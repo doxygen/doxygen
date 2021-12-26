@@ -1834,6 +1834,7 @@ void HtmlDocVisitor::visitPost(DocImage *img)
 void HtmlDocVisitor::visitPre(DocDotFile *df)
 {
   if (m_hide) return;
+  if (!Config_getBool(DOT_CLEANUP)) copyFile(df->file(),Config_getString(HTML_OUTPUT)+"/"+stripPath(df->file()));
   m_t << "<div class=\"dotgraph\">\n";
   writeDotFile(df->file(),df->relPath(),df->context(),df->srcFile(),df->srcLine());
   if (df->hasCaption())
@@ -1855,6 +1856,7 @@ void HtmlDocVisitor::visitPost(DocDotFile *df)
 void HtmlDocVisitor::visitPre(DocMscFile *df)
 {
   if (m_hide) return;
+  if (!Config_getBool(DOT_CLEANUP)) copyFile(df->file(),Config_getString(HTML_OUTPUT)+"/"+stripPath(df->file()));
   m_t << "<div class=\"mscgraph\">\n";
   writeMscFile(df->file(),df->relPath(),df->context(),df->srcFile(),df->srcLine());
   if (df->hasCaption())
@@ -1875,6 +1877,7 @@ void HtmlDocVisitor::visitPost(DocMscFile *df)
 void HtmlDocVisitor::visitPre(DocDiaFile *df)
 {
   if (m_hide) return;
+  if (!Config_getBool(DOT_CLEANUP)) copyFile(df->file(),Config_getString(HTML_OUTPUT)+"/"+stripPath(df->file()));
   m_t << "<div class=\"diagraph\">\n";
   writeDiaFile(df->file(),df->relPath(),df->context(),df->srcFile(),df->srcLine());
   if (df->hasCaption())
