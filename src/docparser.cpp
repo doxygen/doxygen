@@ -513,8 +513,8 @@ void DocParser::checkUnOrMultipleDocumentedParams()
           }
           else if (count>1 && Config_getBool(WARN_IF_DOC_ERROR))
           {
-            warn_doc_error(context.memberDef->getDefFileName(),
-                           context.memberDef->getDefLine(),
+            warn_doc_error(context.memberDef->docFile(),
+                           context.memberDef->docLine(),
                            "%s",
                            qPrint("argument '" + aName +
                            "' from the argument list of " +
@@ -541,8 +541,8 @@ void DocParser::checkUnOrMultipleDocumentedParams()
           first=FALSE;
           errMsg+="  parameter '"+argName+"'";
         }
-        warn_incomplete_doc(context.memberDef->getDefFileName(),
-                            context.memberDef->getDefLine(),
+        warn_incomplete_doc(context.memberDef->docFile(),
+                            context.memberDef->docLine(),
                             "%s",
                             qPrint(substitute(errMsg,"%","%%")));
       }

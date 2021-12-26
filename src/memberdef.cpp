@@ -4006,7 +4006,7 @@ void MemberDefImpl::detectUndocumentedParams(bool hasParamCommand,bool hasReturn
           )
   {
 
-    warn_doc_error(getDefFileName(),getDefLine(),"documented empty return type of %s",
+    warn_doc_error(docFile(),docLine(),"documented empty return type of %s",
                           qPrint(qualifiedName()));
   }
   else if ( // see if return needs to documented
@@ -4034,14 +4034,14 @@ void MemberDefImpl::warnIfUndocumentedParams() const
     QCString returnType = typeString();
     if (!m_impl->hasDocumentedParams)
     {
-      warn_doc_error(getDefFileName(),getDefLine(),
+      warn_doc_error(docFile(),docLine(),
           "parameters of member %s are not (all) documented",
           qPrint(qualifiedName()));
     }
     if (!m_impl->hasDocumentedReturnType &&
         hasDocumentation() && !returnType.isEmpty())
     {
-      warn_doc_error(getDefFileName(),getDefLine(),
+      warn_doc_error(docFile(),docLine(),
           "return type of member %s is not documented",
           qPrint(qualifiedName()));
     }
