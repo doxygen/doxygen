@@ -1,8 +1,6 @@
 /******************************************************************************
  *
- *
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2021 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -295,8 +293,8 @@ static void writeLatexMakefile()
   }
   TextStream t(&f);
   // inserted by KONNO Akihisa <konno@researchers.jp> 2002-03-05
-  QCString latex_command = theTranslator->latexCommandName();
-  QCString mkidx_command = Config_getString(MAKEINDEX_CMD_NAME);
+  QCString latex_command = theTranslator->latexCommandName().quoted();
+  QCString mkidx_command = Config_getString(MAKEINDEX_CMD_NAME).quoted();
   // end insertion by KONNO Akihisa <konno@researchers.jp> 2002-03-05
   if (!Config_getBool(USE_PDFLATEX)) // use plain old latex
   {
@@ -383,8 +381,8 @@ static void writeMakeBat()
 #if defined(_MSC_VER)
   QCString dir=Config_getString(LATEX_OUTPUT);
   QCString fileName=dir+"/make.bat";
-  QCString latex_command = theTranslator->latexCommandName();
-  QCString mkidx_command = Config_getString(MAKEINDEX_CMD_NAME);
+  QCString latex_command = theTranslator->latexCommandName().quoted();
+  QCString mkidx_command = Config_getString(MAKEINDEX_CMD_NAME).quoted();
   bool generateBib = !CitationManager::instance().isEmpty();
   std::ofstream t(fileName.str(),std::ofstream::out | std::ofstream::binary);
   if (!t.is_open())

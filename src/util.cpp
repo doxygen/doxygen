@@ -7386,3 +7386,4 @@ QCString integerToRoman(int n, bool upper)
 
   return result;
 }
+
