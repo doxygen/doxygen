@@ -407,6 +407,7 @@ struct commentscanYY_state
 
   QCString         guardExpr;
   int              roundCount = 0;
+  int              HTMLDetails = 0;
 
   bool             insideParBlock = FALSE;
   bool             inInternalDocs = FALSE;
@@ -476,8 +477,11 @@ CODE      [cC][oO][dD][eE]
 CAPTION   [cC][aA][pP][tT][iI][oO][nN]
 CENTER    [cC][eE][nN][tT][eE][rR]
 DIV       [dD][iI][vV]
+DETAILS   [dD][eE][tT][aA][iI][lL][sS]
 DETAILEDHTML {CENTER}|{DIV}|{PRE}|{UL}|{TABLE}|{OL}|{DL}|{P}|[Hh][1-6]|{IMG}|{HR}|{PARA}
 DETAILEDHTMLOPT {CODE}
+SUMMARY   [sS][uU][mM][mM][aA][rR][yY]
+REMARKS   [rR][eE][mM][aA][rR][kK][sS]
 BN        [ \t\n\r]
 BL        [ \t\r]*"\n"
 B         [ \t]
@@ -610,19 +614,28 @@ STopt  [^\n@\\]*
                                           // continue with the same input
                                           REJECT;
                                         }
-<Comment>"<summary>"                    { // start of a .NET XML style brief description
-                                          setOutput(yyscanner,OutputBrief);
-                                          addOutput(yyscanner,yytext);
-                                        }
-<Comment>"<remarks>"                    { // start of a .NET XML style detailed description
+<Comment>"<"{DETAILS}{ATTR}">"          { // start of a HTML style details description
+                                          yyextra->HTMLDetails++;
                                           setOutput(yyscanner,OutputDoc);
                                           addOutput(yyscanner,yytext);
                                         }
-<Comment>"</summary>"                   { // start of a .NET XML style detailed description
+<Comment>"</"{DETAILS}">"               { // end of a HTML style details description
+                                          if (yyextra->HTMLDetails) yyextra->HTMLDetails--;
                                           addOutput(yyscanner,yytext);
-                                          setOutput(yyscanner,OutputDoc);
                                         }
-<Comment>"</remarks>"                   { // end of a brief or detailed description
+<Comment>"<"{SUMMARY}">"                { // start of a .NET XML style brief description
+                                          if (!yyextra->HTMLDetails) setOutput(yyscanner,OutputBrief);
+                                          addOutput(yyscanner,yytext);
+                                        }
+<Comment>"<"{REMARKS}">"                { // start of a .NET XML style detailed description
+                                          setOutput(yyscanner,OutputDoc);
+                                          addOutput(yyscanner,yytext);
+                                        }
+<Comment>"</"{SUMMARY}">"               { // start of a .NET XML style detailed description
+                                          addOutput(yyscanner,yytext);
+                                          if (!yyextra->HTMLDetails) setOutput(yyscanner,OutputDoc);
+                                        }
+<Comment>"</"{REMARKS}">"               { // end of a brief or detailed description
                                           setOutput(yyscanner,OutputDoc);
                                           addOutput(yyscanner,yytext);
                                         }

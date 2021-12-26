@@ -358,7 +358,9 @@ class DocStyleChange : public DocNode
                  Del           = (1<<12),
                  Ins           = (1<<13),
                  S             = (1<<14),
-                 Cite          = (1<<15)
+                 Details       = (1<<15),
+                 Summary       = (1<<16),
+                 Cite          = (1<<17)
                };
 
     DocStyleChange(DocParser &parser,DocNode *parent,uint position,Style s,const QCString &tagName,bool enable,

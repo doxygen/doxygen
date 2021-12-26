@@ -188,7 +188,8 @@ enum HtmlTagType
   HTML_INS       = 36,
   HTML_DEL       = 37,
   HTML_S         = 38,
-  HTML_CITE      = 39,
+  HTML_DETAILS   = 39,
+  HTML_CITE      = 40,
 
   XML_CmdMask    = 0x100,
 

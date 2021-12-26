@@ -51,6 +51,8 @@ of a HTML tag are passed on to the HTML output only
 <li><tt>\anchor htmltag_endDD \addindex "\</DD\>"\</DD\></tt>   Ends an item description.
 <li><tt>\anchor htmltag_DEL \addindex "\<DEL\>"\<DEL\></tt>   Starts a section of deleted text, typically shown strike through text.
 <li><tt>\anchor htmltag_endDEL \addindex "\</DEL\>"\</DEL\></tt>  Ends a section of deleted text.
+<li><tt>\anchor htmltag_DETAILS \addindex "\<DETAILS\>"\<DETAILS\></tt> Starts a section of detailed text that the user can open and close (in HTML output))
+<li><tt>\anchor htmltag_endDETAILS \addindex "\</DETAILS\>"\</DETAILS\></tt> Ends a section of detailed text.
 <li><tt>\anchor htmltag_DFN \addindex "\<DFN\>"\<DFN\></tt>   Starts a piece of text displayed in a typewriter font.
 <li><tt>\anchor htmltag_endDFN \addindex "\</DFN\>"\</DFN\></tt>  Ends a \ref htmltag_DFN "\<DFN\>" section.
 <li><tt>\anchor htmltag_DIV \addindex "\<DIV\>"\<DIV></tt>    Starts a section with a specific style (HTML only)
