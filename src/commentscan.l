@@ -1794,7 +1794,7 @@ STopt  [^\n@\\]*
   /* ----- handle argument of raisewarning command ------- */
 <RaiseWarning>{DOCNL}                   { // end of argument
                                           warn_doc_error(yyextra->fileName,yyextra->lineNr,
-                                                         qPrint(yyextra->raiseWarning));
+                                                         "%s",qPrint(yyextra->raiseWarning));
                                           yyextra->raiseWarning = "";
                                           if (*yytext=='\n') yyextra->lineNr++;
                                           addOutput(yyscanner,'\n');
