@@ -102,6 +102,11 @@ static bool elemIsVisible(const XMLHandlers::Attributes &attrib,bool defVal=TRUE
   return visible!="no" && visible!="0";
 }
 
+static bool parentIsVisible(LayoutNavEntry *parent)
+{
+  return parent==0 || parent->visible();
+}
+
 //---------------------------------------------------------------------------------
 
 LayoutNavEntry *LayoutNavEntry::find(LayoutNavEntry::Kind kind,
@@ -120,15 +125,6 @@ LayoutNavEntry *LayoutNavEntry::find(LayoutNavEntry::Kind kind,
     }
   }
   return result;
-}
-
-void LayoutNavEntry::adjustVisibility()
-{
-  if (parent()) setVisible(visible() & parent()->visible());
-  for (const auto &entry : m_children)
-  {
-    entry.get()->adjustVisibility();
-  }
 }
 
 QCString LayoutNavEntry::url() const
@@ -190,7 +186,7 @@ class LayoutParser
 
     void startSimpleEntry(LayoutDocEntry::Kind k,const XMLHandlers::Attributes &attrib)
     {
-      bool isVisible = elemIsVisible(attrib);
+      bool isVisible = elemIsVisible(attrib) && parentIsVisible(m_rootNav);
       if (m_part!=-1 && isVisible)
       {
         LayoutDocManager::instance().addEntry((LayoutDocManager::LayoutPart)m_part,
@@ -203,7 +199,7 @@ class LayoutParser
     void startSectionEntry(LayoutDocEntry::Kind k,const XMLHandlers::Attributes &attrib,
                            const QCString &title)
     {
-      bool isVisible = elemIsVisible(attrib);
+      bool isVisible = elemIsVisible(attrib) && parentIsVisible(m_rootNav);
       QCString userTitle = XMLHandlers::value(attrib,"title");
       //printf("startSectionEntry: title='%s' userTitle='%s'\n",
       //    qPrint(title),qPrint(userTitle));
@@ -257,7 +253,6 @@ class LayoutParser
       if (m_rootNav)
       {
         m_rootNav->clear();
-        m_rootNav->setVisible(true);
       }
     }
 
@@ -539,7 +534,7 @@ class LayoutParser
       }
       QCString baseFile = mapping[i].baseFile;
       QCString title = XMLHandlers::value(attrib,"title");
-      bool isVisible = elemIsVisible(attrib);
+      bool isVisible = elemIsVisible(attrib) && parentIsVisible(m_rootNav);
       if (title.isEmpty()) // use default title
       {
         title = mapping[i].mainName; // use title for main row
@@ -1582,7 +1577,6 @@ void LayoutDocManager::init()
   layoutParser.setDocumentLocator(&parser);
   QCString layout_default = ResourceMgr::instance().getAsString("layout_default.xml");
   parser.parse("layout_default.xml",layout_default.data(),Debug::isFlagSet(Debug::Lex));
-  d->rootNav->adjustVisibility();
 }
 
 LayoutDocManager::~LayoutDocManager()
@@ -1626,7 +1620,6 @@ void LayoutDocManager::parse(const QCString &fileName)
   XMLParser parser(handlers);
   layoutParser.setDocumentLocator(&parser);
   parser.parse(fileName.data(),fileToString(fileName).data(),Debug::isFlagSet(Debug::Lex));
-  d->rootNav->adjustVisibility();
 }
 
 //---------------------------------------------------------------------------------

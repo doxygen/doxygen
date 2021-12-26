@@ -173,16 +173,14 @@ struct LayoutNavEntry
     QCString intro() const           { return m_intro; }
     QCString url() const;
     bool visible()                   { return m_visible; }
-    void setVisible(bool v)          { m_visible = v; }
     void clear()                     { m_children.clear(); }
     void addChild(LayoutNavEntry *e) { m_children.push_back(std::unique_ptr<LayoutNavEntry>(e)); }
     void prependChild(LayoutNavEntry *e) { m_children.insert(m_children.begin(),std::unique_ptr<LayoutNavEntry>(e)); }
     const LayoutNavEntryList &children() const { return m_children; }
     LayoutNavEntry *find(LayoutNavEntry::Kind k,const QCString &file=QCString()) const;
-    void adjustVisibility();
 
   private:
-    LayoutNavEntry() : m_parent(0), m_kind(None), m_visible(FALSE) {}
+    LayoutNavEntry() : m_parent(0), m_kind(None), m_visible(true) {}
     LayoutNavEntry *m_parent;
     Kind m_kind;
     bool m_visible;
