@@ -1655,7 +1655,6 @@ void VHDLCodeParser::parseCode(CodeOutputInterface &od,
     VhdlDocGen::init();
     yyextra->lexInit=true;
   }
-  /*int iLine=*/countLines(yyscanner);
   vhdlcodeYYrestart( 0, yyscanner );
   BEGIN( Bases );
   vhdlcodeYYlex(yyscanner);
