@@ -102,6 +102,11 @@ static bool elemIsVisible(const XMLHandlers::Attributes &attrib,bool defVal=TRUE
   return visible!="no" && visible!="0";
 }
 
+static bool parentIsVisible(LayoutNavEntry *parent)
+{
+  return parent==0 || parent->visible();
+}
+
 //---------------------------------------------------------------------------------
 
 LayoutNavEntry *LayoutNavEntry::find(LayoutNavEntry::Kind kind,
@@ -121,8 +126,6 @@ LayoutNavEntry *LayoutNavEntry::find(LayoutNavEntry::Kind kind,
   }
   return result;
 }
-
-
 
 QCString LayoutNavEntry::url() const
 {
@@ -183,7 +186,7 @@ class LayoutParser
 
     void startSimpleEntry(LayoutDocEntry::Kind k,const XMLHandlers::Attributes &attrib)
     {
-      bool isVisible = elemIsVisible(attrib);
+      bool isVisible = elemIsVisible(attrib) && parentIsVisible(m_rootNav);
       if (m_part!=-1 && isVisible)
       {
         LayoutDocManager::instance().addEntry((LayoutDocManager::LayoutPart)m_part,
@@ -196,7 +199,7 @@ class LayoutParser
     void startSectionEntry(LayoutDocEntry::Kind k,const XMLHandlers::Attributes &attrib,
                            const QCString &title)
     {
-      bool isVisible = elemIsVisible(attrib);
+      bool isVisible = elemIsVisible(attrib) && parentIsVisible(m_rootNav);
       QCString userTitle = XMLHandlers::value(attrib,"title");
       //printf("startSectionEntry: title='%s' userTitle='%s'\n",
       //    qPrint(title),qPrint(userTitle));
@@ -247,7 +250,10 @@ class LayoutParser
     {
       m_scope="navindex/";
       m_rootNav = LayoutDocManager::instance().rootNavEntry();
-      if (m_rootNav) m_rootNav->clear();
+      if (m_rootNav)
+      {
+        m_rootNav->clear();
+      }
     }
 
     void endNavIndex()
@@ -528,7 +534,7 @@ class LayoutParser
       }
       QCString baseFile = mapping[i].baseFile;
       QCString title = XMLHandlers::value(attrib,"title");
-      bool isVisible = elemIsVisible(attrib);
+      bool isVisible = elemIsVisible(attrib) && parentIsVisible(m_rootNav);
       if (title.isEmpty()) // use default title
       {
         title = mapping[i].mainName; // use title for main row
