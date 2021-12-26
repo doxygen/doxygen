@@ -40,6 +40,10 @@
 #include "containers.h"
 #include "debug.h"
 
+// ----------------- private part -----------------------------------------------
+
+namespace {
+
 /** Information about an linkable anchor */
 class TagAnchorInfo
 {
@@ -1562,6 +1566,10 @@ void TagFileParser::addIncludes()
     }
   }
 }
+
+} // namespace
+
+// ----------------- public part -----------------------------------------------
 
 void parseTagFile(const std::shared_ptr<Entry> &root,const char *fullName)
 {

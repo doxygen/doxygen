@@ -724,6 +724,8 @@ class LayoutParser
 
 //---------------------------------------------------------------------------------
 
+namespace {
+
 struct ElementCallbacks
 {
   using StartCallback = std::function<void(LayoutParser&,const XMLHandlers::Attributes&)>;
@@ -1511,6 +1513,9 @@ static const std::map< std::string, ElementCallbacks > g_elementHandlers =
                                                   } },
 
 };
+
+
+} // namespace
 
 void LayoutParser::startElement( const std::string &name, const XMLHandlers::Attributes& attrib )
 {
