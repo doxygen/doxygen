@@ -414,10 +414,11 @@ class TranslatorDutch : public Translator
         bool single)
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
+      static bool vhdlOpt = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
       QCString result=(QCString)"De documentatie voor ";
       switch(compType)
       {
-        case ClassDef::Class:      result+="deze klasse"; break;
+        case ClassDef::Class:      result+=vhdlOpt?"deze ontwerp eenheid":"deze klasse"; break;
         case ClassDef::Struct:     result+="deze struct"; break;
         case ClassDef::Union:      result+="deze union"; break;
         case ClassDef::Interface:  result+="dit interface"; break;
