@@ -169,6 +169,7 @@ documentation:
 \refitem cmdpublic \\public
 \refitem cmdpublicsection \\publicsection
 \refitem cmdpure \\pure
+\refitem cmdraisewarning \\raisewarning
 \refitem cmdref \\ref
 \refitem cmdrefitem \\refitem
 \refitem cmdrelated \\related
@@ -1442,6 +1443,34 @@ contains \c TEST, or \c DEV
   All the text, including the command, till the end of the line is ignored.
   The command will most commonly be used in combination with \ref cfg_aliases "ALIASES"
   to ignore not supported commands that are present for e.g. other processing tools.
+<hr>
+\section cmdraisewarning \\raisewarning ( text to be shown as warning )
+
+  \addindex \\raisewarning
+  All the text, excluding the command, till the end of the line is is literally shown
+  as a documentation warning. The text, including the command, is removed from the output.
+  The command will most commonly be used in combination with \ref cfg_aliases "ALIASES"
+  to show a specific warning.
+  \par Example:
+\verbatim
+\raisewarning My specific warnning
+
+\warnNoDoc
+
+\warnNoDoc{My specific warnning}
+\endverbatim
+   together with:
+\verbatim
+ALIASES  = warnNoDoc="\raisewarning Missing documentation"
+ALIASES += warnNoDoc{1}="\raisewarning Incomplete documentation: \1"
+\endverbatim
+   will  result in:
+\verbatim
+   ex_1.md:1: warning: My specific warnning
+   ex_1.md:3: warning: Missing documentation
+   ex_1.md:5: warning: Incomplete documentation: My specific warnning
+\endverbatim
+
 <hr>
 \section cmdelse \\else
 
