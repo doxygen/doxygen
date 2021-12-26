@@ -251,6 +251,32 @@ class QCString
       return QCString(m_rep.substr(start,1+end-start));
     }
 
+    // Returns a quoted copy of this string, unless it is already quoted.
+    // Note that trailing and leading whitespace is removed.
+    QCString quoted() const
+    {
+      size_t start=0, sl=m_rep.size(), end=sl-1;
+      while (start<sl  && qisspace(m_rep[start])) start++; // skip over leading whitespace
+      if (start==sl) return QCString(); // only whitespace
+      while (end>start && qisspace(m_rep[end]))   end--;   // skip over trailing whitespace
+      bool needsQuotes=false;
+      size_t i=start;
+      if (i<end && m_rep[i]!='"') // stripped string has at least non-whitespace unquoted character
+      {
+        while (i<end && !needsQuotes) // check if the to be quoted part has at least one whitespace character
+        {
+          needsQuotes = qisspace(m_rep[i++]);
+        }
+      }
+      QCString result(m_rep.substr(start,1+end-start));
+      if (needsQuotes)
+      {
+        result.prepend("\"");
+        result.append("\"");
+      }
+      return result;
+    }
+
     /// returns a copy of this string with all whitespace removed
     QCString removeWhiteSpace() const
     {
