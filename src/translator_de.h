@@ -864,10 +864,11 @@ class TranslatorGerman : public TranslatorAdapter_1_8_15
     virtual QCString trGeneratedFromFiles(ClassDef::CompoundType compType,
         bool single)
     { // single is true implies a single file
+      static bool vhdlOpt = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
       QCString result=(QCString)"Die Dokumentation für diese";
       switch(compType)
       {
-        case ClassDef::Class:      result+=" Klasse"; break;
+        case ClassDef::Class:      result+=vhdlOpt?"Entwurfseinheiten":"Klasse"; break;
         case ClassDef::Struct:     result+=" Struktur"; break;
         case ClassDef::Union:      result+=" Variante"; break;
         case ClassDef::Interface:  result+=" Schnittstelle"; break;

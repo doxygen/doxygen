@@ -34,11 +34,22 @@ static std::mutex      g_mutex;
 void initWarningFormat()
 {
   g_warnFormat = Config_getString(WARN_FORMAT);
-  if (!Config_getString(WARN_LOGFILE).isEmpty())
+  QCString logFile = Config_getString(WARN_LOGFILE);
+
+  if (!logFile.isEmpty())
   {
-    g_warnFile = Portable::fopen(Config_getString(WARN_LOGFILE).data(),"w");
+    if (logFile == "-")
+    {
+      g_warnFile = stdout;
+    }
+    else if (!(g_warnFile = Portable::fopen(logFile,"w")))
+    {
+      // point it to something valid, because warn() relies on it
+      g_warnFile = stderr;
+      err("Cannot open '%s' for writing, redirecting 'WARN_LOGFILE' output to 'stderr'\n",logFile.data());
+    }
   }
-  if (!g_warnFile) // point it to something valid, because warn() relies on it
+  else
   {
     g_warnFile = stderr;
   }

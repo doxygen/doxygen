@@ -308,15 +308,7 @@ static void addRelatedPage(Entry *root)
     if (!g.groupname.isEmpty() && (gd=Doxygen::groupLinkedMap->find(g.groupname))) break;
   }
   //printf("---> addRelatedPage() %s gd=%p\n",qPrint(root->name),gd);
-  QCString doc;
-  if (root->brief.isEmpty())
-  {
-    doc=root->doc+root->inbodyDocs;
-  }
-  else
-  {
-    doc=root->brief+"\n\n"+root->doc+root->inbodyDocs;
-  }
+  QCString doc=root->doc+root->inbodyDocs;
 
   PageDef *pd = addRelatedPage(root->name,root->args,doc,
       root->docFile,
@@ -1244,6 +1236,7 @@ static void addConceptToContext(const Entry *root)
       cd->setLanguage(root->lang);
       cd->setId(root->id);
       cd->setHidden(root->hidden);
+      cd->setGroupId(root->mGrpId);
       if (tArgList)
       {
         cd->setTemplateArguments(*tArgList);
@@ -1305,6 +1298,37 @@ static void buildConceptDocList(const Entry *root)
     addConceptToContext(root);
   }
   for (const auto &e : root->children()) buildConceptDocList(e.get());
+}
+
+// This routine is to allow @ingroup X @{ concept A; concept B; @} to work
+// (same also works for variable and functions because of logic in MemberGroup::insertMember)
+static void distributeConceptGroups()
+{
+  for (const auto &cd : *Doxygen::conceptLinkedMap)
+  {
+    if (cd->groupId()!=DOX_NOGROUP)
+    {
+      for (const auto &ocd : *Doxygen::conceptLinkedMap)
+      {
+        if (cd!=ocd && cd->groupId()==ocd->groupId() &&
+            !cd->partOfGroups().empty() && ocd->partOfGroups().empty())
+        {
+          ConceptDefMutable *ocdm = toConceptDefMutable(ocd.get());
+          if (ocdm)
+          {
+            for (const auto &gd : cd->partOfGroups())
+            {
+              if (gd)
+              {
+                ocdm->makePartOfGroup(gd);
+                const_cast<GroupDef*>(gd)->addConcept(ocd.get());
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }
 
 //----------------------------------------------------------------------
@@ -3612,6 +3636,11 @@ static void buildFunctionList(const Entry *root)
                   sameRequiresClause = FALSE;
                 }
               }
+              else if (!mdTempl.empty() || !root->tArgLists.empty())
+              { // if one has template parameters and the other doesn't then that also counts as a
+                // difference
+                sameNumTemplateArgs = FALSE;
+              }
 
               bool staticsInDifferentFiles =
                 root->stat && md->isStatic() && root->fileName!=md->getDefFileName();
@@ -4101,7 +4130,7 @@ static void findUsedClassesForClass(const Entry *root,
           }
           // add any template arguments to the class
           QCString usedName = removeRedundantWhiteSpace(usedClassName+templSpec);
-          //printf("    usedName=%s\n",qPrint(usedName));
+          //printf("    usedName=%s usedClassName=%s templSpec=%s\n",qPrint(usedName),qPrint(usedClassName),qPrint(templSpec));
 
           TemplateNameMap formTemplateNames;
           if (templateNames.empty())
@@ -5114,7 +5143,7 @@ static void addMemberDocs(const Entry *root,
 {
   if (md==0) return;
   //printf("addMemberDocs: '%s'::'%s' '%s' funcDecl='%s' mSpec=%lld\n",
-  //     qPrint(root->parent()->name),qPrint(md->name()),md->argsString(),funcDecl,spec);
+  //     qPrint(root->parent()->name),qPrint(md->name()),qPrint(md->argsString()),qPrint(funcDecl),spec);
   QCString fDecl=funcDecl;
   // strip extern specifier
   fDecl.stripPrefix("extern ");
@@ -6642,7 +6671,7 @@ static void findMember(const Entry *root,
               root->fileName,root->startLine,root->startColumn,
               funcType,funcName,funcArgs,exceptions,
               root->protection,root->virt,
-              root->stat && !isMemberOf,
+              root->stat,
               isMemberOf ? Foreign : Related,
               mtype,
               (!root->tArgLists.empty() ? root->tArgLists.back() : ArgumentList()),
@@ -7828,7 +7857,7 @@ static void computeMemberRelations()
                    bmd->getLanguage()==SrcLangExt_Python || bmd->getLanguage()==SrcLangExt_Java || bmd->getLanguage()==SrcLangExt_PHP ||
                    bmcd->compoundType()==ClassDef::Interface || bmcd->compoundType()==ClassDef::Protocol
                   ) &&
-                  md->isFunction() &&
+                  (md->isFunction() || md->isCSharpProperty()) &&
                   mcd->isLinkable() &&
                   bmcd->isLinkable() &&
                   mcd->isBaseClass(bmcd,TRUE))
@@ -9358,6 +9387,7 @@ static void generateExampleDocs()
                          pd->docLine(),                            // startLine
                          pd.get(),                                 // context
                          0,                                        // memberDef
+                         (pd->briefDescription().isEmpty()?"":pd->briefDescription()+"\n\n")+
                          pd->documentation()+"\n\n\\include"+lineNoOptStr+" "+pd->name(), // docs
                          TRUE,                                     // index words
                          TRUE,                                     // is example
@@ -10473,10 +10503,10 @@ static void dumpSymbol(TextStream &t,Definition *d)
   QCString scope;
   if (d->getOuterScope() && d->getOuterScope()!=Doxygen::globalScope)
   {
-    scope = d->getOuterScope()->getOutputFileBase()+Doxygen::htmlFileExtension;
+    scope = addHtmlExtensionIfMissing(d->getOuterScope()->getOutputFileBase());
   }
   t << "REPLACE INTO symbols (symbol_id,scope_id,name,file,line) VALUES('"
-    << d->getOutputFileBase()+Doxygen::htmlFileExtension+anchor << "','"
+    << addHtmlExtensionIfMissing(d->getOutputFileBase())+anchor << "','"
     << scope << "','"
     << d->name() << "','"
     << d->getDefFileName() << "','"
@@ -10909,7 +10939,7 @@ void readConfiguration(int argc, char **argv)
           }
           Config::postProcess(TRUE);
           Config::updateObsolete();
-          Config::checkAndCorrect(Config_getBool(QUIET));
+          Config::checkAndCorrect(Config_getBool(QUIET), false);
 
           setTranslator(Config_getEnum(OUTPUT_LANGUAGE));
 
@@ -10955,7 +10985,7 @@ void readConfiguration(int argc, char **argv)
           }
           Config::postProcess(TRUE);
           Config::updateObsolete();
-          Config::checkAndCorrect(Config_getBool(QUIET));
+          Config::checkAndCorrect(Config_getBool(QUIET), false);
 
           setTranslator(Config_getEnum(OUTPUT_LANGUAGE));
 
@@ -11145,7 +11175,7 @@ void checkConfiguration()
 
   Config::postProcess(FALSE);
   Config::updateObsolete();
-  Config::checkAndCorrect(Config_getBool(QUIET));
+  Config::checkAndCorrect(Config_getBool(QUIET), true);
   initWarningFormat();
 }
 
@@ -11865,6 +11895,7 @@ void parseInput()
 
   g_s.begin("Associating documentation with concepts...\n");
   buildConceptDocList(root.get());
+  distributeConceptGroups();
   g_s.end();
 
   g_s.begin("Building example list...\n");
@@ -12423,7 +12454,12 @@ void generateOutput()
     g_s.end();
   }
 
-  if (g_useOutputTemplate) generateOutputViaTemplate();
+  if (g_useOutputTemplate)
+  {
+    g_s.begin("Generating output via template engine...\n");
+    generateOutputViaTemplate();
+    g_s.end();
+  }
 
   warn_flush();
 

@@ -153,7 +153,7 @@ class LatexDocVisitor : public DocVisitor
     // helper functions
     //--------------------------------------
 
-    void filter(const QCString &str);
+    void filter(const QCString &str, const bool retainNewLine = false);
     void startLink(const QCString &ref,const QCString &file,
                    const QCString &anchor,bool refToTable=FALSE);
     void endLink(const QCString &ref,const QCString &file,

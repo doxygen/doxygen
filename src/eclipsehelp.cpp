@@ -188,7 +188,7 @@ void EclipseHelp::addContentsItem(
         indent();
         m_tocstream << "<topic label=\"" << convertToXML(name) << "\"";
         m_tocstream << " href=\"" << convertToXML(m_pathprefix)
-                    << file << Doxygen::htmlFileExtension;
+                    << addHtmlExtensionIfMissing(file);
         if (!anchor.isEmpty())
         {
           m_tocstream << "#" << anchor;

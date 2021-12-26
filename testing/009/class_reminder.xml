@@ -8,6 +8,7 @@
         <definition>void Reminder::reminder</definition>
         <argsstring>()</argsstring>
         <name>reminder</name>
+        <qualifiedname>Reminder::reminder</qualifiedname>
         <briefdescription>
         </briefdescription>
         <detaileddescription>

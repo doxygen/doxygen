@@ -305,7 +305,8 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "weakgroup",       { &handleWeakGroup,        CommandSpacing::Invisible }},
   { "xmlinclude",      { 0,                       CommandSpacing::Inline    }},
   { "xmlonly",         { &handleFormatBlock,      CommandSpacing::Invisible }},
-  { "xrefitem",        { &handleXRefItem,         CommandSpacing::XRef      }}
+  { "xrefitem",        { &handleXRefItem,         CommandSpacing::XRef      }},
+  { "iliteral",        { &handleFormatBlock,      CommandSpacing::Inline    }},
 };
 
 #define YY_NO_INPUT 1
@@ -406,6 +407,7 @@ struct commentscanYY_state
 
   QCString         guardExpr;
   int              roundCount = 0;
+  int              HTMLDetails = 0;
 
   bool             insideParBlock = FALSE;
   bool             inInternalDocs = FALSE;
@@ -453,6 +455,10 @@ static void addIline(yyscan_t yyscanner,int lineNr);
 #undef        YY_INPUT
 #define        YY_INPUT(buf,result,max_size) result=yyread(yyscanner,buf,max_size);
 
+// otherwise the filename would be the name of the converted file (*.cpp instead of *.l)
+static inline const char *getLexerFILE() {return __FILE__;}
+#include "doxygen_lex.h"
+
 %}
 
        /* start command character */
@@ -471,8 +477,11 @@ CODE      [cC][oO][dD][eE]
 CAPTION   [cC][aA][pP][tT][iI][oO][nN]
 CENTER    [cC][eE][nN][tT][eE][rR]
 DIV       [dD][iI][vV]
+DETAILS   [dD][eE][tT][aA][iI][lL][sS]
 DETAILEDHTML {CENTER}|{DIV}|{PRE}|{UL}|{TABLE}|{OL}|{DL}|{P}|[Hh][1-6]|{IMG}|{HR}|{PARA}
 DETAILEDHTMLOPT {CODE}
+SUMMARY   [sS][uU][mM][mM][aA][rR][yY]
+REMARKS   [rR][eE][mM][aA][rR][kK][sS]
 BN        [ \t\n\r]
 BL        [ \t\r]*"\n"
 B         [ \t]
@@ -493,7 +502,7 @@ CITEID    {CITESCHAR}{CITEECHAR}*("."{CITESCHAR}{CITEECHAR}*)*|"\""{CITESCHAR}{C
 SCOPEID   {ID}({ID}*{BN}*"::"{BN}*)*({ID}?)
 SCOPENAME "$"?(({ID}?{BN}*("::"|"."){BN}*)*)((~{BN}*)?{ID})
 TMPLSPEC  "<"{BN}*[^>]+{BN}*">"
-MAILADDR   [a-z_A-Z0-9.+\-]+"@"[a-z_A-Z0-9\-]+("."[a-z_A-Z0-9\-]+)+[a-z_A-Z0-9\-]+
+MAILADDR  ("mailto:")?[a-z_A-Z0-9\x80-\xff.+-]+"@"[a-z_A-Z0-9\x80-\xff-]+("."[a-z_A-Z0-9\x80-\xff\-]+)+[a-z_A-Z0-9\x80-\xff\-]+
 RCSTAG    "$"{ID}":"[^\n$]+"$"
 
   // C start comment 
@@ -605,19 +614,28 @@ STopt  [^\n@\\]*
                                           // continue with the same input
                                           REJECT;
                                         }
-<Comment>"<summary>"                    { // start of a .NET XML style brief description
-                                          setOutput(yyscanner,OutputBrief);
-                                          addOutput(yyscanner,yytext);
-                                        }
-<Comment>"<remarks>"                    { // start of a .NET XML style detailed description
+<Comment>"<"{DETAILS}{ATTR}">"          { // start of a HTML style details description
+                                          yyextra->HTMLDetails++;
                                           setOutput(yyscanner,OutputDoc);
                                           addOutput(yyscanner,yytext);
                                         }
-<Comment>"</summary>"                   { // start of a .NET XML style detailed description
+<Comment>"</"{DETAILS}">"               { // end of a HTML style details description
+                                          if (yyextra->HTMLDetails) yyextra->HTMLDetails--;
                                           addOutput(yyscanner,yytext);
-                                          setOutput(yyscanner,OutputDoc);
                                         }
-<Comment>"</remarks>"                   { // end of a brief or detailed description
+<Comment>"<"{SUMMARY}">"                { // start of a .NET XML style brief description
+                                          if (!yyextra->HTMLDetails) setOutput(yyscanner,OutputBrief);
+                                          addOutput(yyscanner,yytext);
+                                        }
+<Comment>"<"{REMARKS}">"                { // start of a .NET XML style detailed description
+                                          setOutput(yyscanner,OutputDoc);
+                                          addOutput(yyscanner,yytext);
+                                        }
+<Comment>"</"{SUMMARY}">"               { // start of a .NET XML style detailed description
+                                          addOutput(yyscanner,yytext);
+                                          if (!yyextra->HTMLDetails) setOutput(yyscanner,OutputDoc);
+                                        }
+<Comment>"</"{REMARKS}">"               { // end of a brief or detailed description
                                           setOutput(yyscanner,OutputDoc);
                                           addOutput(yyscanner,yytext);
                                         }
@@ -1007,7 +1025,8 @@ STopt  [^\n@\\]*
   /* ------------ handle argument of namespace command --------------- */
 
 <NameSpaceDocArg1>{SCOPENAME}           { // handle argument
-                                          yyextra->current->name = substitute(QCString(yytext),QCString("."),QCString("::"));
+                                          lineCount(yyscanner);
+                                          yyextra->current->name = substitute(removeRedundantWhiteSpace(QCString(yytext)),QCString("."),QCString("::"));
                                           BEGIN( Comment );
                                         }
 <NameSpaceDocArg1>{LC}                  { // line continuation
@@ -1075,10 +1094,12 @@ STopt  [^\n@\\]*
   /* ------ handle argument of class/struct/union command --------------- */
 
 <ClassDocArg1>{SCOPENAME}{TMPLSPEC}     {
+                                          lineCount(yyscanner);
                                           yyextra->current->name = substitute(removeRedundantWhiteSpace(QCString(yytext)),".","::");
                                           BEGIN( ClassDocArg2 );
                                         }
 <ClassDocArg1>{SCOPENAME}               { // first argument
+                                          lineCount(yyscanner);
                                           yyextra->current->name = substitute(QCString(yytext),".","::");
                                           if (yyextra->current->section==Entry::PROTOCOLDOC_SEC)
                                           {
@@ -1088,6 +1109,7 @@ STopt  [^\n@\\]*
                                           BEGIN( ClassDocArg2 );
                                         }
 <CategoryDocArg1>{SCOPENAME}{B}*"("[^\)]+")" {
+                                          lineCount(yyscanner);
                                           yyextra->current->name = substitute(QCString(yytext),".","::");
                                           BEGIN( ClassDocArg2 );
                                         }
@@ -1491,7 +1513,7 @@ STopt  [^\n@\\]*
 
   /* ----- handle arguments of the preformatted block commands ------- */
 
-<FormatBlock>{CMD}("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endrtfonly"|"endmanonly"|"enddot"|"endcode"|"endmsc")/{NW} { // possible ends
+<FormatBlock>{CMD}("endverbatim"|"endiliteral"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endrtfonly"|"endmanonly"|"enddot"|"endcode"|"endmsc")/{NW} { // possible ends
                                           addOutput(yyscanner,yytext);
                                           if (&yytext[4]==yyextra->blockName) // found end of the block
                                           {
@@ -1513,12 +1535,12 @@ STopt  [^\n@\\]*
                                           addOutput(yyscanner,'\n');
                                         }
 <FormatBlock>{CCS}                       { // start of a C-comment
-                                          if (!(yyextra->blockName=="code" || yyextra->blockName=="verbatim")) yyextra->commentCount++;
+                                          if (!(yyextra->blockName=="code" || yyextra->blockName=="verbatim" || yyextra->blockName=="iliteral")) yyextra->commentCount++;
                                           addOutput(yyscanner,yytext);
                                         }
 <FormatBlock>{CCE}                       { // end of a C-comment
                                           addOutput(yyscanner,yytext);
-                                          if (!(yyextra->blockName=="code" || yyextra->blockName=="verbatim"))
+                                          if (!(yyextra->blockName=="code" || yyextra->blockName=="verbatim" || yyextra->blockName=="iliteral"))
                                           {
                                             yyextra->commentCount--;
                                             if (yyextra->commentCount<0)
@@ -1935,19 +1957,40 @@ STopt  [^\n@\\]*
 
   /* ----- handle argument of the copydoc command ------- */
 
-<CopyDoc><<EOF>>                        |
-<CopyDoc>{DOCNL}                        {
-                                          if (*yytext=='\n') yyextra->lineNr++;
-                                          addOutput(yyscanner,'\n');
+<CopyDoc><<EOF>>                        {
                                           setOutput(yyscanner,OutputDoc);
-                                          addOutput(yyscanner," \\copydetails ");
+                                          addOutput(yyscanner," \\ilinebr\\ilinebr\\copydetails ");
                                           addOutput(yyscanner,yyextra->copyDocArg);
                                           addOutput(yyscanner,"\n");
                                           BEGIN(Comment);
                                         }
-<CopyDoc>[^\n\\]+                       {
+<CopyDoc>{DOCNL}                        {
+                                          if (*yytext=='\n') yyextra->lineNr++;
+                                          if (yyextra->braceCount==0)
+                                          {
+                                            setOutput(yyscanner,OutputDoc);
+                                            addOutput(yyscanner," \\ilinebr\\ilinebr\\copydetails ");
+                                            addOutput(yyscanner,yyextra->copyDocArg);
+                                            addOutput(yyscanner,"\n");
+                                            BEGIN(Comment);
+                                          }
+                                        }
+<CopyDoc>{LC}                           { // line continuation
+                                          yyextra->lineNr++;
+                                        }
+<CopyDoc>[^@\\\n()]+                    { // non-special characters
                                           yyextra->copyDocArg+=yytext;
                                           addOutput(yyscanner,yytext);
+                                        }
+<CopyDoc>"("                            {
+                                          yyextra->copyDocArg+=yytext;
+                                          addOutput(yyscanner,yytext);
+                                          yyextra->braceCount++;
+                                        }
+<CopyDoc>")"                            {
+                                          yyextra->copyDocArg+=yytext;
+                                          addOutput(yyscanner,yytext);
+                                          yyextra->braceCount--;
                                         }
 <CopyDoc>.                              {
                                           yyextra->copyDocArg+=yytext;
@@ -2143,6 +2186,7 @@ static bool handleMainpage(yyscan_t yyscanner,const QCString &, const StringVect
   {
     yyextra->current->name = "mainpage";
   }
+  setOutput(yyscanner,OutputDoc);
   BEGIN( PageDocArg2 );
   return stop;
 }
@@ -2328,6 +2372,7 @@ static bool handleRelated(yyscan_t yyscanner,const QCString &cmd, const StringVe
         "found multiple \\relates, \\relatesalso or \\memberof commands in a comment block, using last definition");
   }
   yyextra->current->relatesType = Simple;
+  yyextra->currentCmd = cmd;
   BEGIN(RelatesParam1);
   return FALSE;
 }
@@ -2827,7 +2872,12 @@ static bool handleCopyDetails(yyscan_t yyscanner,const QCString &, const StringV
 static bool handleCopyDoc(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  setOutput(yyscanner,OutputBrief);
+  if (yyextra->current->brief.isEmpty() && yyextra->current->doc.isEmpty())
+  { // if we don't have a brief or detailed description yet,
+    // then the @copybrief should end up in the brief description.
+    // otherwise it will be copied inline (see bug691315 & bug700788)
+    setOutput(yyscanner,OutputBrief);
+  }
   if (!yyextra->spaceBeforeCmd.isEmpty())
   {
     addOutput(yyscanner,yyextra->spaceBeforeCmd);
@@ -2835,6 +2885,7 @@ static bool handleCopyDoc(yyscan_t yyscanner,const QCString &, const StringVecto
   }
   addOutput(yyscanner,"\\copybrief ");
   yyextra->copyDocArg.resize(0);
+  yyextra->braceCount = 0;
   BEGIN(CopyDoc);
   return FALSE;
 }
@@ -3206,6 +3257,7 @@ static inline void setOutput(yyscan_t yyscanner,OutputContext ctx)
       if (oldContext!=yyextra->inContext)
       {
         stripTrailingWhiteSpace(yyextra->current->doc);
+        if (yyextra->current->doc.isEmpty()) yyextra->current->docLine = yyextra->lineNr;
         if (yyextra->current->docFile.isEmpty())
         {
           yyextra->current->docFile = yyextra->fileName;
@@ -3217,6 +3269,7 @@ static inline void setOutput(yyscan_t yyscanner,OutputContext ctx)
     case OutputBrief:
       if (oldContext!=yyextra->inContext)
       {
+        if (yyextra->current->brief.isEmpty()) yyextra->current->briefLine = yyextra->lineNr;
         if (yyextra->current->briefFile.isEmpty())
         {
           yyextra->current->briefFile = yyextra->fileName;
@@ -3308,8 +3361,8 @@ static inline void addOutput(yyscan_t yyscanner,char c)
 
 static void addIline(yyscan_t yyscanner,int lineNr)
 {
-  char cmd[20];
-  sprintf(cmd,"\\iline %d ",lineNr);
+  char cmd[30];
+  sprintf(cmd,"\\iline %d \\ilinebr ",lineNr);
   addOutput(yyscanner, cmd);
 }
 

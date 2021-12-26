@@ -265,6 +265,9 @@ void RTFDocVisitor::visit(DocStyleChange *s)
     case DocStyleChange::Small:
       if (s->enable()) m_t << "{\\sub ";  else m_t << "} ";
       break;
+    case DocStyleChange::Cite:
+      if (s->enable()) m_t << "{\\i ";     else m_t << "} ";
+      break;
     case DocStyleChange::Preformatted:
       if (s->enable())
       {
@@ -283,6 +286,22 @@ void RTFDocVisitor::visit(DocStyleChange *s)
       break;
     case DocStyleChange::Div:  /* HTML only */ break;
     case DocStyleChange::Span: /* HTML only */ break;
+    case DocStyleChange::Details: /* emulation of the <details> tag */
+      if (s->enable())
+      {
+        m_t << "{\n";
+        m_t << "\\par\n";
+      }
+      else
+      {
+        m_t << "\\par";
+        m_t << "}\n";
+      }
+      m_lastIsPara=TRUE;
+      break;
+    case DocStyleChange::Summary: /* emulation of the <summary> tag inside a <details> tag */
+      if (s->enable()) m_t << "{\\b ";      else m_t << "} ";
+      break;
   }
 }
 
@@ -310,6 +329,16 @@ void RTFDocVisitor::visit(DocVerbatim *s)
       getCodeParser(lang).parseCode(m_ci,s->context(),s->text(),langExt,
                                     s->isExample(),s->exampleFile());
       //m_t << "\\par\n";
+      m_t << "}\n";
+      break;
+    case DocVerbatim::JavaDocLiteral:
+      filter(s->text(),TRUE);
+      break;
+    case DocVerbatim::JavaDocCode:
+      m_t << "{\n";
+      m_t << "{\\f2 ";
+      filter(s->text(),TRUE);
+      m_t << "}";
       m_t << "}\n";
       break;
     case DocVerbatim::Verbatim:
@@ -1042,12 +1071,23 @@ void RTFDocVisitor::visitPost(DocHtmlDescData *)
   m_lastIsPara=TRUE;
 }
 
-void RTFDocVisitor::visitPre(DocHtmlTable *)
+void RTFDocVisitor::visitPre(DocHtmlTable *t)
 {
   if (m_hide) return;
   DBG_RTF("{\\comment RTFDocVisitor::visitPre(DocHtmlTable)}\n");
   if (!m_lastIsPara) m_t << "\\par\n";
   m_lastIsPara=TRUE;
+  if (t->hasCaption())
+  {
+    DocHtmlCaption *c = t->caption();
+    m_t << "\\pard \\qc \\b";
+    if (!c->file().isEmpty())
+    {
+      m_t << "{\\bkmkstart " << rtfFormatBmkStr(stripPath(c->file())+"_"+c->anchor()) << "}\n";
+      m_t << "{\\bkmkend " << rtfFormatBmkStr(stripPath(c->file())+"_"+c->anchor()) << "}\n";
+    }
+    m_t << "{Table \\field\\flddirty{\\*\\fldinst { SEQ Table \\\\*Arabic }}{\\fldrslt {\\noproof 1}} ";
+  }
 }
 
 void RTFDocVisitor::visitPost(DocHtmlTable *)
@@ -1062,8 +1102,7 @@ void RTFDocVisitor::visitPost(DocHtmlTable *)
 void RTFDocVisitor::visitPre(DocHtmlCaption *)
 {
   DBG_RTF("{\\comment RTFDocVisitor::visitPre(DocHtmlCaption)}\n");
-  m_t << "\\pard \\qc \\b";
-  m_t << "{Table \\field\\flddirty{\\*\\fldinst { SEQ Table \\\\*Arabic }}{\\fldrslt {\\noproof 1}} ";
+  // start of caption is handled in the RTFDocVisitor::visitPre(DocHtmlTable *t)
 }
 
 void RTFDocVisitor::visitPost(DocHtmlCaption *)
@@ -1310,6 +1349,7 @@ void RTFDocVisitor::includePicturePostRTF(bool isTypeRTF, bool hasCaption, bool 
 void RTFDocVisitor::visitPre(DocDotFile *df)
 {
   DBG_RTF("{\\comment RTFDocVisitor::visitPre(DocDotFile)}\n");
+  if (!Config_getBool(DOT_CLEANUP)) copyFile(df->file(),Config_getString(RTF_OUTPUT)+"/"+stripPath(df->file()));
   writeDotFile(df);
 }
 
@@ -1321,6 +1361,7 @@ void RTFDocVisitor::visitPost(DocDotFile *df)
 void RTFDocVisitor::visitPre(DocMscFile *df)
 {
   DBG_RTF("{\\comment RTFDocVisitor::visitPre(DocMscFile)}\n");
+  if (!Config_getBool(DOT_CLEANUP)) copyFile(df->file(),Config_getString(RTF_OUTPUT)+"/"+stripPath(df->file()));
   writeMscFile(df);
 }
 
@@ -1333,6 +1374,7 @@ void RTFDocVisitor::visitPost(DocMscFile *df)
 void RTFDocVisitor::visitPre(DocDiaFile *df)
 {
   DBG_RTF("{\\comment RTFDocVisitor::visitPre(DocDiaFile)}\n");
+  if (!Config_getBool(DOT_CLEANUP)) copyFile(df->file(),Config_getString(RTF_OUTPUT)+"/"+stripPath(df->file()));
   writeDiaFile(df);
 }
 

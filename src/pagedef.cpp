@@ -162,7 +162,7 @@ void PageDefImpl::writeTagFile(TextStream &tagFile)
     tagFile << "  <compound kind=\"page\">\n";
     tagFile << "    <name>" << name() << "</name>\n";
     tagFile << "    <title>" << convertToXML(title()) << "</title>\n";
-    tagFile << "    <filename>" << convertToXML(getOutputFileBase())<< Doxygen::htmlFileExtension << "</filename>\n";
+    tagFile << "    <filename>" << addHtmlExtensionIfMissing(getOutputFileBase()) << "</filename>\n";
     writeDocAnchorsToTagFile(tagFile);
     tagFile << "  </compound>\n";
   }
@@ -292,7 +292,7 @@ void PageDefImpl::writeDocumentation(OutputList &ol)
 void PageDefImpl::writePageDocumentation(OutputList &ol) const
 {
   ol.startTextBlock();
-  QCString docStr = documentation()+inbodyDocumentation();
+  QCString docStr = (briefDescription().isEmpty()?"":briefDescription()+"\n\n")+documentation()+inbodyDocumentation();
   if (hasBriefDescription() && !SectionManager::instance().find(name()))
   {
     ol.pushGeneratorState();

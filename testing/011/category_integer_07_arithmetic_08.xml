@@ -8,6 +8,7 @@
         <definition>id Integer(Arithmetic)::add:</definition>
         <argsstring>(Integer *addend)</argsstring>
         <name>add:</name>
+        <qualifiedname>-[Integer(Arithmetic) add:]</qualifiedname>
         <param>
           <type><ref refid="interface_integer" kindref="compound">Integer</ref> *</type>
           <declname>addend</declname>
@@ -26,6 +27,7 @@
         <definition>id Integer(Arithmetic)::sub:</definition>
         <argsstring>(Integer *subtrahend)</argsstring>
         <name>sub:</name>
+        <qualifiedname>-[Integer(Arithmetic) sub:]</qualifiedname>
         <param>
           <type><ref refid="interface_integer" kindref="compound">Integer</ref> *</type>
           <declname>subtrahend</declname>

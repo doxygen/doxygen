@@ -460,11 +460,11 @@ void DotNode::writeBox(TextStream &t,
       int anchorPos = m_url.findRev('#');
       if (anchorPos==-1)
       {
-        t << ",URL=\"" << m_url << Doxygen::htmlFileExtension << "\"";
+        t << ",URL=\"" << addHtmlExtensionIfMissing(m_url) << "\"";
       }
       else
       {
-        t << ",URL=\"" << m_url.left(anchorPos) << Doxygen::htmlFileExtension
+        t << ",URL=\"" << addHtmlExtensionIfMissing(m_url.left(anchorPos))
           << m_url.right(m_url.length()-anchorPos) << "\"";
       }
     }

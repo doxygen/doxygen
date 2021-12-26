@@ -649,9 +649,16 @@ void PerlModDocVisitor::visit(DocStyleChange *s)
     case DocStyleChange::Superscript:   style = "superscript"; break;
     case DocStyleChange::Center:        style = "center"; break;
     case DocStyleChange::Small:         style = "small"; break;
+    case DocStyleChange::Cite:          style = "cite"; break;
     case DocStyleChange::Preformatted:  style = "preformatted"; break;
     case DocStyleChange::Div:           style = "div"; break;
     case DocStyleChange::Span:          style = "span"; break;
+    case DocStyleChange::Details: /* emulation of the <details> tag */
+      style = "details";
+      break;
+    case DocStyleChange::Summary: /* emulation of the <summary> tag inside a <details> tag */
+      style = "summary";
+      break;
 
   }
   openItem("style");
@@ -672,6 +679,8 @@ void PerlModDocVisitor::visit(DocVerbatim *s)
       m_output.add("</programlisting>");
       return;
 #endif
+    case DocVerbatim::JavaDocCode:
+    case DocVerbatim::JavaDocLiteral:
     case DocVerbatim::Verbatim:  type = "preformatted"; break;
     case DocVerbatim::HtmlOnly:  type = "htmlonly";     break;
     case DocVerbatim::RtfOnly:   type = "rtfonly";      break;

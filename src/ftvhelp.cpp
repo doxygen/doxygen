@@ -451,8 +451,7 @@ void FTVHelp::generateTree(TextStream &t, const std::vector<FTVNode*> &nl,int le
       }
       if (srcRef)
       {
-        t << "<a href=\"" << srcRef->getSourceFileBase()
-          << Doxygen::htmlFileExtension
+        t << "<a href=\"" << addHtmlExtensionIfMissing(srcRef->getSourceFileBase())
           << "\">";
       }
       if (n->def && n->def->definitionType()==Definition::TypeGroup)

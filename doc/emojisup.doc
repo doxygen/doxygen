@@ -60,6 +60,8 @@ def get_emojis():
     return json.loads(raw_data)
 
 def download_images(dir_name):
+    if not os.path.exists(dir_name):
+        os.makedirs(dir_name)
     json_data = get_emojis()
     num_items = len(json_data)
     cur_item=0

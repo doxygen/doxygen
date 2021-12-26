@@ -92,7 +92,24 @@ static const std::set<std::string> g_plantumlEngine {
 
 using DefinitionStack = std::vector<const Definition *>;
 using DocNodeStack = std::stack<const DocNode *>;
-using DocStyleChangeStack = std::stack<const DocStyleChange *>;
+//using DocStyleChangeStack = std::stack<const DocStyleChange *>;
+
+template<typename T, typename Container = std::deque<T>>
+class iterable_stack
+: public std::stack<T, Container>
+{
+    using std::stack<T, Container>::c;
+
+public:
+
+    // expose just the iterators of the underlying container
+    auto begin() { return std::begin(c); }
+    auto end() { return std::end(c); }
+
+    auto begin() const { return std::begin(c); }
+    auto end() const { return std::end(c); }
+};
+using DocStyleChangeStack = iterable_stack<const DocStyleChange *>;
 
 /** Parser's context to store all global variables.
  */
@@ -379,7 +396,7 @@ QCString DocParser::findAndCopyImage(const QCString &fileName, DocImage::Type ty
  */
 void DocParser::checkArgumentName()
 {
-  if (!Config_getBool(WARN_IF_DOC_ERROR)) return;
+  if (!(Config_getBool(WARN_IF_DOC_ERROR) || Config_getBool(WARN_IF_INCOMPLETE_DOC))) return;
   if (context.memberDef==0) return; // not a member
   std::string name = context.token->name.str();
   const ArgumentList &al=context.memberDef->isDocsForDefinition() ?
@@ -618,6 +635,15 @@ static bool insideTable(DocNode *n)
   return FALSE;
 }
 
+static const DocStyleChange *insideDetails(DocStyleChangeStack styleStack)
+{
+  const DocStyleChange *retItem = NULL;
+  for (auto i : styleStack)
+  {
+     if (i->style() == DocStyleChange::Details) retItem = i;
+  }
+  return retItem;
+}
 //---------------------------------------------------------------------------
 /*! Looks for a documentation block with name commandName in the current
  *  context (g_parserContext.context). The resulting documentation string is
@@ -985,6 +1011,7 @@ const char *DocStyleChange::styleString() const
     case DocStyleChange::Code:         return "code";
     case DocStyleChange::Center:       return "center";
     case DocStyleChange::Small:        return "small";
+    case DocStyleChange::Cite:         return "cite";
     case DocStyleChange::Subscript:    return "subscript";
     case DocStyleChange::Superscript:  return "superscript";
     case DocStyleChange::Preformatted: return "pre";
@@ -995,6 +1022,8 @@ const char *DocStyleChange::styleString() const
     case DocStyleChange::Del:          return "del";
     case DocStyleChange::Underline:    return "u";
     case DocStyleChange::Ins:          return "ins";
+    case DocStyleChange::Details:      return "details";
+    case DocStyleChange::Summary:      return "summary";
   }
   return "<invalid>";
 }
@@ -1553,6 +1582,16 @@ reparsetoken:
               handleStyleLeave(parent,children,DocStyleChange::Ins,tokenName);
             }
             break;
+          case HTML_DETAILS:
+            if (!context.token->endTag)
+            {
+              handleStyleEnter(parent,children,DocStyleChange::Details,tokenName,&context.token->attribs);
+            }
+            else
+            {
+              handleStyleLeave(parent,children,DocStyleChange::Details,tokenName);
+            }
+            break;
           case HTML_CODE:
           case XML_C:
             if (!context.token->endTag)
@@ -1612,6 +1651,16 @@ reparsetoken:
             else
             {
               handleStyleLeave(parent,children,DocStyleChange::Small,tokenName);
+            }
+            break;
+          case HTML_CITE:
+            if (!context.token->endTag)
+            {
+              handleStyleEnter(parent,children,DocStyleChange::Cite,tokenName,&context.token->attribs);
+            }
+            else
+            {
+              handleStyleLeave(parent,children,DocStyleChange::Cite,tokenName);
             }
             break;
           case HTML_IMG:
@@ -2987,7 +3036,6 @@ endheader:
   DBG(("DocHtmlHeader::parse() end\n"));
   return retval;
 }
-
 //---------------------------------------------------------------------------
 
 int DocHRef::parse()
@@ -5078,9 +5126,11 @@ void DocPara::handleLink(const QCString &cmdName,bool isJavaLink)
         DocTokenizer::tokToString(tok),qPrint(saveCmdName));
     return;
   }
+  if (saveCmdName == "javalink") m_children.push_back(std::make_unique<DocStyleChange>(m_parser,this,(uint)m_parser.context.nodeStack.size(),DocStyleChange::Code,cmdName,TRUE));
   m_parser.tokenizer.setStatePara();
   DocLink *lnk = new DocLink(m_parser,this,m_parser.context.token->name);
   m_children.push_back(std::unique_ptr<DocLink>(lnk));
+  if (saveCmdName == "javalink") m_children.push_back(std::make_unique<DocStyleChange>(m_parser,this,(uint)m_parser.context.nodeStack.size(),DocStyleChange::Code,cmdName,FALSE));
   QCString leftOver = lnk->parse(isJavaLink);
   if (!leftOver.isEmpty())
   {
@@ -5576,6 +5626,53 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
         m_parser.tokenizer.setStatePara();
       }
       break;
+    case CMD_ILITERAL:
+      {
+        DocVerbatim::Type t = DocVerbatim::JavaDocLiteral;
+        m_parser.tokenizer.setStateILiteralOpt();
+        retval = m_parser.tokenizer.lex();
+
+        QCString fullMatch = m_parser.context.token->verb;
+        int idx = fullMatch.find('{');
+        int idxEnd = fullMatch.find("}",idx+1);
+        StringVector optList;
+        if (idx != -1) // options present
+        {
+           QCString optStr = fullMatch.mid(idx+1,idxEnd-idx-1).stripWhiteSpace();
+           optList = split(optStr.str(),",");
+           for (const auto &opt : optList)
+           {
+             if (opt.empty()) continue;
+             QCString locOpt(opt);
+             locOpt = locOpt.stripWhiteSpace().lower();
+             if (locOpt == "code")
+             {
+               t = DocVerbatim::JavaDocCode;
+             }
+             else if (!locOpt.isEmpty())
+             {
+               warn(m_parser.context.fileName,m_parser.tokenizer.getLineNr(), "Unknown option '%s' for '\\iliteral'",qPrint(opt));
+             }
+           }
+        }
+
+        m_parser.tokenizer.setStateILiteral();
+        retval = m_parser.tokenizer.lex();
+        m_children.push_back(std::make_unique<DocVerbatim>(m_parser,this,m_parser.context.context,m_parser.context.token->verb,t,m_parser.context.isExample,m_parser.context.exampleName));
+        if (retval==0)
+        {
+          if (t == DocVerbatim::JavaDocCode)
+          {
+            warn_doc_error(m_parser.context.fileName,m_parser.tokenizer.getLineNr(),"javadoc code section ended without end marker");
+          }
+          else
+          {
+            warn_doc_error(m_parser.context.fileName,m_parser.tokenizer.getLineNr(),"javadoc literal section ended without end marker");
+          }
+        }
+        m_parser.tokenizer.setStatePara();
+      }
+      break;
     case CMD_VERBATIM:
       {
         m_parser.tokenizer.setStateVerbatim();
@@ -5735,6 +5832,7 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
     case CMD_ENDDBONLY:
     case CMD_ENDLINK:
     case CMD_ENDVERBATIM:
+    case CMD_ENDILITERAL:
     case CMD_ENDDOT:
     case CMD_ENDMSC:
     case CMD_ENDUML:
@@ -6020,6 +6118,9 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
     case HTML_INS:
       if (!m_parser.context.token->emptyTag) m_parser.handleStyleEnter(this,m_children,DocStyleChange::Ins,tagName,&m_parser.context.token->attribs);
       break;
+    case HTML_DETAILS:
+      if (!m_parser.context.token->emptyTag) m_parser.handleStyleEnter(this,m_children,DocStyleChange::Details,tagName,&m_parser.context.token->attribs);
+      break;
     case HTML_CODE:
       if (m_parser.context.token->emptyTag) break;
       if (/*getLanguageFromFileName(m_parser.context.fileName)==SrcLangExt_CSharp ||*/ m_parser.context.xmlComment)
@@ -6054,6 +6155,9 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
       break;
     case HTML_SMALL:
       if (!m_parser.context.token->emptyTag) m_parser.handleStyleEnter(this,m_children,DocStyleChange::Small,tagName,&m_parser.context.token->attribs);
+      break;
+    case HTML_CITE:
+      if (!m_parser.context.token->emptyTag) m_parser.handleStyleEnter(this,m_children,DocStyleChange::Cite,tagName,&m_parser.context.token->attribs);
       break;
     case HTML_PRE:
       if (m_parser.context.token->emptyTag) break;
@@ -6144,6 +6248,11 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
       break;
 
     case XML_SUMMARY:
+      if (insideDetails(m_parser.context.styleStack))
+      {
+        if (!m_parser.context.token->emptyTag) m_parser.handleStyleEnter(this,m_children,DocStyleChange::Summary,tagName,&m_parser.context.token->attribs);
+        break;
+      }
     case XML_REMARKS:
     case XML_EXAMPLE:
       m_parser.context.xmlComment=TRUE;
@@ -6445,6 +6554,9 @@ int DocPara::handleHtmlEndTag(const QCString &tagName)
     case HTML_INS:
       m_parser.handleStyleLeave(this,m_children,DocStyleChange::Ins,tagName);
       break;
+    case HTML_DETAILS:
+      m_parser.handleStyleLeave(this,m_children,DocStyleChange::Details,tagName);
+      break;
     case HTML_CODE:
       m_parser.handleStyleLeave(this,m_children,DocStyleChange::Code,tagName);
       break;
@@ -6468,6 +6580,9 @@ int DocPara::handleHtmlEndTag(const QCString &tagName)
       break;
     case HTML_SMALL:
       m_parser.handleStyleLeave(this,m_children,DocStyleChange::Small,tagName);
+      break;
+    case HTML_CITE:
+      m_parser.handleStyleLeave(this,m_children,DocStyleChange::Cite,tagName);
       break;
     case HTML_PRE:
       m_parser.handleStyleLeave(this,m_children,DocStyleChange::Preformatted,tagName);
@@ -6537,6 +6652,11 @@ int DocPara::handleHtmlEndTag(const QCString &tagName)
       //m_children.push_back(std::make_unique<DocStyleChange>(this,(uint)m_parser.context.nodeStack.size(),DocStyleChange::Bold,FALSE));
       break;
     case XML_SUMMARY:
+      if (insideDetails(m_parser.context.styleStack))
+      {
+        m_parser.handleStyleLeave(this,m_children,DocStyleChange::Summary,tagName);
+        break;
+      }
     case XML_REMARKS:
     case XML_PARA:
     case XML_VALUE:
@@ -7343,6 +7463,7 @@ static QCString extractCopyDocId(const char *data, uint &j, uint len)
     j+=9;
   }
   e=j;
+  if (j>0 && data[j-1]=='.') { e--; } // do not include punctuation added by Definition::_setBriefDescription()
   QCString id(data+s,e-s);
   //printf("extractCopyDocId='%s' input='%s'\n",qPrint(id),&data[s]);
   return id;
@@ -7376,6 +7497,7 @@ static uint isVerbatimSection(const char *data,uint i,uint len,QCString &endMark
     CHECK_FOR_COMMAND("code",endMarker="endcode");
     CHECK_FOR_COMMAND("msc",endMarker="endmsc");
     CHECK_FOR_COMMAND("verbatim",endMarker="endverbatim");
+    CHECK_FOR_COMMAND("iliteral",endMarker="endiliteral");
     CHECK_FOR_COMMAND("latexonly",endMarker="endlatexonly");
     CHECK_FOR_COMMAND("htmlonly",endMarker="endhtmlonly");
     CHECK_FOR_COMMAND("xmlonly",endMarker="endxmlonly");

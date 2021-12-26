@@ -58,6 +58,8 @@ sub html_ent {
 	s/\!\`/&iexcl;/g;
 	s/\-\-\-/&mdash;/g;
 	s/([^\!])\-\-([^\>])/$1&ndash;$2/g;
+	s/(CITEREF_[^\!])&ndash;([^\>])/$1--$2/g;
+	s/(CITEREF_[^\!])&mdash;([^\>])/$1---$2/g;
 	s/\\([aA]lpha)\b/&$1;/g;
 	s/\\([bB]eta)\b/&$1;/g;
 	s/\\([gG]amma)\b/&$1;/g;

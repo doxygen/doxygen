@@ -78,8 +78,9 @@ struct pycodeYY_state
   CodeOutputInterface * code = 0;
   const char *  inputString = 0;     //!< the code fragment as text
   yy_size_t     inputPosition = 0;   //!< read offset during parsing
+  QCString      fileName;
   const char *  currentFontClass = 0;
-  bool          needsTermination = FALSE;
+  bool          insideCodeLine = FALSE;
   const Definition *searchCtx = 0;
   bool          collectXRefs = FALSE;
   int           inputLines = 0;      //!< number of line in the code fragment
@@ -162,6 +163,10 @@ static std::mutex g_countFlowKeywordsMutex;
 
 #undef YY_INPUT
 #define YY_INPUT(buf,result,max_size) result=yyread(yyscanner,buf,max_size);
+
+// otherwise the filename would be the name of the converted file (*.cpp instead of *.l)
+static inline const char *getLexerFILE() {return __FILE__;}
+#include "doxygen_lex.h"
 
 %}
 
@@ -940,7 +945,6 @@ static int countLines(yyscan_t yyscanner)
   { // last line does not end with a \n, so we add an extra
     // line and explicitly terminate the line after parsing.
     count++;
-    yyextra->needsTermination=TRUE;
   }
   return count;
 }
@@ -1063,6 +1067,8 @@ static void startCodeLine(yyscan_t yyscanner)
     }
   }
   yyextra->code->startCodeLine(yyextra->sourceFileDef);
+  yyextra->insideCodeLine=true;
+
   if (yyextra->currentFontClass)
   {
     yyextra->code->startFontClass(yyextra->currentFontClass);
@@ -1084,6 +1090,7 @@ static void endCodeLine(yyscan_t yyscanner)
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   endFontClass(yyscanner);
   yyextra->code->endCodeLine();
+  yyextra->insideCodeLine=false;
 }
 
 //-------------------------------------------------------------------------------
@@ -1092,7 +1099,10 @@ static void nextCodeLine(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   const char *fc = yyextra->currentFontClass;
-  endCodeLine(yyscanner);
+  if (yyextra->insideCodeLine)
+  {
+    endCodeLine(yyscanner);
+  }
   if (yyextra->yyLineNr<yyextra->inputLines)
   {
     yyextra->currentFontClass = fc;
@@ -1520,16 +1530,17 @@ static void findMemberLink(yyscan_t yyscanner,
   //    yyextra->currentDefinition?qPrint(yyextra->currentDefinition->name()):"<none>",
   //    yyextra->currentMemberDef?qPrint(yyextra->currentMemberDef->name()):"<none>"
   //    );
+  bool found = false;
   if (yyextra->currentDefinition)
   {
     auto range = Doxygen::symbolMap->find(symName);
     for (auto it = range.first; it!=range.second; ++it)
     {
-      findMemberLink(yyscanner,ol,it->second,symName);
+      if (findMemberLink(yyscanner,ol,it->second,symName)) found = true;
     }
   }
   //printf("sym %s not found\n",&yytext[5]);
-  codify(yyscanner,symName);
+  if (!found) codify(yyscanner,symName);
 }
 
 
@@ -1590,11 +1601,12 @@ void PythonCodeParser::parseCode(CodeOutputInterface &codeOutIntf,
 
   if (input.isEmpty()) return;
   printlex(yy_flex_debug, TRUE, __FILE__, fileDef ? qPrint(fileDef->fileName()): NULL);
+  yyextra->fileName      = fileDef ? fileDef->fileName():"";
   yyextra->code = &codeOutIntf;
   yyextra->inputString   = input.data();
   yyextra->inputPosition = 0;
   yyextra->currentFontClass = 0;
-  yyextra->needsTermination = FALSE;
+  yyextra->insideCodeLine = FALSE;
   yyextra->searchCtx=searchCtx;
   yyextra->collectXRefs=collectXRefs;
   if (startLine!=-1)
@@ -1637,7 +1649,7 @@ void PythonCodeParser::parseCode(CodeOutputInterface &codeOutIntf,
     // printf("Exited pysourceparser in inconsistent state!\n");
   }
 
-  if (yyextra->needsTermination)
+  if (yyextra->insideCodeLine)
   {
     endCodeLine(yyscanner);
   }

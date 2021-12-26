@@ -342,7 +342,7 @@ void DirDefImpl::writeSubDirList(OutputList &ol)
     ol.startMemberList();
     for(const auto dd : m_subdirs)
     {
-      if (dd->hasDocumentation() || dd->getFiles().empty())
+      if (dd->hasDocumentation() || !dd->getFiles().empty())
       {
         ol.startMemberDeclaration();
         ol.startMemberItem(dd->anchor(),0);
@@ -376,7 +376,12 @@ void DirDefImpl::writeFileList(OutputList &ol)
   int numFiles = 0;
   for (const auto &fd : m_fileList)
   {
-    if (fd->hasDocumentation())
+    bool genSourceFile;
+    if (fileVisibleInIndex(fd,genSourceFile))
+    {
+      numFiles++;
+    }
+    else if (genSourceFile)
     {
       numFiles++;
     }
@@ -391,7 +396,9 @@ void DirDefImpl::writeFileList(OutputList &ol)
     ol.startMemberList();
     for (const auto &fd : m_fileList)
     {
-      if (fd->hasDocumentation())
+      bool doc,src;
+      doc = fileVisibleInIndex(fd,src);
+      if (doc || src)
       {
         ol.startMemberDeclaration();
         ol.startMemberItem(fd->anchor(),0);
@@ -466,7 +473,7 @@ void DirDefImpl::writeTagFile(TextStream &tagFile)
   tagFile << "  <compound kind=\"dir\">\n";
   tagFile << "    <name>" << convertToXML(displayName()) << "</name>\n";
   tagFile << "    <path>" << convertToXML(name()) << "</path>\n";
-  tagFile << "    <filename>" << convertToXML(getOutputFileBase()) << Doxygen::htmlFileExtension << "</filename>\n";
+  tagFile << "    <filename>" << addHtmlExtensionIfMissing(getOutputFileBase()) << "</filename>\n";
   for (const auto &lde : LayoutDocManager::instance().docEntries(LayoutDocManager::Directory))
   {
     switch (lde->kind())
@@ -742,7 +749,7 @@ bool DirDefImpl::isParentOf(const DirDef *dir) const
 
 bool DirDefImpl::depGraphIsTrivial() const
 {
-  return m_usedDirs.empty();
+  return m_usedDirs.empty() && m_parent==nullptr;
 }
 
 

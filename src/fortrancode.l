@@ -140,10 +140,11 @@ struct fortrancodeYY_state
   const char *  inputString = 0;     //!< the code fragment as text
   yy_size_t     inputPosition = 0;   //!< read offset during parsing
   int           inputLines = 0;      //!< number of line in the code fragment
+  QCString      fileName;
   int           yyLineNr = 0;        //!< current line number
   int           contLineNr = 0;      //!< current, local, line number for continuation determination
   int          *hasContLine = 0;     //!< signals whether or not a line has a continuation line (fixed source form)
-  bool          needsTermination = false;
+  bool          insideCodeLine = false;
   const Definition *searchCtx = 0;
   bool          collectXRefs = false;
   bool          isFixedForm = false;
@@ -220,6 +221,10 @@ static std::mutex g_countFlowKeywordsMutex;
 /* -----------------------------------------------------------------*/
 #undef  YY_INPUT
 #define YY_INPUT(buf,result,max_size) result=yyread(yyscanner,buf,max_size);
+
+// otherwise the filename would be the name of the converted file (*.cpp instead of *.l)
+static inline const char *getLexerFILE() {return __FILE__;}
+#include "doxygen_lex.h"
 
 %}
 
@@ -376,6 +381,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                         }
 <*>"import"{BS}/"\n"                    |
 <*>"import"{BS_}                        {
+                                          if(YY_START == String) YY_FTN_REJECT; // ignore in strings
                                           startFontClass(yyscanner,"keywordtype");
                                           codifyLines(yyscanner,yytext);
                                           endFontClass(yyscanner);
@@ -411,6 +417,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                           BEGIN(ClassName);
                                         }
 <*>{LANGUAGE_BIND_SPEC}                 {  //
+                                          if(YY_START == String) YY_FTN_REJECT; // ignore in strings
                                           startFontClass(yyscanner,"keyword");
                                           codifyLines(yyscanner,yytext);
                                           endFontClass(yyscanner);
@@ -721,11 +728,13 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                           endFontClass(yyscanner);
                                         }
 <*>"assignment"/{BS}"("{BS}"="{BS}")"   {
+                                          if(YY_START == String) YY_FTN_REJECT; // ignore in strings
                                           startFontClass(yyscanner,"keyword");
                                           codifyLines(yyscanner,yytext);
                                           endFontClass(yyscanner);
                                         }
 <*>"operator"/{BS}"("[^)]*")"           {
+                                          if(YY_START == String) YY_FTN_REJECT; // ignore in strings
                                           startFontClass(yyscanner,"keyword");
                                           codifyLines(yyscanner,yytext);
                                           endFontClass(yyscanner);
@@ -950,6 +959,7 @@ static void startCodeLine(yyscan_t yyscanner)
     }
   }
   yyextra->code->startCodeLine(yyextra->sourceFileDef);
+  yyextra->insideCodeLine=true;
   if (yyextra->currentFontClass)
   {
     yyextra->code->startFontClass(QCString(yyextra->currentFontClass));
@@ -962,6 +972,7 @@ static void endCodeLine(yyscan_t yyscanner)
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   endFontClass(yyscanner);
   yyextra->code->endCodeLine();
+  yyextra->insideCodeLine=false;
 }
 
 static void nextCodeLine(yyscan_t yyscanner)
@@ -1312,8 +1323,7 @@ static int countLines(yyscan_t yyscanner)
   if (p>yyextra->inputString && *(p-1)!='\n')
   { // last line does not end with a \n, so we add an extra
     // line and explicitly terminate the line after parsing.
-    count++,
-    yyextra->needsTermination=TRUE;
+    count++;
   }
   return count;
 }
@@ -1429,7 +1439,7 @@ void FortranCodeParser::resetCodeParserState()
   yyextra->currentDefinition = 0;
   yyextra->currentMemberDef = 0;
   yyextra->currentFontClass = 0;
-  yyextra->needsTermination = FALSE;
+  yyextra->insideCodeLine = FALSE;
   BEGIN( Start );
 }
 
@@ -1464,6 +1474,7 @@ void FortranCodeParser::parseCode(CodeOutputInterface & codeOutIntf,
   yyextra->code = &codeOutIntf;
   yyextra->inputString   = input.data();
   yyextra->inputPosition = 0;
+  yyextra->fileName      = fileDef ? fileDef->fileName():"";
   yyextra->isFixedForm = recognizeFixedForm(input,p->format);
   yyextra->contLineNr = 1;
   yyextra->hasContLine = NULL;
@@ -1472,7 +1483,7 @@ void FortranCodeParser::parseCode(CodeOutputInterface & codeOutIntf,
     checkContLines(yyscanner,yyextra->inputString);
   }
   yyextra->currentFontClass = 0;
-  yyextra->needsTermination = FALSE;
+  yyextra->insideCodeLine = FALSE;
   yyextra->searchCtx = searchCtx;
   yyextra->collectXRefs = collectXRefs;
   if (startLine!=-1)
@@ -1508,10 +1519,9 @@ void FortranCodeParser::parseCode(CodeOutputInterface & codeOutIntf,
   fortrancodeYYrestart(0, yyscanner);
   BEGIN( Start );
   fortrancodeYYlex(yyscanner);
-  if (yyextra->needsTermination)
+  if (yyextra->insideCodeLine)
   {
-    endFontClass(yyscanner);
-    yyextra->code->endCodeLine();
+    endCodeLine(yyscanner);
   }
   if (isExampleBlock && yyextra->sourceFileDef)
   {

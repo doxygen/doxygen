@@ -141,8 +141,188 @@ static QCString replace(const QCString &s,char csrc,char cdst)
 }
 #endif
 
-//- TemplateVariant implementation -------------------------------------------
+//- Template struct & list forward declarations ------------------------------
 
+class TemplateStruct;
+using TemplateStructPtr = std::shared_ptr<TemplateStruct>;
+
+/** @brief Default implementation of a context value of type struct. */
+class TemplateStruct : public TemplateStructIntf
+{
+  public:
+    // TemplateStructIntf methods
+    virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
+
+    /** Creates an instance and returns a shared pointer to it */
+    static TemplateStructPtr alloc();
+
+    /** Sets the value the field of a struct
+     *  @param[in] name The name of the field.
+     *  @param[in] v The value to set.
+     */
+    virtual void set(const QCString &name,const TemplateVariant &v);
+
+    /** Removes the field from the struct */
+    virtual void remove(const QCString &name);
+
+    /** Creates a struct */
+    TemplateStruct() = default; //{ printf("%p:TemplateStruct::TemplateStruct()\n",(void*)this); }
+    /** Destroys the struct */
+    virtual ~TemplateStruct() = default; //{ printf("%p:TemplateStruct::~TemplateStruct()\n",(void*)this); }
+
+  private:
+
+    std::unordered_map<std::string,TemplateVariant> m_fields;
+};
+
+void TemplateStruct::set(const QCString &name,const TemplateVariant &v)
+{
+  auto it = m_fields.find(name.str());
+  if (it!=m_fields.end()) // change existing field
+  {
+    it->second = v;
+  }
+  else // insert new field
+  {
+    m_fields.insert(std::make_pair(name.str(),v));
+  }
+}
+
+void TemplateStruct::remove(const QCString &name)
+{
+  auto it = m_fields.find(name.str());
+  if (it!=m_fields.end())
+  {
+    m_fields.erase(it);
+  }
+}
+
+TemplateVariant TemplateStruct::get(const QCString &name) const
+{
+  auto it = m_fields.find(name.str());
+  return it!=m_fields.end() ? it->second : TemplateVariant();
+}
+
+StringVector TemplateStruct::fields() const
+{
+  StringVector result;
+  for (const auto &kv : m_fields)
+  {
+    result.push_back(kv.first);
+  }
+  std::sort(result.begin(),result.end());
+  return result;
+}
+
+TemplateStructPtr TemplateStruct::alloc()
+{
+  return std::make_shared<TemplateStruct>();
+}
+
+class TemplateList;
+using TemplateListPtr = std::shared_ptr<TemplateList>;
+
+//- Template list implementation ----------------------------------------------
+
+// iterator support
+template<class List>
+class TemplateListGenericConstIterator : public TemplateListIntf::ConstIterator
+{
+  public:
+    TemplateListGenericConstIterator(const List &l) : m_list(l) { m_index=0; }
+    virtual ~TemplateListGenericConstIterator() {}
+    virtual void toFirst()
+    {
+      m_index=0;
+    }
+    virtual void toLast()
+    {
+      uint count = m_list.count();
+      m_index = count>0 ? count-1 : 0;
+    }
+    virtual void toNext()
+    {
+      if (m_index<m_list.count()) { m_index++; }
+    }
+    virtual void toPrev()
+    {
+      if (m_index>0) { --m_index; }
+    }
+    virtual bool current(TemplateVariant &v) const
+    {
+      if (m_index<m_list.count())
+      {
+        v = m_list.at(m_index);
+        return TRUE;
+      }
+      else
+      {
+        v = TemplateVariant();
+        return FALSE;
+      }
+    }
+  private:
+    const List &m_list;
+    size_t m_index = 0;
+};
+
+//-------------------------------------------------------------------------------
+//
+/** @brief Default implementation of a context value of type list. */
+class TemplateList : public TemplateListIntf
+{
+  public:
+    // TemplateListIntf methods
+    virtual uint count() const
+    {
+      return static_cast<uint>(m_elems.size());
+    }
+    virtual TemplateVariant at(uint index) const
+    {
+      return index < m_elems.size() ?  m_elems[index] : TemplateVariant();
+    }
+    virtual TemplateListIntf::ConstIteratorPtr createIterator() const
+    {
+      return std::make_unique< TemplateListGenericConstIterator<TemplateList> >(*this);
+    }
+
+    /** Creates an instance and returns a shared pointer to it */
+    static TemplateListPtr alloc()
+    {
+      return std::make_shared<TemplateList>();
+    }
+
+    /** Appends element \a v to the end of the list */
+    virtual void append(const TemplateVariant &v)
+    {
+      m_elems.push_back(v);
+    }
+
+    void removeAt(uint index)
+    {
+      if (index<m_elems.size())
+      {
+        m_elems.erase(m_elems.begin()+index);
+      }
+    }
+
+    void insertAt(uint index,TemplateListPtr list)
+    {
+      auto it = m_elems.begin()+index;
+      m_elems.insert(it,list->m_elems.begin(),list->m_elems.end());
+    }
+
+    /** Creates a list */
+    TemplateList() = default; //{ printf("%p:TemplateList::TemplateList()\n",(void*)this); }
+    /** Destroys the list */
+    virtual ~TemplateList() = default; //{ printf("%p:TemplateList::~TemplateList()\n",(void*)this); }
+
+  private:
+    TemplateVariantList m_elems;
+};
+
+//- TemplateVariant implementation -------------------------------------------
 
 TemplateVariant::TemplateVariant(TemplateVariant &&v)
 {
@@ -167,13 +347,13 @@ bool TemplateVariant::operator==(TemplateVariant &other) const
   }
   if (isBool() && other.isBool())
   {
-    return m_variant.get<bool>() == other.m_variant.get<bool>();
+    return m_variant.get<static_cast<uint8_t>(Type::Bool)>() == other.m_variant.get<static_cast<uint8_t>(Type::Bool)>();
   }
   else if (isInt() && other.isInt())
   {
-    return m_variant.get<int>() == other.m_variant.get<int>();
+    return m_variant.get<static_cast<uint8_t>(Type::Int)>() == other.m_variant.get<static_cast<uint8_t>(Type::Int)>();
   }
-  else if ((isList() || isWeakList()) && (other.isList() || other.isWeakList()))
+  else if (isList() && other.isList())
   {
     return toList() == other.toList();
   }
@@ -189,14 +369,13 @@ bool TemplateVariant::toBool() const
   switch (type())
   {
     case Type::None:       return false;
-    case Type::Bool:       return m_variant.get<bool>();
-    case Type::Int:        return m_variant.get<int>()!=0;
-    case Type::String:     return !m_variant.get<QCString>().isEmpty();
+    case Type::Bool:       return m_variant.get<static_cast<uint8_t>(Type::Bool)>();
+    case Type::Int:        return m_variant.get<static_cast<uint8_t>(Type::Int)>()!=0;
+    case Type::String:     return !m_variant.get<static_cast<uint8_t>(Type::String)>().isEmpty();
     case Type::Struct:     return true;
-    case Type::List:       return m_variant.get<TemplateListIntfPtr>()->count()!=0;
+    case Type::List:       return m_variant.get<static_cast<uint8_t>(Type::List)>()->count()!=0;
     case Type::Function:   return false;
     case Type::WeakStruct: return true;
-    case Type::WeakList:   { auto l = toList(); return l ? l->count() : false; }
   }
   return FALSE;
 }
@@ -206,14 +385,13 @@ int TemplateVariant::toInt() const
   switch (type())
   {
     case Type::None:       return 0;
-    case Type::Bool:       return m_variant.get<bool>() ? 1 : 0;
-    case Type::Int:        return m_variant.get<int>();
-    case Type::String:     return !m_variant.get<QCString>().toInt();
+    case Type::Bool:       return m_variant.get<static_cast<uint8_t>(Type::Bool)>() ? 1 : 0;
+    case Type::Int:        return m_variant.get<static_cast<uint8_t>(Type::Int)>();
+    case Type::String:     return !m_variant.get<static_cast<uint8_t>(Type::String)>().toInt();
     case Type::Struct:     return 0;
-    case Type::List:       return m_variant.get<TemplateListIntfPtr>()->count();
+    case Type::List:       return m_variant.get<static_cast<uint8_t>(Type::List)>()->count();
     case Type::Function:   return 0;
     case Type::WeakStruct: return 0;
-    case Type::WeakList:   { auto l = toList(); return l ? l->count() : 0; }
   }
   return 0;
 }
@@ -223,14 +401,13 @@ QCString TemplateVariant::toString() const
   switch (type())
   {
     case Type::None:       return QCString();
-    case Type::Bool:       return m_variant.get<bool>() ? "true" : "false";
-    case Type::Int:        return QCString().setNum(m_variant.get<int>());
-    case Type::String:     return m_variant.get<QCString>();
+    case Type::Bool:       return m_variant.get<static_cast<uint8_t>(Type::Bool)>() ? "true" : "false";
+    case Type::Int:        return QCString().setNum(m_variant.get<static_cast<uint8_t>(Type::Int)>());
+    case Type::String:     return m_variant.get<static_cast<uint8_t>(Type::String)>();
     case Type::Struct:     return structToString();
     case Type::List:       return listToString();
     case Type::Function:   return "[function]";
     case Type::WeakStruct: return structToString();
-    case Type::WeakList:   return listToString();
   }
   return QCString();
 }
@@ -248,51 +425,65 @@ const char *TemplateVariant::typeAsString() const
     case Type::List:       return "list";
     case Type::Function:   return "function";
     case Type::WeakStruct: return "struct";
-    case Type::WeakList:   return "list";
   }
   return "invalid";
+}
+
+TemplateListIntfPtr TemplateVariant::toList()
+{
+  return isList() ? m_variant.get<static_cast<uint8_t>(Type::List)>() : nullptr;
+}
+const TemplateListIntfPtr TemplateVariant::toList() const
+{
+  return isList() ? m_variant.get<static_cast<uint8_t>(Type::List)>() : nullptr;
+}
+
+TemplateStructIntfPtr TemplateVariant::toStruct()
+{
+  return isStruct()     ? m_variant.get<static_cast<uint8_t>(Type::Struct)>() :
+         isWeakStruct() ? m_variant.get<static_cast<uint8_t>(Type::WeakStruct)>().lock() :
+         nullptr;
+}
+const TemplateStructIntfPtr TemplateVariant::toStruct() const
+{
+  return isStruct()     ? m_variant.get<static_cast<uint8_t>(Type::Struct)>() :
+         isWeakStruct() ? m_variant.get<static_cast<uint8_t>(Type::WeakStruct)>().lock() :
+         nullptr;
+}
+
+TemplateVariant TemplateVariant::call(const std::vector<TemplateVariant> &args)
+{
+  return isFunction() ? m_variant.get<static_cast<uint8_t>(Type::Function)>()(args) : TemplateVariant();
 }
 
 //- Template struct implementation --------------------------------------------
 
 
 /** @brief Private data of a template struct object */
-class TemplateStruct::Private
+class TemplateImmutableStruct::Private
 {
   public:
-    Private() : refCount(0) {}
+    Private(std::initializer_list<StructField> fs) : fields(fs) {}
     std::unordered_map<std::string,TemplateVariant> fields;
-    int refCount = 0;
 };
 
-TemplateStruct::TemplateStruct() : p(std::make_unique<Private>())
+TemplateImmutableStruct::TemplateImmutableStruct(
+    std::initializer_list<StructField> fields)
+  : p(std::make_unique<Private>(fields))
 {
 }
 
-TemplateStruct::~TemplateStruct()
+TemplateImmutableStruct::~TemplateImmutableStruct()
 {
 }
 
-void TemplateStruct::set(const QCString &name,const TemplateVariant &v)
-{
-  auto it = p->fields.find(name.str());
-  if (it!=p->fields.end()) // change existing field
-  {
-    it->second = v;
-  }
-  else // insert new field
-  {
-    p->fields.insert(std::make_pair(name.str(),v));
-  }
-}
-
-TemplateVariant TemplateStruct::get(const QCString &name) const
+TemplateVariant TemplateImmutableStruct::get(const QCString &name) const
 {
   auto it = p->fields.find(name.str());
   return it!=p->fields.end() ? it->second : TemplateVariant();
 }
 
-StringVector TemplateStruct::fields() const
+StringVector TemplateImmutableStruct::fields() const
 {
   StringVector result;
   for (const auto &kv : p->fields)
@@ -303,116 +494,60 @@ StringVector TemplateStruct::fields() const
   return result;
 }
 
-TemplateStructPtr TemplateStruct::alloc()
+TemplateStructIntfPtr TemplateImmutableStruct::alloc(std::initializer_list<StructField> fields)
 {
-  return std::make_shared<TemplateStruct>();
+  return std::make_shared<TemplateImmutableStruct>(fields);
 }
 
-//- Template list implementation ----------------------------------------------
+//- Template immutable list implementation ------------------------------------
 
-
-/** @brief Private data of a template list object */
-class TemplateList::Private
+/** @brief Private data of a template immutable list object */
+class TemplateImmutableList::Private
 {
   public:
-    Private() : index(-1), refCount(0) {}
-    std::vector<TemplateVariant> elems;
+    Private(std::initializer_list<TemplateVariant> e) : elems(e) {}
+    Private(const TemplateVariantList &e) : elems(e) {}
+    TemplateVariantList elems;
     int index = -1;
-    int refCount = 0;
 };
 
-
-TemplateList::TemplateList() : p(std::make_unique<Private>())
+TemplateImmutableList::TemplateImmutableList(std::initializer_list<TemplateVariant> elements)
+  : p(std::make_unique<Private>(elements))
 {
 }
 
-TemplateList::~TemplateList()
+TemplateImmutableList::TemplateImmutableList(const TemplateVariantList &elements)
+  : p(std::make_unique<Private>(elements))
 {
 }
 
-uint TemplateList::count() const
+TemplateImmutableList::~TemplateImmutableList()
+{
+}
+
+uint TemplateImmutableList::count() const
 {
   return static_cast<uint>(p->elems.size());
 }
 
-void TemplateList::append(const TemplateVariant &v)
+TemplateListIntf::ConstIteratorPtr TemplateImmutableList::createIterator() const
+      {
+  return std::make_unique< TemplateListGenericConstIterator<TemplateImmutableList> >(*this);
+      }
+
+TemplateVariant TemplateImmutableList::at(uint index) const
 {
-  p->elems.push_back(v);
+  return index<p->elems.size() ? p->elems[index] : TemplateVariant();
 }
 
-// iterator support
-class TemplateListConstIterator : public TemplateListIntf::ConstIterator
+TemplateListIntfPtr TemplateImmutableList::alloc(std::initializer_list<TemplateVariant> elements)
 {
-  public:
-    TemplateListConstIterator(const TemplateList &l) : m_list(l) { m_index=0; }
-    virtual ~TemplateListConstIterator() {}
-    virtual void toFirst()
-    {
-      m_index=0;
-    }
-    virtual void toLast()
-    {
-      if (m_list.p->elems.size()>0)
-      {
-        m_index=m_list.p->elems.size()-1;
-      }
-      else
-      {
-        m_index=0;
-      }
-    }
-    virtual void toNext()
-    {
-      if (m_index<m_list.p->elems.size())
-      {
-        m_index++;
-      }
-    }
-    virtual void toPrev()
-    {
-      if (m_index>0)
-      {
-        --m_index;
-      }
-    }
-    virtual bool current(TemplateVariant &v) const
-    {
-      if (m_index<m_list.p->elems.size())
-      {
-        v = m_list.p->elems[m_index];
-        return TRUE;
-      }
-      else
-      {
-        v = TemplateVariant();
-        return FALSE;
-      }
-    }
-  private:
-    const TemplateList &m_list;
-    size_t m_index = 0;
-};
-
-TemplateListIntf::ConstIteratorPtr TemplateList::createIterator() const
-{
-  return std::make_unique<TemplateListConstIterator>(*this);
+  return std::make_shared<TemplateImmutableList>(elements);
 }
 
-TemplateVariant TemplateList::at(uint index) const
+TemplateListIntfPtr TemplateImmutableList::alloc(const TemplateVariantList &elements)
 {
-  if (index<p->elems.size())
-  {
-    return p->elems[index];
-  }
-  else
-  {
-    return TemplateVariant();
-  }
-}
-
-TemplateListPtr TemplateList::alloc()
-{
-  return std::make_shared<TemplateList>();
+  return std::make_shared<TemplateImmutableList>(elements);
 }
 
 //- Operator types ------------------------------------------------------------
@@ -508,27 +643,38 @@ class TemplateContextImpl : public TemplateContext
     TemplateContextImpl(const TemplateEngine *e);
     virtual ~TemplateContextImpl();
 
+    using EscapeIntfMap = std::unordered_map<std::string, std::unique_ptr<TemplateEscapeIntf>>;
+    void copyEscapeIntfMap(const EscapeIntfMap &map)
+    {
+      for (const auto &kv : map)
+      {
+        m_escapeIntfMap.insert(std::make_pair(kv.first,kv.second->clone()));
+      }
+    }
+
     // TemplateContext methods
     void push();
     void pop();
     void set(const QCString &name,const TemplateVariant &v);
-    void update(const QCString &name,const TemplateVariant &v);
+    //void update(const QCString &name,const TemplateVariant &v);
     TemplateVariant get(const QCString &name) const;
     const TemplateVariant *getRef(const QCString &name) const;
     void setOutputDirectory(const QCString &dir)
     { m_outputDir = dir; }
-    void setEscapeIntf(const QCString &ext,TemplateEscapeIntf *intf)
+    void setEscapeIntf(const QCString &ext,std::unique_ptr<TemplateEscapeIntf> intf)
     {
       int i=(!ext.isEmpty() && ext.at(0)=='.') ? 1 : 0;
-      m_escapeIntfMap.insert(std::make_pair(ext.mid(i).str(),intf));
+      m_escapeIntfMap.insert(std::make_pair(ext.mid(i).str(),std::move(intf)));
     }
     void selectEscapeIntf(const QCString &ext)
     {
       auto it = m_escapeIntfMap.find(ext.str());
-      m_activeEscapeIntf = it!=m_escapeIntfMap.end() ? it->second : 0;
+      m_activeEscapeIntf = it!=m_escapeIntfMap.end() ? it->second.get() : 0;
     }
     void setActiveEscapeIntf(TemplateEscapeIntf *intf) { m_activeEscapeIntf = intf; }
-    void setSpacelessIntf(TemplateSpacelessIntf *intf) { m_spacelessIntf = intf; }
+    TemplateEscapeIntf *escapeIntf() { return m_activeEscapeIntf; }
+    const TemplateEscapeIntf *escapeIntf() const { return m_activeEscapeIntf; }
+    void setSpacelessIntf(std::unique_ptr<TemplateSpacelessIntf> intf) { m_spacelessIntf = std::move(intf); }
 
     // internal methods
     TemplateBlockContext *blockContext();
@@ -538,8 +684,8 @@ class TemplateContextImpl : public TemplateContext
     QCString templateName() const                { return m_templateName; }
     int line() const                             { return m_line; }
     QCString outputDirectory() const             { return m_outputDir; }
-    TemplateEscapeIntf *escapeIntf() const       { return m_activeEscapeIntf; }
-    TemplateSpacelessIntf *spacelessIntf() const { return m_spacelessIntf; }
+    std::unique_ptr<TemplateSpacelessIntf> &spacelessIntf() { return m_spacelessIntf; }
+    const std::unique_ptr<TemplateSpacelessIntf> &spacelessInfo() const { return m_spacelessIntf; }
     void enableSpaceless(bool b)                 { if (b && !m_spacelessEnabled) m_spacelessIntf->reset();
                                                    m_spacelessEnabled=b;
                                                  }
@@ -558,17 +704,18 @@ class TemplateContextImpl : public TemplateContext
     void openSubIndex(const QCString &indexName);
     void closeSubIndex(const QCString &indexName);
     void addIndexEntry(const QCString &indexName,const std::vector<TemplateKeyValue> &arguments);
+    const TemplateStructPtr indices() const { return m_indices; }
 
   private:
     const TemplateEngine *m_engine = 0;
-    QCString m_templateName;
-    int m_line = 0;
+    QCString m_templateName = "<unknown>";
+    int m_line = 1;
     QCString m_outputDir;
-    std::deque< std::map<std::string,TemplateVariant> > m_contextStack;
+    std::deque< std::unordered_map<std::string,TemplateVariant> > m_contextStack;
     TemplateBlockContext m_blockContext;
-    std::unordered_map<std::string, TemplateEscapeIntf*> m_escapeIntfMap;
+    EscapeIntfMap m_escapeIntfMap;
     TemplateEscapeIntf *m_activeEscapeIntf = 0;
-    TemplateSpacelessIntf *m_spacelessIntf = 0;
+    std::unique_ptr<TemplateSpacelessIntf> m_spacelessIntf;
     bool m_spacelessEnabled = false;
     bool m_tabbingEnabled = false;
     TemplateStructPtr m_indices;
@@ -673,7 +820,7 @@ class FilterKeep
   public:
     static TemplateVariant apply(const TemplateVariant &v,const TemplateVariant &args)
     {
-      if (v.isValid() && (v.isList() || v.isWeakList()) && args.isString())
+      if (v.isValid() && (v.isList()) && args.isString())
       {
         TemplateListIntfPtr list = v.toList();
         if (list)
@@ -719,7 +866,7 @@ class FilterList
     {
       if (v.isValid())
       {
-        if (v.isList() || v.isWeakList()) // input is already a list
+        if (v.isList()) // input is already a list
         {
           return v;
         }
@@ -828,18 +975,6 @@ class FilterLength
       {
         return TemplateVariant((int)v.toList()->count());
       }
-      else if (v.isWeakList())
-      {
-        TemplateListIntfPtr list = v.toList();
-        if (list)
-        {
-          return TemplateVariant((int)list->count());
-        }
-        else
-        {
-          return TemplateVariant((int)0);
-        }
-      }
       else if (v.isString())
       {
         return TemplateVariant((int)v.toString().length());
@@ -882,7 +1017,7 @@ class FilterFlatten
   public:
     static TemplateVariant apply(const TemplateVariant &v,const TemplateVariant &)
     {
-      if (!v.isValid() || (!v.isList() && !v.isWeakList()))
+      if (!v.isValid() || !v.isList())
       {
         return v;
       }
@@ -938,7 +1073,7 @@ class FilterListSort
   public:
     static TemplateVariant apply(const TemplateVariant &v,const TemplateVariant &args)
     {
-      if ((v.isList() || v.isWeakList()) && args.isString())
+      if (v.isList() && args.isString())
       {
         //printf("FilterListSort::apply: v=%s args=%s\n",qPrint(v.toString()),qPrint(args.toString()));
         TemplateListIntfPtr list = v.toList();
@@ -1021,7 +1156,7 @@ class FilterGroupBy
   public:
     static TemplateVariant apply(const TemplateVariant &v,const TemplateVariant &args)
     {
-      if ((v.isList() || v.isWeakList()) && args.isString())
+      if (v.isList() && args.isString())
       {
         TemplateListIntfPtr list = v.toList();
         if (list)
@@ -1185,7 +1320,7 @@ class FilterAlphaIndex
   public:
     static TemplateVariant apply(const TemplateVariant &v,const TemplateVariant &args)
     {
-      if ((v.isList() || v.isWeakList()) && args.isString())
+      if (v.isList() && args.isString())
       {
         TemplateListIntfPtr list = v.toList();
         if (list)
@@ -2437,9 +2572,9 @@ class TemplateImpl : public TemplateNode, public Template
 //----------------------------------------------------------
 
 TemplateContextImpl::TemplateContextImpl(const TemplateEngine *e)
-  : m_engine(e), m_templateName("<unknown>"), m_line(1), m_activeEscapeIntf(0),
-    m_spacelessIntf(0), m_spacelessEnabled(FALSE), m_tabbingEnabled(FALSE), m_indices(TemplateStruct::alloc())
+  : m_engine(e), m_indices(TemplateStruct::alloc())
 {
+  //printf("%p:TemplateContextImpl::TemplateContextImpl()\n",(void*)this);
   m_fromUtf8 = (void*)(-1);
   push();
   set("index",std::static_pointer_cast<TemplateStructIntf>(m_indices));
@@ -2448,6 +2583,7 @@ TemplateContextImpl::TemplateContextImpl(const TemplateEngine *e)
 TemplateContextImpl::~TemplateContextImpl()
 {
   pop();
+  //printf("%p:TemplateContextImpl::~TemplateContextImpl()\n",(void*)this);
 }
 
 void TemplateContextImpl::setEncoding(const QCString &templateName,int line,const QCString &enc)
@@ -2502,24 +2638,10 @@ void TemplateContextImpl::set(const QCString &name,const TemplateVariant &v)
     ctx.erase(it);
   }
   ctx.insert(std::make_pair(name.str(),v));
+  //printf("TemplateContextImpl::set(%s) #stacks=%lu front().size()=%lu\n",
+  //    qPrint(name),m_contextStack.size(),m_contextStack.size()>0 ? m_contextStack.front().size() : 0);
 }
 
-void TemplateContextImpl::update(const QCString &name,const TemplateVariant &v)
-{
-  int depth=0;
-  for (auto &ctx : m_contextStack)
-  {
-    auto it = ctx.find(name.str());
-    if (it!=ctx.end())
-    {
-      ctx.erase(it);
-      ctx.insert(std::make_pair(name.str(),v));
-      return;
-    }
-    depth++;
-  }
-  warn(m_templateName,m_line,"requesting update for non-existing variable '%s'",qPrint(name));
-}
 
 TemplateVariant TemplateContextImpl::get(const QCString &name) const
 {
@@ -2563,7 +2685,7 @@ TemplateVariant TemplateContextImpl::get(const QCString &name) const
           return TemplateVariant();
         }
       }
-      else if (v.isList() || v.isWeakList())
+      else if (v.isList())
       {
         TemplateListIntfPtr list = v.toList();
         if (list)
@@ -2626,11 +2748,13 @@ TemplateVariant TemplateContextImpl::getPrimary(const QCString &name) const
 
 void TemplateContextImpl::push()
 {
-  m_contextStack.push_front(std::map<std::string,TemplateVariant>());
+  m_contextStack.push_front(std::unordered_map<std::string,TemplateVariant>());
+  //printf("TemplateContextImpl::push() #stacks=%lu\n",m_contextStack.size());
 }
 
 void TemplateContextImpl::pop()
 {
+  //printf("TemplateContextImpl::pop() #stacks=%lu\n",m_contextStack.size());
   if (m_contextStack.empty())
   {
     warn(m_templateName,m_line,"pop() called on empty context stack!\n");
@@ -2659,7 +2783,7 @@ void TemplateContextImpl::openSubIndex(const QCString &indexName)
 {
   //printf("TemplateContextImpl::openSubIndex(%s)\n",qPrint(indexName));
   auto kv = m_indexStacks.find(indexName.str());
-  if (kv==m_indexStacks.end() || kv->second.empty() || kv->second.top().isList() || kv->second.top().isWeakList()) // error: no stack yet or no entry
+  if (kv==m_indexStacks.end() || kv->second.empty() || kv->second.top().isList()) // error: no stack yet or no entry
   {
     warn(m_templateName,m_line,"opensubindex for index %s without preceding indexentry",qPrint(indexName));
     return;
@@ -2728,8 +2852,8 @@ static TemplateVariant getPathFunc(const TemplateStructIntfWeakPtr entryWeakRef)
 
 void TemplateContextImpl::addIndexEntry(const QCString &indexName,const std::vector<TemplateKeyValue> &arguments)
 {
-  auto it = arguments.begin();
-  //printf("TemplateContextImpl::addIndexEntry(%s)\n",qPrint(indexName));
+  //auto it = arguments.begin();
+  //printf("%p:> TemplateContextImpl::addIndexEntry(%s)\n",(void*)this,qPrint(indexName));
   //while (it!=arguments.end())
   //{
   //  printf("  key=%s value=%s\n",(*it).key.data(),(*it).value.toString().data());
@@ -2758,7 +2882,7 @@ void TemplateContextImpl::addIndexEntry(const QCString &indexName,const std::vec
     }
     else // first entry after opensubindex
     {
-      ASSERT(stack.top().isList() || stack.top().isWeakList());
+      ASSERT(stack.top().isList());
     }
     if (stack.size()>1)
     {
@@ -2766,7 +2890,7 @@ void TemplateContextImpl::addIndexEntry(const QCString &indexName,const std::vec
       stack.pop();
       // To prevent a cyclic dependency between parent and child which causes a memory
       // leak, we wrap the parent into a weak reference version.
-      parent = TemplateVariant(TemplateStructIntfWeakPtr(stack.top().toStruct()));
+      //parent = TemplateVariant(TemplateStructIntfWeakPtr(stack.top().toStruct()));
       stack.push(tmp);
     }
     // get list to add new item
@@ -2774,7 +2898,7 @@ void TemplateContextImpl::addIndexEntry(const QCString &indexName,const std::vec
   }
   TemplateStructPtr entry = TemplateStruct::alloc();
   // add user specified fields to the entry
-  for (it=arguments.begin();it!=arguments.end();++it)
+  for (auto it=arguments.begin();it!=arguments.end();++it)
   {
     entry->set((*it).key,(*it).value);
   }
@@ -2791,9 +2915,9 @@ void TemplateContextImpl::addIndexEntry(const QCString &indexName,const std::vec
   entry->set("index",list->count());
   entry->set("parent",parent);
   TemplateStructIntfWeakPtr entryWeak(std::static_pointer_cast<TemplateStructIntf>(entry));
-  entry->set("path",TemplateVariant([entryWeak](const std::vector<TemplateVariant>&){ return getPathFunc(entryWeak); }));
+  entry->set("path",TemplateVariant([entryWeak](const TemplateVariantList &){ return getPathFunc(entryWeak); }));
   entry->set("last",true);
-  stack.emplace(TemplateVariant(std::static_pointer_cast<TemplateStructIntf>(entry)));
+  stack.push(TemplateVariant(std::static_pointer_cast<TemplateStructIntf>(entry)));
   list->append(TemplateVariant(std::static_pointer_cast<TemplateStructIntf>(entry)));
 }
 
@@ -2864,6 +2988,7 @@ class TemplateNodeVariable : public TemplateNode
 
     void render(TextStream &ts, TemplateContext *c)
     {
+      TRACE(("{TemplateNodeVariable::render\n"));
       TemplateContextImpl* ci = dynamic_cast<TemplateContextImpl*>(c);
       if (ci==0) return; // should not happen
       ci->setLocation(m_templateName,m_line);
@@ -2872,7 +2997,7 @@ class TemplateNodeVariable : public TemplateNode
         TemplateVariant v = m_var->resolve(c);
         if (v.isFunction())
         {
-          v = v.call(std::vector<TemplateVariant>());
+          v = v.call();
         }
         if (ci->escapeIntf() && !v.raw())
         {
@@ -2897,6 +3022,7 @@ class TemplateNodeVariable : public TemplateNode
           }
         }
       }
+      TRACE(("}TemplateNodeVariable::render\n"));
     }
 
   private:
@@ -3352,7 +3478,7 @@ class TemplateNodeFor : public TemplateNodeCreator<TemplateNodeFor>
         TemplateVariant v = m_expr->resolve(c);
         if (v.isFunction())
         {
-          v = v.call(std::vector<TemplateVariant>());
+          v = v.call();
         }
         const TemplateListIntfPtr list = v.toList();
         if (list)
@@ -3447,6 +3573,7 @@ class TemplateNodeMsg : public TemplateNodeCreator<TemplateNodeMsg>
     }
     void render(TextStream &, TemplateContext *c)
     {
+      TRACE(("{TemplateNodeMsg::render\n"));
       TemplateContextImpl* ci = dynamic_cast<TemplateContextImpl*>(c);
       if (ci==0) return; // should not happen
       ci->setLocation(m_templateName,m_line);
@@ -3460,6 +3587,7 @@ class TemplateNodeMsg : public TemplateNodeCreator<TemplateNodeMsg>
       std::cout << "\n";
       ci->setActiveEscapeIntf(escIntf);
       ci->enableSpaceless(enable);
+      TRACE(("}TemplateNodeMsg::render\n"));
     }
   private:
     TemplateNodeList m_nodes;
@@ -3608,12 +3736,12 @@ class TemplateNodeExtend : public TemplateNodeCreator<TemplateNodeExtend>
 
           // clean up
           bc->clear();
-          t->engine()->unload(t);
         }
         else
         {
           ci->warn(m_templateName,m_line,"failed to load template %s for extend",qPrint(extendFile));
         }
+        t->engine()->unload(bt);
       }
     }
 
@@ -3659,12 +3787,12 @@ class TemplateNodeInclude : public TemplateNodeCreator<TemplateNodeInclude>
             if (incTemplate)
             {
               incTemplate->render(ts,c);
-              t->engine()->unload(t);
             }
             else
             {
               ci->warn(m_templateName,m_line,"failed to load template '%s' for include",qPrint(includeFile));
             }
+            t->engine()->unload(it);
           }
         }
       }
@@ -3678,16 +3806,17 @@ class TemplateNodeInclude : public TemplateNodeCreator<TemplateNodeInclude>
 
 static void stripLeadingWhiteSpace(QCString &s)
 {
-  uint i=0, dstIdx=0, l=s.length();
   bool skipSpaces=true;
-  while (i<l)
+  const char *src = s.data();
+  char *dst = s.rawData();
+  char c;
+  while ((c=*src++))
   {
-    char c = s[i++];
-    if (c=='\n') { s[dstIdx++]=c; skipSpaces=true; }
+    if (c=='\n') { *dst++=c; skipSpaces=true; }
     else if (c==' ' && skipSpaces) {}
-    else { s[dstIdx++] = c; skipSpaces=false; }
+    else { *dst++ = c; skipSpaces=false; }
   }
-  s.resize(dstIdx+1);
+  s.resize(dst-s.data()+1);
 }
 
 /** @brief Class representing an 'create' tag in a template */
@@ -3727,6 +3856,7 @@ class TemplateNodeCreate : public TemplateNodeCreator<TemplateNodeCreate>
     }
     void render(TextStream &, TemplateContext *c)
     {
+      TRACE(("{TemplateNodeCreate::render\n"));
       TemplateContextImpl* ci = dynamic_cast<TemplateContextImpl*>(c);
       if (ci==0) return; // should not happen
       ci->setLocation(m_templateName,m_line);
@@ -3791,6 +3921,7 @@ class TemplateNodeCreate : public TemplateNodeCreator<TemplateNodeCreate>
           }
         }
       }
+      TRACE(("}TemplateNodeCreate::render\n"));
     }
 
   private:
@@ -3852,10 +3983,10 @@ class TemplateNodeTree : public TemplateNodeCreator<TemplateNodeTree>
             if (list && list->count()>0) // non-empty list
             {
               TreeContext childCtx(this,list,ctx->templateCtx);
-              TemplateVariant children(TemplateVariant(
-                    [childCtx](const std::vector<TemplateVariant>&) {
+              TemplateVariant children(
+                    [childCtx](const TemplateVariantList &) {
                        return TemplateVariant(childCtx.object->renderChildren(&childCtx),TRUE);
-                    }));
+                    });
               children.setRaw(TRUE);
               c->set("children",children);
               m_treeNodes.render(ss,c);
@@ -4150,7 +4281,7 @@ class TemplateNodeCycle : public TemplateNodeCreator<TemplateNodeCycle>
         TemplateVariant v = m_args[m_index]->resolve(c);
         if (v.isFunction())
         {
-          v = v.call(std::vector<TemplateVariant>());
+          v = v.call();
         }
         if (ci->escapeIntf() && !v.raw())
         {
@@ -5047,6 +5178,7 @@ TemplateImpl::TemplateImpl(TemplateEngine *engine,const QCString &name,const QCS
     const QCString &extension)
   : TemplateNode(0)
 {
+  //printf("%p:TemplateImpl::TemplateImpl(%s)\n",(void*)this,qPrint(name));
   m_name = name;
   m_engine = engine;
   TemplateLexer lexer(engine,name,data);
@@ -5062,7 +5194,7 @@ TemplateImpl::TemplateImpl(TemplateEngine *engine,const QCString &name,const QCS
 
 TemplateImpl::~TemplateImpl()
 {
-  //printf("deleting template %s\n",qPrint(m_name));
+  //printf("%p:TemplateImpl::~TemplateImpl(%s)\n",(void*)this,qPrint(m_name));
 }
 
 void TemplateImpl::render(TextStream &ts, TemplateContext *c)
@@ -5113,6 +5245,11 @@ class TemplateEngine::Private
   public:
     Private(TemplateEngine *engine) : m_engine(engine)
     {
+      //printf("%p:TemplateEngine::Private::Private()\n",(void*)this);
+    }
+    ~Private()
+    {
+      //printf("%p:TemplateEngine::Private::~Private()\n",(void*)this);
     }
     Template *loadByName(const QCString &fileName,int line)
     {
