@@ -9396,7 +9396,7 @@ class docTitleType(GeneratedsSuper):
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
     superclass = None
-    def __init__(self, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, cite=None, del_=None, ins=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
+    def __init__(self, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, cite=None, del_=None, ins=None, details=None, summary=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
         self.gds_collector_ = gds_collector_
         self.gds_elementtree_node_ = None
         self.original_tagname_ = None
@@ -9472,6 +9472,16 @@ class docTitleType(GeneratedsSuper):
         else:
             self.ins = ins
         self.ins_nsprefix_ = None
+        if details is None:
+            self.details = []
+        else:
+            self.details = details
+        self.details_nsprefix_ = None
+        if summary is None:
+            self.summary = []
+        else:
+            self.summary = summary
+        self.summary_nsprefix_ = None
         if htmlonly is None:
             self.htmlonly = []
         else:
@@ -9712,6 +9722,26 @@ class docTitleType(GeneratedsSuper):
         self.ins.insert(index, value)
     def replace_ins_at(self, index, value):
         self.ins[index] = value
+    def get_details(self):
+        return self.details
+    def set_details(self, details):
+        self.details = details
+    def add_details(self, value):
+        self.details.append(value)
+    def insert_details_at(self, index, value):
+        self.details.insert(index, value)
+    def replace_details_at(self, index, value):
+        self.details[index] = value
+    def get_summary(self):
+        return self.summary
+    def set_summary(self, summary):
+        self.summary = summary
+    def add_summary(self, value):
+        self.summary.append(value)
+    def insert_summary_at(self, index, value):
+        self.summary.insert(index, value)
+    def replace_summary_at(self, index, value):
+        self.summary[index] = value
     def get_htmlonly(self):
         return self.htmlonly
     def set_htmlonly(self, htmlonly):
@@ -9880,6 +9910,8 @@ class docTitleType(GeneratedsSuper):
             self.cite or
             self.del_ or
             self.ins or
+            self.details or
+            self.summary or
             self.htmlonly or
             self.manonly or
             self.xmlonly or
@@ -9976,6 +10008,12 @@ class docTitleType(GeneratedsSuper):
         for ins_ in self.ins:
             namespaceprefix_ = self.ins_nsprefix_ + ':' if (UseCapturedNS_ and self.ins_nsprefix_) else ''
             ins_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='ins', pretty_print=pretty_print)
+        for details_ in self.details:
+            namespaceprefix_ = self.details_nsprefix_ + ':' if (UseCapturedNS_ and self.details_nsprefix_) else ''
+            details_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='details', pretty_print=pretty_print)
+        for summary_ in self.summary:
+            namespaceprefix_ = self.summary_nsprefix_ + ':' if (UseCapturedNS_ and self.summary_nsprefix_) else ''
+            summary_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='summary', pretty_print=pretty_print)
         for htmlonly_ in self.htmlonly:
             namespaceprefix_ = self.htmlonly_nsprefix_ + ':' if (UseCapturedNS_ and self.htmlonly_nsprefix_) else ''
             htmlonly_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='htmlonly', pretty_print=pretty_print)
@@ -10185,6 +10223,26 @@ class docTitleType(GeneratedsSuper):
               self.add_ins(obj_.value)
             elif hasattr(self, 'set_ins'):
               self.set_ins(obj_.value)
+        elif nodeName_ == 'details':
+            obj_ = docMarkupType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'details', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_details'):
+              self.add_details(obj_.value)
+            elif hasattr(self, 'set_details'):
+              self.set_details(obj_.value)
+        elif nodeName_ == 'summary':
+            obj_ = docMarkupType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'summary', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_summary'):
+              self.add_summary(obj_.value)
+            elif hasattr(self, 'set_summary'):
+              self.set_summary(obj_.value)
         elif nodeName_ == 'htmlonly':
             obj_ = docHtmlOnlyType.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
@@ -10336,7 +10394,7 @@ class docParaType(GeneratedsSuper):
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
     superclass = None
-    def __init__(self, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, cite=None, del_=None, ins=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, hruler=None, preformatted=None, programlisting=None, verbatim=None, javadocliteral=None, javadoccode=None, indexentry=None, orderedlist=None, itemizedlist=None, simplesect=None, title=None, variablelist=None, table=None, heading=None, dotfile=None, mscfile=None, diafile=None, toclist=None, language=None, parameterlist=None, xrefsect=None, copydoc=None, blockquote=None, parblock=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
+    def __init__(self, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, cite=None, del_=None, ins=None, details=None, summary=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, hruler=None, preformatted=None, programlisting=None, verbatim=None, javadocliteral=None, javadoccode=None, indexentry=None, orderedlist=None, itemizedlist=None, simplesect=None, title=None, variablelist=None, table=None, heading=None, dotfile=None, mscfile=None, diafile=None, toclist=None, language=None, parameterlist=None, xrefsect=None, copydoc=None, blockquote=None, parblock=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
         self.gds_collector_ = gds_collector_
         self.gds_elementtree_node_ = None
         self.original_tagname_ = None
@@ -10412,6 +10470,16 @@ class docParaType(GeneratedsSuper):
         else:
             self.ins = ins
         self.ins_nsprefix_ = None
+        if details is None:
+            self.details = []
+        else:
+            self.details = details
+        self.details_nsprefix_ = None
+        if summary is None:
+            self.summary = []
+        else:
+            self.summary = summary
+        self.summary_nsprefix_ = None
         if htmlonly is None:
             self.htmlonly = []
         else:
@@ -10772,6 +10840,26 @@ class docParaType(GeneratedsSuper):
         self.ins.insert(index, value)
     def replace_ins_at(self, index, value):
         self.ins[index] = value
+    def get_details(self):
+        return self.details
+    def set_details(self, details):
+        self.details = details
+    def add_details(self, value):
+        self.details.append(value)
+    def insert_details_at(self, index, value):
+        self.details.insert(index, value)
+    def replace_details_at(self, index, value):
+        self.details[index] = value
+    def get_summary(self):
+        return self.summary
+    def set_summary(self, summary):
+        self.summary = summary
+    def add_summary(self, value):
+        self.summary.append(value)
+    def insert_summary_at(self, index, value):
+        self.summary.insert(index, value)
+    def replace_summary_at(self, index, value):
+        self.summary[index] = value
     def get_htmlonly(self):
         return self.htmlonly
     def set_htmlonly(self, htmlonly):
@@ -11180,6 +11268,8 @@ class docParaType(GeneratedsSuper):
             self.cite or
             self.del_ or
             self.ins or
+            self.details or
+            self.summary or
             self.htmlonly or
             self.manonly or
             self.xmlonly or
@@ -11300,6 +11390,12 @@ class docParaType(GeneratedsSuper):
         for ins_ in self.ins:
             namespaceprefix_ = self.ins_nsprefix_ + ':' if (UseCapturedNS_ and self.ins_nsprefix_) else ''
             ins_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='ins', pretty_print=pretty_print)
+        for details_ in self.details:
+            namespaceprefix_ = self.details_nsprefix_ + ':' if (UseCapturedNS_ and self.details_nsprefix_) else ''
+            details_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='details', pretty_print=pretty_print)
+        for summary_ in self.summary:
+            namespaceprefix_ = self.summary_nsprefix_ + ':' if (UseCapturedNS_ and self.summary_nsprefix_) else ''
+            summary_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='summary', pretty_print=pretty_print)
         for htmlonly_ in self.htmlonly:
             namespaceprefix_ = self.htmlonly_nsprefix_ + ':' if (UseCapturedNS_ and self.htmlonly_nsprefix_) else ''
             htmlonly_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='htmlonly', pretty_print=pretty_print)
@@ -11584,6 +11680,26 @@ class docParaType(GeneratedsSuper):
               self.add_ins(obj_.value)
             elif hasattr(self, 'set_ins'):
               self.set_ins(obj_.value)
+        elif nodeName_ == 'details':
+            obj_ = docMarkupType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'details', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_details'):
+              self.add_details(obj_.value)
+            elif hasattr(self, 'set_details'):
+              self.set_details(obj_.value)
+        elif nodeName_ == 'summary':
+            obj_ = docMarkupType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'summary', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_summary'):
+              self.add_summary(obj_.value)
+            elif hasattr(self, 'set_summary'):
+              self.set_summary(obj_.value)
         elif nodeName_ == 'htmlonly':
             obj_ = docHtmlOnlyType.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
@@ -11969,7 +12085,7 @@ class docMarkupType(GeneratedsSuper):
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
     superclass = None
-    def __init__(self, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, cite=None, del_=None, ins=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, hruler=None, preformatted=None, programlisting=None, verbatim=None, javadocliteral=None, javadoccode=None, indexentry=None, orderedlist=None, itemizedlist=None, simplesect=None, title=None, variablelist=None, table=None, heading=None, dotfile=None, mscfile=None, diafile=None, toclist=None, language=None, parameterlist=None, xrefsect=None, copydoc=None, blockquote=None, parblock=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
+    def __init__(self, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, cite=None, del_=None, ins=None, details=None, summary=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, hruler=None, preformatted=None, programlisting=None, verbatim=None, javadocliteral=None, javadoccode=None, indexentry=None, orderedlist=None, itemizedlist=None, simplesect=None, title=None, variablelist=None, table=None, heading=None, dotfile=None, mscfile=None, diafile=None, toclist=None, language=None, parameterlist=None, xrefsect=None, copydoc=None, blockquote=None, parblock=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
         self.gds_collector_ = gds_collector_
         self.gds_elementtree_node_ = None
         self.original_tagname_ = None
@@ -12045,6 +12161,16 @@ class docMarkupType(GeneratedsSuper):
         else:
             self.ins = ins
         self.ins_nsprefix_ = None
+        if details is None:
+            self.details = []
+        else:
+            self.details = details
+        self.details_nsprefix_ = None
+        if summary is None:
+            self.summary = []
+        else:
+            self.summary = summary
+        self.summary_nsprefix_ = None
         if htmlonly is None:
             self.htmlonly = []
         else:
@@ -12405,6 +12531,26 @@ class docMarkupType(GeneratedsSuper):
         self.ins.insert(index, value)
     def replace_ins_at(self, index, value):
         self.ins[index] = value
+    def get_details(self):
+        return self.details
+    def set_details(self, details):
+        self.details = details
+    def add_details(self, value):
+        self.details.append(value)
+    def insert_details_at(self, index, value):
+        self.details.insert(index, value)
+    def replace_details_at(self, index, value):
+        self.details[index] = value
+    def get_summary(self):
+        return self.summary
+    def set_summary(self, summary):
+        self.summary = summary
+    def add_summary(self, value):
+        self.summary.append(value)
+    def insert_summary_at(self, index, value):
+        self.summary.insert(index, value)
+    def replace_summary_at(self, index, value):
+        self.summary[index] = value
     def get_htmlonly(self):
         return self.htmlonly
     def set_htmlonly(self, htmlonly):
@@ -12813,6 +12959,8 @@ class docMarkupType(GeneratedsSuper):
             self.cite or
             self.del_ or
             self.ins or
+            self.details or
+            self.summary or
             self.htmlonly or
             self.manonly or
             self.xmlonly or
@@ -12933,6 +13081,12 @@ class docMarkupType(GeneratedsSuper):
         for ins_ in self.ins:
             namespaceprefix_ = self.ins_nsprefix_ + ':' if (UseCapturedNS_ and self.ins_nsprefix_) else ''
             ins_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='ins', pretty_print=pretty_print)
+        for details_ in self.details:
+            namespaceprefix_ = self.details_nsprefix_ + ':' if (UseCapturedNS_ and self.details_nsprefix_) else ''
+            details_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='details', pretty_print=pretty_print)
+        for summary_ in self.summary:
+            namespaceprefix_ = self.summary_nsprefix_ + ':' if (UseCapturedNS_ and self.summary_nsprefix_) else ''
+            summary_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='summary', pretty_print=pretty_print)
         for htmlonly_ in self.htmlonly:
             namespaceprefix_ = self.htmlonly_nsprefix_ + ':' if (UseCapturedNS_ and self.htmlonly_nsprefix_) else ''
             htmlonly_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='htmlonly', pretty_print=pretty_print)
@@ -13217,6 +13371,26 @@ class docMarkupType(GeneratedsSuper):
               self.add_ins(obj_.value)
             elif hasattr(self, 'set_ins'):
               self.set_ins(obj_.value)
+        elif nodeName_ == 'details':
+            obj_ = docMarkupType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'details', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_details'):
+              self.add_details(obj_.value)
+            elif hasattr(self, 'set_details'):
+              self.set_details(obj_.value)
+        elif nodeName_ == 'summary':
+            obj_ = docMarkupType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'summary', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_summary'):
+              self.add_summary(obj_.value)
+            elif hasattr(self, 'set_summary'):
+              self.set_summary(obj_.value)
         elif nodeName_ == 'htmlonly':
             obj_ = docHtmlOnlyType.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
@@ -13602,7 +13776,7 @@ class docURLLink(GeneratedsSuper):
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
     superclass = None
-    def __init__(self, url=None, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, cite=None, del_=None, ins=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
+    def __init__(self, url=None, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, cite=None, del_=None, ins=None, details=None, summary=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
         self.gds_collector_ = gds_collector_
         self.gds_elementtree_node_ = None
         self.original_tagname_ = None
@@ -13680,6 +13854,16 @@ class docURLLink(GeneratedsSuper):
         else:
             self.ins = ins
         self.ins_nsprefix_ = None
+        if details is None:
+            self.details = []
+        else:
+            self.details = details
+        self.details_nsprefix_ = None
+        if summary is None:
+            self.summary = []
+        else:
+            self.summary = summary
+        self.summary_nsprefix_ = None
         if htmlonly is None:
             self.htmlonly = []
         else:
@@ -13920,6 +14104,26 @@ class docURLLink(GeneratedsSuper):
         self.ins.insert(index, value)
     def replace_ins_at(self, index, value):
         self.ins[index] = value
+    def get_details(self):
+        return self.details
+    def set_details(self, details):
+        self.details = details
+    def add_details(self, value):
+        self.details.append(value)
+    def insert_details_at(self, index, value):
+        self.details.insert(index, value)
+    def replace_details_at(self, index, value):
+        self.details[index] = value
+    def get_summary(self):
+        return self.summary
+    def set_summary(self, summary):
+        self.summary = summary
+    def add_summary(self, value):
+        self.summary.append(value)
+    def insert_summary_at(self, index, value):
+        self.summary.insert(index, value)
+    def replace_summary_at(self, index, value):
+        self.summary[index] = value
     def get_htmlonly(self):
         return self.htmlonly
     def set_htmlonly(self, htmlonly):
@@ -14092,6 +14296,8 @@ class docURLLink(GeneratedsSuper):
             self.cite or
             self.del_ or
             self.ins or
+            self.details or
+            self.summary or
             self.htmlonly or
             self.manonly or
             self.xmlonly or
@@ -14190,6 +14396,12 @@ class docURLLink(GeneratedsSuper):
         for ins_ in self.ins:
             namespaceprefix_ = self.ins_nsprefix_ + ':' if (UseCapturedNS_ and self.ins_nsprefix_) else ''
             ins_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='ins', pretty_print=pretty_print)
+        for details_ in self.details:
+            namespaceprefix_ = self.details_nsprefix_ + ':' if (UseCapturedNS_ and self.details_nsprefix_) else ''
+            details_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='details', pretty_print=pretty_print)
+        for summary_ in self.summary:
+            namespaceprefix_ = self.summary_nsprefix_ + ':' if (UseCapturedNS_ and self.summary_nsprefix_) else ''
+            summary_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='summary', pretty_print=pretty_print)
         for htmlonly_ in self.htmlonly:
             namespaceprefix_ = self.htmlonly_nsprefix_ + ':' if (UseCapturedNS_ and self.htmlonly_nsprefix_) else ''
             htmlonly_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='htmlonly', pretty_print=pretty_print)
@@ -14402,6 +14614,26 @@ class docURLLink(GeneratedsSuper):
               self.add_ins(obj_.value)
             elif hasattr(self, 'set_ins'):
               self.set_ins(obj_.value)
+        elif nodeName_ == 'details':
+            obj_ = docMarkupType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'details', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_details'):
+              self.add_details(obj_.value)
+            elif hasattr(self, 'set_details'):
+              self.set_details(obj_.value)
+        elif nodeName_ == 'summary':
+            obj_ = docMarkupType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'summary', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_summary'):
+              self.add_summary(obj_.value)
+            elif hasattr(self, 'set_summary'):
+              self.set_summary(obj_.value)
         elif nodeName_ == 'htmlonly':
             obj_ = docHtmlOnlyType.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
@@ -15493,7 +15725,7 @@ class docRefTextType(GeneratedsSuper):
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
     superclass = None
-    def __init__(self, refid=None, kindref=None, external=None, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, cite=None, del_=None, ins=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
+    def __init__(self, refid=None, kindref=None, external=None, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, cite=None, del_=None, ins=None, details=None, summary=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
         self.gds_collector_ = gds_collector_
         self.gds_elementtree_node_ = None
         self.original_tagname_ = None
@@ -15575,6 +15807,16 @@ class docRefTextType(GeneratedsSuper):
         else:
             self.ins = ins
         self.ins_nsprefix_ = None
+        if details is None:
+            self.details = []
+        else:
+            self.details = details
+        self.details_nsprefix_ = None
+        if summary is None:
+            self.summary = []
+        else:
+            self.summary = summary
+        self.summary_nsprefix_ = None
         if htmlonly is None:
             self.htmlonly = []
         else:
@@ -15815,6 +16057,26 @@ class docRefTextType(GeneratedsSuper):
         self.ins.insert(index, value)
     def replace_ins_at(self, index, value):
         self.ins[index] = value
+    def get_details(self):
+        return self.details
+    def set_details(self, details):
+        self.details = details
+    def add_details(self, value):
+        self.details.append(value)
+    def insert_details_at(self, index, value):
+        self.details.insert(index, value)
+    def replace_details_at(self, index, value):
+        self.details[index] = value
+    def get_summary(self):
+        return self.summary
+    def set_summary(self, summary):
+        self.summary = summary
+    def add_summary(self, value):
+        self.summary.append(value)
+    def insert_summary_at(self, index, value):
+        self.summary.insert(index, value)
+    def replace_summary_at(self, index, value):
+        self.summary[index] = value
     def get_htmlonly(self):
         return self.htmlonly
     def set_htmlonly(self, htmlonly):
@@ -16008,6 +16270,8 @@ class docRefTextType(GeneratedsSuper):
             self.cite or
             self.del_ or
             self.ins or
+            self.details or
+            self.summary or
             self.htmlonly or
             self.manonly or
             self.xmlonly or
@@ -16112,6 +16376,12 @@ class docRefTextType(GeneratedsSuper):
         for ins_ in self.ins:
             namespaceprefix_ = self.ins_nsprefix_ + ':' if (UseCapturedNS_ and self.ins_nsprefix_) else ''
             ins_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='ins', pretty_print=pretty_print)
+        for details_ in self.details:
+            namespaceprefix_ = self.details_nsprefix_ + ':' if (UseCapturedNS_ and self.details_nsprefix_) else ''
+            details_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='details', pretty_print=pretty_print)
+        for summary_ in self.summary:
+            namespaceprefix_ = self.summary_nsprefix_ + ':' if (UseCapturedNS_ and self.summary_nsprefix_) else ''
+            summary_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='summary', pretty_print=pretty_print)
         for htmlonly_ in self.htmlonly:
             namespaceprefix_ = self.htmlonly_nsprefix_ + ':' if (UseCapturedNS_ and self.htmlonly_nsprefix_) else ''
             htmlonly_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='htmlonly', pretty_print=pretty_print)
@@ -16333,6 +16603,26 @@ class docRefTextType(GeneratedsSuper):
               self.add_ins(obj_.value)
             elif hasattr(self, 'set_ins'):
               self.set_ins(obj_.value)
+        elif nodeName_ == 'details':
+            obj_ = docMarkupType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'details', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_details'):
+              self.add_details(obj_.value)
+            elif hasattr(self, 'set_details'):
+              self.set_details(obj_.value)
+        elif nodeName_ == 'summary':
+            obj_ = docMarkupType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'summary', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_summary'):
+              self.add_summary(obj_.value)
+            elif hasattr(self, 'set_summary'):
+              self.set_summary(obj_.value)
         elif nodeName_ == 'htmlonly':
             obj_ = docHtmlOnlyType.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
@@ -17011,7 +17301,7 @@ class docCaptionType(GeneratedsSuper):
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
     superclass = None
-    def __init__(self, id=None, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, cite=None, del_=None, ins=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
+    def __init__(self, id=None, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, cite=None, del_=None, ins=None, details=None, summary=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
         self.gds_collector_ = gds_collector_
         self.gds_elementtree_node_ = None
         self.original_tagname_ = None
@@ -17089,6 +17379,16 @@ class docCaptionType(GeneratedsSuper):
         else:
             self.ins = ins
         self.ins_nsprefix_ = None
+        if details is None:
+            self.details = []
+        else:
+            self.details = details
+        self.details_nsprefix_ = None
+        if summary is None:
+            self.summary = []
+        else:
+            self.summary = summary
+        self.summary_nsprefix_ = None
         if htmlonly is None:
             self.htmlonly = []
         else:
@@ -17329,6 +17629,26 @@ class docCaptionType(GeneratedsSuper):
         self.ins.insert(index, value)
     def replace_ins_at(self, index, value):
         self.ins[index] = value
+    def get_details(self):
+        return self.details
+    def set_details(self, details):
+        self.details = details
+    def add_details(self, value):
+        self.details.append(value)
+    def insert_details_at(self, index, value):
+        self.details.insert(index, value)
+    def replace_details_at(self, index, value):
+        self.details[index] = value
+    def get_summary(self):
+        return self.summary
+    def set_summary(self, summary):
+        self.summary = summary
+    def add_summary(self, value):
+        self.summary.append(value)
+    def insert_summary_at(self, index, value):
+        self.summary.insert(index, value)
+    def replace_summary_at(self, index, value):
+        self.summary[index] = value
     def get_htmlonly(self):
         return self.htmlonly
     def set_htmlonly(self, htmlonly):
@@ -17501,6 +17821,8 @@ class docCaptionType(GeneratedsSuper):
             self.cite or
             self.del_ or
             self.ins or
+            self.details or
+            self.summary or
             self.htmlonly or
             self.manonly or
             self.xmlonly or
@@ -17599,6 +17921,12 @@ class docCaptionType(GeneratedsSuper):
         for ins_ in self.ins:
             namespaceprefix_ = self.ins_nsprefix_ + ':' if (UseCapturedNS_ and self.ins_nsprefix_) else ''
             ins_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='ins', pretty_print=pretty_print)
+        for details_ in self.details:
+            namespaceprefix_ = self.details_nsprefix_ + ':' if (UseCapturedNS_ and self.details_nsprefix_) else ''
+            details_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='details', pretty_print=pretty_print)
+        for summary_ in self.summary:
+            namespaceprefix_ = self.summary_nsprefix_ + ':' if (UseCapturedNS_ and self.summary_nsprefix_) else ''
+            summary_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='summary', pretty_print=pretty_print)
         for htmlonly_ in self.htmlonly:
             namespaceprefix_ = self.htmlonly_nsprefix_ + ':' if (UseCapturedNS_ and self.htmlonly_nsprefix_) else ''
             htmlonly_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='htmlonly', pretty_print=pretty_print)
@@ -17811,6 +18139,26 @@ class docCaptionType(GeneratedsSuper):
               self.add_ins(obj_.value)
             elif hasattr(self, 'set_ins'):
               self.set_ins(obj_.value)
+        elif nodeName_ == 'details':
+            obj_ = docMarkupType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'details', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_details'):
+              self.add_details(obj_.value)
+            elif hasattr(self, 'set_details'):
+              self.set_details(obj_.value)
+        elif nodeName_ == 'summary':
+            obj_ = docMarkupType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'summary', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_summary'):
+              self.add_summary(obj_.value)
+            elif hasattr(self, 'set_summary'):
+              self.set_summary(obj_.value)
         elif nodeName_ == 'htmlonly':
             obj_ = docHtmlOnlyType.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
@@ -17962,7 +18310,7 @@ class docHeadingType(GeneratedsSuper):
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
     superclass = None
-    def __init__(self, level=None, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, cite=None, del_=None, ins=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
+    def __init__(self, level=None, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, cite=None, del_=None, ins=None, details=None, summary=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
         self.gds_collector_ = gds_collector_
         self.gds_elementtree_node_ = None
         self.original_tagname_ = None
@@ -18040,6 +18388,16 @@ class docHeadingType(GeneratedsSuper):
         else:
             self.ins = ins
         self.ins_nsprefix_ = None
+        if details is None:
+            self.details = []
+        else:
+            self.details = details
+        self.details_nsprefix_ = None
+        if summary is None:
+            self.summary = []
+        else:
+            self.summary = summary
+        self.summary_nsprefix_ = None
         if htmlonly is None:
             self.htmlonly = []
         else:
@@ -18280,6 +18638,26 @@ class docHeadingType(GeneratedsSuper):
         self.ins.insert(index, value)
     def replace_ins_at(self, index, value):
         self.ins[index] = value
+    def get_details(self):
+        return self.details
+    def set_details(self, details):
+        self.details = details
+    def add_details(self, value):
+        self.details.append(value)
+    def insert_details_at(self, index, value):
+        self.details.insert(index, value)
+    def replace_details_at(self, index, value):
+        self.details[index] = value
+    def get_summary(self):
+        return self.summary
+    def set_summary(self, summary):
+        self.summary = summary
+    def add_summary(self, value):
+        self.summary.append(value)
+    def insert_summary_at(self, index, value):
+        self.summary.insert(index, value)
+    def replace_summary_at(self, index, value):
+        self.summary[index] = value
     def get_htmlonly(self):
         return self.htmlonly
     def set_htmlonly(self, htmlonly):
@@ -18452,6 +18830,8 @@ class docHeadingType(GeneratedsSuper):
             self.cite or
             self.del_ or
             self.ins or
+            self.details or
+            self.summary or
             self.htmlonly or
             self.manonly or
             self.xmlonly or
@@ -18550,6 +18930,12 @@ class docHeadingType(GeneratedsSuper):
         for ins_ in self.ins:
             namespaceprefix_ = self.ins_nsprefix_ + ':' if (UseCapturedNS_ and self.ins_nsprefix_) else ''
             ins_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='ins', pretty_print=pretty_print)
+        for details_ in self.details:
+            namespaceprefix_ = self.details_nsprefix_ + ':' if (UseCapturedNS_ and self.details_nsprefix_) else ''
+            details_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='details', pretty_print=pretty_print)
+        for summary_ in self.summary:
+            namespaceprefix_ = self.summary_nsprefix_ + ':' if (UseCapturedNS_ and self.summary_nsprefix_) else ''
+            summary_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='summary', pretty_print=pretty_print)
         for htmlonly_ in self.htmlonly:
             namespaceprefix_ = self.htmlonly_nsprefix_ + ':' if (UseCapturedNS_ and self.htmlonly_nsprefix_) else ''
             htmlonly_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='htmlonly', pretty_print=pretty_print)
@@ -18762,6 +19148,26 @@ class docHeadingType(GeneratedsSuper):
               self.add_ins(obj_.value)
             elif hasattr(self, 'set_ins'):
               self.set_ins(obj_.value)
+        elif nodeName_ == 'details':
+            obj_ = docMarkupType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'details', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_details'):
+              self.add_details(obj_.value)
+            elif hasattr(self, 'set_details'):
+              self.set_details(obj_.value)
+        elif nodeName_ == 'summary':
+            obj_ = docMarkupType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'summary', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_summary'):
+              self.add_summary(obj_.value)
+            elif hasattr(self, 'set_summary'):
+              self.set_summary(obj_.value)
         elif nodeName_ == 'htmlonly':
             obj_ = docHtmlOnlyType.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
@@ -18913,7 +19319,7 @@ class docImageType(GeneratedsSuper):
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
     superclass = None
-    def __init__(self, type_=None, name=None, width=None, height=None, alt=None, inline=None, caption=None, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, cite=None, del_=None, ins=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
+    def __init__(self, type_=None, name=None, width=None, height=None, alt=None, inline=None, caption=None, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, cite=None, del_=None, ins=None, details=None, summary=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
         self.gds_collector_ = gds_collector_
         self.gds_elementtree_node_ = None
         self.original_tagname_ = None
@@ -19003,6 +19409,16 @@ class docImageType(GeneratedsSuper):
         else:
             self.ins = ins
         self.ins_nsprefix_ = None
+        if details is None:
+            self.details = []
+        else:
+            self.details = details
+        self.details_nsprefix_ = None
+        if summary is None:
+            self.summary = []
+        else:
+            self.summary = summary
+        self.summary_nsprefix_ = None
         if htmlonly is None:
             self.htmlonly = []
         else:
@@ -19243,6 +19659,26 @@ class docImageType(GeneratedsSuper):
         self.ins.insert(index, value)
     def replace_ins_at(self, index, value):
         self.ins[index] = value
+    def get_details(self):
+        return self.details
+    def set_details(self, details):
+        self.details = details
+    def add_details(self, value):
+        self.details.append(value)
+    def insert_details_at(self, index, value):
+        self.details.insert(index, value)
+    def replace_details_at(self, index, value):
+        self.details[index] = value
+    def get_summary(self):
+        return self.summary
+    def set_summary(self, summary):
+        self.summary = summary
+    def add_summary(self, value):
+        self.summary.append(value)
+    def insert_summary_at(self, index, value):
+        self.summary.insert(index, value)
+    def replace_summary_at(self, index, value):
+        self.summary[index] = value
     def get_htmlonly(self):
         return self.htmlonly
     def set_htmlonly(self, htmlonly):
@@ -19465,6 +19901,8 @@ class docImageType(GeneratedsSuper):
             self.cite or
             self.del_ or
             self.ins or
+            self.details or
+            self.summary or
             self.htmlonly or
             self.manonly or
             self.xmlonly or
@@ -19581,6 +20019,12 @@ class docImageType(GeneratedsSuper):
         for ins_ in self.ins:
             namespaceprefix_ = self.ins_nsprefix_ + ':' if (UseCapturedNS_ and self.ins_nsprefix_) else ''
             ins_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='ins', pretty_print=pretty_print)
+        for details_ in self.details:
+            namespaceprefix_ = self.details_nsprefix_ + ':' if (UseCapturedNS_ and self.details_nsprefix_) else ''
+            details_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='details', pretty_print=pretty_print)
+        for summary_ in self.summary:
+            namespaceprefix_ = self.summary_nsprefix_ + ':' if (UseCapturedNS_ and self.summary_nsprefix_) else ''
+            summary_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='summary', pretty_print=pretty_print)
         for htmlonly_ in self.htmlonly:
             namespaceprefix_ = self.htmlonly_nsprefix_ + ':' if (UseCapturedNS_ and self.htmlonly_nsprefix_) else ''
             htmlonly_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='htmlonly', pretty_print=pretty_print)
@@ -19819,6 +20263,26 @@ class docImageType(GeneratedsSuper):
               self.add_ins(obj_.value)
             elif hasattr(self, 'set_ins'):
               self.set_ins(obj_.value)
+        elif nodeName_ == 'details':
+            obj_ = docMarkupType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'details', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_details'):
+              self.add_details(obj_.value)
+            elif hasattr(self, 'set_details'):
+              self.set_details(obj_.value)
+        elif nodeName_ == 'summary':
+            obj_ = docMarkupType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'summary', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_summary'):
+              self.add_summary(obj_.value)
+            elif hasattr(self, 'set_summary'):
+              self.set_summary(obj_.value)
         elif nodeName_ == 'htmlonly':
             obj_ = docHtmlOnlyType.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
@@ -19970,7 +20434,7 @@ class docDotMscType(GeneratedsSuper):
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
     superclass = None
-    def __init__(self, name=None, width=None, height=None, caption=None, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, cite=None, del_=None, ins=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
+    def __init__(self, name=None, width=None, height=None, caption=None, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, cite=None, del_=None, ins=None, details=None, summary=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
         self.gds_collector_ = gds_collector_
         self.gds_elementtree_node_ = None
         self.original_tagname_ = None
@@ -20054,6 +20518,16 @@ class docDotMscType(GeneratedsSuper):
         else:
             self.ins = ins
         self.ins_nsprefix_ = None
+        if details is None:
+            self.details = []
+        else:
+            self.details = details
+        self.details_nsprefix_ = None
+        if summary is None:
+            self.summary = []
+        else:
+            self.summary = summary
+        self.summary_nsprefix_ = None
         if htmlonly is None:
             self.htmlonly = []
         else:
@@ -20294,6 +20768,26 @@ class docDotMscType(GeneratedsSuper):
         self.ins.insert(index, value)
     def replace_ins_at(self, index, value):
         self.ins[index] = value
+    def get_details(self):
+        return self.details
+    def set_details(self, details):
+        self.details = details
+    def add_details(self, value):
+        self.details.append(value)
+    def insert_details_at(self, index, value):
+        self.details.insert(index, value)
+    def replace_details_at(self, index, value):
+        self.details[index] = value
+    def get_summary(self):
+        return self.summary
+    def set_summary(self, summary):
+        self.summary = summary
+    def add_summary(self, value):
+        self.summary.append(value)
+    def insert_summary_at(self, index, value):
+        self.summary.insert(index, value)
+    def replace_summary_at(self, index, value):
+        self.summary[index] = value
     def get_htmlonly(self):
         return self.htmlonly
     def set_htmlonly(self, htmlonly):
@@ -20478,6 +20972,8 @@ class docDotMscType(GeneratedsSuper):
             self.cite or
             self.del_ or
             self.ins or
+            self.details or
+            self.summary or
             self.htmlonly or
             self.manonly or
             self.xmlonly or
@@ -20585,6 +21081,12 @@ class docDotMscType(GeneratedsSuper):
         for ins_ in self.ins:
             namespaceprefix_ = self.ins_nsprefix_ + ':' if (UseCapturedNS_ and self.ins_nsprefix_) else ''
             ins_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='ins', pretty_print=pretty_print)
+        for details_ in self.details:
+            namespaceprefix_ = self.details_nsprefix_ + ':' if (UseCapturedNS_ and self.details_nsprefix_) else ''
+            details_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='details', pretty_print=pretty_print)
+        for summary_ in self.summary:
+            namespaceprefix_ = self.summary_nsprefix_ + ':' if (UseCapturedNS_ and self.summary_nsprefix_) else ''
+            summary_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='summary', pretty_print=pretty_print)
         for htmlonly_ in self.htmlonly:
             namespaceprefix_ = self.htmlonly_nsprefix_ + ':' if (UseCapturedNS_ and self.htmlonly_nsprefix_) else ''
             htmlonly_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='htmlonly', pretty_print=pretty_print)
@@ -20809,6 +21311,26 @@ class docDotMscType(GeneratedsSuper):
               self.add_ins(obj_.value)
             elif hasattr(self, 'set_ins'):
               self.set_ins(obj_.value)
+        elif nodeName_ == 'details':
+            obj_ = docMarkupType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'details', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_details'):
+              self.add_details(obj_.value)
+            elif hasattr(self, 'set_details'):
+              self.set_details(obj_.value)
+        elif nodeName_ == 'summary':
+            obj_ = docMarkupType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'summary', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_summary'):
+              self.add_summary(obj_.value)
+            elif hasattr(self, 'set_summary'):
+              self.set_summary(obj_.value)
         elif nodeName_ == 'htmlonly':
             obj_ = docHtmlOnlyType.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
@@ -20960,7 +21482,7 @@ class docImageFileType(GeneratedsSuper):
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
     superclass = None
-    def __init__(self, name=None, width=None, height=None, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, cite=None, del_=None, ins=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
+    def __init__(self, name=None, width=None, height=None, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, cite=None, del_=None, ins=None, details=None, summary=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
         self.gds_collector_ = gds_collector_
         self.gds_elementtree_node_ = None
         self.original_tagname_ = None
@@ -21042,6 +21564,16 @@ class docImageFileType(GeneratedsSuper):
         else:
             self.ins = ins
         self.ins_nsprefix_ = None
+        if details is None:
+            self.details = []
+        else:
+            self.details = details
+        self.details_nsprefix_ = None
+        if summary is None:
+            self.summary = []
+        else:
+            self.summary = summary
+        self.summary_nsprefix_ = None
         if htmlonly is None:
             self.htmlonly = []
         else:
@@ -21282,6 +21814,26 @@ class docImageFileType(GeneratedsSuper):
         self.ins.insert(index, value)
     def replace_ins_at(self, index, value):
         self.ins[index] = value
+    def get_details(self):
+        return self.details
+    def set_details(self, details):
+        self.details = details
+    def add_details(self, value):
+        self.details.append(value)
+    def insert_details_at(self, index, value):
+        self.details.insert(index, value)
+    def replace_details_at(self, index, value):
+        self.details[index] = value
+    def get_summary(self):
+        return self.summary
+    def set_summary(self, summary):
+        self.summary = summary
+    def add_summary(self, value):
+        self.summary.append(value)
+    def insert_summary_at(self, index, value):
+        self.summary.insert(index, value)
+    def replace_summary_at(self, index, value):
+        self.summary[index] = value
     def get_htmlonly(self):
         return self.htmlonly
     def set_htmlonly(self, htmlonly):
@@ -21462,6 +22014,8 @@ class docImageFileType(GeneratedsSuper):
             self.cite or
             self.del_ or
             self.ins or
+            self.details or
+            self.summary or
             self.htmlonly or
             self.manonly or
             self.xmlonly or
@@ -21566,6 +22120,12 @@ class docImageFileType(GeneratedsSuper):
         for ins_ in self.ins:
             namespaceprefix_ = self.ins_nsprefix_ + ':' if (UseCapturedNS_ and self.ins_nsprefix_) else ''
             ins_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='ins', pretty_print=pretty_print)
+        for details_ in self.details:
+            namespaceprefix_ = self.details_nsprefix_ + ':' if (UseCapturedNS_ and self.details_nsprefix_) else ''
+            details_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='details', pretty_print=pretty_print)
+        for summary_ in self.summary:
+            namespaceprefix_ = self.summary_nsprefix_ + ':' if (UseCapturedNS_ and self.summary_nsprefix_) else ''
+            summary_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='summary', pretty_print=pretty_print)
         for htmlonly_ in self.htmlonly:
             namespaceprefix_ = self.htmlonly_nsprefix_ + ':' if (UseCapturedNS_ and self.htmlonly_nsprefix_) else ''
             htmlonly_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='htmlonly', pretty_print=pretty_print)
@@ -21786,6 +22346,26 @@ class docImageFileType(GeneratedsSuper):
               self.add_ins(obj_.value)
             elif hasattr(self, 'set_ins'):
               self.set_ins(obj_.value)
+        elif nodeName_ == 'details':
+            obj_ = docMarkupType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'details', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_details'):
+              self.add_details(obj_.value)
+            elif hasattr(self, 'set_details'):
+              self.set_details(obj_.value)
+        elif nodeName_ == 'summary':
+            obj_ = docMarkupType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'summary', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_summary'):
+              self.add_summary(obj_.value)
+            elif hasattr(self, 'set_summary'):
+              self.set_summary(obj_.value)
         elif nodeName_ == 'htmlonly':
             obj_ = docHtmlOnlyType.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
@@ -21937,7 +22517,7 @@ class docPlantumlType(GeneratedsSuper):
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
     superclass = None
-    def __init__(self, name=None, width=None, height=None, caption=None, engine=None, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, cite=None, del_=None, ins=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
+    def __init__(self, name=None, width=None, height=None, caption=None, engine=None, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, cite=None, del_=None, ins=None, details=None, summary=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
         self.gds_collector_ = gds_collector_
         self.gds_elementtree_node_ = None
         self.original_tagname_ = None
@@ -22023,6 +22603,16 @@ class docPlantumlType(GeneratedsSuper):
         else:
             self.ins = ins
         self.ins_nsprefix_ = None
+        if details is None:
+            self.details = []
+        else:
+            self.details = details
+        self.details_nsprefix_ = None
+        if summary is None:
+            self.summary = []
+        else:
+            self.summary = summary
+        self.summary_nsprefix_ = None
         if htmlonly is None:
             self.htmlonly = []
         else:
@@ -22263,6 +22853,26 @@ class docPlantumlType(GeneratedsSuper):
         self.ins.insert(index, value)
     def replace_ins_at(self, index, value):
         self.ins[index] = value
+    def get_details(self):
+        return self.details
+    def set_details(self, details):
+        self.details = details
+    def add_details(self, value):
+        self.details.append(value)
+    def insert_details_at(self, index, value):
+        self.details.insert(index, value)
+    def replace_details_at(self, index, value):
+        self.details[index] = value
+    def get_summary(self):
+        return self.summary
+    def set_summary(self, summary):
+        self.summary = summary
+    def add_summary(self, value):
+        self.summary.append(value)
+    def insert_summary_at(self, index, value):
+        self.summary.insert(index, value)
+    def replace_summary_at(self, index, value):
+        self.summary[index] = value
     def get_htmlonly(self):
         return self.htmlonly
     def set_htmlonly(self, htmlonly):
@@ -22464,6 +23074,8 @@ class docPlantumlType(GeneratedsSuper):
             self.cite or
             self.del_ or
             self.ins or
+            self.details or
+            self.summary or
             self.htmlonly or
             self.manonly or
             self.xmlonly or
@@ -22574,6 +23186,12 @@ class docPlantumlType(GeneratedsSuper):
         for ins_ in self.ins:
             namespaceprefix_ = self.ins_nsprefix_ + ':' if (UseCapturedNS_ and self.ins_nsprefix_) else ''
             ins_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='ins', pretty_print=pretty_print)
+        for details_ in self.details:
+            namespaceprefix_ = self.details_nsprefix_ + ':' if (UseCapturedNS_ and self.details_nsprefix_) else ''
+            details_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='details', pretty_print=pretty_print)
+        for summary_ in self.summary:
+            namespaceprefix_ = self.summary_nsprefix_ + ':' if (UseCapturedNS_ and self.summary_nsprefix_) else ''
+            summary_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='summary', pretty_print=pretty_print)
         for htmlonly_ in self.htmlonly:
             namespaceprefix_ = self.htmlonly_nsprefix_ + ':' if (UseCapturedNS_ and self.htmlonly_nsprefix_) else ''
             htmlonly_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='htmlonly', pretty_print=pretty_print)
@@ -22803,6 +23421,26 @@ class docPlantumlType(GeneratedsSuper):
               self.add_ins(obj_.value)
             elif hasattr(self, 'set_ins'):
               self.set_ins(obj_.value)
+        elif nodeName_ == 'details':
+            obj_ = docMarkupType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'details', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_details'):
+              self.add_details(obj_.value)
+            elif hasattr(self, 'set_details'):
+              self.set_details(obj_.value)
+        elif nodeName_ == 'summary':
+            obj_ = docMarkupType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'summary', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_summary'):
+              self.add_summary(obj_.value)
+            elif hasattr(self, 'set_summary'):
+              self.set_summary(obj_.value)
         elif nodeName_ == 'htmlonly':
             obj_ = docHtmlOnlyType.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
@@ -22954,7 +23592,7 @@ class docTocItemType(GeneratedsSuper):
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
     superclass = None
-    def __init__(self, id=None, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, cite=None, del_=None, ins=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
+    def __init__(self, id=None, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, cite=None, del_=None, ins=None, details=None, summary=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
         self.gds_collector_ = gds_collector_
         self.gds_elementtree_node_ = None
         self.original_tagname_ = None
@@ -23032,6 +23670,16 @@ class docTocItemType(GeneratedsSuper):
         else:
             self.ins = ins
         self.ins_nsprefix_ = None
+        if details is None:
+            self.details = []
+        else:
+            self.details = details
+        self.details_nsprefix_ = None
+        if summary is None:
+            self.summary = []
+        else:
+            self.summary = summary
+        self.summary_nsprefix_ = None
         if htmlonly is None:
             self.htmlonly = []
         else:
@@ -23272,6 +23920,26 @@ class docTocItemType(GeneratedsSuper):
         self.ins.insert(index, value)
     def replace_ins_at(self, index, value):
         self.ins[index] = value
+    def get_details(self):
+        return self.details
+    def set_details(self, details):
+        self.details = details
+    def add_details(self, value):
+        self.details.append(value)
+    def insert_details_at(self, index, value):
+        self.details.insert(index, value)
+    def replace_details_at(self, index, value):
+        self.details[index] = value
+    def get_summary(self):
+        return self.summary
+    def set_summary(self, summary):
+        self.summary = summary
+    def add_summary(self, value):
+        self.summary.append(value)
+    def insert_summary_at(self, index, value):
+        self.summary.insert(index, value)
+    def replace_summary_at(self, index, value):
+        self.summary[index] = value
     def get_htmlonly(self):
         return self.htmlonly
     def set_htmlonly(self, htmlonly):
@@ -23444,6 +24112,8 @@ class docTocItemType(GeneratedsSuper):
             self.cite or
             self.del_ or
             self.ins or
+            self.details or
+            self.summary or
             self.htmlonly or
             self.manonly or
             self.xmlonly or
@@ -23542,6 +24212,12 @@ class docTocItemType(GeneratedsSuper):
         for ins_ in self.ins:
             namespaceprefix_ = self.ins_nsprefix_ + ':' if (UseCapturedNS_ and self.ins_nsprefix_) else ''
             ins_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='ins', pretty_print=pretty_print)
+        for details_ in self.details:
+            namespaceprefix_ = self.details_nsprefix_ + ':' if (UseCapturedNS_ and self.details_nsprefix_) else ''
+            details_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='details', pretty_print=pretty_print)
+        for summary_ in self.summary:
+            namespaceprefix_ = self.summary_nsprefix_ + ':' if (UseCapturedNS_ and self.summary_nsprefix_) else ''
+            summary_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='summary', pretty_print=pretty_print)
         for htmlonly_ in self.htmlonly:
             namespaceprefix_ = self.htmlonly_nsprefix_ + ':' if (UseCapturedNS_ and self.htmlonly_nsprefix_) else ''
             htmlonly_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='htmlonly', pretty_print=pretty_print)
@@ -23754,6 +24430,26 @@ class docTocItemType(GeneratedsSuper):
               self.add_ins(obj_.value)
             elif hasattr(self, 'set_ins'):
               self.set_ins(obj_.value)
+        elif nodeName_ == 'details':
+            obj_ = docMarkupType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'details', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_details'):
+              self.add_details(obj_.value)
+            elif hasattr(self, 'set_details'):
+              self.set_details(obj_.value)
+        elif nodeName_ == 'summary':
+            obj_ = docMarkupType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'summary', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_summary'):
+              self.add_summary(obj_.value)
+            elif hasattr(self, 'set_summary'):
+              self.set_summary(obj_.value)
         elif nodeName_ == 'htmlonly':
             obj_ = docHtmlOnlyType.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)

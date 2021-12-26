@@ -63,11 +63,11 @@ Here is the list of tags supported by doxygen:
 <li><tt>\anchor xmltag_seealso \addindex "\<seealso\>" \<seealso cref="member"\></tt> Starts a "See also" section referring
                          to "member". Similar to using \ref cmdsa "\\sa" member.
 <li><tt>\anchor xmltag_summary \addindex "\<summary\>" \<summary\></tt> 
-                         In case this tag is used outside a <tt>\<details\></tt> tag this tag
+                         In case this tag is used outside a \ref htmltag_DETAILS "\<DETAILS\>" tag this tag
                          identifies the brief description.
                          Similar to using \ref cmdbrief "\\brief".
-                         In case this tag is used inside a <tt>\<details\></tt> tag this tag
-                         identifies the heading of the <tt>\<details\></tt> tag.
+                         In case this tag is used inside a \ref htmltag_DETAILS "\<DETAILS\>" tag this tag
+                         identifies the heading of the \ref htmltag_DETAILS "\<DETAILS\>" tag.
 <li><tt>\anchor xmltag_term \addindex "\<term\>" \<term\></tt>    Part of a \ref xmltag_list "\<list\>" command.
 <li><tt>\anchor xmltag_typeparam \addindex "\<typeparam\>" \<typeparam name="paramName"\></tt> Marks a piece of text as the documentation
                          for type parameter "paramName". Similar to 
