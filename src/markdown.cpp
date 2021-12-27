@@ -1282,12 +1282,21 @@ int Markdown::processLink(const char *data,int offset,int size)
       i++;
       titleStart=i;
       nl=0;
-      while (i<size && data[i]!=')')
+      while (i<size)
       {
         if (data[i]=='\n')
         {
           if (nl>1) { TRACE_RESULT(0); return 0; }
           nl++;
+        }
+        else if (data[i]=='\\') // escaped char in string
+        {
+          i++; 
+        }
+        else if (data[i]==c)
+        {
+          i++; 
+          break;
         }
         i++;
       }
@@ -1303,6 +1312,16 @@ int Markdown::processLink(const char *data,int offset,int size)
       {
         convertStringFragment(title,data+titleStart,titleEnd-titleStart);
         //printf("processLink: title={%s}\n",qPrint(title));
+        while (i<size)
+        {
+          if (data[i]==' ')i++; // remove space after the closing quote and the closing bracket
+          else if (data[i] == ')') break; // the end bracket
+          else // illegal
+          {
+            TRACE_RESULT(0);
+            return 0;
+          }
+        }
       }
       else
       {
