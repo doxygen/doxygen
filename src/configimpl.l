@@ -1556,6 +1556,35 @@ static void checkList(const StringVector &list,const char *name, bool equalRequi
   }
 }
 
+static void adjustBoolSetting(const char *depOption, const char *optionName,bool expectedValue)
+{
+  // lookup option by name
+  const ConfigValues::Info *option = ConfigValues::instance().get(optionName);
+  if (option && option->type==ConfigValues::Info::Bool) // safety check
+  {
+    if (ConfigValues::instance().*(option->value.b)!=expectedValue) // current value differs from expectation
+    {
+      err("When enabling %s the %s option should be disabled. I'll adjust it for you.\n",depOption,optionName);
+      ConfigValues::instance().*(option->value.b)=expectedValue; // adjust option
+    }
+  }
+}
+
+static void adjustStringSetting(const char *depOption, const char *optionName,const QCString &expectedValue)
+{
+  // lookup option by name
+  const ConfigValues::Info *option = ConfigValues::instance().get(optionName);
+  if (option && option->type==ConfigValues::Info::String) // safety check
+  {
+    if (ConfigValues::instance().*(option->value.s)!=expectedValue) // current value differs from expectation
+    {
+      err("When enabling %s the %s option should have value '%s'. I'll adjust it for you.\n",depOption,optionName,qPrint(expectedValue));
+      ConfigValues::instance().*(option->value.s)=expectedValue; // adjust option
+    }
+  }
+}
+
+
 void Config::checkAndCorrect(bool quiet, const bool check)
 {
   ConfigValues::instance().init();
@@ -1781,35 +1810,21 @@ void Config::checkAndCorrect(bool quiet, const bool check)
   }
 
   //------------------------
-  // check if GENERATE_TREEVIEW and GENERATE_HTMLHELP are both enabled
-  if (Config_getBool(GENERATE_TREEVIEW) && Config_getBool(GENERATE_HTMLHELP))
+
+  // check for settings that are inconsistent with having GENERATE_HTMLHELP enabled
+  if (Config_getBool(GENERATE_HTMLHELP))
   {
-    err("When enabling GENERATE_HTMLHELP the tree view (GENERATE_TREEVIEW) should be disabled. I'll do it for you.\n");
-    Config_updateBool(GENERATE_TREEVIEW,FALSE);
+    const char *depOption = "GENERATE_HTMLHELP";
+    adjustBoolSetting(  depOption, "GENERATE_TREEVIEW",   false  );
+    adjustBoolSetting(  depOption, "SEARCHENGINE",        false  );
+    adjustStringSetting(depOption, "HTML_FILE_EXTENSION", ".html");
   }
 
-  //------------------------
-  // check if GENERATE_HTMLHELP and HTML_FILE_EXTENSION is not .html
-  if (Config_getString(HTML_FILE_EXTENSION)!=".html" && Config_getBool(GENERATE_HTMLHELP))
+  // check for settings that are inconsistent with having INLINE_GROUPED_CLASSES enabled
+  if (Config_getBool(INLINE_GROUPED_CLASSES))
   {
-    err("When enabling GENERATE_HTMLHELP the HTML_FILE_EXTENSION should be \".html\". I'll do it for you.\n");
-    Config_updateString(HTML_FILE_EXTENSION,".html");
-  }
-
-  //------------------------
-  // check if SEARCHENGINE and GENERATE_HTMLHELP are both enabled
-  if (Config_getBool(SEARCHENGINE) && Config_getBool(GENERATE_HTMLHELP))
-  {
-    err("When enabling GENERATE_HTMLHELP the search engine (SEARCHENGINE) should be disabled. I'll do it for you.\n");
-    Config_updateBool(SEARCHENGINE,FALSE);
-  }
-
-  //------------------------
-  // check if SEPARATE_MEMBER_PAGES and INLINE_GROUPED_CLASSES are both enabled
-  if (Config_getBool(SEPARATE_MEMBER_PAGES) && Config_getBool(INLINE_GROUPED_CLASSES))
-  {
-    err("When enabling INLINE_GROUPED_CLASSES the SEPARATE_MEMBER_PAGES option should be disabled. I'll do it for you.\n");
-    Config_updateBool(SEPARATE_MEMBER_PAGES,FALSE);
+    const char *depOption = "INLINE_GROUPED_CLASSES";
+    adjustBoolSetting(depOption, "SEPARATE_MEMBER_PAGES", false);
   }
 
   //------------------------
@@ -2002,41 +2017,16 @@ void Config::checkAndCorrect(bool quiet, const bool check)
   }
 
   //------------------------
-  // some default settings for vhdl
-  if (Config_getBool(OPTIMIZE_OUTPUT_VHDL) &&
-      (Config_getBool(INLINE_INHERITED_MEMB) ||
-       Config_getBool(INHERIT_DOCS) ||
-       !Config_getBool(HIDE_SCOPE_NAMES) ||
-       !Config_getBool(EXTRACT_PRIVATE) ||
-       !Config_getBool(EXTRACT_PACKAGE)
-      )
-     )
+  // check for settings that are inconsistent with having OPTIMIZED_OUTPUT_VHDL enabled
+  if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
   {
-    bool b1 = Config_getBool(INLINE_INHERITED_MEMB);
-    bool b2 = Config_getBool(INHERIT_DOCS);
-    bool b3 = Config_getBool(HIDE_SCOPE_NAMES);
-    bool b4 = Config_getBool(EXTRACT_PRIVATE);
-    bool b5 = Config_getBool(SKIP_FUNCTION_MACROS);
-    bool b6 = Config_getBool(EXTRACT_PACKAGE);
-    const char *s1,*s2,*s3,*s4,*s5,*s6;
-    if (b1)  s1="  INLINE_INHERITED_MEMB  = NO (was YES)\n"; else s1="";
-    if (b2)  s2="  INHERIT_DOCS           = NO (was YES)\n"; else s2="";
-    if (!b3) s3="  HIDE_SCOPE_NAMES       = YES (was NO)\n"; else s3="";
-    if (!b4) s4="  EXTRACT_PRIVATE        = YES (was NO)\n"; else s4="";
-    if (b5)  s5="  ENABLE_PREPROCESSING   = NO (was YES)\n"; else s5="";
-    if (!b6) s6="  EXTRACT_PACKAGE        = YES (was NO)\n"; else s6="";
-
-
-    warn_uncond("enabling OPTIMIZE_OUTPUT_VHDL assumes the following settings:\n"
-               "%s%s%s%s%s%s",s1,s2,s3,s4,s5,s6
-              );
-
-    Config_updateBool(INLINE_INHERITED_MEMB, FALSE);
-    Config_updateBool(INHERIT_DOCS,          FALSE);
-    Config_updateBool(HIDE_SCOPE_NAMES,      TRUE);
-    Config_updateBool(EXTRACT_PRIVATE,       TRUE);
-    Config_updateBool(ENABLE_PREPROCESSING,  FALSE);
-    Config_updateBool(EXTRACT_PACKAGE,       TRUE);
+    const char *depOption = "OPTIMIZE_OUTPUT_VHDL";
+    adjustBoolSetting(depOption,"INLINE_INHERITED_MEMB",false);
+    adjustBoolSetting(depOption,"INHERIT_DOCS",         false);
+    adjustBoolSetting(depOption,"HIDE_SCOPE_NAMES",     true );
+    adjustBoolSetting(depOption,"EXTRACT_PRIVATE",      true );
+    adjustBoolSetting(depOption,"ENABLE_PREPROCESSING", false);
+    adjustBoolSetting(depOption,"EXTRACT_PACKAGE",      true );
   }
 
   if (!checkFileName(Config_getString(GENERATE_TAGFILE),"GENERATE_TAGFILE"))
