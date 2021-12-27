@@ -277,8 +277,7 @@ static QCString htmlAttribsToString(const HtmlAttribList &attribs, QCString *pAl
 
 HtmlDocVisitor::HtmlDocVisitor(TextStream &t,CodeOutputInterface &ci,
                                const Definition *ctx)
-  : DocVisitor(DocVisitor_Html), m_t(t), m_ci(ci), m_insidePre(FALSE),
-                                 m_hide(FALSE), m_ctx(ctx)
+  : DocVisitor(DocVisitor_Html), m_t(t), m_ci(ci), m_ctx(ctx)
 {
   if (ctx) m_langExt=ctx->getDefFileExtension();
 }
@@ -319,14 +318,22 @@ void HtmlDocVisitor::visit(DocWhiteSpace *w)
 void HtmlDocVisitor::visit(DocSymbol *s)
 {
   if (m_hide) return;
-  const char *res = HtmlEntityMapper::instance()->html(s->symbol());
-  if (res)
+  if (m_insideTitle &&
+      (s->symbol()==DocSymbol::Sym_Quot || s->symbol()==DocSymbol::Sym_quot)) // escape "'s inside title="..."
   {
-    m_t << res;
+    m_t << "&quot;";
   }
   else
   {
-    err("HTML: non supported HTML-entity found: %s\n",HtmlEntityMapper::instance()->html(s->symbol(),TRUE));
+    const char *res = HtmlEntityMapper::instance()->html(s->symbol());
+    if (res)
+    {
+      m_t << res;
+    }
+    else
+    {
+      err("HTML: non supported HTML-entity found: %s\n",HtmlEntityMapper::instance()->html(s->symbol(),TRUE));
+    }
   }
 }
 
@@ -1784,6 +1791,7 @@ void HtmlDocVisitor::visitPre(DocImage *img)
       if (inlineImage)
       {
         m_t << " title=\"";
+        m_insideTitle=true;
       }
       else
       {
@@ -1813,6 +1821,7 @@ void HtmlDocVisitor::visitPost(DocImage *img)
       if (inlineImage)
       {
         m_t << "\"/>";
+        m_insideTitle=false;
       }
       else // end <div class="caption">
       {
