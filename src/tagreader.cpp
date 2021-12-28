@@ -40,6 +40,9 @@
 #include "containers.h"
 #include "debug.h"
 
+// set to 1 for debugging
+#define DUMP_OUTPUT 0
+
 // ----------------- private part -----------------------------------------------
 
 namespace {
@@ -989,6 +992,7 @@ void TagFileParser::startCompound( const XMLHandlers::Attributes& attrib )
   }
 }
 
+#if DUMP_OUTPUT
 /*! Dumps the internal structures. For debugging only! */
 void TagFileParser::dump()
 {
@@ -1160,6 +1164,7 @@ void TagFileParser::dump()
     }
   }
 }
+#endif
 
 void TagFileParser::addDocAnchors(const std::shared_ptr<Entry> &e,const std::vector<TagAnchorInfo> &l)
 {
@@ -1587,5 +1592,7 @@ void parseTagFile(const std::shared_ptr<Entry> &root,const char *fullName)
   parser.parse(fullName,inputStr.data(),Debug::isFlagSet(Debug::Lex));
   tagFileParser.buildLists(root);
   tagFileParser.addIncludes();
-  //tagFileParser.dump();
+#if DUMP_OUTPUT
+  tagFileParser.dump();
+#endif
 }

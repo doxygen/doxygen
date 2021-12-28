@@ -521,7 +521,7 @@ int Markdown::isSpecialCommand(const char *data,int offset,int size)
   {
     if (offset_<size_ && data_[offset_]==' ') // we expect a space before the name
     {
-      char c;
+      char c=0;
       offset_++;
       // skip over spaces
       while (offset_<size_ && data_[offset_]==' ') offset_++;
