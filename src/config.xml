@@ -3912,6 +3912,14 @@ This setting is not only used for dot files but also for msc temporary files.
 ]]>
       </docs>
     </option>
+    <option type='bool' id='OBFUSCATE_EMAILS' defval='1'>
+      <docs>
+<![CDATA[
+If the \c OBFUSCATE_EMAILS tag is set to \c YES, doxygen will
+obfuscate email addresses.
+]]>
+      </docs>
+    </option>
     <option type='obsolete' orgtype='bool' id='USE_WINDOWS_ENCODING'/>
     <option type='obsolete' orgtype='bool' id='DETAILS_AT_TOP'/>
     <option type='obsolete' orgtype='string' id='QTHELP_FILE'/>
