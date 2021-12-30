@@ -402,7 +402,7 @@ void HtmlDocVisitor::visit(DocURL *u)
         {
           p = writeUTF8Char(m_t,p);
         }
-        if (*p) m_t << "<span style=\"display: none;\">.nosp@m.</span>";
+        if (*p) m_t << "<span class=\"obfuscator\">.nosp@m.</span>";
         if (size==5) size=4; else size=5;
       }
     }
