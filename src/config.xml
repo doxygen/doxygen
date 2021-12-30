@@ -2463,6 +2463,14 @@ The \c DOCSET_PUBLISHER_NAME tag identifies the documentation publisher.
 ]]>
       </docs>
     </option>
+    <option type='bool' id='OBFUSCATE_EMAILS' defval='1'>
+      <docs>
+<![CDATA[
+If the \c OBFUSCATE_EMAILS tag is set to \c YES, doxygen will
+obfuscate email addresses.
+]]>
+      </docs>
+    </option>
     <option type='enum' id='HTML_FORMULA_FORMAT' defval='png' depends='GENERATE_HTML'>
       <docs>
 <![CDATA[
@@ -3909,14 +3917,6 @@ If the \c DOT_CLEANUP tag is set to \c YES, doxygen will
 remove the intermediate files that are used to generate the various graphs.
  <br>Note:
 This setting is not only used for dot files but also for msc temporary files.
-]]>
-      </docs>
-    </option>
-    <option type='bool' id='OBFUSCATE_EMAILS' defval='1'>
-      <docs>
-<![CDATA[
-If the \c OBFUSCATE_EMAILS tag is set to \c YES, doxygen will
-obfuscate email addresses.
 ]]>
       </docs>
     </option>
