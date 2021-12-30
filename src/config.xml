@@ -2463,7 +2463,7 @@ The \c DOCSET_PUBLISHER_NAME tag identifies the documentation publisher.
 ]]>
       </docs>
     </option>
-    <option type='bool' id='OBFUSCATE_EMAILS' defval='1'>
+    <option type='bool' id='OBFUSCATE_EMAILS' defval='1' depends='GENERATE_HTML'>
       <docs>
 <![CDATA[
 If the \c OBFUSCATE_EMAILS tag is set to \c YES, doxygen will
