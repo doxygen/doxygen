@@ -3521,6 +3521,7 @@ void  VhdlParserTokenManager::SkipLexicalActions(Token *matchedToken){
          image.append(input_stream->GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
    {
      QCString q = filter2008VhdlComment(image.data());
+     parser->outlineParser()->lineCount(image.data());
      parser->outlineParser()->handleCommentBlock(QCString(q),TRUE);image.clear();
    }
          break;
