@@ -114,6 +114,8 @@ ${doxywizard_RESOURCES_RCC}
 doxywizard.rc
 )
 
+set_property(TARGET doxywizard PROPERTY WIN32_EXECUTABLE true)
+
 if(Qt5Core_FOUND)
   target_link_libraries(doxywizard Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Xml doxygen_version)
 else()
