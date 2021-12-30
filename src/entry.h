@@ -118,73 +118,6 @@ class Entry
       EXAMPLE_LINENO_SEC     = 0x1B000000,
     };
 
-    // class specifiers (add new items to the end)
-    static const uint64 Template        = (1ULL<<0);
-    static const uint64 Generic         = (1ULL<<1);
-    static const uint64 Ref             = (1ULL<<2);
-    static const uint64 Value           = (1ULL<<3);
-    static const uint64 Interface       = (1ULL<<4);
-    static const uint64 Struct          = (1ULL<<5);
-    static const uint64 Union           = (1ULL<<6);
-    static const uint64 Exception       = (1ULL<<7);
-    static const uint64 Protocol        = (1ULL<<8);
-    static const uint64 Category        = (1ULL<<9);
-    static const uint64 SealedClass     = (1ULL<<10);
-    static const uint64 AbstractClass   = (1ULL<<11);
-    static const uint64 Enum            = (1ULL<<12); // for Java-style enums
-    static const uint64 Service         = (1ULL<<13); // UNO IDL
-    static const uint64 Singleton       = (1ULL<<14); // UNO IDL
-    static const uint64 ForwardDecl     = (1ULL<<15); // forward declared template classes
-    static const uint64 Local           = (1ULL<<16); // for Slice types
-
-    // member specifiers (add new items to the beginning)
-    static const uint64 EnumStruct      = (1ULL<<18);
-    static const uint64 ConstExpr       = (1ULL<<19); // C++11 constexpr
-    static const uint64 PrivateGettable     = (1ULL<<20); // C# private getter
-    static const uint64 ProtectedGettable   = (1ULL<<21); // C# protected getter
-    static const uint64 PrivateSettable     = (1ULL<<22); // C# private setter
-    static const uint64 ProtectedSettable   = (1ULL<<23); // C# protected setter
-    static const uint64 Inline          = (1ULL<<24);
-    static const uint64 Explicit        = (1ULL<<25);
-    static const uint64 Mutable         = (1ULL<<26);
-    static const uint64 Settable        = (1ULL<<27);
-    static const uint64 Gettable        = (1ULL<<28);
-    static const uint64 Readable        = (1ULL<<29);
-    static const uint64 Writable        = (1ULL<<30);
-    static const uint64 Final           = (1ULL<<31);
-    static const uint64 Abstract        = (1ULL<<32);
-    static const uint64 Addable         = (1ULL<<33);
-    static const uint64 Removable       = (1ULL<<34);
-    static const uint64 Raisable        = (1ULL<<35);
-    static const uint64 Override        = (1ULL<<36);
-    static const uint64 New             = (1ULL<<37);
-    static const uint64 Sealed          = (1ULL<<38);
-    static const uint64 Initonly        = (1ULL<<39);
-    static const uint64 Optional        = (1ULL<<40);
-    static const uint64 Required        = (1ULL<<41);
-    static const uint64 NonAtomic       = (1ULL<<42);
-    static const uint64 Copy            = (1ULL<<43);
-    static const uint64 Retain          = (1ULL<<44);
-    static const uint64 Assign          = (1ULL<<45);
-    static const uint64 Strong          = (1ULL<<46);
-    static const uint64 Weak            = (1ULL<<47);
-    static const uint64 Unretained      = (1ULL<<48);
-    static const uint64 Alias           = (1ULL<<49);
-    static const uint64 ConstExp        = (1ULL<<50);
-    static const uint64 Default         = (1ULL<<51);
-    static const uint64 Delete          = (1ULL<<52);
-    static const uint64 NoExcept        = (1ULL<<53);
-    static const uint64 Attribute       = (1ULL<<54); // UNO IDL attribute
-    static const uint64 Property        = (1ULL<<55); // UNO IDL property
-    static const uint64 Readonly        = (1ULL<<56); // on UNO IDL attribute or property
-    static const uint64 Bound           = (1ULL<<57); // on UNO IDL attribute or property
-    static const uint64 Constrained     = (1ULL<<58); // on UNO IDL property
-    static const uint64 Transient       = (1ULL<<59); // on UNO IDL property
-    static const uint64 MaybeVoid       = (1ULL<<60); // on UNO IDL property
-    static const uint64 MaybeDefault    = (1ULL<<61); // on UNO IDL property
-    static const uint64 MaybeAmbiguous  = (1ULL<<62); // on UNO IDL property
-    static const uint64 Published       = (1ULL<<63); // UNO IDL keyword
-
     enum GroupDocType
     {
       GROUPDOC_NORMAL,        //!< defgroup
@@ -245,7 +178,7 @@ class Entry
     // content
     Protection protection;    //!< class protection
     MethodTypes mtype;        //!< signal, slot, (dcop) method, or property?
-    uint64 spec;              //!< class/member specifiers
+    Spec spec;                //!< class/member specifiers
     int  initLines;           //!< define/variable initializer lines to show
     bool stat;                //!< static ?
     bool explicitExternal;    //!< explicitly defined as external?
@@ -290,7 +223,7 @@ class Entry
     QCString	fileName;     //!< file this entry was extracted from
     int		startLine;    //!< start line of entry in the source
     int		startColumn;  //!< start column of entry in the source
-    RefItemVector sli; //!< special lists (test/todo/bug/deprecated/..) this entry is in
+    RefItemVector sli;        //!< special lists (test/todo/bug/deprecated/..) this entry is in
     SrcLangExt  lang;         //!< programming language in which this entry was found
     bool        hidden;       //!< does this represent an entity that is hidden from the output
     bool        artificial;   //!< Artificially introduced item

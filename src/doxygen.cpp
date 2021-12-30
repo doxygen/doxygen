@@ -247,7 +247,7 @@ class Statistics
 
 
 static void addMemberDocs(const Entry *root,MemberDefMutable *md, const QCString &funcDecl,
-                   const ArgumentList *al,bool over_load,uint64 spec);
+                   const ArgumentList *al,bool over_load,Spec spec);
 static void findMember(const Entry *root,
                        const QCString &relates,
                        const QCString &type,
@@ -893,24 +893,24 @@ std::unique_ptr<ArgumentList> getTemplateArgumentsFromName(
 }
 
 static
-ClassDef::CompoundType convertToCompoundType(int section,uint64 specifier)
+ClassDef::CompoundType convertToCompoundType(int section,Spec specifier)
 {
   ClassDef::CompoundType sec=ClassDef::Class;
-  if (specifier&Entry::Struct)
+  if ((specifier&SpecifierStruct)!=0)
     sec=ClassDef::Struct;
-  else if (specifier&Entry::Union)
+  else if ((specifier&SpecifierUnion)!=0)
     sec=ClassDef::Union;
-  else if (specifier&Entry::Category)
+  else if ((specifier&SpecifierCategory)!=0)
     sec=ClassDef::Category;
-  else if (specifier&Entry::Interface)
+  else if ((specifier&SpecifierInterface)!=0)
     sec=ClassDef::Interface;
-  else if (specifier&Entry::Protocol)
+  else if ((specifier&SpecifierProtocol)!=0)
     sec=ClassDef::Protocol;
-  else if (specifier&Entry::Exception)
+  else if ((specifier&SpecifierException)!=0)
     sec=ClassDef::Exception;
-  else if (specifier&Entry::Service)
+  else if ((specifier&SpecifierService)!=0)
     sec=ClassDef::Service;
-  else if (specifier&Entry::Singleton)
+  else if ((specifier&SpecifierSingleton)!=0)
     sec=ClassDef::Singleton;
 
   switch(section)
@@ -991,7 +991,7 @@ static void addClassToContext(const Entry *root)
     cd->setDocumentation(root->doc,root->docFile,root->docLine);
     cd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
 
-    if ((root->spec&Entry::ForwardDecl)==0 && cd->isForwardDeclared())
+    if ((root->spec&SpecifierForwardDecl)==0 && cd->isForwardDeclared())
     {
       cd->setDefFile(root->fileName,root->startLine,root->startColumn);
       if (root->bodyLine!=-1)
@@ -1001,7 +1001,7 @@ static void addClassToContext(const Entry *root)
       }
     }
 
-    if (cd->templateArguments().empty() || (cd->isForwardDeclared() && (root->spec&Entry::ForwardDecl)==0))
+    if (cd->templateArguments().empty() || (cd->isForwardDeclared() && (root->spec&SpecifierForwardDecl)==0))
     {
       // this happens if a template class declared with @class is found
       // before the actual definition or if a forward declaration has different template
@@ -1065,7 +1065,7 @@ static void addClassToContext(const Entry *root)
         Doxygen::classLinkedMap->add(fullName,
           std::unique_ptr<ClassDef>(
             createClassDef(tagInfo?tagName:root->fileName,root->startLine,root->startColumn,
-               fullName,sec,tagName,refFileName,TRUE,root->spec&Entry::Enum) )));
+               fullName,sec,tagName,refFileName,TRUE,(root->spec&SpecifierEnum)!=0) )));
     if (cd)
     {
       Debug::print(Debug::Classes,0,"  New class '%s' (sec=0x%08x)! #tArgLists=%d tagInfo=%p hidden=%d artificial=%d\n",
@@ -1111,7 +1111,7 @@ static void addClassToContext(const Entry *root)
   {
     cd->addSectionsToDefinition(root->anchors);
     if (!root->subGrouping) cd->setSubGrouping(FALSE);
-    if ((root->spec&Entry::ForwardDecl)==0)
+    if ((root->spec&SpecifierForwardDecl)==0)
     {
       if (cd->hasDocumentation())
       {
@@ -1745,7 +1745,7 @@ static void buildNamespaceList(const Entry *root)
               std::unique_ptr<NamespaceDef>(
                 createNamespaceDef(tagInfo?tagName:root->fileName,root->startLine,
                   root->startColumn,fullName,tagName,tagFileName,
-                  root->type,root->spec&Entry::Published))));
+                  root->type,(root->spec&SpecifierPublished)!=0))));
         if (nd)
         {
           nd->setDocumentation(root->doc,root->docFile,root->docLine); // copy docs to definition
@@ -1756,7 +1756,7 @@ static void buildNamespaceList(const Entry *root)
           nd->setLanguage(root->lang);
           nd->setId(root->id);
           nd->setMetaData(root->metaData);
-          nd->setInline((root->spec&Entry::Inline)!=0);
+          nd->setInline((root->spec&SpecifierInline)!=0);
 
           //printf("Adding namespace to group\n");
           addNamespaceToGroups(root,nd);
@@ -1965,7 +1965,7 @@ static void findUsingDirectives(const Entry *root)
           nd->setLanguage(root->lang);
           nd->setId(root->id);
           nd->setMetaData(root->metaData);
-          nd->setInline((root->spec&Entry::Inline)!=0);
+          nd->setInline((root->spec&SpecifierInline)!=0);
 
           for (const Grouping &g : root->groups)
           {
@@ -2244,7 +2244,7 @@ static MemberDef *addVariableToClass(
   {
     if (related || mtype==MemberType_Friend || Config_getBool(HIDE_SCOPE_NAMES))
     {
-      if (root->spec&Entry::Alias) // turn 'typedef B A' into 'using A = B'
+      if ((root->spec&SpecifierAlias)!=0) // turn 'typedef B A' into 'using A = B'
       {
         def="using "+name+" = "+type.mid(7);
       }
@@ -2255,7 +2255,7 @@ static MemberDef *addVariableToClass(
     }
     else
     {
-      if (root->spec&Entry::Alias) // turn 'typedef B C::A' into 'using C::A = B'
+      if ((root->spec&SpecifierAlias)!=0) // turn 'typedef B C::A' into 'using C::A = B'
       {
         def="using "+qualScope+scopeSeparator+name+" = "+type.mid(7);
       }
@@ -2447,7 +2447,7 @@ static MemberDef *addVariableToFile(
 
     if (!type.isEmpty())
     {
-      if (root->spec&Entry::Alias) // turn 'typedef B NS::A' into 'using NS::A = B'
+      if ((root->spec&SpecifierAlias)!=0) // turn 'typedef B NS::A' into 'using NS::A = B'
       {
         def="using "+nd->name()+sep+name+" = "+type;
       }
@@ -2471,7 +2471,7 @@ static MemberDef *addVariableToFile(
       }
       else
       {
-        if (root->spec&Entry::Alias) // turn 'typedef B A' into 'using A = B'
+        if ((root->spec&SpecifierAlias)!=0) // turn 'typedef B A' into 'using A = B'
         {
           def="using "+root->name+" = "+type.mid(7);
         }
@@ -2830,7 +2830,7 @@ static void addVariable(const Entry *root,int isFuncPtr=-1)
     else
     {
       int i=isFuncPtr;
-      if (i==-1 && (root->spec&Entry::Alias)==0) i=findFunctionPtr(type.str(),root->lang); // for typedefs isFuncPtr is not yet set
+      if (i==-1 && (root->spec&SpecifierAlias)==0) i=findFunctionPtr(type.str(),root->lang); // for typedefs isFuncPtr is not yet set
       Debug::print(Debug::Variables,0,"  functionPtr? %s\n",i!=-1?"yes":"no");
       if (i>=0) // function pointer
       {
@@ -3147,7 +3147,7 @@ static void addInterfaceOrServiceToServiceOrSingleton(
   // also add the member as a "base" (to get nicer diagrams)
   // "optional" interface/service get Protected which turns into dashed line
   BaseInfo base(rname,
-          (root->spec & (Entry::Optional)) ? Protected : Public,Normal);
+          (root->spec & (SpecifierOptional))!=0 ? Protected : Public,Normal);
   TemplateNameMap templateNames;
   findClassRelation(root,cd,cd,&base,templateNames,DocumentedOnly,true) ||
        findClassRelation(root,cd,cd,&base,templateNames,Undocumented,true);
@@ -3231,7 +3231,7 @@ static void buildInterfaceAndServiceList(const Entry *root)
 static void addMethodToClass(const Entry *root,ClassDefMutable *cd,
                   const QCString &rtype,const QCString &rname,const QCString &rargs,
                   bool isFriend,
-                  Protection protection,bool stat,Specifier virt,uint64 spec,
+                  Protection protection,bool stat,Specifier virt,Spec spec,
                   const QCString &relates
                   )
 {
@@ -3496,7 +3496,7 @@ static void buildFunctionList(const Entry *root)
   {
     Debug::print(Debug::Functions,0,
                  "FUNCTION_SEC:\n"
-                 "  '%s' '%s'::'%s' '%s' relates='%s' relatesType='%d' file='%s' line='%d' bodyLine='%d' #tArgLists=%d mGrpId=%d spec=%lld proto=%d docFile=%s\n",
+                 "  '%s' '%s'::'%s' '%s' relates='%s' relatesType='%d' file='%s' line='%d' bodyLine='%d' #tArgLists=%d mGrpId=%d spec=(%08llx,%08llx) proto=%d docFile=%s\n",
                  qPrint(root->type),
                  qPrint(root->parent()->name),
                  qPrint(root->name),
@@ -3508,7 +3508,8 @@ static void buildFunctionList(const Entry *root)
                  root->bodyLine,
                  root->tArgLists.size(),
                  root->mGrpId,
-                 root->spec,
+                 root->spec.spec,
+                 root->spec.specExt,
                  root->proto,
                  qPrint(root->docFile)
                 );
@@ -5138,7 +5139,7 @@ static void addMemberDocs(const Entry *root,
                    MemberDefMutable *md, const QCString &funcDecl,
                    const ArgumentList *al,
                    bool over_load,
-                   uint64 spec
+                   Spec spec
                   )
 {
   if (md==0) return;
@@ -5306,7 +5307,7 @@ static bool findGlobalMember(const Entry *root,
                            const QCString &tempArg,
                            const QCString &,
                            const QCString &decl,
-                           uint64 spec)
+                           Spec spec)
 {
   Debug::print(Debug::FindMembers,0,
        "2. findGlobalMember(namespace=%s,type=%s,name=%s,tempArg=%s,decl=%s)\n",
@@ -5656,7 +5657,7 @@ static void addLocalObjCMethod(const Entry *root,
                         const QCString &scopeName,
                         const QCString &funcType,const QCString &funcName,const QCString &funcArgs,
                         const QCString &exceptions,const QCString &funcDecl,
-                        uint64 spec)
+                        Spec spec)
 {
   //printf("scopeName='%s' className='%s'\n",qPrint(scopeName),qPrint(className));
   ClassDefMutable *cd=0;
@@ -5719,7 +5720,7 @@ static void addMemberFunction(const Entry *root,
                        const QCString &type,
                        const QCString &args,
                        bool isFriend,
-                       uint64 spec,
+                       Spec spec,
                        const QCString &relates,
                        const QCString &funcDecl,
                        bool overloaded,
@@ -6062,7 +6063,7 @@ static void addMemberSpecialization(const Entry *root,
                              const QCString &funcArgs,
                              const QCString &funcDecl,
                              const QCString &exceptions,
-                             uint64 spec
+                             Spec spec
                             )
 {
   MemberDef *declMd=0;
@@ -6117,7 +6118,7 @@ static void addMemberSpecialization(const Entry *root,
 
 static void addOverloaded(const Entry *root,MemberName *mn,
                           const QCString &funcType,const QCString &funcName,const QCString &funcArgs,
-                          const QCString &funcDecl,const QCString &exceptions,uint64 spec)
+                          const QCString &funcDecl,const QCString &exceptions,Spec spec)
 {
   // for unique overloaded member we allow the class to be
   // omitted, this is to be Qt compatible. Using this should
@@ -6222,7 +6223,7 @@ static void findMember(const Entry *root,
   bool isMemberOf=FALSE;
   bool isFriend=FALSE;
   bool done;
-  uint64 spec = root->spec;
+  Spec spec = root->spec;
   do
   {
     done=TRUE;
@@ -6233,17 +6234,17 @@ static void findMember(const Entry *root,
     }
     if (funcDecl.stripPrefix("inline "))
     {
-      spec|=Entry::Inline;
+      spec|=SpecifierInline;
       done=FALSE;
     }
     if (funcDecl.stripPrefix("explicit "))
     {
-      spec|=Entry::Explicit;
+      spec|=SpecifierExplicit;
       done=FALSE;
     }
     if (funcDecl.stripPrefix("mutable "))
     {
-      spec|=Entry::Mutable;
+      spec|=SpecifierMutable;
       done=FALSE;
     }
     if (funcDecl.stripPrefix("virtual "))
@@ -7303,7 +7304,7 @@ static void addEnumValuesToEnums(const Entry *root)
                    (sle=root->lang)==SrcLangExt_CSharp ||
                    sle==SrcLangExt_Java ||
                    sle==SrcLangExt_XML ||
-                   (root->spec&Entry::Strong)
+                   (root->spec&SpecifierStrong)
                  )
               {
                 // Unlike classic C/C++ enums, for C++11, C# & Java enum

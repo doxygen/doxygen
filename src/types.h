@@ -60,6 +60,135 @@ enum SrcLangExt
   SrcLangExt_Lex      = 0x80000
 };
 
+/** This struct is used to store the class specifiers */
+struct Spec
+{
+  Spec() : spec(0), specExt(0) {}
+  Spec(uint64 n, uint64 e = 0) : spec(n), specExt(e) {}
+
+  bool operator==(Spec rhs) const { return rhs.spec == spec && rhs.specExt == specExt;}
+
+  bool operator!=(Spec rhs) const { return !(rhs==*this);}
+  friend bool operator!=(const int lhs, const Spec& rhs) { return !(rhs==lhs);}
+
+  bool operator&&(const Spec& rhs) { return (*this!=0) && (rhs!=0);}
+  friend bool operator&&(const bool lhs, const Spec& rhs) { return lhs && (rhs!=0);}
+
+  bool operator||(const Spec& rhs) { return (*this!=0) || (rhs!=0);}
+  friend bool operator||(const bool lhs, const Spec& rhs) { return lhs || (rhs!=0);}
+
+  bool operator!() { return !(spec!=0 || specExt!=0);}
+
+  Spec operator~() const { return Spec(~spec,~specExt);}
+
+  Spec operator&(Spec rhs) const { return Spec(rhs.spec & spec, rhs.specExt & specExt);}
+  Spec operator&=(const Spec rhs) { spec &= rhs.spec; specExt &= rhs.specExt; return *this;}
+
+  Spec operator|(Spec rhs) const { return Spec(rhs.spec | spec, rhs.specExt | specExt);}
+  Spec operator|=(const Spec rhs) { spec |= rhs.spec; specExt |= rhs.specExt; return *this;}
+
+  Spec operator^(Spec rhs) const { return Spec(rhs.spec ^ spec, rhs.specExt ^ specExt);}
+  Spec operator^=(const Spec rhs) { spec ^= rhs.spec; specExt ^= rhs.specExt; return *this;}
+
+  uint64 spec;
+  uint64 specExt;
+};
+// class specifiers (add new items to the end)
+static const Spec SpecifierTemplate        = (1ULL<<0);
+static const Spec SpecifierGeneric         = (1ULL<<1);
+static const Spec SpecifierRef             = (1ULL<<2);
+static const Spec SpecifierValue           = (1ULL<<3);
+static const Spec SpecifierInterface       = (1ULL<<4);
+static const Spec SpecifierStruct          = (1ULL<<5);
+static const Spec SpecifierUnion           = (1ULL<<6);
+static const Spec SpecifierException       = (1ULL<<7);
+static const Spec SpecifierProtocol        = (1ULL<<8);
+static const Spec SpecifierCategory        = (1ULL<<9);
+static const Spec SpecifierSealedClass     = (1ULL<<10);
+static const Spec SpecifierAbstractClass   = (1ULL<<11);
+static const Spec SpecifierEnum            = (1ULL<<12); // for Java-style enums
+static const Spec SpecifierService         = (1ULL<<13); // UNO IDL
+static const Spec SpecifierSingleton       = (1ULL<<14); // UNO IDL
+static const Spec SpecifierForwardDecl     = (1ULL<<15); // forward declared template classes
+static const Spec SpecifierLocal           = (1ULL<<16); // for Slice types
+
+// member specifiers (add new items to the beginning)
+static const Spec SpecifierEnumStruct      = (1ULL<<18);
+static const Spec SpecifierConstExpr       = (1ULL<<19); // C++11 constexpr
+static const Spec SpecifierPrivateGettable     = (1ULL<<20); // C# private getter
+static const Spec SpecifierProtectedGettable   = (1ULL<<21); // C# protected getter
+static const Spec SpecifierPrivateSettable     = (1ULL<<22); // C# private setter
+static const Spec SpecifierProtectedSettable   = (1ULL<<23); // C# protected setter
+static const Spec SpecifierInline          = (1ULL<<24);
+static const Spec SpecifierExplicit        = (1ULL<<25);
+static const Spec SpecifierMutable         = (1ULL<<26);
+static const Spec SpecifierSettable        = (1ULL<<27);
+static const Spec SpecifierGettable        = (1ULL<<28);
+static const Spec SpecifierReadable        = (1ULL<<29);
+static const Spec SpecifierWritable        = (1ULL<<30);
+static const Spec SpecifierFinal           = (1ULL<<31);
+static const Spec SpecifierAbstract        = (1ULL<<32);
+static const Spec SpecifierAddable         = (1ULL<<33);
+static const Spec SpecifierRemovable       = (1ULL<<34);
+static const Spec SpecifierRaisable        = (1ULL<<35);
+static const Spec SpecifierOverride        = (1ULL<<36);
+static const Spec SpecifierNew             = (1ULL<<37);
+static const Spec SpecifierSealed          = (1ULL<<38);
+static const Spec SpecifierInitonly        = (1ULL<<39);
+static const Spec SpecifierOptional        = (1ULL<<40);
+static const Spec SpecifierRequired        = (1ULL<<41);
+static const Spec SpecifierNonAtomic       = (1ULL<<42);
+static const Spec SpecifierCopy            = (1ULL<<43);
+static const Spec SpecifierRetain          = (1ULL<<44);
+static const Spec SpecifierAssign          = (1ULL<<45);
+static const Spec SpecifierStrong          = (1ULL<<46);
+static const Spec SpecifierWeak            = (1ULL<<47);
+static const Spec SpecifierUnretained      = (1ULL<<48);
+static const Spec SpecifierAlias           = (1ULL<<49);
+static const Spec SpecifierConstExp        = (1ULL<<50);
+static const Spec SpecifierDefault         = (1ULL<<51);
+static const Spec SpecifierDelete          = (1ULL<<52);
+static const Spec SpecifierNoExcept        = (1ULL<<53);
+static const Spec SpecifierAttribute       = (1ULL<<54); // UNO IDL attribute
+static const Spec SpecifierProperty        = (1ULL<<55); // UNO IDL property
+static const Spec SpecifierReadonly        = (1ULL<<56); // on UNO IDL attribute or property
+static const Spec SpecifierBound           = (1ULL<<57); // on UNO IDL attribute or property
+static const Spec SpecifierConstrained     = (1ULL<<58); // on UNO IDL property
+static const Spec SpecifierTransient       = (1ULL<<59); // on UNO IDL property
+static const Spec SpecifierMaybeVoid       = (1ULL<<60); // on UNO IDL property
+static const Spec SpecifierMaybeDefault    = (1ULL<<61); // on UNO IDL property
+static const Spec SpecifierMaybeAmbiguous  = (1ULL<<62); // on UNO IDL property
+static const Spec SpecifierPublished       = (1ULL<<63); // UNO IDL keyword
+
+// VHDL specifiers
+static const Spec SpecifierLibrary         = Spec(0,1ULL<< 1);
+static const Spec SpecifierEntity          = Spec(0,1ULL<< 2);
+static const Spec SpecifierPackage_body    = Spec(0,1ULL<< 3);
+static const Spec SpecifierArchitecture    = Spec(0,1ULL<< 4);
+static const Spec SpecifierPackage         = Spec(0,1ULL<< 5);
+static const Spec SpecifierAttributeVhdl       = Spec(0,1ULL<< 6);
+static const Spec SpecifierSignal          = Spec(0,1ULL<< 7);
+static const Spec SpecifierComponent       = Spec(0,1ULL<< 8);
+static const Spec SpecifierConstant        = Spec(0,1ULL<< 9);
+static const Spec SpecifierType            = Spec(0,1ULL<<10);
+static const Spec SpecifierSubtype         = Spec(0,1ULL<<11);
+static const Spec SpecifierFunction        = Spec(0,1ULL<<12);
+static const Spec SpecifierRecord          = Spec(0,1ULL<<13);
+static const Spec SpecifierProcedure       = Spec(0,1ULL<<14);
+static const Spec SpecifierUse             = Spec(0,1ULL<<15);
+static const Spec SpecifierProcess         = Spec(0,1ULL<<16);
+static const Spec SpecifierPort            = Spec(0,1ULL<<17);
+static const Spec SpecifierUnits           = Spec(0,1ULL<<18);
+static const Spec SpecifierGenericVhdl         = Spec(0,1ULL<<19);
+static const Spec SpecifierInstantiation   = Spec(0,1ULL<<20);
+static const Spec SpecifierGroup           = Spec(0,1ULL<<21);
+static const Spec SpecifierVfile           = Spec(0,1ULL<<22);
+static const Spec SpecifierSharedvariable  = Spec(0,1ULL<<23);
+static const Spec SpecifierConfig          = Spec(0,1ULL<<24);
+static const Spec SpecifierAliasVhdl           = Spec(0,1ULL<<25);
+static const Spec SpecifierMiscellaneous   = Spec(0,1ULL<<26);
+static const Spec SpecifierUcf_const       = Spec(0,1ULL<<27);
+
 /** Grouping info */
 struct Grouping
 {

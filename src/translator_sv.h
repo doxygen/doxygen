@@ -2131,86 +2131,137 @@ class TranslatorSwedish : public Translator
     virtual QCString trFunctionAndProc()
     { return "Funktioner/Procedurer/Processer"; }
     /** VHDL type */
-    virtual QCString trVhdlType(uint64 type,bool single)
+    virtual QCString trVhdlType(Spec type,bool single)
     {
-      switch(type)
-      {
-        case VhdlDocGen::LIBRARY:
+        if ((SpecifierLibrary&type)!=0)
+        {
           return "Biblotek";
-        case VhdlDocGen::PACKAGE:
+        }
+        else if ((SpecifierPackage&type)!=0)
+        {
           return "Paket";
-        case VhdlDocGen::SIGNAL:
+        }
+        else if ((SpecifierSignal&type)!=0)
+        {
           if (single) return "Signal";
           else        return "Signaler";
-        case VhdlDocGen::COMPONENT:
+        }
+        else if ((SpecifierComponent&type)!=0)
+        {
           if (single) return "Komponent";
           else        return "Komponenter";
-        case VhdlDocGen::CONSTANT:
+        }
+        else if ((SpecifierConstant&type)!=0)
+        {
           if (single) return "Konstant";
           else        return "Konstanter";
-        case VhdlDocGen::ENTITY:
+        }
+        else if ((SpecifierEntity&type)!=0)
+        {
           if (single) return "Entitet";
           else        return "Entiteter";
-        case VhdlDocGen::TYPE:
+        }
+        else if ((SpecifierType&type)!=0)
+        {
           if (single) return "Typ";
           else        return "Typer";
-        case VhdlDocGen::SUBTYPE:
+        }
+        else if ((SpecifierSubtype&type)!=0)
+        {
           if (single) return "Undertyp";
           else        return "Undertyper";
-        case VhdlDocGen::FUNCTION:
+        }
+        else if ((SpecifierFunction&type)!=0)
+        {
           if (single) return "Funktion";
           else        return "Funktioner";
-        case VhdlDocGen::RECORD:
+        }
+        else if ((SpecifierRecord&type)!=0)
+        {
           if (single) return "Post";
           else        return "Poster";
-        case VhdlDocGen::PROCEDURE:
+        }
+        else if ((SpecifierProcedure&type)!=0)
+        {
           if (single) return "Procedur";
           else        return "Procedurer";
-        case VhdlDocGen::ARCHITECTURE:
+        }
+        else if ((SpecifierArchitecture&type)!=0)
+        {
           if (single) return "Arkitektur";
           else        return "Arkitekturer";
-        case VhdlDocGen::ATTRIBUTE:
+        }
+        else if ((SpecifierAttributeVhdl&type)!=0)
+        {
           return "Attribut";
-        case VhdlDocGen::PROCESS:
+        }
+        else if ((SpecifierProcess&type)!=0)
+        {
           if (single) return "Process";
           else        return "Processer";
-        case VhdlDocGen::PORT:
+        }
+        else if ((SpecifierPort&type)!=0)
+        {
           if (single) return "Port";
           else        return "Portar";
-        case VhdlDocGen::USE:
+        }
+        else if ((SpecifierUse&type)!=0)
+        {
           if (single) return "use clause";
           else        return "Use Clauses";
-        case VhdlDocGen::GENERIC:
+        }
+        else if ((SpecifierGenericVhdl&type)!=0)
+        {
           if (single) return "Generisk";
           else        return "Generiska";
-        case VhdlDocGen::PACKAGE_BODY:
+        }
+        else if ((SpecifierPackage_body&type)!=0)
+        {
           return "Paketinehåll";
-        case VhdlDocGen::UNITS:
+        }
+        else if ((SpecifierUnits&type)!=0)
+        {
           return "Enheter";
-        case VhdlDocGen::SHAREDVARIABLE:
+        }
+        else if ((SpecifierSharedvariable&type)!=0)
+        {
           if (single) return "Delad Variabel";
           else        return "Delade Variabler";
-        case VhdlDocGen::VFILE:
+        }
+        else if ((SpecifierVfile&type)!=0)
+        {
           if (single) return "Fil";
           else        return "Filer";
-        case VhdlDocGen::GROUP:
+        }
+        else if ((SpecifierGroup&type)!=0)
+        {
           if (single) return "Grupp";
           else        return "Grupper";
-        case VhdlDocGen::INSTANTIATION:
+        }
+        else if ((SpecifierInstantiation&type)!=0)
+        {
           if (single) return "Instantiation";
           else        return "Instantiations";
-        case VhdlDocGen::ALIAS:
+        }
+        else if ((SpecifierAliasVhdl&type)!=0)
+        {
           return "Alias";
-        case VhdlDocGen::CONFIG:
+        }
+        else if ((SpecifierConfig&type)!=0)
+        {
           if (single) return "Konfiguration";
           else        return "Konfigurationer";
-        case VhdlDocGen::MISCELLANEOUS:
+        }
+        else if ((SpecifierMiscellaneous&type)!=0)
+        {
           return "Diverse";
-        case VhdlDocGen::UCF_CONST:
+        }
+        else if ((SpecifierUcf_const&type)!=0)
+        {
           return "Begränsningar";
-        default:
+        }
+        else
           return "Klass";
-      }
     }
     virtual QCString trCustomReference(const QCString &name)
     { return QCString(name)+"referens"; }

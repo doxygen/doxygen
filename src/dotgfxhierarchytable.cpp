@@ -181,9 +181,8 @@ void DotGfxHierarchyTable::addClassList(const ClassLinkedMap &cl,ClassDefSet &vi
   for (const auto &cd : cl)
   {
     //printf("Trying %s subClasses=%d\n",qPrint(cd->name()),cd->subClasses()->count());
-    if (cd->getLanguage()==SrcLangExt_VHDL &&
-      (VhdlDocGen::VhdlClasses)cd->protection()!=VhdlDocGen::ENTITYCLASS
-      )
+    Spec spec=cd->getClassSpecifier();
+    if (cd->getLanguage()==SrcLangExt_VHDL && (spec&SpecifierEntity)==0)
     {
       continue;
     }

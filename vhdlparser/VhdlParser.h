@@ -8597,7 +8597,7 @@ struct SharedState
   QCString lab;
   int param_sec = 0;
   int parse_sec = 0;
-  int currP = 0;
+  Spec currP = 0;
 };
 
 VHDLOutlineParser *m_outlineParser;

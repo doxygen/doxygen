@@ -961,7 +961,7 @@ NONLopt [^\n]*
                                           else if (qstrncmp(yytext,"@property",9)==0) // ObjC 2.0 property
                                           {
                                             yyextra->current->mtype = yyextra->mtype = Property;
-                                            yyextra->current->spec|=Entry::Readable | Entry::Writable | Entry::Assign;
+                                            yyextra->current->spec|=SpecifierReadable | SpecifierWritable | SpecifierAssign;
                                             yyextra->current->protection = Public ;
                                             unput('(');
                                             BEGIN( ObjCPropAttr );
@@ -978,34 +978,34 @@ NONLopt [^\n]*
                                           yyextra->current->write = yytext+7;
                                         }
 <ObjCPropAttr>"readonly"                {
-                                          yyextra->current->spec&=~Entry::Writable;
+                                          yyextra->current->spec&=~SpecifierWritable;
                                         }
 <ObjCPropAttr>"readwrite"               { // default
                                         }
 <ObjCPropAttr>"assign"                  { // default
                                         }
 <ObjCPropAttr>"unsafe_unretained"       {
-                                          yyextra->current->spec&=~Entry::Assign;
-                                          yyextra->current->spec|=Entry::Unretained;
+                                          yyextra->current->spec&=~SpecifierAssign;
+                                          yyextra->current->spec|=SpecifierUnretained;
                                         }
 <ObjCPropAttr>"retain"                  {
-                                          yyextra->current->spec&=~Entry::Assign;
-                                          yyextra->current->spec|=Entry::Retain;
+                                          yyextra->current->spec&=~SpecifierAssign;
+                                          yyextra->current->spec|=SpecifierRetain;
                                         }
 <ObjCPropAttr>"copy"                    {
-                                          yyextra->current->spec&=~Entry::Assign;
-                                          yyextra->current->spec|=Entry::Copy;
+                                          yyextra->current->spec&=~SpecifierAssign;
+                                          yyextra->current->spec|=SpecifierCopy;
                                         }
 <ObjCPropAttr>"weak"                    {
-                                          yyextra->current->spec&=~Entry::Assign;
-                                          yyextra->current->spec|=Entry::Weak;
+                                          yyextra->current->spec&=~SpecifierAssign;
+                                          yyextra->current->spec|=SpecifierWeak;
                                         }
 <ObjCPropAttr>"strong"                  {
-                                          yyextra->current->spec&=~Entry::Assign;
-                                          yyextra->current->spec|=Entry::Strong;
+                                          yyextra->current->spec&=~SpecifierAssign;
+                                          yyextra->current->spec|=SpecifierStrong;
                                         }
 <ObjCPropAttr>"nonatomic"               {
-                                          yyextra->current->spec|=Entry::NonAtomic;
+                                          yyextra->current->spec|=SpecifierNonAtomic;
                                         }
 <ObjCPropAttr>")"                       {
                                           BEGIN(FindMembers);
@@ -1028,7 +1028,7 @@ NONLopt [^\n]*
                                           else if (qstrcmp(yytext,"@property")==0) // ObjC 2.0 property
                                           {
                                             yyextra->current->mtype = yyextra->mtype = Property;
-                                            yyextra->current->spec|=Entry::Writable | Entry::Readable;
+                                            yyextra->current->spec|=SpecifierWritable | SpecifierReadable;
                                             yyextra->current->protection = Public ;
                                           }
                                           else if (qstrcmp(yytext,"@synthesize")==0)
@@ -1075,7 +1075,7 @@ NONLopt [^\n]*
                                         }
 <FindMembers>{B}*"initonly"{BN}+        { if (yyextra->insideJava) REJECT;
                                           yyextra->current->type += " initonly ";
-                                          if (yyextra->insideCli) yyextra->current->spec |= Entry::Initonly;
+                                          if (yyextra->insideCli) yyextra->current->spec |= SpecifierInitonly;
                                           lineCount(yyscanner);
                                         }
 <FindMembers>{B}*"static"{BN}+          { yyextra->current->type += " static ";
@@ -1106,7 +1106,7 @@ NONLopt [^\n]*
 <FindMembers>{B}*"constexpr"{BN}+       {
                                           if (yyextra->insideCpp)
                                           {
-                                            yyextra->current->spec |= Entry::ConstExpr;
+                                            yyextra->current->spec |= SpecifierConstExpr;
                                           }
                                           REJECT;
                                         }
@@ -1114,7 +1114,7 @@ NONLopt [^\n]*
                                           if (yyextra->insideIDL)
                                           {
                                             lineCount(yyscanner);
-                                            yyextra->current->spec |= Entry::Published;
+                                            yyextra->current->spec |= SpecifierPublished;
                                           }
                                           else
                                           {
@@ -1131,37 +1131,37 @@ NONLopt [^\n]*
                                             }
                                             else
                                             {
-                                              yyextra->current->spec|=Entry::Abstract;
+                                              yyextra->current->spec|=SpecifierAbstract;
                                             }
                                           }
                                           else
                                           {
-                                            yyextra->current->spec|=Entry::Abstract;
+                                            yyextra->current->spec|=SpecifierAbstract;
                                           }
                                           lineCount(yyscanner);
                                         }
 <FindMembers>{B}*"inline"{BN}+          { if (yyextra->insideJava) REJECT;
-                                          yyextra->current->spec|=Entry::Inline;
+                                          yyextra->current->spec|=SpecifierInline;
                                           lineCount(yyscanner);
                                         }
 <FindMembers>{B}*"mutable"{BN}+         { if (yyextra->insideJava) REJECT;
-                                          yyextra->current->spec|=Entry::Mutable;
+                                          yyextra->current->spec|=SpecifierMutable;
                                           lineCount(yyscanner);
                                         }
 <FindMembers>{B}*"explicit"{BN}+        { if (yyextra->insideJava) REJECT;
-                                          yyextra->current->spec|=Entry::Explicit;
+                                          yyextra->current->spec|=SpecifierExplicit;
                                           lineCount(yyscanner);
                                         }
 <FindMembers>{B}*"local"{BN}+           { if (yyextra->insideJava) REJECT;
-                                          yyextra->current->spec|=Entry::Local;
+                                          yyextra->current->spec|=SpecifierLocal;
                                           lineCount(yyscanner);
                                         }
 <FindMembers>{B}*"@required"{BN}+       { // Objective C 2.0 protocol required section
-                                          yyextra->current->spec=(yyextra->current->spec & ~Entry::Optional) | Entry::Required;
+                                          yyextra->current->spec=(yyextra->current->spec & ~SpecifierOptional) | SpecifierRequired;
                                           lineCount(yyscanner);
                                         }
 <FindMembers>{B}*"@optional"{BN}+       {  // Objective C 2.0 protocol optional section
-                                          yyextra->current->spec=(yyextra->current->spec & ~Entry::Required) | Entry::Optional;
+                                          yyextra->current->spec=(yyextra->current->spec & ~SpecifierRequired) | SpecifierOptional;
                                           lineCount(yyscanner);
                                         }
   /*
@@ -1260,9 +1260,9 @@ NONLopt [^\n]*
                                           {
                                             yyextra->isTypedef=FALSE;
                                             yyextra->current->section = Entry::CLASS_SEC;
-                                            yyextra->current->spec = Entry::Service |
+                                            yyextra->current->spec = SpecifierService |
                                               // preserve UNO IDL [optional] or published
-                                              (yyextra->current->spec & (Entry::Optional|Entry::Published));
+                                              (yyextra->current->spec & (SpecifierOptional|SpecifierPublished));
                                             addType(yyscanner);
                                             yyextra->current->type += " service " ;
                                             yyextra->current->fileName  = yyextra->fileName;
@@ -1283,8 +1283,8 @@ NONLopt [^\n]*
                                           {
                                             yyextra->isTypedef=FALSE;
                                             yyextra->current->section = Entry::CLASS_SEC;
-                                            yyextra->current->spec = Entry::Singleton |
-                                              (yyextra->current->spec & Entry::Published); // preserve
+                                            yyextra->current->spec = SpecifierSingleton |
+                                              (yyextra->current->spec & SpecifierPublished); // preserve
                                             addType(yyscanner);
                                             yyextra->current->type += " singleton " ;
                                             yyextra->current->fileName  = yyextra->fileName;
@@ -1305,9 +1305,9 @@ NONLopt [^\n]*
                                           {
                                             yyextra->isTypedef=FALSE;
                                             yyextra->current->section = Entry::CLASS_SEC;
-                                            yyextra->current->spec = Entry::Interface |
+                                            yyextra->current->spec = SpecifierInterface |
                                                 // preserve UNO IDL [optional], published, Slice local
-                                                (yyextra->current->spec & (Entry::Optional|Entry::Published|Entry::Local));
+                                                (yyextra->current->spec & (SpecifierOptional|SpecifierPublished|SpecifierLocal));
                                             addType(yyscanner);
                                             yyextra->current->type += " interface" ;
                                             yyextra->current->fileName  = yyextra->fileName;
@@ -1342,7 +1342,7 @@ NONLopt [^\n]*
                                           lineCount(yyscanner);
                                           yyextra->isTypedef=FALSE;
                                           yyextra->current->section = Entry::CLASS_SEC;
-                                          yyextra->current->spec = Entry::Interface;
+                                          yyextra->current->spec = SpecifierInterface;
                                           if (!yyextra->insideJava)
                                           {
                                             yyextra->language = yyextra->current->lang = SrcLangExt_ObjC;
@@ -1362,7 +1362,7 @@ NONLopt [^\n]*
                                           lineCount(yyscanner);
                                           yyextra->isTypedef=FALSE;
                                           yyextra->current->section = Entry::CLASS_SEC;
-                                          yyextra->current->spec = Entry::Protocol;
+                                          yyextra->current->spec = SpecifierProtocol;
                                           yyextra->language = yyextra->current->lang = SrcLangExt_ObjC;
                                           yyextra->insideObjC = TRUE;
                                           yyextra->current->protection = yyextra->protection = Public ;
@@ -1380,9 +1380,9 @@ NONLopt [^\n]*
                                           yyextra->isTypedef=FALSE;
                                           yyextra->current->section = Entry::CLASS_SEC;
                                           // preserve UNO IDL, Slice local
-                                          yyextra->current->spec    = Entry::Exception |
-                                            (yyextra->current->spec & Entry::Published) |
-                                            (yyextra->current->spec & Entry::Local);
+                                          yyextra->current->spec    = SpecifierException |
+                                            (yyextra->current->spec & SpecifierPublished) |
+                                            (yyextra->current->spec & SpecifierLocal);
                                           addType(yyscanner);
                                           yyextra->current->type += " exception" ;
                                           yyextra->current->fileName  = yyextra->fileName;
@@ -1402,15 +1402,15 @@ NONLopt [^\n]*
                                           bool isVolatile=decl.find("volatile")!=-1;
                                           yyextra->current->section = Entry::CLASS_SEC;
                                           addType(yyscanner);
-                                          uint64 spec = yyextra->current->spec;
-                                          if (yyextra->insidePHP && yyextra->current->spec&Entry::Abstract)
+                                          Spec spec = yyextra->current->spec;
+                                          if (yyextra->insidePHP && yyextra->current->spec&SpecifierAbstract)
                                           {
                                             // convert Abstract to AbstractClass
-                                            yyextra->current->spec=(yyextra->current->spec&~Entry::Abstract)|Entry::AbstractClass;
+                                            yyextra->current->spec=(yyextra->current->spec&~SpecifierAbstract)|SpecifierAbstractClass;
                                           }
-                                          if (yyextra->insideSlice && spec&Entry::Local)
+                                          if (yyextra->insideSlice && spec&SpecifierLocal)
                                           {
-                                            yyextra->current->spec|=Entry::Local;
+                                            yyextra->current->spec|=SpecifierLocal;
                                           }
                                           if (isConst)
                                           {
@@ -1439,7 +1439,7 @@ NONLopt [^\n]*
 <FindMembers>{B}*"value class"{BN}+     {
                                           yyextra->isTypedef=FALSE;
                                           yyextra->current->section = Entry::CLASS_SEC;
-                                          yyextra->current->spec = Entry::Value;
+                                          yyextra->current->spec = SpecifierValue;
                                           addType(yyscanner);
                                           yyextra->current->type += " value class" ;
                                           yyextra->current->fileName  = yyextra->fileName;
@@ -1455,7 +1455,7 @@ NONLopt [^\n]*
 <FindMembers>{B}*"ref class"{BN}+       {
                                           yyextra->isTypedef=FALSE;
                                           yyextra->current->section = Entry::CLASS_SEC;
-                                          yyextra->current->spec = Entry::Ref;
+                                          yyextra->current->spec = SpecifierRef;
                                           addType(yyscanner);
                                           yyextra->current->type += " ref class" ;
                                           yyextra->current->fileName  = yyextra->fileName;
@@ -1471,7 +1471,7 @@ NONLopt [^\n]*
 <FindMembers>{B}*"interface class"{BN}+ {
                                           yyextra->isTypedef=FALSE;
                                           yyextra->current->section = Entry::CLASS_SEC;
-                                          yyextra->current->spec = Entry::Interface;
+                                          yyextra->current->spec = SpecifierInterface;
                                           addType(yyscanner);
                                           yyextra->current->type += " interface class" ;
                                           yyextra->current->fileName  = yyextra->fileName;
@@ -1515,10 +1515,10 @@ NONLopt [^\n]*
                                           bool isVolatile=decl.find("volatile")!=-1;
                                           yyextra->current->section = Entry::CLASS_SEC ;
                                           // preserve UNO IDL & Inline attributes, Slice local
-                                          yyextra->current->spec    = Entry::Struct |
-                                            (yyextra->current->spec & Entry::Published) |
-                                            (yyextra->current->spec & Entry::Inline) |
-                                            (yyextra->current->spec & Entry::Local);
+                                          yyextra->current->spec    = SpecifierStruct |
+                                            (yyextra->current->spec & SpecifierPublished) |
+                                            (yyextra->current->spec & SpecifierInline) |
+                                            (yyextra->current->spec & SpecifierLocal);
                                           // bug 582676: can be a struct nested in an interface so keep yyextra->insideObjC state
                                           //yyextra->current->objc    = yyextra->insideObjC = FALSE;
                                           addType(yyscanner);
@@ -1544,7 +1544,7 @@ NONLopt [^\n]*
 <FindMembers>{B}*"value struct"{BN}+     {
                                           yyextra->isTypedef=FALSE;
                                           yyextra->current->section = Entry::CLASS_SEC;
-                                          yyextra->current->spec    = Entry::Struct | Entry::Value;
+                                          yyextra->current->spec    = SpecifierStruct | SpecifierValue;
                                           addType(yyscanner);
                                           yyextra->current->type += " value struct" ;
                                           yyextra->current->fileName  = yyextra->fileName;
@@ -1560,7 +1560,7 @@ NONLopt [^\n]*
 <FindMembers>{B}*"ref struct"{BN}+     {
                                           yyextra->isTypedef=FALSE;
                                           yyextra->current->section = Entry::CLASS_SEC;
-                                          yyextra->current->spec    = Entry::Struct | Entry::Ref;
+                                          yyextra->current->spec    = SpecifierStruct | SpecifierRef;
                                           addType(yyscanner);
                                           yyextra->current->type += " ref struct" ;
                                           yyextra->current->fileName  = yyextra->fileName;
@@ -1576,7 +1576,7 @@ NONLopt [^\n]*
 <FindMembers>{B}*"interface struct"{BN}+ {
                                           yyextra->isTypedef=FALSE;
                                           yyextra->current->section = Entry::CLASS_SEC;
-                                          yyextra->current->spec    = Entry::Struct | Entry::Interface;
+                                          yyextra->current->spec    = SpecifierStruct | SpecifierInterface;
                                           addType(yyscanner);
                                           yyextra->current->type += " interface struct";
                                           yyextra->current->fileName  = yyextra->fileName;
@@ -1596,7 +1596,7 @@ NONLopt [^\n]*
                                           bool isConst=decl.find("const")!=-1;
                                           bool isVolatile=decl.find("volatile")!=-1;
                                           yyextra->current->section = Entry::CLASS_SEC;
-                                          yyextra->current->spec    = Entry::Union;
+                                          yyextra->current->spec    = SpecifierUnion;
                                           // bug 582676: can be a struct nested in an interface so keep yyextra->insideObjC state
                                           //yyextra->current->objc    = yyextra->insideObjC = FALSE;
                                           addType(yyscanner);
@@ -1627,7 +1627,7 @@ NONLopt [^\n]*
                                           if (yyextra->insideJava)
                                           {
                                             yyextra->current->section = Entry::CLASS_SEC;
-                                            yyextra->current->spec    = Entry::Enum;
+                                            yyextra->current->spec    = SpecifierEnum;
                                           }
                                           else
                                           {
@@ -1637,12 +1637,12 @@ NONLopt [^\n]*
                                           yyextra->current->type += " enum";
                                           if (isStrongEnum)
                                           {
-                                            yyextra->current->spec |= Entry::Strong;
+                                            yyextra->current->spec |= SpecifierStrong;
                                           }
                                           if (isEnumSytruct)
                                           {
-                                            yyextra->current->spec |= Entry::Strong;
-                                            yyextra->current->spec |= Entry::EnumStruct;
+                                            yyextra->current->spec |= SpecifierStrong;
+                                            yyextra->current->spec |= SpecifierEnumStruct;
                                           }
                                           yyextra->current->fileName  = yyextra->fileName;
                                           yyextra->current->startLine = yyextra->yyLineNr;
@@ -1695,7 +1695,7 @@ NONLopt [^\n]*
 <FindMembers>("template"|"generic")({BN}*)"<"/[>]?      {  // generic is a C++/CLI extension
                                           lineCount(yyscanner);
                                           ArgumentList al;
-                                          //yyextra->current->spec |= (yytext[0]=='g') ? Entry::Generic : Entry::Template;
+                                          //yyextra->current->spec |= (yytext[0]=='g') ? SpecifierGeneric : SpecifierTemplate;
                                           yyextra->current->tArgLists.push_back(al);
                                           yyextra->currentArgumentList = &yyextra->current->tArgLists.back();
                                           yyextra->templateStr="<";
@@ -1841,7 +1841,7 @@ NONLopt [^\n]*
                                           yyextra->previous->name=yyextra->previous->name.stripWhiteSpace();
                                           yyextra->previous->bodyLine = yyextra->yyLineNr;
                                           yyextra->previous->bodyColumn = yyextra->yyColNr;
-                                          yyextra->previous->spec |= Entry::Alias;
+                                          yyextra->previous->spec |= SpecifierAlias;
                                           BEGIN(FindMembers);
                                         }
 <UsingAlias>";"{BN}*{DCOMM}"<" {
@@ -2096,11 +2096,11 @@ NONLopt [^\n]*
                                           yyextra->current->name=yytext;
                                         }
 <QtPropType,QtPropAttr>{B}+"READ"{B}+   {
-                                          yyextra->current->spec |= Entry::Readable;
+                                          yyextra->current->spec |= SpecifierReadable;
                                           BEGIN(QtPropRead);
                                         }
 <QtPropType,QtPropAttr>{B}+"WRITE"{B}+  {
-                                          yyextra->current->spec |= Entry::Writable;
+                                          yyextra->current->spec |= SpecifierWritable;
                                           BEGIN(QtPropWrite);
                                         }
 <QtPropType,QtPropAttr>{B}+"MEMBER"{B}+{ID}     | // member property => not supported yet
@@ -2805,7 +2805,7 @@ NONLopt [^\n]*
                                           yyextra->lastInitializerContext = YY_START;
                                           yyextra->initBracketCount=0;
                                           yyextra->current->mtype = yyextra->mtype = Property;
-                                          yyextra->current->spec |= Entry::Gettable;
+                                          yyextra->current->spec |= SpecifierGettable;
                                           BEGIN(ReadInitializerPtr);
                                         }
 <FindMembers>"="                        { // in PHP code this could also be due to "<?="
@@ -2850,7 +2850,7 @@ NONLopt [^\n]*
                                         }
 <ReadInitializer,ReadInitializerPtr>[;,] {
                                           //printf(">> initializer '%s' <<\n",qPrint(yyextra->current->initializer));
-                                          if (*yytext==';' && (yyextra->current_root->spec&Entry::Enum))
+                                          if (*yytext==';' && (yyextra->current_root->spec&SpecifierEnum))
                                           {
                                             yyextra->current->fileName   = yyextra->fileName;
                                             yyextra->current->startLine  = yyextra->yyLineNr;
@@ -3518,8 +3518,8 @@ NONLopt [^\n]*
                                                  yyextra->current->mtype == Property)
                                             { // we are yyextra->inside the properties section of a dispinterface
                                               yyextra->odlProp = true;
-                                              yyextra->current->spec |= Entry::Gettable;
-                                              yyextra->current->spec |= Entry::Settable;
+                                              yyextra->current->spec |= SpecifierGettable;
+                                              yyextra->current->spec |= SpecifierSettable;
                                             }
 
                                             BEGIN( IDLAttribute );
@@ -3592,54 +3592,54 @@ NONLopt [^\n]*
                                           {
                                             yyextra->current->mtype = Property;
                                           }
-                                          yyextra->current->spec |= Entry::Settable;
+                                          yyextra->current->spec |= SpecifierSettable;
                                         }
 <IDLAttribute>"propget"                 {
                                           if (Config_getBool(IDL_PROPERTY_SUPPORT))
                                           {
                                             yyextra->current->mtype = Property;
                                           }
-                                          yyextra->current->spec |= Entry::Gettable;
+                                          yyextra->current->spec |= SpecifierGettable;
                                         }
 <IDLAttribute>"property" { // UNO IDL property
-                                          yyextra->current->spec |= Entry::Property;
+                                          yyextra->current->spec |= SpecifierProperty;
                                         }
 <IDLAttribute>"attribute" { // UNO IDL attribute
-                                          yyextra->current->spec |= Entry::Attribute;
+                                          yyextra->current->spec |= SpecifierAttribute;
                                         }
 <IDLAttribute>"optional" { // on UNO IDL interface/service/attribute/property
-                           yyextra->current->spec |= Entry::Optional;
+                           yyextra->current->spec |= SpecifierOptional;
                          }
 <IDLAttribute>"readonly" { // on UNO IDL attribute or property
                                           if (Config_getBool(IDL_PROPERTY_SUPPORT) && yyextra->odlProp)
                                           {
-                                            yyextra->current->spec ^= Entry::Settable;
+                                            yyextra->current->spec ^= SpecifierSettable;
                                           }
                                           else
                                           {
-                                            yyextra->current->spec |= Entry::Readonly;
+                                            yyextra->current->spec |= SpecifierReadonly;
                                           }
                                         }
 <IDLAttribute>"bound" { // on UNO IDL attribute or property
-                                          yyextra->current->spec |= Entry::Bound;
+                                          yyextra->current->spec |= SpecifierBound;
                                         }
 <IDLAttribute>"removable" { // on UNO IDL property
-                                          yyextra->current->spec |= Entry::Removable;
+                                          yyextra->current->spec |= SpecifierRemovable;
                                         }
 <IDLAttribute>"constrained" { // on UNO IDL property
-                                          yyextra->current->spec |= Entry::Constrained;
+                                          yyextra->current->spec |= SpecifierConstrained;
                                         }
 <IDLAttribute>"transient" { // on UNO IDL property
-                                          yyextra->current->spec |= Entry::Transient;
+                                          yyextra->current->spec |= SpecifierTransient;
                                         }
 <IDLAttribute>"maybevoid" { // on UNO IDL property
-                                          yyextra->current->spec |= Entry::MaybeVoid;
+                                          yyextra->current->spec |= SpecifierMaybeVoid;
                                         }
 <IDLAttribute>"maybedefault" { // on UNO IDL property
-                                          yyextra->current->spec |= Entry::MaybeDefault;
+                                          yyextra->current->spec |= SpecifierMaybeDefault;
                                         }
 <IDLAttribute>"maybeambiguous" { // on UNO IDL property
-                                          yyextra->current->spec |= Entry::MaybeAmbiguous;
+                                          yyextra->current->spec |= SpecifierMaybeAmbiguous;
                                         }
 <IDLAttribute>.                         {
                                         }
@@ -3783,7 +3783,7 @@ NONLopt [^\n]*
                                               yyextra->current->fileName   = yyextra->fileName;
                                               yyextra->current->startLine  = yyextra->yyLineNr;
                                               yyextra->current->startColumn = yyextra->yyColNr;
-                                              if (!(yyextra->current_root->spec&Entry::Enum))
+                                              if (!(yyextra->current_root->spec&SpecifierEnum))
                                               {
                                                 yyextra->current->type       = "@"; // enum marker
                                               }
@@ -3810,7 +3810,7 @@ NONLopt [^\n]*
                                             yyextra->current->fileName   = yyextra->fileName;
                                             yyextra->current->startLine  = yyextra->yyLineNr;
                                             yyextra->current->startColumn = yyextra->yyColNr;
-                                            if (!(yyextra->current_root->spec&Entry::Enum))
+                                            if (!(yyextra->current_root->spec&SpecifierEnum))
                                             {
                                               yyextra->current->type       = "@"; // enum marker
                                             }
@@ -3819,7 +3819,7 @@ NONLopt [^\n]*
                                             yyextra->current->section    = Entry::VARIABLE_SEC;
                                             // add to the scope of the enum
                                             if (!yyextra->insideCS && !yyextra->insideJava &&
-                                                !(yyextra->current_root->spec&Entry::Strong))
+                                                !(yyextra->current_root->spec&SpecifierStrong))
                                                 // for C# and Java 1.5+ enum values always have to be explicitly qualified,
                                                 // same for C++11 style enums (enum class Name {})
                                             {
@@ -3973,7 +3973,7 @@ NONLopt [^\n]*
                                             }
                                             else
                                             {
-                                              if ((yyextra->current->section == Entry::ENUM_SEC) || (yyextra->current->spec&Entry::Enum))
+                                              if ((yyextra->current->section == Entry::ENUM_SEC) || (yyextra->current->spec&SpecifierEnum))
                                               {
                                                 yyextra->current->program << ','; // add field terminator
                                               }
@@ -3984,7 +3984,7 @@ NONLopt [^\n]*
                                               yyextra->current->name = yyextra->current->name.stripWhiteSpace();
                                               //printf("adding '%s' '%s' '%s' brief=%s yyextra->insideObjC=%d %x\n",qPrint(yyextra->current->type),qPrint(yyextra->current->name),qPrint(yyextra->current->args),qPrint(yyextra->current->brief),yyextra->insideObjC,yyextra->current->section);
                                               if (yyextra->insideObjC &&
-                                                  ((yyextra->current->spec&Entry::Interface) || (yyextra->current->spec==Entry::Category))
+                                                  ((yyextra->current->spec&SpecifierInterface)!=0 || (yyextra->current->spec&SpecifierCategory)!=0)
                                                  ) // method definition follows
                                               {
                                                 BEGIN( ReadBodyIntf ) ;
@@ -3995,7 +3995,7 @@ NONLopt [^\n]*
                                                 yyextra->current_root->moveToSubEntryAndKeep( yyextra->current ) ;
                                                 yyextra->current = std::make_shared<Entry>(*yyextra->current);
                                                 if (yyextra->current->section==Entry::NAMESPACE_SEC ||
-                                                    (yyextra->current->spec==Entry::Interface) ||
+                                                    (yyextra->current->spec&SpecifierInterface)!=0 ||
                                                     yyextra->insideJava || yyextra->insidePHP || yyextra->insideCS || yyextra->insideD || yyextra->insideJS ||
                                                     yyextra->insideSlice
                                                    )
@@ -4047,7 +4047,7 @@ NONLopt [^\n]*
                                           yyextra->current->type.prepend(yytext);
                                         }
 <TypedefName>{ID}                       {
-                                          if ((yyextra->current->section == Entry::ENUM_SEC) || (yyextra->current->spec&Entry::Enum))
+                                          if ((yyextra->current->section == Entry::ENUM_SEC) || (yyextra->current->spec&SpecifierEnum))
                                           {
                                             yyextra->current->program << ","; // add field terminator
                                           }
@@ -4067,7 +4067,7 @@ NONLopt [^\n]*
                                         }
 <TypedefName>";"                        { /* typedef of anonymous type */
                                           yyextra->current->name.sprintf("@%d",anonCount++);
-                                          if ((yyextra->current->section == Entry::ENUM_SEC) || (yyextra->current->spec&Entry::Enum))
+                                          if ((yyextra->current->section == Entry::ENUM_SEC) || (yyextra->current->spec&SpecifierEnum))
                                           {
                                             yyextra->current->program << ','; // add field terminator
                                           }
@@ -4096,11 +4096,11 @@ NONLopt [^\n]*
                                           // handle *pName in: typedef { ... } name, *pName;
                                           if (yyextra->firstTypedefEntry)
                                           {
-                                            if (yyextra->firstTypedefEntry->spec&Entry::Struct)
+                                            if ((yyextra->firstTypedefEntry->spec&SpecifierStruct)!=0)
                                             {
                                               yyextra->msType.prepend("struct "+yyextra->firstTypedefEntry->name);
                                             }
-                                            else if (yyextra->firstTypedefEntry->spec&Entry::Union)
+                                            else if ((yyextra->firstTypedefEntry->spec&SpecifierUnion)!=0)
                                             {
                                               yyextra->msType.prepend("union "+yyextra->firstTypedefEntry->name);
                                             }
@@ -4158,7 +4158,7 @@ NONLopt [^\n]*
                                             // -> omit typedef and use S_t as the struct name
                                             if (typedefHidesStruct &&
                                                 yyextra->isTypedef &&
-                                                ((yyextra->current->spec&(Entry::Struct|Entry::Union)) ||
+                                                ((yyextra->current->spec&(SpecifierStruct|SpecifierUnion))!=0 ||
                                                  yyextra->current->section==Entry::ENUM_SEC )&&
                                                 yyextra->msType.stripWhiteSpace().isEmpty() &&
                                                 yyextra->memspecEntry)
@@ -4184,7 +4184,7 @@ NONLopt [^\n]*
                                               }
                                               if (typedefHidesStruct &&
                                                   yyextra->isTypedef &&
-                                                  (yyextra->current->spec&(Entry::Struct|Entry::Union)) &&
+                                                  (yyextra->current->spec&(SpecifierStruct|SpecifierUnion)) &&
                                                   yyextra->memspecEntry
                                                  ) // case 1: use S_t as type for pS_t in "typedef struct _S {} S_t, *pS_t;"
                                               {
@@ -4821,24 +4821,24 @@ NONLopt [^\n]*
                                         }
 <FuncQual,TrailingReturn>{BN}*"override"{BN}*          { // C++11 overridden virtual member function
                                           lineCount(yyscanner) ;
-                                          yyextra->current->spec |= Entry::Override;
+                                          yyextra->current->spec |= SpecifierOverride;
                                           yyextra->current->args += " override ";
                                           BEGIN(FuncQual);
                                         }
 <FuncQual,TrailingReturn>{BN}*"final"{BN}*             { // C++11 final method
                                           lineCount(yyscanner) ;
-                                          yyextra->current->spec |= Entry::Final;
+                                          yyextra->current->spec |= SpecifierFinal;
                                           yyextra->current->args += " final ";
                                           BEGIN(FuncQual);
                                         }
 <FuncQual>{BN}*"sealed"{BN}*            { // sealed member function
                                           lineCount(yyscanner) ;
-                                          yyextra->current->spec |= Entry::Sealed;
+                                          yyextra->current->spec |= SpecifierSealed;
                                           yyextra->current->args += " sealed ";
                                         }
 <FuncQual>{BN}*"new"{BN}*               { // new member function
                                           lineCount(yyscanner) ;
-                                          yyextra->current->spec |= Entry::New;
+                                          yyextra->current->spec |= SpecifierNew;
                                           yyextra->current->args += " new ";
                                         }
 <FuncQual>{BN}*"const"{BN}*             { // const member function
@@ -4854,12 +4854,12 @@ NONLopt [^\n]*
 <FuncQual>{BN}*"noexcept"{BN}*          { // noexcept qualifier
                                           lineCount(yyscanner) ;
                                           yyextra->current->args += " noexcept ";
-                                          yyextra->current->spec |= Entry::NoExcept;
+                                          yyextra->current->spec |= SpecifierNoExcept;
                                         }
 <FuncQual>{BN}*"noexcept"{BN}*"("       { // noexcept expression
                                           lineCount(yyscanner) ;
                                           yyextra->current->args += " noexcept(";
-                                          yyextra->current->spec |= Entry::NoExcept;
+                                          yyextra->current->spec |= SpecifierNoExcept;
                                           yyextra->lastRoundContext=FuncQual;
                                           yyextra->pCopyRoundString=&yyextra->current->args;
                                           yyextra->roundCount=0;
@@ -4884,14 +4884,14 @@ NONLopt [^\n]*
 <FuncQual,TrailingReturn>{BN}*"="{BN}*"delete"{BN}*     { // C++11 explicitly delete member
                                           lineCount(yyscanner);
                                           yyextra->current->args += " = delete";
-                                          yyextra->current->spec |= Entry::Delete;
+                                          yyextra->current->spec |= SpecifierDelete;
                                           yyextra->current->argList.setIsDeleted(TRUE);
                                           BEGIN(FuncQual);
                                         }
 <FuncQual,TrailingReturn>{BN}*"="{BN}*"default"{BN}*     { // C++11 explicitly defaulted constructor/assignment operator
                                           lineCount(yyscanner);
                                           yyextra->current->args += " = default";
-                                          yyextra->current->spec |= Entry::Default;
+                                          yyextra->current->spec |= SpecifierDefault;
                                           BEGIN(FuncQual);
                                         }
 <FuncQual>{BN}*"->"{BN}*                {
@@ -5172,11 +5172,11 @@ NONLopt [^\n]*
                                           {
                                             if (findAndRemoveWord(yyextra->current->type,"final"))
                                             {
-                                              yyextra->current->spec |= Entry::Final;
+                                              yyextra->current->spec |= SpecifierFinal;
                                             }
                                             if (findAndRemoveWord(yyextra->current->type,"abstract"))
                                             {
-                                              yyextra->current->spec |= Entry::Abstract;
+                                              yyextra->current->spec |= SpecifierAbstract;
                                             }
                                           }
                                           if ( yyextra->insidePHP && !containsWord(yyextra->current->type,"function"))
@@ -5203,9 +5203,9 @@ NONLopt [^\n]*
                                             yyextra->current_root->moveToSubEntryAndRefresh(yyextra->current);
                                             initEntry(yyscanner);
                                             // Objective C 2.0: Required/Optional section
-                                            if (yyextra->previous->spec & (Entry::Optional | Entry::Required))
+                                            if ((yyextra->previous->spec & (SpecifierOptional | SpecifierRequired))!=0)
                                             {
-                                              yyextra->current->spec |= yyextra->previous->spec & (Entry::Optional|Entry::Required);
+                                              yyextra->current->spec |= yyextra->previous->spec & (SpecifierOptional|SpecifierRequired);
                                             }
                                             yyextra->lastCurlyContext = FindMembers;
                                             if ( *yytext == ',' )
@@ -5220,7 +5220,7 @@ NONLopt [^\n]*
                                             {
                                               if ( !yyextra->insidePHP && (yyextra->current_root->section & Entry::COMPOUND_MASK) )
                                               {
-                                                yyextra->previous->spec |= Entry::Inline;
+                                                yyextra->previous->spec |= SpecifierInline;
                                               }
                                               //addToBody(yytext);
                                               yyextra->curlyCount=0;
@@ -5467,8 +5467,8 @@ NONLopt [^\n]*
                                           BEGIN( FindMembers ) ;
                                         }
 <Bases>";"                      {
-                                          if (yyextra->insideIDL && (yyextra->current->spec & (Entry::Singleton |
-                                                                             Entry::Service)))
+                                          if (yyextra->insideIDL && (yyextra->current->spec & (SpecifierSingleton |
+                                                                             SpecifierService)))
                                           {
                                             // in UNO IDL a service or singleton may be defined
                                             // completely like this: "service Foo : XFoo;"
@@ -5500,7 +5500,7 @@ NONLopt [^\n]*
 <CompoundName>{SCOPENAME}/{BN}*"<"      {
                                           yyextra->sharpCount = 0;
                                           yyextra->current->name = yytext ;
-                                          if (yyextra->current->spec & Entry::Protocol)
+                                          if ((yyextra->current->spec & SpecifierProtocol)!=0)
                                           {
                                             yyextra->current->name+="-p";
                                           }
@@ -5524,7 +5524,7 @@ NONLopt [^\n]*
 <CSGeneric>"<"                          {
                                           ArgumentList al;
                                           // check bug 612858 before enabling the next line
-                                          //yyextra->current->spec |= Entry::Template;
+                                          //yyextra->current->spec |= SpecifierTemplate;
                                           yyextra->current->tArgLists.push_back(al);
                                           yyextra->currentArgumentList = &yyextra->current->tArgLists.back();
                                           yyextra->templateStr="<";
@@ -5545,7 +5545,7 @@ NONLopt [^\n]*
                                           if (yyextra->roundCount==0 && --yyextra->sharpCount<=0)
                                           {
                                             yyextra->current->name = removeRedundantWhiteSpace(yyextra->current->name);
-                                            if (yyextra->current->spec & Entry::Protocol)
+                                            if ((yyextra->current->spec & SpecifierProtocol)!=0)
                                             { // Objective-C protocol
                                               unput('{'); // fake start of body
                                               BEGIN( ClassVar );
@@ -5577,16 +5577,16 @@ NONLopt [^\n]*
                                             {
                                               prependScope(yyscanner);
                                             }
-                                            yyextra->current->spec|=Entry::ForwardDecl;
+                                            yyextra->current->spec|=SpecifierForwardDecl;
                                             yyextra->current_root->moveToSubEntryAndRefresh(yyextra->current);
                                           }
                                           else if (yyextra->insideIDL &&
-                                                   (((yyextra->current_root->spec & (Entry::Interface |
-                                                                            Entry::Service)) &&
-                                                     (yyextra->current->spec & Entry::Interface)) ||
-                                                    ((yyextra->current_root->spec & (Entry::Service |
-                                                                            Entry::Singleton)) &&
-                                                     (yyextra->current->spec & Entry::Service))))
+                                                   (((yyextra->current_root->spec & (SpecifierInterface |
+                                                                            SpecifierService)) &&
+                                                     (yyextra->current->spec & SpecifierInterface)) ||
+                                                    ((yyextra->current_root->spec & (SpecifierService |
+                                                                            SpecifierSingleton)) &&
+                                                     (yyextra->current->spec & SpecifierService))))
                                           {
                                             // interface yyextra->inside of UNO IDL service or interface
                                             // service yyextra->inside of UNO IDL service or singleton
@@ -5594,11 +5594,11 @@ NONLopt [^\n]*
                                             // so do not throw it away...
                                             yyextra->current->name = yytext;
                                             yyextra->current->name=yyextra->current->name.left(yyextra->current->name.length()-1).stripWhiteSpace();
-                                            yyextra->current->section = (yyextra->current->spec & Entry::Interface)
+                                            yyextra->current->section = (yyextra->current->spec & SpecifierInterface)!=0
                                                 ? Entry::EXPORTED_INTERFACE_SEC
                                                 : Entry::INCLUDED_SERVICE_SEC;
 //                                          yyextra->current->section = Entry::MEMBERDOC_SEC;
-                                            yyextra->current->spec &= ~(Entry::Interface|Entry::Service); // FIXME: horrible: Interface == Gettable, so need to clear it - actually we're mixing values from different enums in this case... granted only Optional and Interface are actually valid in this context but urgh...
+                                            yyextra->current->spec &= ~(SpecifierInterface|SpecifierService); // FIXME: horrible: Interface == Gettable, so need to clear it - actually we're mixing values from different enums in this case... granted only Optional and Interface are actually valid in this context but urgh...
                                             yyextra->current_root->moveToSubEntryAndRefresh(yyextra->current);
                                           }
 
@@ -5626,7 +5626,7 @@ NONLopt [^\n]*
                                           }
                                           else
                                           {
-                                            if (yyextra->current->spec & Entry::Protocol)
+                                            if ((yyextra->current->spec & SpecifierProtocol)!=0)
                                             {
                                               yyextra->current->name += "-p";
                                             }
@@ -5669,11 +5669,11 @@ NONLopt [^\n]*
                                             yyextra->current->id = yyextra->clangParser->lookup(yyextra->yyLineNr,yytext);
                                           }
                                           lineCount(yyscanner);
-                                          if (yyextra->current->spec & Entry::Protocol)
+                                          if ((yyextra->current->spec & SpecifierProtocol)!=0)
                                           {
                                             yyextra->current->name += "-p";
                                           }
-                                          if ((yyextra->current->spec & Entry::Protocol) ||
+                                          if ((yyextra->current->spec & SpecifierProtocol) ||
                                               yyextra->current->section == Entry::OBJCIMPL_SEC)
                                           {
                                             unput('{'); // fake start of body
@@ -5720,9 +5720,9 @@ NONLopt [^\n]*
                                           if (yyextra->insideCli)
                                           {
                                             if (yytext[0]=='s') // sealed
-                                              yyextra->current->spec |= Entry::SealedClass;
+                                              yyextra->current->spec |= SpecifierSealedClass;
                                             else // abstract
-                                              yyextra->current->spec |= Entry::AbstractClass;
+                                              yyextra->current->spec |= SpecifierAbstractClass;
                                             BEGIN( ClassVar );
                                           }
                                           else
@@ -5761,15 +5761,15 @@ NONLopt [^\n]*
                                           }
                                           else if (yyextra->insideCli &&  qstrcmp(yytext,"abstract")==0)
                                           {
-                                            yyextra->current->spec|=Entry::Abstract;
+                                            yyextra->current->spec|=SpecifierAbstract;
                                           }
                                           else if (yyextra->insideCli &&  qstrcmp(yytext,"sealed")==0)
                                           {
-                                            yyextra->current->spec|=Entry::Sealed;
+                                            yyextra->current->spec|=SpecifierSealed;
                                           }
                                           else if (qstrcmp(yytext,"final")==0)
                                           {
-                                            yyextra->current->spec|=Entry::Final;
+                                            yyextra->current->spec|=SpecifierFinal;
                                           }
                                           else
                                           {
@@ -5793,7 +5793,7 @@ NONLopt [^\n]*
                                             yyextra->current->name+='(';
                                             //if (yyextra->current->section!=Entry::OBJCIMPL_SEC)
                                             //{
-                                              yyextra->current->spec|=Entry::Category;
+                                              yyextra->current->spec|=SpecifierCategory;
                                             //}
                                             BEGIN( ClassCategory );
                                           }
@@ -5871,7 +5871,7 @@ NONLopt [^\n]*
                                         }
 <ClassCategory>")"                      {
                                           yyextra->current->name+=')';
-                                          if ((yyextra->current->section & Entry::Protocol) ||
+                                          if ((yyextra->current->spec & SpecifierProtocol)!=0 ||
                                               yyextra->current->section == Entry::OBJCIMPL_SEC)
                                           {
                                             unput('{'); // fake start of body
@@ -5899,10 +5899,10 @@ NONLopt [^\n]*
                                           else
                                           {
                                             yyextra->current->type.resize(0);
-                                            if ((yyextra->current->spec & Entry::Interface) ||
-                                                (yyextra->current->spec & Entry::Struct)    ||
-                                                (yyextra->current->spec & Entry::Ref)       ||
-                                                (yyextra->current->spec & Entry::Value)     ||
+                                            if ((yyextra->current->spec & SpecifierInterface) ||
+                                                (yyextra->current->spec & SpecifierStruct)    ||
+                                                (yyextra->current->spec & SpecifierRef)       ||
+                                                (yyextra->current->spec & SpecifierValue)     ||
                                                 yyextra->insidePHP || yyextra->insideCS || yyextra->insideD || yyextra->insideObjC || yyextra->insideIDL
                                                )
                                               yyextra->baseProt=Public;
@@ -5995,8 +5995,8 @@ NONLopt [^\n]*
                                           }
                                           yyextra->curlyCount=0;
                                           if (yyextra->current_root && // not a nested struct yyextra->inside an @interface section
-                                              !(yyextra->current_root->spec & Entry::Interface) &&
-                                              ((yyextra->current->spec & (Entry::Interface | Entry::Protocol | Entry::Category) ||
+                                              !(yyextra->current_root->spec & SpecifierInterface) &&
+                                              ((yyextra->current->spec & (SpecifierInterface | SpecifierProtocol | SpecifierCategory) ||
                                                 yyextra->current->section==Entry::OBJCIMPL_SEC)
                                               ) &&
                                               yyextra->insideObjC
@@ -6189,7 +6189,7 @@ NONLopt [^\n]*
                                               BaseInfo(yyextra->baseName,yyextra->baseProt,yyextra->baseVirt)
                                             );
                                           }
-                                          if ((yyextra->current->spec & (Entry::Interface|Entry::Struct)) ||
+                                          if ((yyextra->current->spec & (SpecifierInterface|SpecifierStruct)) ||
                                               yyextra->insideJava || yyextra->insidePHP || yyextra->insideCS ||
                                               yyextra->insideD || yyextra->insideObjC || yyextra->insideIDL || yyextra->insideSlice)
                                           {
@@ -6434,7 +6434,7 @@ NONLopt [^\n]*
                                             yyextra->curlyCount=0;
                                             BEGIN( CSAccessorDecl );
                                           }
-                                          else if (yyextra->insideIDL && (yyextra->current->spec & Entry::Attribute))
+                                          else if (yyextra->insideIDL && (yyextra->current->spec & SpecifierAttribute))
                                           {
                                             // UNO IDL: attributes may have setter and getter
                                             // exception specifications
@@ -6506,15 +6506,15 @@ NONLopt [^\n]*
                                             BEGIN(FindMembers);
                                           }
                                         }
-<CSAccessorDecl>"private "{BN}*"set"    { if (yyextra->curlyCount==0) yyextra->current->spec |= Entry::PrivateSettable;   }
-<CSAccessorDecl>"protected "{BN}*"set"  { if (yyextra->curlyCount==0) yyextra->current->spec |= Entry::ProtectedSettable; }
-<CSAccessorDecl>"private "{BN}*"get"    { if (yyextra->curlyCount==0) yyextra->current->spec |= Entry::PrivateGettable;         }
-<CSAccessorDecl>"protected "{BN}*"get"  { if (yyextra->curlyCount==0) yyextra->current->spec |= Entry::ProtectedGettable; }
-<CSAccessorDecl>"set"                   { if (yyextra->curlyCount==0) yyextra->current->spec |= Entry::Settable;  }
-<CSAccessorDecl>"get"                   { if (yyextra->curlyCount==0) yyextra->current->spec |= Entry::Gettable;  }
-<CSAccessorDecl>"add"                   { if (yyextra->curlyCount==0) yyextra->current->spec |= Entry::Addable;   }
-<CSAccessorDecl>"remove"                { if (yyextra->curlyCount==0) yyextra->current->spec |= Entry::Removable; }
-<CSAccessorDecl>"raise"                 { if (yyextra->curlyCount==0) yyextra->current->spec |= Entry::Raisable;  }
+<CSAccessorDecl>"private "{BN}*"set"    { if (yyextra->curlyCount==0) yyextra->current->spec |= SpecifierPrivateSettable;   }
+<CSAccessorDecl>"protected "{BN}*"set"  { if (yyextra->curlyCount==0) yyextra->current->spec |= SpecifierProtectedSettable; }
+<CSAccessorDecl>"private "{BN}*"get"    { if (yyextra->curlyCount==0) yyextra->current->spec |= SpecifierPrivateGettable;         }
+<CSAccessorDecl>"protected "{BN}*"get"  { if (yyextra->curlyCount==0) yyextra->current->spec |= SpecifierProtectedGettable; }
+<CSAccessorDecl>"set"                   { if (yyextra->curlyCount==0) yyextra->current->spec |= SpecifierSettable;  }
+<CSAccessorDecl>"get"                   { if (yyextra->curlyCount==0) yyextra->current->spec |= SpecifierGettable;  }
+<CSAccessorDecl>"add"                   { if (yyextra->curlyCount==0) yyextra->current->spec |= SpecifierAddable;   }
+<CSAccessorDecl>"remove"                { if (yyextra->curlyCount==0) yyextra->current->spec |= SpecifierRemovable; }
+<CSAccessorDecl>"raise"                 { if (yyextra->curlyCount==0) yyextra->current->spec |= SpecifierRaisable;  }
 <CSAccessorDecl>"\""                    { BEGIN(CSString);}
 <CSAccessorDecl>"."                     {}
 <CSAccessorDecl>\n                      { lineCount(yyscanner); }
@@ -6527,7 +6527,7 @@ NONLopt [^\n]*
  /* ---- Slice-specific rules ------ */
 
 <SliceSequence>{SCOPENAME}              {
-                                          if (yyextra->current->spec&Entry::Local)
+                                          if ((yyextra->current->spec&SpecifierLocal)!=0)
                                           {
                                             yyextra->current->type = "local ";
                                           }
@@ -6556,7 +6556,7 @@ NONLopt [^\n]*
 
 <SliceDictionary>{SCOPENAME}{BN}*","{BN}*{SCOPENAME} {
                                           lineCount(yyscanner);
-                                          if (yyextra->current->spec&Entry::Local)
+                                          if ((yyextra->current->spec&SpecifierLocal)!=0)
                                           {
                                             yyextra->current->type = "local ";
                                           }
@@ -7068,7 +7068,7 @@ static void initEntry(yyscan_t yyscanner)
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (yyextra->insideJava)
   {
-    yyextra->protection = (yyextra->current_root->spec & (Entry::Interface|Entry::Enum)) ?  Public : Package;
+    yyextra->protection = (yyextra->current_root->spec & (SpecifierInterface|SpecifierEnum))!=0 ?  Public : Package;
   }
   yyextra->current->protection = yyextra->protection ;
   yyextra->current->mtype      = yyextra->mtype;
@@ -7540,7 +7540,7 @@ static void parseCompounds(yyscan_t yyscanner,const std::shared_ptr<Entry> &rt)
       yyextra->programStr = ce->program.str();
       yyextra->inputString = yyextra->programStr.data();
       yyextra->inputPosition = 0;
-      if (ce->section==Entry::ENUM_SEC || (ce->spec&Entry::Enum))
+      if (ce->section==Entry::ENUM_SEC || (ce->spec&SpecifierEnum))
         BEGIN( FindFields ) ;
       else
         BEGIN( FindMembers ) ;
@@ -7557,7 +7557,7 @@ static void parseCompounds(yyscan_t yyscanner,const std::shared_ptr<Entry> &rt)
 
       // deep copy group list from parent (see bug 727732)
       bool autoGroupNested = Config_getBool(GROUP_NESTED_COMPOUNDS);
-      if (autoGroupNested && !rt->groups.empty() && ce->section!=Entry::ENUM_SEC && !(ce->spec&Entry::Enum))
+      if (autoGroupNested && !rt->groups.empty() && ce->section!=Entry::ENUM_SEC && !(ce->spec&SpecifierEnum))
       {
         ce->groups = rt->groups;
       }
@@ -7572,9 +7572,9 @@ static void parseCompounds(yyscan_t yyscanner,const std::shared_ptr<Entry> &rt)
         }
         else if (yyextra->insideJava)
         {
-          yyextra->current->protection = yyextra->protection = (ce->spec & (Entry::Interface|Entry::Enum)) ?  Public : Package;
+          yyextra->current->protection = yyextra->protection = (ce->spec & (SpecifierInterface|SpecifierEnum))!=0 ?  Public : Package;
         }
-        else if (ce->spec&(Entry::Interface | Entry::Ref | Entry::Value | Entry::Struct | Entry::Union))
+        else if ((ce->spec&(SpecifierInterface | SpecifierRef | SpecifierValue | SpecifierStruct | SpecifierUnion))!=0)
         {
           if (ce->lang==SrcLangExt_ObjC)
           {

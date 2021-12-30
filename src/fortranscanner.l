@@ -657,7 +657,7 @@ SCOPENAME ({ID}{BS}"::"{BS})*
 {BS}"::"{BS}                            {}
 
 abstract                                {
-                                          yyextra->current->spec |= Entry::AbstractClass;
+                                          yyextra->current->spec |= SpecifierAbstractClass;
                                         }
 extends{ARGS}                           {
                                           QCString basename = extractFromParens(yytext).lower();
@@ -676,7 +676,7 @@ private                                 {
                                         }
 {ID}                                    { /* type name found */
                                           yyextra->current->section = Entry::CLASS_SEC;
-                                          yyextra->current->spec |= Entry::Struct;
+                                          yyextra->current->spec |= SpecifierStruct;
                                           yyextra->current->name = yytext;
                                           yyextra->current->fileName = yyextra->fileName;
                                           yyextra->current->bodyLine  = yyextra->lineNr;
@@ -701,7 +701,7 @@ private                                 {
                                           yyextra->current->type = QCString(yytext).simplifyWhiteSpace();
                                         }
 ^{BS}final                              {
-                                          yyextra->current->spec |= Entry::Final;
+                                          yyextra->current->spec |= SpecifierFinal;
                                           yyextra->current->type = QCString(yytext).simplifyWhiteSpace();
                                         }
 ^{BS}generic                            {
@@ -1077,7 +1077,7 @@ private                                 {
                                           yyextra->typeProtection = yyextra->defaultProtection;
                                           yyextra->typeMode = true;
 
-                                          yyextra->current->spec |= Entry::Struct;
+                                          yyextra->current->spec |= SpecifierStruct;
                                           yyextra->current->name.resize(0);
                                           yyextra->current->args.resize(0);
                                           yyextra->current->name.sprintf("@%d",yyextra->anonCount++);
@@ -2392,7 +2392,7 @@ static void addInterface(yyscan_t yyscanner,QCString name, InterfaceType type)
   }
 
   yyextra->current->section = Entry::CLASS_SEC; // was Entry::INTERFACE_SEC;
-  yyextra->current->spec = Entry::Interface;
+  yyextra->current->spec = SpecifierInterface;
   yyextra->current->name = name;
 
   switch (type)

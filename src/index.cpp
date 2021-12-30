@@ -430,7 +430,8 @@ static void writeClassTreeToOutput(OutputList &ol,const BaseClassList &bcl,int l
   for (const auto &bcd : bcl)
   {
     ClassDef *cd=bcd.classDef;
-    if (cd->getLanguage()==SrcLangExt_VHDL && (VhdlDocGen::VhdlClasses)cd->protection()!=VhdlDocGen::ENTITYCLASS)
+    Spec spec=cd->getClassSpecifier();
+    if (cd->getLanguage()==SrcLangExt_VHDL && (spec&SpecifierEntity)==0)
     {
       continue;
     }
@@ -792,7 +793,8 @@ static void writeClassTreeForList(OutputList &ol,const ClassLinkedMap &cl,bool &
     bool b;
     if (cd->getLanguage()==SrcLangExt_VHDL)
     {
-      if ((VhdlDocGen::VhdlClasses)cd->protection()!=VhdlDocGen::ENTITYCLASS)
+      Spec spec=cd->getClassSpecifier();
+      if ((spec&SpecifierEntity)==0)
       {
         continue;
       }
@@ -1527,13 +1529,12 @@ static void writeClassTree(const ListType &cl,FTVHelp *ftv,bool addToIndex,bool 
     ClassDefMutable *cdm = toClassDefMutable(cd);
     if (cdm && cd->getLanguage()==SrcLangExt_VHDL)
     {
-      if ((VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::PACKAGECLASS ||
-          (VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::PACKBODYCLASS
-         )// no architecture
+      Spec spec=cd->getClassSpecifier();
+      if ((spec&SpecifierPackage)!= 0 || (spec&SpecifierPackage_body)!= 0)// no architecture
       {
         continue;
       }
-      if ((VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::ARCHITECTURECLASS)
+      if (cd->getLanguage()==SrcLangExt_VHDL && (spec&SpecifierArchitecture)==0)
       {
         QCString n=cd->name();
         cdm->setClassName(n);
@@ -1947,9 +1948,9 @@ static void writeAnnotatedClassList(OutputList &ol,ClassDef::CompoundType ct)
 
   for (const auto &cd : *Doxygen::classLinkedMap)
   {
+    Spec spec=cd->getClassSpecifier();
     if (cd->getLanguage()==SrcLangExt_VHDL &&
-        ((VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::PACKAGECLASS ||
-         (VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::PACKBODYCLASS)
+        ((spec&SpecifierPackage)!= 0 || (spec&SpecifierPackage_body)!= 0)
        ) // no architecture
     {
       continue;
@@ -1977,8 +1978,8 @@ static void writeAnnotatedClassList(OutputList &ol,ClassDef::CompoundType ct)
       ol.startIndexKey();
       if (cd->getLanguage()==SrcLangExt_VHDL)
       {
-        QCString prot= VhdlDocGen::getProtectionName((VhdlDocGen::VhdlClasses)cd->protection());
-        ol.docify(prot);
+        QCString specName= VhdlDocGen::getSpecifierName(spec);
+        ol.docify(specName);
         ol.writeString(" ");
       }
       ol.writeObjectLink(QCString(),cd->getOutputFileBase(),cd->anchor(),cd->displayName());
@@ -2079,7 +2080,8 @@ static void writeAlphabeticalClassList(OutputList &ol, ClassDef::CompoundType ct
       continue;
     if (cd->isLinkableInProject() && cd->templateMaster()==0)
     {
-      if (cd->getLanguage()==SrcLangExt_VHDL && !((VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::ENTITYCLASS ))// no architecture
+      Spec spec=cd->getClassSpecifier();
+      if (cd->getLanguage()==SrcLangExt_VHDL && (spec&SpecifierEntity)==0)
         continue;
 
       // get the first UTF8 character (after the part that should be ignored)
@@ -2116,7 +2118,8 @@ static void writeAlphabeticalClassList(OutputList &ol, ClassDef::CompoundType ct
   {
     if (sliceOpt && cd->compoundType() != ct)
       continue;
-    if (cd->getLanguage()==SrcLangExt_VHDL && !((VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::ENTITYCLASS ))// no architecture
+    Spec spec=cd->getClassSpecifier();
+    if (cd->getLanguage()==SrcLangExt_VHDL && (spec&SpecifierEntity)==0)
       continue;
 
     if (cd->isLinkableInProject() && cd->templateMaster()==0)

@@ -68,46 +68,6 @@ struct VhdlConfNode
 class VhdlDocGen
 {
   public:
-
-    enum VhdlClasses       // Overlays: Protection
-    {
-      ENTITYCLASS,         // Overlays: Public
-      PACKBODYCLASS,       // Overlays: Protected
-      ARCHITECTURECLASS,   // Overlays: Private
-      PACKAGECLASS         // Overlays: Package
-    };
-
-    enum VhdlKeyWords
-    {
-      LIBRARY=1,
-      ENTITY,
-      PACKAGE_BODY,
-      ARCHITECTURE,
-      PACKAGE,
-      ATTRIBUTE,
-      SIGNAL,
-      COMPONENT,
-      CONSTANT,
-      TYPE,
-      SUBTYPE,
-      FUNCTION,
-      RECORD,
-      PROCEDURE,
-      USE,
-      PROCESS,
-      PORT,
-      UNITS,
-      GENERIC,
-      INSTANTIATION,
-      GROUP,
-      VFILE,
-      SHAREDVARIABLE,
-      CONFIG,
-      ALIAS,
-      MISCELLANEOUS,
-      UCF_CONST
-    };
-
     VhdlDocGen();
     virtual ~VhdlDocGen();
     static void init();
@@ -194,11 +154,11 @@ class VhdlDocGen
 
     static void writePlainVHDLDeclarations(const MemberList* ml,OutputList &ol,
         const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
-        uint64_t specifier);
+        Spec specifier);
 
     static void writeVHDLDeclarations(const MemberList* ml,OutputList &ol,
         const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
-        const QCString &title,const QCString &subtitle,bool showEnumValues,int type);
+        const QCString &title,const QCString &subtitle,bool showEnumValues,Spec type);
 
     static bool writeClassType(const ClassDef *,OutputList &ol ,QCString & cname);
 
@@ -208,7 +168,7 @@ class VhdlDocGen
 
     static QCString getClassName(const ClassDef*);
     static bool isNumber(const std::string& s);
-    static QCString getProtectionName(int prot);
+    static QCString getSpecifierName(Spec spec);
 
     static void parseUCF(const char*  input,Entry* entity,const QCString &f,bool vendor);
 
@@ -235,10 +195,10 @@ class VhdlDocGen
 
     static  bool isVhdlClass (const Entry *cu)
     {
-      return cu->spec==VhdlDocGen::ENTITY       ||
-             cu->spec==VhdlDocGen::PACKAGE      ||
-             cu->spec==VhdlDocGen::ARCHITECTURE ||
-             cu->spec==VhdlDocGen::PACKAGE_BODY;
+      return (cu->spec&SpecifierEntity)!=0       ||
+             (cu->spec&SpecifierPackage)!=0      ||
+             (cu->spec&SpecifierArchitecture)!=0 ||
+             (cu->spec&SpecifierPackage_body)!=0;
     }
 
   static void resetCodeVhdlParserState();

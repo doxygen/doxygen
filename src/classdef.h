@@ -360,6 +360,8 @@ class ClassDef : public Definition
 
     virtual QCString requiresClause() const = 0;
 
+    virtual Spec getClassSpecifier() const = 0;
+
     //-----------------------------------------------------------------------------------
     // --- count members ----
     //-----------------------------------------------------------------------------------
@@ -396,7 +398,7 @@ class ClassDefMutable : public DefinitionMutable, public ClassDef
     virtual void setIsStatic(bool b) = 0;
     virtual void setCompoundType(CompoundType t) = 0;
     virtual void setClassName(const QCString &name) = 0;
-    virtual void setClassSpecifier(uint64 spec) = 0;
+    virtual void setClassSpecifier(Spec spec) = 0;
     virtual void setTemplateArguments(const ArgumentList &al) = 0;
     virtual void setTemplateBaseClassNames(const TemplateNameMap &templateNames) = 0;
     virtual void setTemplateMaster(const ClassDef *tm) = 0;

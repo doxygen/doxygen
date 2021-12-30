@@ -5002,9 +5002,9 @@ class ClassListContext::Private : public GenericNodeListContext
     {
       for (const auto &cd : classLinkedMap)
       {
+        Spec spec=cd->getClassSpecifier();
         if (cd->getLanguage()==SrcLangExt_VHDL &&
-            ((VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::PACKAGECLASS ||
-             (VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::PACKBODYCLASS)
+            ((spec&SpecifierPackage)!= 0 || (spec&SpecifierPackage_body)!= 0)
            ) // no architecture
         {
           continue;
@@ -5075,9 +5075,9 @@ class ClassIndexContext::Private
       {
         for (const auto &cd : *Doxygen::classLinkedMap)
         {
+          Spec spec=cd->getClassSpecifier();
           if (cd->getLanguage()==SrcLangExt_VHDL &&
-              ((VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::PACKAGECLASS ||
-               (VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::PACKBODYCLASS)
+              ((spec&SpecifierPackage)!= 0 || (spec&SpecifierPackage_body)!= 0)
              ) // no architecture
           {
             continue;
@@ -5731,8 +5731,8 @@ class NestingContext::Private : public GenericNodeListContext
     {
       if (cd->getLanguage()==SrcLangExt_VHDL)
       {
-        if ((VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::PACKAGECLASS ||
-            (VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::PACKBODYCLASS
+        Spec spec=cd->getClassSpecifier();
+        if ((spec&SpecifierPackage)!= 0 || (spec&SpecifierPackage_body)!= 0
            )// no architecture
         {
           return;
@@ -5893,7 +5893,8 @@ class NestingContext::Private : public GenericNodeListContext
       for (const auto &bcd : bcl)
       {
         const ClassDef *cd=bcd.classDef;
-        if (cd->getLanguage()==SrcLangExt_VHDL && (VhdlDocGen::VhdlClasses)cd->protection()!=VhdlDocGen::ENTITYCLASS)
+        Spec spec=cd->getClassSpecifier();
+        if (cd->getLanguage()==SrcLangExt_VHDL && (spec&SpecifierEntity)==0)
         {
           continue;
         }
@@ -5923,7 +5924,8 @@ class NestingContext::Private : public GenericNodeListContext
         bool b;
         if (cd->getLanguage()==SrcLangExt_VHDL)
         {
-          if ((VhdlDocGen::VhdlClasses)cd->protection()!=VhdlDocGen::ENTITYCLASS)
+          Spec spec=cd->getClassSpecifier();
+          if ((spec&SpecifierEntity)==0)
           {
             continue;
           }
