@@ -353,23 +353,30 @@ void HtmlDocVisitor::visit(DocEmoji *s)
 
 void HtmlDocVisitor::writeObfuscatedMailAddress(const QCString &url)
 {
-  m_t << "<a href=\"#\" onclick=\"location.href='mai'+'lto:'";
-  if (!url.isEmpty())
+  if (!Config_getBool(OBFUSCATE_EMAILS))
   {
-    const char *p = url.data();
-    uint size=3;
-    while (*p)
-    {
-      m_t << "+'";
-      for (uint j=0;j<size && *p;j++)
-      {
-        p = writeUTF8Char(m_t,p);
-      }
-      m_t << "'";
-      if (size==3) size=2; else size=3;
-    }
+    m_t << "<a href=\"mailto:" << url << "\">";
   }
-  m_t << "; return false;\">";
+  else
+  {
+    m_t << "<a href=\"#\" onclick=\"location.href='mai'+'lto:'";
+    if (!url.isEmpty())
+    {
+      const char *p = url.data();
+      uint size=3;
+      while (*p)
+      {
+        m_t << "+'";
+        for (uint j=0;j<size && *p;j++)
+        {
+          p = writeUTF8Char(m_t,p);
+        }
+        m_t << "'";
+        if (size==3) size=2; else size=3;
+      }
+    }
+    m_t << "; return false;\">";
+  }
 }
 
 void HtmlDocVisitor::visit(DocURL *u)
@@ -380,17 +387,24 @@ void HtmlDocVisitor::visit(DocURL *u)
     QCString url = u->url();
     // obfuscate the mail address link
     writeObfuscatedMailAddress(url);
-    const char *p = url.data();
-    // also obfuscate the address as shown on the web page
-    uint size=5;
-    while (*p)
+    if (!Config_getBool(OBFUSCATE_EMAILS))
     {
-      for (uint j=0;j<size && *p;j++)
+      m_t << url;
+    }
+    else
+    {
+      const char *p = url.data();
+      // also obfuscate the address as shown on the web page
+      uint size=5;
+      while (*p)
       {
-        p = writeUTF8Char(m_t,p);
+        for (uint j=0;j<size && *p;j++)
+        {
+          p = writeUTF8Char(m_t,p);
+        }
+        if (*p) m_t << "<span style=\"display: none;\">.nosp@m.</span>";
+        if (size==5) size=4; else size=5;
       }
-      if (*p) m_t << "<span style=\"display: none;\">.nosp@m.</span>";
-      if (size==5) size=4; else size=5;
     }
     m_t << "</a>";
   }
