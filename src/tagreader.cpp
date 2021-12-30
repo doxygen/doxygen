@@ -112,7 +112,7 @@ class TagCompoundInfo
     QCString name;
     QCString filename;
     std::vector<TagAnchorInfo> docAnchors;
-    int lineNr;
+    int lineNr = 0;
   private:
     CompoundType m_type;
 };
