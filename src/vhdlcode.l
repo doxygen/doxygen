@@ -112,6 +112,9 @@ struct vhdlcodeYY_state
   bool          lexInit = false;
   int           braceCount = 0;
   TooltipManager tooltipManager;
+
+  QCString      commentBlock;
+  int           commentContext;
 };
 
 
@@ -205,6 +208,7 @@ XILINX      "INST"|"NET"|"PIN"|"BLKNM"|"BUFG"|"COLLAPSE"|"CPLD"|"COMPGRP"|"CONFI
 %option nounput
 
 %x Bases
+%x Comment
 %x ParseType
 %x ParseFuncProto
 %x ParseComponent
@@ -870,6 +874,48 @@ XILINX      "INST"|"NET"|"PIN"|"BLKNM"|"BUFG"|"COLLAPSE"|"CPLD"|"COMPGRP"|"CONFI
 <Bases>^{B}*"set_"[^\n]*            {
                                       writeWord(yyscanner,yytext);
                                     }
+<Comment>[^*]*                      {
+                                      yyextra->commentBlock += yytext;
+                                    }
+<Comment>"*"                        {
+                                      yyextra->commentBlock += yytext;
+                                    }
+<Comment>"\n"                       {
+                                      yyextra->commentBlock += yytext;
+                                    }
+<Comment>"*/"                       {
+                                      yyextra->commentBlock += yytext;
+                                      int i=yyextra->commentBlock.find("/*");
+                                      if (yyextra->commentBlock.mid(i,3)=="/*!") /* VHDL only supports "!" type of doxygen ccomments */
+                                      {
+                                        // hide special comment
+                                        if (!Config_getBool(STRIP_CODE_COMMENTS))
+                                        {
+                                          codifyLines(yyscanner,yyextra->commentBlock,0,false,true);
+                                        }
+                                      }
+                                      else // normal comment
+                                      {
+                                        codifyLines(yyscanner,yyextra->commentBlock,0,false,true);
+                                      }
+                                      BEGIN(yyextra->commentContext);
+                                    }
+<Comment><<EOF>>                    { // warning has already been given in the scanner / "jjparser"
+                                      int i=yyextra->commentBlock.find("/*");
+                                      if ((yyextra->commentBlock.mid(i,3)=="/*!") || (yyextra->commentBlock.mid(i,3)=="/**"))
+                                      {
+                                        // hide special comment
+                                        if (!Config_getBool(STRIP_CODE_COMMENTS))
+                                        {
+                                          codifyLines(yyscanner,yyextra->commentBlock,0,false,true);
+                                        }
+                                      }
+                                      else // normal comment
+                                      {
+                                        codifyLines(yyscanner,yyextra->commentBlock,0,false,true);
+                                      }
+                                      BEGIN(yyextra->commentContext);
+                                    }
 
 <*>\n                               {
                                       codifyLines(yyscanner,yytext);
@@ -883,10 +929,15 @@ XILINX      "INST"|"NET"|"PIN"|"BLKNM"|"BUFG"|"COLLAPSE"|"CPLD"|"COMPGRP"|"CONFI
                                       yyextra->code->codify(yytext);
                                     }
 
+<*>"/*"                             {
+                                      yyextra->commentBlock = yytext;
+                                      yyextra->commentContext = YY_START;
+                                      BEGIN(Comment);
+                                    }
 <*>\n{TEXTT}                        { // found normal or special comment on its own line
                                       QCString text(yytext);
                                       int i=text.find("--");
-                                      if (text.mid(i,3)=="--!") // && // hide special comment
+                                      if ((text.mid(i,3)=="--!") || (text.mid(i,3)=="--#")) // hide special comment
                                       {
                                         if (!Config_getBool(STRIP_CODE_COMMENTS))
                                         {
@@ -902,7 +953,7 @@ XILINX      "INST"|"NET"|"PIN"|"BLKNM"|"BUFG"|"COLLAPSE"|"CPLD"|"COMPGRP"|"CONFI
 <*>{TEXTT}                          { // found normal or special comment after something
                                       QCString text(yytext);
                                       int i=text.find("--");
-                                      if (text.mid(i,3)=="--!")
+                                      if ((text.mid(i,3)=="--!") || (text.mid(i,3)=="--#")) // hide special comment
                                       {
                                         // hide special comment
                                         if (!Config_getBool(STRIP_CODE_COMMENTS))
