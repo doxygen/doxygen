@@ -200,6 +200,7 @@ class LayoutDocManager
   public:
     enum LayoutPart
     {
+      Undefined = -1,
       Class, Concept, Namespace, File, Group, Directory,
       NrParts
     };

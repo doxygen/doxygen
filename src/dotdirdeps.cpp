@@ -66,16 +66,16 @@ static QCString getDirectoryBackgroundColor(int depthIndex)
   static int sat   = Config_getInt(HTML_COLORSTYLE_SAT);
   static int gamma = Config_getInt(HTML_COLORSTYLE_GAMMA);
   assert(depthIndex>=0 && depthIndex<=Config_getInt(DIR_GRAPH_MAX_DEPTH));
-  float fraction = (float)depthIndex/(float)Config_getInt(DIR_GRAPH_MAX_DEPTH);
+  float fraction = static_cast<float>(depthIndex)/static_cast<float>(Config_getInt(DIR_GRAPH_MAX_DEPTH));
   const char hex[] = "0123456789abcdef";
   int range = 0x40; // range from darkest color to lightest color
-  int luma   = 0xef-(int)(fraction*range); // interpolation
+  int luma   = 0xef-static_cast<int>(fraction*range); // interpolation
   double r,g,b;
   ColoredImage::hsl2rgb(hue/360.0,sat/255.0,
                         pow(luma/255.0,gamma/100.0),&r,&g,&b);
-  int red   = (int)(r*255.0);
-  int green = (int)(g*255.0);
-  int blue  = (int)(b*255.0);
+  int red   = static_cast<int>(r*255.0);
+  int green = static_cast<int>(g*255.0);
+  int blue  = static_cast<int>(b*255.0);
   assert(red>=0   && red<=255);
   assert(green>=0 && green<=255);
   assert(blue>=0  && blue<=255);
@@ -383,7 +383,7 @@ void writeDotDirDepGraph(TextStream &t,const DirDef *dd,bool linkRelations)
         size_t nrefs = udir->filePairs().size();
         t << "  " << dir->getOutputFileBase() << "->"
           << usedDir->getOutputFileBase();
-        t << " [headlabel=\"" << (uint)nrefs << "\", labeldistance=1.5";
+        t << " [headlabel=\"" << static_cast<uint>(nrefs) << "\", labeldistance=1.5";
         if (linkRelations)
         {
           t << " headhref=\"" << addHtmlExtensionIfMissing(relationName) << "\"";

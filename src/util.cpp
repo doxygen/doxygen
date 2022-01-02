@@ -182,7 +182,7 @@ QCString removeAnonymousScopes(const QCString &str)
   // helper to check if the found delimiter ends with a colon
   auto endsWithColon = [](const std::string &del)
   {
-    for (int i=(int)del.size()-1;i>=0;i--)
+    for (int i=static_cast<int>(del.size())-1;i>=0;i--)
     {
       if (del[i]=='@') return false;
       else if (del[i]==':') return true;
@@ -552,11 +552,11 @@ QCString removeRedundantWhiteSpace(const QCString &s)
   // improve the performance of this function
   // and thread_local is needed to make it multi-thread safe
   static THREAD_LOCAL char *growBuf = 0;
-  static THREAD_LOCAL int growBufLen = 0;
-  if ((int)s.length()*3>growBufLen) // For input character we produce at most 3 output characters,
+  static THREAD_LOCAL size_t growBufLen = 0;
+  if (s.length()*3>growBufLen) // For input character we produce at most 3 output characters,
   {
     growBufLen = s.length()*3;
-    growBuf = (char *)realloc(growBuf,growBufLen+1); // add 1 for 0-terminator
+    growBuf = static_cast<char *>(realloc(growBuf,growBufLen+1)); // add 1 for 0-terminator
   }
   if (growBuf==0) return s; // should not happen, only we run out of memory
 
@@ -572,7 +572,7 @@ QCString removeRedundantWhiteSpace(const QCString &s)
   char c;
   char pc=0;
   // skip leading whitespace
-  while (i<l && isspace((uchar)src[i]))
+  while (i<l && isspace(static_cast<uchar>(src[i])))
   {
     i++;
   }
@@ -661,7 +661,7 @@ QCString removeRedundantWhiteSpace(const QCString &s)
         }
         break;
       case '>': // current char is a >
-        if (i>0 && !isspace((uchar)pc) &&
+        if (i>0 && !isspace(static_cast<uchar>(pc)) &&
             (isId(pc) || pc=='*' || pc=='&' || pc=='.' || pc=='>') && // prev char is an id char or space or *&.
             (osp<8 || (osp==8 && pc!='-')) // string in front is not "operator>" or "operator->"
            )
@@ -676,7 +676,7 @@ QCString removeRedundantWhiteSpace(const QCString &s)
         break;
       case ',': // current char is a ,
         *dst++=c;
-        if (i>0 && !isspace((uchar)pc) &&
+        if (i>0 && !isspace(static_cast<uchar>(pc)) &&
             ((i<l-1 && (isId(nc) || nc=='[')) || // the [ is for attributes (see bug702170)
              (i<l-2 && nc=='$' && isId(src[i+2])) ||   // for PHP: ',$name' -> ', $name'
              (i<l-3 && nc=='&' && src[i+2]=='$' && isId(src[i+3])) // for PHP: ',&$name' -> ', &$name'
@@ -733,7 +733,7 @@ QCString removeRedundantWhiteSpace(const QCString &s)
         // else fallthrough
       case '@':  // '@name' -> ' @name'
       case '\'': // ''name' -> '' name'
-        if (i>0 && i<l-1 && pc!='=' && pc!=':' && !isspace((uchar)pc) &&
+        if (i>0 && i<l-1 && pc!='=' && pc!=':' && !isspace(static_cast<uchar>(pc)) &&
             isId(nc) && osp<8) // ")id" -> ") id"
         {
           *dst++=' ';
@@ -762,8 +762,8 @@ QCString removeRedundantWhiteSpace(const QCString &s)
       case '\n': // fallthrough
       case '\t':
         {
-          if (g_charAroundSpace.charMap[(uchar)pc].before &&
-              g_charAroundSpace.charMap[(uchar)nc].after  &&
+          if (g_charAroundSpace.charMap[static_cast<uchar>(pc)].before &&
+              g_charAroundSpace.charMap[static_cast<uchar>(nc)].after  &&
               !(pc==',' && nc=='.') &&
               (osp<8 || (osp>=8 && isId(pc) && isId(nc)))
                   // e.g.    'operator >>' -> 'operator>>',
@@ -782,21 +782,21 @@ QCString removeRedundantWhiteSpace(const QCString &s)
       default:
         *dst++=c;
         if (c=='t' && csp==5 && i<l-1 && // found 't' in 'const'
-             !(isId(nc) || nc==')' || nc==',' || isspace((uchar)nc))
+             !(isId(nc) || nc==')' || nc==',' || isspace(static_cast<uchar>(nc)))
            ) // prevent const ::A from being converted to const::A
         {
           *dst++=' ';
           csp=0;
         }
         else if (c=='e' && vosp==8 && i<l-1 && // found 'e' in 'volatile'
-             !(isId(nc) || nc==')' || nc==',' || isspace((uchar)nc))
+             !(isId(nc) || nc==')' || nc==',' || isspace(static_cast<uchar>(nc)))
            ) // prevent volatile ::A from being converted to volatile::A
         {
           *dst++=' ';
           vosp=0;
         }
         else if (c=='l' && vsp==7 && i<l-1 && // found 'l' in 'virtual'
-             !(isId(nc) || nc==')' || nc==',' || isspace((uchar)nc))
+             !(isId(nc) || nc==')' || nc==',' || isspace(static_cast<uchar>(nc)))
             ) // prevent virtual ::A from being converted to virtual::A
         {
           *dst++=' ';
@@ -1108,7 +1108,7 @@ void writeMarkerList(OutputList &ol,const std::string &markerText,size_t numMark
     size_t matchLen = match.length();
     ol.parseText(markerText.substr(index,newIndex-index));
     unsigned long entryIndex = std::stoul(match[1].str());
-    if (entryIndex<(unsigned long)numMarkers)
+    if (entryIndex<static_cast<unsigned long>(numMarkers))
     {
       replaceFunc(entryIndex);
     }
@@ -1140,7 +1140,7 @@ void writeExamples(OutputList &ol,const ExampleList &list)
     ol.popGeneratorState();
   };
 
-  writeMarkerList(ol, theTranslator->trWriteList((int)list.size()).str(), list.size(), replaceFunc);
+  writeMarkerList(ol, theTranslator->trWriteList(static_cast<int>(list.size())).str(), list.size(), replaceFunc);
 
   ol.writeString(".");
 }
@@ -1247,10 +1247,10 @@ QCString tempArgListToString(const ArgumentList &al,SrcLangExt lang,bool include
  * converted content (i.e. the same as \a len (Unix, MAC) or
  * smaller (DOS).
  */
-static int filterCRLF(char *buf,int len)
+static size_t filterCRLF(char *buf,size_t len)
 {
-  int src = 0;    // source index
-  int dest = 0;   // destination index
+  size_t src = 0;    // source index
+  size_t dest = 0;   // destination index
   char c;         // current character
 
   while (src<len)
@@ -1357,7 +1357,7 @@ QCString transcodeCharacterStringToUTF8(const QCString &input)
   int outputSize=inputSize*4+1;
   QCString output(outputSize);
   void *cd = portable_iconv_open(outputEncoding,inputEncoding.data());
-  if (cd==(void *)(-1))
+  if (cd==reinterpret_cast<void *>(-1))
   {
     err("unsupported character conversion: '%s'->'%s'\n",
         qPrint(inputEncoding),outputEncoding);
@@ -1371,7 +1371,7 @@ QCString transcodeCharacterStringToUTF8(const QCString &input)
     char *outputPtr = output.rawData();
     if (!portable_iconv(cd, &inputPtr, &iLeft, &outputPtr, &oLeft))
     {
-      outputSize-=(int)oLeft;
+      outputSize-=static_cast<int>(oLeft);
       output.resize(outputSize+1);
       output.at(outputSize)='\0';
       //printf("iconv: input size=%d output size=%d\n[%s]\n",size,newSize,qPrint(srcBuf));
@@ -1414,11 +1414,11 @@ QCString fileToString(const QCString &name,bool filter,bool isSourceCode)
       err("file '%s' not found\n",qPrint(name));
       return "";
     }
-    BufStr buf((uint)fi.size());
+    BufStr buf(fi.size());
     fileOpened=readInputFile(name,buf,filter,isSourceCode);
     if (fileOpened)
     {
-      int s = buf.size();
+      size_t s = buf.size();
       if (s>1 && buf.at(s-2)!='\n')
       {
         buf.at(s-1)='\n';
@@ -1517,7 +1517,7 @@ static void stripIrrelevantString(QCString &target,const QCString &str)
   while ((i=target.find(str,p))!=-1)
   {
     bool isMatch = (i==0 || !isId(target.at(i-1))) && // not a character before str
-      (i+l==(int)target.length() || !isId(target.at(i+l))); // not a character after str
+      (i+l==static_cast<int>(target.length()) || !isId(target.at(i+l))); // not a character after str
     if (isMatch)
     {
       int i1=target.find('*',i+l);
@@ -2246,7 +2246,7 @@ bool getDefs(const QCString &scName,
   if (memberName.left(9)!="operator " && // treat operator conversion methods
       // as a special case
       (im=memberName.findRev("::"))!=-1 &&
-      im<(int)memberName.length()-2 // not A::
+      im<static_cast<int>(memberName.length())-2 // not A::
      )
   {
     mScope=memberName.left(im);
@@ -2745,9 +2745,9 @@ static bool getScopeDefs(const QCString &docScope,const QCString &scope,
 static bool isLowerCase(QCString &s)
 {
   if (s.isEmpty()) return true;
-  uchar *p=(uchar*)s.data();
+  const char *p=s.data();
   int c;
-  while ((c=*p++)) if (!islower(c)) return false;
+  while ((c=static_cast<uchar>(*p++))) if (!islower(c)) return false;
   return true;
 }
 
@@ -3228,7 +3228,7 @@ FileDef *findFileDef(const FileNameLinkedMap *fnMap,const QCString &n,bool &ambi
 
   const int maxAddrSize = 20;
   char addr[maxAddrSize];
-  qsnprintf(addr,maxAddrSize,"%p:",(void*)fnMap);
+  qsnprintf(addr,maxAddrSize,"%p:",reinterpret_cast<const void*>(fnMap));
   QCString key = addr;
   key+=n;
 
@@ -3496,7 +3496,7 @@ QCString escapeCharsInString(const QCString &name,bool allowDots,bool allowUnder
                   if (doEscape) // not a valid unicode char or escaping needed
                   {
                     char ids[5];
-                    unsigned char id = (unsigned char)c;
+                    unsigned char id = static_cast<unsigned char>(c);
                     ids[0]='_';
                     ids[1]='x';
                     ids[2]=hex[id>>4];
@@ -3512,7 +3512,7 @@ QCString escapeCharsInString(const QCString &name,bool allowDots,bool allowUnder
                 else
                 {
                   growBuf.addChar('_');
-                  growBuf.addChar((char)tolower(c));
+                  growBuf.addChar(static_cast<char>(tolower(c)));
                 }
                 break;
     }
@@ -3574,7 +3574,7 @@ QCString unescapeCharsInString(const QCString &s)
           default:
             if (!caseSenseNames && c>='a' && c<='z') // lower to upper case escape, _a -> 'A'
             {
-              result+=(char)toupper(*p);
+              result+=static_cast<char>(toupper(*p));
               p++;
             }
             else // unknown escape, pass underscore character as-is
@@ -3632,7 +3632,7 @@ QCString convertNameToFile(const QCString &name,bool allowDots,bool allowUndersc
       // third algorithm based on MD5 hash
       uchar md5_sig[16];
       char sigStr[33];
-      MD5Buffer((const unsigned char *)result.data(),resultLen,md5_sig);
+      MD5Buffer(result.data(),resultLen,md5_sig);
       MD5SigToString(md5_sig,sigStr);
       result=result.left(128-32)+sigStr;
     }
@@ -3643,7 +3643,7 @@ QCString convertNameToFile(const QCString &name,bool allowDots,bool allowUndersc
 
     // compute md5 hash to determine sub directory to use
     uchar md5_sig[16];
-    MD5Buffer((const unsigned char *)result.data(),result.length(),md5_sig);
+    MD5Buffer(result.data(),result.length(),md5_sig);
     l1Dir = md5_sig[14]&0xf;
     l2Dir = md5_sig[15];
 
@@ -3923,8 +3923,8 @@ QCString convertToId(const QCString &s)
     else
     {
       encChar[0]='_';
-      encChar[1]=hex[((unsigned char)c)>>4];
-      encChar[2]=hex[((unsigned char)c)&0xF];
+      encChar[1]=hex[static_cast<unsigned char>(c)>>4];
+      encChar[2]=hex[static_cast<unsigned char>(c)&0xF];
       encChar[3]=0;
       growBuf.addStr(encChar);
     }
@@ -4000,9 +4000,9 @@ QCString convertToDocBook(const QCString &s, const bool retainNewline)
 {
   if (s.isEmpty()) return s;
   GrowBuf growBuf;
-  const unsigned char *q;
+  const char *q;
   int cnt;
-  const unsigned char *p=(const unsigned char *)s.data();
+  const char *p=s.data();
   char c;
   while ((c=*p++))
   {
@@ -4022,7 +4022,7 @@ QCString convertToDocBook(const QCString &s, const bool retainNewline)
         if (*q == ';')
         {
            --p; // we need & as well
-           DocSymbol::SymType res = HtmlEntityMapper::instance()->name2sym(QCString((char *)p).left(cnt));
+           DocSymbol::SymType res = HtmlEntityMapper::instance()->name2sym(QCString(p).left(cnt));
            if (res == DocSymbol::Sym_Unknown)
            {
              p++;
@@ -4345,7 +4345,7 @@ int extractClassNameFromType(const QCString &type,int &pos,QCString &name,QCStri
   name.resize(0);
   templSpec.resize(0);
   if (type.isEmpty()) return -1;
-  int typeLen=(int)type.length();
+  size_t typeLen=type.length();
   if (typeLen>0)
   {
     if (lang == SrcLangExt_Fortran)
@@ -4357,17 +4357,17 @@ int extractClassNameFromType(const QCString &type,int &pos,QCString &name,QCStri
       }
     }
     std::string s = type.str();
-    reg::Iterator it(s,*re,(int)pos);
+    reg::Iterator it(s,*re,static_cast<int>(pos));
     reg::Iterator end;
 
     if (it!=end)
     {
       const auto &match = *it;
-      int i = (int)match.position();
-      int l = (int)match.length();
-      int ts = i+l;
-      int te = ts;
-      int tl = 0;
+      size_t i = match.position();
+      size_t l = match.length();
+      size_t ts = i+l;
+      size_t te = ts;
+      size_t tl = 0;
 
       while (ts<typeLen && type[ts]==' ') ts++,tl++; // skip any whitespace
       if (ts<typeLen && type[ts]=='<') // assume template instance
@@ -4401,7 +4401,7 @@ int extractClassNameFromType(const QCString &type,int &pos,QCString &name,QCStri
       }
       //printf("extractClassNameFromType([in] type=%s,[out] pos=%d,[out] name=%s,[out] templ=%s)=TRUE i=%d\n",
       //    qPrint(type),pos,qPrint(name),qPrint(templSpec),i);
-      return i;
+      return static_cast<int>(i);
     }
   }
   pos = typeLen;
@@ -4937,14 +4937,14 @@ void filterLatexString(TextStream &t,const QCString &str,
 {
   if (str.isEmpty()) return;
   //if (strlen(str)<2) stackTrace();
-  const unsigned char *p=(const unsigned char *)str.data();
-  const unsigned char *q;
+  const char *p=str.data();
+  const char *q;
   int cnt;
   unsigned char c;
   unsigned char pc='\0';
   while (*p)
   {
-    c=*p++;
+    c=static_cast<unsigned char>(*p++);
 
     if (insidePre)
     {
@@ -4952,13 +4952,13 @@ void filterLatexString(TextStream &t,const QCString &str,
       {
         case 0xef: // handle U+FFFD i.e. "Replacement character" caused by octal: 357 277 275 / hexadecimal 0xef 0xbf 0xbd
                    // the LaTeX command \ucr has been defined in doxygen.sty
-          if ((unsigned char)*(p) == 0xbf && (unsigned char)*(p+1) == 0xbd)
+          if (static_cast<unsigned char>(*(p)) == 0xbf && static_cast<unsigned char>(*(p+1)) == 0xbd)
           {
             t << "{\\ucr}";
             p += 2;
           }
           else
-            t << (char)c;
+            t << static_cast<char>(c);
           break;
         case '\\': t << "\\(\\backslash\\)"; break;
         case '{':  t << "\\{"; break;
@@ -4970,7 +4970,7 @@ void filterLatexString(TextStream &t,const QCString &str,
         case '$':  t << "\\$"; break;
         case '"':  t << "\"{}"; break;
         case '-':  t << "-\\/"; break;
-        case '^':  insideTable ? t << "\\string^" : t << (char)c;    break;
+        case '^':  insideTable ? t << "\\string^" : t << static_cast<char>(c);    break;
         case '~':  t << "\\string~";    break;
         case '\n':  if (retainNewline) t << "\\newline"; else t << ' ';
                    break;
@@ -4978,7 +4978,7 @@ void filterLatexString(TextStream &t,const QCString &str,
                    break;
         default:
                    if (c<32) t << ' '; // non printable control character
-                   else t << (char)c;
+                   else t << static_cast<char>(c);
                    break;
       }
     }
@@ -4988,13 +4988,13 @@ void filterLatexString(TextStream &t,const QCString &str,
       {
         case 0xef: // handle U+FFFD i.e. "Replacement character" caused by octal: 357 277 275 / hexadecimal 0xef 0xbf 0xbd
                    // the LaTeX command \ucr has been defined in doxygen.sty
-          if ((unsigned char)*(p) == 0xbf && (unsigned char)*(p+1) == 0xbd)
+          if (static_cast<unsigned char>(*(p)) == 0xbf && static_cast<unsigned char>(*(p+1)) == 0xbd)
           {
             t << "{\\ucr}";
             p += 2;
           }
           else
-            t << (char)c;
+            t << static_cast<char>(c);
           break;
         case '#':  t << "\\#";           break;
         case '$':  t << "\\$";           break;
@@ -5011,7 +5011,7 @@ void filterLatexString(TextStream &t,const QCString &str,
                    if (*q == ';')
                    {
                       --p; // we need & as well
-                      DocSymbol::SymType res = HtmlEntityMapper::instance()->name2sym(QCString((char *)p).left(cnt));
+                      DocSymbol::SymType res = HtmlEntityMapper::instance()->name2sym(QCString(p).left(cnt));
                       if (res == DocSymbol::Sym_Unknown)
                       {
                         p++;
@@ -5080,7 +5080,7 @@ void filterLatexString(TextStream &t,const QCString &str,
                    }
                    else
                    {
-                     t << (char)c;
+                     t << static_cast<char>(c);
                    }
       }
     }
@@ -5203,7 +5203,7 @@ QCString latexFilterURL(const QCString &s)
 {
   if (s.isEmpty()) return s;
   TextStream t;
-  const signed char *p=(const signed char*)s.data();
+  const char *p=s.data();
   char c;
   while ((c=*p++))
   {
@@ -5215,7 +5215,7 @@ QCString latexFilterURL(const QCString &s)
       default:
         if (c<0)
         {
-          unsigned char id = (unsigned char)c;
+          unsigned char id = static_cast<unsigned char>(c);
           t << "\\%" << hex[id>>4] << hex[id&0xF];
         }
         else
@@ -5468,7 +5468,7 @@ g_lang2extMap[] =
   { "sql",         "sql",           SrcLangExt_SQL,      ".sql" },
   { "md",          "md",            SrcLangExt_Markdown, ".md"  },
   { "lex",         "lex",           SrcLangExt_Lex,      ".l"   },
-  { 0,             0,              (SrcLangExt)0,        0      }
+  { 0,             0,               static_cast<SrcLangExt>(0),0}
 };
 
 bool updateLanguageMapping(const QCString &extension,const QCString &language)
@@ -5587,7 +5587,7 @@ SrcLangExt getLanguageFromFileName(const QCString& fileName, SrcLangExt defLang)
   if (it!=g_extLookup.end()) // listed extension
   {
     //printf("getLanguageFromFileName(%s)=%x\n",qPrint(fi.extension()),*pVal);
-    return (SrcLangExt)it->second;
+    return static_cast<SrcLangExt>(it->second);
   }
   //printf("getLanguageFromFileName(%s) not found!\n",qPrint(fileName));
   return defLang; // not listed => assume C-ish language.
@@ -5699,17 +5699,17 @@ bool checkIfTypedef(const Definition *scope,const FileDef *fileScope,const QCStr
 static int nextUTF8CharPosition(const QCString &utf8Str,uint len,uint startPos)
 {
   if (startPos>=len) return len;
-  uchar c = (uchar)utf8Str[startPos];
+  uchar c = static_cast<uchar>(utf8Str[startPos]);
   int bytes=getUTF8CharNumBytes(c);
   if (c=='&') // skip over character entities
   {
     bytes=1;
     int (*matcher)(int) = 0;
-    c = (uchar)utf8Str[startPos+bytes];
+    c = static_cast<uchar>(utf8Str[startPos+bytes]);
     if (c=='#') // numerical entity?
     {
       bytes++;
-      c = (uchar)utf8Str[startPos+bytes];
+      c = static_cast<uchar>(utf8Str[startPos+bytes]);
       if (c=='x') // hexadecimal entity?
       {
         bytes++;
@@ -5727,7 +5727,7 @@ static int nextUTF8CharPosition(const QCString &utf8Str,uint len,uint startPos)
     }
     if (matcher)
     {
-      while ((c = (uchar)utf8Str[startPos+bytes])!=0 && matcher(c))
+      while ((c = static_cast<uchar>(utf8Str[startPos+bytes]))!=0 && matcher(c))
       {
         bytes++;
       }
@@ -5749,7 +5749,7 @@ QCString parseCommentAsText(const Definition *scope,const MemberDef *md,
   std::unique_ptr<IDocParser> parser { createDocParser() };
   std::unique_ptr<DocRoot>    root   { validatingParseDoc(*parser.get(),
                                        fileName,lineNr,
-                                       (Definition*)scope,(MemberDef*)md,doc,FALSE,FALSE,
+                                       const_cast<Definition*>(scope),const_cast<MemberDef*>(md),doc,FALSE,FALSE,
                                        QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT)) };
   auto visitor = std::make_unique<TextDocVisitor>(t);
   root->accept(visitor.get());
@@ -5788,10 +5788,10 @@ static QCString expandAliasRec(StringUnorderedSet &aliasesProcessed,
 
 struct Marker
 {
-  Marker(int p, int n,int s) : pos(p),number(n),size(s) {}
-  int pos; // position in the string
+  Marker(size_t p, int n,size_t s) : pos(p),number(n),size(s) {}
+  size_t pos; // position in the string
   int number; // argument number
-  int size; // size of the marker
+  size_t size; // size of the marker
 };
 
 /** For a string \a s that starts with a command name, returns the character
@@ -5817,7 +5817,7 @@ static int findEndOfCommand(const char *s)
       QCString args = extractAliasArgs(p,0);
       i+=args.length();
     }
-    i+=(int)(p-s);
+    i+=static_cast<int>(p-s);
   }
   return i;
 }
@@ -5833,8 +5833,8 @@ static QCString replaceAliasArguments(StringUnorderedSet &aliasesProcessed,
 
   // first make a list of arguments from the comma separated argument list
   std::vector<QCString> args;
-  int i,l=(int)argList.length();
-  int s=0;
+  size_t i,l=argList.length();
+  size_t s=0;
   for (i=0;i<l;i++)
   {
     char c = argList.at(i);
@@ -5857,7 +5857,7 @@ static QCString replaceAliasArguments(StringUnorderedSet &aliasesProcessed,
   l = aliasValue.length();
   char pc='\0';
   bool insideMarkerId=false;
-  int markerStart=0;
+  size_t markerStart=0;
   auto isDigit = [](char c) { return c>='0' && c<='9'; };
   for (i=0;i<=l;i++)
   {
@@ -5865,7 +5865,7 @@ static QCString replaceAliasArguments(StringUnorderedSet &aliasesProcessed,
     if (insideMarkerId && !isDigit(c)) // found end of a markerId
     {
       insideMarkerId = false;
-      int markerLen = i-markerStart;
+      size_t markerLen = i-markerStart;
       markerList.push_back(Marker(markerStart-1,
                                   aliasValue.mid(markerStart,markerLen).toInt(),
                                   markerLen+1));
@@ -5888,13 +5888,13 @@ static QCString replaceAliasArguments(StringUnorderedSet &aliasesProcessed,
 
   // then we replace the markers with the corresponding arguments in one pass
   QCString result;
-  int p=0;
-  for (i=0;i<(int)markerList.size();i++)
+  size_t p=0;
+  for (i=0;i<markerList.size();i++)
   {
     const Marker &m = markerList.at(i);
     result+=aliasValue.mid(p,m.pos-p);
     //printf("part before marker %d: '%s'\n",i,qPrint(aliasValue.mid(p,m->pos-p)));
-    if (m.number>0 && m.number<=(int)args.size()) // valid number
+    if (m.number>0 && m.number<=static_cast<int>(args.size())) // valid number
     {
       result+=expandAliasRec(aliasesProcessed,args.at(m.number-1),TRUE);
       //printf("marker index=%d pos=%d number=%d size=%d replacement %s\n",i,m->pos,m->number,m->size,
@@ -6130,22 +6130,22 @@ static int transcodeCharacterBuffer(const QCString &fileName,BufStr &srcBuf,int 
   if (inputEncoding.isEmpty() || outputEncoding.isEmpty()) return size;
   if (qstricmp(inputEncoding,outputEncoding)==0) return size;
   void *cd = portable_iconv_open(outputEncoding.data(),inputEncoding.data());
-  if (cd==(void *)(-1))
+  if (cd==reinterpret_cast<void *>(-1))
   {
     term("unsupported character conversion: '%s'->'%s': %s\n"
         "Check the INPUT_ENCODING setting in the config file!\n",
         qPrint(inputEncoding),qPrint(outputEncoding),strerror(errno));
   }
-  int tmpBufSize=size*4+1;
+  size_t tmpBufSize=size*4+1;
   BufStr tmpBuf(tmpBufSize);
   size_t iLeft=size;
   size_t oLeft=tmpBufSize;
   const char *srcPtr = srcBuf.data();
   char *dstPtr = tmpBuf.data();
-  uint newSize=0;
+  size_t newSize=0;
   if (!portable_iconv(cd, &srcPtr, &iLeft, &dstPtr, &oLeft))
   {
-    newSize = tmpBufSize-(int)oLeft;
+    newSize = tmpBufSize-oLeft;
     srcBuf.shrink(newSize);
     strncpy(srcBuf.data(),tmpBuf.data(),newSize);
     //printf("iconv: input size=%d output size=%d\n[%s]\n",size,newSize,qPrint(srcBuf));
@@ -6163,7 +6163,7 @@ static int transcodeCharacterBuffer(const QCString &fileName,BufStr &srcBuf,int 
 bool readInputFile(const QCString &fileName,BufStr &inBuf,bool filter,bool isSourceCode)
 {
   // try to open file
-  int size=0;
+  size_t size=0;
 
   FileInfo fi(fileName.str());
   if (!fi.exists()) return FALSE;
@@ -6176,7 +6176,7 @@ bool readInputFile(const QCString &fileName,BufStr &inBuf,bool filter,bool isSou
       err("could not open file %s\n",qPrint(fileName));
       return FALSE;
     }
-    size=(int)fi.size();
+    size=fi.size();
     // read the file
     inBuf.skip(size);
     f.read(inBuf.data(),size);
@@ -6199,7 +6199,7 @@ bool readInputFile(const QCString &fileName,BufStr &inBuf,bool filter,bool isSou
     const int bufSize=1024;
     char buf[bufSize];
     int numRead;
-    while ((numRead=(int)fread(buf,1,bufSize,f))>0)
+    while ((numRead=static_cast<int>(fread(buf,1,bufSize,f)))>0)
     {
       //printf(">>>>>>>>Reading %d bytes\n",numRead);
       inBuf.addArray(buf,numRead),size+=numRead;
@@ -6212,23 +6212,25 @@ bool readInputFile(const QCString &fileName,BufStr &inBuf,bool filter,bool isSou
 
   int start=0;
   if (size>=2 &&
-      ((uchar)inBuf.at(0)==0xFF && (uchar)inBuf.at(1)==0xFE) // Little endian BOM
+      static_cast<uchar>(inBuf.at(0))==0xFF &&
+      static_cast<uchar>(inBuf.at(1))==0xFE // Little endian BOM
      ) // UCS-2LE encoded file
   {
     transcodeCharacterBuffer(fileName,inBuf,inBuf.curPos(),
         "UCS-2LE","UTF-8");
   }
   else if (size>=2 &&
-           ((uchar)inBuf.at(0)==0xFE && (uchar)inBuf.at(1)==0xFF) // big endian BOM
+           static_cast<uchar>(inBuf.at(0))==0xFE &&
+           static_cast<uchar>(inBuf.at(1))==0xFF // big endian BOM
          ) // UCS-2BE encoded file
   {
     transcodeCharacterBuffer(fileName,inBuf,inBuf.curPos(),
         "UCS-2BE","UTF-8");
   }
   else if (size>=3 &&
-           (uchar)inBuf.at(0)==0xEF &&
-           (uchar)inBuf.at(1)==0xBB &&
-           (uchar)inBuf.at(2)==0xBF
+           static_cast<uchar>(inBuf.at(0))==0xEF &&
+           static_cast<uchar>(inBuf.at(1))==0xBB &&
+           static_cast<uchar>(inBuf.at(2))==0xBF
      ) // UTF-8 encoded file
   {
     inBuf.dropFromStart(3); // remove UTF-8 BOM: no translation needed
@@ -6244,7 +6246,7 @@ bool readInputFile(const QCString &fileName,BufStr &inBuf,bool filter,bool isSou
 
   // and translate CR's
   size=inBuf.curPos()-start;
-  int newSize=filterCRLF(inBuf.data()+start,size);
+  size_t newSize=filterCRLF(inBuf.data()+start,size);
   //printf("filter char at %p size=%d newSize=%d\n",qPrint(dest)+oldPos,size,newSize);
   if (newSize!=size) // we removed chars
   {
@@ -6418,9 +6420,9 @@ QCString replaceColorMarkers(const QCString &str)
     int level = HEXTONUM(lumStr[0])*16+HEXTONUM(lumStr[1]);
     ColoredImage::hsl2rgb(hue/360.0,sat/255.0,
                           pow(level/255.0,gamma/100.0),&r,&g,&b);
-    red   = (int)(r*255.0);
-    green = (int)(g*255.0);
-    blue  = (int)(b*255.0);
+    red   = static_cast<int>(r*255.0);
+    green = static_cast<int>(g*255.0);
+    blue  = static_cast<int>(b*255.0);
     char colStr[8];
     colStr[0]='#';
     colStr[1]=hex[red>>4];
@@ -7088,27 +7090,24 @@ void writeExtraLatexPackages(TextStream &t)
 
 void writeLatexSpecialFormulaChars(TextStream &t)
 {
-    unsigned char minus[4]; // Superscript minus
-    char *pminus = (char *)minus;
-    unsigned char sup2[3]; // Superscript two
-    char *psup2 = (char *)sup2;
-    unsigned char sup3[3];
-    char *psup3 = (char *)sup3; // Superscript three
-    minus[0]= 0xE2;
-    minus[1]= 0x81;
-    minus[2]= 0xBB;
+    char minus[4]; // Superscript minus
+    char sup2[3]; // Superscript two
+    char sup3[3];
+    minus[0]= static_cast<char>(0xE2);
+    minus[1]= static_cast<char>(0x81);
+    minus[2]= static_cast<char>(0xBB);
     minus[3]= 0;
-    sup2[0]= 0xC2;
-    sup2[1]= 0xB2;
+    sup2[0]= static_cast<char>(0xC2);
+    sup2[1]= static_cast<char>(0xB2);
     sup2[2]= 0;
-    sup3[0]= 0xC2;
-    sup3[1]= 0xB3;
+    sup3[0]= static_cast<char>(0xC2);
+    sup3[1]= static_cast<char>(0xB3);
     sup3[2]= 0;
 
     t << "\\usepackage{newunicodechar}\n"
-         "  \\newunicodechar{" << pminus << "}{${}^{-}$}% Superscript minus\n"
-         "  \\newunicodechar{" << psup2  << "}{${}^{2}$}% Superscript two\n"
-         "  \\newunicodechar{" << psup3  << "}{${}^{3}$}% Superscript three\n"
+         "  \\newunicodechar{" << minus << "}{${}^{-}$}% Superscript minus\n"
+         "  \\newunicodechar{" << sup2  << "}{${}^{2}$}% Superscript two\n"
+         "  \\newunicodechar{" << sup3  << "}{${}^{3}$}% Superscript three\n"
          "\n";
 }
 
@@ -7175,13 +7174,13 @@ QCString clearBlock(const QCString &s,const QCString &begin,const QCString &end)
 {
   if (s.isEmpty() || begin.isEmpty() || end.isEmpty()) return s;
   const char *p, *q;
-  int beginLen = (int)begin.length();
-  int endLen = (int)end.length();
-  int resLen = 0;
+  size_t beginLen = begin.length();
+  size_t endLen = end.length();
+  size_t resLen = 0;
   for (p=s.data(); (q=strstr(p,begin.data()))!=0; p=q+endLen)
   {
-    resLen+=(int)(q-p);
-    p=q+beginLen;
+    resLen += q-p;
+    p = q+beginLen;
     if ((q=strstr(p,end.data()))==0)
     {
       resLen+=beginLen;
@@ -7195,7 +7194,7 @@ QCString clearBlock(const QCString &s,const QCString &begin,const QCString &end)
   char *r;
   for (r=result.rawData(), p=s.data(); (q=strstr(p,begin.data()))!=0; p=q+endLen)
   {
-    int l = (int)(q-p);
+    size_t l = q-p;
     memcpy(r,p,l);
     r+=l;
     p=q+beginLen;
@@ -7324,7 +7323,7 @@ StringVector split(const std::string &s,const reg::Ex &delimiter)
 int findIndex(const StringVector &sv,const std::string &s)
 {
   auto it = std::find(sv.begin(),sv.end(),s);
-  return it!=sv.end() ? (int)(it-sv.begin()) : -1;
+  return it!=sv.end() ? static_cast<int>(it-sv.begin()) : -1;
 }
 
 /// find the index of the first occurrence of pattern \a re in a string \a s
@@ -7332,7 +7331,7 @@ int findIndex(const StringVector &sv,const std::string &s)
 int findIndex(const std::string &s,const reg::Ex &re)
 {
   reg::Match match;
-  return reg::search(s,match,re) ? (int)match.position() : -1;
+  return reg::search(s,match,re) ? static_cast<int>(match.position()) : -1;
 }
 
 /// create a string where the string in the vector are joined by the given delimiter

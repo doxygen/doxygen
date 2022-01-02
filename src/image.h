@@ -19,6 +19,7 @@
 #ifndef IMAGE_H
 #define IMAGE_H
 
+#include <vector>
 #include "types.h"
 #include "qcstring.h"
 
@@ -43,13 +44,12 @@ class Image
     friend uint stringLength(const QCString &s);
     uint width() const { return m_width; }
     uint height() const { return m_height; }
-    uchar *data() const { return m_data; }
     static uint stringLength(const QCString &s);
 
   private:
     uint m_width;
     uint m_height;
-    uchar *m_data;
+    std::vector<uchar> m_data;
 };
 
 /** Class representing a bitmap image colored based on hue/sat/gamma settings. */
@@ -66,7 +66,7 @@ class ColoredImage
   private:
     uint m_width;
     uint m_height;
-    uchar *m_data;
+    std::vector<uchar> m_data;
     bool m_hasAlpha;
 };
 

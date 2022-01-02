@@ -23,10 +23,10 @@
   QCString msg1 = msg;                                               \
   msg1 += "\n    lexical analyzer: ";                                \
   msg1 += getLexerFILE();                                            \
-  if (!((struct yyguts_t*)yyscanner)->yyextra_r->fileName.isEmpty()) \
+  if (!static_cast<yyguts_t*>(yyscanner)->yyextra_r->fileName.isEmpty()) \
   {                                                                  \
     msg1 += " (for: ";                                               \
-    msg1 += ((struct yyguts_t*)yyscanner)->yyextra_r->fileName;      \
+    msg1 += static_cast<yyguts_t*>(yyscanner)->yyextra_r->fileName;  \
     msg1 += ")";                                                     \
   }                                                                  \
   msg1 += "\n";                                                      \

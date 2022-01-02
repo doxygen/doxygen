@@ -91,7 +91,7 @@ static const std::set<std::string> g_plantumlEngine {
 //---------------------------------------------------------------------------
 
 using DefinitionStack = std::vector<const Definition *>;
-using DocNodeStack = std::stack<const DocNode *>;
+using DocNodeStack = std::stack<DocNode *>;
 //using DocStyleChangeStack = std::stack<const DocStyleChange *>;
 
 template<typename T, typename Container = std::deque<T>>
@@ -203,7 +203,7 @@ std::unique_ptr<IDocParser> createDocParser()
 class AutoNodeStack
 {
   public:
-    AutoNodeStack(DocParser &parser,const DocNode* node)
+    AutoNodeStack(DocParser &parser,DocNode* node)
       : m_parser(parser), m_node(node) { m_parser.context.nodeStack.push(node); }
    ~AutoNodeStack() {
 #if defined(NDEBUG)
@@ -305,7 +305,7 @@ QCString DocParser::findAndCopyImage(const QCString &fileName, DocImage::Type ty
       int i;
       if ((i=result.findRev('/'))!=-1 || (i=result.findRev('\\'))!=-1)
       {
-	result = result.right((int)result.length()-i-1);
+	result = result.right(static_cast<int>(result.length())-i-1);
       }
       //printf("fileName=%s result=%s\n",fileName,qPrint(result));
       QCString outputDir;
@@ -603,7 +603,7 @@ static bool insideUL(DocNode *n)
   while (n)
   {
     if (n->kind()==DocNode::Kind_HtmlList &&
-        ((DocHtmlList *)n)->type()==DocHtmlList::Unordered) return TRUE;
+        dynamic_cast<DocHtmlList *>(n)->type()==DocHtmlList::Unordered) return TRUE;
     n=n->parent();
   }
   return FALSE;
@@ -617,7 +617,7 @@ static bool insideOL(DocNode *n)
   while (n)
   {
     if (n->kind()==DocNode::Kind_HtmlList &&
-        ((DocHtmlList *)n)->type()==DocHtmlList::Ordered) return TRUE;
+        dynamic_cast<DocHtmlList *>(n)->type()==DocHtmlList::Ordered) return TRUE;
     n=n->parent();
   }
   return FALSE;
@@ -712,7 +712,7 @@ bool DocParser::findDocsForMemberOrCompound(const QCString &commandName,
     cmdArg = substitute(cmdArg,".","::");
   }
 
-  int l=(int)cmdArg.length();
+  int l=static_cast<int>(cmdArg.length());
 
   int funcStart=cmdArg.find('(');
   if (funcStart==-1)
@@ -755,7 +755,7 @@ bool DocParser::findDocsForMemberOrCompound(const QCString &commandName,
   }
 
 
-  int scopeOffset=(int)context.context.length();
+  int scopeOffset=static_cast<int>(context.context.length());
   do // for each scope
   {
     QCString fullName=cmdArg;
@@ -882,7 +882,7 @@ void DocParser::handleStyleEnter(DocNode *parent,DocNodeList &children,
           DocStyleChange::Style s,const QCString &tagName,const HtmlAttribList *attribs)
 {
   DBG(("HandleStyleEnter\n"));
-  DocStyleChange *sc= new DocStyleChange(*this,parent,(uint)context.nodeStack.size(),s,tagName,TRUE,attribs);
+  DocStyleChange *sc= new DocStyleChange(*this,parent,context.nodeStack.size(),s,tagName,TRUE,attribs);
   children.push_back(std::unique_ptr<DocStyleChange>(sc));
   context.styleStack.push(sc);
 }
@@ -918,7 +918,7 @@ void DocParser::handleStyleLeave(DocNode *parent,DocNodeList &children,
     }
     else
     {
-      warn_doc_error(context.fileName,tokenizer.getLineNr(),"found </%s> at different nesting level (%zu) than expected (%d)",
+      warn_doc_error(context.fileName,tokenizer.getLineNr(),"found </%s> at different nesting level (%zu) than expected (%zu)",
           qPrint(tagName),context.nodeStack.size(),context.styleStack.top()->position());
     }
   }
@@ -926,7 +926,7 @@ void DocParser::handleStyleLeave(DocNode *parent,DocNodeList &children,
   {
     children.push_back(
         std::make_unique<DocStyleChange>(
-          *this,parent,(uint)context.nodeStack.size(),s,context.styleStack.top()->tagName(),FALSE));
+          *this,parent,context.nodeStack.size(),s,context.styleStack.top()->tagName(),FALSE));
     context.styleStack.pop();
   }
 }
@@ -942,7 +942,7 @@ void DocParser::handlePendingStyleCommands(DocNode *parent,DocNodeList &children
     const DocStyleChange *sc = context.styleStack.top();
     while (sc && sc->position()>=context.nodeStack.size())
     { // there are unclosed style modifiers in the paragraph
-      children.push_back(std::make_unique<DocStyleChange>(*this,parent,(uint)context.nodeStack.size(),sc->style(),sc->tagName(),FALSE));
+      children.push_back(std::make_unique<DocStyleChange>(*this,parent,context.nodeStack.size(),sc->style(),sc->tagName(),FALSE));
       context.initialStyleStack.push(sc);
       context.styleStack.pop();
       sc = !context.styleStack.empty() ? context.styleStack.top() : 0;
@@ -1375,9 +1375,9 @@ reparsetoken:
           break;
         case CMD_EMPHASIS:
           {
-            children.push_back(std::make_unique<DocStyleChange>(*this,parent,(uint)context.nodeStack.size(),DocStyleChange::Italic,tokenName,TRUE));
+            children.push_back(std::make_unique<DocStyleChange>(*this,parent,context.nodeStack.size(),DocStyleChange::Italic,tokenName,TRUE));
             tok=handleStyleArgument(parent,children,tokenName);
-            children.push_back(std::make_unique<DocStyleChange>(*this,parent,(uint)context.nodeStack.size(),DocStyleChange::Italic,tokenName,FALSE));
+            children.push_back(std::make_unique<DocStyleChange>(*this,parent,context.nodeStack.size(),DocStyleChange::Italic,tokenName,FALSE));
             if (tok!=TK_WORD) children.push_back(std::make_unique<DocWhiteSpace>(*this,parent," "));
             if (tok==TK_NEWPARA) goto handlepara;
             else if (tok==TK_WORD || tok==TK_HTMLTAG)
@@ -1389,9 +1389,9 @@ reparsetoken:
           break;
         case CMD_BOLD:
           {
-            children.push_back(std::make_unique<DocStyleChange>(*this,parent,(uint)context.nodeStack.size(),DocStyleChange::Bold,tokenName,TRUE));
+            children.push_back(std::make_unique<DocStyleChange>(*this,parent,context.nodeStack.size(),DocStyleChange::Bold,tokenName,TRUE));
             tok=handleStyleArgument(parent,children,tokenName);
-            children.push_back(std::make_unique<DocStyleChange>(*this,parent,(uint)context.nodeStack.size(),DocStyleChange::Bold,tokenName,FALSE));
+            children.push_back(std::make_unique<DocStyleChange>(*this,parent,context.nodeStack.size(),DocStyleChange::Bold,tokenName,FALSE));
             if (tok!=TK_WORD) children.push_back(std::make_unique<DocWhiteSpace>(*this,parent," "));
             if (tok==TK_NEWPARA) goto handlepara;
             else if (tok==TK_WORD || tok==TK_HTMLTAG)
@@ -1403,9 +1403,9 @@ reparsetoken:
           break;
         case CMD_CODE:
           {
-            children.push_back(std::make_unique<DocStyleChange>(*this,parent,(uint)context.nodeStack.size(),DocStyleChange::Code,tokenName,TRUE));
+            children.push_back(std::make_unique<DocStyleChange>(*this,parent,context.nodeStack.size(),DocStyleChange::Code,tokenName,TRUE));
             tok=handleStyleArgument(parent,children,tokenName);
-            children.push_back(std::make_unique<DocStyleChange>(*this,parent,(uint)context.nodeStack.size(),DocStyleChange::Code,tokenName,FALSE));
+            children.push_back(std::make_unique<DocStyleChange>(*this,parent,context.nodeStack.size(),DocStyleChange::Code,tokenName,FALSE));
             if (tok!=TK_WORD) children.push_back(std::make_unique<DocWhiteSpace>(*this,parent," "));
             if (tok==TK_NEWPARA) goto handlepara;
             else if (tok==TK_WORD || tok==TK_HTMLTAG)
@@ -1506,7 +1506,7 @@ reparsetoken:
           }
           break;
         case CMD_IMAGE:
-          ((DocPara *)parent) -> handleImage("image");
+          dynamic_cast<DocPara *>(parent)->handleImage("image");
           break;
         default:
           return FALSE;
@@ -1802,7 +1802,7 @@ int DocParser::internalValidatingParseDoc(DocNode *parent,DocNodeList &children,
   DocPara *lastPar=0;
   if (!children.empty() && children.back()->kind()==DocNode::Kind_Para)
   { // last child item was a paragraph
-    lastPar = (DocPara*)children.back().get();
+    lastPar = dynamic_cast<DocPara*>(children.back().get());
     isFirst=FALSE;
   }
   do
@@ -2053,7 +2053,7 @@ void DocIncOperator::parse()
           if (nonEmpty) break; // we have a pattern to match
           so=o+1; // no pattern, skip empty line
         }
-        else if (!isspace((uchar)c)) // no white space char
+        else if (!isspace(static_cast<uchar>(c))) // no white space char
         {
           nonEmpty=TRUE;
         }
@@ -2081,7 +2081,7 @@ void DocIncOperator::parse()
             if (nonEmpty) break; // we have a pattern to match
             so=o+1; // no pattern, skip empty line
           }
-          else if (!isspace((uchar)c)) // no white space char
+          else if (!isspace(static_cast<uchar>(c))) // no white space char
           {
             nonEmpty=TRUE;
           }
@@ -2112,7 +2112,7 @@ void DocIncOperator::parse()
             if (nonEmpty) break; // we have a pattern to match
             so=o+1; // no pattern, skip empty line
           }
-          else if (!isspace((uchar)c)) // no white space char
+          else if (!isspace(static_cast<uchar>(c))) // no white space char
           {
             nonEmpty=TRUE;
           }
@@ -2141,7 +2141,7 @@ void DocIncOperator::parse()
             if (nonEmpty) break; // we have a pattern to match
             so=o+1; // no pattern, skip empty line
           }
-          else if (!isspace((uchar)c)) // no white space char
+          else if (!isspace(static_cast<uchar>(c))) // no white space char
           {
             nonEmpty=TRUE;
           }
@@ -2403,7 +2403,7 @@ DocInternalRef::DocInternalRef(DocParser &parser,DocNode *parent,const QCString 
   int i=ref.find('#');
   if (i!=-1)
   {
-    m_anchor = ref.right((int)ref.length()-i-1);
+    m_anchor = ref.right(static_cast<int>(ref.length())-i-1);
     m_file   = ref.left(i);
   }
   else
@@ -2530,7 +2530,7 @@ static void flattenParagraphs(DocNode *root,DocNodeList &children)
   {
     if (dn->kind()==DocNode::Kind_Para)
     {
-      DocPara *para = (DocPara*)dn.get();
+      DocPara *para = dynamic_cast<DocPara*>(dn.get());
       // move the children of the paragraph to the end of the newChildren list
       newChildren.insert(newChildren.end(),
                          std::make_move_iterator(para->children().begin()),
@@ -2717,9 +2717,9 @@ QCString DocLink::parse(bool isJavaLink,bool isXmlLink)
             {
               uint l=w.length();
               m_children.push_back(std::make_unique<DocWord>(m_parser,this,w.left(p)));
-              if ((uint)p<l-1) // something left after the } (for instance a .)
+              if (static_cast<uint>(p)<l-1) // something left after the } (for instance a .)
               {
-                result=w.right((int)l-p-1);
+                result=w.right(static_cast<int>(l)-p-1);
               }
               goto endlink;
             }
@@ -2917,7 +2917,7 @@ DocImage::DocImage(DocParser &parser,DocNode *parent,const HtmlAttribList &attri
 bool DocImage::isSVG() const
 {
   QCString  locName = m_url.isEmpty() ? m_name : m_url;
-  int len = (int)locName.length();
+  int len = static_cast<int>(locName.length());
   int fnd = locName.find('?'); // ignore part from ? until end
   if (fnd==-1) fnd=len;
   return fnd>=4 && locName.mid(fnd-4,4)==".svg";
@@ -3735,12 +3735,12 @@ void DocHtmlTable::computeTableGrid()
     if (rowNode->kind()==DocNode::Kind_HtmlRow)
     {
       size_t i;
-      DocHtmlRow *row = (DocHtmlRow*)rowNode.get();
+      DocHtmlRow *row = dynamic_cast<DocHtmlRow*>(rowNode.get());
       for (const auto &cellNode : row->children())
       {
         if (cellNode->kind()==DocNode::Kind_HtmlCell)
         {
-          DocHtmlCell *cell = (DocHtmlCell*)cellNode.get();
+          DocHtmlCell *cell = dynamic_cast<DocHtmlCell*>(cellNode.get());
           uint rs = cell->rowSpan();
           uint cs = cell->colSpan();
 
@@ -4457,7 +4457,7 @@ int DocSimpleSect::parse(bool userTitle,bool needsSeparator)
   else
   {
     ASSERT(m_children.back()->kind()==DocNode::Kind_Para);
-    ((DocPara *)m_children.back().get())->markLast(FALSE);
+    dynamic_cast<DocPara *>(m_children.back().get())->markLast(FALSE);
   }
   par->markLast();
   if (needsSeparator) m_children.push_back(std::make_unique<DocSimpleSectSep>(m_parser,this));
@@ -4504,7 +4504,7 @@ int DocSimpleSect::parseXml()
     else
     {
       ASSERT(m_children.back()->kind()==DocNode::Kind_Para);
-      ((DocPara *)m_children.back().get())->markLast(FALSE);
+      dynamic_cast<DocPara *>(m_children.back().get())->markLast(FALSE);
     }
     par->markLast();
     m_children.push_back(std::unique_ptr<DocPara>(par));
@@ -4533,7 +4533,7 @@ void DocSimpleSect::appendLinkWord(const QCString &word)
   }
   else
   {
-    p = (DocPara *)m_children.back().get();
+    p = dynamic_cast<DocPara *>(m_children.back().get());
 
     // Comma-separate <seealso> links.
     p->injectToken(TK_WORD,",");
@@ -4602,7 +4602,7 @@ int DocParamList::parse(const QCString &cmdName)
         m_parser.context.token->name = m_parser.context.token->name.mid(typeSeparator+1);
         m_parser.context.hasParamCommand=TRUE;
         m_parser.checkArgumentName();
-        ((DocParamSect*)parent())->m_hasTypeSpecifier=TRUE;
+        dynamic_cast<DocParamSect*>(parent())->m_hasTypeSpecifier=TRUE;
       }
       else
       {
@@ -4737,7 +4737,7 @@ int DocParamSect::parse(const QCString &cmdName,bool xmlContext, Direction d)
   else
   {
     ASSERT(m_children.back()->kind()==DocNode::Kind_ParamList);
-    ((DocParamList *)m_children.back().get())->markLast(FALSE);
+    dynamic_cast<DocParamList *>(m_children.back().get())->markLast(FALSE);
     pl->markLast();
   }
   m_children.push_back(std::unique_ptr<DocParamList>(pl));
@@ -4766,11 +4766,11 @@ int DocPara::handleSimpleSection(DocSimpleSect::Type t, bool xmlContext)
   bool needsSeparator = FALSE;
   if (!m_children.empty() &&                           // previous element
       m_children.back()->kind()==Kind_SimpleSect &&      // was a simple sect
-      ((DocSimpleSect *)m_children.back().get())->type()==t && // of same type
+      dynamic_cast<DocSimpleSect *>(m_children.back().get())->type()==t && // of same type
       t!=DocSimpleSect::User)                            // but not user defined
   {
     // append to previous section
-    ss=(DocSimpleSect *)m_children.back().get();
+    ss=dynamic_cast<DocSimpleSect *>(m_children.back().get());
     needsSeparator = TRUE;
   }
   else // start new section
@@ -4798,17 +4798,17 @@ int DocPara::handleParamSection(const QCString &cmdName,
   DocParamSect *ps=0;
   if (!m_children.empty() &&                        // previous element
       m_children.back()->kind()==Kind_ParamSect &&    // was a param sect
-      ((DocParamSect *)m_children.back().get())->type()==t) // of same type
+      dynamic_cast<DocParamSect *>(m_children.back().get())->type()==t) // of same type
   {
     // append to previous section
-    ps=(DocParamSect *)m_children.back().get();
+    ps=dynamic_cast<DocParamSect *>(m_children.back().get());
   }
   else // start new section
   {
     ps=new DocParamSect(m_parser,this,t);
     m_children.push_back(std::unique_ptr<DocParamSect>(ps));
   }
-  int rv=ps->parse(cmdName,xmlContext,(DocParamSect::Direction)direction);
+  int rv=ps->parse(cmdName,xmlContext,static_cast<DocParamSect::Direction>(direction));
   return (rv!=TK_NEWPARA) ? rv : RetVal_OK;
 }
 
@@ -4948,13 +4948,13 @@ void DocPara::handleIncludeOperator(const QCString &cmdName,DocIncOperator::Type
   op->markLast(TRUE);
   if (n1!=0 && n1->kind()==DocNode::Kind_IncOperator)
   {
-    ((DocIncOperator *)n1)->markLast(FALSE);
+    dynamic_cast<DocIncOperator *>(n1)->markLast(FALSE);
   }
   else if (n1!=0 && n1->kind()==DocNode::Kind_WhiteSpace &&
            n2!=0 && n2->kind()==DocNode::Kind_IncOperator
           )
   {
-    ((DocIncOperator *)n2)->markLast(FALSE);
+    dynamic_cast<DocIncOperator *>(n2)->markLast(FALSE);
   }
   m_children.push_back(std::unique_ptr<DocIncOperator>(op));
   op->parse();
@@ -5126,11 +5126,11 @@ void DocPara::handleLink(const QCString &cmdName,bool isJavaLink)
         DocTokenizer::tokToString(tok),qPrint(saveCmdName));
     return;
   }
-  if (saveCmdName == "javalink") m_children.push_back(std::make_unique<DocStyleChange>(m_parser,this,(uint)m_parser.context.nodeStack.size(),DocStyleChange::Code,cmdName,TRUE));
+  if (saveCmdName == "javalink") m_children.push_back(std::make_unique<DocStyleChange>(m_parser,this,m_parser.context.nodeStack.size(),DocStyleChange::Code,cmdName,TRUE));
   m_parser.tokenizer.setStatePara();
   DocLink *lnk = new DocLink(m_parser,this,m_parser.context.token->name);
   m_children.push_back(std::unique_ptr<DocLink>(lnk));
-  if (saveCmdName == "javalink") m_children.push_back(std::make_unique<DocStyleChange>(m_parser,this,(uint)m_parser.context.nodeStack.size(),DocStyleChange::Code,cmdName,FALSE));
+  if (saveCmdName == "javalink") m_children.push_back(std::make_unique<DocStyleChange>(m_parser,this,m_parser.context.nodeStack.size(),DocStyleChange::Code,cmdName,FALSE));
   QCString leftOver = lnk->parse(isJavaLink);
   if (!leftOver.isEmpty())
   {
@@ -5413,21 +5413,21 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
       warn_doc_error(m_parser.context.fileName,m_parser.tokenizer.getLineNr(),"Found unknown command '%s%s'",TK_COMMAND_CHAR(tok),qPrint(cmdName));
       break;
     case CMD_EMPHASIS:
-      m_children.push_back(std::make_unique<DocStyleChange>(m_parser,this,(uint)m_parser.context.nodeStack.size(),DocStyleChange::Italic,cmdName,TRUE));
+      m_children.push_back(std::make_unique<DocStyleChange>(m_parser,this,m_parser.context.nodeStack.size(),DocStyleChange::Italic,cmdName,TRUE));
       retval=m_parser.handleStyleArgument(this,m_children,cmdName);
-      m_children.push_back(std::make_unique<DocStyleChange>(m_parser,this,(uint)m_parser.context.nodeStack.size(),DocStyleChange::Italic,cmdName,FALSE));
+      m_children.push_back(std::make_unique<DocStyleChange>(m_parser,this,m_parser.context.nodeStack.size(),DocStyleChange::Italic,cmdName,FALSE));
       if (retval!=TK_WORD) m_children.push_back(std::make_unique<DocWhiteSpace>(m_parser,this," "));
       break;
     case CMD_BOLD:
-      m_children.push_back(std::make_unique<DocStyleChange>(m_parser,this,(uint)m_parser.context.nodeStack.size(),DocStyleChange::Bold,cmdName,TRUE));
+      m_children.push_back(std::make_unique<DocStyleChange>(m_parser,this,m_parser.context.nodeStack.size(),DocStyleChange::Bold,cmdName,TRUE));
       retval=m_parser.handleStyleArgument(this,m_children,cmdName);
-      m_children.push_back(std::make_unique<DocStyleChange>(m_parser,this,(uint)m_parser.context.nodeStack.size(),DocStyleChange::Bold,cmdName,FALSE));
+      m_children.push_back(std::make_unique<DocStyleChange>(m_parser,this,m_parser.context.nodeStack.size(),DocStyleChange::Bold,cmdName,FALSE));
       if (retval!=TK_WORD) m_children.push_back(std::make_unique<DocWhiteSpace>(m_parser,this," "));
       break;
     case CMD_CODE:
-      m_children.push_back(std::make_unique<DocStyleChange>(m_parser,this,(uint)m_parser.context.nodeStack.size(),DocStyleChange::Code,cmdName,TRUE));
+      m_children.push_back(std::make_unique<DocStyleChange>(m_parser,this,m_parser.context.nodeStack.size(),DocStyleChange::Code,cmdName,TRUE));
       retval=m_parser.handleStyleArgument(this,m_children,cmdName);
-      m_children.push_back(std::make_unique<DocStyleChange>(m_parser,this,(uint)m_parser.context.nodeStack.size(),DocStyleChange::Code,cmdName,FALSE));
+      m_children.push_back(std::make_unique<DocStyleChange>(m_parser,this,m_parser.context.nodeStack.size(),DocStyleChange::Code,cmdName,FALSE));
       if (retval!=TK_WORD) m_children.push_back(std::make_unique<DocWhiteSpace>(m_parser,this," "));
       break;
     case CMD_BSLASH:
@@ -6307,9 +6307,9 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
         if (findAttribute(tagHtmlAttribs,"name",&paramName))
         {
           //printf("paramName=%s\n",qPrint(paramName));
-          m_children.push_back(std::make_unique<DocStyleChange>(m_parser,this,(uint)m_parser.context.nodeStack.size(),DocStyleChange::Italic,tagName,TRUE));
+          m_children.push_back(std::make_unique<DocStyleChange>(m_parser,this,m_parser.context.nodeStack.size(),DocStyleChange::Italic,tagName,TRUE));
           m_children.push_back(std::make_unique<DocWord>(m_parser,this,paramName));
-          m_children.push_back(std::make_unique<DocStyleChange>(m_parser,this,(uint)m_parser.context.nodeStack.size(),DocStyleChange::Italic,tagName,FALSE));
+          m_children.push_back(std::make_unique<DocStyleChange>(m_parser,this,m_parser.context.nodeStack.size(),DocStyleChange::Italic,tagName,FALSE));
           if (retval!=TK_WORD) m_children.push_back(std::make_unique<DocWhiteSpace>(m_parser,this," "));
         }
         else
@@ -6354,7 +6354,7 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
       m_parser.context.hasReturnCommand=TRUE;
       break;
     case XML_TERM:
-      //m_children.push_back(std::make_unique<DocStyleChange>(this,(uint)m_parser.context.nodeStack.size(),DocStyleChange::Bold,TRUE));
+      //m_children.push_back(std::make_unique<DocStyleChange>(this,m_parser.context.nodeStack.size(),DocStyleChange::Bold,TRUE));
       if (insideTable(this))
       {
         retval=RetVal_TableCell;
@@ -6399,9 +6399,9 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
           bool inSeeBlock = m_parser.context.inSeeBlock;
           m_parser.context.token->name = cref;
           m_parser.context.inSeeBlock = TRUE;
-          m_children.push_back(std::make_unique<DocStyleChange>(m_parser,this,(uint)m_parser.context.nodeStack.size(),DocStyleChange::Code,tagName,TRUE));
+          m_children.push_back(std::make_unique<DocStyleChange>(m_parser,this,m_parser.context.nodeStack.size(),DocStyleChange::Code,tagName,TRUE));
           m_parser.handleLinkedWord(this,m_children,TRUE);
-          m_children.push_back(std::make_unique<DocStyleChange>(m_parser,this,(uint)m_parser.context.nodeStack.size(),DocStyleChange::Code,tagName,FALSE));
+          m_children.push_back(std::make_unique<DocStyleChange>(m_parser,this,m_parser.context.nodeStack.size(),DocStyleChange::Code,tagName,FALSE));
           m_parser.context.inSeeBlock = inSeeBlock;
         }
         else
@@ -6421,9 +6421,9 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
           DocSimpleSect *ss=0;
           for (const auto &n : m_children)
           {
-            if (n->kind()==Kind_SimpleSect && ((DocSimpleSect *)n.get())->type()==DocSimpleSect::See)
+            if (n->kind()==Kind_SimpleSect && dynamic_cast<DocSimpleSect *>(n.get())->type()==DocSimpleSect::See)
             {
-              ss = (DocSimpleSect *)n.get();
+              ss = dynamic_cast<DocSimpleSect *>(n.get());
             }
           }
 
@@ -6649,7 +6649,7 @@ int DocPara::handleHtmlEndTag(const QCString &tagName)
       break;
 
     case XML_TERM:
-      //m_children.push_back(std::make_unique<DocStyleChange>(this,(uint)m_parser.context.nodeStack.size(),DocStyleChange::Bold,FALSE));
+      //m_children.push_back(std::make_unique<DocStyleChange>(this,m_parser.context.nodeStack.size(),DocStyleChange::Bold,FALSE));
       break;
     case XML_SUMMARY:
       if (insideDetails(m_parser.context.styleStack))
@@ -6760,7 +6760,7 @@ reparsetoken:
           while (n && n->kind()!=DocNode::Kind_AutoList) n=n->parent();
           if (n) // we found an auto list up in the hierarchy
           {
-            DocAutoList *al = (DocAutoList *)n;
+            DocAutoList *al = dynamic_cast<DocAutoList *>(n);
             DBG(("previous list item at %d\n",al->indent()));
             if (al->indent()>=m_parser.context.token->indent)
               // new item at the same or lower indent level
@@ -6776,7 +6776,7 @@ reparsetoken:
           while(n)
           {
             if (n->kind() == DocNode::Kind_AutoList &&
-                ((DocAutoList*)n)->isEnumList()) depth++;
+                dynamic_cast<DocAutoList*>(n)->isEnumList()) depth++;
             n=n->parent();
           }
 
@@ -6833,7 +6833,7 @@ reparsetoken:
         if (parent()->kind()==DocNode::Kind_AutoListItem)
         {
           ASSERT(parent()->parent()->kind()==DocNode::Kind_AutoList);
-          DocAutoList *al = (DocAutoList *)parent()->parent();
+          DocAutoList *al = dynamic_cast<DocAutoList *>(parent()->parent());
           if (al->indent()>=m_parser.context.token->indent)
           {
             // end of list marker ends this paragraph
@@ -7006,11 +7006,11 @@ reparsetoken:
 endparagraph:
   m_parser.handlePendingStyleCommands(this,m_children);
   DBG(("DocPara::parse() end retval=%s\n",DocTokenizer::retvalToString(retval)));
-  const DocNode *n = m_parser.context.nodeStack.top();
+  DocNode *n = m_parser.context.nodeStack.top();
   if (!m_parser.context.token->endTag && n->kind()==DocNode::Kind_Para &&
       retval==TK_NEWPARA && m_parser.context.token->name.lower() == "p")
   {
-    ((DocPara *)n)->setAttribs(m_parser.context.token->attribs);
+    dynamic_cast<DocPara *>(n)->setAttribs(m_parser.context.token->attribs);
   }
   INTERNAL_ASSERT(retval==0 || retval==TK_NEWPARA || retval==TK_LISTITEM ||
          retval==TK_ENDLIST || retval>RetVal_OK

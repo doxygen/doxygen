@@ -149,7 +149,7 @@ class TextStream final
     /** Adds a float to the stream */
     TextStream &operator<<( float f)
     {
-      output_double((double)f);
+      output_double(static_cast<double>(f));
       return static_cast<TextStream&>(*this);
     }
 
@@ -233,9 +233,9 @@ class TextStream final
       *p = '\0';
       if ( neg )
       {
-	n = (uint32_t)(-(int32_t)n);
+	n = static_cast<uint32_t>(-static_cast<int32_t>(n));
       }
-      do { *--p = ((char)(n%10)) + '0'; n /= 10; } while ( n );
+      do { *--p = (static_cast<char>(n%10)) + '0'; n /= 10; } while ( n );
       if ( neg ) *--p = '-';
       m_buffer+=p;
     }

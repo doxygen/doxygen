@@ -183,7 +183,7 @@ static QCString encodeDirName(const QCString &anchor)
   // convert to md5 hash
   uchar md5_sig[16];
   char sigStr[33];
-  MD5Buffer((const unsigned char *)anchor.data(),anchor.length(),md5_sig);
+  MD5Buffer(anchor.data(),anchor.length(),md5_sig);
   MD5SigToString(md5_sig,sigStr);
   return sigStr;
 
@@ -558,7 +558,7 @@ void DirDefImpl::writeDocumentation(OutputList &ol)
         break;
       case LayoutDocEntry::DetailedDesc:
         {
-          const LayoutDocEntrySection *ls = (const LayoutDocEntrySection*)lde.get();
+          const LayoutDocEntrySection *ls = dynamic_cast<const LayoutDocEntrySection*>(lde.get());
           writeDetailedDescription(ol,ls->title(lang));
         }
         break;

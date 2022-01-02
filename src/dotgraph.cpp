@@ -150,7 +150,7 @@ bool DotGraph::prepareDotFile()
   char sigStr[33];
   uchar md5_sig[16];
   // calculate md5
-  MD5Buffer((const unsigned char*)m_theGraph.data(), m_theGraph.length(), md5_sig);
+  MD5Buffer(m_theGraph.data(), m_theGraph.length(), md5_sig);
   // convert result to a string
   MD5SigToString(md5_sig, sigStr);
 

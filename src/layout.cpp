@@ -187,10 +187,9 @@ class LayoutParser
     void startSimpleEntry(LayoutDocEntry::Kind k,const XMLHandlers::Attributes &attrib)
     {
       bool isVisible = elemIsVisible(attrib) && parentIsVisible(m_rootNav);
-      if (m_part!=-1 && isVisible)
+      if (m_part!=LayoutDocManager::Undefined && isVisible)
       {
-        LayoutDocManager::instance().addEntry((LayoutDocManager::LayoutPart)m_part,
-                                              new LayoutDocEntrySimple(k));
+        LayoutDocManager::instance().addEntry(m_part,new LayoutDocEntrySimple(k));
       }
     }
 
@@ -204,10 +203,9 @@ class LayoutParser
       //printf("startSectionEntry: title='%s' userTitle='%s'\n",
       //    qPrint(title),qPrint(userTitle));
       if (userTitle.isEmpty())  userTitle = title;
-      if (m_part!=-1 && isVisible)
+      if (m_part!=LayoutDocManager::Undefined && isVisible)
       {
-        LayoutDocManager::instance().addEntry((LayoutDocManager::LayoutPart)m_part,
-                                              new LayoutDocEntrySection(k,userTitle));
+        LayoutDocManager::instance().addEntry(m_part,new LayoutDocEntrySection(k,userTitle));
       }
     }
 
@@ -222,10 +220,9 @@ class LayoutParser
       if (userTitle.isEmpty())     userTitle     = title;
       if (userSubscript.isEmpty()) userSubscript = subscript;
       //printf("memberdecl: %s\n",qPrint(userTitle));
-      if (m_part!=-1 /*&& isVisible*/)
+      if (m_part!=LayoutDocManager::Undefined)
       {
-        LayoutDocManager::instance().addEntry((LayoutDocManager::LayoutPart)m_part,
-                                              new LayoutDocEntryMemberDecl(type,userTitle,userSubscript));
+        LayoutDocManager::instance().addEntry(m_part,new LayoutDocEntryMemberDecl(type,userTitle,userSubscript));
       }
     }
 
@@ -235,9 +232,9 @@ class LayoutParser
       QCString userTitle = XMLHandlers::value(attrib,"title");
       if (userTitle.isEmpty()) userTitle = title;
       //printf("memberdef: %s\n",qPrint(userTitle));
-      if (m_part!=-1 /*&& isVisible*/)
+      if (m_part!=LayoutDocManager::Undefined)
       {
-        LayoutDocManager::instance().addEntry((LayoutDocManager::LayoutPart)m_part,
+        LayoutDocManager::instance().addEntry(m_part,
                                               new LayoutDocEntryMemberDef(type,userTitle));
       }
     }
@@ -498,7 +495,7 @@ class LayoutParser
           "usergroup"
         },
         { 0, // end of list
-          (LayoutNavEntry::Kind)0,
+          static_cast<LayoutNavEntry::Kind>(0),
           QCString(),
           QCString(),
           QCString(),
@@ -587,87 +584,86 @@ class LayoutParser
     {
       LayoutDocManager::instance().clear(LayoutDocManager::Class);
       m_scope="class/";
-      m_part = (int)LayoutDocManager::Class;
+      m_part = LayoutDocManager::Class;
     }
 
     void endClass()
     {
       m_scope="";
-      m_part = -1;
+      m_part = LayoutDocManager::Undefined;
     }
 
     void startNamespace(const XMLHandlers::Attributes &)
     {
       LayoutDocManager::instance().clear(LayoutDocManager::Namespace);
       m_scope="namespace/";
-      m_part = (int)LayoutDocManager::Namespace;
+      m_part = LayoutDocManager::Namespace;
     }
 
     void endNamespace()
     {
       m_scope="";
-      m_part = -1;
+      m_part = LayoutDocManager::Undefined;
     }
 
     void startConcept(const XMLHandlers::Attributes &)
     {
       LayoutDocManager::instance().clear(LayoutDocManager::Concept);
       m_scope="concept/";
-      m_part = (int)LayoutDocManager::Concept;
+      m_part = LayoutDocManager::Concept;
     }
 
     void endConcept()
     {
       m_scope="";
-      m_part = -1;
+      m_part = LayoutDocManager::Undefined;
     }
 
     void startFile(const XMLHandlers::Attributes &)
     {
       LayoutDocManager::instance().clear(LayoutDocManager::File);
       m_scope="file/";
-      m_part = (int)LayoutDocManager::File;
+      m_part = LayoutDocManager::File;
     }
 
     void endFile()
     {
       m_scope="";
-      m_part = -1;
+      m_part = LayoutDocManager::Undefined;
     }
 
     void startGroup(const XMLHandlers::Attributes &)
     {
       LayoutDocManager::instance().clear(LayoutDocManager::Group);
       m_scope="group/";
-      m_part = (int)LayoutDocManager::Group;
+      m_part = LayoutDocManager::Group;
     }
 
     void endGroup()
     {
       m_scope="";
-      m_part = -1;
+      m_part = LayoutDocManager::Undefined;
     }
 
     void startDirectory(const XMLHandlers::Attributes &)
     {
       LayoutDocManager::instance().clear(LayoutDocManager::Directory);
       m_scope="directory/";
-      m_part = (int)LayoutDocManager::Directory;
+      m_part = LayoutDocManager::Directory;
     }
 
     void endDirectory()
     {
       m_scope="";
-      m_part = -1;
+      m_part = LayoutDocManager::Undefined;
     }
 
     void startMemberDef(const XMLHandlers::Attributes &)
     {
       m_scope+="memberdef/";
-      if (m_part!=-1)
+      if (m_part!=LayoutDocManager::Undefined)
       {
-        LayoutDocManager::instance().addEntry((LayoutDocManager::LayoutPart)m_part,
-                                              new LayoutDocEntrySimple(LayoutDocEntry::MemberDefStart));
+        LayoutDocManager::instance().addEntry(m_part,new LayoutDocEntrySimple(LayoutDocEntry::MemberDefStart));
       }
     }
 
@@ -677,10 +673,9 @@ class LayoutParser
       if (i!=-1)
       {
         m_scope=m_scope.left(i);
-        if (m_part!=-1)
+        if (m_part!=LayoutDocManager::Undefined)
         {
-          LayoutDocManager::instance().addEntry((LayoutDocManager::LayoutPart)m_part,
-                                              new LayoutDocEntrySimple(LayoutDocEntry::MemberDefEnd));
+          LayoutDocManager::instance().addEntry(m_part,new LayoutDocEntrySimple(LayoutDocEntry::MemberDefEnd));
         }
       }
     }
@@ -688,10 +683,9 @@ class LayoutParser
     void startMemberDecl(const XMLHandlers::Attributes &)
     {
       m_scope+="memberdecl/";
-      if (m_part!=-1)
+      if (m_part!=LayoutDocManager::Undefined)
       {
-        LayoutDocManager::instance().addEntry((LayoutDocManager::LayoutPart)m_part,
-                                              new LayoutDocEntrySimple(LayoutDocEntry::MemberDeclStart));
+        LayoutDocManager::instance().addEntry(m_part,new LayoutDocEntrySimple(LayoutDocEntry::MemberDeclStart));
       }
     }
 
@@ -701,10 +695,9 @@ class LayoutParser
       if (i!=-1)
       {
         m_scope=m_scope.left(i);
-        if (m_part!=-1)
+        if (m_part!=LayoutDocManager::Undefined)
         {
-          LayoutDocManager::instance().addEntry((LayoutDocManager::LayoutPart)m_part,
-                                              new LayoutDocEntrySimple(LayoutDocEntry::MemberDeclEnd));
+          LayoutDocManager::instance().addEntry(m_part,new LayoutDocEntrySimple(LayoutDocEntry::MemberDeclEnd));
         }
       }
     }
@@ -715,7 +708,7 @@ class LayoutParser
    ~LayoutParser() { delete m_rootNav; }
 
     QCString m_scope;
-    int m_part = -1;
+    LayoutDocManager::LayoutPart m_part = LayoutDocManager::Undefined;
     LayoutNavEntry *m_rootNav = 0;
     bool m_invalidEntry = false;
     static int m_userGroupCount;
@@ -1597,7 +1590,7 @@ LayoutDocManager & LayoutDocManager::instance()
 
 const LayoutDocEntryList &LayoutDocManager::docEntries(LayoutDocManager::LayoutPart part) const
 {
-  return d->docEntries[(int)part];
+  return d->docEntries[static_cast<int>(part)];
 }
 
 LayoutNavEntry* LayoutDocManager::rootNavEntry() const
@@ -1607,12 +1600,12 @@ LayoutNavEntry* LayoutDocManager::rootNavEntry() const
 
 void LayoutDocManager::addEntry(LayoutDocManager::LayoutPart p,LayoutDocEntry *e)
 {
-  d->docEntries[(int)p].push_back(std::unique_ptr<LayoutDocEntry>(e));
+  d->docEntries[static_cast<int>(p)].push_back(std::unique_ptr<LayoutDocEntry>(e));
 }
 
 void LayoutDocManager::clear(LayoutDocManager::LayoutPart p)
 {
-  d->docEntries[(int)p].clear();
+  d->docEntries[static_cast<int>(p)].clear();
 }
 
 void LayoutDocManager::parse(const QCString &fileName)
@@ -1664,8 +1657,8 @@ QCString extractLanguageSpecificTitle(const QCString &input,SrcLangExt lang)
     e=input.find('|',s);
     i=input.find('=',s);
     assert(i>s);
-    int key=input.mid(s,i-s).toInt();
-    if (key==(int)lang) // found matching key
+    size_t key=input.mid(s,i-s).toUInt();
+    if (key==lang) // found matching key
     {
       if (e==-1) e=input.length();
       return input.mid(i+1,e-i-1);

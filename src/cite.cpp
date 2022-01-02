@@ -153,11 +153,11 @@ void CitationManager::insertCrossReferencesForBibFile(const QCString &bibFile)
         {
           if (k!=-1)
           {
-            citeName = line.mid((uint)(j),(uint)(k-j));
+            citeName = line.mid(static_cast<size_t>(j),static_cast<size_t>(k-j));
           }
           else
           {
-            citeName = line.mid((uint)(j));
+            citeName = line.mid(static_cast<size_t>(j));
           }
           citeName = citeName.stripWhiteSpace();
           j = 0;
@@ -176,7 +176,7 @@ void CitationManager::insertCrossReferencesForBibFile(const QCString &bibFile)
       int k = line.find('}',i);
       if (j>i && k>j)
       {
-        QCString crossrefName = line.mid((uint)(j+1),(uint)(k-j-1));
+        QCString crossrefName = line.mid(static_cast<size_t>(j+1),static_cast<uint>(k-j-1));
         // check if the reference with the cross reference is used
         // insert cross reference when cross reference has not yet been added.
         if ((p->entries.find(citeName.str())!=p->entries.end()) &&
@@ -310,9 +310,9 @@ void CitationManager::generatePage()
         int k=line.find("]</a>");
         if (j!=-1 && k!=-1)
         {
-          uint ui=(uint)i;
-          uint uj=(uint)j;
-          uint uk=(uint)k;
+          size_t ui=static_cast<size_t>(i);
+          size_t uj=static_cast<size_t>(j);
+          size_t uk=static_cast<size_t>(k);
           QCString label = line.mid(ui+14,uj-ui-14);
           QCString number = line.mid(uj+2,uk-uj-1);
           line = line.left(ui+14) + label + line.right(line.length()-uj);

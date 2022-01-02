@@ -352,7 +352,7 @@ void DefinitionImpl::addSectionsToIndex()
     if (isSection(type))
     {
       //printf("  level=%d title=%s\n",level,qPrint(si->title));
-      int nextLevel = (int)type;
+      int nextLevel = static_cast<int>(type);
       int i;
       if (nextLevel>level)
       {
@@ -373,7 +373,7 @@ void DefinitionImpl::addSectionsToIndex()
       // determine if there is a next level inside this item
       auto it_next = std::next(it);
       bool isDir = (it_next!=m_impl->sectionRefs.end()) ?
-                       ((int)((*it_next)->type()) > nextLevel) : FALSE;
+                       (static_cast<int>((*it_next)->type()) > nextLevel) : FALSE;
       Doxygen::indexList->addContentsItem(isDir,title,
                                          getReference(),
                                          m_impl->def->getOutputFileBase(),
@@ -419,7 +419,7 @@ bool DefinitionImpl::_docsAlreadyAdded(const QCString &doc,QCString &sigList)
   // to avoid mismatches due to differences in indenting, we first remove
   // double whitespaces...
   QCString docStr = doc.simplifyWhiteSpace();
-  MD5Buffer((const unsigned char *)docStr.data(),docStr.length(),md5_sig);
+  MD5Buffer(docStr.data(),docStr.length(),md5_sig);
   MD5SigToString(md5_sig,sigStr);
   //printf("%s:_docsAlreadyAdded doc='%s' sig='%s' docSigs='%s'\n",
   //    qPrint(name()),qPrint(doc),qPrint(sigStr),qPrint(sigList));
@@ -600,8 +600,8 @@ class FilterCache
         auto item = it->second;
         //printf("getFileContents(%s): cache hit\n",qPrint(fileName));
         // file already processed, get the results after filtering from the tmp file
-        Debug::print(Debug::FilterOutput,0,"Reusing filter result for %s from %s at offset=%d size=%d\n",
-               qPrint(fileName),qPrint(Doxygen::filterDBFileName),(int)item.filePos,(int)item.fileSize);
+        Debug::print(Debug::FilterOutput,0,"Reusing filter result for %s from %s at offset=%lld size=%zu\n",
+               qPrint(fileName),qPrint(Doxygen::filterDBFileName),item.filePos,item.fileSize);
         f = Portable::fopen(Doxygen::filterDBFileName,"rb");
         if (f)
         {
@@ -609,7 +609,7 @@ class FilterCache
           str.resize(static_cast<uint>(item.fileSize+1));
           if (Portable::fseek(f,item.filePos,SEEK_SET)==-1)
           {
-            err("Failed to seek to position %d in filter database file %s\n",(int)item.filePos,qPrint(Doxygen::filterDBFileName));
+            err("Failed to seek to position %d in filter database file %s\n",static_cast<int>(item.filePos),qPrint(Doxygen::filterDBFileName));
             success=FALSE;
           }
           if (success)
@@ -617,8 +617,8 @@ class FilterCache
             size_t numBytes = fread(str.data(),1,item.fileSize,f);
             if (numBytes!=item.fileSize)
             {
-              err("Failed to read %d bytes from position %d in filter database file %s: got %d bytes\n",
-                 (int)item.fileSize,(int)item.filePos,qPrint(Doxygen::filterDBFileName),(int)numBytes);
+              err("Failed to read %zu bytes from position %d in filter database file %s: got %zu bytes\n",
+                 item.fileSize,static_cast<int>(item.filePos),qPrint(Doxygen::filterDBFileName),numBytes);
               success=FALSE;
             }
           }
@@ -659,8 +659,8 @@ class FilterCache
           if (bytesRead!=bytesWritten)
           {
             // handle error
-            err("Failed to write to filter database %s. Wrote %d out of %d bytes\n",
-                qPrint(Doxygen::filterDBFileName),(int)bytesWritten,(int)bytesRead);
+            err("Failed to write to filter database %s. Wrote %zu out of %zu bytes\n",
+                qPrint(Doxygen::filterDBFileName),bytesWritten,bytesRead);
             str.addChar('\0');
             Portable::pclose(f);
             fclose(bf);
@@ -673,8 +673,8 @@ class FilterCache
         item.fileSize = size;
         // add location entry to the dictionary
         m_cache.insert(std::make_pair(fileName.str(),item));
-        Debug::print(Debug::FilterOutput,0,"Storing new filter result for %s in %s at offset=%d size=%d\n",
-               qPrint(fileName),qPrint(Doxygen::filterDBFileName),(int)item.filePos,(int)item.fileSize);
+        Debug::print(Debug::FilterOutput,0,"Storing new filter result for %s in %s at offset=%lld size=%zu\n",
+               qPrint(fileName),qPrint(Doxygen::filterDBFileName),item.filePos,item.fileSize);
         // update end of file position
         m_endPos += size;
         Portable::pclose(f);
@@ -839,7 +839,7 @@ bool readCodeFragment(const QCString &fileName,
         int braceIndex   = result.findRev('}');
         if (braceIndex > newLineIndex)
         {
-          result.truncate((uint)braceIndex+1);
+          result.truncate(static_cast<size_t>(braceIndex+1));
         }
         endLine=lineNr-1;
       }
@@ -914,7 +914,7 @@ void DefinitionImpl::writeSourceDef(OutputList &ol,const QCString &) const
         // write file link
         ol.writeObjectLink(QCString(),fn,QCString(),m_impl->body->fileDef->name());
         // write text right from file marker
-        ol.parseText(refText.right(refText.length()-(uint)fileMarkerPos-2));
+        ol.parseText(refText.right(refText.length()-static_cast<size_t>(fileMarkerPos)-2));
       }
       else // file marker before line marker
       {
@@ -927,7 +927,7 @@ void DefinitionImpl::writeSourceDef(OutputList &ol,const QCString &) const
         // write line link
         ol.writeObjectLink(QCString(),fn,anchorStr,lineStr);
         // write text right from linePos marker
-        ol.parseText(refText.right(refText.length()-(uint)lineMarkerPos-2));
+        ol.parseText(refText.right(refText.length()-static_cast<size_t>(lineMarkerPos)-2));
       }
       ol.endParagraph();
     }
@@ -1083,7 +1083,7 @@ void DefinitionImpl::_writeSourceRefList(OutputList &ol,const QCString &scopeNam
     ol.parseText(text);
     ol.docify(" ");
     writeMarkerList(ol,
-                    theTranslator->trWriteList((int)members.size()).str(),
+                    theTranslator->trWriteList(members.size()).str(),
                     members.size(),
                     replaceFunc);
     ol.writeString(".");
@@ -1429,7 +1429,7 @@ void DefinitionImpl::writeToc(OutputList &ol, const LocalToc &localToc) const
       if (isSection(type))
       {
         //printf("  level=%d title=%s\n",level,qPrint(si->title));
-        int nextLevel = (int)type;
+        int nextLevel = static_cast<int>(type);
         if (nextLevel>level)
         {
           for (l=level;l<nextLevel;l++)
@@ -1446,7 +1446,7 @@ void DefinitionImpl::writeToc(OutputList &ol, const LocalToc &localToc) const
             if (l <= maxLevel) ol.writeString("</ul>\n");
           }
         }
-        cs[0]=(char)('0'+nextLevel);
+        cs[0]=static_cast<char>('0'+nextLevel);
         if (nextLevel <= maxLevel && inLi[nextLevel])
         {
           ol.writeString("</li>\n");
@@ -1494,7 +1494,7 @@ void DefinitionImpl::writeToc(OutputList &ol, const LocalToc &localToc) const
       if (isSection(type))
       {
         //printf("  level=%d title=%s\n",level,qPrint(si->title));
-        int nextLevel = (int)type;
+        int nextLevel = static_cast<int>(type);
         if (nextLevel>level)
         {
           for (l=level;l<nextLevel;l++)

@@ -153,9 +153,9 @@ class PrintDocVisitor : public DocVisitor
           if (s->enable())
           {
             indent_pre();
-            printf("<details>\n"); 
+            printf("<details>\n");
           }
-          else 
+          else
           {
             indent_post();
             printf("</details>\n");
@@ -165,9 +165,9 @@ class PrintDocVisitor : public DocVisitor
           if (s->enable())
           {
             indent_pre();
-            printf("<summary>\n"); 
+            printf("<summary>\n");
           }
-          else 
+          else
           {
             indent_post();
             printf("</summary>\n");
@@ -426,7 +426,7 @@ class PrintDocVisitor : public DocVisitor
         printf(">\n");
       }
       else printf("<ul>\n");
- 
+
     }
     void visitPost(DocHtmlList *s)
     {
@@ -678,11 +678,11 @@ class PrintDocVisitor : public DocVisitor
         {
           if (param->kind()==DocNode::Kind_Word)
           {
-            visit((DocWord*)param.get());
+            visit(dynamic_cast<DocWord*>(param.get()));
           }
           else if (param->kind()==DocNode::Kind_LinkedWord)
           {
-            visit((DocLinkedWord*)param.get());
+            visit(dynamic_cast<DocLinkedWord*>(param.get()));
           }
           else if (param->kind()==DocNode::Kind_Sep)
           {

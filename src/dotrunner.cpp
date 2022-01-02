@@ -107,7 +107,7 @@ static bool resetPDFSize(const int width,const int height, const QCString &base)
 bool DotRunner::readBoundingBox(const QCString &fileName,int *width,int *height,bool isEps)
 {
   const char *bb = isEps ? "%%PageBoundingBox:" : "/MediaBox [";
-  int bblen = (int)strlen(bb);
+  size_t bblen = strlen(bb);
   FILE *f = Portable::fopen(fileName,"rb");
   if (!f)
   {

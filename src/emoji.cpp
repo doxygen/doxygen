@@ -1894,18 +1894,18 @@ static struct emojiEntityCompatibility
   {":person_with_pouting_face:",              ":pouting_face:"},
 };
 
-static const int g_numEmojiEntities = (int)(sizeof(g_emojiEntities)/sizeof(*g_emojiEntities));
-static const int g_numEmojiCompatibilityEntities = (int)(sizeof(g_emojiCompatibilityEntities)/sizeof(*g_emojiCompatibilityEntities));
+static const size_t g_numEmojiEntities = sizeof(g_emojiEntities)/sizeof(*g_emojiEntities);
+static const size_t g_numEmojiCompatibilityEntities = sizeof(g_emojiCompatibilityEntities)/sizeof(*g_emojiCompatibilityEntities);
 
 EmojiEntityMapper *EmojiEntityMapper::s_instance = 0;
 
 EmojiEntityMapper::EmojiEntityMapper()
 {
-  for (int i = 0; i < g_numEmojiEntities; i++)
+  for (size_t i = 0; i < g_numEmojiEntities; i++)
   {
     m_name2symGh.insert(std::make_pair(g_emojiEntities[i].name, i));
   }
-  for (int i = 0; i < g_numEmojiCompatibilityEntities; i++)
+  for (size_t i = 0; i < g_numEmojiCompatibilityEntities; i++)
   {
     int ii = symbol2index(g_emojiCompatibilityEntities[i].newName);
     if (ii != -1) m_name2symGh.insert(std::make_pair(g_emojiCompatibilityEntities[i].oldName, ii));
@@ -1950,11 +1950,11 @@ int EmojiEntityMapper::symbol2index(const std::string &symName) const
  */
 void EmojiEntityMapper::writeEmojiFile(TextStream &t)
 {
-  for (int i = 0; i < g_numEmojiEntities; i++)
+  for (size_t i = 0; i < g_numEmojiEntities; i++)
   {
     t << g_emojiEntities[i].name << "\n";
   }
-  for (int i = 0; i < g_numEmojiCompatibilityEntities; i++)
+  for (size_t i = 0; i < g_numEmojiCompatibilityEntities; i++)
   {
     t << g_emojiCompatibilityEntities[i].oldName << "\n";
   }
@@ -1967,7 +1967,7 @@ void EmojiEntityMapper::writeEmojiFile(TextStream &t)
  */
 const char *EmojiEntityMapper::unicode(int index) const
 {
-  return index>=0 && index<g_numEmojiEntities ? g_emojiEntities[index].unicode : 0;
+  return index>=0 && static_cast<size_t>(index)<g_numEmojiEntities ? g_emojiEntities[index].unicode : 0;
 }
 
 /*! @brief Access routine to the name of the Emoji entity
@@ -1977,5 +1977,5 @@ const char *EmojiEntityMapper::unicode(int index) const
  */
 const char *EmojiEntityMapper::name(int index) const
 {
-  return index>=0 && index<g_numEmojiEntities ? g_emojiEntities[index].name : 0;
+  return index>=0 && static_cast<size_t>(index)<g_numEmojiEntities ? g_emojiEntities[index].name : 0;
 }

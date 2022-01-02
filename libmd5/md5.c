@@ -272,11 +272,11 @@ MD5Transform(UWORD32 buf[4], UWORD32 const in[16])
 
 #endif
 
-void MD5Buffer (const unsigned char *buf,unsigned int len,unsigned char sig[16])
+void MD5Buffer (const char *buf,unsigned int len,unsigned char sig[16])
 {
   struct MD5Context md5;
   MD5Init(&md5);
-  MD5Update(&md5,buf,len);
+  MD5Update(&md5,(const md5byte*)buf,len);
   MD5Final(sig,&md5);
 }
 

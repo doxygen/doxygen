@@ -334,7 +334,7 @@ void XMLCodeGenerator::writeLineNumber(const QCString &extRef,const QCString &co
   if (!compId.isEmpty())
   {
     m_refId=compId;
-    if (!anchorId.isEmpty()) m_refId+=(QCString)"_1"+anchorId;
+    if (!anchorId.isEmpty()) m_refId+=QCString("_1")+anchorId;
     m_isMemberRef = anchorId!=0;
     if (!extRef.isEmpty()) m_external=extRef;
   }
@@ -1761,7 +1761,7 @@ static void generateXMLForPage(PageDef *pd,TextStream &ti,bool isExample)
   QCString pageName = pd->getOutputFileBase();
   if (pd->getGroupDef())
   {
-    pageName+=(QCString)"_"+pd->name();
+    pageName+=QCString("_")+pd->name();
   }
   if (pageName=="index") pageName="indexpage"; // to prevent overwriting the generated index page.
 
@@ -1821,7 +1821,7 @@ static void generateXMLForPage(PageDef *pd,TextStream &ti,bool isExample)
       if (isSection(si->type()))
       {
         //printf("  level=%d title=%s\n",level,qPrint(si->title));
-        int nextLevel = (int)si->type();
+        int nextLevel = static_cast<int>(si->type());
         if (nextLevel>level)
         {
           for (l=level;l<nextLevel;l++)

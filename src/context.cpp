@@ -5003,8 +5003,8 @@ class ClassListContext::Private : public GenericNodeListContext
       for (const auto &cd : classLinkedMap)
       {
         if (cd->getLanguage()==SrcLangExt_VHDL &&
-            ((VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::PACKAGECLASS ||
-             (VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::PACKBODYCLASS)
+            (static_cast<VhdlDocGen::VhdlClasses>(cd->protection())==VhdlDocGen::PACKAGECLASS ||
+             static_cast<VhdlDocGen::VhdlClasses>(cd->protection())==VhdlDocGen::PACKBODYCLASS)
            ) // no architecture
         {
           continue;
@@ -5076,8 +5076,8 @@ class ClassIndexContext::Private
         for (const auto &cd : *Doxygen::classLinkedMap)
         {
           if (cd->getLanguage()==SrcLangExt_VHDL &&
-              ((VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::PACKAGECLASS ||
-               (VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::PACKBODYCLASS)
+              (static_cast<VhdlDocGen::VhdlClasses>(cd->protection())==VhdlDocGen::PACKAGECLASS ||
+               static_cast<VhdlDocGen::VhdlClasses>(cd->protection())==VhdlDocGen::PACKBODYCLASS)
              ) // no architecture
           {
             continue;
@@ -5478,7 +5478,7 @@ class NestingNodeContext::Private
           {
             if (lde->kind()==LayoutDocEntry::MemberDef)
             {
-              const LayoutDocEntryMemberDef *lmd = (const LayoutDocEntryMemberDef*)lde.get();
+              const LayoutDocEntryMemberDef *lmd = dynamic_cast<const LayoutDocEntryMemberDef*>(lde.get());
               const MemberList *ml = toNamespaceDef(m_def)->getMemberList(lmd->type);
               if (ml)
               {
@@ -5494,7 +5494,7 @@ class NestingNodeContext::Private
           {
             if (lde->kind()==LayoutDocEntry::MemberDef)
             {
-              const LayoutDocEntryMemberDef *lmd = (const LayoutDocEntryMemberDef*)lde.get();
+              const LayoutDocEntryMemberDef *lmd = dynamic_cast<const LayoutDocEntryMemberDef*>(lde.get());
               const MemberList *ml = toClassDef(m_def)->getMemberList(lmd->type);
               if (ml)
               {
@@ -5510,7 +5510,7 @@ class NestingNodeContext::Private
           {
             if (lde->kind()==LayoutDocEntry::MemberDef)
             {
-              const LayoutDocEntryMemberDef *lmd = (const LayoutDocEntryMemberDef*)lde.get();
+              const LayoutDocEntryMemberDef *lmd = dynamic_cast<const LayoutDocEntryMemberDef*>(lde.get());
               const MemberList *ml = toFileDef(m_def)->getMemberList(lmd->type);
               if (ml)
               {
@@ -5527,7 +5527,7 @@ class NestingNodeContext::Private
         {
           if (lde->kind()==LayoutDocEntry::MemberDef)
           {
-            const LayoutDocEntryMemberDef *lmd = (const LayoutDocEntryMemberDef*)lde.get();
+            const LayoutDocEntryMemberDef *lmd = dynamic_cast<const LayoutDocEntryMemberDef*>(lde.get());
             const MemberList *ml = toGroupDef(m_def)->getMemberList(lmd->type);
             if (ml)
             {
@@ -5731,8 +5731,8 @@ class NestingContext::Private : public GenericNodeListContext
     {
       if (cd->getLanguage()==SrcLangExt_VHDL)
       {
-        if ((VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::PACKAGECLASS ||
-            (VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::PACKBODYCLASS
+        if (static_cast<VhdlDocGen::VhdlClasses>(cd->protection())==VhdlDocGen::PACKAGECLASS ||
+            static_cast<VhdlDocGen::VhdlClasses>(cd->protection())==VhdlDocGen::PACKBODYCLASS
            )// no architecture
         {
           return;
@@ -5893,7 +5893,7 @@ class NestingContext::Private : public GenericNodeListContext
       for (const auto &bcd : bcl)
       {
         const ClassDef *cd=bcd.classDef;
-        if (cd->getLanguage()==SrcLangExt_VHDL && (VhdlDocGen::VhdlClasses)cd->protection()!=VhdlDocGen::ENTITYCLASS)
+        if (cd->getLanguage()==SrcLangExt_VHDL && static_cast<VhdlDocGen::VhdlClasses>(cd->protection())!=VhdlDocGen::ENTITYCLASS)
         {
           continue;
         }
@@ -5923,7 +5923,7 @@ class NestingContext::Private : public GenericNodeListContext
         bool b;
         if (cd->getLanguage()==SrcLangExt_VHDL)
         {
-          if ((VhdlDocGen::VhdlClasses)cd->protection()!=VhdlDocGen::ENTITYCLASS)
+          if (static_cast<VhdlDocGen::VhdlClasses>(cd->protection())!=VhdlDocGen::ENTITYCLASS)
           {
             continue;
           }
@@ -8115,16 +8115,16 @@ class InheritedMemberInfoListContext::Private : public GenericNodeListContext
                              MemberListType lt1,int lt2,const QCString &title,bool additionalList)
     {
       int count = cd->countMembersIncludingGrouped(lt1,inheritedFrom,additionalList);
-      if (lt2!=-1) count += cd->countMembersIncludingGrouped((MemberListType)lt2,inheritedFrom,additionalList);
+      if (lt2!=-1) count += cd->countMembersIncludingGrouped(static_cast<MemberListType>(lt2),inheritedFrom,additionalList);
       if (count>0)
       {
         const MemberList *ml  = cd->getMemberList(lt1);
-        const MemberList *ml2 = lt2!=-1 ? cd->getMemberList((MemberListType)lt2) : 0;
+        const MemberList *ml2 = lt2!=-1 ? cd->getMemberList(static_cast<MemberListType>(lt2)) : 0;
         std::unique_ptr<MemberList> combinedList = std::make_unique<MemberList>(lt,MemberListContainer::Class);
         addMemberListIncludingGrouped(inheritedFrom,ml,combinedList.get());
         addMemberListIncludingGrouped(inheritedFrom,ml2,combinedList.get());
         addMemberGroupsOfClass(inheritedFrom,cd,lt,combinedList.get());
-        if (lt2!=-1) addMemberGroupsOfClass(inheritedFrom,cd,(MemberListType)lt2,combinedList.get());
+        if (lt2!=-1) addMemberGroupsOfClass(inheritedFrom,cd,static_cast<MemberListType>(lt2),combinedList.get());
         append(InheritedMemberInfoContext::alloc(cd,std::move(combinedList),title));
       }
     }
@@ -8149,9 +8149,9 @@ class InheritedMemberInfoListContext::Private : public GenericNodeListContext
             if (lt1!=-1)
             {
               // add member info for members of cd with list type lt
-              addInheritedMembers(inheritedFrom,icd,lt,(MemberListType)lt1,lt2,title,additionalList);
+              addInheritedMembers(inheritedFrom,icd,lt,static_cast<MemberListType>(lt1),lt2,title,additionalList);
               // recurse down the inheritance tree
-              findInheritedMembers(inheritedFrom,icd,(MemberListType)lt1,lt2,title,additionalList,visitedClasses);
+              findInheritedMembers(inheritedFrom,icd,static_cast<MemberListType>(lt1),lt2,title,additionalList,visitedClasses);
             }
           }
         }

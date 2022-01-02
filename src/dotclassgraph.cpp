@@ -147,8 +147,8 @@ bool DotClassGraph::determineVisibleNodes(DotNode *rootNode,
 {
   DotNodeDeque childQueue;
   DotNodeDeque parentQueue;
-  IntVector childTreeWidth;
-  IntVector parentTreeWidth;
+  std::vector<size_t> childTreeWidth;
+  std::vector<size_t> parentTreeWidth;
   childQueue.push_back(rootNode);
   if (includeParents) parentQueue.push_back(rootNode);
   bool firstNode=TRUE; // flag to force reprocessing rootNode in the parent loop
@@ -159,16 +159,16 @@ bool DotClassGraph::determineVisibleNodes(DotNode *rootNode,
     {
       DotNode *n = childQueue.front();
       childQueue.pop_front();
-      int distance = n->distance();
-      if (!n->isVisible() && distance<=Config_getInt(MAX_DOT_GRAPH_DEPTH)) // not yet processed
+      size_t distance = n->distance();
+      if (!n->isVisible() && distance<=static_cast<size_t>(Config_getInt(MAX_DOT_GRAPH_DEPTH))) // not yet processed
       {
         if (distance>0)
         {
-          int oldSize=(int)childTreeWidth.size();
+          size_t oldSize=childTreeWidth.size();
           if (distance>oldSize)
           {
-            childTreeWidth.resize(std::max(childTreeWidth.size(),(size_t)distance));
-            int i; for (i=oldSize;i<distance;i++) childTreeWidth[i]=0;
+            childTreeWidth.resize(std::max(childTreeWidth.size(),distance));
+            for (size_t i=oldSize;i<distance;i++) childTreeWidth[i]=0;
           }
           childTreeWidth[distance-1]+=n->label().length();
         }
@@ -188,14 +188,14 @@ bool DotClassGraph::determineVisibleNodes(DotNode *rootNode,
       if ((!n->isVisible() || firstNode) && n->distance()<=Config_getInt(MAX_DOT_GRAPH_DEPTH)) // not yet processed
       {
         firstNode=FALSE;
-        int distance = n->distance();
+        size_t distance = n->distance();
         if (distance>0)
         {
-          int oldSize = (int)parentTreeWidth.size();
+          size_t oldSize = parentTreeWidth.size();
           if (distance>oldSize)
           {
-            parentTreeWidth.resize(std::max(parentTreeWidth.size(),(size_t)distance));
-            int i; for (i=oldSize;i<distance;i++) parentTreeWidth[i]=0;
+            parentTreeWidth.resize(std::max(parentTreeWidth.size(),distance));
+            for (size_t i=oldSize;i<distance;i++) parentTreeWidth[i]=0;
           }
           parentTreeWidth[distance-1]+=n->label().length();
         }
@@ -210,14 +210,13 @@ bool DotClassGraph::determineVisibleNodes(DotNode *rootNode,
     }
   }
   if (Config_getBool(UML_LOOK)) return FALSE; // UML graph are always top to bottom
-  int maxWidth=0;
-  int maxHeight=(int)std::max(childTreeWidth.size(),parentTreeWidth.size());
-  uint i;
-  for (i=0;i<childTreeWidth.size();i++)
+  size_t maxWidth=0;
+  size_t maxHeight=std::max(childTreeWidth.size(),parentTreeWidth.size());
+  for (size_t i=0;i<childTreeWidth.size();i++)
   {
     if (childTreeWidth.at(i)>maxWidth) maxWidth=childTreeWidth.at(i);
   }
-  for (i=0;i<parentTreeWidth.size();i++)
+  for (size_t i=0;i<parentTreeWidth.size();i++)
   {
     if (parentTreeWidth.at(i)>maxWidth) maxWidth=parentTreeWidth.at(i);
   }
@@ -363,13 +362,13 @@ bool DotClassGraph::isTooBig() const
 
 int DotClassGraph::numNodes() const
 {
-  int numNodes = 0;
-  numNodes+= (int)m_startNode->children().size();
+  size_t numNodes = 0;
+  numNodes+= m_startNode->children().size();
   if (m_graphType==Inheritance)
   {
-    numNodes+= (int)m_startNode->parents().size();
+    numNodes+= m_startNode->parents().size();
   }
-  return numNodes;
+  return static_cast<int>(numNodes);
 }
 
 DotClassGraph::~DotClassGraph()

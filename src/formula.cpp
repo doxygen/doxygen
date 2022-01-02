@@ -54,7 +54,7 @@ struct FormulaManager::Private
     return DisplaySize(-1,-1);
   }
   StringVector  formulas;
-  IntMap formulaMap;
+  std::map<std::string,size_t> formulaMap;
   std::map<int,DisplaySize> displaySizeMap;
 };
 
@@ -168,10 +168,10 @@ void FormulaManager::generateImages(const QCString &path,Format format,HighDPI h
     }
     t << "\\pagestyle{empty}\n";
     t << "\\begin{document}\n";
-    for (int i=0; i<(int)p->formulas.size(); i++)
+    for (size_t i=0; i<p->formulas.size(); i++)
     {
       QCString resultName;
-      resultName.sprintf("form_%d.%s",i,format==Format::Vector?"svg":"png");
+      resultName.sprintf("form_%d.%s",static_cast<int>(i),format==Format::Vector?"svg":"png");
       // only formulas for which no image exists are generated
       FileInfo fi(resultName.str());
       if (!fi.exists())
@@ -272,8 +272,8 @@ void FormulaManager::generateImages(const QCString &path,Format format,HighDPI h
       if (zoomFactor<8 || zoomFactor>50) zoomFactor=10;
       scaleFactor *= zoomFactor/10.0;
 
-      int width  = (int)((x2-x1)*scaleFactor+0.5);
-      int height = (int)((y2-y1)*scaleFactor+0.5);
+      int width  = static_cast<int>((x2-x1)*scaleFactor+0.5);
+      int height = static_cast<int>((y2-y1)*scaleFactor+0.5);
       p->storeDisplaySize(pageNum,width,height);
 
       if (format==Format::Vector)
@@ -398,7 +398,7 @@ void FormulaManager::generateImages(const QCString &path,Format format,HighDPI h
 
         Portable::sysTimerStop();
         sprintf(args,"-q -dNOSAFER -dBATCH -dNOPAUSE -dEPSCrop -sDEVICE=pnggray -dGraphicsAlphaBits=4 -dTextAlphaBits=4 "
-            "-r%d -sOutputFile=form_%d.png %s_tmp_corr.eps",(int)(scaleFactor*72),pageNum,qPrint(formBase));
+            "-r%d -sOutputFile=form_%d.png %s_tmp_corr.eps",static_cast<int>(scaleFactor*72),pageNum,qPrint(formBase));
         Portable::sysTimerStart();
         if (Portable::system(Portable::ghostScriptCommand(),args)!=0)
         {
@@ -443,10 +443,10 @@ void FormulaManager::generateImages(const QCString &path,Format format,HighDPI h
   if (f.is_open())
   {
     TextStream t(&f);
-    for (int i=0; i<(int)p->formulas.size(); i++)
+    for (size_t i=0; i<p->formulas.size(); i++)
     {
       DisplaySize size = p->getDisplaySize(i);
-      t << "\\_form#" << i;
+      t << "\\_form#" << static_cast<uint>(i);
       if (size.width!=-1 && size.height!=-1)
       {
         t << "=" << size.width << "x" << size.height;
@@ -472,15 +472,15 @@ int FormulaManager::addFormula(const std::string &formulaText)
     return it->second;
   }
   // store new formula
-  int id = (int)p->formulas.size();
-  p->formulaMap.insert(std::pair<std::string,int>(formulaText,id));
+  size_t id = p->formulas.size();
+  p->formulaMap.insert(std::make_pair(formulaText,id));
   p->formulas.push_back(formulaText);
-  return id;
+  return static_cast<int>(id);
 }
 
 std::string FormulaManager::findFormula(int formulaId) const
 {
-  if (formulaId>=0 && formulaId<(int)p->formulas.size())
+  if (formulaId>=0 && formulaId<static_cast<int>(p->formulas.size()))
   {
     return p->formulas[formulaId];
   }

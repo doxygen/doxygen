@@ -60,10 +60,10 @@ void *qmemmove( void *dst, const void *src, size_t len );
 char *qstrdup( const char * );
 
 inline uint cstrlen( const char *str )
-{ return (uint)strlen(str); }
+{ return static_cast<uint>(strlen(str)); }
 
 inline uint qstrlen( const char *str )
-{ return str ? (uint)strlen(str) : 0; }
+{ return str ? static_cast<uint>(strlen(str)) : 0; }
 
 inline char *cstrcpy( char *dst, const char *src )
 { return strcpy(dst,src); }
@@ -144,10 +144,10 @@ class QCString
     bool isEmpty() const { return m_rep.empty(); }
 
     /** Returns the length of the string, not counting the 0-terminator. Equivalent to size(). */
-    uint length() const { return (uint)m_rep.size(); }
+    uint length() const { return static_cast<uint>(m_rep.size()); }
 
     /** Returns the length of the string, not counting the 0-terminator. */
-    uint size() const { return (uint)m_rep.size(); }
+    uint size() const { return static_cast<uint>(m_rep.size()); }
 
     /** Returns a pointer to the contents of the string in the form of a 0-terminated C string */
     const char *data() const { return m_rep.c_str(); }
@@ -174,7 +174,7 @@ class QCString
      */
     bool fill( char c, int len = -1 )
     {
-      int l = len==-1 ? (int)m_rep.size() : len;
+      int l = len==-1 ? static_cast<int>(m_rep.size()) : len;
       m_rep = std::string(l,c);
       return TRUE;
     }
