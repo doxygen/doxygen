@@ -43,7 +43,7 @@ struct SharedState
   QCString lab;
   int param_sec = 0;
   int parse_sec = 0;
-  int currP = 0;
+  Spec currP = 0;
 };
 
 VHDLOutlineParser *m_outlineParser;
@@ -403,7 +403,7 @@ QCString alias_declaration() :  {QCString s,s1,s2;}
  <IS_T> { s+=" is "; } s1=name() {s+=s1;} [s1=signature() {s+=s1;}]
  <SEMI_T>
 {
- outlineParser()->addVhdlType(s2.data(),outlineParser()->getLine(ALIAS_T),Entry::VARIABLE_SEC,VhdlDocGen::ALIAS,0,s.data(),Public);
+ outlineParser()->addVhdlType(s2.data(),outlineParser()->getLine(ALIAS_T),Entry::VARIABLE_SEC,SpecifierAliasVhdl,0,s.data(),Public);
 
  return s2+" "+s+";";
 }
@@ -432,7 +432,7 @@ void architecture_body() : {QCString s,s1;}
     m_sharedState->genLabels.resize(0);
     outlineParser()->pushLabel(m_sharedState->genLabels,s1);
     m_sharedState->lastCompound=m_sharedState->current;
-    outlineParser()->addVhdlType(t.data(),outlineParser()->getLine(ARCHITECTURE_T),Entry::CLASS_SEC,VhdlDocGen::ARCHITECTURE,0,0,Private);
+    outlineParser()->addVhdlType(t.data(),outlineParser()->getLine(ARCHITECTURE_T),Entry::CLASS_SEC,SpecifierArchitecture,0,0,Public);
   }
   try
   {
@@ -504,7 +504,7 @@ QCString attribute_declaration() : {QCString s,s1;}
 {
  <ATTRIBUTE_T> s=identifier() <COLON_T> s1=type_mark() <SEMI_T>
   {
-    outlineParser()->addVhdlType(s.data(),outlineParser()->getLine(ATTRIBUTE_T),Entry::VARIABLE_SEC,VhdlDocGen::ATTRIBUTE,0,s1.data(),Public);
+    outlineParser()->addVhdlType(s.data(),outlineParser()->getLine(ATTRIBUTE_T),Entry::VARIABLE_SEC,SpecifierAttributeVhdl,0,s1.data(),Public);
     return " attribute "+s+":"+s1+";";
   }
  }
@@ -526,7 +526,7 @@ QCString attribute_specification():  {QCString s,s1,s2;}
   <ATTRIBUTE_T> s=attribute_designator() <OF_T> s1=entity_specification() <IS_T> s2=expression() <SEMI_T>
   {
    QCString t= s1+" is "+s2;
-   outlineParser()->addVhdlType(s.data(),outlineParser()->getLine(ATTRIBUTE_T),Entry::VARIABLE_SEC,VhdlDocGen::ATTRIBUTE,0,t.data(),Public);
+   outlineParser()->addVhdlType(s.data(),outlineParser()->getLine(ATTRIBUTE_T),Entry::VARIABLE_SEC,SpecifierAttributeVhdl,0,t.data(),Public);
    return " attribute "+s+" of "+s1+ " is "+s2+";";
   }
 }
@@ -713,11 +713,11 @@ void component_configuration () :{}
 void component_declaration() :  {QCString s;}
 {
  <COMPONENT_T> s=identifier() [ <IS_T> ]
-   { m_sharedState->currP=VhdlDocGen::COMPONENT; }
+   { m_sharedState->currP=SpecifierComponent; }
   [ generic_clause() ]
   [ port_clause() ]
    {
-     outlineParser()->addVhdlType(s.data(),outlineParser()->getLine(COMPONENT_T),Entry::VARIABLE_SEC,VhdlDocGen::COMPONENT,0,0,Public);
+     outlineParser()->addVhdlType(s.data(),outlineParser()->getLine(COMPONENT_T),Entry::VARIABLE_SEC,SpecifierComponent,0,0,Public);
      m_sharedState->currP=0;
   }
   <END_T> <COMPONENT_T> [ identifier() ] <SEMI_T>
@@ -839,7 +839,7 @@ void configuration_declaration() :  {QCString s,s1;}
   {
 
   m_sharedState->confName=s+"::"+s1;
-  outlineParser()->addVhdlType(s.data(),outlineParser()->getLine(CONFIGURATION_T),Entry::VARIABLE_SEC,VhdlDocGen::CONFIG,"configuration",s1.data(),Public);
+  outlineParser()->addVhdlType(s.data(),outlineParser()->getLine(CONFIGURATION_T),Entry::VARIABLE_SEC,SpecifierConfig,"configuration",s1.data(),Public);
   }
     configuration_declarative_part()
     block_configuration()
@@ -879,7 +879,7 @@ QCString constant_declaration() :  {QCString s,s1,s2;Token *t=0;}
      if(t)
       s2.prepend(":=");
      QCString it=s1+s2;
-     outlineParser()->addVhdlType(s.data(),outlineParser()->getLine(CONSTANT_T),Entry::VARIABLE_SEC,VhdlDocGen::CONSTANT,0,it.data(),Public);
+     outlineParser()->addVhdlType(s.data(),outlineParser()->getLine(CONSTANT_T),Entry::VARIABLE_SEC,SpecifierConstant,0,it.data(),Public);
      it.prepend("constant ");
      return it;
     }
@@ -990,7 +990,7 @@ QCString element_declaration() :  {QCString rec_name,s1,s2;}
       outlineParser()->addVhdlType(
           name.c_str(),outlineParser()->getLine(),
           Entry::VARIABLE_SEC,
-          VhdlDocGen::RECORD,0,
+          SpecifierRecord,0,
           s1.data(),
           Public);
     }
@@ -1045,7 +1045,7 @@ void entity_declaration() :  {QCString s;}
              {
                 m_sharedState->lastEntity=m_sharedState->current;
                 m_sharedState->lastCompound=0;
-                outlineParser()->addVhdlType(s.data(),outlineParser()->getLine(ENTITY_T),Entry::CLASS_SEC,VhdlDocGen::ENTITY,0,0,Public);
+                outlineParser()->addVhdlType(s.data(),outlineParser()->getLine(ENTITY_T),Entry::CLASS_SEC,SpecifierEntity,0,0,Public);
                }
         entity_header()
         entity_declarative_part ()
@@ -1096,8 +1096,8 @@ s=entity_tag() [ s1=signature() ] { return s+s1;}
 
 void entity_header() : {}
 {
- [  { m_sharedState->currP=VhdlDocGen::GENERIC;m_sharedState->parse_sec=GEN_SEC; } generic_clause()]
- [ { m_sharedState->currP=VhdlDocGen::PORT; } port_clause()]
+ [  { m_sharedState->currP=SpecifierGenericVhdl;m_sharedState->parse_sec=GEN_SEC; } generic_clause()]
+ [ { m_sharedState->currP=SpecifierPort; } port_clause()]
 }
 
 QCString entity_name_list() :  {QCString s,s1,s2;}
@@ -1199,7 +1199,7 @@ QCString file_declaration() :  {QCString s,s1,s2,s3;}
  <FILE_T> s=identifier_list() <COLON_T> s2=subtype_indication() [ s3=file_open_information() ] <SEMI_T>
    {
    QCString t1=s2+" "+s3;
-   outlineParser()->addVhdlType(s.data(),outlineParser()->getLine(),Entry::VARIABLE_SEC,VhdlDocGen::VFILE,0,t1.data(),Public);
+   outlineParser()->addVhdlType(s.data(),outlineParser()->getLine(),Entry::VARIABLE_SEC,SpecifierVfile,0,t1.data(),Public);
    return " file "+s+":"+s2+" "+s3+";";
    }
  }
@@ -1246,7 +1246,7 @@ QCString full_type_declaration() :  { std::shared_ptr<Entry> tmpEntry;QCString s
   <TYPE_T> s=identifier() <IS_T>
   {
     tmpEntry=m_sharedState->current;
-    outlineParser()->addVhdlType(s.data(),outlineParser()->getLine(),Entry::VARIABLE_SEC,VhdlDocGen::RECORD,0,0,Public);
+    outlineParser()->addVhdlType(s.data(),outlineParser()->getLine(),Entry::VARIABLE_SEC,SpecifierRecord,0,0,Public);
   }
  
   s2=type_definition()
@@ -1255,16 +1255,16 @@ QCString full_type_declaration() :  { std::shared_ptr<Entry> tmpEntry;QCString s
   {
      if (s2.contains("#")) {
       VhdlDocGen::deleteAllChars(s2,'#');
-      tmpEntry->spec=VhdlDocGen::RECORD;
+      tmpEntry->spec=SpecifierRecord;
       tmpEntry->type=s2.data();
     }
     else if (s2.contains("%")) {
       VhdlDocGen::deleteAllChars(s2,'%');
-      tmpEntry->spec=VhdlDocGen::UNITS;
+      tmpEntry->spec=SpecifierUnits;
       tmpEntry->type=s2.data();
      }
     else {
-      tmpEntry->spec=VhdlDocGen::TYPE;
+      tmpEntry->spec=SpecifierType;
       tmpEntry->type=s2.data();
     }
    
@@ -1466,7 +1466,7 @@ QCString interface_file_declaration() : {QCString s,s1;}
 {
   <FILE_T> s=identifier_list() <COLON_T> s1=subtype_indication()
   {
-    outlineParser()->addVhdlType(s.data(),outlineParser()->getLine(),Entry::VARIABLE_SEC,VhdlDocGen::VFILE,0,s1.data(),Public);
+    outlineParser()->addVhdlType(s.data(),outlineParser()->getLine(),Entry::VARIABLE_SEC,SpecifierVfile,0,s1.data(),Public);
     return QCString(" file "+s+":"+s1);
   }
 }
@@ -1494,16 +1494,16 @@ QCString interface_variable_declaration() :  {Token *tok=0;Token *tok1=0;Token *
         s3+=":=";
 
       QCString it=s+":"+s1+" "+s2+" "+s3+" "+s4;
-      if (m_sharedState->currP!=VhdlDocGen::COMPONENT)
+      if ((m_sharedState->currP&SpecifierComponent)==0)
       {
-        if (m_sharedState->currP==VhdlDocGen::FUNCTION || m_sharedState->currP==VhdlDocGen::PROCEDURE)
+        if ((m_sharedState->currP&SpecifierFunction)!=0 || (m_sharedState->currP&SpecifierProcedure)!=0)
         {
           outlineParser()->addProto(s5.data(),s.data(),s1.data(),s2.data(),s3.data(),s4.data());
         }
         else
         {
           QCString i=s2+s3+s4;
-          if (m_sharedState->currP==VhdlDocGen::GENERIC && m_sharedState->param_sec==0)
+          if ((m_sharedState->currP&SpecifierGenericVhdl)!=0 && m_sharedState->param_sec==0)
             outlineParser()->addVhdlType(s.data(),outlineParser()->getLine(),Entry::VARIABLE_SEC,m_sharedState->currP,i.data(),s1.data(),Public);
           else if(m_sharedState->parse_sec != GEN_SEC)
             outlineParser()->addVhdlType(s.data(),outlineParser()->getLine(),Entry::VARIABLE_SEC,m_sharedState->currP,i.data(),s1.data(),Public);
@@ -1544,7 +1544,7 @@ QCString library_clause() :  {QCString s;}
  {
                if ( m_sharedState->parse_sec==0 && Config_getBool(SHOW_INCLUDE_FILES) )
                    {
-                           outlineParser()->addVhdlType(s.data(),outlineParser()->getLine(),Entry::VARIABLE_SEC,VhdlDocGen::LIBRARY,s.data(),"_library_",Public);
+                           outlineParser()->addVhdlType(s.data(),outlineParser()->getLine(),Entry::VARIABLE_SEC,SpecifierLibrary,0,"_library_",Public);
                    }
                    QCString s1="library "+s;
                    return s1;
@@ -1732,7 +1732,7 @@ void package_body() :  {QCString s;}
  {
                         m_sharedState->lastCompound=m_sharedState->current;
                         s.prepend("_");
-                        outlineParser()->addVhdlType(s.data(),outlineParser()->getLine(),Entry::CLASS_SEC,VhdlDocGen::PACKAGE_BODY,0,0,Protected);
+                        outlineParser()->addVhdlType(s.data(),outlineParser()->getLine(),Entry::CLASS_SEC,SpecifierPackage_body,0,0,Public);
                       }
  package_body_declarative_part()
 
@@ -1775,13 +1775,13 @@ void package_declaration():  {QCString s;}
                           m_sharedState->lastCompound=m_sharedState->current;
                           std::shared_ptr<Entry> clone=std::make_shared<Entry>(*m_sharedState->current);
                           clone->section=Entry::NAMESPACE_SEC;
-                          clone->spec=VhdlDocGen::PACKAGE;
+                          clone->spec=SpecifierPackage;
                           clone->name=s;
                           clone->startLine=outlineParser()->getLine(PACKAGE_T);
                           clone->bodyLine=outlineParser()->getLine(PACKAGE_T);
                           clone->protection=Package;
                           m_sharedState->current_root->moveToSubEntryAndKeep(clone);
-                          outlineParser()->addVhdlType(s.data(),outlineParser()->getLine(PACKAGE_T),Entry::CLASS_SEC,VhdlDocGen::PACKAGE,0,0,Package);
+                          outlineParser()->addVhdlType(s.data(),outlineParser()->getLine(PACKAGE_T),Entry::CLASS_SEC,SpecifierPackage,0,0,Public);
                           }
     package_header()  
     package_declarative_part()
@@ -1841,7 +1841,7 @@ QCString physical_literal() :  {QCString s,s1;}
 QCString physical_type_definition() : {QCString s,s1,s2;Token *t=0;}
 {
         t=<UNITS_T>
-            s=identifier()<SEMI_T> { outlineParser()->addVhdlType(s.data(),t->beginLine,Entry::VARIABLE_SEC,VhdlDocGen::UNITS,0,0,Public);}
+            s=identifier()<SEMI_T> { outlineParser()->addVhdlType(s.data(),t->beginLine,Entry::VARIABLE_SEC,SpecifierUnits,0,0,Public);}
             (
              s1=secondary_unit_declaration()
             )*
@@ -1952,7 +1952,7 @@ void process_statement() : {QCString s,s1,s2;Token *tok=0;Token *tok1=0;}
 [ s=identifier() <COLON_T> ]
 [ <POSTPONED_T> ] tok1=<PROCESS_T>
  {
-	m_sharedState->currP=VhdlDocGen::PROCESS;
+	m_sharedState->currP=SpecifierProcess;
     m_sharedState->current->startLine=tok1->beginLine;
     m_sharedState->current->bodyLine=tok1->beginLine;
  }
@@ -1980,7 +1980,7 @@ void process_statement() : {QCString s,s1,s2;Token *tok=0;Token *tok1=0;}
           m_sharedState->currP=0;
           if(tok)
             s1=tok->image;
-          outlineParser()->createFunction(m_sharedState->currName.data(),VhdlDocGen::PROCESS,s1.data());
+          outlineParser()->createFunction(m_sharedState->currName.data(),SpecifierProcess,s1.data());
           outlineParser()->createFlow();
           m_sharedState->currName="";
           outlineParser()->newEntry();
@@ -2086,7 +2086,7 @@ QCString secondary_unit_declaration() :  {QCString s,s1;Token *t1=0;}
 {
 s=identifier() t1=<EQU_T> s1=physical_literal() <SEMI_T>
 {
-   outlineParser()->addVhdlType(s.data(),t1->beginLine,Entry::VARIABLE_SEC,VhdlDocGen::UNITS,0,s1.data(),Public);  
+   outlineParser()->addVhdlType(s.data(),t1->beginLine,Entry::VARIABLE_SEC,SpecifierUnits,0,s1.data(),Public);  
    return s+"="+s1; }
 }
 
@@ -2220,7 +2220,7 @@ void signal_declaration() :  { Token* tok=0;QCString s,s1,s2,s3,s4;}
      if(tok)
       s3.prepend(":=");
      s4=s1+s2+s3;
-     outlineParser()->addVhdlType(s.data(),outlineParser()->getLine(),Entry::VARIABLE_SEC,VhdlDocGen::SIGNAL,0,s4.data(),Public);
+     outlineParser()->addVhdlType(s.data(),outlineParser()->getLine(),Entry::VARIABLE_SEC,SpecifierSignal,0,s4.data(),Public);
      }
 }
 QCString signal_kind() :  {}
@@ -2340,7 +2340,7 @@ void subprogram_specification() : {QCString s;Token *tok=0;Token *t;}
 {
  <PROCEDURE_T> s=designator()
  {
-   m_sharedState->currP=VhdlDocGen::PROCEDURE;
+   m_sharedState->currP=SpecifierProcedure;
    outlineParser()->createFunction(s.data(),m_sharedState->currP,0);
    m_sharedState->tempEntry=m_sharedState->current;
    m_sharedState->current->startLine=outlineParser()->getLine(PROCEDURE_T);
@@ -2354,7 +2354,7 @@ void subprogram_specification() : {QCString s;Token *tok=0;Token *t;}
  |
  [ (tok=<PURE_T> | tok=<IMPURE_T>) ] t=<FUNCTION_T> s=designator()
  {
-   m_sharedState->currP=VhdlDocGen::FUNCTION;
+   m_sharedState->currP=SpecifierFunction;
    if(tok)
      outlineParser()->createFunction(tok->image.c_str(),m_sharedState->currP,s.data());
    else
@@ -2381,7 +2381,7 @@ QCString subtype_declaration() :  {QCString s,s1;}
 {
 <SUBTYPE_T> s=identifier() <IS_T> s1=subtype_indication() <SEMI_T>
 {
-  outlineParser()->addVhdlType(s.data(),outlineParser()->getLine(),Entry::VARIABLE_SEC,VhdlDocGen::SUBTYPE,0,s1.data(),Public);
+  outlineParser()->addVhdlType(s.data(),outlineParser()->getLine(),Entry::VARIABLE_SEC,SpecifierSubtype,0,s1.data(),Public);
   return " subtype "+s+" is "+s1+";";
 }
 }
@@ -2478,8 +2478,8 @@ QCString unconstraint_array_definition() :  {QCString s,s1,s2,s3;}
                          outlineParser()->addVhdlType(it.c_str(),
                                                       outlineParser()->getLine(),
                                                       Entry::VARIABLE_SEC,
-                                                      VhdlDocGen::USE,
-                                                      it.c_str(),
+                                                      SpecifierUse,
+                                                      0,
                                                       "_use_",Public);
                        }
                      }
@@ -2504,7 +2504,7 @@ QCString variable_declaration() :  {Token *tok=0;Token *t1=0;QCString s,s1,s2;}
 [ t1=<VARASSIGN_T> s2=expression() ] <SEMI_T>
 
 {
-  int spec;
+  Spec spec;
   if(t1)
     s2.prepend(":=");
   QCString val=" variable "+s+":"+s1+s2+";";
@@ -2513,10 +2513,10 @@ QCString variable_declaration() :  {Token *tok=0;Token *t1=0;QCString s,s1,s2;}
   {
     it.prepend(" shared ");
     val.prepend(" shared");
-    spec=VhdlDocGen::SHAREDVARIABLE;
+    spec=SpecifierSharedvariable;
   }
   else
-    spec=VhdlDocGen::SHAREDVARIABLE;
+    spec=SpecifierSharedvariable;
 
   if(t1)
   {
@@ -2633,7 +2633,7 @@ void context_declaration(): {QCString s,s1;}
  <CONTEXT_T> s=identifier() <IS_T> { m_sharedState->parse_sec=CONTEXT_SEC; }  (s1=libustcont_stats())* <END_T> [ <CONTEXT_T> ][identifier()] <SEMI_T>
                         {
                           m_sharedState->parse_sec=0;
-                          outlineParser()->addVhdlType(s.data(),outlineParser()->getLine(LIBRARY_T),Entry::VARIABLE_SEC,VhdlDocGen::LIBRARY,"context",s1.data(),Public);
+                          outlineParser()->addVhdlType(s.data(),outlineParser()->getLine(LIBRARY_T),Entry::VARIABLE_SEC,SpecifierLibrary,"context",s1.data(),Public);
                         }
 }
 
@@ -2649,7 +2649,7 @@ QCString libustcont_stats(): {QCString s;}
  <PACKAGE_T> s=identifier() <IS_T>  <NEW_T> s1=name() s2=signature() [gen_assoc_list()] <SEMI_T>
     {
       QCString q=" is new "+s1+s2;
-      outlineParser()->addVhdlType(s.data(),outlineParser()->getLine(PACKAGE_T),Entry::VARIABLE_SEC,VhdlDocGen::INSTANTIATION,"package",q.data(),Public);
+      outlineParser()->addVhdlType(s.data(),outlineParser()->getLine(PACKAGE_T),Entry::VARIABLE_SEC,SpecifierInstantiation,"package",q.data(),Public);
     }
 }
 
@@ -2667,7 +2667,7 @@ QCString subprogram_instantiation_declaration():{QCString s,s1,s2;}
  <FUNCTION_T>  s=identifier() <IS_T> <NEW_T> s1=name()  s2=signature() [gen_assoc_list()] <SEMI_T>
     {
      QCString q= " is new "+s1+s2;
-      outlineParser()->addVhdlType(s.data(),outlineParser()->getLine(FUNCTION_T),Entry::VARIABLE_SEC,VhdlDocGen::INSTANTIATION,"function ",q.data(),Public);
+      outlineParser()->addVhdlType(s.data(),outlineParser()->getLine(FUNCTION_T),Entry::VARIABLE_SEC,SpecifierInstantiation,"function ",q.data(),Public);
     return q;
     }
 }
@@ -2924,7 +2924,7 @@ QCString ifunc():{QCString s,s1,s2,s3;Token *t=0;Token *t1=0;Token *t2=0;}
      int b=outlineParser()->getLine(PROCEDURE_T);
 
      if (a>b) b=a;
-     outlineParser()->addVhdlType(m_sharedState->current->name.data(),b,Entry::VARIABLE_SEC,VhdlDocGen::GENERIC,ss.data(),0,Public);
+     outlineParser()->addVhdlType(m_sharedState->current->name.data(),b,Entry::VARIABLE_SEC,SpecifierGenericVhdl,ss.data(),0,Public);
    }
    m_sharedState->currP=0;return QCString();
  }

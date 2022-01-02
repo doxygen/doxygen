@@ -831,7 +831,7 @@ static const std::map< std::string, ElementCallbacks > g_elementHandlers =
                                                   } },
   { "class/memberdecl/nestedclasses",             { startCb(&LayoutParser::startSectionEntry,LayoutDocEntry::ClassNestedClasses,
                                                             []() { return compileOptions(/*default*/        theTranslator->trCompounds(),
-                                                                                         SrcLangExt_VHDL,   theTranslator->trVhdlType(VhdlDocGen::ENTITY,FALSE),
+                                                                                         SrcLangExt_VHDL,   theTranslator->trVhdlType(SpecifierEntity,FALSE),
                                                                                          SrcLangExt_Fortran,theTranslator->trDataTypes()); }),
                                                     endCb()
                                                   } },
@@ -1076,7 +1076,7 @@ static const std::map< std::string, ElementCallbacks > g_elementHandlers =
                                                   } },
   { "namespace/memberdecl/classes",               { startCb(&LayoutParser::startSectionEntry,LayoutDocEntry::NamespaceClasses,
                                                             []() { return compileOptions(/* default */      theTranslator->trCompounds(),
-                                                                           SrcLangExt_VHDL,   theTranslator->trVhdlType(VhdlDocGen::ENTITY,FALSE),
+                                                                           SrcLangExt_VHDL,   theTranslator->trVhdlType(SpecifierEntity,FALSE),
                                                                            SrcLangExt_Fortran,theTranslator->trDataTypes()); }),
                                                     endCb()
                                                   } },
@@ -1199,7 +1199,7 @@ static const std::map< std::string, ElementCallbacks > g_elementHandlers =
                                                   } },
   { "file/memberdecl/classes",                    { startCb(&LayoutParser::startSectionEntry,LayoutDocEntry::FileClasses,
                                                             []() { return compileOptions(/* default */      theTranslator->trCompounds(),
-                                                                                         SrcLangExt_VHDL,   theTranslator->trVhdlType(VhdlDocGen::ENTITY,FALSE),
+                                                                                         SrcLangExt_VHDL,   theTranslator->trVhdlType(SpecifierEntity,FALSE),
                                                                                          SrcLangExt_Fortran,theTranslator->trDataTypes()); }),
                                                     endCb()
                                                   } },
@@ -1325,7 +1325,7 @@ static const std::map< std::string, ElementCallbacks > g_elementHandlers =
 
   { "group/memberdecl/classes",                   { startCb(&LayoutParser::startSectionEntry, LayoutDocEntry::GroupClasses,
                                                             []() { return compileOptions(/* default */       theTranslator->trCompounds(),
-                                                                                         SrcLangExt_VHDL,    theTranslator->trVhdlType(VhdlDocGen::ENTITY,FALSE),
+                                                                                         SrcLangExt_VHDL,    theTranslator->trVhdlType(SpecifierEntity,FALSE),
                                                                                          SrcLangExt_Fortran, theTranslator->trDataTypes()); }),
                                                     endCb()
                                                   } },

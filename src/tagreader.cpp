@@ -1200,7 +1200,7 @@ void TagFileParser::buildMemberList(const std::shared_ptr<Entry> &ce,const std::
     }
     if (tmi.enumValues.size()>0)
     {
-      me->spec |= Entry::Strong;
+      me->spec |= SpecifierStrong;
       for (const auto &evi : tmi.enumValues)
       {
         std::shared_ptr<Entry> ev = std::make_shared<Entry>();
@@ -1318,15 +1318,15 @@ void TagFileParser::buildLists(const std::shared_ptr<Entry> &root)
       switch (tci->kind)
       {
         case TagClassInfo::Kind::Class:     break;
-        case TagClassInfo::Kind::Struct:    ce->spec = Entry::Struct;    break;
-        case TagClassInfo::Kind::Union:     ce->spec = Entry::Union;     break;
-        case TagClassInfo::Kind::Interface: ce->spec = Entry::Interface; break;
-        case TagClassInfo::Kind::Enum:      ce->spec = Entry::Enum;      break;
-        case TagClassInfo::Kind::Exception: ce->spec = Entry::Exception; break;
-        case TagClassInfo::Kind::Protocol:  ce->spec = Entry::Protocol;  break;
-        case TagClassInfo::Kind::Category:  ce->spec = Entry::Category;  break;
-        case TagClassInfo::Kind::Service:   ce->spec = Entry::Service;   break;
-        case TagClassInfo::Kind::Singleton: ce->spec = Entry::Singleton; break;
+        case TagClassInfo::Kind::Struct:    ce->spec = SpecifierStruct;    break;
+        case TagClassInfo::Kind::Union:     ce->spec = SpecifierUnion;     break;
+        case TagClassInfo::Kind::Interface: ce->spec = SpecifierInterface; break;
+        case TagClassInfo::Kind::Enum:      ce->spec = SpecifierEnum;      break;
+        case TagClassInfo::Kind::Exception: ce->spec = SpecifierException; break;
+        case TagClassInfo::Kind::Protocol:  ce->spec = SpecifierProtocol;  break;
+        case TagClassInfo::Kind::Category:  ce->spec = SpecifierCategory;  break;
+        case TagClassInfo::Kind::Service:   ce->spec = SpecifierService;   break;
+        case TagClassInfo::Kind::Singleton: ce->spec = SpecifierSingleton; break;
         case TagClassInfo::Kind::None:      // should never happen, means not properly initialized
                                       assert(tci->kind != TagClassInfo::Kind::None);
                                       break;

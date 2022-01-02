@@ -2024,9 +2024,7 @@ void Config::checkAndCorrect(bool quiet, const bool check)
     adjustBoolSetting(depOption,"INLINE_INHERITED_MEMB",false);
     adjustBoolSetting(depOption,"INHERIT_DOCS",         false);
     adjustBoolSetting(depOption,"HIDE_SCOPE_NAMES",     true );
-    adjustBoolSetting(depOption,"EXTRACT_PRIVATE",      true );
     adjustBoolSetting(depOption,"ENABLE_PREPROCESSING", false);
-    adjustBoolSetting(depOption,"EXTRACT_PACKAGE",      true );
   }
 
   if (!checkFileName(Config_getString(GENERATE_TAGFILE),"GENERATE_TAGFILE"))

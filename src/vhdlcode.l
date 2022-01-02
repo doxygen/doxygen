@@ -1305,7 +1305,7 @@ static void generateMemLink(yyscan_t yyscanner,CodeOutputInterface &ol,QCString 
   const MemberDef *md=VhdlDocGen::findMember(className,memberName);
   ClassDef *po=VhdlDocGen::getClass(className);
 
-  if (md==0 && po && (VhdlDocGen::VhdlClasses)po->protection()==VhdlDocGen::PACKBODYCLASS)
+  if (md==0 && po && ((po->getClassSpecifier()&SpecifierPackage)!= 0))
   {
     QCString temp=className;//.stripPrefix("_");
     temp.stripPrefix("_");

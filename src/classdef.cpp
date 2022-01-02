@@ -261,7 +261,8 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
     virtual void setIsStatic(bool b);
     virtual void setCompoundType(CompoundType t);
     virtual void setClassName(const QCString &name);
-    virtual void setClassSpecifier(uint64 spec);
+    virtual void setClassSpecifier(Spec spec);
+    virtual Spec getClassSpecifier() const;
     virtual void setTemplateArguments(const ArgumentList &al);
     virtual void setTemplateBaseClassNames(const TemplateNameMap &templateNames);
     virtual void setTemplateMaster(const ClassDef *tm);
@@ -537,6 +538,9 @@ class ClassDefAliasImpl : public DefinitionAliasMixin<ClassDef>
     virtual QCString requiresClause() const
     { return getCdAlias()->requiresClause(); }
 
+    virtual Spec getClassSpecifier() const
+    { return getCdAlias()->getClassSpecifier(); }
+
     virtual int countMembersIncludingGrouped(MemberListType lt,const ClassDef *inheritedFrom,bool additional) const
     { return getCdAlias()->countMembersIncludingGrouped(lt,inheritedFrom,additional); }
     virtual int countInheritanceNodes() const
@@ -708,7 +712,7 @@ class ClassDefImpl::IMPL
     /** Does this class represent a Java style enum? */
     bool isJavaEnum = false;
 
-    uint64 spec = 0;
+    Spec spec = 0;
 
     QCString metaData;
 
@@ -1819,19 +1823,19 @@ void ClassDefImpl::writeIncludeFilesForSlice(OutputList &ol) const
     ol.docify(m_impl->metaData);
     ol.lineBreak();
   }
-  if (m_impl->spec & Entry::Local)
+  if ((m_impl->spec & SpecifierLocal)!=0)
   {
     ol.docify("local ");
   }
-  if (m_impl->spec & Entry::Interface)
+  if ((m_impl->spec & SpecifierInterface)!=0)
   {
     ol.docify("interface ");
   }
-  else if (m_impl->spec & Entry::Struct)
+  else if ((m_impl->spec & SpecifierStruct)!=0)
   {
     ol.docify("struct ");
   }
-  else if (m_impl->spec & Entry::Exception)
+  else if ((m_impl->spec & SpecifierException)!=0)
   {
     ol.docify("exception ");
   }
@@ -1842,7 +1846,7 @@ void ClassDefImpl::writeIncludeFilesForSlice(OutputList &ol) const
   ol.docify(stripScope(name()));
   if (!m_impl->inherits.empty())
   {
-    if (m_impl->spec & (Entry::Interface|Entry::Exception))
+    if ((m_impl->spec & (SpecifierInterface|SpecifierException))!=0)
     {
       ol.docify(" extends ");
       bool first=true;
@@ -2385,7 +2389,7 @@ void ClassDefImpl::writeDeclarationLink(OutputList &ol,bool &found,const QCStrin
       }
       else if (lang==SrcLangExt_VHDL)
       {
-        ol.parseText(theTranslator->trVhdlType(VhdlDocGen::ARCHITECTURE,FALSE));
+        ol.parseText(theTranslator->trVhdlType(SpecifierArchitecture,FALSE));
       }
       else
       {
@@ -2430,7 +2434,7 @@ void ClassDefImpl::writeDeclarationLink(OutputList &ol,bool &found,const QCStrin
     {
       ol.writeString(" ");
       ol.insertMemberAlign();
-      ol.writeString(VhdlDocGen::getProtectionName((VhdlDocGen::VhdlClasses)protection()));
+      ol.writeString(VhdlDocGen::getSpecifierName(m_impl->spec));
     }
     ol.endMemberItem();
 
@@ -4627,32 +4631,32 @@ bool ClassDefImpl::isTemplateArgument() const
 
 bool ClassDefImpl::isAbstract() const
 {
-  return m_impl->isAbstract || (m_impl->spec&Entry::Abstract);
+  return m_impl->isAbstract || (m_impl->spec&SpecifierAbstract);
 }
 
 bool ClassDefImpl::isFinal() const
 {
-  return m_impl->spec&Entry::Final;
+  return (m_impl->spec&SpecifierFinal)!=0;
 }
 
 bool ClassDefImpl::isSealed() const
 {
-  return m_impl->spec&Entry::Sealed;
+  return (m_impl->spec&SpecifierSealed)!=0;
 }
 
 bool ClassDefImpl::isPublished() const
 {
-  return m_impl->spec&Entry::Published;
+  return (m_impl->spec&SpecifierPublished)!=0;
 }
 
 bool ClassDefImpl::isForwardDeclared() const
 {
-  return m_impl->spec&Entry::ForwardDecl;
+  return (m_impl->spec&SpecifierForwardDecl)!=0;
 }
 
 bool ClassDefImpl::isInterface() const
 {
-  return m_impl->spec&Entry::Interface;
+  return (m_impl->spec&SpecifierInterface)!=0;
 }
 
 bool ClassDefImpl::isObjectiveC() const
@@ -4826,9 +4830,14 @@ bool ClassDefImpl::isJavaEnum() const
   return m_impl->isJavaEnum;
 }
 
-void ClassDefImpl::setClassSpecifier(uint64 spec)
+void ClassDefImpl::setClassSpecifier(Spec spec)
 {
   m_impl->spec = spec;
+}
+
+Spec ClassDefImpl::getClassSpecifier() const
+{
+  return m_impl->spec;
 }
 
 bool ClassDefImpl::isExtension() const
@@ -4862,7 +4871,7 @@ bool ClassDefImpl::subGrouping() const
 
 bool ClassDefImpl::isSliceLocal() const
 {
-  return m_impl->spec&Entry::Local;
+  return (m_impl->spec&SpecifierLocal)!=0;
 }
 
 void ClassDefImpl::setName(const QCString &name)

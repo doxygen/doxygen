@@ -106,7 +106,7 @@ class TranslatorAdapter_1_8_15 : public TranslatorAdapter_1_8_19
     virtual QCString trFunctionAndProc()
     { return english.trFunctionAndProc(); }
 
-    virtual QCString trVhdlType(uint64 type,bool single)
+    virtual QCString trVhdlType(Spec type,bool single)
     { return english.trVhdlType(type,single); }
 
     virtual QCString trCustomReference(const QCString &name)
