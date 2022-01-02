@@ -102,40 +102,40 @@ jobs:
         if (NOT result EQUAL 0)
           message(FATAL_ERROR "Bad exit status")
         endif()
-
-    - name: Build
-      shell: cmake -P {0}
-      run: |
-        include(ProcessorCount)
-        ProcessorCount(N)
-        execute_process(
-          COMMAND cmake --build build --parallel ${N} 
-          RESULT_VARIABLE result
-          OUTPUT_VARIABLE output
-          ERROR_VARIABLE output
-          ECHO_OUTPUT_VARIABLE ECHO_ERROR_VARIABLE
-        )
-        if (NOT result EQUAL 0)
-          string(REGEX MATCH "FAILED:.*$" error_message "${output}")
-          string(REPLACE "\n" "%0A" error_message "${error_message}")
-          message("::error::${error_message}")
-          message(FATAL_ERROR "Build failed")
-        endif()
-
-      - name: Build/scan doxygen
-        run: |
-          cov-build --dir cov-int nmake
-
-# don't submit during test just create tar file
-      - name: Submit results
-        run: |
-          tar zcf doxygen.tgz cov-int
-#          curl --form token=$TOKEN \
-#            --form email=$EMAIL \
-#            --form file=@doxygen.tgz \
-#            --form version="$(git rev-parse HEAD)" \
-#            --form description="Automatic GHA scan" \
-#            'https://scan.coverity.com/builds?project=doxygen'
-        env:
-          TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
-          EMAIL: ${{ secrets.COVERITY_SCAN_EMAIL }}
+#
+#    - name: Build
+#      shell: cmake -P {0}
+#      run: |
+#        include(ProcessorCount)
+#        ProcessorCount(N)
+#        execute_process(
+#          COMMAND cmake --build build --parallel ${N} 
+#          RESULT_VARIABLE result
+#          OUTPUT_VARIABLE output
+#          ERROR_VARIABLE output
+#          ECHO_OUTPUT_VARIABLE ECHO_ERROR_VARIABLE
+#        )
+#        if (NOT result EQUAL 0)
+#          string(REGEX MATCH "FAILED:.*$" error_message "${output}")
+#          string(REPLACE "\n" "%0A" error_message "${error_message}")
+#          message("::error::${error_message}")
+#          message(FATAL_ERROR "Build failed")
+#        endif()
+#
+#      - name: Build/scan doxygen
+#        run: |
+#          cov-build --dir cov-int nmake
+#
+## don't submit during test just create tar file
+#      - name: Submit results
+#        run: |
+#          tar zcf doxygen.tgz cov-int
+##          curl --form token=$TOKEN \
+##            --form email=$EMAIL \
+##            --form file=@doxygen.tgz \
+##            --form version="$(git rev-parse HEAD)" \
+##            --form description="Automatic GHA scan" \
+##            'https://scan.coverity.com/builds?project=doxygen'
+#        env:
+#          TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
+#          EMAIL: ${{ secrets.COVERITY_SCAN_EMAIL }}
