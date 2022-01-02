@@ -1,0 +1,141 @@
+name: Coverity for doxygen
+
+# Just for tests
+on: [push, pull_request]
+
+# The right schedule
+#on:
+#  schedule:
+#    - cron: '30 2 * * *'  # Run once per day, to avoid Coverity's submission limits
+#    - cron: '30 2 * * 1'  # Run once per a week on Monday early morning, to avoid Coverity's submission limits
+#  workflow_dispatch:
+
+jobs:
+  build:
+    name: ${{ matrix.config.name }}
+    runs-on: ${{ matrix.config.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+        - {
+            name: "Windows Latest MSVC Release", 
+            os: windows-latest,
+            build_type: "Release", cc: "cl", cxx: "cl",
+            build_gen: "NMake Makefiles"
+          }
+    steps:
+    - name: Checkout doxygen
+      uses: actions/checkout@v1
+      
+    - name: Download Coverity
+      run: |
+        wget -q https://scan.coverity.com/download/cxx/win64 --post-data "token=$TOKEN&project=doxygen" -O coverity_tool.zip
+        unzip coverity_tool.zip
+      env:
+        TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
+
+    - name: Set up coverity environment
+      run: |
+        echo "$(pwd)/cov-analysis-win64-2020.09/bin" >> $GITHUB_PATH
+
+    - name: Install libiconv (Windows)
+      uses: suisei-cn/actions-download-file@v1
+      with: 
+        url: "https://github.com/pffang/libiconv-for-Windows/releases/download/v1.16/libiconv-for-Windows_1.16.7z"
+        target: .  
+      if: matrix.config.os == 'windows-latest'
+
+    - name: Install bison/flex (Windows)
+      run:
+        choco install winflexbison
+      if: matrix.config.os == 'windows-latest'
+
+    - name: Setup VS Environment (Windows)
+      uses: seanmiddleditch/gha-setup-vsdevenv@master
+      if: matrix.config.os == 'windows-latest'
+
+    - name: Refresh Env (Windows)
+      run:
+        refreshenv
+      if: matrix.config.os == 'windows-latest'
+    
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v2
+
+    - name: Check tool versions (Windows)
+      shell: bash
+      run: |
+        echo "=== perl ===";
+        perl --version;
+        echo "=== python ===";
+        python --version;
+        echo "=== cmake ===";
+        cmake --version;
+        echo "=== bison ===";
+        win_bison --version;
+        echo "=== flex ===";
+        win_flex --version;
+      if: matrix.config.os == 'windows-latest'
+
+    - name: Configure
+      shell: cmake -P {0}
+      run: |
+        set(ENV{CC} ${{ matrix.config.cc }})
+        set(ENV{CXX} ${{ matrix.config.cxx }})
+
+        execute_process(
+          COMMAND cmake
+            -S .
+            -B build
+            -D CMAKE_BUILD_TYPE=${{ matrix.config.build_type }}
+            -G "${{ matrix.config.build_gen }}"
+            -Dbuild_wizard=YES
+            -Dbuild_app=NO
+            -Dbuild_xmlparser=YES
+            -Dbuild_search=NO
+            -Dbuild_doc=YES
+            -Dbuild_parse=YES
+            ${{ matrix.config.cmake_extra_opts }}            
+          RESULT_VARIABLE result
+        )
+        if (NOT result EQUAL 0)
+          message(FATAL_ERROR "Bad exit status")
+        endif()
+
+    - name: Build
+      shell: cmake -P {0}
+      run: |
+        include(ProcessorCount)
+        ProcessorCount(N)
+        execute_process(
+          COMMAND cmake --build build --parallel ${N} 
+          RESULT_VARIABLE result
+          OUTPUT_VARIABLE output
+          ERROR_VARIABLE output
+          ECHO_OUTPUT_VARIABLE ECHO_ERROR_VARIABLE
+        )
+        if (NOT result EQUAL 0)
+          string(REGEX MATCH "FAILED:.*$" error_message "${output}")
+          string(REPLACE "\n" "%0A" error_message "${error_message}")
+          message("::error::${error_message}")
+          message(FATAL_ERROR "Build failed")
+        endif()
+
+      - name: Build/scan doxygen
+        run: |
+          cov-build --dir cov-int nmake
+
+# don't submit during test just create tar file
+      - name: Submit results
+        run: |
+          tar zcf doxygen.tgz cov-int
+#          curl --form token=$TOKEN \
+#            --form email=$EMAIL \
+#            --form file=@doxygen.tgz \
+#            --form version="$(git rev-parse HEAD)" \
+#            --form description="Automatic GHA scan" \
+#            'https://scan.coverity.com/builds?project=doxygen'
+        env:
+          TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
+          EMAIL: ${{ secrets.COVERITY_SCAN_EMAIL }}
