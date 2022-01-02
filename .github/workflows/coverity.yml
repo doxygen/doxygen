@@ -30,11 +30,15 @@ jobs:
       
     - name: Install wget
       run: |
-        choco install wget --no-progress
+        #choco install wget --no-progress
+        choco install wget
+        wget --help
 
     - name: Download Coverity
       run: |
-        wget -q https://scan.coverity.com/download/cxx/win64 --post-data "token=$TOKEN&project=doxygen" -O cov-analysis-win64-2020.09.zip$
+        wget https://scan.coverity.com/download/cxx/win64 --post-data "token=$TOKEN&project=doxygen" -O cov-analysis-win64-2020.09.zip$
+        #wget -q https://scan.coverity.com/download/cxx/win64 --post-data "token=$TOKEN&project=doxygen" -O cov-analysis-win64-2020.09.zip$
+        ls -ls
         unzip cov-analysis-win64-2020.09.zip
       env:
         TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
