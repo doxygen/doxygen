@@ -55,14 +55,6 @@ CONTENT "#ifndef SETTINGS_H
 #endif" )
 set_source_files_properties(${GENERATED_SRC_WIZARD}/settings.h PROPERTIES GENERATED 1)
 
-# generate version.cpp
-add_custom_command(
-    COMMAND ${PYTHON_EXECUTABLE} ${PROJECT_SOURCE_DIR}/src/version.py ${VERSION} > ${GENERATED_SRC_WIZARD}/version.cpp
-    DEPENDS ${PROJECT_SOURCE_DIR}/VERSION ${PROJECT_SOURCE_DIR}/src/version.py
-    OUTPUT ${GENERATED_SRC_WIZARD}/version.cpp
-)
-set_source_files_properties(${GENERATED_SRC_WIZARD}/version.cpp PROPERTIES GENERATED 1)
-
 # generate configdoc.cpp
 add_custom_command(
     COMMAND ${PYTHON_EXECUTABLE} ${PROJECT_SOURCE_DIR}/src/configgen.py -wiz ${PROJECT_SOURCE_DIR}/src/config.xml > ${GENERATED_SRC_WIZARD}/configdoc.cpp
