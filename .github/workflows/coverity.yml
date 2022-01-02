@@ -28,10 +28,14 @@ jobs:
     - name: Checkout doxygen
       uses: actions/checkout@v1
       
+    - name: Install wget
+      run: |
+        choco install wget --no-progress
+
     - name: Download Coverity
       run: |
-        wget -q https://scan.coverity.com/download/cxx/win64 --post-data "token=$TOKEN&project=doxygen" -O coverity_tool.zip
-        unzip coverity_tool.zip
+        wget -q https://scan.coverity.com/download/cxx/win64 --post-data "token=$TOKEN&project=doxygen" -O cov-analysis-win64-2020.09.zip$
+        unzip cov-analysis-win64-2020.09.zip
       env:
         TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
 
