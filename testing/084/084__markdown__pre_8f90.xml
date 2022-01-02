@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <project>
+    <projectname>My Project</projectname>
+    <projectnumber/>
+    <projectbrief/>
+    <projectlogo/>
+  </project>
   <compounddef id="084__markdown__pre_8f90" kind="file" language="Fortran">
     <compoundname>084_markdown_pre.f90</compoundname>
     <sectiondef kind="func">

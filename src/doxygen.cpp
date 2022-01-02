@@ -12219,6 +12219,7 @@ void generateOutput()
   bool generateMan   = Config_getBool(GENERATE_MAN);
   bool generateRtf   = Config_getBool(GENERATE_RTF);
   bool generateDocbook = Config_getBool(GENERATE_DOCBOOK);
+  bool generateXml   = Config_getBool(GENERATE_XML);
 
 
   g_outputList = new OutputList;
@@ -12318,6 +12319,10 @@ void generateOutput()
   {
     copyLogo(Config_getString(RTF_OUTPUT));
   }
+  if (generateXml)
+  {
+    copyLogo(Config_getString(XML_OUTPUT));
+  }
 
   const FormulaManager &fm = FormulaManager::instance();
   if (fm.hasFormulas() && generateHtml
@@ -12400,7 +12405,7 @@ void generateOutput()
   writeTagFile();
   g_s.end();
 
-  if (Config_getBool(GENERATE_XML))
+  if (generateXml)
   {
     g_s.begin("Generating XML output...\n");
     Doxygen::generatingXmlOutput=TRUE;

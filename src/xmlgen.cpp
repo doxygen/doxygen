@@ -147,6 +147,19 @@ inline void writeXMLCodeString(TextStream &t,const QCString &str, int &col)
   }
 }
 
+static void xmlgen_xml(TextStream &t)
+{
+  t << "  <project>\n";
+  t << "    <projectname>";
+  t <<        convertToXML(convertCharEntitiesToUTF8(Config_getString(PROJECT_NAME)));
+  t << "</projectname>\n";
+  t << "    <projectnumber>" << Config_getString(PROJECT_NUMBER) << "</projectnumber>\n";
+  t << "    <projectbrief>";
+  t <<        convertToXML(convertCharEntitiesToUTF8(Config_getString(PROJECT_BRIEF)));
+  t << "</projectbrief>\n";
+  t << "    <projectlogo>" << Config_getString(PROJECT_LOGO) << "</projectlogo>\n";
+  t << "  </project>\n";
+}
 
 static void writeXMLHeader(TextStream &t)
 {
@@ -156,6 +169,7 @@ static void writeXMLHeader(TextStream &t)
   t << "version=\"" << getDoxygenVersion() << "\" ";
   t << "xml:lang=\"" << theTranslator->trISOLang() << "\"";
   t << ">\n";
+  xmlgen_xml(t);
 }
 
 static void writeCombineScript()
@@ -169,6 +183,13 @@ static void writeCombineScript()
     return;
   }
 
+  // Note:
+  // The code
+  //   "    <xsl:text>\n  </xsl:text>\n"
+  // is there to get a better readable result at the output i.e. a newline and some indentation.
+  //   "        <xsl:copy-of select=\"document( concat( @refid, '.xml' ) )/doxygen/compounddef\" />\n"
+  // has been used to have from the compound part only the <compounddef> part and not the <project>
+  // part. The later is taken from the index.
   t <<
   "<!-- XSLT script to combine the generated output into a single file. \n"
   "     If you have xsltproc you could use:\n"
@@ -178,14 +199,17 @@ static void writeCombineScript()
   "  <xsl:output method=\"xml\" version=\"1.0\" indent=\"no\" standalone=\"yes\" />\n"
   "  <xsl:template match=\"/\">\n"
   "    <doxygen version=\"{doxygenindex/@version}\" xml:lang=\"{doxygenindex/@xml:lang}\">\n"
-  "      <!-- Load all doxygen generated xml files -->\n"
+  "    <xsl:text>\n  </xsl:text>\n"
+  "    <xsl:copy-of select=\"/doxygenindex/project\" />\n"
+  "    <xsl:text>\n  </xsl:text>\n"
+  "      <!-- Load all doxgen generated xml files -->\n"
   "      <xsl:for-each select=\"doxygenindex/compound\">\n"
-  "        <xsl:copy-of select=\"document( concat( @refid, '.xml' ) )/doxygen/*\" />\n"
+  "        <xsl:copy-of select=\"document( concat( @refid, '.xml' ) )/doxygen/compounddef\" />\n"
+  "        <xsl:text>\n  </xsl:text>\n"
   "      </xsl:for-each>\n"
   "    </doxygen>\n"
   "  </xsl:template>\n"
   "</xsl:stylesheet>\n";
-
 }
 
 void writeXMLLink(TextStream &t,const QCString &extRef,const QCString &compoundId,
@@ -264,7 +288,7 @@ void XMLCodeGenerator::writeTooltip(const QCString &, const DocLinkInfo &, const
 void XMLCodeGenerator::startCodeLine(bool)
 {
   XML_DB(("(startCodeLine)\n"));
-  m_t << "<codeline";
+  m_t << "      <codeline";
   if (m_lineNumber!=-1)
   {
     m_t << " lineno=\"" << m_lineNumber << "\"";
@@ -1971,6 +1995,7 @@ void generateXML()
     t << "version=\"" << getDoxygenVersion() << "\" ";
     t << "xml:lang=\"" << theTranslator->trISOLang() << "\"";
     t << ">\n";
+    xmlgen_xml(t);
 
     for (const auto &cd : *Doxygen::classLinkedMap)
     {

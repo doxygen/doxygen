@@ -8,10 +8,20 @@
 
   <xsd:complexType name="DoxygenType">
     <xsd:sequence maxOccurs="unbounded">
-      <xsd:element name="compounddef" type="compounddefType" minOccurs="0" />
+      <xsd:element name="project" type="ProjectType"/>
+      <xsd:element name="compounddef" type="compounddefType" maxOccurs="unbounded" minOccurs="0" />
     </xsd:sequence>
     <xsd:attribute name="version" type="DoxVersionNumber" use="required" />
     <xsd:attribute ref="xml:lang" use="required"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="ProjectType">
+    <xsd:sequence>
+    <xsd:element name="projectname" type="xsd:string"/>
+    <xsd:element name="projectnumber" type="xsd:string"/>
+    <xsd:element name="projectbrief" type="xsd:string"/>
+    <xsd:element name="projectlogo" type="xsd:string"/>
+    </xsd:sequence>
   </xsd:complexType>
 
   <xsd:complexType name="compounddefType">

@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <project>
+    <projectname>My Project</projectname>
+    <projectnumber/>
+    <projectbrief/>
+    <projectlogo/>
+  </project>
   <compounddef id="016__copydoc_8c" kind="file" language="C++">
     <compoundname>016_copydoc.c</compoundname>
     <sectiondef kind="func">

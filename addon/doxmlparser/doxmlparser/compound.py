@@ -1211,7 +1211,7 @@ class DoxygenType(GeneratedsSuper):
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
     superclass = None
-    def __init__(self, version=None, lang=None, compounddef=None, gds_collector_=None, **kwargs_):
+    def __init__(self, version=None, lang=None, project=None, compounddef=None, gds_collector_=None, **kwargs_):
         self.gds_collector_ = gds_collector_
         self.gds_elementtree_node_ = None
         self.original_tagname_ = None
@@ -1221,6 +1221,11 @@ class DoxygenType(GeneratedsSuper):
         self.version_nsprefix_ = None
         self.lang = _cast(None, lang)
         self.lang_nsprefix_ = None
+        if project is None:
+            self.project = []
+        else:
+            self.project = project
+        self.project_nsprefix_ = None
         if compounddef is None:
             self.compounddef = []
         else:
@@ -1241,6 +1246,16 @@ class DoxygenType(GeneratedsSuper):
         return self.ns_prefix_
     def set_ns_prefix_(self, ns_prefix):
         self.ns_prefix_ = ns_prefix
+    def get_project(self):
+        return self.project
+    def set_project(self, project):
+        self.project = project
+    def add_project(self, value):
+        self.project.append(value)
+    def insert_project_at(self, index, value):
+        self.project.insert(index, value)
+    def replace_project_at(self, index, value):
+        self.project[index] = value
     def get_compounddef(self):
         return self.compounddef
     def set_compounddef(self, compounddef):
@@ -1272,6 +1287,7 @@ class DoxygenType(GeneratedsSuper):
     validate_DoxVersionNumber_patterns_ = [['^(\\d+\\.\\d+.*)$']]
     def hasContent_(self):
         if (
+            self.project or
             self.compounddef
         ):
             return True
@@ -1312,6 +1328,9 @@ class DoxygenType(GeneratedsSuper):
             eol_ = '\n'
         else:
             eol_ = ''
+        for project_ in self.project:
+            namespaceprefix_ = self.project_nsprefix_ + ':' if (UseCapturedNS_ and self.project_nsprefix_) else ''
+            project_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='project', pretty_print=pretty_print)
         for compounddef_ in self.compounddef:
             namespaceprefix_ = self.compounddef_nsprefix_ + ':' if (UseCapturedNS_ and self.compounddef_nsprefix_) else ''
             compounddef_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='compounddef', pretty_print=pretty_print)
@@ -1337,12 +1356,163 @@ class DoxygenType(GeneratedsSuper):
             already_processed.add('lang')
             self.lang = value
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False, gds_collector_=None):
-        if nodeName_ == 'compounddef':
+        if nodeName_ == 'project':
+            obj_ = ProjectType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            self.project.append(obj_)
+            obj_.original_tagname_ = 'project'
+        elif nodeName_ == 'compounddef':
             obj_ = compounddefType.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
             self.compounddef.append(obj_)
             obj_.original_tagname_ = 'compounddef'
 # end class DoxygenType
+
+
+class ProjectType(GeneratedsSuper):
+    __hash__ = GeneratedsSuper.__hash__
+    subclass = None
+    superclass = None
+    def __init__(self, projectname=None, projectnumber=None, projectbrief=None, projectlogo=None, gds_collector_=None, **kwargs_):
+        self.gds_collector_ = gds_collector_
+        self.gds_elementtree_node_ = None
+        self.original_tagname_ = None
+        self.parent_object_ = kwargs_.get('parent_object_')
+        self.ns_prefix_ = None
+        self.projectname = projectname
+        self.projectname_nsprefix_ = None
+        self.projectnumber = projectnumber
+        self.projectnumber_nsprefix_ = None
+        self.projectbrief = projectbrief
+        self.projectbrief_nsprefix_ = None
+        self.projectlogo = projectlogo
+        self.projectlogo_nsprefix_ = None
+    def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, ProjectType)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
+        if ProjectType.subclass:
+            return ProjectType.subclass(*args_, **kwargs_)
+        else:
+            return ProjectType(*args_, **kwargs_)
+    factory = staticmethod(factory)
+    def get_ns_prefix_(self):
+        return self.ns_prefix_
+    def set_ns_prefix_(self, ns_prefix):
+        self.ns_prefix_ = ns_prefix
+    def get_projectname(self):
+        return self.projectname
+    def set_projectname(self, projectname):
+        self.projectname = projectname
+    def get_projectnumber(self):
+        return self.projectnumber
+    def set_projectnumber(self, projectnumber):
+        self.projectnumber = projectnumber
+    def get_projectbrief(self):
+        return self.projectbrief
+    def set_projectbrief(self, projectbrief):
+        self.projectbrief = projectbrief
+    def get_projectlogo(self):
+        return self.projectlogo
+    def set_projectlogo(self, projectlogo):
+        self.projectlogo = projectlogo
+    def hasContent_(self):
+        if (
+            self.projectname is not None or
+            self.projectnumber is not None or
+            self.projectbrief is not None or
+            self.projectlogo is not None
+        ):
+            return True
+        else:
+            return False
+    def export(self, outfile, level, namespaceprefix_='', namespacedef_='', name_='ProjectType', pretty_print=True):
+        imported_ns_def_ = GenerateDSNamespaceDefs_.get('ProjectType')
+        if imported_ns_def_ is not None:
+            namespacedef_ = imported_ns_def_
+        if pretty_print:
+            eol_ = '\n'
+        else:
+            eol_ = ''
+        if self.original_tagname_ is not None and name_ == 'ProjectType':
+            name_ = self.original_tagname_
+        if UseCapturedNS_ and self.ns_prefix_:
+            namespaceprefix_ = self.ns_prefix_ + ':'
+        showIndent(outfile, level, pretty_print)
+        outfile.write('<%s%s%s' % (namespaceprefix_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        already_processed = set()
+        self.exportAttributes(outfile, level, already_processed, namespaceprefix_, name_='ProjectType')
+        if self.hasContent_():
+            outfile.write('>%s' % (eol_, ))
+            self.exportChildren(outfile, level + 1, namespaceprefix_, namespacedef_, name_='ProjectType', pretty_print=pretty_print)
+            showIndent(outfile, level, pretty_print)
+            outfile.write('</%s%s>%s' % (namespaceprefix_, name_, eol_))
+        else:
+            outfile.write('/>%s' % (eol_, ))
+    def exportAttributes(self, outfile, level, already_processed, namespaceprefix_='', name_='ProjectType'):
+        pass
+    def exportChildren(self, outfile, level, namespaceprefix_='', namespacedef_='', name_='ProjectType', fromsubclass_=False, pretty_print=True):
+        if pretty_print:
+            eol_ = '\n'
+        else:
+            eol_ = ''
+        if self.projectname is not None:
+            namespaceprefix_ = self.projectname_nsprefix_ + ':' if (UseCapturedNS_ and self.projectname_nsprefix_) else ''
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%sprojectname>%s</%sprojectname>%s' % (namespaceprefix_ , self.gds_encode(self.gds_format_string(quote_xml(self.projectname), input_name='projectname')), namespaceprefix_ , eol_))
+        if self.projectnumber is not None:
+            namespaceprefix_ = self.projectnumber_nsprefix_ + ':' if (UseCapturedNS_ and self.projectnumber_nsprefix_) else ''
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%sprojectnumber>%s</%sprojectnumber>%s' % (namespaceprefix_ , self.gds_encode(self.gds_format_string(quote_xml(self.projectnumber), input_name='projectnumber')), namespaceprefix_ , eol_))
+        if self.projectbrief is not None:
+            namespaceprefix_ = self.projectbrief_nsprefix_ + ':' if (UseCapturedNS_ and self.projectbrief_nsprefix_) else ''
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%sprojectbrief>%s</%sprojectbrief>%s' % (namespaceprefix_ , self.gds_encode(self.gds_format_string(quote_xml(self.projectbrief), input_name='projectbrief')), namespaceprefix_ , eol_))
+        if self.projectlogo is not None:
+            namespaceprefix_ = self.projectlogo_nsprefix_ + ':' if (UseCapturedNS_ and self.projectlogo_nsprefix_) else ''
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%sprojectlogo>%s</%sprojectlogo>%s' % (namespaceprefix_ , self.gds_encode(self.gds_format_string(quote_xml(self.projectlogo), input_name='projectlogo')), namespaceprefix_ , eol_))
+    def build(self, node, gds_collector_=None):
+        self.gds_collector_ = gds_collector_
+        if SaveElementTreeNode:
+            self.gds_elementtree_node_ = node
+        already_processed = set()
+        self.ns_prefix_ = node.prefix
+        self.buildAttributes(node, node.attrib, already_processed)
+        for child in node:
+            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
+            self.buildChildren(child, node, nodeName_, gds_collector_=gds_collector_)
+        return self
+    def buildAttributes(self, node, attrs, already_processed):
+        pass
+    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False, gds_collector_=None):
+        if nodeName_ == 'projectname':
+            value_ = child_.text
+            value_ = self.gds_parse_string(value_, node, 'projectname')
+            value_ = self.gds_validate_string(value_, node, 'projectname')
+            self.projectname = value_
+            self.projectname_nsprefix_ = child_.prefix
+        elif nodeName_ == 'projectnumber':
+            value_ = child_.text
+            value_ = self.gds_parse_string(value_, node, 'projectnumber')
+            value_ = self.gds_validate_string(value_, node, 'projectnumber')
+            self.projectnumber = value_
+            self.projectnumber_nsprefix_ = child_.prefix
+        elif nodeName_ == 'projectbrief':
+            value_ = child_.text
+            value_ = self.gds_parse_string(value_, node, 'projectbrief')
+            value_ = self.gds_validate_string(value_, node, 'projectbrief')
+            self.projectbrief = value_
+            self.projectbrief_nsprefix_ = child_.prefix
+        elif nodeName_ == 'projectlogo':
+            value_ = child_.text
+            value_ = self.gds_parse_string(value_, node, 'projectlogo')
+            value_ = self.gds_validate_string(value_, node, 'projectlogo')
+            self.projectlogo = value_
+            self.projectlogo_nsprefix_ = child_.prefix
+# end class ProjectType
 
 
 class compounddefType(GeneratedsSuper):
@@ -26553,6 +26723,7 @@ NamespaceToDefMappings_ = {'http://www.w3.org/XML/1998/namespace': []}
 
 __all__ = [
     "DoxygenType",
+    "ProjectType",
     "argsstring",
     "array",
     "attributes",
