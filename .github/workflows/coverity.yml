@@ -38,12 +38,9 @@ jobs:
         echo ===========
         echo $TOKEN
         echo ===========
-        echo $TOKENC
-        echo ===========
         unzip cov-analysis-win64-2020.09.zip
       env:
         TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
-        TOKENC: ${{ Coverity.COVERITY_SCAN_TOKEN }}
 
     - name: Set up coverity environment
       run: |
