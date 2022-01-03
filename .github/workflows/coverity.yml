@@ -30,14 +30,13 @@ jobs:
       
     - name: Install wget
       run: |
-        #choco install wget --no-progress
-        choco install wget
-        wget --help
+        choco install wget --no-progress
 
     - name: Download Coverity
       run: |
-        wget https://scan.coverity.com/download/cxx/win64 --post-data "token=$TOKEN&project=doxygen%%2Fdoxygen" -O cov-analysis-win64-2020.09.zip
-        unzip cov-analysis-win64-2020.09.zip
+        wget https://scan.coverity.com/download/cxx/win64 --post-data "token=$TOKEN&project=doxygen%%2Fdoxygen"
+        rename win64 cov_ana.zip
+        unzip cov_ana.zip
       env:
         TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
 
@@ -84,6 +83,8 @@ jobs:
         win_flex --version;
         echo "=== curl ===";
         curl --version;
+        echo "=== tar ===";
+        tar --version;
       if: matrix.config.os == 'windows-latest'
 
     - name: Configure
