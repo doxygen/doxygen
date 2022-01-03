@@ -32,6 +32,25 @@ jobs:
       run: |
         choco install wget --no-progress
 
+    - name: Check tool versions (Windows)
+      shell: bash
+      run: |
+        echo "=== perl ===";
+        perl --version;
+        echo "=== python ===";
+        python --version;
+        echo "=== cmake ===";
+        cmake --version;
+        echo "=== bison ===";
+        win_bison --version;
+        echo "=== flex ===";
+        win_flex --version;
+        echo "=== curl ===";
+        curl --version;
+        echo "=== tar ===";
+        tar --version;
+      if: matrix.config.os == 'windows-latest'
+
     - name: Download Coverity
       run: |
         wget https://scan.coverity.com/download/cxx/win64 --post-data "token=$TOKEN&project=doxygen%2Fdoxygen" -O cov-analysis-win64-2020.09.zip
@@ -69,25 +88,6 @@ jobs:
     
     - name: Install Qt
       uses: jurplel/install-qt-action@v2
-
-    - name: Check tool versions (Windows)
-      shell: bash
-      run: |
-        echo "=== perl ===";
-        perl --version;
-        echo "=== python ===";
-        python --version;
-        echo "=== cmake ===";
-        cmake --version;
-        echo "=== bison ===";
-        win_bison --version;
-        echo "=== flex ===";
-        win_flex --version;
-        echo "=== curl ===";
-        curl --version;
-        echo "=== tar ===";
-        tar --version;
-      if: matrix.config.os == 'windows-latest'
 
     - name: Configure
       shell: cmake -P {0}
