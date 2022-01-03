@@ -34,9 +34,8 @@ jobs:
 
     - name: Download Coverity
       run: |
-        wget https://scan.coverity.com/download/cxx/win64 --post-data "token=$TOKEN&project=doxygen%%2Fdoxygen"
-        rename win64 cov_ana.zip
-        unzip cov_ana.zip
+        wget https://scan.coverity.com/download/cxx/win64 --post-data "token=%TOKEN%&project=doxygen%%2Fdoxygen" -O cov_ana.zip-analysis-win64-2020.09.zip
+        unzip cov-analysis-win64-2020.09.zip
       env:
         TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
 
