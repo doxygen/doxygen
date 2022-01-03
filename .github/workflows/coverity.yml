@@ -28,6 +28,11 @@ jobs:
     - name: Checkout doxygen
       uses: actions/checkout@v1
       
+    - name: Install bison/flex (Windows)
+      run:
+        choco install winflexbison
+      if: matrix.config.os == 'windows-latest'
+
     - name: Install wget
       run: |
         choco install wget --no-progress
@@ -70,11 +75,6 @@ jobs:
       with: 
         url: "https://github.com/pffang/libiconv-for-Windows/releases/download/v1.16/libiconv-for-Windows_1.16.7z"
         target: .  
-      if: matrix.config.os == 'windows-latest'
-
-    - name: Install bison/flex (Windows)
-      run:
-        choco install winflexbison
       if: matrix.config.os == 'windows-latest'
 
     - name: Setup VS Environment (Windows)
