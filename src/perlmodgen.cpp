@@ -1311,18 +1311,18 @@ void PerlModDocVisitor::visitPre(DocParamList *pl)
     QCString name;
     if (param->kind()==DocNode::Kind_Word)
     {
-      name = ((DocWord*)param.get())->word();
+      name = dynamic_cast<DocWord*>(param.get())->word();
     }
     else if (param->kind()==DocNode::Kind_LinkedWord)
     {
-      name = ((DocLinkedWord*)param.get())->word();
+      name = dynamic_cast<DocLinkedWord*>(param.get())->word();
     }
 
     QCString dir = "";
     DocParamSect *sect = 0;
     if (pl->parent() && pl->parent()->kind()==DocNode::Kind_ParamSect)
     {
-      sect=(DocParamSect*)pl->parent();
+      sect=dynamic_cast<DocParamSect*>(pl->parent());
     }
     if (sect && sect->hasInOutSpecifier())
     {

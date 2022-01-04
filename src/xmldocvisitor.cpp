@@ -550,8 +550,8 @@ void XmlDocVisitor::visit(DocSimpleSectSep *sep)
 {
   if (sep->parent() && sep->parent()->kind()==DocNode::Kind_SimpleSect)
   {
-    visitPost((DocSimpleSect*)sep->parent()); // end current section
-    visitPre((DocSimpleSect*)sep->parent());  // start new section
+    visitPost(dynamic_cast<DocSimpleSect*>(sep->parent())); // end current section
+    visitPre(dynamic_cast<DocSimpleSect*>(sep->parent()));  // start new section
   }
 }
 
@@ -814,8 +814,8 @@ void XmlDocVisitor::visitPost(DocHtmlDescData *)
 void XmlDocVisitor::visitPre(DocHtmlTable *t)
 {
   if (m_hide) return;
-  m_t << "<table rows=\"" << (uint)t->numRows()
-      << "\" cols=\"" << (uint)t->numColumns() << "\"" ;
+  m_t << "<table rows=\"" << t->numRows()
+      << "\" cols=\"" << t->numColumns() << "\"" ;
   for (const auto &opt : t->attribs())
   {
     if (opt.name=="width")
@@ -1143,11 +1143,11 @@ void XmlDocVisitor::visitPre(DocParamList *pl)
       {
         if (type->kind()==DocNode::Kind_Word)
         {
-          visit((DocWord*)type.get());
+          visit(dynamic_cast<DocWord*>(type.get()));
         }
         else if (type->kind()==DocNode::Kind_LinkedWord)
         {
-          visit((DocLinkedWord*)type.get());
+          visit(dynamic_cast<DocLinkedWord*>(type.get()));
         }
         else if (type->kind()==DocNode::Kind_Sep)
         {
@@ -1178,11 +1178,11 @@ void XmlDocVisitor::visitPre(DocParamList *pl)
     m_t << ">";
     if (param->kind()==DocNode::Kind_Word)
     {
-      visit((DocWord*)param.get());
+      visit(dynamic_cast<DocWord*>(param.get()));
     }
     else if (param->kind()==DocNode::Kind_LinkedWord)
     {
-      visit((DocLinkedWord*)param.get());
+      visit(dynamic_cast<DocLinkedWord*>(param.get()));
     }
     m_t << "</parametername>\n";
   }

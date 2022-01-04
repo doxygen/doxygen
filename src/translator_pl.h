@@ -123,7 +123,7 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
      */
     QCString trGeneratedAutomatically(const QCString &s)
     { QCString result="Wygenerowano automatycznie z kodu źródłowego programem Doxygen";
-      if (!s.isEmpty()) result+=(QCString)" dla "+s;
+      if (!s.isEmpty()) result+=" dla "+s;
       result+=".";
       return result;
     }
@@ -499,16 +499,16 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
      */
     QCString trGeneratedAt(const QCString &date,const QCString &projName)
     {
-      QCString result=(QCString)"Wygenerowano "+date;
-      if (!projName.isEmpty()) result+=(QCString)" dla "+projName;
-      result+=(QCString)" programem";
+      QCString result="Wygenerowano "+date;
+      if (!projName.isEmpty()) result+=" dla "+projName;
+      result+=" programem";
       return result;
     }
 
     /*! this text is put before a class diagram */
     QCString trClassDiagram(const QCString &clName)
     {
-      return (QCString)"Diagram dziedziczenia dla "+clName;
+      return "Diagram dziedziczenia dla "+clName;
     }
 
     /*! this text is generated when the \\internal command is used. */
@@ -608,7 +608,7 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
         case ClassDef::Exception:  result+=" wyjątku "; break;
         default: break;
       }
-      result+=(QCString)clName;
+      result+=clName;
       return result;
     }
 
@@ -756,7 +756,7 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
         bool single)
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
-      QCString result=(QCString)"Dokumentacja dla te";
+      QCString result="Dokumentacja dla te";
       switch(compType)
       {
         case ClassDef::Class:      result+="j klasy"; break;
@@ -825,12 +825,12 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
     /*! this text is put before a collaboration diagram */
     QCString trCollaborationDiagram(const QCString &clName)
     {
-      return (QCString)"Diagram współpracy dla "+clName+":";
+      return "Diagram współpracy dla "+clName+":";
     }
     /*! this text is put before an include dependency graph */
     QCString trInclDepGraph(const QCString &fName)
     {
-      return (QCString)"Wykres zależności załączania dla "+fName+":";
+      return "Wykres zależności załączania dla "+fName+":";
     }
     /*! header that is put before the list of constructor/destructors. */
     QCString trConstructorDocumentation()
@@ -1112,7 +1112,7 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
     /*! Used as the title of a Java package */
     virtual QCString trPackage(const QCString &name)
     {
-      return (QCString)"Pakiet "+name;
+      return "Pakiet "+name;
     }
     /*! Title of the package index page */
     virtual QCString trPackageList()
@@ -1641,7 +1641,7 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
         case ClassDef::Exception:  result+=" wyjątku "; break;
         default: break;
       }
-      result+=(QCString)clName;
+      result+=clName;
       return result;
     }
     /*! used as the title of the HTML page of a module (Fortran) */
@@ -1696,7 +1696,7 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
         bool single)
     {
       // single is true implies a single file
-      QCString result=(QCString)"Dokumentacja dla te";
+      QCString result="Dokumentacja dla te";
       switch(compType)
       {
         case ClassDef::Class:      result+="go modułu"; break;
@@ -1783,7 +1783,7 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
      */
     virtual QCString trFileIn(const QCString &name)
     {
-      return (QCString)"Plik w "+name;
+      return "Plik w "+name;
     }
 
     /*! when clicking a directory dependency label, a page with a
@@ -1792,7 +1792,7 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
      */
     virtual QCString trIncludesFileIn(const QCString &name)
     {
-      return (QCString)"Zawiera plik w "+name;
+      return "Zawiera plik w "+name;
     }
 
     /** Compiles a date string.

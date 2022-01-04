@@ -1115,7 +1115,7 @@ void RTFDocVisitor::visitPre(DocHtmlRow *r)
 {
   if (m_hide) return;
   DBG_RTF("{\\comment RTFDocVisitor::visitPre(DocHtmlRow)}\n");
-  uint i,columnWidth=(uint)r->numCells()>0 ? rtf_pageWidth/(uint)r->numCells() : 10;
+  size_t i,columnWidth=r->numCells()>0 ? rtf_pageWidth/r->numCells() : 10;
   m_t << "\\trowd \\trgaph108\\trleft-108"
          "\\trbrdrt\\brdrs\\brdrw10 "
          "\\trbrdrl\\brdrs\\brdrw10 "
@@ -1522,8 +1522,8 @@ void RTFDocVisitor::visitPre(DocParamList *pl)
   DocParamSect *sect = 0;
   if (pl->parent() && pl->parent()->kind()==DocNode::Kind_ParamSect)
   {
-    parentType = ((DocParamSect*)pl->parent())->type();
-    sect=(DocParamSect*)pl->parent();
+    sect       = dynamic_cast<DocParamSect*>(pl->parent());
+    parentType = sect->type();
   }
   bool useTable = parentType==DocParamSect::Param ||
                   parentType==DocParamSect::RetVal ||
@@ -1593,15 +1593,15 @@ void RTFDocVisitor::visitPre(DocParamList *pl)
     {
       if (type->kind()==DocNode::Kind_Word)
       {
-        visit((DocWord*)type.get());
+        visit(dynamic_cast<DocWord*>(type.get()));
       }
       else if (type->kind()==DocNode::Kind_LinkedWord)
       {
-        visit((DocLinkedWord*)type.get());
+        visit(dynamic_cast<DocLinkedWord*>(type.get()));
       }
       else if (type->kind()==DocNode::Kind_Sep)
       {
-        m_t << " " << ((DocSeparator *)type.get())->chars() << " ";
+        m_t << " " << dynamic_cast<DocSeparator *>(type.get())->chars() << " ";
       }
     }
     if (useTable)
@@ -1623,11 +1623,11 @@ void RTFDocVisitor::visitPre(DocParamList *pl)
     if (!first) m_t << ","; else first=FALSE;
     if (param->kind()==DocNode::Kind_Word)
     {
-      visit((DocWord*)param.get());
+      visit(dynamic_cast<DocWord*>(param.get()));
     }
     else if (param->kind()==DocNode::Kind_LinkedWord)
     {
-      visit((DocLinkedWord*)param.get());
+      visit(dynamic_cast<DocLinkedWord*>(param.get()));
     }
   }
   m_t << "} ";
@@ -1648,7 +1648,7 @@ void RTFDocVisitor::visitPost(DocParamList *pl)
   //DocParamSect *sect = 0;
   if (pl->parent() && pl->parent()->kind()==DocNode::Kind_ParamSect)
   {
-    parentType = ((DocParamSect*)pl->parent())->type();
+    parentType = dynamic_cast<DocParamSect*>(pl->parent())->type();
     //sect=(DocParamSect*)pl->parent();
   }
   bool useTable = parentType==DocParamSect::Param ||
@@ -1813,27 +1813,11 @@ void RTFDocVisitor::filter(const QCString &str,bool verbatim)
 {
   if (!str.isEmpty())
   {
-    const unsigned char *p=(const unsigned char *)str.data();
-    unsigned char c;
-    //unsigned char pc='\0';
+    const char *p=str.data();
+    char c;
     while (*p)
     {
-      //static bool MultiByte = FALSE;
       c=*p++;
-
-      //if ( MultiByte )
-      //{
-      //  m_t << getMultiByte( c );
-      //  MultiByte = FALSE;
-      //  continue;
-      //}
-      //if ( c >= 0x80 )
-      //{
-      //  MultiByte = TRUE;
-      //  m_t << getMultiByte( c );
-      //  continue;
-      //}
-
       switch (c)
       {
         case '{':  m_t << "\\{";            break;
@@ -1848,9 +1832,8 @@ void RTFDocVisitor::filter(const QCString &str,bool verbatim)
                      m_t << '\n';
                    }
                    break;
-        default:   m_t << (char)c;
+        default:   m_t << c;
       }
-      //pc = c;
     }
   }
 }

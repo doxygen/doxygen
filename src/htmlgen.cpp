@@ -144,12 +144,12 @@ static QCString getConvertLatexMacro()
   if (macrofile.isEmpty()) return "";
   QCString s = fileToString(macrofile);
   macrofile = FileInfo(macrofile.str()).absFilePath();
-  int size = s.length();
+  size_t size = s.length();
   GrowBuf out(size);
   const char *data = s.data();
   int line = 1;
   int cnt = 0;
-  int i = 0;
+  size_t i = 0;
   QCString nr;
   while (i < size)
   {
@@ -168,13 +168,13 @@ static QCString getConvertLatexMacro()
       return "";
     }
     i++;
-    if (!qstrncmp(data + i, "newcommand", (uint)strlen("newcommand")))
+    if (!qstrncmp(data + i, "newcommand", strlen("newcommand")))
     {
-      i += (int)strlen("newcommand");
+      i += strlen("newcommand");
     }
-    else if (!qstrncmp(data + i, "renewcommand", (uint)strlen("renewcommand")))
+    else if (!qstrncmp(data + i, "renewcommand", strlen("renewcommand")))
     {
-      i += (int)strlen("renewcommand");
+      i += strlen("renewcommand");
     }
     else
     {
@@ -2440,8 +2440,8 @@ static void writeDefaultQuickLinks(TextStream &t,bool compact,
   bool searchEngine = Config_getBool(SEARCHENGINE);
   bool externalSearch = Config_getBool(EXTERNAL_SEARCH);
   LayoutNavEntry *root = LayoutDocManager::instance().rootNavEntry();
-  LayoutNavEntry::Kind kind = (LayoutNavEntry::Kind)-1;
-  LayoutNavEntry::Kind altKind = (LayoutNavEntry::Kind)-1; // fall back for the old layout file
+  LayoutNavEntry::Kind kind = LayoutNavEntry::None;
+  LayoutNavEntry::Kind altKind = LayoutNavEntry::None; // fall back for the old layout file
   bool highlightParent=FALSE;
   switch (hli) // map HLI enums to LayoutNavEntry::Kind enums
   {
@@ -2529,7 +2529,7 @@ static void writeDefaultQuickLinks(TextStream &t,bool compact,
   {
     // find highlighted index item
     LayoutNavEntry *hlEntry = root->find(kind,kind==LayoutNavEntry::UserGroup ? file : QCString());
-    if (!hlEntry && altKind!=(LayoutNavEntry::Kind)-1) { hlEntry=root->find(altKind); kind=altKind; }
+    if (!hlEntry && altKind!=LayoutNavEntry::None) { hlEntry=root->find(altKind); kind=altKind; }
     if (!hlEntry) // highlighted item not found in the index! -> just show the level 1 index...
     {
       highlightParent=TRUE;

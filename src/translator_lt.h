@@ -134,7 +134,7 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
      */
     virtual QCString trGeneratedAutomatically(const QCString &s)
     { QCString result="Automatiškai sugeneruota Doxygen įrankiu";
-      if (!s.isEmpty()) result+=(QCString)" "+s;
+      if (!s.isEmpty()) result+=" "+s;
       result+=" iš programos kodo.";
       return result;
     }
@@ -496,16 +496,16 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
      */
     virtual QCString trGeneratedAt(const QCString &date,const QCString &projName)
     {
-      QCString result=(QCString)"Sugeneruota "+date;/*FIXME*/
-      if (!projName.isEmpty()) result+=(QCString)" "+projName;/*FIXME*/
-      result+=(QCString)" ";/*FIXME*/
+      QCString result="Sugeneruota "+date;/*FIXME*/
+      if (!projName.isEmpty()) result+=" "+projName;/*FIXME*/
+      result+=" ";/*FIXME*/
       return result;
     }
 
     /*! this text is put before a class diagram */
     virtual QCString trClassDiagram(const QCString &clName)
     {
-      return (QCString)"Paveldimumo diagrama "+clName+":"; /*FIXME*/
+      return "Paveldimumo diagrama "+clName+":"; /*FIXME*/
     }
 
     /*! this text is generated when the \\internal command is used. */
@@ -586,7 +586,7 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
                                     ClassDef::CompoundType compType,
                                     bool isTemplate)
     {
-      QCString result=(QCString)clName;
+      QCString result=clName;
       switch(compType)
       {
         case ClassDef::Class:      result+=" Klasė"; break;
@@ -745,7 +745,7 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
         bool single)
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
-      QCString result=(QCString)"Dokumentacija ";
+      QCString result="Dokumentacija ";
       switch(compType)
       {
         case ClassDef::Class:      result+="šiai klasei"; break;
@@ -810,12 +810,12 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
     /*! this text is put before a collaboration diagram */
     virtual QCString trCollaborationDiagram(const QCString &clName)
     {
-      return (QCString)"Bendradarbiavimo diagrama "+clName+":";/*FIXME*/
+      return "Bendradarbiavimo diagrama "+clName+":";/*FIXME*/
     }
     /*! this text is put before an include dependency graph */
     virtual QCString trInclDepGraph(const QCString &fName)
     {
-      return (QCString)"Įtraukimo priklausomybių diagrama "+fName+":";/*FIXME*/
+      return "Įtraukimo priklausomybių diagrama "+fName+":";/*FIXME*/
     }
     /*! header that is put before the list of constructor/destructors. */
     virtual QCString trConstructorDocumentation()
@@ -1096,7 +1096,7 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
     /*! Used as the title of a Java package */
     virtual QCString trPackage(const QCString &name)
     {
-      return (QCString)"Paketas "+name;
+      return "Paketas "+name;
     }
     /*! Title of the package index page */
     virtual QCString trPackageList()

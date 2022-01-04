@@ -163,7 +163,7 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
      */
     virtual QCString trGeneratedAutomatically(const QCString &s)
     { QCString result="Được tạo ra bởi Doxygen";
-      if (!s.isEmpty()) result+=(QCString)" cho "+s;
+      if (!s.isEmpty()) result+=" cho "+s;
       result+=" từ mã nguồn.";
       return result;
     }
@@ -525,16 +525,16 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
      */
     virtual QCString trGeneratedAt(const QCString &date,const QCString &projName)
     {
-      QCString result=(QCString)"Được biên soạn vào "+date;
-      if (!projName.isEmpty()) result+=(QCString)" cho mã nguồn dự án "+projName;
-      result+=(QCString)" bởi";
+      QCString result="Được biên soạn vào "+date;
+      if (!projName.isEmpty()) result+=" cho mã nguồn dự án "+projName;
+      result+=" bởi";
       return result;
     }
 
     /*! this text is put before a class diagram */
     virtual QCString trClassDiagram(const QCString &clName)
     {
-      return (QCString)"Sơ đồ kế thừa cho "+clName+":";
+      return "Sơ đồ kế thừa cho "+clName+":";
     }
 
     /*! this text is generated when the \\internal command is used. */
@@ -615,7 +615,7 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
                                     ClassDef::CompoundType compType,
                                     bool isTemplate)
     {
-      QCString result=(QCString)clName;
+      QCString result=clName;
       switch(compType)
       {
         case ClassDef::Class:      result+=" Class"; break;
@@ -774,7 +774,7 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
     virtual QCString trGeneratedFromFiles(ClassDef::CompoundType compType,bool)
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
-      QCString result=(QCString)"Thông tin cho ";
+      QCString result="Thông tin cho ";
       switch(compType)
       {
         case ClassDef::Class:      result+="class"; break;
@@ -839,12 +839,12 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
     /*! this text is put before a collaboration diagram */
     virtual QCString trCollaborationDiagram(const QCString &clName)
     {
-      return (QCString)"Sơ đồ liên kết cho "+clName+":";
+      return "Sơ đồ liên kết cho "+clName+":";
     }
     /*! this text is put before an include dependency graph */
     virtual QCString trInclDepGraph(const QCString &fName)
     {
-      return (QCString)"Kèm theo graph phụ thuộc cho "+fName+":";
+      return "Kèm theo graph phụ thuộc cho "+fName+":";
     }
     /*! header that is put before the list of constructor/destructors. */
     virtual QCString trConstructorDocumentation()
@@ -1124,7 +1124,7 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
     /*! Used as the title of a Java package */
     virtual QCString trPackage(const QCString &name)
     {
-      return (QCString)"Gói "+name;
+      return "Gói "+name;
     }
     /*! Title of the package index page */
     virtual QCString trPackageList()
@@ -1647,7 +1647,7 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
                                     ClassDef::CompoundType compType,
                                     bool isTemplate)
     {
-      QCString result=(QCString)clName;
+      QCString result=clName;
       switch(compType)
       {
         case ClassDef::Class:      result+=" Module"; break;
@@ -1715,7 +1715,7 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
         bool single)
     { // here s is one of " Module", " Struct" or " Union"
       // single is true implies a single file
-      QCString result=(QCString)"Thông tin cho ";
+      QCString result="Thông tin cho ";
       switch(compType)
       {
         case ClassDef::Class:      result+="module"; break;

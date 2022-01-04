@@ -199,11 +199,11 @@ class GenericNodeListContext : public TemplateListIntf
     }
 
     // TemplateListIntf methods
-    uint count() const
+    size_t count() const
     {
-      return static_cast<uint>(m_children.size());
+      return m_children.size();
     }
-    TemplateVariant at(uint index) const
+    TemplateVariant at(size_t index) const
     {
       TemplateVariant result;
       if (index<count())
@@ -1692,12 +1692,12 @@ IncludeInfoListContext::~IncludeInfoListContext()
 }
 
 // TemplateListIntf
-uint IncludeInfoListContext::count() const
+size_t IncludeInfoListContext::count() const
 {
   return p->count();
 }
 
-TemplateVariant IncludeInfoListContext::at(uint index) const
+TemplateVariant IncludeInfoListContext::at(size_t index) const
 {
   return p->at(index);
 }
@@ -5003,8 +5003,8 @@ class ClassListContext::Private : public GenericNodeListContext
       for (const auto &cd : classLinkedMap)
       {
         if (cd->getLanguage()==SrcLangExt_VHDL &&
-            (static_cast<VhdlDocGen::VhdlClasses>(cd->protection())==VhdlDocGen::PACKAGECLASS ||
-             static_cast<VhdlDocGen::VhdlClasses>(cd->protection())==VhdlDocGen::PACKBODYCLASS)
+            (VhdlDocGen::convert(cd->protection())==VhdlDocGen::PACKAGECLASS ||
+             VhdlDocGen::convert(cd->protection())==VhdlDocGen::PACKBODYCLASS)
            ) // no architecture
         {
           continue;
@@ -5029,12 +5029,12 @@ ClassListContext::~ClassListContext()
 }
 
 // TemplateListIntf
-uint ClassListContext::count() const
+size_t ClassListContext::count() const
 {
   return p->count();
 }
 
-TemplateVariant ClassListContext::at(uint index) const
+TemplateVariant ClassListContext::at(size_t index) const
 {
   return p->at(index);
 }
@@ -5076,8 +5076,8 @@ class ClassIndexContext::Private
         for (const auto &cd : *Doxygen::classLinkedMap)
         {
           if (cd->getLanguage()==SrcLangExt_VHDL &&
-              (static_cast<VhdlDocGen::VhdlClasses>(cd->protection())==VhdlDocGen::PACKAGECLASS ||
-               static_cast<VhdlDocGen::VhdlClasses>(cd->protection())==VhdlDocGen::PACKBODYCLASS)
+              (VhdlDocGen::convert(cd->protection())==VhdlDocGen::PACKAGECLASS ||
+               VhdlDocGen::convert(cd->protection())==VhdlDocGen::PACKBODYCLASS)
              ) // no architecture
           {
             continue;
@@ -5731,8 +5731,8 @@ class NestingContext::Private : public GenericNodeListContext
     {
       if (cd->getLanguage()==SrcLangExt_VHDL)
       {
-        if (static_cast<VhdlDocGen::VhdlClasses>(cd->protection())==VhdlDocGen::PACKAGECLASS ||
-            static_cast<VhdlDocGen::VhdlClasses>(cd->protection())==VhdlDocGen::PACKBODYCLASS
+        if (VhdlDocGen::convert(cd->protection())==VhdlDocGen::PACKAGECLASS ||
+            VhdlDocGen::convert(cd->protection())==VhdlDocGen::PACKBODYCLASS
            )// no architecture
         {
           return;
@@ -5893,7 +5893,7 @@ class NestingContext::Private : public GenericNodeListContext
       for (const auto &bcd : bcl)
       {
         const ClassDef *cd=bcd.classDef;
-        if (cd->getLanguage()==SrcLangExt_VHDL && static_cast<VhdlDocGen::VhdlClasses>(cd->protection())!=VhdlDocGen::ENTITYCLASS)
+        if (cd->getLanguage()==SrcLangExt_VHDL && VhdlDocGen::convert(cd->protection())!=VhdlDocGen::ENTITYCLASS)
         {
           continue;
         }
@@ -5923,7 +5923,7 @@ class NestingContext::Private : public GenericNodeListContext
         bool b;
         if (cd->getLanguage()==SrcLangExt_VHDL)
         {
-          if (static_cast<VhdlDocGen::VhdlClasses>(cd->protection())!=VhdlDocGen::ENTITYCLASS)
+          if (VhdlDocGen::convert(cd->protection())!=VhdlDocGen::ENTITYCLASS)
           {
             continue;
           }
@@ -5974,12 +5974,12 @@ NestingContext::~NestingContext()
 }
 
 // TemplateListIntf
-uint NestingContext::count() const
+size_t NestingContext::count() const
 {
   return p->count();
 }
 
-TemplateVariant NestingContext::at(uint index) const
+TemplateVariant NestingContext::at(size_t index) const
 {
   return p->at(index);
 }
@@ -6184,12 +6184,12 @@ ConceptListContext::~ConceptListContext()
 }
 
 // TemplateListIntf
-uint ConceptListContext::count() const
+size_t ConceptListContext::count() const
 {
   return p->count();
 }
 
-TemplateVariant ConceptListContext::at(uint index) const
+TemplateVariant ConceptListContext::at(size_t index) const
 {
   return p->at(index);
 }
@@ -6227,12 +6227,12 @@ NamespaceListContext::~NamespaceListContext()
 }
 
 // TemplateListIntf
-uint NamespaceListContext::count() const
+size_t NamespaceListContext::count() const
 {
   return p->count();
 }
 
-TemplateVariant NamespaceListContext::at(uint index) const
+TemplateVariant NamespaceListContext::at(size_t index) const
 {
   return p->at(index);
 }
@@ -6360,12 +6360,12 @@ FileListContext::~FileListContext()
 }
 
 // TemplateListIntf
-uint FileListContext::count() const
+size_t FileListContext::count() const
 {
   return p->count();
 }
 
-TemplateVariant FileListContext::at(uint index) const
+TemplateVariant FileListContext::at(size_t index) const
 {
   return p->at(index);
 }
@@ -6399,12 +6399,12 @@ DirListContext::~DirListContext()
 }
 
 // TemplateListIntf
-uint DirListContext::count() const
+size_t DirListContext::count() const
 {
   return p->count();
 }
 
-TemplateVariant DirListContext::at(uint index) const
+TemplateVariant DirListContext::at(size_t index) const
 {
   return p->at(index);
 }
@@ -6443,12 +6443,12 @@ UsedFilesContext::~UsedFilesContext()
 }
 
 // TemplateListIntf
-uint UsedFilesContext::count() const
+size_t UsedFilesContext::count() const
 {
   return p->count();
 }
 
-TemplateVariant UsedFilesContext::at(uint index) const
+TemplateVariant UsedFilesContext::at(size_t index) const
 {
   return p->at(index);
 }
@@ -6650,12 +6650,12 @@ PageListContext::~PageListContext()
 }
 
 // TemplateListIntf
-uint PageListContext::count() const
+size_t PageListContext::count() const
 {
   return p->count();
 }
 
-TemplateVariant PageListContext::at(uint index) const
+TemplateVariant PageListContext::at(size_t index) const
 {
   return p->at(index);
 }
@@ -6692,12 +6692,12 @@ ExampleListContext::~ExampleListContext()
 }
 
 // TemplateListIntf
-uint ExampleListContext::count() const
+size_t ExampleListContext::count() const
 {
   return p->count();
 }
 
-TemplateVariant ExampleListContext::at(uint index) const
+TemplateVariant ExampleListContext::at(size_t index) const
 {
   return p->at(index);
 }
@@ -6735,12 +6735,12 @@ ModuleListContext::~ModuleListContext()
 }
 
 // TemplateListIntf
-uint ModuleListContext::count() const
+size_t ModuleListContext::count() const
 {
   return p->count();
 }
 
-TemplateVariant ModuleListContext::at(uint index) const
+TemplateVariant ModuleListContext::at(size_t index) const
 {
   return p->at(index);
 }
@@ -7543,12 +7543,12 @@ InheritanceListContext::~InheritanceListContext()
 }
 
 // TemplateListIntf
-uint InheritanceListContext::count() const
+size_t InheritanceListContext::count() const
 {
   return p->count();
 }
 
-TemplateVariant InheritanceListContext::at(uint index) const
+TemplateVariant InheritanceListContext::at(size_t index) const
 {
   return p->at(index);
 }
@@ -7604,12 +7604,12 @@ MemberListContext::~MemberListContext()
 }
 
 // TemplateListIntf
-uint MemberListContext::count() const
+size_t MemberListContext::count() const
 {
   return p->count();
 }
 
-TemplateVariant MemberListContext::at(uint index) const
+TemplateVariant MemberListContext::at(size_t index) const
 {
   return p->at(index);
 }
@@ -7746,12 +7746,12 @@ AllMembersListContext::~AllMembersListContext()
 }
 
 // TemplateListIntf
-uint AllMembersListContext::count() const
+size_t AllMembersListContext::count() const
 {
   return p->count();
 }
 
-TemplateVariant AllMembersListContext::at(uint index) const
+TemplateVariant AllMembersListContext::at(size_t index) const
 {
   return p->at(index);
 }
@@ -7881,12 +7881,12 @@ MemberGroupListContext::~MemberGroupListContext()
 }
 
 // TemplateListIntf
-uint MemberGroupListContext::count() const
+size_t MemberGroupListContext::count() const
 {
   return p->count();
 }
 
-TemplateVariant MemberGroupListContext::at(uint index) const
+TemplateVariant MemberGroupListContext::at(size_t index) const
 {
   return p->at(index);
 }
@@ -8182,12 +8182,12 @@ InheritedMemberInfoListContext::~InheritedMemberInfoListContext()
 }
 
 // TemplateListIntf
-uint InheritedMemberInfoListContext::count() const
+size_t InheritedMemberInfoListContext::count() const
 {
   return p->count();
 }
 
-TemplateVariant InheritedMemberInfoListContext::at(uint index) const
+TemplateVariant InheritedMemberInfoListContext::at(size_t index) const
 {
   return p->at(index);
 }
@@ -8220,7 +8220,7 @@ class ArgumentContext::Private
     TemplateVariant namePart() const
     {
       QCString result = m_argument.attrib;
-      uint l = result.length();
+      size_t l = result.length();
       if (l>2 && result.at(0)=='[' && result.at(l-1)==']')
       {
         result = result.mid(1,l-2);
@@ -8315,12 +8315,12 @@ ArgumentListContext::~ArgumentListContext()
 }
 
 // TemplateListIntf
-uint ArgumentListContext::count() const
+size_t ArgumentListContext::count() const
 {
   return p->count();
 }
 
-TemplateVariant ArgumentListContext::at(uint index) const
+TemplateVariant ArgumentListContext::at(size_t index) const
 {
   return p->at(index);
 }
@@ -8520,12 +8520,12 @@ SymbolListContext::~SymbolListContext()
 }
 
 // TemplateListIntf
-uint SymbolListContext::count() const
+size_t SymbolListContext::count() const
 {
   return p->count();
 }
 
-TemplateVariant SymbolListContext::at(uint index) const
+TemplateVariant SymbolListContext::at(size_t index) const
 {
   return p->at(index);
 }
@@ -8635,12 +8635,12 @@ SymbolGroupListContext::~SymbolGroupListContext()
 }
 
 // TemplateListIntf
-uint SymbolGroupListContext::count() const
+size_t SymbolGroupListContext::count() const
 {
   return p->count();
 }
 
-TemplateVariant SymbolGroupListContext::at(uint index) const
+TemplateVariant SymbolGroupListContext::at(size_t index) const
 {
   return p->at(index);
 }
@@ -8732,12 +8732,12 @@ SymbolIndicesContext::~SymbolIndicesContext()
 }
 
 // TemplateListIntf
-uint SymbolIndicesContext::count() const
+size_t SymbolIndicesContext::count() const
 {
   return p->count();
 }
 
-TemplateVariant SymbolIndicesContext::at(uint index) const
+TemplateVariant SymbolIndicesContext::at(size_t index) const
 {
   return p->at(index);
 }
@@ -8827,12 +8827,12 @@ SearchIndicesContext::~SearchIndicesContext()
 }
 
 // TemplateListIntf
-uint SearchIndicesContext::count() const
+size_t SearchIndicesContext::count() const
 {
   return p->count();
 }
 
-TemplateVariant SearchIndicesContext::at(uint index) const
+TemplateVariant SearchIndicesContext::at(size_t index) const
 {
   return p->at(index);
 }

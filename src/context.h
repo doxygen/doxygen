@@ -136,8 +136,8 @@ class UsedFilesContext : public TemplateListIntf
     { return std::static_pointer_cast<TemplateListIntf>(std::make_shared<UsedFilesContext>(cd)); }
 
     // TemplateListIntf
-    virtual uint count() const;
-    virtual TemplateVariant at(uint index) const;
+    virtual size_t count() const;
+    virtual TemplateVariant at(size_t index) const;
     virtual TemplateListIntf::ConstIteratorPtr createIterator() const;
 
     void addFile(const FileDef *fd);
@@ -179,8 +179,8 @@ class IncludeInfoListContext : public TemplateListIntf
     { return std::static_pointer_cast<TemplateListIntf>(std::make_shared<IncludeInfoListContext>(list,lang)); }
 
     // TemplateListIntf
-    virtual uint count() const;
-    virtual TemplateVariant at(uint index) const;
+    virtual size_t count() const;
+    virtual TemplateVariant at(size_t index) const;
     virtual TemplateListIntf::ConstIteratorPtr createIterator() const;
 
     IncludeInfoListContext(const IncludeInfoList &list,SrcLangExt lang);
@@ -362,8 +362,8 @@ class ClassListContext : public TemplateListIntf
     { return std::static_pointer_cast<TemplateListIntf>(std::make_shared<ClassListContext>()); }
 
     // TemplateListIntf
-    virtual uint count() const;
-    virtual TemplateVariant at(uint index) const;
+    virtual size_t count() const;
+    virtual TemplateVariant at(size_t index) const;
     virtual TemplateListIntf::ConstIteratorPtr createIterator() const;
 
     ClassListContext();
@@ -444,8 +444,8 @@ class ClassInheritanceContext : public TemplateListIntf
     { return std::static_pointer_cast<TemplateListIntf>(std::make_shared<ClassInheritanceContext>()); }
 
     // TemplateListIntf
-    virtual uint count() const;
-    virtual TemplateVariant at(uint index) const;
+    virtual size_t count() const;
+    virtual TemplateVariant at(size_t index) const;
     virtual TemplateListIntf::ConstIteratorPtr createIterator() const;
 
     ClassInheritanceContext();
@@ -531,8 +531,8 @@ class NestingContext : public TemplateListIntf
     { return std::static_pointer_cast<TemplateListIntf>(std::make_shared<NestingContext>(parent,type,level)); }
 
     // TemplateListIntf
-    virtual uint count() const;
-    virtual TemplateVariant at(uint index) const;
+    virtual size_t count() const;
+    virtual TemplateVariant at(size_t index) const;
     virtual TemplateListIntf::ConstIteratorPtr createIterator() const;
 
     void addNamespaces(const NamespaceLinkedMap &nsLinkedMap,bool rootOnly,bool addClasses,bool addConcepts,ClassDefSet &visitedClasses);
@@ -590,8 +590,8 @@ class ConceptListContext : public TemplateListIntf
     { return std::static_pointer_cast<TemplateListIntf>(std::make_shared<ConceptListContext>()); }
 
     // TemplateListIntf
-    virtual uint count() const;
-    virtual TemplateVariant at(uint index) const;
+    virtual size_t count() const;
+    virtual TemplateVariant at(size_t index) const;
     virtual TemplateListIntf::ConstIteratorPtr createIterator() const;
 
     ConceptListContext();
@@ -611,8 +611,8 @@ class NamespaceListContext : public TemplateListIntf
     { return std::static_pointer_cast<TemplateListIntf>(std::make_shared<NamespaceListContext>()); }
 
     // TemplateListIntf
-    virtual uint count() const;
-    virtual TemplateVariant at(uint index) const;
+    virtual size_t count() const;
+    virtual TemplateVariant at(size_t index) const;
     virtual TemplateListIntf::ConstIteratorPtr createIterator() const;
 
     NamespaceListContext();
@@ -652,8 +652,8 @@ class DirListContext : public TemplateListIntf
     { return std::static_pointer_cast<TemplateListIntf>(std::make_shared<DirListContext>()); }
 
     // TemplateListIntf
-    virtual uint count() const;
-    virtual TemplateVariant at(uint index) const;
+    virtual size_t count() const;
+    virtual TemplateVariant at(size_t index) const;
     virtual TemplateListIntf::ConstIteratorPtr createIterator() const;
 
     DirListContext();
@@ -673,8 +673,8 @@ class FileListContext : public TemplateListIntf
     { return std::static_pointer_cast<TemplateListIntf>(std::make_shared<FileListContext>()); }
 
     // TemplateListIntf
-    virtual uint count() const;
-    virtual TemplateVariant at(uint index) const;
+    virtual size_t count() const;
+    virtual TemplateVariant at(size_t index) const;
     virtual TemplateListIntf::ConstIteratorPtr createIterator() const;
 
     FileListContext();
@@ -714,8 +714,8 @@ class PageListContext : public TemplateListIntf
     { return std::static_pointer_cast<TemplateListIntf>(std::make_shared<PageListContext>(pages)); }
 
     // TemplateListIntf methods
-    virtual uint count() const;
-    virtual TemplateVariant at(uint index) const;
+    virtual size_t count() const;
+    virtual TemplateVariant at(size_t index) const;
     virtual TemplateListIntf::ConstIteratorPtr createIterator() const;
 
     void addPages(const PageLinkedMap &pages);
@@ -777,8 +777,8 @@ class ModuleListContext : public TemplateListIntf
     { return std::static_pointer_cast<TemplateListIntf>(std::make_shared<ModuleListContext>()); }
 
     // TemplateListIntf
-    virtual uint count() const;
-    virtual TemplateVariant at(uint index) const;
+    virtual size_t count() const;
+    virtual TemplateVariant at(size_t index) const;
     virtual TemplateListIntf::ConstIteratorPtr createIterator() const;
 
     void addModules(const GroupLinkedMap &);
@@ -841,8 +841,8 @@ class ExampleListContext : public TemplateListIntf
     { return std::static_pointer_cast<TemplateListIntf>(std::make_shared<ExampleListContext>()); }
 
     // TemplateListIntf methods
-    virtual uint count() const;
-    virtual TemplateVariant at(uint index) const;
+    virtual size_t count() const;
+    virtual TemplateVariant at(size_t index) const;
     virtual TemplateListIntf::ConstIteratorPtr createIterator() const;
 
     ExampleListContext();
@@ -984,8 +984,8 @@ class InheritanceListContext : public TemplateListIntf
     { return std::static_pointer_cast<TemplateListIntf>(std::make_shared<InheritanceListContext>(list,baseClasses)); }
 
     // TemplateListIntf
-    virtual uint count() const;
-    virtual TemplateVariant at(uint index) const;
+    virtual size_t count() const;
+    virtual TemplateVariant at(size_t index) const;
     virtual TemplateListIntf::ConstIteratorPtr createIterator() const;
 
     InheritanceListContext(const BaseClassList &list,bool baseClasses);
@@ -1009,8 +1009,8 @@ class MemberListContext : public TemplateListIntf
     { return std::static_pointer_cast<TemplateListIntf>(std::make_shared<MemberListContext>(ml)); }
 
     // TemplateListIntf
-    virtual uint count() const;
-    virtual TemplateVariant at(uint index) const;
+    virtual size_t count() const;
+    virtual TemplateVariant at(size_t index) const;
     virtual TemplateListIntf::ConstIteratorPtr createIterator() const;
 
     MemberListContext();
@@ -1056,8 +1056,8 @@ class MemberGroupListContext : public TemplateListIntf
     { return std::static_pointer_cast<TemplateListIntf>(std::make_shared<MemberGroupListContext>(def,relPath,list,subGrouping)); }
 
     // TemplateListIntf
-    virtual uint count() const;
-    virtual TemplateVariant at(uint index) const;
+    virtual size_t count() const;
+    virtual TemplateVariant at(size_t index) const;
     virtual TemplateListIntf::ConstIteratorPtr createIterator() const;
 
     MemberGroupListContext();
@@ -1145,8 +1145,8 @@ class InheritedMemberInfoListContext : public TemplateListIntf
     void addMemberList(const ClassDef *cd,MemberListType lt,const QCString &title,bool additionalList=TRUE);
 
     // TemplateListIntf
-    virtual uint count() const;
-    virtual TemplateVariant at(uint index) const;
+    virtual size_t count() const;
+    virtual TemplateVariant at(size_t index) const;
     virtual TemplateListIntf::ConstIteratorPtr createIterator() const;
 
     InheritedMemberInfoListContext();
@@ -1166,8 +1166,8 @@ class AllMembersListContext : public TemplateListIntf
     { return std::static_pointer_cast<TemplateListIntf>(std::make_shared<AllMembersListContext>(ml)); }
 
     // TemplateListIntf
-    virtual uint count() const;
-    virtual TemplateVariant at(uint index) const;
+    virtual size_t count() const;
+    virtual TemplateVariant at(size_t index) const;
     virtual TemplateListIntf::ConstIteratorPtr createIterator() const;
 
     AllMembersListContext(const MemberNameInfoLinkedMap &ml);
@@ -1209,8 +1209,8 @@ class ArgumentListContext : public TemplateListIntf
     { return std::static_pointer_cast<TemplateListIntf>(std::make_shared<ArgumentListContext>(al,def,relPath)); }
 
     // TemplateListIntf
-    virtual uint count() const;
-    virtual TemplateVariant at(uint index) const;
+    virtual size_t count() const;
+    virtual TemplateVariant at(size_t index) const;
     virtual TemplateListIntf::ConstIteratorPtr createIterator() const;
 
     ArgumentListContext();
@@ -1252,8 +1252,8 @@ class SymbolListContext : public TemplateListIntf
     { return std::static_pointer_cast<TemplateListIntf>(std::make_shared<SymbolListContext>(start,end)); }
 
     // TemplateListIntf
-    virtual uint count() const;
-    virtual TemplateVariant at(uint index) const;
+    virtual size_t count() const;
+    virtual TemplateVariant at(size_t index) const;
     virtual TemplateListIntf::ConstIteratorPtr createIterator() const;
 
     SymbolListContext(const SearchIndexList::const_iterator &start,
@@ -1296,8 +1296,8 @@ class SymbolGroupListContext : public TemplateListIntf
     { return std::static_pointer_cast<TemplateListIntf>(std::make_shared<SymbolGroupListContext>(sil)); }
 
     // TemplateListIntf
-    virtual uint count() const;
-    virtual TemplateVariant at(uint index) const;
+    virtual size_t count() const;
+    virtual TemplateVariant at(size_t index) const;
     virtual TemplateListIntf::ConstIteratorPtr createIterator() const;
 
     SymbolGroupListContext(const SearchIndexList &sil);
@@ -1338,8 +1338,8 @@ class SymbolIndicesContext : public TemplateListIntf
     { return std::static_pointer_cast<TemplateListIntf>(std::make_shared<SymbolIndicesContext>(info)); }
 
     // TemplateListIntf
-    virtual uint count() const;
-    virtual TemplateVariant at(uint index) const;
+    virtual size_t count() const;
+    virtual TemplateVariant at(size_t index) const;
     virtual TemplateListIntf::ConstIteratorPtr createIterator() const;
 
     SymbolIndicesContext(const SearchIndexInfo &info);
@@ -1379,8 +1379,8 @@ class SearchIndicesContext : public TemplateListIntf
     { return std::static_pointer_cast<TemplateListIntf>(std::make_shared<SearchIndicesContext>()); }
 
     // TemplateListIntf
-    virtual uint count() const;
-    virtual TemplateVariant at(uint index) const;
+    virtual size_t count() const;
+    virtual TemplateVariant at(size_t index) const;
     virtual TemplateListIntf::ConstIteratorPtr createIterator() const;
 
     SearchIndicesContext();

@@ -717,7 +717,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
         bool single)
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
-      QCString result=(QCString)"Документація  ";
+      QCString result="Документація  ";
       switch(compType)
       {
         case ClassDef::Class:
@@ -797,7 +797,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
     /*! this text is put before a collaboration diagram */
     virtual QCString trCollaborationDiagram(const QCString &clName)
     {
-      return (QCString)"Діаграма зв'язків класу "+clName+":";
+      return "Діаграма зв'язків класу "+clName+":";
     }
     /*! this text is put before an include dependency graph */
     virtual QCString trInclDepGraph(const QCString &fName)
@@ -1587,7 +1587,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
                                     ClassDef::CompoundType compType,
                                     bool isTemplate)
     {
-      QCString result=(QCString)clName;
+      QCString result=clName;
       if (isTemplate)
       {
 	switch(compType)
@@ -1672,7 +1672,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
         bool single)
     {
       // single is true implies a single file
-      QCString result=(QCString)"Документацію для ";
+      QCString result="Документацію для ";
       switch(compType)
       {
         case ClassDef::Class:      result+="цього модуля"; break;
@@ -1761,7 +1761,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
      */
     virtual QCString trFileIn(const QCString &name)
     {
-      return (QCString)"Файл у "+name;
+      return "Файл у "+name;
     }
 
     /*! when clicking a directory dependency label, a page with a
@@ -1770,7 +1770,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
      */
     virtual QCString trIncludesFileIn(const QCString &name)
     {
-      return (QCString)"Включає файли в "+name;
+      return "Включає файли в "+name;
     }
 
     /** Compiles a date string.

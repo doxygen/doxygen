@@ -520,13 +520,13 @@ void ConceptDefImpl::writeDocumentation(OutputList &ol)
         break;
       case LayoutDocEntry::ConceptDefinition:
         {
-          const LayoutDocEntrySection *ls = (const LayoutDocEntrySection*)lde.get();
+          const LayoutDocEntrySection *ls = dynamic_cast<const LayoutDocEntrySection*>(lde.get());
           writeDefinition(ol,ls->title(getLanguage()));
         }
         break;
       case LayoutDocEntry::DetailedDesc:
         {
-          const LayoutDocEntrySection *ls = (const LayoutDocEntrySection*)lde.get();
+          const LayoutDocEntrySection *ls = dynamic_cast<const LayoutDocEntrySection*>(lde.get());
           writeDetailedDescription(ol,ls->title(getLanguage()));
         }
         break;

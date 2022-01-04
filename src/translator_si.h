@@ -66,7 +66,7 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
     { return ", vključujoč dedovane metode in atribute."; }
     QCString trGeneratedAutomatically(const QCString &s)
     { QCString result="zgenerirano z Doxygen-om";
-      if (!s.isEmpty()) result+=(QCString)" za "+s;
+      if (!s.isEmpty()) result+=" za "+s;
       result+=" iz izvorne kode.";
       return result;
     }
@@ -188,14 +188,14 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
     { return "Strukture"; }
     QCString trGeneratedAt(const QCString &date,const QCString &projName)
     {
-      QCString result=(QCString)"Generirano "+date;
-      if (!projName.isEmpty()) result+=(QCString)" projekt: "+projName;
-      result+=(QCString)" generator: ";
+      QCString result="Generirano "+date;
+      if (!projName.isEmpty()) result+=" projekt: "+projName;
+      result+=" generator: ";
       return result;
     }
     QCString trClassDiagram(const QCString &clName)
     {
-      return (QCString)"Diagram razredov za "+clName;
+      return "Diagram razredov za "+clName;
     }
     QCString trForInternalUseOnly()
     { return "Samo za interno uporabo."; }
@@ -266,7 +266,7 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
         case ClassDef::Exception:  result+=" IDL prekinitev "; break;
         default: break;
       }
-      result += (QCString)clName;
+      result += clName;
 
       return result;
     }
@@ -403,7 +403,7 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
         bool single)
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
-      QCString result=(QCString)"Opis ";
+      QCString result="Opis ";
       switch(compType)
       {
         case ClassDef::Class:      result+="razreda"; break;
@@ -474,12 +474,12 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
     /*! this text is put before a collaboration diagram */
     QCString trCollaborationDiagram(const QCString &clName)
     {
-      return (QCString)"Kolaboracijski diagram razreda "+clName+":";
+      return "Kolaboracijski diagram razreda "+clName+":";
     }
     /*! this text is put before an include dependency graph */
     QCString trInclDepGraph(const QCString &fName)
     {
-      return (QCString)"Graf prikazuje seznam datotek, "
+      return "Graf prikazuje seznam datotek, "
           "ki jih datoteka \""+fName+"\" "
           "direktno ali indirektno vključuje. Pravokotniki ponazarjajo datoteke, puščice "
 	  "predstavljajo relacije med njimi. "
@@ -767,7 +767,7 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
     /*! Used as the title of a Java package */
     virtual QCString trPackage(const QCString &name)
     {
-      return (QCString)"JAVA paket "+name;
+      return "JAVA paket "+name;
     }
     /*! Title of the package index page */
     virtual QCString trPackageList()

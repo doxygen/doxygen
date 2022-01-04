@@ -149,7 +149,7 @@ class TranslatorLatvian : public TranslatorAdapter_1_8_4
      */
     virtual QCString trGeneratedAutomatically(const QCString &s)
     { QCString result="Automātiski ģenerēts izmantojot Doxygen";
-      if (!s.isEmpty()) result+=(QCString)" priekš "+s;
+      if (!s.isEmpty()) result+=" priekš "+s;
       result+=" no pirmkoda.";
       return result;
     }
@@ -511,16 +511,16 @@ class TranslatorLatvian : public TranslatorAdapter_1_8_4
      */
     virtual QCString trGeneratedAt(const QCString &date,const QCString &projName)
     {
-      QCString result=(QCString)"Ģenerēts "+date;
-      if (!projName.isEmpty()) result+=(QCString)" projektam "+projName;
-      result+=(QCString)" ar";
+      QCString result="Ģenerēts "+date;
+      if (!projName.isEmpty()) result+=" projektam "+projName;
+      result+=" ar";
       return result;
     }
 
     /*! this text is put before a class diagram */
     virtual QCString trClassDiagram(const QCString &clName)
     {
-      return (QCString)"Mantojamības diagramma klasei "+clName+":";
+      return "Mantojamības diagramma klasei "+clName+":";
     }
 
     /*! this text is generated when the \\internal command is used. */
@@ -601,7 +601,7 @@ class TranslatorLatvian : public TranslatorAdapter_1_8_4
                                     ClassDef::CompoundType compType,
                                     bool isTemplate)
     {
-      QCString result=(QCString)clName;
+      QCString result=clName;
       switch(compType)
       {
         case ClassDef::Class:      result+=" klases"; break;
@@ -760,7 +760,7 @@ class TranslatorLatvian : public TranslatorAdapter_1_8_4
     virtual QCString trGeneratedFromFiles(ClassDef::CompoundType compType,
         bool single)
     { // single is true implies a single file
-      QCString result=(QCString)"Šī";
+      QCString result="Šī";
       switch(compType)
       {
         case ClassDef::Class:      result+="s klases"; break;
@@ -825,12 +825,12 @@ class TranslatorLatvian : public TranslatorAdapter_1_8_4
     /*! this text is put before a collaboration diagram */
     virtual QCString trCollaborationDiagram(const QCString &clName)
     {
-      return (QCString)"Sadarbības diagramma klasei "+clName+":";
+      return "Sadarbības diagramma klasei "+clName+":";
     }
     /*! this text is put before an include dependency graph */
     virtual QCString trInclDepGraph(const QCString &fName)
     {
-      return (QCString)"Include dependency graph for "+fName+":";
+      return "Include dependency graph for "+fName+":";
     }
     /*! header that is put before the list of constructor/destructors. */
     virtual QCString trConstructorDocumentation()
@@ -1113,7 +1113,7 @@ class TranslatorLatvian : public TranslatorAdapter_1_8_4
     /*! Used as the title of a Java package */
     virtual QCString trPackage(const QCString &name)
     {
-      return (QCString)"Pakotne "+name;
+      return "Pakotne "+name;
     }
     /*! Title of the package index page */
     virtual QCString trPackageList()
@@ -1637,7 +1637,7 @@ class TranslatorLatvian : public TranslatorAdapter_1_8_4
                                     ClassDef::CompoundType compType,
                                     bool isTemplate)
     {
-      QCString result=(QCString)clName;
+      QCString result=clName;
       switch(compType)
       {
         case ClassDef::Class:      result+=" moduļa"; break;
@@ -1706,7 +1706,7 @@ class TranslatorLatvian : public TranslatorAdapter_1_8_4
         bool single)
     {
       // single is true implies a single file
-      QCString result=(QCString)"Dokumentācija š";
+      QCString result="Dokumentācija š";
       switch(compType)
       {
         case ClassDef::Class:      result+="im modulim"; break;
@@ -1795,7 +1795,7 @@ class TranslatorLatvian : public TranslatorAdapter_1_8_4
      */
     virtual QCString trFileIn(const QCString &name)
     {
-      return (QCString)"File in "+name;
+      return "File in "+name;
     }
 
     /*! when clicking a directory dependency label, a page with a
@@ -1804,7 +1804,7 @@ class TranslatorLatvian : public TranslatorAdapter_1_8_4
      */
     virtual QCString trIncludesFileIn(const QCString &name)
     {
-      return (QCString)"Includes file in "+name;
+      return "Includes file in "+name;
     }
 
     /** Compiles a date string.

@@ -167,7 +167,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
      */
     virtual QCString trGeneratedAutomatically(const QCString &s)
     { QCString result="소스 코드로부터 ";
-      if (!s.isEmpty()) result+=s+(QCString)"를 위해 ";
+      if (!s.isEmpty()) result+=s+"를 위해 ";
       result+="Doxygen에 의해 자동으로 생성됨.";
       return result;
     }
@@ -531,16 +531,16 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
      */
     virtual QCString trGeneratedAt(const QCString &date,const QCString &projName)
     {
-      QCString result=(QCString)"생성시간 : "+date;
-      if (!projName.isEmpty()) result+=(QCString)", 프로젝트명 : "+projName;
-      result+=(QCString)", 생성자 : ";
+      QCString result="생성시간 : "+date;
+      if (!projName.isEmpty()) result+=", 프로젝트명 : "+projName;
+      result+=", 생성자 : ";
       return result;
     }
 
     /*! this text is put before a class diagram */
     virtual QCString trClassDiagram(const QCString &clName)
     {
-      return (QCString)clName+"에 대한 상속 다이어그램 : ";
+      return clName+"에 대한 상속 다이어그램 : ";
     }
 
     /*! this text is generated when the \\internal command is used. */
@@ -621,7 +621,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
                                     ClassDef::CompoundType compType,
                                     bool isTemplate)
     {
-      QCString result=(QCString)clName;
+      QCString result=clName;
       switch(compType)
       {
         case ClassDef::Class:      result+=" 클래스"; break;
@@ -781,7 +781,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
         bool single)
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
-      QCString result=(QCString)"이 ";
+      QCString result="이 ";
       switch(compType)
       {
         case ClassDef::Class:      result+="클래스"; break;
@@ -847,12 +847,12 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
     /*! this text is put before a collaboration diagram */
     virtual QCString trCollaborationDiagram(const QCString &clName)
     {
-      return (QCString)clName+"에 대한 협력 다이어그램:";
+      return clName+"에 대한 협력 다이어그램:";
     }
     /*! this text is put before an include dependency graph */
     virtual QCString trInclDepGraph(const QCString &fName)
     {
-      return (QCString)fName+"에 대한 include 의존 그래프";
+      return fName+"에 대한 include 의존 그래프";
     }
     /*! header that is put before the list of constructor/destructors. */
     virtual QCString trConstructorDocumentation()
@@ -1126,7 +1126,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
     /*! Used as the title of a Java package */
     virtual QCString trPackage(const QCString &name)
     {
-      return name+(QCString)" 패키지";
+      return name+" 패키지";
     }
     /*! Title of the package index page */
     virtual QCString trPackageList()
@@ -1649,7 +1649,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
                                     ClassDef::CompoundType compType,
                                     bool isTemplate)
     {
-      QCString result=(QCString)clName;
+      QCString result=clName;
       switch(compType)
       {
         case ClassDef::Class:      result+=" 모듈"; break;
@@ -1717,7 +1717,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
         bool single)
     { // here s is one of " Module", " Struct" or " Union"
       // single is true implies a single file
-      QCString result=(QCString)"다음 파일";
+      QCString result="다음 파일";
       if (single) result+=""; else result+="들";
       result+="로부터 생성된 ";
       result+="이 ";
@@ -1978,14 +1978,14 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
     /** UNO IDL service page title */
     virtual QCString trServiceReference(const QCString &sName)
     {
-      QCString result=(QCString)sName;
+      QCString result=sName;
       result+=" 서비스 레퍼런스";
       return result;
     }
     /** UNO IDL singleton page title */
     virtual QCString trSingletonReference(const QCString &sName)
     {
-      QCString result=(QCString)sName;
+      QCString result=sName;
       result+=" 싱글톤 레퍼런스";
       return result;
     }
@@ -1993,7 +1993,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
     virtual QCString trServiceGeneratedFromFiles(bool single)
     {
       // single is true implies a single file
-      QCString result=(QCString)"이 서비스에 대한 문서화는 다음의 파일";
+      QCString result="이 서비스에 대한 문서화는 다음의 파일";
       if (!single) result+="들";
 	  result+="로부터 생성되었습니다.:";
       return result;
@@ -2002,7 +2002,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
     virtual QCString trSingletonGeneratedFromFiles(bool single)
     {
       // single is true implies a single file
-      QCString result=(QCString)"이 싱글톤에 대한 문서화는 다음의 파일";
+      QCString result="이 싱글톤에 대한 문서화는 다음의 파일";
       if (!single) result+="들";
 	  result+="로부터 생성되었습니다.:";
       return result;

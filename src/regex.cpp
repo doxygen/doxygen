@@ -539,7 +539,7 @@ bool Ex::Private::matchAt(size_t tokenPos,size_t tokenLen,const std::string &str
       tokenPos++; // skip over EndCapture
     }
     tokenPos++; // skip over end marker
-    while ((int)index>=(int)startIndex)
+    while (index>=startIndex)
     {
       // pattern 'x*xy' should match 'xy' and 'xxxxy'
       bool found = matchAt(tokenPos,tokenLen,str,match,index,level+1);
@@ -548,6 +548,7 @@ bool Ex::Private::matchAt(size_t tokenPos,size_t tokenLen,const std::string &str
         match.setMatch(pos,index-pos+match.length());
         return true;
       }
+      if (index==0) break;
       index--;
     }
     return false;

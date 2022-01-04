@@ -178,7 +178,7 @@ void VhdlDocGen::writeOverview()
   bool found=FALSE;
   for (const auto &cd : *Doxygen::classLinkedMap)
   {
-    if ((VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::ENTITYCLASS )
+    if (VhdlDocGen::convert(cd->protection())==VhdlDocGen::ENTITYCLASS )
     {
       found=TRUE;
       break;
@@ -201,7 +201,7 @@ void VhdlDocGen::writeOverview()
 
   for (const auto &cd : *Doxygen::classLinkedMap)
   {
-    if ((VhdlDocGen::VhdlClasses)cd->protection()!=VhdlDocGen::ENTITYCLASS )
+    if (VhdlDocGen::convert(cd->protection())!=VhdlDocGen::ENTITYCLASS )
     {
       continue;
     }
@@ -612,8 +612,8 @@ const MemberDef* VhdlDocGen::findMember(const QCString& className, const QCStrin
   // nothing found so far
   // if we are an architecture or package body search in entity
 
-  if ((VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::ARCHITECTURECLASS ||
-      (VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::PACKBODYCLASS)
+  if (VhdlDocGen::convert(cd->protection())==VhdlDocGen::ARCHITECTURECLASS ||
+      VhdlDocGen::convert(cd->protection())==VhdlDocGen::PACKBODYCLASS)
   {
     Definition *d = cd->getOuterScope();
     // searching upper/lower case names
@@ -642,8 +642,8 @@ const MemberDef* VhdlDocGen::findMember(const QCString& className, const QCStrin
    }
 
 
-  if ((VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::ARCHITECTURECLASS ||
-      (VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::PACKBODYCLASS)
+  if (VhdlDocGen::convert(cd->protection())==VhdlDocGen::ARCHITECTURECLASS ||
+      VhdlDocGen::convert(cd->protection())==VhdlDocGen::PACKBODYCLASS)
   {
     Definition *d = cd->getOuterScope();
 
@@ -812,7 +812,7 @@ QCString VhdlDocGen::getClassName(const ClassDef* cd)
   QCString temp;
   if (cd==0) return "";
 
-  if ((VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::PACKBODYCLASS)
+  if (VhdlDocGen::convert(cd->protection())==VhdlDocGen::PACKBODYCLASS)
   {
     temp=cd->name();
     temp.stripPrefix("_");
@@ -830,17 +830,17 @@ void VhdlDocGen::writeInlineClassLink(const ClassDef* cd ,OutputList& ol)
 {
   std::vector<QCString> ql;
   QCString nn=cd->className();
-  int ii=(int)cd->protection()+2;
+  VhdlClasses ii=convert(cd->protection());
 
   QCString type;
-  if (ii==VhdlDocGen::ENTITY)
-    type+=theTranslator_vhdlType(VhdlDocGen::ARCHITECTURE,TRUE);
-  else if (ii==VhdlDocGen::ARCHITECTURE)
+  if (ii==VhdlDocGen::ENTITYCLASS)
     type+=theTranslator_vhdlType(VhdlDocGen::ENTITY,TRUE);
-  else if (ii==VhdlDocGen::PACKAGE_BODY)
-    type+=theTranslator_vhdlType(VhdlDocGen::PACKAGE,TRUE);
-  else if (ii==VhdlDocGen::PACKAGE)
+  else if (ii==VhdlDocGen::ARCHITECTURECLASS)
+    type+=theTranslator_vhdlType(VhdlDocGen::ARCHITECTURE,TRUE);
+  else if (ii==VhdlDocGen::PACKBODYCLASS)
     type+=theTranslator_vhdlType(VhdlDocGen::PACKAGE_BODY,TRUE);
+  else if (ii==VhdlDocGen::PACKAGECLASS)
+    type+=theTranslator_vhdlType(VhdlDocGen::PACKAGE,TRUE);
   else
     type+="";
 
@@ -849,17 +849,17 @@ void VhdlDocGen::writeInlineClassLink(const ClassDef* cd ,OutputList& ol)
   ol.disable(OutputGenerator::RTF);
   ol.disable(OutputGenerator::Man);
 
-  if (ii==VhdlDocGen::PACKAGE_BODY)
+  if (ii==VhdlDocGen::PACKBODYCLASS)
   {
     nn.stripPrefix("_");
     cd=getClass(nn);
   }
-  else  if (ii==VhdlDocGen::PACKAGE)
+  else  if (ii==VhdlDocGen::PACKAGECLASS)
   {
     nn.prepend("_");
     cd=getClass(nn);
   }
-  else if (ii==VhdlDocGen::ARCHITECTURE)
+  else if (ii==VhdlDocGen::ARCHITECTURECLASS)
   {
     StringVector qlist=split(nn.str(),"-");
     if (qlist.size()>1)
@@ -870,7 +870,7 @@ void VhdlDocGen::writeInlineClassLink(const ClassDef* cd ,OutputList& ol)
   }
 
   QCString opp;
-  if (ii==VhdlDocGen::ENTITY)
+  if (ii==VhdlDocGen::ENTITYCLASS)
   {
     VhdlDocGen::findAllArchitectures(ql,cd);
     for (const auto &s : ql)
@@ -1043,7 +1043,7 @@ QCString VhdlDocGen::getIndexWord(const QCString &c,int index)
   static const reg::Ex reg(R"([\s|])");
   auto ql=split(c.str(),reg);
 
-  if ((size_t)index < ql.size())
+  if (index < static_cast<int>(ql.size()))
   {
     return QCString(ql[index]);
   }
@@ -1757,7 +1757,7 @@ void VhdlDocGen::writeVHDLDeclaration(const MemberDefMutable* mdef,OutputList &o
   else if (nd) d=nd;
   else if (fd) d=fd;
   else if (gd) d=gd;
-  else d=(Definition*)mdef;
+  else d=mdef;
 
   // write search index info
   if (Doxygen::searchIndex)
@@ -1778,7 +1778,7 @@ void VhdlDocGen::writeVHDLDeclaration(const MemberDefMutable* mdef,OutputList &o
   ClassDef *annoClassDef=mdef->getClassDefOfAnonymousType();
 
   // start a new member declaration
-  uint isAnonymous = (bool)(annoClassDef); // || m_impl->annMemb || m_impl->annEnumType;
+  uint isAnonymous = annoClassDef!=0; // || m_impl->annMemb || m_impl->annEnumType;
   ///printf("startMemberItem for %s\n",qPrint(name()));
   uint64_t mm=mdef->getMemberSpecifiers();
   if (mm==VhdlDocGen::MISCELLANEOUS)
@@ -1836,7 +1836,7 @@ void VhdlDocGen::writeVHDLDeclaration(const MemberDefMutable* mdef,OutputList &o
       break;
     case VhdlDocGen::USE:
       kl=VhdlDocGen::getClass(mdef->name());
-      if (kl && ((VhdlDocGen::VhdlClasses)kl->protection()==VhdlDocGen::ENTITYCLASS)) break;
+      if (kl && (VhdlDocGen::convert(kl->protection())==VhdlDocGen::ENTITYCLASS)) break;
       writeLink(mdef,ol);
       ol.insertMemberAlign();
       ol.docify("  ");
@@ -3544,7 +3544,7 @@ void FlowChart::writeShape(TextStream &t,const FlowChart &fl)
 
     int z=q.findRev("\n");
 
-    if (z==(int)q.length()-1)
+    if (z==static_cast<int>(q.length())-1)
     {
       q=q.remove(z,2);
     }

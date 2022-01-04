@@ -132,6 +132,12 @@ class TemplateVariant
     /** Constructs a new variant with a integer value \a v. */
     TemplateVariant(int v) { m_variant.set<static_cast<uint8_t>(Type::Int)>(v); }
 
+    /** Constructs a new variant with a integer value \a v. */
+    TemplateVariant(unsigned int v) { m_variant.set<static_cast<uint8_t>(Type::Int)>(static_cast<int>(v)); }
+
+    /** Constructs a new variant with a integer value \a v. */
+    TemplateVariant(size_t v) { m_variant.set<static_cast<uint8_t>(Type::Int)>(static_cast<int>(v)); }
+
     /** Constructs a new variant with a string value \a s. */
     TemplateVariant(const char *s,bool raw=FALSE) : m_raw(raw) { m_variant.set<static_cast<uint8_t>(Type::String)>(s); }
 
@@ -295,10 +301,10 @@ class TemplateListIntf
     virtual ~TemplateListIntf() {}
 
     /** Returns the number of elements in the list */
-    virtual uint count() const = 0;
+    virtual size_t count() const = 0;
 
     /** Returns the element at index position \a index. */
-    virtual TemplateVariant  at(uint index) const = 0;
+    virtual TemplateVariant  at(size_t index) const = 0;
 
     /** Creates a new iterator for this list.
      *  @note the user should call delete on the returned pointer.
@@ -312,8 +318,8 @@ class TemplateImmutableList : public TemplateListIntf
 {
   public:
     // TemplateListIntf methods
-    virtual uint count() const;
-    virtual TemplateVariant at(uint index) const;
+    virtual size_t count() const;
+    virtual TemplateVariant at(size_t index) const;
     virtual TemplateListIntf::ConstIteratorPtr createIterator() const;
 
     /** Creates an instance and returns a shared pointer to it */

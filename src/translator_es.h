@@ -137,7 +137,7 @@ class TranslatorSpanish : public TranslatorAdapter_1_8_15
      */
     virtual QCString trGeneratedAutomatically(const QCString &s)
     { QCString result="Generado automáticamente por Doxygen";
-      if (!s.isEmpty()) result+=(QCString)" para "+s;
+      if (!s.isEmpty()) result+=" para "+s;
       result+=" del código fuente.";
       return result;
     }
@@ -497,16 +497,16 @@ class TranslatorSpanish : public TranslatorAdapter_1_8_15
      */
     virtual QCString trGeneratedAt(const QCString &date,const QCString &projName)
     {
-      QCString result=(QCString)"Generado el "+date;
-      if (!projName.isEmpty()) result+=(QCString)" para "+projName;
-      result+=(QCString)" por";
+      QCString result="Generado el "+date;
+      if (!projName.isEmpty()) result+=" para "+projName;
+      result+=" por";
       return result;
     }
 
     /*! this text is put before a class diagram */
     virtual QCString trClassDiagram(const QCString &clName)
     {
-      return (QCString)"Diagrama de herencias de "+clName;
+      return "Diagrama de herencias de "+clName;
     }
 
     /*! this text is generated when the \\internal command is used. */
@@ -600,7 +600,7 @@ class TranslatorSpanish : public TranslatorAdapter_1_8_15
         case ClassDef::Exception:  result+=" la Excepción "; break;
         default: break;
       }
-      result+=(QCString)clName;
+      result+=clName;
       return result;
     }
 
@@ -757,7 +757,7 @@ class TranslatorSpanish : public TranslatorAdapter_1_8_15
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
       static bool vhdlOpt = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
-      QCString result=(QCString)"La documentación para est";
+      QCString result="La documentación para est";
       switch(compType)
       {
         case ClassDef::Class:      result+=vhdlOpt? "a unidades de diseño":"a clase"; break;
@@ -823,13 +823,13 @@ class TranslatorSpanish : public TranslatorAdapter_1_8_15
     /*! this text is put before a collaboration diagram */
     virtual QCString trCollaborationDiagram(const QCString &clName)
     {
-      return (QCString)"Diagrama de colaboración para "+clName+":";
+      return "Diagrama de colaboración para "+clName+":";
     }
 
     /*! this text is put before an include dependency graph */
     virtual QCString trInclDepGraph(const QCString &fName)
     {
-      return (QCString)"Dependencia gráfica adjunta para "+fName+":";
+      return "Dependencia gráfica adjunta para "+fName+":";
     }
 
     /*! header that is put before the list of constructor/destructors. */
@@ -1142,7 +1142,7 @@ class TranslatorSpanish : public TranslatorAdapter_1_8_15
     /*! Used as the title of a Java package */
     virtual QCString trPackage(const QCString &name)
     {
-      return (QCString)"Paquetes "+name;
+      return "Paquetes "+name;
     }
 
     /*! Title of the package index page */
@@ -1702,7 +1702,7 @@ class TranslatorSpanish : public TranslatorAdapter_1_8_15
         case ClassDef::Exception:  result+=" la excepción"; break;
         default: break;
       }
-      result+=(QCString)clName;
+      result+=clName;
       return result;
     }
 
@@ -1759,7 +1759,7 @@ class TranslatorSpanish : public TranslatorAdapter_1_8_15
                                                  bool single)
     { // here s is one of " Module", " Struct" or " Union"
       // single is true implies a single file
-      QCString result=(QCString)"La documentación para est";
+      QCString result="La documentación para est";
       switch(compType)
       {
     	case ClassDef::Class:      result+="e módulo"; break;
@@ -1849,7 +1849,7 @@ class TranslatorSpanish : public TranslatorAdapter_1_8_15
      */
     virtual QCString trFileIn(const QCString &name)
     {
-      return (QCString)"Fichero en "+name;
+      return "Fichero en "+name;
     }
 
     /*! when clicking a directory dependency label, a page with a
@@ -1858,7 +1858,7 @@ class TranslatorSpanish : public TranslatorAdapter_1_8_15
      */
     virtual QCString trIncludesFileIn(const QCString &name)
     {
-      return (QCString)"Incluye ficheros en "+name;
+      return "Incluye ficheros en "+name;
     }
 
     /** Compiles a date string.
@@ -2028,14 +2028,14 @@ class TranslatorSpanish : public TranslatorAdapter_1_8_15
     /** UNO IDL service page title */
     virtual QCString trServiceReference(const QCString &sName)
     {
-      QCString result=(QCString)sName;
+      QCString result=sName;
       result+=" Referencia servicio";
       return result;
     }
     /** UNO IDL singleton page title */
     virtual QCString trSingletonReference(const QCString &sName)
     {
-      QCString result=(QCString)sName;
+      QCString result=sName;
       result+=" referencia Singleton";
       return result;
     }
@@ -2043,7 +2043,7 @@ class TranslatorSpanish : public TranslatorAdapter_1_8_15
     virtual QCString trServiceGeneratedFromFiles(bool single)
     {
       // single is true implies a single file
-      QCString result=(QCString)"La documentacion para este servicio "
+      QCString result="La documentacion para este servicio "
                                 "se ha generado desde ";
       if (single) result+="el siguiente fichero:"; else result+="los siguientes ficheros:";
       return result;
@@ -2052,7 +2052,7 @@ class TranslatorSpanish : public TranslatorAdapter_1_8_15
     virtual QCString trSingletonGeneratedFromFiles(bool single)
     {
       // single is true implies a single file
-      QCString result=(QCString)"La documentación para este singleton "
+      QCString result="La documentación para este singleton "
                                 "se ha generado desde ";
       if (single) result+="el siguiente fichero:"; else result+="los siguientes ficheros:";
       return result;
@@ -2286,7 +2286,7 @@ class TranslatorSpanish : public TranslatorAdapter_1_8_15
         default: break;
       }
       if (isLocal) result+=" Local";
-      result+=(QCString)clName;
+      result+=clName;
       return result;
     }
     virtual QCString trOperations()

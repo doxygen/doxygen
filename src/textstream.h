@@ -146,6 +146,13 @@ class TextStream final
       return static_cast<TextStream&>(*this);
     }
 
+    /** Adds a size_t integer to the stream */
+    TextStream &operator<<( size_t i)
+    {
+      output_int32(static_cast<uint>(i),false);
+      return static_cast<TextStream&>(*this);
+    }
+
     /** Adds a float to the stream */
     TextStream &operator<<( float f)
     {

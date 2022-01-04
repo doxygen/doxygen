@@ -500,7 +500,7 @@ void ManDocVisitor::visitPre(DocAutoListItem *li)
   ws.fill(' ',m_indent-2);
   if (!m_firstCol) m_t << "\n";
   m_t << ".IP \"" << ws;
-  if (((DocAutoList *)li->parent())->isEnumList())
+  if (dynamic_cast<DocAutoList *>(li->parent())->isEnumList())
   {
     m_t << li->itemNumber() << ".\" " << m_indent+2;
   }
@@ -706,7 +706,7 @@ void ManDocVisitor::visitPre(DocHtmlListItem *li)
   ws.fill(' ',m_indent-2);
   if (!m_firstCol) m_t << "\n";
   m_t << ".IP \"" << ws;
-  if (((DocHtmlList *)li->parent())->type()==DocHtmlList::Ordered)
+  if (dynamic_cast<DocHtmlList *>(li->parent())->type()==DocHtmlList::Ordered)
   {
     for (const auto &opt : li->attribs())
     {
@@ -1018,11 +1018,11 @@ void ManDocVisitor::visitPre(DocParamList *pl)
     if (!first) m_t << ","; else first=FALSE;
     if (param->kind()==DocNode::Kind_Word)
     {
-      visit((DocWord*)param.get());
+      visit(dynamic_cast<DocWord*>(param.get()));
     }
     else if (param->kind()==DocNode::Kind_LinkedWord)
     {
-      visit((DocLinkedWord*)param.get());
+      visit(dynamic_cast<DocLinkedWord*>(param.get()));
     }
   }
   m_t << "\\fP ";

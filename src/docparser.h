@@ -662,15 +662,16 @@ class DocFormula : public DocNode
 {
   public:
     DocFormula(DocParser &parser,DocNode *parent,int id);
-    Kind kind() const override          { return Kind_Formula; }
+    Kind kind() const override  { return Kind_Formula; }
     QCString name() const       { return m_name; }
     QCString text() const       { return m_text; }
     QCString relPath() const    { return m_relPath; }
-    int id() const             { return m_id; }
+    int id() const              { return m_id; }
     void accept(DocVisitor *v) override { v->visit(this); }
-    bool isInline()            {
+    bool isInline() const
+    {
       if (m_text.length()>1 && m_text.at(0)=='\\' && m_text.at(1)=='[') return false;
-      if (m_text.length()>7 && m_text.startsWith("\\begin{")) return false;
+      if (m_text.startsWith("\\begin{")) return false;
       return true;
     }
 

@@ -169,7 +169,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
      */
     virtual QCString trGeneratedAutomatically(const QCString &s)
     { QCString result = "Doxygen により";
-      if (!s.isEmpty()) result=(QCString)" "+s+"の";
+      if (!s.isEmpty()) result=" "+s+"の";
       result+="ソースコードから抽出しました。";
       return result;
     }
@@ -536,8 +536,8 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
      */
     virtual QCString trGeneratedAt(const QCString &date,const QCString &projName)
     {
-      QCString result = (QCString)date+"作成";
-      if (!projName.isEmpty()) result+=(QCString)" - " + projName;
+      QCString result = date+"作成";
+      if (!projName.isEmpty()) result+=" - " + projName;
       result+=" / 構成: ";
       return result;
     }
@@ -545,7 +545,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
     /*! this text is put before a class diagram */
     virtual QCString trClassDiagram(const QCString &clName)
     {
-      return (QCString)clName+" の継承関係図";
+      return clName+" の継承関係図";
     }
 
     /*! this text is generated when the \\internal command is used. */
@@ -627,7 +627,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
                                  ClassDef::CompoundType compType,
                                  bool isTemplate)
     {
-      QCString result=(QCString)clName+" ";
+      QCString result=clName+" ";
       switch(compType)
       {
         case ClassDef::Class:      result+="クラス"; break;
@@ -646,14 +646,14 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
     /*! used as the title of the HTML page of a file */
     virtual QCString trFileReference(const QCString &fileName)
     {
-      QCString result=(QCString)fileName+" ファイル";
+      QCString result=fileName+" ファイル";
       return result;
     }
 
     /*! used as the title of the HTML page of a namespace */
     virtual QCString trNamespaceReference(const QCString &namespaceName)
     {
-      QCString result=(QCString)namespaceName+" 名前空間";
+      QCString result=namespaceName+" 名前空間";
       return result;
     }
 
@@ -792,7 +792,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
         bool /*single*/)
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
-      QCString result=(QCString)"この";
+      QCString result="この";
       switch(compType)
       {
         case ClassDef::Class:      result+="クラス"; break;
@@ -852,12 +852,12 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
     /*! this text is put before a collaboration diagram */
     virtual QCString trCollaborationDiagram(const QCString &clName)
     {
-      return (QCString)clName+" 連携図";
+      return clName+" 連携図";
     }
     /*! this text is put before an include dependency graph */
     virtual QCString trInclDepGraph(const QCString &fName)
     {
-    return (QCString)fName+" の依存先関係図:";
+    return fName+" の依存先関係図:";
     }
     /*! header that is put before the list of constructor/destructors. */
     virtual QCString trConstructorDocumentation()
@@ -1130,7 +1130,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
     /*! Used as the title of a Java package */
     virtual QCString trPackage(const QCString &name)
     {
-      return (QCString)name+" パッケージ";
+      return name+" パッケージ";
     }
     /*! Title of the package index page */
     virtual QCString trPackageList()
@@ -1651,7 +1651,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
         default: break;
       }
       if (isTemplate) result += "テンプレート ";
-      result+=(QCString)clName;
+      result+=clName;
       return result;
     }
     /*! used as the title of the HTML page of a module (Fortran) */
@@ -1783,7 +1783,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
      */
     virtual QCString trFileIn(const QCString &name)
     {
-      return (QCString)name+"にあるファイル";
+      return name+"にあるファイル";
     }
 
     /*! when clicking a directory dependency label, a page with a
@@ -1792,7 +1792,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
      */
     virtual QCString trIncludesFileIn(const QCString &name)
     {
-      return (QCString)name+"にあるファイルを include している";
+      return name+"にあるファイルを include している";
     }
 
     /** Compiles a date string.
@@ -1955,14 +1955,14 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
     /** UNO IDL service page title */
     virtual QCString trServiceReference(const QCString &sName)
     {
-      QCString result=(QCString)sName;
+      QCString result=sName;
       result+=" サービス詳解";
       return result;
     }
     /** UNO IDL singleton page title */
     virtual QCString trSingletonReference(const QCString &sName)
     {
-      QCString result=(QCString)sName;
+      QCString result=sName;
       result+=" Singleton 詳解";
       return result;
     }

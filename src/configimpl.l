@@ -281,7 +281,7 @@ QCString &ConfigImpl::getString(const char *fileName,int num,const char *name) c
   {
     config_term("%s<%d>: Internal error: Requested option %s not of string type!\n",fileName,num,name);
   }
-  return *((ConfigString *)it->second)->valueRef();
+  return *(dynamic_cast<ConfigString *>(it->second))->valueRef();
 }
 
 StringVector &ConfigImpl::getList(const char *fileName,int num,const char *name) const
@@ -295,7 +295,7 @@ StringVector &ConfigImpl::getList(const char *fileName,int num,const char *name)
   {
     config_term("%s<%d>: Internal error: Requested option %s not of list type!\n",fileName,num,name);
   }
-  return *((ConfigList *)it->second)->valueRef();
+  return *(dynamic_cast<ConfigList *>(it->second))->valueRef();
 }
 
 QCString &ConfigImpl::getEnum(const char *fileName,int num,const char *name) const
@@ -309,7 +309,7 @@ QCString &ConfigImpl::getEnum(const char *fileName,int num,const char *name) con
   {
     config_term("%s<%d>: Internal error: Requested option %s not of enum type!\n",fileName,num,name);
   }
-  return *((ConfigEnum *)it->second)->valueRef();
+  return *(dynamic_cast<ConfigEnum *>(it->second))->valueRef();
 }
 
 int &ConfigImpl::getInt(const char *fileName,int num,const char *name) const
@@ -323,7 +323,7 @@ int &ConfigImpl::getInt(const char *fileName,int num,const char *name) const
   {
     config_term("%s<%d>: Internal error: Requested option %s not of integer type!\n",fileName,num,name);
   }
-  return *((ConfigInt *)it->second)->valueRef();
+  return *(dynamic_cast<ConfigInt *>(it->second))->valueRef();
 }
 
 bool &ConfigImpl::getBool(const char *fileName,int num,const char *name) const
@@ -337,7 +337,7 @@ bool &ConfigImpl::getBool(const char *fileName,int num,const char *name) const
   {
     config_term("%s<%d>: Internal error: Requested option %s not of boolean type!\n",fileName,num,name);
   }
-  return *((ConfigBool *)it->second)->valueRef();
+  return *(dynamic_cast<ConfigBool *>(it->second))->valueRef();
 }
 
 /* ------------------------------------------ */
@@ -637,7 +637,7 @@ static yy_size_t yyread(char *buf,yy_size_t max_size)
   else
   {
     //assert(g_includeStack.current()->newState==YY_CURRENT_BUFFER);
-    return (yy_size_t)fread(buf,1,max_size,g_includeStack.back()->filePtr);
+    return static_cast<yy_size_t>(fread(buf,1,max_size,g_includeStack.back()->filePtr));
   }
 }
 
@@ -648,22 +648,22 @@ static QCString configStringRecode(
     const QCString &outputEncoding)
 {
   if (inputEncoding.isEmpty() || outputEncoding.isEmpty() || inputEncoding==outputEncoding) return str;
-  int inputSize=str.length();
-  int outputSize=inputSize*4+1;
+  size_t inputSize=str.length();
+  size_t outputSize=inputSize*4+1;
   QCString output(outputSize);
   void *cd = portable_iconv_open(outputEncoding.data(),inputEncoding.data());
-  if (cd==(void *)(-1))
+  if (cd==reinterpret_cast<void *>(-1))
   {
     config_term("Error: unsupported character conversion: '%s'->'%s'\n",
         qPrint(inputEncoding),qPrint(outputEncoding));
   }
-  size_t iLeft=(size_t)inputSize;
-  size_t oLeft=(size_t)outputSize;
+  size_t iLeft=inputSize;
+  size_t oLeft=outputSize;
   const char *inputPtr  = str.data();
   char *outputPtr = output.rawData();
   if (!portable_iconv(cd, &inputPtr, &iLeft, &outputPtr, &oLeft))
   {
-    outputSize-=(int)oLeft;
+    outputSize-=oLeft;
     output.resize(outputSize+1);
     output.at(outputSize)='\0';
     //printf("iconv: input size=%d output size=%d\n[%s]\n",size,newSize,qPrint(srcBuf));
@@ -679,7 +679,7 @@ static QCString configStringRecode(
 
 static void checkEncoding()
 {
-  ConfigString *option = (ConfigString*)g_config->get("DOXYFILE_ENCODING");
+  ConfigString *option = dynamic_cast<ConfigString*>(g_config->get("DOXYFILE_ENCODING"));
   g_encoding = *option->valueRef();
 }
 
@@ -989,28 +989,28 @@ static void readIncludeFile(const QCString &incName)
                                                  BEGIN(SkipInvalid);
                                                  break;
                                                case ConfigOption::O_List:
-                                                 g_list = ((ConfigList *)option)->valueRef();
+                                                 g_list = dynamic_cast<ConfigList *>(option)->valueRef();
                                                  g_list->clear();
                                                  g_listStr="";
                                                  BEGIN(GetStrList);
                                                  break;
                                                case ConfigOption::O_Enum:
-                                                 g_string = ((ConfigEnum *)option)->valueRef();
+                                                 g_string = dynamic_cast<ConfigEnum *>(option)->valueRef();
                                                  g_string->resize(0);
                                                  BEGIN(GetString);
                                                  break;
                                                case ConfigOption::O_String:
-                                                 g_string = ((ConfigString *)option)->valueRef();
+                                                 g_string = dynamic_cast<ConfigString *>(option)->valueRef();
                                                  g_string->resize(0);
                                                  BEGIN(GetString);
                                                  break;
                                                case ConfigOption::O_Int:
-                                                 g_string = ((ConfigInt *)option)->valueStringRef();
+                                                 g_string = dynamic_cast<ConfigInt *>(option)->valueStringRef();
                                                  g_string->resize(0);
                                                  BEGIN(GetString);
                                                  break;
                                                case ConfigOption::O_Bool:
-                                                 g_string = ((ConfigBool *)option)->valueStringRef();
+                                                 g_string = dynamic_cast<ConfigBool *>(option)->valueStringRef();
                                                  g_string->resize(0);
                                                  BEGIN(GetString);
                                                  break;
@@ -1026,17 +1026,17 @@ static void readIncludeFile(const QCString &incName)
                                                               "         To avoid this warning please remove this line from your configuration "
                                                               "file or upgrade it using \"doxygen -u\"\n", qPrint(g_cmd),g_yyLineNr,qPrint(g_yyFileName));
                                                  }
-                                                 ((ConfigObsolete*)option)->markAsPresent();
-                                                 if (((ConfigObsolete*)option)->orgType()==ConfigOption::O_List)
+                                                 dynamic_cast<ConfigObsolete*>(option)->markAsPresent();
+                                                 if (dynamic_cast<ConfigObsolete*>(option)->orgType()==ConfigOption::O_List)
                                                  {
-                                                   g_list = ((ConfigObsolete*)option)->valueListRef();
+                                                   g_list = dynamic_cast<ConfigObsolete*>(option)->valueListRef();
                                                    g_list->clear();
                                                    g_listStr="";
                                                    BEGIN(GetStrList);
                                                  }
                                                  else
                                                  {
-                                                   g_string = ((ConfigObsolete*)option)->valueStringRef();
+                                                   g_string = dynamic_cast<ConfigObsolete*>(option)->valueStringRef();
                                                    g_string->resize(0);
                                                    BEGIN(GetString);
                                                  }
@@ -1077,7 +1077,7 @@ static void readIncludeFile(const QCString &incName)
                                                 BEGIN(SkipInvalid);
                                                 break;
                                               case ConfigOption::O_List:
-                                                g_list = ((ConfigList *)option)->valueRef();
+                                                g_list = dynamic_cast<ConfigList *>(option)->valueRef();
                                                 g_listStr="";
                                                 BEGIN(GetStrList);
                                                 break;
@@ -1093,9 +1093,9 @@ static void readIncludeFile(const QCString &incName)
                                                  config_warn("Tag '%s' at line %d of file %s has become obsolete.\n"
                                                             "To avoid this warning please update your configuration "
                                                             "file using \"doxygen -u\"\n", qPrint(g_cmd),g_yyLineNr,qPrint(g_yyFileName));
-                                                 if (((ConfigObsolete*)option)->orgType()==ConfigOption::O_List)
+                                                 if (dynamic_cast<ConfigObsolete*>(option)->orgType()==ConfigOption::O_List)
                                                  {
-                                                   g_list = ((ConfigObsolete*)option)->valueListRef();
+                                                   g_list = dynamic_cast<ConfigObsolete*>(option)->valueListRef();
                                                    g_listStr="";
                                                    BEGIN(GetStrList);
                                                  }
@@ -2111,7 +2111,7 @@ bool Config::parse(const QCString &fileName,bool update)
 
   // Internally we use the default format UTF-8 and
   // when updating etc. the output is in this format as well and not in the read format
-  ConfigString *option = (ConfigString*)g_config->get("DOXYFILE_ENCODING");
+  ConfigString *option = dynamic_cast<ConfigString*>(g_config->get("DOXYFILE_ENCODING"));
   option->init();
 
   return parseRes;

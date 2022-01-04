@@ -1083,7 +1083,7 @@ void DefinitionImpl::_writeSourceRefList(OutputList &ol,const QCString &scopeNam
     ol.parseText(text);
     ol.docify(" ");
     writeMarkerList(ol,
-                    theTranslator->trWriteList(members.size()).str(),
+                    theTranslator->trWriteList(static_cast<int>(members.size())).str(),
                     members.size(),
                     replaceFunc);
     ol.writeString(".");

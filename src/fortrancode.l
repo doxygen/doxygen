@@ -695,7 +695,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                           yyextra->contLineNr++;
                                           if (Config_getBool(STRIP_CODE_COMMENTS))
                                           {
-                                            yyextra->yyLineNr+=((QCString)yyextra->docBlock).contains('\n');
+                                            yyextra->yyLineNr+=yyextra->docBlock.contains('\n');
                                             yyextra->yyLineNr+=1;
                                             nextCodeLine(yyscanner);
                                             yyextra->endComment=TRUE;

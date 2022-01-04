@@ -187,7 +187,7 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
      */
     virtual QCString trGeneratedAutomatically(const QCString &s)
     { QCString result="Automatisk genereret af Doxygen";
-      if (!s.isEmpty()) result+=(QCString)" for "+s;
+      if (!s.isEmpty()) result+=" for "+s;
       result+=" ud fra kildekoden.";
       return result;
     }
@@ -516,16 +516,16 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
      */
     virtual QCString trGeneratedAt(const QCString &date,const QCString &projName)
     {
-      QCString result=(QCString)"Genereret "+date;
-      if (!projName.isEmpty()) result+=(QCString)" for "+projName;
-      result+=(QCString)" af";
+      QCString result="Genereret "+date;
+      if (!projName.isEmpty()) result+=" for "+projName;
+      result+=" af";
       return result;
     }
 
     /*! this text is put before a class diagram */
     virtual QCString trClassDiagram(const QCString &clName)
     {
-      return (QCString)"Stamtræ for "+clName+":";
+      return "Stamtræ for "+clName+":";
     }
 
     /*! this text is generated when the \\internal command is used. */
@@ -606,7 +606,7 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
                                     ClassDef::CompoundType compType,
                                     bool isTemplate)
     {
-      QCString result=(QCString)clName+" ";
+      QCString result=clName+" ";
       switch(compType)
       {
         case ClassDef::Class:      result+=" Klasse-"; break;
@@ -764,7 +764,7 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
         bool single)
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
-      QCString result=(QCString)"Dokumentationen for denne ";
+      QCString result="Dokumentationen for denne ";
       switch(compType)
       {
         case ClassDef::Class:      result+="klasse"; break;
@@ -831,12 +831,12 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
     /*! this text is put before a collaboration diagram */
     virtual QCString trCollaborationDiagram(const QCString &clName)
     {
-      return (QCString)"Samarbejdsdiagram for "+clName+":";
+      return "Samarbejdsdiagram for "+clName+":";
     }
     /*! this text is put before an include dependency graph */
     virtual QCString trInclDepGraph(const QCString &fName)
     {
-      return (QCString)"Inklusions-afhængighedsgraf for "+fName+":";
+      return "Inklusions-afhængighedsgraf for "+fName+":";
     }
     /*! header that is put before the list of constructor/destructors. */
     virtual QCString trConstructorDocumentation()
@@ -1082,7 +1082,7 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
     /*! Used as the title of a Java package */
     virtual QCString trPackage(const QCString &name)
     {
-      return (QCString)"Pakke "+name;
+      return "Pakke "+name;
     }
     /*! Title of the package index page */
     virtual QCString trPackageList()
@@ -1555,7 +1555,7 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
                                     ClassDef::CompoundType compType,
                                     bool isTemplate)
     {
-      QCString result=(QCString)clName;
+      QCString result=clName;
       switch(compType)
       {
         case ClassDef::Class:      result+=" Modul"; break;     // " Module"
@@ -1625,7 +1625,7 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
         bool single)
     {
       // single is true implies a single file
-      QCString result=(QCString)"The documentation for this ";
+      QCString result="The documentation for this ";
       switch(compType)
       {
         case ClassDef::Class:      result+="modul"; break;        // "module"
@@ -1714,7 +1714,7 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
      */
     virtual QCString trFileIn(const QCString &name)
     {
-      return (QCString)"File i "+name;     // "File in "
+      return "File i "+name;     // "File in "
     }
 
     /*! when clicking a directory dependency label, a page with a
@@ -1723,7 +1723,7 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
      */
     virtual QCString trIncludesFileIn(const QCString &name)
     {
-      return (QCString)"Inkluderer file i "+name;    // "Includes file in "
+      return "Inkluderer file i "+name;    // "Includes file in "
     }
 
     /** Compiles a date string.
@@ -1783,7 +1783,7 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
 			const char* base, const char* plurSuffix)
     {
       QCString result(base);
-      if (first_capital) result[0] = (char)toupper(result[0]);
+      if (first_capital) result[0] = static_cast<char>(toupper(result[0]));
       if (!singular)  result+=plurSuffix;
       return result;
     }

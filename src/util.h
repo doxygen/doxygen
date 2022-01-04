@@ -379,8 +379,8 @@ struct ColoredImgDataItem
   const char *name;
   unsigned short width;
   unsigned short height;
-  unsigned char *content;
-  unsigned char *alpha;
+  const unsigned char *content;
+  const unsigned char *alpha;
 };
 
 void writeColoredImgData(const QCString &dir,ColoredImgDataItem data[]);

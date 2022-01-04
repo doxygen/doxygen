@@ -2647,9 +2647,9 @@ static int findFunctionPtr(const std::string &type,SrcLangExt lang, int *pLength
       !(bb<i && i<be) // bug665855: avoid treating "typedef A<void (T*)> type" as a function pointer
      )
   {
-    if (pLength) *pLength=(int)l;
+    if (pLength) *pLength=static_cast<int>(l);
     //printf("findFunctionPtr=%d\n",(int)i);
-    return (int)i;
+    return static_cast<int>(i);
   }
   else
   {
@@ -4987,10 +4987,10 @@ static void computeTemplateClassRelations()
               TemplateNameMap actualTemplateNames;
               for (const auto &tn_kv : templateNames)
               {
-                int templIndex = tn_kv.second;
+                size_t templIndex = tn_kv.second;
                 Argument actArg;
                 bool hasActArg=FALSE;
-                if (templIndex<(int)templArgs->size())
+                if (templIndex<templArgs->size())
                 {
                   actArg=templArgs->at(templIndex);
                   hasActArg=TRUE;
@@ -5000,7 +5000,7 @@ static void computeTemplateClassRelations()
                     actualTemplateNames.find(actArg.type.str())==actualTemplateNames.end()
                    )
                 {
-                  actualTemplateNames.insert(std::make_pair(actArg.type.str(),templIndex));
+                  actualTemplateNames.insert(std::make_pair(actArg.type.str(),static_cast<int>(templIndex)));
                 }
               }
 
@@ -9878,7 +9878,7 @@ static std::shared_ptr<Entry> parseFile(OutlineParserInterface &parser,
   }
 
   FileInfo fi(fileName.str());
-  BufStr preBuf((uint)fi.size()+4096);
+  BufStr preBuf(fi.size()+4096);
 
   if (Config_getBool(ENABLE_PREPROCESSING) &&
       parser.needsPreprocessing(extension))
@@ -9890,7 +9890,7 @@ static std::shared_ptr<Entry> parseFile(OutlineParserInterface &parser,
       std::string absPath = FileInfo(s).absFilePath();
       preprocessor.addSearchDir(absPath.c_str());
     }
-    BufStr inBuf((uint)fi.size()+4096);
+    BufStr inBuf(fi.size()+4096);
     msg("Preprocessing %s...\n",qPrint(fn));
     readInputFile(fileName,inBuf);
     preprocessor.processFile(fileName,inBuf,preBuf);
@@ -12546,7 +12546,7 @@ void generateOutput()
   if (Debug::isFlagSet(Debug::Time))
   {
     msg("Total elapsed time: %.6f seconds\n(of which %.6f seconds waiting for external tools to finish)\n",
-         ((double)Debug::elapsedTime()),
+         (static_cast<double>(Debug::elapsedTime())),
          Portable::getSysElapsedTime()
         );
     g_s.print();

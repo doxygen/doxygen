@@ -130,7 +130,7 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
      */
     virtual QCString trGeneratedAutomatically(const QCString &s)
     { QCString result="Автоматски создадено од Doxygen";
-      if (!s.isEmpty()) result+=(QCString)" за "+s;
+      if (!s.isEmpty()) result+=" за "+s;
       result+=" изворниот код.";
       return result;
     }
@@ -491,16 +491,16 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
      */
     virtual QCString trGeneratedAt(const QCString &date,const QCString &projName)
     {
-      QCString result=(QCString)"Создадено на "+date;
-      if (!projName.isEmpty()) result+=(QCString)" за "+projName;
-      result+=(QCString)" од";
+      QCString result="Создадено на "+date;
+      if (!projName.isEmpty()) result+=" за "+projName;
+      result+=" од";
       return result;
     }
 
     /*! this text is put before a class diagram */
     virtual QCString trClassDiagram(const QCString &clName)
     {
-      return (QCString)"Диаграм на наследување за "+clName+":";
+      return "Диаграм на наследување за "+clName+":";
     }
 
     /*! this text is generated when the \\internal command is used. */
@@ -581,7 +581,7 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
                                     ClassDef::CompoundType compType,
                                     bool isTemplate)
     {
-      QCString result=(QCString)clName;
+      QCString result=clName;
       switch(compType)
       {
         case ClassDef::Class:      result+=" Класа"; break;
@@ -741,7 +741,7 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
         bool single)
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
-      QCString result=(QCString)"Документацијата за ";
+      QCString result="Документацијата за ";
       switch(compType)
       {
         case ClassDef::Class:      result+="оваа класа"; break;
@@ -806,12 +806,12 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
     /*! this text is put before a collaboration diagram */
     virtual QCString trCollaborationDiagram(const QCString &clName)
     {
-      return (QCString)"Диаграм на соработка за "+clName+":";
+      return "Диаграм на соработка за "+clName+":";
     }
     /*! this text is put before an include dependency graph */
     virtual QCString trInclDepGraph(const QCString &fName)
     {
-      return (QCString)"Вклучен дијаграм на зависност за "+fName+":";
+      return "Вклучен дијаграм на зависност за "+fName+":";
     }
     /*! header that is put before the list of constructor/destructors. */
     virtual QCString trConstructorDocumentation()
@@ -1091,7 +1091,7 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
     /*! Used as the title of a Java package */
     virtual QCString trPackage(const QCString &name)
     {
-      return (QCString)"Пакет "+name;
+      return "Пакет "+name;
     }
     /*! Title of the package index page */
     virtual QCString trPackageList()
@@ -1612,7 +1612,7 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
                                     ClassDef::CompoundType compType,
                                     bool isTemplate)
     {
-      QCString result=(QCString)clName + " - Повикување на";
+      QCString result=clName + " - Повикување на";
       switch(compType)
       {
         case ClassDef::Class:      result+=" Класа"; break;
@@ -1679,7 +1679,7 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
         bool single)
     { // here s is one of " Module", " Struct" or " Union"
       // single is true implies a single file
-      QCString result=(QCString)"Документацијата за ";
+      QCString result="Документацијата за ";
       switch(compType)
       {
         case ClassDef::Class:      result+="оваа класа"; break;

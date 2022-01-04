@@ -218,7 +218,7 @@ void RTFGenerator::cleanup()
 static QCString makeIndexName(const QCString &s,int i)
 {
   QCString result=s;
-  result+=(char)(i+'0');
+  result+=static_cast<char>(i+'0');
   return result;
 }
 
@@ -1615,12 +1615,10 @@ void RTFGenerator::docify(const QCString &str)
 {
   if (!str.isEmpty())
   {
-    const unsigned char *p=(const unsigned char *)str.data();
-    unsigned char c;
-    //unsigned char pc='\0';
+    const char *p=str.data();
+    char c;
     while (*p)
     {
-      //static bool MultiByte = FALSE;
       c=*p++;
 
       switch (c)
@@ -1630,12 +1628,9 @@ void RTFGenerator::docify(const QCString &str)
         case '\\': m_t << "\\\\";           break;
         default:
           {
-            // see if we can insert an hyphenation hint
-            //if (isupper(c) && islower(pc) && !insideTabbing) m_t << "\\-";
-            m_t << (char)c;
+            m_t << c;
           }
       }
-      //pc = c;
       m_omitParagraph = FALSE;
     }
   }
@@ -1648,8 +1643,8 @@ void RTFGenerator::codify(const QCString &str)
   //static char spaces[]="        ";
   if (!str.isEmpty())
   {
-    const unsigned char *p=(const unsigned char *)str.data();
-    unsigned char c;
+    const char *p=str.data();
+    char c;
     int spacesToNextTabStop;
 
     while (*p)
@@ -1670,7 +1665,7 @@ void RTFGenerator::codify(const QCString &str)
         case '{':   m_t << "\\{"; m_col++;          break;
         case '}':   m_t << "\\}"; m_col++;          break;
         case '\\':  m_t << "\\\\"; m_col++;         break;
-        default:    p=(const unsigned char *)writeUTF8Char(m_t,(const char *)p-1); m_col++; break;
+        default:    p=writeUTF8Char(m_t,p-1); m_col++; break;
       }
     }
   }
@@ -2021,15 +2016,15 @@ static void encodeForOutput(TextStream &t,const QCString &s)
   if (s==0) return;
   QCString encoding;
   bool converted=FALSE;
-  int l = (int)s.length();
+  size_t l = s.length();
   static std::vector<char> enc;
-  if (l*4>(int)enc.size()) enc.resize(l*4); // worst case
+  if (l*4>enc.size()) enc.resize(l*4); // worst case
   encoding.sprintf("CP%s",qPrint(theTranslator->trRTFansicp()));
   if (!encoding.isEmpty())
   {
     // convert from UTF-8 back to the output encoding
     void *cd = portable_iconv_open(encoding.data(),"UTF-8");
-    if (cd!=(void *)(-1))
+    if (cd!=reinterpret_cast<void *>(-1))
     {
       size_t iLeft=l;
       size_t oLeft=enc.size();
@@ -2037,7 +2032,7 @@ static void encodeForOutput(TextStream &t,const QCString &s)
       char *outputPtr = &enc[0];
       if (!portable_iconv(cd, &inputPtr, &iLeft, &outputPtr, &oLeft))
       {
-        enc.resize(enc.size()-(unsigned int)oLeft);
+        enc.resize(enc.size()-oLeft);
         converted=TRUE;
       }
       portable_iconv_close(cd);
@@ -2048,12 +2043,11 @@ static void encodeForOutput(TextStream &t,const QCString &s)
     memcpy(enc.data(),s.data(),l);
     enc.resize(l);
   }
-  uint i;
   bool multiByte = FALSE;
 
-  for (i=0;i<enc.size();i++)
+  for (size_t i=0;i<enc.size();i++)
   {
-    uchar c = (uchar)enc.at(i);
+    uchar c = static_cast<uchar>(enc.at(i));
 
     if (c>=0x80 || multiByte)
     {
@@ -2072,7 +2066,7 @@ static void encodeForOutput(TextStream &t,const QCString &s)
     }
     else
     {
-      t << (char)c;
+      t << c;
     }
   }
 }

@@ -112,7 +112,7 @@ CONSTSUFFIX ([uU][lL]?[lL]?)|([lL][lL]?[uU]?)
 
 static yy_size_t yyread(char *buf,yy_size_t max_size,yyscan_t yyscanner)
 {
-  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  struct yyguts_t *yyg = static_cast<struct yyguts_t*>(yyscanner);
   yy_size_t c=0;
   while( c < max_size && yyextra->inputString[yyextra->inputPosition] )
   {
@@ -162,7 +162,7 @@ bool ConstExpressionParser::parse(const char *fileName,int lineNr,const std::str
 
   //printf("Result: %ld\n",(long)g_resultValue);
   printlex(yy_flex_debug, false, __FILE__, fileName);
-  bool result = (long)yyextra->resultValue!=0;
+  bool result = static_cast<long>(yyextra->resultValue)!=0;
 
   return result;
 }

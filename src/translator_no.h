@@ -144,7 +144,7 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
      */
     virtual QCString trGeneratedAutomatically(const QCString &s)
     { QCString result="Generert automatisk av Doxygen";
-      if (!s.isEmpty()) result+=(QCString)" for "+s;
+      if (!s.isEmpty()) result+=" for "+s;
       result+=" fra kildekoden.";
       return result;
     }
@@ -526,16 +526,16 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
      */
     virtual QCString trGeneratedAt(const QCString &date,const QCString &projName)
     {
-      QCString result=(QCString)"Generert "+date;
-      if (!projName.isEmpty()) result+=(QCString)" for "+projName;
-      result+=(QCString)" av";
+      QCString result="Generert "+date;
+      if (!projName.isEmpty()) result+=" for "+projName;
+      result+=" av";
       return result;
     }
 
     /*! this text is put before a class diagram */
     virtual QCString trClassDiagram(const QCString &clName)
     {
-      return (QCString)"Arvediagram for "+clName+":";
+      return "Arvediagram for "+clName+":";
     }
 
     /*! this text is generated when the \\internal command is used. */
@@ -624,7 +624,7 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
                                     ClassDef::CompoundType compType,
                                     bool isTemplate)
     {
-      QCString result=(QCString)clName;
+      QCString result=clName;
       switch(compType)
       {
         case ClassDef::Class:      result+=" Klasse"; break;
@@ -784,7 +784,7 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
         bool single)
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
-      QCString result=(QCString)"Dokumentasjonen for ";
+      QCString result="Dokumentasjonen for ";
       switch(compType)
       {
         case ClassDef::Class:      result+="denne klasse"; break;
@@ -853,12 +853,12 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
     /*! this text is put before a collaboration diagram */
     virtual QCString trCollaborationDiagram(const QCString &clName)
     {
-      return (QCString)"Samarbeidsdiagram for "+clName+":";
+      return "Samarbeidsdiagram for "+clName+":";
     }
     /*! this text is put before an include dependency graph */
     virtual QCString trInclDepGraph(const QCString &fName)
     {
-      return (QCString)"Avhengighetsgraf for "+fName+":";
+      return "Avhengighetsgraf for "+fName+":";
     }
 
     /*! header that is put before the list of constructor/destructors. */
@@ -1138,7 +1138,7 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
     /*! Used as the title of a Java package */
     virtual QCString trPackage(const QCString &name)
     {
-      return (QCString)"Package "+name;
+      return "Package "+name;
     }
     /*! Title of the package index page */
     virtual QCString trPackageList()

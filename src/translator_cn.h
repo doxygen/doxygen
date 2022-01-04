@@ -138,7 +138,7 @@ class TranslatorChinese : public Translator
     virtual QCString trGeneratedAutomatically(const QCString &s)
     { QCString result;
       result = "由" CN_SPC "Doyxgen" CN_SPC "通过分析" CN_SPC;
-      if (!s.isEmpty()) result += ((QCString)s+CN_SPC "的" CN_SPC);
+      if (!s.isEmpty()) result += (s+CN_SPC "的" CN_SPC);
       result+= "源代码自动生成.";
       return result;
     }
@@ -392,15 +392,15 @@ class TranslatorChinese : public Translator
     }
 
     virtual QCString trGeneratedAt(const QCString &date,const QCString &projName)
-    { QCString result=(QCString)"生成于" CN_SPC+date;
-      if (!projName.isEmpty()) result+=(QCString)CN_SPC ", 为" CN_SPC+projName;
-      result+=(QCString)"使用" CN_SPC;
+    { QCString result="生成于" CN_SPC+date;
+      if (!projName.isEmpty()) result+=CN_SPC ", 为" CN_SPC+projName;
+      result+="使用" CN_SPC;
       return result;
     }
 
     virtual QCString trClassDiagram(const QCString &clName)
     {
-      return (QCString)"类" CN_SPC+clName+CN_SPC "继承关系图:";
+      return "类" CN_SPC+clName+CN_SPC "继承关系图:";
     }
 
      virtual QCString trForInternalUseOnly()
@@ -464,7 +464,7 @@ class TranslatorChinese : public Translator
                                  bool isTemplate)
       // used as the title of the HTML page of a class/struct/union
     {
-       QCString result=(QCString)clName;
+       QCString result=clName;
       if (isTemplate) result+=CN_SPC "模板";
       switch(compType)
       {
@@ -634,7 +634,7 @@ class TranslatorChinese : public Translator
         bool)
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
-       QCString result=(QCString)"该";
+       QCString result="该";
       switch(compType)
       {
         case ClassDef::Class:      result+="类"; break;
@@ -699,13 +699,13 @@ class TranslatorChinese : public Translator
     /*! this text is put before a collaboration diagram */
     virtual QCString trCollaborationDiagram(const QCString &clName)
     {
-      return (QCString)clName+CN_SPC "的协作图:";
+      return clName+CN_SPC "的协作图:";
     }
 
     /*! this text is put before an include dependency graph */
     virtual QCString trInclDepGraph(const QCString &fName)
     {
-      return (QCString)fName+CN_SPC "的引用(Include)关系图:";
+      return fName+CN_SPC "的引用(Include)关系图:";
     }
 
     /*! header that is put before the list of constructor/destructors. */
@@ -1007,7 +1007,7 @@ class TranslatorChinese : public Translator
     /*! Used as the title of a Java package */
     virtual QCString trPackage(const QCString &name)
     {
-      return (QCString)"包" CN_SPC+name;
+      return "包" CN_SPC+name;
     }
 
     /*! Title of the package index page */
@@ -1578,7 +1578,7 @@ class TranslatorChinese : public Translator
                                     ClassDef::CompoundType compType,
                                     bool isTemplate)
     {
-      QCString result=(QCString)clName;
+      QCString result=clName;
       switch(compType)
       {
         case ClassDef::Class:      result+=CN_SPC "模块"; break;
@@ -1729,12 +1729,12 @@ class TranslatorChinese : public Translator
 
   virtual QCString trFileIn(const QCString &name)
   {
-    return (QCString)"文件在"+CN_SPC+name;
+    return QCString("文件在")+CN_SPC+name;
   }
 
   virtual QCString trIncludesFileIn(const QCString &name)
   {
-    return (QCString)"在" CN_SPC+name+CN_SPC "中引用";
+    return "在" CN_SPC+name+CN_SPC "中引用";
   }
 
   virtual QCString trDateTime(int year,int month,int day,int dayOfWeek,
@@ -1892,14 +1892,14 @@ class TranslatorChinese : public Translator
     /** UNO IDL service page title */
     virtual QCString trServiceReference(const QCString &sName)
     {
-      QCString result=(QCString)sName;
+      QCString result=sName;
       result+= CN_SPC "服务参考";
       return result;
     }
     /** UNO IDL singleton page title */
     virtual QCString trSingletonReference(const QCString &sName)
     {
-      QCString result=(QCString)sName;
+      QCString result=sName;
       result+= CN_SPC "单例参考";
       return result;
     }
@@ -2109,7 +2109,7 @@ class TranslatorChinese : public Translator
     }
     virtual QCString trCompoundReferenceSlice(const QCString &clName, ClassDef::CompoundType compType, bool isLocal)
     {
-      QCString result=(QCString)clName;
+      QCString result=clName;
       if (isLocal) result+=" 局部";
       switch(compType)
       {

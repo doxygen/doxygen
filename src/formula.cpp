@@ -178,7 +178,7 @@ void FormulaManager::generateImages(const QCString &path,Format format,HighDPI h
       {
         // we force a pagebreak after each formula
         t << p->formulas[i].c_str() << "\n\\pagebreak\n\n";
-        formulasToGenerate.push_back(i);
+        formulasToGenerate.push_back(static_cast<int>(i));
       }
       Doxygen::indexList->addImageFile(resultName);
     }
@@ -445,8 +445,8 @@ void FormulaManager::generateImages(const QCString &path,Format format,HighDPI h
     TextStream t(&f);
     for (size_t i=0; i<p->formulas.size(); i++)
     {
-      DisplaySize size = p->getDisplaySize(i);
-      t << "\\_form#" << static_cast<uint>(i);
+      DisplaySize size = p->getDisplaySize(static_cast<int>(i));
+      t << "\\_form#" << i;
       if (size.width!=-1 && size.height!=-1)
       {
         t << "=" << size.width << "x" << size.height;
@@ -469,7 +469,7 @@ int FormulaManager::addFormula(const std::string &formulaText)
   auto it = p->formulaMap.find(formulaText);
   if (it!=p->formulaMap.end()) // already stored
   {
-    return it->second;
+    return static_cast<int>(it->second);
   }
   // store new formula
   size_t id = p->formulas.size();

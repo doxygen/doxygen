@@ -4369,21 +4369,21 @@ int extractClassNameFromType(const QCString &type,int &pos,QCString &name,QCStri
       size_t te = ts;
       size_t tl = 0;
 
-      while (ts<typeLen && type[ts]==' ') ts++,tl++; // skip any whitespace
-      if (ts<typeLen && type[ts]=='<') // assume template instance
+      while (ts<typeLen && type[static_cast<uint>(ts)]==' ') ts++,tl++; // skip any whitespace
+      if (ts<typeLen && type[static_cast<uint>(ts)]=='<') // assume template instance
       {
         // locate end of template
         te=ts+1;
         int brCount=1;
         while (te<typeLen && brCount!=0)
         {
-          if (type[te]=='<')
+          if (type[static_cast<uint>(te)]=='<')
           {
-            if (te<typeLen-1 && type[te+1]=='<') te++; else brCount++;
+            if (te<typeLen-1 && type[static_cast<uint>(te)+1]=='<') te++; else brCount++;
           }
-          if (type[te]=='>')
+          if (type[static_cast<uint>(te)]=='>')
           {
-            if (te<typeLen-1 && type[te+1]=='>') te++; else brCount--;
+            if (te<typeLen-1 && type[static_cast<uint>(te)+1]=='>') te++; else brCount--;
           }
           te++;
         }
@@ -4393,18 +4393,18 @@ int extractClassNameFromType(const QCString &type,int &pos,QCString &name,QCStri
       {
         templSpec = QCString(type).mid(ts,te-ts);
         tl+=te-ts;
-        pos=i+l+tl;
+        pos=static_cast<int>(i+l+tl);
       }
       else // no template part
       {
-        pos=i+l;
+        pos=static_cast<int>(i+l);
       }
       //printf("extractClassNameFromType([in] type=%s,[out] pos=%d,[out] name=%s,[out] templ=%s)=TRUE i=%d\n",
       //    qPrint(type),pos,qPrint(name),qPrint(templSpec),i);
       return static_cast<int>(i);
     }
   }
-  pos = typeLen;
+  pos = static_cast<int>(typeLen);
   //printf("extractClassNameFromType([in] type=%s,[out] pos=%d,[out] name=%s,[out] templ=%s)=FALSE\n",
   //       qPrint(type),pos,qPrint(name),qPrint(templSpec));
   return -1;
@@ -6124,7 +6124,7 @@ void stackTrace()
 #endif
 }
 
-static int transcodeCharacterBuffer(const QCString &fileName,BufStr &srcBuf,int size,
+static size_t transcodeCharacterBuffer(const QCString &fileName,BufStr &srcBuf,size_t size,
            const QCString &inputEncoding,const QCString &outputEncoding)
 {
   if (inputEncoding.isEmpty() || outputEncoding.isEmpty()) return size;

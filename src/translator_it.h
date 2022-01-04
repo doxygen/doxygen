@@ -182,7 +182,7 @@ class TranslatorItalian : public TranslatorAdapter_1_8_15
     QCString trGeneratedAutomatically(const QCString &s)
     {
       QCString result="Generato automaticamente da Doxygen";
-      if (!s.isEmpty()) result+=(QCString)" per "+s;
+      if (!s.isEmpty()) result+=" per "+s;
       result+=" a partire dal codice sorgente.";
       return result;
     }
@@ -520,16 +520,16 @@ class TranslatorItalian : public TranslatorAdapter_1_8_15
      */
     QCString trGeneratedAt(const QCString &date,const QCString &projName)
     {
-      QCString result=(QCString)"Generato "+date;
-      if (!projName.isEmpty()) result+=(QCString)" per "+projName;
-      result+=(QCString)" da";
+      QCString result="Generato "+date;
+      if (!projName.isEmpty()) result+=" per "+projName;
+      result+=" da";
       return result;
     }
 
     /*! this text is put before a class diagram */
     QCString trClassDiagram(const QCString &clName)
     {
-      return (QCString)"Diagramma delle classi per "+clName;
+      return "Diagramma delle classi per "+clName;
     }
 
     /*! this text is generated when the \\internal command is used. */
@@ -624,7 +624,7 @@ class TranslatorItalian : public TranslatorAdapter_1_8_15
         case ClassDef::Exception:  result+="l'eccezione "; break;
         default: break;
       }
-      result+=(QCString)clName;
+      result+=clName;
       return result;
 
     }
@@ -633,7 +633,7 @@ class TranslatorItalian : public TranslatorAdapter_1_8_15
     QCString trFileReference(const QCString &fileName)
     {
       QCString result="Riferimenti per il file ";
-      result+=(QCString)fileName;
+      result+=fileName;
       return result;
     }
 
@@ -641,7 +641,7 @@ class TranslatorItalian : public TranslatorAdapter_1_8_15
     QCString trNamespaceReference(const QCString &namespaceName)
     {
       QCString result="Riferimenti per il namespace ";
-      result+=(QCString)namespaceName;
+      result+=namespaceName;
       return result;
     }
 
@@ -774,7 +774,7 @@ class TranslatorItalian : public TranslatorAdapter_1_8_15
         bool single)
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
-      QCString result=(QCString)"La documentazione per quest";
+      QCString result="La documentazione per quest";
       switch(compType)
       {
         case ClassDef::Class:      result+="a classe"; break;
@@ -840,12 +840,12 @@ class TranslatorItalian : public TranslatorAdapter_1_8_15
     /*! this text is put before a collaboration diagram */
     QCString trCollaborationDiagram(const QCString &clName)
     {
-      return (QCString)"Diagramma di collaborazione per "+clName+":";
+      return "Diagramma di collaborazione per "+clName+":";
     }
     /*! this text is put before an include dependency graph */
     QCString trInclDepGraph(const QCString &fName)
     {
-      return (QCString)"Grafo delle dipendenze di inclusione per "+fName+":";
+      return "Grafo delle dipendenze di inclusione per "+fName+":";
     }
     /*! header that is put before the list of constructor/destructors. */
     QCString trConstructorDocumentation()
@@ -1119,7 +1119,7 @@ class TranslatorItalian : public TranslatorAdapter_1_8_15
     /*! Used as the title of a Java package */
     virtual QCString trPackage(const QCString &name)
     {
-      return (QCString)"Package "+name;
+      return "Package "+name;
     }
     /*! Title of the package index page */
     virtual QCString trPackageList()
@@ -1626,7 +1626,7 @@ class TranslatorItalian : public TranslatorAdapter_1_8_15
         case ClassDef::Exception:  result+=" l'eccezione"; break;
         default: break;
       }
-      result+=(QCString)clName;
+      result+=clName;
       return result;
     }
 
@@ -1683,7 +1683,7 @@ class TranslatorItalian : public TranslatorAdapter_1_8_15
         bool single)
     { // here s is one of " Module", " Struct" or " Union"
       // single is true implies a single file
-      QCString result=(QCString)"La documentazione per quest";
+      QCString result="La documentazione per quest";
       switch(compType)
       {
         case ClassDef::Class:      result+="o modulo"; break;
@@ -1772,7 +1772,7 @@ class TranslatorItalian : public TranslatorAdapter_1_8_15
      */
     virtual QCString trFileIn(const QCString &name)
     {
-      return (QCString)"File in "+name;
+      return "File in "+name;
     }
 
     /*! when clicking a directory dependency label, a page with a
@@ -1781,7 +1781,7 @@ class TranslatorItalian : public TranslatorAdapter_1_8_15
      */
     virtual QCString trIncludesFileIn(const QCString &name)
     {
-      return (QCString)"Include il file in "+name;
+      return "Include il file in "+name;
     }
 
     /** Compiles a date string.
@@ -1947,14 +1947,14 @@ class TranslatorItalian : public TranslatorAdapter_1_8_15
     /** UNO IDL service page title */
     virtual QCString trServiceReference(const QCString &sName)
     {
-      QCString result=(QCString)"Riferimenti per il servizio ";
+      QCString result="Riferimenti per il servizio ";
       result+=sName;
       return result;
     }
     /** UNO IDL singleton page title */
     virtual QCString trSingletonReference(const QCString &sName)
     {
-      QCString result=(QCString)"Riferimenti per il singleton ";
+      QCString result="Riferimenti per il singleton ";
       result+=sName;
       return result;
     }
@@ -1962,7 +1962,7 @@ class TranslatorItalian : public TranslatorAdapter_1_8_15
     virtual QCString trServiceGeneratedFromFiles(bool single)
     {
       // single is true implies a single file
-      QCString result=(QCString)"La documentazione per questo servizio "
+      QCString result="La documentazione per questo servizio "
                                 "è stata generata a partire ";
       if (single) result+="dal seguente file:"; else result+="dai seguenti file:";
       return result;
@@ -1971,7 +1971,7 @@ class TranslatorItalian : public TranslatorAdapter_1_8_15
     virtual QCString trSingletonGeneratedFromFiles(bool single)
     {
       // single is true implies a single file
-      QCString result=(QCString)"La documentazione per questo singleton "
+      QCString result="La documentazione per questo singleton "
                                 "è stata generata a partire ";
       if (single) result+="dal seguente file:"; else result+="dai seguenti file:";
       return result;

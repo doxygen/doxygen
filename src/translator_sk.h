@@ -119,7 +119,7 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_15
     { QCString result("Generované automaticky programom Doxygen "
                       "zo zdrojových textov");
       if (!s.isEmpty())
-          result+=(QCString)" projektu "+s;
+          result+=" projektu "+s;
       result+=".";
       return result;
     }
@@ -480,16 +480,16 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_15
      */
     virtual QCString trGeneratedAt(const QCString &date,const QCString &projName)
     {
-      QCString result=(QCString)"Generované "+date;
-      if (!projName.isEmpty()) result+=(QCString)" pre projekt "+projName;
-      result+=(QCString)" programom";
+      QCString result="Generované "+date;
+      if (!projName.isEmpty()) result+=" pre projekt "+projName;
+      result+=" programom";
       return result;
     }
 
     /*! this text is put before a class diagram */
     virtual QCString trClassDiagram(const QCString &clName)
     {
-      return (QCString)"Diagram dedičnosti pre triedu "+clName;
+      return "Diagram dedičnosti pre triedu "+clName;
     }
 
     /*! this text is generated when the \\internal command is used. */
@@ -742,7 +742,7 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_15
         bool single)
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
-      QCString result=(QCString)"Dokumentácia pre ";
+      QCString result="Dokumentácia pre ";
       switch(compType)
       {
         case ClassDef::Class:	   result+="túto triedu"; break;
@@ -808,12 +808,12 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_15
     /*! this text is put before a collaboration diagram */
     virtual QCString trCollaborationDiagram(const QCString &clName)
     {
-      return (QCString)"Diagram tried pre "+clName+":";
+      return "Diagram tried pre "+clName+":";
     }
     /*! this text is put before an include dependency graph */
     virtual QCString trInclDepGraph(const QCString &fName)
     {
-      return (QCString)"Graf závislostí na vkladaných súboroch "
+      return "Graf závislostí na vkladaných súboroch "
                     "pre "+fName+":";
     }
     /*! header that is put before the list of constructor/destructors. */
@@ -1092,7 +1092,7 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_15
     /*! Used as the title of a Java package */
     virtual QCString trPackage(const QCString &name)
     {
-      return (QCString)"Balík "+name;
+      return "Balík "+name;
     }
     /*! Title of the package index page */
     virtual QCString trPackageList()
@@ -1668,7 +1668,7 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_15
         bool single)
     { // here s is one of " Module", " Struct" or " Union"
       // single is true implies a single file
-      QCString result=(QCString)"Dokumentácia ";
+      QCString result="Dokumentácia ";
       switch(compType)
       {
         case ClassDef::Class:      result+="k tomuto modulu"; break;
@@ -1756,7 +1756,7 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_15
      */
     virtual QCString trFileIn(const QCString &name)
     {
-      return (QCString)"Súbor v "+name;
+      return "Súbor v "+name;
     }
 
     /*! when clicking a directory dependency label, a page with a
@@ -1765,7 +1765,7 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_15
      */
     virtual QCString trIncludesFileIn(const QCString &name)
     {
-      return (QCString)"Vkladá (include) súbor z "+name;
+      return "Vkladá (include) súbor z "+name;
     }
 
     /** Compiles a date string.

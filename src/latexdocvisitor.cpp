@@ -1096,7 +1096,7 @@ static bool classEqualsReflist(const DocNode *n)
 {
   if (n->kind()==DocNode::Kind_HtmlDescList)
   {
-    HtmlAttribList attrs = ((DocHtmlDescList *)n)->attribs();
+    HtmlAttribList attrs = dynamic_cast<const DocHtmlDescList *>(n)->attribs();
     auto it = std::find_if(attrs.begin(),attrs.end(),
                         [](const auto &att) { return att.name=="class"; });
     if (it!=attrs.end() && it->value == "reflist") return true;
@@ -1186,7 +1186,7 @@ static bool tableIsNested(const DocNode *n)
   return isNested;
 }
 
-static void writeStartTableCommand(TextStream &t,const DocNode *n,int cols)
+static void writeStartTableCommand(TextStream &t,const DocNode *n,size_t cols)
 {
   if (tableIsNested(n))
   {
@@ -1228,7 +1228,7 @@ void LatexDocVisitor::visitPre(DocHtmlTable *t)
     m_t << "\n";
   }
 
-  writeStartTableCommand(m_t,t->parent(),(uint)t->numColumns());
+  writeStartTableCommand(m_t,t->parent(),t->numColumns());
 
   if (t->hasCaption())
   {
@@ -1240,7 +1240,7 @@ void LatexDocVisitor::visitPre(DocHtmlTable *t)
     m_t << "\\\\\n";
   }
 
-  setNumCols((uint)t->numColumns());
+  setNumCols(t->numColumns());
   m_t << "\\hline\n";
 
   // check if first row is a heading and then render the row already here
@@ -1285,7 +1285,7 @@ void LatexDocVisitor::visitPost(DocHtmlRow *row)
 
   DocNode *n = row->parent() ->parent();
 
-  int c=currentColumn();
+  size_t c=currentColumn();
   while (c<=numCols()) // end of row while inside a row span?
   {
     for (const auto &span : rowSpans())
@@ -1313,7 +1313,7 @@ void LatexDocVisitor::visitPost(DocHtmlRow *row)
 
   m_t << "\\\\";
 
-  int col = 1;
+  size_t col = 1;
   for (auto &span : rowSpans())
   {
     if (span.rowSpan>0) span.rowSpan--;
@@ -1363,7 +1363,7 @@ void LatexDocVisitor::visitPre(DocHtmlCell *c)
   DocHtmlRow *row = 0;
   if (c->parent() && c->parent()->kind()==DocNode::Kind_HtmlRow)
   {
-    row = (DocHtmlRow*)c->parent();
+    row = dynamic_cast<DocHtmlRow*>(c->parent());
   }
 
   setCurrentColumn(currentColumn()+1);
@@ -1749,8 +1749,8 @@ void LatexDocVisitor::visitPre(DocParamList *pl)
   DocParamSect *sect = 0;
   if (pl->parent() && pl->parent()->kind()==DocNode::Kind_ParamSect)
   {
-    parentType = ((DocParamSect*)pl->parent())->type();
-    sect=(DocParamSect*)pl->parent();
+    sect       = dynamic_cast<DocParamSect*>(pl->parent());
+    parentType = sect->type();
   }
   bool useTable = parentType==DocParamSect::Param ||
                   parentType==DocParamSect::RetVal ||
@@ -1787,15 +1787,15 @@ void LatexDocVisitor::visitPre(DocParamList *pl)
     {
       if (type->kind()==DocNode::Kind_Word)
       {
-        visit((DocWord*)type.get());
+        visit(dynamic_cast<DocWord*>(type.get()));
       }
       else if (type->kind()==DocNode::Kind_LinkedWord)
       {
-        visit((DocLinkedWord*)type.get());
+        visit(dynamic_cast<DocLinkedWord*>(type.get()));
       }
       else if (type->kind()==DocNode::Kind_Sep)
       {
-        m_t << " " << ((DocSeparator *)type.get())->chars() << " ";
+        m_t << " " << dynamic_cast<DocSeparator *>(type.get())->chars() << " ";
       }
     }
     if (useTable) m_t << " & ";
@@ -1808,11 +1808,11 @@ void LatexDocVisitor::visitPre(DocParamList *pl)
     m_insideItem=TRUE;
     if (param->kind()==DocNode::Kind_Word)
     {
-      visit((DocWord*)param.get());
+      visit(dynamic_cast<DocWord*>(param.get()));
     }
     else if (param->kind()==DocNode::Kind_LinkedWord)
     {
-      visit((DocLinkedWord*)param.get());
+      visit(dynamic_cast<DocLinkedWord*>(param.get()));
     }
     m_insideItem=FALSE;
   }
@@ -1833,7 +1833,7 @@ void LatexDocVisitor::visitPost(DocParamList *pl)
   DocParamSect::Type parentType = DocParamSect::Unknown;
   if (pl->parent() && pl->parent()->kind()==DocNode::Kind_ParamSect)
   {
-    parentType = ((DocParamSect*)pl->parent())->type();
+    parentType = dynamic_cast<DocParamSect*>(pl->parent())->type();
   }
   bool useTable = parentType==DocParamSect::Param ||
                   parentType==DocParamSect::RetVal ||

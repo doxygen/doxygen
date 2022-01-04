@@ -70,12 +70,12 @@ void LatexCodeGenerator::codify(const QCString &str)
 {
   if (!str.isEmpty())
   {
-    const signed char *p=(const signed char*)str.data();
-    signed char c;
+    const char *p=str.data();
+    char c;
     //char cs[5];
     int spacesToNextTabStop;
     int tabSize = Config_getInt(TAB_SIZE);
-    static THREAD_LOCAL signed char *result = NULL;
+    static THREAD_LOCAL char *result = NULL;
     static THREAD_LOCAL int lresult = 0;
     int i;
     while ((c=*p))
@@ -112,7 +112,7 @@ void LatexCodeGenerator::codify(const QCString &str)
                      if (lresult < (i + bytes + 1))               \
                      {                                            \
                        lresult += 512;                            \
-                       result = (signed char *)realloc(result, lresult); \
+                       result = static_cast<char *>(realloc(result, lresult)); \
                      }                                            \
                      for (int j=0; j<bytes && *p; j++)            \
                      {                                            \
@@ -130,7 +130,7 @@ void LatexCodeGenerator::codify(const QCString &str)
                      COPYCHAR();
                    }
                    result[i]=0; // add terminator
-                   filterLatexString(m_t,(const char *)result,
+                   filterLatexString(m_t,result,
                                      false, // insideTabbing
                                      true,  // insidePre
                                      false, // insideItem
