@@ -298,7 +298,8 @@ static void writeLatexMakefile()
   // end insertion by KONNO Akihisa <konno@researchers.jp> 2002-03-05
   if (!Config_getBool(USE_PDFLATEX)) // use plain old latex
   {
-    t << "LATEX_CMD=" << latex_command << "\n"
+    t << "LATEX_CMD?=" << latex_command << "\n"
+      << "MKIDX_CMD?=" << mkidx_command << "\n"
       << "\n"
       << "all: refman.dvi\n"
       << "\n"
@@ -319,7 +320,7 @@ static void writeLatexMakefile()
       << "\techo \"Running latex...\"\n"
       << "\t$(LATEX_CMD) refman.tex\n"
       << "\techo \"Running makeindex...\"\n"
-      << "\t" << mkidx_command << " refman.idx\n";
+      << "\t$(MKIDX_CMD) refman.idx\n";
     if (generateBib)
     {
       t << "\techo \"Running bibtex...\"\n";
@@ -336,7 +337,7 @@ static void writeLatexMakefile()
       << "\t      $(LATEX_CMD) refman.tex ; \\\n"
       << "\t      latex_count=`expr $$latex_count - 1` ;\\\n"
       << "\t    done\n"
-      << "\t" << mkidx_command << " refman.idx\n"
+      << "\t$(MKIDX_CMD) refman.idx\n"
       << "\t$(LATEX_CMD) refman.tex\n\n"
       << "refman_2on1.ps: refman.ps\n"
       << "\tpsnup -2 refman.ps >refman_2on1.ps\n"
@@ -346,13 +347,14 @@ static void writeLatexMakefile()
   }
   else // use pdflatex for higher quality output
   {
-    t << "LATEX_CMD=" << latex_command << "\n"
+    t << "LATEX_CMD?=" << latex_command << "\n"
+      << "MKIDX_CMD?=" << mkidx_command << "\n"
       << "\n";
     t << "all: refman.pdf\n\n"
       << "pdf: refman.pdf\n\n";
     t << "refman.pdf: clean refman.tex\n";
     t << "\t$(LATEX_CMD) refman\n";
-    t << "\t" << mkidx_command << " refman.idx\n";
+    t << "\t$(MKIDX_CMD) refman.idx\n";
     if (generateBib)
     {
       t << "\tbibtex refman\n";
@@ -366,7 +368,7 @@ static void writeLatexMakefile()
       << "\t      $(LATEX_CMD) refman ;\\\n"
       << "\t      latex_count=`expr $$latex_count - 1` ;\\\n"
       << "\t    done\n"
-      << "\t" << mkidx_command << " refman.idx\n"
+      << "\t$(MKIDX_CMD) refman.idx\n"
       << "\t$(LATEX_CMD) refman\n\n";
   }
 
@@ -395,9 +397,10 @@ static void writeMakeBat()
   if (!Config_getBool(USE_PDFLATEX)) // use plain old latex
   {
     t << "set LATEX_CMD=" << latex_command << "\r\n";
+    t << "set MKIDX_CMD=" << mkidx_command << "\r\n";
     t << "%LATEX_CMD% refman.tex\r\n";
     t << "echo ----\r\n";
-    t << mkidx_command << " refman.idx\r\n";
+    t << "%MKIDX_CMD% refman.idx\r\n";
     if (generateBib)
     {
       t << "bibtex refman\r\n";
@@ -418,7 +421,7 @@ static void writeMakeBat()
     t << "goto :repeat\r\n";
     t << ":skip\r\n";
     t << "endlocal\r\n";
-    t << mkidx_command << " refman.idx\r\n";
+    t << "%MKIDX_CMD% refman.idx\r\n";
     t << "%LATEX_CMD% refman.tex\r\n";
     t << "dvips -o refman.ps refman.dvi\r\n";
     t << Portable::ghostScriptCommand();
@@ -428,9 +431,10 @@ static void writeMakeBat()
   else // use pdflatex
   {
     t << "set LATEX_CMD=" << latex_command << "\r\n";
+    t << "set MKIDX_CMD=" << mkidx_command << "\r\n";
     t << "%LATEX_CMD% refman\r\n";
     t << "echo ----\r\n";
-    t << mkidx_command << " refman.idx\r\n";
+    t << "%MKIDX_CMD% refman.idx\r\n";
     if (generateBib)
     {
       t << "bibtex refman\r\n";
@@ -452,7 +456,7 @@ static void writeMakeBat()
     t << "goto :repeat\r\n";
     t << ":skip\r\n";
     t << "endlocal\r\n";
-    t << mkidx_command << " refman.idx\r\n";
+    t << "%MKIDX_CMD% refman.idx\r\n";
     t << "%LATEX_CMD% refman\r\n";
     t << "cd /D %Dir_Old%\r\n";
     t << "set Dir_Old=\r\n";
