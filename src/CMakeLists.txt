@@ -344,6 +344,7 @@ if (use_libclang)
     add_definitions(${LLVM_DEFINITIONS})
     if (static_libclang)
         set(CLANG_LIBS libclang clangTooling)
+        add_definitions(-DCINDEX_NO_EXPORTS)
     else() # dynamically linked version of clang
         llvm_config(doxymain USE_SHARED support)
         set(CLANG_LIBS libclang clang-cpp)
