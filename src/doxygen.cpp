@@ -10157,7 +10157,7 @@ static std::string resolveSymlink(const std::string &path)
   QCString oldPrefix = "/";
   do
   {
-#ifdef WIN32
+#if defined(_WIN32)
     // UNC path, skip server and share name
     if (sepPos==0 && (result.left(2)=="//" || result.left(2)=="\\\\"))
       sepPos = result.find('/',2);
