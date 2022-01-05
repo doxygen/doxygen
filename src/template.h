@@ -135,8 +135,13 @@ class TemplateVariant
     /** Constructs a new variant with a integer value \a v. */
     TemplateVariant(unsigned int v) { m_variant.set<static_cast<uint8_t>(Type::Int)>(static_cast<int>(v)); }
 
-    /** Constructs a new variant with a integer value \a v. */
-    TemplateVariant(size_t v) { m_variant.set<static_cast<uint8_t>(Type::Int)>(static_cast<int>(v)); }
+    /** Constructs a new variant with a integer value \a v.
+     *  We use SFINAE to avoid a compiler error in case size_t already matches the 'unsigned int' overload.
+     */
+    template<typename T,
+             typename std::enable_if<std::is_same<T,size_t>::value,T>::type* = nullptr
+            >
+    TemplateVariant(T v) { m_variant.set<static_cast<uint8_t>(Type::Int)>(static_cast<int>(v)); }
 
     /** Constructs a new variant with a string value \a s. */
     TemplateVariant(const char *s,bool raw=FALSE) : m_raw(raw) { m_variant.set<static_cast<uint8_t>(Type::String)>(s); }

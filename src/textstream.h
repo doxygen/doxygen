@@ -22,6 +22,7 @@
 #include <cstdint>
 #include <cstdio>
 #include <fstream>
+#include <type_traits>
 
 #include "qcstring.h"
 
@@ -146,8 +147,13 @@ class TextStream final
       return static_cast<TextStream&>(*this);
     }
 
-    /** Adds a size_t integer to the stream */
-    TextStream &operator<<( size_t i)
+    /** Adds a size_t integer to the stream.
+     *  We use SFINAE to avoid a compiler error in case size_t already matches the 'unsigned int' overload.
+     */
+    template<typename T,
+             typename std::enable_if<std::is_same<T,size_t>::value,T>::type* = nullptr
+            >
+    TextStream &operator<<( T i)
     {
       output_int32(static_cast<uint>(i),false);
       return static_cast<TextStream&>(*this);
