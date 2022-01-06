@@ -654,11 +654,12 @@ static QCString substituteLatexKeywords(const QCString &str,
   QCString latexSpecialFormulaChars = tg2.str();
 
   QCString formulaMacrofile = Config_getString(FORMULA_MACROFILE);
+  QCString stripMacroFile;
   if (!formulaMacrofile.isEmpty())
   {
     FileInfo fi(formulaMacrofile.str());
     formulaMacrofile=fi.absFilePath();
-    QCString stripMacroFile = fi.fileName();
+    stripMacroFile = fi.fileName();
     copyFile(formulaMacrofile,Config_getString(LATEX_OUTPUT) + "/" + stripMacroFile);
   }
 
@@ -684,7 +685,7 @@ static QCString substituteLatexKeywords(const QCString &str,
   result = substitute(result,"$makeindex",makeIndex());
   result = substitute(result,"$extralatexpackages",extraLatexPackages);
   result = substitute(result,"$latexspecialformulachars",latexSpecialFormulaChars);
-  result = substitute(result,"$formulamacrofile",formulaMacrofile);
+  result = substitute(result,"$formulamacrofile",stripMacroFile);
 
   // additional LaTeX only conditional blocks
   result = selectBlock(result,"CITATIONS_PRESENT", !CitationManager::instance().isEmpty(),OutputGenerator::Latex);
