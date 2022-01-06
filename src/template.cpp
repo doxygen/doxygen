@@ -238,20 +238,20 @@ class TemplateListGenericConstIterator : public TemplateListIntf::ConstIterator
     }
     virtual void toLast()
     {
-      uint count = m_list.count();
+      int count = static_cast<int>(m_list.count());
       m_index = count>0 ? count-1 : 0;
     }
     virtual void toNext()
     {
-      if (m_index<m_list.count()) { m_index++; }
+      if (m_index<static_cast<int>(m_list.count())) { m_index++; }
     }
     virtual void toPrev()
     {
-      if (m_index>0) { --m_index; }
+      if (m_index>=0) { --m_index; }
     }
     virtual bool current(TemplateVariant &v) const
     {
-      if (m_index<m_list.count())
+      if (m_index>=0 && m_index<static_cast<int>(m_list.count()))
       {
         v = m_list.at(m_index);
         return TRUE;
@@ -264,7 +264,7 @@ class TemplateListGenericConstIterator : public TemplateListIntf::ConstIterator
     }
   private:
     const List &m_list;
-    size_t m_index = 0;
+    int m_index = 0;
 };
 
 //-------------------------------------------------------------------------------
@@ -389,7 +389,7 @@ int TemplateVariant::toInt() const
     case Type::Int:        return m_variant.get<static_cast<uint8_t>(Type::Int)>();
     case Type::String:     return !m_variant.get<static_cast<uint8_t>(Type::String)>().toInt();
     case Type::Struct:     return 0;
-    case Type::List:       return m_variant.get<static_cast<uint8_t>(Type::List)>()->count();
+    case Type::List:       return static_cast<int>(m_variant.get<static_cast<uint8_t>(Type::List)>()->count());
     case Type::Function:   return 0;
     case Type::WeakStruct: return 0;
   }

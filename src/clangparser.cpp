@@ -184,11 +184,11 @@ void ClangTUParser::parse()
       clang_option_len = command[command.size()-1].CommandLine.size();
     }
   }
-  char **argv = (char**)malloc(sizeof(char*)*
+  char **argv = static_cast<char**>(malloc(sizeof(char*)*
                                (4+Doxygen::inputPaths.size()+
                                 includePath.size()+
                                 clangOptions.size()+
-                                clang_option_len));
+                                clang_option_len)));
   if (!command.empty() )
   {
     std::vector<std::string> options = command[command.size()-1].CommandLine;
@@ -547,9 +547,9 @@ void ClangTUParser::codifyLines(CodeOutputInterface &ol,const FileDef *fd,const 
     if (c=='\n')
     {
       line++;
-      int l = (int)(p-sp-1);
+      int l = static_cast<int>(p-sp-1);
       column=l+1;
-      char *tmp = (char*)malloc(l+1);
+      char *tmp = static_cast<char *>(malloc(l+1));
       memcpy(tmp,sp,l);
       tmp[l]='\0';
       ol.codify(tmp);
@@ -586,18 +586,17 @@ void ClangTUParser::writeMultiLineCodeLink(CodeOutputInterface &ol,
   }
   bool inlineCodeFragment = false;
   bool done=FALSE;
-  char *p=(char *)text;
+  const char *p=text;
   while (!done)
   {
-    char *sp=p;
+    const char *sp=p;
     char c;
     while ((c=*p++) && c!='\n') { column++; }
     if (c=='\n')
     {
       line++;
-      *(p-1)='\0';
       //printf("writeCodeLink(%s,%s,%s,%s)\n",ref,file,anchor,sp);
-      ol.writeCodeLink(d->codeSymbolType(),ref,file,anchor,sp,tooltip);
+      ol.writeCodeLink(d->codeSymbolType(),ref,file,anchor,QCString(sp,p-sp-1),tooltip);
       ol.endCodeLine();
       ol.startCodeLine(TRUE);
       writeLineNumber(ol,fd,line,inlineCodeFragment);

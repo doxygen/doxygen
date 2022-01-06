@@ -187,7 +187,7 @@ int Trace::s_indent = 0;
   ((data[i]>='a' && data[i]<='z') || \
    (data[i]>='A' && data[i]<='Z') || \
    (data[i]>='0' && data[i]<='9') || \
-   (((unsigned char)data[i])>=0x80)) // unicode characters
+   (static_cast<unsigned char>(data[i])>=0x80)) // unicode characters
 
 #define extraChar(i) \
   (data[i]=='-' || data[i]=='+' || data[i]=='!' || \
@@ -220,17 +220,17 @@ Markdown::Markdown(const QCString &fileName,int lineNr,int indentLevel)
 {
   using namespace std::placeholders;
   // setup callback table for special characters
-  m_actions[(unsigned int)'_'] = std::bind(&Markdown::processEmphasis,      this,_1,_2,_3);
-  m_actions[(unsigned int)'*'] = std::bind(&Markdown::processEmphasis,      this,_1,_2,_3);
-  m_actions[(unsigned int)'~'] = std::bind(&Markdown::processEmphasis,      this,_1,_2,_3);
-  m_actions[(unsigned int)'`'] = std::bind(&Markdown::processCodeSpan,      this,_1,_2,_3);
-  m_actions[(unsigned int)'\\']= std::bind(&Markdown::processSpecialCommand,this,_1,_2,_3);
-  m_actions[(unsigned int)'@'] = std::bind(&Markdown::processSpecialCommand,this,_1,_2,_3);
-  m_actions[(unsigned int)'['] = std::bind(&Markdown::processLink,          this,_1,_2,_3);
-  m_actions[(unsigned int)'!'] = std::bind(&Markdown::processLink,          this,_1,_2,_3);
-  m_actions[(unsigned int)'<'] = std::bind(&Markdown::processHtmlTag,       this,_1,_2,_3);
-  m_actions[(unsigned int)'-'] = std::bind(&Markdown::processNmdash,        this,_1,_2,_3);
-  m_actions[(unsigned int)'"'] = std::bind(&Markdown::processQuoted,        this,_1,_2,_3);
+  m_actions[static_cast<unsigned int>('_')] = std::bind(&Markdown::processEmphasis,      this,_1,_2,_3);
+  m_actions[static_cast<unsigned int>('*')] = std::bind(&Markdown::processEmphasis,      this,_1,_2,_3);
+  m_actions[static_cast<unsigned int>('~')] = std::bind(&Markdown::processEmphasis,      this,_1,_2,_3);
+  m_actions[static_cast<unsigned int>('`')] = std::bind(&Markdown::processCodeSpan,      this,_1,_2,_3);
+  m_actions[static_cast<unsigned int>('\\')]= std::bind(&Markdown::processSpecialCommand,this,_1,_2,_3);
+  m_actions[static_cast<unsigned int>('@')] = std::bind(&Markdown::processSpecialCommand,this,_1,_2,_3);
+  m_actions[static_cast<unsigned int>('[')] = std::bind(&Markdown::processLink,          this,_1,_2,_3);
+  m_actions[static_cast<unsigned int>('!')] = std::bind(&Markdown::processLink,          this,_1,_2,_3);
+  m_actions[static_cast<unsigned int>('<')] = std::bind(&Markdown::processHtmlTag,       this,_1,_2,_3);
+  m_actions[static_cast<unsigned int>('-')] = std::bind(&Markdown::processNmdash,        this,_1,_2,_3);
+  m_actions[static_cast<unsigned int>('"')] = std::bind(&Markdown::processQuoted,        this,_1,_2,_3);
   (void)m_lineNr; // not used yet
 }
 
@@ -239,7 +239,7 @@ enum Alignment { AlignNone, AlignLeft, AlignCenter, AlignRight };
 
 //---------- constants -------
 //
-const uchar    g_utf8_nbsp[3] = { 0xc2, 0xa0, 0}; // UTF-8 nbsp
+const char    g_utf8_nbsp[3] = { static_cast<char>(0xc2), static_cast<char>(0xa0), 0}; // UTF-8 nbsp
 const char    *g_doxy_nsbp = "&_doxy_nbsp;";            // doxygen escape command for UTF-8 nbsp
 const int codeBlockIndent = 4;
 
@@ -324,7 +324,7 @@ static void convertStringFragment(QCString &result,const char *data,int size)
 {
   TRACE(result);
   if (size<0) size=0;
-  result = QCString(data,(uint)size);
+  result = QCString(data,static_cast<size_t>(size));
   TRACE_RESULT(result);
 }
 
@@ -1526,7 +1526,7 @@ int Markdown::processLink(const char *data,int offset,int size)
           else if (!(forg.exists() && forg.isReadable()))
           {
             FileInfo fi(m_fileName.str());
-            QCString mdFile = m_fileName.left(m_fileName.length()-(uint)fi.fileName().length()) + link;
+            QCString mdFile = m_fileName.left(m_fileName.length()-fi.fileName().length()) + link;
             FileInfo fmd(mdFile.str());
             if (fmd.exists() && fmd.isReadable())
             {
@@ -1677,7 +1677,7 @@ void Markdown::addStrEscapeUtf8Nbsp(const char *s,int len)
   }
   else // escape needed -> slow
   {
-    m_out.addStr(substitute(QCString(s).left(len),g_doxy_nsbp,(const char *)g_utf8_nbsp));
+    m_out.addStr(substitute(QCString(s).left(len),g_doxy_nsbp,g_utf8_nbsp));
   }
 }
 
@@ -1746,7 +1746,7 @@ void Markdown::processInline(const char *data,int size)
   while (i<size)
   {
     // skip over character that do not trigger a specific action
-    while (end<size && ((action=m_actions[(uchar)data[end]])==0)) end++;
+    while (end<size && ((action=m_actions[static_cast<uchar>(data[end])])==0)) end++;
     // and add them to the output
     m_out.addStr(data+i,end-i);
     if (end>=size) break;
@@ -1964,7 +1964,7 @@ static QCString extractTitleId(QCString &title, int level)
   if (reg::search(ti,match,r2))
   {
     std::string id = match[1].str();
-    title = title.left((int)match.position());
+    title = title.left(match.position());
     //printf("found match id='%s' title=%s\n",id.c_str(),qPrint(title));
     TRACE_RESULT(QCString(id));
     return QCString(id);
@@ -3319,7 +3319,7 @@ QCString Markdown::detab(const QCString &s,int &refIndent)
   int minIndent=maxIndent;
   while (i<size)
   {
-    signed char c = (signed char)data[i++];
+    char c = data[i++];
     switch(c)
     {
       case '\t': // expand tab

@@ -319,7 +319,7 @@ static struct htmlEntityInfo
   { SYM(Equal),    "=",            "=",          "=",                    "=",             "=",                      "=",      "=",           { "=",          DocSymbol::Perl_char    }}
 };
 
-static const int g_numHtmlEntities = (int)(sizeof(g_htmlEntities)/ sizeof(*g_htmlEntities));
+static const int g_numHtmlEntities = static_cast<int>(sizeof(g_htmlEntities)/ sizeof(*g_htmlEntities));
 
 HtmlEntityMapper *HtmlEntityMapper::s_instance = 0;
 

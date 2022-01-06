@@ -51,7 +51,7 @@
 static QCString filterId(const QCString &s)
 {
   if (s.isEmpty()) return s;
-  static GrowBuf growBuf;
+  GrowBuf growBuf;
   growBuf.clear();
   const char *p=s.data();
   char c;

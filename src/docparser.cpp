@@ -7479,7 +7479,7 @@ static QCString extractCopyDocId(const char *data, uint &j, uint len)
 
 static uint isCopyBriefOrDetailsCmd(const char *data, uint i,uint len,bool &brief)
 {
-  int j=0;
+  uint j=0;
   if (i==0 || (data[i-1]!='@' && data[i-1]!='\\')) // not an escaped command
   {
     CHECK_FOR_COMMAND("copybrief",brief=TRUE);    // @copybrief or \copybrief
@@ -7490,7 +7490,7 @@ static uint isCopyBriefOrDetailsCmd(const char *data, uint i,uint len,bool &brie
 
 static uint isVerbatimSection(const char *data,uint i,uint len,QCString &endMarker)
 {
-  int j=0;
+  uint j=0;
   if (i==0 || (data[i-1]!='@' && data[i-1]!='\\')) // not an escaped command
   {
     CHECK_FOR_COMMAND("dot",endMarker="enddot");
@@ -7558,12 +7558,12 @@ QCString DocParser::processCopyDoc(const char *data,uint &len)
             context.copyStack.push_back(def);
             if (isBrief)
             {
-              uint l=brief.length();
+              uint l=static_cast<uint>(brief.length());
               buf.addStr(processCopyDoc(brief.data(),l));
             }
             else
             {
-              uint l=doc.length();
+              uint l=static_cast<uint>(doc.length());
               buf.addStr(processCopyDoc(doc.data(),l));
             }
             context.copyStack.pop_back();
@@ -7590,7 +7590,7 @@ QCString DocParser::processCopyDoc(const char *data,uint &len)
         uint k = isVerbatimSection(data,i,len,endMarker);
         if (k>0)
         {
-          int orgPos = i;
+          uint orgPos = i;
           i=skipToEndMarker(data,k,len,endMarker);
           buf.addStr(data+orgPos,i-orgPos);
         }
@@ -7607,7 +7607,7 @@ QCString DocParser::processCopyDoc(const char *data,uint &len)
       i++;
     }
   }
-  len = buf.getPos();
+  len = static_cast<uint>(buf.getPos());
   buf.addChar(0);
   return buf.get();
 }
@@ -7701,7 +7701,7 @@ DocRoot *validatingParseDoc(IDocParser &parserIntf,
 
   //printf("Starting comment block at %s:%d\n",qPrint(parser.context.fileName),startLine);
   parser.tokenizer.setLineNr(startLine);
-  uint ioLen = input.length();
+  uint ioLen = static_cast<uint>(input.length());
   QCString inpStr = parser.processCopyDoc(input.data(),ioLen);
   if (inpStr.isEmpty() || inpStr.at(inpStr.length()-1)!='\n')
   {

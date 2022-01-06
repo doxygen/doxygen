@@ -1678,7 +1678,7 @@ void ClassDefImpl::writeInheritanceGraph(OutputList &ol) const
 
     ol.startParagraph();
     writeMarkerList(ol,
-                    theTranslator->trInheritsList((int)m_impl->inherits.size()).str(),
+                    theTranslator->trInheritsList(static_cast<int>(m_impl->inherits.size())).str(),
                     m_impl->inherits.size(),
                     replaceFunc);
     ol.endParagraph();
@@ -1705,7 +1705,7 @@ void ClassDefImpl::writeInheritanceGraph(OutputList &ol) const
 
     ol.startParagraph();
     writeMarkerList(ol,
-                    theTranslator->trInheritedByList((int)m_impl->inheritedBy.size()).str(),
+                    theTranslator->trInheritedByList(static_cast<int>(m_impl->inheritedBy.size())).str(),
                     m_impl->inheritedBy.size(),
                     replaceFunc);
     ol.endParagraph();
@@ -2035,7 +2035,7 @@ void ClassDefImpl::writeSummaryLinks(OutputList &ol) const
           m_impl->innerClasses.declVisible()
          )
       {
-        const LayoutDocEntrySection *ls = (const LayoutDocEntrySection*)lde.get();
+        const LayoutDocEntrySection *ls = dynamic_cast<const LayoutDocEntrySection*>(lde.get());
         ol.writeSummaryLink(QCString(),"nested-classes",ls->title(lang),first);
         first=FALSE;
       }
@@ -2049,7 +2049,7 @@ void ClassDefImpl::writeSummaryLinks(OutputList &ol) const
       }
       else if (lde->kind()== LayoutDocEntry::MemberDecl)
       {
-        const LayoutDocEntryMemberDecl *lmd = (const LayoutDocEntryMemberDecl*)lde.get();
+        const LayoutDocEntryMemberDecl *lmd = dynamic_cast<const LayoutDocEntryMemberDecl*>(lde.get());
         MemberList * ml = getMemberList(lmd->type);
         if (ml && ml->declVisible())
         {
@@ -2150,7 +2150,7 @@ void ClassDefImpl::writeTagFile(TextStream &tagFile)
         break;
       case LayoutDocEntry::MemberDecl:
         {
-          const LayoutDocEntryMemberDecl *lmd = (const LayoutDocEntryMemberDecl*)lde.get();
+          const LayoutDocEntryMemberDecl *lmd = dynamic_cast<const LayoutDocEntryMemberDecl*>(lde.get());
           MemberList * ml = getMemberList(lmd->type);
           if (ml)
           {
@@ -2247,7 +2247,7 @@ void ClassDefImpl::writeInlineDocumentation(OutputList &ol) const
       case LayoutDocEntry::MemberDecl:
         {
           ClassDefSet visitedClasses;
-          const LayoutDocEntryMemberDecl *lmd = (const LayoutDocEntryMemberDecl*)lde.get();
+          const LayoutDocEntryMemberDecl *lmd = dynamic_cast<const LayoutDocEntryMemberDecl*>(lde.get());
           if (!isSimple) writeMemberDeclarations(ol,visitedClasses,lmd->type,lmd->title(lang),lmd->subtitle(lang),TRUE);
         }
         break;
@@ -2262,7 +2262,7 @@ void ClassDefImpl::writeInlineDocumentation(OutputList &ol) const
         break;
       case LayoutDocEntry::MemberDef:
         {
-          const LayoutDocEntryMemberDef *lmd = (const LayoutDocEntryMemberDef*)lde.get();
+          const LayoutDocEntryMemberDef *lmd = dynamic_cast<const LayoutDocEntryMemberDef*>(lde.get());
           if (isSimple)
           {
             writeSimpleMemberDocumentation(ol,lmd->type);
@@ -2430,7 +2430,7 @@ void ClassDefImpl::writeDeclarationLink(OutputList &ol,bool &found,const QCStrin
     {
       ol.writeString(" ");
       ol.insertMemberAlign();
-      ol.writeString(VhdlDocGen::getProtectionName((VhdlDocGen::VhdlClasses)protection()));
+      ol.writeString(VhdlDocGen::getProtectionName(VhdlDocGen::convert(protection())));
     }
     ol.endMemberItem();
 
@@ -2529,13 +2529,13 @@ void ClassDefImpl::writeDocumentationContents(OutputList &ol,const QCString & /*
       case LayoutDocEntry::MemberDecl:
         {
           ClassDefSet visitedClasses;
-          const LayoutDocEntryMemberDecl *lmd = (const LayoutDocEntryMemberDecl*)lde.get();
+          const LayoutDocEntryMemberDecl *lmd = dynamic_cast<const LayoutDocEntryMemberDecl*>(lde.get());
           writeMemberDeclarations(ol,visitedClasses,lmd->type,lmd->title(lang),lmd->subtitle(lang));
         }
         break;
       case LayoutDocEntry::ClassNestedClasses:
         {
-          const LayoutDocEntrySection *ls = (const LayoutDocEntrySection*)lde.get();
+          const LayoutDocEntrySection *ls = dynamic_cast<const LayoutDocEntrySection*>(lde.get());
           writeNestedClasses(ol,ls->title(lang));
         }
         break;
@@ -2544,7 +2544,7 @@ void ClassDefImpl::writeDocumentationContents(OutputList &ol,const QCString & /*
         break;
       case LayoutDocEntry::DetailedDesc:
         {
-          const LayoutDocEntrySection *ls = (const LayoutDocEntrySection*)lde.get();
+          const LayoutDocEntrySection *ls = dynamic_cast<const LayoutDocEntrySection*>(lde.get());
           writeDetailedDescription(ol,pageType,exampleFlag,ls->title(lang));
         }
         break;
@@ -2556,7 +2556,7 @@ void ClassDefImpl::writeDocumentationContents(OutputList &ol,const QCString & /*
         break;
       case LayoutDocEntry::MemberDef:
         {
-          const LayoutDocEntryMemberDef *lmd = (const LayoutDocEntryMemberDef*)lde.get();
+          const LayoutDocEntryMemberDef *lmd = dynamic_cast<const LayoutDocEntryMemberDef*>(lde.get());
           writeMemberDocumentation(ol,lmd->type,lmd->title(lang));
         }
         break;
@@ -3160,7 +3160,7 @@ void ClassDefImpl::addTypeConstraints()
         addTypeConstraint(typeConstraint,a.type);
         p=i+1;
       }
-      typeConstraint = a.typeConstraint.right(a.typeConstraint.length()-(uint)p).stripWhiteSpace();
+      typeConstraint = a.typeConstraint.right(a.typeConstraint.length()-p).stripWhiteSpace();
       addTypeConstraint(typeConstraint,a.type);
     }
   }
@@ -3257,7 +3257,7 @@ void ClassDefImpl::writeDeclaration(OutputList &ol,const MemberDef *md,bool inGr
   {
     if (lde->kind()==LayoutDocEntry::MemberDecl)
     {
-      const LayoutDocEntryMemberDecl *lmd = (const LayoutDocEntryMemberDecl*)lde.get();
+      const LayoutDocEntryMemberDecl *lmd = dynamic_cast<const LayoutDocEntryMemberDecl*>(lde.get());
       writePlainMemberDeclaration(ol,lmd->type,inGroup,indentLevel,inheritedFrom,inheritId);
     }
   }
@@ -3458,7 +3458,7 @@ void ClassDefImpl::mergeMembers()
                   //    qPrint(dstMd->name()),
                   //    qPrint(dstMi->scopePath.left(dstMi->scopePath.find("::")+2));
 
-                  QCString scope=dstMi->scopePath().left((uint)dstMi->scopePath().find(sep)+sepLen);
+                  QCString scope=dstMi->scopePath().left(dstMi->scopePath().find(sep)+sepLen);
                   if (scope!=dstMi->ambiguityResolutionScope().left(scope.length()))
                   {
                     dstMi->setAmbiguityResolutionScope(scope+dstMi->ambiguityResolutionScope());
@@ -3487,7 +3487,7 @@ void ClassDefImpl::mergeMembers()
                   //    qPrint(dstMd->name()),
                   //    qPrint(dstMi->scopePath.left(dstMi->scopePath.find("::")+2));
 
-                  QCString scope=dstMi->scopePath().left((uint)dstMi->scopePath().find(sep)+sepLen);
+                  QCString scope=dstMi->scopePath().left(dstMi->scopePath().find(sep)+sepLen);
                   if (scope!=dstMi->ambiguityResolutionScope().left(scope.length()))
                   {
                     dstMi->setAmbiguityResolutionScope(dstMi->ambiguityResolutionScope()+scope);
@@ -4201,7 +4201,7 @@ int ClassDefImpl::countMemberDeclarations(MemberListType lt,const ClassDef *inhe
   //printf("%s: countMemberDeclarations for %d and %d\n",qPrint(name()),lt,lt2);
   int count=0;
   MemberList * ml  = getMemberList(lt);
-  MemberList * ml2 = getMemberList((MemberListType)lt2);
+  MemberList * ml2 = getMemberList(static_cast<MemberListType>(lt2));
   if (getLanguage()!=SrcLangExt_VHDL) // use specific declarations function
   {
     if (ml)
@@ -4220,7 +4220,7 @@ int ClassDefImpl::countMemberDeclarations(MemberListType lt,const ClassDef *inhe
       for (const auto &mg : m_impl->memberGroups)
       {
         count+=mg->countGroupedInheritedMembers(lt);
-        if (lt2!=-1) count+=mg->countGroupedInheritedMembers((MemberListType)lt2);
+        if (lt2!=-1) count+=mg->countGroupedInheritedMembers(static_cast<MemberListType>(lt2));
       }
     }
     static bool inlineInheritedMembers = Config_getBool(INLINE_INHERITED_MEMB);
@@ -4239,7 +4239,7 @@ void ClassDefImpl::setAnonymousEnumType()
   {
     if (lde->kind()==LayoutDocEntry::MemberDecl)
     {
-      const LayoutDocEntryMemberDecl *lmd = (const LayoutDocEntryMemberDecl*)lde.get();
+      const LayoutDocEntryMemberDecl *lmd = dynamic_cast<const LayoutDocEntryMemberDecl*>(lde.get());
       MemberList * ml = getMemberList(lmd->type);
       if (ml)
       {
@@ -4295,7 +4295,7 @@ int ClassDefImpl::countInheritedDecMembers(MemberListType lt,
           visitedClasses.insert(icd); // guard for multiple virtual inheritance
           if (lt1!=-1)
           {
-            inhCount+=icd->countMemberDeclarations((MemberListType)lt1,inheritedFrom,lt2,FALSE,TRUE,visitedClasses);
+            inhCount+=icd->countMemberDeclarations(static_cast<MemberListType>(lt1),inheritedFrom,lt2,FALSE,TRUE,visitedClasses);
           }
         }
       }
@@ -4312,7 +4312,7 @@ void ClassDefImpl::getTitleForMemberListType(MemberListType type,
   {
     if (lde->kind()==LayoutDocEntry::MemberDecl)
     {
-      const LayoutDocEntryMemberDecl *lmd = (const LayoutDocEntryMemberDecl*)lde.get();
+      const LayoutDocEntryMemberDecl *lmd = dynamic_cast<const LayoutDocEntryMemberDecl*>(lde.get());
       if (lmd->type==type)
       {
         title = lmd->title(lang);
@@ -4332,7 +4332,7 @@ int ClassDefImpl::countAdditionalInheritedMembers() const
   {
     if (lde->kind()==LayoutDocEntry::MemberDecl)
     {
-      const LayoutDocEntryMemberDecl *lmd = (const LayoutDocEntryMemberDecl*)lde.get();
+      const LayoutDocEntryMemberDecl *lmd = dynamic_cast<const LayoutDocEntryMemberDecl*>(lde.get());
       if (lmd->type!=MemberListType_friends) // friendship is not inherited
       {
         ClassDefSet visited;
@@ -4351,7 +4351,7 @@ void ClassDefImpl::writeAdditionalInheritedMembers(OutputList &ol) const
   {
     if (lde->kind()==LayoutDocEntry::MemberDecl)
     {
-      const LayoutDocEntryMemberDecl *lmd = (const LayoutDocEntryMemberDecl*)lde.get();
+      const LayoutDocEntryMemberDecl *lmd = dynamic_cast<const LayoutDocEntryMemberDecl*>(lde.get());
       if (lmd->type!=MemberListType_friends)
       {
         ClassDefSet visited;
@@ -4415,7 +4415,7 @@ void ClassDefImpl::writeInheritedMemberDeclarations(OutputList &ol,ClassDefSet &
           visitedClasses.insert(icd); // guard for multiple virtual inheritance
           if (lt1!=-1)
           {
-            icd->writeMemberDeclarations(ol,visitedClasses,(MemberListType)lt1,
+            icd->writeMemberDeclarations(ol,visitedClasses,static_cast<MemberListType>(lt1),
                 title,QCString(),FALSE,inheritedFrom,lt2,FALSE,TRUE);
           }
         }
@@ -4436,7 +4436,7 @@ void ClassDefImpl::writeMemberDeclarations(OutputList &ol,ClassDefSet &visitedCl
 {
   //printf("%s: ClassDefImpl::writeMemberDeclarations lt=%d lt2=%d\n",qPrint(name()),lt,lt2);
   MemberList * ml = getMemberList(lt);
-  MemberList * ml2 = getMemberList((MemberListType)lt2);
+  MemberList * ml2 = getMemberList(static_cast<MemberListType>(lt2));
   if (getLanguage()==SrcLangExt_VHDL) // use specific declarations function
   {
     static const ClassDef *cdef;
