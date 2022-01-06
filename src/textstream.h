@@ -98,6 +98,21 @@ class TextStream final
       return static_cast<TextStream&>(*this);
     }
 
+    /** Adds an unsigned character string to the stream */
+    TextStream &operator<<( unsigned char *s)
+    {
+      if (s)
+      {
+        unsigned char *p = s;
+        while(*p)
+        {
+          m_buffer+=*p;
+          p++;
+        }
+      }
+      return static_cast<TextStream&>(*this);
+    }
+
     /** Adds a C-style string to the stream */
     TextStream &operator<<( const char *s)
     {

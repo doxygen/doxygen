@@ -7090,18 +7090,18 @@ void writeExtraLatexPackages(TextStream &t)
 
 void writeLatexSpecialFormulaChars(TextStream &t)
 {
-    char minus[4]; // Superscript minus
-    char sup2[3]; // Superscript two
-    char sup3[3];
-    minus[0]= static_cast<char>(0xE2);
-    minus[1]= static_cast<char>(0x81);
-    minus[2]= static_cast<char>(0xBB);
+    unsigned char minus[4]; // Superscript minus
+    unsigned char sup2[3]; // Superscript two
+    unsigned char sup3[3];
+    minus[0]= 0xE2;
+    minus[1]= 0x81;
+    minus[2]= 0xBB;
     minus[3]= 0;
-    sup2[0]= static_cast<char>(0xC2);
-    sup2[1]= static_cast<char>(0xB2);
+    sup2[0]= 0xC2;
+    sup2[1]= 0xB2;
     sup2[2]= 0;
-    sup3[0]= static_cast<char>(0xC2);
-    sup3[1]= static_cast<char>(0xB3);
+    sup3[0]= 0xC2;
+    sup3[1]= 0xB3;
     sup3[2]= 0;
 
     t << "\\usepackage{newunicodechar}\n"
