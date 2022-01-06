@@ -105,7 +105,7 @@ class Trace
           }
         }
         data_s[j++]=0;
-        fprintf(IOSTREAM,"> %s data=[%s…]\n",qPrint(func),data_s);
+        fprintf(IOSTREAM,"> %s data=[%s...]\n",qPrint(func),data_s);
         s_indent++;
       }
     }
