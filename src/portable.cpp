@@ -447,10 +447,16 @@ bool Portable::fileSystemIsCaseSensitive()
 
 FILE * Portable::popen(const QCString &name,const QCString &type)
 {
-  #if defined(_MSC_VER) || defined(__BORLANDC__)
-  return ::_popen(name.data(),type.data());
+  #if defined(_WIN32)
+  QCString newname = "\"" + name + "\"";
   #else
-  return ::popen(name.data(),type.data());
+  QCString newname = name;
+  #endif
+
+  #if defined(_MSC_VER) || defined(__BORLANDC__)
+  return ::_popen(newname.data(),type.data());
+  #else
+  return ::popen(newname.data(),type.data());
   #endif
 }
 
