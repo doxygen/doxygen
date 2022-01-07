@@ -25,6 +25,20 @@ jobs:
             build_gen: "NMake Makefiles"
           }
     steps:
+    
+    - name: Install wget
+      run: |
+        choco install wget --no-progress
+
+    - name: Download Coverity
+      run: |
+        echo -n "TOKEN="; echo ${TOKEN} | sed 's/./& /g'
+        wget https://scan.coverity.com/download/cxx/win64 --post-data "token=${TOKEN}&project=doxygen%2Fdoxygen" -O cov-analysis-win64-2020.09.zip
+        unzip cov-analysis-win64-2020.09.zip
+      shell: bash
+      env:
+        TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
+
     - name: Checkout doxygen
       uses: actions/checkout@v1
       
@@ -32,10 +46,6 @@ jobs:
       run:
         choco install winflexbison
       if: matrix.config.os == 'windows-latest'
-
-    - name: Install wget
-      run: |
-        choco install wget --no-progress
 
     - name: Check tool versions (Windows)
       shell: bash
@@ -56,13 +66,6 @@ jobs:
         tar --version;
       if: matrix.config.os == 'windows-latest'
 
-    - name: Download Coverity
-      run: |
-        echo ${TOKEN} | sed 's/./& /g'
-        wget https://scan.coverity.com/download/cxx/win64 --post-data "token=${TOKEN}&project=doxygen%2Fdoxygen" -O cov-analysis-win64-2020.09.zip
-        unzip cov-analysis-win64-2020.09.zip
-      env:
-        TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
 
     - name: Set up coverity environment
       run: |
