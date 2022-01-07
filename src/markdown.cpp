@@ -1489,6 +1489,7 @@ int Markdown::processLink(const char *data,int offset,int size)
       writeMarkdownImage("latex",   isImageInline, explicitTitle, title, content, link, attributes, fd);
       writeMarkdownImage("rtf",     isImageInline, explicitTitle, title, content, link, attributes, fd);
       writeMarkdownImage("docbook", isImageInline, explicitTitle, title, content, link, attributes, fd);
+      writeMarkdownImage("xml",     isImageInline, explicitTitle, title, content, link, attributes, fd);
     }
     else
     {
