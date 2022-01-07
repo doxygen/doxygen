@@ -178,8 +178,6 @@ static void runPlantumlContent(const PlantumlManager::FilesMap &plantumlFiles,
   {
     pumlArgs += "-graphvizdot \"";
     pumlArgs += dotPath;
-    pumlArgs += "dot";
-    pumlArgs += Portable::commandExtension();
     pumlArgs += "\" ";
   }
   switch (format)

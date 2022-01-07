@@ -3787,7 +3787,7 @@ UML notation for the relationships.
 ]]>
       </docs>
     </option>
-    <option type='string' id='DOT_PATH' format='dir' defval='' depends='HAVE_DOT'>
+    <option type='string' id='DOT_PATH' format='filedir' defval='' depends='HAVE_DOT'>
       <docs>
 <![CDATA[
  The \c DOT_PATH tag can be used to specify the path where the \c dot tool can be found.

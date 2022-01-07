@@ -1856,30 +1856,28 @@ void Config::checkAndCorrect(bool quiet, const bool check)
   if (!dotPath.isEmpty())
   {
     FileInfo fi(dotPath.str());
-    if (fi.exists() && fi.isFile()) // user specified path + exec
+    if (!(fi.exists() && fi.isFile()) )// not an existing user specified path + exec
     {
-      dotPath=fi.dirPath(TRUE)+"/";
-    }
-    else
-    {
-      QCString dotExe = dotPath+"/dot"+Portable::commandExtension();
-      FileInfo dp(dotExe.str());
+      dotPath = dotPath+"/dot"+Portable::commandExtension();
+      FileInfo dp(dotPath.str());
       if (!dp.exists() || !dp.isFile())
       {
-        warn_uncond("the dot tool could not be found at %s\n",qPrint(dotPath));
-        dotPath="";
-      }
-      else
-      {
-        dotPath=dp.dirPath(TRUE)+"/";
+        warn_uncond("the dot tool could not be found as '%s'\n",qPrint(dotPath));
+        dotPath = "dot";
+        dotPath += Portable::commandExtension();
       }
     }
 #if defined(_WIN32) // convert slashes
     uint i=0,l=dotPath.length();
     for (i=0;i<l;i++) if (dotPath.at(i)=='/') dotPath.at(i)='\\';
 #endif
-    Config_updateString(DOT_PATH,dotPath);
   }
+  else
+  {
+    dotPath = "dot";
+    dotPath += Portable::commandExtension();
+  }
+  Config_updateString(DOT_PATH,dotPath);
 
   //------------------------
   // check plantuml path
