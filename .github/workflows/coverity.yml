@@ -32,7 +32,6 @@ jobs:
 
     - name: Download Coverity
       run: |
-        echo -n "TOKEN="; echo ${TOKEN} | sed 's/./& /g'
         wget https://scan.coverity.com/download/cxx/win64 --post-data "token=${TOKEN}&project=doxygen%2Fdoxygen" -O cov-analysis-win64-2020.09.zip
         unzip cov-analysis-win64-2020.09.zip
       shell: bash
