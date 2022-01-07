@@ -97,6 +97,12 @@ class TextStream final
       m_buffer+=c;
       return static_cast<TextStream&>(*this);
     }
+    /** Adds an unsigned character to the stream */
+    TextStream &operator<<( unsigned char c)
+    {
+      m_buffer+=c;
+      return static_cast<TextStream&>(*this);
+    }
 
     /** Adds an unsigned character string to the stream */
     TextStream &operator<<( unsigned char *s)
