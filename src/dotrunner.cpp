@@ -141,7 +141,7 @@ bool DotRunner::readBoundingBox(const QCString &fileName,int *width,int *height,
 DotRunner::DotRunner(const QCString& absDotName, const QCString& md5Hash)
   : m_file(absDotName)
   , m_md5Hash(md5Hash)
-  , m_dotExe(Config_getString(DOT_PATH)+"dot")
+  , m_dotExe(Config_getString(DOT_PATH))
   , m_cleanUp(Config_getBool(DOT_CLEANUP))
 {
 }
