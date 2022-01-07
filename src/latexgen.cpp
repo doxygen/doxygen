@@ -295,87 +295,90 @@ static void writeLatexMakefile()
   // inserted by KONNO Akihisa <konno@researchers.jp> 2002-03-05
   QCString latex_command = theTranslator->latexCommandName().quoted();
   QCString mkidx_command = Config_getString(MAKEINDEX_CMD_NAME).quoted();
+  QCString bibtex_command = "bibtex";
+  QCString manual_file = "refman";
+  const int latex_count = 8;
   // end insertion by KONNO Akihisa <konno@researchers.jp> 2002-03-05
-  if (!Config_getBool(USE_PDFLATEX)) // use plain old latex
-  {
     t << "LATEX_CMD?=" << latex_command << "\n"
       << "MKIDX_CMD?=" << mkidx_command << "\n"
-      << "\n"
-      << "all: refman.dvi\n"
-      << "\n"
-      << "ps: refman.ps\n"
-      << "\n"
-      << "pdf: refman.pdf\n"
-      << "\n"
-      << "ps_2on1: refman_2on1.ps\n"
-      << "\n"
-      << "pdf_2on1: refman_2on1.pdf\n"
-      << "\n"
-      << "refman.ps: refman.dvi\n"
-      << "\tdvips -o refman.ps refman.dvi\n"
+      << "BIBTEX_CMD?=" << bibtex_command << "\n"
+      << "LATEX_COUNT?=" << latex_count << "\n"
+      << "MANUAL_FILE?=" << manual_file << "\n"
       << "\n";
-    t << "refman.pdf: refman.ps\n";
-    t << "\tps2pdf refman.ps refman.pdf\n\n";
-    t << "refman.dvi: clean refman.tex doxygen.sty\n"
+  if (!Config_getBool(USE_PDFLATEX)) // use plain old latex
+  {
+    t << "all: $(MANUAL_FILE).dvi\n"
+      << "\n"
+      << "ps: $(MANUAL_FILE).ps\n"
+      << "\n"
+      << "pdf: $(MANUAL_FILE).pdf\n"
+      << "\n"
+      << "ps_2on1: $(MANUAL_FILE).ps\n"
+      << "\n"
+      << "pdf_2on1: $(MANUAL_FILE).pdf\n"
+      << "\n"
+      << "$(MANUAL_FILE).ps: $(MANUAL_FILE).dvi\n"
+      << "\tdvips -o $(MANUAL_FILE).ps $(MANUAL_FILE).dvi\n"
+      << "\n";
+    t << "$(MANUAL_FILE).pdf: $(MANUAL_FILE).ps\n";
+    t << "\tps2pdf $(MANUAL_FILE).ps $(MANUAL_FILE).pdf\n\n";
+    t << "$(MANUAL_FILE).dvi: clean $(MANUAL_FILE).tex doxygen.sty\n"
       << "\techo \"Running latex...\"\n"
-      << "\t$(LATEX_CMD) refman.tex\n"
+      << "\t$(LATEX_CMD) $(MANUAL_FILE).tex\n"
       << "\techo \"Running makeindex...\"\n"
-      << "\t$(MKIDX_CMD) refman.idx\n";
+      << "\t$(MKIDX_CMD) $(MANUAL_FILE).idx\n";
     if (generateBib)
     {
       t << "\techo \"Running bibtex...\"\n";
-      t << "\tbibtex refman\n";
+      t << "\t$(BIBTEX_CMD) $(MANUAL_FILE)\n";
       t << "\techo \"Rerunning latex....\"\n";
-      t << "\t$(LATEX_CMD) refman.tex\n";
+      t << "\t$(LATEX_CMD) $(MANUAL_FILE).tex\n";
     }
     t << "\techo \"Rerunning latex....\"\n"
-      << "\t$(LATEX_CMD) refman.tex\n"
-      << "\tlatex_count=8 ; \\\n"
-      << "\twhile egrep -s 'Rerun (LaTeX|to get cross-references right)' refman.log && [ $$latex_count -gt 0 ] ;\\\n"
+      << "\t$(LATEX_CMD) $(MANUAL_FILE).tex\n"
+      << "\tlatex_count=%(LATEX_COUNT) ; \\\n"
+      << "\twhile egrep -s 'Rerun (LaTeX|to get cross-references right|to get bibliographical references right)' $(MANUAL_FILE).log && [ $$latex_count -gt 0 ] ;\\\n"
       << "\t    do \\\n"
       << "\t      echo \"Rerunning latex....\" ;\\\n"
-      << "\t      $(LATEX_CMD) refman.tex ; \\\n"
+      << "\t      $(LATEX_CMD) $(MANUAL_FILE).tex ; \\\n"
       << "\t      latex_count=`expr $$latex_count - 1` ;\\\n"
       << "\t    done\n"
-      << "\t$(MKIDX_CMD) refman.idx\n"
-      << "\t$(LATEX_CMD) refman.tex\n\n"
-      << "refman_2on1.ps: refman.ps\n"
-      << "\tpsnup -2 refman.ps >refman_2on1.ps\n"
+      << "\t$(MKIDX_CMD) $(MANUAL_FILE).idx\n"
+      << "\t$(LATEX_CMD) $(MANUAL_FILE).tex\n\n"
+      << "$(MANUAL_FILE).ps: $(MANUAL_FILE).ps\n"
+      << "\tpsnup -2 $(MANUAL_FILE).ps >$(MANUAL_FILE).ps\n"
       << "\n"
-      << "refman_2on1.pdf: refman_2on1.ps\n"
-      << "\tps2pdf refman_2on1.ps refman_2on1.pdf\n";
+      << "$(MANUAL_FILE).pdf: $(MANUAL_FILE).ps\n"
+      << "\tps2pdf $(MANUAL_FILE).ps $(MANUAL_FILE).pdf\n";
   }
   else // use pdflatex for higher quality output
   {
-    t << "LATEX_CMD?=" << latex_command << "\n"
-      << "MKIDX_CMD?=" << mkidx_command << "\n"
-      << "\n";
-    t << "all: refman.pdf\n\n"
-      << "pdf: refman.pdf\n\n";
-    t << "refman.pdf: clean refman.tex\n";
-    t << "\t$(LATEX_CMD) refman\n";
-    t << "\t$(MKIDX_CMD) refman.idx\n";
+    t << "all: $(MANUAL_FILE).pdf\n\n"
+      << "pdf: $(MANUAL_FILE).pdf\n\n";
+    t << "$(MANUAL_FILE).pdf: clean $(MANUAL_FILE).tex\n";
+    t << "\t$(LATEX_CMD) $(MANUAL_FILE)\n";
+    t << "\t$(MKIDX_CMD) $(MANUAL_FILE).idx\n";
     if (generateBib)
     {
-      t << "\tbibtex refman\n";
-      t << "\t$(LATEX_CMD) refman\n";
+      t << "\t$(BIBTEX_CMD) $(MANUAL_FILE)\n";
+      t << "\t$(LATEX_CMD) $(MANUAL_FILE)\n";
     }
-    t << "\t$(LATEX_CMD) refman\n"
-      << "\tlatex_count=8 ; \\\n"
-      << "\twhile egrep -s 'Rerun (LaTeX|to get cross-references right)' refman.log && [ $$latex_count -gt 0 ] ;\\\n"
+    t << "\t$(LATEX_CMD) $(MANUAL_FILE)\n"
+      << "\tlatex_count=$(LATEX_COUNT) ; \\\n"
+      << "\twhile egrep -s 'Rerun (LaTeX|to get cross-references right|to get bibliographical references right)' $(MANUAL_FILE).log && [ $$latex_count -gt 0 ] ;\\\n"
       << "\t    do \\\n"
       << "\t      echo \"Rerunning latex....\" ;\\\n"
-      << "\t      $(LATEX_CMD) refman ;\\\n"
+      << "\t      $(LATEX_CMD) $(MANUAL_FILE) ;\\\n"
       << "\t      latex_count=`expr $$latex_count - 1` ;\\\n"
       << "\t    done\n"
-      << "\t$(MKIDX_CMD) refman.idx\n"
-      << "\t$(LATEX_CMD) refman\n\n";
+      << "\t$(MKIDX_CMD) $(MANUAL_FILE).idx\n"
+      << "\t$(LATEX_CMD) $(MANUAL_FILE)\n\n";
   }
 
   t << "\n"
     << "clean:\n"
     << "\trm -f "
-    << "*.ps *.dvi *.aux *.toc *.idx *.ind *.ilg *.log *.out *.brf *.blg *.bbl refman.pdf\n";
+    << "*.ps *.dvi *.aux *.toc *.idx *.ind *.ilg *.log *.out *.brf *.blg *.bbl $(MANUAL_FILE).pdf\n";
 }
 
 static void writeMakeBat()
@@ -385,6 +388,9 @@ static void writeMakeBat()
   QCString fileName=dir+"/make.bat";
   QCString latex_command = theTranslator->latexCommandName().quoted();
   QCString mkidx_command = Config_getString(MAKEINDEX_CMD_NAME).quoted();
+  QCString bibtex_command = "bibtex";
+  QCString manual_file = "refman";
+  const int latex_count = 8;
   bool generateBib = !CitationManager::instance().isEmpty();
   std::ofstream t(fileName.str(),std::ofstream::out | std::ofstream::binary);
   if (!t.is_open())
@@ -393,74 +399,97 @@ static void writeMakeBat()
   }
   t << "set Dir_Old=%cd%\r\n";
   t << "cd /D %~dp0\r\n\r\n";
-  t << "del /s /f *.ps *.dvi *.aux *.toc *.idx *.ind *.ilg *.log *.out *.brf *.blg *.bbl refman.pdf\r\n\r\n";
+  t << "\r\n";
+  t << "set ORG_LATEX_CMD=%LATEX_CMD%\r\n";
+  t << "set ORG_MKIDX_CMD=%MKIDX_CMD%\r\n";
+  t << "set ORG_BIBTEX_CMD=%BIBTEX_CMD%\r\n";
+  t << "set ORG_LATEX_COUNT=%LATEX_COUNT%\r\n";
+  t << "set ORG_MANUAL_FILE=%MANUAL_FILE%\r\n";
+  t << "if \"X\"%LATEX_CMD% == \"X\" set LATEX_CMD=" << latex_command << "\r\n";
+  t << "if \"X\"%MKIDX_CMD% == \"X\" set MKIDX_CMD=" << mkidx_command << "\r\n";
+  t << "if \"X\"%BIBTEX_CMD% == \"X\" set BIBTEX_CMD=" << bibtex_command << "\r\n";
+  t << "if \"X\"%LATEX_COUNT% == \"X\" set LATEX_COUNT=" << latex_count << "\r\n";
+  t << "if \"X\"%MANUAL_FILE% == \"X\" set MANUAL_FILE=" << manual_file << "\r\n";
+  t << "\r\n";
+  t << "del /s /f *.ps *.dvi *.aux *.toc *.idx *.ind *.ilg *.log *.out *.brf *.blg *.bbl %MANUAL_FILE%.pdf\r\n\r\n";
+  t << "\r\n";
   if (!Config_getBool(USE_PDFLATEX)) // use plain old latex
   {
-    t << "set LATEX_CMD=" << latex_command << "\r\n";
-    t << "set MKIDX_CMD=" << mkidx_command << "\r\n";
-    t << "%LATEX_CMD% refman.tex\r\n";
+    t << "%LATEX_CMD% %MANUAL_FILE%.tex\r\n";
     t << "echo ----\r\n";
-    t << "%MKIDX_CMD% refman.idx\r\n";
+    t << "%MKIDX_CMD% %MANUAL_FILE%.idx\r\n";
     if (generateBib)
     {
-      t << "bibtex refman\r\n";
+      t << "%BIBTEX_CMD% %MANUAL_FILE%\r\n";
       t << "echo ----\r\n";
-      t << "\t%LATEX_CMD% refman.tex\r\n";
+      t << "\t%LATEX_CMD% %MANUAL_FILE%.tex\r\n";
     }
     t << "setlocal enabledelayedexpansion\r\n";
-    t << "set count=8\r\n";
+    t << "set count=%LAT#EX_COUNT%\r\n";
     t << ":repeat\r\n";
     t << "set content=X\r\n";
-    t << "for /F \"tokens=*\" %%T in ( 'findstr /C:\"Rerun LaTeX\" refman.log' ) do set content=\"%%~T\"\r\n";
-    t << "if !content! == X for /F \"tokens=*\" %%T in ( 'findstr /C:\"Rerun to get cross-references right\" refman.log' ) do set content=\"%%~T\"\r\n";
+    t << "for /F \"tokens=*\" %%T in ( 'findstr /C:\"Rerun LaTeX\" %MANUAL_FILE%.log' ) do set content=\"%%~T\"\r\n";
+    t << "if !content! == X for /F \"tokens=*\" %%T in ( 'findstr /C:\"Rerun to get cross-references right\" %MANUAL_FILE%.log' ) do set content=\"%%~T\"\r\n";
+    t << "if !content! == X for /F \"tokens=*\" %%T in ( 'findstr /C:\"Rerun to get bibliographical references right\" %MANUAL_FILE%.log' ) do set content=\"%%~T\"\r\n";
     t << "if !content! == X goto :skip\r\n";
     t << "set /a count-=1\r\n";
     t << "if !count! EQU 0 goto :skip\r\n\r\n";
     t << "echo ----\r\n";
-    t << "%LATEX_CMD% refman.tex\r\n";
+    t << "%LATEX_CMD% %MANUAL_FILE%.tex\r\n";
     t << "goto :repeat\r\n";
     t << ":skip\r\n";
     t << "endlocal\r\n";
-    t << "%MKIDX_CMD% refman.idx\r\n";
-    t << "%LATEX_CMD% refman.tex\r\n";
-    t << "dvips -o refman.ps refman.dvi\r\n";
+    t << "%MKIDX_CMD% %MANUAL_FILE%.idx\r\n";
+    t << "%LATEX_CMD% %MANUAL_FILE%.tex\r\n";
+    t << "dvips -o %MANUAL_FILE%.ps %MANUAL_FILE%.dvi\r\n";
     t << Portable::ghostScriptCommand();
     t << " -q -dNOPAUSE -dBATCH -sDEVICE=pdfwrite "
-         "-sOutputFile=refman.pdf -c save pop -f refman.ps\r\n";
+         "-sOutputFile=%MANUAL_FILE%.pdf -c save pop -f %MANUAL_FILE%.ps\r\n";
   }
   else // use pdflatex
   {
-    t << "set LATEX_CMD=" << latex_command << "\r\n";
-    t << "set MKIDX_CMD=" << mkidx_command << "\r\n";
-    t << "%LATEX_CMD% refman\r\n";
+    t << "%LATEX_CMD% %MANUAL_FILE%\r\n";
     t << "echo ----\r\n";
-    t << "%MKIDX_CMD% refman.idx\r\n";
+    t << "%MKIDX_CMD% %MANUAL_FILE%.idx\r\n";
     if (generateBib)
     {
-      t << "bibtex refman\r\n";
-      t << "%LATEX_CMD% refman\r\n";
+      t << "%BIBTEX_CMD% %MANUAL_FILE%\r\n";
+      t << "%LATEX_CMD% %MANUAL_FILE%\r\n";
     }
     t << "echo ----\r\n";
-    t << "%LATEX_CMD% refman\r\n\r\n";
+    t << "%LATEX_CMD% %MANUAL_FILE%\r\n\r\n";
     t << "setlocal enabledelayedexpansion\r\n";
-    t << "set count=8\r\n";
+    t << "set count=%LATEX_COUNT%\r\n";
     t << ":repeat\r\n";
     t << "set content=X\r\n";
-    t << "for /F \"tokens=*\" %%T in ( 'findstr /C:\"Rerun LaTeX\" refman.log' ) do set content=\"%%~T\"\r\n";
-    t << "if !content! == X for /F \"tokens=*\" %%T in ( 'findstr /C:\"Rerun to get cross-references right\" refman.log' ) do set content=\"%%~T\"\r\n";
+    t << "for /F \"tokens=*\" %%T in ( 'findstr /C:\"Rerun LaTeX\" %MANUAL_FILE%.log' ) do set content=\"%%~T\"\r\n";
+    t << "if !content! == X for /F \"tokens=*\" %%T in ( 'findstr /C:\"Rerun to get cross-references right\" %MANUAL_FILE%.log' ) do set content=\"%%~T\"\r\n";
+    t << "if !content! == X for /F \"tokens=*\" %%T in ( 'findstr /C:\"Rerun to get bibliographical references right\" %MANUAL_FILE%.log' ) do set content=\"%%~T\"\r\n";
     t << "if !content! == X goto :skip\r\n";
     t << "set /a count-=1\r\n";
     t << "if !count! EQU 0 goto :skip\r\n\r\n";
     t << "echo ----\r\n";
-    t << "%LATEX_CMD% refman\r\n";
+    t << "%LATEX_CMD% %MANUAL_FILE%\r\n";
     t << "goto :repeat\r\n";
     t << ":skip\r\n";
     t << "endlocal\r\n";
-    t << "%MKIDX_CMD% refman.idx\r\n";
-    t << "%LATEX_CMD% refman\r\n";
-    t << "cd /D %Dir_Old%\r\n";
-    t << "set Dir_Old=\r\n";
+    t << "%MKIDX_CMD% %MANUAL_FILE%.idx\r\n";
+    t << "%LATEX_CMD% %MANUAL_FILE%\r\n";
   }
+  t<< "\r\n";
+  t<< "@REM reset environment\r\n";
+  t<< "cd /D %Dir_Old%\r\n";
+  t<< "set Dir_Old=\r\n";
+  t<< "set LATEX_CMD=%ORG_LATEX_CMD%\r\n";
+  t<< "set ORG_LATEX_CMD=\r\n";
+  t<< "set MKIDX_CMD=%ORG_MKIDX_CMD%\r\n";
+  t<< "set ORG_MKIDX_CMD=\r\n";
+  t<< "set BIBTEX_CMD=%ORG_BIBTEX_CMD%\r\n";
+  t<< "set ORG_BIBTEX_CMD=\r\n";
+  t<< "set MANUAL_FILE=%ORG_MANUAL_FILE%\r\n";
+  t<< "set ORG_MANUAL_FILE=\r\n";
+  t<< "set LATEX_COUNT=%ORG_LATEX_COUNT%\r\n";
+  t<< "set ORG_LATEX_COUNT=\r\n";
 #endif
 }
 
