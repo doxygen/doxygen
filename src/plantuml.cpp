@@ -174,7 +174,7 @@ static void runPlantumlContent(const PlantumlManager::FilesMap &plantumlFiles,
     pumlArgs += plantumlConfigFile;
     pumlArgs += "\" ";
   }
-  if (Config_getBool(HAVE_DOT) && !dotPath.isEmpty())
+  if (Config_getBool(HAVE_DOT) && Config::getPlantumlDotPathSet() && !dotPath.isEmpty())
   {
     pumlArgs += "-graphvizdot \"";
     pumlArgs += dotPath;
