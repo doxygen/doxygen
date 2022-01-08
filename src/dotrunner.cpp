@@ -22,6 +22,7 @@
 #include "message.h"
 #include "config.h"
 #include "dir.h"
+#include "doxygen.h"
 
 // the graphicx LaTeX has a limitation of maximum size of 16384
 // To be on the save side we take it a little bit smaller i.e. 150 inch * 72 dpi
@@ -141,7 +142,7 @@ bool DotRunner::readBoundingBox(const QCString &fileName,int *width,int *height,
 DotRunner::DotRunner(const QCString& absDotName, const QCString& md5Hash)
   : m_file(absDotName)
   , m_md5Hash(md5Hash)
-  , m_dotExe(Config_getString(DOT_PATH))
+  , m_dotExe(Doxygen::verifiedDotPath)
   , m_cleanUp(Config_getBool(DOT_CLEANUP))
 {
 }
