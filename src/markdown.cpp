@@ -517,16 +517,22 @@ int Markdown::isSpecialCommand(const char *data,int offset,int size)
     return endOfLabel(data_,offset_,size_);
   };
 
-  static const auto endOfFunc = [](const char *data_,int offset_,int size_) -> int
+  static const auto endOfFuncLike = [](const char *data_,int offset_,int size_,bool allowSpaces) -> int
   {
     if (offset_<size_ && data_[offset_]==' ') // we expect a space before the name
     {
       char c=0;
       offset_++;
       // skip over spaces
-      while (offset_<size_ && data_[offset_]==' ') offset_++;
-      // skip over name
-      while (offset_<size_ && (c=data_[offset_])!=' ' && c!='\n' && c!='(') offset_++;
+      while (offset_<size_ && data_[offset_]==' ')
+      {
+        offset_++;
+      }
+      // skip over name (and optionally type)
+      while (offset_<size_ && (c=data_[offset_])!='\n' && (allowSpaces || c!=' ') && c!='(')
+      {
+        offset_++;
+      }
       if (c=='(') // find the end of the function
       {
         int count=1;
@@ -543,9 +549,14 @@ int Markdown::isSpecialCommand(const char *data,int offset,int size)
     return 0;
   };
 
+  static const auto endOfFunc = [](const char *data_,int offset_,int size_) -> int
+  {
+    return endOfFuncLike(data_,offset_,size_,true);
+  };
+
   static const auto endOfGuard = [](const char *data_,int offset_,int size_) -> int
   {
-    return endOfFunc(data_,offset_,size_);
+    return endOfFuncLike(data_,offset_,size_,false);
   };
 
   static const std::unordered_map<std::string,EndCmdFunc> cmdNames =
