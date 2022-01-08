@@ -92,6 +92,11 @@ namespace Config
 
   /*! Clean up any data */
   void deinit();
+
+  /*! Signal whether or not the DOT_PATH is explicitly set. plantuml needs either a full or
+   * relative path to the dot executable
+   */
+  bool getPlantumlDotPathSet();
 }
 
 #endif
