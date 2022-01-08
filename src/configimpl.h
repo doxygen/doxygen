@@ -583,20 +583,6 @@ class ConfigImpl
       return substitute(result,"\r","");
     }
 
-    /*! Signal whether or not the DOT_PATH is explicitly set. plantuml needs either a full or
-     * relative path to the dot executable
-     */
-    bool getPlantumlDotPathSet()
-    {
-      return m_plantumlDotPathSet;
-    }
-
-    /*! setter function for m_plantumlDotPathSet */
-    void setPlantumlDotPathSet(bool f)
-    {
-      m_plantumlDotPathSet = f;
-    }
-
   protected:
 
     ConfigImpl()
@@ -618,7 +604,6 @@ class ConfigImpl
     QCString m_userComment;
     bool m_initialized;
     QCString m_header;
-    bool m_plantumlDotPathSet = false;
 };
 
 #endif

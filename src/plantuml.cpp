@@ -143,7 +143,6 @@ static void runPlantumlContent(const PlantumlManager::FilesMap &plantumlFiles,
   int exitCode;
   QCString plantumlJarPath = Config_getString(PLANTUML_JAR_PATH);
   QCString plantumlConfigFile = Config_getString(PLANTUML_CFG_FILE);
-  QCString dotPath = Config_getString(DOT_PATH);
 
   QCString pumlExe = "java";
   QCString pumlArgs = "";
@@ -174,7 +173,11 @@ static void runPlantumlContent(const PlantumlManager::FilesMap &plantumlFiles,
     pumlArgs += plantumlConfigFile;
     pumlArgs += "\" ";
   }
-  if (Config_getBool(HAVE_DOT) && Config::getPlantumlDotPathSet() && !dotPath.isEmpty())
+  // the -graphvizdot option expects a relative or absolute path to the dot executable, so
+  // we need to use the unverified DOT_PATH option and check if it points to an existing file.
+  QCString dotPath = Config_getString(DOT_PATH);
+  FileInfo dp(dotPath.str());
+  if (Config_getBool(HAVE_DOT) && dp.exists() && dp.isFile())
   {
     pumlArgs += "-graphvizdot \"";
     pumlArgs += dotPath;

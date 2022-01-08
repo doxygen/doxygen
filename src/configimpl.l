@@ -1851,39 +1851,6 @@ void Config::checkAndCorrect(bool quiet, const bool check)
   Config_updateInt(DOT_NUM_THREADS,dotNumThreads);
 
   //------------------------
-  // check dot path
-  QCString dotPath = Config_getString(DOT_PATH);
-  bool plantumlDotPathSet = true;
-  if (!dotPath.isEmpty())
-  {
-    FileInfo fi(dotPath.str());
-    if (!(fi.exists() && fi.isFile()) )// not an existing user specified path + exec
-    {
-      dotPath = dotPath+"/dot"+Portable::commandExtension();
-      FileInfo dp(dotPath.str());
-      if (!dp.exists() || !dp.isFile())
-      {
-        warn_uncond("the dot tool could not be found as '%s'\n",qPrint(dotPath));
-        plantumlDotPathSet = false;
-        dotPath = "dot";
-        dotPath += Portable::commandExtension();
-      }
-    }
-#if defined(_WIN32) // convert slashes
-    uint i=0,l=dotPath.length();
-    for (i=0;i<l;i++) if (dotPath.at(i)=='/') dotPath.at(i)='\\';
-#endif
-  }
-  else
-  {
-    plantumlDotPathSet = false;
-    dotPath = "dot";
-    dotPath += Portable::commandExtension();
-  }
-  Config_updateString(DOT_PATH,dotPath);
-  ConfigImpl::instance()->setPlantumlDotPathSet(plantumlDotPathSet);
-
-  //------------------------
   // check plantuml path
   QCString plantumlJarPath = Config_getString(PLANTUML_JAR_PATH);
   if (!plantumlJarPath.isEmpty())
@@ -2104,11 +2071,6 @@ void Config::compareDoxyfile(TextStream &t)
 void Config::writeXMLDoxyfile(TextStream &t)
 {
   ConfigImpl::instance()->writeXMLDoxyfile(t);
-}
-
-bool Config::getPlantumlDotPathSet()
-{
-  return ConfigImpl::instance()->getPlantumlDotPathSet();
 }
 
 bool Config::parse(const QCString &fileName,bool update)

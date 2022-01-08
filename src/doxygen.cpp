@@ -165,6 +165,7 @@ QCString              Doxygen::spaces;
 bool                  Doxygen::generatingXmlOutput = FALSE;
 DefinesPerFileList    Doxygen::macroDefinitions;
 bool                  Doxygen::clangAssistedParsing = FALSE;
+QCString              Doxygen::verifiedDotPath;
 
 // locally accessible globals
 static std::multimap< std::string, const Entry* > g_classEntries;
@@ -9559,6 +9560,38 @@ static QCString fixSlashes(QCString &s)
 }
 #endif
 
+//----------------------------------------------------------------------------
+
+static void computeVerifiedDotPath()
+{
+  // check dot path
+  QCString dotPath = Config_getString(DOT_PATH);
+  if (!dotPath.isEmpty())
+  {
+    FileInfo fi(dotPath.str());
+    if (!(fi.exists() && fi.isFile()) )// not an existing user specified path + exec
+    {
+      dotPath = dotPath+"/dot"+Portable::commandExtension();
+      FileInfo dp(dotPath.str());
+      if (!dp.exists() || !dp.isFile())
+      {
+        warn_uncond("the dot tool could not be found as '%s'\n",qPrint(dotPath));
+        dotPath = "dot";
+        dotPath += Portable::commandExtension();
+      }
+    }
+#if defined(_WIN32) // convert slashes
+    uint i=0,l=dotPath.length();
+    for (i=0;i<l;i++) if (dotPath.at(i)=='/') dotPath.at(i)='\\';
+#endif
+  }
+  else
+  {
+    dotPath = "dot";
+    dotPath += Portable::commandExtension();
+  }
+  Doxygen::verifiedDotPath = dotPath;
+}
 
 //----------------------------------------------------------------------------
 
@@ -11592,6 +11625,8 @@ void parseInput()
 #if USE_LIBCLANG
   Doxygen::clangAssistedParsing = Config_getBool(CLANG_ASSISTED_PARSING);
 #endif
+
+  computeVerifiedDotPath();
 
   // we would like to show the versionString earlier, but we first have to handle the configuration file
   // to know the value of the QUIET setting.
