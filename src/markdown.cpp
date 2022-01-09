@@ -492,7 +492,7 @@ int Markdown::isSpecialCommand(const char *data,int offset,int size)
       // skip over spaces
       while (offset_<size_ && data_[offset_]==' ') offset_++;
       // skip over label
-      while (offset_<size_ && (c=data_[offset_])!=' ' && c!='\n') offset_++;
+      while (offset_<size_ && (c=data_[offset_])!=' ' && c!='\\' && c!='@' && c!='\n') offset_++;
       return offset_;
     }
     return 0;
@@ -620,7 +620,7 @@ int Markdown::isSpecialCommand(const char *data,int offset,int size)
     { "property",       endOfLine  },
     { "protocol",       endOfLine  },
     { "ref",            endOfLabel },
-    { "refitem",        endOfLabel },
+    { "refitem",        endOfLine  },
     { "related",        endOfLabel },
     { "relatedalso",    endOfLabel },
     { "relates",        endOfLabel },
