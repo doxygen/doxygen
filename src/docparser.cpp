@@ -1292,6 +1292,116 @@ void DocParser::defaultHandleTitleAndSize(const int cmd, DocNode *parent, DocNod
   handlePendingStyleCommands(parent,children);
 }
 
+static void handleImage(DocNode *parent, DocParser &parser, DocNodeList &m_children)
+{
+  bool inlineImage = false;
+  QCString anchorStr;
+
+  int tok=parser.tokenizer.lex();
+  if (tok!=TK_WHITESPACE)
+  {
+    if (tok==TK_WORD)
+    {
+      if (parser.context.token->name == "{")
+      {
+        parser.tokenizer.setStateOptions();
+        tok=parser.tokenizer.lex();
+        parser.tokenizer.setStatePara();
+        StringVector optList=split(parser.context.token->name.str(),",");
+        for (const auto &opt : optList)
+        {
+          if (opt.empty()) continue;
+          QCString locOpt(opt);
+          QCString locOptLow;
+          locOpt = locOpt.stripWhiteSpace();
+          locOptLow = locOpt.lower();
+          if (locOptLow == "inline")
+          {
+            inlineImage = true;
+          }
+          else if (locOptLow.startsWith("anchor:"))
+          {
+            if (!anchorStr.isEmpty())
+            {
+               warn_doc_error(parser.context.fileName,parser.tokenizer.getLineNr(),
+                  "multiple use of option 'anchor' for 'image' command, ignoring: '%s'",
+                  qPrint(locOpt.mid(7)));
+            }
+            else
+            {
+               anchorStr = locOpt.mid(7);
+            }
+          }
+          else
+          {
+            warn_doc_error(parser.context.fileName,parser.tokenizer.getLineNr(),
+                  "unknown option '%s' for 'image' command specified",
+                  qPrint(locOpt));
+          }
+        }
+        tok=parser.tokenizer.lex();
+        if (tok!=TK_WHITESPACE)
+        {
+          warn_doc_error(parser.context.fileName,parser.tokenizer.getLineNr(),"expected whitespace after \\image command");
+          return;
+        }
+      }
+    }
+    else
+    {
+      warn_doc_error(parser.context.fileName,parser.tokenizer.getLineNr(),"expected whitespace after \\image command");
+      return;
+    }
+  }
+  tok=parser.tokenizer.lex();
+  if (tok!=TK_WORD && tok!=TK_LNKWORD)
+  {
+    warn_doc_error(parser.context.fileName,parser.tokenizer.getLineNr(),"unexpected token %s as the argument of \\image",
+        DocTokenizer::tokToString(tok));
+    return;
+  }
+  tok=parser.tokenizer.lex();
+  if (tok!=TK_WHITESPACE)
+  {
+    warn_doc_error(parser.context.fileName,parser.tokenizer.getLineNr(),"expected whitespace after \\image command");
+    return;
+  }
+  DocImage::Type t;
+  QCString imgType = parser.context.token->name.lower();
+  if      (imgType=="html")    t=DocImage::Html;
+  else if (imgType=="latex")   t=DocImage::Latex;
+  else if (imgType=="docbook") t=DocImage::DocBook;
+  else if (imgType=="rtf")     t=DocImage::Rtf;
+  else if (imgType=="xml")     t=DocImage::Xml;
+  else
+  {
+    warn_doc_error(parser.context.fileName,parser.tokenizer.getLineNr(),"output format `%s` specified as the first argument of "
+        "\\image command is not valid",
+        qPrint(imgType));
+    return;
+  }
+  parser.tokenizer.setStateFile();
+  tok=parser.tokenizer.lex();
+  parser.tokenizer.setStatePara();
+  if (tok!=TK_WORD)
+  {
+    warn_doc_error(parser.context.fileName,parser.tokenizer.getLineNr(),"unexpected token %s as the argument of \\image",
+        DocTokenizer::tokToString(tok));
+    return;
+  }
+  if (!anchorStr.isEmpty())
+  {
+    DocAnchor *anchor = new DocAnchor(parser,parent,anchorStr,true);
+    m_children.push_back(std::unique_ptr<DocAnchor>(anchor));
+  }
+  HtmlAttribList attrList;
+  DocImage *img = new DocImage(parser,parent,attrList,
+                 parser.findAndCopyImage(parser.context.token->name,t),t,"",inlineImage);
+  m_children.push_back(std::unique_ptr<DocImage>(img));
+  img->parse();
+}
+
+
 /* Helper function that deals with the most common tokens allowed in
  * title like sections.
  * @param parent     Parent node, owner of the children list passed as
@@ -1506,7 +1616,7 @@ reparsetoken:
           }
           break;
         case CMD_IMAGE:
-          dynamic_cast<DocPara *>(parent)->handleImage("image");
+          handleImage(parent,*this,children);
           break;
         default:
           return FALSE;
@@ -4960,119 +5070,6 @@ void DocPara::handleIncludeOperator(const QCString &cmdName,DocIncOperator::Type
   op->parse();
 }
 
-void DocPara::handleImage(const QCString &cmdName)
-{
-  QCString saveCmdName = cmdName;
-  bool inlineImage = false;
-  QCString anchorStr;
-
-  int tok=m_parser.tokenizer.lex();
-  if (tok!=TK_WHITESPACE)
-  {
-    if (tok==TK_WORD)
-    {
-      if (m_parser.context.token->name == "{")
-      {
-        m_parser.tokenizer.setStateOptions();
-        tok=m_parser.tokenizer.lex();
-        m_parser.tokenizer.setStatePara();
-        StringVector optList=split(m_parser.context.token->name.str(),",");
-        for (const auto &opt : optList)
-        {
-          if (opt.empty()) continue;
-          QCString locOpt(opt);
-          QCString locOptLow;
-          locOpt = locOpt.stripWhiteSpace();
-          locOptLow = locOpt.lower();
-          if (locOptLow == "inline")
-          {
-            inlineImage = true;
-          }
-          else if (locOptLow.startsWith("anchor:"))
-          {
-            if (!anchorStr.isEmpty())
-            {
-               warn_doc_error(m_parser.context.fileName,m_parser.tokenizer.getLineNr(),
-                  "multiple use of option 'anchor' for '%s' command, ignoring: '%s'",
-                  qPrint(saveCmdName),qPrint(locOpt.mid(7)));
-            }
-            else
-            {
-               anchorStr = locOpt.mid(7);
-            }
-          }
-          else
-          {
-            warn_doc_error(m_parser.context.fileName,m_parser.tokenizer.getLineNr(),
-                  "unknown option '%s' for '%s' command specified",
-                  qPrint(locOpt), qPrint(saveCmdName));
-          }
-        }
-        tok=m_parser.tokenizer.lex();
-        if (tok!=TK_WHITESPACE)
-        {
-          warn_doc_error(m_parser.context.fileName,m_parser.tokenizer.getLineNr(),"expected whitespace after \\%s command",
-              qPrint(saveCmdName));
-          return;
-        }
-      }
-    }
-    else
-    {
-      warn_doc_error(m_parser.context.fileName,m_parser.tokenizer.getLineNr(),"expected whitespace after \\%s command",
-        qPrint(saveCmdName));
-      return;
-    }
-  }
-  tok=m_parser.tokenizer.lex();
-  if (tok!=TK_WORD && tok!=TK_LNKWORD)
-  {
-    warn_doc_error(m_parser.context.fileName,m_parser.tokenizer.getLineNr(),"unexpected token %s as the argument of %s",
-        DocTokenizer::tokToString(tok),qPrint(saveCmdName));
-    return;
-  }
-  tok=m_parser.tokenizer.lex();
-  if (tok!=TK_WHITESPACE)
-  {
-    warn_doc_error(m_parser.context.fileName,m_parser.tokenizer.getLineNr(),"expected whitespace after \\%s command",
-        qPrint(saveCmdName));
-    return;
-  }
-  DocImage::Type t;
-  QCString imgType = m_parser.context.token->name.lower();
-  if      (imgType=="html")    t=DocImage::Html;
-  else if (imgType=="latex")   t=DocImage::Latex;
-  else if (imgType=="docbook") t=DocImage::DocBook;
-  else if (imgType=="rtf")     t=DocImage::Rtf;
-  else if (imgType=="xml")     t=DocImage::Xml;
-  else
-  {
-    warn_doc_error(m_parser.context.fileName,m_parser.tokenizer.getLineNr(),"output format `%s` specified as the first argument of "
-        "%s command is not valid",
-        qPrint(imgType),qPrint(saveCmdName));
-    return;
-  }
-  m_parser.tokenizer.setStateFile();
-  tok=m_parser.tokenizer.lex();
-  m_parser.tokenizer.setStatePara();
-  if (tok!=TK_WORD)
-  {
-    warn_doc_error(m_parser.context.fileName,m_parser.tokenizer.getLineNr(),"unexpected token %s as the argument of %s",
-        DocTokenizer::tokToString(tok),qPrint(saveCmdName));
-    return;
-  }
-  if (!anchorStr.isEmpty())
-  {
-    DocAnchor *anchor = new DocAnchor(m_parser,this,anchorStr,true);
-    m_children.push_back(std::unique_ptr<DocAnchor>(anchor));
-  }
-  HtmlAttribList attrList;
-  DocImage *img = new DocImage(m_parser,this,attrList,
-                 m_parser.findAndCopyImage(m_parser.context.token->name,t),t,"",inlineImage);
-  m_children.push_back(std::unique_ptr<DocImage>(img));
-  img->parse();
-}
-
 template<class T>
 void DocPara::handleFile(const QCString &cmdName)
 {
@@ -5950,7 +5947,7 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
       handleIncludeOperator(cmdName,DocIncOperator::Line);
       break;
     case CMD_IMAGE:
-      handleImage(cmdName);
+      handleImage(this,m_parser,m_children);
       break;
     case CMD_DOTFILE:
       if (!Config_getBool(HAVE_DOT))
