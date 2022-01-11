@@ -12254,6 +12254,7 @@ void generateOutput()
   bool generateMan   = Config_getBool(GENERATE_MAN);
   bool generateRtf   = Config_getBool(GENERATE_RTF);
   bool generateDocbook = Config_getBool(GENERATE_DOCBOOK);
+  bool generateXml   = Config_getBool(GENERATE_XML);
 
 
   g_outputList = new OutputList;
@@ -12377,6 +12378,13 @@ void generateOutput()
     g_s.end();
   }
 
+  if (fm.hasFormulas() && generateXml)
+  {
+    g_s.begin("Generating images for formulas in XML...\n");
+    fm.generateImages(Config_getString(XML_OUTPUT),FormulaManager::Format::Bitmap);
+    g_s.end();
+  }
+
   g_s.begin("Generating example documentation...\n");
   generateExampleDocs();
   g_s.end();
@@ -12435,7 +12443,7 @@ void generateOutput()
   writeTagFile();
   g_s.end();
 
-  if (Config_getBool(GENERATE_XML))
+  if (generateXml)
   {
     g_s.begin("Generating XML output...\n");
     Doxygen::generatingXmlOutput=TRUE;
