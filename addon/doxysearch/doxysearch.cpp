@@ -1,10 +1,10 @@
 /******************************************************************************
  *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2022 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -117,10 +117,10 @@ static std::string uriDecode(const std::string & sSrc)
   return sResult;
 }
 
-/** return list of strings that result when splitting \a s using 
- *  delimiter \a delim 
+/** return list of strings that result when splitting \a s using
+ *  delimiter \a delim
  */
-static std::vector<std::string> split(const std::string &s, char delim) 
+static std::vector<std::string> split(const std::string &s, char delim)
 {
   std::vector<std::string> elems;
   std::stringstream ss(s);
@@ -198,9 +198,9 @@ static bool insideRange(const std::vector<Range> &ranges,size_t start,size_t len
 }
 
 /** Returns a list of text \a fragments from \a s containing one or
- *  more \a words. The list is sorted according to the 
+ *  more \a words. The list is sorted according to the
  *  number of occurrences of words within the fragment.
- */ 
+ */
 static void highlighter(const std::string &s,
                  const std::vector<std::string> &words,
                  std::vector<Fragment> &fragments)
@@ -222,7 +222,7 @@ static void highlighter(const std::string &s,
     size_t pos=0;
     size_t i;
     std::string word = *it;
-    while ((i=s.find(word,pos))!=std::string::npos) 
+    while ((i=s.find(word,pos))!=std::string::npos)
     {
       positions.push_back(WordPosition(i,j));
       pos=i+word.length();
@@ -250,11 +250,11 @@ static void highlighter(const std::string &s,
       else
       {
         std::string startFragment,endFragment;
-        size_t bi=i-(fragLen-wl)/2;
+        int bi=static_cast<int>(i)-static_cast<int>((fragLen-wl)/2);
         size_t ei=i+wl+(fragLen-wl)/2;
         int occ=0;
         if (bi<0)  { ei-=bi; bi=0; } else startFragment=dots;
-        if (ei>sl) { ei=sl; }        else endFragment=dots;
+        if (ei>sl) { ei=sl;        } else endFragment=dots;
         while (bi>0  && !isspace(s[bi])) bi--; // round to start of the word
         while (ei<sl && !isspace(s[ei])) ei++; // round to end of the word
         // highlight any word in s between indexes bi and ei
@@ -367,7 +367,7 @@ int main(int argc,char **argv)
       if (kv.size()==2)
       {
         std::string val = uriDecode(kv[1]);
-        if      (kv[0]=="q")  searchFor = val; 
+        if      (kv[0]=="q")  searchFor = val;
         else if (kv[0]=="n")  num       = fromString<int>(val);
         else if (kv[0]=="p")  page      = fromString<int>(val);
         else if (kv[0]=="cb") callback  = val;
@@ -423,7 +423,7 @@ int main(int argc,char **argv)
 
     // write results as JSONP
     std::cout << callback.c_str() << "(";
-    std::cout << "{" << std::endl 
+    std::cout << "{" << std::endl
               << "  \"hits\":"   << hits   << "," << std::endl
               << "  \"first\":"  << offset << "," << std::endl
               << "  \"count\":"  << num    << "," << std::endl
@@ -433,7 +433,7 @@ int main(int argc,char **argv)
               << "  \"items\":[" << std::endl;
     // foreach search result
     unsigned int o = offset;
-    for (Xapian::MSetIterator i = matches.begin(); i != matches.end(); ++i,++o) 
+    for (Xapian::MSetIterator i = matches.begin(); i != matches.end(); ++i,++o)
     {
       std::vector<Fragment> hl;
       Xapian::Document doc = i.get_document();
@@ -458,11 +458,11 @@ int main(int argc,char **argv)
       std::cout << std::endl;
     }
     std::cout << " ]" << std::endl << "})" << std::endl;
-  } 
+  }
   catch (const Xapian::Error &e) // Xapian exception
   {
     showError(callback,e.get_description());
-  } 
+  }
   catch (...) // Any other exception
   {
     showError(callback,"Unknown Exception!");
