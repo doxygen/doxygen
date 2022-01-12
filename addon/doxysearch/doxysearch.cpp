@@ -253,7 +253,7 @@ static void highlighter(const std::string &s,
         size_t bi=i-(fragLen-wl)/2;
         size_t ei=i+wl+(fragLen-wl)/2;
         int occ=0;
-        if (bi<0)  { ei-=bi; bi=0; } else startFragment=dots;
+        if (bi>sl)  { ei-=bi; bi=0; } else startFragment=dots;
         if (ei>sl) { ei=sl; }        else endFragment=dots;
         while (bi>0  && !isspace(s[bi])) bi--; // round to start of the word
         while (ei<sl && !isspace(s[ei])) ei++; // round to end of the word
