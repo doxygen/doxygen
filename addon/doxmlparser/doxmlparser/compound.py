@@ -14892,7 +14892,7 @@ class docFormulaType(GeneratedsSuper):
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
     superclass = None
-    def __init__(self, id=None, figure=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
+    def __init__(self, id=None, image=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
         self.gds_collector_ = gds_collector_
         self.gds_elementtree_node_ = None
         self.original_tagname_ = None
@@ -14900,8 +14900,8 @@ class docFormulaType(GeneratedsSuper):
         self.ns_prefix_ = None
         self.id = _cast(None, id)
         self.id_nsprefix_ = None
-        self.figure = _cast(None, figure)
-        self.figure_nsprefix_ = None
+        self.image = _cast(None, image)
+        self.image_nsprefix_ = None
         self.valueOf_ = valueOf_
         if mixedclass_ is None:
             self.mixedclass_ = MixedContainer
@@ -14931,10 +14931,10 @@ class docFormulaType(GeneratedsSuper):
         return self.id
     def set_id(self, id):
         self.id = id
-    def get_figure(self):
-        return self.figure
-    def set_figure(self, figure):
-        self.figure = figure
+    def get_image(self):
+        return self.image
+    def set_image(self, image):
+        self.image = image
     def get_valueOf_(self): return self.valueOf_
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def hasContent_(self):
@@ -14969,9 +14969,9 @@ class docFormulaType(GeneratedsSuper):
         if self.id is not None and 'id' not in already_processed:
             already_processed.add('id')
             outfile.write(' id=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.id), input_name='id')), ))
-        if self.figure is not None and 'figure' not in already_processed:
-            already_processed.add('figure')
-            outfile.write(' figure=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.figure), input_name='figure')), ))
+        if self.image is not None and 'image' not in already_processed:
+            already_processed.add('image')
+            outfile.write(' image=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.image), input_name='image')), ))
     def exportChildren(self, outfile, level, namespaceprefix_='', namespacedef_='', name_='docFormulaType', fromsubclass_=False, pretty_print=True):
         pass
     def build(self, node, gds_collector_=None):
@@ -14995,10 +14995,10 @@ class docFormulaType(GeneratedsSuper):
         if value is not None and 'id' not in already_processed:
             already_processed.add('id')
             self.id = value
-        value = find_attr_value_('figure', node)
-        if value is not None and 'figure' not in already_processed:
-            already_processed.add('figure')
-            self.figure = value
+        value = find_attr_value_('image', node)
+        if value is not None and 'image' not in already_processed:
+            already_processed.add('image')
+            self.image = value
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False, gds_collector_=None):
         if not fromsubclass_ and child_.tail is not None:
             obj_ = self.mixedclass_(MixedContainer.CategoryText,
@@ -20447,7 +20447,7 @@ class docDotMscType(GeneratedsSuper):
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
     superclass = None
-    def __init__(self, name=None, width=None, height=None, caption=None, figure=None, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, cite=None, del_=None, ins=None, details=None, summary=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
+    def __init__(self, name=None, width=None, height=None, caption=None, image_attr=None, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, cite=None, del_=None, ins=None, details=None, summary=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
         self.gds_collector_ = gds_collector_
         self.gds_elementtree_node_ = None
         self.original_tagname_ = None
@@ -20461,8 +20461,8 @@ class docDotMscType(GeneratedsSuper):
         self.height_nsprefix_ = None
         self.caption = _cast(None, caption)
         self.caption_nsprefix_ = None
-        self.figure = _cast(None, figure)
-        self.figure_nsprefix_ = None
+        self.image_attr = _cast(None, image_attr)
+        self.image_attr_nsprefix_ = None
         if ulink is None:
             self.ulink = []
         else:
@@ -20969,10 +20969,10 @@ class docDotMscType(GeneratedsSuper):
         return self.caption
     def set_caption(self, caption):
         self.caption = caption
-    def get_figure(self):
-        return self.figure
-    def set_figure(self, figure):
-        self.figure = figure
+    def get_image_attr(self):
+        return self.image_attr
+    def set_image_attr(self, image_attr):
+        self.image_attr = image_attr
     def get_valueOf_(self): return self.valueOf_
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def hasContent_(self):
@@ -21050,9 +21050,9 @@ class docDotMscType(GeneratedsSuper):
         if self.caption is not None and 'caption' not in already_processed:
             already_processed.add('caption')
             outfile.write(' caption=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.caption), input_name='caption')), ))
-        if self.figure is not None and 'figure' not in already_processed:
-            already_processed.add('figure')
-            outfile.write(' figure=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.figure), input_name='figure')), ))
+        if self.image_attr is not None and 'image_attr' not in already_processed:
+            already_processed.add('image_attr')
+            outfile.write(' image=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.image_attr), input_name='image_attr')), ))
     def exportChildren(self, outfile, level, namespaceprefix_='', namespacedef_='', name_='docDotMscType', fromsubclass_=False, pretty_print=True):
         if not fromsubclass_:
             for item_ in self.content_:
@@ -21192,10 +21192,10 @@ class docDotMscType(GeneratedsSuper):
         if value is not None and 'caption' not in already_processed:
             already_processed.add('caption')
             self.caption = value
-        value = find_attr_value_('figure', node)
-        if value is not None and 'figure' not in already_processed:
-            already_processed.add('figure')
-            self.figure = value
+        value = find_attr_value_('image', node)
+        if value is not None and 'image_attr' not in already_processed:
+            already_processed.add('image_attr')
+            self.image_attr = value
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False, gds_collector_=None):
         if nodeName_ == 'ulink':
             obj_ = docURLLink.factory(parent_object_=self)
@@ -21508,7 +21508,7 @@ class docImageFileType(GeneratedsSuper):
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
     superclass = None
-    def __init__(self, name=None, width=None, height=None, figure=None, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, cite=None, del_=None, ins=None, details=None, summary=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
+    def __init__(self, name=None, width=None, height=None, image_attr=None, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, cite=None, del_=None, ins=None, details=None, summary=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
         self.gds_collector_ = gds_collector_
         self.gds_elementtree_node_ = None
         self.original_tagname_ = None
@@ -21520,8 +21520,8 @@ class docImageFileType(GeneratedsSuper):
         self.width_nsprefix_ = None
         self.height = _cast(None, height)
         self.height_nsprefix_ = None
-        self.figure = _cast(None, figure)
-        self.figure_nsprefix_ = None
+        self.image_attr = _cast(None, image_attr)
+        self.image_attr_nsprefix_ = None
         if ulink is None:
             self.ulink = []
         else:
@@ -22024,10 +22024,10 @@ class docImageFileType(GeneratedsSuper):
         return self.height
     def set_height(self, height):
         self.height = height
-    def get_figure(self):
-        return self.figure
-    def set_figure(self, figure):
-        self.figure = figure
+    def get_image_attr(self):
+        return self.image_attr
+    def set_image_attr(self, image_attr):
+        self.image_attr = image_attr
     def get_valueOf_(self): return self.valueOf_
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def hasContent_(self):
@@ -22102,9 +22102,9 @@ class docImageFileType(GeneratedsSuper):
         if self.height is not None and 'height' not in already_processed:
             already_processed.add('height')
             outfile.write(' height=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.height), input_name='height')), ))
-        if self.figure is not None and 'figure' not in already_processed:
-            already_processed.add('figure')
-            outfile.write(' figure=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.figure), input_name='figure')), ))
+        if self.image_attr is not None and 'image_attr' not in already_processed:
+            already_processed.add('image_attr')
+            outfile.write(' image=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.image_attr), input_name='image_attr')), ))
     def exportChildren(self, outfile, level, namespaceprefix_='', namespacedef_='', name_='docImageFileType', fromsubclass_=False, pretty_print=True):
         if not fromsubclass_:
             for item_ in self.content_:
@@ -22240,10 +22240,10 @@ class docImageFileType(GeneratedsSuper):
         if value is not None and 'height' not in already_processed:
             already_processed.add('height')
             self.height = value
-        value = find_attr_value_('figure', node)
-        if value is not None and 'figure' not in already_processed:
-            already_processed.add('figure')
-            self.figure = value
+        value = find_attr_value_('image', node)
+        if value is not None and 'image_attr' not in already_processed:
+            already_processed.add('image_attr')
+            self.image_attr = value
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False, gds_collector_=None):
         if nodeName_ == 'ulink':
             obj_ = docURLLink.factory(parent_object_=self)
@@ -22556,7 +22556,7 @@ class docPlantumlType(GeneratedsSuper):
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
     superclass = None
-    def __init__(self, name=None, width=None, height=None, caption=None, engine=None, figure=None, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, cite=None, del_=None, ins=None, details=None, summary=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
+    def __init__(self, name=None, width=None, height=None, caption=None, engine=None, image_attr=None, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, cite=None, del_=None, ins=None, details=None, summary=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
         self.gds_collector_ = gds_collector_
         self.gds_elementtree_node_ = None
         self.original_tagname_ = None
@@ -22572,8 +22572,8 @@ class docPlantumlType(GeneratedsSuper):
         self.caption_nsprefix_ = None
         self.engine = _cast(None, engine)
         self.engine_nsprefix_ = None
-        self.figure = _cast(None, figure)
-        self.figure_nsprefix_ = None
+        self.image_attr = _cast(None, image_attr)
+        self.image_attr_nsprefix_ = None
         if ulink is None:
             self.ulink = []
         else:
@@ -23084,10 +23084,10 @@ class docPlantumlType(GeneratedsSuper):
         return self.engine
     def set_engine(self, engine):
         self.engine = engine
-    def get_figure(self):
-        return self.figure
-    def set_figure(self, figure):
-        self.figure = figure
+    def get_image_attr(self):
+        return self.image_attr
+    def set_image_attr(self, image_attr):
+        self.image_attr = image_attr
     def get_valueOf_(self): return self.valueOf_
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def validate_DoxPlantumlEngine(self, value):
@@ -23181,9 +23181,9 @@ class docPlantumlType(GeneratedsSuper):
         if self.engine is not None and 'engine' not in already_processed:
             already_processed.add('engine')
             outfile.write(' engine=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.engine), input_name='engine')), ))
-        if self.figure is not None and 'figure' not in already_processed:
-            already_processed.add('figure')
-            outfile.write(' figure=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.figure), input_name='figure')), ))
+        if self.image_attr is not None and 'image_attr' not in already_processed:
+            already_processed.add('image_attr')
+            outfile.write(' image=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.image_attr), input_name='image_attr')), ))
     def exportChildren(self, outfile, level, namespaceprefix_='', namespacedef_='', name_='docPlantumlType', fromsubclass_=False, pretty_print=True):
         if not fromsubclass_:
             for item_ in self.content_:
@@ -23328,10 +23328,10 @@ class docPlantumlType(GeneratedsSuper):
             already_processed.add('engine')
             self.engine = value
             self.validate_DoxPlantumlEngine(self.engine)    # validate type DoxPlantumlEngine
-        value = find_attr_value_('figure', node)
-        if value is not None and 'figure' not in already_processed:
-            already_processed.add('figure')
-            self.figure = value
+        value = find_attr_value_('image', node)
+        if value is not None and 'image_attr' not in already_processed:
+            already_processed.add('image_attr')
+            self.image_attr = value
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False, gds_collector_=None):
         if nodeName_ == 'ulink':
             obj_ = docURLLink.factory(parent_object_=self)

@@ -40,10 +40,12 @@ static void visitCaption(XmlDocVisitor *parent, const DocNodeList &children)
 
 static void visitPreStart(TextStream &t, QCString cmd, bool doCaption,
                           XmlDocVisitor *parent, const DocNodeList &children,
-                          const QCString &name, bool writeType, DocImage::Type type, const QCString &width,
+                          const QCString &name, const QCString relPath, bool writeType, DocImage::Type type, const QCString &width,
                           const QCString &height, const QCString &srcFile, int srcLine,
                           const QCString engine = QCString(), const QCString &alt = QCString(), bool inlineImage = FALSE)
 {
+  static bool XmlIncorporateImages = Config_getBool(XML_INCORPORATE_IMAGES);
+
   t << "<" << cmd;
   if (writeType)
   {
@@ -60,13 +62,13 @@ static void visitPreStart(TextStream &t, QCString cmd, bool doCaption,
   }
   if (!name.isEmpty() && (cmd != "dot") && (cmd != "plantuml") && (cmd != "msc"))
   {
-    if (cmd == "diafile")
+    if (cmd == "image")
     {
-      t << " name=\"" << convertToXML(stripPath(name), TRUE) << "\"";
+      t << " name=\"" << convertToXML(name, TRUE) << "\"";
     }
     else
     {
-      t << " name=\"" << convertToXML(name, TRUE) << "\"";
+      t << " name=\"" << convertToXML(stripPath(name), TRUE) << "\"";
     }
   }
   if (!width.isEmpty())
@@ -95,9 +97,10 @@ static void visitPreStart(TextStream &t, QCString cmd, bool doCaption,
     visitCaption(parent, children);
     t << "\"";
   }
-  if ((cmd == "dotfile") || (cmd =="dot"))
+  if (XmlIncorporateImages)
   {
     QCString baseName=name;
+    static QCString outDir = Config_getString(XML_OUTPUT);
     int i;
     if ((i=baseName.findRev('/'))!=-1)
     {
@@ -107,62 +110,32 @@ static void visitPreStart(TextStream &t, QCString cmd, bool doCaption,
     {
       baseName=baseName.left(i);
     }
-    baseName.prepend("dot_");
-    QCString outDir = Config_getString(XML_OUTPUT);
-    QCString imgExt = getDotImageExtension();
-    writeDotGraphFromFile(name,outDir,baseName,GOF_BITMAP,srcFile,srcLine);
-    t << " figure=\"" << convertToXML(baseName + "." + imgExt, TRUE) << "\"";
-  }
-  else if (cmd == "plantuml")
-  {
-    QCString baseName=name;
-    int i;
-    if ((i=baseName.findRev('/'))!=-1)
+
+    if ((cmd == "dotfile") || (cmd =="dot"))
     {
-      baseName=baseName.right(baseName.length()-i-1);
+      baseName.prepend("dot_");
+      QCString imgExt = getDotImageExtension();
+      writeDotGraphFromFile(name,outDir,baseName,GOF_BITMAP,srcFile,srcLine);
+      t << " image=\"" << convertToXML(relPath + baseName + "." + imgExt, TRUE) << "\"";
     }
-    if ((i=baseName.find('.'))!=-1)
+    else if (cmd == "plantuml")
     {
-      baseName=baseName.left(i);
+      QCString imgExt = "png";
+      t << " image=\"" << convertToXML(relPath + baseName + "." + imgExt, TRUE) << "\"";
     }
-    QCString outDir = Config_getString(XML_OUTPUT);
-    QCString imgExt = "png";
-    t << " figure=\"" << convertToXML(baseName + "." + imgExt, TRUE) << "\"";
-  }
-  else if ((cmd == "mscfile") || (cmd =="msc"))
-  {
-    QCString baseName=name;
-    int i;
-    if ((i=baseName.findRev('/'))!=-1)
+    else if ((cmd == "mscfile") || (cmd =="msc"))
     {
-      baseName=baseName.right(baseName.length()-i-1);
+      QCString imgExt = "png";
+      writeMscGraphFromFile(name,outDir,baseName,MSC_BITMAP,srcFile,srcLine);
+      t << " image=\"" << convertToXML(relPath + baseName + "." + imgExt, TRUE) << "\"";
     }
-    if ((i=baseName.find('.'))!=-1)
+    else if (cmd == "diafile")
     {
-      baseName=baseName.left(i);
+      baseName.prepend("dia_");
+      QCString imgExt = "png";
+      writeDiaGraphFromFile(name,outDir,baseName,DIA_BITMAP,srcFile,srcLine);
+      t << " image=\"" << convertToXML(relPath + baseName + "." + imgExt, TRUE) << "\"";
     }
-    QCString outDir = Config_getString(XML_OUTPUT);
-    QCString imgExt = "png";
-    writeMscGraphFromFile(name,outDir,baseName,MSC_BITMAP,srcFile,srcLine);
-    t << " figure=\"" << convertToXML(baseName + "." + imgExt, TRUE) << "\"";
-  }
-  else if (cmd == "diafile")
-  {
-    QCString baseName=name;
-    int i;
-    if ((i=baseName.findRev('/'))!=-1)
-    {
-      baseName=baseName.right(baseName.length()-i-1);
-    }
-    if ((i=baseName.find('.'))!=-1)
-    {
-      baseName=baseName.left(i);
-    }
-    baseName.prepend("dia_");
-    QCString outDir = Config_getString(XML_OUTPUT);
-    QCString imgExt = "png";
-    writeDiaGraphFromFile(name,outDir,baseName,DIA_BITMAP,srcFile,srcLine);
-    t << " figure=\"" << convertToXML(baseName + "." + imgExt, TRUE) << "\"";
   }
   t << ">";
 }
@@ -334,6 +307,7 @@ void XmlDocVisitor::visit(DocStyleChange *s)
 void XmlDocVisitor::visit(DocVerbatim *s)
 {
   if (m_hide) return;
+  static bool XmlIncorporateImages = Config_getBool(XML_INCORPORATE_IMAGES);
   QCString lang = m_langExt;
   if (!s->language().isEmpty()) // explicit language setting
   {
@@ -404,75 +378,86 @@ void XmlDocVisitor::visit(DocVerbatim *s)
       break;
     case DocVerbatim::Dot:
       {
-        static int dotindex = 1;
-        QCString baseName(4096);
-        QCString name;
-        QCString stext = s->text();
-        name.sprintf("%s%d", "dot_inline_dotgraph_", dotindex);
-        baseName.sprintf("%s%d",
-            qPrint(Config_getString(XML_OUTPUT)+"/inline_dotgraph_"),
-            dotindex++
-            );
-        std::string fileName = baseName.str()+".dot";
-        std::ofstream file(fileName,std::ofstream::out | std::ofstream::binary);
-        if (!file.is_open())
+        std::string fileName = "";
+        if (XmlIncorporateImages)
         {
-          err("Could not open file %s for writing\n",fileName.c_str());
+          static int dotindex = 1;
+          QCString baseName(4096);
+          QCString name;
+          QCString stext = s->text();
+          name.sprintf("%s%d", "dot_inline_dotgraph_", dotindex);
+          baseName.sprintf("%s%d",
+              qPrint(Config_getString(XML_OUTPUT)+"/inline_dotgraph_"),
+              dotindex++
+              );
+          fileName = baseName.str()+".dot";
+          std::ofstream file(fileName,std::ofstream::out | std::ofstream::binary);
+          if (!file.is_open())
+          {
+            err("Could not open file %s for writing\n",fileName.c_str());
+          }
+          file.write( stext.data(), stext.length() );
+          file.close();
         }
-        file.write( stext.data(), stext.length() );
-        file.close();
-
-        visitPreStart(m_t, "dot", s->hasCaption(), this, s->children(), fileName.c_str(), FALSE, DocImage::Xml, s->width(), s->height(), s->srcFile(), s->srcLine());
+        visitPreStart(m_t, "dot", s->hasCaption(), this, s->children(), fileName.c_str(), s->relPath(), FALSE, DocImage::Xml, s->width(), s->height(), s->srcFile(), s->srcLine());
         filter(s->text());
         visitPostEnd(m_t, "dot");
-        if (Config_getBool(DOT_CLEANUP)) Dir().remove(fileName);
+        if (Config_getBool(DOT_CLEANUP) && XmlIncorporateImages) Dir().remove(fileName);
       }
       break;
     case DocVerbatim::Msc:
       {
-        static int mscindex = 1;
-        QCString baseName(4096);
-        QCString name;
-        QCString stext = s->text();
-        name.sprintf("%s%d", "msc_inline_mscgraph_", mscindex);
-        baseName.sprintf("%s%d",
-            (Config_getString(XML_OUTPUT)+"/inline_mscgraph_").data(),
-            mscindex++
-            );
-        std::string fileName = baseName.str()+".msc";
-        std::ofstream file(fileName,std::ofstream::out | std::ofstream::binary);
-        if (!file.is_open())
+        std::string fileName = "";
+        if (XmlIncorporateImages)
         {
-          err("Could not open file %s for writing\n",fileName.c_str());
+          static int mscindex = 1;
+          QCString baseName(4096);
+          QCString name;
+          QCString stext = s->text();
+          name.sprintf("%s%d", "msc_inline_mscgraph_", mscindex);
+          baseName.sprintf("%s%d",
+              (Config_getString(XML_OUTPUT)+"/inline_mscgraph_").data(),
+              mscindex++
+              );
+          fileName = baseName.str()+".msc";
+          std::ofstream file(fileName,std::ofstream::out | std::ofstream::binary);
+          if (!file.is_open())
+          {
+            err("Could not open file %s for writing\n",fileName.c_str());
+          }
+          QCString text = "msc {";
+          text+=stext;
+          text+="}";
+          file.write( text.data(), text.length() );
+          file.close();
         }
-        QCString text = "msc {";
-        text+=stext;
-        text+="}";
-        file.write( text.data(), text.length() );
-        file.close();
-        //writeMscFile(baseName,s);
 
-        visitPreStart(m_t, "msc", s->hasCaption(), this, s->children(),  fileName.c_str(), FALSE, DocImage::Xml, s->width(), s->height(), s->srcFile(), s->srcLine());
+        visitPreStart(m_t, "msc", s->hasCaption(), this, s->children(),  fileName.c_str(), s->relPath(), FALSE, DocImage::Xml, s->width(), s->height(), s->srcFile(), s->srcLine());
         filter(s->text());
         visitPostEnd(m_t, "msc");
 
-        if (Config_getBool(DOT_CLEANUP)) Dir().remove(fileName);
+        if (Config_getBool(DOT_CLEANUP) && XmlIncorporateImages) Dir().remove(fileName);
       }
       break;
     
     case DocVerbatim::PlantUML:
       {
-        static QCString xmlOutput = Config_getString(XML_OUTPUT);
-        QCString baseName = PlantumlManager::instance().writePlantUMLSource(xmlOutput,s->exampleFile(),s->text(),PlantumlManager::PUML_BITMAP,s->engine(),s->srcFile(),s->srcLine());
-        QCString shortName = baseName;
-        int i;
-        if ((i=shortName.findRev('/'))!=-1)
+        QCString fileName = "";
+        if (XmlIncorporateImages)
         {
-          shortName=shortName.right(shortName.length()-i-1);
+          static QCString xmlOutput = Config_getString(XML_OUTPUT);
+          QCString baseName = PlantumlManager::instance().writePlantUMLSource(xmlOutput,s->exampleFile(),s->text(),PlantumlManager::PUML_BITMAP,s->engine(),s->srcFile(),s->srcLine());
+          QCString shortName = baseName;
+          int i;
+          if ((i=shortName.findRev('/'))!=-1)
+          {
+            shortName=shortName.right(shortName.length()-i-1);
+          }
+          fileName = baseName + ".png";
+          PlantumlManager::instance().generatePlantUMLOutput(baseName,xmlOutput,PlantumlManager::PUML_BITMAP);
         }
-        PlantumlManager::instance().generatePlantUMLOutput(baseName,xmlOutput,PlantumlManager::PUML_BITMAP);
 
-        visitPreStart(m_t, "plantuml", s->hasCaption(), this, s->children(), s->relPath() + baseName + ".png", FALSE, DocImage::Xml, s->width(), s->height(), s->srcFile(), s->srcLine(), s->engine());
+        visitPreStart(m_t, "plantuml", s->hasCaption(), this, s->children(), fileName, s->relPath(), FALSE, DocImage::Xml, s->width(), s->height(), s->srcFile(), s->srcLine(), s->engine());
         filter(s->text());
         visitPostEnd(m_t, "plantuml");
       }
@@ -670,8 +655,12 @@ void XmlDocVisitor::visit(DocIncOperator *op)
 void XmlDocVisitor::visit(DocFormula *f)
 {
   if (m_hide) return;
+  static bool XmlIncorporateImages = Config_getBool(XML_INCORPORATE_IMAGES);
   m_t << "<formula id=\"" << f->id() << "\"";
-  m_t << " figure=\"" << f->relPath() << f->name() << ".png\"";
+  if (XmlIncorporateImages)
+  {
+    m_t << " image=\"" << f->relPath() << f->name() << ".png\"";
+  }
   m_t << ">";
   filter(f->text());
   m_t << "</formula>";
@@ -1119,7 +1108,7 @@ void XmlDocVisitor::visitPre(DocImage *img)
   auto it = std::find_if(attribs.begin(),attribs.end(),
                          [](const auto &att) { return att.name=="alt"; });
   QCString altValue = it!=attribs.end() ? it->value : "";
-  visitPreStart(m_t, "image", FALSE, this, img->children(), baseName, TRUE,
+  visitPreStart(m_t, "image", FALSE, this, img->children(), baseName, QCString(), TRUE,
                 img->type(), img->width(), img->height(),QCString(),-1, QCString(),
                 altValue, img->isInlineImage());
 
@@ -1142,7 +1131,7 @@ void XmlDocVisitor::visitPre(DocDotFile *df)
 {
   if (m_hide) return;
   copyFile(df->file(),Config_getString(XML_OUTPUT)+"/"+stripPath(df->file()));
-  visitPreStart(m_t, "dotfile", FALSE, this, df->children(), stripPath(df->file()), FALSE, DocImage::Xml, df->width(), df->height(), df->srcFile(), df->srcLine());
+  visitPreStart(m_t, "dotfile", FALSE, this, df->children(), stripPath(df->file()), df->relPath(), FALSE, DocImage::Xml, df->width(), df->height(), df->srcFile(), df->srcLine());
 }
 
 void XmlDocVisitor::visitPost(DocDotFile *)
@@ -1155,7 +1144,7 @@ void XmlDocVisitor::visitPre(DocMscFile *df)
 {
   if (m_hide) return;
   copyFile(df->file(),Config_getString(XML_OUTPUT)+"/"+stripPath(df->file()));
-  visitPreStart(m_t, "mscfile", FALSE, this, df->children(), stripPath(df->file()), FALSE, DocImage::Xml, df->width(), df->height(), df->srcFile(), df->srcLine());
+  visitPreStart(m_t, "mscfile", FALSE, this, df->children(), stripPath(df->file()), df->relPath(), FALSE, DocImage::Xml, df->width(), df->height(), df->srcFile(), df->srcLine());
 }
 
 void XmlDocVisitor::visitPost(DocMscFile *)
@@ -1168,7 +1157,7 @@ void XmlDocVisitor::visitPre(DocDiaFile *df)
 {
   if (m_hide) return;
   copyFile(df->file(),Config_getString(XML_OUTPUT)+"/"+stripPath(df->file()));
-  visitPreStart(m_t, "diafile", FALSE, this, df->children(), df->file(), FALSE, DocImage::Xml, df->width(), df->height(), df->srcFile(), df->srcLine());
+  visitPreStart(m_t, "diafile", FALSE, this, df->children(), df->file(), df->relPath(), FALSE, DocImage::Xml, df->width(), df->height(), df->srcFile(), df->srcLine());
 }
 
 void XmlDocVisitor::visitPost(DocDiaFile *)

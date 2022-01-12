@@ -3222,6 +3222,19 @@ The following block name is set based on whether or not a feature is used in the
 ]]>
       </docs>
     </option>
+    <option type='bool' id='XML_INCORPORATE_IMAGES' defval='0' depends='GENERATE_XML'>
+      <docs>
+<![CDATA[
+ If the \c XML_INCORPORATE_IMAGES tag is set to \c YES, doxygen will add the
+ names of the generated image files as an attribute to the XML output and place
+ the files in the XML directory. This is the case for the commands
+ \ref cmddotfile "\\dotfile", \ref cmddot "\\dot", \ref cmdmsc "\\msc",
+ \ref cmdmscfile "\\mscfile", \ref cmdstartuml "\\startuml",
+ \ref cmddiafile "\\diafile", \ref cmdfdollar "\\f$", \ref cmdfrndopen "\\f(",
+ \ref cmdfbropen "\\f[" and \ref cmdfcurlyopen "\\f{".
+]]>
+      </docs>
+    </option>
     <option type='bool' id='XML_PROGRAMLISTING' defval='1' depends='GENERATE_XML'>
       <docs>
 <![CDATA[

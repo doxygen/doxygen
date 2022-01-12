@@ -12378,7 +12378,7 @@ void generateOutput()
     g_s.end();
   }
 
-  if (fm.hasFormulas() && generateXml)
+  if (fm.hasFormulas() && generateXml && Config_getBool(XML_INCORPORATE_IMAGES))
   {
     g_s.begin("Generating images for formulas in XML...\n");
     fm.generateImages(Config_getString(XML_OUTPUT),FormulaManager::Format::Bitmap);

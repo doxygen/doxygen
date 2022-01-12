@@ -26,7 +26,7 @@
     <briefdescription>
     </briefdescription>
     <detaileddescription>
-      <para><ref refid="class_sender" kindref="compound">Sender</ref> class. Can be used to send a command to the server. The receiver will acknowledge the command by calling <ref refid="class_sender_1a8ad2c6f9baa4e798868fe4a4d45f8fda" kindref="member">Ack()</ref>. <msc figure="inline_mscgraph_2.png">
+      <para><ref refid="class_sender" kindref="compound">Sender</ref> class. Can be used to send a command to the server. The receiver will acknowledge the command by calling <ref refid="class_sender_1a8ad2c6f9baa4e798868fe4a4d45f8fda" kindref="member">Ack()</ref>. <msc>
   Sender,Receiver;
   Sender-&gt;Receiver [label="Command()", URL="\ref Receiver::Command()"];
   Sender&lt;-Receiver [label="Ack()", URL="\ref Ack()", ID="1"];

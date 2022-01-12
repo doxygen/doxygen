@@ -7,7 +7,7 @@
     <briefdescription>
     </briefdescription>
     <detaileddescription>
-      <para>A bit more complex msc diagram, with also parallel events. <msc figure="inline_mscgraph_3.png">
+      <para>A bit more complex msc diagram, with also parallel events. <msc>
 Sender_1,Receiver_1,Sender1_1,
 Sender,Receiver,Sender1,
 Sender_2,Receiver_2,Sender1_2;

@@ -6,7 +6,7 @@
     <briefdescription>
     </briefdescription>
     <detaileddescription>
-      <para>Class relations expressed via an inline dot graph: <dot figure="dot_inline_dotgraph_1.png">
+      <para>Class relations expressed via an inline dot graph: <dot>
 digraph example {
   node [shape=record, fontname=Helvetica, fontsize=10];
   b [ label="class B" URL="\ref B"];

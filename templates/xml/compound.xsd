@@ -505,7 +505,7 @@
 
   <xsd:complexType name="docFormulaType" mixed="true">
     <xsd:attribute name="id" type="xsd:string" />
-    <xsd:attribute name="figure" type="xsd:string" />
+    <xsd:attribute name="image" type="xsd:string" use="optional"/>
   </xsd:complexType>
 
   <xsd:complexType name="docIndexEntryType">
@@ -623,7 +623,7 @@
     <xsd:attribute name="width" type="xsd:string" use="optional"/>
     <xsd:attribute name="height" type="xsd:string" use="optional"/>
     <xsd:attribute name="caption" type="xsd:string" use="optional"/>
-    <xsd:attribute name="figure" type="xsd:string" />
+    <xsd:attribute name="image" type="xsd:string" use="optional"/>
   </xsd:complexType>
 
   <xsd:complexType name="docImageFileType" mixed="true">
@@ -631,7 +631,7 @@
     <xsd:attribute name="name" type="xsd:string" use="optional"/>
     <xsd:attribute name="width" type="xsd:string" use="optional"/>
     <xsd:attribute name="height" type="xsd:string" use="optional"/>
-    <xsd:attribute name="figure" type="xsd:string" />
+    <xsd:attribute name="image" type="xsd:string" use="optional"/>
   </xsd:complexType>
 
   <xsd:complexType name="docPlantumlType" mixed="true">
@@ -641,7 +641,7 @@
     <xsd:attribute name="height" type="xsd:string" use="optional"/>
     <xsd:attribute name="caption" type="xsd:string" use="optional"/>
     <xsd:attribute name="engine" type="DoxPlantumlEngine" use="optional"/>
-    <xsd:attribute name="figure" type="xsd:string" />
+    <xsd:attribute name="image" type="xsd:string" use="optional"/>
   </xsd:complexType>
 
   <xsd:complexType name="docTocItemType" mixed="true">
