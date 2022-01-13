@@ -118,8 +118,9 @@ jobs:
 
     - name: Build/scan doxygen
       run: |
-        echo "PATH=$PATH"
-        cov-analysis-win64-2020.09/bin/cov-build --dir cov-int nmake
+        echo "PATH=$(pwd)"
+        cov-build --dir cov-int nmake
+      shell: bash
  
  # don't submit during test just create tar file
     - name: Submit results
