@@ -97,7 +97,7 @@ class CachedItem
      */
     T &get(const TOwner *owner) const
     {
-      // create a lamda function to create the cached data
+      // create a lambda function to create the cached data
       auto creatorFunc = [this,owner]() { m_item = (owner->*creator)(); };
       // use std::call_once to let one thread invoke the creator func
       std::call_once(m_cache_flag, creatorFunc);
