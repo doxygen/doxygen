@@ -10618,7 +10618,7 @@ static void usage(const QCString &name,const QCString &versionString)
   msg("4) Use doxygen to generate a template file controlling the layout of the\n");
   msg("   generated documentation:\n");
   msg("    %s -l [layoutFileName]\n\n",qPrint(name));
-  msg("    In case layoutFileName is omitted layoutFileName.xml will be used as filename.\n");
+  msg("    In case layoutFileName is omitted DoxygenLayout.xml will be used as filename.\n");
   msg("    If - is used for layoutFileName doxygen will write to standard output.\n\n");
   msg("5) Use doxygen to generate a template style sheet file for RTF, HTML or Latex.\n");
   msg("    RTF:        %s -w rtf styleSheetFile\n",qPrint(name));
