@@ -68,7 +68,8 @@ jobs:
 
     - name: Set up coverity environment
       run: |
-        echo "$PWD/cov-analysis-win64-2020.09/bin" >> $GITHUB_PATH
+        echo "$(pwd)/cov-analysis-win64-2020.09/bin" >> $GITHUB_PATH
+        export PATH="$(pwd)/cov-analysis-win64-2020.09/bin/:$PATH"
       shell: bash
 
     - name: Install libiconv (Windows)
