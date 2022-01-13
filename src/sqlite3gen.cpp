@@ -2369,7 +2369,7 @@ static void generateSqlite3ForPage(const PageDef *pd,bool isExample)
   QCString qrefid = pd->getOutputFileBase();
   if (pd->getGroupDef())
   {
-    qrefid+=(QCString)"_"+pd->name();
+    qrefid+="_"+pd->name();
   }
   if (qrefid=="index") qrefid="indexpage"; // to prevent overwriting the generated index page.
 

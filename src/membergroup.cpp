@@ -261,7 +261,7 @@ QCString MemberGroup::anchor() const
   char sigStr[33];
   QCString locHeader = grpHeader;
   if (locHeader.isEmpty()) locHeader="[NOHEADER]";
-  MD5Buffer((const unsigned char *)locHeader.data(),locHeader.length(),md5_sig);
+  MD5Buffer(locHeader.data(),locHeader.length(),md5_sig);
   MD5SigToString(md5_sig,sigStr);
   return QCString("amgrp")+sigStr;
 }

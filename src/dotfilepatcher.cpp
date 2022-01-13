@@ -258,35 +258,35 @@ bool DotFilePatcher::isSVGFile() const
 int DotFilePatcher::addMap(const QCString &mapFile,const QCString &relPath,
                            bool urlOnly,const QCString &context,const QCString &label)
 {
-  int id = (int)m_maps.size();
+  size_t id = m_maps.size();
   m_maps.emplace_back(mapFile,relPath,urlOnly,context,label);
-  return id;
+  return static_cast<int>(id);
 }
 
 int DotFilePatcher::addFigure(const QCString &baseName,
                               const QCString &figureName,bool heightCheck)
 {
-  int id = (int)m_maps.size();
+  size_t id = m_maps.size();
   m_maps.emplace_back(figureName,"",heightCheck,"",baseName);
-  return id;
+  return static_cast<int>(id);
 }
 
 int DotFilePatcher::addSVGConversion(const QCString &relPath,bool urlOnly,
                                      const QCString &context,bool zoomable,
                                      int graphId)
 {
-  int id = (int)m_maps.size();
+  size_t id = m_maps.size();
   m_maps.emplace_back("",relPath,urlOnly,context,"",zoomable,graphId);
-  return id;
+  return static_cast<int>(id);
 }
 
 int DotFilePatcher::addSVGObject(const QCString &baseName,
                                  const QCString &absImgName,
                                  const QCString &relPath)
 {
-  int id = (int)m_maps.size();
+  size_t id = m_maps.size();
   m_maps.emplace_back(absImgName,relPath,false,"",baseName);
-  return id;
+  return static_cast<int>(id);
 }
 
 bool DotFilePatcher::run() const
@@ -391,7 +391,7 @@ bool DotFilePatcher::run() const
       int mapId=-1;
       t << line.left(i);
       int n = sscanf(line.data()+i+1,"!-- SVG %d",&mapId);
-      if (n==1 && mapId>=0 && mapId<(int)m_maps.size())
+      if (n==1 && mapId>=0 && mapId<static_cast<int>(m_maps.size()))
       {
         int e = std::max(line.find("--]"),line.find("-->"));
         const Map &map = m_maps.at(mapId);
@@ -414,7 +414,7 @@ bool DotFilePatcher::run() const
       int mapId=-1;
       t << line.left(i);
       int n = sscanf(line.data()+i,"<!-- MAP %d",&mapId);
-      if (n==1 && mapId>=0 && mapId<(int)m_maps.size())
+      if (n==1 && mapId>=0 && mapId<static_cast<int>(m_maps.size()))
       {
         TextStream tt;
         const Map &map = m_maps.at(mapId);
@@ -439,7 +439,7 @@ bool DotFilePatcher::run() const
       int mapId=-1;
       int n = sscanf(line.data()+i+2,"FIG %d",&mapId);
       //printf("line='%s' n=%d\n",qPrint(line)+i,n);
-      if (n==1 && mapId>=0 && mapId<(int)m_maps.size())
+      if (n==1 && mapId>=0 && mapId<static_cast<int>(m_maps.size()))
       {
         const Map &map = m_maps.at(mapId);
         //printf("patching FIG %d in file %s with contents of %s\n",

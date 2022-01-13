@@ -166,6 +166,9 @@ void ManDocVisitor::visit(DocStyleChange *s)
     case DocStyleChange::Small:
       /* not supported */
       break;
+    case DocStyleChange::Cite:
+      /* not supported */
+      break;
     case DocStyleChange::Preformatted:
       if (s->enable())
       {
@@ -185,6 +188,18 @@ void ManDocVisitor::visit(DocStyleChange *s)
       break;
     case DocStyleChange::Div:  /* HTML only */ break;
     case DocStyleChange::Span: /* HTML only */ break;
+    case DocStyleChange::Details: /* emulation of the <details> tag */
+      if (!s->enable())
+      {
+        if (!m_firstCol) m_t << "\n";
+        m_t << ".PP\n";
+        m_firstCol=TRUE;
+      }
+      break;
+    case DocStyleChange::Summary: /* emulation of the <summary> tag inside a <details> tag */
+      if (s->enable()) m_t << "\\fB";      else m_t << "\\fP";
+      m_firstCol=FALSE;
+      break;
   }
 }
 
@@ -211,11 +226,19 @@ void ManDocVisitor::visit(DocVerbatim *s)
       m_t << ".PP\n";
       m_firstCol=TRUE;
       break;
+    case DocVerbatim::JavaDocLiteral:
+      filter(s->text());
+      break;
+    case DocVerbatim::JavaDocCode:
+      m_t << "\\fC\n";
+      filter(s->text());
+      m_t << "\\fP\n";
+      break;
     case DocVerbatim::Verbatim:
       if (!m_firstCol) m_t << "\n";
       m_t << ".PP\n";
       m_t << ".nf\n";
-      m_t << s->text();
+      filter(s->text());
       if (!m_firstCol) m_t << "\n";
       m_t << ".fi\n";
       m_t << ".PP\n";
@@ -477,7 +500,7 @@ void ManDocVisitor::visitPre(DocAutoListItem *li)
   ws.fill(' ',m_indent-2);
   if (!m_firstCol) m_t << "\n";
   m_t << ".IP \"" << ws;
-  if (((DocAutoList *)li->parent())->isEnumList())
+  if (dynamic_cast<DocAutoList *>(li->parent())->isEnumList())
   {
     m_t << li->itemNumber() << ".\" " << m_indent+2;
   }
@@ -683,7 +706,7 @@ void ManDocVisitor::visitPre(DocHtmlListItem *li)
   ws.fill(' ',m_indent-2);
   if (!m_firstCol) m_t << "\n";
   m_t << ".IP \"" << ws;
-  if (((DocHtmlList *)li->parent())->type()==DocHtmlList::Ordered)
+  if (dynamic_cast<DocHtmlList *>(li->parent())->type()==DocHtmlList::Ordered)
   {
     for (const auto &opt : li->attribs())
     {
@@ -995,11 +1018,11 @@ void ManDocVisitor::visitPre(DocParamList *pl)
     if (!first) m_t << ","; else first=FALSE;
     if (param->kind()==DocNode::Kind_Word)
     {
-      visit((DocWord*)param.get());
+      visit(dynamic_cast<DocWord*>(param.get()));
     }
     else if (param->kind()==DocNode::Kind_LinkedWord)
     {
-      visit((DocLinkedWord*)param.get());
+      visit(dynamic_cast<DocLinkedWord*>(param.get()));
     }
   }
   m_t << "\\fP ";

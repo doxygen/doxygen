@@ -130,7 +130,7 @@ class TranslatorSerbian : public TranslatorAdapter_1_6_0
      */
     virtual QCString trGeneratedAutomatically(const QCString &s)
     { QCString result="Napravljeno automatski korišćenjem alata Doxygen";
-      if (!s.isEmpty()) result+=(QCString)" za projekat " + s;
+      if (!s.isEmpty()) result+=" za projekat " + s;
       result+=" od izvornog koda.";
       return result;
     }
@@ -489,9 +489,9 @@ class TranslatorSerbian : public TranslatorAdapter_1_6_0
      */
     virtual QCString trGeneratedAt(const QCString &date,const QCString &projName)
     {
-      QCString result=(QCString)"[" + date + "] Napravljeno automatski ";
-      if (!projName.isEmpty()) result+=(QCString)" za projekat " + projName;
-	  result+=(QCString)" upotrebom ";
+      QCString result="[" + date + "] Napravljeno automatski ";
+      if (!projName.isEmpty()) result+=" za projekat " + projName;
+	  result+=" upotrebom ";
       return result;
     }
 
@@ -739,7 +739,7 @@ class TranslatorSerbian : public TranslatorAdapter_1_6_0
         bool single)
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
-      QCString result=(QCString)"Dokumentacija ";
+      QCString result="Dokumentacija ";
       switch(compType)
       {
         case ClassDef::Class:      result+="ove klase"; break;
@@ -804,12 +804,12 @@ class TranslatorSerbian : public TranslatorAdapter_1_6_0
     /*! this text is put before a collaboration diagram */
     virtual QCString trCollaborationDiagram(const QCString &clName)
     {
-      return (QCString)"Klasni dijagram za "+clName+":";
+      return "Klasni dijagram za "+clName+":";
     }
     /*! this text is put before an include dependency graph */
     virtual QCString trInclDepGraph(const QCString &fName)
     {
-      return (QCString)"Graf zavisnosti datoteka za "+fName+":";
+      return "Graf zavisnosti datoteka za "+fName+":";
     }
     /*! header that is put before the list of constructor/destructors. */
     virtual QCString trConstructorDocumentation()
@@ -1089,7 +1089,7 @@ class TranslatorSerbian : public TranslatorAdapter_1_6_0
     /*! Used as the title of a Java package */
     virtual QCString trPackage(const QCString &name)
     {
-      return (QCString)"Paket "+name;
+      return "Paket "+name;
     }
     /*! Title of the package index page */
     virtual QCString trPackageList()
@@ -1612,7 +1612,7 @@ class TranslatorSerbian : public TranslatorAdapter_1_6_0
                                     ClassDef::CompoundType compType,
                                     bool isTemplate)
     {
-      QCString result=(QCString)clName;
+      QCString result=clName;
       switch(compType)
       {
         case ClassDef::Class:      result+=" Modul"; break;
@@ -1680,7 +1680,7 @@ class TranslatorSerbian : public TranslatorAdapter_1_6_0
         bool single)
     { // here s is one of " Module", " Struct" or " Union"
       // single is true implies a single file
-      QCString result=(QCString)"Dokumentacija za ovaj ";
+      QCString result="Dokumentacija za ovaj ";
       switch(compType)
       {
         case ClassDef::Class:      result+="modul"; break;

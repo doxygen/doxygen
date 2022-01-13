@@ -117,6 +117,7 @@ class Doxygen
     static bool                      generatingXmlOutput;
     static DefinesPerFileList        macroDefinitions;
     static bool                      clangAssistedParsing;
+    static QCString                  verifiedDotPath;
 };
 
 void initDoxygen();

@@ -22,6 +22,7 @@
 #include <cstdint>
 #include <cstdio>
 #include <fstream>
+#include <type_traits>
 
 #include "qcstring.h"
 
@@ -96,6 +97,27 @@ class TextStream final
       m_buffer+=c;
       return static_cast<TextStream&>(*this);
     }
+    /** Adds an unsigned character to the stream */
+    TextStream &operator<<( unsigned char c)
+    {
+      m_buffer+=c;
+      return static_cast<TextStream&>(*this);
+    }
+
+    /** Adds an unsigned character string to the stream */
+    TextStream &operator<<( unsigned char *s)
+    {
+      if (s)
+      {
+        unsigned char *p = s;
+        while(*p)
+        {
+          m_buffer+=*p;
+          p++;
+        }
+      }
+      return static_cast<TextStream&>(*this);
+    }
 
     /** Adds a C-style string to the stream */
     TextStream &operator<<( const char *s)
@@ -146,10 +168,22 @@ class TextStream final
       return static_cast<TextStream&>(*this);
     }
 
+    /** Adds a size_t integer to the stream.
+     *  We use SFINAE to avoid a compiler error in case size_t already matches the 'unsigned int' overload.
+     */
+    template<typename T,
+             typename std::enable_if<std::is_same<T,size_t>::value,T>::type* = nullptr
+            >
+    TextStream &operator<<( T i)
+    {
+      output_int32(static_cast<uint>(i),false);
+      return static_cast<TextStream&>(*this);
+    }
+
     /** Adds a float to the stream */
     TextStream &operator<<( float f)
     {
-      output_double((double)f);
+      output_double(static_cast<double>(f));
       return static_cast<TextStream&>(*this);
     }
 
@@ -233,9 +267,9 @@ class TextStream final
       *p = '\0';
       if ( neg )
       {
-	n = (uint32_t)(-(int32_t)n);
+	n = static_cast<uint32_t>(-static_cast<int32_t>(n));
       }
-      do { *--p = ((char)(n%10)) + '0'; n /= 10; } while ( n );
+      do { *--p = (static_cast<char>(n%10)) + '0'; n /= 10; } while ( n );
       if ( neg ) *--p = '-';
       m_buffer+=p;
     }

@@ -1527,6 +1527,10 @@ span.emoji {
          */
 }
 
+span.obfuscator {
+  display: none;
+}
+
 .PageDocRTL-title div.toc li.level1 {
   margin-left: 0 !important;
   margin-right: 0;
@@ -1818,6 +1822,10 @@ table.DocNodeLTR {
    width: auto;
    margin-right: auto;
    margin-left: 0;
+}
+
+code.JavaDocCode
+  direction:ltr;
 }
 
 tt, code, kbd, samp

@@ -38,6 +38,7 @@
 #include "emoji.h"
 #include "plantuml.h"
 #include "fileinfo.h"
+#include "regex.h"
 
 const int maxLevels=5;
 static const char *secLabels[maxLevels] =
@@ -50,6 +51,26 @@ static const char *getSectionName(int level)
   if (compactLatex) l++;
   if (Doxygen::insideMainPage) l--;
   return secLabels[std::min(maxLevels-1,l)];
+}
+
+static void insertDimension(TextStream &t, QCString dimension, const char *orientationString)
+{
+  // dimensions for latex images can be a percentage, in this case they need some extra
+  // handling as the % symbol is used for comments
+  static const reg::Ex re(R"((\d+)%)");
+  std::string s = dimension.str();
+  reg::Match match;
+  if (reg::search(s,match,re))
+  {
+    bool ok;
+    double percent = QCString(match[1].str()).toInt(&ok);
+    if (ok)
+    {
+      t << percent/100.0 << "\\text" << orientationString;
+      return;
+    }
+  }
+  t << dimension;
 }
 
 static void visitPreStart(TextStream &t, bool hasCaption, QCString name,  QCString width,  QCString height, bool inlineImage = FALSE)
@@ -78,7 +99,8 @@ static void visitPreStart(TextStream &t, bool hasCaption, QCString name,  QCStri
     }
     if (!width.isEmpty())
     {
-      t << "width=" << width;
+      t << "width=";
+      insertDimension(t, width, "width");
     }
     if (!width.isEmpty() && !height.isEmpty())
     {
@@ -86,7 +108,8 @@ static void visitPreStart(TextStream &t, bool hasCaption, QCString name,  QCStri
     }
     if (!height.isEmpty())
     {
-      t << "height=" << height;
+      t << "height=";
+      insertDimension(t, height, "height");
     }
     if (width.isEmpty() && height.isEmpty())
     {
@@ -336,6 +359,9 @@ void LatexDocVisitor::visit(DocStyleChange *s)
     case DocStyleChange::Small:
       if (s->enable()) m_t << "\n\\footnotesize ";  else m_t << "\n\\normalsize ";
       break;
+    case DocStyleChange::Cite:
+      if (s->enable()) m_t << "{\\itshape ";     else m_t << "}";
+      break;
     case DocStyleChange::Preformatted:
       if (s->enable())
       {
@@ -350,6 +376,12 @@ void LatexDocVisitor::visit(DocStyleChange *s)
       break;
     case DocStyleChange::Div:  /* HTML only */ break;
     case DocStyleChange::Span: /* HTML only */ break;
+    case DocStyleChange::Details: /* emulation of the <details> tag */
+      if (!s->enable()) m_t << "\n\n";
+      break;
+    case DocStyleChange::Summary: /* emulation of the <summary> tag inside a <details> tag */
+      if (s->enable()) m_t << "{\\bfseries{";      else m_t << "}}";
+      break;
   }
 }
 
@@ -371,6 +403,14 @@ void LatexDocVisitor::visit(DocVerbatim *s)
                                       s->isExample(),s->exampleFile());
         m_ci.endCodeFragment("DoxyCode");
       }
+      break;
+    case DocVerbatim::JavaDocLiteral:
+      filter(s->text(), true);
+      break;
+    case DocVerbatim::JavaDocCode:
+      m_t << "{\\ttfamily ";
+      filter(s->text(), true);
+      m_t << "}";
       break;
     case DocVerbatim::Verbatim:
       m_t << "\\begin{DoxyVerb}";
@@ -1056,7 +1096,7 @@ static bool classEqualsReflist(const DocNode *n)
 {
   if (n->kind()==DocNode::Kind_HtmlDescList)
   {
-    HtmlAttribList attrs = ((DocHtmlDescList *)n)->attribs();
+    HtmlAttribList attrs = dynamic_cast<const DocHtmlDescList *>(n)->attribs();
     auto it = std::find_if(attrs.begin(),attrs.end(),
                         [](const auto &att) { return att.name=="class"; });
     if (it!=attrs.end() && it->value == "reflist") return true;
@@ -1146,7 +1186,7 @@ static bool tableIsNested(const DocNode *n)
   return isNested;
 }
 
-static void writeStartTableCommand(TextStream &t,const DocNode *n,int cols)
+static void writeStartTableCommand(TextStream &t,const DocNode *n,size_t cols)
 {
   if (tableIsNested(n))
   {
@@ -1188,7 +1228,7 @@ void LatexDocVisitor::visitPre(DocHtmlTable *t)
     m_t << "\n";
   }
 
-  writeStartTableCommand(m_t,t->parent(),(uint)t->numColumns());
+  writeStartTableCommand(m_t,t->parent(),t->numColumns());
 
   if (t->hasCaption())
   {
@@ -1200,7 +1240,7 @@ void LatexDocVisitor::visitPre(DocHtmlTable *t)
     m_t << "\\\\\n";
   }
 
-  setNumCols((uint)t->numColumns());
+  setNumCols(t->numColumns());
   m_t << "\\hline\n";
 
   // check if first row is a heading and then render the row already here
@@ -1245,7 +1285,7 @@ void LatexDocVisitor::visitPost(DocHtmlRow *row)
 
   DocNode *n = row->parent() ->parent();
 
-  int c=currentColumn();
+  size_t c=currentColumn();
   while (c<=numCols()) // end of row while inside a row span?
   {
     for (const auto &span : rowSpans())
@@ -1273,7 +1313,7 @@ void LatexDocVisitor::visitPost(DocHtmlRow *row)
 
   m_t << "\\\\";
 
-  int col = 1;
+  size_t col = 1;
   for (auto &span : rowSpans())
   {
     if (span.rowSpan>0) span.rowSpan--;
@@ -1323,7 +1363,7 @@ void LatexDocVisitor::visitPre(DocHtmlCell *c)
   DocHtmlRow *row = 0;
   if (c->parent() && c->parent()->kind()==DocNode::Kind_HtmlRow)
   {
-    row = (DocHtmlRow*)c->parent();
+    row = dynamic_cast<DocHtmlRow*>(c->parent());
   }
 
   setCurrentColumn(currentColumn()+1);
@@ -1516,6 +1556,7 @@ void LatexDocVisitor::visitPost(DocImage *img)
 void LatexDocVisitor::visitPre(DocDotFile *df)
 {
   if (m_hide) return;
+  if (!Config_getBool(DOT_CLEANUP)) copyFile(df->file(),Config_getString(LATEX_OUTPUT)+"/"+stripPath(df->file()));
   startDotFile(df->file(),df->width(),df->height(),df->hasCaption(),df->srcFile(),df->srcLine());
 }
 
@@ -1527,6 +1568,7 @@ void LatexDocVisitor::visitPost(DocDotFile *df)
 void LatexDocVisitor::visitPre(DocMscFile *df)
 {
   if (m_hide) return;
+  if (!Config_getBool(DOT_CLEANUP)) copyFile(df->file(),Config_getString(LATEX_OUTPUT)+"/"+stripPath(df->file()));
   startMscFile(df->file(),df->width(),df->height(),df->hasCaption(),df->srcFile(),df->srcLine());
 }
 
@@ -1539,6 +1581,7 @@ void LatexDocVisitor::visitPost(DocMscFile *df)
 void LatexDocVisitor::visitPre(DocDiaFile *df)
 {
   if (m_hide) return;
+  if (!Config_getBool(DOT_CLEANUP)) copyFile(df->file(),Config_getString(LATEX_OUTPUT)+"/"+stripPath(df->file()));
   startDiaFile(df->file(),df->width(),df->height(),df->hasCaption(),df->srcFile(),df->srcLine());
 }
 
@@ -1706,8 +1749,8 @@ void LatexDocVisitor::visitPre(DocParamList *pl)
   DocParamSect *sect = 0;
   if (pl->parent() && pl->parent()->kind()==DocNode::Kind_ParamSect)
   {
-    parentType = ((DocParamSect*)pl->parent())->type();
-    sect=(DocParamSect*)pl->parent();
+    sect       = dynamic_cast<DocParamSect*>(pl->parent());
+    parentType = sect->type();
   }
   bool useTable = parentType==DocParamSect::Param ||
                   parentType==DocParamSect::RetVal ||
@@ -1744,15 +1787,15 @@ void LatexDocVisitor::visitPre(DocParamList *pl)
     {
       if (type->kind()==DocNode::Kind_Word)
       {
-        visit((DocWord*)type.get());
+        visit(dynamic_cast<DocWord*>(type.get()));
       }
       else if (type->kind()==DocNode::Kind_LinkedWord)
       {
-        visit((DocLinkedWord*)type.get());
+        visit(dynamic_cast<DocLinkedWord*>(type.get()));
       }
       else if (type->kind()==DocNode::Kind_Sep)
       {
-        m_t << " " << ((DocSeparator *)type.get())->chars() << " ";
+        m_t << " " << dynamic_cast<DocSeparator *>(type.get())->chars() << " ";
       }
     }
     if (useTable) m_t << " & ";
@@ -1765,11 +1808,11 @@ void LatexDocVisitor::visitPre(DocParamList *pl)
     m_insideItem=TRUE;
     if (param->kind()==DocNode::Kind_Word)
     {
-      visit((DocWord*)param.get());
+      visit(dynamic_cast<DocWord*>(param.get()));
     }
     else if (param->kind()==DocNode::Kind_LinkedWord)
     {
-      visit((DocLinkedWord*)param.get());
+      visit(dynamic_cast<DocLinkedWord*>(param.get()));
     }
     m_insideItem=FALSE;
   }
@@ -1790,7 +1833,7 @@ void LatexDocVisitor::visitPost(DocParamList *pl)
   DocParamSect::Type parentType = DocParamSect::Unknown;
   if (pl->parent() && pl->parent()->kind()==DocNode::Kind_ParamSect)
   {
-    parentType = ((DocParamSect*)pl->parent())->type();
+    parentType = dynamic_cast<DocParamSect*>(pl->parent())->type();
   }
   bool useTable = parentType==DocParamSect::Param ||
                   parentType==DocParamSect::RetVal ||
@@ -1894,14 +1937,15 @@ void LatexDocVisitor::visitPost(DocParBlock *)
   if (m_hide) return;
 }
 
-void LatexDocVisitor::filter(const QCString &str)
+void LatexDocVisitor::filter(const QCString &str, const bool retainNewLine)
 {
   filterLatexString(m_t,str,
                     m_insideTabbing,
                     m_insidePre,
                     m_insideItem,
                     m_ci.usedTableLevel()>0,  // insideTable
-                    false                     // keepSpaces
+                    false, // keepSpaces
+                    retainNewLine
                    );
 }
 

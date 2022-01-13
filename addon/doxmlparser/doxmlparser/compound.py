@@ -3,19 +3,19 @@
 
 #
 # Generated  by generateDS.py.
-# Python 3.9.7 (default, Sep  3 2021, 12:45:31)  [Clang 12.0.0 (clang-1200.0.32.29)]
+#
 #
 # Command line options:
 #   ('--no-dates', '')
 #   ('--no-versions', '')
 #   ('-f', '')
-#   ('-o', '/Users/dimitri/doxygen.git/addon/doxmlparser/doxmlparser/compound.py')
+#   ('-o', '.../addon/doxmlparser/doxmlparser/compound.py')
 #
 # Command line arguments:
-#   /Users/dimitri/doxygen.git/templates/xml/compound.xsd
+#  .../templates/xml/compound.xsd
 #
 # Command line:
-#   /usr/local/bin/generateDS --no-dates --no-versions -f -o "/Users/dimitri/doxygen.git/addon/doxmlparser/doxmlparser/compound.py" /Users/dimitri/doxygen.git/templates/xml/compound.xsd
+#  .../generateDS --no-dates --no-versions -f -o ".../addon/doxmlparser/doxmlparser/compound.py" .../templates/xml/compound.xsd
 #
 # Current working directory (os.getcwd()):
 #   doxmlparser
@@ -175,7 +175,7 @@ except ModulenotfoundExp_ :
 try:
     from generatedssuper import GeneratedsSuper
 except ModulenotfoundExp_ as exp:
-    
+
     class GeneratedsSuper(object):
         __hash__ = object.__hash__
         tzoff_pattern = re_.compile(r'(\+|-)((0\d|1[0-3]):[0-5]\d|14:00)$')
@@ -657,8 +657,8 @@ except ModulenotfoundExp_ as exp:
                     self.gds_elementtree_node_.sourceline)
             else:
                 return ""
-    
-    
+
+
     def getSubclassFromModule_(module, class_):
         '''Get the subclass of a class from a specific module.'''
         name = class_.__name__ + 'Sub'
@@ -3424,7 +3424,7 @@ class memberdefType(GeneratedsSuper):
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
     superclass = None
-    def __init__(self, kind=None, id=None, prot=None, static=None, strong=None, const=None, explicit=None, inline=None, refqual=None, virt=None, volatile=None, mutable=None, noexcept=None, constexpr=None, readable=None, writable=None, initonly=None, settable=None, privatesettable=None, protectedsettable=None, gettable=None, privategettable=None, protectedgettable=None, final=None, sealed=None, new=None, add=None, remove=None, raise_=None, optional=None, required=None, accessor=None, attribute=None, property=None, readonly=None, bound=None, removable=None, constrained=None, transient=None, maybevoid=None, maybedefault=None, maybeambiguous=None, templateparamlist=None, type_=None, definition=None, argsstring=None, name=None, read=None, write=None, bitfield=None, reimplements=None, reimplementedby=None, param=None, enumvalue=None, requiresclause=None, initializer=None, exceptions=None, briefdescription=None, detaileddescription=None, inbodydescription=None, location=None, references=None, referencedby=None, gds_collector_=None, **kwargs_):
+    def __init__(self, kind=None, id=None, prot=None, static=None, strong=None, const=None, explicit=None, inline=None, refqual=None, virt=None, volatile=None, mutable=None, noexcept=None, constexpr=None, readable=None, writable=None, initonly=None, settable=None, privatesettable=None, protectedsettable=None, gettable=None, privategettable=None, protectedgettable=None, final=None, sealed=None, new=None, add=None, remove=None, raise_=None, optional=None, required=None, accessor=None, attribute=None, property=None, readonly=None, bound=None, removable=None, constrained=None, transient=None, maybevoid=None, maybedefault=None, maybeambiguous=None, templateparamlist=None, type_=None, definition=None, argsstring=None, name=None, qualifiedname=None, read=None, write=None, bitfield=None, reimplements=None, reimplementedby=None, param=None, enumvalue=None, requiresclause=None, initializer=None, exceptions=None, briefdescription=None, detaileddescription=None, inbodydescription=None, location=None, references=None, referencedby=None, gds_collector_=None, **kwargs_):
         self.gds_collector_ = gds_collector_
         self.gds_elementtree_node_ = None
         self.original_tagname_ = None
@@ -3524,6 +3524,8 @@ class memberdefType(GeneratedsSuper):
         self.argsstring_nsprefix_ = None
         self.name = name
         self.name_nsprefix_ = None
+        self.qualifiedname = qualifiedname
+        self.qualifiedname_nsprefix_ = None
         self.read = read
         self.read_nsprefix_ = None
         self.write = write
@@ -3609,6 +3611,10 @@ class memberdefType(GeneratedsSuper):
         return self.name
     def set_name(self, name):
         self.name = name
+    def get_qualifiedname(self):
+        return self.qualifiedname
+    def set_qualifiedname(self, qualifiedname):
+        self.qualifiedname = qualifiedname
     def get_read(self):
         return self.read
     def set_read(self, read):
@@ -3962,6 +3968,7 @@ class memberdefType(GeneratedsSuper):
             self.definition is not None or
             self.argsstring is not None or
             self.name is not None or
+            self.qualifiedname is not None or
             self.read is not None or
             self.write is not None or
             self.bitfield is not None or
@@ -4155,6 +4162,10 @@ class memberdefType(GeneratedsSuper):
             namespaceprefix_ = self.name_nsprefix_ + ':' if (UseCapturedNS_ and self.name_nsprefix_) else ''
             showIndent(outfile, level, pretty_print)
             outfile.write('<%sname>%s</%sname>%s' % (namespaceprefix_ , self.gds_encode(self.gds_format_string(quote_xml(self.name), input_name='name')), namespaceprefix_ , eol_))
+        if self.qualifiedname is not None:
+            namespaceprefix_ = self.qualifiedname_nsprefix_ + ':' if (UseCapturedNS_ and self.qualifiedname_nsprefix_) else ''
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%squalifiedname>%s</%squalifiedname>%s' % (namespaceprefix_ , self.gds_encode(self.gds_format_string(quote_xml(self.qualifiedname), input_name='qualifiedname')), namespaceprefix_ , eol_))
         if self.read is not None:
             namespaceprefix_ = self.read_nsprefix_ + ':' if (UseCapturedNS_ and self.read_nsprefix_) else ''
             showIndent(outfile, level, pretty_print)
@@ -4456,6 +4467,12 @@ class memberdefType(GeneratedsSuper):
             value_ = self.gds_validate_string(value_, node, 'name')
             self.name = value_
             self.name_nsprefix_ = child_.prefix
+        elif nodeName_ == 'qualifiedname':
+            value_ = child_.text
+            value_ = self.gds_parse_string(value_, node, 'qualifiedname')
+            value_ = self.gds_validate_string(value_, node, 'qualifiedname')
+            self.qualifiedname = value_
+            self.qualifiedname_nsprefix_ = child_.prefix
         elif nodeName_ == 'read':
             value_ = child_.text
             value_ = self.gds_parse_string(value_, node, 'read')
@@ -4692,6 +4709,82 @@ class argsstring(GeneratedsSuper):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False, gds_collector_=None):
         pass
 # end class argsstring
+
+
+class qualifiedname(GeneratedsSuper):
+    __hash__ = GeneratedsSuper.__hash__
+    subclass = None
+    superclass = None
+    def __init__(self, gds_collector_=None, **kwargs_):
+        self.gds_collector_ = gds_collector_
+        self.gds_elementtree_node_ = None
+        self.original_tagname_ = None
+        self.parent_object_ = kwargs_.get('parent_object_')
+        self.ns_prefix_ = None
+    def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, qualifiedname)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
+        if qualifiedname.subclass:
+            return qualifiedname.subclass(*args_, **kwargs_)
+        else:
+            return qualifiedname(*args_, **kwargs_)
+    factory = staticmethod(factory)
+    def get_ns_prefix_(self):
+        return self.ns_prefix_
+    def set_ns_prefix_(self, ns_prefix):
+        self.ns_prefix_ = ns_prefix
+    def hasContent_(self):
+        if (
+
+        ):
+            return True
+        else:
+            return False
+    def export(self, outfile, level, namespaceprefix_='', namespacedef_='', name_='qualifiedname', pretty_print=True):
+        imported_ns_def_ = GenerateDSNamespaceDefs_.get('qualifiedname')
+        if imported_ns_def_ is not None:
+            namespacedef_ = imported_ns_def_
+        if pretty_print:
+            eol_ = '\n'
+        else:
+            eol_ = ''
+        if self.original_tagname_ is not None and name_ == 'qualifiedname':
+            name_ = self.original_tagname_
+        if UseCapturedNS_ and self.ns_prefix_:
+            namespaceprefix_ = self.ns_prefix_ + ':'
+        showIndent(outfile, level, pretty_print)
+        outfile.write('<%s%s%s' % (namespaceprefix_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        already_processed = set()
+        self.exportAttributes(outfile, level, already_processed, namespaceprefix_, name_='qualifiedname')
+        if self.hasContent_():
+            outfile.write('>%s' % (eol_, ))
+            self.exportChildren(outfile, level + 1, namespaceprefix_, namespacedef_, name_='qualifiedname', pretty_print=pretty_print)
+            outfile.write('</%s%s>%s' % (namespaceprefix_, name_, eol_))
+        else:
+            outfile.write('/>%s' % (eol_, ))
+    def exportAttributes(self, outfile, level, already_processed, namespaceprefix_='', name_='qualifiedname'):
+        pass
+    def exportChildren(self, outfile, level, namespaceprefix_='', namespacedef_='', name_='qualifiedname', fromsubclass_=False, pretty_print=True):
+        pass
+    def build(self, node, gds_collector_=None):
+        self.gds_collector_ = gds_collector_
+        if SaveElementTreeNode:
+            self.gds_elementtree_node_ = node
+        already_processed = set()
+        self.ns_prefix_ = node.prefix
+        self.buildAttributes(node, node.attrib, already_processed)
+        for child in node:
+            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
+            self.buildChildren(child, node, nodeName_, gds_collector_=gds_collector_)
+        return self
+    def buildAttributes(self, node, attrs, already_processed):
+        pass
+    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False, gds_collector_=None):
+        pass
+# end class qualifiedname
 
 
 class read(GeneratedsSuper):
@@ -9303,7 +9396,7 @@ class docTitleType(GeneratedsSuper):
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
     superclass = None
-    def __init__(self, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, del_=None, ins=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
+    def __init__(self, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, cite=None, del_=None, ins=None, details=None, summary=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
         self.gds_collector_ = gds_collector_
         self.gds_elementtree_node_ = None
         self.original_tagname_ = None
@@ -9364,6 +9457,11 @@ class docTitleType(GeneratedsSuper):
         else:
             self.small = small
         self.small_nsprefix_ = None
+        if cite is None:
+            self.cite = []
+        else:
+            self.cite = cite
+        self.cite_nsprefix_ = None
         if del_ is None:
             self.del_ = []
         else:
@@ -9374,6 +9472,16 @@ class docTitleType(GeneratedsSuper):
         else:
             self.ins = ins
         self.ins_nsprefix_ = None
+        if details is None:
+            self.details = []
+        else:
+            self.details = details
+        self.details_nsprefix_ = None
+        if summary is None:
+            self.summary = []
+        else:
+            self.summary = summary
+        self.summary_nsprefix_ = None
         if htmlonly is None:
             self.htmlonly = []
         else:
@@ -9584,6 +9692,16 @@ class docTitleType(GeneratedsSuper):
         self.small.insert(index, value)
     def replace_small_at(self, index, value):
         self.small[index] = value
+    def get_cite(self):
+        return self.cite
+    def set_cite(self, cite):
+        self.cite = cite
+    def add_cite(self, value):
+        self.cite.append(value)
+    def insert_cite_at(self, index, value):
+        self.cite.insert(index, value)
+    def replace_cite_at(self, index, value):
+        self.cite[index] = value
     def get_del(self):
         return self.del_
     def set_del(self, del_):
@@ -9604,6 +9722,26 @@ class docTitleType(GeneratedsSuper):
         self.ins.insert(index, value)
     def replace_ins_at(self, index, value):
         self.ins[index] = value
+    def get_details(self):
+        return self.details
+    def set_details(self, details):
+        self.details = details
+    def add_details(self, value):
+        self.details.append(value)
+    def insert_details_at(self, index, value):
+        self.details.insert(index, value)
+    def replace_details_at(self, index, value):
+        self.details[index] = value
+    def get_summary(self):
+        return self.summary
+    def set_summary(self, summary):
+        self.summary = summary
+    def add_summary(self, value):
+        self.summary.append(value)
+    def insert_summary_at(self, index, value):
+        self.summary.insert(index, value)
+    def replace_summary_at(self, index, value):
+        self.summary[index] = value
     def get_htmlonly(self):
         return self.htmlonly
     def set_htmlonly(self, htmlonly):
@@ -9769,8 +9907,11 @@ class docTitleType(GeneratedsSuper):
             self.superscript or
             self.center or
             self.small or
+            self.cite or
             self.del_ or
             self.ins or
+            self.details or
+            self.summary or
             self.htmlonly or
             self.manonly or
             self.xmlonly or
@@ -9858,12 +9999,21 @@ class docTitleType(GeneratedsSuper):
         for small_ in self.small:
             namespaceprefix_ = self.small_nsprefix_ + ':' if (UseCapturedNS_ and self.small_nsprefix_) else ''
             small_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='small', pretty_print=pretty_print)
+        for cite_ in self.cite:
+            namespaceprefix_ = self.cite_nsprefix_ + ':' if (UseCapturedNS_ and self.cite_nsprefix_) else ''
+            cite_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='cite', pretty_print=pretty_print)
         for del_ in self.del_:
             namespaceprefix_ = self.del__nsprefix_ + ':' if (UseCapturedNS_ and self.del__nsprefix_) else ''
             del_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='del', pretty_print=pretty_print)
         for ins_ in self.ins:
             namespaceprefix_ = self.ins_nsprefix_ + ':' if (UseCapturedNS_ and self.ins_nsprefix_) else ''
             ins_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='ins', pretty_print=pretty_print)
+        for details_ in self.details:
+            namespaceprefix_ = self.details_nsprefix_ + ':' if (UseCapturedNS_ and self.details_nsprefix_) else ''
+            details_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='details', pretty_print=pretty_print)
+        for summary_ in self.summary:
+            namespaceprefix_ = self.summary_nsprefix_ + ':' if (UseCapturedNS_ and self.summary_nsprefix_) else ''
+            summary_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='summary', pretty_print=pretty_print)
         for htmlonly_ in self.htmlonly:
             namespaceprefix_ = self.htmlonly_nsprefix_ + ':' if (UseCapturedNS_ and self.htmlonly_nsprefix_) else ''
             htmlonly_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='htmlonly', pretty_print=pretty_print)
@@ -10043,6 +10193,16 @@ class docTitleType(GeneratedsSuper):
               self.add_small(obj_.value)
             elif hasattr(self, 'set_small'):
               self.set_small(obj_.value)
+        elif nodeName_ == 'cite':
+            obj_ = docMarkupType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'cite', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_cite'):
+              self.add_cite(obj_.value)
+            elif hasattr(self, 'set_cite'):
+              self.set_cite(obj_.value)
         elif nodeName_ == 'del':
             obj_ = docMarkupType.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
@@ -10063,6 +10223,26 @@ class docTitleType(GeneratedsSuper):
               self.add_ins(obj_.value)
             elif hasattr(self, 'set_ins'):
               self.set_ins(obj_.value)
+        elif nodeName_ == 'details':
+            obj_ = docMarkupType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'details', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_details'):
+              self.add_details(obj_.value)
+            elif hasattr(self, 'set_details'):
+              self.set_details(obj_.value)
+        elif nodeName_ == 'summary':
+            obj_ = docMarkupType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'summary', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_summary'):
+              self.add_summary(obj_.value)
+            elif hasattr(self, 'set_summary'):
+              self.set_summary(obj_.value)
         elif nodeName_ == 'htmlonly':
             obj_ = docHtmlOnlyType.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
@@ -10214,7 +10394,7 @@ class docParaType(GeneratedsSuper):
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
     superclass = None
-    def __init__(self, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, del_=None, ins=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, hruler=None, preformatted=None, programlisting=None, verbatim=None, indexentry=None, orderedlist=None, itemizedlist=None, simplesect=None, title=None, variablelist=None, table=None, heading=None, dotfile=None, mscfile=None, diafile=None, toclist=None, language=None, parameterlist=None, xrefsect=None, copydoc=None, blockquote=None, parblock=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
+    def __init__(self, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, cite=None, del_=None, ins=None, details=None, summary=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, hruler=None, preformatted=None, programlisting=None, verbatim=None, javadocliteral=None, javadoccode=None, indexentry=None, orderedlist=None, itemizedlist=None, simplesect=None, title=None, variablelist=None, table=None, heading=None, dotfile=None, mscfile=None, diafile=None, toclist=None, language=None, parameterlist=None, xrefsect=None, copydoc=None, blockquote=None, parblock=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
         self.gds_collector_ = gds_collector_
         self.gds_elementtree_node_ = None
         self.original_tagname_ = None
@@ -10275,6 +10455,11 @@ class docParaType(GeneratedsSuper):
         else:
             self.small = small
         self.small_nsprefix_ = None
+        if cite is None:
+            self.cite = []
+        else:
+            self.cite = cite
+        self.cite_nsprefix_ = None
         if del_ is None:
             self.del_ = []
         else:
@@ -10285,6 +10470,16 @@ class docParaType(GeneratedsSuper):
         else:
             self.ins = ins
         self.ins_nsprefix_ = None
+        if details is None:
+            self.details = []
+        else:
+            self.details = details
+        self.details_nsprefix_ = None
+        if summary is None:
+            self.summary = []
+        else:
+            self.summary = summary
+        self.summary_nsprefix_ = None
         if htmlonly is None:
             self.htmlonly = []
         else:
@@ -10380,6 +10575,16 @@ class docParaType(GeneratedsSuper):
         else:
             self.verbatim = verbatim
         self.verbatim_nsprefix_ = None
+        if javadocliteral is None:
+            self.javadocliteral = []
+        else:
+            self.javadocliteral = javadocliteral
+        self.javadocliteral_nsprefix_ = None
+        if javadoccode is None:
+            self.javadoccode = []
+        else:
+            self.javadoccode = javadoccode
+        self.javadoccode_nsprefix_ = None
         if indexentry is None:
             self.indexentry = []
         else:
@@ -10605,6 +10810,16 @@ class docParaType(GeneratedsSuper):
         self.small.insert(index, value)
     def replace_small_at(self, index, value):
         self.small[index] = value
+    def get_cite(self):
+        return self.cite
+    def set_cite(self, cite):
+        self.cite = cite
+    def add_cite(self, value):
+        self.cite.append(value)
+    def insert_cite_at(self, index, value):
+        self.cite.insert(index, value)
+    def replace_cite_at(self, index, value):
+        self.cite[index] = value
     def get_del(self):
         return self.del_
     def set_del(self, del_):
@@ -10625,6 +10840,26 @@ class docParaType(GeneratedsSuper):
         self.ins.insert(index, value)
     def replace_ins_at(self, index, value):
         self.ins[index] = value
+    def get_details(self):
+        return self.details
+    def set_details(self, details):
+        self.details = details
+    def add_details(self, value):
+        self.details.append(value)
+    def insert_details_at(self, index, value):
+        self.details.insert(index, value)
+    def replace_details_at(self, index, value):
+        self.details[index] = value
+    def get_summary(self):
+        return self.summary
+    def set_summary(self, summary):
+        self.summary = summary
+    def add_summary(self, value):
+        self.summary.append(value)
+    def insert_summary_at(self, index, value):
+        self.summary.insert(index, value)
+    def replace_summary_at(self, index, value):
+        self.summary[index] = value
     def get_htmlonly(self):
         return self.htmlonly
     def set_htmlonly(self, htmlonly):
@@ -10815,6 +11050,26 @@ class docParaType(GeneratedsSuper):
         self.verbatim.insert(index, value)
     def replace_verbatim_at(self, index, value):
         self.verbatim[index] = value
+    def get_javadocliteral(self):
+        return self.javadocliteral
+    def set_javadocliteral(self, javadocliteral):
+        self.javadocliteral = javadocliteral
+    def add_javadocliteral(self, value):
+        self.javadocliteral.append(value)
+    def insert_javadocliteral_at(self, index, value):
+        self.javadocliteral.insert(index, value)
+    def replace_javadocliteral_at(self, index, value):
+        self.javadocliteral[index] = value
+    def get_javadoccode(self):
+        return self.javadoccode
+    def set_javadoccode(self, javadoccode):
+        self.javadoccode = javadoccode
+    def add_javadoccode(self, value):
+        self.javadoccode.append(value)
+    def insert_javadoccode_at(self, index, value):
+        self.javadoccode.insert(index, value)
+    def replace_javadoccode_at(self, index, value):
+        self.javadoccode[index] = value
     def get_indexentry(self):
         return self.indexentry
     def set_indexentry(self, indexentry):
@@ -11010,8 +11265,11 @@ class docParaType(GeneratedsSuper):
             self.superscript or
             self.center or
             self.small or
+            self.cite or
             self.del_ or
             self.ins or
+            self.details or
+            self.summary or
             self.htmlonly or
             self.manonly or
             self.xmlonly or
@@ -11031,6 +11289,8 @@ class docParaType(GeneratedsSuper):
             self.preformatted or
             self.programlisting or
             self.verbatim or
+            self.javadocliteral or
+            self.javadoccode or
             self.indexentry or
             self.orderedlist or
             self.itemizedlist or
@@ -11121,12 +11381,21 @@ class docParaType(GeneratedsSuper):
         for small_ in self.small:
             namespaceprefix_ = self.small_nsprefix_ + ':' if (UseCapturedNS_ and self.small_nsprefix_) else ''
             small_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='small', pretty_print=pretty_print)
+        for cite_ in self.cite:
+            namespaceprefix_ = self.cite_nsprefix_ + ':' if (UseCapturedNS_ and self.cite_nsprefix_) else ''
+            cite_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='cite', pretty_print=pretty_print)
         for del_ in self.del_:
             namespaceprefix_ = self.del__nsprefix_ + ':' if (UseCapturedNS_ and self.del__nsprefix_) else ''
             del_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='del', pretty_print=pretty_print)
         for ins_ in self.ins:
             namespaceprefix_ = self.ins_nsprefix_ + ':' if (UseCapturedNS_ and self.ins_nsprefix_) else ''
             ins_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='ins', pretty_print=pretty_print)
+        for details_ in self.details:
+            namespaceprefix_ = self.details_nsprefix_ + ':' if (UseCapturedNS_ and self.details_nsprefix_) else ''
+            details_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='details', pretty_print=pretty_print)
+        for summary_ in self.summary:
+            namespaceprefix_ = self.summary_nsprefix_ + ':' if (UseCapturedNS_ and self.summary_nsprefix_) else ''
+            summary_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='summary', pretty_print=pretty_print)
         for htmlonly_ in self.htmlonly:
             namespaceprefix_ = self.htmlonly_nsprefix_ + ':' if (UseCapturedNS_ and self.htmlonly_nsprefix_) else ''
             htmlonly_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='htmlonly', pretty_print=pretty_print)
@@ -11190,6 +11459,14 @@ class docParaType(GeneratedsSuper):
             namespaceprefix_ = self.verbatim_nsprefix_ + ':' if (UseCapturedNS_ and self.verbatim_nsprefix_) else ''
             showIndent(outfile, level, pretty_print)
             outfile.write('<%sverbatim>%s</%sverbatim>%s' % (namespaceprefix_ , self.gds_encode(self.gds_format_string(quote_xml(verbatim_), input_name='verbatim')), namespaceprefix_ , eol_))
+        for javadocliteral_ in self.javadocliteral:
+            namespaceprefix_ = self.javadocliteral_nsprefix_ + ':' if (UseCapturedNS_ and self.javadocliteral_nsprefix_) else ''
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%sjavadocliteral>%s</%sjavadocliteral>%s' % (namespaceprefix_ , self.gds_encode(self.gds_format_string(quote_xml(javadocliteral_), input_name='javadocliteral')), namespaceprefix_ , eol_))
+        for javadoccode_ in self.javadoccode:
+            namespaceprefix_ = self.javadoccode_nsprefix_ + ':' if (UseCapturedNS_ and self.javadoccode_nsprefix_) else ''
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%sjavadoccode>%s</%sjavadoccode>%s' % (namespaceprefix_ , self.gds_encode(self.gds_format_string(quote_xml(javadoccode_), input_name='javadoccode')), namespaceprefix_ , eol_))
         for indexentry_ in self.indexentry:
             namespaceprefix_ = self.indexentry_nsprefix_ + ':' if (UseCapturedNS_ and self.indexentry_nsprefix_) else ''
             indexentry_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='indexentry', pretty_print=pretty_print)
@@ -11373,6 +11650,16 @@ class docParaType(GeneratedsSuper):
               self.add_small(obj_.value)
             elif hasattr(self, 'set_small'):
               self.set_small(obj_.value)
+        elif nodeName_ == 'cite':
+            obj_ = docMarkupType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'cite', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_cite'):
+              self.add_cite(obj_.value)
+            elif hasattr(self, 'set_cite'):
+              self.set_cite(obj_.value)
         elif nodeName_ == 'del':
             obj_ = docMarkupType.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
@@ -11393,6 +11680,26 @@ class docParaType(GeneratedsSuper):
               self.add_ins(obj_.value)
             elif hasattr(self, 'set_ins'):
               self.set_ins(obj_.value)
+        elif nodeName_ == 'details':
+            obj_ = docMarkupType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'details', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_details'):
+              self.add_details(obj_.value)
+            elif hasattr(self, 'set_details'):
+              self.set_details(obj_.value)
+        elif nodeName_ == 'summary':
+            obj_ = docMarkupType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'summary', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_summary'):
+              self.add_summary(obj_.value)
+            elif hasattr(self, 'set_summary'):
+              self.set_summary(obj_.value)
         elif nodeName_ == 'htmlonly':
             obj_ = docHtmlOnlyType.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
@@ -11571,6 +11878,22 @@ class docParaType(GeneratedsSuper):
                 MixedContainer.TypeString, 'verbatim', valuestr_)
             self.content_.append(obj_)
             self.verbatim_nsprefix_ = child_.prefix
+        elif nodeName_ == 'javadocliteral' and child_.text is not None:
+            valuestr_ = child_.text
+            valuestr_ = self.gds_parse_string(valuestr_, node, 'javadocliteral')
+            valuestr_ = self.gds_validate_string(valuestr_, node, 'javadocliteral')
+            obj_ = self.mixedclass_(MixedContainer.CategorySimple,
+                MixedContainer.TypeString, 'javadocliteral', valuestr_)
+            self.content_.append(obj_)
+            self.javadocliteral_nsprefix_ = child_.prefix
+        elif nodeName_ == 'javadoccode' and child_.text is not None:
+            valuestr_ = child_.text
+            valuestr_ = self.gds_parse_string(valuestr_, node, 'javadoccode')
+            valuestr_ = self.gds_validate_string(valuestr_, node, 'javadoccode')
+            obj_ = self.mixedclass_(MixedContainer.CategorySimple,
+                MixedContainer.TypeString, 'javadoccode', valuestr_)
+            self.content_.append(obj_)
+            self.javadoccode_nsprefix_ = child_.prefix
         elif nodeName_ == 'indexentry':
             obj_ = docIndexEntryType.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
@@ -11762,7 +12085,7 @@ class docMarkupType(GeneratedsSuper):
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
     superclass = None
-    def __init__(self, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, del_=None, ins=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, hruler=None, preformatted=None, programlisting=None, verbatim=None, indexentry=None, orderedlist=None, itemizedlist=None, simplesect=None, title=None, variablelist=None, table=None, heading=None, dotfile=None, mscfile=None, diafile=None, toclist=None, language=None, parameterlist=None, xrefsect=None, copydoc=None, blockquote=None, parblock=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
+    def __init__(self, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, cite=None, del_=None, ins=None, details=None, summary=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, hruler=None, preformatted=None, programlisting=None, verbatim=None, javadocliteral=None, javadoccode=None, indexentry=None, orderedlist=None, itemizedlist=None, simplesect=None, title=None, variablelist=None, table=None, heading=None, dotfile=None, mscfile=None, diafile=None, toclist=None, language=None, parameterlist=None, xrefsect=None, copydoc=None, blockquote=None, parblock=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
         self.gds_collector_ = gds_collector_
         self.gds_elementtree_node_ = None
         self.original_tagname_ = None
@@ -11823,6 +12146,11 @@ class docMarkupType(GeneratedsSuper):
         else:
             self.small = small
         self.small_nsprefix_ = None
+        if cite is None:
+            self.cite = []
+        else:
+            self.cite = cite
+        self.cite_nsprefix_ = None
         if del_ is None:
             self.del_ = []
         else:
@@ -11833,6 +12161,16 @@ class docMarkupType(GeneratedsSuper):
         else:
             self.ins = ins
         self.ins_nsprefix_ = None
+        if details is None:
+            self.details = []
+        else:
+            self.details = details
+        self.details_nsprefix_ = None
+        if summary is None:
+            self.summary = []
+        else:
+            self.summary = summary
+        self.summary_nsprefix_ = None
         if htmlonly is None:
             self.htmlonly = []
         else:
@@ -11928,6 +12266,16 @@ class docMarkupType(GeneratedsSuper):
         else:
             self.verbatim = verbatim
         self.verbatim_nsprefix_ = None
+        if javadocliteral is None:
+            self.javadocliteral = []
+        else:
+            self.javadocliteral = javadocliteral
+        self.javadocliteral_nsprefix_ = None
+        if javadoccode is None:
+            self.javadoccode = []
+        else:
+            self.javadoccode = javadoccode
+        self.javadoccode_nsprefix_ = None
         if indexentry is None:
             self.indexentry = []
         else:
@@ -12153,6 +12501,16 @@ class docMarkupType(GeneratedsSuper):
         self.small.insert(index, value)
     def replace_small_at(self, index, value):
         self.small[index] = value
+    def get_cite(self):
+        return self.cite
+    def set_cite(self, cite):
+        self.cite = cite
+    def add_cite(self, value):
+        self.cite.append(value)
+    def insert_cite_at(self, index, value):
+        self.cite.insert(index, value)
+    def replace_cite_at(self, index, value):
+        self.cite[index] = value
     def get_del(self):
         return self.del_
     def set_del(self, del_):
@@ -12173,6 +12531,26 @@ class docMarkupType(GeneratedsSuper):
         self.ins.insert(index, value)
     def replace_ins_at(self, index, value):
         self.ins[index] = value
+    def get_details(self):
+        return self.details
+    def set_details(self, details):
+        self.details = details
+    def add_details(self, value):
+        self.details.append(value)
+    def insert_details_at(self, index, value):
+        self.details.insert(index, value)
+    def replace_details_at(self, index, value):
+        self.details[index] = value
+    def get_summary(self):
+        return self.summary
+    def set_summary(self, summary):
+        self.summary = summary
+    def add_summary(self, value):
+        self.summary.append(value)
+    def insert_summary_at(self, index, value):
+        self.summary.insert(index, value)
+    def replace_summary_at(self, index, value):
+        self.summary[index] = value
     def get_htmlonly(self):
         return self.htmlonly
     def set_htmlonly(self, htmlonly):
@@ -12363,6 +12741,26 @@ class docMarkupType(GeneratedsSuper):
         self.verbatim.insert(index, value)
     def replace_verbatim_at(self, index, value):
         self.verbatim[index] = value
+    def get_javadocliteral(self):
+        return self.javadocliteral
+    def set_javadocliteral(self, javadocliteral):
+        self.javadocliteral = javadocliteral
+    def add_javadocliteral(self, value):
+        self.javadocliteral.append(value)
+    def insert_javadocliteral_at(self, index, value):
+        self.javadocliteral.insert(index, value)
+    def replace_javadocliteral_at(self, index, value):
+        self.javadocliteral[index] = value
+    def get_javadoccode(self):
+        return self.javadoccode
+    def set_javadoccode(self, javadoccode):
+        self.javadoccode = javadoccode
+    def add_javadoccode(self, value):
+        self.javadoccode.append(value)
+    def insert_javadoccode_at(self, index, value):
+        self.javadoccode.insert(index, value)
+    def replace_javadoccode_at(self, index, value):
+        self.javadoccode[index] = value
     def get_indexentry(self):
         return self.indexentry
     def set_indexentry(self, indexentry):
@@ -12558,8 +12956,11 @@ class docMarkupType(GeneratedsSuper):
             self.superscript or
             self.center or
             self.small or
+            self.cite or
             self.del_ or
             self.ins or
+            self.details or
+            self.summary or
             self.htmlonly or
             self.manonly or
             self.xmlonly or
@@ -12579,6 +12980,8 @@ class docMarkupType(GeneratedsSuper):
             self.preformatted or
             self.programlisting or
             self.verbatim or
+            self.javadocliteral or
+            self.javadoccode or
             self.indexentry or
             self.orderedlist or
             self.itemizedlist or
@@ -12669,12 +13072,21 @@ class docMarkupType(GeneratedsSuper):
         for small_ in self.small:
             namespaceprefix_ = self.small_nsprefix_ + ':' if (UseCapturedNS_ and self.small_nsprefix_) else ''
             small_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='small', pretty_print=pretty_print)
+        for cite_ in self.cite:
+            namespaceprefix_ = self.cite_nsprefix_ + ':' if (UseCapturedNS_ and self.cite_nsprefix_) else ''
+            cite_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='cite', pretty_print=pretty_print)
         for del_ in self.del_:
             namespaceprefix_ = self.del__nsprefix_ + ':' if (UseCapturedNS_ and self.del__nsprefix_) else ''
             del_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='del', pretty_print=pretty_print)
         for ins_ in self.ins:
             namespaceprefix_ = self.ins_nsprefix_ + ':' if (UseCapturedNS_ and self.ins_nsprefix_) else ''
             ins_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='ins', pretty_print=pretty_print)
+        for details_ in self.details:
+            namespaceprefix_ = self.details_nsprefix_ + ':' if (UseCapturedNS_ and self.details_nsprefix_) else ''
+            details_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='details', pretty_print=pretty_print)
+        for summary_ in self.summary:
+            namespaceprefix_ = self.summary_nsprefix_ + ':' if (UseCapturedNS_ and self.summary_nsprefix_) else ''
+            summary_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='summary', pretty_print=pretty_print)
         for htmlonly_ in self.htmlonly:
             namespaceprefix_ = self.htmlonly_nsprefix_ + ':' if (UseCapturedNS_ and self.htmlonly_nsprefix_) else ''
             htmlonly_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='htmlonly', pretty_print=pretty_print)
@@ -12738,6 +13150,14 @@ class docMarkupType(GeneratedsSuper):
             namespaceprefix_ = self.verbatim_nsprefix_ + ':' if (UseCapturedNS_ and self.verbatim_nsprefix_) else ''
             showIndent(outfile, level, pretty_print)
             outfile.write('<%sverbatim>%s</%sverbatim>%s' % (namespaceprefix_ , self.gds_encode(self.gds_format_string(quote_xml(verbatim_), input_name='verbatim')), namespaceprefix_ , eol_))
+        for javadocliteral_ in self.javadocliteral:
+            namespaceprefix_ = self.javadocliteral_nsprefix_ + ':' if (UseCapturedNS_ and self.javadocliteral_nsprefix_) else ''
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%sjavadocliteral>%s</%sjavadocliteral>%s' % (namespaceprefix_ , self.gds_encode(self.gds_format_string(quote_xml(javadocliteral_), input_name='javadocliteral')), namespaceprefix_ , eol_))
+        for javadoccode_ in self.javadoccode:
+            namespaceprefix_ = self.javadoccode_nsprefix_ + ':' if (UseCapturedNS_ and self.javadoccode_nsprefix_) else ''
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%sjavadoccode>%s</%sjavadoccode>%s' % (namespaceprefix_ , self.gds_encode(self.gds_format_string(quote_xml(javadoccode_), input_name='javadoccode')), namespaceprefix_ , eol_))
         for indexentry_ in self.indexentry:
             namespaceprefix_ = self.indexentry_nsprefix_ + ':' if (UseCapturedNS_ and self.indexentry_nsprefix_) else ''
             indexentry_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='indexentry', pretty_print=pretty_print)
@@ -12921,6 +13341,16 @@ class docMarkupType(GeneratedsSuper):
               self.add_small(obj_.value)
             elif hasattr(self, 'set_small'):
               self.set_small(obj_.value)
+        elif nodeName_ == 'cite':
+            obj_ = docMarkupType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'cite', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_cite'):
+              self.add_cite(obj_.value)
+            elif hasattr(self, 'set_cite'):
+              self.set_cite(obj_.value)
         elif nodeName_ == 'del':
             obj_ = docMarkupType.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
@@ -12941,6 +13371,26 @@ class docMarkupType(GeneratedsSuper):
               self.add_ins(obj_.value)
             elif hasattr(self, 'set_ins'):
               self.set_ins(obj_.value)
+        elif nodeName_ == 'details':
+            obj_ = docMarkupType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'details', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_details'):
+              self.add_details(obj_.value)
+            elif hasattr(self, 'set_details'):
+              self.set_details(obj_.value)
+        elif nodeName_ == 'summary':
+            obj_ = docMarkupType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'summary', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_summary'):
+              self.add_summary(obj_.value)
+            elif hasattr(self, 'set_summary'):
+              self.set_summary(obj_.value)
         elif nodeName_ == 'htmlonly':
             obj_ = docHtmlOnlyType.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
@@ -13119,6 +13569,22 @@ class docMarkupType(GeneratedsSuper):
                 MixedContainer.TypeString, 'verbatim', valuestr_)
             self.content_.append(obj_)
             self.verbatim_nsprefix_ = child_.prefix
+        elif nodeName_ == 'javadocliteral' and child_.text is not None:
+            valuestr_ = child_.text
+            valuestr_ = self.gds_parse_string(valuestr_, node, 'javadocliteral')
+            valuestr_ = self.gds_validate_string(valuestr_, node, 'javadocliteral')
+            obj_ = self.mixedclass_(MixedContainer.CategorySimple,
+                MixedContainer.TypeString, 'javadocliteral', valuestr_)
+            self.content_.append(obj_)
+            self.javadocliteral_nsprefix_ = child_.prefix
+        elif nodeName_ == 'javadoccode' and child_.text is not None:
+            valuestr_ = child_.text
+            valuestr_ = self.gds_parse_string(valuestr_, node, 'javadoccode')
+            valuestr_ = self.gds_validate_string(valuestr_, node, 'javadoccode')
+            obj_ = self.mixedclass_(MixedContainer.CategorySimple,
+                MixedContainer.TypeString, 'javadoccode', valuestr_)
+            self.content_.append(obj_)
+            self.javadoccode_nsprefix_ = child_.prefix
         elif nodeName_ == 'indexentry':
             obj_ = docIndexEntryType.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
@@ -13310,7 +13776,7 @@ class docURLLink(GeneratedsSuper):
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
     superclass = None
-    def __init__(self, url=None, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, del_=None, ins=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
+    def __init__(self, url=None, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, cite=None, del_=None, ins=None, details=None, summary=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
         self.gds_collector_ = gds_collector_
         self.gds_elementtree_node_ = None
         self.original_tagname_ = None
@@ -13373,6 +13839,11 @@ class docURLLink(GeneratedsSuper):
         else:
             self.small = small
         self.small_nsprefix_ = None
+        if cite is None:
+            self.cite = []
+        else:
+            self.cite = cite
+        self.cite_nsprefix_ = None
         if del_ is None:
             self.del_ = []
         else:
@@ -13383,6 +13854,16 @@ class docURLLink(GeneratedsSuper):
         else:
             self.ins = ins
         self.ins_nsprefix_ = None
+        if details is None:
+            self.details = []
+        else:
+            self.details = details
+        self.details_nsprefix_ = None
+        if summary is None:
+            self.summary = []
+        else:
+            self.summary = summary
+        self.summary_nsprefix_ = None
         if htmlonly is None:
             self.htmlonly = []
         else:
@@ -13593,6 +14074,16 @@ class docURLLink(GeneratedsSuper):
         self.small.insert(index, value)
     def replace_small_at(self, index, value):
         self.small[index] = value
+    def get_cite(self):
+        return self.cite
+    def set_cite(self, cite):
+        self.cite = cite
+    def add_cite(self, value):
+        self.cite.append(value)
+    def insert_cite_at(self, index, value):
+        self.cite.insert(index, value)
+    def replace_cite_at(self, index, value):
+        self.cite[index] = value
     def get_del(self):
         return self.del_
     def set_del(self, del_):
@@ -13613,6 +14104,26 @@ class docURLLink(GeneratedsSuper):
         self.ins.insert(index, value)
     def replace_ins_at(self, index, value):
         self.ins[index] = value
+    def get_details(self):
+        return self.details
+    def set_details(self, details):
+        self.details = details
+    def add_details(self, value):
+        self.details.append(value)
+    def insert_details_at(self, index, value):
+        self.details.insert(index, value)
+    def replace_details_at(self, index, value):
+        self.details[index] = value
+    def get_summary(self):
+        return self.summary
+    def set_summary(self, summary):
+        self.summary = summary
+    def add_summary(self, value):
+        self.summary.append(value)
+    def insert_summary_at(self, index, value):
+        self.summary.insert(index, value)
+    def replace_summary_at(self, index, value):
+        self.summary[index] = value
     def get_htmlonly(self):
         return self.htmlonly
     def set_htmlonly(self, htmlonly):
@@ -13782,8 +14293,11 @@ class docURLLink(GeneratedsSuper):
             self.superscript or
             self.center or
             self.small or
+            self.cite or
             self.del_ or
             self.ins or
+            self.details or
+            self.summary or
             self.htmlonly or
             self.manonly or
             self.xmlonly or
@@ -13873,12 +14387,21 @@ class docURLLink(GeneratedsSuper):
         for small_ in self.small:
             namespaceprefix_ = self.small_nsprefix_ + ':' if (UseCapturedNS_ and self.small_nsprefix_) else ''
             small_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='small', pretty_print=pretty_print)
+        for cite_ in self.cite:
+            namespaceprefix_ = self.cite_nsprefix_ + ':' if (UseCapturedNS_ and self.cite_nsprefix_) else ''
+            cite_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='cite', pretty_print=pretty_print)
         for del_ in self.del_:
             namespaceprefix_ = self.del__nsprefix_ + ':' if (UseCapturedNS_ and self.del__nsprefix_) else ''
             del_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='del', pretty_print=pretty_print)
         for ins_ in self.ins:
             namespaceprefix_ = self.ins_nsprefix_ + ':' if (UseCapturedNS_ and self.ins_nsprefix_) else ''
             ins_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='ins', pretty_print=pretty_print)
+        for details_ in self.details:
+            namespaceprefix_ = self.details_nsprefix_ + ':' if (UseCapturedNS_ and self.details_nsprefix_) else ''
+            details_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='details', pretty_print=pretty_print)
+        for summary_ in self.summary:
+            namespaceprefix_ = self.summary_nsprefix_ + ':' if (UseCapturedNS_ and self.summary_nsprefix_) else ''
+            summary_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='summary', pretty_print=pretty_print)
         for htmlonly_ in self.htmlonly:
             namespaceprefix_ = self.htmlonly_nsprefix_ + ':' if (UseCapturedNS_ and self.htmlonly_nsprefix_) else ''
             htmlonly_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='htmlonly', pretty_print=pretty_print)
@@ -14061,6 +14584,16 @@ class docURLLink(GeneratedsSuper):
               self.add_small(obj_.value)
             elif hasattr(self, 'set_small'):
               self.set_small(obj_.value)
+        elif nodeName_ == 'cite':
+            obj_ = docMarkupType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'cite', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_cite'):
+              self.add_cite(obj_.value)
+            elif hasattr(self, 'set_cite'):
+              self.set_cite(obj_.value)
         elif nodeName_ == 'del':
             obj_ = docMarkupType.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
@@ -14081,6 +14614,26 @@ class docURLLink(GeneratedsSuper):
               self.add_ins(obj_.value)
             elif hasattr(self, 'set_ins'):
               self.set_ins(obj_.value)
+        elif nodeName_ == 'details':
+            obj_ = docMarkupType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'details', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_details'):
+              self.add_details(obj_.value)
+            elif hasattr(self, 'set_details'):
+              self.set_details(obj_.value)
+        elif nodeName_ == 'summary':
+            obj_ = docMarkupType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'summary', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_summary'):
+              self.add_summary(obj_.value)
+            elif hasattr(self, 'set_summary'):
+              self.set_summary(obj_.value)
         elif nodeName_ == 'htmlonly':
             obj_ = docHtmlOnlyType.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
@@ -15172,7 +15725,7 @@ class docRefTextType(GeneratedsSuper):
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
     superclass = None
-    def __init__(self, refid=None, kindref=None, external=None, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, del_=None, ins=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
+    def __init__(self, refid=None, kindref=None, external=None, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, cite=None, del_=None, ins=None, details=None, summary=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
         self.gds_collector_ = gds_collector_
         self.gds_elementtree_node_ = None
         self.original_tagname_ = None
@@ -15239,6 +15792,11 @@ class docRefTextType(GeneratedsSuper):
         else:
             self.small = small
         self.small_nsprefix_ = None
+        if cite is None:
+            self.cite = []
+        else:
+            self.cite = cite
+        self.cite_nsprefix_ = None
         if del_ is None:
             self.del_ = []
         else:
@@ -15249,6 +15807,16 @@ class docRefTextType(GeneratedsSuper):
         else:
             self.ins = ins
         self.ins_nsprefix_ = None
+        if details is None:
+            self.details = []
+        else:
+            self.details = details
+        self.details_nsprefix_ = None
+        if summary is None:
+            self.summary = []
+        else:
+            self.summary = summary
+        self.summary_nsprefix_ = None
         if htmlonly is None:
             self.htmlonly = []
         else:
@@ -15459,6 +16027,16 @@ class docRefTextType(GeneratedsSuper):
         self.small.insert(index, value)
     def replace_small_at(self, index, value):
         self.small[index] = value
+    def get_cite(self):
+        return self.cite
+    def set_cite(self, cite):
+        self.cite = cite
+    def add_cite(self, value):
+        self.cite.append(value)
+    def insert_cite_at(self, index, value):
+        self.cite.insert(index, value)
+    def replace_cite_at(self, index, value):
+        self.cite[index] = value
     def get_del(self):
         return self.del_
     def set_del(self, del_):
@@ -15479,6 +16057,26 @@ class docRefTextType(GeneratedsSuper):
         self.ins.insert(index, value)
     def replace_ins_at(self, index, value):
         self.ins[index] = value
+    def get_details(self):
+        return self.details
+    def set_details(self, details):
+        self.details = details
+    def add_details(self, value):
+        self.details.append(value)
+    def insert_details_at(self, index, value):
+        self.details.insert(index, value)
+    def replace_details_at(self, index, value):
+        self.details[index] = value
+    def get_summary(self):
+        return self.summary
+    def set_summary(self, summary):
+        self.summary = summary
+    def add_summary(self, value):
+        self.summary.append(value)
+    def insert_summary_at(self, index, value):
+        self.summary.insert(index, value)
+    def replace_summary_at(self, index, value):
+        self.summary[index] = value
     def get_htmlonly(self):
         return self.htmlonly
     def set_htmlonly(self, htmlonly):
@@ -15669,8 +16267,11 @@ class docRefTextType(GeneratedsSuper):
             self.superscript or
             self.center or
             self.small or
+            self.cite or
             self.del_ or
             self.ins or
+            self.details or
+            self.summary or
             self.htmlonly or
             self.manonly or
             self.xmlonly or
@@ -15766,12 +16367,21 @@ class docRefTextType(GeneratedsSuper):
         for small_ in self.small:
             namespaceprefix_ = self.small_nsprefix_ + ':' if (UseCapturedNS_ and self.small_nsprefix_) else ''
             small_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='small', pretty_print=pretty_print)
+        for cite_ in self.cite:
+            namespaceprefix_ = self.cite_nsprefix_ + ':' if (UseCapturedNS_ and self.cite_nsprefix_) else ''
+            cite_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='cite', pretty_print=pretty_print)
         for del_ in self.del_:
             namespaceprefix_ = self.del__nsprefix_ + ':' if (UseCapturedNS_ and self.del__nsprefix_) else ''
             del_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='del', pretty_print=pretty_print)
         for ins_ in self.ins:
             namespaceprefix_ = self.ins_nsprefix_ + ':' if (UseCapturedNS_ and self.ins_nsprefix_) else ''
             ins_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='ins', pretty_print=pretty_print)
+        for details_ in self.details:
+            namespaceprefix_ = self.details_nsprefix_ + ':' if (UseCapturedNS_ and self.details_nsprefix_) else ''
+            details_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='details', pretty_print=pretty_print)
+        for summary_ in self.summary:
+            namespaceprefix_ = self.summary_nsprefix_ + ':' if (UseCapturedNS_ and self.summary_nsprefix_) else ''
+            summary_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='summary', pretty_print=pretty_print)
         for htmlonly_ in self.htmlonly:
             namespaceprefix_ = self.htmlonly_nsprefix_ + ':' if (UseCapturedNS_ and self.htmlonly_nsprefix_) else ''
             htmlonly_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='htmlonly', pretty_print=pretty_print)
@@ -15963,6 +16573,16 @@ class docRefTextType(GeneratedsSuper):
               self.add_small(obj_.value)
             elif hasattr(self, 'set_small'):
               self.set_small(obj_.value)
+        elif nodeName_ == 'cite':
+            obj_ = docMarkupType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'cite', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_cite'):
+              self.add_cite(obj_.value)
+            elif hasattr(self, 'set_cite'):
+              self.set_cite(obj_.value)
         elif nodeName_ == 'del':
             obj_ = docMarkupType.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
@@ -15983,6 +16603,26 @@ class docRefTextType(GeneratedsSuper):
               self.add_ins(obj_.value)
             elif hasattr(self, 'set_ins'):
               self.set_ins(obj_.value)
+        elif nodeName_ == 'details':
+            obj_ = docMarkupType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'details', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_details'):
+              self.add_details(obj_.value)
+            elif hasattr(self, 'set_details'):
+              self.set_details(obj_.value)
+        elif nodeName_ == 'summary':
+            obj_ = docMarkupType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'summary', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_summary'):
+              self.add_summary(obj_.value)
+            elif hasattr(self, 'set_summary'):
+              self.set_summary(obj_.value)
         elif nodeName_ == 'htmlonly':
             obj_ = docHtmlOnlyType.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
@@ -16661,7 +17301,7 @@ class docCaptionType(GeneratedsSuper):
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
     superclass = None
-    def __init__(self, id=None, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, del_=None, ins=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
+    def __init__(self, id=None, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, cite=None, del_=None, ins=None, details=None, summary=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
         self.gds_collector_ = gds_collector_
         self.gds_elementtree_node_ = None
         self.original_tagname_ = None
@@ -16724,6 +17364,11 @@ class docCaptionType(GeneratedsSuper):
         else:
             self.small = small
         self.small_nsprefix_ = None
+        if cite is None:
+            self.cite = []
+        else:
+            self.cite = cite
+        self.cite_nsprefix_ = None
         if del_ is None:
             self.del_ = []
         else:
@@ -16734,6 +17379,16 @@ class docCaptionType(GeneratedsSuper):
         else:
             self.ins = ins
         self.ins_nsprefix_ = None
+        if details is None:
+            self.details = []
+        else:
+            self.details = details
+        self.details_nsprefix_ = None
+        if summary is None:
+            self.summary = []
+        else:
+            self.summary = summary
+        self.summary_nsprefix_ = None
         if htmlonly is None:
             self.htmlonly = []
         else:
@@ -16944,6 +17599,16 @@ class docCaptionType(GeneratedsSuper):
         self.small.insert(index, value)
     def replace_small_at(self, index, value):
         self.small[index] = value
+    def get_cite(self):
+        return self.cite
+    def set_cite(self, cite):
+        self.cite = cite
+    def add_cite(self, value):
+        self.cite.append(value)
+    def insert_cite_at(self, index, value):
+        self.cite.insert(index, value)
+    def replace_cite_at(self, index, value):
+        self.cite[index] = value
     def get_del(self):
         return self.del_
     def set_del(self, del_):
@@ -16964,6 +17629,26 @@ class docCaptionType(GeneratedsSuper):
         self.ins.insert(index, value)
     def replace_ins_at(self, index, value):
         self.ins[index] = value
+    def get_details(self):
+        return self.details
+    def set_details(self, details):
+        self.details = details
+    def add_details(self, value):
+        self.details.append(value)
+    def insert_details_at(self, index, value):
+        self.details.insert(index, value)
+    def replace_details_at(self, index, value):
+        self.details[index] = value
+    def get_summary(self):
+        return self.summary
+    def set_summary(self, summary):
+        self.summary = summary
+    def add_summary(self, value):
+        self.summary.append(value)
+    def insert_summary_at(self, index, value):
+        self.summary.insert(index, value)
+    def replace_summary_at(self, index, value):
+        self.summary[index] = value
     def get_htmlonly(self):
         return self.htmlonly
     def set_htmlonly(self, htmlonly):
@@ -17133,8 +17818,11 @@ class docCaptionType(GeneratedsSuper):
             self.superscript or
             self.center or
             self.small or
+            self.cite or
             self.del_ or
             self.ins or
+            self.details or
+            self.summary or
             self.htmlonly or
             self.manonly or
             self.xmlonly or
@@ -17224,12 +17912,21 @@ class docCaptionType(GeneratedsSuper):
         for small_ in self.small:
             namespaceprefix_ = self.small_nsprefix_ + ':' if (UseCapturedNS_ and self.small_nsprefix_) else ''
             small_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='small', pretty_print=pretty_print)
+        for cite_ in self.cite:
+            namespaceprefix_ = self.cite_nsprefix_ + ':' if (UseCapturedNS_ and self.cite_nsprefix_) else ''
+            cite_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='cite', pretty_print=pretty_print)
         for del_ in self.del_:
             namespaceprefix_ = self.del__nsprefix_ + ':' if (UseCapturedNS_ and self.del__nsprefix_) else ''
             del_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='del', pretty_print=pretty_print)
         for ins_ in self.ins:
             namespaceprefix_ = self.ins_nsprefix_ + ':' if (UseCapturedNS_ and self.ins_nsprefix_) else ''
             ins_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='ins', pretty_print=pretty_print)
+        for details_ in self.details:
+            namespaceprefix_ = self.details_nsprefix_ + ':' if (UseCapturedNS_ and self.details_nsprefix_) else ''
+            details_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='details', pretty_print=pretty_print)
+        for summary_ in self.summary:
+            namespaceprefix_ = self.summary_nsprefix_ + ':' if (UseCapturedNS_ and self.summary_nsprefix_) else ''
+            summary_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='summary', pretty_print=pretty_print)
         for htmlonly_ in self.htmlonly:
             namespaceprefix_ = self.htmlonly_nsprefix_ + ':' if (UseCapturedNS_ and self.htmlonly_nsprefix_) else ''
             htmlonly_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='htmlonly', pretty_print=pretty_print)
@@ -17412,6 +18109,16 @@ class docCaptionType(GeneratedsSuper):
               self.add_small(obj_.value)
             elif hasattr(self, 'set_small'):
               self.set_small(obj_.value)
+        elif nodeName_ == 'cite':
+            obj_ = docMarkupType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'cite', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_cite'):
+              self.add_cite(obj_.value)
+            elif hasattr(self, 'set_cite'):
+              self.set_cite(obj_.value)
         elif nodeName_ == 'del':
             obj_ = docMarkupType.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
@@ -17432,6 +18139,26 @@ class docCaptionType(GeneratedsSuper):
               self.add_ins(obj_.value)
             elif hasattr(self, 'set_ins'):
               self.set_ins(obj_.value)
+        elif nodeName_ == 'details':
+            obj_ = docMarkupType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'details', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_details'):
+              self.add_details(obj_.value)
+            elif hasattr(self, 'set_details'):
+              self.set_details(obj_.value)
+        elif nodeName_ == 'summary':
+            obj_ = docMarkupType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'summary', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_summary'):
+              self.add_summary(obj_.value)
+            elif hasattr(self, 'set_summary'):
+              self.set_summary(obj_.value)
         elif nodeName_ == 'htmlonly':
             obj_ = docHtmlOnlyType.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
@@ -17583,7 +18310,7 @@ class docHeadingType(GeneratedsSuper):
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
     superclass = None
-    def __init__(self, level=None, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, del_=None, ins=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
+    def __init__(self, level=None, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, cite=None, del_=None, ins=None, details=None, summary=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
         self.gds_collector_ = gds_collector_
         self.gds_elementtree_node_ = None
         self.original_tagname_ = None
@@ -17646,6 +18373,11 @@ class docHeadingType(GeneratedsSuper):
         else:
             self.small = small
         self.small_nsprefix_ = None
+        if cite is None:
+            self.cite = []
+        else:
+            self.cite = cite
+        self.cite_nsprefix_ = None
         if del_ is None:
             self.del_ = []
         else:
@@ -17656,6 +18388,16 @@ class docHeadingType(GeneratedsSuper):
         else:
             self.ins = ins
         self.ins_nsprefix_ = None
+        if details is None:
+            self.details = []
+        else:
+            self.details = details
+        self.details_nsprefix_ = None
+        if summary is None:
+            self.summary = []
+        else:
+            self.summary = summary
+        self.summary_nsprefix_ = None
         if htmlonly is None:
             self.htmlonly = []
         else:
@@ -17866,6 +18608,16 @@ class docHeadingType(GeneratedsSuper):
         self.small.insert(index, value)
     def replace_small_at(self, index, value):
         self.small[index] = value
+    def get_cite(self):
+        return self.cite
+    def set_cite(self, cite):
+        self.cite = cite
+    def add_cite(self, value):
+        self.cite.append(value)
+    def insert_cite_at(self, index, value):
+        self.cite.insert(index, value)
+    def replace_cite_at(self, index, value):
+        self.cite[index] = value
     def get_del(self):
         return self.del_
     def set_del(self, del_):
@@ -17886,6 +18638,26 @@ class docHeadingType(GeneratedsSuper):
         self.ins.insert(index, value)
     def replace_ins_at(self, index, value):
         self.ins[index] = value
+    def get_details(self):
+        return self.details
+    def set_details(self, details):
+        self.details = details
+    def add_details(self, value):
+        self.details.append(value)
+    def insert_details_at(self, index, value):
+        self.details.insert(index, value)
+    def replace_details_at(self, index, value):
+        self.details[index] = value
+    def get_summary(self):
+        return self.summary
+    def set_summary(self, summary):
+        self.summary = summary
+    def add_summary(self, value):
+        self.summary.append(value)
+    def insert_summary_at(self, index, value):
+        self.summary.insert(index, value)
+    def replace_summary_at(self, index, value):
+        self.summary[index] = value
     def get_htmlonly(self):
         return self.htmlonly
     def set_htmlonly(self, htmlonly):
@@ -18055,8 +18827,11 @@ class docHeadingType(GeneratedsSuper):
             self.superscript or
             self.center or
             self.small or
+            self.cite or
             self.del_ or
             self.ins or
+            self.details or
+            self.summary or
             self.htmlonly or
             self.manonly or
             self.xmlonly or
@@ -18146,12 +18921,21 @@ class docHeadingType(GeneratedsSuper):
         for small_ in self.small:
             namespaceprefix_ = self.small_nsprefix_ + ':' if (UseCapturedNS_ and self.small_nsprefix_) else ''
             small_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='small', pretty_print=pretty_print)
+        for cite_ in self.cite:
+            namespaceprefix_ = self.cite_nsprefix_ + ':' if (UseCapturedNS_ and self.cite_nsprefix_) else ''
+            cite_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='cite', pretty_print=pretty_print)
         for del_ in self.del_:
             namespaceprefix_ = self.del__nsprefix_ + ':' if (UseCapturedNS_ and self.del__nsprefix_) else ''
             del_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='del', pretty_print=pretty_print)
         for ins_ in self.ins:
             namespaceprefix_ = self.ins_nsprefix_ + ':' if (UseCapturedNS_ and self.ins_nsprefix_) else ''
             ins_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='ins', pretty_print=pretty_print)
+        for details_ in self.details:
+            namespaceprefix_ = self.details_nsprefix_ + ':' if (UseCapturedNS_ and self.details_nsprefix_) else ''
+            details_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='details', pretty_print=pretty_print)
+        for summary_ in self.summary:
+            namespaceprefix_ = self.summary_nsprefix_ + ':' if (UseCapturedNS_ and self.summary_nsprefix_) else ''
+            summary_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='summary', pretty_print=pretty_print)
         for htmlonly_ in self.htmlonly:
             namespaceprefix_ = self.htmlonly_nsprefix_ + ':' if (UseCapturedNS_ and self.htmlonly_nsprefix_) else ''
             htmlonly_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='htmlonly', pretty_print=pretty_print)
@@ -18334,6 +19118,16 @@ class docHeadingType(GeneratedsSuper):
               self.add_small(obj_.value)
             elif hasattr(self, 'set_small'):
               self.set_small(obj_.value)
+        elif nodeName_ == 'cite':
+            obj_ = docMarkupType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'cite', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_cite'):
+              self.add_cite(obj_.value)
+            elif hasattr(self, 'set_cite'):
+              self.set_cite(obj_.value)
         elif nodeName_ == 'del':
             obj_ = docMarkupType.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
@@ -18354,6 +19148,26 @@ class docHeadingType(GeneratedsSuper):
               self.add_ins(obj_.value)
             elif hasattr(self, 'set_ins'):
               self.set_ins(obj_.value)
+        elif nodeName_ == 'details':
+            obj_ = docMarkupType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'details', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_details'):
+              self.add_details(obj_.value)
+            elif hasattr(self, 'set_details'):
+              self.set_details(obj_.value)
+        elif nodeName_ == 'summary':
+            obj_ = docMarkupType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'summary', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_summary'):
+              self.add_summary(obj_.value)
+            elif hasattr(self, 'set_summary'):
+              self.set_summary(obj_.value)
         elif nodeName_ == 'htmlonly':
             obj_ = docHtmlOnlyType.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
@@ -18505,7 +19319,7 @@ class docImageType(GeneratedsSuper):
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
     superclass = None
-    def __init__(self, type_=None, name=None, width=None, height=None, alt=None, inline=None, caption=None, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, del_=None, ins=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
+    def __init__(self, type_=None, name=None, width=None, height=None, alt=None, inline=None, caption=None, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, cite=None, del_=None, ins=None, details=None, summary=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
         self.gds_collector_ = gds_collector_
         self.gds_elementtree_node_ = None
         self.original_tagname_ = None
@@ -18580,6 +19394,11 @@ class docImageType(GeneratedsSuper):
         else:
             self.small = small
         self.small_nsprefix_ = None
+        if cite is None:
+            self.cite = []
+        else:
+            self.cite = cite
+        self.cite_nsprefix_ = None
         if del_ is None:
             self.del_ = []
         else:
@@ -18590,6 +19409,16 @@ class docImageType(GeneratedsSuper):
         else:
             self.ins = ins
         self.ins_nsprefix_ = None
+        if details is None:
+            self.details = []
+        else:
+            self.details = details
+        self.details_nsprefix_ = None
+        if summary is None:
+            self.summary = []
+        else:
+            self.summary = summary
+        self.summary_nsprefix_ = None
         if htmlonly is None:
             self.htmlonly = []
         else:
@@ -18800,6 +19629,16 @@ class docImageType(GeneratedsSuper):
         self.small.insert(index, value)
     def replace_small_at(self, index, value):
         self.small[index] = value
+    def get_cite(self):
+        return self.cite
+    def set_cite(self, cite):
+        self.cite = cite
+    def add_cite(self, value):
+        self.cite.append(value)
+    def insert_cite_at(self, index, value):
+        self.cite.insert(index, value)
+    def replace_cite_at(self, index, value):
+        self.cite[index] = value
     def get_del(self):
         return self.del_
     def set_del(self, del_):
@@ -18820,6 +19659,26 @@ class docImageType(GeneratedsSuper):
         self.ins.insert(index, value)
     def replace_ins_at(self, index, value):
         self.ins[index] = value
+    def get_details(self):
+        return self.details
+    def set_details(self, details):
+        self.details = details
+    def add_details(self, value):
+        self.details.append(value)
+    def insert_details_at(self, index, value):
+        self.details.insert(index, value)
+    def replace_details_at(self, index, value):
+        self.details[index] = value
+    def get_summary(self):
+        return self.summary
+    def set_summary(self, summary):
+        self.summary = summary
+    def add_summary(self, value):
+        self.summary.append(value)
+    def insert_summary_at(self, index, value):
+        self.summary.insert(index, value)
+    def replace_summary_at(self, index, value):
+        self.summary[index] = value
     def get_htmlonly(self):
         return self.htmlonly
     def set_htmlonly(self, htmlonly):
@@ -19039,8 +19898,11 @@ class docImageType(GeneratedsSuper):
             self.superscript or
             self.center or
             self.small or
+            self.cite or
             self.del_ or
             self.ins or
+            self.details or
+            self.summary or
             self.htmlonly or
             self.manonly or
             self.xmlonly or
@@ -19148,12 +20010,21 @@ class docImageType(GeneratedsSuper):
         for small_ in self.small:
             namespaceprefix_ = self.small_nsprefix_ + ':' if (UseCapturedNS_ and self.small_nsprefix_) else ''
             small_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='small', pretty_print=pretty_print)
+        for cite_ in self.cite:
+            namespaceprefix_ = self.cite_nsprefix_ + ':' if (UseCapturedNS_ and self.cite_nsprefix_) else ''
+            cite_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='cite', pretty_print=pretty_print)
         for del_ in self.del_:
             namespaceprefix_ = self.del__nsprefix_ + ':' if (UseCapturedNS_ and self.del__nsprefix_) else ''
             del_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='del', pretty_print=pretty_print)
         for ins_ in self.ins:
             namespaceprefix_ = self.ins_nsprefix_ + ':' if (UseCapturedNS_ and self.ins_nsprefix_) else ''
             ins_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='ins', pretty_print=pretty_print)
+        for details_ in self.details:
+            namespaceprefix_ = self.details_nsprefix_ + ':' if (UseCapturedNS_ and self.details_nsprefix_) else ''
+            details_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='details', pretty_print=pretty_print)
+        for summary_ in self.summary:
+            namespaceprefix_ = self.summary_nsprefix_ + ':' if (UseCapturedNS_ and self.summary_nsprefix_) else ''
+            summary_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='summary', pretty_print=pretty_print)
         for htmlonly_ in self.htmlonly:
             namespaceprefix_ = self.htmlonly_nsprefix_ + ':' if (UseCapturedNS_ and self.htmlonly_nsprefix_) else ''
             htmlonly_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='htmlonly', pretty_print=pretty_print)
@@ -19362,6 +20233,16 @@ class docImageType(GeneratedsSuper):
               self.add_small(obj_.value)
             elif hasattr(self, 'set_small'):
               self.set_small(obj_.value)
+        elif nodeName_ == 'cite':
+            obj_ = docMarkupType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'cite', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_cite'):
+              self.add_cite(obj_.value)
+            elif hasattr(self, 'set_cite'):
+              self.set_cite(obj_.value)
         elif nodeName_ == 'del':
             obj_ = docMarkupType.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
@@ -19382,6 +20263,26 @@ class docImageType(GeneratedsSuper):
               self.add_ins(obj_.value)
             elif hasattr(self, 'set_ins'):
               self.set_ins(obj_.value)
+        elif nodeName_ == 'details':
+            obj_ = docMarkupType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'details', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_details'):
+              self.add_details(obj_.value)
+            elif hasattr(self, 'set_details'):
+              self.set_details(obj_.value)
+        elif nodeName_ == 'summary':
+            obj_ = docMarkupType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'summary', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_summary'):
+              self.add_summary(obj_.value)
+            elif hasattr(self, 'set_summary'):
+              self.set_summary(obj_.value)
         elif nodeName_ == 'htmlonly':
             obj_ = docHtmlOnlyType.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
@@ -19533,7 +20434,7 @@ class docDotMscType(GeneratedsSuper):
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
     superclass = None
-    def __init__(self, name=None, width=None, height=None, caption=None, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, del_=None, ins=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
+    def __init__(self, name=None, width=None, height=None, caption=None, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, cite=None, del_=None, ins=None, details=None, summary=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
         self.gds_collector_ = gds_collector_
         self.gds_elementtree_node_ = None
         self.original_tagname_ = None
@@ -19602,6 +20503,11 @@ class docDotMscType(GeneratedsSuper):
         else:
             self.small = small
         self.small_nsprefix_ = None
+        if cite is None:
+            self.cite = []
+        else:
+            self.cite = cite
+        self.cite_nsprefix_ = None
         if del_ is None:
             self.del_ = []
         else:
@@ -19612,6 +20518,16 @@ class docDotMscType(GeneratedsSuper):
         else:
             self.ins = ins
         self.ins_nsprefix_ = None
+        if details is None:
+            self.details = []
+        else:
+            self.details = details
+        self.details_nsprefix_ = None
+        if summary is None:
+            self.summary = []
+        else:
+            self.summary = summary
+        self.summary_nsprefix_ = None
         if htmlonly is None:
             self.htmlonly = []
         else:
@@ -19822,6 +20738,16 @@ class docDotMscType(GeneratedsSuper):
         self.small.insert(index, value)
     def replace_small_at(self, index, value):
         self.small[index] = value
+    def get_cite(self):
+        return self.cite
+    def set_cite(self, cite):
+        self.cite = cite
+    def add_cite(self, value):
+        self.cite.append(value)
+    def insert_cite_at(self, index, value):
+        self.cite.insert(index, value)
+    def replace_cite_at(self, index, value):
+        self.cite[index] = value
     def get_del(self):
         return self.del_
     def set_del(self, del_):
@@ -19842,6 +20768,26 @@ class docDotMscType(GeneratedsSuper):
         self.ins.insert(index, value)
     def replace_ins_at(self, index, value):
         self.ins[index] = value
+    def get_details(self):
+        return self.details
+    def set_details(self, details):
+        self.details = details
+    def add_details(self, value):
+        self.details.append(value)
+    def insert_details_at(self, index, value):
+        self.details.insert(index, value)
+    def replace_details_at(self, index, value):
+        self.details[index] = value
+    def get_summary(self):
+        return self.summary
+    def set_summary(self, summary):
+        self.summary = summary
+    def add_summary(self, value):
+        self.summary.append(value)
+    def insert_summary_at(self, index, value):
+        self.summary.insert(index, value)
+    def replace_summary_at(self, index, value):
+        self.summary[index] = value
     def get_htmlonly(self):
         return self.htmlonly
     def set_htmlonly(self, htmlonly):
@@ -20023,8 +20969,11 @@ class docDotMscType(GeneratedsSuper):
             self.superscript or
             self.center or
             self.small or
+            self.cite or
             self.del_ or
             self.ins or
+            self.details or
+            self.summary or
             self.htmlonly or
             self.manonly or
             self.xmlonly or
@@ -20123,12 +21072,21 @@ class docDotMscType(GeneratedsSuper):
         for small_ in self.small:
             namespaceprefix_ = self.small_nsprefix_ + ':' if (UseCapturedNS_ and self.small_nsprefix_) else ''
             small_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='small', pretty_print=pretty_print)
+        for cite_ in self.cite:
+            namespaceprefix_ = self.cite_nsprefix_ + ':' if (UseCapturedNS_ and self.cite_nsprefix_) else ''
+            cite_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='cite', pretty_print=pretty_print)
         for del_ in self.del_:
             namespaceprefix_ = self.del__nsprefix_ + ':' if (UseCapturedNS_ and self.del__nsprefix_) else ''
             del_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='del', pretty_print=pretty_print)
         for ins_ in self.ins:
             namespaceprefix_ = self.ins_nsprefix_ + ':' if (UseCapturedNS_ and self.ins_nsprefix_) else ''
             ins_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='ins', pretty_print=pretty_print)
+        for details_ in self.details:
+            namespaceprefix_ = self.details_nsprefix_ + ':' if (UseCapturedNS_ and self.details_nsprefix_) else ''
+            details_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='details', pretty_print=pretty_print)
+        for summary_ in self.summary:
+            namespaceprefix_ = self.summary_nsprefix_ + ':' if (UseCapturedNS_ and self.summary_nsprefix_) else ''
+            summary_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='summary', pretty_print=pretty_print)
         for htmlonly_ in self.htmlonly:
             namespaceprefix_ = self.htmlonly_nsprefix_ + ':' if (UseCapturedNS_ and self.htmlonly_nsprefix_) else ''
             htmlonly_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='htmlonly', pretty_print=pretty_print)
@@ -20323,6 +21281,16 @@ class docDotMscType(GeneratedsSuper):
               self.add_small(obj_.value)
             elif hasattr(self, 'set_small'):
               self.set_small(obj_.value)
+        elif nodeName_ == 'cite':
+            obj_ = docMarkupType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'cite', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_cite'):
+              self.add_cite(obj_.value)
+            elif hasattr(self, 'set_cite'):
+              self.set_cite(obj_.value)
         elif nodeName_ == 'del':
             obj_ = docMarkupType.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
@@ -20343,6 +21311,26 @@ class docDotMscType(GeneratedsSuper):
               self.add_ins(obj_.value)
             elif hasattr(self, 'set_ins'):
               self.set_ins(obj_.value)
+        elif nodeName_ == 'details':
+            obj_ = docMarkupType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'details', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_details'):
+              self.add_details(obj_.value)
+            elif hasattr(self, 'set_details'):
+              self.set_details(obj_.value)
+        elif nodeName_ == 'summary':
+            obj_ = docMarkupType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'summary', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_summary'):
+              self.add_summary(obj_.value)
+            elif hasattr(self, 'set_summary'):
+              self.set_summary(obj_.value)
         elif nodeName_ == 'htmlonly':
             obj_ = docHtmlOnlyType.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
@@ -20494,7 +21482,7 @@ class docImageFileType(GeneratedsSuper):
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
     superclass = None
-    def __init__(self, name=None, width=None, height=None, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, del_=None, ins=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
+    def __init__(self, name=None, width=None, height=None, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, cite=None, del_=None, ins=None, details=None, summary=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
         self.gds_collector_ = gds_collector_
         self.gds_elementtree_node_ = None
         self.original_tagname_ = None
@@ -20561,6 +21549,11 @@ class docImageFileType(GeneratedsSuper):
         else:
             self.small = small
         self.small_nsprefix_ = None
+        if cite is None:
+            self.cite = []
+        else:
+            self.cite = cite
+        self.cite_nsprefix_ = None
         if del_ is None:
             self.del_ = []
         else:
@@ -20571,6 +21564,16 @@ class docImageFileType(GeneratedsSuper):
         else:
             self.ins = ins
         self.ins_nsprefix_ = None
+        if details is None:
+            self.details = []
+        else:
+            self.details = details
+        self.details_nsprefix_ = None
+        if summary is None:
+            self.summary = []
+        else:
+            self.summary = summary
+        self.summary_nsprefix_ = None
         if htmlonly is None:
             self.htmlonly = []
         else:
@@ -20781,6 +21784,16 @@ class docImageFileType(GeneratedsSuper):
         self.small.insert(index, value)
     def replace_small_at(self, index, value):
         self.small[index] = value
+    def get_cite(self):
+        return self.cite
+    def set_cite(self, cite):
+        self.cite = cite
+    def add_cite(self, value):
+        self.cite.append(value)
+    def insert_cite_at(self, index, value):
+        self.cite.insert(index, value)
+    def replace_cite_at(self, index, value):
+        self.cite[index] = value
     def get_del(self):
         return self.del_
     def set_del(self, del_):
@@ -20801,6 +21814,26 @@ class docImageFileType(GeneratedsSuper):
         self.ins.insert(index, value)
     def replace_ins_at(self, index, value):
         self.ins[index] = value
+    def get_details(self):
+        return self.details
+    def set_details(self, details):
+        self.details = details
+    def add_details(self, value):
+        self.details.append(value)
+    def insert_details_at(self, index, value):
+        self.details.insert(index, value)
+    def replace_details_at(self, index, value):
+        self.details[index] = value
+    def get_summary(self):
+        return self.summary
+    def set_summary(self, summary):
+        self.summary = summary
+    def add_summary(self, value):
+        self.summary.append(value)
+    def insert_summary_at(self, index, value):
+        self.summary.insert(index, value)
+    def replace_summary_at(self, index, value):
+        self.summary[index] = value
     def get_htmlonly(self):
         return self.htmlonly
     def set_htmlonly(self, htmlonly):
@@ -20978,8 +22011,11 @@ class docImageFileType(GeneratedsSuper):
             self.superscript or
             self.center or
             self.small or
+            self.cite or
             self.del_ or
             self.ins or
+            self.details or
+            self.summary or
             self.htmlonly or
             self.manonly or
             self.xmlonly or
@@ -21075,12 +22111,21 @@ class docImageFileType(GeneratedsSuper):
         for small_ in self.small:
             namespaceprefix_ = self.small_nsprefix_ + ':' if (UseCapturedNS_ and self.small_nsprefix_) else ''
             small_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='small', pretty_print=pretty_print)
+        for cite_ in self.cite:
+            namespaceprefix_ = self.cite_nsprefix_ + ':' if (UseCapturedNS_ and self.cite_nsprefix_) else ''
+            cite_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='cite', pretty_print=pretty_print)
         for del_ in self.del_:
             namespaceprefix_ = self.del__nsprefix_ + ':' if (UseCapturedNS_ and self.del__nsprefix_) else ''
             del_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='del', pretty_print=pretty_print)
         for ins_ in self.ins:
             namespaceprefix_ = self.ins_nsprefix_ + ':' if (UseCapturedNS_ and self.ins_nsprefix_) else ''
             ins_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='ins', pretty_print=pretty_print)
+        for details_ in self.details:
+            namespaceprefix_ = self.details_nsprefix_ + ':' if (UseCapturedNS_ and self.details_nsprefix_) else ''
+            details_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='details', pretty_print=pretty_print)
+        for summary_ in self.summary:
+            namespaceprefix_ = self.summary_nsprefix_ + ':' if (UseCapturedNS_ and self.summary_nsprefix_) else ''
+            summary_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='summary', pretty_print=pretty_print)
         for htmlonly_ in self.htmlonly:
             namespaceprefix_ = self.htmlonly_nsprefix_ + ':' if (UseCapturedNS_ and self.htmlonly_nsprefix_) else ''
             htmlonly_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='htmlonly', pretty_print=pretty_print)
@@ -21271,6 +22316,16 @@ class docImageFileType(GeneratedsSuper):
               self.add_small(obj_.value)
             elif hasattr(self, 'set_small'):
               self.set_small(obj_.value)
+        elif nodeName_ == 'cite':
+            obj_ = docMarkupType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'cite', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_cite'):
+              self.add_cite(obj_.value)
+            elif hasattr(self, 'set_cite'):
+              self.set_cite(obj_.value)
         elif nodeName_ == 'del':
             obj_ = docMarkupType.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
@@ -21291,6 +22346,26 @@ class docImageFileType(GeneratedsSuper):
               self.add_ins(obj_.value)
             elif hasattr(self, 'set_ins'):
               self.set_ins(obj_.value)
+        elif nodeName_ == 'details':
+            obj_ = docMarkupType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'details', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_details'):
+              self.add_details(obj_.value)
+            elif hasattr(self, 'set_details'):
+              self.set_details(obj_.value)
+        elif nodeName_ == 'summary':
+            obj_ = docMarkupType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'summary', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_summary'):
+              self.add_summary(obj_.value)
+            elif hasattr(self, 'set_summary'):
+              self.set_summary(obj_.value)
         elif nodeName_ == 'htmlonly':
             obj_ = docHtmlOnlyType.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
@@ -21442,7 +22517,7 @@ class docPlantumlType(GeneratedsSuper):
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
     superclass = None
-    def __init__(self, name=None, width=None, height=None, caption=None, engine=None, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, del_=None, ins=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
+    def __init__(self, name=None, width=None, height=None, caption=None, engine=None, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, cite=None, del_=None, ins=None, details=None, summary=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
         self.gds_collector_ = gds_collector_
         self.gds_elementtree_node_ = None
         self.original_tagname_ = None
@@ -21513,6 +22588,11 @@ class docPlantumlType(GeneratedsSuper):
         else:
             self.small = small
         self.small_nsprefix_ = None
+        if cite is None:
+            self.cite = []
+        else:
+            self.cite = cite
+        self.cite_nsprefix_ = None
         if del_ is None:
             self.del_ = []
         else:
@@ -21523,6 +22603,16 @@ class docPlantumlType(GeneratedsSuper):
         else:
             self.ins = ins
         self.ins_nsprefix_ = None
+        if details is None:
+            self.details = []
+        else:
+            self.details = details
+        self.details_nsprefix_ = None
+        if summary is None:
+            self.summary = []
+        else:
+            self.summary = summary
+        self.summary_nsprefix_ = None
         if htmlonly is None:
             self.htmlonly = []
         else:
@@ -21733,6 +22823,16 @@ class docPlantumlType(GeneratedsSuper):
         self.small.insert(index, value)
     def replace_small_at(self, index, value):
         self.small[index] = value
+    def get_cite(self):
+        return self.cite
+    def set_cite(self, cite):
+        self.cite = cite
+    def add_cite(self, value):
+        self.cite.append(value)
+    def insert_cite_at(self, index, value):
+        self.cite.insert(index, value)
+    def replace_cite_at(self, index, value):
+        self.cite[index] = value
     def get_del(self):
         return self.del_
     def set_del(self, del_):
@@ -21753,6 +22853,26 @@ class docPlantumlType(GeneratedsSuper):
         self.ins.insert(index, value)
     def replace_ins_at(self, index, value):
         self.ins[index] = value
+    def get_details(self):
+        return self.details
+    def set_details(self, details):
+        self.details = details
+    def add_details(self, value):
+        self.details.append(value)
+    def insert_details_at(self, index, value):
+        self.details.insert(index, value)
+    def replace_details_at(self, index, value):
+        self.details[index] = value
+    def get_summary(self):
+        return self.summary
+    def set_summary(self, summary):
+        self.summary = summary
+    def add_summary(self, value):
+        self.summary.append(value)
+    def insert_summary_at(self, index, value):
+        self.summary.insert(index, value)
+    def replace_summary_at(self, index, value):
+        self.summary[index] = value
     def get_htmlonly(self):
         return self.htmlonly
     def set_htmlonly(self, htmlonly):
@@ -21951,8 +23071,11 @@ class docPlantumlType(GeneratedsSuper):
             self.superscript or
             self.center or
             self.small or
+            self.cite or
             self.del_ or
             self.ins or
+            self.details or
+            self.summary or
             self.htmlonly or
             self.manonly or
             self.xmlonly or
@@ -22054,12 +23177,21 @@ class docPlantumlType(GeneratedsSuper):
         for small_ in self.small:
             namespaceprefix_ = self.small_nsprefix_ + ':' if (UseCapturedNS_ and self.small_nsprefix_) else ''
             small_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='small', pretty_print=pretty_print)
+        for cite_ in self.cite:
+            namespaceprefix_ = self.cite_nsprefix_ + ':' if (UseCapturedNS_ and self.cite_nsprefix_) else ''
+            cite_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='cite', pretty_print=pretty_print)
         for del_ in self.del_:
             namespaceprefix_ = self.del__nsprefix_ + ':' if (UseCapturedNS_ and self.del__nsprefix_) else ''
             del_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='del', pretty_print=pretty_print)
         for ins_ in self.ins:
             namespaceprefix_ = self.ins_nsprefix_ + ':' if (UseCapturedNS_ and self.ins_nsprefix_) else ''
             ins_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='ins', pretty_print=pretty_print)
+        for details_ in self.details:
+            namespaceprefix_ = self.details_nsprefix_ + ':' if (UseCapturedNS_ and self.details_nsprefix_) else ''
+            details_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='details', pretty_print=pretty_print)
+        for summary_ in self.summary:
+            namespaceprefix_ = self.summary_nsprefix_ + ':' if (UseCapturedNS_ and self.summary_nsprefix_) else ''
+            summary_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='summary', pretty_print=pretty_print)
         for htmlonly_ in self.htmlonly:
             namespaceprefix_ = self.htmlonly_nsprefix_ + ':' if (UseCapturedNS_ and self.htmlonly_nsprefix_) else ''
             htmlonly_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='htmlonly', pretty_print=pretty_print)
@@ -22259,6 +23391,16 @@ class docPlantumlType(GeneratedsSuper):
               self.add_small(obj_.value)
             elif hasattr(self, 'set_small'):
               self.set_small(obj_.value)
+        elif nodeName_ == 'cite':
+            obj_ = docMarkupType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'cite', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_cite'):
+              self.add_cite(obj_.value)
+            elif hasattr(self, 'set_cite'):
+              self.set_cite(obj_.value)
         elif nodeName_ == 'del':
             obj_ = docMarkupType.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
@@ -22279,6 +23421,26 @@ class docPlantumlType(GeneratedsSuper):
               self.add_ins(obj_.value)
             elif hasattr(self, 'set_ins'):
               self.set_ins(obj_.value)
+        elif nodeName_ == 'details':
+            obj_ = docMarkupType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'details', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_details'):
+              self.add_details(obj_.value)
+            elif hasattr(self, 'set_details'):
+              self.set_details(obj_.value)
+        elif nodeName_ == 'summary':
+            obj_ = docMarkupType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'summary', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_summary'):
+              self.add_summary(obj_.value)
+            elif hasattr(self, 'set_summary'):
+              self.set_summary(obj_.value)
         elif nodeName_ == 'htmlonly':
             obj_ = docHtmlOnlyType.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
@@ -22430,7 +23592,7 @@ class docTocItemType(GeneratedsSuper):
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
     superclass = None
-    def __init__(self, id=None, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, del_=None, ins=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
+    def __init__(self, id=None, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, cite=None, del_=None, ins=None, details=None, summary=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
         self.gds_collector_ = gds_collector_
         self.gds_elementtree_node_ = None
         self.original_tagname_ = None
@@ -22493,6 +23655,11 @@ class docTocItemType(GeneratedsSuper):
         else:
             self.small = small
         self.small_nsprefix_ = None
+        if cite is None:
+            self.cite = []
+        else:
+            self.cite = cite
+        self.cite_nsprefix_ = None
         if del_ is None:
             self.del_ = []
         else:
@@ -22503,6 +23670,16 @@ class docTocItemType(GeneratedsSuper):
         else:
             self.ins = ins
         self.ins_nsprefix_ = None
+        if details is None:
+            self.details = []
+        else:
+            self.details = details
+        self.details_nsprefix_ = None
+        if summary is None:
+            self.summary = []
+        else:
+            self.summary = summary
+        self.summary_nsprefix_ = None
         if htmlonly is None:
             self.htmlonly = []
         else:
@@ -22713,6 +23890,16 @@ class docTocItemType(GeneratedsSuper):
         self.small.insert(index, value)
     def replace_small_at(self, index, value):
         self.small[index] = value
+    def get_cite(self):
+        return self.cite
+    def set_cite(self, cite):
+        self.cite = cite
+    def add_cite(self, value):
+        self.cite.append(value)
+    def insert_cite_at(self, index, value):
+        self.cite.insert(index, value)
+    def replace_cite_at(self, index, value):
+        self.cite[index] = value
     def get_del(self):
         return self.del_
     def set_del(self, del_):
@@ -22733,6 +23920,26 @@ class docTocItemType(GeneratedsSuper):
         self.ins.insert(index, value)
     def replace_ins_at(self, index, value):
         self.ins[index] = value
+    def get_details(self):
+        return self.details
+    def set_details(self, details):
+        self.details = details
+    def add_details(self, value):
+        self.details.append(value)
+    def insert_details_at(self, index, value):
+        self.details.insert(index, value)
+    def replace_details_at(self, index, value):
+        self.details[index] = value
+    def get_summary(self):
+        return self.summary
+    def set_summary(self, summary):
+        self.summary = summary
+    def add_summary(self, value):
+        self.summary.append(value)
+    def insert_summary_at(self, index, value):
+        self.summary.insert(index, value)
+    def replace_summary_at(self, index, value):
+        self.summary[index] = value
     def get_htmlonly(self):
         return self.htmlonly
     def set_htmlonly(self, htmlonly):
@@ -22902,8 +24109,11 @@ class docTocItemType(GeneratedsSuper):
             self.superscript or
             self.center or
             self.small or
+            self.cite or
             self.del_ or
             self.ins or
+            self.details or
+            self.summary or
             self.htmlonly or
             self.manonly or
             self.xmlonly or
@@ -22993,12 +24203,21 @@ class docTocItemType(GeneratedsSuper):
         for small_ in self.small:
             namespaceprefix_ = self.small_nsprefix_ + ':' if (UseCapturedNS_ and self.small_nsprefix_) else ''
             small_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='small', pretty_print=pretty_print)
+        for cite_ in self.cite:
+            namespaceprefix_ = self.cite_nsprefix_ + ':' if (UseCapturedNS_ and self.cite_nsprefix_) else ''
+            cite_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='cite', pretty_print=pretty_print)
         for del_ in self.del_:
             namespaceprefix_ = self.del__nsprefix_ + ':' if (UseCapturedNS_ and self.del__nsprefix_) else ''
             del_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='del', pretty_print=pretty_print)
         for ins_ in self.ins:
             namespaceprefix_ = self.ins_nsprefix_ + ':' if (UseCapturedNS_ and self.ins_nsprefix_) else ''
             ins_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='ins', pretty_print=pretty_print)
+        for details_ in self.details:
+            namespaceprefix_ = self.details_nsprefix_ + ':' if (UseCapturedNS_ and self.details_nsprefix_) else ''
+            details_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='details', pretty_print=pretty_print)
+        for summary_ in self.summary:
+            namespaceprefix_ = self.summary_nsprefix_ + ':' if (UseCapturedNS_ and self.summary_nsprefix_) else ''
+            summary_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='summary', pretty_print=pretty_print)
         for htmlonly_ in self.htmlonly:
             namespaceprefix_ = self.htmlonly_nsprefix_ + ':' if (UseCapturedNS_ and self.htmlonly_nsprefix_) else ''
             htmlonly_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='htmlonly', pretty_print=pretty_print)
@@ -23181,6 +24400,16 @@ class docTocItemType(GeneratedsSuper):
               self.add_small(obj_.value)
             elif hasattr(self, 'set_small'):
               self.set_small(obj_.value)
+        elif nodeName_ == 'cite':
+            obj_ = docMarkupType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'cite', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_cite'):
+              self.add_cite(obj_.value)
+            elif hasattr(self, 'set_cite'):
+              self.set_cite(obj_.value)
         elif nodeName_ == 'del':
             obj_ = docMarkupType.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
@@ -23201,6 +24430,26 @@ class docTocItemType(GeneratedsSuper):
               self.add_ins(obj_.value)
             elif hasattr(self, 'set_ins'):
               self.set_ins(obj_.value)
+        elif nodeName_ == 'details':
+            obj_ = docMarkupType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'details', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_details'):
+              self.add_details(obj_.value)
+            elif hasattr(self, 'set_details'):
+              self.set_details(obj_.value)
+        elif nodeName_ == 'summary':
+            obj_ = docMarkupType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'summary', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_summary'):
+              self.add_summary(obj_.value)
+            elif hasattr(self, 'set_summary'):
+              self.set_summary(obj_.value)
         elif nodeName_ == 'htmlonly':
             obj_ = docHtmlOnlyType.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
@@ -25378,6 +26627,7 @@ __all__ = [
     "name",
     "nodeType",
     "paramType",
+    "qualifiedname",
     "read",
     "refTextType",
     "refType",

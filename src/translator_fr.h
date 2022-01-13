@@ -204,7 +204,7 @@ class TranslatorFrench : public TranslatorAdapter_1_8_15
      */
     virtual QCString trGeneratedAutomatically(const QCString &s)
     { QCString result="Généré automatiquement par Doxygen";
-      if (!s.isEmpty()) result+=(QCString)" pour "+s;
+      if (!s.isEmpty()) result+=" pour "+s;
       result+=" à partir du code source.";
       return result;
     }
@@ -571,16 +571,16 @@ class TranslatorFrench : public TranslatorAdapter_1_8_15
      */
     virtual QCString trGeneratedAt(const QCString &date,const QCString &projName)
     {
-      QCString result=(QCString)"Généré le "+date;
-      if (!projName.isEmpty()) result+=(QCString)" pour "+projName;
-      result+=(QCString)" par";
+      QCString result="Généré le "+date;
+      if (!projName.isEmpty()) result+=" pour "+projName;
+      result+=" par";
       return result;
     }
 
     /*! this text is put before a class diagram */
     virtual QCString trClassDiagram(const QCString &clName)
     {
-      return (QCString)"Graphe d'héritage de "+clName+":";
+      return "Graphe d'héritage de "+clName+":";
     }
 
     /*! this text is generated when the \\internal command is used. */
@@ -675,7 +675,7 @@ class TranslatorFrench : public TranslatorAdapter_1_8_15
         case ClassDef::Exception:  result+="l'exception "; break;
         default: break;
       }
-      result+=(QCString)clName;
+      result+=clName;
       return result;
     }
 
@@ -822,11 +822,12 @@ class TranslatorFrench : public TranslatorAdapter_1_8_15
         bool single)
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
+      static bool vhdlOpt = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
       bool feminine = true;
-      QCString result=(QCString)"La documentation de ";
+      QCString result="La documentation de ";
       switch(compType)
       {
-        case ClassDef::Class:      result+="cette classe"; break;
+        case ClassDef::Class:      result+=vhdlOpt? "cette unités de conception":"cette classe"; break;
         case ClassDef::Struct:     result+="cette structure"; break;
         case ClassDef::Union:      result+="cette union"; break;
         case ClassDef::Interface:  result+="cette interface"; break;
@@ -890,12 +891,12 @@ class TranslatorFrench : public TranslatorAdapter_1_8_15
     /*! this text is put before a collaboration diagram */
     virtual QCString trCollaborationDiagram(const QCString &clName)
     {
-      return (QCString)"Graphe de collaboration de "+clName+":";
+      return "Graphe de collaboration de "+clName+":";
     }
     /*! this text is put before an include dependency graph */
     virtual QCString trInclDepGraph(const QCString &fName)
     {
-      return (QCString)"Graphe des dépendances par inclusion de "+fName+":";
+      return "Graphe des dépendances par inclusion de "+fName+":";
     }
     /*! header that is put before the list of constructor/destructors. */
     virtual QCString trConstructorDocumentation()
@@ -1175,7 +1176,7 @@ class TranslatorFrench : public TranslatorAdapter_1_8_15
     /*! Used as the title of a Java package */
     virtual QCString trPackage(const QCString &name)
     {
-      return (QCString)"Paquetage "+name;
+      return "Paquetage "+name;
     }
     /*! Title of the package index page */
     virtual QCString trPackageList()
@@ -1712,7 +1713,7 @@ class TranslatorFrench : public TranslatorAdapter_1_8_15
         case ClassDef::Exception:  result+="de l'exception "; break;
         default: break;
       }
-      result+=(QCString)clName;
+      result+=clName;
       return result;
     }
     /*! used as the title of the HTML page of a module (Fortran) */
@@ -1768,7 +1769,7 @@ class TranslatorFrench : public TranslatorAdapter_1_8_15
         bool single)
     {
       // single is true implies a single file
-      QCString result=(QCString)"La documentation de ";
+      QCString result="La documentation de ";
       switch(compType)
       {
         case ClassDef::Class:      result+="ce module"; break;
@@ -1857,7 +1858,7 @@ class TranslatorFrench : public TranslatorAdapter_1_8_15
      */
     virtual QCString trFileIn(const QCString &name)
     {
-      return (QCString)"Fichier dans "+name;
+      return "Fichier dans "+name;
     }
 
     /*! when clicking a directory dependency label, a page with a
@@ -1866,7 +1867,7 @@ class TranslatorFrench : public TranslatorAdapter_1_8_15
      */
     virtual QCString trIncludesFileIn(const QCString &name)
     {
-      return (QCString)"Inclut le fichier dans "+name;
+      return "Inclut le fichier dans "+name;
     }
 
     /** Compiles a date string.
@@ -2033,21 +2034,21 @@ class TranslatorFrench : public TranslatorAdapter_1_8_15
     virtual QCString trServiceReference(const QCString &sName)
     {
       QCString result="Référence du service ";
-      result+=(QCString)sName;
+      result+=sName;
       return result;
     }
     /** UNO IDL singleton page title */
     virtual QCString trSingletonReference(const QCString &sName)
     {
       QCString result="Référence du singleton ";
-      result+=(QCString)sName;
+      result+=sName;
       return result;
     }
     /** UNO IDL service page */
     virtual QCString trServiceGeneratedFromFiles(bool single)
     {
       // single is true implies a single file
-      QCString result=(QCString)"La documentation pour ce service "
+      QCString result="La documentation pour ce service "
                                 "a été générée par ";
       if (single) result+="le fichier suivant :"; else result+="les fichiers suivants :";
       return result;
@@ -2056,7 +2057,7 @@ class TranslatorFrench : public TranslatorAdapter_1_8_15
     virtual QCString trSingletonGeneratedFromFiles(bool single)
     {
       // single is true implies a single file
-      QCString result=(QCString)"La documentation pour ce singleton "
+      QCString result="La documentation pour ce singleton "
                                 "a été générée par ";
       if (single) result+="le fichier suivant :"; else result+="les fichiers suivants :";
       return result;
@@ -2296,7 +2297,7 @@ class TranslatorFrench : public TranslatorAdapter_1_8_15
         result += (feminine) ? "locale " : "local ";
       }
 
-      result += (QCString)clName;
+      result += clName;
 
       return result;
     }

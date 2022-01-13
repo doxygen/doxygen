@@ -183,7 +183,7 @@ static QCString encodeDirName(const QCString &anchor)
   // convert to md5 hash
   uchar md5_sig[16];
   char sigStr[33];
-  MD5Buffer((const unsigned char *)anchor.data(),anchor.length(),md5_sig);
+  MD5Buffer(anchor.data(),anchor.length(),md5_sig);
   MD5SigToString(md5_sig,sigStr);
   return sigStr;
 
@@ -558,7 +558,7 @@ void DirDefImpl::writeDocumentation(OutputList &ol)
         break;
       case LayoutDocEntry::DetailedDesc:
         {
-          const LayoutDocEntrySection *ls = (const LayoutDocEntrySection*)lde.get();
+          const LayoutDocEntrySection *ls = dynamic_cast<const LayoutDocEntrySection*>(lde.get());
           writeDetailedDescription(ol,ls->title(lang));
         }
         break;
@@ -942,7 +942,7 @@ static void computeCommonDirPrefix()
   {
     // start will full path of first dir
     path=(*it)->name();
-    int i=path.findRev('/',(int)path.length()-2);
+    int i=path.findRev('/',path.length()-2);
     path=path.left(i+1);
     bool done=FALSE;
     if (i==-1)
@@ -962,7 +962,7 @@ static void computeCommonDirPrefix()
           {
             if (dirName.left(l)!=path) // dirName does not start with path
             {
-              i=path.findRev('/',(int)l-2);
+              i=path.findRev('/',l-2);
               if (i==-1) // no unique prefix -> stop
               {
                 path="";
@@ -979,7 +979,7 @@ static void computeCommonDirPrefix()
           {
             path=dir->name();
             l=path.length();
-            i=path.findRev('/',(int)l-2);
+            i=path.findRev('/',l-2);
             if (i==-1) // no unique prefix -> stop
             {
               path="";
@@ -1036,7 +1036,7 @@ void buildDirectories()
   for (const auto &dir : *Doxygen::dirLinkedMap)
   {
     QCString name = dir->name();
-    int i=name.findRev('/',(int)name.length()-2);
+    int i=name.findRev('/',name.length()-2);
     if (i>0)
     {
       DirDef *parent = Doxygen::dirLinkedMap->find(name.left(i+1));

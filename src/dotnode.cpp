@@ -359,9 +359,27 @@ void DotNode::writeBox(TextStream &t,
                        GraphOutputFormat /*format*/,
                        bool hasNonReachableChildren) const
 {
-  const char *labCol =
-    m_url.isEmpty() ? "grey75" :  // non link
+  const char *labCol;
+  if (m_classDef)
+  {
+    if (m_classDef->hasDocumentation() && hasNonReachableChildren)
+      labCol = "red";
+    else if (m_classDef->hasDocumentation() && !hasNonReachableChildren)
+      labCol = "black";
+    else if (!m_classDef->hasDocumentation() && hasNonReachableChildren)
+      labCol = "orangered";
+    else // (!m_classDef->hasDocumentation() && !hasNonReachableChildren)
+    {
+      labCol = "grey75";
+      if (m_classDef->templateMaster() && m_classDef->templateMaster()->hasDocumentation())
+        labCol = "black";
+    }
+  }
+  else
+  {
+    labCol = m_url.isEmpty() ? "grey75" :  // non link
     (hasNonReachableChildren ? "red" : "black");
+  }
   t << "  Node" << m_number << " [label=\"";
 
   if (m_classDef && Config_getBool(UML_LOOK) && (gt==Inheritance || gt==Collaboration))
@@ -445,15 +463,11 @@ void DotNode::writeBox(TextStream &t,
   }
   else
   {
+    t << ",color=\"" << labCol << "\"";
     if (!Config_getBool(DOT_TRANSPARENT))
     {
-      t << ",color=\"" << labCol << "\", fillcolor=\"";
-      t << "white";
-      t << "\", style=\"filled\"";
-    }
-    else
-    {
-      t << ",color=\"" << labCol << "\"";
+      t << ", fillcolor=\"white\"";
+      t << ", style=\"filled\"";
     }
     if (!m_url.isEmpty())
     {

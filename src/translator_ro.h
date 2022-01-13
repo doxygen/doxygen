@@ -144,7 +144,7 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
      */
     virtual QCString trGeneratedAutomatically(const QCString &s)
     { QCString result="Generat automat de Doxygen";
-      if (!s.isEmpty()) result+=(QCString)" pentru "+s;
+      if (!s.isEmpty()) result+=" pentru "+s;
       result+=" din codul sursă.";
       return result;
     }
@@ -518,16 +518,16 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
      */
     virtual QCString trGeneratedAt(const QCString &date,const QCString &projName)
     {
-      QCString result=(QCString)"Generat "+date;
-      if (!projName.isEmpty()) result+=(QCString)" pentru "+projName;
-      result+=(QCString)" de către";
+      QCString result="Generat "+date;
+      if (!projName.isEmpty()) result+=" pentru "+projName;
+      result+=" de către";
       return result;
     }
 
     /*! this text is put before a class diagram */
     virtual QCString trClassDiagram(const QCString &clName)
     {
-      return (QCString)"Diagrama de relaţii pentru "+clName;
+      return "Diagrama de relaţii pentru "+clName;
     }
 
     /*! this text is generated when the \\internal command is used. */
@@ -620,7 +620,7 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
         default: break;
       }
       if (isTemplate) result+=" (Template) ";
-      result+=(QCString)clName;
+      result+=clName;
 
       return result;
     }
@@ -770,7 +770,7 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
         bool single)
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
-      QCString result=(QCString)"Documentaţia pentru această ";
+      QCString result="Documentaţia pentru această ";
       switch(compType)
       {
         case ClassDef::Class:      result+="clasă"; break;
@@ -835,12 +835,12 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
     /*! this text is put before a collaboration diagram */
     virtual QCString trCollaborationDiagram(const QCString &clName)
     {
-      return (QCString)"Diagrama de relaţii pentru "+clName+":";
+      return "Diagrama de relaţii pentru "+clName+":";
     }
     /*! this text is put before an include dependency graph */
     virtual QCString trInclDepGraph(const QCString &fName)
     {
-      return (QCString)"Graful dependenţelor prin incluziune pentru "+fName+":";
+      return "Graful dependenţelor prin incluziune pentru "+fName+":";
     }
     /*! header that is put before the list of constructor/destructors. */
     virtual QCString trConstructorDocumentation()
@@ -1117,7 +1117,7 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
     /*! Used as the title of a Java package */
     virtual QCString trPackage(const QCString &name)
     {
-      return (QCString)"Pachet "+name;
+      return "Pachet "+name;
     }
     /*! Title of the package index page */
     virtual QCString trPackageList()
@@ -1656,7 +1656,7 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
         default: break;
       }
       if (isTemplate) result+="(Template) ";
-	  result+=(QCString)clName;
+	  result+=clName;
       return result;
     }
     /*! used as the title of the HTML page of a module (Fortran) */
@@ -1712,7 +1712,7 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
         bool single)
     { // here s is one of " Module", " Struct" or " Union"
       // single is true implies a single file
-      QCString result=(QCString)"Documentaţia ";
+      QCString result="Documentaţia ";
       switch(compType)
       {
         case ClassDef::Class:      result+="modulului"; break;
@@ -1801,7 +1801,7 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
      */
     virtual QCString trFileIn(const QCString &name)
     {
-      return (QCString)"Fișierul din "+name;
+      return "Fișierul din "+name;
     }
 
     /*! when clicking a directory dependency label, a page with a
@@ -1810,7 +1810,7 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
      */
     virtual QCString trIncludesFileIn(const QCString &name)
     {
-      return (QCString)"Include fișierul din "+name;
+      return "Include fișierul din "+name;
     }
 
     /** Compiles a date string.
@@ -1977,14 +1977,14 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
     /** UNO IDL service page title */
     virtual QCString trServiceReference(const QCString &sName)
     {
-      QCString result=(QCString)sName;
+      QCString result=sName;
       result+=" Referință Serviciu";
       return result;
     }
     /** UNO IDL singleton page title */
     virtual QCString trSingletonReference(const QCString &sName)
     {
-      QCString result=(QCString)sName;
+      QCString result=sName;
       result+=" Referință Singleton";
       return result;
     }
@@ -1992,7 +1992,7 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
     virtual QCString trServiceGeneratedFromFiles(bool single)
     {
       // single is true implies a single file
-      QCString result=(QCString)"Documentația pentru acest serviciu "
+      QCString result="Documentația pentru acest serviciu "
                                 "a fost generată din ";
       if (single)
         result += "următorul fișier:";
@@ -2004,7 +2004,7 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
     virtual QCString trSingletonGeneratedFromFiles(bool single)
     {
       // single is true implies a single file
-      QCString result=(QCString)"Documentația pentru acest singleton "
+      QCString result="Documentația pentru acest singleton "
                                 "a fost generată din ";
       if (single)
         result += "următorul fișier:";

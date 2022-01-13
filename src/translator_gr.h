@@ -148,7 +148,7 @@ class TranslatorGreek : public Translator
      */
     virtual QCString trGeneratedAutomatically(const QCString &s)
     { QCString result="Δημιουργήθηκε αυτόματα από το Doxygen";
-      if (!s.isEmpty()) result+=(QCString)" για "+s;
+      if (!s.isEmpty()) result+=" για "+s;
       result+=" από τον πηγαίο κώδικα.";
       return result;
     }
@@ -509,16 +509,16 @@ class TranslatorGreek : public Translator
      */
     virtual QCString trGeneratedAt(const QCString &date,const QCString &projName)
     {
-      QCString result=(QCString)"Δημιουργήθηκε στις "+date;
-      if (!projName.isEmpty()) result+=(QCString)" για "+projName;
-      result+=(QCString)" από";
+      QCString result="Δημιουργήθηκε στις "+date;
+      if (!projName.isEmpty()) result+=" για "+projName;
+      result+=" από";
       return result;
     }
 
     /*! this text is put before a class diagram */
     virtual QCString trClassDiagram(const QCString &clName)
     {
-      return (QCString)"Διάγραμμα κληρονομικότητας για την "+clName+":";
+      return "Διάγραμμα κληρονομικότητας για την "+clName+":";
     }
 
     /*! this text is generated when the \\internal command is used. */
@@ -599,7 +599,7 @@ class TranslatorGreek : public Translator
                                     ClassDef::CompoundType compType,
                                     bool isTemplate)
     {
-      QCString result=(QCString)"Τεκμηρίωση";
+      QCString result="Τεκμηρίωση";
       if (isTemplate) result+=" Προτύπου";
       switch(compType)
       {
@@ -759,7 +759,7 @@ class TranslatorGreek : public Translator
         bool single)
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
-      QCString result=(QCString)"Η τεκμηρίωση για ";
+      QCString result="Η τεκμηρίωση για ";
       switch(compType)
       {
         case ClassDef::Class:      result+="αυτή την κλάση"; break;
@@ -824,12 +824,12 @@ class TranslatorGreek : public Translator
     /*! this text is put before a collaboration diagram */
     virtual QCString trCollaborationDiagram(const QCString &clName)
     {
-      return (QCString)"Διάγραμμα Συνεργασίας για την κλάση "+clName+":";
+      return "Διάγραμμα Συνεργασίας για την κλάση "+clName+":";
     }
     /*! this text is put before an include dependency graph */
     virtual QCString trInclDepGraph(const QCString &fName)
     {
-      return (QCString)"Διάγραμμα εξάρτησης αρχείου συμπερίληψης για το "+fName+":";
+      return "Διάγραμμα εξάρτησης αρχείου συμπερίληψης για το "+fName+":";
     }
     /*! header that is put before the list of constructor/destructors. */
     virtual QCString trConstructorDocumentation()
@@ -1112,7 +1112,7 @@ class TranslatorGreek : public Translator
     /*! Used as the title of a Java package */
     virtual QCString trPackage(const QCString &name)
     {
-      return (QCString)"Πακέτο "+name;
+      return "Πακέτο "+name;
     }
     /*! Title of the package index page */
     virtual QCString trPackageList()
@@ -1646,7 +1646,7 @@ class TranslatorGreek : public Translator
                                     ClassDef::CompoundType compType,
                                     bool isTemplate)
     {
-      QCString result=(QCString)clName;
+      QCString result=clName;
       switch(compType)
       {
         case ClassDef::Class:      result+=" Υπομονάδα"; break;
@@ -1714,7 +1714,7 @@ class TranslatorGreek : public Translator
         bool single)
     { // here s is one of " Module", " Struct" or " Union"
       // single is true implies a single file
-      QCString result=(QCString)"Η τεκμηρίωση για ";
+      QCString result="Η τεκμηρίωση για ";
       switch(compType)
       {
         case ClassDef::Class:      result+="αυτή την υπομονάδα"; break;
@@ -1802,7 +1802,7 @@ class TranslatorGreek : public Translator
      */
     virtual QCString trFileIn(const QCString &name)
     {
-      return (QCString)"Αρχείο σε "+name;
+      return "Αρχείο σε "+name;
     }
 
     /*! when clicking a directory dependency label, a page with a
@@ -1811,7 +1811,7 @@ class TranslatorGreek : public Translator
      */
     virtual QCString trIncludesFileIn(const QCString &name)
     {
-      return (QCString)"Εσωκλείει το αρχείο στο "+name;
+      return "Εσωκλείει το αρχείο στο "+name;
     }
 
     /** Compiles a date string.
@@ -1977,14 +1977,14 @@ class TranslatorGreek : public Translator
     /** UNO IDL service page title */
     virtual QCString trServiceReference(const QCString &sName)
     {
-      QCString result=(QCString)sName;
+      QCString result=sName;
       result+=" Τεκμηρίωση Υπηρεσίας";
       return result;
     }
     /** UNO IDL singleton page title */
     virtual QCString trSingletonReference(const QCString &sName)
     {
-      QCString result=(QCString)sName;
+      QCString result=sName;
       result+=" Τεκμηρίωση Μονοσύνολου";
       return result;
     }
@@ -1992,7 +1992,7 @@ class TranslatorGreek : public Translator
     virtual QCString trServiceGeneratedFromFiles(bool single)
     {
       // single is true implies a single file
-      QCString result=(QCString)"Η τεκμηρίωση για την υπηρεσία αυτή "
+      QCString result="Η τεκμηρίωση για την υπηρεσία αυτή "
                                 "δημιουργήθηκε από ";
       if (single) result+="το ακόλουθο αρχείο:"; else result+="τα ακόλουθα αρχεία:";
       return result;
@@ -2001,7 +2001,7 @@ class TranslatorGreek : public Translator
     virtual QCString trSingletonGeneratedFromFiles(bool single)
     {
       // single is true implies a single file
-      QCString result=(QCString)"Η τεκμηρίωση για αυτό το μονοσύνολο "
+      QCString result="Η τεκμηρίωση για αυτό το μονοσύνολο "
                                 "δημιουργήθηκε από ";
       if (single) result+="το ακόλουθο αρχείο:"; else result+="τα ακόλουθα αρχεία:";
       return result;

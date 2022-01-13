@@ -110,7 +110,7 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
      */
     virtual QCString trGeneratedAutomatically(const QCString &s)
     { QCString result="Ավտոմատ ստեղծված է ելքային կոդից, Doxygen-ի միջոցով, ";
-      if (!s.isEmpty()) result+=s+(QCString)" համար:";
+      if (!s.isEmpty()) result+=s+" համար:";
       return result;
     }
 
@@ -459,9 +459,9 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
      */
     virtual QCString trGeneratedAt(const QCString &date,const QCString &projName)
     {
-      QCString result=(QCString)"Ստեղծվել է "+date;
-      if (!projName.isEmpty()) result+=projName+QCString(" -ի համար,");
-      result+=(QCString)" հետևյալ համակարգով.";
+      QCString result=QCString("Ստեղծվել է ")+date;
+      if (!projName.isEmpty()) result+=projName+" -ի համար,";
+      result+=" հետևյալ համակարգով.";
       return result;
     }
 
@@ -549,7 +549,7 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
                                  ClassDef::CompoundType compType,
                                  bool isTemplate)
     {
-      QCString result=(QCString)clName;
+      QCString result=clName;
       if (isTemplate)
       {
         switch(compType)
@@ -724,7 +724,7 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
     virtual QCString trGeneratedFromFiles(ClassDef::CompoundType compType,
         bool single)
     {
-      QCString result = (QCString)"Այս ";
+      QCString result = "Այս ";
       switch(compType)
       {
         case ClassDef::Class:      result+="դասի"; break;
@@ -789,12 +789,12 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
     /*! this text is put before a collaboration diagram */
     virtual QCString trCollaborationDiagram(const QCString &clName)
     {
-      return (QCString)clName+"-ի համագործակցությունների գծագիր.";
+      return clName+"-ի համագործակցությունների գծագիր.";
     }
     /*! this text is put before an include dependency graph */
     virtual QCString trInclDepGraph(const QCString &fName)
     {
-      return (QCString)fName+"-ի ներառումների կախվածությունների գծագիր.";
+      return fName+"-ի ներառումների կախվածությունների գծագիր.";
     }
     /*! header that is put before the list of constructor/destructors. */
     virtual QCString trConstructorDocumentation()
@@ -1076,7 +1076,7 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
     /*! Used as the title of a Java package */
     virtual QCString trPackage(const QCString &name)
     {
-      return (QCString)"Փաթեթ "+name;
+      return "Փաթեթ "+name;
     }
     /*! Title of the package index page */
     virtual QCString trPackageList()
@@ -1576,7 +1576,7 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
                                     ClassDef::CompoundType compType,
                                     bool isTemplate)
     {
-      QCString result=(QCString)clName;
+      QCString result=clName;
       if (!isTemplate)
       {
         switch(compType)
@@ -1658,7 +1658,7 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
         bool single)
     { // here s is one of " Module", " Struct" or " Union"
       // single is true implies a single file
-      QCString result=(QCString)"Այս ";
+      QCString result="Այս ";
       switch(compType)
       {
         case ClassDef::Class:      result+="մոդուլի"; break;
@@ -1744,7 +1744,7 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
      */
     virtual QCString trFileIn(const QCString &name)
     {
-      return (QCString)"Ֆայլը " + name + " ում";
+      return "Ֆայլը " + name + " ում";
     }
 
     /*! when clicking a directory dependency label, a page with a
@@ -1753,7 +1753,7 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
      */
     virtual QCString trIncludesFileIn(const QCString &name)
     {
-      return (QCString)"Ներառում է ֆայլը " + name + " ում";
+      return "Ներառում է ֆայլը " + name + " ում";
     }
 
     /** Compiles a date string.

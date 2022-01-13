@@ -128,7 +128,7 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
      */
     virtual QCString trGeneratedAutomatically(const QCString &s)
     { QCString result="Automaties gegenereer deur Doxygen";
-      if (!s.isEmpty()) result+=(QCString)" vir "+s;
+      if (!s.isEmpty()) result+=" vir "+s;
       result+=" van die bron kode af.";
       return result;
     }
@@ -488,16 +488,16 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
      */
     virtual QCString trGeneratedAt(const QCString &date,const QCString &projName)
     {
-      QCString result=(QCString)"Gegenereer op "+date;
-      if (!projName.isEmpty()) result+=(QCString)" vir "+projName;
-      result+=(QCString)" deur";
+      QCString result="Gegenereer op "+date;
+      if (!projName.isEmpty()) result+=" vir "+projName;
+      result+=" deur";
       return result;
     }
 
     /*! this text is put before a class diagram */
     virtual QCString trClassDiagram(const QCString &clName)
     {
-      return (QCString)"Afleidings diagram vir "+clName+":";
+      return "Afleidings diagram vir "+clName+":";
     }
 
     /*! this text is generated when the \\internal command is used. */
@@ -578,7 +578,7 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
                                     ClassDef::CompoundType compType,
                                     bool isTemplate)
     {
-      QCString result=(QCString)clName;
+      QCString result=clName;
       switch(compType)
       {
         case ClassDef::Class:      result+=" klas"; break;
@@ -738,7 +738,7 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
         bool single)
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
-      QCString result=(QCString)"Die dokumentasie vir hierdie ";
+      QCString result="Die dokumentasie vir hierdie ";
       switch(compType)
       {
         case ClassDef::Class:      result+="klas"; break;
@@ -803,12 +803,12 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
     /*! this text is put before a collaboration diagram */
     virtual QCString trCollaborationDiagram(const QCString &clName)
     {
-      return (QCString)"Samewerkings diagram vir "+clName+":";
+      return "Samewerkings diagram vir "+clName+":";
     }
     /*! this text is put before an include dependency graph */
     virtual QCString trInclDepGraph(const QCString &fName)
     {
-      return (QCString)"Insluitings afhanklikheid diagram vir "+fName+":";
+      return "Insluitings afhanklikheid diagram vir "+fName+":";
     }
     /*! header that is put before the list of constructor/destructors. */
     virtual QCString trConstructorDocumentation()
@@ -1089,7 +1089,7 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
     /*! Used as the title of a Java package */
     virtual QCString trPackage(const QCString &name)
     {
-      return (QCString)"Pakket "+name;
+      return "Pakket "+name;
     }
     /*! Title of the package index page */
     virtual QCString trPackageList()
@@ -1613,7 +1613,7 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
                                     ClassDef::CompoundType compType,
                                     bool isTemplate)
     {
-      QCString result=(QCString)clName;
+      QCString result=clName;
       switch(compType)
       {
         case ClassDef::Class:      result+=" Module"; break;
@@ -1681,7 +1681,7 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
         bool single)
     {
       // single is true implies a single file
-      QCString result=(QCString)"The documentation for this ";
+      QCString result="The documentation for this ";
       switch(compType)
       {
         case ClassDef::Class:      result+="module"; break;

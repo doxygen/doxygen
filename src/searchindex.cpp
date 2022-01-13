@@ -191,8 +191,8 @@ static int charsToIndex(const QCString &word)
   //return h;
 
   // Simple hashing that allows for substring searching
-  uint c1=(uchar)word[0];
-  uint c2=(uchar)word[1];
+  uint c1=static_cast<uchar>(word[0]);
+  uint c2=static_cast<uchar>(word[1]);
   return c1*256+c2;
 }
 

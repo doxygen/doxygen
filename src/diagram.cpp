@@ -46,7 +46,7 @@ class DiagramItem
     QCString fileName() const;
     DiagramItem *parentItem() { return m_parent; }
     DiagramItemList getChildren() { return m_children; }
-    void move(int dx,int dy) { m_x+=(uint)dx; m_y+=(uint)dy; }
+    void move(int dx,int dy) { m_x=static_cast<uint>(m_x+dx); m_y=static_cast<uint>(m_y+dy); }
     uint xPos() const { return m_x; }
     uint yPos() const { return m_y; }
     uint avgChildPos() const;
@@ -339,7 +339,7 @@ void DiagramRow::insertClass(DiagramItem *parent,const ClassDef *cd,bool doBases
                                           cd,prot,virt,ts);
   DiagramItem *di_ptr = di.get();
   if (parent) parent->addChild(di_ptr);
-  di->move((int)(m_items.size()*gridWidth),(int)(m_level*gridHeight));
+  di->move(static_cast<int>(m_items.size()*gridWidth),static_cast<int>(m_level*gridHeight));
   m_items.push_back(std::move(di));
   int count=0;
   for (const auto &bcd : doBases ? cd->baseClasses() : cd->subClasses())
@@ -408,7 +408,9 @@ bool TreeDiagram::layoutTree(DiagramItem *root,uint r)
       //printf("Moving children %d-%d in row %d\n",
       //    dil->getFirst()->number(),row->count()-1,r+1);
       for (k=children.front()->number();k<row->numItems();k++)
-        row->item(k)->move((int)(pPos-cPos),0);
+      {
+        row->item(k)->move(static_cast<int>(pPos-cPos),0);
+      }
       moved=TRUE;
     }
     else if (pPos<cPos) // move parent
@@ -417,7 +419,9 @@ bool TreeDiagram::layoutTree(DiagramItem *root,uint r)
       //printf("Moving parents %d-%d in row %d\n",
       //    root->number(),row->count()-1,r);
       for (k=root->number();k<row->numItems();k++)
-        row->item(k)->move((int)(cPos-pPos),0);
+      {
+        row->item(k)->move(static_cast<int>(cPos-pPos),0);
+      }
       moved=TRUE;
     }
 
@@ -521,7 +525,7 @@ void TreeDiagram::computeExtremes(uint *maxLabelLen,uint *maxXPos)
     for (const auto &di : *dr) // for each item in a row
     {
       if (di->isInList()) done=TRUE;
-      if (maxXPos) mx=std::max(mx,(uint)di->xPos());
+      if (maxXPos) mx=std::max(mx,static_cast<uint>(di->xPos()));
       if (maxLabelLen) ml=std::max(ml,Image::stringLength(di->label()));
     }
     if (done) break;
@@ -622,14 +626,14 @@ void TreeDiagram::drawBoxes(TextStream &t,Image *image,
           }
           else
           {
-            xf = di->xPos()/(float)gridWidth;
+            xf = di->xPos()/static_cast<float>(gridWidth);
             if (doBase)
             {
-              yf = di->yPos()/(float)gridHeight+superRows-1;
+              yf = di->yPos()/static_cast<float>(gridHeight)+superRows-1;
             }
             else
             {
-              yf = superRows-1-di->yPos()/(float)gridHeight;
+              yf = superRows-1-di->yPos()/static_cast<float>(gridHeight);
             }
           }
         }
@@ -678,14 +682,14 @@ void TreeDiagram::drawBoxes(TextStream &t,Image *image,
         }
         else
         {
-          xf=di->xPos()/(float)gridWidth;
+          xf=di->xPos()/static_cast<float>(gridWidth);
           if (doBase)
           {
-            yf = di->yPos()/(float)gridHeight+superRows-1;
+            yf = di->yPos()/static_cast<float>(gridHeight)+superRows-1;
           }
           else
           {
-            yf = superRows-1-di->yPos()/(float)gridHeight;
+            yf = superRows-1-di->yPos()/static_cast<float>(gridHeight);
           }
           writeVectorBox(t,di.get(),xf,yf);
         }
@@ -746,13 +750,13 @@ void TreeDiagram::drawConnectors(TextStream &t,Image *image,
             t << protToString(di->protection()) << "\n";
             if (doBase)
             {
-              t << "1 " << (di->xPos()/(float)gridWidth) << " "
-                << (di->yPos()/(float)gridHeight+superRows-1) << " in\n";
+              t << "1 " << (di->xPos()/static_cast<float>(gridWidth)) << " "
+                << (di->yPos()/static_cast<float>(gridHeight)+superRows-1) << " in\n";
             }
             else
             {
-              t << "0 " << (di->xPos()/(float)gridWidth) << " "
-                << ((float)superRows-0.25f-di->yPos()/(float)gridHeight)
+              t << "0 " << (di->xPos()/static_cast<float>(gridWidth)) << " "
+                << (static_cast<float>(superRows)-0.25f-di->yPos()/static_cast<float>(gridHeight))
                 << " in\n";
             }
           }
@@ -779,15 +783,15 @@ void TreeDiagram::drawConnectors(TextStream &t,Image *image,
           }
           else
           {
-            xf = di->parentItem()->xPos()/(float)gridWidth;
+            xf = di->parentItem()->xPos()/static_cast<float>(gridWidth);
             if (doBase)
             {
-              ysf = di->yPos()/(float)gridHeight+superRows-1;
+              ysf = di->yPos()/static_cast<float>(gridHeight)+superRows-1;
               yf = ysf + 0.5f;
             }
             else
             {
-              ysf = (float)superRows-0.25f-di->yPos()/(float)gridHeight;
+              ysf = static_cast<float>(superRows)-0.25f-di->yPos()/static_cast<float>(gridHeight);
               yf = ysf - 0.25f;
             }
           }
@@ -913,13 +917,13 @@ void TreeDiagram::drawConnectors(TextStream &t,Image *image,
             t << protToString(di->protection()) << "\n";
             if (doBase)
             {
-              t << "1 " << di->xPos()/(float)gridWidth << " "
-                << (di->yPos()/(float)gridHeight+superRows-1) << " in\n";
+              t << "1 " << di->xPos()/static_cast<float>(gridWidth) << " "
+                << (di->yPos()/static_cast<float>(gridHeight)+superRows-1) << " in\n";
             }
             else
             {
-              t << "0 " << di->xPos()/(float)gridWidth << " "
-                << ((float)superRows-0.25f-di->yPos()/(float)gridHeight)
+              t << "0 " << di->xPos()/static_cast<float>(gridWidth) << " "
+                << (static_cast<float>(superRows)-0.25f-di->yPos()/static_cast<float>(gridHeight))
                 << " in\n";
             }
           }
@@ -953,13 +957,13 @@ void TreeDiagram::drawConnectors(TextStream &t,Image *image,
             t << protToString(p) << "\n";
             if (doBase)
             {
-              t << "0 " << di->xPos()/(float)gridWidth  << " "
-                << (di->yPos()/(float)gridHeight+superRows-1) << " out\n";
+              t << "0 " << di->xPos()/static_cast<float>(gridWidth)  << " "
+                << (di->yPos()/static_cast<float>(gridHeight)+superRows-1) << " out\n";
             }
             else
             {
-              t << "1 " << di->xPos()/(float)gridWidth  << " "
-                << ((float)superRows-1.75f-di->yPos()/(float)gridHeight)
+              t << "1 " << di->xPos()/static_cast<float>(gridWidth)  << " "
+                << (static_cast<float>(superRows)-1.75f-di->yPos()/static_cast<float>(gridHeight))
                 << " out\n";
             }
           }
@@ -988,16 +992,16 @@ void TreeDiagram::drawConnectors(TextStream &t,Image *image,
               t << protToString(p) << "\n";
               if (doBase)
               {
-                t << first->xPos()/(float)gridWidth << " "
-                  << last->xPos()/(float)gridWidth << " "
-                  << (first->yPos()/(float)gridHeight+superRows-1)
+                t << first->xPos()/static_cast<float>(gridWidth) << " "
+                  << last->xPos()/static_cast<float>(gridWidth) << " "
+                  << (first->yPos()/static_cast<float>(gridHeight)+superRows-1)
                   << " conn\n";
               }
               else
               {
-                t << first->xPos()/(float)gridWidth << " "
-                  << last->xPos()/(float)gridWidth << " "
-                  << ((float)superRows-first->yPos()/(float)gridHeight)
+                t << first->xPos()/static_cast<float>(gridWidth) << " "
+                  << last->xPos()/static_cast<float>(gridWidth) << " "
+                  << (static_cast<float>(superRows)-first->yPos()/static_cast<float>(gridHeight))
                   << " conn\n";
               }
             }
@@ -1030,13 +1034,13 @@ ClassDiagram::ClassDiagram(const ClassDef *root) : p(std::make_unique<Private>(r
   uint xsuper = superItem->xPos();
   if (xbase>xsuper)
   {
-    superItem->move((int)(xbase-xsuper),0);
-    p->super.moveChildren(superItem,(int)(xbase-xsuper));
+    superItem->move(static_cast<int>(xbase-xsuper),0);
+    p->super.moveChildren(superItem,static_cast<int>(xbase-xsuper));
   }
   else if (xbase<xsuper)
   {
-    baseItem->move((int)(xsuper-xbase),0);
-    p->base.moveChildren(baseItem,(int)(xsuper-xbase));
+    baseItem->move(static_cast<int>(xsuper-xbase),0);
+    p->base.moveChildren(baseItem,static_cast<int>(xsuper-xbase));
   }
 }
 
@@ -1084,7 +1088,7 @@ void ClassDiagram::writeFigure(TextStream &output,const QCString &path,
 
   //printf("writeFigure rows=%d cols=%d\n",rows,cols);
 
-  QCString epsBaseName=(QCString)path+"/"+fileName;
+  QCString epsBaseName=QCString(path)+"/"+fileName;
   QCString epsName=epsBaseName+".eps";
   std::ofstream f(epsName.str(),std::ofstream::out | std::ofstream::binary);
   if (!f.is_open())
@@ -1106,7 +1110,7 @@ void ClassDiagram::writeFigure(TextStream &output,const QCString &path,
     t << "%%For: \n";
     t << "%Magnification: 1.00\n";
     t << "%%Orientation: Portrait\n";
-    t << "%%BoundingBox: 0 0 500 " << estHeight*500.0f/(float)estWidth << "\n";
+    t << "%%BoundingBox: 0 0 500 " << estHeight*500.0f/static_cast<float>(estWidth) << "\n";
     t << "%%Pages: 0\n";
     t << "%%BeginSetup\n";
     t << "%%EndSetup\n";
@@ -1120,7 +1124,7 @@ void ClassDiagram::writeFigure(TextStream &output,const QCString &path,
     t << "/marginwidth 10 def\n";
     t << "/distx 20 def\n";
     t << "/disty 40 def\n";
-    t << "/boundaspect " << estWidth/(float)estHeight << " def  % aspect ratio of the BoundingBox (width/height)\n";
+    t << "/boundaspect " << estWidth/static_cast<float>(estHeight) << " def  % aspect ratio of the BoundingBox (width/height)\n";
     t << "/boundx 500 def\n";
     t << "/boundy boundx boundaspect div def\n";
     t << "/xspacing 0 def\n";
@@ -1367,7 +1371,7 @@ void ClassDiagram::writeImage(TextStream &t,const QCString &path,
   p->super.drawConnectors(t,&image,FALSE,TRUE,baseRows,superRows,cellWidth,cellHeight);
 
 #define IMAGE_EXT ".png"
-  image.save((QCString)path+"/"+fileName+IMAGE_EXT);
+  image.save(QCString(path)+"/"+fileName+IMAGE_EXT);
   Doxygen::indexList->addImageFile(QCString(fileName)+IMAGE_EXT);
 }
 

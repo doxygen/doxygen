@@ -34,11 +34,22 @@ static std::mutex      g_mutex;
 void initWarningFormat()
 {
   g_warnFormat = Config_getString(WARN_FORMAT);
-  if (!Config_getString(WARN_LOGFILE).isEmpty())
+  QCString logFile = Config_getString(WARN_LOGFILE);
+
+  if (!logFile.isEmpty())
   {
-    g_warnFile = Portable::fopen(Config_getString(WARN_LOGFILE).data(),"w");
+    if (logFile == "-")
+    {
+      g_warnFile = stdout;
+    }
+    else if (!(g_warnFile = Portable::fopen(logFile,"w")))
+    {
+      // point it to something valid, because warn() relies on it
+      g_warnFile = stderr;
+      err("Cannot open '%s' for writing, redirecting 'WARN_LOGFILE' output to 'stderr'\n",logFile.data());
+    }
   }
-  if (!g_warnFile) // point it to something valid, because warn() relies on it
+  else
   {
     g_warnFile = stderr;
   }
@@ -57,7 +68,7 @@ void msg(const char *fmt, ...)
     std::unique_lock<std::mutex> lock(g_mutex);
     if (Debug::isFlagSet(Debug::Time))
     {
-      printf("%.3f sec: ",((double)Debug::elapsedTime()));
+      printf("%.3f sec: ",(static_cast<double>(Debug::elapsedTime())));
     }
     va_list args;
     va_start(args, fmt);
@@ -126,23 +137,23 @@ static void do_warn(bool enabled, const QCString &file, int line, const char *pr
   va_list argsCopy;
   va_copy(argsCopy, args);
 
-  int l=0;
+  size_t l=0;
   if (prefix)
   {
-    l=(int)strlen(prefix);
+    l=strlen(prefix);
   }
   // determine needed buffersize based on:
   // format + arguments
   // prefix
   // 1 position for `\0`
-  int bufSize = vsnprintf(NULL, 0, fmt, args) + l + 1;
+  size_t bufSize = vsnprintf(NULL, 0, fmt, args) + l + 1;
   QCString text(bufSize);
   if (prefix)
   {
     qstrncpy(text.rawData(),prefix,bufSize);
   }
   vsnprintf(text.rawData()+l, bufSize-l, fmt, argsCopy);
-  text[bufSize-1]='\0';
+  text[static_cast<int>(bufSize)-1]='\0';
   format_warn(file,line,text);
 
   va_end(argsCopy);
@@ -227,7 +238,8 @@ void term(const char *fmt, ...)
     va_end(args);
     if (g_warnFile != stderr)
     {
-      for (int i = 0; i < (int)strlen(g_errorStr); i++) fprintf(g_warnFile, " ");
+      size_t l = strlen(g_errorStr);
+      for (size_t i=0; i<l; i++) fprintf(g_warnFile, " ");
       fprintf(g_warnFile, "%s\n", "Exiting...");
     }
   }

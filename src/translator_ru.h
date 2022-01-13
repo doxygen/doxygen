@@ -804,12 +804,12 @@ class TranslatorRussian : public TranslatorAdapter_1_8_15
     /*! this text is put before a collaboration diagram */
     virtual QCString trCollaborationDiagram(const QCString &clName)
     {
-      return (QCString)"Граф связей класса "+clName+":";
+      return "Граф связей класса "+clName+":";
     }
     /*! this text is put before an include dependency graph */
     virtual QCString trInclDepGraph(const QCString &fName)
     {
-      return (QCString)"Граф включаемых заголовочных файлов для "+fName+":";
+      return "Граф включаемых заголовочных файлов для "+fName+":";
     }
     /*! header that is put before the list of constructor/destructors. */
     virtual QCString trConstructorDocumentation()
@@ -1593,7 +1593,7 @@ class TranslatorRussian : public TranslatorAdapter_1_8_15
                                     ClassDef::CompoundType compType,
                                     bool isTemplate)
     {
-      QCString result=(QCString)clName;
+      QCString result=clName;
       if (isTemplate)
       {
 	switch(compType)
@@ -1675,7 +1675,7 @@ class TranslatorRussian : public TranslatorAdapter_1_8_15
         bool single)
     { // here s is one of " Module", " Struct" or " Union"
       // single is true implies a single file
-      QCString result=(QCString)"Документация по ";
+      QCString result="Документация по ";
       switch(compType)
       {
         case ClassDef::Class:      result+="модулю"; break;
@@ -1761,7 +1761,7 @@ class TranslatorRussian : public TranslatorAdapter_1_8_15
      */
     virtual QCString trFileIn(const QCString &name)
     {
-      return (QCString)"Файл в "+name;
+      return "Файл в "+name;
     }
 
     /*! when clicking a directory dependency label, a page with a
@@ -1770,7 +1770,7 @@ class TranslatorRussian : public TranslatorAdapter_1_8_15
      */
     virtual QCString trIncludesFileIn(const QCString &name)
     {
-      return (QCString)"Включает файл в "+name;
+      return "Включает файл в "+name;
     }
 
     /** Compiles a date string.
@@ -1935,14 +1935,14 @@ class TranslatorRussian : public TranslatorAdapter_1_8_15
     /** UNO IDL service page title */
     virtual QCString trServiceReference(const QCString &sName)
     {
-      QCString result=(QCString)sName;
+      QCString result=sName;
       result+=" Ссылка на сервис";
       return result;
     }
     /** UNO IDL singleton page title */
     virtual QCString trSingletonReference(const QCString &sName)
     {
-      QCString result=(QCString)sName;
+      QCString result=sName;
       result+=" Ссылка на одиночку";
       return result;
     }
@@ -1950,7 +1950,7 @@ class TranslatorRussian : public TranslatorAdapter_1_8_15
     virtual QCString trServiceGeneratedFromFiles(bool single)
     {
       // single is true implies a single file
-      QCString result=(QCString)"Документация для этого сервиса "
+      QCString result="Документация для этого сервиса "
                                 "сгенерирована из следующего файл";
       if (single) result+="а:"; else result+="ов:";
       return result;
@@ -1959,7 +1959,7 @@ class TranslatorRussian : public TranslatorAdapter_1_8_15
     virtual QCString trSingletonGeneratedFromFiles(bool single)
     {
       // single is true implies a single file
-      QCString result=(QCString)"Документация по этому одиночке "
+      QCString result="Документация по этому одиночке "
                                 "сгенерирована из следующего файл";
       if (single) result+="а:"; else result+="ов:";
       return result;

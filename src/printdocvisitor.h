@@ -137,6 +137,9 @@ class PrintDocVisitor : public DocVisitor
         case DocStyleChange::Small:
           if (s->enable()) printf("<small>"); else printf("</small>");
           break;
+        case DocStyleChange::Cite:
+          if (s->enable()) printf("<cite>"); else printf("</cite>");
+          break;
         case DocStyleChange::Preformatted:
           if (s->enable()) printf("<pre>"); else printf("</pre>");
           break;
@@ -145,6 +148,30 @@ class PrintDocVisitor : public DocVisitor
           break;
         case DocStyleChange::Span:
           if (s->enable()) printf("<span>"); else printf("</span>");
+          break;
+        case DocStyleChange::Details:
+          if (s->enable())
+          {
+            indent_pre();
+            printf("<details>\n");
+          }
+          else
+          {
+            indent_post();
+            printf("</details>\n");
+          }
+          break;
+        case DocStyleChange::Summary:
+          if (s->enable())
+          {
+            indent_pre();
+            printf("<summary>\n");
+          }
+          else
+          {
+            indent_post();
+            printf("</summary>\n");
+          }
           break;
       }
     }
@@ -155,6 +182,8 @@ class PrintDocVisitor : public DocVisitor
       {
         case DocVerbatim::Code: printf("<code>"); break;
         case DocVerbatim::Verbatim: printf("<verbatim>"); break;
+        case DocVerbatim::JavaDocLiteral: printf("<javadocliteral>"); break;
+        case DocVerbatim::JavaDocCode: printf("<javadoccode>"); break;
         case DocVerbatim::HtmlOnly: printf("<htmlonly>"); break;
         case DocVerbatim::RtfOnly: printf("<rtfonly>"); break;
         case DocVerbatim::ManOnly: printf("<manonly>"); break;
@@ -170,6 +199,8 @@ class PrintDocVisitor : public DocVisitor
       {
         case DocVerbatim::Code: printf("</code>"); break;
         case DocVerbatim::Verbatim: printf("</verbatim>"); break;
+        case DocVerbatim::JavaDocLiteral: printf("</javadocliteral>"); break;
+        case DocVerbatim::JavaDocCode: printf("</javadoccode>"); break;
         case DocVerbatim::HtmlOnly: printf("</htmlonly>"); break;
         case DocVerbatim::RtfOnly: printf("</rtfonly>"); break;
         case DocVerbatim::ManOnly: printf("</manonly>"); break;
@@ -395,7 +426,7 @@ class PrintDocVisitor : public DocVisitor
         printf(">\n");
       }
       else printf("<ul>\n");
- 
+
     }
     void visitPost(DocHtmlList *s)
     {
@@ -647,11 +678,11 @@ class PrintDocVisitor : public DocVisitor
         {
           if (param->kind()==DocNode::Kind_Word)
           {
-            visit((DocWord*)param.get());
+            visit(dynamic_cast<DocWord*>(param.get()));
           }
           else if (param->kind()==DocNode::Kind_LinkedWord)
           {
-            visit((DocLinkedWord*)param.get());
+            visit(dynamic_cast<DocLinkedWord*>(param.get()));
           }
           else if (param->kind()==DocNode::Kind_Sep)
           {

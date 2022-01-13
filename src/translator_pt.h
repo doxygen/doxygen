@@ -169,7 +169,7 @@ class TranslatorPortuguese : public Translator
      */
     QCString trGeneratedAutomatically(const QCString &s)
     { QCString result="Gerado automaticamente por Doxygen";
-      if (!s.isEmpty()) result+=(QCString)" para "+s;
+      if (!s.isEmpty()) result+=" para "+s;
       result+=" a partir do código fonte.";
       return result;
     }
@@ -519,16 +519,16 @@ class TranslatorPortuguese : public Translator
      */
     QCString trGeneratedAt(const QCString &date,const QCString &projName)
     {
-      QCString result=(QCString)"Gerado em "+date;
-      if (!projName.isEmpty()) result+=(QCString)" para "+projName;
-      result+=(QCString)" por";
+      QCString result="Gerado em "+date;
+      if (!projName.isEmpty()) result+=" para "+projName;
+      result+=" por";
       return result;
     }
 
     /*! this text is put before a class diagram */
     QCString trClassDiagram(const QCString &clName)
     {
-      return (QCString)"Diagrama de heranças da classe "+clName;
+      return "Diagrama de heranças da classe "+clName;
     }
 
     /*! this text is generated when the \\internal command is used. */
@@ -622,7 +622,7 @@ class TranslatorPortuguese : public Translator
         default: break;
       }
       if (isTemplate) result+="Template ";
-      result+=(QCString)clName;
+      result+=clName;
       return result;
     }
 
@@ -772,10 +772,11 @@ class TranslatorPortuguese : public Translator
         bool single)
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
-      QCString result=(QCString)"A documentação para ";
+      static bool vhdlOpt = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
+      QCString result="A documentação para ";
       switch(compType)
       {
-        case ClassDef::Class:      result+="esta classe"; break;
+        case ClassDef::Class:      result+=vhdlOpt?"esta Unidade de Design":"esta classe"; break;
         case ClassDef::Struct:     result+="esta estrutura"; break;
         case ClassDef::Union:      result+="esta união"; break;
         case ClassDef::Interface:  result+="este interface"; break;
@@ -838,12 +839,12 @@ class TranslatorPortuguese : public Translator
     /*! this text is put before a collaboration diagram */
     virtual QCString trCollaborationDiagram(const QCString &clName)
     {
-      return (QCString)"Diagrama de colaboração para "+clName+":";
+      return "Diagrama de colaboração para "+clName+":";
     }
     /*! this text is put before an include dependency graph */
     virtual QCString trInclDepGraph(const QCString &fName)
     {
-      return (QCString)"Diagrama de dependências de inclusão para "+fName+":";
+      return "Diagrama de dependências de inclusão para "+fName+":";
     }
     /*! header that is put before the list of constructor/destructors. */
     virtual QCString trConstructorDocumentation()
@@ -1116,7 +1117,7 @@ class TranslatorPortuguese : public Translator
     /*! Used as the title of a Java package */
     virtual QCString trPackage(const QCString &name)
     {
-      return (QCString)"Pacote "+name;
+      return "Pacote "+name;
     }
     /*! Title of the package index page */
     virtual QCString trPackageList()
@@ -1638,7 +1639,7 @@ class TranslatorPortuguese : public Translator
                                     ClassDef::CompoundType compType,
                                     bool isTemplate)
     {
-      QCString result = (QCString)"Referência ";
+      QCString result = "Referência ";
 
       if (isTemplate) result+="da Template ";
 
@@ -1709,7 +1710,7 @@ class TranslatorPortuguese : public Translator
         bool single)
     { // here s is one of " Module", " Struct" or " Union"
       // single is true implies a single file
-      QCString result=(QCString)"A documentação para ";
+      QCString result="A documentação para ";
       switch(compType)
       {
         case ClassDef::Class:      result+="este modulo "; break;
@@ -1802,7 +1803,7 @@ class TranslatorPortuguese : public Translator
      */
     virtual QCString trFileIn(const QCString &name)
     {
-      return (QCString)"Ficheiro em "+name;
+      return "Ficheiro em "+name;
     }
 
     /*! when clicking a directory dependency label, a page with a
@@ -1811,7 +1812,7 @@ class TranslatorPortuguese : public Translator
      */
     virtual QCString trIncludesFileIn(const QCString &name)
     {
-      return (QCString)"Inclui ficheiro em "+name;
+      return "Inclui ficheiro em "+name;
     }
 
     /** Compiles a date string.
@@ -2004,7 +2005,7 @@ class TranslatorPortuguese : public Translator
     virtual QCString trServiceGeneratedFromFiles(bool single)
     {
       // single is true implies a single file
-      QCString result=(QCString)"A documentação para este serviço "
+      QCString result="A documentação para este serviço "
                                 "foi gerada a partir ";
       if (single) {
         result+="do seguinte ficheiro:";
@@ -2018,7 +2019,7 @@ class TranslatorPortuguese : public Translator
     virtual QCString trSingletonGeneratedFromFiles(bool single)
     {
       // single is true implies a single file
-      QCString result=(QCString)"A documentação para este singleton "
+      QCString result="A documentação para este singleton "
                                 "foi gerada a partir ";
       if (single) {
         result+="do seguinte ficheiro:";
@@ -2245,7 +2246,7 @@ class TranslatorPortuguese : public Translator
     }
     virtual QCString trCompoundReferenceSlice(const QCString &clName, ClassDef::CompoundType compType, bool isLocal)
     {
-      QCString result=(QCString)"Referência ";
+      QCString result="Referência ";
       switch(compType)
       {
         case ClassDef::Class:      result+="da Classe "; break;

@@ -139,12 +139,12 @@ class LatexDocVisitor : public DocVisitor
 
     struct ActiveRowSpan
     {
-      ActiveRowSpan(DocHtmlCell *c,int rs,int cs,int col)
+      ActiveRowSpan(DocHtmlCell *c,size_t rs,size_t cs,size_t col)
         : cell(c), rowSpan(rs), colSpan(cs), column(col) {}
       DocHtmlCell *cell;
-      int rowSpan;
-      int colSpan;
-      int column;
+      size_t rowSpan;
+      size_t colSpan;
+      size_t column;
     };
 
     typedef std::vector<ActiveRowSpan> RowSpanList;
@@ -153,7 +153,7 @@ class LatexDocVisitor : public DocVisitor
     // helper functions
     //--------------------------------------
 
-    void filter(const QCString &str);
+    void filter(const QCString &str, const bool retainNewLine = false);
     void startLink(const QCString &ref,const QCString &file,
                    const QCString &anchor,bool refToTable=FALSE);
     void endLink(const QCString &ref,const QCString &file,
@@ -197,8 +197,8 @@ class LatexDocVisitor : public DocVisitor
     struct TableState
     {
       RowSpanList rowSpans;
-      int  numCols = 0;
-      int currentColumn = 0;
+      size_t numCols = 0;
+      size_t currentColumn = 0;
       bool inRowSpan = false;
       bool inColSpan = false;
       bool firstRow = false;
@@ -224,19 +224,19 @@ class LatexDocVisitor : public DocVisitor
     {
       m_tableStateStack.pop();
     }
-    int currentColumn() const
+    size_t currentColumn() const
     {
       return !m_tableStateStack.empty() ? m_tableStateStack.top().currentColumn : 0;
     }
-    void setCurrentColumn(int col)
+    void setCurrentColumn(size_t col)
     {
       if (!m_tableStateStack.empty()) m_tableStateStack.top().currentColumn = col;
     }
-    int numCols() const
+    size_t numCols() const
     {
       return !m_tableStateStack.empty() ? m_tableStateStack.top().numCols : 0;
     }
-    void setNumCols(int num)
+    void setNumCols(size_t num)
     {
       if (!m_tableStateStack.empty()) m_tableStateStack.top().numCols = num;
     }

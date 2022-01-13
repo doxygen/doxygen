@@ -54,6 +54,7 @@ class ConceptDefImpl : public DefinitionMixin<ConceptDefMutable>
     virtual const NamespaceDef *getNamespaceDef() const;
     virtual const FileDef *getFileDef() const;
     virtual QCString title() const;
+    virtual int groupId() const;
 
     //---------- ConceptDefMutable
     virtual void setIncludeFile(FileDef *fd,const QCString &incName,bool local,bool force);
@@ -64,6 +65,7 @@ class ConceptDefImpl : public DefinitionMixin<ConceptDefMutable>
     virtual void writeDocumentation(OutputList &);
     virtual void setInitializer(const QCString &init);
     virtual void findSectionsInDocumentation();
+    virtual void setGroupId(int id);
 
     //---------- Helpers
     void writeBriefDescription(OutputList &) const;
@@ -79,6 +81,7 @@ class ConceptDefImpl : public DefinitionMixin<ConceptDefMutable>
     FileDef                     *m_fileDef = 0;
     ArgumentList                 m_tArgList;
     QCString                     m_initializer;
+    int                          m_groupId = -1;
 };
 
 ConceptDefMutable *createConceptDef(
@@ -134,6 +137,8 @@ class ConceptDefAliasImpl : public DefinitionAliasMixin<ConceptDef>
     virtual void writeDeclarationLink(OutputList &ol,bool &found,
                               const QCString &header,bool localNames) const
     { getCdAlias()->writeDeclarationLink(ol,found,header,localNames); }
+    virtual int groupId() const
+    { return getCdAlias()->groupId(); }
 };
 
 ConceptDef *createConceptDefAlias(const Definition *newScope,const ConceptDef *cd)
@@ -264,6 +269,16 @@ const FileDef *ConceptDefImpl::getFileDef() const
 QCString ConceptDefImpl::title() const
 {
   return theTranslator->trConceptReference(displayName());
+}
+
+int ConceptDefImpl::groupId() const
+{
+  return m_groupId;
+}
+
+void ConceptDefImpl::setGroupId(int id)
+{
+  m_groupId = id;
 }
 
 void ConceptDefImpl::writeTagFile(TextStream &tagFile)
@@ -505,13 +520,13 @@ void ConceptDefImpl::writeDocumentation(OutputList &ol)
         break;
       case LayoutDocEntry::ConceptDefinition:
         {
-          const LayoutDocEntrySection *ls = (const LayoutDocEntrySection*)lde.get();
+          const LayoutDocEntrySection *ls = dynamic_cast<const LayoutDocEntrySection*>(lde.get());
           writeDefinition(ol,ls->title(getLanguage()));
         }
         break;
       case LayoutDocEntry::DetailedDesc:
         {
-          const LayoutDocEntrySection *ls = (const LayoutDocEntrySection*)lde.get();
+          const LayoutDocEntrySection *ls = dynamic_cast<const LayoutDocEntrySection*>(lde.get());
           writeDetailedDescription(ol,ls->title(getLanguage()));
         }
         break;

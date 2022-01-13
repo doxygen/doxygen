@@ -135,7 +135,7 @@ class TranslatorArabic : public TranslatorAdapter_1_4_6
      */
     virtual QCString trGeneratedAutomatically(const QCString &s)
     { QCString result="تم تكوينها آليا بواسطة Doxygen";
-      if (!s.isEmpty()) result+=(QCString)" لـ "+s;
+      if (!s.isEmpty()) result+=" لـ "+s;
       result+=" من ملفات المصدر.";
       return result;
     }
@@ -515,16 +515,16 @@ class TranslatorArabic : public TranslatorAdapter_1_4_6
      */
     virtual QCString trGeneratedAt(const QCString &date,const QCString &projName)
     {
-      QCString result=(QCString)"Generated on "+date;
-      if (!projName.isEmpty()) result+=(QCString)" for "+projName;
-      result+=(QCString)" by";
+      QCString result="Generated on "+date;
+      if (!projName.isEmpty()) result+=" for "+projName;
+      result+=" by";
       return result;
     }
 
     /*! this text is put before a class diagram */
     virtual QCString trClassDiagram(const QCString &clName)
     {
-      return (QCString)"Inheritance diagram for "+clName+":";
+      return "Inheritance diagram for "+clName+":";
     }
 
     /*! this text is generated when the \\internal command is used. */
@@ -613,7 +613,7 @@ class TranslatorArabic : public TranslatorAdapter_1_4_6
                                     ClassDef::CompoundType compType,
                                     bool isTemplate)
     {
-      QCString result=(QCString)clName;
+      QCString result=clName;
       switch(compType)
       {
         case ClassDef::Class:      result+=" Class"; break;
@@ -773,7 +773,7 @@ class TranslatorArabic : public TranslatorAdapter_1_4_6
         bool single)
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
-      QCString result=(QCString)"توثيق   ";
+      QCString result="توثيق   ";
       switch(compType)
       {
         case ClassDef::Class:      result+="هذه الفئة"; break;
@@ -842,12 +842,12 @@ class TranslatorArabic : public TranslatorAdapter_1_4_6
     /*! this text is put before a collaboration diagram */
     virtual QCString trCollaborationDiagram(const QCString &clName)
     {
-      return (QCString)"رسم التعاون لـ "+clName+":";
+      return "رسم التعاون لـ "+clName+":";
     }
     /*! this text is put before an include dependency graph */
     virtual QCString trInclDepGraph(const QCString &fName)
     {
-      return (QCString)"رسم اعتمادية التضمين لـ "+fName+":";
+      return "رسم اعتمادية التضمين لـ "+fName+":";
     }
     /*! header that is put before the list of constructor/destructors. */
     virtual QCString trConstructorDocumentation()
@@ -1133,7 +1133,7 @@ class TranslatorArabic : public TranslatorAdapter_1_4_6
     /*! Used as the title of a Java package */
     virtual QCString trPackage(const QCString &name)
     {
-      return (QCString)"حزمة "+name;
+      return "حزمة "+name;
     }
     /*! Title of the package index page */
     virtual QCString trPackageList()

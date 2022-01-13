@@ -139,7 +139,7 @@ class HtmlDocVisitor : public DocVisitor
     //--------------------------------------
 
     void writeObfuscatedMailAddress(const QCString &url);
-    void filter(const QCString &str);
+    void filter(const QCString &str, const bool retainNewline = false);
     void filterQuotedCdataAttr(const QCString &str);
     void startLink(const QCString &ref,const QCString &file,
                    const QCString &relPath,const QCString &anchor,
@@ -163,8 +163,9 @@ class HtmlDocVisitor : public DocVisitor
 
     TextStream &m_t;
     CodeOutputInterface &m_ci;
-    bool m_insidePre;
-    bool m_hide;
+    bool m_insidePre = false;
+    bool m_hide = false;
+    bool m_insideTitle = false;
     const Definition *m_ctx;
     QCString m_langExt;
 };

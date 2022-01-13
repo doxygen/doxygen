@@ -120,7 +120,7 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
     { return ", uključujući naslijeđene članove."; }
     QCString trGeneratedAutomatically(const QCString &s)
     { QCString result="napravljeno automatski Doxygen-om";
-      if (!s.isEmpty()) result+=(QCString)" za "+s;
+      if (!s.isEmpty()) result+=" za "+s;
       result+=" iz programskog koda.";
       return result;
     }
@@ -287,8 +287,8 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
     { return "Strukture"; }
     QCString trGeneratedAt(const QCString &date,const QCString &projName)
     {
-      QCString result=(QCString)"Napravljeno "+date;
-      if (!projName.isEmpty()) result+=(QCString)" projekt: "+projName;
+      QCString result="Napravljeno "+date;
+      if (!projName.isEmpty()) result+=" projekt: "+projName;
       result+=" generator: ";
       return result;
     }
@@ -561,12 +561,12 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
     /*! this text is put before a collaboration diagram */
     QCString trCollaborationDiagram(const QCString &clName)
     {
-      return (QCString)"Kolaboracijski dijagram za "+clName+ ":";
+      return "Kolaboracijski dijagram za "+clName+ ":";
     }
     /*! this text is put before an include dependency graph */
     QCString trInclDepGraph(const QCString &fName)
     {
-      return (QCString)"Graf include međuovisnosti za "+fName+":";
+      return "Graf include međuovisnosti za "+fName+":";
     }
     /*! header that is put before the list of constructor/destructors. */
     QCString trConstructorDocumentation()
@@ -826,7 +826,7 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
     /*! Used as the title of a Java package */
     virtual QCString trPackage(const QCString &name)
     {
-      return (QCString)"Paket "+name;
+      return "Paket "+name;
     }
     /*! Title of the package index page */
     virtual QCString trPackageList()
@@ -1324,7 +1324,7 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
       ClassDef::CompoundType compType,
       bool isTemplate)
     {
-      QCString result=(QCString)clName;
+      QCString result=clName;
       switch(compType)
       {
         case ClassDef::Class:      result+=" Modul"; break;
@@ -1392,7 +1392,7 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
       bool)
     { // here s is one of " Module", " Struct" or " Union"
       // single is true implies a single file
-      QCString result=(QCString)"Dokumentacija ovog ";
+      QCString result="Dokumentacija ovog ";
       switch(compType)
       {
         case ClassDef::Class:      result+="modula"; break;
@@ -1477,7 +1477,7 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
      */
     virtual QCString trFileIn(const QCString &name)
     {
-      return (QCString)"Datoteka u "+name;
+      return "Datoteka u "+name;
     }
 
     /*! when clicking a directory dependency label, a page with a
@@ -1486,7 +1486,7 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
      */
     virtual QCString trIncludesFileIn(const QCString &name)
     {
-      return (QCString)"Uključuje datotake u "+name;
+      return "Uključuje datotake u "+name;
     }
 
     /** Compiles a date string.

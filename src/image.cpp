@@ -227,23 +227,21 @@ Image::Image(uint w,uint h)
                         &red2,&green2,&blue2
                        );
 
-  palette[2].red   = (int)(red1   * 255.0);
-  palette[2].green = (int)(green1 * 255.0);
-  palette[2].blue  = (int)(blue1  * 255.0);
+  palette[2].red   = static_cast<int>(red1   * 255.0);
+  palette[2].green = static_cast<int>(green1 * 255.0);
+  palette[2].blue  = static_cast<int>(blue1  * 255.0);
 
-  palette[3].red   = (int)(red2   * 255.0);
-  palette[3].green = (int)(green2 * 255.0);
-  palette[3].blue  = (int)(blue2  * 255.0);
+  palette[3].red   = static_cast<int>(red2   * 255.0);
+  palette[3].green = static_cast<int>(green2 * 255.0);
+  palette[3].blue  = static_cast<int>(blue2  * 255.0);
 
-  m_data = new uchar[w*h];
-  memset(m_data,0,w*h);
+  m_data.resize(w*h);
   m_width = w;
   m_height = h;
 }
 
 Image::~Image()
 {
-  delete[] m_data;
 }
 
 void Image::setPixel(uint x,uint y,uchar val)
@@ -400,7 +398,7 @@ bool Image::save(const QCString &fileName,int mode)
   }
   encoder.infoPng.color.colorType = 3;
   encoder.infoRaw.color.colorType = 3;
-  LodePNG_encode(&encoder, &buffer, &bufferSize, m_data, m_width, m_height);
+  LodePNG_encode(&encoder, &buffer, &bufferSize, &m_data[0], m_width, m_height);
   LodePNG_saveFile(buffer, bufferSize, fileName.data());
   free(buffer);
   LodePNG_Encoder_cleanup(&encoder);
@@ -429,7 +427,7 @@ void ColoredImage::hsl2rgb(double h,double s,double l,
     m       = l + l - v;
     sv      = (v - m ) / v;
     h      *= 6.0;
-    sextant = (int)h;
+    sextant = static_cast<int>(h);
     fract   = h - sextant;
     vsf     = v * sv * fract;
     mid1    = m + vsf;
@@ -480,7 +478,7 @@ ColoredImage::ColoredImage(uint width,uint height,
   m_hasAlpha = alphaLevels!=0;
   m_width    = width;
   m_height   = height;
-  m_data     = (uchar*)malloc(width*height*4);
+  m_data.resize(width*height*4);
   uint i;
   for (i=0;i<width*height;i++)
   {
@@ -490,9 +488,9 @@ ColoredImage::ColoredImage(uint width,uint height,
             saturation/255.0,                     // saturation
             pow(greyLevels[i]/255.0,gamma/100.0), // luma (gamma corrected)
             &red,&green,&blue);
-    r = (int)(red  *255.0);
-    g = (int)(green*255.0);
-    b = (int)(blue *255.0);
+    r = static_cast<int>(red  *255.0);
+    g = static_cast<int>(green*255.0);
+    b = static_cast<int>(blue *255.0);
     a = alphaLevels ? alphaLevels[i] : 255;
     m_data[i*4+0]=r;
     m_data[i*4+1]=g;
@@ -503,7 +501,6 @@ ColoredImage::ColoredImage(uint width,uint height,
 
 ColoredImage::~ColoredImage()
 {
-  free(m_data);
 }
 
 bool ColoredImage::save(const QCString &fileName)
@@ -514,7 +511,7 @@ bool ColoredImage::save(const QCString &fileName)
   LodePNG_Encoder_init(&encoder);
   encoder.infoPng.color.colorType = m_hasAlpha ? 6 : 2; // 2=RGB 24 bit, 6=RGBA 32 bit
   encoder.infoRaw.color.colorType = 6; // 6=RGBA 32 bit
-  LodePNG_encode(&encoder, &buffer, &bufferSize, m_data, m_width, m_height);
+  LodePNG_encode(&encoder, &buffer, &bufferSize, &m_data[0], m_width, m_height);
   LodePNG_saveFile(buffer, bufferSize, fileName.data());
   LodePNG_Encoder_cleanup(&encoder);
   free(buffer);

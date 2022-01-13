@@ -81,7 +81,7 @@ static bool isAlpha(const char c)
 
 static bool isAlphaNumSpec(const char c)
 {
-  return isAlpha(c) || (c>='0' && c<='9') || c=='-' || c=='.' || (((unsigned char)c)>=0x80);
+  return isAlpha(c) || (c>='0' && c<='9') || c=='-' || c=='.' || (static_cast<unsigned char>(c)>=0x80);
 }
 
 /**

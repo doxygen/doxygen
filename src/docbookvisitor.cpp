@@ -51,7 +51,7 @@
 static QCString filterId(const QCString &s)
 {
   if (s.isEmpty()) return s;
-  static GrowBuf growBuf;
+  GrowBuf growBuf;
   growBuf.clear();
   const char *p=s.data();
   char c;
@@ -295,6 +295,7 @@ DB_VIS_C
       /* There is no equivalent Docbook tag for rendering Small text */
     case DocStyleChange::Small: /* XSLT Stylesheets can be used */ break;
                                                                    /* HTML only */
+    case DocStyleChange::Cite:  break;
     case DocStyleChange::S:  break;
     case DocStyleChange::Strike:  break;
     case DocStyleChange::Del:        break;
@@ -302,6 +303,21 @@ DB_VIS_C
     case DocStyleChange::Ins:        break;
     case DocStyleChange::Div:  /* HTML only */ break;
     case DocStyleChange::Span: /* HTML only */ break;
+    case DocStyleChange::Details: /* emulation of the <details> tag */
+      if (s->enable())
+      {
+        m_t << "\n";
+        m_t << "<para>";
+      }
+      else
+      {
+        m_t << "</para>";
+        m_t << "\n";
+      }
+      break;
+    case DocStyleChange::Summary: /* emulation of the <summary> tag inside a <details> tag */
+      if (s->enable()) m_t << "<emphasis role=\"bold\">";      else m_t << "</emphasis>";
+      break;
   }
 }
 
@@ -330,6 +346,14 @@ DB_VIS_C
       m_t << "<literallayout><computeroutput>";
       filter(s->text());
       m_t << "</computeroutput></literallayout>";
+      break;
+    case DocVerbatim::JavaDocLiteral:
+      filter(s->text(), true);
+      break;
+    case DocVerbatim::JavaDocCode:
+      m_t << "<computeroutput>";
+      filter(s->text(), true);
+      m_t << "</computeroutput>";
       break;
     case DocVerbatim::HtmlOnly:
       break;
@@ -405,7 +429,7 @@ DB_VIS_C
         int i;
         if ((i=shortName.findRev('/'))!=-1)
         {
-          shortName=shortName.right((int)shortName.length()-i-1);
+          shortName=shortName.right(shortName.length()-i-1);
         }
         m_t << "<para>\n";
         writePlantUMLFile(baseName,s);
@@ -953,7 +977,7 @@ void DocbookDocVisitor::visitPre(DocHtmlListItem *s)
 {
 DB_VIS_C
   if (m_hide) return;
-  DocHtmlList *l = (DocHtmlList *)s->parent();
+  DocHtmlList *l = dynamic_cast<DocHtmlList *>(s->parent());
   if (l->type()==DocHtmlList::Ordered)
   {
     bool isFirst = l->children().front().get()==s;
@@ -1069,7 +1093,7 @@ DB_VIS_C
   m_bodySet.push(false);
   if (m_hide) return;
   m_t << "<informaltable frame=\"all\">\n";
-  m_t << "    <tgroup cols=\"" << (unsigned int)t->numColumns() << "\" align=\"left\" colsep=\"1\" rowsep=\"1\">\n";
+  m_t << "    <tgroup cols=\"" << t->numColumns() << "\" align=\"left\" colsep=\"1\" rowsep=\"1\">\n";
   for (uint i = 0; i <t->numColumns(); i++)
   {
     // do something with colwidth based of cell width specification (be aware of possible colspan in the header)?
@@ -1273,7 +1297,7 @@ DB_VIS_C
     int i;
     if ((i=baseName.findRev('/'))!=-1 || (i=baseName.findRev('\\'))!=-1)
     {
-      baseName=baseName.right((int)baseName.length()-i-1);
+      baseName=baseName.right(baseName.length()-i-1);
     }
     visitPreStart(m_t, img->children(), img->hasCaption(), img->relPath() + baseName, img->width(), img->height(), img->isInlineImage());
   }
@@ -1296,7 +1320,7 @@ DB_VIS_C
     int i;
     if ((i=baseName.findRev('/'))!=-1 || (i=baseName.findRev('\\'))!=-1)
     {
-      baseName=baseName.right((int)baseName.length()-i-1);
+      baseName=baseName.right(baseName.length()-i-1);
     }
     QCString m_file;
     bool ambig;
@@ -1317,6 +1341,7 @@ void DocbookDocVisitor::visitPre(DocDotFile *df)
 {
 DB_VIS_C
   if (m_hide) return;
+  if (!Config_getBool(DOT_CLEANUP)) copyFile(df->file(),Config_getString(DOCBOOK_OUTPUT)+"/"+stripPath(df->file()));
   startDotFile(df->file(),df->width(),df->height(),df->hasCaption(),df->children(),df->srcFile(),df->srcLine());
 }
 
@@ -1331,6 +1356,7 @@ void DocbookDocVisitor::visitPre(DocMscFile *df)
 {
 DB_VIS_C
   if (m_hide) return;
+  if (!Config_getBool(DOT_CLEANUP)) copyFile(df->file(),Config_getString(DOCBOOK_OUTPUT)+"/"+stripPath(df->file()));
   startMscFile(df->file(),df->width(),df->height(),df->hasCaption(),df->children(),df->srcFile(),df->srcLine());
 }
 
@@ -1344,6 +1370,7 @@ void DocbookDocVisitor::visitPre(DocDiaFile *df)
 {
 DB_VIS_C
   if (m_hide) return;
+  if (!Config_getBool(DOT_CLEANUP)) copyFile(df->file(),Config_getString(DOCBOOK_OUTPUT)+"/"+stripPath(df->file()));
   startDiaFile(df->file(),df->width(),df->height(),df->hasCaption(),df->children(),df->srcFile(),df->srcLine());
 }
 
@@ -1477,7 +1504,7 @@ DB_VIS_C
   DocParamSect *sect = 0;
   if (pl->parent() && pl->parent()->kind()==DocNode::Kind_ParamSect)
   {
-    sect=(DocParamSect*)pl->parent();
+    sect=dynamic_cast<DocParamSect*>(pl->parent());
   }
 
   if (sect && sect->hasInOutSpecifier())
@@ -1508,15 +1535,15 @@ DB_VIS_C
     {
       if (type->kind()==DocNode::Kind_Word)
       {
-        visit((DocWord*)type.get());
+        visit(dynamic_cast<DocWord*>(type.get()));
       }
       else if (type->kind()==DocNode::Kind_LinkedWord)
       {
-        visit((DocLinkedWord*)type.get());
+        visit(dynamic_cast<DocLinkedWord*>(type.get()));
       }
       else if (type->kind()==DocNode::Kind_Sep)
       {
-        m_t << " " << ((DocSeparator *)type.get())->chars() << " ";
+        m_t << " " << dynamic_cast<DocSeparator *>(type.get())->chars() << " ";
       }
 
     }
@@ -1539,11 +1566,11 @@ DB_VIS_C
       }
       if (param->kind()==DocNode::Kind_Word)
       {
-        visit((DocWord*)param.get());
+        visit(dynamic_cast<DocWord*>(param.get()));
       }
       else if (param->kind()==DocNode::Kind_LinkedWord)
       {
-        visit((DocLinkedWord*)param.get());
+        visit(dynamic_cast<DocLinkedWord*>(param.get()));
       }
       cnt++;
     }
@@ -1648,10 +1675,10 @@ DB_VIS_C
 }
 
 
-void DocbookDocVisitor::filter(const QCString &str)
+void DocbookDocVisitor::filter(const QCString &str, const bool retainNewLine)
 {
 DB_VIS_C
-  m_t << convertToDocBook(str);
+  m_t << convertToDocBook(str, retainNewLine);
 }
 
 void DocbookDocVisitor::startLink(const QCString &file,const QCString &anchor)
@@ -1679,7 +1706,7 @@ DB_VIS_C
   int i;
   if ((i=shortName.findRev('/'))!=-1)
   {
-    shortName=shortName.right((int)shortName.length()-i-1);
+    shortName=shortName.right(shortName.length()-i-1);
   }
   QCString outDir = Config_getString(DOCBOOK_OUTPUT);
   writeMscGraphFromFile(baseName+".msc",outDir,shortName,MSC_BITMAP,s->srcFile(),s->srcLine());
@@ -1695,7 +1722,7 @@ DB_VIS_C
   int i;
   if ((i=shortName.findRev('/'))!=-1)
   {
-    shortName=shortName.right((int)shortName.length()-i-1);
+    shortName=shortName.right(shortName.length()-i-1);
   }
   QCString outDir = Config_getString(DOCBOOK_OUTPUT);
   PlantumlManager::instance().generatePlantUMLOutput(baseName,outDir,PlantumlManager::PUML_BITMAP);
@@ -1718,7 +1745,7 @@ DB_VIS_C
   int i;
   if ((i=baseName.findRev('/'))!=-1)
   {
-    baseName=baseName.right((int)baseName.length()-i-1);
+    baseName=baseName.right(baseName.length()-i-1);
   }
   if ((i=baseName.find('.'))!=-1)
   {
@@ -1746,7 +1773,7 @@ DB_VIS_C
   int i;
   if ((i=shortName.findRev('/'))!=-1)
   {
-    shortName=shortName.right((int)shortName.length()-i-1);
+    shortName=shortName.right(shortName.length()-i-1);
   }
   QCString outDir = Config_getString(DOCBOOK_OUTPUT);
   writeDiaGraphFromFile(baseName+".dia",outDir,shortName,DIA_BITMAP,s->srcFile(),s->srcLine());
@@ -1769,7 +1796,7 @@ DB_VIS_C
   int i;
   if ((i=baseName.findRev('/'))!=-1)
   {
-    baseName=baseName.right((int)baseName.length()-i-1);
+    baseName=baseName.right(baseName.length()-i-1);
   }
   if ((i=baseName.find('.'))!=-1)
   {
@@ -1797,7 +1824,7 @@ DB_VIS_C
   int i;
   if ((i=shortName.findRev('/'))!=-1)
   {
-    shortName=shortName.right((int)shortName.length()-i-1);
+    shortName=shortName.right(shortName.length()-i-1);
   }
   QCString outDir = Config_getString(DOCBOOK_OUTPUT);
   writeDotGraphFromFile(baseName+".dot",outDir,shortName,GOF_BITMAP,s->srcFile(),s->srcLine());
@@ -1820,7 +1847,7 @@ DB_VIS_C
   int i;
   if ((i=baseName.findRev('/'))!=-1)
   {
-    baseName=baseName.right((int)baseName.length()-i-1);
+    baseName=baseName.right(baseName.length()-i-1);
   }
   if ((i=baseName.find('.'))!=-1)
   {

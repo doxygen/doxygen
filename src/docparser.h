@@ -357,10 +357,13 @@ class DocStyleChange : public DocNode
                  Underline     = (1<<11),
                  Del           = (1<<12),
                  Ins           = (1<<13),
-                 S             = (1<<14)
+                 S             = (1<<14),
+                 Details       = (1<<15),
+                 Summary       = (1<<16),
+                 Cite          = (1<<17)
                };
 
-    DocStyleChange(DocParser &parser,DocNode *parent,uint position,Style s,const QCString &tagName,bool enable,
+    DocStyleChange(DocParser &parser,DocNode *parent,size_t position,Style s,const QCString &tagName,bool enable,
                    const HtmlAttribList *attribs=0) :
       DocNode(parser), m_position(position), m_style(s), m_enable(enable)
       { m_parent = parent; if (attribs) m_attribs=*attribs; m_tagName = tagName.lower();}
@@ -368,13 +371,13 @@ class DocStyleChange : public DocNode
     Style style() const                   { return m_style; }
     const char *styleString() const;
     bool enable() const                   { return m_enable; }
-    uint position() const                 { return m_position; }
+    size_t position() const                 { return m_position; }
     void accept(DocVisitor *v) override            { v->visit(this); }
     const HtmlAttribList &attribs() const { return m_attribs; }
     QCString tagName() const              { return m_tagName; }
 
   private:
-    uint     m_position = 0;
+    size_t   m_position = 0;
     Style    m_style = Bold;
     bool     m_enable = false;
     HtmlAttribList m_attribs;
@@ -510,7 +513,7 @@ class DocSeparator : public DocNode
 class DocVerbatim : public DocNode
 {
   public:
-    enum Type { Code, HtmlOnly, ManOnly, LatexOnly, RtfOnly, XmlOnly, Verbatim, Dot, Msc, DocbookOnly, PlantUML };
+    enum Type { Code, HtmlOnly, ManOnly, LatexOnly, RtfOnly, XmlOnly, Verbatim, Dot, Msc, DocbookOnly, PlantUML, JavaDocCode, JavaDocLiteral };
     DocVerbatim(DocParser &parser,DocNode *parent,const QCString &context,
                 const QCString &text, Type t,bool isExample,
                 const QCString &exampleFile,bool isBlock=FALSE,const QCString &lang=QCString());
@@ -577,7 +580,7 @@ class DocInclude : public DocNode
     QCString file() const        { return m_file; }
     QCString extension() const   { int i=m_file.findRev('.');
                                    if (i!=-1)
-                                     return m_file.right(m_file.length()-(uint)i);
+                                     return m_file.right(m_file.length()-static_cast<uint>(i));
                                    else
                                      return QCString();
                                  }
@@ -659,15 +662,16 @@ class DocFormula : public DocNode
 {
   public:
     DocFormula(DocParser &parser,DocNode *parent,int id);
-    Kind kind() const override          { return Kind_Formula; }
+    Kind kind() const override  { return Kind_Formula; }
     QCString name() const       { return m_name; }
     QCString text() const       { return m_text; }
     QCString relPath() const    { return m_relPath; }
-    int id() const             { return m_id; }
+    int id() const              { return m_id; }
     void accept(DocVisitor *v) override { v->visit(this); }
-    bool isInline()            {
+    bool isInline() const
+    {
       if (m_text.length()>1 && m_text.at(0)=='\\' && m_text.at(1)=='[') return false;
-      if (m_text.length()>7 && m_text.startsWith("\\begin{")) return false;
+      if (m_text.startsWith("\\begin{")) return false;
       return true;
     }
 
@@ -1197,7 +1201,6 @@ class DocPara : public CompAccept<DocPara>
                            bool xmlContext,
                            int direction);
     void handleIncludeOperator(const QCString &cmdName,DocIncOperator::Type t);
-    void handleImage(const QCString &cmdName);
     template<class T> void handleFile(const QCString &cmdName);
     void handleInclude(const QCString &cmdName,DocInclude::Type t);
     void handleLink(const QCString &cmdName,bool isJavaLink);
@@ -1344,8 +1347,8 @@ class DocHtmlCell : public CompAccept<DocHtmlCell>
     bool           m_isFirst = false;
     bool           m_isLast = false;
     HtmlAttribList m_attribs;
-    uint           m_rowIdx = (uint)-1;
-    uint           m_colIdx = (uint)-1;
+    uint           m_rowIdx = static_cast<uint>(-1);
+    uint           m_colIdx = static_cast<uint>(-1);
 };
 
 /** Node representing a HTML table caption */
@@ -1385,7 +1388,7 @@ class DocHtmlRow : public CompAccept<DocHtmlRow>
                                    {
                                      if (n->kind()==Kind_HtmlCell)
                                      {
-                                       heading = heading && ((DocHtmlCell*)n.get())->isHeading();
+                                       heading = heading && (dynamic_cast<DocHtmlCell*>(n.get()))->isHeading();
                                      }
                                    }
                                    return !m_children.empty() && heading;
@@ -1398,7 +1401,7 @@ class DocHtmlRow : public CompAccept<DocHtmlRow>
     void setRowIndex(uint idx)   { m_rowIdx = idx; }
     HtmlAttribList m_attribs;
     uint m_visibleCells = 0;
-    uint m_rowIdx = (uint)-1;
+    uint m_rowIdx = static_cast<uint>(-1);
 };
 
 /** Node representing a HTML table */
@@ -1419,7 +1422,7 @@ class DocHtmlTable : public CompAccept<DocHtmlTable>
     DocHtmlCaption *caption() const { return m_caption; }
     DocHtmlRow *firstRow() const {
                              return (!m_children.empty() && m_children.front()->kind()==Kind_HtmlRow) ?
-                                     (DocHtmlRow*)m_children.front().get() : 0;
+                                     dynamic_cast<DocHtmlRow*>(m_children.front().get()) : 0;
                            }
 
   private:

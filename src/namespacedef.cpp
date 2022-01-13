@@ -606,7 +606,7 @@ void NamespaceDefImpl::writeTagFile(TextStream &tagFile)
         break;
       case LayoutDocEntry::MemberDecl:
         {
-          const LayoutDocEntryMemberDecl *lmd = (const LayoutDocEntryMemberDecl*)lde.get();
+          const LayoutDocEntryMemberDecl *lmd = dynamic_cast<const LayoutDocEntryMemberDecl*>(lde.get());
           MemberList * ml = getMemberList(lmd->type);
           if (ml)
           {
@@ -818,56 +818,56 @@ void NamespaceDefImpl::writeSummaryLinks(OutputList &ol) const
   {
     if (lde->kind()==LayoutDocEntry::NamespaceClasses && classes.declVisible())
     {
-      const LayoutDocEntrySection *ls = (const LayoutDocEntrySection*)lde.get();
+      const LayoutDocEntrySection *ls = dynamic_cast<const LayoutDocEntrySection*>(lde.get());
       QCString label = "nested-classes";
       ol.writeSummaryLink(QCString(),label,ls->title(lang),first);
       first=FALSE;
     }
     else if (lde->kind()==LayoutDocEntry::NamespaceInterfaces && interfaces.declVisible())
     {
-      const LayoutDocEntrySection *ls = (const LayoutDocEntrySection*)lde.get();
+      const LayoutDocEntrySection *ls = dynamic_cast<const LayoutDocEntrySection*>(lde.get());
       QCString label = "interfaces";
       ol.writeSummaryLink(QCString(),label,ls->title(lang),first);
       first=FALSE;
     }
     else if (lde->kind()==LayoutDocEntry::NamespaceStructs && structs.declVisible())
     {
-      const LayoutDocEntrySection *ls = (const LayoutDocEntrySection*)lde.get();
+      const LayoutDocEntrySection *ls = dynamic_cast<const LayoutDocEntrySection*>(lde.get());
       QCString label = "structs";
       ol.writeSummaryLink(QCString(),label,ls->title(lang),first);
       first=FALSE;
     }
     else if (lde->kind()==LayoutDocEntry::NamespaceExceptions && exceptions.declVisible())
     {
-      const LayoutDocEntrySection *ls = (const LayoutDocEntrySection*)lde.get();
+      const LayoutDocEntrySection *ls = dynamic_cast<const LayoutDocEntrySection*>(lde.get());
       QCString label = "exceptions";
       ol.writeSummaryLink(QCString(),label,ls->title(lang),first);
       first=FALSE;
     }
     else if (lde->kind()==LayoutDocEntry::NamespaceNestedNamespaces && namespaces.declVisible(false))
     {
-      const LayoutDocEntrySection *ls = (const LayoutDocEntrySection*)lde.get();
+      const LayoutDocEntrySection *ls = dynamic_cast<const LayoutDocEntrySection*>(lde.get());
       QCString label = "namespaces";
       ol.writeSummaryLink(QCString(),label,ls->title(lang),first);
       first=FALSE;
     }
     else if (lde->kind()==LayoutDocEntry::NamespaceNestedConstantGroups && namespaces.declVisible(true))
     {
-      const LayoutDocEntrySection *ls = (const LayoutDocEntrySection*)lde.get();
+      const LayoutDocEntrySection *ls = dynamic_cast<const LayoutDocEntrySection*>(lde.get());
       QCString label = "constantgroups";
       ol.writeSummaryLink(QCString(),label,ls->title(lang),first);
       first=FALSE;
     }
     else if (lde->kind()==LayoutDocEntry::NamespaceConcepts && m_concepts.declVisible())
     {
-      const LayoutDocEntrySection *ls = (const LayoutDocEntrySection*)lde.get();
+      const LayoutDocEntrySection *ls = dynamic_cast<const LayoutDocEntrySection*>(lde.get());
       QCString label = "concepts";
       ol.writeSummaryLink(QCString(),label,ls->title(lang),first);
       first=FALSE;
     }
     else if (lde->kind()== LayoutDocEntry::MemberDecl)
     {
-      const LayoutDocEntryMemberDecl *lmd = (const LayoutDocEntryMemberDecl*)lde.get();
+      const LayoutDocEntryMemberDecl *lmd = dynamic_cast<const LayoutDocEntryMemberDecl*>(lde.get());
       MemberList * ml = getMemberList(lmd->type);
       if (ml && ml->declVisible())
       {
@@ -967,43 +967,43 @@ void NamespaceDefImpl::writeDocumentation(OutputList &ol)
         break;
       case LayoutDocEntry::NamespaceClasses:
         {
-          const LayoutDocEntrySection *ls = (const LayoutDocEntrySection*)lde.get();
+          const LayoutDocEntrySection *ls = dynamic_cast<const LayoutDocEntrySection*>(lde.get());
           writeClassDeclarations(ol,ls->title(lang),classes);
         }
         break;
       case LayoutDocEntry::NamespaceInterfaces:
         {
-          const LayoutDocEntrySection *ls = (const LayoutDocEntrySection*)lde.get();
+          const LayoutDocEntrySection *ls = dynamic_cast<const LayoutDocEntrySection*>(lde.get());
           writeClassDeclarations(ol,ls->title(lang),interfaces);
         }
         break;
       case LayoutDocEntry::NamespaceStructs:
         {
-          const LayoutDocEntrySection *ls = (const LayoutDocEntrySection*)lde.get();
+          const LayoutDocEntrySection *ls = dynamic_cast<const LayoutDocEntrySection*>(lde.get());
           writeClassDeclarations(ol,ls->title(lang),structs);
         }
         break;
       case LayoutDocEntry::NamespaceExceptions:
         {
-          const LayoutDocEntrySection *ls = (const LayoutDocEntrySection*)lde.get();
+          const LayoutDocEntrySection *ls = dynamic_cast<const LayoutDocEntrySection*>(lde.get());
           writeClassDeclarations(ol,ls->title(lang),exceptions);
         }
         break;
       case LayoutDocEntry::NamespaceConcepts:
         {
-          const LayoutDocEntrySection *ls = (const LayoutDocEntrySection*)lde.get();
+          const LayoutDocEntrySection *ls = dynamic_cast<const LayoutDocEntrySection*>(lde.get());
           writeConcepts(ol,ls->title(lang));
         }
         break;
       case LayoutDocEntry::NamespaceNestedNamespaces:
         {
-          const LayoutDocEntrySection *ls = (const LayoutDocEntrySection*)lde.get();
+          const LayoutDocEntrySection *ls = dynamic_cast<const LayoutDocEntrySection*>(lde.get());
           writeNamespaceDeclarations(ol,ls->title(lang),false);
         }
         break;
       case LayoutDocEntry::NamespaceNestedConstantGroups:
         {
-          const LayoutDocEntrySection *ls = (const LayoutDocEntrySection*)lde.get();
+          const LayoutDocEntrySection *ls = dynamic_cast<const LayoutDocEntrySection*>(lde.get());
           writeNamespaceDeclarations(ol,ls->title(lang),true);
         }
         break;
@@ -1012,7 +1012,7 @@ void NamespaceDefImpl::writeDocumentation(OutputList &ol)
         break;
       case LayoutDocEntry::MemberDecl:
         {
-          const LayoutDocEntryMemberDecl *lmd = (const LayoutDocEntryMemberDecl*)lde.get();
+          const LayoutDocEntryMemberDecl *lmd = dynamic_cast<const LayoutDocEntryMemberDecl*>(lde.get());
           writeMemberDeclarations(ol,lmd->type,lmd->title(lang));
         }
         break;
@@ -1021,7 +1021,7 @@ void NamespaceDefImpl::writeDocumentation(OutputList &ol)
         break;
       case LayoutDocEntry::DetailedDesc:
         {
-          const LayoutDocEntrySection *ls = (const LayoutDocEntrySection*)lde.get();
+          const LayoutDocEntrySection *ls = dynamic_cast<const LayoutDocEntrySection*>(lde.get());
           writeDetailedDescription(ol,ls->title(lang));
         }
         break;
@@ -1033,7 +1033,7 @@ void NamespaceDefImpl::writeDocumentation(OutputList &ol)
         break;
       case LayoutDocEntry::MemberDef:
         {
-          const LayoutDocEntryMemberDef *lmd = (const LayoutDocEntryMemberDef*)lde.get();
+          const LayoutDocEntryMemberDef *lmd = dynamic_cast<const LayoutDocEntryMemberDef*>(lde.get());
           writeMemberDocumentation(ol,lmd->type,lmd->title(lang));
         }
         break;
@@ -1168,7 +1168,7 @@ void NamespaceDefImpl::countMembers()
 int NamespaceDefImpl::numDocMembers() const
 {
   MemberList *allMemberList = getMemberList(MemberListType_allMembersList);
-  return (allMemberList ? allMemberList->numDocMembers() : 0) + (int)m_innerCompounds.size();
+  return (allMemberList ? allMemberList->numDocMembers() : 0) + static_cast<int>(m_innerCompounds.size());
 }
 
 void NamespaceDefImpl::addUsingDirective(const NamespaceDef *nd)

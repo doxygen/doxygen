@@ -235,7 +235,7 @@ class TranslatorGerman : public TranslatorAdapter_1_8_15
      */
     virtual QCString trGeneratedAutomatically(const QCString &s)
     { QCString result="Automatisch erzeugt von Doxygen";
-      if (!s.isEmpty()) result+=(QCString)" für "+s;
+      if (!s.isEmpty()) result+=" für "+s;
       result+=" aus dem Quellcode.";
       return result;
     }
@@ -605,16 +605,16 @@ class TranslatorGerman : public TranslatorAdapter_1_8_15
      */
     virtual QCString trGeneratedAt(const QCString &date,const QCString &projName)
     {
-      QCString result=(QCString)"Erzeugt am "+date;
-      if (!projName.isEmpty()) result+=(QCString)" für "+projName;
-      result+=(QCString)" von";
+      QCString result="Erzeugt am "+date;
+      if (!projName.isEmpty()) result+=" für "+projName;
+      result+=" von";
       return result;
     }
 
     /*! this text is put before a class diagram */
     virtual QCString trClassDiagram(const QCString &clName)
     {
-      return (QCString)"Klassendiagramm für "+clName+":";
+      return "Klassendiagramm für "+clName+":";
     }
 
     /*! this text is generated when the \\internal command is used. */
@@ -695,7 +695,7 @@ class TranslatorGerman : public TranslatorAdapter_1_8_15
                                  ClassDef::CompoundType compType,
                                  bool isTemplate)
     {
-      QCString result=(QCString)clName+" ";
+      QCString result=clName+" ";
       if (isTemplate) result+="Template-";
       switch(compType)
       {
@@ -864,10 +864,11 @@ class TranslatorGerman : public TranslatorAdapter_1_8_15
     virtual QCString trGeneratedFromFiles(ClassDef::CompoundType compType,
         bool single)
     { // single is true implies a single file
-      QCString result=(QCString)"Die Dokumentation für diese";
+      static bool vhdlOpt = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
+      QCString result="Die Dokumentation für diese";
       switch(compType)
       {
-        case ClassDef::Class:      result+=" Klasse"; break;
+        case ClassDef::Class:      result+=vhdlOpt?"Entwurfseinheiten":"Klasse"; break;
         case ClassDef::Struct:     result+=" Struktur"; break;
         case ClassDef::Union:      result+=" Variante"; break;
         case ClassDef::Interface:  result+=" Schnittstelle"; break;
@@ -930,13 +931,13 @@ class TranslatorGerman : public TranslatorAdapter_1_8_15
     /*! this text is put before a collaboration diagram */
     virtual QCString trCollaborationDiagram(const QCString &clName)
     {
-      return (QCString)"Zusammengehörigkeiten von "+clName+":";
+      return "Zusammengehörigkeiten von "+clName+":";
     }
 
     /*! this text is put before an include dependency graph */
     virtual QCString trInclDepGraph(const QCString &fName)
     {
-      return (QCString)"Include-Abhängigkeitsdiagramm für "+fName+":";
+      return "Include-Abhängigkeitsdiagramm für "+fName+":";
     }
 
     /*! header that is put before the list of constructor/destructors. */
@@ -1255,7 +1256,7 @@ class TranslatorGerman : public TranslatorAdapter_1_8_15
     /*! Used as the title of a Java package */
     virtual QCString trPackage(const QCString &name)
     {
-      return (QCString)"Paket "+name;
+      return "Paket "+name;
     }
 
     /*! Title of the package index page */
@@ -1769,7 +1770,7 @@ class TranslatorGerman : public TranslatorAdapter_1_8_15
                                     ClassDef::CompoundType compType,
                                     bool isTemplate)
     {
-      QCString result=(QCString)clName;
+      QCString result=clName;
       result += "-";
       switch(compType)
       {
@@ -1839,7 +1840,7 @@ class TranslatorGerman : public TranslatorAdapter_1_8_15
         bool single)
     {
       // single is true implies a single file
-      QCString result=(QCString)"Die Dokumentation für ";
+      QCString result="Die Dokumentation für ";
       switch(compType)
       {
         case ClassDef::Class:      result+="dieses Modul"; break;
@@ -1930,7 +1931,7 @@ class TranslatorGerman : public TranslatorAdapter_1_8_15
      */
     virtual QCString trFileIn(const QCString &name)
     {
-      return (QCString)"Datei in "+name;
+      return "Datei in "+name;
     }
 
     /*! when clicking a directory dependency label, a page with a
@@ -1939,7 +1940,7 @@ class TranslatorGerman : public TranslatorAdapter_1_8_15
      */
     virtual QCString trIncludesFileIn(const QCString &name)
     {
-      return (QCString)"Include-Dateien in "+name;
+      return "Include-Dateien in "+name;
     }
 
     /** Compiles a date string.
@@ -2108,7 +2109,7 @@ class TranslatorGerman : public TranslatorAdapter_1_8_15
     /** UNO IDL service page title */
     virtual QCString trServiceReference(const QCString &sName)
     {
-      QCString result=(QCString)sName;
+      QCString result=sName;
       result+=" Dienstreferenz";
       return result;
     }
@@ -2116,7 +2117,7 @@ class TranslatorGerman : public TranslatorAdapter_1_8_15
     /** UNO IDL singleton page title */
     virtual QCString trSingletonReference(const QCString &sName)
     {
-      QCString result=(QCString)sName;
+      QCString result=sName;
       result+=" Singleton-Referenz";
       return result;
     }
@@ -2124,7 +2125,7 @@ class TranslatorGerman : public TranslatorAdapter_1_8_15
     /** UNO IDL service page */
     virtual QCString trServiceGeneratedFromFiles(bool single)
     {
-      QCString result=(QCString)"Die Dokumentation für diesen Dienst "
+      QCString result="Die Dokumentation für diesen Dienst "
                                 "wurde generiert aus ";
       if (single) result+="folgender Datei: "; else result+="folgenden Dateien: ";
       return result;
@@ -2133,7 +2134,7 @@ class TranslatorGerman : public TranslatorAdapter_1_8_15
     /** UNO IDL singleton page */
     virtual QCString trSingletonGeneratedFromFiles(bool single)
     {
-      QCString result=(QCString)"Die Dokumentation für diesen Singleton wurde generiert aus ";
+      QCString result="Die Dokumentation für diesen Singleton wurde generiert aus ";
       if (single) result+="folgender Datei:"; else result+="folgenden Dateien:";
       return result;
     }

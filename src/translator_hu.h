@@ -169,7 +169,7 @@ class TranslatorHungarian : public TranslatorAdapter_1_8_15
      */
     virtual QCString trGeneratedAutomatically(const QCString &s)
     { QCString result="Ezt a dokumentációt a Doxygen készítette ";
-      if (!s.isEmpty()) result+=(QCString)" a" + zed(s[0])+s+(QCString)" projekthez";
+      if (!s.isEmpty()) result+=QCString(" a") + zed(s[0])+s+" projekthez";
       result+=" a forráskódból.";
       return result;
     }
@@ -532,16 +532,16 @@ class TranslatorHungarian : public TranslatorAdapter_1_8_15
      */
     virtual QCString trGeneratedAt(const QCString &date,const QCString &projName)
     {
-      QCString result=(QCString)"";
-      if (!projName.isEmpty()) result+=(QCString)"Projekt: "+projName;
-      result+=(QCString)" Készült: "+date+" Készítette: ";
+      QCString result="";
+      if (!projName.isEmpty()) result+="Projekt: "+projName;
+      result+=" Készült: "+date+" Készítette: ";
       return result;
     }
 
     /*! this text is put before a class diagram */
     virtual QCString trClassDiagram(const QCString &clName)
     {
-      return (QCString)"A"+zed(clName[0])+clName+" osztály származási diagramja:";
+      return QCString("A")+zed(clName[0])+clName+" osztály származási diagramja:";
     }
 
     /*! this text is generated when the \\internal command is used. */
@@ -622,7 +622,7 @@ class TranslatorHungarian : public TranslatorAdapter_1_8_15
                                     ClassDef::CompoundType compType,
                                     bool isTemplate)
     {
-      QCString result=(QCString)clName;
+      QCString result=clName;
       switch(compType)
       {
         case ClassDef::Class:      result+=" osztály"; break;
@@ -781,7 +781,7 @@ class TranslatorHungarian : public TranslatorAdapter_1_8_15
     virtual QCString trGeneratedFromFiles(ClassDef::CompoundType compType,
         bool single)
     { // single is true implies a single file
-      QCString result=(QCString)"Ez a dokumentáció ";
+      QCString result="Ez a dokumentáció ";
       switch(compType)
       {
         case ClassDef::Class:      result+="az osztályról"; break;
@@ -847,12 +847,12 @@ class TranslatorHungarian : public TranslatorAdapter_1_8_15
     /*! this text is put before a collaboration diagram */
     virtual QCString trCollaborationDiagram(const QCString &clName)
     {
-      return (QCString)"A"+zed(clName[0])+clName+" osztály együttműködési diagramja:";
+      return QCString("A")+zed(clName[0])+clName+" osztály együttműködési diagramja:";
     }
     /*! this text is put before an include dependency graph */
     virtual QCString trInclDepGraph(const QCString &fName)
     {
-      return (QCString)"A"+zed(fName[0])+fName+" definíciós fájl függési gráfja:";
+      return QCString("A")+zed(fName[0])+fName+" definíciós fájl függési gráfja:";
     }
     /*! header that is put before the list of constructor/destructors. */
     virtual QCString trConstructorDocumentation()
@@ -1133,7 +1133,7 @@ class TranslatorHungarian : public TranslatorAdapter_1_8_15
     /*! Used as the title of a Java package */
     virtual QCString trPackage(const QCString &name)
     {
-      return name+(QCString)" csomag";
+      return name+" csomag";
     }
     /*! Title of the package index page */
     virtual QCString trPackageList()
@@ -1657,7 +1657,7 @@ class TranslatorHungarian : public TranslatorAdapter_1_8_15
                                     ClassDef::CompoundType compType,
                                     bool isTemplate)
     {
-      QCString result=(QCString)clName;
+      QCString result=clName;
       switch(compType)
       {
         case ClassDef::Class:      result+=" modul"; break;
@@ -1726,7 +1726,7 @@ class TranslatorHungarian : public TranslatorAdapter_1_8_15
         bool single)
     {
       // single is true implies a single file
-      QCString result=(QCString)"Ez a dokumentáció ";
+      QCString result="Ez a dokumentáció ";
       switch(compType)
       {
         case ClassDef::Class:      result+="a modulról"; break;
@@ -1816,7 +1816,7 @@ class TranslatorHungarian : public TranslatorAdapter_1_8_15
      */
     virtual QCString trFileIn(const QCString &name)
     {
-      return (QCString)"Fájl a(z) "+name+" könyvtárban";
+      return "Fájl a(z) "+name+" könyvtárban";
     }
 
     /*! when clicking a directory dependency label, a page with a
@@ -1825,7 +1825,7 @@ class TranslatorHungarian : public TranslatorAdapter_1_8_15
      */
     virtual QCString trIncludesFileIn(const QCString &name)
     {
-      return (QCString)"Tartalmazott fájl a(z) "+name+" könyvtárban";
+      return "Tartalmazott fájl a(z) "+name+" könyvtárban";
     }
 
     /** Compiles a date string.
@@ -1990,14 +1990,14 @@ class TranslatorHungarian : public TranslatorAdapter_1_8_15
     /** UNO IDL service page title */
     virtual QCString trServiceReference(const QCString &sName)
     {
-      QCString result=(QCString)sName;
+      QCString result=sName;
       result+=" szolgáltatás referencia";
       return result;
     }
     /** UNO IDL singleton page title */
     virtual QCString trSingletonReference(const QCString &sName)
     {
-      QCString result=(QCString)sName;
+      QCString result=sName;
       result+=" egyke példány referencia";
       return result;
     }
@@ -2005,7 +2005,7 @@ class TranslatorHungarian : public TranslatorAdapter_1_8_15
     virtual QCString trServiceGeneratedFromFiles(bool single)
     {
       // single is true implies a single file
-      QCString result=(QCString)"A szolgáltatás dokumentációja "
+      QCString result="A szolgáltatás dokumentációja "
                                 "a következő fájl";
       if (single) result+="ból"; else result+="okból";
       result+="lett létrehozva:";
@@ -2015,7 +2015,7 @@ class TranslatorHungarian : public TranslatorAdapter_1_8_15
     virtual QCString trSingletonGeneratedFromFiles(bool single)
     {
       // single is true implies a single file
-      QCString result=(QCString)"Az egyke példány dokomentációja "
+      QCString result="Az egyke példány dokomentációja "
                                 "a következő fájl";
       if (single) result+="ból"; else result+="okból";
       result+="lett létrehozva:";

@@ -36,7 +36,7 @@
 #include <QTextStream>
 #include <QDebug>
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <windows.h>
 #endif
 
@@ -651,7 +651,7 @@ void MainWindow::showHtmlOutput()
   QString indexFile = m_expert->getHtmlOutputIndex(m_workingDir->text());
   QFileInfo fi(indexFile);
   // TODO: the following doesn't seem to work with IE
-#ifdef WIN32
+#ifdef _WIN32
   //QString indexUrl(QString::fromLatin1("file:///"));
   ShellExecute(NULL, L"open", (LPCWSTR)fi.absoluteFilePath().utf16(), NULL, NULL, SW_SHOWNORMAL);
 #else

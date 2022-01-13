@@ -68,8 +68,8 @@ class HtmlHelpRecoder
 
     QCString recode(const QCString &s)
     {
-      int iSize        = s.length();
-      int oSize        = iSize*4+1;
+      size_t iSize     = s.length();
+      size_t oSize     = iSize*4+1;
       QCString output(oSize);
       size_t iLeft     = iSize;
       size_t oLeft     = oSize;
@@ -77,7 +77,7 @@ class HtmlHelpRecoder
       char *oPtr       = output.rawData();
       if (!portable_iconv(m_fromUtf8,&iPtr,&iLeft,&oPtr,&oLeft))
       {
-        oSize -= (int)oLeft;
+        oSize -= oLeft;
         output.resize(oSize+1);
         output.at(oSize)='\0';
         return output;
@@ -88,7 +88,7 @@ class HtmlHelpRecoder
       }
     }
   private:
-    void *m_iconv_null = (void*)(-1);
+    void *m_iconv_null = reinterpret_cast<void*>(-1);
     void *m_fromUtf8 = m_iconv_null;
 
 };
@@ -674,11 +674,11 @@ void HtmlHelp::addContentsItem(bool isDir,
   p->cts << "<param name=\"ImageNumber\" value=\"";
   if (isDir)  // added - KPW
   {
-    p->cts << (int)BOOK_CLOSED ;
+    p->cts << static_cast<int>(BOOK_CLOSED);
   }
   else
   {
-    p->cts << (int)TEXT;
+    p->cts << static_cast<int>(TEXT);
   }
   p->cts << "\">";
   p->cts << "</OBJECT>\n";

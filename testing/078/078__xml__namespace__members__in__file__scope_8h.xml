@@ -7,6 +7,7 @@
       <memberdef kind="enum" id="078__xml__namespace__members__in__file__scope_8h_1add172b93283b1ab7612c3ca6cc5dcfea" prot="public" static="no" strong="yes">
         <type/>
         <name>Enum</name>
+        <qualifiedname>Namespace::Enum</qualifiedname>
         <briefdescription>
           <para>An enum. </para>
         </briefdescription>
@@ -23,6 +24,7 @@
         <definition>void Namespace::foo</definition>
         <argsstring>()</argsstring>
         <name>foo</name>
+        <qualifiedname>Namespace::foo</qualifiedname>
         <briefdescription>
           <para>A function. </para>
         </briefdescription>

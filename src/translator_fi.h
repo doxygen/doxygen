@@ -198,9 +198,9 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
      *  parameter s is name of the project name.
      */
     virtual QCString trGeneratedAutomatically(const QCString &s)
-    { QCString result=(QCString)"Automaattisesti luotu Doxygenilla "
+    { QCString result="Automaattisesti luotu Doxygenilla "
                       "lähdekoodista projektille "+s; // "Generated automatically by Doxygen" ... "for" ... "from the sourcecode"
-      //if (s) result+=(QCString)" voor "+s;
+      //if (s) result+=" voor "+s;
       // tässä on ongelma, kuinka taivuttaa parametria, esim. "Jcad"+"in"; "IFC2VRML konversio"+"n"
       // mutta ratkaistaan ongelma kätevästi kaksoispisteellä -> "Jcad:n" / "IFC2VRML konversio:n"
       // lopputulos on vähemmän kökkö ja täysin luettava, mutta ei kuitenkaan täydellinen.
@@ -571,16 +571,16 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
         // Muutetaan siis lauserakennetta suomalaisemmaksi
         // Generated on $date for $project by:
         // -> Generated for $project on $date by:
-      QCString result=(QCString)"Generoinut ";
-      if (!projName.isEmpty()) result+=(QCString)"projektille "+projName+" ";
-      result+=(QCString)date+" ";
+      QCString result="Generoinut ";
+      if (!projName.isEmpty()) result+="projektille "+projName+" ";
+      result+=date+" ";
       return result;
     }
 
     /*! this text is put before a class diagram */
     virtual QCString trClassDiagram(const QCString &clName)
     {
-      return "Luokan "+(QCString)clName+" luokkakaavio"; // "Inheritance diagram for "
+      return "Luokan "+clName+" luokkakaavio"; // "Inheritance diagram for "
     }
 
     /*! this text is generated when the \\internal command is used. */
@@ -661,7 +661,7 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
                                     ClassDef::CompoundType compType,
                                     bool isTemplate)
     {
-      QCString result=(QCString)clName;
+      QCString result=clName;
       switch(compType)
       {
         case ClassDef::Class:      result+=" luokka"; break; // " Class"
@@ -745,7 +745,7 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
      */
     virtual QCString trInheritsList(int numEntries)
     {
-      return (QCString)"Periytyy "+(numEntries > 1 ? "luokista " : "luokasta ")+trWriteList(numEntries)+"."; // "Inherits "
+      return QCString("Periytyy ")+(numEntries > 1 ? "luokista " : "luokasta ")+trWriteList(numEntries)+"."; // "Inherits "
     }
 
     /*! used in class documentation to produce a list of super classes,
@@ -753,7 +753,7 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
      */
     virtual QCString trInheritedByList(int numEntries)
     {
-      return (QCString)"Periytetään "+(numEntries > 1 ? "luokissa " : "luokassa ")+trWriteList(numEntries)+"."; // "Inherited by "
+      return QCString("Periytetään ")+(numEntries > 1 ? "luokissa " : "luokassa ")+trWriteList(numEntries)+"."; // "Inherited by "
     }
 
     /*! used in member documentation blocks to produce a list of
@@ -761,7 +761,7 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
      */
     virtual QCString trReimplementedFromList(int numEntries)
     {
-      return (QCString)"Uudelleentoteuttaa "+(numEntries > 1 ? "luokat " : "luokan  ")+trWriteList(numEntries)+"."; // "Reimplemented from "
+      return QCString("Uudelleentoteuttaa ")+(numEntries > 1 ? "luokat " : "luokan  ")+trWriteList(numEntries)+"."; // "Reimplemented from "
     }
 
     /*! used in member documentation blocks to produce a list of
@@ -769,7 +769,7 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
      */
     virtual QCString trReimplementedInList(int numEntries)
     {
-      return (QCString)"Uudelleentoteutetaan "+(numEntries > 1 ? "luokissa " : "luokassa ")+trWriteList(numEntries)+"."; // "Reimplemented in "
+      return QCString("Uudelleentoteutetaan ")+(numEntries > 1 ? "luokissa " : "luokassa ")+trWriteList(numEntries)+"."; // "Reimplemented in "
     }
 
     /*! This is put above each page as a link to all members of namespaces. */
@@ -821,7 +821,7 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
         bool single)
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
-      QCString result=(QCString)"Dokumentaatio tälle "; // "The documentation for this "
+      QCString result="Dokumentaatio tälle "; // "The documentation for this "
       switch(compType)
       {
         case ClassDef::Class:      result+="luokalle"; break; // "class"
@@ -886,12 +886,12 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
     /*! this text is put before a collaboration diagram */
     virtual QCString trCollaborationDiagram(const QCString &clName)
     {
-      return (QCString)"Yhteistyökaavio luokalle "+clName+":"; // "Collaboration diagram for "+clName+":"
+      return "Yhteistyökaavio luokalle "+clName+":"; // "Collaboration diagram for "+clName+":"
     }
     /*! this text is put before an include dependency graph */
     virtual QCString trInclDepGraph(const QCString &fName)
     {
-      return (QCString)"Sisällytysriippuvuuskaavio tiedostolle "+fName+":"; // "Include dependency graph for "+fName+":"
+      return "Sisällytysriippuvuuskaavio tiedostolle "+fName+":"; // "Include dependency graph for "+fName+":"
     }
     /*! header that is put before the list of constructor/destructors. */
     virtual QCString trConstructorDocumentation()
@@ -1223,7 +1223,7 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
     /*! Used as the title of a Java package */
     virtual QCString trPackage(const QCString &name)
     {
-      return (QCString)"Paketti "+name; // "Package "
+      return "Paketti "+name; // "Package "
     }
     /*! Title of the package index page */
     virtual QCString trPackageList()
@@ -1752,7 +1752,7 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
                                     ClassDef::CompoundType compType,
                                     bool isTemplate)
     {
-      QCString result=(QCString)clName;
+      QCString result=clName;
       switch(compType)
       {
         case ClassDef::Class:      result+=" moduuli"; break; // " Module"
@@ -1820,7 +1820,7 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
         bool single)
     { // here s is one of " Module", " Struct" or " Union"
       // single is true implies a single file
-      QCString result=(QCString)"Dokumentaatio tälle "; // "The documentation for this "
+      QCString result="Dokumentaatio tälle "; // "The documentation for this "
       switch(compType)
       {
         case ClassDef::Class:      result+="moduulille"; break; // "module"

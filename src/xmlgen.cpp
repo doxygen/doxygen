@@ -334,7 +334,7 @@ void XMLCodeGenerator::writeLineNumber(const QCString &extRef,const QCString &co
   if (!compId.isEmpty())
   {
     m_refId=compId;
-    if (!anchorId.isEmpty()) m_refId+=(QCString)"_1"+anchorId;
+    if (!anchorId.isEmpty()) m_refId+=QCString("_1")+anchorId;
     m_isMemberRef = anchorId!=0;
     if (!extRef.isEmpty()) m_external=extRef;
   }
@@ -567,12 +567,6 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
   ti << "    <member refid=\"" << memberOutputFileBase(md)
      << "_1" << md->anchor() << "\" kind=\"" << memType << "\"><name>"
      << convertToXML(md->name()) << "</name></member>\n";
-
-  QCString scopeName;
-  if (md->getClassDef())
-    scopeName=md->getClassDef()->name();
-  else if (md->getNamespaceDef())
-    scopeName=md->getNamespaceDef()->name();
 
   t << "      <memberdef kind=\"";
   //enum { define_t,variable_t,typedef_t,enum_t,function_t } xmlType = function_t;
@@ -819,7 +813,13 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
     t << "</type>\n";
   }
 
-  t << "        <name>" << convertToXML(md->name()) << "</name>\n";
+  QCString name = md->name();
+  QCString qualifiedName = md->qualifiedName();;
+  t << "        <name>" << convertToXML(name) << "</name>\n";
+  if (name!=qualifiedName)
+  {
+    t << "        <qualifiedname>" << convertToXML(qualifiedName) << "</qualifiedname>\n";
+  }
 
   if (md->memberType() == MemberType_Property)
   {
@@ -1761,7 +1761,7 @@ static void generateXMLForPage(PageDef *pd,TextStream &ti,bool isExample)
   QCString pageName = pd->getOutputFileBase();
   if (pd->getGroupDef())
   {
-    pageName+=(QCString)"_"+pd->name();
+    pageName+=QCString("_")+pd->name();
   }
   if (pageName=="index") pageName="indexpage"; // to prevent overwriting the generated index page.
 
@@ -1821,7 +1821,7 @@ static void generateXMLForPage(PageDef *pd,TextStream &ti,bool isExample)
       if (isSection(si->type()))
       {
         //printf("  level=%d title=%s\n",level,qPrint(si->title));
-        int nextLevel = (int)si->type();
+        int nextLevel = static_cast<int>(si->type());
         if (nextLevel>level)
         {
           for (l=level;l<nextLevel;l++)

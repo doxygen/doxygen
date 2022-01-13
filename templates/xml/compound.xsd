@@ -142,6 +142,7 @@
       <xsd:element name="definition" minOccurs="0" />
       <xsd:element name="argsstring" minOccurs="0" />
       <xsd:element name="name" />
+      <xsd:element name="qualifiedname" minOccurs="0"/>
       <xsd:element name="read" minOccurs="0" />
       <xsd:element name="write" minOccurs="0" />
       <xsd:element name="bitfield" minOccurs="0" />
@@ -427,8 +428,11 @@
       <xsd:element name="superscript" type="docMarkupType" />
       <xsd:element name="center" type="docMarkupType" />
       <xsd:element name="small" type="docMarkupType" />
+      <xsd:element name="cite" type="docMarkupType" />
       <xsd:element name="del" type="docMarkupType" />
       <xsd:element name="ins" type="docMarkupType" />
+      <xsd:element name="details" type="docMarkupType" />
+      <xsd:element name="summary" type="docMarkupType" />
       <xsd:element name="htmlonly" type="docHtmlOnlyType" />
       <xsd:element name="manonly" type="xsd:string" />
       <xsd:element name="xmlonly" type="xsd:string" />
@@ -459,6 +463,8 @@
       <xsd:element name="preformatted" type="docMarkupType" />
       <xsd:element name="programlisting" type="listingType" />
       <xsd:element name="verbatim" type="xsd:string" />
+      <xsd:element name="javadocliteral" type="xsd:string" />
+      <xsd:element name="javadoccode" type="xsd:string" />
       <xsd:element name="indexentry" type="docIndexEntryType" />
       <xsd:element name="orderedlist" type="docListType" />
       <xsd:element name="itemizedlist" type="docListType" />

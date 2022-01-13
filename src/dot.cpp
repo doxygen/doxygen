@@ -280,7 +280,7 @@ void writeDotGraphFromFile(const QCString &inFile,const QCString &outDir,
   }
 
   QCString imgExt = getDotImageExtension();
-  QCString imgName = (QCString)outFile+"."+imgExt;
+  QCString imgName = QCString(outFile)+"."+imgExt;
   QCString absImgName = QCString(d.absPath())+"/"+imgName;
   QCString absOutFile = QCString(d.absPath())+"/"+outFile;
 

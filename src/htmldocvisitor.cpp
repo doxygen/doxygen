@@ -140,17 +140,19 @@ static bool mustBeOutsideParagraph(const DocNode *n)
           return TRUE;
         case DocNode::Kind_Verbatim:
           {
-            DocVerbatim *dv = (DocVerbatim*)n;
-            return dv->type()!=DocVerbatim::HtmlOnly || dv->isBlock();
+            const DocVerbatim *dv = dynamic_cast<const DocVerbatim*>(n);
+            DocVerbatim::Type t = dv->type();
+            if (t == DocVerbatim::JavaDocCode || t == DocVerbatim::JavaDocLiteral) return FALSE;
+            return t!=DocVerbatim::HtmlOnly || dv->isBlock();
           }
         case DocNode::Kind_StyleChange:
-          return ((DocStyleChange*)n)->style()==DocStyleChange::Preformatted ||
-                 ((DocStyleChange*)n)->style()==DocStyleChange::Div ||
-                 ((DocStyleChange*)n)->style()==DocStyleChange::Center;
+          return dynamic_cast<const DocStyleChange*>(n)->style()==DocStyleChange::Preformatted ||
+                 dynamic_cast<const DocStyleChange*>(n)->style()==DocStyleChange::Div ||
+                 dynamic_cast<const DocStyleChange*>(n)->style()==DocStyleChange::Center;
         case DocNode::Kind_Formula:
-          return !((DocFormula*)n)->isInline();
+          return !dynamic_cast<const DocFormula*>(n)->isInline();
         case DocNode::Kind_Image:
-          return !((DocImage*)n)->isInlineImage();
+          return !dynamic_cast<const DocImage*>(n)->isInlineImage();
         default:
           break;
   }
@@ -203,13 +205,13 @@ static bool isInvisibleNode(const DocNode *node)
 {
   return (node->kind()==DocNode::Kind_WhiteSpace)
       || // skip over image nodes that are not for HTML output
-         (node->kind()==DocNode::Kind_Image && ((DocImage*)node)->type()!=DocImage::Html)
+         (node->kind()==DocNode::Kind_Image && dynamic_cast<const DocImage*>(node)->type()!=DocImage::Html)
       || // skip over verbatim nodes that are not visible in the HTML output
-         (node->kind()==DocNode::Kind_Verbatim && !isDocVerbatimVisible((DocVerbatim*)node))
+         (node->kind()==DocNode::Kind_Verbatim && !isDocVerbatimVisible(dynamic_cast<const DocVerbatim*>(node)))
       || // skip over include nodes that are not visible in the HTML output
-         (node->kind()==DocNode::Kind_Include && !isDocIncludeVisible((DocInclude*)node))
+         (node->kind()==DocNode::Kind_Include && !isDocIncludeVisible(dynamic_cast<const DocInclude*>(node)))
       || // skip over include operator nodes that are not visible in the HTML output
-         (node->kind()==DocNode::Kind_IncOperator && !isDocIncOperatorVisible((DocIncOperator*)node))
+         (node->kind()==DocNode::Kind_IncOperator && !isDocIncOperatorVisible(dynamic_cast<const DocIncOperator*>(node)))
       ;
 }
 
@@ -252,6 +254,15 @@ static QCString htmlAttribsToString(const HtmlAttribList &attribs, QCString *pAl
         result+="=\""+convertToXML(att.value)+"\"";
       }
     }
+    else if (att.name=="open")
+    {
+        // The open attribute is a boolean attribute.
+        // Specifies that the details should be visible (open) to the user
+        // As it is a boolean attribute the initialisation value is of no interest
+        result+=" ";
+        result+=att.name;
+        result+="=\"true\"";
+    }
     else if (att.name=="nowrap") // In XHTML, attribute minimization is forbidden, and the nowrap attribute must be defined as <td nowrap="nowrap">.
     {
         result+=" ";
@@ -266,8 +277,7 @@ static QCString htmlAttribsToString(const HtmlAttribList &attribs, QCString *pAl
 
 HtmlDocVisitor::HtmlDocVisitor(TextStream &t,CodeOutputInterface &ci,
                                const Definition *ctx)
-  : DocVisitor(DocVisitor_Html), m_t(t), m_ci(ci), m_insidePre(FALSE),
-                                 m_hide(FALSE), m_ctx(ctx)
+  : DocVisitor(DocVisitor_Html), m_t(t), m_ci(ci), m_ctx(ctx)
 {
   if (ctx) m_langExt=ctx->getDefFileExtension();
 }
@@ -308,14 +318,22 @@ void HtmlDocVisitor::visit(DocWhiteSpace *w)
 void HtmlDocVisitor::visit(DocSymbol *s)
 {
   if (m_hide) return;
-  const char *res = HtmlEntityMapper::instance()->html(s->symbol());
-  if (res)
+  if (m_insideTitle &&
+      (s->symbol()==DocSymbol::Sym_Quot || s->symbol()==DocSymbol::Sym_quot)) // escape "'s inside title="..."
   {
-    m_t << res;
+    m_t << "&quot;";
   }
   else
   {
-    err("HTML: non supported HTML-entity found: %s\n",HtmlEntityMapper::instance()->html(s->symbol(),TRUE));
+    const char *res = HtmlEntityMapper::instance()->html(s->symbol());
+    if (res)
+    {
+      m_t << res;
+    }
+    else
+    {
+      err("HTML: non supported HTML-entity found: %s\n",HtmlEntityMapper::instance()->html(s->symbol(),TRUE));
+    }
   }
 }
 
@@ -335,16 +353,30 @@ void HtmlDocVisitor::visit(DocEmoji *s)
 
 void HtmlDocVisitor::writeObfuscatedMailAddress(const QCString &url)
 {
-  m_t << "<a href=\"#\" onclick=\"location.href='mai'+'lto:'";
-  uint i;
-  int size=3;
-  for (i=0;i<url.length();)
+  if (!Config_getBool(OBFUSCATE_EMAILS))
   {
-    m_t << "+'" << url.mid(i,size) << "'";
-    i+=size;
-    if (size==3) size=2; else size=3;
+    m_t << "<a href=\"mailto:" << url << "\">";
   }
-  m_t << "; return false;\">";
+  else
+  {
+    m_t << "<a href=\"#\" onclick=\"location.href='mai'+'lto:'";
+    if (!url.isEmpty())
+    {
+      const char *p = url.data();
+      uint size=3;
+      while (*p)
+      {
+        m_t << "+'";
+        for (uint j=0;j<size && *p;j++)
+        {
+          p = writeUTF8Char(m_t,p);
+        }
+        m_t << "'";
+        if (size==3) size=2; else size=3;
+      }
+    }
+    m_t << "; return false;\">";
+  }
 }
 
 void HtmlDocVisitor::visit(DocURL *u)
@@ -353,14 +385,26 @@ void HtmlDocVisitor::visit(DocURL *u)
   if (u->isEmail()) // mail address
   {
     QCString url = u->url();
+    // obfuscate the mail address link
     writeObfuscatedMailAddress(url);
-    uint size=5,i;
-    for (i=0;i<url.length();)
+    if (!Config_getBool(OBFUSCATE_EMAILS))
     {
-      filter(url.mid(i,size));
-      if (i<url.length()-size) m_t << "<span style=\"display: none;\">.nosp@m.</span>";
-      i+=size;
-      if (size==5) size=4; else size=5;
+      m_t << url;
+    }
+    else
+    {
+      const char *p = url.data();
+      // also obfuscate the address as shown on the web page
+      uint size=5;
+      while (*p)
+      {
+        for (uint j=0;j<size && *p;j++)
+        {
+          p = writeUTF8Char(m_t,p);
+        }
+        if (*p) m_t << "<span class=\"obfuscator\">.nosp@m.</span>";
+        if (size==5) size=4; else size=5;
+      }
     }
     m_t << "</a>";
   }
@@ -437,6 +481,9 @@ void HtmlDocVisitor::visit(DocStyleChange *s)
     case DocStyleChange::Small:
       if (s->enable()) m_t << "<small" << htmlAttribsToString(s->attribs()) << ">";  else m_t << "</small>";
       break;
+    case DocStyleChange::Cite:
+      if (s->enable()) m_t << "<cite" << htmlAttribsToString(s->attribs()) << ">";  else m_t << "</cite>";
+      break;
     case DocStyleChange::Preformatted:
       if (s->enable())
       {
@@ -466,7 +513,12 @@ void HtmlDocVisitor::visit(DocStyleChange *s)
     case DocStyleChange::Span:
       if (s->enable()) m_t << "<span" << htmlAttribsToString(s->attribs()) << ">";  else m_t << "</span>";
       break;
-
+    case DocStyleChange::Details:
+      if (s->enable()) m_t << "<details" << htmlAttribsToString(s->attribs()) << ">\n"; else m_t << "</details>\n";
+      break;
+    case DocStyleChange::Summary:
+      if (s->enable()) m_t << "<summary" << htmlAttribsToString(s->attribs()) << ">";  else m_t << "</summary>";
+      break;
   }
 }
 
@@ -531,6 +583,14 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
       filter(s->text());
       m_t << "</pre>";
       forceStartParagraph(s);
+      break;
+    case DocVerbatim::JavaDocLiteral:
+      filter(s->text(), true);
+      break;
+    case DocVerbatim::JavaDocCode:
+      m_t << "<code class=\"JavaDocCode\">";
+      filter(s->text(), true);
+      m_t << "</code>";
       break;
     case DocVerbatim::HtmlOnly:
       {
@@ -1015,7 +1075,7 @@ bool isLastChildNode(T *parent, DocNode *node)
    return !parent->children().empty() && parent->children().back().get()==node;
 }
 
-bool isSeparatedParagraph(DocSimpleSect *parent,DocPara *par)
+bool isSeparatedParagraph(const DocSimpleSect *parent,DocPara *par)
 {
   const DocNodeList &nodes = parent->children();
   auto it = std::find_if(nodes.begin(),nodes.end(),[par](const auto &n) { return n.get()==par; });
@@ -1064,8 +1124,8 @@ static int getParagraphContext(DocPara *p,bool &isFirst,bool &isLast)
           {
             kind = p->parent()->parent()->parent()->kind();
           }
-          isFirst=isFirstChildNode((DocParBlock*)p->parent(),p);
-          isLast =isLastChildNode ((DocParBlock*)p->parent(),p);
+          isFirst=isFirstChildNode(dynamic_cast<DocParBlock*>(p->parent()),p);
+          isLast =isLastChildNode (dynamic_cast<DocParBlock*>(p->parent()),p);
           t=NONE;
           if (isFirst)
           {
@@ -1127,8 +1187,8 @@ static int getParagraphContext(DocPara *p,bool &isFirst,bool &isLast)
           break;
         }
       case DocNode::Kind_AutoListItem:
-        isFirst=isFirstChildNode((DocAutoListItem*)p->parent(),p);
-        isLast =isLastChildNode ((DocAutoListItem*)p->parent(),p);
+        isFirst=isFirstChildNode(dynamic_cast<const DocAutoListItem*>(p->parent()),p);
+        isLast =isLastChildNode (dynamic_cast<const DocAutoListItem*>(p->parent()),p);
         t=STARTLI; // not used
         break;
       case DocNode::Kind_SimpleListItem:
@@ -1142,39 +1202,39 @@ static int getParagraphContext(DocPara *p,bool &isFirst,bool &isLast)
         t=STARTLI; // not used
         break;
       case DocNode::Kind_HtmlListItem:
-        isFirst=isFirstChildNode((DocHtmlListItem*)p->parent(),p);
-        isLast =isLastChildNode ((DocHtmlListItem*)p->parent(),p);
+        isFirst=isFirstChildNode(dynamic_cast<const DocHtmlListItem*>(p->parent()),p);
+        isLast =isLastChildNode (dynamic_cast<const DocHtmlListItem*>(p->parent()),p);
         if (isFirst) t=STARTLI;
         if (isLast)  t=ENDLI;
         if (!isFirst && !isLast) t = INTERLI;
         break;
       case DocNode::Kind_SecRefItem:
-        isFirst=isFirstChildNode((DocSecRefItem*)p->parent(),p);
-        isLast =isLastChildNode ((DocSecRefItem*)p->parent(),p);
+        isFirst=isFirstChildNode(dynamic_cast<const DocSecRefItem*>(p->parent()),p);
+        isLast =isLastChildNode (dynamic_cast<const DocSecRefItem*>(p->parent()),p);
         if (isFirst) t=STARTLI;
         if (isLast)  t=ENDLI;
         if (!isFirst && !isLast) t = INTERLI;
         break;
       case DocNode::Kind_HtmlDescData:
-        isFirst=isFirstChildNode((DocHtmlDescData*)p->parent(),p);
-        isLast =isLastChildNode ((DocHtmlDescData*)p->parent(),p);
+        isFirst=isFirstChildNode(dynamic_cast<const DocHtmlDescData*>(p->parent()),p);
+        isLast =isLastChildNode (dynamic_cast<const DocHtmlDescData*>(p->parent()),p);
         if (isFirst) t=STARTDD;
         if (isLast)  t=ENDDD;
         if (!isFirst && !isLast) t = INTERDD;
         break;
       case DocNode::Kind_XRefItem:
-        isFirst=isFirstChildNode((DocXRefItem*)p->parent(),p);
-        isLast =isLastChildNode ((DocXRefItem*)p->parent(),p);
+        isFirst=isFirstChildNode(dynamic_cast<const DocXRefItem*>(p->parent()),p);
+        isLast =isLastChildNode (dynamic_cast<const DocXRefItem*>(p->parent()),p);
         if (isFirst) t=STARTDD;
         if (isLast)  t=ENDDD;
         if (!isFirst && !isLast) t = INTERDD;
         break;
       case DocNode::Kind_SimpleSect:
-        isFirst=isFirstChildNode((DocSimpleSect*)p->parent(),p);
-        isLast =isLastChildNode ((DocSimpleSect*)p->parent(),p);
+        isFirst=isFirstChildNode(dynamic_cast<const DocSimpleSect*>(p->parent()),p);
+        isLast =isLastChildNode (dynamic_cast<const DocSimpleSect*>(p->parent()),p);
         if (isFirst) t=STARTDD;
         if (isLast)  t=ENDDD;
-        if (isSeparatedParagraph((DocSimpleSect*)p->parent(),p))
+        if (isSeparatedParagraph(dynamic_cast<const DocSimpleSect*>(p->parent()),p))
           // if the paragraph is enclosed with separators it will
           // be included in <dd>..</dd> so avoid addition paragraph
           // markers
@@ -1184,8 +1244,8 @@ static int getParagraphContext(DocPara *p,bool &isFirst,bool &isLast)
         if (!isFirst && !isLast) t = INTERDD;
         break;
       case DocNode::Kind_HtmlCell:
-        isFirst=isFirstChildNode((DocHtmlCell*)p->parent(),p);
-        isLast =isLastChildNode ((DocHtmlCell*)p->parent(),p);
+        isFirst=isFirstChildNode(dynamic_cast<const DocHtmlCell*>(p->parent()),p);
+        isLast =isLastChildNode (dynamic_cast<const DocHtmlCell*>(p->parent()),p);
         if (isFirst) t=STARTTD;
         if (isLast)  t=ENDTD;
         if (!isFirst && !isLast) t = INTERTD;
@@ -1226,7 +1286,7 @@ void HtmlDocVisitor::visitPre(DocPara *p)
         needsTag = TRUE;
         break;
       case DocNode::Kind_Root:
-        needsTag = !((DocRoot*)p->parent())->singleLine();
+        needsTag = !dynamic_cast<DocRoot*>(p->parent())->singleLine();
         break;
       default:
         needsTag = FALSE;
@@ -1300,7 +1360,7 @@ void HtmlDocVisitor::visitPost(DocPara *p)
         needsTag = TRUE;
         break;
       case DocNode::Kind_Root:
-        needsTag = !((DocRoot*)p->parent())->singleLine();
+        needsTag = !dynamic_cast<DocRoot*>(p->parent())->singleLine();
         break;
       default:
         needsTag = FALSE;
@@ -1745,6 +1805,7 @@ void HtmlDocVisitor::visitPre(DocImage *img)
       if (inlineImage)
       {
         m_t << " title=\"";
+        m_insideTitle=true;
       }
       else
       {
@@ -1774,6 +1835,7 @@ void HtmlDocVisitor::visitPost(DocImage *img)
       if (inlineImage)
       {
         m_t << "\"/>";
+        m_insideTitle=false;
       }
       else // end <div class="caption">
       {
@@ -1795,6 +1857,7 @@ void HtmlDocVisitor::visitPost(DocImage *img)
 void HtmlDocVisitor::visitPre(DocDotFile *df)
 {
   if (m_hide) return;
+  if (!Config_getBool(DOT_CLEANUP)) copyFile(df->file(),Config_getString(HTML_OUTPUT)+"/"+stripPath(df->file()));
   m_t << "<div class=\"dotgraph\">\n";
   writeDotFile(df->file(),df->relPath(),df->context(),df->srcFile(),df->srcLine());
   if (df->hasCaption())
@@ -1816,6 +1879,7 @@ void HtmlDocVisitor::visitPost(DocDotFile *df)
 void HtmlDocVisitor::visitPre(DocMscFile *df)
 {
   if (m_hide) return;
+  if (!Config_getBool(DOT_CLEANUP)) copyFile(df->file(),Config_getString(HTML_OUTPUT)+"/"+stripPath(df->file()));
   m_t << "<div class=\"mscgraph\">\n";
   writeMscFile(df->file(),df->relPath(),df->context(),df->srcFile(),df->srcLine());
   if (df->hasCaption())
@@ -1836,6 +1900,7 @@ void HtmlDocVisitor::visitPost(DocMscFile *df)
 void HtmlDocVisitor::visitPre(DocDiaFile *df)
 {
   if (m_hide) return;
+  if (!Config_getBool(DOT_CLEANUP)) copyFile(df->file(),Config_getString(HTML_OUTPUT)+"/"+stripPath(df->file()));
   m_t << "<div class=\"diagraph\">\n";
   writeDiaFile(df->file(),df->relPath(),df->context(),df->srcFile(),df->srcLine());
   if (df->hasCaption())
@@ -1970,7 +2035,7 @@ void HtmlDocVisitor::visitPre(DocParamList *pl)
   DocParamSect *sect = 0;
   if (pl->parent()->kind()==DocNode::Kind_ParamSect)
   {
-    sect=(DocParamSect*)pl->parent();
+    sect=dynamic_cast<DocParamSect*>(pl->parent());
   }
   if (sect && sect->hasInOutSpecifier())
   {
@@ -2001,15 +2066,15 @@ void HtmlDocVisitor::visitPre(DocParamList *pl)
     {
       if (type->kind()==DocNode::Kind_Word)
       {
-        visit((DocWord*)type.get());
+        visit(dynamic_cast<DocWord*>(type.get()));
       }
       else if (type->kind()==DocNode::Kind_LinkedWord)
       {
-        visit((DocLinkedWord*)type.get());
+        visit(dynamic_cast<DocLinkedWord*>(type.get()));
       }
       else if (type->kind()==DocNode::Kind_Sep)
       {
-        m_t << "&#160;" << ((DocSeparator *)type.get())->chars() << "&#160;";
+        m_t << "&#160;" << dynamic_cast<DocSeparator *>(type.get())->chars() << "&#160;";
       }
     }
     m_t << "</td>";
@@ -2021,11 +2086,11 @@ void HtmlDocVisitor::visitPre(DocParamList *pl)
     if (!first) m_t << ","; else first=FALSE;
     if (param->kind()==DocNode::Kind_Word)
     {
-      visit((DocWord*)param.get());
+      visit(dynamic_cast<DocWord*>(param.get()));
     }
     else if (param->kind()==DocNode::Kind_LinkedWord)
     {
-      visit((DocLinkedWord*)param.get());
+      visit(dynamic_cast<DocLinkedWord*>(param.get()));
     }
   }
   m_t << "</td><td>";
@@ -2148,7 +2213,7 @@ void HtmlDocVisitor::visitPost(DocParBlock *)
 
 
 
-void HtmlDocVisitor::filter(const QCString &str)
+void HtmlDocVisitor::filter(const QCString &str, const bool retainNewline)
 {
   if (str.isEmpty()) return;
   const char *p=str.data();
@@ -2158,6 +2223,7 @@ void HtmlDocVisitor::filter(const QCString &str)
     c=*p++;
     switch(c)
     {
+      case '\n': if(retainNewline) m_t << "<br/>"; m_t << c; break;
       case '<':  m_t << "&lt;"; break;
       case '>':  m_t << "&gt;"; break;
       case '&':  m_t << "&amp;"; break;
@@ -2349,26 +2415,26 @@ void HtmlDocVisitor::writePlantUMLFile(const QCString &fileName, const QCString 
     must be located outside of a paragraph, i.e. it is a center, div, or pre tag.
     See also bug746162.
  */
-static bool insideStyleChangeThatIsOutsideParagraph(DocPara *para,int nodeIndex)
+static bool insideStyleChangeThatIsOutsideParagraph(const DocPara *para,int nodeIndex)
 {
   //printf("insideStyleChangeThatIsOutputParagraph(index=%d)\n",nodeIndex);
   int styleMask=0;
   bool styleOutsideParagraph=FALSE;
   while (nodeIndex>=0 && !styleOutsideParagraph)
   {
-    DocNode *n = para->children().at(nodeIndex).get();
+    const DocNode *n = para->children().at(nodeIndex).get();
     if (n->kind()==DocNode::Kind_StyleChange)
     {
-      DocStyleChange *sc = (DocStyleChange*)n;
+      const DocStyleChange *sc = dynamic_cast<const DocStyleChange*>(n);
       if (!sc->enable()) // remember styles that has been closed already
       {
-        styleMask|=(int)sc->style();
+        styleMask|=static_cast<int>(sc->style());
       }
       bool paraStyle = sc->style()==DocStyleChange::Center ||
                        sc->style()==DocStyleChange::Div    ||
                        sc->style()==DocStyleChange::Preformatted;
       //printf("Found style change %s enabled=%d\n",sc->styleString(),sc->enable());
-      if (sc->enable() && (styleMask&(int)sc->style())==0 && // style change that is still active
+      if (sc->enable() && (styleMask&static_cast<int>(sc->style()))==0 && // style change that is still active
           paraStyle
          )
       {
@@ -2389,7 +2455,7 @@ void HtmlDocVisitor::forceEndParagraph(DocNode *n)
   //printf("forceEndParagraph(%p) %d\n",n,n->kind());
   if (n->parent() && n->parent()->kind()==DocNode::Kind_Para)
   {
-    DocPara *para = (DocPara*)n->parent();
+    DocPara *para = dynamic_cast<DocPara*>(n->parent());
     const DocNodeList &children = para->children();
     auto it = std::find_if(children.begin(),children.end(),[n](const auto &np) { return np.get()==n; });
     if (it==children.end()) return;
@@ -2425,7 +2491,7 @@ void HtmlDocVisitor::forceStartParagraph(DocNode *n)
   //printf("forceStartParagraph(%p) %d\n",n,n->kind());
   if (n->parent() && n->parent()->kind()==DocNode::Kind_Para) // if we are inside a paragraph
   {
-    DocPara *para = (DocPara*)n->parent();
+    DocPara *para = dynamic_cast<DocPara*>(n->parent());
     const DocNodeList &children = para->children();
     auto it = std::find_if(children.begin(),children.end(),[n](const auto &np) { return np.get()==n; });
     if (it==children.end()) return;

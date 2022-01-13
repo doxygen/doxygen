@@ -204,7 +204,7 @@ bool DotCallGraph::isTooBig() const
 
 int DotCallGraph::numNodes() const
 {
-  return (int)m_startNode->children().size();
+  return static_cast<int>(m_startNode->children().size());
 }
 
 bool DotCallGraph::isTrivial(const MemberDef *md,bool inverse)

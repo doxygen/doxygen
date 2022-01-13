@@ -228,7 +228,7 @@ class DevNullCodeDocInterface : public CodeOutputInterface
 */
 FileDefImpl::FileDefImpl(const QCString &p,const QCString &nm,
                  const QCString &lref,const QCString &dn)
-   : DefinitionMixin((QCString)p+nm,1,1,nm)
+   : DefinitionMixin(QCString(p)+nm,1,1,nm)
 {
   m_path=p;
   m_filePath=m_path+nm;
@@ -386,7 +386,7 @@ void FileDefImpl::writeTagFile(TextStream &tagFile)
         break;
       case LayoutDocEntry::MemberDecl:
         {
-          const LayoutDocEntryMemberDecl *lmd = (const LayoutDocEntryMemberDecl*)lde.get();
+          const LayoutDocEntryMemberDecl *lmd = dynamic_cast<const LayoutDocEntryMemberDecl*>(lde.get());
           MemberList * ml = getMemberList(lmd->type);
           if (ml)
           {
@@ -750,49 +750,49 @@ void FileDefImpl::writeSummaryLinks(OutputList &ol) const
   {
     if (lde->kind()==LayoutDocEntry::FileClasses && m_classes.declVisible())
     {
-      const LayoutDocEntrySection *ls = (const LayoutDocEntrySection*)lde.get();
+      const LayoutDocEntrySection *ls = dynamic_cast<const LayoutDocEntrySection*>(lde.get());
       QCString label = "nested-classes";
       ol.writeSummaryLink(QCString(),label,ls->title(lang),first);
       first=FALSE;
     }
     else if (lde->kind()==LayoutDocEntry::FileInterfaces && m_interfaces.declVisible())
     {
-      const LayoutDocEntrySection *ls = (const LayoutDocEntrySection*)lde.get();
+      const LayoutDocEntrySection *ls = dynamic_cast<const LayoutDocEntrySection*>(lde.get());
       QCString label = "interfaces";
       ol.writeSummaryLink(QCString(),label,ls->title(lang),first);
       first=FALSE;
     }
     else if (lde->kind()==LayoutDocEntry::FileStructs && m_structs.declVisible())
     {
-      const LayoutDocEntrySection *ls = (const LayoutDocEntrySection*)lde.get();
+      const LayoutDocEntrySection *ls = dynamic_cast<const LayoutDocEntrySection*>(lde.get());
       QCString label = "structs";
       ol.writeSummaryLink(QCString(),label,ls->title(lang),first);
       first=FALSE;
     }
     else if (lde->kind()==LayoutDocEntry::FileExceptions && m_exceptions.declVisible())
     {
-      const LayoutDocEntrySection *ls = (const LayoutDocEntrySection*)lde.get();
+      const LayoutDocEntrySection *ls = dynamic_cast<const LayoutDocEntrySection*>(lde.get());
       QCString label = "exceptions";
       ol.writeSummaryLink(QCString(),label,ls->title(lang),first);
       first=FALSE;
     }
     else if (lde->kind()==LayoutDocEntry::FileNamespaces && m_namespaces.declVisible(false))
     {
-      const LayoutDocEntrySection *ls = (const LayoutDocEntrySection*)lde.get();
+      const LayoutDocEntrySection *ls = dynamic_cast<const LayoutDocEntrySection*>(lde.get());
       QCString label = "namespaces";
       ol.writeSummaryLink(QCString(),label,ls->title(lang),first);
       first=FALSE;
     }
     else if (lde->kind()==LayoutDocEntry::FileConcepts && m_concepts.declVisible())
     {
-      const LayoutDocEntrySection *ls = (const LayoutDocEntrySection*)lde.get();
+      const LayoutDocEntrySection *ls = dynamic_cast<const LayoutDocEntrySection*>(lde.get());
       QCString label = "concepts";
       ol.writeSummaryLink(QCString(),label,ls->title(lang),first);
       first=FALSE;
     }
     else if (lde->kind()==LayoutDocEntry::MemberDecl)
     {
-      const LayoutDocEntryMemberDecl *lmd = (const LayoutDocEntryMemberDecl*)lde.get();
+      const LayoutDocEntryMemberDecl *lmd = dynamic_cast<const LayoutDocEntryMemberDecl*>(lde.get());
       MemberList * ml = getMemberList(lmd->type);
       if (ml && ml->declVisible())
       {
@@ -903,43 +903,43 @@ void FileDefImpl::writeDocumentation(OutputList &ol)
         break;
       case LayoutDocEntry::FileClasses:
         {
-          const LayoutDocEntrySection *ls = (const LayoutDocEntrySection*)lde.get();
+          const LayoutDocEntrySection *ls = dynamic_cast<const LayoutDocEntrySection*>(lde.get());
           writeClassDeclarations(ol,ls->title(lang),m_classes);
         }
         break;
       case LayoutDocEntry::FileInterfaces:
         {
-          const LayoutDocEntrySection *ls = (const LayoutDocEntrySection*)lde.get();
+          const LayoutDocEntrySection *ls = dynamic_cast<const LayoutDocEntrySection*>(lde.get());
           writeClassDeclarations(ol,ls->title(lang),m_interfaces);
         }
         break;
       case LayoutDocEntry::FileStructs:
         {
-          const LayoutDocEntrySection *ls = (const LayoutDocEntrySection*)lde.get();
+          const LayoutDocEntrySection *ls = dynamic_cast<const LayoutDocEntrySection*>(lde.get());
           writeClassDeclarations(ol,ls->title(lang),m_structs);
         }
         break;
       case LayoutDocEntry::FileExceptions:
         {
-          const LayoutDocEntrySection *ls = (const LayoutDocEntrySection*)lde.get();
+          const LayoutDocEntrySection *ls = dynamic_cast<const LayoutDocEntrySection*>(lde.get());
           writeClassDeclarations(ol,ls->title(lang),m_exceptions);
         }
         break;
       case LayoutDocEntry::FileConcepts:
         {
-          const LayoutDocEntrySection *ls = (const LayoutDocEntrySection*)lde.get();
+          const LayoutDocEntrySection *ls = dynamic_cast<const LayoutDocEntrySection*>(lde.get());
           writeConcepts(ol,ls->title(lang));
         }
         break;
       case LayoutDocEntry::FileNamespaces:
         {
-          const LayoutDocEntrySection *ls = (const LayoutDocEntrySection*)lde.get();
+          const LayoutDocEntrySection *ls = dynamic_cast<const LayoutDocEntrySection*>(lde.get());
           writeNamespaceDeclarations(ol,ls->title(lang),false);
         }
         break;
       case LayoutDocEntry::FileConstantGroups:
         {
-          const LayoutDocEntrySection *ls = (const LayoutDocEntrySection*)lde.get();
+          const LayoutDocEntrySection *ls = dynamic_cast<const LayoutDocEntrySection*>(lde.get());
           writeNamespaceDeclarations(ol,ls->title(lang),true);
         }
         break;
@@ -948,7 +948,7 @@ void FileDefImpl::writeDocumentation(OutputList &ol)
         break;
       case LayoutDocEntry::MemberDecl:
         {
-          const LayoutDocEntryMemberDecl *lmd = (const LayoutDocEntryMemberDecl*)lde.get();
+          const LayoutDocEntryMemberDecl *lmd = dynamic_cast<const LayoutDocEntryMemberDecl*>(lde.get());
           writeMemberDeclarations(ol,lmd->type,lmd->title(lang));
         }
         break;
@@ -957,7 +957,7 @@ void FileDefImpl::writeDocumentation(OutputList &ol)
         break;
       case LayoutDocEntry::DetailedDesc:
         {
-          const LayoutDocEntrySection *ls = (const LayoutDocEntrySection*)lde.get();
+          const LayoutDocEntrySection *ls = dynamic_cast<const LayoutDocEntrySection*>(lde.get());
           writeDetailedDescription(ol,ls->title(lang));
         }
         break;
@@ -969,7 +969,7 @@ void FileDefImpl::writeDocumentation(OutputList &ol)
         break;
       case LayoutDocEntry::MemberDef:
         {
-          const LayoutDocEntryMemberDef *lmd = (const LayoutDocEntryMemberDef*)lde.get();
+          const LayoutDocEntryMemberDef *lmd = dynamic_cast<const LayoutDocEntryMemberDef*>(lde.get());
           writeMemberDocumentation(ol,lmd->type,lmd->title(lang));
         }
         break;
@@ -1558,7 +1558,7 @@ void FileDefImpl::acquireFileVersion()
     }
     const int bufSize=1024;
     char buf[bufSize];
-    int numRead = (int)fread(buf,1,bufSize-1,f);
+    int numRead = static_cast<int>(fread(buf,1,bufSize-1,f));
     Portable::pclose(f);
     if (numRead>0 && numRead<bufSize)
     {

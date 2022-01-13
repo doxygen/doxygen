@@ -163,6 +163,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     virtual bool isTemplateSpecialization() const;
     virtual bool isObjCMethod() const;
     virtual bool isObjCProperty() const;
+    virtual bool isCSharpProperty() const;
     virtual bool isConstructor() const;
     virtual bool isDestructor() const;
     virtual bool hasOneLineInitializer() const;
@@ -601,6 +602,8 @@ class MemberDefAliasImpl : public DefinitionAliasMixin<MemberDef>
     { return getMdAlias()->isObjCMethod(); }
     virtual bool isObjCProperty() const
     { return getMdAlias()->isObjCProperty(); }
+    virtual bool isCSharpProperty() const
+    { return getMdAlias()->isCSharpProperty(); }
     virtual bool isConstructor() const
     { return getMdAlias()->isConstructor(); }
     virtual bool isDestructor() const
@@ -1741,7 +1744,7 @@ bool MemberDefImpl::isLinkableInProject() const
 {
   if (m_isLinkableCached==0)
   {
-    MemberDefImpl *that = (MemberDefImpl*)this;
+    MemberDefImpl *that = const_cast<MemberDefImpl*>(this);
     that->_computeLinkableInProject();
   }
   ASSERT(m_isLinkableCached>0);
@@ -2158,8 +2161,8 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
   bool endAnonScopeNeeded=FALSE;
   if (reg::search(stype,match,r)) // member has an anonymous type
   {
-    int i = (int)match.position();
-    int l = (int)match.length();
+    int i = static_cast<int>(match.position());
+    int l = static_cast<int>(match.length());
     //printf("annoClassDef=%p annMemb=%p scopeName='%s' anonymous='%s'\n",
     //    annoClassDef,annMemb,qPrint(cname),qPrint(ltype.mid(i,l)));
 
@@ -2908,11 +2911,11 @@ void MemberDefImpl::_writeReimplementedBy(OutputList &ol) const
     QCString reimplInLine;
     if (m_impl->virt==Pure || (getClassDef() && getClassDef()->compoundType()==ClassDef::Interface))
     {
-      reimplInLine = theTranslator->trImplementedInList((int)count);
+      reimplInLine = theTranslator->trImplementedInList(static_cast<int>(count));
     }
     else
     {
-      reimplInLine = theTranslator->trReimplementedInList((int)count);
+      reimplInLine = theTranslator->trReimplementedInList(static_cast<int>(count));
     }
 
     // write the list of classes that overwrite this member
@@ -3131,7 +3134,7 @@ QCString MemberDefImpl::displayDefinition() const
     //printf("start >%s<\n",qPrint(ldef));
     int i=l-1;
     while (i>=0 && (isId(ldef.at(i)) || ldef.at(i)==':')) i--;
-    while (i>=0 && isspace((uchar)ldef.at(i))) i--;
+    while (i>=0 && isspace(static_cast<uchar>(ldef.at(i)))) i--;
     if (i>0)
     {
       // insert braches around the type
@@ -3461,7 +3464,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
       //printf("start >%s<\n",qPrint(ldef));
       int i=dl-1;
       while (i>=0 && (isId(ldef.at(i)) || ldef.at(i)==':')) i--;
-      while (i>=0 && isspace((uchar)ldef.at(i))) i--;
+      while (i>=0 && isspace(static_cast<uchar>(ldef.at(i)))) i--;
       if (i>0)
       {
         // insert braches around the type
@@ -4003,7 +4006,7 @@ void MemberDefImpl::detectUndocumentedParams(bool hasParamCommand,bool hasReturn
           )
   {
 
-    warn_doc_error(getDefFileName(),getDefLine(),"documented empty return type of %s",
+    warn_doc_error(docFile(),docLine(),"documented empty return type of %s",
                           qPrint(qualifiedName()));
   }
   else if ( // see if return needs to documented
@@ -4031,14 +4034,14 @@ void MemberDefImpl::warnIfUndocumentedParams() const
     QCString returnType = typeString();
     if (!m_impl->hasDocumentedParams)
     {
-      warn_doc_error(getDefFileName(),getDefLine(),
+      warn_doc_error(docFile(),docLine(),
           "parameters of member %s are not (all) documented",
           qPrint(qualifiedName()));
     }
     if (!m_impl->hasDocumentedReturnType &&
         hasDocumentation() && !returnType.isEmpty())
     {
-      warn_doc_error(getDefFileName(),getDefLine(),
+      warn_doc_error(docFile(),docLine(),
           "return type of member %s is not documented",
           qPrint(qualifiedName()));
     }
@@ -4102,7 +4105,7 @@ void MemberDefImpl::setAnchor()
   if (m_impl->tArgList.hasParameters())
   {
     char buf[20];
-    qsnprintf(buf,20,"%d:",(int)m_impl->tArgList.size());
+    qsnprintf(buf,20,"%d:",static_cast<int>(m_impl->tArgList.size()));
     buf[19]='\0';
     memAnchor.prepend(buf);
   }
@@ -4114,7 +4117,7 @@ void MemberDefImpl::setAnchor()
   // convert to md5 hash
   uchar md5_sig[16];
   char sigStr[33];
-  MD5Buffer((const unsigned char *)memAnchor.data(),memAnchor.length(),md5_sig);
+  MD5Buffer(memAnchor.data(),memAnchor.length(),md5_sig);
   MD5SigToString(md5_sig,sigStr);
   m_impl->anc = QCString("a")+sigStr;
 }
@@ -4228,7 +4231,7 @@ void MemberDefImpl::setInitializer(const QCString &initializer)
   m_impl->initializer=initializer;
   int l=m_impl->initializer.length();
   int p=l-1;
-  while (p>=0 && isspace((uchar)m_impl->initializer.at(p))) p--;
+  while (p>=0 && isspace(static_cast<uchar>(m_impl->initializer.at(p)))) p--;
   m_impl->initializer=m_impl->initializer.left(p+1);
   m_impl->initLines=m_impl->initializer.contains('\n');
   //printf("%s::setInitializer(%s)\n",qPrint(name()),qPrint(m_impl->initializer));
@@ -4439,7 +4442,7 @@ bool MemberDefImpl::isConstructor() const
 {
   if (m_isConstructorCached==0)
   {
-    MemberDefImpl *that = (MemberDefImpl*)this;
+    MemberDefImpl *that = const_cast<MemberDefImpl*>(this);
     that->_computeIsConstructor();
   }
   ASSERT(m_isConstructorCached>0);
@@ -4476,7 +4479,7 @@ bool MemberDefImpl::isDestructor() const
 {
   if (m_isDestructorCached==0)
   {
-    MemberDefImpl *that=(MemberDefImpl*)this;
+    MemberDefImpl *that=const_cast<MemberDefImpl*>(this);
     that->_computeIsDestructor();
   }
   ASSERT(m_isDestructorCached>0);
@@ -4524,7 +4527,7 @@ void MemberDefImpl::writeEnumDeclaration(OutputList &typeDecl,
     typeDecl.writeChar(' ');
   }
 
-  uint enumValuesPerLine = (uint)Config_getInt(ENUM_VALUES_PER_LINE);
+  uint enumValuesPerLine = static_cast<uint>(Config_getInt(ENUM_VALUES_PER_LINE));
   if (numVisibleEnumValues>0 && enumValuesPerLine>0)
   {
     typeDecl.docify("{ ");
@@ -4700,6 +4703,12 @@ bool MemberDefImpl::isObjCMethod() const
 bool MemberDefImpl::isObjCProperty() const
 {
   if (getClassDef() && getClassDef()->isObjectiveC() && isProperty()) return TRUE;
+  return FALSE;
+}
+
+bool MemberDefImpl::isCSharpProperty() const
+{
+  if (getClassDef() && getClassDef()->isCSharp() && isProperty()) return TRUE;
   return FALSE;
 }
 
@@ -5827,9 +5836,12 @@ void combineDeclarationAndDefinition(MemberDefMutable *mdec,MemberDefMutable *md
     //    mdef, mdef ? qPrint(mdef->name()) : "",
     //    mdec, mdec ? qPrint(mdec->name()) : "");
 
+    bool sameNumTemplateArgs = mdef->templateArguments().size()==mdec->templateArguments().size();
+
     ArgumentList &mdefAl = const_cast<ArgumentList&>(mdef->argumentList());
     ArgumentList &mdecAl = const_cast<ArgumentList&>(mdec->argumentList());
-    if (matchArguments2(mdef->getOuterScope(),mdef->getFileDef(),&mdefAl,
+    if (sameNumTemplateArgs &&
+        matchArguments2(mdef->getOuterScope(),mdef->getFileDef(),&mdefAl,
                         mdec->getOuterScope(),mdec->getFileDef(),&mdecAl,
                         TRUE
                        )

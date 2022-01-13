@@ -144,7 +144,7 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
      */
     virtual QCString trGeneratedAutomatically(const QCString &s)
     { QCString result="Generat automàticament per Doxygen";
-      if (!s.isEmpty()) result+=(QCString)" per a "+s;
+      if (!s.isEmpty()) result+=" per a "+s;
       result+=" a partir del codi font.";
       return result;
     }
@@ -506,16 +506,16 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
      */
     virtual QCString trGeneratedAt(const QCString &date,const QCString &projName)
     {
-      QCString result=(QCString)"Generat a "+date;
-      if (!projName.isEmpty()) result+=(QCString)" per a "+projName;
-      result+=(QCString)" per";
+      QCString result="Generat a "+date;
+      if (!projName.isEmpty()) result+=" per a "+projName;
+      result+=" per";
       return result;
     }
 
     /*! this text is put before a class diagram */
     virtual QCString trClassDiagram(const QCString &clName)
     {
-      return (QCString)"Diagrama d'Herència per a "+clName+":";
+      return "Diagrama d'Herència per a "+clName+":";
     }
 
     /*! this text is generated when the \\internal command is used. */
@@ -609,7 +609,7 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
         default: break;
       }
       if (isTemplate) result+="Template ";
-      result+=(QCString)clName;
+      result+=clName;
       return result;
     }
 
@@ -756,7 +756,7 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
         bool single)
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
-      QCString result=(QCString)"La documentació d'aquest";
+      QCString result="La documentació d'aquest";
       switch(compType)
       {
         case ClassDef::Class:      result+="a classe"; break;
@@ -825,12 +825,12 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
     /*! this text is put before a collaboration diagram */
     virtual QCString trCollaborationDiagram(const QCString &clName)
     {
-      return (QCString)"Diagrama de col·laboració per a "+clName+":";
+      return "Diagrama de col·laboració per a "+clName+":";
     }
     /*! this text is put before an include dependency graph */
     virtual QCString trInclDepGraph(const QCString &fName)
     {
-      return (QCString)"Inclou el graf de dependències per a "+fName+":";
+      return "Inclou el graf de dependències per a "+fName+":";
     }
     /*! header that is put before the list of constructor/destructors. */
     virtual QCString trConstructorDocumentation()
@@ -1104,7 +1104,7 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
     /*! Used as the title of a Java package */
     virtual QCString trPackage(const QCString &name)
     {
-      return (QCString)"Paquet "+name;
+      return "Paquet "+name;
     }
     /*! Title of the package index page */
     virtual QCString trPackageList()
@@ -1640,7 +1640,7 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
         default: break;
       }
       if (isTemplate) result+="Template ";
-      result+=(QCString)clName;
+      result+=clName;
       return result;
     }
 
@@ -1699,7 +1699,7 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
         bool single)
     { // here s is one of " Module", " Struct" or " Union"
       // single is true implies a single file
-      QCString result=(QCString)"La documentació d'aquest";
+      QCString result="La documentació d'aquest";
       switch(compType)
       {
         case ClassDef::Class:      result+=" mòdul"; break;
@@ -1792,7 +1792,7 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
      */
     virtual QCString trFileIn(const QCString &name)
     {
-      return (QCString)"Fitxer a "+name;
+      return "Fitxer a "+name;
     }
 
     /*! when clicking a directory dependency label, a page with a
@@ -1801,7 +1801,7 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
      */
     virtual QCString trIncludesFileIn(const QCString &name)
     {
-      return (QCString)"Inclou fitxer a "+name;
+      return "Inclou fitxer a "+name;
     }
 
     /** Compiles a date string.

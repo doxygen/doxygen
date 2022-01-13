@@ -90,10 +90,6 @@ QCString PlantumlManager::writePlantUMLSource(const QCString &outDirArg,const QC
 
 void PlantumlManager::generatePlantUMLOutput(const QCString &baseName,const QCString &outDir,OutputFormat format)
 {
-  QCString plantumlJarPath = Config_getString(PLANTUML_JAR_PATH);
-  QCString plantumlConfigFile = Config_getString(PLANTUML_CFG_FILE);
-  QCString dotPath = Config_getString(DOT_PATH);
-
   QCString imgName = baseName;
   // The basename contains path, we need to strip the path from the filename in order
   // to create the image file name which should be included in the index.qhp (Qt help index file).
@@ -147,7 +143,6 @@ static void runPlantumlContent(const PlantumlManager::FilesMap &plantumlFiles,
   int exitCode;
   QCString plantumlJarPath = Config_getString(PLANTUML_JAR_PATH);
   QCString plantumlConfigFile = Config_getString(PLANTUML_CFG_FILE);
-  QCString dotPath = Config_getString(DOT_PATH);
 
   QCString pumlExe = "java";
   QCString pumlArgs = "";
@@ -171,19 +166,21 @@ static void runPlantumlContent(const PlantumlManager::FilesMap &plantumlFiles,
     }
   }
   if (!pumlIncludePathList.empty()) pumlArgs += "\" ";
-  pumlArgs += "-Djava.awt.headless=true -jar \""+plantumlJarPath+"plantuml.jar\" ";
+  pumlArgs += "-Djava.awt.headless=true -jar \""+plantumlJarPath+"\" ";
   if (!plantumlConfigFile.isEmpty())
   {
     pumlArgs += "-config \"";
     pumlArgs += plantumlConfigFile;
     pumlArgs += "\" ";
   }
-  if (Config_getBool(HAVE_DOT) && !dotPath.isEmpty())
+  // the -graphvizdot option expects a relative or absolute path to the dot executable, so
+  // we need to use the unverified DOT_PATH option and check if it points to an existing file.
+  QCString dotPath = Config_getString(DOT_PATH);
+  FileInfo dp(dotPath.str());
+  if (Config_getBool(HAVE_DOT) && dp.exists() && dp.isFile())
   {
     pumlArgs += "-graphvizdot \"";
     pumlArgs += dotPath;
-    pumlArgs += "dot";
-    pumlArgs += Portable::commandExtension();
     pumlArgs += "\" ";
   }
   switch (format)
@@ -249,7 +246,7 @@ static void runPlantumlContent(const PlantumlManager::FilesMap &plantumlFiles,
       Portable::sysTimerStart();
       if ((exitCode=Portable::system(pumlExe.data(),pumlArguments.data(),TRUE))!=0)
       {
-        err_full(nb.srcFile,nb.srcLine,"Problems running PlantUML. Verify that the command 'java -jar \"%splantuml.jar\" -h' works from the command line. Exit code: %d\n",
+        err_full(nb.srcFile,nb.srcLine,"Problems running PlantUML. Verify that the command 'java -jar \"%s\" -h' works from the command line. Exit code: %d\n",
             plantumlJarPath.data(),exitCode);
       }
       Portable::sysTimerStop();

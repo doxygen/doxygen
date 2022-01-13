@@ -536,6 +536,10 @@ QWidget *Expert::createTopicWidget(QDomElement &elem)
         {
           mode = InputString::StringFile;
         }
+        else if (format==SA("filedir"))
+        {
+          mode = InputString::StringFileDir;
+        }
         else if (format==SA("image"))
         {
           mode = InputString::StringImage;
@@ -752,7 +756,7 @@ void Expert::loadSettings(QSettings *s)
   {
     i.next();
     QVariant var = s->value(SA("config/")+i.key());
-    if (i.value())
+    if (i.value() && var.isValid())
     {
       //printf("Loading key %s: type=%d value='%s'\n",qPrintable(i.key()),var.type(),qPrintable(var.toString()));
       i.value()->value() = var;

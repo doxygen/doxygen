@@ -369,7 +369,7 @@ void addMembersToIndex(T *def,LayoutDocManager::LayoutPart part,
       auto kind = lde->kind();
       if (kind==LayoutDocEntry::MemberDef)
       {
-        const LayoutDocEntryMemberDef *lmd = (const LayoutDocEntryMemberDef*)lde.get();
+        const LayoutDocEntryMemberDef *lmd = dynamic_cast<const LayoutDocEntryMemberDef*>(lde.get());
         MemberList *ml = def->getMemberList(lmd->type);
         if (ml)
         {
@@ -430,7 +430,7 @@ static void writeClassTreeToOutput(OutputList &ol,const BaseClassList &bcl,int l
   for (const auto &bcd : bcl)
   {
     ClassDef *cd=bcd.classDef;
-    if (cd->getLanguage()==SrcLangExt_VHDL && (VhdlDocGen::VhdlClasses)cd->protection()!=VhdlDocGen::ENTITYCLASS)
+    if (cd->getLanguage()==SrcLangExt_VHDL && VhdlDocGen::convert(cd->protection())!=VhdlDocGen::ENTITYCLASS)
     {
       continue;
     }
@@ -792,7 +792,7 @@ static void writeClassTreeForList(OutputList &ol,const ClassLinkedMap &cl,bool &
     bool b;
     if (cd->getLanguage()==SrcLangExt_VHDL)
     {
-      if ((VhdlDocGen::VhdlClasses)cd->protection()!=VhdlDocGen::ENTITYCLASS)
+      if (VhdlDocGen::convert(cd->protection())!=VhdlDocGen::ENTITYCLASS)
       {
         continue;
       }
@@ -1527,13 +1527,13 @@ static void writeClassTree(const ListType &cl,FTVHelp *ftv,bool addToIndex,bool 
     ClassDefMutable *cdm = toClassDefMutable(cd);
     if (cdm && cd->getLanguage()==SrcLangExt_VHDL)
     {
-      if ((VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::PACKAGECLASS ||
-          (VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::PACKBODYCLASS
+      if (VhdlDocGen::convert(cd->protection())==VhdlDocGen::PACKAGECLASS ||
+          VhdlDocGen::convert(cd->protection())==VhdlDocGen::PACKBODYCLASS
          )// no architecture
       {
         continue;
       }
-      if ((VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::ARCHITECTURECLASS)
+      if (VhdlDocGen::convert(cd->protection())==VhdlDocGen::ARCHITECTURECLASS)
       {
         QCString n=cd->name();
         cdm->setClassName(n);
@@ -1591,7 +1591,7 @@ int countVisibleMembers(const NamespaceDef *nd)
   {
     if (lde->kind()==LayoutDocEntry::MemberDef)
     {
-      const LayoutDocEntryMemberDef *lmd = (const LayoutDocEntryMemberDef*)lde.get();
+      const LayoutDocEntryMemberDef *lmd = dynamic_cast<const LayoutDocEntryMemberDef*>(lde.get());
       MemberList *ml = nd->getMemberList(lmd->type);
       if (ml)
       {
@@ -1614,7 +1614,7 @@ static void writeNamespaceMembers(const NamespaceDef *nd,bool addToIndex)
   {
     if (lde->kind()==LayoutDocEntry::MemberDef)
     {
-      const LayoutDocEntryMemberDef *lmd = (const LayoutDocEntryMemberDef*)lde.get();
+      const LayoutDocEntryMemberDef *lmd = dynamic_cast<const LayoutDocEntryMemberDef*>(lde.get());
       MemberList *ml = nd->getMemberList(lmd->type);
       if (ml)
       {
@@ -1948,8 +1948,8 @@ static void writeAnnotatedClassList(OutputList &ol,ClassDef::CompoundType ct)
   for (const auto &cd : *Doxygen::classLinkedMap)
   {
     if (cd->getLanguage()==SrcLangExt_VHDL &&
-        ((VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::PACKAGECLASS ||
-         (VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::PACKBODYCLASS)
+        (VhdlDocGen::convert(cd->protection())==VhdlDocGen::PACKAGECLASS ||
+         VhdlDocGen::convert(cd->protection())==VhdlDocGen::PACKBODYCLASS)
        ) // no architecture
     {
       continue;
@@ -1977,7 +1977,7 @@ static void writeAnnotatedClassList(OutputList &ol,ClassDef::CompoundType ct)
       ol.startIndexKey();
       if (cd->getLanguage()==SrcLangExt_VHDL)
       {
-        QCString prot= VhdlDocGen::getProtectionName((VhdlDocGen::VhdlClasses)cd->protection());
+        QCString prot= VhdlDocGen::getProtectionName(VhdlDocGen::convert(cd->protection()));
         ol.docify(prot);
         ol.writeString(" ");
       }
@@ -2032,8 +2032,8 @@ static QCString letterToLabel(const QCString &startLetter)
     const char hex[]="0123456789abcdef";
     while ((c=*p++))
     {
-      result+=hex[((unsigned char)c)>>4];
-      result+=hex[((unsigned char)c)&0xf];
+      result+=hex[static_cast<unsigned char>(c)>>4];
+      result+=hex[static_cast<unsigned char>(c)&0xf];
     }
   }
   return result;
@@ -2079,7 +2079,7 @@ static void writeAlphabeticalClassList(OutputList &ol, ClassDef::CompoundType ct
       continue;
     if (cd->isLinkableInProject() && cd->templateMaster()==0)
     {
-      if (cd->getLanguage()==SrcLangExt_VHDL && !((VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::ENTITYCLASS ))// no architecture
+      if (cd->getLanguage()==SrcLangExt_VHDL && !(VhdlDocGen::convert(cd->protection())==VhdlDocGen::ENTITYCLASS ))// no architecture
         continue;
 
       // get the first UTF8 character (after the part that should be ignored)
@@ -2116,7 +2116,7 @@ static void writeAlphabeticalClassList(OutputList &ol, ClassDef::CompoundType ct
   {
     if (sliceOpt && cd->compoundType() != ct)
       continue;
-    if (cd->getLanguage()==SrcLangExt_VHDL && !((VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::ENTITYCLASS ))// no architecture
+    if (cd->getLanguage()==SrcLangExt_VHDL && !(VhdlDocGen::convert(cd->protection())==VhdlDocGen::ENTITYCLASS ))// no architecture
       continue;
 
     if (cd->isLinkableInProject() && cd->templateMaster()==0)
@@ -2539,7 +2539,7 @@ static void writeMemberList(OutputList &ol,bool useSections,const std::string &p
                             const MemberIndexMap &memberIndexMap,
                             Definition::DefType type)
 {
-  int index = (int)type;
+  int index = static_cast<int>(type);
   ASSERT(index<3);
 
   typedef void (*writeLinkForMember_t)(OutputList &ol,const MemberDef *md,const QCString &separator,
@@ -2592,8 +2592,8 @@ static void writeMemberList(OutputList &ol,bool useSections,const std::string &p
           if (!firstItem)    ol.endItemListItem();
           if (!firstSection) ol.endItemList();
           QCString cs = letterToLabel(letter.c_str());
-          QCString anchor=(QCString)"index_"+convertToId(cs);
-          QCString title=(QCString)"- "+letter.c_str()+" -";
+          QCString anchor=QCString("index_")+convertToId(cs);
+          QCString title=QCString("- ")+letter.c_str()+" -";
           ol.startSection(anchor,title,SectionType::Subsection);
           ol.docify(title);
           ol.endSection(anchor,SectionType::Subsection);
@@ -2974,7 +2974,7 @@ static void writeClassMemberIndexFiltered(OutputList &ol, ClassMemberHighlight h
   QCString extension=Doxygen::htmlFileExtension;
   LayoutNavEntry *lne = LayoutDocManager::instance().rootNavEntry()->find(LayoutNavEntry::ClassMembers);
   QCString title = lne ? lne->title() : theTranslator->trCompoundMembers();
-  if (hl!=CMHL_All) title+=(QCString)" - "+getCmhlInfo(hl)->title;
+  if (hl!=CMHL_All) title+=QCString(" - ")+getCmhlInfo(hl)->title;
   bool addToIndex = lne==0 || lne->visible();
 
   if (addToIndex)
@@ -3806,7 +3806,7 @@ static void writeGroupTreeNode(OutputList &ol, const GroupDef *gd, int level, FT
     {
       if (lde->kind()==LayoutDocEntry::MemberDef && addToIndex)
       {
-        const LayoutDocEntryMemberDef *lmd = (const LayoutDocEntryMemberDef*)lde.get();
+        const LayoutDocEntryMemberDef *lmd = dynamic_cast<const LayoutDocEntryMemberDef*>(lde.get());
         MemberList *ml = gd->getMemberList(lmd->type);
         if (ml)
         {
@@ -4690,7 +4690,7 @@ static void writeIndexHierarchyEntries(OutputList &ol,const LayoutNavEntryList &
   for (const auto &lne : entries)
   {
     LayoutNavEntry::Kind kind = lne->kind();
-    uint index = (uint)kind;
+    size_t index = static_cast<size_t>(kind);
     if (index>=indexWritten.size())
     {
       size_t i;

@@ -23,7 +23,7 @@
 <image type="html" name="https://raster.shields.io/badge/license-MIT-brightgreen.png"/>
 </para>
       <para>Inline SVG image with caption:<linebreak/>
-This image is inline <image type="html" name="https://raster.shields.io/badge/license-MIT-brightgreen.svg" inline="yes">MIT license</image>
+This image is inline<image type="html" name="https://raster.shields.io/badge/license-MIT-brightgreen.svg" inline="yes">MIT license</image>
  within the text.</para>
       <para>Inline PNG image with caption:<linebreak/>
 This image is inline <image type="html" name="https://raster.shields.io/badge/license-MIT-brightgreen.png" inline="yes">MIT license</image>

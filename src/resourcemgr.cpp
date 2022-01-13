@@ -105,7 +105,7 @@ bool ResourceMgr::copyResourceAs(const QCString &name,const QCString &targetDir,
         {
           QCString n = name;
           n = n.left(n.length()-4)+".png"; // replace .lum by .png
-          uchar *data = (uchar*)res->data;
+          const uchar *data = res->data;
           ushort width   = (data[0]<<8)+data[1];
           ushort height  = (data[2]<<8)+data[3];
           ColoredImgDataItem images[2];
@@ -123,7 +123,7 @@ bool ResourceMgr::copyResourceAs(const QCString &name,const QCString &targetDir,
         {
           QCString n = name;
           n = n.left(n.length()-5)+".png"; // replace .luma by .png
-          uchar *data = (uchar*)res->data;
+          const uchar *data = res->data;
           ushort width   = (data[0]<<8)+data[1];
           ushort height  = (data[2]<<8)+data[3];
           ColoredImgDataItem images[2];

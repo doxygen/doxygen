@@ -165,6 +165,7 @@ QCString              Doxygen::spaces;
 bool                  Doxygen::generatingXmlOutput = FALSE;
 DefinesPerFileList    Doxygen::macroDefinitions;
 bool                  Doxygen::clangAssistedParsing = FALSE;
+QCString              Doxygen::verifiedDotPath;
 
 // locally accessible globals
 static std::multimap< std::string, const Entry* > g_classEntries;
@@ -308,15 +309,7 @@ static void addRelatedPage(Entry *root)
     if (!g.groupname.isEmpty() && (gd=Doxygen::groupLinkedMap->find(g.groupname))) break;
   }
   //printf("---> addRelatedPage() %s gd=%p\n",qPrint(root->name),gd);
-  QCString doc;
-  if (root->brief.isEmpty())
-  {
-    doc=root->doc+root->inbodyDocs;
-  }
-  else
-  {
-    doc=root->brief+"\n\n"+root->doc+root->inbodyDocs;
-  }
+  QCString doc=root->doc+root->inbodyDocs;
 
   PageDef *pd = addRelatedPage(root->name,root->args,doc,
       root->docFile,
@@ -1244,6 +1237,7 @@ static void addConceptToContext(const Entry *root)
       cd->setLanguage(root->lang);
       cd->setId(root->id);
       cd->setHidden(root->hidden);
+      cd->setGroupId(root->mGrpId);
       if (tArgList)
       {
         cd->setTemplateArguments(*tArgList);
@@ -1305,6 +1299,37 @@ static void buildConceptDocList(const Entry *root)
     addConceptToContext(root);
   }
   for (const auto &e : root->children()) buildConceptDocList(e.get());
+}
+
+// This routine is to allow @ingroup X @{ concept A; concept B; @} to work
+// (same also works for variable and functions because of logic in MemberGroup::insertMember)
+static void distributeConceptGroups()
+{
+  for (const auto &cd : *Doxygen::conceptLinkedMap)
+  {
+    if (cd->groupId()!=DOX_NOGROUP)
+    {
+      for (const auto &ocd : *Doxygen::conceptLinkedMap)
+      {
+        if (cd!=ocd && cd->groupId()==ocd->groupId() &&
+            !cd->partOfGroups().empty() && ocd->partOfGroups().empty())
+        {
+          ConceptDefMutable *ocdm = toConceptDefMutable(ocd.get());
+          if (ocdm)
+          {
+            for (const auto &gd : cd->partOfGroups())
+            {
+              if (gd)
+              {
+                ocdm->makePartOfGroup(gd);
+                const_cast<GroupDef*>(gd)->addConcept(ocd.get());
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }
 
 //----------------------------------------------------------------------
@@ -2623,9 +2648,9 @@ static int findFunctionPtr(const std::string &type,SrcLangExt lang, int *pLength
       !(bb<i && i<be) // bug665855: avoid treating "typedef A<void (T*)> type" as a function pointer
      )
   {
-    if (pLength) *pLength=(int)l;
+    if (pLength) *pLength=static_cast<int>(l);
     //printf("findFunctionPtr=%d\n",(int)i);
-    return (int)i;
+    return static_cast<int>(i);
   }
   else
   {
@@ -3612,6 +3637,11 @@ static void buildFunctionList(const Entry *root)
                   sameRequiresClause = FALSE;
                 }
               }
+              else if (!mdTempl.empty() || !root->tArgLists.empty())
+              { // if one has template parameters and the other doesn't then that also counts as a
+                // difference
+                sameNumTemplateArgs = FALSE;
+              }
 
               bool staticsInDifferentFiles =
                 root->stat && md->isStatic() && root->fileName!=md->getDefFileName();
@@ -4101,7 +4131,7 @@ static void findUsedClassesForClass(const Entry *root,
           }
           // add any template arguments to the class
           QCString usedName = removeRedundantWhiteSpace(usedClassName+templSpec);
-          //printf("    usedName=%s\n",qPrint(usedName));
+          //printf("    usedName=%s usedClassName=%s templSpec=%s\n",qPrint(usedName),qPrint(usedClassName),qPrint(templSpec));
 
           TemplateNameMap formTemplateNames;
           if (templateNames.empty())
@@ -4958,10 +4988,10 @@ static void computeTemplateClassRelations()
               TemplateNameMap actualTemplateNames;
               for (const auto &tn_kv : templateNames)
               {
-                int templIndex = tn_kv.second;
+                size_t templIndex = tn_kv.second;
                 Argument actArg;
                 bool hasActArg=FALSE;
-                if (templIndex<(int)templArgs->size())
+                if (templIndex<templArgs->size())
                 {
                   actArg=templArgs->at(templIndex);
                   hasActArg=TRUE;
@@ -4971,7 +5001,7 @@ static void computeTemplateClassRelations()
                     actualTemplateNames.find(actArg.type.str())==actualTemplateNames.end()
                    )
                 {
-                  actualTemplateNames.insert(std::make_pair(actArg.type.str(),templIndex));
+                  actualTemplateNames.insert(std::make_pair(actArg.type.str(),static_cast<int>(templIndex)));
                 }
               }
 
@@ -5114,7 +5144,7 @@ static void addMemberDocs(const Entry *root,
 {
   if (md==0) return;
   //printf("addMemberDocs: '%s'::'%s' '%s' funcDecl='%s' mSpec=%lld\n",
-  //     qPrint(root->parent()->name),qPrint(md->name()),md->argsString(),funcDecl,spec);
+  //     qPrint(root->parent()->name),qPrint(md->name()),qPrint(md->argsString()),qPrint(funcDecl),spec);
   QCString fDecl=funcDecl;
   // strip extern specifier
   fDecl.stripPrefix("extern ");
@@ -6642,7 +6672,7 @@ static void findMember(const Entry *root,
               root->fileName,root->startLine,root->startColumn,
               funcType,funcName,funcArgs,exceptions,
               root->protection,root->virt,
-              root->stat && !isMemberOf,
+              root->stat,
               isMemberOf ? Foreign : Related,
               mtype,
               (!root->tArgLists.empty() ? root->tArgLists.back() : ArgumentList()),
@@ -7828,7 +7858,7 @@ static void computeMemberRelations()
                    bmd->getLanguage()==SrcLangExt_Python || bmd->getLanguage()==SrcLangExt_Java || bmd->getLanguage()==SrcLangExt_PHP ||
                    bmcd->compoundType()==ClassDef::Interface || bmcd->compoundType()==ClassDef::Protocol
                   ) &&
-                  md->isFunction() &&
+                  (md->isFunction() || md->isCSharpProperty()) &&
                   mcd->isLinkable() &&
                   bmcd->isLinkable() &&
                   mcd->isBaseClass(bmcd,TRUE))
@@ -9358,6 +9388,7 @@ static void generateExampleDocs()
                          pd->docLine(),                            // startLine
                          pd.get(),                                 // context
                          0,                                        // memberDef
+                         (pd->briefDescription().isEmpty()?"":pd->briefDescription()+"\n\n")+
                          pd->documentation()+"\n\n\\include"+lineNoOptStr+" "+pd->name(), // docs
                          TRUE,                                     // index words
                          TRUE,                                     // is example
@@ -9529,6 +9560,38 @@ static QCString fixSlashes(QCString &s)
 }
 #endif
 
+//----------------------------------------------------------------------------
+
+static void computeVerifiedDotPath()
+{
+  // check dot path
+  QCString dotPath = Config_getString(DOT_PATH);
+  if (!dotPath.isEmpty())
+  {
+    FileInfo fi(dotPath.str());
+    if (!(fi.exists() && fi.isFile()) )// not an existing user specified path + exec
+    {
+      dotPath = dotPath+"/dot"+Portable::commandExtension();
+      FileInfo dp(dotPath.str());
+      if (!dp.exists() || !dp.isFile())
+      {
+        warn_uncond("the dot tool could not be found as '%s'\n",qPrint(dotPath));
+        dotPath = "dot";
+        dotPath += Portable::commandExtension();
+      }
+    }
+#if defined(_WIN32) // convert slashes
+    uint i=0,l=dotPath.length();
+    for (i=0;i<l;i++) if (dotPath.at(i)=='/') dotPath.at(i)='\\';
+#endif
+  }
+  else
+  {
+    dotPath = "dot";
+    dotPath += Portable::commandExtension();
+  }
+  Doxygen::verifiedDotPath = dotPath;
+}
 
 //----------------------------------------------------------------------------
 
@@ -9848,7 +9911,7 @@ static std::shared_ptr<Entry> parseFile(OutlineParserInterface &parser,
   }
 
   FileInfo fi(fileName.str());
-  BufStr preBuf((uint)fi.size()+4096);
+  BufStr preBuf(fi.size()+4096);
 
   if (Config_getBool(ENABLE_PREPROCESSING) &&
       parser.needsPreprocessing(extension))
@@ -9860,7 +9923,7 @@ static std::shared_ptr<Entry> parseFile(OutlineParserInterface &parser,
       std::string absPath = FileInfo(s).absFilePath();
       preprocessor.addSearchDir(absPath.c_str());
     }
-    BufStr inBuf((uint)fi.size()+4096);
+    BufStr inBuf(fi.size()+4096);
     msg("Preprocessing %s...\n",qPrint(fn));
     readInputFile(fileName,inBuf);
     preprocessor.processFile(fileName,inBuf,preBuf);
@@ -10127,7 +10190,7 @@ static std::string resolveSymlink(const std::string &path)
   QCString oldPrefix = "/";
   do
   {
-#ifdef WIN32
+#if defined(_WIN32)
     // UNC path, skip server and share name
     if (sepPos==0 && (result.left(2)=="//" || result.left(2)=="\\\\"))
       sepPos = result.find('/',2);
@@ -10555,7 +10618,7 @@ static void usage(const QCString &name,const QCString &versionString)
   msg("4) Use doxygen to generate a template file controlling the layout of the\n");
   msg("   generated documentation:\n");
   msg("    %s -l [layoutFileName]\n\n",qPrint(name));
-  msg("    In case layoutFileName is omitted layoutFileName.xml will be used as filename.\n");
+  msg("    In case layoutFileName is omitted DoxygenLayout.xml will be used as filename.\n");
   msg("    If - is used for layoutFileName doxygen will write to standard output.\n\n");
   msg("5) Use doxygen to generate a template style sheet file for RTF, HTML or Latex.\n");
   msg("    RTF:        %s -w rtf styleSheetFile\n",qPrint(name));
@@ -10909,7 +10972,7 @@ void readConfiguration(int argc, char **argv)
           }
           Config::postProcess(TRUE);
           Config::updateObsolete();
-          Config::checkAndCorrect(Config_getBool(QUIET));
+          Config::checkAndCorrect(Config_getBool(QUIET), false);
 
           setTranslator(Config_getEnum(OUTPUT_LANGUAGE));
 
@@ -10955,7 +11018,7 @@ void readConfiguration(int argc, char **argv)
           }
           Config::postProcess(TRUE);
           Config::updateObsolete();
-          Config::checkAndCorrect(Config_getBool(QUIET));
+          Config::checkAndCorrect(Config_getBool(QUIET), false);
 
           setTranslator(Config_getEnum(OUTPUT_LANGUAGE));
 
@@ -11145,7 +11208,7 @@ void checkConfiguration()
 
   Config::postProcess(FALSE);
   Config::updateObsolete();
-  Config::checkAndCorrect(Config_getBool(QUIET));
+  Config::checkAndCorrect(Config_getBool(QUIET), true);
   initWarningFormat();
 }
 
@@ -11563,6 +11626,8 @@ void parseInput()
   Doxygen::clangAssistedParsing = Config_getBool(CLANG_ASSISTED_PARSING);
 #endif
 
+  computeVerifiedDotPath();
+
   // we would like to show the versionString earlier, but we first have to handle the configuration file
   // to know the value of the QUIET setting.
   QCString versionString = getFullVersion();
@@ -11865,6 +11930,7 @@ void parseInput()
 
   g_s.begin("Associating documentation with concepts...\n");
   buildConceptDocList(root.get());
+  distributeConceptGroups();
   g_s.end();
 
   g_s.begin("Building example list...\n");
@@ -12515,7 +12581,7 @@ void generateOutput()
   if (Debug::isFlagSet(Debug::Time))
   {
     msg("Total elapsed time: %.6f seconds\n(of which %.6f seconds waiting for external tools to finish)\n",
-         ((double)Debug::elapsedTime()),
+         (static_cast<double>(Debug::elapsedTime())),
          Portable::getSysElapsedTime()
         );
     g_s.print();

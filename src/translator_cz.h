@@ -558,9 +558,9 @@ class TranslatorCzech : public Translator
      */
     virtual QCString trGeneratedAt(const QCString &date,const QCString &projName)
     {
-      QCString result=(QCString)"Vygenerováno dne: "+date;
+      QCString result="Vygenerováno dne: "+date;
       if (!projName.isEmpty()) result += QCString(", pro projekt: ") + projName;
-      result+=(QCString)", programem";
+      result+=", programem";
       return result;
     }
 
@@ -819,7 +819,7 @@ class TranslatorCzech : public Translator
     virtual QCString trGeneratedFromFiles(ClassDef::CompoundType compType,
         bool single)
     { // single is true implies a single file
-      QCString result=(QCString)"Dokumentace pro ";
+      QCString result="Dokumentace pro ";
       switch(compType)
       {
         case ClassDef::Class:      result+="tuto třídu"; break;
@@ -885,12 +885,12 @@ class TranslatorCzech : public Translator
     /*! this text is put before a collaboration diagram */
     virtual QCString trCollaborationDiagram(const QCString &clName)
     {
-      return (QCString)"Diagram pro "+clName+":";
+      return "Diagram pro "+clName+":";
     }
     /*! this text is put before an include dependency graph */
     virtual QCString trInclDepGraph(const QCString &fName)
     {
-      return (QCString)"Graf závislostí na vkládaných souborech pro "+fName+":";
+      return "Graf závislostí na vkládaných souborech pro "+fName+":";
     }
     /*! header that is put before the list of constructor/destructors. */
     virtual QCString trConstructorDocumentation()
@@ -1790,7 +1790,7 @@ class TranslatorCzech : public Translator
         bool single)
     {
       // single is true implies a single file
-      QCString result=(QCString)"Dokumentace ";
+      QCString result="Dokumentace ";
       switch(compType)
       {
         case ClassDef::Class:      result+="k tomuto modulu"; break;
@@ -1880,7 +1880,7 @@ class TranslatorCzech : public Translator
      */
     virtual QCString trFileIn(const QCString &name)
     {
-      return (QCString)"Soubor v "+name;
+      return "Soubor v "+name;
     }
 
     /*! when clicking a directory dependency label, a page with a
@@ -1889,7 +1889,7 @@ class TranslatorCzech : public Translator
      */
     virtual QCString trIncludesFileIn(const QCString &name)
     {
-      return (QCString)"Vkládá (include) soubor z "+name;
+      return "Vkládá (include) soubor z "+name;
     }
 
     /** Compiles a date string.

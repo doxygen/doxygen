@@ -40,6 +40,13 @@
 #include "containers.h"
 #include "debug.h"
 
+// set to 1 for debugging
+#define DUMP_OUTPUT 0
+
+// ----------------- private part -----------------------------------------------
+
+namespace {
+
 /** Information about an linkable anchor */
 class TagAnchorInfo
 {
@@ -105,7 +112,7 @@ class TagCompoundInfo
     QCString name;
     QCString filename;
     std::vector<TagAnchorInfo> docAnchors;
-    int lineNr;
+    int lineNr = 0;
   private:
     CompoundType m_type;
 };
@@ -985,6 +992,7 @@ void TagFileParser::startCompound( const XMLHandlers::Attributes& attrib )
   }
 }
 
+#if DUMP_OUTPUT
 /*! Dumps the internal structures. For debugging only! */
 void TagFileParser::dump()
 {
@@ -1156,6 +1164,7 @@ void TagFileParser::dump()
     }
   }
 }
+#endif
 
 void TagFileParser::addDocAnchors(const std::shared_ptr<Entry> &e,const std::vector<TagAnchorInfo> &l)
 {
@@ -1563,6 +1572,10 @@ void TagFileParser::addIncludes()
   }
 }
 
+} // namespace
+
+// ----------------- public part -----------------------------------------------
+
 void parseTagFile(const std::shared_ptr<Entry> &root,const char *fullName)
 {
   TagFileParser tagFileParser(fullName);
@@ -1579,5 +1592,7 @@ void parseTagFile(const std::shared_ptr<Entry> &root,const char *fullName)
   parser.parse(fullName,inputStr.data(),Debug::isFlagSet(Debug::Lex));
   tagFileParser.buildLists(root);
   tagFileParser.addIncludes();
-  //tagFileParser.dump();
+#if DUMP_OUTPUT
+  tagFileParser.dump();
+#endif
 }

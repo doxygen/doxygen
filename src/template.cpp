@@ -238,20 +238,20 @@ class TemplateListGenericConstIterator : public TemplateListIntf::ConstIterator
     }
     virtual void toLast()
     {
-      uint count = m_list.count();
+      int count = static_cast<int>(m_list.count());
       m_index = count>0 ? count-1 : 0;
     }
     virtual void toNext()
     {
-      if (m_index<m_list.count()) { m_index++; }
+      if (m_index<static_cast<int>(m_list.count())) { m_index++; }
     }
     virtual void toPrev()
     {
-      if (m_index>0) { --m_index; }
+      if (m_index>=0) { --m_index; }
     }
     virtual bool current(TemplateVariant &v) const
     {
-      if (m_index<m_list.count())
+      if (m_index>=0 && m_index<static_cast<int>(m_list.count()))
       {
         v = m_list.at(m_index);
         return TRUE;
@@ -264,7 +264,7 @@ class TemplateListGenericConstIterator : public TemplateListIntf::ConstIterator
     }
   private:
     const List &m_list;
-    size_t m_index = 0;
+    int m_index = 0;
 };
 
 //-------------------------------------------------------------------------------
@@ -274,13 +274,13 @@ class TemplateList : public TemplateListIntf
 {
   public:
     // TemplateListIntf methods
-    virtual uint count() const
+    virtual size_t count() const
     {
-      return static_cast<uint>(m_elems.size());
+      return m_elems.size();
     }
-    virtual TemplateVariant at(uint index) const
+    virtual TemplateVariant at(size_t index) const
     {
-      return index < m_elems.size() ?  m_elems[index] : TemplateVariant();
+      return index < m_elems.size() ?  m_elems[static_cast<int>(index)] : TemplateVariant();
     }
     virtual TemplateListIntf::ConstIteratorPtr createIterator() const
     {
@@ -299,7 +299,7 @@ class TemplateList : public TemplateListIntf
       m_elems.push_back(v);
     }
 
-    void removeAt(uint index)
+    void removeAt(size_t index)
     {
       if (index<m_elems.size())
       {
@@ -307,7 +307,7 @@ class TemplateList : public TemplateListIntf
       }
     }
 
-    void insertAt(uint index,TemplateListPtr list)
+    void insertAt(size_t index,TemplateListPtr list)
     {
       auto it = m_elems.begin()+index;
       m_elems.insert(it,list->m_elems.begin(),list->m_elems.end());
@@ -389,7 +389,7 @@ int TemplateVariant::toInt() const
     case Type::Int:        return m_variant.get<static_cast<uint8_t>(Type::Int)>();
     case Type::String:     return !m_variant.get<static_cast<uint8_t>(Type::String)>().toInt();
     case Type::Struct:     return 0;
-    case Type::List:       return m_variant.get<static_cast<uint8_t>(Type::List)>()->count();
+    case Type::List:       return static_cast<int>(m_variant.get<static_cast<uint8_t>(Type::List)>()->count());
     case Type::Function:   return 0;
     case Type::WeakStruct: return 0;
   }
@@ -525,19 +525,19 @@ TemplateImmutableList::~TemplateImmutableList()
 {
 }
 
-uint TemplateImmutableList::count() const
+size_t TemplateImmutableList::count() const
 {
-  return static_cast<uint>(p->elems.size());
+  return p->elems.size();
 }
 
 TemplateListIntf::ConstIteratorPtr TemplateImmutableList::createIterator() const
-      {
-  return std::make_unique< TemplateListGenericConstIterator<TemplateImmutableList> >(*this);
-      }
-
-TemplateVariant TemplateImmutableList::at(uint index) const
 {
-  return index<p->elems.size() ? p->elems[index] : TemplateVariant();
+  return std::make_unique< TemplateListGenericConstIterator<TemplateImmutableList> >(*this);
+}
+
+TemplateVariant TemplateImmutableList::at(size_t index) const
+{
+  return index<p->elems.size() ? p->elems[static_cast<int>(index)] : TemplateVariant();
 }
 
 TemplateListIntfPtr TemplateImmutableList::alloc(std::initializer_list<TemplateVariant> elements)
@@ -973,11 +973,11 @@ class FilterLength
       }
       if (v.isList())
       {
-        return TemplateVariant((int)v.toList()->count());
+        return TemplateVariant(v.toList()->count());
       }
       else if (v.isString())
       {
-        return TemplateVariant((int)v.toString().length());
+        return TemplateVariant(v.toString().length());
       }
       else
       {
@@ -1303,8 +1303,8 @@ class FilterAlphaIndex
         const char hex[]="0123456789abcdef";
         while ((c=*p++))
         {
-          result+=hex[((unsigned char)c)>>4];
-          result+=hex[((unsigned char)c)&0xf];
+          result+=hex[static_cast<unsigned char>(c)>>4];
+          result+=hex[static_cast<unsigned char>(c)&0xf];
         }
       }
       //printf("<keyToLabel(%s)\n",qPrint(result));
@@ -2575,7 +2575,7 @@ TemplateContextImpl::TemplateContextImpl(const TemplateEngine *e)
   : m_engine(e), m_indices(TemplateStruct::alloc())
 {
   //printf("%p:TemplateContextImpl::TemplateContextImpl()\n",(void*)this);
-  m_fromUtf8 = (void*)(-1);
+  m_fromUtf8 = reinterpret_cast<void*>(-1);
   push();
   set("index",std::static_pointer_cast<TemplateStructIntf>(m_indices));
 }
@@ -2589,16 +2589,16 @@ TemplateContextImpl::~TemplateContextImpl()
 void TemplateContextImpl::setEncoding(const QCString &templateName,int line,const QCString &enc)
 {
   if (enc==m_encoding) return; // nothing changed
-  if (m_fromUtf8!=(void *)(-1))
+  if (m_fromUtf8!=reinterpret_cast<void *>(-1))
   {
     portable_iconv_close(m_fromUtf8);
-    m_fromUtf8 = (void*)(-1);
+    m_fromUtf8 = reinterpret_cast<void*>(-1);
   }
   m_encoding=enc;
   if (!enc.isEmpty())
   {
     m_fromUtf8 = portable_iconv_open(enc.data(),"UTF-8");
-    if (m_fromUtf8==(void*)(-1))
+    if (m_fromUtf8==reinterpret_cast<void*>(-1))
     {
       warn(templateName,line,"unsupported character conversion: '%s'->'UTF-8'\n", qPrint(enc));
     }
@@ -2609,8 +2609,8 @@ void TemplateContextImpl::setEncoding(const QCString &templateName,int line,cons
 QCString TemplateContextImpl::recode(const QCString &s)
 {
   //printf("TemplateContextImpl::recode(%s)\n",qPrint(s));
-  int iSize        = s.length();
-  int oSize        = iSize*4+1;
+  size_t iSize     = s.length();
+  size_t oSize     = iSize*4+1;
   QCString output(oSize);
   size_t iLeft     = iSize;
   size_t oLeft     = oSize;
@@ -2618,7 +2618,7 @@ QCString TemplateContextImpl::recode(const QCString &s)
   char *oPtr       = output.rawData();
   if (!portable_iconv(m_fromUtf8,&iPtr,&iLeft,&oPtr,&oLeft))
   {
-    oSize -= (int)oLeft;
+    oSize -= oLeft;
     output.resize(oSize+1);
     output.at(oSize)='\0';
     return output;
@@ -3219,10 +3219,10 @@ class TemplateNodeRepeat : public TemplateNodeCreator<TemplateNodeRepeat>
         for (i=0;i<n;i++)
         {
           TemplateStructPtr s = TemplateStruct::alloc();
-          s->set("counter0",    (int)i);
-          s->set("counter",     (int)(i+1));
-          s->set("revcounter",  (int)(n-i));
-          s->set("revcounter0", (int)(n-i-1));
+          s->set("counter0",    i);
+          s->set("counter",     i+1);
+          s->set("revcounter",  n-i);
+          s->set("revcounter0", n-i-1);
           s->set("first",i==0);
           s->set("last", i==n-1);
           c->set("repeatloop",std::static_pointer_cast<TemplateStructIntf>(s));
@@ -3326,27 +3326,27 @@ class TemplateNodeRange : public TemplateNodeCreator<TemplateNodeRange>
         TemplateVariant ve = m_endExpr->resolve(c);
         if (vs.isInt() && ve.isInt())
         {
-          int s = vs.toInt();
-          int e = ve.toInt();
-          int l = m_down ? s-e+1 : e-s+1;
+          size_t s = vs.toInt();
+          size_t e = ve.toInt();
+          size_t l = m_down ? s-e+1 : e-s+1;
           if (l>0)
           {
             c->push();
             //int index = m_reversed ? list.count() : 0;
             const TemplateVariant *parentLoop = c->getRef("forloop");
-            uint index = 0;
-            int i = m_down ? e : s;
+            size_t index = 0;
+            size_t i = m_down ? e : s;
             bool done=false;
             while (!done)
             {
               // set the forloop meta-data variable
               TemplateStructPtr ls = TemplateStruct::alloc();
-              ls->set("counter0",    (int)index);
-              ls->set("counter",     (int)(index+1));
-              ls->set("revcounter",  (int)(l-index));
-              ls->set("revcounter0", (int)(l-index-1));
-              ls->set("first",index==0);
-              ls->set("last", (int)index==l-1);
+              ls->set("counter0",    index);
+              ls->set("counter",     (index+1));
+              ls->set("revcounter",  (l-index));
+              ls->set("revcounter0", (l-index-1));
+              ls->set("first",       index==0);
+              ls->set("last",        index==l-1);
               ls->set("parentloop",parentLoop ? *parentLoop : TemplateVariant());
               c->set("forloop",std::static_pointer_cast<TemplateStructIntf>(ls));
 
@@ -3483,7 +3483,7 @@ class TemplateNodeFor : public TemplateNodeCreator<TemplateNodeFor>
         const TemplateListIntfPtr list = v.toList();
         if (list)
         {
-          uint listSize = list->count();
+          size_t listSize = list->count();
           if (listSize==0) // empty for loop
           {
             m_emptyNodes.render(ts,c);
@@ -3493,7 +3493,7 @@ class TemplateNodeFor : public TemplateNodeCreator<TemplateNodeFor>
           //int index = m_reversed ? list.count() : 0;
           //TemplateVariant v;
           const TemplateVariant *parentLoop = c->getRef("forloop");
-          uint index = m_reversed ? listSize-1 : 0;
+          size_t index = m_reversed ? listSize-1 : 0;
           TemplateListIntf::ConstIteratorPtr it = list->createIterator();
           TemplateVariant ve;
           for (m_reversed ? it->toLast() : it->toFirst();
@@ -3501,12 +3501,12 @@ class TemplateNodeFor : public TemplateNodeCreator<TemplateNodeFor>
               m_reversed ? it->toPrev() : it->toNext())
           {
             TemplateStructPtr s = TemplateStruct::alloc();
-            s->set("counter0",    (int)index);
-            s->set("counter",     (int)(index+1));
-            s->set("revcounter",  (int)(listSize-index));
-            s->set("revcounter0", (int)(listSize-index-1));
-            s->set("first",index==0);
-            s->set("last", index==listSize-1);
+            s->set("counter0",    index);
+            s->set("counter",     index+1);
+            s->set("revcounter",  listSize-index);
+            s->set("revcounter0", listSize-index-1);
+            s->set("first",       index==0);
+            s->set("last",        index==listSize-1);
             s->set("parentloop",parentLoop ? *parentLoop : TemplateVariant());
             c->set("forloop",std::static_pointer_cast<TemplateStructIntf>(s));
 
@@ -4461,7 +4461,7 @@ class TemplateNodeMarkers : public TemplateNodeCreator<TemplateNodeMarkers>
               if (i==entryIndex) // found element
               {
                 TemplateStructPtr s = TemplateStruct::alloc();
-                s->set("id",(int)i);
+                s->set("id",i);
                 c->set("markers",std::static_pointer_cast<TemplateStructIntf>(s));
                 c->set(m_var,var); // define local variable to hold element of list type
                 bool wasSpaceless = ci->spacelessEnabled();
@@ -5265,7 +5265,7 @@ class TemplateEngine::Private
         if (f.is_open()) // read template from disk
         {
           FileInfo fi(filePath.str());
-          int size=(int)fi.size();
+          size_t size=fi.size();
           QCString data(size+1);
           f.read(data.rawData(),size);
           if (!f.fail())

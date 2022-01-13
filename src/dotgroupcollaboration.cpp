@@ -298,12 +298,12 @@ void DotGroupCollaboration::Edge::write( TextStream &t ) const
   }
   switch( eType )
   {
-  case thierarchy:
-    arrowStyle = "dir=\"back\", style=\"solid\"";
-    break;
-  default:
-    t << ", color=\"" << linkTypeColor[(int)eType] << "\"";
-    break;
+    case thierarchy:
+      arrowStyle = "dir=\"back\", style=\"solid\"";
+      break;
+    default:
+      t << ", color=\"" << linkTypeColor[static_cast<int>(eType)] << "\"";
+      break;
   }
   t << ", " << arrowStyle;
   t << "];\n";

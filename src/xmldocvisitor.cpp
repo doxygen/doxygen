@@ -225,6 +225,9 @@ void XmlDocVisitor::visit(DocStyleChange *s)
     case DocStyleChange::Small:
       if (s->enable()) m_t << "<small>";  else m_t << "</small>";
       break;
+    case DocStyleChange::Cite:
+      if (s->enable()) m_t << "<cite>";  else m_t << "</cite>";
+      break;
     case DocStyleChange::Preformatted:
       if (s->enable())
       {
@@ -239,6 +242,12 @@ void XmlDocVisitor::visit(DocStyleChange *s)
       break;
     case DocStyleChange::Div:  /* HTML only */ break;
     case DocStyleChange::Span: /* HTML only */ break;
+    case DocStyleChange::Details:
+      if (s->enable()) m_t << "<details>";  else m_t << "</details>";
+      break;
+    case DocStyleChange::Summary:
+      if (s->enable()) m_t << "<summary>";  else m_t << "</summary>";
+      break;
   }
 }
 
@@ -262,6 +271,16 @@ void XmlDocVisitor::visit(DocVerbatim *s)
       getCodeParser(lang).parseCode(m_ci,s->context(),s->text(),langExt,
                                     s->isExample(),s->exampleFile());
       m_t << "</programlisting>";
+      break;
+    case DocVerbatim::JavaDocLiteral:
+      m_t << "<javadocliteral>";
+      filter(s->text());
+      m_t << "</javadocliteral>";
+      break;
+    case DocVerbatim::JavaDocCode:
+      m_t << "<javadoccode>";
+      filter(s->text());
+      m_t << "</javadoccode>";
       break;
     case DocVerbatim::Verbatim:
       m_t << "<verbatim>";
@@ -531,8 +550,8 @@ void XmlDocVisitor::visit(DocSimpleSectSep *sep)
 {
   if (sep->parent() && sep->parent()->kind()==DocNode::Kind_SimpleSect)
   {
-    visitPost((DocSimpleSect*)sep->parent()); // end current section
-    visitPre((DocSimpleSect*)sep->parent());  // start new section
+    visitPost(dynamic_cast<DocSimpleSect*>(sep->parent())); // end current section
+    visitPre(dynamic_cast<DocSimpleSect*>(sep->parent()));  // start new section
   }
 }
 
@@ -795,8 +814,8 @@ void XmlDocVisitor::visitPost(DocHtmlDescData *)
 void XmlDocVisitor::visitPre(DocHtmlTable *t)
 {
   if (m_hide) return;
-  m_t << "<table rows=\"" << (uint)t->numRows()
-      << "\" cols=\"" << (uint)t->numColumns() << "\"" ;
+  m_t << "<table rows=\"" << t->numRows()
+      << "\" cols=\"" << t->numColumns() << "\"" ;
   for (const auto &opt : t->attribs())
   {
     if (opt.name=="width")
@@ -980,7 +999,8 @@ void XmlDocVisitor::visitPost(DocImage *)
 void XmlDocVisitor::visitPre(DocDotFile *df)
 {
   if (m_hide) return;
-  visitPreStart(m_t, "dotfile", FALSE, this, df->children(), df->file(), FALSE, DocImage::Html, df->width(), df->height());
+  copyFile(df->file(),Config_getString(XML_OUTPUT)+"/"+stripPath(df->file()));
+  visitPreStart(m_t, "dotfile", FALSE, this, df->children(), stripPath(df->file()), FALSE, DocImage::Html, df->width(), df->height());
 }
 
 void XmlDocVisitor::visitPost(DocDotFile *)
@@ -992,7 +1012,8 @@ void XmlDocVisitor::visitPost(DocDotFile *)
 void XmlDocVisitor::visitPre(DocMscFile *df)
 {
   if (m_hide) return;
-  visitPreStart(m_t, "mscfile", FALSE, this, df->children(), df->file(), FALSE, DocImage::Html, df->width(), df->height());
+  copyFile(df->file(),Config_getString(XML_OUTPUT)+"/"+stripPath(df->file()));
+  visitPreStart(m_t, "mscfile", FALSE, this, df->children(), stripPath(df->file()), FALSE, DocImage::Html, df->width(), df->height());
 }
 
 void XmlDocVisitor::visitPost(DocMscFile *)
@@ -1004,7 +1025,8 @@ void XmlDocVisitor::visitPost(DocMscFile *)
 void XmlDocVisitor::visitPre(DocDiaFile *df)
 {
   if (m_hide) return;
-  visitPreStart(m_t, "diafile", FALSE, this, df->children(), df->file(), FALSE, DocImage::Html, df->width(), df->height());
+  copyFile(df->file(),Config_getString(XML_OUTPUT)+"/"+stripPath(df->file()));
+  visitPreStart(m_t, "diafile", FALSE, this, df->children(), stripPath(df->file()), FALSE, DocImage::Html, df->width(), df->height());
 }
 
 void XmlDocVisitor::visitPost(DocDiaFile *)
@@ -1121,11 +1143,11 @@ void XmlDocVisitor::visitPre(DocParamList *pl)
       {
         if (type->kind()==DocNode::Kind_Word)
         {
-          visit((DocWord*)type.get());
+          visit(dynamic_cast<DocWord*>(type.get()));
         }
         else if (type->kind()==DocNode::Kind_LinkedWord)
         {
-          visit((DocLinkedWord*)type.get());
+          visit(dynamic_cast<DocLinkedWord*>(type.get()));
         }
         else if (type->kind()==DocNode::Kind_Sep)
         {
@@ -1156,11 +1178,11 @@ void XmlDocVisitor::visitPre(DocParamList *pl)
     m_t << ">";
     if (param->kind()==DocNode::Kind_Word)
     {
-      visit((DocWord*)param.get());
+      visit(dynamic_cast<DocWord*>(param.get()));
     }
     else if (param->kind()==DocNode::Kind_LinkedWord)
     {
-      visit((DocLinkedWord*)param.get());
+      visit(dynamic_cast<DocLinkedWord*>(param.get()));
     }
     m_t << "</parametername>\n";
   }

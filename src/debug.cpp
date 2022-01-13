@@ -82,13 +82,13 @@ static int labelToEnumValue(const QCString &l)
 int Debug::setFlag(const QCString &lab)
 {
   int retVal = labelToEnumValue(lab);
-  curMask = (DebugMask)(curMask | retVal);
+  curMask = static_cast<DebugMask>(curMask | retVal);
   return retVal;
 }
 
 void Debug::clearFlag(const QCString &lab)
 {
-  curMask = (DebugMask)(curMask & ~labelToEnumValue(lab));
+  curMask = static_cast<DebugMask>(curMask & ~labelToEnumValue(lab));
 }
 
 void Debug::setPriority(int p)

@@ -103,17 +103,13 @@ struct codeYY_state
   QCString      parmType;
   QCString      parmName;
 
-  bool          beginCodeLine = true; //!< signals whether or not we should with the first line
-                                      //!< write a start line code or not. Essential
-                                      //!< when this code parser is called from another 
-                                      //!< code parser.
-
   const char *  inputString = 0;     //!< the code fragment as text
   yy_size_t     inputPosition = 0;   //!< read offset during parsing
+  QCString      fileName;
   int           inputLines = 0;      //!< number of line in the code fragment
   int           yyLineNr = 0;        //!< current line number
   yy_size_t     yyColNr = 0;         //!< current column number
-  bool          needsTermination = FALSE;
+  bool          insideCodeLine = FALSE;
 
   bool          exampleBlock = FALSE;
   QCString      exampleName;
@@ -193,7 +189,7 @@ static bool isCastKeyword(const char *s);
 
 //-------------------------------------------------------------------
 #if USE_STATE2STRING
-static const char *stateToString(yyscan_t yyscanner,int state);
+static const char *stateToString(int state);
 #endif
 
 static void saveObjCContext(yyscan_t yyscanner);
@@ -269,6 +265,9 @@ static std::mutex g_usingDirectiveMutex;
 #undef  YY_INPUT
 #define YY_INPUT(buf,result,max_size) result=yyread(yyscanner,buf,max_size);
 
+// otherwise the filename would be the name of the converted file (*.cpp instead of *.l)
+static inline const char *getLexerFILE() {return __FILE__;}
+#include "doxygen_lex.h"
 
 %}
 
@@ -1534,7 +1533,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           yyextra->code->codify(yytext);
                                           endFontClass(yyscanner);
                                         }
-<MemberCall2,FuncCall>{ID}(({B}*"<"[^\n\[\](){}<>]*">")?({B}*"::"{B}*{ID})?)* {
+<MemberCall2,FuncCall>("::")?{ID}(({B}*"<"[^\n\[\](){}<>]*">")?({B}*"::"{B}*{ID})?)* {
                                           if (isCastKeyword(yytext))
                                           {
                                             REJECT;
@@ -1944,7 +1943,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                             BEGIN( yyextra->lastCContext ) ;
                                           }
                                         }
-<SkipCPP>\n/.*\n                        {
+<SkipCPP>\n/(.|\n)                      {
                                           endFontClass(yyscanner);
                                           BEGIN( yyextra->lastSkipCppContext ) ;
                                           unput('\n');
@@ -2395,6 +2394,7 @@ static void startCodeLine(yyscan_t yyscanner)
   }
   DBG_CTX((stderr,"startCodeLine(%d)\n",yyextra->yyLineNr));
   yyextra->code->startCodeLine(yyextra->sourceFileDef && yyextra->lineNumbers);
+  yyextra->insideCodeLine = true;
   if (yyextra->currentFontClass)
   {
     yyextra->code->startFontClass(QCString(yyextra->currentFontClass));
@@ -2409,13 +2409,17 @@ static void endCodeLine(yyscan_t yyscanner)
   DBG_CTX((stderr,"endCodeLine(%d)\n",yyextra->yyLineNr));
   endFontClass(yyscanner);
   yyextra->code->endCodeLine();
+  yyextra->insideCodeLine = false;
 }
 
 static void nextCodeLine(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   const char * fc = yyextra->currentFontClass;
-  endCodeLine(yyscanner);
+  if (yyextra->insideCodeLine)
+  {
+    endCodeLine(yyscanner);
+  }
   if (yyextra->yyLineNr<yyextra->inputLines)
   {
     yyextra->currentFontClass = fc;
@@ -3355,9 +3359,7 @@ static int countLines(yyscan_t yyscanner)
   }
   if (p>yyextra->inputString && *(p-1)!='\n')
   { // last line does not end with a \n, so we add an extra
-    // line and explicitly terminate the line after parsing.
-    count++,
-    yyextra->needsTermination=TRUE;
+    count++;
   }
   return count;
 }
@@ -3737,7 +3739,36 @@ static bool skipLanguageSpecificKeyword(yyscan_t yyscanner,const char *keyword)
     "gcnew", "gcroot", "generic", "get",
     "internal", "null", "pin_ptr", "raise",
     "remove", "self", "set", "transient"};
-  return yyextra->lang==SrcLangExt_Cpp && (non_cpp_keywords.find(keyword) != non_cpp_keywords.end());
+  static std::unordered_set<std::string> non_java_keywords = {
+    "alignas", "alignof", "and", "and_eq", "asm",
+    "atomic_cancel", "atomic_commit", "atomic_noexcept", "auto", "bitand",
+    "bitor", "bool", "char8_t", "char16_t", "char32_t",
+    "compl", "concept", "consteval", "constexpr", "constinit",
+    "const_cast", "co_await", "co_return", "co_yield", "decltype",
+    "delete", "dynamic_cast", "explicit", "export", "extern",
+    "friend", "inline", "mutable", "namespace", "noexcept",
+    "not", "not_eq", "nullptr", "operator", "or",
+    "or_eq", "reflexpr", "register", "reinterpret_cast", "requires",
+    "signed", "sizeof", "static_assert", "static_cast", "struct",
+    "template", "thread_local", "typedef", "typeid", "typename",
+    "union", "unsigned", "using", "virtual", "wchar_t",
+    "xor", "xor_eq",
+    "override"
+  };
+  bool retval;
+  switch (yyextra->lang)
+  {
+    case SrcLangExt_Cpp:
+      retval = (non_cpp_keywords.find(keyword) != non_cpp_keywords.end());
+      break;
+    case SrcLangExt_Java:
+      retval = (non_java_keywords.find(keyword) != non_java_keywords.end());
+      break;
+    default: 
+      retval = false;
+      break;
+  }
+  return retval;
 }
 
 static bool isCastKeyword(const char *keyword)
@@ -3843,12 +3874,19 @@ void CCodeParser::resetCodeParserState()
   yyextra->codeClassMap.clear();
   yyextra->curClassBases.clear();
   yyextra->anchorCount = 0;
+  yyextra->insideCodeLine = false;
 }
 
-void CCodeParser::setStartCodeLine(const bool inp)
+void CCodeParser::setInsideCodeLine(bool inp)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)p->yyscanner;
-  yyextra->beginCodeLine = inp;
+  yyextra->insideCodeLine = inp;
+}
+
+bool CCodeParser::insideCodeLine() const
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)p->yyscanner;
+  return yyextra->insideCodeLine;
 }
 
 void CCodeParser::parseCode(CodeOutputInterface &od,const QCString &className,const QCString &s,
@@ -3868,10 +3906,10 @@ void CCodeParser::parseCode(CodeOutputInterface &od,const QCString &className,co
 
   yyextra->code = &od;
   yyextra->inputString   = s.data();
+  yyextra->fileName      = fd ? fd->fileName():"";
   yyextra->inputPosition = 0;
   codeYYrestart(0,yyscanner);
   yyextra->currentFontClass = 0;
-  yyextra->needsTermination = FALSE;
   yyextra->searchCtx = searchCtx;
   yyextra->collectXRefs = collectXRefs;
   yyextra->inFunctionTryBlock = FALSE;
@@ -3925,7 +3963,10 @@ void CCodeParser::parseCode(CodeOutputInterface &od,const QCString &className,co
   }
   yyextra->includeCodeFragment = inlineFragment;
   DBG_CTX((stderr,"** exBlock=%d exName=%s include=%d\n",exBlock,qPrint(exName),inlineFragment));
-  if (yyextra->beginCodeLine) startCodeLine(yyscanner);
+  if (!yyextra->insideCodeLine)
+  {
+    startCodeLine(yyscanner);
+  }
   yyextra->type.resize(0);
   yyextra->name.resize(0);
   yyextra->args.resize(0);
@@ -3935,11 +3976,9 @@ void CCodeParser::parseCode(CodeOutputInterface &od,const QCString &className,co
   BEGIN( Body );
   codeYYlex(yyscanner);
   yyextra->lexInit=TRUE;
-  if (yyextra->needsTermination)
+  if (yyextra->insideCodeLine)
   {
-    endFontClass(yyscanner);
-    DBG_CTX((stderr,"endCodeLine(%d)\n",yyextra->yyLineNr));
-    yyextra->code->endCodeLine();
+    endCodeLine(yyscanner);
   }
   if (cleanupSourceDef)
   {
@@ -3951,7 +3990,6 @@ void CCodeParser::parseCode(CodeOutputInterface &od,const QCString &className,co
   yyextra->tooltipManager.writeTooltips(od);
 
   printlex(yy_flex_debug, FALSE, __FILE__, fd ? qPrint(fd->fileName()): NULL);
-  return;
 }
 
 #if USE_STATE2STRING

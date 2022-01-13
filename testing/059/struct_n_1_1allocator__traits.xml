@@ -13,6 +13,7 @@
         <definition>using N::allocator_traits&lt; _Alloc &gt;::const_pointer =  typename _Ptr&lt;__c_pointer, const value_type&gt;::type</definition>
         <argsstring/>
         <name>const_pointer</name>
+        <qualifiedname>N::allocator_traits::const_pointer</qualifiedname>
         <briefdescription>
           <para>The allocator's const pointer type. </para>
         </briefdescription>
