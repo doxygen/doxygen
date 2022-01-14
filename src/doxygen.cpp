@@ -12203,6 +12203,7 @@ void parseInput()
   combineUsingRelations();
   g_s.end();
 
+  initSearchIndexer();
   g_s.begin("Adding members to index pages...\n");
   addMembersToIndex();
   addToIndices();
@@ -12246,8 +12247,6 @@ void generateOutput()
     dumpSymbolMap();
     exit(0);
   }
-
-  initSearchIndexer();
 
   bool generateHtml  = Config_getBool(GENERATE_HTML);
   bool generateLatex = Config_getBool(GENERATE_LATEX);
