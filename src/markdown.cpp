@@ -2678,7 +2678,7 @@ void Markdown::writeOneLineHeaderOrRuler(const char *data,int size)
     {
       if (!id.isEmpty())
       {
-        m_out.addStr("\\anchor "+id+"\\ilinebr ");
+        m_out.addStr("\\ianchor "+id+" "+header+"\\ilinebr ");
       }
       hTag.sprintf("h%d",level);
       m_out.addStr("<"+hTag+">");
@@ -3507,13 +3507,13 @@ void MarkdownOutlineParser::parseInput(const QCString &fileName,
            FileInfo(mdfileAsMainPage.str()).absFilePath()) // file reference with path
          )
       {
-        docs.prepend("@anchor " + id + "\\ilinebr ");
+        docs.prepend("@ianchor " + id + " " + title + "\\ilinebr ");
         docs.prepend("@mainpage "+title+"\\ilinebr ");
       }
       else if (id=="mainpage" || id=="index")
       {
         if (title.isEmpty()) title = titleFn;
-        docs.prepend("@anchor " + id + "\\ilinebr ");
+        docs.prepend("@ianchor " + id + " " + title + "\\ilinebr ");
         docs.prepend("@mainpage "+title+"\\ilinebr ");
       }
       else
@@ -3540,7 +3540,9 @@ void MarkdownOutlineParser::parseInput(const QCString &fileName,
           docs = docs.left(labelStartPos)+                     // part before label
                  newLabel+                                     // new label
                  docs.mid(labelEndPos,lineLen-labelEndPos-1)+  // part between orgLabel and \n
-                 "\\ilinebr @anchor "+orgLabel+"\n"+           // add original anchor
+                 "\\ilinebr @ianchor "+orgLabel+" "+           // add original anchor
+                 docs.mid(labelEndPos,lineLen-labelEndPos-1)+  // part between orgLabel and \n
+                 "\n"+
                  docs.right(docs.length()-match.length());     // add remainder of docs
         }
       }

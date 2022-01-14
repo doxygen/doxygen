@@ -171,6 +171,7 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "addindex",        { &handleAddIndex,         CommandSpacing::Invisible }},
   { "addtogroup",      { &handleAddToGroup,       CommandSpacing::Invisible }},
   { "anchor",          { &handleAnchor,           CommandSpacing::Invisible }},
+  { "ianchor",         { &handleAnchor,           CommandSpacing::Invisible }},
   { "arg",             { 0,                       CommandSpacing::Block     }},
   { "attention",       { 0,                       CommandSpacing::Block     }},
   { "author",          { 0,                       CommandSpacing::Block     }},
@@ -386,6 +387,9 @@ struct commentscanYY_state
 
   bool             needNewEntry = FALSE;
 
+  QCString         anchorLabel;
+  QCString         anchorText;
+
   QCString         sectionLabel;
   QCString         sectionTitle;
   int              sectionLevel = 0;
@@ -442,7 +446,7 @@ static QCString addFormula(yyscan_t yyscanner);
 static void checkFormula(yyscan_t yyscanner);
 static void addSection(yyscan_t yyscanner);
 static inline void setOutput(yyscan_t yyscanner,OutputContext ctx);
-static void addAnchor(yyscan_t yyscanner,const QCString &anchor);
+static void addAnchor(yyscan_t yyscanner,const QCString &anchor, QCString title = QCString());
 static inline void addOutput(yyscan_t yyscanner,const char *s);
 static inline void addOutput(yyscan_t yyscanner,const QCString &s);
 static inline void addOutput(yyscan_t yyscanner,char c);
@@ -509,11 +513,11 @@ TMPLSPEC  "<"{BN}*[^>]+{BN}*">"
 MAILADDR  ("mailto:")?[a-z_A-Z0-9\x80-\xff.+-]+"@"[a-z_A-Z0-9\x80-\xff-]+("."[a-z_A-Z0-9\x80-\xff\-]+)+[a-z_A-Z0-9\x80-\xff\-]+
 RCSTAG    "$"{ID}":"[^\n$]+"$"
 
-  // C start comment 
+  // C start comment
 CCS   "/\*"
   // C end comment
 CCE   "*\/"
-  // Cpp comment 
+  // Cpp comment
 CPPC  "/\/"
 
   // end of section title with asterisk
@@ -563,6 +567,8 @@ STopt  [^\n@\\]*
 %x      ReadFormulaRound
 %x      ReadFormulaLong
 %x      AnchorLabel
+%x      IAnchorLabel
+%x      IAnchorText
 %x      HtmlComment
 %x      SkipLang
 %x      CiteLabel
@@ -1495,12 +1501,21 @@ STopt  [^\n@\\]*
 
   /* ----- handle arguments of the anchor command ------- */
 
-<AnchorLabel>{LABELID}                  { // found argument
-                                          addAnchor(yyscanner,QCString(yytext));
+<AnchorLabel,IAnchorLabel>{LABELID}     { // found argument
                                           addOutput(yyscanner,yytext);
-                                          BEGIN( Comment );
+                                          if (YY_START == IAnchorLabel)
+                                          {
+                                            yyextra->anchorLabel = yytext;
+                                            yyextra->anchorText = "";
+                                            BEGIN( IAnchorText );
+                                          }
+                                          else
+                                          {
+                                            addAnchor(yyscanner,QCString(yytext));
+                                            BEGIN( Comment );
+                                          }
                                         }
-<AnchorLabel>{DOCNL}                    { // missing argument
+<AnchorLabel,IAnchorLabel>{DOCNL}       { // missing argument
                                           warn(yyextra->fileName,yyextra->lineNr,
                                               "\\anchor command has no label"
                                               );
@@ -1508,13 +1523,23 @@ STopt  [^\n@\\]*
                                           addOutput(yyscanner,'\n');
                                           BEGIN( Comment );
                                         }
-<AnchorLabel>.                          { // invalid character for anchor label
+<AnchorLabel,IAnchorLabel>.             { // invalid character for anchor label
                                           warn(yyextra->fileName,yyextra->lineNr,
                                               "Invalid or missing anchor label"
                                               );
                                           BEGIN(Comment);
                                         }
 
+<IAnchorText>{DOCNL}                    { // end of text
+                                          addAnchor(yyscanner,yyextra->anchorLabel, yyextra->anchorText.stripWhiteSpace());
+                                          unput_string(yytext,yyleng);
+                                          BEGIN(Comment);
+                                        }
+
+<IAnchorText>.                          { // text
+                                          addOutput(yyscanner,yytext);
+                                          yyextra->anchorText += *yytext;
+                                        }
 
   /* ----- handle arguments of the preformatted block commands ------- */
 
@@ -2472,11 +2497,18 @@ static bool handleSubpage(yyscan_t yyscanner,const QCString &s, const StringVect
   return FALSE;
 }
 
-static bool handleAnchor(yyscan_t yyscanner,const QCString &s, const StringVector &)
+static bool handleAnchor(yyscan_t yyscanner,const QCString &cmd, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  addOutput(yyscanner,"@"+s+" ");
-  BEGIN(AnchorLabel);
+  addOutput(yyscanner,"@anchor ");
+  if (cmd == "anchor")
+  {
+    BEGIN(AnchorLabel);
+  }
+  else
+  {
+    BEGIN(IAnchorLabel);
+  }
   return FALSE;
 }
 
@@ -3329,7 +3361,7 @@ static inline void setOutput(yyscan_t yyscanner,OutputContext ctx)
 }
 
 
-static void addAnchor(yyscan_t yyscanner,const QCString &anchor)
+static void addAnchor(yyscan_t yyscanner,const QCString &anchor, QCString title)
 {
   std::unique_lock<std::mutex> lock(g_sectionMutex);
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
@@ -3339,7 +3371,7 @@ static void addAnchor(yyscan_t yyscanner,const QCString &anchor)
   {
     if (!si->ref().isEmpty()) // we are from a tag file
     {
-      si = sm.replace(anchor,yyextra->fileName,yyextra->lineNr,QCString(),SectionType::Anchor,0);
+      si = sm.replace(anchor,yyextra->fileName,yyextra->lineNr,title,SectionType::Anchor,0);
       yyextra->current->anchors.push_back(si);
     }
     else if (si->lineNr() != -1)
@@ -3356,7 +3388,7 @@ static void addAnchor(yyscan_t yyscanner,const QCString &anchor)
   }
   else
   {
-    si = sm.add(anchor,yyextra->fileName,yyextra->lineNr,QCString(),SectionType::Anchor,0);
+    si = sm.add(anchor,yyextra->fileName,yyextra->lineNr,title,SectionType::Anchor,0);
     yyextra->current->anchors.push_back(si);
   }
 }
