@@ -239,8 +239,8 @@ enum Alignment { AlignNone, AlignLeft, AlignCenter, AlignRight };
 
 //---------- constants -------
 //
-const char    g_utf8_nbsp[3] = { static_cast<char>(0xc2), static_cast<char>(0xa0), 0}; // UTF-8 nbsp
-const char    *g_doxy_nsbp = "&_doxy_nbsp;";            // doxygen escape command for UTF-8 nbsp
+const char    *g_utf8_nbsp = "\xc2\xa0";      // UTF-8 nbsp
+const char    *g_doxy_nbsp = "&_doxy_nbsp;";  // doxygen escape command for UTF-8 nbsp
 const int codeBlockIndent = 4;
 
 //---------- helpers -------
@@ -1683,13 +1683,13 @@ int Markdown::processCodeSpan(const char *data, int /*offset*/, int size)
 void Markdown::addStrEscapeUtf8Nbsp(const char *s,int len)
 {
   TRACE(s);
-  if (Portable::strnstr(s,g_doxy_nsbp,len)==0) // no escape needed -> fast
+  if (Portable::strnstr(s,g_doxy_nbsp,len)==0) // no escape needed -> fast
   {
     m_out.addStr(s,len);
   }
   else // escape needed -> slow
   {
-    m_out.addStr(substitute(QCString(s).left(len),g_doxy_nsbp,g_utf8_nbsp));
+    m_out.addStr(substitute(QCString(s).left(len),g_doxy_nbsp,g_utf8_nbsp));
   }
 }
 
@@ -3357,7 +3357,7 @@ QCString Markdown::detab(const QCString &s,int &refIndent)
           int nb = isUTF8NonBreakableSpace(data);
           if (nb>0)
           {
-            m_out.addStr(g_doxy_nsbp);
+            m_out.addStr(g_doxy_nbsp);
             i+=nb-1;
           }
           else
@@ -3420,7 +3420,7 @@ QCString Markdown::process(const QCString &input, int &startNewlines, bool fromP
   }
 
   // post processing
-  QCString result = substitute(m_out.get(),g_doxy_nsbp,"&nbsp;");
+  QCString result = substitute(m_out.get(),g_doxy_nbsp,"&nbsp;");
   const char *p = result.data();
   if (p)
   {

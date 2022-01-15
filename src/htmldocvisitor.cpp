@@ -104,64 +104,49 @@ static QCString convertIndexWordToAnchor(const QCString &word)
 
 static bool mustBeOutsideParagraph(const DocNode *n)
 {
-  switch (n->kind())
+  if (DocNodeMultiCast< /* <ul> */         DocHtmlList,   DocSimpleList, DocAutoList,
+                        /* <dl> */         DocSimpleSect, DocParamSect,  DocHtmlDescList, DocXRefItem,
+                        /* <table> */      DocHtmlTable,
+                        /* <h?> */         DocSection,    DocHtmlHeader,
+                        /* \internal */    DocInternal,
+                        /* <div> */        DocInclude,    DocSecRefList,
+                        /* <hr> */         DocHorRuler,
+                        /* <blockquote> */ DocHtmlBlockQuote,
+                        /* \parblock */    DocParBlock,
+                                           DocIncOperator >::is_a(n))
   {
-          /* <ul> */
-        case DocNode::Kind_HtmlList:
-        case DocNode::Kind_SimpleList:
-        case DocNode::Kind_AutoList:
-          /* <dl> */
-        case DocNode::Kind_SimpleSect:
-        case DocNode::Kind_ParamSect:
-        case DocNode::Kind_HtmlDescList:
-        case DocNode::Kind_XRefItem:
-          /* <table> */
-        case DocNode::Kind_HtmlTable:
-          /* <h?> */
-        case DocNode::Kind_Section:
-        case DocNode::Kind_HtmlHeader:
-          /* \internal */
-        case DocNode::Kind_Internal:
-          /* <div> */
-        case DocNode::Kind_Include:
-        case DocNode::Kind_SecRefList:
-          /* <hr> */
-        case DocNode::Kind_HorRuler:
-          /* CopyDoc gets paragraph markers from the wrapping DocPara node,
-           * but needs to insert them for all documentation being copied to
-           * preserve formatting.
-           */
-        case DocNode::Kind_Copy:
-          /* <blockquote> */
-        case DocNode::Kind_HtmlBlockQuote:
-          /* \parblock */
-        case DocNode::Kind_ParBlock:
-        case DocNode::Kind_IncOperator:
-          return TRUE;
-        case DocNode::Kind_Verbatim:
-          {
-            const DocVerbatim *dv = dynamic_cast<const DocVerbatim*>(n);
-            DocVerbatim::Type t = dv->type();
-            if (t == DocVerbatim::JavaDocCode || t == DocVerbatim::JavaDocLiteral) return FALSE;
-            return t!=DocVerbatim::HtmlOnly || dv->isBlock();
-          }
-        case DocNode::Kind_StyleChange:
-          return dynamic_cast<const DocStyleChange*>(n)->style()==DocStyleChange::Preformatted ||
-                 dynamic_cast<const DocStyleChange*>(n)->style()==DocStyleChange::Div ||
-                 dynamic_cast<const DocStyleChange*>(n)->style()==DocStyleChange::Center;
-        case DocNode::Kind_Formula:
-          return !dynamic_cast<const DocFormula*>(n)->isInline();
-        case DocNode::Kind_Image:
-          return !dynamic_cast<const DocImage*>(n)->isInlineImage();
-        default:
-          break;
+    return TRUE;
+  }
+  const DocVerbatim *dv = dynamic_cast<const DocVerbatim*>(n);
+  if (dv)
+  {
+    DocVerbatim::Type t = dv->type();
+    if (t == DocVerbatim::JavaDocCode || t == DocVerbatim::JavaDocLiteral) return FALSE;
+    return t!=DocVerbatim::HtmlOnly || dv->isBlock();
+  }
+  const DocStyleChange *sc = dynamic_cast<const DocStyleChange*>(n);
+  if (sc)
+  {
+    return sc->style()==DocStyleChange::Preformatted ||
+           sc->style()==DocStyleChange::Div ||
+           sc->style()==DocStyleChange::Center;
+  }
+  const DocFormula *df = dynamic_cast<const DocFormula*>(n);
+  if (df)
+  {
+    return !df->isInline();
+  }
+  const DocImage *di = dynamic_cast<const DocImage*>(n);
+  if (di)
+  {
+    return !di->isInlineImage();
   }
   return FALSE;
 }
 
 static bool isDocVerbatimVisible(const DocVerbatim *s)
 {
-  switch(s->type())
+  switch (s->type())
   {
     case DocVerbatim::ManOnly:
     case DocVerbatim::LatexOnly:
@@ -203,16 +188,22 @@ static bool isDocIncOperatorVisible(const DocIncOperator *s)
 
 static bool isInvisibleNode(const DocNode *node)
 {
-  return (node->kind()==DocNode::Kind_WhiteSpace)
-      || // skip over image nodes that are not for HTML output
-         (node->kind()==DocNode::Kind_Image && dynamic_cast<const DocImage*>(node)->type()!=DocImage::Html)
-      || // skip over verbatim nodes that are not visible in the HTML output
-         (node->kind()==DocNode::Kind_Verbatim && !isDocVerbatimVisible(dynamic_cast<const DocVerbatim*>(node)))
-      || // skip over include nodes that are not visible in the HTML output
-         (node->kind()==DocNode::Kind_Include && !isDocIncludeVisible(dynamic_cast<const DocInclude*>(node)))
-      || // skip over include operator nodes that are not visible in the HTML output
-         (node->kind()==DocNode::Kind_IncOperator && !isDocIncOperatorVisible(dynamic_cast<const DocIncOperator*>(node)))
-      ;
+  // skip over white space
+  const DocWhiteSpace *ws = dynamic_cast<const DocWhiteSpace *>(node);
+  if (ws) return true;
+  // skip over image nodes that are not for HTML output
+  const DocImage *di = dynamic_cast<const DocImage *>(node);
+  if (di) return di->type()!=DocImage::Html;
+  // skip over verbatim nodes that are not visible in the HTML output
+  const DocVerbatim *dv = dynamic_cast<const DocVerbatim *>(node);
+  if (dv) return !isDocVerbatimVisible(dv);
+  // skip over include nodes that are not visible in the HTML output
+  const DocInclude *dinc = dynamic_cast<const DocInclude *>(node);
+  if (dinc) return !isDocIncludeVisible(dinc);
+  const DocIncOperator *dio = dynamic_cast<const DocIncOperator *>(node);
+  // skip over include operator nodes that are not visible in the HTML output
+  if (dio) return !isDocIncOperatorVisible(dio);
+  return false;
 }
 
 static void mergeHtmlAttributes(const HtmlAttribList &attribs, HtmlAttribList &mergeInto)
@@ -1082,29 +1073,20 @@ bool isSeparatedParagraph(const DocSimpleSect *parent,DocPara *par)
   if (it==nodes.end()) return FALSE;
   size_t i = it - nodes.begin();
   size_t count = parent->children().size();
+  auto isSeparator = [&nodes](size_t i_) { return dynamic_cast<DocSimpleSectSep*>(nodes.at(i_).get())!=0; };
   if (count>1 && i==0) // first node
   {
-    if (nodes.at(i+1)->kind()==DocNode::Kind_SimpleSectSep)
-    {
-      return TRUE;
-    }
+    return isSeparator(1);
   }
   else if (count>1 && i==count-1) // last node
   {
-    if (nodes.at(i-1)->kind()==DocNode::Kind_SimpleSectSep)
-    {
-      return TRUE;
-    }
+    return isSeparator(i-1);
   }
   else if (count>2 && i>0 && i<count-1) // intermediate node
   {
-    if (nodes.at(i-1)->kind()==DocNode::Kind_SimpleSectSep &&
-        nodes.at(i+1)->kind()==DocNode::Kind_SimpleSectSep)
-    {
-      return TRUE;
-    }
+    return isSeparator(i-1) && isSeparator(i+1);
   }
-  return FALSE;
+  return false;
 }
 
 static int getParagraphContext(DocPara *p,bool &isFirst,bool &isLast)
@@ -1114,149 +1096,157 @@ static int getParagraphContext(DocPara *p,bool &isFirst,bool &isLast)
   isLast=FALSE;
   if (p && p->parent())
   {
-    switch (p->parent()->kind())
+    const auto parBlock = dynamic_cast<const DocParBlock*>(p->parent());
+    if (parBlock)
     {
-      case DocNode::Kind_ParBlock:
-        { // hierarchy: node N -> para -> parblock -> para
-          // adapt return value to kind of N
-          DocNode::Kind kind = DocNode::Kind_Para;
-          if ( p->parent()->parent() && p->parent()->parent()->parent() )
-          {
-            kind = p->parent()->parent()->parent()->kind();
-          }
-          isFirst=isFirstChildNode(dynamic_cast<DocParBlock*>(p->parent()),p);
-          isLast =isLastChildNode (dynamic_cast<DocParBlock*>(p->parent()),p);
-          t=NONE;
-          if (isFirst)
-          {
-            if (kind==DocNode::Kind_HtmlListItem ||
-                kind==DocNode::Kind_SecRefItem)
-            {
-              t=STARTLI;
-            }
-            else if (kind==DocNode::Kind_HtmlDescData ||
-                     kind==DocNode::Kind_XRefItem ||
-                     kind==DocNode::Kind_SimpleSect)
-            {
-              t=STARTDD;
-            }
-            else if (kind==DocNode::Kind_HtmlCell ||
-                     kind==DocNode::Kind_ParamList)
-            {
-              t=STARTTD;
-            }
-          }
-          if (isLast)
-          {
-            if (kind==DocNode::Kind_HtmlListItem ||
-                kind==DocNode::Kind_SecRefItem)
-            {
-              t=ENDLI;
-            }
-            else if (kind==DocNode::Kind_HtmlDescData ||
-                     kind==DocNode::Kind_XRefItem ||
-                     kind==DocNode::Kind_SimpleSect)
-            {
-              t=ENDDD;
-            }
-            else if (kind==DocNode::Kind_HtmlCell ||
-                     kind==DocNode::Kind_ParamList)
-            {
-              t=ENDTD;
-            }
-          }
-          if (!isFirst && !isLast)
-          {
-            if (kind==DocNode::Kind_HtmlListItem ||
-                kind==DocNode::Kind_SecRefItem)
-            {
-              t=INTERLI;
-            }
-            else if (kind==DocNode::Kind_HtmlDescData ||
-                     kind==DocNode::Kind_XRefItem ||
-                     kind==DocNode::Kind_SimpleSect)
-            {
-              t=INTERDD;
-            }
-            else if (kind==DocNode::Kind_HtmlCell ||
-                     kind==DocNode::Kind_ParamList)
-            {
-              t=INTERTD;
-            }
-          }
-          break;
-        }
-      case DocNode::Kind_AutoListItem:
-        isFirst=isFirstChildNode(dynamic_cast<const DocAutoListItem*>(p->parent()),p);
-        isLast =isLastChildNode (dynamic_cast<const DocAutoListItem*>(p->parent()),p);
-        t=STARTLI; // not used
-        break;
-      case DocNode::Kind_SimpleListItem:
-        isFirst=TRUE;
-        isLast =TRUE;
-        t=STARTLI; // not used
-        break;
-      case DocNode::Kind_ParamList:
-        isFirst=TRUE;
-        isLast =TRUE;
-        t=STARTLI; // not used
-        break;
-      case DocNode::Kind_HtmlListItem:
-        isFirst=isFirstChildNode(dynamic_cast<const DocHtmlListItem*>(p->parent()),p);
-        isLast =isLastChildNode (dynamic_cast<const DocHtmlListItem*>(p->parent()),p);
-        if (isFirst) t=STARTLI;
-        if (isLast)  t=ENDLI;
-        if (!isFirst && !isLast) t = INTERLI;
-        break;
-      case DocNode::Kind_SecRefItem:
-        isFirst=isFirstChildNode(dynamic_cast<const DocSecRefItem*>(p->parent()),p);
-        isLast =isLastChildNode (dynamic_cast<const DocSecRefItem*>(p->parent()),p);
-        if (isFirst) t=STARTLI;
-        if (isLast)  t=ENDLI;
-        if (!isFirst && !isLast) t = INTERLI;
-        break;
-      case DocNode::Kind_HtmlDescData:
-        isFirst=isFirstChildNode(dynamic_cast<const DocHtmlDescData*>(p->parent()),p);
-        isLast =isLastChildNode (dynamic_cast<const DocHtmlDescData*>(p->parent()),p);
-        if (isFirst) t=STARTDD;
-        if (isLast)  t=ENDDD;
-        if (!isFirst && !isLast) t = INTERDD;
-        break;
-      case DocNode::Kind_XRefItem:
-        isFirst=isFirstChildNode(dynamic_cast<const DocXRefItem*>(p->parent()),p);
-        isLast =isLastChildNode (dynamic_cast<const DocXRefItem*>(p->parent()),p);
-        if (isFirst) t=STARTDD;
-        if (isLast)  t=ENDDD;
-        if (!isFirst && !isLast) t = INTERDD;
-        break;
-      case DocNode::Kind_SimpleSect:
-        isFirst=isFirstChildNode(dynamic_cast<const DocSimpleSect*>(p->parent()),p);
-        isLast =isLastChildNode (dynamic_cast<const DocSimpleSect*>(p->parent()),p);
-        if (isFirst) t=STARTDD;
-        if (isLast)  t=ENDDD;
-        if (isSeparatedParagraph(dynamic_cast<const DocSimpleSect*>(p->parent()),p))
-          // if the paragraph is enclosed with separators it will
-          // be included in <dd>..</dd> so avoid addition paragraph
-          // markers
-        {
-          isFirst=isLast=TRUE;
-        }
-        if (!isFirst && !isLast) t = INTERDD;
-        break;
-      case DocNode::Kind_HtmlCell:
-        isFirst=isFirstChildNode(dynamic_cast<const DocHtmlCell*>(p->parent()),p);
-        isLast =isLastChildNode (dynamic_cast<const DocHtmlCell*>(p->parent()),p);
-        if (isFirst) t=STARTTD;
-        if (isLast)  t=ENDTD;
-        if (!isFirst && !isLast) t = INTERTD;
-        break;
-      default:
-        break;
+      // hierarchy: node N -> para -> parblock -> para
+      // adapt return value to kind of N
+      DocNode *p3 = 0;
+      if ( p->parent()->parent() && p->parent()->parent()->parent() )
+      {
+        p3 = p->parent()->parent()->parent();
+      }
+      isFirst=isFirstChildNode(parBlock,p);
+      isLast =isLastChildNode (parBlock,p);
+      bool isLI = DocNodeMultiCast<DocHtmlListItem,DocSecRefItem>::is_a(p3);
+      bool isDD = DocNodeMultiCast<DocHtmlDescData,DocXRefItem,DocSimpleSect>::is_a(p3);
+      bool isTD = DocNodeMultiCast<DocHtmlCell,DocParamList>::is_a(p3);
+      t=NONE;
+      if (isFirst)
+      {
+        if (isLI) t=STARTLI; else if (isDD) t=STARTDD; else if (isTD) t=STARTTD;
+      }
+      if (isLast)
+      {
+        if (isLI) t=ENDLI;   else if (isDD) t=ENDDD;   else if (isTD) t=ENDTD;
+      }
+      if (!isFirst && !isLast)
+      {
+        if (isLI) t=INTERLI; else if (isDD) t=INTERDD; else if (isTD) t=INTERTD;
+      }
+      return t;
     }
-    //printf("para=%p parent()->kind=%d isFirst=%d isLast=%d t=%d\n",
-    //    p,p->parent()->kind(),isFirst,isLast,t);
+    const auto docAutoListItem = dynamic_cast<const DocAutoListItem*>(p->parent());
+    if (docAutoListItem)
+    {
+      isFirst=isFirstChildNode(docAutoListItem,p);
+      isLast =isLastChildNode (docAutoListItem,p);
+      t=STARTLI; // not used
+      return t;
+    }
+    const auto docSimpleListItem = dynamic_cast<const DocSimpleListItem*>(p->parent());
+    if (docSimpleListItem)
+    {
+      isFirst=TRUE;
+      isLast =TRUE;
+      t=STARTLI; // not used
+      return t;
+    }
+    const auto docParamList = dynamic_cast<const DocParamList*>(p->parent());
+    if (docParamList)
+    {
+      isFirst=TRUE;
+      isLast =TRUE;
+      t=STARTLI; // not used
+      return t;
+    }
+    const auto docHtmlListItem = dynamic_cast<const DocHtmlListItem*>(p->parent());
+    if (docHtmlListItem)
+    {
+      isFirst=isFirstChildNode(docHtmlListItem,p);
+      isLast =isLastChildNode (docHtmlListItem,p);
+      if (isFirst) t=STARTLI;
+      if (isLast)  t=ENDLI;
+      if (!isFirst && !isLast) t = INTERLI;
+      return t;
+    }
+    const auto docSecRefItem = dynamic_cast<const DocSecRefItem*>(p->parent());
+    if (docSecRefItem)
+    {
+      isFirst=isFirstChildNode(docSecRefItem,p);
+      isLast =isLastChildNode (docSecRefItem,p);
+      if (isFirst) t=STARTLI;
+      if (isLast)  t=ENDLI;
+      if (!isFirst && !isLast) t = INTERLI;
+      return t;
+    }
+    const auto docHtmlDescData = dynamic_cast<const DocHtmlDescData*>(p->parent());
+    if (docHtmlDescData)
+    {
+      isFirst=isFirstChildNode(docHtmlDescData,p);
+      isLast =isLastChildNode (docHtmlDescData,p);
+      if (isFirst) t=STARTDD;
+      if (isLast)  t=ENDDD;
+      if (!isFirst && !isLast) t = INTERDD;
+      return t;
+    }
+    const auto docXRefItem = dynamic_cast<const DocXRefItem*>(p->parent());
+    if (docXRefItem)
+    {
+      isFirst=isFirstChildNode(docXRefItem,p);
+      isLast =isLastChildNode (docXRefItem,p);
+      if (isFirst) t=STARTDD;
+      if (isLast)  t=ENDDD;
+      if (!isFirst && !isLast) t = INTERDD;
+      return t;
+    }
+    const auto docSimpleSect = dynamic_cast<const DocSimpleSect*>(p->parent());
+    if (docSimpleSect)
+    {
+      isFirst=isFirstChildNode(docSimpleSect,p);
+      isLast =isLastChildNode (docSimpleSect,p);
+      if (isFirst) t=STARTDD;
+      if (isLast)  t=ENDDD;
+      if (isSeparatedParagraph(docSimpleSect,p))
+        // if the paragraph is enclosed with separators it will
+        // be included in <dd>..</dd> so avoid addition paragraph
+        // markers
+      {
+        isFirst=isLast=TRUE;
+      }
+      if (!isFirst && !isLast) t = INTERDD;
+      return t;
+    }
+    const auto docHtmlCell = dynamic_cast<DocHtmlCell*>(p->parent());
+    if (docHtmlCell)
+    {
+      isFirst=isFirstChildNode(docHtmlCell,p);
+      isLast =isLastChildNode (docHtmlCell,p);
+      if (isFirst) t=STARTTD;
+      if (isLast)  t=ENDTD;
+      if (!isFirst && !isLast) t = INTERTD;
+      return t;
+    }
   }
   return t;
+}
+
+static bool determineIfNeedsTag(DocPara *p)
+{
+  bool needsTag = FALSE;
+  if (p && p->parent())
+  {
+    if (DocNodeMultiCast<DocSection,
+                         DocInternal,
+                         DocHtmlListItem,
+                         DocHtmlDescData,
+                         DocHtmlCell,
+                         DocSimpleListItem,
+                         DocAutoListItem,
+                         DocSimpleSect,
+                         DocXRefItem,
+                         DocHtmlBlockQuote,
+                         DocParBlock
+                         >::is_a(p->parent()))
+    {
+      needsTag = TRUE;
+    }
+    else if (dynamic_cast<DocRoot*>(p->parent()))
+    {
+      needsTag = !dynamic_cast<DocRoot*>(p->parent())->singleLine();
+    }
+  }
+  return needsTag;
 }
 
 void HtmlDocVisitor::visitPre(DocPara *p)
@@ -1266,32 +1256,7 @@ void HtmlDocVisitor::visitPre(DocPara *p)
   //printf("DocPara::visitPre: parent of kind %d ",
   //       p->parent() ? p->parent()->kind() : -1);
 
-  bool needsTag = FALSE;
-  if (p && p->parent())
-  {
-    switch (p->parent()->kind())
-    {
-      case DocNode::Kind_Section:
-      case DocNode::Kind_Internal:
-      case DocNode::Kind_HtmlListItem:
-      case DocNode::Kind_HtmlDescData:
-      case DocNode::Kind_HtmlCell:
-      case DocNode::Kind_SimpleListItem:
-      case DocNode::Kind_AutoListItem:
-      case DocNode::Kind_SimpleSect:
-      case DocNode::Kind_XRefItem:
-      case DocNode::Kind_Copy:
-      case DocNode::Kind_HtmlBlockQuote:
-      case DocNode::Kind_ParBlock:
-        needsTag = TRUE;
-        break;
-      case DocNode::Kind_Root:
-        needsTag = !dynamic_cast<DocRoot*>(p->parent())->singleLine();
-        break;
-      default:
-        needsTag = FALSE;
-    }
-  }
+  bool needsTag = determineIfNeedsTag(p);
 
   // if the first element of a paragraph is something that should be outside of
   // the paragraph (<ul>,<dl>,<table>,..) then that will already started the
@@ -1340,32 +1305,7 @@ void HtmlDocVisitor::visitPost(DocPara *p)
   //printf("DocPara::visitPost: parent of kind %d ",
   //       p->parent() ? p->parent()->kind() : -1);
 
-  bool needsTag = FALSE;
-  if (p->parent())
-  {
-    switch (p->parent()->kind())
-    {
-      case DocNode::Kind_Section:
-      case DocNode::Kind_Internal:
-      case DocNode::Kind_HtmlListItem:
-      case DocNode::Kind_HtmlDescData:
-      case DocNode::Kind_HtmlCell:
-      case DocNode::Kind_SimpleListItem:
-      case DocNode::Kind_AutoListItem:
-      case DocNode::Kind_SimpleSect:
-      case DocNode::Kind_XRefItem:
-      case DocNode::Kind_Copy:
-      case DocNode::Kind_HtmlBlockQuote:
-      case DocNode::Kind_ParBlock:
-        needsTag = TRUE;
-        break;
-      case DocNode::Kind_Root:
-        needsTag = !dynamic_cast<DocRoot*>(p->parent())->singleLine();
-        break;
-      default:
-        needsTag = FALSE;
-    }
-  }
+  bool needsTag = determineIfNeedsTag(p);
 
   // if the last element of a paragraph is something that should be outside of
   // the paragraph (<ul>,<dl>,<table>) then that will already have ended the
@@ -2032,11 +1972,7 @@ void HtmlDocVisitor::visitPre(DocParamList *pl)
   //printf("DocParamList::visitPre\n");
   if (m_hide) return;
   m_t << "    <tr>";
-  DocParamSect *sect = 0;
-  if (pl->parent()->kind()==DocNode::Kind_ParamSect)
-  {
-    sect=dynamic_cast<DocParamSect*>(pl->parent());
-  }
+  DocParamSect *sect = dynamic_cast<DocParamSect*>(pl->parent());
   if (sect && sect->hasInOutSpecifier())
   {
     m_t << "<td class=\"paramdir\">";
@@ -2064,17 +2000,20 @@ void HtmlDocVisitor::visitPre(DocParamList *pl)
     m_t << "<td class=\"paramtype\">";
     for (const auto &type : pl->paramTypes())
     {
-      if (type->kind()==DocNode::Kind_Word)
+      DocWord       *word       = dynamic_cast<DocWord*      >(type.get());
+      DocLinkedWord *linkedWord = dynamic_cast<DocLinkedWord*>(type.get());
+      DocSeparator  *sep        = dynamic_cast<DocSeparator* >(type.get());
+      if (word)
       {
-        visit(dynamic_cast<DocWord*>(type.get()));
+        visit(word);
       }
-      else if (type->kind()==DocNode::Kind_LinkedWord)
+      else if (linkedWord)
       {
-        visit(dynamic_cast<DocLinkedWord*>(type.get()));
+        visit(linkedWord);
       }
-      else if (type->kind()==DocNode::Kind_Sep)
+      else if (sep)
       {
-        m_t << "&#160;" << dynamic_cast<DocSeparator *>(type.get())->chars() << "&#160;";
+        m_t << "&#160;" << sep->chars() << "&#160;";
       }
     }
     m_t << "</td>";
@@ -2084,13 +2023,15 @@ void HtmlDocVisitor::visitPre(DocParamList *pl)
   for (const auto &param : pl->parameters())
   {
     if (!first) m_t << ","; else first=FALSE;
-    if (param->kind()==DocNode::Kind_Word)
+    DocWord       *word       = dynamic_cast<DocWord*      >(param.get());
+    DocLinkedWord *linkedWord = dynamic_cast<DocLinkedWord*>(param.get());
+    if (word)
     {
-      visit(dynamic_cast<DocWord*>(param.get()));
+      visit(word);
     }
-    else if (param->kind()==DocNode::Kind_LinkedWord)
+    else if (linkedWord)
     {
-      visit(dynamic_cast<DocLinkedWord*>(param.get()));
+      visit(linkedWord);
     }
   }
   m_t << "</td><td>";
@@ -2423,9 +2364,9 @@ static bool insideStyleChangeThatIsOutsideParagraph(const DocPara *para,int node
   while (nodeIndex>=0 && !styleOutsideParagraph)
   {
     const DocNode *n = para->children().at(nodeIndex).get();
-    if (n->kind()==DocNode::Kind_StyleChange)
+    const DocStyleChange *sc = dynamic_cast<const DocStyleChange*>(n);
+    if (sc)
     {
-      const DocStyleChange *sc = dynamic_cast<const DocStyleChange*>(n);
       if (!sc->enable()) // remember styles that has been closed already
       {
         styleMask|=static_cast<int>(sc->style());
@@ -2453,9 +2394,9 @@ static bool insideStyleChangeThatIsOutsideParagraph(const DocPara *para,int node
 void HtmlDocVisitor::forceEndParagraph(DocNode *n)
 {
   //printf("forceEndParagraph(%p) %d\n",n,n->kind());
-  if (n->parent() && n->parent()->kind()==DocNode::Kind_Para)
+  DocPara *para=0;
+  if (n->parent() && (para = dynamic_cast<DocPara*>(n->parent())))
   {
-    DocPara *para = dynamic_cast<DocPara*>(n->parent());
     const DocNodeList &children = para->children();
     auto it = std::find_if(children.begin(),children.end(),[n](const auto &np) { return np.get()==n; });
     if (it==children.end()) return;
@@ -2489,9 +2430,9 @@ void HtmlDocVisitor::forceEndParagraph(DocNode *n)
 void HtmlDocVisitor::forceStartParagraph(DocNode *n)
 {
   //printf("forceStartParagraph(%p) %d\n",n,n->kind());
-  if (n->parent() && n->parent()->kind()==DocNode::Kind_Para) // if we are inside a paragraph
+  DocPara *para=0;
+  if (n->parent() && (para = dynamic_cast<DocPara*>(n->parent()))) // if we are inside a paragraph
   {
-    DocPara *para = dynamic_cast<DocPara*>(n->parent());
     const DocNodeList &children = para->children();
     auto it = std::find_if(children.begin(),children.end(),[n](const auto &np) { return np.get()==n; });
     if (it==children.end()) return;

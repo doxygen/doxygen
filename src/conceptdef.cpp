@@ -513,22 +513,17 @@ void ConceptDefImpl::writeDocumentation(OutputList &ol)
 
   for (const auto &lde : LayoutDocManager::instance().docEntries(LayoutDocManager::Concept))
   {
+    const LayoutDocEntrySection *ls = dynamic_cast<const LayoutDocEntrySection*>(lde.get());
     switch (lde->kind())
     {
       case LayoutDocEntry::BriefDesc:
         writeBriefDescription(ol);
         break;
       case LayoutDocEntry::ConceptDefinition:
-        {
-          const LayoutDocEntrySection *ls = dynamic_cast<const LayoutDocEntrySection*>(lde.get());
-          writeDefinition(ol,ls->title(getLanguage()));
-        }
+        if (ls) writeDefinition(ol,ls->title(getLanguage()));
         break;
       case LayoutDocEntry::DetailedDesc:
-        {
-          const LayoutDocEntrySection *ls = dynamic_cast<const LayoutDocEntrySection*>(lde.get());
-          writeDetailedDescription(ol,ls->title(getLanguage()));
-        }
+        if (ls) writeDetailedDescription(ol,ls->title(getLanguage()));
         break;
       case LayoutDocEntry::AuthorSection:
         writeAuthorSection(ol);

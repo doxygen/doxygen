@@ -548,10 +548,11 @@ void XmlDocVisitor::visit(DocIndexEntry *ie)
 
 void XmlDocVisitor::visit(DocSimpleSectSep *sep)
 {
-  if (sep->parent() && sep->parent()->kind()==DocNode::Kind_SimpleSect)
+  DocSimpleSect *sect = sep->parent() ? dynamic_cast<DocSimpleSect*>(sep->parent()) : 0;
+  if (sect)
   {
-    visitPost(dynamic_cast<DocSimpleSect*>(sep->parent())); // end current section
-    visitPre(dynamic_cast<DocSimpleSect*>(sep->parent()));  // start new section
+    visitPost(sect); // end current section
+    visitPre(sect);  // start new section
   }
 }
 
@@ -1141,15 +1142,18 @@ void XmlDocVisitor::visitPre(DocParamList *pl)
       m_t << "<parametertype>";
       for (const auto &type : pl->paramTypes())
       {
-        if (type->kind()==DocNode::Kind_Word)
+        DocWord       *word       = dynamic_cast<DocWord*      >(type.get());
+        DocLinkedWord *linkedWord = dynamic_cast<DocLinkedWord*>(type.get());
+        DocSeparator  *sep        = dynamic_cast<DocSeparator* >(type.get());
+        if (word)
         {
-          visit(dynamic_cast<DocWord*>(type.get()));
+          visit(word);
         }
-        else if (type->kind()==DocNode::Kind_LinkedWord)
+        else if (linkedWord)
         {
-          visit(dynamic_cast<DocLinkedWord*>(type.get()));
+          visit(linkedWord);
         }
-        else if (type->kind()==DocNode::Kind_Sep)
+        else if (sep)
         {
           m_t << "</parametertype>\n";
           m_t << "<parametertype>";
@@ -1176,13 +1180,15 @@ void XmlDocVisitor::visitPre(DocParamList *pl)
       m_t << "\"";
     }
     m_t << ">";
-    if (param->kind()==DocNode::Kind_Word)
+    DocWord       *word       = dynamic_cast<DocWord*      >(param.get());
+    DocLinkedWord *linkedWord = dynamic_cast<DocLinkedWord*>(param.get());
+    if (word)
     {
-      visit(dynamic_cast<DocWord*>(param.get()));
+      visit(word);
     }
-    else if (param->kind()==DocNode::Kind_LinkedWord)
+    else if (linkedWord)
     {
-      visit(dynamic_cast<DocLinkedWord*>(param.get()));
+      visit(linkedWord);
     }
     m_t << "</parametername>\n";
   }

@@ -370,14 +370,17 @@ void addMembersToIndex(T *def,LayoutDocManager::LayoutPart part,
       if (kind==LayoutDocEntry::MemberDef)
       {
         const LayoutDocEntryMemberDef *lmd = dynamic_cast<const LayoutDocEntryMemberDef*>(lde.get());
-        MemberList *ml = def->getMemberList(lmd->type);
-        if (ml)
+        if (lmd)
         {
-          for (const auto &md : *ml)
+          MemberList *ml = def->getMemberList(lmd->type);
+          if (ml)
           {
-            if (md->visibleInIndex())
+            for (const auto &md : *ml)
             {
-              writeMemberToIndex(def,md,addToIndex);
+              if (md->visibleInIndex())
+              {
+                writeMemberToIndex(def,md,addToIndex);
+              }
             }
           }
         }
@@ -1592,14 +1595,17 @@ int countVisibleMembers(const NamespaceDef *nd)
     if (lde->kind()==LayoutDocEntry::MemberDef)
     {
       const LayoutDocEntryMemberDef *lmd = dynamic_cast<const LayoutDocEntryMemberDef*>(lde.get());
-      MemberList *ml = nd->getMemberList(lmd->type);
-      if (ml)
+      if (lmd)
       {
-        for (const auto &md : *ml)
+        MemberList *ml = nd->getMemberList(lmd->type);
+        if (ml)
         {
-          if (md->visibleInIndex())
+          for (const auto &md : *ml)
           {
-            count++;
+            if (md->visibleInIndex())
+            {
+              count++;
+            }
           }
         }
       }
@@ -1615,15 +1621,18 @@ static void writeNamespaceMembers(const NamespaceDef *nd,bool addToIndex)
     if (lde->kind()==LayoutDocEntry::MemberDef)
     {
       const LayoutDocEntryMemberDef *lmd = dynamic_cast<const LayoutDocEntryMemberDef*>(lde.get());
-      MemberList *ml = nd->getMemberList(lmd->type);
-      if (ml)
+      if (lmd)
       {
-        for (const auto &md : *ml)
+        MemberList *ml = nd->getMemberList(lmd->type);
+        if (ml)
         {
-          //printf("  member %s visible=%d\n",qPrint(md->name()),md->visibleInIndex());
-          if (md->visibleInIndex())
+          for (const auto &md : *ml)
           {
-             writeMemberToIndex(nd,md,addToIndex);
+            //printf("  member %s visible=%d\n",qPrint(md->name()),md->visibleInIndex());
+            if (md->visibleInIndex())
+            {
+              writeMemberToIndex(nd,md,addToIndex);
+            }
           }
         }
       }
@@ -3807,32 +3816,35 @@ static void writeGroupTreeNode(OutputList &ol, const GroupDef *gd, int level, FT
       if (lde->kind()==LayoutDocEntry::MemberDef && addToIndex)
       {
         const LayoutDocEntryMemberDef *lmd = dynamic_cast<const LayoutDocEntryMemberDef*>(lde.get());
-        MemberList *ml = gd->getMemberList(lmd->type);
-        if (ml)
+        if (lmd)
         {
-          for (const auto &md : *ml)
+          MemberList *ml = gd->getMemberList(lmd->type);
+          if (ml)
           {
-            const MemberVector &enumList = md->enumFieldList();
-            isDir = !enumList.empty() && md->isEnumerate();
-            if (md->isVisible() && !md->isAnonymous())
+            for (const auto &md : *ml)
             {
-              Doxygen::indexList->addContentsItem(isDir,
-                  md->qualifiedName(),md->getReference(),
-                  md->getOutputFileBase(),md->anchor(),FALSE,addToIndex);
-            }
-            if (isDir)
-            {
-              Doxygen::indexList->incContentsDepth();
-              for (const auto &emd : enumList)
+              const MemberVector &enumList = md->enumFieldList();
+              isDir = !enumList.empty() && md->isEnumerate();
+              if (md->isVisible() && !md->isAnonymous())
               {
-                if (emd->isVisible())
-                {
-                  Doxygen::indexList->addContentsItem(FALSE,
-                      emd->qualifiedName(),emd->getReference(),emd->getOutputFileBase(),
-                      emd->anchor(),FALSE,addToIndex);
-                }
+                Doxygen::indexList->addContentsItem(isDir,
+                    md->qualifiedName(),md->getReference(),
+                    md->getOutputFileBase(),md->anchor(),FALSE,addToIndex);
               }
-              Doxygen::indexList->decContentsDepth();
+              if (isDir)
+              {
+                Doxygen::indexList->incContentsDepth();
+                for (const auto &emd : enumList)
+                {
+                  if (emd->isVisible())
+                  {
+                    Doxygen::indexList->addContentsItem(FALSE,
+                        emd->qualifiedName(),emd->getReference(),emd->getOutputFileBase(),
+                        emd->anchor(),FALSE,addToIndex);
+                  }
+                }
+                Doxygen::indexList->decContentsDepth();
+              }
             }
           }
         }
