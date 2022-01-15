@@ -559,7 +559,10 @@ void DirDefImpl::writeDocumentation(OutputList &ol)
       case LayoutDocEntry::DetailedDesc:
         {
           const LayoutDocEntrySection *ls = dynamic_cast<const LayoutDocEntrySection*>(lde.get());
-          writeDetailedDescription(ol,ls->title(lang));
+          if (ls)
+          {
+            writeDetailedDescription(ol,ls->title(lang));
+          }
         }
         break;
       case LayoutDocEntry::ClassIncludes:

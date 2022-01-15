@@ -387,10 +387,13 @@ void FileDefImpl::writeTagFile(TextStream &tagFile)
       case LayoutDocEntry::MemberDecl:
         {
           const LayoutDocEntryMemberDecl *lmd = dynamic_cast<const LayoutDocEntryMemberDecl*>(lde.get());
-          MemberList * ml = getMemberList(lmd->type);
-          if (ml)
+          if (lmd)
           {
-            ml->writeTagFile(tagFile);
+            MemberList * ml = getMemberList(lmd->type);
+            if (ml)
+            {
+              ml->writeTagFile(tagFile);
+            }
           }
         }
         break;
@@ -748,44 +751,39 @@ void FileDefImpl::writeSummaryLinks(OutputList &ol) const
   SrcLangExt lang=getLanguage();
   for (const auto &lde : LayoutDocManager::instance().docEntries(LayoutDocManager::File))
   {
-    if (lde->kind()==LayoutDocEntry::FileClasses && m_classes.declVisible())
+    const LayoutDocEntrySection *ls = dynamic_cast<const LayoutDocEntrySection*>(lde.get());
+    if (lde->kind()==LayoutDocEntry::FileClasses && m_classes.declVisible() && ls)
     {
-      const LayoutDocEntrySection *ls = dynamic_cast<const LayoutDocEntrySection*>(lde.get());
       QCString label = "nested-classes";
       ol.writeSummaryLink(QCString(),label,ls->title(lang),first);
       first=FALSE;
     }
-    else if (lde->kind()==LayoutDocEntry::FileInterfaces && m_interfaces.declVisible())
+    else if (lde->kind()==LayoutDocEntry::FileInterfaces && m_interfaces.declVisible() && ls)
     {
-      const LayoutDocEntrySection *ls = dynamic_cast<const LayoutDocEntrySection*>(lde.get());
       QCString label = "interfaces";
       ol.writeSummaryLink(QCString(),label,ls->title(lang),first);
       first=FALSE;
     }
-    else if (lde->kind()==LayoutDocEntry::FileStructs && m_structs.declVisible())
+    else if (lde->kind()==LayoutDocEntry::FileStructs && m_structs.declVisible() && ls)
     {
-      const LayoutDocEntrySection *ls = dynamic_cast<const LayoutDocEntrySection*>(lde.get());
       QCString label = "structs";
       ol.writeSummaryLink(QCString(),label,ls->title(lang),first);
       first=FALSE;
     }
-    else if (lde->kind()==LayoutDocEntry::FileExceptions && m_exceptions.declVisible())
+    else if (lde->kind()==LayoutDocEntry::FileExceptions && m_exceptions.declVisible() && ls)
     {
-      const LayoutDocEntrySection *ls = dynamic_cast<const LayoutDocEntrySection*>(lde.get());
       QCString label = "exceptions";
       ol.writeSummaryLink(QCString(),label,ls->title(lang),first);
       first=FALSE;
     }
-    else if (lde->kind()==LayoutDocEntry::FileNamespaces && m_namespaces.declVisible(false))
+    else if (lde->kind()==LayoutDocEntry::FileNamespaces && m_namespaces.declVisible(false) && ls)
     {
-      const LayoutDocEntrySection *ls = dynamic_cast<const LayoutDocEntrySection*>(lde.get());
       QCString label = "namespaces";
       ol.writeSummaryLink(QCString(),label,ls->title(lang),first);
       first=FALSE;
     }
-    else if (lde->kind()==LayoutDocEntry::FileConcepts && m_concepts.declVisible())
+    else if (lde->kind()==LayoutDocEntry::FileConcepts && m_concepts.declVisible() && ls)
     {
-      const LayoutDocEntrySection *ls = dynamic_cast<const LayoutDocEntrySection*>(lde.get());
       QCString label = "concepts";
       ol.writeSummaryLink(QCString(),label,ls->title(lang),first);
       first=FALSE;
@@ -793,11 +791,14 @@ void FileDefImpl::writeSummaryLinks(OutputList &ol) const
     else if (lde->kind()==LayoutDocEntry::MemberDecl)
     {
       const LayoutDocEntryMemberDecl *lmd = dynamic_cast<const LayoutDocEntryMemberDecl*>(lde.get());
-      MemberList * ml = getMemberList(lmd->type);
-      if (ml && ml->declVisible())
+      if (lmd)
       {
-        ol.writeSummaryLink(QCString(),MemberList::listTypeAsString(ml->listType()),lmd->title(lang),first);
-        first=FALSE;
+        MemberList * ml = getMemberList(lmd->type);
+        if (ml && ml->declVisible())
+        {
+          ol.writeSummaryLink(QCString(),MemberList::listTypeAsString(ml->listType()),lmd->title(lang),first);
+          first=FALSE;
+        }
       }
     }
   }
@@ -881,6 +882,7 @@ void FileDefImpl::writeDocumentation(OutputList &ol)
   SrcLangExt lang = getLanguage();
   for (const auto &lde : LayoutDocManager::instance().docEntries(LayoutDocManager::File))
   {
+    const LayoutDocEntrySection *ls = dynamic_cast<const LayoutDocEntrySection*>(lde.get());
     switch (lde->kind())
     {
       case LayoutDocEntry::BriefDesc:
@@ -902,46 +904,25 @@ void FileDefImpl::writeDocumentation(OutputList &ol)
         writeSourceLink(ol);
         break;
       case LayoutDocEntry::FileClasses:
-        {
-          const LayoutDocEntrySection *ls = dynamic_cast<const LayoutDocEntrySection*>(lde.get());
-          writeClassDeclarations(ol,ls->title(lang),m_classes);
-        }
+        if (ls) writeClassDeclarations(ol,ls->title(lang),m_classes);
         break;
       case LayoutDocEntry::FileInterfaces:
-        {
-          const LayoutDocEntrySection *ls = dynamic_cast<const LayoutDocEntrySection*>(lde.get());
-          writeClassDeclarations(ol,ls->title(lang),m_interfaces);
-        }
+        if (ls) writeClassDeclarations(ol,ls->title(lang),m_interfaces);
         break;
       case LayoutDocEntry::FileStructs:
-        {
-          const LayoutDocEntrySection *ls = dynamic_cast<const LayoutDocEntrySection*>(lde.get());
-          writeClassDeclarations(ol,ls->title(lang),m_structs);
-        }
+        if (ls) writeClassDeclarations(ol,ls->title(lang),m_structs);
         break;
       case LayoutDocEntry::FileExceptions:
-        {
-          const LayoutDocEntrySection *ls = dynamic_cast<const LayoutDocEntrySection*>(lde.get());
-          writeClassDeclarations(ol,ls->title(lang),m_exceptions);
-        }
+        if (ls) writeClassDeclarations(ol,ls->title(lang),m_exceptions);
         break;
       case LayoutDocEntry::FileConcepts:
-        {
-          const LayoutDocEntrySection *ls = dynamic_cast<const LayoutDocEntrySection*>(lde.get());
-          writeConcepts(ol,ls->title(lang));
-        }
+        if (ls) writeConcepts(ol,ls->title(lang));
         break;
       case LayoutDocEntry::FileNamespaces:
-        {
-          const LayoutDocEntrySection *ls = dynamic_cast<const LayoutDocEntrySection*>(lde.get());
-          writeNamespaceDeclarations(ol,ls->title(lang),false);
-        }
+        if (ls) writeNamespaceDeclarations(ol,ls->title(lang),false);
         break;
       case LayoutDocEntry::FileConstantGroups:
-        {
-          const LayoutDocEntrySection *ls = dynamic_cast<const LayoutDocEntrySection*>(lde.get());
-          writeNamespaceDeclarations(ol,ls->title(lang),true);
-        }
+        if (ls) writeNamespaceDeclarations(ol,ls->title(lang),true);
         break;
       case LayoutDocEntry::MemberGroups:
         writeMemberGroups(ol);
@@ -949,17 +930,14 @@ void FileDefImpl::writeDocumentation(OutputList &ol)
       case LayoutDocEntry::MemberDecl:
         {
           const LayoutDocEntryMemberDecl *lmd = dynamic_cast<const LayoutDocEntryMemberDecl*>(lde.get());
-          writeMemberDeclarations(ol,lmd->type,lmd->title(lang));
+          if (lmd) writeMemberDeclarations(ol,lmd->type,lmd->title(lang));
         }
         break;
       case LayoutDocEntry::MemberDeclEnd:
         endMemberDeclarations(ol);
         break;
       case LayoutDocEntry::DetailedDesc:
-        {
-          const LayoutDocEntrySection *ls = dynamic_cast<const LayoutDocEntrySection*>(lde.get());
-          writeDetailedDescription(ol,ls->title(lang));
-        }
+        if (ls) writeDetailedDescription(ol,ls->title(lang));
         break;
       case LayoutDocEntry::MemberDefStart:
         startMemberDocumentation(ol);
@@ -970,7 +948,7 @@ void FileDefImpl::writeDocumentation(OutputList &ol)
       case LayoutDocEntry::MemberDef:
         {
           const LayoutDocEntryMemberDef *lmd = dynamic_cast<const LayoutDocEntryMemberDef*>(lde.get());
-          writeMemberDocumentation(ol,lmd->type,lmd->title(lang));
+          if (lmd) writeMemberDocumentation(ol,lmd->type,lmd->title(lang));
         }
         break;
       case LayoutDocEntry::MemberDefEnd:

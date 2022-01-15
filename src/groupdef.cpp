@@ -702,10 +702,13 @@ void GroupDefImpl::writeTagFile(TextStream &tagFile)
       case LayoutDocEntry::MemberDecl:
         {
           const LayoutDocEntryMemberDecl *lmd = dynamic_cast<const LayoutDocEntryMemberDecl*>(lde.get());
-          MemberList * ml = getMemberList(lmd->type);
-          if (ml)
+          if (lmd)
           {
-            ml->writeTagFile(tagFile);
+            MemberList * ml = getMemberList(lmd->type);
+            if (ml)
+            {
+              ml->writeTagFile(tagFile);
+            }
           }
         }
         break;
@@ -1062,23 +1065,29 @@ void GroupDefImpl::writeSummaryLinks(OutputList &ol) const
        )
     {
       const LayoutDocEntrySection *ls = dynamic_cast<const LayoutDocEntrySection*>(lde.get());
-      QCString label = lde->kind()==LayoutDocEntry::GroupClasses      ? "nested-classes" :
-                       lde->kind()==LayoutDocEntry::GroupConcepts     ? "concepts"       :
-                       lde->kind()==LayoutDocEntry::GroupNamespaces   ? "namespaces"     :
-                       lde->kind()==LayoutDocEntry::GroupFiles        ? "files"          :
-                       lde->kind()==LayoutDocEntry::GroupNestedGroups ? "groups"         :
-                       "dirs";
-      ol.writeSummaryLink(QCString(),label,ls->title(lang),first);
-      first=FALSE;
+      if (ls)
+      {
+        QCString label = lde->kind()==LayoutDocEntry::GroupClasses      ? "nested-classes" :
+                         lde->kind()==LayoutDocEntry::GroupConcepts     ? "concepts"       :
+                         lde->kind()==LayoutDocEntry::GroupNamespaces   ? "namespaces"     :
+                         lde->kind()==LayoutDocEntry::GroupFiles        ? "files"          :
+                         lde->kind()==LayoutDocEntry::GroupNestedGroups ? "groups"         :
+                         "dirs";
+        ol.writeSummaryLink(QCString(),label,ls->title(lang),first);
+        first=FALSE;
+      }
     }
     else if (lde->kind()==LayoutDocEntry::MemberDecl)
     {
       const LayoutDocEntryMemberDecl *lmd = dynamic_cast<const LayoutDocEntryMemberDecl*>(lde.get());
-      MemberList * ml = getMemberList(lmd->type);
-      if (ml && ml->declVisible())
+      if (lmd)
       {
-        ol.writeSummaryLink(QCString(),MemberList::listTypeAsString(ml->listType()),lmd->title(lang),first);
-        first=FALSE;
+        MemberList * ml = getMemberList(lmd->type);
+        if (ml && ml->declVisible())
+        {
+          ol.writeSummaryLink(QCString(),MemberList::listTypeAsString(ml->listType()),lmd->title(lang),first);
+          first=FALSE;
+        }
       }
     }
   }
@@ -1124,6 +1133,7 @@ void GroupDefImpl::writeDocumentation(OutputList &ol)
   SrcLangExt lang=getLanguage();
   for (const auto &lde : LayoutDocManager::instance().docEntries(LayoutDocManager::Group))
   {
+    const LayoutDocEntrySection *ls = dynamic_cast<const LayoutDocEntrySection*>(lde.get());
     switch (lde->kind())
     {
       case LayoutDocEntry::BriefDesc:
@@ -1133,27 +1143,16 @@ void GroupDefImpl::writeDocumentation(OutputList &ol)
         startMemberDeclarations(ol);
         break;
       case LayoutDocEntry::GroupClasses:
-        {
-          const LayoutDocEntrySection *ls = dynamic_cast<const LayoutDocEntrySection*>(lde.get());
-          writeClasses(ol,ls->title(lang));
-        }
+        if (ls) writeClasses(ol,ls->title(lang));
         break;
       case LayoutDocEntry::GroupConcepts:
-        {
-          const LayoutDocEntrySection *ls = dynamic_cast<const LayoutDocEntrySection*>(lde.get());
-          writeConcepts(ol,ls->title(lang));
-        }
+        if (ls) writeConcepts(ol,ls->title(lang));
         break;
       case LayoutDocEntry::GroupInlineClasses:
-        {
-          writeInlineClasses(ol);
-        }
+        writeInlineClasses(ol);
         break;
       case LayoutDocEntry::GroupNamespaces:
-        {
-          const LayoutDocEntrySection *ls = dynamic_cast<const LayoutDocEntrySection*>(lde.get());
-          writeNamespaces(ol,ls->title(lang));
-        }
+        if (ls) writeNamespaces(ol,ls->title(lang));
         break;
       case LayoutDocEntry::MemberGroups:
         writeMemberGroups(ol);
@@ -1161,17 +1160,17 @@ void GroupDefImpl::writeDocumentation(OutputList &ol)
       case LayoutDocEntry::MemberDecl:
         {
           const LayoutDocEntryMemberDecl *lmd = dynamic_cast<const LayoutDocEntryMemberDecl*>(lde.get());
-          writeMemberDeclarations(ol,lmd->type,lmd->title(lang));
+          if (lmd)
+          {
+            writeMemberDeclarations(ol,lmd->type,lmd->title(lang));
+          }
         }
         break;
       case LayoutDocEntry::MemberDeclEnd:
         endMemberDeclarations(ol);
         break;
       case LayoutDocEntry::DetailedDesc:
-        {
-          const LayoutDocEntrySection *ls = dynamic_cast<const LayoutDocEntrySection*>(lde.get());
-          writeDetailedDescription(ol,ls->title(lang));
-        }
+        if (ls) writeDetailedDescription(ol,ls->title(lang));
         break;
       case LayoutDocEntry::MemberDefStart:
         startMemberDocumentation(ol);
@@ -1179,32 +1178,26 @@ void GroupDefImpl::writeDocumentation(OutputList &ol)
       case LayoutDocEntry::MemberDef:
         {
           const LayoutDocEntryMemberDef *lmd = dynamic_cast<const LayoutDocEntryMemberDef*>(lde.get());
-          writeMemberDocumentation(ol,lmd->type,lmd->title(lang));
+          if (lmd)
+          {
+            writeMemberDocumentation(ol,lmd->type,lmd->title(lang));
+          }
         }
         break;
       case LayoutDocEntry::MemberDefEnd:
         endMemberDocumentation(ol);
         break;
       case LayoutDocEntry::GroupNestedGroups:
-        {
-          const LayoutDocEntrySection *ls = dynamic_cast<const LayoutDocEntrySection*>(lde.get());
-          writeNestedGroups(ol,ls->title(lang));
-        }
+        if (ls) writeNestedGroups(ol,ls->title(lang));
         break;
       case LayoutDocEntry::GroupPageDocs:
         writePageDocumentation(ol);
         break;
       case LayoutDocEntry::GroupDirs:
-        {
-          const LayoutDocEntrySection *ls = dynamic_cast<const LayoutDocEntrySection*>(lde.get());
-          writeDirs(ol,ls->title(lang));
-        }
+        if (ls) writeDirs(ol,ls->title(lang));
         break;
       case LayoutDocEntry::GroupFiles:
-        {
-          const LayoutDocEntrySection *ls = dynamic_cast<const LayoutDocEntrySection*>(lde.get());
-          writeFiles(ol,ls->title(lang));
-        }
+        if (ls) writeFiles(ol,ls->title(lang));
         break;
       case LayoutDocEntry::GroupGraph:
         writeGroupGraph(ol);

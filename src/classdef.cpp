@@ -2035,9 +2035,12 @@ void ClassDefImpl::writeSummaryLinks(OutputList &ol) const
           m_impl->innerClasses.declVisible()
          )
       {
-        const LayoutDocEntrySection *ls = dynamic_cast<const LayoutDocEntrySection*>(lde.get());
-        ol.writeSummaryLink(QCString(),"nested-classes",ls->title(lang),first);
-        first=FALSE;
+        const LayoutDocEntrySection *ls  = dynamic_cast<const LayoutDocEntrySection*>(lde.get());
+        if (ls)
+        {
+          ol.writeSummaryLink(QCString(),"nested-classes",ls->title(lang),first);
+          first=FALSE;
+        }
       }
       else if (lde->kind()==LayoutDocEntry::ClassAllMembersLink &&
                !m_impl->allMemberNameInfoLinkedMap.empty() &&
@@ -2047,14 +2050,17 @@ void ClassDefImpl::writeSummaryLinks(OutputList &ol) const
         ol.writeSummaryLink(getMemberListFileName(),"all-members-list",theTranslator->trListOfAllMembers(),first);
         first=FALSE;
       }
-      else if (lde->kind()== LayoutDocEntry::MemberDecl)
+      else if (lde->kind()==LayoutDocEntry::MemberDecl)
       {
         const LayoutDocEntryMemberDecl *lmd = dynamic_cast<const LayoutDocEntryMemberDecl*>(lde.get());
-        MemberList * ml = getMemberList(lmd->type);
-        if (ml && ml->declVisible())
+        if (lmd)
         {
-          ol.writeSummaryLink(QCString(),MemberList::listTypeAsString(ml->listType()),lmd->title(lang),first);
-          first=FALSE;
+          MemberList * ml = getMemberList(lmd->type);
+          if (ml && ml->declVisible())
+          {
+            ol.writeSummaryLink(QCString(),MemberList::listTypeAsString(ml->listType()),lmd->title(lang),first);
+            first=FALSE;
+          }
         }
       }
     }
@@ -2151,10 +2157,13 @@ void ClassDefImpl::writeTagFile(TextStream &tagFile)
       case LayoutDocEntry::MemberDecl:
         {
           const LayoutDocEntryMemberDecl *lmd = dynamic_cast<const LayoutDocEntryMemberDecl*>(lde.get());
-          MemberList * ml = getMemberList(lmd->type);
-          if (ml)
+          if (lmd)
           {
-            ml->writeTagFile(tagFile);
+            MemberList * ml = getMemberList(lmd->type);
+            if (ml)
+            {
+              ml->writeTagFile(tagFile);
+            }
           }
         }
         break;
@@ -2246,9 +2255,12 @@ void ClassDefImpl::writeInlineDocumentation(OutputList &ol) const
         break;
       case LayoutDocEntry::MemberDecl:
         {
-          ClassDefSet visitedClasses;
           const LayoutDocEntryMemberDecl *lmd = dynamic_cast<const LayoutDocEntryMemberDecl*>(lde.get());
-          if (!isSimple) writeMemberDeclarations(ol,visitedClasses,lmd->type,lmd->title(lang),lmd->subtitle(lang),TRUE);
+          if (lmd)
+          {
+            ClassDefSet visitedClasses;
+            if (!isSimple) writeMemberDeclarations(ol,visitedClasses,lmd->type,lmd->title(lang),lmd->subtitle(lang),TRUE);
+          }
         }
         break;
       case LayoutDocEntry::MemberGroups:
@@ -2263,13 +2275,16 @@ void ClassDefImpl::writeInlineDocumentation(OutputList &ol) const
       case LayoutDocEntry::MemberDef:
         {
           const LayoutDocEntryMemberDef *lmd = dynamic_cast<const LayoutDocEntryMemberDef*>(lde.get());
-          if (isSimple)
+          if (lmd)
           {
-            writeSimpleMemberDocumentation(ol,lmd->type);
-          }
-          else
-          {
-            writeMemberDocumentation(ol,lmd->type,lmd->title(lang),TRUE);
+            if (isSimple)
+            {
+              writeSimpleMemberDocumentation(ol,lmd->type);
+            }
+            else
+            {
+              writeMemberDocumentation(ol,lmd->type,lmd->title(lang),TRUE);
+            }
           }
         }
         break;
@@ -2530,13 +2545,19 @@ void ClassDefImpl::writeDocumentationContents(OutputList &ol,const QCString & /*
         {
           ClassDefSet visitedClasses;
           const LayoutDocEntryMemberDecl *lmd = dynamic_cast<const LayoutDocEntryMemberDecl*>(lde.get());
-          writeMemberDeclarations(ol,visitedClasses,lmd->type,lmd->title(lang),lmd->subtitle(lang));
+          if (lmd)
+          {
+            writeMemberDeclarations(ol,visitedClasses,lmd->type,lmd->title(lang),lmd->subtitle(lang));
+          }
         }
         break;
       case LayoutDocEntry::ClassNestedClasses:
         {
           const LayoutDocEntrySection *ls = dynamic_cast<const LayoutDocEntrySection*>(lde.get());
-          writeNestedClasses(ol,ls->title(lang));
+          if (ls)
+          {
+            writeNestedClasses(ol,ls->title(lang));
+          }
         }
         break;
       case LayoutDocEntry::MemberDeclEnd:
@@ -2545,7 +2566,10 @@ void ClassDefImpl::writeDocumentationContents(OutputList &ol,const QCString & /*
       case LayoutDocEntry::DetailedDesc:
         {
           const LayoutDocEntrySection *ls = dynamic_cast<const LayoutDocEntrySection*>(lde.get());
-          writeDetailedDescription(ol,pageType,exampleFlag,ls->title(lang));
+          if (ls)
+          {
+            writeDetailedDescription(ol,pageType,exampleFlag,ls->title(lang));
+          }
         }
         break;
       case LayoutDocEntry::MemberDefStart:
@@ -2557,7 +2581,10 @@ void ClassDefImpl::writeDocumentationContents(OutputList &ol,const QCString & /*
       case LayoutDocEntry::MemberDef:
         {
           const LayoutDocEntryMemberDef *lmd = dynamic_cast<const LayoutDocEntryMemberDef*>(lde.get());
-          writeMemberDocumentation(ol,lmd->type,lmd->title(lang));
+          if (lmd)
+          {
+            writeMemberDocumentation(ol,lmd->type,lmd->title(lang));
+          }
         }
         break;
       case LayoutDocEntry::MemberDefEnd:
@@ -3258,7 +3285,10 @@ void ClassDefImpl::writeDeclaration(OutputList &ol,const MemberDef *md,bool inGr
     if (lde->kind()==LayoutDocEntry::MemberDecl)
     {
       const LayoutDocEntryMemberDecl *lmd = dynamic_cast<const LayoutDocEntryMemberDecl*>(lde.get());
-      writePlainMemberDeclaration(ol,lmd->type,inGroup,indentLevel,inheritedFrom,inheritId);
+      if (lmd)
+      {
+        writePlainMemberDeclaration(ol,lmd->type,inGroup,indentLevel,inheritedFrom,inheritId);
+      }
     }
   }
 }
@@ -4240,10 +4270,13 @@ void ClassDefImpl::setAnonymousEnumType()
     if (lde->kind()==LayoutDocEntry::MemberDecl)
     {
       const LayoutDocEntryMemberDecl *lmd = dynamic_cast<const LayoutDocEntryMemberDecl*>(lde.get());
-      MemberList * ml = getMemberList(lmd->type);
-      if (ml)
+      if (lmd)
       {
-        ml->setAnonymousEnumType();
+        MemberList * ml = getMemberList(lmd->type);
+        if (ml)
+        {
+          ml->setAnonymousEnumType();
+        }
       }
     }
     else if (lde->kind()==LayoutDocEntry::MemberGroups)
@@ -4313,7 +4346,7 @@ void ClassDefImpl::getTitleForMemberListType(MemberListType type,
     if (lde->kind()==LayoutDocEntry::MemberDecl)
     {
       const LayoutDocEntryMemberDecl *lmd = dynamic_cast<const LayoutDocEntryMemberDecl*>(lde.get());
-      if (lmd->type==type)
+      if (lmd && lmd->type==type)
       {
         title = lmd->title(lang);
         subtitle = lmd->subtitle(lang);
@@ -4333,7 +4366,7 @@ int ClassDefImpl::countAdditionalInheritedMembers() const
     if (lde->kind()==LayoutDocEntry::MemberDecl)
     {
       const LayoutDocEntryMemberDecl *lmd = dynamic_cast<const LayoutDocEntryMemberDecl*>(lde.get());
-      if (lmd->type!=MemberListType_friends) // friendship is not inherited
+      if (lmd && lmd->type!=MemberListType_friends) // friendship is not inherited
       {
         ClassDefSet visited;
         totalCount+=countInheritedDecMembers(lmd->type,this,TRUE,FALSE,visited);
@@ -4352,7 +4385,7 @@ void ClassDefImpl::writeAdditionalInheritedMembers(OutputList &ol) const
     if (lde->kind()==LayoutDocEntry::MemberDecl)
     {
       const LayoutDocEntryMemberDecl *lmd = dynamic_cast<const LayoutDocEntryMemberDecl*>(lde.get());
-      if (lmd->type!=MemberListType_friends)
+      if (lmd && lmd->type!=MemberListType_friends)
       {
         ClassDefSet visited;
         writeInheritedMemberDeclarations(ol,visited,lmd->type,-1,lmd->title(getLanguage()),this,TRUE,FALSE);

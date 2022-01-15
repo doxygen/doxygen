@@ -5479,10 +5479,13 @@ class NestingNodeContext::Private
             if (lde->kind()==LayoutDocEntry::MemberDef)
             {
               const LayoutDocEntryMemberDef *lmd = dynamic_cast<const LayoutDocEntryMemberDef*>(lde.get());
-              const MemberList *ml = toNamespaceDef(m_def)->getMemberList(lmd->type);
-              if (ml)
+              if (lmd)
               {
-                m_members->addMembers(*ml,visitedClasses);
+                const MemberList *ml = toNamespaceDef(m_def)->getMemberList(lmd->type);
+                if (ml)
+                {
+                  m_members->addMembers(*ml,visitedClasses);
+                }
               }
             }
           }
@@ -5495,10 +5498,13 @@ class NestingNodeContext::Private
             if (lde->kind()==LayoutDocEntry::MemberDef)
             {
               const LayoutDocEntryMemberDef *lmd = dynamic_cast<const LayoutDocEntryMemberDef*>(lde.get());
-              const MemberList *ml = toClassDef(m_def)->getMemberList(lmd->type);
-              if (ml)
+              if (lmd)
               {
-                m_members->addMembers(*ml,visitedClasses);
+                const MemberList *ml = toClassDef(m_def)->getMemberList(lmd->type);
+                if (ml)
+                {
+                  m_members->addMembers(*ml,visitedClasses);
+                }
               }
             }
           }
@@ -5511,10 +5517,13 @@ class NestingNodeContext::Private
             if (lde->kind()==LayoutDocEntry::MemberDef)
             {
               const LayoutDocEntryMemberDef *lmd = dynamic_cast<const LayoutDocEntryMemberDef*>(lde.get());
-              const MemberList *ml = toFileDef(m_def)->getMemberList(lmd->type);
-              if (ml)
+              if (lmd)
               {
-                m_members->addMembers(*ml,visitedClasses);
+                const MemberList *ml = toFileDef(m_def)->getMemberList(lmd->type);
+                if (ml)
+                {
+                  m_members->addMembers(*ml,visitedClasses);
+                }
               }
             }
           }
@@ -5528,10 +5537,13 @@ class NestingNodeContext::Private
           if (lde->kind()==LayoutDocEntry::MemberDef)
           {
             const LayoutDocEntryMemberDef *lmd = dynamic_cast<const LayoutDocEntryMemberDef*>(lde.get());
-            const MemberList *ml = toGroupDef(m_def)->getMemberList(lmd->type);
-            if (ml)
+            if (lmd)
             {
-              m_members->addMembers(*ml,visitedClasses);
+              const MemberList *ml = toGroupDef(m_def)->getMemberList(lmd->type);
+              if (ml)
+              {
+                m_members->addMembers(*ml,visitedClasses);
+              }
             }
           }
         }
