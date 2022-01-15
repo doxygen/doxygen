@@ -1073,7 +1073,7 @@ bool isSeparatedParagraph(const DocSimpleSect *parent,DocPara *par)
   if (it==nodes.end()) return FALSE;
   size_t i = it - nodes.begin();
   size_t count = parent->children().size();
-  auto isSeparator = [&nodes](size_t i) { return dynamic_cast<DocSimpleSectSep*>(nodes.at(i).get())!=0; };
+  auto isSeparator = [&nodes](size_t i_) { return dynamic_cast<DocSimpleSectSep*>(nodes.at(i_).get())!=0; };
   if (count>1 && i==0) // first node
   {
     return isSeparator(1);
