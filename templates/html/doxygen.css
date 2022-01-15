@@ -1824,7 +1824,7 @@ table.DocNodeLTR {
    margin-left: 0;
 }
 
-code.JavaDocCode
+code.JavaDocCode {
   direction:ltr;
 }
 
