@@ -1501,12 +1501,7 @@ DB_VIS_C
   if (m_hide) return;
   m_t << "                            <row>\n";
 
-  DocParamSect *sect = 0;
-  if (pl->parent() && pl->parent()->kind()==DocNode::Kind_ParamSect)
-  {
-    sect=dynamic_cast<DocParamSect*>(pl->parent());
-  }
-
+  DocParamSect *sect = pl->parent() ? dynamic_cast<DocParamSect*>(pl->parent()) : 0;
   if (sect && sect->hasInOutSpecifier())
   {
     m_t << "<entry>";
@@ -1533,17 +1528,20 @@ DB_VIS_C
     m_t << "<entry>";
     for (const auto &type : pl->paramTypes())
     {
-      if (type->kind()==DocNode::Kind_Word)
+      DocWord       *word       = dynamic_cast<DocWord*      >(type.get());
+      DocLinkedWord *linkedWord = dynamic_cast<DocLinkedWord*>(type.get());
+      DocSeparator  *sep        = dynamic_cast<DocSeparator* >(type.get());
+      if (word)
       {
-        visit(dynamic_cast<DocWord*>(type.get()));
+        visit(word);
       }
-      else if (type->kind()==DocNode::Kind_LinkedWord)
+      else if (linkedWord)
       {
-        visit(dynamic_cast<DocLinkedWord*>(type.get()));
+        visit(linkedWord);
       }
-      else if (type->kind()==DocNode::Kind_Sep)
+      else if (sep)
       {
-        m_t << " " << dynamic_cast<DocSeparator *>(type.get())->chars() << " ";
+        m_t << " " << sep->chars() << " ";
       }
 
     }
@@ -1564,13 +1562,15 @@ DB_VIS_C
       {
         m_t << ", ";
       }
-      if (param->kind()==DocNode::Kind_Word)
+      DocWord       *word       = dynamic_cast<DocWord*      >(param.get());
+      DocLinkedWord *linkedWord = dynamic_cast<DocLinkedWord*>(param.get());
+      if (word)
       {
-        visit(dynamic_cast<DocWord*>(param.get()));
+        visit(word);
       }
-      else if (param->kind()==DocNode::Kind_LinkedWord)
+      else if (linkedWord)
       {
-        visit(dynamic_cast<DocLinkedWord*>(param.get()));
+        visit(linkedWord);
       }
       cnt++;
     }

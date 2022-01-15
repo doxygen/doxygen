@@ -528,7 +528,7 @@ void ManDocVisitor::visitPost(DocPara *p)
   if (m_hide) return;
   if (!p->isLast() &&            // omit <p> for last paragraph
       !(p->parent() &&           // and for parameter sections
-        p->parent()->kind()==DocNode::Kind_ParamSect
+        dynamic_cast<DocParamSect*>(p->parent())
        )
      )
   {
@@ -1016,13 +1016,15 @@ void ManDocVisitor::visitPre(DocParamList *pl)
   for (const auto &param : pl->parameters())
   {
     if (!first) m_t << ","; else first=FALSE;
-    if (param->kind()==DocNode::Kind_Word)
+    DocWord *word             = dynamic_cast<DocWord*      >(param.get());
+    DocLinkedWord *linkedWord = dynamic_cast<DocLinkedWord*>(param.get());
+    if (word)
     {
-      visit(dynamic_cast<DocWord*>(param.get()));
+      visit(word);
     }
-    else if (param->kind()==DocNode::Kind_LinkedWord)
+    else if (linkedWord)
     {
-      visit(dynamic_cast<DocLinkedWord*>(param.get()));
+      visit(linkedWord);
     }
   }
   m_t << "\\fP ";

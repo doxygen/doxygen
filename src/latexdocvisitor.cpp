@@ -768,7 +768,7 @@ void LatexDocVisitor::visitPost(DocPara *p)
   if (m_hide) return;
   if (!p->isLast() &&            // omit <p> for last paragraph
       !(p->parent() &&           // and for parameter sections
-        p->parent()->kind()==DocNode::Kind_ParamSect
+        dynamic_cast<DocParamSect*>(p->parent())
        )
      ) m_t << "\n\n";
 }
@@ -1094,9 +1094,10 @@ void LatexDocVisitor::visitPost(DocHtmlListItem *)
 
 static bool classEqualsReflist(const DocNode *n)
 {
-  if (n->kind()==DocNode::Kind_HtmlDescList)
+  const auto docHtmlDescList = dynamic_cast<const DocHtmlDescList*>(n);
+  if (docHtmlDescList)
   {
-    HtmlAttribList attrs = dynamic_cast<const DocHtmlDescList *>(n)->attribs();
+    HtmlAttribList attrs = docHtmlDescList->attribs();
     auto it = std::find_if(attrs.begin(),attrs.end(),
                         [](const auto &att) { return att.name=="class"; });
     if (it!=attrs.end() && it->value == "reflist") return true;
@@ -1115,7 +1116,7 @@ static bool listIsNested(const DocNode *n)
   }
   while (n && !isNested)
   {
-    if (n->kind()==DocNode::Kind_HtmlDescList)
+    if (dynamic_cast<const DocHtmlDescList*>(n))
     {
       isNested = !classEqualsReflist(n);
     }
@@ -1180,7 +1181,7 @@ static bool tableIsNested(const DocNode *n)
   bool isNested=FALSE;
   while (n && !isNested)
   {
-    isNested = n->kind()==DocNode::Kind_HtmlTable || n->kind()==DocNode::Kind_ParamSect;
+    isNested = DocNodeMultiCast<DocHtmlTable,DocParamSect>::is_a(n);
     n  = n->parent();
   }
   return isNested;
@@ -1360,11 +1361,7 @@ void LatexDocVisitor::visitPre(DocHtmlCell *c)
 {
   if (m_hide) return;
 
-  DocHtmlRow *row = 0;
-  if (c->parent() && c->parent()->kind()==DocNode::Kind_HtmlRow)
-  {
-    row = dynamic_cast<DocHtmlRow*>(c->parent());
-  }
+  DocHtmlRow *row = c->parent() ? dynamic_cast<DocHtmlRow*>(c->parent()) : 0;
 
   setCurrentColumn(currentColumn()+1);
 
@@ -1746,10 +1743,9 @@ void LatexDocVisitor::visitPre(DocParamList *pl)
 {
   if (m_hide) return;
   DocParamSect::Type parentType = DocParamSect::Unknown;
-  DocParamSect *sect = 0;
-  if (pl->parent() && pl->parent()->kind()==DocNode::Kind_ParamSect)
+  DocParamSect *sect = pl->parent() ? dynamic_cast<DocParamSect*>(pl->parent()) : 0;
+  if (sect)
   {
-    sect       = dynamic_cast<DocParamSect*>(pl->parent());
     parentType = sect->type();
   }
   bool useTable = parentType==DocParamSect::Param ||
@@ -1785,17 +1781,20 @@ void LatexDocVisitor::visitPre(DocParamList *pl)
   {
     for (const auto &type : pl->paramTypes())
     {
-      if (type->kind()==DocNode::Kind_Word)
+      DocWord       *word       = dynamic_cast<DocWord*      >(type.get());
+      DocLinkedWord *linkedWord = dynamic_cast<DocLinkedWord*>(type.get());
+      DocSeparator  *sep        = dynamic_cast<DocSeparator* >(type.get());
+      if (word)
       {
-        visit(dynamic_cast<DocWord*>(type.get()));
+        visit(word);
       }
-      else if (type->kind()==DocNode::Kind_LinkedWord)
+      else if (linkedWord)
       {
-        visit(dynamic_cast<DocLinkedWord*>(type.get()));
+        visit(linkedWord);
       }
-      else if (type->kind()==DocNode::Kind_Sep)
+      else if (sep)
       {
-        m_t << " " << dynamic_cast<DocSeparator *>(type.get())->chars() << " ";
+        m_t << " " << sep->chars() << " ";
       }
     }
     if (useTable) m_t << " & ";
@@ -1806,13 +1805,15 @@ void LatexDocVisitor::visitPre(DocParamList *pl)
   {
     if (!first) m_t << ","; else first=FALSE;
     m_insideItem=TRUE;
-    if (param->kind()==DocNode::Kind_Word)
+    DocWord       *word       = dynamic_cast<DocWord*      >(param.get());
+    DocLinkedWord *linkedWord = dynamic_cast<DocLinkedWord*>(param.get());
+    if (word)
     {
-      visit(dynamic_cast<DocWord*>(param.get()));
+      visit(word);
     }
-    else if (param->kind()==DocNode::Kind_LinkedWord)
+    else if (linkedWord)
     {
-      visit(dynamic_cast<DocLinkedWord*>(param.get()));
+      visit(linkedWord);
     }
     m_insideItem=FALSE;
   }
@@ -1831,9 +1832,10 @@ void LatexDocVisitor::visitPost(DocParamList *pl)
 {
   if (m_hide) return;
   DocParamSect::Type parentType = DocParamSect::Unknown;
-  if (pl->parent() && pl->parent()->kind()==DocNode::Kind_ParamSect)
+  DocParamSect *sect = pl->parent() ? dynamic_cast<DocParamSect*>(pl->parent()) : 0;
+  if (sect)
   {
-    parentType = dynamic_cast<DocParamSect*>(pl->parent())->type();
+    parentType = sect->type();
   }
   bool useTable = parentType==DocParamSect::Param ||
                   parentType==DocParamSect::RetVal ||
