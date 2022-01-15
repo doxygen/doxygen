@@ -751,7 +751,7 @@ void RTFDocVisitor::visitPost(DocPara *p)
   if (!m_lastIsPara &&
       !p->isLast() &&            // omit <p> for last paragraph
       !(p->parent() &&           // and for parameters & sections
-        p->parent()->kind()==DocNode::Kind_ParamSect
+        dynamic_cast<DocParamSect*>(p->parent())
        )
      )
   {
@@ -1519,10 +1519,9 @@ void RTFDocVisitor::visitPre(DocParamList *pl)
   DBG_RTF("{\\comment RTFDocVisitor::visitPre(DocParamList)}\n");
 
   DocParamSect::Type parentType = DocParamSect::Unknown;
-  DocParamSect *sect = 0;
-  if (pl->parent() && pl->parent()->kind()==DocNode::Kind_ParamSect)
+  DocParamSect *sect = pl->parent() ? dynamic_cast<DocParamSect*>(pl->parent()) : 0;
+  if (sect)
   {
-    sect       = dynamic_cast<DocParamSect*>(pl->parent());
     parentType = sect->type();
   }
   bool useTable = parentType==DocParamSect::Param ||
@@ -1591,17 +1590,20 @@ void RTFDocVisitor::visitPre(DocParamList *pl)
     }
     for (const auto &type : pl->paramTypes())
     {
-      if (type->kind()==DocNode::Kind_Word)
+      DocWord       *word       = dynamic_cast<DocWord*      >(type.get());
+      DocLinkedWord *linkedWord = dynamic_cast<DocLinkedWord*>(type.get());
+      DocSeparator  *sep        = dynamic_cast<DocSeparator* >(type.get());
+      if (word)
       {
-        visit(dynamic_cast<DocWord*>(type.get()));
+        visit(word);
       }
-      else if (type->kind()==DocNode::Kind_LinkedWord)
+      else if (linkedWord)
       {
-        visit(dynamic_cast<DocLinkedWord*>(type.get()));
+        visit(linkedWord);
       }
-      else if (type->kind()==DocNode::Kind_Sep)
+      else if (sep)
       {
-        m_t << " " << dynamic_cast<DocSeparator *>(type.get())->chars() << " ";
+        m_t << " " << sep->chars() << " ";
       }
     }
     if (useTable)
@@ -1621,13 +1623,15 @@ void RTFDocVisitor::visitPre(DocParamList *pl)
   for (const auto &param : pl->parameters())
   {
     if (!first) m_t << ","; else first=FALSE;
-    if (param->kind()==DocNode::Kind_Word)
+    DocWord       *word       = dynamic_cast<DocWord*      >(param.get());
+    DocLinkedWord *linkedWord = dynamic_cast<DocLinkedWord*>(param.get());
+    if (word)
     {
-      visit(dynamic_cast<DocWord*>(param.get()));
+      visit(word);
     }
-    else if (param->kind()==DocNode::Kind_LinkedWord)
+    else if (linkedWord)
     {
-      visit(dynamic_cast<DocLinkedWord*>(param.get()));
+      visit(linkedWord);
     }
   }
   m_t << "} ";
@@ -1645,11 +1649,10 @@ void RTFDocVisitor::visitPost(DocParamList *pl)
   DBG_RTF("{\\comment RTFDocVisitor::visitPost(DocParamList)}\n");
 
   DocParamSect::Type parentType = DocParamSect::Unknown;
-  //DocParamSect *sect = 0;
-  if (pl->parent() && pl->parent()->kind()==DocNode::Kind_ParamSect)
+  DocParamSect *sect = pl->parent() ? dynamic_cast<DocParamSect*>(pl->parent()) : 0;
+  if (sect)
   {
-    parentType = dynamic_cast<DocParamSect*>(pl->parent())->type();
-    //sect=(DocParamSect*)pl->parent();
+    parentType = sect->type();
   }
   bool useTable = parentType==DocParamSect::Param ||
                   parentType==DocParamSect::RetVal ||

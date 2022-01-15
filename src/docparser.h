@@ -96,71 +96,11 @@ class DocParser;
 class DocNode
 {
   public:
-    /*! Available node types. */
-    enum Kind { Kind_Root           = 0,
-                Kind_Word           = 1,
-                Kind_WhiteSpace     = 2,
-                Kind_Para           = 3,
-                Kind_AutoList       = 4,
-                Kind_AutoListItem   = 5,
-                Kind_Symbol         = 6,
-                Kind_URL            = 7,
-                Kind_StyleChange    = 8,
-                Kind_SimpleSect     = 9,
-                Kind_Title          = 10,
-                Kind_SimpleList     = 11,
-                Kind_SimpleListItem = 12,
-                Kind_Section        = 13,
-                Kind_Verbatim       = 14,
-                Kind_XRefItem       = 15,
-                Kind_HtmlList       = 16,
-                Kind_HtmlListItem   = 17,
-                Kind_HtmlDescList   = 18,
-                Kind_HtmlDescData   = 19,
-                Kind_HtmlDescTitle  = 20,
-                Kind_HtmlTable      = 21,
-                Kind_HtmlRow        = 22,
-                Kind_HtmlCell       = 23,
-                Kind_HtmlCaption    = 24,
-                Kind_LineBreak      = 25,
-                Kind_HorRuler       = 26,
-                Kind_Anchor         = 27,
-                Kind_IndexEntry     = 28,
-                Kind_Internal       = 29,
-                Kind_HRef           = 30,
-                Kind_Include        = 31,
-                Kind_IncOperator    = 32,
-                Kind_HtmlHeader     = 33,
-                Kind_Image          = 34,
-                Kind_DotFile        = 35,
-                Kind_Link           = 36,
-                Kind_Ref            = 37,
-                Kind_Formula        = 38,
-                Kind_SecRefItem     = 39,
-                Kind_SecRefList     = 40,
-                Kind_SimpleSectSep  = 41,
-                Kind_LinkedWord     = 42,
-                Kind_ParamSect      = 43,
-                Kind_ParamList      = 44,
-                Kind_InternalRef    = 45,
-                Kind_Copy           = 46,
-                Kind_Text           = 47,
-                Kind_MscFile        = 48,
-                Kind_HtmlBlockQuote = 49,
-                Kind_VhdlFlow       = 50,
-                Kind_ParBlock       = 51,
-                Kind_DiaFile        = 52,
-                Kind_Emoji          = 53,
-                Kind_Sep            = 54
-              };
     /*! Creates a new node */
     DocNode(DocParser &parser) : m_parser(parser) {}
 
     /*! Destroys a node. */
     virtual ~DocNode() {}
-
-    /*! Returns the kind of node. Provides runtime type information */
-    virtual Kind kind() const = 0;
 
     /*! Returns the parent of this node or 0 for the root node. */
     DocNode *parent() const { return m_parent; }
@@ -188,6 +128,26 @@ class DocNode
 };
 
 using DocNodeList = std::vector< std::unique_ptr<DocNode> >;
+
+/** Recursive helper class to see if a given DocNode pointer is derived of any of a given set of types */
+template<typename T, typename ...Ts>
+struct DocNodeMultiCast
+{
+  inline static bool is_a(DocNode *node)
+  { return dynamic_cast<T*>(node)!=0 || DocNodeMultiCast<Ts...>::is_a(node); }
+  inline static bool is_a(const DocNode *node)
+  { return dynamic_cast<const T*>(node)!=0 || DocNodeMultiCast<Ts...>::is_a(node); }
+};
+
+/** Helper to stop the recursion */
+template<typename T>
+struct DocNodeMultiCast<T>
+{
+  inline static bool is_a(DocNode *node)
+  { return dynamic_cast<T*>(node)!=0; }
+  inline static bool is_a(const DocNode *node)
+  { return dynamic_cast<const T*>(node)!=0; }
+};
 
 /** Default accept implementation for compound nodes in the abstract
  *  syntax tree.
@@ -219,7 +179,6 @@ class DocWord : public DocNode
   public:
     DocWord(DocParser &parser,DocNode *parent,const QCString &word);
     QCString word() const { return m_word; }
-    Kind kind() const override { return Kind_Word; }
     void accept(DocVisitor *v) override { v->visit(this); }
 
   private:
@@ -235,7 +194,6 @@ class DocLinkedWord : public DocNode
                   const QCString &ref,const QCString &file,
                   const QCString &anchor,const QCString &tooltip);
     QCString word() const       { return m_word; }
-    Kind kind() const override          { return Kind_LinkedWord; }
     QCString file() const       { return m_file; }
     QCString relPath() const    { return m_relPath; }
     QCString ref() const        { return m_ref; }
@@ -259,7 +217,6 @@ class DocURL : public DocNode
     DocURL(DocParser &parser,DocNode *parent,const QCString &url,bool isEmail) :
       DocNode(parser), m_url(url), m_isEmail(isEmail) { m_parent=parent; }
     QCString url() const        { return m_url; }
-    Kind kind() const override          { return Kind_URL; }
     void accept(DocVisitor *v) override { v->visit(this); }
     bool isEmail() const       { return m_isEmail; }
 
@@ -275,7 +232,6 @@ class DocLineBreak : public DocNode
     DocLineBreak(DocParser &parser,DocNode *parent) : DocNode(parser) { m_parent = parent; }
     DocLineBreak(DocParser &parser,DocNode *parent,const HtmlAttribList &attribs)
       : DocNode(parser), m_attribs(attribs) { m_parent = parent; }
-    Kind kind() const override          { return Kind_LineBreak; }
     void accept(DocVisitor *v) override { v->visit(this); }
 
     const HtmlAttribList &attribs() const { return m_attribs; }
@@ -290,7 +246,6 @@ class DocHorRuler : public DocNode
   public:
     DocHorRuler(DocParser &parser,DocNode *parent,const HtmlAttribList &attribs)
       : DocNode(parser), m_attribs(attribs) { m_parent = parent; }
-    Kind kind() const override          { return Kind_HorRuler; }
     void accept(DocVisitor *v) override { v->visit(this); }
 
     const HtmlAttribList &attribs() const { return m_attribs; }
@@ -304,7 +259,6 @@ class DocAnchor : public DocNode
 {
   public:
     DocAnchor(DocParser &parser,DocNode *parent,const QCString &id,bool newAnchor);
-    Kind kind() const override          { return Kind_Anchor; }
     QCString anchor() const    { return m_anchor; }
     QCString file() const      { return m_file; }
     void accept(DocVisitor *v) override { v->visit(this); }
@@ -322,7 +276,6 @@ class DocCite : public DocNode
 {
   public:
     DocCite(DocParser &parser,DocNode *parent,const QCString &target,const QCString &context);
-    Kind kind() const override            { return Kind_Ref; }
     QCString file() const        { return m_file; }
     QCString relPath() const     { return m_relPath; }
     QCString ref() const         { return m_ref; }
@@ -367,7 +320,6 @@ class DocStyleChange : public DocNode
                    const HtmlAttribList *attribs=0) :
       DocNode(parser), m_position(position), m_style(s), m_enable(enable)
       { m_parent = parent; if (attribs) m_attribs=*attribs; m_tagName = tagName.lower();}
-    Kind kind() const override                     { return Kind_StyleChange; }
     Style style() const                   { return m_style; }
     const char *styleString() const;
     bool enable() const                   { return m_enable; }
@@ -460,7 +412,6 @@ class DocSymbol : public DocNode
     DocSymbol(DocParser &parser,DocNode *parent,SymType s) :
       DocNode(parser), m_symbol(s) { m_parent = parent; }
     SymType symbol() const     { return m_symbol; }
-    Kind kind() const override          { return Kind_Symbol; }
     void accept(DocVisitor *v) override { v->visit(this); }
     static SymType decodeSymbol(const QCString &symName);
 
@@ -475,7 +426,6 @@ class DocEmoji : public DocNode
     DocEmoji(DocParser &parser,DocNode *parent,const QCString &symName);
     QCString name() const      { return m_symName; }
     int index() const          { return m_index; }
-    Kind kind() const override          { return Kind_Emoji; }
     void accept(DocVisitor *v) override { v->visit(this); }
 
   private:
@@ -489,7 +439,6 @@ class DocWhiteSpace : public DocNode
   public:
     DocWhiteSpace(DocParser &parser,DocNode *parent,const QCString &chars) :
       DocNode(parser), m_chars(chars) { m_parent = parent; }
-    Kind kind() const override          { return Kind_WhiteSpace; }
     QCString chars() const     { return m_chars; }
     void accept(DocVisitor *v) override { v->visit(this); }
   private:
@@ -502,7 +451,6 @@ class DocSeparator : public DocNode
   public:
     DocSeparator(DocParser &parser,DocNode *parent,const QCString &chars) :
       DocNode(parser), m_chars(chars) { m_parent = parent; }
-    Kind kind() const override          { return Kind_Sep; }
     QCString chars() const     { return m_chars; }
     void accept(DocVisitor *) override { }
   private:
@@ -517,7 +465,6 @@ class DocVerbatim : public DocNode
     DocVerbatim(DocParser &parser,DocNode *parent,const QCString &context,
                 const QCString &text, Type t,bool isExample,
                 const QCString &exampleFile,bool isBlock=FALSE,const QCString &lang=QCString());
-    Kind kind() const override            { return Kind_Verbatim; }
     Type type() const            { return m_type; }
     QCString text() const        { return m_text; }
     QCString context() const     { return m_context; }
@@ -576,7 +523,6 @@ class DocInclude : public DocNode
       DocNode(parser), m_file(file), m_context(context), m_type(t),
       m_isExample(isExample), m_isBlock(isBlock),
       m_exampleFile(exampleFile), m_blockId(blockId) { m_parent = parent; }
-    Kind kind() const override            { return Kind_Include; }
     QCString file() const        { return m_file; }
     QCString extension() const   { int i=m_file.findRev('.');
                                    if (i!=-1)
@@ -615,7 +561,6 @@ class DocIncOperator : public DocNode
       DocNode(parser), m_type(t), m_pattern(pat), m_context(context),
       m_isFirst(FALSE), m_isLast(FALSE),
       m_isExample(isExample), m_exampleFile(exampleFile) { m_parent = parent; }
-    Kind kind() const override           { return Kind_IncOperator; }
     Type type() const           { return m_type; }
     const char *typeAsString() const
     {
@@ -662,7 +607,6 @@ class DocFormula : public DocNode
 {
   public:
     DocFormula(DocParser &parser,DocNode *parent,int id);
-    Kind kind() const override  { return Kind_Formula; }
     QCString name() const       { return m_name; }
     QCString text() const       { return m_text; }
     QCString relPath() const    { return m_relPath; }
@@ -688,7 +632,6 @@ class DocIndexEntry : public DocNode
   public:
     DocIndexEntry(DocParser &parser,DocNode *parent,const Definition *scope,const MemberDef *md)
       : DocNode(parser), m_scope(scope), m_member(md){ m_parent = parent; }
-    Kind kind() const override { return Kind_IndexEntry; }
     int parse();
     const Definition *scope() const    { return m_scope;  }
     const MemberDef *member() const    { return m_member; }
@@ -708,7 +651,6 @@ class DocAutoList : public CompAccept<DocAutoList>
 {
   public:
     DocAutoList(DocParser &parser,DocNode *parent,int indent,bool isEnumList,int depth);
-    Kind kind() const override          { return Kind_AutoList; }
     bool isEnumList() const    { return m_isEnumList; }
     int  indent() const        { return m_indent; }
     int depth() const          { return m_depth; }
@@ -725,7 +667,6 @@ class DocAutoListItem : public CompAccept<DocAutoListItem>
 {
   public:
     DocAutoListItem(DocParser &parser,DocNode *parent,int indent,int num);
-    Kind kind() const override          { return Kind_AutoListItem; }
     int itemNumber() const     { return m_itemNum; }
     int parse();
 
@@ -743,7 +684,6 @@ class DocTitle : public CompAccept<DocTitle>
     DocTitle(DocParser &parser,DocNode *parent) : CompAccept<DocTitle>(parser) { m_parent = parent; }
     void parse();
     void parseFromString(const QCString &title);
-    Kind kind() const override          { return Kind_Title; }
     bool hasTitle() const      { return !m_children.empty(); }
 
   private:
@@ -754,7 +694,6 @@ class DocXRefItem : public CompAccept<DocXRefItem>
 {
   public:
     DocXRefItem(DocParser &parser,DocNode *parent,int id,const QCString &key);
-    Kind kind() const override          { return Kind_XRefItem; }
     QCString file() const       { return m_file; }
     QCString anchor() const     { return m_anchor; }
     QCString title() const      { return m_title; }
@@ -778,7 +717,6 @@ class DocImage : public CompAccept<DocImage>
     enum Type { Html, Latex, Rtf, DocBook, Xml };
     DocImage(DocParser &parser,DocNode *parent,const HtmlAttribList &attribs,
              const QCString &name,Type t,const QCString &url=QCString(), bool inlineImage = TRUE);
-    Kind kind() const override           { return Kind_Image; }
     Type type() const           { return m_type; }
     QCString name() const       { return m_name; }
     bool hasCaption() const     { return !m_children.empty(); }
@@ -836,7 +774,6 @@ class DocDotFile : public DocDiagramFileBase<DocDotFile>
   public:
     DocDotFile(DocParser &parser,DocNode *parent,const QCString &name,const QCString &context,
                const QCString &srcFile,int srcLine);
-    Kind kind() const override          { return Kind_DotFile; }
     bool parse();
 };
 
@@ -846,7 +783,6 @@ class DocMscFile : public DocDiagramFileBase<DocMscFile>
   public:
     DocMscFile(DocParser &parser,DocNode *parent,const QCString &name,const QCString &context,
                const QCString &srcFile,int srcLine);
-    Kind kind() const override          { return Kind_MscFile; }
     bool parse();
 };
 
@@ -856,7 +792,6 @@ class DocDiaFile : public DocDiagramFileBase<DocDiaFile>
   public:
     DocDiaFile(DocParser &parser,DocNode *parent,const QCString &name,const QCString &context,
                const QCString &srcFile,int srcLine);
-    Kind kind() const override          { return Kind_DiaFile; }
     bool parse();
 };
 
@@ -866,7 +801,6 @@ class DocVhdlFlow : public CompAccept<DocVhdlFlow>
   public:
     DocVhdlFlow(DocParser &parser,DocNode *parent);
     void parse();
-    Kind kind() const override    { return Kind_VhdlFlow; }
     bool hasCaption()    { return !m_children.empty(); }
   private:
 };
@@ -877,7 +811,6 @@ class DocLink : public CompAccept<DocLink>
   public:
     DocLink(DocParser &parser,DocNode *parent,const QCString &target);
     QCString parse(bool,bool isXmlLink=FALSE);
-    Kind kind() const override          { return Kind_Link; }
     QCString file() const       { return m_file; }
     QCString relPath() const    { return m_relPath; }
     QCString ref() const        { return m_ref; }
@@ -897,7 +830,6 @@ class DocRef : public CompAccept<DocRef>
   public:
     DocRef(DocParser &parser,DocNode *parent,const QCString &target,const QCString &context);
     void parse();
-    Kind kind() const override            { return Kind_Ref; }
     QCString file() const         { return m_file; }
     QCString relPath() const      { return m_relPath; }
     QCString ref() const          { return m_ref; }
@@ -925,7 +857,6 @@ class DocInternalRef : public CompAccept<DocInternalRef>
   public:
     DocInternalRef(DocParser &parser,DocNode *parent,const QCString &target);
     void parse();
-    Kind kind() const override            { return Kind_Ref; }
     QCString file() const         { return m_file; }
     QCString relPath() const      { return m_relPath; }
     QCString anchor() const       { return m_anchor; }
@@ -947,7 +878,6 @@ class DocHRef : public CompAccept<DocHRef>
     QCString url() const        { return m_url; }
     QCString file() const       { return m_file; }
     QCString relPath() const    { return m_relPath; }
-    Kind kind() const override           { return Kind_HRef; }
     const HtmlAttribList &attribs() const { return m_attribs; }
 
   private:
@@ -964,7 +894,6 @@ class DocHtmlHeader : public CompAccept<DocHtmlHeader>
     DocHtmlHeader(DocParser &parser,DocNode *parent,const HtmlAttribList &attribs,int level) :
        CompAccept<DocHtmlHeader>(parser), m_level(level), m_attribs(attribs) { m_parent = parent; }
     int level() const                     { return m_level; }
-    Kind kind() const override                     { return Kind_HtmlHeader; }
     const HtmlAttribList &attribs() const { return m_attribs; }
     int parse();
 
@@ -979,7 +908,6 @@ class DocHtmlDescTitle : public CompAccept<DocHtmlDescTitle>
   public:
     DocHtmlDescTitle(DocParser &parser,DocNode *parent,const HtmlAttribList &attribs) :
       CompAccept<DocHtmlDescTitle>(parser), m_attribs(attribs) { m_parent = parent; }
-    Kind kind() const override                     { return Kind_HtmlDescTitle; }
     const HtmlAttribList &attribs() const { return m_attribs; }
     int parse();
 
@@ -993,7 +921,6 @@ class DocHtmlDescList : public CompAccept<DocHtmlDescList>
   public:
     DocHtmlDescList(DocParser &parser,DocNode *parent,const HtmlAttribList &attribs) :
       CompAccept<DocHtmlDescList>(parser), m_attribs(attribs) { m_parent = parent; }
-    Kind kind() const override                     { return Kind_HtmlDescList; }
     const HtmlAttribList &attribs() const { return m_attribs; }
     int parse();
 
@@ -1007,7 +934,6 @@ class DocSection : public CompAccept<DocSection>
   public:
     DocSection(DocParser &parser,DocNode *parent,int level,const QCString &id) :
       CompAccept<DocSection>(parser), m_level(level), m_id(id) { m_parent = parent; }
-    Kind kind() const override          { return Kind_Section; }
     int level() const          { return m_level; }
     QCString title() const      { return m_title; }
     QCString anchor() const     { return m_anchor; }
@@ -1028,7 +954,6 @@ class DocSecRefItem : public CompAccept<DocSecRefItem>
 {
   public:
     DocSecRefItem(DocParser &parser,DocNode *parent,const QCString &target);
-    Kind kind() const override          { return Kind_SecRefItem; }
     QCString target() const     { return m_target; }
     QCString file() const       { return m_file; }
     QCString anchor() const     { return m_anchor; }
@@ -1054,7 +979,6 @@ class DocSecRefList : public CompAccept<DocSecRefList>
   public:
     DocSecRefList(DocParser &parser,DocNode *parent) : CompAccept<DocSecRefList>(parser) { m_parent = parent; }
     void parse();
-    Kind kind() const override          { return Kind_SecRefList; }
 
   private:
 };
@@ -1065,7 +989,6 @@ class DocInternal : public CompAccept<DocInternal>
   public:
     DocInternal(DocParser &parser,DocNode *parent) : CompAccept<DocInternal>(parser) { m_parent = parent; }
     int parse(int);
-    Kind kind() const override          { return Kind_Internal; }
 
   private:
 };
@@ -1076,7 +999,6 @@ class DocParBlock : public CompAccept<DocParBlock>
   public:
     DocParBlock(DocParser &parser,DocNode *parent) : CompAccept<DocParBlock>(parser) { m_parent = parent; }
     int parse();
-    Kind kind() const override          { return Kind_ParBlock; }
 
   private:
 };
@@ -1087,7 +1009,6 @@ class DocSimpleList : public CompAccept<DocSimpleList>
 {
   public:
     DocSimpleList(DocParser &parser,DocNode *parent) : CompAccept<DocSimpleList>(parser) { m_parent = parent; }
-    Kind kind() const override          { return Kind_SimpleList; }
     int parse();
 
   private:
@@ -1100,7 +1021,6 @@ class DocHtmlList : public CompAccept<DocHtmlList>
     enum Type { Unordered, Ordered };
     DocHtmlList(DocParser &parser,DocNode *parent,const HtmlAttribList &attribs,Type t) :
       CompAccept<DocHtmlList>(parser), m_type(t), m_attribs(attribs) { m_parent = parent; }
-    Kind kind() const override          { return Kind_HtmlList; }
     Type type() const          { return m_type; }
     const HtmlAttribList &attribs() const { return m_attribs; }
     int parse();
@@ -1122,7 +1042,6 @@ class DocSimpleSect : public CompAccept<DocSimpleSect>
     };
     DocSimpleSect(DocParser &parser,DocNode *parent,Type t);
     virtual ~DocSimpleSect();
-    Kind kind() const override       { return Kind_SimpleSect; }
     Type type() const       { return m_type; }
     QCString typeString() const;
     void accept(DocVisitor *v) override;
@@ -1144,7 +1063,6 @@ class DocSimpleSectSep : public DocNode
 {
   public:
     DocSimpleSectSep(DocParser &parser,DocNode *parent) : DocNode(parser) { m_parent = parent; }
-    Kind kind() const override { return Kind_SimpleSectSep; }
     void accept(DocVisitor *v) override { v->visit(this); }
 
   private:
@@ -1167,7 +1085,6 @@ class DocParamSect : public CompAccept<DocParamSect>
       : CompAccept<DocParamSect>(parser), m_type(t), m_hasInOutSpecifier(FALSE), m_hasTypeSpecifier(FALSE)
     { m_parent = parent; }
     int parse(const QCString &cmdName,bool xmlContext,Direction d);
-    Kind kind() const override          { return Kind_ParamSect; }
     Type type() const          { return m_type; }
     bool hasInOutSpecifier() const { return m_hasInOutSpecifier; }
     bool hasTypeSpecifier() const  { return m_hasTypeSpecifier; }
@@ -1185,7 +1102,6 @@ class DocPara : public CompAccept<DocPara>
     DocPara(DocParser &parser,DocNode *parent) :
              CompAccept<DocPara>(parser), m_isFirst(FALSE), m_isLast(FALSE) { m_parent = parent; }
     int parse();
-    Kind kind() const override           { return Kind_Para; }
     bool isEmpty() const        { return m_children.empty(); }
     void markFirst(bool v=TRUE) { m_isFirst=v; }
     void markLast(bool v=TRUE)  { m_isLast=v; }
@@ -1237,7 +1153,6 @@ class DocParamList : public DocNode
       m_parent = parent;
     }
     virtual ~DocParamList()         { }
-    Kind kind() const override               { return Kind_ParamList; }
     DocNodeList &parameters()       { return m_params; }
     DocNodeList &paramTypes()       { return m_paramTypes; }
     DocParamSect::Type type() const { return m_type; }
@@ -1273,7 +1188,6 @@ class DocSimpleListItem : public DocNode
       DocNode(parser) { m_paragraph=new DocPara(parser,this); m_parent = parent; }
     int parse();
     virtual ~DocSimpleListItem() { delete m_paragraph; }
-    Kind kind() const override            { return Kind_SimpleListItem; }
     void accept(DocVisitor *v) override
     {
       v->visitPre(this);
@@ -1291,7 +1205,6 @@ class DocHtmlListItem : public CompAccept<DocHtmlListItem>
   public:
     DocHtmlListItem(DocParser &parser,DocNode *parent,const HtmlAttribList &attribs,int num) :
       CompAccept<DocHtmlListItem>(parser), m_attribs(attribs), m_itemNum(num) { m_parent = parent; }
-    Kind kind() const override                     { return Kind_HtmlListItem; }
     int itemNumber() const                { return m_itemNum; }
     const HtmlAttribList &attribs() const { return m_attribs; }
     int parse();
@@ -1307,7 +1220,6 @@ class DocHtmlDescData : public CompAccept<DocHtmlDescData>
 {
   public:
     DocHtmlDescData(DocParser &parser,DocNode *parent) : CompAccept<DocHtmlDescData>(parser) { m_parent = parent; }
-    Kind kind() const override                     { return Kind_HtmlDescData; }
     const HtmlAttribList &attribs() const { return m_attribs; }
     int parse();
 
@@ -1327,7 +1239,6 @@ class DocHtmlCell : public CompAccept<DocHtmlCell>
     bool isHeading() const      { return m_isHeading; }
     bool isFirst() const        { return m_isFirst; }
     bool isLast() const         { return m_isLast; }
-    Kind kind() const override           { return Kind_HtmlCell; }
     void markFirst(bool v=TRUE) { m_isFirst=v; }
     void markLast(bool v=TRUE)  { m_isLast=v; }
     const HtmlAttribList &attribs() const { return m_attribs; }
@@ -1356,7 +1267,6 @@ class DocHtmlCaption : public CompAccept<DocHtmlCaption>
 {
   public:
     DocHtmlCaption(DocParser &parser,DocNode *parent,const HtmlAttribList &attribs);
-    Kind kind() const override          { return Kind_HtmlCaption; }
     const HtmlAttribList &attribs() const { return m_attribs; }
     int parse();
     bool hasCaptionId() const { return m_hasCaptionId; }
@@ -1377,7 +1287,6 @@ class DocHtmlRow : public CompAccept<DocHtmlRow>
   public:
     DocHtmlRow(DocParser &parser,DocNode *parent,const HtmlAttribList &attribs)
       : CompAccept<DocHtmlRow>(parser), m_attribs(attribs) { m_parent = parent; }
-    Kind kind() const override            { return Kind_HtmlRow; }
     size_t numCells() const      { return m_children.size(); }
     const HtmlAttribList &attribs() const { return m_attribs; }
     int parse();
@@ -1386,9 +1295,10 @@ class DocHtmlRow : public CompAccept<DocHtmlRow>
                                    bool heading=TRUE;
                                    for (const auto &n : m_children)
                                    {
-                                     if (n->kind()==Kind_HtmlCell)
+                                     const DocHtmlCell *cell = dynamic_cast<const DocHtmlCell*>(n.get());
+                                     if (cell)
                                      {
-                                       heading = heading && (dynamic_cast<DocHtmlCell*>(n.get()))->isHeading();
+                                       heading = heading && cell->isHeading();
                                      }
                                    }
                                    return !m_children.empty() && heading;
@@ -1411,7 +1321,6 @@ class DocHtmlTable : public CompAccept<DocHtmlTable>
     DocHtmlTable(DocParser &parser,DocNode *parent,const HtmlAttribList &attribs)
       : CompAccept<DocHtmlTable>(parser), m_attribs(attribs) { m_caption=0; m_numCols=0; m_parent = parent; }
     ~DocHtmlTable()         { delete m_caption; }
-    Kind kind() const override       { return Kind_HtmlTable; }
     size_t numRows() const  { return m_children.size(); }
     bool hasCaption()       { return m_caption!=0; }
     const HtmlAttribList &attribs() const { return m_attribs; }
@@ -1421,8 +1330,7 @@ class DocHtmlTable : public CompAccept<DocHtmlTable>
     void accept(DocVisitor *v) override;
     DocHtmlCaption *caption() const { return m_caption; }
     DocHtmlRow *firstRow() const {
-                             return (!m_children.empty() && m_children.front()->kind()==Kind_HtmlRow) ?
-                                     dynamic_cast<DocHtmlRow*>(m_children.front().get()) : 0;
+                             return !m_children.empty() ? dynamic_cast<DocHtmlRow*>(m_children.front().get()) : 0;
                            }
 
   private:
@@ -1438,7 +1346,6 @@ class DocHtmlBlockQuote : public CompAccept<DocHtmlBlockQuote>
   public:
     DocHtmlBlockQuote(DocParser &parser,DocNode *parent,const HtmlAttribList &attribs)
       : CompAccept<DocHtmlBlockQuote>(parser), m_attribs(attribs) { m_parent = parent; }
-    Kind kind() const override       { return Kind_HtmlBlockQuote; }
     int parse();
     const HtmlAttribList &attribs() const { return m_attribs; }
 
@@ -1451,7 +1358,6 @@ class DocText : public CompAccept<DocText>
 {
   public:
     DocText(DocParser &parser) : CompAccept<DocText>(parser) {}
-    Kind kind() const override       { return Kind_Text; }
     void parse();
     bool isEmpty() const    { return m_children.empty(); }
 };
@@ -1461,7 +1367,6 @@ class DocRoot : public CompAccept<DocRoot>
 {
   public:
     DocRoot(DocParser &parser,bool indent,bool sl) : CompAccept<DocRoot>(parser), m_indent(indent), m_singleLine(sl) {}
-    Kind kind() const override       { return Kind_Root; }
     void parse();
     bool indent() const { return m_indent; }
     bool singleLine() const { return m_singleLine; }

@@ -676,15 +676,18 @@ class PrintDocVisitor : public DocVisitor
         printf("<param>");
         for (const auto &param : pl->parameters())
         {
-          if (param->kind()==DocNode::Kind_Word)
+          DocWord *word             = dynamic_cast<DocWord*      >(param.get());
+          DocLinkedWord *linkedWord = dynamic_cast<DocLinkedWord*>(param.get());
+          DocSeparator *sep         = dynamic_cast<DocSeparator* >(param.get());
+          if (word)
           {
-            visit(dynamic_cast<DocWord*>(param.get()));
+            visit(word);
           }
-          else if (param->kind()==DocNode::Kind_LinkedWord)
+          else if (linkedWord)
           {
-            visit(dynamic_cast<DocLinkedWord*>(param.get()));
+            visit(linkedWord);
           }
-          else if (param->kind()==DocNode::Kind_Sep)
+          else if (sep)
           {
             printf("</param>");
             printf("<param>");

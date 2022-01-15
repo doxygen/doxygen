@@ -589,7 +589,7 @@ static bool insideLI(DocNode *n)
 {
   while (n)
   {
-    if (n->kind()==DocNode::Kind_HtmlListItem) return TRUE;
+    if (dynamic_cast<DocHtmlListItem*>(n)) return TRUE;
     n=n->parent();
   }
   return FALSE;
@@ -602,8 +602,8 @@ static bool insideUL(DocNode *n)
 {
   while (n)
   {
-    if (n->kind()==DocNode::Kind_HtmlList &&
-        dynamic_cast<DocHtmlList *>(n)->type()==DocHtmlList::Unordered) return TRUE;
+    DocHtmlList *dl = dynamic_cast<DocHtmlList*>(n);
+    if (dl && dl->type()==DocHtmlList::Unordered) return TRUE;
     n=n->parent();
   }
   return FALSE;
@@ -616,8 +616,8 @@ static bool insideOL(DocNode *n)
 {
   while (n)
   {
-    if (n->kind()==DocNode::Kind_HtmlList &&
-        dynamic_cast<DocHtmlList *>(n)->type()==DocHtmlList::Ordered) return TRUE;
+    DocHtmlList *dl = dynamic_cast<DocHtmlList*>(n);
+    if (dl && dl->type()==DocHtmlList::Ordered) return TRUE;
     n=n->parent();
   }
   return FALSE;
@@ -629,7 +629,7 @@ static bool insideTable(DocNode *n)
 {
   while (n)
   {
-    if (n->kind()==DocNode::Kind_HtmlTable) return TRUE;
+    if (dynamic_cast<DocHtmlTable*>(n)) return TRUE;
     n=n->parent();
   }
   return FALSE;
@@ -1909,10 +1909,9 @@ int DocParser::internalValidatingParseDoc(DocNode *parent,DocNodeList &children,
 
   // first parse any number of paragraphs
   bool isFirst=TRUE;
-  DocPara *lastPar=0;
-  if (!children.empty() && children.back()->kind()==DocNode::Kind_Para)
+  DocPara *lastPar=!children.empty() ? dynamic_cast<DocPara*>(children.back().get()) : 0;
+  if (lastPar)
   { // last child item was a paragraph
-    lastPar = dynamic_cast<DocPara*>(children.back().get());
     isFirst=FALSE;
   }
   do
@@ -2638,9 +2637,9 @@ static void flattenParagraphs(DocNode *root,DocNodeList &children)
   DocNodeList newChildren;
   for (const auto &dn : children)
   {
-    if (dn->kind()==DocNode::Kind_Para)
+    DocPara *para = dynamic_cast<DocPara*>(dn.get());
+    if (para)
     {
-      DocPara *para = dynamic_cast<DocPara*>(dn.get());
       // move the children of the paragraph to the end of the newChildren list
       newChildren.insert(newChildren.end(),
                          std::make_move_iterator(para->children().begin()),
@@ -3842,15 +3841,15 @@ void DocHtmlTable::computeTableGrid()
   {
     uint colIdx=1;
     uint cells=0;
-    if (rowNode->kind()==DocNode::Kind_HtmlRow)
+    DocHtmlRow *row = dynamic_cast<DocHtmlRow*>(rowNode.get());
+    if (row)
     {
       size_t i;
-      DocHtmlRow *row = dynamic_cast<DocHtmlRow*>(rowNode.get());
       for (const auto &cellNode : row->children())
       {
-        if (cellNode->kind()==DocNode::Kind_HtmlCell)
+        DocHtmlCell *cell = dynamic_cast<DocHtmlCell*>(cellNode.get());
+        if (cell)
         {
-          DocHtmlCell *cell = dynamic_cast<DocHtmlCell*>(cellNode.get());
           uint rs = cell->rowSpan();
           uint cs = cell->colSpan();
 
@@ -4564,10 +4563,13 @@ int DocSimpleSect::parse(bool userTitle,bool needsSeparator)
   {
     par->markFirst();
   }
-  else
+  else // current last child is no longer the last
   {
-    ASSERT(m_children.back()->kind()==DocNode::Kind_Para);
-    dynamic_cast<DocPara *>(m_children.back().get())->markLast(FALSE);
+    DocPara *lastPar = dynamic_cast<DocPara*>(m_children.back().get());
+    if (lastPar)
+    {
+      lastPar->markLast(FALSE);
+    }
   }
   par->markLast();
   if (needsSeparator) m_children.push_back(std::make_unique<DocSimpleSectSep>(m_parser,this));
@@ -4613,8 +4615,11 @@ int DocSimpleSect::parseXml()
     }
     else
     {
-      ASSERT(m_children.back()->kind()==DocNode::Kind_Para);
-      dynamic_cast<DocPara *>(m_children.back().get())->markLast(FALSE);
+      DocPara *lastPar = dynamic_cast<DocPara*>(m_children.back().get());
+      if (lastPar)
+      {
+        lastPar->markLast(FALSE);
+      }
     }
     par->markLast();
     m_children.push_back(std::unique_ptr<DocPara>(par));
@@ -4635,16 +4640,14 @@ int DocSimpleSect::parseXml()
 
 void DocSimpleSect::appendLinkWord(const QCString &word)
 {
-  DocPara *p;
-  if (m_children.empty() || m_children.back()->kind()!=DocNode::Kind_Para)
+  DocPara *p=0;
+  if (m_children.empty() || (p=dynamic_cast<DocPara*>(m_children.back().get()))==0)
   {
     p = new DocPara(m_parser,this);
     m_children.push_back(std::unique_ptr<DocPara>(p));
   }
   else
   {
-    p = dynamic_cast<DocPara *>(m_children.back().get());
-
     // Comma-separate <seealso> links.
     p->injectToken(TK_WORD,",");
     p->injectToken(TK_WHITESPACE," ");
@@ -4846,8 +4849,11 @@ int DocParamSect::parse(const QCString &cmdName,bool xmlContext, Direction d)
   }
   else
   {
-    ASSERT(m_children.back()->kind()==DocNode::Kind_ParamList);
-    dynamic_cast<DocParamList *>(m_children.back().get())->markLast(FALSE);
+    DocParamList *lastPl = dynamic_cast<DocParamList*>(m_children.back().get());
+    if (lastPl)
+    {
+      lastPl->markLast(FALSE);
+    }
     pl->markLast();
   }
   m_children.push_back(std::unique_ptr<DocParamList>(pl));
@@ -4874,13 +4880,12 @@ int DocPara::handleSimpleSection(DocSimpleSect::Type t, bool xmlContext)
 {
   DocSimpleSect *ss=0;
   bool needsSeparator = FALSE;
-  if (!m_children.empty() &&                           // previous element
-      m_children.back()->kind()==Kind_SimpleSect &&      // was a simple sect
-      dynamic_cast<DocSimpleSect *>(m_children.back().get())->type()==t && // of same type
-      t!=DocSimpleSect::User)                            // but not user defined
+  if (!m_children.empty() &&                                         // has previous element
+      (ss=dynamic_cast<DocSimpleSect*>(m_children.back().get())) &&  // was a simple sect
+      ss->type()==t &&                                               // of same type
+      t!=DocSimpleSect::User)                                        // but not user defined
   {
     // append to previous section
-    ss=dynamic_cast<DocSimpleSect *>(m_children.back().get());
     needsSeparator = TRUE;
   }
   else // start new section
@@ -4906,16 +4911,15 @@ int DocPara::handleParamSection(const QCString &cmdName,
                                 int direction=DocParamSect::Unspecified)
 {
   DocParamSect *ps=0;
-  if (!m_children.empty() &&                        // previous element
-      m_children.back()->kind()==Kind_ParamSect &&    // was a param sect
-      dynamic_cast<DocParamSect *>(m_children.back().get())->type()==t) // of same type
+  if (!m_children.empty() &&                                       // previous element
+      (ps=dynamic_cast<DocParamSect*>(m_children.back().get())) && // was a param sect
+      ps->type()==t)                                               // of same type
   {
     // append to previous section
-    ps=dynamic_cast<DocParamSect *>(m_children.back().get());
   }
   else // start new section
   {
-    ps=new DocParamSect(m_parser,this,t);
+    ps = new DocParamSect(m_parser,this,t);
     m_children.push_back(std::unique_ptr<DocParamSect>(ps));
   }
   int rv=ps->parse(cmdName,xmlContext,static_cast<DocParamSect::Direction>(direction));
@@ -5045,26 +5049,23 @@ void DocPara::handleIncludeOperator(const QCString &cmdName,DocIncOperator::Type
     return;
   }
   DocIncOperator *op = new DocIncOperator(m_parser,this,t,m_parser.context.token->name,m_parser.context.context,m_parser.context.isExample,m_parser.context.exampleName);
-  DocNode *n1 = m_children.size()>=1 ? m_children.at(m_children.size()-1).get() : 0;
-  DocNode *n2 = m_children.size()>=2 ? m_children.at(m_children.size()-2).get() : 0;
-  bool isFirst = n1==0 || // no last node
-                 (n1->kind()!=DocNode::Kind_IncOperator &&
-                  n1->kind()!=DocNode::Kind_WhiteSpace
-                 ) || // last node is not operator or whitespace
-                 (n1->kind()==DocNode::Kind_WhiteSpace &&
-                  n2!=0 && n2->kind()!=DocNode::Kind_IncOperator
-                 ); // previous not is not operator
+  DocNode        *n1 = m_children.size()>=1 ? m_children.at(m_children.size()-1).get() : 0;
+  DocNode        *n2 = m_children.size()>=2 ? m_children.at(m_children.size()-2).get() : 0;
+  DocIncOperator *n1_docIncOp = dynamic_cast<DocIncOperator*>(n1);
+  DocWhiteSpace  *n1_docWs    = dynamic_cast<DocWhiteSpace* >(n1);
+  DocIncOperator *n2_docIncOp = dynamic_cast<DocIncOperator*>(n2);
+  bool isFirst = !n1 ||                            // no last node
+                 (!n1_docIncOp && !n1_docWs) ||    // last node is not operator or whitespace
+                 (n1_docWs && n2 && !n2_docIncOp); // last node is not operator
   op->markFirst(isFirst);
   op->markLast(TRUE);
-  if (n1!=0 && n1->kind()==DocNode::Kind_IncOperator)
+  if (n1_docIncOp)
   {
-    dynamic_cast<DocIncOperator *>(n1)->markLast(FALSE);
+    n1_docIncOp->markLast(FALSE);
   }
-  else if (n1!=0 && n1->kind()==DocNode::Kind_WhiteSpace &&
-           n2!=0 && n2->kind()==DocNode::Kind_IncOperator
-          )
+  else if (n1_docWs && n2_docIncOp)
   {
-    dynamic_cast<DocIncOperator *>(n2)->markLast(FALSE);
+    n2_docIncOp->markLast(FALSE);
   }
   m_children.push_back(std::unique_ptr<DocIncOperator>(op));
   op->parse();
@@ -6418,9 +6419,10 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
           DocSimpleSect *ss=0;
           for (const auto &n : m_children)
           {
-            if (n->kind()==Kind_SimpleSect && dynamic_cast<DocSimpleSect *>(n.get())->type()==DocSimpleSect::See)
+            DocSimpleSect *candidate = dynamic_cast<DocSimpleSect*>(n.get());
+            if (candidate && candidate->type()==DocSimpleSect::See)
             {
-              ss = dynamic_cast<DocSimpleSect *>(n.get());
+              ss = candidate;
             }
           }
 
@@ -6726,23 +6728,21 @@ reparsetoken:
       case TK_WHITESPACE:
         {
           // prevent leading whitespace and collapse multiple whitespace areas
-          DocNode::Kind k;
           if (insidePRE(this) || // all whitespace is relevant
               (
                // remove leading whitespace
                !m_children.empty()  &&
                // and whitespace after certain constructs
-               (k=m_children.back()->kind())!=DocNode::Kind_HtmlDescList &&
-               k!=DocNode::Kind_HtmlTable &&
-               k!=DocNode::Kind_HtmlList &&
-               k!=DocNode::Kind_SimpleSect &&
-               k!=DocNode::Kind_AutoList &&
-               k!=DocNode::Kind_SimpleList &&
-               /*k!=DocNode::Kind_Verbatim &&*/
-               k!=DocNode::Kind_HtmlHeader &&
-               k!=DocNode::Kind_HtmlBlockQuote &&
-               k!=DocNode::Kind_ParamSect &&
-               k!=DocNode::Kind_XRefItem
+               !DocNodeMultiCast<DocHtmlDescList,
+                                 DocHtmlTable,
+                                 DocHtmlList,
+                                 DocSimpleSect,
+                                 DocAutoList,
+                                 DocSimpleList,
+                                 DocHtmlHeader,
+                                 DocHtmlBlockQuote,
+                                 DocParamSect,
+                                 DocXRefItem>::is_a(m_children.back().get())
               )
              )
           {
@@ -6752,12 +6752,12 @@ reparsetoken:
         break;
       case TK_LISTITEM:
         {
-          DBG(("found list item at %d parent=%d\n",m_parser.context.token->indent,parent()->kind()));
+          DBG(("found list item at %d\n",m_parser.context.token->indent));
           DocNode *n=parent();
-          while (n && n->kind()!=DocNode::Kind_AutoList) n=n->parent();
-          if (n) // we found an auto list up in the hierarchy
+          while (n && dynamic_cast<DocAutoList*>(n)==0) n=n->parent();
+          DocAutoList *al = dynamic_cast<DocAutoList *>(n);
+          if (al) // we found an auto list up in the hierarchy
           {
-            DocAutoList *al = dynamic_cast<DocAutoList *>(n);
             DBG(("previous list item at %d\n",al->indent()));
             if (al->indent()>=m_parser.context.token->indent)
               // new item at the same or lower indent level
@@ -6770,22 +6770,21 @@ reparsetoken:
           // determine list depth
           int depth = 0;
           n=parent();
-          while(n)
+          while (n)
           {
-            if (n->kind() == DocNode::Kind_AutoList &&
-                dynamic_cast<DocAutoList*>(n)->isEnumList()) depth++;
+            al = dynamic_cast<DocAutoList *>(n);
+            if (al && al->isEnumList()) depth++;
             n=n->parent();
           }
 
           // first item or sub list => create new list
-          DocAutoList *al=0;
           do
           {
             al = new DocAutoList(m_parser,this,m_parser.context.token->indent,
                                  m_parser.context.token->isEnumList,depth);
             m_children.push_back(std::unique_ptr<DocAutoList>(al));
             retval = al->parse();
-          } while (retval==TK_LISTITEM &&         // new list
+          } while (retval==TK_LISTITEM &&                   // new list
               al->indent()==m_parser.context.token->indent  // at same indent level
               );
 
@@ -6827,11 +6826,10 @@ reparsetoken:
         break;
       case TK_ENDLIST:
         DBG(("Found end of list inside of paragraph at line %d\n",m_parser.tokenizer.getLineNr()));
-        if (parent()->kind()==DocNode::Kind_AutoListItem)
+        if (dynamic_cast<DocAutoList*>(parent()))
         {
-          ASSERT(parent()->parent()->kind()==DocNode::Kind_AutoList);
-          DocAutoList *al = dynamic_cast<DocAutoList *>(parent()->parent());
-          if (al->indent()>=m_parser.context.token->indent)
+          DocAutoList *al = dynamic_cast<DocAutoList*>(parent()->parent());
+          if (al && al->indent()>=m_parser.context.token->indent)
           {
             // end of list marker ends this paragraph
             retval=TK_ENDLIST;
@@ -6856,10 +6854,7 @@ reparsetoken:
           // see if we have to start a simple section
           int cmd = Mappers::cmdMapper->map(m_parser.context.token->name);
           DocNode *n=parent();
-          while (n &&
-              n->kind()!=DocNode::Kind_SimpleSect &&
-              n->kind()!=DocNode::Kind_ParamSect
-              )
+          while (n && !DocNodeMultiCast<DocSimpleSect,DocParamSect>::is_a(n))
           {
             n=n->parent();
           }
@@ -6876,7 +6871,7 @@ reparsetoken:
           }
           // see if we are in a simple list
           n=parent();
-          while (n && n->kind()!=DocNode::Kind_SimpleListItem) n=n->parent();
+          while (n && dynamic_cast<DocSimpleListItem*>(n)==0) n=n->parent();
           if (n)
           {
             if (cmd==CMD_LI)
@@ -6970,10 +6965,7 @@ reparsetoken:
       case TK_RCSTAG:
         {
           DocNode *n=parent();
-          while (n &&
-              n->kind()!=DocNode::Kind_SimpleSect &&
-              n->kind()!=DocNode::Kind_ParamSect
-              )
+          while (n && !DocNodeMultiCast<DocSimpleSect,DocParamSect>::is_a(n))
           {
             n=n->parent();
           }
@@ -7003,11 +6995,11 @@ reparsetoken:
 endparagraph:
   m_parser.handlePendingStyleCommands(this,m_children);
   DBG(("DocPara::parse() end retval=%s\n",DocTokenizer::retvalToString(retval)));
-  DocNode *n = m_parser.context.nodeStack.top();
-  if (!m_parser.context.token->endTag && n->kind()==DocNode::Kind_Para &&
+  DocPara *par = dynamic_cast<DocPara*>(m_parser.context.nodeStack.top());
+  if (!m_parser.context.token->endTag && par &&
       retval==TK_NEWPARA && m_parser.context.token->name.lower() == "p")
   {
-    dynamic_cast<DocPara *>(n)->setAttribs(m_parser.context.token->attribs);
+    par->setAttribs(m_parser.context.token->attribs);
   }
   INTERNAL_ASSERT(retval==0 || retval==TK_NEWPARA || retval==TK_LISTITEM ||
          retval==TK_ENDLIST || retval>RetVal_OK
