@@ -200,7 +200,7 @@ struct TagDirInfo : public TagCompoundInfo
 
 using TagDirInfoPtr = std::unique_ptr<TagDirInfo>;
 
-/** Variant class that holds a unqiue pointer to one of the specific container types */
+/** Variant class that holds a unique pointer to one of the specific container types */
 class TagCompoundVariant
 {
   public:
