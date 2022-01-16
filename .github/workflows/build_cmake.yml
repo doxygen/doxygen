@@ -90,7 +90,9 @@ jobs:
       if: matrix.config.os == 'windows-latest'
 
     - name: Install LaTeX (Linux)
-      run: sudo apt-get install texlive texlive-latex-recommended texlive-extra-utils texlive-latex-extra texlive-font-utils
+      run: |
+        sudo apt update
+        sudo apt-get install texlive texlive-latex-recommended texlive-extra-utils texlive-latex-extra texlive-font-utils
       if: startsWith(matrix.config.os,'ubuntu-')
 
     - name: Install LaTeX (MacOS)
@@ -101,6 +103,7 @@ jobs:
     
     - name: Install libclang (Ubuntu 20.04)
       run: |
+        sudo apt update
         sudo apt remove llvm-8 clang-8 libclang-common-8-dev clang-format-8 libllvm8
         sudo apt remove llvm-9 llvm-9-dev llvm-9-tools llvm-9-runtime clang-9 libclang-common-9-dev clang-format-9 libllvm9
         #sudo apt remove llvm-10 llvm-10-dev llvm-10-tools llvm-10-runtime clang-10 clang-format-10 libclang-common-10-dev libclang-cpp10 libclang1-10 libllvm10  
@@ -121,6 +124,7 @@ jobs:
     
     - name: Install libxapian (Ubuntu 18.04)
       run: |
+        sudo apt update
         sudo apt install libxapian-dev
       if: matrix.config.os == 'ubuntu-18.04'
           
@@ -160,7 +164,9 @@ jobs:
       if: matrix.config.os == 'windows-latest'
 
     - name: Install Ghostscript (Linux)
-      run: sudo apt-get install ghostscript
+      run: |
+        sudo apt update
+        sudo apt-get install ghostscript
       if: startsWith(matrix.config.os,'ubuntu-')
     
     - name: Install Ghostscript (Windows)
@@ -199,7 +205,9 @@ jobs:
       if: matrix.config.os == 'windows-latest'
 
     - name: Install Graphviz (Linux)
-      run: sudo apt-get install graphviz
+      run: |
+        sudo apt update
+        sudo apt-get install graphviz
       if: startsWith(matrix.config.os,'ubuntu-')
 
     - name: Install Graphviz (MacOS)
