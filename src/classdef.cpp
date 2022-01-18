@@ -4127,8 +4127,7 @@ void ClassDefImpl::addListReferences()
     const RefItemVector &xrefItems = xrefListItems();
     addRefItem(xrefItems,
              qualifiedName(),
-             lang==SrcLangExt_Fortran ? theTranslator->trType(TRUE,TRUE)
-                                      : theTranslator->trClass(TRUE,TRUE),
+             theTranslator->trCompoundType(compoundType(), lang),
              getOutputFileBase(),
              displayName(),
              QCString(),

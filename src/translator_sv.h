@@ -2404,5 +2404,28 @@ class TranslatorSwedish : public Translator
     {
       return "Konceptdefinition";
     }
+
+    /*! the compound type as used for the xrefitems */
+    virtual QCString trCompoundType(ClassDef::CompoundType compType, SrcLangExt lang)
+    {
+      QCString result;
+      switch(compType)
+      {
+        case ClassDef::Class:
+          if (lang == SrcLangExt_Fortran) trType(true,true);
+          else result=trClass(true,true);
+          break;
+        case ClassDef::Struct:     result="Strukt"; break;
+        case ClassDef::Union:      result="Union"; break;
+        case ClassDef::Interface:  result="Gränssnitt"; break;
+        case ClassDef::Protocol:   result="Protokoll"; break;
+        case ClassDef::Category:   result="Kategori"; break;
+        case ClassDef::Exception:  result="Undantag"; break;
+        case ClassDef::Service:    result="Tjänstere"; break;
+        case ClassDef::Singleton:  result="Singleton"; break;
+        default: break;
+      }
+      return result;
+    }
 };
 #endif

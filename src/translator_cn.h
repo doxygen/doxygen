@@ -2191,6 +2191,29 @@ class TranslatorChinese : public Translator
       return "概念定义";
     }
 
+    /*! the compound type as used for the xrefitems */
+    virtual QCString trCompoundType(ClassDef::CompoundType compType, SrcLangExt lang)
+    {
+      QCString result;
+      switch(compType)
+      {
+        case ClassDef::Class:
+          if (lang == SrcLangExt_Fortran) trType(true,true);
+          else result=trClass(true,true);
+          break;
+        case ClassDef::Struct:     result="结构体"; break;
+        case ClassDef::Union:      result="联合体"; break;
+        case ClassDef::Interface:  result="接口"; break;
+        case ClassDef::Protocol:   result="协议"; break;
+        case ClassDef::Category:   result="分类"; break;
+        case ClassDef::Exception:  result="异常"; break;
+        case ClassDef::Service:    result="Service"; break;
+        case ClassDef::Singleton:  result="Singleton"; break;
+        default: break;
+      }
+      return result;
+    }
+
 };
 
 #endif
