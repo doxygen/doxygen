@@ -3535,11 +3535,11 @@ void MarkdownOutlineParser::parseInput(const QCString &fileName,
           QCString orgLabel    = match[1].str();
           QCString newLabel    = markdownFileNameToId(fileName);
           size_t labelStartPos = match[1].position();
-          size_t labelEndPos   = labelStartPos+match[1].length();
+          size_t labelEndPos   = labelStartPos+match[1].length(); // i.e. first position after the label
           size_t lineLen       = match.length();
           docs = docs.left(labelStartPos)+                     // part before label
                  newLabel+                                     // new label
-                 docs.mid(labelEndPos,lineLen-labelEndPos-1)+  // part between orgLabel and \n
+                 docs.mid(labelEndPos,lineLen-labelEndPos)+    // part between orgLabel and \n
                  "\\ilinebr @anchor "+orgLabel+"\n"+           // add original anchor
                  docs.right(docs.length()-match.length());     // add remainder of docs
         }
