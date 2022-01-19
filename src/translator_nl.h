@@ -845,7 +845,7 @@ class TranslatorDutch : public Translator
      */
     virtual QCString trClass(bool first_capital, bool singular)
     {
-      QCString result((first_capital ? "Klasse" : "klass"));
+      QCString result((first_capital ? "Klasse" : "klasse"));
       if (!singular)  result+="n";
       return result;
     }
