@@ -3846,6 +3846,10 @@ static void writeGroupTreeNode(OutputList &ol, const GroupDef *gd, int level, FT
                 Doxygen::indexList->decContentsDepth();
               }
             }
+            if (md->isVisible() && !md->isAnonymous())
+            {
+              Doxygen::indexList->closeContentsItem();
+            }
           }
         }
       }

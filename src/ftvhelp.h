@@ -50,6 +50,7 @@ class FTVHelp : public IndexIntf
                          bool separateIndex,
                          bool addToNavIndex,
                          const Definition *def);
+    void closeContentsItem() {}
     void addIndexItem(const Definition *,const MemberDef *,const QCString &,const QCString &) {}
     void addIndexFile(const QCString &) {}
     void addImageFile(const QCString &) {}
