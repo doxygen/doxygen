@@ -868,7 +868,7 @@ class TranslatorGerman : public TranslatorAdapter_1_8_15
       QCString result="Die Dokumentation für diese";
       switch(compType)
       {
-        case ClassDef::Class:      result+=vhdlOpt?" Entwurfseinheiten":" Klasse"; break;
+        case ClassDef::Class:      result+=vhdlOpt?"Entwurfseinheiten":"Klasse"; break;
         case ClassDef::Struct:     result+=" Struktur"; break;
         case ClassDef::Union:      result+=" Variante"; break;
         case ClassDef::Interface:  result+=" Schnittstelle"; break;
