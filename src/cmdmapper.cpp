@@ -153,6 +153,7 @@ CommandMap cmdMap[] =
   { "iline",         CMD_ILINE },
   { "iliteral",      CMD_ILITERAL },
   { "endiliteral",   CMD_ENDILITERAL },
+  { "ianchor",       CMD_IANCHOR },
   { 0,               0 },
 };
 
