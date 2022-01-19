@@ -193,6 +193,12 @@ void Qhp::decContentsDepth()
   m_sectionLevel--;
 }
 
+void Qhp::closeContentsItem()
+{
+    handlePrevSection();
+    m_toc.close("section");
+    m_openCount--;
+}
 void Qhp::addContentsItem(bool /*isDir*/, const QCString & name,
                           const QCString & /*ref*/, const QCString & file,
                           const QCString &anchor, bool /* separateIndex */,
@@ -205,7 +211,7 @@ void Qhp::addContentsItem(bool /*isDir*/, const QCString & name,
   QCString f = file;
   if (!f.isEmpty() && f.at(0)=='^') return; // absolute URL not supported
 
-  int diff = m_prevSectionLevel - m_sectionLevel;
+  int diff = m_prevSectionLevel - m_sectionLevel - 1;
 
   handlePrevSection();
   setPrevSection(name, f, anchor, m_sectionLevel);
@@ -310,13 +316,8 @@ void Qhp::handlePrevSection()
   </toc>
   */
 
-  if (m_prevSectionTitle.isNull())
-  {
-    m_prevSectionTitle=" "; // should not happen...
-  }
-
   // We skip "Main Page" as our extra root is pointing to that
-  if (!((m_prevSectionLevel==1) && (m_prevSectionTitle==getFullProjectName())))
+  if (!((m_prevSectionLevel==1) && (m_prevSectionTitle==getFullProjectName())) && !m_prevSectionTitle.isNull())
   {
     QCString finalRef = makeRef(m_prevSectionBaseName, m_prevSectionAnchor);
 
