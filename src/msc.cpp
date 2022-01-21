@@ -92,7 +92,7 @@ static bool convertMapFile(TextStream &t,const QCString &mapName,const QCString 
 bool do_mscgen_generate(const QCString& inFile,const QCString& outFile,mscgen_format_t msc_format,
                      const QCString &srcFile,int srcLine)
 {
-  QCString const& external_mscgen = Config_getString(MSCGEN);
+  QCString const& external_mscgen = Config_getString(MSCGEN).stripWhiteSpace();
   if (!external_mscgen.isEmpty()) {
     QCString type;
     switch (msc_format)
@@ -114,8 +114,10 @@ bool do_mscgen_generate(const QCString& inFile,const QCString& outFile,mscgen_fo
     int exitcode = Portable::system(external_mscgen,"-T"+type+" -o "+outFile+" "+inFile);
     if (exitcode==0)
       return true;
-    warn(srcFile,srcLine,"Problems running %s given with MSCGEN (exit status: %d); check your installation. Trying with internal mscgen instead.",
+    err_full(srcFile,srcLine,"Problems running external tool %s given via MSCGEN (exit status: %d)."
+                             " Look for typos in your msc file and check error messages above.",
         external_mscgen.data(),exitcode);
+    return false;
   }
   int code = mscgen_generate(inFile.data(),outFile.data(),msc_format);
   if (code!=0)
