@@ -76,6 +76,7 @@ struct scannerYY_state
   int              lastSkipSharpContext = 0;
   int              lastSkipRoundContext = 0;
   int              lastStringContext = 0;
+  int              lastDeprecatedContext = 0;
   int              lastCurlyContext = 0;
   int              lastRoundContext = 0;
   int              lastSharpContext = 0;
@@ -458,8 +459,27 @@ NONLopt [^\n]*
 %x      RequiresExpression
 %x      ConceptName
 
+ /** Object-C Deprecated */
+%x      Deprecated_round
+
 %%
 
+<*>"DEPRECATED_ATTRIBUTE"               { // Object-C attribute
+                                          if (!yyextra->insideObjC) REJECT;
+                                        }
+<*>"DEPRECATED_MSG_ATTRIBUTE(\""        { // Object-C attribute
+                                          if (!yyextra->insideObjC) REJECT;
+                                          yyextra->lastDeprecatedContext=YY_START;
+                                          yyextra->lastStringContext=Deprecated_round;
+                                          BEGIN(SkipString);
+                                        }
+<Deprecated_round>")"                   {
+                                          BEGIN(yyextra->lastDeprecatedContext);
+                                        }
+<Deprecated_round>{BNopt}               {
+                                          lineCount(yyscanner);
+                                        }
+<Deprecated_round>.                     { }
 <NextSemi>"{"                           {
                                           yyextra->curlyCount=0;
                                           yyextra->needsSemi = TRUE;
