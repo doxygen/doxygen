@@ -89,6 +89,44 @@ static bool convertMapFile(TextStream &t,const QCString &mapName,const QCString 
   return true;
 }
 
+bool do_mscgen_generate(const QCString& inFile,const QCString& outFile,mscgen_format_t msc_format,
+                     const QCString &srcFile,int srcLine)
+{
+  QCString external_mscgen = Portable::getenv("MSCGEN_PATH");//TODO use ConfigValues::instance().MSCGEN_PATH() instead
+  if (!external_mscgen.isEmpty()) {
+    QCString type;
+    switch (msc_format)
+    {
+      case mscgen_format_png:
+        type = "png";
+        break;
+      case mscgen_format_eps:
+        type = "eps";
+        break;
+      case mscgen_format_svg:
+        type = "svg";
+        break;
+      case mscgen_format_pngmap:
+      case mscgen_format_svgmap:
+        type = "ismap";
+        break;
+    }
+    int exitcode = Portable::system(external_mscgen,"-T"+type+" -o "+outFile+" "+inFile);
+    if (exitcode==0)
+      return true;
+    warn(srcFile,srcLine,"Problems running %s given with MSCGEN_PATH (exit status %d); check your installation. Trying with internal mscgen instead.",
+        external_mscgen.data(),exitcode);
+  }
+  int code = mscgen_generate(inFile.data(),outFile.data(),msc_format);
+  if (code!=0)
+  {
+    err_full(srcFile,srcLine,"Problems generating msc output (error=%s). Look for typos in you msc file %s\n",
+        mscgen_error2str(code),qPrint(inFile));
+    return false;
+  }
+  return true;
+}
+
 void writeMscGraphFromFile(const QCString &inFile,const QCString &outDir,
                            const QCString &outFile,MscOutputFormat format,
                            const QCString &srcFile,int srcLine
@@ -117,13 +155,8 @@ void writeMscGraphFromFile(const QCString &inFile,const QCString &outDir,
     default:
       return;
   }
-  int code;
-  if ((code=mscgen_generate(inFile.data(),imgName.data(),msc_format))!=0)
-  {
-    err_full(srcFile,srcLine,"Problems generating msc output (error=%s). Look for typos in you msc file %s\n",
-        mscgen_error2str(code),qPrint(inFile));
+  if (!do_mscgen_generate(inFile,imgName,msc_format,srcFile,srcLine))
     return;
-  }
 
   if ( (format==MSC_EPS) && (Config_getBool(USE_PDFLATEX)) )
   {
@@ -149,14 +182,10 @@ static QCString getMscImageMapFromFile(const QCString& inFile, const QCString& o
 {
   QCString outFile = inFile + ".map";
 
-  int code;
-  if ((code=mscgen_generate(inFile.data(),outFile.data(),
-                            writeSVGMap ? mscgen_format_svgmap : mscgen_format_pngmap))!=0)
-  {
-    err_full(srcFile,srcLine,"Problems generating msc output (error=%s). Look for typos in you msc file %s\n",
-        mscgen_error2str(code),qPrint(inFile));
+  if (!do_mscgen_generate(inFile,outFile,
+                            writeSVGMap ? mscgen_format_svgmap : mscgen_format_pngmap,
+                            srcFile,srcLine))
     return "";
-  }
 
   TextStream t;
   convertMapFile(t, outFile, relPath, context);
