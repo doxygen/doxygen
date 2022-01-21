@@ -333,6 +333,7 @@ void MainWindow::saveConfig(const QString &fileName)
     return;
   }
   QTextStream t(&f);
+  t.device()->setTextModeEnabled(false);
   m_expert->writeConfig(t,false,false);
   updateConfigFileName(fileName);
   m_modified = false;
