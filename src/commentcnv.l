@@ -838,7 +838,7 @@ SLASHopt [/]*
 				     copyToOutput(yyscanner,yytext,(int)yyleng); 
 				     yyextra->inSpecialComment=FALSE;
 				     yyextra->inRoseComment=FALSE;
-                                     yyextra->readLineCtx = Scan; // reset, otherwise ther will be problems with:
+                                     yyextra->readLineCtx = Scan; // reset, otherwise there will be problems with:
                                                                   //   static void handleCondSectionId
 				     BEGIN(Scan); 
                                    }
