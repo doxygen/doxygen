@@ -3649,7 +3649,7 @@ static void buildFunctionList(const Entry *root)
               if (
                   matchArguments2(md->getOuterScope(),mfd,&mdAl,
                     rnd ? rnd : Doxygen::globalScope,rfd,&root->argList,
-                    FALSE) &&
+                    FALSE,root->lang) &&
                   sameNumTemplateArgs &&
                   matchingReturnTypes &&
                   sameRequiresClause &&
@@ -3816,7 +3816,7 @@ static void findFriends()
               (mmd->isFriend() || (mmd->isRelated() && mmd->isFunction())) &&
               matchArguments2(mmd->getOuterScope(), mmd->getFileDef(), &mmd->argumentList(),
                               fmd->getOuterScope(), fmd->getFileDef(), &fmd->argumentList(),
-                              TRUE
+                              TRUE,mmd->getLanguage()
                              )
 
              ) // if the member is related and the arguments match then the
@@ -3946,7 +3946,7 @@ static void transferFunctionReferences()
       if (
           matchArguments2(mdef->getOuterScope(),mdef->getFileDef(),const_cast<ArgumentList*>(&mdefAl),
                           mdec->getOuterScope(),mdec->getFileDef(),const_cast<ArgumentList*>(&mdecAl),
-                          TRUE
+                          TRUE,mdef->getLanguage()
             )
          ) /* match found */
       {
@@ -3988,7 +3988,7 @@ static void transferRelatedFunctionDocumentation()
                 (rmd->isRelated() || rmd->isForeign()) && // related function
                 matchArguments2( md->getOuterScope(), md->getFileDef(), &md->argumentList(),
                   rmd->getOuterScope(),rmd->getFileDef(),&rmd->argumentList(),
-                  TRUE
+                  TRUE,md->getLanguage()
                   )
                )
             {
@@ -4096,7 +4096,7 @@ static void findUsedClassesForClass(const Entry *root,
       {
         //printf("    Found variable %s in class %s\n",qPrint(md->name()),qPrint(masterCd->name()));
         QCString type = normalizeNonTemplateArgumentsInString(md->typeString(),masterCd,formalArgs);
-        QCString typedefValue = resolveTypeDef(masterCd,type);
+        QCString typedefValue = md->getLanguage()==SrcLangExt_Java ? type : resolveTypeDef(masterCd,type);
         if (!typedefValue.isEmpty())
         {
           type = typedefValue;
@@ -4640,9 +4640,6 @@ static bool findClassRelation(
           }
         }
         bool isATemplateArgument = templateNames.find(biName.str())!=templateNames.end();
-        // make templSpec canonical
-        // warning: the following line doesn't work for Mixin classes (see bug 560623)
-        // templSpec = getCanonicalTemplateSpec(cd, cd->getFileDef(), templSpec);
 
         //printf("4. found=%d\n",found);
         if (found)
@@ -5180,7 +5177,7 @@ static void addMemberDocs(const Entry *root,
     if (
           matchArguments2( md->getOuterScope(), md->getFileDef(),const_cast<ArgumentList*>(&mdAl),
                            rscope,rfd,&root->argList,
-                           TRUE
+                           TRUE, root->lang
                          )
        )
     {
@@ -5411,7 +5408,7 @@ static bool findGlobalMember(const Entry *root,
           md->isVariable() || md->isTypedef() || /* in case of function pointers */
           matchArguments2(md->getOuterScope(),const_cast<const MemberDef *>(md.get())->getFileDef(),&mdAl,
                           rnd ? rnd : Doxygen::globalScope,fd,&root->argList,
-                          FALSE);
+                          FALSE,root->lang);
 
         // for template members we need to check if the number of
         // template arguments is the same, otherwise we are dealing with
@@ -5841,7 +5838,7 @@ static void addMemberFunction(const Entry *root,
         matchArguments2(
             md->getClassDef(),md->getFileDef(),&argList,
             cd,fd,&root->argList,
-            TRUE);
+            TRUE,root->lang);
 
       if (md->getLanguage()==SrcLangExt_ObjC && md->isVariable() && (root->section&Entry::FUNCTION_SEC))
       {
@@ -6622,7 +6619,7 @@ static void findMember(const Entry *root,
                 className!=rmd->getOuterScope()->name() ||
                 !matchArguments2(rmd->getOuterScope(),rmd->getFileDef(),&rmdAl,
                     cd,fd,&root->argList,
-                    TRUE);
+                    TRUE,root->lang);
               if (!newMember)
               {
                 rmd_found = rmd;
@@ -6721,7 +6718,7 @@ static void findMember(const Entry *root,
                   if (
                       matchArguments2(rmd->getOuterScope(),rmd->getFileDef(),&rmdAl,
                         cd,fd,&root->argList,
-                        TRUE)
+                        TRUE,root->lang)
                      )
                   {
                     found=TRUE;
@@ -7874,7 +7871,7 @@ static void computeMemberRelations()
                     bmd->getLanguage()==SrcLangExt_Python ||
                     matchArguments2(bmd->getOuterScope(),bmd->getFileDef(),&bmdAl,
                       md->getOuterScope(), md->getFileDef(), &mdAl,
-                      TRUE
+                      TRUE,bmd->getLanguage()
                       )
                    )
                 {

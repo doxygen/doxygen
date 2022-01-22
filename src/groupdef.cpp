@@ -344,7 +344,7 @@ bool GroupDefImpl::insertMember(const MemberDef *md,bool docOnly)
         (tSrcMdAl.size()==tMdAl.size()) &&       // same number of template arguments
         matchArguments2(srcMd->getOuterScope(),srcMd->getFileDef(),&srcMdAl,
                         md->getOuterScope(),md->getFileDef(),&mdAl,
-                        TRUE
+                        TRUE,srcMd->getLanguage()
                        ) && // matching parameters
         sameScope // both are found in the same scope
        )

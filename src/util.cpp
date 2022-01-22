@@ -1589,9 +1589,9 @@ static QCString stripDeclKeywords(const QCString &s)
 }
 
 // forward decl for circular dependencies
-static QCString extractCanonicalType(const Definition *d,const FileDef *fs,QCString type);
+static QCString extractCanonicalType(const Definition *d,const FileDef *fs,QCString type,SrcLangExt lang);
 
-QCString getCanonicalTemplateSpec(const Definition *d,const FileDef *fs,const QCString& spec)
+static QCString getCanonicalTemplateSpec(const Definition *d,const FileDef *fs,const QCString& spec,SrcLangExt lang)
 {
 
   QCString templSpec = spec.stripWhiteSpace();
@@ -1599,9 +1599,9 @@ QCString getCanonicalTemplateSpec(const Definition *d,const FileDef *fs,const QC
   // std::list<std::string> against list<string> so it is now back again!
   if (!templSpec.isEmpty() && templSpec.at(0) == '<')
   {
-    templSpec = "< " + extractCanonicalType(d,fs,templSpec.right(templSpec.length()-1).stripWhiteSpace());
+    templSpec = "< " + extractCanonicalType(d,fs,templSpec.right(templSpec.length()-1).stripWhiteSpace(),lang);
   }
-  QCString resolvedType = resolveTypeDef(d,templSpec);
+  QCString resolvedType = lang==SrcLangExt_Java ? templSpec : resolveTypeDef(d,templSpec);
   if (!resolvedType.isEmpty()) // not known as a typedef either
   {
     templSpec = resolvedType;
@@ -1612,14 +1612,14 @@ QCString getCanonicalTemplateSpec(const Definition *d,const FileDef *fs,const QC
 
 
 static QCString getCanonicalTypeForIdentifier(
-    const Definition *d,const FileDef *fs,const QCString &word,
+    const Definition *d,const FileDef *fs,const QCString &word,SrcLangExt lang,
     QCString *tSpec,int count=0)
 {
   if (count>10) return word; // oops recursion
 
   QCString symName,result,templSpec,tmpName;
   if (tSpec && !tSpec->isEmpty())
-    templSpec = stripDeclKeywords(getCanonicalTemplateSpec(d,fs,*tSpec));
+    templSpec = stripDeclKeywords(getCanonicalTemplateSpec(d,fs,*tSpec,lang));
 
   if (word.findRev("::")!=-1 && !(tmpName=stripScope(word)).isEmpty())
   {
@@ -1691,7 +1691,7 @@ static QCString getCanonicalTypeForIdentifier(
       else if (!ts.isEmpty() && templSpec.isEmpty())
       {
         // use formal template args for spec
-        templSpec = stripDeclKeywords(getCanonicalTemplateSpec(d,fs,ts));
+        templSpec = stripDeclKeywords(getCanonicalTemplateSpec(d,fs,ts,lang));
       }
 
       result = removeRedundantWhiteSpace(cd->qualifiedName() + templSpec);
@@ -1734,7 +1734,7 @@ static QCString getCanonicalTypeForIdentifier(
         type.stripPrefix("typename ");
         type = stripTemplateSpecifiersFromScope(type,FALSE);
       }
-      result = getCanonicalTypeForIdentifier(d,fs,type,tSpec,count+1);
+      result = getCanonicalTypeForIdentifier(d,fs,type,mType->getLanguage(),tSpec,count+1);
     }
     else
     {
@@ -1743,7 +1743,7 @@ static QCString getCanonicalTypeForIdentifier(
   }
   else // fallback
   {
-    resolvedType = resolveTypeDef(d,word);
+    resolvedType = lang==SrcLangExt_Java ? word : resolveTypeDef(d,word);
     //printf("typedef [%s]->[%s]\n",qPrint(word),qPrint(resolvedType));
     if (resolvedType.isEmpty()) // not known as a typedef either
     {
@@ -1758,7 +1758,7 @@ static QCString getCanonicalTypeForIdentifier(
   return result;
 }
 
-static QCString extractCanonicalType(const Definition *d,const FileDef *fs,QCString type)
+static QCString extractCanonicalType(const Definition *d,const FileDef *fs,QCString type,SrcLangExt lang)
 {
   type = type.stripWhiteSpace();
 
@@ -1785,7 +1785,7 @@ static QCString extractCanonicalType(const Definition *d,const FileDef *fs,QCStr
     //printf("     i=%d p=%d\n",i,p);
     if (i>pp) canType += type.mid(pp,i-pp);
 
-    QCString ct = getCanonicalTypeForIdentifier(d,fs,word,&templSpec);
+    QCString ct = getCanonicalTypeForIdentifier(d,fs,word,lang,&templSpec);
 
     // in case the ct is empty it means that "word" represents scope "d"
     // and this does not need to be added to the canonical
@@ -1819,7 +1819,7 @@ static QCString extractCanonicalType(const Definition *d,const FileDef *fs,QCStr
         size_t tl = match.length();
         std::string matchStr = match.str();
         canType += ts.substr(tp,ti-tp);
-        canType += getCanonicalTypeForIdentifier(d,fs,matchStr.c_str(),0);
+        canType += getCanonicalTypeForIdentifier(d,fs,matchStr.c_str(),lang,0);
         tp=ti+tl;
       }
       canType+=ts.substr(tp);
@@ -1833,7 +1833,7 @@ static QCString extractCanonicalType(const Definition *d,const FileDef *fs,QCStr
   return removeRedundantWhiteSpace(canType);
 }
 
-static QCString extractCanonicalArgType(const Definition *d,const FileDef *fs,const Argument &arg)
+static QCString extractCanonicalArgType(const Definition *d,const FileDef *fs,const Argument &arg,SrcLangExt lang)
 {
   QCString type = arg.type.stripWhiteSpace();
   QCString name = arg.name;
@@ -1853,12 +1853,13 @@ static QCString extractCanonicalArgType(const Definition *d,const FileDef *fs,co
     type+=arg.array;
   }
 
-  return extractCanonicalType(d,fs,type);
+  return extractCanonicalType(d,fs,type,lang);
 }
 
 static bool matchArgument2(
     const Definition *srcScope,const FileDef *srcFileScope,Argument &srcA,
-    const Definition *dstScope,const FileDef *dstFileScope,Argument &dstA
+    const Definition *dstScope,const FileDef *dstFileScope,Argument &dstA,
+    SrcLangExt lang
     )
 {
   //printf(">> match argument: %s::'%s|%s' (%s) <-> %s::'%s|%s' (%s)\n",
@@ -1896,8 +1897,8 @@ static bool matchArgument2(
   if (srcA.canType.isEmpty() || dstA.canType.isEmpty())
   {
     // need to re-evaluate both see issue #8370
-    srcA.canType = extractCanonicalArgType(srcScope,srcFileScope,srcA);
-    dstA.canType = extractCanonicalArgType(dstScope,dstFileScope,dstA);
+    srcA.canType = extractCanonicalArgType(srcScope,srcFileScope,srcA,lang);
+    dstA.canType = extractCanonicalArgType(dstScope,dstFileScope,dstA,lang);
   }
 
   if (srcA.canType==dstA.canType)
@@ -1917,8 +1918,8 @@ static bool matchArgument2(
 
 // new algorithm for argument matching
 bool matchArguments2(const Definition *srcScope,const FileDef *srcFileScope,const ArgumentList *srcAl,
-                     const Definition *dstScope,const FileDef *dstFileScope,const ArgumentList *dstAl,
-                     bool checkCV)
+                               const Definition *dstScope,const FileDef *dstFileScope,const ArgumentList *dstAl,
+                               bool checkCV,SrcLangExt lang)
 {
   ASSERT(srcScope!=0 && dstScope!=0);
 
@@ -1990,7 +1991,8 @@ bool matchArguments2(const Definition *srcScope,const FileDef *srcFileScope,cons
     Argument &srcA = const_cast<Argument&>(*srcIt);
     Argument &dstA = const_cast<Argument&>(*dstIt);
     if (!matchArgument2(srcScope,srcFileScope,srcA,
-          dstScope,dstFileScope,dstA)
+                        dstScope,dstFileScope,dstA,
+                        lang)
        )
     {
       NOMATCH
@@ -2000,7 +2002,6 @@ bool matchArguments2(const Definition *srcScope,const FileDef *srcFileScope,cons
   MATCH
   return TRUE; // all arguments match
 }
-
 
 
 // merges the initializer of two argument lists
@@ -2172,7 +2173,7 @@ static void findMembersWithSpecificName(const MemberName *mn,
         match=matchArguments2(
             md->getOuterScope(),fd,&mdAl,
             Doxygen::globalScope,fd,argList_p.get(),
-            checkCV);
+            checkCV,md->getLanguage());
       }
       if (match)
       {
@@ -2310,7 +2311,7 @@ bool getDefs(const QCString &scName,
             bool match = args.isEmpty() ||
               matchArguments2(mmd->getOuterScope(),mmd->getFileDef(),&mmdAl,
                              fcd,                  fcd->getFileDef(),argList.get(),
-                             checkCV);
+                             checkCV,mmd->getLanguage());
             //printf("match=%d\n",match);
             if (match)
             {
@@ -2433,9 +2434,8 @@ bool getDefs(const QCString &scName,
 
       const ArgumentList &mmdAl = mmd->argumentList();
       if (matchArguments2(mmd->getOuterScope(),mmd->getFileDef(),&mmdAl,
-            Doxygen::globalScope,mmd->getFileDef(),argList.get(),
-            checkCV
-            )
+                          Doxygen::globalScope,mmd->getFileDef(),argList.get(),
+                          checkCV,mmd->getLanguage())
          )
       {
         fuzzy_mmd = mmd;
@@ -2520,7 +2520,7 @@ bool getDefs(const QCString &scName,
               match=matchArguments2(
                   mmd->getOuterScope(),mmd->getFileDef(),&mmdAl,
                   fnd,mmd->getFileDef(),argList_p.get(),
-                  checkCV);
+                  checkCV,mmd->getLanguage());
             }
             if (match)
             {

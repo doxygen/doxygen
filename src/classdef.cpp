@@ -3472,7 +3472,7 @@ void ClassDefImpl::mergeMembers()
                   found=matchArguments2(
                       srcMd->getOuterScope(),srcMd->getFileDef(),&srcAl,
                       dstMd->getOuterScope(),dstMd->getFileDef(),&dstAl,
-                      TRUE
+                      TRUE,getLanguage()
                       );
                   //printf("  Yes, matching (%s<->%s): %d\n",
                   //    qPrint(argListToString(srcMd->argumentList())),

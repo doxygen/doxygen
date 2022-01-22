@@ -5843,7 +5843,7 @@ void combineDeclarationAndDefinition(MemberDefMutable *mdec,MemberDefMutable *md
     if (sameNumTemplateArgs &&
         matchArguments2(mdef->getOuterScope(),mdef->getFileDef(),&mdefAl,
                         mdec->getOuterScope(),mdec->getFileDef(),&mdecAl,
-                        TRUE
+                        TRUE,mdef->getLanguage()
                        )
        ) /* match found */
     {

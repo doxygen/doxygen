@@ -145,11 +145,11 @@ void generateFileRef(OutputDocInterface &od,const QCString &,
 
 void writePageRef(OutputDocInterface &od,const QCString &cn,const QCString &mn);
 
-QCString getCanonicalTemplateSpec(const Definition *d,const FileDef *fs,const QCString& spec);
+//QCString getCanonicalTemplateSpec(const Definition *d,const FileDef *fs,const QCString& spec);
 
 bool matchArguments2(const Definition *srcScope,const FileDef *srcFileScope,const ArgumentList *srcAl,
                      const Definition *dstScope,const FileDef *dstFileScope,const ArgumentList *dstAl,
-                     bool checkCV
+                     bool checkCV,SrcLangExt lang
                     );
 
 void mergeArguments(ArgumentList &,ArgumentList &,bool forceNameOverwrite=FALSE);
