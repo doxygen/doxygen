@@ -189,7 +189,7 @@ ANYopt .*
   // Optional white space
 WSopt [ \t\r]*
   // readline non special
-RLopt [^\\@\n\*\/]*
+RLopt [^\\@\n\*\/{]*
   // Optional slash
 SLASHopt [/]*
 
@@ -336,16 +336,19 @@ SLASHopt [/]*
 				     yyextra->readLineCtx=YY_START;
 				     BEGIN(ReadLine);
                                    }
-<Scan>{CPPC}/.*\n	                   { /* one line C++ comment */ 
+<Scan>{CPPC}[!\/]/.*\n             { /* one line C++ special doxygen comment */ 
 				     yyextra->inSpecialComment=yytext[2]=='/' || yytext[2]=='!';
   				     copyToOutput(yyscanner,yytext,(int)yyleng); 
 				     yyextra->readLineCtx=YY_START;
 				     BEGIN(ReadLine);
 				   }
-<Scan>{CCS}{CCE}                       { /* avoid matching next rule for empty C comment, see bug 711723 */
+<Scan>{CPPC}.*\n                   { /* one line C++ comment */ 
+  				     copyToOutput(yyscanner,yytext,(int)yyleng); 
+				   }
+<Scan>{CCS}{CCE}                   { /* avoid matching next rule for empty C comment, see bug 711723 */
                                      copyToOutput(yyscanner,yytext,(int)yyleng);
                                    }
-<Scan>{CCS}[*!]?			   { /* start of a C comment */
+<Scan>{CCS}[*!]?		   { /* start of a C comment */
                                      if (yyextra->lang==SrcLangExt_Python)
 				     {
 				       REJECT;
@@ -417,14 +420,14 @@ SLASHopt [/]*
 <CComment,CNComment,ReadLine>"<"{MAILADDR}">" { // Mail address, to prevent seeing e.g x@code-factory.org as start of a code block
                                      copyToOutput(yyscanner,yytext,(int)yyleng);
                                    }
-<CComment>"{"[ \t]*"@code"/[ \t\n] {
+<CComment,ReadLine>"{"[ \t]*"@code"/[ \t\n] {
                                      copyToOutput(yyscanner,"@iliteral{code}",15); 
 				     yyextra->lastCommentContext = YY_START;
 				     yyextra->javaBlock=1;
 				     yyextra->blockName=&yytext[1];
                                      BEGIN(VerbatimCode);
   				   }
-<CComment>"{"[ \t]*"@literal"/[ \t\n] {
+<CComment,ReadLine>"{"[ \t]*"@literal"/[ \t\n] {
                                      copyToOutput(yyscanner,"@iliteral",9); 
 				     yyextra->lastCommentContext = YY_START;
 				     yyextra->javaBlock=1;
