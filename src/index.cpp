@@ -331,6 +331,7 @@ static void writeMemberToIndex(const Definition *def,const MemberDef *md,bool ad
       Doxygen::indexList->decContentsDepth();
     }
   }
+  Doxygen::indexList->closeContentsItem();
 }
 
 //----------------------------------------------------------------------
