@@ -46,7 +46,8 @@ static std::map< std::string, Debug::DebugMask > s_labels =
   { "plantuml",          Debug::Plantuml          },
   { "fortranfixed2free", Debug::FortranFixed2Free },
   { "cite",              Debug::Cite              },
-  { "rtf",               Debug::Rtf               }
+  { "rtf",               Debug::Rtf               },
+  { "qhp",               Debug::Qhp               },
 };
 
 //------------------------------------------------------------------------
