@@ -91,6 +91,9 @@ struct scannerYY_state
   int              lastDefineContext = 0;
   int              lastAlignAsContext = 0;
   int              lastC11AttributeContext = 0;
+  int              lastC11DeprecatedAttributeContext = 0;
+  bool             foundC11DeprecatedAttribute = false;
+  QCString         foundC11DeprecatedAttributeComment;
   int              lastModifierContext = 0;
   Protection       protection = Public;
   Protection       baseProt = Public;
@@ -338,6 +341,7 @@ NONLopt [^\n]*
 %x      SkipInits
 %x      SkipC11Inits
 %x      SkipC11Attribute
+%x      C11AttrDeprecatedComment
 %x      SkipCPP
 %x      SkipComment
 %x      SkipCxxComment
@@ -5253,7 +5257,37 @@ NONLopt [^\n]*
                                             BEGIN(SkipInits);
                                           }
                                         }
-<SkipC11Attribute>"]]"                 {
+<SkipC11Attribute,C11AttrDeprecatedComment>"]]"    {
+                                          if (yyextra->foundC11DeprecatedAttribute)
+                                          {
+                                            QCString commentToAdd;
+                                            if (yyextra->foundC11DeprecatedAttributeComment.isEmpty())
+                                            {
+                                              // add an uncommented '@deprecated' statement only if there is not yet already one
+                                              const QCString toSearch(yyextra->docBlock.str());
+                                              if (!toSearch.contains("@deprecated") && !toSearch.contains("\\deprecated"))
+                                              {
+                                                commentToAdd = " \\ilinebr \\ilinebr @deprecated \\ilinebr \\ilinebr ";
+                                              }
+                                            }
+                                            else
+                                            {
+                                              commentToAdd = " \\ilinebr \\ilinebr @deprecated " +
+                                                             yyextra->foundC11DeprecatedAttributeComment +
+                                                             " \\ilinebr \\ilinebr ";
+                                            }
+                                            if (!commentToAdd.isEmpty())
+                                            {
+                                             // Only the additional comment is added (== appended) via 'handleCommentBlock()'.
+                                             // This is to avoid appending the already existing comment within 'yyextra->docBlock'
+                                             // a second time (looks really nasty). 'yyextra->docBlock' is also updated to keep
+                                             // the comment and the already handled data within 'yyscanner as consistent' as possible.
+                                             yyextra->docBlock << commentToAdd;
+                                             handleCommentBlock(yyscanner, commentToAdd, FALSE);
+                                            }
+                                            yyextra->foundC11DeprecatedAttribute = false;
+                                            yyextra->foundC11DeprecatedAttributeComment = "";
+                                          }
                                           BEGIN(yyextra->lastC11AttributeContext);
                                         }
 <SkipInits>"{"                          { // C++11 style initializer
@@ -5351,7 +5385,7 @@ NONLopt [^\n]*
                                           //addToBody(yytext);
                                           BEGIN( SkipCurlyCpp );
                                         }
-<SkipCurly,SkipC11Inits,SkipInits,SkipC11Attribute>\n   {
+<SkipCurly,SkipC11Inits,SkipInits,SkipC11Attribute,C11AttrDeprecatedComment>\n   {
                                           lineCount(yyscanner);
                                           //addToBody(yytext);
                                         }
@@ -5390,12 +5424,12 @@ NONLopt [^\n]*
                                           //addToBody(yytext);
                                           lineCount(yyscanner);
                                         }
-<SkipInits,SkipC11Inits,SkipCurly,SkipCurlyCpp,SkipC11Attribute>{CCS}    {
+<SkipInits,SkipC11Inits,SkipCurly,SkipCurlyCpp,SkipC11Attribute,C11AttrDeprecatedComment>{CCS}    {
                                           //addToBody(yytext);
                                           yyextra->lastCContext = YY_START;
                                           BEGIN(SkipComment);
                                         }
-<SkipInits,SkipC11Inits,SkipCurly,SkipCurlyCpp,SkipC11Attribute>{CPPC}  {
+<SkipInits,SkipC11Inits,SkipCurly,SkipCurlyCpp,SkipC11Attribute,C11AttrDeprecatedComment>{CPPC}  {
                                           //addToBody(yytext);
                                           yyextra->lastCContext = YY_START;
                                           BEGIN(SkipCxxComment);
@@ -5404,6 +5438,20 @@ NONLopt [^\n]*
                                           yyextra->roundCount=0;
                                           yyextra->lastSkipRoundContext=YY_START;
                                           BEGIN(SkipRound);
+                                        }
+<SkipC11Attribute>"deprecated"          { // the following combinations are now possible: 'deprecated]]', 'deprecated,...', 'deprecated("<...comment...>")'
+                                          // only the comment string here ('"<...comment...>"') is of interest if there is any
+                                          yyextra->lastC11DeprecatedAttributeContext = YY_START;
+                                          yyextra->foundC11DeprecatedAttribute = true;
+                                          BEGIN( C11AttrDeprecatedComment );
+                                        }
+<C11AttrDeprecatedComment>\"            { // the interesting comment for the documentation
+                                          yyextra->pCopyQuotedString=&(yyextra->foundC11DeprecatedAttributeComment);
+                                          yyextra->lastStringContext=YY_START;
+                                          BEGIN(CopyString);
+                                        }
+<C11AttrDeprecatedComment>"[,)]"        { // the end of the 'deprecated' attribute data has been reached or there was no comment string
+                                          BEGIN(yyextra->lastC11DeprecatedAttributeContext);
                                         }
 <SkipInits,SkipC11Inits,SkipC11Attribute>\"             {
                                           yyextra->lastStringContext=YY_START;
@@ -5440,7 +5488,7 @@ NONLopt [^\n]*
                                             BEGIN(SkipPHPString);
                                           }
                                         }
-<SkipInits,SkipC11Inits,SkipCurly,SkipCurlyCpp,SkipC11Attribute>.       { }
+<SkipInits,SkipC11Inits,SkipCurly,SkipCurlyCpp,SkipC11Attribute,C11AttrDeprecatedComment>.       { }
 <SkipString,SkipPHPString>\\.           { }
 <SkipString>\"                          {
                                           BEGIN( yyextra->lastStringContext );
@@ -6276,7 +6324,7 @@ NONLopt [^\n]*
                                         }
 <Comment>.                              { yyextra->current->program << *yytext ; }
 
-<FindMembers,FindFields,MemberSpec,FuncQual,SkipCurly,Operator,ClassVar,SkipInits,SkipC11Inits,SkipC11Attribute,Bases,OldStyleArgs>({CPPC}{B}*)?{CCS}"!" {
+<FindMembers,FindFields,MemberSpec,FuncQual,SkipCurly,Operator,ClassVar,SkipInits,SkipC11Inits,SkipC11Attribute,C11AttrDeprecatedComment,Bases,OldStyleArgs>({CPPC}{B}*)?{CCS}"!" {
                                           //printf("Start doc block at %d\n",yyextra->yyLineNr);
                                           if (!yyextra->current->doc.isEmpty())
                                           {
@@ -6953,6 +7001,8 @@ NONLopt [^\n]*
 <*>"[["                                 { // C++11 attribute
                                           if (!yyextra->insideCpp) REJECT;
                                           if (YY_START == CopyGString || YY_START == CopyGString) REJECT;
+                                          yyextra->foundC11DeprecatedAttribute = false;
+                                          yyextra->foundC11DeprecatedAttributeComment = "";
                                           yyextra->lastC11AttributeContext = YY_START;
                                           BEGIN( SkipC11Attribute );
                                         }
