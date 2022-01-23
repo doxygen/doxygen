@@ -2470,7 +2470,19 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
         ol.pushGeneratorState();
         ol.disableAllBut(OutputGenerator::Html);
         ol.docify(" ");
-        ol.startTextLink(getOutputFileBase(),anchor());
+        MemberDefMutable *annMemb = NULL;
+        if (!isAnonymous()) // hide anonymous stuff
+        {
+          annMemb = toMemberDefMutable(m_impl->annMemb);
+        }
+        if (annMemb)
+        {
+          ol.startTextLink(annMemb->getOutputFileBase(),annMemb->anchor());
+        }
+        else
+        {
+          ol.startTextLink(getOutputFileBase(),anchor());
+        }
         ol.parseText(theTranslator->trMore());
         ol.endTextLink();
         ol.popGeneratorState();
