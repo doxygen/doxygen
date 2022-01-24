@@ -1,15 +1,13 @@
 name: Coverity for doxygen
 
-
 # Just for tests
-on: [push, pull_request]
+#on: [push, pull_request]
 
 # The right schedule
-#on:
-#  schedule:
-#    - cron: '30 2 * * *'  # Run once per day, to avoid Coverity's submission limits
+on:
+  schedule:
+    - cron: '30 2 * * *'  # Run once per day, to avoid Coverity's submission limits
 #    - cron: '30 2 * * 1'  # Run once per a week on Monday early morning, to avoid Coverity's submission limits
-#  workflow_dispatch:
 
 jobs:
   scan:
@@ -48,12 +46,12 @@ jobs:
       - name: Submit results
         run: |
           tar zcf cov-scan.tgz build/cov-int
-          #curl --form token=$TOKEN \
-          #     --form email=$EMAIL \
-          #     --form file=@cov-scan.tgz \
-          #     --form version="$(git rev-parse HEAD)" \
-          #     --form description="Automatic GHA scan" \
-          #     'https://scan.coverity.com/builds?project=doxygen%2Fdoxygen'
+          curl --form token=$TOKEN \
+               --form email=$EMAIL \
+               --form file=@cov-scan.tgz \
+               --form version="$(git rev-parse HEAD)" \
+               --form description="Automatic GHA scan" \
+               'https://scan.coverity.com/builds?project=doxygen%2Fdoxygen'
         env:
           TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
           EMAIL: ${{ secrets.COVERITY_SCAN_EMAIL }}
