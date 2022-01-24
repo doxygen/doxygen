@@ -275,11 +275,11 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 
   /* no comment start / end signs inside square brackets */
 NCOMM [^/\*]
-  // C start comment 
+  // C start comment
 CCS   "/\*"
   // C end comment
 CCE   "*\/"
-  // Cpp comment 
+  // Cpp comment
 CPPC  "/\/"
   // doxygen C start comment
 DCOMMC ("/\*!"|"/\**")
@@ -5465,9 +5465,9 @@ NONLopt [^\n]*
                                           BEGIN( C11AttrDeprecatedComment );
                                         }
 <C11AttrDeprecatedComment>\"            { // the interesting comment for the documentation
-                                          yyextra->pCopyQuotedString=&(yyextra->foundC11DeprecatedAttributeComment);
-                                          yyextra->lastStringContext=YY_START;
-                                          BEGIN(CopyString);
+                                          yyextra->pCopyCStringContent=&(yyextra->foundC11DeprecatedAttributeComment);
+                                          yyextra->lastCStringContentContext=YY_START;
+                                          BEGIN(CopyCStringContent);
                                         }
 <C11AttrDeprecatedComment>"[,)]"        { // the end of the 'deprecated' attribute data has been reached or there was no comment string
                                           BEGIN(yyextra->lastC11DeprecatedAttributeContext);
