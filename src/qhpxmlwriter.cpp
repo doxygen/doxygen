@@ -17,10 +17,12 @@
 #include "qhpxmlwriter.h"
 #include "util.h"
 #include "qcstring.h"
+#include "debug.h"
 
 QhpXmlWriter::QhpXmlWriter()
-    : m_indentLevel(0), m_curLineIndented(false), m_compress(false)
+    : m_indentLevel(0), m_curLineIndented(false)
 {
+  m_compress = !Debug::isFlagSet(Debug::Qhp);
 }
 
 QhpXmlWriter::~QhpXmlWriter()
@@ -94,9 +96,12 @@ void QhpXmlWriter::indent()
   {
     return;
   }
-  for (int i = 0; i < m_indentLevel; i++)
+  if (!m_compress)
   {
-    m_backend << "  ";
+    for (int i = 0; i < m_indentLevel; i++)
+    {
+      m_backend << "  ";
+    }
   }
   m_curLineIndented = true;
 }

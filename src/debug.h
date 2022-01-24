@@ -41,7 +41,8 @@ class Debug
                      FortranFixed2Free = 0x00008000,
                      Cite         = 0x00010000,
                      NoLineNo     = 0x00020000,
-                     Rtf          = 0x00040000
+                     Rtf          = 0x00040000,
+                     Qhp          = 0x00080000,
                    };
     static void print(DebugMask mask,int prio,const char *fmt,...);
 

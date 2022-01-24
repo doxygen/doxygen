@@ -377,6 +377,11 @@ QCString resolveTypeDef(const Definition *context,const QCString &qualifiedName,
   if (typedefContext) *typedefContext=context;
 
   // see if the qualified name has a scope part
+  if (qualifiedName.find('<')!=-1)
+  {
+    //printf("  templates cannot be typedefs!\n");
+    return result;
+  }
   int scopeIndex = qualifiedName.findRev("::");
   QCString resName=qualifiedName;
   if (scopeIndex!=-1) // strip scope part for the name
@@ -460,7 +465,7 @@ QCString resolveTypeDef(const Definition *context,const QCString &qualifiedName,
   if (md)
   {
     //printf(">>resolveTypeDef: Found typedef name '%s' in scope '%s' value='%s' args='%s'\n",
-    //    qPrint(qualifiedName),qPrint(context->name()),md->typeString(),md->argsString()
+    //    qPrint(qualifiedName),qPrint(context->name()),qPrint(md->typeString()),qPrint(md->argsString())
     //    );
     result=md->typeString();
     QCString args = md->argsString();
