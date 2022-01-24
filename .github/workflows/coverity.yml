@@ -1,5 +1,6 @@
 name: Coverity for doxygen
 
+
 # Just for tests
 on: [push, pull_request]
 
