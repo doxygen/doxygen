@@ -75,6 +75,7 @@ struct scannerYY_state
   int              lastCPPContext = 0;
   int              lastSkipSharpContext = 0;
   int              lastSkipRoundContext = 0;
+  int              lastCStringContentContext = 0;
   int              lastStringContext = 0;
   int              lastCurlyContext = 0;
   int              lastRoundContext = 0;
@@ -157,6 +158,7 @@ struct scannerYY_state
   ArgumentList    *currentArgumentList = 0;
   char             lastCopyArgChar = '\0';
 
+  QCString *pCopyCStringContent = 0;
   QCString *pCopyQuotedString = 0;
   QCString *pCopyRoundString = 0;
   QCString *pCopyCurlyString = 0;
@@ -395,6 +397,7 @@ NONLopt [^\n]*
 %x      IDLUnionCase
 %x      NSAliasName
 %x      NSAliasArg
+%x      CopyCStringContent
 %x      CopyString
 %x      CopyPHPString
 %x      CopyGString
@@ -3063,6 +3066,22 @@ NONLopt [^\n]*
                                         }
 <CopyString,CopyPHPString>.             {
                                           *yyextra->pCopyQuotedString+=*yytext;
+                                        }
+
+  /* generic copying of a C string content (without the terminating quote sign) */
+
+<CopyCStringContent>\\.                 {
+                                          *yyextra->pCopyCStringContent+=yytext;
+                                        }
+<CopyCStringContent>\"                  {
+                                          BEGIN(yyextra->lastCStringContentContext);
+                                        }
+<CopyCStringContent>"[\r\n]"            { // newline characters before the terminating quote are a syntax error
+                                          //printf("error: Found a line break before the char string was closed with a quote at line %d of %s\n",yyextra->yyLineNr,yyextra->fileName);
+                                          BEGIN( yyextra->lastCStringContentContext );
+                                        }
+<CopyCStringContent>.                   {
+                                          *yyextra->pCopyCStringContent+=yytext;
                                         }
 
   /* generic quoted growable string copy rules */
