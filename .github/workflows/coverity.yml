@@ -45,10 +45,10 @@ jobs:
 
       - name: Submit results
         run: |
-          tar zcf cov-scan.tgz build/cov-int
+          cd build && tar zcf cov-scan.tgz cov-int
           curl --form token=$TOKEN \
                --form email=$EMAIL \
-               --form file=@cov-scan.tgz \
+               --form file=@build/cov-scan.tgz \
                --form version="$(git rev-parse HEAD)" \
                --form description="Automatic GHA scan" \
                'https://scan.coverity.com/builds?project=doxygen%2Fdoxygen'
