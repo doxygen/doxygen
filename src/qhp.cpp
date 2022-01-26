@@ -257,7 +257,14 @@ void Qhp::addIndexItem(const Definition *context,const MemberDef *md,
 
     // <keyword name="foo" id="MyApplication::foo" ref="doc.html#foo"/>
     ref = makeRef(contRef, anchor);
-    QCString id = level1+"::"+level2;
+    QCString id;
+    if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C) && (
+        level1.find(".c", level1.length() - 2, false) >= 0 ||
+        level1.find(".h", level1.length() - 2, false) >= 0 )) {
+        id = level2;
+    } else {
+        id = level1+"::"+level2;
+    }
     const char * attributes[] =
     {
       "name", level2.data(),
