@@ -896,7 +896,7 @@ static FILE *findFile(const QCString &fileName)
   return tryPath(".",fileName);
 }
 
-static void readIncludeFile(const QCString &incName)
+static void readIncludeFile(const QCString &incName,const bool mandatory)
 {
   if (g_includeStack.size()==MAX_INCLUDE_DEPTH) {
     config_term("maximum include depth (%d) reached, %s is not included. Aborting...\n",
@@ -937,7 +937,7 @@ static void readIncludeFile(const QCString &incName)
   }
   else
   {
-    config_term("@INCLUDE = %s: not found!\n",qPrint(inc));
+    if (mandatory) config_term("@INCLUDE = %s: not found!\n",qPrint(inc));
   }
 }
 
@@ -952,6 +952,7 @@ static void readIncludeFile(const QCString &incName)
 %x      GetString
 %x      GetStrList
 %x      Include
+%x      IncludeIfPresent
 
 %%
 
@@ -1120,7 +1121,12 @@ static void readIncludeFile(const QCString &incName)
   /* include a g_config file */
 <Start>"@INCLUDE"[ \t]*"="              { BEGIN(Include);}
 <Include>([^ \"\t\r\n]+)|("\""[^\n\"]+"\"") {
-                                          readIncludeFile(configStringRecode(yytext,g_encoding,"UTF-8"));
+                                          readIncludeFile(configStringRecode(yytext,g_encoding,"UTF-8"),true);
+                                          BEGIN(Start);
+                                        }
+<Start>"@INCLUDE_IF_PRESENT"[ \t]*"="   { BEGIN(IncludeIfPresent);}
+<IncludeIfPresent>([^ \"\t\r\n]+)|("\""[^\n\"]+"\"") {
+                                          readIncludeFile(configStringRecode(yytext,g_encoding,"UTF-8"),false);
                                           BEGIN(Start);
                                         }
 <<EOF>>                                 {

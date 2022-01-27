@@ -65,6 +65,11 @@ with these paths before the <code>\@INCLUDE</code> tag, e.g.:
 \verbatim
 @INCLUDE_PATH = my_config_dir
 \endverbatim
+\note with the <code>\@INCLUDE</code> tag the file to be included has to exist
+otherwise doxygen is terminated.
+When local changes should be allowed the tag <code>\@INCLUDE_IF_PRESENT</code>
+can be used that works identical when the file is present and ignores the 
+setting when the file is not present.
 
 The configuration options can be divided into several categories.
 Below is an alphabetical index of the tags that are recognized
