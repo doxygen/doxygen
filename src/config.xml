@@ -1308,7 +1308,7 @@ FILE_VERSION_FILTER = "cleartool desc -fmt \%Vn"
 <![CDATA[
  If the \c WARN_IF_UNDOCUMENTED tag is set to \c YES then doxygen will generate warnings
  for undocumented members. If \ref cfg_extract_all "EXTRACT_ALL" is set to \c YES then this flag will
- automatically be disabled.
+ automatically be disabled unless the \ref cfg_warn_extract_all "WARN_EXTRACT_ALL" is also set to \c YES.
 ]]>
       </docs>
     </option>
@@ -1340,9 +1340,10 @@ FILE_VERSION_FILTER = "cleartool desc -fmt \%Vn"
  or return value. If set to \c NO, doxygen will only warn about
  wrong parameter documentation, but not about the absence of
  documentation.
+ See also \ref cfg_warn_if_incomplete_doc "WARN_IF_INCOMPLETE_DOC".
  If \ref cfg_extract_all "EXTRACT_ALL" is set to \c YES then this flag will
- automatically be disabled.
- See also \ref cfg_warn_if_incomplete_doc "WARN_IF_INCOMPLETE_DOC"
+ automatically be disabled unless the \ref cfg_warn_extract_all "WARN_EXTRACT_ALL"
+ is also set to \c YES.
 ]]>
       </docs>
     </option>
@@ -1383,6 +1384,14 @@ FILE_VERSION_FILTER = "cleartool desc -fmt \%Vn"
  writing the warning and error messages are written to standard error. When as 
  file `-` is specified the warning and error messages are written to standard output
  (`stdout`).
+]]>
+      </docs>
+    </option>
+    <option type='bool' id='WARN_EXTRACT_ALL' defval='0' depends='EXTRACT_ALL'>
+      <docs>
+<![CDATA[
+ If the \c WARN_EXTRACT_ALL tag is set to \c YES then doxygen will generate warnings
+ for undocumented members even when \ref cfg_extract_all "EXTRACT_ALL" is set to \c YES.
 ]]>
       </docs>
     </option>

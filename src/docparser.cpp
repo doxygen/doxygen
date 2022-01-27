@@ -6280,7 +6280,7 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
         {
           if (paramName.isEmpty())
           {
-            if (Config_getBool(WARN_NO_PARAMDOC))
+            if (Config_getBool(WARN_NO_PARAMDOC) || (Config_getBool(EXTRACT_ALL) && Config_getBool(WARN_EXTRACT_ALL)))
             {
               warn_doc_error(m_parser.context.fileName,m_parser.tokenizer.getLineNr(),"empty 'name' attribute for <param%s> tag.",tagId==XML_PARAM?"":"type");
             }

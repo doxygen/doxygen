@@ -3876,11 +3876,12 @@ void MemberDefImpl::warnIfUndocumented() const
   else
     t="file", d=fd;
   static bool extractAll = Config_getBool(EXTRACT_ALL);
+  static bool warnExtractAll = Config_getBool(WARN_EXTRACT_ALL);
 
   //printf("%s:warnIfUndoc: hasUserDocs=%d isFriendClass=%d protection=%d isRef=%d isDel=%d\n",
   //    qPrint(name()),
   //    hasUserDocumentation(),isFriendClass(),protectionLevelVisible(m_impl->prot),isReference(),isDeleted());
-  if ((!hasUserDocumentation() && !extractAll) &&
+  if ((!hasUserDocumentation() && (!extractAll || warnExtractAll)) &&
       !isFriendClass() &&
       name().find('@')==-1 && d && d->name().find('@')==-1 &&
       protectionLevelVisible(m_impl->prot) &&
@@ -4023,7 +4024,7 @@ void MemberDefImpl::detectUndocumentedParams(bool hasParamCommand,bool hasReturn
 
 void MemberDefImpl::warnIfUndocumentedParams() const
 {
-  if (!Config_getBool(EXTRACT_ALL) &&
+  if ((!Config_getBool(EXTRACT_ALL) || Config_getBool(WARN_EXTRACT_ALL)) &&
       Config_getBool(WARN_IF_UNDOCUMENTED) &&
       Config_getBool(WARN_NO_PARAMDOC) &&
       isFunction() &&
