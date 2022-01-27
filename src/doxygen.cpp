@@ -1069,7 +1069,7 @@ static void addClassToContext(const Entry *root)
                fullName,sec,tagName,refFileName,TRUE,root->spec&Entry::Enum) )));
     if (cd)
     {
-      Debug::print(Debug::Classes,0,"  New class '%s' (sec=0x%08x)! #tArgLists=%d tagInfo=%p hidden=%d artificial=%d\n",
+      Debug::print(Debug::Classes,0,"  New class '%s' (sec=0x%08x)! #tArgLists=%zu tagInfo=%p hidden=%d artificial=%d\n",
           qPrint(fullName),sec,root->tArgLists.size(), tagInfo,root->hidden,root->artificial);
       cd->setDocumentation(root->doc,root->docFile,root->docLine); // copy docs to definition
       cd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
@@ -1230,7 +1230,7 @@ static void addConceptToContext(const Entry *root)
                qualifiedName,tagName,refFileName))));
     if (cd)
     {
-      Debug::print(Debug::Classes,0,"  New concept '%s' #tArgLists=%d tagInfo=%p\n",
+      Debug::print(Debug::Classes,0,"  New concept '%s' #tArgLists=%zu tagInfo=%p\n",
           qPrint(qualifiedName),root->tArgLists.size(),tagInfo);
       cd->setDocumentation(root->doc,root->docFile,root->docLine); // copy docs to definition
       cd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
@@ -2059,7 +2059,7 @@ static void findUsingDeclarations(const Entry *root,bool filterPythonPackages)
       //printf("%s -> %p\n",qPrint(root->name),(void*)usingCd);
       if (usingCd==0) // definition not in the input => add an artificial class
       {
-        Debug::print(Debug::Classes,0,"  New using class '%s' (sec=0x%08x)! #tArgLists=%d\n",
+        Debug::print(Debug::Classes,0,"  New using class '%s' (sec=0x%08x)! #tArgLists=%zu\n",
              qPrint(name),root->section,root->tArgLists.size());
         usingCd = toClassDefMutable(
              Doxygen::hiddenClassLinkedMap->add(name,
@@ -3171,7 +3171,7 @@ static void buildInterfaceAndServiceList(const Entry *root)
   {
     Debug::print(Debug::Functions,0,
                  "EXPORTED_INTERFACE_SEC:\n"
-                 "  '%s' '%s'::'%s' '%s' relates='%s' relatesType='%d' file='%s' line='%d' bodyLine='%d' #tArgLists=%d mGrpId=%d spec=%lld proto=%d docFile=%s\n",
+                 "  '%s' '%s'::'%s' '%s' relates='%s' relatesType='%d' file='%s' line='%d' bodyLine='%d' #tArgLists=%zu mGrpId=%d spec=%lld proto=%d docFile=%s\n",
                  qPrint(root->type),
                  qPrint(root->parent()->name),
                  qPrint(root->name),
@@ -3497,7 +3497,7 @@ static void buildFunctionList(const Entry *root)
   {
     Debug::print(Debug::Functions,0,
                  "FUNCTION_SEC:\n"
-                 "  '%s' '%s'::'%s' '%s' relates='%s' relatesType='%d' file='%s' line='%d' bodyLine='%d' #tArgLists=%d mGrpId=%d spec=%lld proto=%d docFile=%s\n",
+                 "  '%s' '%s'::'%s' '%s' relates='%s' relatesType='%d' file='%s' line='%d' bodyLine='%d' #tArgLists=%zu mGrpId=%d spec=%lld proto=%d docFile=%s\n",
                  qPrint(root->type),
                  qPrint(root->parent()->name),
                  qPrint(root->name),
@@ -5855,7 +5855,7 @@ static void addMemberFunction(const Entry *root,
         memType=substitute(stripTemplateSpecifiersFromScope(memType,TRUE),
             className+"::",""); // see bug758900
         Debug::print(Debug::FindMembers,0,
-            "5b. Comparing return types '%s'<->'%s' #args %d<->%d\n",
+            "5b. Comparing return types '%s'<->'%s' #args %zu<->%zu\n",
             qPrint(md->typeString()),qPrint(funcType),
             md->templateArguments().size(),root->tArgLists.back().size());
         if (md->templateArguments().size()!=root->tArgLists.back().size() || memType!=funcType)
@@ -6536,7 +6536,7 @@ static void findMember(const Entry *root,
     if (!isRelated && !strongEnum && mn) // function name already found
     {
       Debug::print(Debug::FindMembers,0,
-                   "2. member name exists (%d members with this name)\n",mn->size());
+                   "2. member name exists (%zu members with this name)\n",mn->size());
       if (!className.isEmpty()) // class name is valid
       {
         if (funcSpec.isEmpty()) // not a member specialization
