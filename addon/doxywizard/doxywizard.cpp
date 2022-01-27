@@ -611,11 +611,7 @@ void MainWindow::readStdout()
     {
       text1 += text;
       m_outputLog->clear();
-#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
       m_outputLog->append(APPQT(text1.toHtmlEscaped().trimmed()));
-#else
-      m_outputLog->append(APPQT(Qt::escape(text1).trimmed()));
-#endif
     }
   }
 }

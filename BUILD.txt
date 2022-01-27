@@ -35,7 +35,6 @@ Doxygen's cmake configuration provides a number of options:
 - use_libclang    Add support for libclang parsing.
 - win_static      Link with /MT in stead of /MD on windows.
 - english_only    Only compile in support for the English language.
-- force_qt4       Forces doxywizard to build using Qt4 even if Qt5 is installed
 
 An option can be turned on, by adding -D<option>=ON as a command line option, this can be
 done when generating the initial build files, but also afterwards, i.e. to enable building
