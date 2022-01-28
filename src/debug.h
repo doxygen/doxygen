@@ -46,7 +46,7 @@ class Debug
                      Tag          = 0x00100000,
                    };
     static void print(DebugMask mask,int prio,const char *fmt,...);
-    static void Debug::print(const char *fmt,...);
+    static void print(const char *fmt,...);
 
     static int  setFlag(const QCString &label);
     static void clearFlag(const QCString &label);
