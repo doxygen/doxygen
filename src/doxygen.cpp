@@ -6200,7 +6200,7 @@ static void findMember(const Entry *root,
 {
   Debug::print(Debug::FindMembers,0,
                "findMember(root=%p,funcDecl='%s',related='%s',overload=%d,"
-               "isFunc=%d mGrpId=%d #tArgList=%d "
+               "isFunc=%d mGrpId=%d #tArgList=%zu "
                "spec=%lld lang=%x\n",
                root,qPrint(funcDecl),qPrint(relates),overloaded,isFunc,root->mGrpId,
                root->tArgLists.size(),
