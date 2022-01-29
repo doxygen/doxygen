@@ -2768,7 +2768,7 @@ void ClassDefImpl::writeMemberPages(OutputList &ol) const
 
 void ClassDefImpl::writeQuickMemberLinks(OutputList &ol,const MemberDef *currentMd) const
 {
-  static bool createSubDirs=Config_getBool(CREATE_SUBDIRS);
+  static bool createSubDirs = (Config_getEnum(CREATE_SUBDIRS) != CREATE_SUBDIRS_t::NO);
 
   ol.writeString("      <div class=\"navtab\">\n");
   ol.writeString("        <table>\n");

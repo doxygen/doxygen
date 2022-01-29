@@ -1472,7 +1472,7 @@ class DefinitionContext
 
     QCString relPathAsString() const
     {
-      static bool createSubdirs = Config_getBool(CREATE_SUBDIRS);
+      static bool createSubdirs = (Config_getEnum(CREATE_SUBDIRS) != CREATE_SUBDIRS_t::NO);
       return createSubdirs ? QCString("../../") : QCString("");
     }
     virtual TemplateVariant relPath() const     { return relPathAsString(); }
@@ -5361,7 +5361,7 @@ class NestingNodeContext::Private
     }
     QCString relPathAsString() const
     {
-      static bool createSubdirs = Config_getBool(CREATE_SUBDIRS);
+      static bool createSubdirs = (Config_getEnum(CREATE_SUBDIRS) != CREATE_SUBDIRS_t::NO);
       return createSubdirs ? QCString("../../") : QCString("");
     }
 
@@ -7036,7 +7036,7 @@ class NavPathElemContext::Private
     }
     QCString relPathAsString() const
     {
-      static bool createSubdirs = Config_getBool(CREATE_SUBDIRS);
+      static bool createSubdirs = (Config_getEnum(CREATE_SUBDIRS) != CREATE_SUBDIRS_t::NO);
       return createSubdirs ? QCString("../../") : QCString("");
     }
   private:

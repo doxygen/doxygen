@@ -3602,7 +3602,30 @@ static std::unordered_map<std::string,int> g_usedNames;
 static std::mutex g_usedNamesMutex;
 static int g_usedNamesCount=1;
 
-
+static int convertCreateSubDirs2Level(CREATE_SUBDIRS_t createSubDirs)
+{
+  switch (createSubDirs)
+  {
+    case CREATE_SUBDIRS_t::D16:
+      return 0;
+    case CREATE_SUBDIRS_t::D32:
+      return 1;
+    case CREATE_SUBDIRS_t::D64:
+      return 2;
+    case CREATE_SUBDIRS_t::D128:
+      return 3;
+    case CREATE_SUBDIRS_t::D256:
+      return 4;
+    case CREATE_SUBDIRS_t::D512:
+      return 5;
+    case CREATE_SUBDIRS_t::D1024:
+      return 6;
+    case CREATE_SUBDIRS_t::D2048:
+      return 7;
+    default: /* NO, YES, D4096 */
+      return 8;
+  }
+}
 
 /*! This function determines the file name on disk of an item
  *  given its name, which could be a class name with template
@@ -3612,7 +3635,7 @@ QCString convertNameToFile(const QCString &name,bool allowDots,bool allowUndersc
 {
   if (name.isEmpty()) return name;
   static bool shortNames = Config_getBool(SHORT_NAMES);
-  static bool createSubdirs = Config_getBool(CREATE_SUBDIRS);
+  static CREATE_SUBDIRS_t createSubDirs = Config_getEnum(CREATE_SUBDIRS);
   QCString result;
   if (shortNames) // use short names only
   {
@@ -3644,10 +3667,10 @@ QCString convertNameToFile(const QCString &name,bool allowDots,bool allowUndersc
       result=result.left(128-32)+sigStr;
     }
   }
-  if (createSubdirs)
+  if (createSubDirs != CREATE_SUBDIRS_t::NO)
   {
     int l1Dir=0,l2Dir=0;
-    static int createSubdirsLevel = std::min(8, Config_getInt(CREATE_SUBDIRS_LEVEL));
+    static int createSubdirsLevel = convertCreateSubDirs2Level(createSubDirs);
     static const uchar createSubdirsBitmaskL2[] =
     {
       0x0, 0x1, 0x3, 0x7, 0xf, 0x1f, 0x3f, 0x7f, 0xff
@@ -3668,7 +3691,7 @@ QCString convertNameToFile(const QCString &name,bool allowDots,bool allowUndersc
 QCString relativePathToRoot(const QCString &name)
 {
   QCString result;
-  if (Config_getBool(CREATE_SUBDIRS))
+  if (Config_getEnum(CREATE_SUBDIRS) != CREATE_SUBDIRS_t::NO)
   {
     if (name.isEmpty())
     {
@@ -3688,10 +3711,11 @@ QCString relativePathToRoot(const QCString &name)
 
 void createSubDirs(const Dir &d)
 {
-  if (Config_getBool(CREATE_SUBDIRS))
+  static CREATE_SUBDIRS_t createSubDirs = Config_getEnum(CREATE_SUBDIRS);
+  if (createSubDirs != CREATE_SUBDIRS_t::NO)
   {
     // create up to 4096 subdirectories
-    static int createSubdirsLevel = std::min(8, Config_getInt(CREATE_SUBDIRS_LEVEL));
+    static int createSubdirsLevel = convertCreateSubDirs2Level(createSubDirs);
     int l1,l2;
     for (l1=0;l1<16;l1++)
     {
@@ -3716,10 +3740,11 @@ void createSubDirs(const Dir &d)
 
 void clearSubDirs(const Dir &d)
 {
-  if (Config_getBool(CREATE_SUBDIRS))
+  static CREATE_SUBDIRS_t createSubDirs = Config_getEnum(CREATE_SUBDIRS);
+  if (createSubDirs != CREATE_SUBDIRS_t::NO)
   {
     // remove empty subdirectories
-    static int createSubdirsLevel = std::min(8, Config_getInt(CREATE_SUBDIRS_LEVEL));
+    static int createSubdirsLevel = convertCreateSubDirs2Level(createSubDirs);
     for (int l1=0;l1<16;l1++)
     {
       QCString subdir;

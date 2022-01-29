@@ -3700,12 +3700,12 @@ void writeGraphInfo(OutputList &ol)
 
   bool stripCommentsStateRef = Config_getBool(STRIP_CODE_COMMENTS);
   bool oldStripCommentsState = stripCommentsStateRef;
-  bool createSubdirs = Config_getBool(CREATE_SUBDIRS);
-  bool oldCreateSubdirs = createSubdirs;
+  CREATE_SUBDIRS_t createSubdirs = Config_getEnum(CREATE_SUBDIRS);
+  CREATE_SUBDIRS_t oldCreateSubdirs = createSubdirs;
   // temporarily disable the stripping of comments for our own code example!
   stripCommentsStateRef = Config_updateBool(STRIP_CODE_COMMENTS,FALSE);
   // temporarily disable create subdirs for linking to our example
-  createSubdirs = Config_updateBool(CREATE_SUBDIRS,FALSE);
+  createSubdirs = Config_updateEnum(CREATE_SUBDIRS,CREATE_SUBDIRS_t::NO);
 
   startFile(ol,"graph_legend",QCString(),theTranslator->trLegendTitle());
   startTitle(ol,QCString());
@@ -3728,7 +3728,7 @@ void writeGraphInfo(OutputList &ol)
 
   // restore config settings
   Config_updateBool(STRIP_CODE_COMMENTS,oldStripCommentsState);
-  Config_updateBool(CREATE_SUBDIRS,oldCreateSubdirs);
+  Config_updateEnum(CREATE_SUBDIRS,oldCreateSubdirs);
 
   endFile(ol);
   ol.popGeneratorState();
