@@ -3647,7 +3647,7 @@ QCString convertNameToFile(const QCString &name,bool allowDots,bool allowUndersc
   if (createSubdirs)
   {
     int l1Dir=0,l2Dir=0;
-    static int createSubdirsLevel = Config_getInt(CREATE_SUBDIRS_LEVEL);
+    static int createSubdirsLevel = std::min(8, Config_getInt(CREATE_SUBDIRS_LEVEL));
     static const uchar createSubdirsBitmaskL2[] =
     {
       0x0, 0x1, 0x3, 0x7, 0xf, 0x1f, 0x3f, 0x7f, 0xff
@@ -3691,7 +3691,7 @@ void createSubDirs(const Dir &d)
   if (Config_getBool(CREATE_SUBDIRS))
   {
     // create up to 4096 subdirectories
-    static int createSubdirsLevel = Config_getInt(CREATE_SUBDIRS_LEVEL);
+    static int createSubdirsLevel = std::min(8, Config_getInt(CREATE_SUBDIRS_LEVEL));
     int l1,l2;
     for (l1=0;l1<16;l1++)
     {
@@ -3719,7 +3719,7 @@ void clearSubDirs(const Dir &d)
   if (Config_getBool(CREATE_SUBDIRS))
   {
     // remove empty subdirectories
-    static int createSubdirsLevel = Config_getInt(CREATE_SUBDIRS_LEVEL);
+    static int createSubdirsLevel = std::min(8, Config_getInt(CREATE_SUBDIRS_LEVEL));
     for (int l1=0;l1<16;l1++)
     {
       QCString subdir;
