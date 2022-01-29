@@ -18,14 +18,22 @@
 
 class Input;
 class QTextStream;
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 class QTextCodec;
+#else
+class QStringEncoder;
+#endif
 
 bool parseConfig(
       const QString &fileName,
       const QHash<QString,Input *> &options
     );
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 void writeStringValue(QTextStream &t,QTextCodec *codec,const QString &s);
+#else
+void writeStringValue(QTextStream &t,QStringEncoder *codec,const QString &s);
+#endif
 
 // directly copied from ../../src/config.h to be consistent
 enum

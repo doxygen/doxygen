@@ -29,8 +29,10 @@ option(use_libclang    "Add support for libclang parsing." OFF)
 option(static_libclang "Link to a statically compiled version of LLVM/libclang." OFF)
 option(win_static      "Link with /MT in stead of /MD on windows" OFF)
 option(english_only    "Only compile in support for the English language" OFF)
-option(force_qt4       "Forces doxywizard to build using Qt4 even if Qt5 is installed" OFF)
 option(enable_coverage "Enable coverage reporting for gcc/clang [development]" OFF)
+
+set(force_qt CACHE INTERNAL "Forces doxywizard to build using the specified major version, this can be Qt5 or Qt6")
+set_property(CACHE force_qt PROPERTY STRINGS OFF Qt6 Qt5)
 
 SET(enlarge_lex_buffers "262144" CACHE INTERNAL "Sets the lex input and read buffers to the specified size")
 

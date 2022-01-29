@@ -33,8 +33,13 @@
 #include <QMessageBox>
 #include <QSettings>
 #include <QTextStream>
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 #include <QTextCodec>
+#else
+#include <QStringEncoder>
+#endif
 #include <QFileInfo>
+#include <QRegularExpression>
 
 #define SA(x) QString::fromLatin1(x)
 
@@ -404,7 +409,7 @@ static QString getDocsForNode(const QDomElement &child)
   // Remove / replace doxygen markup strings
   // the regular expressions are hard to read so the intention will be given
   // Note: see also configgen.py in the src directory for other doxygen parts
-  QRegExp regexp;
+  QRegularExpression regexp;
   // remove \n at end and replace by a space
   regexp.setPattern(SA("\\n$"));
   docs.replace(regexp,SA(" "));
@@ -785,8 +790,13 @@ void Expert::loadConfig(const QString &fileName)
   parseConfig(fileName,m_options);
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 void Expert::saveTopic(QTextStream &t,QDomElement &elem,QTextCodec *codec,
                        bool brief,bool condensed)
+#else
+void Expert::saveTopic(QTextStream &t,QDomElement &elem,QStringEncoder *codec,
+                       bool brief,bool condensed)
+#endif
 {
   if (!brief)
   {
@@ -847,8 +857,9 @@ bool Expert::writeConfig(QTextStream &t,bool brief, bool condensed)
     t << convertToComment(m_header);
   }
 
-  QTextCodec *codec = 0;
   Input *option = m_options[QString::fromLatin1("DOXYFILE_ENCODING")];
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+  QTextCodec *codec = 0;
   if (option)
   {
     codec = QTextCodec::codecForName(option->value().toString().toLatin1());
@@ -857,6 +868,17 @@ bool Expert::writeConfig(QTextStream &t,bool brief, bool condensed)
       codec = QTextCodec::codecForName("UTF-8");
     }
   }
+#else
+  QStringEncoder *codec = 0;
+  if (option)
+  {
+    codec = new QStringEncoder(*QStringConverter::encodingForName(option->value().toString().toLatin1()));
+    if (codec==0) // fallback: use UTF-8
+    {
+      codec = new QStringEncoder(*QStringConverter::encodingForName("UTF-8"));
+    }
+  }
+#endif
   QDomElement childElem = m_rootElement.firstChildElement();
   while (!childElem.isNull())
   {

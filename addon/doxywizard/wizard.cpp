@@ -386,16 +386,28 @@ void ColorPicker::paintEvent(QPaintEvent*)
 
 void ColorPicker::mouseMoveEvent(QMouseEvent *m)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
   if      (m_mode==Hue)        setHue(y2hue(m->y()));
   else if (m_mode==Saturation) setSat(y2sat(m->y()));
   else                         setGam(y2gam(m->y()));
+#else
+  if      (m_mode==Hue)        setHue(y2hue(m->position().y()));
+  else if (m_mode==Saturation) setSat(y2sat(m->position().y()));
+  else                         setGam(y2gam(m->position().y()));
+#endif
 }
 
 void ColorPicker::mousePressEvent(QMouseEvent *m)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
   if      (m_mode==Hue)        setHue(y2hue(m->y()));
   else if (m_mode==Saturation) setSat(y2sat(m->y()));
   else                         setGam(y2gam(m->y()));
+#else
+  if      (m_mode==Hue)        setHue(y2hue(m->position().y()));
+  else if (m_mode==Saturation) setSat(y2sat(m->position().y()));
+  else                         setGam(y2gam(m->position().y()));
+#endif
 }
 
 void ColorPicker::setHue(int h)
@@ -478,7 +490,7 @@ int ColorPicker::gam2y(int g)
 Step1::Step1(Wizard *wizard,const QHash<QString,Input*> &modelData) : m_wizard(wizard), m_modelData(modelData)
 {
   QVBoxLayout *layout = new QVBoxLayout(this);
-  layout->setMargin(4);
+  layout->setContentsMargins(4,4,4,4);
   layout->setSpacing(8);
   QLabel *l = new QLabel(this);
   l->setText(tr("Provide some information "

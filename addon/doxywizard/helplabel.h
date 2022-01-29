@@ -39,7 +39,11 @@ class HelpLabel : public QLabel
       }
     }
   protected:
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     void enterEvent( QEvent * event ) { enter(); QLabel::enterEvent(event); }
+#else
+    void enterEvent( QEnterEvent * event ) { enter(); QLabel::enterEvent(event); }
+#endif
 };
 
 #endif

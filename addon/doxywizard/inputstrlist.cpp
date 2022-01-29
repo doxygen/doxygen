@@ -22,7 +22,11 @@
 #include <QFileInfo>
 #include <QFileDialog>
 #include <QTextStream>
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 #include <QTextCodec>
+#else
+#include <QStringEncoder>
+#endif
 
 InputStrList::InputStrList( QGridLayout *layout,int &row,
                             const QString & id,
@@ -243,7 +247,11 @@ void InputStrList::reset()
   setValue(m_default);
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 void InputStrList::writeValue(QTextStream &t,QTextCodec *codec)
+#else
+void InputStrList::writeValue(QTextStream &t,QStringEncoder *codec)
+#endif
 {
   bool first=true;
   foreach (QString s, m_strList)

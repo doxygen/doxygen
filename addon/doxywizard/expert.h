@@ -24,7 +24,11 @@ class QTreeWidgetItem;
 class QStackedWidget;
 class QSettings;
 class QTextBrowser;
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 class QTextCodec;
+#else
+class QStringEncoder;
+#endif
 class QPushButton;
 class Input;
 
@@ -67,7 +71,11 @@ class Expert : public QSplitter, public DocIntf
 
   private:
     void createTopics(const QDomElement &);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     void saveTopic(QTextStream &t,QDomElement &elem,QTextCodec *codec,bool brief,bool dondensed);
+#else
+    void saveTopic(QTextStream &t,QDomElement &elem,QStringEncoder *codec,bool brief,bool dondensed);
+#endif
 
     QSplitter               *m_splitter;
     QTextBrowser            *m_helper;
