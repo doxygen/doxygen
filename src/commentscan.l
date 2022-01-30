@@ -1480,6 +1480,10 @@ STopt  [^\n@\\]*
                                           addOutput(yyscanner,'\n');
                                           BEGIN( Comment );
                                         }
+<SubpageLabel>.                         {
+                                          unput(yytext[0]);
+                                          BEGIN( Comment );
+                                        }
 <SubpageTitle>{DOCNL}                   { // no title, end command
                                           addOutput(yyscanner,yytext);
                                           BEGIN( Comment );
@@ -2015,9 +2019,9 @@ STopt  [^\n@\\]*
                                         }
 
  /*
-<*>.  { fprintf(stderr,"Lex scanner %s %sdefault rule for state %s: #%s#\n", __FILE__,yyextra->fileName ? ("(" + yyextra->fileName +") ").data(): "",stateToString(YY_START),yytext);}
-<*>\n  { fprintf(stderr,"Lex scanner %s %sdefault rule newline for state %s.\n", __FILE__, yyextra->fileName ? ("(" + yyextra->fileName +") ").data(): "",stateToString(YY_START));}
-  */
+<*>.  { fprintf(stderr,"Lex scanner %s %sdefault rule for state %s: #%s#\n", __FILE__,!yyextra->fileName.isEmpty() ? ("(" + yyextra->fileName +") ").data(): "",stateToString(YY_START),yytext);}
+<*>\n  { fprintf(stderr,"Lex scanner %s %sdefault rule newline for state %s.\n", __FILE__, !yyextra->fileName.isEmpty() ? ("(" + yyextra->fileName +") ").data(): "",stateToString(YY_START));}
+ */
 
 %%
 
