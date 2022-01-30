@@ -5119,6 +5119,7 @@ static bool renderQuickLinksAsJs(std::ostream &t,LayoutNavEntry *root,bool first
         if (!firstChild) t << ",\n";
         firstChild=FALSE;
         QCString url = entry->url();
+        if (isURL(url)) url = "^" + url;
         t << "{text:\"" << convertToJSString(entry->title()) << "\",url:\""
           << convertToJSString(url) << "\"";
         bool hasChildren=FALSE;

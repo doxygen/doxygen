@@ -3559,7 +3559,7 @@ void Preprocessor::processFile(const QCString &fileName,BufStr &input,BufStr &ou
 #endif
 
   printlex(yy_flex_debug, TRUE, __FILE__, qPrint(fileName));
-  uint orgOffset=output.curPos();
+  size_t orgOffset=output.curPos();
   //printf("##########################\n%s\n####################\n",
   //    qPrint(input));
 
