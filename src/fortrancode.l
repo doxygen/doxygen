@@ -328,7 +328,8 @@ INTRINSIC_MODULE                ({INTRINSIC_MODULE_IEEE}|ISO_C_BINDING|ISO_FORTR
 
 SPECIFIER                       (ACCESS|ACQUIRED_LOCK|ACTION|ADVANCE|ASYNCHRONOUS|BLANK|DECIMAL|DELIM|DIM|DIRECT|ENCODING|EOR|ERR|ERRMSG|EXIST|FILE|FMT|FORM|FORMATTED|ID|IOLENGTH|IOMSG|IOSTAT|KIND|LEN|MOLD|NAME|NAMED|NEW_INDEX|NEWUNIT|NEXTREC|NML|NUMBER|OPENED|PAD|PENDING|POS|POSITION|QUIET|READ|READWRITE|REC|RECL|ROUND|SEQUENTIAL|SIGN|SIZE|SOURCE|STAT|STATUS|STREAM|TEAM|TEAM_NUMBER|UNFORMATTED|UNIT|UNTIL_COUNT|WRITE)
 
-STATEMENT                       (ALLOCATE|ASSIGN|BACKSPACE|BLOCK{BS}DATA|CALL|CHANGE{BS}TEAM|CLOSE|COMMON|CONTAINS|CONTINUE|CYCLE|DATA|DEALLOCATE|ENTRY|ERROR{BS}STOP|EQUIVALENCE|EVENT{BS_}POST|EVENT{BS_}WAIT|EXIT|FAIL{BS_}IMAGE|FINAL|FLUSH|FORM{BS_}TEAM|FORMAT|FORMATTED|FUNCTION|GENERIC|GO{BS}TO|INCLUDE|INQUIRE|LOCK|MODULE{BS_}PROCEDURE|NAMELIST|NULLIFY|OPEN|PAUSE|PRINT|PROGRAM|READ|RESULT|RETURN|REWIND|STOP|SUBMODULE|END{BS}SUBMODULE|SUBROUTINE|SYNC{BS_}(ALL|MEMORY|IMAGES|TEAM)|UNFORMATTED|UNLOCK|WAIT|WRITE)
+/* FUNCTION and SUBROUTINE are excluded from STATEMENT below to prevent dot-graph self-reference misrepresentations. */
+STATEMENT                       (ALLOCATE|ASSIGN|BACKSPACE|BLOCK{BS}DATA|CALL|CHANGE{BS}TEAM|CLOSE|COMMON|CONTAINS|CONTINUE|CYCLE|DATA|DEALLOCATE|ENTRY|ERROR{BS}STOP|EQUIVALENCE|EVENT{BS_}POST|EVENT{BS_}WAIT|EXIT|FAIL{BS_}IMAGE|FINAL|FLUSH|FORM{BS_}TEAM|FORMAT|FORMATTED|GENERIC|GO{BS}TO|INCLUDE|INQUIRE|LOCK|MODULE{BS_}PROCEDURE|NAMELIST|NULLIFY|OPEN|PAUSE|PRINT|PROGRAM|READ|RESULT|RETURN|REWIND|STOP|SUBMODULE|END{BS}SUBMODULE|SYNC{BS_}(ALL|MEMORY|IMAGES|TEAM)|UNFORMATTED|UNLOCK|WAIT|WRITE)
 
 /* INTRINSIC_DERIVED_TYPE_IEEE and INTRINSIC_DERIVED_TYPE_CFI can be merged with INTRINSIC_DERIVED_TYPE when the flex bug gets resolved in the future */
 INTRINSIC_DERIVED_TYPE_IEEE     (IEEE_CLASS_TYPE|IEEE_FEATURES_TYPE|IEEE_FLAG_TYPE|IEEE_MODES_TYPE|IEEE_ROUND_TYPE|IEEE_STATUS_TYPE)
@@ -658,7 +659,7 @@ INTRINSIC_DERIVED_TYPE          (C_FUNPTR|C_PTR|EVENT_TYPE|LOCK_TYPE|TEAM_TYPE)
                                         }
  /*-------- subprog definition -------------------------------------*/
  /*
-<Start>({PREFIX}{BS_})?{TYPE_SPEC}{BS_}({PREFIX}{BS_})?{BS}/{SUBPROG}{BS_}  {   // TYPE_SPEC is for old function style function result
+ <Start>({PREFIX}{BS_})?({TYPE_SPEC}{BS_}({PREFIX}{BS_})?{BS}/{SUBPROG}{BS_}  {   // TYPE_SPEC is for old function style function result
                                           startFontClass(yyscanner,"fortran_prefix");
                                           codifyLines(yyscanner,yytext);
                                           endFontClass(yyscanner);
@@ -722,7 +723,7 @@ INTRINSIC_DERIVED_TYPE          (C_FUNPTR|C_PTR|EVENT_TYPE|LOCK_TYPE|TEAM_TYPE)
                                           yyextra->code->codify(QCString(yytext));
                                           endFontClass(yyscanner);
                                         }
-<Start>^{BS}{ATTR_SPEC}                 { // declare attribute statement. Highlighting must be "fortran_attribute" as attribute has precedence over statement.
+<Start>^{BS}({ATTR_SPEC}{BS_})+         { // declare attribute statement. Highlighting must be "fortran_attribute" as attribute has precedence over statement.
                                           if (QCString(yytext) == "external")
                                           {
                                             yy_push_state(YY_START,yyscanner);
@@ -966,9 +967,9 @@ INTRINSIC_DERIVED_TYPE          (C_FUNPTR|C_PTR|EVENT_TYPE|LOCK_TYPE|TEAM_TYPE)
                                           yyextra->code->codify(QCString(yytext));
                                         }
 <Start>{ID}                             {
-                                            yyextra->insideBody=TRUE;
+                                            //yyextra->insideBody=TRUE; // why is this needed? It messes up the dot-graph representations by generating artificial self-references.
                                             generateLink(yyscanner,*yyextra->code, yytext);
-                                            yyextra->insideBody=FALSE;
+                                            //yyextra->insideBody=FALSE;
                                         }
  /*------ strings --------------------------------------------------*/
 <String>\n                              { // string with \n inside
@@ -1477,7 +1478,7 @@ static bool getLink(yyscan_t yyscanner,const UseMap &useMap, // dictionary with 
 }
 
 
-static void generateLink(yyscan_t yyscanner,CodeOutputInterface &ol, const QCString &lname)
+static void generateLink(yyscan_t yyscanner, CodeOutputInterface &ol, const QCString &lname)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   ClassDef *cd=0;
@@ -1496,7 +1497,7 @@ static void generateLink(yyscan_t yyscanner,CodeOutputInterface &ol, const QCStr
     }
     else
     { // write type or interface link
-      writeMultiLineCodeLink(yyscanner, ol,cd,name);
+      writeMultiLineCodeLink(yyscanner, ol, cd, name);
       addToSearchIndex(yyscanner, name);
     }
   }
