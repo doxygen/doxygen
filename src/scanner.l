@@ -5038,6 +5038,16 @@ NONLopt [^\n]*
                                           BEGIN(FuncQual);
                                         }
 <OldStyleArgs>.                         { yyextra->current->args += *yytext; }
+<FuncQual,FuncRound,FuncFunc>\"         {
+                                          if (yyextra->insideIDL && yyextra->insideCppQuote)
+                                          {
+                                            BEGIN(EndCppQuote);
+                                          }
+                                          else
+                                          {
+                                            yyextra->current->args += *yytext;
+                                          }
+                                        }
 <FuncQual,FuncRound,FuncFunc>.          { yyextra->current->args += *yytext; }
 <FuncQual>{BN}*"try:"                   |
 <FuncQual>{BN}*"try"{BN}+               { /* try-function-block */
@@ -6963,6 +6973,11 @@ NONLopt [^\n]*
                                           {
                                             BEGIN(EndCppQuote);
                                           }
+                                          else if (yyextra->insidePHP)
+                                          {
+                                            yyextra->lastStringContext=YY_START;
+                                            BEGIN(SkipString);
+                                          }
                                         }
 <*>^{B}*"#"                             {
                                           if (!yyextra->insidePHP)
@@ -6987,13 +7002,6 @@ NONLopt [^\n]*
                                           {
                                             yyextra->lastStringContext=YY_START;
                                             BEGIN(SkipPHPString);
-                                          }
-                                        }
-<*>\"                                   {
-                                          if (yyextra->insidePHP)
-                                          {
-                                            yyextra->lastStringContext=YY_START;
-                                            BEGIN(SkipString);
                                           }
                                         }
 <*>\?                                   {
