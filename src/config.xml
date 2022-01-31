@@ -280,15 +280,13 @@ Go to the <a href="commands.html">next</a> section or return to the
  Enabling this option can be useful when feeding doxygen a huge amount of source
  files, where putting all generated files in the same directory would otherwise
  causes performance problems for the file system.
- The values \c D16, \c D32, \c D64 ... \c D4096 define the numbers of directories that will be created
- from 16 to 4096.
+ The values \c D64, \c D128, ... \c D4096 define the numbers of directories that will be created
+ from 64 to 4096.
  Default for "YES" are 4096 directories.
 ]]>
       </docs>
       <value name='NO'/>
       <value name='YES'/>
-      <value name='D16'/>
-      <value name='D32'/>
       <value name='D64'/>
       <value name='D128'/>
       <value name='D256'/>

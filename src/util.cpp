@@ -3610,10 +3610,9 @@ static int convertCreateSubDirs2Level(CREATE_SUBDIRS_t createSubDirs)
 {
   switch (createSubDirs)
   {
-    case CREATE_SUBDIRS_t::D16:
-      return 0;
-    case CREATE_SUBDIRS_t::D32:
-      return 1;
+    case CREATE_SUBDIRS_t::YES:
+    case CREATE_SUBDIRS_t::D4096:
+      return 8;
     case CREATE_SUBDIRS_t::D64:
       return 2;
     case CREATE_SUBDIRS_t::D128:
@@ -3626,8 +3625,11 @@ static int convertCreateSubDirs2Level(CREATE_SUBDIRS_t createSubDirs)
       return 6;
     case CREATE_SUBDIRS_t::D2048:
       return 7;
-    default: /* NO, YES, D4096 */
-      return 8;
+    default:
+      /* CREATE_SUBDIRS_t::NO or any invalid value.
+       * This should never happen! */
+      assert(false);
+      return -1;
   }
 }
 
