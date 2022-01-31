@@ -3604,7 +3604,7 @@ static int g_usedNamesCount=1;
 
 /*! This function converts the value of CREATE_SUBDIRS
  *  into the number of relevant bits for the number of
- *  created directoried in 2nd level.
+ *  created directories in the 2nd level.
  */
 static int convertCreateSubDirs2Level(CREATE_SUBDIRS_t createSubDirs)
 {
