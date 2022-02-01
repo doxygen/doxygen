@@ -6826,7 +6826,7 @@ reparsetoken:
         break;
       case TK_ENDLIST:
         DBG(("Found end of list inside of paragraph at line %d\n",m_parser.tokenizer.getLineNr()));
-        if (dynamic_cast<DocAutoList*>(parent()))
+        if (dynamic_cast<DocAutoListItem*>(parent()))
         {
           DocAutoList *al = dynamic_cast<DocAutoList*>(parent()->parent());
           if (al && al->indent()>=m_parser.context.token->indent)
