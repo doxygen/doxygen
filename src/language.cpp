@@ -151,6 +151,9 @@
 #ifdef LANG_TR
 #include "translator_tr.h"
 #endif
+#ifdef LANG_BG
+#include "translator_bg.h"
+#endif
 #endif // !ENGLISH_ONLY
 
 Translator *theTranslator=0;
@@ -172,6 +175,11 @@ void setTranslator(OUTPUT_LANGUAGE_t langName)
 #endif
 #ifdef LANG_BR
     case OUTPUT_LANGUAGE_t::Brazilian:           theTranslator = new TranslatorBrazilian; break;
+#endif
+#ifdef LANG_BG
+    case OUTPUT_LANGUAGE_t::Bulgarian:          theTranslator = new TranslatorBulgarian; break;
+#else
+#error "huh!"
 #endif
 #ifdef LANG_CA
     case OUTPUT_LANGUAGE_t::Catalan:             theTranslator = new TranslatorCatalan; break;
