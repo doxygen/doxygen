@@ -3521,7 +3521,9 @@ where `loc1` and `loc2` can be relative or absolute paths or URLs.
  You can define MSCs within doxygen comments using the \ref cmdmsc "\\msc"
  command. Doxygen will either use an internal tool to produce the chart, or if
  specified the <code>MSCGEN</code> tag allows you to use an external program
- for that.
+ for that. In the latter case, the external program shall be callable as
+ `prog -T <outfile_format> -o <outputfile> <inputfile>` and support
+ output file formats "png", "eps", "svg", and "ismap".
 ]]>
       </docs>
     </option>
