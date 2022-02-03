@@ -177,9 +177,7 @@ void setTranslator(OUTPUT_LANGUAGE_t langName)
     case OUTPUT_LANGUAGE_t::Brazilian:           theTranslator = new TranslatorBrazilian; break;
 #endif
 #ifdef LANG_BG
-    case OUTPUT_LANGUAGE_t::Bulgarian:          theTranslator = new TranslatorBulgarian; break;
-#else
-#error "huh!"
+    case OUTPUT_LANGUAGE_t::Bulgarian:           theTranslator = new TranslatorBulgarian; break;
 #endif
 #ifdef LANG_CA
     case OUTPUT_LANGUAGE_t::Catalan:             theTranslator = new TranslatorCatalan; break;
