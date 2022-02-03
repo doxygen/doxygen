@@ -104,7 +104,6 @@ class Translator
     virtual QCString trClassHierarchy() = 0;
     virtual QCString trCompoundList() = 0;
     virtual QCString trFileList() = 0;
-    //virtual QCString trHeaderFiles() = 0;
     virtual QCString trCompoundMembers() = 0;
     virtual QCString trFileMembers() = 0;
     virtual QCString trRelatedPages() = 0;
@@ -115,11 +114,9 @@ class Translator
     virtual QCString trCompoundListDescription() = 0;
     virtual QCString trCompoundMembersDescription(bool extractAll) = 0;
     virtual QCString trFileMembersDescription(bool extractAll) = 0;
-    //virtual QCString trHeaderFilesDescription() = 0;
     virtual QCString trExamplesDescription() = 0;
     virtual QCString trRelatedPagesDescription() = 0;
     virtual QCString trModulesDescription() = 0;
-    //virtual QCString trNoDescriptionAvailable() = 0;
 
     // index titles (the project name is prepended for these)
 
@@ -135,26 +132,21 @@ class Translator
     virtual QCString trPageDocumentation() = 0;
     virtual QCString trReferenceManual() = 0;
     virtual QCString trDefines() = 0;
-    //virtual QCString trFuncProtos() = 0;
     virtual QCString trTypedefs() = 0;
     virtual QCString trEnumerations() = 0;
     virtual QCString trFunctions() = 0;
     virtual QCString trVariables() = 0;
     virtual QCString trEnumerationValues() = 0;
     virtual QCString trDefineDocumentation() = 0;
-    //virtual QCString trFunctionPrototypeDocumentation() = 0;
     virtual QCString trTypedefDocumentation() = 0;
     virtual QCString trEnumerationTypeDocumentation() = 0;
     virtual QCString trFunctionDocumentation() = 0;
     virtual QCString trVariableDocumentation() = 0;
     virtual QCString trCompounds() = 0;
     virtual QCString trGeneratedAt(const QCString &date,const QCString &projName) = 0;
-    //virtual QCString trWrittenBy() = 0;
     virtual QCString trClassDiagram(const QCString &clName) = 0;
     virtual QCString trForInternalUseOnly() = 0;
-    //virtual QCString trReimplementedForInternalReasons() = 0;
     virtual QCString trWarning() = 0;
-    //virtual QCString trBugsAndLimitations() = 0;
     virtual QCString trVersion() = 0;
     virtual QCString trDate() = 0;
     virtual QCString trReturns() = 0;
@@ -234,7 +226,6 @@ class Translator
 // new since 0.49-991003
 //////////////////////////////////////////////////////////////////////////
 
-    //virtual QCString trSources() = 0;
     virtual QCString trDefinedAtLineInSourceFile() = 0;
     virtual QCString trDefinedInSourceFile() = 0;
 
@@ -328,13 +319,11 @@ class Translator
 // new since 1.2.4
 //////////////////////////////////////////////////////////////////////////
 
-    //virtual QCString trInterfaces() = 0;
     virtual QCString trClasses() = 0;
     virtual QCString trPackage(const QCString &name) = 0;
     virtual QCString trPackageList() = 0;
     virtual QCString trPackageListDescription() = 0;
     virtual QCString trPackages() = 0;
-    //virtual QCString trPackageDocumentation() = 0;
     virtual QCString trDefineValue() = 0;
 
 //////////////////////////////////////////////////////////////////////////
@@ -415,7 +404,6 @@ class Translator
     virtual QCString trGroup(bool first_capital, bool singular) = 0;
     virtual QCString trPage(bool first_capital, bool singular) = 0;
     virtual QCString trMember(bool first_capital, bool singular) = 0;
-    //virtual QCString trField(bool first_capital, bool singular) = 0;
     virtual QCString trGlobal(bool first_capital, bool singular) = 0;
 
 //////////////////////////////////////////////////////////////////////////

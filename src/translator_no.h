@@ -190,10 +190,6 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
     virtual QCString trFileList()
     { return "Fil-liste"; }
 
-    /*! This is put above each page as a link to the list of all verbatim headers */
-    virtual QCString trHeaderFiles()
-    { return "Header-filer"; }
-
     /*! This is put above each page as a link to all members of compounds. */
     virtual QCString trCompoundMembers()
     {
@@ -329,10 +325,6 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
       return result;
     }
 
-    /*! This is an introduction to the page with the list of all header files. */
-    virtual QCString trHeaderFilesDescription()
-    { return "Her er alle header-filene som utgjør API'et:"; }
-
     /*! This is an introduction to the page with the list of all examples */
     virtual QCString trExamplesDescription()
     { return "Her er en liste over alle eksemplene:"; }
@@ -344,12 +336,6 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
     /*! This is an introduction to the page with the list of class/file groups */
     virtual QCString trModulesDescription()
     { return "Her er en liste over alle moduler:"; }
-
-    /*! This sentences is used in the annotated class/file lists if no brief
-     * description is given.
-     */
-    virtual QCString trNoDescriptionAvailable()
-    { return "Ingen beskrivelse tilgjengelig"; }
 
     // index titles (the project name is prepended for these)
 
@@ -542,17 +528,9 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
     virtual QCString trForInternalUseOnly()
     { return "Kun for intern bruk."; }
 
-    /*! this text is generated when the \\reimp command is used. */
-    virtual QCString trReimplementedForInternalReasons()
-    { return "Reimplementert av interne grunner; API er ikke påvirket."; }
-
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
     { return "Advarsel"; }
-
-    /*! this text is generated when the \\bug command is used. */
-    virtual QCString trBugsAndLimitations()
-    { return "Feil og begrensninger"; }
 
     /*! this text is generated when the \\version command is used. */
     virtual QCString trVersion()
@@ -824,10 +802,6 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
 // new since 0.49-991003
 //////////////////////////////////////////////////////////////////////////
 
-    virtual QCString trSources()
-    {
-      return "Kilder";
-    }
     virtual QCString trDefinedAtLineInSourceFile()
     {
       return "Definisjon på linje @0 i filen @1.";
@@ -1155,11 +1129,6 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
     {
       return "Pakker";
     }
-    /*! Used as a chapter title for Latex & RTF output */
-    virtual QCString trPackageDocumentation()
-    {
-      return "Pakke-dokumentasjon";
-    }
     /*! Text shown before a multi-line define */
     virtual QCString trDefineValue()
     {
@@ -1293,17 +1262,6 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
     {
       QCString result((first_capital ? "Medlem" : "medlem"));
       if (!singular)  result+="mer";
-      return result;
-    }
-
-    /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names
-     *  of the category.
-     */
-    virtual QCString trField(bool first_capital, bool singular)
-    {
-      QCString result((first_capital ? "Felt" : "felt"));
-      if (!singular)  result+="";
       return result;
     }
 
