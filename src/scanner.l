@@ -3489,6 +3489,8 @@ NONLopt [^\n]*
                                           {
                                             yyextra->mtype = Method;
                                             yyextra->virt = Normal;
+                                            yyextra->current->bodyLine = -1;
+                                            yyextra->current->bodyColumn = 1;
                                             yyextra->current->groups.clear();
                                             initEntry(yyscanner);
                                           }
