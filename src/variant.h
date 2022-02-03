@@ -175,9 +175,9 @@ struct VariantType<index, F, Ts...>
 template<typename... Ts>
 struct Variant {
   private:
-    //! constant respresenting the maximum size that can hold all types in the template list
+    //! constant representing the maximum size that can hold all types in the template list
     static const size_t data_size = details::TMax<sizeof(Ts)...>::value;
-    //! constant respresenting the maximum alignment requirement for all types in the template list
+    //! constant representing the maximum alignment requirement for all types in the template list
     static const size_t data_align = details::TMax<alignof(Ts)...>::value;
 
     //! the data type for the Variant's internal memory
