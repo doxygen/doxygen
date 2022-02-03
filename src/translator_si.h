@@ -84,8 +84,6 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
     { return "kratek opis razredov"; }
     QCString trFileList()
     { return "seznam datotek"; }
-/*     QCString trHeaderFiles() */
-/*     { return "'Header' datoteka"; } */
     QCString trCompoundMembers()
     { return "metode in atributi"; }
     QCString trFileMembers()
@@ -128,17 +126,12 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
       else result+="s povezavami na datoteke v katerih se nahajajo:";
       return result;
     }
-/*     QCString trHeaderFilesDescription() */
-/*     { return "Seznam header datotek, ki tvorijo aplikacijski vmesnik (API) :"; } */
     QCString trExamplesDescription()
     { return "Seznam primerov :"; }
     QCString trRelatedPagesDescription()
     { return "Seznam strani z dodatnimi opisi:"; }
     QCString trModulesDescription()
     { return "Seznam modulov:"; }
-/*     QCString trNoDescriptionAvailable() */
-/*     { return "Opis ni dostopen"; } */
-
     QCString trDocumentation()
     { return "Dokumentacija"; }
     QCString trModuleIndex()
@@ -199,14 +192,8 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
     }
     QCString trForInternalUseOnly()
     { return "Samo za interno uporabo."; }
-/*     QCString trReimplementedForInternalReasons() */
-/*     { return "Ponovno implementirano zaradi internih razlogov. " */
-/*              "Nima vpliva na API.";  */
-/*     } */
     QCString trWarning()
     { return "Opozorilo"; }
-/*     QCString trBugsAndLimitations() */
-/*     { return "Napake in omejtive"; } */
     QCString trVersion()
     { return "Verzija"; }
     QCString trDate()
@@ -445,10 +432,6 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
 // new since 0.49-991106
 //////////////////////////////////////////////////////////////////////////
 
-/*     QCString trSources() */
-/*     { */
-/*       return "Izvorne datoteke"; */
-/*     } */
     QCString trDefinedAtLineInSourceFile()
     {
       return "Definirano v @0 vrstici datoteke @1.";
@@ -784,11 +767,6 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
     {
       return "JAVA paketi";
     }
-    /*! Used as a chapter title for Latex & RTF output */
-/*     virtual QCString trPackageDocumentation() */
-/*     { */
-/*       return "Opisi JAVA paketov"; */
-/*     } */
     /*! Text shown before a multi-line define */
     virtual QCString trDefineValue()
     {
@@ -925,18 +903,6 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
       if (!singular)  result+="i";
       return result;
     }
-
-    /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names
-     *  of the category.
-     */
-/*     virtual QCString trField(bool first_capital, bool singular) */
-/*     {  */
-/*       QCString result((first_capital ? "Polj" : "polj")); */
-/*       if (!singular)  result+="a"; */
-/*       else result += "e"; */
-/*       return result;  */
-/*     } */
 
     /*! This is used for translation of the word that will possibly
      *  be followed by a single name or by a list of names

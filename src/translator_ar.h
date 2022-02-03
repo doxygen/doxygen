@@ -181,10 +181,6 @@ class TranslatorArabic : public TranslatorAdapter_1_4_6
     virtual QCString trFileList()
     { return "قائمة الملفات"; }
 
-    /*! This is put above each page as a link to the list of all verbatim headers */
-    virtual QCString trHeaderFiles()
-    { return "الملفات الرأسية"; }
-
     /*! This is put above each page as a link to all members of compounds. */
     virtual QCString trCompoundMembers()
     {
@@ -318,10 +314,6 @@ class TranslatorArabic : public TranslatorAdapter_1_4_6
       return result;
     }
 
-    /*! This is an introduction to the page with the list of all header files. */
-    virtual QCString trHeaderFilesDescription()
-    { return "Here are the header files that make up the API:"; }
-
     /*! This is an introduction to the page with the list of all examples */
     virtual QCString trExamplesDescription()
     { return "هذه قائمة بكل الأمثلة:"; }
@@ -333,14 +325,6 @@ class TranslatorArabic : public TranslatorAdapter_1_4_6
     /*! This is an introduction to the page with the list of class/file groups */
     virtual QCString trModulesDescription()
     { return "هذه قائمة بكل المكونات:"; }
-
-    /*! This sentences is used in the annotated class/file lists if no brief
-     * description is given.
-     */
-    virtual QCString trNoDescriptionAvailable()
-    { return "لا يوجد وصف متاح"; }
-
-    // index titles (the project name is prepended for these)
 
 
     /*! This is used in HTML as the title of index.html. */
@@ -531,17 +515,9 @@ class TranslatorArabic : public TranslatorAdapter_1_4_6
     virtual QCString trForInternalUseOnly()
     { return "للاستخدام الداخلي فقط."; }
 
-    /*! this text is generated when the \\reimp command is used. */
-    virtual QCString trReimplementedForInternalReasons()
-    { return "Reimplemented for internal reasons; the API is not affected."; }
-
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
     { return "تنبيه"; }
-
-    /*! this text is generated when the \\bug command is used. */
-    virtual QCString trBugsAndLimitations()
-    { return "Bugs and limitations"; }
 
     /*! this text is generated when the \\version command is used. */
     virtual QCString trVersion()
@@ -813,10 +789,6 @@ class TranslatorArabic : public TranslatorAdapter_1_4_6
 // new since 0.49-991003
 //////////////////////////////////////////////////////////////////////////
 
-    virtual QCString trSources()
-    {
-      return "مصادر";
-    }
     virtual QCString trDefinedAtLineInSourceFile()
     {
       return "Definition at line @0 of file @1.";
@@ -1150,11 +1122,6 @@ class TranslatorArabic : public TranslatorAdapter_1_4_6
     {
       return "حزم";
     }
-    /*! Used as a chapter title for Latex & RTF output */
-    virtual QCString trPackageDocumentation()
-    {
-      return "توثيق الحزم";
-    }
     /*! Text shown before a multi-line define */
     virtual QCString trDefineValue()
     {
@@ -1288,17 +1255,6 @@ class TranslatorArabic : public TranslatorAdapter_1_4_6
     {
       QCString result("عضو");
       if (!singular)  result="أعضاء";
-      return result;
-    }
-
-    /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names
-     *  of the category.
-     */
-    virtual QCString trField(bool /*first_capital*/, bool singular)
-    {
-      QCString result("حقل");
-      if (!singular)  result="حقول";
       return result;
     }
 
