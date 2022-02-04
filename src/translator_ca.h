@@ -392,6 +392,10 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
       {
         return "Documentació de les Estructures de Dades";
       }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+          return trDesignUnitDocumentation();
+      }
       else
       {
         return "Documentació de les Classes";
@@ -409,12 +413,6 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
      */
     virtual QCString trExampleDocumentation()
     { return "Documentació dels Exemples"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all related pages.
-     */
-    virtual QCString trPageDocumentation()
-    { return "Documentació de les Pàgines"; }
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
@@ -517,10 +515,6 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
     {
       return "Diagrama d'Herència per a "+clName+":";
     }
-
-    /*! this text is generated when the \\internal command is used. */
-    virtual QCString trForInternalUseOnly()
-    { return "Tan sols per a ús intern."; }
 
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
@@ -1106,11 +1100,6 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
     {
       return "Paquet "+name;
     }
-    /*! Title of the package index page */
-    virtual QCString trPackageList()
-    {
-      return "Llista de Paquets";
-    }
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
     {
@@ -1484,14 +1473,6 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
      */
     virtual QCString trDirectories()
     { return "Directoris"; }
-
-    /*! This returns a sentences that introduces the directory hierarchy.
-     *  and the fact that it is sorted alphabetically per level
-     */
-    virtual QCString trDirDescription()
-    { return "Aquesta jerarquia de directoris està ordenada toscament, "
-             "però no completa, de forma alfabètica:";
-    }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.

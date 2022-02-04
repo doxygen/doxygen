@@ -462,12 +462,6 @@ class TranslatorCzech : public Translator
     virtual QCString trExampleDocumentation()
     { return "Dokumentace příkladů"; }
 
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all related pages.
-     */
-    virtual QCString trPageDocumentation()
-    { return "Dokumentace souvisejících stránek"; }
-
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
     { return "Referenční příručka"; }
@@ -569,10 +563,6 @@ class TranslatorCzech : public Translator
     {
       return QCString("Diagram dědičnosti pro třídu ") + clName+":";
     }
-
-    /*! this text is generated when the \\internal command is used. */
-    virtual QCString trForInternalUseOnly()
-    { return "Pouze pro vnitřní použití."; }
 
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
@@ -1185,11 +1175,6 @@ class TranslatorCzech : public Translator
     {
       return QCString("Balík ") + name;
     }
-    /*! Title of the package index page */
-    virtual QCString trPackageList()
-    {
-      return "Seznam balíků";
-    }
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
     {
@@ -1570,15 +1555,6 @@ class TranslatorCzech : public Translator
      */
     virtual QCString trDirectories()
     { return "Adresáře"; }
-
-    /*! This returns a sentences that introduces the directory hierarchy.
-     *  and the fact that it is sorted alphabetically per level
-     */
-    virtual QCString trDirDescription()
-    {
-        return "Následující hierarchie adresářů je zhruba, "
-                      "ale ne úplně, řazena podle abecedy:";
-    }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.

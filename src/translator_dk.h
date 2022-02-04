@@ -398,9 +398,16 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
      */
     virtual QCString trClassDocumentation()
     {
-      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C)) {
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+      {
         return "Datastruktur-documentation";
-      } else {
+      }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+          return trDesignUnitDocumentation();
+      }
+      else
+      {
         return "Klasse-dokumentation";
       }
     }
@@ -416,12 +423,6 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
      */
     virtual QCString trExampleDocumentation()
     { return "Eksempel-dokumentation"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all related pages.
-     */
-    virtual QCString trPageDocumentation()
-    { return "Side-dokumentation"; }
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
@@ -527,10 +528,6 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
     {
       return "Stamtræ for "+clName+":";
     }
-
-    /*! this text is generated when the \\internal command is used. */
-    virtual QCString trForInternalUseOnly()
-    { return "Kun til intern brug."; }
 
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
@@ -1084,11 +1081,6 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
     {
       return "Pakke "+name;
     }
-    /*! Title of the package index page */
-    virtual QCString trPackageList()
-    {
-      return "Pakkeoversigt";
-    }
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
     {
@@ -1406,14 +1398,6 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
      */
     virtual QCString trDirectories()
     { return "Kataloger"; }
-
-    /*! This returns a sentences that introduces the directory hierarchy.
-     *  and the fact that it is sorted alphabetically per level
-     */
-    virtual QCString trDirDescription()
-    { return "Denne katalogstruktur er sorteret næsten - "
-             "men ikke nødvendigvis helt - alfabetisk:";
-    }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.

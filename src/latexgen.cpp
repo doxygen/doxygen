@@ -745,10 +745,6 @@ void LatexGenerator::startIndexSection(IndexSections is)
       if (compactLatex) m_t << "\\doxysection"; else m_t << "\\chapter";
       m_t << "{"; //Introduction}\n"
       break;
-    //case isPackageIndex:
-    //  if (compactLatex) m_t << "\\doxysection"; else m_t << "\\chapter";
-    //  m_t << "{"; //Package Index}\n"
-    //  break;
     case isModuleIndex:
       if (compactLatex) m_t << "\\doxysection"; else m_t << "\\chapter";
       m_t << "{"; //Module Index}\n"

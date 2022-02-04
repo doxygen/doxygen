@@ -424,12 +424,6 @@ class TranslatorItalian : public TranslatorAdapter_1_8_15
     QCString trExampleDocumentation()
     { return "Documentazione degli esempi"; }
 
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all related pages.
-     */
-    QCString trPageDocumentation()
-    { return "Documentazione delle pagine tra loro collegate "; }
-
     /*! This is used in LaTeX as the title of the document */
     QCString trReferenceManual()
     { return "Manuale di riferimento"; }
@@ -531,10 +525,6 @@ class TranslatorItalian : public TranslatorAdapter_1_8_15
     {
       return "Diagramma delle classi per "+clName;
     }
-
-    /*! this text is generated when the \\internal command is used. */
-    QCString trForInternalUseOnly()
-    { return "Solo per uso interno."; }
 
     /*! this text is generated when the \\warning command is used. */
     QCString trWarning()
@@ -1121,11 +1111,6 @@ class TranslatorItalian : public TranslatorAdapter_1_8_15
     {
       return "Package "+name;
     }
-    /*! Title of the package index page */
-    virtual QCString trPackageList()
-    {
-      return "Lista dei package";
-    }
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
     {
@@ -1471,14 +1456,6 @@ class TranslatorItalian : public TranslatorAdapter_1_8_15
      */
     virtual QCString trDirectories()
     { return "Directory"; }
-
-    /*! This returns a sentences that introduces the directory hierarchy.
-     *  and the fact that it is sorted alphabetically per level
-     */
-    virtual QCString trDirDescription()
-    { return "Questa gerarchia di directory è approssimativamente, "
-        "ma non completamente, ordinata in ordine alfabetico:";
-    }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.

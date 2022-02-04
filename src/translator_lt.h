@@ -382,6 +382,10 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
       {
         return "Duomenų Struktūros Dokumentacija";
       }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+          return trDesignUnitDocumentation();
+      }
       else
       {
         return "Klasės Dokumentacija";
@@ -399,12 +403,6 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
      */
     virtual QCString trExampleDocumentation()
     { return "Pavyzdžio Dokumentacija"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all related pages.
-     */
-    virtual QCString trPageDocumentation()
-    { return "Puslapio Dokumentacija"; }
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
@@ -507,10 +505,6 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
     {
       return "Paveldimumo diagrama "+clName+":"; /*FIXME*/
     }
-
-    /*! this text is generated when the \\internal command is used. */
-    virtual QCString trForInternalUseOnly()
-    { return "Tiktai vidiniam naudojimui."; }
 
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
@@ -1098,11 +1092,6 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
     {
       return "Paketas "+name;
     }
-    /*! Title of the package index page */
-    virtual QCString trPackageList()
-    {
-      return "Paketo Sąrašas";
-    }
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
     {
@@ -1481,13 +1470,6 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
      */
     virtual QCString trDirectories()
     { return "Direktorijos"; }
-
-    /*! This returns a sentences that introduces the directory hierarchy.
-     *  and the fact that it is sorted alphabetically per level
-     */
-    virtual QCString trDirDescription()
-    { return "Ši direktorjų strūktūra grubiai surikiuota abėcėlės tvarka:";
-    }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.

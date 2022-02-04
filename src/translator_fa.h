@@ -384,6 +384,10 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
       {
         return "مستندات ساختار داده ها";
       }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+          return trDesignUnitDocumentation();
+      }
       else
       {
         return "مستندات کلاس ها";
@@ -401,12 +405,6 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
      */
     virtual QCString trExampleDocumentation()
     { return "مستندات مثال"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all related pages.
-     */
-    virtual QCString trPageDocumentation()
-    { return "مستندات صفحه"; }
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
@@ -515,10 +513,6 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
     {
       return ""+clName+" نمودار وراثت برای  :";
     }
-
-    /*! this text is generated when the \\internal command is used. */
-    virtual QCString trForInternalUseOnly()
-    { return ".فقط برای استعمال داخلی"; }
 
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
@@ -1103,11 +1097,6 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
     {
       return "Package "+name;
     }
-    /*! Title of the package index page */
-    virtual QCString trPackageList()
-    {
-      return "لیست بسته ها";
-    }
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
     {
@@ -1481,13 +1470,6 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
      */
     virtual QCString trDirectories()
     { return "شاخه ها"; }
-
-    /*! This returns a sentences that introduces the directory hierarchy.
-     *  and the fact that it is sorted alphabetically per level
-     */
-    virtual QCString trDirDescription()
-    { return "در ذيل ساختار شاخه ها و دايرکتوری ها را نسبتا مرتب شده می بينيد :";
-    }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.

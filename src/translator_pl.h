@@ -371,6 +371,10 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
       {
         return "Dokumentacja struktur danych";
       }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+          return trDesignUnitDocumentation();
+      }
       else
       {
         return "Dokumentacja klas";
@@ -388,12 +392,6 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
      */
     QCString trExampleDocumentation()
     { return "Dokumentacja przykładów"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all related pages.
-     */
-    QCString trPageDocumentation()
-    { return "Dokumentacja stron"; }
 
     /*! This is used in LaTeX as the title of the document */
     QCString trReferenceManual()
@@ -496,10 +494,6 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
     {
       return "Diagram dziedziczenia dla "+clName;
     }
-
-    /*! this text is generated when the \\internal command is used. */
-    QCString trForInternalUseOnly()
-    { return "Tylko do użytku wewnętrznego."; }
 
     /*! this text is generated when the \\warning command is used. */
     QCString trWarning()
@@ -1088,11 +1082,6 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
     {
       return "Pakiet "+name;
     }
-    /*! Title of the package index page */
-    virtual QCString trPackageList()
-    {
-      return "Lista Pakietów";
-    }
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
     {
@@ -1443,14 +1432,6 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
     virtual QCString trDirectories()
     { return "Katalogi"; }
 
-    /*! This returns a sentences that introduces the directory hierarchy.
-     *  and the fact that it is sorted alphabetically per level
-     */
-    virtual QCString trDirDescription()
-    {
-      return "Ta struktura katalogów posortowana jest z grubsza, "
-             "choć nie całkowicie, alfabetycznie:";
-    }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.

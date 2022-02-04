@@ -421,12 +421,6 @@ class TranslatorEnglish : public Translator
     virtual QCString trExampleDocumentation()
     { return "Example Documentation"; }
 
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all related pages.
-     */
-    virtual QCString trPageDocumentation()
-    { return "Page Documentation"; }
-
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
     { return "Reference Manual"; }
@@ -528,10 +522,6 @@ class TranslatorEnglish : public Translator
     {
       return "Inheritance diagram for "+clName+":";
     }
-
-    /*! this text is generated when the \\internal command is used. */
-    virtual QCString trForInternalUseOnly()
-    { return "For internal use only."; }
 
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
@@ -1122,11 +1112,6 @@ class TranslatorEnglish : public Translator
     {
       return "Package "+name;
     }
-    /*! Title of the package index page */
-    virtual QCString trPackageList()
-    {
-      return "Package List";
-    }
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
     {
@@ -1500,14 +1485,6 @@ class TranslatorEnglish : public Translator
      */
     virtual QCString trDirectories()
     { return "Directories"; }
-
-    /*! This returns a sentences that introduces the directory hierarchy.
-     *  and the fact that it is sorted alphabetically per level
-     */
-    virtual QCString trDirDescription()
-    { return "This directory hierarchy is sorted roughly, "
-             "but not completely, alphabetically:";
-    }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.

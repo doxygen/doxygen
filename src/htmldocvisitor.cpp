@@ -1619,8 +1619,6 @@ void HtmlDocVisitor::visitPost(DocHtmlCaption *)
 void HtmlDocVisitor::visitPre(DocInternal *)
 {
   if (m_hide) return;
-  //forceEndParagraph(i);
-  //m_t << "<p><b>" << theTranslator->trForInternalUseOnly() << "</b></p>\n";
 }
 
 void HtmlDocVisitor::visitPost(DocInternal *)

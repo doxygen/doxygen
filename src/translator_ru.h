@@ -339,6 +339,10 @@ class TranslatorRussian : public TranslatorAdapter_1_8_15
       {
         return "Структуры данных";
       }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+          return trDesignUnitDocumentation();
+      }
       else
       {
         return "Классы";
@@ -356,12 +360,6 @@ class TranslatorRussian : public TranslatorAdapter_1_8_15
      */
     virtual QCString trExampleDocumentation()
     { return "Примеры"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all related pages.
-     */
-    virtual QCString trPageDocumentation()
-    { return "Тематические описания"; }
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
@@ -469,10 +467,6 @@ class TranslatorRussian : public TranslatorAdapter_1_8_15
     {
       return QCString("Граф наследования:")+clName+":";
     }
-
-    /*! this text is generated when the \\internal command is used. */
-    virtual QCString trForInternalUseOnly()
-    { return "Только для внутреннего использования"; }
 
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
@@ -1093,11 +1087,6 @@ class TranslatorRussian : public TranslatorAdapter_1_8_15
     {
       return QCString("Пакет ")+name;
     }
-    /*! Title of the package index page */
-    virtual QCString trPackageList()
-    {
-      return "Полный список пакетов ";
-    }
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
     {
@@ -1449,12 +1438,6 @@ class TranslatorRussian : public TranslatorAdapter_1_8_15
      */
     virtual QCString trDirectories()
     { return "Алфавитный указатель директорий"; }
-
-    /*! This returns a sentences that introduces the directory hierarchy.
-     *  and the fact that it is sorted alphabetically per level
-     */
-    virtual QCString trDirDescription()
-    { return "Дерево директорий"; }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.

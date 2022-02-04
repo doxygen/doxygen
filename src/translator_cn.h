@@ -329,6 +329,10 @@ class TranslatorChinese : public Translator
       {
         return "结构体说明";
       }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+          return trDesignUnitDocumentation();
+      }
       else {
         return "类说明";
       }
@@ -339,9 +343,6 @@ class TranslatorChinese : public Translator
 
     virtual QCString trExampleDocumentation()
     { return "示例说明"; }
-
-    virtual QCString trPageDocumentation()
-    { return "页面说明"; }
 
     virtual QCString trReferenceManual()
     { return "参考手册"; }
@@ -402,9 +403,6 @@ class TranslatorChinese : public Translator
     {
       return "类" CN_SPC+clName+CN_SPC "继承关系图:";
     }
-
-     virtual QCString trForInternalUseOnly()
-    { return "仅限内部使用."; }
 
      virtual QCString trWarning()
     { return "警告"; }
@@ -1010,11 +1008,6 @@ class TranslatorChinese : public Translator
       return "包" CN_SPC+name;
     }
 
-    /*! Title of the package index page */
-    virtual QCString trPackageList()
-    {
-      return "包列表";
-    }
 
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
@@ -1429,14 +1422,6 @@ class TranslatorChinese : public Translator
      */
     virtual QCString trDirectories()
     { return "目录"; }
-
-    /*! This returns a sentences that introduces the directory hierarchy.
-     *  and the fact that it is sorted alphabetically per level
-     */
-    virtual QCString trDirDescription()
-    {
-      return "此继承关系列表按字典顺序粗略的排序:" CN_SPC;
-    }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.

@@ -417,6 +417,10 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
       {
         return "데이터 구조 문서화";
       }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+          return trDesignUnitDocumentation();
+      }
       else
       {
         return "클래스 문서화";
@@ -434,12 +438,6 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
      */
     virtual QCString trExampleDocumentation()
     { return "예제 문서화"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all related pages.
-     */
-    virtual QCString trPageDocumentation()
-    { return "페이지 문서화"; }
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
@@ -542,10 +540,6 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
     {
       return clName+"에 대한 상속 다이어그램 : ";
     }
-
-    /*! this text is generated when the \\internal command is used. */
-    virtual QCString trForInternalUseOnly()
-    { return "내부적적으로만 사용하기 위해."; }
 
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
@@ -1128,11 +1122,6 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
     {
       return name+" 패키지";
     }
-    /*! Title of the package index page */
-    virtual QCString trPackageList()
-    {
-      return "패키지 목록";
-    }
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
     {
@@ -1506,13 +1495,6 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
      */
     virtual QCString trDirectories()
     { return "디렉토리"; }
-
-    /*! This returns a sentences that introduces the directory hierarchy.
-     *  and the fact that it is sorted alphabetically per level
-     */
-    virtual QCString trDirDescription()
-    { return "이 디렉토리 목록은 완전하진 않지만, (대략적으로) 알파벳순으로 정렬되어있습니다.:";
-    }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.
