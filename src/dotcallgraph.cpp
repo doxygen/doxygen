@@ -189,6 +189,8 @@ QCString DotCallGraph::writeGraph(
         const QCString &relPath,bool generateImageMap,
         int graphId)
 {
+  m_doNotAddImageToIndex = textFormat!=EOF_Html;
+
   return DotGraph::writeGraph(out, graphFormat, textFormat, path, fileName, relPath, generateImageMap, graphId);
 }
 
