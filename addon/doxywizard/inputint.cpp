@@ -18,6 +18,11 @@
 #include <QGridLayout>
 #include <QWheelEvent>
 #include <QTextStream>
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+#include <QTextCodec>
+#else
+#include <QStringEncoder>
+#endif
 
 class NoWheelSpinBox : public QSpinBox
 {
@@ -123,7 +128,11 @@ void InputInt::reset()
   setValue(m_default);
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 void InputInt::writeValue(QTextStream &t,QTextCodec *)
+#else
+void InputInt::writeValue(QTextStream &t,QStringEncoder *)
+#endif
 {
   t << m_val;
 }

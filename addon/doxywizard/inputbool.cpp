@@ -16,7 +16,11 @@
 
 #include <QCheckBox>
 #include <QTextStream>
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 #include <QTextCodec>
+#else
+#include <QStringEncoder>
+#endif
 #include <QGridLayout>
 
 InputBool::InputBool( QGridLayout *layout, int &row,
@@ -135,6 +139,7 @@ void InputBool::reset()
   setValue(m_default);
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 void InputBool::writeValue(QTextStream &t,QTextCodec *codec)
 {
   if (m_state)
@@ -142,6 +147,15 @@ void InputBool::writeValue(QTextStream &t,QTextCodec *codec)
   else
     t << codec->fromUnicode(QString::fromLatin1("NO"));
 }
+#else
+void InputBool::writeValue(QTextStream &t,QStringEncoder *codec)
+{
+  if (m_state)
+    t << codec->encode(QString::fromLatin1("YES"));
+  else
+    t << codec->encode(QString::fromLatin1("NO"));
+}
+#endif
 
 bool InputBool::isDefault()
 {

@@ -23,7 +23,11 @@
 #include <QToolBar>
 #include <QFileInfo>
 #include <QFileDialog>
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 #include <QTextCodec>
+#else
+#include <QStringEncoder>
+#endif
 
 class NoWheelComboBox : public QComboBox
 {
@@ -254,7 +258,11 @@ void InputString::reset()
   setDefault();
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 void InputString::writeValue(QTextStream &t,QTextCodec *codec)
+#else
+void InputString::writeValue(QTextStream &t,QStringEncoder *codec)
+#endif
 {
   writeStringValue(t,codec,m_str);
 }

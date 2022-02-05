@@ -28,7 +28,11 @@ class InputObsolete : public Input
     void updateDependencies()    {}
     void reset()                 {}
     bool isDefault()             { return false; }
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     void writeValue(QTextStream &,QTextCodec *) {}
+#else
+    void writeValue(QTextStream &,QStringEncoder *) {}
+#endif
     void setTemplateDocs(const QString &) {}
     bool isEmpty()               { return false; };
     Kind orgKind() const         { return m_orgKind; }

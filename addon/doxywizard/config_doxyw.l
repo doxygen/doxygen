@@ -31,11 +31,15 @@
 #include <QString>
 #include <QVariant>
 #include <QStack>
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 #include <QTextCodec>
+#else
+#include <QStringDecoder>
+#endif
 #include <QByteArray>
 #include <QFileInfo>
 #include <QStringList>
-#include <QRegExp>
+#include <QRegularExpression>
 #include <QTextStream>
 #include <QMessageBox>
 
@@ -68,7 +72,11 @@ static int                            g_includeDepth;
 static QVariant                      *g_arg;
 static Input                         *g_curOption=0;
 static QByteArray                     g_str;
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 static QTextCodec                    *g_codec     = QTextCodec::codecForName("UTF-8");
+#else
+static QStringDecoder                *g_codec     = new QStringDecoder(*QStringConverter::encodingForName("UTF-8"));
+#endif
 static QString                        g_codecName = QString::fromLatin1("UTF-8");
 static QString                        g_cmd;
 static bool                           g_isEnum;
@@ -101,7 +109,11 @@ static void checkEncoding()
   Input *option = g_options->value(QString::fromLatin1("DOXYFILE_ENCODING"));
   if (option && option->value().toString()!=g_codecName)
   {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     QTextCodec *newCodec = QTextCodec::codecForName(option->value().toString().toLatin1());
+#else
+    QStringDecoder *newCodec = new QStringDecoder(*QStringConverter::encodingForName(option->value().toString().toLatin1()));
+#endif
     if (newCodec)
     {
       g_codec = newCodec;
@@ -191,11 +203,19 @@ static void processString()
   if (g_isEnum)
   {
     InputString *cur = dynamic_cast<InputString *>(g_curOption);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     *g_arg = cur->checkEnumVal(g_codec->toUnicode(result));
+#else
+    *g_arg = cur->checkEnumVal(g_codec->decode(result));
+#endif
   }
   else
   {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     *g_arg = QVariant(g_codec->toUnicode(result));
+#else
+    *g_arg = QVariant(g_codec->decode(result));
+#endif
   }
 
   // update encoding
@@ -219,7 +239,11 @@ static void processList()
     if (!elemStr.isEmpty())
     {
       //printf("Processed list element '%s'\n",e.data());
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
       *g_arg = QVariant(g_arg->toStringList() << g_codec->toUnicode(elemStr));
+#else
+      *g_arg = QVariant(g_arg->toStringList() << g_codec->decode(elemStr));
+#endif
       elemStr="";
     }
   };
@@ -398,7 +422,12 @@ static void readIncludeFile(const QString &incName)
 
    /*-------------- TAG start ---------------*/
 
-<Start>[a-z_A-Z][a-z_A-Z0-9]*[ \t]*"="	 { g_cmd = g_codec->toUnicode(yytext);
+<Start>[a-z_A-Z][a-z_A-Z0-9]*[ \t]*"="	 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+                                           g_cmd = g_codec->toUnicode(yytext);
+#else
+                                           g_cmd = g_codec->decode(yytext);
+#endif
                                            g_cmd=g_cmd.left(g_cmd.length()-1).trimmed();
 					   g_curOption = g_options->value(g_cmd);
 					   if (g_curOption==0) // oops not known
@@ -456,7 +485,12 @@ static void readIncludeFile(const QString &incName)
 					     }
 					   }
 					}
-<Start>[a-z_A-Z][a-z_A-Z0-9]*[ \t]*"+="	{ g_cmd=g_codec->toUnicode(yytext);
+<Start>[a-z_A-Z][a-z_A-Z0-9]*[ \t]*"+="	{
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+                                          g_cmd=g_codec->toUnicode(yytext);
+#else
+                                          g_cmd=g_codec->decode(yytext);
+#endif
                                           g_cmd=g_cmd.left(g_cmd.length()-2).trimmed();
 					  g_curOption = g_options->value(g_cmd);
 					  if (g_curOption==0) // oops not known
@@ -510,7 +544,11 @@ static void readIncludeFile(const QString &incName)
   /* include a config file */
 <Start>"@INCLUDE"[ \t]*"="     		{ BEGIN(Include);}
 <Include>([^ \"\t\r\n]+)|("\""[^\n\"]+"\"") {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
   					  readIncludeFile(g_codec->toUnicode(yytext));
+#else
+  					  readIncludeFile(g_codec->decode(yytext));
+#endif
   					  BEGIN(Start);
 					}
 <<EOF>>					{
@@ -597,16 +635,22 @@ static void readIncludeFile(const QString &incName)
 
 static void substEnvVarsInString(QString &s)
 {
-  static QRegExp re(QString::fromLatin1("\\$\\([a-z_A-Z0-9]+\\)"));
+  static QRegularExpression re(QString::fromLatin1("\\$\\([a-z_A-Z0-9]+\\)"));
   if (s.isEmpty()) return;
   int p=0;
   int i,l;
   //printf("substEnvVarInString(%s) start\n",qPrintable(s));
-  while ((i=re.indexIn(s,p))!=-1)
+
+  QRegularExpressionMatch match;
+  while ((i=s.indexOf(re,p,&match))!=-1)
   {
-    l = re.matchedLength();
+    l = match.capturedLength();
     //printf("Found environment var s.mid(%d,%d)='%s'\n",i+2,l-3,qPrintable(s.mid(i+2,l-3)));
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     QString env=g_codec->toUnicode(getenv(s.mid(i+2,l-3).toLatin1()));
+#else
+    QString env=g_codec->decode(getenv(s.mid(i+2,l-3).toLatin1()));
+#endif
     substEnvVarsInString(env); // recursively expand variables if needed.
     s = s.left(i)+env+s.right(s.length()-i-l);
     p=i+env.length(); // next time start at the end of the expanded string
@@ -642,7 +686,7 @@ static void substEnvVarsInStrList(QStringList &sl)
       // search for a "word"
       for (i=0;i<l;i++)
       {
-	QChar c=0;
+	QChar c;
 	// skip until start of new word
 	while (i<l && ((c=result.at(i))==QChar::fromLatin1(' ') || c==QChar::fromLatin1('\t'))) i++;
 	p=i; // p marks the start index of the word
@@ -778,14 +822,22 @@ bool parseConfig(
   return true;
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 void writeStringValue(QTextStream &t,QTextCodec *codec,const QString &s)
+#else
+void writeStringValue(QTextStream &t,QStringEncoder *codec,const QString &s)
+#endif
 {
   QChar c;
   bool needsEscaping=false;
   bool needsHashEscaping=false;
   // convert the string back to it original encoding
   //QByteArray se = codec->fromUnicode(s);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
   t.setCodec(codec);
+#else
+  t.setEncoding(*QStringConverter::encodingForName(codec->name()));
+#endif
   const QChar *p=s.data();
   if (!s.isEmpty() && !p->isNull())
   {
