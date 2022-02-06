@@ -36,6 +36,7 @@
 #include <QTextStream>
 #include <QRegularExpression>
 #include <QDebug>
+#include <QDate>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -276,8 +277,9 @@ void MainWindow::about()
               QString::fromLatin1(qVersion());
        }
   t << QString::fromLatin1(")</center><p><br>"
-       "<center>Written by<br> Dimitri van Heesch<br>&copy; 2000-2021</center><p>"
-       "</qt>");
+       "<center>Written by<br> Dimitri van Heesch<br>&copy; 2000-");
+  t << QDate::currentDate().year();
+  t << QString::fromLatin1("</center><p></qt>");
   QMessageBox::about(this,tr("Doxygen GUI"),msg);
 }
 
