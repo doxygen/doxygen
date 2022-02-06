@@ -320,6 +320,7 @@ class HtmlHelp::Private
     int dc = 0;
     StringSet indexFiles;
     StringSet imageFiles;
+    StringSet styleFiles;
     HtmlHelpRecoder recoder;
     HtmlHelpIndex index;
 };
@@ -557,6 +558,10 @@ void HtmlHelp::Private::createProjectFile()
     {
       t << s.c_str() << "\n";
     }
+    for (auto &s : styleFiles)
+    {
+      t << s.c_str() << "\n";
+    }
     t.close();
   }
   else
@@ -715,6 +720,11 @@ void HtmlHelp::addIndexItem(const Definition *context,const MemberDef *md,
     QCString level1  = !word.isEmpty() ? word : context->name();
     p->index.addItem(level1,QCString(),context->getOutputFileBase(),sectionAnchor,TRUE,FALSE);
   }
+}
+
+void HtmlHelp::addStyleSheetFile(const QCString &fileName)
+{
+  p->styleFiles.insert(fileName.str());
 }
 
 void HtmlHelp::addImageFile(const QCString &fileName)

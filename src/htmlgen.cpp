@@ -1288,10 +1288,18 @@ void HtmlGenerator::writeStyleInfo(int part)
     }
 
     Doxygen::indexList->addStyleSheetFile("jquery.js");
+
     Doxygen::indexList->addStyleSheetFile("dynsections.js");
+
     if (Config_getBool(INTERACTIVE_SVG))
     {
       Doxygen::indexList->addStyleSheetFile("svgpan.js");
+    }
+
+    if (!Config_getBool(DISABLE_INDEX) && Config_getBool(HTML_DYNAMIC_MENUS))
+    {
+      Doxygen::indexList->addStyleSheetFile("menu.js");
+      Doxygen::indexList->addStyleSheetFile("menudata.js");
     }
   }
 }
