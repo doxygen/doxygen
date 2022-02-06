@@ -14,7 +14,6 @@
 #include "version.h"
 #include "expert.h"
 #include "wizard.h"
-#include <ctime>
 
 #include <QMenu>
 #include <QMenuBar>
@@ -37,6 +36,7 @@
 #include <QTextStream>
 #include <QRegularExpression>
 #include <QDebug>
+#include <QDate>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -264,11 +264,8 @@ void MainWindow::manual()
 
 void MainWindow::about()
 {
-  auto now = std::chrono::system_clock::now();
-  std::time_t time = std::chrono::system_clock::to_time_t(now);
-  auto current = *localtime(&time);
   char tmp[10];
-  sprintf(tmp,"%d",current.tm_year+1900);
+  sprintf(tmp,"%d",QDate::currentDate().year());
 
   QString msg;
   QTextStream t(&msg,QIODevice::WriteOnly);
