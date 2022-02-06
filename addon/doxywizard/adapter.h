@@ -20,7 +20,9 @@
 #include <QPointF>
 #include <QMouseEvent>
 
-/** @file compatibility adapters for Qt5/Qt6 support */
+/** @file
+ *  @brief compatibility adapters for Qt5/Qt6 support.
+ */
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 #include <QTextCodec>
