@@ -3,8 +3,8 @@
  * Copyright (C) 1997-2019 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -16,24 +16,17 @@
 #include <QHash>
 #include <QString>
 
+#include "adapter.h"
+
 class Input;
 class QTextStream;
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-class QTextCodec;
-#else
-class QStringEncoder;
-#endif
 
 bool parseConfig(
       const QString &fileName,
       const QHash<QString,Input *> &options
     );
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-void writeStringValue(QTextStream &t,QTextCodec *codec,const QString &s);
-#else
-void writeStringValue(QTextStream &t,QStringEncoder *codec,const QString &s);
-#endif
+void writeStringValue(QTextStream &t,TextCodecAdapter *codec,const QString &s);
 
 // directly copied from ../../src/config.h to be consistent
 enum

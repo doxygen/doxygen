@@ -33,11 +33,6 @@
 #include <QMessageBox>
 #include <QSettings>
 #include <QTextStream>
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-#include <QTextCodec>
-#else
-#include <QStringEncoder>
-#endif
 #include <QFileInfo>
 #include <QRegularExpression>
 
@@ -790,13 +785,8 @@ void Expert::loadConfig(const QString &fileName)
   parseConfig(fileName,m_options);
 }
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-void Expert::saveTopic(QTextStream &t,QDomElement &elem,QTextCodec *codec,
+void Expert::saveTopic(QTextStream &t,QDomElement &elem,TextCodecAdapter *codec,
                        bool brief,bool condensed)
-#else
-void Expert::saveTopic(QTextStream &t,QDomElement &elem,QStringEncoder *codec,
-                       bool brief,bool condensed)
-#endif
 {
   if (!brief)
   {
@@ -858,33 +848,13 @@ bool Expert::writeConfig(QTextStream &t,bool brief, bool condensed)
   }
 
   Input *option = m_options[QString::fromLatin1("DOXYFILE_ENCODING")];
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-  QTextCodec *codec = 0;
-  if (option)
-  {
-    codec = QTextCodec::codecForName(option->value().toString().toLatin1());
-    if (codec==0) // fallback: use UTF-8
-    {
-      codec = QTextCodec::codecForName("UTF-8");
-    }
-  }
-#else
-  QStringEncoder *codec = 0;
-  if (option)
-  {
-    codec = new QStringEncoder(*QStringConverter::encodingForName(option->value().toString().toLatin1()));
-    if (codec==0) // fallback: use UTF-8
-    {
-      codec = new QStringEncoder(*QStringConverter::encodingForName("UTF-8"));
-    }
-  }
-#endif
+  TextCodecAdapter codec(option->value().toString().toLatin1());
   QDomElement childElem = m_rootElement.firstChildElement();
   while (!childElem.isNull())
   {
     if (childElem.tagName()==SA("group"))
     {
-      saveTopic(t,childElem,codec,brief,condensed);
+      saveTopic(t,childElem,&codec,brief,condensed);
     }
     childElem = childElem.nextSiblingElement();
   }

@@ -35,6 +35,7 @@
 #include <QStackedWidget>
 #include <qdrawutil.h>
 
+
 // options configurable via the wizard
 #define STR_PROJECT_NAME          QString::fromLatin1("PROJECT_NAME")
 #define STR_PROJECT_LOGO          QString::fromLatin1("PROJECT_LOGO")
@@ -386,28 +387,16 @@ void ColorPicker::paintEvent(QPaintEvent*)
 
 void ColorPicker::mouseMoveEvent(QMouseEvent *m)
 {
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-  if      (m_mode==Hue)        setHue(y2hue(m->y()));
-  else if (m_mode==Saturation) setSat(y2sat(m->y()));
-  else                         setGam(y2gam(m->y()));
-#else
-  if      (m_mode==Hue)        setHue(y2hue(m->position().y()));
-  else if (m_mode==Saturation) setSat(y2sat(m->position().y()));
-  else                         setGam(y2gam(m->position().y()));
-#endif
+  if      (m_mode==Hue)        setHue(y2hue(getMouseYPositionFromEvent(m)));
+  else if (m_mode==Saturation) setSat(y2sat(getMouseYPositionFromEvent(m)));
+  else                         setGam(y2gam(getMouseYPositionFromEvent(m)));
 }
 
 void ColorPicker::mousePressEvent(QMouseEvent *m)
 {
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-  if      (m_mode==Hue)        setHue(y2hue(m->y()));
-  else if (m_mode==Saturation) setSat(y2sat(m->y()));
-  else                         setGam(y2gam(m->y()));
-#else
-  if      (m_mode==Hue)        setHue(y2hue(m->position().y()));
-  else if (m_mode==Saturation) setSat(y2sat(m->position().y()));
-  else                         setGam(y2gam(m->position().y()));
-#endif
+  if      (m_mode==Hue)        setHue(y2hue(getMouseYPositionFromEvent(m)));
+  else if (m_mode==Saturation) setSat(y2sat(getMouseYPositionFromEvent(m)));
+  else                         setGam(y2gam(getMouseYPositionFromEvent(m)));
 }
 
 void ColorPicker::setHue(int h)
@@ -875,10 +864,17 @@ Step2::Step2(Wizard *wizard,const QHash<QString,Input*> &modelData)
 
   connect(m_crossRef,SIGNAL(stateChanged(int)),
           SLOT(changeCrossRefState(int)));
+#if QT_VERSION < QT_VERSION_CHECK(5, 15, 0)
   connect(m_optimizeLangGroup,SIGNAL(buttonClicked(int)),
           SLOT(optimizeFor(int)));
   connect(m_extractModeGroup,SIGNAL(buttonClicked(int)),
           SLOT(extractMode(int)));
+#else
+  connect(m_optimizeLangGroup,SIGNAL(idClicked(int)),
+          SLOT(optimizeFor(int)));
+  connect(m_extractModeGroup,SIGNAL(idClicked(int)),
+          SLOT(extractMode(int)));
+#endif
 }
 
 
@@ -1005,10 +1001,13 @@ Step3::Step3(Wizard *wizard,const QHash<QString,Input*> &modelData)
   connect(m_xmlEnabled,SIGNAL(stateChanged(int)),SLOT(setXmlEnabled(int)));
   connect(m_docbookEnabled,SIGNAL(stateChanged(int)),SLOT(setDocbookEnabled(int)));
   connect(m_searchEnabled,SIGNAL(stateChanged(int)),SLOT(setSearchEnabled(int)));
-  connect(m_htmlOptionsGroup,SIGNAL(buttonClicked(int)),
-          SLOT(setHtmlOptions(int)));
-  connect(m_texOptionsGroup,SIGNAL(buttonClicked(int)),
-          SLOT(setLatexOptions(int)));
+#if QT_VERSION < QT_VERSION_CHECK(5, 15, 0)
+  connect(m_htmlOptionsGroup,SIGNAL(buttonClicked(int)),SLOT(setHtmlOptions(int)));
+  connect(m_texOptionsGroup,SIGNAL(buttonClicked(int)),SLOT(setLatexOptions(int)));
+#else
+  connect(m_htmlOptionsGroup,SIGNAL(idClicked(int)),SLOT(setHtmlOptions(int)));
+  connect(m_texOptionsGroup,SIGNAL(idClicked(int)),SLOT(setLatexOptions(int)));
+#endif
   connect(m_tuneColor,SIGNAL(clicked()),SLOT(tuneColorDialog()));
 }
 
@@ -1197,8 +1196,13 @@ Step4::Step4(Wizard *wizard,const QHash<QString,Input*> &modelData)
   m_dotCollaboration->setChecked(true);
   gbox->setRowStretch(6,1);
 
+#if QT_VERSION < QT_VERSION_CHECK(5, 15, 0)
   connect(m_diagramModeGroup,SIGNAL(buttonClicked(int)),
           this,SLOT(diagramModeChanged(int)));
+#else
+  connect(m_diagramModeGroup,SIGNAL(idClicked(int)),
+          this,SLOT(diagramModeChanged(int)));
+#endif
   connect(m_dotClass,SIGNAL(stateChanged(int)),
           this,SLOT(setClassGraphEnabled(int)));
   connect(m_dotCollaboration,SIGNAL(stateChanged(int)),

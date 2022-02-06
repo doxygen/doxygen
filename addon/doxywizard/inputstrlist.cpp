@@ -22,11 +22,6 @@
 #include <QFileInfo>
 #include <QFileDialog>
 #include <QTextStream>
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-#include <QTextCodec>
-#else
-#include <QStringEncoder>
-#endif
 
 InputStrList::InputStrList( QGridLayout *layout,int &row,
                             const QString & id,
@@ -156,7 +151,7 @@ void InputStrList::setEnabled(bool state)
 void InputStrList::browseFiles()
 {
   QString path = QFileInfo(MainWindow::instance().configFileName()).path();
-  QStringList fileNames = QFileDialog::getOpenFileNames();	
+  QStringList fileNames = QFileDialog::getOpenFileNames();
 
   if (!fileNames.isEmpty())
   {
@@ -184,9 +179,9 @@ void InputStrList::browseFiles()
 }
 
 void InputStrList::browseDir()
-{	
+{
   QString path = QFileInfo(MainWindow::instance().configFileName()).path();
-  QString dirName = QFileDialog::getExistingDirectory();	
+  QString dirName = QFileDialog::getExistingDirectory();
 
   if (!dirName.isNull())
   {
@@ -247,11 +242,7 @@ void InputStrList::reset()
   setValue(m_default);
 }
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-void InputStrList::writeValue(QTextStream &t,QTextCodec *codec)
-#else
-void InputStrList::writeValue(QTextStream &t,QStringEncoder *codec)
-#endif
+void InputStrList::writeValue(QTextStream &t,TextCodecAdapter *codec)
 {
   bool first=true;
   foreach (QString s, m_strList)

@@ -3,8 +3,8 @@
  * Copyright (C) 1997-2019 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -14,14 +14,10 @@
 #define INPUT_H
 
 #include <QVariant>
+#include "adapter.h"
 
 class QTextStream;
 class QTextStream;
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-class QTextCodec;
-#else
-class QStringEncoder;
-#endif
 
 class Input
 {
@@ -46,11 +42,7 @@ class Input
     virtual void updateDependencies() = 0;
     virtual void reset() = 0;
     virtual bool isDefault() = 0;
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    virtual void writeValue(QTextStream &t,QTextCodec *codec) = 0;
-#else
-    virtual void writeValue(QTextStream &t,QStringEncoder *codec) = 0;
-#endif
+    virtual void writeValue(QTextStream &t,TextCodecAdapter *codec) = 0;
     virtual void setTemplateDocs(const QString &docs) = 0;
     virtual bool isEmpty() { return false; };
 };
