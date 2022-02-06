@@ -14,6 +14,7 @@
 #include "version.h"
 #include "expert.h"
 #include "wizard.h"
+#include <ctime>
 
 #include <QMenu>
 #include <QMenuBar>
@@ -263,6 +264,12 @@ void MainWindow::manual()
 
 void MainWindow::about()
 {
+  auto now = std::chrono::system_clock::now();
+  std::time_t time = std::chrono::system_clock::to_time_t(now);
+  auto current = *localtime(&time);
+  char tmp[10];
+  sprintf(tmp,"%d",current.tm_year+1900);
+
   QString msg;
   QTextStream t(&msg,QIODevice::WriteOnly);
   t << QString::fromLatin1("<qt><center>A tool to configure and run doxygen version ")+
@@ -276,8 +283,9 @@ void MainWindow::about()
               QString::fromLatin1(qVersion());
        }
   t << QString::fromLatin1(")</center><p><br>"
-       "<center>Written by<br> Dimitri van Heesch<br>&copy; 2000-2021</center><p>"
-       "</qt>");
+       "<center>Written by<br> Dimitri van Heesch<br>&copy; 2000-");
+  t << QString::fromLatin1(tmp);
+  t << QString::fromLatin1("</center><p></qt>");
   QMessageBox::about(this,tr("Doxygen GUI"),msg);
 }
 
