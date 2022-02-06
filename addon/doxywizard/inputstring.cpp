@@ -23,7 +23,6 @@
 #include <QToolBar>
 #include <QFileInfo>
 #include <QFileDialog>
-#include <QTextCodec>
 
 class NoWheelComboBox : public QComboBox
 {
@@ -101,7 +100,7 @@ InputString::InputString( QGridLayout *layout,int &row,
 
   if (m_le)  connect( m_le,   SIGNAL(textChanged(const QString&)),
                       this,   SLOT(setValue(const QString&)) );
-  if (m_com) connect( m_com,  SIGNAL(activated(const QString &)),
+  if (m_com) connect( m_com,  SIGNAL(textActivated(const QString &)),
                       this,   SLOT(setValue(const QString &)) );
   m_str = s+QChar::fromLatin1('!'); // force update
   setValue(s);
@@ -254,7 +253,7 @@ void InputString::reset()
   setDefault();
 }
 
-void InputString::writeValue(QTextStream &t,QTextCodec *codec)
+void InputString::writeValue(QTextStream &t,TextCodecAdapter *codec)
 {
   writeStringValue(t,codec,m_str);
 }
