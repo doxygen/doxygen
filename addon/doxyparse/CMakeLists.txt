@@ -11,6 +11,13 @@ include_directories(
 add_executable(doxyparse
 doxyparse.cpp
 )
+if(EDITBIN)
+  add_custom_command(
+    TARGET doxyparse
+    POST_BUILD
+      COMMAND "${EDITBIN}" ${EDITBIN_FLAGS} "$<TARGET_FILE:doxyparse>"
+    VERBATIM)
+endif()
 add_sanitizers(doxyparse)
 
 if (use_libclang)
