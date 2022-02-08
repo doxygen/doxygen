@@ -43,6 +43,7 @@ class Debug
                      NoLineNo     = 0x00020000,
                      Rtf          = 0x00040000,
                      Qhp          = 0x00080000,
+                     Tag          = 0x00100000,
                    };
     static void print(DebugMask mask,int prio,const char *fmt,...);
 
