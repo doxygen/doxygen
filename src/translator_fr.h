@@ -457,6 +457,10 @@ class TranslatorFrench : public TranslatorAdapter_1_8_15
       {
         return "Documentation des structures de données";
       }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+          return trDesignUnitDocumentation();
+      }
       else
       {
         return "Documentation des classes";
@@ -474,12 +478,6 @@ class TranslatorFrench : public TranslatorAdapter_1_8_15
      */
     virtual QCString trExampleDocumentation()
     { return "Documentation des exemples"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all related pages.
-     */
-    virtual QCString trPageDocumentation()
-    { return "Documentation des pages associées"; }
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
@@ -582,10 +580,6 @@ class TranslatorFrench : public TranslatorAdapter_1_8_15
     {
       return "Graphe d'héritage de "+clName+":";
     }
-
-    /*! this text is generated when the \\internal command is used. */
-    virtual QCString trForInternalUseOnly()
-    { return "Pour un usage interne uniquement."; }
 
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
@@ -1178,11 +1172,6 @@ class TranslatorFrench : public TranslatorAdapter_1_8_15
     {
       return "Paquetage "+name;
     }
-    /*! Title of the package index page */
-    virtual QCString trPackageList()
-    {
-      return "Liste des paquetages";
-    }
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
     {
@@ -1557,14 +1546,6 @@ class TranslatorFrench : public TranslatorAdapter_1_8_15
      */
     virtual QCString trDirectories()
     { return "Répertoires"; }
-
-    /*! This returns a sentences that introduces the directory hierarchy.
-     *  and the fact that it is sorted alphabetically per level
-     */
-    virtual QCString trDirDescription()
-    { return "Cette hiérarchie de répertoire est triée approximativement, "
-             "mais pas complètement, par ordre alphabétique :";
-    }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.

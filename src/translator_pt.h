@@ -409,7 +409,20 @@ class TranslatorPortuguese : public Translator
      *  the documentation of all classes, structs and unions.
      */
     QCString trClassDocumentation()
-    { return "Documentação da classe"; }
+    {
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+      {
+        return "Documentação da estruturas de dados";
+      }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+          return trDesignUnitDocumentation();
+      }
+      else
+      {
+        return "Documentação da classe";
+      }
+    }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all files.
@@ -422,12 +435,6 @@ class TranslatorPortuguese : public Translator
      */
     QCString trExampleDocumentation()
     { return "Documentação do exemplo"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all related pages.
-     */
-    QCString trPageDocumentation()
-    { return "Documentação da página"; }
 
     /*! This is used in LaTeX as the title of the document */
     QCString trReferenceManual()
@@ -530,10 +537,6 @@ class TranslatorPortuguese : public Translator
     {
       return "Diagrama de heranças da classe "+clName;
     }
-
-    /*! this text is generated when the \\internal command is used. */
-    QCString trForInternalUseOnly()
-    { return "Apenas para uso interno."; }
 
     /*! this text is generated when the \\warning command is used. */
     QCString trWarning()
@@ -1119,11 +1122,6 @@ class TranslatorPortuguese : public Translator
     {
       return "Pacote "+name;
     }
-    /*! Title of the package index page */
-    virtual QCString trPackageList()
-    {
-      return "Lista de pacotes";
-    }
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
     {
@@ -1497,12 +1495,6 @@ class TranslatorPortuguese : public Translator
      */
     virtual QCString trDirectories()
     { return "Diretórios"; }
-
-    /*! This returns a sentences that introduces the directory hierarchy.
-     *  and the fact that it is sorted alphabetically per level
-     */
-    virtual QCString trDirDescription()
-    { return "Esta Hierarquia de Diretórios está parcialmente ordenada (ordem alfabética)"; }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.

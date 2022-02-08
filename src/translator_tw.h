@@ -399,6 +399,10 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
       {
         return "資料結構說明文件";
       }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+          return trDesignUnitDocumentation();
+      }
       else
       {
         return "類別說明文件";
@@ -416,12 +420,6 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
      */
     virtual QCString trExampleDocumentation()
     { return "範例說明文件"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all related pages.
-     */
-    virtual QCString trPageDocumentation()
-    { return "頁面說明文件"; }
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
@@ -530,10 +528,6 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
     {
       return "類別"+clName+"的繼承圖:";
     }
-
-    /*! this text is generated when the \\internal command is used. */
-    virtual QCString trForInternalUseOnly()
-    { return "僅供內部使用."; }
 
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
@@ -1121,11 +1115,6 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
     {
       return "Package "+name;
     }
-    /*! Title of the package index page */
-    virtual QCString trPackageList()
-    {
-      return "Package列表";
-    }
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
     {
@@ -1484,13 +1473,6 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
      */
     virtual QCString trDirectories()
     { return "目錄"; }
-
-    /*! This returns a sentences that introduces the directory hierarchy.
-     *  and the fact that it is sorted alphabetically per level
-     */
-    virtual QCString trDirDescription()
-    { return "這個目錄階層經過簡略的字母排序: ";
-    }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.

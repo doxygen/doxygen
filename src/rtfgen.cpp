@@ -431,10 +431,6 @@ void RTFGenerator::startIndexSection(IndexSections is)
       //Introduction
       beginRTFChapter();
       break;
-    //case isPackageIndex:
-    //  //Package Index
-    //  beginRTFChapter();
-    //  break;
     case isModuleIndex:
       //Module Index
       beginRTFChapter();
@@ -694,11 +690,6 @@ void RTFGenerator::endIndexSection(IndexSections is)
       m_t << "index";
       m_t << ".rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
       break;
-    //case isPackageIndex:
-    //  m_t << "\\par " << rtf_Style_Reset << "\n";
-    //  m_t << "{\\tc \\v " << theTranslator->trPackageList() << "}\n";
-    //  m_t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"packages.rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
-    //  break;
     case isModuleIndex:
       m_t << "\\par " << rtf_Style_Reset << "\n";
       m_t << "{\\tc \\v " << theTranslator->trModuleIndex() << "}\n";
@@ -929,23 +920,6 @@ void RTFGenerator::endIndexSection(IndexSections is)
       }
       break;
     case isPageDocumentation:
-      {
-//#error "fix me in the same way as the latex index..."
-        //m_t << "{\\tc \\v " << theTranslator->trPageDocumentation() << "}\n";
-        //m_t << "}\n";
-        //bool first=TRUE;
-        //for (const auto *pd : Doxygen::pageLinkedMap)
-        //{
-        //  if (!pd->getGroupDef() && !pd->isReference())
-        //  {
-        //    if (first) m_t << "\\par " << rtf_Style_Reset << "\n";
-        //    m_t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
-        //    m_t << pd->getOutputFileBase();
-        //    m_t << ".rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
-        //    first=FALSE;
-        //  }
-        //}
-      }
       break;
     case isPageDocumentation2:
       {

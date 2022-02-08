@@ -150,8 +150,6 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
     { return "Opis datoteke"; }
     QCString trExampleDocumentation()
     { return "Opis primera"; }
-    QCString trPageDocumentation()
-    { return "Opis povezanih strani"; }
     QCString trReferenceManual()
     { return "Priročnik"; }
 
@@ -190,8 +188,6 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
     {
       return "Diagram razredov za "+clName;
     }
-    QCString trForInternalUseOnly()
-    { return "Samo za interno uporabo."; }
     QCString trWarning()
     { return "Opozorilo"; }
     QCString trVersion()
@@ -752,11 +748,6 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
     {
       return "JAVA paket "+name;
     }
-    /*! Title of the package index page */
-    virtual QCString trPackageList()
-    {
-      return "Seznam JAVA paketov";
-    }
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
     {
@@ -1133,13 +1124,6 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
      */
     virtual QCString trDirectories()
     { return "Imeniki"; }
-
-    /*! This returns a sentences that introduces the directory hierarchy.
-     *  and the fact that it is sorted alphabetically per level
-     */
-    virtual QCString trDirDescription()
-    { return "Imeniška hierarhija je urejena v glavnem, toda ne popolnoma, po abecedi, ";
-    }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.

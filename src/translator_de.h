@@ -26,8 +26,6 @@
 //
 //   2001/03/23 Jens Seidel (jensseidel@users.sourceforge.net)
 //    - fixed typos
-//    - changed trPageDocumentation() "Seitenbeschreibung" to
-//      "Zusätzliche Informationen"
 //    - removed old trGeneratedFrom()
 //    - changed "/*!" to "/*" (documentation is inherited from translator_en.h
 //      (INHERIT_DOCS = YES), there's no need to make changes twice)
@@ -509,12 +507,6 @@ class TranslatorGerman : public TranslatorAdapter_1_8_15
     virtual QCString trExampleDocumentation()
     { return "Dokumentation der Beispiele"; }
 
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all related pages.
-     */
-    virtual QCString trPageDocumentation()
-    { return "Zusätzliche Informationen"; }
-
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
     { return "Nachschlagewerk"; }
@@ -616,10 +608,6 @@ class TranslatorGerman : public TranslatorAdapter_1_8_15
     {
       return "Klassendiagramm für "+clName+":";
     }
-
-    /*! this text is generated when the \\internal command is used. */
-    virtual QCString trForInternalUseOnly()
-    { return "Nur für den internen Gebrauch."; }
 
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
@@ -1259,11 +1247,6 @@ class TranslatorGerman : public TranslatorAdapter_1_8_15
       return "Paket "+name;
     }
 
-    /*! Title of the package index page */
-    virtual QCString trPackageList()
-    {
-      return "Paketliste";
-    }
 
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
@@ -1626,14 +1609,6 @@ class TranslatorGerman : public TranslatorAdapter_1_8_15
      */
     virtual QCString trDirectories()
     { return "Verzeichnisse"; }
-
-    /*! This returns a sentences that introduces the directory hierarchy.
-     *  and the fact that it is sorted alphabetically per level
-     */
-    virtual QCString trDirDescription()
-    { return "Diese Verzeichnishierarchie ist -mit Einschränkungen- "
-         "alphabetisch sortiert:";
-    }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.

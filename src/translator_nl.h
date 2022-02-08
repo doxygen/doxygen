@@ -166,13 +166,24 @@ class TranslatorDutch : public Translator
     QCString trModuleDocumentation()
     { return "Module Documentatie"; }
     QCString trClassDocumentation()
-    { return "Klassen Documentatie"; }
+    {
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+      {
+        return "Klassen Documentatie";
+      }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+          return trDesignUnitDocumentation();
+      }
+      else
+      {
+        return "Klassen Documentatie";
+      }
+    }
     QCString trFileDocumentation()
     { return "Bestand Documentatie"; }
     QCString trExampleDocumentation()
     { return "Documentatie van voorbeelden"; }
-    QCString trPageDocumentation()
-    { return "Documentatie van gerelateerde pagina's"; }
     QCString trReferenceManual()
     { return "Naslagwerk"; }
 
@@ -213,8 +224,6 @@ class TranslatorDutch : public Translator
     {
       return "Klasse diagram voor "+clName;
     }
-    QCString trForInternalUseOnly()
-    { return "Alleen voor intern gebruik."; }
     QCString trWarning()
     { return "Waarschuwing"; }
     QCString trVersion()
@@ -754,11 +763,6 @@ class TranslatorDutch : public Translator
     {
       return "Package "+name;
     }
-    /*! Title of the package index page */
-    QCString trPackageList()
-    {
-      return "Package Lijst";
-    }
     /*! The description of the package index page */
     QCString trPackageListDescription()
     {
@@ -1126,14 +1130,6 @@ class TranslatorDutch : public Translator
      */
     virtual QCString trDirectories()
     { return "Folders"; }
-
-    /*! This returns a sentences that introduces the directory hierarchy.
-     *  and the fact that it is sorted alphabetically per level
-     */
-    virtual QCString trDirDescription()
-    { return "Deze folder hi&euml;rarchie is min of meer alfabetisch "
-             "gesorteerd:";
-    }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.

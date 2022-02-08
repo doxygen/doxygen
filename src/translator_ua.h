@@ -334,6 +334,10 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
       {
         return  "Структури даних" ;
       }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+          return trDesignUnitDocumentation();
+      }
       else
       {
         return  "Класи" ;
@@ -351,12 +355,6 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
      */
     virtual QCString trExampleDocumentation()
     { return "Приклади"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all related pages.
-     */
-    virtual QCString trPageDocumentation()
-    { return "Документація по темі"; }
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
@@ -464,10 +462,6 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
     {
       return QCString("Схема успадкувань для ")+clName;
     }
-
-    /*! this text is generated when the \\internal command is used. */
-    virtual QCString trForInternalUseOnly()
-    { return "Тільки для внутрішнього користування"; }
 
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
@@ -1082,11 +1076,6 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
     {
       return QCString("Пакет ")+name;
     }
-    /*! Title of the package index page */
-    virtual QCString trPackageList()
-    {
-      return "Повний список пакетів";
-    }
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
     {
@@ -1443,14 +1432,6 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
      */
     virtual QCString trDirectories()
     { return "Каталоги"; }
-
-    /*! This returns a sentences that introduces the directory hierarchy.
-     *  and the fact that it is sorted alphabetically per level
-     */
-    virtual QCString trDirDescription()
-    { return "Дерево каталогів впорядковано наближено "
-	     "до алфавіту:";
-    }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.

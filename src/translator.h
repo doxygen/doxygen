@@ -129,7 +129,6 @@ class Translator
     virtual QCString trClassDocumentation() = 0;
     virtual QCString trFileDocumentation() = 0;
     virtual QCString trExampleDocumentation() = 0;
-    virtual QCString trPageDocumentation() = 0;
     virtual QCString trReferenceManual() = 0;
     virtual QCString trDefines() = 0;
     virtual QCString trTypedefs() = 0;
@@ -145,7 +144,6 @@ class Translator
     virtual QCString trCompounds() = 0;
     virtual QCString trGeneratedAt(const QCString &date,const QCString &projName) = 0;
     virtual QCString trClassDiagram(const QCString &clName) = 0;
-    virtual QCString trForInternalUseOnly() = 0;
     virtual QCString trWarning() = 0;
     virtual QCString trVersion() = 0;
     virtual QCString trDate() = 0;
@@ -212,7 +210,6 @@ class Translator
 
     virtual QCString trGeneratedFromFiles(ClassDef::CompoundType compType,
                                           bool single) = 0;
-    //virtual QCString trAlphabeticalList() = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990901
@@ -303,12 +300,6 @@ class Translator
     virtual QCString trTestList() = 0;
 
 //////////////////////////////////////////////////////////////////////////
-// new since 1.2.1
-//////////////////////////////////////////////////////////////////////////
-
-    //virtual QCString trDCOPMethods() = 0;
-
-//////////////////////////////////////////////////////////////////////////
 // new since 1.2.2
 //////////////////////////////////////////////////////////////////////////
 
@@ -321,7 +312,6 @@ class Translator
 
     virtual QCString trClasses() = 0;
     virtual QCString trPackage(const QCString &name) = 0;
-    virtual QCString trPackageList() = 0;
     virtual QCString trPackageListDescription() = 0;
     virtual QCString trPackages() = 0;
     virtual QCString trDefineValue() = 0;
@@ -465,7 +455,6 @@ class Translator
 // new since 1.3.3
 //////////////////////////////////////////////////////////////////////////
 
-    //virtual QCString trSearchForIndex() = 0;
     virtual QCString trSearchResultsTitle() = 0;
     virtual QCString trSearchResults(int numDocuments) = 0;
     virtual QCString trSearchMatches() = 0;
@@ -483,7 +472,6 @@ class Translator
     virtual QCString trDirIndex() = 0;
     virtual QCString trDirDocumentation() = 0;
     virtual QCString trDirectories() = 0;
-    virtual QCString trDirDescription() = 0;
     virtual QCString trDirReference(const QCString &dirName) = 0;
     virtual QCString trDir(bool first_capital, bool singular) = 0;
 
@@ -544,7 +532,6 @@ class Translator
 // new since 1.6.3
 //////////////////////////////////////////////////////////////////////////
 
-    //virtual QCString trDirDependency(const QCString &name) = 0;
     virtual QCString trFileIn(const QCString &name) = 0;
     virtual QCString trIncludesFileIn(const QCString &name) = 0;
     virtual QCString trDateTime(int year,int month,int day,int dayOfWeek,

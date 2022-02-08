@@ -424,6 +424,10 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
       {
         return "データ構造詳解";
       }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+          return trDesignUnitDocumentation();
+      }
       else
       {
         return "クラス詳解";
@@ -441,12 +445,6 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
      */
     virtual QCString trExampleDocumentation()
     { return "各例詳解"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all related pages.
-     */
-    virtual QCString trPageDocumentation()
-    { return "ページ詳解"; }
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
@@ -547,10 +545,6 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
     {
       return clName+" の継承関係図";
     }
-
-    /*! this text is generated when the \\internal command is used. */
-    virtual QCString trForInternalUseOnly()
-    { return "内部処理用です。"; }
 
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
@@ -1132,11 +1126,6 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
     {
       return name+" パッケージ";
     }
-    /*! Title of the package index page */
-    virtual QCString trPackageList()
-    {
-      return "パッケージ一覧";
-    }
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
     {
@@ -1495,14 +1484,6 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
      */
     virtual QCString trDirectories()
     { return "ディレクトリ"; }
-
-    /*! This returns a sentences that introduces the directory hierarchy.
-     *  and the fact that it is sorted alphabetically per level
-     */
-    virtual QCString trDirDescription()
-    { return "このディレクトリ一覧はおおまかにはソートされていますが、"
-             "完全にアルファベット順でソートされてはいません。";
-    }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.

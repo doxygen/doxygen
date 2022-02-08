@@ -402,6 +402,10 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
       {
         return "Documentaţia Structurilor de Date";
       }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+          return trDesignUnitDocumentation();
+      }
       else
       {
         return "Documentaţia Claselor";
@@ -420,12 +424,6 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
      */
     virtual QCString trExampleDocumentation()
     { return "Documentaţia Exemplelor"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all related pages.
-     */
-    virtual QCString trPageDocumentation()
-    { return "Documentaţii înrudite"; }
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
@@ -529,10 +527,6 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
     {
       return "Diagrama de relaţii pentru "+clName;
     }
-
-    /*! this text is generated when the \\internal command is used. */
-    virtual QCString trForInternalUseOnly()
-    { return "Doar pentru uz intern."; }
 
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
@@ -1119,11 +1113,6 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
     {
       return "Pachet "+name;
     }
-    /*! Title of the package index page */
-    virtual QCString trPackageList()
-    {
-      return "Lista Pachetelor";
-    }
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
     {
@@ -1497,14 +1486,6 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
       */
      virtual QCString trDirectories()
      { return "Directoare"; }
-
-     /*! This returns a sentences that introduces the directory hierarchy.
-      *  and the fact that it is sorted alphabetically per level
-      */
-     virtual QCString trDirDescription()
-     { return "Această ierarhie de directoare este sortată în general, "
-              "dar nu complet, în ordine alfabetică:";
-     }
 
      /*! This returns the title of a directory page. The name of the
       *  directory is passed via \a dirName.

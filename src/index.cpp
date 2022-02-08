@@ -4490,8 +4490,6 @@ static void writeIndex(OutputList &ol)
   }
   if (documentedPages>0)
   {
-    //ol.parseText(projPrefix+theTranslator->trPageDocumentation());
-    //ol.endIndexSection(isPageDocumentation);
     bool first=Doxygen::mainPage==0;
     for (const auto &pd : *Doxygen::pageLinkedMap)
     {

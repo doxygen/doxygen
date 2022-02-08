@@ -426,12 +426,6 @@ class TranslatorBulgarian : public Translator
     virtual QCString trExampleDocumentation()
     { return "Примери Документация"; }
 
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all related pages.
-     */
-    virtual QCString trPageDocumentation()
-    { return "Свързани страници Документация"; }
-
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
     { return "Помощно ръководство"; }
@@ -533,10 +527,6 @@ class TranslatorBulgarian : public Translator
     {
       return (QCString)"Диаграма на наследяване за "+clName+":";
     }
-
-    /*! this text is generated when the \\internal command is used. */
-    virtual QCString trForInternalUseOnly()
-    { return "Само за вътрешно ползване."; }
 
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
@@ -1128,11 +1118,6 @@ class TranslatorBulgarian : public Translator
     {
       return (QCString)"Пакет "+name;
     }
-    /*! Title of the package index page */
-    virtual QCString trPackageList()
-    {
-      return "Пакети Списък";
-    }
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
     {
@@ -1506,14 +1491,6 @@ class TranslatorBulgarian : public Translator
      */
     virtual QCString trDirectories()
     { return "Директории"; }
-
-    /*! This returns a sentences that introduces the directory hierarchy.
-     *  and the fact that it is sorted alphabetically per level
-     */
-    virtual QCString trDirDescription()
-    { return "Тази йерархия на директориите е сортирана, "
-             "но не изцяло, по азбучен ред:";
-    }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.

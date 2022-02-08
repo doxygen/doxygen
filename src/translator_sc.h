@@ -395,6 +395,10 @@ class TranslatorSerbianCyrillic : public TranslatorAdapter_1_6_0
       {
         return "Документација структуре";
       }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+          return trDesignUnitDocumentation();
+      }
       else
       {
         return "Документација класе";
@@ -412,12 +416,6 @@ class TranslatorSerbianCyrillic : public TranslatorAdapter_1_6_0
      */
     virtual QCString trExampleDocumentation()
     { return "Документација примера"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all related pages.
-     */
-    virtual QCString trPageDocumentation()
-    { return "Документација странице"; }
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
@@ -520,10 +518,6 @@ class TranslatorSerbianCyrillic : public TranslatorAdapter_1_6_0
     {
       return "Дијаграм наслеђивања за "+clName+":";
     }
-
-    /*! this text is generated when the \\internal command is used. */
-    virtual QCString trForInternalUseOnly()
-    { return "Само за унутрашњу употребу."; }
 
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
@@ -1129,11 +1123,6 @@ class TranslatorSerbianCyrillic : public TranslatorAdapter_1_6_0
     {
       return "Пакет "+name;
     }
-    /*! Title of the package index page */
-    virtual QCString trPackageList()
-    {
-      return "Списак пакета";
-    }
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
     {
@@ -1519,14 +1508,6 @@ class TranslatorSerbianCyrillic : public TranslatorAdapter_1_6_0
      */
     virtual QCString trDirectories()
     { return "Директоријуми"; }
-
-    /*! This returns a sentences that introduces the directory hierarchy.
-     *  and the fact that it is sorted alphabetically per level
-     */
-    virtual QCString trDirDescription()
-    { return "Ова хијерархија директоријума је уређена "
-             "приближно по абецеди:";
-    }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.
