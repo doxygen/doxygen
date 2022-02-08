@@ -1817,6 +1817,8 @@ void Config::checkAndCorrect(bool quiet, const bool check)
     const char *depOption = "GENERATE_HTMLHELP";
     adjustBoolSetting(  depOption, "GENERATE_TREEVIEW",   false  );
     adjustBoolSetting(  depOption, "SEARCHENGINE",        false  );
+    adjustBoolSetting(  depOption, "HTML_DYNAMIC_MENUS",  false  );
+    adjustBoolSetting(  depOption, "HTML_DYNAMIC_SECTIONS",false  );
     adjustStringSetting(depOption, "HTML_FILE_EXTENSION", ".html");
   }
 
