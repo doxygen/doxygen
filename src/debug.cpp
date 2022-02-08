@@ -67,14 +67,6 @@ void Debug::print(DebugMask mask,int prio,const char *fmt,...)
   }
 }
 
-void Debug::print(const char *fmt,...)
-{
-  va_list args;
-  va_start(args,fmt);
-  vfprintf(stdout, fmt, args);
-  va_end(args);
-}
-
 static char asciiToLower(char in) {
     if (in <= 'Z' && in >= 'A')
         return in - ('Z' - 'z');
