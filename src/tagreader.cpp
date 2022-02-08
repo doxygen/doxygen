@@ -41,9 +41,6 @@
 #include "containers.h"
 #include "debug.h"
 
-// set to 1 for debugging
-#define DUMP_OUTPUT 0
-
 // ----------------- private part -----------------------------------------------
 
 namespace {
@@ -295,6 +292,10 @@ class TagCompoundVariant
         }
       }
       return 0;
+    }
+    Type type()
+    {
+      return(static_cast<Type>(m_variant.index()));
     }
 
   private:
@@ -1110,179 +1111,179 @@ void TagFileParser::startCompound( const XMLHandlers::Attributes& attrib )
   }
 }
 
-#if DUMP_OUTPUT
 /*! Dumps the internal structures. For debugging only! */
 void TagFileParser::dump()
 {
-  msg("Result:\n");
+  if (!Debug::isFlagSet(Debug::Tag)) return;
+
+  Debug::print("Result:\n");
   //============== CLASSES
-  for (const auto &comp : m_tagFileCompounds)
+  for (auto &comp : m_tagFileCompounds)
   {
-    if (comp->compoundType()==TagCompoundInfo::CompoundType::Class)
+    if (comp.type()==TagCompoundVariant::Type::Class)
     {
-      const TagClassInfo *cd = TagClassInfo::get(comp);
-      msg("class '%s'\n",qPrint(cd->name));
-      msg("  filename '%s'\n",qPrint(cd->filename));
+      const TagClassInfo *cd = comp.getClassInfo();
+      Debug::print("class '%s'\n",qPrint(cd->name));
+      Debug::print("  filename '%s'\n",qPrint(cd->filename));
       for (const BaseInfo &bi : cd->bases)
       {
-        msg( "  base: %s \n", bi.name.isEmpty() ? "" : qPrint(bi.name) );
+        Debug::print( "  base: %s \n", bi.name.isEmpty() ? "" : qPrint(bi.name) );
       }
 
       for (const auto &md : cd->members)
       {
-        msg("  member:\n");
-        msg("    kind: '%s'\n",qPrint(md.kind));
-        msg("    name: '%s'\n",qPrint(md.name));
-        msg("    anchor: '%s'\n",qPrint(md.anchor));
-        msg("    arglist: '%s'\n",qPrint(md.arglist));
+        Debug::print("  member:\n");
+        Debug::print("    kind: '%s'\n",qPrint(md.kind));
+        Debug::print("    name: '%s'\n",qPrint(md.name));
+        Debug::print("    anchor: '%s'\n",qPrint(md.anchor));
+        Debug::print("    arglist: '%s'\n",qPrint(md.arglist));
       }
     }
   }
   //============== CONCEPTS
-  for (const auto &comp : m_tagFileCompounds)
+  for (auto &comp : m_tagFileCompounds)
   {
-    if (comp->compoundType()==TagCompoundInfo::CompoundType::Concept)
+    if (comp.type()==TagCompoundVariant::Type::Concept)
     {
-      const TagConceptInfo *cd = TagConceptInfo::get(comp);
+      const TagConceptInfo *cd = comp.getConceptInfo();
 
-      msg("concept '%s'\n",qPrint(cd->name));
-      msg("  filename '%s'\n",qPrint(cd->filename));
+      Debug::print("concept '%s'\n",qPrint(cd->name));
+      Debug::print("  filename '%s'\n",qPrint(cd->filename));
     }
   }
   //============== NAMESPACES
-  for (const auto &comp : m_tagFileCompounds)
+  for (auto &comp : m_tagFileCompounds)
   {
-    if (comp->compoundType()==TagCompoundInfo::CompoundType::Namespace)
+    if (comp.type()==TagCompoundVariant::Type::Namespace)
     {
-      const TagNamespaceInfo *nd = TagNamespaceInfo::get(comp);
+      const TagNamespaceInfo *nd = comp.getNamespaceInfo();
 
-      msg("namespace '%s'\n",qPrint(nd->name));
-      msg("  filename '%s'\n",qPrint(nd->filename));
+      Debug::print("namespace '%s'\n",qPrint(nd->name));
+      Debug::print("  filename '%s'\n",qPrint(nd->filename));
       for (const auto &cls : nd->classList)
       {
-        msg( "  class: %s \n", cls.c_str() );
+        Debug::print( "  class: %s \n", cls.c_str() );
       }
 
       for (const auto &md : nd->members)
       {
-        msg("  member:\n");
-        msg("    kind: '%s'\n",qPrint(md.kind));
-        msg("    name: '%s'\n",qPrint(md.name));
-        msg("    anchor: '%s'\n",qPrint(md.anchor));
-        msg("    arglist: '%s'\n",qPrint(md.arglist));
+        Debug::print("  member:\n");
+        Debug::print("    kind: '%s'\n",qPrint(md.kind));
+        Debug::print("    name: '%s'\n",qPrint(md.name));
+        Debug::print("    anchor: '%s'\n",qPrint(md.anchor));
+        Debug::print("    arglist: '%s'\n",qPrint(md.arglist));
       }
     }
   }
 
   //============== FILES
-  for (const auto &comp : m_tagFileCompounds)
+  for (auto &comp : m_tagFileCompounds)
   {
-    if (comp->compoundType()==TagCompoundInfo::CompoundType::File)
+    if (comp.type()==TagCompoundVariant::Type::File)
     {
-      const TagFileInfo *fd = TagFileInfo::get(comp);
+      const TagFileInfo *fd = comp.getFileInfo();
 
-      msg("file '%s'\n",qPrint(fd->name));
-      msg("  filename '%s'\n",qPrint(fd->filename));
+      Debug::print("file '%s'\n",qPrint(fd->name));
+      Debug::print("  filename '%s'\n",qPrint(fd->filename));
       for (const auto &ns : fd->namespaceList)
       {
-        msg( "  namespace: %s \n", ns.c_str() );
+        Debug::print( "  namespace: %s \n", ns.c_str() );
       }
       for (const auto &cs : fd->classList)
       {
-        msg( "  class: %s \n", cs.c_str() );
+        Debug::print( "  class: %s \n", cs.c_str() );
       }
 
       for (const auto &md : fd->members)
       {
-        msg("  member:\n");
-        msg("    kind: '%s'\n",qPrint(md.kind));
-        msg("    name: '%s'\n",qPrint(md.name));
-        msg("    anchor: '%s'\n",qPrint(md.anchor));
-        msg("    arglist: '%s'\n",qPrint(md.arglist));
+        Debug::print("  member:\n");
+        Debug::print("    kind: '%s'\n",qPrint(md.kind));
+        Debug::print("    name: '%s'\n",qPrint(md.name));
+        Debug::print("    anchor: '%s'\n",qPrint(md.anchor));
+        Debug::print("    arglist: '%s'\n",qPrint(md.arglist));
       }
 
       for (const auto &ii : fd->includes)
       {
-        msg("  includes id: %s name: %s\n",qPrint(ii.id),qPrint(ii.name));
+        Debug::print("  includes id: %s name: %s\n",qPrint(ii.id),qPrint(ii.name));
       }
     }
   }
 
   //============== GROUPS
-  for (const auto &comp : m_tagFileCompounds)
+  for (auto &comp : m_tagFileCompounds)
   {
-    if (comp->compoundType()==TagCompoundInfo::CompoundType::Group)
+    if (comp.type()==TagCompoundVariant::Type::Group)
     {
-      const TagGroupInfo *gd = TagGroupInfo::get(comp);
-      msg("group '%s'\n",qPrint(gd->name));
-      msg("  filename '%s'\n",qPrint(gd->filename));
+      const TagGroupInfo *gd = comp.getGroupInfo();
+      Debug::print("group '%s'\n",qPrint(gd->name));
+      Debug::print("  filename '%s'\n",qPrint(gd->filename));
 
       for (const auto &ns : gd->namespaceList)
       {
-        msg( "  namespace: %s \n", ns.c_str() );
+        Debug::print( "  namespace: %s \n", ns.c_str() );
       }
       for (const auto &cs : gd->classList)
       {
-        msg( "  class: %s \n", cs.c_str() );
+        Debug::print( "  class: %s \n", cs.c_str() );
       }
       for (const auto &fi : gd->fileList)
       {
-        msg( "  file: %s \n", fi.c_str() );
+        Debug::print( "  file: %s \n", fi.c_str() );
       }
       for (const auto &sg : gd->subgroupList)
       {
-        msg( "  subgroup: %s \n", sg.c_str() );
+        Debug::print( "  subgroup: %s \n", sg.c_str() );
       }
       for (const auto &pg : gd->pageList)
       {
-        msg( "  page: %s \n", pg.c_str() );
+        Debug::print( "  page: %s \n", pg.c_str() );
       }
 
       for (const auto &md : gd->members)
       {
-        msg("  member:\n");
-        msg("    kind: '%s'\n",qPrint(md.kind));
-        msg("    name: '%s'\n",qPrint(md.name));
-        msg("    anchor: '%s'\n",qPrint(md.anchor));
-        msg("    arglist: '%s'\n",qPrint(md.arglist));
+        Debug::print("  member:\n");
+        Debug::print("    kind: '%s'\n",qPrint(md.kind));
+        Debug::print("    name: '%s'\n",qPrint(md.name));
+        Debug::print("    anchor: '%s'\n",qPrint(md.anchor));
+        Debug::print("    arglist: '%s'\n",qPrint(md.arglist));
       }
     }
   }
 
   //============== PAGES
-  for (const auto &comp : m_tagFileCompounds)
+  for (auto &comp : m_tagFileCompounds)
   {
-    if (comp->compoundType()==TagCompoundInfo::CompoundType::Page)
+    if (comp.type()==TagCompoundVariant::Type::Page)
     {
-      const TagPageInfo *pd = TagPageInfo::get(comp);
-      msg("page '%s'\n",qPrint(pd->name));
-      msg("  title '%s'\n",qPrint(pd->title));
-      msg("  filename '%s'\n",qPrint(pd->filename));
+      const TagPageInfo *pd = comp.getPageInfo();
+      Debug::print("page '%s'\n",qPrint(pd->name));
+      Debug::print("  title '%s'\n",qPrint(pd->title));
+      Debug::print("  filename '%s'\n",qPrint(pd->filename));
     }
   }
 
   //============== DIRS
-  for (const auto &comp : m_tagFileCompounds)
+  for (auto &comp : m_tagFileCompounds)
   {
-    if (comp->compoundType()==TagCompoundInfo::CompoundType::Dir)
+    if (comp.type()==TagCompoundVariant::Type::Dir)
     {
-      const TagDirInfo *dd = TagDirInfo::get(comp);
+      const TagDirInfo *dd = comp.getDirInfo();
       {
-        msg("dir '%s'\n",qPrint(dd->name));
-        msg("  path '%s'\n",qPrint(dd->path));
+        Debug::print("dir '%s'\n",qPrint(dd->name));
+        Debug::print("  path '%s'\n",qPrint(dd->path));
         for (const auto &fi : dd->fileList)
         {
-          msg( "  file: %s \n", fi.c_str() );
+          Debug::print( "  file: %s \n", fi.c_str() );
         }
         for (const auto &sd : dd->subdirList)
         {
-          msg( "  subdir: %s \n", sd.c_str() );
+          Debug::print( "  subdir: %s \n", sd.c_str() );
         }
       }
     }
   }
 }
-#endif
 
 void TagFileParser::addDocAnchors(const std::shared_ptr<Entry> &e,const std::vector<TagAnchorInfo> &l)
 {
@@ -1703,7 +1704,5 @@ void parseTagFile(const std::shared_ptr<Entry> &root,const char *fullName)
   parser.parse(fullName,inputStr.data(),Debug::isFlagSet(Debug::Lex));
   tagFileParser.buildLists(root);
   tagFileParser.addIncludes();
-#if DUMP_OUTPUT
-  tagFileParser.dump();
-#endif
+  if (Debug::isFlagSet(Debug::Tag)) tagFileParser.dump();
 }
