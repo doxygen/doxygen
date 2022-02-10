@@ -124,6 +124,14 @@ doxywizard.rc
 
 set_property(TARGET doxywizard PROPERTY WIN32_EXECUTABLE true)
 
+if(EDITBIN)
+  add_custom_command(
+    TARGET doxywizard
+    POST_BUILD
+      COMMAND "${EDITBIN}" ${EDITBIN_WIZARD_FLAGS} "$<TARGET_FILE:doxywizard>"
+    VERBATIM)
+endif()
+
 if(Qt5Core_FOUND)
   target_link_libraries(doxywizard Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Xml doxygen_version)
 else()

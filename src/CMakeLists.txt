@@ -327,6 +327,13 @@ endif()
 add_executable(doxygen
     main.cpp
 )
+if(EDITBIN)
+  add_custom_command(
+    TARGET doxygen
+    POST_BUILD
+      COMMAND "${EDITBIN}" ${EDITBIN_FLAGS} "$<TARGET_FILE:doxygen>"
+    VERBATIM)
+endif()
 add_sanitizers(doxygen)
 
 if (use_libclang)
