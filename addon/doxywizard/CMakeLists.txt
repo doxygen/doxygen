@@ -124,12 +124,11 @@ doxywizard.rc
 
 set_property(TARGET doxywizard PROPERTY WIN32_EXECUTABLE true)
 
-if(EDITBIN)
-  add_custom_command(
-    TARGET doxywizard
-    POST_BUILD
-      COMMAND "${EDITBIN}" ${EDITBIN_WIZARD_FLAGS} "$<TARGET_FILE:doxywizard>"
-    VERBATIM)
+include(ApplyEditbin)
+if (enable_console)
+apply_editbin(doxywizard console)
+else()
+apply_editbin(doxywizard windows)
 endif()
 
 if(Qt5Core_FOUND)

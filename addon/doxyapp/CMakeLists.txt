@@ -11,14 +11,8 @@ include_directories(
 add_executable(doxyapp
 doxyapp.cpp
 )
-if(EDITBIN)
-  add_custom_command(
-    TARGET doxyapp
-    POST_BUILD
-      COMMAND "${EDITBIN}" ${EDITBIN_FLAGS} "$<TARGET_FILE:doxyapp>"
-    VERBATIM)
-endif()
-
+include(ApplyEditbin)
+apply_editbin(doxyapp console)
 add_sanitizers(doxyapp)
 
 if (use_libclang)
