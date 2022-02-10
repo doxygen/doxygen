@@ -11,6 +11,8 @@ include_directories(
 add_executable(doxyapp
 doxyapp.cpp
 )
+include(ApplyEditbin)
+apply_editbin(doxyapp console)
 add_sanitizers(doxyapp)
 
 if (use_libclang)
