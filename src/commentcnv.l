@@ -576,14 +576,21 @@ SLASHopt [/]*
 <Verbatim>^[ \t]*{CPPC}[/!]          {
   				     if (yyextra->blockName=="dot" || yyextra->blockName=="msc" || yyextra->blockName=="uml" || yyextra->blockName.at(0)=='f')
 				     {
-				       // see bug 487871, strip /// from dot images and formulas.
-                                       int l=0;
-                                       while (yytext[l]==' ' || yytext[l]=='\t')
+                                       if (yyextra->mlBrief)
                                        {
-                                         l++;
+                                         copyToOutput(yyscanner,yytext,yyleng);
                                        }
-                                       copyToOutput(yyscanner,yytext,l);
-				       copyToOutput(yyscanner,"   ",3);
+                                       else
+                                       {
+				         // see bug 487871, strip /// from dot images and formulas.
+                                         int l=0;
+                                         while (yytext[l]==' ' || yytext[l]=='\t')
+                                         {
+                                           l++;
+                                         }
+                                         copyToOutput(yyscanner,yytext,l);
+				         copyToOutput(yyscanner,"   ",3);
+				       }
 				     }
 				     else // even slashes are verbatim (e.g. \verbatim, \code)
 				     {
