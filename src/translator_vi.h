@@ -1739,6 +1739,20 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
       return "Ràng buộc của kiểu (Type)";
     }
 
+    virtual QCString trDayOfWeek(int dayOfWeek, bool, bool full)
+    {
+      static const char *days_short[]   = { "T2", "T3", "T4", "T5", "T6", "T7", "CN" };
+      static const char *days_full[]    = { "Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy", "Chủ Nhật" };
+      QCString text  = full? days_full[dayOfWeek-1] : days_short[dayOfWeek-1];
+      return text;
+    }
+    virtual QCString trMonth(int month, bool, bool full)
+    {
+      static const char *months_short[] = { "Thg1", "Thg2", "Thg3", "Thg4", "Thg5", "Thg6", "Thg7", "Thg8", "Thg9", "Thg10", "Thg11", "Thg12" };
+      static const char *months_full[]  = { "Tháng Giêng", "Tháng Hai", "Tháng Ba", "Tháng Tư", "Tháng Năm", "Tháng Sáu", "Tháng Bảy", "Tháng Tám", "Tháng Chín", "Tháng Mười", "Tháng Mười Một", "Tháng Mười Hai" };
+      QCString text  = full? months_full[month-1] : months_short[month-1];
+      return text;
+    }
 };
 
 #endif

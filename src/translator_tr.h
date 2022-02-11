@@ -1800,6 +1800,20 @@ class TranslatorTurkish : public TranslatorAdapter_1_7_5
     }
     return sdate;
     }
+    virtual QCString trDayOfWeek(int dayOfWeek, bool, bool full)
+    {
+      static const char *days_short[]   = { "Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz" };
+      static const char *days_full[]    = { "Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi", "Pazar" };
+      QCString text  = full? days_full[dayOfWeek-1] : days_short[dayOfWeek-1];
+      return text;
+    }
+    virtual QCString trMonth(int month, bool, bool full)
+    {
+      static const char *months_short[] = { "Oca", "Şub", "Mar", "Nis", "May", "Haz", "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara" };
+      static const char *months_full[]  = { "Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık" };
+      QCString text  = full? months_full[month-1] : months_short[month-1];
+      return text;
+    }
 
 };
 

@@ -1780,6 +1780,20 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
       }
       return sdate;
     }
+    virtual QCString trDayOfWeek(int dayOfWeek, bool, bool full)
+    {
+      static const char *days_short[]   = { "Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Нд" };
+      static const char *days_full[]    = { "понеділок", "вівторок", "середа", "четвер", "п'ятниця", "субота", "неділя" };
+      QCString text  = full? days_full[dayOfWeek-1] : days_short[dayOfWeek-1];
+      return text;
+    }
+    virtual QCString trMonth(int month, bool, bool full)
+    {
+      static const char *months_short[] = { "Січ", "Лют", "Бер", "Кві", "Тра", "Чер", "Лип", "Сер", "Вер", "Жов", "Лис", "Гру" };
+      static const char *months_full[]  = { "січень", "лютий", "березень", "квітень", "травень", "червень", "липень", "серпень", "вересень", "жовтень", "листопад", "грудень" };
+      QCString text  = full? months_full[month-1] : months_short[month-1];
+      return text;
+    }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.7.5

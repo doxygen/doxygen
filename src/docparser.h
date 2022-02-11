@@ -1127,6 +1127,7 @@ class DocPara : public CompAccept<DocPara>
     void handleInheritDoc();
     void handleVhdlFlow();
     void handleIline();
+    void handleShowDate();
     int handleStartCode();
     int handleHtmlHeader(const HtmlAttribList &tagHtmlAttribs,int level);
 

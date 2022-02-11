@@ -342,6 +342,8 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
 RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revision"|"Source"|"State")":"[^:\n$][^\n$]*"$"
 LINENR {BLANK}*[1-9][0-9]*
 
+SHOWDATE       [0-9][0-9]?"-"[0-9][0-9]?"-"[0-9][0-9][0-9][0-9]
+
 %option noyywrap
 
 %x St_Para
@@ -388,12 +390,16 @@ LINENR {BLANK}*[1-9][0-9]*
 %x St_Block
 %x St_Emoji
 %x St_Iline
+%x St_ShowDate
 
 %x St_Sections
 %s St_SecLabel1
 %s St_SecLabel2
 %s St_SecTitle
 %x St_SecSkip
+
+%x St_QuotedString
+%x St_QuotedContent
 
 %%
 <St_Para>\r            /* skip carriage return */
@@ -1236,6 +1242,37 @@ LINENR {BLANK}*[1-9][0-9]*
 <St_Emoji>.            {
                          return 0;
                        }
+<St_QuotedString>"\""  {
+                         yyextra->token->name="";
+                         BEGIN(St_QuotedContent);
+                       }
+<St_QuotedString>(\n|"\\ilinebr") {
+                         unput_string(yytext,yyleng);
+                         return 0;
+                       }
+<St_QuotedString>.     {
+                         unput(*yytext);
+                         return 0;
+                       }
+<St_QuotedContent>"\"" {
+                         return TK_WORD;
+                       }
+<St_QuotedContent>.    {
+                         yyextra->token->name+=yytext;
+                       }
+<St_ShowDate>{WS}+{SHOWDATE} {
+                         lineCount(yytext,yyleng);
+                         yyextra->token->name=yytext;
+                         return TK_WORD;
+                       }
+<St_ShowDate>(\n|"\\ilinebr") {
+                         unput_string(yytext,yyleng);
+                         return 0;
+                       }
+<St_ShowDate>.         {
+                         unput(*yytext);
+                         return 0;
+                       }
 <St_Iline>{LINENR}/[\n\.]     |
 <St_Iline>{LINENR}{BLANK}     {
                          bool ok = false;
@@ -1975,6 +2012,20 @@ void DocTokenizer::setStateIline()
   yyscan_t yyscanner = p->yyscanner;
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   BEGIN(St_Iline);
+}
+
+void DocTokenizer::setStateQuotedString()
+{
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  BEGIN(St_QuotedString);
+}
+
+void DocTokenizer::setStateShowDate()
+{
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  BEGIN(St_ShowDate);
 }
 
 void DocTokenizer::cleanup()

@@ -1727,7 +1727,7 @@ class TranslatorChinese : public Translator
                                 bool includeTime)
   {
     static const char *days[]   = { "一","二","三","四","五","六","日" };
-      static const char *months[] = { "一","二","三","四","五","六","七","八","九","十","十一","十二" };
+    static const char *months[] = { "一","二","三","四","五","六","七","八","九","十","十一","十二" };
 
     QCString sdate;
 
@@ -1740,6 +1740,20 @@ class TranslatorChinese : public Translator
       sdate+=stime;
     }
     return sdate;
+  }
+  virtual QCString trDayOfWeek(int dayOfWeek, bool, bool full)
+  {
+    static const char *days_short[]   = { "周一", "周二", "周三", "周四", "周五", "周六", "周日" };
+    static const char *days_full[]    = { "星期一", "星期二", "星期三", "星期四", "星期五", "星期六", "星期日" };
+    QCString text  = full? days_full[dayOfWeek-1] : days_short[dayOfWeek-1];
+    return text;
+  }
+  virtual QCString trMonth(int month, bool, bool full)
+  {
+    static const char *months_short[] = { "1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月" };
+    static const char *months_full[]  = { "一月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "十一月", "十二月" };
+    QCString text  = full? months_full[month-1] : months_short[month-1];
+    return text;
   }
 
 //////////////////////////////////////////////////////////////////////////

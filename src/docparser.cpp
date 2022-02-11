@@ -5022,6 +5022,179 @@ void DocPara::handleIline()
   m_parser.tokenizer.setStatePara();
 }
 
+void DocPara::handleShowDate()
+{
+  QCString fmt;
+  QCString date;
+  int tok=m_parser.tokenizer.lex();
+  if (tok!=TK_WHITESPACE)
+  {
+    warn_doc_error(m_parser.context.fileName,m_parser.tokenizer.getLineNr(),"expected whitespace after '\\%s' command",
+        qPrint("showdate"));
+    return;
+  }
+  m_parser.tokenizer.setStateQuotedString();
+  tok = m_parser.tokenizer.lex();
+  if (tok!=TK_WORD)
+  {
+    warn_doc_error(m_parser.context.fileName,m_parser.tokenizer.getLineNr(),"invalid format argument for command '\\showdate'");
+    m_parser.tokenizer.setStatePara();
+    return;
+  }
+  fmt = m_parser.context.token->name;
+
+  m_parser.tokenizer.setStateShowDate();
+  tok = m_parser.tokenizer.lex();
+  std::tm dat = tm{};
+  if (tok == 0)
+  {
+    dat = getCurrentDateTime();
+  }
+  else if (tok!=TK_WORD)
+  {
+    warn_doc_error(m_parser.context.fileName,m_parser.tokenizer.getLineNr(),"invalid date argument for command '\\showdate'");
+    m_parser.tokenizer.setStatePara();
+    return;
+  }
+  else
+  {
+    int day, month, year;
+    sscanf(m_parser.context.token->name.stripWhiteSpace().data(),"%d-%d-%d", &day, &month, &year);
+    dat.tm_year = year-1900;
+    dat.tm_mon  = month-1;
+    dat.tm_mday = day;
+    int weekday;
+    if (!valid_tm(dat,&weekday))
+    {
+      warn_doc_error(m_parser.context.fileName,m_parser.tokenizer.getLineNr(),"invalid or non representable date argument for command '\\showdate'");
+      m_parser.tokenizer.setStatePara();
+      return;
+    }
+    dat.tm_wday = weekday;
+
+  }
+
+  GrowBuf growBuf;
+  signed char c;
+  const char *p=fmt.data();
+  while ((c=*p++)!=0)
+  {
+    switch (c)
+    {
+      case '%':
+        switch (*p)
+        {
+          case '%':
+            growBuf.addChar('%');
+            break;
+          /* single digit prefixed with a zero */
+          case '0':
+            p++;
+            switch (*p)
+            {
+              /* month */
+              case 'm':
+                {
+                  char tmp[10];
+                  sprintf(tmp,"%02d",getMonth(dat));
+                  growBuf.addStr(tmp);
+                }
+                break;
+              /* day */
+              case 'd':
+                {
+                  char tmp[10];
+                  sprintf(tmp,"%02d",getDay(dat));
+                  growBuf.addStr(tmp);
+                }
+                break;
+              default:
+                /* we just handle the % and 0 here */
+                p--;
+                growBuf.addChar('%');
+                growBuf.addChar('0');
+                break;
+            }
+            break;
+          /* first character set to capital*/
+          case 'l':
+            p++;
+            switch (*p)
+            {
+              /* month */
+              case 'b':
+                growBuf.addStr(theTranslator->trMonth(getMonth(dat),true,false));
+                break;
+              case 'B':
+                growBuf.addStr(theTranslator->trMonth(getMonth(dat),true,true));
+                break;
+              /* day of week */
+              case 'a':
+                growBuf.addStr(theTranslator->trDayOfWeek(getDayOfWeek(dat),true,false));
+                break;
+              case 'A':
+                growBuf.addStr(theTranslator->trDayOfWeek(getDayOfWeek(dat),true,true));
+                break;
+              default:
+                /* we just handle the % and l here */
+                p--;
+                growBuf.addChar('%');
+                growBuf.addChar('l');
+                break;
+            }
+            break;
+          /* year */
+          case 'y':
+            growBuf.addStr(QCString().setNum(getYear(dat)).mid(2));
+            break;
+          case 'Y':
+            growBuf.addStr(QCString().setNum(getYear(dat)));
+            break;
+          /* month */
+          case 'm':
+            growBuf.addStr(QCString().setNum(getMonth(dat)));
+            break;
+          case 'b':
+            growBuf.addStr(theTranslator->trMonth(getMonth(dat),false,false));
+            break;
+          case 'B':
+            growBuf.addStr(theTranslator->trMonth(getMonth(dat),false,true));
+            break;
+          /* day */
+          case 'd':
+            growBuf.addStr(QCString().setNum(getDay(dat)));
+            break;
+          /* day of week */
+          case 'u':
+            growBuf.addStr(QCString().setNum(getDayOfWeek(dat))); // Monday = 1 ... Sunday = 7
+            break;
+          case 'w':
+            growBuf.addStr(QCString().setNum(getDayOfWeek(dat)%7)); // Sunday = 0 .. Saturday = 6
+            break;
+          case 'a':
+            growBuf.addStr(theTranslator->trDayOfWeek(getDayOfWeek(dat),false,false));
+            break;
+          case 'A':
+            growBuf.addStr(theTranslator->trDayOfWeek(getDayOfWeek(dat),false,true));
+            break;
+          default:
+            growBuf.addChar('%');
+            growBuf.addChar(c);
+            break;
+        }
+        p++;
+        break;
+      default:
+        growBuf.addChar(c);
+        break;
+    }
+  }
+  growBuf.addChar(0);
+
+  m_children.push_back(std::make_unique<DocWord>(m_parser,this,growBuf.get()));
+  m_parser.tokenizer.setStatePara();
+}
+
 void DocPara::handleIncludeOperator(const QCString &cmdName,DocIncOperator::Type t)
 {
   QCString saveCmdName = cmdName;
@@ -6020,6 +6193,9 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
         }
         m_parser.tokenizer.setStatePara();
       }
+      break;
+    case CMD_SHOWDATE:
+      handleShowDate();
       break;
     case CMD_INHERITDOC:
       handleInheritDoc();

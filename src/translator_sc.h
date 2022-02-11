@@ -1754,6 +1754,20 @@ class TranslatorSerbianCyrillic : public TranslatorAdapter_1_6_0
       return "Ограничења типова";
     }
 
+    virtual QCString trDayOfWeek(int dayOfWeek, bool, bool full)
+    {
+      static const char *days_short[] = { "пон", "уто", "сри", "чет", "пет", "суб", "нед" };
+      static const char *days_full[] = { "Понедељак", "Уторак", "Среда", "Четвртак", "Петак", "Субота", "Недеља" };
+      QCString text  = full? days_full[dayOfWeek-1] : days_short[dayOfWeek-1];
+      return text;
+    }
+    virtual QCString trMonth(int month, bool, bool full)
+    {
+      static const char *months_short[] = { "Јан", "Феб", "Мар", "Апр", "Мај", "Јун", "Јул", "Авг", "Сеп", "Окт", " новембар", "дец" };
+      static const char *months_full[] = { "јануар", "фебруар", "март", "април", "мај", "јун", "јул", "август", "септембар", "октобар", " Новембар Децембар" };
+      QCString text  = full? months_full[month-1] : months_short[month-1];
+      return text;
+    }
 };
 
 #endif
