@@ -76,7 +76,7 @@ class TranslatorBulgarian : public Translator
      */
     virtual QCString latexLanguageSupportCommand()
     {
-      return "";
+    { return "\\usepackage[T2A]{fontenc}\n\\usepackage[bulgarian]{babel}\n"; }
     }
 
     virtual QCString trISOLang()
@@ -1156,8 +1156,8 @@ class TranslatorBulgarian : public Translator
     /*! Used as ansicpg for RTF file
      *
      * The following table shows the correlation of Charset name, Charset Value and
-     * <pre>
      * Codepage number:
+     * <pre>
      * Charset Name       Charset Value(hex)  Codepage number
      * ------------------------------------------------------
      * DEFAULT_CHARSET           1 (x01)
@@ -1180,7 +1180,7 @@ class TranslatorBulgarian : public Translator
      */
     virtual QCString trRTFansicp()
     {
-      return "1252";
+      return "1251";
     }
 
 
@@ -1189,7 +1189,7 @@ class TranslatorBulgarian : public Translator
      */
     virtual QCString trRTFCharSet()
     {
-      return "222";
+      return "204";
     }
 
     /*! Used as header RTF general index */

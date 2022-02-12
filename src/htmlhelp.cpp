@@ -339,6 +339,7 @@ HtmlHelp::~HtmlHelp()
 }
 
 /* language codes for Html help
+   0x402 Bulgarian
    0x405 Czech
    0x406 Danish
    0x413 Dutch
@@ -403,6 +404,7 @@ static StringUnorderedMap s_languageDict =
   { "polish",      "0x415 Polish"                    },
   { "portuguese",  "0x816 Portuguese(Portugal)"      },
   { "brazilian",   "0x416 Portuguese(Brazil)"        },
+  { "bulgarian",   "0x402 bulgarian"                 },
   { "russian",     "0x419 Russian"                   },
   { "spanish",     "0x40A Spanish(Traditional Sort)" },
   { "swedish",     "0x41D Swedish"                   },
