@@ -361,6 +361,66 @@ int guessSection(const QCString &name)
   return 0;
 }
 
+static void stripIrrelevantString(QCString &target,const QCString &str)
+{
+  if (target==str) { target.resize(0); return; }
+  int i,p=0;
+  int l=str.length();
+  bool changed=FALSE;
+  while ((i=target.find(str,p))!=-1)
+  {
+    bool isMatch = (i==0 || !isId(target.at(i-1))) && // not a character before str
+      (i+l==static_cast<int>(target.length()) || !isId(target.at(i+l))); // not a character after str
+    if (isMatch)
+    {
+      int i1=target.find('*',i+l);
+      int i2=target.find('&',i+l);
+      if (i1==-1 && i2==-1)
+      {
+        // strip str from target at index i
+        target=target.left(i)+target.right(target.length()-i-l);
+        changed=TRUE;
+        i-=l;
+      }
+      else if ((i1!=-1 && i<i1) || (i2!=-1 && i<i2)) // str before * or &
+      {
+        // move str to front
+        target=str+" "+target.left(i)+target.right(target.length()-i-l);
+        changed=TRUE;
+        i++;
+      }
+    }
+    p = i+l;
+  }
+  if (changed) target=target.stripWhiteSpace();
+}
+
+/*! According to the C++ spec and Ivan Vecerina:
+
+  Parameter declarations  that differ only in the presence or absence
+  of const and/or volatile are equivalent.
+
+  So the following example, show what is stripped by this routine
+  for const. The same is done for volatile.
+
+  For Java code we also strip the "final" keyword, see bug 765070.
+
+  \code
+  const T param     ->   T param          // not relevant
+  const T& param    ->   const T& param   // const needed
+  T* const param    ->   T* param         // not relevant
+  const T* param    ->   const T* param   // const needed
+  \endcode
+ */
+static void stripIrrelevantConstVolatile(QCString &s)
+{
+  //printf("stripIrrelevantConstVolatile(%s)=",qPrint(s));
+  stripIrrelevantString(s,"const");
+  stripIrrelevantString(s,"volatile");
+  stripIrrelevantString(s,"final");
+  //printf("%s\n",qPrint(s));
+}
+
 QCString resolveTypeDef(const Definition *context,const QCString &qualifiedName,
                         const Definition **typedefContext)
 {
@@ -384,6 +444,14 @@ QCString resolveTypeDef(const Definition *context,const QCString &qualifiedName,
   }
   int scopeIndex = qualifiedName.findRev("::");
   QCString resName=qualifiedName;
+  stripIrrelevantConstVolatile(resName);
+  uint l = 0;
+  l = resName.length();
+  while ((l = resName.length()) && (resName.at(l-1) == '&' || resName.at(l-1) == '*'))
+  {
+    resName = resName.left(l-1).stripWhiteSpace();
+  }
+
   if (scopeIndex!=-1) // strip scope part for the name
   {
     resName=qualifiedName.right(qualifiedName.length()-scopeIndex-2);
@@ -1512,67 +1580,6 @@ void trimBaseClassScope(const BaseClassList &bcl,QCString &s,int level=0)
     }
   }
 }
-
-static void stripIrrelevantString(QCString &target,const QCString &str)
-{
-  if (target==str) { target.resize(0); return; }
-  int i,p=0;
-  int l=str.length();
-  bool changed=FALSE;
-  while ((i=target.find(str,p))!=-1)
-  {
-    bool isMatch = (i==0 || !isId(target.at(i-1))) && // not a character before str
-      (i+l==static_cast<int>(target.length()) || !isId(target.at(i+l))); // not a character after str
-    if (isMatch)
-    {
-      int i1=target.find('*',i+l);
-      int i2=target.find('&',i+l);
-      if (i1==-1 && i2==-1)
-      {
-        // strip str from target at index i
-        target=target.left(i)+target.right(target.length()-i-l);
-        changed=TRUE;
-        i-=l;
-      }
-      else if ((i1!=-1 && i<i1) || (i2!=-1 && i<i2)) // str before * or &
-      {
-        // move str to front
-        target=str+" "+target.left(i)+target.right(target.length()-i-l);
-        changed=TRUE;
-        i++;
-      }
-    }
-    p = i+l;
-  }
-  if (changed) target=target.stripWhiteSpace();
-}
-
-/*! According to the C++ spec and Ivan Vecerina:
-
-  Parameter declarations  that differ only in the presence or absence
-  of const and/or volatile are equivalent.
-
-  So the following example, show what is stripped by this routine
-  for const. The same is done for volatile.
-
-  For Java code we also strip the "final" keyword, see bug 765070.
-
-  \code
-  const T param     ->   T param          // not relevant
-  const T& param    ->   const T& param   // const needed
-  T* const param    ->   T* param         // not relevant
-  const T* param    ->   const T* param   // const needed
-  \endcode
- */
-void stripIrrelevantConstVolatile(QCString &s)
-{
-  //printf("stripIrrelevantConstVolatile(%s)=",qPrint(s));
-  stripIrrelevantString(s,"const");
-  stripIrrelevantString(s,"volatile");
-  stripIrrelevantString(s,"final");
-  //printf("%s\n",qPrint(s));
-}
-
 
 // a bit of debug support for matchArguments
 #define MATCH
