@@ -444,13 +444,13 @@ QCString resolveTypeDef(const Definition *context,const QCString &qualifiedName,
   }
   int scopeIndex = qualifiedName.findRev("::");
   QCString resName=qualifiedName;
-  stripIrrelevantConstVolatile(resName);
   uint l = 0;
   l = resName.length();
   while ((l = resName.length()) && (resName.at(l-1) == '&' || resName.at(l-1) == '*'))
   {
     resName = resName.left(l-1).stripWhiteSpace();
   }
+  stripIrrelevantConstVolatile(resName);
 
   if (scopeIndex!=-1) // strip scope part for the name
   {
