@@ -29,7 +29,7 @@ option(use_libclang    "Add support for libclang parsing." OFF)
 option(static_libclang "Link to a statically compiled version of LLVM/libclang." OFF)
 option(win_static      "Link with /MT in stead of /MD on windows" OFF)
 option(english_only    "Only compile in support for the English language" OFF)
-option(enable_console  "Enable that excutables on Windows get the CONSOLE bit set for the doxywizard executable [development]"  OFF)
+option(enable_console  "Enable that executables on Windows get the CONSOLE bit set for the doxywizard executable [development]"  OFF)
 option(enable_coverage "Enable coverage reporting for gcc/clang [development]" OFF)
 
 set(force_qt CACHE INTERNAL "Forces doxywizard to build using the specified major version, this can be Qt5 or Qt6")
