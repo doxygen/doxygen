@@ -90,6 +90,10 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
     {
       return "zh-Hant";
     }
+    virtual QCString getLanguageString()
+    {
+      return "0x404 Chinese (Taiwan)";
+    }
 
     // --- Language translation methods -------------------
 

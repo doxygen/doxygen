@@ -83,6 +83,10 @@ class TranslatorBulgarian : public Translator
     {
       return "bg";
     }
+    virtual QCString getLanguageString()
+    {
+      return "0x402 bulgarian";
+    }
 
     // --- Language translation methods -------------------
 

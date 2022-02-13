@@ -998,7 +998,7 @@ class TranslateContext::Private
     }
     TemplateVariant langString() const
     {
-      return HtmlHelp::getLanguageString();
+      return theTranslator->getLanguageString();
     }
     TemplateVariant code() const
     {

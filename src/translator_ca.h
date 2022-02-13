@@ -79,6 +79,10 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
     {
       return "ca";
     }
+    virtual QCString getLanguageString()
+    {
+      return "0x403 Catalan";
+    }
 
     // --- Language translation methods -------------------
 

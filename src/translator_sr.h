@@ -62,6 +62,10 @@ class TranslatorSerbian : public TranslatorAdapter_1_6_0
     {
       return "sr-Latn";
     }
+    virtual QCString getLanguageString()
+    {
+      return "0x81A Serbian (Serbia, Latin)";
+    }
 
     // --- Language translation methods -------------------
 

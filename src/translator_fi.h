@@ -123,6 +123,10 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
     {
       return "fi";
     }
+    virtual QCString getLanguageString()
+    {
+      return "0x40B Finnish";
+    }
     // --- Language translation methods -------------------
 
     /*! used in the compound documentation before a list of related functions. */

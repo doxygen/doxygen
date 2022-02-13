@@ -37,6 +37,10 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
     }
     virtual QCString trISOLang()
     { return "hy"; }
+    virtual QCString getLanguageString()
+    {
+      return "0x42b Armenian";
+    }
 
     // --- Language translation methods -------------------
 

@@ -104,6 +104,10 @@ class TranslatorPortuguese : public Translator
     {
       return "pt";
     }
+    virtual QCString getLanguageString()
+    {
+      return "0x816 Portuguese(Portugal)";
+    }
 
     // --- Language translation methods -------------------
 

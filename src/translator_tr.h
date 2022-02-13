@@ -77,6 +77,10 @@ class TranslatorTurkish : public TranslatorAdapter_1_7_5
     {
       return "tr";
     }
+    virtual QCString getLanguageString()
+    {
+      return "0x41F Turkey";
+    }
 
     // --- Language translation methods -------------------
 

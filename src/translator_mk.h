@@ -69,6 +69,10 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
     {
       return "mk";
     }
+    virtual QCString getLanguageString()
+    {
+      return "0x042f Macedonian (Former Yugoslav Republic of Macedonia)";
+    }
 
     // --- Language translation methods -------------------
 

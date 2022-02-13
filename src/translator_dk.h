@@ -123,6 +123,10 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
     {
       return "da";
     }
+    virtual QCString getLanguageString()
+    {
+      return "0x406 Danish";
+    }
 
     // --- Language translation methods -------------------
 

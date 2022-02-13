@@ -82,6 +82,10 @@ class TranslatorSerbianCyrillic : public TranslatorAdapter_1_6_0
     {
       return "sr-Cyrl";
     }
+    virtual QCString getLanguageString()
+    {
+      return "0xC1A Serbian (Serbia, Cyrillic)";
+    }
 
     // --- Language translation methods -------------------
 
