@@ -980,7 +980,7 @@ Go to the <a href="commands.html">next</a> section or return to the
  whose names only differ in casing), the option must be set to \c YES to properly deal with such files
  in case they appear in the input.
 
- For filesystems that are not case sensitive the option should be be set to \c NO to properly
+ For filesystems that are not case sensitive the option should be set to \c NO to properly
  deal with output files written for symbols that only differ in casing, such as for two classes,
  one named \c CLASS and the other named \c Class, and to also support references to files without
  having to specify the exact matching casing.
@@ -2883,7 +2883,7 @@ doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty
            version of the word "Bibliography".
            This setting is typically used in combination with the block name `CITATIONS_PRESENT`.
  <dt><code>$latexbibstyle</code><dd>will be replaced with the latex bib style to be used as
-           as set by \ref cfg_latex_bib_style "LATEX_BIB_STYLE", in case nothing is set the bib style
+           set by \ref cfg_latex_bib_style "LATEX_BIB_STYLE", in case nothing is set the bib style
            `plain` is used.
            This setting is typically used in combination with the block name `CITATIONS_PRESENT`.
  <dt><code>$latexbibfiles</code><dd>will be replaced by the comma separated list of `bib`. files
