@@ -262,7 +262,7 @@ void ClangTUParser::parse()
       case DetectedLang::ObjCpp: argv[argc++]=qstrdup("objective-c++"); break;
     }
 
-    // provide the input and and its dependencies as unsaved files so we can
+    // provide the input and its dependencies as unsaved files so we can
     // pass the filtered versions
     argv[argc++]=qstrdup(fileName.data());
   }

@@ -19,7 +19,7 @@
  *        Ulisses Guedes <uli1958 at hotmail dot com>
  *
  * Notes about this translation:
- *    Since I'm Brazilian, this translation may be odd or even incorect for
+ *    Since I'm Brazilian, this translation may be odd or even incorrect for
  *    Portuguese (from Portugal) speakers. If you find any errors, feel free
  *    to contact me.
  *
