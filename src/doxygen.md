@@ -155,7 +155,7 @@ easy ways to get debug information.
     Will print each comment block before and after the comment is interpreted by
     the comment scanner.
   - printtree<br>
-    Give the results in in pretty print way, i.e. in an XML like way with each
+    Give the results in pretty print way, i.e. in an XML like way with each
     level indented by a `"."` (dot).
   - time<br>
     Provides information of the different stages of the doxygen process.
