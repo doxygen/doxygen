@@ -4972,14 +4972,16 @@ void DocPara::handleEmoji()
   tok=m_parser.tokenizer.lex();
   if (tok==0)
   {
-    warn_doc_error(m_parser.context.fileName,m_parser.tokenizer.getLineNr(),"unexpected end of comment block while parsing the "
-        "argument of command %s\n", qPrint("emoji"));
+    warn_doc_error(m_parser.context.fileName,m_parser.tokenizer.getLineNr(),"no emoji name given or unexpected end of comment block while parsing the "
+        "argument of command %s", qPrint("emoji"));
+    m_parser.tokenizer.setStatePara();
     return;
   }
   else if (tok!=TK_WORD)
   {
     warn_doc_error(m_parser.context.fileName,m_parser.tokenizer.getLineNr(),"unexpected token %s as the argument of %s",
         DocTokenizer::tokToString(tok),qPrint("emoji"));
+    m_parser.tokenizer.setStatePara();
     return;
   }
   m_children.push_back(
