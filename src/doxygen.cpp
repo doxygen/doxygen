@@ -7995,7 +7995,7 @@ static void generateFileSources()
       {
         for (const auto &fd : *fn)
         {
-          if (fd->isSource() && !fd->isReference() &&
+          if (fd->isSource() && !fd->isReference() && getLanguageFromFileName(fd->docName())==SrcLangExt_Cpp &&
               ((fd->generateSourceFile() && !g_useOutputTemplate) ||
                (!fd->isReference() && Doxygen::parseSourcesNeeded)
               )
@@ -8057,24 +8057,51 @@ static void generateFileSources()
         {
           if (processedFiles.find(fd->absFilePath().str())==processedFiles.end()) // not yet processed
           {
-            if (fd->generateSourceFile() && !Htags::useHtags && !g_useOutputTemplate) // sources need to be shown in the output
+            if (getLanguageFromFileName(fd->docName())==SrcLangExt_Cpp) // not yet processed
             {
-              auto clangParser = ClangParser::instance()->createTUParser(fd.get());
-              msg("Generating code for file %s...\n",qPrint(fd->docName()));
-              clangParser->parse();
-              fd->writeSourceHeader(*g_outputList);
-              fd->writeSourceBody(*g_outputList,clangParser.get());
-              fd->writeSourceFooter(*g_outputList);
+              if (fd->generateSourceFile() && !Htags::useHtags && !g_useOutputTemplate) // sources need to be shown in the output
+              {
+                auto clangParser = ClangParser::instance()->createTUParser(fd.get());
+                msg("Generating code for file %s...\n",qPrint(fd->docName()));
+                clangParser->parse();
+                fd->writeSourceHeader(*g_outputList);
+                fd->writeSourceBody(*g_outputList,clangParser.get());
+                fd->writeSourceFooter(*g_outputList);
+              }
+              else if (!fd->isReference() && Doxygen::parseSourcesNeeded)
+                // we needed to parse the sources even if we do not show them
+              {
+                auto clangParser = ClangParser::instance()->createTUParser(fd.get());
+                msg("Parsing code for file %s...\n",qPrint(fd->docName()));
+                clangParser->parse();
+                fd->writeSourceHeader(*g_outputList);
+                fd->writeSourceBody(*g_outputList,clangParser.get());
+                fd->writeSourceFooter(*g_outputList);
+              }
             }
-            else if (!fd->isReference() && Doxygen::parseSourcesNeeded)
-              // we needed to parse the sources even if we do not show them
+            else
             {
-              auto clangParser = ClangParser::instance()->createTUParser(fd.get());
-              msg("Parsing code for file %s...\n",qPrint(fd->docName()));
-              clangParser->parse();
-              fd->writeSourceHeader(*g_outputList);
-              fd->writeSourceBody(*g_outputList,clangParser.get());
-              fd->writeSourceFooter(*g_outputList);
+              for (const auto &fn : *Doxygen::inputNameLinkedMap)
+              {
+                for (const auto &fd : *fn)
+                {
+                  StringVector filesInSameTu;
+                  fd->getAllIncludeFilesRecursively(filesInSameTu);
+                  if (fd->generateSourceFile() && !Htags::useHtags && !g_useOutputTemplate) // sources need to be shown in the output
+                  {
+                    msg("Generating code for file %s...\n",qPrint(fd->docName()));
+                    fd->writeSourceHeader(*g_outputList);
+                    fd->writeSourceBody(*g_outputList,nullptr);
+                    fd->writeSourceFooter(*g_outputList);
+                  }
+                  else if (!fd->isReference() && Doxygen::parseSourcesNeeded)
+                    // we needed to parse the sources even if we do not show them
+                  {
+                    msg("Parsing code for file %s...\n",qPrint(fd->docName()));
+                    fd->parseSource(nullptr);
+                  }
+                }
+              }
             }
           }
         }
@@ -9985,7 +10012,7 @@ static void parseFilesMultiThreading(const std::shared_ptr<Entry> &root)
       bool ambig;
       FileDef *fd=findFileDef(Doxygen::inputNameLinkedMap,s.c_str(),ambig);
       ASSERT(fd!=0);
-      if (fd->isSource() && !fd->isReference()) // this is a source file
+      if (fd->isSource() && !fd->isReference() && getLanguageFromFileName(s.c_str())==SrcLangExt_Cpp) // this is a source file
       {
         // lambda representing the work to executed by a thread
         auto processFile = [s,&filesToProcess,&processedFilesLock,&processedFiles]() {
@@ -10042,19 +10069,34 @@ static void parseFilesMultiThreading(const std::shared_ptr<Entry> &root)
     {
       if (processedFiles.find(s)==processedFiles.end()) // not yet processed
       {
-        // lambda representing the work to executed by a thread
-        auto processFile = [s]() {
-          bool ambig;
-          std::vector< std::shared_ptr<Entry> > roots;
-          FileDef *fd=findFileDef(Doxygen::inputNameLinkedMap,s.c_str(),ambig);
-          auto clangParser = ClangParser::instance()->createTUParser(fd);
-          auto parser { getParserForFile(s.c_str()) };
-          auto fileRoot = parseFile(*parser.get(),fd,s.c_str(),clangParser.get(),true);
-          roots.push_back(fileRoot);
-          return roots;
-        };
-        // dispatch the work and collect the future results
-        results.emplace_back(threadPool.queue(processFile));
+        if (getLanguageFromFileName(s.c_str())==SrcLangExt_Cpp) // not yet processed
+        {
+          // lambda representing the work to executed by a thread
+          auto processFile = [s]() {
+            bool ambig;
+            std::vector< std::shared_ptr<Entry> > roots;
+            FileDef *fd=findFileDef(Doxygen::inputNameLinkedMap,s.c_str(),ambig);
+            auto clangParser = ClangParser::instance()->createTUParser(fd);
+            auto parser { getParserForFile(s.c_str()) };
+            auto fileRoot = parseFile(*parser.get(),fd,s.c_str(),clangParser.get(),true);
+            roots.push_back(fileRoot);
+            return roots;
+          };
+          results.emplace_back(threadPool.queue(processFile));
+        }
+        else
+        {
+          auto processFile = [s]() {
+            bool ambig;
+            std::vector< std::shared_ptr<Entry> > roots;
+            FileDef *fd=findFileDef(Doxygen::inputNameLinkedMap,s.c_str(),ambig);
+            auto parser = getParserForFile(s.c_str());
+            auto fileRoot = parseFile(*parser.get(),fd,s.c_str(),nullptr,true);
+            roots.push_back(fileRoot);
+            return roots;
+          };
+          results.emplace_back(threadPool.queue(processFile));
+        }
       }
     }
     // synchronise with the Entry result lists produced and add them to the root
@@ -10117,7 +10159,7 @@ static void parseFilesSingleThreading(const std::shared_ptr<Entry> &root)
       bool ambig;
       FileDef *fd=findFileDef(Doxygen::inputNameLinkedMap,s.c_str(),ambig);
       ASSERT(fd!=0);
-      if (fd->isSource() && !fd->isReference()) // this is a source file
+      if (fd->isSource() && !fd->isReference() && getLanguageFromFileName(s.c_str())==SrcLangExt_Cpp) // this is a source file
       {
         auto clangParser = ClangParser::instance()->createTUParser(fd);
         auto parser { getParserForFile(s.c_str()) };
@@ -10152,10 +10194,19 @@ static void parseFilesSingleThreading(const std::shared_ptr<Entry> &root)
       {
         bool ambig;
         FileDef *fd=findFileDef(Doxygen::inputNameLinkedMap,s.c_str(),ambig);
-        auto clangParser = ClangParser::instance()->createTUParser(fd);
-        auto parser { getParserForFile(s.c_str()) };
-        auto fileRoot = parseFile(*parser.get(),fd,s.c_str(),clangParser.get(),true);
-        root->moveToSubEntryAndKeep(fileRoot);
+        if (getLanguageFromFileName(s.c_str())==SrcLangExt_Cpp) // not yet processed
+        {
+          auto clangParser = ClangParser::instance()->createTUParser(fd);
+          auto parser { getParserForFile(s.c_str()) };
+          auto fileRoot = parseFile(*parser.get(),fd,s.c_str(),clangParser.get(),true);
+          root->moveToSubEntryAndKeep(fileRoot);
+        }
+        else
+        {
+          std::unique_ptr<OutlineParserInterface> parser { getParserForFile(s.c_str()) };
+          std::shared_ptr<Entry> fileRoot = parseFile(*parser.get(),fd,s.c_str(),nullptr,true);
+          root->moveToSubEntryAndKeep(fileRoot);
+        }
         processedFiles.insert(s);
       }
     }
