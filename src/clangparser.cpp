@@ -489,7 +489,7 @@ std::string ClangTUParser::lookup(uint line,const char *symbol)
 void ClangTUParser::writeLineNumber(CodeOutputInterface &ol,const FileDef *fd,uint line,bool writeLineAnchor)
 {
   const Definition *d = fd ? fd->getSourceDefinition(line) : 0;
-  if (d && d->isLinkable())
+  if (d && fd->isLinkable())
   {
     p->currentLine=line;
     const MemberDef *md = fd->getSourceMember(line);
