@@ -116,7 +116,7 @@ class ConfigInfo : public ConfigOption
     void substEnvVars() {}
 };
 
-/** Class respresenting a list type option.
+/** Class representing a list type option.
  */
 class ConfigList : public ConfigOption
 {

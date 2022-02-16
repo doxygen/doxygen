@@ -327,6 +327,10 @@ endif()
 add_executable(doxygen
     main.cpp
 )
+
+include(ApplyEditbin)
+apply_editbin(doxygen console)
+
 add_sanitizers(doxygen)
 
 if (use_libclang)

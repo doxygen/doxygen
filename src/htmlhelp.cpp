@@ -320,6 +320,7 @@ class HtmlHelp::Private
     int dc = 0;
     StringSet indexFiles;
     StringSet imageFiles;
+    StringSet styleFiles;
     HtmlHelpRecoder recoder;
     HtmlHelpIndex index;
 };
@@ -338,6 +339,7 @@ HtmlHelp::~HtmlHelp()
 }
 
 /* language codes for Html help
+   0x402 Bulgarian
    0x405 Czech
    0x406 Danish
    0x413 Dutch
@@ -402,6 +404,7 @@ static StringUnorderedMap s_languageDict =
   { "polish",      "0x415 Polish"                    },
   { "portuguese",  "0x816 Portuguese(Portugal)"      },
   { "brazilian",   "0x416 Portuguese(Brazil)"        },
+  { "bulgarian",   "0x402 bulgarian"                 },
   { "russian",     "0x419 Russian"                   },
   { "spanish",     "0x40A Spanish(Traditional Sort)" },
   { "swedish",     "0x41D Swedish"                   },
@@ -554,6 +557,10 @@ void HtmlHelp::Private::createProjectFile()
       t << s.c_str() << "\n";
     }
     for (auto &s : imageFiles)
+    {
+      t << s.c_str() << "\n";
+    }
+    for (auto &s : styleFiles)
     {
       t << s.c_str() << "\n";
     }
@@ -715,6 +722,11 @@ void HtmlHelp::addIndexItem(const Definition *context,const MemberDef *md,
     QCString level1  = !word.isEmpty() ? word : context->name();
     p->index.addItem(level1,QCString(),context->getOutputFileBase(),sectionAnchor,TRUE,FALSE);
   }
+}
+
+void HtmlHelp::addStyleSheetFile(const QCString &fileName)
+{
+  p->styleFiles.insert(fileName.str());
 }
 
 void HtmlHelp::addImageFile(const QCString &fileName)

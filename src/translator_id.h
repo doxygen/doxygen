@@ -374,6 +374,10 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
       {
         return "Dokumentasi Struktur Data";
       }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+          return trDesignUnitDocumentation();
+      }
       else
       {
         return "Dokumentasi Kelas";
@@ -391,12 +395,6 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
      */
     virtual QCString trExampleDocumentation()
     { return "Dokumentasi Contoh"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all related pages.
-     */
-    virtual QCString trPageDocumentation()
-    { return "Dokumentasi Halaman"; }
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
@@ -499,10 +497,6 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
     {
       return "Diagram hierarki kelas untuk "+clName+":";
     }
-
-    /*! this text is generated when the \\internal command is used. */
-    virtual QCString trForInternalUseOnly()
-    { return "Hanya untuk digunakan secara internal."; }
 
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
@@ -1090,11 +1084,6 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
     {
       return "Paket "+name;
     }
-    /*! Title of the package index page */
-    virtual QCString trPackageList()
-    {
-      return "Daftar Paket";
-    }
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
     {
@@ -1468,13 +1457,6 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
      */
     virtual QCString trDirectories()
     { return "Daftar Direktori"; }
-
-    /*! This returns a sentences that introduces the directory hierarchy.
-     *  and the fact that it is sorted alphabetically per level
-     */
-    virtual QCString trDirDescription()
-    { return "Struktur direktori ini diurutkan hampir berdasarkan abjad:";
-    }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.

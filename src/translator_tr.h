@@ -35,7 +35,7 @@
  files frees the maintainer from thinking about whether the
  first, the second, or both files should be included or not, and
  why.  This holds namely for localized translators because their
- base class is changed occasionaly to adapter classes when the
+ base class is changed occasionally to adapter classes when the
  Translator class changes the interface, or back to the
  Translator class (by the local maintainer) when the localized
  translator is made up-to-date again.
@@ -386,6 +386,10 @@ class TranslatorTurkish : public TranslatorAdapter_1_7_5
       {
         return "Veri Yapıları Dokümantasyonu";
       }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+          return trDesignUnitDocumentation();
+      }
       else
       {
         return "Sınıf Dokümantasyonu";
@@ -403,12 +407,6 @@ class TranslatorTurkish : public TranslatorAdapter_1_7_5
      */
     virtual QCString trExampleDocumentation()
     { return "Örnek Dokümantasyonu"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all related pages.
-     */
-    virtual QCString trPageDocumentation()
-    { return "Sayfa Dokümantasyonu"; }
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
@@ -511,10 +509,6 @@ class TranslatorTurkish : public TranslatorAdapter_1_7_5
     {
       return clName+" için kalıtım şeması:";
     }
-
-    /*! this text is generated when the \\internal command is used. */
-    virtual QCString trForInternalUseOnly()
-    { return "İç kullanıma ayrılmıştır."; }
 
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
@@ -1103,11 +1097,6 @@ class TranslatorTurkish : public TranslatorAdapter_1_7_5
     {
       return "Paket "+name;
     }
-    /*! Title of the package index page */
-    virtual QCString trPackageList()
-    {
-      return "Paket Listesi";
-    }
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
     {
@@ -1481,14 +1470,6 @@ class TranslatorTurkish : public TranslatorAdapter_1_7_5
      */
     virtual QCString trDirectories()
     { return "Dizinler"; }
-
-    /*! This returns a sentences that introduces the directory hierarchy.
-     *  and the fact that it is sorted alphabetically per level
-     */
-    virtual QCString trDirDescription()
-    { return "Bu dizin hiyerarşisi tamamen olmasa da yaklaşık "
-             "olarak alfabetik sıraya konulmuştur:";
-    }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.

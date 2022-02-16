@@ -234,30 +234,32 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
       }
       else
       {
-		return "Skupno kazalo ";
+	return "Skupno kazalo ";
       }
-	}
+    }
     QCString trFileIndex()
     { return "Kazalo datoteka"; }
     QCString trModuleDocumentation()
     { return "Dokumentacija modula"; }
     QCString trClassDocumentation()
     {
-		if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
-		{
-			return "Dokumentacija struktura podataka";
-		}
-		else
-		{
-			return "Dokumentacija klasa";
-		}
-	}
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+      {
+        return "Dokumentacija struktura podataka";
+      }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+        return trDesignUnitDocumentation();
+      }
+      else
+      {
+        return "Dokumentacija klasa";
+      }
+    }
     QCString trFileDocumentation()
     { return "Dokumentacija datoteka"; }
     QCString trExampleDocumentation()
     { return "Dokumentacija primjera"; }
-    QCString trPageDocumentation()
-    { return "Dokumentacija vezane stranice"; }
     QCString trReferenceManual()
     { return "Priručnik"; }
 
@@ -296,8 +298,6 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
     {
       return QCString("Dijagram klasa za ")+clName;
     }
-    QCString trForInternalUseOnly()
-    { return "Isključivo za internu uporabu."; }
     QCString trWarning()
     { return "Upozorenje"; }
     QCString trVersion()
@@ -828,11 +828,6 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
     {
       return "Paket "+name;
     }
-    /*! Title of the package index page */
-    virtual QCString trPackageList()
-    {
-      return "Lista paketa";
-    }
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
     {
@@ -1184,12 +1179,6 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
      */
     virtual QCString trDirectories()
     { return "Direktoriji"; }
-
-    /*! This returns a sentences that introduces the directory hierarchy.
-     *  and the fact that it is sorted alphabetically per level
-     */
-    virtual QCString trDirDescription()
-    { return "Stablo direktorija sortirano abecednim redom:"; }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.

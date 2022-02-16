@@ -37,7 +37,7 @@
  files frees the maintainer from thinking about whether the
  first, the second, or both files should be included or not, and
  why.  This holds namely for localized translators because their
- base class is changed occasionaly to adapter classes when the
+ base class is changed occasionally to adapter classes when the
  Translator class changes the interface, or back to the
  Translator class (by the local maintainer) when the localized
  translator is made up-to-date again.
@@ -393,6 +393,10 @@ class TranslatorEsperanto : public TranslatorAdapter_1_8_4
       {
         return "Datumstruktura Dokumentado";
       }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+          return trDesignUnitDocumentation();
+      }
       else
       {
         return "Klasa Dokumentado";
@@ -410,12 +414,6 @@ class TranslatorEsperanto : public TranslatorAdapter_1_8_4
      */
     virtual QCString trExampleDocumentation()
     { return "Ekzempla Dokumentado"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all related pages.
-     */
-    virtual QCString trPageDocumentation()
-    { return "Paĝa Dokumentado"; }
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
@@ -518,10 +516,6 @@ class TranslatorEsperanto : public TranslatorAdapter_1_8_4
     {
       return "Heredada diagramo por "+clName+":";
     }
-
-    /*! this text is generated when the \\internal command is used. */
-    virtual QCString trForInternalUseOnly()
-    { return "Nur por ena uzado."; }
 
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
@@ -1109,11 +1103,6 @@ class TranslatorEsperanto : public TranslatorAdapter_1_8_4
     {
       return "Pakaĵo "+name;
     }
-    /*! Title of the package index page */
-    virtual QCString trPackageList()
-    {
-      return "Pakaĵa Listo";
-    }
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
     {
@@ -1487,14 +1476,6 @@ class TranslatorEsperanto : public TranslatorAdapter_1_8_4
      */
     virtual QCString trDirectories()
     { return "Dosierujoj"; }
-
-    /*! This returns a sentences that introduces the directory hierarchy.
-     *  and the fact that it is sorted alphabetically per level
-     */
-    virtual QCString trDirDescription()
-    { return "Tiu ĉi dosieruja hierarkio estas plimalpli, "
-             "sed ne tute, ordigita alfabete:";
-    }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.
@@ -1941,15 +1922,6 @@ class TranslatorEsperanto : public TranslatorAdapter_1_8_4
     {
       return "Dokumentaro de la Metodo";
     }
-
-    /*! Used as the title of the design overview picture created for the
-     *  VHDL output.
-     */
-    virtual QCString trDesignOverview()
-    {
-      return "Fasona Superrigardo";
-    }
-
 };
 
 #endif

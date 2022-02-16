@@ -13,35 +13,39 @@
  * Documents produced by Doxygen are derivative works derived from the
  * input used in their production; they are not affected by this license.
  *
- * The translation into Chinesetraditional was provided by
- *   Daniel YC Lin (dlin.tw <at> gmail.com) since v1.2.16-v1.5.5
  */
 
-#ifndef TRANSLATOR_TW_H
-#define TRANSLATOR_TW_H
+#ifndef TRANSLATOR_BG_H
+#define TRANSLATOR_BG_H
 
-// When defining a translator class for the new language, follow
-// the description in the documentation.  One of the steps says
-// that you should copy the translator_en.h (this) file to your
-// translator_xx.h new file.  Your new language should use the
-// Translator class as the base class.  This means that you need to
-// implement exactly the same (pure virtual) methods as the
-// TranslatorEnglish does.  Because of this, it is a good idea to
-// start with the copy of TranslatorEnglish and replace the strings
-// one by one.
-//
-// It is not necessary to include "translator.h" or
-// "translator_adapter.h" here.  The files are included in the
-// language.cpp correctly.  Not including any of the mentioned
-// files frees the maintainer from thinking about whether the
-// first, the second, or both files should be included or not, and
-// why.  This holds namely for localized translators because their
-// base class is changed occasionally to adapter classes when the
-// Translator class changes the interface, or back to the
-// Translator class (by the local maintainer) when the localized
-// translator is made up-to-date again.
+/*!
+ When defining a translator class for the new language, follow
+ the description in the documentation.  One of the steps says
+ that you should copy the translator_en.h (this) file to your
+ translator_xx.h new file.  Your new language should use the
+ Translator class as the base class.  This means that you need to
+ implement exactly the same (pure virtual) methods as the
+ TranslatorEnglish does.  Because of this, it is a good idea to
+ start with the copy of TranslatorEnglish and replace the strings
+ one by one.
 
-class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
+ It is not necessary to include "translator.h" or
+ "translator_adapter.h" here.  The files are included in the
+ language.cpp correctly.  Not including any of the mentioned
+ files frees the maintainer from thinking about whether the
+ first, the second, or both files should be included or not, and
+ why.  This holds namely for localized translators because their
+ base class is changed occasionally to adapter classes when the
+ Translator class changes the interface, or back to the
+ Translator class (by the local maintainer) when the localized
+ translator is made up-to-date again.
+*/
+
+/*
+ * Kiril Kirilov released released Feb 28, 2022
+ *
+ */
+class TranslatorBulgarian : public Translator
 {
   public:
 
@@ -54,7 +58,7 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
      * the identification used in language.cpp.
      */
     virtual QCString idLanguage()
-    { return "chinese-traditional"; }
+    { return "bulgarian"; }
 
     /*! Used to get the LaTeX command(s) for the language support.
      *  This method should return string with commands that switch
@@ -72,105 +76,94 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
      */
     virtual QCString latexLanguageSupportCommand()
     {
-      return "\\usepackage{CJKutf8}\n";
+    { return "\\usepackage[T2A]{fontenc}\n\\usepackage[bulgarian]{babel}\n"; }
     }
-    virtual QCString latexFontenc()
-    {
-      return "";
-    }
-    virtual QCString latexDocumentPre()
-    {
-      return "\\begin{CJK}{UTF8}{min}\n";
-    }
-    virtual QCString latexDocumentPost()
-    {
-      return "\\end{CJK}\n";
-    }
+
     virtual QCString trISOLang()
     {
-      return "zh-Hant";
+      return "bg";
     }
 
     // --- Language translation methods -------------------
 
     /*! used in the compound documentation before a list of related functions. */
     virtual QCString trRelatedFunctions()
-    { return "相關函式"; }
+    { return "Функции, свързани с класа"; }
 
     /*! subscript for the related functions. */
     virtual QCString trRelatedSubscript()
-    { return "(註：這些不是成員函式)"; }
+    { return "(Имайте предвид, че тези функции не са членове на класа.)"; }
 
     /*! header that is put before the detailed description of files, classes and namespaces. */
     virtual QCString trDetailedDescription()
-    { return "詳細描述"; }
+    { return "Подробно описание"; }
 
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
-    { return "型態定義成員說明文件"; }
+    { return "Членове Дефинирани типове Документация"; }
 
     /*! header that is put before the list of enumerations. */
     virtual QCString trMemberEnumerationDocumentation()
-    { return "列舉型態成員說明文件"; }
+    { return "Членове Изброявания Документация"; }
 
     /*! header that is put before the list of member functions. */
     virtual QCString trMemberFunctionDocumentation()
-    { return "函式成員說明文件"; }
+    { return "Членове Функции(методи) Документация"; }
 
     /*! header that is put before the list of member attributes. */
     virtual QCString trMemberDataDocumentation()
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
-        return "欄位說明文件";
+        return "Полета Документация";
       }
       else
       {
-        return "資料成員說明文件";
+        return "Член данни Документация";
       }
     }
 
     /*! this is the text of a link put after brief descriptions. */
     virtual QCString trMore()
-    { return "更多..."; }
+    { return "Допълнително..."; }
 
     /*! put in the class documentation */
     virtual QCString trListOfAllMembers()
-    { return "全部成員列表"; }
+    { return "Списък на всички членове"; }
 
     /*! used as the title of the "list of all members" page of a class */
     virtual QCString trMemberList()
-    { return "成員列表"; }
+    { return "Членове Списък"; }
 
     /*! this is the first part of a sentence that is followed by a class name */
     virtual QCString trThisIsTheListOfAllMembers()
-    { return "完整成員列表，類別為"; }
+    { return "Това е пълен списък с членове за "; }
 
     /*! this is the remainder of the sentence after the class name */
     virtual QCString trIncludingInheritedMembers()
-    { return ", 包含所有繼承的成員"; }
+    { return ", включително всички наследени членове."; }
 
     /*! this is put at the author sections at the bottom of man pages.
      *  parameter s is name of the project name.
      */
     virtual QCString trGeneratedAutomatically(const QCString &s)
-    { QCString result="本文件由Doxygen";
-      if (!s.isEmpty()) result+=" 自 "+s;
-      result+=" 的原始碼中自動產生.";
+    { QCString result="Генерирано автоматично от Doxygen";
+      if (!s.isEmpty()) result+=(QCString)" за "+s;
+      result+=" от изходния код.";
       return result;
     }
 
     /*! put after an enum name in the list of all members */
     virtual QCString trEnumName()
-    { return "列舉型態名稱"; }
+    { return "изброяване"; }
 
     /*! put after an enum value in the list of all members */
     virtual QCString trEnumValue()
-    { return "列舉值"; }
+    { return "елементи на изброяване"; }
 
     /*! put after an undocumented member in the list of all members */
     virtual QCString trDefinedIn()
-    { return "被定義於"; }
+    { return "дефинирани в"; }
 
     // quick reference sections
 
@@ -178,39 +171,39 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
      *  compounds or files (see the \\group command).
      */
     virtual QCString trModules()
-    { return "模組"; }
+    { return "Групи"; }
 
     /*! This is put above each page as a link to the class hierarchy */
     virtual QCString trClassHierarchy()
-    { return "類別階層"; }
+    { return "Класове Йерархия"; }
 
     /*! This is put above each page as a link to the list of annotated classes */
     virtual QCString trCompoundList()
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
-        return "資料結構";
+        return "Структури от данни";
       }
       else
       {
-        return "複合列表";
+        return "Класове Списък";
       }
     }
 
     /*! This is put above each page as a link to the list of documented files */
     virtual QCString trFileList()
-    { return "檔案列表"; }
+    { return "Файлове Списък"; }
 
     /*! This is put above each page as a link to all members of compounds. */
     virtual QCString trCompoundMembers()
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
-        return "資料欄位";
+        return "Член Полета с данни";
       }
       else
       {
-        return "複合成員";
+        return "Членове на класа";
       }
     }
 
@@ -219,37 +212,46 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
-        return "全域資料";
+        return "Глобални";
       }
       else
       {
-        return "檔案成員";
+        return "Файлове Членове";
       }
     }
 
     /*! This is put above each page as a link to all related pages. */
     virtual QCString trRelatedPages()
-    { return "相關頁面"; }
+    { return "Свързани страници"; }
 
     /*! This is put above each page as a link to all examples. */
     virtual QCString trExamples()
-    { return "範例"; }
+    { return "Примери"; }
 
     /*! This is put above each page as a link to the search engine. */
     virtual QCString trSearch()
-    { return "搜尋"; }
+    { return "Търсене"; }
 
     /*! This is an introduction to the class hierarchy. */
     virtual QCString trClassHierarchyDescription()
-    { return "這個繼承列表經過簡略的字母排序: ";
+    {
+      if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+        return "Йерархичен списък на всички обекти:";
+      }
+      else
+      {
+        return "Този списък с наследявания е сортиран, "
+               "но не изцяло по азбучен ред:";
+      }
     }
 
     /*! This is an introduction to the list with all files. */
     virtual QCString trFileListDescription(bool extractAll)
     {
-      QCString result="這是附帶簡略說明";
-      if (!extractAll) result+="且經過文件化";
-      result+="的檔案列表:";
+      QCString result="Пълен списък с ";
+      if (!extractAll) result+="документирани ";
+      result+="файлове с кратко описание:";
       return result;
     }
 
@@ -259,52 +261,56 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
 
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
-        return "這是附帶簡略說明的資料結構:";
+        return "Структури от данни с кратко описание:";
+      }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_SLICE))
+      {
+        return "Класове с кратко описание:";
       }
       else
       {
-        return "這是附帶簡略說明的類別，結構，"
-               "聯合型態(unions)及介面(interfaces):";
+        return "Класове, структури, "
+               "обединения и интерфейси с кратко описание:";
       }
     }
 
     /*! This is an introduction to the page with all class members. */
     virtual QCString trCompoundMembersDescription(bool extractAll)
     {
-      QCString result="這是全部";
+      QCString result="Списък на всички ";
       if (!extractAll)
       {
-        result+="文件化過";
+        result+="документирани ";
       }
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
-        result+="結構及聯合型態欄位";
+        result+="членове поле, структура и обединение";
       }
       else
       {
-        result+="類別成員";
+        result+="членове на класа";
       }
-      result+=", 並且帶有連結至";
+      result+=" с връзки към ";
       if (!extractAll)
       {
         if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
         {
-          result+="每個欄位的結構/聯合型態說明文件:";
+          result+="документацията за структура/обединение за всяко поле:";
         }
         else
         {
-          result+="每個成員的類別說明文件:";
+          result+="документацията на класа за всеки член:";
         }
       }
       else
       {
         if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
         {
-          result+="這些結構/聯合型態所屬:";
+          result+="структурите/обединенията, към които принадлежат:";
         }
         else
         {
-          result+="這些類別所屬:";
+          result+="класовете, към които принадлежат:";
         }
       }
       return result;
@@ -313,55 +319,54 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
     /*! This is an introduction to the page with all file members. */
     virtual QCString trFileMembersDescription(bool extractAll)
     {
-      QCString result="這是全部";
-      if (!extractAll) result+="文件化的";
+      QCString result="Списък на всички ";
+      if (!extractAll) result+="документирани ";
 
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
-        result+="函式，變數，定義，列舉，及型態定義";
+        result+="функции, променливи, макроопределения, изброявания и дефиниции на типове";
       }
       else
       {
-        result+="檔案成員";
+        result+="членове на файлове";
       }
-      result+="，並且帶有連結至";
+      result+=" с връзки към ";
       if (extractAll)
-        result+="這些檔案所屬:";
+        result+="файловете,към които принадлежат:";
       else
-        result+="說明文件:";
+        result+="документацията:";
       return result;
     }
 
     /*! This is an introduction to the page with the list of all examples */
     virtual QCString trExamplesDescription()
-    { return "所有範例列表:"; }
+    { return "Списък на всички примери:"; }
 
     /*! This is an introduction to the page with the list of related pages */
     virtual QCString trRelatedPagesDescription()
-    { return "所有相關文件頁面列表:"; }
+    { return "Списък на всички свързани страници с документация:"; }
 
     /*! This is an introduction to the page with the list of class/file groups */
     virtual QCString trModulesDescription()
-    { return "所有模組列表:"; }
+    { return "Списък на всички групи:"; }
 
     // index titles (the project name is prepended for these)
 
-
     /*! This is used in HTML as the title of index.html. */
     virtual QCString trDocumentation()
-    { return "說明文件"; }
+    { return "Документация"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
      */
     virtual QCString trModuleIndex()
-    { return "模組索引"; }
+    { return "Групи Указател"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * class hierarchy.
      */
     virtual QCString trHierarchicalIndex()
-    { return "階層索引"; }
+    { return "Класове Йерархичен указател"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * annotated compound index.
@@ -370,11 +375,11 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
-        return "資料結構索引";
+        return "Структури от данни Указател";
       }
       else
       {
-        return "複合索引";
+        return "Класове Указател";
       }
     }
 
@@ -382,13 +387,13 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
      * list of all files.
      */
     virtual QCString trFileIndex()
-    { return "檔案索引"; }
+    { return "Файлове Списък"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all groups.
      */
     virtual QCString trModuleDocumentation()
-    { return "模組說明文件"; }
+    { return "Групи Документация"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all classes, structs and unions.
@@ -397,7 +402,7 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
-        return "資料結構說明文件";
+        return "Структури от данни Документация";
       }
       else if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
       {
@@ -405,7 +410,7 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
       }
       else
       {
-        return "類別說明文件";
+        return "Класове Документация";
       }
     }
 
@@ -413,89 +418,83 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
      *  the documentation of all files.
      */
     virtual QCString trFileDocumentation()
-    { return "檔案說明文件"; }
+    { return "Файлове Документация"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all examples.
      */
     virtual QCString trExampleDocumentation()
-    { return "範例說明文件"; }
+    { return "Примери Документация"; }
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
-    { return "參考手冊"; }
+    { return "Помощно ръководство"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of defines
      */
     virtual QCString trDefines()
-    { return "定義"; }
+    { return "Макроси"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of typedefs
      */
     virtual QCString trTypedefs()
-    { return "型態定義"; }
+    { return "Дефиниции на типове"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of enumerations
      */
     virtual QCString trEnumerations()
-    { return "列舉型態"; }
+    { return "Изброявания"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of (global) functions
      */
     virtual QCString trFunctions()
-    { return "函式"; }
+    { return "Функции"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of (global) variables
      */
     virtual QCString trVariables()
-    { return "變數"; }
+    { return "Променливи"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of (global) variables
      */
     virtual QCString trEnumerationValues()
-    { return "列舉值"; }
+    { return "Елементи на изброяване"; }
 
     /*! This is used in the documentation of a file before the list of
      *  documentation blocks for defines
      */
     virtual QCString trDefineDocumentation()
-    { return "定義巨集說明文件"; }
+    { return "Макро дефиниции Документация"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for typedefs
      */
     virtual QCString trTypedefDocumentation()
-    { return "型態定義說明文件"; }
+    { return "Дефинирани типове Документация"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for enumeration types
      */
     virtual QCString trEnumerationTypeDocumentation()
-    { return "列舉型態說明文件"; }
-
-    /*! This is used in the documentation of a file/namespace before the list
-     *  of documentation blocks for enumeration values
-     */
-    virtual QCString trEnumerationValueDocumentation()
-    { return "列舉值說明文件"; }
+    { return "Изброени типове Документация"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for functions
      */
     virtual QCString trFunctionDocumentation()
-    { return "函式說明文件"; }
+    { return "Функции Документация"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for variables
      */
     virtual QCString trVariableDocumentation()
-    { return "變數說明文件"; }
+    { return "Променливи Документация"; }
 
     /*! This is used in the documentation of a file/namespace/group before
      *  the list of links to documented compounds
@@ -504,11 +503,11 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
-        return "資料結構";
+        return "Структури от данни";
       }
       else
       {
-        return "複合項目";
+        return "Класове";
       }
     }
 
@@ -517,49 +516,49 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
      */
     virtual QCString trGeneratedAt(const QCString &date,const QCString &projName)
     {
-      QCString result="產生日期:"+date;
-      if (!projName.isEmpty()) result+=", 專案:"+projName;
-      result+=", 產生器:";
+      QCString result=(QCString)"Генерирано на "+date;
+      if (!projName.isEmpty()) result+=(QCString)" за "+projName;
+      result+=(QCString)" от";
       return result;
     }
 
     /*! this text is put before a class diagram */
     virtual QCString trClassDiagram(const QCString &clName)
     {
-      return "類別"+clName+"的繼承圖:";
+      return (QCString)"Диаграма на наследяване за "+clName+":";
     }
 
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
-    { return "警告"; }
+    { return "Предупреждение"; }
 
     /*! this text is generated when the \\version command is used. */
     virtual QCString trVersion()
-    { return "版本"; }
+    { return "Версия"; }
 
     /*! this text is generated when the \\date command is used. */
     virtual QCString trDate()
-    { return "日期"; }
+    { return "Дата"; }
 
     /*! this text is generated when the \\return command is used. */
     virtual QCString trReturns()
-    { return "傳回值"; }
+    { return "Връща"; }
 
     /*! this text is generated when the \\sa command is used. */
     virtual QCString trSeeAlso()
-    { return "參閱"; }
+    { return "Виж също"; }
 
     /*! this text is generated when the \\param command is used. */
     virtual QCString trParameters()
-    { return "參數"; }
+    { return "Аргументи"; }
 
     /*! this text is generated when the \\exception command is used. */
     virtual QCString trExceptions()
-    { return "例外"; }
+    { return "Изключения"; }
 
     /*! this text is used in the title page of a LaTeX document. */
     virtual QCString trGeneratedBy()
-    { return "產生者:"; }
+    { return "Генериран от"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990307
@@ -567,14 +566,14 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
 
     /*! used as the title of page containing all the index of all namespaces. */
     virtual QCString trNamespaceList()
-    { return "命名空間(name space)列表"; }
+    { return "Именни пространства Списък "; }
 
     /*! used as an introduction to the namespace list */
     virtual QCString trNamespaceListDescription(bool extractAll)
     {
-      QCString result="這是所有附帶簡略說明的";
-      if (!extractAll) result+="文件化的";
-      result+="命名空間(namespaces):";
+      QCString result="пълен списък с ";
+      if (!extractAll) result+="документирани ";
+      result+="именни пространства с кратко описание:";
       return result;
     }
 
@@ -582,7 +581,7 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
      *  friends of a class
      */
     virtual QCString trFriends()
-    { return "類別朋友(Friends)"; }
+    { return "Приятели"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990405
@@ -592,7 +591,7 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
      * related classes
      */
     virtual QCString trRelatedFunctionDocumentation()
-    { return "類別朋友及相關函式說明文件"; }
+    { return "Приятели и Свързани функции Документация"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990425
@@ -603,20 +602,20 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
                                     ClassDef::CompoundType compType,
                                     bool isTemplate)
     {
-      QCString result=clName+" ";
+      QCString result=(QCString)clName;
       switch(compType)
       {
-        case ClassDef::Class:      result+=" 類別"; break;
-        case ClassDef::Struct:     result+=" 結構"; break;
-        case ClassDef::Union:      result+=" 聯合"; break;
-        case ClassDef::Interface:  result+=" 介面"; break;
-        case ClassDef::Protocol:   result+=" 協定"; break;
-        case ClassDef::Category:   result+=" 分類"; break;
-        case ClassDef::Exception:  result+=" 例外"; break;
+        case ClassDef::Class:      result+=" Клас"; break;
+        case ClassDef::Struct:     result+=" Структура"; break;
+        case ClassDef::Union:      result+=" Обединение"; break;
+        case ClassDef::Interface:  result+=" Интерфейс"; break;
+        case ClassDef::Protocol:   result+=" Протокол"; break;
+        case ClassDef::Category:   result+=" Категория"; break;
+        case ClassDef::Exception:  result+=" Изключение"; break;
         default: break;
       }
-      if (isTemplate) result+=" 樣版";
-      result+=" 參考文件";
+      if (isTemplate) result+=" Шаблон";
+      result+=" Препратка";
       return result;
     }
 
@@ -624,7 +623,7 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
     virtual QCString trFileReference(const QCString &fileName)
     {
       QCString result=fileName;
-      result+=" 檔案參考文件";
+      result+=" Файл Справка";
       return result;
     }
 
@@ -632,30 +631,30 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
     virtual QCString trNamespaceReference(const QCString &namespaceName)
     {
       QCString result=namespaceName;
-      result+=" 命名空間(Namespace)參考文件";
+      result+=" Именно пространството Справка";
       return result;
     }
 
     virtual QCString trPublicMembers()
-    { return "公開方法(Public Methods)"; }
+    { return "Общодостъпни членове функции"; }
     virtual QCString trPublicSlots()
-    { return "公開插槽(Public Slots)"; }
+    { return "Общодостъпни слотове"; }
     virtual QCString trSignals()
-    { return "訊號(Signals)"; }
+    { return "Сигнали"; }
     virtual QCString trStaticPublicMembers()
-    { return "靜態公開方法(Static Public Methods)"; }
+    { return "Статични общодостъпни членове функции"; }
     virtual QCString trProtectedMembers()
-    { return "保護方法(Protected Methods)"; }
+    { return "Защитени членове функции"; }
     virtual QCString trProtectedSlots()
-    { return "保護插槽(Protected Slots)"; }
+    { return "Защитени слотове"; }
     virtual QCString trStaticProtectedMembers()
-    { return "靜態保護方法(Static Protected Methods)"; }
+    { return "Статични защитени членове функции"; }
     virtual QCString trPrivateMembers()
-    { return "私有方法(Private Methods)"; }
+    { return "Частни членове функции"; }
     virtual QCString trPrivateSlots()
-    { return "私有插槽(Private Slots)"; }
+    { return "Частни слотове"; }
     virtual QCString trStaticPrivateMembers()
-    { return "靜態私有方法(Static Private Methods)"; }
+    { return "Статични частни членове функции"; }
 
     /*! this function is used to produce a comma-separated list of items.
      *  use generateMarker(i) to indicate where item i should be put.
@@ -676,7 +675,7 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
           if (i<numEntries-2) // not the fore last entry
             result+=", ";
           else                // the fore last entry
-            result+=", 及 ";
+            result+=", и ";
         }
       }
       return result;
@@ -687,7 +686,7 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
      */
     virtual QCString trInheritsList(int numEntries)
     {
-      return "繼承自 "+trWriteList(numEntries)+".";
+      return "Базови класове "+trWriteList(numEntries)+".";
     }
 
     /*! used in class documentation to produce a list of super classes,
@@ -695,7 +694,7 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
      */
     virtual QCString trInheritedByList(int numEntries)
     {
-      return "被 "+trWriteList(numEntries)+"繼承.";
+      return "Производни класове "+trWriteList(numEntries)+".";
     }
 
     /*! used in member documentation blocks to produce a list of
@@ -703,7 +702,7 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
      */
     virtual QCString trReimplementedFromList(int numEntries)
     {
-      return "依據"+trWriteList(numEntries)+"重新實作.";
+      return "Заменя наследеният метод "+trWriteList(numEntries)+".";
     }
 
     /*! used in member documentation blocks to produce a list of
@@ -711,36 +710,37 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
      */
     virtual QCString trReimplementedInList(int numEntries)
     {
-      return "在"+trWriteList(numEntries)+"重新實作.";
+      return "Заменя в "+trWriteList(numEntries)+".";
     }
 
     /*! This is put above each page as a link to all members of namespaces. */
     virtual QCString trNamespaceMembers()
-    { return "命名空間(Namespace)成員"; }
+    { return "Членове Именни пространства";
+	}
 
     /*! This is an introduction to the page with all namespace members */
     virtual QCString trNamespaceMemberDescription(bool extractAll)
     {
-      QCString result="此處列表為所有 ";
-      if (!extractAll) result+="文件化的 ";
-      result+="命名空間(namespace)成員，並且附帶連結至 ";
+      QCString result="Пълен списък с ";
+      if (!extractAll) result+="документирани ";
+      result+="членове именни пространства с връзки към ";
       if (extractAll)
-        result+="每個成員的說明文件:";
+        result+="документация за именно пространство за всеки член:";
       else
-        result+="該命名空間所屬之處:";
+        result+="именните пространства към които принадлежат:";
       return result;
     }
     /*! This is used in LaTeX as the title of the chapter with the
      *  index of all namespaces.
      */
     virtual QCString trNamespaceIndex()
-    { return "命名空間(Namespace)索引"; }
+    { return "Именни пространства Указател"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all namespaces.
      */
     virtual QCString trNamespaceDocumentation()
-    { return "命名空間(Namespace)說明文件"; }
+    { return "Именни пространства Документация"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990522
@@ -750,7 +750,7 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
      *  namespaces in a file.
      */
     virtual QCString trNamespaces()
-    { return "命名空間(Namespaces)"; }
+    { return "Именни пространства"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990728
@@ -759,23 +759,24 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
     /*! This is put at the bottom of a class documentation page and is
      *  followed by a list of files that were used to generate the page.
      */
-    virtual QCString trGeneratedFromFiles(ClassDef::CompoundType compType,bool)
-    { // here s is one of " Class", " Struct" or " Union"
-      // single is true implies a single file
-      QCString result="此";
+    virtual QCString trGeneratedFromFiles(ClassDef::CompoundType compType,
+        bool single)
+    { // single is true implies a single file
+      static bool vhdlOpt = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
+      QCString result=(QCString)"Документация за ";
       switch(compType)
       {
-        case ClassDef::Class:      result+="類別(class)"; break;
-        case ClassDef::Struct:     result+="結構(structure)"; break;
-        case ClassDef::Union:      result+="聯合(union)"; break;
-        case ClassDef::Interface:  result+="介面(interface)"; break;
-        case ClassDef::Protocol:   result+="協定(protocol)"; break;
-        case ClassDef::Category:   result+="分類(category)"; break;
-        case ClassDef::Exception:  result+="例外(exception)"; break;
+        case ClassDef::Class:      result+=vhdlOpt?"проектна единица":"клас"; break;
+        case ClassDef::Struct:     result+="структура"; break;
+        case ClassDef::Union:      result+="обединение"; break;
+        case ClassDef::Interface:  result+="интерфейс"; break;
+        case ClassDef::Protocol:   result+="протокол"; break;
+        case ClassDef::Category:   result+="категория"; break;
+        case ClassDef::Exception:  result+="изключение"; break;
         default: break;
       }
-      result+=" 文件是由下列檔案中產生";
-      result+=":";
+      result+=" генериран от ";
+      if (single) result+="следният файл:"; else result+="следните файлове:";
       return result;
     }
 
@@ -785,18 +786,18 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
 
     /*! This is used as the heading text for the retval command. */
     virtual QCString trReturnValues()
-    { return "傳回值"; }
+    { return "Връщана стойност"; }
 
     /*! This is in the (quick) index as a link to the main page (index.html)
      */
     virtual QCString trMainPage()
-    { return "主頁面"; }
+    { return "Главна страница"; }
 
     /*! This is used in references to page that are put in the LaTeX
      *  documentation. It should be an abbreviation of the word page.
      */
     virtual QCString trPageAbbreviation()
-    { return "p."; }
+    { return "стр."; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-991003
@@ -804,11 +805,11 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
 
     virtual QCString trDefinedAtLineInSourceFile()
     {
-      return "定義在 @1 檔案之第 @0 行.";
+      return "Виж дефиницията във файла @1 ред @0.";
     }
     virtual QCString trDefinedInSourceFile()
     {
-      return "定義在 @0 檔.";
+      return "Виж дефиницията във файла @0.";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -817,7 +818,7 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
 
     virtual QCString trDeprecated()
     {
-      return "過時";
+      return "Остарело";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -827,68 +828,68 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
     /*! this text is put before a collaboration diagram */
     virtual QCString trCollaborationDiagram(const QCString &clName)
     {
-      return ""+clName+"的合作圖:";
+      return (QCString)"Граф на зависимости за класа "+clName+":";
     }
     /*! this text is put before an include dependency graph */
     virtual QCString trInclDepGraph(const QCString &fName)
     {
-      return ""+fName+"的包含相依圖:";
+      return (QCString)"Граф на включените заглавни файлове за "+fName+":";
     }
     /*! header that is put before the list of constructor/destructors. */
     virtual QCString trConstructorDocumentation()
     {
-      return "建構子與解構子說明文件";
+      return "Конструктор & Деструктор Документация";
     }
     /*! Used in the file documentation to point to the corresponding sources. */
     virtual QCString trGotoSourceCode()
     {
-      return "查看本檔案的原始碼.";
+      return "Вижте изходният код на този файл.";
     }
     /*! Used in the file sources to point to the corresponding documentation. */
     virtual QCString trGotoDocumentation()
     {
-      return "查看本檔案說明文件.";
+      return "Вижте документацията за този файл.";
     }
     /*! Text for the \\pre command */
     virtual QCString trPrecondition()
     {
-      return "前置條件";
+      return "Предпоставка";
     }
     /*! Text for the \\post command */
     virtual QCString trPostcondition()
     {
-      return "後置條件";
+      return "Следусловие";
     }
     /*! Text for the \\invariant command */
     virtual QCString trInvariant()
     {
-      return "常數";
+      return "Инвариант";
     }
     /*! Text shown before a multi-line variable/enum initialization */
     virtual QCString trInitialValue()
     {
-      return "初值:";
+      return "Първоначална стойност:";
     }
     /*! Text used the source code in the file index */
     virtual QCString trCode()
     {
-      return "程式碼";
+      return "изходен код";
     }
     virtual QCString trGraphicalHierarchy()
     {
-      return "圖形化之類別階層";
+      return "Йерархия на класовете Графичен вид";
     }
     virtual QCString trGotoGraphicalHierarchy()
     {
-      return "查看圖形化之類別階層";
+      return "Виж графичен вид на йерархията на класовете";
     }
     virtual QCString trGotoTextualHierarchy()
     {
-      return "查看文字化之類別階層";
+      return "Виж текстови вид на йерархията на класовете";
     }
     virtual QCString trPageIndex()
     {
-      return "頁面索引";
+      return "Тематични описания Указател";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -897,50 +898,50 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
 
     virtual QCString trNote()
     {
-      return "註";
+      return "Пояснение";
     }
     virtual QCString trPublicTypes()
     {
-      return "公開型態";
+      return "Общодостъпни типове";
     }
     virtual QCString trPublicAttribs()
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
-        return "資料欄位";
+        return "Полета данни";
       }
       else
       {
-        return "公開屬性";
+        return "Общодостъпни атрибути";
       }
     }
     virtual QCString trStaticPublicAttribs()
     {
-      return "靜態公開屬性";
+      return "Статични общодостъпни атрибути";
     }
     virtual QCString trProtectedTypes()
     {
-      return "保護型態";
+      return "Защитени типове";
     }
     virtual QCString trProtectedAttribs()
     {
-      return "保護屬性";
+      return "Защитени атрибути";
     }
     virtual QCString trStaticProtectedAttribs()
     {
-      return "靜態保護屬性";
+      return "Статични защитени атрибути";
     }
     virtual QCString trPrivateTypes()
     {
-      return "私有型態";
+      return "Частни типове";
     }
     virtual QCString trPrivateAttribs()
     {
-      return "私有屬性";
+      return "Частни атрибути";
     }
     virtual QCString trStaticPrivateAttribs()
     {
-      return "靜態私有屬性";
+      return "Статични частни атрибути";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -950,12 +951,12 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
     /*! Used as a marker that is put before a \\todo item */
     virtual QCString trTodo()
     {
-      return "待辦事項";
+      return "Елементи на списъка със задачи";
     }
     /*! Used as the header of the todo list */
     virtual QCString trTodoList()
     {
-      return "待辦事項列表";
+      return "Списък със задачи за обсъждане свързани с подобренията";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -964,24 +965,24 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
 
     virtual QCString trReferencedBy()
     {
-      return "被參考於";
+      return "Използва се";
     }
     virtual QCString trRemarks()
     {
-      return "備註";
+      return "Забележки";
     }
     virtual QCString trAttention()
     {
-      return "注意";
+      return "Внимание";
     }
     virtual QCString trInclByDepGraph()
     {
-      return "本圖顯示出哪些檔案直接或間接include本檔 "
-             ":";
+      return "Граф на файлове показващ, кой файлове включват "
+             "явно или косвено този файл:";
     }
     virtual QCString trSince()
     {
-      return "自";
+      return "От";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -991,7 +992,7 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
     /*! title of the graph legend page */
     virtual QCString trLegendTitle()
     {
-      return "圖示";
+      return "Графична легенда";
     }
     /*! page explaining how the dot graph's should be interpreted
      *  The %A in the text below are to prevent link to classes called "A".
@@ -999,27 +1000,27 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
     virtual QCString trLegendDocs()
     {
       return
-        "本頁解釋如何解譯這些由doxygen所產生的圖示 "
-        ".<p>\n"
-        "請看下面範例:\n"
+        "Тази страница обяснява как да интерпретирате графиките, генерирани "
+        "от doxygen.<p>\n"
+        "Разгледайте следният пример:\n"
         "\\code\n"
-        "/*! 因為截斷而造成的不可見類別 */\n"
+        "/*! Невидим клас поради съкращаване */\n"
         "class Invisible { };\n\n"
-        "/*! 截斷的類別, 繼承關係被隱藏 */\n"
+        "/*! Съкратен клас, наследствена връзка е скрита */\n"
         "class Truncated : public Invisible { };\n\n"
-        "/* 未經過doxygen註解處理過的類別 */\n"
+        "/* Класът не е документиран с doxygen коментари */\n"
         "class Undocumented { };\n\n"
-        "/*! 經過公開(Public)繼承的類別 */\n"
+        "/*! Клас, който се наследява чрез публично наследяване */\n"
         "class PublicBase : public Truncated { };\n\n"
-        "/*! 一個樣版類別 */\n"
+        "/*! Шаблонен клас */\n"
         "template<class T> class Templ { };\n\n"
-        "/*! 使用保護(Protected)繼承的類別 */\n"
+        "/*! Клас, който се наследява чрез защитено наследяване */\n"
         "class ProtectedBase { };\n\n"
-        "/*! 使用私有(Private)繼承的類別 */\n"
+        "/*! Клас, който се наследява чрез частно наследяване */\n"
         "class PrivateBase { };\n\n"
-        "/*! 由被繼承類別所使用的類別 */\n"
+        "/*! Клас, използващ наследеният клас */\n"
         "class Used { };\n\n"
-        "/*! 由數個其他類別所繼承來的超類別(Super Class) */\n"
+        "/*! Супер клас, който наследява редица други класове */\n"
         "class Inherited : public PublicBase,\n"
         "                  protected ProtectedBase,\n"
         "                  private PrivateBase,\n"
@@ -1030,38 +1031,40 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
         "    Used *m_usedClass;\n"
         "};\n"
         "\\endcode\n"
-        "這個例子會產生下列的圖示:"
+        "Правоъгълниците в този граф имат следното значение:"
         "<p><center><img alt=\"\" src=\"graph_legend."+getDotImageExtension()+"\"></center></p>\n"
         "<p>\n"
-        "上圖中的各區塊意義如下:\n"
+        "Правоъгълниците в този граф имат следното значение:\n"
         "</p>\n"
         "<ul>\n"
-        "<li>%A 填滿黑色的區塊代表產生這個圖示的類別或結構 "
-        ".\n"
-        "<li>%A 黑邊的區塊代表文件化過的結構或類別.</li>\n"
-        "<li>%A 灰邊的區塊代表未經文件化的結構或是類別.</li>\n"
-        "<li>%A 紅邊的區塊代表文件化的結構或是類別，"
-        "這些結構或類別的繼承或包含關係不會全部顯示. %A 圖示 "
-        "若無法塞入指定的邊界中將會被截斷.</li>\n"
+        "<li>%Запълненият сиво правоъгълник представлява структурата или клас, "
+        "за който е създаден графа.</li>\n"
+        "<li>%Правоъгълника с черна рамка обозначава документирана структура или клас.</li>\n"
+        "<li>%Правоъгълника със сива рамка обозначава недокументирана структура или клас.</li>\n"
+        "<li>%Правоъгълника с червена рамка обозначава документирана структура или клас за"
+        "който не са показани всички отношения наследяване/съдържание. %A Графa e"
+        "съкратен, ако не се вписва в определените граници.</li>\n"
         "</ul>\n"
         "<p>\n"
-        "箭頭具有下面的意義:\n"
+        "Стрелките имат следното значение:\n"
         "</p>\n"
         "<ul>\n"
-        "<li>%A 深藍色箭頭用來代表兩個類別間的公開繼承 "
-        "關係.\n"
-        "<li>%A 深綠色箭頭代表保護繼承。</li>\n"
-        "<li>%A 深紅色箭頭代表私有繼承。</li>\n"
-        "<li>%A 紫色箭頭用來表示類別被另一個包含或是使用."
-        "箭頭上標示著可存取該類別或是結構的對應變數。</li>\n"
-        "<li>%A 黃色箭頭代表樣版實體與樣版類別之間的關係。"
-        "箭頭上標記著樣版實體上的參數。</li>\n"
+        "<li>%Тъмносиня стрелка се използва за визуализиране на публично наследство "
+        "между два класа.</li>\n"
+        "<li>%Тъмнозелена стрелка се използва за защитено наследяване.</li>\n"
+        "<li>%Тъмночервена стрелка се използва за частно наследяване.</li>\n"
+        "<li>%Лилава пунктирана стрелка се използва, ако клас се съдържа или използва "
+        "от друг клас. Стрелката указва променлива(и) "
+        "чрез който е достъпен посоченият клас или структура.</li>\n"
+        "<li>%Жълта пунктирана стрелка обозначава връзка между екземпляр на шаблон и "
+        "класът шаблон, от който е създаден. Стрелката указва "
+        "параметрите на шаблона на екземпляра.</li>\n"
         "</ul>\n";
     }
     /*! text for the link to the legend page */
     virtual QCString trLegend()
     {
-      return "圖示";
+      return "легенда";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1071,12 +1074,12 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
     /*! Used as a marker that is put before a test item */
     virtual QCString trTest()
     {
-      return "測試項目";
+      return "Тест";
     }
     /*! Used as the header of the test list */
     virtual QCString trTestList()
     {
-      return "測試項目列表";
+      return "Тестове Списък";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1086,12 +1089,12 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
     /*! Used as a section header for IDL properties */
     virtual QCString trProperties()
     {
-      return "屬性(properties)";
+      return "Свойства";
     }
     /*! Used as a section header for IDL property documentation */
     virtual QCString trPropertyDocumentation()
     {
-      return "屬性(property)說明文件";
+      return "Свойство Документация";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1103,33 +1106,32 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
-        return "資料結構";
+        return "Структури от данни";
       }
       else
       {
-        return "類別";
+        return "Класове";
       }
     }
     /*! Used as the title of a Java package */
     virtual QCString trPackage(const QCString &name)
     {
-      return "Package "+name;
+      return (QCString)"Пакет "+name;
     }
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
     {
-      return "此處為Package的概略說明(如果有的話):";
+      return "Списък на пакетите с кратки описания(ако има такива):";
     }
     /*! The link name in the Quick links header for each page */
     virtual QCString trPackages()
     {
-      return "Packages";
+      return "Пакети";
     }
-
     /*! Text shown before a multi-line define */
     virtual QCString trDefineValue()
     {
-      return "巨集內容:";
+      return "Макроопределение:";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1139,12 +1141,12 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
     /*! Used as a marker that is put before a \\bug item */
     virtual QCString trBug()
     {
-      return "臭蟲";
+      return "Бъг";
     }
     /*! Used as the header of the bug list */
     virtual QCString trBugList()
     {
-      return "臭蟲列表";
+      return "Бъгове Списък";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1154,8 +1156,8 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
     /*! Used as ansicpg for RTF file
      *
      * The following table shows the correlation of Charset name, Charset Value and
-     * <pre>
      * Codepage number:
+     * <pre>
      * Charset Name       Charset Value(hex)  Codepage number
      * ------------------------------------------------------
      * DEFAULT_CHARSET           1 (x01)
@@ -1178,7 +1180,7 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
      */
     virtual QCString trRTFansicp()
     {
-      return "950";
+      return "1251";
     }
 
 
@@ -1187,76 +1189,90 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
      */
     virtual QCString trRTFCharSet()
     {
-      return "136";
+      return "204";
     }
 
     /*! Used as header RTF general index */
     virtual QCString trRTFGeneralIndex()
     {
-      return "索引";
+      return "Азбучен указател";
     }
 
     /*! This is used for translation of the word that will possibly
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trClass(bool /*first_capital*/, bool /*singular*/)
+    virtual QCString trClass(bool first_capital, bool singular)
     {
-      return QCString("類別");
+      QCString result((first_capital ? "Клас" : "клас"));
+      if (!singular)  result+="ове";
+      return result;
     }
 
     /*! This is used for translation of the word that will possibly
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trFile(bool /*first_capital*/, bool /*singular*/)
+    virtual QCString trFile(bool first_capital, bool singular)
     {
-      return QCString("檔案");
+      QCString result((first_capital ? "Файл" : "файл"));
+      if (!singular)  result+="ове";
+      return result;
     }
 
     /*! This is used for translation of the word that will possibly
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trNamespace(bool /*first_capital*/, bool /*singular*/)
+    virtual QCString trNamespace(bool first_capital, bool singular)
     {
-      return QCString("命名空間");
+      QCString result((first_capital ? "Именн" : "именн"));
+	  result+=(singular ? "о пространство" : "и пространства");
+      return result;
     }
 
     /*! This is used for translation of the word that will possibly
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trGroup(bool /*first_capital*/, bool /*singular*/)
+    virtual QCString trGroup(bool first_capital, bool singular)
     {
-      return QCString("群組");
+      QCString result((first_capital ? "Груп" : "груп"));
+	  result+=(singular ? "а" : "и");
+      return result;
     }
 
     /*! This is used for translation of the word that will possibly
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trPage(bool /*first_capital*/, bool /*singular*/)
+    virtual QCString trPage(bool first_capital, bool singular)
     {
-      return QCString("頁面");
+      QCString result((first_capital ? "Страниц" : "странц"));
+	  result+=(singular ? "а" : "и");
+      return result;
     }
 
     /*! This is used for translation of the word that will possibly
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trMember(bool /*first_capital*/, bool /*singular*/)
+    virtual QCString trMember(bool first_capital, bool singular)
     {
-      return QCString("成員");
+      QCString result((first_capital ? "Член" : "член"));
+      if (!singular)  result+="ове";
+      return result;
     }
 
     /*! This is used for translation of the word that will possibly
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trGlobal(bool /*first_capital*/, bool /*singular*/)
+    virtual QCString trGlobal(bool first_capital, bool singular)
     {
-      return QCString("全域");
+      QCString result((first_capital ? "Глобалн" : "глобалн"));
+	  result+=(singular ? "а" : "и");
+      return result;
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1265,9 +1281,11 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
 
     /*! This text is generated when the \\author command is used and
      *  for the author section in man pages. */
-    virtual QCString trAuthor(bool /*first_capital*/, bool /*singular*/)
+    virtual QCString trAuthor(bool first_capital, bool singular)
     {
-      return QCString("作者");
+      QCString result((first_capital ? "Автор" : "автор"));
+      if (!singular)  result+="и";
+      return result;
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1278,7 +1296,7 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
      */
     virtual QCString trReferences()
     {
-      return "參考";
+      return "Кръстосани препратки";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1290,7 +1308,7 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
      */
     virtual QCString trImplementedFromList(int numEntries)
     {
-      return "實作 "+trWriteList(numEntries)+".";
+      return "Заменя "+trWriteList(numEntries)+".";
     }
 
     /*! used in member documentation blocks to produce a list of
@@ -1298,10 +1316,10 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
      */
     virtual QCString trImplementedInList(int numEntries)
     {
-      return "實作於 "+trWriteList(numEntries)+".";
+      return "Заменя в "+trWriteList(numEntries)+".";
     }
 
-    //////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
 // new since 1.2.16
 //////////////////////////////////////////////////////////////////////////
 
@@ -1310,7 +1328,7 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
      */
     virtual QCString trRTFTableOfContents()
     {
-      return "目錄";
+      return "Съдържание";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1322,7 +1340,7 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
      */
     virtual QCString trDeprecatedList()
     {
-      return "過時項目(Deprecated) 列表";
+      return "Остарели дефиниции и декларации Списък";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1334,12 +1352,12 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
      */
     virtual QCString trEvents()
     {
-      return "Events";
+      return "Събития";
     }
     /*! Header used for the documentation section of a class' events. */
     virtual QCString trEventDocumentation()
     {
-      return "Event 文件";
+      return "Събития Документация";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1350,35 +1368,35 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
      */
     virtual QCString trPackageTypes()
     {
-      return "Package 型別";
+      return "Типове с област на видимост пакет";
     }
     /*! Used as a heading for a list of Java class functions with package
      * scope.
      */
     virtual QCString trPackageMembers()
     {
-      return "Package 函數列表";
+      return "Функции с област на видимост пакет";
     }
     /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
     virtual QCString trStaticPackageMembers()
     {
-      return "靜態 Package 函數列表";
+      return "Статични функции с област на видимост пакет";
     }
     /*! Used as a heading for a list of Java class variables with package
      * scope.
      */
     virtual QCString trPackageAttribs()
     {
-      return "Package 屬性";
+      return "Променливи с област на видимост пакет";
     }
     /*! Used as a heading for a list of static Java class variables with
      * package scope.
      */
     virtual QCString trStaticPackageAttribs()
     {
-      return "靜態 Package 屬性";
+      return "Статични променливи с област на видимост пакет";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1390,12 +1408,12 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
      */
     virtual QCString trAll()
     {
-      return "全部";
+      return "Указател към не филтриран списък на всички членове";
     }
     /*! Put in front of the call graph for a function. */
     virtual QCString trCallGraph()
     {
-      return "這是此函數的引用函數圖:";
+      return "Граф с извикванията за тази функция:";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1407,7 +1425,7 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
      */
     virtual QCString trSearchResultsTitle()
     {
-      return "搜尋結果";
+      return "Резултати от търсенето";
     }
     /*! This string is put just before listing the search results. The
      *  text can be different depending on the number of documents found.
@@ -1421,16 +1439,16 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
     {
       if (numDocuments==0)
       {
-        return "找不到符合的資料.";
+        return "За съжаление няма документи, отговарящи на вашата заявка.";
       }
       else if (numDocuments==1)
       {
-        return "找到 <b>1</b> 筆符合的資料.";
+        return "Намерен е <b>1</b> документ, съответстващ на вашата заявка.";
       }
       else
       {
-        return "找到 <b>$num</b> 筆符合的資料. "
-               "越符合的結果顯示在越前面.";
+        return "Намерени са <b>$num</b> документи, съответстващи на вашата заявка. "
+               "Първо се показват най-добрите съвпадения.";
       }
     }
     /*! This string is put before the list of matched words, for each search
@@ -1438,7 +1456,7 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
      */
     virtual QCString trSearchMatches()
     {
-      return "符合:";
+      return "Намерено:";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1449,7 +1467,7 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
      */
     virtual QCString trSourceFile(QCString& filename)
     {
-      return filename + " 原始程式檔";
+      return filename + " Изходен файл";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1460,32 +1478,34 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
      *  hierarchy.
      */
     virtual QCString trDirIndex()
-    { return "目錄階層"; }
+    { return "Директории Йерархия"; }
 
     /*! This is used as the name of the chapter containing the documentation
      *  of the directories.
      */
     virtual QCString trDirDocumentation()
-    { return "目錄說明文件"; }
+    { return "Директории Документация"; }
 
     /*! This is used as the title of the directory index and also in the
-     *  Quick links of a HTML page, to link to the directory hierarchy.
+     *  Quick links of an HTML page, to link to the directory hierarchy.
      */
     virtual QCString trDirectories()
-    { return "目錄"; }
+    { return "Директории"; }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.
      */
     virtual QCString trDirReference(const QCString &dirName)
-    { QCString result=dirName; result+=" 目錄參考文件"; return result; }
+    { QCString result=dirName; result+=" Директория Съдържание"; return result; }
 
     /*! This returns the word directory with or without starting capital
-     *  (\a first_capital) and in sigular or plural form (\a singular).
+     *  (\a first_capital) and in singular or plural form (\a singular).
      */
-    virtual QCString trDir(bool /*first_capital*/, bool /*singular*/)
+    virtual QCString trDir(bool first_capital, bool singular)
     {
-      return QCString("目錄");
+      QCString result((first_capital ? "Директори" : "директори"));
+      if (singular) result+="я"; else result+="и";
+      return result;
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1497,9 +1517,11 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
      */
     virtual QCString trOverloadText()
     {
-       return "這是一個為了便利性所提供 overload 成員函數，"
-              "只有在接受的參數上，與前一個函數不同.";
+       return "Това е преопределена член функция, "
+              "предоставена за удобство. Различава се от спомената по горе "
+              "функция само по броя на фактическите аргументи.";
     }
+
 //////////////////////////////////////////////////////////////////////////
 // new since 1.4.6
 //////////////////////////////////////////////////////////////////////////
@@ -1507,9 +1529,14 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
     /*! This is used to introduce a caller (or called-by) graph */
     virtual QCString trCallerGraph()
     {
-      return "呼叫此函數的函數列表:";
+      return "Граф на извикванията за тази функция:";
     }
 
+    /*! This is used in the documentation of a file/namespace before the list
+     *  of documentation blocks for enumeration values
+     */
+    virtual QCString trEnumerationValueDocumentation()
+    { return "Изброяване Документация"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.5.4 (mainly for Fortran)
@@ -1517,37 +1544,37 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
 
     /*! header that is put before the list of member subprograms (Fortran). */
     virtual QCString trMemberFunctionDocumentationFortran()
-    { return "成員函數/子程序 文件"; }
+    { return "Функции/подпрограми Документация"; }
 
     /*! This is put above each page as a link to the list of annotated data types (Fortran). */
     virtual QCString trCompoundListFortran()
-    { return "資料型態列表"; }
+    { return "Типове данни Списък"; }
 
     /*! This is put above each page as a link to all members of compounds (Fortran). */
     virtual QCString trCompoundMembersFortran()
-    { return "資料欄位"; }
+    { return "Полета данни"; }
 
     /*! This is an introduction to the annotated compound list (Fortran). */
     virtual QCString trCompoundListDescriptionFortran()
-    { return "資料型態簡短說明列表:"; }
+    { return "Анотиран списък от типовете данни с кратки описания:"; }
 
     /*! This is an introduction to the page with all data types (Fortran). */
     virtual QCString trCompoundMembersDescriptionFortran(bool extractAll)
     {
-      QCString result="此處列出所有";
+      QCString result="Списък на всички ";
       if (!extractAll)
       {
-        result+="有文件的";
+        result+="документирани ";
       }
-      result+="資料型別成員函數";
-      result+=" 附帶連結到 ";
+      result+="членове типове данни";
+      result+=" с препратки към ";
       if (!extractAll)
       {
-         result+="每個成員函數的資料結構文件";
+         result+="документацията за структура от данни за всеки член";
       }
       else
       {
-         result+="他們屬於的資料型別";
+         result+="типовете данни, към които принадлежат:";
       }
       return result;
     }
@@ -1556,42 +1583,42 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
      * annotated compound index (Fortran).
      */
     virtual QCString trCompoundIndexFortran()
-    { return "資料型別索引"; }
+    { return "Типове данни Указател"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all data types (Fortran).
      */
     virtual QCString trTypeDocumentation()
-    { return "資料型別文件"; }
+    { return "Типове данни Документация"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of (global) subprograms (Fortran).
      */
     virtual QCString trSubprograms()
-    { return "函數/子程序"; }
+    { return "Функции/Подпрограми"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for subprograms (Fortran)
      */
     virtual QCString trSubprogramDocumentation()
-    { return "函數/子程序 文件"; }
+    { return "Функции/Подпрограми Документация"; }
 
     /*! This is used in the documentation of a file/namespace/group before
      *  the list of links to documented compounds (Fortran)
      */
      virtual QCString trDataTypes()
-    { return "資料型別"; }
+    { return "Типове данни"; }
 
     /*! used as the title of page containing all the index of all modules (Fortran). */
     virtual QCString trModulesList()
-    { return "模組列表"; }
+    { return "Модули Списък"; }
 
     /*! used as an introduction to the modules list (Fortran) */
     virtual QCString trModulesListDescription(bool extractAll)
     {
-      QCString result="此處列出所有";
-      if (!extractAll) result+="有文件的";
-      result+="模組附帶簡短說明:";
+      QCString result="Списък на всички ";
+      if (!extractAll) result+="документирани ";
+      result+="модули с кратко описание:";
       return result;
     }
 
@@ -1600,47 +1627,47 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
                                     ClassDef::CompoundType compType,
                                     bool isTemplate)
     {
-      QCString result=clName;
+      QCString result=(QCString)clName;
       switch(compType)
       {
-        case ClassDef::Class:      result+="模組"; break;
-        case ClassDef::Struct:     result+="型態"; break;
-        case ClassDef::Union:      result+="聯合"; break;
-        case ClassDef::Interface:  result+="介面"; break;
-        case ClassDef::Protocol:   result+="協議"; break;
-        case ClassDef::Category:   result+="分類"; break;
-        case ClassDef::Exception:  result+="例外"; break;
+        case ClassDef::Class:      result+=" Модул"; break;
+        case ClassDef::Struct:     result+=" Тип"; break;
+        case ClassDef::Union:      result+=" Обединение"; break;
+        case ClassDef::Interface:  result+=" Интерфейс"; break;
+        case ClassDef::Protocol:   result+=" Протокол"; break;
+        case ClassDef::Category:   result+=" Категория"; break;
+        case ClassDef::Exception:  result+=" Изключение"; break;
         default: break;
       }
-      if (isTemplate) result+=" Template";
-      result+="參考文件";
+      if (isTemplate) result+=" Шаблон";
+      result+=" Отнася се";
       return result;
     }
     /*! used as the title of the HTML page of a module (Fortran) */
     virtual QCString trModuleReference(const QCString &namespaceName)
     {
       QCString result=namespaceName;
-      result+="模組參考文件";
+      result+=" Модул Справка";
       return result;
     }
 
     /*! This is put above each page as a link to all members of modules. (Fortran) */
     virtual QCString trModulesMembers()
-    { return "模組成員"; }
+    { return "Модул Членове"; }
 
     /*! This is an introduction to the page with all modules members (Fortran) */
     virtual QCString trModulesMemberDescription(bool extractAll)
     {
-      QCString result="此處列出所有";
-      if (!extractAll) result+="有文件的";
-      result+="模組成員附帶連結到";
+      QCString result="Списък на всички ";
+      if (!extractAll) result+="документирани ";
+      result+="членове на модула с връзки към ";
       if (extractAll)
       {
-        result+="每個函數的模組文件:";
+        result+="документацията на модула за всеки член:";
       }
       else
       {
-        result+="他們所屬的模組:";
+        result+="модулите, към които принадлежат:";
       }
       return result;
     }
@@ -1649,62 +1676,69 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
      *  index of all modules (Fortran).
      */
     virtual QCString trModulesIndex()
-    { return "模組索引"; }
+    { return "Модули Указател"; }
 
     /*! This is used for translation of the word that will possibly
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trModule(bool /* first_capital */, bool /* singular */)
+    virtual QCString trModule(bool first_capital, bool singular)
     {
-      QCString result("模組");
+      QCString result((first_capital ? "Модул" : "модул"));
+      if (!singular)  result+="и";
       return result;
     }
+
     /*! This is put at the bottom of a module documentation page and is
      *  followed by a list of files that were used to generate the page.
      */
     virtual QCString trGeneratedFromFilesFortran(ClassDef::CompoundType compType,
-        bool /* single */)
-    { // here s is one of " Module", " Struct" or " Union"
+        bool single)
+    {
       // single is true implies a single file
-      QCString result="這個";
+      QCString result=(QCString)"Документацията за ";
       switch(compType)
       {
-        case ClassDef::Class:      result+="模組"; break;
-        case ClassDef::Struct:     result+="型態"; break;
-        case ClassDef::Union:      result+="聯合"; break;
-        case ClassDef::Interface:  result+="介面"; break;
-        case ClassDef::Protocol:   result+="協議"; break;
-        case ClassDef::Category:   result+="分類"; break;
-        case ClassDef::Exception:  result+="例外"; break;
+        case ClassDef::Class:      result+="модул"; break;
+        case ClassDef::Struct:     result+="тип"; break;
+        case ClassDef::Union:      result+="обединение"; break;
+        case ClassDef::Interface:  result+="интерфейс"; break;
+        case ClassDef::Protocol:   result+="протокол"; break;
+        case ClassDef::Category:   result+="категория"; break;
+        case ClassDef::Exception:  result+="изключение"; break;
         default: break;
       }
-      result+="文件由下列檔案產生";
+      result+=" беше генериран ";
+      if (single) result+="от следният файл:"; else result+="от следните файлове:";
       return result;
     }
+
     /*! This is used for translation of the word that will possibly
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trType(bool /* first_capital */, bool /* singular */)
+    virtual QCString trType(bool first_capital, bool singular)
     {
-      QCString result("型別");
+      QCString result((first_capital ? "Тип" : "тип"));
+      if (!singular)  result+="ове";
       return result;
     }
+
     /*! This is used for translation of the word that will possibly
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trSubprogram(bool /* first_capital */, bool /* singular */)
+    virtual QCString trSubprogram(bool first_capital, bool singular)
     {
-      QCString result("子程式");
+      QCString result((first_capital ? "Подпрограм" : "подпрограм"));
+	  if (singular) result+="а:"; else result+="и:";
       return result;
     }
 
     /*! C# Type Constraint list */
     virtual QCString trTypeConstraints()
     {
-      return "型別限制條件";
+      return "Съвместими типове";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1714,31 +1748,31 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
     /*! directory relation for \a name */
     virtual QCString trDirRelation(const QCString &name)
     {
-      return QCString(name)+" 關連";
+      return QCString(name)+" Връзка";
     }
 
     /*! Loading message shown when loading search results */
     virtual QCString trLoading()
     {
-      return "載入中...";
+      return "Зареждане...";
     }
 
     /*! Label used for search results in the global namespace */
     virtual QCString trGlobalNamespace()
     {
-      return "全域命名空間";
+      return "Глобални именни пространства";
     }
 
     /*! Message shown while searching */
     virtual QCString trSearching()
     {
-      return "搜尋中...";
+      return "Търсене...";
     }
 
     /*! Text shown when no search results are found */
     virtual QCString trNoMatches()
     {
-      return "無符合項目";
+      return "Не намерено";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1751,7 +1785,7 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
      */
     virtual QCString trFileIn(const QCString &name)
     {
-      return "檔案在"+name;
+      return (QCString)"Файл в "+name;
     }
 
     /*! when clicking a directory dependency label, a page with a
@@ -1760,7 +1794,7 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
      */
     virtual QCString trIncludesFileIn(const QCString &name)
     {
-      return "含入檔案在"+name;
+      return (QCString)"Включва файла в "+name;
     }
 
     /** Compiles a date string.
@@ -1777,10 +1811,10 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
                                 int hour,int minutes,int seconds,
                                 bool includeTime)
     {
-      static const char *days[]   = { "星期一","星期二","星期三","星期四","星期五","星期六","星期日" };
-      static const char *months[] = { "1","2","3","4","5","6","7","8","9","10","11","12" };
+      static const char *days[]   = { "Пн","Вт","Ср","Чт","Пт","Сб","Нд" };
+      static const char *months[] = { "Яну","Фев","Мар","Апр","Май","Юни","Юли","Авг","Сеп","Окт","Ное","Дек" };
       QCString sdate;
-      sdate.sprintf("%d年%s月%d日 %s",year,months[month-1],day,days[dayOfWeek-1]);
+      sdate.sprintf("%s %s %d %d",days[dayOfWeek-1],months[month-1],day,year);
       if (includeTime)
       {
         QCString stime;
@@ -1796,15 +1830,15 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
 
     /*! Header for the page with bibliographic citations */
     virtual QCString trCiteReferences()
-    { return "參考文獻資料"; }
+    { return "Библиография"; }
 
     /*! Text for copyright paragraph */
     virtual QCString trCopyright()
-    { return "版權聲明"; }
+    { return "Авторско право"; }
 
     /*! Header for the graph showing the directory dependencies */
     virtual QCString trDirDepGraph(const QCString &name)
-    { return QCString(name)+"的目錄關連圖"+":"; }
+    { return QCString("Граф на зависимостта на директория за ")+name+":"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.8.0
@@ -1812,37 +1846,37 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
 
     /*! Detail level selector shown for hierarchical indices */
     virtual QCString trDetailLevel()
-    { return "詳細程度"; }
+    { return "ниво на детайлност"; }
 
     /*! Section header for list of template parameters */
     virtual QCString trTemplateParameters()
-    { return "樣版參數"; }
+    { return "Шаблона Параметри"; }
 
     /*! Used in dot graph when UML_LOOK is enabled and there are many fields */
     virtual QCString trAndMore(const QCString &number)
-    { return "及 "+number+" 個更多..."; }
+    { return "и "+number+" повече..."; }
 
     /*! Used file list for a Java enum */
     virtual QCString trEnumGeneratedFromFiles(bool single)
-    { QCString result = "此列舉型態的文件是由下列檔案所產生";
-      if (!single) result += "";
+    { QCString result = "Документацията за това изброяване е генерирана от ";
+	  if (single) result+="следният файл:"; else result+="следните файлове:";
       result+=":";
       return result;
     }
 
     /*! Header of a Java enum page (Java enums are represented as classes). */
     virtual QCString trEnumReference(const QCString &name)
-    { return QCString(name)+" 列舉型態參考"; }
+    { return QCString(name)+" Изброяване Справка"; }
 
     /*! Used for a section containing inherited members */
     virtual QCString trInheritedFrom(const QCString &members,const QCString &what)
-    { return QCString(members)+" 繼承自 "+what; }
+    { return QCString(members)+" наследен от "+what; }
 
     /*! Header of the sections with inherited members specific for the
      *  base class(es)
      */
     virtual QCString trAdditionalInheritedMembers()
-    { return "額外的繼承成員"; }
+    { return "Допълнителни наследени членове"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.8.2
@@ -1854,8 +1888,8 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
      */
     virtual QCString trPanelSynchronisationTooltip(bool enable)
     {
-      QCString opt = enable ? "啟用" : "停用";
-      return "點擊 "+opt+" 面板進行同步";
+      QCString opt = enable ? "включване" : "изключване";
+      return "натиснете на "+opt+" за синхронизация на панела";
     }
 
     /*! Used in a method of an Objective-C class that is declared in a
@@ -1864,7 +1898,7 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
      */
     virtual QCString trProvidedByCategory()
     {
-      return "由 @0 分類所提供.";
+      return "По групи @0.";
     }
 
     /*! Used in a method of an Objective-C category that extends a class.
@@ -1873,7 +1907,7 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
      */
     virtual QCString trExtendsClass()
     {
-      return "延伸 @0 類別 .";
+      return "Разширява класа @0.";
     }
 
     /*! Used as the header of a list of class methods in Objective-C.
@@ -1881,7 +1915,7 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
      */
     virtual QCString trClassMethods()
     {
-      return "類別方法";
+      return "Клас Методи";
     }
 
     /*! Used as the header of a list of instance methods in Objective-C.
@@ -1889,14 +1923,14 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
      */
     virtual QCString trInstanceMethods()
     {
-      return "實體方法";
+      return "Общодостъпни Методи";
     }
 
     /*! Used as the header of the member functions of an Objective-C class.
      */
     virtual QCString trMethodDocumentation()
     {
-      return "方法文件";
+      return "Метод Документация";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1905,56 +1939,358 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
 
     /** old style UNO IDL services: implemented interfaces */
     virtual QCString trInterfaces()
-    { return "導出介面"; }
+    { return "Експортирани интерфейси"; }
 
     /** old style UNO IDL services: inherited services */
     virtual QCString trServices()
-    { return "引入的服務"; }
+    { return "Включени услуги"; }
 
     /** UNO IDL constant groups */
     virtual QCString trConstantGroups()
-    { return "常數群組"; }
+    { return "Постоянни групи"; }
 
     /** UNO IDL constant groups */
     virtual QCString trConstantGroupReference(const QCString &namespaceName)
     {
       QCString result=namespaceName;
-      result+="常數群組參考";
+      result+=" Постоянни групи Справка";
       return result;
     }
     /** UNO IDL service page title */
     virtual QCString trServiceReference(const QCString &sName)
     {
-      QCString result=sName;
-      result+="服務參考";
+      QCString result=(QCString)sName;
+      result+=" Сървис Справка";
       return result;
     }
     /** UNO IDL singleton page title */
     virtual QCString trSingletonReference(const QCString &sName)
     {
-      QCString result=sName;
-      result+="Singleton參考";
+      QCString result=(QCString)sName;
+      result+=" Конкретика Справка";
       return result;
     }
     /** UNO IDL service page */
-    virtual QCString trServiceGeneratedFromFiles(bool)
+    virtual QCString trServiceGeneratedFromFiles(bool single)
     {
       // single is true implies a single file
-      QCString result="本服務的文件由以下的檔案"
-                                "所產生";
-      result+=":";
+      QCString result=(QCString)"Документацията за този сървис "
+                                "беше генерирано от ";
+      if (single) result+="следният файл:"; else result+="следните файлове:";
       return result;
     }
     /** UNO IDL singleton page */
-    virtual QCString trSingletonGeneratedFromFiles(bool)
+    virtual QCString trSingletonGeneratedFromFiles(bool single)
     {
       // single is true implies a single file
-      QCString result="本singleton的文件由下面的檔案"
-                                "所產生";
-      result+=":";
+      QCString result=(QCString)"Документацията за тази конкретика "
+                                "беше генерирано от ";
+      if (single) result+="следният файл:"; else result+="следните файлове:";
       return result;
     }
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.8.15
+//////////////////////////////////////////////////////////////////////////
+
+    /** VHDL design unit hierarchy */
+    virtual QCString trDesignUnitHierarchy()
+    { return "Проектни единици Йерархия"; }
+    /** VHDL design unit list */
+    virtual QCString trDesignUnitList()
+    { return "Проектни единици Списък"; }
+    /** VHDL design unit members */
+    virtual QCString trDesignUnitMembers()
+    { return "Проектна единица Членове"; }
+    /** VHDL design unit list description */
+    virtual QCString trDesignUnitListDescription()
+    {
+        return "Here is a list of all design unit members with links to "
+            "the Entities they belong to:";
+    }
+    /** VHDL design unit index */
+    virtual QCString trDesignUnitIndex()
+    { return "Проектна единица Указател"; }
+    /** VHDL design units */
+    virtual QCString trDesignUnits()
+    { return "Проектни единици"; }
+    /** VHDL functions/procedures/processes */
+    virtual QCString trFunctionAndProc()
+    { return "Функции/Процедури/Процеси"; }
+    /** VHDL type */
+    virtual QCString trVhdlType(uint64 type,bool single)
+    {
+      switch(type)
+      {
+        case VhdlDocGen::LIBRARY:
+          if (single) return "Библиотека";
+          else        return "Библиотеки";
+        case VhdlDocGen::PACKAGE:
+          if (single) return "Пакет";
+          else        return "Пакети";
+        case VhdlDocGen::SIGNAL:
+          if (single) return "Сигнал";
+          else        return "Сигнали";
+        case VhdlDocGen::COMPONENT:
+          if (single) return "Компонент";
+          else        return "Компоненти";
+        case VhdlDocGen::CONSTANT:
+          if (single) return "Константа";
+          else        return "Константи";
+        case VhdlDocGen::ENTITY:
+          if (single) return "Същност";
+          else        return "Същности";
+        case VhdlDocGen::TYPE:
+          if (single) return "Тип";
+          else        return "Типове";
+        case VhdlDocGen::SUBTYPE:
+          if (single) return "Подтип";
+          else        return "Подтипове";
+        case VhdlDocGen::FUNCTION:
+          if (single) return "Функция";
+          else        return "Функции";
+        case VhdlDocGen::RECORD:
+          if (single) return "Запис";
+          else        return "Записи";
+        case VhdlDocGen::PROCEDURE:
+          if (single) return "Процедура";
+          else        return "Процедури";
+        case VhdlDocGen::ARCHITECTURE:
+          if (single) return "Архитектура";
+          else        return "Архитектури";
+        case VhdlDocGen::ATTRIBUTE:
+          if (single) return "Атрибут";
+          else        return "Атрибути";
+        case VhdlDocGen::PROCESS:
+          if (single) return "Процес";
+          else        return "Процеси";
+        case VhdlDocGen::PORT:
+          if (single) return "Порт";
+          else        return "Портове";
+        case VhdlDocGen::USE:
+          if (single) return "use клауза";
+          else        return "Use клаузи";
+        case VhdlDocGen::GENERIC:
+          if (single) return "Роден";
+          else        return "Родни";
+        case VhdlDocGen::PACKAGE_BODY:
+          return "Тяло на пакета";
+        case VhdlDocGen::UNITS:
+          return "Единици";
+        case VhdlDocGen::SHAREDVARIABLE:
+          if (single) return "Споделена променлива";
+          else        return "Споделени променливи";
+        case VhdlDocGen::VFILE:
+          if (single) return "Файл";
+          else        return "Файлове";
+        case VhdlDocGen::GROUP:
+          if (single) return "Група";
+          else        return "Групи";
+        case VhdlDocGen::INSTANTIATION:
+          if (single) return "Инстанция";
+          else        return "Инстанции";
+        case VhdlDocGen::ALIAS:
+          if (single) return "Псевдоним";
+          else        return "Псевдоними";
+        case VhdlDocGen::CONFIG:
+          if (single) return "Конфигурация";
+          else        return "Конфигурации";
+        case VhdlDocGen::MISCELLANEOUS:
+          return "Други";
+        case VhdlDocGen::UCF_CONST:
+          return "Ограничения";
+        default:
+          return "Клас";
+      }
+    }
+    virtual QCString trCustomReference(const QCString &name)
+    { return QCString(name)+" Отнася се"; }
+
+    /* Slice */
+    virtual QCString trConstants()
+    {
+        return "Константи";
+    }
+    virtual QCString trConstantDocumentation()
+    {
+        return "Константи Документация";
+    }
+    virtual QCString trSequences()
+    {
+        return "Последователности";
+    }
+    virtual QCString trSequenceDocumentation()
+    {
+        return "Последователности Документация";
+    }
+    virtual QCString trDictionaries()
+    {
+        return "Речници";
+    }
+    virtual QCString trDictionaryDocumentation()
+    {
+        return "Речници Документация";
+    }
+    virtual QCString trSliceInterfaces()
+    {
+        return "Интерфейси";
+    }
+    virtual QCString trInterfaceIndex()
+    {
+        return "Интерфейси Указател";
+    }
+    virtual QCString trInterfaceList()
+    {
+        return "Интерфейси списък";
+    }
+    virtual QCString trInterfaceListDescription()
+    {
+        return "Интерфейсите с кратки описания:";
+    }
+    virtual QCString trInterfaceHierarchy()
+    {
+        return "Интерфейси Йерархия";
+    }
+    virtual QCString trInterfaceHierarchyDescription()
+    {
+        return "Този списък на наследяване е сортиран, но не напълно, по азбучен ред:";
+    }
+    virtual QCString trInterfaceDocumentation()
+    {
+        return "Интерфейси Документация";
+    }
+    virtual QCString trStructs()
+    {
+        return "Структури";
+    }
+    virtual QCString trStructIndex()
+    {
+        return "Структури Указател";
+    }
+    virtual QCString trStructList()
+    {
+        return "Структури Списък";
+    }
+    virtual QCString trStructListDescription()
+    {
+        return "Структури с кратки описания:";
+    }
+    virtual QCString trStructDocumentation()
+    {
+        return "Структури Документация";
+    }
+    virtual QCString trExceptionIndex()
+    {
+        return "Изключения Указател";
+    }
+    virtual QCString trExceptionList()
+    {
+        return "Изключения Списък";
+    }
+    virtual QCString trExceptionListDescription()
+    {
+        return "Изключения с кратки описания:";
+    }
+    virtual QCString trExceptionHierarchy()
+    {
+        return "Изключения Йерархия";
+    }
+    virtual QCString trExceptionHierarchyDescription()
+    {
+        return "Този списък на наследяване е сортиран, но не напълно, по азбучен ред:";
+    }
+    virtual QCString trExceptionDocumentation()
+    {
+        return "Изключения Документация";
+    }
+    virtual QCString trCompoundReferenceSlice(const QCString &clName, ClassDef::CompoundType compType, bool isLocal)
+    {
+      QCString result=(QCString)clName;
+      if (isLocal) result+=" Локален";
+      switch(compType)
+      {
+        case ClassDef::Class:      result+=" Клас"; break;
+        case ClassDef::Struct:     result+=" Структура"; break;
+        case ClassDef::Union:      result+=" Обединение"; break;
+        case ClassDef::Interface:  result+=" Интерфейс"; break;
+        case ClassDef::Protocol:   result+=" Протокол"; break;
+        case ClassDef::Category:   result+=" Категория"; break;
+        case ClassDef::Exception:  result+=" Изключение"; break;
+        default: break;
+      }
+      result+=" Отнася се";
+      return result;
+    }
+    virtual QCString trOperations()
+    {
+        return "Операции";
+    }
+    virtual QCString trOperationDocumentation()
+    {
+        return "Операции Документация";
+    }
+    virtual QCString trDataMembers()
+    {
+        return "Членове Данни";
+    }
+    virtual QCString trDataMemberDocumentation()
+    {
+        return "Членове Данни Документация";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.8.19
+//////////////////////////////////////////////////////////////////////////
+
+    /** VHDL design unit documentation */
+    virtual QCString trDesignUnitDocumentation()
+    { return "Проектни единици Документация"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.2
+//////////////////////////////////////////////////////////////////////////
+
+    /** C++20 concept */
+    virtual QCString trConcept(bool first_capital, bool singular)
+    {
+      QCString result((first_capital ? "Концепци" : "концепци"));
+	  if (singular)  result+="я"; else result+="и";
+      return result;
+    }
+    /*! used as the title of the HTML page of a C++20 concept page */
+    virtual QCString trConceptReference(const QCString &conceptName)
+    {
+      QCString result=conceptName;
+      result+=" Концепции Справка";
+      return result;
+    }
+
+    /*! used as the title of page containing all the index of all concepts. */
+    virtual QCString trConceptList()
+    { return "Концепции Списък"; }
+
+    /*! used as the title of chapter containing the index listing all concepts. */
+    virtual QCString trConceptIndex()
+    { return "Концепции Указател"; }
+
+    /*! used as the title of chapter containing all information about concepts. */
+    virtual QCString trConceptDocumentation()
+    { return "Концепции Документация"; }
+
+    /*! used as an introduction to the concept list */
+    virtual QCString trConceptListDescription(bool extractAll)
+    {
+      QCString result="Списък на всички ";
+      if (!extractAll) result+="документирани ";
+      result+="концепции с кратко описание:";
+      return result;
+    }
+
+    /*! used to introduce the definition of the C++20 concept */
+    virtual QCString trConceptDefinition()
+    {
+      return "Дефиниция на концепция";
+    }
 };
 
 #endif

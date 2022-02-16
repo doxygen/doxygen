@@ -420,6 +420,10 @@ class TranslatorBrazilian : public Translator
       {
         return "Estruturas";
       }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+          return trDesignUnitDocumentation();
+      }
       else
       {
         return "Classes";
@@ -437,12 +441,6 @@ class TranslatorBrazilian : public Translator
      */
     virtual QCString trExampleDocumentation()
     { return "Exemplos"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all related pages.
-     */
-    virtual QCString trPageDocumentation()
-    { return "Documentação Relacionada"; }
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
@@ -545,10 +543,6 @@ class TranslatorBrazilian : public Translator
     {
       return "Diagrama de hierarquia para "+clName+":";
     }
-
-    /*! this text is generated when the \\internal command is used. */
-    virtual QCString trForInternalUseOnly()
-    { return "Apenas para uso interno."; }
 
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
@@ -1177,11 +1171,6 @@ class TranslatorBrazilian : public Translator
     {
       return "Pacote "+name;
     }
-    /*! Title of the package index page */
-    virtual QCString trPackageList()
-    {
-      return "Lista de Pacotes";
-    }
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
     {
@@ -1559,12 +1548,6 @@ class TranslatorBrazilian : public Translator
      */
     virtual QCString trDirectories()
     { return "Diretórios"; }
-
-    /*! This returns a sentences that introduces the directory hierarchy.
-     *  and the fact that it is sorted alphabetically per level
-     */
-    virtual QCString trDirDescription()
-    { return "Esta Hierarquia de Diretórios está parcialmente ordenada (ordem alfabética)"; }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.
@@ -2349,7 +2332,7 @@ class TranslatorBrazilian : public Translator
 	virtual QCString trDesignUnitDocumentation()
 	{
 	    return "Documentação da Unidade de Projeto";
-    }
+        }
 
 
 	//////////////////////////////////////////////////////////////////////////

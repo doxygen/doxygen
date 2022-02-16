@@ -384,12 +384,6 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_15
     virtual QCString trExampleDocumentation()
     { return "Dokumentácia príkladov"; }
 
-    /*! This is used in LaTeX as the title of the chapter containing
-     *	the documentation of all related pages.
-     */
-    virtual QCString trPageDocumentation()
-    { return "Dokumentácia súvisiacich stránok"; }
-
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
     { return "Referenčná príručka"; }
@@ -491,10 +485,6 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_15
     {
       return "Diagram dedičnosti pre triedu "+clName;
     }
-
-    /*! this text is generated when the \\internal command is used. */
-    virtual QCString trForInternalUseOnly()
-    { return "Iba pre interné použitie."; }
 
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
@@ -1094,11 +1084,6 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_15
     {
       return "Balík "+name;
     }
-    /*! Title of the package index page */
-    virtual QCString trPackageList()
-    {
-      return "Zoznam balíkov";
-    }
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
     {
@@ -1449,15 +1434,6 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_15
      */
     virtual QCString trDirectories()
     { return "Adresáre"; }
-
-    /*! This returns a sentences that introduces the directory hierarchy.
-     *  and the fact that it is sorted alphabetically per level
-     */
-    virtual QCString trDirDescription()
-    {
-        return "Následujúca hierarchia adresárov je zhruba, "
-                      "ale nie úplne, zoradená podľa abecedy:";
-    }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.

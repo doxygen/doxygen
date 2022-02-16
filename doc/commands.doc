@@ -1447,7 +1447,7 @@ contains \c TEST, or \c DEV
 \section cmdraisewarning \\raisewarning ( text to be shown as warning )
 
   \addindex \\raisewarning
-  All the text, excluding the command, till the end of the line is is literally shown
+  All the text, excluding the command, till the end of the line is literally shown
   as a documentation warning. The text, including the command, is removed from the output.
   The command will most commonly be used in combination with \ref cfg_aliases "ALIASES"
   to show a specific warning.

@@ -48,6 +48,7 @@ static std::map< std::string, Debug::DebugMask > s_labels =
   { "cite",              Debug::Cite              },
   { "rtf",               Debug::Rtf               },
   { "qhp",               Debug::Qhp               },
+  { "tag",               Debug::Tag               },
 };
 
 //------------------------------------------------------------------------

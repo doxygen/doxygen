@@ -418,6 +418,10 @@ class TranslatorHungarian : public TranslatorAdapter_1_8_15
       {
         return "Adatszerkezetek dokumentációja";
       }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+          return trDesignUnitDocumentation();
+      }
       else
       {
         return "Osztályok dokumentációja";
@@ -435,12 +439,6 @@ class TranslatorHungarian : public TranslatorAdapter_1_8_15
      */
     virtual QCString trExampleDocumentation()
     { return "Példák dokumentációja"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all related pages.
-     */
-    virtual QCString trPageDocumentation()
-    { return "Kapcsolódó dokumentációk"; }
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
@@ -543,10 +541,6 @@ class TranslatorHungarian : public TranslatorAdapter_1_8_15
     {
       return QCString("A")+zed(clName[0])+clName+" osztály származási diagramja:";
     }
-
-    /*! this text is generated when the \\internal command is used. */
-    virtual QCString trForInternalUseOnly()
-    { return "CSAK BELSŐ HASZNÁLATRA!"; }
 
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
@@ -1135,11 +1129,6 @@ class TranslatorHungarian : public TranslatorAdapter_1_8_15
     {
       return name+" csomag";
     }
-    /*! Title of the package index page */
-    virtual QCString trPackageList()
-    {
-      return "Csomaglista";
-    }
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
     {
@@ -1514,14 +1503,6 @@ class TranslatorHungarian : public TranslatorAdapter_1_8_15
      */
     virtual QCString trDirectories()
     { return "Könyvtárak"; }
-
-    /*! This returns a sentences that introduces the directory hierarchy.
-     *  and the fact that it is sorted alphabetically per level
-     */
-    virtual QCString trDirDescription()
-    { return "Majdnem (de nem teljesen) betűrendbe szedett "
-             "könyvtárhierarchia:";
-    }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.

@@ -375,6 +375,10 @@ class TranslatorSerbian : public TranslatorAdapter_1_6_0
       {
         return "Dokumentacija stuktura/unija";
       }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+          return trDesignUnitDocumentation();
+      }
       else
       {
         return "Dokumentacija klasa";
@@ -392,12 +396,6 @@ class TranslatorSerbian : public TranslatorAdapter_1_6_0
      */
     virtual QCString trExampleDocumentation()
     { return "Dokumentacija primera"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all related pages.
-     */
-    virtual QCString trPageDocumentation()
-    { return "Dokumentacija stranice"; }
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
@@ -500,10 +498,6 @@ class TranslatorSerbian : public TranslatorAdapter_1_6_0
     {
       return QCString("Dijagram nasleđivanja za klasu ") + clName + ":";
     }
-
-    /*! this text is generated when the \\internal command is used. */
-    virtual QCString trForInternalUseOnly()
-    { return "Samo za unutrašnju upotrebu."; }
 
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
@@ -1091,11 +1085,6 @@ class TranslatorSerbian : public TranslatorAdapter_1_6_0
     {
       return "Paket "+name;
     }
-    /*! Title of the package index page */
-    virtual QCString trPackageList()
-    {
-      return "Spisak paketa";
-    }
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
     {
@@ -1471,12 +1460,6 @@ class TranslatorSerbian : public TranslatorAdapter_1_6_0
     virtual QCString trDirectories()
     { return "Direktorijumi"; }
 
-    /*! This returns a sentences that introduces the directory hierarchy.
-     *  and the fact that it is sorted alphabetically per level
-     */
-    virtual QCString trDirDescription()
-    { return "Hijerarhija direktorijuma uređena približno po abecedi:"; }
-
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.
      */
@@ -1723,59 +1706,11 @@ class TranslatorSerbian : public TranslatorAdapter_1_6_0
       return "Ograničenja tipova";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// following methods have no corresponding entry in translator_en.h
-//////////////////////////////////////////////////////////////////////////
-
-//      /*! This is put above each page as a link to the list of all verbatim headers */
-//     virtual QCString trHeaderFiles()
-//     { return "Zaglavlja"; }
-//
-//     /*! This is an introduction to the page with the list of all header files. */
-//     virtual QCString trHeaderFilesDescription()
-//     { return "Zaglavlja koje izgraduju API:"; }
-//
-//     /*! This sentences is used in the annotated class/file lists if no brief
-//      * description is given.
-//      */
-//     virtual QCString trNoDescriptionAvailable()
-//     { return "Opis nije dostupan"; }
-//
-//     /*! this text is generated when the \\reimp command is used. */
-//     virtual QCString trReimplementedForInternalReasons()
-//     { return decode("Preuradeno zbog unutrasnjih razloga; Nema uticaja na API." ); }
-//
-//     /*! this text is generated when the \\bug command is used. */
-//     virtual QCString trBugsAndLimitations()
-//     { return "Greske i ogranicenja"; }
-//
-//     virtual QCString trSources()
-//     {
-//       return decode("Izvorne datoteke" );
-//     }
-//
-//     /*! Used for Java interfaces in the summary section of Java packages */
-//     virtual QCString trInterfaces()
-//     {
-//       return "Interfejsi";  //!< Radna okruzenja. Ali to je dve reci.
-//     }
-//
-//     /*! Used as a chapter title for Latex & RTF output */
-//     virtual QCString trPackageDocumentation()
-//     {
-//       return "Dokumentacija paketa";
-//     }
-//
-//     /*! This is used for translation of the word that will possibly
-//      *  be followed by a single name or by a list of names
-//      *  of the category.
-//      */
-//     virtual QCString trField(bool first_capital, bool singular)
-//     {
-//       QCString result((first_capital ? "Polj" : "polj"));
-//       result+= (singular ? "e" : "a");
-//       return result;
-//     }
+    /*! Used for Java interfaces in the summary section of Java packages */
+    virtual QCString trInterfaces()
+    {
+      return "Interfejsi";  //!< Radna okruzenja. Ali to je dve reci.
+    }
 
 };
 

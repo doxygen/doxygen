@@ -395,6 +395,10 @@ class TranslatorGreek : public Translator
       {
         return "Τεκμηρίωση Δομών Δεδομένων";
       }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+          return trDesignUnitDocumentation();
+      }
       else
       {
         return "Τεκμηρίωση Κλάσεων";
@@ -412,12 +416,6 @@ class TranslatorGreek : public Translator
      */
     virtual QCString trExampleDocumentation()
     { return "Τεκμηρίωση Παραδειγμάτων"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all related pages.
-     */
-    virtual QCString trPageDocumentation()
-    { return "Τεκμηρίωση Σελίδων"; }
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
@@ -520,10 +518,6 @@ class TranslatorGreek : public Translator
     {
       return "Διάγραμμα κληρονομικότητας για την "+clName+":";
     }
-
-    /*! this text is generated when the \\internal command is used. */
-    virtual QCString trForInternalUseOnly()
-    { return "Μόνο για εσωτερική χρήση."; }
 
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
@@ -1114,11 +1108,6 @@ class TranslatorGreek : public Translator
     {
       return "Πακέτο "+name;
     }
-    /*! Title of the package index page */
-    virtual QCString trPackageList()
-    {
-      return "Λίστα Πακέτων";
-    }
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
     {
@@ -1502,14 +1491,6 @@ class TranslatorGreek : public Translator
      */
     virtual QCString trDirectories()
     { return "Κατάλογοι"; }
-
-    /*! This returns a sentences that introduces the directory hierarchy.
-     *  and the fact that it is sorted alphabetically per level
-     */
-    virtual QCString trDirDescription()
-    {
-			return "Η ιεραρχία καταλόγων ταξινομήθηκε αλφαβητικά, αλλά όχι πολύ αυστηρά:";
-    }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.

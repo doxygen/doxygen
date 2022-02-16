@@ -875,8 +875,13 @@ class Transl:
                             assert False
 
                         assert(uniPrototype not in self.prototypeDic)
-                        # Insert new dictionary item.
-                        self.prototypeDic[uniPrototype] = prototype
+                        # Insert new dictionary item, unless they have a default in translator.h
+                        if (not (prototype=="virtual QCString latexDocumentPost()" or
+                                 prototype=="virtual QCString latexDocumentPre()" or
+                                 prototype=="virtual QCString latexCommandName()" or
+                                 prototype=="virtual QCString latexFont()" or
+                                 prototype=="virtual QCString latexFontenc()")):
+                          self.prototypeDic[uniPrototype] = prototype
                         status = 2      # body consumed
                         methodId = None # outside of any method
                 elif tokenId == 'lcurly':

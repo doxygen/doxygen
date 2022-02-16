@@ -26,6 +26,9 @@ Armen Tangamyan: armen dot tangamyan at anu dot edu dot au
 TranslatorBrazilian
 Fabio "FJTC" Jun Takada Chino: jun-chino at uol dot com dot br
 
+TranslatorBulgarian
+Kiril Kirilov: kpkirilov at abv dot bg
+
 TranslatorCatalan
 Maximiliano Pin: max dot pin at bitroit dot com
 Albert Mora: [unreachable] amora at iua dot upf dot es

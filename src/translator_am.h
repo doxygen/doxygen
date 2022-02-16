@@ -342,6 +342,10 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
       {
         return "Տվյալների կառուցվածքներ";
       }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+          return trDesignUnitDocumentation();
+      }
       else
       {
         return "Դասեր";
@@ -359,12 +363,6 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
      */
     virtual QCString trExampleDocumentation()
     { return "Օրինակներ"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all related pages.
-     */
-    virtual QCString trPageDocumentation()
-    { return "Էջեր"; }
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
@@ -470,10 +468,6 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
     {
       return clName+QCString(" -ի ժառանգման գծագիրը.");
     }
-
-    /*! this text is generated when the \\internal command is used. */
-    virtual QCString trForInternalUseOnly()
-    { return "Միայն ներքին օգտագործման համար"; }
 
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
@@ -1078,11 +1072,6 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
     {
       return "Փաթեթ "+name;
     }
-    /*! Title of the package index page */
-    virtual QCString trPackageList()
-    {
-      return "Փաթեթների ցուցակ";
-    }
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
     {
@@ -1434,14 +1423,6 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
      */
     virtual QCString trDirectories()
     { return "Ֆայլադրաններ"; }
-
-    /*! This returns a sentences that introduces the directory hierarchy.
-     *  and the fact that it is sorted alphabetically per level
-     */
-    virtual QCString trDirDescription()
-    { return "Այս ֆայլադարանների հիերարխիան կարգավորված է կոպտորեն, "
-			"բայց ոչ ամբողջապես, այբբենական կարգով.";
-	}
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.

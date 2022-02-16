@@ -11,6 +11,9 @@ include_directories(
 add_executable(doxyparse
 doxyparse.cpp
 )
+
+include(ApplyEditbin)
+apply_editbin(doxyparse console)
 add_sanitizers(doxyparse)
 
 if (use_libclang)

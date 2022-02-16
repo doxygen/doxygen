@@ -244,7 +244,7 @@ QCString DotGroupCollaboration::writeGraph( TextStream &t,
   const QCString &path, const QCString &fileName, const QCString &relPath,
   bool generateImageMap,int graphId)
 {
-  m_doNotAddImageToIndex = TRUE;
+  m_doNotAddImageToIndex = textFormat!=EOF_Html;
 
   return DotGraph::writeGraph(t, graphFormat, textFormat, path, fileName, relPath, generateImageMap, graphId);
 }

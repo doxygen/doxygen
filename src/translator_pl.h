@@ -169,10 +169,6 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
     QCString trFileList()
     { return "Lista plików"; }
 
-    /*! This is put above each page as a link to the list of all verbatim headers */
-    QCString trHeaderFiles()
-    { return "Pliki nagłówkowe"; }
-
     /*! This is put above each page as a link to all members of compounds. */
     QCString trCompoundMembers()
     {
@@ -308,10 +304,6 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
       return result;
     }
 
-    /*! This is an introduction to the page with the list of all header files. */
-    QCString trHeaderFilesDescription()
-    { return "Tutaj znajdują się pliki nagłówkowe tworzące API:"; }
-
     /*! This is an introduction to the page with the list of all examples */
     QCString trExamplesDescription()
     { return "Tutaj znajduje się lista wszystkich przykładów:"; }
@@ -323,12 +315,6 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
     /*! This is an introduction to the page with the list of class/file groups */
     QCString trModulesDescription()
     { return "Tutaj znajduje się lista wszystkich grup:"; }
-
-    /*! This sentences is used in the annotated class/file lists if no brief
-     * description is given.
-     */
-    QCString trNoDescriptionAvailable()
-    { return "Brak opisu"; }
 
     // index titles (the project name is prepended for these)
 
@@ -385,6 +371,10 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
       {
         return "Dokumentacja struktur danych";
       }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+          return trDesignUnitDocumentation();
+      }
       else
       {
         return "Dokumentacja klas";
@@ -402,12 +392,6 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
      */
     QCString trExampleDocumentation()
     { return "Dokumentacja przykładów"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all related pages.
-     */
-    QCString trPageDocumentation()
-    { return "Dokumentacja stron"; }
 
     /*! This is used in LaTeX as the title of the document */
     QCString trReferenceManual()
@@ -511,21 +495,9 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
       return "Diagram dziedziczenia dla "+clName;
     }
 
-    /*! this text is generated when the \\internal command is used. */
-    QCString trForInternalUseOnly()
-    { return "Tylko do użytku wewnętrznego."; }
-
-    /*! this text is generated when the \\reimp command is used. */
-    QCString trReimplementedForInternalReasons()
-    { return "Reimplementowana z wewnętrzych przyczyn; nie dotyczy API."; }
-
     /*! this text is generated when the \\warning command is used. */
     QCString trWarning()
     { return "Ostrzeżenie"; }
-
-    /*! this text is generated when the \\bug command is used. */
-    QCString trBugsAndLimitations()
-    { return "Błędy i ograniczenia"; }
 
     /*! this text is generated when the \\version command is used. */
     QCString trVersion()
@@ -796,10 +768,6 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
 // new since 0.49-991003
 //////////////////////////////////////////////////////////////////////////
 
-    QCString trSources()
-    {
-      return "Źródła";
-    }
     QCString trDefinedAtLineInSourceFile()
     {
       return "Definicja w linii @0 pliku @1.";
@@ -1114,11 +1082,6 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
     {
       return "Pakiet "+name;
     }
-    /*! Title of the package index page */
-    virtual QCString trPackageList()
-    {
-      return "Lista Pakietów";
-    }
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
     {
@@ -1128,11 +1091,6 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
     virtual QCString trPackages()
     {
       return "Pakiety";
-    }
-    /*! Used as a chapter title for Latex & RTF output */
-    virtual QCString trPackageDocumentation()
-    {
-      return "Dokumentacja Pakietu";
     }
     /*! Text shown before a multi-line define */
     virtual QCString trDefineValue()
@@ -1241,17 +1199,6 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
     {
       QCString result((first_capital ? "Składow" : "składow"));
       result+=(singular ? "a" : "e");
-      return result;
-    }
-
-    /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names
-     *  of the category.
-     */
-    virtual QCString trField(bool first_capital, bool singular)
-    {
-      QCString result((first_capital ? "Pol" : "pol"));
-      result+=(singular ? "e" : "a");
       return result;
     }
 
@@ -1485,14 +1432,6 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
     virtual QCString trDirectories()
     { return "Katalogi"; }
 
-    /*! This returns a sentences that introduces the directory hierarchy.
-     *  and the fact that it is sorted alphabetically per level
-     */
-    virtual QCString trDirDescription()
-    {
-      return "Ta struktura katalogów posortowana jest z grubsza, "
-             "choć nie całkowicie, alfabetycznie:";
-    }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.

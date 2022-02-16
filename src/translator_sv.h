@@ -500,6 +500,10 @@ class TranslatorSwedish : public Translator
       {
         return "Dokumentation över datastrukturer";
       }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+          return trDesignUnitDocumentation();
+      }
       else
       {
         return "Klassdokumentation";
@@ -517,12 +521,6 @@ class TranslatorSwedish : public Translator
      */
     virtual QCString trExampleDocumentation()
     { return "Exempeldokumentation"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all related pages.
-     */
-    virtual QCString trPageDocumentation()
-    { return "Sid-dokumentation"; }
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
@@ -625,10 +623,6 @@ class TranslatorSwedish : public Translator
     {
       return "Klassdiagram för "+clName;
     }
-
-    /*! this text is generated when the \\internal command is used. */
-    virtual QCString trForInternalUseOnly()
-    { return "Endast för internt bruk."; }
 
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
@@ -1227,11 +1221,6 @@ class TranslatorSwedish : public Translator
     {
       return "Paket "+name;
     }
-    /*! Title of the package index page */
-    virtual QCString trPackageList()
-    {
-      return "Paketlista";
-    }
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
     {
@@ -1593,14 +1582,6 @@ class TranslatorSwedish : public Translator
      */
     virtual QCString trDirectories()
     { return "Kataloger"; }
-
-    /*! This returns a sentences that introduces the directory hierarchy.
-     *  and the fact that it is sorted alphabetically per level
-     */
-    virtual QCString trDirDescription()
-    { return "Den här katalogen är grovt sorterad, "
-             "men inte helt, i alfabetisk ordning:";
-    }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.

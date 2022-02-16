@@ -42,7 +42,7 @@
  files frees the maintainer from thinking about whether the
  first, the second, or both files should be included or not, and
  why.  This holds namely for localized translators because their
- base class is changed occasionaly to adapter classes when the
+ base class is changed occasionally to adapter classes when the
  Translator class changes the interface, or back to the
  Translator class (by the local maintainer) when the localized
  translator is made up-to-date again.
@@ -411,6 +411,10 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
       {
         return "Thông tin về cấu trúc cơ sở dữ liệu";
       }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+          return trDesignUnitDocumentation();
+      }
       else
       {
         return "Thông tin về Class";
@@ -428,12 +432,6 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
      */
     virtual QCString trExampleDocumentation()
     { return "Thông tin về các ví dụ"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all related pages.
-     */
-    virtual QCString trPageDocumentation()
-    { return "Trang Thông tin"; }
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
@@ -536,10 +534,6 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
     {
       return "Sơ đồ kế thừa cho "+clName+":";
     }
-
-    /*! this text is generated when the \\internal command is used. */
-    virtual QCString trForInternalUseOnly()
-    { return "Chỉ cho sử dụng nội bộ."; }
 
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
@@ -1126,11 +1120,6 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
     {
       return "Gói "+name;
     }
-    /*! Title of the package index page */
-    virtual QCString trPackageList()
-    {
-      return "Danh sách gói";
-    }
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
     {
@@ -1504,14 +1493,6 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
      */
     virtual QCString trDirectories()
     { return "Các thư mục"; }
-
-    /*! This returns a sentences that introduces the directory hierarchy.
-     *  and the fact that it is sorted alphabetically per level
-     */
-    virtual QCString trDirDescription()
-    { return "Thư mục đã được sắp xếp theo al-pha-bê, "
-             "nhưng chưa đầy đủ:";
-    }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.
