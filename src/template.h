@@ -284,7 +284,7 @@ class TemplateListIntf
     {
       public:
         /** Destructor for the iterator */
-        virtual ~ConstIterator() {}
+        virtual ~ConstIterator() = default;
         /** Moves iterator to the first element in the list */
         virtual void toFirst() = 0;
         /** Moves iterator to the last element in the list */
@@ -303,7 +303,7 @@ class TemplateListIntf
     using ConstIteratorPtr = std::unique_ptr<ConstIterator>;
 
     /** Destroys the list */
-    virtual ~TemplateListIntf() {}
+    virtual ~TemplateListIntf() = default;
 
     /** Returns the number of elements in the list */
     virtual size_t count() const = 0;
@@ -349,7 +349,7 @@ class TemplateStructIntf
 {
   public:
     /** Destroys the struct */
-    virtual ~TemplateStructIntf() {}
+    virtual ~TemplateStructIntf() = default;
 
     /** Gets the value for a field name.
      *  @param[in] name The name of the field.
@@ -395,7 +395,7 @@ class TemplateImmutableStruct : public TemplateStructIntf
 class TemplateEscapeIntf
 {
   public:
-    virtual ~TemplateEscapeIntf() {}
+    virtual ~TemplateEscapeIntf() = default;
     /** Create a copy of the escape filter */
     virtual std::unique_ptr<TemplateEscapeIntf> clone() = 0;
     /** Returns the \a input after escaping certain characters */
@@ -410,7 +410,7 @@ class TemplateEscapeIntf
 class TemplateSpacelessIntf
 {
   public:
-    virtual ~TemplateSpacelessIntf() {}
+    virtual ~TemplateSpacelessIntf() = default;
     /** Create a copy of the spaceless filter */
     virtual std::unique_ptr<TemplateSpacelessIntf> clone() = 0;
     /** Returns the \a input after removing redundant whitespace */
@@ -433,7 +433,7 @@ class TemplateSpacelessIntf
 class TemplateContext
 {
   public:
-    virtual ~TemplateContext() {}
+    virtual ~TemplateContext() = default;
 
     /** Push a new scope on the stack. */
     virtual void push() = 0;
@@ -487,7 +487,7 @@ class Template
 {
   public:
     /** Destructor */
-    virtual ~Template() {}
+    virtual ~Template() = default;
 
     /** Renders a template instance to a stream.
      *  @param[in] ts The text stream to write the results to.

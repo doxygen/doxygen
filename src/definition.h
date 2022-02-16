@@ -76,11 +76,6 @@ struct BodyInfo
 class Definition
 {
   public:
-    struct Cookie
-    {
-      virtual ~Cookie() {}
-    };
-
     /*! Types of derived classes */
     enum DefType
     {

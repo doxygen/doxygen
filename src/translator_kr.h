@@ -50,10 +50,6 @@
 */
 class TranslatorKorean : public TranslatorAdapter_1_8_15
 {
-  protected:
-    friend class TranslatorAdapterBase;
-    virtual ~TranslatorKorean() {}
-
   public:
 
     // --- Language control methods -------------------

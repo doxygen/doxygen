@@ -34,7 +34,7 @@ class DotGraph
   public:
     DotGraph() : m_doNotAddImageToIndex(FALSE), m_noDivTag(FALSE),
                  m_zoomable(TRUE), m_urlOnly(FALSE) {}
-    virtual ~DotGraph() {}
+    virtual ~DotGraph() = default;
 
   protected:
     /** returns node numbers. The Counter is reset by the constructor */

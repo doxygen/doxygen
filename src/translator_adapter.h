@@ -13,7 +13,6 @@
 class TranslatorAdapterBase : public Translator
 {
   protected:
-    virtual ~TranslatorAdapterBase() {}
     TranslatorEnglish english;
 
     /*! An auxiliary inline method used by the updateNeededMessage()

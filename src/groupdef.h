@@ -49,8 +49,6 @@ class MemberDef;
 class GroupDef : public DefinitionMutable, public Definition
 {
   public:
-   ~GroupDef() {}
-
     virtual DefType definitionType() const = 0;
     virtual QCString getOutputFileBase() const = 0;
     virtual QCString anchor() const = 0;

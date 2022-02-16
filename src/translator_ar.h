@@ -32,10 +32,6 @@
 
 class TranslatorArabic : public TranslatorAdapter_1_4_6
 {
-  protected:
-    friend class TranslatorAdapterBase;
-    virtual ~TranslatorArabic() {}
-
   public:
 
     // --- Language control methods -------------------

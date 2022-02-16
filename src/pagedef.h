@@ -25,8 +25,6 @@ class OutputList;
 class PageDef : public DefinitionMutable, public Definition
 {
   public:
-    virtual ~PageDef() {}
-
     // setters
     virtual void setFileName(const QCString &name) = 0;
     virtual void setLocalToc(const LocalToc &tl) = 0;

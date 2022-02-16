@@ -23,9 +23,6 @@
 
 class TranslatorSlovene : public TranslatorAdapter_1_4_6
 {
-  protected:
-    friend class TranslatorAdapterBase;
-    virtual ~TranslatorSlovene() {}
   public:
     QCString idLanguage()
     { return "slovene"; }

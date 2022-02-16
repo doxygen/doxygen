@@ -68,7 +68,7 @@ class MemberInfo
   public:
     MemberInfo(const MemberDef *md,Protection p,Specifier v,bool inh) :
           m_memberDef(md), m_prot(p), m_virt(v), m_inherited(inh) {}
-   ~MemberInfo() {}
+   ~MemberInfo() = default;
 
     // getters
     const MemberDef *memberDef()                { return m_memberDef; }

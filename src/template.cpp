@@ -231,7 +231,6 @@ class TemplateListGenericConstIterator : public TemplateListIntf::ConstIterator
 {
   public:
     TemplateListGenericConstIterator(const List &l) : m_list(l) { m_index=0; }
-    virtual ~TemplateListGenericConstIterator() {}
     virtual void toFirst()
     {
       m_index=0;
@@ -1663,7 +1662,7 @@ static TemplateFilterFactory::AutoRegister<FilterIsAbsoluteURL>      fIsAbsolute
 class ExprAst
 {
   public:
-    virtual ~ExprAst() {}
+    virtual ~ExprAst() = default;
     virtual TemplateVariant resolve(TemplateContext *) { return TemplateVariant(); }
 };
 
@@ -1934,7 +1933,7 @@ class TemplateNode
 {
   public:
     TemplateNode(TemplateNode *parent) : m_parent(parent) {}
-    virtual ~TemplateNode() {}
+    virtual ~TemplateNode() = default;
 
     virtual void render(TextStream &ts, TemplateContext *c) = 0;
 

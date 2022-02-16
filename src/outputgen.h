@@ -61,7 +61,7 @@ struct SourceLinkInfo
 class CodeOutputInterface
 {
   public:
-    virtual ~CodeOutputInterface() {}
+    virtual ~CodeOutputInterface() = default;
     CodeOutputInterface() {}
     CodeOutputInterface(const CodeOutputInterface &) = delete;
     CodeOutputInterface &operator=(const CodeOutputInterface &) = delete;
@@ -161,7 +161,6 @@ class CodeOutputInterface
 class BaseOutputDocInterface : public CodeOutputInterface
 {
   public:
-    virtual ~BaseOutputDocInterface() {}
     enum ParamListTypes { Param, RetVal, Exception };
     enum SectionTypes { /*See, Return, Author, Version,
                         Since, Date, Bug, Note,
@@ -527,8 +526,6 @@ class OutputGenerator : public BaseOutputDocInterface
 class OutputDocInterface : public BaseOutputDocInterface
 {
   public:
-    virtual ~OutputDocInterface() {}
-
     /*! Disables all output formats except format \a o
      *  (useful for OutputList only)
      */

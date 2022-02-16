@@ -147,7 +147,7 @@ class DefinitionMixin : public Base
         const QCString &defFileName,int defLine,int defColumn,
         const QCString &name,const char *b=0,const char *d=0,
         bool isSymbol=TRUE) : m_impl(this,defFileName,defLine,defColumn,name,b,d,isSymbol) {}
-    virtual ~DefinitionMixin() {}
+    virtual ~DefinitionMixin() = default;
 
     virtual bool isAlias() const { return FALSE; }
 

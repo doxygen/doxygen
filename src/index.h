@@ -32,7 +32,7 @@ class OutputList;
 class IndexIntf
 {
   public:
-    virtual ~IndexIntf() {}
+    virtual ~IndexIntf() = default;
     virtual void initialize() = 0;
     virtual void finalize() = 0;
     virtual void incContentsDepth() = 0;
@@ -51,7 +51,7 @@ class IndexIntf
 /** \brief A list of index interfaces.
  *
  *  This class itself implements all methods of IndexIntf and
- *  just forwards the calls to all items in the list.
+ *  just forwards the calls to all items in the list (composite design pattern).
  */
 class IndexList : public IndexIntf
 {
