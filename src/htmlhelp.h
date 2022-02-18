@@ -79,7 +79,6 @@ class HtmlHelp  : public IndexIntf
     void addIndexFile(const QCString &name);
     void addImageFile(const QCString &);
     void addStyleSheetFile(const QCString &);
-    static QCString getLanguageString();
 
   private:
     class Private;

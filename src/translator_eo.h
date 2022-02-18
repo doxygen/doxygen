@@ -81,6 +81,11 @@ class TranslatorEsperanto : public TranslatorAdapter_1_8_4
       return "eo";
     }
 
+    // using fallback see translator.h
+    virtual QCString getLanguageString()
+    {
+      return "0x409 English (United States)";
+    }
     // --- Language translation methods -------------------
 
     /*! used in the compound documentation before a list of related functions. */

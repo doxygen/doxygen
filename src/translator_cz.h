@@ -111,6 +111,10 @@ class TranslatorCzech : public Translator
     {
       return "cs";
     }
+    virtual QCString getLanguageString()
+    {
+      return "0x405 Czech";
+    }
 
     // --- Language translation methods -------------------
 

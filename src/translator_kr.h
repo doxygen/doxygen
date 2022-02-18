@@ -98,6 +98,10 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
     {
       return "ko";
     }
+    virtual QCString getLanguageString()
+    {
+      return "0x412 Korean";
+    }
 
     // --- Language translation methods -------------------
 

@@ -72,6 +72,10 @@ class TranslatorSpanish : public TranslatorAdapter_1_8_15
     {
       return "es";
     }
+    virtual QCString getLanguageString()
+    {
+      return "0x40A Spanish(Traditional Sort)";
+    }
 
     // --- Language translation methods -------------------
 

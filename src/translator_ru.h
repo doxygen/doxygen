@@ -39,6 +39,10 @@ class TranslatorRussian : public TranslatorAdapter_1_8_15
 
     virtual QCString trISOLang()
     { return "ru"; }
+    virtual QCString getLanguageString()
+    {
+      return "0x419 Russian";
+    }
 
     // --- Language translation methods -------------------
 

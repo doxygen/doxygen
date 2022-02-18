@@ -66,6 +66,10 @@ class TranslatorArabic : public TranslatorAdapter_1_4_6
 
     virtual QCString trISOLang()
     { return "ar-EG"; }
+    virtual QCString getLanguageString()
+    {
+      return "0xC01 Arabic (Egypt)";
+    }
 
     // --- Language translation methods -------------------
 

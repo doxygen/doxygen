@@ -64,6 +64,10 @@ class TranslatorKoreanEn : public TranslatorEnglish
     {
       return "ko";
     }
+    virtual QCString getLanguageString()
+    {
+      return "0x412 Korean";
+    }
 };
 
 #endif

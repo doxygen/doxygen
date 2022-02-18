@@ -84,6 +84,10 @@ class TranslatorLatvian : public TranslatorAdapter_1_8_4
     {
       return "lv";
     }
+    virtual QCString getLanguageString()
+    {
+      return "0x426 Latvian";
+    }
 
     // --- Language translation methods -------------------
 

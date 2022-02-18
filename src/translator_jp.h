@@ -83,6 +83,10 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
     {
       return "ja";
     }
+    virtual QCString getLanguageString()
+    {
+      return "0x411 Japanese";
+    }
     virtual QCString latexFontenc()
     {
       return "";

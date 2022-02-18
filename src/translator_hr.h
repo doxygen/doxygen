@@ -94,6 +94,10 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
     { return "\\usepackage[croatian]{babel}\n"; }
     QCString trISOLang()
     { return "hr"; }
+    virtual QCString getLanguageString()
+    {
+      return "0x41A Croatian";
+    }
     QCString trRelatedFunctions()
     { return "Povezane funkcije"; }
     QCString trRelatedSubscript()
