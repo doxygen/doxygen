@@ -578,6 +578,7 @@ void MainWindow::runDoxygen()
     }
     QTextStream t(m_runProcess);
     m_expert->writeConfig(t,false,false);
+    t.flush();
     m_runProcess->closeWriteChannel();
 
     if (m_runProcess->state() == QProcess::NotRunning)
