@@ -95,6 +95,7 @@ class Translator
        0x40C French
        0x407 German
        0x408 Greece
+       0x439 Hindi
        0x40E Hungarian
        0x410 Italian
        0x814 Norwegian

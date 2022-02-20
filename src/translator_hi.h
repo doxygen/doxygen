@@ -187,7 +187,7 @@ class TranslatorHindi : public Translator
     { return "hi-IN"; }
 
     virtual QCString getLanguageString()
-    { return ""; }
+    { return "0x439 Hindi"; }
 
     // --- Language translation methods -------------------
 
