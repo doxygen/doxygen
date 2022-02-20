@@ -1170,7 +1170,7 @@ class TranslatorHindi : public Translator
      *
      */
     virtual QCString trRTFansicp()
-    { return ""; }
+    { return "65001"; }
 
     /*! Used as ansicpg for RTF fcharset
      *  \see trRTFansicp() for a table of possible values.
