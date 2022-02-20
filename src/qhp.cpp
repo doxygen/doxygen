@@ -16,7 +16,7 @@
 #include <memory>
 #include <string.h>
 #include <vector>
-
+#include <cassert>
 
 #include "config.h"
 #include "debug.h"
@@ -88,8 +88,8 @@ class QhpSectionTree
           {
             // we have a dir node
             writeIndent(t,indent);
-            t << "<section title=\"" << root.children[i-1]->title << "\""
-              <<         " ref=\""   << root.children[i-1]->ref   << "\">\n";
+            t << "<section title=\"" << convertToXML(root.children[i-1]->title) << "\""
+              <<         " ref=\""   << convertToXML(root.children[i-1]->ref)   << "\">\n";
             while (i<numChildren && root.children[i]->type==Node::Type::Dir)
             {
               traverse(*root.children[i].get(),t,indent+1);
@@ -101,8 +101,8 @@ class QhpSectionTree
           else // we have a leaf section node
           {
             writeIndent(t,indent);
-            t << "<section title=\"" << root.children[i-1]->title << "\""
-              <<           " ref=\"" << root.children[i-1]->ref   << "\"/>\n";
+            t << "<section title=\"" << convertToXML(root.children[i-1]->title) << "\""
+              <<           " ref=\"" << convertToXML(root.children[i-1]->ref)   << "\"/>\n";
           }
         }
         else // dir without preceding section (no extra indent)
@@ -221,23 +221,23 @@ void Qhp::initialize()
   p->doc << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
   p->doc << "<QtHelpProject version=\"1.0\">\n";
   writeIndent(p->doc,1);
-  p->doc << "<namespace>" << Config_getString(QHP_NAMESPACE) << "</namespace>\n";
+  p->doc << "<namespace>" << convertToXML(Config_getString(QHP_NAMESPACE)) << "</namespace>\n";
   writeIndent(p->doc,1);
-  p->doc << "<virtualFolder>" << Config_getString(QHP_VIRTUAL_FOLDER) << "</virtualFolder>\n";
+  p->doc << "<virtualFolder>" << convertToXML(Config_getString(QHP_VIRTUAL_FOLDER)) << "</virtualFolder>\n";
 
   // Add custom filter
   QCString filterName = Config_getString(QHP_CUST_FILTER_NAME);
   if (!filterName.isEmpty())
   {
     writeIndent(p->doc,1);
-    p->doc << "<customFilter name=\"" << filterName << "\">\n";
+    p->doc << "<customFilter name=\"" << convertToXML(filterName) << "\">\n";
 
     StringVector customFilterAttributes =
         split(Config_getString(QHP_CUST_FILTER_ATTRS).str(), " ");
     for (const auto &attr : customFilterAttributes)
     {
       writeIndent(p->doc,2);
-      p->doc << "<filterAttribute>" << attr << "</filterAttribute>\n";
+      p->doc << "<filterAttribute>" << convertToXML(QCString(attr)) << "</filterAttribute>\n";
     }
     writeIndent(p->doc,1);
     p->doc << "</customFilter>\n";
@@ -257,7 +257,7 @@ void Qhp::initialize()
   for (const auto &attr : sectionFilterAttributes)
   {
     writeIndent(p->doc,2);
-    p->doc << "<filterAttribute>" << attr << "</filterAttribute>\n";
+    p->doc << "<filterAttribute>" << convertToXML(QCString(attr)) << "</filterAttribute>\n";
   }
 
   // Add extra root node to the TOC
@@ -361,9 +361,9 @@ void Qhp::addIndexItem(const Definition *context,const MemberDef *md,
     ref = makeRef(contRef, anchor);
     QCString id = level1+"::"+level2;
     writeIndent(p->index,3);
-    p->index << "<keyword name=\"" << level2 << "\""
-                          " id=\"" << id << "\""
-                         " ref=\"" << ref << "\"/>\n";
+    p->index << "<keyword name=\"" << convertToXML(level2) << "\""
+                          " id=\"" << convertToXML(id) << "\""
+                         " ref=\"" << convertToXML(ref) << "\"/>\n";
   }
   else if (context) // container
   {
@@ -372,16 +372,16 @@ void Qhp::addIndexItem(const Definition *context,const MemberDef *md,
     QCString level1  = !word.isEmpty() ? word : context->name();
     QCString ref = makeRef(contRef,sectionAnchor);
     writeIndent(p->index,3);
-    p->index << "<keyword name=\"" << level1 << "\""
-             <<           " id=\"" << level1 << "\""
-             <<          " ref=\"" << ref << "\"/>\n";
+    p->index << "<keyword name=\"" << convertToXML(level1) << "\""
+             <<           " id=\"" << convertToXML(level1) << "\""
+             <<          " ref=\"" << convertToXML(ref) << "\"/>\n";
   }
 }
 
 void Qhp::addFile(const QCString & fileName)
 {
   writeIndent(p->files,3);
-  p->files << "<file>" << fileName << "</file>\n";
+  p->files << "<file>" << convertToXML(fileName) << "</file>\n";
 }
 
 void Qhp::addIndexFile(const QCString & fileName)
