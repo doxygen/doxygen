@@ -19,7 +19,7 @@
  * alias = उपनाम
  * alias = उपनामगण
  * architecture = वास्तुकला
- * architectures = वास्तुकलाएं";
+ * architectures = वास्तुकलाएं
  * argument = तर्क
  * arguments = तर्कगण
  * attribute = गुण
@@ -90,8 +90,8 @@
  * operations = कार्यवाहीयाँ
  * overload = अधिभार
  * overloaded = अधिभारित
- * package = "संकुल"
- * packages = "संकुलगण"
+ * package = संकुल
+ * packages = संकुलगण
  * page = पृष्ठ
  * pages = पृष्ठगण
  * parameter = मापदंड
@@ -1176,7 +1176,7 @@ class TranslatorHindi : public Translator
      *  \see trRTFansicp() for a table of possible values.
      */
     virtual QCString trRTFCharSet()
-    { return ""; }
+    { return "1252"; }
 
     /*! Used as header RTF general index */
     virtual QCString trRTFGeneralIndex()
