@@ -981,7 +981,7 @@ Go to the <a href="commands.html">next</a> section or return to the
  whose names only differ in casing), the option must be set to \c YES to properly deal with such files
  in case they appear in the input.
 
- For filesystems that are not case sensitive the option should be be set to \c NO to properly
+ For filesystems that are not case sensitive the option should be set to \c NO to properly
  deal with output files written for symbols that only differ in casing, such as for two classes,
  one named \c CLASS and the other named \c Class, and to also support references to files without
  having to specify the exact matching casing.
