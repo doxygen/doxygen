@@ -73,7 +73,6 @@ class HtmlHelp  : public IndexIntf
                          bool separateIndex,
                          bool addToNavIndex,
                          const Definition *def);
-    void closeContentsItem() {}
     void addIndexItem(const Definition *context,const MemberDef *md,
                       const QCString &sectionAnchor, const QCString &title);
     void addIndexFile(const QCString &name);
