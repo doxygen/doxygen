@@ -161,7 +161,9 @@ class Tester:
 				print('DOCBOOK_OUTPUT=%s/docbook' % self.test_out, file=f)
 			else:
 				print('GENERATE_DOCBOOK=NO', file=f)
-			if (self.args.xhtml):
+			if (self.args.qhp):
+				print('GENERATE_QHP=YES', file=f)
+			if (self.args.xhtml or self.args.qhp):
 				print('GENERATE_HTML=YES', file=f)
 			# HTML_OUTPUT can also have been set locally
 			print('HTML_OUTPUT=%s/html' % self.test_out, file=f)
@@ -275,6 +277,7 @@ class Tester:
 
 		failed_xml=False
 		failed_html=False
+		failed_qhp=False
 		failed_latex=False
 		failed_docbook=False
 		failed_rtf=False
@@ -443,7 +446,7 @@ class Tester:
 			elif not self.args.keep:
 				shutil.rmtree(docbook_output,ignore_errors=True)
 
-		if (self.args.xhtml):
+		if (self.args.xhtml or self.args.qhp):
 			html_output='%s/html' % self.test_out
 			if (sys.platform == 'win32'):
 				redirx=' 2> %s/temp >nul:'%html_output
@@ -462,10 +465,23 @@ class Tester:
 			xmllint_out = self.cleanup_xmllint(xmllint_out)
 			if xmllint_out:
 				xmllint_out  = clean_header(xmllint_out)
-			if xmllint_out:
-				msg += (xmllint_out,)
-				failed_html=True
-			elif not self.args.keep:
+				if xmllint_out:
+					msg += (xmllint_out,)
+					failed_html=True
+
+			failed_qhp=False
+			if not failed_html:
+				check_file = "%s/index.qhp"%(html_output)
+				exe_string = '%s --noout %s' % (self.args.xmllint,check_file)
+				exe_string1 = exe_string
+				exe_string += ' %s' % (redirx)
+				exe_string += ' %s more "%s/temp"' % (separ,html_output)
+				xmllint_out = xpopen(exe_string,exe_string1,getStderr=True)
+				xmllint_out = self.cleanup_xmllint(xmllint_out)
+				if xmllint_out:
+					msg += (xmllint_out,)
+					failed_qhp=True
+			if not failed_html and not failed_qhp and not self.args.keep:
 				shutil.rmtree(html_output,ignore_errors=True)
 		if (self.args.pdf):
 			failed_latex=False
@@ -508,7 +524,7 @@ class Tester:
 		if failed_warn:
 			msg += (warnings,)
 
-		if failed_warn or failed_xml or failed_html or failed_latex or failed_docbook or failed_rtf or failed_xmlxsd:
+		if failed_warn or failed_xml or failed_html or failed_qhp or failed_latex or failed_docbook or failed_rtf or failed_xmlxsd:
 			testmgr.ok(False,self.test_name,msg)
 			return False
 
@@ -534,7 +550,7 @@ class TestManager:
 		self.num_tests = len(tests)
 		self.count=1
 		self.passed=0
-		if self.args.xhtml:
+		if (self.args.xhtml or self.args.qhp):
 			self.prepare_dtd()
 		print('1..%d' % self.num_tests)
 
@@ -573,7 +589,7 @@ class TestManager:
 			passed = p.map(do_generation_work, dl)
 			self.passed = sum(passed)
 		res=self.result()
-		if self.args.xhtml and self.args.inputdir!='.' and not res and not self.args.keep:
+		if (self.args.xhtml or self.args.qhp) and self.args.inputdir!='.' and not res and not self.args.keep:
 			shutil.rmtree("dtd",ignore_errors=True)
 		return 0 if self.args.updateref else res
 
@@ -627,6 +643,8 @@ def main():
 		'create docbook output and check with xmllint',action="store_true")
 	parser.add_argument('--xhtml',help=
 		'create xhtml output and check with xmllint',action="store_true")
+	parser.add_argument('--qhp',help=
+		'create qhp output and check with xmllint',action="store_true")
 	parser.add_argument('--xmlxsd',help=
 		'create xml output and check with xmllint against xsd',action="store_true")
 	parser.add_argument('--pdf',help='create LaTeX output and create pdf from it',
@@ -647,7 +665,7 @@ def main():
 	args = parser.parse_args(test_flags + sys.argv[1:])
 
 	# sanity check
-	if (not args.xml) and (not args.pdf) and (not args.xhtml) and (not args.docbook and (not args.rtf) and (not args.xmlxsd)):
+	if (not args.xml) and (not args.pdf) and (not args.xhtml) and (not args.qhp) and (not args.docbook and (not args.rtf) and (not args.xmlxsd)):
 		args.xml=True
 	if (not args.updateref is None) and (args.ids is None) and (args.all is None):
 		parser.error('--updateref requires either --id or --all')
