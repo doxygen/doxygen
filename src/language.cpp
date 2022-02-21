@@ -76,6 +76,9 @@
 #ifdef LANG_PT
 #include "translator_pt.h"
 #endif
+#ifdef LANG_HI
+#include "translator_hi.h"
+#endif
 #ifdef LANG_HU
 #include "translator_hu.h"
 #endif
@@ -217,6 +220,9 @@ void setTranslator(OUTPUT_LANGUAGE_t langName)
 #endif
 #ifdef LANG_GR
     case OUTPUT_LANGUAGE_t::Greek:               theTranslator = new TranslatorGreek; break;
+#endif
+#ifdef LANG_HI
+    case OUTPUT_LANGUAGE_t::Hindi:               theTranslator = new TranslatorHindi; break;
 #endif
 #ifdef LANG_HU
     case OUTPUT_LANGUAGE_t::Hungarian:           theTranslator = new TranslatorHungarian; break;

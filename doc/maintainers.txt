@@ -76,6 +76,9 @@ Jens Seidel: jensseidel at users dot sf dot net
 TranslatorGreek
 Paul Gessos: gessos dot paul at yahoo dot gr
 
+TranslatorHindi
+Harsh Rathod: hrathore50 at ymail dot com
+
 TranslatorHungarian
 Ákos Kiss: akiss at users dot sourceforge dot net
 Földvári György: [unreachable] foldvari lost at cyberspace
@@ -165,4 +168,3 @@ Petro  Yermolenko: python at i dot ua
 
 TranslatorVietnamese
 Dang Minh Tuan: tuanvietkey at gmail dot com
-
