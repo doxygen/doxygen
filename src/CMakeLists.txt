@@ -289,7 +289,6 @@ add_library(doxymain STATIC
     plantuml.cpp
     qcstring.cpp
     qhp.cpp
-    qhpxmlwriter.cpp
     reflist.cpp
     regex.cpp
     resourcemgr.cpp

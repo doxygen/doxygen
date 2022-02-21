@@ -12532,7 +12532,7 @@ void generateOutput()
       !Config_getString(QHG_LOCATION).isEmpty())
   {
     g_s.begin("Running qhelpgenerator...\n");
-    QCString qhpFileName = Qhp::getQhpFileName();
+    QCString qhpFileName = "index.qhp";
     QCString qchFileName = getQchFileName();
 
     QCString args = QCString().sprintf("%s -o \"%s\"", qPrint(qhpFileName), qPrint(qchFileName));
