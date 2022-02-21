@@ -341,12 +341,6 @@ void addMembersToIndex(T *def,LayoutDocManager::LayoutPart part,
                        const ConceptLinkedRefMap *concepts = nullptr)
 
 {
-  bool hasMembers = !def->getMemberLists().empty() || !def->getMemberGroups().empty();
-  Doxygen::indexList->addContentsItem(hasMembers,name,
-                                     def->getReference(),def->getOutputFileBase(),anchor,
-                                     hasMembers && !preventSeparateIndex,
-                                     addToIndex,
-                                     def);
   int numClasses=0;
   for (const auto &cd : def->getClasses())
   {
@@ -360,6 +354,12 @@ void addMembersToIndex(T *def,LayoutDocManager::LayoutPart part,
       if (cd->isLinkable()) numConcepts++;
     }
   }
+  bool hasMembers = !def->getMemberLists().empty() || !def->getMemberGroups().empty() || (numClasses>0) || (numConcepts>0);
+  Doxygen::indexList->addContentsItem(hasMembers,name,
+                                     def->getReference(),def->getOutputFileBase(),anchor,
+                                     hasMembers && !preventSeparateIndex,
+                                     addToIndex,
+                                     def);
   //printf("addMembersToIndex(def=%s hasMembers=%d numClasses=%d)\n",qPrint(def->name()),hasMembers,numClasses);
   if (hasMembers || numClasses>0 || numConcepts>0)
   {
@@ -3262,7 +3262,7 @@ static void writeFileMemberIndex(OutputList &ol)
   bool addToIndex = lne==0 || lne->visible();
   if (documentedFileMembers[FMHL_All]>0 && addToIndex)
   {
-    Doxygen::indexList->addContentsItem(FALSE,lne ? lne->title() : theTranslator->trFileMembers(),QCString(),"globals",QCString());
+    Doxygen::indexList->addContentsItem(true,lne ? lne->title() : theTranslator->trFileMembers(),QCString(),"globals",QCString());
     Doxygen::indexList->incContentsDepth();
   }
   writeFileMemberIndexFiltered(ol,FMHL_All);
@@ -3436,7 +3436,7 @@ static void writeNamespaceMemberIndex(OutputList &ol)
   bool addToIndex = lne==0 || lne->visible();
   if (documentedNamespaceMembers[NMHL_All]>0 && addToIndex)
   {
-    Doxygen::indexList->addContentsItem(FALSE,lne ? lne->title() : theTranslator->trNamespaceMembers(),QCString(),"namespacemembers",QCString());
+    Doxygen::indexList->addContentsItem(true,lne ? lne->title() : theTranslator->trNamespaceMembers(),QCString(),"namespacemembers",QCString());
     Doxygen::indexList->incContentsDepth();
   }
   //bool fortranOpt = Config_getBool(OPTIMIZE_FOR_FORTRAN);
@@ -4350,11 +4350,17 @@ static void writeIndex(OutputList &ol)
         (!projectName.isEmpty() && mainPageHasTitle() && qstricmp(title,projectName)!=0)
        ) // to avoid duplicate entries in the treeview
     {
-      Doxygen::indexList->addContentsItem(Doxygen::mainPage->hasSubPages(),title,QCString(),indexName,QCString(),Doxygen::mainPage->hasSubPages(),TRUE);
+      Doxygen::indexList->addContentsItem(Doxygen::mainPage->hasSubPages() || Doxygen::mainPage->hasSections(),title,QCString(),indexName,QCString(),Doxygen::mainPage->hasSubPages(),TRUE);
+      if (Doxygen::mainPage->hasSubPages()) Doxygen::indexList->incContentsDepth();
+
     }
     if (Doxygen::mainPage->hasSubPages() || Doxygen::mainPage->hasSections())
     {
       writePages(Doxygen::mainPage.get(),0);
+    }
+    if (!projectName.isEmpty() && mainPageHasTitle() && qstricmp(title,projectName)!=0 && Doxygen::mainPage->hasSubPages())
+    {
+      if (Doxygen::mainPage->hasSubPages()) Doxygen::indexList->decContentsDepth();
     }
   }
 
