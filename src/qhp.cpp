@@ -148,7 +148,7 @@ class Qhp::Private
     std::ofstream docFile;
     TextStream doc;
     TextStream index;
-    TextStream files;
+    StringSet files;
     QhpSectionTree sectionTree;
 };
 
@@ -266,8 +266,6 @@ void Qhp::initialize()
 
   writeIndent(p->index,2);
   p->index << "<keywords>\n";
-  writeIndent(p->files,2);
-  p->files << "<files>\n";
 }
 
 void Qhp::finalize()
@@ -284,9 +282,15 @@ void Qhp::finalize()
   p->doc << p->index.str();
 
   // Finish files
-  writeIndent(p->files,2);
-  p->files << "</files>\n";
-  p->doc << p->files.str();
+  writeIndent(p->doc,2);
+  p->doc << "<files>\n";
+  for (auto &s : p->files)
+  {
+    writeIndent(p->doc,3);
+    p->doc << s.c_str() << "\n";
+  }
+  writeIndent(p->doc,2);
+  p->doc << "</files>\n";
 
   writeIndent(p->doc,1);
   p->doc << "</filterSection>\n";
@@ -380,8 +384,7 @@ void Qhp::addIndexItem(const Definition *context,const MemberDef *md,
 
 void Qhp::addFile(const QCString & fileName)
 {
-  writeIndent(p->files,3);
-  p->files << "<file>" << convertToXML(fileName) << "</file>\n";
+  p->files.insert(("<file>" + convertToXML(fileName) + "</file>").str());
 }
 
 void Qhp::addIndexFile(const QCString & fileName)
