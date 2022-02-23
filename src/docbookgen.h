@@ -24,7 +24,6 @@ class DocbookCodeGenerator : public CodeOutputInterface
 {
   public:
     DocbookCodeGenerator(TextStream &t);
-    virtual ~DocbookCodeGenerator();
     void setRelativePath(const QCString &path) { m_relPath = path; }
     void setSourceFileName(const QCString &sourceFileName) { m_sourceFileName = sourceFileName; }
     QCString sourceFileName() { return m_sourceFileName; }

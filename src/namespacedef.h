@@ -54,7 +54,6 @@ class NamespaceLinkedRefMap : public LinkedRefMap<const NamespaceDef>
 class NamespaceDef : public Definition
 {
   public:
-    virtual ~NamespaceDef() {}
     virtual DefType definitionType() const = 0;
 
     // ---- getters

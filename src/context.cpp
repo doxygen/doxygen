@@ -149,7 +149,6 @@ class GenericConstIterator : public TemplateListIntf::ConstIterator
 {
   public:
     GenericConstIterator(const TemplateVariantList &list) : m_list(list) {}
-    virtual ~GenericConstIterator() {}
     void toFirst()
     {
       m_index=0;
@@ -998,7 +997,7 @@ class TranslateContext::Private
     }
     TemplateVariant langString() const
     {
-      return HtmlHelp::getLanguageString();
+      return theTranslator->getLanguageString();
     }
     TemplateVariant code() const
     {
@@ -1404,7 +1403,7 @@ class DefinitionContext
         m_sourceDef = TemplateImmutableList::alloc( {} );
       }
     }
-    virtual ~DefinitionContext() {}
+    virtual ~DefinitionContext() = default;
 
   protected:
     // Property getters
@@ -1548,7 +1547,7 @@ class DefinitionContext
     }
 
   protected:
-    struct Cachable : public Definition::Cookie
+    struct Cachable
     {
       using DC = DefinitionContext<T>;
       CachedItem<TemplateVariant,     DC, &DC::createDetails>        details;
@@ -1716,7 +1715,6 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
        m_classDef(cd)
     {
     }
-    virtual ~Private() {}
 
     // TemplateStructIntf methods
     TemplateVariant get(const QCString &n) const       { return s_inst.get(this,n); }
@@ -2495,7 +2493,6 @@ class NamespaceContext::Private : public DefinitionContext<NamespaceContext::Pri
                                 m_namespaceDef(nd)
     {
     }
-    virtual ~Private() {}
 
     // TemplateStructIntf methods
     TemplateVariant get(const QCString &n) const { return s_inst.get(this,n); }
@@ -2742,7 +2739,6 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
     {
       if (fd==0) abort();
     }
-    virtual ~Private() {}
 
     // TemplateStructIntf methods
     TemplateVariant get(const QCString &n) const { return s_inst.get(this,n); }
@@ -3118,7 +3114,6 @@ class DirContext::Private : public DefinitionContext<DirContext::Private>
     Private(const DirDef *dd) : DefinitionContext<DirContext::Private>(dd) , m_dirDef(dd)
     {
     }
-    virtual ~Private() {}
 
     // TemplateStructIntf methods
     TemplateVariant get(const QCString &n) const { return s_inst.get(this,n); }
@@ -3275,7 +3270,6 @@ class PageContext::Private : public DefinitionContext<PageContext::Private>
         m_isExample(isExample)
     {
     }
-    virtual ~Private() {}
 
     // TemplateStructIntf methods
     TemplateVariant get(const QCString &n) const { return s_inst.get(this,n); }
@@ -3554,8 +3548,8 @@ class TextGeneratorFactory
       return 0;
     }
   private:
-    TextGeneratorFactory() {}
-    virtual ~TextGeneratorFactory() {}
+    TextGeneratorFactory() = default;
+    virtual ~TextGeneratorFactory() = default;
 };
 
 TemplateVariant createLinkedText(const Definition *def,const QCString &relPath,const QCString &text)
@@ -3580,7 +3574,6 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
     Private(const MemberDef *md) : DefinitionContext<MemberContext::Private>(md) , m_memberDef(md)
     {
     }
-    virtual ~Private() {}
 
     // TemplateStructIntf methods
     TemplateVariant get(const QCString &n) const { return s_inst.get(this,n); }
@@ -4438,7 +4431,6 @@ class ConceptContext::Private : public DefinitionContext<ConceptContext::Private
        m_conceptDef(cd)
     {
     }
-    virtual ~Private() {}
 
     // TemplateStructIntf methods
     TemplateVariant get(const QCString &n) const { return s_inst.get(this,n); }

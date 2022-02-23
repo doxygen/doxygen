@@ -45,7 +45,6 @@ class MemberVector;
 class MemberDef : public Definition
 {
   public:
-    virtual ~MemberDef() {}
     virtual DefType definitionType() const = 0;
     // move this member into a different scope
     virtual MemberDef *deepCopy() const =0;

@@ -168,6 +168,10 @@ class TranslatorGerman : public TranslatorAdapter_1_8_15
     {
       return "de";
     }
+    virtual QCString getLanguageString()
+    {
+      return "0x407 German";
+    }
 
     // --- Language translation methods -------------------
 

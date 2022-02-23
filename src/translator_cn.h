@@ -59,6 +59,10 @@ class TranslatorChinese : public Translator
     {
       return "zh";
     }
+    virtual QCString getLanguageString()
+    {
+      return "0x804 Chinese (PRC)";
+    }
     virtual QCString latexFontenc()
     {
       return "";

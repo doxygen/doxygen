@@ -58,6 +58,10 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
     {
       return "pl";
     }
+    virtual QCString getLanguageString()
+    {
+      return "0x415 Polish";
+    }
 
     // --- Language translation methods -------------------
 

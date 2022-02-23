@@ -69,7 +69,7 @@ class SearchIndexIntf
   public:
     enum Kind { Internal, External };
     SearchIndexIntf(Kind k) : m_kind(k) {}
-    virtual ~SearchIndexIntf() {}
+    virtual ~SearchIndexIntf() = default;
     virtual void setCurrentDoc(const Definition *ctx,const QCString &anchor,bool isSourceFile) = 0;
     virtual void addWord(const QCString &word,bool hiPriority) = 0;
     virtual void write(const QCString &file) = 0;

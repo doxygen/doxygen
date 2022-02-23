@@ -53,6 +53,10 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_15
     {
       return "sk";
     }
+    virtual QCString getLanguageString()
+    {
+      return "0x41B Slovak";
+    }
     // --- Language translation methods -------------------
 
     /*! used in the compound documentation before a list of related functions. */

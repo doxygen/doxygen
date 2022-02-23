@@ -78,6 +78,10 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
     {
       return "ro";
     }
+    virtual QCString getLanguageString()
+    {
+      return "0x418 Romanian";
+    }
 
     // --- Language translation methods -------------------
 

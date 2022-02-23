@@ -1,6 +1,5 @@
 /*
- * Copyright (C) 2008 by Sebastian Pipping.
- * Copyright (C) 2008 Dimitri van Heesch.
+ * Copyright (C) 1997-2022 Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -10,23 +9,21 @@
  *
  * Documents produced by Doxygen are derivative works derived from the
  * input used in their production; they are not affected by this license.
- *
- * Sebastian Pipping <sebastian@pipping.org>
  */
 
-#ifndef DOXYGEN_QHP_H
-#define DOXYGEN_QHP_H
+#ifndef QHP_H
+#define QHP_H
+
+#include <memory>
 
 #include "index.h"
-#include "qhpxmlwriter.h"
 
 class Qhp : public IndexIntf
 {
   public:
     Qhp();
-   ~Qhp();
+    ~Qhp();
 
-    // BEGIN IndexIntf
     void initialize();
     void finalize();
     void incContentsDepth();
@@ -37,36 +34,15 @@ class Qhp : public IndexIntf
                          const Definition *def);
     void addIndexItem(const Definition *context, const MemberDef *md,
                       const QCString &sectionAnchor, const QCString &title);
-    void closeContentsItem();
     void addIndexFile(const QCString & name);
     void addImageFile(const QCString & name);
     void addStyleSheetFile(const QCString & name);
-    // END IndexIntf
-
-    static QCString getQhpFileName();
 
   private:
-    void handlePrevSection();
-    void clearPrevSection();
-    void setPrevSection(const QCString & title, const QCString & basename, const QCString & anchor, int level);
-    void addFile(const QCString & fileName);
-
-    static QCString getFullProjectName();
-
-    QhpXmlWriter m_doc;
-    QhpXmlWriter m_toc;
-    QhpXmlWriter m_index;
-    QhpXmlWriter m_files;
-
-    QCString m_prevSectionTitle;
-    QCString m_prevSectionBaseName;
-    QCString m_prevSectionAnchor;
-
-    int m_prevSectionLevel = 0;
-    int m_sectionLevel = 0;
-    int m_openCount = 0;
-    bool m_skipMainPageSection = false;
+    void addFile(const QCString &);
+    class Private;
+    std::unique_ptr<Private> p;
 };
 
-#endif // DOXYGEN_QHP_H
+#endif // QHP_H
 

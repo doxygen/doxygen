@@ -79,6 +79,10 @@ class TranslatorEnglish : public Translator
       return "en-US";
     }
 
+    virtual QCString getLanguageString()
+    {
+      return "0x409 English (United States)";
+    }
     // --- Language translation methods -------------------
 
     /*! used in the compound documentation before a list of related functions. */

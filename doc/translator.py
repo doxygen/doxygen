@@ -624,8 +624,8 @@ class Transl:
                 else:
                     self.__unexpectedToken(status, tokenId, tokenLineNo)
 
-            elif status == 8:    # zero expected
-                if tokenId == 'num' and tokenStr == '0':
+            elif status == 8:    # zero expected (or default for the destructor)
+                if (tokenId == 'num' and tokenStr == '0') or (tokenId == 'id' and tokenStr == 'default'):
                     status = 9
                 else:
                     self.__unexpectedToken(status, tokenId, tokenLineNo)

@@ -809,11 +809,11 @@ void DocParser::errorHandleDefaultToken(DocNode *parent,int tok,
       // fall through
     case TK_COMMAND_BS:
       children.push_back(std::make_unique<DocWord>(*this,parent,TK_COMMAND_CHAR(tok) + context.token->name));
-      warn_doc_error(context.fileName,tokenizer.getLineNr(),"Illegal command %s as part of a %s",
+      warn_doc_error(context.fileName,tokenizer.getLineNr(),"Illegal command %s found as part of a %s",
        qPrint(cmd_start + context.token->name),qPrint(txt));
       break;
     case TK_SYMBOL:
-      warn_doc_error(context.fileName,tokenizer.getLineNr(),"Unsupported symbol %s found found as part of a %s",
+      warn_doc_error(context.fileName,tokenizer.getLineNr(),"Unsupported symbol %s found as part of a %s",
            qPrint(context.token->name), qPrint(txt));
       break;
     default:
@@ -4972,14 +4972,16 @@ void DocPara::handleEmoji()
   tok=m_parser.tokenizer.lex();
   if (tok==0)
   {
-    warn_doc_error(m_parser.context.fileName,m_parser.tokenizer.getLineNr(),"unexpected end of comment block while parsing the "
-        "argument of command %s\n", qPrint("emoji"));
+    warn_doc_error(m_parser.context.fileName,m_parser.tokenizer.getLineNr(),"no emoji name given or unexpected end of comment block while parsing the "
+        "argument of command %s", qPrint("emoji"));
+    m_parser.tokenizer.setStatePara();
     return;
   }
   else if (tok!=TK_WORD)
   {
     warn_doc_error(m_parser.context.fileName,m_parser.tokenizer.getLineNr(),"unexpected token %s as the argument of %s",
         DocTokenizer::tokToString(tok),qPrint("emoji"));
+    m_parser.tokenizer.setStatePara();
     return;
   }
   m_children.push_back(
@@ -5933,7 +5935,7 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
                }
                else
                {
-                 warn(m_parser.context.fileName,m_parser.tokenizer.getLineNr(),"Multiple use of of filename for '\\startuml'");
+                 warn(m_parser.context.fileName,m_parser.tokenizer.getLineNr(),"Multiple use of filename for '\\startuml'");
                }
              }
            }

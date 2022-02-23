@@ -32,7 +32,7 @@ class OutputList;
 class IndexIntf
 {
   public:
-    virtual ~IndexIntf() {}
+    virtual ~IndexIntf() = default;
     virtual void initialize() = 0;
     virtual void finalize() = 0;
     virtual void incContentsDepth() = 0;
@@ -40,7 +40,6 @@ class IndexIntf
     virtual void addContentsItem(bool isDir, const QCString &name, const QCString &ref,
                                  const QCString &file, const QCString &anchor, bool separateIndex,
                                  bool addToNavIndex,const Definition *def) = 0;
-    virtual void closeContentsItem() = 0;
     virtual void addIndexItem(const Definition *context,const MemberDef *md,
                               const QCString &sectionAnchor,const QCString &title) = 0;
     virtual void addIndexFile(const QCString &name) = 0;
@@ -51,7 +50,7 @@ class IndexIntf
 /** \brief A list of index interfaces.
  *
  *  This class itself implements all methods of IndexIntf and
- *  just forwards the calls to all items in the list.
+ *  just forwards the calls to all items in the list (composite design pattern).
  */
 class IndexList : public IndexIntf
 {
@@ -99,8 +98,6 @@ class IndexList : public IndexIntf
                          const QCString &file, const QCString &anchor,bool separateIndex=FALSE,bool addToNavIndex=FALSE,
                          const Definition *def=0)
     { if (m_enabled) foreach(&IndexIntf::addContentsItem,isDir,name,ref,file,anchor,separateIndex,addToNavIndex,def); }
-    void closeContentsItem()
-    { if (m_enabled) foreach(&IndexIntf::closeContentsItem); }
     void addIndexItem(const Definition *context,const MemberDef *md,const QCString &sectionAnchor=QCString(),const QCString &title=QCString())
     { if (m_enabled) foreach(&IndexIntf::addIndexItem,context,md,sectionAnchor,title); }
     void addIndexFile(const QCString &name)

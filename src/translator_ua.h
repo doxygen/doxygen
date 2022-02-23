@@ -35,6 +35,10 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
     {
       return "uk";
     }
+    virtual QCString getLanguageString()
+    {
+      return "0x422 Ukrainian";
+    }
 
     // --- Language translation methods -------------------
 

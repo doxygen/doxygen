@@ -42,7 +42,7 @@
  files frees the maintainer from thinking about whether the
  first, the second, or both files should be included or not, and
  why.  This holds namely for localized translators because their
- base class is changed occasionaly to adapter classes when the
+ base class is changed occasionally to adapter classes when the
  Translator class changes the interface, or back to the
  Translator class (by the local maintainer) when the localized
  translator is made up-to-date again.
@@ -98,6 +98,10 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
     virtual QCString trISOLang()
     {
       return "vi";
+    }
+    virtual QCString getLanguageString()
+    {
+      return "0x42A Vietnamese";
     }
     // --- Language translation methods -------------------
 

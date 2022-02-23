@@ -62,6 +62,10 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
     {
       return "id";
     }
+    virtual QCString getLanguageString()
+    {
+      return "0x421 Indonesian";
+    }
 
     // --- Language translation methods -------------------
 

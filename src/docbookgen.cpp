@@ -147,8 +147,6 @@ DocbookCodeGenerator::DocbookCodeGenerator(TextStream &t) : m_t(t)
 {
 }
 
-DocbookCodeGenerator::~DocbookCodeGenerator() {}
-
 void DocbookCodeGenerator::codify(const QCString &text)
 {
   Docbook_DB(("(codify \"%s\")\n",text));

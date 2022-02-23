@@ -69,6 +69,10 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
     {
       return "lt";
     }
+    virtual QCString getLanguageString()
+    {
+      return "0x427 Lithuanian";
+    }
 
     // --- Language translation methods -------------------
 

@@ -38,7 +38,7 @@ class MemberGroup;
 class IDocParser
 {
   public:
-    virtual ~IDocParser() {}
+    virtual ~IDocParser() = default;
 };
 
 // factory function
@@ -100,7 +100,7 @@ class DocNode
     DocNode(DocParser &parser) : m_parser(parser) {}
 
     /*! Destroys a node. */
-    virtual ~DocNode() {}
+    virtual ~DocNode() = default;
 
     /*! Returns the parent of this node or 0 for the root node. */
     DocNode *parent() const { return m_parent; }

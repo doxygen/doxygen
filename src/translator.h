@@ -31,7 +31,7 @@ class Translator
      *  It is implemented by the adapter classes.
      */
     virtual QCString updateNeededMessage() { return QCString(); }
-    virtual ~Translator() {}
+    virtual ~Translator() = default;
 
     // Please, have a look at comments inside the translator_en.h file
     // to learn the meaning of the following methods.  The translator_en.h
@@ -78,6 +78,69 @@ class Translator
       return latex_command;
     }
     virtual QCString trISOLang() = 0;
+
+    /** language codes for Html help
+       0x402 Bulgarian
+       0x405 Czech
+       0x406 Danish
+       0x413 Dutch
+       0xC09 English (Australia)
+       0x809 English (Britain)
+       0x1009 English (Canada)
+       0x1809 English (Ireland)
+       0x1409 English (New Zealand)
+       0x1C09 English (South Africa)
+       0x409 English (United States)
+       0x40B Finnish
+       0x40C French
+       0x407 German
+       0x408 Greece
+       0x439 Hindi
+       0x40E Hungarian
+       0x410 Italian
+       0x814 Norwegian
+       0x415 Polish
+       0x816 Portuguese(Portugal)
+       0x416 Portuguese(Brazil)
+       0x419 Russian
+       0x80A Spanish(Mexico)
+       0xC0A Spanish(Modern Sort)
+       0x40A Spanish(Traditional Sort)
+       0x41D Swedish
+       0x41F Turkey
+       0x411 Japanese
+       0x412 Korean
+       0x804 Chinese (PRC)
+       0x404 Chinese (Taiwan)
+
+       New LCIDs:
+       0x421 Indonesian
+       0x41A Croatian
+       0x418 Romanian
+       0x424 Slovenian
+       0x41B Slovak
+       0x422 Ukrainian
+       0x81A Serbian (Serbia, Latin)
+       0x403 Catalan
+       0x426 Latvian
+       0x427 Lithuanian
+       0x436 Afrikaans
+       0x42A Vietnamese
+       0x429 Persian (Iran)
+       0xC01 Arabic (Egypt) - I don't know which version of arabic is used inside translator_ar.h ,
+       so I have chosen Egypt at random
+
+      Code for Esperanto should be as shown below but the htmlhelp compiler 1.3 does not support this
+      (and no newer version is available).
+      0x48f Esperanto
+      So do a fallback to the default language
+      0x409 English (United States)
+
+
+      0xC1A Serbian (Serbia, Cyrillic)
+
+    */
+    virtual QCString getLanguageString() = 0;
 
     // --- Language translation methods -------------------
 

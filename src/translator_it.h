@@ -116,6 +116,10 @@ class TranslatorItalian : public TranslatorAdapter_1_8_15
     {
       return "it";
     }
+    virtual QCString getLanguageString()
+    {
+      return "0x410 Italian";
+    }
 
     // --- Language translation methods -------------------
 

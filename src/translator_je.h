@@ -67,6 +67,10 @@ class TranslatorJapaneseEn : public TranslatorEnglish
     {
       return "ja";
     }
+    virtual QCString getLanguageString()
+    {
+      return "0x411 Japanese";
+    }
 };
 
 #endif

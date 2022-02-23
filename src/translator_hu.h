@@ -104,6 +104,10 @@ class TranslatorHungarian : public TranslatorAdapter_1_8_15
     {
       return "hu";
     }
+    virtual QCString getLanguageString()
+    {
+      return "0x40E Hungarian";
+    }
 
     // --- Language translation methods -------------------
 

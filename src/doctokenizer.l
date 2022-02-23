@@ -1240,6 +1240,7 @@ SHOWDATE       [0-9][0-9]?"-"[0-9][0-9]?"-"[0-9][0-9][0-9][0-9]
                          return TK_WORD;
                        }
 <St_Emoji>.            {
+                         unput(*yytext);
                          return 0;
                        }
 <St_QuotedString>"\""  {

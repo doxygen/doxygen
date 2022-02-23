@@ -79,6 +79,10 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
     {
       return "nn";
     }
+    virtual QCString getLanguageString()
+    {
+      return "0x814 Norwegian";
+    }
 
     // --- Language translation methods -------------------
 

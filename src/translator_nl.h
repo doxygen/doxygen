@@ -38,6 +38,10 @@ class TranslatorDutch : public Translator
     { return "\\usepackage[dutch]{babel}\n"; }
     QCString trISOLang()
     { return "nl"; }
+    virtual QCString getLanguageString()
+    {
+      return "0x413 Dutch";
+    }
     QCString trRelatedFunctions()
     { return "Gerelateerde functies"; }
     QCString trRelatedSubscript()

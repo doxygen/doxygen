@@ -186,6 +186,10 @@ class TranslatorSwedish : public Translator
     {
       return "sv";
     }
+    virtual QCString getLanguageString()
+    {
+      return "0x41D Swedish";
+    }
 
     // --- Language translation methods -------------------
 

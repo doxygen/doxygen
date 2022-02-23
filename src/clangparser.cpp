@@ -262,7 +262,7 @@ void ClangTUParser::parse()
       case DetectedLang::ObjCpp: argv[argc++]=qstrdup("objective-c++"); break;
     }
 
-    // provide the input and and its dependencies as unsaved files so we can
+    // provide the input and its dependencies as unsaved files so we can
     // pass the filtered versions
     argv[argc++]=qstrdup(fileName.data());
   }
@@ -489,7 +489,7 @@ std::string ClangTUParser::lookup(uint line,const char *symbol)
 void ClangTUParser::writeLineNumber(CodeOutputInterface &ol,const FileDef *fd,uint line,bool writeLineAnchor)
 {
   const Definition *d = fd ? fd->getSourceDefinition(line) : 0;
-  if (d && d->isLinkable())
+  if (d && fd->isLinkable())
   {
     p->currentLine=line;
     const MemberDef *md = fd->getSourceMember(line);
@@ -763,7 +763,7 @@ void ClangTUParser::writeSources(CodeOutputInterface &ol,const FileDef *fd)
   QCString lineNumber,lineAnchor;
   bool inlineCodeFragment = false;
   ol.startCodeLine(TRUE);
-  writeLineNumber(ol,fd,line,inlineCodeFragment);
+  writeLineNumber(ol,fd,line,!inlineCodeFragment);
   for (unsigned int i=0;i<p->numTokens;i++)
   {
     CXSourceLocation start = clang_getTokenLocation(p->tu, p->tokens[i]);
@@ -775,7 +775,7 @@ void ClangTUParser::writeSources(CodeOutputInterface &ol,const FileDef *fd)
       line++;
       ol.endCodeLine();
       ol.startCodeLine(TRUE);
-      writeLineNumber(ol,fd,line,inlineCodeFragment);
+      writeLineNumber(ol,fd,line,!inlineCodeFragment);
     }
     while (column<c) { ol.codify(" "); column++; }
     CXString tokenString = clang_getTokenSpelling(p->tu, p->tokens[i]);

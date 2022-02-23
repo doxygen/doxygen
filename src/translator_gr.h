@@ -1196,6 +1196,10 @@ class TranslatorGreek : public Translator
     {
       return "Ευρετήριο";
     }
+    virtual QCString getLanguageString()
+    {
+      return "0x408 Greece";
+    }
 
     /*! This is used for translation of the word that will possibly
      *  be followed by a single name or by a list of names

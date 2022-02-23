@@ -42,7 +42,7 @@ class ClangTUParser;
 class OutlineParserInterface
 {
   public:
-    virtual ~OutlineParserInterface() {}
+    virtual ~OutlineParserInterface() = default;
 
     /** Parses a single input file with the goal to build an Entry tree.
      *  @param[in] fileName    The full name of the file.
@@ -83,7 +83,7 @@ class OutlineParserInterface
 class CodeParserInterface
 {
   public:
-    virtual ~CodeParserInterface() {}
+    virtual ~CodeParserInterface() = default;
 
     /** Parses a source file or fragment with the goal to produce
      *  highlighted and cross-referenced output.

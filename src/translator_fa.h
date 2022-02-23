@@ -96,6 +96,10 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
       return "fa";
     }
 
+    virtual QCString getLanguageString()
+    {
+      return "0x429 Persian (Iran)";
+    }
     // --- Language translation methods -------------------
 
     /*! used in the compound documentation before a list of related functions. */

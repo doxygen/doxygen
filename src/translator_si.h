@@ -23,9 +23,6 @@
 
 class TranslatorSlovene : public TranslatorAdapter_1_4_6
 {
-  protected:
-    friend class TranslatorAdapterBase;
-    virtual ~TranslatorSlovene() {}
   public:
     QCString idLanguage()
     { return "slovene"; }
@@ -38,6 +35,10 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
     { return "\\usepackage[slovene]{babel}\n"; }
     QCString trISOLang()
     { return "sl"; }
+    virtual QCString getLanguageString()
+    {
+      return "0x424 Slovenian";
+    }
     QCString trRelatedFunctions()
     { return "Povezane funkcije"; }
     QCString trRelatedSubscript()

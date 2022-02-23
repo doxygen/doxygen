@@ -338,104 +338,6 @@ HtmlHelp::~HtmlHelp()
 {
 }
 
-/* language codes for Html help
-   0x405 Czech
-   0x406 Danish
-   0x413 Dutch
-   0xC09 English (Australia)
-   0x809 English (Britain)
-   0x1009 English (Canada)
-   0x1809 English (Ireland)
-   0x1409 English (New Zealand)
-   0x1C09 English (South Africa)
-   0x409 English (United States)
-   0x40B Finnish
-   0x40C French
-   0x407 German
-   0x408 Greece
-   0x40E Hungarian
-   0x410 Italian
-   0x814 Norwegian
-   0x415 Polish
-   0x816 Portuguese(Portugal)
-   0x416 Portuguese(Brazil)
-   0x419 Russian
-   0x80A Spanish(Mexico)
-   0xC0A Spanish(Modern Sort)
-   0x40A Spanish(Traditional Sort)
-   0x41D Swedish
-   0x41F Turkey
-   0x411 Japanese
-   0x412 Korean
-   0x804 Chinese (PRC)
-   0x404 Chinese (Taiwan)
-
-   New LCIDs:
-   0x421 Indonesian
-   0x41A Croatian
-   0x418 Romanian
-   0x424 Slovenian
-   0x41B Slovak
-   0x422 Ukrainian
-   0x81A Serbian (Serbia, Latin)
-   0x403 Catalan
-   0x426 Latvian
-   0x427 Lithuanian
-   0x436 Afrikaans
-   0x42A Vietnamese
-   0x429 Persian (Iran)
-   0xC01 Arabic (Egypt) - I don't know which version of arabic is used inside translator_ar.h ,
-   so I have chosen Egypt at random
-
-*/
-static StringUnorderedMap s_languageDict =
-{
-  { "czech",       "0x405 Czech"                     },
-  { "danish",      "0x406 Danish"                    },
-  { "dutch",       "0x413 Dutch"                     },
-  { "finnish",     "0x40B Finnish"                   },
-  { "french",      "0x40C French"                    },
-  { "german",      "0x407 German"                    },
-  { "greek",       "0x408 Greece"                    },
-  { "hungarian",   "0x40E Hungarian"                 },
-  { "italian",     "0x410 Italian"                   },
-  { "norwegian",   "0x814 Norwegian"                 },
-  { "polish",      "0x415 Polish"                    },
-  { "portuguese",  "0x816 Portuguese(Portugal)"      },
-  { "brazilian",   "0x416 Portuguese(Brazil)"        },
-  { "russian",     "0x419 Russian"                   },
-  { "spanish",     "0x40A Spanish(Traditional Sort)" },
-  { "swedish",     "0x41D Swedish"                   },
-  { "turkish",     "0x41F Turkey"                    },
-  { "japanese",    "0x411 Japanese"                  },
-  { "japanese-en", "0x411 Japanese"                  },
-  { "korean",      "0x412 Korean"                    },
-  { "korean-en",   "0x412 Korean"                    },
-  { "chinese",     "0x804 Chinese (PRC)"             },
-  { "chinese-traditional", "0x404 Chinese (Taiwan)"  },
-  { "indonesian",  "0x421 Indonesian"                },
-  { "croatian",    "0x41A Croatian"                  },
-  { "romanian",    "0x418 Romanian"                  },
-  { "slovene",     "0x424 Slovenian"                 },
-  { "slovak",      "0x41B Slovak"                    },
-  { "ukrainian",   "0x422 Ukrainian"                 },
-  { "serbian",     "0x81A Serbian (Serbia, Latin)"   },
-  { "catalan",     "0x403 Catalan"                   },
-  { "lithuanian",  "0x427 Lithuanian"                },
-  { "afrikaans",   "0x436 Afrikaans"                 },
-  { "vietnamese",  "0x42A Vietnamese"                },
-  { "persian",     "0x429 Persian (Iran)"            },
-  { "arabic",      "0xC01 Arabic (Egypt)"            },
-  { "latvian",     "0x426 Latvian"                   },
-  { "macedonian",  "0x042f Macedonian (Former Yugoslav Republic of Macedonia)" },
-  { "armenian",    "0x42b Armenian"                  },
-  //Code for Esperanto should be as shown below but the htmlhelp compiler 1.3 does not support this
-  // (and no newer version is available).
-  //So do a fallback to the default language (see getLanguageString())
-  //{ "esperanto",   "0x48f Esperanto" },
-  { "serbian-cyrillic", "0xC1A Serbian (Serbia, Cyrillic)" }
-};
-
 /*! This will create a contents file (index.hhc) and a index file (index.hhk)
  *  and write the header of those files.
  *  It also creates a project file (index.hhp)
@@ -477,23 +379,6 @@ void HtmlHelp::initialize()
 
 }
 
-
-QCString HtmlHelp::getLanguageString()
-{
-  if (!theTranslator->idLanguage().isEmpty())
-  {
-    auto it = s_languageDict.find(theTranslator->idLanguage().str());
-    if (it!=s_languageDict.end())
-    {
-      return QCString(it->second);
-    }
-  }
-  // default language
-  return "0x409 English (United States)";
-}
-
-
-
 void HtmlHelp::Private::createProjectFile()
 {
   /* Write the project file */
@@ -519,7 +404,7 @@ void HtmlHelp::Private::createProjectFile()
     t << "Default Window=main\n"
          "Default topic=" << indexName << "\n";
     if (hhkPresent) t << "Index file=index.hhk\n";
-    t << "Language=" << getLanguageString() << "\n";
+    t << "Language=" << theTranslator->getLanguageString() << "\n";
     if (Config_getBool(BINARY_TOC)) t << "Binary TOC=YES\n";
     if (Config_getBool(GENERATE_CHI)) t << "Create CHI file=YES\n";
     t << "Title=" << recoder.recode(Config_getString(PROJECT_NAME)) << "\n\n";

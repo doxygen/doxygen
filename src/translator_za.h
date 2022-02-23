@@ -63,6 +63,10 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
     {
       return "af";
     }
+    virtual QCString getLanguageString()
+    {
+      return "0x436 Afrikaans";
+    }
 
     // --- Language translation methods -------------------
 

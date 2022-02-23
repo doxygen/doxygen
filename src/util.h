@@ -61,7 +61,7 @@ class Dir;
 class TextGeneratorIntf
 {
   public:
-    virtual ~TextGeneratorIntf() {}
+    virtual ~TextGeneratorIntf() = default;
     virtual void writeString(const QCString &,bool) const = 0;
     virtual void writeBreak(int indent) const = 0;
     virtual void writeLink(const QCString &extRef,const QCString &file,
@@ -73,7 +73,6 @@ class TextGeneratorIntf
 class TextGeneratorOLImpl : public TextGeneratorIntf
 {
   public:
-    virtual ~TextGeneratorOLImpl() {}
     TextGeneratorOLImpl(OutputDocInterface &od);
     void writeString(const QCString &s,bool keepSpaces) const;
     void writeBreak(int indent) const;
