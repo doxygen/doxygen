@@ -691,6 +691,7 @@ LINENR {BLANK}*[1-9][0-9]*
                            yyextra->token->name = &yytext[1];
                          else
                            yyextra->token->name = yytext;
+                         yyextra->token->name = substitute(yyextra->token->name,"&doxyzwj;","");
                          return TK_WORD;
                        }
 <St_Text>({ID}".")+{ID} {
