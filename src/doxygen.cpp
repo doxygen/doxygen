@@ -11397,23 +11397,6 @@ static QCString createOutputDirectory(const QCString &baseDirName,
   return result;
 }
 
-static QCString getQchFileName()
-{
-  QCString const & qchFile = Config_getString(QCH_FILE);
-  if (!qchFile.isEmpty())
-  {
-    return qchFile;
-  }
-
-  QCString const & projectName = Config_getString(PROJECT_NAME);
-  QCString const & versionText = Config_getString(PROJECT_NUMBER);
-
-  return QCString("../qch/")
-      + (projectName.isEmpty() ? QCString("index") : projectName)
-      + (versionText.isEmpty() ? QCString("") : QCString("-") + versionText)
-      + QCString(".qch");
-}
-
 void searchInputFiles()
 {
   StringUnorderedSet killSet;
@@ -12516,9 +12499,9 @@ void generateOutput()
     Dir::setCurrent(Config_getString(HTML_OUTPUT).str());
     Portable::setShortDir();
     Portable::sysTimerStart();
-    if (Portable::system(Config_getString(HHC_LOCATION).data(), "index.hhp", Debug::isFlagSet(Debug::ExtCmd))!=1)
+    if (Portable::system(Config_getString(HHC_LOCATION).data(), qPrint(HtmlHelp::hhpFileName), Debug::isFlagSet(Debug::ExtCmd))!=1)
     {
-      err("failed to run html help compiler on index.hhp\n");
+      err("failed to run html help compiler on %s\n", qPrint(HtmlHelp::hhpFileName));
     }
     Portable::sysTimerStop();
     Dir::setCurrent(oldDir);
@@ -12532,16 +12515,14 @@ void generateOutput()
       !Config_getString(QHG_LOCATION).isEmpty())
   {
     g_s.begin("Running qhelpgenerator...\n");
-    QCString qhpFileName = "index.qhp";
-    QCString qchFileName = getQchFileName();
 
-    QCString args = QCString().sprintf("%s -o \"%s\"", qPrint(qhpFileName), qPrint(qchFileName));
+    QCString args = QCString().sprintf("%s -o \"%s\"", qPrint(Qhp::qhpFileName), qPrint(Qhp::getQchFileName()));
     std::string oldDir = Dir::currentDirPath();
     Dir::setCurrent(Config_getString(HTML_OUTPUT).str());
     Portable::sysTimerStart();
     if (Portable::system(Config_getString(QHG_LOCATION).data(), args.data(), FALSE))
     {
-      err("failed to run qhelpgenerator on index.qhp\n");
+      err("failed to run qhelpgenerator on %s\n",qPrint(Qhp::qhpFileName));
     }
     Portable::sysTimerStop();
     Dir::setCurrent(oldDir);

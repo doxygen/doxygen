@@ -210,7 +210,7 @@ void Qhp::initialize()
       <filterAttribute>1.0</filterAttribute>
   ..
   */
-  QCString fileName = Config_getString(HTML_OUTPUT) + "/index.qhp";
+  QCString fileName = Config_getString(HTML_OUTPUT) + "/" + qhpFileName;
   p->docFile.open( fileName.str(), std::ofstream::out | std::ofstream::binary);
   if (!p->docFile.is_open())
   {
@@ -399,3 +399,19 @@ void Qhp::addStyleSheetFile(const QCString &fileName)
   addFile(fileName);
 }
 
+QCString Qhp::getQchFileName()
+{
+  QCString const & qchFile = Config_getString(QCH_FILE);
+  if (!qchFile.isEmpty())
+  {
+    return qchFile;
+  }
+
+  QCString const & projectName = Config_getString(PROJECT_NAME);
+  QCString const & versionText = Config_getString(PROJECT_NUMBER);
+
+  return QCString("../qch/")
+      + (projectName.isEmpty() ? QCString("index") : projectName)
+      + (versionText.isEmpty() ? QCString("") : QCString("-") + versionText)
+      + QCString(".qch");
+}
