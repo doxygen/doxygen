@@ -38,6 +38,9 @@ class Qhp : public IndexIntf
     void addImageFile(const QCString & name);
     void addStyleSheetFile(const QCString & name);
 
+    static inline const QCString qhpFileName = "index.qhp";
+    static QCString getQchFileName();
+
   private:
     void addFile(const QCString &);
     class Private;

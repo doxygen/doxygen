@@ -348,7 +348,7 @@ void HtmlHelp::initialize()
   p->recoder.initialize();
 
   /* open the contents file */
-  QCString fName = Config_getString(HTML_OUTPUT) + "/index.hhc";
+  QCString fName = Config_getString(HTML_OUTPUT) + "/" + hhcFileName;
   p->cts.open(fName.str(),std::ofstream::out | std::ofstream::binary);
   if (!p->cts.is_open())
   {
@@ -362,8 +362,8 @@ void HtmlHelp::initialize()
          "</OBJECT>\n"
          "<UL>\n";
 
-  /* open the contents file */
-  fName = Config_getString(HTML_OUTPUT) + "/index.hhk";
+  /* open the index file */
+  fName = Config_getString(HTML_OUTPUT) + "/" + hhkFileName;
   p->kts.open(fName.str(),std::ofstream::out | std::ofstream::binary);
   if (!p->kts.is_open())
   {
@@ -382,12 +382,12 @@ void HtmlHelp::initialize()
 void HtmlHelp::Private::createProjectFile()
 {
   /* Write the project file */
-  QCString fName = Config_getString(HTML_OUTPUT) + "/index.hhp";
+  QCString fName = Config_getString(HTML_OUTPUT) + "/" + hhpFileName;
   std::ofstream t(fName.str(),std::ofstream::out | std::ofstream::binary);
   if (t.is_open())
   {
-    const char *hhcFile = "\"index.hhc\"";
-    const char *hhkFile = "\"index.hhk\"";
+    QCString hhcFile = "\"" + hhcFileName  + "\"";
+    QCString hhkFile = "\"" + hhkFileName  + "\"";
     bool hhkPresent = index.size()>0;
     if (!ctsItemPresent) hhcFile = "";
     if (!hhkPresent) hhkFile = "";
@@ -400,10 +400,10 @@ void HtmlHelp::Private::createProjectFile()
     }
     t << "Compatibility=1.1\n"
          "Full-text search=Yes\n";
-    if (ctsItemPresent) t << "Contents file=index.hhc\n";
+    if (ctsItemPresent) t << "Contents file=" + hhcFileName + "\n";
     t << "Default Window=main\n"
          "Default topic=" << indexName << "\n";
-    if (hhkPresent) t << "Index file=index.hhk\n";
+    if (hhkPresent) t << "Index file=" + hhkFileName + "\n";
     t << "Language=" << theTranslator->getLanguageString() << "\n";
     if (Config_getBool(BINARY_TOC)) t << "Binary TOC=YES\n";
     if (Config_getBool(GENERATE_CHI)) t << "Create CHI file=YES\n";
@@ -461,7 +461,7 @@ void HtmlHelp::addIndexFile(const QCString &s)
 }
 
 /*! Finalizes the HTML help. This will finish and close the
- *  contents file (index.hhc) and the index file (index.hhk).
+ *  htmlhelp contents file  and the htmlhelp index file.
  *  \sa initialize()
  */
 void HtmlHelp::finalize()
