@@ -141,7 +141,7 @@ class ManGenerator : public OutputGenerator
     void writeChar(char c);
     void startMemberDoc(const QCString &,const QCString &,const QCString &,const QCString &,int,int,bool);
     void endMemberDoc(bool);
-    void startDoxyAnchor(const QCString &,const QCString &,const QCString &,const QCString &,const QCString &);
+    void startDoxyAnchor(const QCString &,const QCString &,const QCString &,const QCString &,const QCString &,const bool);
     void endDoxyAnchor(const QCString &,const QCString &) {}
     void writeLatexSpacing() {}
     void writeStartAnnoItem(const QCString &type,const QCString &file,

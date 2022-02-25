@@ -1425,7 +1425,7 @@ void RTFGenerator::endMemberDoc(bool)
 
 void RTFGenerator::startDoxyAnchor(const QCString &,const QCString &,
                                    const QCString &,const QCString &,
-                                   const QCString &
+                                   const QCString &,const bool
                                   )
 {
   DBG_RTF(m_t << "{\\comment startDoxyAnchor}\n")

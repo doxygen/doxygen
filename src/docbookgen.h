@@ -258,7 +258,7 @@ class DocbookGenerator : public OutputGenerator
     void endMemberDoc(bool);
     void startDoxyAnchor(const QCString &fName,const QCString &manName,
                          const QCString &anchor,const QCString &name,
-                         const QCString &args);
+                         const QCString &args,const bool);
     void endDoxyAnchor(const QCString &fileName,const QCString &anchor);
     void writeLatexSpacing(){DB_GEN_EMPTY}
     void writeStartAnnoItem(const QCString &,const QCString &,

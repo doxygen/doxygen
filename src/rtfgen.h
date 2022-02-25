@@ -141,7 +141,7 @@ class RTFGenerator : public OutputGenerator
     void lineBreak(const QCString &style=QCString());
     void startMemberDoc(const QCString &,const QCString &,const QCString &,const QCString &,int,int,bool);
     void endMemberDoc(bool);
-    void startDoxyAnchor(const QCString &,const QCString &,const QCString &,const QCString &,const QCString &);
+    void startDoxyAnchor(const QCString &,const QCString &,const QCString &,const QCString &,const QCString &,const bool);
     void endDoxyAnchor(const QCString &,const QCString &);
     void writeChar(char c);
     void writeLatexSpacing() {};//{ m_t << "\\hspace{0.3cm}"; }

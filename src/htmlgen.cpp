@@ -1306,7 +1306,7 @@ void HtmlGenerator::writeStyleInfo(int part)
 
 void HtmlGenerator::startDoxyAnchor(const QCString &,const QCString &,
                                     const QCString &anchor, const QCString &,
-                                    const QCString &)
+                                    const QCString &,const bool)
 {
   m_t << "<a id=\"" << anchor << "\" name=\"" << anchor << "\"></a>";
 }

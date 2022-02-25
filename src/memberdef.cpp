@@ -3373,7 +3373,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
   }
   else // not an enum value or anonymous compound
   {
-    ol.startDoxyAnchor(cfname,cname,memAnchor,doxyName,doxyArgs);
+    ol.startDoxyAnchor(cfname,cname,memAnchor,doxyName,doxyArgs,false);
     ol.startMemberDoc(ciname,name(),memAnchor,title,memCount,memTotal,showInline);
 
     if (!m_impl->metaData.isEmpty() && getLanguage()==SrcLangExt_Slice)

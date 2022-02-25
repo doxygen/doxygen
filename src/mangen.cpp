@@ -422,7 +422,7 @@ void ManGenerator::startMemberDoc(const QCString &,const QCString &,const QCStri
 
 void ManGenerator::startDoxyAnchor(const QCString &,const QCString &manName,
                                    const QCString &, const QCString &name,
-                                   const QCString &)
+                                   const QCString &,const bool)
 {
     // something to be done?
     if( !Config_getBool(MAN_LINKS) )

@@ -263,8 +263,8 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::endMemberDoc,hasArgs); }
     void startDoxyAnchor(const QCString &fName,const QCString &manName,
                          const QCString &anchor, const QCString &name,
-                         const QCString &args)
-    { forall(&OutputGenerator::startDoxyAnchor,fName,manName,anchor,name,args); }
+                         const QCString &args,const bool boxed = true)
+    { forall(&OutputGenerator::startDoxyAnchor,fName,manName,anchor,name,args,boxed); }
     void endDoxyAnchor(const QCString &fn,const QCString &anchor)
     { forall(&OutputGenerator::endDoxyAnchor,fn,anchor); }
     void writeLatexSpacing()

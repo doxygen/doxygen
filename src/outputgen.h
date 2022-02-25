@@ -426,7 +426,7 @@ class OutputGenerator : public BaseOutputDocInterface
     virtual void endMemberDoc(bool) = 0;
     virtual void startDoxyAnchor(const QCString &fName,const QCString &manName,
                                  const QCString &anchor,const QCString &name,
-                                 const QCString &args) = 0;
+                                 const QCString &args,const bool boxed = true) = 0;
     virtual void endDoxyAnchor(const QCString &fileName,const QCString &anchor) = 0;
     virtual void writeLatexSpacing() = 0;
     virtual void writeStartAnnoItem(const QCString &type,const QCString &file,

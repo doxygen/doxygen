@@ -1459,11 +1459,11 @@ void LatexGenerator::endMemberDoc(bool)
 
 void LatexGenerator::startDoxyAnchor(const QCString &fName,const QCString &,
                                      const QCString &anchor, const QCString &,
-                                     const QCString &)
+                                     const QCString &, const bool boxed)
 {
   bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
   bool usePDFLatex   = Config_getBool(USE_PDFLATEX);
-  m_t << "\\mbox{";
+  if (boxed) m_t << "\\mbox{";
   if (usePDFLatex && pdfHyperlinks)
   {
     m_t << "\\Hypertarget{";
@@ -1474,7 +1474,14 @@ void LatexGenerator::startDoxyAnchor(const QCString &fName,const QCString &,
   m_t << "\\label{";
   if (!fName.isEmpty()) m_t << stripPath(fName);
   if (!anchor.isEmpty()) m_t << "_" << anchor;
-  m_t << "}} \n";
+  if (boxed)
+  {
+    m_t << "}} \n";
+  }
+  else
+  {
+    m_t << "} \n";
+  }
 }
 
 void LatexGenerator::endDoxyAnchor(const QCString &fName,const QCString &anchor)

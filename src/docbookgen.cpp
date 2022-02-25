@@ -837,7 +837,7 @@ DB_GEN_C
 }
 void DocbookGenerator::startDoxyAnchor(const QCString &fName,const QCString &,
                                  const QCString &anchor,const QCString &,
-                                 const QCString &)
+                                 const QCString &,const bool)
 {
 DB_GEN_C
   if (!m_inListItem[m_levelListItem] && !m_descTable && !m_simpleTable)
