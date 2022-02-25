@@ -879,6 +879,17 @@ Go to the <a href="commands.html">next</a> section or return to the
       <value name="DATETIME" />
       <value name="DATE" />
     </option>
+    <option type='bool' id='PREDICTABLE_URLS' defval='0'>
+      <docs>
+<![CDATA[
+ If the PREDICTABLE_URLS tag is set to YES, then doxygen will create
+ file names that can be predicted from the namespace qualified class names,
+ and member anchors that can be predicted from the member names.
+ Warning: This assumes no overloading or template specialization is taking
+ place, so it may not be suitable for every input language or project.
+]]>
+      </docs>
+    </option>
   </group>
   <group name='Build' docs='Build related configuration options'>
     <option type='bool' id='EXTRACT_ALL' defval='0'>

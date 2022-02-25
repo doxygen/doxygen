@@ -111,7 +111,7 @@ class NamespaceDefMutable : public DefinitionMutable, public NamespaceDef
     virtual void setMetaData(const QCString &m) = 0;
     virtual void insertUsedFile(FileDef *fd) = 0;
     virtual void writeDocumentation(OutputList &ol) = 0;
-    virtual void writeMemberPages(OutputList &ol) = 0;
+    virtual void writeMemberPages(OutputList &ol, bool onlyEnum=false) = 0;
     virtual void writeQuickMemberLinks(OutputList &ol,const MemberDef *currentMd) const = 0;
     virtual void writeTagFile(TextStream &) = 0;
     virtual void insertClass(ClassDef *cd) = 0;

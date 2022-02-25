@@ -802,7 +802,17 @@ void ClassDefImpl::IMPL::init(const QCString &defFileName, const QCString &name,
   }
   else
   {
-    fileName=ctStr+name;
+    static bool predictableURLs = Config_getBool(PREDICTABLE_URLS);
+    if (predictableURLs)
+    {
+      QCString fname(name);
+      int index=fname.find('<'); // strip type parameters
+      fileName = (index==-1) ? fname : fname.left(index);
+    }
+    else
+    {
+      fileName=ctStr+name;
+    }
   }
   prot=Protection::Public;
   //nspace=0;
