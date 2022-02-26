@@ -303,5 +303,5 @@ void setTranslator(OUTPUT_LANGUAGE_t langName)
   }
 
   QCString msg = theTranslator->updateNeededMessage();
-  if (!msg.isEmpty()) warn_uncond("%s", qPrint(msg));
+  if (!msg.isEmpty()) ::msg("%s", qPrint(msg));
 }
