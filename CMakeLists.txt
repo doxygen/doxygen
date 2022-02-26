@@ -28,7 +28,6 @@ endif()
 option(use_libclang    "Add support for libclang parsing." OFF)
 option(static_libclang "Link to a statically compiled version of LLVM/libclang." OFF)
 option(win_static      "Link with /MT in stead of /MD on windows" OFF)
-option(english_only    "Only compile in support for the English language" OFF)
 option(enable_console  "Enable that executables on Windows get the CONSOLE bit set for the doxywizard executable [development]"  OFF)
 option(enable_coverage "Enable coverage reporting for gcc/clang [development]" OFF)
 
@@ -146,20 +145,6 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${EXECUTABLE_OUTPUT_PATH})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${EXECUTABLE_OUTPUT_PATH})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL ${EXECUTABLE_OUTPUT_PATH})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO ${EXECUTABLE_OUTPUT_PATH})
-
-# gather lang codes for translation
-file(GLOB lang_files RELATIVE "${PROJECT_SOURCE_DIR}/src" "${PROJECT_SOURCE_DIR}/src/translator_??.h")
-if (english_only) # user only wants English
-  set(lcodes "ENONLY")
-else ()
-  set(lcodes "")
-  foreach (_lang ${lang_files})
-    string(REGEX REPLACE "translator_(.*).h" "\\1" _lang_code ${_lang})
-    string(TOUPPER ${_lang_code} lang_code)
-    list(APPEND lcodes "${lang_code}")
-  endforeach()
-endif()
-set(LANG_CODES ${lcodes} CACHE STRING "List of language codes for which translations should be compiled in")
 
 if (win_static)
     set(CompilerFlags
