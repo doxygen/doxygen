@@ -142,8 +142,10 @@ class Translator
     */
     virtual QCString getLanguageString() = 0;
 
-    /** add punctuation at the end of a brief description when needed and supported by the language */
-    virtual inline bool needsPunctuation() {return true;}
+    /**
+     * add punctuation at the end of a brief description when needed and supported by the language
+    */
+    virtual bool needsPunctuation() { return true; }
 
     // --- Language translation methods -------------------
 

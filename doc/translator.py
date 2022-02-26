@@ -880,7 +880,8 @@ class Transl:
                                  prototype=="virtual QCString latexDocumentPre()" or
                                  prototype=="virtual QCString latexCommandName()" or
                                  prototype=="virtual QCString latexFont()" or
-                                 prototype=="virtual QCString latexFontenc()")):
+                                 prototype=="virtual QCString latexFontenc()" or
+                                 prototype=="virtual bool needsPunctuation()")):
                           self.prototypeDic[uniPrototype] = prototype
                         status = 2      # body consumed
                         methodId = None # outside of any method

@@ -102,7 +102,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
     {
       return "0x412 Korean";
     }
-    virtual inline bool needsPunctuation()
+    virtual bool needsPunctuation()
     {
       return false;
     }

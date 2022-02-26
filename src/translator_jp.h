@@ -99,7 +99,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
     {
       return "\\end{CJK}\n";
     }
-    virtual inline bool needsPunctuation()
+    virtual bool needsPunctuation()
     {
       return false;
     }
