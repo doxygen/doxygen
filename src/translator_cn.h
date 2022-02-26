@@ -75,7 +75,7 @@ class TranslatorChinese : public Translator
     {
       return "\\end{CJK}\n";
     }
-    virtual const inline bool needsPunctuation()
+    virtual inline bool needsPunctuation()
     {
       return false;
     }

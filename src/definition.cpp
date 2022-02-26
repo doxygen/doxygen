@@ -488,22 +488,24 @@ void DefinitionImpl::setDocumentation(const QCString &d,const QCString &docFile,
 
 void DefinitionImpl::_setBriefDescription(const QCString &b,const QCString &briefFile,int briefLine)
 {
-  const bool needsDot = theTranslator->needsPunctuation();
   QCString brief = b;
   brief = brief.stripWhiteSpace();
   brief = stripLeadingAndTrailingEmptyLines(brief,briefLine);
   brief = brief.stripWhiteSpace();
   if (brief.isEmpty()) return;
   uint bl = brief.length();
-  if (bl>0 && needsDot) // add punctuation if needed
+  if (bl>0)
   {
-    int c = brief.at(bl-1);
-    switch(c)
+    if (!theTranslator || theTranslator->needsPunctuation()) // add punctuation if needed
     {
-      case '.': case '!': case '?': case '>': case ':': case ')': break;
-      default:
-        if (isUTF8CharUpperCase(brief.str(),0) && !lastUTF8CharIsMultibyte(brief.str())) brief+='.';
-        break;
+      int c = brief.at(bl-1);
+      switch(c)
+      {
+        case '.': case '!': case '?': case '>': case ':': case ')': break;
+        default:
+          if (isUTF8CharUpperCase(brief.str(),0) && !lastUTF8CharIsMultibyte(brief.str())) brief+='.';
+          break;
+      }
     }
   }
 
