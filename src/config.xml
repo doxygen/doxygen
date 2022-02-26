@@ -3401,6 +3401,9 @@ If set to \c NO, doxygen will warn if an a database file is already found and no
  The \c INCLUDE_PATH tag can be used to specify one or more directories that
  contain include files that are not input files but should be processed by
  the preprocessor.
+
+ Note that the \c INCLUDE_PATH is not recursive, so the setting of \ref cfg_recursive "RECURSIVE" 
+ has no effect here.
 ]]>
       </docs>
     </option>

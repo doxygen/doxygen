@@ -11421,7 +11421,7 @@ void searchInputFiles()
                         &exclPatterns,                 // exclPatList
                         0,                             // resultList
                         0,                             // resultSet
-                        alwaysRecursive,               // recursive
+                        false,                         // INCLUDE_PATH isn't recursive
                         TRUE,                          // errorIfNotExist
                         &killSet);                     // killSet
   }
