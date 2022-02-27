@@ -4026,15 +4026,16 @@ void MemberDefImpl::warnIfUndocumentedParams() const
           "return type of member %s is not documented",
           qPrint(qualifiedName()));
     }
-    else if (m_impl->hasDocumentedReturnType &&
+  }
+  if (Config_getBool(WARN_IF_DOC_ERROR) &&
+            m_impl->hasDocumentedReturnType &&
             (isVoidReturn        || // void return type
              isFortranSubroutine || // fortran subroutine
              isConstructor()     || // a constructor
              isDestructor()))       // or destructor
-    {
-      warn_doc_error(docFile(),docLine(),"found documented return type of member %s that does not return anything",
-                     qPrint(qualifiedName()));
-    }
+  {
+    warn_doc_error(docFile(),docLine(),"found documented return type for %s that does not return anything",
+                   qPrint(qualifiedName()));
   }
 }
 
