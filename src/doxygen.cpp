@@ -8090,11 +8090,8 @@ static void generateFileSources()
           {
             bool generateSourceFile = fd->generateSourceFile() && !Htags::useHtags && !g_useOutputTemplate;
             auto ctx = std::make_shared<SourceContext>(fd.get(),generateSourceFile,*g_outputList);
-            if (generateSourceFile)
+            auto processFile = [ctx]()
             {
-              fd->writeSourceHeader(ctx->ol);
-            }
-            auto processFile = [ctx]() {
               if (ctx->generateSourceFile)
               {
                 msg("Generating code for file %s...\n",qPrint(ctx->fd->docName()));
@@ -8107,7 +8104,9 @@ static void generateFileSources()
               ctx->fd->getAllIncludeFilesRecursively(filesInSameTu);
               if (ctx->generateSourceFile) // sources need to be shown in the output
               {
+                ctx->fd->writeSourceHeader(ctx->ol);
                 ctx->fd->writeSourceBody(ctx->ol,nullptr);
+                ctx->fd->writeSourceFooter(ctx->ol);
               }
               else if (!ctx->fd->isReference() && Doxygen::parseSourcesNeeded)
                 // we needed to parse the sources even if we do not show them
@@ -8122,10 +8121,6 @@ static void generateFileSources()
         for (auto &f : results)
         {
           auto ctx = f.get();
-          if (ctx->generateSourceFile)
-          {
-            ctx->fd->writeSourceFooter(ctx->ol);
-          }
         }
       }
       else // single threaded version

@@ -3920,23 +3920,15 @@ static QCString stripTrailingReturn(const QCString &trailRet)
   return trailRet;
 }
 
+static std::mutex g_detectUndocumentedParamsMutex;
+
 void MemberDefImpl::detectUndocumentedParams(bool hasParamCommand,bool hasReturnCommand) const
 {
-  QCString returnType = typeString();
-  bool isPython = getLanguage()==SrcLangExt_Python;
-  bool isFortran = getLanguage()==SrcLangExt_Fortran;
-  bool isFortranSubroutine = isFortran && returnType.find("subroutine")!=-1;
+  // this function is called while parsing the documentation. A member can have multiple
+  // documentation blocks, which could be handled by multiple threads, hence this guard.
+  std::lock_guard<std::mutex> lock(g_detectUndocumentedParamsMutex);
 
-  bool isVoidReturn = (returnType=="void") || (returnType.right(5)==" void");
-  if (!isVoidReturn && returnType == "auto")
-  {
-    const ArgumentList &defArgList=isDocsForDefinition() ?  argumentList() : declArgumentList();
-    if (!defArgList.trailingReturnType().isEmpty())
-    {
-      QCString strippedTrailingReturn = stripTrailingReturn(defArgList.trailingReturnType());
-      isVoidReturn = (strippedTrailingReturn=="void") || (strippedTrailingReturn.right(5)==" void");
-    }
-  }
+  bool isPython = getLanguage()==SrcLangExt_Python;
 
   if (!m_impl->hasDocumentedParams && hasParamCommand)
   {
@@ -3995,34 +3987,24 @@ void MemberDefImpl::detectUndocumentedParams(bool hasParamCommand,bool hasReturn
   {
     m_impl->hasDocumentedReturnType = TRUE;
   }
-  else if ( // see if return type is documented in a function w/o return type
-            hasReturnCommand &&
-            (
-              isVoidReturn         || // void return type
-              isFortranSubroutine  || // fortran subroutine
-              isConstructor()      || // a constructor
-              isDestructor()          // or destructor
-            )
-          )
-  {
-
-    warn_doc_error(docFile(),docLine(),"documented empty return type of %s",
-                          qPrint(qualifiedName()));
-  }
-  else if ( // see if return needs to documented
-            m_impl->hasDocumentedReturnType ||
-           isVoidReturn        || // void return type
-           isFortranSubroutine || // fortran subroutine
-           isConstructor()     || // a constructor
-           isDestructor()         // or destructor
-          )
-  {
-    m_impl->hasDocumentedReturnType = TRUE;
-  }
 }
 
 void MemberDefImpl::warnIfUndocumentedParams() const
 {
+  QCString returnType = typeString();
+  bool isFortran = getLanguage()==SrcLangExt_Fortran;
+  bool isFortranSubroutine = isFortran && returnType.find("subroutine")!=-1;
+
+  bool isVoidReturn = (returnType=="void") || (returnType.right(5)==" void");
+  if (!isVoidReturn && returnType == "auto")
+  {
+    const ArgumentList &defArgList=isDocsForDefinition() ?  argumentList() : declArgumentList();
+    if (!defArgList.trailingReturnType().isEmpty())
+    {
+      QCString strippedTrailingReturn = stripTrailingReturn(defArgList.trailingReturnType());
+      isVoidReturn = (strippedTrailingReturn=="void") || (strippedTrailingReturn.right(5)==" void");
+    }
+  }
   if (!Config_getBool(EXTRACT_ALL) &&
       Config_getBool(WARN_IF_UNDOCUMENTED) &&
       Config_getBool(WARN_NO_PARAMDOC) &&
@@ -4031,11 +4013,10 @@ void MemberDefImpl::warnIfUndocumentedParams() const
       !isReference() &&
       !Doxygen::suppressDocWarnings)
   {
-    QCString returnType = typeString();
     if (!m_impl->hasDocumentedParams)
     {
       warn_doc_error(docFile(),docLine(),
-          "parameters of member %s are not (all) documented",
+          "parameters of member %s are not documented",
           qPrint(qualifiedName()));
     }
     if (!m_impl->hasDocumentedReturnType &&
@@ -4044,6 +4025,15 @@ void MemberDefImpl::warnIfUndocumentedParams() const
       warn_doc_error(docFile(),docLine(),
           "return type of member %s is not documented",
           qPrint(qualifiedName()));
+    }
+    else if (m_impl->hasDocumentedReturnType &&
+            (isVoidReturn        || // void return type
+             isFortranSubroutine || // fortran subroutine
+             isConstructor()     || // a constructor
+             isDestructor()))       // or destructor
+    {
+      warn_doc_error(docFile(),docLine(),"found documented return type of member %s that does not return anything",
+                     qPrint(qualifiedName()));
     }
   }
 }

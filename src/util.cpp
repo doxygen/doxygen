@@ -4343,8 +4343,8 @@ void addMembersToMemberGroup(MemberList *ml,
  */
 int extractClassNameFromType(const QCString &type,int &pos,QCString &name,QCString &templSpec,SrcLangExt lang)
 {
-  static reg::Ex re_norm(R"(\a[\w:]*)");
-  static reg::Ex re_fortran(R"(\a[\w:()=]*)");
+  static const reg::Ex re_norm(R"(\a[\w:]*)");
+  static const reg::Ex re_fortran(R"(\a[\w:()=]*)");
   static const reg::Ex *re = &re_norm;
 
   name.resize(0);
