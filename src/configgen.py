@@ -443,6 +443,19 @@ def parseGroupMapSetter(node):
             if len(setting) > 0:
                 print("#endif")
 
+def parseGroupMapAvailable(node):
+    for n in node.childNodes:
+        if n.nodeType == Node.ELEMENT_NODE:
+            setting = n.getAttribute('setting')
+            type = n.getAttribute('type')
+            name = n.getAttribute('id')
+            if type=='enum':
+                if len(setting) > 0:
+                    print("#if %s" % (setting))
+                print("    %-22s isAvailable_%-41s { return v.lower() == %s_enum2str(%s_str2enum(v)).lower(); }" % ('bool',name+'(QCString v)',name,name));
+                if len(setting) > 0:
+                    print("#endif")
+
 def parseGroupMapVar(node):
     map = { 'bool':'bool', 'string':'QCString', 'enum':'QCString', 'int':'int', 'list':'StringVector' }
     for n in node.childNodes:
@@ -759,6 +772,10 @@ def main():
             if n.nodeType == Node.ELEMENT_NODE:
                 if n.nodeName == "group":
                     parseGroupMapSetter(n)
+        for n in elem.childNodes:
+            if n.nodeType == Node.ELEMENT_NODE:
+                if n.nodeName == "group":
+                    parseGroupMapAvailable(n)
         print("    void init();")
         print("    StringVector fields() const;")
         print("    struct Info")
