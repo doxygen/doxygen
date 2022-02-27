@@ -4020,7 +4020,14 @@ void MemberDefImpl::warnIfUndocumentedParams() const
           qPrint(qualifiedName()));
     }
     if (!m_impl->hasDocumentedReturnType &&
-        hasDocumentation() && !returnType.isEmpty())
+        hasDocumentation() && !returnType.isEmpty() &&
+        !( // not one of the cases where nothing is returned
+          isVoidReturn        || // void return type
+          isFortranSubroutine || // fortran subroutine
+          isConstructor()     || // a constructor
+          isDestructor()         // or destructor
+         )
+       )
     {
       warn_doc_error(docFile(),docLine(),
           "return type of member %s is not documented",
