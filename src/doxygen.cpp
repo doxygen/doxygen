@@ -8431,9 +8431,9 @@ static void countMembers()
 
 
 //----------------------------------------------------------------------------
-// generate the documentation of all classes
+// generate the documentation for all classes
 
-static void generateClassList(const ClassLinkedMap &classList)
+static void generateDocsForClassList(const std::vector<ClassDefMutable*> &classList)
 {
   std::size_t numThreads = static_cast<std::size_t>(Config_getInt(NUM_PROC_THREADS));
   if (numThreads==0)
@@ -8451,13 +8451,10 @@ static void generateClassList(const ClassLinkedMap &classList)
     };
     ThreadPool threadPool(numThreads);
     std::vector< std::future< std::shared_ptr<DocContext> > > results;
-    for (const auto &cdi : classList)
+    for (const auto &cd : classList)
     {
-      ClassDefMutable *cd=toClassDefMutable(cdi.get());
-
       //printf("cd=%s getOuterScope=%p global=%p\n",qPrint(cd->name()),cd->getOuterScope(),Doxygen::globalScope);
-      if (cd &&
-          (cd->getOuterScope()==0 || // <-- should not happen, but can if we read an old tag file
+      if ((cd->getOuterScope()==0 || // <-- should not happen, but can if we read an old tag file
            cd->getOuterScope()==Doxygen::globalScope // only look at global classes
           ) && !cd->isHidden() && !cd->isEmbeddedInOuterScope()
          )
@@ -8489,13 +8486,10 @@ static void generateClassList(const ClassLinkedMap &classList)
   }
   else // single threaded processing
   {
-    for (const auto &cdi : classList)
+    for (const auto &cd : classList)
     {
-      ClassDefMutable *cd=toClassDefMutable(cdi.get());
-
       //printf("cd=%s getOuterScope=%p global=%p\n",qPrint(cd->name()),cd->getOuterScope(),Doxygen::globalScope);
-      if (cd &&
-          (cd->getOuterScope()==0 || // <-- should not happen, but can if we read an old tag file
+      if ((cd->getOuterScope()==0 || // <-- should not happen, but can if we read an old tag file
            cd->getOuterScope()==Doxygen::globalScope // only look at global classes
           ) && !cd->isHidden() && !cd->isEmbeddedInOuterScope()
          )
@@ -8516,10 +8510,45 @@ static void generateClassList(const ClassLinkedMap &classList)
   }
 }
 
+static void addClassAndNestedClasses(std::vector<ClassDefMutable*> &list,ClassDefMutable *cd)
+{
+  list.push_back(cd);
+  for (const auto &innerCdi : cd->getClasses())
+  {
+    ClassDefMutable *innerCd = toClassDefMutable(innerCdi);
+    if (innerCd && innerCd->isLinkableInProject() && innerCd->templateMaster()==0 &&
+        protectionLevelVisible(innerCd->protection()) &&
+        !innerCd->isEmbeddedInOuterScope()
+       )
+    {
+      list.push_back(innerCd);
+      addClassAndNestedClasses(list,innerCd);
+    }
+  }
+}
+
 static void generateClassDocs()
 {
-  generateClassList(*Doxygen::classLinkedMap);
-  generateClassList(*Doxygen::hiddenClassLinkedMap);
+  std::vector<ClassDefMutable*> classList;
+  for (const auto &cdi : *Doxygen::classLinkedMap)
+  {
+    ClassDefMutable *cd = toClassDefMutable(cdi.get());
+    if (cd && (cd->getOuterScope()==0 ||
+               cd->getOuterScope()->definitionType()!=Definition::TypeClass))
+    {
+      addClassAndNestedClasses(classList,cd);
+    }
+  }
+  for (const auto &cdi : *Doxygen::hiddenClassLinkedMap)
+  {
+    ClassDefMutable *cd = toClassDefMutable(cdi.get());
+    if (cd && (cd->getOuterScope()==0 ||
+               cd->getOuterScope()->definitionType()!=Definition::TypeClass))
+    {
+      addClassAndNestedClasses(classList,cd);
+    }
+  }
+  generateDocsForClassList(classList);
 }
 
 //----------------------------------------------------------------------------
@@ -10762,8 +10791,6 @@ void cleanUpDoxygen()
   delete Doxygen::namespaceLinkedMap;
   delete Doxygen::dirLinkedMap;
   delete Doxygen::symbolMap;
-
-  DotManager::deleteInstance();
 }
 
 static int computeIdealCacheParam(size_t v)

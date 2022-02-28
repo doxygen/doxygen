@@ -17,6 +17,7 @@
 #include <cassert>
 #include <sstream>
 #include <algorithm>
+#include <mutex>
 
 #include "config.h"
 #include "dot.h"
@@ -35,6 +36,8 @@
 //--------------------------------------------------------------------
 
 static QCString g_dotFontPath;
+
+static std::mutex g_dotManagerMutex;
 
 static void setDotFontPath(const QCString &path)
 {
@@ -72,22 +75,17 @@ static void unsetDotFontPath()
 
 //--------------------------------------------------------------------
 
-DotManager *DotManager::m_theInstance = 0;
-
 DotManager *DotManager::instance()
 {
-  if (!m_theInstance)
-  {
-    m_theInstance = new DotManager;
-  }
-  return m_theInstance;
+  static DotManager theInstance;
+  return &theInstance;
 }
 
-void DotManager::deleteInstance()
-{
-  delete m_theInstance;
-  m_theInstance=0;
-}
+//void DotManager::deleteInstance()
+//{
+//  delete m_theInstance;
+//  m_theInstance=0;
+//}
 
 DotManager::DotManager() : m_runners(), m_filePatchers()
 {
@@ -119,6 +117,7 @@ DotManager::~DotManager()
 
 DotRunner* DotManager::createRunner(const QCString &absDotName, const QCString& md5Hash)
 {
+  std::lock_guard<std::mutex> lock(g_dotManagerMutex);
   DotRunner* rv = nullptr;
   auto const runit = m_runners.find(absDotName.str());
   if (runit == m_runners.end())
@@ -142,6 +141,7 @@ DotRunner* DotManager::createRunner(const QCString &absDotName, const QCString& 
 
 DotFilePatcher *DotManager::createFilePatcher(const QCString &fileName)
 {
+  std::lock_guard<std::mutex> lock(g_dotManagerMutex);
   auto patcher = m_filePatchers.find(fileName.str());
 
   if (patcher != m_filePatchers.end()) return &(patcher->second);
