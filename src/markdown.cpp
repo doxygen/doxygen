@@ -3021,15 +3021,6 @@ QCString Markdown::processBlocks(const QCString &s,const int indent)
   QCString id,link,title;
   int blockIndent = indent;
 
-  // get indent for the first line
-  end = i+1;
-  int sp=0;
-  while (end<=size && data[end-1]!='\n')
-  {
-    if (data[end-1]==' ') sp++;
-    end++;
-  }
-
 #if 0 // commented m_out, since starting with a comment block is probably a usage error
       // see also http://stackoverflow.com/q/20478611/784672
 
@@ -3342,6 +3333,62 @@ QCString Markdown::detab(const QCString &s,int &refIndent)
           while (stop--) m_out.addChar(' ');
         }
         break;
+      case '\\': // potential verbatim command start
+      case '@':
+        if (data[i] == '\\' || data[i] == '@') // escaped command starter
+        {
+          m_out.addChar(c);
+          c = data[i++];
+          m_out.addChar(c);
+          if (col<minIndent) minIndent=col;
+          col+=2;
+        }
+        else
+        {
+          m_out.addChar(c);
+          if (col<minIndent) minIndent=col;
+          col++;
+          // skip over blocks that should not be processed
+          QCString endBlockName = isBlockCommand(data+i-1,i-1,size-i+1);
+          if (!endBlockName.isEmpty())
+          {
+            int l = endBlockName.length();
+            while (i<size-l)
+            {
+              if ((data[i]=='\\' || data[i]=='@') && // command
+                  data[i+1]!='\\' && data[i+1]!='@') // not escaped
+              {
+                if (qstrncmp(&data[i+1],endBlockName.data(),l)==0)
+                {
+                  break;
+                }
+                else
+                {
+                  m_out.addChar(data[i]);
+                  col++;
+                }
+              }
+              else if (data[i] == '\n')
+              {
+                m_out.addChar(data[i]);
+                col = 0;
+              }
+              else if (data[i] == '\t')
+              {
+                int stop = tabSize - (col%tabSize);
+                col+=stop;
+                while (stop--) m_out.addChar(' ');
+              }
+              else
+              {
+                m_out.addChar(data[i]);
+                col++;
+              }
+              i++;
+            }
+          }
+        }
+        break;
       case '\n': // reset column counter
         m_out.addChar(c);
         col=0;
@@ -3377,6 +3424,7 @@ QCString Markdown::detab(const QCString &s,int &refIndent)
         }
         if (col<minIndent) minIndent=col;
         col++;
+        break;
     }
   }
   if (minIndent!=maxIndent) refIndent=minIndent; else refIndent=0;
