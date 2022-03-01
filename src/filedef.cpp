@@ -228,7 +228,7 @@ class DevNullCodeDocInterface : public CodeOutputInterface
 */
 FileDefImpl::FileDefImpl(const QCString &p,const QCString &nm,
                  const QCString &lref,const QCString &dn)
-   : DefinitionMixin(QCString(p)+nm,1,1,nm)
+   : DefinitionMixin(QCString(p)+nm,1,1,nm,0,0,!p.isEmpty())
 {
   m_path=p;
   m_filePath=m_path+nm;

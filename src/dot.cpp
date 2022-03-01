@@ -81,12 +81,6 @@ DotManager *DotManager::instance()
   return &theInstance;
 }
 
-//void DotManager::deleteInstance()
-//{
-//  delete m_theInstance;
-//  m_theInstance=0;
-//}
-
 DotManager::DotManager() : m_runners(), m_filePatchers()
 {
   m_queue = new DotRunnerQueue;
