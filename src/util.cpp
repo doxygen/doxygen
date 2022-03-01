@@ -7125,6 +7125,7 @@ bool recognizeFixedForm(const QCString &contents, FortranFormat format)
 
   if (format == FortranFormat_Fixed) return TRUE;
   if (format == FortranFormat_Free)  return FALSE;
+  static int tabSize=Config_getInt(TAB_SIZE);
 
   for (int i=0;;i++)
   {
@@ -7135,6 +7136,9 @@ bool recognizeFixedForm(const QCString &contents, FortranFormat format)
       case '\n':
         column=0;
         skipLine=FALSE;
+        break;
+      case '\t':
+        column += tabSize-1;
         break;
       case ' ':
         break;
@@ -7150,8 +7154,7 @@ bool recognizeFixedForm(const QCString &contents, FortranFormat format)
         if (skipLine) break;
         return FALSE;
       case '!':
-        if (column>1 && column<7) return FALSE;
-        skipLine=TRUE;
+        if (column!=6) skipLine=TRUE;
         break;
       default:
         if (skipLine) break;
