@@ -626,7 +626,11 @@
 
   <xsd:complexType name="docImageFileType" mixed="true">
     <xsd:group ref="docTitleCmdGroup" minOccurs="0" maxOccurs="unbounded" />
-    <xsd:attribute name="name" type="xsd:string" use="optional"/>
+    <xsd:attribute name="name" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>The mentioned file will be located in the directory as specified by XML_OUTPUT</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
     <xsd:attribute name="width" type="xsd:string" use="optional"/>
     <xsd:attribute name="height" type="xsd:string" use="optional"/>
   </xsd:complexType>

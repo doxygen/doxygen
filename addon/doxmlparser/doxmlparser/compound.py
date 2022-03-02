@@ -21479,6 +21479,8 @@ class docDotMscType(GeneratedsSuper):
 
 
 class docImageFileType(GeneratedsSuper):
+    """The mentioned file will be located in the directory as specified by
+    XML_OUTPUT"""
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
     superclass = None
