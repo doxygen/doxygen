@@ -44,7 +44,7 @@ enum class DetectedLang { Cpp, ObjC, ObjCpp };
 
 static QCString detab(const QCString &s)
 {
-  static int tabSize = Config_getInt(TAB_SIZE);
+  int tabSize = Config_getInt(TAB_SIZE);
   GrowBuf out;
   int size = s.length();
   const char *data = s.data();
@@ -324,7 +324,7 @@ void ClangTUParser::parse()
 ClangTUParser::~ClangTUParser()
 {
   //printf("ClangTUParser::~ClangTUParser() this=%p\n",this);
-  static bool clangAssistedParsing = Config_getBool(CLANG_ASSISTED_PARSING);
+  bool clangAssistedParsing = Config_getBool(CLANG_ASSISTED_PARSING);
   if (!clangAssistedParsing) return;
   if (p->tu)
   {
@@ -383,7 +383,7 @@ std::string ClangTUParser::lookup(uint line,const char *symbol)
   //printf("ClangParser::lookup(%d,%s)\n",line,symbol);
   std::string result;
   if (symbol==0) return result;
-  static bool clangAssistedParsing = Config_getBool(CLANG_ASSISTED_PARSING);
+  bool clangAssistedParsing = Config_getBool(CLANG_ASSISTED_PARSING);
   if (!clangAssistedParsing) return result;
 
   auto getCurrentTokenLine = [=]() -> uint
@@ -574,7 +574,7 @@ void ClangTUParser::writeMultiLineCodeLink(CodeOutputInterface &ol,
                   const Definition *d,
                   const char *text)
 {
-  static bool sourceTooltips = Config_getBool(SOURCE_TOOLTIPS);
+  bool sourceTooltips = Config_getBool(SOURCE_TOOLTIPS);
   p->tooltipManager.addTooltip(ol,d);
   QCString ref  = d->getReference();
   QCString file = d->getOutputFileBase();

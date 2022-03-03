@@ -62,9 +62,9 @@ typedef std::vector< std::pair< std::unique_ptr<DirRelation>, bool> > DirRelatio
 /** Returns a DOT color name according to the directory depth. */
 static QCString getDirectoryBackgroundColor(int depthIndex)
 {
-  static int hue   = Config_getInt(HTML_COLORSTYLE_HUE);
-  static int sat   = Config_getInt(HTML_COLORSTYLE_SAT);
-  static int gamma = Config_getInt(HTML_COLORSTYLE_GAMMA);
+  int hue   = Config_getInt(HTML_COLORSTYLE_HUE);
+  int sat   = Config_getInt(HTML_COLORSTYLE_SAT);
+  int gamma = Config_getInt(HTML_COLORSTYLE_GAMMA);
   assert(depthIndex>=0 && depthIndex<=Config_getInt(DIR_GRAPH_MAX_DEPTH));
   float fraction = static_cast<float>(depthIndex)/static_cast<float>(Config_getInt(DIR_GRAPH_MAX_DEPTH));
   const char hex[] = "0123456789abcdef";

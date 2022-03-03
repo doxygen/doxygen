@@ -340,7 +340,7 @@ void Qhp::addIndexItem(const Definition *context,const MemberDef *md,
 
   if (md) // member
   {
-    static bool separateMemberPages = Config_getBool(SEPARATE_MEMBER_PAGES);
+    bool separateMemberPages = Config_getBool(SEPARATE_MEMBER_PAGES);
     if (context==0) // global member
     {
       if (md->getGroupDef())

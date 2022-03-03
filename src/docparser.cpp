@@ -696,7 +696,7 @@ bool DocParser::findDocsForMemberOrCompound(const QCString &commandName,
   // for symbols we need to normalize the separator, so A#B, or A\B, or A.B becomes A::B
   cmdArg = substitute(cmdArg,"#","::");
   cmdArg = substitute(cmdArg,"\\","::");
-  static bool extractAnonNs = Config_getBool(EXTRACT_ANON_NSPACES);
+  bool extractAnonNs = Config_getBool(EXTRACT_ANON_NSPACES);
   if (extractAnonNs &&
       cmdArg.startsWith("anonymous_namespace{")
       )
@@ -1044,7 +1044,7 @@ void DocParser::handleUnclosedStyleCommands()
 void DocParser::handleLinkedWord(DocNode *parent,DocNodeList &children,bool ignoreAutoLinkFlag)
 {
   QCString name = linkToText(SrcLangExt_Unknown,context.token->name,TRUE);
-  static bool autolinkSupport = Config_getBool(AUTOLINK_SUPPORT);
+  bool autolinkSupport = Config_getBool(AUTOLINK_SUPPORT);
   if (!autolinkSupport && !ignoreAutoLinkFlag) // no autolinking -> add as normal word
   {
     children.push_back(std::make_unique<DocWord>(*this,parent,name));
@@ -5725,7 +5725,7 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
       break;
     case CMD_STARTUML:
       {
-        static QCString jarPath = Config_getString(PLANTUML_JAR_PATH);
+        QCString jarPath = Config_getString(PLANTUML_JAR_PATH);
         m_parser.tokenizer.setStatePlantUMLOpt();
         retval = m_parser.tokenizer.lex();
 

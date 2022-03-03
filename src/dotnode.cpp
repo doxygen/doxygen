@@ -131,7 +131,7 @@ static void writeBoxMemberList(TextStream &t,
     }
 
     int count=0;
-    static auto dotUmlDetails = Config_getEnum(DOT_UML_DETAILS);
+    auto dotUmlDetails = Config_getEnum(DOT_UML_DETAILS);
     for (const auto &mma : *ml)
     {
       if (mma->getClassDef() == scope &&
@@ -408,7 +408,7 @@ void DotNode::writeBox(TextStream &t,
 
     //printf("DotNode::writeBox for %s\n",qPrint(m_classDef->name()));
     t << "{" << convertLabel(m_label) << "\\n";
-    static auto dotUmlDetails = Config_getEnum(DOT_UML_DETAILS);
+    auto dotUmlDetails = Config_getEnum(DOT_UML_DETAILS);
     if (dotUmlDetails!=DOT_UML_DETAILS_t::NONE)
     {
       t << "|";

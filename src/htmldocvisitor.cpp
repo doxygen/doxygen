@@ -672,7 +672,7 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
     case DocVerbatim::PlantUML:
       {
         forceEndParagraph(s);
-        static QCString htmlOutput = Config_getString(HTML_OUTPUT);
+        QCString htmlOutput = Config_getString(HTML_OUTPUT);
         QCString imgExt = getDotImageExtension();
         PlantumlManager::OutputFormat format = PlantumlManager::PUML_BITMAP;	// default : PUML_BITMAP
         if (imgExt=="svg")
@@ -2332,7 +2332,7 @@ void HtmlDocVisitor::writePlantUMLFile(const QCString &fileName, const QCString 
   {
     baseName=baseName.left(i);
   }
-  static QCString outDir = Config_getString(HTML_OUTPUT);
+  QCString outDir = Config_getString(HTML_OUTPUT);
   QCString imgExt = getDotImageExtension();
   if (imgExt=="svg")
   {

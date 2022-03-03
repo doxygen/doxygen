@@ -1452,7 +1452,7 @@ static void resolveClassNestingRelations()
 
 void distributeClassGroupRelations()
 {
-  //static bool inlineGroupedClasses = Config_getBool(INLINE_GROUPED_CLASSES);
+  //bool inlineGroupedClasses = Config_getBool(INLINE_GROUPED_CLASSES);
   //if (!inlineGroupedClasses) return;
   //printf("** distributeClassGroupRelations()\n");
 
@@ -2790,7 +2790,7 @@ done:
 
 static void addVariable(const Entry *root,int isFuncPtr=-1)
 {
-    static bool sliceOpt = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
+    bool sliceOpt = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
 
     Debug::print(Debug::Variables,0,
                   "VARIABLE_SEC: \n"
@@ -2947,7 +2947,7 @@ static void addVariable(const Entry *root,int isFuncPtr=-1)
       //int anonyScopes = 0;
       //bool added=FALSE;
 
-      static bool inlineSimpleStructs = Config_getBool(INLINE_SIMPLE_STRUCTS);
+      bool inlineSimpleStructs = Config_getBool(INLINE_SIMPLE_STRUCTS);
       if (si!=-1 && !inlineSimpleStructs) // anonymous scope or type
       {
         QCString pScope;
@@ -5970,7 +5970,7 @@ static void addMemberFunction(const Entry *root,
         candidates++;
       }
     }
-    static bool strictProtoMatching = Config_getBool(STRICT_PROTO_MATCHING);
+    bool strictProtoMatching = Config_getBool(STRICT_PROTO_MATCHING);
     if (!strictProtoMatching)
     {
       if (candidates==1 && ucd && umd)
@@ -8970,7 +8970,7 @@ static void findDefineDocumentation(Entry *root)
     }
     else if (!root->doc.isEmpty() || !root->brief.isEmpty()) // define not found
     {
-      static bool preEnabled = Config_getBool(ENABLE_PREPROCESSING);
+      bool preEnabled = Config_getBool(ENABLE_PREPROCESSING);
       if (preEnabled)
       {
         warn(root->fileName,root->startLine,
@@ -9503,7 +9503,7 @@ static void generateNamespaceConceptDocs(const ConceptLinkedRefMap &conceptList)
 
 static void generateNamespaceDocs()
 {
-  static bool sliceOpt = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
+  bool sliceOpt = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
 
   //writeNamespaceIndex(*g_outputList);
 
@@ -12291,8 +12291,8 @@ void generateOutput()
   g_outputList->writeStyleInfo(0); // write first part
   g_s.end();
 
-  static bool searchEngine      = Config_getBool(SEARCHENGINE);
-  static bool serverBasedSearch = Config_getBool(SERVER_BASED_SEARCH);
+  bool searchEngine      = Config_getBool(SEARCHENGINE);
+  bool serverBasedSearch = Config_getBool(SERVER_BASED_SEARCH);
 
   g_s.begin("Generating search indices...\n");
   if (searchEngine && !serverBasedSearch && (generateHtml || g_useOutputTemplate))

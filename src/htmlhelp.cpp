@@ -526,7 +526,7 @@ void HtmlHelp::addContentsItem(bool isDir,
                                bool /* addToNavIndex */,
                                const Definition * /* def */)
 {
-  static bool binaryTOC = Config_getBool(BINARY_TOC);
+  bool binaryTOC = Config_getBool(BINARY_TOC);
   // If we're using a binary toc then folders cannot have links.
   // Tried this and I didn't see any problems, when not using
   // the resetting of file and anchor the TOC works better
@@ -580,7 +580,7 @@ void HtmlHelp::addIndexItem(const Definition *context,const MemberDef *md,
 {
   if (md)
   {
-    static bool separateMemberPages = Config_getBool(SEPARATE_MEMBER_PAGES);
+    bool separateMemberPages = Config_getBool(SEPARATE_MEMBER_PAGES);
     if (context==0) // global member
     {
       if (md->getGroupDef())

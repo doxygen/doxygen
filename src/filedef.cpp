@@ -305,8 +305,8 @@ void FileDefImpl::findSectionsInDocumentation()
 
 bool FileDefImpl::hasDetailedDescription() const
 {
-  static bool repeatBrief = Config_getBool(REPEAT_BRIEF);
-  static bool sourceBrowser = Config_getBool(SOURCE_BROWSER);
+  bool repeatBrief = Config_getBool(REPEAT_BRIEF);
+  bool sourceBrowser = Config_getBool(SOURCE_BROWSER);
   return ((!briefDescription().isEmpty() && repeatBrief) ||
           !documentation().stripWhiteSpace().isEmpty() || // avail empty section
           (sourceBrowser && getStartBodyLine()!=-1 && getBodyDef())
@@ -814,7 +814,7 @@ void FileDefImpl::writeSummaryLinks(OutputList &ol) const
 */
 void FileDefImpl::writeDocumentation(OutputList &ol)
 {
-  static bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
+  bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
   //funcList->countDecMembers();
 
   //QCString fn = name();
@@ -1023,7 +1023,7 @@ void FileDefImpl::writeMemberPages(OutputList &ol)
 
 void FileDefImpl::writeQuickMemberLinks(OutputList &ol,const MemberDef *currentMd) const
 {
-  static bool createSubDirs=Config_getBool(CREATE_SUBDIRS);
+  bool createSubDirs=Config_getBool(CREATE_SUBDIRS);
 
   ol.writeString("      <div class=\"navtab\">\n");
   ol.writeString("        <table>\n");
@@ -1169,7 +1169,7 @@ void FileDefImpl::writeSourceFooter(OutputList &ol)
 
 void FileDefImpl::parseSource(ClangTUParser *clangParser)
 {
-  static bool filterSourceFiles = Config_getBool(FILTER_SOURCE_FILES);
+  bool filterSourceFiles = Config_getBool(FILTER_SOURCE_FILES);
   DevNullCodeDocInterface devNullIntf;
 #if USE_LIBCLANG
   if (Doxygen::clangAssistedParsing && clangParser &&
@@ -1444,8 +1444,8 @@ bool FileDefImpl::isIncluded(const QCString &name) const
 
 bool FileDefImpl::generateSourceFile() const
 {
-  static bool sourceBrowser = Config_getBool(SOURCE_BROWSER);
-  static bool verbatimHeaders = Config_getBool(VERBATIM_HEADERS);
+  bool sourceBrowser = Config_getBool(SOURCE_BROWSER);
+  bool verbatimHeaders = Config_getBool(VERBATIM_HEADERS);
   return !isReference() &&
          (sourceBrowser ||
            (verbatimHeaders && guessSection(name())==Entry::HEADER_SEC)
@@ -1578,8 +1578,8 @@ QCString FileDefImpl::includeName() const
 
 void FileDefImpl::addMemberToList(MemberListType lt,MemberDef *md)
 {
-  static bool sortBriefDocs = Config_getBool(SORT_BRIEF_DOCS);
-  static bool sortMemberDocs = Config_getBool(SORT_MEMBER_DOCS);
+  bool sortBriefDocs = Config_getBool(SORT_BRIEF_DOCS);
+  bool sortMemberDocs = Config_getBool(SORT_MEMBER_DOCS);
   const auto &ml = m_memberLists.get(lt,MemberListContainer::File);
   ml->setNeedsSorting(
        ((ml->listType()&MemberListType_declarationLists) && sortBriefDocs) ||
@@ -1648,7 +1648,7 @@ MemberList *FileDefImpl::getMemberList(MemberListType lt) const
 
 void FileDefImpl::writeMemberDeclarations(OutputList &ol,MemberListType lt,const QCString &title)
 {
-  static bool optVhdl = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
+  bool optVhdl = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
   MemberList * ml = getMemberList(lt);
   if (ml)
   {
@@ -1672,7 +1672,7 @@ void FileDefImpl::writeMemberDocumentation(OutputList &ol,MemberListType lt,cons
 
 bool FileDefImpl::isLinkableInProject() const
 {
-  static bool showFiles = Config_getBool(SHOW_FILES);
+  bool showFiles = Config_getBool(SHOW_FILES);
   return hasDocumentation() && !isReference() && (showFiles || isLinkableViaGroup());
 }
 
