@@ -563,7 +563,7 @@ static QCString convertFileId2Var(const QCString &fileId)
 static bool generateJSTree(NavIndexEntryList &navIndex,TextStream &t,
                            const std::vector<FTVNode*> &nl,int level,bool &first)
 {
-  static QCString htmlOutput = Config_getString(HTML_OUTPUT);
+  QCString htmlOutput = Config_getString(HTML_OUTPUT);
   QCString indentStr;
   indentStr.fill(' ',level*2);
   bool found=FALSE;

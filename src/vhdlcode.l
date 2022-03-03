@@ -1237,7 +1237,7 @@ static void writeMultiLineCodeLink(yyscan_t yyscanner,CodeOutputInterface &ol,
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (text.isEmpty()) return;
-  static bool sourceTooltips = Config_getBool(SOURCE_TOOLTIPS);
+  bool sourceTooltips = Config_getBool(SOURCE_TOOLTIPS);
   yyextra->tooltipManager.addTooltip(ol,d);
   QCString ref  = d->getReference();
   QCString file = d->getOutputFileBase();

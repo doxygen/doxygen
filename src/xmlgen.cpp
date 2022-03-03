@@ -123,7 +123,7 @@ inline void writeXMLCodeString(TextStream &t,const QCString &str, int &col)
     {
       case '\t':
       {
-        static int tabSize = Config_getInt(TAB_SIZE);
+        int tabSize = Config_getInt(TAB_SIZE);
 	int spacesToNextTabStop = tabSize - (col%tabSize);
 	col+=spacesToNextTabStop;
 	while (spacesToNextTabStop--) t << "<sp/>";
@@ -500,7 +500,7 @@ static void stripQualifiers(QCString &typeStr)
 
 static QCString classOutputFileBase(const ClassDef *cd)
 {
-  //static bool inlineGroupedClasses = Config_getBool(INLINE_GROUPED_CLASSES);
+  //bool inlineGroupedClasses = Config_getBool(INLINE_GROUPED_CLASSES);
   //if (inlineGroupedClasses && cd->partOfGroups()!=0)
   return cd->getOutputFileBase();
   //else
@@ -509,7 +509,7 @@ static QCString classOutputFileBase(const ClassDef *cd)
 
 static QCString memberOutputFileBase(const MemberDef *md)
 {
-  //static bool inlineGroupedClasses = Config_getBool(INLINE_GROUPED_CLASSES);
+  //bool inlineGroupedClasses = Config_getBool(INLINE_GROUPED_CLASSES);
   //if (inlineGroupedClasses && md->getClassDef() && md->getClassDef()->partOfGroups()!=0)
   //  return md->getClassDef()->getXmlOutputFileBase();
   //else

@@ -418,7 +418,7 @@ void RTFDocVisitor::visit(DocVerbatim *s)
       break;
     case DocVerbatim::PlantUML:
       {
-        static QCString rtfOutput = Config_getString(RTF_OUTPUT);
+        QCString rtfOutput = Config_getString(RTF_OUTPUT);
         QCString baseName = PlantumlManager::instance().writePlantUMLSource(
                        rtfOutput,s->exampleFile(),s->text(),PlantumlManager::PUML_BITMAP,
                        s->engine(),s->srcFile(),s->srcLine());

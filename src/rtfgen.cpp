@@ -279,7 +279,7 @@ void RTFGenerator::beginRTFDocument()
   m_t << "{\\widctlpar\\adjustright \\fs20\\cgrid \\snext0 Normal;}\n";
 
   // set the paper dimensions according to PAPER_TYPE
-  static auto paperType = Config_getEnum(PAPER_TYPE);
+  auto paperType = Config_getEnum(PAPER_TYPE);
   m_t << "{";
   switch (paperType)
   {

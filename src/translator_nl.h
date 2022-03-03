@@ -427,7 +427,7 @@ class TranslatorDutch : public Translator
         bool single)
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
-      static bool vhdlOpt = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
+      bool vhdlOpt = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
       QCString result="De documentatie voor ";
       switch(compType)
       {

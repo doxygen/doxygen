@@ -1011,7 +1011,7 @@ static void replaceCommentMarker(yyscan_t yyscanner,const char *s,int len)
 static inline int computeIndent(const char *s)
 {
   int col=0;
-  static int tabSize=Config_getInt(TAB_SIZE);
+  int tabSize=Config_getInt(TAB_SIZE);
   const char *p=s;
   char c;
   while ((c=*p++))

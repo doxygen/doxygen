@@ -170,7 +170,7 @@ void PageDefImpl::writeTagFile(TextStream &tagFile)
 
 void PageDefImpl::writeDocumentation(OutputList &ol)
 {
-  static bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
+  bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
 
   //outputList->disable(OutputGenerator::Man);
   QCString pageName,manPageName;
@@ -352,7 +352,7 @@ void PageDefImpl::writePageDocumentation(OutputList &ol) const
 
 bool PageDefImpl::visibleInIndex() const
 {
-  static bool externalPages = Config_getBool(EXTERNAL_PAGES);
+  bool externalPages = Config_getBool(EXTERNAL_PAGES);
   return // not part of a group
          !getGroupDef() &&
          // not an externally defined page

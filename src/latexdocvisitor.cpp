@@ -46,7 +46,7 @@ static const char *secLabels[maxLevels] =
 
 static const char *getSectionName(int level)
 {
-  static bool compactLatex = Config_getBool(COMPACT_LATEX);
+  bool compactLatex = Config_getBool(COMPACT_LATEX);
   int l = level;
   if (compactLatex) l++;
   if (Doxygen::insideMainPage) l--;
@@ -1220,7 +1220,7 @@ void LatexDocVisitor::visitPre(DocHtmlTable *t)
   if (t->hasCaption())
   {
     DocHtmlCaption *c = t->caption();
-    static bool pdfHyperLinks = Config_getBool(PDF_HYPERLINKS);
+    bool pdfHyperLinks = Config_getBool(PDF_HYPERLINKS);
     if (!c->file().isEmpty() && pdfHyperLinks)
     {
       m_t << "\\hypertarget{" << stripPath(c->file()) << "_" << c->anchor()
@@ -1846,7 +1846,7 @@ void LatexDocVisitor::visitPost(DocParamList *pl)
 
 void LatexDocVisitor::visitPre(DocXRefItem *x)
 {
-  static bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
+  bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
   if (m_hide) return;
   if (x->title().isEmpty()) return;
   incIndentLevel();
@@ -1949,7 +1949,7 @@ void LatexDocVisitor::filter(const QCString &str, const bool retainNewLine)
 
 void LatexDocVisitor::startLink(const QCString &ref,const QCString &file,const QCString &anchor,bool refToTable)
 {
-  static bool pdfHyperLinks = Config_getBool(PDF_HYPERLINKS);
+  bool pdfHyperLinks = Config_getBool(PDF_HYPERLINKS);
   if (ref.isEmpty() && pdfHyperLinks) // internal PDF link
   {
     if (refToTable)
@@ -1982,7 +1982,7 @@ void LatexDocVisitor::startLink(const QCString &ref,const QCString &file,const Q
 void LatexDocVisitor::endLink(const QCString &ref,const QCString &file,const QCString &anchor,bool refToTable)
 {
   m_t << "}";
-  static bool pdfHyperLinks = Config_getBool(PDF_HYPERLINKS);
+  bool pdfHyperLinks = Config_getBool(PDF_HYPERLINKS);
   if (ref.isEmpty() && !pdfHyperLinks)
   {
     m_t << "{";

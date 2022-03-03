@@ -470,7 +470,7 @@ static QCString definitionToName(const Definition *ctx)
 
 void SearchIndexExternal::setCurrentDoc(const Definition *ctx,const QCString &anchor,bool isSourceFile)
 {
-  static QCString extId = stripPath(Config_getString(EXTERNAL_SEARCH_ID));
+  QCString extId = stripPath(Config_getString(EXTERNAL_SEARCH_ID));
   QCString baseName = isSourceFile ? (toFileDef(ctx))->getSourceFileBase() : ctx->getOutputFileBase();
   QCString url = addHtmlExtensionIfMissing(baseName);
   if (!anchor.isEmpty()) url+=QCString("#")+anchor;
@@ -630,7 +630,7 @@ static std::array<SearchIndexInfo,NUM_SEARCH_INDICES> g_searchIndexInfo =
 
 static void addMemberToSearchIndex(const MemberDef *md)
 {
-  static bool hideFriendCompounds = Config_getBool(HIDE_FRIEND_COMPOUNDS);
+  bool hideFriendCompounds = Config_getBool(HIDE_FRIEND_COMPOUNDS);
   bool isLinkable = md->isLinkable();
   const ClassDef *cd=0;
   const NamespaceDef *nd=0;
@@ -1024,7 +1024,7 @@ void writeJavaScriptSearchIndex()
           }
           ti << "',";
 
-          static bool extLinksInWindow = Config_getBool(EXT_LINKS_IN_WINDOW);
+          bool extLinksInWindow = Config_getBool(EXT_LINKS_IN_WINDOW);
           if (!extLinksInWindow || d->getReference().isEmpty())
           {
             ti << "1,";
@@ -1241,9 +1241,9 @@ const std::array<SearchIndexInfo,NUM_SEARCH_INDICES> &getSearchIndices()
 
 void initSearchIndexer()
 {
-  static bool searchEngine      = Config_getBool(SEARCHENGINE);
-  static bool serverBasedSearch = Config_getBool(SERVER_BASED_SEARCH);
-  static bool externalSearch    = Config_getBool(EXTERNAL_SEARCH);
+  bool searchEngine      = Config_getBool(SEARCHENGINE);
+  bool serverBasedSearch = Config_getBool(SERVER_BASED_SEARCH);
+  bool externalSearch    = Config_getBool(EXTERNAL_SEARCH);
   if (searchEngine && serverBasedSearch)
   {
     if (externalSearch) // external tools produce search index and engine

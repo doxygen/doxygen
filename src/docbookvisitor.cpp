@@ -423,7 +423,7 @@ DB_VIS_C
       break;
     case DocVerbatim::PlantUML:
       {
-        static QCString docbookOutput = Config_getString(DOCBOOK_OUTPUT);
+        QCString docbookOutput = Config_getString(DOCBOOK_OUTPUT);
         QCString baseName = PlantumlManager::instance().writePlantUMLSource(docbookOutput,s->exampleFile(),s->text(),PlantumlManager::PUML_BITMAP,s->engine(),s->srcFile(),s->srcLine());
         QCString shortName = baseName;
         int i;
