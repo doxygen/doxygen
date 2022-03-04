@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
   <compounddef id="class_test" kind="class" language="C++" prot="public">
     <compoundname>Test</compoundname>
     <sectiondef kind="public-func">
@@ -8,6 +8,7 @@
         <definition>void Test::drawRect</definition>
         <argsstring>(int, int, int, int)</argsstring>
         <name>drawRect</name>
+        <qualifiedname>Test::drawRect</qualifiedname>
         <param>
           <type>int</type>
           <defname>x</defname>
@@ -31,13 +32,14 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="041_overload.cpp" line="7" column="1" bodyfile="041_overload.cpp" bodystart="12" bodyend="12"/>
+        <location file="041_overload.cpp" line="7" column="10" bodyfile="041_overload.cpp" bodystart="12" bodyend="12"/>
       </memberdef>
       <memberdef kind="function" id="class_test_1ae87a6e26707e684c0d2d07bb3d4a9d7f" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>void</type>
         <definition>void Test::drawRect</definition>
         <argsstring>(const Rect &amp;r)</argsstring>
         <name>drawRect</name>
+        <qualifiedname>Test::drawRect</qualifiedname>
         <param>
           <type>const Rect &amp;</type>
           <declname>r</declname>
@@ -45,17 +47,18 @@
         <briefdescription>
         </briefdescription>
         <detaileddescription>
-          <para>This is an overloaded member function, provided for convenience. It differs from the above function only in what argument(s) it accepts. </para>
+          <para>This is an overloaded member function, provided for convenience. It differs from the above function only in what argument(s) it accepts.</para>
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="041_overload.cpp" line="8" column="1" bodyfile="041_overload.cpp" bodystart="13" bodyend="13"/>
+        <location file="041_overload.cpp" line="8" column="10" bodyfile="041_overload.cpp" bodystart="13" bodyend="13"/>
       </memberdef>
       <memberdef kind="function" id="class_test_1a62a76eed05fa84633d1e460aeeaf875d" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>void</type>
         <definition>void Test::drawRect</definition>
         <argsstring>(const Point &amp;topLeft, const Point &amp;bottomRight)</argsstring>
         <name>drawRect</name>
+        <qualifiedname>Test::drawRect</qualifiedname>
         <param>
           <type>const Point &amp;</type>
           <declname>topLeft</declname>
@@ -72,7 +75,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="041_overload.cpp" line="9" column="1" bodyfile="041_overload.cpp" bodystart="18" bodyend="18"/>
+        <location file="041_overload.cpp" line="9" column="10" bodyfile="041_overload.cpp" bodystart="18" bodyend="18"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
@@ -81,7 +84,7 @@
     <detaileddescription>
       <para>More text. </para>
     </detaileddescription>
-    <location file="041_overload.cpp" line="5" column="1" bodyfile="041_overload.cpp" bodystart="4" bodyend="10"/>
+    <location file="041_overload.cpp" line="4" column="1" bodyfile="041_overload.cpp" bodystart="5" bodyend="10"/>
     <listofallmembers>
       <member refid="class_test_1a8e7b46ceaf7bd2ab94114b390b3288ca" prot="public" virt="non-virtual">
         <scope>Test</scope>

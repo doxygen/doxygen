@@ -18,1335 +18,1382 @@
 
 #include "types.h"
 #include "template.h"
-#include <qlist.h>
-#include <stdio.h>
+#include "classdef.h"
+#include "searchindex.h"
+#include "memberlist.h"
+#include "dotgfxhierarchytable.h"
 
 class Definition;
-class ClassDef;
-class ClassSDict;
-class BaseClassList;
+
 class PageDef;
+class PageLinkedMap;
+class PageLinkedRefMap;
+
 class GroupDef;
+class GroupLinkedMap;
+class GroupList;
+
+class ConceptDef;
+class ConceptLinkedMap;
+class ConceptLinkedRefMap;
+
 class NamespaceDef;
-class BaseClassList;
-class NamespaceSDict;
+class NamespaceLinkedMap;
+class NamespaceLinkedRefMap;
+
+class FileNameLinkedMap;
+class ClassLinkedMap;
+class MemberNameInfoLinkedMap;
+
+class DirDef;
+class DirLinkedMap;
+class DirList;
+
 class FileDef;
 class FileList;
-class FileNameList;
-class DirSDict;
-class DirList;
-class DirDef;
-class PageSDict;
-class GroupSDict;
-class GroupDef;
-class GroupList;
+
 struct IncludeInfo;
+class IncludeInfoList;
+
 class MemberList;
-class MemberSDict;
 class MemberDef;
 struct Argument;
 class ArgumentList;
-class MemberNameInfoSDict;
-struct MemberInfo;
-class MemberGroup;
-class MemberGroupSDict;
-class MemberGroupList;
+class MemberInfo;
 class DotNode;
-class DotGfxHierarchyTable;
-struct SearchIndexInfo;
-class SearchIndexList;
-class SearchDefinitionList;
+
+class MemberGroup;
+class MemberGroupList;
+class MemberGroupRefList;
+class MemberVector;
 
 //----------------------------------------------------
 
-#define DEBUG_REF 0
-
-/** @brief Helper class to support reference counting */
-#if DEBUG_REF
-class RefCountedContext
+class ConfigContext : public TemplateStructIntf
 {
   public:
-    RefCountedContext(const char *className) : m_refCount(0)
-    {
-      m_className=className;
-      m_insideRelease = FALSE;
-    }
-    virtual ~RefCountedContext()
-    {
-      if (!m_insideRelease) abort();
-    }
-    int addRef()
-    {
-      ++s_totalCount;
-      printf("%p:%s::addRef()=%d\n",this,m_className.data(),m_refCount);
-      return ++m_refCount;
-    }
-    int release()
-    {
-      --s_totalCount;
-      printf("%p:%s::release()=%d\n",this,m_className.data(),m_refCount-1);
-      int count = --m_refCount;
-      if (count<=0)
-      {
-        m_insideRelease=TRUE;
-        delete this;
-      }
-      return count;
-    }
-  private:
-    int m_refCount;
-    QCString m_className;
-    bool m_insideRelease;
-  public:
-    static int s_totalCount;
-};
-
-#else // release version
-
-class RefCountedContext
-{
-  public:
-    RefCountedContext(const char *) : m_refCount(0) {}
-    virtual ~RefCountedContext() {}
-    int addRef() { return ++m_refCount; }
-    int release()
-    {
-      int count = --m_refCount;
-      if (count<=0)
-      {
-        delete this;
-      }
-      return count;
-    }
-  private:
-    int m_refCount;
-};
-#endif
-
-
-//----------------------------------------------------
-
-class ConfigContext : public RefCountedContext, public TemplateStructIntf
-{
-  public:
-    static ConfigContext *alloc() { return new ConfigContext; }
+    static TemplateStructIntfPtr alloc()
+    { return std::static_pointer_cast<TemplateStructIntf>(std::make_shared<ConfigContext>()); }
 
     // TemplateStructIntf methods
-    virtual TemplateVariant get(const char *name) const;
-    virtual int addRef()  { return RefCountedContext::addRef(); }
-    virtual int release() { return RefCountedContext::release(); }
+    virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
 
-  private:
     ConfigContext();
-   ~ConfigContext();
+    virtual ~ConfigContext();
+
+  private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
 
-class DoxygenContext : public RefCountedContext, public TemplateStructIntf
+class DoxygenContext : public TemplateStructIntf
 {
   public:
-    static DoxygenContext *alloc() { return new DoxygenContext; }
+    static TemplateStructIntfPtr alloc()
+    { return std::static_pointer_cast<TemplateStructIntf>(std::make_shared<DoxygenContext>()); }
 
     // TemplateStructIntf methods
-    virtual TemplateVariant get(const char *name) const;
-    virtual int addRef()  { return RefCountedContext::addRef(); }
-    virtual int release() { return RefCountedContext::release(); }
+    virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
 
-  private:
     DoxygenContext();
-    ~DoxygenContext();
+    virtual ~DoxygenContext();
+
+  private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
 
-class TranslateContext : public RefCountedContext, public TemplateStructIntf
+class TranslateContext : public TemplateStructIntf
 {
   public:
-    static TranslateContext *alloc() { return new TranslateContext; }
+    static TemplateStructIntfPtr alloc()
+    { return std::static_pointer_cast<TemplateStructIntf>(std::make_shared<TranslateContext>()); }
 
     // TemplateStructIntf methods
-    virtual TemplateVariant get(const char *name) const;
-    virtual int addRef()  { return RefCountedContext::addRef(); }
-    virtual int release() { return RefCountedContext::release(); }
+    virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
 
-  private:
     TranslateContext();
-   ~TranslateContext();
+    virtual ~TranslateContext();
+
+  private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
 
-class UsedFilesContext : public RefCountedContext, public TemplateListIntf
+class UsedFilesContext : public TemplateListIntf
 {
   public:
-    static UsedFilesContext *alloc(ClassDef *cd) { return new UsedFilesContext(cd); }
+    static TemplateListIntfPtr alloc(const ClassDef *cd)
+    { return std::static_pointer_cast<TemplateListIntf>(std::make_shared<UsedFilesContext>(cd)); }
 
     // TemplateListIntf
-    virtual int count() const;
-    virtual TemplateVariant at(int index) const;
-    virtual TemplateListIntf::ConstIterator *createIterator() const;
-    virtual int addRef()  { return RefCountedContext::addRef(); }
-    virtual int release() { return RefCountedContext::release(); }
+    virtual size_t count() const;
+    virtual TemplateVariant at(size_t index) const;
+    virtual TemplateListIntf::ConstIteratorPtr createIterator() const;
 
-    void addFile(FileDef *fd);
+    void addFile(const FileDef *fd);
+    UsedFilesContext(const ClassDef *cd);
+    virtual ~UsedFilesContext();
 
   private:
-    UsedFilesContext(ClassDef *cd);
-   ~UsedFilesContext();
 
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
 
-class IncludeInfoContext : public RefCountedContext, public TemplateStructIntf
+class IncludeInfoContext : public TemplateStructIntf
 {
   public:
-    static IncludeInfoContext *alloc(const IncludeInfo *info,SrcLangExt lang)
-    { return new IncludeInfoContext(info,lang); }
+    static TemplateStructIntfPtr alloc(const IncludeInfo *info,SrcLangExt lang)
+    { return std::static_pointer_cast<TemplateStructIntf>(std::make_shared<IncludeInfoContext>(info,lang)); }
 
     // TemplateStructIntf methods
-    virtual TemplateVariant get(const char *name) const;
-    virtual int addRef()  { return RefCountedContext::addRef(); }
-    virtual int release() { return RefCountedContext::release(); }
+    virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
 
-  private:
     IncludeInfoContext(const IncludeInfo *,SrcLangExt lang);
-   ~IncludeInfoContext();
+    virtual ~IncludeInfoContext();
+
+  private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
 
-class IncludeInfoListContext : public RefCountedContext, public TemplateListIntf
+class IncludeInfoListContext : public TemplateListIntf
 {
   public:
-    static IncludeInfoListContext *alloc(const QList<IncludeInfo> &list,SrcLangExt lang)
-    { return new IncludeInfoListContext(list,lang); }
+    static TemplateListIntfPtr alloc(const IncludeInfoList &list,SrcLangExt lang)
+    { return std::static_pointer_cast<TemplateListIntf>(std::make_shared<IncludeInfoListContext>(list,lang)); }
 
     // TemplateListIntf
-    virtual int count() const;
-    virtual TemplateVariant at(int index) const;
-    virtual TemplateListIntf::ConstIterator *createIterator() const;
-    virtual int addRef()  { return RefCountedContext::addRef(); }
-    virtual int release() { return RefCountedContext::release(); }
+    virtual size_t count() const;
+    virtual TemplateVariant at(size_t index) const;
+    virtual TemplateListIntf::ConstIteratorPtr createIterator() const;
+
+    IncludeInfoListContext(const IncludeInfoList &list,SrcLangExt lang);
+    virtual ~IncludeInfoListContext();
 
   private:
-    IncludeInfoListContext(const QList<IncludeInfo> &list,SrcLangExt lang);
-   ~IncludeInfoListContext();
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
-
 
 //----------------------------------------------------
 
-class ClassContext : public RefCountedContext, public TemplateStructIntf
+class ClassContext : public TemplateStructIntf
 {
   public:
-    static ClassContext *alloc(ClassDef *cd) { return new ClassContext(cd); }
+    static TemplateStructIntfPtr alloc(const ClassDef *cd)
+    { return std::static_pointer_cast<TemplateStructIntf>(std::make_shared<ClassContext>(cd)); }
 
     // TemplateStructIntf methods
-    virtual TemplateVariant get(const char *name) const;
-    virtual int addRef()  { return RefCountedContext::addRef(); }
-    virtual int release() { return RefCountedContext::release(); }
+    virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
+
+    ClassContext(const ClassDef *);
+    virtual ~ClassContext();
 
   private:
-    ClassContext(ClassDef *);
-   ~ClassContext();
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
+
 
 //----------------------------------------------------
 
-class NamespaceContext : public RefCountedContext, public TemplateStructIntf
+class ConceptContext : public TemplateStructIntf
 {
   public:
-    static NamespaceContext *alloc(NamespaceDef *nd) { return new NamespaceContext(nd); }
+    static TemplateStructIntfPtr alloc(const ConceptDef *cd)
+    { return std::static_pointer_cast<TemplateStructIntf>(std::make_shared<ConceptContext>(cd)); }
 
     // TemplateStructIntf methods
-    virtual TemplateVariant get(const char *name) const;
-    virtual int addRef()  { return RefCountedContext::addRef(); }
-    virtual int release() { return RefCountedContext::release(); }
+    virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
+
+    ConceptContext(const ConceptDef *);
+    virtual ~ConceptContext();
 
   private:
-    NamespaceContext(NamespaceDef *);
-   ~NamespaceContext();
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
 
-class FileContext : public RefCountedContext, public TemplateStructIntf
+class NamespaceContext : public TemplateStructIntf
 {
   public:
-    static FileContext *alloc(FileDef *fd) { return new FileContext(fd); }
+    static TemplateStructIntfPtr alloc(const NamespaceDef *nd)
+    { return std::static_pointer_cast<TemplateStructIntf>(std::make_shared<NamespaceContext>(nd)); }
 
     // TemplateStructIntf methods
-    virtual TemplateVariant get(const char *name) const;
-    virtual int addRef()  { return RefCountedContext::addRef(); }
-    virtual int release() { return RefCountedContext::release(); }
+    virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
+
+    NamespaceContext(const NamespaceDef *);
+    virtual ~NamespaceContext();
 
   private:
-    FileContext(FileDef *);
-   ~FileContext();
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
+
 //----------------------------------------------------
 
-class DirContext : public RefCountedContext, public TemplateStructIntf
+class FileContext : public TemplateStructIntf
 {
   public:
-    static DirContext *alloc(DirDef *dd) { return new DirContext(dd); }
+    static TemplateStructIntfPtr alloc(const FileDef *fd)
+    { return std::static_pointer_cast<TemplateStructIntf>(std::make_shared<FileContext>(fd)); }
 
     // TemplateStructIntf methods
-    virtual TemplateVariant get(const char *name) const;
-    virtual int addRef()  { return RefCountedContext::addRef(); }
-    virtual int release() { return RefCountedContext::release(); }
+    virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
+
+    FileContext(const FileDef *);
+    virtual ~FileContext();
 
   private:
-    DirContext(DirDef *);
-   ~DirContext();
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
-
-
 //----------------------------------------------------
 
-class PageContext : public RefCountedContext, public TemplateStructIntf
+class DirContext : public TemplateStructIntf
 {
   public:
-    static PageContext *alloc(PageDef *pd,bool isMainPage,bool isExample) { return new PageContext(pd,isMainPage,isExample); }
+    static TemplateStructIntfPtr alloc(const DirDef *dd)
+    { return std::static_pointer_cast<TemplateStructIntf>(std::make_shared<DirContext>(dd)); }
 
     // TemplateStructIntf methods
-    virtual TemplateVariant get(const char *name) const;
-    virtual int addRef()  { return RefCountedContext::addRef(); }
-    virtual int release() { return RefCountedContext::release(); }
+    virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
+
+    DirContext(const DirDef *);
+    virtual ~DirContext();
 
   private:
-    PageContext(PageDef *,bool isMainPage,bool isExample);
-   ~PageContext();
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
+
 
 //----------------------------------------------------
 
-class MemberContext : public RefCountedContext, public TemplateStructIntf
+class PageContext : public TemplateStructIntf
 {
   public:
-    static MemberContext *alloc(MemberDef *md) { return new MemberContext(md); }
+    static TemplateStructIntfPtr alloc(const PageDef *pd,bool isMainPage,bool isExample)
+    { return std::static_pointer_cast<TemplateStructIntf>(std::make_shared<PageContext>(pd,isMainPage,isExample)); }
 
     // TemplateStructIntf methods
-    virtual TemplateVariant get(const char *name) const;
-    virtual int addRef()  { return RefCountedContext::addRef(); }
-    virtual int release() { return RefCountedContext::release(); }
+    virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
+
+    PageContext(const PageDef *,bool isMainPage,bool isExample);
+    virtual ~PageContext();
 
   private:
-    MemberContext(MemberDef *);
-   ~MemberContext();
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
-
 
 //----------------------------------------------------
 
-class ModuleContext : public RefCountedContext, public TemplateStructIntf
+class MemberContext : public TemplateStructIntf
 {
   public:
-    static ModuleContext *alloc(GroupDef *gd) { return new ModuleContext(gd); }
+    static TemplateStructIntfPtr alloc(const MemberDef *md)
+    { return std::static_pointer_cast<TemplateStructIntf>(std::make_shared<MemberContext>(md)); }
 
     // TemplateStructIntf methods
-    virtual TemplateVariant get(const char *name) const;
-    virtual int addRef()  { return RefCountedContext::addRef(); }
-    virtual int release() { return RefCountedContext::release(); }
+    virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
+
+    MemberContext(const MemberDef *);
+    virtual ~MemberContext();
 
   private:
-    ModuleContext(GroupDef *);
-   ~ModuleContext();
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
+};
+
+
+//----------------------------------------------------
+
+class ModuleContext : public TemplateStructIntf
+{
+  public:
+    static TemplateStructIntfPtr alloc(const GroupDef *gd)
+    { return std::static_pointer_cast<TemplateStructIntf>(std::make_shared<ModuleContext>(gd)); }
+
+    // TemplateStructIntf methods
+    virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
+
+    ModuleContext(const GroupDef *);
+    virtual ~ModuleContext();
+
+  private:
+    class Private;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
 
-class ClassListContext : public RefCountedContext, public TemplateListIntf
+class ClassListContext : public TemplateListIntf
 {
   public:
-    static ClassListContext *alloc() { return new ClassListContext; }
+    static TemplateListIntfPtr alloc()
+    { return std::static_pointer_cast<TemplateListIntf>(std::make_shared<ClassListContext>()); }
 
     // TemplateListIntf
-    virtual int  count() const;
-    virtual TemplateVariant at(int index) const;
-    virtual TemplateListIntf::ConstIterator *createIterator() const;
-    virtual int addRef()  { return RefCountedContext::addRef(); }
-    virtual int release() { return RefCountedContext::release(); }
+    virtual size_t count() const;
+    virtual TemplateVariant at(size_t index) const;
+    virtual TemplateListIntf::ConstIteratorPtr createIterator() const;
 
-  private:
     ClassListContext();
-   ~ClassListContext();
+    virtual ~ClassListContext();
+
+  private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
 
-class ClassIndexContext : public RefCountedContext, public TemplateStructIntf
+class ClassIndexContext : public TemplateStructIntf
 {
   public:
-    static ClassIndexContext *alloc() { return new ClassIndexContext; }
+    static TemplateStructIntfPtr alloc()
+    { return std::static_pointer_cast<TemplateStructIntf>(std::make_shared<ClassIndexContext>()); }
 
     // TemplateStructIntf methods
-    virtual TemplateVariant get(const char *name) const;
-    virtual int addRef()  { return RefCountedContext::addRef(); }
-    virtual int release() { return RefCountedContext::release(); }
+    virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
 
-  private:
     ClassIndexContext();
-   ~ClassIndexContext();
-    class Private;
-    Private *p;
-};
-
-//----------------------------------------------------
-
-class InheritanceGraphContext : public RefCountedContext, public TemplateStructIntf
-{
-  public:
-    static InheritanceGraphContext *alloc(DotGfxHierarchyTable *hierarchy,DotNode *n,int id)
-    { return new InheritanceGraphContext(hierarchy,n,id); }
-
-    // TemplateStructIntf methods
-    virtual TemplateVariant get(const char *name) const;
-    virtual int addRef()  { return RefCountedContext::addRef(); }
-    virtual int release() { return RefCountedContext::release(); }
+    virtual ~ClassIndexContext();
 
   private:
-    InheritanceGraphContext(DotGfxHierarchyTable *hierarchy,DotNode *n,int id);
-   ~InheritanceGraphContext();
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
 
-class ClassInheritanceNodeContext : public RefCountedContext, public TemplateStructIntf
+class InheritanceGraphContext : public TemplateStructIntf
 {
   public:
-    static ClassInheritanceNodeContext *alloc(ClassDef *cd)
-    { return new ClassInheritanceNodeContext(cd); }
+    static TemplateStructIntfPtr alloc(DotGfxHierarchyTablePtr hierarchy,DotNode *n,int id)
+    { return std::static_pointer_cast<TemplateStructIntf>(std::make_shared<InheritanceGraphContext>(hierarchy,n,id)); }
 
     // TemplateStructIntf methods
-    virtual TemplateVariant get(const char *name) const;
-    virtual int addRef()  { return RefCountedContext::addRef(); }
-    virtual int release() { return RefCountedContext::release(); }
+    virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
 
-    void addChildren(const BaseClassList *bcl,bool hideSuper);
+    InheritanceGraphContext(DotGfxHierarchyTablePtr hierarchy,DotNode *n,int id);
+    virtual ~InheritanceGraphContext();
 
   private:
-    ClassInheritanceNodeContext(ClassDef *);
-   ~ClassInheritanceNodeContext();
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
 
-class ClassInheritanceContext : public RefCountedContext, public TemplateListIntf
+class ClassInheritanceNodeContext : public TemplateStructIntf
 {
   public:
-    static ClassInheritanceContext *alloc() { return new ClassInheritanceContext; }
+    static TemplateStructIntfPtr alloc(const ClassDef *cd)
+    { return std::static_pointer_cast<TemplateStructIntf>(std::make_shared<ClassInheritanceNodeContext>(cd)); }
+
+    // TemplateStructIntf methods
+    virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
+
+    void addChildren(const BaseClassList &bcl,bool hideSuper);
+    ClassInheritanceNodeContext(const ClassDef *);
+    virtual ~ClassInheritanceNodeContext();
+
+  private:
+    class Private;
+    std::unique_ptr<Private> p;
+};
+
+//----------------------------------------------------
+
+class ClassInheritanceContext : public TemplateListIntf
+{
+  public:
+    static TemplateListIntfPtr alloc()
+    { return std::static_pointer_cast<TemplateListIntf>(std::make_shared<ClassInheritanceContext>()); }
 
     // TemplateListIntf
-    virtual int  count() const;
-    virtual TemplateVariant at(int index) const;
-    virtual TemplateListIntf::ConstIterator *createIterator() const;
-    virtual int addRef()  { return RefCountedContext::addRef(); }
-    virtual int release() { return RefCountedContext::release(); }
+    virtual size_t count() const;
+    virtual TemplateVariant at(size_t index) const;
+    virtual TemplateListIntf::ConstIteratorPtr createIterator() const;
+
+    ClassInheritanceContext();
+    virtual ~ClassInheritanceContext();
 
   private:
-    ClassInheritanceContext();
-   ~ClassInheritanceContext();
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
 
-class ClassHierarchyContext : public RefCountedContext, public TemplateStructIntf
+class ClassHierarchyContext : public TemplateStructIntf
 {
   public:
-    static ClassHierarchyContext *alloc() { return new ClassHierarchyContext; }
+    static TemplateStructIntfPtr alloc()
+    { return std::static_pointer_cast<TemplateStructIntf>(std::make_shared<ClassHierarchyContext>()); }
 
     // TemplateStructIntf methods
-    virtual TemplateVariant get(const char *name) const;
-    virtual int addRef()  { return RefCountedContext::addRef(); }
-    virtual int release() { return RefCountedContext::release(); }
+    virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
+
+    ClassHierarchyContext();
+    virtual ~ClassHierarchyContext();
 
   private:
-    ClassHierarchyContext();
-   ~ClassHierarchyContext();
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
 
-class NestingNodeContext : public RefCountedContext, public TemplateStructIntf
+enum class ContextTreeType
+{
+  Namespace,           // NamespaceTreeContext
+  ClassInheritance,    // ClassHierarchyContext
+  ClassNesting,        // ClassTreeContext
+  Module,              // ModuleTreeContext
+  File,                // FileTreeContext
+  Page,                // PageTreeContext
+  Concept,             // ContextTreeContext
+  Example              // ExampleTreeContext
+};
+
+class NestingNodeContext : public TemplateStructIntf
 {
   public:
-    static NestingNodeContext *alloc(const NestingNodeContext *parent,Definition *def,
-                                     int index,int level,bool addClasses,bool inherit,bool hideSuper)
-    { return new NestingNodeContext(parent,def,index,level,addClasses,inherit,hideSuper); }
+    static TemplateStructIntfPtr alloc(const NestingNodeContext *parent,ContextTreeType type,
+                                     const Definition *def,
+                                     int index,int level,
+                                     bool addClasses,bool addConcepts,
+                                     bool inherit,bool hideSuper,
+                                     ClassDefSet &visitedClasses)
+    { return std::static_pointer_cast<TemplateStructIntf>(std::make_shared<NestingNodeContext>
+             (parent,type,def,index,level,addClasses,addConcepts,inherit,hideSuper,visitedClasses)); }
 
     QCString id() const;
 
     // TemplateStructIntf methods
-    virtual TemplateVariant get(const char *name) const;
-    virtual int addRef()  { return RefCountedContext::addRef(); }
-    virtual int release() { return RefCountedContext::release(); }
+    virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
 
-  private:
     NestingNodeContext(const NestingNodeContext *parent,
-                       Definition *,int index,int level,bool addClasses,bool inherit,bool hideSuper);
-   ~NestingNodeContext();
+                       ContextTreeType type,
+                       const Definition *,int index,int level,
+                       bool addClasses,bool addConcepts,
+                       bool inherit,bool hideSuper,
+                       ClassDefSet &visitedClasses);
+    virtual ~NestingNodeContext();
+
+  private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
 
-class NestingContext : public RefCountedContext, public TemplateListIntf
+class NestingContext : public TemplateListIntf
 {
   public:
-    static NestingContext *alloc(const NestingNodeContext *parent,int level)
-    { return new NestingContext(parent,level); }
+
+    static TemplateListIntfPtr alloc(const NestingNodeContext *parent,ContextTreeType type,int level)
+    { return std::static_pointer_cast<TemplateListIntf>(std::make_shared<NestingContext>(parent,type,level)); }
 
     // TemplateListIntf
-    virtual int  count() const;
-    virtual TemplateVariant at(int index) const;
-    virtual TemplateListIntf::ConstIterator *createIterator() const;
-    virtual int addRef()  { return RefCountedContext::addRef(); }
-    virtual int release() { return RefCountedContext::release(); }
+    virtual size_t count() const;
+    virtual TemplateVariant at(size_t index) const;
+    virtual TemplateListIntf::ConstIteratorPtr createIterator() const;
 
-    void addNamespaces(const NamespaceSDict &nsDict,bool rootOnly,bool addClasses);
-    void addClasses(const ClassSDict &clDict,bool rootOnly);
-    void addDirs(const DirSDict &);
-    void addDirs(const DirList &);
-    void addFiles(const FileNameList &);
-    void addFiles(const FileList &);
-    void addPages(const PageSDict &pages,bool rootOnly);
-    void addModules(const GroupSDict &modules);
-    void addModules(const GroupList &modules);
-    void addClassHierarchy(const ClassSDict &clDict,bool rootOnly);
-    void addDerivedClasses(const BaseClassList *bcl,bool hideSuper);
+    void addNamespaces(const NamespaceLinkedMap &nsLinkedMap,bool rootOnly,bool addClasses,bool addConcepts,ClassDefSet &visitedClasses);
+    void addNamespaces(const NamespaceLinkedRefMap &nsLinkedMap,bool rootOnly,bool addClasses,bool addConcepts,ClassDefSet &visitedClasses);
+    void addClasses(const ClassLinkedMap &clLinkedMap,bool rootOnly,ClassDefSet &visitedClasses);
+    void addClasses(const ClassLinkedRefMap &clLinkedMap,bool rootOnly,ClassDefSet &visitedClasses);
+    void addConcepts(const ConceptLinkedMap &cnLinkedMap,bool rootOnly,ClassDefSet &visitedClasses);
+    void addConcepts(const ConceptLinkedRefMap &cnLinkedMap,bool rootOnly,ClassDefSet &visitedClasses);
+    void addDirs(const DirLinkedMap &,ClassDefSet &visitedClasses);
+    void addDirs(const DirList &,ClassDefSet &visitedClasses);
+    void addFiles(const FileNameLinkedMap &,ClassDefSet &visitedClasses);
+    void addFiles(const FileList &,ClassDefSet &visitedClasses);
+    void addPages(const PageLinkedMap &pages,bool rootOnly,ClassDefSet &visitedClasses);
+    void addPages(const PageLinkedRefMap &pages,bool rootOnly,ClassDefSet &visitedClasses);
+    void addModules(const GroupLinkedMap &modules,ClassDefSet &visitedClasses);
+    void addModules(const GroupList &modules,ClassDefSet &visitedClasses);
+    void addClassHierarchy(const ClassLinkedMap &clLinkedMap,ClassDefSet &visitedClasses);
+    void addDerivedClasses(const BaseClassList &bcl,bool hideSuper,ClassDefSet &visitedClasses);
+    void addMembers(const MemberVector &mv,ClassDefSet &visitedClasses);
+
+    NestingContext(const NestingNodeContext *parent,ContextTreeType type,int level);
+    virtual ~NestingContext();
 
   private:
-    NestingContext(const NestingNodeContext *parent,int level);
-   ~NestingContext();
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
 
-class ClassTreeContext : public RefCountedContext, public TemplateStructIntf
+class ClassTreeContext : public TemplateStructIntf
 {
   public:
-    static ClassTreeContext *alloc() { return new ClassTreeContext; }
+    static TemplateStructIntfPtr alloc()
+    { return std::static_pointer_cast<TemplateStructIntf>(std::make_shared<ClassTreeContext>()); }
 
     // TemplateStructIntf methods
-    virtual TemplateVariant get(const char *name) const;
-    virtual int addRef()  { return RefCountedContext::addRef(); }
-    virtual int release() { return RefCountedContext::release(); }
+    virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
 
-  private:
     ClassTreeContext();
-   ~ClassTreeContext();
+    virtual ~ClassTreeContext();
+
+  private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
 
-class NamespaceListContext : public RefCountedContext, public TemplateListIntf
+class ConceptListContext : public TemplateListIntf
 {
   public:
-    static NamespaceListContext *alloc() { return new NamespaceListContext; }
+    static TemplateListIntfPtr alloc()
+    { return std::static_pointer_cast<TemplateListIntf>(std::make_shared<ConceptListContext>()); }
 
     // TemplateListIntf
-    virtual int  count() const;
-    virtual TemplateVariant at(int index) const;
-    virtual TemplateListIntf::ConstIterator *createIterator() const;
-    virtual int addRef()  { return RefCountedContext::addRef(); }
-    virtual int release() { return RefCountedContext::release(); }
+    virtual size_t count() const;
+    virtual TemplateVariant at(size_t index) const;
+    virtual TemplateListIntf::ConstIteratorPtr createIterator() const;
+
+    ConceptListContext();
+    virtual ~ConceptListContext();
 
   private:
+    class Private;
+    std::unique_ptr<Private> p;
+};
+
+//----------------------------------------------------
+
+class NamespaceListContext : public TemplateListIntf
+{
+  public:
+    static TemplateListIntfPtr alloc()
+    { return std::static_pointer_cast<TemplateListIntf>(std::make_shared<NamespaceListContext>()); }
+
+    // TemplateListIntf
+    virtual size_t count() const;
+    virtual TemplateVariant at(size_t index) const;
+    virtual TemplateListIntf::ConstIteratorPtr createIterator() const;
+
     NamespaceListContext();
-   ~NamespaceListContext();
+    virtual ~NamespaceListContext();
+
+  private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
 
-class NamespaceTreeContext : public RefCountedContext, public TemplateStructIntf
+class NamespaceTreeContext : public TemplateStructIntf
 {
   public:
-    static NamespaceTreeContext *alloc() { return new NamespaceTreeContext; }
+    static TemplateStructIntfPtr alloc()
+    { return std::static_pointer_cast<TemplateStructIntf>(std::make_shared<NamespaceTreeContext>()); }
 
     // TemplateStructIntf methods
-    virtual TemplateVariant get(const char *name) const;
-    virtual int addRef()  { return RefCountedContext::addRef(); }
-    virtual int release() { return RefCountedContext::release(); }
+    virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
 
-  private:
     NamespaceTreeContext();
-   ~NamespaceTreeContext();
+    virtual ~NamespaceTreeContext();
+
+  private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
 
-class DirListContext : public RefCountedContext, public TemplateListIntf
+class DirListContext : public TemplateListIntf
 {
   public:
-    static DirListContext *alloc() { return new DirListContext; }
+    static TemplateListIntfPtr alloc()
+    { return std::static_pointer_cast<TemplateListIntf>(std::make_shared<DirListContext>()); }
 
     // TemplateListIntf
-    virtual int  count() const;
-    virtual TemplateVariant at(int index) const;
-    virtual TemplateListIntf::ConstIterator *createIterator() const;
-    virtual int addRef()  { return RefCountedContext::addRef(); }
-    virtual int release() { return RefCountedContext::release(); }
+    virtual size_t count() const;
+    virtual TemplateVariant at(size_t index) const;
+    virtual TemplateListIntf::ConstIteratorPtr createIterator() const;
 
-  private:
     DirListContext();
-   ~DirListContext();
-    class Private;
-    Private *p;
-};
-
-//----------------------------------------------------
-
-class FileListContext : public RefCountedContext, public TemplateListIntf
-{
-  public:
-    static FileListContext *alloc() { return new FileListContext; }
-
-    // TemplateListIntf
-    virtual int  count() const;
-    virtual TemplateVariant at(int index) const;
-    virtual TemplateListIntf::ConstIterator *createIterator() const;
-    virtual int addRef()  { return RefCountedContext::addRef(); }
-    virtual int release() { return RefCountedContext::release(); }
+    virtual ~DirListContext();
 
   private:
-    FileListContext();
-   ~FileListContext();
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
 
-class FileTreeContext : public RefCountedContext, public TemplateStructIntf
+class FileListContext : public TemplateListIntf
 {
   public:
-    static FileTreeContext *alloc() { return new FileTreeContext; }
+    static TemplateListIntfPtr alloc()
+    { return std::static_pointer_cast<TemplateListIntf>(std::make_shared<FileListContext>()); }
+
+    // TemplateListIntf
+    virtual size_t count() const;
+    virtual TemplateVariant at(size_t index) const;
+    virtual TemplateListIntf::ConstIteratorPtr createIterator() const;
+
+    FileListContext();
+    virtual ~FileListContext();
+
+  private:
+    class Private;
+    std::unique_ptr<Private> p;
+};
+
+//----------------------------------------------------
+
+class FileTreeContext : public TemplateStructIntf
+{
+  public:
+    static TemplateStructIntfPtr alloc()
+    { return std::static_pointer_cast<TemplateStructIntf>(std::make_shared<FileTreeContext>()); }
 
     // TemplateStructIntf methods
-    virtual TemplateVariant get(const char *name) const;
-    virtual int addRef()  { return RefCountedContext::addRef(); }
-    virtual int release() { return RefCountedContext::release(); }
+    virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
+
+    FileTreeContext();
+    virtual ~FileTreeContext();
 
   private:
-    FileTreeContext();
-   ~FileTreeContext();
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
 
-class PageListContext : public RefCountedContext, public TemplateListIntf
+class PageListContext : public TemplateListIntf
 {
   public:
-    static PageListContext *alloc(const PageSDict *pages) { return new PageListContext(pages); }
+    static TemplateListIntfPtr alloc(const PageLinkedMap &pages)
+    { return std::static_pointer_cast<TemplateListIntf>(std::make_shared<PageListContext>(pages)); }
 
     // TemplateListIntf methods
-    virtual int  count() const;
-    virtual TemplateVariant at(int index) const;
-    virtual TemplateListIntf::ConstIterator *createIterator() const;
-    virtual int addRef()  { return RefCountedContext::addRef(); }
-    virtual int release() { return RefCountedContext::release(); }
+    virtual size_t count() const;
+    virtual TemplateVariant at(size_t index) const;
+    virtual TemplateListIntf::ConstIteratorPtr createIterator() const;
 
-    void addPages(const PageSDict &pages);
+    void addPages(const PageLinkedMap &pages);
+
+    PageListContext(const PageLinkedMap &pages);
+    virtual ~PageListContext();
 
   private:
-    PageListContext(const PageSDict *pages);
-   ~PageListContext();
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
 
-class PageTreeContext : public RefCountedContext, public TemplateStructIntf
+class PageTreeContext : public TemplateStructIntf
 {
   public:
-    static PageTreeContext *alloc(const PageSDict *pages) { return new PageTreeContext(pages); }
+    static TemplateStructIntfPtr alloc(const PageLinkedMap &pages)
+    { return std::static_pointer_cast<TemplateStructIntf>(std::make_shared<PageTreeContext>(pages)); }
 
     // TemplateStructIntf methods
-    virtual TemplateVariant get(const char *name) const;
-    virtual int addRef()  { return RefCountedContext::addRef(); }
-    virtual int release() { return RefCountedContext::release(); }
+    virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
+
+    PageTreeContext(const PageLinkedMap &pages);
+    virtual ~PageTreeContext();
 
   private:
-    PageTreeContext(const PageSDict *pages);
-   ~PageTreeContext();
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
 
-class ModuleNodeContext : public RefCountedContext, public TemplateStructIntf
+class ModuleNodeContext : public TemplateStructIntf
 {
   public:
-    static ModuleNodeContext *alloc(GroupDef *gd) { return new ModuleNodeContext(gd); }
+    static TemplateStructIntfPtr alloc(const GroupDef *gd)
+    { return std::static_pointer_cast<TemplateStructIntf>(std::make_shared<ModuleNodeContext>(gd)); }
 
     // TemplateStructIntf methods
-    virtual TemplateVariant get(const char *name) const;
-    virtual int addRef()  { return RefCountedContext::addRef(); }
-    virtual int release() { return RefCountedContext::release(); }
+    virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
+
+    ModuleNodeContext(const GroupDef *);
+    virtual ~ModuleNodeContext();
 
   private:
-    ModuleNodeContext(GroupDef *);
-   ~ModuleNodeContext();
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
 
-class ModuleListContext : public RefCountedContext, public TemplateListIntf
+class ModuleListContext : public TemplateListIntf
 {
   public:
-    static ModuleListContext *alloc() { return new ModuleListContext(); }
+    static TemplateListIntfPtr alloc()
+    { return std::static_pointer_cast<TemplateListIntf>(std::make_shared<ModuleListContext>()); }
 
     // TemplateListIntf
-    virtual int  count() const;
-    virtual TemplateVariant at(int index) const;
-    virtual TemplateListIntf::ConstIterator *createIterator() const;
-    virtual int addRef()  { return RefCountedContext::addRef(); }
-    virtual int release() { return RefCountedContext::release(); }
+    virtual size_t count() const;
+    virtual TemplateVariant at(size_t index) const;
+    virtual TemplateListIntf::ConstIteratorPtr createIterator() const;
 
-    void addModules(const GroupSDict &);
+    void addModules(const GroupLinkedMap &);
     void addModules(const GroupList &);
 
-  private:
     ModuleListContext();
-   ~ModuleListContext();
+    virtual ~ModuleListContext();
+
+  private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
 
-class ModuleTreeContext : public RefCountedContext, public TemplateStructIntf
+class ConceptTreeContext : public TemplateStructIntf
 {
   public:
-    static ModuleTreeContext *alloc() { return new ModuleTreeContext(); }
+    static TemplateStructIntfPtr alloc()
+    { return std::static_pointer_cast<TemplateStructIntf>(std::make_shared<ConceptTreeContext>()); }
 
     // TemplateStructIntf methods
-    virtual TemplateVariant get(const char *name) const;
-    virtual int addRef()  { return RefCountedContext::addRef(); }
-    virtual int release() { return RefCountedContext::release(); }
+    virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
+
+    ConceptTreeContext();
+    virtual ~ConceptTreeContext();
 
   private:
-    ModuleTreeContext();
-   ~ModuleTreeContext();
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
 
-class ExampleListContext : public RefCountedContext, public TemplateListIntf
+class ModuleTreeContext : public TemplateStructIntf
 {
   public:
-    static ExampleListContext *alloc() { return new ExampleListContext; }
+    static TemplateStructIntfPtr alloc()
+    { return std::static_pointer_cast<TemplateStructIntf>(std::make_shared<ModuleTreeContext>()); }
+
+    // TemplateStructIntf methods
+    virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
+
+    ModuleTreeContext();
+    virtual ~ModuleTreeContext();
+
+  private:
+    class Private;
+    std::unique_ptr<Private> p;
+};
+
+//----------------------------------------------------
+
+class ExampleListContext : public TemplateListIntf
+{
+  public:
+    static TemplateListIntfPtr alloc()
+    { return std::static_pointer_cast<TemplateListIntf>(std::make_shared<ExampleListContext>()); }
 
     // TemplateListIntf methods
-    virtual int  count() const;
-    virtual TemplateVariant at(int index) const;
-    virtual TemplateListIntf::ConstIterator *createIterator() const;
-    virtual int addRef()  { return RefCountedContext::addRef(); }
-    virtual int release() { return RefCountedContext::release(); }
+    virtual size_t count() const;
+    virtual TemplateVariant at(size_t index) const;
+    virtual TemplateListIntf::ConstIteratorPtr createIterator() const;
 
-  private:
     ExampleListContext();
-   ~ExampleListContext();
+    virtual ~ExampleListContext();
+
+  private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
 
 
-class ExampleTreeContext : public RefCountedContext, public TemplateStructIntf
+class ExampleTreeContext : public TemplateStructIntf
 {
   public:
-    static ExampleTreeContext *alloc() { return new ExampleTreeContext; }
+    static TemplateStructIntfPtr alloc()
+    { return std::static_pointer_cast<TemplateStructIntf>(std::make_shared<ExampleTreeContext>()); }
 
     // TemplateStructIntf methods
-    virtual TemplateVariant get(const char *name) const;
-    virtual int addRef()  { return RefCountedContext::addRef(); }
-    virtual int release() { return RefCountedContext::release(); }
+    virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
 
-  private:
     ExampleTreeContext();
-   ~ExampleTreeContext();
+    virtual ~ExampleTreeContext();
+
+  private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
 
-class GlobalsIndexContext : public RefCountedContext, public TemplateStructIntf
+class GlobalsIndexContext : public TemplateStructIntf
 {
   public:
-    static GlobalsIndexContext *alloc() { return new GlobalsIndexContext(); }
+    static TemplateStructIntfPtr alloc()
+    { return std::static_pointer_cast<TemplateStructIntf>(std::make_shared<GlobalsIndexContext>()); }
 
     // TemplateStructIntf methods
-    virtual TemplateVariant get(const char *name) const;
-    virtual int addRef()  { return RefCountedContext::addRef(); }
-    virtual int release() { return RefCountedContext::release(); }
+    virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
 
-  private:
     GlobalsIndexContext();
-   ~GlobalsIndexContext();
+    virtual ~GlobalsIndexContext();
+
+  private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
 
-class ClassMembersIndexContext : public RefCountedContext, public TemplateStructIntf
+class ClassMembersIndexContext : public TemplateStructIntf
 {
   public:
-    static ClassMembersIndexContext *alloc() { return new ClassMembersIndexContext(); }
+    static TemplateStructIntfPtr alloc()
+    { return std::static_pointer_cast<TemplateStructIntf>(std::make_shared<ClassMembersIndexContext>()); }
 
     // TemplateStructIntf methods
-    virtual TemplateVariant get(const char *name) const;
-    virtual int addRef()  { return RefCountedContext::addRef(); }
-    virtual int release() { return RefCountedContext::release(); }
+    virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
 
-  private:
     ClassMembersIndexContext();
-   ~ClassMembersIndexContext();
+    virtual ~ClassMembersIndexContext();
+
+  private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
 
-class NamespaceMembersIndexContext : public RefCountedContext, public TemplateStructIntf
+class NamespaceMembersIndexContext : public TemplateStructIntf
 {
   public:
-    static NamespaceMembersIndexContext *alloc() { return new NamespaceMembersIndexContext(); }
+    static TemplateStructIntfPtr alloc()
+    { return std::static_pointer_cast<TemplateStructIntf>(std::make_shared<NamespaceMembersIndexContext>()); }
 
     // TemplateStructIntf methods
-    virtual TemplateVariant get(const char *name) const;
-    virtual int addRef()  { return RefCountedContext::addRef(); }
-    virtual int release() { return RefCountedContext::release(); }
+    virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
 
-  private:
     NamespaceMembersIndexContext();
-   ~NamespaceMembersIndexContext();
+    virtual ~NamespaceMembersIndexContext();
+
+  private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
 
-class NavPathElemContext : public RefCountedContext, public TemplateStructIntf
+class NavPathElemContext : public TemplateStructIntf
 {
   public:
-    static NavPathElemContext *alloc(Definition *def) { return new NavPathElemContext(def); }
+    static TemplateStructIntfPtr alloc(const Definition *def)
+    { return std::static_pointer_cast<TemplateStructIntf>(std::make_shared<NavPathElemContext>(def)); }
 
     // TemplateStructIntf methods
-    virtual TemplateVariant get(const char *name) const;
-    virtual int addRef()  { return RefCountedContext::addRef(); }
-    virtual int release() { return RefCountedContext::release(); }
+    virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
+
+    NavPathElemContext(const Definition *def);
+    virtual ~NavPathElemContext();
 
   private:
-    NavPathElemContext(Definition *def);
-   ~NavPathElemContext();
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 
 //----------------------------------------------------
 
-class InheritanceNodeContext : public RefCountedContext, public TemplateStructIntf
+class InheritanceNodeContext : public TemplateStructIntf
 {
   public:
-    static InheritanceNodeContext *alloc(ClassDef *cd,const QCString &name)
-    { return new InheritanceNodeContext(cd,name); }
+    static TemplateStructIntfPtr alloc(const ClassDef *cd,const QCString &name)
+    { return std::static_pointer_cast<TemplateStructIntf>(std::make_shared<InheritanceNodeContext>(cd,name)); }
 
     // TemplateStructIntf methods
-    virtual TemplateVariant get(const char *name) const;
-    virtual int addRef()  { return RefCountedContext::addRef(); }
-    virtual int release() { return RefCountedContext::release(); }
+    virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
+
+    InheritanceNodeContext(const ClassDef *cd,const QCString &name);
+    virtual ~InheritanceNodeContext();
 
   private:
-    InheritanceNodeContext(ClassDef *cd,const QCString &name);
-   ~InheritanceNodeContext();
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
 
-class InheritanceListContext : public RefCountedContext, public TemplateListIntf
+class InheritanceListContext : public TemplateListIntf
 {
   public:
-    static InheritanceListContext *alloc(const BaseClassList *list,bool baseClasses)
-    { return new InheritanceListContext(list,baseClasses); }
+    static TemplateListIntfPtr alloc(const BaseClassList &list,bool baseClasses)
+    { return std::static_pointer_cast<TemplateListIntf>(std::make_shared<InheritanceListContext>(list,baseClasses)); }
 
     // TemplateListIntf
-    virtual int  count() const;
-    virtual TemplateVariant at(int index) const;
-    virtual TemplateListIntf::ConstIterator *createIterator() const;
-    virtual int addRef()  { return RefCountedContext::addRef(); }
-    virtual int release() { return RefCountedContext::release(); }
+    virtual size_t count() const;
+    virtual TemplateVariant at(size_t index) const;
+    virtual TemplateListIntf::ConstIteratorPtr createIterator() const;
+
+    InheritanceListContext(const BaseClassList &list,bool baseClasses);
+    virtual ~InheritanceListContext();
 
   private:
-    InheritanceListContext(const BaseClassList *list,bool baseClasses);
-   ~InheritanceListContext();
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
 
-class MemberListContext : public RefCountedContext, public TemplateListIntf
+class MemberListContext : public TemplateListIntf
 {
   public:
-    static MemberListContext *alloc()
-    { return new MemberListContext; }
-    static MemberListContext *alloc(const MemberList *ml)
-    { return new MemberListContext(ml); }
-    static MemberListContext *alloc(MemberSDict *ml,bool doSort)
-    { return new MemberListContext(ml,doSort); }
+    static TemplateListIntfPtr alloc()
+    { return std::static_pointer_cast<TemplateListIntf>(std::make_shared<MemberListContext>()); }
+    static TemplateListIntfPtr alloc(const MemberList *ml)
+    { return std::static_pointer_cast<TemplateListIntf>(std::make_shared<MemberListContext>(ml)); }
+    static TemplateListIntfPtr alloc(const MemberVector &ml)
+    { return std::static_pointer_cast<TemplateListIntf>(std::make_shared<MemberListContext>(ml)); }
 
     // TemplateListIntf
-    virtual int  count() const;
-    virtual TemplateVariant at(int index) const;
-    virtual TemplateListIntf::ConstIterator *createIterator() const;
-    virtual int addRef()  { return RefCountedContext::addRef(); }
-    virtual int release() { return RefCountedContext::release(); }
+    virtual size_t count() const;
+    virtual TemplateVariant at(size_t index) const;
+    virtual TemplateListIntf::ConstIteratorPtr createIterator() const;
 
-  private:
     MemberListContext();
     MemberListContext(const MemberList *ml);
-    MemberListContext(MemberSDict *ml,bool doSort);
-   ~MemberListContext();
+    MemberListContext(const MemberVector &ml);
+    virtual ~MemberListContext();
+
+  private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
 
-class MemberGroupInfoContext : public RefCountedContext, public TemplateStructIntf
+class MemberGroupInfoContext : public TemplateStructIntf
 {
   public:
-    static MemberGroupInfoContext *alloc(Definition *def,const QCString &relPath,const MemberGroup *mg)
-    { return new MemberGroupInfoContext(def,relPath,mg); }
+    static TemplateStructIntfPtr alloc(const Definition *def,const QCString &relPath,const MemberGroup *mg)
+    { return std::static_pointer_cast<TemplateStructIntf>(std::make_shared<MemberGroupInfoContext>(def,relPath,mg)); }
 
     // TemplateStructIntf methods
-    virtual TemplateVariant get(const char *name) const;
-    virtual int addRef()  { return RefCountedContext::addRef(); }
-    virtual int release() { return RefCountedContext::release(); }
+    virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
+
+    MemberGroupInfoContext(const Definition *def,const QCString &relPath,const MemberGroup *mg);
+    virtual ~MemberGroupInfoContext();
 
   private:
-    MemberGroupInfoContext(Definition *def,const QCString &relPath,const MemberGroup *mg);
-   ~MemberGroupInfoContext();
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
 
-class MemberGroupListContext : public RefCountedContext, public TemplateListIntf
+class MemberGroupListContext : public TemplateListIntf
 {
   public:
-    static MemberGroupListContext *alloc()
-    { return new MemberGroupListContext; }
-    static MemberGroupListContext *alloc(Definition *def,const QCString &relPath,const MemberGroupList *list)
-    { return new MemberGroupListContext(def,relPath,list); }
-    static MemberGroupListContext *alloc(Definition *def,const QCString &relPath,const MemberGroupSDict *dict,bool subGrouping)
-    { return new MemberGroupListContext(def,relPath,dict,subGrouping); }
+    static TemplateListIntfPtr alloc()
+    { return std::static_pointer_cast<TemplateListIntf>(std::make_shared<MemberGroupListContext>()); }
+    static TemplateListIntfPtr alloc(const Definition *def,const QCString &relPath,const MemberGroupRefList &list)
+    { return std::static_pointer_cast<TemplateListIntf>(std::make_shared<MemberGroupListContext>(def,relPath,list)); }
+    static TemplateListIntfPtr alloc(const Definition *def,const QCString &relPath,const MemberGroupList &list,bool subGrouping)
+    { return std::static_pointer_cast<TemplateListIntf>(std::make_shared<MemberGroupListContext>(def,relPath,list,subGrouping)); }
 
     // TemplateListIntf
-    virtual int  count() const;
-    virtual TemplateVariant at(int index) const;
-    virtual TemplateListIntf::ConstIterator *createIterator() const;
-    virtual int addRef()  { return RefCountedContext::addRef(); }
-    virtual int release() { return RefCountedContext::release(); }
+    virtual size_t count() const;
+    virtual TemplateVariant at(size_t index) const;
+    virtual TemplateListIntf::ConstIteratorPtr createIterator() const;
+
+    MemberGroupListContext();
+    MemberGroupListContext(const Definition *def,const QCString &relPath,const MemberGroupRefList &list);
+    MemberGroupListContext(const Definition *def,const QCString &relPath,const MemberGroupList &list,bool subGrouping);
+    virtual ~MemberGroupListContext();
 
   private:
-    MemberGroupListContext();
-    MemberGroupListContext(Definition *def,const QCString &relPath,const MemberGroupList *list);
-    MemberGroupListContext(Definition *def,const QCString &relPath,const MemberGroupSDict *mgDict,bool subGrouping);
-   ~MemberGroupListContext();
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 
 //----------------------------------------------------
 
-class MemberListInfoContext : public RefCountedContext, public TemplateStructIntf
+class MemberListInfoContext : public TemplateStructIntf
 {
   public:
-    static MemberListInfoContext *alloc(Definition *def,const QCString &relPath,
+    static TemplateStructIntfPtr alloc(const Definition *def,const QCString &relPath,
                           const MemberList *ml,const QCString &title,
                           const QCString &subtitle=QCString())
-    { return new MemberListInfoContext(def,relPath,ml,title,subtitle); }
+    { return std::static_pointer_cast<TemplateStructIntf>(std::make_shared<MemberListInfoContext>(def,relPath,ml,title,subtitle)); }
 
     // TemplateStructIntf methods
-    virtual TemplateVariant get(const char *name) const;
-    virtual int addRef()  { return RefCountedContext::addRef(); }
-    virtual int release() { return RefCountedContext::release(); }
+    virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
 
-  private:
-    MemberListInfoContext(Definition *def,const QCString &relPath,
+    MemberListInfoContext(const Definition *def,const QCString &relPath,
                           const MemberList *ml,const QCString &title,
                           const QCString &subtitle=QCString());
-   ~MemberListInfoContext();
+    virtual ~MemberListInfoContext();
+
+  private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
 
-class MemberInfoContext : public RefCountedContext, public TemplateStructIntf
+class MemberInfoContext : public TemplateStructIntf
 {
   public:
-    static MemberInfoContext *alloc(const MemberInfo *mi) { return new MemberInfoContext(mi); }
+    static TemplateStructIntfPtr alloc(const MemberInfo *mi)
+    { return std::static_pointer_cast<TemplateStructIntf>(std::make_shared<MemberInfoContext>(mi)); }
 
     // TemplateStructIntf methods
-    virtual TemplateVariant get(const char *name) const;
-    virtual int addRef()  { return RefCountedContext::addRef(); }
-    virtual int release() { return RefCountedContext::release(); }
+    virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
 
-  private:
     MemberInfoContext(const MemberInfo *mi);
-   ~MemberInfoContext();
+    virtual ~MemberInfoContext();
+
+  private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
 
-class InheritedMemberInfoContext : public RefCountedContext, public TemplateStructIntf
+class InheritedMemberInfoContext : public TemplateStructIntf
 {
   public:
-    static InheritedMemberInfoContext *alloc(ClassDef *cd,MemberList *ml,const QCString &title)
-    { return new InheritedMemberInfoContext(cd,ml,title); }
+    static TemplateStructIntfPtr alloc(const ClassDef *cd,std::unique_ptr<MemberList> &&ml,const QCString &title)
+    { return std::static_pointer_cast<TemplateStructIntf>(std::make_shared<InheritedMemberInfoContext>(cd,std::move(ml),title)); }
 
     // TemplateStructIntf methods
-    virtual TemplateVariant get(const char *name) const;
-    virtual int addRef()  { return RefCountedContext::addRef(); }
-    virtual int release() { return RefCountedContext::release(); }
+    virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
+
+    InheritedMemberInfoContext(const ClassDef *cd,std::unique_ptr<MemberList> &&ml,const QCString &title);
+    virtual ~InheritedMemberInfoContext();
 
   private:
-    InheritedMemberInfoContext(ClassDef *cd,MemberList *ml,const QCString &title);
-   ~InheritedMemberInfoContext();
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
 
-class InheritedMemberInfoListContext : public RefCountedContext, public TemplateListIntf
+class InheritedMemberInfoListContext : public TemplateListIntf
 {
   public:
-    static InheritedMemberInfoListContext *alloc() { return new InheritedMemberInfoListContext; }
-    void addMemberList(ClassDef *cd,MemberListType lt,const QCString &title,bool additionalList=TRUE);
+    static TemplateListIntfPtr alloc()
+    { return std::static_pointer_cast<TemplateListIntf>(std::make_shared<InheritedMemberInfoListContext>()); }
+    void addMemberList(const ClassDef *cd,MemberListType lt,const QCString &title,bool additionalList=TRUE);
 
     // TemplateListIntf
-    virtual int  count() const;
-    virtual TemplateVariant at(int index) const;
-    virtual TemplateListIntf::ConstIterator *createIterator() const;
-    virtual int addRef()  { return RefCountedContext::addRef(); }
-    virtual int release() { return RefCountedContext::release(); }
+    virtual size_t count() const;
+    virtual TemplateVariant at(size_t index) const;
+    virtual TemplateListIntf::ConstIteratorPtr createIterator() const;
 
-  private:
     InheritedMemberInfoListContext();
-   ~InheritedMemberInfoListContext();
-    class Private;
-    Private *p;
-};
-
-//----------------------------------------------------
-
-class AllMembersListContext : public RefCountedContext, public TemplateListIntf
-{
-  public:
-    static AllMembersListContext *alloc()
-    { return new AllMembersListContext; }
-    static AllMembersListContext *alloc(const MemberNameInfoSDict *ml)
-    { return new AllMembersListContext(ml); }
-
-    // TemplateListIntf
-    virtual int  count() const;
-    virtual TemplateVariant at(int index) const;
-    virtual TemplateListIntf::ConstIterator *createIterator() const;
-    virtual int addRef()  { return RefCountedContext::addRef(); }
-    virtual int release() { return RefCountedContext::release(); }
+    virtual ~InheritedMemberInfoListContext();
 
   private:
-    AllMembersListContext();
-    AllMembersListContext(const MemberNameInfoSDict *ml);
-   ~AllMembersListContext();
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
 
-class ArgumentContext : public RefCountedContext, public TemplateStructIntf
+class AllMembersListContext : public TemplateListIntf
 {
   public:
-    static ArgumentContext *alloc(const Argument *arg,Definition *def,const QCString &relPath)
-    { return new ArgumentContext(arg,def,relPath); }
+    static TemplateListIntfPtr alloc(const MemberNameInfoLinkedMap &ml)
+    { return std::static_pointer_cast<TemplateListIntf>(std::make_shared<AllMembersListContext>(ml)); }
+
+    // TemplateListIntf
+    virtual size_t count() const;
+    virtual TemplateVariant at(size_t index) const;
+    virtual TemplateListIntf::ConstIteratorPtr createIterator() const;
+
+    AllMembersListContext(const MemberNameInfoLinkedMap &ml);
+    virtual ~AllMembersListContext();
+
+  private:
+    class Private;
+    std::unique_ptr<Private> p;
+};
+
+//----------------------------------------------------
+
+class ArgumentContext : public TemplateStructIntf
+{
+  public:
+    static TemplateStructIntfPtr alloc(const Argument &arg,const Definition *def,const QCString &relPath)
+    { return std::static_pointer_cast<TemplateStructIntf>(std::make_shared<ArgumentContext>(arg,def,relPath)); }
 
     // TemplateStructIntf methods
-    virtual TemplateVariant get(const char *name) const;
-    virtual int addRef()  { return RefCountedContext::addRef(); }
-    virtual int release() { return RefCountedContext::release(); }
+    virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
+
+    ArgumentContext(const Argument &arg,const Definition *def,const QCString &relPath);
+    virtual ~ArgumentContext();
 
   private:
-    ArgumentContext(const Argument *arg,Definition *def,const QCString &relPath);
-   ~ArgumentContext();
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
 
-class ArgumentListContext : public RefCountedContext, public TemplateListIntf
+class ArgumentListContext : public TemplateListIntf
 {
   public:
-    static ArgumentListContext *alloc() { return new ArgumentListContext; }
-    static ArgumentListContext *alloc(const ArgumentList *al,Definition *def,const QCString &relPath)
-    { return new ArgumentListContext(al,def,relPath); }
+    static TemplateListIntfPtr alloc()
+    { return std::static_pointer_cast<TemplateListIntf>(std::make_shared<ArgumentListContext>()); }
+    static TemplateListIntfPtr alloc(const ArgumentList &al,const Definition *def,const QCString &relPath)
+    { return std::static_pointer_cast<TemplateListIntf>(std::make_shared<ArgumentListContext>(al,def,relPath)); }
 
     // TemplateListIntf
-    virtual int  count() const;
-    virtual TemplateVariant at(int index) const;
-    virtual TemplateListIntf::ConstIterator *createIterator() const;
-    virtual int addRef()  { return RefCountedContext::addRef(); }
-    virtual int release() { return RefCountedContext::release(); }
+    virtual size_t count() const;
+    virtual TemplateVariant at(size_t index) const;
+    virtual TemplateListIntf::ConstIteratorPtr createIterator() const;
 
-  private:
     ArgumentListContext();
-    ArgumentListContext(const ArgumentList *al,Definition *def,const QCString &relPath);
-   ~ArgumentListContext();
+    ArgumentListContext(const ArgumentList &al,const Definition *def,const QCString &relPath);
+    virtual ~ArgumentListContext();
+
+  private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
 
-class SymbolContext : public RefCountedContext, public TemplateStructIntf
+class SymbolContext : public TemplateStructIntf
 {
   public:
-    static SymbolContext *alloc(const Definition *def,const Definition *prev,const Definition *next)
-    { return new SymbolContext(def,prev,next); }
+    static TemplateStructIntfPtr alloc(const Definition *def,const Definition *prev,const Definition *next)
+    { return std::static_pointer_cast<TemplateStructIntf>(std::make_shared<SymbolContext>(def,prev,next)); }
 
     // TemplateStructIntf methods
-    virtual TemplateVariant get(const char *name) const;
-    virtual int addRef()  { return RefCountedContext::addRef(); }
-    virtual int release() { return RefCountedContext::release(); }
+    virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
 
-  private:
     SymbolContext(const Definition *def,const Definition *prev,const Definition *next);
-   ~SymbolContext();
-    class Private;
-    Private *p;
-};
-
-//----------------------------------------------------
-
-class SymbolListContext : public RefCountedContext, public TemplateListIntf
-{
-  public:
-    static SymbolListContext *alloc(const SearchDefinitionList *sdl)
-    { return new SymbolListContext(sdl); }
-
-    // TemplateListIntf
-    virtual int  count() const;
-    virtual TemplateVariant at(int index) const;
-    virtual TemplateListIntf::ConstIterator *createIterator() const;
-    virtual int addRef()  { return RefCountedContext::addRef(); }
-    virtual int release() { return RefCountedContext::release(); }
+    virtual ~SymbolContext();
 
   private:
-    SymbolListContext(const SearchDefinitionList *sdl);
-   ~SymbolListContext();
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
 
-class SymbolGroupContext : public RefCountedContext, public TemplateStructIntf
+class SymbolListContext : public TemplateListIntf
 {
   public:
-    static SymbolGroupContext *alloc(const SearchDefinitionList *sdl)
-    { return new SymbolGroupContext(sdl); }
+    static TemplateListIntfPtr alloc(const SearchIndexList::const_iterator &start,
+                                    const SearchIndexList::const_iterator &end)
+    { return std::static_pointer_cast<TemplateListIntf>(std::make_shared<SymbolListContext>(start,end)); }
+
+    // TemplateListIntf
+    virtual size_t count() const;
+    virtual TemplateVariant at(size_t index) const;
+    virtual TemplateListIntf::ConstIteratorPtr createIterator() const;
+
+    SymbolListContext(const SearchIndexList::const_iterator &start,
+                      const SearchIndexList::const_iterator &end);
+    virtual ~SymbolListContext();
+
+  private:
+    class Private;
+    std::unique_ptr<Private> p;
+};
+
+//----------------------------------------------------
+
+class SymbolGroupContext : public TemplateStructIntf
+{
+  public:
+    static TemplateStructIntfPtr alloc(const SearchIndexList::const_iterator &start,
+                                     const SearchIndexList::const_iterator &end)
+    { return std::static_pointer_cast<TemplateStructIntf>(std::make_shared<SymbolGroupContext>(start,end)); }
 
     // TemplateStructIntf methods
-    virtual TemplateVariant get(const char *name) const;
-    virtual int addRef()  { return RefCountedContext::addRef(); }
-    virtual int release() { return RefCountedContext::release(); }
+    virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
+
+    SymbolGroupContext(const SearchIndexList::const_iterator &start,
+                       const SearchIndexList::const_iterator &end);
+    virtual ~SymbolGroupContext();
 
   private:
-    SymbolGroupContext(const SearchDefinitionList *sdl);
-   ~SymbolGroupContext();
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
 
-class SymbolGroupListContext : public RefCountedContext, public TemplateListIntf
+class SymbolGroupListContext : public TemplateListIntf
 {
   public:
-    static SymbolGroupListContext *alloc(const SearchIndexList *sil)
-    { return new SymbolGroupListContext(sil); }
+    static TemplateListIntfPtr alloc(const SearchIndexList &sil)
+    { return std::static_pointer_cast<TemplateListIntf>(std::make_shared<SymbolGroupListContext>(sil)); }
 
     // TemplateListIntf
-    virtual int  count() const;
-    virtual TemplateVariant at(int index) const;
-    virtual TemplateListIntf::ConstIterator *createIterator() const;
-    virtual int addRef()  { return RefCountedContext::addRef(); }
-    virtual int release() { return RefCountedContext::release(); }
+    virtual size_t count() const;
+    virtual TemplateVariant at(size_t index) const;
+    virtual TemplateListIntf::ConstIteratorPtr createIterator() const;
+
+    SymbolGroupListContext(const SearchIndexList &sil);
+    virtual ~SymbolGroupListContext();
 
   private:
-    SymbolGroupListContext(const SearchIndexList *sil);
-   ~SymbolGroupListContext();
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
 
-class SymbolIndexContext : public RefCountedContext, public TemplateStructIntf
+class SymbolIndexContext : public TemplateStructIntf
 {
   public:
-    static SymbolIndexContext *alloc(const SearchIndexList *sl,const QCString &name)
-    { return new SymbolIndexContext(sl,name); }
+    static TemplateStructIntfPtr alloc(const std::string &letter,
+                                     const SearchIndexList &sl,const QCString &name)
+    { return std::static_pointer_cast<TemplateStructIntf>(std::make_shared<SymbolIndexContext>(letter,sl,name)); }
 
     // TemplateStructIntf methods
-    virtual TemplateVariant get(const char *name) const;
-    virtual int addRef()  { return RefCountedContext::addRef(); }
-    virtual int release() { return RefCountedContext::release(); }
+    virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
+
+    SymbolIndexContext(const std::string &letter,const SearchIndexList &sl,const QCString &name);
+    virtual ~SymbolIndexContext();
 
   private:
-    SymbolIndexContext(const SearchIndexList *sl,const QCString &name);
-   ~SymbolIndexContext();
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
 
-class SymbolIndicesContext : public RefCountedContext, public TemplateListIntf
+class SymbolIndicesContext : public TemplateListIntf
 {
   public:
-    static SymbolIndicesContext *alloc(const SearchIndexInfo *info)
-    { return new SymbolIndicesContext(info); }
+    static TemplateListIntfPtr alloc(const SearchIndexInfo &info)
+    { return std::static_pointer_cast<TemplateListIntf>(std::make_shared<SymbolIndicesContext>(info)); }
 
     // TemplateListIntf
-    virtual int  count() const;
-    virtual TemplateVariant at(int index) const;
-    virtual TemplateListIntf::ConstIterator *createIterator() const;
-    virtual int addRef()  { return RefCountedContext::addRef(); }
-    virtual int release() { return RefCountedContext::release(); }
+    virtual size_t count() const;
+    virtual TemplateVariant at(size_t index) const;
+    virtual TemplateListIntf::ConstIteratorPtr createIterator() const;
+
+    SymbolIndicesContext(const SearchIndexInfo &info);
+    virtual ~SymbolIndicesContext();
 
   private:
-    SymbolIndicesContext(const SearchIndexInfo *info);
-   ~SymbolIndicesContext();
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
 
-class SearchIndexContext : public RefCountedContext, public TemplateStructIntf
+class SearchIndexContext : public TemplateStructIntf
 {
   public:
-    static SearchIndexContext *alloc(const SearchIndexInfo *info)
-    { return new SearchIndexContext(info); }
+    static TemplateStructIntfPtr alloc(const SearchIndexInfo &info)
+    { return std::static_pointer_cast<TemplateStructIntf>(std::make_shared<SearchIndexContext>(info)); }
 
     // TemplateStructIntf methods
-    virtual TemplateVariant get(const char *name) const;
-    virtual int addRef()  { return RefCountedContext::addRef(); }
-    virtual int release() { return RefCountedContext::release(); }
+    virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
+
+    SearchIndexContext(const SearchIndexInfo &info);
+    virtual ~SearchIndexContext();
 
   private:
-    SearchIndexContext(const SearchIndexInfo *info);
-   ~SearchIndexContext();
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
 
-class SearchIndicesContext : public RefCountedContext, public TemplateListIntf
+class SearchIndicesContext : public TemplateListIntf
 {
   public:
-    static SearchIndicesContext *alloc() { return new SearchIndicesContext; }
+    static TemplateListIntfPtr alloc()
+    { return std::static_pointer_cast<TemplateListIntf>(std::make_shared<SearchIndicesContext>()); }
 
     // TemplateListIntf
-    virtual int  count() const;
-    virtual TemplateVariant at(int index) const;
-    virtual TemplateListIntf::ConstIterator *createIterator() const;
-    virtual int addRef()  { return RefCountedContext::addRef(); }
-    virtual int release() { return RefCountedContext::release(); }
+    virtual size_t count() const;
+    virtual TemplateVariant at(size_t index) const;
+    virtual TemplateListIntf::ConstIteratorPtr createIterator() const;
 
-  private:
     SearchIndicesContext();
-   ~SearchIndicesContext();
+    virtual ~SearchIndicesContext();
+
+  private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
 
 void generateOutputViaTemplate();
-void generateTemplateFiles(const char *templateDir);
+void generateTemplateFiles(const QCString &templateDir);
 
 #endif

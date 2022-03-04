@@ -9,51 +9,51 @@ Some text.
 More text.
 
 SVG image with caption:\n
-\image html http://img.shields.io/badge/license-MIT-brightgreen.svg "A caption"
+\image html https://raster.shields.io/badge/license-MIT-brightgreen.svg "A caption"
 
 PNG image with caption:\n
-\image html http://img.shields.io/badge/license-MIT-brightgreen.png "A caption"
+\image html https://raster.shields.io/badge/license-MIT-brightgreen.png "A caption"
 
 SVG image without caption:\n
-\image html http://img.shields.io/badge/license-MIT-brightgreen.svg
+\image html https://raster.shields.io/badge/license-MIT-brightgreen.svg
 
 PNG image without caption:\n
-\image html http://img.shields.io/badge/license-MIT-brightgreen.png
+\image html https://raster.shields.io/badge/license-MIT-brightgreen.png
 
 Inline SVG image with caption:\n
-This image is inline \image{inline} html http://img.shields.io/badge/license-MIT-brightgreen.svg "MIT license" within the text.
+This image is inline \image{inline} html https://raster.shields.io/badge/license-MIT-brightgreen.svg "MIT license" within the text.
 
 Inline PNG image with caption:\n
 This image is inline
-\image{inline} html http://img.shields.io/badge/license-MIT-brightgreen.png "MIT license"
+\image{inline} html https://raster.shields.io/badge/license-MIT-brightgreen.png "MIT license"
 within the text.
 
 Markdown style linked SVG image:\n
-[![MIT license](http://img.shields.io/badge/license-MIT-brightgreen.svg)](http://opensource.org/licenses/MIT)
+[![MIT license](https://raster.shields.io/badge/license-MIT-brightgreen.svg)](https://opensource.org/licenses/MIT)
 
 Markdown style linked PNG image:\n
-[![MIT license](http://img.shields.io/badge/license-MIT-brightgreen.png)](http://opensource.org/licenses/MIT)
+[![MIT license](https://raster.shields.io/badge/license-MIT-brightgreen.png)](https://opensource.org/licenses/MIT)
 
 HTML style linked SVG image:\n
-<a href="http://opensource.org/licenses/MIT">
-<img src="http://img.shields.io/badge/license-MIT-brightgreen.svg" alt="MIT license">
+<a href="https://opensource.org/licenses/MIT">
+<img src="https://raster.shields.io/badge/license-MIT-brightgreen.svg" alt="MIT license">
 </a>
 
 HTML style linked PNG image:\n
-<a href="http://opensource.org/licenses/MIT">
-<img src="http://img.shields.io/badge/license-MIT-brightgreen.png" alt="MIT license">
+<a href="https://opensource.org/licenses/MIT">
+<img src="https://raster.shields.io/badge/license-MIT-brightgreen.png" alt="MIT license">
 </a>
 
 HTML style unlinked SVG image:\n
-<img src="http://img.shields.io/badge/license-MIT-brightgreen.svg" alt="MIT license"/>
+<img src="https://raster.shields.io/badge/license-MIT-brightgreen.svg" alt="MIT license"/>
 
 HTML style unlinked PNG image:\n
-<img src="http://img.shields.io/badge/license-MIT-brightgreen.png" alt="MIT license"/>
+<img src="https://raster.shields.io/badge/license-MIT-brightgreen.png" alt="MIT license"/>
 
 Some markdown image tests\n
-![Some SVG image](https://img.shields.io/badge/docs-Doxygen-blue.svg?foo&bar)
-[Some normal link](http://www.doxygen.nl?foo&bar)
+![Some SVG image](https://raster.shields.io/badge/docs-Doxygen-blue.svg?foo&bar)
+[Some normal link](https://www.doxygen.nl/index.html?foo&bar)
 
-![Some SVG image](https://img.shields.io/badge/docs-Doxygen-blue.svg?foo&amp;bar)
-[Some normal link](http://www.doxygen.nl?foo&amp;bar)
+![Some SVG image](https://raster.shields.io/badge/docs-Doxygen-blue.svg?foo&amp;bar)
+[Some normal link](https://www.doxygen.nl/index.html?foo&amp;bar)
 */

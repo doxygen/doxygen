@@ -141,8 +141,8 @@ class Transl:
         self.baseClassId = None
         self.readableStatus = None   # 'up-to-date', '1.2.3', '1.3', etc.
         self.status = None           # '', '1.2.03', '1.3.00', etc.
-        self.lang = None             # like 'Brasilian'
-        self.langReadable = None     # like 'Brasilian Portuguese'
+        self.lang = None             # like 'Brazilian'
+        self.langReadable = None     # like 'Brazilian Portuguese'
         self.note = None             # like 'should be cleaned up'
         self.prototypeDic = {}       # uniPrototype -> prototype
         self.translateMeText = 'translate me!'
@@ -624,8 +624,8 @@ class Transl:
                 else:
                     self.__unexpectedToken(status, tokenId, tokenLineNo)
 
-            elif status == 8:    # zero expected
-                if tokenId == 'num' and tokenStr == '0':
+            elif status == 8:    # zero expected (or default for the destructor)
+                if (tokenId == 'num' and tokenStr == '0') or (tokenId == 'id' and tokenStr == 'default'):
                     status = 9
                 else:
                     self.__unexpectedToken(status, tokenId, tokenLineNo)
@@ -875,8 +875,14 @@ class Transl:
                             assert False
 
                         assert(uniPrototype not in self.prototypeDic)
-                        # Insert new dictionary item.
-                        self.prototypeDic[uniPrototype] = prototype
+                        # Insert new dictionary item, unless they have a default in translator.h
+                        if (not (prototype=="virtual QCString latexDocumentPost()" or
+                                 prototype=="virtual QCString latexDocumentPre()" or
+                                 prototype=="virtual QCString latexCommandName()" or
+                                 prototype=="virtual QCString latexFont()" or
+                                 prototype=="virtual QCString latexFontenc()" or
+                                 prototype=="virtual bool needsPunctuation()")):
+                          self.prototypeDic[uniPrototype] = prototype
                         status = 2      # body consumed
                         methodId = None # outside of any method
                 elif tokenId == 'lcurly':
@@ -1231,10 +1237,14 @@ class TrManager:
         self.src_path = os.path.join(self.doxy_path, 'src')
         #  Normally the original sources aren't in the current directory
         # (as we are in the build directory) so we have to specify the
-        # original source directory.
+        # original source /documentation / ... directory.
         self.org_src_path = self.src_path
+        self.org_doc_path = self.doc_path
+        self.org_doxy_path = self.doxy_path
         if (len(sys.argv) > 1 and os.path.isdir(os.path.join(sys.argv[1], 'src'))):
             self.org_src_path = os.path.join(sys.argv[1], 'src')
+            self.org_doc_path = os.path.join(sys.argv[1], 'doc')
+            self.org_doxy_path = sys.argv[1]
             # Get the explicit arguments of the script.
             self.script_argLst = sys.argv[2:]
         else:
@@ -1290,7 +1300,7 @@ class TrManager:
         # The translator.h must exist (the Transl object will check it),
         # create the object for it and let it build the dictionary of
         # required methods.
-        tr = Transl(os.path.join(self.src_path, 'translator.h'), self)
+        tr = Transl(os.path.join(self.org_src_path, 'translator.h'), self)
         self.requiredMethodsDic = tr.collectPureVirtualPrototypes()
         tim = tr.getmtime()
         if tim > self.lastModificationTime:
@@ -1298,7 +1308,7 @@ class TrManager:
 
         # The translator_adapter.h must exist (the Transl object will check it),
         # create the object for it and store the reference in the dictionary.
-        tr = Transl(os.path.join(self.src_path, 'translator_adapter.h'), self)
+        tr = Transl(os.path.join(self.org_src_path, 'translator_adapter.h'), self)
         self.adaptMethodsDic = tr.collectAdapterPrototypes()
         tim = tr.getmtime()
         if tim > self.lastModificationTime:
@@ -1310,11 +1320,11 @@ class TrManager:
         if self.script_argLst:
             lst = ['translator_' + x + '.h' for x in self.script_argLst]
             for fname in lst:
-                if not os.path.isfile(os.path.join(self.src_path, fname)):
+                if not os.path.isfile(os.path.join(self.org_src_path, fname)):
                     sys.stderr.write("\a\nFile '%s' not found!\n" % fname)
                     sys.exit(1)
         else:
-            lst = os.listdir(self.src_path)
+            lst = os.listdir(self.org_src_path)
             lst = [x for x in lst if x[:11] == 'translator_'
                                    and x[-2:] == '.h'
                                    and x != 'translator_adapter.h']
@@ -1323,7 +1333,7 @@ class TrManager:
         # content of the file. Then insert the object to the dictionary
         # accessed via classId.
         for fname in lst:
-            fullname = os.path.join(self.src_path, fname)
+            fullname = os.path.join(self.org_src_path, fname)
             tr = Transl(fullname, self)
             tr.processing()
             assert(tr.classId != 'Translator')
@@ -1402,7 +1412,7 @@ class TrManager:
                     self.numLang -= 1    # the couple will be counted as one
 
         # Extract the version of Doxygen.
-        f = xopen(os.path.join(self.doxy_path, 'VERSION'))
+        f = xopen(os.path.join(self.org_doxy_path, 'VERSION'))
         self.doxVersion = f.readline().strip()
         f.close()
 
@@ -1557,7 +1567,7 @@ class TrManager:
         # The e-mail addresses of the maintainers will be collected to
         # the auxiliary file in the order of translator classes listed
         # in the translator report.
-        fmail = xopen('mailto.txt', 'w')
+        fmail = xopen(os.path.join(self.doc_path, 'mailto.txt'), 'w')
 
         # Write the list of "up-to-date" translator classes.
         if self.upToDateIdLst:
@@ -1720,7 +1730,7 @@ class TrManager:
 
         Fills the dictionary classId -> [(name, e-mail), ...]."""
 
-        fname = os.path.join(self.doc_path, self.maintainersFileName)
+        fname = os.path.join(self.org_doc_path, self.maintainersFileName)
 
         # Include the maintainers file to the group of files checked with
         # respect to the modification time.
@@ -1772,10 +1782,16 @@ class TrManager:
         """Checks the modtime of files and generates language.doc."""
         self.__loadMaintainers()
 
+        # Check the last modification time of the VERSION file.
+        fVerName = os.path.join(self.org_doxy_path, "VERSION")
+        tim = os.path.getmtime(fVerName)
+        if tim > self.lastModificationTime:
+            self.lastModificationTime = tim
+
         # Check the last modification time of the template file. It is the
         # last file from the group that decide whether the documentation
         # should or should not be generated.
-        fTplName = os.path.join(self.doc_path, self.languageTplFileName)
+        fTplName = os.path.join(self.org_doc_path, self.languageTplFileName)
         tim = os.path.getmtime(fTplName)
         if tim > self.lastModificationTime:
             self.lastModificationTime = tim
@@ -1814,16 +1830,15 @@ class TrManager:
         tplDic['supportedLangReadableStr'] = self.supportedLangReadableStr
         tplDic['translatorReportFileName'] = self.translatorReportFileName
 
-        ahref = '<a href="../doc/' + self.translatorReportFileName
-        ahref += '"\n><code>doxygen/doc/'  + self.translatorReportFileName
-        ahref += '</code></a>'
+        ahref = '<a href="' + self.translatorReportFileName
+        ahref += '"\n><code>'  + self.translatorReportFileName + '</code></a>'
         tplDic['translatorReportLink'] = ahref
         tplDic['numLangStr'] = str(self.numLang)
 
         # Define templates for HTML table parts of the documentation.
-        htmlTableTpl = '''\
+        htmlTableTpl = '''
             \\htmlonly
-			</p>
+            </p>
             <table align="center" cellspacing="0" cellpadding="0" border="0">
             <tr bgcolor="#000000">
             <td>
@@ -1842,7 +1857,7 @@ class TrManager:
             </td>
             </tr>
             </table>
-			<p>
+            <p>
             \\endhtmlonly
             '''
         htmlTableTpl = textwrap.dedent(htmlTableTpl)
@@ -1998,11 +2013,11 @@ class TrManager:
 
 if __name__ == '__main__':
 
-    # The Python 2.6+ or 3.3+ is required.
+    # The Python 2.7+ or 3.3+ is required.
     major = sys.version_info[0]
     minor = sys.version_info[1]
-    if (major == 2 and minor < 6) or (major == 3 and minor < 0):
-        print('Python 2.6+ or Python 3.0+ are required for the script')
+    if (major == 2 and minor < 7) or (major == 3 and minor < 0):
+        print('Python 2.7+ or Python 3.0+ are required for the script')
         sys.exit(1)
 
     # The translator manager builds the Transl objects, parses the related

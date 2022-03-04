@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
   <compounddef id="indexpage" kind="page">
     <compoundname>index</compoundname>
     <title>My Project</title>
     <briefdescription>
     </briefdescription>
     <detaileddescription>
-      <para> Our main function starts like this: <programlisting filename="example_test.cpp"><codeline><highlight class="normal">void<sp/>main()</highlight></codeline><codeline><highlight class="normal">{</highlight></codeline></programlisting> First we create a object <computeroutput>t</computeroutput> of the <ref refid="class_test" kindref="compound">Test</ref> class. <programlisting filename="example_test.cpp"><codeline><highlight class="normal"><sp/><sp/>Test<sp/>t;</highlight></codeline></programlisting> Then we call the example member function <programlisting filename="example_test.cpp"><codeline><highlight class="normal"><sp/><sp/>t.example();</highlight></codeline></programlisting> After that our little test routine ends. <programlisting filename="example_test.cpp"><codeline><highlight class="normal">}</highlight></codeline></programlisting> </para>
+      <para> Our main function starts like this: <programlisting filename="example_test.cpp"><codeline><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>main()</highlight></codeline><codeline><highlight class="normal">{</highlight></codeline></programlisting>First we create a object <computeroutput>t</computeroutput> of the <ref refid="class_test" kindref="compound">Test</ref> class. <programlisting filename="example_test.cpp"><codeline><highlight class="normal"><sp/><sp/><ref refid="class_test" kindref="compound">Test</ref><sp/>t;</highlight></codeline></programlisting>Then we call the example member function <programlisting filename="example_test.cpp"><codeline><highlight class="normal"><sp/><sp/>t.<ref refid="class_test_1a47b775f65718978f1ffcd96376f8ecfa" kindref="member">example</ref>();</highlight></codeline></programlisting>After that our little test routine ends. <programlisting filename="example_test.cpp"><codeline><highlight class="normal">}</highlight></codeline></programlisting></para>
     </detaileddescription>
+    <location file="021_dontinclude.cpp"/>
   </compounddef>
 </doxygen>

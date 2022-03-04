@@ -1,3 +1,15 @@
+/******************************************************************************
+ *
+ * Copyright (C) 1997-2019 by Dimitri van Heesch.
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
+ * for any purpose. It is provided "as is" without express or implied warranty.
+ * See the GNU General Public License for more details.
+ *
+ */
+
 #include "wizard.h"
 #include "input.h"
 #include "doxywizard.h"
@@ -23,6 +35,7 @@
 #include <QStackedWidget>
 #include <qdrawutil.h>
 
+
 // options configurable via the wizard
 #define STR_PROJECT_NAME          QString::fromLatin1("PROJECT_NAME")
 #define STR_PROJECT_LOGO          QString::fromLatin1("PROJECT_LOGO")
@@ -35,6 +48,7 @@
 #define STR_OPTIMIZE_OUTPUT_JAVA  QString::fromLatin1("OPTIMIZE_OUTPUT_JAVA")
 #define STR_OPTIMIZE_FOR_FORTRAN  QString::fromLatin1("OPTIMIZE_FOR_FORTRAN")
 #define STR_OPTIMIZE_OUTPUT_VHDL  QString::fromLatin1("OPTIMIZE_OUTPUT_VHDL")
+#define STR_OPTIMIZE_OUTPUT_SLICE QString::fromLatin1("OPTIMIZE_OUTPUT_SLICE")
 #define STR_CPP_CLI_SUPPORT       QString::fromLatin1("CPP_CLI_SUPPORT")
 #define STR_HIDE_SCOPE_NAMES      QString::fromLatin1("HIDE_SCOPE_NAMES")
 #define STR_EXTRACT_ALL           QString::fromLatin1("EXTRACT_ALL")
@@ -44,13 +58,13 @@
 #define STR_GENERATE_MAN          QString::fromLatin1("GENERATE_MAN")
 #define STR_GENERATE_RTF          QString::fromLatin1("GENERATE_RTF")
 #define STR_GENERATE_XML          QString::fromLatin1("GENERATE_XML")
+#define STR_GENERATE_DOCBOOK      QString::fromLatin1("GENERATE_DOCBOOK")
 #define STR_GENERATE_HTMLHELP     QString::fromLatin1("GENERATE_HTMLHELP")
 #define STR_GENERATE_TREEVIEW     QString::fromLatin1("GENERATE_TREEVIEW")
 #define STR_USE_PDFLATEX          QString::fromLatin1("USE_PDFLATEX")
 #define STR_PDF_HYPERLINKS        QString::fromLatin1("PDF_HYPERLINKS")
 #define STR_SEARCHENGINE          QString::fromLatin1("SEARCHENGINE")
 #define STR_HAVE_DOT              QString::fromLatin1("HAVE_DOT")
-#define STR_CLASS_DIAGRAMS        QString::fromLatin1("CLASS_DIAGRAMS")
 #define STR_CLASS_GRAPH           QString::fromLatin1("CLASS_GRAPH")
 #define STR_COLLABORATION_GRAPH   QString::fromLatin1("COLLABORATION_GRAPH")
 #define STR_GRAPHICAL_HIERARCHY   QString::fromLatin1("GRAPHICAL_HIERARCHY")
@@ -62,7 +76,7 @@
 #define STR_HTML_COLORSTYLE_SAT   QString::fromLatin1("HTML_COLORSTYLE_SAT")
 #define STR_HTML_COLORSTYLE_GAMMA QString::fromLatin1("HTML_COLORSTYLE_GAMMA")
 
-static bool g_optimizeMapping[6][6] = 
+static bool g_optimizeMapping[7][7] =
 {
   // A: OPTIMIZE_OUTPUT_FOR_C
   // B: OPTIMIZE_OUTPUT_JAVA
@@ -70,23 +84,26 @@ static bool g_optimizeMapping[6][6] =
   // D: OPTIMIZE_OUTPUT_VHDL
   // E: CPP_CLI_SUPPORT
   // F: HIDE_SCOPE_NAMES
-  // A     B     C     D     E      F
-  { false,false,false,false,false,false }, // 0: C++
-  { false,false,false,false,true, false }, // 1: C++/CLI
-  { false,true, false,false,false,false }, // 2: C#/Java
-  { true, false,false,false,false,true  }, // 3: C/PHP 
-  { false,false,true, false,false,false }, // 4: Fortran
-  { false,false,false,true, false,false }, // 5: VHDL
+  // G: OPTIMIZE_OUTPUT_SLICE
+  // A     B     C     D     E     F     G
+  { false,false,false,false,false,false,false }, // 0: C++
+  { false,false,false,false,true, false,false }, // 1: C++/CLI
+  { false,true, false,false,false,false,false }, // 2: C#/Java
+  { true, false,false,false,false,true, false }, // 3: C/PHP
+  { false,false,true, false,false,false,false }, // 4: Fortran
+  { false,false,false,true, false,false,false }, // 5: VHDL
+  { false,false,false,false,false,false,true  }, // 6: SLICE
 };
 
-static QString g_optimizeOptionNames[6] =
+static QString g_optimizeOptionNames[7] =
 {
   STR_OPTIMIZE_OUTPUT_FOR_C,
   STR_OPTIMIZE_OUTPUT_JAVA,
   STR_OPTIMIZE_FOR_FORTRAN,
   STR_OPTIMIZE_OUTPUT_VHDL,
   STR_CPP_CLI_SUPPORT,
-  STR_HIDE_SCOPE_NAMES
+  STR_HIDE_SCOPE_NAMES,
+  STR_OPTIMIZE_OUTPUT_SLICE
 };
 
 //==========================================================================
@@ -95,7 +112,7 @@ static bool stringVariantToBool(const QVariant &v)
 {
   QString s = v.toString().toLower();
   return s==QString::fromLatin1("yes") || s==QString::fromLatin1("true") || s==QString::fromLatin1("1");
-} 
+}
 
 static bool getBoolOption(
     const QHash<QString,Input*>&model,const QString &name)
@@ -103,7 +120,7 @@ static bool getBoolOption(
   Input *option = model[name];
   Q_ASSERT(option!=0);
   return stringVariantToBool(option->value());
-} 
+}
 
 static int getIntOption(
     const QHash<QString,Input*>&model,const QString &name)
@@ -111,7 +128,7 @@ static int getIntOption(
   Input *option = model[name];
   Q_ASSERT(option!=0);
   return option->value().toInt();
-} 
+}
 
 static QString getStringOption(
     const QHash<QString,Input*>&model,const QString &name)
@@ -331,19 +348,19 @@ void ColorPicker::paintEvent(QPaintEvent*)
   QRect r(0, foff, w, height() - 2*foff);
   int wi = r.width() - 2;
   int hi = r.height() - 2;
-  if (!m_pix || m_pix->height() != hi || m_pix->width() != wi) 
+  if (!m_pix || m_pix->height() != hi || m_pix->width() != wi)
   {
     delete m_pix;
     QImage img(wi, hi, QImage::Format_RGB32);
     int y;
     uint *pixel = (uint *) img.scanLine(0);
-    for (y = 0; y < hi; y++) 
+    for (y = 0; y < hi; y++)
     {
       const uint *end = pixel + wi;
       int yh = y2hue(y+coff);
       int ys = y2sat(y+coff);
       int yg = y2gam(y+coff);
-      while (pixel < end) 
+      while (pixel < end)
       {
         QColor c;
         c.setHsv(yh, ys, (int)(255*pow(0.7,yg/100.0)));
@@ -357,10 +374,10 @@ void ColorPicker::paintEvent(QPaintEvent*)
   p.drawPixmap(1, coff, *m_pix);
   const QPalette &g = palette();
   qDrawShadePanel(&p, r, g, true);
-  p.setPen(g.foreground().color());
-  p.setBrush(g.foreground());
+  p.setPen(g.windowText().color());
+  p.setBrush(g.windowText());
   QPolygon a;
-  int y = m_mode==Hue ?        hue2y(m_hue) : 
+  int y = m_mode==Hue ?        hue2y(m_hue) :
           m_mode==Saturation ? sat2y(m_sat) :
                                gam2y(m_gam);
   a.setPoints(3, w, y, w+5, y+5, w+5, y-5);
@@ -370,16 +387,16 @@ void ColorPicker::paintEvent(QPaintEvent*)
 
 void ColorPicker::mouseMoveEvent(QMouseEvent *m)
 {
-  if      (m_mode==Hue)        setHue(y2hue(m->y())); 
-  else if (m_mode==Saturation) setSat(y2sat(m->y()));
-  else                         setGam(y2gam(m->y()));
+  if      (m_mode==Hue)        setHue(y2hue(getMouseYPositionFromEvent(m)));
+  else if (m_mode==Saturation) setSat(y2sat(getMouseYPositionFromEvent(m)));
+  else                         setGam(y2gam(getMouseYPositionFromEvent(m)));
 }
 
 void ColorPicker::mousePressEvent(QMouseEvent *m)
 {
-  if      (m_mode==Hue)        setHue(y2hue(m->y())); 
-  else if (m_mode==Saturation) setSat(y2sat(m->y()));
-  else                         setGam(y2gam(m->y()));
+  if      (m_mode==Hue)        setHue(y2hue(getMouseYPositionFromEvent(m)));
+  else if (m_mode==Saturation) setSat(y2sat(getMouseYPositionFromEvent(m)));
+  else                         setGam(y2gam(getMouseYPositionFromEvent(m)));
 }
 
 void ColorPicker::setHue(int h)
@@ -462,7 +479,7 @@ int ColorPicker::gam2y(int g)
 Step1::Step1(Wizard *wizard,const QHash<QString,Input*> &modelData) : m_wizard(wizard), m_modelData(modelData)
 {
   QVBoxLayout *layout = new QVBoxLayout(this);
-  layout->setMargin(4);
+  layout->setContentsMargins(4,4,4,4);
   layout->setSpacing(8);
   QLabel *l = new QLabel(this);
   l->setText(tr("Provide some information "
@@ -518,7 +535,7 @@ Step1::Step1(Wizard *wizard,const QHash<QString,Input*> &modelData) : m_wizard(w
   QFrame *f = new QFrame( this );
   f->setFrameStyle( QFrame::HLine | QFrame::Sunken );
   layout->addWidget(f);
-  
+
   l = new QLabel(this);
   l->setText(tr("Specify the directory to scan for source code"));
   layout->addWidget(l);
@@ -590,7 +607,7 @@ void Step1::selectProjectIcon()
   else
   {
     QFile Fout(iconName);
-    if(!Fout.exists()) 
+    if(!Fout.exists())
     {
       m_projIconLab->setText(tr("Sorry, cannot find file(")+iconName+QString::fromLatin1(");"));
     }
@@ -699,7 +716,7 @@ void Step1::init()
   if (!iconName.isEmpty())
   {
     QFile Fout(iconName);
-    if(!Fout.exists()) 
+    if(!Fout.exists())
     {
       m_projIconLab->setText(tr("Sorry, cannot find file(")+iconName+QString::fromLatin1(");"));
     }
@@ -733,7 +750,7 @@ void Step1::init()
 
 //==========================================================================
 
-Step2::Step2(Wizard *wizard,const QHash<QString,Input*> &modelData) 
+Step2::Step2(Wizard *wizard,const QHash<QString,Input*> &modelData)
   : m_wizard(wizard), m_modelData(modelData)
 {
   QRadioButton *r;
@@ -758,7 +775,7 @@ Step2::Step2(Wizard *wizard,const QHash<QString,Input*> &modelData)
   // m_crossRef -> SOURCE_BROWSER = YES/NO
   gbox->addWidget(m_crossRef,3,0);
   layout->addWidget(m_extractMode);
-  
+
   //---------------------------------------------------
   QFrame *f = new QFrame( this );
   f->setFrameStyle( QFrame::HLine | QFrame::Sunken );
@@ -767,8 +784,8 @@ Step2::Step2(Wizard *wizard,const QHash<QString,Input*> &modelData)
   m_optimizeLangGroup = new QButtonGroup(this);
   m_optimizeLang = new QGroupBox(this);
   m_optimizeLang->setTitle(tr("Select programming language to optimize the results for"));
-  gbox = new QGridLayout( m_optimizeLang ); 
-  
+  gbox = new QGridLayout( m_optimizeLang );
+
   r = new QRadioButton(m_optimizeLang);
   r->setText(tr("Optimize for C++ output"));
   r->setChecked(true);
@@ -779,6 +796,7 @@ Step2::Step2(Wizard *wizard,const QHash<QString,Input*> &modelData)
   //      OPTIMIZE_OUTPUT_VHDL  = NO
   //      CPP_CLI_SUPPORT       = NO
   //      HIDE_SCOPE_NAMES      = NO
+  //      OPTIMIZE_OUTPUT_SLICE = NO
   gbox->addWidget(r,0,0);
   r = new QRadioButton(tr("Optimize for C++/CLI output"));
   gbox->addWidget(r,1,0);
@@ -789,6 +807,7 @@ Step2::Step2(Wizard *wizard,const QHash<QString,Input*> &modelData)
   //      OPTIMIZE_OUTPUT_VHDL  = NO
   //      CPP_CLI_SUPPORT       = YES
   //      HIDE_SCOPE_NAMES      = NO
+  //      OPTIMIZE_OUTPUT_SLICE = NO
   r = new QRadioButton(tr("Optimize for Java or C# output"));
   m_optimizeLangGroup->addButton(r, 2);
   // 2 -> OPTIMIZE_OUTPUT_FOR_C = NO
@@ -797,6 +816,7 @@ Step2::Step2(Wizard *wizard,const QHash<QString,Input*> &modelData)
   //      OPTIMIZE_OUTPUT_VHDL  = NO
   //      CPP_CLI_SUPPORT       = NO
   //      HIDE_SCOPE_NAMES      = NO
+  //      OPTIMIZE_OUTPUT_SLICE = NO
   gbox->addWidget(r,2,0);
   r = new QRadioButton(tr("Optimize for C or PHP output"));
   m_optimizeLangGroup->addButton(r, 3);
@@ -806,6 +826,7 @@ Step2::Step2(Wizard *wizard,const QHash<QString,Input*> &modelData)
   //      OPTIMIZE_OUTPUT_VHDL  = NO
   //      CPP_CLI_SUPPORT       = NO
   //      HIDE_SCOPE_NAMES      = YES
+  //      OPTIMIZE_OUTPUT_SLICE = NO
   gbox->addWidget(r,3,0);
   r = new QRadioButton(tr("Optimize for Fortran output"));
   m_optimizeLangGroup->addButton(r, 4);
@@ -815,6 +836,7 @@ Step2::Step2(Wizard *wizard,const QHash<QString,Input*> &modelData)
   //      OPTIMIZE_OUTPUT_VHDL  = NO
   //      CPP_CLI_SUPPORT       = NO
   //      HIDE_SCOPE_NAMES      = NO
+  //      OPTIMIZE_OUTPUT_SLICE = NO
   gbox->addWidget(r,4,0);
   r = new QRadioButton(tr("Optimize for VHDL output"));
   m_optimizeLangGroup->addButton(r, 5);
@@ -824,23 +846,41 @@ Step2::Step2(Wizard *wizard,const QHash<QString,Input*> &modelData)
   //      OPTIMIZE_OUTPUT_VHDL  = YES
   //      CPP_CLI_SUPPORT       = NO
   //      HIDE_SCOPE_NAMES      = NO
+  //      OPTIMIZE_OUTPUT_SLICE = NO
   gbox->addWidget(r,5,0);
+  r = new QRadioButton(tr("Optimize for SLICE output"));
+  m_optimizeLangGroup->addButton(r, 6);
+  // 5 -> OPTIMIZE_OUTPUT_FOR_C = NO
+  //      OPTIMIZE_OUTPUT_JAVA  = NO
+  //      OPTIMIZE_FOR_FORTRAN  = NO
+  //      OPTIMIZE_OUTPUT_VHDL  = NO
+  //      CPP_CLI_SUPPORT       = NO
+  //      HIDE_SCOPE_NAMES      = NO
+  //      OPTIMIZE_OUTPUT_SLICE = YES
+  gbox->addWidget(r,6,0);
 
   layout->addWidget(m_optimizeLang);
   layout->addStretch(1);
 
   connect(m_crossRef,SIGNAL(stateChanged(int)),
           SLOT(changeCrossRefState(int)));
+#if QT_VERSION < QT_VERSION_CHECK(5, 15, 0)
   connect(m_optimizeLangGroup,SIGNAL(buttonClicked(int)),
           SLOT(optimizeFor(int)));
   connect(m_extractModeGroup,SIGNAL(buttonClicked(int)),
           SLOT(extractMode(int)));
+#else
+  connect(m_optimizeLangGroup,SIGNAL(idClicked(int)),
+          SLOT(optimizeFor(int)));
+  connect(m_extractModeGroup,SIGNAL(idClicked(int)),
+          SLOT(extractMode(int)));
+#endif
 }
 
 
 void Step2::optimizeFor(int choice)
 {
-  for (int i=0;i<6;i++)
+  for (int i=0;i<7;i++)
   {
     updateBoolOption(m_modelData,
                      g_optimizeOptionNames[i],
@@ -870,12 +910,13 @@ void Step2::init()
   else if (getBoolOption(m_modelData,STR_OPTIMIZE_OUTPUT_FOR_C)) x=3;
   else if (getBoolOption(m_modelData,STR_OPTIMIZE_FOR_FORTRAN))  x=4;
   else if (getBoolOption(m_modelData,STR_OPTIMIZE_OUTPUT_VHDL))  x=5;
+  else if (getBoolOption(m_modelData,STR_OPTIMIZE_OUTPUT_SLICE)) x=6;
   m_optimizeLangGroup->button(x)->setChecked(true);
 }
 
 //==========================================================================
 
-Step3::Step3(Wizard *wizard,const QHash<QString,Input*> &modelData) 
+Step3::Step3(Wizard *wizard,const QHash<QString,Input*> &modelData)
   : m_wizard(wizard), m_modelData(modelData)
 {
   QVBoxLayout *vbox = 0;
@@ -945,21 +986,28 @@ Step3::Step3(Wizard *wizard,const QHash<QString,Input*> &modelData)
   // GENERATE_RTF
   m_xmlEnabled=new QCheckBox(tr("XML"));
   // GENERATE_XML
+  m_docbookEnabled=new QCheckBox(tr("Docbook"));
+  // GENERATE_DOCBOOK
   gbox->addWidget(m_manEnabled,3,0);
   gbox->addWidget(m_rtfEnabled,4,0);
   gbox->addWidget(m_xmlEnabled,5,0);
+  gbox->addWidget(m_docbookEnabled,6,0);
 
-  gbox->setRowStretch(6,1);
+  gbox->setRowStretch(7,1);
   connect(m_htmlOptions,SIGNAL(toggled(bool)),SLOT(setHtmlEnabled(bool)));
   connect(m_texOptions,SIGNAL(toggled(bool)),SLOT(setLatexEnabled(bool)));
   connect(m_manEnabled,SIGNAL(stateChanged(int)),SLOT(setManEnabled(int)));
   connect(m_rtfEnabled,SIGNAL(stateChanged(int)),SLOT(setRtfEnabled(int)));
   connect(m_xmlEnabled,SIGNAL(stateChanged(int)),SLOT(setXmlEnabled(int)));
+  connect(m_docbookEnabled,SIGNAL(stateChanged(int)),SLOT(setDocbookEnabled(int)));
   connect(m_searchEnabled,SIGNAL(stateChanged(int)),SLOT(setSearchEnabled(int)));
-  connect(m_htmlOptionsGroup,SIGNAL(buttonClicked(int)),
-          SLOT(setHtmlOptions(int)));
-  connect(m_texOptionsGroup,SIGNAL(buttonClicked(int)),
-          SLOT(setLatexOptions(int)));
+#if QT_VERSION < QT_VERSION_CHECK(5, 15, 0)
+  connect(m_htmlOptionsGroup,SIGNAL(buttonClicked(int)),SLOT(setHtmlOptions(int)));
+  connect(m_texOptionsGroup,SIGNAL(buttonClicked(int)),SLOT(setLatexOptions(int)));
+#else
+  connect(m_htmlOptionsGroup,SIGNAL(idClicked(int)),SLOT(setHtmlOptions(int)));
+  connect(m_texOptionsGroup,SIGNAL(idClicked(int)),SLOT(setLatexOptions(int)));
+#endif
   connect(m_tuneColor,SIGNAL(clicked()),SLOT(tuneColorDialog()));
 }
 
@@ -1000,6 +1048,11 @@ void Step3::setRtfEnabled(int state)
 void Step3::setXmlEnabled(int state)
 {
   updateBoolOption(m_modelData,STR_GENERATE_XML,state==Qt::Checked);
+}
+
+void Step3::setDocbookEnabled(int state)
+{
+  updateBoolOption(m_modelData,STR_GENERATE_DOCBOOK,state==Qt::Checked);
 }
 
 void Step3::setSearchEnabled(int state)
@@ -1052,6 +1105,7 @@ void Step3::init()
   m_manEnabled->setChecked(getBoolOption(m_modelData,STR_GENERATE_MAN));
   m_rtfEnabled->setChecked(getBoolOption(m_modelData,STR_GENERATE_RTF));
   m_xmlEnabled->setChecked(getBoolOption(m_modelData,STR_GENERATE_XML));
+  m_docbookEnabled->setChecked(getBoolOption(m_modelData,STR_GENERATE_DOCBOOK));
   m_searchEnabled->setChecked(getBoolOption(m_modelData,STR_SEARCHENGINE));
   if (getBoolOption(m_modelData,STR_GENERATE_HTMLHELP))
   {
@@ -1081,30 +1135,37 @@ void Step3::init()
 
 //==========================================================================
 
-Step4::Step4(Wizard *wizard,const QHash<QString,Input*> &modelData) 
+Step4::Step4(Wizard *wizard,const QHash<QString,Input*> &modelData)
   : m_wizard(wizard), m_modelData(modelData)
 {
   m_diagramModeGroup = new QButtonGroup(this);
   QGridLayout *gbox = new QGridLayout( this );
   gbox->addWidget(new QLabel(tr("Diagrams to generate")),0,0);
 
+  // CLASS_GRAPH = NO, HAVE_DOT = NO
   QRadioButton *rb = new QRadioButton(tr("No diagrams"));
   m_diagramModeGroup->addButton(rb, 0);
   gbox->addWidget(rb,1,0);
-  // CLASS_DIAGRAMS = NO, HAVE_DOT = NO
   rb->setChecked(true);
-  rb = new QRadioButton(tr("Use built-in class diagram generator"));
+
+  // CLASS_GRAPH = TEXT, HAVE_DOT = NO
+  rb = new QRadioButton(tr("Text only"));
   m_diagramModeGroup->addButton(rb, 1);
-  // CLASS_DIAGRAMS = YES, HAVE_DOT = NO
   gbox->addWidget(rb,2,0);
-  rb = new QRadioButton(tr("Use dot tool from the GraphViz package"));
+
+  // CLASS_GRAPH = YES/GRAPH, HAVE_DOT = NO
+  rb = new QRadioButton(tr("Use built-in class diagram generator"));
   m_diagramModeGroup->addButton(rb, 2);
   gbox->addWidget(rb,3,0);
-  // CLASS_DIAGRAMS = NO, HAVE_DOT = YES
+
+  // CLASS_GRAPH = YES/GRAPH, HAVE_DOT = YES
+  rb = new QRadioButton(tr("Use dot tool from the GraphViz package"));
+  m_diagramModeGroup->addButton(rb, 3);
+  gbox->addWidget(rb,4,0);
 
   m_dotGroup = new QGroupBox(tr("Dot graphs to generate"));
     QVBoxLayout *vbox = new QVBoxLayout;
-    m_dotClass=new QCheckBox(tr("Class diagrams"));
+    m_dotClass=new QCheckBox(tr("Class graphs"));
     // CLASS_GRAPH
     m_dotCollaboration=new QCheckBox(tr("Collaboration diagrams"));
     // COLLABORATION_GRAPH
@@ -1129,14 +1190,19 @@ Step4::Step4(Wizard *wizard,const QHash<QString,Input*> &modelData)
     m_dotGroup->setLayout(vbox);
     m_dotClass->setChecked(true);
     m_dotGroup->setEnabled(false);
-  gbox->addWidget(m_dotGroup,4,0);
+  gbox->addWidget(m_dotGroup,5,0);
 
   m_dotInclude->setChecked(true);
   m_dotCollaboration->setChecked(true);
-  gbox->setRowStretch(5,1);
+  gbox->setRowStretch(6,1);
 
+#if QT_VERSION < QT_VERSION_CHECK(5, 15, 0)
   connect(m_diagramModeGroup,SIGNAL(buttonClicked(int)),
           this,SLOT(diagramModeChanged(int)));
+#else
+  connect(m_diagramModeGroup,SIGNAL(idClicked(int)),
+          this,SLOT(diagramModeChanged(int)));
+#endif
   connect(m_dotClass,SIGNAL(stateChanged(int)),
           this,SLOT(setClassGraphEnabled(int)));
   connect(m_dotCollaboration,SIGNAL(stateChanged(int)),
@@ -1158,24 +1224,37 @@ void Step4::diagramModeChanged(int id)
   if (id==0) // no diagrams
   {
     updateBoolOption(m_modelData,STR_HAVE_DOT,false);
-    updateBoolOption(m_modelData,STR_CLASS_DIAGRAMS,false);
+    updateStringOption(m_modelData,STR_CLASS_GRAPH, QString::fromLatin1("NO"));
   }
-  else if (id==1) // builtin diagrams
+  else if (id==1) // text only
   {
     updateBoolOption(m_modelData,STR_HAVE_DOT,false);
-    updateBoolOption(m_modelData,STR_CLASS_DIAGRAMS,true);
+    updateStringOption(m_modelData,STR_CLASS_GRAPH, QString::fromLatin1("TEXT"));
   }
-  else if (id==2) // dot diagrams
+  else if (id==2) // builtin diagrams
+  {
+    updateBoolOption(m_modelData,STR_HAVE_DOT,false);
+    updateStringOption(m_modelData,STR_CLASS_GRAPH, QString::fromLatin1("YES"));
+  }
+  else if (id==3) // dot diagrams
   {
     updateBoolOption(m_modelData,STR_HAVE_DOT,true);
-    updateBoolOption(m_modelData,STR_CLASS_DIAGRAMS,false);
+    updateStringOption(m_modelData,STR_CLASS_GRAPH, QString::fromLatin1("YES"));
   }
-  m_dotGroup->setEnabled(id==2);
+  m_dotGroup->setEnabled(id==3);
 }
 
 void Step4::setClassGraphEnabled(int state)
 {
-  updateBoolOption(m_modelData,STR_CLASS_GRAPH,state==Qt::Checked);
+  QString classGraph = getStringOption(m_modelData,STR_CLASS_GRAPH);
+  if (state==Qt::Checked)
+  {
+    updateStringOption(m_modelData,STR_CLASS_GRAPH,QString::fromLatin1("YES"));
+  }
+  else if (classGraph==QString::fromLatin1("YES") || classGraph==QString::fromLatin1("GRAPH"))
+  {
+    updateStringOption(m_modelData,STR_CLASS_GRAPH,QString::fromLatin1("NO"));
+  }
 }
 
 void Step4::setCollaborationGraphEnabled(int state)
@@ -1211,22 +1290,21 @@ void Step4::setCallerGraphEnabled(int state)
 void Step4::init()
 {
   int id = 0;
-  if (getBoolOption(m_modelData,STR_HAVE_DOT))
+  QString classGraph = getStringOption(m_modelData,STR_CLASS_GRAPH).toLower();
+  if (classGraph==QString::fromLatin1("yes") || classGraph==QString::fromLatin1("graph"))
   {
-    m_diagramModeGroup->button(2)->setChecked(true); // Dot
-    id = 2;
+    id = getBoolOption(m_modelData,STR_HAVE_DOT) ? 3 : 2;
   }
-  else if (getBoolOption(m_modelData,STR_CLASS_DIAGRAMS))
+  else if (classGraph==QString::fromLatin1("text"))
   {
-    m_diagramModeGroup->button(1)->setChecked(true); // Builtin diagrams
     id = 1;
   }
   else
   {
-    m_diagramModeGroup->button(0)->setChecked(true); // no diagrams
     id = 0;
   }
-  m_dotGroup->setEnabled(id==2);
+  m_diagramModeGroup->button(id)->setChecked(true); // no diagrams
+  m_dotGroup->setEnabled(id==3);
   m_dotClass->setChecked(getBoolOption(m_modelData,STR_CLASS_GRAPH));
   m_dotCollaboration->setChecked(getBoolOption(m_modelData,STR_COLLABORATION_GRAPH));
   m_dotInheritance->setChecked(getBoolOption(m_modelData,STR_GRAPHICAL_HIERARCHY));
@@ -1238,7 +1316,7 @@ void Step4::init()
 
 //==========================================================================
 
-Wizard::Wizard(const QHash<QString,Input*> &modelData, QWidget *parent) : 
+Wizard::Wizard(const QHash<QString,Input*> &modelData, QWidget *parent) :
   QSplitter(parent), m_modelData(modelData)
 {
   m_treeWidget = new QTreeWidget;
@@ -1291,7 +1369,7 @@ void Wizard::activateTopic(QTreeWidgetItem *item,QTreeWidgetItem *)
 {
   if (item)
   {
-    
+
     QString label = item->text(0);
     if (label==tr("Project"))
     {

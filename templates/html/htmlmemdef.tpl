@@ -4,7 +4,10 @@
     <h2 class="groupheader">{{ memberListInfo.title }}</h2>
     {% for member in memberListInfo.members %}
       {% if member.detailsVisibleFor:compound.compoundKind %}
-        <a class="anchor" id="{{ member.anchor }}"></a>
+      <a id="{{ member.anchor }}" name="{{ member.anchor }}"></a>
+      <h2 class="memtitle"><span class="permalink"><a href="#{{ member.anchor }}">&#9670;&nbsp;</a></span>{{ member.name }}{% if member.isFunction and not member.isObjCMethod %}(){% endif %}
+      {% if memberListInfo.members|length>1 %}<span class="overload">[{{ forloop.counter }}/{{ memberListInfo.members|length }}]</a>{% endif %}
+      </h2>
         <div class="memitem">
         <div class="memproto">
         {# write template declarations #}
@@ -29,7 +32,6 @@
           <tr><td class="memname">
             {{ member.definition }}
             {# write argument list #}
-            {# TODO: TCL #}
             {% if member.hasParameters %}
               {% if member.isObjCMethod %}
                 {% if member.parameters %}

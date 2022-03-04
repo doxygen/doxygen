@@ -1,3 +1,15 @@
+/******************************************************************************
+ *
+ * Copyright (C) 1997-2019 by Dimitri van Heesch.
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
+ * for any purpose. It is provided "as is" without express or implied warranty.
+ * See the GNU General Public License for more details.
+ *
+ */
+
 #ifndef EXPERT_H
 #define EXPERT_H
 
@@ -6,13 +18,13 @@
 #include <QHash>
 
 #include "docintf.h"
+#include "adapter.h"
 
 class QTreeWidget;
 class QTreeWidgetItem;
 class QStackedWidget;
 class QSettings;
 class QTextBrowser;
-class QTextCodec;
 class QPushButton;
 class Input;
 
@@ -26,7 +38,7 @@ class Expert : public QSplitter, public DocIntf
     void loadSettings(QSettings *);
     void saveSettings(QSettings *);
     void loadConfig(const QString &fileName);
-    bool writeConfig(QTextStream &t,bool brief);
+    bool writeConfig(QTextStream &t,bool brief,bool condensed);
     QByteArray saveInnerState () const;
     bool restoreInnerState ( const QByteArray & state );
     const QHash<QString,Input*> &modelData() const { return m_options; }
@@ -38,7 +50,7 @@ class Expert : public QSplitter, public DocIntf
     // DocIntf methods
     void setHeader(const char *name);
     void add(const char *name,const char *doc);
-  
+
   public slots:
     void activateTopic(QTreeWidgetItem *,QTreeWidgetItem *);
     QWidget *createTopicWidget(QDomElement &elem);
@@ -55,7 +67,7 @@ class Expert : public QSplitter, public DocIntf
 
   private:
     void createTopics(const QDomElement &);
-    void saveTopic(QTextStream &t,QDomElement &elem,QTextCodec *codec,bool brief);
+    void saveTopic(QTextStream &t,QDomElement &elem,TextCodecAdapter *codec,bool brief,bool dondensed);
 
     QSplitter               *m_splitter;
     QTextBrowser            *m_helper;

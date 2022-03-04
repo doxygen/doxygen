@@ -24,7 +24,7 @@ tab_s.png
 nav_h.png
 nav_f.png
 bc_s.png
-doxygen.png
+doxygen.svg
 closed.png
 open.png
 bdwn.png

@@ -14,6 +14,14 @@
 
 \batchmode
 \documentclass{book}
+%% moved from doxygen.sty due to workaround for LaTex 2019 version and unmaintained tabu package
+\usepackage{ifthen}
+\ifx\requestedLaTeXdate\undefined
+\usepackage{array}
+\else
+\usepackage{array}[=2016-10-06]
+\fi
+%%
 \usepackage[a4paper,left=2.5cm,right=2.5cm,top=2.5cm,bottom=2.5cm]{geometry}
 \usepackage{makeidx}
 \usepackage{natbib}
@@ -23,7 +31,7 @@
 \usepackage{geometry}
 \usepackage{listings}
 \usepackage{color}
-\usepackage{ifthen}
+%%\usepackage{ifthen} %% moved to top due to workaround for LaTex 2019 version and unmaintained tabu package
 \usepackage[table]{xcolor}
 \PassOptionsToPackage{warn}{textcomp}
 \usepackage{textcomp}
@@ -57,6 +65,40 @@
 \usepackage{amssymb}
 \usepackage{doxygen}
 \usepackage{manual}
+%%
+%gave problems when in doxygen.sty
+\makeatletter
+\newcommand\hrulefilll{\leavevmode\leaders\hrule\hskip 0pt plus 1filll\kern\z@}
+\makeatother
+%%
+% unfortunately constructs like: 
+%   \renewcommand{\doxysection}[1]{\doxysubsection{##1}}
+% using values from book.cls (see also doxygen.sty) and redefining sections to correct level.
+\makeatletter
+\newenvironment{DoxygenSubAppendix}{%
+\renewcommand\doxysection{\@startsection{subsection}{2}{\z@}%
+                                     {-3.25ex\@plus -1ex \@minus -.2ex}%
+                                     {1.5ex \@plus .2ex}%
+                                     {\raggedright\normalfont\large\bfseries}}
+\renewcommand\doxysubsection{\@startsection{subsubsection}{3}{\z@}%
+                                     {-3.25ex\@plus -1ex \@minus -.2ex}%
+                                     {1.5ex \@plus .2ex}%
+                                     {\raggedright\normalfont\normalsize\bfseries}}
+\renewcommand\doxysubsubsection{\@startsection{paragraph}{4}{\z@}%
+                                    {3.25ex \@plus1ex \@minus.2ex}%
+                                    {-1em}%
+                                    {\raggedright\normalfont\normalsize\bfseries}}
+\renewcommand\doxyparagraph{\@startsection{subparagraph}{5}{\parindent}%
+                                       {3.25ex \@plus1ex \@minus .2ex}%
+                                       {-1em}%
+                                      {\raggedright\normalfont\normalsize\bfseries}}
+%%\renewcommand{\doxysection}[1]{\doxysubsection{##1}}
+%%\renewcommand{\doxysubsection}[1]{\doxysubsubsection{##1}}
+%%\renewcommand{\doxysubsubsection}[1]{\doxyparagraph{##1}}
+%%\renewcommand{\doxyparagraph}[1]{\doxysubparagraph{##1}}
+}{}
+\makeatother
+%%
 \newcommand{\+}{\discretionary{\mbox{\scriptsize$\hookleftarrow$}}{}{}}
 \lstset{language=C++,inputencoding=utf8,basicstyle=\footnotesize,breaklines=true,breakatwhitespace=true,tabsize=8,numbers=left }
 \makeindex
@@ -80,6 +122,7 @@
 \usepackage{etoc}
 \etocsettocstyle{\doxytocparskip}{\doxynormalparskip}
 \begin{document}
+\raggedbottom
 \pagenumbering{alph}
 \begin{titlepage}
 \includegraphics[width=\textwidth]{doxygen_logo}
@@ -129,67 +172,84 @@ Written by Dimitri van Heesch\\[2ex]
 \chapter{Perl Module Output}\label{perlmod}\hypertarget{perlmod}{}\input{perlmod}
 \chapter{Doxygen's internals}\label{arch}\hypertarget{arch}{}\input{arch}
 \renewcommand{\thepart}{}
+\renewcommand{\partname}{}
 \part{Appendices}
 \appendix
 %mean that subinputfrom requires a / at the end of the path
 \chapter{Autolink Example}\label{autolink_example}\hypertarget{autolink_example}{}
-\subinputfrom{../html/examples/autolink/latex/}{refman_doc}
+\subinputfrom{examples/autolink/latex/}{refman_doc}
 \chapter{Resolving Typedef Example}\label{restypedef_example}\hypertarget{restypedef_example}{}
-\subinputfrom{../html/examples/restypedef/latex/}{refman_doc}
+\subinputfrom{examples/restypedef/latex/}{refman_doc}
 
-\IfFileExists{../html/examples/diagrams/latex/refman_doc.tex}
+\IfFileExists{examples/diagrams/latex/refman_doc.tex}
 {
   \chapter{Diagrams Example}\label{diagrams_example}\hypertarget{diagrams_example}{}
-  \subinputfrom{../html/examples/diagrams/latex/}{refman_doc}
+  \subinputfrom{examples/diagrams/latex/}{refman_doc}
 }{}
 
 \chapter{Modules Example}\label{modules_example}\hypertarget{modules_example}{}
-\subinputfrom{../html/examples/group/latex/}{refman_doc}
+\subinputfrom{examples/group/latex/}{refman_doc}
 \chapter{Member Groups Example}\label{memgrp_example}\hypertarget{memgrp_example}{}
-\subinputfrom{../html/examples/memgrp/latex/}{refman_doc}
-\chapter{After Block Example}\label{afterdoc_example}\hypertarget{afterdoc_example}{}
-\subinputfrom{../html/examples/afterdoc/latex/}{refman_doc}
-\chapter{QT Style Example}\label{qtstyle_example}\hypertarget{qtstyle_example}{}
-\subinputfrom{../html/examples/qtstyle/latex/}{refman_doc}
-\chapter{Javadoc Style Example}\label{jdstyle_example}\hypertarget{jdstyle_example}{}
-\subinputfrom{../html/examples/jdstyle/latex/}{refman_doc}
+\subinputfrom{examples/memgrp/latex/}{refman_doc}
+\chapter{Style Examples}
+  \doxysection{After Block Example}\label{afterdoc_example}\hypertarget{afterdoc_example}{}
+  \begin{DoxygenSubAppendix}
+    \subinputfrom{examples/afterdoc/latex/}{refman_doc}
+  \end{DoxygenSubAppendix}
+  \doxysection{QT Style Example}\label{qtstyle_example}\hypertarget{qtstyle_example}{}
+  \begin{DoxygenSubAppendix}
+    \subinputfrom{examples/qtstyle/latex/}{refman_doc}
+  \end{DoxygenSubAppendix}
+  \doxysection{Javadoc Style Example}\label{jdstyle_example}\hypertarget{jdstyle_example}{}
+  \begin{DoxygenSubAppendix}
+    \subinputfrom{examples/jdstyle/latex/}{refman_doc}
+  \end{DoxygenSubAppendix}
+  \doxysection{Javadoc Banner Example}\label{javadoc_banner_example}\hypertarget{javadoc_banner_example}{}
+  \begin{DoxygenSubAppendix}
+    \subinputfrom{examples/javadoc-banner/latex/}{refman_doc}
+  \end{DoxygenSubAppendix}
 \chapter{Structural Commands Example}\label{structcmd_example}\hypertarget{structcmd_example}{}
-\subinputfrom{../html/examples/structcmd/latex/}{refman_doc}
-\chapter{Python Docstring Example}\label{python_example}\hypertarget{python_example}{}
-\subinputfrom{../html/examples/docstring/latex/}{refman_doc}
-\chapter{Python Example}\label{py_example}\hypertarget{py_example}{}
-\subinputfrom{../html/examples/pyexample/latex/}{refman_doc}
-\chapter{VHDL Example}\label{vhdl_example}\hypertarget{vhdl_example}{}
-\subinputfrom{../html/examples/mux/latex/}{refman_doc}
-\chapter{Tcl Example}\label{tcl_example}\hypertarget{tcl_example}{}
-\subinputfrom{../html/examples/tclexample/latex/}{refman_doc}
+\subinputfrom{examples/structcmd/latex/}{refman_doc}
+\chapter{Language Examples}
+  \doxysection{Python Docstring Example}\label{python_example}\hypertarget{python_example}{}
+  \begin{DoxygenSubAppendix}
+    \subinputfrom{examples/docstring/latex/}{refman_doc}
+  \end{DoxygenSubAppendix}
+  \doxysection{Python Example}\label{py_example}\hypertarget{py_example}{}
+  \begin{DoxygenSubAppendix}
+    \subinputfrom{examples/pyexample/latex/}{refman_doc}
+  \end{DoxygenSubAppendix}
+  \doxysection{VHDL Example}\label{vhdl_example}\hypertarget{vhdl_example}{}
+  \begin{DoxygenSubAppendix}
+    \subinputfrom{examples/mux/latex/}{refman_doc}
+  \end{DoxygenSubAppendix}
 
 \chapter{Class Example}\label{class_example}\hypertarget{class_example}{}
-\subinputfrom{../html/examples/class/latex/}{refman_doc}
+\subinputfrom{examples/class/latex/}{refman_doc}
 \chapter{Define Example}\label{define_example}\hypertarget{define_example}{}
-\subinputfrom{../html/examples/define/latex/}{refman_doc}
+\subinputfrom{examples/define/latex/}{refman_doc}
 \chapter{Enum Example}\label{enum_example}\hypertarget{enum_example}{}
-\subinputfrom{../html/examples/enum/latex/}{refman_doc}
+\subinputfrom{examples/enum/latex/}{refman_doc}
 \chapter{Example Example}\label{example_example}\hypertarget{example_example}{}
-\subinputfrom{../html/examples/example/latex/}{refman_doc}
+\subinputfrom{examples/example/latex/}{refman_doc}
 \chapter{Extends/Implements Example}\label{extends_example}\hypertarget{extends_example}{}
-\subinputfrom{../html/examples/manual/latex/}{refman_doc}
+\subinputfrom{examples/manual/latex/}{refman_doc}
 \chapter{File Example}\label{file_example}\hypertarget{file_example}{}
-\subinputfrom{../html/examples/file/latex/}{refman_doc}
+\subinputfrom{examples/file/latex/}{refman_doc}
 \chapter{Fn Example}\label{fn_example}\hypertarget{fn_example}{}
-\subinputfrom{../html/examples/func/latex/}{refman_doc}
+\subinputfrom{examples/func/latex/}{refman_doc}
 \chapter{Overload Example}\label{overload_example}\hypertarget{overload_example}{}
-\subinputfrom{../html/examples/overload/latex/}{refman_doc}
+\subinputfrom{examples/overload/latex/}{refman_doc}
 \chapter{Page Example}\label{page_example}\hypertarget{page_example}{}
-\subinputfrom{../html/examples/page/latex/}{refman_doc}
+\subinputfrom{examples/page/latex/}{refman_doc}
 \chapter{Relates Example}\label{relates_example}\hypertarget{relates_example}{}
-\subinputfrom{../html/examples/relates/latex/}{refman_doc}
+\subinputfrom{examples/relates/latex/}{refman_doc}
 \chapter{Author Example}\label{author_example}\hypertarget{author_example}{}
-\subinputfrom{../html/examples/author/latex/}{refman_doc}
+\subinputfrom{examples/author/latex/}{refman_doc}
 \chapter{Par Example}\label{par_example}\hypertarget{par_example}{}
-\subinputfrom{../html/examples/par/latex/}{refman_doc}
+\subinputfrom{examples/par/latex/}{refman_doc}
 \chapter{Include Example}\label{include_example}\hypertarget{include_example}{}
-\subinputfrom{../html/examples/include/latex/}{refman_doc}
+\subinputfrom{examples/include/latex/}{refman_doc}
 
 
 \printindex

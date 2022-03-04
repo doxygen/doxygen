@@ -1,13 +1,10 @@
 /******************************************************************************
  *
- * 
- *
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2021 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -21,56 +18,66 @@
 #include "cppvalue.h"
 #include "constexp.h"
 
-CPPValue parseOctal()
+CPPValue parseOctal(const std::string& token)
 {
   long val = 0;
-  for (const char *p = g_strToken.data(); *p != 0; p++)
+  for (const char *p = token.c_str(); *p != 0; p++)
   {
     if (*p >= '0' && *p <= '7') val = val * 8 + *p - '0';
   }
   return CPPValue(val);
 }
 
-CPPValue parseDecimal()
+CPPValue parseDecimal(const std::string& token)
 {
   long val = 0;
-  for (const char *p = g_strToken.data(); *p != 0; p++)
+  for (const char *p = token.c_str(); *p != 0; p++)
   {
     if (*p >= '0' && *p <= '9') val = val * 10 + *p - '0';
   }
   return CPPValue(val);
 }
 
-CPPValue parseHexadecimal()
+CPPValue parseHexadecimal(const std::string& token)
 {
   long val = 0;
-  for (const char *p = g_strToken.data(); *p != 0; p++)
+  for (const char *p = token.c_str(); *p != 0; p++)
   {
     if      (*p >= '0' && *p <= '9') val = val * 16 + *p - '0';
     else if (*p >= 'a' && *p <= 'f') val = val * 16 + *p - 'a' + 10;
     else if (*p >= 'A' && *p <= 'F') val = val * 16 + *p - 'A' + 10;
   }
-  //printf("parseHexadecimal %s->%x\n",g_strToken.data(),val);
+  //printf("parseHexadecimal %s->%x\n",qPrint(token),val);
   return CPPValue(val);
 }
 
-CPPValue parseCharacter() // does not work for '\n' and the alike 
+CPPValue parseBinary(const std::string& token)
 {
-  if (g_strToken[1]=='\\')
+  long val = 0;
+  for (const char *p = token.c_str(); *p != 0; p++)
   {
-    switch(g_strToken[2])
+    if (*p >= '0' && *p <= '1') val = val * 2 + *p - '0';
+  }
+  return CPPValue(val);
+}
+
+CPPValue parseCharacter(const std::string& token) // does not work for '\n' and the alike
+{
+  if (token[1]=='\\')
+  {
+    switch(token[2])
     {
-      case 'n':  return CPPValue((long)'\n');
-      case 't':  return CPPValue((long)'\t');
-      case 'v':  return CPPValue((long)'\v');
-      case 'b':  return CPPValue((long)'\b');
-      case 'r':  return CPPValue((long)'\r');
-      case 'f':  return CPPValue((long)'\f');
-      case 'a':  return CPPValue((long)'\a');
-      case '\\': return CPPValue((long)'\\');
-      case '?':  return CPPValue((long)'\?');
-      case '\'': return CPPValue((long)'\'');
-      case '"':  return CPPValue((long)'"');
+      case 'n':  return CPPValue('\n');
+      case 't':  return CPPValue('\t');
+      case 'v':  return CPPValue('\v');
+      case 'b':  return CPPValue('\b');
+      case 'r':  return CPPValue('\r');
+      case 'f':  return CPPValue('\f');
+      case 'a':  return CPPValue('\a');
+      case '\\': return CPPValue('\\');
+      case '?':  return CPPValue('\?');
+      case '\'': return CPPValue('\'');
+      case '"':  return CPPValue('"');
       case '0':  // fall through
       case '1':  // fall through
       case '2':  // fall through
@@ -79,17 +86,17 @@ CPPValue parseCharacter() // does not work for '\n' and the alike
       case '5':  // fall through
       case '6':  // fall through
       case '7':  // fall through
-                 return parseOctal();
-      case 'x': 
-      case 'X':  return parseHexadecimal();
-      default:   printf("Invalid escape sequence %s found!\n",g_strToken.data()); 
-                 return CPPValue(0L); 
+                 return parseOctal(token);
+      case 'x':
+      case 'X':  return parseHexadecimal(token);
+      default:   printf("Invalid escape sequence %s found!\n",token.c_str());
+                 return CPPValue(0L);
     }
   }
-  return CPPValue((long)g_strToken[1]);
+  return CPPValue(token[1]);
 }
 
-CPPValue parseFloat()
+CPPValue parseFloat(const std::string& token)
 {
-  return CPPValue(atof(g_strToken));
+  return CPPValue(std::stod(token));
 }

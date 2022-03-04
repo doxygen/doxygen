@@ -30,7 +30,7 @@ has its own advantages and disadvantages:
 
 <h2>1. Client side searching</h2>
    The easiest way to enable searching is to enable the built-in client
-   side search engine. This engine is implemented using Javascript and DHTML
+   side search engine. This engine is implemented using JavaScript and DHTML
    only and runs entirely on the clients browser. So no additional tooling is
    required to make it work. 
  
@@ -43,8 +43,12 @@ has its own advantages and disadvantages:
    searching, i.e. the search results are presented and adapted as you type.
 
    This method also has its drawbacks: it is limited to searching for symbols
-   only. It does not provide full text search capabilities, and it does not
+   only. It does not provide full text search capabilities and it does not
    scale well to very large projects (then searching becomes very slow).
+   Furthermore the searching is done from the beginning of the indexed items, so
+   when having the available items `A_STRING`, `AA_STRING` and `STRING` and
+   typing in the search box `A` it will find `A_STRING` and `AA_STRING`, but when
+   typing  e.g. `STR` it will only find `STRING` and not `A_STRING`.
 
 <h2>2. Server side searching</h2>
    If you plan to put the HTML documentation on a web server, and that
@@ -139,7 +143,7 @@ has its own advantages and disadvantages:
 <h2>6. Qt Compressed Help</h2> 
    If you develop for or want to install the Qt application framework,
    you will get an application 
-   called <a href="http://doc.qt.io/archives/qt-4.8/assistant-manual.html">Qt assistant</a>. 
+   called <a href="https://doc.qt.io/archives/qt-4.8/assistant-manual.html">Qt assistant</a>. 
    This is a help viewer for Qt Compressed Help files (<code>.qch</code>).
 
    To enable this feature set \ref cfg_generate_qhp "GENERATE_QHP" to \c YES.
@@ -147,7 +151,7 @@ has its own advantages and disadvantages:
    \ref cfg_qhp_namespace "QHP_NAMESPACE", 
    \ref cfg_qhg_location "QHG_LOCATION", 
    \ref cfg_qhp_virtual_folder "QHP_VIRTUAL_FOLDER".
-   See <a href="http://doc.qt.io/archives/qq/qq28-qthelp.html#htmlfilesandhelpprojects">this article</a> 
+   See <a href="https://doc.qt.io/archives/qq/qq28-qthelp.html#htmlfilesandhelpprojects">this article</a> 
    for more info.
 
    Feature wise the Qt compressed help feature is comparable with the CHM 

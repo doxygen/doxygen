@@ -1,13 +1,10 @@
 /******************************************************************************
  *
- * 
- *
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2021 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -55,7 +52,7 @@ CommandMap cmdMap[] =
   { "endverbatim",   CMD_ENDVERBATIM },
   { "endxmlonly",    CMD_ENDXMLONLY },
   { "exception",     CMD_EXCEPTION },
-  { "form",          CMD_FORMULA },
+  { "_form",         CMD_FORMULA },
   { "htmlinclude",   CMD_HTMLINCLUDE },
   { "htmlonly",      CMD_HTMLONLY },
   { "image",         CMD_IMAGE },
@@ -63,6 +60,7 @@ CommandMap cmdMap[] =
   { "internal",      CMD_INTERNAL },
   { "invariant",     CMD_INVARIANT },
   { "javalink",      CMD_JAVALINK },
+  { "javalinkplain", CMD_JAVALINK },
   { "latexinclude",  CMD_LATEXINCLUDE },
   { "latexonly",     CMD_LATEXONLY },
   { "li",            CMD_LI },
@@ -83,7 +81,6 @@ CommandMap cmdMap[] =
   { "return",        CMD_RETURN },
   { "returns",       CMD_RETURN },
   { "retval",        CMD_RETVAL },
-  { "rtfonly",       CMD_RTFONLY },
   { "sa",            CMD_SA },
   { "secreflist",    CMD_SECREFLIST },
   { "section",       CMD_SECTION },
@@ -149,6 +146,13 @@ CommandMap cmdMap[] =
   { "---",           CMD_MDASH },
   { "_setscope",     CMD_SETSCOPE },
   { "emoji",         CMD_EMOJI },
+  { "rtfinclude",    CMD_RTFINCLUDE },
+  { "docbookinclude",CMD_DOCBOOKINCLUDE },
+  { "maninclude",    CMD_MANINCLUDE },
+  { "xmlinclude",    CMD_XMLINCLUDE },
+  { "iline",         CMD_ILINE },
+  { "iliteral",      CMD_ILITERAL },
+  { "endiliteral",   CMD_ENDILITERAL },
   { 0,               0 },
 };
 
@@ -161,6 +165,7 @@ CommandMap htmlTagMap[] =
   { "table",      HTML_TABLE },
   { "caption",    HTML_CAPTION },
   { "small",      HTML_SMALL },
+  { "cite",       HTML_CITE },
   { "code",       HTML_CODE },
   { "dfn",        HTML_CODE },
   { "var",        HTML_EMPHASIS },
@@ -196,7 +201,11 @@ CommandMap htmlTagMap[] =
   { "div",        HTML_DIV },
   { "blockquote", HTML_BLOCKQUOTE },
   { "strike",     HTML_STRIKE },
+  { "s",          HTML_S },
   { "u",          HTML_UNDERLINE },
+  { "ins",        HTML_INS },
+  { "del",        HTML_DEL },
+  { "details",    HTML_DETAILS },
 
   { "c",            XML_C },
   // { "code",       XML_CODE },  <= ambiguous <code> is also a HTML tag
@@ -226,34 +235,34 @@ CommandMap htmlTagMap[] =
 
 //----------------------------------------------------------------------------
 
-Mapper *Mappers::cmdMapper     = new Mapper(cmdMap,TRUE);
-Mapper *Mappers::htmlTagMapper = new Mapper(htmlTagMap,FALSE);
+Mapper *Mappers::cmdMapper     = new Mapper(cmdMap,true);
+Mapper *Mappers::htmlTagMapper = new Mapper(htmlTagMap,false);
 
-int Mapper::map(const char *n)
+int Mapper::map(const QCString &n)
 {
-  QCString name=n;
+  if (n.isEmpty()) return 0;
+  QCString name = n;
   if (!m_cs) name=name.lower();
-  int *result;
-  return !name.isEmpty() && (result=m_map.find(name)) ? *result: 0;
+  auto it = m_map.find(name.str());
+  return it!=m_map.end() ? it->second : 0;
 }
 
-QString Mapper::find(const int n)
+QCString Mapper::find(const int n)
 {
-  QDictIterator<int> mapIterator(m_map);
-  for (int *curVal = mapIterator.toFirst();(curVal = mapIterator.current());++mapIterator)
+  for (const auto &kv : m_map)
   {
-    if (*curVal == n || (*curVal == (n | SIMPLESECT_BIT))) return mapIterator.currentKey();
+    int curVal = kv.second;
+    if (curVal == n || (curVal == (n | SIMPLESECT_BIT))) return kv.first.c_str();
   }
-  return NULL;
+  return QCString();
 }
 
-Mapper::Mapper(const CommandMap *cm,bool caseSensitive) : m_map(89), m_cs(caseSensitive)
+Mapper::Mapper(const CommandMap *cm,bool caseSensitive) : m_cs(caseSensitive)
 {
-  m_map.setAutoDelete(TRUE);
   const CommandMap *p = cm;
   while (p->cmdName)
   {
-    m_map.insert(p->cmdName,new int(p->cmdId));
+    m_map.insert(std::make_pair(p->cmdName,p->cmdId));
     p++;
   }
 }

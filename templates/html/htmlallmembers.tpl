@@ -9,8 +9,7 @@
 <p>{{ tr.theListOfAllMembers }} <a class="el" href="{{ compound.fileName }}{{ config.HTML_FILE_EXTENSION }}">{{ compound.name }}</a>{{ tr.incInheritedMembers }}</p>
 <table class="directory">
 {% for mi in compound.allMembersList %}
-  <tr class="{% cycle 'even' 'odd' %}">
-  {% spaceless %}
+  <tr class="{% cycle 'even' 'odd' %}">{% spaceless %}
   {% with member=mi.member %}
   {% if member.language=='objc' %}
     <td class="entry">

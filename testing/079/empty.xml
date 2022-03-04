@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
   <compounddef id="empty" kind="page">
     <compoundname>empty</compoundname>
     <title>An empty page</title>
     <briefdescription>
     </briefdescription>
     <detaileddescription>
-<para>With an empty TOC. </para>
+      <para>With an empty TOC. </para>
     </detaileddescription>
+    <location file="079_tableofcontents.dox"/>
   </compounddef>
 </doxygen>

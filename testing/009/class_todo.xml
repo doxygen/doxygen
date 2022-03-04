@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
   <compounddef id="class_todo" kind="class" language="C++" prot="public">
     <compoundname>Todo</compoundname>
     <sectiondef kind="public-func">
@@ -8,6 +8,7 @@
         <definition>void Todo::todo</definition>
         <argsstring>()</argsstring>
         <name>todo</name>
+        <qualifiedname>Todo::todo</qualifiedname>
         <briefdescription>
         </briefdescription>
         <detaileddescription>
@@ -22,7 +23,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="009_bug.cpp" line="43" column="1"/>
+        <location file="009_bug.cpp" line="43" column="10"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
@@ -37,7 +38,7 @@
         </xrefsect>
       </para>
     </detaileddescription>
-    <location file="009_bug.cpp" line="40" column="1" bodyfile="009_bug.cpp" bodystart="39" bodyend="44"/>
+    <location file="009_bug.cpp" line="39" column="1" bodyfile="009_bug.cpp" bodystart="40" bodyend="44"/>
     <listofallmembers>
       <member refid="class_todo_1a9e70ec9176ac4c1b20e011b4daddc9d8" prot="public" virt="non-virtual">
         <scope>Todo</scope>

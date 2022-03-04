@@ -65,6 +65,14 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
     {
       return "\\usepackage[macedonian]{babel}\n";
     }
+    virtual QCString trISOLang()
+    {
+      return "mk";
+    }
+    virtual QCString getLanguageString()
+    {
+      return "0x042f Macedonian (Former Yugoslav Republic of Macedonia)";
+    }
 
     // --- Language translation methods -------------------
 
@@ -124,9 +132,9 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
     /*! this is put at the author sections at the bottom of man pages.
      *  parameter s is name of the project name.
      */
-    virtual QCString trGeneratedAutomatically(const char *s)
+    virtual QCString trGeneratedAutomatically(const QCString &s)
     { QCString result="Автоматски создадено од Doxygen";
-      if (s) result+=(QCString)" за "+s;
+      if (!s.isEmpty()) result+=" за "+s;
       result+=" изворниот код.";
       return result;
     }
@@ -231,6 +239,10 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Список на структури со кратки описи:";
+      }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_SLICE))
+      {
+        return "Список на класи со кратки описи:";
       }
       else
       {
@@ -369,6 +381,10 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
       {
         return "Документација на Структури";
       }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+          return trDesignUnitDocumentation();
+      }
       else
       {
         return "Документација на Класи";
@@ -386,12 +402,6 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
      */
     virtual QCString trExampleDocumentation()
     { return "Документаија на Примери"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all related pages.
-     */
-    virtual QCString trPageDocumentation()
-    { return "Документација на Страници"; }
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
@@ -481,23 +491,19 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
     /*! This is used in the standard footer of each page and indicates when
      *  the page was generated
      */
-    virtual QCString trGeneratedAt(const char *date,const char *projName)
+    virtual QCString trGeneratedAt(const QCString &date,const QCString &projName)
     {
-      QCString result=(QCString)"Создадено на "+date;
-      if (projName) result+=(QCString)" за "+projName;
-      result+=(QCString)" од";
+      QCString result="Создадено на "+date;
+      if (!projName.isEmpty()) result+=" за "+projName;
+      result+=" од";
       return result;
     }
 
     /*! this text is put before a class diagram */
-    virtual QCString trClassDiagram(const char *clName)
+    virtual QCString trClassDiagram(const QCString &clName)
     {
-      return (QCString)"Диаграм на наследување за "+clName+":";
+      return "Диаграм на наследување за "+clName+":";
     }
-
-    /*! this text is generated when the \\internal command is used. */
-    virtual QCString trForInternalUseOnly()
-    { return "Само за интерна употреба."; }
 
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
@@ -569,11 +575,11 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
 //////////////////////////////////////////////////////////////////////////
 
     /*! used as the title of the HTML page of a class/struct/union */
-    virtual QCString trCompoundReference(const char *clName,
+    virtual QCString trCompoundReference(const QCString &clName,
                                     ClassDef::CompoundType compType,
                                     bool isTemplate)
     {
-      QCString result=(QCString)clName;
+      QCString result=clName;
       switch(compType)
       {
         case ClassDef::Class:      result+=" Класа"; break;
@@ -591,7 +597,7 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
     }
 
     /*! used as the title of the HTML page of a file */
-    virtual QCString trFileReference(const char *fileName)
+    virtual QCString trFileReference(const QCString &fileName)
     {
       QCString result = "Опис на Датотекaта ";
       result += fileName;
@@ -599,7 +605,7 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
     }
 
     /*! used as the title of the HTML page of a namespace */
-    virtual QCString trNamespaceReference(const char *namespaceName)
+    virtual QCString trNamespaceReference(const QCString &namespaceName)
     {
       QCString result = "Опис на Имeто на Простор ";
       result += namespaceName;
@@ -733,7 +739,7 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
         bool single)
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
-      QCString result=(QCString)"Документацијата за ";
+      QCString result="Документацијата за ";
       switch(compType)
       {
         case ClassDef::Class:      result+="оваа класа"; break;
@@ -796,14 +802,14 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
 //////////////////////////////////////////////////////////////////////////
 
     /*! this text is put before a collaboration diagram */
-    virtual QCString trCollaborationDiagram(const char *clName)
+    virtual QCString trCollaborationDiagram(const QCString &clName)
     {
-      return (QCString)"Диаграм на соработка за "+clName+":";
+      return "Диаграм на соработка за "+clName+":";
     }
     /*! this text is put before an include dependency graph */
-    virtual QCString trInclDepGraph(const char *fName)
+    virtual QCString trInclDepGraph(const QCString &fName)
     {
-      return (QCString)"Вклучен дијаграм на зависност за "+fName+":";
+      return "Вклучен дијаграм на зависност за "+fName+":";
     }
     /*! header that is put before the list of constructor/destructors. */
     virtual QCString trConstructorDocumentation()
@@ -1081,14 +1087,9 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
       }
     }
     /*! Used as the title of a Java package */
-    virtual QCString trPackage(const char *name)
+    virtual QCString trPackage(const QCString &name)
     {
-      return (QCString)"Пакет "+name;
-    }
-    /*! Title of the package index page */
-    virtual QCString trPackageList()
-    {
-      return "Список на Пакети";
+      return "Пакет "+name;
     }
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
@@ -1464,16 +1465,10 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
     virtual QCString trDirectories()
     { return "Именици"; }
 
-    /*! This returns a sentences that introduces the directory hierarchy.
-     *  and the fact that it is sorted alphabetically per level
-     */
-    virtual QCString trDirDescription()
-    { return "Ова стебло на именици е приближно азбучно подреден:";}
-
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.
      */
-    virtual QCString trDirReference(const char *dirName)
+    virtual QCString trDirReference(const QCString &dirName)
     { QCString result= "Опис на Именикот "; result += dirName; return result; }
 
     /*! This returns the word directory with or without starting capital
@@ -1600,11 +1595,11 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
     }
 
     /*! used as the title of the HTML page of a module/type (Fortran) */
-    virtual QCString trCompoundReferenceFortran(const char *clName,
+    virtual QCString trCompoundReferenceFortran(const QCString &clName,
                                     ClassDef::CompoundType compType,
                                     bool isTemplate)
     {
-      QCString result=(QCString)clName + " - Повикување на";
+      QCString result=clName + " - Повикување на";
       switch(compType)
       {
         case ClassDef::Class:      result+=" Класа"; break;
@@ -1620,7 +1615,7 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
       return result;
     }
     /*! used as the title of the HTML page of a module (Fortran) */
-    virtual QCString trModuleReference(const char *namespaceName)
+    virtual QCString trModuleReference(const QCString &namespaceName)
     {
       QCString result=namespaceName;
       result+=" - Содржина на Модул";
@@ -1671,7 +1666,7 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
         bool single)
     { // here s is one of " Module", " Struct" or " Union"
       // single is true implies a single file
-      QCString result=(QCString)"Документацијата за ";
+      QCString result="Документацијата за ";
       switch(compType)
       {
         case ClassDef::Class:      result+="оваа класа"; break;
@@ -1718,6 +1713,7 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
     {
       return "Ограничувања на Тип";
     }
+
 };
 
 #endif

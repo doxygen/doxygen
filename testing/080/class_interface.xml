@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
   <compounddef id="class_interface" kind="class" language="C++" prot="public" abstract="yes">
     <compoundname>Interface</compoundname>
     <sectiondef kind="public-func">
@@ -8,6 +8,7 @@
         <definition>void Interface::load</definition>
         <argsstring>()</argsstring>
         <name>load</name>
+        <qualifiedname>Interface::load</qualifiedname>
         <briefdescription>
           <para>Load things. </para>
         </briefdescription>
@@ -16,7 +17,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="080_extract_private_virtual.cpp" line="13" column="1"/>
+        <location file="080_extract_private_virtual.cpp" line="13" column="10"/>
       </memberdef>
     </sectiondef>
     <sectiondef kind="private-func">
@@ -25,6 +26,7 @@
         <definition>virtual void Interface::doLoad</definition>
         <argsstring>()=0</argsstring>
         <name>doLoad</name>
+        <qualifiedname>Interface::doLoad</qualifiedname>
         <briefdescription>
           <para>Pure virtual implementation for <ref refid="class_interface_1ab58d3008a7001cbb47f2fa5a5a1aeefa" kindref="member">load()</ref> </para>
         </briefdescription>
@@ -33,13 +35,14 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="080_extract_private_virtual.cpp" line="21" column="1"/>
+        <location file="080_extract_private_virtual.cpp" line="21" column="18"/>
       </memberdef>
       <memberdef kind="function" id="class_interface_1ad13fffb1181ab0da1f8fbb586eff9afe" prot="private" static="no" const="no" explicit="no" inline="no" virt="virtual">
         <type>void</type>
         <definition>virtual void Interface::doOtherStuff</definition>
         <argsstring>()</argsstring>
         <name>doOtherStuff</name>
+        <qualifiedname>Interface::doOtherStuff</qualifiedname>
         <briefdescription>
           <para>Non-pure virtual function. </para>
         </briefdescription>
@@ -48,26 +51,28 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="080_extract_private_virtual.cpp" line="28" column="1"/>
+        <location file="080_extract_private_virtual.cpp" line="28" column="18"/>
       </memberdef>
       <memberdef kind="function" id="class_interface_1a46062977049a7c2c2c141e4487e954b8" prot="private" static="no" const="no" explicit="no" inline="no" virt="virtual">
         <type>void</type>
         <definition>virtual void Interface::doSomethingUndocumented</definition>
         <argsstring>()</argsstring>
         <name>doSomethingUndocumented</name>
+        <qualifiedname>Interface::doSomethingUndocumented</qualifiedname>
         <briefdescription>
         </briefdescription>
         <detaileddescription>
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="080_extract_private_virtual.cpp" line="31" column="1"/>
+        <location file="080_extract_private_virtual.cpp" line="31" column="18"/>
       </memberdef>
       <memberdef kind="function" id="class_interface_1a108dce1debd0596b57e7985bbb0f63a1" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>void</type>
         <definition>void Interface::someUtility</definition>
         <argsstring>()</argsstring>
         <name>someUtility</name>
+        <qualifiedname>Interface::someUtility</qualifiedname>
         <briefdescription>
           <para>A non-virtual private function, not extracted. </para>
         </briefdescription>
@@ -75,7 +80,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="080_extract_private_virtual.cpp" line="34" column="1"/>
+        <location file="080_extract_private_virtual.cpp" line="34" column="10"/>
       </memberdef>
     </sectiondef>
     <briefdescription>

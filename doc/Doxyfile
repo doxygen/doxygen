@@ -32,27 +32,30 @@ HTML_COLORSTYLE_SAT = 0
 ENABLED_SECTIONS  = logo_on
 ENABLE_PREPROCESSING = NO
 CASE_SENSE_NAMES  = NO
-IMAGE_PATH        = .
+IMAGE_PATH        = . images
 INPUT             = index.doc install.doc starting.doc docblocks.doc markdown.doc \
                     lists.doc grouping.doc formulas.doc tables.doc diagrams.doc preprocessing.doc \
                     autolink.doc output.doc searching.doc extsearch.doc customize.doc custcmd.doc \
                     external.doc faq.doc trouble.doc features.doc \
 		    doxygen_usage.doc doxywizard_usage.doc \
 		    config.doc commands.doc htmlcmds.doc xmlcmds.doc emojisup.doc language.doc \
-                    perlmod.doc perlmod_tree.doc arch.doc changelog.doc
+                    perlmod.doc arch.doc changelog.doc
 FILE_PATTERNS     = *.cpp *.h *.doc
-EXAMPLE_PATH      = ../examples
+EXAMPLE_PATH      = ../examples .
 RECURSIVE         = NO
 TAGFILES          =
 ALLEXTERNALS      = NO
-PERL_PATH         = /usr/bin/perl
 SEARCHENGINE      = NO
 PDF_HYPERLINKS    = YES
 USE_PDFLATEX      = YES
 STRIP_CODE_COMMENTS = NO
 HTML_STYLESHEET   = doxygen_manual.css
-ALIASES           = LaTeX="\f$\mbox{\LaTeX}\f$"
-ALIASES          += TeX="\f$\mbox{\TeX}\f$"
+HTML_EXTRA_FILES  = doxygen_logo.svg
+HTML_EXTRA_FILES += translator_report.txt
+ALIASES           = LaTeX="\f({\LaTeX}\f)"
+ALIASES          += TeX="\f({\TeX}\f)"
+ALIASES          += forceNewPage="\latexonly \newpage \endlatexonly"
 LATEX_BATCHMODE   = YES
 LATEX_EXTRA_STYLESHEET = manual.sty
 LATEX_EMOJI_DIRECTORY  = ../doc
+WARN_AS_ERROR = FAIL_ON_WARNINGS

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
   <compounddef id="namespacens" kind="namespace" language="C++">
     <compoundname>ns</compoundname>
     <sectiondef kind="func">
@@ -8,6 +8,7 @@
         <definition>int ns::operator""_op</definition>
         <argsstring>(unsigned long long)</argsstring>
         <name>operator""_op</name>
+        <qualifiedname>ns::operator""_op</qualifiedname>
         <param>
           <type>unsigned long long</type>
         </param>
@@ -18,13 +19,14 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="074_ref.cpp" line="67" column="1" declfile="074_ref.cpp" declline="67" declcolumn="1"/>
+        <location file="074_ref.cpp" line="67" column="5" declfile="074_ref.cpp" declline="67" declcolumn="5"/>
       </memberdef>
       <memberdef kind="function" id="namespacens_1a47f70e51e66b81b8383a4e2da66f1e09" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
         <definition>int ns::operator""_oq</definition>
         <argsstring>(unsigned long long)</argsstring>
         <name>operator""_oq</name>
+        <qualifiedname>ns::operator""_oq</qualifiedname>
         <param>
           <type>unsigned long long</type>
         </param>
@@ -35,13 +37,14 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="074_ref.cpp" line="70" column="1" declfile="074_ref.cpp" declline="70" declcolumn="1"/>
+        <location file="074_ref.cpp" line="70" column="5" declfile="074_ref.cpp" declline="70" declcolumn="5"/>
       </memberdef>
       <memberdef kind="function" id="namespacens_1aaa9eb8a7b40d4ed0edbe5e163b4e6e8d" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>void</type>
         <definition>void ns::foo</definition>
         <argsstring>(std::initializer_list&lt; int * &gt;)</argsstring>
         <name>foo</name>
+        <qualifiedname>ns::foo</qualifiedname>
         <param>
           <type>std::initializer_list&lt; int * &gt;</type>
         </param>
@@ -52,7 +55,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="074_ref.cpp" line="73" column="1" declfile="074_ref.cpp" declline="73" declcolumn="1"/>
+        <location file="074_ref.cpp" line="73" column="6" declfile="074_ref.cpp" declline="73" declcolumn="6"/>
       </memberdef>
     </sectiondef>
     <briefdescription>

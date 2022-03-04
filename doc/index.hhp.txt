@@ -102,7 +102,7 @@ examples/tag/html/tab_a.png
 examples/tag/html/tab_b.png
 examples/tag/html/tab_h.png
 examples/tag/html/tab_s.png
-examples/template/html/tab_a.png
-examples/template/html/tab_b.png
-examples/template/html/tab_h.png
-examples/template/html/tab_s.png
+examples/templ/html/tab_a.png
+examples/templ/html/tab_b.png
+examples/templ/html/tab_h.png
+examples/templ/html/tab_s.png

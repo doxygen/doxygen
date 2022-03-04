@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
   <compounddef id="class_test" kind="class" language="C++" prot="public">
     <compoundname>Test</compoundname>
     <sectiondef kind="public-func">
@@ -8,6 +8,7 @@
         <definition>void Test::method</definition>
         <argsstring>()</argsstring>
         <name>method</name>
+        <qualifiedname>Test::method</qualifiedname>
         <briefdescription>
         </briefdescription>
         <detaileddescription>
@@ -15,7 +16,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="046_related.cpp" line="14" column="1"/>
+        <location file="046_related.cpp" line="14" column="10"/>
       </memberdef>
     </sectiondef>
     <sectiondef kind="related">
@@ -24,6 +25,7 @@
         <definition>void function</definition>
         <argsstring>()</argsstring>
         <name>function</name>
+        <qualifiedname>Test::function</qualifiedname>
         <briefdescription>
         </briefdescription>
         <detaileddescription>
@@ -38,13 +40,14 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="046_related.cpp" line="22" column="1" declfile="046_related.cpp" declline="22" declcolumn="1"/>
+        <location file="046_related.cpp" line="22" column="6" declfile="046_related.cpp" declline="22" declcolumn="6"/>
       </memberdef>
       <memberdef kind="function" id="class_test_1a1283d836e0611ff772c1b06a31ecbbfe" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>void</type>
         <definition>void another</definition>
         <argsstring>()</argsstring>
         <name>another</name>
+        <qualifiedname>Test::another</qualifiedname>
         <briefdescription>
         </briefdescription>
         <detaileddescription>
@@ -52,7 +55,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="046_related.cpp" line="28" column="1" declfile="046_related.cpp" declline="28" declcolumn="1"/>
+        <location file="046_related.cpp" line="28" column="6" declfile="046_related.cpp" declline="28" declcolumn="6"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
@@ -61,7 +64,7 @@
       <para>A test class <simplesect kind="see"><para><ref refid="class_test_1a1683da699dc049d74101488d143c8e98" kindref="member">Test::method()</ref></para></simplesect>
 </para>
     </detaileddescription>
-    <location file="046_related.cpp" line="11" column="1" bodyfile="046_related.cpp" bodystart="10" bodyend="15"/>
+    <location file="046_related.cpp" line="10" column="1" bodyfile="046_related.cpp" bodystart="11" bodyend="15"/>
     <listofallmembers>
       <member refid="class_test_1a1283d836e0611ff772c1b06a31ecbbfe" prot="public" virt="non-virtual">
         <scope>Test</scope>

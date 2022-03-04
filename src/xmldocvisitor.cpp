@@ -1,13 +1,10 @@
 /******************************************************************************
  *
- * 
- *
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2020 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -15,8 +12,6 @@
  * input used in their production; they are not affected by this license.
  *
  */
-
-#include <qfileinfo.h> 
 
 #include "xmldocvisitor.h"
 #include "docparser.h"
@@ -32,18 +27,18 @@
 #include "config.h"
 #include "htmlentity.h"
 #include "emoji.h"
+#include "filedef.h"
+#include "fileinfo.h"
 
-static void visitCaption(XmlDocVisitor *parent, QList<DocNode> children)
+static void visitCaption(XmlDocVisitor *parent, const DocNodeList &children)
 {
-  QListIterator<DocNode> cli(children);
-  DocNode *n;
-  for (cli.toFirst();(n=cli.current());++cli) n->accept(parent);
+  for (const auto &n : children) n->accept(parent);
 }
 
-static void visitPreStart(FTextStream &t, const char *cmd, bool doCaption, 
-                          XmlDocVisitor *parent, QList<DocNode> children, 
-                          const QCString &name, bool writeType, DocImage::Type type, const QCString &width, 
-                          const QCString &height, bool inlineImage = FALSE)
+static void visitPreStart(TextStream &t, const char *cmd, bool doCaption,
+                          XmlDocVisitor *parent, const DocNodeList &children,
+                          const QCString &name, bool writeType, DocImage::Type type, const QCString &width,
+                          const QCString &height, const QCString engine = QCString(), const QCString &alt = QCString(), bool inlineImage = FALSE)
 {
   t << "<" << cmd;
   if (writeType)
@@ -55,6 +50,7 @@ static void visitPreStart(FTextStream &t, const char *cmd, bool doCaption,
       case DocImage::Latex:   t << "latex"; break;
       case DocImage::Rtf:     t << "rtf"; break;
       case DocImage::DocBook: t << "docbook"; break;
+      case DocImage::Xml:     t << "xml"; break;
     }
     t << "\"";
   }
@@ -70,6 +66,14 @@ static void visitPreStart(FTextStream &t, const char *cmd, bool doCaption,
   {
     t << " height=\"" << convertToXML(height) << "\"";
   }
+  if (!engine.isEmpty())
+  {
+    t << " engine=\"" << convertToXML(engine) << "\"";
+  }
+  if (!alt.isEmpty())
+  {
+    t << " alt=\"" << convertToXML(alt) << "\"";
+  }
   if (inlineImage)
   {
     t << " inline=\"yes\"";
@@ -83,13 +87,14 @@ static void visitPreStart(FTextStream &t, const char *cmd, bool doCaption,
   t << ">";
 }
 
-static void visitPostEnd(FTextStream &t, const char *cmd)
+static void visitPostEnd(TextStream &t, const char *cmd)
 {
-  t << "</" << cmd << ">" << endl;
+  t << "</" << cmd << ">\n";
 }
 
-XmlDocVisitor::XmlDocVisitor(FTextStream &t,CodeOutputInterface &ci) 
-  : DocVisitor(DocVisitor_XML), m_t(t), m_ci(ci), m_insidePre(FALSE), m_hide(FALSE) 
+XmlDocVisitor::XmlDocVisitor(TextStream &t,CodeOutputInterface &ci,const QCString &langExt)
+  : DocVisitor(DocVisitor_XML), m_t(t), m_ci(ci), m_insidePre(FALSE), m_hide(FALSE),
+    m_langExt(langExt)
 {
 }
 
@@ -159,7 +164,7 @@ void XmlDocVisitor::visit(DocEmoji *s)
 void XmlDocVisitor::visit(DocURL *u)
 {
   if (m_hide) return;
-  m_t << "<ulink url=\""; 
+  m_t << "<ulink url=\"";
   if (u->isEmail()) m_t << "mailto:";
   filter(u->url());
   m_t << "\">";
@@ -187,11 +192,20 @@ void XmlDocVisitor::visit(DocStyleChange *s)
     case DocStyleChange::Bold:
       if (s->enable()) m_t << "<bold>";      else m_t << "</bold>";
       break;
+    case DocStyleChange::S:
+      if (s->enable()) m_t << "<s>";      else m_t << "</s>";
+      break;
     case DocStyleChange::Strike:
       if (s->enable()) m_t << "<strike>";      else m_t << "</strike>";
       break;
+    case DocStyleChange::Del:
+      if (s->enable()) m_t << "<del>";      else m_t << "</del>";
+      break;
     case DocStyleChange::Underline:
       if (s->enable()) m_t << "<underline>";      else m_t << "</underline>";
+      break;
+    case DocStyleChange::Ins:
+      if (s->enable()) m_t << "<ins>";      else m_t << "</ins>";
       break;
     case DocStyleChange::Italic:
       if (s->enable()) m_t << "<emphasis>";     else m_t << "</emphasis>";
@@ -211,13 +225,16 @@ void XmlDocVisitor::visit(DocStyleChange *s)
     case DocStyleChange::Small:
       if (s->enable()) m_t << "<small>";  else m_t << "</small>";
       break;
+    case DocStyleChange::Cite:
+      if (s->enable()) m_t << "<cite>";  else m_t << "</cite>";
+      break;
     case DocStyleChange::Preformatted:
-      if (s->enable()) 
+      if (s->enable())
       {
-        m_t << "<preformatted>";  
+        m_t << "<preformatted>";
         m_insidePre=TRUE;
       }
-      else 
+      else
       {
         m_t << "</preformatted>";
         m_insidePre=FALSE;
@@ -225,6 +242,12 @@ void XmlDocVisitor::visit(DocStyleChange *s)
       break;
     case DocStyleChange::Div:  /* HTML only */ break;
     case DocStyleChange::Span: /* HTML only */ break;
+    case DocStyleChange::Details:
+      if (s->enable()) m_t << "<details>";  else m_t << "</details>";
+      break;
+    case DocStyleChange::Summary:
+      if (s->enable()) m_t << "<summary>";  else m_t << "</summary>";
+      break;
   }
 }
 
@@ -236,33 +259,67 @@ void XmlDocVisitor::visit(DocVerbatim *s)
   {
     lang = s->language();
   }
-  SrcLangExt langExt = getLanguageFromFileName(lang);
+  SrcLangExt langExt = getLanguageFromCodeLang(lang);
   switch(s->type())
   {
-    case DocVerbatim::Code: // fall though
+    case DocVerbatim::Code:
       m_t << "<programlisting";
       if (!s->language().isEmpty())
           m_t << " filename=\"" << lang << "\">";
       else
           m_t << ">";
-      Doxygen::parserManager->getParser(lang)
-                            ->parseCode(m_ci,s->context(),s->text(),langExt,
-                                        s->isExample(),s->exampleFile());
-      m_t << "</programlisting>"; 
+      getCodeParser(lang).parseCode(m_ci,s->context(),s->text(),langExt,
+                                    s->isExample(),s->exampleFile());
+      m_t << "</programlisting>";
       break;
-    case DocVerbatim::Verbatim: 
+    case DocVerbatim::JavaDocLiteral:
+      m_t << "<javadocliteral>";
+      filter(s->text());
+      m_t << "</javadocliteral>";
+      break;
+    case DocVerbatim::JavaDocCode:
+      m_t << "<javadoccode>";
+      filter(s->text());
+      m_t << "</javadoccode>";
+      break;
+    case DocVerbatim::Verbatim:
       m_t << "<verbatim>";
       filter(s->text());
-      m_t << "</verbatim>"; 
+      m_t << "</verbatim>";
       break;
-    case DocVerbatim::HtmlOnly: 
-    case DocVerbatim::RtfOnly: 
-    case DocVerbatim::ManOnly: 
-    case DocVerbatim::LatexOnly: 
+    case DocVerbatim::HtmlOnly:
+      if (s->isBlock())
+      {
+        m_t << "<htmlonly block=\"yes\">";
+      }
+      else
+      {
+        m_t << "<htmlonly>";
+      }
+      filter(s->text());
+      m_t << "</htmlonly>";
+      break;
+    case DocVerbatim::RtfOnly:
+      m_t << "<rtfonly>";
+      filter(s->text());
+      m_t << "</rtfonly>";
+      break;
+    case DocVerbatim::ManOnly:
+      m_t << "<manonly>";
+      filter(s->text());
+      m_t << "</manonly>";
+      break;
+    case DocVerbatim::LatexOnly:
+      m_t << "<latexonly>";
+      filter(s->text());
+      m_t << "</latexonly>";
+      break;
     case DocVerbatim::DocbookOnly:
-      /* nothing */ 
+      m_t << "<docbookonly>";
+      filter(s->text());
+      m_t << "</docbookonly>";
       break;
-    case DocVerbatim::XmlOnly: 
+    case DocVerbatim::XmlOnly:
       m_t << s->text();
       break;
     case DocVerbatim::Dot:
@@ -276,7 +333,7 @@ void XmlDocVisitor::visit(DocVerbatim *s)
       visitPostEnd(m_t, "msc");
       break;
     case DocVerbatim::PlantUML:
-      visitPreStart(m_t, "plantuml", s->hasCaption(), this, s->children(),  QCString(""), FALSE, DocImage::Html, s->width(), s->height());
+      visitPreStart(m_t, "plantuml", s->hasCaption(), this, s->children(),  QCString(""), FALSE, DocImage::Html, s->width(), s->height(), s->engine());
       filter(s->text());
       visitPostEnd(m_t, "plantuml");
       break;
@@ -296,30 +353,29 @@ void XmlDocVisitor::visit(DocInclude *inc)
   switch(inc->type())
   {
     case DocInclude::IncWithLines:
-      { 
+      {
          m_t << "<programlisting filename=\"" << inc->file() << "\">";
-         QFileInfo cfi( inc->file() );
-         FileDef fd( cfi.dirPath().utf8(), cfi.fileName().utf8() );
-         Doxygen::parserManager->getParser(inc->extension())
-                               ->parseCode(m_ci,inc->context(),
+         FileInfo cfi( inc->file().str() );
+         FileDef *fd = createFileDef( cfi.dirPath(), cfi.fileName() );
+         getCodeParser(inc->extension()).parseCode(m_ci,inc->context(),
                                            inc->text(),
                                            langExt,
                                            inc->isExample(),
                                            inc->exampleFile(),
-                                           &fd,   // fileDef,
+                                           fd,   // fileDef,
                                            -1,    // start line
                                            -1,    // end line
                                            FALSE, // inline fragment
                                            0,     // memberDef
                                            TRUE   // show line numbers
 					   );
-         m_t << "</programlisting>"; 
+         delete fd;
+         m_t << "</programlisting>";
       }
-      break;    
-    case DocInclude::Include: 
+      break;
+    case DocInclude::Include:
       m_t << "<programlisting filename=\"" << inc->file() << "\">";
-      Doxygen::parserManager->getParser(inc->extension())
-                            ->parseCode(m_ci,inc->context(),
+      getCodeParser(inc->extension()).parseCode(m_ci,inc->context(),
                                         inc->text(),
                                         langExt,
                                         inc->isExample(),
@@ -331,11 +387,12 @@ void XmlDocVisitor::visit(DocInclude *inc)
                                         0,     // memberDef
                                         FALSE  // show line numbers
 				       );
-      m_t << "</programlisting>"; 
+      m_t << "</programlisting>";
       break;
-    case DocInclude::DontInclude: 
+    case DocInclude::DontInclude:
+    case DocInclude::DontIncWithLines:
       break;
-    case DocInclude::HtmlInclude: 
+    case DocInclude::HtmlInclude:
       if (inc->isBlock())
       {
         m_t << "<htmlonly block=\"yes\">";
@@ -352,47 +409,64 @@ void XmlDocVisitor::visit(DocInclude *inc)
       filter(inc->text());
       m_t << "</latexonly>";
       break;
-    case DocInclude::VerbInclude: 
+    case DocInclude::RtfInclude:
+      m_t << "<rtfonly>";
+      filter(inc->text());
+      m_t << "</rtfonly>";
+      break;
+    case DocInclude::ManInclude:
+      m_t << "<manonly>";
+      filter(inc->text());
+      m_t << "</manonly>";
+      break;
+    case DocInclude::XmlInclude:
+      filter(inc->text());
+      break;
+    case DocInclude::DocbookInclude:
+      m_t << "<docbookonly>";
+      filter(inc->text());
+      m_t << "</docbookonly>";
+      break;
+    case DocInclude::VerbInclude:
       m_t << "<verbatim>";
       filter(inc->text());
-      m_t << "</verbatim>"; 
+      m_t << "</verbatim>";
       break;
     case DocInclude::Snippet:
       m_t << "<programlisting filename=\"" << inc->file() << "\">";
-      Doxygen::parserManager->getParser(inc->extension())
-                            ->parseCode(m_ci,
+      getCodeParser(inc->extension()).parseCode(m_ci,
                                         inc->context(),
                                         extractBlock(inc->text(),inc->blockId()),
                                         langExt,
                                         inc->isExample(),
                                         inc->exampleFile()
                                        );
-      m_t << "</programlisting>"; 
+      m_t << "</programlisting>";
       break;
     case DocInclude::SnipWithLines:
       {
          m_t << "<programlisting filename=\"" << inc->file() << "\">";
-         QFileInfo cfi( inc->file() );
-         FileDef fd( cfi.dirPath().utf8(), cfi.fileName().utf8() );
-         Doxygen::parserManager->getParser(inc->extension())
-                               ->parseCode(m_ci,
+         FileInfo cfi( inc->file().str() );
+         FileDef *fd = createFileDef( cfi.dirPath(), cfi.fileName() );
+         getCodeParser(inc->extension()).parseCode(m_ci,
                                            inc->context(),
                                            extractBlock(inc->text(),inc->blockId()),
                                            langExt,
                                            inc->isExample(),
-                                           inc->exampleFile(), 
-                                           &fd,
+                                           inc->exampleFile(),
+                                           fd,
                                            lineBlock(inc->text(),inc->blockId()),
                                            -1,    // endLine
                                            FALSE, // inlineFragment
                                            0,     // memberDef
                                            TRUE   // show line number
                                           );
-         m_t << "</programlisting>"; 
+         delete fd;
+         m_t << "</programlisting>";
       }
       break;
-    case DocInclude::SnippetDoc: 
-    case DocInclude::IncludeDoc: 
+    case DocInclude::SnippetDoc:
+    case DocInclude::IncludeDoc:
       err("Internal inconsistency: found switch SnippetDoc / IncludeDoc in file: %s"
           "Please create a bug report\n",__FILE__);
       break;
@@ -401,39 +475,55 @@ void XmlDocVisitor::visit(DocInclude *inc)
 
 void XmlDocVisitor::visit(DocIncOperator *op)
 {
-  //printf("DocIncOperator: type=%d first=%d, last=%d text=`%s'\n",
-  //    op->type(),op->isFirst(),op->isLast(),op->text().data());
-  if (op->isFirst()) 
+  //printf("DocIncOperator: type=%d first=%d, last=%d text='%s'\n",
+  //    op->type(),op->isFirst(),op->isLast(),qPrint(op->text()));
+  if (op->isFirst())
   {
     if (!m_hide)
     {
       m_t << "<programlisting filename=\"" << op->includeFileName() << "\">";
     }
-    pushEnabled();
+    pushHidden(m_hide);
     m_hide = TRUE;
   }
-  SrcLangExt langExt = getLanguageFromFileName(m_langExt);
-  if (op->type()!=DocIncOperator::Skip) 
+  QCString locLangExt = getFileNameExtension(op->includeFileName());
+  if (locLangExt.isEmpty()) locLangExt = m_langExt;
+  SrcLangExt langExt = getLanguageFromFileName(locLangExt);
+  if (op->type()!=DocIncOperator::Skip)
   {
-    popEnabled();
-    if (!m_hide) 
+    m_hide = popHidden();
+    if (!m_hide)
     {
-      Doxygen::parserManager->getParser(m_langExt)
-                            ->parseCode(m_ci,op->context(),
-                                        op->text(),langExt,op->isExample(),
-                                        op->exampleFile());
+      FileDef *fd = 0;
+      if (!op->includeFileName().isEmpty())
+      {
+        FileInfo cfi( op->includeFileName().str() );
+        fd = createFileDef( cfi.dirPath(), cfi.fileName() );
+      }
+
+      getCodeParser(locLangExt).parseCode(m_ci,op->context(),
+                                          op->text(),langExt,op->isExample(),
+                                          op->exampleFile(),
+                                          fd,     // fileDef
+                                          op->line(),    // startLine
+                                          -1,    // endLine
+                                          FALSE, // inline fragment
+                                          0,     // memberDef
+                                          op->showLineNo()  // show line numbers
+                                         );
+      if (fd) delete fd;
     }
-    pushEnabled();
+    pushHidden(m_hide);
     m_hide=TRUE;
   }
-  if (op->isLast())  
+  if (op->isLast())
   {
-    popEnabled();
-    if (!m_hide) m_t << "</programlisting>"; 
+    m_hide = popHidden();
+    if (!m_hide) m_t << "</programlisting>";
   }
   else
   {
-    if (!m_hide) m_t << endl;
+    if (!m_hide) m_t << "\n";
   }
 }
 
@@ -458,10 +548,11 @@ void XmlDocVisitor::visit(DocIndexEntry *ie)
 
 void XmlDocVisitor::visit(DocSimpleSectSep *sep)
 {
-  if (sep->parent() && sep->parent()->kind()==DocNode::Kind_SimpleSect)
+  DocSimpleSect *sect = sep->parent() ? dynamic_cast<DocSimpleSect*>(sep->parent()) : 0;
+  if (sect)
   {
-    visitPost((DocSimpleSect*)sep->parent()); // end current section
-    visitPre((DocSimpleSect*)sep->parent());  // start new section
+    visitPost(sect); // end current section
+    visitPre(sect);  // start new section
   }
 }
 
@@ -509,13 +600,13 @@ void XmlDocVisitor::visitPre(DocAutoListItem *)
   m_t << "<listitem>";
 }
 
-void XmlDocVisitor::visitPost(DocAutoListItem *) 
+void XmlDocVisitor::visitPost(DocAutoListItem *)
 {
   if (m_hide) return;
   m_t << "</listitem>";
 }
 
-void XmlDocVisitor::visitPre(DocPara *) 
+void XmlDocVisitor::visitPre(DocPara *)
 {
   if (m_hide) return;
   m_t << "<para>";
@@ -524,7 +615,7 @@ void XmlDocVisitor::visitPre(DocPara *)
 void XmlDocVisitor::visitPost(DocPara *)
 {
   if (m_hide) return;
-  m_t << "</para>" << endl;
+  m_t << "</para>\n";
 }
 
 void XmlDocVisitor::visitPre(DocRoot *)
@@ -543,21 +634,21 @@ void XmlDocVisitor::visitPre(DocSimpleSect *s)
   m_t << "<simplesect kind=\"";
   switch(s->type())
   {
-    case DocSimpleSect::See: 
+    case DocSimpleSect::See:
       m_t << "see"; break;
-    case DocSimpleSect::Return: 
+    case DocSimpleSect::Return:
       m_t << "return"; break;
-    case DocSimpleSect::Author: 
+    case DocSimpleSect::Author:
       m_t << "author"; break;
-    case DocSimpleSect::Authors: 
+    case DocSimpleSect::Authors:
       m_t << "authors"; break;
-    case DocSimpleSect::Version: 
+    case DocSimpleSect::Version:
       m_t << "version"; break;
-    case DocSimpleSect::Since: 
+    case DocSimpleSect::Since:
       m_t << "since"; break;
-    case DocSimpleSect::Date: 
+    case DocSimpleSect::Date:
       m_t << "date"; break;
-    case DocSimpleSect::Note: 
+    case DocSimpleSect::Note:
       m_t << "note"; break;
     case DocSimpleSect::Warning:
       m_t << "warning"; break;
@@ -573,9 +664,9 @@ void XmlDocVisitor::visitPre(DocSimpleSect *s)
       m_t << "remark"; break;
     case DocSimpleSect::Attention:
       m_t << "attention"; break;
-    case DocSimpleSect::User: 
+    case DocSimpleSect::User:
       m_t << "par"; break;
-    case DocSimpleSect::Rcs: 
+    case DocSimpleSect::Rcs:
       m_t << "rcs"; break;
     case DocSimpleSect::Unknown:  break;
   }
@@ -618,7 +709,7 @@ void XmlDocVisitor::visitPre(DocSimpleListItem *)
   m_t << "<listitem>";
 }
 
-void XmlDocVisitor::visitPost(DocSimpleListItem *) 
+void XmlDocVisitor::visitPost(DocSimpleListItem *)
 {
   if (m_hide) return;
   m_t << "</listitem>\n";
@@ -629,13 +720,13 @@ void XmlDocVisitor::visitPre(DocSection *s)
   if (m_hide) return;
   m_t << "<sect" << s->level() << " id=\"" << s->file();
   if (!s->anchor().isEmpty()) m_t << "_1" << s->anchor();
-  m_t << "\">" << endl;
+  m_t << "\">\n";
   m_t << "<title>";
   filter(convertCharEntitiesToUTF8(s->title()));
-  m_t << "</title>" << endl;
+  m_t << "</title>\n";
 }
 
-void XmlDocVisitor::visitPost(DocSection *s) 
+void XmlDocVisitor::visitPost(DocSection *s)
 {
   m_t << "</sect" << s->level() << ">\n";
 }
@@ -643,28 +734,43 @@ void XmlDocVisitor::visitPost(DocSection *s)
 void XmlDocVisitor::visitPre(DocHtmlList *s)
 {
   if (m_hide) return;
-  if (s->type()==DocHtmlList::Ordered) 
-    m_t << "<orderedlist>\n"; 
-  else 
+  if (s->type()==DocHtmlList::Ordered)
+  {
+    m_t << "<orderedlist";
+    for (const auto &opt : s->attribs())
+    {
+      m_t << " " << opt.name << "=\"" << opt.value << "\"";
+    }
+    m_t << ">\n";
+  }
+  else
     m_t << "<itemizedlist>\n";
 }
 
-void XmlDocVisitor::visitPost(DocHtmlList *s) 
+void XmlDocVisitor::visitPost(DocHtmlList *s)
 {
   if (m_hide) return;
-  if (s->type()==DocHtmlList::Ordered) 
-    m_t << "</orderedlist>\n"; 
-  else 
+  if (s->type()==DocHtmlList::Ordered)
+    m_t << "</orderedlist>\n";
+  else
     m_t << "</itemizedlist>\n";
 }
 
-void XmlDocVisitor::visitPre(DocHtmlListItem *)
+void XmlDocVisitor::visitPre(DocHtmlListItem *l)
 {
   if (m_hide) return;
-  m_t << "<listitem>\n";
+  m_t << "<listitem";
+  for (const auto &opt : l->attribs())
+  {
+    if (opt.name=="value")
+    {
+      m_t << " " << opt.name << "=\"" << opt.value << "\"";
+    }
+  }
+  m_t << ">\n";
 }
 
-void XmlDocVisitor::visitPost(DocHtmlListItem *) 
+void XmlDocVisitor::visitPost(DocHtmlListItem *)
 {
   if (m_hide) return;
   m_t << "</listitem>\n";
@@ -676,7 +782,7 @@ void XmlDocVisitor::visitPre(DocHtmlDescList *)
   m_t << "<variablelist>\n";
 }
 
-void XmlDocVisitor::visitPost(DocHtmlDescList *) 
+void XmlDocVisitor::visitPost(DocHtmlDescList *)
 {
   if (m_hide) return;
   m_t << "</variablelist>\n";
@@ -688,7 +794,7 @@ void XmlDocVisitor::visitPre(DocHtmlDescTitle *)
   m_t << "<varlistentry><term>";
 }
 
-void XmlDocVisitor::visitPost(DocHtmlDescTitle *) 
+void XmlDocVisitor::visitPost(DocHtmlDescTitle *)
 {
   if (m_hide) return;
   m_t << "</term></varlistentry>\n";
@@ -700,7 +806,7 @@ void XmlDocVisitor::visitPre(DocHtmlDescData *)
   m_t << "<listitem>";
 }
 
-void XmlDocVisitor::visitPost(DocHtmlDescData *) 
+void XmlDocVisitor::visitPost(DocHtmlDescData *)
 {
   if (m_hide) return;
   m_t << "</listitem>\n";
@@ -709,11 +815,29 @@ void XmlDocVisitor::visitPost(DocHtmlDescData *)
 void XmlDocVisitor::visitPre(DocHtmlTable *t)
 {
   if (m_hide) return;
-  m_t << "<table rows=\"" << t->numRows() 
-      << "\" cols=\"" << t->numColumns() << "\">" ;
+  m_t << "<table rows=\"" << t->numRows()
+      << "\" cols=\"" << t->numColumns() << "\"" ;
+  for (const auto &opt : t->attribs())
+  {
+    if (opt.name=="width")
+    {
+      m_t << " " << opt.name << "=\"" << opt.value << "\"";
+    }
+  }
+  m_t << ">";
+  if (t->hasCaption())
+  {
+    DocHtmlCaption *c = t->caption();
+    m_t << "<caption";
+    if (!c->file().isEmpty())
+    {
+      m_t << " id=\""  << stripPath(c->file()) << "_1" << c->anchor() << "\"";
+    }
+    m_t << ">";
+  }
 }
 
-void XmlDocVisitor::visitPost(DocHtmlTable *) 
+void XmlDocVisitor::visitPost(DocHtmlTable *)
 {
   if (m_hide) return;
   m_t << "</table>\n";
@@ -725,7 +849,7 @@ void XmlDocVisitor::visitPre(DocHtmlRow *)
   m_t << "<row>\n";
 }
 
-void XmlDocVisitor::visitPost(DocHtmlRow *) 
+void XmlDocVisitor::visitPost(DocHtmlRow *)
 {
   if (m_hide) return;
   m_t << "</row>\n";
@@ -734,22 +858,67 @@ void XmlDocVisitor::visitPost(DocHtmlRow *)
 void XmlDocVisitor::visitPre(DocHtmlCell *c)
 {
   if (m_hide) return;
-  if (c->isHeading()) m_t << "<entry thead=\"yes\">"; else m_t << "<entry thead=\"no\">";
+  if (c->isHeading()) m_t << "<entry thead=\"yes\""; else m_t << "<entry thead=\"no\"";
+  for (const auto &opt : c->attribs())
+  {
+    if (opt.name=="colspan" || opt.name=="rowspan")
+    {
+      m_t << " " << opt.name << "=\"" << opt.value.toInt() << "\"";
+    }
+    else if (opt.name=="align" &&
+             (opt.value=="right" || opt.value=="left" || opt.value=="center"))
+    {
+      m_t << " align=\"" << opt.value << "\"";
+    }
+    else if (opt.name=="valign" &&
+      (opt.value == "bottom" || opt.value == "top" || opt.value == "middle"))
+    {
+      m_t << " valign=\"" << opt.value << "\"";
+    }
+    else if (opt.name=="width")
+    {
+      m_t << " width=\"" << opt.value << "\"";
+    }
+    else if (opt.name=="class") // handle markdown generated attributes
+    {
+      if (opt.value.left(13)=="markdownTable") // handle markdown generated attributes
+      {
+        if (opt.value.right(5)=="Right")
+        {
+          m_t << " align='right'";
+        }
+        else if (opt.value.right(4)=="Left")
+        {
+          m_t << " align='left'";
+        }
+        else if (opt.value.right(6)=="Center")
+        {
+          m_t << " align='center'";
+        }
+        // skip 'markdownTable*' value ending with "None"
+      }
+      else if (!opt.value.isEmpty())
+      {
+        m_t << " class=\"" << convertToXML(opt.value) << "\"";
+      }
+    }
+  }
+  m_t << ">";
 }
 
-void XmlDocVisitor::visitPost(DocHtmlCell *) 
+void XmlDocVisitor::visitPost(DocHtmlCell *)
 {
   if (m_hide) return;
-  m_t << "</entry>"; 
+  m_t << "</entry>";
 }
 
 void XmlDocVisitor::visitPre(DocHtmlCaption *)
 {
   if (m_hide) return;
-  m_t << "<caption>";
+  // start of caption is handled in the XmlDocVisitor::visitPre(DocHtmlTable *t)
 }
 
-void XmlDocVisitor::visitPost(DocHtmlCaption *) 
+void XmlDocVisitor::visitPost(DocHtmlCaption *)
 {
   if (m_hide) return;
   m_t << "</caption>\n";
@@ -761,10 +930,10 @@ void XmlDocVisitor::visitPre(DocInternal *)
   m_t << "<internal>";
 }
 
-void XmlDocVisitor::visitPost(DocInternal *) 
+void XmlDocVisitor::visitPost(DocInternal *)
 {
   if (m_hide) return;
-  m_t << "</internal>" << endl;
+  m_t << "</internal>\n";
 }
 
 void XmlDocVisitor::visitPre(DocHRef *href)
@@ -773,7 +942,7 @@ void XmlDocVisitor::visitPre(DocHRef *href)
   m_t << "<ulink url=\"" << convertToXML(href->url(), TRUE) << "\">";
 }
 
-void XmlDocVisitor::visitPost(DocHRef *) 
+void XmlDocVisitor::visitPost(DocHRef *)
 {
   if (m_hide) return;
   m_t << "</ulink>";
@@ -785,7 +954,7 @@ void XmlDocVisitor::visitPre(DocHtmlHeader *header)
   m_t << "<heading level=\"" << header->level() << "\">";
 }
 
-void XmlDocVisitor::visitPost(DocHtmlHeader *) 
+void XmlDocVisitor::visitPost(DocHtmlHeader *)
 {
   if (m_hide) return;
   m_t << "</heading>\n";
@@ -795,36 +964,34 @@ void XmlDocVisitor::visitPre(DocImage *img)
 {
   if (m_hide) return;
 
-  QCString baseName=img->name();
-  int i;
-  if ((i=baseName.findRev('/'))!=-1 || (i=baseName.findRev('\\'))!=-1)
+  QCString url = img->url();
+  QCString baseName;
+  if (url.isEmpty())
   {
-    baseName=baseName.right(baseName.length()-i-1);
+    baseName = img->relPath()+img->name();
   }
-  visitPreStart(m_t, "image", FALSE, this, img->children(), baseName, TRUE, img->type(), img->width(), img->height(), img ->isInlineImage());
+  else
+  {
+    baseName = correctURL(url,img->relPath());
+  }
+  HtmlAttribList attribs = img->attribs();
+  auto it = std::find_if(attribs.begin(),attribs.end(),
+                         [](const auto &att) { return att.name=="alt"; });
+  QCString altValue = it!=attribs.end() ? it->value : "";
+  visitPreStart(m_t, "image", FALSE, this, img->children(), baseName, TRUE,
+                img->type(), img->width(), img->height(), QCString(),
+                altValue, img->isInlineImage());
 
   // copy the image to the output dir
   FileDef *fd;
   bool ambig;
-  if ((fd=findFileDef(Doxygen::imageNameDict,img->name(),ambig)))
+  if (url.isEmpty() && (fd=findFileDef(Doxygen::imageNameLinkedMap,img->name(),ambig)))
   {
-    QFile inImage(fd->absFilePath());
-    QFile outImage(Config_getString(XML_OUTPUT)+"/"+baseName.data());
-    if (inImage.open(IO_ReadOnly))
-    {
-      if (outImage.open(IO_WriteOnly))
-      {
-        char *buffer = new char[inImage.size()];
-        inImage.readBlock(buffer,inImage.size());
-        outImage.writeBlock(buffer,inImage.size());
-        outImage.flush();
-        delete[] buffer;
-      }
-    }
+    copyFile(fd->absFilePath(),Config_getString(XML_OUTPUT)+"/"+baseName);
   }
 }
 
-void XmlDocVisitor::visitPost(DocImage *) 
+void XmlDocVisitor::visitPost(DocImage *)
 {
   if (m_hide) return;
   visitPostEnd(m_t, "image");
@@ -833,10 +1000,11 @@ void XmlDocVisitor::visitPost(DocImage *)
 void XmlDocVisitor::visitPre(DocDotFile *df)
 {
   if (m_hide) return;
-  visitPreStart(m_t, "dotfile", FALSE, this, df->children(), df->file(), FALSE, DocImage::Html, df->width(), df->height());
+  copyFile(df->file(),Config_getString(XML_OUTPUT)+"/"+stripPath(df->file()));
+  visitPreStart(m_t, "dotfile", FALSE, this, df->children(), stripPath(df->file()), FALSE, DocImage::Html, df->width(), df->height());
 }
 
-void XmlDocVisitor::visitPost(DocDotFile *) 
+void XmlDocVisitor::visitPost(DocDotFile *)
 {
   if (m_hide) return;
   visitPostEnd(m_t, "dotfile");
@@ -845,10 +1013,11 @@ void XmlDocVisitor::visitPost(DocDotFile *)
 void XmlDocVisitor::visitPre(DocMscFile *df)
 {
   if (m_hide) return;
-  visitPreStart(m_t, "mscfile", FALSE, this, df->children(), df->file(), FALSE, DocImage::Html, df->width(), df->height());
+  copyFile(df->file(),Config_getString(XML_OUTPUT)+"/"+stripPath(df->file()));
+  visitPreStart(m_t, "mscfile", FALSE, this, df->children(), stripPath(df->file()), FALSE, DocImage::Html, df->width(), df->height());
 }
 
-void XmlDocVisitor::visitPost(DocMscFile *) 
+void XmlDocVisitor::visitPost(DocMscFile *)
 {
   if (m_hide) return;
   visitPostEnd(m_t, "mscfile");
@@ -857,7 +1026,8 @@ void XmlDocVisitor::visitPost(DocMscFile *)
 void XmlDocVisitor::visitPre(DocDiaFile *df)
 {
   if (m_hide) return;
-  visitPreStart(m_t, "diafile", FALSE, this, df->children(), df->file(), FALSE, DocImage::Html, df->width(), df->height());
+  copyFile(df->file(),Config_getString(XML_OUTPUT)+"/"+stripPath(df->file()));
+  visitPreStart(m_t, "diafile", FALSE, this, df->children(), stripPath(df->file()), FALSE, DocImage::Html, df->width(), df->height());
 }
 
 void XmlDocVisitor::visitPost(DocDiaFile *)
@@ -872,7 +1042,7 @@ void XmlDocVisitor::visitPre(DocLink *lnk)
   startLink(lnk->ref(),lnk->file(),lnk->anchor());
 }
 
-void XmlDocVisitor::visitPost(DocLink *) 
+void XmlDocVisitor::visitPost(DocLink *)
 {
   if (m_hide) return;
   endLink();
@@ -881,14 +1051,14 @@ void XmlDocVisitor::visitPost(DocLink *)
 void XmlDocVisitor::visitPre(DocRef *ref)
 {
   if (m_hide) return;
-  if (!ref->file().isEmpty()) 
+  if (!ref->file().isEmpty())
   {
     startLink(ref->ref(),ref->file(),ref->isSubPage() ? QCString() : ref->anchor());
   }
   if (!ref->hasLinkText()) filter(ref->targetTitle());
 }
 
-void XmlDocVisitor::visitPost(DocRef *ref) 
+void XmlDocVisitor::visitPost(DocRef *ref)
 {
   if (m_hide) return;
   if (!ref->file().isEmpty()) endLink();
@@ -898,25 +1068,28 @@ void XmlDocVisitor::visitPost(DocRef *ref)
 void XmlDocVisitor::visitPre(DocSecRefItem *ref)
 {
   if (m_hide) return;
-  m_t << "<tocitem id=\"" << ref->file() << "_1" << ref->anchor() << "\">";
+  m_t << "<tocitem id=\"" << ref->file();
+  if (!ref->anchor().isEmpty()) m_t << "_1" << ref->anchor();
+  m_t << "\"";
+  m_t << ">";
 }
 
-void XmlDocVisitor::visitPost(DocSecRefItem *) 
+void XmlDocVisitor::visitPost(DocSecRefItem *)
 {
   if (m_hide) return;
-  m_t << "</tocitem>" << endl;
+  m_t << "</tocitem>\n";
 }
 
 void XmlDocVisitor::visitPre(DocSecRefList *)
 {
   if (m_hide) return;
-  m_t << "<toclist>" << endl;
+  m_t << "<toclist>\n";
 }
 
-void XmlDocVisitor::visitPost(DocSecRefList *) 
+void XmlDocVisitor::visitPost(DocSecRefList *)
 {
   if (m_hide) return;
-  m_t << "</toclist>" << endl;
+  m_t << "</toclist>\n";
 }
 
 //void XmlDocVisitor::visitPre(DocLanguage *l)
@@ -925,10 +1098,10 @@ void XmlDocVisitor::visitPost(DocSecRefList *)
 //  m_t << "<language langid=\"" << l->id() << "\">";
 //}
 //
-//void XmlDocVisitor::visitPost(DocLanguage *) 
+//void XmlDocVisitor::visitPost(DocLanguage *)
 //{
 //  if (m_hide) return;
-//  m_t << "</language>" << endl;
+//  m_t << "</language>\n";
 //}
 
 void XmlDocVisitor::visitPre(DocParamSect *s)
@@ -937,13 +1110,13 @@ void XmlDocVisitor::visitPre(DocParamSect *s)
   m_t << "<parameterlist kind=\"";
   switch(s->type())
   {
-    case DocParamSect::Param: 
+    case DocParamSect::Param:
       m_t << "param"; break;
-    case DocParamSect::RetVal: 
+    case DocParamSect::RetVal:
       m_t << "retval"; break;
-    case DocParamSect::Exception: 
+    case DocParamSect::Exception:
       m_t << "exception"; break;
-    case DocParamSect::TemplateParam: 
+    case DocParamSect::TemplateParam:
       m_t << "templateparam"; break;
     default:
       ASSERT(0);
@@ -954,37 +1127,39 @@ void XmlDocVisitor::visitPre(DocParamSect *s)
 void XmlDocVisitor::visitPost(DocParamSect *)
 {
   if (m_hide) return;
-  m_t << "</parameterlist>" << endl;
+  m_t << "</parameterlist>\n";
 }
 
 void XmlDocVisitor::visitPre(DocParamList *pl)
 {
   if (m_hide) return;
-  m_t << "<parameteritem>" << endl;
-  m_t << "<parameternamelist>" << endl;
-  //QStrListIterator li(pl->parameters());
-  //const char *s;
-  QListIterator<DocNode> li(pl->parameters());
-  DocNode *param;
-  for (li.toFirst();(param=li.current());++li)
+  m_t << "<parameteritem>\n";
+  m_t << "<parameternamelist>\n";
+  for (const auto &param : pl->parameters())
   {
-    if (pl->paramTypes().count()>0)
+    if (!pl->paramTypes().empty())
     {
-      QListIterator<DocNode> li(pl->paramTypes());
-      DocNode *type;
-      for (li.toFirst();(type=li.current());++li)
+      m_t << "<parametertype>";
+      for (const auto &type : pl->paramTypes())
       {
-        m_t << "<parametertype>";
-        if (type->kind()==DocNode::Kind_Word)
+        DocWord       *word       = dynamic_cast<DocWord*      >(type.get());
+        DocLinkedWord *linkedWord = dynamic_cast<DocLinkedWord*>(type.get());
+        DocSeparator  *sep        = dynamic_cast<DocSeparator* >(type.get());
+        if (word)
         {
-          visit((DocWord*)type); 
+          visit(word);
         }
-        else if (type->kind()==DocNode::Kind_LinkedWord)
+        else if (linkedWord)
         {
-          visit((DocLinkedWord*)type); 
+          visit(linkedWord);
         }
-        m_t << "</parametertype>" << endl;
+        else if (sep)
+        {
+          m_t << "</parametertype>\n";
+          m_t << "<parametertype>";
+        }
       }
+      m_t << "</parametertype>\n";
     }
     m_t << "<parametername";
     if (pl->direction()!=DocParamSect::Unspecified)
@@ -1005,25 +1180,27 @@ void XmlDocVisitor::visitPre(DocParamList *pl)
       m_t << "\"";
     }
     m_t << ">";
-    if (param->kind()==DocNode::Kind_Word)
+    DocWord       *word       = dynamic_cast<DocWord*      >(param.get());
+    DocLinkedWord *linkedWord = dynamic_cast<DocLinkedWord*>(param.get());
+    if (word)
     {
-      visit((DocWord*)param); 
+      visit(word);
     }
-    else if (param->kind()==DocNode::Kind_LinkedWord)
+    else if (linkedWord)
     {
-      visit((DocLinkedWord*)param); 
+      visit(linkedWord);
     }
-    m_t << "</parametername>" << endl;
+    m_t << "</parametername>\n";
   }
-  m_t << "</parameternamelist>" << endl;
-  m_t << "<parameterdescription>" << endl;
+  m_t << "</parameternamelist>\n";
+  m_t << "<parameterdescription>\n";
 }
 
 void XmlDocVisitor::visitPost(DocParamList *)
 {
   if (m_hide) return;
-  m_t << "</parameterdescription>" << endl;
-  m_t << "</parameteritem>" << endl;
+  m_t << "</parameterdescription>\n";
+  m_t << "</parameteritem>\n";
 }
 
 void XmlDocVisitor::visitPre(DocXRefItem *x)
@@ -1050,26 +1227,14 @@ void XmlDocVisitor::visitPost(DocXRefItem *x)
 void XmlDocVisitor::visitPre(DocInternalRef *ref)
 {
   if (m_hide) return;
-  startLink(0,ref->file(),ref->anchor());
+  startLink(QCString(),ref->file(),ref->anchor());
 }
 
-void XmlDocVisitor::visitPost(DocInternalRef *) 
+void XmlDocVisitor::visitPost(DocInternalRef *)
 {
   if (m_hide) return;
   endLink();
   m_t << " ";
-}
-
-void XmlDocVisitor::visitPre(DocCopy *c)
-{
-  if (m_hide) return;
-  m_t << "<copydoc link=\"" << convertToXML(c->link()) << "\">";
-}
-
-void XmlDocVisitor::visitPost(DocCopy *)
-{
-  if (m_hide) return;
-  m_t << "</copydoc>" << endl;
 }
 
 void XmlDocVisitor::visitPre(DocText *)
@@ -1113,14 +1278,14 @@ void XmlDocVisitor::visitPost(DocParBlock *)
 }
 
 
-void XmlDocVisitor::filter(const char *str)
-{ 
+void XmlDocVisitor::filter(const QCString &str)
+{
   m_t << convertToXML(str);
 }
 
 void XmlDocVisitor::startLink(const QCString &ref,const QCString &file,const QCString &anchor)
 {
-  //printf("XmlDocVisitor: file=%s anchor=%s\n",file.data(),anchor.data());
+  //printf("XmlDocVisitor: file=%s anchor=%s\n",qPrint(file),qPrint(anchor));
   m_t << "<ref refid=\"" << file;
   if (!anchor.isEmpty()) m_t << "_1" << anchor;
   m_t << "\" kindref=\"";
@@ -1133,18 +1298,5 @@ void XmlDocVisitor::startLink(const QCString &ref,const QCString &file,const QCS
 void XmlDocVisitor::endLink()
 {
   m_t << "</ref>";
-}
-
-void XmlDocVisitor::pushEnabled()
-{
-  m_enabled.push(new bool(m_hide));
-}
-
-void XmlDocVisitor::popEnabled()
-{
-  bool *v=m_enabled.pop();
-  ASSERT(v!=0);
-  m_hide = *v;
-  delete v;
 }
 

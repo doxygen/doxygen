@@ -1,12 +1,12 @@
 /******************************************************************************
  *
- * 
+ *
  *
  * Copyright (C) 1997-2015 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -19,8 +19,8 @@
 Source files that are used as input to doxygen can be parsed by doxygen's
 built-in C-preprocessor.
 
-By default doxygen does only partial preprocessing. That is, it 
-evaluates conditional compilation statements (like \c \#if) and 
+By default doxygen does only partial preprocessing. That is, it
+evaluates conditional compilation statements (like \c \#if) and
 evaluates macro definitions, but it does not perform macro expansion.
 
 So if you have the following code fragment
@@ -44,8 +44,8 @@ Then by default doxygen will feed the following to its parser:
   static CONST_STRING version = "2.xx";
 \endverbatim
 
-You can disable all preprocessing by setting 
-\ref cfg_enable_preprocessing "ENABLE_PREPROCESSING" to \c 
+You can disable all preprocessing by setting
+\ref cfg_enable_preprocessing "ENABLE_PREPROCESSING" to \c
 NO in the configuration file. In the case above doxygen will then read
 both statements, i.e.:
 
@@ -55,7 +55,7 @@ both statements, i.e.:
 \endverbatim
 
 In case you want to expand the \c CONST_STRING macro, you should set the
-\ref cfg_macro_expansion "MACRO_EXPANSION" tag in the configuration file 
+\ref cfg_macro_expansion "MACRO_EXPANSION" tag in the configuration file
 to \c YES. Then the result after preprocessing becomes:
 
 \verbatim
@@ -65,18 +65,18 @@ to \c YES. Then the result after preprocessing becomes:
   static const char * version = "2.xx";
 \endverbatim
 
-Note that doxygen will now expand \e all macro definitions 
-(recursively if needed). This is often too much. Therefore, doxygen also 
-allows you to expand only those defines that you explicitly 
-specify. For this you have to set the 
+Note that doxygen will now expand \e all macro definitions
+(recursively if needed). This is often too much. Therefore, doxygen also
+allows you to expand only those defines that you explicitly
+specify. For this you have to set the
 \ref cfg_expand_only_predef "EXPAND_ONLY_PREDEF" tag to \c YES
-and specify the macro definitions after 
-the \ref cfg_predefined "PREDEFINED" or 
-\ref cfg_expand_as_defined "EXPAND_AS_DEFINED" tag.  
+and specify the macro definitions after
+the \ref cfg_predefined "PREDEFINED" or
+\ref cfg_expand_as_defined "EXPAND_AS_DEFINED" tag.
 
 A typically example where some help from the preprocessor is needed is
 when dealing with the language extension from Microsoft: \c __declspec. The same goes
-for GNU's \c \__attribute__ extension. Here is an example function.
+for GNU's \c __attribute__ extension. Here is an example function.
 
 \verbatim
 extern "C" void __declspec(dllexport) ErrorMsg( String aMessage,...);
@@ -86,7 +86,7 @@ When nothing is done, doxygen will be confused and see \c __declspec as
 some sort of function. To help doxygen one typically uses the following
 preprocessor settings:
 
-\verbatim  
+\verbatim
 ENABLE_PREPROCESSING   = YES
 MACRO_EXPANSION        = YES
 EXPAND_ONLY_PREDEF     = YES
@@ -96,16 +96,16 @@ PREDEFINED             = __declspec(x)=
 This will make sure the \c __declspec(dllexport) is removed before doxygen
 parses the source code.
 
-Similar settings can be used for removing \c \__attribute__ expressions from the input:
+Similar settings can be used for removing \c __attribute__ expressions from the input:
 
-\verbatim  
+\verbatim
 ENABLE_PREPROCESSING   = YES
 MACRO_EXPANSION        = YES
 EXPAND_ONLY_PREDEF     = YES
 PREDEFINED             = __attribute__(x)=
 \endverbatim
 
-For a more complex example, suppose you have the following obfuscated 
+For a more complex example, suppose you have the following obfuscated
 code fragment of an abstract base class called \c IUnknown:
 
 \verbatim
@@ -126,8 +126,8 @@ DECLARE_INTERFACE(IUnknown)
 };
 \endverbatim
 
-without macro expansion doxygen will get confused, but we may not want to 
-expand the \c REFIID macro, because it is documented and the user that reads 
+without macro expansion doxygen will get confused, but we may not want to
+expand the \c REFIID macro, because it is documented and the user that reads
 the documentation should use it when implementing the interface.
 
 By setting the following in the configuration file:
@@ -158,20 +158,20 @@ class  IUnknown
 };
 \endverbatim
 
-Note that the \ref cfg_predefined "PREDEFINED" tag accepts function 
+Note that the \ref cfg_predefined "PREDEFINED" tag accepts function
 like macro definitions
-(like \c DECLARE_INTERFACE ), normal macro 
-substitutions (like \c PURE and \c THIS) and plain 
+(like \c DECLARE_INTERFACE ), normal macro
+substitutions (like \c PURE and \c THIS) and plain
 defines (like \c __cplusplus).
 
-Note also that preprocessor definitions that are normally defined 
-automatically by the preprocessor (like \c __cplusplus), have to be defined 
+Note also that preprocessor definitions that are normally defined
+automatically by the preprocessor (like \c __cplusplus), have to be defined
 by hand with doxygen's parser (this is done because these defines
 are often platform/compiler specific).
 
-In some cases you may want to substitute a macro name or function by 
+In some cases you may want to substitute a macro name or function by
 something else without exposing the result to further macro substitution.
-You can do this but using the <code>:=</code> operator instead of 
+You can do this but using the <code>:=</code> operator instead of
 <code>=</code>
 
 As an example suppose we have the following piece of code:
@@ -188,8 +188,8 @@ for class \c QList is to define:
 PREDEFINED = QListT:=QList
 \endverbatim
 
-Here is an example provided by Valter Minute and Reyes Ponce that helps 
-doxygen to wade through the boilerplate code in Microsoft's ATL \& MFC 
+Here is an example provided by Valter Minute and Reyes Ponce that helps
+doxygen to wade through the boilerplate code in Microsoft's ATL \& MFC
 libraries:
 
 \verbatim
@@ -251,7 +251,7 @@ PREDEFINED           = "DECLARE_INTERFACE(name)=class name" \
 \endverbatim
 
 As you can see doxygen's preprocessor is quite powerful, but if you want
-even more flexibility you can always write an input filter and specify it 
+even more flexibility you can always write an input filter and specify it
 after the \ref cfg_input_filter "INPUT_FILTER" tag.
 
 If you are unsure what the effect of doxygen's preprocessing will be
@@ -259,10 +259,18 @@ you can run doxygen as follows:
 \verbatim
   doxygen -d Preprocessor
 \endverbatim
+or when the line numbers are not wanted:
+\verbatim
+  doxygen -d Preprocessor -d NoLineno
+\endverbatim
 This will instruct doxygen to dump the input sources to standard output after
-preprocessing has been done (Hint: set <code>QUIET = YES</code> and 
-<code>WARNINGS = NO</code> in the configuration file to disable any other 
+preprocessing has been done (Hint: set <code>QUIET = YES</code> and
+<code>WARNINGS = NO</code> in the configuration file to disable any other
 output).
+
+Note preprocessing is not done for all languages. Preprocessing is enabled for files
+that use the "C" scanner (with the exception of 'java', 'd' and 'php'), Fortran files
+(only in case the extension contains at least one upper case character) and vhdl files.
 
 \htmlonly
 Go to the <a href="autolink.html">next</a> section or return to the

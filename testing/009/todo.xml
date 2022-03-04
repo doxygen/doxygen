@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
   <compounddef id="todo" kind="page">
     <compoundname>todo</compoundname>
     <title>Todo List</title>
@@ -9,7 +9,7 @@
       <para>
         <variablelist>
           <varlistentry>
-            <term>Class <ref refid="class_todo" kindref="compound">Todo</ref></term>
+            <term>Class <ref refid="class_todo" kindref="compound">Todo</ref>  </term>
           </varlistentry>
           <listitem>
             <para><anchor id="todo_1_todo000001"/>This still needs to be done.  </para>
@@ -23,5 +23,6 @@
         </variablelist>
       </para>
     </detaileddescription>
+    <location file="todo"/>
   </compounddef>
 </doxygen>

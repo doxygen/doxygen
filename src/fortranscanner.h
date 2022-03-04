@@ -1,12 +1,12 @@
 /******************************************************************************
  *
- * 
+ *
  *
  * Copyright (C) 1997-2015 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -24,51 +24,35 @@
  *
  *  This is the Fortran language parser for doxygen.
  */
-class FortranLanguageScanner : public ParserInterface
+class FortranOutlineParser : public OutlineParserInterface
 {
   public:
-    FortranLanguageScanner(FortranFormat format=FortranFormat_Unknown) : m_format(format) { }
-    virtual ~FortranLanguageScanner() {}
-    void startTranslationUnit(const char *) {}
-    void finishTranslationUnit() {}
-    void parseInput(const char *fileName,
+    FortranOutlineParser(FortranFormat format=FortranFormat_Unknown);
+   ~FortranOutlineParser();
+    void parseInput(const QCString &fileName,
                     const char *fileBuf,
-                    Entry *root,
-                    bool sameTranslationUnit,
-                    QStrList &filesInSameTranslationUnit);
-    bool needsPreprocessing(const QCString &extension);
-    void parseCode(CodeOutputInterface &codeOutIntf,
-                   const char *scopeName,
-                   const QCString &input,
-                   SrcLangExt lang,
-                   bool isExampleBlock,
-                   const char *exampleName=0,
-                   FileDef *fileDef=0,
-                   int startLine=-1,
-                   int endLine=-1,
-                   bool inlineFragment=FALSE,
-                   MemberDef *memberDef=0,
-                   bool showLineNumbers=TRUE,
-                   Definition *searchCtx=0,
-                   bool collectXRefs=TRUE
-                  );
-    void resetCodeParserState();
-    void parsePrototype(const char *text);
+                    const std::shared_ptr<Entry> &root,
+                    ClangTUParser *clangParser);
+    bool needsPreprocessing(const QCString &extension) const;
+    void parsePrototype(const QCString &text);
 
   private:
-    FortranFormat m_format;
+    struct Private;
+    std::unique_ptr<Private> p;
 };
 
-class FortranLanguageScannerFree : public FortranLanguageScanner
+class FortranOutlineParserFree : public FortranOutlineParser
 {
   public:
-    FortranLanguageScannerFree() : FortranLanguageScanner(FortranFormat_Free) { }
+    FortranOutlineParserFree() : FortranOutlineParser(FortranFormat_Free) { }
 };
 
-class FortranLanguageScannerFixed : public FortranLanguageScanner
+class FortranOutlineParserFixed : public FortranOutlineParser
 {
   public:
-    FortranLanguageScannerFixed() : FortranLanguageScanner(FortranFormat_Fixed) { }
+    FortranOutlineParserFixed() : FortranOutlineParser(FortranFormat_Fixed) { }
 };
+
+const char* prepassFixedForm(const char* contents, int *hasContLine);
 
 #endif

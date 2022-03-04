@@ -18,26 +18,24 @@
 #ifndef ENTRY_H
 #define ENTRY_H
 
+#include <vector>
+#include <memory>
+#include <sstream>
+
 #include "types.h"
+#include "arguments.h"
+#include "reflist.h"
+#include "textstream.h"
 
-#include <qlist.h>
-#include <qgstring.h>
-
-struct SectionInfo;
-class QFile;
-class EntryNav;
+class SectionInfo;
 class FileDef;
-class FileStorage;
-class StorageIntf;
-class ArgumentList;
-struct ListItemInfo;
 
 /** This class stores information about an inheritance relation
  */
 struct BaseInfo
 {
   /*! Creates an object representing an inheritance relation */
-  BaseInfo(const char *n,Protection p,Specifier v) :
+  BaseInfo(const QCString &n,Protection p,Specifier v) :
     name(n),prot(p),virt(v) {}
   QCString   name; //!< the name of the base class
   Protection prot; //!< inheritance type
@@ -68,6 +66,7 @@ class Entry
     enum Sections {
       CLASS_SEC        = 0x00000001,
       NAMESPACE_SEC    = 0x00000010,
+      CONCEPT_SEC      = 0x00000020,
       COMPOUND_MASK    = CLASS_SEC,
       SCOPE_MASK       = COMPOUND_MASK | NAMESPACE_SEC,
 
@@ -81,6 +80,7 @@ class Entry
       CATEGORYDOC_SEC  = 0x00040000,
       SERVICEDOC_SEC   = 0x00080000,
       SINGLETONDOC_SEC = 0x00100000,
+      CONCEPTDOC_SEC   = 0x00200000,
       COMPOUNDDOC_MASK = CLASSDOC_SEC | STRUCTDOC_SEC | UNIONDOC_SEC |
                          INTERFACEDOC_SEC | EXCEPTIONDOC_SEC | PROTOCOLDOC_SEC |
                          CATEGORYDOC_SEC | SERVICEDOC_SEC | SINGLETONDOC_SEC,
@@ -138,6 +138,7 @@ class Entry
     static const uint64 Local           = (1ULL<<16); // for Slice types
 
     // member specifiers (add new items to the beginning)
+    static const uint64 EnumStruct      = (1ULL<<18);
     static const uint64 ConstExpr       = (1ULL<<19); // C++11 constexpr
     static const uint64 PrivateGettable     = (1ULL<<20); // C# private getter
     static const uint64 ProtectedGettable   = (1ULL<<21); // C# protected getter
@@ -187,7 +188,7 @@ class Entry
     enum GroupDocType
     {
       GROUPDOC_NORMAL,        //!< defgroup
-      GROUPDOC_ADD,           //!< addgroup
+      GROUPDOC_ADD,           //!< addtogroup
       GROUPDOC_WEAK           //!< weakgroup
     };                        //!< kind of group
 
@@ -195,50 +196,51 @@ class Entry
     Entry(const Entry &);
    ~Entry();
 
-    /*! Returns the static size of the Entry (so excluding any dynamic memory) */
-    int getSize();
-
-    void addSpecialListItem(const char *listName,int index);
-    void createNavigationIndex(EntryNav *rootNav,FileStorage *storage,FileDef *fd);
-
-    // while parsing a file these function can be used to navigate/build the tree
-    void setParent(Entry *parent) { m_parent = parent; }
-
     /*! Returns the parent for this Entry or 0 if this entry has no parent. */
     Entry *parent() const { return m_parent; }
 
     /*! Returns the list of children for this Entry
      *  @see addSubEntry() and removeSubEntry()
      */
-    const QList<Entry> *children() const { return m_sublist; }
+    const std::vector< std::shared_ptr<Entry> > &children() const { return m_sublist; }
 
-    /*! Adds entry \a e as a child to this entry */
-    void addSubEntry (Entry* e) ;
+    /*! @name add entry as a child and pass ownership.
+     *  @note This makes the entry passed invalid!
+     *  @{
+     */
+    void moveToSubEntryAndKeep(Entry* e);
+    void moveToSubEntryAndKeep(std::shared_ptr<Entry> e);
+    /*! @} */
+
+    /*! @name add entry as a child, pass ownership and reinitialize entry */
+    void moveToSubEntryAndRefresh(Entry* &e);
+    void moveToSubEntryAndRefresh(std::shared_ptr<Entry> &e);
+
+    /*! make a copy of \a e and add it as a child to this entry */
+    void copyToSubEntry (Entry* e);
+    void copyToSubEntry (const std::shared_ptr<Entry> &e);
 
     /*! Removes entry \a e from the list of children.
-     *  Returns a pointer to the entry or 0 if the entry was not a child.
-     *  Note the entry will not be deleted.
+     *  The entry will be deleted if found.
      */
-    Entry *removeSubEntry(Entry *e);
+    void removeSubEntry(const Entry *e);
 
     /*! Restore the state of this Entry to the default value it has
      *  at construction time.
      */
     void reset();
 
-    /*! Serialize this entry to a persistent storage stream. */
-    void marshall(StorageIntf *);
-
-    /*! Reinitialize this entry from a persistent storage stream. */
-    void unmarshall(StorageIntf *);
-
-  public:
+    void markAsProcessed() const { (const_cast<Entry*>(this))->section = Entry::EMPTY_SEC; }
+    void setFileDef(FileDef *fd);
+    FileDef *fileDef() const { return m_fileDef; }
 
     // identification
     int          section;     //!< entry type (see Sections);
     QCString	 type;        //!< member type
     QCString	 name;        //!< member name
-    TagInfo     *tagInfo;     //!< tag file info
+    bool         hasTagInfo;  //!< is tag info valid
+    TagInfo      tagInfoData; //!< tag file info data
+    const TagInfo *tagInfo() const { return hasTagInfo ? &tagInfoData : 0; }
 
     // content
     Protection protection;    //!< class protection
@@ -256,10 +258,10 @@ class Entry
     Specifier    virt;        //!< virtualness of the entry
     QCString     args;        //!< member argument string
     QCString     bitfields;   //!< member's bit fields
-    ArgumentList *argList;    //!< member arguments as a list
-    QList<ArgumentList> *tArgLists; //!< template argument declarations
-    QGString	 program;     //!< the program text
-    QGString     initializer; //!< initial value (for variables)
+    ArgumentList argList;     //!< member arguments as a list
+    ArgumentLists tArgLists;  //!< template argument declarations
+    TextStream   program;     //!< the program text
+    TextStream   initializer; //!< initial value (for variables)
     QCString     includeFile; //!< include file (2 arg of \\class, must be unique)
     QCString     includeName; //!< include name (3 arg of \\class)
     QCString     doc;         //!< documentation block (partly parsed)
@@ -277,17 +279,18 @@ class Entry
     QCString     write;       //!< property write accessor
     QCString     inside;      //!< name of the class in which documents are found
     QCString     exception;   //!< throw specification
-    ArgumentList *typeConstr; //!< where clause (C#) for type constraints
-    int          bodyLine;    //!< line number of the definition in the source
+    ArgumentList typeConstr;  //!< where clause (C#) for type constraints
+    int          bodyLine;    //!< line number of the body in the source
+    int          bodyColumn;  //!< column of the body in the source
     int          endBodyLine; //!< line number where the definition ends
     int          mGrpId;      //!< member group id
-    QList<BaseInfo> *extends; //!< list of base classes
-    QList<Grouping> *groups;  //!< list of groups this entry belongs to
-    QList<SectionInfo> *anchors; //!< list of anchors defined in this entry
+    std::vector<BaseInfo> extends; //!< list of base classes
+    std::vector<Grouping> groups;  //!< list of groups this entry belongs to
+    std::vector<const SectionInfo*> anchors; //!< list of anchors defined in this entry
     QCString	fileName;     //!< file this entry was extracted from
     int		startLine;    //!< start line of entry in the source
     int		startColumn;  //!< start column of entry in the source
-    QList<ListItemInfo> *sli; //!< special lists (test/todo/bug/deprecated/..) this entry is in
+    RefItemVector sli; //!< special lists (test/todo/bug/deprecated/..) this entry is in
     SrcLangExt  lang;         //!< programming language in which this entry was found
     bool        hidden;       //!< does this represent an entity that is hidden from the output
     bool        artificial;   //!< Artificially introduced item
@@ -295,9 +298,7 @@ class Entry
     QCString    id;           //!< libclang id
     LocalToc    localToc;
     QCString    metaData;     //!< Slice metadata
-
-
-    static int  num;          //!< counts the total number of entries
+    QCString    req;          //!< C++20 requires clause
 
     /// return the command name used to define GROUPDOC_SEC
     const char *groupDocCmd() const
@@ -305,7 +306,7 @@ class Entry
       switch( groupDocType )
       {
         case GROUPDOC_NORMAL: return "\\defgroup";
-        case GROUPDOC_ADD: return "\\addgroup";
+        case GROUPDOC_ADD: return "\\addtogroup";
         case GROUPDOC_WEAK: return "\\weakgroup";
         default: return "unknown group command";
       }
@@ -326,64 +327,12 @@ class Entry
     }
 
   private:
-    void createSubtreeIndex(EntryNav *nav,FileStorage *storage,FileDef *fd);
     Entry         *m_parent;    //!< parent node in the tree
-    QList<Entry>  *m_sublist;   //!< entries that are children of this one
+    std::vector< std::shared_ptr<Entry> > m_sublist;
     Entry &operator=(const Entry &);
+    FileDef       *m_fileDef;
 };
 
-/** Wrapper for a node in the Entry tree.
- *
- *  Allows navigating through the Entry tree and load and storing Entry
- *  objects persistently to disk.
- */
-class EntryNav
-{
-  public:
-    EntryNav(EntryNav *parent,Entry *e);
-   ~EntryNav();
-    void addChild(EntryNav *);
-    bool loadEntry(FileStorage *storage);
-    bool saveEntry(Entry *e,FileStorage *storage);
-    void setEntry(Entry *e);
-    void releaseEntry();
-    void changeSection(int section) { m_section = section; }
-    void setFileDef(FileDef *fd) { m_fileDef = fd; }
-
-    Entry *entry() const { return m_info; }
-    int section() const { return m_section; }
-    SrcLangExt lang() const { return m_lang; }
-    const QCString &type() const { return m_type; }
-    const QCString &name() const { return m_name; }
-    TagInfo *tagInfo() const { return m_tagInfo; }
-    const QList<EntryNav> *children() const { return m_subList; }
-    EntryNav *parent() const { return m_parent; }
-    FileDef *fileDef() const { return m_fileDef; }
-
-  private:
-
-    // navigation
-    EntryNav        *m_parent;    //!< parent node in the tree
-    QList<EntryNav> *m_subList;   //!< entries that are children of this one
-
-    // identification
-    int          m_section;     //!< entry type (see Sections);
-    QCString	 m_type;        //!< member type
-    QCString	 m_name;        //!< member name
-    TagInfo     *m_tagInfo;      //!< tag file info
-    FileDef     *m_fileDef;
-    SrcLangExt   m_lang;         //!< programming language in which this entry was found
-
-    Entry       *m_info;
-    int64        m_offset;
-    bool         m_noLoad;
-};
-
-
-typedef QList<Entry> EntryList;
-typedef QListIterator<Entry> EntryListIterator;
-
-typedef QList<EntryNav> EntryNavList;
-typedef QListIterator<EntryNav> EntryNavListIterator;
+typedef std::vector< std::shared_ptr<Entry> > EntryList;
 
 #endif

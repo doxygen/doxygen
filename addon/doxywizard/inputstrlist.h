@@ -1,19 +1,17 @@
 /******************************************************************************
  *
- * 
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2019 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
  */
 
-#ifndef _INPUTSTRLIST_H
-#define _INPUTSTRLIST_H
+#ifndef INPUTSTRLIST_H
+#define INPUTSTRLIST_H
 
 #include "input.h"
 
@@ -24,7 +22,6 @@ class QLabel;
 class QLineEdit;
 class QPushButton;
 class QListWidget;
-class QStringList;
 class QGridLayout;
 class QAction;
 
@@ -53,7 +50,8 @@ class InputStrList : public QObject, public Input
     void addDependency(Input *) { Q_ASSERT(false); }
     void setEnabled(bool);
     void updateDependencies() {}
-    void writeValue(QTextStream &t,QTextCodec *codec);
+    bool isDefault();
+    void writeValue(QTextStream &t,TextCodecAdapter *codec);
     void setTemplateDocs(const QString &docs) { m_tdocs = docs; }
     bool isEmpty();
 
@@ -65,9 +63,9 @@ class InputStrList : public QObject, public Input
     void showHelp(Input *);
 
   private slots:
-    void addString(); 
-    void delString(); 
-    void updateString(); 
+    void addString();
+    void delString();
+    void updateString();
     void selectText(const QString &s);
     void browseFiles();
     void browseDir();

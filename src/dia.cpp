@@ -1,12 +1,10 @@
 /******************************************************************************
  *
- * 
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2021 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -20,24 +18,25 @@
 #include "config.h"
 #include "message.h"
 #include "util.h"
+#include "dir.h"
 
-#include <qdir.h>
 
 static const int maxCmdLine = 40960;
 
-void writeDiaGraphFromFile(const char *inFile,const char *outDir,
-                           const char *outFile,DiaOutputFormat format)
+void writeDiaGraphFromFile(const QCString &inFile,const QCString &outDir,
+                           const QCString &outFile,DiaOutputFormat format,
+                           const QCString &srcFile,int srcLine)
 {
   QCString absOutFile = outDir;
-  absOutFile+=portable_pathSeparator();
+  absOutFile+=Portable::pathSeparator();
   absOutFile+=outFile;
 
   // chdir to the output dir, so dot can find the font file.
-  QCString oldDir = QDir::currentDirPath().utf8();
+  std::string oldDir = Dir::currentDirPath();
   // go to the html output directory (i.e. path)
-  QDir::setCurrent(outDir);
-  //printf("Going to dir %s\n",QDir::currentDirPath().data());
-  QCString diaExe = Config_getString(DIA_PATH)+"dia"+portable_commandExtension();
+  Dir::setCurrent(outDir.str());
+  //printf("Going to dir %s\n",Dir::currentDirPath().c_str());
+  QCString diaExe = Config_getString(DIA_PATH)+"dia"+Portable::commandExtension();
   QCString diaArgs;
   QCString extension;
   diaArgs+="-n ";
@@ -61,28 +60,30 @@ void writeDiaGraphFromFile(const char *inFile,const char *outDir,
   diaArgs+="\"";
 
   int exitCode;
-  //printf("*** running: %s %s outDir:%s %s\n",diaExe.data(),diaArgs.data(),outDir,outFile);
-  portable_sysTimerStart();
-  if ((exitCode=portable_system(diaExe,diaArgs,FALSE))!=0)
+  //printf("*** running: %s %s outDir:%s %s\n",qPrint(diaExe),qPrint(diaArgs),outDir,outFile);
+  Portable::sysTimerStart();
+  if ((exitCode=Portable::system(diaExe,diaArgs,FALSE))!=0)
   {
-    portable_sysTimerStop();
+    err_full(srcFile,srcLine,"Problems running %s. Check your installation or look typos in you dia file %s\n",
+        qPrint(diaExe),qPrint(inFile));
+    Portable::sysTimerStop();
     goto error;
   }
-  portable_sysTimerStop();
+  Portable::sysTimerStop();
   if ( (format==DIA_EPS) && (Config_getBool(USE_PDFLATEX)) )
   {
     QCString epstopdfArgs(maxCmdLine);
     epstopdfArgs.sprintf("\"%s.eps\" --outfile=\"%s.pdf\"",
-                         outFile,outFile);
-    portable_sysTimerStart();
-    if (portable_system("epstopdf",epstopdfArgs)!=0)
+                         qPrint(outFile),qPrint(outFile));
+    Portable::sysTimerStart();
+    if (Portable::system("epstopdf",epstopdfArgs)!=0)
     {
       err("Problems running epstopdf. Check your TeX installation!\n");
     }
-    portable_sysTimerStop();
+    Portable::sysTimerStop();
   }
 
 error:
-  QDir::setCurrent(oldDir);
+  Dir::setCurrent(oldDir);
 }
 

@@ -13,7 +13,6 @@
 class TranslatorAdapterBase : public Translator
 {
   protected:
-    virtual ~TranslatorAdapterBase() {}
     TranslatorEnglish english;
 
     /*! An auxiliary inline method used by the updateNeededMessage()
@@ -41,7 +40,45 @@ class TranslatorAdapterBase : public Translator
 
 };
 
-class TranslatorAdapter_1_8_15 : public TranslatorAdapterBase
+class TranslatorAdapter_1_9_2 : public TranslatorAdapterBase
+{
+  public:
+    virtual QCString updateNeededMessage()
+    { return createUpdateNeededMessage(idLanguage(),"release 1.9.2"); }
+
+    virtual QCString trConcept(bool first_capital,bool singular)
+    { return english.trConcept(first_capital,singular); }
+
+    virtual QCString trConceptReference(const QCString &conceptName)
+    { return english.trConceptReference(conceptName); }
+
+    virtual QCString trConceptList()
+    { return english.trConceptList(); }
+
+    virtual QCString trConceptIndex()
+    { return english.trConceptIndex(); }
+
+    virtual QCString trConceptDocumentation()
+    { return english.trConceptDocumentation(); }
+
+    virtual QCString trConceptListDescription(bool extractAll)
+    { return english.trConceptListDescription(extractAll); }
+
+    virtual QCString trConceptDefinition()
+    { return english.trConceptDefinition(); }
+};
+
+class TranslatorAdapter_1_8_19 : public TranslatorAdapter_1_9_2
+{
+  public:
+    virtual QCString updateNeededMessage()
+    { return createUpdateNeededMessage(idLanguage(),"release 1.8.19"); }
+
+    virtual QCString trDesignUnitDocumentation()
+    { return english.trDesignUnitDocumentation(); }
+};
+
+class TranslatorAdapter_1_8_15 : public TranslatorAdapter_1_8_19
 {
   public:
     virtual QCString updateNeededMessage()
@@ -71,7 +108,7 @@ class TranslatorAdapter_1_8_15 : public TranslatorAdapterBase
     virtual QCString trVhdlType(uint64 type,bool single)
     { return english.trVhdlType(type,single); }
 
-    virtual QCString trCustomReference(const char *name)
+    virtual QCString trCustomReference(const QCString &name)
     { return english.trCustomReference(name); }
 
     virtual QCString trConstants()
@@ -146,7 +183,7 @@ class TranslatorAdapter_1_8_15 : public TranslatorAdapterBase
     virtual QCString trExceptionDocumentation()
     { return english.trExceptionDocumentation(); }
 
-    virtual QCString trCompoundReferenceSlice(const char *clName, ClassDef::CompoundType compType, bool isLocal)
+    virtual QCString trCompoundReferenceSlice(const QCString &clName, ClassDef::CompoundType compType, bool isLocal)
     { return english.trCompoundReferenceSlice(clName,compType,isLocal); }
 
     virtual QCString trOperations()
@@ -177,13 +214,13 @@ class TranslatorAdapter_1_8_4 : public TranslatorAdapter_1_8_15
     virtual QCString trConstantGroups()
     { return english.trConstantGroups(); }
 
-    virtual QCString trConstantGroupReference(const char *namespaceName)
+    virtual QCString trConstantGroupReference(const QCString &namespaceName)
     { return english.trConstantGroupReference(namespaceName); }
 
-    virtual QCString trServiceReference(const char *sName)
+    virtual QCString trServiceReference(const QCString &sName)
     { return english.trServiceReference(sName); }
 
-    virtual QCString trSingletonReference(const char *sName)
+    virtual QCString trSingletonReference(const QCString &sName)
     { return english.trSingletonReference(sName); }
 
     virtual QCString trServiceGeneratedFromFiles(bool single)
@@ -216,9 +253,6 @@ class TranslatorAdapter_1_8_2 : public TranslatorAdapter_1_8_4
 
     virtual QCString trMethodDocumentation()
     { return english.trMethodDocumentation(); }
-
-    virtual QCString trDesignOverview()
-    { return english.trDesignOverview(); }
 };
 
 
@@ -243,10 +277,10 @@ class TranslatorAdapter_1_8_0 : public TranslatorAdapter_1_8_2
     virtual QCString trEnumGeneratedFromFiles(bool single)
     { return english.trEnumGeneratedFromFiles(single); }
 
-    virtual QCString trEnumReference(const char *name)
+    virtual QCString trEnumReference(const QCString &name)
     { return english.trEnumReference(name); }
 
-    virtual QCString trInheritedFrom(const char *members,const char *what)
+    virtual QCString trInheritedFrom(const QCString &members,const QCString &what)
     { return english.trInheritedFrom(members,what); }
 
     virtual QCString trAdditionalInheritedMembers()
@@ -269,22 +303,12 @@ class TranslatorAdapter_1_7_5 : public TranslatorAdapter_1_8_0
     virtual QCString trCopyright()
     { return english.trCopyright(); }
 
-    virtual QCString trDirDepGraph(const char *name)
+    virtual QCString trDirDepGraph(const QCString &name)
     { return english.trDirDepGraph(name); }
-};
 
-/** Adapter class for languages that only contain translations up to
- *  version 1.6.3.
- */
-class TranslatorAdapter_1_6_3 : public TranslatorAdapter_1_7_5
-{
-  public:
-    virtual QCString updateNeededMessage()
-    { return createUpdateNeededMessage(idLanguage(),"release 1.6.3"); }
-
-    virtual QCString trFileIn(const char *name)
+    virtual QCString trFileIn(const QCString &name)
     { return english.trFileIn(name); }
-    virtual QCString trIncludesFileIn(const char *name)
+    virtual QCString trIncludesFileIn(const QCString &name)
     { return english.trIncludesFileIn(name); }
     virtual QCString trDateTime(int year,int month,int day,int dayOfWeek,
                                 int hour,int minutes,int seconds,
@@ -295,13 +319,13 @@ class TranslatorAdapter_1_6_3 : public TranslatorAdapter_1_7_5
 /** Adapter class for languages that only contain translations up to
  *  version 1.6.0.
  */
-class TranslatorAdapter_1_6_0 : public TranslatorAdapter_1_6_3
+class TranslatorAdapter_1_6_0 : public TranslatorAdapter_1_7_5
 {
   public:
     virtual QCString updateNeededMessage()
     { return createUpdateNeededMessage(idLanguage(),"release 1.6.0"); }
 
-    virtual QCString trDirRelation(const char *name)
+    virtual QCString trDirRelation(const QCString &name)
     { return english.trDirRelation(name); }
 
     virtual QCString trLoading()
@@ -315,16 +339,6 @@ class TranslatorAdapter_1_6_0 : public TranslatorAdapter_1_6_3
 
     virtual QCString trNoMatches()
     { return english.trNoMatches(); }
-};
-
-/** Adapter class for languages that only contain translations up to
- *  version 1.5.4
- */
-class TranslatorAdapter_1_5_4 : public TranslatorAdapter_1_6_0
-{
-  public:
-    virtual QCString updateNeededMessage()
-    { return createUpdateNeededMessage(idLanguage(),"release 1.5.4"); }
 
     virtual QCString trMemberFunctionDocumentationFortran()
     { return english.trMemberFunctionDocumentationFortran(); }
@@ -362,12 +376,12 @@ class TranslatorAdapter_1_5_4 : public TranslatorAdapter_1_6_0
     virtual QCString trModulesListDescription(bool extractAll)
     { return english.trModulesListDescription(extractAll); }
 
-    virtual QCString trCompoundReferenceFortran(const char *clName,
+    virtual QCString trCompoundReferenceFortran(const QCString &clName,
                                  ClassDef::CompoundType compType,
                                  bool isTemplate)
     { return english.trCompoundReferenceFortran(clName,compType,isTemplate); }
 
-    virtual QCString trModuleReference(const char *namespaceName)
+    virtual QCString trModuleReference(const QCString &namespaceName)
     { return english.trModuleReference(namespaceName); }
 
     virtual QCString trModulesMembers()
@@ -399,7 +413,7 @@ class TranslatorAdapter_1_5_4 : public TranslatorAdapter_1_6_0
 /** Adapter class for languages that only contain translations up to
  *  version 1.4.6
  */
-class TranslatorAdapter_1_4_6 : public TranslatorAdapter_1_5_4
+class TranslatorAdapter_1_4_6 : public TranslatorAdapter_1_6_0
 {
   public:
     virtual QCString updateNeededMessage()

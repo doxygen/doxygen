@@ -1,13 +1,10 @@
 /******************************************************************************
  *
- * 
- *
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2021 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -16,18 +13,20 @@
  *
  */
 
-#ifndef _CONSTEXP_H
-#define _CONSTEXP_H
+#ifndef CONSTEXP_H
+#define CONSTEXP_H
 
-#include "cppvalue.h"
-#include <qcstring.h>
+#include <string>
 
-extern bool parseconstexp(const char *fileName,int line,const QCString &s);
-extern int constexpYYparse();
-extern int constexpYYdebug;
-extern QCString g_strToken;
-extern CPPValue g_resultValue;
-extern QCString g_constExpFileName;
-extern int      g_constExpLineNr;
+class ConstExpressionParser
+{
+  public:
+    ConstExpressionParser();
+   ~ConstExpressionParser();
+    bool parse(const char *fileName,int line,const std::string &expression);
+  private:
+    struct Private;
+    Private *p;
+};
 
 #endif

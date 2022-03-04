@@ -1,13 +1,13 @@
 /******************************************************************************
  *
- * 
+ *
  *
  *
  * Copyright (C) 1997-2015 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -16,14 +16,15 @@
  *
  */
 
-#ifndef _XMLDOCVISITOR_H
-#define _XMLDOCVISITOR_H
+#ifndef XMLDOCVISITOR_H
+#define XMLDOCVISITOR_H
 
+#include <iostream>
+
+#include "qcstring.h"
 #include "docvisitor.h"
-#include <qstack.h>
-#include <qcstring.h>
+#include "textstream.h"
 
-class FTextStream;
 class CodeOutputInterface;
 class QCString;
 
@@ -31,12 +32,12 @@ class QCString;
 class XmlDocVisitor : public DocVisitor
 {
   public:
-    XmlDocVisitor(FTextStream &t,CodeOutputInterface &ci);
-    
+    XmlDocVisitor(TextStream &t,CodeOutputInterface &ci,const QCString &langExt);
+
     //--------------------------------------
     // visitor functions for leaf nodes
     //--------------------------------------
-    
+
     void visit(DocWord *);
     void visit(DocLinkedWord *);
     void visit(DocWhiteSpace *);
@@ -58,7 +59,7 @@ class XmlDocVisitor : public DocVisitor
     //--------------------------------------
     // visitor functions for compound nodes
     //--------------------------------------
-    
+
     void visitPre(DocAutoList *);
     void visitPost(DocAutoList *);
     void visitPre(DocAutoListItem *);
@@ -130,8 +131,6 @@ class XmlDocVisitor : public DocVisitor
     void visitPost(DocXRefItem *);
     void visitPre(DocInternalRef *);
     void visitPost(DocInternalRef *);
-    void visitPre(DocCopy *);
-    void visitPost(DocCopy *);
     void visitPre(DocText *);
     void visitPost(DocText *);
     void visitPre(DocHtmlBlockQuote *);
@@ -144,26 +143,22 @@ class XmlDocVisitor : public DocVisitor
   private:
 
     //--------------------------------------
-    // helper functions 
+    // helper functions
     //--------------------------------------
-    
-    void filter(const char *str);
+
+    void filter(const QCString &str);
     void startLink(const QCString &ref,const QCString &file,
                    const QCString &anchor);
     void endLink();
-
-    void pushEnabled();
-    void popEnabled();
 
     //--------------------------------------
     // state variables
     //--------------------------------------
 
-    FTextStream &m_t;
+    TextStream &m_t;
     CodeOutputInterface &m_ci;
     bool m_insidePre;
     bool m_hide;
-    QStack<bool> m_enabled;
     QCString m_langExt;
 };
 

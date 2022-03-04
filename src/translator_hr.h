@@ -92,6 +92,12 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
     { return "croatian"; }
     QCString latexLanguageSupportCommand()
     { return "\\usepackage[croatian]{babel}\n"; }
+    QCString trISOLang()
+    { return "hr"; }
+    virtual QCString getLanguageString()
+    {
+      return "0x41A Croatian";
+    }
     QCString trRelatedFunctions()
     { return "Povezane funkcije"; }
     QCString trRelatedSubscript()
@@ -116,9 +122,9 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
     { return "Ovo je popis svih članova"; }
     QCString trIncludingInheritedMembers()
     { return ", uključujući naslijeđene članove."; }
-    QCString trGeneratedAutomatically(const char *s)
+    QCString trGeneratedAutomatically(const QCString &s)
     { QCString result="napravljeno automatski Doxygen-om";
-      if (s) result+=(QCString)" za "+s;
+      if (!s.isEmpty()) result+=" za "+s;
       result+=" iz programskog koda.";
       return result;
     }
@@ -232,30 +238,32 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
       }
       else
       {
-		return "Skupno kazalo ";
+	return "Skupno kazalo ";
       }
-	}
+    }
     QCString trFileIndex()
     { return "Kazalo datoteka"; }
     QCString trModuleDocumentation()
     { return "Dokumentacija modula"; }
     QCString trClassDocumentation()
     {
-		if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
-		{
-			return "Dokumentacija struktura podataka";
-		}
-		else
-		{
-			return "Dokumentacija klasa";
-		}
-	}
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+      {
+        return "Dokumentacija struktura podataka";
+      }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+        return trDesignUnitDocumentation();
+      }
+      else
+      {
+        return "Dokumentacija klasa";
+      }
+    }
     QCString trFileDocumentation()
     { return "Dokumentacija datoteka"; }
     QCString trExampleDocumentation()
     { return "Dokumentacija primjera"; }
-    QCString trPageDocumentation()
-    { return "Dokumentacija vezane stranice"; }
     QCString trReferenceManual()
     { return "Priručnik"; }
 
@@ -283,19 +291,17 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
     { return "Dokumentacija varijable"; }
     QCString trCompounds()
     { return "Strukture"; }
-    QCString trGeneratedAt(const char *date,const char *projName)
+    QCString trGeneratedAt(const QCString &date,const QCString &projName)
     {
-      QCString result=(QCString)"Napravljeno "+date;
-      if (projName) result+=(QCString)" projekt: "+projName;
+      QCString result="Napravljeno "+date;
+      if (!projName.isEmpty()) result+=" projekt: "+projName;
       result+=" generator: ";
       return result;
     }
-    QCString trClassDiagram(const char *clName)
+    QCString trClassDiagram(const QCString &clName)
     {
       return QCString("Dijagram klasa za ")+clName;
     }
-    QCString trForInternalUseOnly()
-    { return "Isključivo za internu uporabu."; }
     QCString trWarning()
     { return "Upozorenje"; }
     QCString trVersion()
@@ -340,7 +346,7 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
 // new since 0.49-990425
 //////////////////////////////////////////////////////////////////////////
 
-    QCString trCompoundReference(const char *clName,
+    QCString trCompoundReference(const QCString &clName,
                                     ClassDef::CompoundType compType,
                                     bool /*isTemplate*/)
       // used as the title of the HTML page of a class/struct/union
@@ -360,14 +366,14 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
       result += clName;
       return result;
     }
-    QCString trFileReference(const char *fileName)
+    QCString trFileReference(const QCString &fileName)
       // used as the title of the HTML page of a file
     {
       QCString result="Opis datoteke ";
           result+=fileName;
           return result;
     }
-    QCString trNamespaceReference(const char *namespaceName)
+    QCString trNamespaceReference(const QCString &namespaceName)
       // used as the title of the HTML page of a namespace
     {
       QCString result ="Opis imenika ";
@@ -557,14 +563,14 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
 //////////////////////////////////////////////////////////////////////////
 
     /*! this text is put before a collaboration diagram */
-    QCString trCollaborationDiagram(const char *clName)
+    QCString trCollaborationDiagram(const QCString &clName)
     {
-      return (QCString)"Kolaboracijski dijagram za "+clName+ ":";
+      return "Kolaboracijski dijagram za "+clName+ ":";
     }
     /*! this text is put before an include dependency graph */
-    QCString trInclDepGraph(const char *fName)
+    QCString trInclDepGraph(const QCString &fName)
     {
-      return (QCString)"Graf include međuovisnosti za "+fName+":";
+      return "Graf include međuovisnosti za "+fName+":";
     }
     /*! header that is put before the list of constructor/destructors. */
     QCString trConstructorDocumentation()
@@ -822,14 +828,9 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
       return "Klase";
     }
     /*! Used as the title of a Java package */
-    virtual QCString trPackage(const char *name)
+    virtual QCString trPackage(const QCString &name)
     {
-      return (QCString)"Paket "+name;
-    }
-    /*! Title of the package index page */
-    virtual QCString trPackageList()
-    {
-      return "Lista paketa";
+      return "Paket "+name;
     }
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
@@ -1183,16 +1184,10 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
     virtual QCString trDirectories()
     { return "Direktoriji"; }
 
-    /*! This returns a sentences that introduces the directory hierarchy.
-     *  and the fact that it is sorted alphabetically per level
-     */
-    virtual QCString trDirDescription()
-    { return "Stablo direktorija sortirano abecednim redom:"; }
-
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.
      */
-    virtual QCString trDirReference(const char *dirName)
+    virtual QCString trDirReference(const QCString &dirName)
     { QCString result= "Opis direktorija "; result += dirName; return result; }
 
     /*! This returns the word directory with or without starting capital
@@ -1318,11 +1313,11 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
     }
 
     /*! used as the title of the HTML page of a module/type (Fortran) */
-    virtual QCString trCompoundReferenceFortran(const char *clName,
+    virtual QCString trCompoundReferenceFortran(const QCString &clName,
       ClassDef::CompoundType compType,
       bool isTemplate)
     {
-      QCString result=(QCString)clName;
+      QCString result=clName;
       switch(compType)
       {
         case ClassDef::Class:      result+=" Modul"; break;
@@ -1339,7 +1334,7 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
       return result;
     }
     /*! used as the title of the HTML page of a module (Fortran) */
-    virtual QCString trModuleReference(const char *namespaceName)
+    virtual QCString trModuleReference(const QCString &namespaceName)
     {
       QCString result=namespaceName;
       result+=" - Sadržaj modula";
@@ -1390,7 +1385,7 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
       bool)
     { // here s is one of " Module", " Struct" or " Union"
       // single is true implies a single file
-      QCString result=(QCString)"Dokumentacija ovog ";
+      QCString result="Dokumentacija ovog ";
       switch(compType)
       {
         case ClassDef::Class:      result+="modula"; break;
@@ -1436,7 +1431,7 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
     //////////////////////////////////////////////////////////////////////////
 
     /*! directory relation for \a name */
-    virtual QCString trDirRelation(const char *name)
+    virtual QCString trDirRelation(const QCString &name)
     {
         return QCString("Relacije ") + QCString(name);
     }
@@ -1473,18 +1468,18 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
      *  table is shown. The heading for the first column mentions the
      *  source file that has a relation to another file.
      */
-    virtual QCString trFileIn(const char *name)
+    virtual QCString trFileIn(const QCString &name)
     {
-      return (QCString)"Datoteka u "+name;
+      return "Datoteka u "+name;
     }
 
     /*! when clicking a directory dependency label, a page with a
      *  table is shown. The heading for the second column mentions the
      *  destination file that is included.
      */
-    virtual QCString trIncludesFileIn(const char *name)
+    virtual QCString trIncludesFileIn(const QCString &name)
     {
-      return (QCString)"Uključuje datotake u "+name;
+      return "Uključuje datotake u "+name;
     }
 
     /** Compiles a date string.
@@ -1526,7 +1521,7 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
     { return "Copyright"; }
 
     /*! Header for the graph showing the directory dependencies */
-    virtual QCString trDirDepGraph(const char *name)
+    virtual QCString trDirDepGraph(const QCString &name)
     { return QCString("Direktoriji o kojima ovisi ")+name+":"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1554,11 +1549,11 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
     }
 
     /*! Header of a Java enum page (Java enums are represented as classes). */
-    virtual QCString trEnumReference(const char *name)
+    virtual QCString trEnumReference(const QCString &name)
     { return "Opis enumeracije " + QCString(name); }
 
     /*! Used for a section containing inherited members */
-    virtual QCString trInheritedFrom(const char *members,const char *what)
+    virtual QCString trInheritedFrom(const QCString &members,const QCString &what)
     { return QCString(members)+" naslijeđeni od "+what; }
 
     /*! Header of the sections with inherited members specific for the
@@ -1566,8 +1561,6 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
      */
     virtual QCString trAdditionalInheritedMembers()
     { return "Dodatni naslijeđeni članovi"; }
-
-//////////////////////////////////////////////////////////////////////////
 
 };
 

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
   <compounddef id="struct_foo" kind="struct" language="C++" prot="public">
     <compoundname>Foo</compoundname>
     <sectiondef kind="public-func">
@@ -8,6 +8,7 @@
         <definition>void Foo::foo</definition>
         <argsstring>(float value)</argsstring>
         <name>foo</name>
+        <qualifiedname>Foo::foo</qualifiedname>
         <param>
           <type>float</type>
           <declname>value</declname>
@@ -19,13 +20,14 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="075_argmatch.cpp" line="5" column="1" bodyfile="075_argmatch.cpp" bodystart="14" bodyend="14"/>
+        <location file="075_argmatch.cpp" line="5" column="10" bodyfile="075_argmatch.cpp" bodystart="14" bodyend="14"/>
       </memberdef>
       <memberdef kind="function" id="struct_foo_1a3b1460a8784e5cc8156899a04df08b94" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>void</type>
         <definition>void Foo::foo</definition>
         <argsstring>(unsigned value)</argsstring>
         <name>foo</name>
+        <qualifiedname>Foo::foo</qualifiedname>
         <param>
           <type>unsigned</type>
           <declname>value</declname>
@@ -37,13 +39,14 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="075_argmatch.cpp" line="6" column="1" bodyfile="075_argmatch.cpp" bodystart="17" bodyend="17"/>
+        <location file="075_argmatch.cpp" line="6" column="10" bodyfile="075_argmatch.cpp" bodystart="17" bodyend="17"/>
       </memberdef>
       <memberdef kind="function" id="struct_foo_1a87f5be128245c4a16b25500fe6ae2fd1" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>void</type>
         <definition>void Foo::foo</definition>
         <argsstring>(unsigned long)</argsstring>
         <name>foo</name>
+        <qualifiedname>Foo::foo</qualifiedname>
         <param>
           <type>unsigned long</type>
         </param>
@@ -54,13 +57,14 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="075_argmatch.cpp" line="7" column="1" bodyfile="075_argmatch.cpp" bodystart="20" bodyend="20"/>
+        <location file="075_argmatch.cpp" line="7" column="10" bodyfile="075_argmatch.cpp" bodystart="20" bodyend="20"/>
       </memberdef>
       <memberdef kind="function" id="struct_foo_1adc1cd4494f8a556d5bf6cb78409e3e68" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>void</type>
         <definition>void Foo::foo</definition>
         <argsstring>(signed long)</argsstring>
         <name>foo</name>
+        <qualifiedname>Foo::foo</qualifiedname>
         <param>
           <type>signed long</type>
         </param>
@@ -71,13 +75,14 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="075_argmatch.cpp" line="8" column="1" bodyfile="075_argmatch.cpp" bodystart="23" bodyend="23"/>
+        <location file="075_argmatch.cpp" line="8" column="10" bodyfile="075_argmatch.cpp" bodystart="23" bodyend="23"/>
       </memberdef>
       <memberdef kind="function" id="struct_foo_1a0baba36cdd24740c6e39d5641e30a0fe" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>void</type>
         <definition>void Foo::foo</definition>
         <argsstring>(const struct Foo)</argsstring>
         <name>foo</name>
+        <qualifiedname>Foo::foo</qualifiedname>
         <param>
           <type>const struct <ref refid="struct_foo" kindref="compound">Foo</ref></type>
         </param>
@@ -88,13 +93,14 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="075_argmatch.cpp" line="9" column="1" bodyfile="075_argmatch.cpp" bodystart="26" bodyend="26"/>
+        <location file="075_argmatch.cpp" line="9" column="10" bodyfile="075_argmatch.cpp" bodystart="26" bodyend="26"/>
       </memberdef>
       <memberdef kind="function" id="struct_foo_1abeaaeb54ad61db26205c06927968845f" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>void</type>
         <definition>void Foo::foo</definition>
         <argsstring>(const char *const, const double param2)</argsstring>
         <name>foo</name>
+        <qualifiedname>Foo::foo</qualifiedname>
         <param>
           <type>const char * const</type>
         </param>
@@ -109,7 +115,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="075_argmatch.cpp" line="10" column="1"/>
+        <location file="075_argmatch.cpp" line="10" column="10"/>
       </memberdef>
     </sectiondef>
     <briefdescription>

@@ -15,7 +15,7 @@
 
 #include "htmlentity.h"
 #include "message.h"
-#include "ftextstream.h"
+#include "textstream.h"
 
 //! Number of doxygen commands mapped as if it were HTML entities
 static const int g_numberHtmlMappedCmds = 11;
@@ -263,7 +263,7 @@ static struct htmlEntityInfo
   { SYM(clubs),    "\xe2\x99\xa3", "&clubs;",    "<clubs/>",             "&#9827;",       "{$\\clubsuit$}",         NULL,     "\\u9827?",    { NULL,         DocSymbol::Perl_unknown }},
   { SYM(hearts),   "\xe2\x99\xa5", "&hearts;",   "<hearts/>",            "&#9829;",       "{$\\heartsuit$}",        NULL,     "\\u9829?",    { NULL,         DocSymbol::Perl_unknown }},
   { SYM(diams),    "\xe2\x99\xa6", "&diams;",    "<diams/>",             "&#9830;",       "{$\\diamondsuit$}",      NULL,     "\\u9830?",    { NULL,         DocSymbol::Perl_unknown }},
-  { SYM(quot),     "\"",           "&quot;",     "\"",                   "&quot;",        "\"",                     "\"",     "\"",          { "\"",         DocSymbol::Perl_char    }},
+  { SYM(quot),     "\"",           "&quot;",     "\"",                   "&quot;",        "\"{}",                   "\"",     "\"",          { "\"",         DocSymbol::Perl_char    }},
   { SYM(amp),      "&",            "&amp;",      "&amp;",                "&amp;",         "\\&",                    "&",      "&",           { "&",          DocSymbol::Perl_char    }},
   { SYM(lt),       "<",            "&lt;",       "&lt;",                 "&lt;",          "<",                      "<",      "<",           { "<",          DocSymbol::Perl_char    }},
   { SYM(gt),       ">",            "&gt;",       "&gt;",                 "&gt;",          ">",                      ">",      ">",           { ">",          DocSymbol::Perl_char    }},
@@ -311,7 +311,7 @@ static struct htmlEntityInfo
   { SYM(DoubleColon), "::",        "::",         "::",                   "::",            "::",                     "::",     "::",          { "::",         DocSymbol::Perl_string  }},
   { SYM(Percent),  "%",            "%",          "%",                    "%",             "\\%",                    "%",      "%",           { "%",          DocSymbol::Perl_char    }},
   { SYM(Pipe),     "|",            "|",          "|",                    "|",             "$|$",                    "|",      "|",           { "|",          DocSymbol::Perl_char    }},
-  { SYM(Quot),     "\"",           "\"",         "\"",                   "&quot;",        "\"",                     "\"",     "\"",          { "\"",         DocSymbol::Perl_char    }},
+  { SYM(Quot),     "\"",           "\"",         "\"",                   "&quot;",        "\"{}",                   "\"",     "\"",          { "\"",         DocSymbol::Perl_char    }},
   { SYM(Minus),    "-",            "-",          "-",                    "-",             "-\\/",                   "-",      "-",           { "-",          DocSymbol::Perl_char    }},
   { SYM(Plus),     "+",            "+",          "+",                    "+",             "+",                      "+",      "+",           { "+",          DocSymbol::Perl_char    }},
   { SYM(Dot),      ".",            ".",          ".",                    ".",             ".",                      ".",      ".",           { ".",          DocSymbol::Perl_char    }},
@@ -319,24 +319,22 @@ static struct htmlEntityInfo
   { SYM(Equal),    "=",            "=",          "=",                    "=",             "=",                      "=",      "=",           { "=",          DocSymbol::Perl_char    }}
 };
 
-static const int g_numHtmlEntities = (int)(sizeof(g_htmlEntities)/ sizeof(*g_htmlEntities));
+static const int g_numHtmlEntities = static_cast<int>(sizeof(g_htmlEntities)/ sizeof(*g_htmlEntities));
 
 HtmlEntityMapper *HtmlEntityMapper::s_instance = 0;
 
 HtmlEntityMapper::HtmlEntityMapper()
 {
-  m_name2sym = new QDict<int>(1009);
-  m_name2sym->setAutoDelete(TRUE);
+
   for (int i = 0; i < g_numHtmlEntities; i++)
   {
-    m_name2sym->insert(g_htmlEntities[i].item,new int(g_htmlEntities[i].symb));
+    m_name2sym.insert(std::make_pair(g_htmlEntities[i].item,g_htmlEntities[i].symb));
   }
   validate();
 }
 
 HtmlEntityMapper::~HtmlEntityMapper()
 {
-  delete m_name2sym;
 }
 
 /** Returns the one and only instance of the HTML entity mapper */
@@ -472,11 +470,11 @@ const DocSymbol::PerlSymb *HtmlEntityMapper::perl(DocSymbol::SymType symb) const
  */
 DocSymbol::SymType HtmlEntityMapper::name2sym(const QCString &symName) const
 {
-  int *pSymb = m_name2sym->find(symName);
-  return pSymb ? ((DocSymbol::SymType)*pSymb) : DocSymbol::Sym_Unknown;
+  auto it = m_name2sym.find(symName.str());
+  return it!=m_name2sym.end() ? it->second : DocSymbol::Sym_Unknown;
 }
 
-void HtmlEntityMapper::writeXMLSchema(FTextStream &t)
+void HtmlEntityMapper::writeXMLSchema(TextStream &t)
 {
   for (int i=0;i<g_numHtmlEntities - g_numberHtmlMappedCmds;i++)
   {

@@ -3,8 +3,8 @@
  * Copyright (C) 1997-2015 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -16,13 +16,12 @@
 #ifndef VHDLDOCGEN_H
 #define VHDLDOCGEN_H
 
-/** 
- * This class implements functions for parsing and generating 
+/**
+ * This class implements functions for parsing and generating
  * vhdl documents
  */
 
-#include <qdict.h>
-#include <qcstring.h>
+#include "qcstring.h"
 #include "layout.h"
 #include "arguments.h"
 #include "entry.h"
@@ -31,16 +30,42 @@ class Entry;
 class ClassDef;
 class MemberList;
 class MemberDef;
-class FTextStream;
+class MemberDefMutable;
 class OutputList;
 class Definition;
 class GroupDef;
 class FileDef;
 class NamespaceDef;
+class TextStream;
 struct Argument;
 
+struct VhdlConfNode
+{
+  VhdlConfNode(const QCString &a,const QCString &b,const QCString &config,const QCString &cs,bool leaf)
+  {
+    arch=a;              // architecture  e.g. for iobuffer
+    arch=arch.lower();
+    binding=b;           // binding e.g.  use entity work.xxx(bev)
+    binding=binding.lower();
+    confVhdl=config;     // configuration foo is bar
+    compSpec=cs;
+    isInlineConf=false;  // primary configuration?
+    isLeaf=leaf;
+  };
+
+  QCString confVhdl;
+  QCString arch;
+  QCString binding;
+  QCString compSpec;
+  int level = 0;
+  bool isLeaf = false;
+  bool isInlineConf = false;
+
+};
+
+
 /** Class for generating documentation specific for VHDL */
-class VhdlDocGen  
+class VhdlDocGen
 {
   public:
 
@@ -51,6 +76,17 @@ class VhdlDocGen
       ARCHITECTURECLASS,   // Overlays: Private
       PACKAGECLASS         // Overlays: Package
     };
+    static VhdlClasses convert(Protection prot)
+    {
+      switch (prot)
+      {
+        case Public:    return ENTITYCLASS;
+        case Protected: return PACKBODYCLASS;
+        case Private:   return ARCHITECTURECLASS;
+        case Package:   return PACKAGECLASS;
+      }
+      return ENTITYCLASS;
+    }
 
     enum VhdlKeyWords
     {
@@ -71,11 +107,11 @@ class VhdlDocGen
       USE,
       PROCESS,
       PORT,
-      UNITS,	  
+      UNITS,
       GENERIC,
       INSTANTIATION,
       GROUP,
-      VFILE,   
+      VFILE,
       SHAREDVARIABLE,
       CONFIG,
       ALIAS,
@@ -88,14 +124,13 @@ class VhdlDocGen
     static void init();
     static QCString convertFileNameToClassName(QCString name);
     // --- used by vhdlscanner.l -----------
-    
+
     static bool isSubClass(ClassDef* cd,ClassDef *scd, bool followInstances,int level);
 
-    static QCString getIndexWord(const char* ,int index);
+    static QCString getIndexWord(const QCString &,int index);
     static bool     deleteCharRev(QCString &s,char c);
     static void     deleteAllChars(QCString &s,char c);
-    static void     parseFuncProto(const char* text,
-                                   QList<Argument>& , 
+    static void     parseFuncProto(const QCString &text,
                                    QCString& name,
                                    QCString& ret,
                                    bool doc=false);
@@ -103,23 +138,22 @@ class VhdlDocGen
 
     static void computeVhdlComponentRelations();
 
-    static QCString* findKeyWord(const QCString& word);
+    static const char* findKeyWord(const QCString& word);
 
     static ClassDef* getPackageName(const QCString& name);
-    static MemberDef* findMember(const QCString& className, 
+    static const MemberDef* findMember(const QCString& className,
                                  const QCString& memName);
     static void findAllPackages(ClassDef*);
-    static MemberDef* findMemberDef(ClassDef* cd,
+    static const MemberDef* findMemberDef(ClassDef* cd,
                                 const QCString& key,
                                 MemberListType type);
-    static ClassDef *getClass(const char *name);
-    static MemberDef* findFunction(const QList<Argument> &ql,
-                                   const QCString& name,
-                                   const QCString& package, bool type);
+    static ClassDef *getClass(const QCString &name);
+    static const MemberDef* findFunction(const QCString& name,
+                                   const QCString& package);
     static QCString getClassTitle(const ClassDef*);
     static void writeInlineClassLink(const ClassDef*,
                                      OutputList &ol);
-    static void writeTagFile(MemberDef *mdef,FTextStream &tagFile);
+    static void writeTagFile(MemberDefMutable *mdef,TextStream &tagFile);
 
     static bool isConstraint(const MemberDef *mdef);
     static bool isConfig(const MemberDef *mdef);
@@ -155,63 +189,62 @@ class VhdlDocGen
     static void formatString(const QCString&,OutputList& ol,const MemberDef*);
 
     static void writeFormatString(const QCString&,OutputList& ol,const MemberDef*);
-    static void writeFunctionProto(OutputList& ol,const ArgumentList *al,const MemberDef*);
-    static void writeProcessProto(OutputList& ol,const ArgumentList *al,const MemberDef*);
-    static void writeProcedureProto(OutputList& ol, const ArgumentList *al,const MemberDef*);
-    static bool writeFuncProcDocu(const MemberDef *mdef, OutputList& ol,const ArgumentList* al,bool type=false);
-    static void writeRecordProto(const MemberDef *mdef, OutputList& ol,const ArgumentList *al);
+    static void writeFunctionProto(OutputList& ol,const ArgumentList &al,const MemberDef*);
+    static void writeProcessProto(OutputList& ol,const ArgumentList &al,const MemberDef*);
+    static void writeProcedureProto(OutputList& ol, const ArgumentList &al,const MemberDef*);
+    static bool writeFuncProcDocu(const MemberDef *mdef, OutputList& ol,const ArgumentList &al,bool type=false);
+    static void writeRecordProto(const MemberDef *mdef, OutputList& ol,const ArgumentList &al);
 
     static bool writeVHDLTypeDocumentation(const MemberDef* mdef, const Definition* d, OutputList &ol);
 
-    static void writeVhdlDeclarations(MemberList*,OutputList&,GroupDef*,ClassDef*,FileDef*,NamespaceDef*);
+    static void writeVhdlDeclarations(const MemberList*,OutputList&,const GroupDef*,const ClassDef*,const FileDef*,const NamespaceDef*);
 
-    static void writeVHDLDeclaration(MemberDef* mdef,OutputList &ol,
-        ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
+    static void writeVHDLDeclaration(const MemberDefMutable* mdef,OutputList &ol,
+        const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
         bool inGroup);
 
-    static void writePlainVHDLDeclarations(MemberList* ml,OutputList &ol,
-        ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,int specifier);
+    static void writePlainVHDLDeclarations(const MemberList* ml,OutputList &ol,
+        const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
+        uint64_t specifier);
 
-    static void writeVHDLDeclarations(MemberList* ml,OutputList &ol,
-        ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
-        const char *title,const char *subtitle,bool showEnumValues,int type);
+    static void writeVHDLDeclarations(const MemberList* ml,OutputList &ol,
+        const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
+        const QCString &title,const QCString &subtitle,bool showEnumValues,int type);
 
-    static bool writeClassType(ClassDef *&,OutputList &ol ,QCString & cname);
+    static bool writeClassType(const ClassDef *,OutputList &ol ,QCString & cname);
 
-    static QCString convertArgumentListToString(const ArgumentList* al,bool f);
+    static QCString convertArgumentListToString(const ArgumentList &al,bool f);
     static QCString getProcessNumber();
     static QCString getRecordNumber();
-   
+
     static QCString getClassName(const ClassDef*);
-    static bool isNumber(const QCString& s);
+    static bool isNumber(const std::string& s);
     static QCString getProtectionName(int prot);
 
-    static void parseUCF(const char*  input,Entry* entity,QCString f,bool vendor);
-    static bool findConstraintFile( LayoutNavEntry *lne);
+    static void parseUCF(const char*  input,Entry* entity,const QCString &f,bool vendor);
 
-    static ClassDef*  findArchitecture(const ClassDef *cd);
-    static ClassDef*  findArchitecture(QCString identifier, QCString entity_name);
+    static const ClassDef*  findArchitecture(const ClassDef *cd);
 
-    
-    static void writeSource(MemberDef *mdef,OutputList& ol,QCString & cname);
-    static void writeAlphbeticalClass(OutputList& ol,const ClassDef* cd,const QCString &);
+    static void correctMemberProperties(MemberDefMutable *md);
+
+    static void writeSource(const MemberDefMutable *mdef,OutputList& ol,const QCString & cname);
 
     static QCString  parseForConfig(QCString & entity,QCString & arch);
     static QCString  parseForBinding(QCString & entity,QCString & arch);
     static void addBaseClass(ClassDef* cd,ClassDef *ent);
-    static ClassDef* findVhdlClass(const char *className );
+    static ClassDef* findVhdlClass(const QCString &className );
 
     static void writeOverview(OutputList &ol);
     static void writeOverview();
- 
+
  // flowcharts
     static void createFlowChart(const MemberDef*);
-    //static void addFlowImage(const FTextStream &,const QCString &);
-    
+    //static void addFlowImage(const TextStream &,const QCString &);
+
     static void setFlowMember( const MemberDef *flowMember);
     static const MemberDef *getFlowMember();
 
-    static  bool isVhdlClass (const Entry *cu) 
+    static  bool isVhdlClass (const Entry *cu)
     {
       return cu->spec==VhdlDocGen::ENTITY       ||
              cu->spec==VhdlDocGen::PACKAGE      ||
@@ -222,12 +255,12 @@ class VhdlDocGen
   static void resetCodeVhdlParserState();
 
   private:
-    static void findAllArchitectures(QList<QCString>& ql,const ClassDef *cd);
-    static bool compareArgList(ArgumentList*,ArgumentList*);
+    static void findAllArchitectures(std::vector<QCString>& ql,const ClassDef *cd);
+    static bool compareArgList(const ArgumentList &,const ArgumentList &);
     static void writeVhdlLink(const ClassDef* cdd ,OutputList& ol,QCString& type,QCString& name,QCString& beh);
     static void writeStringLink(const MemberDef *mdef,QCString mem,OutputList& ol);
     static void writeRecUnitDocu( const MemberDef *md, OutputList& ol,QCString largs);
-    static void  writeRecorUnit(QCString & largs,OutputList& ol ,const MemberDef *mdef);
+    static void  writeRecordUnit(QCString & largs,QCString & ltype,OutputList& ol,const MemberDefMutable *mdef);
 };
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -264,59 +297,58 @@ class FlowChart
       BEGIN_NO     = 1<<21
     };
 
-    //---------- create svg ------------------------------------------------------------- 
+    //---------- create svg -------------------------------------------------------------
     static void createSVG();
-    static void startDot(FTextStream &t);
-    static void endDot(FTextStream &t);
-    static void codify(FTextStream &t,const char *str);
-    static void writeShape(FTextStream &t,const FlowChart* fl);
-    static void writeEdge(FTextStream &t,int fl_from,int fl_to,int i,bool bFrom=FALSE,bool bTo=FALSE);
-    static void writeEdge(FTextStream &t,const FlowChart* fl_from,const FlowChart* fl_to,int i);
-    static void writeFlowLinks(FTextStream &t);
+    static void startDot(TextStream &t);
+    static void endDot(TextStream &t);
+    static void codify(TextStream &t,const QCString &str);
+    static void writeShape(TextStream &t,const FlowChart &fl);
+    static void writeEdge(TextStream &t,int fl_from,int fl_to,int i,bool bFrom=FALSE,bool bTo=FALSE);
+    static void writeEdge(TextStream &t,const FlowChart &fl_from,const FlowChart &fl_to,int i);
+    static void writeFlowLinks(TextStream &t);
 
     static QCString getNodeName(int n);
     static void colTextNodes();
 
-    static int getNextTextLink(const FlowChart* fl,uint index);
-    static int getNextIfLink(const FlowChart*,uint);
-    static int getNextNode(int,int);
-    static int findNode(int index,int stamp,int type);
-    static int findNode(int index,int type);
-    static int findNextLoop(int j,int stamp);
-    static int findPrevLoop(int j,int stamp,bool endif=FALSE);
-    static int findLabel(int j,QCString &);
+    static size_t getNextIfLink(const FlowChart&,size_t);
+    static size_t getNextNode(size_t index,int stamp);
+    static size_t findNode(size_t index,int stamp,int type);
+    static size_t findNode(size_t index,int type);
+    static size_t findNextLoop(size_t j,int stamp);
+    static size_t findPrevLoop(size_t j,int stamp,bool endif=FALSE);
+    static size_t findLabel(size_t j,const QCString &);
     static void delFlowList();
     static const char* getNodeType(int c);
 
-    static void addFlowChart(int type,const char* text,const char* exp,const char * label=0);
+    static void addFlowChart(int type,const QCString &text,const QCString &exp,const QCString &label=QCString());
     static void moveToPrevLevel();
     static int getTimeStamp();
     static void writeFlowChart();
-    static void alignFuncProc(QCString & q,const ArgumentList*  al,bool isFunc);
+    static void alignFuncProc(QCString & q,const ArgumentList &al,bool isFunc);
     static QCString convertNameToFileName();
-    static void printNode(const FlowChart* n);
+    static void printNode(const FlowChart& n);
     static void printFlowTree();
-    static void buildCommentNodes(FTextStream &t);
-    static void alignCommentNode(FTextStream &t,QCString com);
+    static void buildCommentNodes(TextStream &t);
+    static void alignCommentNode(TextStream &t,QCString com);
 
     static void  printUmlTree();
-    static QCString printPlantUmlNode(const FlowChart *flo,bool,bool);
+    static QCString printPlantUmlNode(const FlowChart &flo,bool,bool);
 
-    static QList<FlowChart> flowList;
-
-    FlowChart(int typ,const char*  t,const char* ex,const char* label=0);
+    FlowChart(int typ,const QCString &t,const QCString &ex,const QCString &label=QCString());
     ~FlowChart();
 
 private:
-    int id;
-    int stamp;
-    int type;
+    int id = 0;
+    int stamp = 0;
+    int type = 0;
 
-    int line;
+    int line = 0;
 
     QCString label;
     QCString text;
     QCString exp;
 };
+
+extern std::vector<FlowChart> flowList;
 
 #endif

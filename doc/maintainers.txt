@@ -26,6 +26,9 @@ Armen Tangamyan: armen dot tangamyan at anu dot edu dot au
 TranslatorBrazilian
 Fabio "FJTC" Jun Takada Chino: jun-chino at uol dot com dot br
 
+TranslatorBulgarian
+Kiril Kirilov: kpkirilov at abv dot bg
+
 TranslatorCatalan
 Maximiliano Pin: max dot pin at bitroit dot com
 Albert Mora: [unreachable] amora at iua dot upf dot es
@@ -72,6 +75,9 @@ Jens Seidel: jensseidel at users dot sf dot net
 
 TranslatorGreek
 Paul Gessos: gessos dot paul at yahoo dot gr
+
+TranslatorHindi
+Harsh Rathod: hrathore50 at ymail dot com
 
 TranslatorHungarian
 Ákos Kiss: akiss at users dot sourceforge dot net
@@ -162,4 +168,3 @@ Petro  Yermolenko: python at i dot ua
 
 TranslatorVietnamese
 Dang Minh Tuan: tuanvietkey at gmail dot com
-

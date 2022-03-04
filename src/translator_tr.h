@@ -35,7 +35,7 @@
  files frees the maintainer from thinking about whether the
  first, the second, or both files should be included or not, and
  why.  This holds namely for localized translators because their
- base class is changed occasionaly to adapter classes when the
+ base class is changed occasionally to adapter classes when the
  Translator class changes the interface, or back to the
  Translator class (by the local maintainer) when the localized
  translator is made up-to-date again.
@@ -71,7 +71,15 @@ class TranslatorTurkish : public TranslatorAdapter_1_7_5
      */
     virtual QCString latexLanguageSupportCommand()
     {
-      return "";
+      return "\\usepackage[turkish]{babel}\n";
+    }
+    virtual QCString trISOLang()
+    {
+      return "tr";
+    }
+    virtual QCString getLanguageString()
+    {
+      return "0x41F Turkey";
     }
 
     // --- Language translation methods -------------------
@@ -136,9 +144,9 @@ class TranslatorTurkish : public TranslatorAdapter_1_7_5
     /*! this is put at the author sections at the bottom of man pages.
      *  parameter s is name of the project name.
      */
-    virtual QCString trGeneratedAutomatically(const char *s)
+    virtual QCString trGeneratedAutomatically(const QCString &s)
     { QCString result="Doxygen tarafından";
-      if (s) result+=s+(QCString)" için ";
+      if (!s.isEmpty()) result+=s+" için ";
       result+=" kaynak koddan otomatik üretilmiştir.";
       return result;
     }
@@ -382,6 +390,10 @@ class TranslatorTurkish : public TranslatorAdapter_1_7_5
       {
         return "Veri Yapıları Dokümantasyonu";
       }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+          return trDesignUnitDocumentation();
+      }
       else
       {
         return "Sınıf Dokümantasyonu";
@@ -399,12 +411,6 @@ class TranslatorTurkish : public TranslatorAdapter_1_7_5
      */
     virtual QCString trExampleDocumentation()
     { return "Örnek Dokümantasyonu"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all related pages.
-     */
-    virtual QCString trPageDocumentation()
-    { return "Sayfa Dokümantasyonu"; }
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
@@ -494,23 +500,19 @@ class TranslatorTurkish : public TranslatorAdapter_1_7_5
     /*! This is used in the standard footer of each page and indicates when
      *  the page was generated
      */
-    virtual QCString trGeneratedAt(const char *date,const char *projName)
+    virtual QCString trGeneratedAt(const QCString &date,const QCString &projName)
     {
-      QCString result=projName+(QCString)" için "+date;
-      if (projName) result+=(QCString)" tarihinde ";
-      result+=(QCString)" üreten: ";
+      QCString result=projName+" için "+date;
+      if (!projName.isEmpty()) result+=" tarihinde ";
+      result+=" üreten: ";
       return result;
     }
 
     /*! this text is put before a class diagram */
-    virtual QCString trClassDiagram(const char *clName)
+    virtual QCString trClassDiagram(const QCString &clName)
     {
-      return clName+(QCString)" için kalıtım şeması:";
+      return clName+" için kalıtım şeması:";
     }
-
-    /*! this text is generated when the \\internal command is used. */
-    virtual QCString trForInternalUseOnly()
-    { return "İç kullanıma ayrılmıştır."; }
 
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
@@ -582,11 +584,11 @@ class TranslatorTurkish : public TranslatorAdapter_1_7_5
 //////////////////////////////////////////////////////////////////////////
 
     /*! used as the title of the HTML page of a class/struct/union */
-    virtual QCString trCompoundReference(const char *clName,
+    virtual QCString trCompoundReference(const QCString &clName,
                                     ClassDef::CompoundType compType,
                                     bool isTemplate)
     {
-      QCString result=(QCString)clName;
+      QCString result=clName;
       switch(compType)
       {
         case ClassDef::Class:      result+=" Sınıf"; break;
@@ -604,7 +606,7 @@ class TranslatorTurkish : public TranslatorAdapter_1_7_5
     }
 
     /*! used as the title of the HTML page of a file */
-    virtual QCString trFileReference(const char *fileName)
+    virtual QCString trFileReference(const QCString &fileName)
     {
       QCString result=fileName;
       result+=" Dosya Referansı";
@@ -612,7 +614,7 @@ class TranslatorTurkish : public TranslatorAdapter_1_7_5
     }
 
     /*! used as the title of the HTML page of a namespace */
-    virtual QCString trNamespaceReference(const char *namespaceName)
+    virtual QCString trNamespaceReference(const QCString &namespaceName)
     {
       QCString result=namespaceName;
       result+=" Namespace Referansı";
@@ -746,7 +748,7 @@ class TranslatorTurkish : public TranslatorAdapter_1_7_5
         bool single)
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
-      QCString result=(QCString)"Bu ";
+      QCString result="Bu ";
       switch(compType)
       {
         case ClassDef::Class:      result+="sınıf"; break;
@@ -810,14 +812,14 @@ class TranslatorTurkish : public TranslatorAdapter_1_7_5
 //////////////////////////////////////////////////////////////////////////
 
     /*! this text is put before a collaboration diagram */
-    virtual QCString trCollaborationDiagram(const char *clName)
+    virtual QCString trCollaborationDiagram(const QCString &clName)
     {
-      return clName+(QCString)" için işbirliği (collaboration) şeması:";
+      return clName+" için işbirliği (collaboration) şeması:";
     }
     /*! this text is put before an include dependency graph */
-    virtual QCString trInclDepGraph(const char *fName)
+    virtual QCString trInclDepGraph(const QCString &fName)
     {
-      return fName+(QCString)" için içerme bağımlılık grafiği:";
+      return fName+" için içerme bağımlılık grafiği:";
     }
     /*! header that is put before the list of constructor/destructors. */
     virtual QCString trConstructorDocumentation()
@@ -1095,14 +1097,9 @@ class TranslatorTurkish : public TranslatorAdapter_1_7_5
       }
     }
     /*! Used as the title of a Java package */
-    virtual QCString trPackage(const char *name)
+    virtual QCString trPackage(const QCString &name)
     {
-      return (QCString)"Paket "+name;
-    }
-    /*! Title of the package index page */
-    virtual QCString trPackageList()
-    {
-      return "Paket Listesi";
+      return "Paket "+name;
     }
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
@@ -1478,18 +1475,10 @@ class TranslatorTurkish : public TranslatorAdapter_1_7_5
     virtual QCString trDirectories()
     { return "Dizinler"; }
 
-    /*! This returns a sentences that introduces the directory hierarchy.
-     *  and the fact that it is sorted alphabetically per level
-     */
-    virtual QCString trDirDescription()
-    { return "Bu dizin hiyerarşisi tamamen olmasa da yaklaşık "
-             "olarak alfabetik sıraya konulmuştur:";
-    }
-
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.
      */
-    virtual QCString trDirReference(const char *dirName)
+    virtual QCString trDirReference(const QCString &dirName)
     { QCString result=dirName; result+=" Dizin Referansı"; return result; }
 
     /*! This returns the word directory with or without starting capital
@@ -1616,11 +1605,11 @@ class TranslatorTurkish : public TranslatorAdapter_1_7_5
     }
 
     /*! used as the title of the HTML page of a module/type (Fortran) */
-    virtual QCString trCompoundReferenceFortran(const char *clName,
+    virtual QCString trCompoundReferenceFortran(const QCString &clName,
                                     ClassDef::CompoundType compType,
                                     bool isTemplate)
     {
-      QCString result=(QCString)clName;
+      QCString result=clName;
       switch(compType)
       {
         case ClassDef::Class:      result+=" Modül"; break;
@@ -1637,7 +1626,7 @@ class TranslatorTurkish : public TranslatorAdapter_1_7_5
       return result;
     }
     /*! used as the title of the HTML page of a module (Fortran) */
-    virtual QCString trModuleReference(const char *namespaceName)
+    virtual QCString trModuleReference(const QCString &namespaceName)
     {
       QCString result=namespaceName;
       result+=" Modül Referansı";
@@ -1688,7 +1677,7 @@ class TranslatorTurkish : public TranslatorAdapter_1_7_5
         bool single)
     { // here s is one of " Module", " Struct" or " Union"
       // single is true implies a single file
-      QCString result=(QCString)"Bu ";
+      QCString result="Bu ";
       switch(compType)
       {
         case ClassDef::Class:      result+="modül"; break;
@@ -1733,60 +1722,60 @@ class TranslatorTurkish : public TranslatorAdapter_1_7_5
     }
 
 
-	//////////////////////////////////////////////////////////////////////////
-	// new since 1.6.0 (mainly for the new search engine)
-	//////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////
+  // new since 1.6.0 (mainly for the new search engine)
+  //////////////////////////////////////////////////////////////////////////
 
     /*! directory relation for \a name */
-    virtual QCString trDirRelation(const char *name)
+    virtual QCString trDirRelation(const QCString &name)
     {
-		return QCString(name)+" İlişkisi";
+    return QCString(name)+" İlişkisi";
     }
 
     /*! Loading message shown when loading search results */
     virtual QCString trLoading()
     {
-		return "Yüklüyor...";
+    return "Yüklüyor...";
     }
 
     /*! Label used for search results in the global namespace */
     virtual QCString trGlobalNamespace()
     {
-		return "En Üst Seviye";
+    return "En Üst Seviye";
     }
 
     /*! Message shown while searching */
     virtual QCString trSearching()
     {
-		return "Arıyor...";
+    return "Arıyor...";
     }
 
     /*! Text shown when no search results are found */
     virtual QCString trNoMatches()
     {
-		return "Eşleşme Yok";
+    return "Eşleşme Yok";
     }
 
-	//////////////////////////////////////////////////////////////////////////
-	// new since 1.6.3 (missing items for the directory pages)
-	//////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////
+  // new since 1.6.3 (missing items for the directory pages)
+  //////////////////////////////////////////////////////////////////////////
 
     /*! when clicking a directory dependency label, a page with a
      *  table is shown. The heading for the first column mentions the
      *  source file that has a relation to another file.
      */
-    virtual QCString trFileIn(const char *name)
+    virtual QCString trFileIn(const QCString &name)
     {
-		return (QCString)(name) + (QCString)" dizinindeki dosya";
+    return name+" dizinindeki dosya";
     }
 
     /*! when clicking a directory dependency label, a page with a
      *  table is shown. The heading for the second column mentions the
      *  destination file that is included.
      */
-    virtual QCString trIncludesFileIn(const char *name)
+    virtual QCString trIncludesFileIn(const QCString &name)
     {
-		return (QCString)(name) + (QCString)" dizinindeki dosyayı kapsıyor";
+    return name + " dizinindeki dosyayı kapsıyor";
     }
 
     /** Compiles a date string.
@@ -1803,19 +1792,18 @@ class TranslatorTurkish : public TranslatorAdapter_1_7_5
                                 int hour,int minutes,int seconds,
                                 bool includeTime)
     {
-		static const char *days[]   = { "Pzt","Sal","Çar","Per","Cma","Cmt","Pzr" };
-		static const char *months[] = { "Oca","Şub","Mar","Nis","May","Haz","Tem","Ağu","Eyl","Ekm","Kas","Ara" };
-		QCString sdate;
-		sdate.sprintf("%s %s %d %d",days[dayOfWeek-1],months[month-1],day,year);
-		if (includeTime)
-		{
-			QCString stime;
-			stime.sprintf(" %.2d:%.2d:%.2d",hour,minutes,seconds);
-			sdate+=stime;
-		}
-		return sdate;
+    static const char *days[]   = { "Pzt","Sal","Çar","Per","Cma","Cmt","Pzr" };
+    static const char *months[] = { "Oca","Şub","Mar","Nis","May","Haz","Tem","Ağu","Eyl","Ekm","Kas","Ara" };
+    QCString sdate;
+    sdate.sprintf("%s %s %d %d",days[dayOfWeek-1],months[month-1],day,year);
+    if (includeTime)
+    {
+      QCString stime;
+      stime.sprintf(" %.2d:%.2d:%.2d",hour,minutes,seconds);
+      sdate+=stime;
     }
-
+    return sdate;
+    }
 
 };
 

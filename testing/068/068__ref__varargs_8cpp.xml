@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
   <compounddef id="068__ref__varargs_8cpp" kind="file" language="C++">
     <compoundname>068_ref_varargs.cpp</compoundname>
     <innerclass refid="class_test" prot="public">Test</innerclass>
@@ -20,7 +20,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="068_ref_varargs.cpp" line="11" column="1" declfile="068_ref_varargs.cpp" declline="11" declcolumn="1"/>
+        <location file="068_ref_varargs.cpp" line="11" column="6" declfile="068_ref_varargs.cpp" declline="11" declcolumn="6"/>
       </memberdef>
       <memberdef kind="function" id="068__ref__varargs_8cpp_1a106e01084409028d1b41f5ad83fb82c1" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>void</type>
@@ -41,7 +41,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="068_ref_varargs.cpp" line="15" column="1" declfile="068_ref_varargs.cpp" declline="15" declcolumn="1"/>
+        <location file="068_ref_varargs.cpp" line="15" column="6" declfile="068_ref_varargs.cpp" declline="15" declcolumn="6"/>
       </memberdef>
     </sectiondef>
     <briefdescription>

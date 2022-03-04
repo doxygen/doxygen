@@ -57,9 +57,15 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
      */
     virtual QCString latexLanguageSupportCommand()
     {
-      //should we use return "\\usepackage[afrikaans]{babel}\n";
-      // not sure - for now return an empty string
-      return "";
+      return "\\usepackage[afrikaans]{babel}\n";
+    }
+    virtual QCString trISOLang()
+    {
+      return "af";
+    }
+    virtual QCString getLanguageString()
+    {
+      return "0x436 Afrikaans";
     }
 
     // --- Language translation methods -------------------
@@ -124,9 +130,9 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
     /*! this is put at the author sections at the bottom of man pages.
      *  parameter s is name of the project name.
      */
-    virtual QCString trGeneratedAutomatically(const char *s)
+    virtual QCString trGeneratedAutomatically(const QCString &s)
     { QCString result="Automaties gegenereer deur Doxygen";
-      if (s) result+=(QCString)" vir "+s;
+      if (!s.isEmpty()) result+=" vir "+s;
       result+=" van die bron kode af.";
       return result;
     }
@@ -232,6 +238,10 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return " Data strukture met kort beskrywings:";
+      }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_SLICE))
+      {
+        return "Klasse met kort beskrywings:";
       }
       else
       {
@@ -368,6 +378,10 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
       {
         return "Data Strukture Dokumentasie";
       }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+          return trDesignUnitDocumentation();
+      }
       else
       {
         return "Klas Dokumentasie";
@@ -385,12 +399,6 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
      */
     virtual QCString trExampleDocumentation()
     { return "Voorbeeld Dokumentasie"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all related pages.
-     */
-    virtual QCString trPageDocumentation()
-    { return "Bladsy Dokumentasie"; }
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
@@ -480,23 +488,19 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
     /*! This is used in the standard footer of each page and indicates when
      *  the page was generated
      */
-    virtual QCString trGeneratedAt(const char *date,const char *projName)
+    virtual QCString trGeneratedAt(const QCString &date,const QCString &projName)
     {
-      QCString result=(QCString)"Gegenereer op "+date;
-      if (projName) result+=(QCString)" vir "+projName;
-      result+=(QCString)" deur";
+      QCString result="Gegenereer op "+date;
+      if (!projName.isEmpty()) result+=" vir "+projName;
+      result+=" deur";
       return result;
     }
 
     /*! this text is put before a class diagram */
-    virtual QCString trClassDiagram(const char *clName)
+    virtual QCString trClassDiagram(const QCString &clName)
     {
-      return (QCString)"Afleidings diagram vir "+clName+":";
+      return "Afleidings diagram vir "+clName+":";
     }
-
-    /*! this text is generated when the \\internal command is used. */
-    virtual QCString trForInternalUseOnly()
-    { return "Slegs vir interne gebruik."; }
 
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
@@ -568,11 +572,11 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
 //////////////////////////////////////////////////////////////////////////
 
     /*! used as the title of the HTML page of a class/struct/union */
-    virtual QCString trCompoundReference(const char *clName,
+    virtual QCString trCompoundReference(const QCString &clName,
                                     ClassDef::CompoundType compType,
                                     bool isTemplate)
     {
-      QCString result=(QCString)clName;
+      QCString result=clName;
       switch(compType)
       {
         case ClassDef::Class:      result+=" klas"; break;
@@ -590,7 +594,7 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
     }
 
     /*! used as the title of the HTML page of a file */
-    virtual QCString trFileReference(const char *fileName)
+    virtual QCString trFileReference(const QCString &fileName)
     {
       QCString result=fileName;
       result+=" Leër Verwysing";
@@ -598,7 +602,7 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
     }
 
     /*! used as the title of the HTML page of a namespace */
-    virtual QCString trNamespaceReference(const char *namespaceName)
+    virtual QCString trNamespaceReference(const QCString &namespaceName)
     {
       QCString result=namespaceName;
       result+=" Namespace Verwysing";
@@ -732,7 +736,7 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
         bool single)
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
-      QCString result=(QCString)"Die dokumentasie vir hierdie ";
+      QCString result="Die dokumentasie vir hierdie ";
       switch(compType)
       {
         case ClassDef::Class:      result+="klas"; break;
@@ -795,14 +799,14 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
 //////////////////////////////////////////////////////////////////////////
 
     /*! this text is put before a collaboration diagram */
-    virtual QCString trCollaborationDiagram(const char *clName)
+    virtual QCString trCollaborationDiagram(const QCString &clName)
     {
-      return (QCString)"Samewerkings diagram vir "+clName+":";
+      return "Samewerkings diagram vir "+clName+":";
     }
     /*! this text is put before an include dependency graph */
-    virtual QCString trInclDepGraph(const char *fName)
+    virtual QCString trInclDepGraph(const QCString &fName)
     {
-      return (QCString)"Insluitings afhanklikheid diagram vir "+fName+":";
+      return "Insluitings afhanklikheid diagram vir "+fName+":";
     }
     /*! header that is put before the list of constructor/destructors. */
     virtual QCString trConstructorDocumentation()
@@ -1081,14 +1085,9 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
       }
     }
     /*! Used as the title of a Java package */
-    virtual QCString trPackage(const char *name)
+    virtual QCString trPackage(const QCString &name)
     {
-      return (QCString)"Pakket "+name;
-    }
-    /*! Title of the package index page */
-    virtual QCString trPackageList()
-    {
-      return "Pakket Lys";
+      return "Pakket "+name;
     }
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
@@ -1464,18 +1463,10 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
     virtual QCString trDirectories()
     { return "Directories"; }
 
-    /*! This returns a sentences that introduces the directory hierarchy.
-     *  and the fact that it is sorted alphabetically per level
-     */
-    virtual QCString trDirDescription()
-    { return "Hierdie directory hiërargie is min of meer alfabeties "
-             "gesorteer:";
-    }
-
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.
      */
-    virtual QCString trDirReference(const char *dirName)
+    virtual QCString trDirReference(const QCString &dirName)
     { QCString result=dirName; result+=" Directory Verwysing"; return result; }
 
     /*! This returns the word directory with or without starting capital
@@ -1603,11 +1594,11 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
     }
 
     /*! used as the title of the HTML page of a module/type (Fortran) */
-    virtual QCString trCompoundReferenceFortran(const char *clName,
+    virtual QCString trCompoundReferenceFortran(const QCString &clName,
                                     ClassDef::CompoundType compType,
                                     bool isTemplate)
     {
-      QCString result=(QCString)clName;
+      QCString result=clName;
       switch(compType)
       {
         case ClassDef::Class:      result+=" Module"; break;
@@ -1624,7 +1615,7 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
       return result;
     }
     /*! used as the title of the HTML page of a module (Fortran) */
-    virtual QCString trModuleReference(const char *namespaceName)
+    virtual QCString trModuleReference(const QCString &namespaceName)
     {
       QCString result=namespaceName;
       result+=" Module Bron";
@@ -1675,7 +1666,7 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
         bool single)
     {
       // single is true implies a single file
-      QCString result=(QCString)"The documentation for this ";
+      QCString result="The documentation for this ";
       switch(compType)
       {
         case ClassDef::Class:      result+="module"; break;

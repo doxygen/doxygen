@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2020 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -14,92 +14,49 @@
  */
 
 #include <stdio.h>
-#include <qdatetime.h>
 #include "config.h"
-#include "util.h"
 #include "debug.h"
-#include "doxygen.h"
 #include "portable.h"
-#include "filedef.h"
 #include "message.h"
+#include "doxygen.h"
 
-static QCString outputFormat;
-static const char *warning_str = "warning: ";
-static const char *error_str = "error: ";
-//static int warnFormatOrder; // 1 = $file,$line,$text
-//                            // 2 = $text,$line,$file
-//                            // 3 = $line,$text,$file
-//                            // 4 = $file,$text,$line
-//                            // 5 = $text,$file,$line
-//                            // 6 = $line,$file,$text
+#include <mutex>
 
-static FILE *warnFile = stderr;
+// globals
+static QCString        g_warnFormat;
+static const char *    g_warningStr = "warning: ";
+static const char *    g_errorStr = "error: ";
+static FILE *          g_warnFile = stderr;
+static WARN_AS_ERROR_t g_warnBehavior = WARN_AS_ERROR_t::NO;
+static bool            g_warnStat = false;
+static std::mutex      g_mutex;
 
 void initWarningFormat()
 {
-//  int filePos = Config_getString(WARN_FORMAT).find("$file");
-//  int linePos = Config_getString(WARN_FORMAT).find("$line");
-//  int textPos = Config_getString(WARN_FORMAT).find("$text");
-//
-//  // sort items on position (there are 6 cases)
-//  warnFormatOrder = 1;
-//  if (filePos>linePos && filePos>textPos)
-//  {
-//    if (linePos>textPos) // $text,$line,$file
-//    {
-//      warnFormatOrder = 2;
-//    }
-//    else                 // $line,$text,$file
-//    {
-//      warnFormatOrder = 3;
-//    }
-//  }
-//  else if (filePos<linePos && filePos<textPos)
-//  {
-//    if (linePos>textPos) // $file,$text,$line
-//    {
-//      warnFormatOrder = 4;
-//    }
-//  }
-//  else if (filePos<linePos && filePos>textPos) // $text,$file,$line
-//  {
-//    warnFormatOrder = 5;
-//  }
-//  else // $line,$file,$text
-//  {
-//    warnFormatOrder = 6;
-//  }
-//  outputFormat =
-//      substitute(
-//        substitute(
-//          substitute(
-//            Config_getString(WARN_FORMAT),
-//           "$file","%s"
-//          ),
-//          "$text","%s"
-//        ),
-//        "$line","%d"
-//      )+'\n';
+  g_warnFormat = Config_getString(WARN_FORMAT);
+  QCString logFile = Config_getString(WARN_LOGFILE);
 
-  //    replace(QRegExp("\\$file"),"%s").
-  //    replace(QRegExp("\\$text"),"%s").
-  //    replace(QRegExp("\\$line"),"%d")+
-  //    '\n';
-
-  outputFormat = Config_getString(WARN_FORMAT);
-
-  if (!Config_getString(WARN_LOGFILE).isEmpty())
+  if (!logFile.isEmpty())
   {
-    warnFile = portable_fopen(Config_getString(WARN_LOGFILE),"w");
+    if (logFile == "-")
+    {
+      g_warnFile = stdout;
+    }
+    else if (!(g_warnFile = Portable::fopen(logFile,"w")))
+    {
+      // point it to something valid, because warn() relies on it
+      g_warnFile = stderr;
+      err("Cannot open '%s' for writing, redirecting 'WARN_LOGFILE' output to 'stderr'\n",logFile.data());
+    }
   }
-  if (!warnFile) // point it to something valid, because warn() relies on it
+  else
   {
-    warnFile = stderr;
+    g_warnFile = stderr;
   }
-
-  if (Config_getBool(WARN_AS_ERROR))
+  g_warnBehavior = Config_getEnum(WARN_AS_ERROR);
+  if (g_warnBehavior != WARN_AS_ERROR_t::NO)
   {
-    warning_str = error_str;
+    g_warningStr = g_errorStr;
   }
 }
 
@@ -108,9 +65,10 @@ void msg(const char *fmt, ...)
 {
   if (!Config_getBool(QUIET))
   {
+    std::unique_lock<std::mutex> lock(g_mutex);
     if (Debug::isFlagSet(Debug::Time))
     {
-      printf("%.3f sec: ",((double)Doxygen::runningTime.elapsed())/1000.0);
+      printf("%.3f sec: ",(static_cast<double>(Debug::elapsedTime())));
     }
     va_list args;
     va_start(args, fmt);
@@ -119,29 +77,19 @@ void msg(const char *fmt, ...)
   }
 }
 
-static void format_warn(const char *file,int line,const char *text)
+static void format_warn(const QCString &file,int line,const QCString &text)
 {
-  QCString fileSubst = file==0 ? "<unknown>" : file;
+  QCString fileSubst = file.isEmpty() ? "<unknown>" : file;
   QCString lineSubst; lineSubst.setNum(line);
   QCString textSubst = text;
   QCString versionSubst;
-  if (file) // get version from file name
-  {
-    bool ambig;
-    FileDef *fd=findFileDef(Doxygen::inputNameDict,file,ambig);
-    if (fd)
-    {
-      versionSubst = fd->getVersion();
-    }
-  }
   // substitute markers by actual values
-  bool warnAsError = Config_getBool(WARN_AS_ERROR);
   QCString msgText =
       substitute(
         substitute(
           substitute(
             substitute(
-              outputFormat,
+              g_warnFormat,
               "$file",fileSubst
             ),
             "$line",lineSubst
@@ -150,68 +98,107 @@ static void format_warn(const char *file,int line,const char *text)
         ),
         "$text",textSubst
       );
-  if (warnAsError)
+  if (g_warnBehavior == WARN_AS_ERROR_t::YES)
   {
     msgText += " (warning treated as error, aborting now)";
   }
   msgText += '\n';
 
-  // print resulting message
-  fwrite(msgText.data(),1,msgText.length(),warnFile);
-  if (warnAsError)
+  {
+    std::unique_lock<std::mutex> lock(g_mutex);
+    // print resulting message
+    fwrite(msgText.data(),1,msgText.length(),g_warnFile);
+  }
+  if (g_warnBehavior == WARN_AS_ERROR_t::YES)
   {
     exit(1);
   }
+  g_warnStat = true;
 }
 
-static void do_warn(bool enabled, const char *file, int line, const char *prefix, const char *fmt, va_list args)
+static void handle_warn_as_error()
+{
+  if (g_warnBehavior == WARN_AS_ERROR_t::YES)
+  {
+    {
+      std::unique_lock<std::mutex> lock(g_mutex);
+      QCString msgText = " (warning treated as error, aborting now)\n";
+      fwrite(msgText.data(),1,msgText.length(),g_warnFile);
+    }
+    exit(1);
+  }
+  g_warnStat = true;
+}
+
+static void do_warn(bool enabled, const QCString &file, int line, const char *prefix, const char *fmt, va_list args)
 {
   if (!enabled) return; // warning type disabled
-  const int bufSize = 40960;
-  char text[bufSize];
-  int l=0;
+
+  va_list argsCopy;
+  va_copy(argsCopy, args);
+
+  size_t l=0;
   if (prefix)
   {
-    qstrncpy(text,prefix,bufSize);
     l=strlen(prefix);
   }
-  vsnprintf(text+l, bufSize-l, fmt, args);
-  text[bufSize-1]='\0';
+  // determine needed buffersize based on:
+  // format + arguments
+  // prefix
+  // 1 position for `\0`
+  size_t bufSize = vsnprintf(NULL, 0, fmt, args) + l + 1;
+  QCString text(bufSize);
+  if (prefix)
+  {
+    qstrncpy(text.rawData(),prefix,bufSize);
+  }
+  vsnprintf(text.rawData()+l, bufSize-l, fmt, argsCopy);
+  text[static_cast<int>(bufSize)-1]='\0';
   format_warn(file,line,text);
+
+  va_end(argsCopy);
 }
 
-void warn(const char *file,int line,const char *fmt, ...)
+void warn(const QCString &file,int line,const char *fmt, ...)
 {
   va_list args;
   va_start(args, fmt);
-  do_warn(Config_getBool(WARNINGS), file, line, warning_str, fmt, args);
+  do_warn(Config_getBool(WARNINGS), file, line, g_warningStr, fmt, args);
   va_end(args);
 }
 
-void va_warn(const char *file,int line,const char *fmt,va_list args)
+void va_warn(const QCString &file,int line,const char *fmt,va_list args)
 {
-  do_warn(Config_getBool(WARNINGS), file, line, warning_str, fmt, args);
+  do_warn(Config_getBool(WARNINGS), file, line, g_warningStr, fmt, args);
 }
 
-void warn_simple(const char *file,int line,const char *text)
+void warn_simple(const QCString &file,int line,const char *text)
 {
   if (!Config_getBool(WARNINGS)) return; // warning type disabled
-  format_warn(file,line,QCString(warning_str) + text);
+  format_warn(file,line,QCString(g_warningStr) + text);
 }
 
-void warn_undoc(const char *file,int line,const char *fmt, ...)
+void warn_undoc(const QCString &file,int line,const char *fmt, ...)
 {
   va_list args;
   va_start(args, fmt);
-  do_warn(Config_getBool(WARN_IF_UNDOCUMENTED), file, line, warning_str, fmt, args);
+  do_warn(Config_getBool(WARN_IF_UNDOCUMENTED), file, line, g_warningStr, fmt, args);
   va_end(args);
 }
 
-void warn_doc_error(const char *file,int line,const char *fmt, ...)
+void warn_incomplete_doc(const QCString &file,int line,const char *fmt, ...)
 {
   va_list args;
   va_start(args, fmt);
-  do_warn(Config_getBool(WARN_IF_DOC_ERROR), file, line, warning_str, fmt, args);
+  do_warn(Config_getBool(WARN_IF_INCOMPLETE_DOC), file, line, g_warningStr, fmt, args);
+  va_end(args);
+}
+
+void warn_doc_error(const QCString &file,int line,const char *fmt, ...)
+{
+  va_list args;
+  va_start(args, fmt);
+  do_warn(Config_getBool(WARN_IF_DOC_ERROR), file, line, g_warningStr, fmt, args);
   va_end(args);
 }
 
@@ -219,25 +206,51 @@ void warn_uncond(const char *fmt, ...)
 {
   va_list args;
   va_start(args, fmt);
-  vfprintf(warnFile, (QCString(warning_str) + fmt).data(), args);
+  vfprintf(g_warnFile, (QCString(g_warningStr) + fmt).data(), args);
   va_end(args);
+  handle_warn_as_error();
 }
 
 void err(const char *fmt, ...)
 {
   va_list args;
   va_start(args, fmt);
-  vfprintf(warnFile, (QCString(error_str) + fmt).data(), args);
+  vfprintf(g_warnFile, (QCString(g_errorStr) + fmt).data(), args);
   va_end(args);
+  handle_warn_as_error();
 }
 
-extern void err_full(const char *file,int line,const char *fmt, ...)
+extern void err_full(const QCString &file,int line,const char *fmt, ...)
 {
   va_list args;
   va_start(args, fmt);
-  do_warn(TRUE, file, line, error_str, fmt, args);
+  do_warn(TRUE, file, line, g_errorStr, fmt, args);
   va_end(args);
 }
+
+void term(const char *fmt, ...)
+{
+  {
+    std::unique_lock<std::mutex> lock(g_mutex);
+    va_list args;
+    va_start(args, fmt);
+    vfprintf(g_warnFile, (QCString(g_errorStr) + fmt).data(), args);
+    va_end(args);
+    if (g_warnFile != stderr)
+    {
+      size_t l = strlen(g_errorStr);
+      for (size_t i=0; i<l; i++) fprintf(g_warnFile, " ");
+      fprintf(g_warnFile, "%s\n", "Exiting...");
+    }
+  }
+  exit(1);
+}
+
+void warn_flush()
+{
+  fflush(g_warnFile);
+}
+
 
 void printlex(int dbg, bool enter, const char *lexName, const char *fileName)
 {
@@ -250,6 +263,7 @@ void printlex(int dbg, bool enter, const char *lexName, const char *fileName)
     enter_txt_uc = "Finished";
   }
 
+  std::unique_lock<std::mutex> lock(g_mutex);
   if (dbg)
   {
     if (fileName)
@@ -263,5 +277,13 @@ void printlex(int dbg, bool enter, const char *lexName, const char *fileName)
       Debug::print(Debug::Lex,0,"%s lexical analyzer: %s (for: %s)\n",enter_txt_uc, qPrint(lexName), qPrint(fileName));
     else
       Debug::print(Debug::Lex,0,"%s lexical analyzer: %s\n",enter_txt_uc, qPrint(lexName));
+  }
+}
+
+extern void finishWarnExit()
+{
+  if (g_warnStat && g_warnBehavior == WARN_AS_ERROR_t::FAIL_ON_WARNINGS)
+  {
+    exit(1);
   }
 }

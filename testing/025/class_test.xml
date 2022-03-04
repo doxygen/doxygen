@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
   <compounddef id="class_test" kind="class" language="C++" prot="public">
     <compoundname>Test</compoundname>
     <sectiondef kind="public-func">
@@ -8,6 +8,7 @@
         <definition>void Test::example</definition>
         <argsstring>()</argsstring>
         <name>example</name>
+        <qualifiedname>Test::example</qualifiedname>
         <briefdescription>
           <para>An example member function. </para>
         </briefdescription>
@@ -16,7 +17,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="025_example.cpp" line="17" column="1" bodyfile="025_example.cpp" bodystart="20" bodyend="20"/>
+        <location file="025_example.cpp" line="17" column="10" bodyfile="025_example.cpp" bodystart="20" bodyend="20"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
@@ -25,7 +26,7 @@
     <detaileddescription>
       <para>More details about this class. </para>
     </detaileddescription>
-    <location file="025_example.cpp" line="11" column="1" bodyfile="025_example.cpp" bodystart="10" bodyend="18"/>
+    <location file="025_example.cpp" line="10" column="1" bodyfile="025_example.cpp" bodystart="11" bodyend="18"/>
     <listofallmembers>
       <member refid="class_test_1a47b775f65718978f1ffcd96376f8ecfa" prot="public" virt="non-virtual">
         <scope>Test</scope>

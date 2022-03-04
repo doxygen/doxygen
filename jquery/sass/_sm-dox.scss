@@ -217,6 +217,10 @@ $sm-dox__toggle-spacing: floor($sm-dox__main-row-height * 0.1);
             background: $sm-dox__collapsible-toggle-bg;
             @include border-radius($sm-dox__border-radius);
         }
+        & span.sub-arrow:before {
+            display: block;
+            content: '+';
+        }
         // Change + to - on sub menu expand
         &.highlighted span.sub-arrow:before {
             display: block;

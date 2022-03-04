@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
   <compounddef id="struct_s" kind="struct" language="C++" prot="public">
     <compoundname>S</compoundname>
     <includes refid="044__section_8h" local="no">044_section.h</includes>
@@ -9,6 +9,7 @@
         <definition>int S::pub1</definition>
         <argsstring/>
         <name>pub1</name>
+        <qualifiedname>S::pub1</qualifiedname>
         <briefdescription>
         </briefdescription>
         <detaileddescription>
@@ -16,13 +17,14 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="044_section.h" line="10" column="1" bodyfile="044_section.h" bodystart="10" bodyend="-1"/>
+        <location file="044_section.h" line="10" column="7" bodyfile="044_section.h" bodystart="10" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="struct_s_1a413054db7785010db38c16322c8583cc" prot="public" static="no" mutable="no">
         <type>int</type>
         <definition>int S::pub2</definition>
         <argsstring/>
         <name>pub2</name>
+        <qualifiedname>S::pub2</qualifiedname>
         <briefdescription>
         </briefdescription>
         <detaileddescription>
@@ -30,7 +32,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="044_section.h" line="12" column="1" bodyfile="044_section.h" bodystart="12" bodyend="-1"/>
+        <location file="044_section.h" line="12" column="7" bodyfile="044_section.h" bodystart="12" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <sectiondef kind="protected-attrib">
@@ -39,6 +41,7 @@
         <definition>int S::pro1</definition>
         <argsstring/>
         <name>pro1</name>
+        <qualifiedname>S::pro1</qualifiedname>
         <briefdescription>
         </briefdescription>
         <detaileddescription>
@@ -46,13 +49,14 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="044_section.h" line="17" column="1" bodyfile="044_section.h" bodystart="17" bodyend="-1"/>
+        <location file="044_section.h" line="17" column="7" bodyfile="044_section.h" bodystart="17" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="struct_s_1a0c535a6122f4ae509a336e3a67f927a4" prot="protected" static="no" mutable="no">
         <type>int</type>
         <definition>int S::pro2</definition>
         <argsstring/>
         <name>pro2</name>
+        <qualifiedname>S::pro2</qualifiedname>
         <briefdescription>
         </briefdescription>
         <detaileddescription>
@@ -60,7 +64,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="044_section.h" line="19" column="1" bodyfile="044_section.h" bodystart="19" bodyend="-1"/>
+        <location file="044_section.h" line="19" column="7" bodyfile="044_section.h" bodystart="19" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <sectiondef kind="private-attrib">
@@ -69,6 +73,7 @@
         <definition>int S::pri1</definition>
         <argsstring/>
         <name>pri1</name>
+        <qualifiedname>S::pri1</qualifiedname>
         <briefdescription>
         </briefdescription>
         <detaileddescription>
@@ -76,13 +81,14 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="044_section.h" line="24" column="1" bodyfile="044_section.h" bodystart="24" bodyend="-1"/>
+        <location file="044_section.h" line="24" column="7" bodyfile="044_section.h" bodystart="24" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="struct_s_1a4b26822a09bcd6b946702e99280826ff" prot="private" static="no" mutable="no">
         <type>int</type>
         <definition>int S::pri2</definition>
         <argsstring/>
         <name>pri2</name>
+        <qualifiedname>S::pri2</qualifiedname>
         <briefdescription>
         </briefdescription>
         <detaileddescription>
@@ -90,7 +96,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="044_section.h" line="26" column="1" bodyfile="044_section.h" bodystart="26" bodyend="-1"/>
+        <location file="044_section.h" line="26" column="7" bodyfile="044_section.h" bodystart="26" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
@@ -98,7 +104,7 @@
     <detaileddescription>
       <para>A struct </para>
     </detaileddescription>
-    <location file="044_section.h" line="6" column="1" bodyfile="044_section.h" bodystart="5" bodyend="27"/>
+    <location file="044_section.h" line="5" column="1" bodyfile="044_section.h" bodystart="6" bodyend="27"/>
     <listofallmembers>
       <member refid="struct_s_1ab754fee7e3500035f644d0ac528cbfc3" prot="private" virt="non-virtual">
         <scope>S</scope>

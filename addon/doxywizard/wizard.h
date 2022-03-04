@@ -1,8 +1,6 @@
 /******************************************************************************
  *
- * 
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2019 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -33,11 +31,6 @@ class Wizard;
 class QImage;
 class QLabel;
 
-enum OptLang     { Lang_Cpp, Lang_C, Lang_Java, Lang_CS };
-enum HtmlStyle   { HS_Plain, HS_TreeView, HS_CHM };
-enum TexStyle    { TS_PDFHyper, TS_PDF, TS_PS };
-enum DiagramMode { DM_None, DM_Builtin, DM_Dot };
-
 class TuneColorDialog : public QDialog
 {
     Q_OBJECT
@@ -52,11 +45,11 @@ class TuneColorDialog : public QDialog
     void updateImage(int hue,int sat,int val);
 
   private:
-    QImage *m_image;
-    QLabel *m_imageLab;
-    int m_hue;
-    int m_sat;
-    int m_gam;
+    QImage *m_image = 0;
+    QLabel *m_imageLab = 0;
+    int m_hue = 0;
+    int m_sat = 0;
+    int m_gam = 0;
 };
 
 class ColorPicker : public QWidget
@@ -91,11 +84,11 @@ private:
     void setSat(int v);
     void setGam(int v);
 
-    QPixmap *m_pix;
-    Mode m_mode;
-    int m_gam;
-    int m_hue;
-    int m_sat;
+    QPixmap *m_pix = 0;
+    Mode m_mode = Hue;
+    int m_gam = 0;
+    int m_hue = 0;
+    int m_sat = 0;
 
 };
 
@@ -120,16 +113,16 @@ class Step1 : public QWidget
     void setRecursiveScan(int);
 
   private:
-    QLineEdit *m_projName;
-    QLineEdit *m_projBrief;
-    QLineEdit *m_projNumber;
-    QLineEdit *m_sourceDir;
-    QLineEdit *m_destDir;
-    QLabel    *m_projIconLab;
-    QCheckBox *m_recursive;
-    QPushButton *m_srcSelectDir;
-    QPushButton *m_dstSelectDir;
-    Wizard    *m_wizard;
+    QLineEdit *m_projName = 0;
+    QLineEdit *m_projBrief = 0;
+    QLineEdit *m_projNumber = 0;
+    QLineEdit *m_sourceDir = 0;
+    QLineEdit *m_destDir = 0;
+    QLabel    *m_projIconLab = 0;
+    QCheckBox *m_recursive = 0;
+    QPushButton *m_srcSelectDir = 0;
+    QPushButton *m_dstSelectDir = 0;
+    Wizard    *m_wizard = 0;
     const QHash<QString,Input *> &m_modelData;
 };
 
@@ -146,12 +139,12 @@ class Step2 : public QWidget
     void changeCrossRefState(int choice);
 
   private:
-    QGroupBox    *m_extractMode;
-    QGroupBox    *m_optimizeLang;
-    QButtonGroup *m_extractModeGroup;
-    QButtonGroup *m_optimizeLangGroup;
-    QCheckBox    *m_crossRef;
-    Wizard       *m_wizard;
+    QGroupBox    *m_extractMode = 0;
+    QGroupBox    *m_optimizeLang = 0;
+    QButtonGroup *m_extractModeGroup = 0;
+    QButtonGroup *m_optimizeLangGroup = 0;
+    QCheckBox    *m_crossRef = 0;
+    Wizard       *m_wizard = 0;
     const QHash<QString,Input *> &m_modelData;
 };
 
@@ -169,24 +162,26 @@ class Step3 : public QWidget
     void setManEnabled(int);
     void setRtfEnabled(int);
     void setXmlEnabled(int);
+    void setDocbookEnabled(int);
     void setSearchEnabled(int);
     void setHtmlOptions(int);
     void setLatexOptions(int);
     void tuneColorDialog();
 
   private:
-    QGroupBox *m_texOptions;
-    QButtonGroup *m_texOptionsGroup;
-    QGroupBox *m_htmlOptions;
-    QButtonGroup *m_htmlOptionsGroup;
-    QCheckBox *m_htmlEnabled;
-    QCheckBox *m_latexEnabled;
-    QCheckBox *m_manEnabled;
-    QCheckBox *m_rtfEnabled;
-    QCheckBox *m_xmlEnabled;
-    QCheckBox *m_searchEnabled;
-    QPushButton *m_tuneColor;
-    Wizard    *m_wizard;
+    QGroupBox *m_texOptions = 0;
+    QButtonGroup *m_texOptionsGroup = 0;
+    QGroupBox *m_htmlOptions = 0;
+    QButtonGroup *m_htmlOptionsGroup = 0;
+    QCheckBox *m_htmlEnabled = 0;
+    QCheckBox *m_latexEnabled = 0;
+    QCheckBox *m_manEnabled = 0;
+    QCheckBox *m_rtfEnabled = 0;
+    QCheckBox *m_xmlEnabled = 0;
+    QCheckBox *m_docbookEnabled = 0;
+    QCheckBox *m_searchEnabled = 0;
+    QPushButton *m_tuneColor = 0;
+    Wizard    *m_wizard = 0;
     const QHash<QString,Input *> &m_modelData;
 };
 
@@ -209,17 +204,17 @@ class Step4 : public QWidget
     void setCallerGraphEnabled(int state);
 
   private:
-    QGroupBox *m_diagramMode;
-    QButtonGroup *m_diagramModeGroup;
-    QGroupBox *m_dotGroup;
-    QCheckBox *m_dotClass;
-    QCheckBox *m_dotCollaboration;
-    QCheckBox *m_dotInclude;
-    QCheckBox *m_dotIncludedBy;
-    QCheckBox *m_dotInheritance;
-    QCheckBox *m_dotCall;
-    QCheckBox *m_dotCaller;
-    Wizard    *m_wizard;
+    QGroupBox *m_diagramMode = 0;
+    QButtonGroup *m_diagramModeGroup = 0;
+    QGroupBox *m_dotGroup = 0;
+    QCheckBox *m_dotClass = 0;
+    QCheckBox *m_dotCollaboration = 0;
+    QCheckBox *m_dotInclude = 0;
+    QCheckBox *m_dotIncludedBy = 0;
+    QCheckBox *m_dotInheritance = 0;
+    QCheckBox *m_dotCall = 0;
+    QCheckBox *m_dotCaller = 0;
+    Wizard    *m_wizard = 0;
     const QHash<QString,Input *> &m_modelData;
 };
 
@@ -243,14 +238,14 @@ class Wizard : public QSplitter
 
   private:
     const QHash<QString,Input *> &m_modelData;
-    QTreeWidget    *m_treeWidget;
-    QStackedWidget *m_topicStack;
-    Step1          *m_step1;
-    Step2          *m_step2;
-    Step3          *m_step3;
-    Step4          *m_step4;
-    QPushButton    *m_next;
-    QPushButton    *m_prev;
+    QTreeWidget    *m_treeWidget = 0;
+    QStackedWidget *m_topicStack = 0;
+    Step1          *m_step1 = 0;
+    Step2          *m_step2 = 0;
+    Step3          *m_step3 = 0;
+    Step4          *m_step4 = 0;
+    QPushButton    *m_next = 0;
+    QPushButton    *m_prev = 0;
 };
 
 #endif

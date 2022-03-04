@@ -1,10 +1,10 @@
 /******************************************************************************
  *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2021 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -24,13 +24,12 @@
 #ifndef FTVHELP_H
 #define FTVHELP_H
 
-#include <qlist.h>
+#include <vector>
 #include "index.h"
 
-class QFile;
 class Definition;
+class TextStream;
 struct FTVNode;
-class FTextStream;
 
 /** A class that generates a dynamic tree view side panel.
  */
@@ -44,34 +43,32 @@ class FTVHelp : public IndexIntf
     void incContentsDepth();
     void decContentsDepth();
     void addContentsItem(bool isDir,
-                         const char *name,
-                         const char *ref,
-                         const char *file,
-                         const char *anchor,
+                         const QCString &name,
+                         const QCString &ref,
+                         const QCString &file,
+                         const QCString &anchor,
                          bool separateIndex,
                          bool addToNavIndex,
-                         Definition *def);
-    void addIndexItem(Definition *,MemberDef *,const char *,const char *) {}
-    void addIndexFile(const char *) {}
-    void addImageFile(const char *) {}
-    void addStyleSheetFile(const char *) {}
+                         const Definition *def);
+    void addIndexItem(const Definition *,const MemberDef *,const QCString &,const QCString &) {}
+    void addIndexFile(const QCString &) {}
+    void addImageFile(const QCString &) {}
+    void addStyleSheetFile(const QCString &) {}
     void generateTreeView();
-    void generateTreeViewInline(FTextStream &t);
+    void generateTreeViewInline(TextStream &t);
     static void generateTreeViewImages();
     void generateTreeViewScripts();
   private:
-    void generateTree(FTextStream &t,const QList<FTVNode> &nl,int level,int maxLevel,int &index);
-    //bool generateJSTree(FTextStream &tidx,FTextStream &t,const QList<FTVNode> &nl,int level,bool &first);
-    //bool generateJSTreeTopLevel(FTextStream &tidx,FTextStream &t,const QList<FTVNode> &nl,int level,bool &first);
+    void generateTree(TextStream &t,const std::vector<FTVNode*> &nl,int level,int maxLevel,int &index);
     QCString generateIndentLabel(FTVNode *n,int level);
-    void generateIndent(FTextStream &t,FTVNode *n,bool opened);
-    void generateLink(FTextStream &t,FTVNode *n);
-    //void generateJSLink(FTextStream &t,FTVNode *n);
-    QList<FTVNode> *m_indentNodes;
+    void generateIndent(TextStream &t,FTVNode *n,bool opened);
+    void generateLink(TextStream &t,FTVNode *n);
+    std::vector< std::vector<FTVNode*> > m_indentNodes;
     int m_indent;
     bool m_topLevelIndex;
 };
 
+extern const char *JAVASCRIPT_LICENSE_TEXT;
 
 #endif /* FTVHELP_H */
 

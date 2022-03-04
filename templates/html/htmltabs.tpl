@@ -15,6 +15,10 @@
     {% if namespaceList %}
    <li{% if page.highlight=='namespaces' %} class="current"{% endif %}><a href="{{ page.relPath }}namespaces{{ config.HTML_FILE_EXTENSION }}"><span>{{ tr.namespaces|nowrap }}</span></a></li>
     {% endif %}
+  {# concepts tab #}
+    {% if conceptList %}
+   <li{% if page.highlight=='concepts' %} class="current"{% endif %}><a href="{{ page.relPath }}concepts{{ config.HTML_FILE_EXTENSION }}"><span>{{ tr.concepts|nowrap }}</span></a></li>
+    {% endif %}
   {# classes tab #}
     {% if classList %}
    <li{% if page.highlight=='classes' %} class="current"{% endif %}><a href="{{ page.relPath }}annotated{{ config.HTML_FILE_EXTENSION }}"><span>{{ tr.classes|nowrap }}</span></a></li>
@@ -35,7 +39,7 @@
      <div id="MSearchBox" class="MSearchBoxInactive">
        <div class="left">
          <form id="FSearchBox" action="{{ page.relPath }}search{% if config.EXTERNAL_SEARCH %}{{ config.HTML_FILE_EXTENSION }}{% else %}.php{% endif %}" method="get">
-           <img id="MSearchSelect" src="{{ page.relPath }}search/mag.png" alt=""/>
+           <img id="MSearchSelect" src="{{ page.relPath }}search/mag.svg" alt=""/>
       {% if page.highlight!='search' %}
            <input type="text" id="MSearchField" name="query" value="{{ tr.search }}" size="20" accesskey="S" 
                   onfocus="searchBox.OnSearchFieldFocus(true)" 
@@ -50,7 +54,7 @@
    <li>
      <div id="MSearchBox" class="MSearchBoxInactive">
      <span class="left">
-       <img id="MSearchSelect" src="{{ page.relPath }}search/mag_sel.png"
+       <img id="MSearchSelect" src="{{ page.relPath }}search/mag_sel.svg"
             onmouseover="return searchBox.OnSearchSelectShow()"
             onmouseout="return searchBox.OnSearchSelectHide()"
             alt=""/>
@@ -60,7 +64,7 @@
             onkeyup="searchBox.OnSearchFieldChange(event)"/>
        </span><span class="right">
          <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><img
-            id="MSearchCloseImg" border="0" src="{{ page.relPath }}search/close.png" alt=""/></a>
+            id="MSearchCloseImg" border="0" src="{{ page.relPath }}search/close.svg" alt=""/></a>
        </span>
      </div>
    </li>
@@ -81,7 +85,7 @@
   {% if page.highlight=='classes' %}
     <li{% if page.subhighlight=='classlist' %} class="current"{% endif %}><a href="{{ page.relPath }}annotated{{ config.HTML_FILE_EXTENSION }}"><span>{{ tr.classList|nowrap }}</span></a></li>
     <li{% if page.subhighlight=='classindex' %} class="current"{% endif %}><a href="{{ page.relPath }}classes{{ config.HTML_FILE_EXTENSION }}"><span>{{ tr.classIndex|nowrap }}</span></a></li>
-    {% if classHierarchy.tree %}
+    {% if classHierarchy.tree and classHierarchy.maxDepth>1 %}
     <li{% if page.subhighlight=='classhierarchy' %} class="current"{% endif %}><a href="{{ page.relPath }}hierarchy{{ config.HTML_FILE_EXTENSION }}"><span>{{ tr.classHierarchy|nowrap }}</span></a></li>
     {% endif %}
     {% if classMembersIndex.all %}

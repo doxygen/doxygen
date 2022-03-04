@@ -1,19 +1,53 @@
-# configvalues.h
-add_custom_command(
-    COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/src/configgen.py -maph ${CMAKE_SOURCE_DIR}/src/config.xml > ${GENERATED_SRC}/configvalues.h
-    DEPENDS ${CMAKE_SOURCE_DIR}/src/config.xml ${CMAKE_SOURCE_DIR}/src/configgen.py
-    OUTPUT ${GENERATED_SRC}/configvalues.h
-)
-set_source_files_properties(${GENERATED_SRC}/configvalues.h PROPERTIES GENERATED 1)
+#
+# Generate parser (default target)
+#
+# when generating the parser with debug options it will look like:
+#   make JAVACC_FLAGS=-debug_parser
+#  or
+#   make JAVACC_FLAGS="-debug_parser -debug_lookahead"
+#
+# Available debug options:
+#  -debug_parser
+#  -debug_token_manager
+#  -debug_lookahead
+#
+# For other javacc settings / options consult the documentation of javacc.
 
-include_directories(${CMAKE_SOURCE_DIR}/src ${CMAKE_SOURCE_DIR}/qtools ${GENERATED_SRC})
+find_package(Javacc)
+if (JAVACC_FOUND)
+    if (JAVACC_VERSION VERSION_LESS 7.0.5)
+        message(STATUS "  Doxygen requires at least JavaCC version 7.0.5 (installed: ${JAVACC_VERSION})")
+	message(STATUS "  Fall back to JavaCC not installed, using existing files.")
+    else()
+
+    add_custom_command(
+        COMMAND ${JAVACC_EXECUTABLE} ${JAVACC_FLAGS} -OUTPUT_DIRECTORY=${PROJECT_SOURCE_DIR}/vhdlparser ${PROJECT_SOURCE_DIR}/vhdlparser/vhdlparser.jj
+        DEPENDS ${PROJECT_SOURCE_DIR}/vhdlparser/vhdlparser.jj
+        OUTPUT ${PROJECT_SOURCE_DIR}/vhdlparser/CharStream.cc ${PROJECT_SOURCE_DIR}/vhdlparser/CharStream.h ${PROJECT_SOURCE_DIR}/vhdlparser/ErrorHandler.h ${PROJECT_SOURCE_DIR}/vhdlparser/ParseException.cc ${PROJECT_SOURCE_DIR}/vhdlparser/ParseException.h ${PROJECT_SOURCE_DIR}/vhdlparser/Token.cc ${PROJECT_SOURCE_DIR}/vhdlparser/Token.h ${PROJECT_SOURCE_DIR}/vhdlparser/TokenManager.h ${PROJECT_SOURCE_DIR}/vhdlparser/TokenMgrError.cc ${PROJECT_SOURCE_DIR}/vhdlparser/TokenMgrError.h ${PROJECT_SOURCE_DIR}/vhdlparser/VhdlParser.cc ${PROJECT_SOURCE_DIR}/vhdlparser/VhdlParser.h ${PROJECT_SOURCE_DIR}/vhdlparser/VhdlParserConstants.h ${PROJECT_SOURCE_DIR}/vhdlparser/VhdlParserTokenManager.cc ${PROJECT_SOURCE_DIR}/vhdlparser/VhdlParserTokenManager.h
+    )
+
+    endif()
+endif()
+
+add_custom_command(
+    COMMAND ${PYTHON_EXECUTABLE} ${PROJECT_SOURCE_DIR}/vhdlparser/vhdl_adj.py ${PROJECT_SOURCE_DIR}/vhdlparser/VhdlParser.cc ${GENERATED_SRC}/VhdlParser_adj.cc
+    DEPENDS ${PROJECT_SOURCE_DIR}/vhdlparser/VhdlParser.cc ${PROJECT_SOURCE_DIR}/vhdlparser/vhdl_adj.py
+    OUTPUT  ${GENERATED_SRC}/VhdlParser_adj.cc
+)
+set_source_files_properties(${GENERATED_SRC}/VhdlParser_adj.cc PROPERTIES GENERATED 1)
+
+include_directories(
+	${PROJECT_SOURCE_DIR}/src
+	${PROJECT_SOURCE_DIR}/vhdlparser
+	${GENERATED_SRC})
 add_library(vhdlparser STATIC
-${GENERATED_SRC}/configvalues.h
 CharStream.cc
 ParseException.cc
 Token.cc
 TokenMgrError.cc
-VhdlParser.cc
+${GENERATED_SRC}/VhdlParser_adj.cc
 VhdlParserTokenManager.cc
-VhdlParserIF.cpp
+)
+add_dependencies(vhdlparser
+    generate_configvalues_header
 )

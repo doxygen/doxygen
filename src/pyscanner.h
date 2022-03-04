@@ -1,12 +1,12 @@
 /******************************************************************************
  *
- * 
+ *
  *
  * Copyright (C) 1997-2015 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -31,37 +31,20 @@
  *
  * This is the Python language parser for doxygen.
  */
-class PythonLanguageScanner : public ParserInterface
+class PythonOutlineParser : public OutlineParserInterface
 {
   public:
-    virtual ~PythonLanguageScanner() {}
-    void startTranslationUnit(const char *) {}
-    void finishTranslationUnit() {}
-    void parseInput(const char * fileName, 
-                    const char *fileBuf, 
-                    Entry *root,
-                    bool sameTranslationUnit,
-                    QStrList &filesInSameTranslationUnit);
-    bool needsPreprocessing(const QCString &extension);
-    void parseCode(CodeOutputInterface &codeOutIntf,
-                   const char *scopeName,
-                   const QCString &input,
-                   SrcLangExt lang,
-                   bool isExampleBlock,
-                   const char *exampleName=0,
-                   FileDef *fileDef=0,
-                   int startLine=-1,
-                   int endLine=-1,
-                   bool inlineFragment=FALSE,
-                   MemberDef *memberDef=0,
-                   bool showLineNumbers=TRUE,
-                   Definition *searchCtx=0,
-                   bool collectXrefs=TRUE
-                  );
-    void resetCodeParserState();
-    void parsePrototype(const char *text);
+    PythonOutlineParser();
+    virtual ~PythonOutlineParser();
+    void parseInput(const QCString &fileName,
+                    const char *fileBuf,
+                    const std::shared_ptr<Entry> &root,
+                    ClangTUParser *clangParser);
+    bool needsPreprocessing(const QCString &extension) const;
+    void parsePrototype(const QCString &text);
+  private:
+    struct Private;
+    std::unique_ptr<Private> p;
 };
-
-void pyscanFreeScanner();
 
 #endif

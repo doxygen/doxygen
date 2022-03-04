@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
   <compounddef id="struct_truck" kind="struct" language="C++" prot="public">
     <compoundname>Truck</compoundname>
     <basecompoundref refid="struct_vehicle" prot="public" virt="non-virtual">Vehicle</basecompoundref>
@@ -11,6 +11,7 @@
         <definition>Vehicle Truck::base</definition>
         <argsstring/>
         <name>base</name>
+        <qualifiedname>Truck::base</qualifiedname>
         <briefdescription>
           <para>Base class. </para>
         </briefdescription>
@@ -18,7 +19,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="027_extends.c" line="79" column="1" bodyfile="027_extends.c" bodystart="79" bodyend="-1"/>
+        <location file="027_extends.c" line="79" column="11" bodyfile="027_extends.c" bodystart="79" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
@@ -27,48 +28,48 @@
       <para><ref refid="struct_truck" kindref="compound">Truck</ref> class. </para>
     </detaileddescription>
     <inheritancegraph>
-      <node id="11">
-        <label>Truck</label>
-        <link refid="struct_truck"/>
-        <childnode refid="12" relation="public-inheritance">
-        </childnode>
-      </node>
-      <node id="12">
-        <label>Vehicle</label>
-        <link refid="struct_vehicle"/>
-        <childnode refid="13" relation="public-inheritance">
-        </childnode>
-      </node>
-      <node id="13">
+      <node id="3">
         <label>Object</label>
         <link refid="struct_object"/>
+      </node>
+      <node id="1">
+        <label>Truck</label>
+        <link refid="struct_truck"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="2">
+        <label>Vehicle</label>
+        <link refid="struct_vehicle"/>
+        <childnode refid="3" relation="public-inheritance">
+        </childnode>
       </node>
     </inheritancegraph>
     <collaborationgraph>
-      <node id="14">
-        <label>Truck</label>
-        <link refid="struct_truck"/>
-        <childnode refid="15" relation="public-inheritance">
-        </childnode>
-        <childnode refid="15" relation="usage">
-          <edgelabel>base</edgelabel>
-        </childnode>
-      </node>
-      <node id="15">
-        <label>Vehicle</label>
-        <link refid="struct_vehicle"/>
-        <childnode refid="16" relation="public-inheritance">
-        </childnode>
-        <childnode refid="16" relation="usage">
-          <edgelabel>base</edgelabel>
-        </childnode>
-      </node>
-      <node id="16">
+      <node id="3">
         <label>Object</label>
         <link refid="struct_object"/>
       </node>
+      <node id="1">
+        <label>Truck</label>
+        <link refid="struct_truck"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+        <childnode refid="2" relation="usage">
+          <edgelabel>base</edgelabel>
+        </childnode>
+      </node>
+      <node id="2">
+        <label>Vehicle</label>
+        <link refid="struct_vehicle"/>
+        <childnode refid="3" relation="public-inheritance">
+        </childnode>
+        <childnode refid="3" relation="usage">
+          <edgelabel>base</edgelabel>
+        </childnode>
+      </node>
     </collaborationgraph>
-    <location file="027_extends.c" line="78" column="1" bodyfile="027_extends.c" bodystart="77" bodyend="80"/>
+    <location file="027_extends.c" line="77" column="1" bodyfile="027_extends.c" bodystart="78" bodyend="80"/>
     <listofallmembers>
       <member refid="struct_truck_1ad0ac321609dda1a6c552488b05ec7ac8" prot="protected" virt="non-virtual">
         <scope>Truck</scope>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
   <compounddef id="reminders" kind="page">
     <compoundname>reminders</compoundname>
     <title>Reminders</title>
@@ -9,19 +9,20 @@
       <para>
         <variablelist>
           <varlistentry>
-            <term>Class <ref refid="class_reminder" kindref="compound">Reminder</ref></term>
+            <term>Class <ref refid="class_reminder" kindref="compound">Reminder</ref>  </term>
           </varlistentry>
           <listitem>
-            <para><anchor id="reminders_1_reminders000001"/>A reminder  </para>
+            <para><anchor id="reminders_1_reminders000001"/> A reminder  </para>
           </listitem>
           <varlistentry>
             <term>Member <ref refid="class_reminder_1a173b5218bb11287b0e86a550d9f0728d" kindref="member">Reminder::reminder</ref>  ()</term>
           </varlistentry>
           <listitem>
-            <para><anchor id="reminders_1_reminders000002"/>Need to rework this before the next release. </para>
+            <para><anchor id="reminders_1_reminders000002"/> Need to rework this before the next release. </para>
           </listitem>
         </variablelist>
       </para>
     </detaileddescription>
+    <location file="reminders"/>
   </compounddef>
 </doxygen>

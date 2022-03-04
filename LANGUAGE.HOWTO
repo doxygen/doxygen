@@ -6,40 +6,41 @@ Just follow these steps:
    is already working on support for that language, you will be 
    assigned as the maintainer for the language. I'll create a 
    list on Doxygen's homepage, so everyone knows who is doing what.
-2) Create a copy of translator_en.h and name it 
+2) Edit src/config.xml:
+   - find the <option> with id='OUTPUT_LANGUAGE'
+   - add a new value with your language and an optional description:
+     <value name='YourLanguage' desc='(only for disambiguation)'/>
+3) Create a copy of translator_en.h and name it
    translator_<your_2_letter_country_code>.h
    I'll use xx in the rest of this document.
-3) Edit language.cpp:
-   - Add a #include<translator_xx.h> 
+4) Edit language.cpp:
+   - Add an include block:
+
+     #include "translator_xx.h"
+
    - In setTranslator() add
-     
-     else if (L_EQUAL("your_language_name"))
-     {
-       theTranslator = new TranslatorYourLanguage;
-     }
-   
-     after the if { ... }
-4) Edit libdoxygen.pro.in and add translator_xx.h to the HEADERS line.
+
+         case OUTPUT_LANGUAGE_t::YourLanguage: theTranslator = new TranslatorYourLanguage; break;
+
 5) Edit translator_xx.h:
    - Change TRANSLATOR_EN_H to TRANSLATOR_XX_H (in both the #include line and
      the #define line).
    - Change TranslatorEnglish to TranslatorYourLanguage 
    - In the member idLanguage() change "english" into the name of your
-     language (use lower case characters only). Depending on the language you
-     may also wish to change the member functions latexLanguageSupportCommand()
-     and idLanguageCharset().
+     language (use lower case characters only). Set the trISOLang() and
+     getLanguageString() return values to match your language as well. Depending on the
+     language you may also wish to change the member function latexLanguageSupportCommand().
    - Edit all the strings that are returned by the members that start
      with tr. Try to match punctuation and capitals!
      To enter special characters (with accents) you can:
-        a) Enter them directly if your keyboard supports that and you are 
-           using a Latin-1 font.
-           Doxygen will translate the characters to proper Latex and
-           leave the Html and man output for what it is (which is fine, if
-           idLanguageCharset() is set correctly).
-        b) Use html codes like &auml; for an a with an umlaut (i.e. ä).
+        a) Enter them directly and store the files using UTF-8 encoding.
+        b) Use html codes like &auml; for an a with an umlaut (i.e. Ã¤).
            See the HTML specification for the codes.
-6) Run configure and make again from the root of the distribution, 
-   in order to regenerate the Makefiles.
+6) Change to your build directory and build again in order to regenerate the binary e.g.:
+
+    cd path/where/you/build
+    cmake --build .
+
 7) Now you can use OUTPUT_LANGUAGE = your_language_name 
    in the config file to generate output in your language.
 8) Send translator_xx.h to me so I can add it to doxygen.

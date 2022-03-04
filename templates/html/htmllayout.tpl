@@ -3,16 +3,23 @@
 {# ---- copy fixed resources to the output ----- #}
 
 {% resource 'doxygen.css' %}
-{% resource 'tabs.css' %}
+{% if config.HTML_DYNAMIC_MENUS %}
+  {% resource 'tabs.css' %}
+{% else %}
+  {% resource 'fixed_tabs.css' as 'tabs.css' %}
+{% endif %}
 {% resource 'jquery.js' %}
-{% resource 'dynsections.js %}
+{% resource 'dynsections.js' %}
+{% if config.SOURCE_BROWSER and config.SOURCE_TOOLTIPS %}
+{% resource 'dynsections_tooltips.js' append 'dynsections.js' %}
+{% endif %}
 {% resource 'tab_a.lum' %}
 {% resource 'tab_b.lum' %}
 {% resource 'tab_h.lum' %}
 {% resource 'tab_s.lum' %}
 {% resource 'tab_h.lum' %}
 {% resource 'bc_s.luma' %}
-{% resource 'doxygen.luma' %}
+{% resource 'doxygen.svg' %}
 {% resource 'closed.luma' %}
 {% resource 'open.luma' %}
 {% resource 'bdwn.luma' %}
@@ -23,10 +30,14 @@
 {% resource 'nav_f.lum' %}
 {% resource 'nav_g.png' %}
 {% resource 'nav_h.lum' %}
+{% if config.GENERATE_TREEVIEW %}
 {% resource 'navtree.css' %}
 {% resource 'navtree.js' %}
 {% resource 'resize.js' %}
+{% endif %}
+{% if not config.DISABLE_INDEX and config.HTML_DYNAMIC_MENUS %}
 {% resource 'menu.js' %}
+{% endif %}
 {% resource 'doc.luma' %}
 {% resource 'folderopen.luma' %}
 {% resource 'folderclosed.luma' %}
@@ -37,26 +48,38 @@
 {% resource 'search_m.png' as 'search/search_m.png' %}
 {% resource 'search_r.png' as 'search/search_r.png' %}
 {% if config.DISABLE_INDEX %}
-  {% resource 'search_noidx.css' as 'search/search.css'   %}
+  {% if config.GENERATE_TREEVIEW and config.FULL_SIDEBAR %}
+  {% resource 'search_sidebar.css'   as 'search/search.css'   %}
+  {% else %}
+  {% resource 'search_nomenu.css'    as 'search/search.css'   %}
+  {% endif %}
 {% else %}
-  {% resource 'search.css'       as 'search/search.css'   %}
+  {% if not config.HTML_DYNAMIC_MENUS %}
+  {% resource 'search_fixedtabs.css' as 'search/search.css'   %}
+  {% else %}
+  {% resource 'search.css'           as 'search/search.css'   %}
+  {% endif %}
 {% endif %}
+{% resource 'search_common.css'      append 'search/search.css' %}
+{% create 'search/nomatches.html' from 'nomatches.tpl' %}
 
 {% if config.SERVER_BASED_SEARCH %}
   {# server side search resources #}
-  {% resource 'mag.png'     as 'search/mag.png'     %}
+  {% resource 'mag.svg'     as 'search/mag.svg'     %}
   {% resource 'extsearch.js as 'search/search.js'   %}
   {% resource 'search_functions.php'  as 'search/search_functions.php'  %}
   {% resource 'search_opensearch.php' as 'search/search_opensearch.php' %}
 {% else %}
   {# client side search resources #}
-  {% resource 'mag_sel.png' as 'search/mag_sel.png' %}
-  {% resource 'close.png'   as 'search/close.png'   %}
+  {% resource 'mag_sel.svg' as 'search/mag_sel.svg' %}
+  {% resource 'close.svg'   as 'search/close.svg'   %}
   {% resource 'search.js'   as 'search/search.js'   %}
 {% endif %}
 
 {# interactive SVGs #}
-{% resource 'svgpan.js' %}
+{% if config.INTERACTIVE_SVG %}
+  {% resource 'svgpan.js' %}
+{% endif %}
 
 {# -------------------------------------------------- #}
 
@@ -68,7 +91,11 @@
 {% set page_postfix='' %}
 
 {# open the global navigation index #}
-{% indexentry nav name=tr.mainPage file='index' anchor='' isReference=False %}
+{% if config.PROJECT_NAME %}
+  {% indexentry nav name=config.PROJECT_NAME file='index' anchor='' isReference=False separateIndex=False addToIndex=True %}
+{% else %}
+  {% indexentry nav name=tr.mainPage file='index' anchor='' isReference=False separateIndex=False addToIndex=True %}
+{% endif %}
 {% opensubindex nav %}
 
 {# ----------- HTML DOCUMENTATION PAGES ------------ #}
@@ -85,6 +112,13 @@
   {% endwith %}
 {% endfor %}
 
+{# write concept documentation pages #}
+{% for compound in conceptList %}
+  {% with page=compound %}
+    {% create compound.fileName|append:config.HTML_FILE_EXTENSION from 'htmlconcept.tpl' %}
+  {% endwith %}
+{% endfor %}
+
 {# write class documentation pages #}
 {% for compound in classList %}
   {% with page=compound %}
@@ -98,7 +132,7 @@
 {# write the file sources #}
 {% for compound in fileList %}
   {% with page=compound %}
-    {# TODO: to deal with clang optimisation, we need to write the sources in a different order! #}
+    {# TODO: to deal with clang optimization, we need to write the sources in a different order! #}
     {% if compound.hasSourceFile %}
       {% create compound.sourceFileName|append:config.HTML_FILE_EXTENSION from 'htmlsource.tpl' %}
     {% endif %}
@@ -158,7 +192,7 @@
 
 {# --- namespaces --- #}
 {% if namespaceList %}
-  {% indexentry nav name=tr.namespaces file='' anchor='' isReference=False %}
+  {% indexentry nav name=tr.namespaces file='namespaces' anchor='' isReference=False separateIndex=False addToIndex=True %}
   {% opensubindex nav %}
 
   {% if namespaceTree.tree %}
@@ -170,7 +204,7 @@
   {# write symbol indices for namespace members #}
   {% if namespaceMembersIndex.all %}
     {% with page=namespaceMembersIndex scope='namespace' template='htmlnsmembers.tpl' %}
-      {% indexentry nav name=tr.namespaceMembers file=page.fileName anchor='' isReference=False %}
+      {% indexentry nav name=tr.namespaceMembers file=page.fileName anchor='' isReference=False separateIndex=False addToIndex=True %}
       {% include 'htmlmembersindex.tpl' %}
     {% endwith %}
   {% endif %}
@@ -178,9 +212,16 @@
   {% closesubindex nav %}
 {% endif %}
 
+{# --- concepts --- #}
+{% if conceptTree.tree %}
+  {% with page=conceptTree %}
+    {% create conceptTree.fileName|append:config.HTML_FILE_EXTENSION from 'htmlconcepts.tpl' %}
+  {% endwith %}
+{% endif %}
+
 {# --- classes --- #}
 {% if classList %}
-  {% indexentry nav name=tr.classes file='' anchor='' isReference=False %}
+  {% indexentry nav name=tr.classes file='annotated'|append:config.HTML_FILE_EXTENSION anchor='' isReference=False separateIndex=False addToIndex=False %}
   {% opensubindex nav %}
 
   {# write the annotated class list #}
@@ -198,7 +239,7 @@
   {% endif %}
 
   {# write the class inheritance hierarchy #}
-  {% if classHierarchy.tree %}
+  {% if classHierarchy.tree and classHierarchy.maxDepth>1 %}
     {% with page=classHierarchy %}
       {% create classHierarchy.fileName|append:config.HTML_FILE_EXTENSION from 'htmlhierarchy.tpl' %}
       {% if config.HAVE_DOT and config.GRAPHICAL_HIERARCHY %}
@@ -212,7 +253,7 @@
   {# write symbol indices for class members #}
   {% if classMembersIndex.all %}
     {% with page=classMembersIndex scope='class' template='htmlclmembers.tpl' %}
-      {% indexentry nav name=tr.classMembers file=page.fileName anchor='' isReference=False %}
+      {% indexentry nav name=tr.classMembers file=page.fileName anchor='' isReference=False separateIndex=False addToIndex=True %}
       {% include 'htmlmembersindex.tpl' %}
     {% endwith %}
   {% endif %}
@@ -222,7 +263,7 @@
 
 {# --- files --- #}
 {% if fileList %}
-  {% indexentry nav name=tr.files file='' anchor='' isReference=False %}
+  {% indexentry nav name=tr.files file='files' anchor='' isReference=False separateIndex=False addToIndex=False addToIndex=False %}
   {% opensubindex nav %}
 
   {# write the directory/file hierarchy #}
@@ -235,7 +276,7 @@
   {# write symbol indices for global namespace #}
   {% if globalsIndex.all %}
     {% with page=globalsIndex scope='file' template='htmlflmembers.tpl' %}
-      {% indexentry nav name=tr.fileMembers file=page.fileName anchor='' isReference=False %}
+      {% indexentry nav name=tr.fileMembers file=page.fileName anchor='' isReference=False separateIndex=False addToIndex=True %}
       {% include 'htmlmembersindex.tpl' %}
     {% endwith %}
   {% endif %}
@@ -258,7 +299,7 @@
   {% create 'search/searchdata.js' from 'htmljssearchdata.tpl' %}
   {% for idx in searchIndices %}
     {% for si in idx.symbolIndices %}
-      {% with baseName=si.name|append:'_'|append:forloop.counter0 %}
+      {% with hexCount=forloop.counter0|hex baseName=si.name|append:'_'|append:hexCount %}
         {% create baseName|prepend:'search/'|append:config.HTML_FILE_EXTENSION from 'htmlsearchresult.tpl' %}
         {% create baseName|prepend:'search/'|append:'.js' from 'htmljssearchindex.tpl' %}
       {% endwith %}
