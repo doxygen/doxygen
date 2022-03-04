@@ -50,8 +50,6 @@ class LatexCodeGenerator : public CodeOutputInterface
     void startFontClass(const QCString &) override;
     void endFontClass() override;
     void writeCodeAnchor(const QCString &) override {}
-    void setCurrentDoc(const Definition *,const QCString &,bool) override {}
-    void addWord(const QCString &,bool) override {}
     void startCodeFragment(const QCString &style) override;
     void endCodeFragment(const QCString &style) override;
 

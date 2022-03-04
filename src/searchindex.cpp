@@ -17,6 +17,7 @@
 #include <ctype.h>
 #include <assert.h>
 #include <sstream>
+#include <mutex>
 
 #include "searchindex.h"
 #include "config.h"
@@ -384,6 +385,27 @@ void SearchIndex::write(const QCString &fileName)
     }
   }
 
+}
+
+static std::mutex g_transferSearchIndexMutex;
+
+void SIDataCollection::transfer(SearchIndexIntf &intf)
+{
+  std::lock_guard<std::mutex> lock(g_transferSearchIndexMutex);
+  for (const auto &v : m_data)
+  {
+    if (std::holds_alternative<SIData_Word>(v))
+    {
+      const auto &d = std::get<SIData_Word>(v);
+      intf.addWord(d.word,d.hiPrio);
+    }
+    else if (std::holds_alternative<SIData_CurrentDoc>(v))
+    {
+      const auto &d = std::get<SIData_CurrentDoc>(v);
+      intf.setCurrentDoc(d.ctx,d.anchor,d.isSourceFile);
+    }
+  }
+  m_data.clear();
 }
 
 

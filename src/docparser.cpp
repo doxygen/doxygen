@@ -151,6 +151,13 @@ struct DocParserContext
 class DocParser : public IDocParser
 {
   public:
+    ~DocParser()
+    {
+      if (Doxygen::searchIndex)
+      {
+        searchData.transfer(*Doxygen::searchIndex);
+      }
+    }
     void pushContext();
     void popContext();
     void handleImg(DocNode *parent,DocNodeList &children,const HtmlAttribList &tagHtmlAttribs);
@@ -191,6 +198,7 @@ class DocParser : public IDocParser
     std::stack< DocParserContext > contextStack;
     DocParserContext               context;
     DocTokenizer                   tokenizer;
+    SIDataCollection               searchData;
 };
 
 std::unique_ptr<IDocParser> createDocParser()
@@ -1993,7 +2001,7 @@ DocWord::DocWord(DocParser &parser,DocNode *parent,const QCString &word) :
   //printf("new word %s url=%s\n",qPrint(word),qPrint(parser.context.searchUrl));
   if (Doxygen::searchIndex && !parser.context.searchUrl.isEmpty())
   {
-    Doxygen::searchIndex->addWord(word,FALSE);
+    parser.searchData.addWord(word,false);
   }
 }
 
@@ -2011,7 +2019,7 @@ DocLinkedWord::DocLinkedWord(DocParser &parser,DocNode *parent,const QCString &w
   //    qPrint(word),qPrint(parser.context.searchUrl),qPrint(tooltip));
   if (Doxygen::searchIndex && !parser.context.searchUrl.isEmpty())
   {
-    Doxygen::searchIndex->addWord(word,FALSE);
+    parser.searchData.addWord(word,false);
   }
 }
 
@@ -7654,12 +7662,12 @@ DocRoot *validatingParseDoc(IDocParser &parserIntf,
     if (md)
     {
       parser.context.searchUrl=md->getOutputFileBase();
-      Doxygen::searchIndex->setCurrentDoc(md,md->anchor(),FALSE);
+      parser.searchData.setCurrentDoc(md,md->anchor(),false);
     }
     else if (ctx)
     {
       parser.context.searchUrl=ctx->getOutputFileBase();
-      Doxygen::searchIndex->setCurrentDoc(ctx,ctx->anchor(),FALSE);
+      parser.searchData.setCurrentDoc(ctx,ctx->anchor(),false);
     }
   }
   else

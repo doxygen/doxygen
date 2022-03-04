@@ -22,6 +22,8 @@
 
 #include "index.h" // for IndexSections
 #include "outputgen.h"
+#include "searchindex.h" // for SIDataCollection
+#include "doxygen.h"
 
 class ClassDiagram;
 class DotClassGraph;
@@ -485,10 +487,22 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::endFontClass); }
     void writeCodeAnchor(const QCString &name)
     { forall(&OutputGenerator::writeCodeAnchor,name); }
+
     void setCurrentDoc(const Definition *context,const QCString &anchor,bool isSourceFile)
-    { forall(&OutputGenerator::setCurrentDoc,context,anchor,isSourceFile); }
+    { /*forall(&OutputGenerator::setCurrentDoc,context,anchor,isSourceFile);*/
+      m_searchData.setCurrentDoc(context,anchor,isSourceFile);
+    }
     void addWord(const QCString &word,bool hiPriority)
-    { forall(&OutputGenerator::addWord,word,hiPriority); }
+    { /*forall(&OutputGenerator::addWord,word,hiPriority);*/
+      m_searchData.addWord(word,hiPriority);
+    }
+    void indexSearchData()
+    {
+      if (Doxygen::searchIndex)
+      {
+        m_searchData.transfer(*Doxygen::searchIndex);
+      }
+    }
 
     void startPlainFile(const QCString &name)
     { forall(&OutputGenerator::startPlainFile,name); }
@@ -515,6 +529,7 @@ class OutputList : public OutputDocInterface
 
     std::vector< std::unique_ptr<OutputGenerator> > m_outputs;
     int m_id;
+    SIDataCollection m_searchData;
 
 };
 

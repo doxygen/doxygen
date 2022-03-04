@@ -7989,6 +7989,7 @@ static void generateFileSources()
       msg("Parsing code for file %s...\n",qPrint(fd->docName()));
       fd->parseSource(parser);
     }
+    ol.indexSearchData();
   };
   if (!Doxygen::inputNameLinkedMap->empty())
   {
@@ -8121,6 +8122,7 @@ static void generateFileSources()
         for (auto &f : results)
         {
           auto ctx = f.get();
+          ctx->ol.indexSearchData();
         }
       }
       else // single threaded version
