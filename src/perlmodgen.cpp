@@ -1766,8 +1766,6 @@ void PerlModGenerator::addListOfAllMembers(const ClassDef *cd)
     {
       const MemberDef *md=mi->memberDef();
       const ClassDef  *mcd=md->getClassDef();
-      const Definition *d=md->getGroupDef();
-      if (d==0) d = mcd;
 
       m_output.openHash()
         .addFieldQuotedString("name", md->name())

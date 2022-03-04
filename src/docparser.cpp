@@ -1305,7 +1305,7 @@ static void handleImage(DocNode *parent, DocParser &parser, DocNodeList &m_child
       if (parser.context.token->name == "{")
       {
         parser.tokenizer.setStateOptions();
-        tok=parser.tokenizer.lex();
+        static_cast<void>(parser.tokenizer.lex());
         parser.tokenizer.setStatePara();
         StringVector optList=split(parser.context.token->name.str(),",");
         for (const auto &opt : optList)
@@ -3002,7 +3002,7 @@ void DocVhdlFlow::parse()
       m_parser.errorHandleDefaultToken(this,tok,m_children,"\\vhdlflow");
     }
   }
-  tok=m_parser.tokenizer.lex();
+  static_cast<void>(m_parser.tokenizer.lex());
 
   m_parser.tokenizer.setStatePara();
   m_parser.handlePendingStyleCommands(this,m_children);
@@ -5174,7 +5174,7 @@ void DocPara::handleInclude(const QCString &cmdName,DocInclude::Type t)
   if (tok==TK_WORD && m_parser.context.token->name=="{")
   {
     m_parser.tokenizer.setStateOptions();
-    tok=m_parser.tokenizer.lex();
+    static_cast<void>(m_parser.tokenizer.lex());
     m_parser.tokenizer.setStatePara();
     StringVector optList=split(m_parser.context.token->name.str(),",");
     auto contains = [&optList](const char *kw)
@@ -5212,10 +5212,10 @@ void DocPara::handleInclude(const QCString &cmdName,DocInclude::Type t)
   else if (tok==TK_WORD && m_parser.context.token->name=="[")
   {
     m_parser.tokenizer.setStateBlock();
-    tok=m_parser.tokenizer.lex();
+    static_cast<void>(m_parser.tokenizer.lex());
     isBlock = (m_parser.context.token->name.stripWhiteSpace() == "block");
     m_parser.tokenizer.setStatePara();
-    tok=m_parser.tokenizer.lex();
+    static_cast<void>(m_parser.tokenizer.lex());
   }
   else if (tok!=TK_WHITESPACE)
   {
@@ -5630,7 +5630,7 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
       {
         DocVerbatim::Type t = DocVerbatim::JavaDocLiteral;
         m_parser.tokenizer.setStateILiteralOpt();
-        retval = m_parser.tokenizer.lex();
+        static_cast<void>(m_parser.tokenizer.lex());
 
         QCString fullMatch = m_parser.context.token->verb;
         int idx = fullMatch.find('{');
@@ -5727,7 +5727,7 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
       {
         QCString jarPath = Config_getString(PLANTUML_JAR_PATH);
         m_parser.tokenizer.setStatePlantUMLOpt();
-        retval = m_parser.tokenizer.lex();
+        static_cast<void>(m_parser.tokenizer.lex());
 
         QCString fullMatch = m_parser.context.token->sectionId;
         QCString sectionId = "";
@@ -6907,19 +6907,14 @@ reparsetoken:
             DBG(("reparsing command %s\n",qPrint(m_parser.context.token->name)));
             goto reparsetoken;
           }
-          else if (retval==RetVal_OK)
-          {
-            // the command ended normally, keep scanning for new tokens.
-            retval = 0;
-          }
           else if (retval>0 && retval<RetVal_OK)
           {
             // the command ended with a new command, reparse this token
             tok = retval;
             goto reparsetoken;
           }
-          else // end of file, end of paragraph, start or end of section
-            // or some auto list marker
+          else if (retval != RetVal_OK) // end of file, end of paragraph, start or end of section
+                                        // or some auto list marker
           {
             goto endparagraph;
           }
@@ -6935,12 +6930,7 @@ reparsetoken:
           {
             retval = handleHtmlEndTag(m_parser.context.token->name);
           }
-          if (retval==RetVal_OK)
-          {
-            // the command ended normally, keep scanner for new tokens.
-            retval = 0;
-          }
-          else
+          if (retval!=RetVal_OK)
           {
             goto endparagraph;
           }
@@ -7407,7 +7397,6 @@ void DocRoot::parse()
 static QCString extractCopyDocId(const char *data, uint &j, uint len)
 {
   uint s=j;
-  uint e=j;
   int round=0;
   bool insideDQuote=FALSE;
   bool insideSQuote=FALSE;
@@ -7453,7 +7442,7 @@ static QCString extractCopyDocId(const char *data, uint &j, uint len)
   {
     j+=9;
   }
-  e=j;
+  uint e=j;
   if (j>0 && data[j-1]=='.') { e--; } // do not include punctuation added by Definition::_setBriefDescription()
   QCString id(data+s,e-s);
   //printf("extractCopyDocId='%s' input='%s'\n",qPrint(id),&data[s]);

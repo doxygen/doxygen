@@ -3697,14 +3697,12 @@ void writeGraphInfo(OutputList &ol)
   DotLegendGraph gd;
   gd.writeGraph(Config_getString(HTML_OUTPUT));
 
-  bool stripCommentsStateRef = Config_getBool(STRIP_CODE_COMMENTS);
-  bool oldStripCommentsState = stripCommentsStateRef;
-  bool createSubdirs = Config_getBool(CREATE_SUBDIRS);
-  bool oldCreateSubdirs = createSubdirs;
+  bool oldStripCommentsState = Config_getBool(STRIP_CODE_COMMENTS);
+  bool oldCreateSubdirs = Config_getBool(CREATE_SUBDIRS);
   // temporarily disable the stripping of comments for our own code example!
-  stripCommentsStateRef = Config_updateBool(STRIP_CODE_COMMENTS,FALSE);
+  Config_updateBool(STRIP_CODE_COMMENTS,FALSE);
   // temporarily disable create subdirs for linking to our example
-  createSubdirs = Config_updateBool(CREATE_SUBDIRS,FALSE);
+  Config_updateBool(CREATE_SUBDIRS,FALSE);
 
   startFile(ol,"graph_legend",QCString(),theTranslator->trLegendTitle());
   startTitle(ol,QCString());

@@ -678,7 +678,7 @@ void DirDefImpl::addUsesDependency(const DirDef *dir,const FileDef *srcFd,
     //printf("  => new file\n");
     auto newUsedDir = std::make_unique<UsedDir>(dir);
     newUsedDir->addFileDep(srcFd,dstFd, srcDirect, dstDirect);
-    usedDir = m_usedDirs.add(dir->getOutputFileBase(),std::move(newUsedDir));
+    m_usedDirs.add(dir->getOutputFileBase(),std::move(newUsedDir));
     added=TRUE;
   }
   if (added)

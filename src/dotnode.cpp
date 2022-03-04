@@ -392,7 +392,7 @@ void DotNode::writeBox(TextStream &t,
     {
       if (!ei.label().isEmpty()) // labels joined by \n
       {
-        int i=ei.label().find('\n');
+        int i;
         int p=0;
         QCString lab;
         while ((i=ei.label().find('\n',p))!=-1)
