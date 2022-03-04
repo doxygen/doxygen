@@ -3621,6 +3621,8 @@ to be found in the default search path.
 <![CDATA[
  If the \c GROUP_GRAPHS tag is set to \c YES then doxygen
  will generate a graph for groups, showing the direct groups dependencies.
+
+ See also the chapter \ref grouping "Grouping" in the manual.
 ]]>
       </docs>
     </option>
