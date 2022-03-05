@@ -153,9 +153,16 @@ class DocParser : public IDocParser
   public:
     ~DocParser()
     {
-      if (Doxygen::searchIndex)
+      try
       {
-        searchData.transfer(*Doxygen::searchIndex);
+        if (Doxygen::searchIndex)
+        {
+          searchData.transfer(*Doxygen::searchIndex);
+        }
+      }
+      catch(...)
+      {
+        err("Unexpected exception caught in DocParser\n");
       }
     }
     void pushContext();
