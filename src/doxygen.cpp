@@ -9627,14 +9627,14 @@ static void generateConfigFile(const QCString &configFile,bool shortList,
   }
 }
 
-static void compareDoxyfile()
+static void compareDoxyfile(DoxyfileSettings diffList)
 {
   std::ofstream f;
   bool fileOpened=openOutputFile("-",f);
   if (fileOpened)
   {
     TextStream t(&f);
-    Config::compareDoxyfile(t);
+    Config::compareDoxyfile(t,diffList);
   }
   else
   {
@@ -10640,6 +10640,9 @@ static void usage(const QCString &name,const QCString &versionString)
   msg("    If - is used for extensionsFile doxygen will write to standard output.\n\n");
   msg("7) Use doxygen to compare the used configuration file with the template configuration file\n");
   msg("    %s -x [configFile]\n\n",qPrint(name));
+  msg("   Use doxygen to compare the used configuration file with the template configuration file");
+  msg("   without replacing the environment variables\n");
+  msg("    %s -x_noenv [configFile]\n\n",qPrint(name));
   msg("8) Use doxygen to show a list of built-in emojis.\n");
   msg("    %s -f emoji outputFileName\n\n",qPrint(name));
   msg("    If - is used for outputFileName doxygen will write to standard output.\n\n");
@@ -10823,7 +10826,7 @@ void readConfiguration(int argc, char **argv)
   QCString listName;
   bool genConfig=FALSE;
   bool shortList=FALSE;
-  bool diffList=FALSE;
+  DoxyfileSettings diffList=DoxyfileSettings::Full;
   bool updateConfig=FALSE;
   int retVal;
   bool quiet = false;
@@ -10868,7 +10871,14 @@ void readConfiguration(int argc, char **argv)
         }
         break;
       case 'x':
-        diffList=TRUE;
+        if (!strcmp(argv[optInd]+1,"x_noenv")) diffList=DoxyfileSettings::CompressedNoEnv;
+        else if (!strcmp(argv[optInd]+1,"x")) diffList=DoxyfileSettings::Compressed;
+        else
+        {
+          err("option should be \"-x\" or \"-x_noenv\", found: \"%s\".\n",argv[optInd]);
+          cleanUpDoxygen();
+          exit(1);
+        }
         break;
       case 's':
         shortList=TRUE;
@@ -11187,10 +11197,10 @@ void readConfiguration(int argc, char **argv)
     exit(1);
   }
 
-  if (diffList)
+  if (diffList!=DoxyfileSettings::Full)
   {
     Config::updateObsolete();
-    compareDoxyfile();
+    compareDoxyfile(diffList);
     cleanUpDoxygen();
     exit(0);
   }
