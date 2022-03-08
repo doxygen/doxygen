@@ -1812,6 +1812,22 @@ to disable this feature.
 ]]>
       </docs>
     </option>
+    <option type='int' id='MAX_ITEMS_BEFORE_QUICK_INDEX' minval='0' maxval='3000' defval='30'>
+      <docs>
+<![CDATA[
+ MAX_ITEMS_BEFORE_QUICK_INDEX defines, when to set the global lists of functions, 
+ variables, typdefs, enums, macros grouped into sections by starting letter. Default value: 30
+]]>
+      </docs>
+    </option>
+    <option type='int' id='MAX_ITEMS_BEFORE_MULTIPAGE_INDEX' minval='0' maxval='30000' defval='200'>
+      <docs>
+<![CDATA[
+ MAX_ITEMS_BEFORE_MULTIPAGE_INDEX defines, when to set the global lists of functions, 
+ variables, typdefs, enums, macros grouped into multiple pages by starting letter. Default value: 200
+]]>
+      </docs>
+    </option>
   </group>
   <group name='HTML' docs='Configuration options related to the HTML output'>
     <option type='bool' id='GENERATE_HTML' defval='1'>
