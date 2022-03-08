@@ -359,7 +359,7 @@ STARTDOCSYMS      "##"
                         lineCount(yyscanner);
                         commentEmptyCount(yyscanner);
                       }
-    {POUNDCOMMENT}{NEWLINE}    { // normal comment
+    ({POUNDCOMMENT}|"#"){NEWLINE}    { // normal comment
                         if (yyextra->yyLineNr!=yyextra->yyCommentEmptyNr) yyextra->packageCommentAllowed = FALSE;
                         lineCount(yyscanner);
                         commentEmptyCount(yyscanner);
