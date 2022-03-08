@@ -79,6 +79,7 @@ struct pyscannerYY_state
   std::shared_ptr<Entry>  previous;
   std::shared_ptr<Entry>  bodyEntry;
   int                     yyLineNr = 1 ;
+  int                     yyCommentEmptyNr = 1 ;
   QCString                fileName;
   MethodTypes             mtype = Method;
   bool                    stat = FALSE;
@@ -130,6 +131,7 @@ static void newFunction(yyscan_t yyscanner);
 static QCString findPackageScopeFromPath(yyscan_t yyscanner,const QCString &path);
 static void addFrom(yyscan_t yyscanner,bool all);
 static void lineCount(yyscan_t yyscanner);
+static void commentEmptyCount(yyscan_t yyscanner);
 static void incLineNr(yyscan_t yyscanner);
 static void startCommentBlock(yyscan_t yyscanner,bool brief);
 static void handleCommentBlock(yyscan_t yyscanner,const QCString &doc,bool brief);
@@ -352,14 +354,22 @@ STARTDOCSYMS      "##"
     "@"{SCOPE}{CALL}? { // decorator
                         lineCount(yyscanner);
                       }
-    {SCRIPTCOMMENT}   { // Unix type script comment
+    {SCRIPTCOMMENT}{NEWLINE}   { // Unix type script comment
                         if (yyextra->yyLineNr != 1) REJECT;
+                        lineCount(yyscanner);
+                        commentEmptyCount(yyscanner);
                       }
-    {POUNDCOMMENT}    { // normal comment
-                        yyextra->packageCommentAllowed = FALSE;
+    {POUNDCOMMENT}{NEWLINE}    { // normal comment
+                        if (yyextra->yyLineNr!=yyextra->yyCommentEmptyNr) yyextra->packageCommentAllowed = FALSE;
+                        lineCount(yyscanner);
+                        commentEmptyCount(yyscanner);
                       }
     {IDENTIFIER}      { // some other identifier
                         yyextra->packageCommentAllowed = FALSE;
+                      }
+    ^{B}{NEWLINE}     {
+                        lineCount(yyscanner);
+                        commentEmptyCount(yyscanner);
                       }
     ^{BB}             {
                         yyextra->curIndent=computeIndent(yytext);
@@ -1618,6 +1628,16 @@ static void lineCount(yyscan_t yyscanner)
   }
 }
 
+static void commentEmptyCount(yyscan_t yyscanner)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  DBG_CTX((stderr,"yyextra->yyCommentEmptyNr=%d\n",yyextra->yyCommentEmptyNr));
+  for (const char *p = yytext; *p; ++p)
+  {
+    yyextra->yyCommentEmptyNr += (*p == '\n') ;
+  }
+}
+
 static void incLineNr(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
@@ -1812,6 +1832,8 @@ static void parseCompounds(yyscan_t yyscanner,std::shared_ptr<Entry> rt)
       }
       yyextra->fileName = ce->fileName;
       yyextra->yyLineNr   = ce->bodyLine ;
+      yyextra->yyCommentEmptyNr = ce->bodyLine - 1; // so it is different from yyLineNr and cannot catch up with it
+                                                    // as we are not in the main body
       yyextra->current = std::make_shared<Entry>();
       initEntry(yyscanner);
 
@@ -1852,6 +1874,7 @@ static void parseMain(yyscan_t yyscanner, const QCString &fileName,const char *f
   yyextra->specialBlock = FALSE;
 
   yyextra->yyLineNr= 1 ;
+  yyextra->yyCommentEmptyNr= 1 ;
   yyextra->fileName = fileName;
   //setContext();
   msg("Parsing file %s...\n",qPrint(yyextra->fileName));
