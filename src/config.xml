@@ -1815,16 +1815,19 @@ to disable this feature.
     <option type='int' id='MAX_ITEMS_BEFORE_QUICK_INDEX' minval='0' maxval='3000' defval='30'>
       <docs>
 <![CDATA[
- MAX_ITEMS_BEFORE_QUICK_INDEX defines, when to set the global lists of functions, 
- variables, typdefs, enums, macros grouped into sections by starting letter. Default value: 30
+ If the number of items on al list of functions, variables, typdefs, enums and macros 
+ exceeds \c MAX_ITEMS_BEFORE_QUICK_INDEX, it will be divided into multiple sections
+ to form a quick index. If the number of items exceeds \c MAX_ITEMS_BEFORE_MULTIPAGE_INDEX, 
+ those sections will be put on a single output page each.
 ]]>
       </docs>
     </option>
     <option type='int' id='MAX_ITEMS_BEFORE_MULTIPAGE_INDEX' minval='0' maxval='30000' defval='200'>
       <docs>
 <![CDATA[
- MAX_ITEMS_BEFORE_MULTIPAGE_INDEX defines, when to set the global lists of functions, 
- variables, typdefs, enums, macros grouped into multiple pages by starting letter. Default value: 200
+ If the number of items on a list of functions, variables, enums, typedefs or macros 
+ exceeds \c MAX_ITEMS_BEFORE_MULTIPAGE_INDEX, it will be 
+ divided into multiple pages, each page containing a section of a quick index. (see \c MAX_ITEMS_BEFORE_QUICK_INDEX)
 ]]>
       </docs>
     </option>
