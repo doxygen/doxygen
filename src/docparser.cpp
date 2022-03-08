@@ -151,6 +151,20 @@ struct DocParserContext
 class DocParser : public IDocParser
 {
   public:
+    ~DocParser()
+    {
+      try
+      {
+        if (Doxygen::searchIndex)
+        {
+          searchData.transfer(*Doxygen::searchIndex);
+        }
+      }
+      catch(...)
+      {
+        err("Unexpected exception caught in DocParser\n");
+      }
+    }
     void pushContext();
     void popContext();
     void handleImg(DocNode *parent,DocNodeList &children,const HtmlAttribList &tagHtmlAttribs);
@@ -191,6 +205,7 @@ class DocParser : public IDocParser
     std::stack< DocParserContext > contextStack;
     DocParserContext               context;
     DocTokenizer                   tokenizer;
+    SIDataCollection               searchData;
 };
 
 std::unique_ptr<IDocParser> createDocParser()
@@ -696,7 +711,7 @@ bool DocParser::findDocsForMemberOrCompound(const QCString &commandName,
   // for symbols we need to normalize the separator, so A#B, or A\B, or A.B becomes A::B
   cmdArg = substitute(cmdArg,"#","::");
   cmdArg = substitute(cmdArg,"\\","::");
-  static bool extractAnonNs = Config_getBool(EXTRACT_ANON_NSPACES);
+  bool extractAnonNs = Config_getBool(EXTRACT_ANON_NSPACES);
   if (extractAnonNs &&
       cmdArg.startsWith("anonymous_namespace{")
       )
@@ -1044,7 +1059,7 @@ void DocParser::handleUnclosedStyleCommands()
 void DocParser::handleLinkedWord(DocNode *parent,DocNodeList &children,bool ignoreAutoLinkFlag)
 {
   QCString name = linkToText(SrcLangExt_Unknown,context.token->name,TRUE);
-  static bool autolinkSupport = Config_getBool(AUTOLINK_SUPPORT);
+  bool autolinkSupport = Config_getBool(AUTOLINK_SUPPORT);
   if (!autolinkSupport && !ignoreAutoLinkFlag) // no autolinking -> add as normal word
   {
     children.push_back(std::make_unique<DocWord>(*this,parent,name));
@@ -1993,7 +2008,7 @@ DocWord::DocWord(DocParser &parser,DocNode *parent,const QCString &word) :
   //printf("new word %s url=%s\n",qPrint(word),qPrint(parser.context.searchUrl));
   if (Doxygen::searchIndex && !parser.context.searchUrl.isEmpty())
   {
-    Doxygen::searchIndex->addWord(word,FALSE);
+    parser.searchData.addWord(word,false);
   }
 }
 
@@ -2011,7 +2026,7 @@ DocLinkedWord::DocLinkedWord(DocParser &parser,DocNode *parent,const QCString &w
   //    qPrint(word),qPrint(parser.context.searchUrl),qPrint(tooltip));
   if (Doxygen::searchIndex && !parser.context.searchUrl.isEmpty())
   {
-    Doxygen::searchIndex->addWord(word,FALSE);
+    parser.searchData.addWord(word,false);
   }
 }
 
@@ -5725,7 +5740,7 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
       break;
     case CMD_STARTUML:
       {
-        static QCString jarPath = Config_getString(PLANTUML_JAR_PATH);
+        QCString jarPath = Config_getString(PLANTUML_JAR_PATH);
         m_parser.tokenizer.setStatePlantUMLOpt();
         retval = m_parser.tokenizer.lex();
 
@@ -7654,12 +7669,12 @@ DocRoot *validatingParseDoc(IDocParser &parserIntf,
     if (md)
     {
       parser.context.searchUrl=md->getOutputFileBase();
-      Doxygen::searchIndex->setCurrentDoc(md,md->anchor(),FALSE);
+      parser.searchData.setCurrentDoc(md,md->anchor(),false);
     }
     else if (ctx)
     {
       parser.context.searchUrl=ctx->getOutputFileBase();
-      Doxygen::searchIndex->setCurrentDoc(ctx,ctx->anchor(),FALSE);
+      parser.searchData.setCurrentDoc(ctx,ctx->anchor(),false);
     }
   }
   else

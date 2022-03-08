@@ -705,12 +705,12 @@ class TranslateContext::Private
     }
     TemplateVariant fileMembersDescription() const
     {
-      static bool extractAll = Config_getBool(EXTRACT_ALL);
+      bool extractAll = Config_getBool(EXTRACT_ALL);
       return theTranslator->trFileMembersDescription(extractAll);
     }
     TemplateVariant namespaceMembersDescription() const
     {
-      static bool extractAll = Config_getBool(EXTRACT_ALL);
+      bool extractAll = Config_getBool(EXTRACT_ALL);
       return theTranslator->trNamespaceMemberDescription(extractAll);
     }
     TemplateVariant classHierarchyDescription() const
@@ -727,8 +727,8 @@ class TranslateContext::Private
     }
     TemplateVariant classMembersDescription() const
     {
-      static bool extractAll = Config_getBool(EXTRACT_ALL);
-      static bool fortranOpt = Config_getBool(OPTIMIZE_FOR_FORTRAN);
+      bool extractAll = Config_getBool(EXTRACT_ALL);
+      bool fortranOpt = Config_getBool(OPTIMIZE_FOR_FORTRAN);
       if (fortranOpt)
       {
         return theTranslator->trCompoundMembersDescriptionFortran(extractAll);
@@ -912,15 +912,15 @@ class TranslateContext::Private
     }
     TemplateVariant functions() const
     {
-      static bool fortranOpt = Config_getBool(OPTIMIZE_FOR_FORTRAN);
-      static bool vhdlOpt    = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
+      bool fortranOpt = Config_getBool(OPTIMIZE_FOR_FORTRAN);
+      bool vhdlOpt    = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
       return fortranOpt ? theTranslator->trSubprograms()     :
              vhdlOpt    ? theTranslator->trFunctionAndProc() :
                           theTranslator->trFunctions();
     }
     TemplateVariant variables() const
     {
-      static bool sliceOpt   = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
+      bool sliceOpt   = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
       return sliceOpt ? theTranslator->trConstants() : theTranslator->trVariables();
     }
     TemplateVariant typedefs() const
@@ -1308,7 +1308,7 @@ static TemplateVariant parseCode(const Definition *d,const QCString &scopeName,c
 
 static TemplateVariant parseCode(const FileDef *fd,const QCString &relPath)
 {
-  static bool filterSourceFiles = Config_getBool(FILTER_SOURCE_FILES);
+  bool filterSourceFiles = Config_getBool(FILTER_SOURCE_FILES);
   auto intf = Doxygen::parserManager->getCodeParser(fd->getDefFileExtension());
   intf->resetCodeParserState();
   TextStream t;
@@ -1471,7 +1471,7 @@ class DefinitionContext
 
     QCString relPathAsString() const
     {
-      static bool createSubdirs = Config_getBool(CREATE_SUBDIRS);
+      bool createSubdirs = Config_getBool(CREATE_SUBDIRS);
       return createSubdirs ? QCString("../../") : QCString("");
     }
     virtual TemplateVariant relPath() const     { return relPathAsString(); }
@@ -1790,8 +1790,8 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
     TemplateVariant hasInheritanceDiagram() const
     {
       bool result=FALSE;
-      static bool haveDot    = Config_getBool(HAVE_DOT);
-      static auto classGraph = Config_getEnum(CLASS_GRAPH);
+      bool haveDot    = Config_getBool(HAVE_DOT);
+      auto classGraph = Config_getEnum(CLASS_GRAPH);
       bool classGraphEnabled = classGraph==CLASS_GRAPH_t::YES || classGraph==CLASS_GRAPH_t::GRAPH;
 
       if (haveDot && classGraphEnabled)
@@ -1808,8 +1808,8 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
     TemplateVariant inheritanceDiagram() const
     {
       TextStream t;
-      static bool haveDot    = Config_getBool(HAVE_DOT);
-      static auto classGraph = Config_getEnum(CLASS_GRAPH);
+      bool haveDot    = Config_getBool(HAVE_DOT);
+      auto classGraph = Config_getEnum(CLASS_GRAPH);
       bool classGraphEnabled = classGraph==CLASS_GRAPH_t::YES || classGraph==CLASS_GRAPH_t::GRAPH;
 
       if (haveDot && classGraphEnabled)
@@ -1896,12 +1896,12 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
     }
     TemplateVariant hasCollaborationDiagram() const
     {
-      static bool haveDot = Config_getBool(HAVE_DOT);
+      bool haveDot = Config_getBool(HAVE_DOT);
       return haveDot && !getCollaborationGraph()->isTrivial();
     }
     TemplateVariant collaborationDiagram() const
     {
-      static bool haveDot = Config_getBool(HAVE_DOT);
+      bool haveDot = Config_getBool(HAVE_DOT);
       TextStream t;
       if (haveDot)
       {
@@ -2526,7 +2526,7 @@ class NamespaceContext::Private : public DefinitionContext<NamespaceContext::Pri
   private:
     TemplateVariant createClasses() const
     {
-      static bool sliceOpt = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
+      bool sliceOpt = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
       TemplateVariantList classList;
       classList.reserve(m_namespaceDef->getClasses().size());
       for (const auto &cd : m_namespaceDef->getClasses())
@@ -2601,7 +2601,7 @@ class NamespaceContext::Private : public DefinitionContext<NamespaceContext::Pri
     }
     TemplateVariant createVariables() const
     {
-      static bool sliceOpt   = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
+      bool sliceOpt   = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
       return createMemberList(MemberListType_decVarMembers, sliceOpt ? theTranslator->trConstants() :
                                                                        theTranslator->trVariables());
     }
@@ -2629,7 +2629,7 @@ class NamespaceContext::Private : public DefinitionContext<NamespaceContext::Pri
     }
     TemplateVariant createDetailedVariables() const
     {
-      static bool sliceOpt   = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
+      bool sliceOpt   = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
       return createMemberList(MemberListType_docVarMembers, sliceOpt ? theTranslator->trConstantDocumentation() :
                                                                        theTranslator->trVariableDocumentation());
     }
@@ -2779,13 +2779,13 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
 
     TemplateVariant hasIncludeGraph() const
     {
-      static bool haveDot = Config_getBool(HAVE_DOT);
+      bool haveDot = Config_getBool(HAVE_DOT);
       DotInclDepGraphPtr incGraph = getIncludeGraph();
       return (haveDot && !incGraph->isTooBig() && !incGraph->isTrivial());
     }
     TemplateVariant includeGraph() const
     {
-      static bool haveDot = Config_getBool(HAVE_DOT);
+      bool haveDot = Config_getBool(HAVE_DOT);
       TextStream t;
       if (haveDot)
       {
@@ -2821,13 +2821,13 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
     }
     TemplateVariant hasIncludedByGraph() const
     {
-      static bool haveDot = Config_getBool(HAVE_DOT);
+      bool haveDot = Config_getBool(HAVE_DOT);
       DotInclDepGraphPtr incGraph = getIncludedByGraph();
       return (haveDot && !incGraph->isTooBig() && !incGraph->isTrivial());
     }
     TemplateVariant includedByGraph() const
     {
-      static bool haveDot = Config_getBool(HAVE_DOT);
+      bool haveDot = Config_getBool(HAVE_DOT);
       TextStream t;
       if (haveDot)
       {
@@ -2958,7 +2958,7 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
     }
     TemplateVariant createVariables() const
     {
-      static bool sliceOpt   = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
+      bool sliceOpt   = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
       return createMemberList(MemberListType_decVarMembers, sliceOpt ? theTranslator->trConstants() :
                                                                        theTranslator->trVariables());
     }
@@ -3134,8 +3134,8 @@ class DirContext::Private : public DefinitionContext<DirContext::Private>
     TemplateVariant hasDirGraph() const
     {
       bool result=FALSE;
-      static bool haveDot  = Config_getBool(HAVE_DOT);
-      static bool dirGraph = Config_getBool(DIRECTORY_GRAPH);
+      bool haveDot  = Config_getBool(HAVE_DOT);
+      bool dirGraph = Config_getBool(DIRECTORY_GRAPH);
       if (haveDot && dirGraph)
       {
         DotDirDepsPtr graph = getDirDepsGraph();
@@ -3146,8 +3146,8 @@ class DirContext::Private : public DefinitionContext<DirContext::Private>
     TemplateVariant dirGraph() const
     {
       TextStream t;
-      static bool haveDot  = Config_getBool(HAVE_DOT);
-      static bool dirGraph = Config_getBool(DIRECTORY_GRAPH);
+      bool haveDot  = Config_getBool(HAVE_DOT);
+      bool dirGraph = Config_getBool(DIRECTORY_GRAPH);
       if (haveDot && dirGraph)
       {
         DotDirDepsPtr graph = getDirDepsGraph();
@@ -3489,7 +3489,7 @@ class TextGeneratorLatex : public TextGeneratorIntf
                    const QCString &anchor,const QCString &text
                   ) const
     {
-      static bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
+      bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
       if (ref.isEmpty() && pdfHyperlinks)
       {
         m_ts << "\\mbox{\\hyperlink{";
@@ -3720,7 +3720,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
     }
     TemplateVariant hasCallGraph() const
     {
-      static bool haveDot = Config_getBool(HAVE_DOT);
+      bool haveDot = Config_getBool(HAVE_DOT);
       if (m_memberDef->hasCallGraph() && haveDot &&
           (m_memberDef->isFunction() || m_memberDef->isSlot() || m_memberDef->isSignal()))
       {
@@ -3778,7 +3778,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
     }
     TemplateVariant hasCallerGraph() const
     {
-      static bool haveDot = Config_getBool(HAVE_DOT);
+      bool haveDot = Config_getBool(HAVE_DOT);
       if (m_memberDef->hasCallerGraph() && haveDot &&
           (m_memberDef->isFunction() || m_memberDef->isSlot() || m_memberDef->isSignal()))
       {
@@ -4584,8 +4584,8 @@ class ModuleContext::Private : public DefinitionContext<ModuleContext::Private>
     TemplateVariant hasGroupGraph() const
     {
       bool result=FALSE;
-      static bool haveDot     = Config_getBool(HAVE_DOT);
-      static bool groupGraphs = Config_getBool(GROUP_GRAPHS);
+      bool haveDot     = Config_getBool(HAVE_DOT);
+      bool groupGraphs = Config_getBool(GROUP_GRAPHS);
       if (haveDot && groupGraphs)
       {
         DotGroupCollaborationPtr graph = getGroupGraph();
@@ -4596,8 +4596,8 @@ class ModuleContext::Private : public DefinitionContext<ModuleContext::Private>
     TemplateVariant groupGraph() const
     {
       TextStream t;
-      static bool haveDot     = Config_getBool(HAVE_DOT);
-      static bool groupGraphs = Config_getBool(GROUP_GRAPHS);
+      bool haveDot     = Config_getBool(HAVE_DOT);
+      bool groupGraphs = Config_getBool(GROUP_GRAPHS);
       if (haveDot && groupGraphs)
       {
         DotGroupCollaborationPtr graph = getGroupGraph();
@@ -4760,7 +4760,7 @@ class ModuleContext::Private : public DefinitionContext<ModuleContext::Private>
     }
     TemplateVariant createVariables() const
     {
-      static bool sliceOpt   = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
+      bool sliceOpt   = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
       return createMemberList(MemberListType_decVarMembers, sliceOpt ? theTranslator->trConstants() :
                                                                        theTranslator->trVariables());
     }
@@ -5353,7 +5353,7 @@ class NestingNodeContext::Private
     }
     QCString relPathAsString() const
     {
-      static bool createSubdirs = Config_getBool(CREATE_SUBDIRS);
+      bool createSubdirs = Config_getBool(CREATE_SUBDIRS);
       return createSubdirs ? QCString("../../") : QCString("");
     }
 
@@ -7028,7 +7028,7 @@ class NavPathElemContext::Private
     }
     QCString relPathAsString() const
     {
-      static bool createSubdirs = Config_getBool(CREATE_SUBDIRS);
+      bool createSubdirs = Config_getBool(CREATE_SUBDIRS);
       return createSubdirs ? QCString("../../") : QCString("");
     }
   private:
@@ -7411,8 +7411,8 @@ class InheritanceGraphContext::Private
     TemplateVariant createGraph() const
     {
       TextStream t;
-      static bool haveDot            = Config_getBool(HAVE_DOT);
-      static bool graphicalHierarchy = Config_getBool(GRAPHICAL_HIERARCHY);
+      bool haveDot            = Config_getBool(HAVE_DOT);
+      bool graphicalHierarchy = Config_getBool(GRAPHICAL_HIERARCHY);
       if (haveDot && graphicalHierarchy)
       {
         m_hierarchy->createGraph(m_node,t,
@@ -7718,7 +7718,7 @@ class AllMembersListContext::Private : public GenericNodeListContext
   public:
     Private(const MemberNameInfoLinkedMap &ml)
     {
-      static bool hideUndocMembers = Config_getBool(HIDE_UNDOC_MEMBERS);
+      bool hideUndocMembers = Config_getBool(HIDE_UNDOC_MEMBERS);
       for (auto &mni : ml)
       {
         for (auto &mi : *mni)

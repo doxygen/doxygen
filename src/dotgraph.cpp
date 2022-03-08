@@ -14,6 +14,7 @@
 */
 
 #include <sstream>
+#include <mutex>
 
 #include "config.h"
 #include "doxygen.h"
@@ -108,6 +109,8 @@ QCString DotGraph::imgName() const
                       ("." + getDotImageExtension()) : (Config_getBool(USE_PDFLATEX) ? ".pdf" : ".eps"));
 }
 
+std::mutex g_dotIndexListMutex;
+
 QCString DotGraph::writeGraph(
         TextStream& t,            // output stream for the code file (html, ...)
         GraphOutputFormat gf,     // bitmap(png/svg) or ps(eps/pdf)
@@ -133,7 +136,11 @@ QCString DotGraph::writeGraph(
 
   m_regenerate = prepareDotFile();
 
-  if (!m_doNotAddImageToIndex) Doxygen::indexList->addImageFile(imgName());
+  if (!m_doNotAddImageToIndex)
+  {
+    std::lock_guard<std::mutex> lock(g_dotIndexListMutex);
+    Doxygen::indexList->addImageFile(imgName());
+  }
 
   generateCode(t);
 

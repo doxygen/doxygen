@@ -23,10 +23,12 @@
 #include <string>
 #include <array>
 #include <functional>
+#include <variant>
 
 #include "qcstring.h"
 
 class Definition;
+class SearchIndexIntf;
 
 /*! Initialize the search indexer */
 void initSearchIndexer();
@@ -34,6 +36,49 @@ void initSearchIndexer();
 void finalizeSearchIndexer();
 
 //------- server side search index ----------------------
+
+
+// --- intermediate data ------
+struct SIData_CurrentDoc
+{
+  SIData_CurrentDoc(const Definition *d,const QCString &a,bool b)
+    : ctx(d), anchor(a), isSourceFile(b) {}
+  const Definition *ctx = 0;
+  QCString anchor;
+  bool isSourceFile;
+};
+
+struct SIData_Word
+{
+  SIData_Word(const QCString &w,bool b)
+    : word(w), hiPrio(b) {}
+  QCString word;
+  bool hiPrio;
+};
+
+// class to aggregate the search data collected on a worker thread
+// and later transfer it to the search index on the main thread.
+class SIDataCollection
+{
+  public:
+    void setCurrentDoc(const Definition *ctx,const QCString &anchor,bool isSourceFile)
+    {
+      m_data.emplace_back(SIData_CurrentDoc(ctx,anchor,isSourceFile));
+    }
+    void addWord(const QCString &word,bool hiPriority)
+    {
+      m_data.emplace_back(SIData_Word(word,hiPriority));
+    }
+
+    // transfer the collected data to the given search index
+    void transfer(SearchIndexIntf &intf);
+
+  private:
+    using SIData = std::variant<SIData_CurrentDoc,SIData_Word>;
+    std::vector<SIData> m_data;
+};
+
+//-----------------------------
 
 struct URL
 {
@@ -63,6 +108,7 @@ class IndexWord
     QCString    m_word;
     URLInfoMap  m_urls;
 };
+
 
 class SearchIndexIntf
 {
@@ -100,9 +146,9 @@ class SearchIndexExternal : public SearchIndexIntf
     struct Private;
   public:
     SearchIndexExternal();
-    void setCurrentDoc(const Definition *ctx,const QCString &anchor,bool isSourceFile);
-    void addWord(const QCString &word,bool hiPriority);
-    void write(const QCString &file);
+    void setCurrentDoc(const Definition *ctx,const QCString &anchor,bool isSourceFile) override;
+    void addWord(const QCString &word,bool hiPriority) override;
+    void write(const QCString &file) override;
   private:
     std::unique_ptr<Private> p;
 };

@@ -253,8 +253,6 @@ class ManGenerator : public OutputGenerator
     void endLabels();
 
     void writeCodeAnchor(const QCString &) {}
-    void setCurrentDoc(const Definition *,const QCString &,bool) {}
-    void addWord(const QCString &,bool) {}
 
   private:
     bool m_firstCol = true;

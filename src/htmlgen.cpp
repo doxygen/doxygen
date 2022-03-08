@@ -3065,22 +3065,6 @@ void HtmlGenerator::endMemberDeclaration(const QCString &anchor,const QCString &
   m_t << "\"><td class=\"memSeparator\" colspan=\"2\">&#160;</td></tr>\n";
 }
 
-void HtmlGenerator::setCurrentDoc(const Definition *context,const QCString &anchor,bool isSourceFile)
-{
-  if (Doxygen::searchIndex)
-  {
-    Doxygen::searchIndex->setCurrentDoc(context,anchor,isSourceFile);
-  }
-}
-
-void HtmlGenerator::addWord(const QCString &word,bool hiPriority)
-{
-  if (Doxygen::searchIndex)
-  {
-    Doxygen::searchIndex->addWord(word,hiPriority);
-  }
-}
-
 QCString HtmlGenerator::getMathJaxMacros()
 {
   return getConvertLatexMacro();

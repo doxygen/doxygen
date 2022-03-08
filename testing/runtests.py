@@ -470,7 +470,7 @@ class Tester:
 					failed_html=True
 
 			failed_qhp=False
-			if not failed_html:
+			if not failed_html and self.args.qhp:
 				check_file = "%s/index.qhp"%(html_output)
 				exe_string = '%s --noout %s' % (self.args.xmllint,check_file)
 				exe_string1 = exe_string

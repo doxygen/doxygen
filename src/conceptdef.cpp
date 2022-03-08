@@ -426,7 +426,7 @@ void ConceptDefImpl::writeDefinition(OutputList &ol,const QCString &title) const
 
 void ConceptDefImpl::writeDetailedDescription(OutputList &ol,const QCString &title) const
 {
-  static bool repeatBrief = Config_getBool(REPEAT_BRIEF);
+  bool repeatBrief = Config_getBool(REPEAT_BRIEF);
   if (hasDetailedDescription())
   {
     ol.pushGeneratorState();
@@ -485,7 +485,7 @@ void ConceptDefImpl::writeAuthorSection(OutputList &ol) const
 
 void ConceptDefImpl::writeDocumentation(OutputList &ol)
 {
-  static bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
+  bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
   QCString pageTitle = theTranslator->trConceptReference(displayName());
   startFile(ol,getOutputFileBase(),name(),pageTitle,HLI_ConceptVisible,!generateTreeView);
 

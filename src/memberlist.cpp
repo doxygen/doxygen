@@ -531,7 +531,7 @@ void MemberList::writeDeclarations(OutputList &ol,
   (void)showEnumValues; // unused
 
   //printf("----- writeDeclaration() this=%p ---- inheritedFrom=%p\n",this,inheritedFrom);
-  static bool optimizeVhdl = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
+  bool optimizeVhdl = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
   QCString inheritId;
 
   const Definition *ctx = cd;
@@ -749,7 +749,7 @@ void MemberList::writeSimpleDocumentation(OutputList &ol,
 void MemberList::writeDocumentationPage(OutputList &ol,
                      const QCString &scopeName, const DefinitionMutable *container) const
 {
-  static bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
+  bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
 
   struct OverloadInfo
   {

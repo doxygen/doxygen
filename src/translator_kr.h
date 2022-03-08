@@ -102,7 +102,10 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
     {
       return "0x412 Korean";
     }
-
+    virtual bool needsPunctuation()
+    {
+      return false;
+    }
     // --- Language translation methods -------------------
 
     /*! used in the compound documentation before a list of related functions. */

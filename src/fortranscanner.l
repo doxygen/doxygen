@@ -639,6 +639,7 @@ SCOPENAME ({ID}{BS}"::"{BS})*
 
  /*------- type definition  -------------------------------------------------------------------------------*/
 
+<ModuleBody>^{BS}type{BS}"="            {}
 <Start,ModuleBody>^{BS}type/[^a-z0-9_]  {
                                           if (YY_START == Start)
                                           {

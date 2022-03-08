@@ -815,7 +815,7 @@ class TranslatorHindi : public Translator
         bool single)
     {
       // single is true implies a single file
-      static bool vhdlOpt = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
+      bool vhdlOpt = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
       QCString result;
       switch (compType)
       {

@@ -79,6 +79,9 @@ class HtmlHelp  : public IndexIntf
     void addImageFile(const QCString &);
     void addStyleSheetFile(const QCString &);
 
+    static inline const QCString hhcFileName = "index.hhc";
+    static inline const QCString hhkFileName = "index.hhk";
+    static inline const QCString hhpFileName = "index.hhp";
   private:
     class Private;
     std::unique_ptr<Private> p;

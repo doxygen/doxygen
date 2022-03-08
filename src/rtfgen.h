@@ -261,8 +261,6 @@ class RTFGenerator : public OutputGenerator
     void endFontClass();
 
     void writeCodeAnchor(const QCString &) {}
-    void setCurrentDoc(const Definition *,const QCString &,bool) {}
-    void addWord(const QCString &,bool) {}
 
     static bool preProcessFileInplace(const QCString &path,const QCString &name);
 

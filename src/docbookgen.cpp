@@ -251,14 +251,6 @@ void DocbookCodeGenerator::writeLineNumber(const QCString &ref,const QCString &f
   m_col=0;
 }
 
-void DocbookCodeGenerator::setCurrentDoc(const Definition *,const QCString &,bool)
-{
-}
-
-void DocbookCodeGenerator::addWord(const QCString &,bool)
-{
-}
-
 void DocbookCodeGenerator::finish()
 {
   endCodeLine();

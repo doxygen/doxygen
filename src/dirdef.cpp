@@ -464,7 +464,7 @@ QCString DirDefImpl::shortTitle() const
 
 bool DirDefImpl::hasDetailedDescription() const
 {
-  static bool repeatBrief = Config_getBool(REPEAT_BRIEF);
+  bool repeatBrief = Config_getBool(REPEAT_BRIEF);
   return (!briefDescription().isEmpty() && repeatBrief) || !documentation().isEmpty();
 }
 
@@ -507,7 +507,7 @@ void DirDefImpl::writeTagFile(TextStream &tagFile)
 
 void DirDefImpl::writeDocumentation(OutputList &ol)
 {
-  static bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
+  bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
   ol.pushGeneratorState();
 
   QCString title=theTranslator->trDirReference(m_dispName);
@@ -881,7 +881,7 @@ static void writePartialFilePath(OutputList &ol,const DirDef *root,const FileDef
 
 void DirRelation::writeDocumentation(OutputList &ol)
 {
-  static bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
+  bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Html);
 

@@ -99,6 +99,10 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
     {
       return "\\end{CJK}\n";
     }
+    virtual bool needsPunctuation()
+    {
+      return false;
+    }
 
     /*! used in the compound documentation before a list of related functions. */
     virtual QCString trRelatedFunctions()

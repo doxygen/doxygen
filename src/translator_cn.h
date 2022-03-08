@@ -75,6 +75,10 @@ class TranslatorChinese : public Translator
     {
       return "\\end{CJK}\n";
     }
+    virtual bool needsPunctuation()
+    {
+      return false;
+    }
 
     /*! used in the compound documentation before a list of related functions.
      */
