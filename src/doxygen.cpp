@@ -63,6 +63,7 @@
 #include "commentcnv.h"
 #include "cmdmapper.h"
 #include "searchindex.h"
+#include "searchindex_js.h"
 #include "parserintf.h"
 #include "htags.h"
 #include "pycode.h"

@@ -155,10 +155,7 @@ class DocParser : public IDocParser
     {
       try
       {
-        if (Doxygen::searchIndex)
-        {
-          searchData.transfer(*Doxygen::searchIndex);
-        }
+        searchData.transfer();
       }
       catch(...)
       {

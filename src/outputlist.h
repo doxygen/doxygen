@@ -498,10 +498,7 @@ class OutputList : public OutputDocInterface
     }
     void indexSearchData()
     {
-      if (Doxygen::searchIndex)
-      {
-        m_searchData.transfer(*Doxygen::searchIndex);
-      }
+      m_searchData.transfer();
     }
 
     void startPlainFile(const QCString &name)
