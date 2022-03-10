@@ -151,7 +151,7 @@
  Translator class (by the local maintainer) when the localized
  translator is made up-to-date again.
 */
-class TranslatorHindi : public Translator
+class TranslatorHindi : public TranslatorAdapter_1_9_4
 {
   public:
 
