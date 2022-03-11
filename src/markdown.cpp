@@ -2970,12 +2970,36 @@ QCString Markdown::processQuotations(const QCString &s,int refIndent)
     {
       if (isFencedCodeBlock(data+pi,size-pi,currentIndent,lang,blockStart,blockEnd,blockOffset))
       {
-        if (lang=="plantuml")
+        auto addSpecialCommand = [&](const QCString &startCmd,const QCString &endCmd)
         {
-          int cmdStart = pi+blockStart+1;
-          processSpecialCommand(data+cmdStart,cmdStart,size-cmdStart);
+          int cmdPos  = pi+blockStart+1;
+          QCString pl = QCString(data+cmdPos).left(blockEnd-blockStart-1);
+          uint i      = 0;
+          // check for absence of start command, either @start<cmd>, or \\start<cmd>
+          while (i<pl.length() && qisspace(pl[i])) i++; // skip leading whitespace
+          if (i+startCmd.length()>=pl.length() || // no room for start command
+              (pl[i]!='\\' && pl[i]!='@') ||     // no @ or \ after whitespace
+              qstrncmp(pl.data()+i+1,startCmd.data(),startCmd.length())!=0) // no start command
+          {
+            pl = "@"+startCmd+"\\ilinebr " + pl + " @"+endCmd;
+          }
+          printf("processSpecialCommand(%s)\n",pl.data());
+          processSpecialCommand(pl.data(),0,pl.length());
+        };
+
+        if (!Config_getString(PLANTUML_JAR_PATH).isEmpty() && lang=="plantuml")
+        {
+          addSpecialCommand("startuml","enduml");
         }
-        else
+        else if (Config_getBool(HAVE_DOT) && lang=="dot")
+        {
+          addSpecialCommand("dot","enddot");
+        }
+        else if (lang=="msc") // msc is built-in
+        {
+          addSpecialCommand("msc","endmsc");
+        }
+        else // normal code block
         {
           writeFencedCodeBlock(data+pi,lang.data(),blockStart,blockEnd);
         }
