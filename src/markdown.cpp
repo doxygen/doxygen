@@ -2970,10 +2970,41 @@ QCString Markdown::processQuotations(const QCString &s,int refIndent)
     {
       if (isFencedCodeBlock(data+pi,size-pi,currentIndent,lang,blockStart,blockEnd,blockOffset))
       {
-        if (lang=="plantuml")
+        if (lang=="plantuml" && !Config_getString(PLANTUML_JAR_PATH).isEmpty())
         {
           int cmdStart = pi+blockStart+1;
-          processSpecialCommand(data+cmdStart,cmdStart,size-cmdStart);
+          // using pl and pl1 so we don't remove any newlines (line counting)
+          QCString pl = QCString(data+cmdStart).left(blockEnd-blockStart-1);
+          QCString pl1 = pl.left(blockEnd-blockStart-1).stripWhiteSpace();
+          if (!pl1.startsWith("@startuml") && !pl1.startsWith("\\startuml"))
+          {
+            pl = "@startuml\\ilinebr " + pl + " @enduml";
+          }
+          processSpecialCommand(pl.data(),0,pl.length());
+        }
+        else if (lang=="dot" && Config_getBool(HAVE_DOT))
+        {
+          int cmdStart = pi+blockStart+1;
+          // using pl and pl1 so we don't remove any newlines (line counting)
+          QCString pl = QCString(data+cmdStart).left(blockEnd-blockStart-1);
+          QCString pl1 = pl.left(blockEnd-blockStart-1).stripWhiteSpace();
+          if (!pl1.startsWith("@dot") && !pl1.startsWith("\\dot"))
+          {
+            pl = "@dot\\ilinebr " + pl + " @enddot";
+          }
+          processSpecialCommand(pl.data(),0,pl.length());
+        }
+        else if (lang=="msc") // msc is build in
+        {
+          int cmdStart = pi+blockStart+1;
+          // using pl and pl1 so we don't remove any newlines (line counting)
+          QCString pl = QCString(data+cmdStart).left(blockEnd-blockStart-1);
+          QCString pl1 = pl.left(blockEnd-blockStart-1).stripWhiteSpace();
+          if (!pl1.startsWith("@msc") && !pl1.startsWith("\\msc"))
+          {
+            pl = "@msc\\ilinebr " + pl + " @endmsc";
+          }
+          processSpecialCommand(pl.data(),0,pl.length());
         }
         else
         {
