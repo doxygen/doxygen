@@ -1561,7 +1561,7 @@ int Markdown::processLink(const char *data,int offset,int size)
     }
     else if (link.find('/')!=-1 || link.find('.')!=-1 || link.find('#')!=-1)
     { // file/url link
-      if (link.at(0) == '#')
+      if (link.at(0) == '#' && !link.startsWith("#user-content"))
       {
         m_out.addStr("@ref ");
         m_out.addStr(link.mid(1));
