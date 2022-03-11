@@ -1173,7 +1173,7 @@ QCString argListToString(const ArgumentList &al,bool useCanonicalType,bool showD
     }
     if (!a.name.isEmpty() || !a.array.isEmpty())
     {
-      result+= type1+" "+a.name+type2+a.array;
+      result+= type1+" "+a.name+type2+(useCanonicalType && !a.canType.isEmpty()?"":a.array);
     }
     else
     {
