@@ -2983,7 +2983,6 @@ QCString Markdown::processQuotations(const QCString &s,int refIndent)
           {
             pl = "@"+startCmd+"\\ilinebr " + pl + " @"+endCmd;
           }
-          printf("processSpecialCommand(%s)\n",pl.data());
           processSpecialCommand(pl.data(),0,pl.length());
         };
 
