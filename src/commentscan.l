@@ -418,6 +418,9 @@ struct commentscanYY_state
   bool             markdownSupport = TRUE;
 
   QCString         raiseWarning;
+
+  QCString         HtmlAnchorStr;
+  bool             HtmlAnchor = false;
 };
 
 
@@ -486,6 +489,8 @@ DETAILEDHTML {CENTER}|{DIV}|{PRE}|{UL}|{TABLE}|{OL}|{DL}|{P}|[Hh][1-6]|{IMG}|{HR
 DETAILEDHTMLOPT {CODE}
 SUMMARY   [sS][uU][mM][mM][aA][rR][yY]
 REMARKS   [rR][eE][mM][aA][rR][kK][sS]
+AHTML     [aA]{BN}*
+ANCHTML   ([iI][dD]|[nN][aA][mM][eE])"="("\""{LABELID}"\""|"'"{LABELID}"'"|{LABELID})
 BN        [ \t\n\r]
 BL        [ \t\r]*"\n"
 B         [ \t]
@@ -564,6 +569,7 @@ STopt  [^\n@\\]*
 %x      ReadFormulaLong
 %x      AnchorLabel
 %x      HtmlComment
+%x      HtmlA
 %x      SkipLang
 %x      CiteLabel
 %x      CopyDoc
@@ -627,6 +633,65 @@ STopt  [^\n@\\]*
 <Comment>"</"{DETAILS}">"               { // end of a HTML style details description
                                           if (yyextra->HTMLDetails) yyextra->HTMLDetails--;
                                           addOutput(yyscanner,yytext);
+                                        }
+<Comment>"<"{AHTML}                     { // potential start of HTML anchor, see issue 9200
+                                          yyextra->HtmlAnchorStr = yytext;
+                                          yyextra->HtmlAnchor = false;
+                                          BEGIN(HtmlA);
+                                        }
+<HtmlA>{ANCHTML}                        { // only labels that can be converted to doxygen anchor
+                                          yyextra->HtmlAnchorStr += yytext;
+                                          QCString tag(yytext);
+                                          int s=tag.find("=");
+                                          char c=tag[s+1];
+                                          QCString id;
+                                          if (c=='\'' || c=='"') // valid start
+                                          {
+                                            int e=tag.find(c,s+2);
+                                            if (e!=-1) // found matching end
+                                            {
+                                              id=tag.mid(s+2,e-s-2); // extract id
+                                              addAnchor(yyscanner,id);
+                                            }
+                                          }
+                                          else
+                                          {
+                                            id=tag.mid(s+1);
+                                            addAnchor(yyscanner,id);
+                                          }
+                                          if (!id.isEmpty() && !yyextra->HtmlAnchor)
+                                          {
+                                            // only use first analogous to what is in docparser
+                                            addOutput(yyscanner,"@anchor ");
+                                            addOutput(yyscanner,id.data());
+                                            addOutput(yyscanner," ");
+                                            yyextra->HtmlAnchor = true;
+                                          }
+                                        }
+<HtmlA>("\""[^\n\"]*"\""|"'"[^\n']*"'") {
+                                          yyextra->HtmlAnchorStr += yytext;
+                                        }
+<HtmlA>">"|"/>"                         {
+                                          if (!yyextra->HtmlAnchor)
+                                          {
+                                            addOutput(yyscanner,yyextra->HtmlAnchorStr);
+                                            addOutput(yyscanner,yytext);
+                                          }
+                                          else
+                                          {
+                                            if (yyleng == 1) // to keep <a></a> pairs, otherwise single </a> present
+                                            {
+                                              addOutput(yyscanner,"<a>");
+                                            }
+                                          }
+                                          BEGIN(Comment);
+                                        }
+<HtmlA>{DOCNL}                          { // newline
+                                          yyextra->HtmlAnchorStr += yytext;
+                                          if (*yytext == '\n') yyextra->lineNr++;
+                                        }
+<HtmlA>.                                { // catch-all for anything else
+                                          yyextra->HtmlAnchorStr += yytext;
                                         }
 <Comment>"<"{SUMMARY}">"                { // start of a .NET XML style brief description
                                           if (!yyextra->HTMLDetails) setOutput(yyscanner,OutputBrief);
