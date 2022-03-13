@@ -2250,12 +2250,11 @@ void HtmlGenerator::endParamList()
   m_t << "</dl>";
 }
 
-void HtmlGenerator::writeDoc(DocNode *n,const Definition *ctx,const MemberDef *,int id)
+void HtmlGenerator::writeDoc(const DocNodeVariant &n,const Definition *ctx,const MemberDef *,int id)
 {
   m_codeGen.setId(id);
-  HtmlDocVisitor *visitor = new HtmlDocVisitor(m_t,m_codeGen,ctx);
-  n->accept(visitor);
-  delete visitor;
+  HtmlDocVisitor visitor(m_t,m_codeGen,ctx);
+  std::visit(visitor,n);
 }
 
 //---------------- helpers for index generation -----------------------------

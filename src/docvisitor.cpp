@@ -29,9 +29,9 @@ struct DocVisitor::Private
   std::stack<bool> hidden;
 };
 
-DocVisitor::DocVisitor(int id) : m_p(std::make_unique<Private>())
+DocVisitor::DocVisitor(/*int id*/) : m_p(std::make_unique<Private>())
 {
-  m_p->id = id;
+//  m_p->id = id;
 }
 
 DocVisitor::~DocVisitor()
@@ -54,10 +54,12 @@ CodeParserInterface &DocVisitor::getCodeParser(const QCString &extension)
   return *it->second.get();
 }
 
+#if 0
 int DocVisitor::id() const
 {
   return m_p->id;
 }
+#endif
 
 void DocVisitor::pushHidden(bool hide)
 {

@@ -115,7 +115,7 @@ class HtmlGenerator : public OutputGenerator
     { m_codeGen.endCodeFragment(style); }
     // ---------------------------
 
-    void writeDoc(DocNode *,const Definition *,const MemberDef *,int id);
+    void writeDoc(const DocNodeVariant &node,const Definition *,const MemberDef *,int id);
 
     void startFile(const QCString &name,const QCString &manName,const QCString &title,int id);
     void writeFooter(const QCString &navPath);

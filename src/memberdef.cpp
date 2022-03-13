@@ -2455,16 +2455,16 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
      )
   {
     std::unique_ptr<IDocParser> parser { createDocParser() };
-    std::unique_ptr<DocRoot>  rootNode { validatingParseDoc(*parser.get(),
+    std::unique_ptr<DocNodeVariant> rootNode { validatingParseDoc(*parser.get(),
                                          briefFile(),briefLine(),
                                          getOuterScope()?getOuterScope():d,
                                          this,briefDescription(),TRUE,FALSE,
                                          QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT)) };
-
-    if (rootNode && !rootNode->isEmpty())
+    const DocRoot *root = std::get_if<DocRoot>(rootNode.get());
+    if (root && !root->isEmpty())
     {
       ol.startMemberDescription(anchor(),inheritId);
-      ol.writeDoc(rootNode.get(),getOuterScope()?getOuterScope():d,this);
+      ol.writeDoc(*rootNode,getOuterScope()?getOuterScope():d,this);
       if (detailsVisible) // add More.. link only when both brief and details are visible
       {
         ol.pushGeneratorState();

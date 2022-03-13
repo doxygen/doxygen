@@ -27,6 +27,7 @@
 #include "index.h"
 #include "section.h"
 #include "textstream.h"
+#include "docparser.h"
 
 class ClassDiagram;
 class DotClassGraph;
@@ -35,7 +36,6 @@ class DotCallGraph;
 class DotDirDeps;
 class DotGfxHierarchyTable;
 class DotGroupCollaboration;
-class DocNode;
 class MemberDef;
 class Definition;
 
@@ -361,7 +361,7 @@ class OutputGenerator : public BaseOutputDocInterface
     //void setEncoding(const QCString &enc) { encoding = enc; }
     //virtual void postProcess(QByteArray &) { }
 
-    virtual void writeDoc(DocNode *,const Definition *ctx,const MemberDef *md,int id) = 0;
+    virtual void writeDoc(const DocNodeVariant &node,const Definition *ctx,const MemberDef *md,int id) = 0;
 
     ///////////////////////////////////////////////////////////////
     // structural output interface

@@ -5752,12 +5752,15 @@ QCString parseCommentAsText(const Definition *scope,const MemberDef *md,
   //printf("parseCommentAsText(%s)\n",qPrint(doc));
   TextStream t;
   std::unique_ptr<IDocParser> parser { createDocParser() };
-  std::unique_ptr<DocRoot>    root   { validatingParseDoc(*parser.get(),
+  std::unique_ptr<DocNodeVariant> rootNode { validatingParseDoc(*parser.get(),
                                        fileName,lineNr,
                                        const_cast<Definition*>(scope),const_cast<MemberDef*>(md),doc,FALSE,FALSE,
                                        QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT)) };
-  auto visitor = std::make_unique<TextDocVisitor>(t);
-  root->accept(visitor.get());
+  if (rootNode)
+  {
+    TextDocVisitor visitor(t);
+    std::visit(visitor,*rootNode);
+  }
   QCString result = convertCharEntitiesToUTF8(t.str().c_str()).stripWhiteSpace();
   int i=0;
   int charCnt=0;

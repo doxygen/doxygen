@@ -2453,14 +2453,15 @@ void ClassDefImpl::writeDeclarationLink(OutputList &ol,bool &found,const QCStrin
     if (!briefDescription().isEmpty() && Config_getBool(BRIEF_MEMBER_DESC))
     {
       std::unique_ptr<IDocParser> parser { createDocParser() };
-      std::unique_ptr<DocRoot> rootNode { validatingParseDoc(*parser.get(),
+      std::unique_ptr<DocNodeVariant> rootNode { validatingParseDoc(*parser.get(),
                                 briefFile(),briefLine(),this,0,
                                 briefDescription(),FALSE,FALSE,
                                 QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT)) };
-      if (rootNode && !rootNode->isEmpty())
+      const DocRoot *root = std::get_if<DocRoot>(rootNode.get());
+      if (root && !root->isEmpty())
       {
         ol.startMemberDescription(anchor());
-        ol.writeDoc(rootNode.get(),this,0);
+        ol.writeDoc(*rootNode,this,0);
         if (isLinkableInProject())
         {
           writeMoreLink(ol,anchor());

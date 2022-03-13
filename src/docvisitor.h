@@ -20,6 +20,7 @@
 
 #include "qcstring.h"
 
+#if 0
 // ids
 const int DocVisitor_Html  = 0;
 const int DocVisitor_Latex = 1;
@@ -85,6 +86,8 @@ class DocSimpleSectSep;
 class DocHtmlBlockQuote;
 class DocVhdlFlow;
 class DocParBlock;
+#endif
+
 class CodeParserInterface;
 
 /*! @brief Abstract visitor that participates in the visitor pattern.
@@ -94,13 +97,14 @@ class DocVisitor
     struct Private;
     std::unique_ptr<Private> m_p;
   public:
-    DocVisitor(int id);
+    DocVisitor(/*int id*/);
     virtual ~DocVisitor();
-    int id() const;
+    //int id() const;
     CodeParserInterface &getCodeParser(const QCString &langExt);
     void pushHidden(bool hide);
     bool popHidden();
 
+#if 0
     /*! @name Visitor functions for leaf nodes
      *  @{
      */
@@ -201,6 +205,9 @@ class DocVisitor
     virtual void visitPre(DocParBlock *) = 0;
     virtual void visitPost(DocParBlock *) = 0;
     /*! @} */
+#endif
 };
+
+
 
 #endif

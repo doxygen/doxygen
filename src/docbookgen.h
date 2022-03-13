@@ -131,7 +131,7 @@ class DocbookGenerator : public OutputGenerator
     { m_codeGen.endCodeFragment(style); }
     // ---------------------------
 
-    void writeDoc(DocNode *,const Definition *ctx,const MemberDef *md,int id);
+    void writeDoc(const DocNodeVariant &node,const Definition *ctx,const MemberDef *md,int id);
 
     ///////////////////////////////////////////////////////////////
     // structural output interface

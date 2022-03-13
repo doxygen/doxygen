@@ -425,16 +425,19 @@ static void writeXMLDocBlock(TextStream &t,
   if (stext.isEmpty()) return;
   // convert the documentation string into an abstract syntax tree
   std::unique_ptr<IDocParser> parser { createDocParser() };
-  std::unique_ptr<DocNode>    root   { validatingParseDoc(*parser.get(),
+  std::unique_ptr<DocNodeVariant> rootNode { validatingParseDoc(*parser.get(),
                                        fileName,lineNr,scope,md,text,FALSE,FALSE,
                                        QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT)) };
-  // create a code generator
-  auto xmlCodeGen = std::make_unique<XMLCodeGenerator>(t);
-  // create a parse tree visitor for XML
-  auto visitor = std::make_unique<XmlDocVisitor>(t,*xmlCodeGen,scope?scope->getDefFileExtension():QCString(""));
-  // visit all nodes
-  root->accept(visitor.get());
-  // clean up
+  if (rootNode)
+  {
+    // create a code generator
+    auto xmlCodeGen = std::make_unique<XMLCodeGenerator>(t);
+    // create a parse tree visitor for XML
+    XmlDocVisitor visitor(t,*xmlCodeGen,scope?scope->getDefFileExtension():QCString(""));
+    // visit all nodes
+    std::visit(visitor,*rootNode);
+    // clean up
+  }
 }
 
 void writeXMLCodeBlock(TextStream &t,FileDef *fd)

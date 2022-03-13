@@ -12594,4 +12594,6 @@ void generateOutput()
   Config::deinit();
   delete Doxygen::clangUsrMap;
   g_successfulRun=TRUE;
+
+  //dumpDocNodeSizes();
 }

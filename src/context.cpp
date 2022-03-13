@@ -1242,7 +1242,7 @@ static TemplateVariant parseDoc(const Definition *def,const QCString &file,int l
 {
   TemplateVariant result;
   std::unique_ptr<IDocParser> parser { createDocParser() };
-  std::unique_ptr<DocRoot>    root   { validatingParseDoc(
+  std::unique_ptr<DocNodeVariant> rootNode { validatingParseDoc(
                                        *parser.get(),file,line,def,0,docStr,TRUE,FALSE,
                                        QCString(),isBrief,FALSE,Config_getBool(MARKDOWN_SUPPORT))
                                      };
@@ -1253,14 +1253,14 @@ static TemplateVariant parseDoc(const Definition *def,const QCString &file,int l
       {
         HtmlCodeGenerator codeGen(ts,relPath);
         HtmlDocVisitor visitor(ts,codeGen,def);
-        root->accept(&visitor);
+        std::visit(visitor,*rootNode);
       }
       break;
     case ContextOutputFormat_Latex:
       {
         LatexCodeGenerator codeGen(ts,relPath,file);
         LatexDocVisitor visitor(ts,codeGen,def->getDefFileExtension(),FALSE);
-        root->accept(&visitor);
+        std::visit(visitor,*rootNode);
       }
       break;
     // TODO: support other generators
@@ -1268,7 +1268,8 @@ static TemplateVariant parseDoc(const Definition *def,const QCString &file,int l
       err("context.cpp: output format not yet supported\n");
       break;
   }
-  bool isEmpty = root->isEmpty();
+  const DocRoot *root = std::get_if<DocRoot>(rootNode.get());
+  bool isEmpty = root && root->isEmpty();
   if (isEmpty)
     result = "";
   else

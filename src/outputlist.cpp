@@ -159,14 +159,14 @@ void OutputList::generateDoc(const QCString &fileName,int startLine,
   // - when only XML format there should be warnings as well (XML has its own write routines)
   // - no formats there should be warnings as well
   std::unique_ptr<IDocParser> parser { createDocParser() };
-  std::unique_ptr<DocRoot>    root   { validatingParseDoc(*parser.get(),
+  std::unique_ptr<DocNodeVariant> rootNode { validatingParseDoc(*parser.get(),
                                        fileName,startLine,
                                        ctx,md,docStr,indexWords,isExample,exampleName,
                                        singleLine,linkFromIndex,markdownSupport) };
-  if (count>0) writeDoc(root.get(),ctx,md,m_id);
+  if (rootNode && count>0) writeDoc(*rootNode,ctx,md,m_id);
 }
 
-void OutputList::writeDoc(DocRoot *root,const Definition *ctx,const MemberDef *md,int)
+void OutputList::writeDoc(const DocNodeVariant &root,const Definition *ctx,const MemberDef *md,int)
 {
   for (const auto &og : m_outputs)
   {
@@ -189,13 +189,13 @@ void OutputList::parseText(const QCString &textStr)
   // - when only XML format there should be warnings as well (XML has its own write routines)
   // - no formats there should be warnings as well
   std::unique_ptr<IDocParser> parser { createDocParser() };
-  std::unique_ptr<DocText>    root   { validatingParseText(*parser.get(), textStr) };
+  std::unique_ptr<DocNodeVariant> textNode { validatingParseText(*parser.get(), textStr) };
 
-  if (count>0)
+  if (textNode && count>0)
   {
     for (const auto &og : m_outputs)
     {
-      if (og->isEnabled()) og->writeDoc(root.get(),0,0,m_id);
+      if (og->isEnabled()) og->writeDoc(*textNode,0,0,m_id);
     }
   }
 }

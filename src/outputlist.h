@@ -31,7 +31,6 @@ class DotDirDeps;
 class DotInclDepGraph;
 class DotGfxHierarchyTable;
 class DotGroupCollaboration;
-class DocRoot;
 
 /** Class representing a list of output generators that are written to
  *  in parallel.
@@ -72,7 +71,7 @@ class OutputList : public OutputDocInterface
                      bool indexWords,bool isExample,const QCString &exampleName /*=0*/,
                      bool singleLine /*=FALSE*/,bool linkFromIndex /*=FALSE*/,
                      bool markdownSupport /*=FALSE*/);
-    void writeDoc(DocRoot *root,const Definition *ctx,const MemberDef *md,int id=0);
+    void writeDoc(const DocNodeVariant &node,const Definition *ctx,const MemberDef *md,int id=0);
     void parseText(const QCString &textStr);
 
     void startIndexSection(IndexSections is)
