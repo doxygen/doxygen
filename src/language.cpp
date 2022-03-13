@@ -119,4 +119,7 @@ void setTranslator(OUTPUT_LANGUAGE_t langName)
     case OUTPUT_LANGUAGE_t::Ukrainian:           theTranslator = new TranslatorUkrainian; break;
     case OUTPUT_LANGUAGE_t::Vietnamese:          theTranslator = new TranslatorVietnamese; break;
   }
+
+  QCString msg = theTranslator->updateNeededMessage();
+  if (!msg.isEmpty()) ::msg("%s", qPrint(msg));
 }
