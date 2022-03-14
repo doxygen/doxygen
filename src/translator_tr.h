@@ -1356,14 +1356,18 @@ class TranslatorTurkish : public TranslatorAdapter_1_7_5
     /*! Used as a heading for a list of Java class fonksiyonlar with package
      * scope.
      */
-    virtual QCString trPackageMembers()
+    virtual QCString trPackageFunctions()
     {
       return "Paket Fonksiyonlar";
+    }
+    virtual QCString trPackageMembers()
+    {
+      return "Paket Üyeler";
     }
     /*! Used as a heading for a list of static Java class fonksiyonlar with
      *  package scope.
      */
-    virtual QCString trStaticPackageMembers()
+    virtual QCString trStaticPackageFunctions()
     {
       return "Static Pakat Fonksiyonları";
     }

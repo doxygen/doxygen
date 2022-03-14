@@ -1359,13 +1359,15 @@ class TranslatorHindi : public Translator
     /*! Used as a heading for a list of Java class functions with package
      * scope.
      */
-    virtual QCString trPackageMembers()
+    virtual QCString trPackageFunctions()
     { return "संकुल फलनगण"; }
+    virtual QCString trPackageMembers()
+    { return "संकुल सदस्यगण"; }
 
     /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
-    virtual QCString trStaticPackageMembers()
+    virtual QCString trStaticPackageFunctions()
     { return "अचल संकुल फलनगण"; }
 
     /*! Used as a heading for a list of Java class variables with package

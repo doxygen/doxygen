@@ -1300,9 +1300,11 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
     /* Java: Entities with package scope... */
     virtual QCString trPackageTypes()
     { return "Typer med pakke-scope"; }
-    virtual QCString trPackageMembers()
+    virtual QCString trPackageFunctions()
     { return "Metoder med pakke-scope"; }
-    virtual QCString trStaticPackageMembers()
+    virtual QCString trPackageMembers()
+    { return "Medlemmer med pakke-scope"; }
+    virtual QCString trStaticPackageFunctions()
     { return "Statiske metoder med pakke-scope"; }
     virtual QCString trPackageAttribs()
     { return "Attributter med pakke-scope"; }

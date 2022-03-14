@@ -507,8 +507,9 @@ class Translator
 //////////////////////////////////////////////////////////////////////////
 
     virtual QCString trPackageTypes() = 0;
+    virtual QCString trPackageFunctions() = 0;
     virtual QCString trPackageMembers() = 0;
-    virtual QCString trStaticPackageMembers() = 0;
+    virtual QCString trStaticPackageFunctions() = 0;
     virtual QCString trPackageAttribs() = 0;
     virtual QCString trStaticPackageAttribs() = 0;
 

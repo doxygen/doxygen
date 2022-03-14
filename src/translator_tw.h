@@ -1359,14 +1359,18 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
     /*! Used as a heading for a list of Java class functions with package
      * scope.
      */
-    virtual QCString trPackageMembers()
+    virtual QCString trPackageFunctions()
     {
       return "Package 函數列表";
+    }
+    virtual QCString trPackageMembers()
+    {
+      return "Package 成員列表";
     }
     /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
-    virtual QCString trStaticPackageMembers()
+    virtual QCString trStaticPackageFunctions()
     {
       return "靜態 Package 函數列表";
     }

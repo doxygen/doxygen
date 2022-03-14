@@ -676,7 +676,7 @@ class TranslateContext::Private
     {
       if (m_javaOpt || m_vhdlOpt)
       {
-        return theTranslator->trPackageMembers();
+        return theTranslator->trPackageFunctions();
       }
       else if (m_fortranOpt || m_sliceOpt)
       {
@@ -2091,11 +2091,11 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
     }
     TemplateVariant createPackageMethods() const
     {
-      return createMemberList(MemberListType_pacMethods,theTranslator->trPackageMembers());
+      return createMemberList(MemberListType_pacMethods,theTranslator->trPackageFunctions());
     }
     TemplateVariant createPackageStaticMethods() const
     {
-      return createMemberList(MemberListType_pacStaticMethods,theTranslator->trStaticPackageMembers());
+      return createMemberList(MemberListType_pacStaticMethods,theTranslator->trStaticPackageFunctions());
     }
     TemplateVariant createPackageAttributes() const
     {
@@ -2248,8 +2248,8 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
       ctx->addMemberList(m_classDef,MemberListType_proAttribs,theTranslator->trProtectedAttribs());
       ctx->addMemberList(m_classDef,MemberListType_proStaticAttribs,theTranslator->trStaticProtectedAttribs());
       ctx->addMemberList(m_classDef,MemberListType_pacTypes,theTranslator->trPackageTypes());
-      ctx->addMemberList(m_classDef,MemberListType_pacMethods,theTranslator->trPackageMembers());
-      ctx->addMemberList(m_classDef,MemberListType_pacStaticMethods,theTranslator->trStaticPackageMembers());
+      ctx->addMemberList(m_classDef,MemberListType_pacMethods,theTranslator->trPackageFunctions());
+      ctx->addMemberList(m_classDef,MemberListType_pacStaticMethods,theTranslator->trStaticPackageFunctions());
       ctx->addMemberList(m_classDef,MemberListType_pacAttribs,theTranslator->trPackageAttribs());
       ctx->addMemberList(m_classDef,MemberListType_pacStaticAttribs,theTranslator->trStaticPackageAttribs());
       ctx->addMemberList(m_classDef,MemberListType_properties,theTranslator->trProperties());

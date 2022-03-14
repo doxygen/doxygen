@@ -1318,14 +1318,18 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_15
     /*! Used as a heading for a list of Java class functions with package
      * scope.
      */
-    virtual QCString trPackageMembers()
+    virtual QCString trPackageFunctions()
     {
       return "Funkcie v balíku";
+    }
+    virtual QCString trPackageMembers()
+    {
+      return "Členy v balíku";
     }
     /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
-    virtual QCString trStaticPackageMembers()
+    virtual QCString trStaticPackageFunctions()
     {
       return "Statické funkcie v balíku";
     }
