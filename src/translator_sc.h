@@ -1382,14 +1382,18 @@ class TranslatorSerbianCyrillic : public TranslatorAdapter_1_6_0
     /*! Used as a heading for a list of Java class functions with package
      * scope.
      */
-    virtual QCString trPackageMembers()
+    virtual QCString trPackageFunctions()
     {
       return "Функције пакета";
+    }
+    virtual QCString trPackageMembers()
+    {
+      return "Чланови пакета";
     }
     /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
-    virtual QCString trStaticPackageMembers()
+    virtual QCString trStaticPackageFunctions()
     {
       return "Статичке функције пакета";
     }

@@ -1377,14 +1377,18 @@ class TranslatorBulgarian : public Translator
     /*! Used as a heading for a list of Java class functions with package
      * scope.
      */
-    virtual QCString trPackageMembers()
+    virtual QCString trPackageFunctions()
     {
       return "Функции с област на видимост пакет";
+    }
+    virtual QCString trPackageMembers()
+    {
+      return "Членове с област на видимост пакет";
     }
     /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
-    virtual QCString trStaticPackageMembers()
+    virtual QCString trStaticPackageFunctions()
     {
       return "Статични функции с област на видимост пакет";
     }

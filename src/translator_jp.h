@@ -1374,14 +1374,19 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
     /*! Used as a heading for a list of Java class functions with package
      * scope.
      */
-    virtual QCString trPackageMembers()
+    virtual QCString trPackageFunctions()
     {
       return "関数";
     }
+    virtual QCString trPackageMembers()
+    {
+      return "パッケージ内のメンバ";
+    }
+
     /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
-    virtual QCString trStaticPackageMembers()
+    virtual QCString trStaticPackageFunctions()
     {
       return "静的関数";
     }

@@ -1303,15 +1303,19 @@ class TranslatorChinese : public Translator
     /*! Used as a heading for a list of Java class functions with package
      * scope.
      */
-    virtual QCString trPackageMembers()
+    virtual QCString trPackageFunctions()
     {
       return "包函数";
+    }
+    virtual QCString trPackageMembers()
+    {
+      return "包成员";
     }
 
     /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
-    virtual QCString trStaticPackageMembers()
+    virtual QCString trStaticPackageFunctions()
     {
       return "静态包函数";
     }

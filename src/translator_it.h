@@ -33,7 +33,7 @@
  *  2006/10: made class to derive directly from Translator class (reported in Petr Prikryl October 9 translator report)
  *  2006/06: updated translation of new items used since version 1.4.6
  *  2006/05: translated new items used since version 1.4.6
- *           corrected typo in trPackageMembers method
+ *           corrected typo in trPackageFunction method
  *  2005/03: translated new items used since version 1.4.1
  *           removed unused methods listed in Petr Prikryl February 28 translator report
  *  2004/09: translated new items used since version 1.3.9
@@ -1342,14 +1342,18 @@ class TranslatorItalian : public TranslatorAdapter_1_8_15
     /*! Used as a heading for a list of Java class functions with package
      * scope.
      */
-    virtual QCString trPackageMembers()
+    virtual QCString trPackageFunctions()
     {
       return "Funzioni con visibilità di package";
+    }
+    virtual QCString trPackageMembers()
+    {
+      return "Membri con visibilità di package";
     }
     /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
-    virtual QCString trStaticPackageMembers()
+    virtual QCString trStaticPackageFunctions()
     {
       return "Funzioni statiche con visibilità di package";
     }

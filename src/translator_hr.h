@@ -1059,14 +1059,18 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
     /*! Used as a heading for a list of Java class functions with package
      * scope.
      */
-    virtual QCString trPackageMembers()
+    virtual QCString trPackageFunctions()
     {
       return "Funkcije u paketu";
+    }
+    virtual QCString trPackageMembers()
+    {
+      return "članovi u paketu";
     }
     /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
-    virtual QCString trStaticPackageMembers()
+    virtual QCString trStaticPackageFunctions()
     {
       return "Statičke funkcije u paketu";
     }
