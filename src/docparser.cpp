@@ -146,6 +146,7 @@ struct DocParserContext
   TokenInfo *token;
   int      lineNo;
   bool     markdownSupport;
+  bool     inHandleStyleArgument = false;
 };
 
 class DocParser : public IDocParser
@@ -863,6 +864,7 @@ int DocParser::handleStyleArgument(DocNode *parent,DocNodeList &children,const Q
       // special character that ends the markup command
       return tok;
     }
+    context.inHandleStyleArgument = true;
     if (!defaultHandleToken(parent,tok,children))
     {
       switch (tok)
@@ -873,6 +875,7 @@ int DocParser::handleStyleArgument(DocNode *parent,DocNodeList &children,const Q
             continue;
           }
           DBG(("handleStyleArgument(%s) end tok=%s\n",qPrint(saveCmdName), DocTokenizer::tokToString(tok)));
+          context.inHandleStyleArgument = false;
           return tok;
           break;
         default:
@@ -880,6 +883,15 @@ int DocParser::handleStyleArgument(DocNode *parent,DocNodeList &children,const Q
           break;
       }
       break;
+    }
+    context.inHandleStyleArgument = false;
+    if (tok == TK_HTMLTAG)
+    {
+      QCString name = context.token->name;
+      if (context.token->endTag) name = "</" + name; else name = "<" + name;
+      name += ">";
+      tokenizer.unputString(name.data(),name.length());
+      return RetVal_OK;
     }
   }
   DBG(("handleStyleArgument(%s) end tok=%s\n",qPrint(saveCmdName), DocTokenizer::tokToString(tok)));
@@ -1645,6 +1657,7 @@ reparsetoken:
             warn_doc_error(context.fileName,tokenizer.getLineNr(),"found <pre> tag in heading\n");
             break;
           case HTML_BOLD:
+            if (context.inHandleStyleArgument) break;
             if (!context.token->endTag)
             {
               handleStyleEnter(parent,children,DocStyleChange::Bold,tokenName,&context.token->attribs);
@@ -1655,6 +1668,7 @@ reparsetoken:
             }
             break;
           case HTML_S:
+            if (context.inHandleStyleArgument) break;
             if (!context.token->endTag)
             {
               handleStyleEnter(parent,children,DocStyleChange::S,tokenName,&context.token->attribs);
@@ -1665,6 +1679,7 @@ reparsetoken:
             }
             break;
           case HTML_STRIKE:
+            if (context.inHandleStyleArgument) break;
             if (!context.token->endTag)
             {
               handleStyleEnter(parent,children,DocStyleChange::Strike,tokenName,&context.token->attribs);
@@ -1675,6 +1690,7 @@ reparsetoken:
             }
             break;
           case HTML_DEL:
+            if (context.inHandleStyleArgument) break;
             if (!context.token->endTag)
             {
               handleStyleEnter(parent,children,DocStyleChange::Del,tokenName,&context.token->attribs);
@@ -1685,6 +1701,7 @@ reparsetoken:
             }
             break;
           case HTML_UNDERLINE:
+            if (context.inHandleStyleArgument) break;
             if (!context.token->endTag)
             {
               handleStyleEnter(parent,children,DocStyleChange::Underline,tokenName,&context.token->attribs);
@@ -1695,6 +1712,7 @@ reparsetoken:
             }
             break;
           case HTML_INS:
+            if (context.inHandleStyleArgument) break;
             if (!context.token->endTag)
             {
               handleStyleEnter(parent,children,DocStyleChange::Ins,tokenName,&context.token->attribs);
@@ -1705,6 +1723,7 @@ reparsetoken:
             }
             break;
           case HTML_DETAILS:
+            if (context.inHandleStyleArgument) break;
             if (!context.token->endTag)
             {
               handleStyleEnter(parent,children,DocStyleChange::Details,tokenName,&context.token->attribs);
@@ -1716,6 +1735,7 @@ reparsetoken:
             break;
           case HTML_CODE:
           case XML_C:
+            if (context.inHandleStyleArgument) break;
             if (!context.token->endTag)
             {
               handleStyleEnter(parent,children,DocStyleChange::Code,tokenName,&context.token->attribs);
@@ -1726,6 +1746,7 @@ reparsetoken:
             }
             break;
           case HTML_EMPHASIS:
+            if (context.inHandleStyleArgument) break;
             if (!context.token->endTag)
             {
               handleStyleEnter(parent,children,DocStyleChange::Italic,tokenName,&context.token->attribs);
@@ -1736,6 +1757,7 @@ reparsetoken:
             }
             break;
           case HTML_SUB:
+            if (context.inHandleStyleArgument) break;
             if (!context.token->endTag)
             {
               handleStyleEnter(parent,children,DocStyleChange::Subscript,tokenName,&context.token->attribs);
@@ -1746,6 +1768,7 @@ reparsetoken:
             }
             break;
           case HTML_SUP:
+            if (context.inHandleStyleArgument) break;
             if (!context.token->endTag)
             {
               handleStyleEnter(parent,children,DocStyleChange::Superscript,tokenName,&context.token->attribs);
@@ -1756,6 +1779,7 @@ reparsetoken:
             }
             break;
           case HTML_CENTER:
+            if (context.inHandleStyleArgument) break;
             if (!context.token->endTag)
             {
               handleStyleEnter(parent,children,DocStyleChange::Center,tokenName,&context.token->attribs);
@@ -1766,6 +1790,7 @@ reparsetoken:
             }
             break;
           case HTML_SMALL:
+            if (context.inHandleStyleArgument) break;
             if (!context.token->endTag)
             {
               handleStyleEnter(parent,children,DocStyleChange::Small,tokenName,&context.token->attribs);
@@ -1776,6 +1801,7 @@ reparsetoken:
             }
             break;
           case HTML_CITE:
+            if (context.inHandleStyleArgument) break;
             if (!context.token->endTag)
             {
               handleStyleEnter(parent,children,DocStyleChange::Cite,tokenName,&context.token->attribs);

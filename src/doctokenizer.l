@@ -1716,6 +1716,14 @@ void DocTokenizer::setStatePara()
   BEGIN(St_Para);
 }
 
+void DocTokenizer::unputString(const char *str, int len)
+{
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  unput_string(str,len);
+}
+
+
 void DocTokenizer::setStateTitle()
 {
   yyscan_t yyscanner = p->yyscanner;
