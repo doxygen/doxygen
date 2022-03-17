@@ -7372,20 +7372,26 @@ static void addEnumValuesToEnums(const Entry *root)
                       //    qPrint(fmd->name()),qPrint(fmd->getOuterScope()->name()));
                       if (nd && !nd->isAnonymous())
                       {
-                        const NamespaceDef *fnd=fmd->getNamespaceDef();
-                        if (fnd==nd) // enum value is inside a namespace
+                        if (!fmd->isStrongEnumValue()) // only non strong enum values can be globally added
                         {
-                          md->insertEnumField(fmd);
-                          fmd->setEnumScope(md);
+                          const NamespaceDef *fnd=fmd->getNamespaceDef();
+                          if (fnd==nd) // enum value is inside a namespace
+                          {
+                            md->insertEnumField(fmd);
+                            fmd->setEnumScope(md);
+                          }
                         }
                       }
                       else if (isGlobal)
                       {
-                        const FileDef *ffd=fmd->getFileDef();
-                        if (ffd==fd) // enum value has file scope
+                        if (!fmd->isStrongEnumValue()) // only non strong enum values can be globally added
                         {
-                          md->insertEnumField(fmd);
-                          fmd->setEnumScope(md);
+                          const FileDef *ffd=fmd->getFileDef();
+                          if (ffd==fd) // enum value has file scope
+                          {
+                            md->insertEnumField(fmd);
+                            fmd->setEnumScope(md);
+                          }
                         }
                       }
                       else if (isRelated && cd) // reparent enum value to
@@ -7400,13 +7406,16 @@ static void addEnumValuesToEnums(const Entry *root)
                       }
                       else
                       {
-                        const ClassDef *fcd=fmd->getClassDef();
-                        if (fcd==cd) // enum value is inside a class
+                        if (!fmd->isStrongEnumValue()) // only non strong enum values can be globally added
                         {
-                          //printf("Inserting enum field %s in enum scope %s\n",
-                          //    qPrint(fmd->name()),qPrint(md->name()));
-                          md->insertEnumField(fmd); // add field def to list
-                          fmd->setEnumScope(md);    // cross ref with enum name
+                          const ClassDef *fcd=fmd->getClassDef();
+                          if (fcd==cd) // enum value is inside a class
+                          {
+                            //printf("Inserting enum field %s in enum scope %s\n",
+                            //    qPrint(fmd->name()),qPrint(md->name()));
+                            md->insertEnumField(fmd); // add field def to list
+                            fmd->setEnumScope(md);    // cross ref with enum name
+                          }
                         }
                       }
                     }
