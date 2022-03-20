@@ -213,7 +213,6 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     virtual MemberDef *fromAnonymousMember() const;
     virtual bool hasCallGraph() const;
     virtual bool hasCallerGraph() const;
-    virtual bool visibleMemberGroup(bool hideNoHeader) const;
     virtual bool hasReferencesRelation() const;
     virtual bool hasReferencedByRelation() const;
     virtual const MemberDef *templateMaster() const;
@@ -698,8 +697,6 @@ class MemberDefAliasImpl : public DefinitionAliasMixin<MemberDef>
     { return getMdAlias()->hasCallGraph(); }
     virtual bool hasCallerGraph() const
     { return getMdAlias()->hasCallerGraph(); }
-    virtual bool visibleMemberGroup(bool hideNoHeader) const
-    { return getMdAlias()->visibleMemberGroup(hideNoHeader); }
     virtual bool hasReferencesRelation() const
     { return getMdAlias()->hasReferencesRelation(); }
     virtual bool hasReferencedByRelation() const
@@ -4084,12 +4081,6 @@ bool MemberDefImpl::hasDocumentation() const
 void MemberDefImpl::setMemberGroup(MemberGroup *grp)
 {
   m_impl->memberGroup = grp;
-}
-
-bool MemberDefImpl::visibleMemberGroup(bool hideNoHeader) const
-{
-  return m_impl->memberGroup!=0 &&
-          (!hideNoHeader || m_impl->memberGroup->header()!="[NOHEADER]");
 }
 
 QCString MemberDefImpl::getScopeString() const

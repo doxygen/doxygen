@@ -614,7 +614,7 @@ void MemberList::writeDeclarations(OutputList &ol,
     //printf("memberGroupList=%p\n",memberGroupList);
     for (const auto &mg : m_memberGroupRefList)
     {
-      bool hasHeader=!mg->header().isEmpty() && mg->header()!="[NOHEADER]";
+      bool hasHeader=!mg->header().isEmpty();
       if (inheritId.isEmpty())
       {
         //printf("mg->header=%s hasHeader=%d\n",qPrint(mg->header()),hasHeader);

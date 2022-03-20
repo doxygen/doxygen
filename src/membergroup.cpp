@@ -95,7 +95,6 @@ void MemberGroup::writeDeclarations(OutputList &ol,
 {
   //printf("MemberGroup::writeDeclarations() %s\n",qPrint(grpHeader));
   QCString ldoc = doc;
-  if (!ldoc.isEmpty()) ldoc.prepend("<a name=\""+anchor()+"\" id=\""+anchor()+"\"></a>");
   memberList->writeDeclarations(ol,cd,nd,fd,gd,grpHeader,ldoc,FALSE,showInline);
 }
 
@@ -255,29 +254,9 @@ int MemberGroup::numDocEnumValues() const
   return memberList->numDocEnumValues();
 }
 
-QCString MemberGroup::anchor() const
-{
-  uchar md5_sig[16];
-  char sigStr[33];
-  QCString locHeader = grpHeader;
-  if (locHeader.isEmpty()) locHeader="[NOHEADER]";
-  MD5Buffer(locHeader.data(),locHeader.length(),md5_sig);
-  MD5SigToString(md5_sig,sigStr);
-  return QCString("amgrp")+sigStr;
-}
-
 void MemberGroup::addListReferences(Definition *def)
 {
   memberList->addListReferences(def);
-  if (def)
-  {
-    QCString name = def->getOutputFileBase()+"#"+anchor();
-    addRefItem(m_xrefListItems,
-        name,
-        theTranslator->trGroup(TRUE,TRUE),
-        name,
-        grpHeader,QCString(),def);
-  }
 }
 
 void MemberGroup::findSectionsInDocumentation(const Definition *d)
