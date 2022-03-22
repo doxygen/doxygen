@@ -102,7 +102,7 @@ doxygen -w rtf rtfstyle.cfg
      used in combination with the \c -u option, to add or strip the
      documentation from an existing configuration file.
      To get a minimal configuration file use the \c -x or \-x_noenv option to
-     show only the defferences from the default doxygen configuration file.
+     show only the differences from the default doxygen configuration file.
      Please use the \c -s or \c -x or \c -x_noenv option if you send me a
      configuration file as part of a bug report or post an issue on GitHub!
      (see also: \ref bug_reports "How to report a bug")
