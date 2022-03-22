@@ -461,8 +461,22 @@ static QCString substituteHtmlKeywords(const QCString &str,
          const StringVector &mathJaxExtensions = Config_getList(MATHJAX_EXTENSIONS);
          if (!mathJaxExtensions.empty() || !g_latex_macro.isEmpty())
          {
-           mathJaxJs+= ",\n"
-                       "  tex: {\n"
+           mathJaxJs+= ",\n";
+           if (!mathJaxExtensions.empty())
+           {
+             bool first = true;
+             mathJaxJs+= "  loader: {\n"
+                         "    load: [";
+             for (const auto &s : mathJaxExtensions)
+             {
+               if (!first) mathJaxJs+= ",";
+               mathJaxJs+= "'[tex]/"+QCString(s.c_str())+"'";
+               first = false;
+             }
+             mathJaxJs+= "]\n"
+                         "  },\n";
+           }
+           mathJaxJs+= "  tex: {\n"
                        "    macros: {";
            if (!g_latex_macro.isEmpty())
            {

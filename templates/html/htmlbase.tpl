@@ -51,6 +51,11 @@ window.MathJax = {
     ignoreHtmlClass: 'tex2jax_ignore',
     processHtmlClass: 'tex2jax_process'
   },
+{% if config.MATHJAX_EXTENSIONS %}
+  loader: {
+    load: [{% for ext in config.MATHJAX_EXTENSIONS %},'{{ ext }}'{% endfor %}]
+  },
+{% endif %}{# MATHJAX_EXTENSIONS #}
   tex: {
 {% if doxygen.mathJaxMacros %}
     macros: { {{ doxygen.mathJaxMacros|raw }} },
