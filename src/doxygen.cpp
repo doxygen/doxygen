@@ -9085,11 +9085,13 @@ static void buildPageList(Entry *root)
 }
 
 // search for the main page defined in this project
-static void findMainPage(Entry *root)
+static void findMainPage(Entry *root, int &surrogateMainpage)
 {
   if (root->section == Entry::MAINPAGEDOC_SEC)
   {
-    if (Doxygen::mainPage==0 && root->tagInfo()==0)
+    QCString mdfileAsMainPage = Config_getString(USE_MDFILE_AS_MAINPAGE);
+    if (Doxygen::mainPage==0 && root->tagInfo()==0 &&
+        (mdfileAsMainPage.isEmpty() || FileInfo(root->docFile.str()).absFilePath() == mdfileAsMainPage))
     {
       //printf("mainpage: docLine=%d startLine=%d\n",root->docLine,root->startLine);
       //printf("Found main page! \n======\n%s\n=======\n",qPrint(root->doc));
@@ -9146,12 +9148,15 @@ static void findMainPage(Entry *root)
     }
     else if (root->tagInfo()==0)
     {
+      // reset a "mainpage" to a normal page
+      root->section = Entry::PAGEDOC_SEC;
+      root->name = "md_surrogate_" + QCString().setNum(surrogateMainpage++);
       warn(root->fileName,root->startLine,
-           "found more than one \\mainpage comment block! (first occurrence: %s, line %d), Skipping current block!",
-           qPrint(Doxygen::mainPage->docFile()),Doxygen::mainPage->getStartBodyLine());
+           "found more than one \\mainpage comment block! (first occurrence: %s, line %d), Resetting current block to \\page comment !",
+           qPrint(root->docFile),root->startLine);
     }
   }
-  for (const auto &e : root->children()) findMainPage(e.get());
+  for (const auto &e : root->children()) findMainPage(e.get(),surrogateMainpage);
 }
 
 // search for the main page imported via tag files and add only the section labels
@@ -11432,6 +11437,57 @@ static QCString createOutputDirectory(const QCString &baseDirName,
   return result;
 }
 
+static void check_md_mainpage()
+{
+  QCString mdfileAsMainPage = Config_getString(USE_MDFILE_AS_MAINPAGE);
+  if (!mdfileAsMainPage.isEmpty())
+  {
+    int exactMatch = 0;
+    int potentialMatch = 0;
+    const FileName *fn;
+
+    if ((fn=Doxygen::inputNameLinkedMap->find(stripPath(mdfileAsMainPage))))
+    {
+      potentialMatch += fn->size();
+      for (const auto &fd : *fn)
+      {
+        if (fd->absFilePath() == FileInfo(mdfileAsMainPage.str()).absFilePath()) exactMatch++;
+      }
+    }
+    if (mdfileAsMainPage == stripPath(mdfileAsMainPage))
+    {
+      // no sudir or exact path specified
+      if (exactMatch)
+      {
+         Config_updateString(USE_MDFILE_AS_MAINPAGE,FileInfo(mdfileAsMainPage.str()).absFilePath());
+      }
+      else if (potentialMatch>1)
+      {
+         warn_uncond("No exact match found for specified 'USE_MDFILE_AS_MAINPAGE' i.e. '%s'\n",qPrint(mdfileAsMainPage));
+         Config_updateString(USE_MDFILE_AS_MAINPAGE ,"");
+      }
+      else if (!potentialMatch)
+      {
+         warn_uncond("No match found for specified 'USE_MDFILE_AS_MAINPAGE' i.e. '%s'\n",qPrint(mdfileAsMainPage));
+         Config_updateString(USE_MDFILE_AS_MAINPAGE ,"");
+      }
+    }
+    else
+    {
+      // subdir or exact path specified so only an exact match is valid
+      if (!exactMatch)
+      {
+         warn_uncond("No exact match found for specified 'USE_MDFILE_AS_MAINPAGE' i.e. '%s'\n",qPrint(mdfileAsMainPage));
+         Config_updateString(USE_MDFILE_AS_MAINPAGE ,"");
+      }
+      else
+      {
+         Config_updateString(USE_MDFILE_AS_MAINPAGE,FileInfo(mdfileAsMainPage.str()).absFilePath());
+      }
+    }
+  }
+}
+
 void searchInputFiles()
 {
   StringUnorderedSet killSet;
@@ -11823,6 +11879,8 @@ void parseInput()
 
   searchInputFiles();
 
+  check_md_mainpage();
+
   // Notice: the order of the function calls below is very important!
 
   if (Config_getBool(GENERATE_HTML) && !Config_getBool(USE_MATHJAX))
@@ -11831,14 +11889,14 @@ void parseInput()
   }
   if (Config_getBool(GENERATE_RTF))
   {
-    // in case GENERRATE_HTML is set we just have to compare, both repositories should be identical
+    // in case GENERATE_HTML is set we just have to compare, both repositories should be identical
     FormulaManager::instance().readFormulas(Config_getString(RTF_OUTPUT),
                               Config_getBool(GENERATE_HTML) &&
                               !Config_getBool(USE_MATHJAX));
   }
   if (Config_getBool(GENERATE_DOCBOOK))
   {
-    // in case GENERRATE_HTML is set we just have to compare, both repositories should be identical
+    // in case GENERATE_HTML or GENERATE_RTF is set we just have to compare, both repositories should be identical
     FormulaManager::instance().readFormulas(Config_getString(DOCBOOK_OUTPUT),
                          (Config_getBool(GENERATE_HTML) &&
                          !Config_getBool(USE_MATHJAX)) ||
@@ -12044,13 +12102,15 @@ void parseInput()
   createTemplateInstanceMembers();
   g_s.end();
 
-  g_s.begin("Building page list...\n");
-  buildPageList(root.get());
+  // order of find and build is important (as mainpage can be converted to a normal page)
+  g_s.begin("Search for main page...\n");
+  int surrogateMainpage = 0;
+  findMainPage(root.get(),surrogateMainpage);
+  findMainPageTagFiles(root.get());
   g_s.end();
 
-  g_s.begin("Search for main page...\n");
-  findMainPage(root.get());
-  findMainPageTagFiles(root.get());
+  g_s.begin("Building page list...\n");
+  buildPageList(root.get());
   g_s.end();
 
   g_s.begin("Computing page relations...\n");
