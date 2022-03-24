@@ -435,10 +435,10 @@ bool DefinitionImpl::_docsAlreadyAdded(const QCString &doc,QCString &sigList)
 }
 
 void DefinitionImpl::_setDocumentation(const QCString &d,const QCString &docFile,int docLine,
-                                   bool stripWhiteSpace,bool atTop)
+                                   bool stripWhiteSpace,bool atTop,bool force)
 {
   //printf("%s::setDocumentation(%s,%s,%d,%d)\n",qPrint(name()),d,docFile,docLine,stripWhiteSpace);
-  if (d.isEmpty()) return;
+  if (d.isEmpty() && !force) return;
   QCString doc = d;
   if (stripWhiteSpace)
   {
@@ -480,10 +480,10 @@ void DefinitionImpl::_setDocumentation(const QCString &d,const QCString &docFile
   }
 }
 
-void DefinitionImpl::setDocumentation(const QCString &d,const QCString &docFile,int docLine,bool stripWhiteSpace)
+void DefinitionImpl::setDocumentation(const QCString &d,const QCString &docFile,int docLine,bool stripWhiteSpace,bool force)
 {
-  if (d.isEmpty()) return;
-  _setDocumentation(d,docFile,docLine,stripWhiteSpace,FALSE);
+  if (d.isEmpty() && !force) return;
+  _setDocumentation(d,docFile,docLine,stripWhiteSpace,FALSE,force);
 }
 
 void DefinitionImpl::_setBriefDescription(const QCString &b,const QCString &briefFile,int briefLine)
