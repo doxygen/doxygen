@@ -168,6 +168,7 @@ class HtmlDocVisitor : public DocVisitor
     bool m_insideTitle = false;
     const Definition *m_ctx;
     QCString m_langExt;
+    QCString m_anchorHtml;
 };
 
 #endif
