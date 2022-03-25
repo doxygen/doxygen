@@ -472,7 +472,13 @@ void DirDefImpl::writeTagFile(TextStream &tagFile)
 {
   tagFile << "  <compound kind=\"dir\">\n";
   tagFile << "    <name>" << convertToXML(displayName()) << "</name>\n";
-  tagFile << "    <path>" << convertToXML(name()) << "</path>\n";
+
+  uchar md5_sig[16];
+  char sigStr[33];
+  MD5Buffer(name().data(),name().length(),md5_sig);
+  MD5SigToString(md5_sig,sigStr);
+  tagFile << "    <path>" << convertToXML(sigStr) << "</path>\n";
+
   tagFile << "    <filename>" << addHtmlExtensionIfMissing(getOutputFileBase()) << "</filename>\n";
   for (const auto &lde : LayoutDocManager::instance().docEntries(LayoutDocManager::Directory))
   {

@@ -46,6 +46,7 @@
 #include "settings.h"
 #include "definitionimpl.h"
 #include "conceptdef.h"
+#include "md5.h"
 
 //---------------------------------------------------------------------------
 
@@ -317,7 +318,13 @@ void FileDefImpl::writeTagFile(TextStream &tagFile)
 {
   tagFile << "  <compound kind=\"file\">\n";
   tagFile << "    <name>" << convertToXML(name()) << "</name>\n";
-  tagFile << "    <path>" << convertToXML(getPath()) << "</path>\n";
+
+  uchar md5_sig[16];
+  char sigStr[33];
+  MD5Buffer(getPath().data(),getPath().length(),md5_sig);
+  MD5SigToString(md5_sig,sigStr);
+  tagFile << "    <path>" << convertToXML(sigStr) << "</path>\n";
+
   tagFile << "    <filename>" << addHtmlExtensionIfMissing(getOutputFileBase()) << "</filename>\n";
   for (const auto &ii : m_includeList)
   {
