@@ -472,7 +472,7 @@ void DirDefImpl::writeTagFile(TextStream &tagFile)
 {
   tagFile << "  <compound kind=\"dir\">\n";
   tagFile << "    <name>" << convertToXML(displayName()) << "</name>\n";
-  tagFile << "    <path>" << convertToXML(name()) << "</path>\n";
+  tagFile << "    <path>" << convertToXML(stripFromPath(name())) << "</path>\n";
   tagFile << "    <filename>" << addHtmlExtensionIfMissing(getOutputFileBase()) << "</filename>\n";
   for (const auto &lde : LayoutDocManager::instance().docEntries(LayoutDocManager::Directory))
   {

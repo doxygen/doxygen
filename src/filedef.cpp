@@ -317,7 +317,7 @@ void FileDefImpl::writeTagFile(TextStream &tagFile)
 {
   tagFile << "  <compound kind=\"file\">\n";
   tagFile << "    <name>" << convertToXML(name()) << "</name>\n";
-  tagFile << "    <path>" << convertToXML(getPath()) << "</path>\n";
+  tagFile << "    <path>" << convertToXML(stripFromPath(getPath())) << "</path>\n";
   tagFile << "    <filename>" << addHtmlExtensionIfMissing(getOutputFileBase()) << "</filename>\n";
   for (const auto &ii : m_includeList)
   {
