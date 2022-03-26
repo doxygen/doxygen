@@ -12555,7 +12555,74 @@ void generateOutput()
     std::string oldDir = Dir::currentDirPath();
     Dir::setCurrent(Config_getString(HTML_OUTPUT).str());
     Portable::sysTimerStart();
-    if (Portable::system(Config_getString(QHG_LOCATION).data(), args.data(), FALSE))
+
+    QCString qhgLocation=Config_getString(QHG_LOCATION);
+    if (Debug::isFlagSet(Debug::Qhp))
+    {
+      QCString cmd=(qhgLocation+ " -v 2>&1").data();
+      Debug::print(Debug::ExtCmd,0,"Executing popen(`%s`)\n",qPrint(cmd));
+      FILE *f=Portable::popen(cmd,"r");
+      if (!f)
+      {
+        err("could not execute %s\n",qPrint(qhgLocation));
+      }
+      else
+      {
+        std::string inBuf;
+        size_t size=0;
+        const int bufSize=1024;
+        char buf[bufSize+1];
+        int numRead;
+        while ((numRead=static_cast<int>(fread(buf,1,bufSize,f)))>0)
+        {
+          buf[numRead] = '\0';
+          inBuf += buf;
+        }
+        Portable::pclose(f);
+        Debug::print(Debug::Qhp,0,inBuf.data());
+        static const reg::Ex marker(R"((Qt \d+\.\d+\.\d+))");
+        reg::Iterator it(inBuf,marker);
+        reg::Iterator end;
+        int ver = 0;
+        for ( ; it!=end ; ++it)
+        {
+          const auto &match = *it;
+          static const reg::Ex marker1(R"((\d+))");
+          std::string sub = match.str();
+          reg::Iterator it1(sub,marker1);
+          reg::Iterator end1;
+          for ( ; it1!=end1 ; ++it1)
+          {
+            const auto &match1 = *it1;
+            ver = ver * 100 + QCString(match1.str()).toInt();
+          }
+        }
+        if (ver && ( ver < 60000 || ver >= 62500))
+        {
+          QCString cmd=(qhgLocation+ " -c " + Qhp::qhpFileName + " 2>&1").data();
+          Debug::print(Debug::ExtCmd,0,"Executing popen(`%s`)\n",qPrint(cmd));
+          f=Portable::popen(cmd,"r");
+          if (!f)
+          {
+            err("could not execute %s\n",qPrint(qhgLocation));
+          }
+          else
+          {
+            inBuf = "";
+            while ((numRead=static_cast<int>(fread(buf,1,bufSize,f)))>0)
+            {
+              //printf(">>>>>>>>Reading %d bytes\n",numRead);
+              buf[numRead] = '\0';
+              inBuf += buf;
+            }
+            Portable::pclose(f);
+            Debug::print(Debug::Qhp,0,inBuf.data());
+          }
+        }
+      }
+    }
+
+    if (Portable::system(qhgLocation.data(), args.data(), FALSE))
     {
       err("failed to run qhelpgenerator on %s\n",qPrint(Qhp::qhpFileName));
     }
