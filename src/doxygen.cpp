@@ -10076,7 +10076,11 @@ static void parseFilesMultiThreading(const std::shared_ptr<Entry> &root)
   else // normal processing
 #endif
   {
-    std::size_t numThreads = std::thread::hardware_concurrency();
+    std::size_t numThreads = static_cast<std::size_t>(Config_getInt(NUM_PROC_THREADS));
+    if (numThreads==0)
+    {
+      numThreads = std::thread::hardware_concurrency();
+    }
     msg("Processing input using %zu threads.\n",numThreads);
     ThreadPool threadPool(numThreads);
     using FutureType = std::shared_ptr<Entry>;
