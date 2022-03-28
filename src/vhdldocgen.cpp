@@ -1040,7 +1040,7 @@ void VhdlDocGen::parseFuncProto(const QCString &text,QCString& name,QCString& re
 
 QCString VhdlDocGen::getIndexWord(const QCString &c,int index)
 {
-  static const reg::Ex reg(R"([\s|])");
+  static const reg::Ex reg(R"([\s:|])");
   auto ql=split(c.str(),reg);
 
   if (index < static_cast<int>(ql.size()))
