@@ -8069,10 +8069,6 @@ static void generateFileSources()
 #endif
     {
       std::size_t numThreads = static_cast<std::size_t>(Config_getInt(NUM_PROC_THREADS));
-      if (numThreads==0)
-      {
-        numThreads = std::thread::hardware_concurrency();
-      }
       if (numThreads>1)
       {
         msg("Generating code files using %zu threads.\n",numThreads);
@@ -8151,10 +8147,6 @@ static void generateFileDocs()
   if (!Doxygen::inputNameLinkedMap->empty())
   {
     std::size_t numThreads = static_cast<std::size_t>(Config_getInt(NUM_PROC_THREADS));
-    if (numThreads==0)
-    {
-      numThreads = std::thread::hardware_concurrency();
-    }
     if (numThreads>1) // multi threaded processing
     {
       struct DocContext
@@ -8439,10 +8431,6 @@ static void countMembers()
 static void generateDocsForClassList(const std::vector<ClassDefMutable*> &classList)
 {
   std::size_t numThreads = static_cast<std::size_t>(Config_getInt(NUM_PROC_THREADS));
-  if (numThreads==0)
-  {
-    numThreads = std::thread::hardware_concurrency();
-  }
   if (numThreads>1) // multi threaded processing
   {
     struct DocContext
@@ -9417,10 +9405,6 @@ static void generateGroupDocs()
 static void generateNamespaceClassDocs(const ClassLinkedRefMap &classList)
 {
   std::size_t numThreads = static_cast<std::size_t>(Config_getInt(NUM_PROC_THREADS));
-  if (numThreads==0)
-  {
-    numThreads = std::thread::hardware_concurrency();
-  }
   if (numThreads>1) // multi threaded processing
   {
     struct DocContext
@@ -9970,10 +9954,6 @@ static void parseFilesMultiThreading(const std::shared_ptr<Entry> &root)
     std::mutex processedFilesLock;
     // process source files (and their include dependencies)
     std::size_t numThreads = static_cast<std::size_t>(Config_getInt(NUM_PROC_THREADS));
-    if (numThreads==0)
-    {
-      numThreads = std::thread::hardware_concurrency();
-    }
     msg("Processing input using %zu threads.\n",numThreads);
     ThreadPool threadPool(numThreads);
     using FutureType = std::vector< std::shared_ptr<Entry> >;
@@ -10076,7 +10056,7 @@ static void parseFilesMultiThreading(const std::shared_ptr<Entry> &root)
   else // normal processing
 #endif
   {
-    std::size_t numThreads = std::thread::hardware_concurrency();
+    std::size_t numThreads = static_cast<std::size_t>(Config_getInt(NUM_PROC_THREADS));
     msg("Processing input using %zu threads.\n",numThreads);
     ThreadPool threadPool(numThreads);
     using FutureType = std::shared_ptr<Entry>;

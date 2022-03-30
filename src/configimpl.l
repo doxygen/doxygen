@@ -1808,6 +1808,13 @@ void Config::checkAndCorrect(bool quiet, const bool check)
     checkList(Config_getList(EXTRA_SEARCH_MAPPINGS),"EXTRA_SEARCH_MAPPING",TRUE,TRUE);
   }
 
+  int numThreads = Config_getInt(NUM_PROC_THREADS);
+  if (numThreads==0)
+  {
+     numThreads = static_cast<int>(std::thread::hardware_concurrency());
+     Config_updateInt(NUM_PROC_THREADS,numThreads);
+  }
+
   //------------------------
 
   // check for settings that are inconsistent with having GENERATE_HTMLHELP enabled
