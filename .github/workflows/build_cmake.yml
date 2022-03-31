@@ -233,8 +233,15 @@ jobs:
         refreshenv
       if: matrix.config.os == 'windows-latest'
     
-    - name: Install Qt
+    - name: Install Qt (MacOs)
       uses: jurplel/install-qt-action@v2
+      with:
+          setup-python: 'false'
+      if: matrix.config.os == 'macos-latest'
+    
+    - name: Install Qt (Linux / Windows)
+      uses: jurplel/install-qt-action@v2
+      if: matrix.config.os != 'macos-latest'
     
     - name: Check tool versions (Linux / MacOS)
       shell: bash
