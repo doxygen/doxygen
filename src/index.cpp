@@ -1708,7 +1708,10 @@ static void writeNamespaceTree(const NamespaceLinkedRefMap &nsLinkedMap,FTVHelp 
 {
   for (const auto &nd : nsLinkedMap)
   {
-    writeNamespaceTreeElement(nd,ftv,rootOnly,addToIndex);
+    if (nd->isLinkableInProject())
+    {
+      writeNamespaceTreeElement(nd,ftv,rootOnly,addToIndex);
+    }
   }
 }
 
@@ -1717,7 +1720,10 @@ static void writeNamespaceTree(const NamespaceLinkedMap &nsLinkedMap,FTVHelp *ft
 {
   for (const auto &nd : nsLinkedMap)
   {
-    writeNamespaceTreeElement(nd.get(),ftv,rootOnly,addToIndex);
+    if (nd->isLinkableInProject())
+    {
+      writeNamespaceTreeElement(nd.get(),ftv,rootOnly,addToIndex);
+    }
   }
 }
 
