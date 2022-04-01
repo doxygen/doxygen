@@ -2974,12 +2974,12 @@ QCString Markdown::processQuotations(const QCString &s,int refIndent)
         {
           int cmdPos  = pi+blockStart+1;
           QCString pl = QCString(data+cmdPos).left(blockEnd-blockStart-1);
-          uint i      = 0;
+          uint ii     = 0;
           // check for absence of start command, either @start<cmd>, or \\start<cmd>
-          while (i<pl.length() && qisspace(pl[i])) i++; // skip leading whitespace
-          if (i+startCmd.length()>=pl.length() || // no room for start command
-              (pl[i]!='\\' && pl[i]!='@') ||     // no @ or \ after whitespace
-              qstrncmp(pl.data()+i+1,startCmd.data(),startCmd.length())!=0) // no start command
+          while (ii<pl.length() && qisspace(pl[ii])) ii++; // skip leading whitespace
+          if (ii+startCmd.length()>=pl.length() || // no room for start command
+              (pl[ii]!='\\' && pl[ii]!='@') ||     // no @ or \ after whitespace
+              qstrncmp(pl.data()+ii+1,startCmd.data(),startCmd.length())!=0) // no start command
           {
             pl = "@"+startCmd+"\\ilinebr " + pl + " @"+endCmd;
           }
