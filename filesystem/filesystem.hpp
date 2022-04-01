@@ -66,6 +66,7 @@
 #define GHC_OS_WINDOWS
 #define GHC_OS_WIN32
 #elif defined(__sun) && defined(__SVR4)
+#define GHC_OS_SOLARIS
 #define GHC_NO_DIRENT_D_TYPE
 #elif defined(__CYGWIN__)
 #define GHC_OS_CYGWIN
