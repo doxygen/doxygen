@@ -167,6 +167,14 @@ configuration file for project \e a you write:
 TAGFILES = b.tag=b.chm::
 \endverbatim
 
+Note:<br>
+In case the chm file you refer to contains an underscore the linking doesn't work and one has to use a construct with 
+`mk:@MSITStore:` so (e.g. for the reference to `b_file.chm`):
+\verbatim
+TAGFILES = b.tag=mk:@MSITStore:b_file.chm::
+\endverbatim
+
+
 \section faq_html I don't like the quick index that is put above each HTML page, what do I do?
 
 You can disable the index by setting \ref cfg_disable_index "DISABLE_INDEX" to `YES`. Then you can
