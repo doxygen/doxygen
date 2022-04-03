@@ -1310,6 +1310,7 @@ void HtmlDocVisitor::operator()(const DocPara &p)
   //printf("endPara first=%d last=%d\n",isFirst,isLast);
   if (isFirst && isLast) needsTagAfter=FALSE;
 
+  //printf("needsTagAfter=%d\n",needsTagAfter);
   if (needsTagAfter) m_t << "</p>\n";
   //printf("< DocPara\n");
 }
@@ -2232,12 +2233,8 @@ void HtmlDocVisitor::forceEndParagraph(const Node &n)
   {
     const DocNodeList &children = para->children();
 
-    //printf("children=[\n");
-    //for (const auto &child : children)
-    //{
-    //  printf("  %s (%p)\n",docNodeName(child),(void*)&child);
-    //}
-    //printf("]\n");
+    //printf("forceEndParagraph\n");
+    //dumpDocNodeList(children);
 
     auto it = std::find_if(std::begin(children),std::end(children),
         [&n](const auto &np) { return holds_value(&n,np); });
@@ -2248,6 +2245,7 @@ void HtmlDocVisitor::forceEndParagraph(const Node &n)
     while (!found)
     {
       found = !isInvisibleNode(*it);
+      if (found) break;
       if (it!=std::begin(children))
       {
         --it;
@@ -2273,6 +2271,7 @@ void HtmlDocVisitor::forceEndParagraph(const Node &n)
     if (isFirst && isLast) return;
     if (styleOutsideParagraph) return;
 
+    //printf("adding </p>\n");
     m_t << "</p>";
   }
 }
