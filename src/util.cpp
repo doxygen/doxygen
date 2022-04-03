@@ -4823,7 +4823,7 @@ PageDef *addRelatedPage(const QCString &name,const QCString &ptitle,
 
     if (tagInfo)
     {
-      pd->setReference(tagInfo->tagName);
+      pd->setReference(tagInfo->tagName,tagInfo->fileName);
       pd->setFileName(tagInfo->fileName);
     }
 

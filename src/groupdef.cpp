@@ -1732,7 +1732,7 @@ bool GroupDefImpl::isLinkableInProject() const
 
 bool GroupDefImpl::isLinkable() const
 {
-  return hasUserDocumentation();
+  return hasUserDocumentation() || (isReference() && !isInValidTagReference());
 }
 
 // let the "programming language" for a group depend on what is inserted into it.

@@ -306,7 +306,15 @@ void FTVHelp::generateLink(TextStream &t,FTVNode *n)
   bool setTarget = FALSE;
   if (n->file.isEmpty()) // no link
   {
-    t << "<b>" << convertToHtml(n->name) << "</b>";
+    if (!n->ref.isEmpty())
+    {
+      t << convertToHtml(n->name);
+      t << "&#160;[external]";
+    }
+    else
+    {
+      t << "<b>" << convertToHtml(n->name) << "</b>";
+    }
   }
   else // link into other frame
   {

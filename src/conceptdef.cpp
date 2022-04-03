@@ -167,7 +167,7 @@ ConceptDefImpl::ConceptDefImpl(const QCString &fileName,int startLine,int startC
   {
     m_fileName = convertNameToFile(QCString("concept")+name);
   }
-  setReference(tagRef);
+  setReference(tagRef,tagFile);
 }
 
 ConceptDefImpl::~ConceptDefImpl()
@@ -220,7 +220,7 @@ bool ConceptDefImpl::isLinkableInProject() const
 
 bool ConceptDefImpl::isLinkable() const
 {
-  return isLinkableInProject() || isReference();
+  return isLinkableInProject() || (isReference() && !isInValidTagReference());
 }
 
 void ConceptDefImpl::setIncludeFile(FileDef *fd,const QCString &incName,bool local,bool force)

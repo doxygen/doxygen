@@ -1759,7 +1759,7 @@ bool MemberDefImpl::isLinkable() const
   }
   else
   {
-    return isLinkableInProject() || isReference();
+    return isLinkableInProject() || (isReference() && !isInValidTagReference());
   }
 }
 
@@ -4752,7 +4752,7 @@ void MemberDefImpl::setTagInfo(const TagInfo *ti)
   {
     //printf("%s: Setting tag name=%s anchor=%s\n",qPrint(name()),qPrint(ti->tagName),qPrint(ti->anchor));
     m_impl->anc=ti->anchor;
-    setReference(ti->tagName);
+    setReference(ti->tagName,ti->fileName);
     m_impl->explicitOutputFileBase = stripExtension(ti->fileName);
   }
 }

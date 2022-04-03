@@ -39,7 +39,7 @@ class PageDefImpl : public DefinitionMixin<PageDef>
     virtual DefType definitionType() const { return TypePage; }
     virtual CodeSymbolType codeSymbolType() const { return CodeSymbolType::Default; }
     virtual bool isLinkableInProject() const { return /*hasDocumentation() &&*/ !isReference(); }
-    virtual bool isLinkable() const { return isLinkableInProject() || isReference(); }
+    virtual bool isLinkable() const { return isLinkableInProject() || (isReference() && !isInValidTagReference()); }
     virtual QCString getOutputFileBase() const;
     virtual QCString anchor() const { return QCString(); }
     virtual void findSectionsInDocumentation();

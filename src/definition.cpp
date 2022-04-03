@@ -64,7 +64,8 @@ class DefinitionImpl::IMPL
     QCString localName;      // local (unqualified) name of the definition
                              // in the future m_name should become m_localName
     QCString qualifiedName;
-    QCString ref;   // reference to external documentation
+    QCString ref;            // reference to external documentation
+    QCString refDocuFile;    // reference to file part of the external documentation
 
     bool hidden = FALSE;
     bool isArtificial = FALSE;
@@ -1715,6 +1716,11 @@ bool DefinitionImpl::isReference() const
   return !m_impl->ref.isEmpty();
 }
 
+bool DefinitionImpl::isInValidTagReference() const
+{
+  return !m_impl->ref.isEmpty() && m_impl->refDocuFile.isEmpty();
+}
+
 int DefinitionImpl::getStartDefLine() const
 {
   return m_impl->body ? m_impl->body->defLine : -1;
@@ -1805,9 +1811,10 @@ void DefinitionImpl::mergeReferencedBy(const Definition *other)
 }
 
 
-void DefinitionImpl::setReference(const QCString &r)
+void DefinitionImpl::setReference(const QCString &r, const QCString &f)
 {
   m_impl->ref=r;
+  m_impl->refDocuFile=f;
 }
 
 SrcLangExt DefinitionImpl::getLanguage() const

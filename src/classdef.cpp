@@ -777,7 +777,7 @@ ClassDefImpl::ClassDefImpl(
     bool isSymbol,bool isJavaEnum)
  : DefinitionMixin(defFileName,defLine,defColumn,removeRedundantWhiteSpace(nm),0,0,isSymbol)
 {
-  setReference(lref);
+  setReference(lref,fName);
   m_impl = new ClassDefImpl::IMPL;
   m_impl->compType = ct;
   m_impl->isJavaEnum = isJavaEnum;
@@ -3324,7 +3324,7 @@ bool ClassDefImpl::isLinkable() const
   }
   else
   {
-    return isReference() || isLinkableInProject();
+    return (isReference() && !isInValidTagReference()) || isLinkableInProject();
   }
 }
 

@@ -62,6 +62,7 @@ class DefinitionImpl
     bool isArtificial() const;
     QCString getReference() const;
     bool isReference() const;
+    bool isInValidTagReference() const;
     QCString externalReference(const QCString &relPath) const;
     int getStartDefLine() const;
     int getStartBodyLine() const;
@@ -86,7 +87,7 @@ class DefinitionImpl
     void setDocumentation(const QCString &d,const QCString &docFile,int docLine,bool stripWhiteSpace=TRUE);
     void setBriefDescription(const QCString &b,const QCString &briefFile,int briefLine);
     void setInbodyDocumentation(const QCString &d,const QCString &docFile,int docLine);
-    void setReference(const QCString &r);
+    void setReference(const QCString &r, const QCString &f);
     void addSectionsToDefinition(const std::vector<const SectionInfo*> &anchorList);
     void setBodySegment(int defLine,int bls,int ble);
     void setBodyDef(const FileDef *fd);
@@ -181,6 +182,7 @@ class DefinitionMixin : public Base
     virtual bool isArtificial() const { return m_impl.isArtificial(); }
     virtual QCString getReference() const { return m_impl.getReference(); }
     virtual bool isReference() const { return m_impl.isReference(); }
+    virtual bool isInValidTagReference() const { return m_impl.isInValidTagReference(); }
     virtual QCString externalReference(const QCString &relPath) const { return m_impl.externalReference(relPath); }
     virtual int getStartDefLine() const { return m_impl.getStartDefLine(); }
     virtual int getStartBodyLine() const { return m_impl.getStartBodyLine(); }
@@ -211,8 +213,8 @@ class DefinitionMixin : public Base
     { m_impl.setBriefDescription(brief,briefFile,briefLine); }
     virtual void setInbodyDocumentation(const QCString &doc,const QCString &docFile,int docLine)
     { m_impl.setInbodyDocumentation(doc,docFile,docLine); }
-    virtual void setReference(const QCString &r)
-    { m_impl.setReference(r); }
+    virtual void setReference(const QCString &r, const QCString &f)
+    { m_impl.setReference(r,f); }
     virtual void addSectionsToDefinition(const std::vector<const SectionInfo*> &anchorList)
     { m_impl.addSectionsToDefinition(anchorList); }
     virtual void setBodySegment(int defLine,int bls,int ble)
@@ -381,6 +383,8 @@ class DefinitionAliasMixin : public Base
     { return m_alias->getReference(); }
     virtual bool isReference() const
     { return m_alias->isReference(); }
+    virtual bool isInValidTagReference() const
+    { return m_alias->isInValidTagReference(); }
     virtual QCString externalReference(const QCString &relPath) const
     { return m_alias->externalReference(relPath); }
     virtual int getStartDefLine() const

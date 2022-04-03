@@ -271,6 +271,8 @@ class MemberDef : public Definition
     virtual QCString briefDescription(bool abbr=FALSE) const = 0;
     virtual QCString fieldType() const = 0;
     virtual bool isReference() const = 0;
+    virtual bool isInValidTagReference() const = 0;
+
 
     virtual QCString getDeclFileName() const = 0;
     virtual int getDeclLine() const = 0;

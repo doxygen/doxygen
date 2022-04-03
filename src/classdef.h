@@ -135,6 +135,9 @@ class ClassDef : public Definition
     /** Returns TRUE if this class is imported via a tag file */
     virtual bool isReference() const = 0;
 
+    /*! Returns TRUE if this definition is imported via a tag file and no filename is given there. */
+    virtual bool isInValidTagReference() const = 0;
+
     /** Returns TRUE if this is a local class definition, see EXTRACT_LOCAL_CLASSES */
     virtual bool isLocal() const = 0;
 

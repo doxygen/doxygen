@@ -234,6 +234,9 @@ class Definition
     /*! Returns TRUE if this definition is imported via a tag file. */
     virtual bool isReference() const = 0;
 
+    /*! Returns TRUE if this definition is imported via a tag file and no filename is given there. */
+    virtual bool isInValidTagReference() const = 0;
+
     /*! Convenience method to return a resolved external link */
     virtual QCString externalReference(const QCString &relPath) const = 0;
 
@@ -333,7 +336,7 @@ class DefinitionMutable
     virtual void setInbodyDocumentation(const QCString &d,const QCString &docFile,int docLine) = 0;
 
     /*! Sets the tag file id via which this definition was imported. */
-    virtual void setReference(const QCString &r) = 0;
+    virtual void setReference(const QCString &r, const QCString &f) = 0;
 
     // source references
     virtual void setBodySegment(int defLine, int bls,int ble) = 0;
