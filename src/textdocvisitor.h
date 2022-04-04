@@ -72,7 +72,7 @@ class TextDocVisitor : public DocVisitor
     void operator()(const DocSimpleSect &s)      { visitChildren(s);  }
     void operator()(const DocTitle &t)           { visitChildren(t);  }
     void operator()(const DocSimpleList &l)      { visitChildren(l);  }
-    void operator()(const DocSimpleListItem &li) {                    }
+    void operator()(const DocSimpleListItem &)   {                    }
     void operator()(const DocSection &s)         { visitChildren(s);  }
     void operator()(const DocHtmlList &l)        { visitChildren(l);  }
     void operator()(const DocHtmlListItem &li)   { visitChildren(li); }
@@ -95,7 +95,7 @@ class TextDocVisitor : public DocVisitor
     void operator()(const DocSecRefItem &s)      { visitChildren(s);  }
     void operator()(const DocSecRefList &l)      { visitChildren(l);  }
     void operator()(const DocParamSect &s)       { visitChildren(s);  }
-    void operator()(const DocParamList &l)       {                    }
+    void operator()(const DocParamList &)        {                    }
     void operator()(const DocXRefItem &x)        { visitChildren(x);  }
     void operator()(const DocInternalRef &r)     { visitChildren(r);  }
     void operator()(const DocText &t)            { visitChildren(t);  }
