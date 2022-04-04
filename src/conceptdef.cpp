@@ -305,7 +305,7 @@ void ConceptDefImpl::writeBriefDescription(OutputList &ol) const
                         briefDescription(),TRUE,FALSE,
                         QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT)) };
     const DocRoot *root = &std::get<DocRoot>(*rootNode);
-    if (rootNode && !root->isEmpty())
+    if (root && !root->isEmpty())
     {
       ol.startParagraph();
       ol.pushGeneratorState();

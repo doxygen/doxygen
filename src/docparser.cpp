@@ -3631,7 +3631,7 @@ int DocHtmlRow::parse(DocNodeVariant *thisVariant)
     isHeading = retval==RetVal_TableHCell;
   }
   while (retval==RetVal_TableCell || retval==RetVal_TableHCell);
-  if (cell) cell->markLast(TRUE);
+  cell->markLast(TRUE);
 
 endrow:
   DBG(("DocHtmlRow::parse() end\n"));
@@ -3691,7 +3691,7 @@ int DocHtmlRow::parseXml(DocNodeVariant *thisVariant,bool isHeading)
     retval=cell->parseXml(vDocHtmlCell);
   }
   while (retval==RetVal_TableCell || retval==RetVal_TableHCell);
-  if (cell) cell->markLast(TRUE);
+  cell->markLast(TRUE);
 
 endrow:
   DBG(("DocHtmlRow::parseXml() end\n"));
@@ -7625,6 +7625,8 @@ DocNodeVariant *validatingParseDoc(IDocParser &parserIntf,
                             bool markdownSupport)
 {
   DocParser *parser = dynamic_cast<DocParser*>(&parserIntf);
+  assert(parser!=0);
+  if (parser==0) return 0;
   //printf("validatingParseDoc(%s,%s)=[%s]\n",ctx?qPrint(ctx->name()):"<none>",
   //                                     md?qPrint(md->name()):"<none>",
   //                                     input);
@@ -7742,6 +7744,9 @@ DocNodeVariant *validatingParseDoc(IDocParser &parserIntf,
 DocNodeVariant *validatingParseText(IDocParser &parserIntf,const QCString &input)
 {
   DocParser *parser = dynamic_cast<DocParser*>(&parserIntf);
+  assert(parser!=0);
+  if (parser==0) return 0;
+
   // store parser state so we can re-enter this function if needed
   parser->pushContext();
 
@@ -7794,6 +7799,8 @@ DocNodeVariant *validatingParseText(IDocParser &parserIntf,const QCString &input
 DocRef *createRef(IDocParser &parserIntf,const QCString &target,const QCString &context)
 {
   DocParser *parser = dynamic_cast<DocParser*>(&parserIntf);
+  assert(parser!=0);
+  if (parser==0) return 0;
   return new DocRef(parser,0,target,context);
 }
 

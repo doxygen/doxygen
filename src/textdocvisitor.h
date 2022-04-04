@@ -57,43 +57,51 @@ class TextDocVisitor : public DocVisitor
     // visitor functions for compound nodes
     //--------------------------------------
 
-    void operator()(const DocAutoList &) {}
-    void operator()(const DocAutoListItem &) {}
-    void operator()(const DocPara &)  {}
-    void operator()(const DocRoot &) {}
-    void operator()(const DocSimpleSect &) {}
-    void operator()(const DocTitle &) {}
-    void operator()(const DocSimpleList &) {}
-    void operator()(const DocSimpleListItem &) {}
-    void operator()(const DocSection &) {}
-    void operator()(const DocHtmlList &) {}
-    void operator()(const DocHtmlListItem &) {}
-    void operator()(const DocHtmlDescList &) {}
-    void operator()(const DocHtmlDescTitle &) {}
-    void operator()(const DocHtmlDescData &) {}
-    void operator()(const DocHtmlTable &) {}
-    void operator()(const DocHtmlRow &) {}
-    void operator()(const DocHtmlCell &) {}
-    void operator()(const DocHtmlCaption &) {}
-    void operator()(const DocInternal &) {}
-    void operator()(const DocHRef &) {}
-    void operator()(const DocHtmlHeader &) {}
-    void operator()(const DocImage &) {}
-    void operator()(const DocDotFile &) {}
-    void operator()(const DocMscFile &) {}
-    void operator()(const DocDiaFile &) {}
-    void operator()(const DocLink &) {}
-    void operator()(const DocRef &) {}
-    void operator()(const DocSecRefItem &) {}
-    void operator()(const DocSecRefList &) {}
-    void operator()(const DocParamSect &) {}
-    void operator()(const DocParamList &) {}
-    void operator()(const DocXRefItem &) {}
-    void operator()(const DocInternalRef &) {}
-    void operator()(const DocText &) {}
-    void operator()(const DocHtmlBlockQuote &) {}
-    void operator()(const DocVhdlFlow &) {}
-    void operator()(const DocParBlock &) {}
+    template<class T>
+    void visitChildren(const T &t)
+    {
+      for (const auto &child : t.children())
+      {
+        std::visit(*this, child);
+      }
+    }
+    void operator()(const DocAutoList &l)        { visitChildren(l);  }
+    void operator()(const DocAutoListItem &li)   { visitChildren(li); }
+    void operator()(const DocPara &p)            { visitChildren(p);  }
+    void operator()(const DocRoot &r)            { visitChildren(r);  }
+    void operator()(const DocSimpleSect &s)      { visitChildren(s);  }
+    void operator()(const DocTitle &t)           { visitChildren(t);  }
+    void operator()(const DocSimpleList &l)      { visitChildren(l);  }
+    void operator()(const DocSimpleListItem &li) {                    }
+    void operator()(const DocSection &s)         { visitChildren(s);  }
+    void operator()(const DocHtmlList &l)        { visitChildren(l);  }
+    void operator()(const DocHtmlListItem &li)   { visitChildren(li); }
+    void operator()(const DocHtmlDescList &dl)   { visitChildren(dl); }
+    void operator()(const DocHtmlDescTitle &dt)  { visitChildren(dt); }
+    void operator()(const DocHtmlDescData &dd)   { visitChildren(dd); }
+    void operator()(const DocHtmlTable &t)       { visitChildren(t);  }
+    void operator()(const DocHtmlRow &r)         { visitChildren(r);  }
+    void operator()(const DocHtmlCell &c)        { visitChildren(c);  }
+    void operator()(const DocHtmlCaption &c)     { visitChildren(c);  }
+    void operator()(const DocInternal &i)        { visitChildren(i);  }
+    void operator()(const DocHRef &h)            { visitChildren(h);  }
+    void operator()(const DocHtmlHeader &h)      { visitChildren(h);  }
+    void operator()(const DocImage &i)           { visitChildren(i);  }
+    void operator()(const DocDotFile &df)        { visitChildren(df); }
+    void operator()(const DocMscFile &df)        { visitChildren(df); }
+    void operator()(const DocDiaFile &df)        { visitChildren(df); }
+    void operator()(const DocLink &l)            { visitChildren(l);  }
+    void operator()(const DocRef &r)             { visitChildren(r);  }
+    void operator()(const DocSecRefItem &s)      { visitChildren(s);  }
+    void operator()(const DocSecRefList &l)      { visitChildren(l);  }
+    void operator()(const DocParamSect &s)       { visitChildren(s);  }
+    void operator()(const DocParamList &l)       {                    }
+    void operator()(const DocXRefItem &x)        { visitChildren(x);  }
+    void operator()(const DocInternalRef &r)     { visitChildren(r);  }
+    void operator()(const DocText &t)            { visitChildren(t);  }
+    void operator()(const DocHtmlBlockQuote &q)  { visitChildren(q);  }
+    void operator()(const DocVhdlFlow &)         {                    }
+    void operator()(const DocParBlock &pb)       { visitChildren(pb); }
 
   private:
 
