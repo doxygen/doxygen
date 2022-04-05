@@ -1065,15 +1065,15 @@ bool isSeparatedParagraph(const DocSimpleSect &parent,const DocPara &par)
   if (it==std::end(nodes)) return FALSE;
   size_t count = parent.children().size();
   auto isSeparator = [](auto &&it_) { return std::get_if<DocSimpleSectSep>(&(*it_))!=0; };
-  if (count>1 && it==std::begin(nodes)) // first node
+  if (count>1 && it==std::begin(nodes)) // it points to first node
   {
     return isSeparator(std::next(it));
   }
-  else if (count>1 && it==std::end(nodes)) // last node
+  else if (count>1 && it==std::prev(std::end(nodes))) // it points to last node
   {
     return isSeparator(std::prev(it));
   }
-  else if (count>2 && it!=std::begin(nodes) && it!=std::prev(std::end(nodes))) // intermediate node
+  else if (count>2 && it!=std::begin(nodes) && it!=std::prev(std::end(nodes))) // it points to intermediate node
   {
     return isSeparator(std::prev(it)) && isSeparator(std::next(it));
   }
@@ -1248,6 +1248,7 @@ void HtmlDocVisitor::operator()(const DocPara &p)
   //dumpDocNodeList(p.children());
 
   bool needsTag = determineIfNeedsTag(p);
+  //printf("  needsTag=%d\n",needsTag);
   bool needsTagBefore = needsTag;
   bool needsTagAfter  = needsTag;
 
@@ -1278,7 +1279,7 @@ void HtmlDocVisitor::operator()(const DocPara &p)
   //printf("startPara first=%d last=%d\n",isFirst,isLast);
   if (isFirst && isLast) needsTagBefore=FALSE;
 
-  //printf("  needsTagBefore=%d\n",needsTag);
+  //printf("  needsTagBefore=%d\n",needsTagBefore);
   // write the paragraph tag (if needed)
   if (needsTagBefore)
   {
@@ -1310,7 +1311,7 @@ void HtmlDocVisitor::operator()(const DocPara &p)
   //printf("endPara first=%d last=%d\n",isFirst,isLast);
   if (isFirst && isLast) needsTagAfter=FALSE;
 
-  //printf("needsTagAfter=%d\n",needsTagAfter);
+  //printf("  needsTagAfter=%d\n",needsTagAfter);
   if (needsTagAfter) m_t << "</p>\n";
   //printf("< DocPara\n");
 }
