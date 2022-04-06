@@ -591,9 +591,10 @@ void HtmlHelp::addIndexItem(const Definition *context,const MemberDef *md,
     if (context==0) return; // should not happen
 
     QCString cfname  = md->getOutputFileBase();
+    QCString argStr  = md->argsString();
     QCString cfiname = context->getOutputFileBase();
     QCString level1  = context->name();
-    QCString level2  = md->name();
+    QCString level2  = md->name() + argStr;
     QCString contRef = separateMemberPages ? cfname : cfiname;
     QCString memRef  = cfname;
     QCString anchor  = !sectionAnchor.isEmpty() ? sectionAnchor : md->anchor();
