@@ -97,6 +97,7 @@ jobs:
 
     - name: Install LaTeX (MacOS)
       run: |
+        brew update
         brew install --cask mactex;
         echo "/Library/TeX/texbin/" >> $GITHUB_PATH
       if: matrix.config.os == 'macos-latest'
