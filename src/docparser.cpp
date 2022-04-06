@@ -5772,7 +5772,6 @@ int DocPara::handleCommand(DocNodeVariant *thisVariant,const QCString &cmdName, 
         QCString jarPath = Config_getString(PLANTUML_JAR_PATH);
         parser()->tokenizer.setStatePlantUMLOpt();
         retval = parser()->tokenizer.lex();
-
         QCString fullMatch = parser()->context.token->sectionId;
         QCString sectionId = "";
         int idx = fullMatch.find('{');
@@ -6917,19 +6916,14 @@ reparsetoken:
             DBG(("reparsing command %s\n",qPrint(parser()->context.token->name)));
             goto reparsetoken;
           }
-          else if (retval==RetVal_OK)
-          {
-            // the command ended normally, keep scanning for new tokens.
-            retval = 0;
-          }
           else if (retval>0 && retval<RetVal_OK)
           {
             // the command ended with a new command, reparse this token
             tok = retval;
             goto reparsetoken;
           }
-          else // end of file, end of paragraph, start or end of section
-            // or some auto list marker
+          else if (retval != RetVal_OK) // end of file, end of paragraph, start or end of section
+                                        // or some auto list marker
           {
             goto endparagraph;
           }
@@ -6945,12 +6939,7 @@ reparsetoken:
           {
             retval = handleHtmlEndTag(thisVariant,parser()->context.token->name);
           }
-          if (retval==RetVal_OK)
-          {
-            // the command ended normally, keep scanner for new tokens.
-            retval = 0;
-          }
-          else
+          if (retval!=RetVal_OK)
           {
             goto endparagraph;
           }
@@ -7418,7 +7407,6 @@ void DocRoot::parse(DocNodeVariant *thisVariant)
 static QCString extractCopyDocId(const char *data, uint &j, uint len)
 {
   uint s=j;
-  uint e=j;
   int round=0;
   bool insideDQuote=FALSE;
   bool insideSQuote=FALSE;
@@ -7464,7 +7452,7 @@ static QCString extractCopyDocId(const char *data, uint &j, uint len)
   {
     j+=9;
   }
-  e=j;
+  uint e=j;
   if (j>0 && data[j-1]=='.') { e--; } // do not include punctuation added by Definition::_setBriefDescription()
   QCString id(data+s,e-s);
   //printf("extractCopyDocId='%s' input='%s'\n",qPrint(id),&data[s]);

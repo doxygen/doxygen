@@ -415,14 +415,10 @@ void DocSets::addIndexItem(const Definition *context,const MemberDef *md,
     {
       scope = nd->name();
     }
-    const MemberDef *declMd = md->memberDeclaration();
-    if (declMd==0) declMd = md;
+    fd = md->getFileDef();
+    if (fd)
     {
-      fd = md->getFileDef();
-      if (fd)
-      {
-        decl = fd->name();
-      }
+      decl = fd->name();
     }
     writeToken(p->tts,md,type,lang,scope,md->anchor(),decl);
   }

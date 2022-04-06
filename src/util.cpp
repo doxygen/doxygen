@@ -634,7 +634,6 @@ QCString removeRedundantWhiteSpace(const QCString &s)
       case '"': // quoted string
         {
           *dst++=c;
-          pc = c;
           i++;
           for (;i<l;i++) // find end of string
           {
@@ -642,7 +641,6 @@ QCString removeRedundantWhiteSpace(const QCString &s)
             *dst++=c;
             if (c=='\\' && i+1<l)
             {
-              pc = c;
               i++;
               c = src[i];
               *dst++=c;
@@ -651,7 +649,6 @@ QCString removeRedundantWhiteSpace(const QCString &s)
             {
               break;
             }
-            pc = c;
           }
         }
         break;
@@ -1402,7 +1399,6 @@ QCString fileToString(const QCString &name,bool filter,bool isSourceCode)
   bool fileOpened=false;
   if (name[0]=='-' && name[1]==0) // read from stdin
   {
-    fileOpened=true;
     std::string contents;
     std::string line;
     while (getline(std::cin,line))
