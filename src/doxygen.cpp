@@ -10221,7 +10221,6 @@ static std::string resolveSymlink(const std::string &path)
           target+=result.mid(sepPos);
         }
         result = Dir::cleanDirPath(target.str());
-        sepPos = 0;
         if (known.find(result.str())!=known.end()) return std::string(); // recursive symlink!
         known.insert(result.str());
         if (isRelative)

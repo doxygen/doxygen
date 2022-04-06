@@ -189,7 +189,7 @@ struct DocNodeList : private std::list<DocNodeVariant>
    *  parameters Args.
    */
   template<class T,class...Args>
-  DocNodeVariant *append(Args&&... args);
+  [[maybe_unused]] DocNodeVariant *append(Args&&... args);
 
   /** moves the element of list \a l at the end of this list.
    * List \a l will become empty. */

@@ -765,7 +765,7 @@ bool readCodeFragment(const QCString &fileName,
           }
           else if (pc=='/' && c=='/') // skip single line comment
           {
-            while ((c=*p++)!='\n' && c!=0) pc=c;
+            while ((c=*p++)!='\n' && c!=0);
             if (c=='\n') lineNr++,col=0;
           }
           else if (pc=='/' && c=='*') // skip C style comment
