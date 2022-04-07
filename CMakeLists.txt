@@ -89,6 +89,11 @@ if (WIN32)
 endif()
 if (CMAKE_SYSTEM_NAME MATCHES "CYGWIN")
    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wa,-mbig-obj")
+   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Og")
+
+   if (CMAKE_BUILD_TYPE STREQUAL  "")
+     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O1")
+   endif()
 endif()
 
 if(POLICY CMP0063)
