@@ -3497,7 +3497,7 @@ static void writeExampleIndex(OutputList &ol)
       ol.writeObjectLink(QCString(),n,QCString(),pd->title());
       if (addToIndex)
       {
-        Doxygen::indexList->addContentsItem(FALSE,filterTitle(pd->title().str()),pd->getReference(),n,QCString(),FALSE,TRUE);
+        Doxygen::indexList->addContentsItem(FALSE,filterTitle(pd->title()),pd->getReference(),n,QCString(),FALSE,TRUE);
       }
     }
     else
@@ -3548,7 +3548,7 @@ static bool mainPageHasOwnTitle()
   QCString title;
   if (Doxygen::mainPage)
   {
-    title = filterTitle(Doxygen::mainPage->title().str());
+    title = filterTitle(Doxygen::mainPage->title());
   }
   return !projectName.isEmpty() && mainPageHasTitle() && qstricmp(title,projectName)!=0;
 }
@@ -3570,7 +3570,7 @@ static void writePages(const PageDef *pd,FTVHelp *ftv)
     if (pd->title().isEmpty())
       pageTitle=pd->name();
     else
-      pageTitle=filterTitle(pd->title().str());
+      pageTitle=filterTitle(pd->title());
 
     if (ftv)
     {
@@ -4336,7 +4336,7 @@ static void writeIndex(OutputList &ol)
   }
   else if (Doxygen::mainPage)
   {
-    title = filterTitle(Doxygen::mainPage->title().str());
+    title = filterTitle(Doxygen::mainPage->title());
   }
 
   QCString indexName="index";

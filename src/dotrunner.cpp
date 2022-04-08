@@ -160,7 +160,7 @@ void DotRunner::addJob(const QCString &format, const QCString &output,
     return;
   }
   auto args = QCString("-T") + format + " -o \"" + output + "\"";
-  m_jobs.emplace_back(format.str(), output, args, srcFile, srcLine);
+  m_jobs.emplace_back(format, output, args, srcFile, srcLine);
 }
 
 QCString getBaseNameOfOutput(const QCString &output)
