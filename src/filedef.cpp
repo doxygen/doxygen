@@ -84,8 +84,8 @@ class FileDefImpl : public DefinitionMixin<FileDef>
     virtual bool isIncluded(const QCString &name) const;
     virtual PackageDef *packageDef() const { return m_package; }
     virtual DirDef *getDirDef() const      { return m_dir; }
-    virtual LinkedRefMap<const NamespaceDef> getUsedNamespaces() const;
-    virtual LinkedRefMap<const ClassDef> getUsedClasses() const  { return m_usingDeclList; }
+    virtual const LinkedRefMap<const NamespaceDef> &getUsedNamespaces() const;
+    virtual const LinkedRefMap<const ClassDef> &getUsedClasses() const  { return m_usingDeclList; }
     virtual const IncludeInfoList &includeFileList() const    { return m_includeList; }
     virtual const IncludeInfoList &includedByFileList() const { return m_includedByList; }
     virtual void getAllIncludeFilesRecursively(StringVector &incFiles) const;
@@ -1354,7 +1354,7 @@ void FileDefImpl::addUsingDirective(const NamespaceDef *nd)
   //printf("%p: FileDefImpl::addUsingDirective: %s:%d\n",this,qPrint(name()),usingDirList->count());
 }
 
-LinkedRefMap<const NamespaceDef> FileDefImpl::getUsedNamespaces() const
+const LinkedRefMap<const NamespaceDef> &FileDefImpl::getUsedNamespaces() const
 {
   //printf("%p: FileDefImpl::getUsedNamespace: %s:%d\n",this,qPrint(name()),usingDirList?usingDirList->count():0);
   return m_usingDirList;

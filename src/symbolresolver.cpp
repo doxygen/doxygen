@@ -144,7 +144,7 @@ struct SymbolResolver::Private
 
     const Definition *followPath(const Definition *start,const QCString &path);
 
-    const Definition *endOfPathIsUsedClass(LinkedRefMap<const ClassDef> cl,const QCString &localName);
+    const Definition *endOfPathIsUsedClass(const LinkedRefMap<const ClassDef> &cl,const QCString &localName);
 
     bool accessibleViaUsingNamespace(StringUnorderedSet &visited,
                                      const LinkedRefMap<const NamespaceDef> &nl,
@@ -821,7 +821,7 @@ const Definition *SymbolResolver::Private::followPath(const Definition *start,co
   return current; // path could be followed
 }
 
-const Definition *SymbolResolver::Private::endOfPathIsUsedClass(LinkedRefMap<const ClassDef> cl,const QCString &localName)
+const Definition *SymbolResolver::Private::endOfPathIsUsedClass(const LinkedRefMap<const ClassDef> &cl,const QCString &localName)
 {
   for (const auto &cd : cl)
   {
