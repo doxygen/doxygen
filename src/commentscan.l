@@ -419,8 +419,8 @@ struct commentscanYY_state
 
   QCString         raiseWarning;
 
-  QCString         HtmlAnchorStr;
-  bool             HtmlAnchor = false;
+  QCString         htmlAnchorStr;
+  bool             htmlAnchor = false;
 };
 
 
@@ -469,14 +469,14 @@ static inline const char *getLexerFILE() {return __FILE__;}
 %}
 
        /* start command character */
-CMD          ("\\"|"@")
+CMD       ("\\"|"@")
 XREFCMD   {CMD}("bug"|"deprecated"|"test"|"todo"|"xrefitem")
 PRE       [pP][rR][eE]
-TABLE          [tT][aA][bB][lL][eE]
-P          [pP]
+TABLE     [tT][aA][bB][lL][eE]
+P         [pP]
 UL        [uU][lL]
-OL          [oO][lL]
-DL          [dD][lL]
+OL        [oO][lL]
+DL        [dD][lL]
 IMG       [iI][mM][gG]
 HR        [hH][rR]
 PARA      [pP][aA][rR][aA]
@@ -499,7 +499,7 @@ BS        ^(({B}*"/""/")?)(({B}*"*"+)?){B}*
 ATTR      ({B}+[^>\n]*)?
 DOCNL     "\n"|"\\ilinebr"
 LC        "\\"{B}*"\n"
-NW          [^a-z_A-Z0-9]
+NW        [^a-z_A-Z0-9]
 FILESCHAR [a-z_A-Z0-9\x80-\xFF\\:\\\/\-\+@&#]
 FILEECHAR [a-z_A-Z0-9\x80-\xFF\-\+@&#]
 FILE      ({FILESCHAR}*{FILEECHAR}+("."{FILESCHAR}*{FILEECHAR}+)*)|("\""[^\n\"]*"\"")
@@ -635,12 +635,12 @@ STopt  [^\n@\\]*
                                           addOutput(yyscanner,yytext);
                                         }
 <Comment>"<"{AHTML}                     { // potential start of HTML anchor, see issue 9200
-                                          yyextra->HtmlAnchorStr = yytext;
-                                          yyextra->HtmlAnchor = false;
+                                          yyextra->htmlAnchorStr = yytext;
+                                          yyextra->htmlAnchor = false;
                                           BEGIN(HtmlA);
                                         }
 <HtmlA>{ANCHTML}                        { // only labels that can be converted to doxygen anchor
-                                          yyextra->HtmlAnchorStr += yytext;
+                                          yyextra->htmlAnchorStr += yytext;
                                           QCString tag(yytext);
                                           int s=tag.find("=");
                                           char c=tag[s+1];
@@ -659,22 +659,22 @@ STopt  [^\n@\\]*
                                             id=tag.mid(s+1);
                                             addAnchor(yyscanner,id);
                                           }
-                                          if (!id.isEmpty() && !yyextra->HtmlAnchor)
+                                          if (!id.isEmpty() && !yyextra->htmlAnchor)
                                           {
                                             // only use first analogous to what is in docparser
                                             addOutput(yyscanner,"@anchor ");
                                             addOutput(yyscanner,id.data());
                                             addOutput(yyscanner," ");
-                                            yyextra->HtmlAnchor = true;
+                                            yyextra->htmlAnchor = true;
                                           }
                                         }
 <HtmlA>("\""[^\n\"]*"\""|"'"[^\n']*"'") {
-                                          yyextra->HtmlAnchorStr += yytext;
+                                          yyextra->htmlAnchorStr += yytext;
                                         }
 <HtmlA>">"|"/>"                         {
-                                          if (!yyextra->HtmlAnchor)
+                                          if (!yyextra->htmlAnchor)
                                           {
-                                            addOutput(yyscanner,yyextra->HtmlAnchorStr);
+                                            addOutput(yyscanner,yyextra->htmlAnchorStr);
                                             addOutput(yyscanner,yytext);
                                           }
                                           else
@@ -687,11 +687,11 @@ STopt  [^\n@\\]*
                                           BEGIN(Comment);
                                         }
 <HtmlA>{DOCNL}                          { // newline
-                                          yyextra->HtmlAnchorStr += yytext;
+                                          yyextra->htmlAnchorStr += yytext;
                                           if (*yytext == '\n') yyextra->lineNr++;
                                         }
 <HtmlA>.                                { // catch-all for anything else
-                                          yyextra->HtmlAnchorStr += yytext;
+                                          yyextra->htmlAnchorStr += yytext;
                                         }
 <Comment>"<"{SUMMARY}">"                { // start of a .NET XML style brief description
                                           if (!yyextra->HTMLDetails) setOutput(yyscanner,OutputBrief);
