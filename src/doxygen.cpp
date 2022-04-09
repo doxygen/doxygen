@@ -9527,6 +9527,91 @@ static void generateNamespaceDocs()
   }
 }
 
+static void runHtmlHelpCompiler()
+{
+  std::string oldDir = Dir::currentDirPath();
+  Dir::setCurrent(Config_getString(HTML_OUTPUT).str());
+  Portable::setShortDir();
+  Portable::sysTimerStart();
+  if (Portable::system(Config_getString(HHC_LOCATION).data(), qPrint(HtmlHelp::hhpFileName), Debug::isFlagSet(Debug::ExtCmd))!=1)
+  {
+    err("failed to run html help compiler on %s\n", qPrint(HtmlHelp::hhpFileName));
+  }
+  Portable::sysTimerStop();
+  Dir::setCurrent(oldDir);
+}
+
+static void runQHelpGenerator()
+{
+  QCString args = Qhp::qhpFileName + " -o \"" + Qhp::getQchFileName() + "\"";
+  std::string oldDir = Dir::currentDirPath();
+  Dir::setCurrent(Config_getString(HTML_OUTPUT).str());
+  Portable::sysTimerStart();
+
+  QCString qhgLocation=Config_getString(QHG_LOCATION);
+  if (Debug::isFlagSet(Debug::Qhp)) // produce info for debugging
+  {
+    // run qhelpgenerator -v and extract the Qt version used
+    QCString cmd=qhgLocation+ " -v 2>&1";
+    Debug::print(Debug::ExtCmd,0,"Executing popen(`%s`)\n",qPrint(cmd));
+    FILE *f=Portable::popen(cmd,"r");
+    if (!f)
+    {
+      err("could not execute %s\n",qPrint(qhgLocation));
+    }
+    else
+    {
+      const size_t bufSize = 1024;
+      char inBuf[bufSize+1];
+      size_t numRead=fread(inBuf,1,bufSize,f);
+      inBuf[numRead] = '\0';
+      Debug::print(Debug::Qhp,0,inBuf);
+      Portable::pclose(f);
+
+      int qtVersion=0;
+      static const reg::Ex versionReg(R"(Qt (\d+)\.(\d+)\.(\d+))");
+      reg::Match match;
+      std::string s = inBuf;
+      if (reg::search(inBuf,match,versionReg))
+      {
+        qtVersion = 10000*QCString(match[1].str()).toInt() +
+                      100*QCString(match[2].str()).toInt() +
+                          QCString(match[3].str()).toInt();
+      }
+      if (qtVersion>0 && (qtVersion<60000 || qtVersion >= 60205))
+      {
+        // dump the output of qhelpgenerator -c file.qhp
+        // Qt<6 or Qt>=6.2.5 or higher, see https://bugreports.qt.io/browse/QTBUG-101070
+        cmd=qhgLocation+ " -c " + Qhp::qhpFileName + " 2>&1";
+        Debug::print(Debug::ExtCmd,0,"Executing popen(`%s`)\n",qPrint(cmd));
+        f=Portable::popen(cmd,"r");
+        if (!f)
+        {
+          err("could not execute %s\n",qPrint(qhgLocation));
+        }
+        else
+        {
+          std::string output;
+          while ((numRead=fread(inBuf,1,bufSize,f))>0)
+          {
+            inBuf[numRead] = '\0';
+            output += inBuf;
+          }
+          Portable::pclose(f);
+          Debug::print(Debug::Qhp,0,output.c_str());
+        }
+      }
+    }
+  }
+
+  if (Portable::system(qhgLocation, args, FALSE))
+  {
+    err("failed to run qhelpgenerator on %s\n",qPrint(Qhp::qhpFileName));
+  }
+  Portable::sysTimerStop();
+  Dir::setCurrent(oldDir);
+}
+
 #if defined(_WIN32)
 static QCString fixSlashes(QCString &s)
 {
@@ -12518,16 +12603,7 @@ void generateOutput()
       !Config_getString(HHC_LOCATION).isEmpty())
   {
     g_s.begin("Running html help compiler...\n");
-    std::string oldDir = Dir::currentDirPath();
-    Dir::setCurrent(Config_getString(HTML_OUTPUT).str());
-    Portable::setShortDir();
-    Portable::sysTimerStart();
-    if (Portable::system(Config_getString(HHC_LOCATION).data(), qPrint(HtmlHelp::hhpFileName), Debug::isFlagSet(Debug::ExtCmd))!=1)
-    {
-      err("failed to run html help compiler on %s\n", qPrint(HtmlHelp::hhpFileName));
-    }
-    Portable::sysTimerStop();
-    Dir::setCurrent(oldDir);
+    runHtmlHelpCompiler();
     g_s.end();
   }
 
@@ -12538,84 +12614,7 @@ void generateOutput()
       !Config_getString(QHG_LOCATION).isEmpty())
   {
     g_s.begin("Running qhelpgenerator...\n");
-
-    QCString args = QCString().sprintf("%s -o \"%s\"", qPrint(Qhp::qhpFileName), qPrint(Qhp::getQchFileName()));
-    std::string oldDir = Dir::currentDirPath();
-    Dir::setCurrent(Config_getString(HTML_OUTPUT).str());
-    Portable::sysTimerStart();
-
-    QCString qhgLocation=Config_getString(QHG_LOCATION);
-    if (Debug::isFlagSet(Debug::Qhp))
-    {
-      QCString cmd=(qhgLocation+ " -v 2>&1").data();
-      Debug::print(Debug::ExtCmd,0,"Executing popen(`%s`)\n",qPrint(cmd));
-      FILE *f=Portable::popen(cmd,"r");
-      if (!f)
-      {
-        err("could not execute %s\n",qPrint(qhgLocation));
-      }
-      else
-      {
-        std::string inBuf;
-        size_t size=0;
-        const int bufSize=1024;
-        char buf[bufSize+1];
-        int numRead;
-        while ((numRead=static_cast<int>(fread(buf,1,bufSize,f)))>0)
-        {
-          buf[numRead] = '\0';
-          inBuf += buf;
-        }
-        Portable::pclose(f);
-        Debug::print(Debug::Qhp,0,inBuf.data());
-        static const reg::Ex marker(R"((Qt \d+\.\d+\.\d+))");
-        reg::Iterator it(inBuf,marker);
-        reg::Iterator end;
-        int ver = 0;
-        for ( ; it!=end ; ++it)
-        {
-          const auto &match = *it;
-          static const reg::Ex marker1(R"((\d+))");
-          std::string sub = match.str();
-          reg::Iterator it1(sub,marker1);
-          reg::Iterator end1;
-          for ( ; it1!=end1 ; ++it1)
-          {
-            const auto &match1 = *it1;
-            ver = ver * 100 + QCString(match1.str()).toInt();
-          }
-        }
-        if (ver && ( ver < 60000 || ver >= 62500))
-        {
-          QCString cmd=(qhgLocation+ " -c " + Qhp::qhpFileName + " 2>&1").data();
-          Debug::print(Debug::ExtCmd,0,"Executing popen(`%s`)\n",qPrint(cmd));
-          f=Portable::popen(cmd,"r");
-          if (!f)
-          {
-            err("could not execute %s\n",qPrint(qhgLocation));
-          }
-          else
-          {
-            inBuf = "";
-            while ((numRead=static_cast<int>(fread(buf,1,bufSize,f)))>0)
-            {
-              //printf(">>>>>>>>Reading %d bytes\n",numRead);
-              buf[numRead] = '\0';
-              inBuf += buf;
-            }
-            Portable::pclose(f);
-            Debug::print(Debug::Qhp,0,inBuf.data());
-          }
-        }
-      }
-    }
-
-    if (Portable::system(qhgLocation.data(), args.data(), FALSE))
-    {
-      err("failed to run qhelpgenerator on %s\n",qPrint(Qhp::qhpFileName));
-    }
-    Portable::sysTimerStop();
-    Dir::setCurrent(oldDir);
+    runQHelpGenerator();
     g_s.end();
   }
 
