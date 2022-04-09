@@ -15,29 +15,13 @@
 
 find_package(Javacc)
 if (JAVACC_FOUND)
-    if (JAVACC_VERSION VERSION_LESS 7.0.5)
-        message(STATUS "  Doxygen requires at least JavaCC version 7.0.5 (installed: ${JAVACC_VERSION})")
+    if (JAVACC_VERSION VERSION_LESS 7.0.6)
+        message(STATUS "  Doxygen requires at least JavaCC version 7.0.6 (installed: ${JAVACC_VERSION})")
 	message(STATUS "  Fall back to JavaCC not installed, using existing files.")
     else()
-        if (JAVACC_VERSION VERSION_LESS 7.0.6)
-          add_custom_command(OUTPUT ${GENERATED_SRC}/vhdlparser.jj
-              COMMAND ${CMAKE_COMMAND} -E remove ${PROJECT_SOURCE_DIR}/vhdlparser/Token.h
-              COMMAND ${CMAKE_COMMAND} -E remove ${PROJECT_SOURCE_DIR}/vhdlparser/Token.cc
-              COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/vhdlparser/vhdlparser.jj ${GENERATED_SRC}/vhdlparser.jj
-              DEPENDS ${PROJECT_SOURCE_DIR}/vhdlparser/vhdlparser.jj
-        )
-        else()
-          add_custom_command(
-              COMMAND ${CMAKE_COMMAND} -E remove ${PROJECT_SOURCE_DIR}/vhdlparser/Token.h
-              COMMAND ${CMAKE_COMMAND} -E remove ${PROJECT_SOURCE_DIR}/vhdlparser/Token.cc
-              COMMAND ${PYTHON_EXECUTABLE} ${PROJECT_SOURCE_DIR}/vhdlparser/vhdljj_adj.py ${PROJECT_SOURCE_DIR}/vhdlparser/vhdlparser.jj ${GENERATED_SRC}/vhdlparser.jj
-              DEPENDS ${PROJECT_SOURCE_DIR}/vhdlparser/vhdlparser.jj ${PROJECT_SOURCE_DIR}/vhdlparser/vhdljj_adj.py
-              OUTPUT  ${GENERATED_SRC}/vhdlparser.jj
-          )
-        endif()
         add_custom_command(
-            COMMAND ${JAVACC_EXECUTABLE} ${JAVACC_FLAGS} -OUTPUT_DIRECTORY=${PROJECT_SOURCE_DIR}/vhdlparser ${GENERATED_SRC}/vhdlparser.jj
-            DEPENDS ${GENERATED_SRC}/vhdlparser.jj
+	    COMMAND ${JAVACC_EXECUTABLE} ${JAVACC_FLAGS} -OUTPUT_DIRECTORY=${PROJECT_SOURCE_DIR}/vhdlparser ${PROJECT_SOURCE_DIR}/vhdlparser/vhdlparser.jj
+            DEPENDS ${PROJECT_SOURCE_DIR}/vhdlparser/vhdlparser.jj
             OUTPUT ${PROJECT_SOURCE_DIR}/vhdlparser/CharStream.cc ${PROJECT_SOURCE_DIR}/vhdlparser/CharStream.h ${PROJECT_SOURCE_DIR}/vhdlparser/ErrorHandler.h ${PROJECT_SOURCE_DIR}/vhdlparser/ParseException.cc ${PROJECT_SOURCE_DIR}/vhdlparser/ParseException.h ${PROJECT_SOURCE_DIR}/vhdlparser/Token.cc ${PROJECT_SOURCE_DIR}/vhdlparser/Token.h ${PROJECT_SOURCE_DIR}/vhdlparser/TokenManager.h ${PROJECT_SOURCE_DIR}/vhdlparser/TokenMgrError.cc ${PROJECT_SOURCE_DIR}/vhdlparser/TokenMgrError.h ${PROJECT_SOURCE_DIR}/vhdlparser/VhdlParser.cc ${PROJECT_SOURCE_DIR}/vhdlparser/VhdlParser.h ${PROJECT_SOURCE_DIR}/vhdlparser/VhdlParserConstants.h ${PROJECT_SOURCE_DIR}/vhdlparser/VhdlParserTokenManager.cc ${PROJECT_SOURCE_DIR}/vhdlparser/VhdlParserTokenManager.h
         )
     endif()
