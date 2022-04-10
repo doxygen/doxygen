@@ -52,6 +52,7 @@ class Markdown
     int processEmphasis3(const char *data, int size, char c);
     int processNmdash(const char *data,int off,int size);
     int processQuoted(const char *data,int,int size);
+    int processSuperSub(const char *data,int,int size);
     int processCodeSpan(const char *data, int /*offset*/, int size);
     void addStrEscapeUtf8Nbsp(const char *s,int len);
     int processSpecialCommand(const char *data, int offset, int size);

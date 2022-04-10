@@ -206,6 +206,10 @@ int Trace::s_indent = 0;
   (data[i]=='('  || data[i]=='{' || data[i]=='[' || (data[i]=='<' && data[i+1]!='/') || \
    data[i]=='\\' || \
    data[i]=='@')
+
+#define isCmdChar(i) \
+   (data[i]=='\\' || \
+   data[i]=='@')
 //----------
 
 struct TableCell
@@ -231,6 +235,7 @@ Markdown::Markdown(const QCString &fileName,int lineNr,int indentLevel)
   m_actions[static_cast<unsigned int>('<')] = std::bind(&Markdown::processHtmlTag,       this,_1,_2,_3);
   m_actions[static_cast<unsigned int>('-')] = std::bind(&Markdown::processNmdash,        this,_1,_2,_3);
   m_actions[static_cast<unsigned int>('"')] = std::bind(&Markdown::processQuoted,        this,_1,_2,_3);
+  m_actions[static_cast<unsigned int>('^')] = std::bind(&Markdown::processSuperSub,      this,_1,_2,_3);
   (void)m_lineNr; // not used yet
 }
 
@@ -1075,6 +1080,7 @@ int Markdown::processHtmlTag(const char *data,int offset,int size)
 int Markdown::processEmphasis(const char *data,int offset,int size)
 {
   TRACE(data);
+  if (data[0]=='~' && data[1]!='~' && (offset== 0 || (offset > 0 && !isCmdChar(-1)))) return processSuperSub(data,offset,size);
   if ((offset>0 && !isOpenEmphChar(-1)) || // invalid char before * or _
       (size>1 && data[0]!=data[1] && !(isIdChar(1) || extraChar(1) || data[1]=='[')) || // invalid char after * or _
       (size>2 && data[0]==data[1] && !(isIdChar(2) || extraChar(2) || data[2]=='[')))   // invalid char after ** or __
@@ -1673,6 +1679,63 @@ int Markdown::processCodeSpan(const char *data, int /*offset*/, int size)
     //m_out.addStr(convertToHtml(codeFragment,TRUE));
     m_out.addStr(escapeSpecialChars(codeFragment));
     m_out.addStr("</tt>");
+  }
+  TRACE_RESULT(end);
+  return end;
+}
+/** '^' and '~' parsing a super and sub script */
+int Markdown::processSuperSub(const char *data, int /*offset*/, int size)
+{
+  TRACE(data);
+  int end, f_begin, f_end;
+  char c = data[0];
+
+  /* finding the next delimiter */
+  int nl=0;
+  for (end=1; end<size && nl<2; end++)
+  {
+    if (data[end]==c)
+    {
+      end++;
+      break;
+    }
+    else if (data[end]=='\n')
+    {
+      nl++;
+    }
+  }
+  if (end >= size)
+  {
+    TRACE_RESULT(0);
+    return 0;  // no matching delimiter
+  }
+  if (nl==2) // too many newlines inside the span
+  {
+    TRACE_RESULT(0);
+    return 0;
+  }
+
+  // trimming outside whitespaces
+  f_begin = 1;
+  while (f_begin < end && data[f_begin]==' ')
+  {
+    f_begin++;
+  }
+  f_end = end - 1;
+  while (f_end > 1 && data[f_end-1]==' ')
+  {
+    f_end--;
+  }
+
+  if (f_begin < f_end)
+  {
+    QCString stringFragment;
+    convertStringFragment(stringFragment,data+f_begin,f_end-f_begin);
+    if (c == '^') m_out.addStr("<sup>");
+    else m_out.addStr("<sub>");
+    m_out.addStr(escapeSpecialChars(stringFragment));
+    if (c == '^') m_out.addStr("</sup>");
+    else m_out.addStr("</sub>");
   }
   TRACE_RESULT(end);
   return end;
