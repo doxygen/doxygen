@@ -472,16 +472,12 @@ void DotNode::writeBox(TextStream &t,
     if (!m_url.isEmpty())
     {
       int tagPos = m_url.findRev('$');
-      QCString noTagURL;
-      if (tagPos==-1)
+      t << ",URL=\"";
+      QCString noTagURL = m_url;
+      if (tagPos!=-1)
       {
-        t << ",URL=\"";
-        QCString noTagURL = m_url;
-      }
-      else
-      {
-        t << ",URL=\"" << m_url.left(tagPos);
-        noTagURL = m_url.right(m_url.length()-tagPos);
+        t << m_url.left(tagPos);
+        noTagURL = m_url.mid(tagPos);
       }
       int anchorPos = noTagURL.findRev('#');
       if (anchorPos==-1)
