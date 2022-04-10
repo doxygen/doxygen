@@ -471,15 +471,23 @@ void DotNode::writeBox(TextStream &t,
     }
     if (!m_url.isEmpty())
     {
-      int anchorPos = m_url.findRev('#');
+      int tagPos = m_url.findRev('$');
+      t << ",URL=\"";
+      QCString noTagURL = m_url;
+      if (tagPos!=-1)
+      {
+        t << m_url.left(tagPos);
+        noTagURL = m_url.mid(tagPos);
+      }
+      int anchorPos = noTagURL.findRev('#');
       if (anchorPos==-1)
       {
-        t << ",URL=\"" << addHtmlExtensionIfMissing(m_url) << "\"";
+        t << addHtmlExtensionIfMissing(noTagURL) << "\"";
       }
       else
       {
-        t << ",URL=\"" << addHtmlExtensionIfMissing(m_url.left(anchorPos))
-          << m_url.right(m_url.length()-anchorPos) << "\"";
+        t << addHtmlExtensionIfMissing(noTagURL.left(anchorPos))
+          << noTagURL.right(noTagURL.length()-anchorPos) << "\"";
       }
     }
   }
