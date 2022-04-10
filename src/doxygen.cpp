@@ -5951,7 +5951,8 @@ static void addMemberFunction(const Entry *root,
               root->protection,root->stat,root->virt,spec,relates);
           return;
         }
-        if (md->argsString()==argListToString(root->argList,FALSE,FALSE))
+        if (argListToString(md->argumentList(),FALSE,FALSE) ==
+            argListToString(root->argList,FALSE,FALSE))
         { // exact argument list match -> remember
           ucd = ecd = ccd;
           umd = emd = cmd;
