@@ -1383,7 +1383,7 @@ FILE_VERSION_FILTER = "cleartool desc -fmt \%Vn"
 <![CDATA[
  In the `$text` part of the \ref cfg_warn_format "WARN_FORMAT" command it is
  possible that a reference to a more specific place is given.  To make it easier
- to jump to this place (outside of doxygen) the user can define its own
+ to jump to this place (outside of doxygen) the user can define a custom
  "cut" / "paste" string.
 
  Example:
