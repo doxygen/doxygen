@@ -45,7 +45,7 @@
  * Kiril Kirilov released released Feb 28, 2022
  *
  */
-class TranslatorBulgarian : public Translator
+class TranslatorBulgarian : public TranslatorAdapter_1_9_4
 {
   public:
 

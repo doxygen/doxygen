@@ -661,7 +661,7 @@ class TranslateContext::Private
     {
       if (m_javaOpt || m_vhdlOpt)
       {
-        return theTranslator->trPackages();
+        return theTranslator->trPackageList();
       }
       else if (m_fortranOpt || m_sliceOpt)
       {
@@ -6275,8 +6275,8 @@ class NamespaceTreeContext::Private
     TemplateVariant preferredDepth() const       { return m_preferredDepth.get(this); }
     TemplateVariant title() const
     {
-      return Config_getBool(OPTIMIZE_OUTPUT_JAVA)  ? theTranslator->trPackages()     :
-             Config_getBool(OPTIMIZE_OUTPUT_VHDL)  ? theTranslator->trPackages()     :
+      return Config_getBool(OPTIMIZE_OUTPUT_JAVA)  ? theTranslator->trPackageList()  :
+             Config_getBool(OPTIMIZE_OUTPUT_VHDL)  ? theTranslator->trPackageList()  :
              Config_getBool(OPTIMIZE_FOR_FORTRAN)  ? theTranslator->trModulesList()  :
              Config_getBool(OPTIMIZE_OUTPUT_SLICE) ? theTranslator->trModulesList()  :
                                                      theTranslator->trNamespaceList();

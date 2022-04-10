@@ -2293,6 +2293,13 @@ class TranslatorEnglish : public Translator
     {
       return "Concept definition";
     }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.4
+//////////////////////////////////////////////////////////////////////////
+
+    virtual QCString trPackageList()
+    { return "Package List"; }
 };
 
 #endif

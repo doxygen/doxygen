@@ -712,6 +712,11 @@ class Translator
     virtual QCString trConceptDocumentation() = 0;
     virtual QCString trConceptListDescription(bool extractAll) = 0;
     virtual QCString trConceptDefinition() = 0;
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.4
+//////////////////////////////////////////////////////////////////////////
+    virtual QCString trPackageList() = 0;
 };
 
 #endif
