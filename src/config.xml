@@ -88,6 +88,17 @@ For lists, items can also be appended using:
       TAG += value [value, ...]
 \endverbatim
 Values that contain spaces should be placed between quotes (\" \").
+<br>
+Note:<br>
+Use doxygen to compare the used configuration file with the template configuration file:
+\verbatim
+      doxygen -x [configFile]
+\endverbatim
+Use doxygen to compare the used configuration file with the template configuration file
+without replacing the environment variables>
+\verbatim
+      doxygen -x_noenv [configFile]
+\endverbatim
 ]]>
     </docs>
   </header>
