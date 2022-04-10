@@ -24,6 +24,7 @@
 
 // globals
 static QCString        g_warnFormat;
+static QCString        g_warnLineFormat;
 static const char *    g_warningStr = "warning: ";
 static const char *    g_errorStr = "error: ";
 static FILE *          g_warnFile = stderr;
@@ -34,6 +35,7 @@ static std::mutex      g_mutex;
 void initWarningFormat()
 {
   g_warnFormat = Config_getString(WARN_FORMAT);
+  g_warnLineFormat = Config_getString(WARN_LINE_FORMAT);
   QCString logFile = Config_getString(WARN_LOGFILE);
 
   if (!logFile.isEmpty())
@@ -159,6 +161,18 @@ static void do_warn(bool enabled, const QCString &file, int line, const char *pr
   va_end(argsCopy);
 }
 
+QCString warn_line(const QCString &file,int line)
+{
+  QCString fileSubst = file.isEmpty() ? "<unknown>" : file;
+  QCString lineSubst; lineSubst.setNum(line);
+  return  substitute(
+            substitute(
+              g_warnLineFormat,
+              "$file",fileSubst
+            ),
+            "$line",lineSubst
+          );
+}
 void warn(const QCString &file,int line,const char *fmt, ...)
 {
   va_list args;

@@ -1373,6 +1373,25 @@ FILE_VERSION_FILTER = "cleartool desc -fmt \%Vn"
  Optionally the format may contain
  <code>$version</code>, which will be replaced by the version of the file (if it could
  be obtained via \ref cfg_file_version_filter "FILE_VERSION_FILTER")
+
+ \sa \ref cfg_warn_line_format "WARN_LINE_FORMAT"
+]]>
+      </docs>
+    </option>
+    <option type='string' id='WARN_LINE_FORMAT' format='string' defval='at line $line of file $file'>
+      <docs>
+<![CDATA[
+ In the `$text` part of the \ref cfg_warn_format "WARN_FORMAT" command it is
+ possible that a reference to a more specific place is given.  To make it easier
+ to jump to this place (outside of doxygen) the user can define its own
+ "cut" / "paste" string.
+
+ Example:
+ \verbatim
+  WARN_LINE_FORMAT = "'vi $file +$line'"
+ \endverbatim
+
+ \sa \ref cfg_warn_format "WARN_FORMAT"
 ]]>
       </docs>
     </option>

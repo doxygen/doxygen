@@ -5474,8 +5474,7 @@ static bool findGlobalMember(const Entry *root,
         {
           warnMsg+=" '";
           warnMsg+=substitute(md->declaration(),"%","%%");
-          warnMsg+="' at line "+QCString().setNum(md->getDefLine())+
-                   " of file "+md->getDefFileName()+"\n";
+          warnMsg+="' " + warn_line(md->getDefFileName(),md->getDefLine());
         }
       }
       warn(root->fileName,root->startLine, "%s", qPrint(warnMsg));
@@ -6037,8 +6036,7 @@ static void addMemberFunction(const Entry *root,
           warnMsg+=md->argsString();
           if (noMatchCount>1)
           {
-            warnMsg+="' at line "+QCString().setNum(md->getDefLine()) +
-              " of file "+md->getDefFileName();
+            warnMsg+="' " + warn_line(md->getDefFileName(),md->getDefLine());
           }
           else
             warnMsg += "'";
@@ -9182,9 +9180,9 @@ static void computePageRelations(Entry *root)
         PageDef *subPd = Doxygen::pageLinkedMap->find(bi.name);
         if (pd==subPd)
         {
-         term("page defined at line %d of file %s with label %s is a direct "
+         term("page defined %s with label %s is a direct "
              "subpage of itself! Please remove this cyclic dependency.\n",
-              pd->docLine(),qPrint(pd->docFile()),qPrint(pd->name()));
+              qPrint(warn_line(pd->docFile(),pd->docLine())),qPrint(pd->name()));
         }
         else if (subPd)
         {
@@ -9207,9 +9205,9 @@ static void checkPageRelations()
     {
       if (ppd==pd.get())
       {
-        term("page defined at line %d of file %s with label %s is a subpage "
-            "of itself! Please remove this cyclic dependency.\n",
-            pd->docLine(),qPrint(pd->docFile()),qPrint(pd->name()));
+        term("page defined %s with label %s is a subpage "
+             "of itself! Please remove this cyclic dependency.\n",
+              qPrint(warn_line(pd->docFile(),pd->docLine())),qPrint(pd->name()));
       }
       ppd=ppd->getOuterScope();
     }
