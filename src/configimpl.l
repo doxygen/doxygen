@@ -36,7 +36,6 @@
 #include "version.h"
 #include "portable.h"
 #include "message.h"
-#include "lang_cfg.h"
 #include "language.h"
 #include "configoptions.h"
 #include "fileinfo.h"
@@ -1809,6 +1808,13 @@ void Config::checkAndCorrect(bool quiet, const bool check)
     checkList(Config_getList(EXTRA_SEARCH_MAPPINGS),"EXTRA_SEARCH_MAPPING",TRUE,TRUE);
   }
 
+  int numThreads = Config_getInt(NUM_PROC_THREADS);
+  if (numThreads==0)
+  {
+     numThreads = static_cast<int>(std::thread::hardware_concurrency());
+     Config_updateInt(NUM_PROC_THREADS,numThreads);
+  }
+
   //------------------------
 
   // check for settings that are inconsistent with having GENERATE_HTMLHELP enabled
@@ -2064,9 +2070,9 @@ void Config::writeTemplate(TextStream &t,bool shortList,bool update)
   ConfigImpl::instance()->writeTemplate(t,shortList,update);
 }
 
-void Config::compareDoxyfile(TextStream &t)
+void Config::compareDoxyfile(TextStream &t,DoxyfileSettings diffList)
 {
-  postProcess(FALSE, TRUE);
+  postProcess(FALSE, diffList);
   ConfigImpl::instance()->compareDoxyfile(t);
 }
 
@@ -2088,10 +2094,10 @@ bool Config::parse(const QCString &fileName,bool update)
   return parseRes;
 }
 
-void Config::postProcess(bool clearHeaderAndFooter, bool compare)
+void Config::postProcess(bool clearHeaderAndFooter, DoxyfileSettings diffList)
 {
-  ConfigImpl::instance()->substituteEnvironmentVars();
-  if (!compare)ConfigImpl::instance()->emptyValueToDefault();
+  if (diffList != DoxyfileSettings::CompressedNoEnv) ConfigImpl::instance()->substituteEnvironmentVars();
+  if (diffList == DoxyfileSettings::Full)ConfigImpl::instance()->emptyValueToDefault();
   ConfigImpl::instance()->convertStrToVal();
 
   // avoid bootstrapping issues when the g_config file already

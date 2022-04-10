@@ -267,13 +267,13 @@ class LayoutParser
 
     void startNavEntry(const XMLHandlers::Attributes &attrib)
     {
-      static bool javaOpt    = Config_getBool(OPTIMIZE_OUTPUT_JAVA);
-      static bool fortranOpt = Config_getBool(OPTIMIZE_FOR_FORTRAN);
-      static bool vhdlOpt    = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
-      static bool sliceOpt   = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
-      static bool hasGraphicalHierarchy = Config_getBool(HAVE_DOT) &&
+      bool javaOpt    = Config_getBool(OPTIMIZE_OUTPUT_JAVA);
+      bool fortranOpt = Config_getBool(OPTIMIZE_FOR_FORTRAN);
+      bool vhdlOpt    = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
+      bool sliceOpt   = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
+      bool hasGraphicalHierarchy = Config_getBool(HAVE_DOT) &&
                                           Config_getBool(GRAPHICAL_HIERARCHY);
-      static bool extractAll = Config_getBool(EXTRACT_ALL);
+      bool extractAll = Config_getBool(EXTRACT_ALL);
       static struct NavEntryMap
       {
         const char *typeStr;       // type attribute name in the XML file
@@ -890,11 +890,11 @@ static const std::map< std::string, ElementCallbacks > g_elementHandlers =
                                                     endCb()
                                                   } },
   { "class/memberdecl/packagemethods",            { startCb(&LayoutParser::startMemberDeclEntry, MemberListType_pacMethods,
-                                                            []() { return compileOptions(theTranslator->trPackageMembers()); }),
+                                                            []() { return compileOptions(theTranslator->trPackageFunctions()); }),
                                                     endCb()
                                                   } },
   { "class/memberdecl/packagestaticmethods",      { startCb(&LayoutParser::startMemberDeclEntry, MemberListType_pacStaticMethods,
-                                                            []() { return compileOptions(theTranslator->trStaticPackageMembers()); }),
+                                                            []() { return compileOptions(theTranslator->trStaticPackageFunctions()); }),
                                                     endCb()
                                                   } },
   { "class/memberdecl/packageattributes",         { startCb(&LayoutParser::startMemberDeclEntry, MemberListType_pacAttribs,

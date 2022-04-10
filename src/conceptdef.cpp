@@ -300,18 +300,19 @@ void ConceptDefImpl::writeBriefDescription(OutputList &ol) const
   if (hasBriefDescription())
   {
     std::unique_ptr<IDocParser> parser { createDocParser() };
-    std::unique_ptr<DocRoot>  rootNode { validatingParseDoc(
+    std::unique_ptr<DocNodeVariant>  rootNode { validatingParseDoc(
                         *parser.get(),briefFile(),briefLine(),this,0,
                         briefDescription(),TRUE,FALSE,
                         QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT)) };
-    if (rootNode && !rootNode->isEmpty())
+    const DocRoot *root = &std::get<DocRoot>(*rootNode);
+    if (root && !root->isEmpty())
     {
       ol.startParagraph();
       ol.pushGeneratorState();
       ol.disableAllBut(OutputGenerator::Man);
       ol.writeString(" - ");
       ol.popGeneratorState();
-      ol.writeDoc(rootNode.get(),this,0);
+      ol.writeDoc(*rootNode,this,0);
       ol.pushGeneratorState();
       ol.disable(OutputGenerator::RTF);
       ol.writeString(" \n");
@@ -426,7 +427,7 @@ void ConceptDefImpl::writeDefinition(OutputList &ol,const QCString &title) const
 
 void ConceptDefImpl::writeDetailedDescription(OutputList &ol,const QCString &title) const
 {
-  static bool repeatBrief = Config_getBool(REPEAT_BRIEF);
+  bool repeatBrief = Config_getBool(REPEAT_BRIEF);
   if (hasDetailedDescription())
   {
     ol.pushGeneratorState();
@@ -485,7 +486,7 @@ void ConceptDefImpl::writeAuthorSection(OutputList &ol) const
 
 void ConceptDefImpl::writeDocumentation(OutputList &ol)
 {
-  static bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
+  bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
   QCString pageTitle = theTranslator->trConceptReference(displayName());
   startFile(ol,getOutputFileBase(),name(),pageTitle,HLI_ConceptVisible,!generateTreeView);
 
@@ -632,14 +633,15 @@ void ConceptDefImpl::writeDeclarationLink(OutputList &ol,bool &found,const QCStr
     if (!briefDescription().isEmpty() && Config_getBool(BRIEF_MEMBER_DESC))
     {
       std::unique_ptr<IDocParser> parser { createDocParser() };
-      std::unique_ptr<DocRoot>  rootNode { validatingParseDoc(
+      std::unique_ptr<DocNodeVariant>  rootNode { validatingParseDoc(
                                 *parser.get(),briefFile(),briefLine(),this,0,
                                 briefDescription(),FALSE,FALSE,
                                 QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT)) };
-      if (rootNode && !rootNode->isEmpty())
+      const DocRoot *root = std::get_if<DocRoot>(rootNode.get());
+      if (root && !root->isEmpty())
       {
         ol.startMemberDescription(anchor());
-        ol.writeDoc(rootNode.get(),this,0);
+        ol.writeDoc(*rootNode,this,0);
         ol.endMemberDescription();
       }
     }

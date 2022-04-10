@@ -1467,14 +1467,18 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
     /*! Used as a heading for a list of Java class functions with package
      * scope.
      */
-    virtual QCString trPackageMembers()
+    virtual QCString trPackageFunctions()
     {
       return "Paketin funktiot"; // "Package Functions"
+    }
+    virtual QCString trPackageMembers()
+    {
+      return "Paketin jäsenet"; // "Package Members"
     }
     /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
-    virtual QCString trStaticPackageMembers()
+    virtual QCString trStaticPackageFunctions()
     {
       return "Paketin staattiset funktiot"; // "Static Package Functions"
     }

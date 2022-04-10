@@ -388,7 +388,7 @@ int TemplateVariant::toInt() const
     case Type::Int:        return std::get<int>(m_variant);
     case Type::String:     return std::get<QCString>(m_variant).toInt();
     case Type::Struct:     return 0;
-    case Type::List:       return std::get<TemplateListIntfPtr>(m_variant)->count();
+    case Type::List:       return static_cast<int>(std::get<TemplateListIntfPtr>(m_variant)->count());
     case Type::Function:   return 0;
     case Type::WeakStruct: return 0;
   }

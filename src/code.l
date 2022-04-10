@@ -3734,12 +3734,12 @@ static QCString escapeComment(yyscan_t yyscanner,const char *s)
 static bool skipLanguageSpecificKeyword(yyscan_t yyscanner,const char *keyword)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  static std::unordered_set<std::string> non_cpp_keywords = {
+  static const std::unordered_set<std::string> non_cpp_keywords = {
     "__assume", "__super", "abstract", "function",
     "gcnew", "gcroot", "generic", "get",
     "internal", "null", "pin_ptr", "raise",
     "remove", "self", "set", "transient"};
-  static std::unordered_set<std::string> non_java_keywords = {
+  static const std::unordered_set<std::string> non_java_keywords = {
     "alignas", "alignof", "and", "and_eq", "asm",
     "atomic_cancel", "atomic_commit", "atomic_noexcept", "auto", "bitand",
     "bitor", "bool", "char8_t", "char16_t", "char32_t",

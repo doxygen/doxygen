@@ -19,6 +19,7 @@
 #include <utility>
 #include <vector>
 #include <memory>
+#include <mutex>
 
 #include "qcstring.h"
 
@@ -68,6 +69,13 @@ class IndexList : public IndexIntf
         (intf.get()->*methodPtr)(std::forward<As>(args)...);
       }
     }
+    // For each version with locking
+    template<class... Ts,class... As>
+    void foreach_locked(void (IndexIntf::*methodPtr)(Ts...),As&&... args)
+    {
+      std::lock_guard<std::mutex> lock(m_mutex);
+      foreach(methodPtr,std::forward<As>(args)...);
+    }
 
   public:
     /** Creates a list of indexes */
@@ -91,24 +99,25 @@ class IndexList : public IndexIntf
     void finalize()
     { foreach(&IndexIntf::finalize); }
     void incContentsDepth()
-    { if (m_enabled) foreach(&IndexIntf::incContentsDepth); }
+    { if (m_enabled) foreach_locked(&IndexIntf::incContentsDepth); }
     void decContentsDepth()
-    { if (m_enabled) foreach(&IndexIntf::decContentsDepth); }
+    { if (m_enabled) foreach_locked(&IndexIntf::decContentsDepth); }
     void addContentsItem(bool isDir, const QCString &name, const QCString &ref,
                          const QCString &file, const QCString &anchor,bool separateIndex=FALSE,bool addToNavIndex=FALSE,
                          const Definition *def=0)
-    { if (m_enabled) foreach(&IndexIntf::addContentsItem,isDir,name,ref,file,anchor,separateIndex,addToNavIndex,def); }
+    { if (m_enabled) foreach_locked(&IndexIntf::addContentsItem,isDir,name,ref,file,anchor,separateIndex,addToNavIndex,def); }
     void addIndexItem(const Definition *context,const MemberDef *md,const QCString &sectionAnchor=QCString(),const QCString &title=QCString())
-    { if (m_enabled) foreach(&IndexIntf::addIndexItem,context,md,sectionAnchor,title); }
+    { if (m_enabled) foreach_locked(&IndexIntf::addIndexItem,context,md,sectionAnchor,title); }
     void addIndexFile(const QCString &name)
-    { if (m_enabled) foreach(&IndexIntf::addIndexFile,name); }
+    { if (m_enabled) foreach_locked(&IndexIntf::addIndexFile,name); }
     void addImageFile(const QCString &name)
-    { if (m_enabled) foreach(&IndexIntf::addImageFile,name); }
+    { if (m_enabled) foreach_locked(&IndexIntf::addImageFile,name); }
     void addStyleSheetFile(const QCString &name)
-    { if (m_enabled) foreach(&IndexIntf::addStyleSheetFile,name); }
+    { if (m_enabled) foreach_locked(&IndexIntf::addStyleSheetFile,name); }
 
   private:
     bool m_enabled;
+    std::mutex m_mutex;
 };
 
 

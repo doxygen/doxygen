@@ -420,17 +420,18 @@ void MemberList::writePlainDeclarations(OutputList &ol, bool inGroup,
               if (!md->briefDescription().isEmpty() && Config_getBool(BRIEF_MEMBER_DESC))
               {
                 std::unique_ptr<IDocParser> parser { createDocParser() };
-                std::unique_ptr<DocRoot>  rootNode { validatingParseDoc(*parser.get(),
+                std::unique_ptr<DocNodeVariant> rootNode { validatingParseDoc(*parser.get(),
                                                      md->briefFile(),md->briefLine(),
                                                      cd,md,
                                                      md->briefDescription(),
                                                      TRUE,FALSE,
                                                      QCString(),TRUE,FALSE,
                                                      Config_getBool(MARKDOWN_SUPPORT)) };
-                if (rootNode && !rootNode->isEmpty())
+                const DocRoot *root = std::get_if<DocRoot>(rootNode.get());
+                if (root && !root->isEmpty())
                 {
                   ol.startMemberDescription(md->anchor());
-                  ol.writeDoc(rootNode.get(),cd,md);
+                  ol.writeDoc(*rootNode,cd,md);
                   if (md->hasDetailedDescription())
                   {
                     ol.disableAllBut(OutputGenerator::Html);
@@ -531,7 +532,7 @@ void MemberList::writeDeclarations(OutputList &ol,
   (void)showEnumValues; // unused
 
   //printf("----- writeDeclaration() this=%p ---- inheritedFrom=%p\n",this,inheritedFrom);
-  static bool optimizeVhdl = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
+  bool optimizeVhdl = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
   QCString inheritId;
 
   const Definition *ctx = cd;
@@ -749,7 +750,7 @@ void MemberList::writeSimpleDocumentation(OutputList &ol,
 void MemberList::writeDocumentationPage(OutputList &ol,
                      const QCString &scopeName, const DefinitionMutable *container) const
 {
-  static bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
+  bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
 
   struct OverloadInfo
   {

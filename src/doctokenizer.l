@@ -177,7 +177,7 @@ static int computeIndent(const char *str,size_t length)
   if (str==0 || length==std::string::npos) return 0;
   size_t i;
   int indent=0;
-  static int tabSize=Config_getInt(TAB_SIZE);
+  int tabSize=Config_getInt(TAB_SIZE);
   for (i=0;i<length;i++)
   {
     if (str[i]=='\t')

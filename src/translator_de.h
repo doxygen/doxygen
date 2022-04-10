@@ -856,7 +856,7 @@ class TranslatorGerman : public TranslatorAdapter_1_8_15
     virtual QCString trGeneratedFromFiles(ClassDef::CompoundType compType,
         bool single)
     { // single is true implies a single file
-      static bool vhdlOpt = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
+      bool vhdlOpt = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
       QCString result="Die Dokumentation für diese";
       switch(compType)
       {
@@ -1492,15 +1492,19 @@ class TranslatorGerman : public TranslatorAdapter_1_8_15
     /*! Used as a heading for a list of Java class functions with package
      * scope.
      */
-    virtual QCString trPackageMembers()
+    virtual QCString trPackageFunctions()
     {
       return "Paketfunktionen";
+    }
+    virtual QCString trPackageMembers()
+    {
+      return "Paketelemente";
     }
 
     /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
-    virtual QCString trStaticPackageMembers()
+    virtual QCString trStaticPackageFunctions()
     {
       return "Statische Paketfunktionen";
     }

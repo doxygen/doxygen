@@ -43,6 +43,7 @@
 //#endif
 //! @}
 
+enum class DoxyfileSettings { Full, Compressed, CompressedNoEnv };
 class TextStream;
 
 /** \brief Public function to deal with the configuration file. */
@@ -60,7 +61,7 @@ namespace Config
   /*! Writes a the differences between the current configuration and the
    *  template configuration to stream \a t.
    */
-  void compareDoxyfile(TextStream &t);
+  void compareDoxyfile(TextStream &t, DoxyfileSettings diffList);
 
   /*! Writes a the used settings of the current configuration as XML format
    *  to stream \a t.
@@ -76,10 +77,10 @@ namespace Config
   /*! Post processed the parsed data. Replaces raw string values by the actual values.
    *  and replaces environment variables.
    *  \param clearHeaderAndFooter set to TRUE when writing header and footer templates.
-   *  \param compare signals if we in Doxyfile compare (`-x`) mode are or not. Influences
-   *  setting of the default value.
+   *  \param compare signals if we in Doxyfile compare (`-x` or `-x_noenv`) mode are or not.
+   *   Influences setting of the default value and replacement of environment variables.
    */
-  void postProcess(bool clearHeaderAndFooter, bool compare = FALSE);
+  void postProcess(bool clearHeaderAndFooter, DoxyfileSettings compare = DoxyfileSettings::Full);
 
   /*! Check the validity of the parsed options and correct or warn the user where needed.
    * \param quiet setting for the QUIET option (can have been overruled by means of a command line option)

@@ -1395,7 +1395,7 @@ QCString getSQLDocBlock(const Definition *scope,
 
   TextStream t;
   std::unique_ptr<IDocParser> parser { createDocParser() };
-  std::unique_ptr<DocRoot>    root   {
+  std::unique_ptr<DocNodeVariant> rootNode   {
     validatingParseDoc(
     *parser.get(),
     fileName,
@@ -1410,11 +1410,14 @@ QCString getSQLDocBlock(const Definition *scope,
     FALSE,
     Config_getBool(MARKDOWN_SUPPORT)
   ) };
-  XMLCodeGenerator codeGen(t);
-  // create a parse tree visitor for XML
-  auto visitor = std::make_unique<XmlDocVisitor>(t,codeGen,
-                      scope ? scope->getDefFileExtension() : QCString(""));
-  root->accept(visitor.get());
+  if (rootNode)
+  {
+    XMLCodeGenerator codeGen(t);
+    // create a parse tree visitor for XML
+    XmlDocVisitor visitor(t,codeGen,
+        scope ? scope->getDefFileExtension() : QCString(""));
+    std::visit(visitor,*rootNode);
+  }
   return convertCharEntitiesToUTF8(t.str().c_str());
 }
 

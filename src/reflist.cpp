@@ -76,7 +76,6 @@ void RefList::generatePage()
       {
         doc += "</dd>";
       }
-      first=false;
       doc += " <dt>";
       doc += "\n";
       if (item->scope())

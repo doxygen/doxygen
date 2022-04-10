@@ -880,7 +880,8 @@ class Transl:
                                  prototype=="virtual QCString latexDocumentPre()" or
                                  prototype=="virtual QCString latexCommandName()" or
                                  prototype=="virtual QCString latexFont()" or
-                                 prototype=="virtual QCString latexFontenc()")):
+                                 prototype=="virtual QCString latexFontenc()" or
+                                 prototype=="virtual bool needsPunctuation()")):
                           self.prototypeDic[uniPrototype] = prototype
                         status = 2      # body consumed
                         methodId = None # outside of any method
@@ -1829,9 +1830,8 @@ class TrManager:
         tplDic['supportedLangReadableStr'] = self.supportedLangReadableStr
         tplDic['translatorReportFileName'] = self.translatorReportFileName
 
-        ahref = '<a href="../doc/' + self.translatorReportFileName
-        ahref += '"\n><code>doxygen/doc/'  + self.translatorReportFileName
-        ahref += '</code></a>'
+        ahref = '<a href="' + self.translatorReportFileName
+        ahref += '"\n><code>'  + self.translatorReportFileName + '</code></a>'
         tplDic['translatorReportLink'] = ahref
         tplDic['numLangStr'] = str(self.numLang)
 

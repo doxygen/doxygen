@@ -76,15 +76,6 @@ add_custom_command(
 )
 set_source_files_properties(${GENERATED_SRC}/ce_parse.h PROPERTIES GENERATED 1)
 
-# lang_cfg.h
-add_custom_command(
-    COMMENT  "Generating ${GENERATED_SRC}/lang_cfg.h"
-    COMMAND ${CMAKE_COMMAND} -P ${PROJECT_SOURCE_DIR}/cmake/lang_cfg.cmake ${GENERATED_SRC}/lang_cfg.h ${LANG_CODES}
-    DEPENDS ${LANGUAGE_FILES}
-    OUTPUT ${GENERATED_SRC}/lang_cfg.h
-)
-set_source_files_properties(${GENERATED_SRC}/lang_cfg.h PROPERTIES GENERATED 1)
-
 # all resource files
 if (${CMAKE_VERSION} VERSION_EQUAL "3.11.0" OR ${CMAKE_VERSION} VERSION_GREATER "3.11.0")
     file(GLOB RESOURCES CONFIGURE_DEPENDS ${PROJECT_SOURCE_DIR}/templates/*/*)
@@ -157,7 +148,6 @@ add_custom_command(
 )
 
 add_library(doxycfg STATIC
-    ${GENERATED_SRC}/lang_cfg.h
     ${GENERATED_SRC}/configvalues.h
     ${GENERATED_SRC}/configimpl.cpp
     ${GENERATED_SRC}/configimpl.l.h
@@ -214,7 +204,6 @@ add_library(doxymain STATIC
     #
     ${GENERATED_SRC}/ce_parse.cpp
     # custom generated files
-    ${GENERATED_SRC}/lang_cfg.h
     ${GENERATED_SRC}/configvalues.h
     ${GENERATED_SRC}/ce_parse.h
     ${GENERATED_SRC}/resources.cpp
@@ -296,6 +285,7 @@ add_library(doxymain STATIC
     rtfgen.cpp
     rtfstyle.cpp
     searchindex.cpp
+    searchindex_js.cpp
     sqlite3gen.cpp
     stlsupport.cpp
     symbolresolver.cpp

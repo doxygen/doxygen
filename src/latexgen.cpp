@@ -1971,12 +1971,12 @@ void LatexGenerator::exceptionEntry(const QCString &prefix,bool closeBracket)
   m_t << " ";
 }
 
-void LatexGenerator::writeDoc(DocNode *n,const Definition *ctx,const MemberDef *,int)
+void LatexGenerator::writeDoc(const DocNodeVariant &n,const Definition *ctx,const MemberDef *,int)
 {
-  LatexDocVisitor *visitor =
-    new LatexDocVisitor(m_t,m_codeGen,ctx?ctx->getDefFileExtension():QCString(""),m_insideTabbing);
-  n->accept(visitor);
-  delete visitor;
+  LatexDocVisitor visitor(m_t,m_codeGen,
+                          ctx?ctx->getDefFileExtension():QCString(""),
+                          m_insideTabbing);
+  std::visit(visitor,n);
 }
 
 void LatexGenerator::startConstraintList(const QCString &header)

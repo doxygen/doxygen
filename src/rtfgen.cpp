@@ -279,7 +279,7 @@ void RTFGenerator::beginRTFDocument()
   m_t << "{\\widctlpar\\adjustright \\fs20\\cgrid \\snext0 Normal;}\n";
 
   // set the paper dimensions according to PAPER_TYPE
-  static auto paperType = Config_getEnum(PAPER_TYPE);
+  auto paperType = Config_getEnum(PAPER_TYPE);
   m_t << "{";
   switch (paperType)
   {
@@ -597,7 +597,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
       break;
     case isTitlePageAuthor:
       {
-        m_t << " doxygen" << getDoxygenVersion() << ".}\n";
+        m_t << " doxygen " << getDoxygenVersion() << ".}\n";
         m_t << "{\\creatim " << dateToRTFDateString() << "}\n}";
         DBG_RTF(m_t << "{\\comment end of infoblock}\n");
         // setup for this section
@@ -630,10 +630,13 @@ void RTFGenerator::endIndexSection(IndexSections is)
         else
         {
           std::unique_ptr<IDocParser> parser { createDocParser() };
-          std::unique_ptr<DocText>    root   { validatingParseText(*parser.get(), projectName) };
-          m_t << "{\\field\\fldedit {\\*\\fldinst TITLE \\\\*MERGEFORMAT}{\\fldrslt ";
-          writeDoc(root.get(),0,0,0);
-          m_t << "}}\\par\n";
+          std::unique_ptr<DocNodeVariant> root { validatingParseText(*parser.get(), projectName) };
+          if (root)
+          {
+            m_t << "{\\field\\fldedit {\\*\\fldinst TITLE \\\\*MERGEFORMAT}{\\fldrslt ";
+            writeDoc(*root,0,0,0);
+            m_t << "}}\\par\n";
+          }
         }
 
         m_t << rtf_Style_Reset << rtf_Style["SubTitle"].reference() << "\n"; // set to title style
@@ -2438,11 +2441,10 @@ void RTFGenerator::exceptionEntry(const QCString &prefix,bool closeBracket)
   m_t << " ";
 }
 
-void RTFGenerator::writeDoc(DocNode *n,const Definition *ctx,const MemberDef *,int)
+void RTFGenerator::writeDoc(const DocNodeVariant &n,const Definition *ctx,const MemberDef *,int)
 {
-  RTFDocVisitor *visitor = new RTFDocVisitor(m_t,*this,ctx?ctx->getDefFileExtension():QCString(""));
-  n->accept(visitor);
-  delete visitor;
+  RTFDocVisitor visitor(m_t,*this,ctx?ctx->getDefFileExtension():QCString(""));
+  std::visit(visitor,n);
   m_omitParagraph = TRUE;
 }
 

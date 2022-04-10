@@ -142,6 +142,11 @@ class Translator
     */
     virtual QCString getLanguageString() = 0;
 
+    /**
+     * add punctuation at the end of a brief description when needed and supported by the language
+    */
+    virtual bool needsPunctuation() { return true; }
+
     // --- Language translation methods -------------------
 
     virtual QCString trRelatedFunctions() = 0;
@@ -502,8 +507,9 @@ class Translator
 //////////////////////////////////////////////////////////////////////////
 
     virtual QCString trPackageTypes() = 0;
+    virtual QCString trPackageFunctions() = 0;
     virtual QCString trPackageMembers() = 0;
-    virtual QCString trStaticPackageMembers() = 0;
+    virtual QCString trStaticPackageFunctions() = 0;
     virtual QCString trPackageAttribs() = 0;
     virtual QCString trStaticPackageAttribs() = 0;
 

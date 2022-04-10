@@ -7486,12 +7486,16 @@ static void handleParametersCommentBlocks(yyscan_t yyscanner,ArgumentList &al)
       yyextra->current->brief.resize(0);
 
       //printf("handleParametersCommentBlock [%s]\n",qPrint(doc));
+      int lineNr = orgDocLine;
+      Markdown markdown(yyextra->fileName,lineNr);
+      QCString strippedDoc = stripIndentation(a.docs);
+      QCString processedDoc = Config_getBool(MARKDOWN_SUPPORT) ? markdown.process(strippedDoc,lineNr) : strippedDoc;
       while (yyextra->commentScanner.parseCommentBlock(
              yyextra->thisParser,
              yyextra->current.get(),
-             a.docs,             // text
+             processedDoc,     // text
              yyextra->fileName,         // file
-             yyextra->current->docLine,   // line of block start
+             lineNr,
              FALSE,
              FALSE,
              FALSE,

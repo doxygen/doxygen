@@ -461,8 +461,22 @@ static QCString substituteHtmlKeywords(const QCString &str,
          const StringVector &mathJaxExtensions = Config_getList(MATHJAX_EXTENSIONS);
          if (!mathJaxExtensions.empty() || !g_latex_macro.isEmpty())
          {
-           mathJaxJs+= ",\n"
-                       "  tex: {\n"
+           mathJaxJs+= ",\n";
+           if (!mathJaxExtensions.empty())
+           {
+             bool first = true;
+             mathJaxJs+= "  loader: {\n"
+                         "    load: [";
+             for (const auto &s : mathJaxExtensions)
+             {
+               if (!first) mathJaxJs+= ",";
+               mathJaxJs+= "'[tex]/"+QCString(s.c_str())+"'";
+               first = false;
+             }
+             mathJaxJs+= "]\n"
+                         "  },\n";
+           }
+           mathJaxJs+= "  tex: {\n"
                        "    macros: {";
            if (!g_latex_macro.isEmpty())
            {
@@ -2236,12 +2250,11 @@ void HtmlGenerator::endParamList()
   m_t << "</dl>";
 }
 
-void HtmlGenerator::writeDoc(DocNode *n,const Definition *ctx,const MemberDef *,int id)
+void HtmlGenerator::writeDoc(const DocNodeVariant &n,const Definition *ctx,const MemberDef *,int id)
 {
   m_codeGen.setId(id);
-  HtmlDocVisitor *visitor = new HtmlDocVisitor(m_t,m_codeGen,ctx);
-  n->accept(visitor);
-  delete visitor;
+  HtmlDocVisitor visitor(m_t,m_codeGen,ctx);
+  std::visit(visitor,n);
 }
 
 //---------------- helpers for index generation -----------------------------
@@ -3063,22 +3076,6 @@ void HtmlGenerator::endMemberDeclaration(const QCString &anchor,const QCString &
     m_t << " inherit " << inheritId;
   }
   m_t << "\"><td class=\"memSeparator\" colspan=\"2\">&#160;</td></tr>\n";
-}
-
-void HtmlGenerator::setCurrentDoc(const Definition *context,const QCString &anchor,bool isSourceFile)
-{
-  if (Doxygen::searchIndex)
-  {
-    Doxygen::searchIndex->setCurrentDoc(context,anchor,isSourceFile);
-  }
-}
-
-void HtmlGenerator::addWord(const QCString &word,bool hiPriority)
-{
-  if (Doxygen::searchIndex)
-  {
-    Doxygen::searchIndex->addWord(word,hiPriority);
-  }
 }
 
 QCString HtmlGenerator::getMathJaxMacros()

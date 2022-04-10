@@ -690,11 +690,10 @@ void ManGenerator::endParamList()
 {
 }
 
-void ManGenerator::writeDoc(DocNode *n,const Definition *ctx,const MemberDef *,int)
+void ManGenerator::writeDoc(const DocNodeVariant &n,const Definition *ctx,const MemberDef *,int)
 {
-  ManDocVisitor *visitor = new ManDocVisitor(m_t,*this,ctx?ctx->getDefFileExtension():QCString(""));
-  n->accept(visitor);
-  delete visitor;
+  auto visitor { ManDocVisitor(m_t,*this,ctx?ctx->getDefFileExtension():QCString("")) };
+  std::visit(visitor,n);
   m_firstCol=FALSE;
   m_paragraph = FALSE;
 }

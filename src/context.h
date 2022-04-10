@@ -19,7 +19,7 @@
 #include "types.h"
 #include "template.h"
 #include "classdef.h"
-#include "searchindex.h"
+#include "searchindex_js.h"
 #include "memberlist.h"
 #include "dotgfxhierarchytable.h"
 

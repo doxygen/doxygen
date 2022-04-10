@@ -210,7 +210,7 @@ void Qhp::initialize()
       <filterAttribute>1.0</filterAttribute>
   ..
   */
-  QCString fileName = Config_getString(HTML_OUTPUT) + "/index.qhp";
+  QCString fileName = Config_getString(HTML_OUTPUT) + "/" + qhpFileName;
   p->docFile.open( fileName.str(), std::ofstream::out | std::ofstream::binary);
   if (!p->docFile.is_open())
   {
@@ -340,7 +340,7 @@ void Qhp::addIndexItem(const Definition *context,const MemberDef *md,
 
   if (md) // member
   {
-    static bool separateMemberPages = Config_getBool(SEPARATE_MEMBER_PAGES);
+    bool separateMemberPages = Config_getBool(SEPARATE_MEMBER_PAGES);
     if (context==0) // global member
     {
       if (md->getGroupDef())
@@ -350,6 +350,7 @@ void Qhp::addIndexItem(const Definition *context,const MemberDef *md,
     }
     if (context==0) return; // should not happen
     QCString cfname  = md->getOutputFileBase();
+    QCString argStr  = md->argsString();
     QCString cfiname = context->getOutputFileBase();
     QCString level1  = context->name();
     QCString level2  = !word.isEmpty() ? word : md->name();
@@ -361,8 +362,8 @@ void Qhp::addIndexItem(const Definition *context,const MemberDef *md,
     ref = makeRef(contRef, anchor);
     QCString id = level1+"::"+level2;
     writeIndent(p->index,3);
-    p->index << "<keyword name=\"" << convertToXML(level2) << "\""
-                          " id=\"" << convertToXML(id) << "\""
+    p->index << "<keyword name=\"" << convertToXML(level2 + argStr) << "\""
+                          " id=\"" << convertToXML(id + "_" + anchor) << "\""
                          " ref=\"" << convertToXML(ref) << "\"/>\n";
   }
   else if (context) // container
@@ -373,7 +374,7 @@ void Qhp::addIndexItem(const Definition *context,const MemberDef *md,
     QCString ref = makeRef(contRef,sectionAnchor);
     writeIndent(p->index,3);
     p->index << "<keyword name=\"" << convertToXML(level1) << "\""
-             <<           " id=\"" << convertToXML(level1) << "\""
+             <<           " id=\"" << convertToXML(level1 +"_" + sectionAnchor) << "\""
              <<          " ref=\"" << convertToXML(ref) << "\"/>\n";
   }
 }
@@ -399,3 +400,19 @@ void Qhp::addStyleSheetFile(const QCString &fileName)
   addFile(fileName);
 }
 
+QCString Qhp::getQchFileName()
+{
+  QCString const & qchFile = Config_getString(QCH_FILE);
+  if (!qchFile.isEmpty())
+  {
+    return qchFile;
+  }
+
+  QCString const & projectName = Config_getString(PROJECT_NAME);
+  QCString const & versionText = Config_getString(PROJECT_NUMBER);
+
+  return QCString("../qch/")
+      + (projectName.isEmpty() ? QCString("index") : projectName)
+      + (versionText.isEmpty() ? QCString("") : QCString("-") + versionText)
+      + QCString(".qch");
+}

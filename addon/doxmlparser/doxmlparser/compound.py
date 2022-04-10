@@ -673,11 +673,11 @@ except ModulenotfoundExp_ as exp:
 # IPython is available from http://ipython.scipy.org/.
 #
 
-## from IPython.Shell import IPShellEmbed
-## args = ''
-## ipshell = IPShellEmbed(args,
-##     banner = 'Dropping into IPython',
-##     exit_msg = 'Leaving Interpreter, back to program.')
+# # from IPython.Shell import IPShellEmbed
+# # args = ''
+# # ipshell = IPShellEmbed(args,
+# #     banner = 'Dropping into IPython',
+# #     exit_msg = 'Leaving Interpreter, back to program.')
 
 # Then use the following line where and when you want to drop into the
 # IPython shell:
@@ -21479,6 +21479,8 @@ class docDotMscType(GeneratedsSuper):
 
 
 class docImageFileType(GeneratedsSuper):
+    """The mentioned file will be located in the directory as specified by
+    XML_OUTPUT"""
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
     superclass = None

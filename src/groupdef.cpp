@@ -236,7 +236,7 @@ void GroupDefImpl::findSectionsInDocumentation()
 
 void GroupDefImpl::addFile(const FileDef *def)
 {
-  static bool sortBriefDocs = Config_getBool(SORT_BRIEF_DOCS);
+  bool sortBriefDocs = Config_getBool(SORT_BRIEF_DOCS);
   if (def->isHidden()) return;
   updateLanguage(def);
   if (sortBriefDocs)
@@ -797,18 +797,19 @@ void GroupDefImpl::writeBriefDescription(OutputList &ol)
   if (hasBriefDescription())
   {
     std::unique_ptr<IDocParser> parser { createDocParser() };
-    std::unique_ptr<DocRoot>  rootNode { validatingParseDoc(*parser.get(),
+    std::unique_ptr<DocNodeVariant> rootNode { validatingParseDoc(*parser.get(),
                                          briefFile(),briefLine(),this,0,
                                          briefDescription(),TRUE,FALSE,
                                          QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT)) };
-    if (rootNode && !rootNode->isEmpty())
+    const DocRoot *root = std::get_if<DocRoot>(rootNode.get());
+    if (root && !root->isEmpty())
     {
       ol.startParagraph();
       ol.pushGeneratorState();
       ol.disableAllBut(OutputGenerator::Man);
       ol.writeString(" - ");
       ol.popGeneratorState();
-      ol.writeDoc(rootNode.get(),this,0);
+      ol.writeDoc(*rootNode,this,0);
       ol.pushGeneratorState();
       ol.disable(OutputGenerator::RTF);
       ol.writeString(" \n");
@@ -1100,7 +1101,7 @@ void GroupDefImpl::writeSummaryLinks(OutputList &ol) const
 
 void GroupDefImpl::writeDocumentation(OutputList &ol)
 {
-  //static bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
+  //bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
   ol.pushGeneratorState();
   startFile(ol,getOutputFileBase(),name(),m_title,HLI_Modules);
 
@@ -1274,7 +1275,7 @@ void GroupDefImpl::writeMemberPages(OutputList &ol)
 
 void GroupDefImpl::writeQuickMemberLinks(OutputList &ol,const MemberDef *currentMd) const
 {
-  static bool createSubDirs=Config_getBool(CREATE_SUBDIRS);
+  bool createSubDirs=Config_getBool(CREATE_SUBDIRS);
 
   ol.writeString("      <div class=\"navtab\">\n");
   ol.writeString("        <table>\n");
@@ -1576,8 +1577,8 @@ void GroupDefImpl::addListReferences()
 
 void GroupDefImpl::addMemberToList(MemberListType lt,const MemberDef *md)
 {
-  static bool sortBriefDocs = Config_getBool(SORT_BRIEF_DOCS);
-  static bool sortMemberDocs = Config_getBool(SORT_MEMBER_DOCS);
+  bool sortBriefDocs = Config_getBool(SORT_BRIEF_DOCS);
+  bool sortMemberDocs = Config_getBool(SORT_MEMBER_DOCS);
   const auto &ml = m_memberLists.get(lt,MemberListContainer::Group);
   ml->setNeedsSorting(
       ((ml->listType()&MemberListType_declarationLists) && sortBriefDocs) ||
@@ -1691,7 +1692,7 @@ MemberList *GroupDefImpl::getMemberList(MemberListType lt) const
 
 void GroupDefImpl::writeMemberDeclarations(OutputList &ol,MemberListType lt,const QCString &title)
 {
-  static bool optimizeVhdl = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
+  bool optimizeVhdl = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
 
   MemberList * ml = getMemberList(lt);
   if (optimizeVhdl && ml)
@@ -1747,7 +1748,7 @@ void GroupDefImpl::updateLanguage(const Definition *d)
 
 bool GroupDefImpl::hasDetailedDescription() const
 {
-  static bool repeatBrief = Config_getBool(REPEAT_BRIEF);
+  bool repeatBrief = Config_getBool(REPEAT_BRIEF);
   return ((!briefDescription().isEmpty() && repeatBrief) ||
          !documentation().isEmpty() ||
          !inbodyDocumentation().isEmpty()) &&

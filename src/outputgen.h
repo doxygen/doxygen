@@ -27,6 +27,7 @@
 #include "index.h"
 #include "section.h"
 #include "textstream.h"
+#include "docparser.h"
 
 class ClassDiagram;
 class DotClassGraph;
@@ -35,7 +36,6 @@ class DotCallGraph;
 class DotDirDeps;
 class DotGfxHierarchyTable;
 class DotGroupCollaboration;
-class DocNode;
 class MemberDef;
 class Definition;
 
@@ -136,8 +136,8 @@ class CodeOutputInterface
      */
     virtual void writeCodeAnchor(const QCString &name) = 0;
 
-    virtual void setCurrentDoc(const Definition *context,const QCString &anchor,bool isSourceFile) = 0;
-    virtual void addWord(const QCString &word,bool hiPriority) = 0;
+    virtual void setCurrentDoc(const Definition *context,const QCString &anchor,bool isSourceFile) {}
+    virtual void addWord(const QCString &word,bool hiPriority) {}
 
     /*! Starts a source code fragment. The fragment will be
      *  fed to the code parser (see code.h) for syntax highlighting
@@ -361,7 +361,7 @@ class OutputGenerator : public BaseOutputDocInterface
     //void setEncoding(const QCString &enc) { encoding = enc; }
     //virtual void postProcess(QByteArray &) { }
 
-    virtual void writeDoc(DocNode *,const Definition *ctx,const MemberDef *md,int id) = 0;
+    virtual void writeDoc(const DocNodeVariant &node,const Definition *ctx,const MemberDef *md,int id) = 0;
 
     ///////////////////////////////////////////////////////////////
     // structural output interface

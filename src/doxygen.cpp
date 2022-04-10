@@ -63,6 +63,7 @@
 #include "commentcnv.h"
 #include "cmdmapper.h"
 #include "searchindex.h"
+#include "searchindex_js.h"
 #include "parserintf.h"
 #include "htags.h"
 #include "pycode.h"
@@ -1452,7 +1453,7 @@ static void resolveClassNestingRelations()
 
 void distributeClassGroupRelations()
 {
-  //static bool inlineGroupedClasses = Config_getBool(INLINE_GROUPED_CLASSES);
+  //bool inlineGroupedClasses = Config_getBool(INLINE_GROUPED_CLASSES);
   //if (!inlineGroupedClasses) return;
   //printf("** distributeClassGroupRelations()\n");
 
@@ -2790,7 +2791,7 @@ done:
 
 static void addVariable(const Entry *root,int isFuncPtr=-1)
 {
-    static bool sliceOpt = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
+    bool sliceOpt = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
 
     Debug::print(Debug::Variables,0,
                   "VARIABLE_SEC: \n"
@@ -2947,7 +2948,7 @@ static void addVariable(const Entry *root,int isFuncPtr=-1)
       //int anonyScopes = 0;
       //bool added=FALSE;
 
-      static bool inlineSimpleStructs = Config_getBool(INLINE_SIMPLE_STRUCTS);
+      bool inlineSimpleStructs = Config_getBool(INLINE_SIMPLE_STRUCTS);
       if (si!=-1 && !inlineSimpleStructs) // anonymous scope or type
       {
         QCString pScope;
@@ -5970,7 +5971,7 @@ static void addMemberFunction(const Entry *root,
         candidates++;
       }
     }
-    static bool strictProtoMatching = Config_getBool(STRICT_PROTO_MATCHING);
+    bool strictProtoMatching = Config_getBool(STRICT_PROTO_MATCHING);
     if (!strictProtoMatching)
     {
       if (candidates==1 && ucd && umd)
@@ -7371,20 +7372,26 @@ static void addEnumValuesToEnums(const Entry *root)
                       //    qPrint(fmd->name()),qPrint(fmd->getOuterScope()->name()));
                       if (nd && !nd->isAnonymous())
                       {
-                        const NamespaceDef *fnd=fmd->getNamespaceDef();
-                        if (fnd==nd) // enum value is inside a namespace
+                        if (!fmd->isStrongEnumValue()) // only non strong enum values can be globally added
                         {
-                          md->insertEnumField(fmd);
-                          fmd->setEnumScope(md);
+                          const NamespaceDef *fnd=fmd->getNamespaceDef();
+                          if (fnd==nd) // enum value is inside a namespace
+                          {
+                            md->insertEnumField(fmd);
+                            fmd->setEnumScope(md);
+                          }
                         }
                       }
                       else if (isGlobal)
                       {
-                        const FileDef *ffd=fmd->getFileDef();
-                        if (ffd==fd) // enum value has file scope
+                        if (!fmd->isStrongEnumValue()) // only non strong enum values can be globally added
                         {
-                          md->insertEnumField(fmd);
-                          fmd->setEnumScope(md);
+                          const FileDef *ffd=fmd->getFileDef();
+                          if (ffd==fd) // enum value has file scope
+                          {
+                            md->insertEnumField(fmd);
+                            fmd->setEnumScope(md);
+                          }
                         }
                       }
                       else if (isRelated && cd) // reparent enum value to
@@ -7399,13 +7406,16 @@ static void addEnumValuesToEnums(const Entry *root)
                       }
                       else
                       {
-                        const ClassDef *fcd=fmd->getClassDef();
-                        if (fcd==cd) // enum value is inside a class
+                        if (!fmd->isStrongEnumValue()) // only non strong enum values can be globally added
                         {
-                          //printf("Inserting enum field %s in enum scope %s\n",
-                          //    qPrint(fmd->name()),qPrint(md->name()));
-                          md->insertEnumField(fmd); // add field def to list
-                          fmd->setEnumScope(md);    // cross ref with enum name
+                          const ClassDef *fcd=fmd->getClassDef();
+                          if (fcd==cd) // enum value is inside a class
+                          {
+                            //printf("Inserting enum field %s in enum scope %s\n",
+                            //    qPrint(fmd->name()),qPrint(md->name()));
+                            md->insertEnumField(fmd); // add field def to list
+                            fmd->setEnumScope(md);    // cross ref with enum name
+                          }
                         }
                       }
                     }
@@ -7989,6 +7999,7 @@ static void generateFileSources()
       msg("Parsing code for file %s...\n",qPrint(fd->docName()));
       fd->parseSource(parser);
     }
+    ol.indexSearchData();
   };
   if (!Doxygen::inputNameLinkedMap->empty())
   {
@@ -8067,10 +8078,6 @@ static void generateFileSources()
 #endif
     {
       std::size_t numThreads = static_cast<std::size_t>(Config_getInt(NUM_PROC_THREADS));
-      if (numThreads==0)
-      {
-        numThreads = std::thread::hardware_concurrency();
-      }
       if (numThreads>1)
       {
         msg("Generating code files using %zu threads.\n",numThreads);
@@ -8090,11 +8097,8 @@ static void generateFileSources()
           {
             bool generateSourceFile = fd->generateSourceFile() && !Htags::useHtags && !g_useOutputTemplate;
             auto ctx = std::make_shared<SourceContext>(fd.get(),generateSourceFile,*g_outputList);
-            if (generateSourceFile)
+            auto processFile = [ctx]()
             {
-              fd->writeSourceHeader(ctx->ol);
-            }
-            auto processFile = [ctx]() {
               if (ctx->generateSourceFile)
               {
                 msg("Generating code for file %s...\n",qPrint(ctx->fd->docName()));
@@ -8107,7 +8111,9 @@ static void generateFileSources()
               ctx->fd->getAllIncludeFilesRecursively(filesInSameTu);
               if (ctx->generateSourceFile) // sources need to be shown in the output
               {
+                ctx->fd->writeSourceHeader(ctx->ol);
                 ctx->fd->writeSourceBody(ctx->ol,nullptr);
+                ctx->fd->writeSourceFooter(ctx->ol);
               }
               else if (!ctx->fd->isReference() && Doxygen::parseSourcesNeeded)
                 // we needed to parse the sources even if we do not show them
@@ -8122,10 +8128,7 @@ static void generateFileSources()
         for (auto &f : results)
         {
           auto ctx = f.get();
-          if (ctx->generateSourceFile)
-          {
-            ctx->fd->writeSourceFooter(ctx->ol);
-          }
+          ctx->ol.indexSearchData();
         }
       }
       else // single threaded version
@@ -8153,10 +8156,6 @@ static void generateFileDocs()
   if (!Doxygen::inputNameLinkedMap->empty())
   {
     std::size_t numThreads = static_cast<std::size_t>(Config_getInt(NUM_PROC_THREADS));
-    if (numThreads==0)
-    {
-      numThreads = std::thread::hardware_concurrency();
-    }
     if (numThreads>1) // multi threaded processing
     {
       struct DocContext
@@ -8436,15 +8435,11 @@ static void countMembers()
 
 
 //----------------------------------------------------------------------------
-// generate the documentation of all classes
+// generate the documentation for all classes
 
-static void generateClassList(const ClassLinkedMap &classList)
+static void generateDocsForClassList(const std::vector<ClassDefMutable*> &classList)
 {
   std::size_t numThreads = static_cast<std::size_t>(Config_getInt(NUM_PROC_THREADS));
-  if (numThreads==0)
-  {
-    numThreads = std::thread::hardware_concurrency();
-  }
   if (numThreads>1) // multi threaded processing
   {
     struct DocContext
@@ -8456,13 +8451,10 @@ static void generateClassList(const ClassLinkedMap &classList)
     };
     ThreadPool threadPool(numThreads);
     std::vector< std::future< std::shared_ptr<DocContext> > > results;
-    for (const auto &cdi : classList)
+    for (const auto &cd : classList)
     {
-      ClassDefMutable *cd=toClassDefMutable(cdi.get());
-
       //printf("cd=%s getOuterScope=%p global=%p\n",qPrint(cd->name()),cd->getOuterScope(),Doxygen::globalScope);
-      if (cd &&
-          (cd->getOuterScope()==0 || // <-- should not happen, but can if we read an old tag file
+      if ((cd->getOuterScope()==0 || // <-- should not happen, but can if we read an old tag file
            cd->getOuterScope()==Doxygen::globalScope // only look at global classes
           ) && !cd->isHidden() && !cd->isEmbeddedInOuterScope()
          )
@@ -8494,13 +8486,10 @@ static void generateClassList(const ClassLinkedMap &classList)
   }
   else // single threaded processing
   {
-    for (const auto &cdi : classList)
+    for (const auto &cd : classList)
     {
-      ClassDefMutable *cd=toClassDefMutable(cdi.get());
-
       //printf("cd=%s getOuterScope=%p global=%p\n",qPrint(cd->name()),cd->getOuterScope(),Doxygen::globalScope);
-      if (cd &&
-          (cd->getOuterScope()==0 || // <-- should not happen, but can if we read an old tag file
+      if ((cd->getOuterScope()==0 || // <-- should not happen, but can if we read an old tag file
            cd->getOuterScope()==Doxygen::globalScope // only look at global classes
           ) && !cd->isHidden() && !cd->isEmbeddedInOuterScope()
          )
@@ -8521,10 +8510,45 @@ static void generateClassList(const ClassLinkedMap &classList)
   }
 }
 
+static void addClassAndNestedClasses(std::vector<ClassDefMutable*> &list,ClassDefMutable *cd)
+{
+  list.push_back(cd);
+  for (const auto &innerCdi : cd->getClasses())
+  {
+    ClassDefMutable *innerCd = toClassDefMutable(innerCdi);
+    if (innerCd && innerCd->isLinkableInProject() && innerCd->templateMaster()==0 &&
+        protectionLevelVisible(innerCd->protection()) &&
+        !innerCd->isEmbeddedInOuterScope()
+       )
+    {
+      list.push_back(innerCd);
+      addClassAndNestedClasses(list,innerCd);
+    }
+  }
+}
+
 static void generateClassDocs()
 {
-  generateClassList(*Doxygen::classLinkedMap);
-  generateClassList(*Doxygen::hiddenClassLinkedMap);
+  std::vector<ClassDefMutable*> classList;
+  for (const auto &cdi : *Doxygen::classLinkedMap)
+  {
+    ClassDefMutable *cd = toClassDefMutable(cdi.get());
+    if (cd && (cd->getOuterScope()==0 ||
+               cd->getOuterScope()->definitionType()!=Definition::TypeClass))
+    {
+      addClassAndNestedClasses(classList,cd);
+    }
+  }
+  for (const auto &cdi : *Doxygen::hiddenClassLinkedMap)
+  {
+    ClassDefMutable *cd = toClassDefMutable(cdi.get());
+    if (cd && (cd->getOuterScope()==0 ||
+               cd->getOuterScope()->definitionType()!=Definition::TypeClass))
+    {
+      addClassAndNestedClasses(classList,cd);
+    }
+  }
+  generateDocsForClassList(classList);
 }
 
 //----------------------------------------------------------------------------
@@ -8946,7 +8970,7 @@ static void findDefineDocumentation(Entry *root)
     }
     else if (!root->doc.isEmpty() || !root->brief.isEmpty()) // define not found
     {
-      static bool preEnabled = Config_getBool(ENABLE_PREPROCESSING);
+      bool preEnabled = Config_getBool(ENABLE_PREPROCESSING);
       if (preEnabled)
       {
         warn(root->fileName,root->startLine,
@@ -9390,10 +9414,6 @@ static void generateGroupDocs()
 static void generateNamespaceClassDocs(const ClassLinkedRefMap &classList)
 {
   std::size_t numThreads = static_cast<std::size_t>(Config_getInt(NUM_PROC_THREADS));
-  if (numThreads==0)
-  {
-    numThreads = std::thread::hardware_concurrency();
-  }
   if (numThreads>1) // multi threaded processing
   {
     struct DocContext
@@ -9479,7 +9499,7 @@ static void generateNamespaceConceptDocs(const ConceptLinkedRefMap &conceptList)
 
 static void generateNamespaceDocs()
 {
-  static bool sliceOpt = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
+  bool sliceOpt = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
 
   //writeNamespaceIndex(*g_outputList);
 
@@ -9505,6 +9525,91 @@ static void generateNamespaceDocs()
     }
     generateNamespaceConceptDocs(nd->getConcepts());
   }
+}
+
+static void runHtmlHelpCompiler()
+{
+  std::string oldDir = Dir::currentDirPath();
+  Dir::setCurrent(Config_getString(HTML_OUTPUT).str());
+  Portable::setShortDir();
+  Portable::sysTimerStart();
+  if (Portable::system(Config_getString(HHC_LOCATION).data(), qPrint(HtmlHelp::hhpFileName), Debug::isFlagSet(Debug::ExtCmd))!=1)
+  {
+    err("failed to run html help compiler on %s\n", qPrint(HtmlHelp::hhpFileName));
+  }
+  Portable::sysTimerStop();
+  Dir::setCurrent(oldDir);
+}
+
+static void runQHelpGenerator()
+{
+  QCString args = Qhp::qhpFileName + " -o \"" + Qhp::getQchFileName() + "\"";
+  std::string oldDir = Dir::currentDirPath();
+  Dir::setCurrent(Config_getString(HTML_OUTPUT).str());
+  Portable::sysTimerStart();
+
+  QCString qhgLocation=Config_getString(QHG_LOCATION);
+  if (Debug::isFlagSet(Debug::Qhp)) // produce info for debugging
+  {
+    // run qhelpgenerator -v and extract the Qt version used
+    QCString cmd=qhgLocation+ " -v 2>&1";
+    Debug::print(Debug::ExtCmd,0,"Executing popen(`%s`)\n",qPrint(cmd));
+    FILE *f=Portable::popen(cmd,"r");
+    if (!f)
+    {
+      err("could not execute %s\n",qPrint(qhgLocation));
+    }
+    else
+    {
+      const size_t bufSize = 1024;
+      char inBuf[bufSize+1];
+      size_t numRead=fread(inBuf,1,bufSize,f);
+      inBuf[numRead] = '\0';
+      Debug::print(Debug::Qhp,0,inBuf);
+      Portable::pclose(f);
+
+      int qtVersion=0;
+      static const reg::Ex versionReg(R"(Qt (\d+)\.(\d+)\.(\d+))");
+      reg::Match match;
+      std::string s = inBuf;
+      if (reg::search(inBuf,match,versionReg))
+      {
+        qtVersion = 10000*QCString(match[1].str()).toInt() +
+                      100*QCString(match[2].str()).toInt() +
+                          QCString(match[3].str()).toInt();
+      }
+      if (qtVersion>0 && (qtVersion<60000 || qtVersion >= 60205))
+      {
+        // dump the output of qhelpgenerator -c file.qhp
+        // Qt<6 or Qt>=6.2.5 or higher, see https://bugreports.qt.io/browse/QTBUG-101070
+        cmd=qhgLocation+ " -c " + Qhp::qhpFileName + " 2>&1";
+        Debug::print(Debug::ExtCmd,0,"Executing popen(`%s`)\n",qPrint(cmd));
+        f=Portable::popen(cmd,"r");
+        if (!f)
+        {
+          err("could not execute %s\n",qPrint(qhgLocation));
+        }
+        else
+        {
+          std::string output;
+          while ((numRead=fread(inBuf,1,bufSize,f))>0)
+          {
+            inBuf[numRead] = '\0';
+            output += inBuf;
+          }
+          Portable::pclose(f);
+          Debug::print(Debug::Qhp,0,output.c_str());
+        }
+      }
+    }
+  }
+
+  if (Portable::system(qhgLocation, args, FALSE))
+  {
+    err("failed to run qhelpgenerator on %s\n",qPrint(Qhp::qhpFileName));
+  }
+  Portable::sysTimerStop();
+  Dir::setCurrent(oldDir);
 }
 
 #if defined(_WIN32)
@@ -9601,14 +9706,14 @@ static void generateConfigFile(const QCString &configFile,bool shortList,
   }
 }
 
-static void compareDoxyfile()
+static void compareDoxyfile(DoxyfileSettings diffList)
 {
   std::ofstream f;
   bool fileOpened=openOutputFile("-",f);
   if (fileOpened)
   {
     TextStream t(&f);
-    Config::compareDoxyfile(t);
+    Config::compareDoxyfile(t,diffList);
   }
   else
   {
@@ -9943,10 +10048,6 @@ static void parseFilesMultiThreading(const std::shared_ptr<Entry> &root)
     std::mutex processedFilesLock;
     // process source files (and their include dependencies)
     std::size_t numThreads = static_cast<std::size_t>(Config_getInt(NUM_PROC_THREADS));
-    if (numThreads==0)
-    {
-      numThreads = std::thread::hardware_concurrency();
-    }
     msg("Processing input using %zu threads.\n",numThreads);
     ThreadPool threadPool(numThreads);
     using FutureType = std::vector< std::shared_ptr<Entry> >;
@@ -10049,7 +10150,7 @@ static void parseFilesMultiThreading(const std::shared_ptr<Entry> &root)
   else // normal processing
 #endif
   {
-    std::size_t numThreads = std::thread::hardware_concurrency();
+    std::size_t numThreads = static_cast<std::size_t>(Config_getInt(NUM_PROC_THREADS));
     msg("Processing input using %zu threads.\n",numThreads);
     ThreadPool threadPool(numThreads);
     using FutureType = std::shared_ptr<Entry>;
@@ -10205,7 +10306,6 @@ static std::string resolveSymlink(const std::string &path)
           target+=result.mid(sepPos);
         }
         result = Dir::cleanDirPath(target.str());
-        sepPos = 0;
         if (known.find(result.str())!=known.end()) return std::string(); // recursive symlink!
         known.insert(result.str());
         if (isRelative)
@@ -10614,6 +10714,9 @@ static void usage(const QCString &name,const QCString &versionString)
   msg("    If - is used for extensionsFile doxygen will write to standard output.\n\n");
   msg("7) Use doxygen to compare the used configuration file with the template configuration file\n");
   msg("    %s -x [configFile]\n\n",qPrint(name));
+  msg("   Use doxygen to compare the used configuration file with the template configuration file");
+  msg("   without replacing the environment variables\n");
+  msg("    %s -x_noenv [configFile]\n\n",qPrint(name));
   msg("8) Use doxygen to show a list of built-in emojis.\n");
   msg("    %s -f emoji outputFileName\n\n",qPrint(name));
   msg("    If - is used for outputFileName doxygen will write to standard output.\n\n");
@@ -10767,8 +10870,6 @@ void cleanUpDoxygen()
   delete Doxygen::namespaceLinkedMap;
   delete Doxygen::dirLinkedMap;
   delete Doxygen::symbolMap;
-
-  DotManager::deleteInstance();
 }
 
 static int computeIdealCacheParam(size_t v)
@@ -10799,7 +10900,7 @@ void readConfiguration(int argc, char **argv)
   QCString listName;
   bool genConfig=FALSE;
   bool shortList=FALSE;
-  bool diffList=FALSE;
+  DoxyfileSettings diffList=DoxyfileSettings::Full;
   bool updateConfig=FALSE;
   int retVal;
   bool quiet = false;
@@ -10844,7 +10945,14 @@ void readConfiguration(int argc, char **argv)
         }
         break;
       case 'x':
-        diffList=TRUE;
+        if (!strcmp(argv[optInd]+1,"x_noenv")) diffList=DoxyfileSettings::CompressedNoEnv;
+        else if (!strcmp(argv[optInd]+1,"x")) diffList=DoxyfileSettings::Compressed;
+        else
+        {
+          err("option should be \"-x\" or \"-x_noenv\", found: \"%s\".\n",argv[optInd]);
+          cleanUpDoxygen();
+          exit(1);
+        }
         break;
       case 's':
         shortList=TRUE;
@@ -11163,10 +11271,10 @@ void readConfiguration(int argc, char **argv)
     exit(1);
   }
 
-  if (diffList)
+  if (diffList!=DoxyfileSettings::Full)
   {
     Config::updateObsolete();
-    compareDoxyfile();
+    compareDoxyfile(diffList);
     cleanUpDoxygen();
     exit(0);
   }
@@ -11397,23 +11505,6 @@ static QCString createOutputDirectory(const QCString &baseDirName,
   return result;
 }
 
-static QCString getQchFileName()
-{
-  QCString const & qchFile = Config_getString(QCH_FILE);
-  if (!qchFile.isEmpty())
-  {
-    return qchFile;
-  }
-
-  QCString const & projectName = Config_getString(PROJECT_NAME);
-  QCString const & versionText = Config_getString(PROJECT_NUMBER);
-
-  return QCString("../qch/")
-      + (projectName.isEmpty() ? QCString("index") : projectName)
-      + (versionText.isEmpty() ? QCString("") : QCString("-") + versionText)
-      + QCString(".qch");
-}
-
 void searchInputFiles()
 {
   StringUnorderedSet killSet;
@@ -11438,7 +11529,7 @@ void searchInputFiles()
                         &exclPatterns,                 // exclPatList
                         0,                             // resultList
                         0,                             // resultSet
-                        alwaysRecursive,               // recursive
+                        false,                         // INCLUDE_PATH isn't recursive
                         TRUE,                          // errorIfNotExist
                         &killSet);                     // killSet
   }
@@ -12286,8 +12377,8 @@ void generateOutput()
   g_outputList->writeStyleInfo(0); // write first part
   g_s.end();
 
-  static bool searchEngine      = Config_getBool(SEARCHENGINE);
-  static bool serverBasedSearch = Config_getBool(SERVER_BASED_SEARCH);
+  bool searchEngine      = Config_getBool(SEARCHENGINE);
+  bool serverBasedSearch = Config_getBool(SERVER_BASED_SEARCH);
 
   g_s.begin("Generating search indices...\n");
   if (searchEngine && !serverBasedSearch && (generateHtml || g_useOutputTemplate))
@@ -12512,16 +12603,7 @@ void generateOutput()
       !Config_getString(HHC_LOCATION).isEmpty())
   {
     g_s.begin("Running html help compiler...\n");
-    std::string oldDir = Dir::currentDirPath();
-    Dir::setCurrent(Config_getString(HTML_OUTPUT).str());
-    Portable::setShortDir();
-    Portable::sysTimerStart();
-    if (Portable::system(Config_getString(HHC_LOCATION).data(), "index.hhp", Debug::isFlagSet(Debug::ExtCmd))!=1)
-    {
-      err("failed to run html help compiler on index.hhp\n");
-    }
-    Portable::sysTimerStop();
-    Dir::setCurrent(oldDir);
+    runHtmlHelpCompiler();
     g_s.end();
   }
 
@@ -12532,19 +12614,7 @@ void generateOutput()
       !Config_getString(QHG_LOCATION).isEmpty())
   {
     g_s.begin("Running qhelpgenerator...\n");
-    QCString qhpFileName = "index.qhp";
-    QCString qchFileName = getQchFileName();
-
-    QCString args = QCString().sprintf("%s -o \"%s\"", qPrint(qhpFileName), qPrint(qchFileName));
-    std::string oldDir = Dir::currentDirPath();
-    Dir::setCurrent(Config_getString(HTML_OUTPUT).str());
-    Portable::sysTimerStart();
-    if (Portable::system(Config_getString(QHG_LOCATION).data(), args.data(), FALSE))
-    {
-      err("failed to run qhelpgenerator on index.qhp\n");
-    }
-    Portable::sysTimerStop();
-    Dir::setCurrent(oldDir);
+    runQHelpGenerator();
     g_s.end();
   }
 
@@ -12589,4 +12659,6 @@ void generateOutput()
   Config::deinit();
   delete Doxygen::clangUsrMap;
   g_successfulRun=TRUE;
+
+  //dumpDocNodeSizes();
 }

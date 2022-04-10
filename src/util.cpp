@@ -634,7 +634,6 @@ QCString removeRedundantWhiteSpace(const QCString &s)
       case '"': // quoted string
         {
           *dst++=c;
-          pc = c;
           i++;
           for (;i<l;i++) // find end of string
           {
@@ -642,7 +641,6 @@ QCString removeRedundantWhiteSpace(const QCString &s)
             *dst++=c;
             if (c=='\\' && i+1<l)
             {
-              pc = c;
               i++;
               c = src[i];
               *dst++=c;
@@ -651,7 +649,6 @@ QCString removeRedundantWhiteSpace(const QCString &s)
             {
               break;
             }
-            pc = c;
           }
         }
         break;
@@ -1355,7 +1352,7 @@ QCString getFileFilter(const QCString &name,bool isSourceCode)
 QCString transcodeCharacterStringToUTF8(const QCString &input)
 {
   bool error=FALSE;
-  static QCString inputEncoding = Config_getString(INPUT_ENCODING);
+  QCString inputEncoding = Config_getString(INPUT_ENCODING);
   const char *outputEncoding = "UTF-8";
   if (inputEncoding.isEmpty() || qstricmp(inputEncoding,outputEncoding)==0) return input;
   int inputSize=input.length();
@@ -1402,7 +1399,6 @@ QCString fileToString(const QCString &name,bool filter,bool isSourceCode)
   bool fileOpened=false;
   if (name[0]=='-' && name[1]==0) // read from stdin
   {
-    fileOpened=true;
     std::string contents;
     std::string line;
     while (getline(std::cin,line))
@@ -2947,7 +2943,7 @@ bool resolveRef(/* in */  const QCString &scName,
 
 QCString linkToText(SrcLangExt lang,const QCString &link,bool isFileName)
 {
-  //static bool optimizeOutputJava = Config_getBool(OPTIMIZE_OUTPUT_JAVA);
+  //bool optimizeOutputJava = Config_getBool(OPTIMIZE_OUTPUT_JAVA);
   QCString result=link;
   if (!result.isEmpty())
   {
@@ -3609,8 +3605,8 @@ static int g_usedNamesCount=1;
 QCString convertNameToFile(const QCString &name,bool allowDots,bool allowUnderscore)
 {
   if (name.isEmpty()) return name;
-  static bool shortNames = Config_getBool(SHORT_NAMES);
-  static bool createSubdirs = Config_getBool(CREATE_SUBDIRS);
+  bool shortNames = Config_getBool(SHORT_NAMES);
+  bool createSubdirs = Config_getBool(CREATE_SUBDIRS);
   QCString result;
   if (shortNames) // use short names only
   {
@@ -4343,8 +4339,8 @@ void addMembersToMemberGroup(MemberList *ml,
  */
 int extractClassNameFromType(const QCString &type,int &pos,QCString &name,QCString &templSpec,SrcLangExt lang)
 {
-  static reg::Ex re_norm(R"(\a[\w:]*)");
-  static reg::Ex re_fortran(R"(\a[\w:()=]*)");
+  static const reg::Ex re_norm(R"(\a[\w:]*)");
+  static const reg::Ex re_fortran(R"(\a[\w:()=]*)");
   static const reg::Ex *re = &re_norm;
 
   name.resize(0);
@@ -5752,12 +5748,15 @@ QCString parseCommentAsText(const Definition *scope,const MemberDef *md,
   //printf("parseCommentAsText(%s)\n",qPrint(doc));
   TextStream t;
   std::unique_ptr<IDocParser> parser { createDocParser() };
-  std::unique_ptr<DocRoot>    root   { validatingParseDoc(*parser.get(),
+  std::unique_ptr<DocNodeVariant> rootNode { validatingParseDoc(*parser.get(),
                                        fileName,lineNr,
                                        const_cast<Definition*>(scope),const_cast<MemberDef*>(md),doc,FALSE,FALSE,
                                        QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT)) };
-  auto visitor = std::make_unique<TextDocVisitor>(t);
-  root->accept(visitor.get());
+  if (rootNode)
+  {
+    TextDocVisitor visitor(t);
+    std::visit(visitor,*rootNode);
+  }
   QCString result = convertCharEntitiesToUTF8(t.str().c_str()).stripWhiteSpace();
   int i=0;
   int charCnt=0;
@@ -6334,7 +6333,7 @@ bool patternMatch(const FileInfo &fi,const StringVector &patList)
 
 QCString externalLinkTarget(const bool parent)
 {
-  static bool extLinksInWindow = Config_getBool(EXT_LINKS_IN_WINDOW);
+  bool extLinksInWindow = Config_getBool(EXT_LINKS_IN_WINDOW);
   if (extLinksInWindow)
     return "target=\"_blank\" ";
   else if (parent)
@@ -6374,9 +6373,9 @@ QCString externalRef(const QCString &relPath,const QCString &ref,bool href)
  */
 void writeColoredImgData(const QCString &dir,ColoredImgDataItem data[])
 {
-  static int hue   = Config_getInt(HTML_COLORSTYLE_HUE);
-  static int sat   = Config_getInt(HTML_COLORSTYLE_SAT);
-  static int gamma = Config_getInt(HTML_COLORSTYLE_GAMMA);
+  int hue   = Config_getInt(HTML_COLORSTYLE_HUE);
+  int sat   = Config_getInt(HTML_COLORSTYLE_SAT);
+  int gamma = Config_getInt(HTML_COLORSTYLE_GAMMA);
   while (data->name)
   {
     QCString fileName = dir+"/"+data->name;
@@ -6404,9 +6403,9 @@ QCString replaceColorMarkers(const QCString &str)
   static const reg::Ex re(R"(##[0-9A-Fa-f][0-9A-Fa-f])");
   reg::Iterator it(s,re);
   reg::Iterator end;
-  static int hue   = Config_getInt(HTML_COLORSTYLE_HUE);
-  static int sat   = Config_getInt(HTML_COLORSTYLE_SAT);
-  static int gamma = Config_getInt(HTML_COLORSTYLE_GAMMA);
+  int hue   = Config_getInt(HTML_COLORSTYLE_HUE);
+  int sat   = Config_getInt(HTML_COLORSTYLE_SAT);
+  int gamma = Config_getInt(HTML_COLORSTYLE_GAMMA);
   size_t sl=s.length();
   size_t p=0;
   for (; it!=end ; ++it)
@@ -6596,8 +6595,8 @@ QCString correctURL(const QCString &url,const QCString &relPath)
 
 bool protectionLevelVisible(Protection prot)
 {
-  static bool extractPrivate = Config_getBool(EXTRACT_PRIVATE);
-  static bool extractPackage = Config_getBool(EXTRACT_PACKAGE);
+  bool extractPrivate = Config_getBool(EXTRACT_PRIVATE);
+  bool extractPackage = Config_getBool(EXTRACT_PACKAGE);
 
   return (prot!=Private && prot!=Package)  ||
          (prot==Private && extractPrivate) ||
@@ -6617,7 +6616,7 @@ QCString stripIndentation(const QCString &s)
   int indent=0;
   int minIndent=1000000; // "infinite"
   bool searchIndent=TRUE;
-  static int tabSize=Config_getInt(TAB_SIZE);
+  int tabSize=Config_getInt(TAB_SIZE);
   while ((c=*p++))
   {
     if      (c=='\t') indent+=tabSize - (indent%tabSize);
@@ -6723,7 +6722,7 @@ void stripIndentation(QCString &doc,const int indentationLevel)
 
 bool fileVisibleInIndex(const FileDef *fd,bool &genSourceFile)
 {
-  static bool allExternals = Config_getBool(ALLEXTERNALS);
+  bool allExternals = Config_getBool(ALLEXTERNALS);
   bool isDocFile = fd->isDocumentationFile();
   genSourceFile = !isDocFile && fd->generateSourceFile();
   return ( ((allExternals && fd->isLinkable()) ||
@@ -6867,7 +6866,7 @@ void convertProtectionLevel(
                    int *outListType2
                   )
 {
-  static bool extractPrivate = Config_getBool(EXTRACT_PRIVATE);
+  bool extractPrivate = Config_getBool(EXTRACT_PRIVATE);
   // default representing 1-1 mapping
   *outListType1=inListType;
   *outListType2=-1;
@@ -7125,6 +7124,7 @@ bool recognizeFixedForm(const QCString &contents, FortranFormat format)
 
   if (format == FortranFormat_Fixed) return TRUE;
   if (format == FortranFormat_Free)  return FALSE;
+  int tabSize=Config_getInt(TAB_SIZE);
 
   for (int i=0;;i++)
   {
@@ -7135,6 +7135,9 @@ bool recognizeFixedForm(const QCString &contents, FortranFormat format)
       case '\n':
         column=0;
         skipLine=FALSE;
+        break;
+      case '\t':
+        column += tabSize-1;
         break;
       case ' ':
         break;
@@ -7150,8 +7153,7 @@ bool recognizeFixedForm(const QCString &contents, FortranFormat format)
         if (skipLine) break;
         return FALSE;
       case '!':
-        if (column>1 && column<7) return FALSE;
-        skipLine=TRUE;
+        if (column!=6) skipLine=TRUE;
         break;
       default:
         if (skipLine) break;

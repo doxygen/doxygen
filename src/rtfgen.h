@@ -40,7 +40,7 @@ class RTFGenerator : public OutputGenerator
     void setRelativePath(const QCString &path);
     void setSourceFileName(const QCString &sourceFileName);
 
-    void writeDoc(DocNode *,const Definition *,const MemberDef *,int);
+    void writeDoc(const DocNodeVariant &node,const Definition *,const MemberDef *,int);
 
     void startFile(const QCString &name,const QCString &manName,const QCString &title,int id);
     void writeSearchInfo() {}
@@ -261,8 +261,6 @@ class RTFGenerator : public OutputGenerator
     void endFontClass();
 
     void writeCodeAnchor(const QCString &) {}
-    void setCurrentDoc(const Definition *,const QCString &,bool) {}
-    void addWord(const QCString &,bool) {}
 
     static bool preProcessFileInplace(const QCString &path,const QCString &name);
 

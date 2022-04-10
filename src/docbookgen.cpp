@@ -251,14 +251,6 @@ void DocbookCodeGenerator::writeLineNumber(const QCString &ref,const QCString &f
   m_col=0;
 }
 
-void DocbookCodeGenerator::setCurrentDoc(const Definition *,const QCString &,bool)
-{
-}
-
-void DocbookCodeGenerator::addWord(const QCString &,bool)
-{
-}
-
 void DocbookCodeGenerator::finish()
 {
   endCodeLine();
@@ -631,13 +623,11 @@ DB_GEN_C
   }
 }
 
-void DocbookGenerator::writeDoc(DocNode *n,const Definition *ctx,const MemberDef *,int)
+void DocbookGenerator::writeDoc(const DocNodeVariant &n,const Definition *ctx,const MemberDef *,int)
 {
 DB_GEN_C
-  DocbookDocVisitor *visitor =
-    new DocbookDocVisitor(m_t,*this,ctx?ctx->getDefFileExtension():QCString());
-  n->accept(visitor);
-  delete visitor;
+  auto visitor { DocbookDocVisitor(m_t,*this,ctx?ctx->getDefFileExtension():QCString()) };
+  std::visit(visitor,n);
 }
 
 void DocbookGenerator::startParagraph(const QCString &)

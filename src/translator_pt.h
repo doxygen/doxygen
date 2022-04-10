@@ -779,7 +779,7 @@ class TranslatorPortuguese : public Translator
         bool single)
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
-      static bool vhdlOpt = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
+      bool vhdlOpt = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
       QCString result="A documentação para ";
       switch(compType)
       {
@@ -1381,14 +1381,18 @@ class TranslatorPortuguese : public Translator
     /*! Used as a heading for a list of Java class functions with package
      * scope.
      */
-    virtual QCString trPackageMembers()
+    virtual QCString trPackageFunctions()
     {
       return "Funções do Pacote";
+    }
+    virtual QCString trPackageMembers()
+    {
+      return "Membros do Pacote";
     }
     /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
-    virtual QCString trStaticPackageMembers()
+    virtual QCString trStaticPackageFunctions()
     {
       return "Funções Estáticas do Pacote";
     }

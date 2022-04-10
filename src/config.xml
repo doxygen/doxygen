@@ -819,7 +819,7 @@ Go to the <a href="commands.html">next</a> section or return to the
     <option type='int' id='NUM_PROC_THREADS' defval='1' minval='0' maxval='32'>
       <docs>
 <![CDATA[
- The \c NUM_PROC_THREADS specifies the number threads doxygen is allowed to use during
+ The \c NUM_PROC_THREADS specifies the number of threads doxygen is allowed to use during
  processing. When set to \c 0 doxygen will based this on the number of cores
  available in the system. You can set it explicitly to a value larger than 0
  to get more control over the balance between CPU load and processing speed.
@@ -3401,6 +3401,9 @@ If set to \c NO, doxygen will warn if an a database file is already found and no
  The \c INCLUDE_PATH tag can be used to specify one or more directories that
  contain include files that are not input files but should be processed by
  the preprocessor.
+
+ Note that the \c INCLUDE_PATH is not recursive, so the setting of \ref cfg_recursive "RECURSIVE" 
+ has no effect here.
 ]]>
       </docs>
     </option>
@@ -3618,6 +3621,8 @@ to be found in the default search path.
 <![CDATA[
  If the \c GROUP_GRAPHS tag is set to \c YES then doxygen
  will generate a graph for groups, showing the direct groups dependencies.
+
+ See also the chapter \ref grouping "Grouping" in the manual.
 ]]>
       </docs>
     </option>
