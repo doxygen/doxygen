@@ -40,6 +40,8 @@
 #define Config_updateInt(name,value)    (ConfigValues::instance().update_##name(value));
 #define Config_updateEnum(name,value)   (ConfigValues::instance().update_##name(value));
 #define Config_updateList(name,...)   (ConfigValues::instance().update_##name(__VA_ARGS__));
+
+#define Config_isAvailableEnum(name,value)   (ConfigValues::instance().isAvailable_##name(value))
 //#endif
 //! @}
 
