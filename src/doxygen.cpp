@@ -3431,6 +3431,7 @@ static void addGlobalFunction(const Entry *root,const QCString &rname,const QCSt
     scope+=sep;
   }
 
+  if (Config_getBool(HIDE_SCOPE_NAMES)) scope = "";
   QCString def;
   //QCString optArgs = root->argList.empty() ? QCString() : root->args;
   if (!root->type.isEmpty())
