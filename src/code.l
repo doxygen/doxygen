@@ -350,6 +350,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
 %x      RemoveSpecialCComment
 %x      Body
 %x      FuncCall
+%x      ForLoop
 %x      MemberCall
 %x      MemberCall2
 %x      SkipInits
@@ -570,7 +571,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
 <SkipCPP>{CPPC}/[^/!]                     {
                                           REJECT;
                                         }
-<Body,FuncCall>"{"                      {
+<Body,FuncCall,ForLoop>"{"              {
                                           yyextra->theVarContext.pushScope();
 
                                           DBG_CTX((stderr,"** scope stack push INNERBLOCK\n"));
@@ -590,7 +591,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           yyextra->name.resize(0);
                                           BEGIN( Body );
                                         }
-<Body,FuncCall,MemberCall,MemberCall2>"}"  {
+<Body,FuncCall,MemberCall,MemberCall2,ForLoop>"}"  {
                                           yyextra->theVarContext.popScope();
                                           yyextra->type.resize(0);
                                           yyextra->name.resize(0);
@@ -944,7 +945,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                         }
 <UsingName>\n                           { codifyLines(yyscanner,yytext); BEGIN(Body); }
 <UsingName>.                            { codifyLines(yyscanner,yytext); BEGIN(Body); }
-<Body,FuncCall>"$"?"this"("->"|".")     { yyextra->code->codify(yytext); // this-> for C++, this. for C#
+<Body,FuncCall,ForLoop>"$"?"this"("->"|".")     { yyextra->code->codify(yytext); // this-> for C++, this. for C#
                                           yyextra->isPrefixedWithThis = TRUE;
                                         }
 <Body>{KEYWORD}/([^a-z_A-Z0-9])         {
@@ -972,7 +973,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           endFontClass(yyscanner);
                                           yyextra->name.resize(0);yyextra->type.resize(0);
                                         }
-<FuncCall>"in"/{BN}*                    {
+<FuncCall,ForLoop>"in"/{BN}*            {
                                           if (!yyextra->inForEachExpression) REJECT;
                                           startFontClass(yyscanner,"keywordflow");
                                           codifyLines(yyscanner,yytext);
@@ -998,7 +999,10 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           endFontClass(yyscanner);
                                           yyextra->name.resize(0);yyextra->type.resize(0);
                                           yyextra->inForEachExpression = (strcmp(yytext,"for each")==0 || strcmp(yytext, "foreach")==0);
-                                          BEGIN(FuncCall);
+                                          if (QCString(yytext)=="for")
+                                            BEGIN(ForLoop);
+                                          else
+                                            BEGIN(FuncCall);
                                         }
 <Body>{FLOWKW}/([^a-z_A-Z0-9])          {
                                           startFontClass(yyscanner,"keywordflow");
@@ -1119,7 +1123,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
 <TemplCast>[*^]*                        {
                                           codifyLines(yyscanner,yytext);
                                         }
-<Body,MemberCall2,FuncCall>{CASTKW}{B}*"<"  { // static_cast<T>(
+<Body,MemberCall2,FuncCall,ForLoop>{CASTKW}{B}*"<"  { // static_cast<T>(
                                           startFontClass(yyscanner,"keyword");
                                           codifyLines(yyscanner,yytext);
                                           endFontClass(yyscanner);
@@ -1174,7 +1178,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           yyextra->name+=yytext;
                                           BEGIN( FuncCall );
                                         }
-<FuncCall,Body,MemberCall,MemberCall2,SkipInits,InlineInit>{RAWBEGIN}   {
+<FuncCall,ForLoop,Body,MemberCall,MemberCall2,SkipInits,InlineInit>{RAWBEGIN}   {
                                           QCString text(yytext);
                                           uint i=(uint)text.find('R');
                                           yyextra->code->codify(text.left(i+1));
@@ -1186,18 +1190,18 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           yyextra->delimiter=yyextra->delimiter.left(yyextra->delimiter.length()-1);
                                           BEGIN( RawString );
                                         }
-<FuncCall,Body,MemberCall,MemberCall2,SkipInits,InlineInit>\"   {
+<FuncCall,ForLoop,Body,MemberCall,MemberCall2,SkipInits,InlineInit>\"   {
                                           startFontClass(yyscanner,"stringliteral");
                                           yyextra->code->codify(yytext);
                                           yyextra->lastStringContext=YY_START;
                                           yyextra->inForEachExpression = FALSE;
                                           BEGIN( SkipString );
                                         }
-<FuncCall,Body,MemberCall,MemberCall2,SkipInits,InlineInit>{NUMBER} { //Note similar code in commentcnv.l
+<FuncCall,ForLoop,Body,MemberCall,MemberCall2,SkipInits,InlineInit>{NUMBER} { //Note similar code in commentcnv.l
                                           if (yyextra->lang!=SrcLangExt_Cpp) REJECT;
                                           yyextra->code->codify(yytext);
                                         }
-<FuncCall,Body,MemberCall,MemberCall2,SkipInits,InlineInit>\'   {
+<FuncCall,ForLoop,Body,MemberCall,MemberCall2,SkipInits,InlineInit>\'   {
                                           startFontClass(yyscanner,"stringliteral");
                                           yyextra->code->codify(yytext);
                                           yyextra->lastStringContext=YY_START;
@@ -1276,7 +1280,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           }
                                           yyextra->code->codify(yytext);
                                         }
-<Body,MemberCall,MemberCall2,FuncCall>"'"((\\0[Xx0-9]+)|(\\.)|(.))"'"   {
+<Body,MemberCall,MemberCall2,FuncCall,ForLoop>"'"((\\0[Xx0-9]+)|(\\.)|(.))"'"   {
                                           startFontClass(yyscanner,"charliteral");
                                           yyextra->code->codify(yytext);
                                           endFontClass(yyscanner);
@@ -1489,7 +1493,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
 <Body>[0-9]+[xX][0-9A-Fa-f]+            {
                                           yyextra->code->codify(yytext);
                                         }
-<MemberCall2,FuncCall>{KEYWORD}/([^a-z_A-Z0-9]) {
+<MemberCall2,FuncCall,ForLoop>{KEYWORD}/([^a-z_A-Z0-9]) {
                                           //addParmType(yyscanner);
                                           //yyextra->parmName=yytext;
                                           if (skipLanguageSpecificKeyword(yyscanner,yytext)) REJECT;
@@ -1497,14 +1501,14 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           yyextra->code->codify(yytext);
                                           endFontClass(yyscanner);
                                         }
-<MemberCall2,FuncCall,OldStyleArgs,TemplCast>{TYPEKW}/([^a-z_A-Z0-9]) {
+<MemberCall2,FuncCall,ForLoop,OldStyleArgs,TemplCast>{TYPEKW}/([^a-z_A-Z0-9]) {
                                           addParmType(yyscanner);
                                           yyextra->parmName=yytext;
                                           startFontClass(yyscanner,"keywordtype");
                                           yyextra->code->codify(yytext);
                                           endFontClass(yyscanner);
                                         }
-<MemberCall2,FuncCall,OldStyleArgs,TemplCast>{TYPEKWSL}/([^a-z_A-Z0-9]) {
+<MemberCall2,FuncCall,ForLoop,OldStyleArgs,TemplCast>{TYPEKWSL}/([^a-z_A-Z0-9]) {
                                           if (yyextra->lang!=SrcLangExt_Slice)
                                           {
                                             REJECT;
@@ -1518,14 +1522,14 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                             endFontClass(yyscanner);
                                           }
                                         }
-<MemberCall2,FuncCall>{FLOWKW}/([^a-z_A-Z0-9]) {
+<MemberCall2,FuncCall,ForLoop>{FLOWKW}/([^a-z_A-Z0-9]) {
                                           addParmType(yyscanner);
                                           yyextra->parmName=yytext;
                                           startFontClass(yyscanner,"keywordflow");
                                           yyextra->code->codify(yytext);
                                           endFontClass(yyscanner);
                                         }
-<MemberCall2,FuncCall>{FLOWCONDITION}/([^a-z_A-Z0-9]) {
+<MemberCall2,FuncCall,ForLoop>{FLOWCONDITION}/([^a-z_A-Z0-9]) {
                                           incrementFlowKeyWordCount(yyscanner);
                                           addParmType(yyscanner);
                                           yyextra->parmName=yytext;
@@ -1533,7 +1537,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           yyextra->code->codify(yytext);
                                           endFontClass(yyscanner);
                                         }
-<MemberCall2,FuncCall>("::")?{ID}(({B}*"<"[^\n\[\](){}<>]*">")?({B}*"::"{B}*{ID})?)* {
+<MemberCall2,FuncCall,ForLoop>("::")?{ID}(({B}*"<"[^\n\[\](){}<>]*">")?({B}*"::"{B}*{ID})?)* {
                                           if (isCastKeyword(yytext))
                                           {
                                             REJECT;
@@ -1542,17 +1546,26 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           yyextra->parmName=yytext;
                                           generateClassOrGlobalLink(yyscanner,*yyextra->code,yytext,!yyextra->insideBody);
                                         }
-<FuncCall>";"                           { // probably a cast, not a function call
+<FuncCall,ForLoop>";"                   { // probably a cast, not a function call
                                           yyextra->code->codify(yytext);
+                                          if (YY_START == ForLoop)
+                                          {
+                                            addVariable(yyscanner,yyextra->parmType,yyextra->parmName);
+                                            yyextra->parmType.resize(0);yyextra->parmName.resize(0);
+                                          }
                                           yyextra->inForEachExpression = FALSE;
                                           BEGIN( Body );
                                         }
-<MemberCall2,FuncCall>,                 {
+<MemberCall2,FuncCall,ForLoop>,         {
                                           yyextra->code->codify(yytext);
                                           addVariable(yyscanner,yyextra->parmType,yyextra->parmName);
-                                          yyextra->parmType.resize(0);yyextra->parmName.resize(0);
+                                          if (YY_START != ForLoop)
+                                          {
+                                            yyextra->parmType.resize(0);
+                                          }
+                                          yyextra->parmName.resize(0);
                                         }
-<MemberCall2,FuncCall>"{"               {
+<MemberCall2,FuncCall,ForLoop>"{"       {
                                           if (yyextra->bracketCount>0)
                                           {
                                             yyextra->code->codify(yytext);
@@ -1581,28 +1594,36 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
 <InlineInit>.                           {
                                           yyextra->code->codify(yytext);
                                         }
-<MemberCall2,FuncCall>"("               {
+<MemberCall2,FuncCall,ForLoop>"("       {
                                           yyextra->parmType.resize(0);yyextra->parmName.resize(0);
                                           yyextra->code->codify(yytext);
                                           yyextra->bracketCount++;
                                           yyextra->theCallContext.pushScope(yyextra->name, yyextra->type);
-                                          if (YY_START==FuncCall && !yyextra->insideBody)
+                                          if ((YY_START==FuncCall  || YY_START==ForLoop) && !yyextra->insideBody)
                                           {
                                             yyextra->theVarContext.pushScope();
                                           }
                                         }
-<MemberCall2,FuncCall>{OPERATOR}        { // operator
+<MemberCall2,FuncCall,ForLoop>{OPERATOR} { // operator
                                           if (qstrcmp(yytext,"*") &&
                                               qstrcmp(yytext,"&") &&
                                               qstrcmp(yytext,"^") &&
                                               qstrcmp(yytext,"%")) // typically a pointer or reference
                                           {
                                             // not a * or &, or C++/CLI's ^ or %
-                                            yyextra->parmType.resize(0);yyextra->parmName.resize(0);
+                                            if (YY_START != ForLoop)
+                                            {
+                                              yyextra->parmType.resize(0);
+                                            }
+                                            else
+                                            {
+                                              addVariable(yyscanner,yyextra->parmType,yyextra->parmName);
+                                            }
+                                            yyextra->parmName.resize(0);
                                           }
                                           yyextra->code->codify(yytext);
                                         }
-<MemberCall,MemberCall2,FuncCall>("*"{B}*)?")"  {
+<MemberCall,MemberCall2,FuncCall,ForLoop>("*"{B}*)?")"  {
                                           if (yytext[0]==')') // no a pointer cast
                                           {
                                             DBG_CTX((stderr,"addVariable(%s,%s)\n",qPrint(yyextra->parmType),qPrint(yyextra->parmName)));
@@ -1637,7 +1658,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                         }
 <CallEnd>[ \t\n]*                       { codifyLines(yyscanner,yytext); }
   /*
-<MemberCall2,FuncCall>")"[ \t\n]*[;:]   {
+<MemberCall2,FuncCall,ForLoop>")"[ \t\n]*[;:]   {
   */
 <CallEnd>[;:]                           {
                                           codifyLines(yyscanner,yytext);
@@ -1812,15 +1833,15 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
 <SkipInits>{ID}                         {
                                           generateClassOrGlobalLink(yyscanner,*yyextra->code,yytext);
                                         }
-<FuncCall>{ID}/"("                      {
+<FuncCall,ForLoop>{ID}/"("              {
                                           generateFunctionLink(yyscanner,*yyextra->code,yytext);
                                         }
-<FuncCall>{ID}/("."|"->")               {
+<FuncCall,ForLoop>{ID}/("."|"->")       {
                                           yyextra->name=yytext;
                                           generateClassOrGlobalLink(yyscanner,*yyextra->code,yytext);
                                           BEGIN( MemberCall2 );
                                         }
-<FuncCall,MemberCall2>("("{B}*("*"{B}*)+{ID}+{B}*")"{B}*)/("."|"->") {
+<FuncCall,ForLoop,MemberCall2>("("{B}*("*"{B}*)+{ID}+{B}*")"{B}*)/("."|"->") {
                                           yyextra->code->codify(yytext);
                                           uint s=0;while (!isId(yytext[s])) s++;
                                           uint e=(uint)yyleng-1;while (e>1 && !isId(yytext[e])) e--;
