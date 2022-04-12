@@ -96,6 +96,20 @@ if (CMAKE_SYSTEM_NAME MATCHES "CYGWIN")
    endif()
 endif()
 
+if (CMAKE_SYSTEM_NAME MATCHES "WINDOWS")
+   if ((CMAKE_GENERATOR MATCHES "MinGW Makefiles") OR
+       (CMAKE_GENERATOR MATCHES "MSYS Makefiles") OR
+       (CMAKE_GENERATOR MATCHES "Unix Makefiles"))
+
+      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wa,-mbig-obj")
+      set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Og")
+
+      if (CMAKE_BUILD_TYPE STREQUAL  "")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O1")
+      endif()
+   endif()
+endif()
+
 if(POLICY CMP0063)
   cmake_policy(SET CMP0063 NEW)
 endif()
