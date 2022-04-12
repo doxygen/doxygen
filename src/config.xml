@@ -434,7 +434,7 @@ Go to the <a href="commands.html">next</a> section or return to the
 ]]>
       </docs>
     </option>
-    <option type='list' id='STRIP_FROM_PATH' format='string' depends='FULL_PATH_NAMES'>
+    <option type='list' id='STRIP_FROM_PATH' format='dir' depends='FULL_PATH_NAMES'>
       <docs>
 <![CDATA[
  The \c STRIP_FROM_PATH tag
@@ -449,7 +449,7 @@ Go to the <a href="commands.html">next</a> section or return to the
 ]]>
       </docs>
     </option>
-    <option type='list' id='STRIP_FROM_INC_PATH' format='string'>
+    <option type='list' id='STRIP_FROM_INC_PATH' format='dir'>
       <docs>
 <![CDATA[
  The \c STRIP_FROM_INC_PATH tag can be used to strip a user-defined part of
