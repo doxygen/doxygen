@@ -316,7 +316,8 @@ static struct htmlEntityInfo
   { SYM(Plus),     "+",            "+",          "+",                    "+",             "+",                      "+",      "+",           { "+",          DocSymbol::Perl_char    }},
   { SYM(Dot),      ".",            ".",          ".",                    ".",             ".",                      ".",      ".",           { ".",          DocSymbol::Perl_char    }},
   { SYM(Colon),    ":",            ":",          ":",                    ":",             ":",                      ":",      ":",           { ":",          DocSymbol::Perl_char    }},
-  { SYM(Equal),    "=",            "=",          "=",                    "=",             "=",                      "=",      "=",           { "=",          DocSymbol::Perl_char    }}
+  { SYM(Equal),    "=",            "=",          "=",                    "=",             "=",                      "=",      "=",           { "=",          DocSymbol::Perl_char    }},
+  { SYM(doxyzwj),  "",             "",           "",                     "",              "",                       NULL,     "",            { NULL,         DocSymbol::Perl_unknown }},
 };
 
 static const int g_numHtmlEntities = static_cast<int>(sizeof(g_htmlEntities)/ sizeof(*g_htmlEntities));

@@ -842,11 +842,11 @@ SLASHopt [/]*
                                                                   //   static void handleCondSectionId
 				     BEGIN(Scan); 
                                    }
-<ReadLine>{CCS}"*"                    {
-				     copyToOutput(yyscanner,"/&zwj;**",8);
+<ReadLine>{CCS}"*"                 {
+				     copyToOutput(yyscanner,"/&doxyzwj;**",12);
 				   }
-<ReadLine>{CCE}                     {
-				     copyToOutput(yyscanner,"*&zwj;/",7);
+<ReadLine>{CCE}                    {
+				     copyToOutput(yyscanner,"*&doxyzwj;/",11);
 				   }
 <ReadLine>"*"                      {
 				     copyToOutput(yyscanner,yytext,(int)yyleng);
