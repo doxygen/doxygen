@@ -140,6 +140,7 @@ class DocTokenizer
     bool popContext();
     int  lex();
     void setStatePara();
+    void unputString(const char *str, int len);
     void setStateTitle();
     void setStateTitleAttrValue();
     void setStateCode();
