@@ -853,10 +853,8 @@ bool SymbolResolver::Private::accessibleViaUsingNamespace(StringUnorderedSet &vi
     if (item->getLanguage()==SrcLangExt_Cpp)
     {
       QCString key=und->qualifiedName();
-      if (!und->getUsedNamespaces().empty() && visited.find(key.str())==visited.end())
+      if (!und->getUsedNamespaces().empty() && visited.insert(key.str()).second)
       {
-        visited.insert(key.str());
-
         if (accessibleViaUsingNamespace(visited,und->getUsedNamespaces(),item,explicitScopePart,level+1))
         {
           //printf("%d ] found it via recursion\n",level);
