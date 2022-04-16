@@ -117,7 +117,7 @@ class QCString
 
     explicit QCString( const std::string &s ) : m_rep(s) {}
 
-    QCString( std::string &&s) { m_rep = std::move(s); }
+    QCString( std::string &&s) : m_rep(std::move(s)) {}
 
     /** creates a string with room for size characters
      *  @param[in] size the number of character to allocate (also counting the 0-terminator!)
