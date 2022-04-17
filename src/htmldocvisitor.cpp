@@ -1300,13 +1300,18 @@ void HtmlDocVisitor::operator()(const DocPara &p)
     for (;;)
     {
       const DocNodeVariant &n = *it;
-      if (!isInvisibleNode(n) && mustBeOutsideParagraph(n))
+      if (!isInvisibleNode(n))
       {
-        needsTagAfter = FALSE;
+        if (mustBeOutsideParagraph(n))
+        {
+          needsTagAfter = FALSE;
+        }
+        // stop searching if we found a node that is visible
         break;
       }
       if (it==std::begin(p.children()))
       {
+        // stop searching if we are at the beginning of the list
         break;
       }
       else
@@ -1315,20 +1320,6 @@ void HtmlDocVisitor::operator()(const DocPara &p)
       }
     }
   }
-
-#if 0
-    auto it = std::find_if(p.children().crbegin(),p.children().crend(),
-                         [](const auto &node) { return !isInvisibleNode(node); });
-    if (it!=p.children().crend())
-    {
-      const DocNodeVariant &n = *it;
-      if (mustBeOutsideParagraph(n))
-      {
-        needsTagAfter = FALSE;
-      }
-    }
-  }
-#endif
 
   //printf("endPara first=%d last=%d\n",isFirst,isLast);
   if (isFirst && isLast) needsTagAfter=FALSE;
