@@ -72,14 +72,14 @@ class TextGeneratorIntf
 class TextGeneratorOLImpl : public TextGeneratorIntf
 {
   public:
-    TextGeneratorOLImpl(OutputDocInterface &od);
+    TextGeneratorOLImpl(BaseOutputDocInterface &od);
     void writeString(const QCString &s,bool keepSpaces) const;
     void writeBreak(int indent) const;
     void writeLink(const QCString &extRef,const QCString &file,
                    const QCString &anchor,const QCString &text
                   ) const;
   private:
-    OutputDocInterface &m_od;
+    BaseOutputDocInterface &m_od;
 };
 
 //--------------------------------------------------------------------
@@ -136,13 +136,13 @@ bool resolveLink(/* in */  const QCString &scName,
                  /* out */ QCString &resAnchor
                 );
 
-bool generateLink(OutputDocInterface &od,const QCString &,
+bool generateLink(OutputList &ol,const QCString &,
                          const QCString &,bool inSeeBlock,const QCString &);
 
-void generateFileRef(OutputDocInterface &od,const QCString &,
+void generateFileRef(OutputList &ol,const QCString &,
                              const QCString &linkTxt=QCString());
 
-void writePageRef(OutputDocInterface &od,const QCString &cn,const QCString &mn);
+void writePageRef(OutputList &ol,const QCString &cn,const QCString &mn);
 
 //QCString getCanonicalTemplateSpec(const Definition *d,const FileDef *fs,const QCString& spec);
 

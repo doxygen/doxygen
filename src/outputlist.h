@@ -35,7 +35,7 @@ class DotGroupCollaboration;
 /** Class representing a list of output generators that are written to
  *  in parallel.
  */
-class OutputList : public OutputDocInterface
+class OutputList : public BaseOutputDocInterface
 {
   public:
     OutputList();

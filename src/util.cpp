@@ -96,7 +96,7 @@ static const char *hex = "0123456789ABCDEF";
 // TextGeneratorOLImpl implementation
 //------------------------------------------------------------------------
 
-TextGeneratorOLImpl::TextGeneratorOLImpl(OutputDocInterface &od) : m_od(od)
+TextGeneratorOLImpl::TextGeneratorOLImpl(BaseOutputDocInterface &od) : m_od(od)
 {
 }
 
@@ -261,20 +261,20 @@ done:
   return newScope;
 }
 
-void writePageRef(OutputDocInterface &od,const QCString &cn,const QCString &mn)
+void writePageRef(OutputList &ol,const QCString &cn,const QCString &mn)
 {
-  od.pushGeneratorState();
+  ol.pushGeneratorState();
 
-  od.disable(OutputGenerator::Html);
-  od.disable(OutputGenerator::Man);
-  od.disable(OutputGenerator::Docbook);
-  if (Config_getBool(PDF_HYPERLINKS)) od.disable(OutputGenerator::Latex);
-  if (Config_getBool(RTF_HYPERLINKS)) od.disable(OutputGenerator::RTF);
-  od.startPageRef();
-  od.docify(theTranslator->trPageAbbreviation());
-  od.endPageRef(cn,mn);
+  ol.disable(OutputGenerator::Html);
+  ol.disable(OutputGenerator::Man);
+  ol.disable(OutputGenerator::Docbook);
+  if (Config_getBool(PDF_HYPERLINKS)) ol.disable(OutputGenerator::Latex);
+  if (Config_getBool(RTF_HYPERLINKS)) ol.disable(OutputGenerator::RTF);
+  ol.startPageRef();
+  ol.docify(theTranslator->trPageAbbreviation());
+  ol.endPageRef(cn,mn);
 
-  od.popGeneratorState();
+  ol.popGeneratorState();
 }
 
 /*! Generate a place holder for a position in a list. Used for
@@ -2985,7 +2985,7 @@ QCString linkToText(SrcLangExt lang,const QCString &link,bool isFileName)
  * instead of :: the \# symbol may also be used.
  */
 
-bool generateRef(OutputDocInterface &od,const char *scName,
+bool generateRef(BaseOutputDocInterface &od,const char *scName,
     const char *name,bool inSeeBlock,const char *rt)
 {
   //printf("generateRef(scName=%s,name=%s,inSee=%d,rt=%s)\n",scName,name,inSeeBlock,rt);
@@ -3149,7 +3149,7 @@ bool resolveLink(/* in */ const QCString &scName,
 // basis for the link's text.
 // returns TRUE if a link could be generated.
 
-bool generateLink(OutputDocInterface &od,const QCString &clName,
+bool generateLink(OutputList &ol,const QCString &clName,
     const QCString &lr,bool inSeeBlock,const QCString &lt)
 {
   //printf("generateLink(clName=%s,lr=%s,lr=%s)\n",clName,lr,lt);
@@ -3171,11 +3171,11 @@ bool generateLink(OutputDocInterface &od,const QCString &clName,
       {
         linkText=linkToText(compound->getLanguage(),lt,TRUE);
       }
-      od.writeObjectLink(compound->getReference(),
+      ol.writeObjectLink(compound->getReference(),
           compound->getOutputFileBase(),anchor,linkText);
       if (!compound->isReference())
       {
-        writePageRef(od,compound->getOutputFileBase(),anchor);
+        writePageRef(ol,compound->getOutputFileBase(),anchor);
       }
     }
     else
@@ -3186,12 +3186,12 @@ bool generateLink(OutputDocInterface &od,const QCString &clName,
   }
   else // link could not be found
   {
-    od.docify(linkText);
+    ol.docify(linkText);
     return FALSE;
   }
 }
 
-void generateFileRef(OutputDocInterface &od,const QCString &name,const QCString &text)
+void generateFileRef(OutputList &ol,const QCString &name,const QCString &text)
 {
   //printf("generateFileRef(%s,%s)\n",name,text);
   QCString linkText = text.isEmpty() ? text : name;
@@ -3201,9 +3201,9 @@ void generateFileRef(OutputDocInterface &od,const QCString &name,const QCString 
   if ((fd=findFileDef(Doxygen::inputNameLinkedMap,name,ambig)) &&
       fd->isLinkable())
     // link to documented input file
-    od.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),QCString(),linkText);
+    ol.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),QCString(),linkText);
   else
-    od.docify(linkText);
+    ol.docify(linkText);
 }
 
 //----------------------------------------------------------------------
