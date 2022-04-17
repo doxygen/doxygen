@@ -292,6 +292,7 @@ struct preYY_state
   QCString           blockName;
   int                condCtx        = 0;
   bool               skip           = false;
+  bool               insideIDL      = false;
   bool               insideCS       = false; // C# has simpler preprocessor
   bool               insideFtn      = false;
   bool               isSource       = false;
@@ -415,6 +416,7 @@ WSopt [ \t\r]*
 %x      CondLineC
 %x      CondLineCpp
 %x      SkipCond
+%x      IDLquote
 
 %%
 
@@ -434,6 +436,32 @@ WSopt [ \t\r]*
                                           if (getLanguageFromFileName(yyextra->fileName)!=SrcLangExt_Lex) REJECT
                                           outputArray(yyscanner,yytext,yyleng);
                                           BEGIN(LexCopyLine);
+                                        }
+<Start>^{Bopt}"cpp_quote"{Bopt}"("{Bopt}\" {
+                                          if (yyextra->insideIDL)
+                                          {
+                                            BEGIN(IDLquote);
+                                          }
+                                          else
+                                          {
+                                            REJECT;
+                                          }
+                                        }
+<IDLquote>"\\\\"                        {
+                                          outputArray(yyscanner,"\\",1);
+                                        }
+<IDLquote>"\\\""                        {
+                                          outputArray(yyscanner,"\"",1);
+                                        }
+<IDLquote>"\""{Bopt}")"                 {
+                                          BEGIN(Start);
+                                        }
+<IDLquote>\n                            {
+                                          outputChar(yyscanner,'\n');
+                                          yyextra->yyLineNr++;
+                                        }
+<IDLquote>.                             {
+                                          outputArray(yyscanner,yytext,yyleng);
                                         }
 <Start>^{Bopt}/[^#]                     {
                                           outputArray(yyscanner,yytext,yyleng);
@@ -1764,7 +1792,7 @@ WSopt [ \t\r]*
                                         }
 <*>{CCS}/{CCE}                          |
 <*>{CCS}[*!]?                           {
-                                          if (YY_START==SkipVerbatim || YY_START==SkipCond)
+                                          if (YY_START==SkipVerbatim || YY_START==SkipCond || YY_START==IDLquote)
                                           {
                                             REJECT;
                                           }
@@ -1786,7 +1814,7 @@ WSopt [ \t\r]*
                                           }
                                         }
 <*>{CPPC}[/!]?                          {
-                                          if (YY_START==SkipVerbatim || YY_START==SkipCond || getLanguageFromFileName(yyextra->fileName)==SrcLangExt_Fortran)
+                                          if (YY_START==SkipVerbatim || YY_START==SkipCond || getLanguageFromFileName(yyextra->fileName)==SrcLangExt_Fortran || YY_START==IDLquote)
                                           {
                                             REJECT;
                                           }
@@ -1844,6 +1872,7 @@ static void setFileName(yyscan_t yyscanner,const QCString &name)
   //printf("setFileName(%s) state->fileName=%s state->yyFileDef=%p\n",
   //    name,qPrint(state->fileName),state->yyFileDef);
   if (state->yyFileDef && state->yyFileDef->isReference()) state->yyFileDef=0;
+  state->insideIDL = getLanguageFromFileName(state->fileName)==SrcLangExt_IDL;
   state->insideCS = getLanguageFromFileName(state->fileName)==SrcLangExt_CSharp;
   state->insideFtn = getLanguageFromFileName(state->fileName)==SrcLangExt_Fortran;
   state->isSource = guessSection(state->fileName);
