@@ -91,15 +91,24 @@ static bool elemIsVisible(const XMLHandlers::Attributes &attrib,bool defVal=TRUE
     }
     else if (opt && opt->type==ConfigValues::Info::String)
     {
-      return ConfigValues::instance().*(opt->value.s) != "NO";
+      visible = ConfigValues::instance().*(opt->value.s);
     }
     else if (!opt)
     {
-      err("found unsupported value %s for visible attribute in layout file\n",
-          qPrint(visible));
+      err("found unsupported value '%s' for visible attribute in layout file, reverting to '%s'\n",
+          qPrint(visible),(defVal?"yes":"no"));
+      return defVal;
     }
   }
-  return visible!="no" && visible!="0";
+  QCString visibleLow = visible.lower();
+  if (visibleLow=="no" || visibleLow=="false" || visibleLow=="0") return FALSE;
+  else if (visibleLow=="yes" || visibleLow=="true" || visibleLow=="1") return TRUE;
+  else
+  {
+    err("found unsupported value '%s' for visible attribute in layout file, reverting to '%s'\n",
+        qPrint(visible),(defVal?"yes":"no"));
+    return defVal;
+  }
 }
 
 static bool parentIsVisible(LayoutNavEntry *parent)
