@@ -361,7 +361,7 @@ class OutputGenerator : public BaseOutputDocInterface
     //void setEncoding(const QCString &enc) { encoding = enc; }
     //virtual void postProcess(QByteArray &) { }
 
-    virtual void writeDoc(const DocNodeVariant &node,const Definition *ctx,const MemberDef *md,int id) = 0;
+    virtual void writeDoc(const IDocNodeAST *ast,const Definition *ctx,const MemberDef *md,int id) = 0;
 
     ///////////////////////////////////////////////////////////////
     // structural output interface

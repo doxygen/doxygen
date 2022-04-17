@@ -36,6 +36,7 @@
 #include "language.h"
 #include "htmlhelp.h"
 #include "docparser.h"
+#include "docnode.h"
 #include "htmldocvisitor.h"
 #include "searchindex.h"
 #include "pagedef.h"
@@ -2250,11 +2251,15 @@ void HtmlGenerator::endParamList()
   m_t << "</dl>";
 }
 
-void HtmlGenerator::writeDoc(const DocNodeVariant &n,const Definition *ctx,const MemberDef *,int id)
+void HtmlGenerator::writeDoc(const IDocNodeAST *ast,const Definition *ctx,const MemberDef *,int id)
 {
-  m_codeGen.setId(id);
-  HtmlDocVisitor visitor(m_t,m_codeGen,ctx);
-  std::visit(visitor,n);
+  const DocNodeAST *astImpl = dynamic_cast<const DocNodeAST*>(ast);
+  if (astImpl)
+  {
+    m_codeGen.setId(id);
+    HtmlDocVisitor visitor(m_t,m_codeGen,ctx);
+    std::visit(visitor,astImpl->root);
+  }
 }
 
 //---------------- helpers for index generation -----------------------------

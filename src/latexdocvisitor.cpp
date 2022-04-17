@@ -247,7 +247,7 @@ void LatexDocVisitor::operator()(const DocSymbol &s)
   const char *res = HtmlEntityMapper::instance()->latex(s.symbol());
   if (res)
   {
-    if (((s.symbol() == DocSymbol::Sym_lt) || (s.symbol() == DocSymbol::Sym_Less))&& (!m_insidePre))
+    if (((s.symbol() == HtmlEntityMapper::Sym_lt) || (s.symbol() == HtmlEntityMapper::Sym_Less))&& (!m_insidePre))
     {
       if (pdfHyperlinks)
       {
@@ -258,7 +258,7 @@ void LatexDocVisitor::operator()(const DocSymbol &s)
         m_t << "$<$";
       }
     }
-    else if (((s.symbol() == DocSymbol::Sym_gt) || (s.symbol() == DocSymbol::Sym_Greater)) && (!m_insidePre))
+    else if (((s.symbol() == HtmlEntityMapper::Sym_gt) || (s.symbol() == HtmlEntityMapper::Sym_Greater)) && (!m_insidePre))
     {
       if (pdfHyperlinks)
       {

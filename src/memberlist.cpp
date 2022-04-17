@@ -419,19 +419,18 @@ void MemberList::writePlainDeclarations(OutputList &ol, bool inGroup,
               ol.endMemberItem();
               if (!md->briefDescription().isEmpty() && Config_getBool(BRIEF_MEMBER_DESC))
               {
-                std::unique_ptr<IDocParser> parser { createDocParser() };
-                std::unique_ptr<DocNodeVariant> rootNode { validatingParseDoc(*parser.get(),
-                                                     md->briefFile(),md->briefLine(),
-                                                     cd,md,
-                                                     md->briefDescription(),
-                                                     TRUE,FALSE,
-                                                     QCString(),TRUE,FALSE,
-                                                     Config_getBool(MARKDOWN_SUPPORT)) };
-                const DocRoot *root = std::get_if<DocRoot>(rootNode.get());
-                if (root && !root->isEmpty())
+                auto parser { createDocParser() };
+                auto ast    { validatingParseDoc(*parser.get(),
+                                                 md->briefFile(),md->briefLine(),
+                                                 cd,md,
+                                                 md->briefDescription(),
+                                                 TRUE,FALSE,
+                                                 QCString(),TRUE,FALSE,
+                                                 Config_getBool(MARKDOWN_SUPPORT)) };
+                if (!ast->isEmpty())
                 {
                   ol.startMemberDescription(md->anchor());
-                  ol.writeDoc(*rootNode,cd,md);
+                  ol.writeDoc(ast.get(),cd,md);
                   if (md->hasDetailedDescription())
                   {
                     ol.disableAllBut(OutputGenerator::Html);

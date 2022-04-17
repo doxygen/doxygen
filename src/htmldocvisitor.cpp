@@ -327,7 +327,7 @@ void HtmlDocVisitor::operator()(const DocSymbol &s)
 {
   if (m_hide) return;
   if (m_insideTitle &&
-      (s.symbol()==DocSymbol::Sym_Quot || s.symbol()==DocSymbol::Sym_quot)) // escape "'s inside title="..."
+      (s.symbol()==HtmlEntityMapper::Sym_Quot || s.symbol()==HtmlEntityMapper::Sym_quot)) // escape "'s inside title="..."
   {
     m_t << "&quot;";
   }
@@ -1296,6 +1296,27 @@ void HtmlDocVisitor::operator()(const DocPara &p)
   // paragraph and we don't need to do it here
   if (!p.children().empty())
   {
+    auto it = std::prev(std::end(p.children()));
+    for (;;)
+    {
+      const DocNodeVariant &n = *it;
+      if (!isInvisibleNode(n) && mustBeOutsideParagraph(n))
+      {
+        needsTagAfter = FALSE;
+        break;
+      }
+      if (it==std::begin(p.children()))
+      {
+        break;
+      }
+      else
+      {
+        --it;
+      }
+    }
+  }
+
+#if 0
     auto it = std::find_if(p.children().crbegin(),p.children().crend(),
                          [](const auto &node) { return !isInvisibleNode(node); });
     if (it!=p.children().crend())
@@ -1307,6 +1328,7 @@ void HtmlDocVisitor::operator()(const DocPara &p)
       }
     }
   }
+#endif
 
   //printf("endPara first=%d last=%d\n",isFirst,isLast);
   if (isFirst && isLast) needsTagAfter=FALSE;

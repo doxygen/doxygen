@@ -20,7 +20,7 @@
 
 #include "containers.h"
 #include "docvisitor.h"
-#include "docparser.h"
+#include "docnode.h"
 #include "qcstring.h"
 
 class CodeOutputInterface;

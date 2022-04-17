@@ -22,7 +22,7 @@
 #include <iostream>
 
 #include "docvisitor.h"
-#include "docparser.h"
+#include "docnode.h"
 
 class CodeOutputInterface;
 class TextStream;

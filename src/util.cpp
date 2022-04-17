@@ -4023,8 +4023,8 @@ QCString convertToDocBook(const QCString &s, const bool retainNewline)
         if (*q == ';')
         {
            --p; // we need & as well
-           DocSymbol::SymType res = HtmlEntityMapper::instance()->name2sym(QCString(p).left(cnt));
-           if (res == DocSymbol::Sym_Unknown)
+           HtmlEntityMapper::SymType res = HtmlEntityMapper::instance()->name2sym(QCString(p).left(cnt));
+           if (res == HtmlEntityMapper::Sym_Unknown)
            {
              p++;
              growBuf.addStr("&amp;");
@@ -4190,9 +4190,9 @@ QCString convertCharEntitiesToUTF8(const QCString &str)
       growBuf.addStr(s.substr(i,p-i));
     }
     QCString entity(match.str());
-    DocSymbol::SymType symType = HtmlEntityMapper::instance()->name2sym(entity);
+    HtmlEntityMapper::SymType symType = HtmlEntityMapper::instance()->name2sym(entity);
     const char *code=0;
-    if (symType!=DocSymbol::Sym_Unknown && (code=HtmlEntityMapper::instance()->utf8(symType)))
+    if (symType!=HtmlEntityMapper::Sym_Unknown && (code=HtmlEntityMapper::instance()->utf8(symType)))
     {
       growBuf.addStr(code);
     }
@@ -5012,8 +5012,8 @@ void filterLatexString(TextStream &t,const QCString &str,
                    if (*q == ';')
                    {
                       --p; // we need & as well
-                      DocSymbol::SymType res = HtmlEntityMapper::instance()->name2sym(QCString(p).left(cnt));
-                      if (res == DocSymbol::Sym_Unknown)
+                      HtmlEntityMapper::SymType res = HtmlEntityMapper::instance()->name2sym(QCString(p).left(cnt));
+                      if (res == HtmlEntityMapper::Sym_Unknown)
                       {
                         p++;
                         t << "\\&";
@@ -5747,15 +5747,16 @@ QCString parseCommentAsText(const Definition *scope,const MemberDef *md,
   if (doc.isEmpty()) return "";
   //printf("parseCommentAsText(%s)\n",qPrint(doc));
   TextStream t;
-  std::unique_ptr<IDocParser> parser { createDocParser() };
-  std::unique_ptr<DocNodeVariant> rootNode { validatingParseDoc(*parser.get(),
-                                       fileName,lineNr,
-                                       const_cast<Definition*>(scope),const_cast<MemberDef*>(md),doc,FALSE,FALSE,
-                                       QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT)) };
-  if (rootNode)
+  auto parser { createDocParser() };
+  auto ast    { validatingParseDoc(*parser.get(),
+                                   fileName,lineNr,
+                                   const_cast<Definition*>(scope),const_cast<MemberDef*>(md),doc,FALSE,FALSE,
+                                   QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT)) };
+  auto astImpl = dynamic_cast<const DocNodeAST*>(ast.get());
+  if (astImpl)
   {
     TextDocVisitor visitor(t);
-    std::visit(visitor,*rootNode);
+    std::visit(visitor,astImpl->root);
   }
   QCString result = convertCharEntitiesToUTF8(t.str().c_str()).stripWhiteSpace();
   int i=0;

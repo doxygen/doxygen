@@ -623,11 +623,15 @@ DB_GEN_C
   }
 }
 
-void DocbookGenerator::writeDoc(const DocNodeVariant &n,const Definition *ctx,const MemberDef *,int)
+void DocbookGenerator::writeDoc(const IDocNodeAST *ast,const Definition *ctx,const MemberDef *,int)
 {
 DB_GEN_C
-  auto visitor { DocbookDocVisitor(m_t,*this,ctx?ctx->getDefFileExtension():QCString()) };
-  std::visit(visitor,n);
+  auto astImpl = dynamic_cast<const DocNodeAST*>(ast);
+  if (astImpl)
+  {
+    auto visitor { DocbookDocVisitor(m_t,*this,ctx?ctx->getDefFileExtension():QCString()) };
+    std::visit(visitor,astImpl->root);
+  }
 }
 
 void DocbookGenerator::startParagraph(const QCString &)

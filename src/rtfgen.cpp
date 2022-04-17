@@ -629,12 +629,12 @@ void RTFGenerator::endIndexSection(IndexSections is)
         }
         else
         {
-          std::unique_ptr<IDocParser> parser { createDocParser() };
-          std::unique_ptr<DocNodeVariant> root { validatingParseText(*parser.get(), projectName) };
-          if (root)
+          auto parser { createDocParser() };
+          auto ast    { validatingParseText(*parser.get(), projectName) };
+          if (ast)
           {
             m_t << "{\\field\\fldedit {\\*\\fldinst TITLE \\\\*MERGEFORMAT}{\\fldrslt ";
-            writeDoc(*root,0,0,0);
+            writeDoc(ast.get(),0,0,0);
             m_t << "}}\\par\n";
           }
         }
@@ -2441,10 +2441,14 @@ void RTFGenerator::exceptionEntry(const QCString &prefix,bool closeBracket)
   m_t << " ";
 }
 
-void RTFGenerator::writeDoc(const DocNodeVariant &n,const Definition *ctx,const MemberDef *,int)
+void RTFGenerator::writeDoc(const IDocNodeAST *ast,const Definition *ctx,const MemberDef *,int)
 {
-  RTFDocVisitor visitor(m_t,*this,ctx?ctx->getDefFileExtension():QCString(""));
-  std::visit(visitor,n);
+  auto astImpl = dynamic_cast<const DocNodeAST*>(ast);
+  if (astImpl)
+  {
+    RTFDocVisitor visitor(m_t,*this,ctx?ctx->getDefFileExtension():QCString(""));
+    std::visit(visitor,astImpl->root);
+  }
   m_omitParagraph = TRUE;
 }
 

@@ -350,17 +350,18 @@ static void generateBriefDoc(TextStream &t,const Definition *def)
   //printf("*** %p: generateBriefDoc(%s)='%s'\n",def,qPrint(def->name()),qPrint(brief));
   if (!brief.isEmpty())
   {
-    std::unique_ptr<IDocParser> parser { createDocParser() };
-    std::unique_ptr<DocNodeVariant> rootNode { validatingParseDoc(*parser.get(),
-                                         def->briefFile(),def->briefLine(),
-                                         def,0,brief,FALSE,FALSE,
-                                         QCString(),TRUE,TRUE,Config_getBool(MARKDOWN_SUPPORT)) };
-    if (rootNode)
+    auto parser { createDocParser() };
+    auto ast    { validatingParseDoc(*parser.get(),
+                                     def->briefFile(),def->briefLine(),
+                                     def,0,brief,FALSE,FALSE,
+                                     QCString(),TRUE,TRUE,Config_getBool(MARKDOWN_SUPPORT)) };
+    const DocNodeAST *astImpl = dynamic_cast<const DocNodeAST*>(ast.get());
+    if (astImpl)
     {
       QCString relPath = relativePathToRoot(def->getOutputFileBase());
       HtmlCodeGenerator htmlGen(t,relPath);
       HtmlDocVisitor visitor(t,htmlGen,def);
-      std::visit(visitor,*rootNode);
+      std::visit(visitor,astImpl->root);
     }
   }
 }

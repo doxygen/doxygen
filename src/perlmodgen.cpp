@@ -1,9 +1,6 @@
 /******************************************************************************
  *
- *
- *
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2022 by Dimitri van Heesch.
  * Authors: Dimitri van Heesch, Miguel Lobo.
  *
  * Permission to use, copy, modify, and distribute this software and its
@@ -25,6 +22,7 @@
 
 #include "perlmodgen.h"
 #include "docparser.h"
+#include "docnode.h"
 #include "message.h"
 #include "doxygen.h"
 #include "pagedef.h"
@@ -507,21 +505,21 @@ void PerlModDocVisitor::operator()(const DocWhiteSpace &)
 
 void PerlModDocVisitor::operator()(const DocSymbol &sy)
 {
-  const DocSymbol::PerlSymb *res = HtmlEntityMapper::instance()->perl(sy.symbol());
+  const HtmlEntityMapper::PerlSymb *res = HtmlEntityMapper::instance()->perl(sy.symbol());
   const char *accent=0;
   if (res->symb)
   {
     switch (res->type)
     {
-      case DocSymbol::Perl_string:
+      case HtmlEntityMapper::Perl_string:
         enterText();
         m_output.add(res->symb);
         break;
-      case DocSymbol::Perl_char:
+      case HtmlEntityMapper::Perl_char:
         enterText();
         m_output.add(res->symb[0]);
         break;
-      case DocSymbol::Perl_symbol:
+      case HtmlEntityMapper::Perl_symbol:
         leaveText();
         openItem("symbol");
         m_output.addFieldQuotedString("symbol", res->symb);
@@ -530,28 +528,28 @@ void PerlModDocVisitor::operator()(const DocSymbol &sy)
       default:
         switch(res->type)
         {
-          case DocSymbol::Perl_umlaut:
+          case HtmlEntityMapper::Perl_umlaut:
             accent = "umlaut";
             break;
-          case DocSymbol::Perl_acute:
+          case HtmlEntityMapper::Perl_acute:
             accent = "acute";
             break;
-          case DocSymbol::Perl_grave:
+          case HtmlEntityMapper::Perl_grave:
             accent = "grave";
             break;
-          case DocSymbol::Perl_circ:
+          case HtmlEntityMapper::Perl_circ:
             accent = "circ";
             break;
-          case DocSymbol::Perl_slash:
+          case HtmlEntityMapper::Perl_slash:
             accent = "slash";
             break;
-          case DocSymbol::Perl_tilde:
+          case HtmlEntityMapper::Perl_tilde:
             accent = "tilde";
             break;
-          case DocSymbol::Perl_cedilla:
+          case HtmlEntityMapper::Perl_cedilla:
             accent = "cedilla";
             break;
-          case DocSymbol::Perl_ring:
+          case HtmlEntityMapper::Perl_ring:
             accent = "ring";
             break;
           default:
@@ -1342,14 +1340,18 @@ static void addPerlModDocBlock(PerlModOutput &output,
   }
   else
   {
-    std::unique_ptr<IDocParser> parser { createDocParser() };
-    std::unique_ptr<DocNodeVariant> rootNode  { validatingParseDoc(*parser.get(),
-                                         fileName,lineNr,scope,md,stext,FALSE,FALSE,
-                                         QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT)) };
+    auto parser { createDocParser() };
+    auto ast    { validatingParseDoc(*parser.get(),
+                                     fileName,lineNr,scope,md,stext,FALSE,FALSE,
+                                     QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT)) };
     output.openHash(name);
-    PerlModDocVisitor visitor(output);
-    std::visit(visitor,*rootNode);
-    visitor.finish();
+    auto astImpl = dynamic_cast<const DocNodeAST*>(ast.get());
+    if (astImpl)
+    {
+      PerlModDocVisitor visitor(output);
+      std::visit(visitor,astImpl->root);
+      visitor.finish();
+    }
     output.closeHash();
   }
 }

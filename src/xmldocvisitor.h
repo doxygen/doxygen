@@ -23,7 +23,7 @@
 
 #include "qcstring.h"
 #include "docvisitor.h"
-#include "docparser.h"
+#include "docnode.h"
 #include "textstream.h"
 
 class CodeOutputInterface;

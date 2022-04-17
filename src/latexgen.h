@@ -122,7 +122,7 @@ class LatexGenerator : public OutputGenerator
     // ---------------------------
 
 
-    void writeDoc(const DocNodeVariant &node,const Definition *ctx,const MemberDef *,int id);
+    void writeDoc(const IDocNodeAST *node,const Definition *ctx,const MemberDef *,int id);
 
     void startFile(const QCString &name,const QCString &manName,const QCString &title,int id);
     void writeSearchInfo() {}

@@ -21,7 +21,7 @@
 
 #include "qcstring.h"
 #include "docvisitor.h"
-#include "docparser.h"
+#include "docnode.h"
 #include "textstream.h"
 
 /*! @brief Concrete visitor implementation for TEXT output. */

@@ -690,10 +690,14 @@ void ManGenerator::endParamList()
 {
 }
 
-void ManGenerator::writeDoc(const DocNodeVariant &n,const Definition *ctx,const MemberDef *,int)
+void ManGenerator::writeDoc(const IDocNodeAST *ast,const Definition *ctx,const MemberDef *,int)
 {
-  auto visitor { ManDocVisitor(m_t,*this,ctx?ctx->getDefFileExtension():QCString("")) };
-  std::visit(visitor,n);
+  const DocNodeAST *astImpl = dynamic_cast<const DocNodeAST *>(ast);
+  if (astImpl)
+  {
+    auto visitor { ManDocVisitor(m_t,*this,ctx?ctx->getDefFileExtension():QCString("")) };
+    std::visit(visitor,astImpl->root);
+  }
   m_firstCol=FALSE;
   m_paragraph = FALSE;
 }

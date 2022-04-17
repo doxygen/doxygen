@@ -481,20 +481,19 @@ void FileDefImpl::writeBriefDescription(OutputList &ol)
 {
   if (hasBriefDescription())
   {
-    std::unique_ptr<IDocParser> parser { createDocParser() };
-    std::unique_ptr<DocNodeVariant> rootNode { validatingParseDoc(*parser.get(),
-                                        briefFile(),briefLine(),this,0,
-                                        briefDescription(),TRUE,FALSE,
-                                        QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT)) };
-    const DocRoot *root = std::get_if<DocRoot>(rootNode.get());
-    if (root && !root->isEmpty())
+    auto parser { createDocParser() };
+    auto ast    { validatingParseDoc(*parser.get(),
+                                     briefFile(),briefLine(),this,0,
+                                     briefDescription(),TRUE,FALSE,
+                                     QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT)) };
+    if (!ast->isEmpty())
     {
       ol.startParagraph();
       ol.pushGeneratorState();
       ol.disableAllBut(OutputGenerator::Man);
       ol.writeString(" - ");
       ol.popGeneratorState();
-      ol.writeDoc(*rootNode,this,0);
+      ol.writeDoc(ast.get(),this,0);
       ol.pushGeneratorState();
       ol.disable(OutputGenerator::RTF);
       ol.writeString(" \n");

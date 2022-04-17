@@ -1241,39 +1241,41 @@ static TemplateVariant parseDoc(const Definition *def,const QCString &file,int l
                                 const QCString &relPath,const QCString &docStr,bool isBrief)
 {
   TemplateVariant result;
-  std::unique_ptr<IDocParser> parser { createDocParser() };
-  std::unique_ptr<DocNodeVariant> rootNode { validatingParseDoc(
-                                       *parser.get(),file,line,def,0,docStr,TRUE,FALSE,
-                                       QCString(),isBrief,FALSE,Config_getBool(MARKDOWN_SUPPORT))
-                                     };
-  TextStream ts;
-  switch (g_globals.outputFormat)
+  auto parser { createDocParser() };
+  auto ast    { validatingParseDoc(*parser.get(),file,line,def,0,docStr,TRUE,FALSE,
+                                   QCString(),isBrief,FALSE,Config_getBool(MARKDOWN_SUPPORT))
+              };
+  const DocNodeAST *astImpl = dynamic_cast<DocNodeAST*>(ast.get());
+  if (astImpl)
   {
-    case ContextOutputFormat_Html:
-      {
-        HtmlCodeGenerator codeGen(ts,relPath);
-        HtmlDocVisitor visitor(ts,codeGen,def);
-        std::visit(visitor,*rootNode);
-      }
-      break;
-    case ContextOutputFormat_Latex:
-      {
-        LatexCodeGenerator codeGen(ts,relPath,file);
-        LatexDocVisitor visitor(ts,codeGen,def->getDefFileExtension(),FALSE);
-        std::visit(visitor,*rootNode);
-      }
-      break;
-    // TODO: support other generators
-    default:
-      err("context.cpp: output format not yet supported\n");
-      break;
+    TextStream ts;
+    switch (g_globals.outputFormat)
+    {
+      case ContextOutputFormat_Html:
+        {
+          HtmlCodeGenerator codeGen(ts,relPath);
+          HtmlDocVisitor visitor(ts,codeGen,def);
+          std::visit(visitor,astImpl->root);
+        }
+        break;
+      case ContextOutputFormat_Latex:
+        {
+          LatexCodeGenerator codeGen(ts,relPath,file);
+          LatexDocVisitor visitor(ts,codeGen,def->getDefFileExtension(),FALSE);
+          std::visit(visitor,astImpl->root);
+        }
+        break;
+        // TODO: support other generators
+      default:
+        err("context.cpp: output format not yet supported\n");
+        break;
+    }
+    bool isEmpty = astImpl->isEmpty();
+    if (isEmpty)
+      result = "";
+    else
+      result = TemplateVariant(ts.str().c_str(),TRUE);
   }
-  const DocRoot *root = std::get_if<DocRoot>(rootNode.get());
-  bool isEmpty = root && root->isEmpty();
-  if (isEmpty)
-    result = "";
-  else
-    result = TemplateVariant(ts.str().c_str(),TRUE);
   return result;
 }
 

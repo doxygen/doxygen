@@ -32,6 +32,7 @@
 #include "dotincldepgraph.h"
 #include "pagedef.h"
 #include "docparser.h"
+#include "docnode.h"
 #include "latexdocvisitor.h"
 #include "dirdef.h"
 #include "cite.h"
@@ -1971,12 +1972,16 @@ void LatexGenerator::exceptionEntry(const QCString &prefix,bool closeBracket)
   m_t << " ";
 }
 
-void LatexGenerator::writeDoc(const DocNodeVariant &n,const Definition *ctx,const MemberDef *,int)
+void LatexGenerator::writeDoc(const IDocNodeAST *ast,const Definition *ctx,const MemberDef *,int)
 {
-  LatexDocVisitor visitor(m_t,m_codeGen,
-                          ctx?ctx->getDefFileExtension():QCString(""),
-                          m_insideTabbing);
-  std::visit(visitor,n);
+  const DocNodeAST *astImpl = dynamic_cast<const DocNodeAST*>(ast);
+  if (astImpl)
+  {
+    LatexDocVisitor visitor(m_t,m_codeGen,
+                            ctx?ctx->getDefFileExtension():QCString(""),
+                            m_insideTabbing);
+    std::visit(visitor,astImpl->root);
+  }
 }
 
 void LatexGenerator::startConstraintList(const QCString &header)

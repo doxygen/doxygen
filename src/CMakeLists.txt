@@ -227,6 +227,7 @@ add_library(doxymain STATIC
     docbookgen.cpp
     docbookvisitor.cpp
     docgroup.cpp
+    docnode.cpp
     docparser.cpp
     docsets.cpp
     docvisitor.cpp
@@ -316,6 +317,9 @@ endif()
 add_executable(doxygen
     main.cpp
 )
+
+# enable to monitor compilation times
+#set_property(TARGET doxymain PROPERTY RULE_LAUNCH_COMPILE "${CMAKE_COMMAND} -E time")
 
 include(ApplyEditbin)
 apply_editbin(doxygen console)
