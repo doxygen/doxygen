@@ -149,7 +149,8 @@ struct SymbolResolver::Private
     bool accessibleViaUsingNamespace(StringUnorderedSet &visited,
                                      const LinkedRefMap<const NamespaceDef> &nl,
                                      const Definition *item,
-                                     const QCString &explicitScopePart="");
+                                     const QCString &explicitScopePart="",
+                                     int level=0);
     bool accessibleViaUsingClass(const LinkedRefMap<const ClassDef> &cl,
                                  const Definition *item,
                                  const QCString &explicitScopePart=""
@@ -835,35 +836,36 @@ const Definition *SymbolResolver::Private::endOfPathIsUsedClass(LinkedRefMap<con
 bool SymbolResolver::Private::accessibleViaUsingNamespace(StringUnorderedSet &visited,
                                  const LinkedRefMap<const NamespaceDef> &nl,
                                  const Definition *item,
-                                 const QCString &explicitScopePart)
+                                 const QCString &explicitScopePart,
+                                 int level)
 {
+  //size_t count=0;
   for (const auto &und : nl) // check used namespaces for the class
   {
-    //printf("[Trying via used namespace %s: count=%d/%d\n",qPrint(und->name()),
-    //    count,nl->count());
+    //printf("%d [Trying via used namespace %s: count=%zu/%zu\n",level,qPrint(und->name()),
+    //    count++,nl.size());
     const Definition *sc = explicitScopePart.isEmpty() ? und : followPath(und,explicitScopePart);
     if (sc && item->getOuterScope()==sc)
     {
-      //printf("] found it\n");
+      //printf("%d ] found it\n",level);
       return true;
     }
     if (item->getLanguage()==SrcLangExt_Cpp)
     {
-      QCString key=und->name();
+      QCString key=und->qualifiedName();
       if (!und->getUsedNamespaces().empty() && visited.find(key.str())==visited.end())
       {
         visited.insert(key.str());
 
-        if (accessibleViaUsingNamespace(visited,und->getUsedNamespaces(),item,explicitScopePart))
+        if (accessibleViaUsingNamespace(visited,und->getUsedNamespaces(),item,explicitScopePart,level+1))
         {
-          //printf("] found it via recursion\n");
+          //printf("%d ] found it via recursion\n",level);
           return true;
         }
 
-        visited.erase(key.str());
       }
     }
-    //printf("] Try via used namespace done\n");
+    //printf("%d ] Try via used namespace done\n",level);
   }
   return false;
 }
@@ -952,7 +954,7 @@ int SymbolResolver::Private::isAccessibleFrom(AccessStack &accessStack,
         goto done;
       }
       StringUnorderedSet visited;
-      if (accessibleViaUsingNamespace(visited,nscope->getUsedNamespaces(),item))
+      if (accessibleViaUsingNamespace(visited,nscope->getUsedNamespaces(),item,0))
       {
         //printf("> found via used namespace\n");
         goto done;

@@ -1406,6 +1406,7 @@ void FileDefImpl::addIncludedUsingDirectives(FileDefSet &visitedFiles)
           for (auto it = unl.rbegin(); it!=unl.rend(); ++it)
           {
             const auto *nd = *it;
+            //printf("  adding using directive for %s\n",qPrint(nd->qualifiedName()));
             m_usingDirList.prepend(nd->qualifiedName(),nd);
           }
           // add using declarations

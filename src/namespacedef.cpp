@@ -165,6 +165,7 @@ NamespaceDefMutable *createNamespaceDef(const QCString &defFileName,int defLine,
                  const QCString &refFile,const QCString &type,
                  bool isPublished)
 {
+  //printf("createNamespaceDef(%s)\n",qPrint(name));
   return new NamespaceDefImpl(defFileName,defLine,defColumn,name,ref,refFile,type,isPublished);
 }
 
@@ -1167,7 +1168,7 @@ int NamespaceDefImpl::numDocMembers() const
 void NamespaceDefImpl::addUsingDirective(const NamespaceDef *nd)
 {
   m_usingDirList.add(nd->qualifiedName(),nd);
-  //printf("%p: NamespaceDefImpl::addUsingDirective: %s:%d\n",this,qPrint(name()),m_usingDirList->count());
+  //printf("%s: NamespaceDefImpl::addUsingDirective: %s:%zu\n",qPrint(name()),qPrint(nd->qualifiedName()),m_usingDirList.size());
 }
 
 void NamespaceDefImpl::addUsingDeclaration(const ClassDef *cd)
