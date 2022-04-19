@@ -3631,10 +3631,10 @@ to be found in the default search path.
  will be shown as texts / links.
 ]]>
       </docs>
-      <value name="NO" />
-      <value name="YES" />
-      <value name="TEXT" />
-      <value name="GRAPH" />
+      <value name="NO" bool_representation="NO" />
+      <value name="YES" bool_representation="YES" />
+      <value name="TEXT" bool_representation="YES" />
+      <value name="GRAPH" bool_representation="YES" />
     </option>
     <option type='bool' id='COLLABORATION_GRAPH' defval='1' depends='HAVE_DOT'>
       <docs>

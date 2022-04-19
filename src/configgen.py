@@ -232,6 +232,7 @@ def prepCDocs(node):
     docC = transformDocs(doc)
     return docC;
 
+
 def parseOption(node):
     # Handling part for Doxyfile
     name = node.getAttribute('id')
@@ -410,6 +411,29 @@ def parseGroupMapEnums(node):
                 print("  return \"{0}\";".format(defval))
                 print("}")
 
+def parseGroupMapEnumsBool(node):
+    def escape(value):
+        return re.sub(r'[^\w]','_',value)
+    for n in node.childNodes:
+        if n.nodeType == Node.ELEMENT_NODE:
+            type   = n.getAttribute('type')
+            name   = n.getAttribute('id')
+            defval = n.getAttribute('defval')
+            if type=='enum':
+                for nv in n.childNodes:
+                    if nv.nodeName == "value":
+                        value = nv.getAttribute('name')
+                        bool_representation = nv.getAttribute('bool_representation')
+                        if value:
+                            if bool_representation:
+                                if bool_representation.upper() == 'YES':
+                                    enabled = "true"
+                                else:
+                                    enabled = "false"
+                                print("  {\"%s\", \"%s\", %s, %s}," % (name,escape(value),"true",enabled))
+                            else:
+                                print("  {\"%s\", \"%s\", %s, %s}," % (name,escape(value),"false","false"))
+
 def parseGroupMapGetter(node):
     map = { 'bool':'bool', 'string':'const QCString &', 'int':'int', 'list':'const StringVector &' }
     for n in node.childNodes:
@@ -494,7 +518,10 @@ def parseGroupMapInit(node):
             type = n.getAttribute('type')
             name = n.getAttribute('id')
             if type in map:
-                print("    { %-25s Info{ %-13s &ConfigValues::m_%s }}," % ('\"'+name+'\",','Info::'+map[type]+',',name))
+                if type == "enum":
+                    print("    { %-26s Info{ %-13s &ConfigValues::m_%-23s %s}}," % ('\"'+name+'\",','Info::'+map[type]+',',name+",", "true"))
+                else:
+                    print("    { %-26s Info{ %-13s &ConfigValues::m_%-24s}}," % ('\"'+name+'\",','Info::'+map[type]+',',name))
             if len(setting) > 0:
                 print("#endif")
 
@@ -760,6 +787,9 @@ def main():
                 if n.nodeName == "group":
                     parseGroupMapEnums(n)
         print("")
+        print("bool enumHasBool(QCString set, QCString val);")
+        print("bool enumBoolRepresentation(QCString set, QCString val);")
+        print("")
         print("class ConfigValues")
         print("{")
         print("  public:")
@@ -784,8 +814,10 @@ def main():
         print("      Info(Type t,bool         ConfigValues::*b) : type(t), value(b) {}")
         print("      Info(Type t,int          ConfigValues::*i) : type(t), value(i) {}")
         print("      Info(Type t,QCString     ConfigValues::*s) : type(t), value(s) {}")
+        print("      Info(Type t,QCString     ConfigValues::*s,bool isEnum) : type(t), value(s), enumType(isEnum) {}")
         print("      Info(Type t,StringVector ConfigValues::*l) : type(t), value(l) {}")
         print("      Type type;")
+        print("      bool enumType = false;")
         print("      union Item")
         print("      {")
         print("        Item(bool         ConfigValues::*v) : b(v) {}")
@@ -815,6 +847,7 @@ def main():
         print("#include \"configvalues.h\"")
         print("#include \"configimpl.h\"")
         print("#include <unordered_map>")
+        print("#include <cassert>")
         print("")
         print("const ConfigValues::Info *ConfigValues::get(const QCString &tag) const");
         print("{");
@@ -860,6 +893,40 @@ def main():
         print("")
         print("  };")
         print("}")
+        print("")
+        print("struct EnumBool")
+        print("{")
+        print("  QCString setting;")
+        print("  QCString value;")
+        print("  bool hasBool;")
+        print("  bool representation;")
+        print("};")
+        print("struct EnumBool enumBool[] = {")
+        for n in elem.childNodes:
+            if n.nodeType == Node.ELEMENT_NODE:
+                if n.nodeName == "group":
+                    parseGroupMapEnumsBool(n)
+        print("};")
+        print("")
+        print("bool enumHasBool(QCString set, QCString val)")
+        print("{")
+        print("  for (int i = 0; i < sizeof(enumBool) / sizeof(*enumBool); i++)")
+        print("  {")
+        print("    if (enumBool[i].setting == set && enumBool[i].value == val) return enumBool[i].hasBool;")
+        print("  }")
+        print("  return false;")
+        print("}")
+        print("")
+        print("bool enumBoolRepresentation(QCString set, QCString val)")
+        print("{")
+        print("  for (int i = 0; i < sizeof(enumBool) / sizeof(*enumBool); i++)")
+        print("  {")
+        print("    if (enumBool[i].hasBool && enumBool[i].setting == set && enumBool[i].value == val) return enumBool[i].representation;")
+        print("  }")
+        print("  assert(false);")
+        print("  return false;")
+        print("}")
+        print("")
     elif (sys.argv[1] == "-cpp"):
         print("/* WARNING: This file is generated!")
         print(" * Do not edit this file, but edit config.xml instead and run")

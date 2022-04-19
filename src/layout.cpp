@@ -76,7 +76,6 @@ inline QCString compileOptions(const QCString &def,SrcLangExt langId1,const QCSt
          "|"+QCString().setNum(langId5)+"="+value5;
 }
 
-
 static bool elemIsVisible(const XMLHandlers::Attributes &attrib,bool defVal=TRUE)
 {
   QCString visible = XMLHandlers::value(attrib,"visible");
@@ -92,6 +91,7 @@ static bool elemIsVisible(const XMLHandlers::Attributes &attrib,bool defVal=TRUE
     else if (opt && opt->type==ConfigValues::Info::String)
     {
       visible = ConfigValues::instance().*(opt->value.s);
+      if (opt->enumType && enumHasBool(id,visible)) return enumBoolRepresentation(id,visible);
     }
     else if (!opt)
     {
