@@ -7785,7 +7785,6 @@ class MemberGroupInfoContext::Private
     TemplateVariant members() const              { return m_members.get(this); }
     TemplateVariant groupTitle() const           { return m_memberGroup->header(); }
     TemplateVariant groupSubtitle() const        { return ""; }
-    TemplateVariant groupAnchor() const          { return m_memberGroup->anchor(); }
     TemplateVariant memberGroups() const         { return m_memberGroups.get(this); }
     TemplateVariant docs() const                 { return m_docs.get(this); }
     TemplateVariant inherited() const            { return FALSE; }
@@ -7822,7 +7821,6 @@ const PropertyMap<MemberGroupInfoContext::Private> MemberGroupInfoContext::Priva
   {  "members",      &Private::members },
   {  "title",        &Private::groupTitle },
   {  "subtitle",     &Private::groupSubtitle },
-  {  "anchor",       &Private::groupAnchor },
   {  "memberGroups", &Private::memberGroups },
   {  "docs",         &Private::docs },
   {  "inherited",    &Private::inherited }

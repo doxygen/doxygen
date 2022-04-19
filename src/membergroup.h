@@ -83,7 +83,6 @@ class MemberGroup
     void addListReferences(Definition *d);
     void setRefItems(const RefItemVector &sli);
     const MemberList &members() const { return *memberList.get(); }
-    QCString anchor() const;
 
     QCString docFile() const { return m_docFile; }
     int docLine() const { return m_docLine; }
