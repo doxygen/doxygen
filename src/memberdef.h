@@ -235,7 +235,6 @@ class MemberDef : public Definition
     // callgraph related members
     virtual bool hasCallGraph() const = 0;
     virtual bool hasCallerGraph() const = 0;
-    virtual bool visibleMemberGroup(bool hideNoHeader) const = 0;
     // referenced related members
     virtual bool hasReferencesRelation() const = 0;
     virtual bool hasReferencedByRelation() const = 0;

@@ -2123,7 +2123,7 @@ void VhdlDocGen::writeVHDLDeclarations(const MemberList* ml,OutputList &ol,
     if (membersHaveSpecificType(&mg->members(),type))
     {
       //printf("mg->header=%s\n",qPrint(mg->header()));
-      bool hasHeader=mg->header()!="[NOHEADER]";
+      bool hasHeader=!mg->header().isEmpty();
       ol.startMemberGroupHeader(hasHeader);
       if (hasHeader)
       {

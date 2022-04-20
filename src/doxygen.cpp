@@ -6036,13 +6036,7 @@ static void addMemberFunction(const Entry *root,
           if (!qScope.isEmpty())
             warnMsg+=qScope+"::"+md->name();
           warnMsg+=md->argsString();
-          if (noMatchCount>1)
-          {
-            warnMsg+="' " + warn_line(md->getDefFileName(),md->getDefLine());
-          }
-          else
-            warnMsg += "'";
-
+          warnMsg+="' " + warn_line(md->getDefFileName(),md->getDefLine());
           warnMsg+='\n';
         }
       }
