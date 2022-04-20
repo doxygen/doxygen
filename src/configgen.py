@@ -424,15 +424,12 @@ def parseGroupMapEnumsBool(node):
                     if nv.nodeName == "value":
                         value = nv.getAttribute('name')
                         bool_representation = nv.getAttribute('bool_representation')
-                        if value:
-                            if bool_representation:
-                                if bool_representation.upper() == 'YES':
-                                    enabled = "true"
-                                else:
-                                    enabled = "false"
-                                print("  {\"%s\", \"%s\", %s, %s}," % (name,escape(value),"true",enabled))
+                        if value and bool_representation:
+                            if bool_representation.upper() == 'YES':
+                                enabled = "true"
                             else:
-                                print("  {\"%s\", \"%s\", %s, %s}," % (name,escape(value),"false","false"))
+                                enabled = "false"
+                            print("  {\"%s\", \"%s\", %s}," % (name,escape(value),enabled))
 
 def parseGroupMapGetter(node):
     map = { 'bool':'bool', 'string':'const QCString &', 'int':'int', 'list':'const StringVector &' }
@@ -787,8 +784,7 @@ def main():
                 if n.nodeName == "group":
                     parseGroupMapEnums(n)
         print("")
-        print("bool enumHasBool(QCString set, QCString val);")
-        print("bool enumBoolRepresentation(QCString set, QCString val);")
+        print("bool enumBoolRepresentation(QCString set, QCString val, bool *representation);")
         print("")
         print("class ConfigValues")
         print("{")
@@ -847,7 +843,6 @@ def main():
         print("#include \"configvalues.h\"")
         print("#include \"configimpl.h\"")
         print("#include <unordered_map>")
-        print("#include <cassert>")
         print("")
         print("const ConfigValues::Info *ConfigValues::get(const QCString &tag) const");
         print("{");
@@ -898,7 +893,6 @@ def main():
         print("{")
         print("  QCString setting;")
         print("  QCString value;")
-        print("  bool hasBool;")
         print("  bool representation;")
         print("};")
         print("struct EnumBool enumBool[] = {")
@@ -908,22 +902,16 @@ def main():
                     parseGroupMapEnumsBool(n)
         print("};")
         print("")
-        print("bool enumHasBool(QCString set, QCString val)")
+        print("bool enumBoolRepresentation(QCString set, QCString val, bool *representation)")
         print("{")
         print("  for (uint i = 0; i < sizeof(enumBool) / sizeof(*enumBool); i++)")
         print("  {")
-        print("    if (enumBool[i].setting == set && enumBool[i].value == val) return enumBool[i].hasBool;")
+        print("    if (enumBool[i].setting == set && enumBool[i].value == val)")
+        print("    {")
+        print("      *representation = enumBool[i].representation;")
+        print("      return true;")
+        print("    }")
         print("  }")
-        print("  return false;")
-        print("}")
-        print("")
-        print("bool enumBoolRepresentation(QCString set, QCString val)")
-        print("{")
-        print("  for (uint i = 0; i < sizeof(enumBool) / sizeof(*enumBool); i++)")
-        print("  {")
-        print("    if (enumBool[i].hasBool && enumBool[i].setting == set && enumBool[i].value == val) return enumBool[i].representation;")
-        print("  }")
-        print("  assert(false);")
         print("  return false;")
         print("}")
         print("")

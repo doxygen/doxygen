@@ -91,7 +91,8 @@ static bool elemIsVisible(const XMLHandlers::Attributes &attrib,bool defVal=TRUE
     else if (opt && opt->type==ConfigValues::Info::String)
     {
       visible = ConfigValues::instance().*(opt->value.s);
-      if (opt->enumType && enumHasBool(id,visible)) return enumBoolRepresentation(id,visible);
+      bool representation = false;
+      if (opt->enumType && enumBoolRepresentation(id,visible,&representation)) return representation;
     }
     else if (!opt)
     {
