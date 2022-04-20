@@ -16,6 +16,10 @@
 #ifndef DOCPARSER_P_H
 #define DOCPARSER_P_H
 
+/** @file
+ *  @brief Private header shared between docparser.cpp and docnode.cpp
+ */
+
 #include <cassert>
 #include <stack>
 #include <iterator>

@@ -154,16 +154,19 @@ void OutputList::generateDoc(const QCString &fileName,int startLine,
     if (og->isEnabled()) count++;
   }
 
-  // we want to validate irrespective of the number of output formats
-  // specified as:
-  // - when only XML format there should be warnings as well (XML has its own write routines)
-  // - no formats there should be warnings as well
-  auto parser { createDocParser() };
-  auto ast    { validatingParseDoc(*parser.get(),
-                                   fileName,startLine,
-                                   ctx,md,docStr,indexWords,isExample,exampleName,
-                                   singleLine,linkFromIndex,markdownSupport) };
-  if (ast && count>0) writeDoc(ast.get(),ctx,md,m_id);
+  if (count>0)
+  {
+    // we want to validate irrespective of the number of output formats
+    // specified as:
+    // - when only XML format there should be warnings as well (XML has its own write routines)
+    // - no formats there should be warnings as well
+    auto parser { createDocParser() };
+    auto ast    { validatingParseDoc(*parser.get(),
+                                     fileName,startLine,
+                                     ctx,md,docStr,indexWords,isExample,exampleName,
+                                     singleLine,linkFromIndex,markdownSupport) };
+    if (ast) writeDoc(ast.get(),ctx,md,m_id);
+  }
 }
 
 void OutputList::writeDoc(const IDocNodeAST *ast,const Definition *ctx,const MemberDef *md,int)
