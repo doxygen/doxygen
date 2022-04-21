@@ -75,9 +75,9 @@ class NamespaceDefImpl : public DefinitionMixin<NamespaceDefMutable>
     virtual void countMembers();
     virtual int  numDocMembers() const;
     virtual void addUsingDirective(const NamespaceDef *nd);
-    virtual LinkedRefMap<const NamespaceDef> getUsedNamespaces() const { return m_usingDirList; }
+    virtual const LinkedRefMap<const NamespaceDef> &getUsedNamespaces() const { return m_usingDirList; }
     virtual void addUsingDeclaration(const ClassDef *cd);
-    virtual LinkedRefMap<const ClassDef> getUsedClasses() const { return m_usingDeclList; }
+    virtual const LinkedRefMap<const ClassDef> &getUsedClasses() const { return m_usingDeclList; }
     virtual void combineUsingRelations(NamespaceDefSet &visitedNamespace);
     virtual QCString displayName(bool=TRUE) const;
     virtual QCString localName() const;
@@ -190,9 +190,9 @@ class NamespaceDefAliasImpl : public DefinitionAliasMixin<NamespaceDef>
     { return getNSAlias()->anchor(); }
     virtual int numDocMembers() const
     { return getNSAlias()->numDocMembers(); }
-    virtual LinkedRefMap<const NamespaceDef> getUsedNamespaces() const
+    virtual const LinkedRefMap<const NamespaceDef> &getUsedNamespaces() const
     { return getNSAlias()->getUsedNamespaces(); }
-    virtual LinkedRefMap<const ClassDef> getUsedClasses() const
+    virtual const LinkedRefMap<const ClassDef> &getUsedClasses() const
     { return getNSAlias()->getUsedClasses(); }
     virtual QCString displayName(bool b=TRUE) const
     { return makeDisplayName(this,b); }

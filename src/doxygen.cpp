@@ -7715,7 +7715,7 @@ static void addToIndices()
   {
     if (pd->isLinkableInProject())
     {
-      Doxygen::indexList->addIndexItem(pd.get(),0,QCString(),filterTitle(pd->title().str()));
+      Doxygen::indexList->addIndexItem(pd.get(),0,QCString(),filterTitle(pd->title()));
     }
   }
 

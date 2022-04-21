@@ -2049,7 +2049,7 @@ void PerlModGenerator::generatePerlModForPage(PageDef *pd)
 
   const SectionInfo *si = SectionManager::instance().find(pd->name());
   if (si)
-    m_output.addFieldQuotedString("title4", filterTitle(si->title().str()));
+    m_output.addFieldQuotedString("title4", filterTitle(si->title()));
 
   addPerlModDocBlock(m_output,"detailed",pd->docFile(),pd->docLine(),0,0,pd->documentation());
   m_output.closeHash();
