@@ -144,7 +144,7 @@ struct SymbolResolver::Private
 
     const Definition *followPath(const Definition *start,const QCString &path);
 
-    const Definition *endOfPathIsUsedClass(LinkedRefMap<const ClassDef> cl,const QCString &localName);
+    const Definition *endOfPathIsUsedClass(const LinkedRefMap<const ClassDef> &cl,const QCString &localName);
 
     bool accessibleViaUsingNamespace(StringUnorderedSet &visited,
                                      const LinkedRefMap<const NamespaceDef> &nl,
@@ -821,7 +821,7 @@ const Definition *SymbolResolver::Private::followPath(const Definition *start,co
   return current; // path could be followed
 }
 
-const Definition *SymbolResolver::Private::endOfPathIsUsedClass(LinkedRefMap<const ClassDef> cl,const QCString &localName)
+const Definition *SymbolResolver::Private::endOfPathIsUsedClass(const LinkedRefMap<const ClassDef> &cl,const QCString &localName)
 {
   for (const auto &cd : cl)
   {
@@ -853,10 +853,8 @@ bool SymbolResolver::Private::accessibleViaUsingNamespace(StringUnorderedSet &vi
     if (item->getLanguage()==SrcLangExt_Cpp)
     {
       QCString key=und->qualifiedName();
-      if (!und->getUsedNamespaces().empty() && visited.find(key.str())==visited.end())
+      if (!und->getUsedNamespaces().empty() && visited.insert(key.str()).second)
       {
-        visited.insert(key.str());
-
         if (accessibleViaUsingNamespace(visited,und->getUsedNamespaces(),item,explicitScopePart,level+1))
         {
           //printf("%d ] found it via recursion\n",level);

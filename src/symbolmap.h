@@ -44,7 +44,7 @@ class SymbolMap
     //! Remove a symbol \a def from the map that was stored under key \a name
     void remove(const QCString &name,Ptr def)
     {
-      auto range = find(name.str());
+      auto range = find(name);
       for (auto it=range.first; it!=range.second; )
       {
         if (it->second==def) it = m_map.erase(it); else ++it;
