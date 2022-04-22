@@ -286,11 +286,24 @@ Go to the <a href="commands.html">next</a> section or return to the
       <docs>
 <![CDATA[
  If the \c CREATE_SUBDIRS tag is set to \c YES then doxygen will create
- 4096 sub-directories (in 2 levels) under the output directory of each output
+ up to 4096 sub-directories (in 2 levels) under the output directory of each output
  format and will distribute the generated files over these directories.
  Enabling this option can be useful when feeding doxygen a huge amount of source
  files, where putting all generated files in the same directory would otherwise
  causes performance problems for the file system.
+ Adapt \c CREATE_SUBDIRS_LEVEL to control the number of sub-directories.
+]]>
+      </docs>
+    </option>
+    <option type='int' id='CREATE_SUBDIRS_LEVEL' minval='0' maxval='8' defval='8'
+            depends='CREATE_SUBDIRS'>
+      <docs>
+<![CDATA[
+ Controls the number of sub-directories that will be created when \c CREATE_SUBDIRS tag
+ is set to \c YES. Level 0 represents 16 directories, and every level increment
+ doubles the number of directories, resulting in 4096 directories at level 8 which is the
+ default and also the maximum value. The sub-directories are organized in 2 levels, the first
+ level always has a fixed numer of 16 directories.
 ]]>
       </docs>
     </option>
@@ -1412,7 +1425,7 @@ FILE_VERSION_FILTER = "cleartool desc -fmt \%Vn"
  The \c WARN_LOGFILE tag can be used to specify a file to which warning
  and error messages should be written. If left blank the output is written
  to standard error (`stderr`). In case the file specified cannot be opened for
- writing the warning and error messages are written to standard error. When as 
+ writing the warning and error messages are written to standard error. When as
  file `-` is specified the warning and error messages are written to standard output
  (`stdout`).
 ]]>
@@ -2566,7 +2579,7 @@ obfuscate email addresses.
  With \c MATHJAX_VERSION it is possible to specify the MathJax version to be used.
  Note that the different versions of MathJax have different requirements with regards to
  the different settings, so it is possible that also other MathJax settings have to be changed
- when switching between the different MathJax versions. 
+ when switching between the different MathJax versions.
 ]]>
       </docs>
       <value name="MathJax_2"/>

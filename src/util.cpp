@@ -3598,6 +3598,8 @@ static std::unordered_map<std::string,int> g_usedNames;
 static std::mutex g_usedNamesMutex;
 static int g_usedNamesCount=1;
 
+
+
 /*! This function determines the file name on disk of an item
  *  given its name, which could be a class name with template
  *  arguments, so special characters need to be escaped.
@@ -3641,12 +3643,14 @@ QCString convertNameToFile(const QCString &name,bool allowDots,bool allowUndersc
   if (createSubdirs)
   {
     int l1Dir=0,l2Dir=0;
+    int createSubdirsLevel = Config_getInt(CREATE_SUBDIRS_LEVEL);
+    int createSubdirsBitmaskL2 = (1<<createSubdirsLevel)-1;
 
     // compute md5 hash to determine sub directory to use
     uchar md5_sig[16];
     MD5Buffer(result.data(),result.length(),md5_sig);
-    l1Dir = md5_sig[14]&0xf;
-    l2Dir = md5_sig[15];
+    l1Dir = md5_sig[14] & 0xf;
+    l2Dir = md5_sig[15] & createSubdirsBitmaskL2;
 
     result.prepend(QCString().sprintf("d%x/d%02x/",l1Dir,l2Dir));
   }
@@ -3679,7 +3683,8 @@ void createSubDirs(const Dir &d)
 {
   if (Config_getBool(CREATE_SUBDIRS))
   {
-    // create 4096 subdirectories
+    // create up to 4096 subdirectories
+    int createSubdirsLevelPow2 = 1 << Config_getInt(CREATE_SUBDIRS_LEVEL);
     int l1,l2;
     for (l1=0;l1<16;l1++)
     {
@@ -3689,7 +3694,7 @@ void createSubDirs(const Dir &d)
       {
         term("Failed to create output directory '%s'\n",qPrint(subdir));
       }
-      for (l2=0;l2<256;l2++)
+      for (l2=0; l2 < createSubdirsLevelPow2; l2++)
       {
         QCString subsubdir;
         subsubdir.sprintf("d%x/d%02x",l1,l2);
@@ -3707,11 +3712,12 @@ void clearSubDirs(const Dir &d)
   if (Config_getBool(CREATE_SUBDIRS))
   {
     // remove empty subdirectories
+    int createSubdirsLevelPow2 = 1 << Config_getInt(CREATE_SUBDIRS_LEVEL);
     for (int l1=0;l1<16;l1++)
     {
       QCString subdir;
       subdir.sprintf("d%x",l1);
-      for (int l2=0;l2<256;l2++)
+      for (int l2=0; l2 < createSubdirsLevelPow2; l2++)
       {
         QCString subsubdir;
         subsubdir.sprintf("d%x/d%02x",l1,l2);
