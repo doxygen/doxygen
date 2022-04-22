@@ -295,17 +295,15 @@ Go to the <a href="commands.html">next</a> section or return to the
 ]]>
       </docs>
     </option>
-    <option type='int' id='CREATE_SUBDIRS_LEVEL' minval='0' maxval='8' defval='8'>
+    <option type='int' id='CREATE_SUBDIRS_LEVEL' minval='0' maxval='8' defval='8'
+            depends='CREATE_SUBDIRS'>
       <docs>
 <![CDATA[
- Controls the number of sub-directories that will be create when \c CREATE_SUBDIRS tag is set to \c YES.
- The number is computed by the formula 16 * (2 ^ CREATE_SUBDIRS_LEVEL).
- With the default value of 8 this results in 4096 sub-directories,
- with a value of 4 this results in 256 sub-directories,
- a value of 0 results in 16 sub-directories.
- The sub-directories are organized in 2 levels, the first level has a fixed numer of 16 directories.
- This option allows to reduce the overhead for medium size projects by adapting this number
- to a suitable value.
+ Controls the number of sub-directories that will be created when \c CREATE_SUBDIRS tag
+ is set to \c YES. Level 0 represents 16 directories, and every level increment
+ doubles the number of directories, resulting in 4096 directories at level 8 which is the
+ default and also the maximum value. The sub-directories are organized in 2 levels, the first
+ level always has a fixed numer of 16 directories.
 ]]>
       </docs>
     </option>
