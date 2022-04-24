@@ -505,6 +505,19 @@ def parseGroupInit(node):
             if len(setting) > 0:
                 print("#endif")
 
+def getEnum2BoolMapping(node):
+    def escape(value):
+        return re.sub(r'[^\w]','_',value)
+    mapping = []
+    for nv in node.childNodes:
+        if nv.nodeName == "value":
+            name = nv.getAttribute("name")
+            bool_rep = nv.getAttribute("bool_representation")
+            if name and bool_rep:
+                bool_value = "true" if bool_rep and bool_rep.upper() == 'YES' else "false"
+                mapping.append( "{{ \"{0}\", \"{1}\" }}".format(escape(name),bool_value))
+    return mapping
+
 def parseGroupMapInit(node):
     map = { 'bool':'Bool', 'string':'String', 'enum':'String', 'int':'Int', 'list':'List' }
     for n in node.childNodes:
@@ -516,7 +529,8 @@ def parseGroupMapInit(node):
             name = n.getAttribute('id')
             if type in map:
                 if type == "enum":
-                    print("    { %-26s Info{ %-13s &ConfigValues::m_%-23s %s}}," % ('\"'+name+'\",','Info::'+map[type]+',',name+",", "true"))
+                    mappingStr = "{%s}" % (', '.join(getEnum2BoolMapping(n)))
+                    print("    { %-26s Info{ %-13s &ConfigValues::m_%-23s %s}}," % ('\"'+name+'\",','Info::'+map[type]+',',name+",", mappingStr))
                 else:
                     print("    { %-26s Info{ %-13s &ConfigValues::m_%-24s}}," % ('\"'+name+'\",','Info::'+map[type]+',',name))
             if len(setting) > 0:
@@ -784,8 +798,6 @@ def main():
                 if n.nodeName == "group":
                     parseGroupMapEnums(n)
         print("")
-        print("bool enumBoolRepresentation(QCString set, QCString val, bool *representation);")
-        print("")
         print("class ConfigValues")
         print("{")
         print("  public:")
@@ -807,10 +819,10 @@ def main():
         print("    struct Info")
         print("    {")
         print("      enum Type { Bool, Int, String, List, Unknown };")
+        print("      using Enum2BoolMap = std::unordered_map<std::string,bool>;");
         print("      Info(Type t,bool         ConfigValues::*b) : type(t), value(b) {}")
         print("      Info(Type t,int          ConfigValues::*i) : type(t), value(i) {}")
-        print("      Info(Type t,QCString     ConfigValues::*s) : type(t), value(s) {}")
-        print("      Info(Type t,QCString     ConfigValues::*s,bool isEnum) : type(t), value(s), enumType(isEnum) {}")
+        print("      Info(Type t,QCString     ConfigValues::*s, Enum2BoolMap boolMap = {}) : type(t), value(s), m_boolMap(boolMap) {}")
         print("      Info(Type t,StringVector ConfigValues::*l) : type(t), value(l) {}")
         print("      Type type;")
         print("      union Item")
@@ -824,9 +836,12 @@ def main():
         print("        QCString     ConfigValues::*s;")
         print("        StringVector ConfigValues::*l;")
         print("      } value;")
-        print("      bool enumType = false;")
+        print("      bool getBooleanRepresentation() const;")
+        print("    private:")
+        print("      Enum2BoolMap m_boolMap;")
         print("    };")
         print("    const Info *get(const QCString &tag) const;")
+        print("")
         print("  private:")
         for n in elem.childNodes:
             if n.nodeType == Node.ELEMENT_NODE:
@@ -889,27 +904,14 @@ def main():
         print("  };")
         print("}")
         print("")
-        print("struct EnumBool")
+        print("bool ConfigValues::Info::getBooleanRepresentation() const")
         print("{")
-        print("  QCString setting;")
-        print("  QCString value;")
-        print("  bool representation;")
-        print("};")
-        print("struct EnumBool enumBool[] = {")
-        for n in elem.childNodes:
-            if n.nodeType == Node.ELEMENT_NODE:
-                if n.nodeName == "group":
-                    parseGroupMapEnumsBool(n)
-        print("};")
-        print("")
-        print("bool enumBoolRepresentation(QCString set, QCString val, bool *representation)")
-        print("{")
-        print("  for (uint i = 0; i < sizeof(enumBool) / sizeof(*enumBool); i++)")
+        print("  if (!m_boolMap.empty())")
         print("  {")
-        print("    if (enumBool[i].setting == set && enumBool[i].value == val)")
+        print("    auto it = m_boolMap.find((ConfigValues::instance().*(value.s)).str());")
+        print("    if (it!=m_boolMap.end())")
         print("    {")
-        print("      *representation = enumBool[i].representation;")
-        print("      return true;")
+        print("      return it->second;");
         print("    }")
         print("  }")
         print("  return false;")
