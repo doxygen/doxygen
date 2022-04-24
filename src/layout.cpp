@@ -195,10 +195,10 @@ class LayoutParser
 
     void startSimpleEntry(LayoutDocEntry::Kind k,const XMLHandlers::Attributes &attrib)
     {
-      bool isVisible = elemIsVisible(attrib) && parentIsVisible(m_rootNav);
+      bool isVisible = m_visible && elemIsVisible(attrib) && parentIsVisible(m_rootNav);
       if (m_part!=LayoutDocManager::Undefined && isVisible)
       {
-        LayoutDocManager::instance().addEntry(m_part,new LayoutDocEntrySimple(k));
+        LayoutDocManager::instance().addEntry(m_part,new LayoutDocEntrySimple(k,isVisible));
       }
     }
 
@@ -207,14 +207,14 @@ class LayoutParser
     void startSectionEntry(LayoutDocEntry::Kind k,const XMLHandlers::Attributes &attrib,
                            const QCString &title)
     {
-      bool isVisible = elemIsVisible(attrib) && parentIsVisible(m_rootNav);
+      bool isVisible = m_visible && elemIsVisible(attrib) && parentIsVisible(m_rootNav);
       QCString userTitle = XMLHandlers::value(attrib,"title");
       //printf("startSectionEntry: title='%s' userTitle='%s'\n",
       //    qPrint(title),qPrint(userTitle));
       if (userTitle.isEmpty())  userTitle = title;
       if (m_part!=LayoutDocManager::Undefined && isVisible)
       {
-        LayoutDocManager::instance().addEntry(m_part,new LayoutDocEntrySection(k,userTitle));
+        LayoutDocManager::instance().addEntry(m_part,new LayoutDocEntrySection(k,userTitle,isVisible));
       }
     }
 
@@ -222,14 +222,12 @@ class LayoutParser
     void startMemberDeclEntry(const XMLHandlers::Attributes &attrib,MemberListType type,
                               const QCString &title,const QCString &subscript)
     {
-      //QCString visible = convertToQCString(XMLHandlers::value(attrib,"visible"));
-      //bool isVisible = visible.isEmpty() || (visible!="no" && visible!="0");
       QCString userTitle     = XMLHandlers::value(attrib,"title");
       QCString userSubscript = XMLHandlers::value(attrib,"subtitle");
       if (userTitle.isEmpty())     userTitle     = title;
       if (userSubscript.isEmpty()) userSubscript = subscript;
-      //printf("memberdecl: %s\n",qPrint(userTitle));
-      if (m_part!=LayoutDocManager::Undefined)
+      bool isVisible = m_visible && elemIsVisible(attrib) && parentIsVisible(m_rootNav);
+      if (m_part!=LayoutDocManager::Undefined && isVisible)
       {
         LayoutDocManager::instance().addEntry(m_part,new LayoutDocEntryMemberDecl(type,userTitle,userSubscript));
       }
@@ -241,7 +239,8 @@ class LayoutParser
       QCString userTitle = XMLHandlers::value(attrib,"title");
       if (userTitle.isEmpty()) userTitle = title;
       //printf("memberdef: %s\n",qPrint(userTitle));
-      if (m_part!=LayoutDocManager::Undefined)
+      bool isVisible = m_visible && elemIsVisible(attrib) && parentIsVisible(m_rootNav);
+      if (m_part!=LayoutDocManager::Undefined && isVisible)
       {
         LayoutDocManager::instance().addEntry(m_part,
                                               new LayoutDocEntryMemberDef(type,userTitle));
@@ -533,7 +532,7 @@ class LayoutParser
       }
       QCString baseFile = mapping[i].baseFile;
       QCString title = XMLHandlers::value(attrib,"title");
-      bool isVisible = elemIsVisible(attrib) && parentIsVisible(m_rootNav);
+      bool isVisible = m_visible && elemIsVisible(attrib) && parentIsVisible(m_rootNav);
       if (title.isEmpty()) // use default title
       {
         title = mapping[i].mainName; // use title for main row
@@ -582,112 +581,75 @@ class LayoutParser
       m_invalidEntry=FALSE;
     }
 
-    void startClass(const XMLHandlers::Attributes &)
+    void recurseNavEntryChildren(LayoutNavEntry &lne)
     {
-      LayoutDocManager::instance().clear(LayoutDocManager::Class);
-      m_scope="class/";
-      m_part = LayoutDocManager::Class;
+      bool vis = lne.visible();
+      for (const auto &lne1 : lne.children())
+      {
+        lne1->setVisible(vis && lne1->visible());
+        recurseNavEntryChildren(*lne1);
+      }
+    }
+    void startTop(const XMLHandlers::Attributes &attrib,LayoutDocManager::LayoutPart part,QCString scope, LayoutNavEntry::Kind nav)
+    {
+      LayoutDocManager::instance().clear(part);
+      m_scope = scope;
+      m_part = part;
+      m_visible = elemIsVisible(attrib);
+      auto *lne = LayoutDocManager::instance().rootNavEntry()->find(nav);
+      if (lne)
+      {
+        m_visible = m_visible && lne->visible();
+        lne->setVisible(m_visible);
+        recurseNavEntryChildren(*lne);
+      }
     }
 
-    void endClass()
-    {
-      m_scope="";
-      m_part = LayoutDocManager::Undefined;
-    }
-
-    void startNamespace(const XMLHandlers::Attributes &)
-    {
-      LayoutDocManager::instance().clear(LayoutDocManager::Namespace);
-      m_scope="namespace/";
-      m_part = LayoutDocManager::Namespace;
-    }
-
-    void endNamespace()
-    {
-      m_scope="";
-      m_part = LayoutDocManager::Undefined;
-    }
-
-    void startConcept(const XMLHandlers::Attributes &)
-    {
-      LayoutDocManager::instance().clear(LayoutDocManager::Concept);
-      m_scope="concept/";
-      m_part = LayoutDocManager::Concept;
-    }
-
-    void endConcept()
+    void endTop()
     {
       m_scope="";
       m_part = LayoutDocManager::Undefined;
     }
 
-    void startFile(const XMLHandlers::Attributes &)
-    {
-      LayoutDocManager::instance().clear(LayoutDocManager::File);
-      m_scope="file/";
-      m_part = LayoutDocManager::File;
-    }
-
-    void endFile()
-    {
-      m_scope="";
-      m_part = LayoutDocManager::Undefined;
-    }
-
-    void startGroup(const XMLHandlers::Attributes &)
-    {
-      LayoutDocManager::instance().clear(LayoutDocManager::Group);
-      m_scope="group/";
-      m_part = LayoutDocManager::Group;
-    }
-
-    void endGroup()
-    {
-      m_scope="";
-      m_part = LayoutDocManager::Undefined;
-    }
-
-    void startDirectory(const XMLHandlers::Attributes &)
-    {
-      LayoutDocManager::instance().clear(LayoutDocManager::Directory);
-      m_scope="directory/";
-      m_part = LayoutDocManager::Directory;
-    }
-
-    void endDirectory()
-    {
-      m_scope="";
-      m_part = LayoutDocManager::Undefined;
-    }
-
-    void startMemberDef(const XMLHandlers::Attributes &)
+    void startMemberDef(const XMLHandlers::Attributes &attrib)
     {
       m_scope+="memberdef/";
       if (m_part!=LayoutDocManager::Undefined)
       {
-        LayoutDocManager::instance().addEntry(m_part,new LayoutDocEntrySimple(LayoutDocEntry::MemberDefStart));
+        bool isVisible = m_visible && elemIsVisible(attrib) && parentIsVisible(m_rootNav);
+        LayoutDocManager::instance().addEntry(m_part,new LayoutDocEntrySimple(LayoutDocEntry::MemberDefStart,isVisible));
       }
     }
 
     void endMemberDef()
     {
+      QCString scopeOrg = m_scope;
       int i=m_scope.findRev("memberdef/");
       if (i!=-1)
       {
         m_scope=m_scope.left(i);
         if (m_part!=LayoutDocManager::Undefined)
         {
-          LayoutDocManager::instance().addEntry(m_part,new LayoutDocEntrySimple(LayoutDocEntry::MemberDefEnd));
+          bool isVisible = true;
+          for (const auto &lde : LayoutDocManager::instance().docEntries(m_part))
+          {
+            if (lde->kind() == LayoutDocEntry::MemberDefStart)
+            {
+               isVisible = dynamic_cast<const LayoutDocEntrySimple*>(lde.get())->visible();
+            }
+          }
+          LayoutDocManager::instance().addEntry(m_part,new LayoutDocEntrySimple(LayoutDocEntry::MemberDefEnd,isVisible));
         }
       }
     }
 
-    void startMemberDecl(const XMLHandlers::Attributes &)
+    void startMemberDecl(const XMLHandlers::Attributes &attrib)
     {
       m_scope+="memberdecl/";
       if (m_part!=LayoutDocManager::Undefined)
       {
-        LayoutDocManager::instance().addEntry(m_part,new LayoutDocEntrySimple(LayoutDocEntry::MemberDeclStart));
+        bool isVisible = m_visible && elemIsVisible(attrib) && parentIsVisible(m_rootNav);
+        LayoutDocManager::instance().addEntry(m_part,new LayoutDocEntrySimple(LayoutDocEntry::MemberDeclStart,isVisible));
       }
     }
 
@@ -699,7 +661,15 @@ class LayoutParser
         m_scope=m_scope.left(i);
         if (m_part!=LayoutDocManager::Undefined)
         {
-          LayoutDocManager::instance().addEntry(m_part,new LayoutDocEntrySimple(LayoutDocEntry::MemberDeclEnd));
+          bool isVisible = true;
+          for (const auto &lde : LayoutDocManager::instance().docEntries(m_part))
+          {
+            if (lde->kind() == LayoutDocEntry::MemberDeclStart)
+            {
+               isVisible = dynamic_cast<const LayoutDocEntrySimple*>(lde.get())->visible();
+            }
+          }
+          LayoutDocManager::instance().addEntry(m_part,new LayoutDocEntrySimple(LayoutDocEntry::MemberDeclEnd,isVisible));
         }
       }
     }
@@ -713,6 +683,7 @@ class LayoutParser
     LayoutDocManager::LayoutPart m_part = LayoutDocManager::Undefined;
     LayoutNavEntry *m_rootNav = 0;
     bool m_invalidEntry = false;
+    bool m_visible = true;
     static int m_userGroupCount;
     const XMLLocator *m_locator = nullptr;
 };
@@ -765,6 +736,14 @@ static ElementCallbacks::StartCallback startCb(void (LayoutParser::*fn)(const XM
   return [fn,type,title,subtitle](LayoutParser &parser,const XMLHandlers::Attributes &attr) { (parser.*fn)(attr,type,title(),subtitle()); };
 }
 
+static ElementCallbacks::StartCallback startCb(void (LayoutParser::*fn)(const XMLHandlers::Attributes &,LayoutDocManager::LayoutPart,QCString,LayoutNavEntry::Kind),
+                                        LayoutDocManager::LayoutPart part,
+                                        QCString scope,
+                                        LayoutNavEntry::Kind nav
+                                       )
+{
+  return [fn,part,scope,nav](LayoutParser &parser,const XMLHandlers::Attributes &attr) { (parser.*fn)(attr,part,scope,nav); };
+}
 
 static ElementCallbacks::EndCallback endCb(void (LayoutParser::*fn)())
 {
@@ -790,8 +769,8 @@ static const std::map< std::string, ElementCallbacks > g_elementHandlers =
                                                   } },
 
   // class layout handlers
-  { "class",                                      { startCb(&LayoutParser::startClass),
-                                                    endCb(&LayoutParser::endClass)
+  { "class",                                      { startCb(&LayoutParser::startTop,LayoutDocManager::Class,QCString("class/"),LayoutNavEntry::Classes),
+                                                    endCb(&LayoutParser::endTop)
                                                   } },
   { "class/briefdescription",                     { startCb(&LayoutParser::startSimpleEntry,LayoutDocEntry::BriefDesc),
                                                     endCb()
@@ -1008,10 +987,9 @@ static const std::map< std::string, ElementCallbacks > g_elementHandlers =
                                                   } },
 
   // concept layout handlers
-  { "concept",                                    { startCb(&LayoutParser::startConcept),
-                                                    endCb(&LayoutParser::endConcept)
+  { "concept",                                    { startCb(&LayoutParser::startTop,LayoutDocManager::Concept,QCString("concept/"),LayoutNavEntry::Concepts),
+                                                    endCb(&LayoutParser::endTop)
                                                   } },
-
   { "concept/briefdescription",                   { startCb(&LayoutParser::startSimpleEntry, LayoutDocEntry::BriefDesc),
                                                     endCb()
                                                   } },
@@ -1033,10 +1011,9 @@ static const std::map< std::string, ElementCallbacks > g_elementHandlers =
                                                     endCb()
                                                   } },
   // namespace layout handlers
-  { "namespace",                                  { startCb(&LayoutParser::startNamespace),
-                                                    endCb(&LayoutParser::endNamespace)
+  { "namespace",                                  { startCb(&LayoutParser::startTop,LayoutDocManager::Namespace,QCString("namespace/"),LayoutNavEntry::Namespaces),
+                                                    endCb(&LayoutParser::endTop)
                                                   } },
-
   { "namespace/briefdescription",                 { startCb(&LayoutParser::startSimpleEntry, LayoutDocEntry::BriefDesc),
                                                     endCb()
                                                   } },
@@ -1155,10 +1132,9 @@ static const std::map< std::string, ElementCallbacks > g_elementHandlers =
                                                   } },
 
   // file layout handlers
-  { "file",                                       { startCb(&LayoutParser::startFile),
-                                                    endCb(&LayoutParser::endFile)
+  { "file",                                       { startCb(&LayoutParser::startTop,LayoutDocManager::File,QCString("file/"),LayoutNavEntry::Files),
+                                                    endCb(&LayoutParser::endTop)
                                                   } },
-
   { "file/briefdescription",                      { startCb(&LayoutParser::startSimpleEntry, LayoutDocEntry::BriefDesc),
                                                     endCb()
                                                   } },
@@ -1294,8 +1270,8 @@ static const std::map< std::string, ElementCallbacks > g_elementHandlers =
                                                   } },
 
   // group layout handlers
-  { "group",                                      { startCb(&LayoutParser::startGroup),
-                                                    endCb(&LayoutParser::endGroup)
+  { "group",                                      { startCb(&LayoutParser::startTop,LayoutDocManager::Group,QCString("group/"),LayoutNavEntry::None),
+                                                    endCb(&LayoutParser::endTop)
                                                   } },
   { "group/briefdescription",                     { startCb(&LayoutParser::startSimpleEntry, LayoutDocEntry::BriefDesc),
                                                     endCb()
@@ -1482,10 +1458,9 @@ static const std::map< std::string, ElementCallbacks > g_elementHandlers =
                                                   } },
 
   // directory layout handlers
-  { "directory",                                  { startCb(&LayoutParser::startDirectory),
-                                                    endCb(&LayoutParser::endDirectory)
+  { "directory",                                  { startCb(&LayoutParser::startTop,LayoutDocManager::Directory,QCString("directory/"),LayoutNavEntry::None),
+                                                    endCb(&LayoutParser::endTop)
                                                   } },
-
   { "directory/briefdescription",                 { startCb(&LayoutParser::startSimpleEntry, LayoutDocEntry::BriefDesc),
                                                     endCb()
                                                   } },
@@ -1566,18 +1541,7 @@ LayoutDocManager::LayoutDocManager() : d(std::make_unique<Private>())
 }
 
 
-void LayoutDocManager::init()
-{
-  LayoutParser &layoutParser = LayoutParser::instance();
-  XMLHandlers handlers;
-  handlers.startElement = [&layoutParser](const std::string &name,const XMLHandlers::Attributes &attrs) { layoutParser.startElement(name,attrs); };
-  handlers.endElement   = [&layoutParser](const std::string &name) { layoutParser.endElement(name); };
-  handlers.error        = [&layoutParser](const std::string &fileName,int lineNr,const std::string &msg) { layoutParser.error(fileName,lineNr,msg); };
-  XMLParser parser(handlers);
-  layoutParser.setDocumentLocator(&parser);
-  QCString layout_default = ResourceMgr::instance().getAsString("layout_default.xml");
-  parser.parse("layout_default.xml",layout_default.data(),Debug::isFlagSet(Debug::Lex));
-}
+void LayoutDocManager::init() { }
 
 LayoutDocManager::~LayoutDocManager()
 {
@@ -1612,6 +1576,11 @@ void LayoutDocManager::clear(LayoutDocManager::LayoutPart p)
 
 void LayoutDocManager::parse(const QCString &fileName)
 {
+  parse(fileName,fileToString(fileName).data(),Debug::isFlagSet(Debug::Lex));
+}
+
+void LayoutDocManager::parse(const QCString &fileName, const char *data, const bool flag)
+{
   LayoutParser &layoutParser = LayoutParser::instance();
   XMLHandlers handlers;
   handlers.startElement = [&layoutParser](const std::string &name,const XMLHandlers::Attributes &attrs) { layoutParser.startElement(name,attrs); };
@@ -1619,9 +1588,8 @@ void LayoutDocManager::parse(const QCString &fileName)
   handlers.error        = [&layoutParser](const std::string &fn,int lineNr,const std::string &msg) { layoutParser.error(fn,lineNr,msg); };
   XMLParser parser(handlers);
   layoutParser.setDocumentLocator(&parser);
-  parser.parse(fileName.data(),fileToString(fileName).data(),Debug::isFlagSet(Debug::Lex));
+  parser.parse(fileName.data(),data,flag);
 }
-
 //---------------------------------------------------------------------------------
 
 void writeDefaultLayoutFile(const QCString &fileName)
