@@ -336,9 +336,6 @@ jobs:
     - name: Run tests (Linux / MacOS)
       shell: cmake -P {0}
       run: |
-        include(ProcessorCount)
-        ProcessorCount(N)
-
         set(ENV{CTEST_OUTPUT_ON_FAILURE} "ON")
 
         execute_process(
@@ -353,9 +350,6 @@ jobs:
     - name: Run tests (Windows)
       shell: cmake -P {0}
       run: |
-        include(ProcessorCount)
-        ProcessorCount(N)
-
         set(ENV{CTEST_OUTPUT_ON_FAILURE} "ON")
 
         execute_process(
