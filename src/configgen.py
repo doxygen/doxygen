@@ -411,26 +411,6 @@ def parseGroupMapEnums(node):
                 print("  return \"{0}\";".format(defval))
                 print("}")
 
-def parseGroupMapEnumsBool(node):
-    def escape(value):
-        return re.sub(r'[^\w]','_',value)
-    for n in node.childNodes:
-        if n.nodeType == Node.ELEMENT_NODE:
-            type   = n.getAttribute('type')
-            name   = n.getAttribute('id')
-            defval = n.getAttribute('defval')
-            if type=='enum':
-                for nv in n.childNodes:
-                    if nv.nodeName == "value":
-                        value = nv.getAttribute('name')
-                        bool_representation = nv.getAttribute('bool_representation')
-                        if value and bool_representation:
-                            if bool_representation.upper() == 'YES':
-                                enabled = "true"
-                            else:
-                                enabled = "false"
-                            print("  {\"%s\", \"%s\", %s}," % (name,escape(value),enabled))
-
 def parseGroupMapGetter(node):
     map = { 'bool':'bool', 'string':'const QCString &', 'int':'int', 'list':'const StringVector &' }
     for n in node.childNodes:
