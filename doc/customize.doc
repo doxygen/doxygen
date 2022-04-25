@@ -381,19 +381,11 @@ This was mainly added for backward compatibility.
 Note that the \c visible attribute is just a hint for doxygen.
 If no relevant information is available for a certain piece it is
 omitted even if it is set to \c yes (i.e. no empty sections are generated).<br>
-Note also that not all elements have a \c visible attribute shown in the layout file.
-This attribute can be used to customize the output anyway but should be used used with
-caution as unexpected results (e.g.incorrect links) might appear.
+Not all elements have a \c visible attribute shown in the layout file, though
+this attribibute can be used anyway (the default is `visible="yes"`).
 
 Some elements have a \c title attribute. This attribute can be used
 to customize the title doxygen will use as a header for the piece.
-
-@warning it is not advised to remove elements from the layout file
-as a way to hide information. Doing so can cause broken links in the
-generated output!
-@warning the use of the attribute `visible="no"` for elements that don't have
-a `visible` attribute by default should be used with caution as it can
-cause broken links in the generated output!
 
 
 \section xmlgenerator Using the XML output
