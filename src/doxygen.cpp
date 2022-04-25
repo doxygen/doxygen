@@ -6010,13 +6010,24 @@ static void addMemberFunction(const Entry *root,
     warnMsg+=fullFuncDecl;
     warnMsg+='\n';
 
-    if (candidates>0)
+    if (candidates>0 || noMatchCount>=1)
     {
       warnMsg+="Possible candidates:\n";
+
+      NamespaceDef *nd=0;
+      if (!namespaceName.isEmpty()) nd=getResolvedNamespace(namespaceName);
+      FileDef *fd=root->fileDef();
+
       for (const auto &md : *mn)
       {
         const ClassDef *cd=md->getClassDef();
-        if (cd!=0 && rightScopeMatch(cd->name(),className))
+        const ClassDef *tcd=findClassDefinition(fd,nd,scopeName);
+        if (tcd==0 && cd && stripAnonymousNamespaceScope(cd->name())==scopeName)
+        {
+          // don't be fooled by anonymous scopes
+          tcd=cd;
+        }
+        if (cd!=0 && (rightScopeMatch(cd->name(),className) || (cd!=tcd)))
         {
           const ArgumentList &templAl = md->templateArguments();
           warnMsg+="  '";
