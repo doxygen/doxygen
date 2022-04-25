@@ -10719,7 +10719,7 @@ static void usage(const QCString &name,const QCString &versionString)
   msg("    If - is used for extensionsFile doxygen will write to standard output.\n\n");
   msg("7) Use doxygen to compare the used configuration file with the template configuration file\n");
   msg("    %s -x [configFile]\n\n",qPrint(name));
-  msg("   Use doxygen to compare the used configuration file with the template configuration file");
+  msg("   Use doxygen to compare the used configuration file with the template configuration file\n");
   msg("   without replacing the environment variables\n");
   msg("    %s -x_noenv [configFile]\n\n",qPrint(name));
   msg("8) Use doxygen to show a list of built-in emojis.\n");
