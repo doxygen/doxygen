@@ -7,15 +7,15 @@ Doxygen is a documentation system for C++, C, Java, Objective-C, IDL
 .PP
 You can use doxygen in a number of ways:
 .TP
-1) Use doxygen to generate a template configuration file:
+1) Use doxygen to generate a template configuration file*:
 .IP
 doxygen [-s] \fB\-g\fR [configName]
 .TP
-2) Use doxygen to update an old configuration file:
+2) Use doxygen to update an old configuration file*:
 .IP
 doxygen [-s] \fB\-u\fR [configName]
 .TP
-3) Use doxygen to generate documentation using an existing configuration file:
+3) Use doxygen to generate documentation using an existing configuration file*:
 .IP
 doxygen [configName]
 .TP
@@ -66,9 +66,11 @@ doxygen \fB\-f\fR emoji outputFileName
    If - is used for outputFileName doxygen will write to standard output.
 .RE
 .PP
-If \fB\-s\fR is specified the comments in the config file will be omitted.
-If configName is omitted `Doxyfile' will be used as a default.
-If - is used for configFile doxygen will write / read the configuration to /from standard output / input.
+.RS 0
+*) If \fB\-s\fR is specified the comments in the config file will be omitted.
+   If configName is omitted `Doxyfile' will be used as a default.
+   If - is used for configFile doxygen will write / read the configuration to /from standard output / input.
+.RE
 .SH AUTHOR
 Doxygen version @VERSION@, Copyright Dimitri van Heesch 1997-@YEAR@
 .SH SEE ALSO
