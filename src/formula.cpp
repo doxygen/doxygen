@@ -75,10 +75,25 @@ void FormulaManager::readFormulas(const QCString &dir,bool doCompare)
   {
     uint formulaCount=0;
     msg("Reading formula repository...\n");
+    std::string readLine;
     std::string line;
-    int lineNr=1;
-    while (getline(f,line))
+    std::string prefix("\\_form#");
+    int lineNr;
+    int nextLineNr=1;
+    bool hasNextLine = getline(f,readLine) ? true : false;
+    while (hasNextLine)
     {
+      line = readLine;
+      lineNr = nextLineNr;
+
+      // look ahead a bit because a formula can be spread over several lines
+      while (hasNextLine = getline(f,readLine) ? true : false)
+      {
+        nextLineNr+=1;
+        if (!readLine.compare(0, prefix.size(), prefix)) break;
+        line += "\n" + readLine;
+      }
+
       // format: \_form#<digits>=<digits>x<digits>:formula
       size_t hi=line.find('#');
       size_t ei=line.find('=');
@@ -117,7 +132,6 @@ void FormulaManager::readFormulas(const QCString &dir,bool doCompare)
           p->storeDisplaySize(id,w,h);
         }
       }
-      lineNr++;
     }
     if (doCompare && formulaCount!=p->formulas.size())
     {
