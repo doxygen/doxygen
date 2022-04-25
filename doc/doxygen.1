@@ -10,7 +10,7 @@ You can use doxygen in a number of ways:
 1) Use doxygen to generate a template configuration file:
 .IP
 doxygen [-s] \fB\-g\fR [configName]
-.TP 
+.TP
 2) Use doxygen to update an old configuration file:
 .IP
 doxygen [-s] \fB\-u\fR [configName]
@@ -23,8 +23,10 @@ doxygen [configName]
 .IP
 doxygen -l [layoutFileName]
 .IP
-In case layoutFileName is omitted DoxygenLayout.xml will be used as filename.
-If - is used for layoutFileName doxygen will write to standard output.
+.RS 0
+   In case layoutFileName is omitted DoxygenLayout.xml will be used as filename.
+   If - is used for layoutFileName doxygen will write to standard output.
+.RE
 .TP
 5) Use doxygen to generate a template style sheet file for RTF, HTML or Latex.
 .IP
@@ -41,14 +43,18 @@ LaTeX: doxygen \fB\-w\fR latex headerFile footerFile styleSheetFile [configFile]
 RTF:
 doxygen \fB\-e\fR rtf extensionsFile
 .IP
-If - is used for extensionsFile doxygen will write to standard output.
+.RS 0
+   If - is used for extensionsFile doxygen will write to standard output.
+.RE
 .TP
 7) Use doxygen to compare the used configuration file with the template configuration file
 .IP
 doxygen \fB\-x\fR [configFile]
 .TP
    Use doxygen to compare the used configuration file with the template configuration file
+.RS 0
    without replacing the environment variables
+.RE
 .IP
 doxygen \fB\-x_noenv\fR [configFile]
 .TP
@@ -56,7 +62,9 @@ doxygen \fB\-x_noenv\fR [configFile]
 .IP
 doxygen \fB\-f\fR emoji outputFileName
 .IP
-If - is used for outputFileName doxygen will write to standard output.
+.RS 0
+   If - is used for outputFileName doxygen will write to standard output.
+.RE
 .PP
 If \fB\-s\fR is specified the comments in the config file will be omitted.
 If configName is omitted `Doxyfile' will be used as a default.
