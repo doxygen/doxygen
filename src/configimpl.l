@@ -1526,7 +1526,7 @@ void Config::init()
   ConfigImpl::instance()->init();
 }
 
-static [[maybe_unused]] bool checkListItem(const char *inp,const char *name, bool equalRequired,bool valueRequired)
+[[maybe_unused]] static bool checkListItem(const char *inp,const char *name, bool equalRequired,bool valueRequired)
 {
   QCString item=inp;
   item=item.stripWhiteSpace();
