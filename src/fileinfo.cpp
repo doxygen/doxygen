@@ -103,13 +103,13 @@ std::string FileInfo::absFilePath() const
   std::string result;
   std::error_code ec;
   fs::path path(m_name);
-  if (fs::exists(path,ec))
+  if (!path.is_relative())
   {
-    result = fs::canonical(path,ec).string();
+    result = path.lexically_normal().string();
   }
   else
   {
-    result = (fs::current_path(ec) / m_name).string();
+    result = (fs::current_path(ec) / m_name).lexically_normal().string();
   }
   correctPath(result);
   return result;
