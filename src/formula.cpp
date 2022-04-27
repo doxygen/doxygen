@@ -80,14 +80,14 @@ void FormulaManager::readFormulas(const QCString &dir,bool doCompare)
     std::string prefix("\\_form#");
     int lineNr;
     int nextLineNr=1;
-    bool hasNextLine = getline(f,readLine) ? true : false;
+    bool hasNextLine = !getline(f,readLine).fail();
     while (hasNextLine)
     {
       line = readLine;
       lineNr = nextLineNr;
 
       // look ahead a bit because a formula can be spread over several lines
-      while (hasNextLine = getline(f,readLine) ? true : false)
+      while ((hasNextLine = !getline(f,readLine).fail()))
       {
         nextLineNr+=1;
         if (!readLine.compare(0, prefix.size(), prefix)) break;
