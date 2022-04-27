@@ -167,6 +167,7 @@ bool                  Doxygen::generatingXmlOutput = FALSE;
 DefinesPerFileList    Doxygen::macroDefinitions;
 bool                  Doxygen::clangAssistedParsing = FALSE;
 QCString              Doxygen::verifiedDotPath;
+volatile bool         Doxygen::terminating = false;
 
 // locally accessible globals
 static std::multimap< std::string, const Entry* > g_classEntries;
@@ -11398,6 +11399,7 @@ static void stopDoxygen(int)
   }
   killpg(0,SIGINT);
   cleanUpDoxygen();
+  Doxygen::terminating=true;
   exit(1);
 }
 #endif

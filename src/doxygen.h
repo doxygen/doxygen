@@ -118,7 +118,19 @@ class Doxygen
     static DefinesPerFileList        macroDefinitions;
     static bool                      clangAssistedParsing;
     static QCString                  verifiedDotPath;
+    static volatile bool             terminating;
 };
+
+/** Deleter that only deletes an object if doxygen is not already terminating */
+template<class T>
+struct NonTerminatingDeleter
+{
+  void operator()(T *obj)
+  {
+    if (!Doxygen::terminating) delete obj;
+  }
+};
+
 
 void initDoxygen();
 void readConfiguration(int argc, char **argv);

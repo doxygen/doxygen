@@ -90,7 +90,7 @@ class DotWorkerThread
    ~DotWorkerThread();
     void run();
     void start();
-    bool isRunning() { return m_thread && m_thread->joinable(); }
+    bool isRunning() const { return m_thread && m_thread->joinable(); }
     void wait() { m_thread->join(); }
   private:
     std::unique_ptr<std::thread> m_thread;
