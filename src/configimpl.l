@@ -41,6 +41,7 @@
 #include "fileinfo.h"
 #include "dir.h"
 #include "textstream.h"
+#include "reflist.h"
 
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
@@ -1525,36 +1526,44 @@ void Config::init()
   ConfigImpl::instance()->init();
 }
 
+static [[maybe_unused]] bool checkListItem(const char *inp,const char *name, bool equalRequired,bool valueRequired)
+{
+  QCString item=inp;
+  item=item.stripWhiteSpace();
+  int i=item.find('=');
+  if (i==-1 && equalRequired)
+  {
+    err("Illegal format for option %s, no equal sign ('=') specified for item '%s'\n",name,qPrint(item));
+    return false;
+  }
+  if (i!=-1)
+  {
+    QCString myName=item.left(i).stripWhiteSpace();
+    if (myName.isEmpty())
+    {
+      err("Illegal format for option %s, no name specified for item '%s'\n",name,qPrint(item));
+      return false;
+    }
+    else if (valueRequired)
+    {
+      QCString myValue=item.right(item.length()-i-1).stripWhiteSpace();
+      if (myValue.isEmpty())
+      {
+        err("Illegal format for option %s, no value specified for item '%s'\n",name,qPrint(item));
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
 static void checkList(const StringVector &list,const char *name, bool equalRequired,bool valueRequired)
 {
   for (const auto &s: list)
   {
-    QCString item=s.c_str();
-    item=item.stripWhiteSpace();
-    int i=item.find('=');
-    if (i==-1 && equalRequired)
-    {
-      err("Illegal format for option %s, no equal sign ('=') specified for item '%s'\n",name,qPrint(item));
-    }
-    if (i!=-1)
-    {
-      QCString myName=item.left(i).stripWhiteSpace();
-      if (myName.isEmpty())
-      {
-        err("Illegal format for option %s, no name specified for item '%s'\n",name,qPrint(item));
-      }
-      else if (valueRequired)
-      {
-        QCString myValue=item.right(item.length()-i-1).stripWhiteSpace();
-        if (myValue.isEmpty())
-        {
-          err("Illegal format for option %s, no value specified for item '%s'\n",name,qPrint(item));
-        }
-      }
-    }
+    checkListItem(s.c_str(), name, equalRequired,valueRequired);
   }
 }
-
 static void adjustBoolSetting(const char *depOption, const char *optionName,bool expectedValue)
 {
   // lookup option by name
@@ -2033,6 +2042,39 @@ void Config::checkAndCorrect(bool quiet, const bool check)
   }
 #endif
 
+  //------------------------
+  // check & correct GENERATE_XREFLIST
+  StringVector generateXreflist = Config_getList(GENERATE_XREFLIST);
+  StringVector newGenerateXreflist;
+  for (const auto &s: generateXreflist)
+  {
+    if (checkListItem(s.c_str(),"GENERATE_XREFLIST",FALSE,FALSE))
+    {
+      // valid syntax, lets check the values
+      std::string p = s;
+      size_t ei=s.find('=');
+      if (ei!=std::string::npos)
+      {
+        std::string refName = s.substr(0,ei); // part before =
+        std::string refVal  = s.substr(ei+1); // part after =
+
+        Generate_XrefList_t sCode = GENERATE_XREFLIST_str2enum(refVal.c_str());
+        if (sCode == Generate_XrefList_t::UNKNOWN)
+        {
+          warn_uncond("Changing 'GENERATE_XREFLIST option to 'YES' for '%s' because supplied value '%s' is unknown.\n",
+          qPrint(refName),qPrint(refVal));
+          p = refName + "=YES";
+        }
+      }
+      newGenerateXreflist.push_back(p);
+    }
+  }
+  if (newGenerateXreflist.empty()) // by default use "YES"
+  {
+    std::string p = "YES";
+    newGenerateXreflist.push_back(p);
+  }
+  Config_updateList(GENERATE_XREFLIST,newGenerateXreflist);
 }
 
 void Config::updateObsolete()

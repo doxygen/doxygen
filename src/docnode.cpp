@@ -462,7 +462,7 @@ DocXRefItem::DocXRefItem(DocParser *parser,DocNodeVariant *parent,int id,const Q
 bool DocXRefItem::parse(DocNodeVariant *thisVariant)
 {
   RefList *refList = RefListManager::instance().find(m_key);
-  if (refList && refList->isEnabled())
+  if (refList && refList->isEnabled(Generate_Xref_t::ITEM))
   {
     RefItem *item = refList->find(m_id);
     ASSERT(item!=0);
@@ -471,6 +471,11 @@ bool DocXRefItem::parse(DocNodeVariant *thisVariant)
       if (parser()->context.memberDef && parser()->context.memberDef->name().at(0)=='@')
       {
         m_file   = "@";  // can't cross reference anonymous enum
+        m_anchor = "@";
+      }
+      else if (!refList->isEnabled(Generate_Xref_t::PAGE))
+      {
+        m_file   = "@";  // can't cross reference to page as the page does not exist
         m_anchor = "@";
       }
       else
