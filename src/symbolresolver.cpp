@@ -259,10 +259,9 @@ const ClassDef *SymbolResolver::Private::getResolvedClassRec(
   }
   *pk='\0';
 
-  LookupInfo *pval = 0;
   {
     std::lock_guard<std::mutex> lock(g_cacheMutex);
-    pval=Doxygen::lookupCache->find(key.str());
+    LookupInfo *pval = Doxygen::lookupCache->find(key.str());
     //printf("Searching for %s result=%p\n",qPrint(key),pval);
     if (pval)
     {
@@ -281,7 +280,7 @@ const ClassDef *SymbolResolver::Private::getResolvedClassRec(
     else // not found yet; we already add a 0 to avoid the possibility of
       // endless recursion.
     {
-      pval = Doxygen::lookupCache->insert(key.str(),LookupInfo());
+      Doxygen::lookupCache->insert(key.str(),LookupInfo());
     }
   }
 
@@ -314,13 +313,11 @@ const ClassDef *SymbolResolver::Private::getResolvedClassRec(
   //printf("getResolvedClassRec: bestMatch=%p pval->resolvedType=%s\n",
   //    bestMatch,qPrint(bestResolvedType));
 
-  if (pval)
   {
+    // we need to insert the item in the cache again, as it could be removed in the meantime
     std::lock_guard<std::mutex> lock(g_cacheMutex);
-    pval->classDef     = bestMatch;
-    pval->typeDef      = bestTypedef;
-    pval->templSpec    = bestTemplSpec;
-    pval->resolvedType = bestResolvedType;
+    Doxygen::lookupCache->insert(key.str(),
+                          LookupInfo(bestMatch,bestTypedef,bestTemplSpec,bestResolvedType));
   }
   //fprintf(stderr,"%d ] bestMatch=%s distance=%d\n",--level,
   //    bestMatch?qPrint(bestMatch->name()):"<none>",minDistance);

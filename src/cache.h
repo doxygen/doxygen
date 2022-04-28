@@ -40,11 +40,20 @@ class Cache
     }
 
     //! Inserts \a value under \a key in the cache
-    V *insert(const K &key,V &&value)
+    [[maybe_unused]] V *insert(const K &key,V &&value)
     {
-      // remove item if it already exists
-      remove(key);
-      // store new item
+      // reuse item if it already exists
+      auto it = m_cacheItemMap.find(key);
+      if (it != m_cacheItemMap.end())
+      {
+        // move the item to the front of the list
+        m_cacheItemList.splice(m_cacheItemList.begin(),
+                               m_cacheItemList,
+                               it->second);
+        std::exchange(it->second->second,value);
+        return &it->second->second;
+      }
+      // create new item
       m_cacheItemList.push_front(kv_pair(key,std::move(value)));
       V *result = &m_cacheItemList.front().second;
       m_cacheItemMap[key] = m_cacheItemList.begin();
@@ -54,10 +63,19 @@ class Cache
     }
 
     //! Inserts \a value under \a key in the cache
-    V *insert(const K &key,const V &value)
+    [[maybe_unused]] V *insert(const K &key,const V &value)
     {
-      // remove item if it already exists
-      remove(key);
+      // reuse item if it already exists
+      auto it = m_cacheItemMap.find(key);
+      if (it != m_cacheItemMap.end())
+      {
+        // move the item to the front of the list
+        m_cacheItemList.splice(m_cacheItemList.begin(),
+                               m_cacheItemList,
+                               it->second);
+        it->second->second = value;
+        return &it->second->second;
+      }
       // store new item
       m_cacheItemList.push_front(kv_pair(key,value));
       V *result = &m_cacheItemList.front().second;
@@ -140,6 +158,7 @@ class Cache
     const_iterator end() const   { return m_cacheItemList.cend();   }
 
   private:
+    // remove least recently used item if cache is full
     void resize()
     {
       if (m_cacheItemMap.size() > m_capacity)
@@ -150,6 +169,7 @@ class Cache
         m_cacheItemList.pop_back();
       }
     }
+
     size_t m_capacity;
     // list of items in the cache, sorted by most to least recently used.
     std::list<kv_pair> m_cacheItemList;
