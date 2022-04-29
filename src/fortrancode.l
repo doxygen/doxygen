@@ -1523,7 +1523,7 @@ void FortranCodeParser::parseCode(CodeOutputInterface & codeOutIntf,
   {
     endCodeLine(yyscanner);
   }
-  if (fileDef!=0 && isExampleBlock && yyextra->sourceFileDef)
+  if (!fileDef && isExampleBlock && yyextra->sourceFileDef)
   {
     // delete the temporary file definition used for this example
     delete yyextra->sourceFileDef;
