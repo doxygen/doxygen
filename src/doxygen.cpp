@@ -10005,16 +10005,24 @@ static std::shared_ptr<Entry> parseFile(OutlineParserInterface &parser,
     BufStr inBuf(fi.size()+4096);
     msg("Preprocessing %s...\n",qPrint(fn));
     readInputFile(fileName,inBuf);
+    if (inBuf.data() && inBuf.curPos()>1 && *(inBuf.data()+inBuf.curPos()-2)!='\n')
+    {
+      // add extra newline to preprocessor
+      *(inBuf.data()+inBuf.curPos()-1) = '\n';
+      inBuf.addChar('\0');
+    }
     preprocessor.processFile(fileName,inBuf,preBuf);
   }
   else // no preprocessing
   {
     msg("Reading %s...\n",qPrint(fn));
     readInputFile(fileName,preBuf);
-  }
-  if (preBuf.data() && preBuf.curPos()>0 && *(preBuf.data()+preBuf.curPos()-1)!='\n')
-  {
-    preBuf.addChar('\n'); // add extra newline to help parser
+    if (preBuf.data() && preBuf.curPos()>1 && *(preBuf.data()+preBuf.curPos()-2)!='\n')
+    {
+      // add extra newline to help parser
+      *(preBuf.data()+preBuf.curPos()-1) = '\n';
+      preBuf.addChar('\0');
+    }
   }
 
   BufStr convBuf(preBuf.curPos()+1024);
