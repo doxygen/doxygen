@@ -8383,17 +8383,15 @@ static void computeTooltipTexts()
   if (numThreads>1)
   {
     ThreadPool threadPool(numThreads);
-    std::vector < std::future< int > > results;
+    std::vector < std::future< void > > results;
     // queue the work
-    std::atomic_int count=0;
     for (const auto &kv : *Doxygen::symbolMap)
     {
       DefinitionMutable *dm = toDefinitionMutable(kv.second);
       if (dm && !isSymbolHidden(toDefinition(dm)) && toDefinition(dm)->isLinkableInProject())
       {
-        auto processTooltip = [dm,&count]() {
+        auto processTooltip = [dm]() {
           dm->computeTooltip();
-          return count++;
         };
         results.emplace_back(threadPool.queue(processTooltip));
       }
@@ -8401,7 +8399,7 @@ static void computeTooltipTexts()
     // wait for the results
     for (auto &f : results)
     {
-      auto i = f.get();
+      f.get();
     }
   }
   else

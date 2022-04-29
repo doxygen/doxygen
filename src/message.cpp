@@ -21,6 +21,7 @@
 #include "doxygen.h"
 
 #include <mutex>
+#include <atomic>
 
 // globals
 static QCString        g_warnFormat;
