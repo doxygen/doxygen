@@ -8379,12 +8379,40 @@ static bool isSymbolHidden(const Definition *d)
 
 static void computeTooltipTexts()
 {
-  for (const auto &kv : *Doxygen::symbolMap)
+  std::size_t numThreads = static_cast<std::size_t>(Config_getInt(NUM_PROC_THREADS));
+  if (numThreads>1)
   {
-    DefinitionMutable *dm = toDefinitionMutable(kv.second);
-    if (dm && !isSymbolHidden(toDefinition(dm)) && toDefinition(dm)->isLinkableInProject())
+    ThreadPool threadPool(numThreads);
+    std::vector < std::future< int > > results;
+    // queue the work
+    std::atomic_int count=0;
+    for (const auto &kv : *Doxygen::symbolMap)
     {
-      dm->computeTooltip();
+      DefinitionMutable *dm = toDefinitionMutable(kv.second);
+      if (dm && !isSymbolHidden(toDefinition(dm)) && toDefinition(dm)->isLinkableInProject())
+      {
+        auto processTooltip = [dm,&count]() {
+          dm->computeTooltip();
+          return count++;
+        };
+        results.emplace_back(threadPool.queue(processTooltip));
+      }
+    }
+    // wait for the results
+    for (auto &f : results)
+    {
+      auto i = f.get();
+    }
+  }
+  else
+  {
+    for (const auto &kv : *Doxygen::symbolMap)
+    {
+      DefinitionMutable *dm = toDefinitionMutable(kv.second);
+      if (dm && !isSymbolHidden(toDefinition(dm)) && toDefinition(dm)->isLinkableInProject())
+      {
+        dm->computeTooltip();
+      }
     }
   }
 }

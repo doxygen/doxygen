@@ -29,7 +29,7 @@ static const char *    g_warningStr = "warning: ";
 static const char *    g_errorStr = "error: ";
 static FILE *          g_warnFile = stderr;
 static WARN_AS_ERROR_t g_warnBehavior = WARN_AS_ERROR_t::NO;
-static bool            g_warnStat = false;
+static std::atomic_bool g_warnStat = false;
 static std::mutex      g_mutex;
 
 void initWarningFormat()
