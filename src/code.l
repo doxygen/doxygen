@@ -3276,7 +3276,7 @@ static void generateFunctionLink(yyscan_t yyscanner,CodeOutputInterface &ol,cons
   QCString funcWithScope=locFunc;
   QCString funcWithFullScope=locFunc;
   QCString fullScope=locScope;
-  DBG_CTX((stdout,"*** locScope=%s locFunc=%s\n",qPrint(locScope),qPrint(locFunc)));
+  DBG_CTX((stderr,"*** locScope=%s locFunc=%s\n",qPrint(locScope),qPrint(locFunc)));
   int len=2;
   int i=locFunc.findRev("::");
   if (yyextra->currentMemberDef && yyextra->currentMemberDef->resolveAlias()->getClassDef() &&
@@ -3985,7 +3985,7 @@ void CCodeParser::parseCode(CodeOutputInterface &od,const QCString &className,co
   {
     setCurrentDoc(yyscanner,"l00001");
   }
-  yyextra->currentDefinition = getResolvedNamespace(className);
+  yyextra->currentDefinition = searchCtx ? searchCtx : getResolvedNamespace(className);
   yyextra->currentMemberDef = 0;
   yyextra->searchingForBody = exBlock;
   yyextra->insideBody = FALSE;
