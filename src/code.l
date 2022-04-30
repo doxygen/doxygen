@@ -179,7 +179,10 @@ struct codeYY_state
   std::unordered_map< int, QCString>  commentMap;
   int           braceCount=0;
 
+  using UsingContext = std::map<std::string,const NamespaceDef*>;
+
   VariableContext theVarContext;
+  UsingContext    theUsingContext;
   CallContext     theCallContext;
   SymbolResolver  symbolResolver;
   TooltipManager  tooltipManager;
@@ -258,7 +261,6 @@ static std::mutex g_searchIndexMutex;
 static std::mutex g_docCrossReferenceMutex;
 static std::mutex g_addExampleMutex;
 static std::mutex g_countFlowKeywordsMutex;
-static std::mutex g_usingDirectiveMutex;
 
 /* -----------------------------------------------------------------
  */
@@ -927,6 +929,12 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           BEGIN(ConceptName);
                                         }
 <Body>"using"{BN}+"namespace"{BN}+      {
+                                          startFontClass(yyscanner,"keyword");
+                                          codifyLines(yyscanner,yytext);
+                                          endFontClass(yyscanner);
+                                          BEGIN(UsingName);
+                                        }
+<Body>"using"{BN}+                      {
                                           startFontClass(yyscanner,"keyword");
                                           codifyLines(yyscanner,yytext);
                                           endFontClass(yyscanner);
@@ -2208,20 +2216,34 @@ static void addVariable(yyscan_t yyscanner,QCString type,QCString name)
   }
   else
   {
-    const ClassDef *varDef = yyextra->symbolResolver.resolveClass(yyextra->currentDefinition,ltype);
-    int i=0;
-    if (varDef)
+    auto findVariableType = [&yyscanner,&yyg,&ltype,&lname,&name](const Definition *d) -> const ClassDef *
     {
-      DBG_CTX((stderr,"** addVariable type='%s' name='%s'\n",qPrint(ltype),qPrint(lname)));
-      yyextra->theVarContext.addVariable(lname,ScopedTypeVariant(varDef)); // add it to a list
-    }
-    else if ((i=ltype.find('<'))!=-1)
+      const ClassDef *varDef = yyextra->symbolResolver.resolveClass(d,ltype);
+      int i=0;
+      if (varDef)
+      {
+        DBG_CTX((stderr,"** addVariable type='%s' name='%s'\n",qPrint(ltype),qPrint(lname)));
+        yyextra->theVarContext.addVariable(lname,ScopedTypeVariant(varDef)); // add it to a list
+      }
+      else if ((i=ltype.find('<'))!=-1)
+      {
+        // probably a template class
+        QCString typeName(ltype.left(i));
+        addVariable(yyscanner,typeName,name);
+      }
+      return varDef;
+    };
+    const ClassDef *varDef = findVariableType(yyextra->currentDefinition);
+    if (varDef==0)
     {
-      // probably a template class
-      QCString typeName(ltype.left(i));
-      addVariable(yyscanner,typeName,name);
+      // also check via using directive
+      for (const auto &kv : yyextra->theUsingContext)
+      {
+        varDef = findVariableType(kv.second);
+        if (varDef!=0) break;
+      }
     }
-    else
+    if (varDef==0)
     {
       if (!yyextra->theVarContext.atGlobalScope()) // for local variables add a dummy entry so the name
         // is hidden to avoid false links to global variables with the same name
@@ -2544,17 +2566,15 @@ static void addParmType(yyscan_t yyscanner)
   yyextra->parmName.resize(0) ;
 }
 
-// TODO: make this have a scope only effect, at least not modifying the FileDef object.
 static void addUsingDirective(yyscan_t yyscanner,const char *name)
 {
-  std::lock_guard<std::mutex> lock(g_usingDirectiveMutex);
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (yyextra->sourceFileDef && name)
   {
     const NamespaceDef *nd = Doxygen::namespaceLinkedMap->find(name);
     if (nd)
     {
-      const_cast<FileDef*>(yyextra->sourceFileDef)->addUsingDirective(nd);
+      yyextra->theUsingContext.insert(std::make_pair(std::string(name),nd));
     }
   }
 }
@@ -2834,7 +2854,6 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
                                       bool varOnly)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  int i=0;
   QCString className=clName;
   if (!className.isEmpty() && className[0]=='~') // correct for matching negated values i.s.o. destructors.
   {
@@ -2865,25 +2884,40 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
   DBG_CTX((stderr,"generateClassOrGlobalLink(className=%s)\n",qPrint(className)));
   if (!yyextra->isPrefixedWithThis || (lcd=yyextra->theVarContext.findVariable(className))==0) // not a local variable
   {
-    const Definition *d = yyextra->currentDefinition;
-    DBG_CTX((stderr,"d=%s yyextra->sourceFileDef=%s\n",d?qPrint(d->name()):"<none>",yyextra->sourceFileDef?qPrint(yyextra->sourceFileDef->name()):"<none>"));
-    cd = yyextra->symbolResolver.resolveClass(d,className);
-    md = yyextra->symbolResolver.getTypedef();
-    DBG_CTX((stderr,"non-local variable name=%s cd=%s md=%s!\n",
-         qPrint(className),cd?qPrint(cd->name()):"<none>",
-         md?qPrint(md->name()):"<none>"));
-    i=className.find('<');
+    int i=className.find('<');
     QCString bareName = className;
     if (i!=-1) bareName = bareName.left(i);
-    if (cd==0 && md==0 && i!=-1)
+
+    auto checkForClass = [&yyg,&md,&cd,&bareName,&className](const Definition *d)
     {
-      DBG_CTX((stderr,"bareName=%s\n",qPrint(bareName)));
-      if (bareName!=className)
+      cd = yyextra->symbolResolver.resolveClass(d,className);
+      md = yyextra->symbolResolver.getTypedef();
+      DBG_CTX((stderr,"non-local variable name=%s cd=%s md=%s!\n",
+            qPrint(className),cd?qPrint(cd->name()):"<none>",
+            md?qPrint(md->name()):"<none>"));
+      if (cd==0 && md==0 && !bareName.isEmpty())
       {
-        cd = yyextra->symbolResolver.resolveClass(d,bareName); // try unspecialized version
-        md = yyextra->symbolResolver.getTypedef();
+        DBG_CTX((stderr,"bareName=%s\n",qPrint(bareName)));
+        if (bareName!=className)
+        {
+          cd = yyextra->symbolResolver.resolveClass(d,bareName); // try unspecialized version
+          md = yyextra->symbolResolver.getTypedef();
+        }
+      }
+    };
+    const Definition *d = yyextra->currentDefinition;
+    DBG_CTX((stderr,"d=%s yyextra->sourceFileDef=%s\n",d?qPrint(d->name()):"<none>",yyextra->sourceFileDef?qPrint(yyextra->sourceFileDef->name()):"<none>"));
+    checkForClass(d);
+    if (cd==0 && md==0)
+    {
+      // also check via using directive
+      for (const auto &kv : yyextra->theUsingContext)
+      {
+        checkForClass(kv.second);
+        if (cd!=0 || md!=0) break;
       }
     }
+
     const NamespaceDef *nd = getResolvedNamespace(className);
     if (nd && nd->isLinkable())
     {
@@ -3902,7 +3936,7 @@ void CCodeParser::parseCode(CodeOutputInterface &od,const QCString &className,co
 
   if (s.isEmpty()) return;
 
-  printlex(yy_flex_debug, TRUE, __FILE__, fd ? qPrint(fd->fileName()): NULL);
+  printlex(yy_flex_debug, TRUE, __FILE__, fd ? qPrint(fd->fileName()): !exName.isEmpty() ? qPrint(exName) : NULL);
 
   yyextra->code = &od;
   yyextra->inputString   = s.data();
