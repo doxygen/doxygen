@@ -10755,6 +10755,8 @@ static void usage(const QCString &name,const QCString &versionString)
   msg("   If - is used for configFile doxygen will write / read the configuration to /from standard output / input.\n\n");
   msg("If -q is used for a doxygen documentation run, doxygen will see this as if QUIET=YES has been set.\n\n");
   msg("-v print version string, -V print extended version information\n");
+  msg("-h,-? prints usage help information\n");
+  msg("%s -d prints additional usage flags for debugging purposes\n",qPrint(name));
 }
 
 //----------------------------------------------------------------------------
