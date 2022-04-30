@@ -21,7 +21,7 @@ doxygen [configName]
 .TP
 4) Use doxygen to generate a template file controlling the layout of the generated documentation:
 .IP
-doxygen -l [layoutFileName]
+doxygen \fB\-l\fR [layoutFileName]
 .IP
 .RS 0
    In case layoutFileName is omitted DoxygenLayout.xml will be used as filename.
@@ -67,10 +67,15 @@ doxygen \fB\-f\fR emoji outputFileName
 .RE
 .PP
 .RS 0
-*) If \fB\-s\fR is specified the comments in the config file will be omitted.
-   If configName is omitted `Doxyfile' will be used as a default.
+*) If \fB\-s\fR is specified the comments of the configuration items in the config file will be omitted.
+   If configName is omitted 'Doxyfile' will be used as a default.
    If - is used for configFile doxygen will write / read the configuration to /from standard output / input.
 .RE
+.PP
+If \fB\-q\fR is used for a doxygen documentation run, doxygen will see this as if QUIET=YES has been set.
+.PP
+\fB\-v\fR print version string, \fB\-V\fR print extended version information
+.PP
 .SH AUTHOR
 Doxygen version @VERSION@, Copyright Dimitri van Heesch 1997-@YEAR@
 .SH SEE ALSO

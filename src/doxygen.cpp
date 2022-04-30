@@ -10723,12 +10723,12 @@ static void usage(const QCString &name,const QCString &versionString)
 {
   msg("Doxygen version %s\nCopyright Dimitri van Heesch 1997-2021\n\n",qPrint(versionString));
   msg("You can use doxygen in a number of ways:\n\n");
-  msg("1) Use doxygen to generate a template configuration file:\n");
+  msg("1) Use doxygen to generate a template configuration file*:\n");
   msg("    %s [-s] -g [configName]\n\n",qPrint(name));
-  msg("2) Use doxygen to update an old configuration file:\n");
+  msg("2) Use doxygen to update an old configuration file*:\n");
   msg("    %s [-s] -u [configName]\n\n",qPrint(name));
   msg("3) Use doxygen to generate documentation using an existing ");
-  msg("configuration file:\n");
+  msg("configuration file*:\n");
   msg("    %s [configName]\n\n",qPrint(name));
   msg("4) Use doxygen to generate a template file controlling the layout of the\n");
   msg("   generated documentation:\n");
@@ -10750,9 +10750,9 @@ static void usage(const QCString &name,const QCString &versionString)
   msg("8) Use doxygen to show a list of built-in emojis.\n");
   msg("    %s -f emoji outputFileName\n\n",qPrint(name));
   msg("    If - is used for outputFileName doxygen will write to standard output.\n\n");
-  msg("If -s is specified the comments of the configuration items in the config file will be omitted.\n");
-  msg("If configName is omitted 'Doxyfile' will be used as a default.\n");
-  msg("If - is used for configFile doxygen will write / read the configuration to /from standard output / input.\n\n");
+  msg("*) If -s is specified the comments of the configuration items in the config file will be omitted.\n");
+  msg("   If configName is omitted 'Doxyfile' will be used as a default.\n");
+  msg("   If - is used for configFile doxygen will write / read the configuration to /from standard output / input.\n\n");
   msg("If -q is used for a doxygen documentation run, doxygen will see this as if QUIET=YES has been set.\n\n");
   msg("-v print version string, -V print extended version information\n");
 }
