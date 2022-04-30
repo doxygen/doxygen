@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2022 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -306,12 +306,12 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
         if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
         {
           result+="각 필드들은 해당 필드에 대한 구조체와 공용체의 "
-		  "문서화 페이지의 링크를 가지고 있습니다. :";
+          "문서화 페이지의 링크를 가지고 있습니다. :";
         }
         else
         {
           result+="각 멤버들은 해당 멤버에 대한 클래스의 문서화 페이지의 "
-		  "링크를 가지고 있습니다. :";
+          "링크를 가지고 있습니다. :";
         }
       }
       else
@@ -319,12 +319,12 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
         if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
         {
           result+="각 필드들은 해당 필드가 속해 있는 구조체와 공용체에 "
-		  "대한 링크를 가지고 있습니다. :";
+          "대한 링크를 가지고 있습니다. :";
         }
         else
         {
           result+="각 멤버들은 해당 멤버가 속해 있는 클래스에 대한 "
-		  "링크를 가지고 있습니다. :";
+          "링크를 가지고 있습니다. :";
         }
       }
       return result;
@@ -1054,7 +1054,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
         "<li>%A 검은색 테두리의 박스는 문서화된 구조체나 클래스를 의미합니다.\n"
         "<li>%A 회색 테두리의 박스는 문서화되지 않은 구조체나 클래스를 의미합니다.\n"
         "<li>%A 빨간색 테두리의 박스는 모든 상속이나 포함관계가 보여지지 않는 "
-	"구조체나 클래스를 의미합니다."
+    "구조체나 클래스를 의미합니다."
         "%A 만약 그래프가 지정된 경계내에 맞지 않으면, 그래프가 잘려집니다.\n"
         "</ul>\n"
         "화살표들은 다음과 같은 의미를 가집니다. :\n"
@@ -1063,9 +1063,9 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
         "<li>%A 어두운 연두색 화살표는 protected 상속이 있음을 의미합니다.\n"
         "<li>%A 어두운 빨간색 화살표는 private 상속이 있음을 의미합니다.\n"
         "<li>%A 보라색 점선 화살표는 다른 클래스에 의해 포함되거나 사용되어짐을 의미합니다. "
-	"화살표의 라벨은 화살표가 가리키는 클래스나 구조체로 접근하는 변수명(들)으로 붙습니다.\n"
+    "화살표의 라벨은 화살표가 가리키는 클래스나 구조체로 접근하는 변수명(들)으로 붙습니다.\n"
         "<li>%A 노란색 점선 화살표는 템플릿 인스턴스와 템프릿 클래스에 대한 관계를 의미합니다. "
-	"화살표의 라벨은 인스턴스의 템플릿 파라메터로 붙습니다.\n"
+    "화살표의 라벨은 인스턴스의 템플릿 파라메터로 붙습니다.\n"
         "</ul>\n";
     }
     /*! text for the link to the legend page */
@@ -1984,7 +1984,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
       // single is true implies a single file
       QCString result="이 서비스에 대한 문서화는 다음의 파일";
       if (!single) result+="들";
-	  result+="로부터 생성되었습니다.:";
+      result+="로부터 생성되었습니다.:";
       return result;
     }
     /** UNO IDL singleton page */
@@ -1993,7 +1993,7 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
       // single is true implies a single file
       QCString result="이 싱글톤에 대한 문서화는 다음의 파일";
       if (!single) result+="들";
-	  result+="로부터 생성되었습니다.:";
+      result+="로부터 생성되었습니다.:";
       return result;
     }
 

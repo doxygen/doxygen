@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # python script to generate an overview of the staes based on the input lex file.
 #
-# Copyright (C) 1997-2019 by Dimitri van Heesch.
+# Copyright (C) 1997-2022 by Dimitri van Heesch.
 #
 # Permission to use, copy, modify, and distribute this software and its
 # documentation under the terms of the GNU General Public License is hereby

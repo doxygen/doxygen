@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright (C) 1997-2020 by Dimitri van Heesch.
+ * Copyright (C) 1997-2022 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -364,11 +364,11 @@ RAWBEGIN  (u|U|L|u8)?R\"[^ \t\(\)\\]{0,16}"("
 RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 
-  // C start comment 
+  // C start comment
 CCS   "/\*"
   // C end comment
 CCE   "*\/"
-  // Cpp comment 
+  // Cpp comment
 CPPC  "/\/"
   // optional characters after import
 ENDIMPORTopt [^\\\n]*
@@ -420,7 +420,7 @@ WSopt [ \t\r]*
 
 %%
 
-<*>\x06                                 
+<*>\x06
 <*>\x00
 <*>\r
 <*>"??"[=/'()!<>-]                      { // Trigraph
@@ -430,7 +430,7 @@ WSopt [ \t\r]*
                                           yyextra->yyColNr+=(int)yyleng;
                                           yyextra->yyMLines=0;
                                           yyextra->potentialDefine=yytext;
-                                          BEGIN(Command); 
+                                          BEGIN(Command);
                                         }
 <Start>^("%top{"|"%{")                  {
                                           if (getLanguageFromFileName(yyextra->fileName)!=SrcLangExt_Lex) REJECT
@@ -1004,7 +1004,7 @@ WSopt [ \t\r]*
                                           BEGIN(SkipLine);
                                         }
 <SkipCommand>.
-<SkipLine>[^'"/\n]+                     
+<SkipLine>[^'"/\n]+
 <SkipLine>{CHARLIT}                     { }
 <SkipLine>\"                            {
                                           BEGIN(SkipString);
@@ -1513,11 +1513,11 @@ WSopt [ \t\r]*
                                           }
                                         }
 <RemoveCComment>{CCE}                   { BEGIN(yyextra->lastCContext); }
-<RemoveCComment>{CPPC}                  
+<RemoveCComment>{CPPC}
 <RemoveCComment>{CCS}
 <RemoveCComment>[^*\x06\n]+
 <RemoveCComment>\n                      { yyextra->yyLineNr++; outputChar(yyscanner,'\n'); }
-<RemoveCComment>.                       
+<RemoveCComment>.
 <SkipCPPComment>[^\n\/\\@]+             {
                                           outputArray(yyscanner,yytext,yyleng);
                                         }
@@ -2193,7 +2193,7 @@ static void processConcatOperators(QCString &expr)
       // remove the ## operator and the surrounding whitespace
       e=e.substr(0,n)+e.substr(n+l);
       int k=static_cast<int>(n)-1;
-      while (k>=0 && isId(e[k])) k--; 
+      while (k>=0 && isId(e[k])) k--;
       if (k>0 && e[k]=='-' && e[k-1]=='@')
       {
         // remove no-rescan marker before ID
@@ -2766,7 +2766,7 @@ static QCString removeIdsAndMarkers(const QCString &s)
       {
         result+=c;
         p++;
-        inNum=TRUE;     
+        inNum=TRUE;
       }
       else if (c=='\'') // quoted character
       {
@@ -3449,8 +3449,8 @@ static void initPredefined(yyscan_t yyscanner,const QCString &fileName)
       continue; // no define name
     }
 
-    if (i_obrace<i_equals && i_cbrace<i_equals && 
-        i_obrace!=std::string::npos && i_cbrace!=std::string::npos && 
+    if (i_obrace<i_equals && i_cbrace<i_equals &&
+        i_obrace!=std::string::npos && i_cbrace!=std::string::npos &&
         i_obrace<i_cbrace
        ) // predefined function macro definition
     {
@@ -3478,7 +3478,7 @@ static void initPredefined(yyscan_t yyscanner,const QCString &fileName)
       reg::Iterator re_it(in,reId);
       reg::Iterator re_end;
       size_t i=0;
-      // substitute all occurrences of formal arguments by their 
+      // substitute all occurrences of formal arguments by their
       // corresponding markers
       for (; re_it!=re_end; ++re_it)
       {
@@ -3646,7 +3646,7 @@ void Preprocessor::processFile(const QCString &fileName,BufStr &input,BufStr &ou
     int line=1;
     Debug::print(Debug::Preprocessor,0,"---------\n");
     if (!Debug::isFlagSet(Debug::NoLineNo)) Debug::print(Debug::Preprocessor,0,"00001 ");
-    while (orgPos<newPos) 
+    while (orgPos<newPos)
     {
       putchar(*orgPos);
       if (*orgPos=='\n' && !Debug::isFlagSet(Debug::NoLineNo)) Debug::print(Debug::Preprocessor,0,"%05d ",++line);

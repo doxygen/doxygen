@@ -1,11 +1,11 @@
 #
-# 
 #
-# Copyright (C) 1997-1999 by Dimitri van Heesch.
+#
+# Copyright (C) 1997-2022 by Dimitri van Heesch.
 #
 # Permission to use, copy, modify, and distribute this software and its
-# documentation under the terms of the GNU General Public License is hereby 
-# granted. No representations are made about the suitability of this software 
+# documentation under the terms of the GNU General Public License is hereby
+# granted. No representations are made about the suitability of this software
 # for any purpose. It is provided "as is" without express or implied warranty.
 # See the GNU General Public License for more details.
 #
@@ -14,8 +14,8 @@
 
 PROJECT_NAME      = "Doxygen"
 OUTPUT_DIRECTORY  = ..
-HTML_HEADER       = 
-HTML_FOOTER       = 
+HTML_HEADER       =
+HTML_FOOTER       =
 QUIET             = YES
 WARNINGS          = YES
 DISABLE_INDEX     = YES
@@ -37,8 +37,8 @@ INPUT             = index.doc install.doc starting.doc docblocks.doc markdown.do
                     lists.doc grouping.doc formulas.doc tables.doc diagrams.doc preprocessing.doc \
                     autolink.doc output.doc searching.doc extsearch.doc customize.doc custcmd.doc \
                     external.doc faq.doc trouble.doc features.doc \
-		    doxygen_usage.doc doxywizard_usage.doc \
-		    config.doc commands.doc htmlcmds.doc xmlcmds.doc emojisup.doc language.doc \
+            doxygen_usage.doc doxywizard_usage.doc \
+            config.doc commands.doc htmlcmds.doc xmlcmds.doc emojisup.doc language.doc \
                     perlmod.doc arch.doc changelog.doc
 FILE_PATTERNS     = *.cpp *.h *.doc
 EXAMPLE_PATH      = ../examples .

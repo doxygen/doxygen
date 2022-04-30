@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 1997-2018 by Dimitri van Heesch.
+ * Copyright (C) 1997-2022 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -22,11 +22,11 @@
  * 20211003:
  *  - Updated to 1.9.3;
  * 20200112:
- * 	- Updated to 1.9.1;
+ *  - Updated to 1.9.1;
  * 20190203:
- *	- Slice methods added;
+ *  - Slice methods added;
  * 20180612:
- *	- Updated to 1.8.15;
+ *  - Updated to 1.8.15;
  * 20170123:
  *  - Full translation revision;
  *  - trLegendDocs() is now synchronized with the English version;
@@ -44,11 +44,11 @@
  *  - Copyright year updated;
  *  - Translation updates suggested by Fernando Carijó added;
  * 20080709:
- *	- References to MAX_DOT_GRAPH_HEIGHT removed from trLegendDocs().
+ *  - References to MAX_DOT_GRAPH_HEIGHT removed from trLegendDocs().
  * 20080206:
  *  - Method trTypeContraints() renamed to trTypeConstraints().
  * 20071216:
- * 	- New methods since 1.5.4 updated.
+ *  - New methods since 1.5.4 updated.
  * Previous history removed from this version.
  */
 #ifndef TRANSLATOR_BR_H
@@ -1093,7 +1093,7 @@ class TranslatorBrazilian : public TranslatorAdapter_1_9_4
         "</p>\n"
         "<ul>\n"
         "<li>Uma caixa cinza denota a estrutura ou a classe que gerou"
-	"este grafo.</li>\n"
+    "este grafo.</li>\n"
         "<li>Uma caixa com a borda preta denota uma estrutura ou classe documentada.</li>\n"
         "<li>Uma caixa com a borda cinza denota uma estrutura ou classe não documentada.</li>\n"
         "<li>Uma caixa com a borda vermelha denota uma estrutura ou classe na"
@@ -1563,8 +1563,8 @@ class TranslatorBrazilian : public TranslatorAdapter_1_9_4
     virtual QCString trDirReference(const QCString &dirName)
     {
         QCString result = "Referência do diretório ";
-     	result += dirName;
-     	return result;
+        result += dirName;
+        return result;
     }
 
     /*! This returns the word directory with or without starting capital
@@ -1587,8 +1587,8 @@ class TranslatorBrazilian : public TranslatorAdapter_1_9_4
     virtual QCString trOverloadText()
     {
        return "Esse é um método provido por conveniência. "
-       		"Ele difere do método acima apenas na lista de "
-       		"argumentos que devem ser utilizados.";
+            "Ele difere do método acima apenas na lista de "
+            "argumentos que devem ser utilizados.";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1780,9 +1780,9 @@ class TranslatorBrazilian : public TranslatorAdapter_1_9_4
 
       result+=" foi gerada a partir do";
       if (single)
-    	result+=" seguinte arquivo:";
+        result+=" seguinte arquivo:";
       else
-    	result+="s seguintes arquivos:";
+        result+="s seguintes arquivos:";
 
       return result;
     }
@@ -2100,7 +2100,7 @@ class TranslatorBrazilian : public TranslatorAdapter_1_9_4
     virtual QCString trDesignUnitListDescription()
     {
         return "Esta é uma lista de todos os membros de unidades de design "
-        		"com ligações para as entidades às quais pertencem:";
+                "com ligações para as entidades às quais pertencem:";
     }
     /** VHDL design unit index */
     virtual QCString trDesignUnitIndex()
@@ -2337,57 +2337,57 @@ class TranslatorBrazilian : public TranslatorAdapter_1_9_4
     //////////////////////////////////////////////////////////////////////////
 
     /** VHDL design unit documentation */
-	virtual QCString trDesignUnitDocumentation()
-	{
-	    return "Documentação da Unidade de Projeto";
+    virtual QCString trDesignUnitDocumentation()
+    {
+        return "Documentação da Unidade de Projeto";
         }
 
 
-	//////////////////////////////////////////////////////////////////////////
-	// new since 1.9.2
-	//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.9.2
+    //////////////////////////////////////////////////////////////////////////
 
-	/** C++20 concept */
-	virtual QCString trConcept(bool first_capital, bool singular)
-	{
-	  QCString result((first_capital ? "Conceito" : "conceito"));
-	  if (!singular) result+="s";
-	  return result;
-	}
-	/*! used as the title of the HTML page of a C++20 concept page */
-	virtual QCString trConceptReference(const QCString &conceptName)
-	{
-	  QCString result= "Referência do Conceito ";
-	  result+=conceptName;
-	  return result;
-	}
+    /** C++20 concept */
+    virtual QCString trConcept(bool first_capital, bool singular)
+    {
+      QCString result((first_capital ? "Conceito" : "conceito"));
+      if (!singular) result+="s";
+      return result;
+    }
+    /*! used as the title of the HTML page of a C++20 concept page */
+    virtual QCString trConceptReference(const QCString &conceptName)
+    {
+      QCString result= "Referência do Conceito ";
+      result+=conceptName;
+      return result;
+    }
 
-	/*! used as the title of page containing all the index of all concepts. */
-	virtual QCString trConceptList()
-	{ return "Lista de Conceitos"; }
+    /*! used as the title of page containing all the index of all concepts. */
+    virtual QCString trConceptList()
+    { return "Lista de Conceitos"; }
 
-	/*! used as the title of chapter containing the index listing all concepts. */
-	virtual QCString trConceptIndex()
-	{ return "Índice de Conceitos"; }
+    /*! used as the title of chapter containing the index listing all concepts. */
+    virtual QCString trConceptIndex()
+    { return "Índice de Conceitos"; }
 
-	/*! used as the title of chapter containing all information about concepts. */
-	virtual QCString trConceptDocumentation()
-	{ return "Documentação do Conceito"; }
+    /*! used as the title of chapter containing all information about concepts. */
+    virtual QCString trConceptDocumentation()
+    { return "Documentação do Conceito"; }
 
-	/*! used as an introduction to the concept list */
-	virtual QCString trConceptListDescription(bool extractAll)
-	{
-	  QCString result="Esta é a lista de todos os conceitos ";
-	  if (!extractAll) result+="documentados ";
-	  result+="com suas respectivas descrições:";
-	  return result;
-	}
+    /*! used as an introduction to the concept list */
+    virtual QCString trConceptListDescription(bool extractAll)
+    {
+      QCString result="Esta é a lista de todos os conceitos ";
+      if (!extractAll) result+="documentados ";
+      result+="com suas respectivas descrições:";
+      return result;
+    }
 
-	/*! used to introduce the definition of the C++20 concept */
-	virtual QCString trConceptDefinition()
-	{
-	  return "Definição de conceito";
-	}
+    /*! used to introduce the definition of the C++20 concept */
+    virtual QCString trConceptDefinition()
+    {
+      return "Definição de conceito";
+    }
 };
 
 #endif

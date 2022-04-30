@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2022 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -3068,7 +3068,7 @@ template<class T> class TemplateNodeCreator : public TemplateNode
         if (!rootDir.mkdir(outputDir))
         {
           err("tag OUTPUT_DIRECTORY: Output directory '%s' does not "
-	      "exist and cannot be created\n",outputDir.c_str());
+          "exist and cannot be created\n",outputDir.c_str());
           return;
         }
         d.setPath(outputDir);

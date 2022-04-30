@@ -2,7 +2,7 @@
  *
  *
  *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2022 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -141,7 +141,7 @@ PREDEFINED           = "DECLARE_INTERFACE(name)=class name" \
                        "PURE= = 0" \
                        THIS_= \
                        THIS= \
-		       __cplusplus
+               __cplusplus
 \endverbatim
 
 we can make sure that the proper result is fed to doxygen's parser:

@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2022 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -253,16 +253,16 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
 
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
-	return "Her er datastrukturene med korte beskrivelser:";
+    return "Her er datastrukturene med korte beskrivelser:";
       }
       else if (Config_getBool(OPTIMIZE_OUTPUT_SLICE))
       {
-	return "Her er klasser med korte beskrivelser:";
+    return "Her er klasser med korte beskrivelser:";
       }
       else
       {
-	return "Her er klasser, struct'er, "
-	       "unioner og interface'er med korte beskrivelser:";
+    return "Her er klasser, struct'er, "
+           "unioner og interface'er med korte beskrivelser:";
       }
     }
 
@@ -291,18 +291,18 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
         }
         else
         {
-	  result+="klassedokumentasjonen for hvert medlem:";
+      result+="klassedokumentasjonen for hvert medlem:";
         }
       }
       else
       {
         if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
         {
-	  result+="struct'ene/unionene de hører til:";
+      result+="struct'ene/unionene de hører til:";
         }
         else
         {
-	  result+="klassene de hører til:";
+      result+="klassene de hører til:";
         }
       }
       return result;
@@ -996,8 +996,8 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
     virtual QCString trLegendDocs()
     {
       return
-	"Denne siden forklarer hvordan man tolker grafene doxygen genererer.<p>\n"
-	"Vi baserer oss på følgende eksempel:\n"
+    "Denne siden forklarer hvordan man tolker grafene doxygen genererer.<p>\n"
+    "Vi baserer oss på følgende eksempel:\n"
         "\\code\n"
         "/*! Usynlig klasse pga. trunkasjon */\n"
         "class Invisible { };\n\n"
@@ -1034,21 +1034,21 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
         "<ul>\n"
         "<li>En fylt svart boks representerer klassen grafen "
         "er generert for.\n"
-	"<li>En boks med svart ramme angir en dokumentert struct eller klasse.\n"
-	"<li>En boks med grå ramme angir en udokumentert struct eller klasse.\n"
-	"<li>En boks med rød ramme angir en dokumentert struct eller klasse "
-	"der ikke alle relasjoner er vist. En graf blir trunkert om den ikke "
-	"passer innenfor de spesifiserte rammene.\n"
-	"</ul>\n"
-	"Pilene i grafen har følgende betydning:\n"
-	"</ul>\n"
-	"<li>En mørk blå pil brukes til å visualisere public-arv mellom to klasser.\n"
-	"<li>En mørk grønn pil brukes for protected-arv.\n"
-	"<li>En mørk rød pil angir private-arv.\n"
-	"<li>En stiplet lilla pil angir at en klasse er inkludert eller brukt "
-	"i en annen klasse. Pilen er merket med variablen(e) klassen "
-	"er tilgjengelig gjennom.\n"
-	"</ul>\n";
+    "<li>En boks med svart ramme angir en dokumentert struct eller klasse.\n"
+    "<li>En boks med grå ramme angir en udokumentert struct eller klasse.\n"
+    "<li>En boks med rød ramme angir en dokumentert struct eller klasse "
+    "der ikke alle relasjoner er vist. En graf blir trunkert om den ikke "
+    "passer innenfor de spesifiserte rammene.\n"
+    "</ul>\n"
+    "Pilene i grafen har følgende betydning:\n"
+    "</ul>\n"
+    "<li>En mørk blå pil brukes til å visualisere public-arv mellom to klasser.\n"
+    "<li>En mørk grønn pil brukes for protected-arv.\n"
+    "<li>En mørk rød pil angir private-arv.\n"
+    "<li>En stiplet lilla pil angir at en klasse er inkludert eller brukt "
+    "i en annen klasse. Pilen er merket med variablen(e) klassen "
+    "er tilgjengelig gjennom.\n"
+    "</ul>\n";
     }
     /*! text for the link to the legend page */
     virtual QCString trLegend()
@@ -1465,7 +1465,7 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
          */
     virtual QCString trSourceFile(QCString& filename)
     {
-       	return "Kildefil " + filename;
+        return "Kildefil " + filename;
     }
 
 //////////////////////////////////////////////////////////////////////////

@@ -2,7 +2,7 @@
  *
  *
  *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2022 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -720,7 +720,7 @@ class TranslatorBulgarian : public TranslatorAdapter_1_9_4
     /*! This is put above each page as a link to all members of namespaces. */
     virtual QCString trNamespaceMembers()
     { return "Членове Именни пространства";
-	}
+    }
 
     /*! This is an introduction to the page with all namespace members */
     virtual QCString trNamespaceMemberDescription(bool extractAll)
@@ -1231,7 +1231,7 @@ class TranslatorBulgarian : public TranslatorAdapter_1_9_4
     virtual QCString trNamespace(bool first_capital, bool singular)
     {
       QCString result((first_capital ? "Именн" : "именн"));
-	  result+=(singular ? "о пространство" : "и пространства");
+      result+=(singular ? "о пространство" : "и пространства");
       return result;
     }
 
@@ -1242,7 +1242,7 @@ class TranslatorBulgarian : public TranslatorAdapter_1_9_4
     virtual QCString trGroup(bool first_capital, bool singular)
     {
       QCString result((first_capital ? "Груп" : "груп"));
-	  result+=(singular ? "а" : "и");
+      result+=(singular ? "а" : "и");
       return result;
     }
 
@@ -1253,7 +1253,7 @@ class TranslatorBulgarian : public TranslatorAdapter_1_9_4
     virtual QCString trPage(bool first_capital, bool singular)
     {
       QCString result((first_capital ? "Страниц" : "странц"));
-	  result+=(singular ? "а" : "и");
+      result+=(singular ? "а" : "и");
       return result;
     }
 
@@ -1275,7 +1275,7 @@ class TranslatorBulgarian : public TranslatorAdapter_1_9_4
     virtual QCString trGlobal(bool first_capital, bool singular)
     {
       QCString result((first_capital ? "Глобалн" : "глобалн"));
-	  result+=(singular ? "а" : "и");
+      result+=(singular ? "а" : "и");
       return result;
     }
 
@@ -1739,7 +1739,7 @@ class TranslatorBulgarian : public TranslatorAdapter_1_9_4
     virtual QCString trSubprogram(bool first_capital, bool singular)
     {
       QCString result((first_capital ? "Подпрограм" : "подпрограм"));
-	  if (singular) result+="а:"; else result+="и:";
+      if (singular) result+="а:"; else result+="и:";
       return result;
     }
 
@@ -1867,7 +1867,7 @@ class TranslatorBulgarian : public TranslatorAdapter_1_9_4
     /*! Used file list for a Java enum */
     virtual QCString trEnumGeneratedFromFiles(bool single)
     { QCString result = "Документацията за това изброяване е генерирана от ";
-	  if (single) result+="следният файл:"; else result+="следните файлове:";
+      if (single) result+="следният файл:"; else result+="следните файлове:";
       result+=":";
       return result;
     }
@@ -2262,7 +2262,7 @@ class TranslatorBulgarian : public TranslatorAdapter_1_9_4
     virtual QCString trConcept(bool first_capital, bool singular)
     {
       QCString result((first_capital ? "Концепци" : "концепци"));
-	  if (singular)  result+="я"; else result+="и";
+      if (singular)  result+="я"; else result+="и";
       return result;
     }
     /*! used as the title of the HTML page of a C++20 concept page */

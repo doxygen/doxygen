@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2022 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -124,11 +124,11 @@ inline void writeXMLCodeString(TextStream &t,const QCString &str, int &col)
       case '\t':
       {
         int tabSize = Config_getInt(TAB_SIZE);
-	int spacesToNextTabStop = tabSize - (col%tabSize);
-	col+=spacesToNextTabStop;
-	while (spacesToNextTabStop--) t << "<sp/>";
-	break;
-	}
+    int spacesToNextTabStop = tabSize - (col%tabSize);
+    col+=spacesToNextTabStop;
+    while (spacesToNextTabStop--) t << "<sp/>";
+    break;
+    }
       case ' ':  t << "<sp/>"; col++;  break;
       case '<':  t << "&lt;"; col++;   break;
       case '>':  t << "&gt;"; col++;   break;

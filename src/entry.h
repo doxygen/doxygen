@@ -2,7 +2,7 @@
  *
  *
  *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2022 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -236,8 +236,8 @@ class Entry
 
     // identification
     int          section;     //!< entry type (see Sections);
-    QCString	 type;        //!< member type
-    QCString	 name;        //!< member name
+    QCString     type;        //!< member type
+    QCString     name;        //!< member name
     bool         hasTagInfo;  //!< is tag info valid
     TagInfo      tagInfoData; //!< tag file info data
     const TagInfo *tagInfo() const { return hasTagInfo ? &tagInfoData : 0; }
@@ -287,9 +287,9 @@ class Entry
     std::vector<BaseInfo> extends; //!< list of base classes
     std::vector<Grouping> groups;  //!< list of groups this entry belongs to
     std::vector<const SectionInfo*> anchors; //!< list of anchors defined in this entry
-    QCString	fileName;     //!< file this entry was extracted from
-    int		startLine;    //!< start line of entry in the source
-    int		startColumn;  //!< start column of entry in the source
+    QCString    fileName;     //!< file this entry was extracted from
+    int     startLine;    //!< start line of entry in the source
+    int     startColumn;  //!< start column of entry in the source
     RefItemVector sli; //!< special lists (test/todo/bug/deprecated/..) this entry is in
     SrcLangExt  lang;         //!< programming language in which this entry was found
     bool        hidden;       //!< does this represent an entity that is hidden from the output

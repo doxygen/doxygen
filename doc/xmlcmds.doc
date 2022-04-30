@@ -1,12 +1,12 @@
 /******************************************************************************
  *
- * 
  *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ *
+ * Copyright (C) 1997-2022 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -16,16 +16,16 @@
  */
 /*! \page xmlcmds XML Commands
 
-Doxygen supports most of the XML commands that are typically used in C# 
+Doxygen supports most of the XML commands that are typically used in C#
 code comments. The XML tags are defined in Appendix D of the
-<a href="https://www.ecma-international.org/publications-and-standards/standards/ecma-334/">ECMA-334</a> 
+<a href="https://www.ecma-international.org/publications-and-standards/standards/ecma-334/">ECMA-334</a>
 standard, which defines the C# language. Unfortunately, the specification is
 not very precise and a number of the examples given are of poor quality.
 
 Here is the list of tags supported by doxygen:
 
 <ul>
-<li><tt>\anchor xmltag_c \addindex "\<c\>" \<c\></tt>     Identifies inline text that should be rendered as a 
+<li><tt>\anchor xmltag_c \addindex "\<c\>" \<c\></tt>     Identifies inline text that should be rendered as a
                        piece of code. Similar to using <tt>\<tt\></tt>text<tt>\</tt\></tt>.
 <li><tt>\anchor xmltag_code \addindex "\<code\>" <code\></tt>  Set one or more lines of source code or program output.
                        Note that this command behaves like \ref cmdcode "\\code" ... \ref cmdendcode "\\endcode"
@@ -33,36 +33,36 @@ Here is the list of tags supported by doxygen:
                        \ref htmltag_CODE "\<CODE\>"...\ref htmltag_endCODE "\</CODE\>" for other languages.
 <li><tt>\anchor xmltag_description \addindex "\<description\>" \<description\></tt> Part of a \ref xmltag_list "\<list\>" command, describes an item.
 <li><tt>\anchor xmltag_example \addindex "\<example\>" \<example\></tt> Marks a block of text as an example, ignored by doxygen.
-<li><tt>\anchor xmltag_exception \addindex "\<exception\>" \<exception cref="member"\></tt> Identifies the exception a 
+<li><tt>\anchor xmltag_exception \addindex "\<exception\>" \<exception cref="member"\></tt> Identifies the exception a
                          method can throw.
 <li><tt>\anchor xmltag_include \addindex "\<include\>" \<include\></tt> Can be used to import a piece of XML from an external
                          file. Ignored by doxygen at the moment.
-<li><tt>\anchor xmltag_inheritdoc \addindex "\<inheritdoc\>" \<inheritdoc\></tt> Can be used to insert the documentation of a 
-                         member of a base class into the documentation of a 
+<li><tt>\anchor xmltag_inheritdoc \addindex "\<inheritdoc\>" \<inheritdoc\></tt> Can be used to insert the documentation of a
+                         member of a base class into the documentation of a
                          member of a derived class that reimplements it.
 <li><tt>\anchor xmltag_item \addindex "\<item\>" \<item\></tt> List item. Can only be used inside a \ref xmltag_list "\<list\>" context.
 
 <li><tt>\anchor xmltag_list \addindex "\<list\>" \<list type="type"\></tt> Starts a list, supported types are <tt>bullet</tt>
-                         or <tt>number</tt> and <tt>table</tt>. 
+                         or <tt>number</tt> and <tt>table</tt>.
                          A list consists of a number of <tt>\<item\></tt> tags.
                          A list of type table, is a two column table which can have
                          a header.
 <li><tt>\anchor xmltag_listheader \addindex "\<listheader\>" \<listheader\></tt>   Starts the header of a list of type "table".
 <li><tt>\anchor xmltag_para \addindex "\<para\>" \<para\></tt>    Identifies a paragraph of text.
 <li><tt>\anchor xmltag_param \addindex "\<param\>" \<param name="paramName"\></tt> Marks a piece of text as the documentation
-                         for parameter "paramName". Similar to 
+                         for parameter "paramName". Similar to
                          using \ref cmdparam "\\param".
 <li><tt>\anchor xmltag_paramref \addindex "\<paramref\>" \<paramref name="paramName"\></tt> Refers to a parameter with name
                          "paramName". Similar to using \ref cmda "\\a".
 <li><tt>\anchor xmltag_permission \addindex "\<permission\>" \<permission\></tt> Identifies the security accessibility of a member.
                          Ignored by doxygen.
-<li><tt>\anchor xmltag_remarks \addindex "\<remarks\>" \<remarks\></tt> Identifies the detailed description. 
+<li><tt>\anchor xmltag_remarks \addindex "\<remarks\>" \<remarks\></tt> Identifies the detailed description.
 <li><tt>\anchor xmltag_returns \addindex "\<returns\>" \<returns\></tt> Marks a piece of text as the return value of a
                          function or method. Similar to using \ref cmdreturn "\\return".
 <li><tt>\anchor xmltag_see \addindex "\<see\>" \<see cref="member"\></tt> Refers to a member. Similar to \ref cmdref "\\ref".
 <li><tt>\anchor xmltag_seealso \addindex "\<seealso\>" \<seealso cref="member"\></tt> Starts a "See also" section referring
                          to "member". Similar to using \ref cmdsa "\\sa" member.
-<li><tt>\anchor xmltag_summary \addindex "\<summary\>" \<summary\></tt> 
+<li><tt>\anchor xmltag_summary \addindex "\<summary\>" \<summary\></tt>
                          In case this tag is used outside a \ref htmltag_DETAILS "\<DETAILS\>" tag this tag
                          identifies the brief description.
                          Similar to using \ref cmdbrief "\\brief".
@@ -70,7 +70,7 @@ Here is the list of tags supported by doxygen:
                          identifies the heading of the \ref htmltag_DETAILS "\<DETAILS\>" tag.
 <li><tt>\anchor xmltag_term \addindex "\<term\>" \<term\></tt>    Part of a \ref xmltag_list "\<list\>" command.
 <li><tt>\anchor xmltag_typeparam \addindex "\<typeparam\>" \<typeparam name="paramName"\></tt> Marks a piece of text as the documentation
-                         for type parameter "paramName". Similar to 
+                         for type parameter "paramName". Similar to
                          using \ref cmdparam "\\param".
 <li>\anchor xmltag_typeparamref \addindex "\<typeparamref\>"<tt>\<typeparamref name="paramName"\></tt> Refers to a parameter with name
                          "paramName". Similar to using \ref cmda "\\a".
@@ -114,4 +114,4 @@ Go to the <a href="emojisup.html">next</a> section or return to the
 \endhtmlonly
 
 */
- 
+

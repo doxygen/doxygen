@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright (C) 1997-2019 by Dimitri van Heesch.
+ * Copyright (C) 1997-2022 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -92,8 +92,8 @@ int DocGroup::findExistingGroup(const MemberGroupInfo *info)
   for (const auto &kv : Doxygen::memberGroupInfoMap)
   {
     if (m_compoundName==kv.second->compoundName &&  // same file or scope
-	!kv.second->header.isEmpty() &&             // not a nameless group
-	qstricmp(kv.second->header,info->header)==0  // same header name
+    !kv.second->header.isEmpty() &&             // not a nameless group
+    qstricmp(kv.second->header,info->header)==0  // same header name
        )
     {
       //printf("Found it!\n");
@@ -107,7 +107,7 @@ void DocGroup::open(Entry *e,const QCString &,int, bool implicit)
 {
   if (!implicit) m_openCount++;
   //printf("==> openGroup(name=%s,sec=%x) m_autoGroupStack=%zu\n",
-  //  	qPrint(e->name),e->section,m_autoGroupStack.size());
+  //    qPrint(e->name),e->section,m_autoGroupStack.size());
   if (e->section==Entry::GROUPDOC_SEC) // auto group
   {
     m_autoGroupStack.push_back(Grouping(e->name,e->groupingPri()));
@@ -184,7 +184,7 @@ void DocGroup::initGroupInfo(Entry *e)
   if (!m_autoGroupStack.empty())
   {
     //printf("Appending group %s to %s: count=%zu entry=%p\n",
-    //	qPrint(m_autoGroupStack.back().groupname),
+    //  qPrint(m_autoGroupStack.back().groupname),
     //    qPrint(e->name),e->groups.size(),(void*)e);
     e->groups.push_back(Grouping(m_autoGroupStack.back()));
   }

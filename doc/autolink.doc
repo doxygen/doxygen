@@ -1,12 +1,12 @@
 /******************************************************************************
  *
- * 
  *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ *
+ * Copyright (C) 1997-2022 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -22,14 +22,14 @@
   to other pieces of documentation can be inserted.
   Although doxygen also has a command to start such a section (See section
   \ref cmdsa "\\sa"), it does allow you to put these kind of links anywhere in the
-  documentation. 
+  documentation.
   For \LaTeX documentation a reference to the page number
-  is written instead of a link. Furthermore, the index at the end of the 
-  document can be used to quickly find the documentation of a member, class, 
+  is written instead of a link. Furthermore, the index at the end of the
+  document can be used to quickly find the documentation of a member, class,
   namespace or file.
   For man pages no reference information is generated.
 
-  The next sections show how to generate links to the various documented 
+  The next sections show how to generate links to the various documented
   entities in a source file.
 
   \section linkurl Links to web pages and mail addresses
@@ -43,9 +43,9 @@
   \section linkclass Links to classes
 
   All words in the documentation that correspond to a documented class and
-  contain at least one non-lower case character will automatically be 
-  replaced by a link to the page containing the 
-  documentation of the class. If you want to prevent that a word 
+  contain at least one non-lower case character will automatically be
+  replaced by a link to the page containing the
+  documentation of the class. If you want to prevent that a word
   that corresponds to a documented class is replaced by a link you
   should put a \% in front of the word.
   To link to an all lower case symbol, use \ref cmdref "\\ref".
@@ -54,12 +54,12 @@
 
   All words that contain a dot (<tt>.</tt>) that is not the last character
   in the word are considered to be file names.
-  If the word is indeed the name of a documented input file, a link will 
+  If the word is indeed the name of a documented input file, a link will
   automatically be created to the documentation of that file.
 
   \section linkfunc Links to functions
 
-  Links to functions are created if one of the following patterns is 
+  Links to functions are created if one of the following patterns is
   encountered:
   <ol>
   <li><tt>\<functionName\>"("\<argument-list\>")"</tt>
@@ -70,34 +70,34 @@
   <li><tt>(\<className\>"::")<sup>n</sup>\<functionName\>"()"</tt>
   <li><tt>(\<className\>"::")<sup>n</sup>\<functionName\></tt>
   </ol>
-  where n\>0. 
+  where n\>0.
 
-  \par Note 1: 
-    Function arguments should be specified with correct types, i.e. 
+  \par Note 1:
+    Function arguments should be specified with correct types, i.e.
     'fun(const std::string&,bool)' or '()' to match any prototype.
   \par Note 2:
-    Member function modifiers (like 'const' and 'volatile') 
+    Member function modifiers (like 'const' and 'volatile')
     are required to identify the target, i.e. 'func(int) const' and 'func(int)'
     target different member functions.
-  \par Note 3: 
-    For Javadoc compatibility a \# may be used instead of a :: in 
+  \par Note 3:
+    For Javadoc compatibility a \# may be used instead of a :: in
     the patterns above.
   \par Note 4:
-    In the documentation of a class containing a member foo, 
+    In the documentation of a class containing a member foo,
     a reference to a global variable is made using "::foo", whereas \#foo
     will link to the member.
 
   For non overloaded members the argument list may be omitted.
 
   If a function is overloaded and no matching argument list is specified
-  (i.e. pattern 2 or 6 is used), a link will be created to the 
+  (i.e. pattern 2 or 6 is used), a link will be created to the
   documentation of one of the overloaded members.
 
   For member functions the class scope (as used in patterns 4 to 7) may
   be omitted, if:
   <ol>
   <li>The pattern points to a documented member that belongs to the same class
-      as the documentation block that contains the pattern. 
+      as the documentation block that contains the pattern.
   <li>The class that corresponds to the documentation blocks that contains
       the pattern has a base class that contains a documented member
       that matches the pattern.
@@ -105,14 +105,14 @@
 
   \section linkother Links to other members
 
-  All of these entities can be linked to in the same way as described in the 
-  previous section. For sake of clarity it is advised to only use 
+  All of these entities can be linked to in the same way as described in the
+  previous section. For sake of clarity it is advised to only use
   patterns 3 and 7 in this case.
 
   \par Example:
   \include autolink.cpp
   \htmlonly
-  Click <a href="examples/autolink/html/class_autolink___test.html">here</a> 
+  Click <a href="examples/autolink/html/class_autolink___test.html">here</a>
   for the corresponding HTML documentation that is generated by doxygen.
   \endhtmlonly
   \latexonly
@@ -126,13 +126,13 @@
 \verbatim
 typedef struct StructName TypeName
 \endverbatim
-  create an alias for StructName, so links will be generated to StructName, 
+  create an alias for StructName, so links will be generated to StructName,
   when either StructName itself or TypeName is encountered.
-  
+
   \par Example:
   \include restypedef.cpp
   \htmlonly
-  Click <a href="examples/restypedef/html/restypedef_8cpp.html">here</a> 
+  Click <a href="examples/restypedef/html/restypedef_8cpp.html">here</a>
   for the corresponding HTML documentation that is generated by doxygen.
   \endhtmlonly
   \latexonly

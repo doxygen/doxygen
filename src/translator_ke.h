@@ -2,7 +2,7 @@
  *
  *
  *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2022 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -16,12 +16,12 @@
  */
 
 //
-//	Update:
+//  Update:
 //
 // 2004.12.22 (SooYoung Jung: jung5000@gmail.com)
-//	- LaTex and RTF were not generated correctly.
-// 	  Corrected trRTFansicp and trRTFCharSet.
-// 	  It was wrong.
+//  - LaTex and RTF were not generated correctly.
+//    Corrected trRTFansicp and trRTFCharSet.
+//    It was wrong.
 //
 //
 

@@ -2,7 +2,7 @@
  *
  *
  *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2022 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -218,7 +218,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
     /*! This is an introduction to the class hierarchy. */
     virtual QCString trClassHierarchyDescription()
     { return "Hierarki kelas ini diurutkan kurang-lebih"
-	" berdasarkan abjad:";
+    " berdasarkan abjad:";
     }
 
     /*! This is an introduction to the list with all files. */
@@ -952,8 +952,8 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
     virtual QCString trInclByDepGraph()
     {
       return "Bagan ini menunjukkan file-file yang memuat"
-	" atau menggunakan file ini baik secara langsung maupun"
-	" tidak langsung:";
+    " atau menggunakan file ini baik secara langsung maupun"
+    " tidak langsung:";
     }
     virtual QCString trSince()
     {
@@ -1492,8 +1492,8 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
     virtual QCString trOverloadText()
     {
       return "Ini adalah fungsi anggota yang di-overload"
-	" untuk kemudahan. Perbedaannya dengan fungsi di atas"
-	" hanya pada parameter-parameter yang diterima.";
+    " untuk kemudahan. Perbedaannya dengan fungsi di atas"
+    " hanya pada parameter-parameter yang diterima.";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1682,7 +1682,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
       }
       result+=" ini dibangkitkan dari file";
       if (!single) result+="-file ";
-	  result+="berikut:";
+      result+="berikut:";
       return result;
     }
     /*! This is used for translation of the word that will possibly

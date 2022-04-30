@@ -2,7 +2,7 @@
  *
  *
  *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2022 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -1429,7 +1429,7 @@ class TranslatorChinese : public TranslatorAdapter_1_9_4
       return "目录说明";
     }
 
-		/*! This is used as the title of the directory index and also in the
+        /*! This is used as the title of the directory index and also in the
      *  Quick links of an HTML page, to link to the directory hierarchy.
      */
     virtual QCString trDirectories()

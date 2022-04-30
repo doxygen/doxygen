@@ -2,7 +2,7 @@
  *
  *
  *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2022 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -74,7 +74,7 @@
  * instantiations = उदाहरणीकरणगण
  * interface = अंतराफलक
  * interfaces = अंतराफलकगण
- * inherit = 
+ * inherit =
  * inheritance = वरासत
  * inherited = वरासित
  * library = संग्रह

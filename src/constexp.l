@@ -1,13 +1,13 @@
 /******************************************************************************
  *
- * 
  *
  *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ *
+ * Copyright (C) 1997-2022 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -23,12 +23,12 @@
 %top{
 #include <stdint.h>
 // forward declare yyscan_t to improve typesafety
-#include "constexp_p.h"  
+#include "constexp_p.h"
 }
 
 %{
 
-#include "constexp.h"  
+#include "constexp.h"
 #include "cppvalue.h"
 #include "ce_parse.hpp" // generated header file
 #include "message.h"
@@ -59,53 +59,53 @@ CONSTSUFFIX ([uU][lL]?[lL]?)|([lL][lL]?[uU]?)
 
 %%
 
-"?"				   { return TOK_QUESTIONMARK; }
-":"				   { return TOK_COLON; }
-"||"				   { return TOK_OR; }
-"&&"				   { return TOK_AND; }
-"|"				   { return TOK_BITWISEOR; }
-"^"				   { return TOK_BITWISEXOR; }
-"&"				   { return TOK_AMPERSAND; }
-"!="            		   { return TOK_NOTEQUAL; }
-"=="            		   { return TOK_EQUAL; }
-"<"             		   { return TOK_LESSTHAN; }
-">"             		   { return TOK_GREATERTHAN; }
-"<="            		   { return TOK_LESSTHANOREQUALTO; }
-">="            		   { return TOK_GREATERTHANOREQUALTO; }
-"<<"            		   { return TOK_SHIFTLEFT; }
-">>"            		   { return TOK_SHIFTRIGHT; }
-"+"             		   { return TOK_PLUS; }
-"-"             		   { return TOK_MINUS; }
-"*"             		   { return TOK_STAR; }
-"/"             		   { return TOK_DIVIDE; }
-"%"             		   { return TOK_MOD; }
-"~"             		   { return TOK_TILDE; }
-"!"             		   { return TOK_NOT; }
-"("             		   { return TOK_LPAREN; }
-")"             		   { return TOK_RPAREN; }
-"'"(([^\'\n\r\\]+)|(\\(([ntvbrfa\\?'\"])|([0-9]+)|([xX][0-9a-fA-F]+))))"'"   { 
-                                     yyextra->strToken=yytext;  
-				     return TOK_CHARACTER; 
-				   }
-0[0-7]*{CONSTSUFFIX}?              { yyextra->strToken=yytext; 
-  				     return TOK_OCTALINT; 
-				   }
-[1-9][0-9]*{CONSTSUFFIX}?          { yyextra->strToken=yytext; 
-  				     return TOK_DECIMALINT; 
-				   }
-(0x|0X)[0-9a-fA-F]+{CONSTSUFFIX}?  { yyextra->strToken=yytext+2; 
-                                     return TOK_HEXADECIMALINT; 
+"?"                { return TOK_QUESTIONMARK; }
+":"                { return TOK_COLON; }
+"||"                   { return TOK_OR; }
+"&&"                   { return TOK_AND; }
+"|"                { return TOK_BITWISEOR; }
+"^"                { return TOK_BITWISEXOR; }
+"&"                { return TOK_AMPERSAND; }
+"!="                       { return TOK_NOTEQUAL; }
+"=="                       { return TOK_EQUAL; }
+"<"                        { return TOK_LESSTHAN; }
+">"                        { return TOK_GREATERTHAN; }
+"<="                       { return TOK_LESSTHANOREQUALTO; }
+">="                       { return TOK_GREATERTHANOREQUALTO; }
+"<<"                       { return TOK_SHIFTLEFT; }
+">>"                       { return TOK_SHIFTRIGHT; }
+"+"                        { return TOK_PLUS; }
+"-"                        { return TOK_MINUS; }
+"*"                        { return TOK_STAR; }
+"/"                        { return TOK_DIVIDE; }
+"%"                        { return TOK_MOD; }
+"~"                        { return TOK_TILDE; }
+"!"                        { return TOK_NOT; }
+"("                        { return TOK_LPAREN; }
+")"                        { return TOK_RPAREN; }
+"'"(([^\'\n\r\\]+)|(\\(([ntvbrfa\\?'\"])|([0-9]+)|([xX][0-9a-fA-F]+))))"'"   {
+                                     yyextra->strToken=yytext;
+                     return TOK_CHARACTER;
+                   }
+0[0-7]*{CONSTSUFFIX}?              { yyextra->strToken=yytext;
+                     return TOK_OCTALINT;
+                   }
+[1-9][0-9]*{CONSTSUFFIX}?          { yyextra->strToken=yytext;
+                     return TOK_DECIMALINT;
+                   }
+(0x|0X)[0-9a-fA-F]+{CONSTSUFFIX}?  { yyextra->strToken=yytext+2;
+                                     return TOK_HEXADECIMALINT;
                                    }
-(0b|0B)[01]+{CONSTSUFFIX}?         { yyextra->strToken=yytext+2; 
-                                     return TOK_BINARYINT; 
+(0b|0B)[01]+{CONSTSUFFIX}?         { yyextra->strToken=yytext+2;
+                                     return TOK_BINARYINT;
                                    }
-(([0-9]+\.[0-9]*)|([0-9]*\.[0-9]+))([eE]([\-\+])?[0-9]+)?([fFlL])? { 
-                                     yyextra->strToken=yytext; return TOK_FLOAT; 
+(([0-9]+\.[0-9]*)|([0-9]*\.[0-9]+))([eE]([\-\+])?[0-9]+)?([fFlL])? {
+                                     yyextra->strToken=yytext; return TOK_FLOAT;
                                    }
-([0-9]+[eE])([\-\+])?[0-9]+([fFlL])? { 
-                                     yyextra->strToken=yytext; return TOK_FLOAT; 
-			           }
-.				   
+([0-9]+[eE])([\-\+])?[0-9]+([fFlL])? {
+                                     yyextra->strToken=yytext; return TOK_FLOAT;
+                       }
+.
 \n
 
 %%

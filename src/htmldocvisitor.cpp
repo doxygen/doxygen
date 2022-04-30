@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright (C) 1997-2020 by Dimitri van Heesch.
+ * Copyright (C) 1997-2022 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -234,7 +234,7 @@ static QCString htmlAttribsToString(const HtmlAttribList &attribs, QCString *pAl
   {
     if (!att.value.isEmpty())  // ignore attribute without values as they
                                 // are not XHTML compliant, with the exception
-				// of the alt attribute with the img tag
+                // of the alt attribute with the img tag
     {
       if (att.name=="alt" && pAltValue) // optionally return the value of alt separately
                                          // need to convert <img> to <object> for SVG images,
@@ -666,7 +666,7 @@ void HtmlDocVisitor::operator()(const DocVerbatim &s)
         forceEndParagraph(s);
         QCString htmlOutput = Config_getString(HTML_OUTPUT);
         QCString imgExt = getDotImageExtension();
-        PlantumlManager::OutputFormat format = PlantumlManager::PUML_BITMAP;	// default : PUML_BITMAP
+        PlantumlManager::OutputFormat format = PlantumlManager::PUML_BITMAP;    // default : PUML_BITMAP
         if (imgExt=="svg")
         {
           format = PlantumlManager::PUML_SVG;

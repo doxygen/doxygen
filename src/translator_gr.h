@@ -2,7 +2,7 @@
  *
  *
  *
- * Copyright (C) 1997-2014 by Dimitri van Heesch.
+ * Copyright (C) 1997-2022 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -28,20 +28,20 @@
  * Αν παρατηρήσετε σφάλματα ΠΑΡΑΚΑΛΩ ΠΟΛΥ επικοινωνήστε μαζί μου.
  */
 
-/*	English to Greek keyword dictionary
-	(Many words have more clear meaning in English than Greek)
-	template -> πρότυπο
-	instance -> υπόσταση
-	module -> υπομονάδα
-	interface -> διεπαφή (ενναλλακτικά μπορεί να χρησιμοποιηθεί: διασύνδεση)
-	singleton -> μονοσύνολο
-	service -> υπηρεσία
-	exception -> εξαίρεση
-	namespace -> χώρος ονομάτων
-	enumeration -> απαρίθμηση
-	concept -> έννοια
-	signal -> σήμα
-	instantiation -> ενσάρκωση
+/*  English to Greek keyword dictionary
+    (Many words have more clear meaning in English than Greek)
+    template -> πρότυπο
+    instance -> υπόσταση
+    module -> υπομονάδα
+    interface -> διεπαφή (ενναλλακτικά μπορεί να χρησιμοποιηθεί: διασύνδεση)
+    singleton -> μονοσύνολο
+    service -> υπηρεσία
+    exception -> εξαίρεση
+    namespace -> χώρος ονομάτων
+    enumeration -> απαρίθμηση
+    concept -> έννοια
+    signal -> σήμα
+    instantiation -> ενσάρκωση
 */
 
 
@@ -1231,7 +1231,7 @@ class TranslatorGreek : public TranslatorAdapter_1_9_4
     {
       QCString result((first_capital ? "Χ" : "χ"));
       if (!singular)  result+="ώροι"; else result+="ώρος";
-	  result+=" ονομάτων";
+      result+=" ονομάτων";
       return result;
     }
 
@@ -2213,7 +2213,7 @@ class TranslatorGreek : public TranslatorAdapter_1_9_4
     {
       QCString result="Τεκμηρίωση ";
       if (isLocal)
-		result+=compType == ClassDef::Protocol ? "Τοπικού " : "Τοπικής ";
+        result+=compType == ClassDef::Protocol ? "Τοπικού " : "Τοπικής ";
       switch(compType)
       {
         case ClassDef::Class:      result+="Κλάσης "; break;

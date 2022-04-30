@@ -2,7 +2,7 @@
  *
  *
  *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2022 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -1751,13 +1751,13 @@ class TranslatorSpanish : public TranslatorAdapter_1_8_15
       QCString result="La documentación para est";
       switch(compType)
       {
-    	case ClassDef::Class:      result+="e módulo"; break;
-    	case ClassDef::Struct:     result+="e tipo"; break;
-    	case ClassDef::Union:      result+="a unión"; break;
-    	case ClassDef::Interface:  result+="e interfaz"; break;
-    	case ClassDef::Protocol:   result+="e protocolo"; break;
-    	case ClassDef::Category:   result+="a categoría"; break;
-    	case ClassDef::Exception:  result+="a excepción"; break;
+        case ClassDef::Class:      result+="e módulo"; break;
+        case ClassDef::Struct:     result+="e tipo"; break;
+        case ClassDef::Union:      result+="a unión"; break;
+        case ClassDef::Interface:  result+="e interfaz"; break;
+        case ClassDef::Protocol:   result+="e protocolo"; break;
+        case ClassDef::Category:   result+="a categoría"; break;
+        case ClassDef::Exception:  result+="a excepción"; break;
         default: break;
       }
       result+=" fue generada de";
@@ -1865,10 +1865,10 @@ class TranslatorSpanish : public TranslatorAdapter_1_8_15
                                 bool includeTime)
     {
       static const char *days[]   = { "Lunes","Martes","Miércoles","Jueves",
-									  "Viernes","Sábado","Domingo" };
+                                      "Viernes","Sábado","Domingo" };
       static const char *months[] = { "Enero","Febrero","Marzo","Abril",
-									  "Mayo","Junio","Julio","Agosto",
-									  "Septiembre","Octubre","Noviembre","Diciembre" };
+                                      "Mayo","Junio","Julio","Agosto",
+                                      "Septiembre","Octubre","Noviembre","Diciembre" };
       QCString sdate;
       sdate.sprintf("%s, %d de %s de %d",days[dayOfWeek-1],day,months[month-1],year);
       if (includeTime)

@@ -1,10 +1,10 @@
 /******************************************************************************
  *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2022 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -31,8 +31,8 @@ This has several advantages:
 - The search engine needs to run on a web server, but clients can still browse
   the web pages locally.
 
-To avoid that everyone has to start writing their own indexer and search 
-engine, doxygen provides an example tool for each action: `doxyindexer` 
+To avoid that everyone has to start writing their own indexer and search
+engine, doxygen provides an example tool for each action: `doxyindexer`
 for indexing the data and `doxysearch.cgi` for searching through the index.
 
 The data flow is shown in the following diagram:
@@ -42,10 +42,10 @@ The data flow is shown in the following diagram:
 
 - `doxygen` produces the raw search data
 - `doxyindexer` indexes the data into a search database `doxysearch.db`
-- when a user performs a search from a doxygen generated HTML page, 
+- when a user performs a search from a doxygen generated HTML page,
   the CGI binary `doxysearch.cgi` will be invoked.
 - the `doxysearch.cgi` tool will perform a query on the database and return
-  the results. 
+  the results.
 - The browser will show the search results.
 
 \section extsearch_config Configuring
@@ -53,11 +53,11 @@ The data flow is shown in the following diagram:
 The first step is to make the search engine available via a web server.
 If you use `doxysearch.cgi` this means making the
 <a href="https://en.wikipedia.org/wiki/Common_Gateway_Interface">CGI</a> binary
-available from the web server (i.e. be able to run it from a 
+available from the web server (i.e. be able to run it from a
 browser via an URL starting with http:)
 
 How to setup a web server is outside the scope of this document,
-but if you for instance have Apache installed, you could simply copy the 
+but if you for instance have Apache installed, you could simply copy the
 `doxysearch.cgi` file from doxygen's `bin` directory to the `cgi-bin` directory of the
 Apache web server. Read the <a href="http://httpd.apache.org/docs/2.2/howto/cgi.html">apache documentation</a> for details.
 
@@ -71,12 +71,12 @@ You should get the following message:
     Test failed: cannot find search index doxysearch.db
 
 If you use Internet Explorer you may be prompted to download a file,
-which will then contain this message. 
+which will then contain this message.
 
 Since we didn't create or install a doxysearch.db it is OK for the test to
 fail for this reason. How to correct this is discussed in the next section.
 
-Before continuing with the next section add the above 
+Before continuing with the next section add the above
 URL (without the `?test` part) to the \ref cfg_searchengine_url "SEARCHENGINE_URL" tag in
 doxygen's configuration file:
 
@@ -91,13 +91,13 @@ in doxygen's configuration file:
     SERVER_BASED_SEARCH    = YES
     EXTERNAL_SEARCH        = YES
 
-This will make doxygen generate a file called `searchdata.xml` in the output 
+This will make doxygen generate a file called `searchdata.xml` in the output
 directory (configured with \ref cfg_output_directory "OUTPUT_DIRECTORY").
-You can change the file name (and location) with the 
+You can change the file name (and location) with the
 \ref cfg_searchdata_file "SEARCHDATA_FILE" option.
 
-The next step is to put the raw search data into an index for efficient 
-searching. You can use `doxyindexer` for this. Simply run it from the command 
+The next step is to put the raw search data into an index for efficient
+searching. You can use `doxyindexer` for this. Simply run it from the command
 line:
 
     doxyindexer searchdata.xml
@@ -106,8 +106,8 @@ This will create a directory called `doxysearch.db` with some files in it.
 By default the directory will be created at the location from which doxyindexer
 was started, but you can change the directory using the `-o` option.
 
-Copy the `doxysearch.db` directory to the same directory as where 
-the `doxysearch.cgi` is located and rerun the browser test by pointing 
+Copy the `doxysearch.db` directory to the same directory as where
+the `doxysearch.cgi` is located and rerun the browser test by pointing
 the browser to
 
     http://yoursite.com/path/to/cgi/doxysearch.cgi?test
@@ -120,8 +120,8 @@ Now you should be able to search for words and symbols from the HTML output.
 
 \subsection extsearch_multi Multi project index
 
-In case you have more than one doxygen project and these projects are related, 
-it may be desirable to allow searching for words in all projects from within 
+In case you have more than one doxygen project and these projects are related,
+it may be desirable to allow searching for words in all projects from within
 the documentation of any of the projects.
 
 To make this possible all that is needed is to combine the search data
@@ -133,7 +133,7 @@ searchdata.xml is generated in directories project_A and project_B run:
 and then copy the resulting `doxysearch.db` to the directory where also
 `doxysearch.cgi` is located.
 
-The `searchdata.xml` file doesn't contain any absolute paths or links, 
+The `searchdata.xml` file doesn't contain any absolute paths or links,
 so how can the search results from multiple projects be linked back to the right documentation set?
 This is where the \ref cfg_external_search_id "EXTERNAL_SEARCH_ID" and
 \ref cfg_extra_search_mappings "EXTRA_SEARCH_MAPPINGS" options come into play.
@@ -147,7 +147,7 @@ mapping per project using the \ref cfg_extra_search_mappings "EXTRA_SEARCH_MAPPI
 With this option to can define the mapping from IDs of other projects to the
 (relative) location of documentation of those projects.
 
-So for projects A and B the relevant part of the configuration file 
+So for projects A and B the relevant part of the configuration file
 could look as follows:
 
     project_A/Doxyfile
@@ -161,7 +161,7 @@ for project A and for project B
     ------------------
     EXTERNAL_SEARCH_ID    = B
     EXTRA_SEARCH_MAPPINGS = A=../../project_A/html
-    
+
 with these settings, projects A and B can share the same search database,
 and the search results will link to the right documentation set.
 
@@ -174,8 +174,8 @@ and `doxyindexer` together in a script to make this process easier.
 
 \section extsearch_api Programming interface
 
-Previous sections have assumed you use the tools `doxyindexer` 
-and `doxysearch.cgi` to do the indexing and searching, but you could also 
+Previous sections have assumed you use the tools `doxyindexer`
+and `doxysearch.cgi` to do the indexing and searching, but you could also
 write your own index and search tools if you like.
 
 For this 3 interfaces are important
@@ -187,14 +187,14 @@ The next subsections describe these interfaces in more detail.
 
 \subsection extsearch_api_index Indexer input format
 
-The search data produced by doxygen follows the 
+The search data produced by doxygen follows the
 <a href="https://cwiki.apache.org/confluence/display/solr/UpdateXmlMessages">Solr XML index message</a>
 format.
 
-The input for the indexer is an XML file, which consists of one `<add>` tag containing 
-multiple `<doc>` tags, which in turn contain multiple `<field>` tags. 
+The input for the indexer is an XML file, which consists of one `<add>` tag containing
+multiple `<doc>` tags, which in turn contain multiple `<field>` tags.
 
-Here is an example of one doc node, which contains the search data and meta data for 
+Here is an example of one doc node, which contains the search data and meta data for
 one method:
 
     <add>
@@ -212,8 +212,8 @@ one method:
     </add>
 
 Each field has a name. The following field names are supported:
-- *type*: the type of the search entry; can be one of: source, function, slot, 
-          signal, variable, typedef, enum, enumvalue, property, event, related, 
+- *type*: the type of the search entry; can be one of: source, function, slot,
+          signal, variable, typedef, enum, enumvalue, property, event, related,
           friend, define, file, namespace, group, package, page, dir
 - *name*: the name of the search entry; for a method this is the qualified name of the method,
           for a class it is the name of the class, etc.
@@ -224,7 +224,7 @@ Each field has a name. The following field names are supported:
           keyword, this entry should get a higher rank in the search results.
 - *text*: the documentation associated with the item. Note that only words are present, no markup.
 
-@note Due to the potentially large size of the XML file, it is recommended to use a 
+@note Due to the potentially large size of the XML file, it is recommended to use a
 <a href="https://en.wikipedia.org/wiki/Simple_API_for_XML">SAX based parser</a> to process it.
 
 \subsection extsearch_api_search_in Search URL format
@@ -237,14 +237,14 @@ The following fields are passed:
 - *n*:  the number of search results requested.
 - *p*:  the number of search page for which to return the results. Each page has *n* values.
 - *cb*: the name of the callback function, used for JSON with padding, see the next section.
-       
+
 From the complete list of search results, the range `[n*p - n*(p+1)-1]` should be returned.
 
 Here is an example of how a query looks like.
 
     http://yoursite.com/path/to/cgi/doxysearch.cgi?q=list&n=20&p=1&cb=dummy
 
-It represents a query for the word 'list' (`q=list`) requesting 20 search results (`n=20`), 
+It represents a query for the word 'list' (`q=list`) requesting 20 search results (`n=20`),
 starting with the result number 20 (`p=1`) and using callback 'dummy' (`cb=dummy`):
 
 

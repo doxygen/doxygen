@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright (C) 1997-2020 by Dimitri van Heesch.
+ * Copyright (C) 1997-2022 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -1308,8 +1308,8 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
   DBG_CTX((stderr,"generateClassOrGlobalLink(className=%s)\n",qPrint(className)));
 
   const ScopedTypeVariant *lcd = 0;
-  const ClassDef *cd=0;             // Class def that we may find 
-  const MemberDef *md=0;            // Member def that we may find 
+  const ClassDef *cd=0;             // Class def that we may find
+  const MemberDef *md=0;            // Member def that we may find
   //bool isLocal=FALSE;
 
   if ((lcd=yyextra->theVarContext.findVariable(className))==0) // not a local variable

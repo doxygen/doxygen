@@ -1,6 +1,6 @@
 # vim:ts=4:sw=4:expandtab:autoindent:
 #
-# Copyright (C) 1997-2015 by Dimitri van Heesch.
+# Copyright (C) 1997-2022 by Dimitri van Heesch.
 #
 # Permission to use, copy, modify, and distribute this software and its
 # documentation under the terms of the GNU General Public License is hereby
@@ -44,12 +44,12 @@ include(version)
 set(sqlite3  "0" CACHE INTERNAL "used in settings.h")
 set(clang    "0" CACHE INTERNAL "used in settings.h")
 if (use_sqlite3)
-	set(sqlite3  "1" CACHE INTERNAL "used in settings.h")
+    set(sqlite3  "1" CACHE INTERNAL "used in settings.h")
 endif()
 
 set(MACOS_VERSION_MIN 10.14)
 if (use_libclang)
-	set(clang    "1" CACHE INTERNAL "used in settings.h")
+    set(clang    "1" CACHE INTERNAL "used in settings.h")
         find_package(LLVM CONFIG REQUIRED)
         find_package(Clang CONFIG REQUIRED)
 endif()

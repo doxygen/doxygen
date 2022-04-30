@@ -3,7 +3,7 @@
  *
  *
  *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2022 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -157,8 +157,8 @@ void RTFDocVisitor::operator()(const DocEmoji &s)
         case '&': case '#': case 'x':
           break;
         case ';':
-	  val1 = val;
-	  val = 0xd800 + ( ( val1 - 0x10000 ) & 0xffc00 ) / 0x400 - 0x10000;
+      val1 = val;
+      val = 0xd800 + ( ( val1 - 0x10000 ) & 0xffc00 ) / 0x400 - 0x10000;
           m_t << "\\u" << val << "?";
           val = 0xdC00 + ( ( val1 - 0x10000 ) & 0x3ff ) - 0x10000 ;
           m_t << "\\u" << val << "?";
@@ -474,7 +474,7 @@ void RTFDocVisitor::operator()(const DocInclude &inc)
                                            FALSE, // inline fragment
                                            0,     // memberDef
                                            TRUE   // show line numbers
-					   );
+                       );
          delete fd;
          m_t << "\\par";
          m_t << "}\n";
@@ -493,7 +493,7 @@ void RTFDocVisitor::operator()(const DocInclude &inc)
                                         TRUE,  // inlineFragment
                                         0,     // memberDef
                                         FALSE  // show line numbers
-				       );
+                       );
       m_t << "\\par";
       m_t << "}\n";
       break;

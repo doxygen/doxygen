@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # python script to generate configoptions.cpp and config.doc from config.xml
 #
-# Copyright (C) 1997-2015 by Dimitri van Heesch.
+# Copyright (C) 1997-2022 by Dimitri van Heesch.
 #
 # Permission to use, copy, modify, and distribute this software and its
 # documentation under the terms of the GNU General Public License is hereby
@@ -168,7 +168,7 @@ def prepCDocs(node):
         elif (type == 'int'):
             minval = node.getAttribute('minval')
             maxval = node.getAttribute('maxval')
-            doc += "<br/>%s: %s, %s: %s, %s: %s." % (" Minimum value", minval, 
+            doc += "<br/>%s: %s, %s: %s, %s: %s." % (" Minimum value", minval,
                      "maximum value", maxval,
                      "default value", defval)
         elif (type == 'bool'):
@@ -584,7 +584,7 @@ def parseOptionDoc(node, first):
             print("")
             print("")
             print("%s: %s%s%s, %s: %s%s%s, %s: %s%s%s." % (
-                     " Minimum value", "<code>", minval, "</code>", 
+                     " Minimum value", "<code>", minval, "</code>",
                      "maximum value", "<code>", maxval, "</code>",
                      "default value", "<code>", defval, "</code>"))
             print("")

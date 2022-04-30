@@ -2,7 +2,7 @@
  *
  *
  *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2022 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -230,7 +230,7 @@ class TranslatorArabic : public TranslatorAdapter_1_4_6
     {
       QCString result="هذه قائمة بكل الملفات";
       if (!extractAll) result+="الموثقة ";
-	  result+="مع وصف مختصر :";
+      result+="مع وصف مختصر :";
       return result;
     }
 
@@ -245,7 +245,7 @@ class TranslatorArabic : public TranslatorAdapter_1_4_6
       else
       {
         return "هذه هي الفئات ، البناءات ،"
-			"الإتحادات والواجهات مع وصف مختصر:";
+            "الإتحادات والواجهات مع وصف مختصر:";
       }
     }
 
@@ -262,7 +262,7 @@ class TranslatorArabic : public TranslatorAdapter_1_4_6
       {
         result+="أعضاء الفئة";
       }
-	  if (!extractAll)
+      if (!extractAll)
       {
         result+=" الموثقة ";
       }
@@ -756,7 +756,7 @@ class TranslatorArabic : public TranslatorAdapter_1_4_6
         default: break;
       }
       result+=" تم تكوينه من ";
-	  if (single) result+="هذا الملف:"; else result+="هذه الملفات:";
+      if (single) result+="هذا الملف:"; else result+="هذه الملفات:";
       return result;
     }
 
@@ -848,7 +848,7 @@ class TranslatorArabic : public TranslatorAdapter_1_4_6
     /*! Text shown before a multi-line variable/enum initialization */
     virtual QCString trInitialValue()
     {
-		return "قيمة مبدئية:";
+        return "قيمة مبدئية:";
     }
     /*! Text used the source code in the file index */
     virtual QCString trCode()
@@ -1104,7 +1104,7 @@ class TranslatorArabic : public TranslatorAdapter_1_4_6
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
     {
-		return "هذه هي الحزم مع وصف مختصر لكل منها )إن وجد( :";
+        return "هذه هي الحزم مع وصف مختصر لكل منها )إن وجد( :";
     }
     /*! The link name in the Quick links header for each page */
     virtual QCString trPackages()
@@ -1114,7 +1114,7 @@ class TranslatorArabic : public TranslatorAdapter_1_4_6
     /*! Text shown before a multi-line define */
     virtual QCString trDefineValue()
     {
-		return "القيمة:";
+        return "القيمة:";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1400,7 +1400,7 @@ class TranslatorArabic : public TranslatorAdapter_1_4_6
     /*! Put in front of the call graph for a function. */
     virtual QCString trCallGraph()
     {
-		return "هذا هو رسم الاستدعاء لهذه الدالة:";
+        return "هذا هو رسم الاستدعاء لهذه الدالة:";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1443,7 +1443,7 @@ class TranslatorArabic : public TranslatorAdapter_1_4_6
      */
     virtual QCString trSearchMatches()
     {
-		return "يتطابق مع:";
+        return "يتطابق مع:";
     }
 
 //////////////////////////////////////////////////////////////////////////

@@ -2,7 +2,7 @@
  *
  *
  *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2022 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -25,7 +25,7 @@
 //  - Initial translation to Macedonian.
 //
 // 2008/05/22
-//	- Translation for 1.5.4.
+//  - Translation for 1.5.4.
 //
 //
 
@@ -1704,9 +1704,9 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
     {
       QCString result((first_capital ? "Потпрограм" : "потпрограм"));
       if (singular){
-		result+="а";
+        result+="а";
       }else{
-      	result+="и";
+        result+="и";
       }
 
       return result;

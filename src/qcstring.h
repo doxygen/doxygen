@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 1997-2015 by Dimitri van Heesch.
+** Copyright (C) 1997-2022 by Dimitri van Heesch.
 **
 ** Permission to use, copy, modify, and distribute this software and its
 ** documentation under the terms of the GNU General Public License is hereby
@@ -35,14 +35,14 @@
 #ifndef TRUE
 #define TRUE true
 #endif
-typedef unsigned char	uchar;
-typedef unsigned short	ushort;
-typedef unsigned	uint;
-typedef unsigned long	ulong;
+typedef unsigned char   uchar;
+typedef unsigned short  ushort;
+typedef unsigned    uint;
+typedef unsigned long   ulong;
 typedef int64_t         int64;
 typedef uint64_t        uint64;
 #define ASSERT(x)  if ( !(x) )\
-	fprintf(stderr,"ASSERT: \"%s\" in %s (%d)\n",#x,__FILE__,__LINE__)
+    fprintf(stderr,"ASSERT: \"%s\" in %s (%d)\n",#x,__FILE__,__LINE__)
 
 
 /*****************************************************************************
@@ -181,17 +181,17 @@ class QCString
 
     QCString &sprintf( const char *format, ... );
 
-    int	find( char c, int index=0, bool cs=TRUE ) const;
-    int	find( const char *str, int index=0, bool cs=TRUE ) const;
+    int find( char c, int index=0, bool cs=TRUE ) const;
+    int find( const char *str, int index=0, bool cs=TRUE ) const;
     int find( const QCString &str, int index=0, bool cs=TRUE ) const;
-    //int	find( const QRegExp &rx, int index=0 ) const;
+    //int   find( const QRegExp &rx, int index=0 ) const;
 
-    int	findRev( char c, int index=-1, bool cs=TRUE) const;
-    int	findRev( const char *str, int index=-1, bool cs=TRUE) const;
-    //int	findRev( const QRegExp &rx, int index=-1 ) const;
+    int findRev( char c, int index=-1, bool cs=TRUE) const;
+    int findRev( const char *str, int index=-1, bool cs=TRUE) const;
+    //int   findRev( const QRegExp &rx, int index=-1 ) const;
 
-    int	contains( char c, bool cs=TRUE ) const;
-    int	contains( const char *str, bool cs=TRUE ) const;
+    int contains( char c, bool cs=TRUE ) const;
+    int contains( const char *str, bool cs=TRUE ) const;
     //int contains( const QRegExp &rx ) const;
 
     bool stripPrefix(const QCString &prefix)
@@ -389,7 +389,7 @@ class QCString
 
     short  toShort(  bool *ok=0, int base=10 ) const;
     ushort toUShort( bool *ok=0, int base=10 ) const;
-    int	   toInt(    bool *ok=0, int base=10 ) const;
+    int    toInt(    bool *ok=0, int base=10 ) const;
     uint   toUInt(   bool *ok=0, int base=10 ) const;
     long   toLong(   bool *ok=0, int base=10 ) const;
     ulong  toULong(  bool *ok=0, int base=10 ) const;

@@ -2,7 +2,7 @@
  *
  *
  *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2022 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -493,7 +493,7 @@ class TranslatorSerbian : public TranslatorAdapter_1_6_0
     {
       QCString result="[" + date + "] Napravljeno automatski ";
       if (!projName.isEmpty()) result+=" za projekat " + projName;
-	  result+=" upotrebom ";
+      result+=" upotrebom ";
       return result;
     }
 

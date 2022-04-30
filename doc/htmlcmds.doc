@@ -1,12 +1,12 @@
 /******************************************************************************
  *
- * 
  *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ *
+ * Copyright (C) 1997-2022 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -18,18 +18,18 @@
 
 Here is a list of all HTML commands that may be used inside the
 documentation. Note that although these HTML tags are translated to the
-proper commands for output formats other than HTML, all attributes 
-of a HTML tag are passed on to the HTML output only 
+proper commands for output formats other than HTML, all attributes
+of a HTML tag are passed on to the HTML output only
 (the \c HREF and \c NAME attributes for the \c A tag are the only exception).
 
 <ul>
-<li><tt>\anchor htmltag_A_HREF \addindex "\<A HREF=\"...\"\>"\<A HREF="..."\></tt> Starts a hyperlink 
-                       (if supported by the output format). 
-<li><tt>\anchor htmltag_A_ID \addindex "\<A ID=\"...\"\>"\<A ID="..."\></tt> Starts a named anchor 
+<li><tt>\anchor htmltag_A_HREF \addindex "\<A HREF=\"...\"\>"\<A HREF="..."\></tt> Starts a hyperlink
                        (if supported by the output format).
-<li><tt>\anchor htmltag_A_NAME \addindex "\<A NAME=\"...\"\>"\<A NAME="..."\></tt> Starts a named anchor 
+<li><tt>\anchor htmltag_A_ID \addindex "\<A ID=\"...\"\>"\<A ID="..."\></tt> Starts a named anchor
                        (if supported by the output format).
-<li><tt>\anchor htmltag_endA \addindex "\</A\>"\</A\></tt>    Ends a link or anchor 
+<li><tt>\anchor htmltag_A_NAME \addindex "\<A NAME=\"...\"\>"\<A NAME="..."\></tt> Starts a named anchor
+                       (if supported by the output format).
+<li><tt>\anchor htmltag_endA \addindex "\</A\>"\</A\></tt>    Ends a link or anchor
 <li><tt>\anchor htmltag_B \addindex "\<B\>"\<B\></tt>     Starts a piece of text displayed in a bold font.
 <li><tt>\anchor htmltag_endB \addindex "\</B\>"\</B\></tt>    Ends a \ref htmltag_B "\<B\>" section.
 <li><tt>\anchor htmltag_BLOCKQUOTE \addindex "\<BLOCKQUOTE\>"\<BLOCKQUOTE\></tt> Starts a quotation block.
@@ -42,8 +42,8 @@ of a HTML tag are passed on to the HTML output only
 <li><tt>\anchor htmltag_CITE \addindex "\<CITE\>"\<CITE\></tt> Starts a section of text displayed in a font specific for citations.
 <li><tt>\anchor htmltag_endCITE \addindex "\</CITE\>"\</CITE\></tt> Ends a \ref htmltag_CITE "\<CITE\>" section.
 <li><tt>\anchor htmltag_CODE \addindex "\<CODE\>"\<CODE\></tt>  Starts a piece of text displayed in a typewriter font.
-                       Note that only for C# code, this command is equivalent to 
-                       \ref cmdcode "\\code" (see \ref xmltag_code "\<code\>"). 
+                       Note that only for C# code, this command is equivalent to
+                       \ref cmdcode "\\code" (see \ref xmltag_code "\<code\>").
 <li><tt>\anchor htmltag_endCODE \addindex "\</CODE\>"\</CODE\></tt> Ends a \ref htmltag_CODE "\<CODE\>" section.
                        Note that only for C# code, this command is equivalent to
                        \ref cmdendcode "\\endcode" (see \ref xmltag_code "\<code\>").

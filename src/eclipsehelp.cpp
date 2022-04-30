@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2022 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -175,14 +175,14 @@ void EclipseHelp::addContentsItem(
     {
       case '^':
         // URL not supported by eclipse toc.xml
-	break;
+    break;
 
       case '!':
         indent();
         m_tocstream << "<topic label=\"" << convertToXML(name) << "\"";
         m_tocstream << " href=\"" << convertToXML(m_pathprefix) << &file[1] << "\"";
         m_endtag = TRUE;
-	break;
+    break;
 
       default:
         indent();
@@ -195,7 +195,7 @@ void EclipseHelp::addContentsItem(
         }
         m_tocstream << "\"";
         m_endtag = TRUE;
-	break;
+    break;
     }
   }
   else

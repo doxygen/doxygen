@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 1997-2018 by Dimitri van Heesch.
+ * Copyright (C) 1997-2022 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -29,16 +29,16 @@
  * 20211003:
  *  - Updated to 1.9.3;
  * 20200112:
- * 	- Updated to 1.9.1;
+ *  - Updated to 1.9.1;
  * 20190203:
- *	- Slice methods added;
+ *  - Slice methods added;
  * 20180612:
- *	- Updated to 1.8.15;
+ *  - Updated to 1.8.15;
  * 20131129:
  *  - Updated to 1.8.5;
  *  - Translation in the method trFileMembers() fixed;
  * 20110628:
- *	- Updated to 1.7.5;
+ *  - Updated to 1.7.5;
  *      - All obsolete methods have been removed;
  * 20110428
  *   - Updated to doxygen 1.6.3 using the Brazilian Portuguese as the base.
@@ -1510,8 +1510,8 @@ class TranslatorPortuguese : public TranslatorAdapter_1_9_4
     virtual QCString trDirReference(const QCString &dirName)
     {
         QCString result = "Referência do diretório ";
-     	result += dirName;
-     	return result;
+        result += dirName;
+        return result;
     }
 
     /*! This returns the word directory with or without starting capital
@@ -1533,8 +1533,8 @@ class TranslatorPortuguese : public TranslatorAdapter_1_9_4
     virtual QCString trOverloadText()
     {
        return "Este é um método provido por conveniência. "
-       		"Ele difere do método acima apenas na lista de "
-       		"argumentos que devem ser utilizados.";
+            "Ele difere do método acima apenas na lista de "
+            "argumentos que devem ser utilizados.";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1725,9 +1725,9 @@ class TranslatorPortuguese : public TranslatorAdapter_1_9_4
 
       result+=" foi gerada a partir do";
       if (single)
-    	result+=" seguinte ficheiro:";
+        result+=" seguinte ficheiro:";
       else
-    	result+="s seguintes ficheiros:";
+        result+="s seguintes ficheiros:";
 
       return result;
     }
@@ -2047,7 +2047,7 @@ class TranslatorPortuguese : public TranslatorAdapter_1_9_4
     virtual QCString trDesignUnitListDescription()
     {
         return "Esta é uma lista de todos os membros de unidades de design "
-        		"com ligações para as entidades às quais pertencem:";
+                "com ligações para as entidades às quais pertencem:";
     }
     /** VHDL design unit index */
     virtual QCString trDesignUnitIndex()
@@ -2284,56 +2284,56 @@ class TranslatorPortuguese : public TranslatorAdapter_1_9_4
     //////////////////////////////////////////////////////////////////////////
 
     /** VHDL design unit documentation */
-	virtual QCString trDesignUnitDocumentation()
-	{
-	    return "Documentação da Unidade de Projeto";
+    virtual QCString trDesignUnitDocumentation()
+    {
+        return "Documentação da Unidade de Projeto";
     }
 
 
-	//////////////////////////////////////////////////////////////////////////
-	// new since 1.9.2
-	//////////////////////////////////////////////////////////////////////////
-	/** C++20 concept */
-	virtual QCString trConcept(bool first_capital, bool singular)
-	{
-	  QCString result((first_capital ? "Conceito" : "conceito"));
-	  if (!singular) result+="s";
-	  return result;
-	}
-	/*! used as the title of the HTML page of a C++20 concept page */
-	virtual QCString trConceptReference(const QCString &conceptName)
-	{
-	  QCString result= "Referência do Conceito ";
-	  result+=conceptName;
-	  return result;
-	}
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.9.2
+    //////////////////////////////////////////////////////////////////////////
+    /** C++20 concept */
+    virtual QCString trConcept(bool first_capital, bool singular)
+    {
+      QCString result((first_capital ? "Conceito" : "conceito"));
+      if (!singular) result+="s";
+      return result;
+    }
+    /*! used as the title of the HTML page of a C++20 concept page */
+    virtual QCString trConceptReference(const QCString &conceptName)
+    {
+      QCString result= "Referência do Conceito ";
+      result+=conceptName;
+      return result;
+    }
 
-	/*! used as the title of page containing all the index of all concepts. */
-	virtual QCString trConceptList()
-	{ return "Lista de Conceitos"; }
+    /*! used as the title of page containing all the index of all concepts. */
+    virtual QCString trConceptList()
+    { return "Lista de Conceitos"; }
 
-	/*! used as the title of chapter containing the index listing all concepts. */
-	virtual QCString trConceptIndex()
-	{ return "Índice de Conceitos"; }
+    /*! used as the title of chapter containing the index listing all concepts. */
+    virtual QCString trConceptIndex()
+    { return "Índice de Conceitos"; }
 
-	/*! used as the title of chapter containing all information about concepts. */
-	virtual QCString trConceptDocumentation()
-	{ return "Documentação do Conceito"; }
+    /*! used as the title of chapter containing all information about concepts. */
+    virtual QCString trConceptDocumentation()
+    { return "Documentação do Conceito"; }
 
-	/*! used as an introduction to the concept list */
-	virtual QCString trConceptListDescription(bool extractAll)
-	{
-	  QCString result="Esta é a lista de todos os conceitos ";
-	  if (!extractAll) result+="documentados ";
-	  result+="com suas respectivas descrições:";
-	  return result;
-	}
+    /*! used as an introduction to the concept list */
+    virtual QCString trConceptListDescription(bool extractAll)
+    {
+      QCString result="Esta é a lista de todos os conceitos ";
+      if (!extractAll) result+="documentados ";
+      result+="com suas respectivas descrições:";
+      return result;
+    }
 
-	/*! used to introduce the definition of the C++20 concept */
-	virtual QCString trConceptDefinition()
-	{
-	  return "Definição de conceito";
-	}
+    /*! used to introduce the definition of the C++20 concept */
+    virtual QCString trConceptDefinition()
+    {
+      return "Definição de conceito";
+    }
 };
 
 #endif

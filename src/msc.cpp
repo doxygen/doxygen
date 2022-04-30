@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright (C) 1997-2021 by Dimitri van Heesch.
+ * Copyright (C) 1997-2022 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -174,10 +174,10 @@ void writeMscImageMapFromFile(TextStream &t,const QCString &inFile,
                               const QCString &relPath,
                               const QCString &baseName,
                               const QCString &context,
-			      MscOutputFormat format,
+                  MscOutputFormat format,
                               const QCString &srcFile,
                               int srcLine
- 			    )
+                )
 {
   QCString mapName = baseName+".map";
   t << "<img src=\"" << relPath << baseName << ".";

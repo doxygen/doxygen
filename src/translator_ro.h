@@ -2,7 +2,7 @@
  *
  *
  *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2022 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -246,8 +246,8 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
     {
       QCString result="Lista tuturor ";
       result+="fişierelor";
-	  if (!extractAll) result+=" documentate";
-	  result+=", cu scurte descrieri:";
+      if (!extractAll) result+=" documentate";
+      result+=", cu scurte descrieri:";
       return result;
     }
 
@@ -265,7 +265,7 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
       else
       {
         return "Lista claselor, structurilor, uniunilor şi interfeţelor"
-		", cu scurte descrieri:";
+        ", cu scurte descrieri:";
       }
 
     }
@@ -284,7 +284,7 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
       else
       {
         result+="membrilor ";
-	  if (!extractAll) result+="documentaţi ";
+      if (!extractAll) result+="documentaţi ";
         result+="din toate clasele ";
       }
       result+=", cu legături către ";
@@ -321,13 +321,13 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         result+="funcţiilor, variabilelor, definiţiilor, enumerărilor şi definiţiilor de tip";
-	  if (!extractAll) result+=" documentate";
+      if (!extractAll) result+=" documentate";
       }
       else
       {
         result+="membrilor ";
-	  if (!extractAll) result+="documentaţi ";
-	  result+="din toate fişierele";
+      if (!extractAll) result+="documentaţi ";
+      result+="din toate fişierele";
       }
       result+=", cu legături către ";
       if (extractAll)
@@ -575,8 +575,8 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
     {
       QCString result="Lista tuturor ";
       result+="namespace-urilor ";
-	  if (!extractAll) result+="documentate ";
-	  result+=", cu scurte descrieri:";
+      if (!extractAll) result+="documentate ";
+      result+=", cu scurte descrieri:";
       return result;
     }
 
@@ -605,7 +605,7 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
                                     ClassDef::CompoundType compType,
                                     bool isTemplate)
     {
-	  QCString result="Referinţă la ";
+      QCString result="Referinţă la ";
       switch(compType)
       {
         case ClassDef::Class:      result+="clasa "; break;
@@ -727,7 +727,7 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
     {
       QCString result="Lista tuturor membrilor ";
       if (!extractAll) result+="documentaţi ";
-	  result+="din toate namespace-urile, cu legături către ";
+      result+="din toate namespace-urile, cu legături către ";
 
       if (extractAll)
         result+="documentaţia namespace-ului pentru fiecare membru în parte:";
@@ -984,7 +984,7 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
     virtual QCString trInclByDepGraph()
     {
       return "Acest graf arată care fişiere includ, "
-		  "direct sau indirect, acest fişier:";
+          "direct sau indirect, acest fişier:";
     }
     virtual QCString trSince()
     {
@@ -1005,7 +1005,7 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
     {
       return
         "Această pagină arată modul în care trebuie să interpretaţi "
-		"grafurile generate de doxygen.<p>\n"
+        "grafurile generate de doxygen.<p>\n"
         "Consideraţi următorul exemplu:\n"
         "\\code\n"
         "/*! Clasă invizibilă, tăiată din cauza depăşirii spaţiului */\n"
@@ -1204,7 +1204,7 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
     virtual QCString trClass(bool first_capital, bool singular)
     {
       QCString result((first_capital ? "Clas" : "clas"));
-	result+= singular ? "a":"ele";
+    result+= singular ? "a":"ele";
       return result;
     }
 
@@ -1215,7 +1215,7 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
     virtual QCString trFile(bool first_capital, bool singular)
     {
       QCString result((first_capital ? "Fişier" : "fişier"));
-	result+= singular ? "ul":"ele";
+    result+= singular ? "ul":"ele";
       return result;
     }
 
@@ -1226,7 +1226,7 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
     virtual QCString trNamespace(bool first_capital, bool singular)
     {
       QCString result((first_capital ? "Namespace" : "namespace"));
-	result+= singular ? "-ul":"-urile";
+    result+= singular ? "-ul":"-urile";
       return result;
     }
 
@@ -1237,7 +1237,7 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
     virtual QCString trGroup(bool first_capital, bool singular)
     {
       QCString result((first_capital ? "Grupu" : "grupu"));
-	result+= singular ? "l":"rile";
+    result+= singular ? "l":"rile";
       return result;
     }
 
@@ -1248,7 +1248,7 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
     virtual QCString trPage(bool first_capital, bool singular)
     {
       QCString result((first_capital ? "Pagin" : "pagin"));
-	result+= singular ? "a":"ile";
+    result+= singular ? "a":"ile";
       return result;
     }
 
@@ -1259,7 +1259,7 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
     virtual QCString trMember(bool first_capital, bool singular)
     {
       QCString result((first_capital ? "Membr" : "membr"));
-	result+= singular ? "ul":"ii";
+    result+= singular ? "ul":"ii";
       return result;
     }
 
@@ -1283,7 +1283,7 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
     virtual QCString trAuthor(bool first_capital, bool singular)
     {
       QCString result((first_capital ? "Autor" : "autor"));
-	result+= singular ? "ul":"ii";
+    result+= singular ? "ul":"ii";
       return result;
     }
 
@@ -1645,14 +1645,14 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
         default: break;
       }
       if (isTemplate) result+="(Template) ";
-	  result+=clName;
+      result+=clName;
       return result;
     }
     /*! used as the title of the HTML page of a module (Fortran) */
     virtual QCString trModuleReference(const QCString &namespaceName)
     {
       QCString result="Referinţă la Modulul ";
-	  result += namespaceName;
+      result += namespaceName;
       return result;
     }
 
@@ -1691,7 +1691,7 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
     {
       QCString result((first_capital ? "Modul" : "modul"));
       if (singular)  result+="ul";
-	  else result += "ele";
+      else result += "ele";
       return result;
     }
     /*! This is put at the bottom of a module documentation page and is
@@ -1725,7 +1725,7 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
     {
       QCString result((first_capital ? "Tip" : "tip"));
       if (singular)  result+="ul";
-	  else result += "urile";
+      else result += "urile";
       return result;
     }
     /*! This is used for translation of the word that will possibly
@@ -1736,7 +1736,7 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
     {
       QCString result((first_capital ? "Subprogram" : "subprogram"));
       if (singular)  result+="ul";
-	  else result += "ele";
+      else result += "ele";
       return result;
     }
 

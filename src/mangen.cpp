@@ -2,7 +2,7 @@
  *
  *
  *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2022 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -427,7 +427,7 @@ void ManGenerator::startDoxyAnchor(const QCString &,const QCString &manName,
     // something to be done?
     if( !Config_getBool(MAN_LINKS) )
     {
-	return; // no
+    return; // no
     }
 
     // the name of the link file is derived from the name of the anchor:

@@ -2,7 +2,7 @@
  *
  *
  *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2022 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -1145,7 +1145,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
       return "パッケージ";
     }
 
-	    /*! Text shown before a multi-line define */
+        /*! Text shown before a multi-line define */
     virtual QCString trDefineValue()
     {
       return "値:";

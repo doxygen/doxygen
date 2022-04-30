@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright (C) 1997-2021 by Dimitri van Heesch.
+ * Copyright (C) 1997-2022 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -390,9 +390,9 @@ static QCString substituteHtmlKeywords(const QCString &str,
     //                    "<script type=\"text/javascript\">var page_layout=";
     //treeViewCssJs += Config_getBool(DISABLE_INDEX) ? "1" : "0";
     //treeViewCssJs += ";</script>\n"
-			"<script type=\"text/javascript\" src=\"$relpath^resize.js\"></script>\n"
-			"<script type=\"text/javascript\" src=\"$relpath^navtreedata.js\"></script>\n"
-			"<script type=\"text/javascript\" src=\"$relpath^navtree.js\"></script>\n";
+            "<script type=\"text/javascript\" src=\"$relpath^resize.js\"></script>\n"
+            "<script type=\"text/javascript\" src=\"$relpath^navtreedata.js\"></script>\n"
+            "<script type=\"text/javascript\" src=\"$relpath^navtree.js\"></script>\n";
   }
 
   if (searchEngine)
@@ -409,10 +409,10 @@ static QCString substituteHtmlKeywords(const QCString &str,
       if (disableIndex || !Config_getBool(HTML_DYNAMIC_MENUS))
       {
         searchCssJs += "<script type=\"text/javascript\">\n"
-					"/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */\n"
-				"  $(document).ready(function() { init_search(); });\n"
-					"/* @license-end */\n"
-					"</script>";
+                    "/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */\n"
+                "  $(document).ready(function() { init_search(); });\n"
+                    "/* @license-end */\n"
+                    "</script>";
       }
     }
     else
@@ -420,12 +420,12 @@ static QCString substituteHtmlKeywords(const QCString &str,
       if (disableIndex || !Config_getBool(HTML_DYNAMIC_MENUS))
       {
         searchCssJs += "<script type=\"text/javascript\">\n"
-					"/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */\n"
-					"  $(document).ready(function() {\n"
-					"    if ($('.searchresults').length > 0) { searchBox.DOMSearchField().focus(); }\n"
-					"  });\n"
-					"  /* @license-end */\n"
-					"</script>\n";
+                    "/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */\n"
+                    "  $(document).ready(function() {\n"
+                    "    if ($('.searchresults').length > 0) { searchBox.DOMSearchField().focus(); }\n"
+                    "  });\n"
+                    "  /* @license-end */\n"
+                    "</script>\n";
       }
 
       // OPENSEARCH_PROVIDER {
@@ -635,7 +635,7 @@ void HtmlCodeGenerator::codify(const QCString &str)
                      { m_t << "&lt;"; p++; }
                    else if (*p=='>')
                      { m_t << "&gt;"; p++; }
-		   else if (*p=='(')
+           else if (*p=='(')
                      { m_t << "\\&zwj;("; m_col++;p++; }
                    else if (*p==')')
                      { m_t << "\\&zwj;)"; m_col++;p++; }
@@ -685,7 +685,7 @@ void HtmlCodeGenerator::docify(const QCString &str)
             { m_t << "&lt;"; p++; }
           else if (*p=='>')
             { m_t << "&gt;"; p++; }
-	  else if (*p=='(')
+      else if (*p=='(')
             { m_t << "\\&zwj;("; p++; }
           else if (*p==')')
             { m_t << "\\&zwj;)"; p++; }
@@ -1545,7 +1545,7 @@ void HtmlGenerator::docify(const QCString &str,bool inHtmlComment)
                      { m_t << "&lt;"; p++; }
                    else if (*p=='>')
                      { m_t << "&gt;"; p++; }
-		   else if (*p=='(')
+           else if (*p=='(')
                      { m_t << "\\&zwj;("; p++; }
                    else if (*p==')')
                      { m_t << "\\&zwj;)"; p++; }
@@ -2706,10 +2706,10 @@ void HtmlGenerator::writeSearchPage()
     t << "<!-- " << theTranslator->trGeneratedBy() << " Doxygen "
       << getDoxygenVersion() << " -->\n";
     t << "<script type=\"text/javascript\">\n";
-		t << "/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */\n";
-		t << "var searchBox = new SearchBox(\"searchBox\", \""
+        t << "/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */\n";
+        t << "var searchBox = new SearchBox(\"searchBox\", \""
       << "search\",'" << theTranslator->trSearch() << "','" << Doxygen::htmlFileExtension << "');\n";
-		t << "/* @license-end */\n";
+        t << "/* @license-end */\n";
     t << "</script>\n";
     if (!Config_getBool(DISABLE_INDEX))
     {
@@ -2762,10 +2762,10 @@ void HtmlGenerator::writeExternalSearchPage()
     t << "<!-- " << theTranslator->trGeneratedBy() << " Doxygen "
       << getDoxygenVersion() << " -->\n";
     t << "<script type=\"text/javascript\">\n";
-		t << "/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */\n";
-		t << "var searchBox = new SearchBox(\"searchBox\", \""
+        t << "/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */\n";
+        t << "var searchBox = new SearchBox(\"searchBox\", \""
       << "search\",'" << theTranslator->trSearch() << "','" << Doxygen::htmlFileExtension << "');\n";
-		t << "/* @license-end */\n";
+        t << "/* @license-end */\n";
     t << "</script>\n";
     if (!Config_getBool(DISABLE_INDEX))
     {

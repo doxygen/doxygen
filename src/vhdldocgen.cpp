@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2022 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -716,7 +716,7 @@ const MemberDef* VhdlDocGen::findMemberDef(ClassDef* cd,const QCString& key,Memb
     return 0;
   }
   //int l=ml->count();
-  //	fprintf(stderr,"\n loading entity %s %s: %d",qPrint(cd->symbolName()),qPrint(keyType),l);
+  //    fprintf(stderr,"\n loading entity %s %s: %d",qPrint(cd->symbolName()),qPrint(keyType),l);
 
   for (const auto &md : *ml)
   {
@@ -1480,7 +1480,7 @@ bool VhdlDocGen::writeFuncProcDocu(
     if (!VhdlDocGen::isProcess(md))
     {
      // startFonts(arg.type,"vhdlkeyword",ol);
-		VhdlDocGen::writeFormatString(arg.type,ol,md);
+        VhdlDocGen::writeFormatString(arg.type,ol,md);
     }
     ol.disable(OutputGenerator::Man);
     ol.endEmphasis();
@@ -1683,7 +1683,7 @@ bool VhdlDocGen::writeVHDLTypeDocumentation(const MemberDef* mdef, const Definit
     if (c || brec || largs.stripPrefix("units"))
     {
       if (c)
-	  largs=ttype;
+      largs=ttype;
       VhdlDocGen::writeRecUnitDocu(mdef,ol,largs);
       return hasParams;
     }

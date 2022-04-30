@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2022 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -219,9 +219,9 @@ QCString &QCString::replace( size_t index, size_t len, const char *s)
 static bool ok_in_base( char c, int base )
 {
     if ( base <= 10 )
-	return c>='0' && c<='9' && (c-'0') < base;
+    return c>='0' && c<='9' && (c-'0') < base;
     else
-	return (c>='0' && c<='9') ||
+    return (c>='0' && c<='9') ||
                (c >= 'a' && c < char('a'+base-10)) ||
                (c >= 'A' && c < char('A'+base-10));
 }
@@ -267,7 +267,7 @@ long QCString::toLong(bool *ok,int base) const
   int neg = 0;
   if ( !p )
     goto bye;
-  while ( l && qisspace(*p) )			// skip leading space
+  while ( l && qisspace(*p) )           // skip leading space
     l--,p++;
   if ( l && *p == '-' ) {
     l--;
@@ -299,7 +299,7 @@ long QCString::toLong(bool *ok,int base) const
   }
   if ( neg )
     val = -val;
-  while ( l && qisspace(*p) )			// skip trailing space
+  while ( l && qisspace(*p) )           // skip trailing space
     l--,p++;
   if ( !l )
     is_ok = TRUE;
@@ -314,11 +314,11 @@ ulong QCString::toULong(bool *ok,int base) const
   const char *p = data();
   ulong val=0;
   int l = length();
-  const ulong max_mult = 429496729;		// UINT_MAX/10, rounded down
+  const ulong max_mult = 429496729;     // UINT_MAX/10, rounded down
   bool is_ok = FALSE;
   if ( !p )
     goto bye;
-  while ( l && qisspace(*p) )			// skip leading space
+  while ( l && qisspace(*p) )           // skip leading space
     l--,p++;
   if ( *p == '+' )
     l--,p++;
@@ -343,7 +343,7 @@ ulong QCString::toULong(bool *ok,int base) const
     p++;
   }
 
-  while ( l && qisspace(*p) )			// skip trailing space
+  while ( l && qisspace(*p) )           // skip trailing space
     l--,p++;
   if ( !l )
     is_ok = TRUE;
@@ -362,7 +362,7 @@ uint64 QCString::toUInt64(bool *ok,int base) const
   bool is_ok = FALSE;
   if ( !p )
     goto bye;
-  while ( l && qisspace(*p) )		 	   // skip leading space
+  while ( l && qisspace(*p) )              // skip leading space
     l--,p++;
   if ( *p == '+' )
     l--,p++;
@@ -387,7 +387,7 @@ uint64 QCString::toUInt64(bool *ok,int base) const
     p++;
   }
 
-  while ( l && qisspace(*p) )			// skip trailing space
+  while ( l && qisspace(*p) )           // skip trailing space
     l--,p++;
   if ( !l )
     is_ok = TRUE;
@@ -404,15 +404,15 @@ void *qmemmove( void *dst, const void *src, size_t len )
     char *d;
     const char *s;
     if ( dst > src ) {
-	d = static_cast<char *>(dst) + len - 1;
-	s = static_cast<const char *>(src) + len - 1;
-	while ( len-- )
-	    *d-- = *s--;
+    d = static_cast<char *>(dst) + len - 1;
+    s = static_cast<const char *>(src) + len - 1;
+    while ( len-- )
+        *d-- = *s--;
     } else if ( dst < src ) {
-	d = static_cast<char *>(dst);
-	s = static_cast<const char *>(src);
-	while ( len-- )
-	    *d++ = *s++;
+    d = static_cast<char *>(dst);
+    s = static_cast<const char *>(src);
+    while ( len-- )
+        *d++ = *s++;
     }
     return dst;
 }
@@ -420,7 +420,7 @@ void *qmemmove( void *dst, const void *src, size_t len )
 char *qstrdup( const char *str )
 {
     if ( !str )
-	return 0;
+    return 0;
     char *dst = new char[qstrlen(str)+1];
     return strcpy( dst, str );
 }
@@ -428,10 +428,10 @@ char *qstrdup( const char *str )
 char *qstrncpy( char *dst, const char *src, size_t len )
 {
     if ( !src )
-	return 0;
+    return 0;
     strncpy( dst, src, len );
     if ( len > 0 )
-	dst[len-1] = '\0';
+    dst[len-1] = '\0';
     return dst;
 }
 
@@ -445,7 +445,7 @@ int qstricmp( const char *s1, const char *s2 )
     uchar c;
     for ( ; !(res = ((c=toLowerChar(*s1)) - toLowerChar(*s2))); s1++, s2++ )
     {
-      if ( !c )				// strings are equal
+      if ( !c )             // strings are equal
         break;
     }
     return res;
@@ -461,10 +461,10 @@ int qstrnicmp( const char *s1, const char *s2, size_t len )
     {
         char c = toLowerChar(*s1);
         int res = c-toLowerChar(*s2);
-	if ( res!=0 ) // strings are not equal
-	    return res;
-	if ( c==0 ) // strings are equal
-	    break;
+    if ( res!=0 ) // strings are not equal
+        return res;
+    if ( c==0 ) // strings are equal
+        break;
     }
     return 0;
 }

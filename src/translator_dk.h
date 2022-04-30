@@ -3,7 +3,7 @@
  *
  *
  *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2022 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -31,56 +31,56 @@
 
 /*  Translator's notes:
 
-	Oversættelseskonventioner:
-	(Konventioner for konventioner:
-	  '?'    angiver oversættelser, jeg har været i tvivl om
-	  '??'   angiver tvivlsomme oversættelser
-	  '..?'  angiver ord, der endnu ikke er fundet en oversættelse til
- 	  '(do.)' angiver ord, der med vilje ikke er oversat, idet jeg selv
+    Oversættelseskonventioner:
+    (Konventioner for konventioner:
+      '?'    angiver oversættelser, jeg har været i tvivl om
+      '??'   angiver tvivlsomme oversættelser
+      '..?'  angiver ord, der endnu ikke er fundet en oversættelse til
+      '(do.)' angiver ord, der med vilje ikke er oversat, idet jeg selv
              overvejende bruger det engelske udtryk
-	  '(-> _)' angiver ord, der er fundet en oversættelse til, men som jeg
-	        vægrer mig ved at oversætte.
+      '(-> _)' angiver ord, der er fundet en oversættelse til, men som jeg
+            vægrer mig ved at oversætte.
           'KLID:_' angiver ord, hvor jeg med overlæg har rettet mig efter
-		KLID.dk's oversættelsesguide (enig eller ej).
-	)
-	bug -> 'kendt fejl'
-	class -> klasse
-	compound -> 'sammensat type'
-	constructor -> konstruktør ?
-	destructor -> destruktør ?
-	directory -> KLID:katalog (kunne også være 'bibliotek','mappe','folder')
-	event -> begivenhed ?
-	exception (-> undtagelse ?)
-	friend ..?
-	interface -> grænseflade ?
-	member -> medlem (TODO)
-	namespace -> (do.)
-	overloaded -> KLID:overdefineret
-	private -> privat
-	property -> egenskab?
-	protected -> beskyttet ??
-	public -> offentlig
-	reference(vb) -> "indeholde referencer til" (?)
-	slot ..?
-	source code -> kildekode
-	struct -> datastruktur
-	template (-> skabelon ?)
-	typedef -> typedefinition (?)
-	todo -> (do.)
-	union ..?
+        KLID.dk's oversættelsesguide (enig eller ej).
+    )
+    bug -> 'kendt fejl'
+    class -> klasse
+    compound -> 'sammensat type'
+    constructor -> konstruktør ?
+    destructor -> destruktør ?
+    directory -> KLID:katalog (kunne også være 'bibliotek','mappe','folder')
+    event -> begivenhed ?
+    exception (-> undtagelse ?)
+    friend ..?
+    interface -> grænseflade ?
+    member -> medlem (TODO)
+    namespace -> (do.)
+    overloaded -> KLID:overdefineret
+    private -> privat
+    property -> egenskab?
+    protected -> beskyttet ??
+    public -> offentlig
+    reference(vb) -> "indeholde referencer til" (?)
+    slot ..?
+    source code -> kildekode
+    struct -> datastruktur
+    template (-> skabelon ?)
+    typedef -> typedefinition (?)
+    todo -> (do.)
+    union ..?
 
-	Specielle forbindelser:
-	'Inheritance diagram' -> Stamtræ  (selvom Nedarvningsdiagram også gik an)
-
-
-	-----
-
-	(Konstruktivt) input modtages med glæde!
-	-- Erik Søe Sørensen <eriksoe@daimi.au.dk>
+    Specielle forbindelser:
+    'Inheritance diagram' -> Stamtræ  (selvom Nedarvningsdiagram også gik an)
 
 
-	links -> (links.)
-	-- Poul-Erik Hansen
+    -----
+
+    (Konstruktivt) input modtages med glæde!
+    -- Erik Søe Sørensen <eriksoe@daimi.au.dk>
+
+
+    links -> (links.)
+    -- Poul-Erik Hansen
 
  */
 
@@ -116,7 +116,7 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
     virtual QCString latexLanguageSupportCommand()
     {
       return
-	"\\usepackage[danish]{babel}\n";
+    "\\usepackage[danish]{babel}\n";
     }
 
     virtual QCString trISOLang()
@@ -139,7 +139,7 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
     { return "(Bemærk at disse ikke er medlems-funktioner.)"; }
 
     /*! header that is put before the detailed description of files,
-	 * classes and namespaces. */
+     * classes and namespaces. */
     virtual QCString trDetailedDescription()
     { return "Detaljeret beskrivelse"; }
 
@@ -150,7 +150,7 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
     /*! header that is put before the list of enumerations. */
     virtual QCString trMemberEnumerationDocumentation()
     { return "Dokumentation af medlems-enumerationer"; }
-	// medlems-enumerationer -> 'indeholdte enumerationer'
+    // medlems-enumerationer -> 'indeholdte enumerationer'
 
     /*! header that is put before the list of member functions. */
     virtual QCString trMemberFunctionDocumentation()
@@ -162,7 +162,7 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C)) {
         return "Felt-dokumentation";
       } else {
-	return "Dokumentation af feltvariable";
+    return "Dokumentation af feltvariable";
       }
     }
 
@@ -250,8 +250,8 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C)) {
         return "Globale symboler";
       } else {
-	return "Placering i filer"; // Fil-medlemmer"; //TODO
-	//"Globale definitioner" ?
+    return "Placering i filer"; // Fil-medlemmer"; //TODO
+    //"Globale definitioner" ?
       }
     }
 
@@ -333,7 +333,7 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
 
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C)) {
         result+="funktioner, variable, #defines, enumerationer "
-	    "og typedefinitioner";
+        "og typedefinitioner";
       } else {
         result+="fil-medlemmer";
       }
@@ -822,7 +822,7 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
     virtual QCString trDeprecated()
     {
       return "Frarådes - fortidslevn"; // ?? - What is the context?
-	  // "Ugleset" :)
+      // "Ugleset" :)
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -946,8 +946,8 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
     virtual QCString trInclByDepGraph()
     {
       return
-	"Denne graf viser, hvilke filer der direkte eller "
-	"indirekte inkluderer denne fil:";
+    "Denne graf viser, hvilke filer der direkte eller "
+    "indirekte inkluderer denne fil:";
     }
     virtual QCString trSince()
     {
@@ -967,8 +967,8 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
     virtual QCString trLegendDocs() //TODO
     {
       return
-		"Denne side forklarer, hvordan man skal fortolke de grafer, "
-		"der genereres af doxygen.<p>\n"
+        "Denne side forklarer, hvordan man skal fortolke de grafer, "
+        "der genereres af doxygen.<p>\n"
         "Tag følgende eksempel:\n"
         "\\code\n"
         "/*! Klasse der er usynlig pg.a. beskæring */\n"
@@ -1003,31 +1003,31 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
         "<p><center><img src=\"graph_legend."+getDotImageExtension()+"\"></center>\n"
         "<p>\n"
         "De forskellige slags kasser i ovenstående graf har følgende "
-		"betydninger:\n"
+        "betydninger:\n"
         "<ul>\n"
         "<li>%En udfyldt sort kasse repræsenterer den datastruktur eller "
-		"klasse, grafen er genereret for.\n"
+        "klasse, grafen er genereret for.\n"
         "<li>%En kasse med sort kant betegner en dokumenteret datastruktur "
-		" eller klasse.\n"
+        " eller klasse.\n"
         "<li>%En kasse med grå kant betegner en udokumenteret datastruktur "
- 		" eller klasse.\n"
+        " eller klasse.\n"
         "<li>%En kasse med rød kant betegner en dokumenteret datastruktur "
- 		" eller klasse, for hvilken ikke alle "
-		"nedarvnings- og indeholdelses-relationer er vist. "
+        " eller klasse, for hvilken ikke alle "
+        "nedarvnings- og indeholdelses-relationer er vist. "
         "%Grafer beskæres, hvis de fylder mere end de specificerede dimensioner.\n "
         "</ul>\n"
         "Pilene har følgende betydninger:\n"
         "<ul>\n"
         "<li>%En mørkeblå pil viser en offentlig nedarvningsrelation "
-		"mellem to klasser.\n"
+        "mellem to klasser.\n"
         "<li>%En mørkegrøn pil viser en beskyttet nedarvningsrelation.\n"
         "<li>%En mørkerød pil viser en privat nedarvningsrelation.\n"
         "<li>%En lilla, stiplet pil bruges, når en klasse er indeholdt i "
-		"eller benyttes af en anden klasse. "
+        "eller benyttes af en anden klasse. "
         "Ved pilen står navnet på den eller de variable, gennem hvilke(n) "
-		"den klasse, pilen peger på, er tilgængelig.\n"
+        "den klasse, pilen peger på, er tilgængelig.\n"
         "<li>%En gul, stiplet pil viser forholdet mellem en template-instans "
-		"og den template-klasse, den er instantieret fra."
+        "og den template-klasse, den er instantieret fra."
         "Ved pilen står template-parametrene brugt ved instantieringen.\n"
         "</ul>\n";
     }
@@ -1089,8 +1089,8 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
     virtual QCString trPackageListDescription()
     {
       return
-	"Her er en liste over pakkerne, med korte beskrivelser "
-	"(hvor en sådan findes):";
+    "Her er en liste over pakkerne, med korte beskrivelser "
+    "(hvor en sådan findes):";
     }
     /*! The link name in the Quick links header for each page */
     virtual QCString trPackages()
@@ -1123,13 +1123,13 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
 //////////////////////////////////////////////////////////////////////////
 
     /*! Used as ansicpg for RTF file
-	 * (used table extract:)
-	 * <pre>
+     * (used table extract:)
+     * <pre>
      * Charset Name       Charset Value(hex)  Codepage number
      * ------------------------------------------------------
      * ANSI_CHARSET              0 (x00)            1252
-	 * </pre>
-	 */
+     * </pre>
+     */
     virtual QCString trRTFansicp()
     {
       return "1252";
@@ -1357,8 +1357,8 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
         return "Fandt <b>1</b> dokument, der passer til din forespørgsel.";
       } else {
         return
-	  "Fandt <b>$num</b> dokumenter, der passer til din forespørgsel. "
-	  "De, der passer bedst, vises først.";
+      "Fandt <b>$num</b> dokumenter, der passer til din forespørgsel. "
+      "De, der passer bedst, vises først.";
       }
     }
 
@@ -1430,8 +1430,8 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
     {
        return "Dette er en overdefineret medlemsfunktion, "
               "defineret af bekvemmelighedshensyn. "
-	      "Den adskiller sig kun fra den ovenstående funktion i, "
-	      "hvilke argumenter den tager.";
+          "Den adskiller sig kun fra den ovenstående funktion i, "
+          "hvilke argumenter den tager.";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1766,11 +1766,11 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
 
 /*---------- For internal use: ----------------------------------------*/
   protected:
-	/*! For easy flexible-noun implementation.
-	 *  \internal
-	 */
+    /*! For easy flexible-noun implementation.
+     *  \internal
+     */
     QCString createNoun(bool first_capital, bool singular,
-			const char* base, const char* plurSuffix)
+            const char* base, const char* plurSuffix)
     {
       QCString result(base);
       if (first_capital) result[0] = static_cast<char>(toupper(result[0]));

@@ -2,7 +2,7 @@
  *
  *
  *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2022 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -139,25 +139,25 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
     QCString trClassHierarchy()
     { return "Stablo klasa"; }
     QCString trCompoundList()
-	{
-		if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
-		{
-			return "Sve strukture";
-		}
-		else
-		{
-			return "Sve klase";
-		}
-	}
+    {
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+        {
+            return "Sve strukture";
+        }
+        else
+        {
+            return "Sve klase";
+        }
+    }
     QCString trFileList()
     { return "Popis datoteka"; }
     QCString trCompoundMembers()
-	{
-		if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
-			return "Svi članovi struktura";
-		else
-			return "Svi članovi klasa";
-	}
+    {
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+            return "Svi članovi struktura";
+        else
+            return "Svi članovi klasa";
+    }
     QCString trFileMembers()
     { return "članovi klasa u datoteci"; }
     QCString trRelatedPages()
@@ -179,42 +179,42 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
     }
     QCString trCompoundListDescription()
     { return "Popis svih klasa, unija i struktura "
-		  "s kratkim opisom :";
+          "s kratkim opisom :";
     }
     QCString trCompoundMembersDescription(bool extractAll)
     {
       QCString result="Popis svih ";
       if (!extractAll)
-		  result+="dokumentiranih ";
+          result+="dokumentiranih ";
 
-	  if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
-		  result+="članova klasa s linkovima na ";
-	  else
-		  result+="članova struktura s linkovima na ";
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+          result+="članova klasa s linkovima na ";
+      else
+          result+="članova struktura s linkovima na ";
 
       if (!extractAll)
-	  {
-		  result+="dokumentaciju svakog člana:";
+      {
+          result+="dokumentaciju svakog člana:";
       }
-	  else
-	  {
-		  if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
-			  result+="dokumentaciju klase :";
-		  else
-			  result +="dokumentaciju strukture";
-	  }
+      else
+      {
+          if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+              result+="dokumentaciju klase :";
+          else
+              result +="dokumentaciju strukture";
+      }
       return result;
     }
     QCString trFileMembersDescription(bool extractAll)
     {
       QCString result="Popis svih ";
       if (!extractAll)
-		  result+="dokumentiranih ";
+          result+="dokumentiranih ";
       result+="članova s linkovima na ";
       if (extractAll)
-		  result+="dokumentaciju datoteke u kojima se nalaze:";
+          result+="dokumentaciju datoteke u kojima se nalaze:";
       else
-		  result+="datoteke u kojima se nalaze:";
+          result+="datoteke u kojima se nalaze:";
       return result;
     }
     QCString trExamplesDescription()
@@ -238,7 +238,7 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
       }
       else
       {
-	return "Skupno kazalo ";
+    return "Skupno kazalo ";
       }
     }
     QCString trFileIndex()
@@ -514,7 +514,7 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
         default: break;
       }
       result+=" je napravljena iz " + trFile(FALSE, single) + ": ";
-	  return result;
+      return result;
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -910,11 +910,11 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
      */
     virtual QCString trNamespace(bool first_capital, bool singular)
     {
-		QCString result;
-		if (singular)
-			result = ((first_capital ? "Imenik" : "imenik"));
-		else
-			result = ((first_capital ? "Imenici" : "imenici"));
+        QCString result;
+        if (singular)
+            result = ((first_capital ? "Imenik" : "imenik"));
+        else
+            result = ((first_capital ? "Imenici" : "imenici"));
       return result;
     }
 
@@ -958,12 +958,12 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
     virtual QCString trGlobal(bool first_capital, bool singular)
     {
       QCString result((first_capital ? "G" : "g"));
-	  if( singular )
-		  result += "lobalna varijabla";
-	  else
-		  result += "lobalne varijable";
+      if( singular )
+          result += "lobalna varijabla";
+      else
+          result += "lobalne varijable";
 
-	  return result;
+      return result;
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1088,72 +1088,72 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
     {
       return "Statički atributi u paketu";
     }
-	//////////////////////////////////////////////////////////////////////////
-	// new since 1.3.1
-	//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.3.1
+    //////////////////////////////////////////////////////////////////////////
 
-	/*! Used in the quick index of a class/file/namespace member list page
-	*  to link to the unfiltered list of all members.
-	*/
-	virtual QCString trAll()
-	{
-		return "Sve";
-	}
-	/*! Put in front of the call graph for a function. */
-	virtual QCString trCallGraph()
-	{
-		return "Ovo je dijagram poziva za ovu funkciju:";
-	}
+    /*! Used in the quick index of a class/file/namespace member list page
+    *  to link to the unfiltered list of all members.
+    */
+    virtual QCString trAll()
+    {
+        return "Sve";
+    }
+    /*! Put in front of the call graph for a function. */
+    virtual QCString trCallGraph()
+    {
+        return "Ovo je dijagram poziva za ovu funkciju:";
+    }
 
-	//////////////////////////////////////////////////////////////////////////
-	// new since 1.3.3
-	//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.3.3
+    //////////////////////////////////////////////////////////////////////////
 
-	/*! This string is used as the title for the page listing the search
-	*  results.
-	*/
-	virtual QCString trSearchResultsTitle()
-	{
-		return "Rezultati pretrage";
-	}
-	/*! This string is put just before listing the search results. The
-	*  text can be different depending on the number of documents found.
-	*  Inside the text you can put the special marker $num to insert
-	*  the number representing the actual number of search results.
-	*  The @a numDocuments parameter can be either 0, 1 or 2, where the
-	*  value 2 represents 2 or more matches. HTML markup is allowed inside
-	*  the returned string.
-	*/
-	virtual QCString trSearchResults(int numDocuments)
-	{
-		if (numDocuments==0)
-		{
-			return "Nema dokumenta koji odgovaraju vašem upitu";
-		}
-		else if (numDocuments==1)
-		{
-			return "Nađen <b>1</b> dokument koji odgovara vašem upitu.";
-		}
-		else if (numDocuments<5)
-		{
-			// Croatian (AFAIK all Slavic languages except Macedonian and Bulgarian)
+    /*! This string is used as the title for the page listing the search
+    *  results.
+    */
+    virtual QCString trSearchResultsTitle()
+    {
+        return "Rezultati pretrage";
+    }
+    /*! This string is put just before listing the search results. The
+    *  text can be different depending on the number of documents found.
+    *  Inside the text you can put the special marker $num to insert
+    *  the number representing the actual number of search results.
+    *  The @a numDocuments parameter can be either 0, 1 or 2, where the
+    *  value 2 represents 2 or more matches. HTML markup is allowed inside
+    *  the returned string.
+    */
+    virtual QCString trSearchResults(int numDocuments)
+    {
+        if (numDocuments==0)
+        {
+            return "Nema dokumenta koji odgovaraju vašem upitu";
+        }
+        else if (numDocuments==1)
+        {
+            return "Nađen <b>1</b> dokument koji odgovara vašem upitu.";
+        }
+        else if (numDocuments<5)
+        {
+            // Croatian (AFAIK all Slavic languages except Macedonian and Bulgarian)
             // have different plural form for 2,3,4.
-			return "Nađena <b>$num</b> dokumenta koji odgovaraju vašem upitu."
-				"Najbolji su prikazani prvi.";
-		}
-		else
-		{
-			return "Nađeno <b>$num</b> dokumenata koji odgovaraju vašem upitu."
-				"Najbolji su prikazani prvi.";
-		}
-	}
-	/*! This string is put before the list of matched words, for each search
-	*  result. What follows is the list of words that matched the query.
-	*/
-	virtual QCString trSearchMatches()
-	{
-		return "Pronađeno:";
-	}
+            return "Nađena <b>$num</b> dokumenta koji odgovaraju vašem upitu."
+                "Najbolji su prikazani prvi.";
+        }
+        else
+        {
+            return "Nađeno <b>$num</b> dokumenata koji odgovaraju vašem upitu."
+                "Najbolji su prikazani prvi.";
+        }
+    }
+    /*! This string is put before the list of matched words, for each search
+    *  result. What follows is the list of words that matched the query.
+    */
+    virtual QCString trSearchMatches()
+    {
+        return "Pronađeno:";
+    }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.3.8

@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2022 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -1865,8 +1865,8 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
                 t << relPathAsString() << m_classDef->getOutputFileBase();
                 t << ".png\" usemap=\"#" << convertToId(name) << "_map\" alt=\"\"/>\n";
                 t << "  <map id=\"" << convertToId(name) << "_map\" name=\"" << convertToId(name) << "_map\">\n";
-	        t << tt.str();
-	        t << "  </map>\n";
+            t << tt.str();
+            t << "  </map>\n";
                 t << "</div>";
               }
               else

@@ -3,7 +3,7 @@
  *
  *
  *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2022 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -350,24 +350,24 @@ class PrintDocVisitor
       printf("<simplesect type=");
       switch(s.type())
       {
-	case DocSimpleSect::See: printf("see"); break;
-	case DocSimpleSect::Return: printf("return"); break;
-	case DocSimpleSect::Author: printf("author"); break;
-	case DocSimpleSect::Authors: printf("authors"); break;
-	case DocSimpleSect::Version: printf("version"); break;
-	case DocSimpleSect::Since: printf("since"); break;
-	case DocSimpleSect::Date: printf("date"); break;
-	case DocSimpleSect::Note: printf("note"); break;
-	case DocSimpleSect::Warning: printf("warning"); break;
-	case DocSimpleSect::Pre: printf("pre"); break;
-	case DocSimpleSect::Post: printf("post"); break;
-	case DocSimpleSect::Copyright: printf("copyright"); break;
-	case DocSimpleSect::Invar: printf("invar"); break;
-	case DocSimpleSect::Remark: printf("remark"); break;
-	case DocSimpleSect::Attention: printf("attention"); break;
-	case DocSimpleSect::User: printf("user"); break;
-	case DocSimpleSect::Rcs: printf("rcs"); break;
-	case DocSimpleSect::Unknown: printf("unknown"); break;
+    case DocSimpleSect::See: printf("see"); break;
+    case DocSimpleSect::Return: printf("return"); break;
+    case DocSimpleSect::Author: printf("author"); break;
+    case DocSimpleSect::Authors: printf("authors"); break;
+    case DocSimpleSect::Version: printf("version"); break;
+    case DocSimpleSect::Since: printf("since"); break;
+    case DocSimpleSect::Date: printf("date"); break;
+    case DocSimpleSect::Note: printf("note"); break;
+    case DocSimpleSect::Warning: printf("warning"); break;
+    case DocSimpleSect::Pre: printf("pre"); break;
+    case DocSimpleSect::Post: printf("post"); break;
+    case DocSimpleSect::Copyright: printf("copyright"); break;
+    case DocSimpleSect::Invar: printf("invar"); break;
+    case DocSimpleSect::Remark: printf("remark"); break;
+    case DocSimpleSect::Attention: printf("attention"); break;
+    case DocSimpleSect::User: printf("user"); break;
+    case DocSimpleSect::Rcs: printf("rcs"); break;
+    case DocSimpleSect::Unknown: printf("unknown"); break;
       }
       printf(">\n");
       if (s.title())
@@ -641,11 +641,11 @@ class PrintDocVisitor
       printf("<paramsect type=");
       switch (ps.type())
       {
-	case DocParamSect::Param: printf("param"); break;
-	case DocParamSect::RetVal: printf("retval"); break;
-	case DocParamSect::Exception: printf("exception"); break;
-	case DocParamSect::TemplateParam: printf("templateparam"); break;
-	case DocParamSect::Unknown: printf("unknown"); break;
+    case DocParamSect::Param: printf("param"); break;
+    case DocParamSect::RetVal: printf("retval"); break;
+    case DocParamSect::Exception: printf("exception"); break;
+    case DocParamSect::TemplateParam: printf("templateparam"); break;
+    case DocParamSect::Unknown: printf("unknown"); break;
       }
       printf(">\n");
       visitChildren(ps);

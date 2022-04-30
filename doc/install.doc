@@ -2,7 +2,7 @@
  *
  *
  *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2022 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -230,7 +230,7 @@ If you want to produce compressed HTML files (see \ref
 cfg_generate_htmlhelp "GENERATE_HTMLHELP") in the configuration file, then
 you need the Microsoft HTML help workshop.
 In the beginning of 2021 Microsoft took the original page, with a.o. the download links,
-offline the HTML help workshop was already many years in maintenance mode). 
+offline the HTML help workshop was already many years in maintenance mode).
 You can download the HTML help workshop from the web archives at
 <a href="http://web.archive.org/web/20160201063255/http://download.microsoft.com/download/0/A/9/0A939EF6-E31C-430F-A3DF-DFAE7960D564/htmlhelp.exe">Installation executable</a>.
 
