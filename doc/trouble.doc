@@ -128,6 +128,9 @@ always try to include the following information in your bug report:
   the files together into a single file for easier processing.
   Note that when reporting a new bug you'll get a chance to attach a file to it
   only \e after submitting the initial bug description.
+- Before submitting, consider also running doxygen with some debugging flags,
+  run `doxygen -d` for all flags. The option `preprocessor` might give you hints
+  on how doxygen is understanding your input files.
 
 You can (and are encouraged to) add a patch for a
 <a href="https://github.com/doxygen/doxygen/issues">reported bug</a>.
