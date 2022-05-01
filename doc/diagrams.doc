@@ -60,6 +60,13 @@
       functions that the function is directly or indirectly called by
       (see also section \ref cmdcallergraph "\\callergraph" and
        section \ref cmdhidecallergraph "\\hidecallergraph").
+  <li>If \ref cfg_directory_graph "DIRECTORY_GRAPH" is set to `YES`, doxygen will 
+      generate graphs that show the directory dependencies for every directory.
+      The graph will show directories as boxes.
+      Subdirectories are shown nested into the box of its parent directory.
+      The depth of the graph is configured through
+      \ref cfg_dir_graph_max_depth "DIR_GRAPH_MAX_DEPTH".
+      Include dependencies between the directories are shown as arrows.
   </ul>
 
   Using a \ref customize "layout file" you can determine which of the
@@ -120,6 +127,38 @@
        relation.
        Class \c A uses class \c B, if class \c A has a member variable \c m 
        of type C, where B is a subtype of C (e.g. `C` could be `B`, `B*`, `T<B>*`). 
+  </ul>
+
+  The elements in the directory dependency graphs have the following meaning:
+  <ul>
+  <li> A box with a \b bold border indicates the directory that the 
+       directory dependency graph has been generated for.
+  <li> A box with a <b>red solid</b> border indicates a directory whose 
+       subdirectories are not shown in the graph ("truncated").
+       To configure the depth of subdirectories that are shown in the graph 
+       see \ref cfg_dir_graph_max_depth "DIR_GRAPH_MAX_DEPTH".
+  <li> A box with a <b>red dashed</b> border indicates a truncated
+       directory whose parent directories are not shown in the graph either.
+  <li> A box with a \b dashed border other than red indicates that not all 
+       but at least one subdirectory are shown.
+  <li> A box with a <b>light gray</b> border indicates a directory with both of 
+       the following two attributes: 
+      <ul>
+        <li> Its parent directory is not shown.
+        <li> At least one subdirectory is shown.
+      </ul>
+  <li> A box with <b>no background color</b> indicates a directory which is not 
+       a subdirectory of the origin's parent directories which are shown.
+       The origin is the directory for which the directory dependency graph is 
+       shown.
+  <li> An \b arrow between two boxes indicates an include dependency between
+       two directories.
+       The include dependency exists if a file in a directory includes a
+       file of another directory.
+       If a directory that is involved in an include dependency is not shown in 
+       the graph, the arrow is attached to the first parent directory that is 
+       shown.
+       This parent directory is shown as truncated (see above).
   </ul>
 
 

@@ -16,14 +16,7 @@
 #ifndef DOXYGEN_H
 #define DOXYGEN_H
 
-#include <qdatetime.h>
-#include <qstrlist.h>
-#include <qdict.h>
-#include <qintdict.h>
-
 #include "containers.h"
-#include "ftextstream.h"
-#include "sortdict.h"
 #include "membergroup.h"
 #include "dirdef.h"
 #include "memberlist.h"
@@ -36,27 +29,24 @@
 #define AtomicBool   std::atomic_bool
 
 class RefList;
-class PageSList;
-class PageSDict;
+class PageLinkedMap;
 class PageDef;
 class SearchIndexIntf;
 class ParserManager;
-class QFileInfo;
 class BufStr;
 class CiteDict;
 class MemberDef;
 class GroupDef;
-class GroupSDict;
+class GroupLinkedMap;
 class FileDef;
 class ClassDef;
-class ClassSDict;
-class GenericsSDict;
+class ClassLinkedMap;
+class ConceptLinkedMap;
 class MemberNameLinkedMap;
 class FileNameLinkedMap;
-class NamespaceSDict;
+class NamespaceLinkedMap;
 class NamespaceDef;
-class DirSDict;
-class DirRelation;
+class DirRelationLinkedMap;
 class IndexList;
 class FormulaList;
 class FormulaDict;
@@ -64,16 +54,6 @@ class FormulaNameDict;
 class Preprocessor;
 struct MemberGroupInfo;
 class NamespaceDefMutable;
-
-typedef QList<QCString>    StringList;
-typedef QListIterator<QCString>    StringListIterator;
-
-class StringDict : public QDict<QCString>
-{
-  public:
-    StringDict(uint size=17) : QDict<QCString>(size) {}
-    virtual ~StringDict() {}
-};
 
 struct LookupInfo
 {
@@ -86,7 +66,7 @@ struct LookupInfo
   QCString   resolvedType;
 };
 
-extern QCString g_spaces;
+using ClangUsrMap = std::unordered_map<std::string,const Definition *>;
 
 /*! \brief This class serves as a namespace for global variables used by doxygen.
  *
@@ -95,11 +75,12 @@ extern QCString g_spaces;
 class Doxygen
 {
   public:
-    static ClassSDict               *classSDict;
-    static ClassSDict               *hiddenClasses;
-    static PageSDict                *exampleSDict;
-    static PageSDict                *pageSDict;
-    static PageDef                  *mainPage;
+    static ClassLinkedMap           *classLinkedMap;
+    static ClassLinkedMap           *hiddenClassLinkedMap;
+    static ConceptLinkedMap         *conceptLinkedMap;
+    static PageLinkedMap            *exampleLinkedMap;
+    static PageLinkedMap            *pageLinkedMap;
+    static std::unique_ptr<PageDef>  mainPage;
     static bool                      insideMainPage;
     static FileNameLinkedMap        *includeNameLinkedMap;
     static FileNameLinkedMap        *exampleNameLinkedMap;
@@ -112,37 +93,44 @@ class Doxygen
     static MemberNameLinkedMap      *memberNameLinkedMap;
     static MemberNameLinkedMap      *functionNameLinkedMap;
     static StringUnorderedMap        namespaceAliasMap;
-    static GroupSDict               *groupSDict;
-    static NamespaceSDict           *namespaceSDict;
-    static StringDict                tagDestinationDict;
-    static StringDict                aliasDict;
-    static QIntDict<MemberGroupInfo> memGrpInfoDict;
+    static GroupLinkedMap           *groupLinkedMap;
+    static NamespaceLinkedMap       *namespaceLinkedMap;
+    static StringMap                 tagDestinationMap;
+    static StringMap                 aliasMap;
+    static MemberGroupInfoMap        memberGroupInfoMap;
     static StringUnorderedSet        expandAsDefinedSet;
     static NamespaceDefMutable      *globalScope;
     static QCString                  htmlFileExtension;
     static bool                      parseSourcesNeeded;
     static SearchIndexIntf          *searchIndex;
-    static SymbolMap<Definition>     symbolMap;
-    static QDict<Definition>        *clangUsrMap;
-    static bool                      outputToWizard;
-    static QDict<int>               *htmlDirMap;
+    static SymbolMap<Definition>    *symbolMap;
+    static ClangUsrMap              *clangUsrMap;
     static Cache<std::string,LookupInfo> *lookupCache;
-    static DirSDict                 *directories;
-    static SDict<DirRelation>        dirRelations;
+    static DirLinkedMap             *dirLinkedMap;
+    static DirRelationLinkedMap      dirRelations;
     static ParserManager            *parserManager;
     static bool                      suppressDocWarnings;
-    static QCString                  objDBFileName;
-    static QCString                  entryDBFileName;
     static QCString                  filterDBFileName;
-    static bool                      userComments;
     static IndexList                *indexList;
     static int                       subpageNestingLevel;
     static QCString                  spaces;
     static bool                      generatingXmlOutput;
-    static GenericsSDict            *genericsDict;
     static DefinesPerFileList        macroDefinitions;
     static bool                      clangAssistedParsing;
+    static QCString                  verifiedDotPath;
+    static volatile bool             terminating;
 };
+
+/** Deleter that only deletes an object if doxygen is not already terminating */
+template<class T>
+struct NonTerminatingDeleter
+{
+  void operator()(T *obj)
+  {
+    if (!Doxygen::terminating) delete obj;
+  }
+};
+
 
 void initDoxygen();
 void readConfiguration(int argc, char **argv);
@@ -153,7 +141,7 @@ void generateOutput();
 void readAliases();
 void readFormulaRepository(QCString dir, bool cmp = FALSE);
 void cleanUpDoxygen();
-int readFileOrDirectory(const char *s,
+void readFileOrDirectory(const QCString &s,
                         FileNameLinkedMap *fnDict,
                         StringUnorderedSet *exclSet,
                         const StringVector *patList,

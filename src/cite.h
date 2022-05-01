@@ -19,14 +19,12 @@
 
 #include <memory>
 
-#include <qcstring.h>
-
-class FTextStream;
+#include "qcstring.h"
 
 /// Citation-related data.
 struct CiteInfo
 {
-    virtual ~CiteInfo() {}
+    virtual ~CiteInfo() = default;
     virtual QCString label() const = 0;
     virtual QCString text() const = 0;
 };
@@ -42,12 +40,12 @@ class CitationManager
     static CitationManager &instance();
 
     /** Insert a citation identified by \a label into the database */
-    void insert(const char *label);
+    void insert(const QCString &label);
 
     /** Return the citation info for a given \a label.
      *  Ownership of the info stays with the manager.
      */
-    const CiteInfo *find(const char *label) const;
+    const CiteInfo *find(const QCString &label) const;
 
     /** Generate the citations page */
     void generatePage();
@@ -59,13 +57,12 @@ class CitationManager
      */
     bool isEmpty() const;
 
-    /** writes the latex code for the standard bibliography
-     *  section to text stream \a t
+    /** lists the bibtex cite files in a comma separated list
      */
-    void writeLatexBibliography(FTextStream &t) const;
+    QCString latexBibFiles();
 
-    const char *fileName() const;
-    const char *anchorPrefix() const;
+    QCString fileName() const;
+    QCString anchorPrefix() const;
 
   private:
     /** Create the database, with an expected maximum of \a size entries */

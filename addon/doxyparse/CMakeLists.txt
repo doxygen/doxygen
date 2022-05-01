@@ -4,7 +4,6 @@ include_directories(
 	${PROJECT_SOURCE_DIR}/src
 	${PROJECT_SOURCE_DIR}/libversion
 	${GENERATED_SRC}
-	${PROJECT_SOURCE_DIR}/qtools
 	${ICONV_INCLUDE_DIR}
 	${CLANG_INCLUDEDIR}
 )
@@ -12,6 +11,9 @@ include_directories(
 add_executable(doxyparse
 doxyparse.cpp
 )
+
+include(ApplyEditbin)
+apply_editbin(doxyparse console)
 add_sanitizers(doxyparse)
 
 if (use_libclang)
@@ -24,8 +26,8 @@ endif()
 
 target_link_libraries(doxyparse
 doxymain
-qtools
 md5
+xml
 lodepng
 mscgen
 doxygen_version

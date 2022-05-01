@@ -33,5 +33,6 @@
         </simplesect>
       </para>
     </detaileddescription>
+    <location file="005_attention.dox"/>
   </compounddef>
 </doxygen>

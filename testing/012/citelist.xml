@@ -39,5 +39,6 @@
         </variablelist>
       </para>
     </detaileddescription>
+    <location file="citelist"/>
   </compounddef>
 </doxygen>

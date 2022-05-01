@@ -17,7 +17,7 @@
 #define ARGUMENTS_H
 
 #include <vector>
-#include <qcstring.h>
+#include "qcstring.h"
 
 /*! \brief This class contains the information about the argument of a
  *         function or template

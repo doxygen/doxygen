@@ -3,22 +3,19 @@
 
 #include <vector>
 #include <memory>
+#include <string>
 
 #include "parserintf.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
 #include <ctype.h>
-#include <qarray.h>
-#include <qcstringlist.h>
 
-#include <qfile.h>
-#include <qdict.h>
-#include <string>
 #include "types.h"
 #include "entry.h"
 #include "vhdldocgen.h"
 #include "config.h"
+#include "util.h"
 
 enum  { GEN_SEC=0x1, PARAM_SEC,CONTEXT_SEC,PROTECTED_SEC } ;
 //void  parserVhdlfile(const char* inputBuffer);
@@ -32,13 +29,13 @@ class VHDLOutlineParser : public OutlineParserInterface
   public:
     VHDLOutlineParser();
     virtual ~VHDLOutlineParser();
-    void parseInput(const char * fileName,
+    void parseInput(const QCString &fileName,
                     const char *fileBuf,
                     const std::shared_ptr<Entry> &root,
                     ClangTUParser *clangParser);
 
     bool needsPreprocessing(const QCString &) const { return TRUE; }
-    void parsePrototype(const char *text);
+    void parsePrototype(const QCString &text);
 
 
     // interface for generated parser code
@@ -53,7 +50,7 @@ class VHDLOutlineParser : public OutlineParserInterface
     void createFunction(const char *impure,uint64 spec,const char *fname);
     void addVhdlType(const char *n,int startLine,int section, uint64 spec,const char* args,const char* type,Protection prot);
     void addCompInst(const char *n, const char* instName, const char* comp,int iLine);
-    void handleCommentBlock(const char* doc,bool brief);
+    void handleCommentBlock(const QCString &doc,bool brief);
     void handleFlowComment(const char*);
     void initEntry(Entry *e);
     void newEntry();
@@ -68,7 +65,7 @@ class VHDLOutlineParser : public OutlineParserInterface
     void setMultCommentLine();
     bool checkMultiComment(QCString& qcs,int line);
     void insertEntryAtLine(std::shared_ptr<Entry> ce,int line);
-    QString getNameID();
+    QCString getNameID();
     int checkInlineCode(QCString & doc);
   private:
     struct Private;

@@ -16,12 +16,13 @@
 #ifndef DOTGRAPH_H
 #define DOTGRAPH_H
 
-#include <qcstring.h>
-#include <qgstring.h>
-#include <qdir.h>
+#include <iostream>
 
-class FTextStream;
+#include "qcstring.h"
+#include "dir.h"
+
 class DotNode;
+class TextStream;
 
 enum GraphOutputFormat    { GOF_BITMAP, GOF_EPS };
 enum EmbeddedOutputFormat { EOF_Html, EOF_LaTeX, EOF_Rtf, EOF_DocBook };
@@ -33,24 +34,24 @@ class DotGraph
   public:
     DotGraph() : m_doNotAddImageToIndex(FALSE), m_noDivTag(FALSE),
                  m_zoomable(TRUE), m_urlOnly(FALSE) {}
-    virtual ~DotGraph() {}
+    virtual ~DotGraph() = default;
 
   protected:
     /** returns node numbers. The Counter is reset by the constructor */
     int getNextNodeNumber() { return ++m_curNodeNumber; }
 
-    QCString writeGraph(FTextStream &t,
+    QCString writeGraph(TextStream &t,
                         GraphOutputFormat gf,
                         EmbeddedOutputFormat ef,
-                        const char *path,
-                        const char *fileName,
-                        const char *relPath,
+                        const QCString &path,
+                        const QCString &fileName,
+                        const QCString &relPath,
                         bool writeImageMap=TRUE,
                         int graphId=-1
                        );
 
-    static void writeGraphHeader(FTextStream& t, const QCString& title = QCString());
-    static void writeGraphFooter(FTextStream& t);
+    static void writeGraphHeader(TextStream& t, const QCString& title = QCString());
+    static void writeGraphFooter(TextStream& t);
     static void computeGraph(DotNode* root,
                              GraphType gt,
                              GraphOutputFormat format,
@@ -58,7 +59,7 @@ class DotGraph
                              bool renderParents,
                              bool backArrows,
                              const QCString& title,
-                             QGString& graphStr
+                             QCString& graphStr
                             );
 
     virtual QCString getBaseName() const = 0;
@@ -77,7 +78,7 @@ class DotGraph
     // the following variables are used while writing the graph to a .dot file
     GraphOutputFormat      m_graphFormat = GOF_BITMAP;
     EmbeddedOutputFormat   m_textFormat = EOF_Html;
-    QDir                   m_dir;
+    Dir                    m_dir;
     QCString               m_fileName;
     QCString               m_relPath;
     bool                   m_generateImageMap = false;
@@ -85,7 +86,7 @@ class DotGraph
 
     QCString               m_absPath;
     QCString               m_baseName;
-    QGString               m_theGraph;
+    QCString               m_theGraph;
     bool                   m_regenerate = false;
     bool                   m_doNotAddImageToIndex = false;
     bool                   m_noDivTag = false;
@@ -97,7 +98,7 @@ class DotGraph
     DotGraph &operator=(const DotGraph &);
 
     bool prepareDotFile();
-    void generateCode(FTextStream &t);
+    void generateCode(TextStream &t);
 
     int m_curNodeNumber = 0;
 };

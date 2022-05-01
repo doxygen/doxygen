@@ -15,9 +15,14 @@
  *        Fabio "FJTC" Jun Takada Chino <fjtc at brokenbits dot com dot br>
  *    Collaborators:
  *        Emerson Ferreira <nuskorpios at gmail dot com>
+ *        Ulisses Guedes <uli1958 at hotmail dot com>
  *    Thanks to Jorge Ramos, Fernando Carijo and others for their contributions.
  *
  * History:
+ * 20211003:
+ *  - Updated to 1.9.3;
+ * 20200112:
+ * 	- Updated to 1.9.1;
  * 20190203:
  *	- Slice methods added;
  * 20180612:
@@ -49,7 +54,7 @@
 #ifndef TRANSLATOR_BR_H
 #define TRANSLATOR_BR_H
 
-class TranslatorBrazilian : public TranslatorAdapter_1_8_19
+class TranslatorBrazilian : public TranslatorAdapter_1_9_4
 {
   public:
 
@@ -88,6 +93,10 @@ class TranslatorBrazilian : public TranslatorAdapter_1_8_19
     virtual QCString trISOLang()
     {
       return "pt-BR";
+    }
+    virtual QCString getLanguageString()
+    {
+      return "0x416 Portuguese(Brazil)";
     }
 
     // --- Language translation methods -------------------
@@ -161,9 +170,9 @@ class TranslatorBrazilian : public TranslatorAdapter_1_8_19
     /*! this is put at the author sections at the bottom of man pages.
      *  parameter s is name of the project name.
      */
-    virtual QCString trGeneratedAutomatically(const char *s)
+    virtual QCString trGeneratedAutomatically(const QCString &s)
     { QCString result="Gerado automaticamente por Doxygen";
-      if (s) result+=(QCString)" para "+s;
+      if (!s.isEmpty()) result+=" para "+s;
       result+=" a partir do código-fonte.";
       return result;
     }
@@ -415,6 +424,10 @@ class TranslatorBrazilian : public TranslatorAdapter_1_8_19
       {
         return "Estruturas";
       }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+          return trDesignUnitDocumentation();
+      }
       else
       {
         return "Classes";
@@ -432,12 +445,6 @@ class TranslatorBrazilian : public TranslatorAdapter_1_8_19
      */
     virtual QCString trExampleDocumentation()
     { return "Exemplos"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all related pages.
-     */
-    virtual QCString trPageDocumentation()
-    { return "Documentação Relacionada"; }
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
@@ -527,23 +534,19 @@ class TranslatorBrazilian : public TranslatorAdapter_1_8_19
     /*! This is used in the standard footer of each page and indicates when
      *  the page was generated
      */
-    virtual QCString trGeneratedAt(const char *date,const char *projName)
+    virtual QCString trGeneratedAt(const QCString &date,const QCString &projName)
     {
-      QCString result=(QCString)"Gerado em "+date;
-      if (projName) result+=(QCString)" para "+projName;
-      result+=(QCString)" por";
+      QCString result="Gerado em "+date;
+      if (!projName.isEmpty()) result+=" para "+projName;
+      result+=" por";
       return result;
     }
 
     /*! this text is put before a class diagram */
-    virtual QCString trClassDiagram(const char *clName)
+    virtual QCString trClassDiagram(const QCString &clName)
     {
-      return (QCString)"Diagrama de hierarquia para "+clName+":";
+      return "Diagrama de hierarquia para "+clName+":";
     }
-
-    /*! this text is generated when the \\internal command is used. */
-    virtual QCString trForInternalUseOnly()
-    { return "Apenas para uso interno."; }
 
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
@@ -615,7 +618,7 @@ class TranslatorBrazilian : public TranslatorAdapter_1_8_19
 //////////////////////////////////////////////////////////////////////////
 
     /*! used as the title of the HTML page of a class/struct/union */
-    virtual QCString trCompoundReference(const char *clName,
+    virtual QCString trCompoundReference(const QCString &clName,
                                     ClassDef::CompoundType compType,
                                     bool isTemplate)
     {
@@ -640,12 +643,12 @@ class TranslatorBrazilian : public TranslatorAdapter_1_8_19
         case ClassDef::Exception:  result+="Exceção "; break;
         default: break;
       }
-      result+=(QCString)clName;
+      result+=clName;
       return result;
     }
 
     /*! used as the title of the HTML page of a file */
-    virtual QCString trFileReference(const char *fileName)
+    virtual QCString trFileReference(const QCString &fileName)
     {
       QCString result = "Referência do Arquivo ";
       result += fileName;
@@ -653,7 +656,7 @@ class TranslatorBrazilian : public TranslatorAdapter_1_8_19
     }
 
     /*! used as the title of the HTML page of a namespace */
-    virtual QCString trNamespaceReference(const char *namespaceName)
+    virtual QCString trNamespaceReference(const QCString &namespaceName)
     {
       QCString result ="Refência do Namespace ";
       result += namespaceName;
@@ -805,7 +808,8 @@ class TranslatorBrazilian : public TranslatorAdapter_1_8_19
         bool single)
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
-      QCString result=(QCString)"A documentação para ";
+      bool vhdlOpt = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
+      QCString result="A documentação para ";
       if (compType == ClassDef::Protocol)
       {
          result+= "esse ";
@@ -816,7 +820,7 @@ class TranslatorBrazilian : public TranslatorAdapter_1_8_19
       }
       switch(compType)
       {
-        case ClassDef::Class:      result+="classe "; break;
+        case ClassDef::Class:      result+=vhdlOpt?"Unidade de Design ":"classe "; break;
         case ClassDef::Struct:     result+="estrutura "; break;
         case ClassDef::Union:      result+="união "; break;
         case ClassDef::Interface:  result+="interface "; break;
@@ -879,14 +883,14 @@ class TranslatorBrazilian : public TranslatorAdapter_1_8_19
 //////////////////////////////////////////////////////////////////////////
 
     /*! this text is put before a collaboration diagram */
-    virtual QCString trCollaborationDiagram(const char *clName)
+    virtual QCString trCollaborationDiagram(const QCString &clName)
     {
-      return (QCString)"Diagrama de colaboração para "+clName+":";
+      return "Diagrama de colaboração para "+clName+":";
     }
     /*! this text is put before an include dependency graph */
-    virtual QCString trInclDepGraph(const char *fName)
+    virtual QCString trInclDepGraph(const QCString &fName)
     {
-      return (QCString)"Gráfico de dependência de inclusões para "+fName+":";
+      return "Gráfico de dependência de inclusões para "+fName+":";
     }
     /*! header that is put before the list of constructor/destructors. */
     virtual QCString trConstructorDocumentation()
@@ -1167,14 +1171,9 @@ class TranslatorBrazilian : public TranslatorAdapter_1_8_19
       }
     }
     /*! Used as the title of a Java package */
-    virtual QCString trPackage(const char *name)
+    virtual QCString trPackage(const QCString &name)
     {
-      return (QCString)"Pacote "+name;
-    }
-    /*! Title of the package index page */
-    virtual QCString trPackageList()
-    {
-      return "Lista de Pacotes";
+      return "Pacote "+name;
     }
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
@@ -1435,14 +1434,18 @@ class TranslatorBrazilian : public TranslatorAdapter_1_8_19
     /*! Used as a heading for a list of Java class functions with package
      * scope.
      */
-    virtual QCString trPackageMembers()
+    virtual QCString trPackageFunctions()
     {
       return "Funções do Pacote";
+    }
+    virtual QCString trPackageMembers()
+    {
+      return "Membros do Pacote";
     }
     /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
-    virtual QCString trStaticPackageMembers()
+    virtual QCString trStaticPackageFunctions()
     {
       return "Funções Estáticas do Pacote";
     }
@@ -1554,16 +1557,10 @@ class TranslatorBrazilian : public TranslatorAdapter_1_8_19
     virtual QCString trDirectories()
     { return "Diretórios"; }
 
-    /*! This returns a sentences that introduces the directory hierarchy.
-     *  and the fact that it is sorted alphabetically per level
-     */
-    virtual QCString trDirDescription()
-    { return "Esta Hierarquia de Diretórios está parcialmente ordenada (ordem alfabética)"; }
-
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.
      */
-    virtual QCString trDirReference(const char *dirName)
+    virtual QCString trDirReference(const QCString &dirName)
     {
         QCString result = "Referência do diretório ";
      	result += dirName;
@@ -1692,11 +1689,11 @@ class TranslatorBrazilian : public TranslatorAdapter_1_8_19
     }
 
     /*! used as the title of the HTML page of a module/type (Fortran) */
-    virtual QCString trCompoundReferenceFortran(const char *clName,
+    virtual QCString trCompoundReferenceFortran(const QCString &clName,
                                     ClassDef::CompoundType compType,
                                     bool isTemplate)
     {
-      QCString result = (QCString)"Referência ";
+      QCString result = "Referência ";
 
       if (isTemplate) result+="do <em>Template</em> ";
 
@@ -1716,7 +1713,7 @@ class TranslatorBrazilian : public TranslatorAdapter_1_8_19
       return result;
     }
     /*! used as the title of the HTML page of a module (Fortran) */
-    virtual QCString trModuleReference(const char *namespaceName)
+    virtual QCString trModuleReference(const QCString &namespaceName)
     {
       QCString result = "Referência do Módulo ";
       result += namespaceName;
@@ -1768,7 +1765,7 @@ class TranslatorBrazilian : public TranslatorAdapter_1_8_19
         bool single)
     {
       // single is true implies a single file
-      QCString result=(QCString)"A documentação para ";
+      QCString result="A documentação para ";
       switch(compType)
       {
         case ClassDef::Class:      result+="esse modulo "; break;
@@ -1823,7 +1820,7 @@ class TranslatorBrazilian : public TranslatorAdapter_1_8_19
 //////////////////////////////////////////////////////////////////////////
 
     /*! directory relation for \a name */
-    virtual QCString trDirRelation(const char *name)
+    virtual QCString trDirRelation(const QCString &name)
     {
       return "Relação " + QCString(name);
     }
@@ -1860,18 +1857,18 @@ class TranslatorBrazilian : public TranslatorAdapter_1_8_19
      *  table is shown. The heading for the first column mentions the
      *  source file that has a relation to another file.
      */
-    virtual QCString trFileIn(const char *name)
+    virtual QCString trFileIn(const QCString &name)
     {
-      return (QCString)"Arquivo em "+name;
+      return "Arquivo em "+name;
     }
 
     /*! when clicking a directory dependency label, a page with a
      *  table is shown. The heading for the second column mentions the
      *  destination file that is included.
      */
-    virtual QCString trIncludesFileIn(const char *name)
+    virtual QCString trIncludesFileIn(const QCString &name)
     {
-      return (QCString)"Inclui arquivo em "+name;
+      return "Inclui arquivo em "+name;
     }
 
     /** Compiles a date string.
@@ -1918,7 +1915,7 @@ class TranslatorBrazilian : public TranslatorAdapter_1_8_19
     }
 
     /*! Header for the graph showing the directory dependencies */
-    virtual QCString trDirDepGraph(const char *name)
+    virtual QCString trDirDepGraph(const QCString &name)
     { return QCString("Grafo de dependências do diretório ")+name+":"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1949,14 +1946,14 @@ class TranslatorBrazilian : public TranslatorAdapter_1_8_19
     }
 
     /*! Header of a Java enum page (Java enums are represented as classes). */
-    virtual QCString trEnumReference(const char *name)
+    virtual QCString trEnumReference(const QCString &name)
     {
       QCString result = "Referência da enumeração ";
       return result + name;
     }
 
     /*! Used for a section containing inherited members */
-    virtual QCString trInheritedFrom(const char *members,const char *what)
+    virtual QCString trInheritedFrom(const QCString &members,const QCString &what)
     { return QCString(members)+" herdados de "+what; }
 
     /*! Header of the sections with inherited members specific for the
@@ -2037,21 +2034,21 @@ class TranslatorBrazilian : public TranslatorAdapter_1_8_19
     { return "Grupos de Constantes"; }
 
     /** UNO IDL constant groups */
-    virtual QCString trConstantGroupReference(const char *namespaceName)
+    virtual QCString trConstantGroupReference(const QCString &namespaceName)
     {
       QCString result = "Referência do grupo de constantes ";
       result += namespaceName;
       return result;
     }
     /** UNO IDL service page title */
-    virtual QCString trServiceReference(const char *sName)
+    virtual QCString trServiceReference(const QCString &sName)
     {
       QCString result = "Referência do serviço ";
       result += sName;
       return result;
     }
     /** UNO IDL singleton page title */
-    virtual QCString trSingletonReference(const char *sName)
+    virtual QCString trSingletonReference(const QCString &sName)
     {
       // TODO: Emerson Ferreira proposes to add emphasis around the word
       // Singleton but I'm not sure if this will work for non HTML generators.
@@ -2063,7 +2060,7 @@ class TranslatorBrazilian : public TranslatorAdapter_1_8_19
     virtual QCString trServiceGeneratedFromFiles(bool single)
     {
       // single is true implies a single file
-      QCString result=(QCString)"A documentação para esse serviço "
+      QCString result="A documentação para esse serviço "
                                 "foi gerada a partir ";
       if (single) {
         result+="do seguinte arquivo:";
@@ -2076,7 +2073,7 @@ class TranslatorBrazilian : public TranslatorAdapter_1_8_19
     virtual QCString trSingletonGeneratedFromFiles(bool single)
     {
       // single is true implies a single file
-      QCString result=(QCString)"A documentação para esse <em>Singleton</em> "
+      QCString result="A documentação para esse <em>Singleton</em> "
                                 "foi gerada a partir ";
       if (single) {
         result+="do seguinte arquivo:";
@@ -2200,7 +2197,7 @@ class TranslatorBrazilian : public TranslatorAdapter_1_8_19
           return "Classe";
       }
     }
-    virtual QCString trCustomReference(const char *name)
+    virtual QCString trCustomReference(const QCString &name)
     { return "Referência de " + QCString(name); }
 
     /* Slice */
@@ -2300,9 +2297,9 @@ class TranslatorBrazilian : public TranslatorAdapter_1_8_19
     {
         return "Exceções";
     }
-    virtual QCString trCompoundReferenceSlice(const char *clName, ClassDef::CompoundType compType, bool isLocal)
+    virtual QCString trCompoundReferenceSlice(const QCString &clName, ClassDef::CompoundType compType, bool isLocal)
     {
-      QCString result=(QCString)"Referência ";
+      QCString result="Referência ";
       switch(compType)
       {
         case ClassDef::Class:      result+="da Classe "; break;
@@ -2335,7 +2332,62 @@ class TranslatorBrazilian : public TranslatorAdapter_1_8_19
         return "Dados Membros";
     }
 
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.8.19
+    //////////////////////////////////////////////////////////////////////////
 
+    /** VHDL design unit documentation */
+	virtual QCString trDesignUnitDocumentation()
+	{
+	    return "Documentação da Unidade de Projeto";
+        }
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// new since 1.9.2
+	//////////////////////////////////////////////////////////////////////////
+
+	/** C++20 concept */
+	virtual QCString trConcept(bool first_capital, bool singular)
+	{
+	  QCString result((first_capital ? "Conceito" : "conceito"));
+	  if (!singular) result+="s";
+	  return result;
+	}
+	/*! used as the title of the HTML page of a C++20 concept page */
+	virtual QCString trConceptReference(const QCString &conceptName)
+	{
+	  QCString result= "Referência do Conceito ";
+	  result+=conceptName;
+	  return result;
+	}
+
+	/*! used as the title of page containing all the index of all concepts. */
+	virtual QCString trConceptList()
+	{ return "Lista de Conceitos"; }
+
+	/*! used as the title of chapter containing the index listing all concepts. */
+	virtual QCString trConceptIndex()
+	{ return "Índice de Conceitos"; }
+
+	/*! used as the title of chapter containing all information about concepts. */
+	virtual QCString trConceptDocumentation()
+	{ return "Documentação do Conceito"; }
+
+	/*! used as an introduction to the concept list */
+	virtual QCString trConceptListDescription(bool extractAll)
+	{
+	  QCString result="Esta é a lista de todos os conceitos ";
+	  if (!extractAll) result+="documentados ";
+	  result+="com suas respectivas descrições:";
+	  return result;
+	}
+
+	/*! used to introduce the definition of the C++20 concept */
+	virtual QCString trConceptDefinition()
+	{
+	  return "Definição de conceito";
+	}
 };
 
 #endif

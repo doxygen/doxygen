@@ -37,7 +37,7 @@ tries to be complete):
 \section step0 Step 0: Check if doxygen supports your programming language
 
 First, assure that your programming language has a reasonable chance of being
-recognized by doxygen. These languages are supported by default: C, C++, C#,
+recognized by doxygen. These languages are supported by default: C, C++, Lex, C#,
 Objective-C, IDL, Java, VHDL, PHP, Python, Fortran and D. It
 is possible to configure certain file type extensions to use certain parsers:
 see the \ref cfg_extension_mapping "Configuration/ExtensionMappings" for details.
@@ -109,27 +109,23 @@ using the following table:
 
 Extension | Language | Extension | Language     | Extension | Language
 ---------:|--------- | ---------:|------------- | ---------:|---------
-.dox      |C / C++   | .idl      |IDL           | .f        |Fortran
-.doc      |C / C++   | .ddl      |IDL           | .for      |Fortran
-.c        |C / C++   | .odl      |IDL           | .f90      |Fortran
-.cc       |C / C++   | .java     |Java          | .f95      |Fortran
-.cxx      |C / C++   | .cs       |C#            | .f03      |Fortran
-.cpp      |C / C++   | .d        |D             | .f08      |Fortran
-.c++      |C / C++   | .php      |PHP           | .f18      |Fortran
-.ii       |C / C++   | .php4     |PHP           | .vhd      |VHDL
-.ixx      |C / C++   | .php5     |PHP           | .vhdl     |VHDL
-.ipp      |C / C++   | .inc      |PHP           | .ucf      |VHDL
-.i++      |C / C++   | .phtml    |PHP           | .qsf      |VHDL
-.inl      |C / C++   | .m        |Objective-C   | &nbsp;    |&nbsp;
-.h        |C / C++   | .M        |Objective-C   | .md       |Markdown
-.H        |C / C++   | .py       |Python        | .markdown |Markdown
-.hh       |C / C++   | .pyw      |Python        | .ice      |Slice
-.HH       |C / C++   | | | | |
-.hxx      |C / C++   | | | | |
-.hpp      |C / C++   | | | | |
-.h++      |C / C++   | | | | |
-.mm       |C / C++   | | | | |
-.txt      |C / C++   | | | | |
+.dox      |C / C++   | .hpp      |C / C++       |.py        |Python
+.doc      |C / C++   | .h++      |C / C++       |.pyw       |Python
+.c        |C / C++   | .mm       |C / C++       |.f         |Fortran
+.cc       |C / C++   | .txt      |C / C++       |.for       |Fortran
+.cxx      |C / C++   | .idl      |IDL           |.f90       |Fortran
+.cpp      |C / C++   | .ddl      |IDL           |.f95       |Fortran
+.c++      |C / C++   | .odl      |IDL           |.f03       |Fortran
+.ii       |C / C++   | .java     |Java          |.f08       |Fortran
+.ixx      |C / C++   | .cs       |C#            |.f18       |Fortran
+.ipp      |C / C++   | .d        |D             |.vhd       |VHDL
+.i++      |C / C++   | .php      |PHP           |.vhdl      |VHDL
+.inl      |C / C++   | .php4     |PHP           |.ucf       |VHDL
+.h        |C / C++   | .php5     |PHP           |.qsf       |VHDL
+.H        |C / C++   | .inc      |PHP           |.l         |Lex
+.hh       |C / C++   | .phtml    |PHP           |.md        |Markdown
+.HH       |C / C++   | .m        |Objective-C   |.markdown  |Markdown
+.hxx      |C / C++   | .M        |Objective-C   |.ice       |Slice
 
 Please note that the above list might contain more items than that by default set
 in the \ref cfg_file_patterns "FILE_PATTERNS".
@@ -249,7 +245,8 @@ files and can be used for validation or to steer XSLT scripts.
 
 In the `addon/doxmlparser` directory you can find a parser library for reading
 the XML output produced by doxygen in an incremental way
-(see `addon/doxmlparser/include/doxmlintf.h` for the interface of the library)
+(see `addon/doxmlparser/doxmparser/index.py` and `addon/doxmlparser/doxmlparser/compound.py`
+for the interface of the library)
 
 \subsection man_out Man page output
 \addindex man

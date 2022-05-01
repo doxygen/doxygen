@@ -1,12 +1,10 @@
 /******************************************************************************
  *
- * 
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2021 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -15,59 +13,58 @@
  *
  */
 
+#include <sstream>
+
 #include "msc.h"
 #include "portable.h"
 #include "config.h"
 #include "message.h"
 #include "docparser.h"
+#include "docnode.h"
 #include "doxygen.h"
 #include "index.h"
 #include "util.h"
-#include "ftextstream.h"
 #include "mscgen_api.h"
-
-#include <qdir.h>
+#include "dir.h"
+#include "textstream.h"
 
 static const int maxCmdLine = 40960;
 
-static bool convertMapFile(FTextStream &t,const char *mapName,const QCString relPath,
+static bool convertMapFile(TextStream &t,const QCString &mapName,const QCString &relPath,
                            const QCString &context)
 {
-  QFile f(mapName);
-  if (!f.open(IO_ReadOnly))
+  std::ifstream f(mapName.str(),std::ifstream::in);
+  if (!f.is_open())
   {
     err("failed to open map file %s for inclusion in the docs!\n"
         "If you installed Graphviz/dot after a previous failing run, \n"
-        "try deleting the output directory and rerun doxygen.\n",mapName);
-    return FALSE;
+        "try deleting the output directory and rerun doxygen.\n",qPrint(mapName));
+    return false;
   }
   const int maxLineLen=1024;
-  char buf[maxLineLen];
   char url[maxLineLen];
   char ref[maxLineLen];
   int x1,y1,x2,y2;
-  while (!f.atEnd())
+  std::string line;
+  while (getline(f,line))
   {
-    bool isRef = FALSE;
-    int numBytes = f.readLine(buf,maxLineLen);
-    buf[numBytes-1]='\0';
-    //printf("ReadLine '%s'\n",buf);
-    if (qstrncmp(buf,"rect",4)==0)
+    bool isRef = false;
+    //printf("ReadLine '%s'\n",line.c_str());
+    if (qstrncmp(line.c_str(),"rect",4)==0)
     {
-      sscanf(buf,"rect %s",ref); // lets get the first word after 'rect'
+      sscanf(line.c_str(),"rect %s",ref); // lets get the first word after 'rect'
       if (qstrcmp(ref,"\\ref")==0 || qstrcmp(ref,"@ref")==0)
       {
-        isRef = TRUE;
-        int j = sscanf(buf,"rect %s %s %d,%d %d,%d",ref,url,&x1,&y1,&x2,&y2);
+        isRef = true;
+        int j = sscanf(line.c_str(),"rect %s %s %d,%d %d,%d",ref,url,&x1,&y1,&x2,&y2);
         if (j!=6) continue;
       }
       else
       {
         // obtain the url and the coordinates in the order used by graphviz-1.5
-        int i = sscanf(buf,"rect %s %d,%d %d,%d",url,&x1,&y1,&x2,&y2);
+        int i = sscanf(line.c_str(),"rect %s %d,%d %d,%d",url,&x1,&y1,&x2,&y2);
         if (i!=5) continue;
       }
-
 
       // sanity checks
       if (y2<y1) { int temp=y2; y2=y1; y1=temp; }
@@ -78,11 +75,14 @@ static bool convertMapFile(FTextStream &t,const char *mapName,const QCString rel
       if ( isRef )
       {
         // handle doxygen \ref tag URL reference
-        DocRef *df = new DocRef( (DocNode*) 0, url, context );
+
+        auto parser { createDocParser() };
+        auto dfAst  { createRef( *parser.get(), url, context ) };
+        auto dfAstImpl = dynamic_cast<const DocNodeAST*>(dfAst.get());
+        const DocRef *df = std::get_if<DocRef>(&dfAstImpl->root);
         t << externalRef(relPath,df->ref(),TRUE);
-        if (!df->file().isEmpty()) t << df->file() << Doxygen::htmlFileExtension;
+        if (!df->file().isEmpty()) t << addHtmlExtensionIfMissing(df->file());
         if (!df->anchor().isEmpty()) t << "#" << df->anchor();
-        delete df;
       }
       else
       {
@@ -90,15 +90,17 @@ static bool convertMapFile(FTextStream &t,const char *mapName,const QCString rel
       }
       t << "\" shape=\"rect\" coords=\""
         << x1 << "," << y1 << "," << x2 << "," << y2 << "\""
-        << " alt=\"\"/>" << endl;
+        << " alt=\"\"/>\n";
     }
   }
 
-  return TRUE;
+  return true;
 }
 
-void writeMscGraphFromFile(const char *inFile,const char *outDir,
-                           const char *outFile,MscOutputFormat format)
+void writeMscGraphFromFile(const QCString &inFile,const QCString &outDir,
+                           const QCString &outFile,MscOutputFormat format,
+                           const QCString &srcFile,int srcLine
+                          )
 {
   QCString absOutFile = outDir;
   absOutFile+=Portable::pathSeparator();
@@ -124,10 +126,10 @@ void writeMscGraphFromFile(const char *inFile,const char *outDir,
       return;
   }
   int code;
-  if ((code=mscgen_generate(inFile,imgName,msc_format))!=0)
+  if ((code=mscgen_generate(inFile.data(),imgName.data(),msc_format))!=0)
   {
-    err("Problems generating msc output (error=%s). Look for typos in you msc file %s\n",
-        mscgen_error2str(code),inFile);
+    err_full(srcFile,srcLine,"Problems generating msc output (error=%s). Look for typos in you msc file %s\n",
+        mscgen_error2str(code),qPrint(inFile));
     return;
   }
 
@@ -135,11 +137,12 @@ void writeMscGraphFromFile(const char *inFile,const char *outDir,
   {
     QCString epstopdfArgs(maxCmdLine);
     epstopdfArgs.sprintf("\"%s.eps\" --outfile=\"%s.pdf\"",
-                         absOutFile.data(),absOutFile.data());
+                         qPrint(absOutFile),qPrint(absOutFile));
     Portable::sysTimerStart();
     if (Portable::system("epstopdf",epstopdfArgs)!=0)
     {
-      err("Problems running epstopdf. Check your TeX installation!\n");
+      err_full(srcFile,srcLine,"Problems running epstopdf when processing '%s.eps'. Check your TeX installation!\n",
+          qPrint(absOutFile));
     }
     Portable::sysTimerStop();
   }
@@ -150,33 +153,35 @@ void writeMscGraphFromFile(const char *inFile,const char *outDir,
 
 static QCString getMscImageMapFromFile(const QCString& inFile, const QCString& outDir,
                                 const QCString& relPath,const QCString& context,
-                                bool writeSVGMap)
+                                bool writeSVGMap,const QCString &srcFile,int srcLine)
 {
   QCString outFile = inFile + ".map";
 
   int code;
-  if ((code=mscgen_generate(inFile,outFile,
+  if ((code=mscgen_generate(inFile.data(),outFile.data(),
                             writeSVGMap ? mscgen_format_svgmap : mscgen_format_pngmap))!=0)
   {
-    err("Problems generating msc output (error=%s). Look for typos in you msc file %s\n",
-        mscgen_error2str(code),inFile.data());
+    err_full(srcFile,srcLine,"Problems generating msc output (error=%s). Look for typos in you msc file %s\n",
+        mscgen_error2str(code),qPrint(inFile));
     return "";
   }
 
-  QGString result;
-  FTextStream tmpout(&result);
-  convertMapFile(tmpout, outFile, relPath, context);
-  QDir().remove(outFile);
+  TextStream t;
+  convertMapFile(t, outFile, relPath, context);
 
-  return result.data();
+  Dir().remove(outFile.str());
+
+  return t.str();
 }
 
-void writeMscImageMapFromFile(FTextStream &t,const QCString &inFile,
+void writeMscImageMapFromFile(TextStream &t,const QCString &inFile,
                               const QCString &outDir,
                               const QCString &relPath,
                               const QCString &baseName,
                               const QCString &context,
-			      MscOutputFormat format
+			      MscOutputFormat format,
+                              const QCString &srcFile,
+                              int srcLine
  			    )
 {
   QCString mapName = baseName+".map";
@@ -195,16 +200,16 @@ void writeMscImageMapFromFile(FTextStream &t,const QCString &inFile,
     default:
       t << "unknown";
   }
-  QCString imap = getMscImageMapFromFile(inFile,outDir,relPath,context,format==MSC_SVG);
+  QCString imap = getMscImageMapFromFile(inFile,outDir,relPath,context,format==MSC_SVG,srcFile,srcLine);
   if (!imap.isEmpty())
   {
     t << "\" alt=\""
-      << baseName << "\" border=\"0\" usemap=\"#" << mapName << "\"/>" << endl;
-    t << "<map name=\"" << mapName << "\" id=\"" << mapName << "\">" << imap << "</map>" << endl;
+      << baseName << "\" border=\"0\" usemap=\"#" << mapName << "\"/>\n";
+    t << "<map name=\"" << mapName << "\" id=\"" << mapName << "\">" << imap << "</map>\n";
   }
   else
   {
-    t << "\" alt=\"" << baseName << "\" border=\"0\"/>" << endl;
+    t << "\" alt=\"" << baseName << "\" border=\"0\"/>\n";
   }
 }
 

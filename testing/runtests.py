@@ -6,6 +6,9 @@ import subprocess
 import shlex
 
 config_reg = re.compile('.*\/\/\s*(?P<name>\S+):\s*(?P<value>.*)$')
+bkmk_reg = re.compile(r'.*bkmkstart\s+([A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z]).*')
+hyper_reg = re.compile(r'.*HYPERLINK\s+[\\l]*\s+"([A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z])".*')
+pageref_reg = re.compile(r'.*PAGEREF\s+([A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z]).*')
 
 
 def xopen(fname, mode='r', encoding='utf-8'):
@@ -35,6 +38,26 @@ def xpopen(cmd, cmd1="",encoding='utf-8-sig', getStderr=False):
 			proc = subprocess.Popen(shlex.split(cmd),stdout=subprocess.PIPE,stderr=subprocess.PIPE,encoding=encoding) # Python 3 with encoding
 			return proc.stdout.read()
 
+def clean_header(errmsg):
+	# messages (due to the usage of more) have a contents like:
+	# ::::::::::::
+	# <file name>
+	# ::::::::::::
+	# we want to skip these
+	msg = errmsg.split('\n')
+	rtnmsg = ""
+	cnt = -1
+	for o in msg:
+		if (o):
+			if (cnt == -1):
+				if o.startswith(":::::::"):
+					cnt = 3
+			if (cnt > 0):
+				cnt-=1
+			else:
+				rtnmsg+=o
+	return rtnmsg
+ 
 class Tester:
 	def __init__(self,args,test):
 		self.args      = args
@@ -129,6 +152,7 @@ class Tester:
 				print('GENERATE_XML=NO', file=f)
 			if (self.args.rtf):
 				print('GENERATE_RTF=YES', file=f)
+				print('RTF_HYPERLINKS=YES', file=f)
 				print('RTF_OUTPUT=%s/rtf' % self.test_out, file=f)
 			else:
 				print('GENERATE_RTF=NO', file=f)
@@ -137,7 +161,9 @@ class Tester:
 				print('DOCBOOK_OUTPUT=%s/docbook' % self.test_out, file=f)
 			else:
 				print('GENERATE_DOCBOOK=NO', file=f)
-			if (self.args.xhtml):
+			if (self.args.qhp):
+				print('GENERATE_QHP=YES', file=f)
+			if (self.args.xhtml or self.args.qhp):
 				print('GENERATE_HTML=YES', file=f)
 			# HTML_OUTPUT can also have been set locally
 			print('HTML_OUTPUT=%s/html' % self.test_out, file=f)
@@ -173,6 +199,43 @@ class Tester:
 		if os.system('%s %s/Doxyfile %s' % (self.args.doxygen,self.test_out,redir))!=0:
 			print('Error: failed to run %s on %s/Doxyfile' % (self.args.doxygen,self.test_out))
 			sys.exit(1)
+
+
+	def check_link_rtf_file(self,fil):
+		bkmk_res = []
+		hyper_res = []
+		pageref_res = []
+		with xopen(fil,'r') as f:
+			for line in f.readlines():
+				if ("bkmkstart" in line) or ("HYPERLINK" in line) or ("PAGEREF" in line):
+					msg = line.split('}')
+					for m in msg:
+						if bkmk_reg.match(m):
+							m1 = re.sub(bkmk_reg, '\\1', m)
+							bkmk_res.append(m1)
+						elif hyper_reg.match(m):
+							m1 = re.sub(hyper_reg, '\\1', m)
+							hyper_res.append(m1)
+						elif pageref_reg.match(m):
+							m1 = re.sub(pageref_reg, '\\1', m)
+							pageref_res.append(m1)
+		# Has been commented out as in the test 57, inline namespace, there is still a small problem.
+		#if sorted(bkmk_res) != sorted(set(bkmk_res)):
+		#	return (False, "RTF: one (or more) bookmark(s) has(have) been defined multiple times")
+		hyper_res = sorted(set(hyper_res))
+		for h in hyper_res:
+			if h not in bkmk_res:
+				#print(bkmk_res)
+				#print(hyper_res)
+				return (False, "RTF: Not all used hyperlinks have been defined")
+		pageref_res = sorted(set(pageref_res))
+		for p in pageref_res:
+			if p not in bkmk_res:
+				#print(bkmk_res)
+				#print(pageref_res)
+				return (False, "RTF: Not all used page reference bookmarks have been defined")
+		return (True,"")
+
 
 	# update the reference data for this test
 	def update_test(self,testmgr):
@@ -214,6 +277,7 @@ class Tester:
 
 		failed_xml=False
 		failed_html=False
+		failed_qhp=False
 		failed_latex=False
 		failed_docbook=False
 		failed_rtf=False
@@ -237,6 +301,7 @@ class Tester:
 						else:
 							check_file = check_file[0]
 					# convert output to canonical form
+					check_file = check_file.replace('\\','/')
 					data = xpopen('%s --format --noblanks --nowarning %s' % (self.args.xmllint,check_file))
 					if data:
 						# strip version
@@ -244,6 +309,8 @@ class Tester:
 					else:
 						msg += ('Failed to run %s on the doxygen output file %s' % (self.args.xmllint,self.test_out),)
 						break
+					if self.args.subdirs:
+						data = re.sub('d[0-9a-f]/d[0-9a-f][0-9a-f]/','',data)
 					out_file='%s/%s' % (self.test_out,check)
 					with xopen(out_file,'w') as f:
 						print(data,file=f)
@@ -280,6 +347,33 @@ class Tester:
 					msg += ('Failed to run %s with schema %s for files: %s' % (self.args.xmllint,index_xsd,index_xml),)
 					failed_xmlxsd=True
 				if xmllint_out:
+					xmllint_out  = clean_header(xmllint_out)
+				if xmllint_out:
+					msg += (xmllint_out,)
+					failed_xmlxsd=True
+				#
+				doxyfile_xml = []
+				doxyfile_xml.append(glob.glob('%s/Doxyfile.xml' % (xmlxsd_output)))
+				doxyfile_xml.append(glob.glob('%s/*/*/Doxyfile.xml' % (xmlxsd_output)))
+				doxyfile_xml = ' '.join(list(itertools.chain.from_iterable(doxyfile_xml))).replace(self.args.outputdir +'/','').replace('\\','/')
+				doxyfile_xsd = []
+				doxyfile_xsd.append(glob.glob('%s/doxyfile.xsd' % (xmlxsd_output)))
+				doxyfile_xsd.append(glob.glob('%s/*/*/doxyfile.xsd' % (xmlxsd_output)))
+				doxyfile_xsd = ' '.join(list(itertools.chain.from_iterable(doxyfile_xsd))).replace(self.args.outputdir +'/','').replace('\\','/')
+				exe_string = '%s --noout --schema %s %s' % (self.args.xmllint,doxyfile_xsd,doxyfile_xml)
+				exe_string1 = exe_string
+				exe_string += ' %s' % (redirx)
+				exe_string += ' %s more "%s/temp"' % (separ,xmlxsd_output)
+
+				xmllint_out = xpopen(exe_string,exe_string1,getStderr=True)
+				if xmllint_out:
+					xmllint_out = re.sub(r'.*validates','',xmllint_out).rstrip('\n')
+				else:
+					msg += ('Failed to run %s with schema %s for files: %s' % (self.args.xmllint,doxyfile_xsd,doxyfile_xml),)
+					failed_xmlxsd=True
+				if xmllint_out:
+					xmllint_out  = clean_header(xmllint_out)
+				if xmllint_out:
 					msg += (xmllint_out,)
 					failed_xmlxsd=True
 				#
@@ -289,6 +383,8 @@ class Tester:
 				compound_xml = ' '.join(list(itertools.chain.from_iterable(compound_xml))).replace(self.args.outputdir +'/','').replace('\\','/')
 				compound_xml = re.sub(r' [^ ]*/index.xml','',compound_xml)
 				compound_xml = re.sub(r'[^ ]*/index.xml ','',compound_xml)
+				compound_xml = re.sub(r' [^ ]*/Doxyfile.xml','',compound_xml)
+				compound_xml = re.sub(r'[^ ]*/Doxyfile.xml ','',compound_xml)
 
 				compound_xsd = []
 				compound_xsd.append(glob.glob('%s/compound.xsd' % (xmlxsd_output)))
@@ -306,6 +402,8 @@ class Tester:
 					msg += ('Failed to run %s with schema %s for files: %s' % (self.args.xmllint,compound_xsd,compound_xml),)
 					failed_xmlxsd=True
 				if xmllint_out:
+					xmllint_out  = clean_header(xmllint_out)
+				if xmllint_out:
 					msg += (xmllint_out,)
 					failed_xmlxsd=True
 
@@ -314,8 +412,11 @@ class Tester:
 				shutil.rmtree(xml_output,ignore_errors=True)
 
 		if (self.args.rtf):
-			# no tests defined yet
-			pass
+			(res, msg1) = self.check_link_rtf_file("%s/rtf/refman.rtf" % self.test_out)
+			if not res:
+				#msg += ("RTF: Not all used hyperlinks have been defined",)
+				msg += (msg1,)
+				failed_rtf=True
 
 		if (self.args.docbook):
 			docbook_output='%s/docbook' % self.test_out
@@ -338,12 +439,14 @@ class Tester:
 			xmllint_out = xpopen(exe_string,exe_string1,getStderr=True)
 			xmllint_out = self.cleanup_xmllint_docbook(xmllint_out)
 			if xmllint_out:
+				xmllint_out  = clean_header(xmllint_out)
+			if xmllint_out:
 				msg += (xmllint_out,)
 				failed_docbook=True
 			elif not self.args.keep:
 				shutil.rmtree(docbook_output,ignore_errors=True)
 
-		if (self.args.xhtml):
+		if (self.args.xhtml or self.args.qhp):
 			html_output='%s/html' % self.test_out
 			if (sys.platform == 'win32'):
 				redirx=' 2> %s/temp >nul:'%html_output
@@ -361,9 +464,24 @@ class Tester:
 			xmllint_out = xpopen(exe_string,exe_string1,getStderr=True)
 			xmllint_out = self.cleanup_xmllint(xmllint_out)
 			if xmllint_out:
-				msg += (xmllint_out,)
-				failed_html=True
-			elif not self.args.keep:
+				xmllint_out  = clean_header(xmllint_out)
+				if xmllint_out:
+					msg += (xmllint_out,)
+					failed_html=True
+
+			failed_qhp=False
+			if not failed_html and self.args.qhp:
+				check_file = "%s/index.qhp"%(html_output)
+				exe_string = '%s --noout %s' % (self.args.xmllint,check_file)
+				exe_string1 = exe_string
+				exe_string += ' %s' % (redirx)
+				exe_string += ' %s more "%s/temp"' % (separ,html_output)
+				xmllint_out = xpopen(exe_string,exe_string1,getStderr=True)
+				xmllint_out = self.cleanup_xmllint(xmllint_out)
+				if xmllint_out:
+					msg += (xmllint_out,)
+					failed_qhp=True
+			if not failed_html and not failed_qhp and not self.args.keep:
 				shutil.rmtree(html_output,ignore_errors=True)
 		if (self.args.pdf):
 			failed_latex=False
@@ -406,7 +524,7 @@ class Tester:
 		if failed_warn:
 			msg += (warnings,)
 
-		if failed_warn or failed_xml or failed_html or failed_latex or failed_docbook or failed_rtf or failed_xmlxsd:
+		if failed_warn or failed_xml or failed_html or failed_qhp or failed_latex or failed_docbook or failed_rtf or failed_xmlxsd:
 			testmgr.ok(False,self.test_name,msg)
 			return False
 
@@ -432,7 +550,7 @@ class TestManager:
 		self.num_tests = len(tests)
 		self.count=1
 		self.passed=0
-		if self.args.xhtml:
+		if (self.args.xhtml or self.args.qhp):
 			self.prepare_dtd()
 		print('1..%d' % self.num_tests)
 
@@ -471,7 +589,7 @@ class TestManager:
 			passed = p.map(do_generation_work, dl)
 			self.passed = sum(passed)
 		res=self.result()
-		if self.args.xhtml and self.args.inputdir!='.' and not res and not self.args.keep:
+		if (self.args.xhtml or self.args.qhp) and self.args.inputdir!='.' and not res and not self.args.keep:
 			shutil.rmtree("dtd",ignore_errors=True)
 		return 0 if self.args.updateref else res
 
@@ -481,6 +599,7 @@ class TestManager:
 			shutil.copytree(self.args.inputdir+"/dtd", "dtd")
 
 def split_and_keep(s,sep):
+    s = s.replace('"','')             # add token separator
     s = s.replace(sep,'\0'+sep)             # add token separator
     s = s.split('\0')                       # split by null delimiter
     s = [x.strip() for x in filter(None,s)] # strip and remove empty elements
@@ -492,7 +611,7 @@ def main():
 	# argument handling
 	parser = argparse.ArgumentParser(description='run doxygen tests')
 	parser.add_argument('--updateref',help=
-		'update the reference files. Should be used in combination with -id to '
+		'update the reference files. Should be used in combination with --id to '
 		'update the reference file(s) for the given test',action="store_true")
 	parser.add_argument('--doxygen',nargs='?',default='doxygen',help=
 		'path/name of the doxygen executable')
@@ -524,6 +643,8 @@ def main():
 		'create docbook output and check with xmllint',action="store_true")
 	parser.add_argument('--xhtml',help=
 		'create xhtml output and check with xmllint',action="store_true")
+	parser.add_argument('--qhp',help=
+		'create qhp output and check with xmllint',action="store_true")
 	parser.add_argument('--xmlxsd',help=
 		'create xml output and check with xmllint against xsd',action="store_true")
 	parser.add_argument('--pdf',help='create LaTeX output and create pdf from it',
@@ -544,7 +665,7 @@ def main():
 	args = parser.parse_args(test_flags + sys.argv[1:])
 
 	# sanity check
-	if (not args.xml) and (not args.pdf) and (not args.xhtml) and (not args.docbook and (not args.rtf) and (not args.xmlxsd)):
+	if (not args.xml) and (not args.pdf) and (not args.xhtml) and (not args.qhp) and (not args.docbook and (not args.rtf) and (not args.xmlxsd)):
 		args.xml=True
 	if (not args.updateref is None) and (args.ids is None) and (args.all is None):
 		parser.error('--updateref requires either --id or --all')

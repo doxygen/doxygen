@@ -1,8 +1,6 @@
 /******************************************************************************
  *
- *
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2021 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -19,43 +17,46 @@
 #define INDEX_H
 
 #include <utility>
-#include <qlist.h>
-#include <qcstring.h>
+#include <vector>
+#include <memory>
+#include <mutex>
+
+#include "qcstring.h"
 
 class Definition;
 class DefinitionMutable;
+class NamespaceDef;
 class MemberDef;
 class OutputList;
-class FTextStream;
 
 /** \brief Abstract interface for index generators. */
 class IndexIntf
 {
   public:
-    virtual ~IndexIntf() {}
+    virtual ~IndexIntf() = default;
     virtual void initialize() = 0;
     virtual void finalize() = 0;
     virtual void incContentsDepth() = 0;
     virtual void decContentsDepth() = 0;
-    virtual void addContentsItem(bool isDir, const char *name, const char *ref,
-                                 const char *file, const char *anchor, bool separateIndex,
+    virtual void addContentsItem(bool isDir, const QCString &name, const QCString &ref,
+                                 const QCString &file, const QCString &anchor, bool separateIndex,
                                  bool addToNavIndex,const Definition *def) = 0;
     virtual void addIndexItem(const Definition *context,const MemberDef *md,
-                              const char *sectionAnchor,const char *title) = 0;
-    virtual void addIndexFile(const char *name) = 0;
-    virtual void addImageFile(const char *name) = 0;
-    virtual void addStyleSheetFile(const char *name) = 0;
+                              const QCString &sectionAnchor,const QCString &title) = 0;
+    virtual void addIndexFile(const QCString &name) = 0;
+    virtual void addImageFile(const QCString &name) = 0;
+    virtual void addStyleSheetFile(const QCString &name) = 0;
 };
 
 /** \brief A list of index interfaces.
  *
  *  This class itself implements all methods of IndexIntf and
- *  just forwards the calls to all items in the list.
+ *  just forwards the calls to all items in the list (composite design pattern).
  */
 class IndexList : public IndexIntf
 {
   private:
-    QList<IndexIntf> m_intfs;
+    std::vector< std::unique_ptr<IndexIntf> > m_intfs;
 
     // For each index format we forward the method call.
     // We use C++11 variadic templates and perfect forwarding to implement foreach() generically,
@@ -63,19 +64,28 @@ class IndexList : public IndexIntf
     template<class... Ts,class... As>
     void foreach(void (IndexIntf::*methodPtr)(Ts...),As&&... args)
     {
-      QListIterator<IndexIntf> li(m_intfs);
-      for (li.toFirst();li.current();++li)
+      for (const auto &intf : m_intfs)
       {
-        (li.current()->*methodPtr)(std::forward<As>(args)...);
+        (intf.get()->*methodPtr)(std::forward<As>(args)...);
       }
+    }
+    // For each version with locking
+    template<class... Ts,class... As>
+    void foreach_locked(void (IndexIntf::*methodPtr)(Ts...),As&&... args)
+    {
+      std::lock_guard<std::mutex> lock(m_mutex);
+      foreach(methodPtr,std::forward<As>(args)...);
     }
 
   public:
     /** Creates a list of indexes */
-    IndexList() { m_intfs.setAutoDelete(TRUE); m_enabled=TRUE; }
-    /** Add an index generator to the list */
-    void addIndex(IndexIntf *intf)
-    { m_intfs.append(intf); }
+    IndexList() { m_enabled=TRUE; }
+
+    /** Add an index generator to the list, using a syntax similar to std::make_unique<T>() */
+    template<class T,class... As>
+    void addIndex(As&&... args)
+    { m_intfs.push_back(std::make_unique<T>(std::forward<As>(args)...)); }
+
     void disable()
     { m_enabled = FALSE; }
     void enable()
@@ -89,24 +99,25 @@ class IndexList : public IndexIntf
     void finalize()
     { foreach(&IndexIntf::finalize); }
     void incContentsDepth()
-    { if (m_enabled) foreach(&IndexIntf::incContentsDepth); }
+    { if (m_enabled) foreach_locked(&IndexIntf::incContentsDepth); }
     void decContentsDepth()
-    { if (m_enabled) foreach(&IndexIntf::decContentsDepth); }
-    void addContentsItem(bool isDir, const char *name, const char *ref,
-                         const char *file, const char *anchor,bool separateIndex=FALSE,bool addToNavIndex=FALSE,
+    { if (m_enabled) foreach_locked(&IndexIntf::decContentsDepth); }
+    void addContentsItem(bool isDir, const QCString &name, const QCString &ref,
+                         const QCString &file, const QCString &anchor,bool separateIndex=FALSE,bool addToNavIndex=FALSE,
                          const Definition *def=0)
-    { if (m_enabled) foreach(&IndexIntf::addContentsItem,isDir,name,ref,file,anchor,separateIndex,addToNavIndex,def); }
-    void addIndexItem(const Definition *context,const MemberDef *md,const char *sectionAnchor=0,const char *title=0)
-    { if (m_enabled) foreach(&IndexIntf::addIndexItem,context,md,sectionAnchor,title); }
-    void addIndexFile(const char *name)
-    { if (m_enabled) foreach(&IndexIntf::addIndexFile,name); }
-    void addImageFile(const char *name)
-    { if (m_enabled) foreach(&IndexIntf::addImageFile,name); }
-    void addStyleSheetFile(const char *name)
-    { if (m_enabled) foreach(&IndexIntf::addStyleSheetFile,name); }
+    { if (m_enabled) foreach_locked(&IndexIntf::addContentsItem,isDir,name,ref,file,anchor,separateIndex,addToNavIndex,def); }
+    void addIndexItem(const Definition *context,const MemberDef *md,const QCString &sectionAnchor=QCString(),const QCString &title=QCString())
+    { if (m_enabled) foreach_locked(&IndexIntf::addIndexItem,context,md,sectionAnchor,title); }
+    void addIndexFile(const QCString &name)
+    { if (m_enabled) foreach_locked(&IndexIntf::addIndexFile,name); }
+    void addImageFile(const QCString &name)
+    { if (m_enabled) foreach_locked(&IndexIntf::addImageFile,name); }
+    void addStyleSheetFile(const QCString &name)
+    { if (m_enabled) foreach_locked(&IndexIntf::addStyleSheetFile,name); }
 
   private:
     bool m_enabled;
+    std::mutex m_mutex;
 };
 
 
@@ -118,6 +129,7 @@ enum IndexSections
   isModuleIndex,
   isDirIndex,
   isNamespaceIndex,
+  isConceptIndex,
   isClassHierarchyIndex,
   isCompoundIndex,
   isFileIndex,
@@ -126,6 +138,7 @@ enum IndexSections
   isDirDocumentation,
   isNamespaceDocumentation,
   isClassDocumentation,
+  isConceptDocumentation,
   isFileDocumentation,
   isExampleDocumentation,
   isPageDocumentation,
@@ -144,6 +157,7 @@ enum HighlightedItem
   HLI_InterfaceHierarchy,
   HLI_ExceptionHierarchy,
   HLI_Classes,
+  HLI_Concepts,
   HLI_Interfaces,
   HLI_Structs,
   HLI_Exceptions,
@@ -161,6 +175,7 @@ enum HighlightedItem
   HLI_UserGroup,
 
   HLI_ClassVisible,
+  HLI_ConceptVisible,
   HLI_InterfaceVisible,
   HLI_StructVisible,
   HLI_ExceptionVisible,
@@ -237,19 +252,19 @@ extern int hierarchyExceptions;
 extern int documentedFiles;
 extern int documentedGroups;
 extern int documentedNamespaces;
+extern int documentedConcepts;
 extern int indexedPages;
 extern int documentedClassMembers[CMHL_Total];
 extern int documentedFileMembers[FMHL_Total];
 extern int documentedNamespaceMembers[NMHL_Total];
 extern int documentedDirs;
-extern int documentedHtmlFiles;
 extern int documentedPages;
 
-void startTitle(OutputList &ol,const char *fileName,const DefinitionMutable *def=0);
-void endTitle(OutputList &ol,const char *fileName,const char *name);
-void startFile(OutputList &ol,const char *name,const char *manName,
-               const char *title,HighlightedItem hli=HLI_None,
-               bool additionalIndices=FALSE,const char *altSidebarName=0);
+void startTitle(OutputList &ol,const QCString &fileName,const DefinitionMutable *def=0);
+void endTitle(OutputList &ol,const QCString &fileName,const QCString &name);
+void startFile(OutputList &ol,const QCString &name,const QCString &manName,
+               const QCString &title,HighlightedItem hli=HLI_None,
+               bool additionalIndices=FALSE,const QCString &altSidebarName=QCString());
 void endFile(OutputList &ol,bool skipNavIndex=FALSE,bool skipEndContents=FALSE,
              const QCString &navPath=QCString());
 void endFileWithNavPath(const Definition *d,OutputList &ol);
@@ -257,9 +272,12 @@ void endFileWithNavPath(const Definition *d,OutputList &ol);
 void initClassMemberIndices();
 void initFileMemberIndices();
 void initNamespaceMemberIndices();
-void addClassMemberNameToIndex(MemberDef *md);
-void addFileMemberNameToIndex(MemberDef *md);
-void addNamespaceMemberNameToIndex(MemberDef *md);
+void addClassMemberNameToIndex(const MemberDef *md);
+void addFileMemberNameToIndex(const MemberDef *md);
+void addNamespaceMemberNameToIndex(const MemberDef *md);
+void sortMemberIndexLists();
 QCString fixSpaces(const QCString &s);
+
+int countVisibleMembers(const NamespaceDef *nd);
 
 #endif

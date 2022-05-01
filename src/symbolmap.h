@@ -36,13 +36,13 @@ class SymbolMap
     using const_iterator = typename Map::const_iterator;
 
     //! Add a symbol \a def into the map under key \a name
-    void add(const char *name,Ptr def)
+    void add(const QCString &name,Ptr def)
     {
-      m_map.insert({std::string(name),def});
+      m_map.insert({name.str(),def});
     }
 
     //! Remove a symbol \a def from the map that was stored under key \a name
-    void remove(const char *name,Ptr def)
+    void remove(const QCString &name,Ptr def)
     {
       auto range = find(name);
       for (auto it=range.first; it!=range.second; )
@@ -53,16 +53,16 @@ class SymbolMap
 
     //! Find the list of symbols stored under key \a name
     //! Returns a pair of iterators pointing to the start and end of the range of matching symbols
-    std::pair<const_iterator,const_iterator> find(const char *name) const
+    std::pair<const_iterator,const_iterator> find(const QCString &name) const
     {
-      return m_map.equal_range(name ? name : "");
+      return m_map.equal_range(name.str());
     }
 
     //! Find the list of symbols stored under key \a name
     //! Returns a pair of iterators pointing to the start and end of the range of matching symbols
-    std::pair<iterator,iterator> find(const char *name)
+    std::pair<iterator,iterator> find(const QCString &name)
     {
-      return m_map.equal_range(name ? name : "");
+      return m_map.equal_range(name.str());
     }
 
     iterator begin()             { return m_map.begin();  }

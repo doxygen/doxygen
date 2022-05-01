@@ -9,6 +9,10 @@
   {% endif %}
 {% endblock %}
 
+{% block ingroups %}
+{% include 'htmlpartofgroups.tpl' %}
+{% endblock %}
+
 {% block content %}
 <div class="contents">
 {% if isMainPage and config.DISABLE_INDEX %}
@@ -33,7 +37,7 @@
   <ul>
     <li><a href="{{ page.relPath }}annotated{{ config.HTML_FILE_EXTENSION }}"><span>{{ tr.classList }}</span></a></li>
     <li><a href="{{ page.relPath }}classes{{ config.HTML_FILE_EXTENSION }}"><span>{{ tr.classIndex }}</span></a></li>
-    {% if classHierarchy.tree %}
+    {% if classHierarchy.tree and classHierarchy.maxDepth>1 %}
     <li><a href="{{ page.relPath }}hierarchy{{ config.HTML_FILE_EXTENSION }}"><span>{{ tr.classHierarchy }} </span></a></li>
     {% endif %}
     {% if classMembersIndex.all %}
@@ -50,7 +54,7 @@
   </ul>
   </li>
 {% endif %}
-{% if exampleList.items %}
+{% if exampleList %}
   <li><a href="{{ page.relPath }}examples{{ config.HTML_FILE_EXTENSION }}"><span>{{ tr.examples }}</span></a>
 {% endif %}
 </ul>

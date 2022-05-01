@@ -21,8 +21,6 @@
 #include "config.h"
 #include "outputgen.h"
 
-class QFile;
-
 /** Generator for RTF output. */
 class RTFGenerator : public OutputGenerator
 {
@@ -34,37 +32,37 @@ class RTFGenerator : public OutputGenerator
     virtual std::unique_ptr<OutputGenerator> clone() const;
 
     static void init();
-    static void writeStyleSheetFile(QFile &f);
-    static void writeExtensionsFile(QFile &file);
+    void cleanup();
+    static void writeStyleSheetFile(TextStream &t);
+    static void writeExtensionsFile(TextStream &t);
     OutputType type() const { return RTF; }
 
     void setRelativePath(const QCString &path);
     void setSourceFileName(const QCString &sourceFileName);
 
-    void writeDoc(DocNode *,const Definition *,const MemberDef *,int);
+    void writeDoc(const IDocNodeAST *ast,const Definition *,const MemberDef *,int);
 
-    void startFile(const char *name,const char *manName,const char *title,int id);
+    void startFile(const QCString &name,const QCString &manName,const QCString &title,int id);
     void writeSearchInfo() {}
-    void writeFooter(const char *) {}
+    void writeFooter(const QCString &) {}
     void endFile();
     void clearBuffer();
-    //void postProcess(QByteArray &);
 
     void startIndexSection(IndexSections);
     void endIndexSection(IndexSections);
-    void writePageLink(const char *,bool);
+    void writePageLink(const QCString &,bool);
     void startProjectNumber();
     void endProjectNumber();
     void writeStyleInfo(int part);
-    void startTitleHead(const char *);
+    void startTitleHead(const QCString &);
     void startTitle();
-    void endTitleHead(const char *,const char *name);
+    void endTitleHead(const QCString &,const QCString &name);
     void endTitle() {}
 
     void newParagraph();
-    void startParagraph(const char *classDef);
+    void startParagraph(const QCString &classDef);
     void endParagraph();
-    void writeString(const char *text);
+    void writeString(const QCString &text);
     void startIndexListItem();
     void endIndexListItem();
     void startIndexList();
@@ -72,30 +70,30 @@ class RTFGenerator : public OutputGenerator
     void startIndexKey();
     void endIndexKey();
     void startIndexValue(bool);
-    void endIndexValue(const char *,bool);
+    void endIndexValue(const QCString &,bool);
     void startItemList();
     void endItemList();
-    void startIndexItem(const char *ref,const char *file);
-    void endIndexItem(const char *ref,const char *file);
-    void docify(const char *text);
-    void codify(const char *text);
-    void writeObjectLink(const char *ref,const char *file,
-                         const char *anchor,const char *name);
-    void writeCodeLink(const char *ref, const char *file,
-                       const char *anchor,const char *name,
-                       const char *tooltip);
-    void writeTooltip(const char *, const DocLinkInfo &, const char *,
-                      const char *, const SourceLinkInfo &, const SourceLinkInfo &
+    void startIndexItem(const QCString &ref,const QCString &file);
+    void endIndexItem(const QCString &ref,const QCString &file);
+    void docify(const QCString &text);
+    void codify(const QCString &text);
+    void writeObjectLink(const QCString &ref,const QCString &file,
+                         const QCString &anchor,const QCString &name);
+    void writeCodeLink(CodeSymbolType type,
+                       const QCString &ref, const QCString &file,
+                       const QCString &anchor,const QCString &name,
+                       const QCString &tooltip);
+    void writeTooltip(const QCString &, const DocLinkInfo &, const QCString &,
+                      const QCString &, const SourceLinkInfo &, const SourceLinkInfo &
                      ) {}
-    void startTextLink(const char *f,const char *anchor);
+    void startTextLink(const QCString &f,const QCString &anchor);
     void endTextLink();
-    void startHtmlLink(const char *url);
+    void startHtmlLink(const QCString &url);
     void endHtmlLink();
-    void startTypewriter() { t << "{\\f2 "; }
-    void endTypewriter()   { t << "}";      }
+    void startTypewriter() { m_t << "{\\f2 "; }
+    void endTypewriter()   { m_t << "}";      }
     void startGroupHeader(int);
     void endGroupHeader(int);
-    //void writeListItem();
     void startItemListItem();
     void endItemListItem();
 
@@ -103,7 +101,7 @@ class RTFGenerator : public OutputGenerator
     void endMemberSections() {}
     void startHeaderSection() {}
     void endHeaderSection() {}
-    void startMemberHeader(const char *,int) { startGroupHeader(FALSE); }
+    void startMemberHeader(const QCString &,int) { startGroupHeader(FALSE); }
     void endMemberHeader() { endGroupHeader(FALSE); }
     void startMemberSubtitle();
     void endMemberSubtitle();
@@ -115,84 +113,85 @@ class RTFGenerator : public OutputGenerator
     void endInlineHeader();
     void startAnonTypeScope(int) {}
     void endAnonTypeScope(int) {}
-    void startMemberItem(const char *,int,const char *);
+    void startMemberItem(const QCString &,int,const QCString &);
     void endMemberItem();
     void startMemberTemplateParams() {}
-    void endMemberTemplateParams(const char *,const char *) {}
+    void endMemberTemplateParams(const QCString &,const QCString &) {}
+    void startCompoundTemplateParams() { startSubsubsection(); }
+    void endCompoundTemplateParams() { endSubsubsection(); }
     void insertMemberAlign(bool) {}
     void insertMemberAlignLeft(int,bool){}
 
     void writeRuler() { rtfwriteRuler_thin(); }
 
-    void writeAnchor(const char *fileName,const char *name);
-    void startCodeFragment(const char *style);
-    void endCodeFragment(const char *style);
-    void writeLineNumber(const char *,const char *,const char *,int l);
+    void writeAnchor(const QCString &fileName,const QCString &name);
+    void startCodeFragment(const QCString &style);
+    void endCodeFragment(const QCString &style);
+    void writeLineNumber(const QCString &,const QCString &,const QCString &,int l, bool);
     void startCodeLine(bool);
     void endCodeLine();
-    void startEmphasis() { t << "{\\i ";  }
-    void endEmphasis()   { t << "}"; }
-    void startBold()     { t << "{\\b "; }
-    void endBold()       { t << "}"; }
+    void startEmphasis() { m_t << "{\\i ";  }
+    void endEmphasis()   { m_t << "}"; }
+    void startBold()     { m_t << "{\\b "; }
+    void endBold()       { m_t << "}"; }
     void startDescription();
     void endDescription();
     void startDescItem();
     void endDescItem();
-    void lineBreak(const char *style=0);
-    void startMemberDoc(const char *,const char *,const char *,const char *,int,int,bool);
+    void lineBreak(const QCString &style=QCString());
+    void startMemberDoc(const QCString &,const QCString &,const QCString &,const QCString &,int,int,bool);
     void endMemberDoc(bool);
-    void startDoxyAnchor(const char *,const char *,const char *,const char *,const char *);
-    void endDoxyAnchor(const char *,const char *);
+    void startDoxyAnchor(const QCString &,const QCString &,const QCString &,const QCString &,const QCString &);
+    void endDoxyAnchor(const QCString &,const QCString &);
     void writeChar(char c);
-    void writeLatexSpacing() {};//{ t << "\\hspace{0.3cm}"; }
-    void writeStartAnnoItem(const char *type,const char *file,
-                            const char *path,const char *name);
-    void writeEndAnnoItem(const char *name);
+    void writeLatexSpacing() {};//{ m_t << "\\hspace{0.3cm}"; }
+    void writeStartAnnoItem(const QCString &type,const QCString &file,
+                            const QCString &path,const QCString &name);
+    void writeEndAnnoItem(const QCString &name);
     void startSubsection();
     void endSubsection();
     void startSubsubsection();
     void endSubsubsection();
-    void startCenter()      { t << "{\\qc" << endl; }
-    void endCenter()        { t << "}"; }
-    void startSmall()       { t << "{\\sub "; }
-    void endSmall()         { t << "}"; }
+    void startCenter()      { m_t << "{\\qc\n"; }
+    void endCenter()        { m_t << "}"; }
+    void startSmall()       { m_t << "{\\sub "; }
+    void endSmall()         { m_t << "}"; }
 
-    void startMemberDescription(const char *,const char *,bool);
+    void startMemberDescription(const QCString &,const QCString &,bool);
     void endMemberDescription();
     void startMemberDeclaration() {}
-    void endMemberDeclaration(const char *,const char *) {}
-    void writeInheritedSectionTitle(const char *,const char *,const char *,
-                      const char *,const char *,const char *) {}
+    void endMemberDeclaration(const QCString &,const QCString &) {}
+    void writeInheritedSectionTitle(const QCString &,const QCString &,const QCString &,
+                      const QCString &,const QCString &,const QCString &) {}
     void startDescList(SectionTypes);
     void startExamples();
     void endExamples();
-    void startParamList(ParamListTypes,const char *);
+    void startParamList(ParamListTypes,const QCString &);
     void endParamList();
-    //void writeDescItem();
     void startDescForItem();
     void endDescForItem();
-    void startSection(const char *,const char *,SectionType);
-    void endSection(const char *,SectionType);
-    void addIndexItem(const char *,const char *);
+    void startSection(const QCString &,const QCString &,SectionType);
+    void endSection(const QCString &,SectionType);
+    void addIndexItem(const QCString &,const QCString &);
     void startIndent();
     void endIndent();
     void writeSynopsis()     {}
     void startClassDiagram();
-    void endClassDiagram(const ClassDiagram &,const char *filename,const char *name);
+    void endClassDiagram(const ClassDiagram &,const QCString &filename,const QCString &name);
     void startPageRef();
-    void endPageRef(const char *,const char *);
+    void endPageRef(const QCString &,const QCString &);
     void startQuickIndices() {}
     void endQuickIndices() {}
-    void writeSplitBar(const char *) {}
-    void writeNavigationPath(const char *) {}
+    void writeSplitBar(const QCString &) {}
+    void writeNavigationPath(const QCString &) {}
     void writeLogo() {}
-    void writeQuickLinks(bool,HighlightedItem,const char *) {}
-    void writeSummaryLink(const char *,const char *,const char *,bool) {}
+    void writeQuickLinks(bool,HighlightedItem,const QCString &) {}
+    void writeSummaryLink(const QCString &,const QCString &,const QCString &,bool) {}
     void startContents() {}
     void endContents() {}
     void writeNonBreakableSpace(int);
 
-    void startDescTable(const char *title);
+    void startDescTable(const QCString &title);
     void endDescTable();
     void startDescTableRow();
     void endDescTableRow();
@@ -228,15 +227,15 @@ class RTFGenerator : public OutputGenerator
     void endMemberDocPrefixItem() {}
     void startMemberDocName(bool) {}
     void endMemberDocName() {}
-    void startParameterType(bool,const char *);
+    void startParameterType(bool,const QCString &);
     void endParameterType();
     void startParameterName(bool) {}
     void endParameterName(bool,bool,bool) {}
     void startParameterList(bool) {}
     void endParameterList() {}
-    void exceptionEntry(const char*,bool);
+    void exceptionEntry(const QCString &,bool);
 
-    void startConstraintList(const char  *);
+    void startConstraintList(const QCString &);
     void startConstraintParam();
     void endConstraintParam();
     void startConstraintType();
@@ -255,27 +254,23 @@ class RTFGenerator : public OutputGenerator
     void endInlineMemberDoc();
 
     void startLabels();
-    void writeLabel(const char *l,bool isLast);
+    void writeLabel(const QCString &l,bool isLast);
     void endLabels();
 
-    void startFontClass(const char *);
+    void startFontClass(const QCString &);
     void endFontClass();
 
-    void writeCodeAnchor(const char *) {}
-    void setCurrentDoc(const Definition *,const char *,bool) {}
-    void addWord(const char *,bool) {}
+    void writeCodeAnchor(const QCString &) {}
 
-    static bool preProcessFileInplace(const char *path,const char *name);
+    static bool preProcessFileInplace(const QCString &path,const QCString &name);
 
   private:
-    const char *rtf_BList_DepthStyle();
-    const char *rtf_CList_DepthStyle();
-    const char *rtf_EList_DepthStyle();
-    const char *rtf_LCList_DepthStyle();
-    const char *rtf_DList_DepthStyle();
-    const char *rtf_Code_DepthStyle();
-    void incrementIndentLevel();
-    void decrementIndentLevel();
+    QCString rtf_BList_DepthStyle();
+    QCString rtf_CList_DepthStyle();
+    QCString rtf_EList_DepthStyle();
+    QCString rtf_LCList_DepthStyle();
+    QCString rtf_DList_DepthStyle();
+    QCString rtf_Code_DepthStyle();
     void beginRTFDocument();
     void beginRTFChapter();
     void beginRTFSection();
@@ -283,17 +278,30 @@ class RTFGenerator : public OutputGenerator
     void rtfwriteRuler_emboss();
     void rtfwriteRuler_thick();
     void rtfwriteRuler_thin();
-    void writeRTFReference(const char *label);
+    void writeRTFReference(const QCString &label);
+
+    int indentLevel() const;
+    void incIndentLevel();
+    void decIndentLevel();
 
     QCString m_sourceFileName;
     int  m_col = 0;
-    bool m_prettyCode = Config_getBool(RTF_SOURCE_CODE);
     bool m_bstartedBody = false;  // has startbody been called yet?
-    int  m_listLevel = 0; // // RTF does not really have a additive indent...manually set list level.
     bool m_omitParagraph = false; // should a the next paragraph command be ignored?
     int  m_numCols = 0; // number of columns in a table
     QCString m_relPath;
     bool m_doxyCodeLineOpen = false;
+
+    // RTF does not really have a additive indent...manually set list level.
+    static const int maxIndentLevels = 13;
+    int m_indentLevel = 0;
+    struct RTFListItemInfo
+    {
+      bool isEnum = false;
+      int number = 1;
+      char type = '1';
+    };
+    RTFListItemInfo m_listItemInfo[maxIndentLevels];
 };
 
 #endif

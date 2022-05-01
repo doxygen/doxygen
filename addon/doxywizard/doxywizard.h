@@ -103,6 +103,7 @@ class MainWindow : public QMainWindow
     QProcess *m_runProcess;
     QTimer *m_timer;
     QTabWidget *m_tabs;
+    int m_outputLogTextCount = 0;
     bool m_running;
     bool m_modified;
 };

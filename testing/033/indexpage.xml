@@ -9,5 +9,6 @@
       <para>Some text.</para>
       <para>More visible text. </para>
     </detaileddescription>
+    <location file="033_internal.dox"/>
   </compounddef>
 </doxygen>

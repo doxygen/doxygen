@@ -18,7 +18,7 @@
 
 #include <functional>
 
-#include <qcstring.h>
+#include "qcstring.h"
 #include "parserintf.h"
 #include "growbuf.h"
 
@@ -32,8 +32,8 @@ QCString markdownFileNameToId(const QCString &fileName);
 class Markdown
 {
   public:
-    Markdown(const char *fileName,int lineNr,int indentLevel=0);
-    QCString process(const QCString &input, int &startNewlines);
+    Markdown(const QCString &fileName,int lineNr,int indentLevel=0);
+    QCString process(const QCString &input, int &startNewlines, bool fromParseInput = false);
     QCString extractPageTitle(QCString &docs,QCString &id,int &prepend);
     void setIndentLevel(int level) { m_indentLevel = level; }
 
@@ -42,6 +42,7 @@ class Markdown
     QCString processQuotations(const QCString &s,int refIndent);
     QCString processBlocks(const QCString &s,int indent);
     QCString isBlockCommand(const char *data,int offset,int size);
+    int isSpecialCommand(const char *data,int offset,int size);
     void findEndOfLine(const char *data,int size,int &pi,int&i,int &end);
     int processHtmlTagWrite(const char *data,int offset,int size,bool doWrite);
     int processHtmlTag(const char *data,int offset,int size);
@@ -57,9 +58,10 @@ class Markdown
     int processLink(const char *data,int,int size);
     int findEmphasisChar(const char *data, int size, char c, int c_size);
     void processInline(const char *data,int size);
-    void writeMarkdownImage(const char *fmt, bool explicitTitle,
+    void writeMarkdownImage(const char *fmt, bool inline_img, bool explicitTitle,
                             const QCString &title, const QCString &content,
-                            const QCString &link, const FileDef *fd);
+                            const QCString &link, const QCString &attributes,
+                            const FileDef *fd);
     int isHeaderline(const char *data, int size, bool allowAdjustLevel);
     int isAtxHeader(const char *data,int size,
                        QCString &header,QCString &id,bool allowAdjustLevel);
@@ -73,7 +75,7 @@ class Markdown
   private:
     struct LinkRef
     {
-      LinkRef(const char *l,const char *t) : link(l), title(t) {}
+      LinkRef(const QCString &l,const QCString &t) : link(l), title(t) {}
       QCString link;
       QCString title;
     };
@@ -93,12 +95,12 @@ class MarkdownOutlineParser : public OutlineParserInterface
   public:
     MarkdownOutlineParser();
     virtual ~MarkdownOutlineParser();
-    void parseInput(const char *fileName,
+    void parseInput(const QCString &fileName,
                     const char *fileBuf,
                     const std::shared_ptr<Entry> &root,
                     ClangTUParser *clangParser);
     bool needsPreprocessing(const QCString &) const { return FALSE; }
-    void parsePrototype(const char *text);
+    void parsePrototype(const QCString &text);
   private:
     struct Private;
     std::unique_ptr<Private> p;

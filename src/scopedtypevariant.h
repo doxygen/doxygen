@@ -18,7 +18,8 @@
 
 #include <utility>
 #include <vector>
-#include <qcstring.h>
+
+#include "qcstring.h"
 #include "definition.h"
 
 //! Class representing a local class definition found while
@@ -277,7 +278,7 @@ class CallContext
     void clear()
     {
       m_stvList.clear();
-      m_stvList.push_back(Ctx("",""));
+      m_stvList.push_back(Ctx(QCString(),QCString()));
     }
     const ScopedTypeVariant getScope() const
     {

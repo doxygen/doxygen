@@ -31,13 +31,13 @@ MD5Transform(UWORD32 buf[4], UWORD32 const in[16]);
 int g_bigEndian = 0;
 int g_endianessDetected = 0;
 
-static void 
+static void
 detectEndianess()
 {
   int nl = 0x12345678;
   short ns = 0x1234;
 
-  unsigned char *p = (unsigned char *)(&nl); 
+  unsigned char *p = (unsigned char *)(&nl);
   unsigned char *sp = (unsigned char *)(&ns);
 
   if (g_endianessDetected) return;
@@ -132,7 +132,7 @@ MD5Update(struct MD5Context *ctx, md5byte const *buf, unsigned len)
 }
 
 /*
- * Final wrapup - pad to 64-byte boundary with the bit pattern 
+ * Final wrapup - pad to 64-byte boundary with the bit pattern
  * 1 0* (64-bit count of bits processed, MSB-first)
  */
 void
@@ -272,24 +272,23 @@ MD5Transform(UWORD32 buf[4], UWORD32 const in[16])
 
 #endif
 
-void MD5Buffer (const unsigned char *buf,unsigned int len,unsigned char sig[16])
+void MD5Buffer (const char *buf,unsigned int len,unsigned char sig[16])
 {
   struct MD5Context md5;
   MD5Init(&md5);
-  MD5Update(&md5,buf,len);
+  MD5Update(&md5,(const md5byte*)buf,len);
   MD5Final(sig,&md5);
 }
 
 #define HEX_STRING      "0123456789abcdef"      /* to convert to hex */
 
-void MD5SigToString(unsigned char signature[16],char *str,int len)
+void MD5SigToString(unsigned char signature[16],char str[33])
 {
   unsigned char *sig_p;
-  char          *str_p, *max_p;
+  char          *str_p;
   unsigned int  high, low;
 
   str_p = str;
-  max_p = str + len;
 
   for (sig_p = (unsigned char *)signature;
       sig_p < (unsigned char *)signature + 16;
@@ -298,16 +297,11 @@ void MD5SigToString(unsigned char signature[16],char *str,int len)
     high = *sig_p / 16;
     low = *sig_p % 16;
     /* account for 2 chars */
-    if (str_p + 1 >= max_p) {
-      break;
-    }
     *str_p++ = HEX_STRING[high];
     *str_p++ = HEX_STRING[low];
   }
-  /* account for 2 chars */
-  if (str_p < max_p) {
-    *str_p++ = '\0';
-  }
+  /* account for 1 terminator */
+  *str_p++ = '\0';
 }
 
 

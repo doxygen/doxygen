@@ -15,6 +15,7 @@
         {% include 'htmlobjlink.tpl' %}
       {% endwith %}
     {% endif %}
+    {% if nc.sourceFileName and nc.isLinkable %}<a class="el" href="{{ nc.sourceFileName }}{{ config.HTML_FILE_EXTENSION }}">[{{ tr.code }}]</a>{% endif %}
     </td></tr>
     {# brief description #}
       {% if nc.brief %}
@@ -25,7 +26,7 @@
         {% endif %}
         <br/></td></tr>
       {% endif %}
-    <tr class="separator:{{ nc.anchor}}"><td class="memSeparator" colspan="2">&#160;</td></tr>
+    <tr class="separator:{{ nc.anchor }}"><td class="memSeparator" colspan="2">&#160;</td></tr>
   {% endfor %}
   </table>
 {% endif %}

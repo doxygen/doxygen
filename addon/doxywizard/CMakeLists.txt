@@ -1,37 +1,52 @@
-# search for Qt5
-if (NOT force_qt4)
+if (force_qt STREQUAL "Qt5" OR NOT force_qt)
   find_package(Qt5Core QUIET CONFIG)
   if (Qt5Core_FOUND)
     message(STATUS "Using Qt5")
     find_package(Qt5 COMPONENTS Widgets Gui Xml)
     macro(qt_wrap_cpp)
-        qt5_wrap_cpp(${ARGN})
+      qt5_wrap_cpp(${ARGN})
     endmacro()
     macro(qt_add_resources)
-        qt5_add_resources(${ARGN})
+      qt5_add_resources(${ARGN})
     endmacro()
-  endif()
-endif()
-# fallback to Qt4
-if (NOT Qt5Core_FOUND)
-  if (NOT force_qt4)
-    message(STATUS "Qt5 not found, searching for Qt4 instead...")
   else()
-    message(STATUS "Using Qt4")
+    if (NOT force_qt)
+      find_package(Qt6Core QUIET CONFIG)
+      if (Qt6Core_FOUND)
+        message(STATUS "Using Qt6")
+        find_package(Qt6 COMPONENTS Widgets Gui Xml)
+        macro(qt_wrap_cpp)
+          qt6_wrap_cpp(${ARGN})
+        endmacro()
+        macro(qt_add_resources)
+          qt6_add_resources(${ARGN})
+        endmacro()
+      else()
+        message(FATAL_ERROR "Qt5 nor Qt6 found")
+      endif()
+    else()
+      message(FATAL_ERROR "Qt5 not found")
+    endif()
   endif()
-  find_package(Qt4 REQUIRED COMPONENTS QtCore QtXml QtGui)
-  macro(qt_wrap_cpp)
-      qt4_wrap_cpp(${ARGN})
-  endmacro()
-  macro(qt_add_resources)
-      qt4_add_resources(${ARGN})
-  endmacro()
+else()
+  find_package(Qt6Core QUIET CONFIG)
+  if (Qt6Core_FOUND)
+    message(STATUS "Using Qt6")
+    find_package(Qt6 COMPONENTS Widgets Gui Xml)
+    macro(qt_wrap_cpp)
+      qt6_wrap_cpp(${ARGN})
+    endmacro()
+    macro(qt_add_resources)
+      qt6_add_resources(${ARGN})
+    endmacro()
+  else()
+    message(FATAL_ERROR "Qt6 not found")
+  endif()
 endif()
 
 include_directories(
   .
   ${PROJECT_SOURCE_DIR}/libversion
-  ${PROJECT_SOURCE_DIR}/qtools
   ${GENERATED_SRC}
 )
 
@@ -39,7 +54,7 @@ set(GENERATED_SRC_WIZARD ${GENERATED_SRC}/doxywizard)
 file(MAKE_DIRECTORY ${GENERATED_SRC_WIZARD})
 
 add_definitions(-DQT_NO_CAST_FROM_ASCII -DQT_NO_CAST_TO_ASCII -DUNICODE)
-if (NOT Qt5Core_FOUND)
+if (NOT Qt6Core_FOUND AND NOT Qt5Core_FOUND)
   include(${QT_USE_FILE})
 endif()
 
@@ -55,14 +70,6 @@ CONTENT "#ifndef SETTINGS_H
   0)
 #endif" )
 set_source_files_properties(${GENERATED_SRC_WIZARD}/settings.h PROPERTIES GENERATED 1)
-
-# generate version.cpp
-add_custom_command(
-    COMMAND ${PYTHON_EXECUTABLE} ${PROJECT_SOURCE_DIR}/src/version.py ${VERSION} > ${GENERATED_SRC_WIZARD}/version.cpp
-    DEPENDS ${PROJECT_SOURCE_DIR}/VERSION ${PROJECT_SOURCE_DIR}/src/version.py
-    OUTPUT ${GENERATED_SRC_WIZARD}/version.cpp
-)
-set_source_files_properties(${GENERATED_SRC_WIZARD}/version.cpp PROPERTIES GENERATED 1)
 
 # generate configdoc.cpp
 add_custom_command(
@@ -98,6 +105,7 @@ wizard.h
 qt_add_resources(doxywizard_RESOURCES_RCC doxywizard.qrc)
 
 add_executable(doxywizard WIN32
+config_msg.cpp
 doxywizard.cpp
 expert.cpp
 wizard.cpp
@@ -114,10 +122,23 @@ ${doxywizard_RESOURCES_RCC}
 doxywizard.rc
 )
 
+set_property(TARGET doxywizard PROPERTY WIN32_EXECUTABLE true)
+
+include(ApplyEditbin)
+if (enable_console)
+apply_editbin(doxywizard console)
+else()
+apply_editbin(doxywizard windows)
+endif()
+
 if(Qt5Core_FOUND)
   target_link_libraries(doxywizard Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Xml doxygen_version)
 else()
+if(Qt6Core_FOUND)
+  target_link_libraries(doxywizard Qt6::Core Qt6::Gui Qt6::Widgets Qt6::Xml doxygen_version)
+else()
   target_link_libraries(doxywizard ${QT_LIBRARIES} ${QT_QTMAIN_LIBRARY} doxygen_version)
+endif()
 endif()
 
 install(TARGETS doxywizard DESTINATION bin)

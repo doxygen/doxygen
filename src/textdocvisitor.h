@@ -1,13 +1,13 @@
 /******************************************************************************
  *
- * 
+ *
  *
  *
  * Copyright (C) 1997-2015 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -16,129 +16,98 @@
  *
  */
 
-#ifndef _TEXTDOCVISITOR_H
-#define _TEXTDOCVISITOR_H
+#ifndef TEXTDOCVISITOR_H
+#define TEXTDOCVISITOR_H
 
+#include "qcstring.h"
 #include "docvisitor.h"
-#include "docparser.h"
-#include <qstack.h>
-#include <qcstring.h>
-#include "ftextstream.h"
-
+#include "docnode.h"
+#include "textstream.h"
 
 /*! @brief Concrete visitor implementation for TEXT output. */
 class TextDocVisitor : public DocVisitor
 {
   public:
-    TextDocVisitor(FTextStream &t) : DocVisitor(DocVisitor_Text), m_t(t) {}
-    
+    TextDocVisitor(TextStream &t) : m_t(t) {}
+
     //--------------------------------------
     // visitor functions for leaf nodes
     //--------------------------------------
-    
-    void visit(DocWord *w)        { filter(w->word()); }
-    void visit(DocLinkedWord *w)  { filter(w->word()); }
-    void visit(DocWhiteSpace *)   { m_t << " ";       }
-    void visit(DocSymbol *);
-    void visit(DocEmoji *);
-    void visit(DocURL *u)         { filter(u->url());  }
-    void visit(DocLineBreak *)    { m_t << " ";       }
-    void visit(DocHorRuler *)     {}
-    void visit(DocStyleChange *)  {}
-    void visit(DocVerbatim *s)    { filter(s->text()); }
-    void visit(DocAnchor *)       {}
-    void visit(DocInclude *)      {}
-    void visit(DocIncOperator *)  {}
-    void visit(DocFormula *)      {}
-    void visit(DocIndexEntry *)   {}
-    void visit(DocSimpleSectSep *){}
-    void visit(DocCite *)         {}
+
+    void operator()(const DocWord &w)        { filter(w.word()); }
+    void operator()(const DocLinkedWord &w)  { filter(w.word()); }
+    void operator()(const DocWhiteSpace &)   { m_t << " ";       }
+    void operator()(const DocSymbol &);
+    void operator()(const DocEmoji &);
+    void operator()(const DocURL &u)         { filter(u.url());  }
+    void operator()(const DocLineBreak &)    { m_t << " ";       }
+    void operator()(const DocHorRuler &)     {}
+    void operator()(const DocStyleChange &)  {}
+    void operator()(const DocVerbatim &s)    { filter(s.text()); }
+    void operator()(const DocAnchor &)       {}
+    void operator()(const DocInclude &)      {}
+    void operator()(const DocIncOperator &)  {}
+    void operator()(const DocFormula &)      {}
+    void operator()(const DocIndexEntry &)   {}
+    void operator()(const DocSimpleSectSep &){}
+    void operator()(const DocCite &)         {}
+    void operator()(const DocSeparator &)    { m_t << " "; }
 
     //--------------------------------------
     // visitor functions for compound nodes
     //--------------------------------------
-    
-    void visitPre(DocAutoList *) {}
-    void visitPost(DocAutoList *) {}
-    void visitPre(DocAutoListItem *) {}
-    void visitPost(DocAutoListItem *) {}
-    void visitPre(DocPara *)  {}
-    void visitPost(DocPara *) {}
-    void visitPre(DocRoot *) {}
-    void visitPost(DocRoot *) {}
-    void visitPre(DocSimpleSect *) {}
-    void visitPost(DocSimpleSect *) {}
-    void visitPre(DocTitle *) {}
-    void visitPost(DocTitle *) {}
-    void visitPre(DocSimpleList *) {}
-    void visitPost(DocSimpleList *) {}
-    void visitPre(DocSimpleListItem *) {}
-    void visitPost(DocSimpleListItem *) {}
-    void visitPre(DocSection *) {}
-    void visitPost(DocSection *) {}
-    void visitPre(DocHtmlList *) {}
-    void visitPost(DocHtmlList *)  {}
-    void visitPre(DocHtmlListItem *) {}
-    void visitPost(DocHtmlListItem *) {}
-    void visitPre(DocHtmlDescList *) {}
-    void visitPost(DocHtmlDescList *) {}
-    void visitPre(DocHtmlDescTitle *) {}
-    void visitPost(DocHtmlDescTitle *) {}
-    void visitPre(DocHtmlDescData *) {}
-    void visitPost(DocHtmlDescData *) {}
-    void visitPre(DocHtmlTable *) {}
-    void visitPost(DocHtmlTable *) {}
-    void visitPre(DocHtmlRow *) {}
-    void visitPost(DocHtmlRow *)  {}
-    void visitPre(DocHtmlCell *) {}
-    void visitPost(DocHtmlCell *) {}
-    void visitPre(DocHtmlCaption *) {}
-    void visitPost(DocHtmlCaption *) {}
-    void visitPre(DocInternal *) {}
-    void visitPost(DocInternal *) {}
-    void visitPre(DocHRef *) {}
-    void visitPost(DocHRef *) {}
-    void visitPre(DocHtmlHeader *) {}
-    void visitPost(DocHtmlHeader *) {}
-    void visitPre(DocImage *) {}
-    void visitPost(DocImage *) {}
-    void visitPre(DocDotFile *) {}
-    void visitPost(DocDotFile *) {}
 
-    void visitPre(DocMscFile *) {}
-    void visitPost(DocMscFile *) {}
-    void visitPre(DocDiaFile *) {}
-    void visitPost(DocDiaFile *) {}
-    void visitPre(DocLink *) {}
-    void visitPost(DocLink *) {}
-    void visitPre(DocRef *) {}
-    void visitPost(DocRef *) {}
-    void visitPre(DocSecRefItem *) {}
-    void visitPost(DocSecRefItem *) {}
-    void visitPre(DocSecRefList *) {}
-    void visitPost(DocSecRefList *) {}
-    void visitPre(DocParamSect *) {}
-    void visitPost(DocParamSect *) {}
-    void visitPre(DocParamList *) {}
-    void visitPost(DocParamList *) {}
-    void visitPre(DocXRefItem *) {}
-    void visitPost(DocXRefItem *) {}
-    void visitPre(DocInternalRef *) {}
-    void visitPost(DocInternalRef *) {}
-    void visitPre(DocText *) {}
-    void visitPost(DocText *) {}
-    void visitPre(DocHtmlBlockQuote *) {}
-    void visitPost(DocHtmlBlockQuote *) {}
-    void visitPre(DocVhdlFlow *) {}
-    void visitPost(DocVhdlFlow *) {}
-    void visitPre(DocParBlock *) {}
-    void visitPost(DocParBlock *) {}
+    template<class T>
+    void visitChildren(const T &t)
+    {
+      for (const auto &child : t.children())
+      {
+        std::visit(*this, child);
+      }
+    }
+    void operator()(const DocAutoList &l)        { visitChildren(l);  }
+    void operator()(const DocAutoListItem &li)   { visitChildren(li); }
+    void operator()(const DocPara &p)            { visitChildren(p);  }
+    void operator()(const DocRoot &r)            { visitChildren(r);  }
+    void operator()(const DocSimpleSect &s)      { visitChildren(s);  }
+    void operator()(const DocTitle &t)           { visitChildren(t);  }
+    void operator()(const DocSimpleList &l)      { visitChildren(l);  }
+    void operator()(const DocSimpleListItem &)   {                    }
+    void operator()(const DocSection &s)         { visitChildren(s);  }
+    void operator()(const DocHtmlList &l)        { visitChildren(l);  }
+    void operator()(const DocHtmlListItem &li)   { visitChildren(li); }
+    void operator()(const DocHtmlDescList &dl)   { visitChildren(dl); }
+    void operator()(const DocHtmlDescTitle &dt)  { visitChildren(dt); }
+    void operator()(const DocHtmlDescData &dd)   { visitChildren(dd); }
+    void operator()(const DocHtmlTable &t)       { visitChildren(t);  }
+    void operator()(const DocHtmlRow &r)         { visitChildren(r);  }
+    void operator()(const DocHtmlCell &c)        { visitChildren(c);  }
+    void operator()(const DocHtmlCaption &c)     { visitChildren(c);  }
+    void operator()(const DocInternal &i)        { visitChildren(i);  }
+    void operator()(const DocHRef &h)            { visitChildren(h);  }
+    void operator()(const DocHtmlHeader &h)      { visitChildren(h);  }
+    void operator()(const DocImage &i)           { visitChildren(i);  }
+    void operator()(const DocDotFile &df)        { visitChildren(df); }
+    void operator()(const DocMscFile &df)        { visitChildren(df); }
+    void operator()(const DocDiaFile &df)        { visitChildren(df); }
+    void operator()(const DocLink &l)            { visitChildren(l);  }
+    void operator()(const DocRef &r)             { visitChildren(r);  }
+    void operator()(const DocSecRefItem &s)      { visitChildren(s);  }
+    void operator()(const DocSecRefList &l)      { visitChildren(l);  }
+    void operator()(const DocParamSect &s)       { visitChildren(s);  }
+    void operator()(const DocParamList &)        {                    }
+    void operator()(const DocXRefItem &x)        { visitChildren(x);  }
+    void operator()(const DocInternalRef &r)     { visitChildren(r);  }
+    void operator()(const DocText &t)            { visitChildren(t);  }
+    void operator()(const DocHtmlBlockQuote &q)  { visitChildren(q);  }
+    void operator()(const DocVhdlFlow &)         {                    }
+    void operator()(const DocParBlock &pb)       { visitChildren(pb); }
 
   private:
 
-   void filter(const char *str);
+    void filter(const QCString &str);
 
-    FTextStream &m_t;
+    TextStream &m_t;
 };
 
 #endif

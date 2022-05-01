@@ -23,32 +23,33 @@
 <image type="html" name="https://raster.shields.io/badge/license-MIT-brightgreen.png"/>
 </para>
       <para>Inline SVG image with caption:<linebreak/>
-This image is inline <image type="html" name="https://raster.shields.io/badge/license-MIT-brightgreen.svg" inline="yes">MIT license</image>
+This image is inline<image type="html" name="https://raster.shields.io/badge/license-MIT-brightgreen.svg" inline="yes">MIT license</image>
  within the text.</para>
       <para>Inline PNG image with caption:<linebreak/>
 This image is inline <image type="html" name="https://raster.shields.io/badge/license-MIT-brightgreen.png" inline="yes">MIT license</image>
  within the text.</para>
       <para>Markdown style linked SVG image:<linebreak/>
-<ulink url="https://opensource.org/licenses/MIT"><image type="html" name="https://raster.shields.io/badge/license-MIT-brightgreen.svg" inline="yes"/></ulink></para>
+<ulink url="https://opensource.org/licenses/MIT"><image type="html" name="https://raster.shields.io/badge/license-MIT-brightgreen.svg" alt="MIT license" inline="yes"/></ulink></para>
       <para>Markdown style linked PNG image:<linebreak/>
-<ulink url="https://opensource.org/licenses/MIT"><image type="html" name="https://raster.shields.io/badge/license-MIT-brightgreen.png" inline="yes"/></ulink></para>
+<ulink url="https://opensource.org/licenses/MIT"><image type="html" name="https://raster.shields.io/badge/license-MIT-brightgreen.png" alt="MIT license" inline="yes"/></ulink></para>
       <para>HTML style linked SVG image:<linebreak/>
-<ulink url="https://opensource.org/licenses/MIT"><image type="html" name="https://raster.shields.io/badge/license-MIT-brightgreen.svg" inline="yes"/></ulink></para>
+<ulink url="https://opensource.org/licenses/MIT"><image type="html" name="https://raster.shields.io/badge/license-MIT-brightgreen.svg" alt="MIT license" inline="yes"/></ulink></para>
       <para>HTML style linked PNG image:<linebreak/>
-<ulink url="https://opensource.org/licenses/MIT"><image type="html" name="https://raster.shields.io/badge/license-MIT-brightgreen.png" inline="yes"/></ulink></para>
+<ulink url="https://opensource.org/licenses/MIT"><image type="html" name="https://raster.shields.io/badge/license-MIT-brightgreen.png" alt="MIT license" inline="yes"/></ulink></para>
       <para>HTML style unlinked SVG image:<linebreak/>
-<image type="html" name="https://raster.shields.io/badge/license-MIT-brightgreen.svg" inline="yes"/>
+<image type="html" name="https://raster.shields.io/badge/license-MIT-brightgreen.svg" alt="MIT license" inline="yes"/>
 </para>
       <para>HTML style unlinked PNG image:<linebreak/>
-<image type="html" name="https://raster.shields.io/badge/license-MIT-brightgreen.png" inline="yes"/>
+<image type="html" name="https://raster.shields.io/badge/license-MIT-brightgreen.png" alt="MIT license" inline="yes"/>
 </para>
       <para>Some markdown image tests<linebreak/>
-<image type="html" name="https://raster.shields.io/badge/docs-Doxygen-blue.svg?foo&amp;bar" inline="yes"/>
+<image type="html" name="https://raster.shields.io/badge/docs-Doxygen-blue.svg?foo&amp;bar" alt="Some SVG image" inline="yes"/>
  <ulink url="https://www.doxygen.nl/index.html?foo&amp;bar">Some normal link</ulink></para>
       <para>
-        <image type="html" name="https://raster.shields.io/badge/docs-Doxygen-blue.svg?foo&amp;bar" inline="yes"/>
+        <image type="html" name="https://raster.shields.io/badge/docs-Doxygen-blue.svg?foo&amp;bar" alt="Some SVG image" inline="yes"/>
         <ulink url="https://www.doxygen.nl/index.html?foo&amp;bar">Some normal link</ulink>
       </para>
     </detaileddescription>
+    <location file="031_image.dox"/>
   </compounddef>
 </doxygen>

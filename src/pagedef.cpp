@@ -13,8 +13,6 @@
  *
  */
 
-#include <qregexp.h>
-
 #include "pagedef.h"
 #include "groupdef.h"
 #include "docparser.h"
@@ -32,21 +30,22 @@
 class PageDefImpl : public DefinitionMixin<PageDef>
 {
   public:
-    PageDefImpl(const char *f,int l,const char *n,const char *d,const char *t);
+    PageDefImpl(const QCString &f,int l,const QCString &n,const QCString &d,const QCString &t);
     virtual ~PageDefImpl();
 
-    virtual void setFileName(const char *name);
+    virtual void setFileName(const QCString &name);
     virtual void setLocalToc(const LocalToc &tl);
     virtual void setShowLineNo(bool);
     virtual DefType definitionType() const { return TypePage; }
+    virtual CodeSymbolType codeSymbolType() const { return CodeSymbolType::Default; }
     virtual bool isLinkableInProject() const { return /*hasDocumentation() &&*/ !isReference(); }
     virtual bool isLinkable() const { return isLinkableInProject() || isReference(); }
     virtual QCString getOutputFileBase() const;
     virtual QCString anchor() const { return QCString(); }
     virtual void findSectionsInDocumentation();
     virtual QCString title() const { return m_title; }
-    virtual GroupDef *  getGroupDef() const;
-    virtual PageSDict * getSubPages() const { return m_subPageDict; }
+    virtual const GroupDef * getGroupDef() const;
+    virtual const PageLinkedRefMap &getSubPages() const { return m_subPages; }
     virtual void addInnerCompound(const Definition *d);
     virtual bool visibleInIndex() const;
     virtual bool documentedPage() const;
@@ -58,34 +57,34 @@ class PageDefImpl : public DefinitionMixin<PageDef>
     virtual Definition *getPageScope() const { return m_pageScope; }
     virtual QCString displayName(bool=TRUE) const { return hasTitle() ? m_title : DefinitionMixin::name(); }
     virtual bool showLineNo() const;
+    virtual void setTitle(const QCString &title);
     virtual void writeDocumentation(OutputList &ol);
-    virtual void writeTagFile(FTextStream &);
+    virtual void writeTagFile(TextStream &);
     virtual void setNestingLevel(int l);
-    virtual void writePageDocumentation(OutputList &ol);
+    virtual void writePageDocumentation(OutputList &ol) const;
 
   private:
     QCString m_fileName;
     QCString m_title;
-    PageSDict *m_subPageDict;                 // list of pages in the group
+    PageLinkedRefMap m_subPages;                 // list of pages in the group
     Definition *m_pageScope;
     int m_nestingLevel;
     LocalToc m_localToc;
     bool m_showLineNo;
 };
 
-PageDef *createPageDef(const char *f,int l,const char *n,const char *d,const char *t)
+PageDef *createPageDef(const QCString &f,int l,const QCString &n,const QCString &d,const QCString &t)
 {
   return new PageDefImpl(f,l,n,d,t);
 }
 
 //------------------------------------------------------------------------------------------
 
-PageDefImpl::PageDefImpl(const char *f,int l,const char *n,
-                 const char *d,const char *t)
- : DefinitionMixin(f,l,1,n), m_title(t)
+PageDefImpl::PageDefImpl(const QCString &f,int l,const QCString &n,
+                 const QCString &d,const QCString &t)
+ : DefinitionMixin(f,l,1,n), m_title(!t.isEmpty() ? t : n)
 {
   setDocumentation(d,f,l);
-  m_subPageDict = new PageSDict(7);
   m_pageScope = 0;
   m_nestingLevel = 0;
   m_fileName = ::convertNameToFile(n,FALSE,TRUE);
@@ -94,7 +93,6 @@ PageDefImpl::PageDefImpl(const char *f,int l,const char *n,
 
 PageDefImpl::~PageDefImpl()
 {
-  delete m_subPageDict;
 }
 
 void PageDefImpl::findSectionsInDocumentation()
@@ -103,10 +101,9 @@ void PageDefImpl::findSectionsInDocumentation()
   docFindSections(documentation(),this,docFile());
 }
 
-GroupDef *PageDefImpl::getGroupDef() const
+const GroupDef *PageDefImpl::getGroupDef() const
 {
-  GroupList *groups = partOfGroups();
-  return groups!=0 ? groups->getFirst() : 0;
+  return !partOfGroups().empty() ? partOfGroups().front() : 0;
 }
 
 QCString PageDefImpl::getOutputFileBase() const
@@ -117,7 +114,7 @@ QCString PageDefImpl::getOutputFileBase() const
     return m_fileName;
 }
 
-void PageDefImpl::setFileName(const char *name)
+void PageDefImpl::setFileName(const QCString &name)
 {
   m_fileName = name;
 }
@@ -129,9 +126,9 @@ void PageDefImpl::addInnerCompound(const Definition *def)
     PageDef *pd = const_cast<PageDef*>(toPageDef(def));
     if (pd)
     {
-      m_subPageDict->append(pd->name(),pd);
+      m_subPages.add(pd->name(),pd);
       pd->setOuterScope(this);
-      if (this==Doxygen::mainPage)
+      if (this==Doxygen::mainPage.get())
       {
         pd->setNestingLevel(m_nestingLevel);
       }
@@ -149,7 +146,7 @@ bool PageDefImpl::hasParentPage() const
          getOuterScope()->definitionType()==Definition::TypePage;
 }
 
-void PageDefImpl::writeTagFile(FTextStream &tagFile)
+void PageDefImpl::writeTagFile(TextStream &tagFile)
 {
   bool found = name()=="citelist";
   for (RefListManager::Ptr &rl : RefListManager::instance())
@@ -162,18 +159,18 @@ void PageDefImpl::writeTagFile(FTextStream &tagFile)
   }
   if (!found) // not one of the generated related pages
   {
-    tagFile << "  <compound kind=\"page\">" << endl;
-    tagFile << "    <name>" << name() << "</name>" << endl;
-    tagFile << "    <title>" << convertToXML(title()) << "</title>" << endl;
-    tagFile << "    <filename>" << convertToXML(getOutputFileBase())<< Doxygen::htmlFileExtension << "</filename>" << endl;
+    tagFile << "  <compound kind=\"page\">\n";
+    tagFile << "    <name>" << name() << "</name>\n";
+    tagFile << "    <title>" << convertToXML(title()) << "</title>\n";
+    tagFile << "    <filename>" << addHtmlExtensionIfMissing(getOutputFileBase()) << "</filename>\n";
     writeDocAnchorsToTagFile(tagFile);
-    tagFile << "  </compound>" << endl;
+    tagFile << "  </compound>\n";
   }
 }
 
 void PageDefImpl::writeDocumentation(OutputList &ol)
 {
-  static bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
+  bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
 
   //outputList->disable(OutputGenerator::Man);
   QCString pageName,manPageName;
@@ -237,7 +234,7 @@ void PageDefImpl::writeDocumentation(OutputList &ol)
     if (si->title() != manPageName)
     {
       ol.generateDoc(docFile(),getStartBodyLine(),this,0,si->title(),TRUE,FALSE,
-                     0,TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
+                     QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
       ol.endSection(si->label(),si->type());
     }
   }
@@ -257,7 +254,7 @@ void PageDefImpl::writeDocumentation(OutputList &ol)
     //ol.startSection(si->label,si->title,si->type);
     startTitle(ol,getOutputFileBase(),this);
     ol.generateDoc(docFile(),getStartBodyLine(),this,0,si->title(),TRUE,FALSE,
-                   0,TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
+                   QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
     //stringToSearchIndex(getOutputFileBase(),
     //                    theTranslator->trPage(TRUE,TRUE)+" "+si->title,
     //                    si->title);
@@ -290,14 +287,12 @@ void PageDefImpl::writeDocumentation(OutputList &ol)
 
   ol.popGeneratorState();
   //1.}
-
-  Doxygen::indexList->addIndexItem(this,0,0,filterTitle(title()));
 }
 
-void PageDefImpl::writePageDocumentation(OutputList &ol)
+void PageDefImpl::writePageDocumentation(OutputList &ol) const
 {
   ol.startTextBlock();
-  QCString docStr = documentation()+inbodyDocumentation();
+  QCString docStr = (briefDescription().isEmpty()?"":briefDescription()+"\n\n")+documentation()+inbodyDocumentation();
   if (hasBriefDescription() && !SectionManager::instance().find(name()))
   {
     ol.pushGeneratorState();
@@ -313,7 +308,7 @@ void PageDefImpl::writePageDocumentation(OutputList &ol)
       docStr,              // docStr
       TRUE,                // index words
       FALSE,               // not an example
-      0,                   // exampleName
+      QCString(),                   // exampleName
       FALSE,               // singleLine
       FALSE,               // linkFromIndex
       TRUE                 // markdown support
@@ -330,9 +325,7 @@ void PageDefImpl::writePageDocumentation(OutputList &ol)
     ol.enable(OutputGenerator::Docbook);
     ol.enable(OutputGenerator::RTF);
 
-    PageSDict::Iterator pdi(*m_subPageDict);
-    PageDef *subPage=pdi.toFirst();
-    for (pdi.toFirst();(subPage=pdi.current());++pdi)
+    for (const auto &subPage : m_subPages)
     {
       SectionType sectionType = SectionType::Paragraph;
       switch (m_nestingLevel)
@@ -359,7 +352,7 @@ void PageDefImpl::writePageDocumentation(OutputList &ol)
 
 bool PageDefImpl::visibleInIndex() const
 {
-  static bool externalPages = Config_getBool(EXTERNAL_PAGES);
+  bool externalPages = Config_getBool(EXTERNAL_PAGES);
   return // not part of a group
          !getGroupDef() &&
          // not an externally defined page
@@ -377,7 +370,7 @@ bool PageDefImpl::documentedPage() const
 
 bool PageDefImpl::hasSubPages() const
 {
-  return m_subPageDict->count()>0;
+  return !m_subPages.empty();
 }
 
 void PageDefImpl::setNestingLevel(int l)
@@ -403,6 +396,11 @@ bool PageDefImpl::showLineNo() const
 bool PageDefImpl::hasTitle() const
 {
   return !m_title.isEmpty() && m_title.lower()!="notitle";
+}
+
+void PageDefImpl::setTitle(const QCString &title)
+{
+  m_title = title;
 }
 
 // --- Cast functions

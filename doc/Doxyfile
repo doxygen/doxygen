@@ -39,9 +39,9 @@ INPUT             = index.doc install.doc starting.doc docblocks.doc markdown.do
                     external.doc faq.doc trouble.doc features.doc \
 		    doxygen_usage.doc doxywizard_usage.doc \
 		    config.doc commands.doc htmlcmds.doc xmlcmds.doc emojisup.doc language.doc \
-                    perlmod.doc perlmod_tree.doc arch.doc changelog.doc
+                    perlmod.doc arch.doc changelog.doc
 FILE_PATTERNS     = *.cpp *.h *.doc
-EXAMPLE_PATH      = ../examples
+EXAMPLE_PATH      = ../examples .
 RECURSIVE         = NO
 TAGFILES          =
 ALLEXTERNALS      = NO
@@ -51,8 +51,9 @@ USE_PDFLATEX      = YES
 STRIP_CODE_COMMENTS = NO
 HTML_STYLESHEET   = doxygen_manual.css
 HTML_EXTRA_FILES  = doxygen_logo.svg
-ALIASES           = LaTeX="\f$\mbox{\LaTeX}\f$"
-ALIASES          += TeX="\f$\mbox{\TeX}\f$"
+HTML_EXTRA_FILES += translator_report.txt
+ALIASES           = LaTeX="\f({\LaTeX}\f)"
+ALIASES          += TeX="\f({\TeX}\f)"
 ALIASES          += forceNewPage="\latexonly \newpage \endlatexonly"
 LATEX_BATCHMODE   = YES
 LATEX_EXTRA_STYLESHEET = manual.sty

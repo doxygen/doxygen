@@ -22,7 +22,6 @@
 #include <QFileInfo>
 #include <QFileDialog>
 #include <QTextStream>
-#include <QTextCodec>
 
 InputStrList::InputStrList( QGridLayout *layout,int &row,
                             const QString & id,
@@ -152,7 +151,7 @@ void InputStrList::setEnabled(bool state)
 void InputStrList::browseFiles()
 {
   QString path = QFileInfo(MainWindow::instance().configFileName()).path();
-  QStringList fileNames = QFileDialog::getOpenFileNames();	
+  QStringList fileNames = QFileDialog::getOpenFileNames();
 
   if (!fileNames.isEmpty())
   {
@@ -180,9 +179,9 @@ void InputStrList::browseFiles()
 }
 
 void InputStrList::browseDir()
-{	
+{
   QString path = QFileInfo(MainWindow::instance().configFileName()).path();
-  QString dirName = QFileDialog::getExistingDirectory();	
+  QString dirName = QFileDialog::getExistingDirectory();
 
   if (!dirName.isNull())
   {
@@ -230,7 +229,7 @@ void InputStrList::updateDefault()
 {
   if (isDefault() || !m_lab->isEnabled())
   {
-    m_lab->setText(QString::fromLatin1("<qt>")+m_id+QString::fromLatin1("</qt"));
+    m_lab->setText(QString::fromLatin1("<qt>")+m_id+QString::fromLatin1("</qt>"));
   }
   else
   {
@@ -243,14 +242,14 @@ void InputStrList::reset()
   setValue(m_default);
 }
 
-void InputStrList::writeValue(QTextStream &t,QTextCodec *codec)
+void InputStrList::writeValue(QTextStream &t,TextCodecAdapter *codec)
 {
   bool first=true;
   foreach (QString s, m_strList)
   {
     if (!first)
     {
-      t << " \\" << endl;
+      t << " \\\n";
       t << "                         ";
     }
     first=false;
@@ -258,48 +257,57 @@ void InputStrList::writeValue(QTextStream &t,QTextCodec *codec)
   }
 }
 
-#include <QMessageBox>
 bool InputStrList::isDefault()
 {
-  bool isEq = m_strList==m_default;
+  if (m_strList==m_default) return true;
 
-  if (!isEq)
+  auto it1 = m_strList.begin();
+  auto it2 = m_default.begin();
+  while (it1!=m_strList.end() && (*it1).isEmpty())
   {
-    isEq = true;
+    ++it1;
+  }
+  while (it2!=m_default.end() && (*it2).isEmpty())
+  {
+    ++it2;
+  }
+  // both lists are empty
+  if (it1==m_strList.end() && it2==m_default.end()) return true;
 
-    auto it1 = m_strList.begin();
-    auto it2 = m_default.begin();
-    while (it1!=m_strList.end() && it2!=m_default.end())
+  // one list is empty but the other is not
+  if (it1==m_strList.end()) return false;
+  if (it2==m_default.end()) return false;
+
+  it1 = m_strList.begin();
+  it2 = m_default.begin();
+  while (it1!=m_strList.end() && it2!=m_default.end())
+  {
+    // skip over empty values
+    while (it1!=m_strList.end() && (*it1).isEmpty())
     {
-      // skip over empty values
-      while (it1!=m_strList.end() && (*it1).isEmpty())
-      {
       ++it1;
-      }
-      while (it2!=m_default.end() && (*it2).isEmpty())
+    }
+    while (it2!=m_default.end() && (*it2).isEmpty())
+    {
+      ++it2;
+    }
+    if ((it1!=m_strList.end()) && (it2!=m_default.end()))
+    {
+      if ((*it1).trimmed()!= (*it2).trimmed()) // difference so not the default
       {
-        ++it2;
+        return false;
       }
-      if ((it1!=m_strList.end()) && (it2!=m_default.end()))
-      {
-        if ((*it1).trimmed()!= (*it2).trimmed()) // difference so not the default
-        {
-          isEq=false;
-          break;
-        }
-        ++it1;
-        ++it2;
-      }
-      else if ((it1!=m_strList.end()) || (it2!=m_default.end()))
-      {
-        // one list empty so cannot be the default
-        isEq=false;
-        break;
-      }
+      ++it1;
+      ++it2;
+    }
+    else if ((it1!=m_strList.end()) || (it2!=m_default.end()))
+    {
+      // one list empty so cannot be the default
+      return false;
     }
   }
 
-  return isEq;
+  return true;
 }
 
 bool InputStrList::isEmpty()

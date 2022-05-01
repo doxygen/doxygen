@@ -23,100 +23,104 @@ of a HTML tag are passed on to the HTML output only
 (the \c HREF and \c NAME attributes for the \c A tag are the only exception).
 
 <ul>
-<li><tt>\<A HREF="..."\></tt> Starts a hyperlink 
+<li><tt>\anchor htmltag_A_HREF \addindex "\<A HREF=\"...\"\>"\<A HREF="..."\></tt> Starts a hyperlink 
                        (if supported by the output format). 
-<li><tt>\<A ID="..."\></tt> Starts a named anchor 
+<li><tt>\anchor htmltag_A_ID \addindex "\<A ID=\"...\"\>"\<A ID="..."\></tt> Starts a named anchor 
                        (if supported by the output format).
-<li><tt>\<A NAME="..."\></tt> Starts a named anchor 
+<li><tt>\anchor htmltag_A_NAME \addindex "\<A NAME=\"...\"\>"\<A NAME="..."\></tt> Starts a named anchor 
                        (if supported by the output format).
-<li><tt>\</A\></tt>    Ends a link or anchor 
-<li><tt>\<B\></tt>     Starts a piece of text displayed in a bold font.
-<li><tt>\</B\></tt>    Ends a <tt>\<B\></tt> section.
-<li><tt>\<BLOCKQUOTE\></tt> Starts a quotation block.
-<li><tt>\</BLOCKQUOTE\></tt> Ends the quotation block.
-<li><tt>\<BR\></tt>    Forces a line break.
-<li><tt>\<CENTER\></tt> starts a section of centered text.
-<li><tt>\</CENTER\></tt> ends a section of centered text.
-<li><tt>\<CAPTION\></tt> Starts a caption. Use within a table only.
-<li><tt>\</CAPTION\></tt> Ends a caption. Use within a table only.
-<li><tt>\<CODE\></tt>  Starts a piece of text displayed in a typewriter font.
+<li><tt>\anchor htmltag_endA \addindex "\</A\>"\</A\></tt>    Ends a link or anchor 
+<li><tt>\anchor htmltag_B \addindex "\<B\>"\<B\></tt>     Starts a piece of text displayed in a bold font.
+<li><tt>\anchor htmltag_endB \addindex "\</B\>"\</B\></tt>    Ends a \ref htmltag_B "\<B\>" section.
+<li><tt>\anchor htmltag_BLOCKQUOTE \addindex "\<BLOCKQUOTE\>"\<BLOCKQUOTE\></tt> Starts a quotation block.
+<li><tt>\anchor htmltag_endBLOCKQUOTE \addindex "\</BLOCKQUOTE\>"\</BLOCKQUOTE\></tt> Ends the quotation block.
+<li><tt>\anchor htmltag_BR \addindex "\<BR\>"\<BR\></tt>    Forces a line break.
+<li><tt>\anchor htmltag_CENTER \addindex "\<CENTER\>"\<CENTER\></tt> starts a section of centered text.
+<li><tt>\anchor htmltag_endCENTER \addindex "\</CENTER\>"\</CENTER\></tt> ends a section of centered text.
+<li><tt>\anchor htmltag_CAPTION \addindex "\<CAPTION\>"\<CAPTION\></tt> Starts a caption. Use within a table only.
+<li><tt>\anchor htmltag_endCAPTION \addindex "\</CAPTION\>"\</CAPTION\></tt> Ends a caption. Use within a table only.
+<li><tt>\anchor htmltag_CITE \addindex "\<CITE\>"\<CITE\></tt> Starts a section of text displayed in a font specific for citations.
+<li><tt>\anchor htmltag_endCITE \addindex "\</CITE\>"\</CITE\></tt> Ends a \ref htmltag_CITE "\<CITE\>" section.
+<li><tt>\anchor htmltag_CODE \addindex "\<CODE\>"\<CODE\></tt>  Starts a piece of text displayed in a typewriter font.
                        Note that only for C# code, this command is equivalent to 
-                       \ref cmdcode "\\code". 
-<li><tt>\</CODE\></tt> Ends a <tt>\<CODE\></tt> section.
+                       \ref cmdcode "\\code" (see \ref xmltag_code "\<code\>"). 
+<li><tt>\anchor htmltag_endCODE \addindex "\</CODE\>"\</CODE\></tt> Ends a \ref htmltag_CODE "\<CODE\>" section.
                        Note that only for C# code, this command is equivalent to
-                       \ref cmdendcode "\\endcode".
-<li><tt>\<DD\></tt>    Starts an item description.
-<li><tt>\</DD\></tt>   Ends an item description.
-<li><tt>\<DEL\></tt>   Starts a section of deleted text, typically shown strike through text.
-<li><tt>\</DEL\></tt>  Ends a section of deleted text.
-<li><tt>\<DFN\></tt>   Starts a piece of text displayed in a typewriter font.
-<li><tt>\</DFN\></tt>  Ends a <tt>\<DFN\></tt> section.
-<li><tt>\<DIV></tt>    Starts a section with a specific style (HTML only)
-<li><tt>\</DIV></tt>   Ends a section with a specific style (HTML only)
-<li><tt>\<DL\></tt>    Starts a description list.
-<li><tt>\</DL\></tt>   Ends a description list.
-<li><tt>\<DT\></tt>    Starts an item title.
-<li><tt>\</DT\></tt>   Ends an item title.
-<li><tt>\<EM\></tt>    Starts a piece of text displayed in an italic font.
-<li><tt>\</EM\></tt>   Ends a <tt>\<EM\></tt> section.
-<li><tt>\<HR\></tt>    Writes a horizontal ruler.
-<li><tt>\<H1\></tt>    Starts an unnumbered section.
-<li><tt>\</H1\></tt>   Ends an unnumbered section.
-<li><tt>\<H2\></tt>    Starts an unnumbered subsection.
-<li><tt>\</H2\></tt>   Ends an unnumbered subsection.
-<li><tt>\<H3\></tt>    Starts an unnumbered subsubsection.
-<li><tt>\</H3\></tt>   Ends an unnumbered subsubsection.
-<li><tt>\<H4\></tt>    Starts an unnumbered subsubsection.
-<li><tt>\</H4\></tt>   Ends an unnumbered subsubsection.
-<li><tt>\<H5\></tt>    Starts an unnumbered subsubsection.
-<li><tt>\</H5\></tt>   Ends an unnumbered subsubsection.
-<li><tt>\<H6\></tt>    Starts an unnumbered subsubsection.
-<li><tt>\</H6\></tt>   Ends an unnumbered subsubsection.
-<li><tt>\<I\></tt>     Starts a piece of text displayed in an italic font.
-<li><tt>\</I\></tt>    Ends a <tt>\<I\></tt> section.
-<li><tt>\<IMG SRC="..." ...\></tt>   This command is written with its attributes to the HTML output only. The SRC attribute is mandatory.
-<li><tt>\<INS\></tt>   Starts a section of inserted text, typically shown as underlined text.
-<li><tt>\</INS\></tt>  Ends a section of inserted text.
-<li><tt>\<LI\></tt>    Starts a new list item.
-<li><tt>\</LI\></tt>   Ends a list item.
-<li><tt>\<OL\></tt>    Starts a numbered item list.
-<li><tt>\</OL\></tt>   Ends a numbered item list.
-<li><tt>\<P\></tt>     Starts a new paragraph.
-<li><tt>\</P\></tt>    Ends a paragraph.
-<li><tt>\<PRE\></tt>   Starts a preformatted fragment.
-<li><tt>\</PRE\></tt>  Ends a preformatted fragment.
-<li><tt>\<SMALL\></tt> Starts a section of text displayed in a smaller font.
-<li><tt>\</SMALL\></tt> Ends a <tt>\<SMALL\></tt> section.
-<li><tt>\<SPAN></tt>   Starts an inline text fragment with a specific style (HTML only)
-<li><tt>\</SPAN></tt>  Ends an inline text fragment with a specific style (HTML only)
-<li><tt>\<S\></tt>     Starts a section of strike through text.
-<li><tt>\</S\></tt>    Ends a section of strike through text.
-<li><tt>\<STRIKE\></tt> Starts a section of strike through text.
-<li><tt>\</STRIKE\></tt> Ends a section of strike through text.
-<li><tt>\<STRONG\></tt> Starts a section of bold text.
-<li><tt>\</STRONG\></tt> Ends a section of bold text.
-<li><tt>\<SUB\></tt>   Starts a piece of text displayed in subscript.
-<li><tt>\</SUB\></tt>  Ends a <tt>\<SUB\></tt> section.
-<li><tt>\<SUP\></tt>   Starts a piece of text displayed in superscript.
-<li><tt>\</SUP\></tt>  Ends a <tt>\<SUP\></tt> section.
-<li><tt>\<TABLE\></tt> starts a table.
-<li><tt>\</TABLE\></tt> ends a table.
-<li><tt>\<TD\></tt>    Starts a new table data element.
-<li><tt>\</TD\></tt>   Ends a table data element.
-<li><tt>\<TH\></tt>    Starts a new table header.
-<li><tt>\</TH\></tt>   Ends a table header.
-<li><tt>\<TR\></tt>    Starts a new table row.
-<li><tt>\</TR\></tt>   Ends a table row.
-<li><tt>\<TT\></tt>    Starts a piece of text displayed in a typewriter font.
-<li><tt>\</TT\></tt>   Ends a <tt>\<TT\></tt> section.
-<li><tt>\<KBD\></tt>   Starts a piece of text displayed in a typewriter font.
-<li><tt>\</KBD\></tt>  Ends a <tt>\<KBD\></tt> section.
-<li><tt>\<U\></tt> Starts a section of underlined text.
-<li><tt>\</U\></tt> Ends a section of underlined text.
-<li><tt>\<UL\></tt>    Starts an unnumbered item list.
-<li><tt>\</UL\></tt>   Ends an unnumbered item list.
-<li><tt>\<VAR\></tt>   Starts a piece of text displayed in an italic font.
-<li><tt>\</VAR\></tt>  Ends a <tt>\<VAR\></tt> section.
+                       \ref cmdendcode "\\endcode" (see \ref xmltag_code "\<code\>").
+<li><tt>\anchor htmltag_DD \addindex "\<DD\>"\<DD\></tt>    Starts an item description.
+<li><tt>\anchor htmltag_endDD \addindex "\</DD\>"\</DD\></tt>   Ends an item description.
+<li><tt>\anchor htmltag_DEL \addindex "\<DEL\>"\<DEL\></tt>   Starts a section of deleted text, typically shown strike through text.
+<li><tt>\anchor htmltag_endDEL \addindex "\</DEL\>"\</DEL\></tt>  Ends a section of deleted text.
+<li><tt>\anchor htmltag_DETAILS \addindex "\<DETAILS\>"\<DETAILS\></tt> Starts a section of detailed text that the user can open and close (in HTML output))
+<li><tt>\anchor htmltag_endDETAILS \addindex "\</DETAILS\>"\</DETAILS\></tt> Ends a section of detailed text.
+<li><tt>\anchor htmltag_DFN \addindex "\<DFN\>"\<DFN\></tt>   Starts a piece of text displayed in a typewriter font.
+<li><tt>\anchor htmltag_endDFN \addindex "\</DFN\>"\</DFN\></tt>  Ends a \ref htmltag_DFN "\<DFN\>" section.
+<li><tt>\anchor htmltag_DIV \addindex "\<DIV\>"\<DIV></tt>    Starts a section with a specific style (HTML only)
+<li><tt>\anchor htmltag_endDIV \addindex "\</DIV\>"\</DIV></tt>   Ends a section with a specific style (HTML only)
+<li><tt>\anchor htmltag_DL \addindex "\<DL\>"\<DL\></tt>    Starts a description list.
+<li><tt>\anchor htmltag_endDL \addindex "\</DL\>"\</DL\></tt>   Ends a description list.
+<li><tt>\anchor htmltag_DT \addindex "\<DT\>"\<DT\></tt>    Starts an item title.
+<li><tt>\anchor htmltag_endDT \addindex "\</DT\>"\</DT\></tt>   Ends an item title.
+<li><tt>\anchor htmltag_EM \addindex "\<EM\>"\<EM\></tt>    Starts a piece of text displayed in an italic font.
+<li><tt>\anchor htmltag_endEM \addindex "\</EM\>"\</EM\></tt>   Ends a \ref htmltag_EM "\<EM\>" section.
+<li><tt>\anchor htmltag_HR \addindex "\<HR\>"\<HR\></tt>    Writes a horizontal ruler.
+<li><tt>\anchor htmltag_H1 \addindex "\<H1\>"\<H1\></tt>    Starts an unnumbered section.
+<li><tt>\anchor htmltag_endH1 \addindex "\</H1\>"\</H1\></tt>   Ends an unnumbered section.
+<li><tt>\anchor htmltag_H2 \addindex "\<H2\>"\<H2\></tt>    Starts an unnumbered subsection.
+<li><tt>\anchor htmltag_endH2 \addindex "\</H2\>"\</H2\></tt>   Ends an unnumbered subsection.
+<li><tt>\anchor htmltag_H3 \addindex "\<H3\>"\<H3\></tt>    Starts an unnumbered subsubsection.
+<li><tt>\anchor htmltag_endH3 \addindex "\</H3\>"\</H3\></tt>   Ends an unnumbered subsubsection.
+<li><tt>\anchor htmltag_H4 \addindex "\<H4\>"\<H4\></tt>    Starts an unnumbered subsubsection.
+<li><tt>\anchor htmltag_endH4 \addindex "\</H4\>"\</H4\></tt>   Ends an unnumbered subsubsection.
+<li><tt>\anchor htmltag_H5 \addindex "\<H5\>"\<H5\></tt>    Starts an unnumbered subsubsection.
+<li><tt>\anchor htmltag_endH5 \addindex "\</H5\>"\</H5\></tt>   Ends an unnumbered subsubsection.
+<li><tt>\anchor htmltag_H6 \addindex "\<H6\>"\<H6\></tt>    Starts an unnumbered subsubsection.
+<li><tt>\anchor htmltag_endH6 \addindex "\</H6\>"\</H6\></tt>   Ends an unnumbered subsubsection.
+<li><tt>\anchor htmltag_I \addindex "\<I\>"\<I\></tt>     Starts a piece of text displayed in an italic font.
+<li><tt>\anchor htmltag_endI \addindex "\</I\>"\</I\></tt>    Ends a \ref htmltag_I "\<I\>" section.
+<li><tt>\anchor htmltag_IMG \addindex "\<IMG SRC=\"...\"\>"\<IMG SRC="..." ...\></tt>   This command is written with its attributes to the HTML output only. The SRC attribute is mandatory.
+<li><tt>\anchor htmltag_INS \addindex "\<INS\>"\<INS\></tt>   Starts a section of inserted text, typically shown as underlined text.
+<li><tt>\anchor htmltag_endINS \addindex "\</INS\>"\</INS\></tt>  Ends a section of inserted text.
+<li><tt>\anchor htmltag_LI \addindex "\<LI\>"\<LI\></tt>    Starts a new list item.
+<li><tt>\anchor htmltag_endLI \addindex "\</LI\>"\</LI\></tt>   Ends a list item.
+<li><tt>\anchor htmltag_OL \addindex "\<OL\>"\<OL\></tt>    Starts a numbered item list.
+<li><tt>\anchor htmltag_endOL \addindex "\</OL\>"\</OL\></tt>   Ends a numbered item list.
+<li><tt>\anchor htmltag_P \addindex "\<P\>"\<P\></tt>     Starts a new paragraph.
+<li><tt>\anchor htmltag_endP \addindex "\</P\>"\</P\></tt>    Ends a paragraph.
+<li><tt>\anchor htmltag_PRE \addindex "\<PRE\>"\<PRE\></tt>   Starts a preformatted fragment.
+<li><tt>\anchor htmltag_endPRE \addindex "\</PRE\>"\</PRE\></tt>  Ends a preformatted fragment.
+<li><tt>\anchor htmltag_SMALL \addindex "\<SMALL\>"\<SMALL\></tt> Starts a section of text displayed in a smaller font.
+<li><tt>\anchor htmltag_endSMALL \addindex "\</SMALL\>"\</SMALL\></tt> Ends a \ref htmltag_SMALL "\<SMALL\>" section.
+<li><tt>\anchor htmltag_SPAN \addindex "\<SPAN\>"\<SPAN></tt>   Starts an inline text fragment with a specific style (HTML only)
+<li><tt>\anchor htmltag_endSPAN \addindex "\</SPAN\>"\</SPAN></tt>  Ends an inline text fragment with a specific style (HTML only)
+<li><tt>\anchor htmltag_S \addindex "\<S\>"\<S\></tt>     Starts a section of strike through text.
+<li><tt>\anchor htmltag_endS \addindex "\</S\>"\</S\></tt>    Ends a section of strike through text.
+<li><tt>\anchor htmltag_STRIKE \addindex "\<STRIKE\>"\<STRIKE\></tt> Starts a section of strike through text.
+<li><tt>\anchor htmltag_endSTRIKE \addindex "\</STRIKE\>"\</STRIKE\></tt> Ends a section of strike through text.
+<li><tt>\anchor htmltag_STRONG \addindex "\<STRONG\>"\<STRONG\></tt> Starts a section of bold text.
+<li><tt>\anchor htmltag_endSTRONG \addindex "\</STRONG\>"\</STRONG\></tt> Ends a section of bold text.
+<li><tt>\anchor htmltag_SUB \addindex "\<SUB\>"\<SUB\></tt>   Starts a piece of text displayed in subscript.
+<li><tt>\anchor htmltag_endSUB \addindex "\</SUB\>"\</SUB\></tt>  Ends a \ref htmltag_SUB "\<SUB\>" section.
+<li><tt>\anchor htmltag_SUP \addindex "\<SUP\>"\<SUP\></tt>   Starts a piece of text displayed in superscript.
+<li><tt>\anchor htmltag_endSUP \addindex "\</SUP\>"\</SUP\></tt>  Ends a \ref htmltag_SUP "\<SUP\>" section.
+<li><tt>\anchor htmltag_TABLE \addindex "\<TABLE\>"\<TABLE\></tt> starts a table.
+<li><tt>\anchor htmltag_endTABLE \addindex "\</TABLE\>"\</TABLE\></tt> ends a table.
+<li><tt>\anchor htmltag_TD \addindex "\<TD\>"\<TD\></tt>    Starts a new table data element.
+<li><tt>\anchor htmltag_endTD \addindex "\</TD\>"\</TD\></tt>   Ends a table data element.
+<li><tt>\anchor htmltag_TH \addindex "\<TH\>"\<TH\></tt>    Starts a new table header.
+<li><tt>\anchor htmltag_endTH \addindex "\</TH\>"\</TH\></tt>   Ends a table header.
+<li><tt>\anchor htmltag_TR \addindex "\<TR\>"\<TR\></tt>    Starts a new table row.
+<li><tt>\anchor htmltag_endTR \addindex "\</TR\>"\</TR\></tt>   Ends a table row.
+<li><tt>\anchor htmltag_TT \addindex "\<TT\>"\<TT\></tt>    Starts a piece of text displayed in a typewriter font.
+<li><tt>\anchor htmltag_endTT \addindex "\</TT\>"\</TT\></tt>   Ends a \ref htmltag_TT "\<TT\>" section.
+<li><tt>\anchor htmltag_KBD \addindex "\<KBD\>"\<KBD\></tt>   Starts a piece of text displayed in a typewriter font.
+<li><tt>\anchor htmltag_endKBD \addindex "\</KBD\>"\</KBD\></tt>  Ends a \ref htmltag_KBD "\<KBD\>" section.
+<li><tt>\anchor htmltag_U \addindex "\<U\>"\<U\></tt> Starts a section of underlined text.
+<li><tt>\anchor htmltag_endU \addindex "\</U\>"\</U\></tt> Ends a section of underlined text.
+<li><tt>\anchor htmltag_UL \addindex "\<UL\>"\<UL\></tt>    Starts an unnumbered item list.
+<li><tt>\anchor htmltag_endUL \addindex "\</UL\>"\</UL\></tt>   Ends an unnumbered item list.
+<li><tt>\anchor htmltag_VAR \addindex "\<VAR\>"\<VAR\></tt>   Starts a piece of text displayed in an italic font.
+<li><tt>\anchor htmltag_endVAR \addindex "\</VAR\>"\</VAR\></tt>  Ends a \ref htmltag_VAR "\<VAR\>" section.
 </ul>
 
 The special HTML4 character entities.<br>
@@ -390,6 +394,7 @@ comments can be used:
 \verbatim
 /*! <!-- This is a comment with a comment block --> Visible text */
 \endverbatim
+The part `<!-- ... -->` will not be shown in the main documentation.
 
 
 \htmlonly

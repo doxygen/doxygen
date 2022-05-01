@@ -8,6 +8,7 @@
         <definition>void Foo::foo</definition>
         <argsstring>(float value)</argsstring>
         <name>foo</name>
+        <qualifiedname>Foo::foo</qualifiedname>
         <param>
           <type>float</type>
           <declname>value</declname>
@@ -26,6 +27,7 @@
         <definition>void Foo::foo</definition>
         <argsstring>(unsigned value)</argsstring>
         <name>foo</name>
+        <qualifiedname>Foo::foo</qualifiedname>
         <param>
           <type>unsigned</type>
           <declname>value</declname>
@@ -44,6 +46,7 @@
         <definition>void Foo::foo</definition>
         <argsstring>(unsigned long)</argsstring>
         <name>foo</name>
+        <qualifiedname>Foo::foo</qualifiedname>
         <param>
           <type>unsigned long</type>
         </param>
@@ -61,6 +64,7 @@
         <definition>void Foo::foo</definition>
         <argsstring>(signed long)</argsstring>
         <name>foo</name>
+        <qualifiedname>Foo::foo</qualifiedname>
         <param>
           <type>signed long</type>
         </param>
@@ -78,6 +82,7 @@
         <definition>void Foo::foo</definition>
         <argsstring>(const struct Foo)</argsstring>
         <name>foo</name>
+        <qualifiedname>Foo::foo</qualifiedname>
         <param>
           <type>const struct <ref refid="struct_foo" kindref="compound">Foo</ref></type>
         </param>
@@ -95,6 +100,7 @@
         <definition>void Foo::foo</definition>
         <argsstring>(const char *const, const double param2)</argsstring>
         <name>foo</name>
+        <qualifiedname>Foo::foo</qualifiedname>
         <param>
           <type>const char * const</type>
         </param>

@@ -22,12 +22,13 @@
 %option extra-type="struct constexpYY_state *"
 %top{
 #include <stdint.h>
+// forward declare yyscan_t to improve typesafety
+#include "constexp_p.h"  
 }
 
 %{
 
 #include "constexp.h"  
-#include "constexp_p.h"  
 #include "cppvalue.h"
 #include "ce_parse.hpp" // generated header file
 #include "message.h"
@@ -45,6 +46,11 @@ static yy_size_t yyread(char *buf,yy_size_t max_size,yyscan_t yyscanner);
 
 #undef  YY_INPUT
 #define YY_INPUT(buf,result,max_size) result=yyread(buf,max_size,yyscanner);
+
+// otherwise the filename would be the name of the converted file (*.cpp instead of *.l)
+static inline const char *getLexerFILE() {return __FILE__;}
+#define LEX_NO_INPUT_FILENAME
+#include "doxygen_lex.h"
 
 %}
 
@@ -90,6 +96,9 @@ CONSTSUFFIX ([uU][lL]?[lL]?)|([lL][lL]?[uU]?)
 (0x|0X)[0-9a-fA-F]+{CONSTSUFFIX}?  { yyextra->strToken=yytext+2; 
                                      return TOK_HEXADECIMALINT; 
                                    }
+(0b|0B)[01]+{CONSTSUFFIX}?         { yyextra->strToken=yytext+2; 
+                                     return TOK_BINARYINT; 
+                                   }
 (([0-9]+\.[0-9]*)|([0-9]*\.[0-9]+))([eE]([\-\+])?[0-9]+)?([fFlL])? { 
                                      yyextra->strToken=yytext; return TOK_FLOAT; 
                                    }
@@ -103,7 +112,7 @@ CONSTSUFFIX ([uU][lL]?[lL]?)|([lL][lL]?[uU]?)
 
 static yy_size_t yyread(char *buf,yy_size_t max_size,yyscan_t yyscanner)
 {
-  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  struct yyguts_t *yyg = static_cast<struct yyguts_t*>(yyscanner);
   yy_size_t c=0;
   while( c < max_size && yyextra->inputString[yyextra->inputPosition] )
   {
@@ -132,7 +141,7 @@ ConstExpressionParser::~ConstExpressionParser()
   delete p;
 }
 
-bool ConstExpressionParser::parse(const char *fileName,int lineNr,const QCString &s)
+bool ConstExpressionParser::parse(const char *fileName,int lineNr,const std::string &s)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)p->yyscanner;
 
@@ -146,14 +155,14 @@ bool ConstExpressionParser::parse(const char *fileName,int lineNr,const QCString
   yyextra->inputPosition = 0;
   constexpYYrestart( yyin, p->yyscanner );
 
-  printlex(yy_flex_debug, TRUE, __FILE__, fileName);
-  //printf("Expression: '%s'\n",s.data());
+  printlex(yy_flex_debug, true, __FILE__, fileName);
+  //printf("Expression: '%s'\n",qPrint(s));
 
   constexpYYparse(p->yyscanner);
 
   //printf("Result: %ld\n",(long)g_resultValue);
-  printlex(yy_flex_debug, FALSE, __FILE__, fileName);
-  bool result = (long)yyextra->resultValue!=0;
+  printlex(yy_flex_debug, false, __FILE__, fileName);
+  bool result = static_cast<long>(yyextra->resultValue)!=0;
 
   return result;
 }
