@@ -2888,7 +2888,8 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
     QCString bareName = className;
     if (i!=-1) bareName = bareName.left(i);
 
-    auto checkForClass = [&yyg,&md,&cd,&bareName,&className](const Definition *d)
+    auto checkForClass = [&yyg,&bareName,&className](const Definition *d,
+                                                     const ClassDef *&cd,const MemberDef *&md)
     {
       cd = yyextra->symbolResolver.resolveClass(d,className);
       md = yyextra->symbolResolver.getTypedef();
@@ -2907,13 +2908,13 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
     };
     const Definition *d = yyextra->currentDefinition;
     DBG_CTX((stderr,"d=%s yyextra->sourceFileDef=%s\n",d?qPrint(d->name()):"<none>",yyextra->sourceFileDef?qPrint(yyextra->sourceFileDef->name()):"<none>"));
-    checkForClass(d);
+    checkForClass(d,cd,md);
     if (cd==0 && md==0)
     {
       // also check via using directive
       for (const auto &kv : yyextra->theUsingContext)
       {
-        checkForClass(kv.second);
+        checkForClass(kv.second,cd,md);
         if (cd!=0 || md!=0) break;
       }
     }
