@@ -1154,6 +1154,18 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           generateFunctionLink(yyscanner,*yyextra->code,yytext);
                                           yyextra->name+=yytext;
                                         }
+<Body>{ID}("."{ID})+/{BN}+              { // CSharp/Java scope
+                                          if (yyextra->lang==SrcLangExt_CSharp || yyextra->lang==SrcLangExt_Java)
+                                          {
+                                            addType(yyscanner);
+                                            generateClassOrGlobalLink(yyscanner,*yyextra->code,yytext);
+                                            yyextra->name+=yytext;
+                                          }
+                                          else
+                                          {
+                                            REJECT;
+                                          }
+                                        }
 <Body>{SCOPENAME}/{B}*                  { // p->func()
                                           if (startsWithKeyword(yytext,"typedef")) REJECT;
                                           addType(yyscanner);
@@ -2205,6 +2217,7 @@ static void addVariable(yyscan_t yyscanner,QCString type,QCString name)
     ltype = ltype.right(ltype.length()-6);
   }
   if (ltype.isEmpty() || lname.isEmpty()) return;
+  ltype = substitute(ltype,".","::");
   DBG_CTX((stderr,"** addVariable trying: type='%s' name='%s' currentDefinition=%s\n",
         qPrint(ltype),qPrint(lname),yyextra->currentDefinition?qPrint(yyextra->currentDefinition->name()):"<none>"));
   auto it = yyextra->codeClassMap.find(ltype.str());
@@ -2233,9 +2246,8 @@ static void addVariable(yyscan_t yyscanner,QCString type,QCString name)
       return varDef;
     };
     const ClassDef *varDef = findVariableType(yyextra->currentDefinition);
-    if (varDef==0)
+    if (varDef==0) // also check via using directive
     {
-      // also check via using directive
       for (const auto &kv : yyextra->theUsingContext)
       {
         varDef = findVariableType(kv.second);
@@ -2874,7 +2886,7 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
   }
   else if (yyextra->lang==SrcLangExt_CSharp || yyextra->lang==SrcLangExt_Java)
   {
-    className = substitute(className,".","::"); // for PHP namespaces
+    className = substitute(className,".","::"); // for C#/Java namespaces
   }
   const ScopedTypeVariant *lcd=0;
   const ClassDef *cd=0;
@@ -2909,6 +2921,15 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
     const Definition *d = yyextra->currentDefinition;
     DBG_CTX((stderr,"d=%s yyextra->sourceFileDef=%s\n",d?qPrint(d->name()):"<none>",yyextra->sourceFileDef?qPrint(yyextra->sourceFileDef->name()):"<none>"));
     checkForClass(d,cd,md);
+    if (cd==0 && md==0 && d && d->definitionType()==Definition::TypeClass)
+    {
+      // also check for using directive in the file that defines this class
+      for (const auto &nd : toClassDef(d)->getFileDef()->getUsedNamespaces())
+      {
+        checkForClass(nd,cd,md);
+        if (cd!=0 || md!=0) break;
+      }
+    }
     if (cd==0 && md==0)
     {
       // also check via using directive
@@ -3009,7 +3030,7 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
       if (md==0) // not found as a typedef
       {
         md = setCallContextForVar(yyscanner,clName);
-        DBG_CTX((stderr,"setCallContextForVar(%s) md=%p yyextra->currentDefinition=%p\n",qPrint(clName),(void*)md,(void*)yyextra->currentDefinition));
+        DBG_CTX((stderr,"setCallContextForVar(%s) md=%p yyextra->currentDefinition=%s\n",qPrint(clName),(void*)md,yyextra->currentDefinition ? qPrint(yyextra->currentDefinition->name()) : "<none>"));
         if (md && yyextra->currentDefinition)
         {
           DBG_CTX((stderr,"%s accessible from %s? %d md->getOuterScope=%s\n",
