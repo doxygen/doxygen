@@ -216,7 +216,7 @@ static void writeMultiLineCodeLink(yyscan_t yyscanner,CodeOutputInterface &ol,
                                    const QCString &text);
 static void addType(yyscan_t yyscanner);
 static void addParmType(yyscan_t yyscanner);
-static void addUsingDirective(yyscan_t yyscanner,const char *name);
+static void addUsingDirective(yyscan_t yyscanner,const QCString &name);
 static void setParameterList(yyscan_t yyscanner,const MemberDef *md);
 static const ClassDef *stripClassName(yyscan_t yyscanner,const QCString &s,const Definition *d);
 static const MemberDef *setCallContextForVar(yyscan_t yyscanner,const QCString &name);
@@ -941,12 +941,11 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           BEGIN(UsingName);
                                         }
 <ConceptName>{ID}("::"{ID})*              {
-                                          addUsingDirective(yyscanner,yytext);
                                           generateClassOrGlobalLink(yyscanner,*yyextra->code,yytext);
                                         }
 <ConceptName>"="                        { codifyLines(yyscanner,yytext); BEGIN(Body); }
-<UsingName>{ID}("::"{ID})*              {
-                                          addUsingDirective(yyscanner,yytext);
+<UsingName>{ID}(("::"|"."){ID})*        {
+                                          addUsingDirective(yyscanner,substitute(yytext,".","::"));
                                           generateClassOrGlobalLink(yyscanner,*yyextra->code,yytext);
                                           BEGIN(Body);
                                         }
@@ -2566,15 +2565,16 @@ static void addParmType(yyscan_t yyscanner)
   yyextra->parmName.resize(0) ;
 }
 
-static void addUsingDirective(yyscan_t yyscanner,const char *name)
+static void addUsingDirective(yyscan_t yyscanner,const QCString &name)
 {
+  //printf("AddUsingDirective(%s)\n",qPrint(name));
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  if (yyextra->sourceFileDef && name)
+  if (yyextra->sourceFileDef && !name.isEmpty())
   {
     const NamespaceDef *nd = Doxygen::namespaceLinkedMap->find(name);
     if (nd)
     {
-      yyextra->theUsingContext.insert(std::make_pair(std::string(name),nd));
+      yyextra->theUsingContext.insert(std::make_pair(name.str(),nd));
     }
   }
 }
