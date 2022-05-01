@@ -2889,20 +2889,20 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
     if (i!=-1) bareName = bareName.left(i);
 
     auto checkForClass = [&yyg,&bareName,&className](const Definition *d,
-                                                     const ClassDef *&cd,const MemberDef *&md)
+                                                     const ClassDef *&cd_,const MemberDef *&md_)
     {
-      cd = yyextra->symbolResolver.resolveClass(d,className);
-      md = yyextra->symbolResolver.getTypedef();
+      cd_ = yyextra->symbolResolver.resolveClass(d,className);
+      md_ = yyextra->symbolResolver.getTypedef();
       DBG_CTX((stderr,"non-local variable name=%s cd=%s md=%s!\n",
-            qPrint(className),cd?qPrint(cd->name()):"<none>",
-            md?qPrint(md->name()):"<none>"));
-      if (cd==0 && md==0 && !bareName.isEmpty())
+            qPrint(className),cd_?qPrint(cd_->name()):"<none>",
+            md_?qPrint(md_->name()):"<none>"));
+      if (cd_==0 && md_==0 && !bareName.isEmpty())
       {
         DBG_CTX((stderr,"bareName=%s\n",qPrint(bareName)));
         if (bareName!=className)
         {
-          cd = yyextra->symbolResolver.resolveClass(d,bareName); // try unspecialized version
-          md = yyextra->symbolResolver.getTypedef();
+          cd_ = yyextra->symbolResolver.resolveClass(d,bareName); // try unspecialized version
+          md_ = yyextra->symbolResolver.getTypedef();
         }
       }
     };
