@@ -2923,11 +2923,15 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
     checkForClass(d,cd,md);
     if (cd==0 && md==0 && d && d->definitionType()==Definition::TypeClass)
     {
-      // also check for using directive in the file that defines this class
-      for (const auto &nd : toClassDef(d)->getFileDef()->getUsedNamespaces())
+      const FileDef *fd = toClassDef(d)->getFileDef();
+      if (fd)
       {
-        checkForClass(nd,cd,md);
-        if (cd!=0 || md!=0) break;
+        // also check for using directive in the file that defines this class
+        for (const auto &nd : fd->getUsedNamespaces())
+        {
+          checkForClass(nd,cd,md);
+          if (cd!=0 || md!=0) break;
+        }
       }
     }
     if (cd==0 && md==0)
