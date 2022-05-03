@@ -82,6 +82,7 @@ if (WIN32)
         set(CMAKE_REQUIRED_DEFINITIONS "-DLIBICONV_STATIC")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj") # needed for language.cpp on 64bit
         add_definitions(-DLIBICONV_STATIC -D_CRT_SECURE_NO_WARNINGS)
+        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /LARGEADDRESSAWARE")
     endif()
     if (CMAKE_GENERATOR MATCHES "NMake Makefiles")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc")
