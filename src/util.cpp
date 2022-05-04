@@ -2697,7 +2697,7 @@ static bool getScopeDefs(const QCString &docScope,const QCString &scope,
   cd=0;nd=0;
 
   QCString scopeName=scope;
-  //printf("getScopeDefs: docScope='%s' scope='%s'\n",docScope,scope);
+  //printf("getScopeDefs: docScope='%s' scope='%s'\n",qPrint(docScope),qPrint(scope));
   if (scopeName.isEmpty()) return FALSE;
 
   bool explicitGlobalScope=FALSE;
@@ -2720,8 +2720,7 @@ static bool getScopeDefs(const QCString &docScope,const QCString &scope,
     if (scopeOffset>0) fullName.prepend(docScopeName.left(scopeOffset)+"::");
 
     if (((cd=getClass(fullName)) ||         // normal class
-         (cd=getClass(fullName+"-p")) //||    // ObjC protocol
-         //(cd=getClass(fullName+"-g"))       // C# generic
+         (cd=getClass(fullName+"-p"))       // ObjC protocol
         ) && cd->isLinkable())
     {
       return TRUE; // class link written => quit
@@ -2803,11 +2802,12 @@ bool resolveRef(/* in */  const QCString &scName,
       return FALSE;
     }
 
-    //printf("scName=%s fullName=%s\n",scName,qPrint(fullName));
+    //printf("scName=%s fullName=%s\n",qPrint(scName),qPrint(fullName));
 
     // check if this is a class or namespace reference
     if (scName!=fullName && getScopeDefs(scName,fullName,cd,nd))
     {
+      //printf("found scopeDef\n");
       if (cd) // scope matches that of a class
       {
         *resContext = cd;
@@ -2824,7 +2824,7 @@ bool resolveRef(/* in */  const QCString &scName,
     {
       //printf("found scName=%s fullName=%s scName==fullName=%d "
       //    "inSeeBlock=%d scopePos=%d!\n",
-      //    scName,qPrint(fullName),scName==fullName,inSeeBlock,scopePos);
+      //    qPrint(scName),qPrint(fullName),scName==fullName,inSeeBlock,scopePos);
       return FALSE;
     }
     // continue search...
