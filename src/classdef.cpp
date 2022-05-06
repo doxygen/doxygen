@@ -1315,6 +1315,9 @@ void ClassDefImpl::writeTemplateSpec(OutputList &ol,const Definition *d,
       while (it!=al.end())
       {
         Argument a = *it;
+        if (al.size()>2) {
+          ol.docify("\n    ");
+        }
         linkifyText(TextGeneratorOLImpl(ol), // out
           d,                       // scope
           getFileDef(),            // fileScope
