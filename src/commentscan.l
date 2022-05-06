@@ -948,7 +948,7 @@ STopt  [^\n@\\]*
                                           addOutput(yyscanner,yytext[0]);
                                           addOutput(yyscanner,yytext[2]);
                                         }
-<Comment>".,"                           { // . with comma such as "e.g.,"
+<Comment>"."[,:;]                       { // . with some puntuations such as "e.g.," or "e.g.:"
                                           addOutput(yyscanner,yytext);
                                         }
 <Comment>"...\\"[ \t]                   { // ellipsis with escaped space.
