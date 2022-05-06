@@ -42,6 +42,7 @@
 
 #define MAX_INCLUDE_DEPTH 10
 
+#define USE_STATE2STRING 0
 
 /* -----------------------------------------------------------------
  *
@@ -374,6 +375,9 @@ static void readIncludeFile(const QString &incName)
   }
 }
 
+#if USE_STATE2STRING
+static const char *stateToString(int state);
+#endif
 
 %}
 
@@ -832,4 +836,6 @@ void writeStringValue(QTextStream &t,TextCodecAdapter *codec,const QString &s)
     }
   }
 }
+#if USE_STATE2STRING
 #include "config_doxyw.l.h"
+#endif
