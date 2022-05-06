@@ -19,6 +19,7 @@
 #include <list>
 #include <unordered_map>
 #include <mutex>
+#include <utility>
 #include <ctype.h>
 
 /*! Fixed size cache for value type V using keys of type K.
