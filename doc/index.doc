@@ -30,7 +30,7 @@ Version: $(VERSION)
 Doxygen is the de facto standard tool for generating documentation from
 annotated C++ sources, but it also supports other popular programming
 languages such as C, Objective-C, C#, PHP, Java, Python, IDL
-(Corba, Microsoft, and UNO/OpenOffice flavors), Fortran, and to some extent D. 
+(Corba, Microsoft, and UNO/OpenOffice flavors), Fortran, and to some extent D.
 Doxygen also supports the hardware description language VHDL.
 
 Doxygen can help you in three ways:
@@ -122,7 +122,7 @@ The third part provides information for developers:
 \addindex license
 \addindex GPL
 
-Copyright &copy; 1997-2019 by
+Copyright &copy; 1997-2022 by
 <a href="mailto:doxygen@gmail.com">Dimitri van Heesch</a>.<p>
 
 Permission to use, copy, modify, and distribute this software and its
