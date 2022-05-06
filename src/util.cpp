@@ -1384,8 +1384,8 @@ QCString transcodeCharacterStringToUTF8(const QCString &input)
           qPrint(inputEncoding),outputEncoding,qPrint(input));
       error=TRUE;
     }
+    portable_iconv_close(cd);
   }
-  portable_iconv_close(cd);
   return error ? input : output;
 }
 
