@@ -941,7 +941,13 @@ STopt  [^\n@\\]*
                                           }
                                           addOutput(yyscanner,yytext);
                                         }
+<Comment>[?!][a-z_A-Z0-9\(\)=<]         |
 <Comment>("."+)[a-z_A-Z0-9\)]           { // . at start or in the middle of a word, or ellipsis
+                                          // ? or ! in middle of word or followed by equal sign or round bracket.
+                                          addOutput(yyscanner,yytext);
+                                        }
+<Comment>{CMD}[\.?!]                    { // we have to be a bit careful with the special commands
+                                          // \. \? and \! as they might otherwise terminate a brief description
                                           addOutput(yyscanner,yytext);
                                         }
 <Comment>".\\"[ \t]                     { // . with escaped space.
@@ -991,8 +997,9 @@ STopt  [^\n@\\]*
                                           }
                                           lineCount(yyscanner);
                                         }
-<Comment>"."                            { // potential end of a JavaDoc style comment
-                                          addOutput(yyscanner,*yytext);
+<Comment>"."[?!]                        |
+<Comment>[\.?!]                         { // potential end of a JavaDoc style comment
+                                          addOutput(yyscanner,yytext);
                                           if (yyextra->briefEndsAtDot)
                                           {
                                             setOutput(yyscanner,OutputDoc);

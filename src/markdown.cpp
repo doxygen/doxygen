@@ -1725,7 +1725,7 @@ int Markdown::processSpecialCommand(const char *data, int offset, int size)
   if (size>1 && data[0]=='\\') // escaped characters
   {
     char c=data[1];
-    if (c=='[' || c==']' || c=='*' || c=='!' || c=='(' || c==')' || c=='`' || c=='_')
+    if (c=='[' || c==']' || c=='*' || c=='(' || c==')' || c=='`' || c=='_')
     {
       m_out.addChar(data[1]);
       TRACE_RESULT(2);

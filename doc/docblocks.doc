@@ -167,7 +167,7 @@ Here is an example:
     in the configuration file,
     then using Javadoc style comment
     blocks will automatically start a brief description which ends at the
-    first dot followed by a space or new line. Here is an example:
+    first dot, question mark or exclamation mark followed by a space or new line. Here is an example:
 
 \verbatim
 /** Brief description which ends at this dot. Details follow
