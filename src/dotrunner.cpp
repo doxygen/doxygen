@@ -14,6 +14,7 @@
 */
 
 #include <cassert>
+#include <cmath>
 
 #include "dotrunner.h"
 #include "util.h"
@@ -130,8 +131,8 @@ bool DotRunner::readBoundingBox(const QCString &fileName,int *width,int *height,
          //printf("readBoundingBox sscanf fail\n");
          return FALSE;
        }
-       *width = static_cast<int>(ceil(w));
-       *height = static_cast<int>(ceil(h));
+       *width = static_cast<int>(std::ceil(w));
+       *height = static_cast<int>(std::ceil(h));
        return TRUE;
      }
   }
