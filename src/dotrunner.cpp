@@ -123,12 +123,15 @@ bool DotRunner::readBoundingBox(const QCString &fileName,int *width,int *height,
      if (p) // found PageBoundingBox or /MediaBox string
      {
        int x,y;
+       double w,h;
        fclose(f);
-       if (sscanf(p+bblen,"%d %d %d %d",&x,&y,width,height)!=4)
+       if (sscanf(p+bblen,"%d %d %lf %lf",&x,&y,&w,&h)!=4)
        {
          //printf("readBoundingBox sscanf fail\n");
          return FALSE;
        }
+       *width = static_cast<int>(ceil(w));
+       *height = static_cast<int>(ceil(h));
        return TRUE;
      }
   }
