@@ -1316,7 +1316,8 @@ void ClassDefImpl::writeTemplateSpec(OutputList &ol,const Definition *d,
       {
         Argument a = *it;
         if (al.size()>2) {
-          ol.docify("\n    ");
+          ol.lineBreak();
+          ol.writeNonBreakableSpace(4);
         }
         linkifyText(TextGeneratorOLImpl(ol), // out
           d,                       // scope
