@@ -139,7 +139,6 @@ void adjustConfiguration();
 void parseInput();
 void generateOutput();
 void readAliases();
-void readFormulaRepository(QCString dir, bool cmp = FALSE);
 void cleanUpDoxygen();
 void readFileOrDirectory(const QCString &s,
                         FileNameLinkedMap *fnDict,

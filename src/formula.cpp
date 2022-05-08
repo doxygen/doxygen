@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright (C) 1997-2020 by Dimitri van Heesch.
+ * Copyright (C) 1997-2022 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -21,6 +21,8 @@
 #include "image.h"
 #include "fileinfo.h"
 #include "dir.h"
+#include "regex.h"
+#include "linkedmap.h"
 
 #include <map>
 #include <vector>
@@ -40,25 +42,12 @@ static int determineInkscapeVersion(Dir &thisDir);
 
 struct FormulaManager::Private
 {
-  void storeDisplaySize(int id,int w,int h)
-  {
-    displaySizeMap.insert(std::make_pair(id,DisplaySize(w,h)));
-  }
-  DisplaySize getDisplaySize(int id)
-  {
-    auto it = displaySizeMap.find(id);
-    if (it!=displaySizeMap.end())
-    {
-      return it->second;
-    }
-    return DisplaySize(-1,-1);
-  }
-  StringVector  formulas;
-  std::map<std::string,size_t> formulaMap;
-  std::map<int,DisplaySize> displaySizeMap;
+  LinkedMap<Formula>      formulas;
+  std::map<int,Formula *> formulaIdMap;
+  bool                    repositoriesValid = true;
 };
 
-FormulaManager::FormulaManager() : p(new Private)
+FormulaManager::FormulaManager() : p(std::make_unique<Private>())
 {
 }
 
@@ -68,7 +57,7 @@ FormulaManager &FormulaManager::instance()
   return fm;
 }
 
-void FormulaManager::readFormulas(const QCString &dir,bool doCompare)
+void FormulaManager::initFromRepository(const QCString &dir)
 {
   std::ifstream f(dir.str()+"/formula.repository",std::ifstream::in);
   if (f.is_open())
@@ -94,54 +83,100 @@ void FormulaManager::readFormulas(const QCString &dir,bool doCompare)
         line += "\n" + readLine;
       }
 
-      // format: \_form#<digits>=<digits>x<digits>:formula
-      size_t hi=line.find('#');
-      size_t ei=line.find('=');
-      size_t se=line.find(':'); // find name and text separator.
-      if (ei==std::string::npos || hi==std::string::npos || se==std::string::npos || hi>se || ei<hi || ei>se)
+      // new format: \_form#<digits>=<digits>x<digits>:formula
+      static const reg::Ex re_new(R"(\\_form#(\d+)=(\d+)x(\d+):)");
+      // old format: \_form#<digits>:formula
+      static const reg::Ex re_old(R"(\\_form#(\d+):)");
+
+      reg::Match match;
+      int id     = -1;
+      int width  = -1;
+      int height = -1;
+      std::string text;
+      if (reg::search(line,match,re_new)) // try new format first
       {
-        warn_uncond("%s/formula.repository is corrupted at line %d!\n",qPrint(dir),lineNr);
+        id     = std::stoi(match[1].str());
+        width  = std::stoi(match[2].str());
+        height = std::stoi(match[3].str());
+        text   = line.substr(match.position()+match.length());
+        //printf("new format found id=%d width=%d height=%d text=%s\n",id,width,height,text.c_str());
+      }
+      else if (reg::search(line,match,re_old)) // check for old format
+      {
+        //id     = std::stoi(match[1].str());
+        //text   = line.substr(match.position()+match.length());
+        //printf("old format found id=%d text=%s\n",id,text.c_str());
+        msg("old formula.respository format detected; forcing upgrade.\n");
+        p->repositoriesValid = false;
         break;
       }
-      else
+      else // unexpected content
       {
-        std::string formName = line.substr(0,se); // '\_form#<digits>=<digits>x<digits>' part
-        std::string formText = line.substr(se+1); // 'formula' part
-        int w=-1,h=-1;
-        size_t xi=formName.find('x',ei);
-        if (xi!=std::string::npos)
+        warn_uncond("%s/formula.repository contains invalid content at line %d: found: '%s'\n",qPrint(dir),lineNr,line.c_str());
+        p->repositoriesValid = false;
+        break;
+      }
+
+      auto it = p->formulaIdMap.find(id);
+      Formula *formula=0;
+      if (it!=p->formulaIdMap.end()) // formula already found in a repository for another output format
+      {
+        formula = it->second;
+        if (formula->text().str()!=text) // inconsistency between repositories detected
         {
-          w=std::stoi(formName.substr(ei+1,xi-ei-1)); // digits from '=<digits>x' part as int
-          h=std::stoi(formName.substr(xi+1));         // digits from 'x<digits>' part as int
+          msg("differences detected between formula.repository files; forcing upgrade.\n");
+          p->repositoriesValid = false;
+          break;
         }
-        formName = formName.substr(0,ei); // keep only the '\_form#<digits>' part
-        if (doCompare)
-        {
-          int formId = std::stoi(formName.substr(hi+1));
-          std::string storedFormText = FormulaManager::instance().findFormula(formId);
-          if (storedFormText!=formText)
-          {
-            term("discrepancy between formula repositories! Remove "
-                "formula.repository and from_* files from output directories.\n");
-          }
-          formulaCount++;
-        }
-        int id = addFormula(formText);
-        if (w!=-1 && h!=-1)
-        {
-          p->storeDisplaySize(id,w,h);
-        }
+        formulaCount++;
+      }
+      else // create new formula from cache
+      {
+        //printf("formula not found adding it under id=%d\n",id);
+        formula = p->formulas.add(text.c_str(),id,width,height);
+        p->formulaIdMap.insert(std::make_pair(id,formula));
+      }
+
+      if (formula) // if an entry in the repository exists also check if there is a generated image
+      {
+        QCString formImgName;
+        formImgName.sprintf("form_%d",formula->id());
+        FileInfo fiPng((dir+"/"+formImgName+".png").str());
+        FileInfo fiSvg((dir+"/"+formImgName+".svg").str());
+        // mark formula as cached, so we do not need to regenerate the images
+        bool isCached = fiPng.exists() || fiSvg.exists();
+        //printf("formula %d: cached=%d\n",formula->id(),isCached);
+        formula->setCached(isCached);
       }
     }
-    if (doCompare && formulaCount!=p->formulas.size())
+
+    // For the first repository all formulas should be new (e.g. formulaCount==0).
+    // For the other repositories the same number of formulas should be found
+    // (and number of formulas should be the same for all repositories, content is already check above)
+    if (formulaCount>0 && formulaCount!=p->formulas.size()) // inconsistency between repositories
     {
-      term("size discrepancy between formula repositories! Remove "
-           "formula.repository and from_* files from output directories.\n");
+      msg("differences detected between formula.repository files; forcing upgrade.\n");
+      p->repositoriesValid = false;
     }
+  }
+  else // no repository found for an output format
+  {
+    p->repositoriesValid = false;
   }
 }
 
-void FormulaManager::generateImages(const QCString &path,Format format,HighDPI hd) const
+void FormulaManager::checkRepositories()
+{
+  //printf("checkRepositories valid=%d\n",p->repositoriesValid);
+  if (!p->repositoriesValid)
+  {
+    clear(); // clear cached formulas, so the corresponding images and repository files
+             // are regenerated
+    p->repositoriesValid = true;
+  }
+}
+
+void FormulaManager::generateImages(const QCString &path,Format format,HighDPI hd)
 {
   Dir d(path.str());
   // store the original directory
@@ -182,17 +217,18 @@ void FormulaManager::generateImages(const QCString &path,Format format,HighDPI h
     }
     t << "\\pagestyle{empty}\n";
     t << "\\begin{document}\n";
-    for (size_t i=0; i<p->formulas.size(); i++)
+    for (const auto &formula : p->formulas)
     {
+      int id = formula->id();
       QCString resultName;
-      resultName.sprintf("form_%d.%s",static_cast<int>(i),format==Format::Vector?"svg":"png");
-      // only formulas for which no image exists are generated
-      FileInfo fi(resultName.str());
-      if (!fi.exists())
+      resultName.sprintf("form_%d.%s",id,format==Format::Vector?"svg":"png");
+      // only formulas for which no image is cached are generated
+      //printf("check formula %d: cached=%d\n",formula->id(),formula->isCached());
+      if (!formula->isCached())
       {
         // we force a pagebreak after each formula
-        t << p->formulas[i].c_str() << "\n\\pagebreak\n\n";
-        formulasToGenerate.push_back(static_cast<int>(i));
+        t << formula->text() << "\n\\pagebreak\n\n";
+        formulasToGenerate.push_back(id);
       }
       Doxygen::indexList->addImageFile(resultName);
     }
@@ -286,9 +322,13 @@ void FormulaManager::generateImages(const QCString &path,Format format,HighDPI h
       if (zoomFactor<8 || zoomFactor>50) zoomFactor=10;
       scaleFactor *= zoomFactor/10.0;
 
-      int width  = static_cast<int>((x2-x1)*scaleFactor+0.5);
-      int height = static_cast<int>((y2-y1)*scaleFactor+0.5);
-      p->storeDisplaySize(pageNum,width,height);
+      auto it = p->formulaIdMap.find(pageNum);
+      if (it!=p->formulaIdMap.end())
+      {
+        Formula *formula = it->second;
+        formula->setWidth(static_cast<int>((x2-x1)*scaleFactor+0.5));
+        formula->setHeight(static_cast<int>((y2-y1)*scaleFactor+0.5));
+      }
 
       if (format==Format::Vector)
       {
@@ -457,15 +497,14 @@ void FormulaManager::generateImages(const QCString &path,Format format,HighDPI h
   if (f.is_open())
   {
     TextStream t(&f);
-    for (size_t i=0; i<p->formulas.size(); i++)
+    for (const auto &formula : p->formulas)
     {
-      DisplaySize size = p->getDisplaySize(static_cast<int>(i));
-      t << "\\_form#" << i;
-      if (size.width!=-1 && size.height!=-1)
+      t << "\\_form#" << formula->id();
+      if (formula->width()!=-1 && formula->height()!=-1)
       {
-        t << "=" << size.width << "x" << size.height;
+        t << "=" << formula->width() << "x" << formula->height();
       }
-      t << ":" << p->formulas[i].c_str() << "\n";
+      t << ":" << formula->text() << "\n";
     }
   }
   // reset the directory to the original location.
@@ -475,40 +514,41 @@ void FormulaManager::generateImages(const QCString &path,Format format,HighDPI h
 void FormulaManager::clear()
 {
   p->formulas.clear();
-  p->formulaMap.clear();
+  p->formulaIdMap.clear();
 }
 
-int FormulaManager::addFormula(const std::string &formulaText)
+int FormulaManager::addFormula(const std::string &formulaText,int width,int height)
 {
-  auto it = p->formulaMap.find(formulaText);
-  if (it!=p->formulaMap.end()) // already stored
+  Formula *formula = p->formulas.find(formulaText);
+  if (formula) // same formula already stored
   {
-    return static_cast<int>(it->second);
+    return formula->id();
   }
-  // store new formula
-  size_t id = p->formulas.size();
-  p->formulaMap.insert(std::make_pair(formulaText,id));
-  p->formulas.push_back(formulaText);
-  return static_cast<int>(id);
+  // add new formula
+  int id = static_cast<int>(p->formulas.size());
+  formula = p->formulas.add(formulaText.c_str(),id,width,height);
+  p->formulaIdMap.insert(std::make_pair(id,formula));
+  return id;
 }
 
-std::string FormulaManager::findFormula(int formulaId) const
+const Formula *FormulaManager::findFormula(int formulaId) const
 {
-  if (formulaId>=0 && formulaId<static_cast<int>(p->formulas.size()))
-  {
-    return p->formulas[formulaId];
-  }
-  return std::string();
+  auto   it  = p->formulaIdMap.find(formulaId);
+  return it != p->formulaIdMap.end() ? it->second : nullptr;
 }
+
+#if 0
+Formula *FormulaManager::findFormula(int formulaId)
+{
+  auto   it  = p->formulaIdMap.find(formulaId);
+  return it != p->formulaIdMap.end() ? it->second : nullptr;
+}
+#endif
+
 
 bool FormulaManager::hasFormulas() const
 {
   return !p->formulas.empty();
-}
-
-FormulaManager::DisplaySize FormulaManager::displaySize(int formulaId) const
-{
-  return p->getDisplaySize(formulaId);
 }
 
 // helper function to detect and return the major version of inkscape.

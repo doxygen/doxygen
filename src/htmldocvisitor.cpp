@@ -923,14 +923,14 @@ void HtmlDocVisitor::operator()(const DocFormula &f)
     {
       m_t << ".png";
     }
-    FormulaManager::DisplaySize size = FormulaManager::instance().displaySize(f.id());
-    if (size.width!=-1)
+    const Formula *formula = FormulaManager::instance().findFormula(f.id());
+    if (formula && formula->width()!=-1)
     {
-      m_t << "\" width=\"" << size.width;
+      m_t << "\" width=\"" << formula->width();
     }
-    if (size.height!=-1)
+    if (formula && formula->height()!=-1)
     {
-      m_t << "\" height=\"" << size.height;
+      m_t << "\" height=\"" << formula->height();
     }
     m_t << "\"/>";
   }

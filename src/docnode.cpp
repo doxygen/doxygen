@@ -499,12 +499,12 @@ bool DocXRefItem::parse(DocNodeVariant *thisVariant)
 DocFormula::DocFormula(DocParser *parser,DocNodeVariant *parent,int id) : DocNode(parser,parent),
       m_relPath(parser->context.relPath)
 {
-  QCString text = FormulaManager::instance().findFormula(id);
-  if (!text.isEmpty())
+  const Formula *formula = FormulaManager::instance().findFormula(id);
+  if (formula && !formula->text().isEmpty())
   {
     m_id = id;
     m_name.sprintf("form_%d",m_id);
-    m_text = text;
+    m_text = formula->text();
   }
   else // wrong \_form#<n> command
   {

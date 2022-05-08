@@ -11933,23 +11933,18 @@ void parseInput()
 
   if (Config_getBool(GENERATE_HTML) && !Config_getBool(USE_MATHJAX))
   {
-    FormulaManager::instance().readFormulas(Config_getString(HTML_OUTPUT));
+    FormulaManager::instance().initFromRepository(Config_getString(HTML_OUTPUT));
   }
   if (Config_getBool(GENERATE_RTF))
   {
-    // in case GENERRATE_HTML is set we just have to compare, both repositories should be identical
-    FormulaManager::instance().readFormulas(Config_getString(RTF_OUTPUT),
-                              Config_getBool(GENERATE_HTML) &&
-                              !Config_getBool(USE_MATHJAX));
+    FormulaManager::instance().initFromRepository(Config_getString(RTF_OUTPUT));
   }
   if (Config_getBool(GENERATE_DOCBOOK))
   {
-    // in case GENERRATE_HTML is set we just have to compare, both repositories should be identical
-    FormulaManager::instance().readFormulas(Config_getString(DOCBOOK_OUTPUT),
-                         (Config_getBool(GENERATE_HTML) &&
-                         !Config_getBool(USE_MATHJAX)) ||
-                         Config_getBool(GENERATE_RTF));
+    FormulaManager::instance().initFromRepository(Config_getString(DOCBOOK_OUTPUT));
   }
+
+  FormulaManager::instance().checkRepositories();
 
   /**************************************************************************
    *             Handle Tag Files                                           *
@@ -12462,7 +12457,7 @@ void generateOutput()
     copyLogo(Config_getString(RTF_OUTPUT));
   }
 
-  const FormulaManager &fm = FormulaManager::instance();
+  FormulaManager &fm = FormulaManager::instance();
   if (fm.hasFormulas() && generateHtml
       && !Config_getBool(USE_MATHJAX))
   {
