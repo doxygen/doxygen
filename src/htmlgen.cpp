@@ -2179,8 +2179,7 @@ void HtmlGenerator::addIndexItem(const QCString &,const QCString &)
 
 void HtmlGenerator::writeNonBreakableSpace(int n)
 {
-  int i;
-  for (i=0;i<n;i++)
+  for (int i=0;i<n;i++)
   {
     m_t << "&#160;";
   }

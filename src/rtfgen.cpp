@@ -1735,9 +1735,12 @@ void RTFGenerator::endCodeFragment(const QCString &)
   m_omitParagraph = TRUE;
 }
 
-void RTFGenerator::writeNonBreakableSpace(int)
+void RTFGenerator::writeNonBreakableSpace(int n)
 {
-  m_t << "\\~ ";
+  for (int i=0;i<n;i++)
+  {
+    m_t << "\\~ ";
+  }
 }
 
 
