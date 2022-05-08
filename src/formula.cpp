@@ -106,7 +106,7 @@ void FormulaManager::initFromRepository(const QCString &dir)
         //id     = std::stoi(match[1].str());
         //text   = line.substr(match.position()+match.length());
         //printf("old format found id=%d text=%s\n",id,text.c_str());
-        msg("old formula.respository format detected; forcing upgrade.\n");
+        msg("old formula.repository format detected; forcing upgrade.\n");
         p->repositoriesValid = false;
         break;
       }
