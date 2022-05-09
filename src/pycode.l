@@ -148,6 +148,7 @@ static void findMemberLink(yyscan_t yyscanner, CodeOutputInterface &ol,
                            const QCString &symName);
 static void adjustScopesAndSuites(yyscan_t yyscanner,unsigned indentLength);
 static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
+static inline void pop_state(yyscan_t yyscanner);
 
 #if 0 // TODO: call me to store local variables and get better syntax highlighting, see code.l
 static void addVariable(yyscan_t yyscanner, QCString type, QCString name);
@@ -780,7 +781,7 @@ TARGET            ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBU
                                         endFontClass(yyscanner);
                                       }
                                       unput(*yytext);
-                                      yy_pop_state(yyscanner);
+                                      pop_state(yyscanner);
                                     }
 <*>{POUNDCOMMENT}.*                 {
                                       if (YY_START==SingleQuoteString ||
@@ -1662,6 +1663,15 @@ void PythonCodeParser::parseCode(CodeOutputInterface &codeOutIntf,
   // write the tooltips
   yyextra->tooltipManager.writeTooltips(codeOutIntf);
   printlex(yy_flex_debug, FALSE, __FILE__, fileDef ? qPrint(fileDef->fileName()): NULL);
+}
+
+static inline void pop_state(yyscan_t yyscanner)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  if ( yyg->yy_start_stack_ptr <= 0 )
+    warn(yyextra->fileName,yyextra->yyLineNr,"Unexpected statement '%s'",yytext );
+  else
+    yy_pop_state(yyscanner);
 }
 
 #if USE_STATE2STRING
