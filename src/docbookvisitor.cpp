@@ -245,7 +245,7 @@ void DocbookDocVisitor::operator()(const DocLineBreak &)
 {
 DB_VIS_C
   if (m_hide) return;
-  m_t << "\n<literallayout>&#160;&#xa;</literallayout>\n";
+  m_t << "<?linebreak?>";
   // gives nicer results but gives problems as it is not allowed in <pare> and also problems with dblatex
   // m_t << "\n" << "<sbr/>\n";
 }

@@ -761,12 +761,12 @@ DB_GEN_C
 void DocbookGenerator::writeNonBreakableSpace(int n)
 {
 DB_GEN_C
-  for (int i=0;i<n;i++) m_t << " ";
+  for (int i=0;i<n;i++) m_t << "&#160;";
 }
 void DocbookGenerator::lineBreak(const QCString &)
 {
 DB_GEN_C
-  m_t << "\n";
+  m_t << "<?linebreak?>";
 }
 void DocbookGenerator::startTypewriter()
 {
