@@ -135,7 +135,6 @@ const char *DocStyleChange::styleString() const
     case DocStyleChange::Del:          return "del";
     case DocStyleChange::Underline:    return "u";
     case DocStyleChange::Ins:          return "ins";
-    case DocStyleChange::Details:      return "details";
     case DocStyleChange::Summary:      return "summary";
   }
   return "<invalid>";
@@ -1284,6 +1283,29 @@ endheader:
   return retval;
 }
 //---------------------------------------------------------------------------
+
+int DocHtmlDetails::parse(DocNodeVariant *thisVariant)
+{
+  DBG(("DocHtmlHtmlDetails::parse() start\n"));
+  int retval=0;
+  auto ns = AutoNodeStack(parser(),thisVariant);
+
+  // parse one or more paragraphs
+  bool isFirst=TRUE;
+  DocPara *par=0;
+  do
+  {
+    auto vDocPara = children().append<DocPara>(parser(),thisVariant);
+    par = children().get_last<DocPara>();
+    if (isFirst) { par->markFirst(); isFirst=FALSE; }
+    retval=par->parse(vDocPara);
+  }
+  while (retval==TK_NEWPARA);
+  if (par) par->markLast();
+
+  DBG(("DocHtmlHtmlDetails::parse() end retval=%s\n",DocTokenizer::retvalToString(retval)));
+  return (retval==RetVal_EndHtmlDetails) ? RetVal_OK : retval;
+}
 
 int DocHRef::parse(DocNodeVariant *thisVariant)
 {
@@ -4308,9 +4330,6 @@ int DocPara::handleHtmlStartTag(DocNodeVariant *thisVariant,const QCString &tagN
     case HTML_INS:
       if (!parser()->context.token->emptyTag) parser()->handleStyleEnter(thisVariant,children(),DocStyleChange::Ins,tagName,&parser()->context.token->attribs);
       break;
-    case HTML_DETAILS:
-      if (!parser()->context.token->emptyTag) parser()->handleStyleEnter(thisVariant,children(),DocStyleChange::Details,tagName,&parser()->context.token->attribs);
-      break;
     case HTML_CODE:
       if (parser()->context.token->emptyTag) break;
       if (/*getLanguageFromFileName(parser()->context.fileName)==SrcLangExt_CSharp ||*/ parser()->context.xmlComment)
@@ -4426,6 +4445,14 @@ int DocPara::handleHtmlStartTag(DocNodeVariant *thisVariant,const QCString &tagN
         parser()->handleImg(thisVariant,children(),tagHtmlAttribs);
       }
       break;
+    case HTML_DETAILS:
+      if (!parser()->context.token->emptyTag)
+      {
+        auto vDocHtmlDetails = children().append<DocHtmlDetails>(parser(),thisVariant,
+                                         tagHtmlAttribs);
+        retval=children().get_last<DocHtmlDetails>()->parse(vDocHtmlDetails);
+      }
+      break;
     case HTML_BLOCKQUOTE:
       if (!parser()->context.token->emptyTag)
       {
@@ -4435,11 +4462,14 @@ int DocPara::handleHtmlStartTag(DocNodeVariant *thisVariant,const QCString &tagN
       break;
 
     case XML_SUMMARY:
-      if (insideDetails(parser()->context.styleStack))
+      if (insideDetails(thisVariant))
       {
-        if (!parser()->context.token->emptyTag) parser()->handleStyleEnter(thisVariant,children(),DocStyleChange::Summary,tagName,&parser()->context.token->attribs);
-        break;
+        if (!parser()->context.token->emptyTag)
+        {
+          parser()->handleStyleEnter(thisVariant,children(),DocStyleChange::Summary,tagName,&parser()->context.token->attribs);
+        } 
       }
+      break;
     case XML_REMARKS:
     case XML_EXAMPLE:
       parser()->context.xmlComment=TRUE;
@@ -4708,6 +4738,9 @@ int DocPara::handleHtmlEndTag(DocNodeVariant *thisVariant,const QCString &tagNam
         // ignore </li> tags
       }
       break;
+    case HTML_DETAILS:
+      retval=RetVal_EndHtmlDetails;
+      break;
     case HTML_BLOCKQUOTE:
       retval=RetVal_EndBlockQuote;
       break;
@@ -4728,9 +4761,6 @@ int DocPara::handleHtmlEndTag(DocNodeVariant *thisVariant,const QCString &tagNam
       break;
     case HTML_INS:
       parser()->handleStyleLeave(thisVariant,children(),DocStyleChange::Ins,tagName);
-      break;
-    case HTML_DETAILS:
-      parser()->handleStyleLeave(thisVariant,children(),DocStyleChange::Details,tagName);
       break;
     case HTML_CODE:
       parser()->handleStyleLeave(thisVariant,children(),DocStyleChange::Code,tagName);
@@ -4827,11 +4857,11 @@ int DocPara::handleHtmlEndTag(DocNodeVariant *thisVariant,const QCString &tagNam
       //children().push_back(std::make_unique<DocStyleChange>(this,parser()->context.nodeStack.size(),DocStyleChange::Bold,FALSE));
       break;
     case XML_SUMMARY:
-      if (insideDetails(parser()->context.styleStack))
+      if (insideDetails(thisVariant))
       {
         parser()->handleStyleLeave(thisVariant,children(),DocStyleChange::Summary,tagName);
-        break;
       }
+      break;
     case XML_REMARKS:
     case XML_PARA:
     case XML_VALUE:
@@ -4911,7 +4941,7 @@ reparsetoken:
                // and whitespace after certain constructs
                !holds_one_of_alternatives<DocHtmlDescList, DocHtmlTable,  DocHtmlList,   DocSimpleSect,
                                           DocAutoList,     DocSimpleList, DocHtmlHeader, DocHtmlBlockQuote,
-                                          DocParamSect,    DocXRefItem>(children().back())
+                                          DocParamSect, DocHtmlDetails,   DocXRefItem>(children().back())
               )
              )
           {

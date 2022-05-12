@@ -45,7 +45,8 @@ class DocParser;
 /* 35 */  DN(DocSecRefList)     DN_SEP DN(DocInternal)      DN_SEP DN(DocParBlock)       DN_SEP DN(DocSimpleList)   DN_SEP DN(DocHtmlList)    DN_SEP   \
 /* 40 */  DN(DocSimpleSect)     DN_SEP DN(DocSimpleSectSep) DN_SEP DN(DocParamSect)      DN_SEP DN(DocPara)         DN_SEP DN(DocParamList)   DN_SEP   \
 /* 45 */  DN(DocSimpleListItem) DN_SEP DN(DocHtmlListItem)  DN_SEP DN(DocHtmlDescData)   DN_SEP DN(DocHtmlCell)     DN_SEP DN(DocHtmlCaption) DN_SEP   \
-/* 50 */  DN(DocHtmlRow)        DN_SEP DN(DocHtmlTable)     DN_SEP DN(DocHtmlBlockQuote) DN_SEP DN(DocText)         DN_SEP DN(DocRoot)                 \
+/* 50 */  DN(DocHtmlRow)        DN_SEP DN(DocHtmlTable)     DN_SEP DN(DocHtmlBlockQuote) DN_SEP DN(DocText)         DN_SEP DN(DocRoot)        DN_SEP   \
+/* 55 */  DN(DocHtmlDetails)                                                                                                                           \
 
 // forward declarations
 #define DN(x) class x;
@@ -271,7 +272,6 @@ class DocStyleChange : public DocNode
                  Del           = (1<<12),
                  Ins           = (1<<13),
                  S             = (1<<14),
-                 Details       = (1<<15),
                  Summary       = (1<<16),
                  Cite          = (1<<17)
                };
@@ -791,6 +791,19 @@ class DocHRef : public DocCompoundNode
     QCString   m_url;
     QCString   m_relPath;
     QCString   m_file;
+};
+
+/** Node Html details */
+class DocHtmlDetails : public DocCompoundNode
+{
+  public:
+    DocHtmlDetails(DocParser *parser,DocNodeVariant *parent,const HtmlAttribList &attribs) :
+       DocCompoundNode(parser,parent), m_attribs(attribs) {}
+    const HtmlAttribList &attribs() const { return m_attribs; }
+    int parse(DocNodeVariant*);
+
+  private:
+    HtmlAttribList m_attribs;
 };
 
 /** Node Html heading */

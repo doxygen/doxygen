@@ -286,21 +286,8 @@ void RTFDocVisitor::operator()(const DocStyleChange &s)
       break;
     case DocStyleChange::Div:  /* HTML only */ break;
     case DocStyleChange::Span: /* HTML only */ break;
-    case DocStyleChange::Details: /* emulation of the <details> tag */
-      if (s.enable())
-      {
-        m_t << "{\n";
-        m_t << "\\par\n";
-      }
-      else
-      {
-        m_t << "\\par";
-        m_t << "}\n";
-      }
-      m_lastIsPara=TRUE;
-      break;
     case DocStyleChange::Summary: /* emulation of the <summary> tag inside a <details> tag */
-      if (s.enable()) m_t << "{\\b ";      else m_t << "} ";
+      if (s.enable()) m_t << "{\\b ";      else m_t << "}\\par ";
       break;
   }
 }
@@ -1142,6 +1129,28 @@ void RTFDocVisitor::operator()(const DocHRef &href)
     m_t << "}";
   }
   m_lastIsPara=FALSE;
+}
+
+void RTFDocVisitor::operator()(const DocHtmlDetails &d)
+{
+  if (m_hide) return;
+  //m_lastIsPara=TRUE;
+  //m_t << "{\n";
+  //m_t << "\\par\n";
+  //visitChildren(d);
+  //m_t << "\\par";
+  //m_t << "}\n";
+  //m_lastIsPara=TRUE;
+  DBG_RTF("{\\comment RTFDocVisitor::operator()(const DocHtmlDetails &)}\n");
+  if (!m_lastIsPara) m_t << "\\par\n";
+  m_t << "{"; // start desc
+  incIndentLevel();
+  m_t << rtf_Style_Reset << getStyle("DescContinue");
+  visitChildren(d);
+  if (!m_lastIsPara) m_t << "\\par\n";
+  decIndentLevel();
+  m_t << "}"; // end desc
+  m_lastIsPara=TRUE;
 }
 
 void RTFDocVisitor::operator()(const DocHtmlHeader &header)

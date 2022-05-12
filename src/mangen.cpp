@@ -627,7 +627,7 @@ void ManGenerator::endSection(const QCString &,SectionType type)
   }
   else
   {
-    m_t << "\n";
+    m_t << "\n.PP\n";
     m_firstCol=TRUE;
     m_paragraph=FALSE;
     m_inHeader=FALSE;

@@ -294,9 +294,6 @@ void XmlDocVisitor::operator()(const DocStyleChange &s)
       break;
     case DocStyleChange::Div:  /* HTML only */ break;
     case DocStyleChange::Span: /* HTML only */ break;
-    case DocStyleChange::Details:
-      if (s.enable()) m_t << "<details>";  else m_t << "</details>";
-      break;
     case DocStyleChange::Summary:
       if (s.enable()) m_t << "<summary>";  else m_t << "</summary>";
       break;
@@ -888,6 +885,14 @@ void XmlDocVisitor::operator()(const DocHRef &href)
   m_t << "<ulink url=\"" << convertToXML(href.url(), TRUE) << "\">";
   visitChildren(href);
   m_t << "</ulink>";
+}
+
+void XmlDocVisitor::operator()(const DocHtmlDetails &d)
+{
+  if (m_hide) return;
+  m_t << "<details>";
+  visitChildren(d);
+  m_t << "</details>";
 }
 
 void XmlDocVisitor::operator()(const DocHtmlHeader &header)

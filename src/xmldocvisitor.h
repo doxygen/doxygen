@@ -82,6 +82,7 @@ class XmlDocVisitor : public DocVisitor
     void operator()(const DocHtmlCaption &);
     void operator()(const DocInternal &);
     void operator()(const DocHRef &);
+    void operator()(const DocHtmlDetails &);
     void operator()(const DocHtmlHeader &);
     void operator()(const DocImage &);
     void operator()(const DocDotFile &);
