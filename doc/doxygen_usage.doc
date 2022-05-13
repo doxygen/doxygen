@@ -1,12 +1,12 @@
 /******************************************************************************
  *
- * 
+ *
  *
  * Copyright (C) 1997-2015 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -16,19 +16,19 @@
  */
 /*! \page doxygen_usage Doxygen usage
 
-Doxygen is a command line based utility.  Calling \c doxygen with the
-`--help` option at the command line will give you a brief description of the 
+Doxygen is a command-line based utility. Calling \c doxygen with the
+`--help` option at the command line will give you a brief description of the
 usage of the program.
 
-All options consist of a leading character <tt>-</tt>, 
+All options consist of a leading character <tt>-</tt>,
 followed by one character and one or more arguments depending on the option.
 
-To generate a manual for your project you typically 
+To generate a manual for your project you typically
 need to follow these steps:
 <ol>
-<li> You document your source code with 
+<li> You document your source code with
      special documentation blocks (see section \ref specialblock).
-<li> You generate a configuration file (see section \ref config) by 
+<li> You generate a configuration file (see section \ref config) by
      calling doxygen with the \c -g option:
 \verbatim
 doxygen -g <config_file>
@@ -44,34 +44,34 @@ doxygen <config_file>
 </ol>
 
 If you have a configuration file generated with an older version of
-doxygen, you can upgrade it to the current version by running doxygen
+Doxygen, you can upgrade it to the current version by running doxygen
 with the -u option.
 \verbatim
 doxygen -u <config_file>
 \endverbatim
 All configuration settings in the original configuration file will be copied
 to the new configuration file. Any new options will have their default value.
-Note that comments that you may have added in the original configuration file 
+Note that comments that you may have added in the original configuration file
 will be lost.
 
 \section doxygen_finetune Fine-tuning the output
-If you want to fine-tune the way the output looks, doxygen allows you 
+If you want to fine-tune the way the output looks, Doxygen allows you
 generate default style sheet, header, and footer files that you can edit
-afterwards:
+afterward:
 <ul>
-<li>For HTML output, you can generate the default header file 
-    (see \ref cfg_html_header "HTML_HEADER"), the default footer 
+<li>For HTML output, you can generate the default header file
+    (see \ref cfg_html_header "HTML_HEADER"), the default footer
     (see \ref cfg_html_footer "HTML_FOOTER"), and the default style
     sheet (see \ref cfg_html_stylesheet "HTML_STYLESHEET"), using the
     following command:
 \verbatim
 doxygen -w html header.html footer.html stylesheet.css <config_file>
 \endverbatim
-  The `config_file` is optional. When omitted doxygen will search for 
+  The `config_file` is optional. When omitted doxygen will search for
   a file named `Doxyfile` and process that. When this is also not found it
-  will used the default settings.
+  will use the default settings.
 
-<li>For \LaTeX output, you can generate the first and last part of \c refman.tex 
+<li>For \LaTeX output, you can generate the first and last part of \c refman.tex
     (see \ref cfg_latex_header "LATEX_HEADER" and
      \ref cfg_latex_footer "LATEX_FOOTER") and the style sheet included
     by that header (normally <code>doxygen.sty</code>), using the following
@@ -79,10 +79,10 @@ doxygen -w html header.html footer.html stylesheet.css <config_file>
 \verbatim
 doxygen -w latex header.tex footer.tex doxygen.sty <config_file>
 \endverbatim
-If you need non-default options (for instance to use extra \LaTeX packages) 
+If you need non-default options (for instance to use extra \LaTeX packages)
 you need to make a configuration file with those options set correctly and then specify
 that configuration file after the generated files (make a backup of the configuration
-file first so you don't loose it in case you forget to specify one of the 
+file first so you don't loose it in case you forget to specify one of the
 output files).
 <li>For RTF output, you can generate the default style sheet file (see
     \ref cfg_rtf_stylesheet_file "RTF_STYLESHEET_FILE") using:
@@ -90,8 +90,8 @@ output files).
 doxygen -w rtf rtfstyle.cfg
 \endverbatim
 </ul>
-\warning When using a custom header you are responsible 
-  for the proper inclusion of any scripts and style sheets that doxygen 
+\warning When using a custom header you are responsible
+  for the proper inclusion of any scripts and style sheets that doxygen
   needs, which is dependent on the configuration options and may changes
   when upgrading to a new doxygen release.
 
@@ -106,7 +106,7 @@ doxygen -w rtf rtfstyle.cfg
      Please use the \c -s or \c -x or \c -x_noenv option if you send me a
      configuration file as part of a bug report or post an issue on GitHub!
      (see also: \ref bug_reports "How to report a bug")
-<li> To make doxygen read/write to standard input/output instead of from/to 
+<li> To make doxygen read/write to standard input/output instead of from/to
      a file, use \c - for the file name.
 </ul>
 
