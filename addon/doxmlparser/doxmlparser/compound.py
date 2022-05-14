@@ -1059,6 +1059,8 @@ class DoxLanguage(str, Enum):
     XML='XML'
     SQL='SQL'
     MARKDOWN='Markdown'
+    SLICE='Slice'
+    LEX='Lex'
 
 
 class DoxMemberKind(str, Enum):
@@ -1694,7 +1696,7 @@ class compounddefType(GeneratedsSuper):
                 self.gds_collector_.add_message('Value "%(value)s"%(lineno)s is not of the correct base simple type (str)' % {"value": value, "lineno": lineno, })
                 return False
             value = value
-            enumerations = ['Unknown', 'IDL', 'Java', 'C#', 'D', 'PHP', 'Objective-C', 'C++', 'JavaScript', 'Python', 'Fortran', 'VHDL', 'XML', 'SQL', 'Markdown']
+            enumerations = ['Unknown', 'IDL', 'Java', 'C#', 'D', 'PHP', 'Objective-C', 'C++', 'JavaScript', 'Python', 'Fortran', 'VHDL', 'XML', 'SQL', 'Markdown', 'Slice', 'Lex']
             if value not in enumerations:
                 lineno = self.gds_get_node_lineno_()
                 self.gds_collector_.add_message('Value "%(value)s"%(lineno)s does not match xsd enumeration restriction on DoxLanguage' % {"value" : encode_str_2_3(value), "lineno": lineno} )

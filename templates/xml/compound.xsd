@@ -826,6 +826,8 @@
       <xsd:enumeration value="XML" />
       <xsd:enumeration value="SQL" />
       <xsd:enumeration value="Markdown" />
+      <xsd:enumeration value="Slice" />
+      <xsd:enumeration value="Lex" />
     </xsd:restriction>
   </xsd:simpleType>
 
