@@ -17,28 +17,28 @@ import json
 import re
 
 class MemberType:
-  Define="macro definition"
-  Function="function"
-  Variable="variable"
-  Typedef="typedef"
-  Enumeration="enumeration"
-  EnumValue="enumvalue"
-  Signal="signal"
-  Slot="slot"
-  Friend="friend"
-  DCOP="dcop"
-  Property="property"
-  Event="event"
-  File="file"
+    Define="macro definition"
+    Function="function"
+    Variable="variable"
+    Typedef="typedef"
+    Enumeration="enumeration"
+    EnumValue="enumvalue"
+    Signal="signal"
+    Slot="slot"
+    Friend="friend"
+    DCOP="dcop"
+    Property="property"
+    Event="event"
+    File="file"
 
 class RequestType:
-  References="9901"
-  Struct="9902"
-  Includers="9903"
-  Includees="9904"
-  Members="9905"
-  BaseClasses="9906"
-  SubClasses="9907"
+    References="9901"
+    Struct="9902"
+    Includers="9903"
+    Includees="9904"
+    Members="9905"
+    BaseClasses="9906"
+    SubClasses="9907"
 
 g_use_regexp=False
 ###############################################################################
@@ -311,7 +311,7 @@ def serveCgi():
     print(json.dumps({"result":j,"error":None}))
 ###############################################################################
 def usage():
-  sys.stderr.write("""Usage: search.py [Options]
+    sys.stderr.write("""Usage: search.py [Options]
 Options:
     -h, --help
     -d <D>    Use database <D> for queries.
@@ -381,9 +381,9 @@ def serveCli(argv):
         cn=openDb(dbname)
         f=Finder(cn,o)
         if ref != None:
-          j=processHref(cn,ref)
+            j=processHref(cn,ref)
         else:
-          j=process(f,kind)
+            j=process(f,kind)
         print(json.dumps(j,indent=4))
 
 
