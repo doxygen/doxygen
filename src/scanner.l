@@ -203,6 +203,8 @@ struct scannerYY_state
   QCString         programStr;
 
   ClangTUParser * clangParser = 0;
+
+  int fakeNS  = 0; //<! number of file scoped namespaces in CSharp file
 };
 
 #if USE_STATE2STRING
@@ -5595,8 +5597,18 @@ NONLopt [^\n]*
 <ClassTemplSpec>.                       {
                                           yyextra->current->name += yytext;
                                         }
-<CompoundName>{SCOPENAME}{BN}*";"       { // forward declaration
-                                          if (!yyextra->current->tArgLists.empty())
+<CompoundName>{SCOPENAME}{BN}*";"       { // forward declaration?
+                                          if (yyextra->insideCS && yyextra->current->type == "namespace")
+                                          {
+                                            // file scoped CSharp namespace
+                                            lineCount(yyscanner);
+                                            yyextra->current->name = yytext;
+                                            yyextra->current->name=yyextra->current->name.left(yyextra->current->name.length()-1).stripWhiteSpace();
+                                            yyextra->fakeNS++;
+                                            unput('{'); // fake start of body
+                                            BEGIN( ClassVar );
+                                          }
+                                          else if (!yyextra->current->tArgLists.empty())
                                           {
                                             // found a forward template declaration, this has
                                             // a purpose of its own
@@ -5634,19 +5646,22 @@ NONLopt [^\n]*
                                             yyextra->current_root->moveToSubEntryAndRefresh(yyextra->current);
                                           }
 
-                                          unput(';');
-                                          yyextra->current->reset();
-                                          initEntry(yyscanner);
-                                          if (yyextra->insideObjC) // see bug746361
+                                          if (!(yyextra->insideCS && yyextra->current->type == "namespace"))
                                           {
-                                            yyextra->language = yyextra->current->lang = SrcLangExt_Cpp;
-                                            yyextra->insideObjC = FALSE;
+                                            unput(';');
+                                            yyextra->current->reset();
+                                            initEntry(yyscanner);
+                                            if (yyextra->insideObjC) // see bug746361
+                                            {
+                                              yyextra->language = yyextra->current->lang = SrcLangExt_Cpp;
+                                              yyextra->insideObjC = FALSE;
+                                              }
+                                            if (yyextra->isTypedef) // typedef of a class, put typedef keyword back
+                                            {
+                                              yyextra->current->type.prepend("typedef");
+                                            }
+                                            BEGIN( FindMembers );
                                           }
-                                          if (yyextra->isTypedef) // typedef of a class, put typedef keyword back
-                                          {
-                                            yyextra->current->type.prepend("typedef");
-                                          }
-                                          BEGIN( FindMembers );
                                         }
 <CompoundName>{SCOPENAME}/{BN}*"("      {
                                           yyextra->current->name = yytext ;
@@ -7051,6 +7066,18 @@ NONLopt [^\n]*
 <*>{CPPC}                                 {
                                           yyextra->lastCContext = YY_START ;
                                           BEGIN( SkipCxxComment ) ;
+                                        }
+<<EOF>>                                 {
+                                          if (yyextra->insideCS && yyextra->fakeNS)
+                                          {
+                                            yyextra->fakeNS--;
+                                            unput('}');
+                                            BEGIN ( ReadNSBody);
+                                          }
+                                          else
+                                          {
+                                            yyterminate();
+                                          }
                                         }
 %%
 

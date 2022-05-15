@@ -110,6 +110,7 @@ struct codeYY_state
   int           yyLineNr = 0;        //!< current line number
   yy_size_t     yyColNr = 0;         //!< current column number
   bool          insideCodeLine = FALSE;
+  bool          skipCodify = FALSE;  //!< for CSharp files scoped namespace {
 
   bool          exampleBlock = FALSE;
   QCString      exampleName;
@@ -660,9 +661,18 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           BEGIN(Body);
                                         }
 <ClassName,ClassVar>";"                 {
-                                          yyextra->code->codify(yytext);
-                                          yyextra->searchingForBody=FALSE;
-                                          BEGIN( Body );
+                                          if (yyextra->lang==SrcLangExt_CSharp)
+                                          {
+                                            yyextra->code->codify(yytext);
+                                            yyextra->skipCodify = true;
+                                            unput('{');
+                                          }
+                                          else
+                                          {
+                                            yyextra->code->codify(yytext);
+                                            yyextra->searchingForBody=FALSE;
+                                            BEGIN( Body );
+                                          }
                                         }
 <ClassName,ClassVar>[*&^%]+             {
                                           yyextra->type=yyextra->curClassName;
@@ -776,7 +786,8 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
 <Bases>^{Bopt}/"@"{ID}                    | // Objective-C interface
 <Bases,ClassName,ClassVar,CppCliTypeModifierFollowup>{B}*"{"{B}* {
                                           yyextra->theVarContext.pushScope();
-                                          yyextra->code->codify(yytext);
+                                          if (!yyextra->skipCodify) yyextra->code->codify(yytext);
+                                          yyextra->skipCodify = false;
                                           if (YY_START==ClassVar && yyextra->curClassName.isEmpty())
                                           {
                                             yyextra->curClassName = yyextra->name;
