@@ -147,18 +147,6 @@ class PrintDocVisitor
         case DocStyleChange::Span:
           if (s.enable()) printf("<span>"); else printf("</span>");
           break;
-        case DocStyleChange::Details:
-          if (s.enable())
-          {
-            indent_pre();
-            printf("<details>\n");
-          }
-          else
-          {
-            indent_post();
-            printf("</details>\n");
-          }
-          break;
         case DocStyleChange::Summary:
           if (s.enable())
           {
@@ -529,6 +517,19 @@ class PrintDocVisitor
       visitChildren(href);
       indent_post();
       printf("</a>\n");
+    }
+    void operator()(const DocHtmlDetails &details)
+    {
+      indent_pre();
+      printf("<details");
+      for (const auto &opt : details.attribs())
+      {
+        printf(" %s=\"%s\"",qPrint(opt.name),qPrint(opt.value));
+      }
+      printf(">\n");
+      visitChildren(details);
+      indent_post();
+      printf("</details>\n");
     }
     void operator()(const DocHtmlHeader &header)
     {

@@ -1394,16 +1394,6 @@ reparsetoken:
               handleStyleLeave(parent,children,DocStyleChange::Ins,tokenName);
             }
             break;
-          case HTML_DETAILS:
-            if (!context.token->endTag)
-            {
-              handleStyleEnter(parent,children,DocStyleChange::Details,tokenName,&context.token->attribs);
-            }
-            else
-            {
-              handleStyleLeave(parent,children,DocStyleChange::Details,tokenName);
-            }
-            break;
           case HTML_CODE:
           case XML_C:
             if (!context.token->endTag)

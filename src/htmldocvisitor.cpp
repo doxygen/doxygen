@@ -116,6 +116,7 @@ static bool mustBeOutsideParagraph(const DocNodeVariant &n)
                                  /* <hr> */         DocHorRuler,
                                  /* <blockquote> */ DocHtmlBlockQuote,
                                  /* \parblock */    DocParBlock,
+                                 /* <details> */    DocHtmlDetails,
                                                     DocIncOperator >(n))
   {
     return TRUE;
@@ -521,9 +522,6 @@ void HtmlDocVisitor::operator()(const DocStyleChange &s)
       break;
     case DocStyleChange::Span:
       if (s.enable()) m_t << "<span" << htmlAttribsToString(s.attribs()) << ">";  else m_t << "</span>";
-      break;
-    case DocStyleChange::Details:
-      if (s.enable()) m_t << "<details" << htmlAttribsToString(s.attribs()) << ">\n"; else m_t << "</details>\n";
       break;
     case DocStyleChange::Summary:
       if (s.enable()) m_t << "<summary" << htmlAttribsToString(s.attribs()) << ">";  else m_t << "</summary>";
@@ -1227,7 +1225,8 @@ static bool determineIfNeedsTag(const DocPara &p)
                          DocSimpleSect,
                          DocXRefItem,
                          DocHtmlBlockQuote,
-                         DocParBlock
+                         DocParBlock,
+                         DocHtmlDetails
                          >(*p.parent()))
     {
       needsTag = TRUE;
@@ -1578,6 +1577,16 @@ void HtmlDocVisitor::operator()(const DocHRef &href)
   }
   visitChildren(href);
   m_t << "</a>";
+}
+
+void HtmlDocVisitor::operator()(const DocHtmlDetails &d)
+{
+  if (m_hide) return;
+  forceEndParagraph(d);
+  m_t << "<details " << htmlAttribsToString(d.attribs()) << ">\n";
+  visitChildren(d);
+  m_t << "</details>\n";
+  forceStartParagraph(d);
 }
 
 void HtmlDocVisitor::operator()(const DocHtmlHeader &header)
@@ -1954,7 +1963,6 @@ void HtmlDocVisitor::operator()(const DocHtmlBlockQuote &b)
 {
   if (m_hide) return;
   forceEndParagraph(b);
-  QCString attrs = htmlAttribsToString(b.attribs());
   m_t << "<blockquote class=\"doxtable\"" << htmlAttribsToString(b.attribs()) << ">\n";
   visitChildren(b);
   m_t << "</blockquote>\n";

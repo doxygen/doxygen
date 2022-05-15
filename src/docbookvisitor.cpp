@@ -306,20 +306,8 @@ DB_VIS_C
     case DocStyleChange::Ins:        break;
     case DocStyleChange::Div:  /* HTML only */ break;
     case DocStyleChange::Span: /* HTML only */ break;
-    case DocStyleChange::Details: /* emulation of the <details> tag */
-      if (s.enable())
-      {
-        m_t << "\n";
-        m_t << "<para>";
-      }
-      else
-      {
-        m_t << "</para>";
-        m_t << "\n";
-      }
-      break;
     case DocStyleChange::Summary: /* emulation of the <summary> tag inside a <details> tag */
-      if (s.enable()) m_t << "<emphasis role=\"bold\">";      else m_t << "</emphasis>";
+      if (s.enable()) m_t << "<para><emphasis role=\"bold\">";      else m_t << "</emphasis></para>";
       break;
   }
 }
@@ -1182,6 +1170,17 @@ DB_VIS_C
   }
   visitChildren(href);
   m_t << "</link>";
+}
+
+void DocbookDocVisitor::operator()(const DocHtmlDetails &d)
+{
+DB_VIS_C
+  if (m_hide) return;
+  m_t << "\n";
+  m_t << "<para>";
+  visitChildren(d);
+  m_t << "</para>";
+  m_t << "\n";
 }
 
 void DocbookDocVisitor::operator()(const DocHtmlHeader &h)

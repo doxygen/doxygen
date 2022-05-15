@@ -336,6 +336,7 @@ class PerlModDocVisitor : public DocVisitor
     void operator()(const DocHtmlCaption &);
     void operator()(const DocInternal &);
     void operator()(const DocHRef &);
+    void operator()(const DocHtmlDetails &);
     void operator()(const DocHtmlHeader &);
     void operator()(const DocImage &);
     void operator()(const DocDotFile &);
@@ -625,9 +626,6 @@ void PerlModDocVisitor::operator()(const DocStyleChange &s)
     case DocStyleChange::Preformatted:  style = "preformatted"; break;
     case DocStyleChange::Div:           style = "div"; break;
     case DocStyleChange::Span:          style = "span"; break;
-    case DocStyleChange::Details: /* emulation of the <details> tag */
-      style = "details";
-      break;
     case DocStyleChange::Summary: /* emulation of the <summary> tag inside a <details> tag */
       style = "summary";
       break;
@@ -1031,6 +1029,15 @@ void PerlModDocVisitor::operator()(const DocHRef &href)
 #if 0
   m_output.add("</ulink>");
 #endif
+}
+
+void PerlModDocVisitor::operator()(const DocHtmlDetails &details)
+{
+  openItem("details");
+  openSubBlock("content");
+  visitChildren(details);
+  closeSubBlock();
+  closeItem();
 }
 
 void PerlModDocVisitor::operator()(const DocHtmlHeader &header)
