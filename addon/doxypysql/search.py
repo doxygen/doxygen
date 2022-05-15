@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 # python script to search through doxygen_sqlite3.db
 #

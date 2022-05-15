@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # python script to generate configoptions.cpp and config.doc from config.xml
 #
 # Copyright (C) 1997-2015 by Dimitri van Heesch.
