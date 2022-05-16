@@ -56,13 +56,13 @@ DOC_NODES
 #undef DN_SEP
 
 // define a variant type
-using DocNodeVariant = std::variant<
 #define DN(x) x
 #define DN_SEP ,
+using DocNodeVariant = std::variant<
 DOC_NODES
+>;
 #undef DN
 #undef DN_SEP
->;
 
 // getter functions to return the name of a doc node type
 #define DN(x) constexpr const char *docNodeName(const x &n) { return #x; }
@@ -1323,17 +1323,17 @@ inline T *DocNodeList::get_last()
   return std::get_if<T>(&back());
 }
 
-/// ---------------- Debug helpers -------------------------------
+// ---------------- Debug helpers -------------------------------
 
-inline const char *docNodeName(const DocNodeVariant &v)
-{
 #define DN(x)  #x
 #define DN_SEP ,
+inline const char *docNodeName(const DocNodeVariant &v)
+{
   static const char *table[] = { DOC_NODES };
-#undef DN
-#undef DN_SEP
   return table[v.index()];
 }
+#undef DN
+#undef DN_SEP
 
 inline void dumpDocNodeSizes()
 {
