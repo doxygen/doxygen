@@ -661,7 +661,7 @@ WSopt [ \t\r]*
                                               (!yyextra->expandOnlyPredef || def->isPredefined)
                                              )
                                           {
-                                            QCString result=def->isPredefined ? def->definition : expandMacro(yyscanner,yytext);
+                                            QCString result=expandMacro(yyscanner,yytext);
                                             outputString(yyscanner,result);
                                           }
                                           else
