@@ -183,7 +183,7 @@ static int charsToIndex(const QCString &word)
   return c1*256+c2;
 }
 
-void SearchIndex::addWord(const QCString &word,bool hiPriority,bool recurse)
+void SearchIndex::addWordRec(const QCString &word,bool hiPriority,bool recurse)
 {
   if (word.isEmpty()) return;
   QCString wStr = QCString(word).lower();
@@ -205,7 +205,7 @@ void SearchIndex::addWord(const QCString &word,bool hiPriority,bool recurse)
     i=getPrefixIndex(word);
     if (i>0)
     {
-      addWord(word.data()+i,hiPriority,TRUE);
+      addWordRec(word.data()+i,hiPriority,TRUE);
       found=TRUE;
     }
   }
@@ -220,14 +220,14 @@ void SearchIndex::addWord(const QCString &word,bool hiPriority,bool recurse)
     }
     if (word[i]!=0 && i>=1)
     {
-      addWord(word.data()+i+1,hiPriority,TRUE);
+      addWordRec(word.data()+i+1,hiPriority,TRUE);
     }
   }
 }
 
 void SearchIndex::addWord(const QCString &word,bool hiPriority)
 {
-  addWord(word,hiPriority,FALSE);
+  addWordRec(word,hiPriority,FALSE);
 }
 
 static void writeInt(std::ostream &f,size_t index)

@@ -25,6 +25,7 @@
 
 #include "message.h"
 #include "index.h"
+#include "indexlist.h"
 #include "doxygen.h"
 #include "config.h"
 #include "filedef.h"

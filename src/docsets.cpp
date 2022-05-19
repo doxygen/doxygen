@@ -41,13 +41,9 @@ struct DocSets::Private
 };
 
 
-DocSets::DocSets() : p(std::make_unique<Private>())
-{
-}
-
-DocSets::~DocSets()
-{
-}
+DocSets::DocSets() : p(std::make_unique<Private>()) {}
+DocSets::~DocSets() = default;
+DocSets::DocSets(DocSets &&) = default;
 
 void DocSets::initialize()
 {

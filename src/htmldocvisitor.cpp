@@ -34,6 +34,7 @@
 #include "plantuml.h"
 #include "formula.h"
 #include "fileinfo.h"
+#include "indexlist.h"
 
 static const int NUM_HTML_LIST_TYPES = 4;
 static const char types[][NUM_HTML_LIST_TYPES] = {"1", "a", "i", "A"};

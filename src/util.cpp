@@ -73,6 +73,7 @@
 #include "dir.h"
 #include "utf8.h"
 #include "textstream.h"
+#include "indexlist.h"
 
 #define ENABLE_TRACINGSUPPORT 0
 

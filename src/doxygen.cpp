@@ -31,6 +31,7 @@
 #include "scanner.h"
 #include "entry.h"
 #include "index.h"
+#include "indexlist.h"
 #include "message.h"
 #include "config.h"
 #include "util.h"

@@ -31,8 +31,8 @@
 #include <fstream>
 
 // TODO: remove these dependencies
-#include "doxygen.h" // for Doxygen::indexList
-#include "index.h"   // for Doxygen::indexList
+#include "doxygen.h"   // for Doxygen::indexList
+#include "indexlist.h" // for Doxygen::indexList
 
 static int determineInkscapeVersion(Dir &thisDir);
 

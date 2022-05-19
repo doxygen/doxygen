@@ -3,12 +3,12 @@
 #include <iterator>
 #include <unordered_map>
 #include <string>
-
 #include <ctype.h>
-#include "md5.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+
+#include "md5.h"
 #include "regex.h"
 #include "config.h"
 #include "definitionimpl.h"
@@ -34,6 +34,7 @@
 #include "bufstr.h"
 #include "reflist.h"
 #include "utf8.h"
+#include "indexlist.h"
 
 //-----------------------------------------------------------------------------------------
 

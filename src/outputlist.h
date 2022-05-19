@@ -20,7 +20,6 @@
 #include <vector>
 #include <memory>
 
-#include "index.h" // for IndexSections
 #include "outputgen.h"
 #include "searchindex.h" // for SIDataCollection
 #include "doxygen.h"

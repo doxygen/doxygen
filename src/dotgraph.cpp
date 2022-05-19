@@ -18,7 +18,7 @@
 
 #include "config.h"
 #include "doxygen.h"
-#include "index.h"
+#include "indexlist.h"
 #include "md5.h"
 #include "message.h"
 #include "util.h"

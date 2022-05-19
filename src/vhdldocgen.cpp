@@ -39,7 +39,6 @@
 #include "util.h"
 #include "language.h"
 #include "commentscan.h"
-#include "index.h"
 #include "definition.h"
 #include "searchindex.h"
 #include "outputlist.h"

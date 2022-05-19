@@ -18,6 +18,7 @@
 #include <cstdio>
 #include <algorithm>
 
+#include "types.h"
 #include "classdef.h"
 #include "classlist.h"
 #include "entry.h"

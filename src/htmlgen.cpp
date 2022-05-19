@@ -54,6 +54,7 @@
 #include "dir.h"
 #include "utf8.h"
 #include "textstream.h"
+#include "indexlist.h"
 
 //#define DBG_HTML(x) x;
 #define DBG_HTML(x)

@@ -32,6 +32,7 @@
 
 #include "qcstring.h"
 #include "growbuf.h"
+#include "dispatcher.h"
 
 class Definition;
 class SearchIndexIntf;
@@ -121,7 +122,7 @@ class SearchIndex
     void addWord(const QCString &word,bool hiPriority);
     void write(const QCString &file);
   private:
-    void addWord(const QCString &word,bool hiPrio,bool recurse);
+    void addWordRec(const QCString &word,bool hiPrio,bool recurse);
     std::unordered_map<std::string,int> m_words;
     std::vector< std::vector< IndexWord> > m_index;
     std::unordered_map<std::string,int> m_url2IdMap;
@@ -151,11 +152,16 @@ class SearchIndexExternal
     void addWord(const QCString &word,bool hiPriority);
     void write(const QCString &file);
   private:
-    //std::unique_ptr<Private> p;
     std::map<std::string,SearchDocEntry> m_docEntries;
     SearchDocEntry *m_current = 0;
 };
 
+namespace SearchIndexMethods
+{
+  template <class T> struct setCurrentDoc     { static constexpr auto method = &T::setCurrentDoc;     };
+  template <class T> struct addWord           { static constexpr auto method = &T::addWord;           };
+  template <class T> struct write             { static constexpr auto method = &T::write;             };
+}
 
 /** Abstract proxy interface for non-javascript based search indices.
  *  It forwards calls to either SearchIndex or SearchIndexExternal depending
@@ -171,27 +177,15 @@ class SearchIndexIntf
                                 SearchIndexVariant(SearchIndexExternal())) { }
     void setCurrentDoc(const Definition *ctx,const QCString &anchor,bool isSourceFile)
     {
-      switch (m_kind)
-      {
-        case Internal: std::get<SearchIndex        >(m_variant).setCurrentDoc(ctx,anchor,isSourceFile); break;
-        case External: std::get<SearchIndexExternal>(m_variant).setCurrentDoc(ctx,anchor,isSourceFile); break;
-      }
+      dispatch_call<SearchIndexMethods::setCurrentDoc>(m_variant,ctx,anchor,isSourceFile);
     }
     void addWord(const QCString &word,bool hiPriority)
     {
-      switch (m_kind)
-      {
-        case Internal: std::get<SearchIndex        >(m_variant).addWord(word,hiPriority); break;
-        case External: std::get<SearchIndexExternal>(m_variant).addWord(word,hiPriority); break;
-      }
+      dispatch_call<SearchIndexMethods::addWord>(m_variant,word,hiPriority);
     }
     void write(const QCString &file)
     {
-      switch (m_kind)
-      {
-        case Internal: std::get<SearchIndex        >(m_variant).write(file); break;
-        case External: std::get<SearchIndexExternal>(m_variant).write(file); break;
-      }
+      dispatch_call<SearchIndexMethods::write>(m_variant,file);
     }
     Kind kind() const { return m_kind; }
   private:

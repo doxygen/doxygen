@@ -330,13 +330,9 @@ class HtmlHelp::Private
  *  The object has to be \link initialize() initialized\endlink before it can
  *  be used.
  */
-HtmlHelp::HtmlHelp() : p(std::make_unique<Private>())
-{
-}
-
-HtmlHelp::~HtmlHelp()
-{
-}
+HtmlHelp::HtmlHelp() : p(std::make_unique<Private>()) {}
+HtmlHelp::~HtmlHelp() = default;
+HtmlHelp::HtmlHelp(HtmlHelp &&) = default;
 
 /*! This will create a contents file (index.hhc) and a index file (index.hhk)
  *  and write the header of those files.

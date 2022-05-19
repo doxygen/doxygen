@@ -26,7 +26,7 @@
 #include "util.h"
 #include "doxygen.h"
 #include "portable.h"
-#include "index.h"
+#include "indexlist.h"
 #include "classlist.h"
 #include "textstream.h"
 

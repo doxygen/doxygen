@@ -24,20 +24,23 @@
 #ifndef FTVHELP_H
 #define FTVHELP_H
 
+#include <memory>
 #include <vector>
-#include "index.h"
+#include "qcstring.h"
 
 class Definition;
+class MemberDef;
 class TextStream;
-struct FTVNode;
+
 
 /** A class that generates a dynamic tree view side panel.
  */
-class FTVHelp : public IndexIntf
+class FTVHelp
 {
   public:
     FTVHelp(bool LTI);
     ~FTVHelp();
+    FTVHelp(FTVHelp &&);
     void initialize();
     void finalize();
     void incContentsDepth();
@@ -59,13 +62,8 @@ class FTVHelp : public IndexIntf
     static void generateTreeViewImages();
     void generateTreeViewScripts();
   private:
-    void generateTree(TextStream &t,const std::vector<FTVNode*> &nl,int level,int maxLevel,int &index);
-    QCString generateIndentLabel(FTVNode *n,int level);
-    void generateIndent(TextStream &t,FTVNode *n,bool opened);
-    void generateLink(TextStream &t,FTVNode *n);
-    std::vector< std::vector<FTVNode*> > m_indentNodes;
-    int m_indent;
-    bool m_topLevelIndex;
+    struct Private;
+    std::unique_ptr<Private> p;
 };
 
 extern const char *JAVASCRIPT_LICENSE_TEXT;

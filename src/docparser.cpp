@@ -36,6 +36,7 @@
 #include "portable.h"
 #include "printdocvisitor.h"
 #include "util.h"
+#include "indexlist.h"
 
 // debug off
 #define DBG(x) do {} while(0)
