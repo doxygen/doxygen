@@ -18,7 +18,7 @@
 
 #include "qcstring.h"
 
-class Defintion;
+class Definition;
 class MemberDef;
 
 class Qhp
