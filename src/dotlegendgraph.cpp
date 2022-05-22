@@ -22,6 +22,7 @@
 #include "dot.h"
 #include "language.h"
 #include "dotfilepatcher.h"
+#include "dotnode.h"
 
 void DotLegendGraph::writeGraph(const QCString &path)
 {
@@ -50,17 +51,17 @@ void DotLegendGraph::computeTheGraph()
   md5stream << "  node [fontsize=\"" << fontSize << "\",height=0.2,width=0.4,fontname=\"" << fontName << "\"];\n";
   md5stream << "  edge [fontsize=\"" << fontSize << "\",fontname=\"" << fontName << "\"];\n";
 
-  md5stream << "  Node9 [label=\"Inherited\",fillcolor=\"grey75\",style=\"filled\" fontcolor=\"black\"];\n";
+  DotNode{9, "Inherited", "", "", TRUE}.writeBox(md5stream, CallGraph, GOF_BITMAP, false);
   md5stream << "  Node10 -> Node9 [dir=\"back\",color=\"midnightblue\",style=\"solid\"];\n";
-  md5stream << "  Node10 [label=\"PublicBase\",color=\"black\"];\n";
+  DotNode{10, "PublicBase", "", "url"}.markHasDocumentation().writeBox(md5stream, CallGraph, GOF_BITMAP, false);
   md5stream << "  Node11 -> Node10 [dir=\"back\",color=\"midnightblue\",style=\"solid\"];\n";
-  md5stream << "  Node11 [label=\"Truncated\",color=\"red\"];\n";
+  DotNode{11, "Truncated!", "", "url"}.markAsTruncated().markHasDocumentation().writeBox(md5stream, CallGraph, GOF_BITMAP, true);
   md5stream << "  Node13 -> Node9 [dir=\"back\",color=\"darkgreen\",style=\"solid\"];\n";
   md5stream << "  Node13 [label=\"ProtectedBase\",color=\"black\"];\n";
   md5stream << "  Node14 -> Node9 [dir=\"back\",color=\"firebrick4\",style=\"solid\"];\n";
   md5stream << "  Node14 [label=\"PrivateBase\",color=\"black\"];\n";
   md5stream << "  Node15 -> Node9 [dir=\"back\",color=\"midnightblue\",style=\"solid\"];\n";
-  md5stream << "  Node15 [label=\"Undocumented\",color=\"grey75\"];\n";
+  DotNode{15, "Undocumented", "", ""}.writeBox(md5stream, CallGraph, GOF_BITMAP, false);
   md5stream << "  Node16 -> Node9 [dir=\"back\",color=\"midnightblue\",style=\"solid\"];\n";
   md5stream << "  Node16 [label=\"Templ\\< int \\>\",color=\"black\"];\n";
   md5stream << "  Node17 -> Node16 [dir=\"back\",color=\"orange\",style=\"dashed\",label=\"< int >\",];\n";
