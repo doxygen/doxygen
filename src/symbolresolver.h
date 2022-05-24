@@ -60,6 +60,17 @@ class SymbolResolver
       return toClassDefMutable(resolveClass(scope,name,mayBeUnlinkable,mayBeHidden));
     }
 
+    /** Find the symbool definition matching name within the scope set.
+     *  @param scope The scope to search from.
+     *  @param name  The name of the symbol.
+     *  @param mayBeUnlinkable include unlinkable symbols in the search.
+     *  @param mayBeHidden include hidden symbols in the search.
+     */
+    const Definition *resolveSymbol(const Definition *scope,
+                                    const QCString &name,
+                                    const QCString &args=QCString(),
+                                    bool checkCV=false);
+
     /** Checks if symbol \a item is accessible from within \a scope.
      *  @returns -1 if \a item is not accessible or a number indicating how
      *  many scope levels up the nearest match was found.

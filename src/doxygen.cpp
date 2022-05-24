@@ -154,7 +154,8 @@ bool                  Doxygen::parseSourcesNeeded = FALSE;
 SearchIndexIntf      *Doxygen::searchIndex=0;
 SymbolMap<Definition>*Doxygen::symbolMap;
 ClangUsrMap          *Doxygen::clangUsrMap = 0;
-Cache<std::string,LookupInfo> *Doxygen::lookupCache;
+Cache<std::string,LookupInfo> *Doxygen::typeLookupCache;
+Cache<std::string,LookupInfo> *Doxygen::symbolLookupCache;
 DirLinkedMap         *Doxygen::dirLinkedMap;
 DirRelationLinkedMap  Doxygen::dirRelations;
 ParserManager        *Doxygen::parserManager = 0;
@@ -8801,17 +8802,17 @@ static void flushCachedTemplateRelations()
   // to this class. Optimization: only remove those classes that
   // have inheritance instances as direct or indirect sub classes.
   StringVector elementsToRemove;
-  for (const auto &ci : *Doxygen::lookupCache)
+  for (const auto &ci : *Doxygen::typeLookupCache)
   {
     const LookupInfo &li = ci.second;
-    if (li.classDef)
+    if (li.definition)
     {
       elementsToRemove.push_back(ci.first);
     }
   }
   for (const auto &k : elementsToRemove)
   {
-    Doxygen::lookupCache->remove(k);
+    Doxygen::typeLookupCache->remove(k);
   }
 
   // remove all cached typedef resolutions whose target is a
@@ -8861,17 +8862,17 @@ static void flushUnresolvedRelations()
   // class C : public B::I {};
 
   StringVector elementsToRemove;
-  for (const auto &ci : *Doxygen::lookupCache)
+  for (const auto &ci : *Doxygen::typeLookupCache)
   {
     const LookupInfo &li = ci.second;
-    if (li.classDef==0 && li.typeDef==0)
+    if (li.definition==0 && li.typeDef==0)
     {
       elementsToRemove.push_back(ci.first);
     }
   }
   for (const auto &k : elementsToRemove)
   {
-    Doxygen::lookupCache->remove(k);
+    Doxygen::typeLookupCache->remove(k);
   }
 
   // for each global function name
@@ -11783,7 +11784,8 @@ void parseInput()
   if (cacheSize<0) cacheSize=0;
   if (cacheSize>9) cacheSize=9;
   uint lookupSize = 65536 << cacheSize;
-  Doxygen::lookupCache = new Cache<std::string,LookupInfo>(lookupSize);
+  Doxygen::typeLookupCache = new Cache<std::string,LookupInfo>(lookupSize);
+  Doxygen::symbolLookupCache = new Cache<std::string,LookupInfo>(lookupSize);
 
 #ifdef HAS_SIGNALS
   signal(SIGINT, stopDoxygen);
@@ -12025,7 +12027,7 @@ void parseInput()
   // calling buildClassList may result in cached relations that
   // become invalid after resolveClassNestingRelations(), that's why
   // we need to clear the cache here
-  Doxygen::lookupCache->clear();
+  Doxygen::typeLookupCache->clear();
   // we don't need the list of using declaration anymore
   g_usingDeclarations.clear();
 
@@ -12649,13 +12651,19 @@ void generateOutput()
 
   g_outputList->cleanup();
 
-  int cacheParam;
-  msg("lookup cache used %zu/%zu hits=%" PRIu64 " misses=%" PRIu64 "\n",
-      Doxygen::lookupCache->size(),
-      Doxygen::lookupCache->capacity(),
-      Doxygen::lookupCache->hits(),
-      Doxygen::lookupCache->misses());
-  cacheParam = computeIdealCacheParam(static_cast<size_t>(Doxygen::lookupCache->misses()*2/3)); // part of the cache is flushed, hence the 2/3 correction factor
+  msg("type lookup cache used %zu/%zu hits=%" PRIu64 " misses=%" PRIu64 "\n",
+      Doxygen::typeLookupCache->size(),
+      Doxygen::typeLookupCache->capacity(),
+      Doxygen::typeLookupCache->hits(),
+      Doxygen::typeLookupCache->misses());
+  msg("symbol lookup cache used %zu/%zu hits=%" PRIu64 " misses=%" PRIu64 "\n",
+      Doxygen::symbolLookupCache->size(),
+      Doxygen::symbolLookupCache->capacity(),
+      Doxygen::symbolLookupCache->hits(),
+      Doxygen::symbolLookupCache->misses());
+  int typeCacheParam   = computeIdealCacheParam(static_cast<size_t>(Doxygen::typeLookupCache->misses()*2/3)); // part of the cache is flushed, hence the 2/3 correction factor
+  int symbolCacheParam = computeIdealCacheParam(static_cast<size_t>(Doxygen::symbolLookupCache->misses()));
+  int cacheParam = std::max(typeCacheParam,symbolCacheParam);
   if (cacheParam>Config_getInt(LOOKUP_CACHE_SIZE))
   {
     msg("Note: based on cache misses the ideal setting for LOOKUP_CACHE_SIZE is %d at the cost of higher memory usage.\n",cacheParam);

@@ -58,9 +58,9 @@ class NamespaceDefMutable;
 struct LookupInfo
 {
   LookupInfo() = default;
-  LookupInfo(const ClassDef *cd,const MemberDef *td,QCString ts,QCString rt)
-    : classDef(cd), typeDef(td), templSpec(ts),resolvedType(rt) {}
-  const ClassDef  *classDef = 0;
+  LookupInfo(const Definition *d,const MemberDef *td,QCString ts,QCString rt)
+    : definition(d), typeDef(td), templSpec(ts),resolvedType(rt) {}
+  const Definition  *definition = 0;
   const MemberDef *typeDef = 0;
   QCString   templSpec;
   QCString   resolvedType;
@@ -105,7 +105,8 @@ class Doxygen
     static SearchIndexIntf          *searchIndex;
     static SymbolMap<Definition>    *symbolMap;
     static ClangUsrMap              *clangUsrMap;
-    static Cache<std::string,LookupInfo> *lookupCache;
+    static Cache<std::string,LookupInfo> *typeLookupCache;
+    static Cache<std::string,LookupInfo> *symbolLookupCache;
     static DirLinkedMap             *dirLinkedMap;
     static DirRelationLinkedMap      dirRelations;
     static ParserManager            *parserManager;

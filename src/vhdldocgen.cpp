@@ -2557,7 +2557,7 @@ static void addInstance(ClassDefMutable* classEntity, ClassDefMutable* ar,
   // fprintf(stderr,"\naddInstance %s to %s %s %s\n",qPrint( classEntity->name()),qPrint(cd->name()),qPrint(ar->name()),cur->name);
   n1=classEntity->name();
 
-  if (!cd->isBaseClass(classEntity, true, 0))
+  if (!cd->isBaseClass(classEntity, true))
   {
     cd->insertBaseClass(classEntity,n1,Public,Normal,QCString());
   }
@@ -2669,7 +2669,7 @@ bool VhdlDocGen::isSubClass(ClassDef* cd,ClassDef *scd, bool followInstances,int
   {
     err("Possible recursive class relation while inside %s and looking for %s\n",qPrint(cd->name()),qPrint(scd->name()));
     abort();
-    return FALSE;
+    return false;
   }
 
   for (const auto &bcd :cd->subClasses())
@@ -2679,13 +2679,17 @@ bool VhdlDocGen::isSubClass(ClassDef* cd,ClassDef *scd, bool followInstances,int
     //printf("isSubClass() subclass %s\n",qPrint(ccd->name()));
     if (ccd==scd)
     {
-      found=TRUE;
+      found=true;
     }
     else
     {
       if (level <256)
       {
-        found=ccd->isBaseClass(scd,followInstances,level+1);
+        level = ccd->isBaseClass(scd,followInstances);
+        if (level>0)
+        {
+          found=true;
+        }
       }
     }
   }
