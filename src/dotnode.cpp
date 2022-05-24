@@ -433,6 +433,30 @@ void DotNode::writeLabel(TextStream &t, GraphType gt) const
   }
 }
 
+void DotNode::writeUrl(TextStream &t) const
+{
+  if (m_url.isEmpty())
+    return;
+  int tagPos = m_url.findRev('$');
+  t << ",URL=\"";
+  QCString noTagURL = m_url;
+  if (tagPos!=-1)
+  {
+    t << m_url.left(tagPos);
+    noTagURL = m_url.mid(tagPos);
+  }
+  int anchorPos = noTagURL.findRev('#');
+  if (anchorPos==-1)
+  {
+    t << addHtmlExtensionIfMissing(noTagURL) << "\"";
+  }
+  else
+  {
+    t << addHtmlExtensionIfMissing(noTagURL.left(anchorPos))
+      << noTagURL.right(noTagURL.length() - anchorPos) << "\"";
+  }
+}
+
 void DotNode::writeBox(TextStream &t,
                        GraphType gt,
                        GraphOutputFormat /*format*/,
@@ -474,27 +498,7 @@ void DotNode::writeBox(TextStream &t,
       t << ", fillcolor=\"white\"";
       t << ", style=\"filled\"";
     }
-    if (!m_url.isEmpty())
-    {
-      int tagPos = m_url.findRev('$');
-      t << ",URL=\"";
-      QCString noTagURL = m_url;
-      if (tagPos!=-1)
-      {
-        t << m_url.left(tagPos);
-        noTagURL = m_url.mid(tagPos);
-      }
-      int anchorPos = noTagURL.findRev('#');
-      if (anchorPos==-1)
-      {
-        t << addHtmlExtensionIfMissing(noTagURL) << "\"";
-      }
-      else
-      {
-        t << addHtmlExtensionIfMissing(noTagURL.left(anchorPos))
-          << noTagURL.right(noTagURL.length()-anchorPos) << "\"";
-      }
-    }
+    writeUrl(t);
   }
   if (!m_tooltip.isEmpty())
   {
