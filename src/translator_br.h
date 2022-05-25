@@ -19,6 +19,8 @@
  *    Thanks to Jorge Ramos, Fernando Carijo and others for their contributions.
  *
  * History:
+ * 20220525:
+ * 	- Updated to 1.9.4;
  * 20211003:
  *  - Updated to 1.9.3;
  * 20200112:
@@ -54,7 +56,7 @@
 #ifndef TRANSLATOR_BR_H
 #define TRANSLATOR_BR_H
 
-class TranslatorBrazilian : public TranslatorAdapter_1_9_4
+class TranslatorBrazilian : public Translator
 {
   public:
 
@@ -2388,6 +2390,12 @@ class TranslatorBrazilian : public TranslatorAdapter_1_9_4
 	{
 	  return "Definição de conceito";
 	}
+	
+	//////////////////////////////////////////////////////////////////////////
+	// new since 1.9.4
+	//////////////////////////////////////////////////////////////////////////
+    virtual QCString trPackageList()
+    { return "Lista de pacotes"; }	
 };
 
 #endif
