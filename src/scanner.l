@@ -2091,7 +2091,7 @@ NONLopt [^\n]*
 <CopyHereDocEnd>.                       {
                                           *yyextra->pCopyHereDocGString <<  yytext;
                                         }
-<FindMembers>"Q_OBJECT"                 { // Qt object macro
+<FindMembers>"Q_OBJECT"|"Q_GADGET"      { // Qt object / gadget macro
                                         }
 <FindMembers>"Q_PROPERTY"               { // Qt property declaration
                                           yyextra->current->protection = Public ; // see bug734245 & bug735462
