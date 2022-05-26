@@ -26,6 +26,8 @@
  * VERSION HISTORY
  * ---------------
  * History:
+  * 20220525:
+ * 	- Updated to 1.9.4;
  * 20211003:
  *  - Updated to 1.9.3;
  * 20200112:
@@ -65,7 +67,7 @@
 #define TRANSLATOR_PT_H
 
 
-class TranslatorPortuguese : public TranslatorAdapter_1_9_4
+class TranslatorPortuguese : public Translator
 {
   public:
 
@@ -2334,6 +2336,12 @@ class TranslatorPortuguese : public TranslatorAdapter_1_9_4
 	{
 	  return "Definição de conceito";
 	}
+	
+	//////////////////////////////////////////////////////////////////////////
+	// new since 1.9.4
+	//////////////////////////////////////////////////////////////////////////
+    virtual QCString trPackageList()
+    { return "Lista de pacotes"; }	
 };
 
 #endif
