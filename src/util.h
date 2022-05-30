@@ -342,7 +342,7 @@ bool checkIfTypedef(const Definition *scope,const FileDef *fileScope,const QCStr
 
 QCString parseCommentAsText(const Definition *scope,const MemberDef *member,const QCString &doc,const QCString &fileName,int lineNr);
 
-QCString transcodeCharacterStringToUTF8(const QCString &input);
+QCString transcodeCharacterStringToUTF8(QCString inputEncoding,const QCString &input);
 
 QCString recodeString(const QCString &str,const char *fromEncoding,const char *toEncoding);
 
@@ -430,4 +430,5 @@ FortranFormat convertFileNameFortranParserCode(QCString fn);
 QCString integerToAlpha(int n, bool upper=true);
 QCString integerToRoman(int n, bool upper=true);
 
+QCString getEncoding(FileInfo &fi);
 #endif

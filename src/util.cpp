@@ -1350,10 +1350,9 @@ QCString getFileFilter(const QCString &name,bool isSourceCode)
 }
 
 
-QCString transcodeCharacterStringToUTF8(const QCString &input)
+QCString transcodeCharacterStringToUTF8(QCString inputEncoding, const QCString &input)
 {
   bool error=FALSE;
-  QCString inputEncoding = Config_getString(INPUT_ENCODING);
   const char *outputEncoding = "UTF-8";
   if (inputEncoding.isEmpty() || qstricmp(inputEncoding,outputEncoding)==0) return input;
   int inputSize=input.length();
@@ -6249,9 +6248,13 @@ bool readInputFile(const QCString &fileName,BufStr &inBuf,bool filter,bool isSou
   }
   else // transcode according to the INPUT_ENCODING setting
   {
-    // do character transcoding if needed.
-    transcodeCharacterBuffer(fileName,inBuf,inBuf.curPos(),
-        Config_getString(INPUT_ENCODING),"UTF-8");
+    FileInfo fi(fileName.str());
+    if (fi.exists() && fi.isFile())
+    {
+      // do character transcoding if needed.
+      transcodeCharacterBuffer(fileName,inBuf,inBuf.curPos(),
+          getEncoding(fi),"UTF-8");
+    }
   }
 
   //inBuf.addChar('\n'); /* to prevent problems under Windows ? */
@@ -6337,6 +6340,48 @@ bool patternMatch(const FileInfo &fi,const StringVector &patList)
     }
   }
   return found;
+}
+
+QCString getEncoding(FileInfo &fi)
+{
+  bool caseSenseNames = Config_getBool(CASE_SENSE_NAMES);
+  bool found = FALSE;
+
+  // For platforms where the file system is non case sensitive overrule the setting
+  if (!Portable::fileSystemIsCaseSensitive())
+  {
+    caseSenseNames = FALSE;
+  }
+
+  if (!Doxygen::inputFileEncoding.empty())
+  {
+    std::string fn = fi.fileName();
+    std::string fp = fi.filePath();
+    std::string afp= fi.absFilePath();
+
+    for (auto enc: Doxygen::inputFileEncoding)
+    {
+      QCString pattern = enc.pattern();
+      if (!pattern.isEmpty())
+      {
+        if (!caseSenseNames)
+        {
+          pattern = pattern.lower();
+          fn      = QCString(fn).lower().str();
+          fp      = QCString(fp).lower().str();
+          afp     = QCString(afp).lower().str();
+        }
+        reg::Ex re(pattern.str(),reg::Ex::Mode::Wildcard);
+        found = re.isValid() && (reg::match(fn,re) ||
+                                 (fn!=fp && reg::match(fp,re)) ||
+                                 (fn!=afp && fp!=afp && reg::match(afp,re)));
+        if (found) return(enc.encoding());
+        //printf("Matching '%s' against pattern '%s' found=%d\n",
+        //    qPrint(fi->fileName()),qPrint(pattern),found);
+      }
+    }
+  }
+  return Config_getString(INPUT_ENCODING);
 }
 
 QCString externalLinkTarget(const bool parent)
