@@ -130,12 +130,7 @@ int Portable::system(const QCString &command,const QCString &args,bool commandHa
 #endif // !_OS_SOLARIS
 
 #else // Win32 specific
-  if (commandHasConsole)
-  {
-    return ::system(fullCmd.data());
-  }
-  else
-  {
+
     // Because ShellExecuteEx can delegate execution to Shell extensions
     // (data sources, context menu handlers, verb implementations) that
     // are activated using Component Object Model (COM), COM should be
@@ -174,6 +169,11 @@ int Portable::system(const QCString &command,const QCString &args,bool commandHa
       NULL                        /* resulting application handle */
     };
 
+    if (commandHasConsole)
+    {
+      sInfo.fMask |= SEE_MASK_NO_CONSOLE; /* for suppressing the creation of conhost. */
+    }
+
     if (!ShellExecuteExW(&sInfo))
     {
       delete[] commandw;
@@ -194,7 +194,7 @@ int Portable::system(const QCString &command,const QCString &args,bool commandHa
       delete[] argsw;
       return exitCode;
     }
-  }
+  
 #endif
   return 1; // we should never get here
 
