@@ -197,7 +197,7 @@ bool DotRunner::run()
       srcFile = m_jobs.front().srcFile;
       srcLine = m_jobs.front().srcLine;
     }
-    if ((exitCode=Portable::system(m_dotExe,dotArgs,FALSE))!=0) goto error;
+    if ((exitCode=Portable::system(m_dotExe,dotArgs,true))!=0) goto error;
   }
   else
   {
@@ -206,7 +206,7 @@ bool DotRunner::run()
       srcFile = s.srcFile;
       srcLine = s.srcLine;
       dotArgs=QCString("\"")+m_file+"\" "+s.args;
-      if ((exitCode=Portable::system(m_dotExe,dotArgs,FALSE))!=0) goto error;
+      if ((exitCode=Portable::system(m_dotExe,dotArgs,true))!=0) goto error;
     }
   }
 
@@ -222,7 +222,7 @@ bool DotRunner::run()
       {
         if (!resetPDFSize(width,height,getBaseNameOfOutput(s.output))) goto error;
         dotArgs=QCString("\"")+m_file+"\" "+s.args;
-        if ((exitCode=Portable::system(m_dotExe,dotArgs,FALSE))!=0) goto error;
+        if ((exitCode=Portable::system(m_dotExe,dotArgs,true))!=0) goto error;
       }
     }
 
