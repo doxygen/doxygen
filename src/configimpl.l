@@ -199,11 +199,11 @@ void ConfigOption::writeStringList(TextStream &t,const StringVector &l)
 
 ConfigImpl *ConfigImpl::m_instance = 0;
 
-void ConfigInt::convertStrToVal(DoxyfileSettings diffList)
+void ConfigInt::convertStrToVal(Config::CompareMode compareMode)
 {
   if (!m_valueString.isEmpty())
   {
-    if (diffList == DoxyfileSettings::CompressedNoEnv)
+    if (compareMode == Config::CompareMode::CompressedNoEnv)
     {
        if (containsEnvVar(m_valueString)) return;
     }
@@ -241,11 +241,11 @@ static bool convertStringToBool(const QCString &str,bool &isValid)
   return false;
 }
 
-void ConfigBool::convertStrToVal(DoxyfileSettings diffList)
+void ConfigBool::convertStrToVal(Config::CompareMode compareMode)
 {
   if (!m_valueString.stripWhiteSpace().isEmpty())
   {
-    if (diffList == DoxyfileSettings::CompressedNoEnv)
+    if (compareMode == Config::CompareMode::CompressedNoEnv)
     {
        if (containsEnvVar(m_valueString)) return;
     }
@@ -263,14 +263,14 @@ void ConfigBool::convertStrToVal(DoxyfileSettings diffList)
   }
 }
 
-void ConfigEnum::convertStrToVal(DoxyfileSettings diffList)
+void ConfigEnum::convertStrToVal(Config::CompareMode compareMode)
 {
   if (m_value.isEmpty())
   {
     m_value = m_defValue;
     return;
   }
-  if (diffList == DoxyfileSettings::CompressedNoEnv)
+  if (compareMode == Config::CompareMode::CompressedNoEnv)
   {
      if (containsEnvVar(m_value)) return;
   }
@@ -421,7 +421,7 @@ bool ConfigList::isDefault()
   return true;
 }
 
-void ConfigList::compareDoxyfile(TextStream &t, DoxyfileSettings)
+void ConfigList::compareDoxyfile(TextStream &t, Config::CompareMode)
 {
   if (!isDefault()) writeTemplate(t,TRUE,TRUE);
 }
@@ -462,7 +462,7 @@ void ConfigEnum::writeTemplate(TextStream &t,bool sl,bool)
   t << "\n";
 }
 
-void ConfigEnum::compareDoxyfile(TextStream &t, DoxyfileSettings)
+void ConfigEnum::compareDoxyfile(TextStream &t, Config::CompareMode)
 {
   if (!isDefault()) writeTemplate(t,TRUE,TRUE);
 }
@@ -496,7 +496,7 @@ void ConfigString::writeTemplate(TextStream &t,bool sl,bool)
   t << "\n";
 }
 
-void ConfigString::compareDoxyfile(TextStream &t, DoxyfileSettings)
+void ConfigString::compareDoxyfile(TextStream &t, Config::CompareMode)
 {
   if (!isDefault()) writeTemplate(t,TRUE,TRUE);
 }
@@ -539,9 +539,9 @@ void ConfigInt::writeTemplate(TextStream &t,bool sl,bool upd)
   t << "\n";
 }
 
-void ConfigInt::compareDoxyfile(TextStream &t,DoxyfileSettings diffList)
+void ConfigInt::compareDoxyfile(TextStream &t,Config::CompareMode compareMode)
 {
-  if (!isDefault() || ((diffList == DoxyfileSettings::CompressedNoEnv) && containsEnvVar(m_valueString))) writeTemplate(t,TRUE,TRUE);
+  if (!isDefault() || ((compareMode == Config::CompareMode::CompressedNoEnv) && containsEnvVar(m_valueString))) writeTemplate(t,TRUE,TRUE);
 }
 
 void ConfigInt::writeXMLDoxyfile(TextStream &t)
@@ -581,9 +581,9 @@ void ConfigBool::writeTemplate(TextStream &t,bool sl,bool upd)
   t << "\n";
 }
 
-void ConfigBool::compareDoxyfile(TextStream &t,DoxyfileSettings diffList)
+void ConfigBool::compareDoxyfile(TextStream &t,Config::CompareMode compareMode)
 {
-  if (!isDefault() || ((diffList == DoxyfileSettings::CompressedNoEnv) && containsEnvVar(m_valueString))) writeTemplate(t,TRUE,TRUE);
+  if (!isDefault() || ((compareMode == Config::CompareMode::CompressedNoEnv) && containsEnvVar(m_valueString))) writeTemplate(t,TRUE,TRUE);
 }
 
 void ConfigBool::writeXMLDoxyfile(TextStream &t)
@@ -1248,14 +1248,14 @@ void ConfigImpl::writeTemplate(TextStream &t,bool sl,bool upd)
   }
 }
 
-void ConfigImpl::compareDoxyfile(TextStream &t,DoxyfileSettings diffList)
+void ConfigImpl::compareDoxyfile(TextStream &t,Config::CompareMode compareMode)
 {
   t << "# Difference with default Doxyfile " << getFullVersion();
   t << "\n";
   for (const auto &option : m_options)
   {
     option->m_userComment = "";
-    option->compareDoxyfile(t,diffList);
+    option->compareDoxyfile(t,compareMode);
   }
 }
 
@@ -1270,11 +1270,11 @@ void ConfigImpl::writeXMLDoxyfile(TextStream &t)
   t << "</doxyfile>\n";
 }
 
-void ConfigImpl::convertStrToVal(DoxyfileSettings diffList)
+void ConfigImpl::convertStrToVal(Config::CompareMode compareMode)
 {
   for (const auto &option : m_options)
   {
-    option->convertStrToVal(diffList);
+    option->convertStrToVal(compareMode);
   }
 }
 void ConfigImpl::emptyValueToDefault()
@@ -2112,10 +2112,10 @@ void Config::writeTemplate(TextStream &t,bool shortList,bool update)
   ConfigImpl::instance()->writeTemplate(t,shortList,update);
 }
 
-void Config::compareDoxyfile(TextStream &t,DoxyfileSettings diffList)
+void Config::compareDoxyfile(TextStream &t,Config::CompareMode compareMode)
 {
-  postProcess(FALSE, diffList);
-  ConfigImpl::instance()->compareDoxyfile(t, diffList);
+  postProcess(FALSE, compareMode);
+  ConfigImpl::instance()->compareDoxyfile(t, compareMode);
 }
 
 void Config::writeXMLDoxyfile(TextStream &t)
@@ -2136,11 +2136,12 @@ bool Config::parse(const QCString &fileName,bool update)
   return parseRes;
 }
 
-void Config::postProcess(bool clearHeaderAndFooter, DoxyfileSettings diffList)
+void Config::postProcess(bool clearHeaderAndFooter, Config::CompareMode compareMode)
 {
-  if (diffList != DoxyfileSettings::CompressedNoEnv) ConfigImpl::instance()->substituteEnvironmentVars();
-  if (diffList == DoxyfileSettings::Full)ConfigImpl::instance()->emptyValueToDefault();
-  ConfigImpl::instance()->convertStrToVal(diffList);
+  auto configInst = ConfigImpl::instance();
+  if (compareMode != CompareMode::CompressedNoEnv) configInst->substituteEnvironmentVars();
+  if (compareMode == CompareMode::Full)            configInst->emptyValueToDefault();
+  configInst->convertStrToVal(compareMode);
 
   // avoid bootstrapping issues when the g_config file already
   // refers to the files that we are supposed to parse.

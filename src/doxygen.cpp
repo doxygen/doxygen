@@ -9740,7 +9740,7 @@ static void generateConfigFile(const QCString &configFile,bool shortList,
   }
 }
 
-static void compareDoxyfile(DoxyfileSettings diffList)
+static void compareDoxyfile(Config::CompareMode diffList)
 {
   std::ofstream f;
   bool fileOpened=openOutputFile("-",f);
@@ -10934,7 +10934,7 @@ void readConfiguration(int argc, char **argv)
   QCString listName;
   bool genConfig=FALSE;
   bool shortList=FALSE;
-  DoxyfileSettings diffList=DoxyfileSettings::Full;
+  Config::CompareMode diffList=Config::CompareMode::Full;
   bool updateConfig=FALSE;
   int retVal;
   bool quiet = false;
@@ -10979,8 +10979,8 @@ void readConfiguration(int argc, char **argv)
         }
         break;
       case 'x':
-        if (!strcmp(argv[optInd]+1,"x_noenv")) diffList=DoxyfileSettings::CompressedNoEnv;
-        else if (!strcmp(argv[optInd]+1,"x")) diffList=DoxyfileSettings::Compressed;
+        if (!strcmp(argv[optInd]+1,"x_noenv")) diffList=Config::CompareMode::CompressedNoEnv;
+        else if (!strcmp(argv[optInd]+1,"x")) diffList=Config::CompareMode::Compressed;
         else
         {
           err("option should be \"-x\" or \"-x_noenv\", found: \"%s\".\n",argv[optInd]);
@@ -11305,7 +11305,7 @@ void readConfiguration(int argc, char **argv)
     exit(1);
   }
 
-  if (diffList!=DoxyfileSettings::Full)
+  if (diffList!=Config::CompareMode::Full)
   {
     Config::updateObsolete();
     compareDoxyfile(diffList);
