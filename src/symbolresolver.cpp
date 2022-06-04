@@ -1328,7 +1328,7 @@ int SymbolResolver::Private::isAccessibleFrom(AccessStack &accessStack,
              (distanceToBase=toClassDef(scope)->isBaseClass(toClassDef(itemScope),TRUE))>0
             )
     {
-      result+=distanceToBase; // penality if member is accessible via a base class
+      result+=distanceToBase; // penalty if member is accessible via a base class
     }
   }
   else if (scope==Doxygen::globalScope)
