@@ -47,23 +47,25 @@ void DotLegendGraph::computeTheGraph()
   QCString fontName = Config_getString(DOT_FONTNAME);
   TextStream md5stream;
   writeGraphHeader(md5stream,theTranslator->trLegendTitle());
-  md5stream << "  Node9 [shape=\"box\",label=\"Inherited\",fontsize=\"" << fontSize << "\",height=0.2,width=0.4,fontname=\"" << fontName << "\",fillcolor=\"grey75\",style=\"filled\" fontcolor=\"black\"];\n";
+  md5stream << "  node [shape=\"box\",fontsize=\"" << fontSize << "\",height=0.2,width=0.4,fontname=\"" << fontName << "\"];\n";
+
+  md5stream << "  Node9 [label=\"Inherited\",fillcolor=\"grey75\",style=\"filled\" fontcolor=\"black\"];\n";
   md5stream << "  Node10 -> Node9 [dir=\"back\",color=\"midnightblue\",fontsize=\"" << fontSize << "\",style=\"solid\",fontname=\"" << fontName << "\"];\n";
-  md5stream << "  Node10 [shape=\"box\",label=\"PublicBase\",fontsize=\"" << fontSize << "\",height=0.2,width=0.4,fontname=\"" << fontName << "\",color=\"black\"];\n";
+  md5stream << "  Node10 [label=\"PublicBase\",color=\"black\"];\n";
   md5stream << "  Node11 -> Node10 [dir=\"back\",color=\"midnightblue\",fontsize=\"" << fontSize << "\",style=\"solid\",fontname=\"" << fontName << "\"];\n";
-  md5stream << "  Node11 [shape=\"box\",label=\"Truncated\",fontsize=\"" << fontSize << "\",height=0.2,width=0.4,fontname=\"" << fontName << "\",color=\"red\"];\n";
+  md5stream << "  Node11 [label=\"Truncated\",color=\"red\"];\n";
   md5stream << "  Node13 -> Node9 [dir=\"back\",color=\"darkgreen\",fontsize=\"" << fontSize << "\",style=\"solid\",fontname=\"" << fontName << "\"];\n";
-  md5stream << "  Node13 [shape=\"box\",label=\"ProtectedBase\",fontsize=\"" << fontSize << "\",height=0.2,width=0.4,fontname=\"" << fontName << "\",color=\"black\"];\n";
+  md5stream << "  Node13 [label=\"ProtectedBase\",color=\"black\"];\n";
   md5stream << "  Node14 -> Node9 [dir=\"back\",color=\"firebrick4\",fontsize=\"" << fontSize << "\",style=\"solid\",fontname=\"" << fontName << "\"];\n";
-  md5stream << "  Node14 [shape=\"box\",label=\"PrivateBase\",fontsize=\"" << fontSize << "\",height=0.2,width=0.4,fontname=\"" << fontName << "\",color=\"black\"];\n";
+  md5stream << "  Node14 [label=\"PrivateBase\",color=\"black\"];\n";
   md5stream << "  Node15 -> Node9 [dir=\"back\",color=\"midnightblue\",fontsize=\"" << fontSize << "\",style=\"solid\",fontname=\"" << fontName << "\"];\n";
-  md5stream << "  Node15 [shape=\"box\",label=\"Undocumented\",fontsize=\"" << fontSize << "\",height=0.2,width=0.4,fontname=\"" << fontName << "\",color=\"grey75\"];\n";
+  md5stream << "  Node15 [label=\"Undocumented\",color=\"grey75\"];\n";
   md5stream << "  Node16 -> Node9 [dir=\"back\",color=\"midnightblue\",fontsize=\"" << fontSize << "\",style=\"solid\",fontname=\"" << fontName << "\"];\n";
-  md5stream << "  Node16 [shape=\"box\",label=\"Templ< int >\",fontsize=\"" << fontSize << "\",height=0.2,width=0.4,fontname=\"" << fontName << "\",color=\"black\"];\n";
+  md5stream << "  Node16 [label=\"Templ< int >\",color=\"black\"];\n";
   md5stream << "  Node17 -> Node16 [dir=\"back\",color=\"orange\",fontsize=\"" << fontSize << "\",style=\"dashed\",label=\"< int >\",fontname=\"" << fontName << "\"];\n";
-  md5stream << "  Node17 [shape=\"box\",label=\"Templ< T >\",fontsize=\"" << fontSize << "\",height=0.2,width=0.4,fontname=\"" << fontName << "\",color=\"black\"];\n";
+  md5stream << "  Node17 [label=\"Templ< T >\",color=\"black\"];\n";
   md5stream << "  Node18 -> Node9 [dir=\"back\",color=\"darkorchid3\",fontsize=\"" << fontSize << "\",style=\"dashed\",label=\"m_usedClass\",fontname=\"" << fontName << "\"];\n";
-  md5stream << "  Node18 [shape=\"box\",label=\"Used\",fontsize=\"" << fontSize << "\",height=0.2,width=0.4,fontname=\"" << fontName << "\",color=\"black\"];\n";
+  md5stream << "  Node18 [label=\"Used\",color=\"black\"];\n";
   writeGraphFooter(md5stream);
   m_theGraph = md5stream.str();
 }
