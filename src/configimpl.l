@@ -1285,17 +1285,14 @@ void ConfigImpl::emptyValueToDefault()
   }
 }
 
-static const reg::Ex re1(R"(\$\((\a[\w.-]*)\))");
-static const reg::Ex re2(R"(\$\((\a[\w.-]*\(\a[\w.-]*\))\))");
+static const reg::Ex reEnvVar(R"(\$\((\a[\w.-]*)\))");                 // e.g. $(HOME)
+static const reg::Ex reEnvVarExt(R"(\$\((\a[\w.-]*\(\a[\w.-]*\))\))"); // e.g. $(PROGRAMFILES(X86))
+
 static bool containsEnvVar(QCString &str)
 {
-  reg::Iterator it1(str.str(),re1);
-  reg::Iterator end1;
-  if (it1 != end1) return true;
-  reg::Iterator it2(str.str(),re2);
-  reg::Iterator end2;
-  if (it2 != end2) return true;
-  return false;
+  reg::Match m;
+  std::string s = str.str();
+  return reg::search(s,m,reEnvVar) || reg::search(s,m,reEnvVarExt);
 }
 
 static void substEnvVarsInString(QCString &str)
@@ -1323,8 +1320,7 @@ static void substEnvVarsInString(QCString &str)
     return result;
   };
 
-  // match e.g. re1=$(HOME) but also re2=$(PROGRAMFILES(X86))
-  str = QCString(replace(replace(str.str(),re1),re2)).stripWhiteSpace();
+  str = QCString(replace(replace(str.str(),reEnvVar),reEnvVarExt)).stripWhiteSpace();
 }
 
 static void substEnvVarsInStrList(StringVector &sl)
