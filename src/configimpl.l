@@ -31,6 +31,7 @@
 #include <fstream>
 #include <iostream>
 
+#include "config.h"
 #include "regex.h"
 #include "configimpl.h"
 #include "version.h"
@@ -83,6 +84,8 @@ static QCString configStringRecode(
     const QCString &str,
     const QCString &fromEncoding,
     const QCString &toEncoding);
+
+static bool containsEnvVar(QCString &str);
 
 #define MAX_INCLUDE_DEPTH 10
 #define YY_NEVER_INTERACTIVE 1
@@ -140,10 +143,10 @@ void ConfigOption::writeIntValue(TextStream &t,int i,bool initSpace)
   t << i;
 }
 
-void ConfigOption::writeStringValue(TextStream &t,const QCString &s,bool initSpace)
+void ConfigOption::writeStringValue(TextStream &t,const QCString &s,bool initSpace, bool wasQuoted)
 {
   char c;
-  bool needsEscaping=FALSE;
+  bool needsEscaping=wasQuoted;
   // convert the string back to it original g_encoding
   QCString se = configStringRecode(s,"UTF-8",m_encoding);
   if (se.isEmpty()) return;
@@ -181,7 +184,12 @@ void ConfigOption::writeStringList(TextStream &t,const StringVector &l)
     QCString s=p.c_str();
     if (!first)
       t << "                        ";
-    writeStringValue(t,s);
+    bool wasQuoted = ((s.at(0)=='"') && (s.at(s.length()-1)=='"'));
+    if (wasQuoted)
+    {
+      s = s.mid(1,s.length()-2);
+    }
+    writeStringValue(t,s,true,wasQuoted);
     first=FALSE;
   }
 }
@@ -191,10 +199,14 @@ void ConfigOption::writeStringList(TextStream &t,const StringVector &l)
 
 ConfigImpl *ConfigImpl::m_instance = 0;
 
-void ConfigInt::convertStrToVal()
+void ConfigInt::convertStrToVal(DoxyfileSettings diffList)
 {
   if (!m_valueString.isEmpty())
   {
+    if (diffList == DoxyfileSettings::CompressedNoEnv)
+    {
+       if (containsEnvVar(m_valueString)) return;
+    }
     bool ok;
     int val = m_valueString.toInt(&ok);
     if (!ok || val<m_minVal || val>m_maxVal)
@@ -229,10 +241,14 @@ static bool convertStringToBool(const QCString &str,bool &isValid)
   return false;
 }
 
-void ConfigBool::convertStrToVal()
+void ConfigBool::convertStrToVal(DoxyfileSettings diffList)
 {
   if (!m_valueString.stripWhiteSpace().isEmpty())
   {
+    if (diffList == DoxyfileSettings::CompressedNoEnv)
+    {
+       if (containsEnvVar(m_valueString)) return;
+    }
     bool isValid=false;
     bool b = convertStringToBool(m_valueString,isValid);
     if (isValid)
@@ -247,12 +263,16 @@ void ConfigBool::convertStrToVal()
   }
 }
 
-void ConfigEnum::convertStrToVal()
+void ConfigEnum::convertStrToVal(DoxyfileSettings diffList)
 {
   if (m_value.isEmpty())
   {
     m_value = m_defValue;
     return;
+  }
+  if (diffList == DoxyfileSettings::CompressedNoEnv)
+  {
+     if (containsEnvVar(m_value)) return;
   }
   QCString val = m_value.stripWhiteSpace().lower();
   for (const auto &s : m_valueRange)
@@ -401,7 +421,7 @@ bool ConfigList::isDefault()
   return true;
 }
 
-void ConfigList::compareDoxyfile(TextStream &t)
+void ConfigList::compareDoxyfile(TextStream &t, DoxyfileSettings)
 {
   if (!isDefault()) writeTemplate(t,TRUE,TRUE);
 }
@@ -442,7 +462,7 @@ void ConfigEnum::writeTemplate(TextStream &t,bool sl,bool)
   t << "\n";
 }
 
-void ConfigEnum::compareDoxyfile(TextStream &t)
+void ConfigEnum::compareDoxyfile(TextStream &t, DoxyfileSettings)
 {
   if (!isDefault()) writeTemplate(t,TRUE,TRUE);
 }
@@ -476,7 +496,7 @@ void ConfigString::writeTemplate(TextStream &t,bool sl,bool)
   t << "\n";
 }
 
-void ConfigString::compareDoxyfile(TextStream &t)
+void ConfigString::compareDoxyfile(TextStream &t, DoxyfileSettings)
 {
   if (!isDefault()) writeTemplate(t,TRUE,TRUE);
 }
@@ -519,9 +539,9 @@ void ConfigInt::writeTemplate(TextStream &t,bool sl,bool upd)
   t << "\n";
 }
 
-void ConfigInt::compareDoxyfile(TextStream &t)
+void ConfigInt::compareDoxyfile(TextStream &t,DoxyfileSettings diffList)
 {
-  if (!isDefault()) writeTemplate(t,TRUE,TRUE);
+  if (!isDefault() || ((diffList == DoxyfileSettings::CompressedNoEnv) && containsEnvVar(m_valueString))) writeTemplate(t,TRUE,TRUE);
 }
 
 void ConfigInt::writeXMLDoxyfile(TextStream &t)
@@ -561,9 +581,9 @@ void ConfigBool::writeTemplate(TextStream &t,bool sl,bool upd)
   t << "\n";
 }
 
-void ConfigBool::compareDoxyfile(TextStream &t)
+void ConfigBool::compareDoxyfile(TextStream &t,DoxyfileSettings diffList)
 {
-  if (!isDefault()) writeTemplate(t,TRUE,TRUE);
+  if (!isDefault() || ((diffList == DoxyfileSettings::CompressedNoEnv) && containsEnvVar(m_valueString))) writeTemplate(t,TRUE,TRUE);
 }
 
 void ConfigBool::writeXMLDoxyfile(TextStream &t)
@@ -778,21 +798,24 @@ static void processList()
   int l = s.length();
 
   QCString elemStr;
+  bool wasQuote=false;
 
   // helper to push elemStr to the list and clear it
-  auto addElem = [&elemStr]()
+  auto addElem = [&elemStr,&wasQuote]()
   {
     if (!elemStr.isEmpty())
     {
       QCString e = configStringRecode(elemStr,g_encoding,"UTF-8");
       //printf("Processed list element '%s'\n",qPrint(e));
+      if (wasQuote) e = "\""+e+"\"";
+      wasQuote = false;
       g_list->push_back(e.str());
       elemStr="";
     }
   };
 
   bool needsSeparator=false;
-  int insideQuote=false;
+  bool insideQuote=false;
   bool warned=false;
   for (int i=0;i<l;i++)
   {
@@ -818,6 +841,7 @@ static void processList()
       if (!insideQuote)
       {
         insideQuote=true;
+        wasQuote=true;
       }
       else // this quote ends an element
       {
@@ -1224,14 +1248,14 @@ void ConfigImpl::writeTemplate(TextStream &t,bool sl,bool upd)
   }
 }
 
-void ConfigImpl::compareDoxyfile(TextStream &t)
+void ConfigImpl::compareDoxyfile(TextStream &t,DoxyfileSettings diffList)
 {
   t << "# Difference with default Doxyfile " << getFullVersion();
   t << "\n";
   for (const auto &option : m_options)
   {
     option->m_userComment = "";
-    option->compareDoxyfile(t);
+    option->compareDoxyfile(t,diffList);
   }
 }
 
@@ -1246,11 +1270,11 @@ void ConfigImpl::writeXMLDoxyfile(TextStream &t)
   t << "</doxyfile>\n";
 }
 
-void ConfigImpl::convertStrToVal()
+void ConfigImpl::convertStrToVal(DoxyfileSettings diffList)
 {
   for (const auto &option : m_options)
   {
-    option->convertStrToVal();
+    option->convertStrToVal(diffList);
   }
 }
 void ConfigImpl::emptyValueToDefault()
@@ -1259,6 +1283,19 @@ void ConfigImpl::emptyValueToDefault()
   {
     option->emptyValueToDefault();
   }
+}
+
+static const reg::Ex re1(R"(\$\((\a[\w.-]*)\))");
+static const reg::Ex re2(R"(\$\((\a[\w.-]*\(\a[\w.-]*\))\))");
+static bool containsEnvVar(QCString &str)
+{
+  reg::Iterator it1(str.str(),re1);
+  reg::Iterator end1;
+  if (it1 != end1) return true;
+  reg::Iterator it2(str.str(),re2);
+  reg::Iterator end2;
+  if (it2 != end2) return true;
+  return false;
 }
 
 static void substEnvVarsInString(QCString &str)
@@ -1287,8 +1324,6 @@ static void substEnvVarsInString(QCString &str)
   };
 
   // match e.g. re1=$(HOME) but also re2=$(PROGRAMFILES(X86))
-  static const reg::Ex re1(R"(\$\((\a[\w.-]*)\))");
-  static const reg::Ex re2(R"(\$\((\a[\w.-]*\(\a[\w.-]*\))\))");
   str = QCString(replace(replace(str.str(),re1),re2)).stripWhiteSpace();
 }
 
@@ -1298,7 +1333,15 @@ static void substEnvVarsInStrList(StringVector &sl)
   for (const auto &s : sl)
   {
     QCString result = s.c_str();
-    bool wasQuoted = (result.find(' ')!=-1) || (result.find('\t')!=-1) || (result.find('"')!=-1);
+    bool wasQuoted = ((result.at(0)=='"') && (result.at(result.length()-1)=='"'));
+    if (wasQuoted)
+    {
+      result = result.mid(1,result.length()-2);
+    }
+    else
+    {
+      wasQuoted = (result.find(' ')!=-1) || (result.find('\t')!=-1) || (result.find('"')!=-1);
+    }
     // here we strip the quote again
     substEnvVarsInString(result);
 
@@ -1518,7 +1561,6 @@ static bool checkFileName(const QCString &s,const char *optionName)
   return true;
 }
 
-#include "config.h"
 
 void Config::init()
 {
@@ -2073,7 +2115,7 @@ void Config::writeTemplate(TextStream &t,bool shortList,bool update)
 void Config::compareDoxyfile(TextStream &t,DoxyfileSettings diffList)
 {
   postProcess(FALSE, diffList);
-  ConfigImpl::instance()->compareDoxyfile(t);
+  ConfigImpl::instance()->compareDoxyfile(t, diffList);
 }
 
 void Config::writeXMLDoxyfile(TextStream &t)
@@ -2098,7 +2140,7 @@ void Config::postProcess(bool clearHeaderAndFooter, DoxyfileSettings diffList)
 {
   if (diffList != DoxyfileSettings::CompressedNoEnv) ConfigImpl::instance()->substituteEnvironmentVars();
   if (diffList == DoxyfileSettings::Full)ConfigImpl::instance()->emptyValueToDefault();
-  ConfigImpl::instance()->convertStrToVal();
+  ConfigImpl::instance()->convertStrToVal(diffList);
 
   // avoid bootstrapping issues when the g_config file already
   // refers to the files that we are supposed to parse.
