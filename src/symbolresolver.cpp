@@ -199,7 +199,7 @@ const ClassDef *SymbolResolver::Private::getResolvedTypeRec(
   //printf("\n%d [getResolvedTypeRec(%s,%s)\n",level++,scope?qPrint(scope->name()):"<global>",qPrint(n));
   QCString explicitScopePart;
   QCString strippedTemplateParams;
-  QCString name=stripTemplateSpecifiersFromScope(removeRedundantWhiteSpace(n),TRUE,&strippedTemplateParams);
+  QCString name=stripTemplateSpecifiersFromScope(n,TRUE,&strippedTemplateParams);
   std::unique_ptr<ArgumentList> actTemplParams;
   if (!strippedTemplateParams.isEmpty()) // template part that was stripped
   {
@@ -224,8 +224,8 @@ const ClassDef *SymbolResolver::Private::getResolvedTypeRec(
   }
 
   //printf("Looking for type %s\n",qPrint(name));
-  auto range = Doxygen::symbolMap->find(name);
-  if (range.first==range.second)
+  auto &range = Doxygen::symbolMap->find(name);
+  if (range.empty())
   {
     return 0;
   }
@@ -303,9 +303,8 @@ const ClassDef *SymbolResolver::Private::getResolvedTypeRec(
   QCString bestResolvedType;
   int minDistance=10000; // init at "infinite"
 
-  for (auto it=range.first ; it!=range.second; ++it)
+  for (Definition *d : range)
   {
-    Definition *d = it->second;
     getResolvedType(scope,d,explicitScopePart,actTemplParams,
                     minDistance,bestMatch,bestTypedef,bestTemplSpec,bestResolvedType);
     if  (minDistance==0) break; // we can stop reaching if we already reached distance 0
@@ -354,7 +353,7 @@ const Definition *SymbolResolver::Private::getResolvedSymbolRec(
   //printf("\n%d [getResolvedSymbolRec(%s,%s)\n",level++,scope?qPrint(scope->name()):"<global>",qPrint(n));
   QCString explicitScopePart;
   QCString strippedTemplateParams;
-  QCString name=stripTemplateSpecifiersFromScope(removeRedundantWhiteSpace(n),TRUE,&strippedTemplateParams);
+  QCString name=stripTemplateSpecifiersFromScope(n,TRUE,&strippedTemplateParams);
   std::unique_ptr<ArgumentList> actTemplParams;
   if (!strippedTemplateParams.isEmpty()) // template part that was stripped
   {
@@ -379,8 +378,8 @@ const Definition *SymbolResolver::Private::getResolvedSymbolRec(
   }
 
   //printf("Looking for symbol %s\n",qPrint(name));
-  auto range = Doxygen::symbolMap->find(name);
-  if (range.first==range.second)
+  auto &range = Doxygen::symbolMap->find(name);
+  if (range.empty())
   {
     return 0;
   }
@@ -464,9 +463,8 @@ const Definition *SymbolResolver::Private::getResolvedSymbolRec(
   QCString bestResolvedType;
   int minDistance=10000; // init at "infinite"
 
-  for (auto it=range.first ; it!=range.second; ++it)
+  for (Definition *d : range)
   {
-    Definition *d = it->second;
     getResolvedSymbol(scope,d,args,checkCV,explicitScopePart,actTemplParams,
                       minDistance,bestMatch,bestTypedef,bestTemplSpec,bestResolvedType);
     if  (minDistance==0) break; // we can stop reaching if we already reached distance 0
@@ -476,9 +474,8 @@ const Definition *SymbolResolver::Private::getResolvedSymbolRec(
   // accept func(), see example 036 in the test set.
   if (bestMatch==0 && args=="()")
   {
-    for (auto it=range.first ; it!=range.second; ++it)
+    for (Definition *d : range)
     {
-      Definition *d = it->second;
       getResolvedSymbol(scope,d,QCString(),false,explicitScopePart,actTemplParams,
                       minDistance,bestMatch,bestTypedef,bestTemplSpec,bestResolvedType);
       if  (minDistance==0) break; // we can stop reaching if we already reached distance 0
@@ -974,7 +971,6 @@ int SymbolResolver::Private::isAccessibleFromWithExpScope(
          (toClassDef(newScope))->isBaseClass(toClassDef(itemScope),TRUE);
 
     bool enumValueWithinEnum =
-         item &&
          item->definitionType()==Definition::TypeMember &&
          toMemberDef(item)->isEnumValue() &&
          toMemberDef(item)->getEnumScope()==newScope;
@@ -1138,10 +1134,9 @@ const Definition *SymbolResolver::Private::followPath(const Definition *start,co
     }
     else if (current==Doxygen::globalScope || current->definitionType()==Definition::TypeFile)
     {
-       auto range = Doxygen::symbolMap->find(qualScopePart);
-       for (auto it = range.first; it!=range.second; ++it)
+       auto &range = Doxygen::symbolMap->find(qualScopePart);
+       for (Definition *def : range)
        {
-         Definition *def = it->second;
          const Definition *outerScope = def->getOuterScope();
          if (
              (outerScope==Doxygen::globalScope || // global scope or
@@ -1408,16 +1403,15 @@ QCString SymbolResolver::Private::substTypedef(
   QCString result=name;
   if (name.isEmpty()) return result;
 
-  auto range = Doxygen::symbolMap->find(name);
-  if (range.first==range.second)
+  auto &range = Doxygen::symbolMap->find(name);
+  if (range.empty())
     return result; // no matches
 
   MemberDef *bestMatch=0;
   int minDistance=10000; // init at "infinite"
 
-  for (auto it = range.first; it!=range.second; ++it)
+  for (Definition *d : range)
   {
-    Definition *d = it->second;
     // only look at members
     if (d->definitionType()==Definition::TypeMember)
     {

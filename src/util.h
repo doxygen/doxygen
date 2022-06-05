@@ -314,7 +314,20 @@ QCString stripExtension(const QCString &fName);
 
 void replaceNamespaceAliases(QCString &scope,int i);
 
-int computeQualifiedIndex(const QCString &name);
+//! Return the index of the last :: in the string \a name that is still before the first <
+inline int computeQualifiedIndex(const QCString &name)
+{
+  int l = static_cast<int>(name.length());
+  int lastSepPos = -1;
+  const char *p = name.data();
+  for (int i=0;i<l-1;i++)
+  {
+    char c=*p++;
+    if (c==':' && *p==':') lastSepPos=i;
+    if (c=='<') break;
+  }
+  return lastSepPos;
+}
 
 void addDirPrefix(QCString &fileName);
 

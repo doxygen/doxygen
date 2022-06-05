@@ -143,7 +143,7 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner, CodeOutputInterface &o
 static void generateFunctionLink(yyscan_t yyscanner, CodeOutputInterface &ol,
                                 const QCString &funcName);
 static bool findMemberLink(yyscan_t yyscanner, CodeOutputInterface &ol,
-                           Definition *sym, const QCString &symName);
+                           const Definition *sym, const QCString &symName);
 static void findMemberLink(yyscan_t yyscanner, CodeOutputInterface &ol,
                            const QCString &symName);
 static void adjustScopesAndSuites(yyscan_t yyscanner,unsigned indentLength);
@@ -1484,7 +1484,7 @@ static void generateFunctionLink(yyscan_t yyscanner,
 
 static bool findMemberLink(yyscan_t yyscanner,
                            CodeOutputInterface &ol,
-                           Definition *sym,
+                           const Definition *sym,
                            const QCString &symName)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
@@ -1534,10 +1534,10 @@ static void findMemberLink(yyscan_t yyscanner,
   bool found = false;
   if (yyextra->currentDefinition)
   {
-    auto range = Doxygen::symbolMap->find(symName);
-    for (auto it = range.first; it!=range.second; ++it)
+    auto v = Doxygen::symbolMap->find(symName);
+    for (auto p : v)
     {
-      if (findMemberLink(yyscanner,ol,it->second,symName)) found = true;
+      if (findMemberLink(yyscanner,ol,p,symName)) found = true;
     }
   }
   //printf("sym %s not found\n",&yytext[5]);

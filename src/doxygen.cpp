@@ -8389,13 +8389,16 @@ static void computeTooltipTexts()
     // queue the work
     for (const auto &kv : *Doxygen::symbolMap)
     {
-      DefinitionMutable *dm = toDefinitionMutable(kv.second);
-      if (dm && !isSymbolHidden(toDefinition(dm)) && toDefinition(dm)->isLinkableInProject())
+      for (const auto &def : kv.second)
       {
-        auto processTooltip = [dm]() {
-          dm->computeTooltip();
-        };
-        results.emplace_back(threadPool.queue(processTooltip));
+        DefinitionMutable *dm = toDefinitionMutable(def);
+        if (dm && !isSymbolHidden(toDefinition(dm)) && toDefinition(dm)->isLinkableInProject())
+        {
+          auto processTooltip = [dm]() {
+            dm->computeTooltip();
+          };
+          results.emplace_back(threadPool.queue(processTooltip));
+        }
       }
     }
     // wait for the results
@@ -8408,10 +8411,13 @@ static void computeTooltipTexts()
   {
     for (const auto &kv : *Doxygen::symbolMap)
     {
-      DefinitionMutable *dm = toDefinitionMutable(kv.second);
-      if (dm && !isSymbolHidden(toDefinition(dm)) && toDefinition(dm)->isLinkableInProject())
+      for (const auto &def : kv.second)
       {
-        dm->computeTooltip();
+        DefinitionMutable *dm = toDefinitionMutable(def);
+        if (dm && !isSymbolHidden(toDefinition(dm)) && toDefinition(dm)->isLinkableInProject())
+        {
+          dm->computeTooltip();
+        }
       }
     }
   }
@@ -10672,7 +10678,10 @@ static void dumpSymbolMap()
     TextStream t(&f);
     for (const auto &kv : *Doxygen::symbolMap)
     {
-      dumpSymbol(t,kv.second);
+      for (const auto &def : kv.second)
+      {
+        dumpSymbol(t,def);
+      }
     }
   }
 }
