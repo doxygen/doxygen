@@ -761,12 +761,16 @@ Structural indicators
       \ref cmdmemberof "\\memberof"
 
 <hr>
-\section cmdingroup \\ingroup (<groupname> [<groupname> <groupname>])
+\section cmdingroup \\ingroup (<groupname> [<groupname>]*)
 
   \addindex \\ingroup
-  If the \c \\ingroup command is placed in a comment block of a
-  class, file or namespace, then it will be added to the group or
-  groups identified by \<groupname\>.
+  If the \c \\ingroup command is placed in a comment block of a compound entity
+  (like class, file or namespace), then it will be added to the group(s)
+  identified by the `<groupname>`(s).
+  In case of members (like variable, functions, typedefs and enums) the member will
+  be added only to one group (to avoid ambiguous linking targets in case 
+  a member is not documented in the context of its class, namespace
+  or file, but only visible as part of a group).
 
   \sa page \ref grouping "Grouping", sections \ref cmddefgroup "\\defgroup",
   \ref cmdaddtogroup "\\addtogroup", and \ref cmdweakgroup "\\weakgroup"
