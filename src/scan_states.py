@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# python script to generate an overview of the staes based on the input lex file.
+# python script to generate an overview of the states based on the input lex file.
 #
 # Copyright (C) 1997-2019 by Dimitri van Heesch.
 #
