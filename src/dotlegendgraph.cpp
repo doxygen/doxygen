@@ -47,7 +47,7 @@ void DotLegendGraph::computeTheGraph()
   QCString fontName = Config_getString(DOT_FONTNAME);
   TextStream md5stream;
   writeGraphHeader(md5stream,theTranslator->trLegendTitle());
-  md5stream << "  node [shape=\"box\",fontsize=\"" << fontSize << "\",height=0.2,width=0.4,fontname=\"" << fontName << "\"];\n";
+  md5stream << "  node [fontsize=\"" << fontSize << "\",height=0.2,width=0.4,fontname=\"" << fontName << "\"];\n";
 
   md5stream << "  Node9 [label=\"Inherited\",fillcolor=\"grey75\",style=\"filled\" fontcolor=\"black\"];\n";
   md5stream << "  Node10 -> Node9 [dir=\"back\",color=\"midnightblue\",fontsize=\"" << fontSize << "\",style=\"solid\",fontname=\"" << fontName << "\"];\n";
@@ -61,9 +61,9 @@ void DotLegendGraph::computeTheGraph()
   md5stream << "  Node15 -> Node9 [dir=\"back\",color=\"midnightblue\",fontsize=\"" << fontSize << "\",style=\"solid\",fontname=\"" << fontName << "\"];\n";
   md5stream << "  Node15 [label=\"Undocumented\",color=\"grey75\"];\n";
   md5stream << "  Node16 -> Node9 [dir=\"back\",color=\"midnightblue\",fontsize=\"" << fontSize << "\",style=\"solid\",fontname=\"" << fontName << "\"];\n";
-  md5stream << "  Node16 [label=\"Templ< int >\",color=\"black\"];\n";
+  md5stream << "  Node16 [label=\"Templ\\< int \\>\",color=\"black\"];\n";
   md5stream << "  Node17 -> Node16 [dir=\"back\",color=\"orange\",fontsize=\"" << fontSize << "\",style=\"dashed\",label=\"< int >\",fontname=\"" << fontName << "\"];\n";
-  md5stream << "  Node17 [label=\"Templ< T >\",color=\"black\"];\n";
+  md5stream << "  Node17 [label=\"Templ\\< T \\>\",color=\"black\"];\n";
   md5stream << "  Node18 -> Node9 [dir=\"back\",color=\"darkorchid3\",fontsize=\"" << fontSize << "\",style=\"dashed\",label=\"m_usedClass\",fontname=\"" << fontName << "\"];\n";
   md5stream << "  Node18 [label=\"Used\",color=\"black\"];\n";
   writeGraphFooter(md5stream);
