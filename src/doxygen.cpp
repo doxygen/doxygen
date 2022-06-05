@@ -11407,6 +11407,10 @@ void adjustConfiguration()
         "Check the 'INPUT_ENCODING' setting in the config file!\n",
         qPrint(Config_getString(INPUT_ENCODING)),qPrint("UTF-8"),strerror(errno));
   }
+  else
+  {
+    portable_iconv_close(cd);
+  }
 
   // check and split INPUT_FILE_ENCODING
   const StringVector &fileEncod = Config_getList(INPUT_FILE_ENCODING);
@@ -11433,6 +11437,10 @@ void adjustConfiguration()
         term("unsupported character conversion: '%s'->'%s': %s\n"
             "Check the 'INPUT_FILE_ENCODING' setting in the config file!\n",
             qPrint(encoding),qPrint("UTF-8"),strerror(errno));
+      }
+      else
+      {
+        portable_iconv_close(cd);
       }
 
       Doxygen::inputFileEncoding.push_back(InputFileEncoding(pattern, encoding));
