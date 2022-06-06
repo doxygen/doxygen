@@ -937,7 +937,7 @@ QCString MemberList::listTypeAsString(MemberListType type)
   return "";
 }
 
-void MemberList::writeTagFile(TextStream &tagFile)
+void MemberList::writeTagFile(TextStream &tagFile,bool useQualifiedName)
 {
   for (const auto &imd : m_members)
   {
@@ -946,7 +946,7 @@ void MemberList::writeTagFile(TextStream &tagFile)
     {
       if (md->getLanguage()!=SrcLangExt_VHDL)
       {
-        md->writeTagFile(tagFile);
+        md->writeTagFile(tagFile,useQualifiedName);
         if (md->memberType()==MemberType_Enumeration && !md->isStrong())
         {
           for (const auto &ivmd : md->enumFieldList())
@@ -954,7 +954,7 @@ void MemberList::writeTagFile(TextStream &tagFile)
             MemberDefMutable *vmd = toMemberDefMutable(ivmd);
             if (vmd)
             {
-              vmd->writeTagFile(tagFile);
+              vmd->writeTagFile(tagFile,useQualifiedName);
             }
           }
         }
@@ -967,7 +967,7 @@ void MemberList::writeTagFile(TextStream &tagFile)
   }
   for (const auto &mg : m_memberGroupRefList)
   {
-    mg->writeTagFile(tagFile);
+    mg->writeTagFile(tagFile,useQualifiedName);
   }
 }
 

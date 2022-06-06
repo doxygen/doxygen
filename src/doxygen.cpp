@@ -717,6 +717,7 @@ QCString stripTemplateSpecifiers(const QCString &s)
  *  full qualified name \a name. Creates an artificial scope if the scope is
  *  not found and set the parent/child scope relation if the scope is found.
  */
+[[maybe_unused]]
 static Definition *buildScopeFromQualifiedName(const QCString &name_,SrcLangExt lang,const TagInfo *tagInfo)
 {
   QCString name = stripTemplateSpecifiers(name_);
@@ -2858,16 +2859,27 @@ static void addVariable(const Entry *root,int isFuncPtr=-1)
     name=removeRedundantWhiteSpace(name);
 
     // find the scope of this variable
-    Entry *p = root->parent();
-    while ((p->section & Entry::SCOPE_MASK))
+    int index = computeQualifiedIndex(name);
+    if (index!=-1 && root->parent()->section==Entry::GROUPDOC_SEC && root->parent()->tagInfo())
+      // grouped members are stored with full scope
     {
-      QCString scopeName = p->name;
-      if (!scopeName.isEmpty())
+      buildScopeFromQualifiedName(name.left(index+2),root->lang,root->tagInfo());
+      scope=name.left(index);
+      name=name.mid(index+2);
+    }
+    else
+    {
+      Entry *p = root->parent();
+      while ((p->section & Entry::SCOPE_MASK))
       {
-        scope.prepend(scopeName);
-        break;
+        QCString scopeName = p->name;
+        if (!scopeName.isEmpty())
+        {
+          scope.prepend(scopeName);
+          break;
+        }
+        p=p->parent();
       }
-      p=p->parent();
     }
 
     MemberType mtype;
@@ -3423,6 +3435,10 @@ static void addGlobalFunction(const Entry *root,const QCString &rname,const QCSt
       nd = getResolvedNamespaceMutable(nscope);
     }
   }
+  else if (root->parent()->section==Entry::GROUPDOC_SEC && !scope.isEmpty())
+  {
+    nd = getResolvedNamespaceMutable(sc);
+  }
 
   if (!scope.isEmpty())
   {
@@ -3450,7 +3466,7 @@ static void addGlobalFunction(const Entry *root,const QCString &rname,const QCSt
       "    '%s' '%s'::'%s' '%s' proto=%d\n"
       "    def='%s'\n",
       qPrint(root->type),
-      qPrint(root->parent()->name),
+      qPrint(scope),
       qPrint(rname),
       qPrint(root->args),
       root->proto,
@@ -3461,10 +3477,6 @@ static void addGlobalFunction(const Entry *root,const QCString &rname,const QCSt
   md->enableCallerGraph(root->callerGraph);
   md->enableReferencedByRelation(root->referencedByRelation);
   md->enableReferencesRelation(root->referencesRelation);
-  //if (root->mGrpId!=-1)
-  //{
-  //  md->setMemberGroup(memberGroupDict[root->mGrpId]);
-  //}
 
   md->setRefItems(root->sli);
   if (nd && !nd->name().isEmpty() && nd->name().at(0)!='@')
@@ -3523,7 +3535,19 @@ static void buildFunctionList(const Entry *root)
     QCString rname = removeRedundantWhiteSpace(root->name);
     //printf("rname=%s\n",qPrint(rname));
 
-    QCString scope=root->parent()->name; //stripAnonymousNamespaceScope(root->parent->name);
+    QCString scope;
+    int index = computeQualifiedIndex(rname);
+    if (index!=-1 && root->parent()->section==Entry::GROUPDOC_SEC && root->parent()->tagInfo())
+      // grouped members are stored with full scope
+    {
+      buildScopeFromQualifiedName(rname.left(index+2),root->lang,root->tagInfo());
+      scope=rname.left(index);
+      rname=rname.mid(index+2);
+    }
+    else
+    {
+      scope=root->parent()->name; //stripAnonymousNamespaceScope(root->parent->name);
+    }
     if (!rname.isEmpty() && scope.find('@')==-1)
     {
       ClassDefMutable *cd=0;
@@ -7069,7 +7093,10 @@ static void findEnums(const Entry *root)
     {
       scope=root->name.left(i); // extract scope
       name=root->name.right(root->name.length()-i-2); // extract name
-      if ((cd=getClassMutable(scope))==0) nd=getResolvedNamespaceMutable(scope);
+      if ((cd=getClassMutable(scope))==0)
+      {
+        nd=toNamespaceDefMutable(buildScopeFromQualifiedName(root->name.left(i+2),root->lang,root->tagInfo()));
+      }
     }
     else // no scope, check the scope in which the docs where found
     {
@@ -7236,7 +7263,10 @@ static void addEnumValuesToEnums(const Entry *root)
     {
       scope=root->name.left(i); // extract scope
       name=root->name.right(root->name.length()-i-2); // extract name
-      if ((cd=getClassMutable(scope))==0) nd=getResolvedNamespaceMutable(scope);
+      if ((cd=getClassMutable(scope))==0)
+      {
+        nd=toNamespaceDefMutable(buildScopeFromQualifiedName(root->name.left(i+2),root->lang,root->tagInfo()));
+      }
     }
     else // no scope, check the scope in which the docs where found
     {
@@ -7302,14 +7332,12 @@ static void addEnumValuesToEnums(const Entry *root)
           // use raw pointer in this loop, since we modify mn and can then invalidate mdp.
           if (md && md->isEnumerate() && !root->children().empty())
           {
-            //printf("   enum with %d children\n",root->children()->count());
+            //printf("   enum with %zu children\n",root->children().size());
             for (const auto &e : root->children())
             {
-              SrcLangExt sle;
-              if (
-                   (sle=root->lang)==SrcLangExt_CSharp ||
-                   sle==SrcLangExt_Java ||
-                   sle==SrcLangExt_XML ||
+              SrcLangExt sle = root->lang;
+              bool isJavaLike = sle==SrcLangExt_CSharp || sle==SrcLangExt_Java || sle==SrcLangExt_XML;
+              if ( isJavaLike ||
                    (root->spec&Entry::Strong)
                  )
               {
@@ -7317,15 +7345,13 @@ static void addEnumValuesToEnums(const Entry *root)
                 // values are only visible inside the enum scope, so we must create
                 // them here and only add them to the enum
                 //printf("md->qualifiedName()=%s e->name=%s tagInfo=%p name=%s\n",
-                //    qPrint(md->qualifiedName()),qPrint(e->name),e->tagInfo,qPrint(e->name));
-                QCString qualifiedName = substitute(root->name,"::",".");
-                if (!scope.isEmpty() && root->tagInfo())
+                //    qPrint(md->qualifiedName()),qPrint(e->name),(void*)e->tagInfo(),qPrint(e->name));
+                QCString qualifiedName = root->name;
+                if (isJavaLike)
                 {
-                  qualifiedName=substitute(scope,"::",".")+"."+qualifiedName;
+                  qualifiedName=substitute(qualifiedName,".","::");
                 }
-                if (substitute(md->qualifiedName(),"::",".")== // TODO: add function to get canonical representation
-                    qualifiedName       // enum value scope matches that of the enum
-                   )
+                if (md->qualifiedName()==qualifiedName)       // enum value scope matches that of the enum
                 {
                   QCString fileName = e->fileName;
                   if (fileName.isEmpty() && e->tagInfo())

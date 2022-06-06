@@ -320,7 +320,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     virtual void writeMemberDocSimple(OutputList &ol,const Definition *container) const;
     virtual void writeEnumDeclaration(OutputList &typeDecl,
             const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd) const;
-    virtual void writeTagFile(TextStream &) const;
+    virtual void writeTagFile(TextStream &,bool useQualifiedName) const;
     virtual void warnIfUndocumented() const;
     virtual void warnIfUndocumentedParams() const;
     virtual bool visibleInIndex() const;
@@ -4325,7 +4325,7 @@ Specifier MemberDefImpl::virtualness(int count) const
   return v;
 }
 
-void MemberDefImpl::writeTagFile(TextStream &tagFile) const
+void MemberDefImpl::writeTagFile(TextStream &tagFile,bool useQualifiedName) const
 {
   if (!isLinkableInProject()) return;
   tagFile << "    <member kind=\"";
@@ -4370,7 +4370,7 @@ void MemberDefImpl::writeTagFile(TextStream &tagFile) const
   {
     tagFile << "      <type>" << convertToXML(typeString()) << "</type>\n";
   }
-  tagFile << "      <name>" << convertToXML(name()) << "</name>\n";
+  tagFile << "      <name>" << convertToXML(useQualifiedName ? qualifiedName() : name()) << "</name>\n";
   tagFile << "      <anchorfile>" << addHtmlExtensionIfMissing(getOutputFileBase()) << "</anchorfile>\n";
   tagFile << "      <anchor>" << convertToXML(anchor()) << "</anchor>\n";
   QCString idStr = id();

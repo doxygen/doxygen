@@ -707,7 +707,7 @@ void GroupDefImpl::writeTagFile(TextStream &tagFile)
             MemberList * ml = getMemberList(lmd->type);
             if (ml)
             {
-              ml->writeTagFile(tagFile);
+              ml->writeTagFile(tagFile,true);
             }
           }
         }
@@ -716,7 +716,7 @@ void GroupDefImpl::writeTagFile(TextStream &tagFile)
         {
           for (const auto &mg : m_memberGroups)
           {
-            mg->writeTagFile(tagFile);
+            mg->writeTagFile(tagFile,true);
           }
         }
         break;
