@@ -80,15 +80,33 @@ add_custom_command(
 set_source_files_properties(${GENERATED_SRC_WIZARD}/configdoc.cpp PROPERTIES GENERATED 1)
 
 set(LEX_FILES config_doxyw)
+
+# Currently the complete list of lex include files for the dependency
+# The dependency should be a more dynamic list based on the content of the lex file
+set(LEX_INC_FILES)
+
 foreach(lex_file ${LEX_FILES})
     add_custom_command(
-        COMMAND ${PYTHON_EXECUTABLE} ${PROJECT_SOURCE_DIR}/src/scan_states.py ${PROJECT_SOURCE_DIR}/addon/doxywizard/${lex_file}.l > ${GENERATED_SRC_WIZARD}/${lex_file}.l.h
-        DEPENDS ${PROJECT_SOURCE_DIR}/src/scan_states.py ${PROJECT_SOURCE_DIR}/addon/doxywizard/${lex_file}.l
+        COMMAND ${PYTHON_EXECUTABLE} ${PROJECT_SOURCE_DIR}/src/pre_lex.py ${PROJECT_SOURCE_DIR}/addon/doxywizard/${lex_file}.l  ${GENERATED_SRC_WIZARD}/${lex_file}.l ${GENERATED_SRC_WIZARD}/${lex_file}.corr ${PROJECT_SOURCE_DIR}/src
+        DEPENDS ${PROJECT_SOURCE_DIR}/src/pre_lex.py ${PROJECT_SOURCE_DIR}/addon/doxywizard/${lex_file}.l ${LEX_INC_FILES}
+        OUTPUT  ${GENERATED_SRC_WIZARD}/${lex_file}.corr ${GENERATED_SRC_WIZARD}/${lex_file}.l
+    )
+    add_custom_command(
+        COMMAND ${PYTHON_EXECUTABLE} ${PROJECT_SOURCE_DIR}/src/scan_states.py ${GENERATED_SRC_WIZARD}/${lex_file}.l > ${GENERATED_SRC_WIZARD}/${lex_file}.l.h
+        DEPENDS ${PROJECT_SOURCE_DIR}/src/scan_states.py ${GENERATED_SRC_WIZARD}/${lex_file}.l
         OUTPUT  ${GENERATED_SRC_WIZARD}/${lex_file}.l.h
     )
     set_source_files_properties(${GENERATED_SRC_WIZARD}/${lex_file}.l.h PROPERTIES GENERATED 1)
 
-    FLEX_TARGET(${lex_file}        ${lex_file}.l        ${GENERATED_SRC_WIZARD}/${lex_file}.cpp        COMPILE_FLAGS "${LEX_FLAGS}")
+    FLEX_TARGET(${lex_file}
+                ${GENERATED_SRC_WIZARD}/${lex_file}.l
+                ${GENERATED_SRC_WIZARD}/${lex_file}_intermediate.cpp
+                COMPILE_FLAGS "${LEX_FLAGS}")
+    add_custom_command(
+        COMMAND ${PYTHON_EXECUTABLE} ${PROJECT_SOURCE_DIR}/src/post_lex.py ${GENERATED_SRC_WIZARD}/${lex_file}_intermediate.cpp ${GENERATED_SRC_WIZARD}/${lex_file}.cpp  ${GENERATED_SRC_WIZARD}/${lex_file}.corr ${PROJECT_SOURCE_DIR}/addon/doxywizard/${lex_file}.l  ${GENERATED_SRC_WIZARD}/${lex_file}.l
+        DEPENDS ${PROJECT_SOURCE_DIR}/src/post_lex.py ${GENERATED_SRC_WIZARD}/${lex_file}_intermediate.cpp ${GENERATED_SRC_WIZARD}/${lex_file}.corr
+        OUTPUT  ${GENERATED_SRC_WIZARD}/${lex_file}.cpp
+    )
 endforeach()
 
 qt_wrap_cpp(doxywizard_MOC

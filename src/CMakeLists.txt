@@ -112,27 +112,43 @@ set(LEX_FILES scanner
     lexscanner
     configimpl)
 
+# Currently the complete list of lex include files for the dependency
+# The dependency should be a more dynamic list based on the content of the lex file
+set(LEX_INC_FILES)
+
 # unfortunately ${LEX_FILES_H} and ${LEX_FILES_CPP} don't work in older versions of CMake (like 3.6.2) for add_library
 foreach(lex_file ${LEX_FILES})
     set(LEX_FILES_H ${LEX_FILES_H} " " ${GENERATED_SRC}/${lex_file}.l.h CACHE INTERNAL "Stores generated files")
     set(LEX_FILES_CPP ${LEX_FILES_CPP} " " ${GENERATED_SRC}/${lex_file}.cpp CACHE INTERNAL "Stores generated files")
+
     add_custom_command(
-        COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_LIST_DIR}/scan_states.py ${CMAKE_CURRENT_LIST_DIR}/${lex_file}.l > ${GENERATED_SRC}/${lex_file}.l.h
-        DEPENDS ${CMAKE_CURRENT_LIST_DIR}/scan_states.py ${CMAKE_CURRENT_LIST_DIR}/${lex_file}.l
+        COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_LIST_DIR}/pre_lex.py ${CMAKE_CURRENT_LIST_DIR}/${lex_file}.l  ${GENERATED_SRC}/${lex_file}.l ${GENERATED_SRC}/${lex_file}.corr ${CMAKE_CURRENT_LIST_DIR}
+        DEPENDS ${CMAKE_CURRENT_LIST_DIR}/pre_lex.py ${CMAKE_CURRENT_LIST_DIR}/${lex_file}.l ${LEX_INC_FILES}
+        OUTPUT  ${GENERATED_SRC}/${lex_file}.corr ${GENERATED_SRC}/${lex_file}.l
+    )
+    add_custom_command(
+        COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_LIST_DIR}/scan_states.py ${GENERATED_SRC}/${lex_file}.l > ${GENERATED_SRC}/${lex_file}.l.h
+        DEPENDS ${CMAKE_CURRENT_LIST_DIR}/scan_states.py ${GENERATED_SRC}/${lex_file}.l
         OUTPUT  ${GENERATED_SRC}/${lex_file}.l.h
     )
     set_source_files_properties(${GENERATED_SRC}/${lex_file}.l.h PROPERTIES GENERATED 1)
+
     # for code coverage we need the flex sources in the build src directory
     add_custom_command(
-        COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/src/${lex_file}.l ${PROJECT_BINARY_DIR}/src/${lex_file}.l
-        DEPENDS ${PROJECT_SOURCE_DIR}/src/${lex_file}.l
+        COMMAND ${CMAKE_COMMAND} -E copy ${GENERATED_SRC}/${lex_file}.l ${PROJECT_BINARY_DIR}/src/${lex_file}.l
+        DEPENDS ${GENERATED_SRC}/${lex_file}.l
         OUTPUT  ${PROJECT_BINARY_DIR}/src/${lex_file}.l
     )
 
     FLEX_TARGET(${lex_file}
-                ${CMAKE_CURRENT_LIST_DIR}/${lex_file}.l
-                ${GENERATED_SRC}/${lex_file}.cpp
+                ${GENERATED_SRC}/${lex_file}.l
+                ${GENERATED_SRC}/${lex_file}_intermediate.cpp
                 COMPILE_FLAGS "${LEX_FLAGS}")
+    add_custom_command(
+        COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_LIST_DIR}/post_lex.py ${GENERATED_SRC}/${lex_file}_intermediate.cpp ${GENERATED_SRC}/${lex_file}.cpp  ${GENERATED_SRC}/${lex_file}.corr ${CMAKE_CURRENT_LIST_DIR}/${lex_file}.l  ${GENERATED_SRC}/${lex_file}.l
+        DEPENDS ${CMAKE_CURRENT_LIST_DIR}/post_lex.py ${GENERATED_SRC}/${lex_file}_intermediate.cpp ${GENERATED_SRC}/${lex_file}.corr
+        OUTPUT  ${GENERATED_SRC}/${lex_file}.cpp
+    )
 endforeach()
 
 
