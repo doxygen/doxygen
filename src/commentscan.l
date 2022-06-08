@@ -1614,22 +1614,10 @@ STopt  [^\n@\\]*
                                           addOutput(yyscanner,'\n');
                                         }
 <FormatBlock>{CCS}                       { // start of a C-comment
-                                          if (!(yyextra->blockName=="code" || yyextra->blockName=="verbatim" || yyextra->blockName=="iliteral")) yyextra->commentCount++;
                                           addOutput(yyscanner,yytext);
                                         }
 <FormatBlock>{CCE}                       { // end of a C-comment
                                           addOutput(yyscanner,yytext);
-                                          if (!(yyextra->blockName=="code" || yyextra->blockName=="verbatim" || yyextra->blockName=="iliteral"))
-                                          {
-                                            yyextra->commentCount--;
-                                            if (yyextra->commentCount<0)
-                                            {
-                                              QCString endTag = "end"+yyextra->blockName;
-                                              if (yyextra->blockName=="startuml") endTag="enduml";
-                                              warn(yyextra->fileName,yyextra->lineNr,
-                                                 "found */ without matching /* while inside a \\%s block! Perhaps a missing \\%s?\n",qPrint(yyextra->blockName),qPrint(endTag));
-                                            }
-                                          }
                                         }
 <FormatBlock>.                          {
                                           addOutput(yyscanner,*yytext);
