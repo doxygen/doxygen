@@ -16,55 +16,45 @@ import sys
 import os
 import re
 
-
 def main():
     if len(sys.argv)!=5:
-        sys.exit('Usage: %s <input_lex_file> <output_lex_file> <correction_file> <include_path>' % sys.argv[0])
+        sys.exit('Usage: {0} <input_lex_file> <output_lex_file> <correction_file> <include_path>'.format(sys.argv[0]))
 
-    inp_lex_file = sys.argv[1]
-    out_lex_file = sys.argv[2]
-    corr_lex_file = sys.argv[3]
-    inc_path = sys.argv[4]
+    inp_lex_file, out_lex_file, corr_lex_file, inc_path = sys.argv[1:]
 
-    cnt = 0
-    rd_cnt = 0
-    add_cnt = 0
+    out_cnt = rd_cnt = add_cnt = 0
     if (os.path.exists(inp_lex_file)):
-        out = open(out_lex_file,"w")
-        corr = open(corr_lex_file,"w")
-        first_corr  = True
-        with open(inp_lex_file) as f:
-            for line in f:
-                if re.search(r'^%doxygen', line):
-                    inc_file = inc_path + "/" + line.split()[1]
-                    first_line = True
-                    with open(inc_file) as f_inc:
-                        for inc_line in f_inc:
-                            if first_line:
-                                first_line = False
-                                out.write("  /* #line 1 %s */\n"%(inc_file))
-                            cnt += 1
-                            add_cnt += 1
-                            out.write("%s"%(inc_line))
-                        f_inc.close()
-                    if not first_line:
-                        out.write("  /* #line %d %s */\n"%(rd_cnt+2,inp_lex_file))
-                        cnt += 2
-                        add_cnt += 1
-                        if first_corr:
-                            corr.write("%d %d\n"%(0,0))
-                            first_corr = False
-                        corr.write("%d %d\n"%(cnt,add_cnt))
-                else:
-                    cnt += 1
-                    rd_cnt += 1
-                    out.write("%s"%(line))
-            f.close()
-        if not first_corr:
-            # sufficient large
-            corr.write("%d %d\n"%(cnt*2,add_cnt*2))
-        corr.close()
-        out.close()
+        with open(out_lex_file,"w") as out_file:
+            with open(corr_lex_file,"w") as corr_file:
+                first_corr  = True
+                with open(inp_lex_file) as in_file:
+                    for line in in_file:
+                        if re.search(r'^%doxygen', line): # special include file marker
+                            inc_file = inc_path + "/" + line.split()[1]
+                            first_line = True
+                            with open(inc_file) as f_inc:
+                                for inc_line in f_inc:
+                                    if first_line:
+                                        first_line = False
+                                        out_file.write("  /* #line 1 {0} */\n".format(inc_file))
+                                    out_cnt += 1
+                                    add_cnt += 1
+                                    out_file.write(inc_line)
+                                f_inc.close()
+                            if not first_line:
+                                out_file.write("  /* #line {0} {1} */\n".format(rd_cnt+2,inp_lex_file))
+                                out_cnt += 2
+                                add_cnt += 1
+                                if first_corr:
+                                    corr_file.write("{0} {1}\n".format(0,0))
+                                    first_corr = False
+                                corr_file.write("{0} {1}\n".format(out_cnt,add_cnt))
+                        else:
+                            out_cnt += 1
+                            rd_cnt  += 1
+                            out_file.write(line)
+    else: # input file does not exist
+        exit(1)
 
 if __name__ == '__main__':
     main()

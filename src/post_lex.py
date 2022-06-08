@@ -16,84 +16,78 @@ import sys
 import os
 import re
 
-
 def main():
     if len(sys.argv)!=6:
-        sys.exit('Usage: %s <input_cpp_file> <output_cpp_file> <correction_file> <original_lex_file> <genetrated_lex_file>' % sys.argv[0])
+        sys.exit('Usage: {0} <input_cpp_file> <output_cpp_file> <correction_file> <original_lex_file> <generated_lex_file>'.formar(sys.argv[0]))
 
-    inp_cpp_file = sys.argv[1]
+    inp_cpp_file, out_cpp_file, corr_cpp_file, org_lex, gen_lex = sys.argv[1:]
+
     quoted_inp_cpp_file = '"' + inp_cpp_file + '"'
-    out_cpp_file = sys.argv[2]
-    corr_cpp_file = sys.argv[3]
-    org_lex = sys.argv[4]
-    gen_lex = sys.argv[5]
-    quoted_gen_lex = '"' + gen_lex + '"'
+    quoted_gen_lex      = '"' + gen_lex      + '"'
 
     corr_list = []
     if (os.path.exists(corr_cpp_file)):
-        corr = open(corr_cpp_file,"r")
-        # read file
-        with open(corr_cpp_file,"r") as corr:
-            corr_list = [tuple(map(int, i.split(' '))) for i in corr]
-            corr.close()
+        # read correction file as list of tuples
+        with open(corr_cpp_file,"r") as corr_file:
+            corr_list = [tuple(map(int, line.split(' '))) for line in corr_file]
 
     if (os.path.exists(inp_cpp_file)):
-        out = open(out_cpp_file,"w")
-        rule_correction = False
-        with open(inp_cpp_file) as f:
-            for line in f:
-                if re.search(r'^#line ', line):
-                    if line.split()[2] == quoted_inp_cpp_file:
-                        out.write("%s %s \"%s\"\n"%(line.split()[0],line.split()[1],out_cpp_file))
-                    elif line.split()[2] == quoted_gen_lex:
-                        line_cnt = int(line.split()[1])
-                        # run correction
+        with open(out_cpp_file,"w") as out_file:
+            rule_correction = False
+            with open(inp_cpp_file) as in_file:
+                for line in in_file:
+                    # helper function to find the correction needed for the given line number
+                    def get_line_correction(line_no):
                         corr_cnt = 0
                         for elem in corr_list:
-                            if elem[0] <= line_cnt:
+                            if elem[0] <= line_no:
                                 corr_cnt = elem[1]
-                        line_cnt -= corr_cnt
-                        out.write("%s %d \"%s\"\n"%(line.split()[0],line_cnt,org_lex))
-                    else:
-                        out.write("%s"%(line))
-                elif re.search(r'^  /\* #line ', line):
-                    out.write("%s %s \"%s\"\n"%(line.split()[1],line.split()[2],line.split()[3]))
-                elif re.search(r'static .* yy_rule_linenum', line):
-                    out.write("%s"%(line))
-                    rule_correction = True
-                    # read next lines till } and correct numbers
-                    # Assumption structure is like:
-                    #   static const flex_int16_t yy_rule_linenum[26] =
-                    #      {   0,
-                    #        981,  985,  989,  995, 1093, 1151, 1153, 1154, 1179, 1182,
-                    #       1195, 1198, 1201, 1207, 1211, 1214, 1217, 1223, 1226, 1228,
-                    #       1230, 1235, 1236, 1237, 1238
-                    #      } ;
-                elif rule_correction:
-                    if re.search(r'{', line):
-                        out.write("%s"%(line))
-                    elif re.search(r'}', line):
-                        out.write("%s"%(line))
-                        rule_correction = False
-                    else:
-                        out.write("    ")
-                        out_list = []
-                        rule_list = line.replace(',','').split()
-                        for rule_cnt in rule_list:
-                            rule_num = int(rule_cnt)
-                            corr_cnt = 0
-                            for elem in corr_list:
-                                if elem[0] <= rule_num:
-                                    corr_cnt = elem[1]
-                            out_list.append("%5d"%(rule_num-corr_cnt))
-                        out.write(','.join(out_list));
-                        if re.search(r',$', line):
-                            out.write(",")
-                        out.write("\n")
-                else:
-                    out.write("%s"%(line))
-            f.close()
-        out.close()
+                        return corr_cnt
+
+                    if re.search(r'^#line ', line): # statement added by C-preprocessing
+                        inc_line, inc_file = line.split()[1:3]
+                        if inc_file == quoted_gen_lex:
+                            line_cnt = int(inc_line)
+                            line_cnt -= get_line_correction(line_cnt) # adjust line number
+                            out_file.write("#line {0} \"{1}\"\n".format(line_cnt,org_lex))
+                        else:
+                            out_file.write(line)
+                    elif re.search(r'^  /\* #line ', line): # statement added by lex-preprocessing
+                        inc_line, inc_file = line.split()[2:4] # first token is `/*` part
+                        out_file.write("#line {0} \"{1}\"\n".format(inc_line,inc_file))
+                    elif re.search(r'static .* yy_rule_linenum', line): # linenum table generated in debug mode (flex -d)
+                        out_file.write(line)
+                        rule_correction = True
+                        # read next lines till } and correct numbers
+                        # Assumption structure is like:
+                        #   static const flex_int16_t yy_rule_linenum[26] =
+                        #      {   0,
+                        #        981,  985,  989,  995, 1093, 1151, 1153, 1154, 1179, 1182,
+                        #       1195, 1198, 1201, 1207, 1211, 1214, 1217, 1223, 1226, 1228,
+                        #       1230, 1235, 1236, 1237, 1238
+                        #      } ;
+                    elif rule_correction:
+                        if re.search(r'{', line): # start of yy_rule_linenum array
+                            out_file.write(line)
+                        elif re.search(r'}', line): # end of yy_rule_linenum array
+                            out_file.write(line)
+                            rule_correction = False
+                        else: # inside the table
+                            out_file.write("    ")
+                            out_list = []
+                            rule_list = line.replace(',',' ').split()
+                            for rule_cnt in rule_list:
+                                rule_num = int(rule_cnt)
+                                rule_num -= get_line_correction(rule_num)
+                                out_list.append("{0:5d}".format(rule_num))
+                            out_file.write(','.join(out_list));
+                            if re.search(r',$', line): # re-add trailing comma
+                                out_file.write(",")
+                            out_file.write("\n")
+                    else: # normal line -> just copy
+                        out_file.write(line)
+    else: # input file does not exist
+        exit(1)
 
 if __name__ == '__main__':
     main()
