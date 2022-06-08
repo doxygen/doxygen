@@ -4278,7 +4278,8 @@ int DocPara::handleHtmlStartTag(DocNodeVariant *thisVariant,const QCString &tagN
   int retval=RetVal_OK;
   int tagId = Mappers::htmlTagMapper->map(tagName);
   if (parser()->context.token->emptyTag && !(tagId&XML_CmdMask) &&
-      tagId!=HTML_UNKNOWN && tagId!=HTML_IMG && tagId!=HTML_BR && tagId!=HTML_HR && tagId!=HTML_P)
+      tagId!=HTML_UNKNOWN && tagId!=HTML_IMG && tagId!=HTML_BR && tagId!=HTML_HR && tagId!=HTML_P
+      && tagId!=HTML_DIV && tagId!=HTML_SPAN)
   {
       warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"HTML tag ('<%s/>') may not use the 'empty tag' XHTML syntax.",
                      qPrint(tagName));
@@ -4348,10 +4349,12 @@ int DocPara::handleHtmlStartTag(DocNodeVariant *thisVariant,const QCString &tagN
       if (!parser()->context.token->emptyTag) parser()->handleStyleEnter(thisVariant,children(),DocStyleChange::Italic,tagName,&parser()->context.token->attribs);
       break;
     case HTML_DIV:
-      if (!parser()->context.token->emptyTag) parser()->handleStyleEnter(thisVariant,children(),DocStyleChange::Div,tagName,&parser()->context.token->attribs);
+      parser()->handleStyleEnter(thisVariant,children(),DocStyleChange::Div,tagName,&parser()->context.token->attribs);
+      if (parser()->context.token->emptyTag) parser()->handleStyleLeave(thisVariant,children(),DocStyleChange::Div,tagName);
       break;
     case HTML_SPAN:
-      if (!parser()->context.token->emptyTag) parser()->handleStyleEnter(thisVariant,children(),DocStyleChange::Span,tagName,&parser()->context.token->attribs);
+      parser()->handleStyleEnter(thisVariant,children(),DocStyleChange::Span,tagName,&parser()->context.token->attribs);
+      if (parser()->context.token->emptyTag) parser()->handleStyleLeave(thisVariant,children(),DocStyleChange::Span,tagName);
       break;
     case HTML_SUB:
       if (!parser()->context.token->emptyTag) parser()->handleStyleEnter(thisVariant,children(),DocStyleChange::Subscript,tagName,&parser()->context.token->attribs);
