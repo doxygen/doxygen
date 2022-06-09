@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# python script to correct the linenumbers due to inclusion of comon parts in lex files
+# python script to correct the linenumbers due to inclusion of common parts in lex files
 #
 # Copyright (C) 1997-2022 by Dimitri van Heesch.
 #
@@ -18,7 +18,7 @@ import re
 
 def main():
     if len(sys.argv)!=6:
-        sys.exit('Usage: {0} <input_cpp_file> <output_cpp_file> <correction_file> <original_lex_file> <generated_lex_file>'.formar(sys.argv[0]))
+        sys.exit('Usage: {0} <input_cpp_file> <output_cpp_file> <correction_file> <original_lex_file> <generated_lex_file>'.format(sys.argv[0]))
 
     inp_cpp_file, out_cpp_file, corr_cpp_file, org_lex, gen_lex = sys.argv[1:]
 
@@ -87,6 +87,7 @@ def main():
                     else: # normal line -> just copy
                         out_file.write(line)
     else: # input file does not exist
+        sys.exit("Input cpp file '{0}' does not exist.".format(sys.argv[1]))
         exit(1)
 
 if __name__ == '__main__':

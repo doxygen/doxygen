@@ -54,7 +54,7 @@ def main():
                             rd_cnt  += 1
                             out_file.write(line)
     else: # input file does not exist
-        exit(1)
+        sys.exit("Input lex file '{0}' does not exist.".format(sys.argv[1]))
 
 if __name__ == '__main__':
     main()
