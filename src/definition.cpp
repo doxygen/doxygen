@@ -372,10 +372,10 @@ void DefinitionImpl::addSectionsToIndex()
       }
       QCString title = si->title();
       if (title.isEmpty()) title = si->label();
-      // determine if there is a next level inside this item
+      // determine if there is a next level inside this item, but be aware of the anchor and table section references.
       auto it_next = std::next(it);
       bool isDir = (it_next!=m_impl->sectionRefs.end()) ?
-                       (static_cast<int>((*it_next)->type()) > nextLevel) : FALSE;
+                       (isSection((*it_next)->type()) && static_cast<int>((*it_next)->type()) > nextLevel) : FALSE;
       Doxygen::indexList->addContentsItem(isDir,title,
                                          getReference(),
                                          m_impl->def->getOutputFileBase(),
