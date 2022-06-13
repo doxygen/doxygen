@@ -17,6 +17,9 @@ foreach (f  ${EXAMPLE_FILES})
     list(APPEND OUT_EXAMPLE_FILES "${PROJECT_BINARY_DIR}/examples/${f}")
 endforeach()
 
+# tag example, this example depends on the example example (here the required tag file is generated).
+set(DEP_EXAMPLES  tag:cpp@example)
+
 set(BASIC_EXAMPLES
                 class:h
                 define:h
@@ -36,7 +39,6 @@ set(BASIC_EXAMPLES
                 jdstyle:cpp
                 autolink:cpp
                 restypedef:cpp
-                tag:cpp
                 group:cpp
                 memgrp:cpp
                 templ:cpp
@@ -47,9 +49,26 @@ set(BASIC_EXAMPLES
                 mux:vhdl
 )
 
-foreach (f_inp  ${BASIC_EXAMPLES})
-        string(REGEX REPLACE ".*:" "" f_ext ${f_inp})
+foreach (f_inp  ${DEP_EXAMPLES})
         string(REGEX REPLACE ":.*" "" f ${f_inp})
+        string(REGEX REPLACE ".*:" "" f_ext ${f_inp})
+        string(REGEX REPLACE "@.*" "" f_ext ${f_ext})
+        string(REGEX REPLACE ".*@" "" f_dep ${f_inp})
+
+    add_custom_command(
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/html/examples/${f}
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/latex/examples/${f}
+	COMMAND ${EXECUTABLE_OUTPUT_PATH}/doxygen ${f}.cfg
+        COMMAND ${PYTHON_EXECUTABLE}  ${TOP}/examples/strip_example.py  < ${PROJECT_BINARY_DIR}/latex/examples/${f}/latex/refman.tex > ${PROJECT_BINARY_DIR}/latex/examples/${f}/latex/refman_doc.tex
+	DEPENDS doxygen ${f}.${f_ext} ${f}.cfg ${TOP}/examples/strip_example.py ${PROJECT_BINARY_DIR}/html/examples/${f_dep}/html/index.html
+	OUTPUT ${PROJECT_BINARY_DIR}/html/examples/${f}/html/index.html ${PROJECT_BINARY_DIR}/latex/examples/${f}/latex/refman_doc.tex
+    )
+    set(EXAMPLES_RES ${EXAMPLES_RES} "" ${PROJECT_BINARY_DIR}/html/examples/${f}/html/index.html)
+endforeach()
+
+foreach (f_inp  ${BASIC_EXAMPLES})
+        string(REGEX REPLACE ":.*" "" f ${f_inp})
+        string(REGEX REPLACE ".*:" "" f_ext ${f_inp})
     add_custom_command(
         COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/html/examples/${f}
         COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/latex/examples/${f}
