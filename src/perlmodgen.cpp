@@ -1481,6 +1481,7 @@ void PerlModGenerator::generatePerlModForMember(const MemberDef *md,const Defini
     case MemberType_Dictionary:  memType="dictionary"; break;
   }
 
+  bool isFortran = md->getLanguage()==SrcLangExt_Fortran;
   name = md->name();
   if (md->isAnonymous()) name = "__unnamed" + name.right(name.length() - 1)+"__";
 
@@ -1524,7 +1525,9 @@ void PerlModGenerator::generatePerlModForMember(const MemberDef *md,const Defini
 	if (defArg && !defArg->name.isEmpty() && defArg->name!=a.name)
 	  m_output.addFieldQuotedString("definition_name", defArg->name);
 
-	if (!a.type.isEmpty())
+        if (isFortran && defArg && !defArg->type.isEmpty())
+	  m_output.addFieldQuotedString("type", defArg->type);
+	else if (!a.type.isEmpty())
 	  m_output.addFieldQuotedString("type", a.type);
 
 	if (!a.array.isEmpty())
