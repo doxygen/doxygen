@@ -2835,12 +2835,6 @@ static bool getLinkInScope(yyscan_t yyscanner,
         return TRUE;
       }
     }
-    else // found member, but it is not linkable, so make sure content inside is not assigned
-         // to the previous member, see bug762760
-    {
-      DBG_CTX((stderr,"unlinkable member %s\n",qPrint(md->name())));
-      yyextra->currentMemberDef = 0;
-    }
   }
   return FALSE;
 }
