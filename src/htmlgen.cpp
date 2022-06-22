@@ -2338,9 +2338,9 @@ static bool quickLinkVisible(LayoutNavEntry::Kind kind)
     case LayoutNavEntry::ClassIndex:         return annotatedClasses>0;
     case LayoutNavEntry::ClassHierarchy:     return hierarchyClasses>0;
     case LayoutNavEntry::ClassMembers:       return documentedClassMembers[CMHL_All]>0;
-    case LayoutNavEntry::Files:              return documentedFiles>0;
-    case LayoutNavEntry::FileList:           return documentedFiles>0;
-    case LayoutNavEntry::FileGlobals:        return documentedFileMembers[FMHL_All]>0;
+    case LayoutNavEntry::Files:              return Config_getBool(SHOW_FILES) && documentedFiles>0;
+    case LayoutNavEntry::FileList:           return Config_getBool(SHOW_FILES) && documentedFiles>0;
+    case LayoutNavEntry::FileGlobals:        return Config_getBool(SHOW_FILES) && documentedFileMembers[FMHL_All]>0;
     case LayoutNavEntry::Examples:           return !Doxygen::exampleLinkedMap->empty();
     case LayoutNavEntry::Interfaces:         return annotatedInterfaces>0;
     case LayoutNavEntry::InterfaceList:      return annotatedInterfaces>0;
