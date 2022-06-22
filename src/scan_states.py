@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # python script to generate an overview of the states based on the input lex file.
 #
 # Copyright (C) 1997-2019 by Dimitri van Heesch.

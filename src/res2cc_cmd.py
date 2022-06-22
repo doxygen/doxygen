@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # Script that compiles a set of resources into a single C++ source file. The C++ file
 # offers an initResources() function, which registers the resources with the resource
 # manager (class ResourceMgr)
