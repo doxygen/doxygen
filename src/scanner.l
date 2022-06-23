@@ -2074,9 +2074,9 @@ NONLopt [^\n]*
                                           }
                                         }
 <HereDocEnd>.                           { }
-<CopyHereDocEnd>^{ID}                   { // id at start of the line could mark the end of the block
+<CopyHereDocEnd>^{Bopt}{ID}             { // id at start of the line could mark the end of the block
                                           *yyextra->pCopyHereDocGString << yytext;
-                                          if (yyextra->delimiter==yytext) // it is the end marker
+                                          if (yyextra->delimiter==QCString(yytext).stripWhiteSpace()) // it is the end marker
                                           {
                                             BEGIN(yyextra->lastHereDocContext);
                                           }
