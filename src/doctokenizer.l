@@ -288,7 +288,7 @@ FILEMASK  {VFILEMASK}|{HFILEMASK}
 LINKMASK  [^ \t\n\r\\@<&${}]+("("[^\n)]*")")?({BLANK}*("const"|"volatile"){BLANK}+)?
 VERBATIM  "verbatim"{BLANK}*
 SPCMD1    {CMD}([a-z_A-Z][a-z_A-Z0-9]*|{VERBATIM}|"--"|"---")
-SPCMD2    {CMD}[\\@<>&$#%~".+=|-]
+SPCMD2    {CMD}[\\@<>&$#%~".+=|!?-]
 SPCMD3    {CMD}_form#[0-9]+
 SPCMD4    {CMD}"::"
 SPCMD5    {CMD}":"

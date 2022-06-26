@@ -487,7 +487,7 @@ Go to the <a href="commands.html">next</a> section or return to the
       <docs>
 <![CDATA[
   If the \c JAVADOC_AUTOBRIEF tag is set to \c YES then doxygen
-  will interpret the first line (until the first dot) of a Javadoc-style
+  will interpret the first line (until the first dot, question mark or exclamation mark) of a Javadoc-style
   comment as the brief description. If set to \c NO, the
   Javadoc-style will behave just like regular Qt-style comments
   (thus requiring an explicit \ref cmdbrief "\@brief" command for a brief description.)
@@ -509,7 +509,7 @@ Go to the <a href="commands.html">next</a> section or return to the
       <docs>
 <![CDATA[
   If the \c QT_AUTOBRIEF tag is set to \c YES then doxygen
-  will interpret the first line (until the first dot) of a Qt-style
+  will interpret the first line (until the first dot, question mark or exclamation mark) of a Qt-style
   comment as the brief description. If set to \c NO, the
   Qt-style will behave just like regular Qt-style comments (thus
   requiring an explicit \ref cmdbrief "\\brief" command for a brief description.)

@@ -120,6 +120,8 @@ CommandMap cmdMap[] =
   { "-",             CMD_MINUS },
   { "::",            CMD_DCOLON },
   { "\"",            CMD_QUOTE },
+  { "!",             CMD_EXCLAMATION },
+  { "?",             CMD_QUESTION },
   { "_internalref",  CMD_INTERNALREF },
   { "dot",           CMD_DOT },
   { "msc",           CMD_MSC },

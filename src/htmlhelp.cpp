@@ -154,8 +154,8 @@ void HtmlHelpIndex::addItem(const QCString &level1,const QCString &level2,
                        bool reversed)
 {
   static const reg::Ex re(R"(@\d+)");
-  std::string key = level1.str();
-  if (!level2.isEmpty()) key+= std::string("?") + level2.str();
+  std::string key = substitute(level1,"?","&quest;").str();
+  if (!level2.isEmpty()) key+= std::string("?") + substitute(level2,"?","&quest;").str();
   if (reg::search(key,re)) // skip anonymous stuff
   {
     return;
