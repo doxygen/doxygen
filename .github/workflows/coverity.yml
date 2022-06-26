@@ -9,6 +9,9 @@ on:
     - cron: '30 2 * * *'  # Run once per day, to avoid Coverity's submission limits
 
 
+permissions:
+  contents: read
+
 jobs:
   check_date:
     runs-on: ubuntu-20.04
