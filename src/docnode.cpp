@@ -3199,9 +3199,10 @@ int DocPara::handleXRefItem(DocNodeVariant *thisVariant)
   return retval;
 }
 
-void DocPara::handleIline(DocNodeVariant *)
+void DocPara::handleILine(DocNodeVariant *)
 {
-  parser()->tokenizer.setStateIline();
+  DBG(("handleILine()\n"));
+  parser()->tokenizer.setStateILine();
   int tok = parser()->tokenizer.lex();
   if (tok!=TK_WORD)
   {
@@ -3210,6 +3211,29 @@ void DocPara::handleIline(DocNodeVariant *)
   }
   parser()->tokenizer.setStatePara();
 }
+
+void DocPara::handleIFile(DocNodeVariant *)
+{
+  DBG(("handleIFile()\n"));
+  int tok=parser()->tokenizer.lex();
+  if (tok!=TK_WHITESPACE)
+  {
+    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"expected whitespace after \\ifile command");
+    return;
+  }
+  parser()->tokenizer.setStateFile();
+  tok=parser()->tokenizer.lex();
+  parser()->tokenizer.setStatePara();
+  if (tok!=TK_WORD)
+  {
+    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected token %s as the argument of \\ifile",
+        DocTokenizer::tokToString(tok));
+    return;
+  }
+  parser()->context.fileName = parser()->context.token->name;
+  parser()->tokenizer.setStatePara();
+}
+
 
 void DocPara::handleIncludeOperator(DocNodeVariant *thisVariant,const QCString &cmdName,DocIncOperator::Type t)
 {
@@ -4239,7 +4263,10 @@ int DocPara::handleCommand(DocNodeVariant *thisVariant,const QCString &cmdName, 
       handleInheritDoc(thisVariant);
       break;
     case CMD_ILINE:
-      handleIline(thisVariant);
+      handleILine(thisVariant);
+      break;
+    case CMD_IFILE:
+      handleIFile(thisVariant);
       break;
     default:
       // we should not get here!
@@ -4470,7 +4497,7 @@ int DocPara::handleHtmlStartTag(DocNodeVariant *thisVariant,const QCString &tagN
         if (!parser()->context.token->emptyTag)
         {
           parser()->handleStyleEnter(thisVariant,children(),DocStyleChange::Summary,tagName,&parser()->context.token->attribs);
-        } 
+        }
       }
       break;
     case XML_REMARKS:
@@ -5595,203 +5622,5 @@ void DocRoot::parse(DocNodeVariant *thisVariant)
   parser()->handleUnclosedStyleCommands();
 
   DBG(("DocRoot::parse() end\n"));
-}
-
-static QCString extractCopyDocId(const char *data, uint &j, uint len)
-{
-  uint s=j;
-  int round=0;
-  bool insideDQuote=FALSE;
-  bool insideSQuote=FALSE;
-  bool found=FALSE;
-  while (j<len && !found)
-  {
-    if (!insideSQuote && !insideDQuote)
-    {
-      switch (data[j])
-      {
-        case '(': round++; break;
-        case ')': round--; break;
-        case '"': insideDQuote=TRUE; break;
-        case '\'': insideSQuote=TRUE; break;
-        case ' ':  // fall through
-        case '\t': // fall through
-        case '\n':
-          found=(round==0);
-          break;
-      }
-    }
-    else if (insideSQuote) // look for single quote end
-    {
-      if (data[j]=='\'' && (j==0 || data[j]!='\\'))
-      {
-        insideSQuote=FALSE;
-      }
-    }
-    else if (insideDQuote) // look for double quote end
-    {
-      if (data[j]=='"' && (j==0 || data[j]!='\\'))
-      {
-        insideDQuote=FALSE;
-      }
-    }
-    if (!found) j++;
-  }
-  if (qstrncmp(data+j," const",6)==0)
-  {
-    j+=6;
-  }
-  else if (qstrncmp(data+j," volatile",9)==0)
-  {
-    j+=9;
-  }
-  uint e=j;
-  if (j>0 && data[j-1]=='.') { e--; } // do not include punctuation added by Definition::_setBriefDescription()
-  QCString id(data+s,e-s);
-  //printf("extractCopyDocId='%s' input='%s'\n",qPrint(id),&data[s]);
-  return id;
-}
-
-// macro to check if the input starts with a specific command.
-// note that data[i] should point to the start of the command (\ or @ character)
-// and the sizeof(str) returns the size of str including the '\0' terminator;
-// a fact we abuse to skip over the start of the command character.
-#define CHECK_FOR_COMMAND(str,action) \
-   do if ((i+sizeof(str)<len) && qstrncmp(data+i+1,str,sizeof(str)-1)==0) \
-   { j=i+sizeof(str); action; } while(0)
-
-static uint isCopyBriefOrDetailsCmd(const char *data, uint i,uint len,bool &brief)
-{
-  uint j=0;
-  if (i==0 || (data[i-1]!='@' && data[i-1]!='\\')) // not an escaped command
-  {
-    CHECK_FOR_COMMAND("copybrief",brief=TRUE);    // @copybrief or \copybrief
-    CHECK_FOR_COMMAND("copydetails",brief=FALSE); // @copydetails or \copydetails
-  }
-  return j;
-}
-
-static uint isVerbatimSection(const char *data,uint i,uint len,QCString &endMarker)
-{
-  uint j=0;
-  if (i==0 || (data[i-1]!='@' && data[i-1]!='\\')) // not an escaped command
-  {
-    CHECK_FOR_COMMAND("dot",endMarker="enddot");
-    CHECK_FOR_COMMAND("code",endMarker="endcode");
-    CHECK_FOR_COMMAND("msc",endMarker="endmsc");
-    CHECK_FOR_COMMAND("verbatim",endMarker="endverbatim");
-    CHECK_FOR_COMMAND("iliteral",endMarker="endiliteral");
-    CHECK_FOR_COMMAND("latexonly",endMarker="endlatexonly");
-    CHECK_FOR_COMMAND("htmlonly",endMarker="endhtmlonly");
-    CHECK_FOR_COMMAND("xmlonly",endMarker="endxmlonly");
-    CHECK_FOR_COMMAND("rtfonly",endMarker="endrtfonly");
-    CHECK_FOR_COMMAND("manonly",endMarker="endmanonly");
-    CHECK_FOR_COMMAND("docbookonly",endMarker="enddocbookonly");
-    CHECK_FOR_COMMAND("startuml",endMarker="enduml");
-  }
-  //printf("isVerbatimSection(%s)=%d)\n",qPrint(QCString(&data[i]).left(10)),j);
-  return j;
-}
-
-static uint skipToEndMarker(const char *data,uint i,uint len,const QCString &endMarker)
-{
-  while (i<len)
-  {
-    if ((data[i]=='@' || data[i]=='\\') &&  // start of command character
-        (i==0 || (data[i-1]!='@' && data[i-1]!='\\'))) // that is not escaped
-    {
-      if (i+endMarker.length()+1<=len && qstrncmp(data+i+1,endMarker.data(),endMarker.length())==0)
-      {
-        return i+endMarker.length()+1;
-      }
-    }
-    i++;
-  }
-  // oops no endmarker found...
-  return i<len ? i+1 : len;
-}
-
-QCString DocParser::processCopyDoc(const char *data,uint &len)
-{
-  //printf("processCopyDoc start '%s'\n",data);
-  GrowBuf buf;
-  uint i=0;
-  while (i<len)
-  {
-    char c = data[i];
-    if (c=='@' || c=='\\') // look for a command
-    {
-      bool isBrief=TRUE;
-      uint j=isCopyBriefOrDetailsCmd(data,i,len,isBrief);
-      if (j>0)
-      {
-        // skip whitespace
-        while (j<len && (data[j]==' ' || data[j]=='\t')) j++;
-        // extract the argument
-        QCString id = extractCopyDocId(data,j,len);
-        const Definition *def = 0;
-        QCString doc,brief;
-        //printf("resolving docs='%s'\n",qPrint(id));
-        if (findDocsForMemberOrCompound(id,&doc,&brief,&def))
-        {
-          //printf("found it def=%p brief='%s' doc='%s' isBrief=%d\n",def,qPrint(brief),qPrint(doc),isBrief);
-          auto it = std::find(context.copyStack.begin(),context.copyStack.end(),def);
-          if (it==context.copyStack.end()) // definition not parsed earlier
-          {
-            context.copyStack.push_back(def);
-            if (isBrief)
-            {
-              uint l=static_cast<uint>(brief.length());
-              buf.addStr(processCopyDoc(brief.data(),l));
-            }
-            else
-            {
-              uint l=static_cast<uint>(doc.length());
-              buf.addStr(processCopyDoc(doc.data(),l));
-            }
-            context.copyStack.pop_back();
-          }
-          else
-          {
-            warn_doc_error(context.fileName,tokenizer.getLineNr(),
-	         "Found recursive @copy%s or @copydoc relation for argument '%s'.\n",
-                 isBrief?"brief":"details",qPrint(id));
-          }
-        }
-        else
-        {
-          warn_doc_error(context.fileName,tokenizer.getLineNr(),
-               "@copy%s or @copydoc target '%s' not found", isBrief?"brief":"details",
-               qPrint(id));
-        }
-        // skip over command
-        i=j;
-      }
-      else
-      {
-        QCString endMarker;
-        uint k = isVerbatimSection(data,i,len,endMarker);
-        if (k>0)
-        {
-          uint orgPos = i;
-          i=skipToEndMarker(data,k,len,endMarker);
-          buf.addStr(data+orgPos,i-orgPos);
-        }
-        else
-        {
-          buf.addChar(c);
-          i++;
-        }
-      }
-    }
-    else // not a command, just copy
-    {
-      buf.addChar(c);
-      i++;
-    }
-  }
-  len = static_cast<uint>(buf.getPos());
-  buf.addChar(0);
-  return buf.get();
 }
 

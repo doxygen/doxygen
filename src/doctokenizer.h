@@ -180,7 +180,7 @@ class DocTokenizer
     void setStateOptions();
     void setStateBlock();
     void setStateEmoji();
-    void setStateIline();
+    void setStateILine();
 
   private:
     struct Private;

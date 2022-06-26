@@ -1042,7 +1042,8 @@ class DocPara : public DocCompoundNode
     void handleSection(DocNodeVariant *thisVariant,const QCString &cmdName);
     void handleInheritDoc(DocNodeVariant *thisVariant);
     void handleVhdlFlow(DocNodeVariant *thisVariant);
-    void handleIline(DocNodeVariant *thisVariant);
+    void handleILine(DocNodeVariant *thisVariant);
+    void handleIFile(DocNodeVariant *thisVariant);
     int handleStartCode(DocNodeVariant *thisVariant);
     int handleHtmlHeader(DocNodeVariant *thisVariant,const HtmlAttribList &tagHtmlAttribs,int level);
 
