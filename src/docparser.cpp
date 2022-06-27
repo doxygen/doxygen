@@ -1843,7 +1843,6 @@ QCString DocParser::processCopyDoc(const char *data,uint &len)
         {
           buf.addChar(c);
           i++;
-          lineNr += (c=='\n') ? 1 : 0;
         }
       }
     }
