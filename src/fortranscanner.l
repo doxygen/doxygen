@@ -74,7 +74,6 @@ typedef yyguts_t *yyscan_t;
 #include "debug.h"
 #include "markdown.h"
 
-const int fixedCommentAfter = 72;
 
 // Toggle for some debugging info
 //#define DBG_CTX(x) fprintf x
@@ -205,6 +204,8 @@ struct fortranscannerYY_state
 //! Holds program scope->symbol name->symbol modifiers.
   std::map<Entry*,std::map<std::string,SymbolModifiers> > modifiers;
   int                      anonCount    = 0 ;
+
+  int fixedCommentAfter = 72;
 };
 
 //-----------------------------------------------------------------------------
@@ -1519,7 +1520,7 @@ static void insertCharacter(char *contents, int length, int pos, char c)
 
 /* change yyextra->comments and bring line continuation character to previous line */
 /* also used to set continuation marks in case of fortran code usage, done here as it is quite complicated code */
-const char* prepassFixedForm(const char* contents, int *hasContLine)
+const char* prepassFixedForm(const char* contents, int *hasContLine,int fixedCommentAfter)
 {
   int column=0;
   int prevLineLength=0;
@@ -2668,13 +2669,14 @@ static void parseMain(yyscan_t yyscanner, const QCString &fileName,const char *f
 
   if (yyextra->isFixedForm)
   {
+    yyextra->fixedCommentAfter = Config_getInt(FORTRAN_COMMENT_AFTER);
     msg("Prepassing fixed form of %s\n", qPrint(fileName));
     //printf("---strlen=%d\n", strlen(fileBuf));
     //clock_t start=clock();
 
     //printf("Input fixed form string:\n%s\n", fileBuf);
     //printf("===========================\n");
-    yyextra->inputString = prepassFixedForm(fileBuf, nullptr);
+    yyextra->inputString = prepassFixedForm(fileBuf, nullptr,yyextra->fixedCommentAfter);
     Debug::print(Debug::FortranFixed2Free,0,"======== Fixed to Free format  =========\n---- Input fixed form string ------- \n%s\n", fileBuf);
     Debug::print(Debug::FortranFixed2Free,0,"---- Resulting free form string ------- \n%s\n", yyextra->inputString);
     //printf("Resulting free form string:\n%s\n", yyextra->inputString);
