@@ -1682,6 +1682,17 @@ FILE_VERSION_FILTER = "cleartool desc -fmt \%Vn"
 ]]>
       </docs>
     </option>
+    <option type='int' id='FORTRAN_COMMENT_AFTER' defval='72' minval='7' maxval='10000'>
+      <docs>
+<![CDATA[
+ The Fortran standard specifies that for fixed formatted Fortran code all characters
+ from position 72 are to be considered as comment. A common extension is to allow
+ longer lines before the automatic comment starts.
+ The setting \c FORTRAN_COMMENT_AFTER will also make it possible that longer lines can be
+ processed before the automatic comment starts.
+]]>
+      </docs>
+    </option>
   </group>
   <group name='Source_Browser' docs='Configuration options related to source browsing'>
     <option type='bool' id='SOURCE_BROWSER' defval='0'>
