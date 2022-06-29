@@ -1100,6 +1100,10 @@ NONLopt [^\n]*
                                           if (yyextra->insideCli) yyextra->current->spec |= Entry::Initonly;
                                           lineCount(yyscanner);
                                         }
+<FindMembers>{B}*"static"{BN}*/"{"      { yyextra->current->type += " static ";
+                                          yyextra->current->stat = TRUE;
+                                          lineCount(yyscanner);
+                                        }
 <FindMembers>{B}*"static"{BN}+          { yyextra->current->type += " static ";
                                           yyextra->current->stat = TRUE;
                                           lineCount(yyscanner);
