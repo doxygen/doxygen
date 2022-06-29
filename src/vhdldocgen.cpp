@@ -2577,7 +2577,7 @@ ferr:
   std::unique_ptr<MemberDefMutable> md { createMemberDef(
       ar->getDefFileName(), cur->startLine,cur->startColumn,
       n1,uu,uu, QCString(),
-      Public, Normal, cur->stat,Member,
+      Public, Normal, cur->stat, Unspecified, Member,
       MemberType_Variable,
       ArgumentList(),
       ArgumentList(),

@@ -248,6 +248,7 @@ class Entry
     uint64 spec;              //!< class/member specifiers
     int  initLines;           //!< define/variable initializer lines to show
     bool stat;                //!< static ?
+    MemberFunction mfunction; //!< unspecified, constructor, destructor?
     bool explicitExternal;    //!< explicitly defined as external?
     bool proto;               //!< prototype ?
     bool subGrouping;         //!< automatically group class members?

@@ -175,6 +175,7 @@ const char * table_schema[][2] = {
       "\tread                 TEXT,\n"
       "\twrite                TEXT,\n"
       "\tprot                 INTEGER DEFAULT 0, -- 0:public 1:protected 2:private 3:package\n"
+      "\tfunction             INTEGER DEFAULT 0, -- 0:unspecified 1:constructor 2:destructor\n"
       "\tstatic               INTEGER DEFAULT 0, -- 0:no 1:yes\n"
       "\textern               INTEGER DEFAULT 0, -- 0:no 1:yes\n"
       "\tconst                INTEGER DEFAULT 0, -- 0:no 1:yes\n"
@@ -609,6 +610,7 @@ SqlStmt memberdef_insert={
     "read,"
     "write,"
     "prot,"
+    "function,"
     "static,"
     "extern,"
     "const,"
@@ -668,6 +670,7 @@ SqlStmt memberdef_insert={
     ":read,"
     ":write,"
     ":prot,"
+    ":function,"
     ":static,"
     ":extern,"
     ":const,"
@@ -1648,6 +1651,8 @@ static void generateSqlite3ForMember(const MemberDef *md, struct Refid scope_ref
     bindIntParameter(memberdef_insert,":new",md->isNew());
     bindIntParameter(memberdef_insert,":optional",md->isOptional());
     bindIntParameter(memberdef_insert,":required",md->isRequired());
+    if (md->memberFunction() != Unspecified)
+      bindIntParameter(memberdef_insert,":function",md->memberFunction());
 
     bindIntParameter(memberdef_insert,":virt",md->virtualness());
   }

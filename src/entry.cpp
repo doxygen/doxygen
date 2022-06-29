@@ -59,6 +59,7 @@ Entry::Entry(const Entry &e)
   spec        = e.spec;
   initLines   = e.initLines;
   stat        = e.stat;
+  mfunction   = e.mfunction;
   localToc    = e.localToc;
   explicitExternal = e.explicitExternal;
   proto       = e.proto;
@@ -224,6 +225,7 @@ void Entry::reset()
   mtype   = Method;
   virt    = Normal;
   stat    = FALSE;
+  mfunction = Unspecified;
   proto   = FALSE;
   explicitExternal = FALSE;
   spec  = 0;

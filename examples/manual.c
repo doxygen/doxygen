@@ -15,6 +15,11 @@ struct Object
   int ref;    //!< \private Reference count.
 };
 
+/*!
+ * Creates a new object.
+ * \constructor \memberof Object
+ */
+Object * objNew();
 
 /*!
  * Increments object reference count by one.

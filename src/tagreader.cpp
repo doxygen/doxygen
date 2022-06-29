@@ -94,6 +94,7 @@ class TagMemberInfo
     Protection prot = Public;
     Specifier virt = Normal;
     bool isStatic = false;
+    MemberFunction mfunction = Unspecified;
     std::vector<TagEnumValueInfo> enumValues;
     int lineNr;
 };
@@ -363,6 +364,7 @@ class TagFileParser
       QCString protStr   = XMLHandlers::value(attrib,"protection");
       QCString virtStr   = XMLHandlers::value(attrib,"virtualness");
       QCString staticStr = XMLHandlers::value(attrib,"static");
+      QCString funcStr   = XMLHandlers::value(attrib,"function");
       m_curMember.lineNr = m_locator->lineNr();
       if (protStr=="protected")
       {
@@ -383,6 +385,10 @@ class TagFileParser
       if (staticStr=="yes")
       {
         m_curMember.isStatic = TRUE;
+      }
+      if (funcStr=="constructor")
+      {
+        m_curMember.mfunction = Constructor;
       }
       m_stateStack.push(m_state);
       m_state = InMember;
@@ -1335,6 +1341,7 @@ void TagFileParser::buildMemberList(const std::shared_ptr<Entry> &ce,const std::
     me->protection = tmi.prot;
     me->virt       = tmi.virt;
     me->stat       = tmi.isStatic;
+    me->mfunction  = tmi.mfunction;
     me->fileName   = ce->fileName;
     me->id         = tmi.clangId;
     me->startLine  = tmi.lineNr;

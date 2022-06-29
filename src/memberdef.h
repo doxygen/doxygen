@@ -102,6 +102,7 @@ class MemberDef : public Definition
     virtual Specifier virtualness(int count=0) const = 0;
     virtual MemberType memberType() const = 0;
     virtual QCString   memberTypeName() const = 0;
+    virtual MemberFunction memberFunction() const = 0;
 
     // getter methods
     virtual bool isSignal() const = 0;
@@ -447,7 +448,7 @@ MemberDefMutable     *toMemberDefMutable(const Definition *d);
 /** Factory method to create a new instance of a MemberDef */
 MemberDefMutable *createMemberDef(const QCString &defFileName,int defLine,int defColumn,
               const QCString &type,const QCString &name,const QCString &args,
-              const QCString &excp,Protection prot,Specifier virt,bool stat,
+              const QCString &excp,Protection prot,Specifier virt,bool stat,MemberFunction mfunction,
               Relationship related,MemberType t,const ArgumentList &tal,
               const ArgumentList &al,const QCString &metaData);
 
