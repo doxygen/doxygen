@@ -145,6 +145,7 @@ enum CommandType
   CMD_ILINE        = 116,
   CMD_ILITERAL     = 117,
   CMD_ENDILITERAL  = 118,
+  CMD_IFILE        = 119
 };
 
 enum HtmlTagType

@@ -32,6 +32,7 @@
 #include "version.h"
 #include "message.h"
 #include "resourcemgr.h"
+#include "indexlist.h"
 
 QCString searchName(const Definition *d)
 {
@@ -466,6 +467,7 @@ void writeJavaScriptSearchIndex()
         // searchData[x][1][y+1] = info for child y
         // searchData[x][1][y+1][0] = url
         // searchData[x][1][y+1][1] = 1 => target="_parent"
+        // searchData[x][1][y+1][1] = 0 => target="_blank"
         // searchData[x][1][y+1][2] = scope
 
         ti << "[\n";

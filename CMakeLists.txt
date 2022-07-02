@@ -36,6 +36,12 @@ set_property(CACHE force_qt PROPERTY STRINGS OFF Qt6 Qt5)
 
 SET(enlarge_lex_buffers "262144" CACHE INTERNAL "Sets the lex input and read buffers to the specified size")
 
+if(enable_coverage)
+  if ("${PROJECT_BINARY_DIR}" STREQUAL "${PROJECT_SOURCE_DIR}")
+    message(FATAL_ERROR "Doxygen cannot be generated in-place, the build directory (${PROJECT_BINARY_DIR}) has to differ from the doxygen main directory (${PROJECT_SOURCE_DIR})\nPlease don't forget to remove the already file created file 'CMakeCache.txt' and the directory 'CMakeFiles'!")
+  endif()
+endif()
+
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/Sanitizers")
 set(TOP "${PROJECT_SOURCE_DIR}")
@@ -82,13 +88,31 @@ if (WIN32)
         set(CMAKE_REQUIRED_DEFINITIONS "-DLIBICONV_STATIC")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj") # needed for language.cpp on 64bit
         add_definitions(-DLIBICONV_STATIC -D_CRT_SECURE_NO_WARNINGS)
+        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /LARGEADDRESSAWARE")
     endif()
     if (CMAKE_GENERATOR MATCHES "NMake Makefiles")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc")
     endif()
 endif()
 if (CMAKE_SYSTEM_NAME MATCHES "CYGWIN")
-   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wa,-mbig-obj")
+   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Og")
+
+   if (CMAKE_BUILD_TYPE STREQUAL  "")
+     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O1")
+   endif()
+endif()
+
+if (CMAKE_SYSTEM_NAME MATCHES "Windows")
+   if ((CMAKE_GENERATOR MATCHES "MinGW Makefiles") OR
+       (CMAKE_GENERATOR MATCHES "MSYS Makefiles") OR
+       (CMAKE_GENERATOR MATCHES "Unix Makefiles"))
+
+      set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Og")
+
+      if (CMAKE_BUILD_TYPE STREQUAL  "")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O1")
+      endif()
+   endif()
 endif()
 
 if(POLICY CMP0063)

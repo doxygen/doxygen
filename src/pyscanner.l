@@ -1800,6 +1800,7 @@ static void parseCompounds(yyscan_t yyscanner,std::shared_ptr<Entry> rt)
       pyscannerYYrestart( 0, yyscanner );
       if (ce->section&Entry::COMPOUND_MASK)
       {
+        yyextra->specialBlock = false;
         yyextra->current_root = ce;
         BEGIN( Search );
       }

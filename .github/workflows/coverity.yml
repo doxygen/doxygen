@@ -9,6 +9,9 @@ on:
     - cron: '30 2 * * *'  # Run once per day, to avoid Coverity's submission limits
 
 
+permissions:
+  contents: read
+
 jobs:
   check_date:
     runs-on: ubuntu-20.04
@@ -16,7 +19,7 @@ jobs:
     outputs:
       should_run: ${{ steps.should_run.outputs.should_run }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: print latest_commit
         run: echo ${{ github.sha }}
 
@@ -37,7 +40,7 @@ jobs:
 
     steps:
       - name: Checkout doxygen
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Download Coverity
         run: |

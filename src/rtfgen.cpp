@@ -597,7 +597,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
       break;
     case isTitlePageAuthor:
       {
-        m_t << " doxygen" << getDoxygenVersion() << ".}\n";
+        m_t << " doxygen " << getDoxygenVersion() << ".}\n";
         m_t << "{\\creatim " << dateToRTFDateString() << "}\n}";
         DBG_RTF(m_t << "{\\comment end of infoblock}\n");
         // setup for this section
@@ -629,11 +629,14 @@ void RTFGenerator::endIndexSection(IndexSections is)
         }
         else
         {
-          std::unique_ptr<IDocParser> parser { createDocParser() };
-          std::unique_ptr<DocText>    root   { validatingParseText(*parser.get(), projectName) };
-          m_t << "{\\field\\fldedit {\\*\\fldinst TITLE \\\\*MERGEFORMAT}{\\fldrslt ";
-          writeDoc(root.get(),0,0,0);
-          m_t << "}}\\par\n";
+          auto parser { createDocParser() };
+          auto ast    { validatingParseText(*parser.get(), projectName) };
+          if (ast)
+          {
+            m_t << "{\\field\\fldedit {\\*\\fldinst TITLE \\\\*MERGEFORMAT}{\\fldrslt ";
+            writeDoc(ast.get(),0,0,0);
+            m_t << "}}\\par\n";
+          }
         }
 
         m_t << rtf_Style_Reset << rtf_Style["SubTitle"].reference() << "\n"; // set to title style
@@ -2438,11 +2441,14 @@ void RTFGenerator::exceptionEntry(const QCString &prefix,bool closeBracket)
   m_t << " ";
 }
 
-void RTFGenerator::writeDoc(DocNode *n,const Definition *ctx,const MemberDef *,int)
+void RTFGenerator::writeDoc(const IDocNodeAST *ast,const Definition *ctx,const MemberDef *,int)
 {
-  RTFDocVisitor *visitor = new RTFDocVisitor(m_t,*this,ctx?ctx->getDefFileExtension():QCString(""));
-  n->accept(visitor);
-  delete visitor;
+  auto astImpl = dynamic_cast<const DocNodeAST*>(ast);
+  if (astImpl)
+  {
+    RTFDocVisitor visitor(m_t,*this,ctx?ctx->getDefFileExtension():QCString(""));
+    std::visit(visitor,astImpl->root);
+  }
   m_omitParagraph = TRUE;
 }
 

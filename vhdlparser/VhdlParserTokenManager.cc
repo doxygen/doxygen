@@ -3407,9 +3407,7 @@ Token * VhdlParserTokenManager::jjFillToken(){
      endLine = input_stream->getEndLine();
      endColumn = input_stream->getEndColumn();
    }
-   t = Token::newToken(jjmatchedKind);
-   t->kind = jjmatchedKind;
-   t->image = curTokenImage;
+   t = Token::newToken(jjmatchedKind, curTokenImage);
    t->specialToken = nullptr;
    t->next = nullptr;
 

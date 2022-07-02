@@ -16,6 +16,8 @@
  */
 /*! \page htmlcmds HTML Commands
 
+\section htmltagcmds  HTML tag commands
+
 Here is a list of all HTML commands that may be used inside the
 documentation. Note that although these HTML tags are translated to the
 proper commands for output formats other than HTML, all attributes 
@@ -123,8 +125,18 @@ of a HTML tag are passed on to the HTML output only
 <li><tt>\anchor htmltag_endVAR \addindex "\</VAR\>"\</VAR\></tt>  Ends a \ref htmltag_VAR "\<VAR\>" section.
 </ul>
 
-The special HTML4 character entities.<br>
-The list of entities with their descriptions has been taken from <a href="http://www.w3.org/TR/html4/sgml/entities.html">Character entity references in HTML 4</a>.
+Finally, to put invisible comments inside comment blocks, HTML style
+comments can be used:
+\verbatim
+/*! <!-- This is a comment with a comment block --> Visible text */
+\endverbatim
+The part `<!-- ... -->` will not be shown in the main documentation.
+
+
+
+\section htmlentities HTML4 character entities
+
+The list of special HTML4 character entities with their descriptions has been taken from: <a href="http://www.w3.org/TR/html4/sgml/entities.html">Character entity references in HTML 4</a>.
 ( Portions &copy; International Organization for Standardization 1986
   Permission to copy in any form is granted for use with
   conforming SGML systems and applications as defined in
@@ -388,14 +400,6 @@ Doxygen extensions:
 <li><tt>\&tm;</tt>`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`  trade mark sign: &tm;
 <li><tt>\&apos;</tt>`&nbsp;&nbsp;&nbsp;`            apostrophe: &apos;
 </ul>
-
-Finally, to put invisible comments inside comment blocks, HTML style
-comments can be used:
-\verbatim
-/*! <!-- This is a comment with a comment block --> Visible text */
-\endverbatim
-The part `<!-- ... -->` will not be shown in the main documentation.
-
 
 \htmlonly
 <br/>

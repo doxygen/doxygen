@@ -36,6 +36,7 @@
 #include "language.h"
 #include "htmlhelp.h"
 #include "docparser.h"
+#include "docnode.h"
 #include "htmldocvisitor.h"
 #include "searchindex.h"
 #include "pagedef.h"
@@ -53,6 +54,7 @@
 #include "dir.h"
 #include "utf8.h"
 #include "textstream.h"
+#include "indexlist.h"
 
 //#define DBG_HTML(x) x;
 #define DBG_HTML(x)
@@ -461,8 +463,22 @@ static QCString substituteHtmlKeywords(const QCString &str,
          const StringVector &mathJaxExtensions = Config_getList(MATHJAX_EXTENSIONS);
          if (!mathJaxExtensions.empty() || !g_latex_macro.isEmpty())
          {
-           mathJaxJs+= ",\n"
-                       "  tex: {\n"
+           mathJaxJs+= ",\n";
+           if (!mathJaxExtensions.empty())
+           {
+             bool first = true;
+             mathJaxJs+= "  loader: {\n"
+                         "    load: [";
+             for (const auto &s : mathJaxExtensions)
+             {
+               if (!first) mathJaxJs+= ",";
+               mathJaxJs+= "'[tex]/"+QCString(s.c_str())+"'";
+               first = false;
+             }
+             mathJaxJs+= "]\n"
+                         "  },\n";
+           }
+           mathJaxJs+= "  tex: {\n"
                        "    macros: {";
            if (!g_latex_macro.isEmpty())
            {
@@ -2236,12 +2252,15 @@ void HtmlGenerator::endParamList()
   m_t << "</dl>";
 }
 
-void HtmlGenerator::writeDoc(DocNode *n,const Definition *ctx,const MemberDef *,int id)
+void HtmlGenerator::writeDoc(const IDocNodeAST *ast,const Definition *ctx,const MemberDef *,int id)
 {
-  m_codeGen.setId(id);
-  HtmlDocVisitor *visitor = new HtmlDocVisitor(m_t,m_codeGen,ctx);
-  n->accept(visitor);
-  delete visitor;
+  const DocNodeAST *astImpl = dynamic_cast<const DocNodeAST*>(ast);
+  if (astImpl)
+  {
+    m_codeGen.setId(id);
+    HtmlDocVisitor visitor(m_t,m_codeGen,ctx);
+    std::visit(visitor,astImpl->root);
+  }
 }
 
 //---------------- helpers for index generation -----------------------------
@@ -2319,9 +2338,9 @@ static bool quickLinkVisible(LayoutNavEntry::Kind kind)
     case LayoutNavEntry::ClassIndex:         return annotatedClasses>0;
     case LayoutNavEntry::ClassHierarchy:     return hierarchyClasses>0;
     case LayoutNavEntry::ClassMembers:       return documentedClassMembers[CMHL_All]>0;
-    case LayoutNavEntry::Files:              return documentedFiles>0;
-    case LayoutNavEntry::FileList:           return documentedFiles>0;
-    case LayoutNavEntry::FileGlobals:        return documentedFileMembers[FMHL_All]>0;
+    case LayoutNavEntry::Files:              return Config_getBool(SHOW_FILES) && documentedFiles>0;
+    case LayoutNavEntry::FileList:           return Config_getBool(SHOW_FILES) && documentedFiles>0;
+    case LayoutNavEntry::FileGlobals:        return Config_getBool(SHOW_FILES) && documentedFileMembers[FMHL_All]>0;
     case LayoutNavEntry::Examples:           return !Doxygen::exampleLinkedMap->empty();
     case LayoutNavEntry::Interfaces:         return annotatedInterfaces>0;
     case LayoutNavEntry::InterfaceList:      return annotatedInterfaces>0;

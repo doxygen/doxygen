@@ -30,6 +30,7 @@
 #include "util.h"
 #include "outputlist.h"
 #include "docparser.h"
+#include "docnode.h"
 #include "language.h"
 
 #include "version.h"
@@ -1394,27 +1395,30 @@ QCString getSQLDocBlock(const Definition *scope,
   if (doc.isEmpty()) return "";
 
   TextStream t;
-  std::unique_ptr<IDocParser> parser { createDocParser() };
-  std::unique_ptr<DocRoot>    root   {
-    validatingParseDoc(
-    *parser.get(),
-    fileName,
-    lineNr,
-    const_cast<Definition*>(scope),
-    toMemberDef(def),
-    doc,
-    FALSE,
-    FALSE,
-    0,
-    FALSE,
-    FALSE,
-    Config_getBool(MARKDOWN_SUPPORT)
-  ) };
-  XMLCodeGenerator codeGen(t);
-  // create a parse tree visitor for XML
-  auto visitor = std::make_unique<XmlDocVisitor>(t,codeGen,
-                      scope ? scope->getDefFileExtension() : QCString(""));
-  root->accept(visitor.get());
+  auto parser { createDocParser() };
+  auto ast    { validatingParseDoc(
+                *parser.get(),
+                fileName,
+                lineNr,
+                const_cast<Definition*>(scope),
+                toMemberDef(def),
+                doc,
+                FALSE,
+                FALSE,
+                0,
+                FALSE,
+                FALSE,
+                Config_getBool(MARKDOWN_SUPPORT))
+              };
+  auto astImpl = dynamic_cast<const DocNodeAST*>(ast.get());
+  if (astImpl)
+  {
+    XMLCodeGenerator codeGen(t);
+    // create a parse tree visitor for XML
+    XmlDocVisitor visitor(t,codeGen,
+        scope ? scope->getDefFileExtension() : QCString(""));
+    std::visit(visitor,astImpl->root);
+  }
   return convertCharEntitiesToUTF8(t.str().c_str());
 }
 

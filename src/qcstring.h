@@ -117,7 +117,7 @@ class QCString
 
     explicit QCString( const std::string &s ) : m_rep(s) {}
 
-    QCString( std::string &&s) { m_rep = std::move(s); }
+    QCString( std::string &&s) : m_rep(std::move(s)) {}
 
     /** creates a string with room for size characters
      *  @param[in] size the number of character to allocate (also counting the 0-terminator!)
@@ -465,7 +465,7 @@ class QCString
     }
 #endif
 
-    std::string str() const
+    const std::string &str() const
     {
       return m_rep;
     }
@@ -530,7 +530,7 @@ class QCString
  *****************************************************************************/
 
 inline bool operator==( const QCString &s1, const QCString &s2 )
-{ return qstrcmp(s1.data(),s2.data()) == 0; }
+{ return s1.str() == s2.str(); }
 
 inline bool operator==( const QCString &s1, const char *s2 )
 { return qstrcmp(s1.data(),s2) == 0; }
@@ -539,7 +539,7 @@ inline bool operator==( const char *s1, const QCString &s2 )
 { return qstrcmp(s1,s2.data()) == 0; }
 
 inline bool operator!=( const QCString &s1, const QCString &s2 )
-{ return qstrcmp(s1.data(),s2.data()) != 0; }
+{ return s1.str() != s2.str(); }
 
 inline bool operator!=( const QCString &s1, const char *s2 )
 { return qstrcmp(s1.data(),s2) != 0; }

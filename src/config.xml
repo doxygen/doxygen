@@ -88,6 +88,17 @@ For lists, items can also be appended using:
       TAG += value [value, ...]
 \endverbatim
 Values that contain spaces should be placed between quotes (\" \").
+<br>
+Note:<br>
+Use doxygen to compare the used configuration file with the template configuration file:
+\verbatim
+      doxygen -x [configFile]
+\endverbatim
+Use doxygen to compare the used configuration file with the template configuration file
+without replacing the environment variables:
+\verbatim
+      doxygen -x_noenv [configFile]
+\endverbatim
 ]]>
     </docs>
   </header>
@@ -275,11 +286,24 @@ Go to the <a href="commands.html">next</a> section or return to the
       <docs>
 <![CDATA[
  If the \c CREATE_SUBDIRS tag is set to \c YES then doxygen will create
- 4096 sub-directories (in 2 levels) under the output directory of each output
+ up to 4096 sub-directories (in 2 levels) under the output directory of each output
  format and will distribute the generated files over these directories.
  Enabling this option can be useful when feeding doxygen a huge amount of source
  files, where putting all generated files in the same directory would otherwise
  causes performance problems for the file system.
+ Adapt \c CREATE_SUBDIRS_LEVEL to control the number of sub-directories.
+]]>
+      </docs>
+    </option>
+    <option type='int' id='CREATE_SUBDIRS_LEVEL' minval='0' maxval='8' defval='8'
+            depends='CREATE_SUBDIRS'>
+      <docs>
+<![CDATA[
+ Controls the number of sub-directories that will be created when \c CREATE_SUBDIRS tag
+ is set to \c YES. Level 0 represents 16 directories, and every level increment
+ doubles the number of directories, resulting in 4096 directories at level 8 which is the
+ default and also the maximum value. The sub-directories are organized in 2 levels, the first
+ level always has a fixed numer of 16 directories.
 ]]>
       </docs>
     </option>
@@ -423,7 +447,7 @@ Go to the <a href="commands.html">next</a> section or return to the
 ]]>
       </docs>
     </option>
-    <option type='list' id='STRIP_FROM_PATH' format='string' depends='FULL_PATH_NAMES'>
+    <option type='list' id='STRIP_FROM_PATH' format='dir' depends='FULL_PATH_NAMES'>
       <docs>
 <![CDATA[
  The \c STRIP_FROM_PATH tag
@@ -438,7 +462,7 @@ Go to the <a href="commands.html">next</a> section or return to the
 ]]>
       </docs>
     </option>
-    <option type='list' id='STRIP_FROM_INC_PATH' format='string'>
+    <option type='list' id='STRIP_FROM_INC_PATH' format='dir'>
       <docs>
 <![CDATA[
  The \c STRIP_FROM_INC_PATH tag can be used to strip a user-defined part of
@@ -1373,6 +1397,25 @@ FILE_VERSION_FILTER = "cleartool desc -fmt \%Vn"
  Optionally the format may contain
  <code>$version</code>, which will be replaced by the version of the file (if it could
  be obtained via \ref cfg_file_version_filter "FILE_VERSION_FILTER")
+
+ \sa \ref cfg_warn_line_format "WARN_LINE_FORMAT"
+]]>
+      </docs>
+    </option>
+    <option type='string' id='WARN_LINE_FORMAT' format='string' defval='at line $line of file $file'>
+      <docs>
+<![CDATA[
+ In the `$text` part of the \ref cfg_warn_format "WARN_FORMAT" command it is
+ possible that a reference to a more specific place is given.  To make it easier
+ to jump to this place (outside of doxygen) the user can define a custom
+ "cut" / "paste" string.
+
+ Example:
+ \verbatim
+  WARN_LINE_FORMAT = "'vi $file +$line'"
+ \endverbatim
+
+ \sa \ref cfg_warn_format "WARN_FORMAT"
 ]]>
       </docs>
     </option>
@@ -1382,7 +1425,7 @@ FILE_VERSION_FILTER = "cleartool desc -fmt \%Vn"
  The \c WARN_LOGFILE tag can be used to specify a file to which warning
  and error messages should be written. If left blank the output is written
  to standard error (`stderr`). In case the file specified cannot be opened for
- writing the warning and error messages are written to standard error. When as 
+ writing the warning and error messages are written to standard error. When as
  file `-` is specified the warning and error messages are written to standard output
  (`stdout`).
 ]]>
@@ -1636,6 +1679,17 @@ FILE_VERSION_FILTER = "cleartool desc -fmt \%Vn"
  is part of the input, its contents will be placed on the main page (`index.html`).
  This can be useful if you have a project on for instance GitHub and want to reuse
  the introduction page also for the doxygen output.
+]]>
+      </docs>
+    </option>
+    <option type='int' id='FORTRAN_COMMENT_AFTER' defval='72' minval='7' maxval='10000'>
+      <docs>
+<![CDATA[
+ The Fortran standard specifies that for fixed formatted Fortran code all characters
+ from position 72 are to be considered as comment. A common extension is to allow
+ longer lines before the automatic comment starts.
+ The setting \c FORTRAN_COMMENT_AFTER will also make it possible that longer lines can be
+ processed before the automatic comment starts.
 ]]>
       </docs>
     </option>
@@ -2536,7 +2590,7 @@ obfuscate email addresses.
  With \c MATHJAX_VERSION it is possible to specify the MathJax version to be used.
  Note that the different versions of MathJax have different requirements with regards to
  the different settings, so it is possible that also other MathJax settings have to be changed
- when switching between the different MathJax versions. 
+ when switching between the different MathJax versions.
 ]]>
       </docs>
       <value name="MathJax_2"/>
@@ -3601,10 +3655,10 @@ to be found in the default search path.
  will be shown as texts / links.
 ]]>
       </docs>
-      <value name="NO" />
-      <value name="YES" />
-      <value name="TEXT" />
-      <value name="GRAPH" />
+      <value name="NO" bool_representation="NO" />
+      <value name="YES" bool_representation="YES" />
+      <value name="TEXT" bool_representation="YES" />
+      <value name="GRAPH" bool_representation="YES" />
     </option>
     <option type='bool' id='COLLABORATION_GRAPH' defval='1' depends='HAVE_DOT'>
       <docs>

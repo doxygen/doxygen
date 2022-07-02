@@ -661,7 +661,7 @@ class TranslateContext::Private
     {
       if (m_javaOpt || m_vhdlOpt)
       {
-        return theTranslator->trPackages();
+        return theTranslator->trPackageList();
       }
       else if (m_fortranOpt || m_sliceOpt)
       {
@@ -1034,7 +1034,7 @@ const PropertyMap<TranslateContext::Private> TranslateContext::Private::s_inst {
   {  "classIndex",        &Private::classIndex },
   //%% string concepts
   {  "concepts",          &Private::concepts },
-  //%% string conceptDefintion
+  //%% string conceptDefinition
   {  "conceptDefinition", &Private::conceptDefinition },
   //%% string namespaceIndex
   {  "namespaceIndex",    &Private::namespaceIndex },
@@ -1241,38 +1241,41 @@ static TemplateVariant parseDoc(const Definition *def,const QCString &file,int l
                                 const QCString &relPath,const QCString &docStr,bool isBrief)
 {
   TemplateVariant result;
-  std::unique_ptr<IDocParser> parser { createDocParser() };
-  std::unique_ptr<DocRoot>    root   { validatingParseDoc(
-                                       *parser.get(),file,line,def,0,docStr,TRUE,FALSE,
-                                       QCString(),isBrief,FALSE,Config_getBool(MARKDOWN_SUPPORT))
-                                     };
-  TextStream ts;
-  switch (g_globals.outputFormat)
+  auto parser { createDocParser() };
+  auto ast    { validatingParseDoc(*parser.get(),file,line,def,0,docStr,TRUE,FALSE,
+                                   QCString(),isBrief,FALSE,Config_getBool(MARKDOWN_SUPPORT))
+              };
+  const DocNodeAST *astImpl = dynamic_cast<DocNodeAST*>(ast.get());
+  if (astImpl)
   {
-    case ContextOutputFormat_Html:
-      {
-        HtmlCodeGenerator codeGen(ts,relPath);
-        HtmlDocVisitor visitor(ts,codeGen,def);
-        root->accept(&visitor);
-      }
-      break;
-    case ContextOutputFormat_Latex:
-      {
-        LatexCodeGenerator codeGen(ts,relPath,file);
-        LatexDocVisitor visitor(ts,codeGen,def->getDefFileExtension(),FALSE);
-        root->accept(&visitor);
-      }
-      break;
-    // TODO: support other generators
-    default:
-      err("context.cpp: output format not yet supported\n");
-      break;
+    TextStream ts;
+    switch (g_globals.outputFormat)
+    {
+      case ContextOutputFormat_Html:
+        {
+          HtmlCodeGenerator codeGen(ts,relPath);
+          HtmlDocVisitor visitor(ts,codeGen,def);
+          std::visit(visitor,astImpl->root);
+        }
+        break;
+      case ContextOutputFormat_Latex:
+        {
+          LatexCodeGenerator codeGen(ts,relPath,file);
+          LatexDocVisitor visitor(ts,codeGen,def->getDefFileExtension(),FALSE);
+          std::visit(visitor,astImpl->root);
+        }
+        break;
+        // TODO: support other generators
+      default:
+        err("context.cpp: output format not yet supported\n");
+        break;
+    }
+    bool isEmpty = astImpl->isEmpty();
+    if (isEmpty)
+      result = "";
+    else
+      result = TemplateVariant(ts.str().c_str(),TRUE);
   }
-  bool isEmpty = root->isEmpty();
-  if (isEmpty)
-    result = "";
-  else
-    result = TemplateVariant(ts.str().c_str(),TRUE);
   return result;
 }
 
@@ -6274,8 +6277,8 @@ class NamespaceTreeContext::Private
     TemplateVariant preferredDepth() const       { return m_preferredDepth.get(this); }
     TemplateVariant title() const
     {
-      return Config_getBool(OPTIMIZE_OUTPUT_JAVA)  ? theTranslator->trPackages()     :
-             Config_getBool(OPTIMIZE_OUTPUT_VHDL)  ? theTranslator->trPackages()     :
+      return Config_getBool(OPTIMIZE_OUTPUT_JAVA)  ? theTranslator->trPackageList()  :
+             Config_getBool(OPTIMIZE_OUTPUT_VHDL)  ? theTranslator->trPackageList()  :
              Config_getBool(OPTIMIZE_FOR_FORTRAN)  ? theTranslator->trModulesList()  :
              Config_getBool(OPTIMIZE_OUTPUT_SLICE) ? theTranslator->trModulesList()  :
                                                      theTranslator->trNamespaceList();
@@ -7782,7 +7785,6 @@ class MemberGroupInfoContext::Private
     TemplateVariant members() const              { return m_members.get(this); }
     TemplateVariant groupTitle() const           { return m_memberGroup->header(); }
     TemplateVariant groupSubtitle() const        { return ""; }
-    TemplateVariant groupAnchor() const          { return m_memberGroup->anchor(); }
     TemplateVariant memberGroups() const         { return m_memberGroups.get(this); }
     TemplateVariant docs() const                 { return m_docs.get(this); }
     TemplateVariant inherited() const            { return FALSE; }
@@ -7819,7 +7821,6 @@ const PropertyMap<MemberGroupInfoContext::Private> MemberGroupInfoContext::Priva
   {  "members",      &Private::members },
   {  "title",        &Private::groupTitle },
   {  "subtitle",     &Private::groupSubtitle },
-  {  "anchor",       &Private::groupAnchor },
   {  "memberGroups", &Private::memberGroups },
   {  "docs",         &Private::docs },
   {  "inherited",    &Private::inherited }

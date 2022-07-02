@@ -20,6 +20,7 @@
 #include "config.h"
 #include "message.h"
 #include "docparser.h"
+#include "docnode.h"
 #include "doxygen.h"
 #include "util.h"
 #include "dot.h"
@@ -149,8 +150,10 @@ static QCString replaceRef(const QCString &buf,const QCString &relPath,
       {
         result=href+"=\"";
         // fake ref node to resolve the url
-        std::unique_ptr<IDocParser> parser { createDocParser() };
-        std::unique_ptr<DocRef>     df     { createRef( *parser.get(), link.mid(5), context ) };
+        auto parser { createDocParser() };
+        auto dfAst  { createRef( *parser.get(), link.mid(5), context ) };
+        auto dfAstImpl = dynamic_cast<const DocNodeAST*>(dfAst.get());
+        const DocRef *df = std::get_if<DocRef>(&dfAstImpl->root);
         result+=externalRef(relPath,df->ref(),TRUE);
         if (!df->file().isEmpty())
           result += addHtmlExtensionIfMissing(df->file());

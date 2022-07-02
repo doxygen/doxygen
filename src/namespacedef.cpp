@@ -75,9 +75,9 @@ class NamespaceDefImpl : public DefinitionMixin<NamespaceDefMutable>
     virtual void countMembers();
     virtual int  numDocMembers() const;
     virtual void addUsingDirective(const NamespaceDef *nd);
-    virtual LinkedRefMap<const NamespaceDef> getUsedNamespaces() const { return m_usingDirList; }
+    virtual const LinkedRefMap<const NamespaceDef> &getUsedNamespaces() const { return m_usingDirList; }
     virtual void addUsingDeclaration(const ClassDef *cd);
-    virtual LinkedRefMap<const ClassDef> getUsedClasses() const { return m_usingDeclList; }
+    virtual const LinkedRefMap<const ClassDef> &getUsedClasses() const { return m_usingDeclList; }
     virtual void combineUsingRelations(NamespaceDefSet &visitedNamespace);
     virtual QCString displayName(bool=TRUE) const;
     virtual QCString localName() const;
@@ -165,6 +165,7 @@ NamespaceDefMutable *createNamespaceDef(const QCString &defFileName,int defLine,
                  const QCString &refFile,const QCString &type,
                  bool isPublished)
 {
+  //printf("createNamespaceDef(%s)\n",qPrint(name));
   return new NamespaceDefImpl(defFileName,defLine,defColumn,name,ref,refFile,type,isPublished);
 }
 
@@ -189,9 +190,9 @@ class NamespaceDefAliasImpl : public DefinitionAliasMixin<NamespaceDef>
     { return getNSAlias()->anchor(); }
     virtual int numDocMembers() const
     { return getNSAlias()->numDocMembers(); }
-    virtual LinkedRefMap<const NamespaceDef> getUsedNamespaces() const
+    virtual const LinkedRefMap<const NamespaceDef> &getUsedNamespaces() const
     { return getNSAlias()->getUsedNamespaces(); }
-    virtual LinkedRefMap<const ClassDef> getUsedClasses() const
+    virtual const LinkedRefMap<const ClassDef> &getUsedClasses() const
     { return getNSAlias()->getUsedClasses(); }
     virtual QCString displayName(bool b=TRUE) const
     { return makeDisplayName(this,b); }
@@ -681,19 +682,19 @@ void NamespaceDefImpl::writeBriefDescription(OutputList &ol)
 {
   if (hasBriefDescription())
   {
-    std::unique_ptr<IDocParser> parser { createDocParser() };
-    std::unique_ptr<DocRoot>  rootNode { validatingParseDoc(*parser.get(),
-                                         briefFile(),briefLine(),this,0,
-                                         briefDescription(),TRUE,FALSE,
-                                         QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT)) };
-    if (rootNode && !rootNode->isEmpty())
+    auto parser { createDocParser() };
+    auto ast    { validatingParseDoc(*parser.get(),
+                                     briefFile(),briefLine(),this,0,
+                                     briefDescription(),TRUE,FALSE,
+                                     QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT)) };
+    if (!ast->isEmpty())
     {
       ol.startParagraph();
       ol.pushGeneratorState();
       ol.disableAllBut(OutputGenerator::Man);
       ol.writeString(" - ");
       ol.popGeneratorState();
-      ol.writeDoc(rootNode.get(),this,0);
+      ol.writeDoc(ast.get(),this,0);
       ol.pushGeneratorState();
       ol.disable(OutputGenerator::RTF);
       ol.writeString(" \n");
@@ -791,8 +792,7 @@ void NamespaceDefImpl::writeMemberGroups(OutputList &ol)
   /* write user defined member groups */
   for (const auto &mg : m_memberGroups)
   {
-    if ((!mg->allMembersInSameSection() || !m_subGrouping)
-        && mg->header()!="[NOHEADER]")
+    if (!mg->allMembersInSameSection() || !m_subGrouping)
     {
       mg->writeDeclarations(ol,0,this,0,0);
     }
@@ -1167,7 +1167,7 @@ int NamespaceDefImpl::numDocMembers() const
 void NamespaceDefImpl::addUsingDirective(const NamespaceDef *nd)
 {
   m_usingDirList.add(nd->qualifiedName(),nd);
-  //printf("%p: NamespaceDefImpl::addUsingDirective: %s:%d\n",this,qPrint(name()),m_usingDirList->count());
+  //printf("%s: NamespaceDefImpl::addUsingDirective: %s:%zu\n",qPrint(name()),qPrint(nd->qualifiedName()),m_usingDirList.size());
 }
 
 void NamespaceDefImpl::addUsingDeclaration(const ClassDef *cd)

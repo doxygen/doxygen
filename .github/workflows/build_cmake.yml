@@ -64,7 +64,7 @@ jobs:
           }
     steps:
     - name: Checkout doxygen
-      uses: actions/checkout@v1
+      uses: actions/checkout@v3
       
     - name: Download MikTex (Windows)
       run: |
@@ -74,11 +74,11 @@ jobs:
         Do {
           $attemptCount++;
           Try {
-            $wc.DownloadFile("https://ctan.math.illinois.edu/systems/win32/miktex/setup/windows-x64/miktexsetup-4.1-x64.zip","miktexsetup-4.1-x64.zip")
+            $wc.DownloadFile("https://ctan.math.illinois.edu/systems/win32/miktex/setup/windows-x64/miktexsetup-4.2-x64.zip","miktexsetup-4.2-x64.zip")
           } Catch [Exception] {
             Write-Host $_.Exception | format-list -force
           }
-        } while (((Test-Path "miktexsetup-4.1-x64.zip") -eq $false) -and ($attemptCount -le $maxAttempts))  
+        } while (((Test-Path "miktexsetup-4.2-x64.zip") -eq $false) -and ($attemptCount -le $maxAttempts))  
       shell: pwsh
       if: matrix.config.os == 'windows-latest'
       
@@ -97,6 +97,7 @@ jobs:
 
     - name: Install LaTeX (MacOS)
       run: |
+        brew update
         brew install --cask mactex;
         echo "/Library/TeX/texbin/" >> $GITHUB_PATH
       if: matrix.config.os == 'macos-latest'
@@ -131,7 +132,7 @@ jobs:
     - name: Extract MikTex zip (Windows)
       shell: bash
       run: |
-        unzip miktexsetup-4.1-x64.zip
+        unzip miktexsetup-4.2-x64.zip
       if: matrix.config.os == 'windows-latest'
 
     - name: Download MikTex packages (Windows)
@@ -327,7 +328,7 @@ jobs:
         endif()
 
     - name: Archive build artifacts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: "${{ matrix.config.name }} build artifacts"
         path: build/bin/
@@ -335,9 +336,6 @@ jobs:
     - name: Run tests (Linux / MacOS)
       shell: cmake -P {0}
       run: |
-        include(ProcessorCount)
-        ProcessorCount(N)
-
         set(ENV{CTEST_OUTPUT_ON_FAILURE} "ON")
 
         execute_process(
@@ -352,9 +350,6 @@ jobs:
     - name: Run tests (Windows)
       shell: cmake -P {0}
       run: |
-        include(ProcessorCount)
-        ProcessorCount(N)
-
         set(ENV{CTEST_OUTPUT_ON_FAILURE} "ON")
 
         execute_process(
@@ -379,7 +374,7 @@ jobs:
       if: matrix.config.os != 'windows-latest'
 
     - name: Archive html documentation artifacts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: "Html documentation artifacts"
         path: build/html/
@@ -387,7 +382,7 @@ jobs:
 
 
     - name: Archive Latex documentation artifacts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: "Latex documentation artifacts"
         path: build/latex/doxygen_manual.pdf

@@ -18,6 +18,7 @@
 #include "doxygen.h"
 #include "config.h"
 #include "image.h"
+#include "dotnode.h"
 
 #include <algorithm>
 #include <iterator>
@@ -149,8 +150,7 @@ static void drawDirectory(TextStream &t, const DirDef *const directory, const Do
     DirDefMap &directoriesInGraph,int startLevel)
 {
   t << "  " << directory->getOutputFileBase() << " ["
-      "shape=box, "
-      "label=\""     << directory->shortName()                                       << "\", "
+      "label=\""     << DotNode::convertLabel(directory->shortName())                                       << "\", "
       "style=\""     << getDirectoryBorderStyle(property)                            << "\", "
       "fillcolor=\"" << getDirectoryBackgroundColor(directory->level()-startLevel)   << "\", "
       "color=\""     << getDirectoryBorderColor(property)                            << "\", "
@@ -182,7 +182,7 @@ static void drawClusterOpening(TextStream &outputStream, const DirDef *const dir
       "label=\"";
   if (isAncestor)
   {
-    outputStream << directory->shortName();
+    outputStream << DotNode::convertLabel(directory->shortName());
   }
   outputStream << "\", "
       "fontname=\"" << Config_getString(DOT_FONTNAME) << "\", "
@@ -192,7 +192,7 @@ static void drawClusterOpening(TextStream &outputStream, const DirDef *const dir
   if (!isAncestor)
   {
     outputStream << "    " << directory->getOutputFileBase() << " [shape=plaintext, "
-        "label=\"" << directory->shortName() << "\""
+        "label=\"" << DotNode::convertLabel(directory->shortName()) << "\""
         "];\n";
     directoriesInGraph.insert(std::make_pair(directory->getOutputFileBase().str(), directory));
   }

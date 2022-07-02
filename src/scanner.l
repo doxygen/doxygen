@@ -76,6 +76,7 @@ struct scannerYY_state
   int              lastSkipSharpContext = 0;
   int              lastSkipRoundContext = 0;
   int              lastStringContext = 0;
+  int              lastDeprecatedContext = 0;
   int              lastCurlyContext = 0;
   int              lastRoundContext = 0;
   int              lastSharpContext = 0;
@@ -202,6 +203,8 @@ struct scannerYY_state
   QCString         programStr;
 
   ClangTUParser * clangParser = 0;
+
+  int fakeNS  = 0; //<! number of file scoped namespaces in CSharp file
 };
 
 #if USE_STATE2STRING
@@ -458,8 +461,27 @@ NONLopt [^\n]*
 %x      RequiresExpression
 %x      ConceptName
 
+ /** Object-C Deprecated */
+%x      Deprecated_round
+
 %%
 
+<*>"DEPRECATED_ATTRIBUTE"               { // Object-C attribute
+                                          if (!yyextra->insideObjC) REJECT;
+                                        }
+<*>"DEPRECATED_MSG_ATTRIBUTE(\""        { // Object-C attribute
+                                          if (!yyextra->insideObjC) REJECT;
+                                          yyextra->lastDeprecatedContext=YY_START;
+                                          yyextra->lastStringContext=Deprecated_round;
+                                          BEGIN(SkipString);
+                                        }
+<Deprecated_round>")"                   {
+                                          BEGIN(yyextra->lastDeprecatedContext);
+                                        }
+<Deprecated_round>{BNopt}               {
+                                          lineCount(yyscanner);
+                                        }
+<Deprecated_round>.                     { }
 <NextSemi>"{"                           {
                                           yyextra->curlyCount=0;
                                           yyextra->needsSemi = TRUE;
@@ -1076,6 +1098,10 @@ NONLopt [^\n]*
 <FindMembers>{B}*"initonly"{BN}+        { if (yyextra->insideJava) REJECT;
                                           yyextra->current->type += " initonly ";
                                           if (yyextra->insideCli) yyextra->current->spec |= Entry::Initonly;
+                                          lineCount(yyscanner);
+                                        }
+<FindMembers>{B}*"static"{BN}*/"{"      { yyextra->current->type += " static ";
+                                          yyextra->current->stat = TRUE;
                                           lineCount(yyscanner);
                                         }
 <FindMembers>{B}*"static"{BN}+          { yyextra->current->type += " static ";
@@ -2052,9 +2078,9 @@ NONLopt [^\n]*
                                           }
                                         }
 <HereDocEnd>.                           { }
-<CopyHereDocEnd>^{ID}                   { // id at start of the line could mark the end of the block
+<CopyHereDocEnd>^{Bopt}{ID}             { // id at start of the line could mark the end of the block
                                           *yyextra->pCopyHereDocGString << yytext;
-                                          if (yyextra->delimiter==yytext) // it is the end marker
+                                          if (yyextra->delimiter==QCString(yytext).stripWhiteSpace()) // it is the end marker
                                           {
                                             BEGIN(yyextra->lastHereDocContext);
                                           }
@@ -2069,7 +2095,7 @@ NONLopt [^\n]*
 <CopyHereDocEnd>.                       {
                                           *yyextra->pCopyHereDocGString <<  yytext;
                                         }
-<FindMembers>"Q_OBJECT"                 { // Qt object macro
+<FindMembers>"Q_OBJECT"|"Q_GADGET"      { // Qt object / gadget macro
                                         }
 <FindMembers>"Q_PROPERTY"               { // Qt property declaration
                                           yyextra->current->protection = Public ; // see bug734245 & bug735462
@@ -3489,6 +3515,8 @@ NONLopt [^\n]*
                                           {
                                             yyextra->mtype = Method;
                                             yyextra->virt = Normal;
+                                            yyextra->current->bodyLine = -1;
+                                            yyextra->current->bodyColumn = 1;
                                             yyextra->current->groups.clear();
                                             initEntry(yyscanner);
                                           }
@@ -5038,6 +5066,16 @@ NONLopt [^\n]*
                                           BEGIN(FuncQual);
                                         }
 <OldStyleArgs>.                         { yyextra->current->args += *yytext; }
+<FuncQual,FuncRound,FuncFunc>\"         {
+                                          if (yyextra->insideIDL && yyextra->insideCppQuote)
+                                          {
+                                            BEGIN(EndCppQuote);
+                                          }
+                                          else
+                                          {
+                                            yyextra->current->args += *yytext;
+                                          }
+                                        }
 <FuncQual,FuncRound,FuncFunc>.          { yyextra->current->args += *yytext; }
 <FuncQual>{BN}*"try:"                   |
 <FuncQual>{BN}*"try"{BN}+               { /* try-function-block */
@@ -5563,8 +5601,18 @@ NONLopt [^\n]*
 <ClassTemplSpec>.                       {
                                           yyextra->current->name += yytext;
                                         }
-<CompoundName>{SCOPENAME}{BN}*";"       { // forward declaration
-                                          if (!yyextra->current->tArgLists.empty())
+<CompoundName>{SCOPENAME}{BN}*";"       { // forward declaration?
+                                          if (yyextra->insideCS && yyextra->current->type == "namespace")
+                                          {
+                                            // file scoped CSharp namespace
+                                            lineCount(yyscanner);
+                                            yyextra->current->name = yytext;
+                                            yyextra->current->name=yyextra->current->name.left(yyextra->current->name.length()-1).stripWhiteSpace();
+                                            yyextra->fakeNS++;
+                                            unput('{'); // fake start of body
+                                            BEGIN( ClassVar );
+                                          }
+                                          else if (!yyextra->current->tArgLists.empty())
                                           {
                                             // found a forward template declaration, this has
                                             // a purpose of its own
@@ -5602,19 +5650,22 @@ NONLopt [^\n]*
                                             yyextra->current_root->moveToSubEntryAndRefresh(yyextra->current);
                                           }
 
-                                          unput(';');
-                                          yyextra->current->reset();
-                                          initEntry(yyscanner);
-                                          if (yyextra->insideObjC) // see bug746361
+                                          if (!(yyextra->insideCS && yyextra->current->type == "namespace"))
                                           {
-                                            yyextra->language = yyextra->current->lang = SrcLangExt_Cpp;
-                                            yyextra->insideObjC = FALSE;
+                                            unput(';');
+                                            yyextra->current->reset();
+                                            initEntry(yyscanner);
+                                            if (yyextra->insideObjC) // see bug746361
+                                            {
+                                              yyextra->language = yyextra->current->lang = SrcLangExt_Cpp;
+                                              yyextra->insideObjC = FALSE;
+                                              }
+                                            if (yyextra->isTypedef) // typedef of a class, put typedef keyword back
+                                            {
+                                              yyextra->current->type.prepend("typedef");
+                                            }
+                                            BEGIN( FindMembers );
                                           }
-                                          if (yyextra->isTypedef) // typedef of a class, put typedef keyword back
-                                          {
-                                            yyextra->current->type.prepend("typedef");
-                                          }
-                                          BEGIN( FindMembers );
                                         }
 <CompoundName>{SCOPENAME}/{BN}*"("      {
                                           yyextra->current->name = yytext ;
@@ -6963,6 +7014,11 @@ NONLopt [^\n]*
                                           {
                                             BEGIN(EndCppQuote);
                                           }
+                                          else if (yyextra->insidePHP)
+                                          {
+                                            yyextra->lastStringContext=YY_START;
+                                            BEGIN(SkipString);
+                                          }
                                         }
 <*>^{B}*"#"                             {
                                           if (!yyextra->insidePHP)
@@ -6987,13 +7043,6 @@ NONLopt [^\n]*
                                           {
                                             yyextra->lastStringContext=YY_START;
                                             BEGIN(SkipPHPString);
-                                          }
-                                        }
-<*>\"                                   {
-                                          if (yyextra->insidePHP)
-                                          {
-                                            yyextra->lastStringContext=YY_START;
-                                            BEGIN(SkipString);
                                           }
                                         }
 <*>\?                                   {
@@ -7021,6 +7070,18 @@ NONLopt [^\n]*
 <*>{CPPC}                                 {
                                           yyextra->lastCContext = YY_START ;
                                           BEGIN( SkipCxxComment ) ;
+                                        }
+<<EOF>>                                 {
+                                          if (yyextra->insideCS && yyextra->fakeNS)
+                                          {
+                                            yyextra->fakeNS--;
+                                            unput('}');
+                                            BEGIN ( ReadNSBody);
+                                          }
+                                          else
+                                          {
+                                            yyterminate();
+                                          }
                                         }
 %%
 
@@ -7486,12 +7547,16 @@ static void handleParametersCommentBlocks(yyscan_t yyscanner,ArgumentList &al)
       yyextra->current->brief.resize(0);
 
       //printf("handleParametersCommentBlock [%s]\n",qPrint(doc));
+      int lineNr = orgDocLine;
+      Markdown markdown(yyextra->fileName,lineNr);
+      QCString strippedDoc = stripIndentation(a.docs);
+      QCString processedDoc = Config_getBool(MARKDOWN_SUPPORT) ? markdown.process(strippedDoc,lineNr) : strippedDoc;
       while (yyextra->commentScanner.parseCommentBlock(
              yyextra->thisParser,
              yyextra->current.get(),
-             a.docs,             // text
+             processedDoc,     // text
              yyextra->fileName,         // file
-             yyextra->current->docLine,   // line of block start
+             lineNr,
              FALSE,
              FALSE,
              FALSE,

@@ -3,12 +3,12 @@
 #include <iterator>
 #include <unordered_map>
 #include <string>
-
 #include <ctype.h>
-#include "md5.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+
+#include "md5.h"
 #include "regex.h"
 #include "config.h"
 #include "definitionimpl.h"
@@ -34,6 +34,7 @@
 #include "bufstr.h"
 #include "reflist.h"
 #include "utf8.h"
+#include "indexlist.h"
 
 //-----------------------------------------------------------------------------------------
 
@@ -208,6 +209,7 @@ static void addToMap(const QCString &name,Definition *d)
   if (!vhdlOpt && index!=-1) symbolName=symbolName.mid(index+2);
   if (!symbolName.isEmpty())
   {
+    //printf("adding symbol %s\n",qPrint(symbolName));
     Doxygen::symbolMap->add(symbolName,d);
 
     d->_setSymbolName(symbolName);
@@ -370,10 +372,10 @@ void DefinitionImpl::addSectionsToIndex()
       }
       QCString title = si->title();
       if (title.isEmpty()) title = si->label();
-      // determine if there is a next level inside this item
+      // determine if there is a next level inside this item, but be aware of the anchor and table section references.
       auto it_next = std::next(it);
       bool isDir = (it_next!=m_impl->sectionRefs.end()) ?
-                       (static_cast<int>((*it_next)->type()) > nextLevel) : FALSE;
+                       (isSection((*it_next)->type()) && static_cast<int>((*it_next)->type()) > nextLevel) : FALSE;
       Doxygen::indexList->addContentsItem(isDir,title,
                                          getReference(),
                                          m_impl->def->getOutputFileBase(),
@@ -765,7 +767,7 @@ bool readCodeFragment(const QCString &fileName,
           }
           else if (pc=='/' && c=='/') // skip single line comment
           {
-            while ((c=*p++)!='\n' && c!=0) pc=c;
+            while ((c=*p++)!='\n' && c!=0);
             if (c=='\n') lineNr++,col=0;
           }
           else if (pc=='/' && c=='*') // skip C style comment

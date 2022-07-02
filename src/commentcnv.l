@@ -663,6 +663,10 @@ SLASHopt [/]*
 				       BEGIN(Scan);
 				     }
                                    }
+<CComment,CNComment>"/""/"+/"*/"   { /* we are already in C-comment so not a start of a nested comment but 
+                                      * just the end of the comment (the end part is handled later). */
+                                     copyToOutput(yyscanner,yytext,(int)yyleng);
+                                   }
 <CComment,CNComment>"/"+"*"                  { /* nested C comment */
                                      if (yyextra->lang==SrcLangExt_Python ||
                                          yyextra->lang==SrcLangExt_Markdown)

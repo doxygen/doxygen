@@ -65,14 +65,19 @@ const char *JAVASCRIPT_LICENSE_TEXT = R"LIC(/*
 */
 )LIC";
 
+struct FTVNode;
+using FTVNodePtr     = std::shared_ptr<FTVNode>;
+using FTVNodeWeakPtr = std::weak_ptr<FTVNode>;
+using FTVNodes       = std::vector<FTVNodePtr>;
+
 struct FTVNode
 {
   FTVNode(bool dir,const QCString &r,const QCString &f,const QCString &a,
           const QCString &n,bool sepIndex,bool navIndex,const Definition *df)
-    : isLast(TRUE), isDir(dir),ref(r),file(f),anchor(a),name(n), index(0),
-      parent(0), separateIndex(sepIndex), addToNavIndex(navIndex),
+    : isLast(TRUE), isDir(dir), ref(r), file(f), anchor(a), name(n),
+      separateIndex(sepIndex), addToNavIndex(navIndex),
       def(df) {}
- ~FTVNode() { for (const auto &child : children) delete child; }
+ ~FTVNode() = default;
   int computeTreeDepth(int level) const;
   int numNodesAtLevel(int level,int maxLevel) const;
   bool isLast;
@@ -81,9 +86,9 @@ struct FTVNode
   QCString file;
   QCString anchor;
   QCString name;
-  int index;
-  std::vector<FTVNode*> children;
-  FTVNode *parent;
+  int index = 0;
+  FTVNodes children;
+  FTVNodeWeakPtr parent;
   bool separateIndex;
   bool addToNavIndex;
   const Definition *def;
@@ -119,31 +124,24 @@ int FTVNode::numNodesAtLevel(int level,int maxLevel) const
 
 //----------------------------------------------------------------------------
 
+struct FTVHelp::Private
+{
+  Private(bool TLI) : topLevelIndex(TLI) { indentNodes.resize(1); }
+  std::vector<FTVNodes> indentNodes;
+  int indent = 0;
+  bool topLevelIndex;
+
+  void generateTree(TextStream &t,const FTVNodes &nl,int level,int maxLevel,int &index);
+  void generateLink(TextStream &t,const FTVNodePtr &n);
+};
+
 /*! Constructs an ftv help object.
  *  The object has to be \link initialize() initialized\endlink before it can
  *  be used.
  */
-FTVHelp::FTVHelp(bool TLI)
-{
-  /* initial depth */
-  m_indentNodes.resize(1);
-  m_indent=0;
-  m_topLevelIndex = TLI;
-}
-
-/*! Destroys the ftv help object. */
-FTVHelp::~FTVHelp()
-{
-  for (auto &idx : m_indentNodes)
-  {
-    for (auto &n : idx)
-    {
-      delete n;
-    }
-    idx.clear();
-  }
-  m_indentNodes.clear();
-}
+FTVHelp::FTVHelp(bool TLI) : p(std::make_unique<Private>(TLI)) {}
+FTVHelp::~FTVHelp() = default;
+FTVHelp::FTVHelp(FTVHelp &&) = default;
 
 /*! This will create a folder tree view table of contents file (tree.js).
  *  \sa finalize()
@@ -167,9 +165,9 @@ void FTVHelp::finalize()
  */
 void FTVHelp::incContentsDepth()
 {
-  //printf("%p: incContentsDepth() indent=%d\n",this,m_indent);
-  m_indent++;
-  m_indentNodes.resize(m_indent+1);
+  //printf("%p: incContentsDepth() indent=%d\n",this,p->indent);
+  p->indent++;
+  p->indentNodes.resize(p->indent+1);
 }
 
 /*! Decrease the level of the contents hierarchy.
@@ -178,16 +176,16 @@ void FTVHelp::incContentsDepth()
  */
 void FTVHelp::decContentsDepth()
 {
-  //printf("%p: decContentsDepth() indent=%d\n",this,m_indent);
-  ASSERT(m_indent>0);
-  if (m_indent>0)
+  //printf("%p: decContentsDepth() indent=%d\n",this,p->indent);
+  ASSERT(p->indent>0);
+  if (p->indent>0)
   {
-    m_indent--;
-    std::vector<FTVNode*> &nl = m_indentNodes[m_indent];
+    p->indent--;
+    auto &nl = p->indentNodes[p->indent];
     if (!nl.empty())
     {
-      FTVNode *parent = nl.back();
-      std::vector<FTVNode*> &children = m_indentNodes[m_indent+1];
+      auto &parent = nl.back();
+      auto &children = p->indentNodes[p->indent+1];
       for (const auto &child : children)
       {
         parent->children.push_back(child);
@@ -217,18 +215,18 @@ void FTVHelp::addContentsItem(bool isDir,
                               const Definition *def
                               )
 {
-  //printf("%p: m_indent=%d addContentsItem(%s,%s,%s,%s)\n",this,m_indent,name,ref,file,anchor);
-  std::vector<FTVNode*> &nl = m_indentNodes[m_indent];
-  FTVNode *newNode = new FTVNode(isDir,ref,file,anchor,name,separateIndex,addToNavIndex,def);
+  //printf("%p: p->indent=%d addContentsItem(%s,%s,%s,%s)\n",this,p->indent,name,ref,file,anchor);
+  auto &nl = p->indentNodes[p->indent];
   if (!nl.empty())
   {
     nl.back()->isLast=FALSE;
   }
+  auto newNode = std::make_shared<FTVNode>(isDir,ref,file,anchor,name,separateIndex,addToNavIndex,def);
   nl.push_back(newNode);
   newNode->index = static_cast<int>(nl.size()-1);
-  if (m_indent>0)
+  if (p->indent>0)
   {
-    std::vector<FTVNode*> &pnl = m_indentNodes[m_indent-1];
+    auto &pnl = p->indentNodes[p->indent-1];
     if (!pnl.empty())
     {
       newNode->parent = pnl.back();
@@ -236,7 +234,7 @@ void FTVHelp::addContentsItem(bool isDir,
   }
 }
 
-static QCString node2URL(const FTVNode *n,bool overruleFile=FALSE,bool srcLink=FALSE)
+static QCString node2URL(const FTVNodePtr &n,bool overruleFile=FALSE,bool srcLink=FALSE)
 {
   QCString url = n->file;
   if (!url.isEmpty() && url.at(0)=='!')  // relative URL
@@ -268,22 +266,23 @@ static QCString node2URL(const FTVNode *n,bool overruleFile=FALSE,bool srcLink=F
   return url;
 }
 
-QCString FTVHelp::generateIndentLabel(FTVNode *n,int level)
+static QCString generateIndentLabel(const FTVNodePtr &n,int level)
 {
   QCString result;
-  if (n->parent)
+  auto parent = n->parent.lock();
+  if (parent)
   {
-    result=generateIndentLabel(n->parent,level+1);
+    result=generateIndentLabel(parent,level+1);
   }
   result+=QCString().setNum(n->index)+"_";
   return result;
 }
 
-void FTVHelp::generateIndent(TextStream &t, FTVNode *n,bool opened)
+static void generateIndent(TextStream &t, const FTVNodePtr &n,bool opened)
 {
   int indent=0;
-  FTVNode *p = n->parent;
-  while (p) { indent++; p=p->parent; }
+  auto parent = n->parent.lock();
+  while (parent) { indent++; parent=parent->parent.lock(); }
   if (n->isDir)
   {
     QCString dir = opened ? "&#9660;" : "&#9658;";
@@ -299,7 +298,7 @@ void FTVHelp::generateIndent(TextStream &t, FTVNode *n,bool opened)
   }
 }
 
-void FTVHelp::generateLink(TextStream &t,FTVNode *n)
+void FTVHelp::Private::generateLink(TextStream &t,const FTVNodePtr &n)
 {
   //printf("FTVHelp::generateLink(ref=%s,file=%s,anchor=%s\n",
   //    qPrint(n->ref),qPrint(n->file),qPrint(n->anchor));
@@ -326,7 +325,7 @@ void FTVHelp::generateLink(TextStream &t,FTVNode *n)
     t << node2URL(n);
     if (!setTarget)
     {
-      if (m_topLevelIndex)
+      if (topLevelIndex)
         t << "\" target=\"basefrm\">";
       else
         t << "\" target=\"_self\">";
@@ -350,15 +349,19 @@ static void generateBriefDoc(TextStream &t,const Definition *def)
   //printf("*** %p: generateBriefDoc(%s)='%s'\n",def,qPrint(def->name()),qPrint(brief));
   if (!brief.isEmpty())
   {
-    std::unique_ptr<IDocParser> parser { createDocParser() };
-    std::unique_ptr<DocRoot>    root   { validatingParseDoc(*parser.get(),
-                                         def->briefFile(),def->briefLine(),
-                                         def,0,brief,FALSE,FALSE,
-                                         QCString(),TRUE,TRUE,Config_getBool(MARKDOWN_SUPPORT)) };
-    QCString relPath = relativePathToRoot(def->getOutputFileBase());
-    HtmlCodeGenerator htmlGen(t,relPath);
-    auto visitor = std::make_unique<HtmlDocVisitor>(t,htmlGen,def);
-    root->accept(visitor.get());
+    auto parser { createDocParser() };
+    auto ast    { validatingParseDoc(*parser.get(),
+                                     def->briefFile(),def->briefLine(),
+                                     def,0,brief,FALSE,FALSE,
+                                     QCString(),TRUE,TRUE,Config_getBool(MARKDOWN_SUPPORT)) };
+    const DocNodeAST *astImpl = dynamic_cast<const DocNodeAST*>(ast.get());
+    if (astImpl)
+    {
+      QCString relPath = relativePathToRoot(def->getOutputFileBase());
+      HtmlCodeGenerator htmlGen(t,relPath);
+      HtmlDocVisitor visitor(t,htmlGen,def);
+      std::visit(visitor,astImpl->root);
+    }
   }
 }
 
@@ -383,7 +386,7 @@ static char compoundIcon(const ClassDef *cd)
   return icon;
 }
 
-void FTVHelp::generateTree(TextStream &t, const std::vector<FTVNode*> &nl,int level,int maxLevel,int &index)
+void FTVHelp::Private::generateTree(TextStream &t, const FTVNodes &nl,int level,int maxLevel,int &index)
 {
   for (const auto &n : nl)
   {
@@ -518,26 +521,28 @@ class NavIndexEntryList : public std::vector<NavIndexEntry>
 {
 };
 
-static QCString pathToNode(const FTVNode *leaf,const FTVNode *n)
+static QCString pathToNode(const FTVNodePtr &leaf,const FTVNodePtr &n)
 {
   QCString result;
-  if (n->parent)
+  auto parent = n->parent.lock();
+  if (parent)
   {
-    result+=pathToNode(leaf,n->parent);
+    result+=pathToNode(leaf,parent);
   }
   result+=QCString().setNum(n->index);
   if (leaf!=n) result+=",";
   return result;
 }
 
-static bool dupOfParent(const FTVNode *n)
+static bool dupOfParent(const FTVNodePtr &n)
 {
-  if (n->parent==0) return FALSE;
-  if (n->file==n->parent->file) return TRUE;
+  auto parent = n->parent.lock();
+  if (!parent) return FALSE;
+  if (n->file==parent->file) return TRUE;
   return FALSE;
 }
 
-static void generateJSLink(TextStream &t,const FTVNode *n)
+static void generateJSLink(TextStream &t,const FTVNodePtr &n)
 {
   if (n->file.isEmpty()) // no link
   {
@@ -561,11 +566,12 @@ static QCString convertFileId2Var(const QCString &fileId)
 }
 
 static bool generateJSTree(NavIndexEntryList &navIndex,TextStream &t,
-                           const std::vector<FTVNode*> &nl,int level,bool &first)
+                           const FTVNodes &nl,int level,bool &first)
 {
   QCString htmlOutput = Config_getString(HTML_OUTPUT);
   QCString indentStr;
   indentStr.fill(' ',level*2);
+
   bool found=FALSE;
   for (const auto &n : nl)
   {
@@ -650,7 +656,7 @@ static bool generateJSTree(NavIndexEntryList &navIndex,TextStream &t,
   return found;
 }
 
-static void generateJSNavTree(const std::vector<FTVNode*> &nodeList)
+static void generateJSNavTree(const FTVNodes &nodeList)
 {
   QCString htmlOutput = Config_getString(HTML_OUTPUT);
   std::ofstream f(htmlOutput.str()+"/navtreedata.js",std::ofstream::out | std::ofstream::binary);
@@ -776,7 +782,7 @@ void FTVHelp::generateTreeViewScripts()
   QCString htmlOutput = Config_getString(HTML_OUTPUT);
 
   // generate navtree.js & navtreeindex.js
-  generateJSNavTree(m_indentNodes[0]);
+  generateJSNavTree(p->indentNodes[0]);
 
   // copy resize.js & navtree.css
   ResourceMgr::instance().copyResource("resize.js",htmlOutput);
@@ -789,7 +795,7 @@ void FTVHelp::generateTreeViewInline(TextStream &t)
   int preferredNumEntries = Config_getInt(HTML_INDEX_NUM_ENTRIES);
   t << "<div class=\"directory\">\n";
   int d=1, depth=1;
-  for (const auto &n : m_indentNodes[0])
+  for (const auto &n : p->indentNodes[0])
   {
     if (!n->children.empty())
     {
@@ -816,7 +822,7 @@ void FTVHelp::generateTreeViewInline(TextStream &t)
       for (int i=1;i<=depth;i++)
       {
         int num=0;
-        for (const auto &n : m_indentNodes[0])
+        for (const auto &n : p->indentNodes[0])
         {
           num+=n->numNodesAtLevel(0,i);
         }
@@ -833,11 +839,11 @@ void FTVHelp::generateTreeViewInline(TextStream &t)
   }
   //printf("preferred depth=%d\n",preferredDepth);
 
-  if (!m_indentNodes[0].empty())
+  if (!p->indentNodes[0].empty())
   {
     t << "<table class=\"directory\">\n";
     int index=0;
-    generateTree(t,m_indentNodes[0],0,preferredDepth,index);
+    p->generateTree(t,p->indentNodes[0],0,preferredDepth,index);
     t << "</table>\n";
   }
 

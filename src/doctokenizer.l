@@ -279,8 +279,8 @@ ATTRIB    {ATTRNAME}{WS}*("="{WS}*(("\""[^\"]*"\"")|("'"[^\']*"'")|[^ \t\r\n'"><
 URLCHAR   [a-z_A-Z0-9\!\~\,\:\;\'\$\?\@\&\%\#\.\-\+\/\=\x80-\xFF]
 URLMASK   ({URLCHAR}+([({]{URLCHAR}*[)}])?)+
 URLPROTOCOL ("http:"|"https:"|"ftp:"|"ftps:"|"sftp:"|"file:"|"news:"|"irc:"|"ircs:")
-FILEICHAR [a-z_A-Z0-9\\:\\\/\-\+&#@]
-FILEECHAR [a-z_A-Z0-9\-\+&#@]
+FILEICHAR [a-z_A-Z0-9\\:\\\/\-\+=&#@]
+FILEECHAR [a-z_A-Z0-9\-\+=&#@]
 FILECHARS {FILEICHAR}*{FILEECHAR}+
 HFILEMASK {FILEICHAR}*("."{FILEICHAR}+)+{FILECHARS}*
 VFILEMASK {FILECHARS}("."{FILECHARS})*
@@ -387,7 +387,7 @@ LINENR {BLANK}*[1-9][0-9]*
 %x St_Options
 %x St_Block
 %x St_Emoji
-%x St_Iline
+%x St_ILine
 
 %x St_Sections
 %s St_SecLabel1
@@ -1237,8 +1237,8 @@ LINENR {BLANK}*[1-9][0-9]*
                          unput(*yytext);
                          return 0;
                        }
-<St_Iline>{LINENR}/[\n\.]     |
-<St_Iline>{LINENR}{BLANK}     {
+<St_ILine>{LINENR}/[\n\.]     |
+<St_ILine>{LINENR}{BLANK}     {
                          bool ok = false;
                          int nr = QCString(yytext).toInt(&ok);
                          if (!ok)
@@ -1251,7 +1251,7 @@ LINENR {BLANK}*[1-9][0-9]*
                          }
                          return TK_WORD;
                        }
-<St_Iline>.            {
+<St_ILine>.            {
                          return 0;
                        }
 <St_File>{FILEMASK}    {
@@ -1971,11 +1971,11 @@ void DocTokenizer::setStateEmoji()
   BEGIN(St_Emoji);
 }
 
-void DocTokenizer::setStateIline()
+void DocTokenizer::setStateILine()
 {
   yyscan_t yyscanner = p->yyscanner;
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  BEGIN(St_Iline);
+  BEGIN(St_ILine);
 }
 
 void DocTokenizer::cleanup()

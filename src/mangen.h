@@ -32,7 +32,7 @@ class ManGenerator : public OutputGenerator
 
     OutputType type() const { return Man; }
 
-    void writeDoc(DocNode *,const Definition *,const MemberDef *,int);
+    void writeDoc(const IDocNodeAST *ast,const Definition *,const MemberDef *,int);
 
     static void init();
     void cleanup();

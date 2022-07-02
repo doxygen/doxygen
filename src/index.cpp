@@ -25,6 +25,7 @@
 
 #include "message.h"
 #include "index.h"
+#include "indexlist.h"
 #include "doxygen.h"
 #include "config.h"
 #include "filedef.h"
@@ -687,14 +688,12 @@ static void writeDirTreeNode(OutputList &ol, const DirDef *dd, int level, FTVHel
     {
       for (const auto &fd : dd->getFiles())
       {
-        //bool allExternals = Config_getBool(ALLEXTERNALS);
-        //if ((allExternals && fd->isLinkable()) || fd->isLinkableInProject())
         bool doc,src;
         doc = fileVisibleInIndex(fd,src);
         if (doc)
         {
           addMembersToIndex(fd,LayoutDocManager::File,fd->displayName(),QCString(),
-                            TRUE,FALSE,&fd->getConcepts());
+                            !fd->isLinkableViaGroup(),FALSE,&fd->getConcepts());
         }
         else if (src)
         {
@@ -1265,22 +1264,19 @@ static void countFiles(int &allFiles,int &docFiles)
 {
   allFiles=0;
   docFiles=0;
-  if (Config_getBool(SHOW_FILES))
+  for (const auto &fn : *Doxygen::inputNameLinkedMap)
   {
-    for (const auto &fn : *Doxygen::inputNameLinkedMap)
+    for (const auto &fd: *fn)
     {
-      for (const auto &fd: *fn)
+      bool doc,src;
+      doc = fileVisibleInIndex(fd.get(),src);
+      if (doc || src)
       {
-        bool doc,src;
-        doc = fileVisibleInIndex(fd.get(),src);
-        if (doc || src)
-        {
-          allFiles++;
-        }
-        if (doc)
-        {
-          docFiles++;
-        }
+        allFiles++;
+      }
+      if (doc)
+      {
+        docFiles++;
       }
     }
   }
@@ -1368,7 +1364,7 @@ static void writeSingleFileIndex(OutputList &ol,const FileDef *fd)
 
 static void writeFileIndex(OutputList &ol)
 {
-  if (documentedFiles==0) return;
+  if (documentedFiles==0 || !Config_getBool(SHOW_FILES)) return;
 
   ol.pushGeneratorState();
   ol.disable(OutputGenerator::Man);
@@ -1708,7 +1704,10 @@ static void writeNamespaceTree(const NamespaceLinkedRefMap &nsLinkedMap,FTVHelp 
 {
   for (const auto &nd : nsLinkedMap)
   {
-    writeNamespaceTreeElement(nd,ftv,rootOnly,addToIndex);
+    if (nd->isLinkableInProject())
+    {
+      writeNamespaceTreeElement(nd,ftv,rootOnly,addToIndex);
+    }
   }
 }
 
@@ -1717,7 +1716,10 @@ static void writeNamespaceTree(const NamespaceLinkedMap &nsLinkedMap,FTVHelp *ft
 {
   for (const auto &nd : nsLinkedMap)
   {
-    writeNamespaceTreeElement(nd.get(),ftv,rootOnly,addToIndex);
+    if (nd->isLinkableInProject())
+    {
+      writeNamespaceTreeElement(nd.get(),ftv,rootOnly,addToIndex);
+    }
   }
 }
 
@@ -3497,7 +3499,7 @@ static void writeExampleIndex(OutputList &ol)
       ol.writeObjectLink(QCString(),n,QCString(),pd->title());
       if (addToIndex)
       {
-        Doxygen::indexList->addContentsItem(FALSE,filterTitle(pd->title().str()),pd->getReference(),n,QCString(),FALSE,TRUE);
+        Doxygen::indexList->addContentsItem(FALSE,filterTitle(pd->title()),pd->getReference(),n,QCString(),FALSE,TRUE);
       }
     }
     else
@@ -3548,7 +3550,7 @@ static bool mainPageHasOwnTitle()
   QCString title;
   if (Doxygen::mainPage)
   {
-    title = filterTitle(Doxygen::mainPage->title().str());
+    title = filterTitle(Doxygen::mainPage->title());
   }
   return !projectName.isEmpty() && mainPageHasTitle() && qstricmp(title,projectName)!=0;
 }
@@ -3570,7 +3572,7 @@ static void writePages(const PageDef *pd,FTVHelp *ftv)
     if (pd->title().isEmpty())
       pageTitle=pd->name();
     else
-      pageTitle=filterTitle(pd->title().str());
+      pageTitle=filterTitle(pd->title());
 
     if (ftv)
     {
@@ -3697,14 +3699,12 @@ void writeGraphInfo(OutputList &ol)
   DotLegendGraph gd;
   gd.writeGraph(Config_getString(HTML_OUTPUT));
 
-  bool stripCommentsStateRef = Config_getBool(STRIP_CODE_COMMENTS);
-  bool oldStripCommentsState = stripCommentsStateRef;
-  bool createSubdirs = Config_getBool(CREATE_SUBDIRS);
-  bool oldCreateSubdirs = createSubdirs;
+  bool oldStripCommentsState = Config_getBool(STRIP_CODE_COMMENTS);
+  bool oldCreateSubdirs = Config_getBool(CREATE_SUBDIRS);
   // temporarily disable the stripping of comments for our own code example!
-  stripCommentsStateRef = Config_updateBool(STRIP_CODE_COMMENTS,FALSE);
+  Config_updateBool(STRIP_CODE_COMMENTS,FALSE);
   // temporarily disable create subdirs for linking to our example
-  createSubdirs = Config_updateBool(CREATE_SUBDIRS,FALSE);
+  Config_updateBool(CREATE_SUBDIRS,FALSE);
 
   startFile(ol,"graph_legend",QCString(),theTranslator->trLegendTitle());
   startTitle(ol,QCString());
@@ -3876,7 +3876,7 @@ static void writeGroupTreeNode(OutputList &ol, const GroupDef *gd, int level, FT
           {
             Doxygen::indexList->addContentsItem(FALSE,
                 nd->displayName(),nd->getReference(),
-                nd->getOutputFileBase(),QCString(),FALSE,addToIndex);
+                nd->getOutputFileBase(),QCString(),FALSE,!Config_getBool(SHOW_NAMESPACES));
           }
         }
       }
@@ -3900,7 +3900,7 @@ static void writeGroupTreeNode(OutputList &ol, const GroupDef *gd, int level, FT
           {
             Doxygen::indexList->addContentsItem(FALSE,
                 fd->displayName(),fd->getReference(),
-                fd->getOutputFileBase(),QCString(),FALSE,FALSE);
+                fd->getOutputFileBase(),QCString(),FALSE,fd->isLinkableViaGroup());
           }
         }
       }
@@ -4338,7 +4338,7 @@ static void writeIndex(OutputList &ol)
   }
   else if (Doxygen::mainPage)
   {
-    title = filterTitle(Doxygen::mainPage->title().str());
+    title = filterTitle(Doxygen::mainPage->title());
   }
 
   QCString indexName="index";
@@ -4612,7 +4612,7 @@ static void writeIndex(OutputList &ol)
       ol.parseText(/*projPrefix+*/theTranslator->trExceptionIndex());
       ol.endIndexSection(isCompoundIndex);
     }
-    if (documentedFiles>0)
+    if (Config_getBool(SHOW_FILES) && documentedFiles>0)
     {
       ol.startIndexSection(isFileIndex);
       ol.parseText(/*projPrefix+*/theTranslator->trFileIndex());
@@ -4663,7 +4663,7 @@ static void writeIndex(OutputList &ol)
     ol.parseText(/*projPrefix+*/theTranslator->trExceptionDocumentation());
     ol.endIndexSection(isClassDocumentation);
   }
-  if (documentedFiles>0)
+  if (Config_getBool(SHOW_FILES) && documentedFiles>0)
   {
     ol.startIndexSection(isFileDocumentation);
     ol.parseText(/*projPrefix+*/theTranslator->trFileDocumentation());
@@ -4900,7 +4900,7 @@ static void writeIndexHierarchyEntries(OutputList &ol,const LayoutNavEntryList &
           break;
         case LayoutNavEntry::Files:
           {
-            if (documentedFiles>0 && addToIndex)
+            if (Config_getBool(SHOW_FILES) && documentedFiles>0 && addToIndex)
             {
               Doxygen::indexList->addContentsItem(TRUE,lne->title(),QCString(),lne->baseFile(),QCString());
               Doxygen::indexList->incContentsDepth();
@@ -4999,6 +4999,7 @@ static void writeIndexHierarchyEntries(OutputList &ol,const LayoutNavEntryList &
 static bool quickLinkVisible(LayoutNavEntry::Kind kind)
 {
   bool showNamespaces = Config_getBool(SHOW_NAMESPACES);
+  bool showFiles = Config_getBool(SHOW_FILES);
   bool sliceOpt = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
   switch (kind)
   {
@@ -5027,8 +5028,8 @@ static bool quickLinkVisible(LayoutNavEntry::Kind kind)
     case LayoutNavEntry::ExceptionList:      return annotatedExceptions>0;
     case LayoutNavEntry::ExceptionIndex:     return annotatedExceptions>0;
     case LayoutNavEntry::ExceptionHierarchy: return hierarchyExceptions>0;
-    case LayoutNavEntry::Files:              return documentedFiles>0;
-    case LayoutNavEntry::FileList:           return documentedFiles>0;
+    case LayoutNavEntry::Files:              return documentedFiles>0 && showFiles;
+    case LayoutNavEntry::FileList:           return documentedFiles>0 && showFiles;
     case LayoutNavEntry::FileGlobals:        return documentedFileMembers[FMHL_All]>0;
     case LayoutNavEntry::Examples:           return !Doxygen::exampleLinkedMap->empty();
     case LayoutNavEntry::None:             // should never happen, means not properly initialized

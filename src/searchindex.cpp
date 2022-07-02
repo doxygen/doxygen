@@ -49,40 +49,7 @@ const size_t numIndexEntries = 256*256;
 
 //--------------------------------------------------------------------
 
-struct URL
-{
-  URL(QCString n,QCString u) : name(n), url(u) {}
-  QCString name;
-  QCString url;
-};
-
-struct URLInfo
-{
-  URLInfo(int idx,int f) : urlIdx(idx), freq(f) {}
-  int urlIdx;
-  int freq;
-};
-
-class IndexWord
-{
-  public:
-    using URLInfoMap = std::unordered_map<int,URLInfo>;
-    IndexWord(QCString word);
-    void addUrlIndex(int,bool);
-    URLInfoMap urls() const { return m_urls; }
-    QCString word() const { return m_word; }
-
-  private:
-    QCString    m_word;
-    URLInfoMap  m_urls;
-};
-
-IndexWord::IndexWord(QCString word) : m_word(word)
-{
-  //printf("IndexWord::IndexWord(%s)\n",word);
-}
-
-void IndexWord::addUrlIndex(int idx,bool hiPriority)
+void SearchIndex::IndexWord::addUrlIndex(int idx,bool hiPriority)
 {
   //printf("IndexWord::addUrlIndex(%d,%d)\n",idx,hiPriority);
   auto it = m_urls.find(idx);
@@ -97,23 +64,7 @@ void IndexWord::addUrlIndex(int idx,bool hiPriority)
 
 //--------------------------------------------------------------------
 
-class SearchIndex : public SearchIndexIntf
-{
-  public:
-    SearchIndex();
-    void setCurrentDoc(const Definition *ctx,const QCString &anchor,bool isSourceFile) override;
-    void addWord(const QCString &word,bool hiPriority) override;
-    void write(const QCString &file) override;
-  private:
-    void addWord(const QCString &word,bool hiPrio,bool recurse);
-    std::unordered_map<std::string,int> m_words;
-    std::vector< std::vector< IndexWord> > m_index;
-    std::unordered_map<std::string,int> m_url2IdMap;
-    std::map<int,URL> m_urls;
-    int m_urlIndex = -1;
-};
-
-SearchIndex::SearchIndex() : SearchIndexIntf(Internal)
+SearchIndex::SearchIndex()
 {
   m_index.resize(numIndexEntries);
 }
@@ -232,7 +183,7 @@ static int charsToIndex(const QCString &word)
   return c1*256+c2;
 }
 
-void SearchIndex::addWord(const QCString &word,bool hiPriority,bool recurse)
+void SearchIndex::addWordRec(const QCString &word,bool hiPriority,bool recurse)
 {
   if (word.isEmpty()) return;
   QCString wStr = QCString(word).lower();
@@ -254,7 +205,7 @@ void SearchIndex::addWord(const QCString &word,bool hiPriority,bool recurse)
     i=getPrefixIndex(word);
     if (i>0)
     {
-      addWord(word.data()+i,hiPriority,TRUE);
+      addWordRec(word.data()+i,hiPriority,TRUE);
       found=TRUE;
     }
   }
@@ -269,14 +220,14 @@ void SearchIndex::addWord(const QCString &word,bool hiPriority,bool recurse)
     }
     if (word[i]!=0 && i>=1)
     {
-      addWord(word.data()+i+1,hiPriority,TRUE);
+      addWordRec(word.data()+i+1,hiPriority,TRUE);
     }
   }
 }
 
 void SearchIndex::addWord(const QCString &word,bool hiPriority)
 {
-  addWord(word,hiPriority,FALSE);
+  addWordRec(word,hiPriority,FALSE);
 }
 
 static void writeInt(std::ostream &f,size_t index)
@@ -450,36 +401,7 @@ void SIDataCollection::transfer()
 //---------------------------------------------------------------------------
 // the following part is for writing an external search index
 
-struct SearchDocEntry
-{
-  QCString type;
-  QCString name;
-  QCString args;
-  QCString extId;
-  QCString url;
-  GrowBuf  importantText;
-  GrowBuf  normalText;
-};
-
-class SearchIndexExternal : public SearchIndexIntf
-{
-    struct Private;
-  public:
-    SearchIndexExternal();
-    void setCurrentDoc(const Definition *ctx,const QCString &anchor,bool isSourceFile) override;
-    void addWord(const QCString &word,bool hiPriority) override;
-    void write(const QCString &file) override;
-  private:
-    std::unique_ptr<Private> p;
-};
-
-struct SearchIndexExternal::Private
-{
-  std::map<std::string,SearchDocEntry> docEntries;
-  SearchDocEntry *current = 0;
-};
-
-SearchIndexExternal::SearchIndexExternal() : SearchIndexIntf(External), p(std::make_unique<Private>())
+SearchIndexExternal::SearchIndexExternal()
 {
 }
 
@@ -548,8 +470,8 @@ void SearchIndexExternal::setCurrentDoc(const Definition *ctx,const QCString &an
   if (!anchor.isEmpty()) url+=QCString("#")+anchor;
   QCString key = extId+";"+url;
 
-  auto it = p->docEntries.find(key.str());
-  if (it == p->docEntries.end())
+  auto it = m_docEntries.find(key.str());
+  if (it == m_docEntries.end())
   {
     SearchDocEntry e;
     e.type = isSourceFile ? QCString("source") : definitionToName(ctx);
@@ -560,16 +482,16 @@ void SearchIndexExternal::setCurrentDoc(const Definition *ctx,const QCString &an
     }
     e.extId = extId;
     e.url  = url;
-    it = p->docEntries.insert({key.str(),e}).first;
+    it = m_docEntries.insert({key.str(),e}).first;
     //printf("searchIndexExt %s : %s\n",qPrint(e->name),qPrint(e->url));
   }
-  p->current = &it->second;
+  m_current = &it->second;
 }
 
 void SearchIndexExternal::addWord(const QCString &word,bool hiPriority)
 {
-  if (word.isEmpty() || !isId(word[0]) || p->current==0) return;
-  GrowBuf *pText = hiPriority ? &p->current->importantText : &p->current->normalText;
+  if (word.isEmpty() || !isId(word[0]) || m_current==0) return;
+  GrowBuf *pText = hiPriority ? &m_current->importantText : &m_current->normalText;
   if (pText->getPos()>0) pText->addChar(' ');
   pText->addStr(word);
   //printf("addWord %s\n",word);
@@ -582,7 +504,7 @@ void SearchIndexExternal::write(const QCString &fileName)
   {
     t << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
     t << "<add>\n";
-    for (auto &kv : p->docEntries)
+    for (auto &kv : m_docEntries)
     {
       SearchDocEntry &doc = kv.second;
       doc.normalText.addChar(0);    // make sure buffer ends with a 0 terminator
@@ -620,14 +542,7 @@ void initSearchIndexer()
   bool externalSearch    = Config_getBool(EXTERNAL_SEARCH);
   if (searchEngine && serverBasedSearch)
   {
-    if (externalSearch) // external tools produce search index and engine
-    {
-      Doxygen::searchIndex = new SearchIndexExternal;
-    }
-    else // doxygen produces search index and engine
-    {
-      Doxygen::searchIndex = new SearchIndex;
-    }
+    Doxygen::searchIndex = new SearchIndexIntf(externalSearch ? SearchIndexIntf::External : SearchIndexIntf::Internal);
   }
   else // no search engine or pure javascript based search function
   {
