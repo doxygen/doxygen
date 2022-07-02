@@ -63,8 +63,6 @@ typedef yyguts_t *yyscan_t;
 #include "fortranscanner.h"
 #include "containers.h"
 
-const int fixedCommentAfter = 72;
-
 // Toggle for some debugging info
 //#define DBG_CTX(x) fprintf x
 #define DBG_CTX(x) do { } while(0)
@@ -171,6 +169,8 @@ struct fortrancodeYY_state
 
   bool          endComment = false;
   TooltipManager tooltipManager;
+
+   int fixedCommentAfter = 72;
 };
 
 #if USE_STATE2STRING
@@ -807,7 +807,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
 <*>^{BS}"type"{BS}"="                   { yyextra->code->codify(QCString(yytext)); }
 
 <*>[\x80-\xFF]*                         { // keep utf8 characters together...
-                                          if (yyextra->isFixedForm && yy_my_start > fixedCommentAfter)
+                                          if (yyextra->isFixedForm && yy_my_start > yyextra->fixedCommentAfter)
                                           {
                                             startFontClass(yyscanner,"comment");
                                             codifyLines(yyscanner,yytext);
@@ -818,7 +818,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                           }
                                         }
 <*>.                                    {
-                                          if (yyextra->isFixedForm && yy_my_start > fixedCommentAfter)
+                                          if (yyextra->isFixedForm && yy_my_start > yyextra->fixedCommentAfter)
                                           {
                                             //yy_push_state(YY_START,yyscanner);
                                             //BEGIN(DocBlock);
@@ -1395,7 +1395,7 @@ static void checkContLines(yyscan_t yyscanner,const char *s)
   yyextra->hasContLine = (int *) malloc((numLines) * sizeof(int));
   for (i = 0; i < numLines; i++)
     yyextra->hasContLine[i] = 0;
-  p = prepassFixedForm(s, yyextra->hasContLine);
+  p = prepassFixedForm(s, yyextra->hasContLine,yyextra->fixedCommentAfter);
   yyextra->hasContLine[0] = 0;
 }
 
@@ -1482,6 +1482,7 @@ void FortranCodeParser::parseCode(CodeOutputInterface & codeOutIntf,
   if (yyextra->isFixedForm)
   {
     checkContLines(yyscanner,yyextra->inputString);
+    yyextra->fixedCommentAfter = Config_getInt(FORTRAN_COMMENT_AFTER);
   }
   yyextra->currentFontClass = 0;
   yyextra->insideCodeLine = FALSE;

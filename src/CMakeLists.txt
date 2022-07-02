@@ -133,12 +133,14 @@ foreach(lex_file ${LEX_FILES})
     )
     set_source_files_properties(${GENERATED_SRC}/${lex_file}.l.h PROPERTIES GENERATED 1)
 
-    # for code coverage we need the flex sources in the build src directory
-    add_custom_command(
-        COMMAND ${CMAKE_COMMAND} -E copy ${GENERATED_SRC}/${lex_file}.l ${PROJECT_BINARY_DIR}/src/${lex_file}.l
-        DEPENDS ${GENERATED_SRC}/${lex_file}.l
-        OUTPUT  ${PROJECT_BINARY_DIR}/src/${lex_file}.l
-    )
+    if(enable_coverage)
+        # for code coverage we need the flex sources in the build src directory
+        add_custom_command(
+            COMMAND ${CMAKE_COMMAND} -E copy ${GENERATED_SRC}/${lex_file}.l ${PROJECT_BINARY_DIR}/src/${lex_file}.l
+            DEPENDS ${GENERATED_SRC}/${lex_file}.l
+            OUTPUT  ${PROJECT_BINARY_DIR}/src/${lex_file}.l
+        )
+    endif()
 
     FLEX_TARGET(${lex_file}
                 ${GENERATED_SRC}/${lex_file}.l
@@ -157,11 +159,13 @@ BISON_TARGET(constexp
              ${GENERATED_SRC}/ce_parse.cpp
              COMPILE_FLAGS "${YACC_FLAGS}")
 
-add_custom_command(
-    COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/src/constexp.y ${PROJECT_BINARY_DIR}/src
-    DEPENDS ${PROJECT_SOURCE_DIR}/src/constexp.y
-    OUTPUT  ${PROJECT_BINARY_DIR}/src/constexp.y
-)
+if(enable_coverage)
+    add_custom_command(
+        COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/src/constexp.y ${PROJECT_BINARY_DIR}/src
+        DEPENDS ${PROJECT_SOURCE_DIR}/src/constexp.y
+        OUTPUT  ${PROJECT_BINARY_DIR}/src/constexp.y
+    )
+endif()
 
 add_library(doxycfg STATIC
     ${GENERATED_SRC}/configvalues.h

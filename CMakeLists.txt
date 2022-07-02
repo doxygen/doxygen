@@ -36,6 +36,12 @@ set_property(CACHE force_qt PROPERTY STRINGS OFF Qt6 Qt5)
 
 SET(enlarge_lex_buffers "262144" CACHE INTERNAL "Sets the lex input and read buffers to the specified size")
 
+if(enable_coverage)
+  if ("${PROJECT_BINARY_DIR}" STREQUAL "${PROJECT_SOURCE_DIR}")
+    message(FATAL_ERROR "Doxygen cannot be generated in-place, the build directory (${PROJECT_BINARY_DIR}) has to differ from the doxygen main directory (${PROJECT_SOURCE_DIR})\nPlease don't forget to remove the already file created file 'CMakeCache.txt' and the directory 'CMakeFiles'!")
+  endif()
+endif()
+
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/Sanitizers")
 set(TOP "${PROJECT_SOURCE_DIR}")
