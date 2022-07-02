@@ -350,14 +350,17 @@ static QCString substituteHtmlKeywords(const QCString &str,
   }
   else
   {
-    FileInfo cssfi(cssFile.str());
-    if (cssfi.exists())
+    if (!(cssFile.left(5)=="http:" ||  cssFile.left(6)=="https:"))
     {
-      cssFile = cssfi.fileName();
-    }
-    else
-    {
-      cssFile = "doxygen.css";
+      FileInfo cssfi(cssFile.str());
+      if (cssfi.exists())
+      {
+        cssFile = cssfi.fileName();
+      }
+      else
+      {
+        cssFile = "doxygen.css";
+      }
     }
   }
 
@@ -367,10 +370,18 @@ static QCString substituteHtmlKeywords(const QCString &str,
   {
     if (!fileName.empty())
     {
-      FileInfo fi(fileName);
-      if (fi.exists())
+      QCString htmlStyleSheet = fileName.c_str();
+      if (htmlStyleSheet.left(5)=="http:" ||  htmlStyleSheet.left(6)=="https:")
       {
-        extraCssText += "<link href=\"$relpath^"+stripPath(fileName.c_str())+"\" rel=\"stylesheet\" type=\"text/css\"/>\n";
+        extraCssText += "<link href=\""+htmlStyleSheet+"\" rel=\"stylesheet\" type=\"text/css\"/>\n";
+      }
+      else
+      {
+        FileInfo fi(fileName);
+        if (fi.exists())
+        {
+          extraCssText += "<link href=\"$relpath^"+stripPath(fileName.c_str())+"\" rel=\"stylesheet\" type=\"text/css\"/>\n";
+        }
       }
     }
   }
@@ -1273,22 +1284,25 @@ void HtmlGenerator::writeStyleInfo(int part)
     }
     else // write user defined style sheet
     {
-      QCString cssname=Config_getString(HTML_STYLESHEET);
-      FileInfo cssfi(cssname.str());
-      if (!cssfi.exists() || !cssfi.isFile() || !cssfi.isReadable())
+      QCString cssName=Config_getString(HTML_STYLESHEET);
+      if (!(cssName.left(5)=="http:" ||  cssName.left(6)=="https:"))
       {
-        err("style sheet %s does not exist or is not readable!", qPrint(Config_getString(HTML_STYLESHEET)));
+        FileInfo cssfi(cssName.str());
+        if (!cssfi.exists() || !cssfi.isFile() || !cssfi.isReadable())
+        {
+          err("style sheet %s does not exist or is not readable!", qPrint(Config_getString(HTML_STYLESHEET)));
+        }
+        else
+        {
+          // convert style sheet to string
+          QCString fileStr = fileToString(cssName);
+          // write the string into the output dir
+          startPlainFile(cssfi.fileName().c_str());
+          m_t << fileStr;
+          endPlainFile();
+        }
+        Doxygen::indexList->addStyleSheetFile(cssfi.fileName().c_str());
       }
-      else
-      {
-        // convert style sheet to string
-        QCString fileStr = fileToString(cssname);
-        // write the string into the output dir
-        startPlainFile(cssfi.fileName().c_str());
-        m_t << fileStr;
-        endPlainFile();
-      }
-      Doxygen::indexList->addStyleSheetFile(cssfi.fileName().c_str());
     }
     const StringVector &extraCssFiles = Config_getList(HTML_EXTRA_STYLESHEET);
     for (const auto &fileName : extraCssFiles)

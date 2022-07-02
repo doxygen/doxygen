@@ -9859,37 +9859,44 @@ static void copyStyleSheet()
   QCString htmlStyleSheet = Config_getString(HTML_STYLESHEET);
   if (!htmlStyleSheet.isEmpty())
   {
-    FileInfo fi(htmlStyleSheet.str());
-    if (!fi.exists())
+    if (!(htmlStyleSheet.left(5)=="http:" ||  htmlStyleSheet.left(6)=="https:"))
     {
-      err("Style sheet '%s' specified by HTML_STYLESHEET does not exist!\n",qPrint(htmlStyleSheet));
-      htmlStyleSheet = Config_updateString(HTML_STYLESHEET,""); // revert to the default
-    }
-    else
-    {
-      QCString destFileName = Config_getString(HTML_OUTPUT)+"/"+fi.fileName();
-      copyFile(htmlStyleSheet,destFileName);
+      FileInfo fi(htmlStyleSheet.str());
+      if (!fi.exists())
+      {
+        err("Style sheet '%s' specified by HTML_STYLESHEET does not exist!\n",qPrint(htmlStyleSheet));
+        htmlStyleSheet = Config_updateString(HTML_STYLESHEET,""); // revert to the default
+      }
+      else
+      {
+        QCString destFileName = Config_getString(HTML_OUTPUT)+"/"+fi.fileName();
+        copyFile(htmlStyleSheet,destFileName);
+      }
     }
   }
   const StringVector &htmlExtraStyleSheet = Config_getList(HTML_EXTRA_STYLESHEET);
   for (const auto &sheet : htmlExtraStyleSheet)
   {
     std::string fileName = sheet;
-    if (!fileName.empty())
+    QCString htmlStyleSheet = fileName.c_str();
+    if (!(htmlStyleSheet.left(5)=="http:" ||  htmlStyleSheet.left(6)=="https:"))
     {
-      FileInfo fi(fileName);
-      if (!fi.exists())
+      if (!fileName.empty())
       {
-        err("Style sheet '%s' specified by HTML_EXTRA_STYLESHEET does not exist!\n",fileName.c_str());
-      }
-      else if (fi.fileName()=="doxygen.css" || fi.fileName()=="tabs.css" || fi.fileName()=="navtree.css")
-      {
-        err("Style sheet %s specified by HTML_EXTRA_STYLESHEET is already a built-in stylesheet. Please use a different name\n",qPrint(fi.fileName()));
-      }
-      else
-      {
-        QCString destFileName = Config_getString(HTML_OUTPUT)+"/"+fi.fileName();
-        copyFile(QCString(fileName), destFileName);
+        FileInfo fi(fileName);
+        if (!fi.exists())
+        {
+          err("Style sheet '%s' specified by HTML_EXTRA_STYLESHEET does not exist!\n",fileName.c_str());
+        }
+        else if (fi.fileName()=="doxygen.css" || fi.fileName()=="tabs.css" || fi.fileName()=="navtree.css")
+        {
+          err("Style sheet %s specified by HTML_EXTRA_STYLESHEET is already a built-in stylesheet. Please use a different name\n",qPrint(fi.fileName()));
+        }
+        else
+        {
+          QCString destFileName = Config_getString(HTML_OUTPUT)+"/"+fi.fileName();
+          copyFile(QCString(fileName), destFileName);
+        }
       }
     }
   }
