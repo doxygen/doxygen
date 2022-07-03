@@ -15,6 +15,8 @@
  *
  */
 
+#include <unordered_set>
+
 #include "memberlist.h"
 #include "classlist.h"
 #include "filedef.h"
@@ -1510,11 +1512,11 @@ void FileDefImpl::combineUsingRelations()
 
 bool FileDefImpl::isDocumentationFile() const
 {
-  return name().right(4)==".doc" ||
-         name().right(4)==".txt" ||
-         name().right(4)==".dox" ||
-         name().right(3)==".md"  ||
-         name().right(9)==".markdown" ||
+  static const std::unordered_set<std::string> docExtensions =
+  { "doc", "txt", "dox", "md", "markdown" };
+
+  int lastDot = name().findRev('.');
+  return (lastDot!=-1 && docExtensions.find(name().mid(lastDot+1).str())!=docExtensions.end()) ||
          getLanguageFromFileName(getFileNameExtension(name())) == SrcLangExt_Markdown;
 }
 
