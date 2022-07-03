@@ -1146,43 +1146,102 @@ Go to the <a href="commands.html">next</a> section or return to the
 ]]>
       </docs>
     </option>
-    <option type='bool' id='GENERATE_TODOLIST' defval='1'>
+    <option type='enum' id='GENERATE_TODOLIST' defval='YES'>
       <docs>
 <![CDATA[
  The \c GENERATE_TODOLIST tag can be used to enable (\c YES) or
  disable (\c NO) the todo list. This list is created by
- putting \ref cmdtodo "\\todo" commands in the documentation.
+ putting \ref cmdtodo "\\todo" commands in the documentation. In case
+ \c GENERATE_TODOLIST is set to `ITEM` the \ref cmdtodo "\\todo" commands
+ are only visible with the item they are defined with, in case
+ \c GENERATE_TODOLIST is set to `PAGE` the \ref cmdtodo "\\todo" commands
+ are only visible on the page with an overview of all \ref cmdtodo "\\todo"
+ commands used.
 ]]>
       </docs>
+      <value name="NO" />
+      <value name="YES" />
+      <value name="ITEM" />
+      <value name="PAGE" />
     </option>
-    <option type='bool' id='GENERATE_TESTLIST' defval='1'>
+    <option type='enum' id='GENERATE_TESTLIST' defval='YES'>
       <docs>
 <![CDATA[
  The \c GENERATE_TESTLIST tag can be used to enable (\c YES) or
  disable (\c NO) the test list. This list is created by
- putting \ref cmdtest "\\test" commands in the documentation.
+ putting \ref cmdtest "\\test" commands in the documentation. In case
+ \c GENERATE_TESTLIST is set to `ITEM` the \ref cmdtest "\\test" commands
+ are only visible with the item they are defined with, in case
+ \c GENERATE_TESTLIST is set to `PAGE` the \ref cmdtest "\\test" commands
+ are only visible on the page with an overview of all \ref cmdtest "\\test"
+ commands used.
 ]]>
       </docs>
+      <value name="NO" />
+      <value name="YES" />
+      <value name="ITEM" />
+      <value name="PAGE" />
     </option>
-    <option type='bool' id='GENERATE_BUGLIST' defval='1'>
+    <option type='enum' id='GENERATE_BUGLIST' defval='YES'>
       <docs>
 <![CDATA[
  The \c GENERATE_BUGLIST tag can be used to enable (\c YES) or
  disable (\c NO) the bug list. This list is created by
- putting \ref cmdbug "\\bug" commands in the documentation.
+ putting \ref cmdbug "\\bug" commands in the documentation. In case
+ \c GENERATE_BUGLIST is set to `ITEM` the \ref cmdbug "\\bug" commands
+ are only visible with the item they are defined with, in case
+ \c GENERATE_BUGLIST is set to `PAGE` the \ref cmdbug "\\bug" commands
+ are only visible on the page with an overview of all \ref cmdbug "\\bug"
+ commands used.
 ]]>
       </docs>
+      <value name="NO" />
+      <value name="YES" />
+      <value name="ITEM" />
+      <value name="PAGE" />
     </option>
-    <option type='bool' id='GENERATE_DEPRECATEDLIST' defval='1'>
+    <option type='enum' id='GENERATE_DEPRECATEDLIST' defval='YES'>
       <docs>
 <![CDATA[
  The \c GENERATE_DEPRECATEDLIST tag can be used to enable (\c YES) or
  disable (\c NO) the deprecated list. This list is created by
- putting \ref cmddeprecated "\\deprecated"
- commands in the documentation.
+ putting \ref cmddeprecated "\\deprecated" commands in the documentation. In case
+ \c GENERATE_DEPRECATEDIST is set to `ITEM` the \ref cmddeprecated "\\deprecated" commands
+ are only visible with the item they are defined with, in case
+ \c GENERATE_DEPRECATEDIST is set to `PAGE` the \ref cmddeprecated "\\deprecated" commands
+ are only visible on the page with an overview of all \ref cmddeprecated "\\deprecated"
+ commands used.
+]]>
+      </docs>
+      <value name="NO" />
+      <value name="YES" />
+      <value name="ITEM" />
+      <value name="PAGE" />
+    </option>
+    <option type='list' id='GENERATE_XREFLIST' format='string'>
+      <docs>
+<![CDATA[
+ The \c GENERATE_XREFLIST tag can be used to enable or disable the specified set of
+ user defined \ref cmdxrefitem "\\xrefiten" commands. The functionality is similar as
+ for the \ref cmdtodo "\\todo", \ref cmdtest "\\test", \ref cmdbug "\\bug" and
+ \ref cmddeprecated "\\deprecated" commands. Each part has the syntax:
+ `<key>[=<value>]`, where `<key>` is the identifier as specified with the 
+ \ref cmdxrefitem "\\xrefiten" command and `<value>` is `NO`, `YES`, `ITEM` or `PAGE`.
+ In case `<value>` is set to `ITEM` the specified \ref cmdxrefitem "\\xrefiten" `<key>` commands
+ are only visible with the item they are defined with, in case `<value>` is set to `PAGE` the
+ \ref cmdxrefitem "\\xrefiten" `<key>` commands are only visible on the page with an overview of all
+ \ref cmdxrefitem "\\xrefiten" `<key>` commands used. In case `<value>` is set to `NO`, the
+ \ref cmdxrefitem "\\xrefiten" `<key>` command is omitted and in case `<value>` is set to `YES`
+ the \ref cmdxrefitem "\\xrefiten" `<key>` commands are shown at the overview page and with the item
+ they are specified with.
+ In case the `<value>` is not specified the value `YES` is used.<br>
+ In case `YES`, `NO`, `ITEM` or `PAGE` is used as item in the \c GENERATE_XREFLIST this value is used
+ as default for the \ref cmdxrefitem "\\xrefiten" `<key>` commands that are not defined.<br>
+ In case for a \ref cmdxrefitem "\\xrefiten" `<key>` nothing is specified the default `YES` is used.
 ]]>
       </docs>
     </option>
+
     <option type='list' id='ENABLED_SECTIONS' format='string'>
       <docs>
 <![CDATA[
@@ -3456,7 +3515,7 @@ If set to \c NO, doxygen will warn if an a database file is already found and no
  contain include files that are not input files but should be processed by
  the preprocessor.
 
- Note that the \c INCLUDE_PATH is not recursive, so the setting of \ref cfg_recursive "RECURSIVE" 
+ Note that the \c INCLUDE_PATH is not recursive, so the setting of \ref cfg_recursive "RECURSIVE"
  has no effect here.
 ]]>
       </docs>

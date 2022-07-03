@@ -26,6 +26,40 @@
 class Definition;
 class RefList;
 
+enum class Generate_Xref_t
+{
+  NO   = 0x0,
+  ITEM = 0x1,
+  PAGE = 0x2,
+  YES  = ITEM | PAGE,
+};
+inline bool operator&(const Generate_Xref_t inp1, const Generate_Xref_t inp2)
+{
+    return static_cast<int>(inp1) & static_cast<int>(inp2);
+}
+
+enum class Generate_XrefList_t
+{
+  UNKNOWN   = -1,
+  NO   = 0x0,
+  ITEM = 0x1,
+  PAGE = 0x2,
+  YES  = ITEM | PAGE,
+};
+inline Generate_XrefList_t GENERATE_XREFLIST_str2enum(const QCString &s)
+{
+  QCString lc = s.lower();
+  static const std::unordered_map<std::string,Generate_XrefList_t> map =
+  {
+    { "no", Generate_XrefList_t::NO },
+    { "yes", Generate_XrefList_t::YES },
+    { "item", Generate_XrefList_t::ITEM },
+    { "page", Generate_XrefList_t::PAGE },
+  };
+  auto it = map.find(lc.str());
+  return it!=map.end() ? it->second : Generate_XrefList_t::UNKNOWN;
+}
+
 /** This struct represents an item in the list of references. */
 class RefItem
 {
@@ -84,7 +118,7 @@ class RefList
      *  @param secTitle String representing the title of the section.
      */
     RefList(const QCString &listName, const QCString &pageTitle, const QCString &secTitle);
-    bool isEnabled() const;
+    bool isEnabled(const Generate_Xref_t inp) const;
 
     /*! Adds a new item to the list.
      *  @returns A unique id for this item.
@@ -103,6 +137,16 @@ class RefList
     QCString sectionTitle() const  { return m_secTitle;  }
 
     void generatePage();
+
+    template<typename T>
+    bool compareXrefEnabled(const T s, const Generate_Xref_t inp) const
+    {
+      if (s == T::YES)  return Generate_Xref_t::YES & inp;
+      if (s == T::NO)   return Generate_Xref_t::NO & inp;
+      if (s == T::ITEM) return Generate_Xref_t::ITEM & inp;
+      if (s == T::PAGE) return Generate_Xref_t::PAGE & inp;
+      return false;
+    }
 
   private:
     int m_id = 0;
