@@ -332,33 +332,31 @@ QCString stripFromIncludePath(const QCString &path)
 int guessSection(const QCString &name)
 {
   QCString n=name.lower();
-  if (n.right(2)==".c"    || // source
-      n.right(3)==".cc"   ||
-      n.right(4)==".cxx"  ||
-      n.right(4)==".cpp"  ||
-      n.right(4)==".c++"  ||
-      n.right(5)==".java" ||
-      n.right(2)==".m"    ||
-      n.right(3)==".mm"   ||
-      n.right(3)==".ii"   || // inline
-      n.right(4)==".ixx"  ||
-      n.right(4)==".ipp"  ||
-      n.right(4)==".i++"  ||
-      n.right(4)==".inl"  ||
-      n.right(4)==".xml"  ||
-      n.right(4)==".lex"  ||
-      n.right(4)==".sql"
-     ) return Entry::SOURCE_SEC;
-  if (n.right(2)==".h"    || // header
-      n.right(3)==".hh"   ||
-      n.right(4)==".hxx"  ||
-      n.right(4)==".hpp"  ||
-      n.right(4)==".h++"  ||
-      n.right(4)==".idl"  ||
-      n.right(4)==".ddl"  ||
-      n.right(5)==".pidl" ||
-      n.right(4)==".ice"
-     ) return Entry::HEADER_SEC;
+  static const std::unordered_set<std::string> sourceExt = {
+     "c","cc","cxx","cpp","c++",   // C/C++
+     "java",                       // Java
+     "cs",                         // C#
+     "m","mm",                     // Objective-C
+     "ii","ixx","ipp","i++","inl", // C/C++ inline
+     "xml","lex","sql"             // others
+  };
+  static const std::unordered_set<std::string> headerExt = {
+     "h", "hh", "hxx", "hpp", "h++" // C/C++ header
+     "idl", "ddl", "pidl", "ice"    // IDL like
+  };
+  int lastDot = n.findRev('.');
+  if (lastDot!=-1)
+  {
+    QCString extension = n.mid(lastDot+1); // part after the last dot
+    if (sourceExt.find(extension.str())!=sourceExt.end())
+    {
+      return Entry::SOURCE_SEC;
+    }
+    if (headerExt.find(extension.str())!=headerExt.end())
+    {
+      return Entry::HEADER_SEC;
+    }
+  }
   return 0;
 }
 
