@@ -2367,12 +2367,12 @@ NONLopt [^\n]*
                                                 yyextra->current->name  = yytext;
                                               else
                                                 yyextra->current->name += yytext;
-                                              if (yyextra->current->name.left(7)=="static ")
+                                              if (yyextra->current->name.startsWith("static "))
                                               {
                                                 yyextra->current->stat = TRUE;
                                                 yyextra->current->name= yyextra->current->name.mid(7);
                                               }
-                                              else if (yyextra->current->name.left(7)=="inline ")
+                                              else if (yyextra->current->name.startsWith("inline "))
                                               {
                                                 if (yyextra->current->type.isEmpty())
                                                 {
@@ -2384,7 +2384,7 @@ NONLopt [^\n]*
                                                 }
                                                 yyextra->current->name= yyextra->current->name.mid(7);
                                               }
-                                              else if (yyextra->current->name.left(10)=="constexpr ")
+                                              else if (yyextra->current->name.startsWith("constexpr "))
                                               {
                                                 if (yyextra->current->type.isEmpty())
                                                 {
@@ -2396,7 +2396,7 @@ NONLopt [^\n]*
                                                 }
                                                 yyextra->current->name=yyextra->current->name.mid(10);
                                               }
-                                              else if (yyextra->current->name.left(6)=="const ")
+                                              else if (yyextra->current->name.startsWith("const "))
                                               {
                                                 if (yyextra->current->type.isEmpty())
                                                 {
@@ -2408,7 +2408,7 @@ NONLopt [^\n]*
                                                 }
                                                 yyextra->current->name=yyextra->current->name.mid(6);
                                               }
-                                              else if (yyextra->current->name.left(9)=="volatile ")
+                                              else if (yyextra->current->name.startsWith("volatile "))
                                               {
                                                 if (yyextra->current->type.isEmpty())
                                                 {
@@ -2420,7 +2420,7 @@ NONLopt [^\n]*
                                                 }
                                                 yyextra->current->name=yyextra->current->name.mid(9);
                                               }
-                                              else if (yyextra->current->name.left(8)=="typedef ")
+                                              else if (yyextra->current->name.startsWith("typedef "))
                                               {
                                                 if (yyextra->current->type.isEmpty())
                                                 {
@@ -3465,11 +3465,11 @@ NONLopt [^\n]*
                                             yyextra->current->bodyLine = yyextra->yyLineNr;
                                             yyextra->current->bodyColumn = yyextra->yyColNr;
                                           }
-                                          if ( yyextra->insidePHP && yyextra->current->type.left(3) == "var" )
+                                          if ( yyextra->insidePHP && yyextra->current->type.startsWith("var"))
                                           {
                                             yyextra->current->type = yyextra->current->type.mid(3);
                                           }
-                                          if (yyextra->isTypedef && yyextra->current->type.left(8)!="typedef ")
+                                          if (yyextra->isTypedef && !yyextra->current->type.startsWith("typedef "))
                                           {
                                             yyextra->current->type.prepend("typedef ");
                                           }
@@ -4435,7 +4435,8 @@ NONLopt [^\n]*
                                           yyextra->current->type += *yytext;
                                         }
 <FindMembers>"("/{BN}*{ID}{BN}*"*"{BN}*{ID}*")"{BN}*"(" { // for catching typedef void (__stdcall *f)() like definitions
-                                          if (yyextra->current->type.left(7)=="typedef" && yyextra->current->bodyLine==-1)
+                                          if (yyextra->current->type.startsWith("typedef") &&
+                                              yyextra->current->bodyLine==-1)
                                             // the bodyLine check is to prevent this guard to be true more than once
                                           {
                                             yyextra->current->bodyLine = yyextra->yyLineNr;
@@ -5157,10 +5158,11 @@ NONLopt [^\n]*
                                           int te=yyextra->current->type.findRev('>');
 
                                           // bug677315: A<int(void *, char *)> get(); is not a function pointer
+                                          bool startsWithTypedef = yyextra->current->type.startsWith("typedef ");
                                           bool isFunction = ti==-1 || // not a (...*...) pattern
                                                             (ts!=-1 && ts<te && ts<ti && ti<te); // (...*...) is part of a template argument list
-                                          bool isVariable = (!yyextra->current->type.isEmpty() &&
-                                                (!isFunction || yyextra->current->type.left(8)=="typedef "));
+                                          bool isVariable = !yyextra->current->type.isEmpty() &&
+                                                (!isFunction || startsWithTypedef);
 
                                           //printf("type=%s ts=%d te=%d ti=%d isFunction=%d\n",
                                           //    qPrint(yyextra->current->type),ts,te,ti,isFunction);
@@ -5173,7 +5175,7 @@ NONLopt [^\n]*
                                             if (isVariable)
                                             {
                                               //printf("Scanner.l: found in class variable: '%s' '%s' '%s'\n", qPrint(yyextra->current->type),qPrint(yyextra->current->name),qPrint(yyextra->current->args));
-                                              if (yyextra->isTypedef && yyextra->current->type.left(8)!="typedef ")
+                                              if (yyextra->isTypedef && !startsWithTypedef)
                                               {
                                                 yyextra->current->type.prepend("typedef ");
                                               }
@@ -5191,7 +5193,7 @@ NONLopt [^\n]*
                                             //printf("Scanner.l: prototype? type='%s' name='%s' args='%s'\n",qPrint(yyextra->current->type),qPrint(yyextra->current->name),qPrint(yyextra->current->args));
                                             if (isVariable)
                                             {
-                                              if (yyextra->isTypedef && yyextra->current->type.left(8)!="typedef ")
+                                              if (yyextra->isTypedef && !startsWithTypedef)
                                               {
                                                 yyextra->current->type.prepend("typedef ");
                                               }
@@ -7281,7 +7283,7 @@ static void prependScope(yyscan_t yyscanner)
 static bool checkForKnRstyleC(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  if (((QCString)yyextra->fileName).right(2).lower()!=".c") return FALSE; // must be a C file
+  if (!yyextra->fileName.lower().endsWith(".c")) return FALSE; // must be a C file
   if (yyextra->current->argList.empty()) return FALSE; // must have arguments
   for (const Argument &a : yyextra->current->argList)
   {
@@ -7392,10 +7394,7 @@ static void addKnRArgInfo(yyscan_t yyscanner,const QCString &type,const QCString
     if (a.type==name)
     {
       a.type=type.stripWhiteSpace();
-      if (a.type.left(9)=="register ") // strip keyword
-      {
-        a.type=a.type.mid(9);
-      }
+      a.type.stripPrefix("register ");
       a.name=name.stripWhiteSpace();
       if (!brief.isEmpty() && !docs.isEmpty())
       {

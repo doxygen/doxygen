@@ -335,7 +335,7 @@ DB_GEN_C
   }
   pageName = fileName;
   relPath = relativePathToRoot(fileName);
-  if (fileName.right(4)!=".xml") fileName+=".xml";
+  if (!fileName.endsWith(".xml")) fileName+=".xml";
   startPlainFile(fileName);
   m_codeGen.setRelativePath(relPath);
   m_codeGen.setSourceFileName(stripPath(fileName));

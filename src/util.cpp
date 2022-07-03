@@ -1332,10 +1332,9 @@ QCString getFileFilter(const QCString &name,bool isSourceCode)
   else
   {
     /* remove surrounding double quotes */
-    if ((filterName.right(1) == "\"") && (filterName.left(1) == "\""))
+    if (filterName.length()>=2 && filterName[0]=='"' && filterName[filterName.length()-1]=='"')
     {
-       filterName.remove(filterName.length() - 1, 1);
-       filterName.remove(0, 1);
+       filterName = filterName.mid(1,filterName.length()-2);
     }
     return filterName;
   }
@@ -2291,7 +2290,7 @@ bool getDefsOld(const QCString &scName,
   //          qPrint(scopeName), qPrint(memberName));
 
   mName=memberName;
-  if (memberName.left(9)!="operator " && // treat operator conversion methods
+  if (!memberName.startsWith("operator ") && // treat operator conversion methods
       // as a special case
       (im=memberName.findRev("::"))!=-1 &&
       im<static_cast<int>(memberName.length())-2 // not A::
@@ -2904,10 +2903,10 @@ bool resolveRef(/* in */  const QCString &scName,
   int bracePos=findParameterList(fullName);
   int endNamePos=bracePos!=-1 ? bracePos : fullName.length();
   int scopePos=fullName.findRev("::",endNamePos);
-  bool explicitScope = fullName.left(2)=="::" &&   // ::scope or #scope
-                       (scopePos>2 ||              // ::N::A
-                        tsName.left(2)=="::" ||    // ::foo in local scope
-                        scName==0                  // #foo  in global scope
+  bool explicitScope = fullName.startsWith("::") &&   // ::scope or #scope
+                       (scopePos>2 ||                 // ::N::A
+                        tsName.startsWith("::") ||    // ::foo in local scope
+                        scName==0                     // #foo  in global scope
                        );
 
   // default result values
@@ -3903,7 +3902,7 @@ done:
   }
   //printf("extractNamespace '%s' => '%s|%s'\n",qPrint(scopeName),
   //       qPrint(className),qPrint(namespaceName));
-  if (/*className.right(2)=="-g" ||*/ className.right(2)=="-p")
+  if (className.endsWith("-p"))
   {
     className = className.left(className.length()-2);
   }
@@ -4482,7 +4481,7 @@ int extractClassNameFromType(const QCString &type,int &pos,QCString &name,QCStri
     if (lang == SrcLangExt_Fortran)
     {
       if (type[pos]==',') return -1;
-      if (QCString(type).left(4).lower()!="type")
+      if (!type.lower().startsWith("type"))
       {
         re = &re_fortran;
       }
@@ -4649,17 +4648,17 @@ QCString substituteTemplateArgumentsInString(
       {
         actArg = *actIt;
       }
-      if (formArg.type.left(6)=="class " && formArg.name.isEmpty())
+      if (formArg.type.startsWith("class ") && formArg.name.isEmpty())
       {
         formArg.name = formArg.type.mid(6);
         formArg.type = "class";
       }
-      if (formArg.type.left(9)=="typename " && formArg.name.isEmpty())
+      if (formArg.type.startsWith("typename ") && formArg.name.isEmpty())
       {
         formArg.name = formArg.type.mid(9);
         formArg.type = "typename";
       }
-      if (formArg.type=="class" || formArg.type=="typename" || formArg.type.left(8)=="template")
+      if (formArg.type=="class" || formArg.type=="typename" || formArg.type.startsWith("template"))
       {
         //printf("n=%s formArg->type='%s' formArg->name='%s' formArg->defval='%s'\n",
         //  qPrint(n),qPrint(formArg->type),qPrint(formArg->name),qPrint(formArg->defval));
@@ -4921,7 +4920,7 @@ PageDef *addRelatedPage(const QCString &name,const QCString &ptitle,
   if (newPage) // new page
   {
     QCString baseName=name;
-    if (baseName.right(4)==".tex")
+    if (baseName.endsWith(".tex"))
       baseName=baseName.left(baseName.length()-4);
     else if (baseName.right(Doxygen::htmlFileExtension.length())==Doxygen::htmlFileExtension)
       baseName=baseName.left(baseName.length()-Doxygen::htmlFileExtension.length());
@@ -6701,12 +6700,12 @@ QCString getLanguageSpecificSeparator(SrcLangExt lang,bool classScope)
 /** Checks whether the given url starts with a supported protocol */
 bool isURL(const QCString &url)
 {
+  static const std::unordered_set<std::string> schemes = {
+    "http", "https", "ftp", "ftps", "sftp", "file", "news", "irc", "ircs"
+  };
   QCString loc_url = url.stripWhiteSpace();
-  return loc_url.left(5)=="http:" || loc_url.left(6)=="https:" ||
-         loc_url.left(4)=="ftp:"  || loc_url.left(5)=="ftps:"  ||
-         loc_url.left(5)=="sftp:" || loc_url.left(5)=="file:"  ||
-         loc_url.left(5)=="news:" || loc_url.left(4)=="irc:"   ||
-         loc_url.left(5)=="ircs:";
+  int colonPos = loc_url.find(':');
+  return colonPos!=-1 && schemes.find(loc_url.left(colonPos).str())!=schemes.end();
 }
 /** Corrects URL \a url according to the relative path \a relPath.
  *  Returns the corrected URL. For absolute URLs no correction will be done.

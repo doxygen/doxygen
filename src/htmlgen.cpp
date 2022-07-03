@@ -350,7 +350,7 @@ static QCString substituteHtmlKeywords(const QCString &str,
   }
   else
   {
-    if (!(cssFile.left(5)=="http:" ||  cssFile.left(6)=="https:"))
+    if (!cssFile.startsWith("http:") && !cssFile.startsWith("https:"))
     {
       FileInfo cssfi(cssFile.str());
       if (cssfi.exists())
@@ -371,7 +371,7 @@ static QCString substituteHtmlKeywords(const QCString &str,
     if (!fileName.empty())
     {
       QCString htmlStyleSheet = fileName.c_str();
-      if (htmlStyleSheet.left(5)=="http:" ||  htmlStyleSheet.left(6)=="https:")
+      if (htmlStyleSheet.startsWith("http:") || htmlStyleSheet.startsWith("https:"))
       {
         extraCssText += "<link href=\""+htmlStyleSheet+"\" rel=\"stylesheet\" type=\"text/css\"/>\n";
       }
@@ -455,7 +455,7 @@ static QCString substituteHtmlKeywords(const QCString &str,
   {
     auto mathJaxVersion = Config_getEnum(MATHJAX_VERSION);
     QCString path = Config_getString(MATHJAX_RELPATH);
-    if (path.isEmpty() || path.left(2)=="..") // relative path
+    if (path.isEmpty() || path.startsWith("..")) // relative path
     {
       path.prepend(relPath);
     }
@@ -1285,7 +1285,7 @@ void HtmlGenerator::writeStyleInfo(int part)
     else // write user defined style sheet
     {
       QCString cssName=Config_getString(HTML_STYLESHEET);
-      if (!(cssName.left(5)=="http:" ||  cssName.left(6)=="https:"))
+      if (!cssName.startsWith("http:") && !cssName.startsWith("https:"))
       {
         FileInfo cssfi(cssName.str());
         if (!cssfi.exists() || !cssfi.isFile() || !cssfi.isReadable())

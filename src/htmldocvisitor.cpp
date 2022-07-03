@@ -1566,7 +1566,7 @@ void HtmlDocVisitor::operator()(const DocInternal &i)
 void HtmlDocVisitor::operator()(const DocHRef &href)
 {
   if (m_hide) return;
-  if (href.url().left(7)=="mailto:")
+  if (href.url().startsWith("mailto:"))
   {
     writeObfuscatedMailAddress(href.url().mid(7));
   }

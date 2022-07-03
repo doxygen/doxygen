@@ -437,8 +437,8 @@ CPPC  "/\/"
 						// and need to correct it to avoid seeing a nameless parameter
 						// "struct A" as a parameter with type "struct" and name "A".
 						int sv=0;
-						if      (a.type.left(6)=="const ")    sv=6;
-						else if (a.type.left(9)=="volatile ") sv=9;
+						if      (a.type.startsWith("const "))    sv=6;
+						else if (a.type.startsWith("volatile ")) sv=9;
 
 						if (a.type.mid(sv)=="struct"    ||
 						    a.type.mid(sv)=="union"     ||

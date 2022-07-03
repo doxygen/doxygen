@@ -374,7 +374,7 @@ void RTFGenerator::startFile(const QCString &name,const QCString &,const QCStrin
   QCString fileName=name;
   m_relPath = relativePathToRoot(fileName);
 
-  if (fileName.right(4)!=".rtf" ) fileName+=".rtf";
+  if (!fileName.endsWith(".rtf")) fileName+=".rtf";
   startPlainFile(fileName);
   setRelativePath(m_relPath);
   setSourceFileName(stripPath(fileName));

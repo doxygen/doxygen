@@ -1425,7 +1425,7 @@ LINENR {BLANK}*[1-9][0-9]*
                          lineCount(yytext,yyleng);
                          yyextra->secTitle = yytext;
                          yyextra->secTitle = yyextra->secTitle.stripWhiteSpace();
-                         if (yyextra->secTitle.right(8)=="\\ilinebr")
+                         if (yyextra->secTitle.endsWith("\\ilinebr"))
                          {
                            yyextra->secTitle.left(yyextra->secTitle.length()-8);
                          }

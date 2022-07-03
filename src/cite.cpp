@@ -32,6 +32,13 @@
 const char *bibTmpFile = "bibTmpFile_";
 const char *bibTmpDir  = "bibTmpDir/";
 
+static QCString getBibFile(const QCString &inFile)
+{
+  QCString name = inFile;
+  if (!name.isEmpty() && !name.endsWith(".bib")) name+=".bib";
+  return name;
+}
+
 class CiteInfoImpl : public CiteInfo
 {
   public:
@@ -202,8 +209,7 @@ void CitationManager::generatePage()
   const StringVector &citeDataList = Config_getList(CITE_BIB_FILES);
   for (const auto &bibdata : citeDataList)
   {
-    QCString bibFile = bibdata.c_str();
-    if (!bibFile.isEmpty() && bibFile.right(4)!=".bib") bibFile+=".bib";
+    QCString bibFile = getBibFile(QCString(bibdata));
     insertCrossReferencesForBibFile(bibFile);
   }
 
@@ -252,8 +258,7 @@ void CitationManager::generatePage()
   int i = 0;
   for (const auto &bibdata : citeDataList)
   {
-    QCString bibFile = bibdata.c_str();
-    if (!bibFile.isEmpty() && bibFile.right(4)!=".bib") bibFile+=".bib";
+    QCString bibFile = getBibFile(QCString(bibdata));
     FileInfo fi(bibFile.str());
     if (fi.exists())
     {
@@ -341,9 +346,7 @@ void CitationManager::generatePage()
     i = 0;
     for (const auto &bibdata : citeDataList)
     {
-      QCString bibFile = bibdata.c_str();
-      // Note: file can now have multiple dots
-      if (!bibFile.isEmpty() && bibFile.right(4)!=".bib") bibFile+=".bib";
+      QCString bibFile = getBibFile(QCString(bibdata));
       FileInfo fi(bibFile.str());
       if (fi.exists())
       {
@@ -387,9 +390,7 @@ QCString CitationManager::latexBibFiles()
   int i = 0;
   for (const auto &bibdata : citeDataList)
   {
-    QCString bibFile = bibdata.c_str();
-    // Note: file can now have multiple dots
-    if (!bibFile.isEmpty() && bibFile.right(4)!=".bib") bibFile+=".bib";
+    QCString bibFile = getBibFile(QCString(bibdata));
     FileInfo fi(bibFile.str());
     if (fi.exists())
     {

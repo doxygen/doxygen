@@ -214,7 +214,7 @@ bool DotRunner::run()
   // As there should be only one pdf file be generated, we don't need code for regenerating multiple pdf files in one call
   for (auto& s : m_jobs)
   {
-    if (s.format.left(3)=="pdf")
+    if (s.format.startsWith("pdf"))
     {
       int width=0,height=0;
       if (!readBoundingBox(s.output,&width,&height,FALSE)) goto error;
@@ -226,7 +226,7 @@ bool DotRunner::run()
       }
     }
 
-    if (s.format.left(3)=="png")
+    if (s.format.startsWith("png"))
     {
       checkPngResult(s.output);
     }

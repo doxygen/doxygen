@@ -180,7 +180,7 @@ QCString DocParser::findAndCopyImage(const QCString &fileName, DocImage::Type ty
     }
 
     if (type==DocImage::Latex && Config_getBool(USE_PDFLATEX) &&
-	fd->name().right(4)==".eps"
+	fd->name().endsWith(".eps")
        )
     { // we have an .eps image in pdflatex mode => convert it to a pdf.
       QCString outputDir = Config_getString(LATEX_OUTPUT);
@@ -201,7 +201,7 @@ QCString DocParser::findAndCopyImage(const QCString &fileName, DocImage::Type ty
   else
   {
     result=fileName;
-    if (result.left(5)!="http:" && result.left(6)!="https:" && doWarn)
+    if (!result.startsWith("http:") && !result.startsWith("https:") && doWarn)
     {
       warn_doc_error(context.fileName,tokenizer.getLineNr(),
            "image file %s is not found in IMAGE_PATH: "
@@ -246,7 +246,7 @@ void DocParser::checkArgumentName()
       if (lang==SrcLangExt_Fortran) argName=argName.lower();
       argName=argName.stripWhiteSpace();
       //printf("argName='%s' aName=%s\n",qPrint(argName),qPrint(aName));
-      if (argName.right(3)=="...") argName=argName.left(argName.length()-3);
+      if (argName.endsWith("...")) argName=argName.left(argName.length()-3);
       if (aName==argName)
       {
 	context.paramsFound.insert(aName.str());
@@ -323,7 +323,7 @@ void DocParser::checkUnOrMultipleDocumentedParams()
         if (lang==SrcLangExt_Fortran) argName = argName.lower();
         argName=argName.stripWhiteSpace();
         QCString aName = argName;
-        if (argName.right(3)=="...") argName=argName.left(argName.length()-3);
+        if (argName.endsWith("...")) argName=argName.left(argName.length()-3);
         if (lang==SrcLangExt_Python && (argName=="self" || argName=="cls"))
         {
           // allow undocumented self / cls parameter for Python
@@ -854,7 +854,7 @@ void DocParser::handleLinkedWord(DocNodeVariant *parent,DocNodeList &children,bo
   }
   else // normal non-linkable word
   {
-    if (context.token->name.left(1)=="#" || context.token->name.left(2)=="::")
+    if (context.token->name.startsWith("#") || context.token->name.startsWith("::"))
     {
       warn_doc_error(context.fileName,tokenizer.getLineNr(),"explicit link request to '%s' could not be resolved",qPrint(name));
       children.append<DocWord>(this,parent,context.token->name);

@@ -1104,17 +1104,17 @@ DB_VIS_C
     }
     else if (opt.name=="class")
     {
-      if (opt.value.left(13)=="markdownTable") // handle markdown generated attributes
+      if (opt.value.startsWith("markdownTable")) // handle markdown generated attributes
       {
-        if (opt.value.right(5)=="Right")
+        if (opt.value.endsWith("Right"))
         {
           m_t << " align='right'";
         }
-        else if (opt.value.right(4)=="Left")
+        else if (opt.value.endsWith("Left"))
         {
           m_t << " align='left'";
         }
-        else if (opt.value.right(6)=="Center")
+        else if (opt.value.endsWith("Center"))
         {
           m_t << " align='center'";
         }

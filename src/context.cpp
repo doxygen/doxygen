@@ -7022,7 +7022,7 @@ class NavPathElemContext::Private
       }
       else if (type==Definition::TypeClass)
       {
-        if (text.right(2)=="-p")
+        if (text.endsWith("-p"))
         {
           text = text.left(text.length()-2);
         }

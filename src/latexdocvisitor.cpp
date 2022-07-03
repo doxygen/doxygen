@@ -1431,7 +1431,7 @@ void LatexDocVisitor::operator()(const DocImage &img)
   {
     if (m_hide) return;
     QCString gfxName = img.name();
-    if (gfxName.right(4)==".eps" || gfxName.right(4)==".pdf")
+    if (gfxName.endsWith(".eps") || gfxName.endsWith(".pdf"))
     {
       gfxName=gfxName.left(gfxName.length()-4);
     }

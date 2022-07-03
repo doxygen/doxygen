@@ -96,7 +96,7 @@ static void unescapeCRef(QCString &s)
 static QCString stripKnownExtensions(const QCString &text)
 {
   QCString result=text;
-  if (result.right(4)==".tex")
+  if (result.endsWith(".tex"))
   {
     result=result.left(result.length()-4);
   }
@@ -1020,7 +1020,7 @@ bool DocDotFile::parse(DocNodeVariant *thisVariant)
 
   bool ambig;
   FileDef *fd = findFileDef(Doxygen::dotFileNameLinkedMap,p->name,ambig);
-  if (fd==0 && p->name.right(4)!=".dot") // try with .dot extension as well
+  if (fd==0 && !p->name.endsWith(".dot")) // try with .dot extension as well
   {
     fd = findFileDef(Doxygen::dotFileNameLinkedMap,p->name+".dot",ambig);
   }
@@ -1058,7 +1058,7 @@ bool DocMscFile::parse(DocNodeVariant *thisVariant)
 
   bool ambig;
   FileDef *fd = findFileDef(Doxygen::mscFileNameLinkedMap,p->name,ambig);
-  if (fd==0 && p->name.right(4)!=".msc") // try with .msc extension as well
+  if (fd==0 && !p->name.endsWith(".msc")) // try with .msc extension as well
   {
     fd = findFileDef(Doxygen::mscFileNameLinkedMap,p->name+".msc",ambig);
   }
@@ -1098,7 +1098,7 @@ bool DocDiaFile::parse(DocNodeVariant *thisVariant)
 
   bool ambig;
   FileDef *fd = findFileDef(Doxygen::diaFileNameLinkedMap,p->name,ambig);
-  if (fd==0 && p->name.right(4)!=".dia") // try with .dia extension as well
+  if (fd==0 && !p->name.endsWith(".dia")) // try with .dia extension as well
   {
     fd = findFileDef(Doxygen::diaFileNameLinkedMap,p->name+".dia",ambig);
   }
@@ -5025,7 +5025,7 @@ reparsetoken:
             // so a new simple section will be started at this level.
             // This is the same as unputting the last read token and continuing.
             parser()->context.token->name = parser()->context.token->simpleSectName;
-            if (parser()->context.token->name.left(4)=="rcs:") // RCS section
+            if (parser()->context.token->name.startsWith("rcs:")) // RCS section
             {
               parser()->context.token->name = parser()->context.token->name.mid(4);
               parser()->context.token->text = parser()->context.token->simpleSectText;
@@ -5123,7 +5123,7 @@ reparsetoken:
             // so a new simple section will be started at this level.
             // This is the same as unputting the last read token and continuing.
             parser()->context.token->name = parser()->context.token->simpleSectName;
-            if (parser()->context.token->name.left(4)=="rcs:") // RCS section
+            if (parser()->context.token->name.startsWith("rcs:")) // RCS section
             {
               parser()->context.token->name = parser()->context.token->name.mid(4);
               parser()->context.token->text = parser()->context.token->simpleSectText;

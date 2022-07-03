@@ -1491,7 +1491,7 @@ void distributeClassGroupRelations()
 static ClassDefMutable *createTagLessInstance(const ClassDef *rootCd,const ClassDef *templ,const QCString &fieldName)
 {
   QCString fullName = removeAnonymousScopes(templ->name());
-  if (fullName.right(2)=="::") fullName=fullName.left(fullName.length()-2);
+  if (fullName.endsWith("::")) fullName=fullName.left(fullName.length()-2);
   fullName+="."+fieldName;
 
   //printf("** adding class %s based on %s\n",qPrint(fullName),qPrint(templ->name()));
@@ -1863,7 +1863,7 @@ static void findUsingDirectives(const Entry *root)
     //printf("Found using directive %s at line %d of %s\n",
     //    qPrint(root->name),root->startLine,qPrint(root->fileName));
     QCString name=substitute(root->name,".","::");
-    if (name.right(2)=="::")
+    if (name.endsWith("::"))
     {
       name=name.left(name.length()-2);
     }
@@ -2409,10 +2409,8 @@ static MemberDef *addVariableToFile(
   {
     QCString ttype = type;
     ttype.stripPrefix("typedef ");
-    if (ttype.left(7)=="struct " || ttype.left(6)=="union ")
+    if (ttype.stripPrefix("struct ") || ttype.stripPrefix("union "))
     {
-      ttype.stripPrefix("struct ");
-      ttype.stripPrefix("union ");
       static const reg::Ex re(R"(\a\w*)");
       reg::Match match;
       std::string typ = ttype.str();
@@ -2685,7 +2683,7 @@ static bool isVarWithConstructor(const Entry *root)
     result=FALSE;
     goto done;
   }
-  else if ((fd != nullptr) && (fd->name().right(2)==".c" || fd->name().right(2)==".h"))
+  else if ((fd != nullptr) && (fd->name().endsWith(".c") || fd->name().endsWith(".h")))
   { // inside a .c file
     result=FALSE;
     goto done;
@@ -2705,7 +2703,6 @@ static bool isVarWithConstructor(const Entry *root)
   findAndRemoveWord(type,"static");
   findAndRemoveWord(type,"volatile");
   typePtrType = type.find('*')!=-1 || type.find('&')!=-1;
-  //if (type.left(6)=="const ") type=type.right(type.length()-6);
   if (!typePtrType)
   {
     typeIsClass = resolver.resolveClass(ctx,type)!=0;
@@ -2923,9 +2920,9 @@ static void addVariable(const Entry *root,int isFuncPtr=-1)
 
     if (type=="@")
       mtype=MemberType_EnumValue;
-    else if (type.left(8)=="typedef ")
+    else if (type.startsWith("typedef "))
       mtype=MemberType_Typedef;
-    else if (type.left(7)=="friend ")
+    else if (type.startsWith("friend "))
       mtype=MemberType_Friend;
     else if (root->mtype==Property)
       mtype=MemberType_Property;
@@ -3258,7 +3255,7 @@ static void addMethodToClass(const Entry *root,ClassDefMutable *cd,
   QCString args = rargs;
 
   QCString name=removeRedundantWhiteSpace(rname);
-  if (name.left(2)=="::") name=name.right(name.length()-2);
+  name.stripPrefix("::");
 
   MemberType mtype;
   if (isFriend)                 mtype=MemberType_Friend;
@@ -3271,7 +3268,7 @@ static void addMethodToClass(const Entry *root,ClassDefMutable *cd,
   int i = -1;
   int j = -1;
   if ((fd==0 || fd->getLanguage()==SrcLangExt_Cpp) &&
-      name.left(9)!="operator " &&   // not operator
+      !name.startsWith("operator ") &&   // not operator
       (i=name.find('<'))!=-1    &&   // containing <
       (j=name.find('>'))!=-1    &&   // or >
       (j!=i+2 || name.at(i+1)!='=')  // but not the C++20 spaceship operator <=>
@@ -3352,7 +3349,7 @@ static void addMethodToClass(const Entry *root,ClassDefMutable *cd,
       def=qualScope+scopeSeparator+name; //+optArgs;
     }
   }
-  if (def.left(7)=="friend ") def=def.right(def.length()-7);
+  def.stripPrefix("friend ");
   md->setDefinition(def);
   md->enableCallGraph(root->callGraph);
   md->enableCallerGraph(root->callerGraph);
@@ -3606,7 +3603,7 @@ static void buildFunctionList(const Entry *root)
                 ) &&
                !isMember &&
                (root->relates.isEmpty() || root->relatesType == Duplicate) &&
-               root->type.left(7)!="extern " && root->type.left(8)!="typedef "
+               !root->type.startsWith("extern ") && !root->type.startsWith("typedef ")
               )
       // no member => unrelated function
       {
@@ -4236,7 +4233,7 @@ static void findUsedClassesForClass(const Entry *root,
           ClassDefMutable *usedCdm = toClassDefMutable(usedCd);
           if (usedCd==0 && !Config_getBool(HIDE_UNDOC_RELATIONS))
           {
-            if (type.right(2)=="(*" || type.right(2)=="(^") // type is a function pointer
+            if (type.endsWith("(*") || type.endsWith("(^")) // type is a function pointer
             {
               type+=md->argsString();
             }
@@ -4524,7 +4521,7 @@ static bool findClassRelation(
   QCString biName=bi->name;
   bool explicitGlobalScope=FALSE;
   //printf("findClassRelation: biName='%s'\n",qPrint(biName));
-  if (biName.left(2)=="::") // explicit global scope
+  if (biName.startsWith("::")) // explicit global scope
   {
      biName=biName.right(biName.length()-2);
      explicitGlobalScope=TRUE;
@@ -4781,7 +4778,7 @@ static bool findClassRelation(
           }
           if (baseClass)
           {
-            if (biName.right(2)=="-p")
+            if (biName.endsWith("-p"))
             {
               biName="<"+biName.left(biName.length()-2)+">";
             }
@@ -4798,7 +4795,7 @@ static bool findClassRelation(
               baseClass->setOuterScope(scope);
             }
 
-            if (baseClassName.right(2)=="-p")
+            if (baseClassName.endsWith("-p"))
             {
               baseClass->setCompoundType(ClassDef::Protocol);
             }
@@ -4963,7 +4960,7 @@ static void computeClassRelations()
     }
     size_t numMembers = cd ? cd->memberNameInfoLinkedMap().size() : 0;
     if ((cd==0 || (!cd->hasDocumentation() && !cd->isReference())) && numMembers>0 &&
-        bName.right(2)!="::")
+        !bName.endsWith("::"))
     {
       if (!root->name.isEmpty() && root->name.find('@')==-1 && // normal name
           (guessSection(root->fileName)==Entry::HEADER_SEC ||
@@ -5607,8 +5604,8 @@ static QCString substituteTemplatesInString(
             QCString tdaName = tda->name;
             QCString tdaType = tda->type;
             int vc=0;
-            if (tdaType.left(6)=="class ") vc=6;
-            else if (tdaType.left(9)=="typename ") vc=9;
+            if      (tdaType.startsWith("class "))    vc=6;
+            else if (tdaType.startsWith("typename ")) vc=9;
             if (vc>0) // convert type=="class T" to type=="class" name=="T"
             {
               tdaName = tdaType.mid(vc);
@@ -6303,13 +6300,13 @@ static void findMember(const Entry *root,
             ).stripWhiteSpace();
 
   //printf("funcDecl='%s'\n",qPrint(funcDecl));
-  if (isFriend && funcDecl.left(6)=="class ")
+  if (isFriend && funcDecl.startsWith("class "))
   {
     //printf("friend class\n");
     funcDecl=funcDecl.right(funcDecl.length()-6);
     funcName = funcDecl;
   }
-  else if (isFriend && funcDecl.left(7)=="struct ")
+  else if (isFriend && funcDecl.startsWith("struct "))
   {
     funcDecl=funcDecl.right(funcDecl.length()-7);
     funcName = funcDecl;
@@ -6553,7 +6550,7 @@ static void findMember(const Entry *root,
       }
     }
 
-    if (funcName.left(9)=="operator ") // strip class scope from cast operator
+    if (funcName.startsWith("operator ")) // strip class scope from cast operator
     {
       funcName = substitute(funcName,className+"::","");
     }
@@ -6887,7 +6884,7 @@ static void filterMemberDocumentation(const Entry *root,const QCString &relates)
     //printf("Results type=%s,name=%s,args=%s\n",qPrint(type),qPrint(root->name),qPrint(args));
     isFunc=FALSE;
   }
-  else if ((type.left(8)=="typedef " && args.find('(')!=-1))
+  else if ((type.startsWith("typedef ") && args.find('(')!=-1))
     // detect function types marked as functions
   {
     isFunc=FALSE;
@@ -9859,7 +9856,7 @@ static void copyStyleSheet()
   QCString htmlStyleSheet = Config_getString(HTML_STYLESHEET);
   if (!htmlStyleSheet.isEmpty())
   {
-    if (!(htmlStyleSheet.left(5)=="http:" ||  htmlStyleSheet.left(6)=="https:"))
+    if (!htmlStyleSheet.startsWith("http:") && !htmlStyleSheet.startsWith("https:"))
     {
       FileInfo fi(htmlStyleSheet.str());
       if (!fi.exists())
@@ -9877,26 +9874,22 @@ static void copyStyleSheet()
   const StringVector &htmlExtraStyleSheet = Config_getList(HTML_EXTRA_STYLESHEET);
   for (const auto &sheet : htmlExtraStyleSheet)
   {
-    std::string fileName = sheet;
-    QCString htmlStyleSheet = fileName.c_str();
-    if (!(htmlStyleSheet.left(5)=="http:" ||  htmlStyleSheet.left(6)=="https:"))
+    QCString fileName(sheet);
+    if (!fileName.isEmpty() && !fileName.startsWith("http:") && !fileName.startsWith("https:"))
     {
-      if (!fileName.empty())
+      FileInfo fi(fileName.str());
+      if (!fi.exists())
       {
-        FileInfo fi(fileName);
-        if (!fi.exists())
-        {
-          err("Style sheet '%s' specified by HTML_EXTRA_STYLESHEET does not exist!\n",fileName.c_str());
-        }
-        else if (fi.fileName()=="doxygen.css" || fi.fileName()=="tabs.css" || fi.fileName()=="navtree.css")
-        {
-          err("Style sheet %s specified by HTML_EXTRA_STYLESHEET is already a built-in stylesheet. Please use a different name\n",qPrint(fi.fileName()));
-        }
-        else
-        {
-          QCString destFileName = Config_getString(HTML_OUTPUT)+"/"+fi.fileName();
-          copyFile(QCString(fileName), destFileName);
-        }
+        err("Style sheet '%s' specified by HTML_EXTRA_STYLESHEET does not exist!\n",qPrint(fileName));
+      }
+      else if (fi.fileName()=="doxygen.css" || fi.fileName()=="tabs.css" || fi.fileName()=="navtree.css")
+      {
+        err("Style sheet %s specified by HTML_EXTRA_STYLESHEET is already a built-in stylesheet. Please use a different name\n",qPrint(fi.fileName()));
+      }
+      else
+      {
+        QCString destFileName = Config_getString(HTML_OUTPUT)+"/"+fi.fileName();
+        copyFile(QCString(fileName), destFileName);
       }
     }
   }
@@ -10349,7 +10342,7 @@ static std::string resolveSymlink(const std::string &path)
   {
 #if defined(_WIN32)
     // UNC path, skip server and share name
-    if (sepPos==0 && (result.left(2)=="//" || result.left(2)=="\\\\"))
+    if (sepPos==0 && (result.startsWith("//") || result.startsWith("\\\\")))
       sepPos = result.find('/',2);
     if (sepPos!=-1)
       sepPos = result.find('/',sepPos+1);

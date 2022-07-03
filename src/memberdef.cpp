@@ -1353,7 +1353,7 @@ void MemberDefImpl::IMPL::init(Definition *d,
   hasDocumentedParams = FALSE;
   hasDocumentedReturnType = FALSE;
   docProvider = 0;
-  isDMember = d->getDefFileName().right(2).lower()==".d";
+  isDMember = d->getDefFileName().lower().endsWith(".d");
 }
 
 
@@ -1841,8 +1841,6 @@ ClassDef *MemberDefImpl::getClassDefOfAnonymousType() const
     cname=getNamespaceDef()->name();
   }
   QCString ltype(m_impl->type);
-  // strip 'static' keyword from ltype
-  //if (ltype.left(7)=="static ") ltype=ltype.right(ltype.length()-7);
   // strip 'friend' keyword from ltype
   ltype.stripPrefix("friend ");
 
@@ -3708,7 +3706,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
 static QCString simplifyTypeForTable(const QCString &s)
 {
   QCString ts=removeAnonymousScopes(s);
-  if (ts.right(2)=="::") ts = ts.left(ts.length()-2);
+  if (ts.endsWith("::")) ts = ts.left(ts.length()-2);
   static const reg::Ex re1(R"(\a\w*::)");       // non-template version
   static const reg::Ex re2(R"(\a\w*<[^>]*>::)"); // template version
   reg::Match match;
@@ -4003,14 +4001,14 @@ void MemberDefImpl::warnIfUndocumentedParams() const
   bool isFortran = getLanguage()==SrcLangExt_Fortran;
   bool isFortranSubroutine = isFortran && returnType.find("subroutine")!=-1;
 
-  bool isVoidReturn = (returnType=="void") || (returnType.right(5)==" void");
+  bool isVoidReturn = (returnType=="void") || (returnType.endsWith(" void"));
   if (!isVoidReturn && returnType == "auto")
   {
     const ArgumentList &defArgList=isDocsForDefinition() ?  argumentList() : declArgumentList();
     if (!defArgList.trailingReturnType().isEmpty())
     {
       QCString strippedTrailingReturn = stripTrailingReturn(defArgList.trailingReturnType());
-      isVoidReturn = (strippedTrailingReturn=="void") || (strippedTrailingReturn.right(5)==" void");
+      isVoidReturn = (strippedTrailingReturn=="void") || (strippedTrailingReturn.endsWith(" void"));
     }
   }
   if (!Config_getBool(EXTRACT_ALL) &&
@@ -4182,7 +4180,7 @@ MemberDefMutable *MemberDefImpl::createTemplateInstanceMember(
   }
 
   QCString methodName=name();
-  if (methodName.left(9)=="operator ") // conversion operator
+  if (methodName.startsWith("operator ")) // conversion operator
   {
     methodName=substituteTemplateArgumentsInString(methodName,formalArgs,actualArgs);
   }
