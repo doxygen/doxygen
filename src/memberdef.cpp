@@ -3799,6 +3799,11 @@ void MemberDefImpl::writeMemberDocSimple(OutputList &ol, const Definition *conta
   {
     linkifyText(TextGeneratorOLImpl(ol),getOuterScope(),getBodyDef(),this,m_impl->bitfields);
   }
+  if (hasOneLineInitializer() && !isDefine())
+  {
+    ol.writeString(" ");
+    linkifyText(TextGeneratorOLImpl(ol),getOuterScope(),getBodyDef(),this,m_impl->initializer.simplifyWhiteSpace());
+  }
   ol.endInlineMemberName();
 
   ol.startInlineMemberDoc();
