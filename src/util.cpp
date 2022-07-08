@@ -889,7 +889,7 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
   size_t strLen = txtStr.length();
   if (strLen==0) return;
 
-  static const reg::Ex regExp(R"((::)?\a[\w~!\\.:$]*)");
+  static const reg::Ex regExp(R"((::)?\a[\w~!\\.:$"]*)");
   reg::Iterator it(txtStr,regExp);
   reg::Iterator end;
 
@@ -919,6 +919,7 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
     for (size_t i=index;i<newIndex;i++)
     {
       if (txtStr.at(i)=='"') insideString=!insideString;
+      if (txtStr.at(i)=='\\') i++; // skip next character it is escaped
     }
 
     //printf("floatingIndex=%d strlen=%d autoBreak=%d\n",floatingIndex,strLen,autoBreak);
@@ -1060,7 +1061,7 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
         if (md!=self && (self==0 || md->name()!=self->name()))
           // name check is needed for overloaded members, where getDefs just returns one
         {
-          /* in case of Fortran scop and the variable is a non Fortran variable: don't link,
+          /* in case of Fortran scope and the variable is a non Fortran variable: don't link,
            * see also getLink in fortrancode.l
            */
           if (!(scope && (scope->getLanguage() == SrcLangExt_Fortran) && md->isVariable() && (md->getLanguage() != SrcLangExt_Fortran)))
