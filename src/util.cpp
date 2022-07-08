@@ -1082,7 +1082,6 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
     // set next start point in the string
     //printf("index=%d/%d\n",index,txtStr.length());
     skipIndex=index=newIndex+matchLen;
-    if (insideString) index++;
   }
   // add last part of the string to the result.
   //ol.docify(txtStr.right(txtStr.length()-skipIndex));
