@@ -96,7 +96,7 @@ static void unescapeCRef(QCString &s)
 static QCString stripKnownExtensions(const QCString &text)
 {
   QCString result=text;
-  if (result.right(4)==".tex")
+  if (result.endsWith(".tex"))
   {
     result=result.left(result.length()-4);
   }
@@ -135,7 +135,6 @@ const char *DocStyleChange::styleString() const
     case DocStyleChange::Del:          return "del";
     case DocStyleChange::Underline:    return "u";
     case DocStyleChange::Ins:          return "ins";
-    case DocStyleChange::Details:      return "details";
     case DocStyleChange::Summary:      return "summary";
   }
   return "<invalid>";
@@ -1021,7 +1020,7 @@ bool DocDotFile::parse(DocNodeVariant *thisVariant)
 
   bool ambig;
   FileDef *fd = findFileDef(Doxygen::dotFileNameLinkedMap,p->name,ambig);
-  if (fd==0 && p->name.right(4)!=".dot") // try with .dot extension as well
+  if (fd==0 && !p->name.endsWith(".dot")) // try with .dot extension as well
   {
     fd = findFileDef(Doxygen::dotFileNameLinkedMap,p->name+".dot",ambig);
   }
@@ -1059,7 +1058,7 @@ bool DocMscFile::parse(DocNodeVariant *thisVariant)
 
   bool ambig;
   FileDef *fd = findFileDef(Doxygen::mscFileNameLinkedMap,p->name,ambig);
-  if (fd==0 && p->name.right(4)!=".msc") // try with .msc extension as well
+  if (fd==0 && !p->name.endsWith(".msc")) // try with .msc extension as well
   {
     fd = findFileDef(Doxygen::mscFileNameLinkedMap,p->name+".msc",ambig);
   }
@@ -1099,7 +1098,7 @@ bool DocDiaFile::parse(DocNodeVariant *thisVariant)
 
   bool ambig;
   FileDef *fd = findFileDef(Doxygen::diaFileNameLinkedMap,p->name,ambig);
-  if (fd==0 && p->name.right(4)!=".dia") // try with .dia extension as well
+  if (fd==0 && !p->name.endsWith(".dia")) // try with .dia extension as well
   {
     fd = findFileDef(Doxygen::diaFileNameLinkedMap,p->name+".dia",ambig);
   }
@@ -1284,6 +1283,29 @@ endheader:
   return retval;
 }
 //---------------------------------------------------------------------------
+
+int DocHtmlDetails::parse(DocNodeVariant *thisVariant)
+{
+  DBG(("DocHtmlHtmlDetails::parse() start\n"));
+  int retval=0;
+  auto ns = AutoNodeStack(parser(),thisVariant);
+
+  // parse one or more paragraphs
+  bool isFirst=TRUE;
+  DocPara *par=0;
+  do
+  {
+    auto vDocPara = children().append<DocPara>(parser(),thisVariant);
+    par = children().get_last<DocPara>();
+    if (isFirst) { par->markFirst(); isFirst=FALSE; }
+    retval=par->parse(vDocPara);
+  }
+  while (retval==TK_NEWPARA);
+  if (par) par->markLast();
+
+  DBG(("DocHtmlHtmlDetails::parse() end retval=%s\n",DocTokenizer::retvalToString(retval)));
+  return (retval==RetVal_EndHtmlDetails) ? RetVal_OK : retval;
+}
 
 int DocHRef::parse(DocNodeVariant *thisVariant)
 {
@@ -3177,9 +3199,10 @@ int DocPara::handleXRefItem(DocNodeVariant *thisVariant)
   return retval;
 }
 
-void DocPara::handleIline(DocNodeVariant *)
+void DocPara::handleILine(DocNodeVariant *)
 {
-  parser()->tokenizer.setStateIline();
+  DBG(("handleILine()\n"));
+  parser()->tokenizer.setStateILine();
   int tok = parser()->tokenizer.lex();
   if (tok!=TK_WORD)
   {
@@ -3188,6 +3211,29 @@ void DocPara::handleIline(DocNodeVariant *)
   }
   parser()->tokenizer.setStatePara();
 }
+
+void DocPara::handleIFile(DocNodeVariant *)
+{
+  DBG(("handleIFile()\n"));
+  int tok=parser()->tokenizer.lex();
+  if (tok!=TK_WHITESPACE)
+  {
+    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"expected whitespace after \\ifile command");
+    return;
+  }
+  parser()->tokenizer.setStateFile();
+  tok=parser()->tokenizer.lex();
+  parser()->tokenizer.setStatePara();
+  if (tok!=TK_WORD)
+  {
+    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected token %s as the argument of \\ifile",
+        DocTokenizer::tokToString(tok));
+    return;
+  }
+  parser()->context.fileName = parser()->context.token->name;
+  parser()->tokenizer.setStatePara();
+}
+
 
 void DocPara::handleIncludeOperator(DocNodeVariant *thisVariant,const QCString &cmdName,DocIncOperator::Type t)
 {
@@ -4217,7 +4263,10 @@ int DocPara::handleCommand(DocNodeVariant *thisVariant,const QCString &cmdName, 
       handleInheritDoc(thisVariant);
       break;
     case CMD_ILINE:
-      handleIline(thisVariant);
+      handleILine(thisVariant);
+      break;
+    case CMD_IFILE:
+      handleIFile(thisVariant);
       break;
     default:
       // we should not get here!
@@ -4256,7 +4305,8 @@ int DocPara::handleHtmlStartTag(DocNodeVariant *thisVariant,const QCString &tagN
   int retval=RetVal_OK;
   int tagId = Mappers::htmlTagMapper->map(tagName);
   if (parser()->context.token->emptyTag && !(tagId&XML_CmdMask) &&
-      tagId!=HTML_UNKNOWN && tagId!=HTML_IMG && tagId!=HTML_BR && tagId!=HTML_HR && tagId!=HTML_P)
+      tagId!=HTML_UNKNOWN && tagId!=HTML_IMG && tagId!=HTML_BR && tagId!=HTML_HR && tagId!=HTML_P
+      && tagId!=HTML_DIV && tagId!=HTML_SPAN)
   {
       warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"HTML tag ('<%s/>') may not use the 'empty tag' XHTML syntax.",
                      qPrint(tagName));
@@ -4308,9 +4358,6 @@ int DocPara::handleHtmlStartTag(DocNodeVariant *thisVariant,const QCString &tagN
     case HTML_INS:
       if (!parser()->context.token->emptyTag) parser()->handleStyleEnter(thisVariant,children(),DocStyleChange::Ins,tagName,&parser()->context.token->attribs);
       break;
-    case HTML_DETAILS:
-      if (!parser()->context.token->emptyTag) parser()->handleStyleEnter(thisVariant,children(),DocStyleChange::Details,tagName,&parser()->context.token->attribs);
-      break;
     case HTML_CODE:
       if (parser()->context.token->emptyTag) break;
       if (/*getLanguageFromFileName(parser()->context.fileName)==SrcLangExt_CSharp ||*/ parser()->context.xmlComment)
@@ -4329,10 +4376,12 @@ int DocPara::handleHtmlStartTag(DocNodeVariant *thisVariant,const QCString &tagN
       if (!parser()->context.token->emptyTag) parser()->handleStyleEnter(thisVariant,children(),DocStyleChange::Italic,tagName,&parser()->context.token->attribs);
       break;
     case HTML_DIV:
-      if (!parser()->context.token->emptyTag) parser()->handleStyleEnter(thisVariant,children(),DocStyleChange::Div,tagName,&parser()->context.token->attribs);
+      parser()->handleStyleEnter(thisVariant,children(),DocStyleChange::Div,tagName,&parser()->context.token->attribs);
+      if (parser()->context.token->emptyTag) parser()->handleStyleLeave(thisVariant,children(),DocStyleChange::Div,tagName);
       break;
     case HTML_SPAN:
-      if (!parser()->context.token->emptyTag) parser()->handleStyleEnter(thisVariant,children(),DocStyleChange::Span,tagName,&parser()->context.token->attribs);
+      parser()->handleStyleEnter(thisVariant,children(),DocStyleChange::Span,tagName,&parser()->context.token->attribs);
+      if (parser()->context.token->emptyTag) parser()->handleStyleLeave(thisVariant,children(),DocStyleChange::Span,tagName);
       break;
     case HTML_SUB:
       if (!parser()->context.token->emptyTag) parser()->handleStyleEnter(thisVariant,children(),DocStyleChange::Subscript,tagName,&parser()->context.token->attribs);
@@ -4426,6 +4475,14 @@ int DocPara::handleHtmlStartTag(DocNodeVariant *thisVariant,const QCString &tagN
         parser()->handleImg(thisVariant,children(),tagHtmlAttribs);
       }
       break;
+    case HTML_DETAILS:
+      if (!parser()->context.token->emptyTag)
+      {
+        auto vDocHtmlDetails = children().append<DocHtmlDetails>(parser(),thisVariant,
+                                         tagHtmlAttribs);
+        retval=children().get_last<DocHtmlDetails>()->parse(vDocHtmlDetails);
+      }
+      break;
     case HTML_BLOCKQUOTE:
       if (!parser()->context.token->emptyTag)
       {
@@ -4435,11 +4492,14 @@ int DocPara::handleHtmlStartTag(DocNodeVariant *thisVariant,const QCString &tagN
       break;
 
     case XML_SUMMARY:
-      if (insideDetails(parser()->context.styleStack))
+      if (insideDetails(thisVariant))
       {
-        if (!parser()->context.token->emptyTag) parser()->handleStyleEnter(thisVariant,children(),DocStyleChange::Summary,tagName,&parser()->context.token->attribs);
-        break;
+        if (!parser()->context.token->emptyTag)
+        {
+          parser()->handleStyleEnter(thisVariant,children(),DocStyleChange::Summary,tagName,&parser()->context.token->attribs);
+        }
       }
+      break;
     case XML_REMARKS:
     case XML_EXAMPLE:
       parser()->context.xmlComment=TRUE;
@@ -4708,6 +4768,9 @@ int DocPara::handleHtmlEndTag(DocNodeVariant *thisVariant,const QCString &tagNam
         // ignore </li> tags
       }
       break;
+    case HTML_DETAILS:
+      retval=RetVal_EndHtmlDetails;
+      break;
     case HTML_BLOCKQUOTE:
       retval=RetVal_EndBlockQuote;
       break;
@@ -4728,9 +4791,6 @@ int DocPara::handleHtmlEndTag(DocNodeVariant *thisVariant,const QCString &tagNam
       break;
     case HTML_INS:
       parser()->handleStyleLeave(thisVariant,children(),DocStyleChange::Ins,tagName);
-      break;
-    case HTML_DETAILS:
-      parser()->handleStyleLeave(thisVariant,children(),DocStyleChange::Details,tagName);
       break;
     case HTML_CODE:
       parser()->handleStyleLeave(thisVariant,children(),DocStyleChange::Code,tagName);
@@ -4827,11 +4887,11 @@ int DocPara::handleHtmlEndTag(DocNodeVariant *thisVariant,const QCString &tagNam
       //children().push_back(std::make_unique<DocStyleChange>(this,parser()->context.nodeStack.size(),DocStyleChange::Bold,FALSE));
       break;
     case XML_SUMMARY:
-      if (insideDetails(parser()->context.styleStack))
+      if (insideDetails(thisVariant))
       {
         parser()->handleStyleLeave(thisVariant,children(),DocStyleChange::Summary,tagName);
-        break;
       }
+      break;
     case XML_REMARKS:
     case XML_PARA:
     case XML_VALUE:
@@ -4911,7 +4971,7 @@ reparsetoken:
                // and whitespace after certain constructs
                !holds_one_of_alternatives<DocHtmlDescList, DocHtmlTable,  DocHtmlList,   DocSimpleSect,
                                           DocAutoList,     DocSimpleList, DocHtmlHeader, DocHtmlBlockQuote,
-                                          DocParamSect,    DocXRefItem>(children().back())
+                                          DocParamSect, DocHtmlDetails,   DocXRefItem>(children().back())
               )
              )
           {
@@ -4965,7 +5025,7 @@ reparsetoken:
             // so a new simple section will be started at this level.
             // This is the same as unputting the last read token and continuing.
             parser()->context.token->name = parser()->context.token->simpleSectName;
-            if (parser()->context.token->name.left(4)=="rcs:") // RCS section
+            if (parser()->context.token->name.startsWith("rcs:")) // RCS section
             {
               parser()->context.token->name = parser()->context.token->name.mid(4);
               parser()->context.token->text = parser()->context.token->simpleSectText;
@@ -5063,7 +5123,7 @@ reparsetoken:
             // so a new simple section will be started at this level.
             // This is the same as unputting the last read token and continuing.
             parser()->context.token->name = parser()->context.token->simpleSectName;
-            if (parser()->context.token->name.left(4)=="rcs:") // RCS section
+            if (parser()->context.token->name.startsWith("rcs:")) // RCS section
             {
               parser()->context.token->name = parser()->context.token->name.mid(4);
               parser()->context.token->text = parser()->context.token->simpleSectText;
@@ -5562,203 +5622,5 @@ void DocRoot::parse(DocNodeVariant *thisVariant)
   parser()->handleUnclosedStyleCommands();
 
   DBG(("DocRoot::parse() end\n"));
-}
-
-static QCString extractCopyDocId(const char *data, uint &j, uint len)
-{
-  uint s=j;
-  int round=0;
-  bool insideDQuote=FALSE;
-  bool insideSQuote=FALSE;
-  bool found=FALSE;
-  while (j<len && !found)
-  {
-    if (!insideSQuote && !insideDQuote)
-    {
-      switch (data[j])
-      {
-        case '(': round++; break;
-        case ')': round--; break;
-        case '"': insideDQuote=TRUE; break;
-        case '\'': insideSQuote=TRUE; break;
-        case ' ':  // fall through
-        case '\t': // fall through
-        case '\n':
-          found=(round==0);
-          break;
-      }
-    }
-    else if (insideSQuote) // look for single quote end
-    {
-      if (data[j]=='\'' && (j==0 || data[j]!='\\'))
-      {
-        insideSQuote=FALSE;
-      }
-    }
-    else if (insideDQuote) // look for double quote end
-    {
-      if (data[j]=='"' && (j==0 || data[j]!='\\'))
-      {
-        insideDQuote=FALSE;
-      }
-    }
-    if (!found) j++;
-  }
-  if (qstrncmp(data+j," const",6)==0)
-  {
-    j+=6;
-  }
-  else if (qstrncmp(data+j," volatile",9)==0)
-  {
-    j+=9;
-  }
-  uint e=j;
-  if (j>0 && data[j-1]=='.') { e--; } // do not include punctuation added by Definition::_setBriefDescription()
-  QCString id(data+s,e-s);
-  //printf("extractCopyDocId='%s' input='%s'\n",qPrint(id),&data[s]);
-  return id;
-}
-
-// macro to check if the input starts with a specific command.
-// note that data[i] should point to the start of the command (\ or @ character)
-// and the sizeof(str) returns the size of str including the '\0' terminator;
-// a fact we abuse to skip over the start of the command character.
-#define CHECK_FOR_COMMAND(str,action) \
-   do if ((i+sizeof(str)<len) && qstrncmp(data+i+1,str,sizeof(str)-1)==0) \
-   { j=i+sizeof(str); action; } while(0)
-
-static uint isCopyBriefOrDetailsCmd(const char *data, uint i,uint len,bool &brief)
-{
-  uint j=0;
-  if (i==0 || (data[i-1]!='@' && data[i-1]!='\\')) // not an escaped command
-  {
-    CHECK_FOR_COMMAND("copybrief",brief=TRUE);    // @copybrief or \copybrief
-    CHECK_FOR_COMMAND("copydetails",brief=FALSE); // @copydetails or \copydetails
-  }
-  return j;
-}
-
-static uint isVerbatimSection(const char *data,uint i,uint len,QCString &endMarker)
-{
-  uint j=0;
-  if (i==0 || (data[i-1]!='@' && data[i-1]!='\\')) // not an escaped command
-  {
-    CHECK_FOR_COMMAND("dot",endMarker="enddot");
-    CHECK_FOR_COMMAND("code",endMarker="endcode");
-    CHECK_FOR_COMMAND("msc",endMarker="endmsc");
-    CHECK_FOR_COMMAND("verbatim",endMarker="endverbatim");
-    CHECK_FOR_COMMAND("iliteral",endMarker="endiliteral");
-    CHECK_FOR_COMMAND("latexonly",endMarker="endlatexonly");
-    CHECK_FOR_COMMAND("htmlonly",endMarker="endhtmlonly");
-    CHECK_FOR_COMMAND("xmlonly",endMarker="endxmlonly");
-    CHECK_FOR_COMMAND("rtfonly",endMarker="endrtfonly");
-    CHECK_FOR_COMMAND("manonly",endMarker="endmanonly");
-    CHECK_FOR_COMMAND("docbookonly",endMarker="enddocbookonly");
-    CHECK_FOR_COMMAND("startuml",endMarker="enduml");
-  }
-  //printf("isVerbatimSection(%s)=%d)\n",qPrint(QCString(&data[i]).left(10)),j);
-  return j;
-}
-
-static uint skipToEndMarker(const char *data,uint i,uint len,const QCString &endMarker)
-{
-  while (i<len)
-  {
-    if ((data[i]=='@' || data[i]=='\\') &&  // start of command character
-        (i==0 || (data[i-1]!='@' && data[i-1]!='\\'))) // that is not escaped
-    {
-      if (i+endMarker.length()+1<=len && qstrncmp(data+i+1,endMarker.data(),endMarker.length())==0)
-      {
-        return i+endMarker.length()+1;
-      }
-    }
-    i++;
-  }
-  // oops no endmarker found...
-  return i<len ? i+1 : len;
-}
-
-QCString DocParser::processCopyDoc(const char *data,uint &len)
-{
-  //printf("processCopyDoc start '%s'\n",data);
-  GrowBuf buf;
-  uint i=0;
-  while (i<len)
-  {
-    char c = data[i];
-    if (c=='@' || c=='\\') // look for a command
-    {
-      bool isBrief=TRUE;
-      uint j=isCopyBriefOrDetailsCmd(data,i,len,isBrief);
-      if (j>0)
-      {
-        // skip whitespace
-        while (j<len && (data[j]==' ' || data[j]=='\t')) j++;
-        // extract the argument
-        QCString id = extractCopyDocId(data,j,len);
-        const Definition *def = 0;
-        QCString doc,brief;
-        //printf("resolving docs='%s'\n",qPrint(id));
-        if (findDocsForMemberOrCompound(id,&doc,&brief,&def))
-        {
-          //printf("found it def=%p brief='%s' doc='%s' isBrief=%d\n",def,qPrint(brief),qPrint(doc),isBrief);
-          auto it = std::find(context.copyStack.begin(),context.copyStack.end(),def);
-          if (it==context.copyStack.end()) // definition not parsed earlier
-          {
-            context.copyStack.push_back(def);
-            if (isBrief)
-            {
-              uint l=static_cast<uint>(brief.length());
-              buf.addStr(processCopyDoc(brief.data(),l));
-            }
-            else
-            {
-              uint l=static_cast<uint>(doc.length());
-              buf.addStr(processCopyDoc(doc.data(),l));
-            }
-            context.copyStack.pop_back();
-          }
-          else
-          {
-            warn_doc_error(context.fileName,tokenizer.getLineNr(),
-	         "Found recursive @copy%s or @copydoc relation for argument '%s'.\n",
-                 isBrief?"brief":"details",qPrint(id));
-          }
-        }
-        else
-        {
-          warn_doc_error(context.fileName,tokenizer.getLineNr(),
-               "@copy%s or @copydoc target '%s' not found", isBrief?"brief":"details",
-               qPrint(id));
-        }
-        // skip over command
-        i=j;
-      }
-      else
-      {
-        QCString endMarker;
-        uint k = isVerbatimSection(data,i,len,endMarker);
-        if (k>0)
-        {
-          uint orgPos = i;
-          i=skipToEndMarker(data,k,len,endMarker);
-          buf.addStr(data+orgPos,i-orgPos);
-        }
-        else
-        {
-          buf.addChar(c);
-          i++;
-        }
-      }
-    }
-    else // not a command, just copy
-    {
-      buf.addChar(c);
-      i++;
-    }
-  }
-  len = static_cast<uint>(buf.getPos());
-  buf.addChar(0);
-  return buf.get();
 }
 

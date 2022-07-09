@@ -37,7 +37,8 @@ class AccessStack
     /** Element in the stack. */
     struct AccessElem
     {
-      AccessElem(const Definition *d,const FileDef *f,const Definition *i,QCString e = QCString()) : scope(d), fileScope(f), item(i), expScope(e) {}
+      AccessElem(const Definition *d,const FileDef *f,const Definition *i) : scope(d), fileScope(f), item(i) {}
+      AccessElem(const Definition *d,const FileDef *f,const Definition *i,const QCString &e) : scope(d), fileScope(f), item(i), expScope(e) {}
       const Definition *scope;
       const FileDef *fileScope;
       const Definition *item;
@@ -103,9 +104,18 @@ struct SymbolResolver::Private
     const MemberDef  *typeDef = 0;
     QCString          templateSpec;
 
-    const ClassDef *getResolvedClassRec(
+    const ClassDef *getResolvedTypeRec(
                            const Definition *scope,    // in
-                           const QCString &n,              // in
+                           const QCString &n,          // in
+                           const MemberDef **pTypeDef, // out
+                           QCString *pTemplSpec,       // out
+                           QCString *pResolvedType);   // out
+                                                       //
+    const Definition *getResolvedSymbolRec(
+                           const Definition *scope,    // in
+                           const QCString &n,          // in
+                           const QCString &args,       // in
+                           bool checkCV,               // in
                            const MemberDef **pTypeDef, // out
                            QCString *pTemplSpec,       // out
                            QCString *pResolvedType);   // out
@@ -122,12 +132,25 @@ struct SymbolResolver::Private
                            const QCString &explicitScopePart);
 
   private:
-    void getResolvedSymbol(const Definition *scope,                             // in
+    void getResolvedType(  const Definition *scope,                             // in
                            const Definition *d,                                 // in
                            const QCString &explicitScopePart,                   // in
                            const std::unique_ptr<ArgumentList> &actTemplParams, // in
                            int &minDistance,                                    // input
                            const ClassDef *&bestMatch,                          // out
+                           const MemberDef *&bestTypedef,                       // out
+                           QCString &bestTemplSpec,                             // out
+                           QCString &bestResolvedType                           // out
+                        );
+
+    void getResolvedSymbol(const Definition *scope,                             // in
+                           const Definition *d,                                 // in
+                           const QCString &args,                                // in
+                           bool  checkCV,                                       // in
+                           const QCString &explicitScopePart,                   // in
+                           const std::unique_ptr<ArgumentList> &actTemplParams, // in
+                           int &minDistance,                                    // inout
+                           const Definition *&bestMatch,                        // out
                            const MemberDef *&bestTypedef,                       // out
                            QCString &bestTemplSpec,                             // out
                            QCString &bestResolvedType                           // out
@@ -164,7 +187,7 @@ struct SymbolResolver::Private
 
 
 
-const ClassDef *SymbolResolver::Private::getResolvedClassRec(
+const ClassDef *SymbolResolver::Private::getResolvedTypeRec(
            const Definition *scope,
            const QCString &n,
            const MemberDef **pTypeDef,
@@ -173,13 +196,10 @@ const ClassDef *SymbolResolver::Private::getResolvedClassRec(
 {
   if (n.isEmpty()) return 0;
   //static int level=0;
-  //fprintf(stderr,"%d [getResolvedClassRec(%s,%s)\n",level++,scope?qPrint(scope->name()):"<global>",n);
-  QCString name;
+  //printf("\n%d [getResolvedTypeRec(%s,%s)\n",level++,scope?qPrint(scope->name()):"<global>",qPrint(n));
   QCString explicitScopePart;
   QCString strippedTemplateParams;
-  name=stripTemplateSpecifiersFromScope
-                     (removeRedundantWhiteSpace(n),TRUE,
-                      &strippedTemplateParams);
+  QCString name=stripTemplateSpecifiersFromScope(n,TRUE,&strippedTemplateParams);
   std::unique_ptr<ArgumentList> actTemplParams;
   if (!strippedTemplateParams.isEmpty()) // template part that was stripped
   {
@@ -199,24 +219,17 @@ const ClassDef *SymbolResolver::Private::getResolvedClassRec(
 
   if (name.isEmpty())
   {
-    //fprintf(stderr,"%d ] empty name\n",--level);
+    //printf("%d ] empty name\n",--level);
     return 0; // empty name
   }
 
-  //printf("Looking for symbol %s\n",qPrint(name));
-  auto range = Doxygen::symbolMap->find(name);
-  // the -g (for C# generics) and -p (for ObjC protocols) are now already
-  // stripped from the key used in the symbolMap, so that is not needed here.
-  if (range.first==range.second)
+  //printf("Looking for type %s\n",qPrint(name));
+  auto &range = Doxygen::symbolMap->find(name);
+  if (range.empty())
   {
-    range = Doxygen::symbolMap->find(name+"-p");
-    if (range.first==range.second)
-    {
-      //fprintf(stderr,"%d ] no such symbol!\n",--level);
-      return 0;
-    }
+    return 0;
   }
-  //printf("found symbol!\n");
+  //printf("found type!\n");
 
   bool hasUsingStatements =
     (m_fileScope && (!m_fileScope->getUsedNamespaces().empty() ||
@@ -235,7 +248,7 @@ const ClassDef *SymbolResolver::Private::getResolvedClassRec(
   int fileScopeLen = hasUsingStatements ? 1+m_fileScope->absFilePath().length() : 0;
 
   // below is a more efficient coding of
-  // QCString key=scope->name()+"+"+name+"+"+explicitScopePart;
+  // QCString key=scope->name()+"+"+name+"+"+explicitScopePart+args+typesOnly?'T':'F';
   QCString key(scopeNameLen+nameLen+explicitPartLen+fileScopeLen+1);
   char *pk=key.rawData();
   qstrcpy(pk,scope->name().data()); *(pk+scopeNameLen-1)='+';
@@ -261,8 +274,8 @@ const ClassDef *SymbolResolver::Private::getResolvedClassRec(
 
   {
     std::lock_guard<std::mutex> lock(g_cacheMutex);
-    LookupInfo *pval = Doxygen::lookupCache->find(key.str());
-    //printf("Searching for %s result=%p\n",qPrint(key),pval);
+    LookupInfo *pval = Doxygen::typeLookupCache->find(key.str());
+    //printf("Searching for %s result=%p\n",qPrint(key),(void*)pval);
     if (pval)
     {
       //printf("LookupInfo %p %p '%s' %p\n",
@@ -271,16 +284,16 @@ const ClassDef *SymbolResolver::Private::getResolvedClassRec(
       if (pTemplSpec)    *pTemplSpec=pval->templSpec;
       if (pTypeDef)      *pTypeDef=pval->typeDef;
       if (pResolvedType) *pResolvedType=pval->resolvedType;
-      //fprintf(stderr,"%d ] cachedMatch=%s\n",--level,
-      //    pval->classDef?qPrint(pval->classDef->name()):"<none>");
+      //printf("%d ] cachedMatch=%s\n",--level,
+      //    pval->definition?qPrint(pval->definition->name()):"<none>");
       //if (pTemplSpec)
       //  printf("templSpec=%s\n",pTemplSpec->data());
-      return pval->classDef;
+      return toClassDef(pval->definition);
     }
     else // not found yet; we already add a 0 to avoid the possibility of
       // endless recursion.
     {
-      Doxygen::lookupCache->insert(key.str(),LookupInfo());
+      Doxygen::typeLookupCache->insert(key.str(),LookupInfo());
     }
   }
 
@@ -290,11 +303,11 @@ const ClassDef *SymbolResolver::Private::getResolvedClassRec(
   QCString bestResolvedType;
   int minDistance=10000; // init at "infinite"
 
-  for (auto it=range.first ; it!=range.second; ++it)
+  for (Definition *d : range)
   {
-    Definition *d = it->second;
-    getResolvedSymbol(scope,d,explicitScopePart,actTemplParams,
-                      minDistance,bestMatch,bestTypedef,bestTemplSpec,bestResolvedType);
+    getResolvedType(scope,d,explicitScopePart,actTemplParams,
+                    minDistance,bestMatch,bestTypedef,bestTemplSpec,bestResolvedType);
+    if  (minDistance==0) break; // we can stop reaching if we already reached distance 0
   }
 
   if (pTypeDef)
@@ -310,23 +323,195 @@ const ClassDef *SymbolResolver::Private::getResolvedClassRec(
     *pResolvedType = bestResolvedType;
   }
 
-  //printf("getResolvedClassRec: bestMatch=%p pval->resolvedType=%s\n",
+  //printf("getResolvedSymbolRec: bestMatch=%p pval->resolvedType=%s\n",
   //    bestMatch,qPrint(bestResolvedType));
 
   {
     // we need to insert the item in the cache again, as it could be removed in the meantime
     std::lock_guard<std::mutex> lock(g_cacheMutex);
-    Doxygen::lookupCache->insert(key.str(),
+    Doxygen::typeLookupCache->insert(key.str(),
                           LookupInfo(bestMatch,bestTypedef,bestTemplSpec,bestResolvedType));
   }
-  //fprintf(stderr,"%d ] bestMatch=%s distance=%d\n",--level,
+  //printf("%d ] bestMatch=%s distance=%d\n",--level,
   //    bestMatch?qPrint(bestMatch->name()):"<none>",minDistance);
   //if (pTemplSpec)
   //  printf("templSpec=%s\n",pTemplSpec->data());
   return bestMatch;
 }
 
-void SymbolResolver::Private::getResolvedSymbol(
+const Definition *SymbolResolver::Private::getResolvedSymbolRec(
+           const Definition *scope,
+           const QCString &n,
+           const QCString &args,
+           bool checkCV,
+           const MemberDef **pTypeDef,
+           QCString *pTemplSpec,
+           QCString *pResolvedType)
+{
+  if (n.isEmpty()) return 0;
+  //static int level=0;
+  //printf("\n%d [getResolvedSymbolRec(%s,%s)\n",level++,scope?qPrint(scope->name()):"<global>",qPrint(n));
+  QCString explicitScopePart;
+  QCString strippedTemplateParams;
+  QCString name=stripTemplateSpecifiersFromScope(n,TRUE,&strippedTemplateParams);
+  std::unique_ptr<ArgumentList> actTemplParams;
+  if (!strippedTemplateParams.isEmpty()) // template part that was stripped
+  {
+    actTemplParams = stringToArgumentList(scope->getLanguage(),strippedTemplateParams);
+  }
+
+  int qualifierIndex = computeQualifiedIndex(name);
+  //printf("name=%s qualifierIndex=%d\n",qPrint(name),qualifierIndex);
+  if (qualifierIndex!=-1) // qualified name
+  {
+    // split off the explicit scope part
+    explicitScopePart=name.left(qualifierIndex);
+    // todo: improve namespace alias substitution
+    replaceNamespaceAliases(explicitScopePart,explicitScopePart.length());
+    name=name.mid(qualifierIndex+2);
+  }
+
+  if (name.isEmpty())
+  {
+    //printf("%d ] empty name\n",--level);
+    return 0; // empty name
+  }
+
+  //printf("Looking for symbol %s\n",qPrint(name));
+  auto &range = Doxygen::symbolMap->find(name);
+  if (range.empty())
+  {
+    return 0;
+  }
+  //printf("found symbol!\n");
+
+  bool hasUsingStatements =
+    (m_fileScope && (!m_fileScope->getUsedNamespaces().empty() ||
+                     !m_fileScope->getUsedClasses().empty())
+    );
+  //printf("hasUsingStatements=%d\n",hasUsingStatements);
+  // Since it is often the case that the same name is searched in the same
+  // scope over an over again (especially for the linked source code generation)
+  // we use a cache to collect previous results. This is possible since the
+  // result of a lookup is deterministic. As the key we use the concatenated
+  // scope, the name to search for and the explicit scope prefix. The speedup
+  // achieved by this simple cache can be enormous.
+  int scopeNameLen = scope->name().length()+1;
+  int nameLen = name.length()+1;
+  int explicitPartLen = explicitScopePart.length();
+  int fileScopeLen = hasUsingStatements ? 1+m_fileScope->absFilePath().length() : 0;
+  int argsLen = args.length()+1;
+
+  // below is a more efficient coding of
+  // QCString key=scope->name()+"+"+name+"+"+explicitScopePart+args+typesOnly?'T':'F';
+  QCString key(scopeNameLen+nameLen+explicitPartLen+fileScopeLen+argsLen+1);
+  char *pk=key.rawData();
+  qstrcpy(pk,scope->name().data()); *(pk+scopeNameLen-1)='+';
+  pk+=scopeNameLen;
+  qstrcpy(pk,name.data()); *(pk+nameLen-1)='+';
+  pk+=nameLen;
+  qstrcpy(pk,explicitScopePart.data());
+  pk+=explicitPartLen;
+
+  // if a file scope is given and it contains using statements we should
+  // also use the file part in the key (as a class name can be in
+  // two different namespaces and a using statement in a file can select
+  // one of them).
+  if (hasUsingStatements)
+  {
+    // below is a more efficient coding of
+    // key+="+"+m_fileScope->name();
+    *pk++='+';
+    qstrcpy(pk,m_fileScope->absFilePath().data());
+    pk+=fileScopeLen-1;
+  }
+  if (argsLen>0)
+  {
+    qstrcpy(pk,args.data());
+    pk+=argsLen-1;
+  }
+  *pk='\0';
+
+  {
+    std::lock_guard<std::mutex> lock(g_cacheMutex);
+    LookupInfo *pval = Doxygen::symbolLookupCache->find(key.str());
+    //printf("Searching for %s result=%p\n",qPrint(key),(void*)pval);
+    if (pval)
+    {
+      //printf("LookupInfo %p %p '%s' %p\n",
+      //    pval->classDef, pval->typeDef, qPrint(pval->templSpec),
+      //    qPrint(pval->resolvedType));
+      if (pTemplSpec)    *pTemplSpec=pval->templSpec;
+      if (pTypeDef)      *pTypeDef=pval->typeDef;
+      if (pResolvedType) *pResolvedType=pval->resolvedType;
+      //printf("%d ] cachedMatch=%s\n",--level,
+      //    pval->definition?qPrint(pval->definition->name()):"<none>");
+      //if (pTemplSpec)
+      //  printf("templSpec=%s\n",pTemplSpec->data());
+      return pval->definition;
+    }
+    else // not found yet; we already add a 0 to avoid the possibility of
+      // endless recursion.
+    {
+      Doxygen::symbolLookupCache->insert(key.str(),LookupInfo());
+    }
+  }
+
+  const Definition *bestMatch=0;
+  const MemberDef *bestTypedef=0;
+  QCString bestTemplSpec;
+  QCString bestResolvedType;
+  int minDistance=10000; // init at "infinite"
+
+  for (Definition *d : range)
+  {
+    getResolvedSymbol(scope,d,args,checkCV,explicitScopePart,actTemplParams,
+                      minDistance,bestMatch,bestTypedef,bestTemplSpec,bestResolvedType);
+    if  (minDistance==0) break; // we can stop reaching if we already reached distance 0
+  }
+
+  // in case we are looking for e.g. func() and the real function is func(int x) we also
+  // accept func(), see example 036 in the test set.
+  if (bestMatch==0 && args=="()")
+  {
+    for (Definition *d : range)
+    {
+      getResolvedSymbol(scope,d,QCString(),false,explicitScopePart,actTemplParams,
+                      minDistance,bestMatch,bestTypedef,bestTemplSpec,bestResolvedType);
+      if  (minDistance==0) break; // we can stop reaching if we already reached distance 0
+    }
+  }
+
+  if (pTypeDef)
+  {
+    *pTypeDef = bestTypedef;
+  }
+  if (pTemplSpec)
+  {
+    *pTemplSpec = bestTemplSpec;
+  }
+  if (pResolvedType)
+  {
+    *pResolvedType = bestResolvedType;
+  }
+
+  //printf("getResolvedSymbolRec: bestMatch=%p pval->resolvedType=%s\n",
+  //    bestMatch,qPrint(bestResolvedType));
+
+  {
+    // we need to insert the item in the cache again, as it could be removed in the meantime
+    std::lock_guard<std::mutex> lock(g_cacheMutex);
+    Doxygen::symbolLookupCache->insert(key.str(),
+                          LookupInfo(bestMatch,bestTypedef,bestTemplSpec,bestResolvedType));
+  }
+  //printf("%d ] bestMatch=%s distance=%d\n",--level,
+  //    bestMatch?qPrint(bestMatch->name()):"<none>",minDistance);
+  //if (pTemplSpec)
+  //  printf("templSpec=%s\n",pTemplSpec->data());
+  return bestMatch;
+}
+
+void SymbolResolver::Private::getResolvedType(
                          const Definition *scope,                             // in
                          const Definition *d,                                 // in
                          const QCString &explicitScopePart,                   // in
@@ -338,7 +523,7 @@ void SymbolResolver::Private::getResolvedSymbol(
                          QCString &bestResolvedType                           // out
                       )
 {
-  //fprintf(stderr,"getResolvedSymbol(%s,%s)\n",qPrint(scope->name()),qPrint(d->qualifiedName()));
+  //fprintf(stderr,"getResolvedType(%s,%s)\n",qPrint(scope->name()),qPrint(d->qualifiedName()));
   // only look at classes and members that are enums or typedefs
   if (d->definitionType()==Definition::TypeClass ||
       (d->definitionType()==Definition::TypeMember &&
@@ -485,6 +670,124 @@ void SymbolResolver::Private::getResolvedSymbol(
   //printf("  bestMatch=%p bestResolvedType=%s\n",bestMatch,qPrint(bestResolvedType));
 }
 
+
+void SymbolResolver::Private::getResolvedSymbol(
+                         const Definition *scope,                             // in
+                         const Definition *d,                                 // in
+                         const QCString &args,                                // in
+                         bool  checkCV,                                       // in
+                         const QCString &explicitScopePart,                   // in
+                         const std::unique_ptr<ArgumentList> &actTemplParams, // in
+                         int &minDistance,                                    // inout
+                         const Definition *&bestMatch,                        // out
+                         const MemberDef *&bestTypedef,                       // out
+                         QCString &bestTemplSpec,                             // out
+                         QCString &bestResolvedType                           // out
+                      )
+{
+  //fprintf(stderr,"getResolvedSymbol(%s,%s)\n",qPrint(scope->name()),qPrint(d->qualifiedName()));
+  // only look at classes and members that are enums or typedefs
+  VisitedNamespaces visitedNamespaces;
+  AccessStack accessStack;
+  // test accessibility of definition within scope.
+  int distance = isAccessibleFromWithExpScope(visitedNamespaces,accessStack,scope,d,explicitScopePart);
+  //fprintf(stderr,"  %s; distance %s (%p) is %d\n",qPrint(scope->name()),qPrint(d->name()),d,distance);
+  //printf("%s: distance=%d scope=%s explScope=%s\n",qPrint(d->name()),distance,qPrint(scope?scope->name():QCString()),qPrint(explicitScopePart));
+  if (distance!=-1) // definition is accessible
+  {
+    // see if we are dealing with a class or a typedef
+    if (d->definitionType()==Definition::TypeClass) // d is a class
+    {
+      const ClassDef *cd = toClassDef(d);
+      //printf("cd=%s\n",qPrint(cd->name()));
+      if (!cd->isTemplateArgument()) // skip classes that
+        // are only there to
+        // represent a template
+        // argument
+      {
+        //printf("is not a templ arg\n");
+        if (distance<minDistance) // found a definition that is "closer"
+        {
+          minDistance=distance;
+          bestMatch = d;
+          bestTypedef = 0;
+          bestTemplSpec.resize(0);
+          bestResolvedType = cd->qualifiedName();
+        }
+        else if (distance==minDistance &&
+            m_fileScope && bestMatch &&
+            !m_fileScope->getUsedNamespaces().empty() &&
+            d->getOuterScope()->definitionType()==Definition::TypeNamespace &&
+            bestMatch->getOuterScope()==Doxygen::globalScope
+            )
+        {
+          // in case the distance is equal it could be that a class X
+          // is defined in a namespace and in the global scope. When searched
+          // in the global scope the distance is 0 in both cases. We have
+          // to choose one of the definitions: we choose the one in the
+          // namespace if the fileScope imports namespaces and the definition
+          // found was in a namespace while the best match so far isn't.
+          // Just a non-perfect heuristic but it could help in some situations
+          // (kdecore code is an example).
+          minDistance=distance;
+          bestMatch = d;
+          bestTypedef = 0;
+          bestTemplSpec.resize(0);
+          bestResolvedType = cd->qualifiedName();
+        }
+      }
+      else
+      {
+        //printf("  is a template argument!\n");
+      }
+    }
+    else if (d->definitionType()==Definition::TypeMember)
+    {
+      const MemberDef *md = toMemberDef(d);
+
+      bool match = true;
+      //printf("@@ checking %s\n",qPrint(md->name()));
+      if (md->isFunction() && !args.isEmpty())
+      {
+        std::unique_ptr<ArgumentList> argList = stringToArgumentList(md->getLanguage(),args);
+        const ArgumentList &mdAl = md->argumentList();
+        match = matchArguments2(md->getOuterScope(),md->getFileDef(),&mdAl,
+              scope, md->getFileDef(),argList.get(),
+              checkCV,md->getLanguage());
+        //printf("@@ %s (%p): matching %s against %s -> %d\n",qPrint(md->name()),(void*)md,qPrint(args),qPrint(argListToString(mdAl)),match);
+      }
+
+      //fprintf(stderr,"  member isTypedef()=%d\n",md->isTypedef());
+      if (match && distance<minDistance)
+      {
+        minDistance=distance;
+        bestMatch = md;
+        bestTypedef = md;
+        bestTemplSpec = "";
+        bestResolvedType = md->qualifiedName();
+      }
+    }
+    else if ((d->definitionType()==Definition::TypeNamespace ||
+              d->definitionType()==Definition::TypeFile))
+    {
+      if (distance<minDistance) // found a definition that is "closer"
+      {
+        minDistance=distance;
+        bestMatch = d;
+        bestTypedef = 0;
+        bestTemplSpec.resize(0);
+        bestResolvedType.resize(0);
+      }
+    }
+  } // if definition accessible
+  else
+  {
+    //printf("  Not accessible!\n");
+  }
+  //printf("bestMatch=%s bestResolvedType=%s\n",qPrint(bestMatch?bestMatch->name():"<none>"),qPrint(bestResolvedType));
+}
+
+
 const ClassDef *SymbolResolver::Private::newResolveTypedef(
                   const Definition *scope,                             // in
                   const MemberDef *md,                                 // in
@@ -540,7 +843,7 @@ const ClassDef *SymbolResolver::Private::newResolveTypedef(
   tl=type.length(); // length may have been changed
   while (sp<tl && type.at(sp)==' ') sp++;
   const MemberDef *memTypeDef = 0;
-  const ClassDef  *result = getResolvedClassRec(md->getOuterScope(),type,
+  const ClassDef *result = getResolvedTypeRec(md->getOuterScope(),type,
                                                 &memTypeDef,0,pResolvedType);
   // if type is a typedef then return what it resolves to.
   if (memTypeDef && memTypeDef->isTypedef())
@@ -562,7 +865,7 @@ const ClassDef *SymbolResolver::Private::newResolveTypedef(
     if (si==-1 && i!=-1) // typedef of a template => try the unspecialized version
     {
       if (pTemplSpec) *pTemplSpec = type.mid(i);
-      result = getResolvedClassRec(md->getOuterScope(),type.left(i),0,0,pResolvedType);
+      result = getResolvedTypeRec(md->getOuterScope(),type.left(i),0,0,pResolvedType);
       //printf("result=%p pRresolvedType=%s sp=%d ip=%d tl=%d\n",
       //    result,pResolvedType?pResolvedType->data():"<none>",sp,ip,tl);
     }
@@ -577,7 +880,7 @@ const ClassDef *SymbolResolver::Private::newResolveTypedef(
       {
         if (pTemplSpec) *pTemplSpec = type.mid(i);
       }
-      result = getResolvedClassRec(md->getOuterScope(),
+      result = getResolvedTypeRec(md->getOuterScope(),
            stripTemplateSpecifiersFromScope(type.left(i),FALSE),0,0,pResolvedType);
     }
 
@@ -587,7 +890,7 @@ const ClassDef *SymbolResolver::Private::newResolveTypedef(
 done:
   if (pResolvedType)
   {
-    if (result)
+    if (result && result->definitionType()==Definition::TypeClass)
     {
       *pResolvedType = result->qualifiedName();
       //printf("*pResolvedType=%s\n",pResolvedType->data());
@@ -623,6 +926,13 @@ done:
   return result;
 }
 
+static bool isParentScope(const Definition *parent,const Definition *item)
+{
+  if (parent==item || item==0 || item==Doxygen::globalScope) return false;
+  if (parent==0 || parent==Doxygen::globalScope)             return true;
+  return isParentScope(parent->getOuterScope(),item);
+}
+
 int SymbolResolver::Private::isAccessibleFromWithExpScope(
                                      VisitedNamespaces &visitedNamespaces,
                                      AccessStack       &accessStack,
@@ -651,7 +961,20 @@ int SymbolResolver::Private::isAccessibleFromWithExpScope(
   if (newScope)  // explicitScope is inside scope => newScope is the result
   {
     Definition *itemScope = item->getOuterScope();
+
     //printf("    scope traversal successful %s<->%s!\n",qPrint(itemScope->name()),qPrint(newScope->name()));
+
+    bool nestedClassInsideBaseClass =
+         itemScope &&
+         itemScope->definitionType()==Definition::TypeClass &&
+         newScope->definitionType()==Definition::TypeClass &&
+         (toClassDef(newScope))->isBaseClass(toClassDef(itemScope),TRUE);
+
+    bool enumValueWithinEnum =
+         item->definitionType()==Definition::TypeMember &&
+         toMemberDef(item)->isEnumValue() &&
+         toMemberDef(item)->getEnumScope()==newScope;
+
     //if (newScope && newScope->definitionType()==Definition::TypeClass)
     //{
     //  ClassDef *cd = (ClassDef *)newScope;
@@ -659,13 +982,9 @@ int SymbolResolver::Private::isAccessibleFromWithExpScope(
     //}
     if (itemScope==newScope)  // exact match of scopes => distance==0
     {
-      //printf("> found it\n");
+      //printf(" > found it\n");
     }
-    else if (itemScope && newScope &&
-             itemScope->definitionType()==Definition::TypeClass &&
-             newScope->definitionType()==Definition::TypeClass &&
-             (toClassDef(newScope))->isBaseClass(toClassDef(itemScope),TRUE,0)
-            )
+    else if (nestedClassInsideBaseClass)
     {
       // inheritance is also ok. Example: looking for B::I, where
       // class A { public: class I {} };
@@ -678,6 +997,10 @@ int SymbolResolver::Private::isAccessibleFromWithExpScope(
 
       //printf("scope(%s) is base class of newScope(%s)\n",
       //    qPrint(scope->name()),qPrint(newScope->name()));
+    }
+    else if (enumValueWithinEnum)
+    {
+      result=1;
     }
     else
     {
@@ -712,6 +1035,13 @@ int SymbolResolver::Private::isAccessibleFromWithExpScope(
           }
         }
       }
+      else if (isParentScope(scope,newScope) && newScope->definitionType()==Definition::TypeClass)
+      {
+        // if we a look for a type B and have explicit scope A, then it is also fine if B
+        // is found at the global scope.
+        result = 1;
+        goto done;
+      }
       // repeat for the parent scope
       if (scope!=Doxygen::globalScope)
       {
@@ -723,14 +1053,14 @@ int SymbolResolver::Private::isAccessibleFromWithExpScope(
   }
   else // failed to resolve explicitScope
   {
-    //printf("    failed to resolve: scope=%s\n",qPrint(scope->name()));
+    //printf("    failed to resolve explicitScope=%s: scope=%s\n",qPrint(explicitScopePart), qPrint(scope->name()));
     if (scope->definitionType()==Definition::TypeNamespace)
     {
       const NamespaceDef *nscope = toNamespaceDef(scope);
       StringUnorderedSet visited;
       if (accessibleViaUsingNamespace(visited,nscope->getUsedNamespaces(),item,explicitScopePart))
       {
-        //printf("> found in used namespace\n");
+        //printf(" > found in used namespace\n");
         goto done;
       }
     }
@@ -741,23 +1071,23 @@ int SymbolResolver::Private::isAccessibleFromWithExpScope(
         StringUnorderedSet visited;
         if (accessibleViaUsingNamespace(visited,m_fileScope->getUsedNamespaces(),item,explicitScopePart))
         {
-          //printf("> found in used namespace\n");
+          //printf(" > found in used namespace\n");
           goto done;
         }
       }
-      //printf("> not found\n");
+      //printf(" > not found\n");
       result=-1;
     }
     else // continue by looking into the parent scope
     {
       int i=isAccessibleFromWithExpScope(visitedNamespaces,accessStack,scope->getOuterScope(),item,explicitScopePart);
-      //printf("> result=%d\n",i);
+      //printf(" > result=%d\n",i);
       result= (i==-1) ? -1 : i+2;
     }
   }
 
 done:
-  //printf("  > result=%d\n",result);
+  //printf(" > result=%d\n",result);
   accessStack.pop();
   return result;
 }
@@ -775,7 +1105,7 @@ const Definition *SymbolResolver::Private::followPath(const Definition *start,co
     // try to resolve the part if it is a typedef
     const MemberDef *memTypeDef=0;
     QCString qualScopePart = substTypedef(current,path.mid(is,l),&memTypeDef);
-    //printf("      qualScopePart=%s\n",qPrint(qualScopePart));
+    //printf("       qualScopePart=%s\n",qPrint(qualScopePart));
     if (memTypeDef)
     {
       const ClassDef *type = newResolveTypedef(m_fileScope,memTypeDef,0,0,0);
@@ -790,6 +1120,50 @@ const Definition *SymbolResolver::Private::followPath(const Definition *start,co
     //     qPrint(qualScopePart),
     //     qPrint(current->name()),
     //     next?qPrint(next->name()):"<null>");
+    if (next==0)
+    {
+      next = current->findInnerCompound(qualScopePart+"-p");
+    }
+    if (current->definitionType()==Definition::TypeClass)
+    {
+      const MemberDef *classMember = toClassDef(current)->getMemberByName(qualScopePart);
+      if (classMember && classMember->isEnumerate())
+      {
+        next = classMember;
+      }
+    }
+    else if (current->definitionType()==Definition::TypeNamespace)
+    {
+      const MemberDef *namespaceMember = toNamespaceDef(current)->getMemberByName(qualScopePart);
+      if (namespaceMember && namespaceMember->isEnumerate())
+      {
+        next = namespaceMember;
+      }
+    }
+    else if (current==Doxygen::globalScope || current->definitionType()==Definition::TypeFile)
+    {
+       auto &range = Doxygen::symbolMap->find(qualScopePart);
+       for (Definition *def : range)
+       {
+         const Definition *outerScope = def->getOuterScope();
+         if (
+             (outerScope==Doxygen::globalScope || // global scope or
+              (outerScope && // anonymous namespace in the global scope
+               outerScope->name().startsWith("anonymous_namespace{") &&
+               outerScope->getOuterScope()==Doxygen::globalScope
+              )
+             ) &&
+             (def->definitionType()==Definition::TypeClass ||
+              def->definitionType()==Definition::TypeMember ||
+              def->definitionType()==Definition::TypeNamespace
+             )
+            )
+         {
+           next=def;
+           break;
+         }
+       }
+    }
     if (next==0) // failed to follow the path
     {
       //printf("==> next==0!\n");
@@ -809,7 +1183,7 @@ const Definition *SymbolResolver::Private::followPath(const Definition *start,co
     else // continue to follow scope
     {
       current = next;
-      //printf("==> current = %p\n",current);
+      //printf("==> current = %p\n",(void*)current);
     }
     ps=is+l;
   }
@@ -896,29 +1270,82 @@ int SymbolResolver::Private::isAccessibleFrom(AccessStack &accessStack,
   int result=0; // assume we found it
   int i;
 
-  Definition *itemScope=item->getOuterScope();
+  const Definition *itemScope=item->getOuterScope();
+  bool itemIsMember = item->definitionType()==Definition::TypeMember;
+  bool itemIsClass  = item->definitionType()==Definition::TypeClass;
+
+  // if item is a global member and scope points to a specific file
+  // we adjust the scope so the file gets preference over members with the same name in
+  // other files.
+  if ((itemIsMember || itemIsClass) &&
+      (itemScope==Doxygen::globalScope || // global
+       (itemScope && itemScope->name().startsWith("anonymous_namespace{")) // member of an anonymous namespace
+      ) &&
+      scope->definitionType()==Definition::TypeFile)
+  {
+    if (itemIsMember)
+    {
+      itemScope = toMemberDef(item)->getFileDef();
+    }
+    else if (itemIsClass)
+    {
+      itemScope = toClassDef(item)->getFileDef();
+    }
+    //printf("adjust scope to %s\n",qPrint(itemScope?itemScope->name():QCString()));
+  }
+
   bool memberAccessibleFromScope =
-      (item->definitionType()==Definition::TypeMember &&                   // a member
+      (itemIsMember &&                                                     // a member
        itemScope && itemScope->definitionType()==Definition::TypeClass  && // of a class
        scope->definitionType()==Definition::TypeClass &&                   // accessible
        (toClassDef(scope))->isAccessibleMember(toMemberDef(item)) // from scope
       );
   bool nestedClassInsideBaseClass =
-      (item->definitionType()==Definition::TypeClass &&                    // a nested class
+      (itemIsClass &&                                                      // a nested class
        itemScope && itemScope->definitionType()==Definition::TypeClass &&  // inside a base
        scope->definitionType()==Definition::TypeClass &&                   // class of scope
        (toClassDef(scope))->isBaseClass(toClassDef(itemScope),TRUE)
       );
+  bool enumValueOfStrongEnum =
+      (itemIsMember &&
+       toMemberDef(item)->isStrongEnumValue() &&
+       scope->definitionType()==Definition::TypeMember &&
+       toMemberDef(scope)->isEnumerate() &&
+       scope==toMemberDef(item)->getEnumScope()
+      );
 
-  if (itemScope==scope || memberAccessibleFromScope || nestedClassInsideBaseClass)
+  if (itemScope==scope || memberAccessibleFromScope || nestedClassInsideBaseClass || enumValueOfStrongEnum)
   {
-    //printf("> found it\n");
-    if (nestedClassInsideBaseClass) result++; // penalty for base class to prevent
+    //printf("> found it memberAccessibleFromScope=%d nestedClassInsideBaseClass=%d enumValueOfStrongEnum=%d\n",memberAccessibleFromScope,nestedClassInsideBaseClass,enumValueOfStrongEnum);
+    int distanceToBase=0;
+    if (nestedClassInsideBaseClass)
+    {
+      result++; // penalty for base class to prevent
                                               // this is preferred over nested class in this class
                                               // see bug 686956
+    }
+    else if (memberAccessibleFromScope &&
+             itemScope &&
+             itemScope->definitionType()==Definition::TypeClass &&
+             scope->definitionType()==Definition::TypeClass &&
+             (distanceToBase=toClassDef(scope)->isBaseClass(toClassDef(itemScope),TRUE))>0
+            )
+    {
+      result+=distanceToBase; // penalty if member is accessible via a base class
+    }
   }
   else if (scope==Doxygen::globalScope)
   {
+    if (itemScope &&
+        itemScope->definitionType()==Definition::TypeNamespace &&
+        toNamespaceDef(itemScope)->isAnonymous() &&
+        itemScope->getOuterScope()==Doxygen::globalScope)
+    { // item is in an anonymous namespace in the global scope and we are
+      // looking in the global scope
+      //printf("> found in anonymous namespace\n");
+      result++;
+      goto done;
+    }
     if (m_fileScope)
     {
       if (accessibleViaUsingClass(m_fileScope->getUsedClasses(),item))
@@ -956,7 +1383,19 @@ int SymbolResolver::Private::isAccessibleFrom(AccessStack &accessStack,
       }
     }
     // repeat for the parent scope
-    i=isAccessibleFrom(accessStack,scope->getOuterScope(),item);
+    const Definition *parentScope = scope->getOuterScope();
+    if (parentScope==Doxygen::globalScope)
+    {
+      if (scope->definitionType()==Definition::TypeClass)
+      {
+        const FileDef *fd = toClassDef(scope)->getFileDef();
+        if (fd)
+        {
+          parentScope = fd;
+        }
+      }
+    }
+    i=isAccessibleFrom(accessStack,parentScope,item);
     //printf("> result=%d\n",i);
     result= (i==-1) ? -1 : i+2;
   }
@@ -972,16 +1411,15 @@ QCString SymbolResolver::Private::substTypedef(
   QCString result=name;
   if (name.isEmpty()) return result;
 
-  auto range = Doxygen::symbolMap->find(name);
-  if (range.first==range.second)
+  auto &range = Doxygen::symbolMap->find(name);
+  if (range.empty())
     return result; // no matches
 
   MemberDef *bestMatch=0;
   int minDistance=10000; // init at "infinite"
 
-  for (auto it = range.first; it!=range.second; ++it)
+  for (Definition *d : range)
   {
-    Definition *d = it->second;
     // only look at members
     if (d->definitionType()==Definition::TypeMember)
     {
@@ -1049,14 +1487,14 @@ const ClassDef *SymbolResolver::resolveClass(const Definition *scope,
   //    qPrint(name),
   //    mayBeUnlinkable
   //   );
-  const ClassDef *result;
+  const ClassDef *result=0;
   if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
   {
     result = getClass(name);
   }
   else
   {
-    result = p->getResolvedClassRec(scope,name,&p->typeDef,&p->templateSpec,&p->resolvedType);
+    result = p->getResolvedTypeRec(scope,name,&p->typeDef,&p->templateSpec,&p->resolvedType);
     if (result==0) // for nested classes imported via tag files, the scope may not
                    // present, so we check the class name directly as well.
                    // See also bug701314
@@ -1074,6 +1512,18 @@ const ClassDef *SymbolResolver::resolveClass(const Definition *scope,
   }
   //fprintf(stderr,"ResolvedClass(%s,%s)=%s\n",scope?qPrint(scope->name()):"<global>",
   //                                  qPrint(name),result?qPrint(result->name()):"<none>");
+  return result;
+}
+
+const Definition *SymbolResolver::resolveSymbol(const Definition *scope,
+                                                const QCString &name,
+                                                const QCString &args,
+                                                bool checkCV)
+{
+  p->reset();
+  if (scope==0) scope=Doxygen::globalScope;
+  const Definition *result = p->getResolvedSymbolRec(scope,name,args,checkCV,&p->typeDef,&p->templateSpec,&p->resolvedType);
+  //printf("resolveSymbol(%s,%s,%s,%d)=%s\n",qPrint(scope?scope->name():QCString()),qPrint(name),qPrint(args),checkCV,qPrint(result?result->qualifiedName():QCString()));
   return result;
 }
 

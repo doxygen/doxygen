@@ -18,6 +18,7 @@
 #include <cstdio>
 #include <algorithm>
 
+#include "types.h"
 #include "classdef.h"
 #include "classlist.h"
 #include "entry.h"
@@ -134,15 +135,10 @@ static QCString makeDisplayName(const ClassDef *cd,bool includeScope)
   {
     n=substitute(n,"::",sep);
   }
-  if (cd->compoundType()==ClassDef::Protocol && n.right(2)=="-p")
+  if (cd->compoundType()==ClassDef::Protocol && n.endsWith("-p"))
   {
     n="<"+n.left(n.length()-2)+">";
   }
-  //else if (n.right(2)=="-g")
-  //{
-  //  n = n.left(n.length()-2);
-  //}
-  //printf("ClassDefImpl::displayName()=%s\n",qPrint(n));
   return n;
 }
 
@@ -191,7 +187,7 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
     virtual const ArgumentList &templateArguments() const;
     virtual FileDef *getFileDef() const;
     virtual const MemberDef *getMemberByName(const QCString &) const;
-    virtual bool isBaseClass(const ClassDef *bcd,bool followInstances,int level=0) const;
+    virtual int isBaseClass(const ClassDef *bcd,bool followInstances) const;
     virtual bool isSubClass(ClassDef *bcd,int level=0) const;
     virtual bool isAccessibleMember(const MemberDef *md) const;
     virtual const TemplateInstanceList &getTemplateInstances() const;
@@ -439,8 +435,8 @@ class ClassDefAliasImpl : public DefinitionAliasMixin<ClassDef>
     { return getCdAlias()->getFileDef(); }
     virtual const MemberDef *getMemberByName(const QCString &s) const
     { return getCdAlias()->getMemberByName(s); }
-    virtual bool isBaseClass(const ClassDef *bcd,bool followInstances,int level=0) const
-    { return getCdAlias()->isBaseClass(bcd,followInstances,level); }
+    virtual int isBaseClass(const ClassDef *bcd,bool followInstances) const
+    { return getCdAlias()->isBaseClass(bcd,followInstances); }
     virtual bool isSubClass(ClassDef *bcd,int level=0) const
     { return getCdAlias()->isSubClass(bcd,level); }
     virtual bool isAccessibleMember(const MemberDef *md) const
@@ -1278,7 +1274,7 @@ static void searchTemplateSpecs(/*in*/  const Definition *d,
     const ClassDef *cd=toClassDef(d);
     if (!name.isEmpty()) name+="::";
     QCString clName = d->localName();
-    if (/*clName.right(2)=="-g" ||*/ clName.right(2)=="-p")
+    if (clName.endsWith("-p"))
     {
       clName = clName.left(clName.length()-2);
     }
@@ -3359,26 +3355,40 @@ bool ClassDefImpl::hasDocumentation() const
 
 //----------------------------------------------------------------------
 // recursive function:
-// returns TRUE iff class definition 'bcd' represents an (in)direct base
-// class of class definition 'cd'.
+// returns the distance to the base class definition 'bcd' represents an (in)direct base
+// class of class definition 'cd' or 0 if it does not.
 
-bool ClassDefImpl::isBaseClass(const ClassDef *bcd, bool followInstances,int level) const
+int ClassDefImpl::isBaseClass(const ClassDef *bcd, bool followInstances) const
 {
-  bool found=FALSE;
+  int distance=0;
   //printf("isBaseClass(cd=%s) looking for %s\n",qPrint(name()),qPrint(bcd->name()));
-  if (level>256)
-  {
-    err("Possible recursive class relation while inside %s and looking for base class %s\n",qPrint(name()),qPrint(bcd->name()));
-    return FALSE;
-  }
   for (const auto &bclass : baseClasses())
   {
     const ClassDef *ccd = bclass.classDef;
     if (!followInstances && ccd->templateMaster()) ccd=ccd->templateMaster();
-    found = (ccd==bcd) || ccd->isBaseClass(bcd,followInstances,level+1);
-    if (found) break;
+    if (ccd==bcd)
+    {
+      distance=1;
+      break; // no shorter path possible
+    }
+    else
+    {
+      int d = ccd->isBaseClass(bcd,followInstances);
+      if (d>256)
+      {
+        err("Possible recursive class relation while inside %s and looking for base class %s\n",qPrint(name()),qPrint(bcd->name()));
+        return 0;
+      }
+      else if (d>0) // path found
+      {
+        if (distance==0 || d+1<distance) // update if no path found yet or shorter path found
+        {
+          distance=d+1;
+        }
+      }
+    }
   }
-  return found;
+  return distance;
 }
 
 //----------------------------------------------------------------------

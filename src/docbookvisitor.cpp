@@ -245,7 +245,7 @@ void DocbookDocVisitor::operator()(const DocLineBreak &)
 {
 DB_VIS_C
   if (m_hide) return;
-  m_t << "\n<literallayout>&#160;&#xa;</literallayout>\n";
+  m_t << "<?linebreak?>";
   // gives nicer results but gives problems as it is not allowed in <pare> and also problems with dblatex
   // m_t << "\n" << "<sbr/>\n";
 }
@@ -306,20 +306,8 @@ DB_VIS_C
     case DocStyleChange::Ins:        break;
     case DocStyleChange::Div:  /* HTML only */ break;
     case DocStyleChange::Span: /* HTML only */ break;
-    case DocStyleChange::Details: /* emulation of the <details> tag */
-      if (s.enable())
-      {
-        m_t << "\n";
-        m_t << "<para>";
-      }
-      else
-      {
-        m_t << "</para>";
-        m_t << "\n";
-      }
-      break;
     case DocStyleChange::Summary: /* emulation of the <summary> tag inside a <details> tag */
-      if (s.enable()) m_t << "<emphasis role=\"bold\">";      else m_t << "</emphasis>";
+      if (s.enable()) m_t << "<para><emphasis role=\"bold\">";      else m_t << "</emphasis></para>";
       break;
   }
 }
@@ -1116,17 +1104,17 @@ DB_VIS_C
     }
     else if (opt.name=="class")
     {
-      if (opt.value.left(13)=="markdownTable") // handle markdown generated attributes
+      if (opt.value.startsWith("markdownTable")) // handle markdown generated attributes
       {
-        if (opt.value.right(5)=="Right")
+        if (opt.value.endsWith("Right"))
         {
           m_t << " align='right'";
         }
-        else if (opt.value.right(4)=="Left")
+        else if (opt.value.endsWith("Left"))
         {
           m_t << " align='left'";
         }
-        else if (opt.value.right(6)=="Center")
+        else if (opt.value.endsWith("Center"))
         {
           m_t << " align='center'";
         }
@@ -1182,6 +1170,17 @@ DB_VIS_C
   }
   visitChildren(href);
   m_t << "</link>";
+}
+
+void DocbookDocVisitor::operator()(const DocHtmlDetails &d)
+{
+DB_VIS_C
+  if (m_hide) return;
+  m_t << "\n";
+  m_t << "<para>";
+  visitChildren(d);
+  m_t << "</para>";
+  m_t << "\n";
 }
 
 void DocbookDocVisitor::operator()(const DocHtmlHeader &h)

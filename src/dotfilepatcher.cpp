@@ -146,7 +146,7 @@ static QCString replaceRef(const QCString &buf,const QCString &relPath,
     QCString result;
     if (urlOnly) // for user defined dot graphs
     {
-      if (link.left(5)=="\\ref " || link.left(5)=="@ref ") // \ref url
+      if (link.startsWith("\\ref ") || link.startsWith("@ref ")) // \ref url
       {
         result=href+"=\"";
         // fake ref node to resolve the url
@@ -230,7 +230,7 @@ bool DotFilePatcher::convertMapFile(TextStream &t,const QCString &mapName,
   while (getline(f,line)) // foreach line
   {
     QCString buf = line+'\n';
-    if (buf.left(5)=="<area")
+    if (buf.startsWith("<area"))
     {
       QCString replBuf = replaceRef(buf,relPath,urlOnly,context);
       // strip id="..." from replBuf since the id's are not needed and not unique.
@@ -255,7 +255,7 @@ DotFilePatcher::DotFilePatcher(const QCString &patchFile)
 
 bool DotFilePatcher::isSVGFile() const
 {
-  return m_patchFile.right(4)==".svg";
+  return m_patchFile.endsWith(".svg");
 }
 
 int DotFilePatcher::addMap(const QCString &mapFile,const QCString &relPath,
@@ -296,7 +296,7 @@ bool DotFilePatcher::run() const
 {
   //printf("DotFilePatcher::run(): %s\n",qPrint(m_patchFile));
   bool interactiveSVG_local = Config_getBool(INTERACTIVE_SVG);
-  bool isSVGFile = m_patchFile.right(4)==".svg";
+  bool isSVGFile = m_patchFile.endsWith(".svg");
   int graphId = -1;
   QCString relPath;
   if (isSVGFile)

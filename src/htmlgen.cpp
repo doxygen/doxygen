@@ -54,6 +54,7 @@
 #include "dir.h"
 #include "utf8.h"
 #include "textstream.h"
+#include "indexlist.h"
 
 //#define DBG_HTML(x) x;
 #define DBG_HTML(x)
@@ -349,14 +350,17 @@ static QCString substituteHtmlKeywords(const QCString &str,
   }
   else
   {
-    FileInfo cssfi(cssFile.str());
-    if (cssfi.exists())
+    if (!cssFile.startsWith("http:") && !cssFile.startsWith("https:"))
     {
-      cssFile = cssfi.fileName();
-    }
-    else
-    {
-      cssFile = "doxygen.css";
+      FileInfo cssfi(cssFile.str());
+      if (cssfi.exists())
+      {
+        cssFile = cssfi.fileName();
+      }
+      else
+      {
+        cssFile = "doxygen.css";
+      }
     }
   }
 
@@ -366,10 +370,18 @@ static QCString substituteHtmlKeywords(const QCString &str,
   {
     if (!fileName.empty())
     {
-      FileInfo fi(fileName);
-      if (fi.exists())
+      QCString htmlStyleSheet = fileName.c_str();
+      if (htmlStyleSheet.startsWith("http:") || htmlStyleSheet.startsWith("https:"))
       {
-        extraCssText += "<link href=\"$relpath^"+stripPath(fileName.c_str())+"\" rel=\"stylesheet\" type=\"text/css\"/>\n";
+        extraCssText += "<link href=\""+htmlStyleSheet+"\" rel=\"stylesheet\" type=\"text/css\"/>\n";
+      }
+      else
+      {
+        FileInfo fi(fileName);
+        if (fi.exists())
+        {
+          extraCssText += "<link href=\"$relpath^"+stripPath(fileName.c_str())+"\" rel=\"stylesheet\" type=\"text/css\"/>\n";
+        }
       }
     }
   }
@@ -443,7 +455,7 @@ static QCString substituteHtmlKeywords(const QCString &str,
   {
     auto mathJaxVersion = Config_getEnum(MATHJAX_VERSION);
     QCString path = Config_getString(MATHJAX_RELPATH);
-    if (path.isEmpty() || path.left(2)=="..") // relative path
+    if (path.isEmpty() || path.startsWith("..")) // relative path
     {
       path.prepend(relPath);
     }
@@ -1272,22 +1284,25 @@ void HtmlGenerator::writeStyleInfo(int part)
     }
     else // write user defined style sheet
     {
-      QCString cssname=Config_getString(HTML_STYLESHEET);
-      FileInfo cssfi(cssname.str());
-      if (!cssfi.exists() || !cssfi.isFile() || !cssfi.isReadable())
+      QCString cssName=Config_getString(HTML_STYLESHEET);
+      if (!cssName.startsWith("http:") && !cssName.startsWith("https:"))
       {
-        err("style sheet %s does not exist or is not readable!", qPrint(Config_getString(HTML_STYLESHEET)));
+        FileInfo cssfi(cssName.str());
+        if (!cssfi.exists() || !cssfi.isFile() || !cssfi.isReadable())
+        {
+          err("style sheet %s does not exist or is not readable!", qPrint(Config_getString(HTML_STYLESHEET)));
+        }
+        else
+        {
+          // convert style sheet to string
+          QCString fileStr = fileToString(cssName);
+          // write the string into the output dir
+          startPlainFile(cssfi.fileName().c_str());
+          m_t << fileStr;
+          endPlainFile();
+        }
+        Doxygen::indexList->addStyleSheetFile(cssfi.fileName().c_str());
       }
-      else
-      {
-        // convert style sheet to string
-        QCString fileStr = fileToString(cssname);
-        // write the string into the output dir
-        startPlainFile(cssfi.fileName().c_str());
-        m_t << fileStr;
-        endPlainFile();
-      }
-      Doxygen::indexList->addStyleSheetFile(cssfi.fileName().c_str());
     }
     const StringVector &extraCssFiles = Config_getList(HTML_EXTRA_STYLESHEET);
     for (const auto &fileName : extraCssFiles)
@@ -2337,9 +2352,9 @@ static bool quickLinkVisible(LayoutNavEntry::Kind kind)
     case LayoutNavEntry::ClassIndex:         return annotatedClasses>0;
     case LayoutNavEntry::ClassHierarchy:     return hierarchyClasses>0;
     case LayoutNavEntry::ClassMembers:       return documentedClassMembers[CMHL_All]>0;
-    case LayoutNavEntry::Files:              return documentedFiles>0;
-    case LayoutNavEntry::FileList:           return documentedFiles>0;
-    case LayoutNavEntry::FileGlobals:        return documentedFileMembers[FMHL_All]>0;
+    case LayoutNavEntry::Files:              return Config_getBool(SHOW_FILES) && documentedFiles>0;
+    case LayoutNavEntry::FileList:           return Config_getBool(SHOW_FILES) && documentedFiles>0;
+    case LayoutNavEntry::FileGlobals:        return Config_getBool(SHOW_FILES) && documentedFileMembers[FMHL_All]>0;
     case LayoutNavEntry::Examples:           return !Doxygen::exampleLinkedMap->empty();
     case LayoutNavEntry::Interfaces:         return annotatedInterfaces>0;
     case LayoutNavEntry::InterfaceList:      return annotatedInterfaces>0;

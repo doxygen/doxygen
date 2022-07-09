@@ -77,7 +77,7 @@ bool FileInfo::isDir() const
 bool FileInfo::isSymLink() const
 {
   std::error_code ec;
-  fs::file_status status = fs::status(m_name,ec);
+  fs::file_status status = fs::symlink_status(m_name,ec);
   return !ec && fs::is_symlink(status);
 }
 

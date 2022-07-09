@@ -354,34 +354,9 @@ void DotNode::deleteNodes(DotNode *node)
   }
 }
 
-void DotNode::writeBox(TextStream &t,
-                       GraphType gt,
-                       GraphOutputFormat /*format*/,
-                       bool hasNonReachableChildren) const
+void DotNode::writeLabel(TextStream &t, GraphType gt) const
 {
-  const char *labCol;
-  if (m_classDef)
-  {
-    if (m_classDef->hasDocumentation() && hasNonReachableChildren)
-      labCol = "red";
-    else if (m_classDef->hasDocumentation() && !hasNonReachableChildren)
-      labCol = "black";
-    else if (!m_classDef->hasDocumentation() && hasNonReachableChildren)
-      labCol = "orangered";
-    else // (!m_classDef->hasDocumentation() && !hasNonReachableChildren)
-    {
-      labCol = "grey75";
-      if (m_classDef->templateMaster() && m_classDef->templateMaster()->hasDocumentation())
-        labCol = "black";
-    }
-  }
-  else
-  {
-    labCol = m_url.isEmpty() ? "grey75" :  // non link
-    (hasNonReachableChildren ? "red" : "black");
-  }
-  t << "  Node" << m_number << " [label=\"";
-
+  t << "label=";
   if (m_classDef && Config_getBool(UML_LOOK) && (gt==Inheritance || gt==Collaboration))
   {
     // add names shown as relations to a set, so we don't show
@@ -407,7 +382,7 @@ void DotNode::writeBox(TextStream &t,
     }
 
     //printf("DotNode::writeBox for %s\n",qPrint(m_classDef->name()));
-    t << "{" << convertLabel(m_label) << "\\n";
+    t << "\"{" << convertLabel(m_label) << "\\n";
     auto dotUmlDetails = Config_getEnum(DOT_UML_DETAILS);
     if (dotUmlDetails!=DOT_UML_DETAILS_t::NONE)
     {
@@ -450,13 +425,67 @@ void DotNode::writeBox(TextStream &t,
         }
       }
     }
-    t << "}";
+    t << "}\"";
   }
   else // standard look
   {
-    t << convertLabel(m_label);
+    t << '"' << convertLabel(m_label) << '"';
   }
-  t << "\",height=0.2,width=0.4";
+}
+
+void DotNode::writeUrl(TextStream &t) const
+{
+  if (m_url.isEmpty())
+    return;
+  int tagPos = m_url.findRev('$');
+  t << ",URL=\"";
+  QCString noTagURL = m_url;
+  if (tagPos!=-1)
+  {
+    t << m_url.left(tagPos);
+    noTagURL = m_url.mid(tagPos);
+  }
+  int anchorPos = noTagURL.findRev('#');
+  if (anchorPos==-1)
+  {
+    t << addHtmlExtensionIfMissing(noTagURL) << "\"";
+  }
+  else
+  {
+    t << addHtmlExtensionIfMissing(noTagURL.left(anchorPos))
+      << noTagURL.right(noTagURL.length() - anchorPos) << "\"";
+  }
+}
+
+void DotNode::writeBox(TextStream &t,
+                       GraphType gt,
+                       GraphOutputFormat /*format*/,
+                       bool hasNonReachableChildren) const
+{
+  const char *labCol;
+  if (m_classDef)
+  {
+    if (m_classDef->hasDocumentation() && hasNonReachableChildren)
+      labCol = "red";
+    else if (m_classDef->hasDocumentation() && !hasNonReachableChildren)
+      labCol = "black";
+    else if (!m_classDef->hasDocumentation() && hasNonReachableChildren)
+      labCol = "orangered";
+    else // (!m_classDef->hasDocumentation() && !hasNonReachableChildren)
+    {
+      labCol = "grey75";
+      if (m_classDef->templateMaster() && m_classDef->templateMaster()->hasDocumentation())
+        labCol = "black";
+    }
+  }
+  else
+  {
+    labCol = m_url.isEmpty() ? "grey75" :  // non link
+    (hasNonReachableChildren ? "red" : "black");
+  }
+  t << "  Node" << m_number << " [";
+  writeLabel(t,gt);
+  t << ",height=0.2,width=0.4";
   if (m_isRoot)
   {
     t << ",color=\"black\", fillcolor=\"grey75\", style=\"filled\", fontcolor=\"black\"";
@@ -469,27 +498,7 @@ void DotNode::writeBox(TextStream &t,
       t << ", fillcolor=\"white\"";
       t << ", style=\"filled\"";
     }
-    if (!m_url.isEmpty())
-    {
-      int tagPos = m_url.findRev('$');
-      t << ",URL=\"";
-      QCString noTagURL = m_url;
-      if (tagPos!=-1)
-      {
-        t << m_url.left(tagPos);
-        noTagURL = m_url.mid(tagPos);
-      }
-      int anchorPos = noTagURL.findRev('#');
-      if (anchorPos==-1)
-      {
-        t << addHtmlExtensionIfMissing(noTagURL) << "\"";
-      }
-      else
-      {
-        t << addHtmlExtensionIfMissing(noTagURL.left(anchorPos))
-          << noTagURL.right(noTagURL.length()-anchorPos) << "\"";
-      }
-    }
+    writeUrl(t);
   }
   if (!m_tooltip.isEmpty())
   {

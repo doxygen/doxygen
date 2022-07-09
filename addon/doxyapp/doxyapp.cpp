@@ -148,11 +148,14 @@ static void listSymbols()
 {
   for (const auto &kv : *Doxygen::symbolMap)
   {
-    listSymbol(kv.second);
+    for (const auto &def : kv.second)
+    {
+      listSymbol(def);
+    }
   }
 }
 
-static void lookupSymbol(Definition *d)
+static void lookupSymbol(const Definition *d)
 {
   if (d!=Doxygen::globalScope && // skip the global namespace symbol
       d->name().at(0)!='@'       // skip anonymous stuff
@@ -169,20 +172,20 @@ static void lookupSymbol(Definition *d)
     {
       case Definition::TypeClass:
         {
-          ClassDef *cd = dynamic_cast<ClassDef*>(d);
+          const ClassDef *cd = dynamic_cast<const ClassDef*>(d);
           printf("Kind: %s\n",cd->compoundTypeString().data());
         }
         break;
       case Definition::TypeFile:
         {
-          FileDef *fd = dynamic_cast<FileDef*>(d);
+          const FileDef *fd = dynamic_cast<const FileDef*>(d);
           printf("Kind: File: #includes %zu other files\n",
               fd->includeFileList().size());
         }
         break;
       case Definition::TypeNamespace:
         {
-          NamespaceDef *nd = dynamic_cast<NamespaceDef*>(d);
+          const NamespaceDef *nd = dynamic_cast<const NamespaceDef*>(d);
           printf("Kind: Namespace: contains %zu classes and %zu namespaces\n",
               nd->getClasses().size(),
               nd->getNamespaces().size());
@@ -190,7 +193,7 @@ static void lookupSymbol(Definition *d)
         break;
       case Definition::TypeMember:
         {
-          MemberDef *md = dynamic_cast<MemberDef*>(d);
+          const MemberDef *md = dynamic_cast<const MemberDef*>(d);
           printf("Kind: %s\n",md->memberTypeName().data());
         }
         break;
@@ -207,9 +210,9 @@ static void lookupSymbols(const QCString &sym)
   {
     auto range = Doxygen::symbolMap->find(sym);
     bool found=false;
-    for (auto it=range.first; it!=range.second; ++it)
+    for (const Definition *def : range)
     {
-      lookupSymbol(it->second);
+      lookupSymbol(def);
       found=true;
     }
     if (!found)

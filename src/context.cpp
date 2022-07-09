@@ -1034,7 +1034,7 @@ const PropertyMap<TranslateContext::Private> TranslateContext::Private::s_inst {
   {  "classIndex",        &Private::classIndex },
   //%% string concepts
   {  "concepts",          &Private::concepts },
-  //%% string conceptDefintion
+  //%% string conceptDefinition
   {  "conceptDefinition", &Private::conceptDefinition },
   //%% string namespaceIndex
   {  "namespaceIndex",    &Private::namespaceIndex },
@@ -7022,7 +7022,7 @@ class NavPathElemContext::Private
       }
       else if (type==Definition::TypeClass)
       {
-        if (text.right(2)=="-p")
+        if (text.endsWith("-p"))
         {
           text = text.left(text.length()-2);
         }

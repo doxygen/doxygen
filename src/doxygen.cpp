@@ -31,6 +31,7 @@
 #include "scanner.h"
 #include "entry.h"
 #include "index.h"
+#include "indexlist.h"
 #include "message.h"
 #include "config.h"
 #include "util.h"
@@ -153,7 +154,8 @@ bool                  Doxygen::parseSourcesNeeded = FALSE;
 SearchIndexIntf      *Doxygen::searchIndex=0;
 SymbolMap<Definition>*Doxygen::symbolMap;
 ClangUsrMap          *Doxygen::clangUsrMap = 0;
-Cache<std::string,LookupInfo> *Doxygen::lookupCache;
+Cache<std::string,LookupInfo> *Doxygen::typeLookupCache;
+Cache<std::string,LookupInfo> *Doxygen::symbolLookupCache;
 DirLinkedMap         *Doxygen::dirLinkedMap;
 DirRelationLinkedMap  Doxygen::dirRelations;
 ParserManager        *Doxygen::parserManager = 0;
@@ -715,6 +717,7 @@ QCString stripTemplateSpecifiers(const QCString &s)
  *  full qualified name \a name. Creates an artificial scope if the scope is
  *  not found and set the parent/child scope relation if the scope is found.
  */
+[[maybe_unused]]
 static Definition *buildScopeFromQualifiedName(const QCString &name_,SrcLangExt lang,const TagInfo *tagInfo)
 {
   QCString name = stripTemplateSpecifiers(name_);
@@ -1488,7 +1491,7 @@ void distributeClassGroupRelations()
 static ClassDefMutable *createTagLessInstance(const ClassDef *rootCd,const ClassDef *templ,const QCString &fieldName)
 {
   QCString fullName = removeAnonymousScopes(templ->name());
-  if (fullName.right(2)=="::") fullName=fullName.left(fullName.length()-2);
+  if (fullName.endsWith("::")) fullName=fullName.left(fullName.length()-2);
   fullName+="."+fieldName;
 
   //printf("** adding class %s based on %s\n",qPrint(fullName),qPrint(templ->name()));
@@ -1860,7 +1863,7 @@ static void findUsingDirectives(const Entry *root)
     //printf("Found using directive %s at line %d of %s\n",
     //    qPrint(root->name),root->startLine,qPrint(root->fileName));
     QCString name=substitute(root->name,".","::");
-    if (name.right(2)=="::")
+    if (name.endsWith("::"))
     {
       name=name.left(name.length()-2);
     }
@@ -2406,10 +2409,8 @@ static MemberDef *addVariableToFile(
   {
     QCString ttype = type;
     ttype.stripPrefix("typedef ");
-    if (ttype.left(7)=="struct " || ttype.left(6)=="union ")
+    if (ttype.stripPrefix("struct ") || ttype.stripPrefix("union "))
     {
-      ttype.stripPrefix("struct ");
-      ttype.stripPrefix("union ");
       static const reg::Ex re(R"(\a\w*)");
       reg::Match match;
       std::string typ = ttype.str();
@@ -2682,7 +2683,7 @@ static bool isVarWithConstructor(const Entry *root)
     result=FALSE;
     goto done;
   }
-  else if ((fd != nullptr) && (fd->name().right(2)==".c" || fd->name().right(2)==".h"))
+  else if ((fd != nullptr) && (fd->name().endsWith(".c") || fd->name().endsWith(".h")))
   { // inside a .c file
     result=FALSE;
     goto done;
@@ -2702,7 +2703,6 @@ static bool isVarWithConstructor(const Entry *root)
   findAndRemoveWord(type,"static");
   findAndRemoveWord(type,"volatile");
   typePtrType = type.find('*')!=-1 || type.find('&')!=-1;
-  //if (type.left(6)=="const ") type=type.right(type.length()-6);
   if (!typePtrType)
   {
     typeIsClass = resolver.resolveClass(ctx,type)!=0;
@@ -2856,16 +2856,27 @@ static void addVariable(const Entry *root,int isFuncPtr=-1)
     name=removeRedundantWhiteSpace(name);
 
     // find the scope of this variable
-    Entry *p = root->parent();
-    while ((p->section & Entry::SCOPE_MASK))
+    int index = computeQualifiedIndex(name);
+    if (index!=-1 && root->parent()->section==Entry::GROUPDOC_SEC && root->parent()->tagInfo())
+      // grouped members are stored with full scope
     {
-      QCString scopeName = p->name;
-      if (!scopeName.isEmpty())
+      buildScopeFromQualifiedName(name.left(index+2),root->lang,root->tagInfo());
+      scope=name.left(index);
+      name=name.mid(index+2);
+    }
+    else
+    {
+      Entry *p = root->parent();
+      while ((p->section & Entry::SCOPE_MASK))
       {
-        scope.prepend(scopeName);
-        break;
+        QCString scopeName = p->name;
+        if (!scopeName.isEmpty())
+        {
+          scope.prepend(scopeName);
+          break;
+        }
+        p=p->parent();
       }
-      p=p->parent();
     }
 
     MemberType mtype;
@@ -2909,9 +2920,9 @@ static void addVariable(const Entry *root,int isFuncPtr=-1)
 
     if (type=="@")
       mtype=MemberType_EnumValue;
-    else if (type.left(8)=="typedef ")
+    else if (type.startsWith("typedef "))
       mtype=MemberType_Typedef;
-    else if (type.left(7)=="friend ")
+    else if (type.startsWith("friend "))
       mtype=MemberType_Friend;
     else if (root->mtype==Property)
       mtype=MemberType_Property;
@@ -3244,7 +3255,7 @@ static void addMethodToClass(const Entry *root,ClassDefMutable *cd,
   QCString args = rargs;
 
   QCString name=removeRedundantWhiteSpace(rname);
-  if (name.left(2)=="::") name=name.right(name.length()-2);
+  name.stripPrefix("::");
 
   MemberType mtype;
   if (isFriend)                 mtype=MemberType_Friend;
@@ -3257,7 +3268,7 @@ static void addMethodToClass(const Entry *root,ClassDefMutable *cd,
   int i = -1;
   int j = -1;
   if ((fd==0 || fd->getLanguage()==SrcLangExt_Cpp) &&
-      name.left(9)!="operator " &&   // not operator
+      !name.startsWith("operator ") &&   // not operator
       (i=name.find('<'))!=-1    &&   // containing <
       (j=name.find('>'))!=-1    &&   // or >
       (j!=i+2 || name.at(i+1)!='=')  // but not the C++20 spaceship operator <=>
@@ -3338,7 +3349,7 @@ static void addMethodToClass(const Entry *root,ClassDefMutable *cd,
       def=qualScope+scopeSeparator+name; //+optArgs;
     }
   }
-  if (def.left(7)=="friend ") def=def.right(def.length()-7);
+  def.stripPrefix("friend ");
   md->setDefinition(def);
   md->enableCallGraph(root->callGraph);
   md->enableCallerGraph(root->callerGraph);
@@ -3421,6 +3432,10 @@ static void addGlobalFunction(const Entry *root,const QCString &rname,const QCSt
       nd = getResolvedNamespaceMutable(nscope);
     }
   }
+  else if (root->parent()->section==Entry::GROUPDOC_SEC && !scope.isEmpty())
+  {
+    nd = getResolvedNamespaceMutable(sc);
+  }
 
   if (!scope.isEmpty())
   {
@@ -3448,7 +3463,7 @@ static void addGlobalFunction(const Entry *root,const QCString &rname,const QCSt
       "    '%s' '%s'::'%s' '%s' proto=%d\n"
       "    def='%s'\n",
       qPrint(root->type),
-      qPrint(root->parent()->name),
+      qPrint(scope),
       qPrint(rname),
       qPrint(root->args),
       root->proto,
@@ -3459,10 +3474,6 @@ static void addGlobalFunction(const Entry *root,const QCString &rname,const QCSt
   md->enableCallerGraph(root->callerGraph);
   md->enableReferencedByRelation(root->referencedByRelation);
   md->enableReferencesRelation(root->referencesRelation);
-  //if (root->mGrpId!=-1)
-  //{
-  //  md->setMemberGroup(memberGroupDict[root->mGrpId]);
-  //}
 
   md->setRefItems(root->sli);
   if (nd && !nd->name().isEmpty() && nd->name().at(0)!='@')
@@ -3521,7 +3532,19 @@ static void buildFunctionList(const Entry *root)
     QCString rname = removeRedundantWhiteSpace(root->name);
     //printf("rname=%s\n",qPrint(rname));
 
-    QCString scope=root->parent()->name; //stripAnonymousNamespaceScope(root->parent->name);
+    QCString scope;
+    int index = computeQualifiedIndex(rname);
+    if (index!=-1 && root->parent()->section==Entry::GROUPDOC_SEC && root->parent()->tagInfo())
+      // grouped members are stored with full scope
+    {
+      buildScopeFromQualifiedName(rname.left(index+2),root->lang,root->tagInfo());
+      scope=rname.left(index);
+      rname=rname.mid(index+2);
+    }
+    else
+    {
+      scope=root->parent()->name; //stripAnonymousNamespaceScope(root->parent->name);
+    }
     if (!rname.isEmpty() && scope.find('@')==-1)
     {
       ClassDefMutable *cd=0;
@@ -3580,7 +3603,7 @@ static void buildFunctionList(const Entry *root)
                 ) &&
                !isMember &&
                (root->relates.isEmpty() || root->relatesType == Duplicate) &&
-               root->type.left(7)!="extern " && root->type.left(8)!="typedef "
+               !root->type.startsWith("extern ") && !root->type.startsWith("typedef ")
               )
       // no member => unrelated function
       {
@@ -4210,7 +4233,7 @@ static void findUsedClassesForClass(const Entry *root,
           ClassDefMutable *usedCdm = toClassDefMutable(usedCd);
           if (usedCd==0 && !Config_getBool(HIDE_UNDOC_RELATIONS))
           {
-            if (type.right(2)=="(*" || type.right(2)=="(^") // type is a function pointer
+            if (type.endsWith("(*") || type.endsWith("(^")) // type is a function pointer
             {
               type+=md->argsString();
             }
@@ -4498,7 +4521,7 @@ static bool findClassRelation(
   QCString biName=bi->name;
   bool explicitGlobalScope=FALSE;
   //printf("findClassRelation: biName='%s'\n",qPrint(biName));
-  if (biName.left(2)=="::") // explicit global scope
+  if (biName.startsWith("::")) // explicit global scope
   {
      biName=biName.right(biName.length()-2);
      explicitGlobalScope=TRUE;
@@ -4755,7 +4778,7 @@ static bool findClassRelation(
           }
           if (baseClass)
           {
-            if (biName.right(2)=="-p")
+            if (biName.endsWith("-p"))
             {
               biName="<"+biName.left(biName.length()-2)+">";
             }
@@ -4772,7 +4795,7 @@ static bool findClassRelation(
               baseClass->setOuterScope(scope);
             }
 
-            if (baseClassName.right(2)=="-p")
+            if (baseClassName.endsWith("-p"))
             {
               baseClass->setCompoundType(ClassDef::Protocol);
             }
@@ -4937,7 +4960,7 @@ static void computeClassRelations()
     }
     size_t numMembers = cd ? cd->memberNameInfoLinkedMap().size() : 0;
     if ((cd==0 || (!cd->hasDocumentation() && !cd->isReference())) && numMembers>0 &&
-        bName.right(2)!="::")
+        !bName.endsWith("::"))
     {
       if (!root->name.isEmpty() && root->name.find('@')==-1 && // normal name
           (guessSection(root->fileName)==Entry::HEADER_SEC ||
@@ -5581,8 +5604,8 @@ static QCString substituteTemplatesInString(
             QCString tdaName = tda->name;
             QCString tdaType = tda->type;
             int vc=0;
-            if (tdaType.left(6)=="class ") vc=6;
-            else if (tdaType.left(9)=="typename ") vc=9;
+            if      (tdaType.startsWith("class "))    vc=6;
+            else if (tdaType.startsWith("typename ")) vc=9;
             if (vc>0) // convert type=="class T" to type=="class" name=="T"
             {
               tdaName = tdaType.mid(vc);
@@ -6277,13 +6300,13 @@ static void findMember(const Entry *root,
             ).stripWhiteSpace();
 
   //printf("funcDecl='%s'\n",qPrint(funcDecl));
-  if (isFriend && funcDecl.left(6)=="class ")
+  if (isFriend && funcDecl.startsWith("class "))
   {
     //printf("friend class\n");
     funcDecl=funcDecl.right(funcDecl.length()-6);
     funcName = funcDecl;
   }
-  else if (isFriend && funcDecl.left(7)=="struct ")
+  else if (isFriend && funcDecl.startsWith("struct "))
   {
     funcDecl=funcDecl.right(funcDecl.length()-7);
     funcName = funcDecl;
@@ -6527,7 +6550,7 @@ static void findMember(const Entry *root,
       }
     }
 
-    if (funcName.left(9)=="operator ") // strip class scope from cast operator
+    if (funcName.startsWith("operator ")) // strip class scope from cast operator
     {
       funcName = substitute(funcName,className+"::","");
     }
@@ -6861,7 +6884,7 @@ static void filterMemberDocumentation(const Entry *root,const QCString &relates)
     //printf("Results type=%s,name=%s,args=%s\n",qPrint(type),qPrint(root->name),qPrint(args));
     isFunc=FALSE;
   }
-  else if ((type.left(8)=="typedef " && args.find('(')!=-1))
+  else if ((type.startsWith("typedef ") && args.find('(')!=-1))
     // detect function types marked as functions
   {
     isFunc=FALSE;
@@ -7067,7 +7090,10 @@ static void findEnums(const Entry *root)
     {
       scope=root->name.left(i); // extract scope
       name=root->name.right(root->name.length()-i-2); // extract name
-      if ((cd=getClassMutable(scope))==0) nd=getResolvedNamespaceMutable(scope);
+      if ((cd=getClassMutable(scope))==0)
+      {
+        nd=toNamespaceDefMutable(buildScopeFromQualifiedName(root->name.left(i+2),root->lang,root->tagInfo()));
+      }
     }
     else // no scope, check the scope in which the docs where found
     {
@@ -7234,7 +7260,10 @@ static void addEnumValuesToEnums(const Entry *root)
     {
       scope=root->name.left(i); // extract scope
       name=root->name.right(root->name.length()-i-2); // extract name
-      if ((cd=getClassMutable(scope))==0) nd=getResolvedNamespaceMutable(scope);
+      if ((cd=getClassMutable(scope))==0)
+      {
+        nd=toNamespaceDefMutable(buildScopeFromQualifiedName(root->name.left(i+2),root->lang,root->tagInfo()));
+      }
     }
     else // no scope, check the scope in which the docs where found
     {
@@ -7300,14 +7329,12 @@ static void addEnumValuesToEnums(const Entry *root)
           // use raw pointer in this loop, since we modify mn and can then invalidate mdp.
           if (md && md->isEnumerate() && !root->children().empty())
           {
-            //printf("   enum with %d children\n",root->children()->count());
+            //printf("   enum with %zu children\n",root->children().size());
             for (const auto &e : root->children())
             {
-              SrcLangExt sle;
-              if (
-                   (sle=root->lang)==SrcLangExt_CSharp ||
-                   sle==SrcLangExt_Java ||
-                   sle==SrcLangExt_XML ||
+              SrcLangExt sle = root->lang;
+              bool isJavaLike = sle==SrcLangExt_CSharp || sle==SrcLangExt_Java || sle==SrcLangExt_XML;
+              if ( isJavaLike ||
                    (root->spec&Entry::Strong)
                  )
               {
@@ -7315,15 +7342,13 @@ static void addEnumValuesToEnums(const Entry *root)
                 // values are only visible inside the enum scope, so we must create
                 // them here and only add them to the enum
                 //printf("md->qualifiedName()=%s e->name=%s tagInfo=%p name=%s\n",
-                //    qPrint(md->qualifiedName()),qPrint(e->name),e->tagInfo,qPrint(e->name));
-                QCString qualifiedName = substitute(root->name,"::",".");
-                if (!scope.isEmpty() && root->tagInfo())
+                //    qPrint(md->qualifiedName()),qPrint(e->name),(void*)e->tagInfo(),qPrint(e->name));
+                QCString qualifiedName = root->name;
+                if (isJavaLike)
                 {
-                  qualifiedName=substitute(scope,"::",".")+"."+qualifiedName;
+                  qualifiedName=substitute(qualifiedName,".","::");
                 }
-                if (substitute(md->qualifiedName(),"::",".")== // TODO: add function to get canonical representation
-                    qualifiedName       // enum value scope matches that of the enum
-                   )
+                if (md->qualifiedName()==qualifiedName)       // enum value scope matches that of the enum
                 {
                   QCString fileName = e->fileName;
                   if (fileName.isEmpty() && e->tagInfo())
@@ -8387,13 +8412,16 @@ static void computeTooltipTexts()
     // queue the work
     for (const auto &kv : *Doxygen::symbolMap)
     {
-      DefinitionMutable *dm = toDefinitionMutable(kv.second);
-      if (dm && !isSymbolHidden(toDefinition(dm)) && toDefinition(dm)->isLinkableInProject())
+      for (const auto &def : kv.second)
       {
-        auto processTooltip = [dm]() {
-          dm->computeTooltip();
-        };
-        results.emplace_back(threadPool.queue(processTooltip));
+        DefinitionMutable *dm = toDefinitionMutable(def);
+        if (dm && !isSymbolHidden(toDefinition(dm)) && toDefinition(dm)->isLinkableInProject())
+        {
+          auto processTooltip = [dm]() {
+            dm->computeTooltip();
+          };
+          results.emplace_back(threadPool.queue(processTooltip));
+        }
       }
     }
     // wait for the results
@@ -8406,10 +8434,13 @@ static void computeTooltipTexts()
   {
     for (const auto &kv : *Doxygen::symbolMap)
     {
-      DefinitionMutable *dm = toDefinitionMutable(kv.second);
-      if (dm && !isSymbolHidden(toDefinition(dm)) && toDefinition(dm)->isLinkableInProject())
+      for (const auto &def : kv.second)
       {
-        dm->computeTooltip();
+        DefinitionMutable *dm = toDefinitionMutable(def);
+        if (dm && !isSymbolHidden(toDefinition(dm)) && toDefinition(dm)->isLinkableInProject())
+        {
+          dm->computeTooltip();
+        }
       }
     }
   }
@@ -8800,17 +8831,17 @@ static void flushCachedTemplateRelations()
   // to this class. Optimization: only remove those classes that
   // have inheritance instances as direct or indirect sub classes.
   StringVector elementsToRemove;
-  for (const auto &ci : *Doxygen::lookupCache)
+  for (const auto &ci : *Doxygen::typeLookupCache)
   {
     const LookupInfo &li = ci.second;
-    if (li.classDef)
+    if (li.definition)
     {
       elementsToRemove.push_back(ci.first);
     }
   }
   for (const auto &k : elementsToRemove)
   {
-    Doxygen::lookupCache->remove(k);
+    Doxygen::typeLookupCache->remove(k);
   }
 
   // remove all cached typedef resolutions whose target is a
@@ -8860,17 +8891,17 @@ static void flushUnresolvedRelations()
   // class C : public B::I {};
 
   StringVector elementsToRemove;
-  for (const auto &ci : *Doxygen::lookupCache)
+  for (const auto &ci : *Doxygen::typeLookupCache)
   {
     const LookupInfo &li = ci.second;
-    if (li.classDef==0 && li.typeDef==0)
+    if (li.definition==0 && li.typeDef==0)
     {
       elementsToRemove.push_back(ci.first);
     }
   }
   for (const auto &k : elementsToRemove)
   {
-    Doxygen::lookupCache->remove(k);
+    Doxygen::typeLookupCache->remove(k);
   }
 
   // for each global function name
@@ -9738,7 +9769,7 @@ static void generateConfigFile(const QCString &configFile,bool shortList,
   }
 }
 
-static void compareDoxyfile(DoxyfileSettings diffList)
+static void compareDoxyfile(Config::CompareMode diffList)
 {
   std::ofstream f;
   bool fileOpened=openOutputFile("-",f);
@@ -9825,28 +9856,31 @@ static void copyStyleSheet()
   QCString htmlStyleSheet = Config_getString(HTML_STYLESHEET);
   if (!htmlStyleSheet.isEmpty())
   {
-    FileInfo fi(htmlStyleSheet.str());
-    if (!fi.exists())
+    if (!htmlStyleSheet.startsWith("http:") && !htmlStyleSheet.startsWith("https:"))
     {
-      err("Style sheet '%s' specified by HTML_STYLESHEET does not exist!\n",qPrint(htmlStyleSheet));
-      htmlStyleSheet = Config_updateString(HTML_STYLESHEET,""); // revert to the default
-    }
-    else
-    {
-      QCString destFileName = Config_getString(HTML_OUTPUT)+"/"+fi.fileName();
-      copyFile(htmlStyleSheet,destFileName);
+      FileInfo fi(htmlStyleSheet.str());
+      if (!fi.exists())
+      {
+        err("Style sheet '%s' specified by HTML_STYLESHEET does not exist!\n",qPrint(htmlStyleSheet));
+        htmlStyleSheet = Config_updateString(HTML_STYLESHEET,""); // revert to the default
+      }
+      else
+      {
+        QCString destFileName = Config_getString(HTML_OUTPUT)+"/"+fi.fileName();
+        copyFile(htmlStyleSheet,destFileName);
+      }
     }
   }
   const StringVector &htmlExtraStyleSheet = Config_getList(HTML_EXTRA_STYLESHEET);
   for (const auto &sheet : htmlExtraStyleSheet)
   {
-    std::string fileName = sheet;
-    if (!fileName.empty())
+    QCString fileName(sheet);
+    if (!fileName.isEmpty() && !fileName.startsWith("http:") && !fileName.startsWith("https:"))
     {
-      FileInfo fi(fileName);
+      FileInfo fi(fileName.str());
       if (!fi.exists())
       {
-        err("Style sheet '%s' specified by HTML_EXTRA_STYLESHEET does not exist!\n",fileName.c_str());
+        err("Style sheet '%s' specified by HTML_EXTRA_STYLESHEET does not exist!\n",qPrint(fileName));
       }
       else if (fi.fileName()=="doxygen.css" || fi.fileName()=="tabs.css" || fi.fileName()=="navtree.css")
       {
@@ -10308,7 +10342,7 @@ static std::string resolveSymlink(const std::string &path)
   {
 #if defined(_WIN32)
     // UNC path, skip server and share name
-    if (sepPos==0 && (result.left(2)=="//" || result.left(2)=="\\\\"))
+    if (sepPos==0 && (result.startsWith("//") || result.startsWith("\\\\")))
       sepPos = result.find('/',2);
     if (sepPos!=-1)
       sepPos = result.find('/',sepPos+1);
@@ -10670,7 +10704,10 @@ static void dumpSymbolMap()
     TextStream t(&f);
     for (const auto &kv : *Doxygen::symbolMap)
     {
-      dumpSymbol(t,kv.second);
+      for (const auto &def : kv.second)
+      {
+        dumpSymbol(t,def);
+      }
     }
   }
 }
@@ -10932,7 +10969,7 @@ void readConfiguration(int argc, char **argv)
   QCString listName;
   bool genConfig=FALSE;
   bool shortList=FALSE;
-  DoxyfileSettings diffList=DoxyfileSettings::Full;
+  Config::CompareMode diffList=Config::CompareMode::Full;
   bool updateConfig=FALSE;
   int retVal;
   bool quiet = false;
@@ -10977,8 +11014,8 @@ void readConfiguration(int argc, char **argv)
         }
         break;
       case 'x':
-        if (!strcmp(argv[optInd]+1,"x_noenv")) diffList=DoxyfileSettings::CompressedNoEnv;
-        else if (!strcmp(argv[optInd]+1,"x")) diffList=DoxyfileSettings::Compressed;
+        if (!strcmp(argv[optInd]+1,"x_noenv")) diffList=Config::CompareMode::CompressedNoEnv;
+        else if (!strcmp(argv[optInd]+1,"x")) diffList=Config::CompareMode::Compressed;
         else
         {
           err("option should be \"-x\" or \"-x_noenv\", found: \"%s\".\n",argv[optInd]);
@@ -11303,7 +11340,7 @@ void readConfiguration(int argc, char **argv)
     exit(1);
   }
 
-  if (diffList!=DoxyfileSettings::Full)
+  if (diffList!=Config::CompareMode::Full)
   {
     Config::updateObsolete();
     compareDoxyfile(diffList);
@@ -11782,7 +11819,8 @@ void parseInput()
   if (cacheSize<0) cacheSize=0;
   if (cacheSize>9) cacheSize=9;
   uint lookupSize = 65536 << cacheSize;
-  Doxygen::lookupCache = new Cache<std::string,LookupInfo>(lookupSize);
+  Doxygen::typeLookupCache = new Cache<std::string,LookupInfo>(lookupSize);
+  Doxygen::symbolLookupCache = new Cache<std::string,LookupInfo>(lookupSize);
 
 #ifdef HAS_SIGNALS
   signal(SIGINT, stopDoxygen);
@@ -12024,7 +12062,7 @@ void parseInput()
   // calling buildClassList may result in cached relations that
   // become invalid after resolveClassNestingRelations(), that's why
   // we need to clear the cache here
-  Doxygen::lookupCache->clear();
+  Doxygen::typeLookupCache->clear();
   // we don't need the list of using declaration anymore
   g_usingDeclarations.clear();
 
@@ -12648,13 +12686,19 @@ void generateOutput()
 
   g_outputList->cleanup();
 
-  int cacheParam;
-  msg("lookup cache used %zu/%zu hits=%" PRIu64 " misses=%" PRIu64 "\n",
-      Doxygen::lookupCache->size(),
-      Doxygen::lookupCache->capacity(),
-      Doxygen::lookupCache->hits(),
-      Doxygen::lookupCache->misses());
-  cacheParam = computeIdealCacheParam(static_cast<size_t>(Doxygen::lookupCache->misses()*2/3)); // part of the cache is flushed, hence the 2/3 correction factor
+  msg("type lookup cache used %zu/%zu hits=%" PRIu64 " misses=%" PRIu64 "\n",
+      Doxygen::typeLookupCache->size(),
+      Doxygen::typeLookupCache->capacity(),
+      Doxygen::typeLookupCache->hits(),
+      Doxygen::typeLookupCache->misses());
+  msg("symbol lookup cache used %zu/%zu hits=%" PRIu64 " misses=%" PRIu64 "\n",
+      Doxygen::symbolLookupCache->size(),
+      Doxygen::symbolLookupCache->capacity(),
+      Doxygen::symbolLookupCache->hits(),
+      Doxygen::symbolLookupCache->misses());
+  int typeCacheParam   = computeIdealCacheParam(static_cast<size_t>(Doxygen::typeLookupCache->misses()*2/3)); // part of the cache is flushed, hence the 2/3 correction factor
+  int symbolCacheParam = computeIdealCacheParam(static_cast<size_t>(Doxygen::symbolLookupCache->misses()));
+  int cacheParam = std::max(typeCacheParam,symbolCacheParam);
   if (cacheParam>Config_getInt(LOOKUP_CACHE_SIZE))
   {
     msg("Note: based on cache misses the ideal setting for LOOKUP_CACHE_SIZE is %d at the cost of higher memory usage.\n",cacheParam);

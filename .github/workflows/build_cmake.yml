@@ -64,7 +64,7 @@ jobs:
           }
     steps:
     - name: Checkout doxygen
-      uses: actions/checkout@v1
+      uses: actions/checkout@v3
       
     - name: Download MikTex (Windows)
       run: |
@@ -328,7 +328,7 @@ jobs:
         endif()
 
     - name: Archive build artifacts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: "${{ matrix.config.name }} build artifacts"
         path: build/bin/
@@ -374,7 +374,7 @@ jobs:
       if: matrix.config.os != 'windows-latest'
 
     - name: Archive html documentation artifacts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: "Html documentation artifacts"
         path: build/html/
@@ -382,7 +382,7 @@ jobs:
 
 
     - name: Archive Latex documentation artifacts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: "Latex documentation artifacts"
         path: build/latex/doxygen_manual.pdf

@@ -439,7 +439,7 @@ SLASHopt [/]*
                                      copyToOutput(yyscanner,yytext,(int)yyleng);
                                      yyextra->lastCommentContext = YY_START;
                                      yyextra->javaBlock=0;
-                                     yyextra->blockName=QCString(yytext).stripWhiteSpace().left(3);
+                                     yyextra->blockName=QCString(yytext).stripWhiteSpace().left(3); // take the ``` or ~~~ part
                                      BEGIN(VerbatimCode);
                                    }
 <CComment,ReadLine>[\\@]("dot"|"code"|"msc"|"startuml")/[^a-z_A-Z0-9] { /* start of a verbatim block */
@@ -662,6 +662,10 @@ SLASHopt [/]*
 				     {
 				       BEGIN(Scan);
 				     }
+                                   }
+<CComment,CNComment>"/""/"+/"*/"   { /* we are already in C-comment so not a start of a nested comment but 
+                                      * just the end of the comment (the end part is handled later). */
+                                     copyToOutput(yyscanner,yytext,(int)yyleng);
                                    }
 <CComment,CNComment>"/"+"*"                  { /* nested C comment */
                                      if (yyextra->lang==SrcLangExt_Python ||

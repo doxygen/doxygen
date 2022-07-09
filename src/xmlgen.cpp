@@ -866,6 +866,7 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
   {
     const ArgumentList &declAl = md->declArgumentList();
     const ArgumentList &defAl = md->argumentList();
+    bool isFortran = md->getLanguage()==SrcLangExt_Fortran;
     if (declAl.hasParameters())
     {
       auto defIt = defAl.begin();
@@ -885,7 +886,13 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
           writeXMLString(t,a.attrib);
           t << "</attributes>\n";
         }
-        if (!a.type.isEmpty())
+        if (isFortran && defArg && !defArg->type.isEmpty())
+        {
+          t << "          <type>";
+          linkifyText(TextGeneratorXMLImpl(t),def,md->getBodyDef(),md,defArg->type);
+          t << "</type>\n";
+        }
+        else if (!a.type.isEmpty())
         {
           t << "          <type>";
           linkifyText(TextGeneratorXMLImpl(t),def,md->getBodyDef(),md,a.type);

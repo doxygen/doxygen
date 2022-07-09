@@ -139,11 +139,11 @@ QCString LayoutNavEntry::url() const
 {
   QCString url = baseFile().stripWhiteSpace();
   if ((kind()!=LayoutNavEntry::User && kind()!=LayoutNavEntry::UserGroup) ||
-      (kind()==LayoutNavEntry::UserGroup && url.left(9)=="usergroup"))
+      (kind()==LayoutNavEntry::UserGroup && url.startsWith("usergroup")))
   {
     url = addHtmlExtensionIfMissing(url);
   }
-  else if (url.left(5)=="@ref " || url.left(5)=="\\ref ")
+  else if (url.startsWith("@ref ") || url.startsWith("\\ref "))
   {
     const Definition *d = 0;
     QCString anchor;

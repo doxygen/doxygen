@@ -3127,9 +3127,7 @@ static void readIncludeFile(yyscan_t yyscanner,const QCString &inc)
   {
     // extract include path+name
     QCString incFileName=inc.mid(s,i-s).stripWhiteSpace();
-
-    QCString dosExt = incFileName.right(4);
-    if (dosExt==".exe" || dosExt==".dll" || dosExt==".tlb")
+    if (incFileName.endsWith(".exe") || incFileName.endsWith(".dll") || incFileName.endsWith(".tlb"))
     {
       // skip imported binary files (e.g. M$ type libraries)
       return;

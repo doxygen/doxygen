@@ -239,18 +239,18 @@ void ClangTUParser::parse()
     SrcLangExt lang = getLanguageFromFileName(fileName);
     if (lang==SrcLangExt_ObjC || p->detectedLang!=DetectedLang::Cpp)
     {
-      QCString fn = fileName;
+      QCString fn = fileName.lower();
       if (p->detectedLang!=DetectedLang::Cpp &&
-          (fn.right(4).lower()==".cpp" || fn.right(4).lower()==".cxx" ||
-           fn.right(3).lower()==".cc" || fn.right(2).lower()==".c"))
+          (fn.endsWith(".cpp") || fn.endsWith(".cxx") ||
+           fn.endsWith(".cc")  || fn.endsWith(".c")))
       { // fall back to C/C++ once we see an extension that indicates this
         p->detectedLang = DetectedLang::Cpp;
       }
-      else if (fn.right(3).lower()==".mm") // switch to Objective C++
+      else if (fn.endsWith(".mm")) // switch to Objective C++
       {
         p->detectedLang = DetectedLang::ObjCpp;
       }
-      else if (fn.right(2).lower()==".m") // switch to Objective C
+      else if (fn.endsWith(".m")) // switch to Objective C
       {
         p->detectedLang = DetectedLang::ObjC;
       }

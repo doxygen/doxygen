@@ -85,6 +85,7 @@ class TextDocVisitor : public DocVisitor
     void operator()(const DocHtmlCaption &c)     { visitChildren(c);  }
     void operator()(const DocInternal &i)        { visitChildren(i);  }
     void operator()(const DocHRef &h)            { visitChildren(h);  }
+    void operator()(const DocHtmlDetails &d)     { visitChildren(d);  }
     void operator()(const DocHtmlHeader &h)      { visitChildren(h);  }
     void operator()(const DocImage &i)           { visitChildren(i);  }
     void operator()(const DocDotFile &df)        { visitChildren(df); }

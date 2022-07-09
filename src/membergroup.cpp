@@ -270,9 +270,9 @@ void MemberGroup::setRefItems(const RefItemVector &sli)
   m_xrefListItems.insert(m_xrefListItems.end(), sli.cbegin(), sli.cend());
 }
 
-void MemberGroup::writeTagFile(TextStream &tagFile)
+void MemberGroup::writeTagFile(TextStream &tagFile,bool qualifiedName)
 {
-  memberList->writeTagFile(tagFile);
+  memberList->writeTagFile(tagFile,qualifiedName);
 }
 
 //--------------------------------------------------------------------------

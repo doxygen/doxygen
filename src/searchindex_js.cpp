@@ -32,6 +32,7 @@
 #include "version.h"
 #include "message.h"
 #include "resourcemgr.h"
+#include "indexlist.h"
 
 QCString searchName(const Definition *d)
 {

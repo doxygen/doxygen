@@ -49,16 +49,16 @@ class PlantumlManager
     void run();
 
     /** Write a PlantUML compatible file.
-     *  @param[in] outDir   the output directory to write the file to.
-     *  @param[in] fileName the name of the file. If empty a name will be chosen automatically.
-     *  @param[in] content  the contents of the PlantUML file.
-     *  @param[in] format   the image format to generate.
-     *  @param[in] engine   the plantuml engine to use.
-     *  @param[in] srcFile  the source file resulting in the write command.
-     *  @param[in] srcLine  the line number resulting in the write command.
+     *  @param[in] outDirArg   the output directory to write the file to.
+     *  @param[in] fileName    the name of the file. If empty a name will be chosen automatically.
+     *  @param[in] content     the contents of the PlantUML file.
+     *  @param[in] format      the image format to generate.
+     *  @param[in] engine      the plantuml engine to use.
+     *  @param[in] srcFile     the source file resulting in the write command.
+     *  @param[in] srcLine     the line number resulting in the write command.
      *  @returns The name of the generated file.
      */
-    QCString writePlantUMLSource(const QCString &outDir,const QCString &fileName,
+    QCString writePlantUMLSource(const QCString &outDirArg,const QCString &fileName,
                                  const QCString &content, OutputFormat format,
                                  const QCString &engine,const QCString &srcFile,
                                  int srcLine);

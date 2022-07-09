@@ -188,16 +188,8 @@ void ManDocVisitor::operator()(const DocStyleChange &s)
       break;
     case DocStyleChange::Div:  /* HTML only */ break;
     case DocStyleChange::Span: /* HTML only */ break;
-    case DocStyleChange::Details: /* emulation of the <details> tag */
-      if (!s.enable())
-      {
-        if (!m_firstCol) m_t << "\n";
-        m_t << ".PP\n";
-        m_firstCol=TRUE;
-      }
-      break;
     case DocStyleChange::Summary: /* emulation of the <summary> tag inside a <details> tag */
-      if (s.enable()) m_t << "\\fB";      else m_t << "\\fP";
+      if (s.enable()) m_t << "\\fB";      else m_t << "\\fP\n.PP\n";
       m_firstCol=FALSE;
       break;
   }
@@ -782,6 +774,22 @@ void ManDocVisitor::operator()(const DocHRef &href)
   m_t << "\\fC";
   visitChildren(href);
   m_t << "\\fP";
+}
+
+void ManDocVisitor::operator()(const DocHtmlDetails &d)
+{
+  if (m_hide) return;
+  if (!m_firstCol)
+  {
+    m_t << "\n";
+    m_t << ".PP\n";
+  }
+  m_t << ".RS 4\n"; // TODO: add support for nested detailes sections
+  visitChildren(d);
+  if (!m_firstCol) m_t << "\n";
+  m_t << ".RE\n";
+  m_t << ".PP\n";
+  m_firstCol=TRUE;
 }
 
 void ManDocVisitor::operator()(const DocHtmlHeader &header)

@@ -17,45 +17,59 @@ foreach (f  ${EXAMPLE_FILES})
     list(APPEND OUT_EXAMPLE_FILES "${PROJECT_BINARY_DIR}/examples/${f}")
 endforeach()
 
+# name                 file           extension   dependency (optional)
+set(EXAMPLE_class      class          h)
+set(EXAMPLE_define     define         h)
+set(EXAMPLE_enum       enum           h)
+set(EXAMPLE_file       file           h)
+set(EXAMPLE_func       func           h)
+set(EXAMPLE_javadoc    javadoc-banner h)
+set(EXAMPLE_structcmd  structcmd      h)
+set(EXAMPLE_afterdoc   afterdoc       h)
+set(EXAMPLE_relates    relates        cpp)
+set(EXAMPLE_author     author         cpp)
+set(EXAMPLE_par        par            cpp)
+set(EXAMPLE_overload   overload       cpp)
+set(EXAMPLE_example    example        cpp)
+set(EXAMPLE_include    include        cpp)
+set(EXAMPLE_qtstyle    qtstyle        cpp)
+set(EXAMPLE_jdstyle    jdstyle        cpp)
+set(EXAMPLE_autolink   autolink       cpp)
+set(EXAMPLE_restypedef restypedef     cpp)
+set(EXAMPLE_tag        tag            cpp        example)
+set(EXAMPLE_group      group          cpp)
+set(EXAMPLE_memgrp     memgrp         cpp)
+set(EXAMPLE_templ      templ          cpp)
+set(EXAMPLE_page       page           doc)
+set(EXAMPLE_docstring  docstring      py)
+set(EXAMPLE_pyexample  pyexample      py)
+set(EXAMPLE_manual     manual         c)
+set(EXAMPLE_mux        mux            vhdl)
+
 set(BASIC_EXAMPLES
-                class:h
-                define:h
-                enum:h
-                file:h
-                func:h
-                javadoc-banner:h
-                structcmd:h
-                afterdoc:h
-                relates:cpp
-                author:cpp
-                par:cpp
-                overload:cpp
-                example:cpp
-                include:cpp
-                qtstyle:cpp
-                jdstyle:cpp
-                autolink:cpp
-                restypedef:cpp
-                tag:cpp
-                group:cpp
-                memgrp:cpp
-                templ:cpp
-                page:doc
-                docstring:py
-                pyexample:py
-                manual:c
-                mux:vhdl
+  EXAMPLE_class   EXAMPLE_define    EXAMPLE_enum       EXAMPLE_file      EXAMPLE_func
+  EXAMPLE_javadoc EXAMPLE_structcmd EXAMPLE_afterdoc   EXAMPLE_relates   EXAMPLE_author
+  EXAMPLE_par     EXAMPLE_overload  EXAMPLE_example    EXAMPLE_include   EXAMPLE_qtstyle
+  EXAMPLE_jdstyle EXAMPLE_autolink  EXAMPLE_restypedef EXAMPLE_tag       EXAMPLE_group
+  EXAMPLE_memgrp  EXAMPLE_templ     EXAMPLE_page       EXAMPLE_docstring EXAMPLE_pyexample
+  EXAMPLE_manual  EXAMPLE_mux
 )
 
 foreach (f_inp  ${BASIC_EXAMPLES})
-        string(REGEX REPLACE ".*:" "" f_ext ${f_inp})
-        string(REGEX REPLACE ":.*" "" f ${f_inp})
+	list(LENGTH ${f_inp} f_len)
+	list(GET    ${f_inp} 0 f)
+	list(GET    ${f_inp} 1 f_ext)
+	set(f_dep "")
+	if (${f_len} GREATER 2)
+	  list(GET  ${f_inp} 2 f_dep)
+	  set(f_dep "${PROJECT_BINARY_DIR}/html/examples/${f_dep}/html/index.html")
+	endif()
     add_custom_command(
         COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/html/examples/${f}
         COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/latex/examples/${f}
 	COMMAND ${EXECUTABLE_OUTPUT_PATH}/doxygen ${f}.cfg
         COMMAND ${PYTHON_EXECUTABLE}  ${TOP}/examples/strip_example.py  < ${PROJECT_BINARY_DIR}/latex/examples/${f}/latex/refman.tex > ${PROJECT_BINARY_DIR}/latex/examples/${f}/latex/refman_doc.tex
-	DEPENDS doxygen ${f}.${f_ext} ${f}.cfg ${TOP}/examples/strip_example.py
+	DEPENDS doxygen ${f}.${f_ext} ${f}.cfg ${TOP}/examples/strip_example.py ${f_dep}
 	OUTPUT ${PROJECT_BINARY_DIR}/html/examples/${f}/html/index.html ${PROJECT_BINARY_DIR}/latex/examples/${f}/latex/refman_doc.tex
     )
     set(EXAMPLES_RES ${EXAMPLES_RES} "" ${PROJECT_BINARY_DIR}/html/examples/${f}/html/index.html)

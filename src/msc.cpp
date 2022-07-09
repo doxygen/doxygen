@@ -22,7 +22,7 @@
 #include "docparser.h"
 #include "docnode.h"
 #include "doxygen.h"
-#include "index.h"
+#include "indexlist.h"
 #include "util.h"
 #include "mscgen_api.h"
 #include "dir.h"

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # python script to generate configoptions.cpp and config.doc from config.xml
 #
 # Copyright (C) 1997-2015 by Dimitri van Heesch.
@@ -173,9 +173,9 @@ def prepCDocs(node):
                      "default value", defval)
         elif (type == 'bool'):
             if (node.hasAttribute('altdefval')):
-              doc += "<br/>%s: %s." % ("The default value is", "system dependent")
+                doc += "<br/>%s: %s." % ("The default value is", "system dependent")
             else:
-              doc += "<br/>%s: %s." % ("The default value is", "YES" if (defval == "1") else "NO")
+                doc += "<br/>%s: %s." % ("The default value is", "YES" if (defval == "1") else "NO")
         elif (type == 'list'):
             if format == 'string':
                 values = collectValues(node)

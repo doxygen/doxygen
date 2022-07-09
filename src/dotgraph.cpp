@@ -18,7 +18,7 @@
 
 #include "config.h"
 #include "doxygen.h"
-#include "index.h"
+#include "indexlist.h"
 #include "md5.h"
 #include "message.h"
 #include "util.h"
@@ -301,7 +301,7 @@ void DotGraph::writeGraphHeader(TextStream &t,const QCString &title)
          "labelfontname=\"" << fontName << "\","
          "labelfontsize=\"" << fontSize << "\"];\n";
   t << "  node [fontname=\"" << fontName << "\","
-         "fontsize=\"" << fontSize << "\",shape=record];\n";
+         "fontsize=\"" << fontSize << "\",shape=\"box\"];\n";
 }
 
 void DotGraph::writeGraphFooter(TextStream &t)
