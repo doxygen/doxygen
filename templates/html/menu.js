@@ -52,7 +52,7 @@ function initMenu(relPath,searchEnabled,serverSide,searchPage,search) {
                   '<form id="FSearchBox" action="'+relPath+searchPage+
                     '" method="get"><img id="MSearchSelect" src="'+
                     relPath+'search/mag.svg" alt=""/>'+
-                  '<input type="text" id="MSearchField" name="query" value="'+search+
+                  '<input type="text" id="MSearchField" name="query" value="" placeholder="'+search+
                     '" size="20" accesskey="S" onfocus="searchBox.OnSearchFieldFocus(true)"'+
                     ' onblur="searchBox.OnSearchFieldFocus(false)">'+
                   '</form>'+
@@ -65,7 +65,7 @@ function initMenu(relPath,searchEnabled,serverSide,searchPage,search) {
                   '<img id="MSearchSelect" src="'+relPath+
                      'search/mag_sel.svg" onmouseover="return searchBox.OnSearchSelectShow()"'+
                      ' onmouseout="return searchBox.OnSearchSelectHide()" alt=""/>'+
-                  '<input type="text" id="MSearchField" value="'+search+
+                  '<input type="text" id="MSearchField" value="" placeholder="'+search+
                     '" accesskey="S" onfocus="searchBox.OnSearchFieldFocus(true)" '+
                     'onblur="searchBox.OnSearchFieldFocus(false)" '+
                     'onkeyup="searchBox.OnSearchFieldChange(event)"/>'+
