@@ -81,7 +81,30 @@ set_source_files_properties(${GENERATED_SRC_WIZARD}/configdoc.cpp PROPERTIES GEN
 
 set(LEX_FILES config_doxyw)
 
+if (NOT depfile_supported)
+    # In case the DEPFILE possibility is not supported the complete list of lex include files for the dependency has to be used
+    set(LEX_INC_FILES)
+endif()
+
 foreach(lex_file ${LEX_FILES})
+    if (depfile_supported)
+        add_custom_command(
+            COMMAND ${PYTHON_EXECUTABLE} ${PROJECT_SOURCE_DIR}/src/pre_lex.py ${PROJECT_SOURCE_DIR}/addon/doxywizard/${lex_file}.l  ${GENERATED_SRC_WIZARD}/${lex_file}.l ${GENERATED_SRC_WIZARD}/${lex_file}.corr ${GENERATED_SRC_WIZARD}/${lex_file}.d ${PROJECT_SOURCE_DIR}/src
+            DEPENDS ${PROJECT_SOURCE_DIR}/src/pre_lex.py ${PROJECT_SOURCE_DIR}/addon/doxywizard/${lex_file}.l
+            DEPFILE ${GENERATED_SRC_WIZARD}/${lex_file}.d
+            OUTPUT  ${GENERATED_SRC_WIZARD}/${lex_file}.l ${GENERATED_SRC_WIZARD}/${lex_file}.corr ${GENERATED_SRC_WIZARD}/${lex_file}.d
+        )
+        set_source_files_properties(${GENERATED_SRC_WIZARD}/${lex_file}.l PROPERTIES GENERATED 1)
+        set_source_files_properties(${GENERATED_SRC_WIZARD}/${lex_file}.corr PROPERTIES GENERATED 1)
+        set_source_files_properties(${GENERATED_SRC_WIZARD}/${lex_file}.d PROPERTIES GENERATED 1)
+    else()
+        add_custom_command(
+            COMMAND ${PYTHON_EXECUTABLE} ${PROJECT_SOURCE_DIR}/src/pre_lex.py ${PROJECT_SOURCE_DIR}/addon/doxywizard/${lex_file}.l  ${GENERATED_SRC_WIZARD}/${lex_file}.l ${GENERATED_SRC_WIZARD}/${lex_file}.corr ${PROJECT_SOURCE_DIR}/src
+            DEPENDS ${PROJECT_SOURCE_DIR}/src/pre_lex.py ${PROJECT_SOURCE_DIR}/addon/doxywizard/${lex_file}.l ${LEX_INC_FILES}
+            OUTPUT  ${GENERATED_SRC_WIZARD}/${lex_file}.corr ${GENERATED_SRC_WIZARD}/${lex_file}.l
+        )
+    endif()
+
     add_custom_command(
         COMMAND ${PYTHON_EXECUTABLE} ${PROJECT_SOURCE_DIR}/src/pre_lex.py ${PROJECT_SOURCE_DIR}/addon/doxywizard/${lex_file}.l  ${GENERATED_SRC_WIZARD}/${lex_file}.l ${GENERATED_SRC_WIZARD}/${lex_file}.corr ${GENERATED_SRC_WIZARD}/${lex_file}.d ${PROJECT_SOURCE_DIR}/src
         DEPENDS ${PROJECT_SOURCE_DIR}/src/pre_lex.py ${PROJECT_SOURCE_DIR}/addon/doxywizard/${lex_file}.l
