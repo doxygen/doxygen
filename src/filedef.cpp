@@ -1526,6 +1526,18 @@ void FileDefImpl::acquireFileVersion()
   if (!vercmd.isEmpty() && !m_filePath.isEmpty() &&
       m_filePath!="generated" && m_filePath!="graph_legend")
   {
+    const StringVector &tagFileList = Config_getList(TAGFILES);
+    for (const auto &s : tagFileList)
+    {
+      int equalSign = s.find('=');
+      std::string fn = s;
+      if (equalSign != -1)
+      {
+        fn = s.substr(0,equalSign);
+      }
+      FileInfo fi(fn);
+      if (m_filePath.startsWith(fi.absFilePath())) return;
+    }
     msg("Version of %s : ",qPrint(m_filePath));
     QCString cmd = vercmd+" \""+m_filePath+"\"";
     Debug::print(Debug::ExtCmd,0,"Executing popen(`%s`)\n",qPrint(cmd));
