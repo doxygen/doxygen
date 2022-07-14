@@ -22,9 +22,8 @@
 
  @licend  The above is the entire license notice for the JavaScript code in this file
  */
-function SearchBox(name, resultsPath, inFrame, label)
+function SearchBox(name, resultsPath, extension)
 {
-  this.searchLabel = label;
   this.DOMSearchField = function()
   {  return document.getElementById("MSearchField");  }
   this.DOMSearchBox = function()
@@ -34,16 +33,10 @@ function SearchBox(name, resultsPath, inFrame, label)
     if (isActive)
     {
       this.DOMSearchBox().className = 'MSearchBoxActive';
-      var searchField = this.DOMSearchField();
-      if (searchField.value == this.searchLabel)
-      {
-        searchField.value = '';
-      }
     }
     else
     {
       this.DOMSearchBox().className = 'MSearchBoxInactive';
-      this.DOMSearchField().value   = this.searchLabel;
     }
   }
 }
