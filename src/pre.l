@@ -476,7 +476,9 @@ WSopt [ \t\r]*
                                           BEGIN(CopyLine);
                                         }
 <Start>^{B}*[_A-Z][_A-Z0-9]+{B}*"("[^\(\)\n]*"("[^\)\n]*")"[^\)\n]*")"{B}*\n | // function list macro with one (...) argument, e.g. for K_GLOBAL_STATIC_WITH_ARGS
-<Start>^{B}*[_A-Z][_A-Z0-9]+{B}*"("[^\)\n]*")"{B}*\n { // function like macro
+<Start>^{B}*[_A-Z][_A-Z0-9]+{B}*"("[^\)\n]*")"{B}*\n | // function like macro
+<Start>^{B}*[_A-Z][_A-Z0-9]+{B}*"("[^\(\)\n]*"("[^\)\n]*")"[^\)\n]*")"/{B}*("//"|"/\*") | // function list macro with one (...) argument followed by comment
+<Start>^{B}*[_A-Z][_A-Z0-9]+{B}*"("[^\)\n]*")"/{B}*("//"|"/\*") { // function like macro followed by comment
                                           bool skipFuncMacros = Config_getBool(SKIP_FUNCTION_MACROS);
                                           QCString name(yytext);
                                           int pos = name.find('(');
@@ -495,8 +497,12 @@ WSopt [ \t\r]*
                                                )
                                              )
                                           {
-                                            outputChar(yyscanner,'\n');
-                                            yyextra->yyLineNr++;
+                                            // Only when ends on \n
+                                            if (yytext[yyleng-1] == '\n')
+                                            {
+                                              outputChar(yyscanner,'\n');
+                                              yyextra->yyLineNr++;
+                                            }
                                           }
                                           else // don't skip
                                           {
