@@ -112,20 +112,34 @@ set(LEX_FILES scanner
     lexscanner
     configimpl)
 
+if (NOT depfile_supported)
+    # In case the DEPFILE possibility is not supported the complete list of lex include files for the dependency has to be used
+    set(LEX_INC_FILES)
+endif()
+
 # unfortunately ${LEX_FILES_H} and ${LEX_FILES_CPP} don't work in older versions of CMake (like 3.6.2) for add_library
 foreach(lex_file ${LEX_FILES})
     set(LEX_FILES_H ${LEX_FILES_H} " " ${GENERATED_SRC}/${lex_file}.l.h CACHE INTERNAL "Stores generated files")
     set(LEX_FILES_CPP ${LEX_FILES_CPP} " " ${GENERATED_SRC}/${lex_file}.cpp CACHE INTERNAL "Stores generated files")
 
-    add_custom_command(
-        COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_LIST_DIR}/pre_lex.py ${CMAKE_CURRENT_LIST_DIR}/${lex_file}.l  ${GENERATED_SRC}/${lex_file}.l ${GENERATED_SRC}/${lex_file}.corr ${GENERATED_SRC}/${lex_file}.d ${CMAKE_CURRENT_LIST_DIR}
-        DEPENDS ${CMAKE_CURRENT_LIST_DIR}/pre_lex.py ${CMAKE_CURRENT_LIST_DIR}/${lex_file}.l
-        DEPFILE ${GENERATED_SRC}/${lex_file}.d
-        OUTPUT  ${GENERATED_SRC}/${lex_file}.l ${GENERATED_SRC}/${lex_file}.corr ${GENERATED_SRC}/${lex_file}.d
-    )
+    if (depfile_supported)
+        add_custom_command(
+            COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_LIST_DIR}/pre_lex.py ${CMAKE_CURRENT_LIST_DIR}/${lex_file}.l  ${GENERATED_SRC}/${lex_file}.l ${GENERATED_SRC}/${lex_file}.corr ${GENERATED_SRC}/${lex_file}.d ${CMAKE_CURRENT_LIST_DIR}
+            DEPENDS ${CMAKE_CURRENT_LIST_DIR}/pre_lex.py ${CMAKE_CURRENT_LIST_DIR}/${lex_file}.l
+            DEPFILE ${GENERATED_SRC}/${lex_file}.d
+            OUTPUT  ${GENERATED_SRC}/${lex_file}.l ${GENERATED_SRC}/${lex_file}.corr ${GENERATED_SRC}/${lex_file}.d
+        )
+    else()
+        add_custom_command(
+            COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_LIST_DIR}/pre_lex.py ${CMAKE_CURRENT_LIST_DIR}/${lex_file}.l  ${GENERATED_SRC}/${lex_file}.l ${GENERATED_SRC}/${lex_file}.corr ${GENERATED_SRC}/${lex_file}.d ${CMAKE_CURRENT_LIST_DIR}
+            DEPENDS ${CMAKE_CURRENT_LIST_DIR}/pre_lex.py ${CMAKE_CURRENT_LIST_DIR}/${lex_file}.l ${LEX_INC_FILES}
+            OUTPUT  ${GENERATED_SRC}/${lex_file}.l ${GENERATED_SRC}/${lex_file}.corr ${GENERATED_SRC}/${lex_file}.d
+        )
+    endif()
     set_source_files_properties(${GENERATED_SRC}/${lex_file}.l PROPERTIES GENERATED 1)
     set_source_files_properties(${GENERATED_SRC}/${lex_file}.corr PROPERTIES GENERATED 1)
     set_source_files_properties(${GENERATED_SRC}/${lex_file}.d PROPERTIES GENERATED 1)
+
     add_custom_command(
         COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_LIST_DIR}/scan_states.py ${GENERATED_SRC}/${lex_file}.l > ${GENERATED_SRC}/${lex_file}.l.h
         DEPENDS ${CMAKE_CURRENT_LIST_DIR}/scan_states.py ${GENERATED_SRC}/${lex_file}.l

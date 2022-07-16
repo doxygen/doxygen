@@ -47,6 +47,13 @@ list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/Sanitizers")
 set(TOP "${PROJECT_SOURCE_DIR}")
 include(version)
 
+message(STATUS "Using Cmake version ${CMAKE_VERSION}")
+if (${CMAKE_VERSION} VERSION_LESS "3.21.0")
+    set(depfile_supported  "0" CACHE INTERNAL "DEPFILE is not supported")
+else()
+    set(depfile_supported  "1" CACHE INTERNAL "DEPFILE is supported")
+endif()
+
 set(sqlite3  "0" CACHE INTERNAL "used in settings.h")
 set(clang    "0" CACHE INTERNAL "used in settings.h")
 if (use_sqlite3)
