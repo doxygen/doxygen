@@ -3391,45 +3391,42 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
 
     const ClassDef *cd=getClassDef();
     const NamespaceDef *nd=getNamespaceDef();
-    if (!Config_getBool(HIDE_SCOPE_NAMES))
+    bool first=TRUE;
+    if (!m_impl->defTmpArgLists.empty() && lang==SrcLangExt_Cpp)
+      // definition has explicit template parameter declarations
     {
-      bool first=TRUE;
-      if (!m_impl->defTmpArgLists.empty() && lang==SrcLangExt_Cpp)
-        // definition has explicit template parameter declarations
+      for (const ArgumentList &tal : m_impl->defTmpArgLists)
       {
-        for (const ArgumentList &tal : m_impl->defTmpArgLists)
+        if (!tal.empty())
+        {
+          if (!first) ol.docify(" ");
+          ol.startMemberDocPrefixItem();
+          _writeTemplatePrefix(ol,scopedContainer,tal);
+          ol.endMemberDocPrefixItem();
+        }
+      }
+    }
+    else // definition gets it template parameters from its class
+      // (since no definition was found)
+    {
+      if (cd && lang==SrcLangExt_Cpp && !isTemplateSpecialization())
+      {
+        for (const ArgumentList &tal : cd->getTemplateParameterLists())
         {
           if (!tal.empty())
           {
             if (!first) ol.docify(" ");
             ol.startMemberDocPrefixItem();
-            _writeTemplatePrefix(ol,scopedContainer,tal);
+            _writeTemplatePrefix(ol,scopedContainer,tal,false);
             ol.endMemberDocPrefixItem();
           }
         }
       }
-      else // definition gets it template parameters from its class
-        // (since no definition was found)
+      if (m_impl->tArgList.hasParameters() && lang==SrcLangExt_Cpp) // function template prefix
       {
-        if (cd && lang==SrcLangExt_Cpp && !isTemplateSpecialization())
-        {
-          for (const ArgumentList &tal : cd->getTemplateParameterLists())
-          {
-            if (!tal.empty())
-            {
-              if (!first) ol.docify(" ");
-              ol.startMemberDocPrefixItem();
-              _writeTemplatePrefix(ol,scopedContainer,tal,false);
-              ol.endMemberDocPrefixItem();
-            }
-          }
-        }
-        if (m_impl->tArgList.hasParameters() && lang==SrcLangExt_Cpp) // function template prefix
-        {
-          ol.startMemberDocPrefixItem();
-          _writeTemplatePrefix(ol,scopedContainer,m_impl->tArgList);
-          ol.endMemberDocPrefixItem();
-        }
+        ol.startMemberDocPrefixItem();
+        _writeTemplatePrefix(ol,scopedContainer,m_impl->tArgList);
+        ol.endMemberDocPrefixItem();
       }
     }
 
