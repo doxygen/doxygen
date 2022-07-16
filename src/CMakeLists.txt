@@ -129,16 +129,17 @@ foreach(lex_file ${LEX_FILES})
             DEPFILE ${GENERATED_SRC}/${lex_file}.d
             OUTPUT  ${GENERATED_SRC}/${lex_file}.l ${GENERATED_SRC}/${lex_file}.corr ${GENERATED_SRC}/${lex_file}.d
         )
-        set_source_files_properties(${GENERATED_SRC}/${lex_file}.l PROPERTIES GENERATED 1)
-        set_source_files_properties(${GENERATED_SRC}/${lex_file}.corr PROPERTIES GENERATED 1)
-        set_source_files_properties(${GENERATED_SRC}/${lex_file}.d PROPERTIES GENERATED 1)
     else()
         add_custom_command(
-            COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_LIST_DIR}/pre_lex.py ${CMAKE_CURRENT_LIST_DIR}/${lex_file}.l  ${GENERATED_SRC}/${lex_file}.l ${GENERATED_SRC}/${lex_file}.corr ${CMAKE_CURRENT_LIST_DIR}
+            COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_LIST_DIR}/pre_lex.py ${CMAKE_CURRENT_LIST_DIR}/${lex_file}.l  ${GENERATED_SRC}/${lex_file}.l ${GENERATED_SRC}/${lex_file}.corr ${GENERATED_SRC}/${lex_file}.d ${CMAKE_CURRENT_LIST_DIR}
             DEPENDS ${CMAKE_CURRENT_LIST_DIR}/pre_lex.py ${CMAKE_CURRENT_LIST_DIR}/${lex_file}.l ${LEX_INC_FILES}
-            OUTPUT  ${GENERATED_SRC}/${lex_file}.corr ${GENERATED_SRC}/${lex_file}.l
+            OUTPUT  ${GENERATED_SRC}/${lex_file}.l ${GENERATED_SRC}/${lex_file}.corr ${GENERATED_SRC}/${lex_file}.d
         )
     endif()
+    set_source_files_properties(${GENERATED_SRC}/${lex_file}.l PROPERTIES GENERATED 1)
+    set_source_files_properties(${GENERATED_SRC}/${lex_file}.corr PROPERTIES GENERATED 1)
+    set_source_files_properties(${GENERATED_SRC}/${lex_file}.d PROPERTIES GENERATED 1)
+
     add_custom_command(
         COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_LIST_DIR}/scan_states.py ${GENERATED_SRC}/${lex_file}.l > ${GENERATED_SRC}/${lex_file}.l.h
         DEPENDS ${CMAKE_CURRENT_LIST_DIR}/scan_states.py ${GENERATED_SRC}/${lex_file}.l
