@@ -3458,7 +3458,7 @@ class Receiver
 
   \b Note:
     environment variables (like \$(HOME) ) are resolved inside a
-    \LaTeX-only block.
+    \LaTeX\-only block.
 
   \sa sections \ref cmdrtfonly "\\rtfonly",
                \ref cmdxmlonly "\\xmlonly",
