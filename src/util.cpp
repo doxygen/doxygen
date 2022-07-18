@@ -6073,7 +6073,7 @@ static QCString escapeCommas(const QCString &s)
 static QCString expandAliasRec(StringUnorderedSet &aliasesProcessed,const QCString &s,bool allowRecursion)
 {
   QCString result;
-  static const reg::Ex re(R"([\\@](\a\w*))");
+  static const reg::Ex re(R"([\\@](\a[\w-]*))");
   std::string str = s.str();
   reg::Match match;
   size_t p = 0;
