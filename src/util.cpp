@@ -6134,6 +6134,13 @@ static QCString expandAliasRec(StringUnorderedSet &aliasesProcessed,const QCStri
   result+=s.right(s.length()-p);
 
   //printf("expandAliases '%s'->'%s'\n",s.data(),result.data());
+  if (result == s)
+  {
+    std::string orgStr = s.str();
+    int ridx = orgStr.rfind('-');
+    if (ridx != -1) return expandAliasRec(aliasesProcessed,s.left(ridx),allowRecursion) + s.right(s.length() - ridx);
+  }
+
   return result;
 }
 
