@@ -42,6 +42,7 @@ typedef yyguts_t *yyscan_t;
 #include <ctype.h>
 
 #include "qcstring.h"
+#include "fileinfo.h"
 #include "cite.h"
 #include "commentscan.h"
 #include "condparser.h"
@@ -142,6 +143,8 @@ static bool handleParBlock(yyscan_t yyscanner,const QCString &, const StringVect
 static bool handleEndParBlock(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleParam(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleRetval(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleFileName(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleFileLine(yyscan_t yyscanner,const QCString &, const StringVector &);
 
 #if USE_STATE2STRING
 static const char *stateToString(int state);
@@ -309,6 +312,8 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "xmlonly",         { &handleFormatBlock,      CommandSpacing::Invisible }},
   { "xrefitem",        { &handleXRefItem,         CommandSpacing::XRef      }},
   { "iliteral",        { &handleFormatBlock,      CommandSpacing::Inline    }},
+  { "filename",        { &handleFileName,         CommandSpacing::Inline    }},
+  { "fileline",        { &handleFileLine,         CommandSpacing::Inline    }},
 };
 
 #define YY_NO_INPUT 1
@@ -2625,6 +2630,107 @@ static bool handleAddIndex(yyscan_t yyscanner,const QCString &, const StringVect
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   addOutput(yyscanner,"@addindex ");
   BEGIN(LineParam);
+  return FALSE;
+}
+
+static bool handleFileName(yyscan_t yyscanner,const QCString &, const StringVector &optList)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  addOutput(yyscanner," ");
+  bool first = true;
+  FileInfo fi(yyextra->fileName.str());
+  for (const auto &opt_ : optList)
+  {
+    QCString opt = QCString(opt_).stripWhiteSpace().lower();
+    if (!opt.isEmpty())
+    {
+      if (opt == "name")
+      {
+        if (!first)
+        {
+          warn(yyextra->fileName,yyextra->lineNr,"Multiple options specified with \\filename, discarding '%s'", qPrint(QCString(opt_).stripWhiteSpace()));
+        }
+        else
+        {
+          addOutput(yyscanner,fi.baseName());
+        }
+        first = false;
+      }
+      else if (opt == "extension")
+      {
+        if (!first)
+        {
+          warn(yyextra->fileName,yyextra->lineNr,"Multiple options specified with \\filename, discarding '%s'", qPrint(QCString(opt_).stripWhiteSpace()));
+        }
+        else
+        {
+          addOutput(yyscanner,fi.extension(true));
+        }
+        first = false;
+      }
+      else if (opt == "filename")
+      {
+        if (!first)
+        {
+          warn(yyextra->fileName,yyextra->lineNr,"Multiple options specified with \\filename, discarding '%s'", qPrint(QCString(opt_).stripWhiteSpace()));
+        }
+        else
+        {
+          addOutput(yyscanner,fi.fileName());
+        }
+        first = false;
+      }
+      else if (opt == "directory")
+      {
+        if (!first)
+        {
+          warn(yyextra->fileName,yyextra->lineNr,"Multiple options specified with \\filename, discarding '%s'", qPrint(QCString(opt_).stripWhiteSpace()));
+        }
+        else
+        {
+          addOutput(yyscanner,fi.dirPath());
+        }
+        first = false;
+      }
+      else if (opt == "full")
+      {
+        if (!first)
+        {
+          warn(yyextra->fileName,yyextra->lineNr,"Multiple options specified with \\filename, discarding '%s'", qPrint(QCString(opt_).stripWhiteSpace()));
+        }
+        else
+        {
+          addOutput(yyscanner,fi.absFilePath());
+        }
+        first = false;
+      }
+      else
+      {
+        warn(yyextra->fileName,yyextra->lineNr,"Unknown option specified with \\filename: '%s'", qPrint(QCString(opt_).stripWhiteSpace()));
+      }
+    }
+  }
+  if (first)
+  {
+    if (Config_getBool(FULL_PATH_NAMES))
+    {
+      addOutput(yyscanner,stripFromPath(yyextra->fileName));
+    }
+    else
+    {
+      addOutput(yyscanner,yyextra->fileName);
+    }
+  }
+  addOutput(yyscanner," ");
+  return FALSE;
+}
+
+static bool handleFileLine(yyscan_t yyscanner,const QCString &, const StringVector &)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  char tmp[12];
+  sprintf(tmp," %d ",yyextra->lineNr);
+  addOutput(yyscanner,tmp);
   return FALSE;
 }
 
