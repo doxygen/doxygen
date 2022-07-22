@@ -2948,6 +2948,7 @@ doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty
  <dt><code>$papertype</code><dd>will be replaced by the paper type as set in
            \ref cfg_paper_type "PAPER_TYPE" and the word "paper" is directly appended to it to have
            a correct \f$\mbox{\LaTeX}\f$ paper type.
+ <dt><code>$langISO</code><dd>will be replaced by the ISO language name.
  <dt><code>$languagesupport</code><dd>will be replaced by an output language dependent setting
            of packages required for translating terms of the specified language.
  <dt><code>$latexfontenc</code><dd>will be replaced by an output language dependent setting
