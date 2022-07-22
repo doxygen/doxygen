@@ -96,7 +96,7 @@ static EdgeProperties umlEdgeProps =
   umlEdgeColorMap, umlArrowStyleMap, umlEdgeStyleMap
 };
 
-static QCString escapeTooltip(const QCString &tooltip)
+QCString escapeTooltip(const QCString &tooltip)
 {
   if (tooltip.isEmpty()) return tooltip;
   QCString result;

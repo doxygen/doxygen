@@ -140,4 +140,6 @@ class DotNodeDeque : public std::deque<DotNode*>
 {
 };
 
+QCString escapeTooltip(const QCString &tooltip);
+
 #endif

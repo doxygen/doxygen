@@ -138,6 +138,14 @@ static std::string getDirectoryBorderStyle(const DotDirProperty &property)
   return style;
 }
 
+static TextStream &common_attributes(TextStream &t, const DirDef *const dir, const DotDirProperty &prop)
+{
+  return t <<
+    "style=\""   << getDirectoryBorderStyle(prop) << "\", "
+    "URL=\""     << addHtmlExtensionIfMissing(dir->getOutputFileBase()) << "\","
+    "tooltip=\"" << escapeTooltip(dir->briefDescriptionAsTooltip()) << "\"";
+}
+
 /**
  * Puts DOT code for drawing directory to stream and adds it to the list.
  * @param[in,out] t stream to which the DOT code is written to
@@ -151,11 +159,10 @@ static void drawDirectory(TextStream &t, const DirDef *const directory, const Do
 {
   t << "  " << directory->getOutputFileBase() << " ["
       "label=\""     << DotNode::convertLabel(directory->shortName())                                       << "\", "
-      "style=\""     << getDirectoryBorderStyle(property)                            << "\", "
       "fillcolor=\"" << getDirectoryBackgroundColor(directory->level()-startLevel)   << "\", "
-      "color=\""     << getDirectoryBorderColor(property)                            << "\", "
-      "URL=\""       << addHtmlExtensionIfMissing(directory->getOutputFileBase())    << "\""
-      "];\n";
+      "color=\""     << getDirectoryBorderColor(property)                            << "\", ";
+  common_attributes(t, directory, property)
+      << "];\n";
   directoriesInGraph.insert(std::make_pair(directory->getOutputFileBase().str(), directory));
 }
 
@@ -178,7 +185,6 @@ static void drawClusterOpening(TextStream &outputStream, const DirDef *const dir
       "    graph [ "
       "bgcolor=\""  << getDirectoryBackgroundColor(directory->level()-startLevel) << "\", "
       "pencolor=\"" << getDirectoryBorderColor(directoryProperty) << "\", "
-      "style=\""    << getDirectoryBorderStyle(directoryProperty) << "\", "
       "label=\"";
   if (isAncestor)
   {
@@ -186,9 +192,9 @@ static void drawClusterOpening(TextStream &outputStream, const DirDef *const dir
   }
   outputStream << "\", "
       "fontname=\"" << Config_getString(DOT_FONTNAME) << "\", "
-      "fontsize=\"" << Config_getInt(DOT_FONTSIZE) << "\", "
-      "URL=\"" << addHtmlExtensionIfMissing(directory->getOutputFileBase()) << "\""
-      "]\n";
+      "fontsize=\"" << Config_getInt(DOT_FONTSIZE) << "\", ";
+  common_attributes(outputStream, directory, directoryProperty)
+      << "]\n";
   if (!isAncestor)
   {
     outputStream << "    " << directory->getOutputFileBase() << " [shape=plaintext, "
