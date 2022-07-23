@@ -1132,13 +1132,17 @@ void HtmlGenerator::writeStyleSheetFile(TextStream &t)
 
 void HtmlGenerator::writeHeaderFile(TextStream &t, const QCString & /*cssname*/)
 {
-  t << "<!-- HTML header for doxygen " << getDoxygenVersion() << "-->\n";
-  t << ResourceMgr::instance().getAsString("header.html");
+  QCString head =  ResourceMgr::instance().getAsString("header.html");
+  int endPlace = head.find("<head>") + 7;
+
+  t << head.left(endPlace);
+  t << "<!-- HTML header for doxygen " << getDoxygenVersion() << " -->\n";
+  t << head.right(head.length() - endPlace);
 }
 
 void HtmlGenerator::writeFooterFile(TextStream &t)
 {
-  t << "<!-- HTML footer for doxygen " << getDoxygenVersion() << "-->\n";
+  t << "<!-- HTML footer for doxygen " << getDoxygenVersion() << " -->\n";
   t << ResourceMgr::instance().getAsString("footer.html");
 }
 
