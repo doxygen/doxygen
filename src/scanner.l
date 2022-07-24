@@ -202,9 +202,10 @@ struct scannerYY_state
   std::vector< std::pair<Entry*,std::shared_ptr<Entry> > > outerScopeEntries;
   QCString         programStr;
 
-  ClangTUParser * clangParser = 0;
+  ClangTUParser   *clangParser = 0;
 
-  int fakeNS  = 0; //<! number of file scoped namespaces in CSharp file
+  int              fakeNS  = 0; //<! number of file scoped namespaces in CSharp file
+  TextStream       dummyTextStream;
 };
 
 #if USE_STATE2STRING
@@ -5466,8 +5467,10 @@ NONLopt [^\n]*
 <SkipInits,SkipCurly,SkipCurlyCpp>@\"   {
                                           if (!yyextra->insideCS) REJECT;
                                           // C# verbatim string
+                                          // we want to discard the string, due to reuse of states we need a dummy stream
                                           yyextra->lastSkipVerbStringContext=YY_START;
-                                          yyextra->pSkipVerbString=&yyextra->current->initializer;
+                                          yyextra->pSkipVerbString=&yyextra->dummyTextStream;
+                                          yyextra->dummyTextStream.clear(); // remove old data so it won't grow too much
                                           BEGIN(SkipVerbString);
                                         }
 <SkipInits,SkipCurly,SkipCurlyCpp>{CHARLIT}     {

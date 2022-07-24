@@ -55,7 +55,7 @@ void DotLegendGraph::computeTheGraph()
   md5stream << "  Node10 -> Node9 [dir=\"back\",color=\"midnightblue\",style=\"solid\"];\n";
   DotNode{10, "PublicBase", "", "url"}.markHasDocumentation().writeBox(md5stream, CallGraph, GOF_BITMAP, false);
   md5stream << "  Node11 -> Node10 [dir=\"back\",color=\"midnightblue\",style=\"solid\"];\n";
-  DotNode{11, "Truncated!", "", "url"}.markAsTruncated().markHasDocumentation().writeBox(md5stream, CallGraph, GOF_BITMAP, true);
+  DotNode{11, "Truncated", "", "url"}.markAsTruncated().markHasDocumentation().writeBox(md5stream, CallGraph, GOF_BITMAP, true);
   md5stream << "  Node13 -> Node9 [dir=\"back\",color=\"darkgreen\",style=\"solid\"];\n";
   md5stream << "  Node13 [label=\"ProtectedBase\",color=\"black\"];\n";
   md5stream << "  Node14 -> Node9 [dir=\"back\",color=\"firebrick4\",style=\"solid\"];\n";

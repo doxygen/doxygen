@@ -3470,6 +3470,7 @@ QCString substituteKeywords(const QCString &s,const QCString &title,
   result = substitute(result,"$projectnumber",projNum);
   result = substitute(result,"$projectbrief",projBrief);
   result = substitute(result,"$projectlogo",stripPath(Config_getString(PROJECT_LOGO)));
+  result = substitute(result,"$lang",theTranslator->trISOLang());
   return result;
 }
 
@@ -6072,7 +6073,7 @@ static QCString escapeCommas(const QCString &s)
 static QCString expandAliasRec(StringUnorderedSet &aliasesProcessed,const QCString &s,bool allowRecursion)
 {
   QCString result;
-  static const reg::Ex re(R"([\\@](\a\w*))");
+  static const reg::Ex re(R"([\\@](\a[\w-]*))");
   std::string str = s.str();
   reg::Match match;
   size_t p = 0;
@@ -6133,6 +6134,13 @@ static QCString expandAliasRec(StringUnorderedSet &aliasesProcessed,const QCStri
   result+=s.right(s.length()-p);
 
   //printf("expandAliases '%s'->'%s'\n",s.data(),result.data());
+  if (result == s)
+  {
+    std::string orgStr = s.str();
+    int ridx = orgStr.rfind('-');
+    if (ridx != -1) return expandAliasRec(aliasesProcessed,s.left(ridx),allowRecursion) + s.right(s.length() - ridx);
+  }
+
   return result;
 }
 

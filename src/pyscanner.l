@@ -1187,6 +1187,10 @@ STARTDOCSYMS      "##"
                         yyextra->start_init = FALSE;
                         yyextra->current->initializer << yytext;
                       }
+   "\\\n"             {
+                        yyextra->current->initializer << yytext;
+                        incLineNr(yyscanner);
+                      }
    .                  {
                         yyextra->start_init = FALSE;
                         yyextra->current->initializer << *yytext;
