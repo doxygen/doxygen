@@ -1524,7 +1524,7 @@ void FileDefImpl::acquireFileVersion()
 {
   QCString vercmd = Config_getString(FILE_VERSION_FILTER);
   if (!vercmd.isEmpty() && !m_filePath.isEmpty() &&
-      m_filePath!="generated" && m_filePath!="graph_legend")
+      m_filePath!="generated" && m_filePath!="graph_legend.dox")
   {
     msg("Version of %s : ",qPrint(m_filePath));
     QCString cmd = vercmd+" \""+m_filePath+"\"";
