@@ -1070,6 +1070,9 @@ STopt  [^\n@\\]*
                                           yyextra->formulaNewLines++;
                                           yyextra->formulaText+=*yytext;
                                           yyextra->lineNr++;
+                                          char tmp[20];
+                                          sprintf(tmp,"\\iline %d ",yyextra->lineNr);
+                                          addOutput(yyscanner, tmp);
                                         }
 <ReadFormulaLong,ReadFormulaShort,ReadFormulaRound>.     { // any other character
                                           yyextra->formulaText+=*yytext;
@@ -1859,8 +1862,11 @@ STopt  [^\n@\\]*
 
   /* ----- handle argument of noop command ------- */
 <Noop>{DOCNL}                           { // end of argument
-                                          if (*yytext=='\n') yyextra->lineNr++;
-                                          addOutput(yyscanner,'\n');
+                                          if (*yytext=='\n')
+                                          {
+                                            yyextra->lineNr++;
+                                            addOutput(yyscanner,'\n');
+                                          }
                                           BEGIN( Comment );
                                         }
 <Noop>.                                 { // ignore other stuff
@@ -3477,7 +3483,17 @@ static void endBrief(yyscan_t yyscanner,bool addToOutput)
     // found some brief description and not just whitespace
     yyextra->briefEndsAtDot=FALSE;
     setOutput(yyscanner,OutputDoc);
+    char tmp[30];
+    sprintf(tmp,"\\iline %d ", yyextra->lineNr);
+    addOutput(yyscanner,tmp);
     if (addToOutput) addOutput(yyscanner,yytext);
+  }
+  else
+  {
+    int saveLineNr = yyextra->lineNr;
+    lineCount(yyscanner);
+    yyextra->current->briefLine = yyextra->lineNr;
+    yyextra->lineNr = saveLineNr;
   }
 }
 
