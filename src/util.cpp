@@ -3470,7 +3470,7 @@ QCString substituteKeywords(const QCString &s,const QCString &title,
   result = substitute(result,"$projectnumber",projNum);
   result = substitute(result,"$projectbrief",projBrief);
   result = substitute(result,"$projectlogo",stripPath(Config_getString(PROJECT_LOGO)));
-  result = substitute(result,"$lang",theTranslator->trISOLang());
+  result = substitute(result,"$langISO",theTranslator->trISOLang());
   return result;
 }
 
