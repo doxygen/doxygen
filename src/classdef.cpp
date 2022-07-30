@@ -3200,28 +3200,30 @@ void ClassDefImpl::setTemplateArguments(const ArgumentList &al)
   m_impl->tempArgs = al;
 }
 
-/*! Returns \c TRUE iff this class or a class inheriting from this class
- *  is \e not defined in an external tag file.
- */
-bool ClassDefImpl::hasNonReferenceSuperClass() const
+static bool hasNonReferenceSuperClassRec(const ClassDef *cd,int level)
 {
-  bool found=!isReference() && isLinkableInProject() && !isHidden();
+  bool found=!cd->isReference() && cd->isLinkableInProject() && !cd->isHidden();
   if (found)
   {
     return TRUE; // we're done if this class is not a reference
   }
-  for (const auto &ibcd : m_impl->inheritedBy)
+  for (const auto &ibcd : cd->subClasses())
   {
-    ClassDef *bcd=ibcd.classDef;
+    const ClassDef *bcd=ibcd.classDef;
+    if (level>256)
+    {
+      err("Possible recursive class relation while inside %s and looking for base class %s\n",qPrint(cd->name()),qPrint(bcd->name()));
+      return FALSE;
+    }
     // recurse into the super class branch
-    found = found || bcd->hasNonReferenceSuperClass();
+    found = found || hasNonReferenceSuperClassRec(bcd,level+1);
     if (!found)
     {
       // look for template instances that might have non-reference super classes
       for (const auto &cil : bcd->getTemplateInstances())
       {
         // recurse into the template instance branch
-        found = cil.classDef->hasNonReferenceSuperClass();
+        found = hasNonReferenceSuperClassRec(cil.classDef,level+1);
         if (found) break;
       }
     }
@@ -3231,6 +3233,14 @@ bool ClassDefImpl::hasNonReferenceSuperClass() const
     }
   }
   return found;
+};
+
+/*! Returns \c TRUE iff this class or a class inheriting from this class
+ *  is \e not defined in an external tag file.
+ */
+bool ClassDefImpl::hasNonReferenceSuperClass() const
+{
+  return hasNonReferenceSuperClassRec(this,0);
 }
 
 QCString ClassDefImpl::requiresClause() const
