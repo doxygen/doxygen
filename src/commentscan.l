@@ -454,6 +454,7 @@ static void handleGuard(yyscan_t yyscanner,const QCString &expr);
 static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
 static void addCite(yyscan_t yyscanner);
 static void addIline(yyscan_t yyscanner,int lineNr);
+static void addIlineBreak(yyscan_t yyscanner,int lineNr);
 
 #define unput_string(yytext,yyleng) do { for (int i=(int)yyleng-1;i>=0;i--) unput(yytext[i]); } while(0)
 
@@ -1070,6 +1071,7 @@ STopt  [^\n@\\]*
                                           yyextra->formulaNewLines++;
                                           yyextra->formulaText+=*yytext;
                                           yyextra->lineNr++;
+                                          addIline(yyscanner,yyextra->lineNr);
                                         }
 <ReadFormulaLong,ReadFormulaShort,ReadFormulaRound>.     { // any other character
                                           yyextra->formulaText+=*yytext;
@@ -1680,7 +1682,7 @@ STopt  [^\n@\\]*
                                           if (*yytext=='\n') yyextra->lineNr++;
                                           //next line is commented out due to bug620924
                                           //addOutput(yyscanner,'\n');
-                                          addIline(yyscanner,yyextra->lineNr);
+                                          addIlineBreak(yyscanner,yyextra->lineNr);
                                           BEGIN( Comment );
                                         }
 <GuardParam>{LC}                        { // line continuation
@@ -1693,7 +1695,7 @@ STopt  [^\n@\\]*
 <GuardParamEnd>{B}*{DOCNL}              {
                                           lineCount(yyscanner);
                                           yyextra->spaceBeforeIf.resize(0);
-                                          addIline(yyscanner,yyextra->lineNr);
+                                          addIlineBreak(yyscanner,yyextra->lineNr);
                                           BEGIN(Comment);
                                         }
 <GuardParamEnd>{B}*                     {
@@ -1702,12 +1704,12 @@ STopt  [^\n@\\]*
                                             addOutput(yyscanner,yyextra->spaceBeforeIf);
                                           }
                                           yyextra->spaceBeforeIf.resize(0);
-                                          addIline(yyscanner,yyextra->lineNr);
+                                          addIlineBreak(yyscanner,yyextra->lineNr);
                                           BEGIN(Comment);
                                         }
 <GuardParamEnd>.                        {
                                           unput(*yytext);
-                                          addIline(yyscanner,yyextra->lineNr);
+                                          addIlineBreak(yyscanner,yyextra->lineNr);
                                           BEGIN(Comment);
                                         }
 
@@ -1859,8 +1861,11 @@ STopt  [^\n@\\]*
 
   /* ----- handle argument of noop command ------- */
 <Noop>{DOCNL}                           { // end of argument
-                                          if (*yytext=='\n') yyextra->lineNr++;
-                                          addOutput(yyscanner,'\n');
+                                          if (*yytext=='\n')
+                                          {
+                                            yyextra->lineNr++;
+                                            addOutput(yyscanner,'\n');
+                                          }
                                           BEGIN( Comment );
                                         }
 <Noop>.                                 { // ignore other stuff
@@ -3464,6 +3469,13 @@ static inline void addOutput(yyscan_t yyscanner,char c)
 
 static void addIline(yyscan_t yyscanner,int lineNr)
 {
+  char cmd[20];
+  sprintf(cmd,"\\iline %d ",lineNr);
+  addOutput(yyscanner, cmd);
+}
+
+static void addIlineBreak(yyscan_t yyscanner,int lineNr)
+{
   char cmd[30];
   sprintf(cmd,"\\iline %d \\ilinebr ",lineNr);
   addOutput(yyscanner, cmd);
@@ -3477,7 +3489,15 @@ static void endBrief(yyscan_t yyscanner,bool addToOutput)
     // found some brief description and not just whitespace
     yyextra->briefEndsAtDot=FALSE;
     setOutput(yyscanner,OutputDoc);
+    addIline(yyscanner,yyextra->lineNr);
     if (addToOutput) addOutput(yyscanner,yytext);
+  }
+  else
+  {
+    int saveLineNr = yyextra->lineNr;
+    lineCount(yyscanner);
+    yyextra->current->briefLine = yyextra->lineNr;
+    yyextra->lineNr = saveLineNr;
   }
 }
 
