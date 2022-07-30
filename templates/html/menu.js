@@ -54,7 +54,7 @@ function initMenu(relPath,searchEnabled,serverSide,searchPage,search) {
                     relPath+'search/mag.svg" alt=""/>'+
                   '<input type="text" id="MSearchField" name="query" value="" placeholder="'+search+
                     '" size="20" accesskey="S" onfocus="searchBox.OnSearchFieldFocus(true)"'+
-                    ' onblur="searchBox.OnSearchFieldFocus(false)">'+
+                    ' onblur="searchBox.OnSearchFieldFocus(false)"/>'+
                   '</form>'+
                  '</div>'+
                  '<div class="right"></div>'+
@@ -73,8 +73,8 @@ function initMenu(relPath,searchEnabled,serverSide,searchPage,search) {
                  '<span class="right"><a id="MSearchClose" '+
                   'href="javascript:searchBox.CloseResultsWindow()">'+
                   '<img id="MSearchCloseImg" border="0" src="'+relPath+
-                  'search/close.svg" alt=""/></a>'
-                 '</span>'
+                  'search/close.svg" alt=""/></a>'+
+                 '</span>'+
                 '</div>';
     }
   }
