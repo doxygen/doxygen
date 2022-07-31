@@ -29,12 +29,6 @@ enum GraphOutputFormat    { GOF_BITMAP, GOF_EPS };
 enum EmbeddedOutputFormat { EOF_Html, EOF_LaTeX, EOF_Rtf, EOF_DocBook };
 enum GraphType            { Dependency, Inheritance, Collaboration, Hierarchy, CallGraph };
 
-struct DotAttributes : std::map<QCString, QCString>
-{
-    DotAttributes(QCString input);
-    QCString str();
-};
-
 /** A dot graph */
 class DotGraph
 {

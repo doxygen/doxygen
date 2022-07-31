@@ -3617,7 +3617,7 @@ to be found in the default search path.
       </docs>
     </option>
     <option type='string' id='DOT_COMMON_ATTR' format='string' depends='HAVE_DOT'
-      defval='fontname=Helvetica fontsize=10'>
+      defval='fontname=Helvetica,fontsize=10'>
       <docs>
 <![CDATA[
  \c DOT_COMMON_ATTR is common attributes for nodes, edges and labels of subgraphs.
@@ -3635,7 +3635,7 @@ to be found in the default search path.
       </docs>
     </option>
     <option type='string' id='DOT_EDGE_ATTR' format='string' depends='HAVE_DOT'
-      defval='labelfontname=Helvetica labelfontsize=10'>
+      defval='labelfontname=Helvetica,labelfontsize=10'>
       <docs>
 <![CDATA[
  \c DOT_EDGE_ATTR is concatenated with \ref cfg_dot_common_attr "DOT_COMMON_ATTR".
@@ -3645,7 +3645,7 @@ to be found in the default search path.
       </docs>
     </option>
     <option type='string' id='DOT_NODE_ATTR' format='string' depends='HAVE_DOT'
-      defval='fontsize=10 shape=box height=0.2 width=0.4'>
+      defval='shape=box,height=0.2,width=0.4'>
       <docs>
 <![CDATA[
  \c DOT_NODE_ATTR is concatenated with \ref cfg_dot_common_attr "DOT_COMMON_ATTR".

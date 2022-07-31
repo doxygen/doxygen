@@ -104,38 +104,6 @@ static bool insertMapFile(TextStream &out,const QCString &mapFile,
 
 //--------------------------------------------------------------------
 
-DotAttributes::DotAttributes(QCString input)
-{
-  std::string tag = R"(\s*(\w+)\s*)";
-  std::string unquoted = R"(\s*([^\s,"]+)\s*)";
-  std::string quoted = R"(\s*\"([^"]*)\"\s*)";
-
-  std::regex re(tag + "=" + "(?:" + unquoted + "|" + quoted + "),?(.*)");
-
-  std::map<QCString, QCString> res;
-  while (!input.isEmpty()) {
-    std::smatch res1;
-    if (!std::regex_match(input.str(), res1, re)) {
-      (*this)["_unmatched_"] = input;
-      break;
-    }
-    // with or without quotes
-    (*this)[QCString(res1[1])] = res1[2].str() + res1[3].str();
-    input = res1[4]; // the rest
-  }
-}
-
-QCString DotAttributes::str()
-{
-  QCString s;
-  for (auto kv: *this)  {
-    if (s.length())
-      s += ' ';
-    s += kv.first + QCString("=") + kv.second.quoted();
-  }
-  return s;
-}
-
 QCString DotGraph::imgName() const
 {
   return m_baseName + ((m_graphFormat == GOF_BITMAP) ?
@@ -327,7 +295,8 @@ void DotGraph::writeGraphHeader(TextStream &t,const QCString &title)
   {
     t << "  bgcolor=\"transparent\";\n";
   }
-  QCString c = Config_getString(DOT_COMMON_ATTR) + " ";
+  QCString c = Config_getString(DOT_COMMON_ATTR);
+  if (!c.isEmpty()) c += ",";
   t << "  edge [" << c << Config_getString(DOT_EDGE_ATTR) << "];\n";
   t << "  node [" << c << Config_getString(DOT_NODE_ATTR) << "];\n";
 }
