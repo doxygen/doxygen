@@ -142,6 +142,7 @@ class DocTokenizer
     void pushContext();
     bool popContext();
     int  lex();
+    void unputString(const QCString &tag);
     void setStatePara();
     void setStateTitle();
     void setStateTitleAttrValue();

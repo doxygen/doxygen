@@ -955,7 +955,8 @@ LINENR {BLANK}*[1-9][0-9]*
                          return TK_SYMBOL;
                        }
 <St_TitleN>{HTMLTAG}   {
-                         lineCount(yytext,yyleng);
+                         yyextra->token->name = yytext;
+                         return TK_HTMLTAG;
                        }
 <St_TitleN>\n          { /* new line => end of title */
                          unput(*yytext);
@@ -1660,6 +1661,13 @@ DocTokenizer::~DocTokenizer()
 int DocTokenizer::lex()
 {
   return doctokenizerYYlex(p->yyscanner);
+}
+
+void DocTokenizer::unputString(const QCString &tag)
+{
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  unput_string(tag.data(),tag.length());
 }
 
 void DocTokenizer::findSections(const QCString &input,const Definition *d,
