@@ -43,6 +43,7 @@
 #include "fileinfo.h"
 #include "dir.h"
 #include "textstream.h"
+#include "dotattributes.h"
 
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
@@ -2064,13 +2065,10 @@ void Config::checkAndCorrect(bool quiet, const bool check)
 
 }
 
-static void appendAttribute(QCString& a, const char * name, ConfigObsolete* value)
+static void updateAttribute(DotAttributes& attr, QCString name, ConfigObsolete* value)
 {
-  if (!value || !value->valueStringRef()->length())
-    return;
-  if (a.length())
-    a += ' ';
-  a += name + QCString("=") + value->valueStringRef()->quoted();
+  if (value==0 || value->valueStringRef()->isEmpty()) return;
+  attr.updateValue(name,*value->valueStringRef());
 }
 
 void Config::updateObsolete()
@@ -2113,15 +2111,21 @@ void Config::updateObsolete()
                "  You may want to clear or change DOT_FONTNAME.\n"
                "  Otherwise you run the risk that the wrong font is being used for dot generated graphs.\n");
 
-  QCString& common_attr = *dynamic_cast<ConfigString*>(ConfigImpl::instance()->get("DOT_COMMON_ATTR"))->valueRef();
+  QCString& commonAttrStr = *dynamic_cast<ConfigString*>(ConfigImpl::instance()->get("DOT_COMMON_ATTR"))->valueRef();
+  printf("commonAttrStr=%s before\n",qPrint(commonAttrStr));
+  DotAttributes commonAttr(commonAttrStr);
+  updateAttribute(commonAttr, "fontname", fontname);
+  updateAttribute(commonAttr, "fontsize", fontsize);
+  commonAttrStr = commonAttr.str();
+  printf("commonAttrStr=%s after\n",qPrint(commonAttrStr));
 
-  appendAttribute(common_attr, "fontname", fontname);
-  appendAttribute(common_attr, "fontsize", fontsize);
-
-  QCString& edge_attr = *dynamic_cast<ConfigString*>(ConfigImpl::instance()->get("DOT_EDGE_ATTR"))->valueRef();
-
-  appendAttribute(edge_attr, "labelfontname", fontname);
-  appendAttribute(edge_attr, "labelfontsize", fontsize);
+  QCString& edgeAttrStr = *dynamic_cast<ConfigString*>(ConfigImpl::instance()->get("DOT_EDGE_ATTR"))->valueRef();
+  printf("edgeAttrStr=%s before\n",qPrint(edgeAttrStr));
+  DotAttributes edgeAttr(edgeAttrStr);
+  updateAttribute(edgeAttr, "labelfontname", fontname);
+  updateAttribute(edgeAttr, "labelfontsize", fontsize);
+  edgeAttrStr = edgeAttr.str();
+  printf("edgeAttrStr=%s after\n",qPrint(edgeAttrStr));
 }
 
 void Config::writeTemplate(TextStream &t,bool shortList,bool update)

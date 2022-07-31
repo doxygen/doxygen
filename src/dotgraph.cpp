@@ -15,6 +15,7 @@
 
 #include <sstream>
 #include <mutex>
+#include <regex>
 
 #include "config.h"
 #include "doxygen.h"
@@ -294,7 +295,8 @@ void DotGraph::writeGraphHeader(TextStream &t,const QCString &title)
   {
     t << "  bgcolor=\"transparent\";\n";
   }
-  QCString c = Config_getString(DOT_COMMON_ATTR) + " ";
+  QCString c = Config_getString(DOT_COMMON_ATTR);
+  if (!c.isEmpty()) c += ",";
   t << "  edge [" << c << Config_getString(DOT_EDGE_ATTR) << "];\n";
   t << "  node [" << c << Config_getString(DOT_NODE_ATTR) << "];\n";
 }

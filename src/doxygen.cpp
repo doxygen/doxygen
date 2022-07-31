@@ -10827,6 +10827,8 @@ template<class T> std::function< std::unique_ptr<T>() > make_parser_factory()
   return []() { return std::make_unique<T>(); };
 }
 
+#include "dotattributes.h"
+
 void initDoxygen()
 {
   initResources();
