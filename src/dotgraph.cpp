@@ -15,6 +15,7 @@
 
 #include <sstream>
 #include <mutex>
+#include <regex>
 
 #include "config.h"
 #include "doxygen.h"
@@ -102,6 +103,38 @@ static bool insertMapFile(TextStream &out,const QCString &mapFile,
 }
 
 //--------------------------------------------------------------------
+
+DotAttributes::DotAttributes(QCString input)
+{
+  std::string tag = R"(\s*(\w+)\s*)";
+  std::string unquoted = R"(\s*([^\s,"]+)\s*)";
+  std::string quoted = R"(\s*\"([^"]*)\"\s*)";
+
+  std::regex re(tag + "=" + "(?:" + unquoted + "|" + quoted + "),?(.*)");
+
+  std::map<QCString, QCString> res;
+  while (!input.isEmpty()) {
+    std::smatch res1;
+    if (!std::regex_match(input.str(), res1, re)) {
+      (*this)["_unmatched_"] = input;
+      break;
+    }
+    // with or without quotes
+    (*this)[QCString(res1[1])] = res1[2].str() + res1[3].str();
+    input = res1[4]; // the rest
+  }
+}
+
+QCString DotAttributes::str()
+{
+  QCString s;
+  for (auto kv: *this)  {
+    if (s.length())
+      s += ' ';
+    s += kv.first + QCString("=") + kv.second.quoted();
+  }
+  return s;
+}
 
 QCString DotGraph::imgName() const
 {

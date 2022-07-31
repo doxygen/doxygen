@@ -43,6 +43,7 @@
 #include "fileinfo.h"
 #include "dir.h"
 #include "textstream.h"
+#include "dotgraph.h"
 
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
@@ -2064,13 +2065,11 @@ void Config::checkAndCorrect(bool quiet, const bool check)
 
 }
 
-static void appendAttribute(QCString& a, const char * name, ConfigObsolete* value)
+static void appendAttribute(DotAttributes& attr, QCString name, ConfigObsolete* value)
 {
   if (!value || !value->valueStringRef()->length())
     return;
-  if (a.length())
-    a += ' ';
-  a += name + QCString("=") + value->valueStringRef()->quoted();
+  attr[name] = *value->valueStringRef();
 }
 
 void Config::updateObsolete()
@@ -2113,15 +2112,19 @@ void Config::updateObsolete()
                "  You may want to clear or change DOT_FONTNAME.\n"
                "  Otherwise you run the risk that the wrong font is being used for dot generated graphs.\n");
 
-  QCString& common_attr = *dynamic_cast<ConfigString*>(ConfigImpl::instance()->get("DOT_COMMON_ATTR"))->valueRef();
+  QCString& common_attr_str = *dynamic_cast<ConfigString*>(ConfigImpl::instance()->get("DOT_COMMON_ATTR"))->valueRef();
+  DotAttributes common_attr{common_attr_str};
 
   appendAttribute(common_attr, "fontname", fontname);
   appendAttribute(common_attr, "fontsize", fontsize);
+  common_attr_str = common_attr.str();
 
-  QCString& edge_attr = *dynamic_cast<ConfigString*>(ConfigImpl::instance()->get("DOT_EDGE_ATTR"))->valueRef();
+  QCString& edge_attr_str = *dynamic_cast<ConfigString*>(ConfigImpl::instance()->get("DOT_EDGE_ATTR"))->valueRef();
+  DotAttributes edge_attr{edge_attr_str};
 
   appendAttribute(edge_attr, "labelfontname", fontname);
   appendAttribute(edge_attr, "labelfontsize", fontsize);
+  edge_attr_str = edge_attr.str();
 }
 
 void Config::writeTemplate(TextStream &t,bool shortList,bool update)
