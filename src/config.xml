@@ -3645,7 +3645,7 @@ to be found in the default search path.
       </docs>
     </option>
     <option type='string' id='DOT_NODE_ATTR' format='string' depends='HAVE_DOT'
-      defval='fontsize=10 shape=box height=0.2 width=0.4'>
+      defval='shape=box height=0.2 width=0.4'>
       <docs>
 <![CDATA[
  \c DOT_NODE_ATTR is concatenated with \ref cfg_dot_common_attr "DOT_COMMON_ATTR".
