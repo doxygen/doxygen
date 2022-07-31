@@ -975,7 +975,7 @@ void DocParser::defaultHandleTitleAndSize(const int cmd, DocNodeVariant *parent,
   }
   while (tok==TK_WHITESPACE || tok==TK_WORD) // there are values following the title
   {
-    if(tok == TK_WORD)
+    if (tok==TK_WORD)
     {
       if (context.token->name=="width=" || context.token->name=="height=")
       {
@@ -1001,17 +1001,16 @@ void DocParser::defaultHandleTitleAndSize(const int cmd, DocNodeVariant *parent,
     }
 
     tok=tokenizer.lex();
-    if (!(tok==TK_WHITESPACE || tok==TK_WORD))
+    // if we found something we did not expect, push it back to the stream
+    // so it can still be processed
+    if (tok==TK_COMMAND_AT || tok==TK_COMMAND_BS)
     {
-      if (tok==TK_COMMAND_AT || tok ==TK_COMMAND_BS)
-      {
-        tokenizer.unputString(context.token->name);
-        tokenizer.unputString(tok==TK_COMMAND_AT ? "@" : "\\");
-      }
-      else if (tok==TK_SYMBOL || tok==TK_HTMLTAG)
-      {
-        tokenizer.unputString(context.token->name);
-      }
+      tokenizer.unputString(context.token->name);
+      tokenizer.unputString(tok==TK_COMMAND_AT ? "@" : "\\");
+    }
+    else if (tok==TK_SYMBOL || tok==TK_HTMLTAG)
+    {
+      tokenizer.unputString(context.token->name);
     }
   }
   tokenizer.setStatePara();

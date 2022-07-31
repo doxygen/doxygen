@@ -1667,12 +1667,7 @@ void DocTokenizer::unputString(const QCString &tag)
 {
   yyscan_t yyscanner = p->yyscanner;
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  QCString tagName = tag;
-  int i,l = tagName.length();
-  for (i=l-1;i>=0;i--)
-  {
-    unput(tag[i]);
-  }
+  unput_string(tag.data(),tag.length());
 }
 
 void DocTokenizer::findSections(const QCString &input,const Definition *d,
