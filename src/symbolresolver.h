@@ -61,10 +61,10 @@ class SymbolResolver
     }
 
     /** Find the symbool definition matching name within the scope set.
-     *  @param scope The scope to search from.
-     *  @param name  The name of the symbol.
-     *  @param mayBeUnlinkable include unlinkable symbols in the search.
-     *  @param mayBeHidden include hidden symbols in the search.
+     *  @param scope   The scope to search from.
+     *  @param name    The name of the symbol.
+     *  @param args    Argument list associated with the symbol (for functions)
+     *  @param checkCV Check const/volatile qualifiers (for methods)
      */
     const Definition *resolveSymbol(const Definition *scope,
                                     const QCString &name,

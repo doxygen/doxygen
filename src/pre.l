@@ -1401,7 +1401,7 @@ WSopt [ \t\r]*
                                           {
                                             if (yyextra->ccomment)
                                             {
-                                              outputArray(yyscanner,"/** ",4);
+                                              outputArray(yyscanner,"/** ",4); // */
                                             }
                                             BEGIN(yyextra->condCtx);
                                           }
@@ -2064,7 +2064,7 @@ static QCString extractTrailingComment(const QCString &s)
             {
               i++;
             }
-            // only /*!< or /**< are treated as a comment for the macro name,
+            // only /*!< ... */ or /**< ... */ are treated as a comment for the macro name,
             // otherwise the comment is treated as part of the macro definition
             return ((s[i+1]=='*' || s[i+1]=='!') && s[i+2]=='<') ? &s[i-1] : "";
           }

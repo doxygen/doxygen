@@ -80,10 +80,10 @@ namespace Config
   /*! Post processed the parsed data. Replaces raw string values by the actual values.
    *  and replaces environment variables.
    *  \param clearHeaderAndFooter set to TRUE when writing header and footer templates.
-   *  \param compare signals if we in Doxyfile compare (`-x` or `-x_noenv`) mode are or not.
+   *  \param compareMode signals if we in Doxyfile compare (`-x` or `-x_noenv`) mode are or not.
    *   Influences setting of the default value and replacement of environment variables.
    */
-  void postProcess(bool clearHeaderAndFooter, CompareMode compare = CompareMode::Full);
+  void postProcess(bool clearHeaderAndFooter, CompareMode compareMode = CompareMode::Full);
 
   /*! Check the validity of the parsed options and correct or warn the user where needed.
    * \param quiet setting for the QUIET option (can have been overruled by means of a command line option)
