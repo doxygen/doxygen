@@ -176,7 +176,9 @@ void writeMscImageMapFromFile(TextStream &t,const QCString &inFile,
                               const QCString &context,
 			      MscOutputFormat format,
                               const QCString &srcFile,
-                              int srcLine
+                              int srcLine,
+                              QCString width,
+                              QCString height
  			    )
 {
   QCString mapName = baseName+".map";
@@ -195,16 +197,26 @@ void writeMscImageMapFromFile(TextStream &t,const QCString &inFile,
     default:
       t << "unknown";
   }
+  QCString sizeAttribs;
+  if (!width.isEmpty())
+  {
+    sizeAttribs+=" width=\""+width+"\"";
+  }
+  if (!height.isEmpty())
+  {
+    sizeAttribs+=" height=\""+height+"\"";
+  }
+
   QCString imap = getMscImageMapFromFile(inFile,outDir,relPath,context,format==MSC_SVG,srcFile,srcLine);
+  t << "\" alt=\"" << baseName << "\" border=\"0\" " << sizeAttribs;
   if (!imap.isEmpty())
   {
-    t << "\" alt=\""
-      << baseName << "\" border=\"0\" usemap=\"#" << mapName << "\"/>\n";
+    t << " usemap=\"#" << mapName << "\"/>\n";
     t << "<map name=\"" << mapName << "\" id=\"" << mapName << "\">" << imap << "</map>\n";
   }
   else
   {
-    t << "\" alt=\"" << baseName << "\" border=\"0\"/>\n";
+    t << "/>\n";
   }
 }
 

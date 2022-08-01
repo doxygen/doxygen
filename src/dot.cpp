@@ -320,7 +320,8 @@ void writeDotImageMapFromFile(TextStream &t,
                             const QCString &inFile, const QCString &outDir,
                             const QCString &relPath, const QCString &baseName,
                             const QCString &context,int graphId,
-                            const QCString &srcFile,int srcLine)
+                            const QCString &srcFile,int srcLine,
+                            QCString width, QCString height)
 {
 
   Dir d(outDir.str());
@@ -352,9 +353,18 @@ void writeDotImageMapFromFile(TextStream &t,
   }
   else // bitmap graphics
   {
+    QCString sizeAttribs;
+    if (!width.isEmpty())
+    {
+      sizeAttribs+=" width=\""+width+"\"";
+    }
+    if (!height.isEmpty())
+    {
+      sizeAttribs+=" height=\""+height+"\"";
+    }
     TextStream tt;
     t << "<img src=\"" << relPath << imgName << "\" alt=\""
-      << imgName << "\" border=\"0\" usemap=\"#" << mapName << "\"/>\n";
+      << imgName << "\" border=\"0\" usemap=\"#" << mapName << "\" " << sizeAttribs << "/>\n";
     DotFilePatcher::convertMapFile(tt, absOutFile, relPath ,TRUE, context);
     if (!tt.empty())
     {

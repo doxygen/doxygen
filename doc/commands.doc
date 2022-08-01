@@ -3408,12 +3408,16 @@ class Receiver
   width or height of the image. This can be useful for \LaTeX or DocBook output
   (i.e. format=<code>latex</code> or format=<code>docbook</code>).
   \anchor image_sizeindicator \par Size indication
-  The \c sizeindication can specify the width or height to be used (or a combination).
-  The size specifier in \LaTeX (for example `10cm` or
-  `4in` or a symbolic width like `\textwidth`).
-
+  The \c sizeindication can specify the width or height to be used (or a combination),
+  in the form `[size_opt[:size]][,size_opt[:size]]*`, where the `size_opt` van be one of
+  the output formats \c html, \c latex, \c docbook or \c xml. In case the the `size_opt` is not specified
+  the specified `size` is used for all the formats where no explicit setting has been done.
+  In case a setting has been done multiple times the last setting is used.
+  The size specifier in \LaTeX is e.g. `10cm` or `4in` or a symbolic width like `\textwidth`
+  (so `width=latex:10cm`).
+  
   Currently only the options `inline` and `anchor` are supported. In case the option `inline` is
-  specified the image is placed "in the line", when a caption s present it is shown
+  specified the image is placed "in the line", when a caption is present it is shown
   in HTML as tooltip (ignored for the other formats). For the `anchor` option the syntax is:
   `anchor:<anchorId>`.
 

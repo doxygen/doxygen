@@ -71,6 +71,19 @@ DOC_NODES
 #undef DN
 #undef DN_SEP
 
+enum DocOutputType
+{
+  DocOutputTypeAll,
+  DocOutputTypeHTML,
+  DocOutputTypeLatex,
+  DocOutputTypeDocbook,
+  DocOutputTypeRTF,
+  DocOutputTypeXML,
+  DocOutputTypeSize,
+};
+
+void setSizeAttrib(QCString dim[DocOutputTypeSize], QCString attr);
+
 /** Abstract node interface with type information. */
 class DocNode
 {
@@ -363,8 +376,8 @@ class DocVerbatim : public DocNode
     QCString language() const    { return p->lang; }
     bool isBlock() const         { return p->isBlock; }
     bool hasCaption() const      { return !p->children.empty(); }
-    QCString width() const       { return p->width; }
-    QCString height() const      { return p->height; }
+    QCString width(DocOutputType type) const  { return p->width[type].isEmpty() ? p->width[DocOutputTypeAll] : p->width[type]; }
+    QCString height(DocOutputType type) const { return p->height[type].isEmpty() ? p->height[DocOutputTypeAll] : p->height[type]; }
     QCString engine() const      { return p->engine; }
     bool useBitmap() const       { return p->useBitmap; }
     const DocNodeList &children() const { return p->children; }
@@ -372,8 +385,8 @@ class DocVerbatim : public DocNode
     QCString srcFile() const     { return p->srcFile; }
     int srcLine() const          { return p->srcLine; }
     void setText(const QCString &t)   { p->text=t;   }
-    void setWidth(const QCString &w)  { p->width=w;  }
-    void setHeight(const QCString &h) { p->height=h; }
+    void setWidth(const QCString &w)  { setSizeAttrib(p->width,w);  }
+    void setHeight(const QCString &h) { setSizeAttrib(p->height,h); }
     void setEngine(const QCString &e) { p->engine=e; }
     void setUseBitmap(const bool &u)  { p->useBitmap=u; }
     void setLocation(const QCString &file,int line) { p->srcFile=file; p->srcLine=line; }
@@ -393,8 +406,8 @@ class DocVerbatim : public DocNode
       QCString  relPath;
       QCString  lang;
       bool      isBlock;
-      QCString  width;
-      QCString  height;
+      QCString  width[DocOutputTypeSize];
+      QCString  height[DocOutputTypeSize];
       QCString  engine;
       bool      useBitmap=false; // some PlantUML engines cannot output data in EPS format so bitmap format is required
       DocNodeList children;
@@ -612,8 +625,8 @@ class DocImage : public DocCompoundNode
     Type type() const           { return p->type; }
     QCString name() const       { return p->name; }
     bool hasCaption() const     { return !children().empty(); }
-    QCString width() const      { return p->width; }
-    QCString height() const     { return p->height; }
+    QCString width(DocOutputType type) const  { return p->width[type].isEmpty() ? p->width[DocOutputTypeAll] : p->width[type]; }
+    QCString height(DocOutputType type) const { return p->height[type].isEmpty() ? p->height[DocOutputTypeAll] : p->height[type]; }
     QCString relPath() const    { return p->relPath; }
     QCString url() const        { return p->url; }
     bool isInlineImage() const  { return p->inlineImage; }
@@ -628,11 +641,13 @@ class DocImage : public DocCompoundNode
               const QCString &relPath_, const QCString &url_,bool inlineImage_)
         : attribs(attribs_), name(name_), type(type_),
           relPath(relPath_), url(url_),   inlineImage(inlineImage_) {}
+      void setWidth(const QCString &w)  { setSizeAttrib(width,w);  }
+      void setHeight(const QCString &h) { setSizeAttrib(height,h); }
       HtmlAttribList attribs;
       QCString  name;
       Type      type = Html;
-      QCString  width;
-      QCString  height;
+      QCString  width[DocOutputTypeSize];
+      QCString  height[DocOutputTypeSize];
       QCString  relPath;
       QCString  url;
       bool      inlineImage;
@@ -650,8 +665,8 @@ class DocDiagramFileBase : public DocCompoundNode
     QCString file() const      { return p->file; }
     QCString relPath() const   { return p->relPath; }
     bool hasCaption() const    { return !children().empty(); }
-    QCString width() const     { return p->width; }
-    QCString height() const    { return p->height; }
+    QCString width(DocOutputType type) const  { return p->width[type].isEmpty() ? p->width[DocOutputTypeAll] : p->width[type]; }
+    QCString height(DocOutputType type) const { return p->height[type].isEmpty() ? p->height[DocOutputTypeAll] : p->height[type]; }
     QCString context() const   { return p->context; }
     QCString srcFile() const   { return p->srcFile; }
     int srcLine() const        { return p->srcLine; }
@@ -661,11 +676,13 @@ class DocDiagramFileBase : public DocCompoundNode
     {
       Private(const QCString &name_,const QCString &context_,const QCString &srcFile_,int srcLine_)
         : name(name_), context(context_), srcFile(srcFile_), srcLine(srcLine_) {}
+      void setWidth(const QCString &w)  { setSizeAttrib(width,w);  }
+      void setHeight(const QCString &h) { setSizeAttrib(height,h); }
       QCString  name;
       QCString  file;
       QCString  relPath;
-      QCString  width;
-      QCString  height;
+      QCString  width[DocOutputTypeSize];
+      QCString  height[DocOutputTypeSize];
       QCString  context;
       QCString  srcFile;
       int       srcLine;

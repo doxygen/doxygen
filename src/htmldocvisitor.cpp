@@ -616,7 +616,7 @@ void HtmlDocVisitor::operator()(const DocVerbatim &s)
           file.close();
 
           m_t << "<div class=\"dotgraph\">\n";
-          writeDotFile(fileName,s.relPath(),s.context(),s.srcFile(),s.srcLine());
+          writeDotFile(fileName,s.relPath(),s.context(),s.srcFile(),s.srcLine(),s.width(DocOutputTypeHTML),s.height(DocOutputTypeHTML));
           visitCaption(m_t, s);
           m_t << "</div>\n";
 
@@ -651,7 +651,7 @@ void HtmlDocVisitor::operator()(const DocVerbatim &s)
           file.close();
 
           m_t << "<div class=\"mscgraph\">\n";
-          writeMscFile(baseName+".msc",s.relPath(),s.context(),s.srcFile(),s.srcLine());
+          writeMscFile(baseName+".msc",s.relPath(),s.context(),s.srcFile(),s.srcLine(),s.width(DocOutputTypeHTML),s.height(DocOutputTypeHTML));
           visitCaption(m_t, s);
           m_t << "</div>\n";
 
@@ -674,7 +674,7 @@ void HtmlDocVisitor::operator()(const DocVerbatim &s)
                                     htmlOutput,s.exampleFile(),
                                     s.text(),format,s.engine(),s.srcFile(),s.srcLine());
         m_t << "<div class=\"plantumlgraph\">\n";
-        writePlantUMLFile(baseName,s.relPath(),s.context(),s.srcFile(),s.srcLine());
+        writePlantUMLFile(baseName,s.relPath(),s.context(),s.srcFile(),s.srcLine(),s.width(DocOutputTypeHTML),s.height(DocOutputTypeHTML));
         visitCaption(m_t, s);
         m_t << "</div>\n";
         forceStartParagraph(s);
@@ -1621,13 +1621,13 @@ void HtmlDocVisitor::operator()(const DocImage &img)
     }
     if (!inlineImage) m_t << "<div class=\"image\">\n";
     QCString sizeAttribs;
-    if (!img.width().isEmpty())
+    if (!img.width(DocOutputTypeHTML).isEmpty())
     {
-      sizeAttribs+=" width=\""+img.width()+"\"";
+      sizeAttribs+=" width=\""+img.width(DocOutputTypeHTML)+"\"";
     }
-    if (!img.height().isEmpty()) // link to local file
+    if (!img.height(DocOutputTypeHTML).isEmpty()) // link to local file
     {
-      sizeAttribs+=" height=\""+img.height()+"\"";
+      sizeAttribs+=" height=\""+img.height(DocOutputTypeHTML)+"\"";
     }
     // 16 cases: url.isEmpty() | typeSVG | inlineImage | img.hasCaption()
 
@@ -1723,7 +1723,7 @@ void HtmlDocVisitor::operator()(const DocDotFile &df)
   if (m_hide) return;
   if (!Config_getBool(DOT_CLEANUP)) copyFile(df.file(),Config_getString(HTML_OUTPUT)+"/"+stripPath(df.file()));
   m_t << "<div class=\"dotgraph\">\n";
-  writeDotFile(df.file(),df.relPath(),df.context(),df.srcFile(),df.srcLine());
+  writeDotFile(df.file(),df.relPath(),df.context(),df.srcFile(),df.srcLine(),df.width(DocOutputTypeHTML),df.height(DocOutputTypeHTML));
   if (df.hasCaption())
   {
     m_t << "<div class=\"caption\">\n";
@@ -1741,7 +1741,7 @@ void HtmlDocVisitor::operator()(const DocMscFile &df)
   if (m_hide) return;
   if (!Config_getBool(DOT_CLEANUP)) copyFile(df.file(),Config_getString(HTML_OUTPUT)+"/"+stripPath(df.file()));
   m_t << "<div class=\"mscgraph\">\n";
-  writeMscFile(df.file(),df.relPath(),df.context(),df.srcFile(),df.srcLine());
+  writeMscFile(df.file(),df.relPath(),df.context(),df.srcFile(),df.srcLine(),df.width(DocOutputTypeHTML),df.height(DocOutputTypeHTML));
   if (df.hasCaption())
   {
     m_t << "<div class=\"caption\">\n";
@@ -1759,7 +1759,7 @@ void HtmlDocVisitor::operator()(const DocDiaFile &df)
   if (m_hide) return;
   if (!Config_getBool(DOT_CLEANUP)) copyFile(df.file(),Config_getString(HTML_OUTPUT)+"/"+stripPath(df.file()));
   m_t << "<div class=\"diagraph\">\n";
-  writeDiaFile(df.file(),df.relPath(),df.context(),df.srcFile(),df.srcLine());
+  writeDiaFile(df.file(),df.relPath(),df.context(),df.srcFile(),df.srcLine(),df.width(DocOutputTypeHTML),df.height(DocOutputTypeHTML));
   if (df.hasCaption())
   {
     m_t << "<div class=\"caption\">\n";
@@ -2109,7 +2109,8 @@ void HtmlDocVisitor::endLink()
 }
 
 void HtmlDocVisitor::writeDotFile(const QCString &fn,const QCString &relPath,
-                                  const QCString &context,const QCString &srcFile,int srcLine)
+                                  const QCString &context,const QCString &srcFile,int srcLine,
+                                  QCString width, QCString height)
 {
   QCString baseName=fn;
   int i;
@@ -2124,11 +2125,12 @@ void HtmlDocVisitor::writeDotFile(const QCString &fn,const QCString &relPath,
   baseName.prepend("dot_");
   QCString outDir = Config_getString(HTML_OUTPUT);
   writeDotGraphFromFile(fn,outDir,baseName,GOF_BITMAP,srcFile,srcLine);
-  writeDotImageMapFromFile(m_t,fn,outDir,relPath,baseName,context,-1,srcFile,srcLine);
+  writeDotImageMapFromFile(m_t,fn,outDir,relPath,baseName,context,-1,srcFile,srcLine,width,height);
 }
 
 void HtmlDocVisitor::writeMscFile(const QCString &fileName,const QCString &relPath,
-                                  const QCString &context,const QCString &srcFile,int srcLine)
+                                  const QCString &context,const QCString &srcFile,int srcLine,
+                                  QCString width, QCString height)
 {
   QCString baseName=fileName;
   int i;
@@ -2147,11 +2149,12 @@ void HtmlDocVisitor::writeMscFile(const QCString &fileName,const QCString &relPa
   if ("svg" == imgExt)
     mscFormat = MSC_SVG;
   writeMscGraphFromFile(fileName,outDir,baseName,mscFormat,srcFile,srcLine);
-  writeMscImageMapFromFile(m_t,fileName,outDir,relPath,baseName,context,mscFormat,srcFile,srcLine);
+  writeMscImageMapFromFile(m_t,fileName,outDir,relPath,baseName,context,mscFormat,srcFile,srcLine,width,height);
 }
 
 void HtmlDocVisitor::writeDiaFile(const QCString &fileName, const QCString &relPath,
-                                  const QCString &,const QCString &srcFile,int srcLine)
+                                  const QCString &,const QCString &srcFile,int srcLine,
+                                  QCString width, QCString height)
 {
   QCString baseName=fileName;
   int i;
@@ -2167,11 +2170,21 @@ void HtmlDocVisitor::writeDiaFile(const QCString &fileName, const QCString &relP
   QCString outDir = Config_getString(HTML_OUTPUT);
   writeDiaGraphFromFile(fileName,outDir,baseName,DIA_BITMAP,srcFile,srcLine);
 
-  m_t << "<img src=\"" << relPath << baseName << ".png" << "\" />\n";
+  QCString sizeAttribs;
+  if (!width.isEmpty())
+  {
+    sizeAttribs+=" width=\""+width+"\"";
+  }
+  if (!height.isEmpty())
+  {
+    sizeAttribs+=" height=\""+height+"\"";
+  }
+  m_t << "<img src=\"" << relPath << baseName << ".png" << "\" " << sizeAttribs << "/>\n";
 }
 
 void HtmlDocVisitor::writePlantUMLFile(const QCString &fileName, const QCString &relPath,
-                                       const QCString &,const QCString &srcFile,int srcLine)
+                                       const QCString &,const QCString &srcFile,int srcLine,
+                                       QCString width, QCString height)
 {
   QCString baseName=fileName;
   int i;
@@ -2185,18 +2198,27 @@ void HtmlDocVisitor::writePlantUMLFile(const QCString &fileName, const QCString 
   }
   QCString outDir = Config_getString(HTML_OUTPUT);
   QCString imgExt = getDotImageExtension();
+  QCString sizeAttribs;
+  if (!width.isEmpty())
+  {
+    sizeAttribs+=" width=\""+width+"\"";
+  }
+  if (!height.isEmpty())
+  {
+    sizeAttribs+=" height=\""+height+"\"";
+  }
   if (imgExt=="svg")
   {
     PlantumlManager::instance().generatePlantUMLOutput(fileName,outDir,PlantumlManager::PUML_SVG);
     //m_t << "<iframe scrolling=\"no\" frameborder=\"0\" src=\"" << relPath << baseName << ".svg" << "\" />\n";
     //m_t << "<p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p>";
     //m_t << "</iframe>\n";
-    m_t << "<object type=\"image/svg+xml\" data=\"" << relPath << baseName << ".svg\"></object>\n";
+    m_t << "<object type=\"image/svg+xml\" data=\"" << relPath << baseName << ".svg\" " << sizeAttribs << "></object>\n";
   }
   else
   {
     PlantumlManager::instance().generatePlantUMLOutput(fileName,outDir,PlantumlManager::PUML_BITMAP);
-    m_t << "<img src=\"" << relPath << baseName << ".png" << "\" />\n";
+    m_t << "<img src=\"" << relPath << baseName << ".png" << "\" " << sizeAttribs << "/>\n";
   }
 }
 

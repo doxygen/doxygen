@@ -90,6 +90,47 @@ static void unescapeCRef(QCString &s)
   s = result;
 }
 
+void setSizeAttrib(QCString dim[DocOutputTypeSize], QCString attr)
+{
+  StringVector attrList;
+  attrList = split(attr.str(),",");
+  for (const auto &att : attrList)
+  {
+    int i = att.find(':');
+    if (i>0)  // found ':'
+    {
+      QCString outType = QCString(att).left(i);
+      QCString outSize = QCString(att).right(att.length() - i - 1);
+      if (!outType.isEmpty())
+      {
+        if (outType == "html")
+        {
+          dim[DocOutputTypeHTML] = outSize;
+        }
+        else if (outType == "latex")
+        {
+          dim[DocOutputTypeLatex] = outSize;
+        }
+        else if (outType == "xml")
+        {
+          dim[DocOutputTypeXML] = outSize;
+        }
+        else if (outType == "rtf")
+        {
+          dim[DocOutputTypeRTF] = outSize;
+        }
+        else if (outType == "docbook")
+        {
+          dim[DocOutputTypeDocbook] = outSize;
+        }
+      }
+    }
+    else
+    {
+      dim[DocOutputTypeAll] = att;
+    }
+  }
+}
 //---------------------------------------------------------------------------
 
 /*! Strips known html and tex extensions from \a text. */
@@ -1016,7 +1057,10 @@ DocDotFile::DocDotFile(DocParser *parser,DocNodeVariant *parent,const QCString &
 bool DocDotFile::parse(DocNodeVariant *thisVariant)
 {
   bool ok = false;
-  parser()->defaultHandleTitleAndSize(CMD_DOTFILE,thisVariant,children(),p->width,p->height);
+  QCString width,height;
+  parser()->defaultHandleTitleAndSize(CMD_DOTFILE,thisVariant,children(),width,height);
+  p->setWidth(width);
+  p->setHeight(height);
 
   bool ambig;
   FileDef *fd = findFileDef(Doxygen::dotFileNameLinkedMap,p->name,ambig);
@@ -1054,7 +1098,10 @@ DocMscFile::DocMscFile(DocParser *parser,DocNodeVariant *parent,const QCString &
 bool DocMscFile::parse(DocNodeVariant *thisVariant)
 {
   bool ok = false;
-  parser()->defaultHandleTitleAndSize(CMD_MSCFILE,thisVariant,children(),p->width,p->height);
+  QCString width,height;
+  parser()->defaultHandleTitleAndSize(CMD_MSCFILE,thisVariant,children(),width,height);
+  p->setWidth(width);
+  p->setHeight(height);
 
   bool ambig;
   FileDef *fd = findFileDef(Doxygen::mscFileNameLinkedMap,p->name,ambig);
@@ -1094,7 +1141,10 @@ DocDiaFile::DocDiaFile(DocParser *parser,DocNodeVariant *parent,const QCString &
 bool DocDiaFile::parse(DocNodeVariant *thisVariant)
 {
   bool ok = false;
-  parser()->defaultHandleTitleAndSize(CMD_DIAFILE,thisVariant,children(),p->width,p->height);
+  QCString width,height;
+  parser()->defaultHandleTitleAndSize(CMD_DIAFILE,thisVariant,children(),width,height);
+  p->setWidth(width);
+  p->setHeight(height);
 
   bool ambig;
   FileDef *fd = findFileDef(Doxygen::diaFileNameLinkedMap,p->name,ambig);
@@ -1171,7 +1221,10 @@ bool DocImage::isSVG() const
 
 void DocImage::parse(DocNodeVariant *thisVariant)
 {
-  parser()->defaultHandleTitleAndSize(CMD_IMAGE,thisVariant,children(),p->width,p->height);
+  QCString width,height;
+  parser()->defaultHandleTitleAndSize(CMD_IMAGE,thisVariant,children(),width,height);
+  p->setWidth(width);
+  p->setHeight(height);
 }
 
 
@@ -3979,6 +4032,15 @@ int DocPara::handleCommand(DocNodeVariant *thisVariant,const QCString &cmdName, 
         parser()->tokenizer.setStatePlantUMLOpt();
         retval = parser()->tokenizer.lex();
         QCString fullMatch = parser()->context.token->sectionId;
+        QCString chkSize = fullMatch.stripWhiteSpace();
+        if (chkSize.startsWith("width=") || chkSize.startsWith("height="))
+        {
+          // special case: we do have a size indicator
+          fullMatch = "";
+          parser()->tokenizer.unputString(parser()->context.token->sectionId);
+          parser()->context.token->sectionId = "";
+        }
+
         QCString sectionId = "";
         int idx = fullMatch.find('{');
         int idxEnd = fullMatch.find("}",idx+1);
@@ -4030,6 +4092,14 @@ int DocPara::handleCommand(DocNodeVariant *thisVariant,const QCString &cmdName, 
 
           sectionId = parser()->context.token->sectionId;
           sectionId = sectionId.stripWhiteSpace();
+          // second time as it time might not yet be caught due to {...}
+          if (sectionId.startsWith("width=") || sectionId.startsWith("height="))
+          {
+            // special case: we do have a size indicator
+            sectionId = "";
+            parser()->tokenizer.unputString(parser()->context.token->sectionId);
+            parser()->context.token->sectionId = "";
+          }
         }
 
         QCString plantFile(sectionId);

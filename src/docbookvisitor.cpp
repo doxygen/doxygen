@@ -1205,7 +1205,7 @@ DB_VIS_C
     {
       baseName=baseName.right(baseName.length()-i-1);
     }
-    visitPreStart(m_t, img.children(), img.hasCaption(), img.relPath() + baseName, img.width(), img.height(), img.isInlineImage());
+    visitPreStart(m_t, img.children(), img.hasCaption(), img.relPath() + baseName, img.width(DocOutputTypeDocbook), img.height(DocOutputTypeDocbook), img.isInlineImage());
     visitChildren(img);
     visitPostEnd(m_t, img.hasCaption(),img.isInlineImage());
     QCString file;
@@ -1227,7 +1227,7 @@ void DocbookDocVisitor::operator()(const DocDotFile &df)
 DB_VIS_C
   if (m_hide) return;
   if (!Config_getBool(DOT_CLEANUP)) copyFile(df.file(),Config_getString(DOCBOOK_OUTPUT)+"/"+stripPath(df.file()));
-  startDotFile(df.file(),df.width(),df.height(),df.hasCaption(),df.children(),df.srcFile(),df.srcLine());
+  startDotFile(df.file(),df.width(DocOutputTypeDocbook),df.height(DocOutputTypeDocbook),df.hasCaption(),df.children(),df.srcFile(),df.srcLine());
   visitChildren(df);
   endDotFile(df.hasCaption());
 }
@@ -1237,7 +1237,7 @@ void DocbookDocVisitor::operator()(const DocMscFile &df)
 DB_VIS_C
   if (m_hide) return;
   if (!Config_getBool(DOT_CLEANUP)) copyFile(df.file(),Config_getString(DOCBOOK_OUTPUT)+"/"+stripPath(df.file()));
-  startMscFile(df.file(),df.width(),df.height(),df.hasCaption(),df.children(),df.srcFile(),df.srcLine());
+  startMscFile(df.file(),df.width(DocOutputTypeDocbook),df.height(DocOutputTypeDocbook),df.hasCaption(),df.children(),df.srcFile(),df.srcLine());
   visitChildren(df);
   endMscFile(df.hasCaption());
 }
@@ -1247,7 +1247,7 @@ void DocbookDocVisitor::operator()(const DocDiaFile &df)
 DB_VIS_C
   if (m_hide) return;
   if (!Config_getBool(DOT_CLEANUP)) copyFile(df.file(),Config_getString(DOCBOOK_OUTPUT)+"/"+stripPath(df.file()));
-  startDiaFile(df.file(),df.width(),df.height(),df.hasCaption(),df.children(),df.srcFile(),df.srcLine());
+  startDiaFile(df.file(),df.width(DocOutputTypeDocbook),df.height(DocOutputTypeDocbook),df.hasCaption(),df.children(),df.srcFile(),df.srcLine());
   visitChildren(df);
   endDiaFile(df.hasCaption());
 }
@@ -1505,7 +1505,7 @@ DB_VIS_C
   }
   QCString outDir = Config_getString(DOCBOOK_OUTPUT);
   writeMscGraphFromFile(baseName+".msc",outDir,shortName,MSC_BITMAP,s.srcFile(),s.srcLine());
-  visitPreStart(m_t, s.children(), s.hasCaption(), s.relPath() + shortName + ".png", s.width(), s.height());
+  visitPreStart(m_t, s.children(), s.hasCaption(), s.relPath() + shortName + ".png", s.width(DocOutputTypeDocbook), s.height(DocOutputTypeDocbook));
   visitCaption(s.children());
   visitPostEnd(m_t, s.hasCaption());
 }
@@ -1521,7 +1521,7 @@ DB_VIS_C
   }
   QCString outDir = Config_getString(DOCBOOK_OUTPUT);
   PlantumlManager::instance().generatePlantUMLOutput(baseName,outDir,PlantumlManager::PUML_BITMAP);
-  visitPreStart(m_t, s.children(), s.hasCaption(), s.relPath() + shortName + ".png", s.width(),s.height());
+  visitPreStart(m_t, s.children(), s.hasCaption(), s.relPath() + shortName + ".png", s.width(DocOutputTypeDocbook),s.height(DocOutputTypeDocbook));
   visitCaption(s.children());
   visitPostEnd(m_t, s.hasCaption());
 }
@@ -1572,7 +1572,7 @@ DB_VIS_C
   }
   QCString outDir = Config_getString(DOCBOOK_OUTPUT);
   writeDiaGraphFromFile(baseName+".dia",outDir,shortName,DIA_BITMAP,s.srcFile(),s.srcLine());
-  visitPreStart(m_t, s.children(), s.hasCaption(), shortName, s.width(),s.height());
+  visitPreStart(m_t, s.children(), s.hasCaption(), shortName, s.width(DocOutputTypeDocbook),s.height(DocOutputTypeDocbook));
   visitCaption(s.children());
   visitPostEnd(m_t, s.hasCaption());
 }
@@ -1623,7 +1623,7 @@ DB_VIS_C
   }
   QCString outDir = Config_getString(DOCBOOK_OUTPUT);
   writeDotGraphFromFile(baseName+".dot",outDir,shortName,GOF_BITMAP,s.srcFile(),s.srcLine());
-  visitPreStart(m_t, s.children(), s.hasCaption(), s.relPath() + shortName + "." + getDotImageExtension(), s.width(),s.height());
+  visitPreStart(m_t, s.children(), s.hasCaption(), s.relPath() + shortName + "." + getDotImageExtension(), s.width(DocOutputTypeDocbook),s.height(DocOutputTypeDocbook));
   visitCaption(s.children());
   visitPostEnd(m_t, s.hasCaption());
 }

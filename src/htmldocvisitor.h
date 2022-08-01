@@ -122,13 +122,13 @@ class HtmlDocVisitor : public DocVisitor
                    const QCString &tooltip = "");
     void endLink();
     void writeDotFile(const QCString &fileName,const QCString &relPath,const QCString &context,
-                      const QCString &srcFile,int srcLine);
+                      const QCString &srcFile,int srcLine,QCString width,QCString height);
     void writeMscFile(const QCString &fileName,const QCString &relPath,const QCString &context,
-                      const QCString &srcFile,int srcLine);
+                      const QCString &srcFile,int srcLine,QCString width,QCString height);
     void writeDiaFile(const QCString &fileName,const QCString &relPath,const QCString &context,
-                      const QCString &srcFile,int srcLine);
+                      const QCString &srcFile,int srcLine,QCString width,QCString height);
     void writePlantUMLFile(const QCString &fileName,const QCString &relPath,const QCString &context,
-                           const QCString &srcFile,int srcLine);
+                           const QCString &srcFile,int srcLine,QCString width,QCString height);
 
     template<class DocNode>
     void forceEndParagraph(const DocNode &n);

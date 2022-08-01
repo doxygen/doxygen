@@ -541,17 +541,18 @@ class PrintDocVisitor
     }
     void operator()(const DocImage &img)
     {
+      DocOutputType type = DocOutputTypeAll;
       indent_pre();
       printf("<image src=\"%s\" type=\"",qPrint(img.name()));
       switch(img.type())
       {
-        case DocImage::Html:    printf("html"); break;
-        case DocImage::Latex:   printf("latex"); break;
-        case DocImage::Rtf:     printf("rtf"); break;
-        case DocImage::DocBook: printf("docbook"); break;
-        case DocImage::Xml:     printf("xml"); break;
+        case DocImage::Html:    {printf("html"); type = DocOutputTypeHTML;} break;
+        case DocImage::Latex:   {printf("latex"); type = DocOutputTypeLatex;} break;
+        case DocImage::Rtf:     {printf("rtf"); type = DocOutputTypeRTF;} break;
+        case DocImage::DocBook: {printf("docbook"); type = DocOutputTypeDocbook;} break;
+        case DocImage::Xml:     {printf("xml"); type = DocOutputTypeXML;} break;
       }
-      printf("\" %s %s inline=\"%s\">\n",qPrint(img.width()),qPrint(img.height()),img.isInlineImage() ? "yes" : "no");
+      printf("\" %s %s inline=\"%s\">\n",qPrint(img.width(type)),qPrint(img.height(type)),img.isInlineImage() ? "yes" : "no");
       visitChildren(img);
       indent_post();
       printf("</image>\n");
