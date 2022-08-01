@@ -2112,20 +2112,16 @@ void Config::updateObsolete()
                "  Otherwise you run the risk that the wrong font is being used for dot generated graphs.\n");
 
   QCString& commonAttrStr = *dynamic_cast<ConfigString*>(ConfigImpl::instance()->get("DOT_COMMON_ATTR"))->valueRef();
-  printf("commonAttrStr=%s before\n",qPrint(commonAttrStr));
   DotAttributes commonAttr(commonAttrStr);
   updateAttribute(commonAttr, "fontname", fontname);
   updateAttribute(commonAttr, "fontsize", fontsize);
   commonAttrStr = commonAttr.str();
-  printf("commonAttrStr=%s after\n",qPrint(commonAttrStr));
 
   QCString& edgeAttrStr = *dynamic_cast<ConfigString*>(ConfigImpl::instance()->get("DOT_EDGE_ATTR"))->valueRef();
-  printf("edgeAttrStr=%s before\n",qPrint(edgeAttrStr));
   DotAttributes edgeAttr(edgeAttrStr);
   updateAttribute(edgeAttr, "labelfontname", fontname);
   updateAttribute(edgeAttr, "labelfontsize", fontsize);
   edgeAttrStr = edgeAttr.str();
-  printf("edgeAttrStr=%s after\n",qPrint(edgeAttrStr));
 }
 
 void Config::writeTemplate(TextStream &t,bool shortList,bool update)

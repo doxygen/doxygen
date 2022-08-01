@@ -53,9 +53,9 @@ class DotAttributes
           while (pos<len && (s[pos]!='"' || (s[pos]=='"' && pc=='\\'))) pc=s[pos++];
           if (pos<len) pos++; // skip over end quote
         }
-        else // unquotes value, search for attribute separator
+        else // unquoted value, search for attribute separator (space,comma, or semicolon)
         {
-          while (pos<len && s[pos]!=',') pos++;
+          while (pos<len && s[pos]!=',' && s[pos]!=';' && !qisspace(s[pos])) pos++;
         }
         // pos is now the position after the value, so replace the part between [start..pos) with the new value
         m_input=m_input.left(startPos)+value.quoted()+m_input.mid(pos);
