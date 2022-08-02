@@ -963,6 +963,11 @@ void DocParser::defaultHandleTitleAndSize(const int cmd, DocNodeVariant *parent,
       // special case: no title, but we do have a size indicator
       break;
     }
+    else if (tok==TK_HTMLTAG)
+    {
+      tokenizer.unputString(context.token->name);
+      break;
+    }
     if (!defaultHandleToken(parent,tok,children))
     {
       errorHandleDefaultToken(parent,tok,children,Mappers::cmdMapper->find(cmd));
