@@ -965,6 +965,7 @@ void DocParser::defaultHandleTitleAndSize(const int cmd, DocNodeVariant *parent,
     }
     else if (tok==TK_HTMLTAG)
     {
+      tokenizer.unputString(context.token->name);
       break;
     }
     if (!defaultHandleToken(parent,tok,children))
