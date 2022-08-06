@@ -1743,7 +1743,7 @@ static void generateSqlite3ForMember(const MemberDef *md, struct Refid scope_ref
 
     if (!md->argsString().isEmpty())
     {
-      bindTextParameter(memberdef_insert,":argsstring",md->argsString());
+      bindTextParameter(memberdef_insert,":argsstring",md->argsString() + md->explicitFunctionDefinition());
     }
   }
 

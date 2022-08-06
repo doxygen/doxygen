@@ -2947,7 +2947,7 @@ void ClassDefImpl::writeMemberList(OutputList &ol) const
 
             if ( md->isFunction() || md->isSignal() || md->isSlot() ||
                 (md->isFriend() && md->argsString().isEmpty()))
-              ol.docify(md->argsString());
+              ol.docify(md->argsString() + md->explicitFunctionDefinition());
             else if (md->isEnumerate())
               ol.parseText(" "+theTranslator->trEnumName());
             else if (md->isEnumValue())
@@ -2995,7 +2995,7 @@ void ClassDefImpl::writeMemberList(OutputList &ol) const
           if (!md->isObjCMethod())
           {
             if ( md->isFunction() || md->isSignal() || md->isSlot() )
-              ol.docify(md->argsString());
+              ol.docify(md->argsString() + md->explicitFunctionDefinition());
             else if (md->isEnumerate())
               ol.parseText(" "+theTranslator->trEnumName());
             else if (md->isEnumValue())

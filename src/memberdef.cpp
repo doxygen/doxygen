@@ -55,7 +55,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
               const QCString &type,const QCString &name,const QCString &args,
               const QCString &excp,Protection prot,Specifier virt,bool stat,
               Relationship related,MemberType t,const ArgumentList &tal,
-              const ArgumentList &al,const QCString &metaData);
+              const ArgumentList &al,const QCString &metaData,const QCString &efdef);
     virtual ~MemberDefImpl();
 
     virtual DefType definitionType() const        { return TypeMember; }
@@ -149,6 +149,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     virtual bool isTypeAlias() const;
     virtual bool isDefault() const;
     virtual bool isDelete() const;
+    virtual QCString explicitFunctionDefinition() const;
     virtual bool isNoExcept() const;
     virtual bool isAttribute() const;
     virtual bool isUNOProperty() const;
@@ -374,10 +375,10 @@ MemberDefMutable *createMemberDef(const QCString &defFileName,int defLine,int de
               const QCString &type,const QCString &name,const QCString &args,
               const QCString &excp,Protection prot,Specifier virt,bool stat,
               Relationship related,MemberType t,const ArgumentList &tal,
-              const ArgumentList &al,const QCString &metaData)
+              const ArgumentList &al,const QCString &metaData,const QCString &efdef)
 {
   return new MemberDefImpl(defFileName,defLine,defColumn,type,name,args,excp,prot,virt,
-                           stat,related,t,tal,al,metaData);
+                           stat,related,t,tal,al,metaData,efdef);
 }
 
 //-----------------------------------------------------------------------------
@@ -573,6 +574,8 @@ class MemberDefAliasImpl : public DefinitionAliasMixin<MemberDef>
     { return getMdAlias()->isDefault(); }
     virtual bool isDelete() const
     { return getMdAlias()->isDelete(); }
+    virtual QCString explicitFunctionDefinition() const
+    { return getMdAlias()->explicitFunctionDefinition(); }
     virtual bool isNoExcept() const
     { return getMdAlias()->isNoExcept(); }
     virtual bool isAttribute() const
@@ -1145,7 +1148,7 @@ class MemberDefImpl::IMPL
     void init(Definition *def,const QCString &t,const QCString &a,const QCString &e,
               Protection p,Specifier v,bool s,Relationship r,
               MemberType mt,const ArgumentList &tal,
-              const ArgumentList &al,const QCString &meta
+              const ArgumentList &al,const QCString &meta, const QCString &efdef
              );
 
     const ClassDef     *classDef = 0; // member of or related to
@@ -1180,6 +1183,7 @@ class MemberDefImpl::IMPL
     QCString read;            // property read accessor
     QCString write;           // property write accessor
     QCString exception;       // exceptions that can be thrown
+    QCString explFunDef;      // explicit function definition (text)
     QCString initializer;     // initializer
     QCString extraTypeChars;  // extra type info found after the argument list
     QCString enumBaseType;    // base type of the enum (C++11)
@@ -1280,7 +1284,8 @@ void MemberDefImpl::IMPL::init(Definition *d,
                      const QCString &t,const QCString &a,const QCString &e,
                      Protection p,Specifier v,bool s,Relationship r,
                      MemberType mt,const ArgumentList &tal,
-                     const ArgumentList &al,const QCString &meta
+                     const ArgumentList &al,const QCString &meta,
+                     const QCString &efdef
                     )
 {
   classDef=0;
@@ -1317,6 +1322,7 @@ void MemberDefImpl::IMPL::init(Definition *d,
   stat=s;
   mtype=mt;
   exception=e;
+  explFunDef=efdef;
   proto=FALSE;
   annScope=FALSE;
   memSpec=0;
@@ -1387,12 +1393,13 @@ void MemberDefImpl::IMPL::init(Definition *d,
 MemberDefImpl::MemberDefImpl(const QCString &df,int dl,int dc,
                      const QCString &t,const QCString &na,const QCString &a,const QCString &e,
                      Protection p,Specifier v,bool s,Relationship r,MemberType mt,
-                     const ArgumentList &tal,const ArgumentList &al,const QCString &meta
+                     const ArgumentList &tal,const ArgumentList &al,const QCString &meta,
+                     const QCString &efdef
                     ) : DefinitionMixin(df,dl,dc,removeRedundantWhiteSpace(na))
 {
   //printf("MemberDefImpl::MemberDef(%s)\n",na);
   m_impl = new MemberDefImpl::IMPL;
-  m_impl->init(this,t,a,e,p,v,s,r,mt,tal,al,meta);
+  m_impl->init(this,t,a,e,p,v,s,r,mt,tal,al,meta,efdef);
   m_isLinkableCached    = 0;
   m_isConstructorCached = 0;
   m_isDestructorCached  = 0;
@@ -2365,7 +2372,7 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
     ol.writeString(" = ");
     linkifyText(TextGeneratorOLImpl(ol),d,getBodyDef(),this,m_impl->type);
   }
-
+  ol.writeString(explicitFunctionDefinition());
 
   if ((isObjCMethod() || isObjCProperty()) && isImplementation())
   {
@@ -4197,7 +4204,7 @@ MemberDefMutable *MemberDefImpl::createTemplateInstanceMember(
                        substituteTemplateArgumentsInString(m_impl->args,formalArgs,actualArgs),
                        m_impl->exception, m_impl->prot,
                        m_impl->virt, m_impl->stat, m_impl->related, m_impl->mtype,
-                       ArgumentList(), ArgumentList(), ""
+                       ArgumentList(), ArgumentList(), "", m_impl->explFunDef
                    );
   imd->moveArgumentList(std::move(actualArgList));
   imd->setDefinition(substituteTemplateArgumentsInString(m_impl->def,formalArgs,actualArgs));
@@ -5137,6 +5144,10 @@ bool MemberDefImpl::isDefault() const
 bool MemberDefImpl::isDelete() const
 {
   return (m_impl->memSpec&Entry::Delete)!=0;
+}
+QCString MemberDefImpl::explicitFunctionDefinition() const
+{
+  return m_impl->explFunDef;
 }
 
 bool MemberDefImpl::isNoExcept() const

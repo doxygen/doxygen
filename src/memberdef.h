@@ -157,6 +157,7 @@ class MemberDef : public Definition
     virtual bool isTypeAlias() const = 0;
     virtual bool isDefault() const = 0;
     virtual bool isDelete() const = 0;
+    virtual QCString explicitFunctionDefinition() const = 0;
     virtual bool isNoExcept() const = 0;
     virtual bool isAttribute() const = 0; // UNO IDL attribute
     virtual bool isUNOProperty() const = 0; // UNO IDL property
@@ -449,7 +450,7 @@ MemberDefMutable *createMemberDef(const QCString &defFileName,int defLine,int de
               const QCString &type,const QCString &name,const QCString &args,
               const QCString &excp,Protection prot,Specifier virt,bool stat,
               Relationship related,MemberType t,const ArgumentList &tal,
-              const ArgumentList &al,const QCString &metaData);
+              const ArgumentList &al,const QCString &metaData,const QCString &efdef);
 
 MemberDef *createMemberDefAlias(const Definition *newScope,const MemberDef *aliasMd);
 

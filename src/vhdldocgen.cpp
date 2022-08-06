@@ -2581,7 +2581,8 @@ ferr:
       MemberType_Variable,
       ArgumentList(),
       ArgumentList(),
-      "") };
+      "",
+      QCString()) };
 
   if (!ar->getOutputFileBase().isEmpty())
   {

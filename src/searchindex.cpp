@@ -478,7 +478,7 @@ void SearchIndexExternal::setCurrentDoc(const Definition *ctx,const QCString &an
     e.name = ctx->qualifiedName();
     if (ctx->definitionType()==Definition::TypeMember)
     {
-      e.args = (toMemberDef(ctx))->argsString();
+      e.args = (toMemberDef(ctx))->argsString() + (toMemberDef(ctx))->explicitFunctionDefinition();
     }
     e.extId = extId;
     e.url  = url;

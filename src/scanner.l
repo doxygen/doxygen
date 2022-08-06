@@ -4906,21 +4906,21 @@ NONLopt [^\n]*
 
 <FuncQual,TrailingReturn>{BN}*"="{BN}*"0"{BN}*          { // pure virtual member function
                                           lineCount(yyscanner) ;
-                                          yyextra->current->args += " = 0";
+                                          yyextra->current->explFunDef = " = 0";
                                           yyextra->current->virt = Pure;
                                           yyextra->current->argList.setPureSpecifier(TRUE);
                                           BEGIN(FuncQual);
                                         }
 <FuncQual,TrailingReturn>{BN}*"="{BN}*"delete"{BN}*     { // C++11 explicitly delete member
                                           lineCount(yyscanner);
-                                          yyextra->current->args += " = delete";
+                                          yyextra->current->explFunDef = " = delete";
                                           yyextra->current->spec |= Entry::Delete;
                                           yyextra->current->argList.setIsDeleted(TRUE);
                                           BEGIN(FuncQual);
                                         }
 <FuncQual,TrailingReturn>{BN}*"="{BN}*"default"{BN}*     { // C++11 explicitly defaulted constructor/assignment operator
                                           lineCount(yyscanner);
-                                          yyextra->current->args += " = default";
+                                          yyextra->current->explFunDef = " = default";
                                           yyextra->current->spec |= Entry::Default;
                                           BEGIN(FuncQual);
                                         }

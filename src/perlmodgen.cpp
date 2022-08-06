@@ -1558,7 +1558,7 @@ void PerlModGenerator::generatePerlModForMember(const MemberDef *md,const Defini
   }
   else if (md->argsString()!=0)
   {
-    m_output.addFieldQuotedString("arguments", md->argsString());
+    m_output.addFieldQuotedString("arguments", md->argsString() + md->explicitFunctionDefinition());
   }
 
   if (!md->initializer().isEmpty())

@@ -555,7 +555,7 @@ void writeJavaScriptSearchIndex()
             if (md) prefix=convertToXML(md->localName());
             if (overloadedFunction) // overloaded member function
             {
-              prefix+=convertToXML(md->argsString());
+              prefix+=convertToXML(md->argsString() + md->explicitFunctionDefinition());
               // show argument list to disambiguate overloaded functions
             }
             else if (md) // unique member function

@@ -807,7 +807,7 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
     linkifyText(TextGeneratorXMLImpl(t),def,md->getBodyDef(),md,typeStr);
     t << "</type>\n";
     t << "        <definition>" << convertToXML(md->definition()) << "</definition>\n";
-    t << "        <argsstring>" << convertToXML(md->argsString()) << "</argsstring>\n";
+    t << "        <argsstring>" << convertToXML(md->argsString() + md->explicitFunctionDefinition()) << "</argsstring>\n";
   }
 
   if (md->memberType() == MemberType_Enumeration)

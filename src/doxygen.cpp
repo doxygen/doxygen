@@ -1543,7 +1543,7 @@ static ClassDefMutable *createTagLessInstance(const ClassDef *rootCd,const Class
             md->typeString(),md->name(),md->argsString(),md->excpString(),
             md->protection(),md->virtualness(),md->isStatic(),Member,
             md->memberType(),
-            ArgumentList(),ArgumentList(),"");
+            ArgumentList(),ArgumentList(),"",md->explicitFunctionDefinition());
         imd->setMemberClass(cd);
         imd->setDocumentation(md->documentation(),md->docFile(),md->docLine());
         imd->setBriefDescription(md->briefDescription(),md->briefFile(),md->briefLine());
@@ -2149,7 +2149,7 @@ static void findUsingDeclImports(const Entry *root)
                     md->typeString(),memName,md->argsString(),
                     md->excpString(),root->protection,root->virt,
                     md->isStatic(),Member,md->memberType(),
-                    templAl,al,root->metaData
+                    templAl,al,root->metaData,md->explicitFunctionDefinition()
                     ) };
                 newMd->setMemberClass(cd);
                 cd->insertMember(newMd.get());
@@ -2328,7 +2328,7 @@ static MemberDef *addVariableToClass(
       type,name,args,root->exception,
       prot,Normal,root->stat,related,
       mtype,!root->tArgLists.empty() ? root->tArgLists.back() : ArgumentList(),
-      ArgumentList(), root->metaData) };
+      ArgumentList(), root->metaData, root->explFunDef) };
   md->setTagInfo(root->tagInfo());
   md->setMemberClass(cd); // also sets outer scope (i.e. getOuterScope())
   md->setDocumentation(root->doc,root->docFile,root->docLine);
@@ -2566,7 +2566,7 @@ static MemberDef *addVariableToFile(
       type,name,args,QCString(),
       root->protection, Normal,root->stat,Member,
       mtype,!root->tArgLists.empty() ? root->tArgLists.back() : ArgumentList(),
-      root->argList, root->metaData) };
+      root->argList, root->metaData,QCString()) };
   md->setTagInfo(root->tagInfo());
   md->setMemberSpecifiers(root->spec);
   md->setDocumentation(root->doc,root->docFile,root->docLine);
@@ -3123,7 +3123,7 @@ static void addInterfaceOrServiceToServiceOrSingleton(
   std::unique_ptr<MemberDefMutable> md { createMemberDef(
       fileName, root->startLine, root->startColumn, root->type, rname,
       "", "", root->protection, root->virt, root->stat, Member,
-      type, ArgumentList(), root->argList, root->metaData) };
+      type, ArgumentList(), root->argList, root->metaData,"") };
   md->setTagInfo(root->tagInfo());
   md->setMemberClass(cd);
   md->setDocumentation(root->doc,root->docFile,root->docLine);
@@ -3296,7 +3296,7 @@ static void addMethodToClass(const Entry *root,ClassDefMutable *cd,
       relates.isEmpty() ? Member :
           root->relatesType == MemberOf ? Foreign : Related,
       mtype,!root->tArgLists.empty() ? root->tArgLists.back() : ArgumentList(),
-      root->argList, root->metaData) };
+      root->argList, root->metaData,root->explFunDef) };
   md->setTagInfo(root->tagInfo());
   md->setMemberClass(cd);
   md->setDocumentation(root->doc,root->docFile,root->docLine);
@@ -3400,7 +3400,7 @@ static void addGlobalFunction(const Entry *root,const QCString &rname,const QCSt
       root->protection,root->virt,root->stat,Member,
       MemberType_Function,
       !root->tArgLists.empty() ? root->tArgLists.back() : ArgumentList(),
-      root->argList,root->metaData) };
+      root->argList,root->metaData,root->explFunDef) };
 
   md->setTagInfo(root->tagInfo());
   md->setLanguage(root->lang);
@@ -5678,7 +5678,7 @@ static void substituteTemplatesInArgList(
 static void addLocalObjCMethod(const Entry *root,
                         const QCString &scopeName,
                         const QCString &funcType,const QCString &funcName,const QCString &funcArgs,
-                        const QCString &exceptions,const QCString &funcDecl,
+                        const QCString &exceptions,const QCString &explFunDef,const QCString &funcDecl,
                         uint64 spec)
 {
   //printf("scopeName='%s' className='%s'\n",qPrint(scopeName),qPrint(className));
@@ -5692,7 +5692,7 @@ static void addLocalObjCMethod(const Entry *root,
         root->fileName,root->startLine,root->startColumn,
         funcType,funcName,funcArgs,exceptions,
         root->protection,root->virt,root->stat,Member,
-        MemberType_Function,ArgumentList(),root->argList,root->metaData) };
+        MemberType_Function,ArgumentList(),root->argList,root->metaData,explFunDef) };
     md->setTagInfo(root->tagInfo());
     md->setLanguage(root->lang);
     md->setId(root->id);
@@ -5739,6 +5739,7 @@ static void addMemberFunction(const Entry *root,
                        const QCString &funcArgs,
                        const QCString &funcTempList,
                        const QCString &exceptions,
+                       const QCString &explFunDef,
                        const QCString &type,
                        const QCString &args,
                        bool isFriend,
@@ -5951,7 +5952,7 @@ static void addMemberFunction(const Entry *root,
   if (count==0 && root->parent() &&
       root->parent()->section==Entry::OBJCIMPL_SEC)
   {
-    addLocalObjCMethod(root,scopeName,funcType,funcName,funcArgs,exceptions,funcDecl,spec);
+    addLocalObjCMethod(root,scopeName,funcType,funcName,funcArgs,exceptions,explFunDef,funcDecl,spec);
     return;
   }
   if (count==0 && !(isFriend && funcType=="class"))
@@ -6090,6 +6091,7 @@ static void addMemberSpecialization(const Entry *root,
                              const QCString &funcArgs,
                              const QCString &funcDecl,
                              const QCString &exceptions,
+                             const QCString &explFunDef,
                              uint64 spec
                             )
 {
@@ -6111,7 +6113,7 @@ static void addMemberSpecialization(const Entry *root,
       funcType,funcName,funcArgs,exceptions,
       declMd ? declMd->protection() : root->protection,
       root->virt,root->stat,Member,
-      mtype,tArgList,root->argList,root->metaData) };
+      mtype,tArgList,root->argList,root->metaData,explFunDef) };
   //printf("new specialized member %s args='%s'\n",qPrint(md->name()),qPrint(funcArgs));
   md->setTagInfo(root->tagInfo());
   md->setLanguage(root->lang);
@@ -6145,7 +6147,7 @@ static void addMemberSpecialization(const Entry *root,
 
 static void addOverloaded(const Entry *root,MemberName *mn,
                           const QCString &funcType,const QCString &funcName,const QCString &funcArgs,
-                          const QCString &funcDecl,const QCString &exceptions,uint64 spec)
+                          const QCString &funcDecl,const QCString &exceptions,const QCString &explFunDef,uint64 spec)
 {
   // for unique overloaded member we allow the class to be
   // omitted, this is to be Qt compatible. Using this should
@@ -6175,7 +6177,7 @@ static void addOverloaded(const Entry *root,MemberName *mn,
         root->fileName,root->startLine,root->startColumn,
         funcType,funcName,funcArgs,exceptions,
         root->protection,root->virt,root->stat,Related,
-        mtype,tArgList ? *tArgList : ArgumentList(),root->argList,root->metaData) };
+        mtype,tArgList ? *tArgList : ArgumentList(),root->argList,root->metaData,explFunDef) };
     md->setTagInfo(root->tagInfo());
     md->setLanguage(root->lang);
     md->setId(root->id);
@@ -6245,6 +6247,7 @@ static void findMember(const Entry *root,
   QCString funcArgs;
   QCString funcTempList;
   QCString exceptions;
+  QCString explFunDef;
   QCString funcSpec;
   bool isRelated=FALSE;
   bool isMemberOf=FALSE;
@@ -6317,6 +6320,7 @@ static void findMember(const Entry *root,
     parseFuncDecl(funcDecl,root->lang,scopeName,funcType,funcName,
                 funcArgs,funcTempList,exceptions
                );
+    explFunDef = root->explFunDef;
   }
   //printf("scopeName='%s' funcType='%s' funcName='%s' funcArgs='%s'\n",
   //    qPrint(scopeName),qPrint(funcType),qPrint(funcName),qPrint(funcArgs));
@@ -6509,13 +6513,14 @@ static void findMember(const Entry *root,
            "  funcDecl='%s'\n"
            "  related='%s'\n"
            "  exceptions='%s'\n"
+           "  explicit function definition='%s'\n"
            "  isRelated=%d\n"
            "  isMemberOf=%d\n"
            "  isFriend=%d\n"
            "  isFunc=%d\n\n",
            qPrint(namespaceName),qPrint(className),
            qPrint(funcType),qPrint(funcSpec),qPrint(funcName),qPrint(funcArgs),qPrint(funcTempList),
-           qPrint(funcDecl),qPrint(relates),qPrint(exceptions),isRelated,isMemberOf,isFriend,
+           qPrint(funcDecl),qPrint(relates),qPrint(exceptions),qPrint(explFunDef),isRelated,isMemberOf,isFriend,
            isFunc
           );
 
@@ -6572,12 +6577,12 @@ static void findMember(const Entry *root,
         if (funcSpec.isEmpty()) // not a member specialization
         {
           addMemberFunction(root,mn,scopeName,namespaceName,className,funcType,funcName,
-                            funcArgs,funcTempList,exceptions,
+                            funcArgs,funcTempList,exceptions,explFunDef,
                             type,args,isFriend,spec,relates,funcDecl,overloaded,isFunc);
         }
         else if (cd) // member specialization
         {
-          addMemberSpecialization(root,mn,cd,funcType,funcName,funcArgs,funcDecl,exceptions,spec);
+          addMemberSpecialization(root,mn,cd,funcType,funcName,funcArgs,funcDecl,exceptions,explFunDef,spec);
         }
         else
         {
@@ -6587,7 +6592,7 @@ static void findMember(const Entry *root,
       }
       else if (overloaded) // check if the function belongs to only one class
       {
-        addOverloaded(root,mn,funcType,funcName,funcArgs,funcDecl,exceptions,spec);
+        addOverloaded(root,mn,funcType,funcName,funcArgs,funcDecl,exceptions,explFunDef,spec);
       }
       else // unrelated function with the same name as a member
       {
@@ -6704,7 +6709,7 @@ static void findMember(const Entry *root,
               mtype,
               (!root->tArgLists.empty() ? root->tArgLists.back() : ArgumentList()),
               funcArgs.isEmpty() ? ArgumentList() : root->argList,
-              root->metaData) };
+              root->metaData,explFunDef) };
 
           if (mdDefine)
           {
@@ -6828,7 +6833,7 @@ static void findMember(const Entry *root,
     }
     else if (root->parent() && root->parent()->section==Entry::OBJCIMPL_SEC)
     {
-      addLocalObjCMethod(root,scopeName,funcType,funcName,funcArgs,exceptions,funcDecl,spec);
+      addLocalObjCMethod(root,scopeName,funcType,funcName,funcArgs,exceptions,explFunDef,funcDecl,spec);
     }
     else // unrelated not overloaded member found
     {
@@ -7146,7 +7151,7 @@ static void findEnums(const Entry *root)
           root->protection,Normal,FALSE,
           isMemberOf ? Foreign : isRelated ? Related : Member,
           MemberType_Enumeration,
-          ArgumentList(),ArgumentList(),root->metaData) };
+          ArgumentList(),ArgumentList(),root->metaData,QCString()) };
       md->setTagInfo(root->tagInfo());
       md->setLanguage(root->lang);
       md->setId(root->id);
@@ -7359,7 +7364,7 @@ static void addEnumValuesToEnums(const Entry *root)
                       fileName,e->startLine,e->startColumn,
                       e->type,e->name,e->args,QCString(),
                       e->protection, Normal,e->stat,Member,
-                      MemberType_EnumValue,ArgumentList(),ArgumentList(),e->metaData) };
+                      MemberType_EnumValue,ArgumentList(),ArgumentList(),e->metaData,QCString()) };
                   const NamespaceDef *mnd = md->getNamespaceDef();
                   if      (md->getClassDef())
                     fmd->setMemberClass(md->getClassDef());
@@ -8332,7 +8337,7 @@ static void buildDefineList()
             def.fileName,def.lineNr,def.columnNr,
             "#define",def.name,def.args,QCString(),
             Public,Normal,FALSE,Member,MemberType_Define,
-            ArgumentList(),ArgumentList(),"") };
+            ArgumentList(),ArgumentList(),"",QCString()) };
 
         if (!def.args.isEmpty())
         {
@@ -8949,7 +8954,7 @@ static void findDefineDocumentation(Entry *root)
       std::unique_ptr<MemberDefMutable> md { createMemberDef(root->tagInfo()->tagName,1,1,
                     "#define",root->name,root->args,QCString(),
                     Public,Normal,FALSE,Member,MemberType_Define,
-                    ArgumentList(),ArgumentList(),"") };
+                    ArgumentList(),ArgumentList(),"",QCString()) };
       md->setTagInfo(root->tagInfo());
       md->setLanguage(root->lang);
       //printf("Searching for '%s' fd=%p\n",qPrint(filePathName),fd);

@@ -91,6 +91,7 @@ Entry::Entry(const Entry &e)
   write       = e.write;
   inside      = e.inside;
   exception   = e.exception;
+  explFunDef  = e.explFunDef;
   typeConstr  = e.typeConstr;
   bodyLine    = e.bodyLine;
   bodyColumn  = e.bodyColumn;
@@ -192,6 +193,7 @@ void Entry::reset()
   args.resize(0);
   bitfields.resize(0);
   exception.resize(0);
+  explFunDef.resize(0);
   program.str(std::string());
   includeFile.resize(0);
   includeName.resize(0);

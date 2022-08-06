@@ -279,6 +279,7 @@ class Entry
     QCString     write;       //!< property write accessor
     QCString     inside;      //!< name of the class in which documents are found
     QCString     exception;   //!< throw specification
+    QCString     explFunDef;  //!< explicit function definition (text)
     ArgumentList typeConstr;  //!< where clause (C#) for type constraints
     int          bodyLine;    //!< line number of the body in the source
     int          bodyColumn;  //!< column of the body in the source

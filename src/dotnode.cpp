@@ -157,7 +157,7 @@ static void writeBoxMemberList(TextStream &t,
           {
             if (dotUmlDetails==DOT_UML_DETAILS_t::YES)
             {
-              label+=mma->argsString();
+              label+=mma->argsString() + mma->explicitFunctionDefinition();
             }
             else
             {

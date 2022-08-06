@@ -13,7 +13,7 @@
           <para>Load things. </para>
         </briefdescription>
         <detaileddescription>
-          <para>Calls <ref refid="class_interface_1a328e0a16ccee5d796ca93801a055d27d" kindref="member">doLoad()</ref>. </para>
+          <para>Calls <ref refid="class_interface_1a3ca47b3b87c7d4fa2bd540e4253d7101" kindref="member">doLoad()</ref>. </para>
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
@@ -21,10 +21,10 @@
       </memberdef>
     </sectiondef>
     <sectiondef kind="private-func">
-      <memberdef kind="function" id="class_interface_1a328e0a16ccee5d796ca93801a055d27d" prot="private" static="no" const="no" explicit="no" inline="no" virt="pure-virtual">
+      <memberdef kind="function" id="class_interface_1a3ca47b3b87c7d4fa2bd540e4253d7101" prot="private" static="no" const="no" explicit="no" inline="no" virt="pure-virtual">
         <type>void</type>
         <definition>virtual void Interface::doLoad</definition>
-        <argsstring>()=0</argsstring>
+        <argsstring>() = 0</argsstring>
         <name>doLoad</name>
         <qualifiedname>Interface::doLoad</qualifiedname>
         <briefdescription>
@@ -90,7 +90,7 @@
     </detaileddescription>
     <location file="080_extract_private_virtual.cpp" line="6" column="1" bodyfile="080_extract_private_virtual.cpp" bodystart="6" bodyend="35"/>
     <listofallmembers>
-      <member refid="class_interface_1a328e0a16ccee5d796ca93801a055d27d" prot="private" virt="pure-virtual">
+      <member refid="class_interface_1a3ca47b3b87c7d4fa2bd540e4253d7101" prot="private" virt="pure-virtual">
         <scope>Interface</scope>
         <name>doLoad</name>
       </member>
