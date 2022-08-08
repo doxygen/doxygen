@@ -378,8 +378,8 @@ void DocParser::checkUnOrMultipleDocumentedParams()
         warn_doc_error(context.memberDef->docFile(),
                        context.memberDef->docLine(),
                        "%s",
-                       QCString(context.memberDef->qualifiedName()) +
-                       " has @param documentation sections but no arguments");
+                       qPrint(context.memberDef->qualifiedName() +
+                              " has @param documentation sections but no arguments"));
       }
     }
   }
