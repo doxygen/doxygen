@@ -371,6 +371,17 @@ void DocParser::checkUnOrMultipleDocumentedParams()
                             qPrint(substitute(errMsg,"%","%%")));
       }
     }
+    else
+    {
+      if (!context.paramsFound.size() && Config_getBool(WARN_IF_DOC_ERROR))
+      {
+        warn_doc_error(context.memberDef->docFile(),
+                       context.memberDef->docLine(),
+                       "%s",
+                       QCString(context.memberDef->qualifiedName()) +
+                       " has @param documentation sections but no arguments");
+      }
+    }
   }
 }
 
