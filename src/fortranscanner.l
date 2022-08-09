@@ -206,6 +206,8 @@ struct fortranscannerYY_state
   int                      anonCount    = 0 ;
 
   int fixedCommentAfter = 72;
+  //! counter for the number of main programs in this file
+  int mainPrograms      = 0; 
 };
 
 //-----------------------------------------------------------------------------
@@ -827,13 +829,30 @@ private                                 {
 {ATTR_STMT}/{BS}"::"                    {
                                           /* attribute statement starts */
                                           DBG_CTX((stderr,"5=========> Attribute statement: %s\n", yytext));
+                                          if (YY_START == Start)
+                                          {
+                                            addModule(yyscanner);
+                                            yy_push_state(ModuleBody,yyscanner); //anon program
+                                          }
                                           QCString tmp = yytext;
                                           yyextra->currentModifiers |= tmp.stripWhiteSpace();
                                           yyextra->argType="";
                                           yy_push_state(YY_START,yyscanner);
                                           BEGIN( AttributeList ) ;
                                         }
+"common"                                {
+                                          if (YY_START == Start)
+                                          {
+                                            addModule(yyscanner);
+                                            yy_push_state(ModuleBody,yyscanner); //anon program
+                                          }
+                                        }
 {ID}                                    {
+                                          if (YY_START == Start)
+                                          {
+                                            addModule(yyscanner);
+                                            yy_push_state(ModuleBody,yyscanner); //anon program
+                                          }
                                         }
 ^{BS}"type"{BS_}"is"/{BT_}              {}
 ^{BS}"type"{BS}"="                      {}
@@ -2352,8 +2371,10 @@ static void addModule(yyscan_t yyscanner,const QCString &name, bool isModule)
     QCString fname = yyextra->fileName;
     int index = std::max(fname.findRev('/'), fname.findRev('\\'));
     fname = fname.right(fname.length()-index-1);
+    if (yyextra->mainPrograms) fname += "__" + QCString().setNum(yyextra->mainPrograms);
+    yyextra->mainPrograms++;
     fname = fname.prepend("__").append("__");
-    yyextra->current->name = fname;
+    yyextra->current->name = substitute(fname, ".", "_");
   }
   yyextra->current->type = "program";
   yyextra->current->fileName  = yyextra->fileName;
