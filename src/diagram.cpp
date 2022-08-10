@@ -216,7 +216,7 @@ static void writeBitmapBox(DiagramItem *di,Image *image,
                            uint x,uint y,uint w,uint h,bool firstRow,
                            bool hasDocs,bool children=FALSE)
 {
-  uchar colFill = hasDocs ? (firstRow ? 0 : 2) : 7;
+  uchar colFill = hasDocs ? (firstRow ? 8 : 2) : 7;
   uchar colBorder = (firstRow || !hasDocs) ? 1 : 3;
   uint l = Image::stringLength(di->label());
   uint mask=virtToMask(di->virtualness());

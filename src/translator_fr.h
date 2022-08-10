@@ -1107,7 +1107,7 @@ class TranslatorFrench : public TranslatorAdapter_1_8_15
         "</ul>\n"
         "Les flèches ont la signification suivante :\n"
         "<ul>\n"
-        "<li>Une flèche bleu foncé est utilisée pour visualiser une relation d'héritage publique "
+        "<li>Une bleu foncé est utilisée pour visualiser une relation d'héritage publique "
         "entre deux classes.\n"
         "<li>Une flèche vert foncé est utilisée pour une relation d'héritage protégée.\n"
         "<li>Une flèche rouge foncé est utilisée pour une relation d'héritage privée.\n"

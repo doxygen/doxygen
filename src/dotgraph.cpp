@@ -291,10 +291,7 @@ void DotGraph::writeGraphHeader(TextStream &t,const QCString &title)
     t << " // INTERACTIVE_SVG=YES\n";
   }
   t << " // LATEX_PDF_SIZE\n"; // write placeholder for LaTeX PDF bounding box size replacement
-  if (Config_getBool(DOT_TRANSPARENT))
-  {
-    t << "  bgcolor=\"transparent\";\n";
-  }
+  t << "  bgcolor=\"transparent\";\n";
   QCString c = Config_getString(DOT_COMMON_ATTR);
   if (!c.isEmpty()) c += ",";
   t << "  edge [" << c << Config_getString(DOT_EDGE_ATTR) << "];\n";

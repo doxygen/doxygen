@@ -71,11 +71,10 @@ static void writeClientSearchBox(TextStream &t,const QCString &relPath)
 {
   t << "        <div id=\"MSearchBox\" class=\"MSearchBoxInactive\">\n";
   t << "        <span class=\"left\">\n";
-  t << "          <img id=\"MSearchSelect\" src=\"" << relPath << "search/mag_sel.svg\"\n";
-  t << "               onmouseover=\"return searchBox.OnSearchSelectShow()\"\n";
-  t << "               onmouseout=\"return searchBox.OnSearchSelectHide()\"\n";
-  t << "               alt=\"\"/>\n";
-  t << "          <input type=\"text\" id=\"MSearchField\" value=\""
+  t << "          <span id=\"MSearchSelect\" ";
+  t << "               onmouseover=\"return searchBox.OnSearchSelectShow()\" ";
+  t << "               onmouseout=\"return searchBox.OnSearchSelectHide()\">&nbsp;</span>\n";
+  t << "          <input type=\"text\" id=\"MSearchField\" value=\"\" placeholder=\""
     << theTranslator->trSearch() << "\" accesskey=\"S\"\n";
   t << "               onfocus=\"searchBox.OnSearchFieldFocus(true)\" \n";
   t << "               onblur=\"searchBox.OnSearchFieldFocus(false)\" \n";
@@ -104,10 +103,10 @@ static void writeServerSearchBox(TextStream &t,const QCString &relPath,bool high
     t << "search.php";
   }
   t << "\" method=\"get\">\n";
-  t << "              <img id=\"MSearchSelect\" src=\"" << relPath << "search/mag.svg\" alt=\"\"/>\n";
+  t << "              <span id=\"MSearchSelectExt\">&nbsp;</span>\n";
   if (!highlightSearch)
   {
-    t << "              <input type=\"text\" id=\"MSearchField\" name=\"query\" value=\""
+    t << "              <input type=\"text\" id=\"MSearchField\" name=\"query\" value=\"\" placeholder=\""
       << theTranslator->trSearch() << "\" size=\"20\" accesskey=\"S\" \n";
     t << "                     onfocus=\"searchBox.OnSearchFieldFocus(true)\" \n";
     t << "                     onblur=\"searchBox.OnSearchFieldFocus(false)\"/>\n";
@@ -561,6 +560,12 @@ static QCString substituteHtmlKeywords(const QCString &str,
     }
   }
 
+  QCString darkModeJs;
+  if (Config_getEnum(HTML_DARKMODE)==HTML_DARKMODE_t::TOGGLE)
+  {
+    darkModeJs="<script type=\"text/javascript\" src=\"$relpath^darkmode_toggle.js\"></script>\n";
+  }
+
   // first substitute generic keywords
   QCString result = substituteKeywords(str,title,
     convertToHtml(Config_getString(PROJECT_NAME)),
@@ -574,6 +579,7 @@ static QCString substituteHtmlKeywords(const QCString &str,
   result = substitute(result,"$searchbox",searchBox);
   result = substitute(result,"$search",searchCssJs);
   result = substitute(result,"$mathjax",mathJaxJs);
+  result = substitute(result,"$darkmode",darkModeJs);
   result = substitute(result,"$generatedby",generatedBy);
   result = substitute(result,"$extrastylesheet",extraCssText);
   result = substitute(result,"$relpath$",relPath); //<-- obsolete: for backwards compatibility only
@@ -1015,6 +1021,17 @@ void HtmlGenerator::init()
     mgr.copyResource("menu.js",dname);
   }
 
+  if (Config_getEnum(HTML_DARKMODE)==HTML_DARKMODE_t::TOGGLE)
+  {
+    //mgr.copyResource("darkmode_toggle.js",dname);
+    std::ofstream f(dname.str()+"/darkmode_toggle.js",std::ofstream::out | std::ofstream::binary);
+    if (f.is_open())
+    {
+      TextStream t(&f);
+      t << replaceColorMarkers(mgr.getAsString("darkmode_toggle.js"));
+    }
+  }
+
   {
     std::ofstream f(dname.str()+"/dynsections.js",std::ofstream::out | std::ofstream::binary);
     if (f.is_open())
@@ -1043,13 +1060,20 @@ void HtmlGenerator::writeTabData()
   QCString dname=Config_getString(HTML_OUTPUT);
   ResourceMgr &mgr = ResourceMgr::instance();
   //writeColoredImgData(dname,colored_tab_data);
-  mgr.copyResource("tab_a.lum",dname);
-  mgr.copyResource("tab_b.lum",dname);
-  mgr.copyResource("tab_h.lum",dname);
-  mgr.copyResource("tab_s.lum",dname);
-  mgr.copyResource("nav_h.lum",dname);
-  mgr.copyResource("nav_f.lum",dname);
-  mgr.copyResource("bc_s.luma",dname);
+  mgr.copyResource("tab_a.lum",dname);  // active, light mode
+  mgr.copyResource("tab_b.lum",dname);  // normal, light mode
+  mgr.copyResource("tab_h.lum",dname);  // highlight, light mode
+  mgr.copyResource("tab_s.lum",dname);  // separator, light mode
+  mgr.copyResource("tab_ad.lum",dname); // active, dark mode
+  mgr.copyResource("tab_bd.lum",dname); // normal, dark mode
+  mgr.copyResource("tab_hd.lum",dname); // highlight, dark mode
+  mgr.copyResource("tab_sd.lum",dname); // separator, light mode
+  mgr.copyResource("nav_h.lum",dname);  // header gradient, light mode
+  mgr.copyResource("nav_hd.lum",dname); // header gradient, dark mode
+  mgr.copyResource("nav_f.lum",dname); // member definition header, light mode
+  mgr.copyResource("nav_fd.lum",dname); // member definition header, dark mode
+  mgr.copyResource("bc_s.luma",dname); // breadcrumb separator, light mode
+  mgr.copyResource("bc_sd.luma",dname); // breadcrumb separator, dark mode
   mgr.copyResource("doxygen.svg",dname);
   Doxygen::indexList->addImageFile("doxygen.svg");
   mgr.copyResource("closed.luma",dname);
@@ -1070,28 +1094,23 @@ void HtmlGenerator::writeTabData()
 
 void HtmlGenerator::writeSearchData(const QCString &dname)
 {
-  bool serverBasedSearch = Config_getBool(SERVER_BASED_SEARCH);
+  //bool serverBasedSearch = Config_getBool(SERVER_BASED_SEARCH);
   //writeImgData(dname,serverBasedSearch ? search_server_data : search_client_data);
   ResourceMgr &mgr = ResourceMgr::instance();
 
-  mgr.copyResource("search_l.png",dname);
-  Doxygen::indexList->addImageFile("search/search_l.png");
-  mgr.copyResource("search_m.png",dname);
-  Doxygen::indexList->addImageFile("search/search_m.png");
-  mgr.copyResource("search_r.png",dname);
-  Doxygen::indexList->addImageFile("search/search_r.png");
-  if (serverBasedSearch)
-  {
-    mgr.copyResource("mag.svg",dname);
-    Doxygen::indexList->addImageFile("search/mag.svg");
-  }
-  else
-  {
-    mgr.copyResource("close.svg",dname);
-    Doxygen::indexList->addImageFile("search/close.svg");
-    mgr.copyResource("mag_sel.svg",dname);
-    Doxygen::indexList->addImageFile("search/mag_sel.svg");
-  }
+  // server side search resources
+  mgr.copyResource("mag.svg",dname);
+  mgr.copyResource("mag_d.svg",dname);
+  Doxygen::indexList->addImageFile("search/mag.svg");
+  Doxygen::indexList->addImageFile("search/mag_d.svg");
+
+  // client side search resources
+  mgr.copyResource("close.svg",dname);
+  Doxygen::indexList->addImageFile("search/close.svg");
+  mgr.copyResource("mag_sel.svg",dname);
+  mgr.copyResource("mag_seld.svg",dname);
+  Doxygen::indexList->addImageFile("search/mag_sel.svg");
+  Doxygen::indexList->addImageFile("search/mag_seld.svg");
 
   QCString searchDirName = dname;
   std::ofstream f(searchDirName.str()+"/search.css",std::ofstream::out | std::ofstream::binary);
@@ -1099,25 +1118,32 @@ void HtmlGenerator::writeSearchData(const QCString &dname)
   {
     TextStream t(&f);
     QCString searchCss;
+    // the position of the search box depends on a number of settings.
+    // Insert the right piece of CSS code depending on which options are selected
     if (Config_getBool(DISABLE_INDEX))
     {
       if (Config_getBool(GENERATE_TREEVIEW) && Config_getBool(FULL_SIDEBAR))
       {
-        searchCss = mgr.getAsString("search_sidebar.css");
+        searchCss = mgr.getAsString("search_sidebar.css"); // we have a full height side bar
+      }
+      else if (Config_getBool(HTML_DARKMODE)==HTML_DARKMODE_t::TOGGLE)
+      {
+        searchCss = mgr.getAsString("search_nomenu_toggle.css"); // we have no tabs but do have a darkmode button
       }
       else
       {
-        searchCss = mgr.getAsString("search_nomenu.css");
+        searchCss = mgr.getAsString("search_nomenu.css"); // we have no tabs and no darkmode button
       }
     }
     else if (!Config_getBool(HTML_DYNAMIC_MENUS))
     {
-      searchCss = mgr.getAsString("search_fixedtabs.css");
+      searchCss = mgr.getAsString("search_fixedtabs.css"); // we have tabs, but they are static
     }
     else
     {
-      searchCss = mgr.getAsString("search.css");
+      searchCss = mgr.getAsString("search.css"); // default case with a dynamic menu bar
     }
+    // and then add the option independent part of the styling
     searchCss += mgr.getAsString("search_common.css");
     searchCss = substitute(replaceColorMarkers(searchCss),"$doxygenversion",getDoxygenVersion());
     t << searchCss;
@@ -1125,9 +1151,54 @@ void HtmlGenerator::writeSearchData(const QCString &dname)
   }
 }
 
+static void writeDefaultStyleSheet(TextStream &t)
+{
+  t << "/* The standard CSS for doxygen " << getDoxygenVersion() << "*/\n\n";
+  switch (Config_getEnum(HTML_DARKMODE))
+  {
+    case HTML_DARKMODE_t::LIGHT:
+    case HTML_DARKMODE_t::AUTO_DARK:
+    case HTML_DARKMODE_t::TOGGLE:
+      t << "html {\n";
+      t << replaceColorMarkers(ResourceMgr::instance().getAsString("lightmode_settings.css"));
+      t << "}\n\n";
+      break;
+    case HTML_DARKMODE_t::DARK:
+    case HTML_DARKMODE_t::AUTO_LIGHT:
+      t << "html {\n";
+      t << replaceColorMarkers(ResourceMgr::instance().getAsString("darkmode_settings.css"));
+      t << "}\n\n";
+      break;
+  }
+  if (Config_getEnum(HTML_DARKMODE)==HTML_DARKMODE_t::AUTO_DARK)
+  {
+    t << "@media (prefers-color-scheme: dark) {\n";
+    t << "  html:not(.light-mode) {\n";
+    t << "    color-scheme: dark;\n\n";
+    t << replaceColorMarkers(ResourceMgr::instance().getAsString("darkmode_settings.css"));
+    t << "}}\n";
+  }
+  else if (Config_getEnum(HTML_DARKMODE)==HTML_DARKMODE_t::AUTO_LIGHT)
+  {
+    t << "@media (prefers-color-scheme: light) {\n";
+    t << "  html:not(.dark-mode) {\n";
+    t << "    color-scheme: light;\n\n";
+    t << replaceColorMarkers(ResourceMgr::instance().getAsString("lightmode_settings.css"));
+    t << "}}\n";
+  }
+  else if (Config_getEnum(HTML_DARKMODE)==HTML_DARKMODE_t::TOGGLE)
+  {
+    t << "html.dark-mode {\n";
+    t << replaceColorMarkers(ResourceMgr::instance().getAsString("darkmode_settings.css"));
+    t << "}\n\n";
+  }
+
+  t << ResourceMgr::instance().getAsString("doxygen.css");
+}
+
 void HtmlGenerator::writeStyleSheetFile(TextStream &t)
 {
-  t << replaceColorMarkers(substitute(ResourceMgr::instance().getAsString("doxygen.css"),"$doxygenversion",getDoxygenVersion()));
+  writeDefaultStyleSheet(t);
 }
 
 void HtmlGenerator::writeHeaderFile(TextStream &t, const QCString & /*cssname*/)
@@ -1273,12 +1344,7 @@ void HtmlGenerator::writeStyleInfo(int part)
     {
       //printf("write doxygen.css\n");
       startPlainFile("doxygen.css");
-
-      // alternative, cooler looking titles
-      //t << "H1 { text-align: center; border-width: thin none thin none;\n";
-      //t << "     border-style : double; border-color : blue; padding-left : 1em; padding-right : 1em }\n";
-
-      m_t << replaceColorMarkers(substitute(ResourceMgr::instance().getAsString("doxygen.css"),"$doxygenversion",getDoxygenVersion()));
+      writeDefaultStyleSheet(m_t);
       endPlainFile();
       Doxygen::indexList->addStyleSheetFile("doxygen.css");
     }
@@ -1320,6 +1386,11 @@ void HtmlGenerator::writeStyleInfo(int part)
     Doxygen::indexList->addStyleSheetFile("jquery.js");
 
     Doxygen::indexList->addStyleSheetFile("dynsections.js");
+
+    if (Config_getEnum(HTML_DARKMODE)==HTML_DARKMODE_t::TOGGLE)
+    {
+      Doxygen::indexList->addStyleSheetFile("darkmode_toggle.js");
+    }
 
     if (Config_getBool(INTERACTIVE_SVG))
     {
@@ -1866,24 +1937,22 @@ void HtmlGenerator::endIndexList()
 
 void HtmlGenerator::startIndexKey()
 {
-  // inserted 'class = ...', 02 jan 2002, jh
-  m_t << "  <tr><td class=\"indexkey\">";
+  //m_t << "  <tr><td class=\"indexkey\">";
 }
 
 void HtmlGenerator::endIndexKey()
 {
-  m_t << "</td>";
+  //m_t << "</td>";
 }
 
 void HtmlGenerator::startIndexValue(bool)
 {
-  // inserted 'class = ...', 02 jan 2002, jh
-  m_t << "<td class=\"indexvalue\">";
+  //m_t << "<td class=\"indexvalue\">";
 }
 
 void HtmlGenerator::endIndexValue(const QCString &,bool)
 {
-  m_t << "</td></tr>\n";
+  //m_t << "</td></tr>\n";
 }
 
 void HtmlGenerator::startMemberDocList()
@@ -2785,7 +2854,11 @@ void HtmlGenerator::writeExternalSearchPage()
     if (!Config_getBool(DISABLE_INDEX))
     {
       writeDefaultQuickLinks(t,TRUE,HLI_Search,QCString(),QCString());
-      t << "            <input type=\"text\" id=\"MSearchField\" name=\"query\" value=\"\" size=\"20\" accesskey=\"S\" onfocus=\"searchBox.OnSearchFieldFocus(true)\" onblur=\"searchBox.OnSearchFieldFocus(false)\"/>\n";
+      if (!Config_getBool(HTML_DYNAMIC_MENUS)) // for dynamic menus, menu.js creates this part
+      {
+        t << "            <input type=\"text\" id=\"MSearchField\" name=\"query\" value=\"\" placeholder=\"" << theTranslator->trSearch() <<
+             "\" size=\"20\" accesskey=\"S\" onfocus=\"searchBox.OnSearchFieldFocus(true)\" onblur=\"searchBox.OnSearchFieldFocus(false)\"/>\n";
+      }
       t << "            </form>\n";
       t << "          </div><div class=\"right\"></div>\n";
       t << "        </div>\n";

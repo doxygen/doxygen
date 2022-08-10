@@ -50,8 +50,7 @@ function initMenu(relPath,searchEnabled,serverSide,searchPage,search) {
       searchBox='<div id="MSearchBox" class="MSearchBoxInactive">'+
                  '<div class="left">'+
                   '<form id="FSearchBox" action="'+relPath+searchPage+
-                    '" method="get"><img id="MSearchSelect" src="'+
-                    relPath+'search/mag.svg" alt=""/>'+
+                    '" method="get"><span id="MSearchSelectExt">&nbsp;</span>'+
                   '<input type="text" id="MSearchField" name="query" value="" placeholder="'+search+
                     '" size="20" accesskey="S" onfocus="searchBox.OnSearchFieldFocus(true)"'+
                     ' onblur="searchBox.OnSearchFieldFocus(false)"/>'+
@@ -62,9 +61,8 @@ function initMenu(relPath,searchEnabled,serverSide,searchPage,search) {
     } else {
       searchBox='<div id="MSearchBox" class="MSearchBoxInactive">'+
                  '<span class="left">'+
-                  '<img id="MSearchSelect" src="'+relPath+
-                     'search/mag_sel.svg" onmouseover="return searchBox.OnSearchSelectShow()"'+
-                     ' onmouseout="return searchBox.OnSearchSelectHide()" alt=""/>'+
+                  '<span id="MSearchSelect" onmouseover="return searchBox.OnSearchSelectShow()"'+
+                     ' onmouseout="return searchBox.OnSearchSelectHide()">&nbsp;</span>'+
                   '<input type="text" id="MSearchField" value="" placeholder="'+search+
                     '" accesskey="S" onfocus="searchBox.OnSearchFieldFocus(true)" '+
                     'onblur="searchBox.OnSearchFieldFocus(false)" '+

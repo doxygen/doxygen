@@ -20,6 +20,9 @@
 #include <string>
 
 #include "qcstring.h"
+#include "containers.h"
+
+class Dir;
 
 /** Class representing a LaTeX formula as found in the documentation */
 class Formula
@@ -33,18 +36,21 @@ class Formula
     int id() const        { return m_id;     }
     QCString text() const { return m_text;   }
     bool isCached() const { return m_cached && !m_forceRegen; }
+    bool isCachedDark() const { return m_cached && !m_forceRegen; }
 
   private:
     friend class FormulaManager;
     void setWidth(int width)    { m_width  = width;  }
     void setHeight(int height)  { m_height = height; }
     void setCached(bool cached) { m_cached = cached; m_forceRegen = m_forceRegen || !cached; }
+    void setCachedDark(bool cached) { m_cachedDark = cached; m_forceRegen = m_forceRegen || !cached; }
 
     QCString m_text;
     int m_id;
     int m_width;
     int m_height;
     bool m_cached = false;
+    bool m_cachedDark = false; // dark version cached?
     bool m_forceRegen = false; // true if there is an inconsistency in setCache calls
 };
 
@@ -76,6 +82,10 @@ class FormulaManager
     //! @}
 
   private:
+    enum class Mode { Dark, Light };
+    void createFormulasTexFile(Dir &d,Format format,HighDPI hd,Mode mode);
+    void createLatexFile(const QCString &fileName,Format format,Mode mode,IntVector &formulasToGenerate);
+    double updateFormulaSize(int pageNum,int x1,int y1,int x2,int y2);
     FormulaManager();
     struct Private;
     std::unique_ptr<Private> p;

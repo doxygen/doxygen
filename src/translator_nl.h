@@ -705,7 +705,7 @@ class TranslatorDutch : public Translator
         "</ul>\n"
         "De pijlen hebben de volgende betekenis:\n"
         "<ul>\n"
-        "<li>Een donkerblauwe pijl visualizeert een public inheritance "
+        "<li>Een blauwe pijl visualizeert een public inheritance "
         "relatie tussen twee klassen.\n"
         "<li>Een donkergroene pijl wordt gebruikt voor protected inheritance.\n"
         "<li>Een donkerrode pijl wordt gebruikt voor private inheritance.\n"

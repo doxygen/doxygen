@@ -393,6 +393,8 @@ void FTVHelp::Private::generateTree(TextStream &t, const FTVNodes &nl,int level,
     t << "<tr id=\"row_" << generateIndentLabel(n,0) << "\"";
     if ((index&1)==0) // even row
       t << " class=\"even\"";
+    else
+      t << " class=\"odd\"";
     if (level>=maxLevel) // item invisible by default
       t << " style=\"display:none;\"";
     else // item visible by default
@@ -771,9 +773,11 @@ void FTVHelp::generateTreeViewImages()
   QCString dname=Config_getString(HTML_OUTPUT);
   const ResourceMgr &rm = ResourceMgr::instance();
   rm.copyResource("doc.luma",dname);
+  rm.copyResource("docd.luma",dname);
   rm.copyResource("folderopen.luma",dname);
   rm.copyResource("folderclosed.luma",dname);
   rm.copyResource("splitbar.lum",dname);
+  rm.copyResource("splitbard.lum",dname);
 }
 
 // new style scripts

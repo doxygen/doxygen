@@ -35,6 +35,7 @@
 #include "formula.h"
 #include "fileinfo.h"
 #include "indexlist.h"
+#include "growbuf.h"
 
 static const int NUM_HTML_LIST_TYPES = 4;
 static const char types[][NUM_HTML_LIST_TYPES] = {"1", "a", "i", "A"};
@@ -908,30 +909,77 @@ void HtmlDocVisitor::operator()(const DocFormula &f)
   }
   else
   {
-    m_t << "<img class=\"formula"
-      << (bDisplay ? "Dsp" : "Inl");
-    m_t << "\" alt=\"";
-    filterQuotedCdataAttr(f.text());
-    m_t << "\"";
-    m_t << " src=\"" << f.relPath() << f.name();
-    if (Config_getEnum(HTML_FORMULA_FORMAT)==HTML_FORMULA_FORMAT_t::svg)
-    {
-      m_t << ".svg";
-    }
-    else
-    {
-      m_t << ".png";
-    }
     const Formula *formula = FormulaManager::instance().findFormula(f.id());
-    if (formula && formula->width()!=-1)
+
+    enum class ImageType { Light, Dark };
+    enum class Visibility { Always, Dark, Light, AutoDark, AutoLight };
+    auto writeFormula = [&](ImageType imgType,Visibility visibility) -> QCString {
+      // see https://chipcullen.com/how-to-have-dark-mode-image-that-works-with-user-choice for the design idea
+      TextStream t;
+      QCString extension = Config_getEnum(HTML_FORMULA_FORMAT)==HTML_FORMULA_FORMAT_t::svg ? ".svg":".png" ;
+      if (visibility==Visibility::AutoDark || visibility==Visibility::AutoLight)
+      {
+        t << "<picture>";
+        t << "<source srcset=\"" << f.relPath() << f.name();
+        if (visibility==Visibility::AutoDark)
+        {
+          t << extension;
+          t << "\" media=\"(prefers-color-scheme: light)\"";
+        }
+        else // AutoLight
+        {
+          t << "_dark";
+          t << extension;
+          t << "\" media=\"(prefers-color-scheme: dark)\"";
+        }
+        t << "/>";
+      }
+      t << "<img class=\"formula";
+      t << (bDisplay ? "Dsp" : "Inl");
+      if (visibility==Visibility::Light)     t << " light-mode-visible";
+      else if (visibility==Visibility::Dark) t << " dark-mode-visible";
+      t << "\" alt=\"" << filterQuotedCdataAttr(f.text()) << "\"" << " src=\"" << f.relPath() << f.name();
+      if (imgType==ImageType::Dark) t << "_dark";
+      t << extension;
+      if (formula && formula->width()!=-1)
+      {
+        t << "\" width=\"";
+        t << formula->width();
+      }
+      if (formula && formula->height()!=-1)
+      {
+        t << "\" height=\"";
+        t << formula->height();
+      }
+      t << "\"/>";
+      if (visibility==Visibility::AutoDark || visibility==Visibility::AutoLight)
+      {
+        t << "</picture>";
+      }
+      return QCString(t.str());
+    };
+
+    auto darkMode = Config_getEnum(HTML_DARKMODE);
+    switch(darkMode)
     {
-      m_t << "\" width=\"" << formula->width();
+      case HTML_DARKMODE_t::LIGHT:
+        m_t << writeFormula(ImageType::Light,Visibility::Always);
+        break;
+      case HTML_DARKMODE_t::DARK:
+        m_t << writeFormula(ImageType::Dark, Visibility::Always);
+        break;
+      case HTML_DARKMODE_t::AUTO_LIGHT:
+        m_t << writeFormula(ImageType::Light, Visibility::AutoLight);
+        break;
+      case HTML_DARKMODE_t::AUTO_DARK:
+        m_t << writeFormula(ImageType::Dark, Visibility::AutoDark);
+        break;
+      case HTML_DARKMODE_t::TOGGLE:
+        // write the image twice and use javascript (darkmode_toggle.js) to show only one of them
+        m_t << writeFormula(ImageType::Light,Visibility::Light);
+        m_t << writeFormula(ImageType::Dark, Visibility::Dark);
+        break;
     }
-    if (formula && formula->height()!=-1)
-    {
-      m_t << "\" height=\"" << formula->height();
-    }
-    m_t << "\"/>";
   }
   if (bDisplay)
   {
@@ -2041,9 +2089,10 @@ void HtmlDocVisitor::filter(const QCString &str, const bool retainNewline)
 
 /// Escape basic entities to produce a valid CDATA attribute value,
 /// assume that the outer quoting will be using the double quote &quot;
-void HtmlDocVisitor::filterQuotedCdataAttr(const QCString &str)
+QCString HtmlDocVisitor::filterQuotedCdataAttr(const QCString &str)
 {
-  if (str.isEmpty()) return;
+  GrowBuf growBuf;
+  if (str.isEmpty()) return str;
   const char *p=str.data();
   char c;
   while (*p)
@@ -2051,30 +2100,41 @@ void HtmlDocVisitor::filterQuotedCdataAttr(const QCString &str)
     c=*p++;
     switch(c)
     {
-      case '&':  m_t << "&amp;"; break;
-      case '"':  m_t << "&quot;"; break;
-      case '<':  m_t << "&lt;"; break;
-      case '>':  m_t << "&gt;"; break;
-      case '\\': if ((*p == '(') || (*p == ')'))
-          m_t << "\\&zwj;" << *p++;
+      case '&':  growBuf.addStr("&amp;"); break;
+      case '"':  growBuf.addStr("&quot;"); break;
+      case '<':  growBuf.addStr("&lt;"); break;
+      case '>':  growBuf.addStr("&gt;"); break;
+      case '\\':
+        if ((*p == '(') || (*p == ')'))
+        {
+          growBuf.addStr("\\&zwj;");
+          growBuf.addChar(*p++);
+        }
         else
-          m_t << c;
+        {
+          growBuf.addChar(c);
+        }
         break;
       default:
         {
           uchar uc = static_cast<uchar>(c);
           if (uc<32 && !isspace(c)) // non-printable control characters
           {
-            m_t << "&#x24" << hex[uc>>4] << hex[uc&0xF] << ";";
+            growBuf.addStr("&#x24");
+            growBuf.addChar(hex[uc>>4]);
+            growBuf.addChar(hex[uc&0xF]);
+            growBuf.addStr(";");
           }
           else
           {
-            m_t << c;
+            growBuf.addChar(c);
           }
         }
         break;
     }
   }
+  growBuf.addChar(0);
+  return growBuf.get();
 }
 
 void HtmlDocVisitor::startLink(const QCString &ref,const QCString &file,

@@ -2118,6 +2118,21 @@ hr.footer {
 ]]>
       </docs>
     </option>
+    <option type='enum' id='HTML_DARKMODE' defval='AUTO_LIGHT' depends='GENERATE_HTML'>
+      <docs>
+<![CDATA[
+ The \c HTML_DARKMODE tag can be used to specify if the generated HTML output should be rendered with
+ a dark or light theme. Default setting \c AUTO_LIGHT enable light output unless the user preference is dark output.
+ Other options are \c DARK to always use dark mode, \c LIGHT to always use light mode, \c AUTO_DARK to default to dark
+ mode unless the user prefers light mode, and \c TOGGLE to let the user toggle between dark and light mode via a button. 
+]]>
+      </docs>
+      <value name="LIGHT" desc="Always generate light output."/>
+      <value name="DARK" desc="Always generate dark output."/>
+      <value name="AUTO_LIGHT" desc="Automatically set the mode according to the user preference, use light mode if no preference is set (the default)."/>
+      <value name="AUTO_DARK" desc="Automatically set the mode according to the user preference, use dark mode if no preference is set."/>
+      <value name="TOGGLE" desc="Allow to user to switch between light and dark mode via a button."/>
+    </option>
     <option type='int' id='HTML_COLORSTYLE_HUE' minval='0' maxval='359' defval='220' depends='GENERATE_HTML'>
       <docs>
 <![CDATA[
@@ -2547,17 +2562,6 @@ obfuscate email addresses.
  When you change the font size after a successful doxygen run you need
  to manually remove any `form_*.png` images from the HTML
  output directory to force them to be regenerated.
-]]>
-      </docs>
-    </option>
-    <option type='bool' id='FORMULA_TRANSPARENT' defval='1' depends='GENERATE_HTML'>
-      <docs>
-<![CDATA[
- Use the \c FORMULA_TRANSPARENT tag to determine whether or not the images
- generated for formulas are transparent PNGs. Transparent PNGs are
- not supported properly for IE 6.0, but are supported on all modern browsers.
- <br>Note that when changing this option you need to delete any `form_*.png` files
- in the HTML output directory before the changes have effect.
 ]]>
       </docs>
     </option>
@@ -3954,19 +3958,6 @@ UML notation for the relationships.
 ]]>
       </docs>
     </option>
-    <option type='bool' id='DOT_TRANSPARENT' defval='0' depends='HAVE_DOT'>
-      <docs>
-<![CDATA[
- Set the \c DOT_TRANSPARENT tag to \c YES to generate images with a transparent
- background. This is disabled by default, because dot on Windows does not
- seem to support this out of the box.
- <br>
- Warning: Depending on the platform used,
- enabling this option may lead to badly anti-aliased labels on the edges of
- a graph (i.e. they become hard to read).
-]]>
-      </docs>
-    </option>
     <option type='bool' id='DOT_MULTI_TARGETS' defval='0' depends='HAVE_DOT'>
       <docs>
 <![CDATA[
@@ -4029,5 +4020,7 @@ This setting is not only used for dot files but also for msc temporary files.
     <option type='obsolete' orgtype='bool' id='CLASS_DIAGRAMS'/>
     <option type='obsolete' orgtype='int' id='DOT_FONTSIZE'/>
     <option type='obsolete' orgtype='string' id='DOT_FONTNAME'/>
+    <option type='obsolete' orgtype='bool' id='FORMULA_TRANSPARENT'/>
+    <option type='obsolete' orgtype='bool' id='DOT_TRANSPARENT'/>
   </group>
 </doxygenconfig>

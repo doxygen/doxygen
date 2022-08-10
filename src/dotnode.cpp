@@ -34,7 +34,7 @@ struct EdgeProperties
 /*! mapping from protection levels to color names */
 static const char *normalEdgeColorMap[] =
 {
-  "midnightblue",  // Public
+  "steelblue1",    // Public
   "darkgreen",     // Protected
   "firebrick4",    // Private
   "darkorchid3",   // "use" relation
@@ -61,7 +61,7 @@ static const char *normalEdgeStyleMap[] =
 
 static const char *umlEdgeColorMap[] =
 {
-  "midnightblue",  // Public
+  "steelblue1",    // Public
   "darkgreen",     // Protected
   "firebrick4",    // Private
   "grey25",        // "use" relation
@@ -472,41 +472,44 @@ void DotNode::writeBox(TextStream &t,
                        bool hasNonReachableChildren) const
 {
   const char *labCol;
+  const char *fillCol = "white";
   if (m_classDef)
   {
     if (m_classDef->hasDocumentation() && hasNonReachableChildren)
+    {
       labCol = "red";
+      fillCol = "#FFF0F0";
+    }
     else if (m_classDef->hasDocumentation() && !hasNonReachableChildren)
-      labCol = "black";
+      labCol = "gray40";
     else if (!m_classDef->hasDocumentation() && hasNonReachableChildren)
       labCol = "orangered";
     else // (!m_classDef->hasDocumentation() && !hasNonReachableChildren)
     {
       labCol = "grey75";
       if (m_classDef->templateMaster() && m_classDef->templateMaster()->hasDocumentation())
-        labCol = "black";
+        labCol = "gray40";
     }
   }
   else
   {
-    labCol = m_url.isEmpty() ? "grey75" :  // non link
-    (hasNonReachableChildren ? "red" : "black");
+    labCol = m_url.isEmpty() ? "grey60" :  // non link
+    (hasNonReachableChildren ? "red" : "grey40");
+    fillCol = m_url.isEmpty() ? "#E0E0E0" :
+    (hasNonReachableChildren ? "#FFF0F0" : "white");
   }
   t << "  Node" << m_number << " [";
   writeLabel(t,gt);
   t << ",height=0.2,width=0.4";
   if (m_isRoot)
   {
-    t << ",color=\"black\", fillcolor=\"grey75\", style=\"filled\", fontcolor=\"black\"";
+    t << ",color=\"gray40\", fillcolor=\"grey60\", style=\"filled\", fontcolor=\"black\"";
   }
   else
   {
     t << ",color=\"" << labCol << "\"";
-    if (!Config_getBool(DOT_TRANSPARENT))
-    {
-      t << ", fillcolor=\"white\"";
-      t << ", style=\"filled\"";
-    }
+    t << ", fillcolor=\"" << fillCol << "\"";
+    t << ", style=\"filled\"";
     writeUrl(t);
   }
   if (!m_tooltip.isEmpty())

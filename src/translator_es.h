@@ -1071,7 +1071,7 @@ class TranslatorSpanish : public TranslatorAdapter_1_8_15
         "Las flechas tienen el siguiente significado:\n"
         "</p>\n"
         "<ul>\n"
-        "<li>Una flecha azul oscuro es usada para visualizar una relación herencia publica entre dos clases.\n"
+        "<li>Una azul oscuro es usada para visualizar una relación herencia publica entre dos clases.\n"
         "<li>Una flecha verde oscuro es usada para herencia protegida.\n"
         "<li>Una flecha rojo oscuro es usada para herencia privada.\n"
         "<li>Una flecha segmentada púrpura se usa si la clase es contenida o "

@@ -421,6 +421,7 @@ void writeJavaScriptSearchIndex()
           t << "<head><title></title>\n";
           t << "<meta http-equiv=\"Content-Type\" content=\"text/xhtml;charset=UTF-8\"/>\n";
           t << "<meta name=\"generator\" content=\"Doxygen " << getDoxygenVersion() << "\"/>\n";
+          t << "<link rel=\"stylesheet\" type=\"text/css\" href=\"../doxygen.css\"/>\n";
           t << "<link rel=\"stylesheet\" type=\"text/css\" href=\"search.css\"/>\n";
           t << "<script type=\"text/javascript\" src=\"" << baseName << ".js\"></script>\n";
           t << "<script type=\"text/javascript\" src=\"search.js\"></script>\n";
@@ -694,6 +695,7 @@ void writeJavaScriptSearchIndex()
       t << "<html xmlns=\"http://www.w3.org/1999/xhtml\">\n";
       t << "<head><title></title>\n";
       t << "<meta http-equiv=\"Content-Type\" content=\"text/xhtml;charset=UTF-8\"/>\n";
+      t << "<link rel=\"stylesheet\" type=\"text/css\" href=\"../doxygen.css\"/>\n";
       t << "<link rel=\"stylesheet\" type=\"text/css\" href=\"search.css\"/>\n";
       t << "<script type=\"text/javascript\" src=\"search.js\"></script>\n";
       t << "</head>\n";
