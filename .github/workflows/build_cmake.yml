@@ -396,8 +396,6 @@ jobs:
       if: matrix.config.name == 'Ubuntu Latest GCC Release'
 
     - name: Publish Internal documentation to Github pages
-      permissions:
-          contents: write
       uses: tsunematsu21/actions-publish-gh-pages@v1.0.1
       with:
           dir: doxygen_docs/html
