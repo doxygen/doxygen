@@ -389,9 +389,17 @@ jobs:
         path: build/latex/doxygen_manual.pdf
       if: matrix.config.name == 'Ubuntu Latest GCC Release'
       
-    - name: Generation Internal documentation
+    - name: Generate Internal documentation
       shell: bash
       run: |
         build/bin/doxygen Doxyfile
       if: matrix.config.name == 'Ubuntu Latest GCC Release'
-        
+
+    - name: Publish Internal documentation to Github pages
+      uses: tsunematsu21/actions-publish-gh-pages@v1.0.1
+      with:
+          dir: doxygen_docs/html
+          branch: gh-pages
+          token: ${{ secrets.ACCESS_TOKEN }}
+      if: matrix.config.name == 'Ubuntu Latest GCC Release'
+
