@@ -1567,12 +1567,12 @@ QCString DefinitionImpl::documentation() const
 
 int DefinitionImpl::docLine() const
 {
-  return m_impl->details ? m_impl->details->line : 1;
+  return m_impl->details ? m_impl->details->line : m_impl->brief ? m_impl->brief->line : 1;
 }
 
 QCString DefinitionImpl::docFile() const
 {
-  return m_impl->details ? m_impl->details->file : QCString("<"+m_impl->name+">");
+  return m_impl->details ? m_impl->details->file : m_impl->brief ? m_impl->brief->file : QCString("<"+m_impl->name+">");
 }
 
 //----------------------------------------------------------------------------
