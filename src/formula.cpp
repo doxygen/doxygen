@@ -45,6 +45,7 @@ struct FormulaManager::Private
   LinkedMap<Formula>      formulas;
   std::map<int,Formula *> formulaIdMap;
   bool                    repositoriesValid = true;
+  StringVector            tempFiles;
 };
 
 FormulaManager::FormulaManager() : p(std::make_unique<Private>())
@@ -551,10 +552,7 @@ void FormulaManager::createFormulasTexFile(Dir &thisDir,Format format,HighDPI hd
           return;
         }
 
-        if (RM_TMP_FILES)
-        {
-          thisDir.remove(formBase.str()+"_tmp.pdf");
-        }
+        p->tempFiles.push_back(formBase.str()+"_tmp.pdf");
       }
       else // format==Format::Bitmap
       {
@@ -570,34 +568,25 @@ void FormulaManager::createFormulasTexFile(Dir &thisDir,Format format,HighDPI hd
 
         if (!createPNG(formBase,outputFile,scaleFactor)) break;
 
-        if (RM_TMP_FILES)
-        {
-          thisDir.remove(formBase.str()+"_tmp.eps");
-          thisDir.remove(formBase.str()+"_tmp_corr.eps");
-        }
+        p->tempFiles.push_back(formBase.str()+"_tmp.eps");
+        p->tempFiles.push_back(formBase.str()+"_tmp_corr.eps");
       }
 
       // remove intermediate image files
-      if (RM_TMP_FILES)
+      p->tempFiles.push_back(formBase.str()+"_tmp.ps");
+      if (mode==Mode::Light)
       {
-        thisDir.remove(formBase.str()+"_tmp.ps");
-        if (mode==Mode::Light)
-        {
-          thisDir.remove(formBase.str()+"_tmp.epsi");
-        }
+        p->tempFiles.push_back(formBase.str()+"_tmp.epsi");
       }
       pageIndex++;
     }
     // remove intermediate files produced by latex
-    if (RM_TMP_FILES)
-    {
-      thisDir.remove(formulaFileName.str()+".dvi");
-      thisDir.remove(formulaFileName.str()+".log"); // keep file in case of errors
-      thisDir.remove(formulaFileName.str()+".aux");
-    }
+    p->tempFiles.push_back(formulaFileName.str()+".dvi");
+    p->tempFiles.push_back(formulaFileName.str()+".log");
+    p->tempFiles.push_back(formulaFileName.str()+".aux");
   }
   // remove the latex file itself
-  if (RM_TMP_FILES) thisDir.remove(formulaFileName.str()+".tex");
+  p->tempFiles.push_back(formulaFileName.str()+".tex");
 
   // write/update the formula repository so we know what text the
   // generated images represent (we use this next time to avoid regeneration
@@ -635,11 +624,20 @@ void FormulaManager::generateImages(const QCString &path,Format format,HighDPI h
   Dir thisDir;
 
   createFormulasTexFile(thisDir,format,hd,Mode::Light);
-  if (Config_getEnum(HTML_DARKMODE)!=HTML_DARKMODE_t::LIGHT) // all modes other than light need a dark version
+  if (Config_getEnum(HTML_COLORSTYLE)!=HTML_COLORSTYLE_t::LIGHT) // all modes other than light need a dark version
   {
     // note that the dark version reuses the bounding box of the light version so it needs to be
     // created after the light version.
     createFormulasTexFile(thisDir,format,hd,Mode::Dark);
+  }
+
+  // clean up temporary files
+  if (RM_TMP_FILES)
+  {
+    for (const auto &file : p->tempFiles)
+    {
+      thisDir.remove(file);
+    }
   }
 
   // reset the directory to the original location.

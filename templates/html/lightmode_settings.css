@@ -19,6 +19,7 @@
 --inherit-header-color: gray;
 
 --footer-foreground-color: ##33;
+--footer-logo-width: 104px;
 --citation-label-color: ##40;
 --glow-color: cyan;
 
@@ -29,6 +30,9 @@
 
 --blockquote-background-color: ##F8;
 --blockquote-border-color: ##AA;
+
+--scrollbar-thumb-color: ##AA;
+--scrollbar-background-color: ##FA;
 
 --icon-background-color: ##88;
 --icon-foreground-color: white;

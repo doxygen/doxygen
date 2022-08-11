@@ -2118,11 +2118,11 @@ hr.footer {
 ]]>
       </docs>
     </option>
-    <option type='enum' id='HTML_DARKMODE' defval='AUTO_LIGHT' depends='GENERATE_HTML'>
+    <option type='enum' id='HTML_COLORSTYLE' defval='AUTO_LIGHT' depends='GENERATE_HTML'>
       <docs>
 <![CDATA[
- The \c HTML_DARKMODE tag can be used to specify if the generated HTML output should be rendered with
- a dark or light theme. Default setting \c AUTO_LIGHT enable light output unless the user preference is dark output.
+ The \c HTML_COLORSTYLE tag can be used to specify if the generated HTML output should be rendered with
+ a dark or light theme. Default setting \c AUTO_LIGHT enables light output unless the user preference is dark output.
  Other options are \c DARK to always use dark mode, \c LIGHT to always use light mode, \c AUTO_DARK to default to dark
  mode unless the user prefers light mode, and \c TOGGLE to let the user toggle between dark and light mode via a button. 
 ]]>

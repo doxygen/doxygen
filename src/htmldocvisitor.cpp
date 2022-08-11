@@ -959,22 +959,22 @@ void HtmlDocVisitor::operator()(const DocFormula &f)
       return QCString(t.str());
     };
 
-    auto darkMode = Config_getEnum(HTML_DARKMODE);
-    switch(darkMode)
+    auto colorStyle = Config_getEnum(HTML_COLORSTYLE);
+    switch(colorStyle)
     {
-      case HTML_DARKMODE_t::LIGHT:
+      case HTML_COLORSTYLE_t::LIGHT:
         m_t << writeFormula(ImageType::Light,Visibility::Always);
         break;
-      case HTML_DARKMODE_t::DARK:
+      case HTML_COLORSTYLE_t::DARK:
         m_t << writeFormula(ImageType::Dark, Visibility::Always);
         break;
-      case HTML_DARKMODE_t::AUTO_LIGHT:
+      case HTML_COLORSTYLE_t::AUTO_LIGHT:
         m_t << writeFormula(ImageType::Light, Visibility::AutoLight);
         break;
-      case HTML_DARKMODE_t::AUTO_DARK:
+      case HTML_COLORSTYLE_t::AUTO_DARK:
         m_t << writeFormula(ImageType::Dark, Visibility::AutoDark);
         break;
-      case HTML_DARKMODE_t::TOGGLE:
+      case HTML_COLORSTYLE_t::TOGGLE:
         // write the image twice and use javascript (darkmode_toggle.js) to show only one of them
         m_t << writeFormula(ImageType::Light,Visibility::Light);
         m_t << writeFormula(ImageType::Dark, Visibility::Dark);

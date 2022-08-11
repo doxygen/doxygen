@@ -19,6 +19,7 @@
 --inherit-header-color: #A0A0A0;
 
 --footer-foreground-color: ##76;
+--footer-logo-width: 60px;
 --citation-label-color: ##A0;
 --glow-color: cyan;
 
@@ -29,6 +30,9 @@
 
 --blockquote-background-color: ##10;
 --blockquote-border-color: ##30;
+
+--scrollbar-thumb-color: ##30;
+--scrollbar-background-color: ##06;
 
 --icon-background-color: ##40;
 --icon-foreground-color: ##CC;
@@ -108,7 +112,7 @@
 --search-results-background-color: ##10;
 --search-results-foreground-color: ##A0;
 --search-results-border-color: ##90;
---search-box-shadow: inset 0.5px 0.5px 3px 0px ##AA;
+--search-box-shadow: inset 0.5px 0.5px 3px 0px ##3A;
 
 /** code fragments */
 --code-keyword-color: #CC99CD;

@@ -1,6 +1,7 @@
 body {
     background-color: var(--page-background-color);
     color: var(--page-foreground-color);
+    scrollbar-color: var(--scrollbar-thumb-color) var(--scrollbar-background-color);
 }
 
 body, table, div, p, dl {
@@ -426,6 +427,7 @@ address.footer {
 img.footer {
 	border: 0px;
 	vertical-align: middle;
+	width: var(--footer-logo-width);
 }
 
 .compoundTemplParams {

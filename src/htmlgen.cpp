@@ -561,7 +561,7 @@ static QCString substituteHtmlKeywords(const QCString &str,
   }
 
   QCString darkModeJs;
-  if (Config_getEnum(HTML_DARKMODE)==HTML_DARKMODE_t::TOGGLE)
+  if (Config_getEnum(HTML_COLORSTYLE)==HTML_COLORSTYLE_t::TOGGLE)
   {
     darkModeJs="<script type=\"text/javascript\" src=\"$relpath^darkmode_toggle.js\"></script>\n";
   }
@@ -1021,7 +1021,7 @@ void HtmlGenerator::init()
     mgr.copyResource("menu.js",dname);
   }
 
-  if (Config_getEnum(HTML_DARKMODE)==HTML_DARKMODE_t::TOGGLE)
+  if (Config_getEnum(HTML_COLORSTYLE)==HTML_COLORSTYLE_t::TOGGLE)
   {
     //mgr.copyResource("darkmode_toggle.js",dname);
     std::ofstream f(dname.str()+"/darkmode_toggle.js",std::ofstream::out | std::ofstream::binary);
@@ -1126,7 +1126,7 @@ void HtmlGenerator::writeSearchData(const QCString &dname)
       {
         searchCss = mgr.getAsString("search_sidebar.css"); // we have a full height side bar
       }
-      else if (Config_getBool(HTML_DARKMODE)==HTML_DARKMODE_t::TOGGLE)
+      else if (Config_getBool(HTML_COLORSTYLE)==HTML_COLORSTYLE_t::TOGGLE)
       {
         searchCss = mgr.getAsString("search_nomenu_toggle.css"); // we have no tabs but do have a darkmode button
       }
@@ -1154,39 +1154,39 @@ void HtmlGenerator::writeSearchData(const QCString &dname)
 static void writeDefaultStyleSheet(TextStream &t)
 {
   t << "/* The standard CSS for doxygen " << getDoxygenVersion() << "*/\n\n";
-  switch (Config_getEnum(HTML_DARKMODE))
+  switch (Config_getEnum(HTML_COLORSTYLE))
   {
-    case HTML_DARKMODE_t::LIGHT:
-    case HTML_DARKMODE_t::AUTO_DARK:
-    case HTML_DARKMODE_t::TOGGLE:
+    case HTML_COLORSTYLE_t::LIGHT:
+    case HTML_COLORSTYLE_t::AUTO_LIGHT:
+    case HTML_COLORSTYLE_t::TOGGLE:
       t << "html {\n";
       t << replaceColorMarkers(ResourceMgr::instance().getAsString("lightmode_settings.css"));
       t << "}\n\n";
       break;
-    case HTML_DARKMODE_t::DARK:
-    case HTML_DARKMODE_t::AUTO_LIGHT:
+    case HTML_COLORSTYLE_t::DARK:
+    case HTML_COLORSTYLE_t::AUTO_DARK:
       t << "html {\n";
       t << replaceColorMarkers(ResourceMgr::instance().getAsString("darkmode_settings.css"));
       t << "}\n\n";
       break;
   }
-  if (Config_getEnum(HTML_DARKMODE)==HTML_DARKMODE_t::AUTO_DARK)
+  if (Config_getEnum(HTML_COLORSTYLE)==HTML_COLORSTYLE_t::AUTO_LIGHT)
   {
     t << "@media (prefers-color-scheme: dark) {\n";
-    t << "  html:not(.light-mode) {\n";
+    t << "  html:not(.dark-mode) {\n";
     t << "    color-scheme: dark;\n\n";
     t << replaceColorMarkers(ResourceMgr::instance().getAsString("darkmode_settings.css"));
     t << "}}\n";
   }
-  else if (Config_getEnum(HTML_DARKMODE)==HTML_DARKMODE_t::AUTO_LIGHT)
+  else if (Config_getEnum(HTML_COLORSTYLE)==HTML_COLORSTYLE_t::AUTO_DARK)
   {
     t << "@media (prefers-color-scheme: light) {\n";
-    t << "  html:not(.dark-mode) {\n";
+    t << "  html:not(.light-mode) {\n";
     t << "    color-scheme: light;\n\n";
     t << replaceColorMarkers(ResourceMgr::instance().getAsString("lightmode_settings.css"));
     t << "}}\n";
   }
-  else if (Config_getEnum(HTML_DARKMODE)==HTML_DARKMODE_t::TOGGLE)
+  else if (Config_getEnum(HTML_COLORSTYLE)==HTML_COLORSTYLE_t::TOGGLE)
   {
     t << "html.dark-mode {\n";
     t << replaceColorMarkers(ResourceMgr::instance().getAsString("darkmode_settings.css"));
@@ -1387,7 +1387,7 @@ void HtmlGenerator::writeStyleInfo(int part)
 
     Doxygen::indexList->addStyleSheetFile("dynsections.js");
 
-    if (Config_getEnum(HTML_DARKMODE)==HTML_DARKMODE_t::TOGGLE)
+    if (Config_getEnum(HTML_COLORSTYLE)==HTML_COLORSTYLE_t::TOGGLE)
     {
       Doxygen::indexList->addStyleSheetFile("darkmode_toggle.js");
     }
