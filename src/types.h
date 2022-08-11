@@ -37,6 +37,9 @@ enum RelatesType  { Simple, Duplicate, MemberOf };
 /** Kind of member relationship */
 enum Relationship { Member, Related, Foreign };
 
+/** Function of members */
+enum MemberFunction { Unspecified, Constructor };
+
 /** Language as given by extension */
 enum SrcLangExt
 {

@@ -142,6 +142,7 @@ static bool handleParBlock(yyscan_t yyscanner,const QCString &, const StringVect
 static bool handleEndParBlock(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleParam(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleRetval(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleConstructor(yyscan_t yyscanner,const QCString &, const StringVector &);
 
 #if USE_STATE2STRING
 static const char *stateToString(int state);
@@ -184,6 +185,7 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "class",           { &handleClass,            CommandSpacing::Invisible }},
   { "code",            { &handleFormatBlock,      CommandSpacing::Block     }},
   { "concept",         { &handleConcept,          CommandSpacing::Invisible }},
+  { "constructor",     { &handleConstructor,      CommandSpacing::Invisible }},
   { "copybrief",       { &handleCopyBrief,        CommandSpacing::Invisible }},
   { "copydetails",     { &handleCopyDetails,      CommandSpacing::Block     }},
   { "copydoc",         { &handleCopyDoc,          CommandSpacing::Block     }},
@@ -2996,6 +2998,13 @@ static bool handleCopyDoc(yyscan_t yyscanner,const QCString &, const StringVecto
   yyextra->copyDocArg.resize(0);
   yyextra->braceCount = 0;
   BEGIN(CopyDoc);
+  return FALSE;
+}
+
+static bool handleConstructor(yyscan_t yyscanner,const QCString &, const StringVector &)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->current->mfunction = Constructor;
   return FALSE;
 }
 

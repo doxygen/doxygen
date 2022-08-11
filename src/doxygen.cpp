@@ -1541,7 +1541,7 @@ static ClassDefMutable *createTagLessInstance(const ClassDef *rootCd,const Class
         //printf("    Member %s type=%s\n",qPrint(md->name()),md->typeString());
         MemberDefMutable *imd = createMemberDef(md->getDefFileName(),md->getDefLine(),md->getDefColumn(),
             md->typeString(),md->name(),md->argsString(),md->excpString(),
-            md->protection(),md->virtualness(),md->isStatic(),Member,
+            md->protection(),md->virtualness(),md->isStatic(),md->memberFunction(),Member,
             md->memberType(),
             ArgumentList(),ArgumentList(),"");
         imd->setMemberClass(cd);
@@ -2148,7 +2148,7 @@ static void findUsingDeclImports(const Entry *root)
                     fileName,root->startLine,root->startColumn,
                     md->typeString(),memName,md->argsString(),
                     md->excpString(),root->protection,root->virt,
-                    md->isStatic(),Member,md->memberType(),
+                    md->isStatic(),md->memberFunction(),Member,md->memberType(),
                     templAl,al,root->metaData
                     ) };
                 newMd->setMemberClass(cd);
@@ -2326,7 +2326,7 @@ static MemberDef *addVariableToClass(
   std::unique_ptr<MemberDefMutable> md { createMemberDef(
       fileName,root->startLine,root->startColumn,
       type,name,args,root->exception,
-      prot,Normal,root->stat,related,
+      prot,Normal,root->stat,Unspecified,related,
       mtype,!root->tArgLists.empty() ? root->tArgLists.back() : ArgumentList(),
       ArgumentList(), root->metaData) };
   md->setTagInfo(root->tagInfo());
@@ -2564,7 +2564,7 @@ static MemberDef *addVariableToFile(
   std::unique_ptr<MemberDefMutable> md { createMemberDef(
       fileName,root->startLine,root->startColumn,
       type,name,args,QCString(),
-      root->protection, Normal,root->stat,Member,
+      root->protection, Normal,root->stat,Unspecified,Member,
       mtype,!root->tArgLists.empty() ? root->tArgLists.back() : ArgumentList(),
       root->argList, root->metaData) };
   md->setTagInfo(root->tagInfo());
@@ -3122,7 +3122,7 @@ static void addInterfaceOrServiceToServiceOrSingleton(
   }
   std::unique_ptr<MemberDefMutable> md { createMemberDef(
       fileName, root->startLine, root->startColumn, root->type, rname,
-      "", "", root->protection, root->virt, root->stat, Member,
+      "", "", root->protection, root->virt, root->stat, root->mfunction, Member,
       type, ArgumentList(), root->argList, root->metaData) };
   md->setTagInfo(root->tagInfo());
   md->setMemberClass(cd);
@@ -3292,7 +3292,7 @@ static void addMethodToClass(const Entry *root,ClassDefMutable *cd,
       fileName,root->startLine,root->startColumn,
       type,name,args,root->exception,
       protection,virt,
-      stat && root->relatesType != MemberOf,
+      stat && root->relatesType != MemberOf, root->mfunction,
       relates.isEmpty() ? Member :
           root->relatesType == MemberOf ? Foreign : Related,
       mtype,!root->tArgLists.empty() ? root->tArgLists.back() : ArgumentList(),
@@ -3397,7 +3397,7 @@ static void addGlobalFunction(const Entry *root,const QCString &rname,const QCSt
   std::unique_ptr<MemberDefMutable> md { createMemberDef(
       root->fileName,root->startLine,root->startColumn,
       root->type,name,root->args,root->exception,
-      root->protection,root->virt,root->stat,Member,
+      root->protection,root->virt,root->stat,root->mfunction,Member,
       MemberType_Function,
       !root->tArgLists.empty() ? root->tArgLists.back() : ArgumentList(),
       root->argList,root->metaData) };
@@ -5691,7 +5691,7 @@ static void addLocalObjCMethod(const Entry *root,
     std::unique_ptr<MemberDefMutable> md { createMemberDef(
         root->fileName,root->startLine,root->startColumn,
         funcType,funcName,funcArgs,exceptions,
-        root->protection,root->virt,root->stat,Member,
+        root->protection,root->virt,root->stat,root->mfunction,Member,
         MemberType_Function,ArgumentList(),root->argList,root->metaData) };
     md->setTagInfo(root->tagInfo());
     md->setLanguage(root->lang);
@@ -6110,7 +6110,7 @@ static void addMemberSpecialization(const Entry *root,
       root->fileName,root->startLine,root->startColumn,
       funcType,funcName,funcArgs,exceptions,
       declMd ? declMd->protection() : root->protection,
-      root->virt,root->stat,Member,
+      root->virt,root->stat,root->mfunction,Member,
       mtype,tArgList,root->argList,root->metaData) };
   //printf("new specialized member %s args='%s'\n",qPrint(md->name()),qPrint(funcArgs));
   md->setTagInfo(root->tagInfo());
@@ -6174,7 +6174,7 @@ static void addOverloaded(const Entry *root,MemberName *mn,
     std::unique_ptr<MemberDefMutable> md { createMemberDef(
         root->fileName,root->startLine,root->startColumn,
         funcType,funcName,funcArgs,exceptions,
-        root->protection,root->virt,root->stat,Related,
+        root->protection,root->virt,root->stat,root->mfunction,Related,
         mtype,tArgList ? *tArgList : ArgumentList(),root->argList,root->metaData) };
     md->setTagInfo(root->tagInfo());
     md->setLanguage(root->lang);
@@ -6699,7 +6699,7 @@ static void findMember(const Entry *root,
               root->fileName,root->startLine,root->startColumn,
               funcType,funcName,funcArgs,exceptions,
               root->protection,root->virt,
-              root->stat,
+              root->stat, root->mfunction,
               isMemberOf ? Foreign : Related,
               mtype,
               (!root->tArgLists.empty() ? root->tArgLists.back() : ArgumentList()),
@@ -7143,7 +7143,7 @@ static void findEnums(const Entry *root)
       std::unique_ptr<MemberDefMutable> md { createMemberDef(
           root->fileName,root->startLine,root->startColumn,
           QCString(),name,QCString(),QCString(),
-          root->protection,Normal,FALSE,
+          root->protection,Normal,FALSE,Unspecified,
           isMemberOf ? Foreign : isRelated ? Related : Member,
           MemberType_Enumeration,
           ArgumentList(),ArgumentList(),root->metaData) };
@@ -7358,7 +7358,7 @@ static void addEnumValuesToEnums(const Entry *root)
                   std::unique_ptr<MemberDefMutable> fmd { createMemberDef(
                       fileName,e->startLine,e->startColumn,
                       e->type,e->name,e->args,QCString(),
-                      e->protection, Normal,e->stat,Member,
+                      e->protection, Normal,e->stat,e->mfunction,Member,
                       MemberType_EnumValue,ArgumentList(),ArgumentList(),e->metaData) };
                   const NamespaceDef *mnd = md->getNamespaceDef();
                   if      (md->getClassDef())
@@ -8331,7 +8331,7 @@ static void buildDefineList()
         std::unique_ptr<MemberDefMutable> md { createMemberDef(
             def.fileName,def.lineNr,def.columnNr,
             "#define",def.name,def.args,QCString(),
-            Public,Normal,FALSE,Member,MemberType_Define,
+            Public,Normal,FALSE,Unspecified,Member,MemberType_Define,
             ArgumentList(),ArgumentList(),"") };
 
         if (!def.args.isEmpty())
@@ -8948,7 +8948,7 @@ static void findDefineDocumentation(Entry *root)
     {
       std::unique_ptr<MemberDefMutable> md { createMemberDef(root->tagInfo()->tagName,1,1,
                     "#define",root->name,root->args,QCString(),
-                    Public,Normal,FALSE,Member,MemberType_Define,
+                    Public,Normal,FALSE,Unspecified,Member,MemberType_Define,
                     ArgumentList(),ArgumentList(),"") };
       md->setTagInfo(root->tagInfo());
       md->setLanguage(root->lang);

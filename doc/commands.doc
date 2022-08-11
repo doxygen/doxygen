@@ -62,6 +62,7 @@ documentation:
 \refitem cmdcode \\code
 \refitem cmdconcept \\concept
 \refitem cmdcond \\cond
+\refitem cmdconstructor \\constructor
 \refitem cmdcopybrief \\copybrief
 \refitem cmdcopydetails \\copydetails
 \refitem cmdcopydoc \\copydoc
@@ -1399,6 +1400,16 @@ contains \c TEST, or \c DEV
                \ref cfg_enabled_sections "ENABLED_SECTIONS".
   \note Due to the moment of parsing the \c \\cond and \ref cmdendcond "\\endcond" commands cannot
   be used in \ref cfg_aliases "ALIASES".
+
+<hr>
+\section cmdconstructor \\constructor
+
+  \addindex \\constructor
+  Indicates that the member documented by the comment block is a class
+  constructor.
+
+  This command is intended for use only when the language does not support the
+  concept of constructor methods natively (e.g. C).
 
 <hr>
 \section cmdcopyright \\copyright { copyright description }

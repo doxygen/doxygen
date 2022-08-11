@@ -619,6 +619,13 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
     if (md->isInline()) t << "yes"; else t << "no";
     t << "\"";
 
+    if (md->memberFunction() != Unspecified)
+    {
+      t << " function=\"";
+      if (md->memberFunction() == Constructor) t << "constructor";
+      t << "\"";
+    }
+
     if (al.refQualifier()!=RefQualifierNone)
     {
       t << " refqual=\"";

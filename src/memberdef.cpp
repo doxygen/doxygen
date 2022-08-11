@@ -54,8 +54,9 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     MemberDefImpl(const QCString &defFileName,int defLine,int defColumn,
               const QCString &type,const QCString &name,const QCString &args,
               const QCString &excp,Protection prot,Specifier virt,bool stat,
-              Relationship related,MemberType t,const ArgumentList &tal,
-              const ArgumentList &al,const QCString &metaData);
+              MemberFunction mfunction,Relationship related,MemberType t,
+              const ArgumentList &tal,const ArgumentList &al,
+              const QCString &metaData);
     virtual ~MemberDefImpl();
 
     virtual DefType definitionType() const        { return TypeMember; }
@@ -96,6 +97,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     virtual Specifier virtualness(int count=0) const;
     virtual MemberType memberType() const;
     virtual QCString memberTypeName() const;
+    virtual MemberFunction memberFunction() const;
     virtual bool isSignal() const;
     virtual bool isSlot() const;
     virtual bool isVariable() const;
@@ -373,11 +375,11 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
 MemberDefMutable *createMemberDef(const QCString &defFileName,int defLine,int defColumn,
               const QCString &type,const QCString &name,const QCString &args,
               const QCString &excp,Protection prot,Specifier virt,bool stat,
-              Relationship related,MemberType t,const ArgumentList &tal,
-              const ArgumentList &al,const QCString &metaData)
+              MemberFunction mfunction,Relationship related,MemberType t,
+              const ArgumentList &tal,const ArgumentList &al,const QCString &metaData)
 {
   return new MemberDefImpl(defFileName,defLine,defColumn,type,name,args,excp,prot,virt,
-                           stat,related,t,tal,al,metaData);
+                           stat,mfunction,related,t,tal,al,metaData);
 }
 
 //-----------------------------------------------------------------------------
@@ -467,6 +469,8 @@ class MemberDefAliasImpl : public DefinitionAliasMixin<MemberDef>
     { return getMdAlias()->memberType(); }
     virtual QCString memberTypeName() const
     { return getMdAlias()->memberTypeName(); }
+    virtual MemberFunction memberFunction() const
+    { return getMdAlias()->memberFunction(); }
     virtual bool isSignal() const
     { return getMdAlias()->isSignal(); }
     virtual bool isSlot() const
@@ -1143,7 +1147,7 @@ class MemberDefImpl::IMPL
     IMPL();
    ~IMPL();
     void init(Definition *def,const QCString &t,const QCString &a,const QCString &e,
-              Protection p,Specifier v,bool s,Relationship r,
+              Protection p,Specifier v,bool s,MemberFunction mf,Relationship r,
               MemberType mt,const ArgumentList &tal,
               const ArgumentList &al,const QCString &meta
              );
@@ -1242,6 +1246,7 @@ class MemberDefImpl::IMPL
     bool isDMember = false;
     Relationship related = Member;    // relationship of this to the class
     bool stat = false;                // is it a static function?
+    MemberFunction mfunction = Unspecified; // is it declared a constructor/destructor?
     bool proto = false;               // is it a prototype?
     bool docEnumValues = false;       // is an enum with documented enum values.
 
@@ -1278,8 +1283,8 @@ MemberDefImpl::IMPL::~IMPL()
 
 void MemberDefImpl::IMPL::init(Definition *d,
                      const QCString &t,const QCString &a,const QCString &e,
-                     Protection p,Specifier v,bool s,Relationship r,
-                     MemberType mt,const ArgumentList &tal,
+                     Protection p,Specifier v,bool s,MemberFunction mf,
+                     Relationship r,MemberType mt,const ArgumentList &tal,
                      const ArgumentList &al,const QCString &meta
                     )
 {
@@ -1315,6 +1320,7 @@ void MemberDefImpl::IMPL::init(Definition *d,
   prot=p;
   related=r;
   stat=s;
+  mfunction=mf;
   mtype=mt;
   exception=e;
   proto=FALSE;
@@ -1386,13 +1392,13 @@ void MemberDefImpl::IMPL::init(Definition *d,
 
 MemberDefImpl::MemberDefImpl(const QCString &df,int dl,int dc,
                      const QCString &t,const QCString &na,const QCString &a,const QCString &e,
-                     Protection p,Specifier v,bool s,Relationship r,MemberType mt,
+                     Protection p,Specifier v,bool s,MemberFunction mf, Relationship r,MemberType mt,
                      const ArgumentList &tal,const ArgumentList &al,const QCString &meta
                     ) : DefinitionMixin(df,dl,dc,removeRedundantWhiteSpace(na))
 {
   //printf("MemberDefImpl::MemberDef(%s)\n",na);
   m_impl = new MemberDefImpl::IMPL;
-  m_impl->init(this,t,a,e,p,v,s,r,mt,tal,al,meta);
+  m_impl->init(this,t,a,e,p,v,s,mf,r,mt,tal,al,meta);
   m_isLinkableCached    = 0;
   m_isConstructorCached = 0;
   m_isDestructorCached  = 0;
@@ -2658,6 +2664,7 @@ StringVector MemberDefImpl::getLabels(const Definition *container) const
         if      (isExplicit())            sl.push_back("explicit");
         if      (isMutable())             sl.push_back("mutable");
         if      (isStatic())              sl.push_back("static");
+        if      (memberFunction() == Constructor) sl.push_back("constructor");
         if      (isGettable())            sl.push_back("get");
         if      (isProtectedGettable())   sl.push_back("protected get");
         if      (isSettable())            sl.push_back("set");
@@ -3863,6 +3870,11 @@ QCString MemberDefImpl::memberTypeName() const
   }
 }
 
+MemberFunction MemberDefImpl::memberFunction() const
+{
+  return m_impl->mfunction;
+}
+
 void MemberDefImpl::warnIfUndocumented() const
 {
   /*
@@ -4196,7 +4208,7 @@ MemberDefMutable *MemberDefImpl::createTemplateInstanceMember(
                        methodName,
                        substituteTemplateArgumentsInString(m_impl->args,formalArgs,actualArgs),
                        m_impl->exception, m_impl->prot,
-                       m_impl->virt, m_impl->stat, m_impl->related, m_impl->mtype,
+                       m_impl->virt, m_impl->stat, m_impl->mfunction, m_impl->related, m_impl->mtype,
                        ArgumentList(), ArgumentList(), ""
                    );
   imd->moveArgumentList(std::move(actualArgList));
@@ -4368,6 +4380,11 @@ void MemberDefImpl::writeTagFile(TextStream &tagFile,bool useQualifiedName) cons
   {
     tagFile << "\" static=\"yes";
   }
+  if (memberFunction()!=Unspecified)
+  {
+    tagFile << "\" function=\"";
+    if (memberFunction() == Constructor) tagFile << "constructor";
+  }
   tagFile << "\">\n";
   if (typeString()!=QCString("@"))
   {
@@ -4408,7 +4425,12 @@ void MemberDefImpl::_computeIsConstructor()
   m_isConstructorCached=1; // FALSE
   if (getClassDef())
   {
-    if (m_impl->isDMember) // for D
+    if (m_impl->mfunction == Constructor) // declared through command
+    {
+      m_isConstructorCached = 2;
+      return;
+    }
+    else if (m_impl->isDMember) // for D
     {
       m_isConstructorCached = name()=="this" ? 2 : 1;
       return;
