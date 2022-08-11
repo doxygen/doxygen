@@ -1,6 +1,5 @@
 // objective: test the \f$, \f[, \f], \f{, and \f} commands
 // check: indexpage.xml
-// config: HTML_DARKMODE = LIGHT
 
 /** @mainpage
 Here are some formulas:
