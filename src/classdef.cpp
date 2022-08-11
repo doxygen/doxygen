@@ -3233,7 +3233,7 @@ static bool hasNonReferenceSuperClassRec(const ClassDef *cd,int level)
     }
   }
   return found;
-};
+}
 
 /*! Returns \c TRUE iff this class or a class inheriting from this class
  *  is \e not defined in an external tag file.
