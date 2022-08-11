@@ -388,4 +388,10 @@ jobs:
         name: "Latex documentation artifacts"
         path: build/latex/doxygen_manual.pdf
       if: matrix.config.name == 'Ubuntu Latest GCC Release'
-
+      
+    - name: Generation Internal documentation
+      shell: bash
+      run: |
+        build/bin/doxygen Doxyfile
+      if: matrix.config.name == 'Ubuntu Latest GCC Release'
+        
