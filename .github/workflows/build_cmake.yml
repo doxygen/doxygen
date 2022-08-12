@@ -400,5 +400,5 @@ jobs:
       with:
          github_token: ${{ secrets.GITHUB_TOKEN }}
          publish_dir: doxygen_docs/html
-      if: matrix.config.name == 'Ubuntu Latest GCC Release'
+      if: ${{ github.event_name == 'push' && matrix.config.name == 'Ubuntu Latest GCC Release' }}
 
