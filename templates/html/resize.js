@@ -27,33 +27,39 @@ function initResizable()
   var cookie_namespace = 'doxygen';
   var sidenav,navtree,content,header,collapsed,collapsedWidth=0,barWidth=6,desktop_vp=768,titleHeight;
 
-  function readCookie(cookie)
+  function readSetting(cookie)
   {
-    var myCookie = cookie_namespace+"_"+cookie+"=";
-    if (document.cookie) {
-      var index = document.cookie.indexOf(myCookie);
-      if (index != -1) {
-        var valStart = index + myCookie.length;
-        var valEnd = document.cookie.indexOf(";", valStart);
-        if (valEnd == -1) {
-          valEnd = document.cookie.length;
+    if (window.chrome) {
+      var val = localStorage.getItem(cookie_namespace+'_width');
+      if (val) return val;
+    } else {
+      var myCookie = cookie_namespace+"_"+cookie+"=";
+      if (document.cookie) {
+        var index = document.cookie.indexOf(myCookie);
+        if (index != -1) {
+          var valStart = index + myCookie.length;
+          var valEnd = document.cookie.indexOf(";", valStart);
+          if (valEnd == -1) {
+            valEnd = document.cookie.length;
+          }
+          var val = document.cookie.substring(valStart, valEnd);
+          return val;
         }
-        var val = document.cookie.substring(valStart, valEnd);
-        return val;
       }
     }
     return 0;
   }
 
-  function writeCookie(cookie, val, expiration)
+  function writeSetting(cookie, val)
   {
-    if (val==undefined) return;
-    if (expiration == null) {
+    if (window.chrome) {
+      localStorage.setItem(cookie_namespace+"_width",val);
+    } else {
       var date = new Date();
       date.setTime(date.getTime()+(10*365*24*60*60*1000)); // default expiration is one week
       expiration = date.toGMTString();
+      document.cookie = cookie_namespace + "_" + cookie + "=" + val + "; SameSite=Lax; expires=" + expiration+"; path=/";
     }
-    document.cookie = cookie_namespace + "_" + cookie + "=" + val + "; SameSite=Lax; expires=" + expiration+"; path=/";
   }
 
   function resizeWidth()
@@ -64,7 +70,7 @@ function initResizable()
     if (typeof page_layout!=='undefined' && page_layout==1) {
       footer.css({marginLeft:parseInt(sidenavWidth)+"px"});
     }
-    writeCookie('width',sidenavWidth-barWidth, null);
+    writeSetting('width',sidenavWidth-barWidth);
   }
 
   function restoreWidth(navWidth)
@@ -120,7 +126,7 @@ function initResizable()
       collapsed=true;
     }
     else {
-      var width = readCookie('width');
+      var width = readSetting('width');
       if (width>200 && width<$(window).width()) { restoreWidth(width); } else { restoreWidth(200); }
       collapsed=false;
     }
@@ -142,7 +148,7 @@ function initResizable()
     $('#nav-sync').css({ right:'34px' });
     barWidth=20;
   }
-  var width = readCookie('width');
+  var width = readSetting('width');
   if (width) { restoreWidth(width); } else { resizeWidth(); }
   resizeHeight();
   var url = location.href;

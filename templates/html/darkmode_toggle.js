@@ -74,6 +74,32 @@ class DarkModeToggle extends HTMLElement {
         this.onclick=this.toggleDarkMode
     }
 
+    static createCookie(name, value, days) {
+        if (days) {
+            var date = new Date();
+            date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+            var expires = "; expires=" + date.toGMTString();
+        }
+        else var expires = "";
+
+        document.cookie = name + "=" + value + expires + "; path=/";
+    }
+
+    static readCookie(name) {
+        var nameEQ = name + "=";
+        var ca = document.cookie.split(';');
+        for (var i = 0; i < ca.length; i++) {
+            var c = ca[i];
+            while (c.charAt(0) == ' ') c = c.substring(1, c.length);
+            if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
+        }
+        return null;
+    }
+
+    static eraseCookie(name) {
+        DarkModeToggle.createCookie(name, "", -1);
+    }
+
     /**
      * @returns `true` for dark-mode, `false` for light-mode system preference
      */
@@ -81,27 +107,76 @@ class DarkModeToggle extends HTMLElement {
         return window.matchMedia('(prefers-color-scheme: dark)').matches
     }
 
-    /**
-     * @returns `true` for dark-mode, `false` for light-mode user preference
-     */
-    static get userPreference() {
-        return (!DarkModeToggle.systemPreference && localStorage.getItem(DarkModeToggle.prefersDarkModeInLightModeKey)) || 
-        (DarkModeToggle.systemPreference && !localStorage.getItem(DarkModeToggle.prefersLightModeInDarkModeKey))
+    static get prefersDarkModeInLightMode() {
+        if (window.chrome) { // Chrome supports localStorage in combination with file:// but not cookies
+          return localStorage.getItem(DarkModeToggle.prefersDarkModeInLightModeKey)
+        } else { // Other browsers support cookies in combination with file:// but not localStorage
+          return DarkModeToggle.readCookie('doxygen_prefers_dark')=='1'
+        }
     }
 
-    static set userPreference(userPreference) {
-        DarkModeToggle.darkModeEnabled = userPreference
-        if(!userPreference) {
-            if(DarkModeToggle.systemPreference) {
-                localStorage.setItem(DarkModeToggle.prefersLightModeInDarkModeKey, true)
+    static set prefersDarkModeInLightMode(preference) {
+        if (window.chrome) {
+            if (preference) {
+                localStorage.setItem(DarkModeToggle.prefersDarkModeInLightModeKey, true)
             } else {
                 localStorage.removeItem(DarkModeToggle.prefersDarkModeInLightModeKey)
             }
         } else {
-            if(!DarkModeToggle.systemPreference) {
-                localStorage.setItem(DarkModeToggle.prefersDarkModeInLightModeKey, true)
+            if (preference) {
+               DarkModeToggle.createCookie('doxygen_prefers_dark','1',365)
+            } else {
+               DarkModeToggle.eraseCookie('doxygen_prefers_dark')
+            }
+        }
+    }
+
+    static get prefersLightModeInDarkMode() {
+        if (window.chrome) { // Chrome supports localStorage in combination with file:// but not cookies
+          return localStorage.getItem(DarkModeToggle.prefersLightModeInDarkModeKey)
+        } else { // Other browsers support cookies in combination with file:// but not localStorage
+          return DarkModeToggle.readCookie('doxygen_prefers_light')=='1'
+        }
+    }
+
+    static set prefersLightModeInDarkMode(preference) {
+        if (window.chrome) {
+            if (preference) {
+                localStorage.setItem(DarkModeToggle.prefersLightModeInDarkModeKey, true)
             } else {
                 localStorage.removeItem(DarkModeToggle.prefersLightModeInDarkModeKey)
+            }
+        } else {
+            if (preference) {
+               DarkModeToggle.createCookie('doxygen_prefers_light','1',365)
+            } else {
+               DarkModeToggle.eraseCookie('doxygen_prefers_light')
+            }
+        }
+    }
+
+
+    /**
+     * @returns `true` for dark-mode, `false` for light-mode user preference
+     */
+    static get userPreference() {
+        return (!DarkModeToggle.systemPreference && DarkModeToggle.prefersDarkModeInLightMode) ||
+        (DarkModeToggle.systemPreference && !DarkModeToggle.prefersLightModeInDarkMode)
+    }
+
+    static set userPreference(userPreference) {
+        DarkModeToggle.darkModeEnabled = userPreference
+        if (!userPreference) {
+            if (DarkModeToggle.systemPreference) {
+                DarkModeToggle.prefersLightModeInDarkMode = true
+            } else {
+                DarkModeToggle.prefersDarkModeInLightMode = false
+            }
+        } else {
+            if (!DarkModeToggle.systemPreference) {
+                DarkModeToggle.prefersDarkModeInLightMode = true
+            } else {
+                DarkModeToggle.prefersLightModeInDarkMode = false
             }
         }
         DarkModeToggle.onUserPreferenceChanged()
