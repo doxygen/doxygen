@@ -396,9 +396,9 @@ jobs:
       if: matrix.config.name == 'Ubuntu Latest GCC Release'
 
     - name: Publish Internal documentation to Github pages
-      uses: tsunematsu21/actions-publish-gh-pages@v1.0.1
+      uses: peaceiris/actions-gh-pages@v3
       with:
-          dir: doxygen_docs/html
-          branch: gh-pages
+         github_token: ${{ secrets.GITHUB_TOKEN }}
+         publish_dir: doxygen_docs/html
       if: matrix.config.name == 'Ubuntu Latest GCC Release'
 
