@@ -128,7 +128,7 @@ dark-mode-toggle {
 
 span.SelectionMark {
     margin-right: 4px;
-    font-family: var(--font-familiy-monospace);
+    font-family: var(--font-family-monospace);
     outline-style: none;
     text-decoration: none;
 }

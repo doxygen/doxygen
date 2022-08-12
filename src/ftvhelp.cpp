@@ -790,7 +790,12 @@ void FTVHelp::generateTreeViewScripts()
 
   // copy resize.js & navtree.css
   ResourceMgr::instance().copyResource("resize.js",htmlOutput);
-  ResourceMgr::instance().copyResource("navtree.css",htmlOutput);
+  std::ofstream f(htmlOutput.str()+"/navtree.css",std::ofstream::out | std::ofstream::binary);
+  if (f.is_open())
+  {
+    TextStream t(&f);
+    t << HtmlGenerator::getNavTreeCss();
+  }
 }
 
 // write tree inside page

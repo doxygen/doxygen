@@ -400,6 +400,13 @@ p.formulaDsp {
 	text-align: center;
 }
 
+img.dark-mode-visible {
+	display: none;
+}
+img.light-mode-visible {
+	display: none;
+}
+
 img.formulaDsp {
 	
 }

@@ -23,7 +23,7 @@
 --citation-label-color: ##40;
 --glow-color: cyan;
 
---title-background-color: var(--page-background-color);
+--title-background-color: white;
 --title-separator-color: ##70;
 --directory-separator-color: ##AA;
 --separator-color: ##66;
@@ -86,8 +86,8 @@
 --nav-text-normal-shadow: 0px 1px 1px rgba(255, 255, 255, 0.9);
 --nav-text-hover-shadow: 0px 1px 1px rgba(0, 0, 0, 1.0);
 --nav-text-active-shadow: 0px 1px 1px rgba(0, 0, 0, 1.0);
---nav-menu-button-color: var(--nav-foreground-color);
---nav-menu-background-color: var(--page-background-color);
+--nav-menu-button-color: ##45;
+--nav-menu-background-color: white;
 --nav-menu-foreground-color: #555555;
 --nav-menu-toggle-color: rgba(255, 255, 255, 0.5);
 --nav-arrow-color: ##AA;
@@ -105,7 +105,7 @@
 --search-magnification-select-image: url('mag_sel.svg');
 --search-active-color: black;
 --search-filter-background-color: ##FA;
---search-filter-foreground-color: var(--page-foreground-color);
+--search-filter-foreground-color: black;
 --search-filter-border-color: ##A0;
 --search-filter-highlight-text-color: white;
 --search-filter-highlight-bg-color: ##50;
@@ -128,22 +128,22 @@
 --code-vhdl-logic-color: #FF0000;
 --code-link-color: ##60;
 --code-external-link-color: ##60;
---fragment-foreground-color: var(--page-foreground-color);
+--fragment-foreground-color: black;
 --fragment-background-color: ##FC;
 --fragment-border-color: ##CC;
 --fragment-lineno-border-color: #00FF00;
 --fragment-lineno-background-color: #E8E8E8;
 --fragment-lineno-foreground-color: black;
---fragment-lineno-link-fg-color: var(--code-link-color);
+--fragment-lineno-link-fg-color: ##60;
 --fragment-lineno-link-bg-color: #D8D8D8;
---fragment-lineno-link-hover-fg-color: var(--code-link-color);
+--fragment-lineno-link-hover-fg-color: ##60;
 --fragment-lineno-link-hover-bg-color: #C8C8C8;
---tooltip-foreground-color: var(--fragment-foreground-color);
+--tooltip-foreground-color: black;
 --tooltip-background-color: white;
 --tooltip-border-color: gray;
 --tooltip-doc-color: grey;
 --tooltip-declaration-color: #006318;
---tooltip-link-color: var(--code-link-color);
+--tooltip-link-color: ##60;
 --tooltip-shadow: 1px 1px 7px gray;
 
 /** font-family */
@@ -154,5 +154,5 @@
 --font-family-toc: Verdana,'DejaVu Sans',Geneva,sans-serif;
 --font-family-search: Arial,Verdana,sans-serif;
 --font-family-icon: Arial,Helvetica;
---font-family-tooltip: var(--font-family-normal)
+--font-family-tooltip: Roboto,sans-serif;
 

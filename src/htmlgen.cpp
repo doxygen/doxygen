@@ -601,6 +601,72 @@ static QCString substituteHtmlKeywords(const QCString &str,
   return result;
 }
 
+//---------------------------------------------------------------------------------------------
+
+static StringUnorderedMap g_lightMap;
+static StringUnorderedMap g_darkMap;
+
+static void fillColorStyleMap(const QCString &definitions,StringUnorderedMap &map)
+{
+  int p=0,i=0;
+  while ((i=definitions.find('\n',p))!=-1)
+  {
+    QCString line = definitions.mid(p,i-p);
+    if (line.startsWith("--"))
+    {
+      int separator = line.find(':');
+      assert(separator!=-1);
+      std::string key = line.left(separator).str();
+      int semi = line.find(';');
+      assert(semi!=-1);
+      std::string value = line.mid(separator+1,semi-separator-1).stripWhiteSpace().str();
+      map.insert(std::make_pair(key,value));
+      //printf("var(%s)=%s\n",qPrint(key),qPrint(value));
+    }
+    p=i+1;
+  }
+}
+
+static QCString replaceVariables(const QCString &input)
+{
+  auto doReplacements = [&input](const StringUnorderedMap &mapping) -> QCString
+  {
+    GrowBuf output;
+    int p=0,i=0;
+    while ((i=input.find("var(",p))!=-1)
+    {
+      output.addStr(input.data()+p,i-p);
+      int j=input.find(")",i+4);
+      assert(j!=-1);
+      auto it = mapping.find(input.mid(i+4,j-i-4).str()); // find variable
+      assert(it!=mapping.end());                          // should be found
+      output.addStr(it->second);                          // add it value
+      //printf("replace '%s' by '%s'\n",qPrint(input.mid(i+4,j-i-4)),qPrint(it->second));
+      p=j+1;
+    }
+    output.addStr(input.data()+p,input.length()-p);
+    output.addChar(0);
+    return output.get();
+  };
+
+  auto colorStyle = Config_getEnum(HTML_COLORSTYLE);
+  if (colorStyle==HTML_COLORSTYLE_t::LIGHT)
+  {
+    return doReplacements(g_lightMap);
+  }
+  else if (colorStyle==HTML_COLORSTYLE_t::DARK)
+  {
+    return doReplacements(g_darkMap);
+  }
+  else
+  {
+    return input;
+  }
+}
+
+//----------------------------------------------------------------------------------------------
+
+
 //--------------------------------------------------------------------------
 
 HtmlCodeGenerator::HtmlCodeGenerator(TextStream &t) : m_t(t)
@@ -959,7 +1025,6 @@ HtmlGenerator::~HtmlGenerator()
   //printf("HtmlGenerator::~HtmlGenerator()\n");
 }
 
-
 void HtmlGenerator::init()
 {
   QCString dname = Config_getString(HTML_OUTPUT);
@@ -1002,14 +1067,36 @@ void HtmlGenerator::init()
   createSubDirs(d);
 
   ResourceMgr &mgr = ResourceMgr::instance();
-  if (Config_getBool(HTML_DYNAMIC_MENUS))
+  auto colorStyle = Config_getEnum(HTML_COLORSTYLE);
+  if (colorStyle==HTML_COLORSTYLE_t::LIGHT)
   {
-    mgr.copyResourceAs("tabs.css",dname,"tabs.css");
+    fillColorStyleMap(replaceColorMarkers(mgr.getAsString("lightmode_settings.css")),g_lightMap);
   }
-  else // stylesheet for the 'old' static tabs
+  else if (colorStyle==HTML_COLORSTYLE_t::DARK)
   {
-    mgr.copyResourceAs("fixed_tabs.css",dname,"tabs.css");
+    fillColorStyleMap(replaceColorMarkers(mgr.getAsString("darkmode_settings.css")),g_darkMap);
   }
+
+  {
+    QCString tabsCss;
+    if (Config_getBool(HTML_DYNAMIC_MENUS))
+    {
+      tabsCss = mgr.getAsString("tabs.css");
+    }
+    else // stylesheet for the 'old' static tabs
+    {
+      tabsCss = mgr.getAsString("fixed_tabs.css");
+    }
+
+    std::ofstream f(dname.str()+"/tabs.css",std::ofstream::out | std::ofstream::binary);
+    if (f.is_open())
+    {
+      TextStream t(&f);
+      t << replaceVariables(tabsCss);
+    }
+  }
+
+
   mgr.copyResource("jquery.js",dname);
   if (Config_getBool(INTERACTIVE_SVG))
   {
@@ -1021,7 +1108,7 @@ void HtmlGenerator::init()
     mgr.copyResource("menu.js",dname);
   }
 
-  if (Config_getEnum(HTML_COLORSTYLE)==HTML_COLORSTYLE_t::TOGGLE)
+  if (colorStyle==HTML_COLORSTYLE_t::TOGGLE)
   {
     //mgr.copyResource("darkmode_toggle.js",dname);
     std::ofstream f(dname.str()+"/darkmode_toggle.js",std::ofstream::out | std::ofstream::binary);
@@ -1145,8 +1232,8 @@ void HtmlGenerator::writeSearchData(const QCString &dname)
     }
     // and then add the option independent part of the styling
     searchCss += mgr.getAsString("search_common.css");
-    searchCss = substitute(replaceColorMarkers(searchCss),"$doxygenversion",getDoxygenVersion());
-    t << searchCss;
+    searchCss = substitute(searchCss,"$doxygenversion",getDoxygenVersion());
+    t << replaceVariables(searchCss);
     Doxygen::indexList->addStyleSheetFile("search/search.css");
   }
 }
@@ -1157,13 +1244,15 @@ static void writeDefaultStyleSheet(TextStream &t)
   switch (Config_getEnum(HTML_COLORSTYLE))
   {
     case HTML_COLORSTYLE_t::LIGHT:
+    case HTML_COLORSTYLE_t::DARK:
+      /* variables will be resolved while writing to the CSS file */
+      break;
     case HTML_COLORSTYLE_t::AUTO_LIGHT:
     case HTML_COLORSTYLE_t::TOGGLE:
       t << "html {\n";
       t << replaceColorMarkers(ResourceMgr::instance().getAsString("lightmode_settings.css"));
       t << "}\n\n";
       break;
-    case HTML_COLORSTYLE_t::DARK:
     case HTML_COLORSTYLE_t::AUTO_DARK:
       t << "html {\n";
       t << replaceColorMarkers(ResourceMgr::instance().getAsString("darkmode_settings.css"));
@@ -1193,7 +1282,7 @@ static void writeDefaultStyleSheet(TextStream &t)
     t << "}\n\n";
   }
 
-  t << ResourceMgr::instance().getAsString("doxygen.css");
+  t << replaceVariables(ResourceMgr::instance().getAsString("doxygen.css"));
 }
 
 void HtmlGenerator::writeStyleSheetFile(TextStream &t)
@@ -3175,3 +3264,10 @@ QCString HtmlGenerator::getMathJaxMacros()
 {
   return getConvertLatexMacro();
 }
+
+QCString HtmlGenerator::getNavTreeCss()
+{
+  ResourceMgr &mgr = ResourceMgr::instance();
+  return replaceVariables(mgr.getAsString("navtree.css"));
+}
+
