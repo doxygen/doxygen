@@ -296,7 +296,7 @@ while (<BBLFILE>) {
     s/(\\\((([^\\]|\\[^\(\)])+)\\\))/&domath($2)/ge;
     s/\\mbox(\001\d+)\{(.*)\1\}/$2/gs;
     while (s/(\<a href\=\"[^"]*?)\~/$1\005/g) { ; }
-    s/([^\\])~/$1&nbsp;/g;
+    s/([^\\])~/$1&#160;/g;
     s/\\\,/&thinsp;/g;
     s/\\ldots\b/&hellip;/g;
     s/\\dots\b/&hellip;/g;
