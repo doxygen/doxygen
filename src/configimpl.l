@@ -1866,6 +1866,31 @@ void Config::checkAndCorrect(bool quiet, const bool check)
     adjustBoolSetting(  depOption, "HTML_DYNAMIC_MENUS",  false  );
     adjustBoolSetting(  depOption, "HTML_DYNAMIC_SECTIONS",false  );
     adjustStringSetting(depOption, "HTML_FILE_EXTENSION", ".html");
+    auto colorStyle = Config_getEnum(HTML_COLORSTYLE);
+    switch (colorStyle)
+    {
+      case HTML_COLORSTYLE_t::LIGHT:
+      case HTML_COLORSTYLE_t::DARK:
+        break;
+      case HTML_COLORSTYLE_t::AUTO_LIGHT:
+        err("When enabling '%s' the '%s' option should be either '%s' or '%s' but has value '%s'. I'll adjust it for you to '%s'.\n",
+            depOption,"HTML_COLORSTYLE",
+            "LIGHT", "DARK", "AUTO_LIGHT","LIGHT");
+        Config_updateEnum(HTML_COLORSTYLE,HTML_COLORSTYLE_t::LIGHT);
+        break;
+      case HTML_COLORSTYLE_t::AUTO_DARK:
+        err("When enabling '%s' the '%s' option should be either '%s' or '%s' but has value '%s'. I'll adjust it for you to '%s'.\n",
+            depOption,"HTML_COLORSTYLE",
+            "LIGHT", "DARK", "AUTO_DARK","DARK");
+        Config_updateEnum(HTML_COLORSTYLE,HTML_COLORSTYLE_t::DARK);
+        break;
+      case HTML_COLORSTYLE_t::TOGGLE:
+        err("When enabling '%s' the '%s' option should be either '%s' or '%s' but has value '%s'. I'll adjust it for you to '%s'.\n",
+            depOption,"HTML_COLORSTYLE",
+            "LIGHT", "DARK", "TOGGLE","LIGHT");
+        Config_updateEnum(HTML_COLORSTYLE,HTML_COLORSTYLE_t::LIGHT);
+        break;
+    }
   }
 
   // check for settings that are inconsistent with having INLINE_GROUPED_CLASSES enabled
