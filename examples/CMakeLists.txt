@@ -7,6 +7,13 @@ if (DOT)
   set(DIAGRAM_EXAMPLE ${PROJECT_BINARY_DIR}/html/examples/diagrams/html/index.html)
 endif()
 
+add_custom_command(
+    COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/examples/baseexample.cfg" "${PROJECT_BINARY_DIR}/examples/"
+    DEPENDS "${PROJECT_SOURCE_DIR}/examples/baseexample.cfg"
+    OUTPUT "${PROJECT_BINARY_DIR}/examples/baseexample.cfg"
+)
+set_source_files_properties("${PROJECT_BINARY_DIR}/examples/baseexample.cfg" PROPERTIES GENERATED 1)
+
 foreach (f  ${EXAMPLE_FILES})
     add_custom_command(
         COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/examples/${f}" "${PROJECT_BINARY_DIR}/examples/"
