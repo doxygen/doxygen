@@ -118,22 +118,18 @@ static const char* getDirectoryBorderColor(const DotDirProperty &property)
 /** Returns a DOT node style according to the directory properties. */
 static std::string getDirectoryBorderStyle(const DotDirProperty &property)
 {
-  std::string style;
-  if (!property.isPeripheral)
-  {
-    style += "filled,";
-  }
+  std::string style = "filled";
   if (property.isOriginal)
   {
-    style += "bold,";
+    style += ",bold";
   }
   if (property.isIncomplete)
   {
-    style += "dashed,";
+    style += ",dashed";
   }
   else if (property.isTruncated && property.isOrphaned)
   {
-    style += "dashed,";
+    style += ",dashed";
   }
   return style;
 }
@@ -158,7 +154,7 @@ static void drawDirectory(TextStream &t, const DirDef *const directory, const Do
     DirDefMap &directoriesInGraph,int startLevel)
 {
   t << "  " << directory->getOutputFileBase() << " ["
-      "label=\""     << DotNode::convertLabel(directory->shortName())                                       << "\", "
+      "label=\""     << DotNode::convertLabel(directory->shortName())                << "\", "
       "fillcolor=\"" << getDirectoryBackgroundColor(directory->level()-startLevel)   << "\", "
       "color=\""     << getDirectoryBorderColor(property)                            << "\", ";
   common_attributes(t, directory, property)
@@ -393,7 +389,7 @@ void writeDotDirDepGraph(TextStream &t,const DirDef *dd,bool linkRelations)
         {
           t << " headhref=\"" << addHtmlExtensionIfMissing(relationName) << "\"";
         }
-        t << "];\n";
+        t << " color=\"steelblue1\" fontcolor=\"steelblue1\"];\n";
       }
     }
   }
