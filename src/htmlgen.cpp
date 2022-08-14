@@ -73,7 +73,7 @@ static void writeClientSearchBox(TextStream &t,const QCString &relPath)
   t << "        <span class=\"left\">\n";
   t << "          <span id=\"MSearchSelect\" ";
   t << "               onmouseover=\"return searchBox.OnSearchSelectShow()\" ";
-  t << "               onmouseout=\"return searchBox.OnSearchSelectHide()\">&nbsp;</span>\n";
+  t << "               onmouseout=\"return searchBox.OnSearchSelectHide()\">&#160;</span>\n";
   t << "          <input type=\"text\" id=\"MSearchField\" value=\"\" placeholder=\""
     << theTranslator->trSearch() << "\" accesskey=\"S\"\n";
   t << "               onfocus=\"searchBox.OnSearchFieldFocus(true)\" \n";
@@ -103,7 +103,7 @@ static void writeServerSearchBox(TextStream &t,const QCString &relPath,bool high
     t << "search.php";
   }
   t << "\" method=\"get\">\n";
-  t << "              <span id=\"MSearchSelectExt\">&nbsp;</span>\n";
+  t << "              <span id=\"MSearchSelectExt\">&#160;</span>\n";
   if (!highlightSearch)
   {
     t << "              <input type=\"text\" id=\"MSearchField\" name=\"query\" value=\"\" placeholder=\""
@@ -2060,7 +2060,7 @@ void HtmlGenerator::startMemberDoc( const QCString &clName, const QCString &memN
 {
   DBG_HTML(m_t << "<!-- startMemberDoc -->\n";)
   m_t << "\n<h2 class=\"memtitle\">"
-      << "<span class=\"permalink\"><a href=\"#" << anchor << "\">&#9670;&nbsp;</a></span>";
+      << "<span class=\"permalink\"><a href=\"#" << anchor << "\">&#9670;&#160;</a></span>";
   docify(title);
   if (memTotal>1)
   {
