@@ -263,7 +263,7 @@ are different from the standard doxygen configuration file settings one can run 
 doxygen command: with the `-x` option and the name of the configuration file (default
 is `Doxyfile`). The output will be a list of the not default settings (in `Doxyfile`
 format). Alternatively also `-x_noenv` is possible which is identical to the `-x`
-option but without replacing the environment variables.
+option but without replacing the environment variables and the CMake type replacement variables.
 
 \htmlonly
 Return to the <a href="index.html">index</a>.

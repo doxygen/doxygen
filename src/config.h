@@ -81,7 +81,7 @@ namespace Config
    *  and replaces environment variables.
    *  \param clearHeaderAndFooter set to TRUE when writing header and footer templates.
    *  \param compareMode signals if we in Doxyfile compare (`-x` or `-x_noenv`) mode are or not.
-   *   Influences setting of the default value and replacement of environment variables.
+   *   Influences setting of the default value and replacement of environment variables and CMake type replacement variables.
    */
   void postProcess(bool clearHeaderAndFooter, CompareMode compareMode = CompareMode::Full);
 
