@@ -1892,7 +1892,7 @@ class TrManager:
                 if classId in self.__translDic:
                     lang = self.__translDic[classId].langReadable
                     mm = 'see the %s language' % lang
-                    ee = '&nbsp;'
+                    ee = '&#160;'
 
             if not mm and obj.classId in self.__maintainersDic:
                 # Build a string of names separated by the HTML break element.
