@@ -47,7 +47,7 @@ function initResizable()
         }
       }
     }
-    return 0;
+    return $TREEVIEW_WIDTH;
   }
 
   function writeSetting(cookie, val)

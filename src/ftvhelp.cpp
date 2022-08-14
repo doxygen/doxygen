@@ -789,12 +789,22 @@ void FTVHelp::generateTreeViewScripts()
   generateJSNavTree(p->indentNodes[0]);
 
   // copy resize.js & navtree.css
-  ResourceMgr::instance().copyResource("resize.js",htmlOutput);
-  std::ofstream f(htmlOutput.str()+"/navtree.css",std::ofstream::out | std::ofstream::binary);
-  if (f.is_open())
+  auto &mgr = ResourceMgr::instance();
   {
-    TextStream t(&f);
-    t << HtmlGenerator::getNavTreeCss();
+    std::ofstream f(htmlOutput.str()+"/resize.js",std::ofstream::out | std::ofstream::binary);
+    if (f.is_open())
+    {
+      TextStream t(&f);
+      t << substitute(mgr.getAsString("resize.js"), "$TREEVIEW_WIDTH", QCString().setNum(Config_getInt(TREEVIEW_WIDTH)));
+    }
+  }
+  {
+    std::ofstream f(htmlOutput.str()+"/navtree.css",std::ofstream::out | std::ofstream::binary);
+    if (f.is_open())
+    {
+      TextStream t(&f);
+      t << HtmlGenerator::getNavTreeCss();
+    }
   }
 }
 
