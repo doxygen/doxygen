@@ -11762,6 +11762,10 @@ void searchInputFiles()
         });
     }
   }
+  if (Doxygen::inputNameLinkedMap->empty())
+  {
+    warn_uncond("No files to be processed, please check your settings, in particular INPUT, FILE_PATTERNS, and RECURSIVE");
+  }
   g_s.end();
 }
 
