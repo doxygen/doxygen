@@ -15,14 +15,14 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="087_public_type.F90" line="21" column="1" bodyfile="087_public_type.F90" bodystart="21" bodyend="21"/>
+        <location file="087_public_type.F90" line="22" column="1" bodyfile="087_public_type.F90" bodystart="22" bodyend="22"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
     </briefdescription>
     <detaileddescription>
     </detaileddescription>
-    <location file="087_public_type.F90" line="20" column="1" bodyfile="087_public_type.F90" bodystart="20" bodyend="23"/>
+    <location file="087_public_type.F90" line="21" column="1" bodyfile="087_public_type.F90" bodystart="21" bodyend="24"/>
     <listofallmembers>
       <member refid="structmymodule_1_1t2_1af907af6c7950c587a50eadd26987799a" prot="public" virt="non-virtual">
         <scope>mymodule::t2</scope>
