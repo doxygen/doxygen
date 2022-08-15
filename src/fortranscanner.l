@@ -930,7 +930,7 @@ private                                 {
                                             }
                                           }
                                           /* remember attributes for the symbol */
-                                          yyextra->modifiers[yyextra->current_root][name.str()] |= yyextra->currentModifiers;
+                                          yyextra->modifiers[yyextra->current_root][name.lower().str()] |= yyextra->currentModifiers;
                                           yyextra->argName= name;
 
                                           yyextra->vtype= V_IGNORE;
