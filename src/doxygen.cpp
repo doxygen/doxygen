@@ -11752,10 +11752,6 @@ void searchInputFiles()
             {
               return  qstricmp(f1->fullName(),f2->fullName())<0;
             });
-  if (!(*Doxygen::inputNameLinkedMap).size())
-  {
-    warn_uncond("No files to be processed, please check your settings");
-  }
   for (auto &fileName : *Doxygen::inputNameLinkedMap)
   {
     if (fileName->size()>1)
@@ -11765,6 +11761,10 @@ void searchInputFiles()
           return qstricmp(f1->absFilePath(),f2->absFilePath())<0;
         });
     }
+  }
+  if (Doxygen::inputNameLinkedMap->empty())
+  {
+    warn_uncond("No files to be processed, please check your settings, in particular INPUT, FILE_PATTERNS, and RECURSIVE");
   }
   g_s.end();
 }
