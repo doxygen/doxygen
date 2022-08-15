@@ -41,7 +41,6 @@ Here is the list of tags supported by doxygen:
                          member of a base class into the documentation of a 
                          member of a derived class that reimplements it.
 <li><tt>\anchor xmltag_item \addindex "\<item\>" \<item\></tt> List item. Can only be used inside a \ref xmltag_list "\<list\>" context.
-
 <li><tt>\anchor xmltag_list \addindex "\<list\>" \<list type="type"\></tt> Starts a list, supported types are <tt>bullet</tt>
                          or <tt>number</tt> and <tt>table</tt>. 
                          A list consists of a number of <tt>\<item\></tt> tags.
