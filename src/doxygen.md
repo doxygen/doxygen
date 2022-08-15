@@ -22,10 +22,11 @@ option.
 
 The format of the configuration file (options and types) is defined
 by the file `config.xml`. As part of the build process,
-the python script `configgen.py` will create a file `configoptions.cpp`
-from this, which serves as the input for the configuration file parser
-that is invoked using Config::parse(). The script `configgen.py` will also
-create the documentation for the configuration items, creating the file
+the python script `configgen.py` will create the files `configoptions.cpp`, 
+`configvalues.h` and `configvalues.cpp` from this, which serves as the input
+for the configuration file parser that is invoked using Config::parse(). 
+The script `configgen.py` will also create the documentation for the
+configuration items, creating the file
 `config.doc`.
 
 Gathering Input files
@@ -37,12 +38,19 @@ searchInputFiles() and any tag files are read using readTagFile()
 Parsing Input files
 ===================
 
-The function parseFiles() takes care of parsing all files.
-It uses the ParserManager singleton factory to create a suitable parser object
-for each file. Each parser implements the abstract interface ParserInterface.
+The function parseFilesSingleThreading() takes care of parsing all files
+(in case `NUM_PROC_THREADS!=1`, the function
+parseFilesMultiThreading() is used instead).
+
+These functions use the ParserManager singleton factory to create a suitable parser object
+for each file. Each parser implements two abstract interfaces: OutlineParserInterface
+en CodeParserInterface. The OutlineParserInterface is used to collect information
+about the symbols that can be documented but does not look into the body of functions.
+The CodeParserInterface is used for syntax highlighting, but also to collect the symbol
+references needed for cross reference relations.
 
 If the parser indicates it needs preprocessing
-via ParserInterface::needsPreprocessing(), doxygen will call preprocessFile()
+via OutlineParserInterface::needsPreprocessing(), doxygen will call Preprocessor::processFile()
 on the file.
 
 A second step is to convert multiline C++-style comments into C style comments
@@ -54,31 +62,26 @@ aliases (ALIASES option) are resolved. The function that performs these
 now coupled to C/C++ code and does not work automatically for other languages!
 
 The third step is the actual language parsing and is done by calling
-ParserInterface::parseInput() on the parser interface returned by
+OutlineParserInterface::parseInput() on the parser interface returned by
 the ParserManager.
 
 The result of parsing is a tree of Entry objects.
-These Entry objects are wrapped in a EntryNav object and stored on disk using
-Entry::createNavigationIndex() on the root node of the tree.
-
 Each Entry object roughly contains the raw data for a symbol and is later
 converted into a Definition object.
 
 When a parser finds a special comment block in the input, it will do a first
-pass parsing via parseCommentBlock(). During this pass the comment block
+pass parsing via CommentScanner::parseCommentBlock(). During this pass the comment block
 is split into multiple parts if needed. Some data that is later needed is
 extracted like section labels, xref items, and formulas.
-Also Markdown markup is processed using processMarkdown() during this pass.
+Also Markdown markup is processed via Markdown::process() during this pass.
 
 Resolving relations
 ===================
 
-The Entry objects created and filled during parsing are stored on disk
-(to keep memory needs low). The name, parent/child relation, and
-location on disk of each Entry is stored as a tree of EntryNav nodes, which is
-kept in memory.
+The Entry objects created and filled during parsing and stored as a tree of Entry nodes,
+which is kept in memory.
 
-%Doxygen does a number of tree walks over the EntryNav nodes in the tree to
+%Doxygen does a number of tree walks over the Entry nodes in the tree to
 build up the data structures needed to produce the output.
 
 The resulting data structures are all children of the generic base class
@@ -86,6 +89,7 @@ called Definition which holds all non-specific data for a symbol definition.
 
 Definition is an abstract base class. Concrete subclasses are
 - ClassDef: for storing class/struct/union related data
+- ConceptDef: for storing C++20 concept definitions
 - NamespaceDef: for storing namespace related data
 - FileDef: for storing file related data
 - DirDef: for storing directory related data
@@ -95,7 +99,8 @@ For doxygen specific concepts the following subclasses are available
 - PageDef: for storing page related data
 
 Finally the data for members of classes, namespaces, and files is stored in
-the subclass MemberDef.
+the subclass MemberDef. This class is used for functions, variables, enums, etc, as indicated by
+MemberDef::memberType().
 
 Producing debug output
 ======================
