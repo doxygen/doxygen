@@ -1311,14 +1311,18 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
     /*! Used as a heading for a list of Java class functions with package
      * scope.
      */
-    virtual QCString trPackageMembers()
+    virtual QCString trPackageFunctions()
     {
       return "Funkcje pakietu";
+    }
+    virtual QCString trPackageMembers()
+    {
+      return "Składowe pakietu";
     }
     /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
-    virtual QCString trStaticPackageMembers()
+    virtual QCString trStaticPackageFunctions()
     {
       return "Statyczne funkcje pakietu";
     }

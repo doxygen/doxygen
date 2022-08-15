@@ -17,6 +17,7 @@
 #include <cassert>
 #include <sstream>
 #include <algorithm>
+#include <mutex>
 
 #include "config.h"
 #include "dot.h"
@@ -27,7 +28,7 @@
 #include "message.h"
 #include "doxygen.h"
 #include "language.h"
-#include "index.h"
+#include "indexlist.h"
 #include "dir.h"
 
 #define MAP_CMD "cmapx"
@@ -35,6 +36,8 @@
 //--------------------------------------------------------------------
 
 static QCString g_dotFontPath;
+
+static std::mutex g_dotManagerMutex;
 
 static void setDotFontPath(const QCString &path)
 {
@@ -72,21 +75,10 @@ static void unsetDotFontPath()
 
 //--------------------------------------------------------------------
 
-DotManager *DotManager::m_theInstance = 0;
-
 DotManager *DotManager::instance()
 {
-  if (!m_theInstance)
-  {
-    m_theInstance = new DotManager;
-  }
-  return m_theInstance;
-}
-
-void DotManager::deleteInstance()
-{
-  delete m_theInstance;
-  m_theInstance=0;
+  static DotManager theInstance;
+  return &theInstance;
 }
 
 DotManager::DotManager() : m_runners(), m_filePatchers()
@@ -98,7 +90,7 @@ DotManager::DotManager() : m_runners(), m_filePatchers()
   {
     for (i=0;i<dotNumThreads;i++)
     {
-      std::unique_ptr<DotWorkerThread> thread = std::make_unique<DotWorkerThread>(m_queue);
+      DotWorkerThreadPtr thread(new DotWorkerThread(m_queue));
       thread->start();
       if (thread->isRunning())
       {
@@ -114,11 +106,12 @@ DotManager::DotManager() : m_runners(), m_filePatchers()
 
 DotManager::~DotManager()
 {
-  delete m_queue;
+  if (!Doxygen::terminating) delete m_queue;
 }
 
 DotRunner* DotManager::createRunner(const QCString &absDotName, const QCString& md5Hash)
 {
+  std::lock_guard<std::mutex> lock(g_dotManagerMutex);
   DotRunner* rv = nullptr;
   auto const runit = m_runners.find(absDotName.str());
   if (runit == m_runners.end())
@@ -142,6 +135,7 @@ DotRunner* DotManager::createRunner(const QCString &absDotName, const QCString& 
 
 DotFilePatcher *DotManager::createFilePatcher(const QCString &fileName)
 {
+  std::lock_guard<std::mutex> lock(g_dotManagerMutex);
   auto patcher = m_filePatchers.find(fileName.str());
 
   if (patcher != m_filePatchers.end()) return &(patcher->second);

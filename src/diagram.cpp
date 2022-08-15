@@ -26,7 +26,7 @@
 #include "util.h"
 #include "doxygen.h"
 #include "portable.h"
-#include "index.h"
+#include "indexlist.h"
 #include "classlist.h"
 #include "textstream.h"
 
@@ -216,7 +216,7 @@ static void writeBitmapBox(DiagramItem *di,Image *image,
                            uint x,uint y,uint w,uint h,bool firstRow,
                            bool hasDocs,bool children=FALSE)
 {
-  uchar colFill = hasDocs ? (firstRow ? 0 : 2) : 7;
+  uchar colFill = hasDocs ? (firstRow ? 8 : 2) : 7;
   uchar colBorder = (firstRow || !hasDocs) ? 1 : 3;
   uint l = Image::stringLength(di->label());
   uint mask=virtToMask(di->virtualness());
@@ -287,7 +287,7 @@ QCString DiagramItem::label() const
     // we use classDef->name() here and not displayName() in order
     // to get the name used in the inheritance relation.
     QCString n = m_classDef->name();
-    if (/*n.right(2)=="-g" ||*/ n.right(2)=="-p")
+    if (n.endsWith("-p"))
     {
       n = n.left(n.length()-2);
     }

@@ -213,7 +213,6 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     virtual MemberDef *fromAnonymousMember() const;
     virtual bool hasCallGraph() const;
     virtual bool hasCallerGraph() const;
-    virtual bool visibleMemberGroup(bool hideNoHeader) const;
     virtual bool hasReferencesRelation() const;
     virtual bool hasReferencedByRelation() const;
     virtual const MemberDef *templateMaster() const;
@@ -321,7 +320,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     virtual void writeMemberDocSimple(OutputList &ol,const Definition *container) const;
     virtual void writeEnumDeclaration(OutputList &typeDecl,
             const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd) const;
-    virtual void writeTagFile(TextStream &) const;
+    virtual void writeTagFile(TextStream &,bool useQualifiedName) const;
     virtual void warnIfUndocumented() const;
     virtual void warnIfUndocumentedParams() const;
     virtual bool visibleInIndex() const;
@@ -698,8 +697,6 @@ class MemberDefAliasImpl : public DefinitionAliasMixin<MemberDef>
     { return getMdAlias()->hasCallGraph(); }
     virtual bool hasCallerGraph() const
     { return getMdAlias()->hasCallerGraph(); }
-    virtual bool visibleMemberGroup(bool hideNoHeader) const
-    { return getMdAlias()->visibleMemberGroup(hideNoHeader); }
     virtual bool hasReferencesRelation() const
     { return getMdAlias()->hasReferencesRelation(); }
     virtual bool hasReferencedByRelation() const
@@ -1356,7 +1353,7 @@ void MemberDefImpl::IMPL::init(Definition *d,
   hasDocumentedParams = FALSE;
   hasDocumentedReturnType = FALSE;
   docProvider = 0;
-  isDMember = d->getDefFileName().right(2).lower()==".d";
+  isDMember = d->getDefFileName().lower().endsWith(".d");
 }
 
 
@@ -1519,8 +1516,8 @@ bool MemberDefImpl::hasExamples() const
 
 QCString MemberDefImpl::getOutputFileBase() const
 {
-  static bool separateMemberPages = Config_getBool(SEPARATE_MEMBER_PAGES);
-  static bool inlineSimpleClasses = Config_getBool(INLINE_SIMPLE_STRUCTS);
+  bool separateMemberPages = Config_getBool(SEPARATE_MEMBER_PAGES);
+  bool inlineSimpleClasses = Config_getBool(INLINE_SIMPLE_STRUCTS);
   QCString baseName;
 
   //printf("Member: %s: templateMaster=%p group=%p classDef=%p nspace=%p fileDef=%p\n",
@@ -1640,8 +1637,8 @@ QCString MemberDefImpl::anchor() const
 
 void MemberDefImpl::_computeLinkableInProject()
 {
-  static bool extractStatic  = Config_getBool(EXTRACT_STATIC);
-  static bool extractPrivateVirtual = Config_getBool(EXTRACT_PRIV_VIRTUAL);
+  bool extractStatic  = Config_getBool(EXTRACT_STATIC);
+  bool extractPrivateVirtual = Config_getBool(EXTRACT_PRIV_VIRTUAL);
   m_isLinkableCached = 2; // linkable
   //printf("MemberDefImpl::isLinkableInProject(name=%s)\n",qPrint(name()));
   if (isHidden())
@@ -1774,7 +1771,7 @@ void MemberDefImpl::writeLink(OutputList &ol,
                       bool onlyText) const
 {
   SrcLangExt lang = getLanguage();
-  static bool hideScopeNames     = Config_getBool(HIDE_SCOPE_NAMES);
+  bool hideScopeNames     = Config_getBool(HIDE_SCOPE_NAMES);
   QCString sep = getLanguageSpecificSeparator(lang,TRUE);
   QCString n = name();
   const ClassDef *classDef = getClassDef();
@@ -1844,8 +1841,6 @@ ClassDef *MemberDefImpl::getClassDefOfAnonymousType() const
     cname=getNamespaceDef()->name();
   }
   QCString ltype(m_impl->type);
-  // strip 'static' keyword from ltype
-  //if (ltype.left(7)=="static ") ltype=ltype.right(ltype.length()-7);
   // strip 'friend' keyword from ltype
   ltype.stripPrefix("friend ");
 
@@ -1883,12 +1878,12 @@ ClassDef *MemberDefImpl::getClassDefOfAnonymousType() const
  */
 bool MemberDefImpl::isBriefSectionVisible() const
 {
-  static bool extractStatic       = Config_getBool(EXTRACT_STATIC);
-  static bool extractPrivateVirtual = Config_getBool(EXTRACT_PRIV_VIRTUAL);
-  static bool hideUndocMembers    = Config_getBool(HIDE_UNDOC_MEMBERS);
-  static bool briefMemberDesc     = Config_getBool(BRIEF_MEMBER_DESC);
-  static bool repeatBrief         = Config_getBool(REPEAT_BRIEF);
-  static bool hideFriendCompounds = Config_getBool(HIDE_FRIEND_COMPOUNDS);
+  bool extractStatic       = Config_getBool(EXTRACT_STATIC);
+  bool extractPrivateVirtual = Config_getBool(EXTRACT_PRIV_VIRTUAL);
+  bool hideUndocMembers    = Config_getBool(HIDE_UNDOC_MEMBERS);
+  bool briefMemberDesc     = Config_getBool(BRIEF_MEMBER_DESC);
+  bool repeatBrief         = Config_getBool(REPEAT_BRIEF);
+  bool hideFriendCompounds = Config_getBool(HIDE_FRIEND_COMPOUNDS);
 
   //printf("Member %s grpId=%d docs=%s file=%s args=%s\n",
   //    qPrint(name()),
@@ -2266,9 +2261,9 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
   // *** write name
   if (!isAnonymous()) // hide anonymous stuff
   {
-    static bool extractPrivate = Config_getBool(EXTRACT_PRIVATE);
-    static bool extractPrivateVirtual = Config_getBool(EXTRACT_PRIV_VIRTUAL);
-    static bool extractStatic  = Config_getBool(EXTRACT_STATIC);
+    bool extractPrivate = Config_getBool(EXTRACT_PRIVATE);
+    bool extractPrivateVirtual = Config_getBool(EXTRACT_PRIV_VIRTUAL);
+    bool extractStatic  = Config_getBool(EXTRACT_STATIC);
     MemberDefMutable *annMemb = toMemberDefMutable(m_impl->annMemb);
     //printf("Member name=`%s gd=%p md->groupDef=%p inGroup=%d isLinkable()=%d hasDocumentation=%d\n",qPrint(name()),gd,getGroupDef(),inGroup,isLinkable(),hasDocumentation());
     if (!name().isEmpty() && // name valid
@@ -2454,23 +2449,34 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
       Config_getBool(BRIEF_MEMBER_DESC)
      )
   {
-    std::unique_ptr<IDocParser> parser { createDocParser() };
-    std::unique_ptr<DocRoot>  rootNode { validatingParseDoc(*parser.get(),
-                                         briefFile(),briefLine(),
-                                         getOuterScope()?getOuterScope():d,
-                                         this,briefDescription(),TRUE,FALSE,
-                                         QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT)) };
-
-    if (rootNode && !rootNode->isEmpty())
+    auto parser { createDocParser() };
+    auto ast    { validatingParseDoc(*parser.get(),
+                                     briefFile(),briefLine(),
+                                     getOuterScope()?getOuterScope():d,
+                                     this,briefDescription(),TRUE,FALSE,
+                                     QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT)) };
+    if (!ast->isEmpty())
     {
       ol.startMemberDescription(anchor(),inheritId);
-      ol.writeDoc(rootNode.get(),getOuterScope()?getOuterScope():d,this);
+      ol.writeDoc(ast.get(),getOuterScope()?getOuterScope():d,this);
       if (detailsVisible) // add More.. link only when both brief and details are visible
       {
         ol.pushGeneratorState();
         ol.disableAllBut(OutputGenerator::Html);
         ol.docify(" ");
-        ol.startTextLink(getOutputFileBase(),anchor());
+        MemberDefMutable *annMemb = NULL;
+        if (!isAnonymous()) // hide anonymous stuff
+        {
+          annMemb = toMemberDefMutable(m_impl->annMemb);
+        }
+        if (annMemb)
+        {
+          ol.startTextLink(annMemb->getOutputFileBase(),annMemb->anchor());
+        }
+        else
+        {
+          ol.startTextLink(getOutputFileBase(),anchor());
+        }
         ol.parseText(theTranslator->trMore());
         ol.endTextLink();
         ol.popGeneratorState();
@@ -2496,14 +2502,14 @@ bool MemberDefImpl::hasDetailedDescription() const
   //printf(">hasDetailedDescription(cached=%d)\n",m_impl->hasDetailedDescriptionCached);
   if (!m_impl->hasDetailedDescriptionCached)
   {
-    static bool extractAll            = Config_getBool(EXTRACT_ALL);
-    static bool alwaysDetailedSec     = Config_getBool(ALWAYS_DETAILED_SEC);
-    static bool repeatBrief           = Config_getBool(REPEAT_BRIEF);
-    static bool briefMemberDesc       = Config_getBool(BRIEF_MEMBER_DESC);
-    static bool hideUndocMembers      = Config_getBool(HIDE_UNDOC_MEMBERS);
-    static bool extractStatic         = Config_getBool(EXTRACT_STATIC);
-    static bool extractPrivateVirtual = Config_getBool(EXTRACT_PRIV_VIRTUAL);
-    static bool inlineSources         = Config_getBool(INLINE_SOURCES);
+    bool extractAll            = Config_getBool(EXTRACT_ALL);
+    bool alwaysDetailedSec     = Config_getBool(ALWAYS_DETAILED_SEC);
+    bool repeatBrief           = Config_getBool(REPEAT_BRIEF);
+    bool briefMemberDesc       = Config_getBool(BRIEF_MEMBER_DESC);
+    bool hideUndocMembers      = Config_getBool(HIDE_UNDOC_MEMBERS);
+    bool extractStatic         = Config_getBool(EXTRACT_STATIC);
+    bool extractPrivateVirtual = Config_getBool(EXTRACT_PRIV_VIRTUAL);
+    bool inlineSources         = Config_getBool(INLINE_SOURCES);
 
     // the member has detailed documentation because the user added some comments
     bool docFilter =
@@ -2597,9 +2603,9 @@ bool MemberDefImpl::hasDetailedDescription() const
 
 bool MemberDefImpl::isDetailedSectionVisible(MemberListContainer container) const
 {
-  static bool separateMemPages = Config_getBool(SEPARATE_MEMBER_PAGES);
-  static bool inlineSimpleStructs = Config_getBool(INLINE_SIMPLE_STRUCTS);
-  static bool hideUndocMembers = Config_getBool(HIDE_UNDOC_MEMBERS);
+  bool separateMemPages = Config_getBool(SEPARATE_MEMBER_PAGES);
+  bool inlineSimpleStructs = Config_getBool(INLINE_SIMPLE_STRUCTS);
+  bool hideUndocMembers = Config_getBool(HIDE_UNDOC_MEMBERS);
   bool groupFilter = getGroupDef()==0 || container==MemberListContainer::Group || separateMemPages;
   bool fileFilter  = getNamespaceDef()==0 || !getNamespaceDef()->isLinkable() || container!=MemberListContainer::File;
   bool simpleFilter = (hasBriefDescription() || !hideUndocMembers) && inlineSimpleStructs &&
@@ -2616,7 +2622,7 @@ bool MemberDefImpl::isDetailedSectionVisible(MemberListContainer container) cons
 StringVector MemberDefImpl::getLabels(const Definition *container) const
 {
   StringVector sl;
-  static bool inlineInfo = Config_getBool(INLINE_INFO);
+  bool inlineInfo = Config_getBool(INLINE_INFO);
 
   Specifier lvirt=virtualness();
   if ((!isObjCMethod() || isOptional() || isRequired()) &&
@@ -2636,7 +2642,7 @@ StringVector MemberDefImpl::getLabels(const Definition *container) const
     //ol.docify(" [");
     SrcLangExt lang = getLanguage();
     bool optVhdl = lang==SrcLangExt_VHDL;
-    static bool extractPrivate = Config_getBool(EXTRACT_PRIVATE);
+    bool extractPrivate = Config_getBool(EXTRACT_PRIVATE);
     if (optVhdl)
     {
       sl.push_back(theTranslator->trVhdlType(getMemberSpecifiers(),TRUE).str());
@@ -3153,7 +3159,7 @@ void MemberDefImpl::_writeGroupInclude(OutputList &ol,bool inGroup) const
 {
   // only write out the include file if this is not part of a class or file
   // definition
-  static bool showGroupedMembInc = Config_getBool(SHOW_GROUPED_MEMB_INC);
+  bool showGroupedMembInc = Config_getBool(SHOW_GROUPED_MEMB_INC);
   const FileDef *fd = getFileDef();
   QCString nm;
   if (fd) nm = getFileDef()->docName();
@@ -3700,7 +3706,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
 static QCString simplifyTypeForTable(const QCString &s)
 {
   QCString ts=removeAnonymousScopes(s);
-  if (ts.right(2)=="::") ts = ts.left(ts.length()-2);
+  if (ts.endsWith("::")) ts = ts.left(ts.length()-2);
   static const reg::Ex re1(R"(\a\w*::)");       // non-template version
   static const reg::Ex re2(R"(\a\w*<[^>]*>::)"); // template version
   reg::Match match;
@@ -3793,6 +3799,11 @@ void MemberDefImpl::writeMemberDocSimple(OutputList &ol, const Definition *conta
   {
     linkifyText(TextGeneratorOLImpl(ol),getOuterScope(),getBodyDef(),this,m_impl->bitfields);
   }
+  if (hasOneLineInitializer() && !isDefine())
+  {
+    ol.writeString(" ");
+    linkifyText(TextGeneratorOLImpl(ol),getOuterScope(),getBodyDef(),this,m_impl->initializer.simplifyWhiteSpace());
+  }
   ol.endInlineMemberName();
 
   ol.startInlineMemberDoc();
@@ -3875,7 +3886,7 @@ void MemberDefImpl::warnIfUndocumented() const
     t="group", d=gd;
   else
     t="file", d=fd;
-  static bool extractAll = Config_getBool(EXTRACT_ALL);
+  bool extractAll = Config_getBool(EXTRACT_ALL);
 
   //printf("%s:warnIfUndoc: hasUserDocs=%d isFriendClass=%d protection=%d isRef=%d isDel=%d\n",
   //    qPrint(name()),
@@ -3920,23 +3931,15 @@ static QCString stripTrailingReturn(const QCString &trailRet)
   return trailRet;
 }
 
+static std::mutex g_detectUndocumentedParamsMutex;
+
 void MemberDefImpl::detectUndocumentedParams(bool hasParamCommand,bool hasReturnCommand) const
 {
-  QCString returnType = typeString();
-  bool isPython = getLanguage()==SrcLangExt_Python;
-  bool isFortran = getLanguage()==SrcLangExt_Fortran;
-  bool isFortranSubroutine = isFortran && returnType.find("subroutine")!=-1;
+  // this function is called while parsing the documentation. A member can have multiple
+  // documentation blocks, which could be handled by multiple threads, hence this guard.
+  std::lock_guard<std::mutex> lock(g_detectUndocumentedParamsMutex);
 
-  bool isVoidReturn = (returnType=="void") || (returnType.right(5)==" void");
-  if (!isVoidReturn && returnType == "auto")
-  {
-    const ArgumentList &defArgList=isDocsForDefinition() ?  argumentList() : declArgumentList();
-    if (!defArgList.trailingReturnType().isEmpty())
-    {
-      QCString strippedTrailingReturn = stripTrailingReturn(defArgList.trailingReturnType());
-      isVoidReturn = (strippedTrailingReturn=="void") || (strippedTrailingReturn.right(5)==" void");
-    }
-  }
+  bool isPython = getLanguage()==SrcLangExt_Python;
 
   if (!m_impl->hasDocumentedParams && hasParamCommand)
   {
@@ -3995,34 +3998,24 @@ void MemberDefImpl::detectUndocumentedParams(bool hasParamCommand,bool hasReturn
   {
     m_impl->hasDocumentedReturnType = TRUE;
   }
-  else if ( // see if return type is documented in a function w/o return type
-            hasReturnCommand &&
-            (
-              isVoidReturn         || // void return type
-              isFortranSubroutine  || // fortran subroutine
-              isConstructor()      || // a constructor
-              isDestructor()          // or destructor
-            )
-          )
-  {
-
-    warn_doc_error(docFile(),docLine(),"documented empty return type of %s",
-                          qPrint(qualifiedName()));
-  }
-  else if ( // see if return needs to documented
-            m_impl->hasDocumentedReturnType ||
-           isVoidReturn        || // void return type
-           isFortranSubroutine || // fortran subroutine
-           isConstructor()     || // a constructor
-           isDestructor()         // or destructor
-          )
-  {
-    m_impl->hasDocumentedReturnType = TRUE;
-  }
 }
 
 void MemberDefImpl::warnIfUndocumentedParams() const
 {
+  QCString returnType = typeString();
+  bool isFortran = getLanguage()==SrcLangExt_Fortran;
+  bool isFortranSubroutine = isFortran && returnType.find("subroutine")!=-1;
+
+  bool isVoidReturn = (returnType=="void") || (returnType.endsWith(" void"));
+  if (!isVoidReturn && returnType == "auto")
+  {
+    const ArgumentList &defArgList=isDocsForDefinition() ?  argumentList() : declArgumentList();
+    if (!defArgList.trailingReturnType().isEmpty())
+    {
+      QCString strippedTrailingReturn = stripTrailingReturn(defArgList.trailingReturnType());
+      isVoidReturn = (strippedTrailingReturn=="void") || (strippedTrailingReturn.endsWith(" void"));
+    }
+  }
   if (!Config_getBool(EXTRACT_ALL) &&
       Config_getBool(WARN_IF_UNDOCUMENTED) &&
       Config_getBool(WARN_NO_PARAMDOC) &&
@@ -4031,20 +4024,36 @@ void MemberDefImpl::warnIfUndocumentedParams() const
       !isReference() &&
       !Doxygen::suppressDocWarnings)
   {
-    QCString returnType = typeString();
     if (!m_impl->hasDocumentedParams)
     {
       warn_doc_error(docFile(),docLine(),
-          "parameters of member %s are not (all) documented",
+          "parameters of member %s are not documented",
           qPrint(qualifiedName()));
     }
     if (!m_impl->hasDocumentedReturnType &&
-        hasDocumentation() && !returnType.isEmpty())
+        hasDocumentation() && !returnType.isEmpty() &&
+        !( // not one of the cases where nothing is returned
+          isVoidReturn        || // void return type
+          isFortranSubroutine || // fortran subroutine
+          isConstructor()     || // a constructor
+          isDestructor()         // or destructor
+         )
+       )
     {
       warn_doc_error(docFile(),docLine(),
           "return type of member %s is not documented",
           qPrint(qualifiedName()));
     }
+  }
+  if (Config_getBool(WARN_IF_DOC_ERROR) &&
+            m_impl->hasDocumentedReturnType &&
+            (isVoidReturn        || // void return type
+             isFortranSubroutine || // fortran subroutine
+             isConstructor()     || // a constructor
+             isDestructor()))       // or destructor
+  {
+    warn_doc_error(docFile(),docLine(),"found documented return type for %s that does not return anything",
+                   qPrint(qualifiedName()));
   }
 }
 
@@ -4074,12 +4083,6 @@ bool MemberDefImpl::hasDocumentation() const
 void MemberDefImpl::setMemberGroup(MemberGroup *grp)
 {
   m_impl->memberGroup = grp;
-}
-
-bool MemberDefImpl::visibleMemberGroup(bool hideNoHeader) const
-{
-  return m_impl->memberGroup!=0 &&
-          (!hideNoHeader || m_impl->memberGroup->header()!="[NOHEADER]");
 }
 
 QCString MemberDefImpl::getScopeString() const
@@ -4182,7 +4185,7 @@ MemberDefMutable *MemberDefImpl::createTemplateInstanceMember(
   }
 
   QCString methodName=name();
-  if (methodName.left(9)=="operator ") // conversion operator
+  if (methodName.startsWith("operator ")) // conversion operator
   {
     methodName=substituteTemplateArgumentsInString(methodName,formalArgs,actualArgs);
   }
@@ -4239,10 +4242,10 @@ void MemberDefImpl::setInitializer(const QCString &initializer)
 
 void MemberDefImpl::addListReference(Definition *)
 {
-  static bool optimizeOutputForC = Config_getBool(OPTIMIZE_OUTPUT_FOR_C);
-  //static bool hideScopeNames     = Config_getBool(HIDE_SCOPE_NAMES);
-  //static bool optimizeOutputJava = Config_getBool(OPTIMIZE_OUTPUT_JAVA);
-  //static bool fortranOpt = Config_getBool(OPTIMIZE_FOR_FORTRAN);
+  bool optimizeOutputForC = Config_getBool(OPTIMIZE_OUTPUT_FOR_C);
+  //bool hideScopeNames     = Config_getBool(HIDE_SCOPE_NAMES);
+  //bool optimizeOutputJava = Config_getBool(OPTIMIZE_OUTPUT_JAVA);
+  //bool fortranOpt = Config_getBool(OPTIMIZE_FOR_FORTRAN);
   SrcLangExt lang = getLanguage();
   if (!isLinkableInProject()) return;
   QCString memLabel;
@@ -4325,7 +4328,7 @@ Specifier MemberDefImpl::virtualness(int count) const
   return v;
 }
 
-void MemberDefImpl::writeTagFile(TextStream &tagFile) const
+void MemberDefImpl::writeTagFile(TextStream &tagFile,bool useQualifiedName) const
 {
   if (!isLinkableInProject()) return;
   tagFile << "    <member kind=\"";
@@ -4370,7 +4373,7 @@ void MemberDefImpl::writeTagFile(TextStream &tagFile) const
   {
     tagFile << "      <type>" << convertToXML(typeString()) << "</type>\n";
   }
-  tagFile << "      <name>" << convertToXML(name()) << "</name>\n";
+  tagFile << "      <name>" << convertToXML(useQualifiedName ? qualifiedName() : name()) << "</name>\n";
   tagFile << "      <anchorfile>" << addHtmlExtensionIfMissing(getOutputFileBase()) << "</anchorfile>\n";
   tagFile << "      <anchor>" << convertToXML(anchor()) << "</anchor>\n";
   QCString idStr = id();
@@ -5992,7 +5995,7 @@ const ArgumentList &MemberDefImpl::typeConstraints() const
 
 bool MemberDefImpl::isFriendToHide() const
 {
-  static bool hideFriendCompounds = Config_getBool(HIDE_FRIEND_COMPOUNDS);
+  bool hideFriendCompounds = Config_getBool(HIDE_FRIEND_COMPOUNDS);
   bool isFriendToHide = hideFriendCompounds &&
      (m_impl->type=="friend class"  ||
       m_impl->type=="friend struct" ||

@@ -16,13 +16,17 @@
 
 #include <memory>
 
-#include "index.h"
+#include "qcstring.h"
 
-class Qhp : public IndexIntf
+class Definition;
+class MemberDef;
+
+class Qhp
 {
   public:
     Qhp();
     ~Qhp();
+    Qhp(Qhp &&);
 
     void initialize();
     void finalize();
@@ -37,6 +41,9 @@ class Qhp : public IndexIntf
     void addIndexFile(const QCString & name);
     void addImageFile(const QCString & name);
     void addStyleSheetFile(const QCString & name);
+
+    static inline const QCString qhpFileName = "index.qhp";
+    static QCString getQchFileName();
 
   private:
     void addFile(const QCString &);

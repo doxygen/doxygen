@@ -1368,14 +1368,18 @@ class TranslatorLatvian : public TranslatorAdapter_1_8_4
     /*! Used as a heading for a list of Java class functions with package
      * scope.
      */
-    virtual QCString trPackageMembers()
+    virtual QCString trPackageFunctions()
     {
       return "Pakas funkcijas";
+    }
+    virtual QCString trPackageMembers()
+    {
+      return "Pakas elementi";
     }
     /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
-    virtual QCString trStaticPackageMembers()
+    virtual QCString trStaticPackageFunctions()
     {
       return "Statiskās pakas funkcijas";
     }

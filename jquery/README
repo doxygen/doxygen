@@ -1,7 +1,7 @@
 Doxygen's jquery.js script is composed of minified versions of the following
 packages:
 - jquery    3.6.0:  https://jquery.com/download/
-- jquery.ui 1.12.1: https://github.com/jquery/jquery-ui
+- jquery.ui 1.13.2: https://github.com/jquery/jquery-ui
     modules required:
     - jquery.ui.core          all
     - jquery.ui.interactions  resizable

@@ -87,7 +87,7 @@
 //    something else.  It is difficult to find the general translation
 //    for all kinds in the Czech language.
 
-class TranslatorCzech : public Translator
+class TranslatorCzech : public TranslatorAdapter_1_9_4
 {
   public:
     // --- Language control methods -------------------
@@ -1440,14 +1440,18 @@ class TranslatorCzech : public Translator
     /*! Used as a heading for a list of Java class functions with package
      * scope.
      */
-    virtual QCString trPackageMembers()
+    virtual QCString trPackageFunctions()
     {
       return "Funkce v balíku";
+    }
+    virtual QCString trPackageMembers()
+    {
+      return "Členy v balíku";
     }
     /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
-    virtual QCString trStaticPackageMembers()
+    virtual QCString trStaticPackageFunctions()
     {
       return "Statické funkce v balíku";
     }

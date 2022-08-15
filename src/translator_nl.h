@@ -427,7 +427,7 @@ class TranslatorDutch : public Translator
         bool single)
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
-      static bool vhdlOpt = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
+      bool vhdlOpt = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
       QCString result="De documentatie voor ";
       switch(compType)
       {
@@ -705,7 +705,7 @@ class TranslatorDutch : public Translator
         "</ul>\n"
         "De pijlen hebben de volgende betekenis:\n"
         "<ul>\n"
-        "<li>Een donkerblauwe pijl visualizeert een public inheritance "
+        "<li>Een blauwe pijl visualizeert een public inheritance "
         "relatie tussen twee klassen.\n"
         "<li>Een donkergroene pijl wordt gebruikt voor protected inheritance.\n"
         "<li>Een donkerrode pijl wordt gebruikt voor private inheritance.\n"
@@ -1016,14 +1016,18 @@ class TranslatorDutch : public Translator
     /*! Used as a heading for a list of Java class functions with package
      * scope.
      */
-    virtual QCString trPackageMembers()
+    virtual QCString trPackageFunctions()
     {
       return "Package Functies";
+    }
+    virtual QCString trPackageMembers()
+    {
+      return "Package Members";
     }
     /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
-    virtual QCString trStaticPackageMembers()
+    virtual QCString trStaticPackageFunctions()
     {
       return "Statische Package Functies";
     }
@@ -1853,6 +1857,12 @@ class TranslatorDutch : public Translator
       return "Concept definitie";
     }
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.4
+//////////////////////////////////////////////////////////////////////////
+
+    virtual QCString trPackageList()
+    { return "Package Lijst"; }
 };
 
 #endif

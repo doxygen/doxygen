@@ -760,7 +760,7 @@ class TranslatorEnglish : public Translator
     virtual QCString trGeneratedFromFiles(ClassDef::CompoundType compType,
         bool single)
     { // single is true implies a single file
-      static bool vhdlOpt = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
+      bool vhdlOpt = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
       QCString result="The documentation for this ";
       switch(compType)
       {
@@ -1047,7 +1047,7 @@ class TranslatorEnglish : public Translator
         "The arrows have the following meaning:\n"
         "</p>\n"
         "<ul>\n"
-        "<li>%A dark blue arrow is used to visualize a public inheritance "
+        "<li>%A blue arrow is used to visualize a public inheritance "
         "relation between two classes.</li>\n"
         "<li>%A dark green arrow is used for protected inheritance.</li>\n"
         "<li>%A dark red arrow is used for private inheritance.</li>\n"
@@ -1371,14 +1371,18 @@ class TranslatorEnglish : public Translator
     /*! Used as a heading for a list of Java class functions with package
      * scope.
      */
-    virtual QCString trPackageMembers()
+    virtual QCString trPackageFunctions()
     {
       return "Package Functions";
+    }
+    virtual QCString trPackageMembers()
+    {
+      return "Package Members";
     }
     /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
-    virtual QCString trStaticPackageMembers()
+    virtual QCString trStaticPackageFunctions()
     {
       return "Static Package Functions";
     }
@@ -2303,6 +2307,13 @@ class TranslatorEnglish : public Translator
     {
       return "Concept definition";
     }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.4
+//////////////////////////////////////////////////////////////////////////
+
+    virtual QCString trPackageList()
+    { return "Package List"; }
 };
 
 #endif

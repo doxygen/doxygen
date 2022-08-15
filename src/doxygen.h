@@ -58,9 +58,9 @@ class NamespaceDefMutable;
 struct LookupInfo
 {
   LookupInfo() = default;
-  LookupInfo(const ClassDef *cd,const MemberDef *td,QCString ts,QCString rt)
-    : classDef(cd), typeDef(td), templSpec(ts),resolvedType(rt) {}
-  const ClassDef  *classDef = 0;
+  LookupInfo(const Definition *d,const MemberDef *td,QCString ts,QCString rt)
+    : definition(d), typeDef(td), templSpec(ts),resolvedType(rt) {}
+  const Definition  *definition = 0;
   const MemberDef *typeDef = 0;
   QCString   templSpec;
   QCString   resolvedType;
@@ -105,7 +105,8 @@ class Doxygen
     static SearchIndexIntf          *searchIndex;
     static SymbolMap<Definition>    *symbolMap;
     static ClangUsrMap              *clangUsrMap;
-    static Cache<std::string,LookupInfo> *lookupCache;
+    static Cache<std::string,LookupInfo> *typeLookupCache;
+    static Cache<std::string,LookupInfo> *symbolLookupCache;
     static DirLinkedMap             *dirLinkedMap;
     static DirRelationLinkedMap      dirRelations;
     static ParserManager            *parserManager;
@@ -118,7 +119,19 @@ class Doxygen
     static DefinesPerFileList        macroDefinitions;
     static bool                      clangAssistedParsing;
     static QCString                  verifiedDotPath;
+    static volatile bool             terminating;
 };
+
+/** Deleter that only deletes an object if doxygen is not already terminating */
+template<class T>
+struct NonTerminatingDeleter
+{
+  void operator()(T *obj)
+  {
+    if (!Doxygen::terminating) delete obj;
+  }
+};
+
 
 void initDoxygen();
 void readConfiguration(int argc, char **argv);
@@ -127,7 +140,6 @@ void adjustConfiguration();
 void parseInput();
 void generateOutput();
 void readAliases();
-void readFormulaRepository(QCString dir, bool cmp = FALSE);
 void cleanUpDoxygen();
 void readFileOrDirectory(const QCString &s,
                         FileNameLinkedMap *fnDict,

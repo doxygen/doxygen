@@ -3,12 +3,12 @@
 #include <iterator>
 #include <unordered_map>
 #include <string>
-
 #include <ctype.h>
-#include "md5.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+
+#include "md5.h"
 #include "regex.h"
 #include "config.h"
 #include "definitionimpl.h"
@@ -34,6 +34,7 @@
 #include "bufstr.h"
 #include "reflist.h"
 #include "utf8.h"
+#include "indexlist.h"
 
 //-----------------------------------------------------------------------------------------
 
@@ -208,6 +209,7 @@ static void addToMap(const QCString &name,Definition *d)
   if (!vhdlOpt && index!=-1) symbolName=symbolName.mid(index+2);
   if (!symbolName.isEmpty())
   {
+    //printf("adding symbol %s\n",qPrint(symbolName));
     Doxygen::symbolMap->add(symbolName,d);
 
     d->_setSymbolName(symbolName);
@@ -370,10 +372,10 @@ void DefinitionImpl::addSectionsToIndex()
       }
       QCString title = si->title();
       if (title.isEmpty()) title = si->label();
-      // determine if there is a next level inside this item
+      // determine if there is a next level inside this item, but be aware of the anchor and table section references.
       auto it_next = std::next(it);
       bool isDir = (it_next!=m_impl->sectionRefs.end()) ?
-                       (static_cast<int>((*it_next)->type()) > nextLevel) : FALSE;
+                       (isSection((*it_next)->type()) && static_cast<int>((*it_next)->type()) > nextLevel) : FALSE;
       Doxygen::indexList->addContentsItem(isDir,title,
                                          getReference(),
                                          m_impl->def->getOutputFileBase(),
@@ -488,25 +490,24 @@ void DefinitionImpl::setDocumentation(const QCString &d,const QCString &docFile,
 
 void DefinitionImpl::_setBriefDescription(const QCString &b,const QCString &briefFile,int briefLine)
 {
-  static OUTPUT_LANGUAGE_t outputLanguage = Config_getEnum(OUTPUT_LANGUAGE);
-  static bool needsDot = outputLanguage!=OUTPUT_LANGUAGE_t::Japanese &&
-                         outputLanguage!=OUTPUT_LANGUAGE_t::Chinese &&
-                         outputLanguage!=OUTPUT_LANGUAGE_t::Korean;
   QCString brief = b;
   brief = brief.stripWhiteSpace();
   brief = stripLeadingAndTrailingEmptyLines(brief,briefLine);
   brief = brief.stripWhiteSpace();
   if (brief.isEmpty()) return;
   uint bl = brief.length();
-  if (bl>0 && needsDot) // add punctuation if needed
+  if (bl>0)
   {
-    int c = brief.at(bl-1);
-    switch(c)
+    if (!theTranslator || theTranslator->needsPunctuation()) // add punctuation if needed
     {
-      case '.': case '!': case '?': case '>': case ':': case ')': break;
-      default:
-        if (isUTF8CharUpperCase(brief.str(),0) && !lastUTF8CharIsMultibyte(brief.str())) brief+='.';
-        break;
+      int c = brief.at(bl-1);
+      switch(c)
+      {
+        case '.': case '!': case '?': case '>': case ':': case ')': break;
+        default:
+          if (isUTF8CharUpperCase(brief.str(),0) && !lastUTF8CharIsMultibyte(brief.str())) brief+='.';
+          break;
+      }
     }
   }
 
@@ -588,7 +589,7 @@ class FilterCache
     FilterCache() : m_endPos(0) { }
     bool getFileContents(const QCString &fileName,BufStr &str)
     {
-      static bool filterSourceFiles = Config_getBool(FILTER_SOURCE_FILES);
+      bool filterSourceFiles = Config_getBool(FILTER_SOURCE_FILES);
       QCString filter = getFileFilter(fileName,TRUE);
       bool usePipe = !filter.isEmpty() && filterSourceFiles;
       FILE *f=0;
@@ -720,7 +721,7 @@ bool readCodeFragment(const QCString &fileName,
                       int &startLine,int &endLine,QCString &result)
 {
   //printf("readCodeFragment(%s,startLine=%d,endLine=%d)\n",fileName,startLine,endLine);
-  static bool filterSourceFiles = Config_getBool(FILTER_SOURCE_FILES);
+  bool filterSourceFiles = Config_getBool(FILTER_SOURCE_FILES);
   QCString filter = getFileFilter(fileName,TRUE);
   bool usePipe = !filter.isEmpty() && filterSourceFiles;
   int tabSize = Config_getInt(TAB_SIZE);
@@ -766,7 +767,7 @@ bool readCodeFragment(const QCString &fileName,
           }
           else if (pc=='/' && c=='/') // skip single line comment
           {
-            while ((c=*p++)!='\n' && c!=0) pc=c;
+            while ((c=*p++)!='\n' && c!=0);
             if (c=='\n') lineNr++,col=0;
           }
           else if (pc=='/' && c=='*') // skip C style comment
@@ -860,7 +861,7 @@ QCString DefinitionImpl::getSourceFileBase() const
 {
   ASSERT(m_impl->def->definitionType()!=Definition::TypeFile); // file overloads this method
   QCString fn;
-  static bool sourceBrowser = Config_getBool(SOURCE_BROWSER);
+  bool sourceBrowser = Config_getBool(SOURCE_BROWSER);
   if (sourceBrowser &&
       m_impl->body && m_impl->body->startLine!=-1 && m_impl->body->fileDef)
   {
@@ -963,7 +964,7 @@ bool DefinitionImpl::hasSources() const
 /*! Write code of this definition into the documentation */
 void DefinitionImpl::writeInlineCode(OutputList &ol,const QCString &scopeName) const
 {
-  static bool inlineSources = Config_getBool(INLINE_SOURCES);
+  bool inlineSources = Config_getBool(INLINE_SOURCES);
   ol.pushGeneratorState();
   //printf("Source Fragment %s: %d-%d bodyDef=%p\n",qPrint(name()),
   //        m_startBodyLine,m_endBodyLine,m_bodyDef);
@@ -1028,14 +1029,14 @@ void DefinitionImpl::_writeSourceRefList(OutputList &ol,const QCString &scopeNam
     const QCString &text,const std::unordered_map<std::string,const MemberDef *> &membersMap,
     bool /*funcOnly*/) const
 {
-  static bool sourceBrowser   = Config_getBool(SOURCE_BROWSER);
-  static bool refLinkSource   = Config_getBool(REFERENCES_LINK_SOURCE);
   if (!membersMap.empty())
   {
     auto members = refMapToVector(membersMap);
 
     auto replaceFunc = [this,&members,scopeName,&ol](size_t entryIndex)
     {
+      bool sourceBrowser   = Config_getBool(SOURCE_BROWSER);
+      bool refLinkSource   = Config_getBool(REFERENCES_LINK_SOURCE);
       const MemberDef *md=members[entryIndex];
       if (md)
       {
@@ -1114,8 +1115,8 @@ bool DefinitionImpl::hasSourceRefs() const
 
 bool DefinitionImpl::hasDocumentation() const
 {
-  static bool extractAll    = Config_getBool(EXTRACT_ALL);
-  //static bool sourceBrowser = Config_getBool(SOURCE_BROWSER);
+  bool extractAll    = Config_getBool(EXTRACT_ALL);
+  //bool sourceBrowser = Config_getBool(SOURCE_BROWSER);
   bool hasDocs =
          (m_impl->details    && !m_impl->details->doc.isEmpty())    || // has detailed docs
          (m_impl->brief      && !m_impl->brief->doc.isEmpty())      || // has brief description
@@ -1366,7 +1367,7 @@ QCString DefinitionImpl::navigationPathAsString() const
     else if (m_impl->def->definitionType()==Definition::TypeClass)
     {
       QCString name = locName;
-      if (name.right(2)=="-p" /*|| name.right(2)=="-g"*/)
+      if (name.endsWith("-p"))
       {
         name = name.left(name.length()-2);
       }
@@ -1566,12 +1567,12 @@ QCString DefinitionImpl::documentation() const
 
 int DefinitionImpl::docLine() const
 {
-  return m_impl->details ? m_impl->details->line : 1;
+  return m_impl->details ? m_impl->details->line : m_impl->brief ? m_impl->brief->line : 1;
 }
 
 QCString DefinitionImpl::docFile() const
 {
-  return m_impl->details ? m_impl->details->file : QCString("<"+m_impl->name+">");
+  return m_impl->details ? m_impl->details->file : m_impl->brief ? m_impl->brief->file : QCString("<"+m_impl->name+">");
 }
 
 //----------------------------------------------------------------------------
@@ -1849,7 +1850,7 @@ QCString DefinitionImpl::_symbolName() const
 
 bool DefinitionImpl::hasBriefDescription() const
 {
-  static bool briefMemberDesc = Config_getBool(BRIEF_MEMBER_DESC);
+  bool briefMemberDesc = Config_getBool(BRIEF_MEMBER_DESC);
   return !briefDescription().isEmpty() && briefMemberDesc;
 }
 

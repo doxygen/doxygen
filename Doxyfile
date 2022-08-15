@@ -1,3 +1,4 @@
+# Doxyfile 1.9.5
 
 #---------------------------------------------------------------------------
 # Project related configuration options
@@ -9,6 +10,7 @@ PROJECT_BRIEF          =
 PROJECT_LOGO           =
 OUTPUT_DIRECTORY       = doxygen_docs
 CREATE_SUBDIRS         = YES
+CREATE_SUBDIRS_LEVEL   = 8
 ALLOW_UNICODE_NAMES    = NO
 OUTPUT_LANGUAGE        = English
 BRIEF_MEMBER_DESC      = YES
@@ -24,6 +26,7 @@ JAVADOC_AUTOBRIEF      = YES
 JAVADOC_BANNER         = NO
 QT_AUTOBRIEF           = NO
 MULTILINE_CPP_IS_BRIEF = NO
+PYTHON_DOCSTRING       = YES
 INHERIT_DOCS           = YES
 SEPARATE_MEMBER_PAGES  = NO
 TAB_SIZE               = 8
@@ -35,7 +38,7 @@ OPTIMIZE_OUTPUT_VHDL   = NO
 OPTIMIZE_OUTPUT_SLICE  = NO
 EXTENSION_MAPPING      =
 MARKDOWN_SUPPORT       = YES
-TOC_INCLUDE_HEADINGS   =
+TOC_INCLUDE_HEADINGS   = 5
 AUTOLINK_SUPPORT       = YES
 BUILTIN_STL_SUPPORT    = NO
 CPP_CLI_SUPPORT        = NO
@@ -48,6 +51,7 @@ INLINE_GROUPED_CLASSES = NO
 INLINE_SIMPLE_STRUCTS  = NO
 TYPEDEF_HIDES_STRUCT   = NO
 LOOKUP_CACHE_SIZE      = 0
+NUM_PROC_THREADS       = 1
 #---------------------------------------------------------------------------
 # Build related configuration options
 #---------------------------------------------------------------------------
@@ -59,6 +63,7 @@ EXTRACT_STATIC         = YES
 EXTRACT_LOCAL_CLASSES  = YES
 EXTRACT_LOCAL_METHODS  = NO
 EXTRACT_ANON_NSPACES   = NO
+RESOLVE_UNNAMED_PARAMS = YES
 HIDE_UNDOC_MEMBERS     = NO
 HIDE_UNDOC_CLASSES     = NO
 HIDE_FRIEND_COMPOUNDS  = NO
@@ -67,6 +72,7 @@ INTERNAL_DOCS          = NO
 CASE_SENSE_NAMES       = NO
 HIDE_SCOPE_NAMES       = NO
 HIDE_COMPOUND_REFERENCE= NO
+SHOW_HEADERFILE        = YES
 SHOW_INCLUDE_FILES     = YES
 SHOW_GROUPED_MEMB_INC  = NO
 FORCE_LOCAL_INCLUDES   = NO
@@ -96,10 +102,12 @@ QUIET                  = NO
 WARNINGS               = YES
 WARN_IF_UNDOCUMENTED   = YES
 WARN_IF_DOC_ERROR      = YES
+WARN_IF_INCOMPLETE_DOC = YES
 WARN_NO_PARAMDOC       = NO
-WARN_AS_ERROR          = NO
-WARN_FORMAT            = "$file:$line: $text "
-WARN_LOGFILE           = warnings.log
+WARN_AS_ERROR          = FAIL_ON_WARNINGS
+WARN_FORMAT            = "$file:$line: $text"
+WARN_LINE_FORMAT       = "at line $line of file $file"
+WARN_LOGFILE           =
 #---------------------------------------------------------------------------
 # Configuration options related to the input files
 #---------------------------------------------------------------------------
@@ -126,6 +134,7 @@ FILTER_PATTERNS        =
 FILTER_SOURCE_FILES    = NO
 FILTER_SOURCE_PATTERNS =
 USE_MDFILE_AS_MAINPAGE =
+FORTRAN_COMMENT_AFTER  = 72
 #---------------------------------------------------------------------------
 # Configuration options related to source browsing
 #---------------------------------------------------------------------------
@@ -154,15 +163,17 @@ HTML_FOOTER            =
 HTML_STYLESHEET        =
 HTML_EXTRA_STYLESHEET  =
 HTML_EXTRA_FILES       =
+HTML_COLORSTYLE        = TOGGLE
 HTML_COLORSTYLE_HUE    = 220
 HTML_COLORSTYLE_SAT    = 100
 HTML_COLORSTYLE_GAMMA  = 80
-HTML_TIMESTAMP         = YES
+HTML_TIMESTAMP         = NO
 HTML_DYNAMIC_MENUS     = YES
 HTML_DYNAMIC_SECTIONS  = YES
 HTML_INDEX_NUM_ENTRIES = 100
 GENERATE_DOCSET        = YES
 DOCSET_FEEDNAME        = "Doxygen docs"
+DOCSET_FEEDURL         =
 DOCSET_BUNDLE_ID       = org.doxygen.Doxygen
 DOCSET_PUBLISHER_ID    = org.doxygen.Publisher
 DOCSET_PUBLISHER_NAME  = Publisher
@@ -185,12 +196,16 @@ GENERATE_ECLIPSEHELP   = NO
 ECLIPSE_DOC_ID         = org.doxygen.Project
 DISABLE_INDEX          = NO
 GENERATE_TREEVIEW      = YES
+FULL_SIDEBAR           = NO
 ENUM_VALUES_PER_LINE   = 4
 TREEVIEW_WIDTH         = 250
 EXT_LINKS_IN_WINDOW    = NO
+OBFUSCATE_EMAILS       = YES
+HTML_FORMULA_FORMAT    = png
 FORMULA_FONTSIZE       = 10
-FORMULA_TRANSPARENT    = YES
+FORMULA_MACROFILE      =
 USE_MATHJAX            = NO
+MATHJAX_VERSION        = MathJax_2
 MATHJAX_FORMAT         = HTML-CSS
 MATHJAX_RELPATH        =
 MATHJAX_EXTENSIONS     =
@@ -258,6 +273,12 @@ DOCBOOK_OUTPUT         = docbook
 #---------------------------------------------------------------------------
 GENERATE_AUTOGEN_DEF   = NO
 #---------------------------------------------------------------------------
+# Configuration options related to Sqlite3 output
+#---------------------------------------------------------------------------
+GENERATE_SQLITE3       = NO
+SQLITE3_OUTPUT         = sqlite3
+SQLITE3_RECREATE_DB    = YES
+#---------------------------------------------------------------------------
 # Configuration options related to the Perl module output
 #---------------------------------------------------------------------------
 GENERATE_PERLMOD       = NO
@@ -293,14 +314,17 @@ DIA_PATH               =
 HIDE_UNDOC_RELATIONS   = YES
 HAVE_DOT               = YES
 DOT_NUM_THREADS        = 0
-DOT_FONTNAME           = Helvetica
-DOT_FONTSIZE           = 10
+DOT_COMMON_ATTR        = "fontname=Helvetica,fontsize=10"
+DOT_EDGE_ATTR          = "labelfontname=Helvetica,labelfontsize=10"
+DOT_NODE_ATTR          = "shape=box,height=0.2,width=0.4"
 DOT_FONTPATH           =
 CLASS_GRAPH            = YES
 COLLABORATION_GRAPH    = YES
 GROUP_GRAPHS           = YES
 UML_LOOK               = NO
 UML_LIMIT_NUM_FIELDS   = 10
+DOT_UML_DETAILS        = NO
+DOT_WRAP_THRESHOLD     = 17
 TEMPLATE_RELATIONS     = YES
 INCLUDE_GRAPH          = YES
 INCLUDED_BY_GRAPH      = YES
@@ -308,6 +332,7 @@ CALL_GRAPH             = NO
 CALLER_GRAPH           = NO
 GRAPHICAL_HIERARCHY    = YES
 DIRECTORY_GRAPH        = YES
+DIR_GRAPH_MAX_DEPTH    = 1
 DOT_IMAGE_FORMAT       = svg
 INTERACTIVE_SVG        = YES
 DOT_PATH               =
@@ -317,11 +342,8 @@ DIAFILE_DIRS           =
 PLANTUML_JAR_PATH      =
 PLANTUML_CFG_FILE      =
 PLANTUML_INCLUDE_PATH  =
-DOT_GRAPH_MAX_NODES    = 100
+DOT_GRAPH_MAX_NODES    = 300
 MAX_DOT_GRAPH_DEPTH    = 0
-DOT_TRANSPARENT        = NO
 DOT_MULTI_TARGETS      = NO
 GENERATE_LEGEND        = YES
 DOT_CLEANUP            = NO
-DOT_WRAP_THRESHOLD     = 17
-DOT_UML_DETAILS        = NO

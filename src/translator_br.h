@@ -19,6 +19,8 @@
  *    Thanks to Jorge Ramos, Fernando Carijo and others for their contributions.
  *
  * History:
+ * 20220525:
+ * 	- Updated to 1.9.4;
  * 20211003:
  *  - Updated to 1.9.3;
  * 20200112:
@@ -808,7 +810,7 @@ class TranslatorBrazilian : public Translator
         bool single)
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
-      static bool vhdlOpt = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
+      bool vhdlOpt = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
       QCString result="A documentação para ";
       if (compType == ClassDef::Protocol)
       {
@@ -1434,14 +1436,18 @@ class TranslatorBrazilian : public Translator
     /*! Used as a heading for a list of Java class functions with package
      * scope.
      */
-    virtual QCString trPackageMembers()
+    virtual QCString trPackageFunctions()
     {
       return "Funções do Pacote";
+    }
+    virtual QCString trPackageMembers()
+    {
+      return "Membros do Pacote";
     }
     /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
-    virtual QCString trStaticPackageMembers()
+    virtual QCString trStaticPackageFunctions()
     {
       return "Funções Estáticas do Pacote";
     }
@@ -2400,6 +2406,12 @@ class TranslatorBrazilian : public Translator
 	{
 	  return "Definição de conceito";
 	}
+	
+	//////////////////////////////////////////////////////////////////////////
+	// new since 1.9.4
+	//////////////////////////////////////////////////////////////////////////
+    virtual QCString trPackageList()
+    { return "Lista de pacotes"; }	
 };
 
 #endif

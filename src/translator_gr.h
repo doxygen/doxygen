@@ -48,7 +48,7 @@
 #ifndef TRANSLATOR_GR_H
 #define TRANSLATOR_GR_H
 
-class TranslatorGreek : public Translator
+class TranslatorGreek : public TranslatorAdapter_1_9_4
 {
   public:
 
@@ -1377,14 +1377,18 @@ class TranslatorGreek : public Translator
     /*! Used as a heading for a list of Java class functions with package
      * scope.
      */
-    virtual QCString trPackageMembers()
+    virtual QCString trPackageFunctions()
     {
       return "Συναρτήσεις Πακέτου";
+    }
+    virtual QCString trPackageMembers()
+    {
+      return "Μέλη Πακέτου";
     }
     /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
-    virtual QCString trStaticPackageMembers()
+    virtual QCString trStaticPackageFunctions()
     {
       return "Στατικές Συναρτήσεις Πακέτου";
     }

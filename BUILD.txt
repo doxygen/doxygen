@@ -34,7 +34,6 @@ Doxygen's cmake configuration provides a number of options:
 - use_sqlite3     Add support for sqlite3 output [experimental].
 - use_libclang    Add support for libclang parsing.
 - win_static      Link with /MT in stead of /MD on windows.
-- english_only    Only compile in support for the English language.
 - force_qt=<vers> Forces doxywizard to build using the specified major version, this can be Qt5 or Qt6
 
 An option can be turned on, by adding -D<option>=ON as a command line option, this can be

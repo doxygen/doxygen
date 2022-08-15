@@ -24,7 +24,7 @@
 */
 #define CN_SPC " "
 
-class TranslatorChinese : public Translator
+class TranslatorChinese : public TranslatorAdapter_1_9_4
 {
   public:
     /*! Used for identification of the language. The identification
@@ -74,6 +74,10 @@ class TranslatorChinese : public Translator
     virtual QCString latexDocumentPost()
     {
       return "\\end{CJK}\n";
+    }
+    virtual bool needsPunctuation()
+    {
+      return false;
     }
 
     /*! used in the compound documentation before a list of related functions.
@@ -1299,15 +1303,19 @@ class TranslatorChinese : public Translator
     /*! Used as a heading for a list of Java class functions with package
      * scope.
      */
-    virtual QCString trPackageMembers()
+    virtual QCString trPackageFunctions()
     {
       return "包函数";
+    }
+    virtual QCString trPackageMembers()
+    {
+      return "包成员";
     }
 
     /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
-    virtual QCString trStaticPackageMembers()
+    virtual QCString trStaticPackageFunctions()
     {
       return "静态包函数";
     }

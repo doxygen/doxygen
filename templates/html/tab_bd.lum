@@ -1,0 +1,8 @@
+# normal tab background luma for dark mode
+# width & height
+1 36
+# luma data
+ 33  43  50  48  45  42  40  37  36
+ 33  32  30  29  28  27  26  25  24
+ 24  12  13  14  15  16  17  18  19
+ 20  22  24  26  28  32  34  21   3

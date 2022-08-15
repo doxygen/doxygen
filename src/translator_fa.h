@@ -1356,14 +1356,18 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
     /*! Used as a heading for a list of Java class functions with package
      * scope.
      */
-    virtual QCString trPackageMembers()
+    virtual QCString trPackageFunctions()
     {
       return "توابع بسته ها";
+    }
+    virtual QCString trPackageMembers()
+    {
+      return "عضوها بسته ها";
     }
     /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
-    virtual QCString trStaticPackageMembers()
+    virtual QCString trStaticPackageFunctions()
     {
       return "Static Package Functions";
     }

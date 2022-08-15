@@ -627,7 +627,7 @@ void ManGenerator::endSection(const QCString &,SectionType type)
   }
   else
   {
-    m_t << "\n";
+    m_t << "\n.PP\n";
     m_firstCol=TRUE;
     m_paragraph=FALSE;
     m_inHeader=FALSE;
@@ -690,11 +690,14 @@ void ManGenerator::endParamList()
 {
 }
 
-void ManGenerator::writeDoc(DocNode *n,const Definition *ctx,const MemberDef *,int)
+void ManGenerator::writeDoc(const IDocNodeAST *ast,const Definition *ctx,const MemberDef *,int)
 {
-  ManDocVisitor *visitor = new ManDocVisitor(m_t,*this,ctx?ctx->getDefFileExtension():QCString(""));
-  n->accept(visitor);
-  delete visitor;
+  const DocNodeAST *astImpl = dynamic_cast<const DocNodeAST *>(ast);
+  if (astImpl)
+  {
+    auto visitor { ManDocVisitor(m_t,*this,ctx?ctx->getDefFileExtension():QCString("")) };
+    std::visit(visitor,astImpl->root);
+  }
   m_firstCol=FALSE;
   m_paragraph = FALSE;
 }

@@ -152,6 +152,7 @@ CommandMap cmdMap[] =
   { "maninclude",    CMD_MANINCLUDE },
   { "xmlinclude",    CMD_XMLINCLUDE },
   { "iline",         CMD_ILINE },
+  { "ifile",         CMD_IFILE },
   { "iliteral",      CMD_ILITERAL },
   { "endiliteral",   CMD_ENDILITERAL },
   { 0,               0 },

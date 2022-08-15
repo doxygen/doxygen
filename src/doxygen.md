@@ -1,4 +1,4 @@
-Doxygen Internals {#mainpage}
+%Doxygen Internals {#mainpage}
 =================
 
 Introduction
@@ -22,10 +22,11 @@ option.
 
 The format of the configuration file (options and types) is defined
 by the file `config.xml`. As part of the build process,
-the python script `configgen.py` will create a file `configoptions.cpp`
-from this, which serves as the input for the configuration file parser
-that is invoked using Config::parse(). The script `configgen.py` will also
-create the documentation for the configuration items, creating the file
+the python script `configgen.py` will create the files `configoptions.cpp`, 
+`configvalues.h` and `configvalues.cpp` from this, which serves as the input
+for the configuration file parser that is invoked using Config::parse(). 
+The script `configgen.py` will also create the documentation for the
+configuration items, creating the file
 `config.doc`.
 
 Gathering Input files
@@ -37,12 +38,19 @@ searchInputFiles() and any tag files are read using readTagFile()
 Parsing Input files
 ===================
 
-The function parseFiles() takes care of parsing all files.
-It uses the ParserManager singleton factory to create a suitable parser object
-for each file. Each parser implements the abstract interface ParserInterface.
+The function parseFilesSingleThreading() takes care of parsing all files
+(in case `NUM_PROC_THREADS!=1`, the function
+parseFilesMultiThreading() is used instead).
+
+These functions use the ParserManager singleton factory to create a suitable parser object
+for each file. Each parser implements two abstract interfaces: OutlineParserInterface
+en CodeParserInterface. The OutlineParserInterface is used to collect information
+about the symbols that can be documented but does not look into the body of functions.
+The CodeParserInterface is used for syntax highlighting, but also to collect the symbol
+references needed for cross reference relations.
 
 If the parser indicates it needs preprocessing
-via ParserInterface::needsPreprocessing(), doxygen will call preprocessFile()
+via OutlineParserInterface::needsPreprocessing(), doxygen will call Preprocessor::processFile()
 on the file.
 
 A second step is to convert multiline C++-style comments into C style comments
@@ -54,31 +62,26 @@ aliases (ALIASES option) are resolved. The function that performs these
 now coupled to C/C++ code and does not work automatically for other languages!
 
 The third step is the actual language parsing and is done by calling
-ParserInterface::parseInput() on the parser interface returned by
+OutlineParserInterface::parseInput() on the parser interface returned by
 the ParserManager.
 
 The result of parsing is a tree of Entry objects.
-These Entry objects are wrapped in a EntryNav object and stored on disk using
-Entry::createNavigationIndex() on the root node of the tree.
-
 Each Entry object roughly contains the raw data for a symbol and is later
 converted into a Definition object.
 
 When a parser finds a special comment block in the input, it will do a first
-pass parsing via parseCommentBlock(). During this pass the comment block
+pass parsing via CommentScanner::parseCommentBlock(). During this pass the comment block
 is split into multiple parts if needed. Some data that is later needed is
 extracted like section labels, xref items, and formulas.
-Also Markdown markup is processed using processMarkdown() during this pass.
+Also Markdown markup is processed via Markdown::process() during this pass.
 
 Resolving relations
 ===================
 
-The Entry objects created and filled during parsing are stored on disk
-(to keep memory needs low). The name, parent/child relation, and
-location on disk of each Entry is stored as a tree of EntryNav nodes, which is
-kept in memory.
+The Entry objects created and filled during parsing and stored as a tree of Entry nodes,
+which is kept in memory.
 
-Doxygen does a number of tree walks over the EntryNav nodes in the tree to
+%Doxygen does a number of tree walks over the Entry nodes in the tree to
 build up the data structures needed to produce the output.
 
 The resulting data structures are all children of the generic base class
@@ -86,6 +89,7 @@ called Definition which holds all non-specific data for a symbol definition.
 
 Definition is an abstract base class. Concrete subclasses are
 - ClassDef: for storing class/struct/union related data
+- ConceptDef: for storing C++20 concept definitions
 - NamespaceDef: for storing namespace related data
 - FileDef: for storing file related data
 - DirDef: for storing directory related data
@@ -95,7 +99,8 @@ For doxygen specific concepts the following subclasses are available
 - PageDef: for storing page related data
 
 Finally the data for members of classes, namespaces, and files is stored in
-the subclass MemberDef.
+the subclass MemberDef. This class is used for functions, variables, enums, etc, as indicated by
+MemberDef::memberType().
 
 Producing debug output
 ======================
@@ -115,12 +120,13 @@ easy ways to get debug information.
       - set the item `Write used lex rules` to `Yes`
       - see to it that the `.l` file is newer than the corresponding `.cpp` file
         or remove the corresponding `.cpp` file
+    - when using `nmake` the same possibilities exist as described with "unices".
   - unices
     - global change<br>
       In the chapter "Doxygen's internals" a `perl` script is given to toggle the
       possibility of having the rules debug information.
     - command line change<br>
-      It is possible to the option `LEX="flex -d"` with the `make` command on the
+      It is possible to the option `LEX_FLAGS="-d"` with the `make` command on the
       command line. In this case the `.l` that are converted to the corresponding
       `.cpp` files during this `make` get the rules debug information.<br>
       To undo the rules debug information output just recompile the file with
@@ -144,6 +150,9 @@ easy ways to get debug information.
     Shows the results of the preprocessing phase, i.e. results from include files,
     <tt>\#define</tt> statements etc., definitions in the doxygen configuration file like:
     `EXPAND_ONLY_PREDEF`, `PREDEFINED` and `MACRO_EXPANSION`.
+  - nolineno<br>
+    In case the line numbers in the results of the preprocessing phase are not wanted they
+    can be removed by means of this option (without `-d preprocessor` this option has no effect.
   - commentcnv<br>
     Shows the results of the comment conversion, the comment conversion does the
     following:
@@ -172,13 +181,32 @@ easy ways to get debug information.
     Provide output of the `lex` files used. When a lexer is started and when a lexer
     ends the name of the `lex` file is given so it is possible to see in which lexer the
     problem occurs. This makes it easier to select the file to be compiled in `lex` debug mode.
+  - cite<br>
+    Retains the temporary files as created and used for the non LaTeX output results of the 
+    generation of the bibliographical references.
+  - fortranfixed2free<br>
+    Shows the result ogf the conversion of Fortran fixed formatted files to Fortran free formatted 
+    files as done by doxygen.
+  - plantuml<br>
+    Shows information about the plantuml process run and the used input / output filenames, the content of the
+    input file.
+  - rtf<br>
+    - Shows the original names and the anchors names (called bookmarks in RTF) where they are mapped to.
+    - At the end of the generation of the RTF files these files are merged into one large RTF file, with
+      this option the original files are retained.
+  - qhp<br>
+    - The qhp file is created with indentation for better readability (normally no indentation so the file is smaller).
+    - When the setting `QHG_LOCATION` is pointing to the `qhelpgenerator` besides generating the `qch` file 
+      also some extra checks are done by means of the `-c` flag of the `qhelpgenerator`.
+  - tag<br>
+    Shows the results of reading the tag files.
 
 Producing output
 ================
 
 TODO
 
-Topics TODO
+Documentation Topics TODO
 ===========
 - Grouping of files in Model / Parser / Generator categories
 - Index files based on IndexIntf

@@ -1309,14 +1309,18 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
     /*! Used as a heading for a list of Java class functions with package
      * scope.
      */
-    virtual QCString trPackageMembers()
+    virtual QCString trPackageFunctions()
     {
       return "Փաթեթի ֆունկցիաներ";
+    }
+    virtual QCString trPackageMembers()
+    {
+      return "Փաթեթի անդամներ";
     }
     /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
-    virtual QCString trStaticPackageMembers()
+    virtual QCString trStaticPackageFunctions()
     {
       return "Փաթեթի ստատիկ ֆունկցիաներ";
     }

@@ -45,7 +45,7 @@
  * Kiril Kirilov released released Feb 28, 2022
  *
  */
-class TranslatorBulgarian : public Translator
+class TranslatorBulgarian : public TranslatorAdapter_1_9_4
 {
   public:
 
@@ -766,7 +766,7 @@ class TranslatorBulgarian : public Translator
     virtual QCString trGeneratedFromFiles(ClassDef::CompoundType compType,
         bool single)
     { // single is true implies a single file
-      static bool vhdlOpt = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
+      bool vhdlOpt = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
       QCString result=(QCString)"Документация за ";
       switch(compType)
       {
@@ -1377,14 +1377,18 @@ class TranslatorBulgarian : public Translator
     /*! Used as a heading for a list of Java class functions with package
      * scope.
      */
-    virtual QCString trPackageMembers()
+    virtual QCString trPackageFunctions()
     {
       return "Функции с област на видимост пакет";
+    }
+    virtual QCString trPackageMembers()
+    {
+      return "Членове с област на видимост пакет";
     }
     /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
-    virtual QCString trStaticPackageMembers()
+    virtual QCString trStaticPackageFunctions()
     {
       return "Статични функции с област на видимост пакет";
     }

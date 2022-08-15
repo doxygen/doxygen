@@ -39,7 +39,6 @@
 #include "util.h"
 #include "language.h"
 #include "commentscan.h"
-#include "index.h"
 #include "definition.h"
 #include "searchindex.h"
 #include "outputlist.h"
@@ -1040,7 +1039,7 @@ void VhdlDocGen::parseFuncProto(const QCString &text,QCString& name,QCString& re
 
 QCString VhdlDocGen::getIndexWord(const QCString &c,int index)
 {
-  static const reg::Ex reg(R"([\s|])");
+  static const reg::Ex reg(R"([\s:|])");
   auto ql=split(c.str(),reg);
 
   if (index < static_cast<int>(ql.size()))
@@ -2123,7 +2122,7 @@ void VhdlDocGen::writeVHDLDeclarations(const MemberList* ml,OutputList &ol,
     if (membersHaveSpecificType(&mg->members(),type))
     {
       //printf("mg->header=%s\n",qPrint(mg->header()));
-      bool hasHeader=mg->header()!="[NOHEADER]";
+      bool hasHeader=!mg->header().isEmpty();
       ol.startMemberGroupHeader(hasHeader);
       if (hasHeader)
       {
@@ -2558,7 +2557,7 @@ static void addInstance(ClassDefMutable* classEntity, ClassDefMutable* ar,
   // fprintf(stderr,"\naddInstance %s to %s %s %s\n",qPrint( classEntity->name()),qPrint(cd->name()),qPrint(ar->name()),cur->name);
   n1=classEntity->name();
 
-  if (!cd->isBaseClass(classEntity, true, 0))
+  if (!cd->isBaseClass(classEntity, true))
   {
     cd->insertBaseClass(classEntity,n1,Public,Normal,QCString());
   }
@@ -2670,7 +2669,7 @@ bool VhdlDocGen::isSubClass(ClassDef* cd,ClassDef *scd, bool followInstances,int
   {
     err("Possible recursive class relation while inside %s and looking for %s\n",qPrint(cd->name()),qPrint(scd->name()));
     abort();
-    return FALSE;
+    return false;
   }
 
   for (const auto &bcd :cd->subClasses())
@@ -2680,13 +2679,17 @@ bool VhdlDocGen::isSubClass(ClassDef* cd,ClassDef *scd, bool followInstances,int
     //printf("isSubClass() subclass %s\n",qPrint(ccd->name()));
     if (ccd==scd)
     {
-      found=TRUE;
+      found=true;
     }
     else
     {
       if (level <256)
       {
-        found=ccd->isBaseClass(scd,followInstances,level+1);
+        level = ccd->isBaseClass(scd,followInstances);
+        if (level>0)
+        {
+          found=true;
+        }
       }
     }
   }

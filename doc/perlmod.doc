@@ -20,7 +20,7 @@ useful output, as shown by the Perl Module-based \LaTeX generator.
 <p>Please report any bugs or problems you find in the Perl Module 
 backend or the Perl Module-based \LaTeX generator to the 
 <a href="https://github.com/doxygen/doxygen/issues">doxygen issue tracker</a>.
-Suggestions are welcome as well.
+Suggestions are welcome as well (see also: \ref bug_reports "How to report a bug").
 
 \section using_perlmod_fmt Usage
 

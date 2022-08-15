@@ -820,7 +820,7 @@ class TranslatorFrench : public TranslatorAdapter_1_8_15
         bool single)
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
-      static bool vhdlOpt = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
+      bool vhdlOpt = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
       bool feminine = true;
       QCString result="La documentation de ";
       switch(compType)
@@ -1107,7 +1107,7 @@ class TranslatorFrench : public TranslatorAdapter_1_8_15
         "</ul>\n"
         "Les flèches ont la signification suivante :\n"
         "<ul>\n"
-        "<li>Une flèche bleu foncé est utilisée pour visualiser une relation d'héritage publique "
+        "<li>Une bleu foncé est utilisée pour visualiser une relation d'héritage publique "
         "entre deux classes.\n"
         "<li>Une flèche vert foncé est utilisée pour une relation d'héritage protégée.\n"
         "<li>Une flèche rouge foncé est utilisée pour une relation d'héritage privée.\n"
@@ -1432,14 +1432,18 @@ class TranslatorFrench : public TranslatorAdapter_1_8_15
     /*! Used as a heading for a list of Java class functions with package
      * scope.
      */
-    virtual QCString trPackageMembers()
+    virtual QCString trPackageFunctions()
     {
       return "Fonctions de paquetage";
+    }
+    virtual QCString trPackageMembers()
+    {
+      return "Membres de paquetage";
     }
     /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
-    virtual QCString trStaticPackageMembers()
+    virtual QCString trStaticPackageFunctions()
     {
       return "Fonctions statiques de paquetage";
     }

@@ -12,47 +12,54 @@
  * input used in their production; they are not affected by this license.
  *
  */
+
+#include <fstream>
+
 #include "eclipsehelp.h"
 #include "util.h"
 #include "config.h"
 #include "message.h"
 #include "doxygen.h"
 
-EclipseHelp::EclipseHelp() : m_depth(0), m_endtag(FALSE), m_openTags(0)
+struct EclipseHelp::Private
 {
-}
+  int depth = 0;
+  bool endtag = false;
+  int openTags = 0;
 
-EclipseHelp::~EclipseHelp()
-{
-}
+  std::ofstream tocstream;
+  QCString pathprefix;
 
-void EclipseHelp::indent()
-{
-  int i;
-  for (i=0; i<m_depth; i++)
+  /* -- formatting helpers */
+  void indent()
   {
-    m_tocstream << "  ";
+    for (int i=0; i<depth; i++)
+    {
+      tocstream << "  ";
+    }
   }
-}
-
-void EclipseHelp::closedTag()
-{
-  if (m_endtag)
+  void closedTag()
   {
-    m_tocstream << "/>\n";
-    m_endtag = FALSE;
+    if (endtag)
+    {
+      tocstream << "/>\n";
+      endtag = FALSE;
+    }
   }
-}
-
-void EclipseHelp::openedTag()
-{
-  if (m_endtag)
+  void openedTag()
   {
-    m_tocstream << ">\n";
-    m_endtag = FALSE;
-    ++m_openTags;
+    if (endtag)
+    {
+      tocstream << ">\n";
+      endtag = FALSE;
+      ++openTags;
+    }
   }
-}
+};
+
+EclipseHelp::EclipseHelp() : p(std::make_unique<Private>()) {}
+EclipseHelp::~EclipseHelp() = default;
+EclipseHelp::EclipseHelp(EclipseHelp&&) = default;
 
 /*!
  * \brief Initialize the Eclipse generator
@@ -62,14 +69,10 @@ void EclipseHelp::openedTag()
  */
 void EclipseHelp::initialize()
 {
-  // -- read path prefix from the configuration
-  //m_pathprefix = Config_getString(ECLIPSE_PATHPREFIX);
-  //if (m_pathprefix.isEmpty()) m_pathprefix = "html/";
-
   // -- open the contents file
   QCString name = Config_getString(HTML_OUTPUT) + "/toc.xml";
-  m_tocstream.open(name.str(), std::ofstream::out | std::ofstream::binary);
-  if (!m_tocstream.is_open())
+  p->tocstream.open(name.str(), std::ofstream::out | std::ofstream::binary);
+  if (!p->tocstream.is_open())
   {
     term("Could not open file %s for writing\n", qPrint(name));
   }
@@ -80,10 +83,10 @@ void EclipseHelp::initialize()
   {
     title = "Doxygen generated documentation";
   }
-  m_tocstream << "<toc label=\"" << convertToXML(title)
-              << "\" topic=\"" << convertToXML(m_pathprefix)
+  p->tocstream << "<toc label=\"" << convertToXML(title)
+              << "\" topic=\"" << convertToXML(p->pathprefix)
               << "index" << Doxygen::htmlFileExtension << "\">\n";
-  ++ m_depth;
+  ++ p->depth;
 }
 
 /*!
@@ -94,14 +97,14 @@ void EclipseHelp::initialize()
  */
 void EclipseHelp::finalize()
 {
-  closedTag(); // -- close previous tag
+  p->closedTag(); // -- close previous tag
 
   // -- write ending tag
-  --m_depth;
-  m_tocstream << "</toc>\n";
+  --p->depth;
+  p->tocstream << "</toc>\n";
 
   // -- close the content file
-  m_tocstream.close();
+  p->tocstream.close();
 
   QCString name = Config_getString(HTML_OUTPUT) + "/plugin.xml";
   std::ofstream t(name.str(),std::ofstream::out | std::ofstream::binary);
@@ -122,8 +125,8 @@ void EclipseHelp::finalize()
  */
 void EclipseHelp::incContentsDepth()
 {
-  openedTag();
-  ++m_depth;
+  p->openedTag();
+  ++p->depth;
 }
 
 /*!
@@ -134,14 +137,14 @@ void EclipseHelp::incContentsDepth()
 void EclipseHelp::decContentsDepth()
 {
   // -- end of the opened topic
-  closedTag();
-  --m_depth;
+  p->closedTag();
+  --p->depth;
 
-  if (m_openTags==m_depth)
+  if (p->openTags==p->depth)
   {
-    --m_openTags;
-    indent();
-    m_tocstream << "</topic>\n";
+    --p->openTags;
+    p->indent();
+    p->tocstream << "</topic>\n";
   }
 }
 
@@ -168,7 +171,7 @@ void EclipseHelp::addContentsItem(
     const Definition * /*def*/)
 {
   // -- write the topic tag
-  closedTag();
+  p->closedTag();
   if (!file.isEmpty())
   {
     switch (file[0]) // check for special markers (user defined URLs)
@@ -178,31 +181,31 @@ void EclipseHelp::addContentsItem(
 	break;
 
       case '!':
-        indent();
-        m_tocstream << "<topic label=\"" << convertToXML(name) << "\"";
-        m_tocstream << " href=\"" << convertToXML(m_pathprefix) << &file[1] << "\"";
-        m_endtag = TRUE;
+        p->indent();
+        p->tocstream << "<topic label=\"" << convertToXML(name) << "\"";
+        p->tocstream << " href=\"" << convertToXML(p->pathprefix) << &file[1] << "\"";
+        p->endtag = TRUE;
 	break;
 
       default:
-        indent();
-        m_tocstream << "<topic label=\"" << convertToXML(name) << "\"";
-        m_tocstream << " href=\"" << convertToXML(m_pathprefix)
+        p->indent();
+        p->tocstream << "<topic label=\"" << convertToXML(name) << "\"";
+        p->tocstream << " href=\"" << convertToXML(p->pathprefix)
                     << addHtmlExtensionIfMissing(file);
         if (!anchor.isEmpty())
         {
-          m_tocstream << "#" << anchor;
+          p->tocstream << "#" << anchor;
         }
-        m_tocstream << "\"";
-        m_endtag = TRUE;
+        p->tocstream << "\"";
+        p->endtag = TRUE;
 	break;
     }
   }
   else
   {
-    indent();
-    m_tocstream << "<topic label=\"" << convertToXML(name) << "\"";
-    m_endtag = TRUE;
+    p->indent();
+    p->tocstream << "<topic label=\"" << convertToXML(name) << "\"";
+    p->endtag = TRUE;
   }
 }
 

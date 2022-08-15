@@ -32,6 +32,7 @@
 #include "dotincldepgraph.h"
 #include "pagedef.h"
 #include "docparser.h"
+#include "docnode.h"
 #include "latexdocvisitor.h"
 #include "dirdef.h"
 #include "cite.h"
@@ -336,7 +337,7 @@ static void writeLatexMakefile()
     }
     t << "\techo \"Rerunning latex....\"\n"
       << "\t$(LATEX_CMD) $(MANUAL_FILE).tex\n"
-      << "\tlatex_count=%(LATEX_COUNT) ; \\\n"
+      << "\tlatex_count=$(LATEX_COUNT) ; \\\n"
       << "\twhile egrep -s 'Rerun (LaTeX|to get cross-references right|to get bibliographical references right)' $(MANUAL_FILE).log && [ $$latex_count -gt 0 ] ;\\\n"
       << "\t    do \\\n"
       << "\t      echo \"Rerunning latex....\" ;\\\n"
@@ -564,7 +565,7 @@ void LatexGenerator::startFile(const QCString &name,const QCString &,const QCStr
 #endif
   QCString fileName=name;
   m_relPath = relativePathToRoot(fileName);
-  if (fileName.right(4)!=".tex" && fileName.right(4)!=".sty") fileName+=".tex";
+  if (!fileName.endsWith(".tex") && !fileName.endsWith(".sty")) fileName+=".tex";
   startPlainFile(fileName);
   m_codeGen.setRelativePath(m_relPath);
   m_codeGen.setSourceFileName(stripPath(fileName));
@@ -692,10 +693,12 @@ static QCString substituteLatexKeywords(const QCString &str,
     copyFile(formulaMacrofile,Config_getString(LATEX_OUTPUT) + "/" + stripMacroFile);
   }
 
+  QCString projectNumber = Config_getString(PROJECT_NUMBER);
+
   // first substitute generic keywords
   QCString result = substituteKeywords(str,title,
     convertToLaTeX(Config_getString(PROJECT_NAME)),
-    convertToLaTeX(Config_getString(PROJECT_NUMBER)),
+    convertToLaTeX(projectNumber),
         convertToLaTeX(Config_getString(PROJECT_BRIEF)));
 
   // additional LaTeX only keywords
@@ -725,6 +728,7 @@ static QCString substituteLatexKeywords(const QCString &str,
   result = selectBlock(result,"LATEX_BATCHMODE",latexBatchmode,OutputGenerator::Latex);
   result = selectBlock(result,"LATEX_FONTENC",!latexFontenc.isEmpty(),OutputGenerator::Latex);
   result = selectBlock(result,"FORMULA_MACROFILE",!formulaMacrofile.isEmpty(),OutputGenerator::Latex);
+  result = selectBlock(result,"PROJECT_NUMBER",!projectNumber.isEmpty(),OutputGenerator::Latex);
 
   result = removeEmptyLines(result);
 
@@ -1971,12 +1975,16 @@ void LatexGenerator::exceptionEntry(const QCString &prefix,bool closeBracket)
   m_t << " ";
 }
 
-void LatexGenerator::writeDoc(DocNode *n,const Definition *ctx,const MemberDef *,int)
+void LatexGenerator::writeDoc(const IDocNodeAST *ast,const Definition *ctx,const MemberDef *,int)
 {
-  LatexDocVisitor *visitor =
-    new LatexDocVisitor(m_t,m_codeGen,ctx?ctx->getDefFileExtension():QCString(""),m_insideTabbing);
-  n->accept(visitor);
-  delete visitor;
+  const DocNodeAST *astImpl = dynamic_cast<const DocNodeAST*>(ast);
+  if (astImpl)
+  {
+    LatexDocVisitor visitor(m_t,m_codeGen,
+                            ctx?ctx->getDefFileExtension():QCString(""),
+                            m_insideTabbing);
+    std::visit(visitor,astImpl->root);
+  }
 }
 
 void LatexGenerator::startConstraintList(const QCString &header)

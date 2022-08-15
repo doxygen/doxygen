@@ -1379,14 +1379,18 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
     /*! Used as a heading for a list of Java class functions with package
      * scope.
      */
-    virtual QCString trPackageMembers()
+    virtual QCString trPackageFunctions()
     {
       return "Các hàm Package";
+    }
+    virtual QCString trPackageMembers()
+    {
+      return "Members Package";
     }
     /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
-    virtual QCString trStaticPackageMembers()
+    virtual QCString trStaticPackageFunctions()
     {
       return "Các hàm Static Package";
     }

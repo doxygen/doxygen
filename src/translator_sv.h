@@ -156,7 +156,7 @@ English:
 #ifndef TRANSLATOR_SE_H
 #define TRANSLATOR_SE_H
 
-class TranslatorSwedish : public Translator
+class TranslatorSwedish : public TranslatorAdapter_1_9_4
 {
   public:
 
@@ -869,7 +869,7 @@ class TranslatorSwedish : public Translator
         bool single)
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
-      static bool vhdlOpt = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
+      bool vhdlOpt = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
       QCString result="Dokumentationen för ";
       switch(compType)
       {
@@ -1468,14 +1468,18 @@ class TranslatorSwedish : public Translator
     /*! Used as a heading for a list of Java class functions with package
      * scope.
      */
-    virtual QCString trPackageMembers()
+    virtual QCString trPackageFunctions()
     {
       return "Paketfunktioner";
+    }
+    virtual QCString trPackageMembers()
+    {
+      return "Paketmedlemmar";
     }
     /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
-    virtual QCString trStaticPackageMembers()
+    virtual QCString trStaticPackageFunctions()
     {
       return "Statiska paketfunktioner";
     }

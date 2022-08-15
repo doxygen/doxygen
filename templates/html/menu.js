@@ -50,11 +50,10 @@ function initMenu(relPath,searchEnabled,serverSide,searchPage,search) {
       searchBox='<div id="MSearchBox" class="MSearchBoxInactive">'+
                  '<div class="left">'+
                   '<form id="FSearchBox" action="'+relPath+searchPage+
-                    '" method="get"><img id="MSearchSelect" src="'+
-                    relPath+'search/mag.svg" alt=""/>'+
-                  '<input type="text" id="MSearchField" name="query" value="'+search+
+                    '" method="get"><span id="MSearchSelectExt">&#160;</span>'+
+                  '<input type="text" id="MSearchField" name="query" value="" placeholder="'+search+
                     '" size="20" accesskey="S" onfocus="searchBox.OnSearchFieldFocus(true)"'+
-                    ' onblur="searchBox.OnSearchFieldFocus(false)">'+
+                    ' onblur="searchBox.OnSearchFieldFocus(false)"/>'+
                   '</form>'+
                  '</div>'+
                  '<div class="right"></div>'+
@@ -62,10 +61,9 @@ function initMenu(relPath,searchEnabled,serverSide,searchPage,search) {
     } else {
       searchBox='<div id="MSearchBox" class="MSearchBoxInactive">'+
                  '<span class="left">'+
-                  '<img id="MSearchSelect" src="'+relPath+
-                     'search/mag_sel.svg" onmouseover="return searchBox.OnSearchSelectShow()"'+
-                     ' onmouseout="return searchBox.OnSearchSelectHide()" alt=""/>'+
-                  '<input type="text" id="MSearchField" value="'+search+
+                  '<span id="MSearchSelect" onmouseover="return searchBox.OnSearchSelectShow()"'+
+                     ' onmouseout="return searchBox.OnSearchSelectHide()">&#160;</span>'+
+                  '<input type="text" id="MSearchField" value="" placeholder="'+search+
                     '" accesskey="S" onfocus="searchBox.OnSearchFieldFocus(true)" '+
                     'onblur="searchBox.OnSearchFieldFocus(false)" '+
                     'onkeyup="searchBox.OnSearchFieldChange(event)"/>'+
@@ -73,8 +71,8 @@ function initMenu(relPath,searchEnabled,serverSide,searchPage,search) {
                  '<span class="right"><a id="MSearchClose" '+
                   'href="javascript:searchBox.CloseResultsWindow()">'+
                   '<img id="MSearchCloseImg" border="0" src="'+relPath+
-                  'search/close.svg" alt=""/></a>'
-                 '</span>'
+                  'search/close.svg" alt=""/></a>'+
+                 '</span>'+
                 '</div>';
     }
   }

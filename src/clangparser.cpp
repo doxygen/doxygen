@@ -44,7 +44,7 @@ enum class DetectedLang { Cpp, ObjC, ObjCpp };
 
 static QCString detab(const QCString &s)
 {
-  static int tabSize = Config_getInt(TAB_SIZE);
+  int tabSize = Config_getInt(TAB_SIZE);
   GrowBuf out;
   int size = s.length();
   const char *data = s.data();
@@ -239,18 +239,18 @@ void ClangTUParser::parse()
     SrcLangExt lang = getLanguageFromFileName(fileName);
     if (lang==SrcLangExt_ObjC || p->detectedLang!=DetectedLang::Cpp)
     {
-      QCString fn = fileName;
+      QCString fn = fileName.lower();
       if (p->detectedLang!=DetectedLang::Cpp &&
-          (fn.right(4).lower()==".cpp" || fn.right(4).lower()==".cxx" ||
-           fn.right(3).lower()==".cc" || fn.right(2).lower()==".c"))
+          (fn.endsWith(".cpp") || fn.endsWith(".cxx") ||
+           fn.endsWith(".cc")  || fn.endsWith(".c")))
       { // fall back to C/C++ once we see an extension that indicates this
         p->detectedLang = DetectedLang::Cpp;
       }
-      else if (fn.right(3).lower()==".mm") // switch to Objective C++
+      else if (fn.endsWith(".mm")) // switch to Objective C++
       {
         p->detectedLang = DetectedLang::ObjCpp;
       }
-      else if (fn.right(2).lower()==".m") // switch to Objective C
+      else if (fn.endsWith(".m")) // switch to Objective C
       {
         p->detectedLang = DetectedLang::ObjC;
       }
@@ -324,7 +324,7 @@ void ClangTUParser::parse()
 ClangTUParser::~ClangTUParser()
 {
   //printf("ClangTUParser::~ClangTUParser() this=%p\n",this);
-  static bool clangAssistedParsing = Config_getBool(CLANG_ASSISTED_PARSING);
+  bool clangAssistedParsing = Config_getBool(CLANG_ASSISTED_PARSING);
   if (!clangAssistedParsing) return;
   if (p->tu)
   {
@@ -383,7 +383,7 @@ std::string ClangTUParser::lookup(uint line,const char *symbol)
   //printf("ClangParser::lookup(%d,%s)\n",line,symbol);
   std::string result;
   if (symbol==0) return result;
-  static bool clangAssistedParsing = Config_getBool(CLANG_ASSISTED_PARSING);
+  bool clangAssistedParsing = Config_getBool(CLANG_ASSISTED_PARSING);
   if (!clangAssistedParsing) return result;
 
   auto getCurrentTokenLine = [=]() -> uint
@@ -574,7 +574,7 @@ void ClangTUParser::writeMultiLineCodeLink(CodeOutputInterface &ol,
                   const Definition *d,
                   const char *text)
 {
-  static bool sourceTooltips = Config_getBool(SOURCE_TOOLTIPS);
+  bool sourceTooltips = Config_getBool(SOURCE_TOOLTIPS);
   p->tooltipManager.addTooltip(ol,d);
   QCString ref  = d->getReference();
   QCString file = d->getOutputFileBase();

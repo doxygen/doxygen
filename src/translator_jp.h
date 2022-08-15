@@ -99,6 +99,10 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
     {
       return "\\end{CJK}\n";
     }
+    virtual bool needsPunctuation()
+    {
+      return false;
+    }
 
     /*! used in the compound documentation before a list of related functions. */
     virtual QCString trRelatedFunctions()
@@ -1370,14 +1374,19 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
     /*! Used as a heading for a list of Java class functions with package
      * scope.
      */
-    virtual QCString trPackageMembers()
+    virtual QCString trPackageFunctions()
     {
       return "関数";
     }
+    virtual QCString trPackageMembers()
+    {
+      return "パッケージ内のメンバ";
+    }
+
     /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
-    virtual QCString trStaticPackageMembers()
+    virtual QCString trStaticPackageFunctions()
     {
       return "静的関数";
     }

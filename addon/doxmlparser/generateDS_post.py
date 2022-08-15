@@ -1,6 +1,6 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 #
-# Copyright (C) 1997-202i by Dimitri van Heesch.
+# Copyright (C) 1997-2022 by Dimitri van Heesch.
 #
 # Permission to use, copy, modify, and distribute this software and its
 # documentation under the terms of the GNU General Public License is hereby
@@ -20,6 +20,7 @@ def main():
     lineStr = ""
     for line in inputFile:
         line = line.rstrip()
+        line = re.sub(r'##','# #',line)
         line = re.sub(r'# Python.*','#',line)
         line = re.sub(r"('-o', ').*(/addon/doxmlparser/doxmlparser)","\\1...\\2",line)
         # python 2 slips the u in ...

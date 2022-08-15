@@ -439,7 +439,7 @@ SLASHopt [/]*
                                      copyToOutput(yyscanner,yytext,(int)yyleng);
                                      yyextra->lastCommentContext = YY_START;
                                      yyextra->javaBlock=0;
-                                     yyextra->blockName=QCString(yytext).stripWhiteSpace().left(3);
+                                     yyextra->blockName=QCString(yytext).stripWhiteSpace().left(3); // take the ``` or ~~~ part
                                      BEGIN(VerbatimCode);
                                    }
 <CComment,ReadLine>[\\@]("dot"|"code"|"msc"|"startuml")/[^a-z_A-Z0-9] { /* start of a verbatim block */
@@ -662,6 +662,10 @@ SLASHopt [/]*
 				     {
 				       BEGIN(Scan);
 				     }
+                                   }
+<CComment,CNComment>"/""/"+/"*/"   { /* we are already in C-comment so not a start of a nested comment but 
+                                      * just the end of the comment (the end part is handled later). */
+                                     copyToOutput(yyscanner,yytext,(int)yyleng);
                                    }
 <CComment,CNComment>"/"+"*"                  { /* nested C comment */
                                      if (yyextra->lang==SrcLangExt_Python ||
@@ -897,10 +901,10 @@ SLASHopt [/]*
                                      handleCondSectionId(yyscanner," "); // fake section id causing the section to be hidden unconditionally
 				     if (*yytext=='\n') { yyextra->lineNr++; copyToOutput(yyscanner,"\n",1);}
   				   }
-<CComment,ReadLine>[\\@][a-z_A-Z][a-z_A-Z0-9]*  { // expand alias without arguments
+<CComment,ReadLine>[\\@][a-z_A-Z][a-z_A-Z0-9-]*  { // expand alias without arguments
 				     replaceAliases(yyscanner,QCString(yytext));
   				   }
-<CComment,ReadLine>[\\@][a-z_A-Z][a-z_A-Z0-9]*"{" { // expand alias with arguments
+<CComment,ReadLine>[\\@][a-z_A-Z][a-z_A-Z0-9-]*"{" { // expand alias with arguments
                                      yyextra->lastBlockContext=YY_START;
 				     yyextra->blockCount=1;
 				     yyextra->aliasString=yytext;
@@ -1011,7 +1015,7 @@ static void replaceCommentMarker(yyscan_t yyscanner,const char *s,int len)
 static inline int computeIndent(const char *s)
 {
   int col=0;
-  static int tabSize=Config_getInt(TAB_SIZE);
+  int tabSize=Config_getInt(TAB_SIZE);
   const char *p=s;
   char c;
   while ((c=*p++))

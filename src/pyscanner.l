@@ -197,7 +197,7 @@ SHORTSTRINGITEM   ({SHORTSTRINGCHAR}|{ESCAPESEQ})
 SHORTSTRINGCHAR   [^\\\n"]
 STRINGLITERAL     {STRINGPREFIX}?( {SHORTSTRING} | {LONGSTRING})
 STRINGPREFIX      ("r"|"u"|"ur"|"R"|"U"|"UR"|"Ur"|"uR")
-FLOWKW            ("or"|"and"|"is"|"not"|"print"|"for"|"in"|"if"|"try"|"except"|"yield"|"raise"|"break"|"continue"|"pass"|"if"|"return"|"while"|"elif"|"else"|"finally")
+FLOWKW            ("or"|"and"|"is"|"not"|"print"|"for"|"in"|"try"|"except"|"yield"|"raise"|"break"|"continue"|"pass"|"if"|"return"|"while"|"elif"|"else"|"finally")
 POUNDCOMMENT      "#"[^#\n][^\n]*
 SCRIPTCOMMENT      "#!".*
 
@@ -548,7 +548,7 @@ STARTDOCSYMS      "##"
 }
 
 <FunctionBody>{
-    \n{B}/{IDENTIFIER}{BB}  {
+    \n{B}/{IDENTIFIER}[^{LETTER}{DIGIT}_]  {
                         DBG_CTX((stderr,"indent %d<=%d\n",computeIndent(&yytext[1]),yyextra->indent));
                         if (computeIndent(&yytext[1])<=yyextra->indent)
                         {
@@ -1187,6 +1187,10 @@ STARTDOCSYMS      "##"
                         yyextra->start_init = FALSE;
                         yyextra->current->initializer << yytext;
                       }
+   "\\\n"             {
+                        yyextra->current->initializer << yytext;
+                        incLineNr(yyscanner);
+                      }
    .                  {
                         yyextra->start_init = FALSE;
                         yyextra->current->initializer << *yytext;
@@ -1534,7 +1538,7 @@ static void newVariable(yyscan_t yyscanner)
 static void newFunction(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  if (yyextra->current->name.left(2)=="__" && yyextra->current->name.right(2)=="__")
+  if (yyextra->current->name.startsWith("__") && yyextra->current->name.endsWith("__"))
   {
     // special method name, see
     // http://docs.python.org/ref/specialnames.html
@@ -1800,6 +1804,7 @@ static void parseCompounds(yyscan_t yyscanner,std::shared_ptr<Entry> rt)
       pyscannerYYrestart( 0, yyscanner );
       if (ce->section&Entry::COMPOUND_MASK)
       {
+        yyextra->specialBlock = false;
         yyextra->current_root = ce;
         BEGIN( Search );
       }

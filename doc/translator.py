@@ -880,8 +880,9 @@ class Transl:
                                  prototype=="virtual QCString latexDocumentPre()" or
                                  prototype=="virtual QCString latexCommandName()" or
                                  prototype=="virtual QCString latexFont()" or
-                                 prototype=="virtual QCString latexFontenc()")):
-                          self.prototypeDic[uniPrototype] = prototype
+                                 prototype=="virtual QCString latexFontenc()" or
+                                 prototype=="virtual bool needsPunctuation()")):
+                            self.prototypeDic[uniPrototype] = prototype
                         status = 2      # body consumed
                         methodId = None # outside of any method
                 elif tokenId == 'lcurly':
@@ -1127,13 +1128,13 @@ class Transl:
         # be set.
         if not self.note and self.status == '' and \
            (self.translateMeFlag or self.txtMAX_DOT_GRAPH_HEIGHT_flag):
-           self.note = ''
-           if self.translateMeFlag:
-               self.note += 'The "%s" found in a comment.' % self.translateMeText
-           if self.note != '':
-               self.note += '\n\t\t'
-           if self.txtMAX_DOT_GRAPH_HEIGHT_flag:
-               self.note += 'The MAX_DOT_GRAPH_HEIGHT found in trLegendDocs()'
+            self.note = ''
+            if self.translateMeFlag:
+                self.note += 'The "%s" found in a comment.' % self.translateMeText
+            if self.note != '':
+                self.note += '\n\t\t'
+            if self.txtMAX_DOT_GRAPH_HEIGHT_flag:
+                self.note += 'The MAX_DOT_GRAPH_HEIGHT found in trLegendDocs()'
 
         # If everything seems OK, but there are obsolete methods, set
         # the note to clean-up source. This note will be used only when
@@ -1829,9 +1830,8 @@ class TrManager:
         tplDic['supportedLangReadableStr'] = self.supportedLangReadableStr
         tplDic['translatorReportFileName'] = self.translatorReportFileName
 
-        ahref = '<a href="../doc/' + self.translatorReportFileName
-        ahref += '"\n><code>doxygen/doc/'  + self.translatorReportFileName
-        ahref += '</code></a>'
+        ahref = '<a href="' + self.translatorReportFileName
+        ahref += '"\n><code>'  + self.translatorReportFileName + '</code></a>'
         tplDic['translatorReportLink'] = ahref
         tplDic['numLangStr'] = str(self.numLang)
 
@@ -1892,7 +1892,7 @@ class TrManager:
                 if classId in self.__translDic:
                     lang = self.__translDic[classId].langReadable
                     mm = 'see the %s language' % lang
-                    ee = '&nbsp;'
+                    ee = '&#160;'
 
             if not mm and obj.classId in self.__maintainersDic:
                 # Build a string of names separated by the HTML break element.

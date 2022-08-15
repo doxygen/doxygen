@@ -1315,15 +1315,19 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
     /*! Used as a heading for a list of Java class functions with package
      * scope.
      */
-    virtual QCString trPackageMembers()
+    virtual QCString trPackageFunctions()
     {
       return "Функції пакетів";
+    }
+    virtual QCString trPackageMembers()
+    {
+      return "Елементи пакетів";
     }
 
     /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
-    virtual QCString trStaticPackageMembers()
+    virtual QCString trStaticPackageFunctions()
     {
       return "Статичні функцію пакетів";
     }

@@ -51,6 +51,11 @@ window.MathJax = {
     ignoreHtmlClass: 'tex2jax_ignore',
     processHtmlClass: 'tex2jax_process'
   },
+{% if config.MATHJAX_EXTENSIONS %}
+  loader: {
+    load: [{% for ext in config.MATHJAX_EXTENSIONS %},'{{ ext }}'{% endfor %}]
+  },
+{% endif %}{# MATHJAX_EXTENSIONS #}
   tex: {
 {% if doxygen.mathJaxMacros %}
     macros: { {{ doxygen.mathJaxMacros|raw }} },
@@ -117,7 +122,7 @@ MathJax.Hub.Config({
     <div class="left">
      <form id="FSearchBox" action="{{ page.relPath }}{% if config.EXTERNAL_SEARCH %}search{{ doxygen.htmlFileExtension }}{% else %}search.php{% endif %}" method="get">
       <img id="MSearchSelect" src="{{ page.relPath }}search/mag.svg" alt=""/>
-      <input type="text" id="MSearchField" name="query" value="{{ tr.search }}" size="20" accesskey="S"
+      <input type="text" id="MSearchField" name="query" value="" placeholder="{{ tr.search }}" size="20" accesskey="S"
                 onfocus="searchBox.OnSearchFieldFocus(true)"
                 onblur="searchBox.OnSearchFieldFocus(false)"/>
      </form>
@@ -131,7 +136,7 @@ MathJax.Hub.Config({
            onmouseover="return searchBox.OnSearchSelectShow()"
            onmouseout="return searchBox.OnSearchSelectHide()"
            alt=""/>
-      <input type="text" id="MSearchField" value="{{ tr.search }}" accesskey="S"
+      <input type="text" id="MSearchField" value="" placeholder="{{ tr.search }}" accesskey="S"
            onfocus="searchBox.OnSearchFieldFocus(true)"
            onblur="searchBox.OnSearchFieldFocus(false)"
            onkeyup="searchBox.OnSearchFieldChange(event)"/>
@@ -156,7 +161,7 @@ MathJax.Hub.Config({
 {% if config.SEARCHENGINE %}
 <script type="text/javascript">
 /* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
-	var searchBox = new SearchBox("searchBox", "{{ page.relPath }}search",'{{ tr.search }}','{{ config.HTML_FILE_EXTENSION }}');
+	var searchBox = new SearchBox("searchBox", "{{ page.relPath }}search", '{{ config.HTML_FILE_EXTENSION }}');
 /* @license-end */
 </script>
 {% endif %}

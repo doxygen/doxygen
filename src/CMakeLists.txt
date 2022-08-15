@@ -76,15 +76,6 @@ add_custom_command(
 )
 set_source_files_properties(${GENERATED_SRC}/ce_parse.h PROPERTIES GENERATED 1)
 
-# lang_cfg.h
-add_custom_command(
-    COMMENT  "Generating ${GENERATED_SRC}/lang_cfg.h"
-    COMMAND ${CMAKE_COMMAND} -P ${PROJECT_SOURCE_DIR}/cmake/lang_cfg.cmake ${GENERATED_SRC}/lang_cfg.h ${LANG_CODES}
-    DEPENDS ${LANGUAGE_FILES}
-    OUTPUT ${GENERATED_SRC}/lang_cfg.h
-)
-set_source_files_properties(${GENERATED_SRC}/lang_cfg.h PROPERTIES GENERATED 1)
-
 # all resource files
 if (${CMAKE_VERSION} VERSION_EQUAL "3.11.0" OR ${CMAKE_VERSION} VERSION_GREATER "3.11.0")
     file(GLOB RESOURCES CONFIGURE_DEPENDS ${PROJECT_SOURCE_DIR}/templates/*/*)
@@ -121,27 +112,59 @@ set(LEX_FILES scanner
     lexscanner
     configimpl)
 
+if (NOT depfile_supported)
+    # In case the DEPFILE possibility is not supported the complete list of lex include files for the dependency has to be used
+    set(LEX_INC_FILES)
+endif()
+
 # unfortunately ${LEX_FILES_H} and ${LEX_FILES_CPP} don't work in older versions of CMake (like 3.6.2) for add_library
 foreach(lex_file ${LEX_FILES})
     set(LEX_FILES_H ${LEX_FILES_H} " " ${GENERATED_SRC}/${lex_file}.l.h CACHE INTERNAL "Stores generated files")
     set(LEX_FILES_CPP ${LEX_FILES_CPP} " " ${GENERATED_SRC}/${lex_file}.cpp CACHE INTERNAL "Stores generated files")
+
+    if (depfile_supported)
+        add_custom_command(
+            COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_LIST_DIR}/pre_lex.py ${CMAKE_CURRENT_LIST_DIR}/${lex_file}.l  ${GENERATED_SRC}/${lex_file}.l ${GENERATED_SRC}/${lex_file}.corr ${GENERATED_SRC}/${lex_file}.d ${CMAKE_CURRENT_LIST_DIR}
+            DEPENDS ${CMAKE_CURRENT_LIST_DIR}/pre_lex.py ${CMAKE_CURRENT_LIST_DIR}/${lex_file}.l
+            DEPFILE ${GENERATED_SRC}/${lex_file}.d
+            OUTPUT  ${GENERATED_SRC}/${lex_file}.l ${GENERATED_SRC}/${lex_file}.corr ${GENERATED_SRC}/${lex_file}.d
+        )
+    else()
+        add_custom_command(
+            COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_LIST_DIR}/pre_lex.py ${CMAKE_CURRENT_LIST_DIR}/${lex_file}.l  ${GENERATED_SRC}/${lex_file}.l ${GENERATED_SRC}/${lex_file}.corr ${GENERATED_SRC}/${lex_file}.d ${CMAKE_CURRENT_LIST_DIR}
+            DEPENDS ${CMAKE_CURRENT_LIST_DIR}/pre_lex.py ${CMAKE_CURRENT_LIST_DIR}/${lex_file}.l ${LEX_INC_FILES}
+            OUTPUT  ${GENERATED_SRC}/${lex_file}.l ${GENERATED_SRC}/${lex_file}.corr ${GENERATED_SRC}/${lex_file}.d
+        )
+    endif()
+    set_source_files_properties(${GENERATED_SRC}/${lex_file}.l PROPERTIES GENERATED 1)
+    set_source_files_properties(${GENERATED_SRC}/${lex_file}.corr PROPERTIES GENERATED 1)
+    set_source_files_properties(${GENERATED_SRC}/${lex_file}.d PROPERTIES GENERATED 1)
+
     add_custom_command(
-        COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_LIST_DIR}/scan_states.py ${CMAKE_CURRENT_LIST_DIR}/${lex_file}.l > ${GENERATED_SRC}/${lex_file}.l.h
-        DEPENDS ${CMAKE_CURRENT_LIST_DIR}/scan_states.py ${CMAKE_CURRENT_LIST_DIR}/${lex_file}.l
+        COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_LIST_DIR}/scan_states.py ${GENERATED_SRC}/${lex_file}.l > ${GENERATED_SRC}/${lex_file}.l.h
+        DEPENDS ${CMAKE_CURRENT_LIST_DIR}/scan_states.py ${GENERATED_SRC}/${lex_file}.l
         OUTPUT  ${GENERATED_SRC}/${lex_file}.l.h
     )
     set_source_files_properties(${GENERATED_SRC}/${lex_file}.l.h PROPERTIES GENERATED 1)
-    # for code coverage we need the flex sources in the build src directory
-    add_custom_command(
-        COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/src/${lex_file}.l ${PROJECT_BINARY_DIR}/src/${lex_file}.l
-        DEPENDS ${PROJECT_SOURCE_DIR}/src/${lex_file}.l
-        OUTPUT  ${PROJECT_BINARY_DIR}/src/${lex_file}.l
-    )
+
+    if(enable_coverage)
+        # for code coverage we need the flex sources in the build src directory
+        add_custom_command(
+            COMMAND ${CMAKE_COMMAND} -E copy ${GENERATED_SRC}/${lex_file}.l ${PROJECT_BINARY_DIR}/src/${lex_file}.l
+            DEPENDS ${GENERATED_SRC}/${lex_file}.l
+            OUTPUT  ${PROJECT_BINARY_DIR}/src/${lex_file}.l
+        )
+    endif()
 
     FLEX_TARGET(${lex_file}
-                ${CMAKE_CURRENT_LIST_DIR}/${lex_file}.l
-                ${GENERATED_SRC}/${lex_file}.cpp
+                ${GENERATED_SRC}/${lex_file}.l
+                ${GENERATED_SRC}/${lex_file}_intermediate.cpp
                 COMPILE_FLAGS "${LEX_FLAGS}")
+    add_custom_command(
+        COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_LIST_DIR}/post_lex.py ${GENERATED_SRC}/${lex_file}_intermediate.cpp ${GENERATED_SRC}/${lex_file}.cpp  ${GENERATED_SRC}/${lex_file}.corr ${CMAKE_CURRENT_LIST_DIR}/${lex_file}.l  ${GENERATED_SRC}/${lex_file}.l
+        DEPENDS ${CMAKE_CURRENT_LIST_DIR}/post_lex.py ${GENERATED_SRC}/${lex_file}_intermediate.cpp ${GENERATED_SRC}/${lex_file}.corr
+        OUTPUT  ${GENERATED_SRC}/${lex_file}.cpp
+    )
 endforeach()
 
 
@@ -150,14 +173,15 @@ BISON_TARGET(constexp
              ${GENERATED_SRC}/ce_parse.cpp
              COMPILE_FLAGS "${YACC_FLAGS}")
 
-add_custom_command(
-    COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/src/constexp.y ${PROJECT_BINARY_DIR}/src
-    DEPENDS ${PROJECT_SOURCE_DIR}/src/constexp.y
-    OUTPUT  ${PROJECT_BINARY_DIR}/src/constexp.y
-)
+if(enable_coverage)
+    add_custom_command(
+        COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/src/constexp.y ${PROJECT_BINARY_DIR}/src
+        DEPENDS ${PROJECT_SOURCE_DIR}/src/constexp.y
+        OUTPUT  ${PROJECT_BINARY_DIR}/src/constexp.y
+    )
+endif()
 
 add_library(doxycfg STATIC
-    ${GENERATED_SRC}/lang_cfg.h
     ${GENERATED_SRC}/configvalues.h
     ${GENERATED_SRC}/configimpl.cpp
     ${GENERATED_SRC}/configimpl.l.h
@@ -214,7 +238,6 @@ add_library(doxymain STATIC
     #
     ${GENERATED_SRC}/ce_parse.cpp
     # custom generated files
-    ${GENERATED_SRC}/lang_cfg.h
     ${GENERATED_SRC}/configvalues.h
     ${GENERATED_SRC}/ce_parse.h
     ${GENERATED_SRC}/resources.cpp
@@ -238,6 +261,7 @@ add_library(doxymain STATIC
     docbookgen.cpp
     docbookvisitor.cpp
     docgroup.cpp
+    docnode.cpp
     docparser.cpp
     docsets.cpp
     docvisitor.cpp
@@ -296,6 +320,7 @@ add_library(doxymain STATIC
     rtfgen.cpp
     rtfstyle.cpp
     searchindex.cpp
+    searchindex_js.cpp
     sqlite3gen.cpp
     stlsupport.cpp
     symbolresolver.cpp
@@ -326,6 +351,9 @@ endif()
 add_executable(doxygen
     main.cpp
 )
+
+# enable to monitor compilation times
+#set_property(TARGET doxymain PROPERTY RULE_LAUNCH_COMPILE "${CMAKE_COMMAND} -E time")
 
 include(ApplyEditbin)
 apply_editbin(doxygen console)

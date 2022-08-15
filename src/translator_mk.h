@@ -1346,14 +1346,18 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
     /*! Used as a heading for a list of Java class functions with package
      * scope.
      */
-    virtual QCString trPackageMembers()
+    virtual QCString trPackageFunctions()
     {
       return "Функции во Пакетот";
+    }
+    virtual QCString trPackageMembers()
+    {
+      return "Членови во Пакетот";
     }
     /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
-    virtual QCString trStaticPackageMembers()
+    virtual QCString trStaticPackageFunctions()
     {
       return "Статични Функции во Пакетот";
     }

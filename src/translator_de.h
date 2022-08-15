@@ -856,7 +856,7 @@ class TranslatorGerman : public TranslatorAdapter_1_8_15
     virtual QCString trGeneratedFromFiles(ClassDef::CompoundType compType,
         bool single)
     { // single is true implies a single file
-      static bool vhdlOpt = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
+      bool vhdlOpt = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
       QCString result="Die Dokumentation für diese";
       switch(compType)
       {
@@ -1176,7 +1176,7 @@ class TranslatorGerman : public TranslatorAdapter_1_8_15
         "Die Pfeile bedeuten:\n"
         "</p>\n"
         "<ul>\n"
-        "<li>Ein dunkelblauer Pfeil stellt eine öffentliche Vererbungsbeziehung "
+        "<li>Ein blauer Pfeil stellt eine öffentliche Vererbungsbeziehung "
         "zwischen zwei Klassen dar.</li>\n"
         "<li>Ein dunkelgrüner Pfeil stellt geschützte Vererbung dar.</li>\n"
         "<li>Ein dunkelroter Pfeil stellt private Vererbung dar.</li>\n"
@@ -1492,15 +1492,19 @@ class TranslatorGerman : public TranslatorAdapter_1_8_15
     /*! Used as a heading for a list of Java class functions with package
      * scope.
      */
-    virtual QCString trPackageMembers()
+    virtual QCString trPackageFunctions()
     {
       return "Paketfunktionen";
+    }
+    virtual QCString trPackageMembers()
+    {
+      return "Paketelemente";
     }
 
     /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
-    virtual QCString trStaticPackageMembers()
+    virtual QCString trStaticPackageFunctions()
     {
       return "Statische Paketfunktionen";
     }

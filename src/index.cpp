@@ -25,6 +25,7 @@
 
 #include "message.h"
 #include "index.h"
+#include "indexlist.h"
 #include "doxygen.h"
 #include "config.h"
 #include "filedef.h"
@@ -86,7 +87,7 @@ static void countRelatedPages(int &docPages,int &indexPages);
 
 void countDataStructures()
 {
-  static bool sliceOpt = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
+  bool sliceOpt = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
   annotatedClasses           = countAnnotatedClasses(&annotatedClassesPrinted, ClassDef::Class); // "classes" + "annotated"
   hierarchyClasses           = countClassHierarchy(ClassDef::Class);     // "hierarchy"
   // "interfaces" + "annotated"
@@ -236,7 +237,7 @@ void startFile(OutputList &ol,const QCString &name,const QCString &manName,
                const QCString &title,HighlightedItem hli,bool additionalIndices,
                const QCString &altSidebarName)
 {
-  static bool disableIndex     = Config_getBool(DISABLE_INDEX);
+  bool disableIndex     = Config_getBool(DISABLE_INDEX);
   ol.startFile(name,manName,title);
   ol.startQuickIndices();
   if (!disableIndex)
@@ -254,7 +255,7 @@ void startFile(OutputList &ol,const QCString &name,const QCString &manName,
 void endFile(OutputList &ol,bool skipNavIndex,bool skipEndContents,
              const QCString &navPath)
 {
-  static bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
+  bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Html);
   if (!skipNavIndex)
@@ -273,7 +274,7 @@ void endFile(OutputList &ol,bool skipNavIndex,bool skipEndContents,
 
 void endFileWithNavPath(const Definition *d,OutputList &ol)
 {
-  static bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
+  bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
   QCString navPath;
   if (generateTreeView)
   {
@@ -394,7 +395,7 @@ void addMembersToIndex(T *def,LayoutDocManager::LayoutPart part,
         {
           if (cd->isLinkable() && (cd->partOfGroups().empty() || def->definitionType()==Definition::TypeGroup))
           {
-            static bool inlineSimpleStructs = Config_getBool(INLINE_SIMPLE_STRUCTS);
+            bool inlineSimpleStructs = Config_getBool(INLINE_SIMPLE_STRUCTS);
             bool isNestedClass = def->definitionType()==Definition::TypeClass;
             addMembersToIndex(cd,LayoutDocManager::Class,cd->displayName(lde->kind()==LayoutDocEntry::FileClasses),cd->anchor(),
                               addToIndex && (isNestedClass || (cd->isSimple() && inlineSimpleStructs)),
@@ -586,7 +587,7 @@ static void writeDirTreeNode(OutputList &ol, const DirDef *dd, int level, FTVHel
     return;
   }
 
-  static bool tocExpand = TRUE; //Config_getBool(TOC_EXPAND);
+  bool tocExpand = TRUE; //Config_getBool(TOC_EXPAND);
   bool isDir = !dd->subDirs().empty() ||  // there are subdirs
                (tocExpand &&              // or toc expand and
                 !dd->getFiles().empty()   // there are files
@@ -631,7 +632,7 @@ static void writeDirTreeNode(OutputList &ol, const DirDef *dd, int level, FTVHel
   {
     for (const auto &fd : dd->getFiles())
     {
-      //static bool allExternals = Config_getBool(ALLEXTERNALS);
+      //bool allExternals = Config_getBool(ALLEXTERNALS);
       //if ((allExternals && fd->isLinkable()) || fd->isLinkableInProject())
       //{
       //  fileCount++;
@@ -687,14 +688,12 @@ static void writeDirTreeNode(OutputList &ol, const DirDef *dd, int level, FTVHel
     {
       for (const auto &fd : dd->getFiles())
       {
-        //static bool allExternals = Config_getBool(ALLEXTERNALS);
-        //if ((allExternals && fd->isLinkable()) || fd->isLinkableInProject())
         bool doc,src;
         doc = fileVisibleInIndex(fd,src);
         if (doc)
         {
           addMembersToIndex(fd,LayoutDocManager::File,fd->displayName(),QCString(),
-                            TRUE,FALSE,&fd->getConcepts());
+                            !fd->isLinkableViaGroup(),FALSE,&fd->getConcepts());
         }
         else if (src)
         {
@@ -784,7 +783,7 @@ static void writeDirHierarchy(OutputList &ol, FTVHelp* ftv,bool addToIndex)
 static void writeClassTreeForList(OutputList &ol,const ClassLinkedMap &cl,bool &started,FTVHelp* ftv,bool addToIndex,
                                   ClassDef::CompoundType ct,ClassDefSet &visitedClasses)
 {
-  static bool sliceOpt = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
+  bool sliceOpt = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
   for (const auto &cd : cl)
   {
     //printf("class %s hasVisibleRoot=%d isVisibleInHierarchy=%d\n",
@@ -909,7 +908,7 @@ static void writeClassHierarchy(OutputList &ol, FTVHelp* ftv,bool addToIndex,Cla
 
 static int countClassesInTreeList(const ClassLinkedMap &cl, ClassDef::CompoundType ct)
 {
-  static bool sliceOpt = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
+  bool sliceOpt = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
   int count=0;
   for (const auto &cd : cl)
   {
@@ -1265,22 +1264,19 @@ static void countFiles(int &allFiles,int &docFiles)
 {
   allFiles=0;
   docFiles=0;
-  if (Config_getBool(SHOW_FILES))
+  for (const auto &fn : *Doxygen::inputNameLinkedMap)
   {
-    for (const auto &fn : *Doxygen::inputNameLinkedMap)
+    for (const auto &fd: *fn)
     {
-      for (const auto &fd: *fn)
+      bool doc,src;
+      doc = fileVisibleInIndex(fd.get(),src);
+      if (doc || src)
       {
-        bool doc,src;
-        doc = fileVisibleInIndex(fd.get(),src);
-        if (doc || src)
-        {
-          allFiles++;
-        }
-        if (doc)
-        {
-          docFiles++;
-        }
+        allFiles++;
+      }
+      if (doc)
+      {
+        docFiles++;
       }
     }
   }
@@ -1368,7 +1364,7 @@ static void writeSingleFileIndex(OutputList &ol,const FileDef *fd)
 
 static void writeFileIndex(OutputList &ol)
 {
-  if (documentedFiles==0) return;
+  if (documentedFiles==0 || !Config_getBool(SHOW_FILES)) return;
 
   ol.pushGeneratorState();
   ol.disable(OutputGenerator::Man);
@@ -1523,7 +1519,7 @@ template<>             const ClassDef *get_pointer(const ClassLinkedRefMap::Ptr 
 template<class ListType>
 static void writeClassTree(const ListType &cl,FTVHelp *ftv,bool addToIndex,bool globalOnly,ClassDef::CompoundType ct)
 {
-  static bool sliceOpt = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
+  bool sliceOpt = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
   for (const auto &cdi : cl)
   {
     const ClassDef *cd = get_pointer(cdi);
@@ -1708,7 +1704,10 @@ static void writeNamespaceTree(const NamespaceLinkedRefMap &nsLinkedMap,FTVHelp 
 {
   for (const auto &nd : nsLinkedMap)
   {
-    writeNamespaceTreeElement(nd,ftv,rootOnly,addToIndex);
+    if (nd->isLinkableInProject())
+    {
+      writeNamespaceTreeElement(nd,ftv,rootOnly,addToIndex);
+    }
   }
 }
 
@@ -1717,7 +1716,10 @@ static void writeNamespaceTree(const NamespaceLinkedMap &nsLinkedMap,FTVHelp *ft
 {
   for (const auto &nd : nsLinkedMap)
   {
-    writeNamespaceTreeElement(nd.get(),ftv,rootOnly,addToIndex);
+    if (nd->isLinkableInProject())
+    {
+      writeNamespaceTreeElement(nd.get(),ftv,rootOnly,addToIndex);
+    }
   }
 }
 
@@ -1727,7 +1729,7 @@ static void writeClassTreeInsideNamespace(const NamespaceLinkedRefMap &nsLinkedM
 static void writeClassTreeInsideNamespaceElement(const NamespaceDef *nd,FTVHelp *ftv,
                                bool rootOnly,bool addToIndex,ClassDef::CompoundType ct)
 {
-  static bool sliceOpt = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
+  bool sliceOpt = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
   if (!nd->isAnonymous() &&
       (!rootOnly || nd->getOuterScope()==Doxygen::globalScope))
   {
@@ -1923,7 +1925,7 @@ static void writeNamespaceIndex(OutputList &ol)
 
 static int countAnnotatedClasses(int *cp, ClassDef::CompoundType ct)
 {
-  static bool sliceOpt = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
+  bool sliceOpt = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
   int count=0;
   int countPrinted=0;
   for (const auto &cd : *Doxygen::classLinkedMap)
@@ -1952,7 +1954,7 @@ static void writeAnnotatedClassList(OutputList &ol,ClassDef::CompoundType ct)
   //bool addToIndex = lne==0 || lne->visible();
   bool first=TRUE;
 
-  static bool sliceOpt = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
+  bool sliceOpt = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
 
   for (const auto &cd : *Doxygen::classLinkedMap)
   {
@@ -2076,7 +2078,7 @@ using UsedIndexLetters = std::set<std::string>;
 // write an alphabetical index of all class with a header for each letter
 static void writeAlphabeticalClassList(OutputList &ol, ClassDef::CompoundType ct, int annotatedCount)
 {
-  static bool sliceOpt = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
+  bool sliceOpt = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
 
   // What starting letters are used
   UsedIndexLetters indexLettersUsed;
@@ -2663,7 +2665,7 @@ void initClassMemberIndices()
 
 void addClassMemberNameToIndex(const MemberDef *md)
 {
-  static bool hideFriendCompounds = Config_getBool(HIDE_FRIEND_COMPOUNDS);
+  bool hideFriendCompounds = Config_getBool(HIDE_FRIEND_COMPOUNDS);
   const ClassDef *cd=0;
 
   if (md->isLinkableInProject() &&
@@ -2945,8 +2947,8 @@ struct CmhlInfo
 
 static const CmhlInfo *getCmhlInfo(size_t hl)
 {
-  static bool fortranOpt = Config_getBool(OPTIMIZE_FOR_FORTRAN);
-  static bool vhdlOpt    = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
+  bool fortranOpt = Config_getBool(OPTIMIZE_FOR_FORTRAN);
+  bool vhdlOpt    = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
   static CmhlInfo cmhlInfo[] =
   {
     CmhlInfo("functions",     theTranslator->trAll()),
@@ -2969,7 +2971,7 @@ static void writeClassMemberIndexFiltered(OutputList &ol, ClassMemberHighlight h
 {
   if (documentedClassMembers[hl]==0) return;
 
-  static bool disableIndex     = Config_getBool(DISABLE_INDEX);
+  bool disableIndex     = Config_getBool(DISABLE_INDEX);
 
   bool multiPageIndex=FALSE;
   if (documentedClassMembers[hl]>MAX_ITEMS_BEFORE_MULTIPAGE_INDEX)
@@ -3122,9 +3124,9 @@ struct FmhlInfo
 
 static const FmhlInfo *getFmhlInfo(size_t hl)
 {
-  static bool fortranOpt = Config_getBool(OPTIMIZE_FOR_FORTRAN);
-  static bool vhdlOpt    = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
-  static bool sliceOpt   = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
+  bool fortranOpt = Config_getBool(OPTIMIZE_FOR_FORTRAN);
+  bool vhdlOpt    = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
+  bool sliceOpt   = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
   static FmhlInfo fmhlInfo[] =
   {
     FmhlInfo("globals",     theTranslator->trAll()),
@@ -3147,7 +3149,7 @@ static void writeFileMemberIndexFiltered(OutputList &ol, FileMemberHighlight hl)
 {
   if (documentedFileMembers[hl]==0) return;
 
-  static bool disableIndex     = Config_getBool(DISABLE_INDEX);
+  bool disableIndex     = Config_getBool(DISABLE_INDEX);
 
   bool multiPageIndex=FALSE;
   if (documentedFileMembers[hl]>MAX_ITEMS_BEFORE_MULTIPAGE_INDEX)
@@ -3293,9 +3295,9 @@ struct NmhlInfo
 
 static const NmhlInfo *getNmhlInfo(size_t hl)
 {
-  static bool fortranOpt = Config_getBool(OPTIMIZE_FOR_FORTRAN);
-  static bool vhdlOpt    = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
-  static bool sliceOpt   = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
+  bool fortranOpt = Config_getBool(OPTIMIZE_FOR_FORTRAN);
+  bool vhdlOpt    = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
+  bool sliceOpt   = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
   static NmhlInfo nmhlInfo[] =
   {
     NmhlInfo("namespacemembers",     theTranslator->trAll()),
@@ -3320,7 +3322,7 @@ static void writeNamespaceMemberIndexFiltered(OutputList &ol,
 {
   if (documentedNamespaceMembers[hl]==0) return;
 
-  static bool disableIndex     = Config_getBool(DISABLE_INDEX);
+  bool disableIndex     = Config_getBool(DISABLE_INDEX);
 
 
   bool multiPageIndex=FALSE;
@@ -3497,7 +3499,7 @@ static void writeExampleIndex(OutputList &ol)
       ol.writeObjectLink(QCString(),n,QCString(),pd->title());
       if (addToIndex)
       {
-        Doxygen::indexList->addContentsItem(FALSE,filterTitle(pd->title().str()),pd->getReference(),n,QCString(),FALSE,TRUE);
+        Doxygen::indexList->addContentsItem(FALSE,filterTitle(pd->title()),pd->getReference(),n,QCString(),FALSE,TRUE);
       }
     }
     else
@@ -3544,11 +3546,11 @@ static void countRelatedPages(int &docPages,int &indexPages)
 
 static bool mainPageHasOwnTitle()
 {
-  static QCString projectName = Config_getString(PROJECT_NAME);
+  QCString projectName = Config_getString(PROJECT_NAME);
   QCString title;
   if (Doxygen::mainPage)
   {
-    title = filterTitle(Doxygen::mainPage->title().str());
+    title = filterTitle(Doxygen::mainPage->title());
   }
   return !projectName.isEmpty() && mainPageHasTitle() && qstricmp(title,projectName)!=0;
 }
@@ -3570,7 +3572,7 @@ static void writePages(const PageDef *pd,FTVHelp *ftv)
     if (pd->title().isEmpty())
       pageTitle=pd->name();
     else
-      pageTitle=filterTitle(pd->title().str());
+      pageTitle=filterTitle(pd->title());
 
     if (ftv)
     {
@@ -3697,14 +3699,12 @@ void writeGraphInfo(OutputList &ol)
   DotLegendGraph gd;
   gd.writeGraph(Config_getString(HTML_OUTPUT));
 
-  bool stripCommentsStateRef = Config_getBool(STRIP_CODE_COMMENTS);
-  bool oldStripCommentsState = stripCommentsStateRef;
-  bool createSubdirs = Config_getBool(CREATE_SUBDIRS);
-  bool oldCreateSubdirs = createSubdirs;
+  bool oldStripCommentsState = Config_getBool(STRIP_CODE_COMMENTS);
+  bool oldCreateSubdirs = Config_getBool(CREATE_SUBDIRS);
   // temporarily disable the stripping of comments for our own code example!
-  stripCommentsStateRef = Config_updateBool(STRIP_CODE_COMMENTS,FALSE);
+  Config_updateBool(STRIP_CODE_COMMENTS,FALSE);
   // temporarily disable create subdirs for linking to our example
-  createSubdirs = Config_updateBool(CREATE_SUBDIRS,FALSE);
+  Config_updateBool(CREATE_SUBDIRS,FALSE);
 
   startFile(ol,"graph_legend",QCString(),theTranslator->trLegendTitle());
   startTitle(ol,QCString());
@@ -3876,7 +3876,7 @@ static void writeGroupTreeNode(OutputList &ol, const GroupDef *gd, int level, FT
           {
             Doxygen::indexList->addContentsItem(FALSE,
                 nd->displayName(),nd->getReference(),
-                nd->getOutputFileBase(),QCString(),FALSE,addToIndex);
+                nd->getOutputFileBase(),QCString(),FALSE,!Config_getBool(SHOW_NAMESPACES));
           }
         }
       }
@@ -3900,7 +3900,7 @@ static void writeGroupTreeNode(OutputList &ol, const GroupDef *gd, int level, FT
           {
             Doxygen::indexList->addContentsItem(FALSE,
                 fd->displayName(),fd->getReference(),
-                fd->getOutputFileBase(),QCString(),FALSE,FALSE);
+                fd->getOutputFileBase(),QCString(),FALSE,fd->isLinkableViaGroup());
           }
         }
       }
@@ -4272,7 +4272,7 @@ static void writeConceptIndex(OutputList &ol)
 
 static void writeUserGroupStubPage(OutputList &ol,LayoutNavEntry *lne)
 {
-  if (lne->baseFile().left(9)=="usergroup")
+  if (lne->baseFile().startsWith("usergroup"))
   {
     ol.pushGeneratorState();
     ol.disableAllBut(OutputGenerator::Html);
@@ -4309,9 +4309,9 @@ static void writeUserGroupStubPage(OutputList &ol,LayoutNavEntry *lne)
 
 static void writeIndex(OutputList &ol)
 {
-  static bool fortranOpt = Config_getBool(OPTIMIZE_FOR_FORTRAN);
-  static bool vhdlOpt    = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
-  static QCString projectName = Config_getString(PROJECT_NAME);
+  bool fortranOpt = Config_getBool(OPTIMIZE_FOR_FORTRAN);
+  bool vhdlOpt    = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
+  QCString projectName = Config_getString(PROJECT_NAME);
   // save old generator state
   ol.pushGeneratorState();
 
@@ -4338,7 +4338,7 @@ static void writeIndex(OutputList &ol)
   }
   else if (Doxygen::mainPage)
   {
-    title = filterTitle(Doxygen::mainPage->title().str());
+    title = filterTitle(Doxygen::mainPage->title());
   }
 
   QCString indexName="index";
@@ -4612,7 +4612,7 @@ static void writeIndex(OutputList &ol)
       ol.parseText(/*projPrefix+*/theTranslator->trExceptionIndex());
       ol.endIndexSection(isCompoundIndex);
     }
-    if (documentedFiles>0)
+    if (Config_getBool(SHOW_FILES) && documentedFiles>0)
     {
       ol.startIndexSection(isFileIndex);
       ol.parseText(/*projPrefix+*/theTranslator->trFileIndex());
@@ -4663,7 +4663,7 @@ static void writeIndex(OutputList &ol)
     ol.parseText(/*projPrefix+*/theTranslator->trExceptionDocumentation());
     ol.endIndexSection(isClassDocumentation);
   }
-  if (documentedFiles>0)
+  if (Config_getBool(SHOW_FILES) && documentedFiles>0)
   {
     ol.startIndexSection(isFileDocumentation);
     ol.parseText(/*projPrefix+*/theTranslator->trFileDocumentation());
@@ -4702,7 +4702,11 @@ static std::vector<bool> indexWritten;
 
 static void writeIndexHierarchyEntries(OutputList &ol,const LayoutNavEntryList &entries)
 {
-  static bool sliceOpt = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
+  auto isRef = [](const QCString &s)
+  {
+    return s.startsWith("@ref") || s.startsWith("\\ref");
+  };
+  bool sliceOpt = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
   for (const auto &lne : entries)
   {
     LayoutNavEntry::Kind kind = lne->kind();
@@ -4736,7 +4740,7 @@ static void writeIndexHierarchyEntries(OutputList &ol,const LayoutNavEntryList &
           break;
         case LayoutNavEntry::Namespaces:
           {
-            static bool showNamespaces = Config_getBool(SHOW_NAMESPACES);
+            bool showNamespaces = Config_getBool(SHOW_NAMESPACES);
             if (showNamespaces)
             {
               if (documentedNamespaces>0 && addToIndex)
@@ -4755,7 +4759,7 @@ static void writeIndexHierarchyEntries(OutputList &ol,const LayoutNavEntryList &
           break;
         case LayoutNavEntry::NamespaceList:
           {
-            static bool showNamespaces = Config_getBool(SHOW_NAMESPACES);
+            bool showNamespaces = Config_getBool(SHOW_NAMESPACES);
             if (showNamespaces)
             {
               msg("Generating namespace index...\n");
@@ -4900,7 +4904,7 @@ static void writeIndexHierarchyEntries(OutputList &ol,const LayoutNavEntryList &
           break;
         case LayoutNavEntry::Files:
           {
-            if (documentedFiles>0 && addToIndex)
+            if (Config_getBool(SHOW_FILES) && documentedFiles>0 && addToIndex)
             {
               Doxygen::indexList->addContentsItem(TRUE,lne->title(),QCString(),lne->baseFile(),QCString());
               Doxygen::indexList->incContentsDepth();
@@ -4934,8 +4938,8 @@ static void writeIndexHierarchyEntries(OutputList &ol,const LayoutNavEntryList &
             {
               url.prepend("^"); // prepend ^ to absolute URL
             }
-            bool isRef = lne->baseFile().left(4)=="@ref" || lne->baseFile().left(4)=="\\ref";
-            Doxygen::indexList->addContentsItem(TRUE,lne->title(),QCString(),url,QCString(),FALSE,isRef || isRelative);
+            Doxygen::indexList->addContentsItem(TRUE,lne->title(),QCString(),
+                                                url,QCString(),FALSE,isRef(lne->baseFile()) || isRelative);
           }
           break;
         case LayoutNavEntry::UserGroup:
@@ -4955,8 +4959,8 @@ static void writeIndexHierarchyEntries(OutputList &ol,const LayoutNavEntryList &
                 {
                   url.prepend("^"); // prepend ^ to absolute URL
                 }
-                bool isRef = lne->baseFile().left(4)=="@ref" || lne->baseFile().left(4)=="\\ref";
-                Doxygen::indexList->addContentsItem(TRUE,lne->title(),QCString(),url,QCString(),FALSE,isRef || isRelative);
+                Doxygen::indexList->addContentsItem(TRUE,lne->title(),QCString(),
+                                                    url,QCString(),FALSE,isRef(lne->baseFile()) || isRelative);
               }
             }
             else
@@ -4998,8 +5002,9 @@ static void writeIndexHierarchyEntries(OutputList &ol,const LayoutNavEntryList &
 
 static bool quickLinkVisible(LayoutNavEntry::Kind kind)
 {
-  static bool showNamespaces = Config_getBool(SHOW_NAMESPACES);
-  static bool sliceOpt = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
+  bool showNamespaces = Config_getBool(SHOW_NAMESPACES);
+  bool showFiles = Config_getBool(SHOW_FILES);
+  bool sliceOpt = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
   switch (kind)
   {
     case LayoutNavEntry::MainPage:           return TRUE;
@@ -5027,8 +5032,8 @@ static bool quickLinkVisible(LayoutNavEntry::Kind kind)
     case LayoutNavEntry::ExceptionList:      return annotatedExceptions>0;
     case LayoutNavEntry::ExceptionIndex:     return annotatedExceptions>0;
     case LayoutNavEntry::ExceptionHierarchy: return hierarchyExceptions>0;
-    case LayoutNavEntry::Files:              return documentedFiles>0;
-    case LayoutNavEntry::FileList:           return documentedFiles>0;
+    case LayoutNavEntry::Files:              return documentedFiles>0 && showFiles;
+    case LayoutNavEntry::FileList:           return documentedFiles>0 && showFiles;
     case LayoutNavEntry::FileGlobals:        return documentedFileMembers[FMHL_All]>0;
     case LayoutNavEntry::Examples:           return !Doxygen::exampleLinkedMap->empty();
     case LayoutNavEntry::None:             // should never happen, means not properly initialized

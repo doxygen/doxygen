@@ -63,24 +63,12 @@ Just follow the following steps:
 <li>Edit `doxygen/src/language.cpp`:
     Add the following code:
 \verbatim
-#ifdef LANG_XX
 #include<translator_xx.h>
-#endif
 \endverbatim
-    Remember to use the same symbol `LANG_XX` that was added to `doxygen/src/lang_cfg.h`.
     <p>Now, in <code>setTranslator()</code> add
 \verbatim
-#ifdef LANG_XX
-    else if (L_EQUAL("your_language_name"))
-    {
-      theTranslator = new TranslatorYourLanguage;
-    }
-#endif
+    case OUTPUT_LANGUAGE_t::YourLanguage:          theTranslator = new TranslatorYourLanguage; break;
 \endverbatim
-    after the <code>if { ... }</code>. I.e., it must be placed after the code
-    for creating the English translator at the beginning, and before the
-    <code>else { ... }</code> part that creates the translator for the
-    default language (English again).
 <li>Edit <code>doxygen/src/translator_xx.h</code>:
    <ul>
    <li>Use the UTF-8 capable editor and open the file using the UTF-8 mode.
@@ -114,10 +102,10 @@ Just follow the following steps:
 <li>Build the documentation by giving the appropriate build command (like: `make docs`).
 <li>Now you can use <code>OUTPUT_LANGUAGE = your_language_name</code>
     in the config file to generate output in your language.
-<li>Send <code>translator_xx.h</code> to me so I can add it to doxygen.
+<li>The preferred way is to clone the doxygen repository at GitHub and make a Pull Request.
+    Alternatively send <code>translator_xx.h</code> to me so I can add it to doxygen.
     Send also your name and e-mail address to be included in the
-    \c maintainers.txt list. You can also clone the doxygen repository
-    at GitHub and make a Pull Request later.
+    \c maintainers.txt list.
 </ol>
 
 
@@ -251,9 +239,7 @@ new methods from the source files for each of the languages.
 The information is stored in the translator report ASCII file
 (\c %(translatorReportFileName)s).
 
-\htmlonly If you compiled this documentation
-from sources and if you have also doxygen sources available the
-link %(translatorReportLink)s should be valid.\endhtmlonly
+\htmlonly You can find this file as %(translatorReportLink)s.\endhtmlonly
 
 Looking at the base class of the language translator, the script
 guesses also the status of the translator -- see the last column of

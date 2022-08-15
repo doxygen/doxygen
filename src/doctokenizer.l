@@ -177,7 +177,7 @@ static int computeIndent(const char *str,size_t length)
   if (str==0 || length==std::string::npos) return 0;
   size_t i;
   int indent=0;
-  static int tabSize=Config_getInt(TAB_SIZE);
+  int tabSize=Config_getInt(TAB_SIZE);
   for (i=0;i<length;i++)
   {
     if (str[i]=='\t')
@@ -279,8 +279,8 @@ ATTRIB    {ATTRNAME}{WS}*("="{WS}*(("\""[^\"]*"\"")|("'"[^\']*"'")|[^ \t\r\n'"><
 URLCHAR   [a-z_A-Z0-9\!\~\,\:\;\'\$\?\@\&\%\#\.\-\+\/\=\x80-\xFF]
 URLMASK   ({URLCHAR}+([({]{URLCHAR}*[)}])?)+
 URLPROTOCOL ("http:"|"https:"|"ftp:"|"ftps:"|"sftp:"|"file:"|"news:"|"irc:"|"ircs:")
-FILEICHAR [a-z_A-Z0-9\\:\\\/\-\+&#@]
-FILEECHAR [a-z_A-Z0-9\-\+&#@]
+FILEICHAR [a-z_A-Z0-9\\:\\\/\-\+=&#@]
+FILEECHAR [a-z_A-Z0-9\-\+=&#@]
 FILECHARS {FILEICHAR}*{FILEECHAR}+
 HFILEMASK {FILEICHAR}*("."{FILEICHAR}+)+{FILECHARS}*
 VFILEMASK {FILECHARS}("."{FILECHARS})*
@@ -389,7 +389,7 @@ SHOWDATE       [0-9][0-9]?"-"[0-9][0-9]?"-"[0-9][0-9][0-9][0-9]
 %x St_Options
 %x St_Block
 %x St_Emoji
-%x St_Iline
+%x St_ILine
 %x St_ShowDate
 
 %x St_Sections
@@ -961,7 +961,8 @@ SHOWDATE       [0-9][0-9]?"-"[0-9][0-9]?"-"[0-9][0-9][0-9][0-9]
                          return TK_SYMBOL;
                        }
 <St_TitleN>{HTMLTAG}   {
-                         lineCount(yytext,yyleng);
+                         yyextra->token->name = yytext;
+                         return TK_HTMLTAG;
                        }
 <St_TitleN>\n          { /* new line => end of title */
                          unput(*yytext);
@@ -1274,8 +1275,8 @@ SHOWDATE       [0-9][0-9]?"-"[0-9][0-9]?"-"[0-9][0-9][0-9][0-9]
                          unput(*yytext);
                          return 0;
                        }
-<St_Iline>{LINENR}/[\n\.]     |
-<St_Iline>{LINENR}{BLANK}     {
+<St_ILine>{LINENR}/[\n\.]     |
+<St_ILine>{LINENR}{BLANK}     {
                          bool ok = false;
                          int nr = QCString(yytext).toInt(&ok);
                          if (!ok)
@@ -1288,7 +1289,7 @@ SHOWDATE       [0-9][0-9]?"-"[0-9][0-9]?"-"[0-9][0-9][0-9][0-9]
                          }
                          return TK_WORD;
                        }
-<St_Iline>.            {
+<St_ILine>.            {
                          return 0;
                        }
 <St_File>{FILEMASK}    {
@@ -1462,7 +1463,7 @@ SHOWDATE       [0-9][0-9]?"-"[0-9][0-9]?"-"[0-9][0-9][0-9][0-9]
                          lineCount(yytext,yyleng);
                          yyextra->secTitle = yytext;
                          yyextra->secTitle = yyextra->secTitle.stripWhiteSpace();
-                         if (yyextra->secTitle.right(8)=="\\ilinebr")
+                         if (yyextra->secTitle.endsWith("\\ilinebr"))
                          {
                            yyextra->secTitle.left(yyextra->secTitle.length()-8);
                          }
@@ -1697,6 +1698,13 @@ DocTokenizer::~DocTokenizer()
 int DocTokenizer::lex()
 {
   return doctokenizerYYlex(p->yyscanner);
+}
+
+void DocTokenizer::unputString(const QCString &tag)
+{
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  unput_string(tag.data(),tag.length());
 }
 
 void DocTokenizer::findSections(const QCString &input,const Definition *d,
@@ -2008,11 +2016,11 @@ void DocTokenizer::setStateEmoji()
   BEGIN(St_Emoji);
 }
 
-void DocTokenizer::setStateIline()
+void DocTokenizer::setStateILine()
 {
   yyscan_t yyscanner = p->yyscanner;
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  BEGIN(St_Iline);
+  BEGIN(St_ILine);
 }
 
 void DocTokenizer::setStateQuotedString()

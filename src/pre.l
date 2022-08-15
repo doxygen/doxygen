@@ -292,6 +292,7 @@ struct preYY_state
   QCString           blockName;
   int                condCtx        = 0;
   bool               skip           = false;
+  bool               insideIDL      = false;
   bool               insideCS       = false; // C# has simpler preprocessor
   bool               insideFtn      = false;
   bool               isSource       = false;
@@ -415,6 +416,7 @@ WSopt [ \t\r]*
 %x      CondLineC
 %x      CondLineCpp
 %x      SkipCond
+%x      IDLquote
 
 %%
 
@@ -435,6 +437,32 @@ WSopt [ \t\r]*
                                           outputArray(yyscanner,yytext,yyleng);
                                           BEGIN(LexCopyLine);
                                         }
+<Start>^{Bopt}"cpp_quote"{Bopt}"("{Bopt}\" {
+                                          if (yyextra->insideIDL)
+                                          {
+                                            BEGIN(IDLquote);
+                                          }
+                                          else
+                                          {
+                                            REJECT;
+                                          }
+                                        }
+<IDLquote>"\\\\"                        {
+                                          outputArray(yyscanner,"\\",1);
+                                        }
+<IDLquote>"\\\""                        {
+                                          outputArray(yyscanner,"\"",1);
+                                        }
+<IDLquote>"\""{Bopt}")"                 {
+                                          BEGIN(Start);
+                                        }
+<IDLquote>\n                            {
+                                          outputChar(yyscanner,'\n');
+                                          yyextra->yyLineNr++;
+                                        }
+<IDLquote>.                             {
+                                          outputArray(yyscanner,yytext,yyleng);
+                                        }
 <Start>^{Bopt}/[^#]                     {
                                           outputArray(yyscanner,yytext,yyleng);
                                           BEGIN(CopyLine);
@@ -448,7 +476,9 @@ WSopt [ \t\r]*
                                           BEGIN(CopyLine);
                                         }
 <Start>^{B}*[_A-Z][_A-Z0-9]+{B}*"("[^\(\)\n]*"("[^\)\n]*")"[^\)\n]*")"{B}*\n | // function list macro with one (...) argument, e.g. for K_GLOBAL_STATIC_WITH_ARGS
-<Start>^{B}*[_A-Z][_A-Z0-9]+{B}*"("[^\)\n]*")"{B}*\n { // function like macro
+<Start>^{B}*[_A-Z][_A-Z0-9]+{B}*"("[^\)\n]*")"{B}*\n | // function like macro
+<Start>^{B}*[_A-Z][_A-Z0-9]+{B}*"("[^\(\)\n]*"("[^\)\n]*")"[^\)\n]*")"/{B}*("//"|"/\*") | // function list macro with one (...) argument followed by comment
+<Start>^{B}*[_A-Z][_A-Z0-9]+{B}*"("[^\)\n]*")"/{B}*("//"|"/\*") { // function like macro followed by comment
                                           bool skipFuncMacros = Config_getBool(SKIP_FUNCTION_MACROS);
                                           QCString name(yytext);
                                           int pos = name.find('(');
@@ -467,8 +497,12 @@ WSopt [ \t\r]*
                                                )
                                              )
                                           {
-                                            outputChar(yyscanner,'\n');
-                                            yyextra->yyLineNr++;
+                                            // Only when ends on \n
+                                            if (yytext[yyleng-1] == '\n')
+                                            {
+                                              outputChar(yyscanner,'\n');
+                                              yyextra->yyLineNr++;
+                                            }
                                           }
                                           else // don't skip
                                           {
@@ -1367,7 +1401,7 @@ WSopt [ \t\r]*
                                           {
                                             if (yyextra->ccomment)
                                             {
-                                              outputArray(yyscanner,"/** ",4);
+                                              outputArray(yyscanner,"/** ",4); // */
                                             }
                                             BEGIN(yyextra->condCtx);
                                           }
@@ -1764,7 +1798,7 @@ WSopt [ \t\r]*
                                         }
 <*>{CCS}/{CCE}                          |
 <*>{CCS}[*!]?                           {
-                                          if (YY_START==SkipVerbatim || YY_START==SkipCond)
+                                          if (YY_START==SkipVerbatim || YY_START==SkipCond || YY_START==IDLquote)
                                           {
                                             REJECT;
                                           }
@@ -1786,7 +1820,7 @@ WSopt [ \t\r]*
                                           }
                                         }
 <*>{CPPC}[/!]?                          {
-                                          if (YY_START==SkipVerbatim || YY_START==SkipCond || getLanguageFromFileName(yyextra->fileName)==SrcLangExt_Fortran)
+                                          if (YY_START==SkipVerbatim || YY_START==SkipCond || getLanguageFromFileName(yyextra->fileName)==SrcLangExt_Fortran || YY_START==IDLquote)
                                           {
                                             REJECT;
                                           }
@@ -1844,6 +1878,7 @@ static void setFileName(yyscan_t yyscanner,const QCString &name)
   //printf("setFileName(%s) state->fileName=%s state->yyFileDef=%p\n",
   //    name,qPrint(state->fileName),state->yyFileDef);
   if (state->yyFileDef && state->yyFileDef->isReference()) state->yyFileDef=0;
+  state->insideIDL = getLanguageFromFileName(state->fileName)==SrcLangExt_IDL;
   state->insideCS = getLanguageFromFileName(state->fileName)==SrcLangExt_CSharp;
   state->insideFtn = getLanguageFromFileName(state->fileName)==SrcLangExt_Fortran;
   state->isSource = guessSection(state->fileName);
@@ -2029,7 +2064,7 @@ static QCString extractTrailingComment(const QCString &s)
             {
               i++;
             }
-            // only /*!< or /**< are treated as a comment for the macro name,
+            // only /*!< ... */ or /**< ... */ are treated as a comment for the macro name,
             // otherwise the comment is treated as part of the macro definition
             return ((s[i+1]=='*' || s[i+1]=='!') && s[i+2]=='<') ? &s[i-1] : "";
           }
@@ -3098,9 +3133,7 @@ static void readIncludeFile(yyscan_t yyscanner,const QCString &inc)
   {
     // extract include path+name
     QCString incFileName=inc.mid(s,i-s).stripWhiteSpace();
-
-    QCString dosExt = incFileName.right(4);
-    if (dosExt==".exe" || dosExt==".dll" || dosExt==".tlb")
+    if (incFileName.endsWith(".exe") || incFileName.endsWith(".dll") || incFileName.endsWith(".tlb"))
     {
       // skip imported binary files (e.g. M$ type libraries)
       return;

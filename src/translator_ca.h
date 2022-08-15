@@ -1359,14 +1359,18 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
     /*! Used as a heading for a list of Java class functions with package
      * scope.
      */
-    virtual QCString trPackageMembers()
+    virtual QCString trPackageFunctions()
     {
       return "Funcions de Paquet";
+    }
+    virtual QCString trPackageMembers()
+    {
+      return "Membres de Paquet";
     }
     /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
-    virtual QCString trStaticPackageMembers()
+    virtual QCString trStaticPackageFunctions()
     {
       return "Funcions Estàtiques de Paquet";
     }

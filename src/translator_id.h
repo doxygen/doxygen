@@ -1343,14 +1343,18 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
     /*! Used as a heading for a list of Java class functions with package
      * scope.
      */
-    virtual QCString trPackageMembers()
+    virtual QCString trPackageFunctions()
     {
       return "Daftar Fungsi Paket";
+    }
+    virtual QCString trPackageMembers()
+    {
+      return "Anggota-anggota Paket";
     }
     /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
-    virtual QCString trStaticPackageMembers()
+    virtual QCString trStaticPackageFunctions()
     {
       return "Daftar Fungsi Statis Paket";
     }

@@ -34,7 +34,7 @@ struct EdgeProperties
 /*! mapping from protection levels to color names */
 static const char *normalEdgeColorMap[] =
 {
-  "midnightblue",  // Public
+  "steelblue1",    // Public
   "darkgreen",     // Protected
   "firebrick4",    // Private
   "darkorchid3",   // "use" relation
@@ -61,7 +61,7 @@ static const char *normalEdgeStyleMap[] =
 
 static const char *umlEdgeColorMap[] =
 {
-  "midnightblue",  // Public
+  "steelblue1",    // Public
   "darkgreen",     // Protected
   "firebrick4",    // Private
   "grey25",        // "use" relation
@@ -96,7 +96,7 @@ static EdgeProperties umlEdgeProps =
   umlEdgeColorMap, umlArrowStyleMap, umlEdgeStyleMap
 };
 
-static QCString escapeTooltip(const QCString &tooltip)
+QCString escapeTooltip(const QCString &tooltip)
 {
   if (tooltip.isEmpty()) return tooltip;
   QCString result;
@@ -131,7 +131,7 @@ static void writeBoxMemberList(TextStream &t,
     }
 
     int count=0;
-    static auto dotUmlDetails = Config_getEnum(DOT_UML_DETAILS);
+    auto dotUmlDetails = Config_getEnum(DOT_UML_DETAILS);
     for (const auto &mma : *ml)
     {
       if (mma->getClassDef() == scope &&
@@ -354,34 +354,9 @@ void DotNode::deleteNodes(DotNode *node)
   }
 }
 
-void DotNode::writeBox(TextStream &t,
-                       GraphType gt,
-                       GraphOutputFormat /*format*/,
-                       bool hasNonReachableChildren) const
+void DotNode::writeLabel(TextStream &t, GraphType gt) const
 {
-  const char *labCol;
-  if (m_classDef)
-  {
-    if (m_classDef->hasDocumentation() && hasNonReachableChildren)
-      labCol = "red";
-    else if (m_classDef->hasDocumentation() && !hasNonReachableChildren)
-      labCol = "black";
-    else if (!m_classDef->hasDocumentation() && hasNonReachableChildren)
-      labCol = "orangered";
-    else // (!m_classDef->hasDocumentation() && !hasNonReachableChildren)
-    {
-      labCol = "grey75";
-      if (m_classDef->templateMaster() && m_classDef->templateMaster()->hasDocumentation())
-        labCol = "black";
-    }
-  }
-  else
-  {
-    labCol = m_url.isEmpty() ? "grey75" :  // non link
-    (hasNonReachableChildren ? "red" : "black");
-  }
-  t << "  Node" << m_number << " [label=\"";
-
+  t << "label=";
   if (m_classDef && Config_getBool(UML_LOOK) && (gt==Inheritance || gt==Collaboration))
   {
     // add names shown as relations to a set, so we don't show
@@ -392,7 +367,7 @@ void DotNode::writeBox(TextStream &t,
     {
       if (!ei.label().isEmpty()) // labels joined by \n
       {
-        int i=ei.label().find('\n');
+        int i;
         int p=0;
         QCString lab;
         while ((i=ei.label().find('\n',p))!=-1)
@@ -407,8 +382,8 @@ void DotNode::writeBox(TextStream &t,
     }
 
     //printf("DotNode::writeBox for %s\n",qPrint(m_classDef->name()));
-    t << "{" << convertLabel(m_label) << "\\n";
-    static auto dotUmlDetails = Config_getEnum(DOT_UML_DETAILS);
+    t << "\"{" << convertLabel(m_label) << "\\n";
+    auto dotUmlDetails = Config_getEnum(DOT_UML_DETAILS);
     if (dotUmlDetails!=DOT_UML_DETAILS_t::NONE)
     {
       t << "|";
@@ -450,38 +425,92 @@ void DotNode::writeBox(TextStream &t,
         }
       }
     }
-    t << "}";
+    t << "}\"";
+  }
+  else if (Config_getString(DOT_NODE_ATTR).contains("shape=plain"))
+  {
+    if (m_isRoot)
+      t << "<<b>" << convertToXML(m_label) << "</b>>";
+    else if (m_truncated == Truncated)
+      t << "<<i>" << convertToXML(m_label) << "</i>>";
+    else
+      t << '"' << convertLabel(m_label) << '"';
   }
   else // standard look
   {
-    t << convertLabel(m_label);
+    t << '"' << convertLabel(m_label) << '"';
   }
-  t << "\",height=0.2,width=0.4";
+}
+
+void DotNode::writeUrl(TextStream &t) const
+{
+  if (m_url.isEmpty())
+    return;
+  int tagPos = m_url.findRev('$');
+  t << ",URL=\"";
+  QCString noTagURL = m_url;
+  if (tagPos!=-1)
+  {
+    t << m_url.left(tagPos);
+    noTagURL = m_url.mid(tagPos);
+  }
+  int anchorPos = noTagURL.findRev('#');
+  if (anchorPos==-1)
+  {
+    t << addHtmlExtensionIfMissing(noTagURL) << "\"";
+  }
+  else
+  {
+    t << addHtmlExtensionIfMissing(noTagURL.left(anchorPos))
+      << noTagURL.right(noTagURL.length() - anchorPos) << "\"";
+  }
+}
+
+void DotNode::writeBox(TextStream &t,
+                       GraphType gt,
+                       GraphOutputFormat /*format*/,
+                       bool hasNonReachableChildren) const
+{
+  const char *labCol;
+  const char *fillCol = "white";
+  if (m_classDef)
+  {
+    if (m_classDef->hasDocumentation() && hasNonReachableChildren)
+    {
+      labCol = "red";
+      fillCol = "#FFF0F0";
+    }
+    else if (m_classDef->hasDocumentation() && !hasNonReachableChildren)
+      labCol = "gray40";
+    else if (!m_classDef->hasDocumentation() && hasNonReachableChildren)
+      labCol = "orangered";
+    else // (!m_classDef->hasDocumentation() && !hasNonReachableChildren)
+    {
+      labCol = "grey75";
+      if (m_classDef->templateMaster() && m_classDef->templateMaster()->hasDocumentation())
+        labCol = "gray40";
+    }
+  }
+  else
+  {
+    labCol = m_url.isEmpty() ? "grey60" :  // non link
+    (hasNonReachableChildren ? "red" : "grey40");
+    fillCol = m_url.isEmpty() ? "#E0E0E0" :
+    (hasNonReachableChildren ? "#FFF0F0" : "white");
+  }
+  t << "  Node" << m_number << " [";
+  writeLabel(t,gt);
+  t << ",height=0.2,width=0.4";
   if (m_isRoot)
   {
-    t << ",color=\"black\", fillcolor=\"grey75\", style=\"filled\", fontcolor=\"black\"";
+    t << ",color=\"gray40\", fillcolor=\"grey60\", style=\"filled\", fontcolor=\"black\"";
   }
   else
   {
     t << ",color=\"" << labCol << "\"";
-    if (!Config_getBool(DOT_TRANSPARENT))
-    {
-      t << ", fillcolor=\"white\"";
-      t << ", style=\"filled\"";
-    }
-    if (!m_url.isEmpty())
-    {
-      int anchorPos = m_url.findRev('#');
-      if (anchorPos==-1)
-      {
-        t << ",URL=\"" << addHtmlExtensionIfMissing(m_url) << "\"";
-      }
-      else
-      {
-        t << ",URL=\"" << addHtmlExtensionIfMissing(m_url.left(anchorPos))
-          << m_url.right(m_url.length()-anchorPos) << "\"";
-      }
-    }
+    t << ", fillcolor=\"" << fillCol << "\"";
+    t << ", style=\"filled\"";
+    writeUrl(t);
   }
   if (!m_tooltip.isEmpty())
   {
@@ -519,8 +548,7 @@ void DotNode::writeArrow(TextStream &t,
   bool umlUseArrow = aStyle=="odiamond";
 
   if (pointBack && !umlUseArrow) t << "dir=\"back\",";
-  t << "color=\"" << eProps->edgeColorMap[ei->color()]
-    << "\",fontsize=\"" << Config_getInt(DOT_FONTSIZE) << "\",";
+  t << "color=\"" << eProps->edgeColorMap[ei->color()] << "\",";
   t << "style=\"" << eProps->edgeStyleMap[ei->style()] << "\"";
   if (!ei->label().isEmpty())
   {
@@ -539,7 +567,6 @@ void DotNode::writeArrow(TextStream &t,
       t << ",arrowhead=\"" << eProps->arrowStyleMap[ei->color()] << "\"";
   }
 
-  if (format==GOF_BITMAP) t << ",fontname=\"" << Config_getString(DOT_FONTNAME) << "\"";
   t << "];\n";
 }
 
