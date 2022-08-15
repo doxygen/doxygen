@@ -109,13 +109,17 @@ function initResizable()
 
   function collapseExpand()
   {
+    var newWidth;
     if (sidenav.width()>0) {
-      restoreWidth(0);
+      newWidth=0;
     }
     else {
       var width = readSetting('width');
-      if (width>$TREEVIEW_WIDTH && width<$(window).width()) { restoreWidth(width); } else { restoreWidth($TREEVIEW_WIDTH); }
+      newWidth = (width>$TREEVIEW_WIDTH && width<$(window).width()) ? width : $TREEVIEW_WIDTH;
     }
+    restoreWidth(newWidth);
+    var sidenavWidth = $(sidenav).outerWidth();
+    writeSetting('width',sidenavWidth-barWidth);
   }
 
   header  = $("#top");
