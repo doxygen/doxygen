@@ -67,7 +67,7 @@ Just follow the following steps:
 \endverbatim
     <p>Now, in <code>setTranslator()</code> add
 \verbatim
-    case OUTPUT_LANGUAGE_t::YourLanguage:          theTranslator = new TranslatorYourLanguage; break;
+case OUTPUT_LANGUAGE_t::YourLanguage: theTranslator = new TranslatorYourLanguage; break;
 \endverbatim
 <li>Edit <code>doxygen/src/translator_xx.h</code>:
    <ul>
