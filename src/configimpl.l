@@ -1287,8 +1287,8 @@ void ConfigImpl::emptyValueToDefault()
   }
 }
 
-static const reg::Ex reEnvVar(R"(\$\((\a[\w.-]*)\))");                 // e.g. $(HOME)
-static const reg::Ex reEnvVarExt(R"(\$\((\a[\w.-]*\(\a[\w.-]*\))\))"); // e.g. $(PROGRAMFILES(X86))
+static const reg::Ex reEnvVar(R"(\$\((\a[\w.-]*(:\-.*)?)\))");                 // e.g. $(HOME) or $(HOME:val)
+static const reg::Ex reEnvVarExt(R"(\$\((\a[\w.-]*\(\a[\w.-]*\)(:\-.*)?)\))"); // e.g. $(PROGRAMFILES(X86)) or $(PROGRAMFILES(X86):val)
 
 static bool containsEnvVar(QCString &str)
 {
@@ -1313,7 +1313,15 @@ static void substEnvVarsInString(QCString &str)
       size_t l = match.length();
       result+=s.substr(p,i-p);
       std::string matchContents = match[1].str();
+      std::string replVal = "";
+      size_t splitPos;
+      if ((splitPos = matchContents.find(":-")) != std::string::npos)
+      {
+        replVal = matchContents.substr(splitPos+2);
+        matchContents = matchContents.substr(0,splitPos);
+      }
       QCString env=Portable::getenv(matchContents.c_str()); // get content of $(..) match
+      if (env.isEmpty()) env = replVal;
       substEnvVarsInString(env); // recursively expand variables if needed.
       result+=env.str();
       p=i+l;
