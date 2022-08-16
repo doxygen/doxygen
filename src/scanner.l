@@ -3275,6 +3275,15 @@ NONLopt [^\n]*
                                           yyextra->lastStringContext=YY_START;
                                           BEGIN(CopyGString);
                                         }
+<GCopyQuare>\'                          {
+                                          *yyextra->pCopySquareGString << *yytext;
+                                          if (yyextra->insidePHP)
+                                          {
+                                            yyextra->pCopyQuotedGString=yyextra->pCopySquareGString;
+                                            yyextra->lastStringContext=YY_START;
+                                            BEGIN(CopyPHPGString);
+                                          }
+                                        }
 <GCopySquare>"["                        {
                                           *yyextra->pCopySquareGString << *yytext;
                                           yyextra->squareCount++;
@@ -3311,7 +3320,7 @@ NONLopt [^\n]*
                                             *yyextra->pCopySquareGString << yytext;
                                           }
                                         }
-<GCopySquare>[^"\[\]\n\/,]+              {
+<GCopySquare>[^"'\[\]\n\/,]+            {
                                           *yyextra->pCopySquareGString << yytext;
                                         }
 <GCopySquare>.                          {
