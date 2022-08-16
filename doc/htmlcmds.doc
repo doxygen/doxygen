@@ -1,12 +1,12 @@
 /******************************************************************************
  *
- * 
+ *
  *
  * Copyright (C) 1997-2015 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -20,110 +20,111 @@
 
 Here is a list of all HTML commands that may be used inside the
 documentation. Note that although these HTML tags are translated to the
-proper commands for output formats other than HTML, all attributes 
-of a HTML tag are passed on to the HTML output only 
+proper commands for output formats other than HTML, all attributes
+of a HTML tag are passed on to the HTML output only
 (the \c HREF and \c NAME attributes for the \c A tag are the only exception).
 
-<ul>
-<li><tt>\anchor htmltag_A_HREF \addindex "\<A HREF=\"...\"\>"\<A HREF="..."\></tt> Starts a hyperlink 
-                       (if supported by the output format). 
-<li><tt>\anchor htmltag_A_ID \addindex "\<A ID=\"...\"\>"\<A ID="..."\></tt> Starts a named anchor 
-                       (if supported by the output format).
-<li><tt>\anchor htmltag_A_NAME \addindex "\<A NAME=\"...\"\>"\<A NAME="..."\></tt> Starts a named anchor 
-                       (if supported by the output format).
-<li><tt>\anchor htmltag_endA \addindex "\</A\>"\</A\></tt>    Ends a link or anchor 
-<li><tt>\anchor htmltag_B \addindex "\<B\>"\<B\></tt>     Starts a piece of text displayed in a bold font.
-<li><tt>\anchor htmltag_endB \addindex "\</B\>"\</B\></tt>    Ends a \ref htmltag_B "\<B\>" section.
-<li><tt>\anchor htmltag_BLOCKQUOTE \addindex "\<BLOCKQUOTE\>"\<BLOCKQUOTE\></tt> Starts a quotation block.
-<li><tt>\anchor htmltag_endBLOCKQUOTE \addindex "\</BLOCKQUOTE\>"\</BLOCKQUOTE\></tt> Ends the quotation block.
-<li><tt>\anchor htmltag_BR \addindex "\<BR\>"\<BR\></tt>    Forces a line break.
-<li><tt>\anchor htmltag_CENTER \addindex "\<CENTER\>"\<CENTER\></tt> starts a section of centered text.
-<li><tt>\anchor htmltag_endCENTER \addindex "\</CENTER\>"\</CENTER\></tt> ends a section of centered text.
-<li><tt>\anchor htmltag_CAPTION \addindex "\<CAPTION\>"\<CAPTION\></tt> Starts a caption. Use within a table only.
-<li><tt>\anchor htmltag_endCAPTION \addindex "\</CAPTION\>"\</CAPTION\></tt> Ends a caption. Use within a table only.
-<li><tt>\anchor htmltag_CITE \addindex "\<CITE\>"\<CITE\></tt> Starts a section of text displayed in a font specific for citations.
-<li><tt>\anchor htmltag_endCITE \addindex "\</CITE\>"\</CITE\></tt> Ends a \ref htmltag_CITE "\<CITE\>" section.
-<li><tt>\anchor htmltag_CODE \addindex "\<CODE\>"\<CODE\></tt>  Starts a piece of text displayed in a typewriter font.
-                       Note that only for C# code, this command is equivalent to 
-                       \ref cmdcode "\\code" (see \ref xmltag_code "\<code\>"). 
-<li><tt>\anchor htmltag_endCODE \addindex "\</CODE\>"\</CODE\></tt> Ends a \ref htmltag_CODE "\<CODE\>" section.
+<table class="markdownTable">
+<tr class="markdownTableHead"><th class="markdownTableHeadLeft">HTML Command</th><th class="markdownTableHeadLeft">Description</th></tr>
+<tr><td valign="top"><tt>\anchor htmltag_A_HREF \addindex "\<A HREF=\"...\"\>"\<A HREF="..."\></tt></td><td valign="top">Starts a hyperlink
+                       (if supported by the output format).</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_A_ID \addindex "\<A ID=\"...\"\>"\<A ID="..."\></tt></td><td valign="top">Starts a named anchor
+                       (if supported by the output format).</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_A_NAME \addindex "\<A NAME=\"...\"\>"\<A NAME="..."\></tt></td><td valign="top">Starts a named anchor
+                       (if supported by the output format).</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_endA \addindex "\</A\>"\</A\></tt></td><td valign="top">Ends a link or anchor</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_B \addindex "\<B\>"\<B\></tt></td><td valign="top">Starts a piece of text displayed in a bold font.</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_endB \addindex "\</B\>"\</B\></tt></td><td valign="top">Ends a \ref htmltag_B "\<B\>" section.</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_BLOCKQUOTE \addindex "\<BLOCKQUOTE\>"\<BLOCKQUOTE\></tt></td><td valign="top">Starts a quotation block.</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_endBLOCKQUOTE \addindex "\</BLOCKQUOTE\>"\</BLOCKQUOTE\></tt></td><td valign="top">Ends the quotation block.</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_BR \addindex "\<BR\>"\<BR\></tt></td><td valign="top">Forces a line break.</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_CENTER \addindex "\<CENTER\>"\<CENTER\></tt></td><td valign="top">starts a section of centered text.</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_endCENTER \addindex "\</CENTER\>"\</CENTER\></tt></td><td valign="top">ends a section of centered text.</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_CAPTION \addindex "\<CAPTION\>"\<CAPTION\></tt></td><td valign="top">Starts a caption. Use within a table only.</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_endCAPTION \addindex "\</CAPTION\>"\</CAPTION\></tt></td><td valign="top">Ends a caption. Use within a table only.</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_CITE \addindex "\<CITE\>"\<CITE\></tt></td><td valign="top">Starts a section of text displayed in a font specific for citations.</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_endCITE \addindex "\</CITE\>"\</CITE\></tt></td><td valign="top">Ends a \ref htmltag_CITE "\<CITE\>" section.</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_CODE \addindex "\<CODE\>"\<CODE\></tt></td><td valign="top">Starts a piece of text displayed in a typewriter font.</td></tr>
                        Note that only for C# code, this command is equivalent to
-                       \ref cmdendcode "\\endcode" (see \ref xmltag_code "\<code\>").
-<li><tt>\anchor htmltag_DD \addindex "\<DD\>"\<DD\></tt>    Starts an item description.
-<li><tt>\anchor htmltag_endDD \addindex "\</DD\>"\</DD\></tt>   Ends an item description.
-<li><tt>\anchor htmltag_DEL \addindex "\<DEL\>"\<DEL\></tt>   Starts a section of deleted text, typically shown strike through text.
-<li><tt>\anchor htmltag_endDEL \addindex "\</DEL\>"\</DEL\></tt>  Ends a section of deleted text.
-<li><tt>\anchor htmltag_DETAILS \addindex "\<DETAILS\>"\<DETAILS\></tt> Starts a section of detailed text that the user can open and close (in HTML output))
-<li><tt>\anchor htmltag_endDETAILS \addindex "\</DETAILS\>"\</DETAILS\></tt> Ends a section of detailed text.
-<li><tt>\anchor htmltag_DFN \addindex "\<DFN\>"\<DFN\></tt>   Starts a piece of text displayed in a typewriter font.
-<li><tt>\anchor htmltag_endDFN \addindex "\</DFN\>"\</DFN\></tt>  Ends a \ref htmltag_DFN "\<DFN\>" section.
-<li><tt>\anchor htmltag_DIV \addindex "\<DIV\>"\<DIV></tt>    Starts a section with a specific style (HTML only)
-<li><tt>\anchor htmltag_endDIV \addindex "\</DIV\>"\</DIV></tt>   Ends a section with a specific style (HTML only)
-<li><tt>\anchor htmltag_DL \addindex "\<DL\>"\<DL\></tt>    Starts a description list.
-<li><tt>\anchor htmltag_endDL \addindex "\</DL\>"\</DL\></tt>   Ends a description list.
-<li><tt>\anchor htmltag_DT \addindex "\<DT\>"\<DT\></tt>    Starts an item title.
-<li><tt>\anchor htmltag_endDT \addindex "\</DT\>"\</DT\></tt>   Ends an item title.
-<li><tt>\anchor htmltag_EM \addindex "\<EM\>"\<EM\></tt>    Starts a piece of text displayed in an italic font.
-<li><tt>\anchor htmltag_endEM \addindex "\</EM\>"\</EM\></tt>   Ends a \ref htmltag_EM "\<EM\>" section.
-<li><tt>\anchor htmltag_HR \addindex "\<HR\>"\<HR\></tt>    Writes a horizontal ruler.
-<li><tt>\anchor htmltag_H1 \addindex "\<H1\>"\<H1\></tt>    Starts an unnumbered section.
-<li><tt>\anchor htmltag_endH1 \addindex "\</H1\>"\</H1\></tt>   Ends an unnumbered section.
-<li><tt>\anchor htmltag_H2 \addindex "\<H2\>"\<H2\></tt>    Starts an unnumbered subsection.
-<li><tt>\anchor htmltag_endH2 \addindex "\</H2\>"\</H2\></tt>   Ends an unnumbered subsection.
-<li><tt>\anchor htmltag_H3 \addindex "\<H3\>"\<H3\></tt>    Starts an unnumbered subsubsection.
-<li><tt>\anchor htmltag_endH3 \addindex "\</H3\>"\</H3\></tt>   Ends an unnumbered subsubsection.
-<li><tt>\anchor htmltag_H4 \addindex "\<H4\>"\<H4\></tt>    Starts an unnumbered subsubsection.
-<li><tt>\anchor htmltag_endH4 \addindex "\</H4\>"\</H4\></tt>   Ends an unnumbered subsubsection.
-<li><tt>\anchor htmltag_H5 \addindex "\<H5\>"\<H5\></tt>    Starts an unnumbered subsubsection.
-<li><tt>\anchor htmltag_endH5 \addindex "\</H5\>"\</H5\></tt>   Ends an unnumbered subsubsection.
-<li><tt>\anchor htmltag_H6 \addindex "\<H6\>"\<H6\></tt>    Starts an unnumbered subsubsection.
-<li><tt>\anchor htmltag_endH6 \addindex "\</H6\>"\</H6\></tt>   Ends an unnumbered subsubsection.
-<li><tt>\anchor htmltag_I \addindex "\<I\>"\<I\></tt>     Starts a piece of text displayed in an italic font.
-<li><tt>\anchor htmltag_endI \addindex "\</I\>"\</I\></tt>    Ends a \ref htmltag_I "\<I\>" section.
-<li><tt>\anchor htmltag_IMG \addindex "\<IMG SRC=\"...\"\>"\<IMG SRC="..." ...\></tt>   This command is written with its attributes to the HTML output only. The SRC attribute is mandatory.
-<li><tt>\anchor htmltag_INS \addindex "\<INS\>"\<INS\></tt>   Starts a section of inserted text, typically shown as underlined text.
-<li><tt>\anchor htmltag_endINS \addindex "\</INS\>"\</INS\></tt>  Ends a section of inserted text.
-<li><tt>\anchor htmltag_LI \addindex "\<LI\>"\<LI\></tt>    Starts a new list item.
-<li><tt>\anchor htmltag_endLI \addindex "\</LI\>"\</LI\></tt>   Ends a list item.
-<li><tt>\anchor htmltag_OL \addindex "\<OL\>"\<OL\></tt>    Starts a numbered item list.
-<li><tt>\anchor htmltag_endOL \addindex "\</OL\>"\</OL\></tt>   Ends a numbered item list.
-<li><tt>\anchor htmltag_P \addindex "\<P\>"\<P\></tt>     Starts a new paragraph.
-<li><tt>\anchor htmltag_endP \addindex "\</P\>"\</P\></tt>    Ends a paragraph.
-<li><tt>\anchor htmltag_PRE \addindex "\<PRE\>"\<PRE\></tt>   Starts a preformatted fragment.
-<li><tt>\anchor htmltag_endPRE \addindex "\</PRE\>"\</PRE\></tt>  Ends a preformatted fragment.
-<li><tt>\anchor htmltag_SMALL \addindex "\<SMALL\>"\<SMALL\></tt> Starts a section of text displayed in a smaller font.
-<li><tt>\anchor htmltag_endSMALL \addindex "\</SMALL\>"\</SMALL\></tt> Ends a \ref htmltag_SMALL "\<SMALL\>" section.
-<li><tt>\anchor htmltag_SPAN \addindex "\<SPAN\>"\<SPAN></tt>   Starts an inline text fragment with a specific style (HTML only)
-<li><tt>\anchor htmltag_endSPAN \addindex "\</SPAN\>"\</SPAN></tt>  Ends an inline text fragment with a specific style (HTML only)
-<li><tt>\anchor htmltag_S \addindex "\<S\>"\<S\></tt>     Starts a section of strike through text.
-<li><tt>\anchor htmltag_endS \addindex "\</S\>"\</S\></tt>    Ends a section of strike through text.
-<li><tt>\anchor htmltag_STRIKE \addindex "\<STRIKE\>"\<STRIKE\></tt> Starts a section of strike through text.
-<li><tt>\anchor htmltag_endSTRIKE \addindex "\</STRIKE\>"\</STRIKE\></tt> Ends a section of strike through text.
-<li><tt>\anchor htmltag_STRONG \addindex "\<STRONG\>"\<STRONG\></tt> Starts a section of bold text.
-<li><tt>\anchor htmltag_endSTRONG \addindex "\</STRONG\>"\</STRONG\></tt> Ends a section of bold text.
-<li><tt>\anchor htmltag_SUB \addindex "\<SUB\>"\<SUB\></tt>   Starts a piece of text displayed in subscript.
-<li><tt>\anchor htmltag_endSUB \addindex "\</SUB\>"\</SUB\></tt>  Ends a \ref htmltag_SUB "\<SUB\>" section.
-<li><tt>\anchor htmltag_SUP \addindex "\<SUP\>"\<SUP\></tt>   Starts a piece of text displayed in superscript.
-<li><tt>\anchor htmltag_endSUP \addindex "\</SUP\>"\</SUP\></tt>  Ends a \ref htmltag_SUP "\<SUP\>" section.
-<li><tt>\anchor htmltag_TABLE \addindex "\<TABLE\>"\<TABLE\></tt> starts a table.
-<li><tt>\anchor htmltag_endTABLE \addindex "\</TABLE\>"\</TABLE\></tt> ends a table.
-<li><tt>\anchor htmltag_TD \addindex "\<TD\>"\<TD\></tt>    Starts a new table data element.
-<li><tt>\anchor htmltag_endTD \addindex "\</TD\>"\</TD\></tt>   Ends a table data element.
-<li><tt>\anchor htmltag_TH \addindex "\<TH\>"\<TH\></tt>    Starts a new table header.
-<li><tt>\anchor htmltag_endTH \addindex "\</TH\>"\</TH\></tt>   Ends a table header.
-<li><tt>\anchor htmltag_TR \addindex "\<TR\>"\<TR\></tt>    Starts a new table row.
-<li><tt>\anchor htmltag_endTR \addindex "\</TR\>"\</TR\></tt>   Ends a table row.
-<li><tt>\anchor htmltag_TT \addindex "\<TT\>"\<TT\></tt>    Starts a piece of text displayed in a typewriter font.
-<li><tt>\anchor htmltag_endTT \addindex "\</TT\>"\</TT\></tt>   Ends a \ref htmltag_TT "\<TT\>" section.
-<li><tt>\anchor htmltag_KBD \addindex "\<KBD\>"\<KBD\></tt>   Starts a piece of text displayed in a typewriter font.
-<li><tt>\anchor htmltag_endKBD \addindex "\</KBD\>"\</KBD\></tt>  Ends a \ref htmltag_KBD "\<KBD\>" section.
-<li><tt>\anchor htmltag_U \addindex "\<U\>"\<U\></tt> Starts a section of underlined text.
-<li><tt>\anchor htmltag_endU \addindex "\</U\>"\</U\></tt> Ends a section of underlined text.
-<li><tt>\anchor htmltag_UL \addindex "\<UL\>"\<UL\></tt>    Starts an unnumbered item list.
-<li><tt>\anchor htmltag_endUL \addindex "\</UL\>"\</UL\></tt>   Ends an unnumbered item list.
-<li><tt>\anchor htmltag_VAR \addindex "\<VAR\>"\<VAR\></tt>   Starts a piece of text displayed in an italic font.
-<li><tt>\anchor htmltag_endVAR \addindex "\</VAR\>"\</VAR\></tt>  Ends a \ref htmltag_VAR "\<VAR\>" section.
-</ul>
+                       \ref cmdcode "\\code" (see \ref xmltag_code "\<code\>").</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_endCODE \addindex "\</CODE\>"\</CODE\></tt></td><td valign="top">Ends a \ref htmltag_CODE "\<CODE\>" section.
+                       Note that only for C# code, this command is equivalent to
+                       \ref cmdendcode "\\endcode" (see \ref xmltag_code "\<code\>").</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_DD \addindex "\<DD\>"\<DD\></tt></td><td valign="top">Starts an item description.</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_endDD \addindex "\</DD\>"\</DD\></tt></td><td valign="top">Ends an item description.</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_DEL \addindex "\<DEL\>"\<DEL\></tt></td><td valign="top">Starts a section of deleted text, typically shown strike through text.</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_endDEL \addindex "\</DEL\>"\</DEL\></tt></td><td valign="top">Ends a section of deleted text.</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_DETAILS \addindex "\<DETAILS\>"\<DETAILS\></tt></td><td valign="top">Starts a section of detailed text that the user can open and close (in HTML output))</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_endDETAILS \addindex "\</DETAILS\>"\</DETAILS\></tt></td><td valign="top">Ends a section of detailed text.</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_DFN \addindex "\<DFN\>"\<DFN\></tt></td><td valign="top">Starts a piece of text displayed in a typewriter font.</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_endDFN \addindex "\</DFN\>"\</DFN\></tt></td><td valign="top">Ends a \ref htmltag_DFN "\<DFN\>" section.</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_DIV \addindex "\<DIV\>"\<DIV></tt></td><td valign="top">Starts a section with a specific style (HTML only)</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_endDIV \addindex "\</DIV\>"\</DIV></tt></td><td valign="top">Ends a section with a specific style (HTML only)</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_DL \addindex "\<DL\>"\<DL\></tt></td><td valign="top">Starts a description list.</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_endDL \addindex "\</DL\>"\</DL\></tt></td><td valign="top">Ends a description list.</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_DT \addindex "\<DT\>"\<DT\></tt></td><td valign="top">Starts an item title.</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_endDT \addindex "\</DT\>"\</DT\></tt></td><td valign="top">Ends an item title.</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_EM \addindex "\<EM\>"\<EM\></tt></td><td valign="top">Starts a piece of text displayed in an italic font.</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_endEM \addindex "\</EM\>"\</EM\></tt></td><td valign="top">Ends a \ref htmltag_EM "\<EM\>" section.</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_HR \addindex "\<HR\>"\<HR\></tt></td><td valign="top">Writes a horizontal ruler.</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_H1 \addindex "\<H1\>"\<H1\></tt></td><td valign="top">Starts an unnumbered section.</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_endH1 \addindex "\</H1\>"\</H1\></tt></td><td valign="top">Ends an unnumbered section.</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_H2 \addindex "\<H2\>"\<H2\></tt></td><td valign="top">Starts an unnumbered subsection.</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_endH2 \addindex "\</H2\>"\</H2\></tt></td><td valign="top">Ends an unnumbered subsection.</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_H3 \addindex "\<H3\>"\<H3\></tt></td><td valign="top">Starts an unnumbered subsubsection.</td></tr></td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_endH3 \addindex "\</H3\>"\</H3\></tt></td><td valign="top">Ends an unnumbered subsubsection.</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_H4 \addindex "\<H4\>"\<H4\></tt></td><td valign="top">Starts an unnumbered subsubsection.</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_endH4 \addindex "\</H4\>"\</H4\></tt></td><td valign="top">Ends an unnumbered subsubsection.</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_H5 \addindex "\<H5\>"\<H5\></tt></td><td valign="top">Starts an unnumbered subsubsection.</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_endH5 \addindex "\</H5\>"\</H5\></tt></td><td valign="top">Ends an unnumbered subsubsection.</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_H6 \addindex "\<H6\>"\<H6\></tt></td><td valign="top">Starts an unnumbered subsubsection.</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_endH6 \addindex "\</H6\>"\</H6\></tt></td><td valign="top">Ends an unnumbered subsubsection.</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_I \addindex "\<I\>"\<I\></tt></td><td valign="top">Starts a piece of text displayed in an italic font.</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_endI \addindex "\</I\>"\</I\></tt></td><td valign="top">Ends a \ref htmltag_I "\<I\>" section.</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_IMG \addindex "\<IMG SRC=\"...\"\>"\<IMG SRC="..." ...\></tt></td><td valign="top">This command is written with its attributes to the HTML output only. The SRC attribute is mandatory.</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_INS \addindex "\<INS\>"\<INS\></tt></td><td valign="top">Starts a section of inserted text, typically shown as underlined text.</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_endINS \addindex "\</INS\>"\</INS\></tt></td><td valign="top">Ends a section of inserted text.</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_LI \addindex "\<LI\>"\<LI\></tt></td><td valign="top">Starts a new list item.</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_endLI \addindex "\</LI\>"\</LI\></tt></td><td valign="top">Ends a list item.</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_OL \addindex "\<OL\>"\<OL\></tt></td><td valign="top">Starts a numbered item list.</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_endOL \addindex "\</OL\>"\</OL\></tt></td><td valign="top">Ends a numbered item list.</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_P \addindex "\<P\>"\<P\></tt></td><td valign="top">Starts a new paragraph.</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_endP \addindex "\</P\>"\</P\></tt></td><td valign="top">Ends a paragraph.</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_PRE \addindex "\<PRE\>"\<PRE\></tt></td><td valign="top">Starts a preformatted fragment.</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_endPRE \addindex "\</PRE\>"\</PRE\></tt></td><td valign="top">Ends a preformatted fragment.</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_SMALL \addindex "\<SMALL\>"\<SMALL\></tt></td><td valign="top">Starts a section of text displayed in a smaller font.</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_endSMALL \addindex "\</SMALL\>"\</SMALL\></tt></td><td valign="top">Ends a \ref htmltag_SMALL "\<SMALL\>" section.</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_SPAN \addindex "\<SPAN\>"\<SPAN></tt></td><td valign="top">Starts an inline text fragment with a specific style (HTML only)</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_endSPAN \addindex "\</SPAN\>"\</SPAN></tt></td><td valign="top">Ends an inline text fragment with a specific style (HTML only)</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_S \addindex "\<S\>"\<S\></tt></td><td valign="top">Starts a section of strike through text.</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_endS \addindex "\</S\>"\</S\></tt></td><td valign="top">Ends a section of strike through text.</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_STRIKE \addindex "\<STRIKE\>"\<STRIKE\></tt></td><td valign="top">Starts a section of strike through text.</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_endSTRIKE \addindex "\</STRIKE\>"\</STRIKE\></tt></td><td valign="top">Ends a section of strike through text.</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_STRONG \addindex "\<STRONG\>"\<STRONG\></tt></td><td valign="top">Starts a section of bold text.</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_endSTRONG \addindex "\</STRONG\>"\</STRONG\></tt></td><td valign="top">Ends a section of bold text.</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_SUB \addindex "\<SUB\>"\<SUB\></tt></td><td valign="top">Starts a piece of text displayed in subscript.</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_endSUB \addindex "\</SUB\>"\</SUB\></tt></td><td valign="top">Ends a \ref htmltag_SUB "\<SUB\>" section.</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_SUP \addindex "\<SUP\>"\<SUP\></tt></td><td valign="top">Starts a piece of text displayed in superscript.</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_endSUP \addindex "\</SUP\>"\</SUP\></tt></td><td valign="top">Ends a \ref htmltag_SUP "\<SUP\>" section.</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_TABLE \addindex "\<TABLE\>"\<TABLE\></tt></td><td valign="top">starts a table.</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_endTABLE \addindex "\</TABLE\>"\</TABLE\></tt></td><td valign="top">ends a table.</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_TD \addindex "\<TD\>"\<TD\></tt></td><td valign="top">Starts a new table data element.</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_endTD \addindex "\</TD\>"\</TD\></tt></td><td valign="top">Ends a table data element.</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_TH \addindex "\<TH\>"\<TH\></tt></td><td valign="top">Starts a new table header.</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_endTH \addindex "\</TH\>"\</TH\></tt></td><td valign="top">Ends a table header.</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_TR \addindex "\<TR\>"\<TR\></tt></td><td valign="top">Starts a new table row.</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_endTR \addindex "\</TR\>"\</TR\></tt></td><td valign="top">Ends a table row.</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_TT \addindex "\<TT\>"\<TT\></tt></td><td valign="top">Starts a piece of text displayed in a typewriter font.</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_endTT \addindex "\</TT\>"\</TT\></tt></td><td valign="top">Ends a \ref htmltag_TT "\<TT\>" section.</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_KBD \addindex "\<KBD\>"\<KBD\></tt></td><td valign="top">Starts a piece of text displayed in a typewriter font.</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_endKBD \addindex "\</KBD\>"\</KBD\></tt></td><td valign="top">Ends a \ref htmltag_KBD "\<KBD\>" section.</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_U \addindex "\<U\>"\<U\></tt></td><td valign="top">Starts a section of underlined text.</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_endU \addindex "\</U\>"\</U\></tt></td><td valign="top">Ends a section of underlined text.</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_UL \addindex "\<UL\>"\<UL\></tt></td><td valign="top">Starts an unnumbered item list.</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_endUL \addindex "\</UL\>"\</UL\></tt></td><td valign="top">Ends an unnumbered item list.</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_VAR \addindex "\<VAR\>"\<VAR\></tt></td><td valign="top">Starts a piece of text displayed in an italic font.</td></tr>
+<tr><td valign="top"><tt>\anchor htmltag_endVAR \addindex "\</VAR\>"\</VAR\></tt></td><td valign="top">Ends a \ref htmltag_VAR "\<VAR\>" section.</td></tr>
+</table>
 
 Finally, to put invisible comments inside comment blocks, HTML style
 comments can be used:
@@ -141,265 +142,263 @@ The list of special HTML4 character entities with their descriptions has been ta
   Permission to copy in any form is granted for use with
   conforming SGML systems and applications as defined in
   ISO 8879, provided this notice is included in all copies.)
-<ul>
-<li><tt>\&nbsp;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;</tt>            no-break space = non-breaking space: &nbsp;
-<li><tt>\&iexcl;</tt><tt>&nbsp;&nbsp;&nbsp;</tt>                 inverted exclamation mark: &iexcl;
-<li><tt>\&cent;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;</tt>            cent sign: &cent;
-<li><tt>\&pound;</tt><tt>&nbsp;&nbsp;&nbsp;</tt>                 pound sign: &pound;
-<li><tt>\&curren;</tt><tt>&nbsp;&nbsp;</tt>                      currency sign: &curren;
-<li><tt>\&yen;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt>       yen sign = yuan sign: &yen;
-<li><tt>\&brvbar;</tt><tt>&nbsp;&nbsp;</tt>                      broken bar = broken vertical bar: &brvbar;
-<li><tt>\&sect;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;</tt>            section sign: &sect;
-<li><tt>\&uml;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt>       diaeresis = spacing diaeresis: &uml;
-<li><tt>\&copy;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;</tt>            copyright sign: &copy;
-<li><tt>\&ordf;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;</tt>            feminine ordinal indicator: &ordf;
-<li><tt>\&laquo;</tt><tt>&nbsp;&nbsp;&nbsp;</tt>                 left-pointing double angle quotation mark = left pointing guillemet: &laquo;
-<li><tt>\&not;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt>       not sign: &not;
-<li><tt>\&shy;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt>       soft hyphen = discretionary hyphen: &shy;
-<li><tt>\&reg;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt>       registered sign = registered trade mark sign: &reg;
-<li><tt>\&macr;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;</tt>            macron = spacing macron = overline = APL overbar: &macr;
-<li><tt>\&deg;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt>       degree sign: &deg;
-<li><tt>\&plusmn;</tt><tt>&nbsp;&nbsp;</tt>                      plus-minus sign = plus-or-minus sign: &plusmn;
-<li><tt>\&sup2;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;</tt>            superscript two = superscript digit two = squared: &sup2;
-<li><tt>\&sup3;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;</tt>            superscript three = superscript digit three = cubed: &sup3;
-<li><tt>\&acute;</tt><tt>&nbsp;&nbsp;&nbsp;</tt>                 acute accent = spacing acute: &acute;
-<li><tt>\&micro;</tt><tt>&nbsp;&nbsp;&nbsp;</tt>                 micro sign: &micro;
-<li><tt>\&para;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;</tt>            pilcrow sign = paragraph sign: &para;
-<li><tt>\&middot;</tt><tt>&nbsp;&nbsp;</tt>                      middle dot = Georgian comma = Greek middle dot: &middot;
-<li><tt>\&cedil;</tt><tt>&nbsp;&nbsp;&nbsp;</tt>                 cedilla = spacing cedilla: &cedil;
-<li><tt>\&sup1;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;</tt>            superscript one = superscript digit one: &sup1;
-<li><tt>\&ordm;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;</tt>            masculine ordinal indicator: &ordm;
-<li><tt>\&raquo;</tt><tt>&nbsp;&nbsp;&nbsp;</tt>                 right-pointing double angle quotation mark = right pointing guillemet: &raquo;
-<li><tt>\&frac14;</tt><tt>&nbsp;&nbsp;</tt>                      vulgar fraction one quarter = fraction one quarter: &frac14;
-<li><tt>\&frac12;</tt><tt>&nbsp;&nbsp;</tt>                      vulgar fraction one half = fraction one half: &frac12;
-<li><tt>\&frac34;</tt><tt>&nbsp;&nbsp;</tt>                      vulgar fraction three quarters = fraction three quarters: &frac34;
-<li><tt>\&iquest;</tt><tt>&nbsp;&nbsp;</tt>                      inverted question mark = turned question mark: &iquest;
-<li><tt>\&Agrave;</tt><tt>&nbsp;&nbsp;</tt>                      latin capital letter A with grave = latin capital letter A grave: &Agrave;
-<li><tt>\&Aacute;</tt><tt>&nbsp;&nbsp;</tt>                      latin capital letter A with acute: &Aacute;
-<li><tt>\&Acirc;</tt><tt>&nbsp;&nbsp;&nbsp;</tt>                 latin capital letter A with circumflex: &Acirc;
-<li><tt>\&Atilde;</tt><tt>&nbsp;&nbsp;</tt>                      latin capital letter A with tilde: &Atilde;
-<li><tt>\&Auml;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;</tt>            latin capital letter A with diaeresis: &Auml;
-<li><tt>\&Aring;</tt><tt>&nbsp;&nbsp;&nbsp;</tt>                 latin capital letter A with ring above = latin capital letter A ring: &Aring;
-<li><tt>\&AElig;</tt><tt>&nbsp;&nbsp;&nbsp;</tt>                 latin capital letter AE = latin capital ligature AE: &AElig;
-<li><tt>\&Ccedil;</tt><tt>&nbsp;&nbsp;</tt>                      latin capital letter C with cedilla: &Ccedil;
-<li><tt>\&Egrave;</tt><tt>&nbsp;&nbsp;</tt>                      latin capital letter E with grave: &Egrave;
-<li><tt>\&Eacute;</tt><tt>&nbsp;&nbsp;</tt>                      latin capital letter E with acute: &Eacute;
-<li><tt>\&Ecirc;</tt><tt>&nbsp;&nbsp;&nbsp;</tt>                 latin capital letter E with circumflex: &Ecirc;
-<li><tt>\&Euml;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;</tt>            latin capital letter E with diaeresis: &Euml;
-<li><tt>\&Igrave;</tt><tt>&nbsp;&nbsp;</tt>                      latin capital letter I with grave: &Igrave;
-<li><tt>\&Iacute;</tt><tt>&nbsp;&nbsp;</tt>                      latin capital letter I with acute: &Iacute;
-<li><tt>\&Icirc;</tt><tt>&nbsp;&nbsp;&nbsp;</tt>                 latin capital letter I with circumflex: &Icirc;
-<li><tt>\&Iuml;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;</tt>            latin capital letter I with diaeresis: &Iuml;
-<li><tt>\&ETH;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt>       latin capital letter ETH: &ETH;
-<li><tt>\&Ntilde;</tt><tt>&nbsp;&nbsp;</tt>                      latin capital letter N with tilde: &Ntilde;
-<li><tt>\&Ograve;</tt><tt>&nbsp;&nbsp;</tt>                      latin capital letter O with grave: &Ograve;
-<li><tt>\&Oacute;</tt><tt>&nbsp;&nbsp;</tt>                      latin capital letter O with acute: &Oacute;
-<li><tt>\&Ocirc;</tt><tt>&nbsp;&nbsp;&nbsp;</tt>                 latin capital letter O with circumflex: &Ocirc;
-<li><tt>\&Otilde;</tt><tt>&nbsp;&nbsp;</tt>                      latin capital letter O with tilde: &Otilde;
-<li><tt>\&Ouml;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;</tt>            latin capital letter O with diaeresis: &Ouml;
-<li><tt>\&times;</tt><tt>&nbsp;&nbsp;&nbsp;</tt>                 multiplication sign: &times;
-<li><tt>\&Oslash;</tt><tt>&nbsp;&nbsp;</tt>                      latin capital letter O with stroke = latin capital letter O slash: &Oslash;
-<li><tt>\&Ugrave;</tt><tt>&nbsp;&nbsp;</tt>                      latin capital letter U with grave: &Ugrave;
-<li><tt>\&Uacute;</tt><tt>&nbsp;&nbsp;</tt>                      latin capital letter U with acute: &Uacute;
-<li><tt>\&Ucirc;</tt><tt>&nbsp;&nbsp;&nbsp;</tt>                 latin capital letter U with circumflex: &Ucirc;
-<li><tt>\&Uuml;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;</tt>            latin capital letter U with diaeresis: &Uuml;
-<li><tt>\&Yacute;</tt><tt>&nbsp;&nbsp;</tt>                      latin capital letter Y with acute: &Yacute;
-<li><tt>\&THORN;</tt><tt>&nbsp;&nbsp;&nbsp;</tt>                 latin capital letter THORN: &THORN;
-<li><tt>\&szlig;</tt><tt>&nbsp;&nbsp;&nbsp;</tt>                 latin small letter sharp s = ess-zed: &szlig;
-<li><tt>\&agrave;</tt><tt>&nbsp;&nbsp;</tt>                      latin small letter a with grave = latin small letter a grave: &agrave;
-<li><tt>\&aacute;</tt><tt>&nbsp;&nbsp;</tt>                      latin small letter a with acute: &aacute;
-<li><tt>\&acirc;</tt><tt>&nbsp;&nbsp;&nbsp;</tt>                 latin small letter a with circumflex: &acirc;
-<li><tt>\&atilde;</tt><tt>&nbsp;&nbsp;</tt>                      latin small letter a with tilde: &atilde;
-<li><tt>\&auml;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;</tt>            latin small letter a with diaeresis: &auml;
-<li><tt>\&aring;</tt><tt>&nbsp;&nbsp;&nbsp;</tt>                 latin small letter a with ring above = latin small letter a ring: &aring;
-<li><tt>\&aelig;</tt><tt>&nbsp;&nbsp;&nbsp;</tt>                 latin small letter ae = latin small ligature ae: &aelig;
-<li><tt>\&ccedil;</tt><tt>&nbsp;&nbsp;</tt>                      latin small letter c with cedilla: &ccedil;
-<li><tt>\&egrave;</tt><tt>&nbsp;&nbsp;</tt>                      latin small letter e with grave: &egrave;
-<li><tt>\&eacute;</tt><tt>&nbsp;&nbsp;</tt>                      latin small letter e with acute: &eacute;
-<li><tt>\&ecirc;</tt><tt>&nbsp;&nbsp;&nbsp;</tt>                 latin small letter e with circumflex: &ecirc;
-<li><tt>\&euml;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;</tt>            latin small letter e with diaeresis: &euml;
-<li><tt>\&igrave;</tt><tt>&nbsp;&nbsp;</tt>                      latin small letter i with grave: &igrave;
-<li><tt>\&iacute;</tt><tt>&nbsp;&nbsp;</tt>                      latin small letter i with acute: &iacute;
-<li><tt>\&icirc;</tt><tt>&nbsp;&nbsp;&nbsp;</tt>                 latin small letter i with circumflex: &icirc;
-<li><tt>\&iuml;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;</tt>            latin small letter i with diaeresis: &iuml;
-<li><tt>\&eth;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt>       latin small letter eth: &eth;
-<li><tt>\&ntilde;</tt><tt>&nbsp;&nbsp;</tt>                      latin small letter n with tilde: &ntilde;
-<li><tt>\&ograve;</tt><tt>&nbsp;&nbsp;</tt>                      latin small letter o with grave: &ograve;
-<li><tt>\&oacute;</tt><tt>&nbsp;&nbsp;</tt>                      latin small letter o with acute: &oacute;
-<li><tt>\&ocirc;</tt><tt>&nbsp;&nbsp;&nbsp;</tt>                 latin small letter o with circumflex: &ocirc;
-<li><tt>\&otilde;</tt><tt>&nbsp;&nbsp;</tt>                      latin small letter o with tilde: &otilde;
-<li><tt>\&ouml;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;</tt>            latin small letter o with diaeresis: &ouml;
-<li><tt>\&divide;</tt><tt>&nbsp;&nbsp;</tt>                      division sign: &divide;
-<li><tt>\&oslash;</tt><tt>&nbsp;&nbsp;</tt>                      latin small letter o with stroke, = latin small letter o slash: &oslash;
-<li><tt>\&ugrave;</tt><tt>&nbsp;&nbsp;</tt>                      latin small letter u with grave: &ugrave;
-<li><tt>\&uacute;</tt><tt>&nbsp;&nbsp;</tt>                      latin small letter u with acute: &uacute;
-<li><tt>\&ucirc;</tt><tt>&nbsp;&nbsp;&nbsp;</tt>                 latin small letter u with circumflex: &ucirc;
-<li><tt>\&uuml;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;</tt>            latin small letter u with diaeresis: &uuml;
-<li><tt>\&yacute;</tt><tt>&nbsp;&nbsp;</tt>                      latin small letter y with acute: &yacute;
-<li><tt>\&thorn;</tt><tt>&nbsp;&nbsp;&nbsp;</tt>                 latin small letter thorn: &thorn;
-<li><tt>\&yuml;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;</tt>            latin small letter y with diaeresis: &yuml;
-<li><tt>\&fnof;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;</tt>            latin small f with hook = function = florin: &fnof;
-<li><tt>\&Alpha;</tt><tt>&nbsp;&nbsp;&nbsp;</tt>                 greek capital letter alpha: &Alpha;
-<li><tt>\&Beta;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;</tt>            greek capital letter beta: &Beta;
-<li><tt>\&Gamma;</tt><tt>&nbsp;&nbsp;&nbsp;</tt>                 greek capital letter gamma: &Gamma;
-<li><tt>\&Delta;</tt><tt>&nbsp;&nbsp;&nbsp;</tt>                 greek capital letter delta: &Delta;
-<li><tt>\&Epsilon;</tt><tt>&nbsp;</tt>                           greek capital letter epsilon: &Epsilon;
-<li><tt>\&Zeta;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;</tt>            greek capital letter zeta: &Zeta;
-<li><tt>\&Eta;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt>       greek capital letter eta: &Eta;
-<li><tt>\&Theta;</tt><tt>&nbsp;&nbsp;&nbsp;</tt>                 greek capital letter theta: &Theta;
-<li><tt>\&Iota;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;</tt>            greek capital letter iota: &Iota;
-<li><tt>\&Kappa;</tt><tt>&nbsp;&nbsp;&nbsp;</tt>                 greek capital letter kappa: &Kappa;
-<li><tt>\&Lambda;</tt><tt>&nbsp;&nbsp;</tt>                      greek capital letter lambda: &Lambda;
-<li><tt>\&Mu;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt>  greek capital letter mu: &Mu;
-<li><tt>\&Nu;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt>  greek capital letter nu: &Nu;
-<li><tt>\&Xi;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt>  greek capital letter xi: &Xi;
-<li><tt>\&Omicron;</tt><tt>&nbsp;</tt>                           greek capital letter omicron: &Omicron;
-<li><tt>\&Pi;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt>  greek capital letter pi: &Pi;
-<li><tt>\&Rho;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt>       greek capital letter rho: &Rho;
-<li><tt>\&Sigma;</tt><tt>&nbsp;&nbsp;&nbsp;</tt>                 greek capital letter sigma: &Sigma;
-<li><tt>\&Tau;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt>       greek capital letter tau: &Tau;
-<li><tt>\&Upsilon;</tt><tt>&nbsp;</tt>                           greek capital letter upsilon: &Upsilon;
-<li><tt>\&Phi;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt>       greek capital letter phi: &Phi;
-<li><tt>\&Chi;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt>       greek capital letter chi: &Chi;
-<li><tt>\&Psi;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt>       greek capital letter psi: &Psi;
-<li><tt>\&Omega;</tt><tt>&nbsp;&nbsp;&nbsp;</tt>                 greek capital letter omega: &Omega;
-<li><tt>\&alpha;</tt><tt>&nbsp;&nbsp;&nbsp;</tt>                 greek small letter alpha: &alpha;
-<li><tt>\&beta;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;</tt>            greek small letter beta: &beta;
-<li><tt>\&gamma;</tt><tt>&nbsp;&nbsp;&nbsp;</tt>                 greek small letter gamma: &gamma;
-<li><tt>\&delta;</tt><tt>&nbsp;&nbsp;&nbsp;</tt>                 greek small letter delta: &delta;
-<li><tt>\&epsilon;</tt><tt>&nbsp;</tt>                           greek small letter epsilon: &epsilon;
-<li><tt>\&zeta;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;</tt>            greek small letter zeta: &zeta;
-<li><tt>\&eta;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt>       greek small letter eta: &eta;
-<li><tt>\&theta;</tt><tt>&nbsp;&nbsp;&nbsp;</tt>                 greek small letter theta: &theta;
-<li><tt>\&iota;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;</tt>            greek small letter iota: &iota;
-<li><tt>\&kappa;</tt><tt>&nbsp;&nbsp;&nbsp;</tt>                 greek small letter kappa: &kappa;
-<li><tt>\&lambda;</tt><tt>&nbsp;&nbsp;</tt>                      greek small letter lambda: &lambda;
-<li><tt>\&mu;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt>  greek small letter mu: &mu;
-<li><tt>\&nu;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt>  greek small letter nu: &nu;
-<li><tt>\&xi;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt>  greek small letter xi: &xi;
-<li><tt>\&omicron;</tt><tt>&nbsp;</tt>                           greek small letter omicron: &omicron;
-<li><tt>\&pi;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt>  greek small letter pi: &pi;
-<li><tt>\&rho;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt>       greek small letter rho: &rho;
-<li><tt>\&sigmaf;</tt><tt>&nbsp;&nbsp;</tt>                      greek small letter final sigma: &sigmaf;
-<li><tt>\&sigma;</tt><tt>&nbsp;&nbsp;&nbsp;</tt>                 greek small letter sigma: &sigma;
-<li><tt>\&tau;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt>       greek small letter tau: &tau;
-<li><tt>\&upsilon;</tt><tt>&nbsp;</tt>                           greek small letter upsilon: &upsilon;
-<li><tt>\&phi;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt>       greek small letter phi: &phi;
-<li><tt>\&chi;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt>       greek small letter chi: &chi;
-<li><tt>\&psi;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt>       greek small letter psi: &psi;
-<li><tt>\&omega;</tt><tt>&nbsp;&nbsp;&nbsp;</tt>                 greek small letter omega: &omega;
-<li><tt>\&thetasym;</tt>                                  greek small letter theta symbol: &thetasym;
-<li><tt>\&upsih;</tt><tt>&nbsp;&nbsp;&nbsp;</tt>                 greek upsilon with hook symbol: &upsih;
-<li><tt>\&piv;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt>       greek pi symbol: &piv;
-<li><tt>\&bull;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;</tt>            bullet = black small circle: &bull;
-<li><tt>\&hellip;</tt><tt>&nbsp;&nbsp;</tt>                      horizontal ellipsis = three dot leader: &hellip;
-<li><tt>\&prime;</tt><tt>&nbsp;&nbsp;&nbsp;</tt>                 prime = minutes = feet: &prime;
-<li><tt>\&Prime;</tt><tt>&nbsp;&nbsp;&nbsp;</tt>                 double prime = seconds = inches: &Prime;
-<li><tt>\&oline;</tt><tt>&nbsp;&nbsp;&nbsp;</tt>                 overline = spacing overscore: &oline;
-<li><tt>\&frasl;</tt><tt>&nbsp;&nbsp;&nbsp;</tt>                 fraction slash: &frasl;
-<li><tt>\&weierp;</tt><tt>&nbsp;&nbsp;</tt>                      script capital P = power set = Weierstrass p: &weierp;
-<li><tt>\&image;</tt><tt>&nbsp;&nbsp;&nbsp;</tt>                 blackletter capital I = imaginary part: &image;
-<li><tt>\&real;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;</tt>            blackletter capital R = real part symbol: &real;
-<li><tt>\&trade;</tt><tt>&nbsp;&nbsp;&nbsp;</tt>                 trade mark sign: &trade;
-<li><tt>\&alefsym;</tt><tt>&nbsp;</tt>                           alef symbol = first transfinite cardinal: &alefsym;
-<li><tt>\&larr;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;</tt>            leftwards arrow: &larr;
-<li><tt>\&uarr;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;</tt>            upwards arrow: &uarr;
-<li><tt>\&rarr;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;</tt>            rightwards arrow: &rarr;
-<li><tt>\&darr;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;</tt>            downwards arrow: &darr;
-<li><tt>\&harr;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;</tt>            left right arrow: &harr;
-<li><tt>\&crarr;</tt><tt>&nbsp;&nbsp;&nbsp;</tt>                 downwards arrow with corner leftwards = carriage return: &crarr;
-<li><tt>\&lArr;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;</tt>            leftwards double arrow: &lArr;
-<li><tt>\&uArr;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;</tt>            upwards double arrow: &uArr;
-<li><tt>\&rArr;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;</tt>            rightwards double arrow: &rArr;
-<li><tt>\&dArr;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;</tt>            downwards double arrow: &dArr;
-<li><tt>\&hArr;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;</tt>            left right double arrow: &hArr;
-<li><tt>\&forall;</tt><tt>&nbsp;&nbsp;</tt>                      for all: &forall;
-<li><tt>\&part;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;</tt>            partial differential: &part;
-<li><tt>\&exist;</tt><tt>&nbsp;&nbsp;&nbsp;</tt>                 there exists: &exist;
-<li><tt>\&empty;</tt><tt>&nbsp;&nbsp;&nbsp;</tt>                 empty set = null set = diameter: &empty;
-<li><tt>\&nabla;</tt><tt>&nbsp;&nbsp;&nbsp;</tt>                 nabla = backward difference: &nabla;
-<li><tt>\&isin;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;</tt>            element of: &isin;
-<li><tt>\&notin;</tt><tt>&nbsp;&nbsp;&nbsp;</tt>                 not an element of: &notin;
-<li><tt>\&ni;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt>  contains as member: &ni;
-<li><tt>\&prod;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;</tt>            n-ary product = product sign: &prod;
-<li><tt>\&sum;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt>       n-ary summation: &sum;
-<li><tt>\&minus;</tt><tt>&nbsp;&nbsp;&nbsp;</tt>                 minus sign: &minus;
-<li><tt>\&lowast;</tt><tt>&nbsp;&nbsp;</tt>                      asterisk operator: &lowast;
-<li><tt>\&radic;</tt><tt>&nbsp;&nbsp;&nbsp;</tt>                 square root = radical sign: &radic;
-<li><tt>\&prop;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;</tt>            proportional to: &prop;
-<li><tt>\&infin;</tt><tt>&nbsp;&nbsp;&nbsp;</tt>                 infinity: &infin;
-<li><tt>\&ang;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt>       angle: &ang;
-<li><tt>\&and;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt>       logical and = wedge: &and;
-<li><tt>\&or;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt>  logical or = vee: &or;
-<li><tt>\&cap;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt>       intersection = cap: &cap;
-<li><tt>\&cup;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt>       union = cup: &cup;
-<li><tt>\&int;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt>       integral: &int;
-<li><tt>\&there4;</tt><tt>&nbsp;&nbsp;</tt>                      therefore: &there4;
-<li><tt>\&sim;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt>       tilde operator = varies with = similar to: &sim;
-<li><tt>\&cong;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;</tt>            approximately equal to: &cong;
-<li><tt>\&asymp;</tt><tt>&nbsp;&nbsp;&nbsp;</tt>                 almost equal to = asymptotic to: &asymp;
-<li><tt>\&ne;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt>  not equal to: &ne;
-<li><tt>\&equiv;</tt><tt>&nbsp;&nbsp;&nbsp;</tt>                 identical to: &equiv;
-<li><tt>\&le;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt>  less-than or equal to: &le;
-<li><tt>\&ge;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt>  greater-than or equal to: &ge;
-<li><tt>\&sub;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt>       subset of: &sub;
-<li><tt>\&sup;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt>       superset of: &sup;
-<li><tt>\&nsub;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;</tt>            not a subset of: &nsub;
-<li><tt>\&sube;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;</tt>            subset of or equal to: &sube;
-<li><tt>\&supe;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;</tt>            superset of or equal to: &supe;
-<li><tt>\&oplus;</tt><tt>&nbsp;&nbsp;&nbsp;</tt>                 circled plus = direct sum: &oplus;
-<li><tt>\&otimes;</tt><tt>&nbsp;&nbsp;</tt>                      circled times = vector product: &otimes;
-<li><tt>\&perp;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;</tt>            up tack = orthogonal to = perpendicular: &perp;
-<li><tt>\&sdot;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;</tt>            dot operator: &sdot;
-<li><tt>\&lceil;</tt><tt>&nbsp;&nbsp;&nbsp;</tt>                 left ceiling = apl upstile: &lceil;
-<li><tt>\&rceil;</tt><tt>&nbsp;&nbsp;&nbsp;</tt>                 right ceiling: &rceil;
-<li><tt>\&lfloor;</tt><tt>&nbsp;&nbsp;</tt>                      left floor = apl downstile: &lfloor;
-<li><tt>\&rfloor;</tt><tt>&nbsp;&nbsp;</tt>                      right floor: &rfloor;
-<li><tt>\&lang;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;</tt>            left-pointing angle bracket = bra: &lang;
-<li><tt>\&rang;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;</tt>            right-pointing angle bracket = ket: &rang;
-<li><tt>\&loz;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt>       lozenge: &loz;
-<li><tt>\&spades;</tt><tt>&nbsp;&nbsp;</tt>                      black spade suit: &spades;
-<li><tt>\&clubs;</tt><tt>&nbsp;&nbsp;&nbsp;</tt>                 black club suit = shamrock: &clubs;
-<li><tt>\&hearts;</tt><tt>&nbsp;&nbsp;</tt>                      black heart suit = valentine: &hearts;
-<li><tt>\&diams;</tt><tt>&nbsp;&nbsp;&nbsp;</tt>                 black diamond suit: &diams;
-<li><tt>\&quot;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;</tt>            quotation mark = APL quote: &quot;
-<li><tt>\&amp;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt>       ampersand: &amp;
-<li><tt>\&lt;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt>  less-than sign: &lt;
-<li><tt>\&gt;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt>  greater-than sign: &gt;
-<li><tt>\&OElig;</tt><tt>&nbsp;&nbsp;&nbsp;</tt>                 latin capital ligature OE: &OElig;
-<li><tt>\&oelig;</tt><tt>&nbsp;&nbsp;&nbsp;</tt>                 latin small ligature oe: &oelig;
-<li><tt>\&Scaron;</tt><tt>&nbsp;&nbsp;</tt>                      latin capital letter S with caron: &Scaron;
-<li><tt>\&scaron;</tt><tt>&nbsp;&nbsp;</tt>                      latin small letter s with caron: &scaron;
-<li><tt>\&Yuml;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;</tt>            latin capital letter Y with diaeresis: &Yuml;
-<li><tt>\&circ;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;</tt>            modifier letter circumflex accent: &circ;
-<li><tt>\&tilde;</tt><tt>&nbsp;&nbsp;&nbsp;</tt>                 small tilde: &tilde;
-<li><tt>\&ensp;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;</tt>            en space: &ensp;
-<li><tt>\&emsp;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;</tt>            em space: &emsp;
-<li><tt>\&thinsp;</tt><tt>&nbsp;&nbsp;</tt>                      thin space: &thinsp;
-<li><tt>\&zwnj;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;</tt>            zero width non-joiner: &zwnj;
-<li><tt>\&zwj;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt>       zero width joiner: &zwj;
-<li><tt>\&lrm;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt>       left-to-right mark: &lrm;
-<li><tt>\&rlm;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt>       right-to-left mark: &rlm;
-<li><tt>\&ndash;</tt><tt>&nbsp;&nbsp;&nbsp;</tt>                 en dash: &ndash;
-<li><tt>\&mdash;</tt><tt>&nbsp;&nbsp;&nbsp;</tt>                 em dash: &mdash;
-<li><tt>\&lsquo;</tt><tt>&nbsp;&nbsp;&nbsp;</tt>                 left single quotation mark: &lsquo;
-<li><tt>\&rsquo;</tt><tt>&nbsp;&nbsp;&nbsp;</tt>                 right single quotation mark: &rsquo;
-<li><tt>\&sbquo;</tt><tt>&nbsp;&nbsp;&nbsp;</tt>                 single low-9 quotation mark: &sbquo;
-<li><tt>\&ldquo;</tt><tt>&nbsp;&nbsp;&nbsp;</tt>                 left double quotation mark: &ldquo;
-<li><tt>\&rdquo;</tt><tt>&nbsp;&nbsp;&nbsp;</tt>                 right double quotation mark: &rdquo;
-<li><tt>\&bdquo;</tt><tt>&nbsp;&nbsp;&nbsp;</tt>                 double low-9 quotation mark: &bdquo;
-<li><tt>\&dagger;</tt><tt>&nbsp;&nbsp;</tt>                      dagger: &dagger;
-<li><tt>\&Dagger;</tt><tt>&nbsp;&nbsp;</tt>                      double dagger: &Dagger;
-<li><tt>\&permil;</tt><tt>&nbsp;&nbsp;</tt>                      per mille sign: &permil;
-<li><tt>\&lsaquo;</tt><tt>&nbsp;&nbsp;</tt>                      single left-pointing angle quotation mark: &lsaquo;
-<li><tt>\&rsaquo;</tt><tt>&nbsp;&nbsp;</tt>                      single right-pointing angle quotation mark: &rsaquo;
-<li><tt>\&euro;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;</tt>            euro sign: &euro;
-</ul>
-Doxygen extensions:
-<ul>
-<li><tt>\&tm;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt>  trade mark sign: &tm;
-<li><tt>\&apos;</tt><tt>&nbsp;&nbsp;&nbsp;</tt>            apostrophe: &apos;
-</ul>
+| Entity | &nbsp; | Description |
+| :----- | :----- | :---------- |
+| <tt>\&nbsp;</tt> | &nbsp; | no-break space = non-breaking space |
+| <tt>\&iexcl;</tt> | &iexcl; | inverted exclamation mark |
+| <tt>\&cent;</tt> | &cent; | cent sign |
+| <tt>\&pound;</tt> | &pound; | pound sign |
+| <tt>\&curren;</tt> | &curren; | currency sign |
+| <tt>\&yen;</tt> | &yen; | yen sign = yuan sign |
+| <tt>\&brvbar;</tt> | &brvbar; | broken bar = broken vertical bar |
+| <tt>\&sect;</tt> | &sect; | section sign |
+| <tt>\&uml;</tt> | &uml; | diaeresis = spacing diaeresis |
+| <tt>\&copy;</tt> | &copy; | copyright sign |
+| <tt>\&ordf;</tt> | &ordf; | feminine ordinal indicator |
+| <tt>\&laquo;</tt> | &laquo; | left-pointing double angle quotation mark = left pointing guillemet |
+| <tt>\&not;</tt> | &not; | not sign |
+| <tt>\&shy;</tt> | &shy; | soft hyphen = discretionary hyphen |
+| <tt>\&reg;</tt> | &reg; | registered sign = registered trade mark sign |
+| <tt>\&macr;</tt> | &macr; | macron = spacing macron = overline = APL overbar |
+| <tt>\&deg;</tt> | &deg; | degree sign |
+| <tt>\&plusmn;</tt> | &plusmn; | plus-minus sign = plus-or-minus sign |
+| <tt>\&sup2;</tt> | &sup2; | superscript two = superscript digit two = squared |
+| <tt>\&sup3;</tt> | &sup3; | superscript three = superscript digit three = cubed |
+| <tt>\&acute;</tt> | &acute; | acute accent = spacing acute |
+| <tt>\&micro;</tt> | &micro; | micro sign |
+| <tt>\&para;</tt> | &para; | pilcrow sign = paragraph sign |
+| <tt>\&middot;</tt> | &middot; | middle dot = Georgian comma = Greek middle dot |
+| <tt>\&cedil;</tt> | &cedil; | cedilla = spacing cedilla |
+| <tt>\&sup1;</tt> | &sup1; | superscript one = superscript digit one |
+| <tt>\&ordm;</tt> | &ordm; | masculine ordinal indicator |
+| <tt>\&raquo;</tt> | &raquo; | right-pointing double angle quotation mark = right pointing guillemet |
+| <tt>\&frac14;</tt> | &frac14; | vulgar fraction one quarter = fraction one quarter |
+| <tt>\&frac12;</tt> | &frac12; | vulgar fraction one half = fraction one half |
+| <tt>\&frac34;</tt> | &frac34; | vulgar fraction three quarters = fraction three quarters |
+| <tt>\&iquest;</tt> | &iquest; | inverted question mark = turned question mark |
+| <tt>\&Agrave;</tt> | &Agrave; | latin capital letter A with grave = latin capital letter A grave |
+| <tt>\&Aacute;</tt> | &Aacute; | latin capital letter A with acute |
+| <tt>\&Acirc;</tt> | &Acirc; | latin capital letter A with circumflex |
+| <tt>\&Atilde;</tt> | &Atilde; | latin capital letter A with tilde |
+| <tt>\&Auml;</tt> | &Auml; | latin capital letter A with diaeresis |
+| <tt>\&Aring;</tt> | &Aring; | latin capital letter A with ring above = latin capital letter A ring |
+| <tt>\&AElig;</tt> | &AElig; | latin capital letter AE = latin capital ligature AE |
+| <tt>\&Ccedil;</tt> | &Ccedil; | latin capital letter C with cedilla |
+| <tt>\&Egrave;</tt> | &Egrave; | latin capital letter E with grave |
+| <tt>\&Eacute;</tt> | &Eacute; | latin capital letter E with acute |
+| <tt>\&Ecirc;</tt> | &Ecirc; | latin capital letter E with circumflex |
+| <tt>\&Euml;</tt> | &Euml; | latin capital letter E with diaeresis |
+| <tt>\&Igrave;</tt> | &Igrave; | latin capital letter I with grave |
+| <tt>\&Iacute;</tt> | &Iacute; | latin capital letter I with acute |
+| <tt>\&Icirc;</tt> | &Icirc; | latin capital letter I with circumflex |
+| <tt>\&Iuml;</tt> | &Iuml; | latin capital letter I with diaeresis |
+| <tt>\&ETH;</tt> | &ETH; | latin capital letter ETH |
+| <tt>\&Ntilde;</tt> | &Ntilde; | latin capital letter N with tilde |
+| <tt>\&Ograve;</tt> | &Ograve; | latin capital letter O with grave |
+| <tt>\&Oacute;</tt> | &Oacute; | latin capital letter O with acute |
+| <tt>\&Ocirc;</tt> | &Ocirc; | latin capital letter O with circumflex |
+| <tt>\&Otilde;</tt> | &Otilde; | latin capital letter O with tilde |
+| <tt>\&Ouml;</tt> | &Ouml; | latin capital letter O with diaeresis |
+| <tt>\&times;</tt> | &times; | multiplication sign |
+| <tt>\&Oslash;</tt> | &Oslash; | latin capital letter O with stroke = latin capital letter O slash |
+| <tt>\&Ugrave;</tt> | &Ugrave; | latin capital letter U with grave |
+| <tt>\&Uacute;</tt> | &Uacute; | latin capital letter U with acute |
+| <tt>\&Ucirc;</tt> | &Ucirc; | latin capital letter U with circumflex |
+| <tt>\&Uuml;</tt> | &Uuml; | latin capital letter U with diaeresis |
+| <tt>\&Yacute;</tt> | &Yacute; | latin capital letter Y with acute |
+| <tt>\&THORN;</tt> | &THORN; | latin capital letter THORN |
+| <tt>\&szlig;</tt> | &szlig; | latin small letter sharp s = ess-zed |
+| <tt>\&agrave;</tt> | &agrave; | latin small letter a with grave = latin small letter a grave |
+| <tt>\&aacute;</tt> | &aacute; | latin small letter a with acute |
+| <tt>\&acirc;</tt> | &acirc; | latin small letter a with circumflex |
+| <tt>\&atilde;</tt> | &atilde; | latin small letter a with tilde |
+| <tt>\&auml;</tt> | &auml; | latin small letter a with diaeresis |
+| <tt>\&aring;</tt> | &aring; | latin small letter a with ring above = latin small letter a ring |
+| <tt>\&aelig;</tt> | &aelig; | latin small letter ae = latin small ligature ae |
+| <tt>\&ccedil;</tt> | &ccedil; | latin small letter c with cedilla |
+| <tt>\&egrave;</tt> | &egrave; | latin small letter e with grave |
+| <tt>\&eacute;</tt> | &eacute; | latin small letter e with acute |
+| <tt>\&ecirc;</tt> | &ecirc; | latin small letter e with circumflex |
+| <tt>\&euml;</tt> | &euml; | latin small letter e with diaeresis |
+| <tt>\&igrave;</tt> | &igrave; | latin small letter i with grave |
+| <tt>\&iacute;</tt> | &iacute; | latin small letter i with acute |
+| <tt>\&icirc;</tt> | &icirc; | latin small letter i with circumflex |
+| <tt>\&iuml;</tt> | &iuml; | latin small letter i with diaeresis |
+| <tt>\&eth;</tt> | &eth; | latin small letter eth |
+| <tt>\&ntilde;</tt> | &ntilde; | latin small letter n with tilde |
+| <tt>\&ograve;</tt> | &ograve; | latin small letter o with grave |
+| <tt>\&oacute;</tt> | &oacute; | latin small letter o with acute |
+| <tt>\&ocirc;</tt> | &ocirc; | latin small letter o with circumflex |
+| <tt>\&otilde;</tt> | &otilde; | latin small letter o with tilde |
+| <tt>\&ouml;</tt> | &ouml; | latin small letter o with diaeresis |
+| <tt>\&divide;</tt> | &divide; | division sign |
+| <tt>\&oslash;</tt> | &oslash; | latin small letter o with stroke, = latin small letter o slash |
+| <tt>\&ugrave;</tt> | &ugrave; | latin small letter u with grave |
+| <tt>\&uacute;</tt> | &uacute; | latin small letter u with acute |
+| <tt>\&ucirc;</tt> | &ucirc; | latin small letter u with circumflex |
+| <tt>\&uuml;</tt> | &uuml; | latin small letter u with diaeresis |
+| <tt>\&yacute;</tt> | &yacute; | latin small letter y with acute |
+| <tt>\&thorn;</tt> | &thorn; | latin small letter thorn |
+| <tt>\&yuml;</tt> | &yuml; | latin small letter y with diaeresis |
+| <tt>\&fnof;</tt> | &fnof; | latin small f with hook = function = florin |
+| <tt>\&Alpha;</tt> | &Alpha; | greek capital letter alpha |
+| <tt>\&Beta;</tt> | &Beta; | greek capital letter beta |
+| <tt>\&Gamma;</tt> | &Gamma; | greek capital letter gamma |
+| <tt>\&Delta;</tt> | &Delta; | greek capital letter delta |
+| <tt>\&Epsilon;</tt> | &Epsilon; | greek capital letter epsilon |
+| <tt>\&Zeta;</tt> | &Zeta; | greek capital letter zeta |
+| <tt>\&Eta;</tt> | &Eta; | greek capital letter eta |
+| <tt>\&Theta;</tt> | &Theta; | greek capital letter theta |
+| <tt>\&Iota;</tt> | &Iota; | greek capital letter iota |
+| <tt>\&Kappa;</tt> | &Kappa; | greek capital letter kappa |
+| <tt>\&Lambda;</tt> | &Lambda; | greek capital letter lambda |
+| <tt>\&Mu;</tt> | &Mu; | greek capital letter mu |
+| <tt>\&Nu;</tt> | &Nu; | greek capital letter nu |
+| <tt>\&Xi;</tt> | &Xi; | greek capital letter xi |
+| <tt>\&Omicron;</tt> | &Omicron; | greek capital letter omicron |
+| <tt>\&Pi;</tt> | &Pi; | greek capital letter pi |
+| <tt>\&Rho;</tt> | &Rho; | greek capital letter rho |
+| <tt>\&Sigma;</tt> | &Sigma; | greek capital letter sigma |
+| <tt>\&Tau;</tt> | &Tau; | greek capital letter tau |
+| <tt>\&Upsilon;</tt> | &Upsilon; | greek capital letter upsilon |
+| <tt>\&Phi;</tt> | &Phi; | greek capital letter phi |
+| <tt>\&Chi;</tt> | &Chi; | greek capital letter chi |
+| <tt>\&Psi;</tt> | &Psi; | greek capital letter psi |
+| <tt>\&Omega;</tt> | &Omega; | greek capital letter omega |
+| <tt>\&alpha;</tt> | &alpha; | greek small letter alpha |
+| <tt>\&beta;</tt> | &beta; | greek small letter beta |
+| <tt>\&gamma;</tt> | &gamma; | greek small letter gamma |
+| <tt>\&delta;</tt> | &delta; | greek small letter delta |
+| <tt>\&epsilon;</tt> | &epsilon; | greek small letter epsilon |
+| <tt>\&zeta;</tt> | &zeta; | greek small letter zeta |
+| <tt>\&eta;</tt> | &eta; | greek small letter eta |
+| <tt>\&theta;</tt> | &theta; | greek small letter theta |
+| <tt>\&iota;</tt> | &iota; | greek small letter iota |
+| <tt>\&kappa;</tt> | &kappa; | greek small letter kappa |
+| <tt>\&lambda;</tt> | &lambda; | greek small letter lambda |
+| <tt>\&mu;</tt> | &mu; | greek small letter mu |
+| <tt>\&nu;</tt> | &nu; | greek small letter nu |
+| <tt>\&xi;</tt> | &xi; | greek small letter xi |
+| <tt>\&omicron;</tt> | &omicron; | greek small letter omicron |
+| <tt>\&pi;</tt> | &pi; | greek small letter pi |
+| <tt>\&rho;</tt> | &rho; | greek small letter rho |
+| <tt>\&sigmaf;</tt> | &sigmaf; | greek small letter final sigma |
+| <tt>\&sigma;</tt> | &sigma; | greek small letter sigma |
+| <tt>\&tau;</tt> | &tau; | greek small letter tau |
+| <tt>\&upsilon;</tt> | &upsilon; | greek small letter upsilon |
+| <tt>\&phi;</tt> | &phi; | greek small letter phi |
+| <tt>\&chi;</tt> | &chi; | greek small letter chi |
+| <tt>\&psi;</tt> | &psi; | greek small letter psi |
+| <tt>\&omega;</tt> | &omega; | greek small letter omega |
+| <tt>\&thetasym;</tt> | &thetasym; | greek small letter theta symbol |
+| <tt>\&upsih;</tt> | &upsih; | greek upsilon with hook symbol |
+| <tt>\&piv;</tt> | &piv; | greek pi symbol |
+| <tt>\&bull;</tt> | &bull; | bullet = black small circle |
+| <tt>\&hellip;</tt> | &hellip; | horizontal ellipsis = three dot leader |
+| <tt>\&prime;</tt> | &prime; | prime = minutes = feet |
+| <tt>\&Prime;</tt> | &Prime; | double prime = seconds = inches |
+| <tt>\&oline;</tt> | &oline; | overline = spacing overscore |
+| <tt>\&frasl;</tt> | &frasl; | fraction slash |
+| <tt>\&weierp;</tt> | &weierp; | script capital P = power set = Weierstrass p |
+| <tt>\&image;</tt> | &image; | blackletter capital I = imaginary part |
+| <tt>\&real;</tt> | &real; | blackletter capital R = real part symbol |
+| <tt>\&trade;</tt> | &trade; | trade mark sign |
+| <tt>\&alefsym;</tt> | &alefsym; | alef symbol = first transfinite cardinal |
+| <tt>\&larr;</tt> | &larr; | leftwards arrow |
+| <tt>\&uarr;</tt> | &uarr; | upwards arrow |
+| <tt>\&rarr;</tt> | &rarr; | rightwards arrow |
+| <tt>\&darr;</tt> | &darr; | downwards arrow |
+| <tt>\&harr;</tt> | &harr; | left right arrow |
+| <tt>\&crarr;</tt> | &crarr; | downwards arrow with corner leftwards = carriage return |
+| <tt>\&lArr;</tt> | &lArr; | leftwards double arrow |
+| <tt>\&uArr;</tt> | &uArr; | upwards double arrow |
+| <tt>\&rArr;</tt> | &rArr; | rightwards double arrow |
+| <tt>\&dArr;</tt> | &dArr; | downwards double arrow |
+| <tt>\&hArr;</tt> | &hArr; | left right double arrow |
+| <tt>\&forall;</tt> | &forall; | for all |
+| <tt>\&part;</tt> | &part; | partial differential |
+| <tt>\&exist;</tt> | &exist; | there exists |
+| <tt>\&empty;</tt> | &empty; | empty set = null set = diameter |
+| <tt>\&nabla;</tt> | &nabla; | nabla = backward difference |
+| <tt>\&isin;</tt> | &isin; | element of |
+| <tt>\&notin;</tt> | &notin; | not an element of |
+| <tt>\&ni;</tt> | &ni; | contains as member |
+| <tt>\&prod;</tt> | &prod; | n-ary product = product sign |
+| <tt>\&sum;</tt> | &sum; | n-ary summation |
+| <tt>\&minus;</tt> | &minus; | minus sign |
+| <tt>\&lowast;</tt> | &lowast; | asterisk operator |
+| <tt>\&radic;</tt> | &radic; | square root = radical sign |
+| <tt>\&prop;</tt> | &prop; | proportional to |
+| <tt>\&infin;</tt> | &infin; | infinity |
+| <tt>\&ang;</tt> | &ang; | angle |
+| <tt>\&and;</tt> | &and; | logical and = wedge |
+| <tt>\&or;</tt> | &or; | logical or = vee |
+| <tt>\&cap;</tt> | &cap; | intersection = cap |
+| <tt>\&cup;</tt> | &cup; | union = cup |
+| <tt>\&int;</tt> | &int; | integral |
+| <tt>\&there4;</tt> | &there4; | therefore |
+| <tt>\&sim;</tt> | &sim; | tilde operator = varies with = similar to |
+| <tt>\&cong;</tt> | &cong; | approximately equal to |
+| <tt>\&asymp;</tt> | &asymp; | almost equal to = asymptotic to |
+| <tt>\&ne;</tt> | &ne; | not equal to |
+| <tt>\&equiv;</tt> | &equiv; | identical to |
+| <tt>\&le;</tt> | &le; | less-than or equal to |
+| <tt>\&ge;</tt> | &ge; | greater-than or equal to |
+| <tt>\&sub;</tt> | &sub; | subset of |
+| <tt>\&sup;</tt> | &sup; | superset of |
+| <tt>\&nsub;</tt> | &nsub; | not a subset of |
+| <tt>\&sube;</tt> | &sube; | subset of or equal to |
+| <tt>\&supe;</tt> | &supe; | superset of or equal to |
+| <tt>\&oplus;</tt> | &oplus; | circled plus = direct sum |
+| <tt>\&otimes;</tt> | &otimes; | circled times = vector product |
+| <tt>\&perp;</tt> | &perp; | up tack = orthogonal to = perpendicular |
+| <tt>\&sdot;</tt> | &sdot; | dot operator |
+| <tt>\&lceil;</tt> | &lceil; | left ceiling = apl upstile |
+| <tt>\&rceil;</tt> | &rceil; | right ceiling |
+| <tt>\&lfloor;</tt> | &lfloor; | left floor = apl downstile |
+| <tt>\&rfloor;</tt> | &rfloor; | right floor |
+| <tt>\&lang;</tt> | &lang; | left-pointing angle bracket = bra |
+| <tt>\&rang;</tt> | &rang; | right-pointing angle bracket = ket |
+| <tt>\&loz;</tt> | &loz; | lozenge |
+| <tt>\&spades;</tt> | &spades; | black spade suit |
+| <tt>\&clubs;</tt> | &clubs; | black club suit = shamrock |
+| <tt>\&hearts;</tt> | &hearts; | black heart suit = valentine |
+| <tt>\&diams;</tt> | &diams; | black diamond suit |
+| <tt>\&quot;</tt> | &quot; | quotation mark = APL quote |
+| <tt>\&amp;</tt> | &amp; | ampersand |
+| <tt>\&lt;</tt> | &lt; | less-than sign |
+| <tt>\&gt;</tt> | &gt; | greater-than sign |
+| <tt>\&OElig;</tt> | &OElig; | latin capital ligature OE |
+| <tt>\&oelig;</tt> | &oelig; | latin small ligature oe |
+| <tt>\&Scaron;</tt> | &Scaron; | latin capital letter S with caron |
+| <tt>\&scaron;</tt> | &scaron; | latin small letter s with caron |
+| <tt>\&Yuml;</tt> | &Yuml; | latin capital letter Y with diaeresis |
+| <tt>\&circ;</tt> | &circ; | modifier letter circumflex accent |
+| <tt>\&tilde;</tt> | &tilde; | small tilde |
+| <tt>\&ensp;</tt> | &ensp; | en space |
+| <tt>\&emsp;</tt> | &emsp; | em space |
+| <tt>\&thinsp;</tt> | &thinsp; | thin space |
+| <tt>\&zwnj;</tt> | &zwnj; | zero width non-joiner |
+| <tt>\&zwj;</tt> | &zwj; | zero width joiner |
+| <tt>\&lrm;</tt> | &lrm; | left-to-right mark |
+| <tt>\&rlm;</tt> | &rlm; | right-to-left mark |
+| <tt>\&ndash;</tt> | &ndash; | en dash |
+| <tt>\&mdash;</tt> | &mdash; | em dash |
+| <tt>\&lsquo;</tt> | &lsquo; | left single quotation mark |
+| <tt>\&rsquo;</tt> | &rsquo; | right single quotation mark |
+| <tt>\&sbquo;</tt> | &sbquo; | single low-9 quotation mark |
+| <tt>\&ldquo;</tt> | &ldquo; | left double quotation mark |
+| <tt>\&rdquo;</tt> | &rdquo; | right double quotation mark |
+| <tt>\&bdquo;</tt> | &bdquo; | double low-9 quotation mark |
+| <tt>\&dagger;</tt> | &dagger; | dagger |
+| <tt>\&Dagger;</tt> | &Dagger; | double dagger |
+| <tt>\&permil;</tt> | &permil; | per mille sign |
+| <tt>\&lsaquo;</tt> | &lsaquo; | single left-pointing angle quotation mark |
+| <tt>\&rsaquo;</tt> | &rsaquo; | single right-pointing angle quotation mark |
+| <tt>\&euro;</tt> | &euro; | euro sign |
+| **Doxygen extensions:** |||
+| <tt>\&tm;</tt> | &tm; | trade mark sign |
+| <tt>\&apos;</tt> | &apos; | apostrophe|
 
 \htmlonly
 <br/>
