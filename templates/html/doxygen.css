@@ -4,6 +4,19 @@ body {
     scrollbar-color: var(--scrollbar-thumb-color) var(--scrollbar-background-color);
 }
 
+::-webkit-scrollbar {
+        background-color: var(--scrollbar-background-color);
+	height: 10px;
+        width: 10px;
+}
+::-webkit-scrollbar-thumb {
+        background-color: var(--scrollbar-thumb-color);
+        border-radius: 8px;
+}
+::-webkit-scrollbar-corner {
+        background-color: var(--scrollbar-background-color);
+}
+
 body, table, div, p, dl {
 	font-weight: 400;
 	font-size: 14px;
