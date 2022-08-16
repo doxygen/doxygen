@@ -1488,7 +1488,7 @@ tr.heading h2 {
 	border-width: 10px;
 	margin: 0px -10px;
 }
-#powerTip.n:before {
+#powerTip.n:before, #powerTip.ne:before, #powerTip.nw:before {
 	border-top-color: var(--tooltip-border-color);
 	border-width: 11px;
 	margin: 0px -11px;
