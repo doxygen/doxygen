@@ -11111,8 +11111,14 @@ void readConfiguration(int argc, char **argv)
             TextStream t(&f);
             RTFGenerator::writeStyleSheetFile(t);
           }
+          else
+          {
+            err("error opening RTF style sheet file %s!\n",argv[optInd+1]);
+            cleanUpDoxygen();
+            exit(1);
+          }
           cleanUpDoxygen();
-          exit(1);
+          exit(0);
         }
         else if (qstricmp(formatName.data(),"html")==0)
         {
