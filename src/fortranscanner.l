@@ -291,7 +291,7 @@ ATTR_SPEC (EXTERNAL|ALLOCATABLE|DIMENSION{ARGS}|{INTENT_SPEC}|INTRINSIC|OPTIONAL
 ACCESS_SPEC (PRIVATE|PUBLIC)
 LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}((,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})|(,{BS}NAME{BS}"="{BS}"'"(.*)"'"{BS}))?")"
 /* Assume that attribute statements are almost the same as attributes. */
-ATTR_STMT {ATTR_SPEC}|DIMENSION|{ACCESS_SPEC}
+ATTR_STMT {ATTR_SPEC}|DIMENSION
 EXTERNAL_STMT (EXTERNAL)
 
 CONTAINS  CONTAINS
@@ -548,14 +548,15 @@ SCOPENAME ({ID}{BS}"::"{BS})*
 <InterfaceBody>module{BS}procedure      { yy_push_state(YY_START,yyscanner);
                                           BEGIN(ModuleProcedure);
                                         }
-<ModuleProcedure>{ID}                   { if (yyextra->ifType == IF_ABSTRACT || yyextra->ifType == IF_SPECIFIC)
+<ModuleProcedure>{ID}                   { QCString name = QCString(yytext).lower();
+                                          if (yyextra->ifType == IF_ABSTRACT || yyextra->ifType == IF_SPECIFIC)
                                           {
-                                            addInterface(yyscanner,yytext, yyextra->ifType);
+                                            addInterface(yyscanner,name, yyextra->ifType);
                                             startScope(yyscanner,yyextra->last_entry.get());
                                           }
 
                                           yyextra->current->section = Entry::FUNCTION_SEC ;
-                                          yyextra->current->name = yytext;
+                                          yyextra->current->name = name; 
                                           yyextra->moduleProcedures.push_back(yyextra->current);
                                           addCurrentEntry(yyscanner,true);
                                         }
@@ -636,12 +637,14 @@ SCOPENAME ({ID}{BS}"::"{BS})*
 
   /*------- access specification --------------------------------------------------------------------------*/
 
-<ModuleBody>private/{BS}(\n|"!")        { yyextra->defaultProtection = Private;
-                                          yyextra->current->protection = yyextra->defaultProtection ;
-                                        }
-<ModuleBody>public/{BS}(\n|"!")         { yyextra->defaultProtection = Public;
-                                          yyextra->current->protection = yyextra->defaultProtection ;
-                                        }
+<ModuleBody,TypedefBody,TypedefBodyContains>private/{BS}(\n|"!") {
+                                           yyextra->defaultProtection = Private;
+                                           yyextra->current->protection = yyextra->defaultProtection ;
+                                         }
+<ModuleBody,TypedefBody,TypedefBodyContains>public/{BS}(\n|"!")  {
+                                           yyextra->defaultProtection = Public;
+                                           yyextra->current->protection = yyextra->defaultProtection ;
+                                         }
 
  /*------- type definition  -------------------------------------------------------------------------------*/
 
@@ -654,8 +657,8 @@ SCOPENAME ({ID}{BS}"::"{BS})*
                                           }
 
                                           yy_push_state(Typedef,yyscanner);
-                                          yyextra->current->protection = yyextra->defaultProtection;
-                                          yyextra->typeProtection = yyextra->defaultProtection;
+                                          yyextra->current->protection = Package; // invalid in Fortran, replaced below
+                                          yyextra->typeProtection = Public;
                                           yyextra->typeMode = true;
                                         }
 <Typedef>{
@@ -672,11 +675,9 @@ extends{ARGS}                           {
                                         }
 public                                  {
                                           yyextra->current->protection = Public;
-                                          yyextra->typeProtection = Public;
                                         }
 private                                 {
                                           yyextra->current->protection = Private;
-                                          yyextra->typeProtection = Private;
                                         }
 {LANGUAGE_BIND_SPEC}                    {
                                           /* ignored for now */
@@ -695,6 +696,20 @@ private                                 {
                                                yyextra->current_root->section == Entry::NAMESPACE_SEC))
                                           {
                                             yyextra->current->name = yyextra->current_root->name + "::" + yyextra->current->name;
+                                          }
+
+                                          // set modifiers to allow adjusting public/private in surrounding module scope
+                                          if( yyextra->current->protection == Package )
+                                          {
+                                            yyextra->current->protection = yyextra->defaultProtection;
+                                          }
+                                          else if( yyextra->current->protection == Public )
+                                          {
+                                            yyextra->modifiers[yyextra->current_root][yyextra->current->name.lower().str()] |= QCString("public");
+                                          }
+                                          else if( yyextra->current->protection == Private )
+                                          {
+                                            yyextra->modifiers[yyextra->current_root][yyextra->current->name.lower().str()] |= QCString("private");
                                           }
 
                                           addCurrentEntry(yyscanner,true);
@@ -899,6 +914,21 @@ private                                 {
                                           /* work around for bug in QCString.replace (QCString works) */
                                           QCString name=yytext;
                                           name = name.lower();
+                                          /* if variable/type/etc is part of a module, mod name is necessary for output */
+                                          // get surrounding state
+                                          int currentState = YY_START;
+                                          yy_pop_state(yyscanner);
+                                          int outerState = YY_START;
+                                          yy_push_state(currentState,yyscanner);
+                                          if( outerState == Start || outerState == ModuleBody )
+                                          {
+                                            if ((yyextra->current_root) && 
+                                                (yyextra->current_root->section == Entry::CLASS_SEC
+                                                 || yyextra->current_root->section == Entry::NAMESPACE_SEC))
+                                            {
+                                              name = yyextra->current_root->name + "::" + name;
+                                            }
+                                          }
                                           /* remember attributes for the symbol */
                                           yyextra->modifiers[yyextra->current_root][name.lower().str()] |= yyextra->currentModifiers;
                                           yyextra->argName= name;
@@ -1176,12 +1206,20 @@ private                                 {
 <Subprog>{BS}                           {   /* ignore white space */   }
 <Subprog>{ID}                           { yyextra->current->name = yytext;
                                           //cout << "1a==========> got " << yyextra->current->type << " " << yytext << " " << yyextra->lineNr << endl;
-                                          yyextra->modifiers[yyextra->current_root][yyextra->current->name.lower().str()].returnName = yyextra->current->name.lower();
+                                          QCString returnName = yyextra->current->name.lower();
+                                          /* if type is part of a module, mod name is necessary for output */
+                                          if ((yyextra->current_root) && 
+                                              (yyextra->current_root->section ==  Entry::CLASS_SEC ||
+                                               yyextra->current_root->section ==  Entry::NAMESPACE_SEC)) 
+                                          {
+                                            yyextra->current->name= yyextra->current_root->name + "::" + yyextra->current->name;
+                                          }
+                                          yyextra->modifiers[yyextra->current_root][yyextra->current->name.lower().str()].returnName = returnName;
 
                                           if (yyextra->ifType == IF_ABSTRACT || yyextra->ifType == IF_SPECIFIC)
                                           {
                                             yyextra->current_root->name = substitute(
-                                                yyextra->current_root->name, "$interface$", yytext);
+                                                yyextra->current_root->name, "$interface$", QCString(yytext).lower());
                                           }
 
                                           BEGIN(Parameterlist);
@@ -1830,16 +1868,37 @@ static void copyEntry(std::shared_ptr<Entry> dest, const std::shared_ptr<Entry> 
 void resolveModuleProcedures(yyscan_t yyscanner,Entry *current_root)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  for (const auto &ce1 : yyextra->moduleProcedures)
+  if (yyextra->moduleProcedures.empty()) return;
+ 
+  // build up map of available functions
+  std::map<std::string,std::shared_ptr<Entry>> procMap;
   {
-    // check all entries in this module
-    for (const auto &ce2 : current_root->children())
+    for (const auto& cf: current_root->children())
     {
-      if (ce1->name == ce2->name)
+      if (cf->section != Entry::FUNCTION_SEC)
+        continue;
+
+      // remove scope from name
+      QCString name = cf->name;
       {
-        copyEntry(ce1, ce2);
+        int end = name.findRev(":");
+        if (end != -1) 
+          name.remove(0, end+1);
       }
-    } // for procedures in yyextra->current module
+
+      procMap.insert(std::make_pair(name.str(), cf));
+    }
+  }
+
+
+  // for all module procedures
+  for (const auto& ce1: yyextra->moduleProcedures)
+  {
+    if (procMap.find(ce1->name.str())!=procMap.end())
+    {
+      std::shared_ptr<Entry> proc = procMap[ce1->name.str()];
+      copyEntry(ce1, proc);
+    }
   } // for all interface module procedures
   yyextra->moduleProcedures.clear();
 }
@@ -2288,12 +2347,20 @@ static bool endScope(yyscan_t yyscanner,Entry *scope, bool isGlobalRoot)
     // iterate variables: get and apply yyextra->modifiers
     for (const auto &ce : scope->children())
     {
-      if (ce->section != Entry::VARIABLE_SEC && ce->section != Entry::FUNCTION_SEC)
+      if (ce->section != Entry::VARIABLE_SEC && ce->section != Entry::FUNCTION_SEC && ce->section != Entry::CLASS_SEC && ce->section != Entry::FUNCTION_SEC)
         continue;
 
       //cout<<ce->name<<", "<<mdfsMap.contains(ce->name.lower())<<mdfsMap.count()<<endl;
       if (mdfsMap.find(ce->name.lower().str())!=mdfsMap.end())
         applyModifiers(ce.get(), mdfsMap[ce->name.lower().str()]);
+
+      // remove prefix for variable names
+      if (ce->section == Entry::VARIABLE_SEC || ce->section == Entry::FUNCTION_SEC)
+      {
+        int end = ce->name.findRev(":");
+        if (end != -1) 
+          ce->name.remove(0, end+1);
+      }
     }
   }
 
