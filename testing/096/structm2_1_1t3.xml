@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="structm2_1_1t3" kind="struct" language="C++" prot="public">
+    <compoundname>m2::t3</compoundname>
+    <basecompoundref refid="structm1_1_1t2" prot="public" virt="non-virtual">m1::t2</basecompoundref>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="3">
+        <label>m1::t1</label>
+        <link refid="structm1_1_1t1"/>
+      </node>
+      <node id="2">
+        <label>m1::t2</label>
+        <link refid="structm1_1_1t2"/>
+        <childnode refid="3" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="1">
+        <label>m2::t3</label>
+        <link refid="structm2_1_1t3"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="3">
+        <label>m1::t1</label>
+        <link refid="structm1_1_1t1"/>
+      </node>
+      <node id="2">
+        <label>m1::t2</label>
+        <link refid="structm1_1_1t2"/>
+        <childnode refid="3" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="1">
+        <label>m2::t3</label>
+        <link refid="structm2_1_1t3"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+    </collaborationgraph>
+    <location file="096_namespace_inheritance.cpp" line="30" column="3" bodyfile="096_namespace_inheritance.cpp" bodystart="31" bodyend="32"/>
+    <listofallmembers>
+    </listofallmembers>
+  </compounddef>
+</doxygen>
