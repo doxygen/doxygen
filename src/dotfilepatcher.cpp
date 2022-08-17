@@ -20,6 +20,7 @@
 #include "config.h"
 #include "message.h"
 #include "docparser.h"
+#include "docnode.h"
 #include "doxygen.h"
 #include "util.h"
 #include "dot.h"
@@ -145,12 +146,14 @@ static QCString replaceRef(const QCString &buf,const QCString &relPath,
     QCString result;
     if (urlOnly) // for user defined dot graphs
     {
-      if (link.left(5)=="\\ref " || link.left(5)=="@ref ") // \ref url
+      if (link.startsWith("\\ref ") || link.startsWith("@ref ")) // \ref url
       {
         result=href+"=\"";
         // fake ref node to resolve the url
-        std::unique_ptr<IDocParser> parser { createDocParser() };
-        std::unique_ptr<DocRef>     df     { createRef( *parser.get(), link.mid(5), context ) };
+        auto parser { createDocParser() };
+        auto dfAst  { createRef( *parser.get(), link.mid(5), context ) };
+        auto dfAstImpl = dynamic_cast<const DocNodeAST*>(dfAst.get());
+        const DocRef *df = std::get_if<DocRef>(&dfAstImpl->root);
         result+=externalRef(relPath,df->ref(),TRUE);
         if (!df->file().isEmpty())
           result += addHtmlExtensionIfMissing(df->file());
@@ -227,7 +230,7 @@ bool DotFilePatcher::convertMapFile(TextStream &t,const QCString &mapName,
   while (getline(f,line)) // foreach line
   {
     QCString buf = line+'\n';
-    if (buf.left(5)=="<area")
+    if (buf.startsWith("<area"))
     {
       QCString replBuf = replaceRef(buf,relPath,urlOnly,context);
       // strip id="..." from replBuf since the id's are not needed and not unique.
@@ -252,48 +255,48 @@ DotFilePatcher::DotFilePatcher(const QCString &patchFile)
 
 bool DotFilePatcher::isSVGFile() const
 {
-  return m_patchFile.right(4)==".svg";
+  return m_patchFile.endsWith(".svg");
 }
 
 int DotFilePatcher::addMap(const QCString &mapFile,const QCString &relPath,
                            bool urlOnly,const QCString &context,const QCString &label)
 {
-  int id = (int)m_maps.size();
+  size_t id = m_maps.size();
   m_maps.emplace_back(mapFile,relPath,urlOnly,context,label);
-  return id;
+  return static_cast<int>(id);
 }
 
 int DotFilePatcher::addFigure(const QCString &baseName,
                               const QCString &figureName,bool heightCheck)
 {
-  int id = (int)m_maps.size();
+  size_t id = m_maps.size();
   m_maps.emplace_back(figureName,"",heightCheck,"",baseName);
-  return id;
+  return static_cast<int>(id);
 }
 
 int DotFilePatcher::addSVGConversion(const QCString &relPath,bool urlOnly,
                                      const QCString &context,bool zoomable,
                                      int graphId)
 {
-  int id = (int)m_maps.size();
+  size_t id = m_maps.size();
   m_maps.emplace_back("",relPath,urlOnly,context,"",zoomable,graphId);
-  return id;
+  return static_cast<int>(id);
 }
 
 int DotFilePatcher::addSVGObject(const QCString &baseName,
                                  const QCString &absImgName,
                                  const QCString &relPath)
 {
-  int id = (int)m_maps.size();
+  size_t id = m_maps.size();
   m_maps.emplace_back(absImgName,relPath,false,"",baseName);
-  return id;
+  return static_cast<int>(id);
 }
 
 bool DotFilePatcher::run() const
 {
   //printf("DotFilePatcher::run(): %s\n",qPrint(m_patchFile));
   bool interactiveSVG_local = Config_getBool(INTERACTIVE_SVG);
-  bool isSVGFile = m_patchFile.right(4)==".svg";
+  bool isSVGFile = m_patchFile.endsWith(".svg");
   int graphId = -1;
   QCString relPath;
   if (isSVGFile)
@@ -391,7 +394,7 @@ bool DotFilePatcher::run() const
       int mapId=-1;
       t << line.left(i);
       int n = sscanf(line.data()+i+1,"!-- SVG %d",&mapId);
-      if (n==1 && mapId>=0 && mapId<(int)m_maps.size())
+      if (n==1 && mapId>=0 && mapId<static_cast<int>(m_maps.size()))
       {
         int e = std::max(line.find("--]"),line.find("-->"));
         const Map &map = m_maps.at(mapId);
@@ -414,7 +417,7 @@ bool DotFilePatcher::run() const
       int mapId=-1;
       t << line.left(i);
       int n = sscanf(line.data()+i,"<!-- MAP %d",&mapId);
-      if (n==1 && mapId>=0 && mapId<(int)m_maps.size())
+      if (n==1 && mapId>=0 && mapId<static_cast<int>(m_maps.size()))
       {
         TextStream tt;
         const Map &map = m_maps.at(mapId);
@@ -439,7 +442,7 @@ bool DotFilePatcher::run() const
       int mapId=-1;
       int n = sscanf(line.data()+i+2,"FIG %d",&mapId);
       //printf("line='%s' n=%d\n",qPrint(line)+i,n);
-      if (n==1 && mapId>=0 && mapId<(int)m_maps.size())
+      if (n==1 && mapId>=0 && mapId<static_cast<int>(m_maps.size()))
       {
         const Map &map = m_maps.at(mapId);
         //printf("patching FIG %d in file %s with contents of %s\n",

@@ -218,7 +218,7 @@ void RTFGenerator::cleanup()
 static QCString makeIndexName(const QCString &s,int i)
 {
   QCString result=s;
-  result+=(char)(i+'0');
+  result+=static_cast<char>(i+'0');
   return result;
 }
 
@@ -279,7 +279,7 @@ void RTFGenerator::beginRTFDocument()
   m_t << "{\\widctlpar\\adjustright \\fs20\\cgrid \\snext0 Normal;}\n";
 
   // set the paper dimensions according to PAPER_TYPE
-  static auto paperType = Config_getEnum(PAPER_TYPE);
+  auto paperType = Config_getEnum(PAPER_TYPE);
   m_t << "{";
   switch (paperType)
   {
@@ -374,7 +374,7 @@ void RTFGenerator::startFile(const QCString &name,const QCString &,const QCStrin
   QCString fileName=name;
   m_relPath = relativePathToRoot(fileName);
 
-  if (fileName.right(4)!=".rtf" ) fileName+=".rtf";
+  if (!fileName.endsWith(".rtf")) fileName+=".rtf";
   startPlainFile(fileName);
   setRelativePath(m_relPath);
   setSourceFileName(stripPath(fileName));
@@ -431,10 +431,6 @@ void RTFGenerator::startIndexSection(IndexSections is)
       //Introduction
       beginRTFChapter();
       break;
-    //case isPackageIndex:
-    //  //Package Index
-    //  beginRTFChapter();
-    //  break;
     case isModuleIndex:
       //Module Index
       beginRTFChapter();
@@ -601,7 +597,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
       break;
     case isTitlePageAuthor:
       {
-        m_t << " doxygen" << getDoxygenVersion() << ".}\n";
+        m_t << " doxygen " << getDoxygenVersion() << ".}\n";
         m_t << "{\\creatim " << dateToRTFDateString() << "}\n}";
         DBG_RTF(m_t << "{\\comment end of infoblock}\n");
         // setup for this section
@@ -633,11 +629,14 @@ void RTFGenerator::endIndexSection(IndexSections is)
         }
         else
         {
-          std::unique_ptr<IDocParser> parser { createDocParser() };
-          std::unique_ptr<DocText>    root   { validatingParseText(*parser.get(), projectName) };
-          m_t << "{\\field\\fldedit {\\*\\fldinst TITLE \\\\*MERGEFORMAT}{\\fldrslt ";
-          writeDoc(root.get(),0,0,0);
-          m_t << "}}\\par\n";
+          auto parser { createDocParser() };
+          auto ast    { validatingParseText(*parser.get(), projectName) };
+          if (ast)
+          {
+            m_t << "{\\field\\fldedit {\\*\\fldinst TITLE \\\\*MERGEFORMAT}{\\fldrslt ";
+            writeDoc(ast.get(),0,0,0);
+            m_t << "}}\\par\n";
+          }
         }
 
         m_t << rtf_Style_Reset << rtf_Style["SubTitle"].reference() << "\n"; // set to title style
@@ -694,11 +693,6 @@ void RTFGenerator::endIndexSection(IndexSections is)
       m_t << "index";
       m_t << ".rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
       break;
-    //case isPackageIndex:
-    //  m_t << "\\par " << rtf_Style_Reset << "\n";
-    //  m_t << "{\\tc \\v " << theTranslator->trPackageList() << "}\n";
-    //  m_t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"packages.rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
-    //  break;
     case isModuleIndex:
       m_t << "\\par " << rtf_Style_Reset << "\n";
       m_t << "{\\tc \\v " << theTranslator->trModuleIndex() << "}\n";
@@ -929,23 +923,6 @@ void RTFGenerator::endIndexSection(IndexSections is)
       }
       break;
     case isPageDocumentation:
-      {
-//#error "fix me in the same way as the latex index..."
-        //m_t << "{\\tc \\v " << theTranslator->trPageDocumentation() << "}\n";
-        //m_t << "}\n";
-        //bool first=TRUE;
-        //for (const auto *pd : Doxygen::pageLinkedMap)
-        //{
-        //  if (!pd->getGroupDef() && !pd->isReference())
-        //  {
-        //    if (first) m_t << "\\par " << rtf_Style_Reset << "\n";
-        //    m_t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
-        //    m_t << pd->getOutputFileBase();
-        //    m_t << ".rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
-        //    first=FALSE;
-        //  }
-        //}
-      }
       break;
     case isPageDocumentation2:
       {
@@ -1615,12 +1592,10 @@ void RTFGenerator::docify(const QCString &str)
 {
   if (!str.isEmpty())
   {
-    const unsigned char *p=(const unsigned char *)str.data();
-    unsigned char c;
-    //unsigned char pc='\0';
+    const char *p=str.data();
+    char c;
     while (*p)
     {
-      //static bool MultiByte = FALSE;
       c=*p++;
 
       switch (c)
@@ -1630,12 +1605,9 @@ void RTFGenerator::docify(const QCString &str)
         case '\\': m_t << "\\\\";           break;
         default:
           {
-            // see if we can insert an hyphenation hint
-            //if (isupper(c) && islower(pc) && !insideTabbing) m_t << "\\-";
-            m_t << (char)c;
+            m_t << c;
           }
       }
-      //pc = c;
       m_omitParagraph = FALSE;
     }
   }
@@ -1648,8 +1620,8 @@ void RTFGenerator::codify(const QCString &str)
   //static char spaces[]="        ";
   if (!str.isEmpty())
   {
-    const unsigned char *p=(const unsigned char *)str.data();
-    unsigned char c;
+    const char *p=str.data();
+    char c;
     int spacesToNextTabStop;
 
     while (*p)
@@ -1670,7 +1642,7 @@ void RTFGenerator::codify(const QCString &str)
         case '{':   m_t << "\\{"; m_col++;          break;
         case '}':   m_t << "\\}"; m_col++;          break;
         case '\\':  m_t << "\\\\"; m_col++;         break;
-        default:    p=(const unsigned char *)writeUTF8Char(m_t,(const char *)p-1); m_col++; break;
+        default:    p=writeUTF8Char(m_t,p-1); m_col++; break;
       }
     }
   }
@@ -2021,15 +1993,15 @@ static void encodeForOutput(TextStream &t,const QCString &s)
   if (s==0) return;
   QCString encoding;
   bool converted=FALSE;
-  int l = (int)s.length();
+  size_t l = s.length();
   static std::vector<char> enc;
-  if (l*4>(int)enc.size()) enc.resize(l*4); // worst case
+  if (l*4>enc.size()) enc.resize(l*4); // worst case
   encoding.sprintf("CP%s",qPrint(theTranslator->trRTFansicp()));
   if (!encoding.isEmpty())
   {
     // convert from UTF-8 back to the output encoding
     void *cd = portable_iconv_open(encoding.data(),"UTF-8");
-    if (cd!=(void *)(-1))
+    if (cd!=reinterpret_cast<void *>(-1))
     {
       size_t iLeft=l;
       size_t oLeft=enc.size();
@@ -2037,7 +2009,7 @@ static void encodeForOutput(TextStream &t,const QCString &s)
       char *outputPtr = &enc[0];
       if (!portable_iconv(cd, &inputPtr, &iLeft, &outputPtr, &oLeft))
       {
-        enc.resize(enc.size()-(unsigned int)oLeft);
+        enc.resize(enc.size()-oLeft);
         converted=TRUE;
       }
       portable_iconv_close(cd);
@@ -2048,12 +2020,11 @@ static void encodeForOutput(TextStream &t,const QCString &s)
     memcpy(enc.data(),s.data(),l);
     enc.resize(l);
   }
-  uint i;
   bool multiByte = FALSE;
 
-  for (i=0;i<enc.size();i++)
+  for (size_t i=0;i<enc.size();i++)
   {
-    uchar c = (uchar)enc.at(i);
+    uchar c = static_cast<uchar>(enc.at(i));
 
     if (c>=0x80 || multiByte)
     {
@@ -2072,7 +2043,7 @@ static void encodeForOutput(TextStream &t,const QCString &s)
     }
     else
     {
-      t << (char)c;
+      t << c;
     }
   }
 }
@@ -2470,11 +2441,14 @@ void RTFGenerator::exceptionEntry(const QCString &prefix,bool closeBracket)
   m_t << " ";
 }
 
-void RTFGenerator::writeDoc(DocNode *n,const Definition *ctx,const MemberDef *,int)
+void RTFGenerator::writeDoc(const IDocNodeAST *ast,const Definition *ctx,const MemberDef *,int)
 {
-  RTFDocVisitor *visitor = new RTFDocVisitor(m_t,*this,ctx?ctx->getDefFileExtension():QCString(""));
-  n->accept(visitor);
-  delete visitor;
+  auto astImpl = dynamic_cast<const DocNodeAST*>(ast);
+  if (astImpl)
+  {
+    RTFDocVisitor visitor(m_t,*this,ctx?ctx->getDefFileExtension():QCString(""));
+    std::visit(visitor,astImpl->root);
+  }
   m_omitParagraph = TRUE;
 }
 

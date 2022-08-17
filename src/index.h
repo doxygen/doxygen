@@ -16,101 +16,13 @@
 #ifndef INDEX_H
 #define INDEX_H
 
-#include <utility>
-#include <vector>
-#include <memory>
-
 #include "qcstring.h"
 
 class Definition;
+class OutputList;
 class DefinitionMutable;
 class NamespaceDef;
 class MemberDef;
-class OutputList;
-
-/** \brief Abstract interface for index generators. */
-class IndexIntf
-{
-  public:
-    virtual ~IndexIntf() {}
-    virtual void initialize() = 0;
-    virtual void finalize() = 0;
-    virtual void incContentsDepth() = 0;
-    virtual void decContentsDepth() = 0;
-    virtual void addContentsItem(bool isDir, const QCString &name, const QCString &ref,
-                                 const QCString &file, const QCString &anchor, bool separateIndex,
-                                 bool addToNavIndex,const Definition *def) = 0;
-    virtual void addIndexItem(const Definition *context,const MemberDef *md,
-                              const QCString &sectionAnchor,const QCString &title) = 0;
-    virtual void addIndexFile(const QCString &name) = 0;
-    virtual void addImageFile(const QCString &name) = 0;
-    virtual void addStyleSheetFile(const QCString &name) = 0;
-};
-
-/** \brief A list of index interfaces.
- *
- *  This class itself implements all methods of IndexIntf and
- *  just forwards the calls to all items in the list.
- */
-class IndexList : public IndexIntf
-{
-  private:
-    std::vector< std::unique_ptr<IndexIntf> > m_intfs;
-
-    // For each index format we forward the method call.
-    // We use C++11 variadic templates and perfect forwarding to implement foreach() generically,
-    // and split the types of the methods from the arguments passed to allow implicit conversions.
-    template<class... Ts,class... As>
-    void foreach(void (IndexIntf::*methodPtr)(Ts...),As&&... args)
-    {
-      for (const auto &intf : m_intfs)
-      {
-        (intf.get()->*methodPtr)(std::forward<As>(args)...);
-      }
-    }
-
-  public:
-    /** Creates a list of indexes */
-    IndexList() { m_enabled=TRUE; }
-
-    /** Add an index generator to the list, using a syntax similar to std::make_unique<T>() */
-    template<class T,class... As>
-    void addIndex(As&&... args)
-    { m_intfs.push_back(std::make_unique<T>(std::forward<As>(args)...)); }
-
-    void disable()
-    { m_enabled = FALSE; }
-    void enable()
-    { m_enabled = TRUE; }
-    bool isEnabled() const
-    { return m_enabled; }
-
-    // IndexIntf implementation
-    void initialize()
-    { foreach(&IndexIntf::initialize); }
-    void finalize()
-    { foreach(&IndexIntf::finalize); }
-    void incContentsDepth()
-    { if (m_enabled) foreach(&IndexIntf::incContentsDepth); }
-    void decContentsDepth()
-    { if (m_enabled) foreach(&IndexIntf::decContentsDepth); }
-    void addContentsItem(bool isDir, const QCString &name, const QCString &ref,
-                         const QCString &file, const QCString &anchor,bool separateIndex=FALSE,bool addToNavIndex=FALSE,
-                         const Definition *def=0)
-    { if (m_enabled) foreach(&IndexIntf::addContentsItem,isDir,name,ref,file,anchor,separateIndex,addToNavIndex,def); }
-    void addIndexItem(const Definition *context,const MemberDef *md,const QCString &sectionAnchor=QCString(),const QCString &title=QCString())
-    { if (m_enabled) foreach(&IndexIntf::addIndexItem,context,md,sectionAnchor,title); }
-    void addIndexFile(const QCString &name)
-    { if (m_enabled) foreach(&IndexIntf::addIndexFile,name); }
-    void addImageFile(const QCString &name)
-    { if (m_enabled) foreach(&IndexIntf::addImageFile,name); }
-    void addStyleSheetFile(const QCString &name)
-    { if (m_enabled) foreach(&IndexIntf::addStyleSheetFile,name); }
-
-  private:
-    bool m_enabled;
-};
-
 
 enum IndexSections
 {

@@ -288,6 +288,7 @@ body {
 }
 
 div.contents {
+	margin-top: 0px;
         margin-bottom: 10px;
         padding: 12px;
         margin-left: auto;
@@ -1583,5 +1584,8 @@ th.markdownTableHeadCenter, td.markdownTableBodyCenter {
 	text-align: center
 }
 
+span.obfuscator {
+  display: none;
+}
 
 /* @end */

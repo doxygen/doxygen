@@ -156,7 +156,7 @@ English:
 #ifndef TRANSLATOR_SE_H
 #define TRANSLATOR_SE_H
 
-class TranslatorSwedish : public Translator
+class TranslatorSwedish : public TranslatorAdapter_1_9_4
 {
   public:
 
@@ -185,6 +185,10 @@ class TranslatorSwedish : public Translator
     virtual QCString trISOLang()
     {
       return "sv";
+    }
+    virtual QCString getLanguageString()
+    {
+      return "0x41D Swedish";
     }
 
     // --- Language translation methods -------------------
@@ -251,7 +255,7 @@ class TranslatorSwedish : public Translator
      */
     virtual QCString trGeneratedAutomatically(const QCString &s)
     { QCString result="Automatiskt skapad av Doxygen";
-      if (!s.isEmpty()) result+=(QCString)" för "+s;
+      if (!s.isEmpty()) result+=" för "+s;
       result+=" från källkoden.";
       return result;
     }
@@ -500,6 +504,10 @@ class TranslatorSwedish : public Translator
       {
         return "Dokumentation över datastrukturer";
       }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+          return trDesignUnitDocumentation();
+      }
       else
       {
         return "Klassdokumentation";
@@ -517,12 +525,6 @@ class TranslatorSwedish : public Translator
      */
     virtual QCString trExampleDocumentation()
     { return "Exempeldokumentation"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all related pages.
-     */
-    virtual QCString trPageDocumentation()
-    { return "Sid-dokumentation"; }
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
@@ -614,21 +616,17 @@ class TranslatorSwedish : public Translator
      */
     virtual QCString trGeneratedAt(const QCString &date,const QCString &projName)
     {
-      QCString result=(QCString)"Skapad "+date;
-      if (!projName.isEmpty()) result+=(QCString)" för "+projName;
-      result+=(QCString)" av";
+      QCString result="Skapad "+date;
+      if (!projName.isEmpty()) result+=" för "+projName;
+      result+=" av";
       return result;
     }
 
     /*! this text is put before a class diagram */
     virtual QCString trClassDiagram(const QCString &clName)
     {
-      return (QCString)"Klassdiagram för "+clName;
+      return "Klassdiagram för "+clName;
     }
-
-    /*! this text is generated when the \\internal command is used. */
-    virtual QCString trForInternalUseOnly()
-    { return "Endast för internt bruk."; }
 
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
@@ -701,7 +699,7 @@ class TranslatorSwedish : public Translator
                                     ClassDef::CompoundType compType,
                                     bool isTemplate)
     {
-      QCString result=(QCString)clName;
+      QCString result=clName;
       switch(compType)
       {
         case ClassDef::Class:  result+=" klass"; break;
@@ -871,10 +869,11 @@ class TranslatorSwedish : public Translator
         bool single)
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
-      QCString result=(QCString)"Dokumentationen för ";
+      bool vhdlOpt = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
+      QCString result="Dokumentationen för ";
       switch(compType)
       {
-        case ClassDef::Class:      result+="denna klass"; break;
+        case ClassDef::Class:      result+=vhdlOpt? "denna designenhets":"denna klass"; break;
         case ClassDef::Struct:     result+="denna strukt"; break;
         case ClassDef::Union:      result+="denna union"; break;
         case ClassDef::Interface:  result+="detta gränssnitt"; break;
@@ -936,12 +935,12 @@ class TranslatorSwedish : public Translator
     /*! this text is put before a collaboration diagram */
     virtual QCString trCollaborationDiagram(const QCString &clName)
     {
-      return (QCString)"Samarbetsdiagram för "+clName+":";
+      return "Samarbetsdiagram för "+clName+":";
     }
     /*! this text is put before an include dependency graph */
     virtual QCString trInclDepGraph(const QCString &fName)
     {
-      return (QCString)"Include-beroendediagram för "+fName+":";
+      return "Include-beroendediagram för "+fName+":";
     }
     /*! header that is put before the list of constructor/destructors. */
     virtual QCString trConstructorDocumentation()
@@ -1224,12 +1223,7 @@ class TranslatorSwedish : public Translator
     /*! Used as the title of a Java package */
     virtual QCString trPackage(const QCString &name)
     {
-      return (QCString)"Paket "+name;
-    }
-    /*! Title of the package index page */
-    virtual QCString trPackageList()
-    {
-      return "Paketlista";
+      return "Paket "+name;
     }
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
@@ -1474,14 +1468,18 @@ class TranslatorSwedish : public Translator
     /*! Used as a heading for a list of Java class functions with package
      * scope.
      */
-    virtual QCString trPackageMembers()
+    virtual QCString trPackageFunctions()
     {
       return "Paketfunktioner";
+    }
+    virtual QCString trPackageMembers()
+    {
+      return "Paketmedlemmar";
     }
     /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
-    virtual QCString trStaticPackageMembers()
+    virtual QCString trStaticPackageFunctions()
     {
       return "Statiska paketfunktioner";
     }
@@ -1592,14 +1590,6 @@ class TranslatorSwedish : public Translator
      */
     virtual QCString trDirectories()
     { return "Kataloger"; }
-
-    /*! This returns a sentences that introduces the directory hierarchy.
-     *  and the fact that it is sorted alphabetically per level
-     */
-    virtual QCString trDirDescription()
-    { return "Den här katalogen är grovt sorterad, "
-             "men inte helt, i alfabetisk ordning:";
-    }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.
@@ -1737,7 +1727,7 @@ class TranslatorSwedish : public Translator
                                     ClassDef::CompoundType compType,
                                     bool isTemplate)
     {
-      QCString result=(QCString)clName;
+      QCString result=clName;
       switch(compType)
       {
         case ClassDef::Class:      result+=" Modul"; break;
@@ -1806,7 +1796,7 @@ class TranslatorSwedish : public Translator
         bool single)
     {
       // single is true implies a single file
-      QCString result=(QCString)"Dokumentationen för ";
+      QCString result="Dokumentationen för ";
       switch(compType)
       {
         case ClassDef::Class:      result+="denna modul"; break;
@@ -1894,7 +1884,7 @@ class TranslatorSwedish : public Translator
      */
     virtual QCString trFileIn(const QCString &name)
     {
-      return (QCString)"Fil i "+name;
+      return "Fil i "+name;
     }
 
     /*! when clicking a directory dependency label, a page with a
@@ -1903,7 +1893,7 @@ class TranslatorSwedish : public Translator
      */
     virtual QCString trIncludesFileIn(const QCString &name)
     {
-      return (QCString)"Inkluderar fil i "+name;
+      return "Inkluderar fil i "+name;
     }
 
     /** Compiles a date string.
@@ -1931,6 +1921,22 @@ class TranslatorSwedish : public Translator
         sdate+=stime;
       }
       return sdate;
+    }
+    virtual QCString trDayOfWeek(int dayOfWeek, bool first_capital, bool full)
+    {
+      static const char *days_short[]   = { "mån", "tis", "ons", "tor", "fre", "lör", "sön" };
+      static const char *days_full[]    = { "måndag", "tisdag", "onsdag", "torsdag", "fredag", "lördag", "söndag" };
+      QCString text  = full? days_full[dayOfWeek-1] : days_short[dayOfWeek-1];
+      if (first_capital) return text.mid(0,1).upper()+text.mid(1);
+      else return text;
+    }
+    virtual QCString trMonth(int month, bool first_capital, bool full)
+    {
+      static const char *months_short[] = { "jan", "feb", "mar", "apr", "maj", "jun", "jul", "aug", "sep", "okt", "nov", "dec" };
+      static const char *months_full[]  = { "januari", "februari", "mars", "april", "maj", "juni", "juli", "augusti", "september", "oktober", "november", "december" };
+      QCString text  = full? months_full[month-1] : months_short[month-1];
+      if (first_capital) return text.mid(0,1).upper()+text.mid(1);
+      else return text;
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2068,14 +2074,14 @@ class TranslatorSwedish : public Translator
     /** UNO IDL service page title */
     virtual QCString trServiceReference(const QCString &sName)
     {
-      QCString result=(QCString)sName;
+      QCString result=sName;
       result+=" Tjänstereferens";
       return result;
     }
     /** UNO IDL singleton page title */
     virtual QCString trSingletonReference(const QCString &sName)
     {
-      QCString result=(QCString)sName;
+      QCString result=sName;
       result+=" Singleton-referens";
       return result;
     }
@@ -2083,7 +2089,7 @@ class TranslatorSwedish : public Translator
     virtual QCString trServiceGeneratedFromFiles(bool single)
     {
       // single is true implies a single file
-      QCString result=(QCString)"Dokumentationen för denna tjänst "
+      QCString result="Dokumentationen för denna tjänst "
                                 "genererades från följande fil";
       if (single) result+=":"; else result+="er:";
       return result;
@@ -2092,7 +2098,7 @@ class TranslatorSwedish : public Translator
     virtual QCString trSingletonGeneratedFromFiles(bool single)
     {
       // single is true implies a single file
-      QCString result=(QCString)"Dokumentationen för denna singleton "
+      QCString result="Dokumentationen för denna singleton "
                                 "genererades från följande fil";
       if (single) result+=":"; else result+="er:";
       return result;
@@ -2318,7 +2324,7 @@ class TranslatorSwedish : public Translator
     }
     virtual QCString trCompoundReferenceSlice(const QCString &clName, ClassDef::CompoundType compType, bool isLocal)
     {
-      QCString result=(QCString)clName;
+      QCString result=clName;
       if (isLocal) result+=" Lokal";
       switch(compType)
       {

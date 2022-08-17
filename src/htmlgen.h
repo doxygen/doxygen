@@ -44,8 +44,6 @@ class HtmlCodeGenerator : public CodeOutputInterface
     void startFontClass(const QCString &s);
     void endFontClass();
     void writeCodeAnchor(const QCString &anchor);
-    void setCurrentDoc(const Definition *,const QCString &,bool) {}
-    void addWord(const QCString &,bool) {}
     void startCodeFragment(const QCString &style);
     void endCodeFragment(const QCString &);
 
@@ -86,6 +84,7 @@ class HtmlGenerator : public OutputGenerator
     static QCString writeLogoAsString(const QCString &path);
     static QCString writeSplitBarAsString(const QCString &name,const QCString &relpath);
     static QCString getMathJaxMacros();
+    static QCString getNavTreeCss();
 
     // ---- CodeOutputInterface
     void codify(const QCString &text)
@@ -117,9 +116,7 @@ class HtmlGenerator : public OutputGenerator
     { m_codeGen.endCodeFragment(style); }
     // ---------------------------
 
-    void setCurrentDoc(const Definition *context,const QCString &anchor,bool isSourceFile);
-    void addWord(const QCString &word,bool hiPriority);
-    void writeDoc(DocNode *,const Definition *,const MemberDef *,int id);
+    void writeDoc(const IDocNodeAST *node,const Definition *,const MemberDef *,int id);
 
     void startFile(const QCString &name,const QCString &manName,const QCString &title,int id);
     void writeFooter(const QCString &navPath);

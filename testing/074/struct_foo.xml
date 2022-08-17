@@ -8,6 +8,7 @@
         <definition>Foo::Foo</definition>
         <argsstring>()</argsstring>
         <name>Foo</name>
+        <qualifiedname>Foo::Foo</qualifiedname>
         <briefdescription>
         </briefdescription>
         <detaileddescription>
@@ -22,6 +23,7 @@
         <definition>Foo &amp; Foo::operator&lt;&lt;</definition>
         <argsstring>(int i)</argsstring>
         <name>operator&lt;&lt;</name>
+        <qualifiedname>Foo::operator&lt;&lt;</qualifiedname>
         <param>
           <type>int</type>
           <declname>i</declname>
@@ -40,6 +42,7 @@
         <definition>const Foo &amp; Foo::operator&lt;&lt;</definition>
         <argsstring>(int i) const</argsstring>
         <name>operator&lt;&lt;</name>
+        <qualifiedname>Foo::operator&lt;&lt;</qualifiedname>
         <param>
           <type>int</type>
           <declname>i</declname>
@@ -58,6 +61,7 @@
         <definition>int Foo::operator()</definition>
         <argsstring>(int i)</argsstring>
         <name>operator()</name>
+        <qualifiedname>Foo::operator()</qualifiedname>
         <param>
           <type>int</type>
           <declname>i</declname>
@@ -76,6 +80,7 @@
         <definition>int Foo::operator()</definition>
         <argsstring>(int i) const</argsstring>
         <name>operator()</name>
+        <qualifiedname>Foo::operator()</qualifiedname>
         <param>
           <type>int</type>
           <declname>i</declname>
@@ -94,6 +99,7 @@
         <definition>Foo &amp; Foo::operator&amp;=</definition>
         <argsstring>(const Foo &amp;rhs)</argsstring>
         <name>operator&amp;=</name>
+        <qualifiedname>Foo::operator&amp;=</qualifiedname>
         <param>
           <type>const <ref refid="struct_foo" kindref="compound">Foo</ref> &amp;</type>
           <declname>rhs</declname>
@@ -112,6 +118,7 @@
         <definition>const Foo &amp; Foo::operator&amp;=</definition>
         <argsstring>(const Foo &amp;rhs) const</argsstring>
         <name>operator&amp;=</name>
+        <qualifiedname>Foo::operator&amp;=</qualifiedname>
         <param>
           <type>const <ref refid="struct_foo" kindref="compound">Foo</ref> &amp;</type>
           <declname>rhs</declname>
@@ -130,6 +137,7 @@
         <definition>int * Foo::operator-&gt;*</definition>
         <argsstring>(int *p)</argsstring>
         <name>operator-&gt;*</name>
+        <qualifiedname>Foo::operator-&gt;*</qualifiedname>
         <param>
           <type>int *</type>
           <declname>p</declname>
@@ -150,6 +158,7 @@
         <definition>Foo Foo::fun</definition>
         <argsstring>() const</argsstring>
         <name>fun</name>
+        <qualifiedname>Foo::fun</qualifiedname>
         <briefdescription>
           <para>Fun with itself. </para>
         </briefdescription>
@@ -168,6 +177,7 @@
         <definition>static Foo Foo::fun</definition>
         <argsstring>(Foo a, Foo b)</argsstring>
         <name>fun</name>
+        <qualifiedname>Foo::fun</qualifiedname>
         <param>
           <type>
             <ref refid="struct_foo" kindref="compound">Foo</ref>

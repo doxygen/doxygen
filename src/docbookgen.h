@@ -24,7 +24,6 @@ class DocbookCodeGenerator : public CodeOutputInterface
 {
   public:
     DocbookCodeGenerator(TextStream &t);
-    virtual ~DocbookCodeGenerator();
     void setRelativePath(const QCString &path) { m_relPath = path; }
     void setSourceFileName(const QCString &sourceFileName) { m_sourceFileName = sourceFileName; }
     QCString sourceFileName() { return m_sourceFileName; }
@@ -48,8 +47,6 @@ class DocbookCodeGenerator : public CodeOutputInterface
     void writeCodeAnchor(const QCString &);
     void writeLineNumber(const QCString &extRef,const QCString &compId,
         const QCString &anchorId,int l, bool writeLineAnchor);
-    void setCurrentDoc(const Definition *,const QCString &,bool);
-    void addWord(const QCString &,bool);
     void finish();
     void startCodeFragment(const QCString &style);
     void endCodeFragment(const QCString &style);
@@ -134,7 +131,7 @@ class DocbookGenerator : public OutputGenerator
     { m_codeGen.endCodeFragment(style); }
     // ---------------------------
 
-    void writeDoc(DocNode *,const Definition *ctx,const MemberDef *md,int id);
+    void writeDoc(const IDocNodeAST *node,const Definition *ctx,const MemberDef *md,int id);
 
     ///////////////////////////////////////////////////////////////
     // structural output interface

@@ -50,8 +50,6 @@ class LatexCodeGenerator : public CodeOutputInterface
     void startFontClass(const QCString &) override;
     void endFontClass() override;
     void writeCodeAnchor(const QCString &) override {}
-    void setCurrentDoc(const Definition *,const QCString &,bool) override {}
-    void addWord(const QCString &,bool) override {}
     void startCodeFragment(const QCString &style) override;
     void endCodeFragment(const QCString &style) override;
 
@@ -124,7 +122,7 @@ class LatexGenerator : public OutputGenerator
     // ---------------------------
 
 
-    void writeDoc(DocNode *,const Definition *ctx,const MemberDef *,int id);
+    void writeDoc(const IDocNodeAST *node,const Definition *ctx,const MemberDef *,int id);
 
     void startFile(const QCString &name,const QCString &manName,const QCString &title,int id);
     void writeSearchInfo() {}

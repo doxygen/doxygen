@@ -14,6 +14,7 @@
 */
 
 #include <cassert>
+#include <cmath>
 
 #include "dotrunner.h"
 #include "util.h"
@@ -22,6 +23,7 @@
 #include "message.h"
 #include "config.h"
 #include "dir.h"
+#include "doxygen.h"
 
 // the graphicx LaTeX has a limitation of maximum size of 16384
 // To be on the save side we take it a little bit smaller i.e. 150 inch * 72 dpi
@@ -107,7 +109,7 @@ static bool resetPDFSize(const int width,const int height, const QCString &base)
 bool DotRunner::readBoundingBox(const QCString &fileName,int *width,int *height,bool isEps)
 {
   const char *bb = isEps ? "%%PageBoundingBox:" : "/MediaBox [";
-  int bblen = (int)strlen(bb);
+  size_t bblen = strlen(bb);
   FILE *f = Portable::fopen(fileName,"rb");
   if (!f)
   {
@@ -122,12 +124,15 @@ bool DotRunner::readBoundingBox(const QCString &fileName,int *width,int *height,
      if (p) // found PageBoundingBox or /MediaBox string
      {
        int x,y;
+       double w,h;
        fclose(f);
-       if (sscanf(p+bblen,"%d %d %d %d",&x,&y,width,height)!=4)
+       if (sscanf(p+bblen,"%d %d %lf %lf",&x,&y,&w,&h)!=4)
        {
          //printf("readBoundingBox sscanf fail\n");
          return FALSE;
        }
+       *width = static_cast<int>(std::ceil(w));
+       *height = static_cast<int>(std::ceil(h));
        return TRUE;
      }
   }
@@ -141,7 +146,7 @@ bool DotRunner::readBoundingBox(const QCString &fileName,int *width,int *height,
 DotRunner::DotRunner(const QCString& absDotName, const QCString& md5Hash)
   : m_file(absDotName)
   , m_md5Hash(md5Hash)
-  , m_dotExe(Config_getString(DOT_PATH)+"dot")
+  , m_dotExe(Doxygen::verifiedDotPath)
   , m_cleanUp(Config_getBool(DOT_CLEANUP))
 {
 }
@@ -159,7 +164,7 @@ void DotRunner::addJob(const QCString &format, const QCString &output,
     return;
   }
   auto args = QCString("-T") + format + " -o \"" + output + "\"";
-  m_jobs.emplace_back(format.str(), output, args, srcFile, srcLine);
+  m_jobs.emplace_back(format, output, args, srcFile, srcLine);
 }
 
 QCString getBaseNameOfOutput(const QCString &output)
@@ -209,7 +214,7 @@ bool DotRunner::run()
   // As there should be only one pdf file be generated, we don't need code for regenerating multiple pdf files in one call
   for (auto& s : m_jobs)
   {
-    if (s.format.left(3)=="pdf")
+    if (s.format.startsWith("pdf"))
     {
       int width=0,height=0;
       if (!readBoundingBox(s.output,&width,&height,FALSE)) goto error;
@@ -221,7 +226,7 @@ bool DotRunner::run()
       }
     }
 
-    if (s.format.left(3)=="png")
+    if (s.format.startsWith("png"))
     {
       checkPngResult(s.output);
     }

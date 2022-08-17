@@ -54,6 +54,7 @@ class ConceptDefImpl : public DefinitionMixin<ConceptDefMutable>
     virtual const NamespaceDef *getNamespaceDef() const;
     virtual const FileDef *getFileDef() const;
     virtual QCString title() const;
+    virtual int groupId() const;
 
     //---------- ConceptDefMutable
     virtual void setIncludeFile(FileDef *fd,const QCString &incName,bool local,bool force);
@@ -64,6 +65,7 @@ class ConceptDefImpl : public DefinitionMixin<ConceptDefMutable>
     virtual void writeDocumentation(OutputList &);
     virtual void setInitializer(const QCString &init);
     virtual void findSectionsInDocumentation();
+    virtual void setGroupId(int id);
 
     //---------- Helpers
     void writeBriefDescription(OutputList &) const;
@@ -79,6 +81,7 @@ class ConceptDefImpl : public DefinitionMixin<ConceptDefMutable>
     FileDef                     *m_fileDef = 0;
     ArgumentList                 m_tArgList;
     QCString                     m_initializer;
+    int                          m_groupId = -1;
 };
 
 ConceptDefMutable *createConceptDef(
@@ -134,6 +137,8 @@ class ConceptDefAliasImpl : public DefinitionAliasMixin<ConceptDef>
     virtual void writeDeclarationLink(OutputList &ol,bool &found,
                               const QCString &header,bool localNames) const
     { getCdAlias()->writeDeclarationLink(ol,found,header,localNames); }
+    virtual int groupId() const
+    { return getCdAlias()->groupId(); }
 };
 
 ConceptDef *createConceptDefAlias(const Definition *newScope,const ConceptDef *cd)
@@ -266,6 +271,16 @@ QCString ConceptDefImpl::title() const
   return theTranslator->trConceptReference(displayName());
 }
 
+int ConceptDefImpl::groupId() const
+{
+  return m_groupId;
+}
+
+void ConceptDefImpl::setGroupId(int id)
+{
+  m_groupId = id;
+}
+
 void ConceptDefImpl::writeTagFile(TextStream &tagFile)
 {
   tagFile << "  <compound kind=\"concept\">\n";
@@ -284,19 +299,19 @@ void ConceptDefImpl::writeBriefDescription(OutputList &ol) const
 {
   if (hasBriefDescription())
   {
-    std::unique_ptr<IDocParser> parser { createDocParser() };
-    std::unique_ptr<DocRoot>  rootNode { validatingParseDoc(
+    auto parser { createDocParser() };
+    auto ast    { validatingParseDoc(
                         *parser.get(),briefFile(),briefLine(),this,0,
                         briefDescription(),TRUE,FALSE,
                         QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT)) };
-    if (rootNode && !rootNode->isEmpty())
+    if (!ast->isEmpty())
     {
       ol.startParagraph();
       ol.pushGeneratorState();
       ol.disableAllBut(OutputGenerator::Man);
       ol.writeString(" - ");
       ol.popGeneratorState();
-      ol.writeDoc(rootNode.get(),this,0);
+      ol.writeDoc(ast.get(),this,0);
       ol.pushGeneratorState();
       ol.disable(OutputGenerator::RTF);
       ol.writeString(" \n");
@@ -411,7 +426,7 @@ void ConceptDefImpl::writeDefinition(OutputList &ol,const QCString &title) const
 
 void ConceptDefImpl::writeDetailedDescription(OutputList &ol,const QCString &title) const
 {
-  static bool repeatBrief = Config_getBool(REPEAT_BRIEF);
+  bool repeatBrief = Config_getBool(REPEAT_BRIEF);
   if (hasDetailedDescription())
   {
     ol.pushGeneratorState();
@@ -470,7 +485,7 @@ void ConceptDefImpl::writeAuthorSection(OutputList &ol) const
 
 void ConceptDefImpl::writeDocumentation(OutputList &ol)
 {
-  static bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
+  bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
   QCString pageTitle = theTranslator->trConceptReference(displayName());
   startFile(ol,getOutputFileBase(),name(),pageTitle,HLI_ConceptVisible,!generateTreeView);
 
@@ -498,22 +513,17 @@ void ConceptDefImpl::writeDocumentation(OutputList &ol)
 
   for (const auto &lde : LayoutDocManager::instance().docEntries(LayoutDocManager::Concept))
   {
+    const LayoutDocEntrySection *ls = dynamic_cast<const LayoutDocEntrySection*>(lde.get());
     switch (lde->kind())
     {
       case LayoutDocEntry::BriefDesc:
         writeBriefDescription(ol);
         break;
       case LayoutDocEntry::ConceptDefinition:
-        {
-          const LayoutDocEntrySection *ls = (const LayoutDocEntrySection*)lde.get();
-          writeDefinition(ol,ls->title(getLanguage()));
-        }
+        if (ls) writeDefinition(ol,ls->title(getLanguage()));
         break;
       case LayoutDocEntry::DetailedDesc:
-        {
-          const LayoutDocEntrySection *ls = (const LayoutDocEntrySection*)lde.get();
-          writeDetailedDescription(ol,ls->title(getLanguage()));
-        }
+        if (ls) writeDetailedDescription(ol,ls->title(getLanguage()));
         break;
       case LayoutDocEntry::AuthorSection:
         writeAuthorSection(ol);
@@ -621,15 +631,15 @@ void ConceptDefImpl::writeDeclarationLink(OutputList &ol,bool &found,const QCStr
     // add the brief description if available
     if (!briefDescription().isEmpty() && Config_getBool(BRIEF_MEMBER_DESC))
     {
-      std::unique_ptr<IDocParser> parser { createDocParser() };
-      std::unique_ptr<DocRoot>  rootNode { validatingParseDoc(
+      auto parser { createDocParser() };
+      auto ast    { validatingParseDoc(
                                 *parser.get(),briefFile(),briefLine(),this,0,
                                 briefDescription(),FALSE,FALSE,
                                 QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT)) };
-      if (rootNode && !rootNode->isEmpty())
+      if (!ast->isEmpty())
       {
         ol.startMemberDescription(anchor());
-        ol.writeDoc(rootNode.get(),this,0);
+        ol.writeDoc(ast.get(),this,0);
         ol.endMemberDescription();
       }
     }

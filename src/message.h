@@ -36,6 +36,7 @@ extern void warn_uncond(const char *fmt, ...) PRINTFLIKE(1, 2);
 extern void err(const char *fmt, ...) PRINTFLIKE(1, 2);
 extern void err_full(const QCString &file,int line,const char *fmt, ...) PRINTFLIKE(3, 4);
 extern void term(const char *fmt, ...) PRINTFLIKE(1, 2);
+extern QCString warn_line(const QCString &file,int line);
 void initWarningFormat();
 void warn_flush();
 extern void finishWarnExit();

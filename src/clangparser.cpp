@@ -44,7 +44,7 @@ enum class DetectedLang { Cpp, ObjC, ObjCpp };
 
 static QCString detab(const QCString &s)
 {
-  static int tabSize = Config_getInt(TAB_SIZE);
+  int tabSize = Config_getInt(TAB_SIZE);
   GrowBuf out;
   int size = s.length();
   const char *data = s.data();
@@ -184,11 +184,11 @@ void ClangTUParser::parse()
       clang_option_len = command[command.size()-1].CommandLine.size();
     }
   }
-  char **argv = (char**)malloc(sizeof(char*)*
+  char **argv = static_cast<char**>(malloc(sizeof(char*)*
                                (4+Doxygen::inputPaths.size()+
                                 includePath.size()+
                                 clangOptions.size()+
-                                clang_option_len));
+                                clang_option_len)));
   if (!command.empty() )
   {
     std::vector<std::string> options = command[command.size()-1].CommandLine;
@@ -239,18 +239,18 @@ void ClangTUParser::parse()
     SrcLangExt lang = getLanguageFromFileName(fileName);
     if (lang==SrcLangExt_ObjC || p->detectedLang!=DetectedLang::Cpp)
     {
-      QCString fn = fileName;
+      QCString fn = fileName.lower();
       if (p->detectedLang!=DetectedLang::Cpp &&
-          (fn.right(4).lower()==".cpp" || fn.right(4).lower()==".cxx" ||
-           fn.right(3).lower()==".cc" || fn.right(2).lower()==".c"))
+          (fn.endsWith(".cpp") || fn.endsWith(".cxx") ||
+           fn.endsWith(".cc")  || fn.endsWith(".c")))
       { // fall back to C/C++ once we see an extension that indicates this
         p->detectedLang = DetectedLang::Cpp;
       }
-      else if (fn.right(3).lower()==".mm") // switch to Objective C++
+      else if (fn.endsWith(".mm")) // switch to Objective C++
       {
         p->detectedLang = DetectedLang::ObjCpp;
       }
-      else if (fn.right(2).lower()==".m") // switch to Objective C
+      else if (fn.endsWith(".m")) // switch to Objective C
       {
         p->detectedLang = DetectedLang::ObjC;
       }
@@ -262,7 +262,7 @@ void ClangTUParser::parse()
       case DetectedLang::ObjCpp: argv[argc++]=qstrdup("objective-c++"); break;
     }
 
-    // provide the input and and its dependencies as unsaved files so we can
+    // provide the input and its dependencies as unsaved files so we can
     // pass the filtered versions
     argv[argc++]=qstrdup(fileName.data());
   }
@@ -324,7 +324,7 @@ void ClangTUParser::parse()
 ClangTUParser::~ClangTUParser()
 {
   //printf("ClangTUParser::~ClangTUParser() this=%p\n",this);
-  static bool clangAssistedParsing = Config_getBool(CLANG_ASSISTED_PARSING);
+  bool clangAssistedParsing = Config_getBool(CLANG_ASSISTED_PARSING);
   if (!clangAssistedParsing) return;
   if (p->tu)
   {
@@ -383,7 +383,7 @@ std::string ClangTUParser::lookup(uint line,const char *symbol)
   //printf("ClangParser::lookup(%d,%s)\n",line,symbol);
   std::string result;
   if (symbol==0) return result;
-  static bool clangAssistedParsing = Config_getBool(CLANG_ASSISTED_PARSING);
+  bool clangAssistedParsing = Config_getBool(CLANG_ASSISTED_PARSING);
   if (!clangAssistedParsing) return result;
 
   auto getCurrentTokenLine = [=]() -> uint
@@ -489,7 +489,7 @@ std::string ClangTUParser::lookup(uint line,const char *symbol)
 void ClangTUParser::writeLineNumber(CodeOutputInterface &ol,const FileDef *fd,uint line,bool writeLineAnchor)
 {
   const Definition *d = fd ? fd->getSourceDefinition(line) : 0;
-  if (d && d->isLinkable())
+  if (d && fd->isLinkable())
   {
     p->currentLine=line;
     const MemberDef *md = fd->getSourceMember(line);
@@ -547,9 +547,9 @@ void ClangTUParser::codifyLines(CodeOutputInterface &ol,const FileDef *fd,const 
     if (c=='\n')
     {
       line++;
-      int l = (int)(p-sp-1);
+      int l = static_cast<int>(p-sp-1);
       column=l+1;
-      char *tmp = (char*)malloc(l+1);
+      char *tmp = static_cast<char *>(malloc(l+1));
       memcpy(tmp,sp,l);
       tmp[l]='\0';
       ol.codify(tmp);
@@ -574,7 +574,7 @@ void ClangTUParser::writeMultiLineCodeLink(CodeOutputInterface &ol,
                   const Definition *d,
                   const char *text)
 {
-  static bool sourceTooltips = Config_getBool(SOURCE_TOOLTIPS);
+  bool sourceTooltips = Config_getBool(SOURCE_TOOLTIPS);
   p->tooltipManager.addTooltip(ol,d);
   QCString ref  = d->getReference();
   QCString file = d->getOutputFileBase();
@@ -586,18 +586,17 @@ void ClangTUParser::writeMultiLineCodeLink(CodeOutputInterface &ol,
   }
   bool inlineCodeFragment = false;
   bool done=FALSE;
-  char *p=(char *)text;
+  const char *p=text;
   while (!done)
   {
-    char *sp=p;
+    const char *sp=p;
     char c;
     while ((c=*p++) && c!='\n') { column++; }
     if (c=='\n')
     {
       line++;
-      *(p-1)='\0';
       //printf("writeCodeLink(%s,%s,%s,%s)\n",ref,file,anchor,sp);
-      ol.writeCodeLink(d->codeSymbolType(),ref,file,anchor,sp,tooltip);
+      ol.writeCodeLink(d->codeSymbolType(),ref,file,anchor,QCString(sp,p-sp-1),tooltip);
       ol.endCodeLine();
       ol.startCodeLine(TRUE);
       writeLineNumber(ol,fd,line,inlineCodeFragment);
@@ -764,7 +763,7 @@ void ClangTUParser::writeSources(CodeOutputInterface &ol,const FileDef *fd)
   QCString lineNumber,lineAnchor;
   bool inlineCodeFragment = false;
   ol.startCodeLine(TRUE);
-  writeLineNumber(ol,fd,line,inlineCodeFragment);
+  writeLineNumber(ol,fd,line,!inlineCodeFragment);
   for (unsigned int i=0;i<p->numTokens;i++)
   {
     CXSourceLocation start = clang_getTokenLocation(p->tu, p->tokens[i]);
@@ -776,7 +775,7 @@ void ClangTUParser::writeSources(CodeOutputInterface &ol,const FileDef *fd)
       line++;
       ol.endCodeLine();
       ol.startCodeLine(TRUE);
-      writeLineNumber(ol,fd,line,inlineCodeFragment);
+      writeLineNumber(ol,fd,line,!inlineCodeFragment);
     }
     while (column<c) { ol.codify(" "); column++; }
     CXString tokenString = clang_getTokenSpelling(p->tu, p->tokens[i]);
@@ -909,11 +908,23 @@ std::unique_ptr<ClangTUParser> ClangParser::createTUParser(const FileDef *fd) co
 //--------------------------------------------------------------------------
 #else // use stubbed functionality in case libclang support is disabled.
 
+class ClangTUParser::Private
+{
+};
+
 void ClangTUParser::switchToFile(const FileDef *fd)
 {
 }
 
 void ClangTUParser::parse()
+{
+}
+
+ClangTUParser::ClangTUParser(const ClangParser &,const FileDef *) : p(std::make_unique<Private>())
+{
+}
+
+ClangTUParser::~ClangTUParser()
 {
 }
 

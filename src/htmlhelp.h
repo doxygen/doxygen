@@ -20,16 +20,17 @@
 #define HTMLHELP_H
 
 #include <memory>
-#include "index.h"
+#include "qcstring.h"
 
 class Definition;
+class MemberDef;
 
 /** A class that generated the HTML Help specific files.
  *
  *  These files can be used with the Microsoft HTML Help workshop
  *  to generate compressed HTML files (.chm).
  */
-class HtmlHelp  : public IndexIntf
+class HtmlHelp
 {
     /*! used in imageNumber param of HTMLHelp::addContentsItem() function
         to specify document icon in tree view.
@@ -61,6 +62,7 @@ class HtmlHelp  : public IndexIntf
     //static HtmlHelp *getInstance();
     HtmlHelp();
     ~HtmlHelp();
+    HtmlHelp(HtmlHelp &&);
     void initialize();
     void finalize();
     void incContentsDepth();
@@ -77,9 +79,11 @@ class HtmlHelp  : public IndexIntf
                       const QCString &sectionAnchor, const QCString &title);
     void addIndexFile(const QCString &name);
     void addImageFile(const QCString &);
-    void addStyleSheetFile(const QCString &) {}
-    static QCString getLanguageString();
+    void addStyleSheetFile(const QCString &);
 
+    static inline const QCString hhcFileName = "index.hhc";
+    static inline const QCString hhkFileName = "index.hhk";
+    static inline const QCString hhpFileName = "index.hhp";
   private:
     class Private;
     std::unique_ptr<Private> p;

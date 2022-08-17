@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="namespacem2" kind="namespace" language="Fortran">
+    <compoundname>m2</compoundname>
+    <sectiondef kind="func">
+      <memberdef kind="function" id="089__module__proc_8f90_1aa7111755564ab9d350b9ad05c9272ddb" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>subroutine, private</type>
+        <definition>subroutine, private m2::f1</definition>
+        <argsstring/>
+        <name>f1</name>
+        <qualifiedname>m2::f1</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="089_module_proc.f90" line="35" column="1" bodyfile="089_module_proc.f90" bodystart="36" bodyend="35"/>
+      </memberdef>
+      <memberdef kind="function" id="089__module__proc_8f90_1a43afff306423f5c42342d1e8a484ffa8" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>integer function, public</type>
+        <definition>integer function, public m2::f2</definition>
+        <argsstring/>
+        <name>f2</name>
+        <qualifiedname>m2::f2</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="089_module_proc.f90" line="38" column="1" bodyfile="089_module_proc.f90" bodystart="39" bodyend="39"/>
+      </memberdef>
+      <memberdef kind="function" id="089__module__proc_8f90_1a924eff4c3fc96894fa67cc3f86fd2690" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>subroutine, public</type>
+        <definition>subroutine, public m2::f3</definition>
+        <argsstring/>
+        <name>f3</name>
+        <qualifiedname>m2::f3</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="089_module_proc.f90" line="42" column="1" bodyfile="089_module_proc.f90" bodystart="43" bodyend="42"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="089_module_proc.f90" line="26" column="1"/>
+  </compounddef>
+</doxygen>

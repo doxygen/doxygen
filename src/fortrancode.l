@@ -63,8 +63,6 @@ typedef yyguts_t *yyscan_t;
 #include "fortranscanner.h"
 #include "containers.h"
 
-const int fixedCommentAfter = 72;
-
 // Toggle for some debugging info
 //#define DBG_CTX(x) fprintf x
 #define DBG_CTX(x) do { } while(0)
@@ -140,10 +138,11 @@ struct fortrancodeYY_state
   const char *  inputString = 0;     //!< the code fragment as text
   yy_size_t     inputPosition = 0;   //!< read offset during parsing
   int           inputLines = 0;      //!< number of line in the code fragment
+  QCString      fileName;
   int           yyLineNr = 0;        //!< current line number
   int           contLineNr = 0;      //!< current, local, line number for continuation determination
   int          *hasContLine = 0;     //!< signals whether or not a line has a continuation line (fixed source form)
-  bool          needsTermination = false;
+  bool          insideCodeLine = false;
   const Definition *searchCtx = 0;
   bool          collectXRefs = false;
   bool          isFixedForm = false;
@@ -170,6 +169,8 @@ struct fortrancodeYY_state
 
   bool          endComment = false;
   TooltipManager tooltipManager;
+
+   int fixedCommentAfter = 72;
 };
 
 #if USE_STATE2STRING
@@ -210,6 +211,7 @@ static void addLocalVar(yyscan_t yyscanner,const QCString &varName);
 static MemberDef *getFortranDefs(yyscan_t yyscanner,const QCString &memberName, const QCString &moduleName,
                                  const UseMap &useMap);
 static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
+static inline void pop_state(yyscan_t yyscanner);
 
 
 //-------------------------------------------------------------------
@@ -220,6 +222,10 @@ static std::mutex g_countFlowKeywordsMutex;
 /* -----------------------------------------------------------------*/
 #undef  YY_INPUT
 #define YY_INPUT(buf,result,max_size) result=yyread(yyscanner,buf,max_size);
+
+// otherwise the filename would be the name of the converted file (*.cpp instead of *.l)
+static inline const char *getLexerFILE() {return __FILE__;}
+#include "doxygen_lex.h"
 
 %}
 
@@ -371,7 +377,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                         }
 <Use,UseOnly,Import>"\n"                {
                                           unput(*yytext);
-                                          yy_pop_state(yyscanner);
+                                          pop_state(yyscanner);
                                           YY_FTN_RESET
                                         }
 <*>"import"{BS}/"\n"                    |
@@ -432,7 +438,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                             yyextra->currentModule = yyextra->currentModule.lower();
                                           }
                                           generateLink(yyscanner,*yyextra->code,yytext);
-                                          yy_pop_state(yyscanner);
+                                          pop_state(yyscanner);
                                         }
 <ClassName>({ACCESS_SPEC}|ABSTRACT|EXTENDS)/[,:( ] { //| variable declaration
                                           startFontClass(yyscanner,"keyword");
@@ -440,7 +446,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                           endFontClass(yyscanner);
                                         }
 <ClassName>\n                           { // interface may be without name
-                                          yy_pop_state(yyscanner);
+                                          pop_state(yyscanner);
                                           YY_FTN_REJECT;
                                         }
 <Start>^{BS}"end"({BS_}"enum").*        {
@@ -481,7 +487,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                         }
 <Subprog,Subprogend>"\n"                { codifyLines(yyscanner,yytext);
                                           yyextra->contLineNr++;
-                                          yy_pop_state(yyscanner);
+                                          pop_state(yyscanner);
                                           YY_FTN_RESET
                                         }
 <Start>"end"{BS}("block"{BS}"data"|{SUBPROG}|"module"|"program"|"enum"|"type"|"interface")?{BS}     {  // Fortran subroutine or function ends
@@ -495,7 +501,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                         }
 <Subprogend>{ID}/{BS}(\n|!|;)           {
                                           generateLink(yyscanner,*yyextra->code,yytext);
-                                          yy_pop_state(yyscanner);
+                                          pop_state(yyscanner);
                                         }
 <Start>"end"{BS}("block"{BS}"data"|{SUBPROG}|"module"|"program"|"enum"|"type"|"interface"){BS}/(\n|!|;) {  // Fortran subroutine or function ends
                                           //cout << "===> end function " << yytext << endl;
@@ -567,7 +573,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                         }
 <DeclarationBinding>{ID}                { // Type bound procedure link
                                           generateLink(yyscanner,*yyextra->code, yytext);
-                                          yy_pop_state(yyscanner);
+                                          pop_state(yyscanner);
                                         }
 <Declaration>[(]                        { // start of array or type / class specification
                                           yyextra->bracketCount++;
@@ -592,7 +598,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                           yyextra->contLineNr++;
                                           codifyLines(yyscanner,yytext);
                                           yyextra->bracketCount = 0;
-                                          yy_pop_state(yyscanner);
+                                          pop_state(yyscanner);
                                           YY_FTN_RESET
                                         }
 <Declaration,DeclarationBinding>"\n"    { // end declaration line (?)
@@ -609,7 +615,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                           if (!(yyextra->hasContLine && yyextra->hasContLine[yyextra->contLineNr - 1]))
                                           {
                                             yyextra->isExternal = false;
-                                            yy_pop_state(yyscanner);
+                                            pop_state(yyscanner);
                                           }
                                           YY_FTN_RESET
                                         }
@@ -627,7 +633,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                           yyextra->insideBody=TRUE;
                                           generateLink(yyscanner,*yyextra->code, yytext);
                                           yyextra->insideBody=FALSE;
-                                          yy_pop_state(yyscanner);
+                                          pop_state(yyscanner);
                                         }
 <Start>{ID}{BS}/"("                     { // function call
                                           if (yyextra->isFixedForm && yy_my_start == 6)
@@ -690,7 +696,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                           yyextra->contLineNr++;
                                           if (Config_getBool(STRIP_CODE_COMMENTS))
                                           {
-                                            yyextra->yyLineNr+=((QCString)yyextra->docBlock).contains('\n');
+                                            yyextra->yyLineNr+=yyextra->docBlock.contains('\n');
                                             yyextra->yyLineNr+=1;
                                             nextCodeLine(yyscanner);
                                             yyextra->endComment=TRUE;
@@ -703,7 +709,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                           }
                                           unput(*yytext);
                                           yyextra->contLineNr--;
-                                          yy_pop_state(yyscanner);
+                                          pop_state(yyscanner);
                                           YY_FTN_RESET
                                         }
 
@@ -770,7 +776,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                           startFontClass(yyscanner,"stringliteral");
                                           codifyLines(yyscanner,yyextra->str);
                                           endFontClass(yyscanner);
-                                          yy_pop_state(yyscanner);
+                                          pop_state(yyscanner);
                                         }
 <String>.                               {yyextra->str+=yytext;}
 
@@ -801,7 +807,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
 <*>^{BS}"type"{BS}"="                   { yyextra->code->codify(QCString(yytext)); }
 
 <*>[\x80-\xFF]*                         { // keep utf8 characters together...
-                                          if (yyextra->isFixedForm && yy_my_start > fixedCommentAfter)
+                                          if (yyextra->isFixedForm && yy_my_start > yyextra->fixedCommentAfter)
                                           {
                                             startFontClass(yyscanner,"comment");
                                             codifyLines(yyscanner,yytext);
@@ -812,7 +818,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                           }
                                         }
 <*>.                                    {
-                                          if (yyextra->isFixedForm && yy_my_start > fixedCommentAfter)
+                                          if (yyextra->isFixedForm && yy_my_start > yyextra->fixedCommentAfter)
                                           {
                                             //yy_push_state(YY_START,yyscanner);
                                             //BEGIN(DocBlock);
@@ -954,6 +960,7 @@ static void startCodeLine(yyscan_t yyscanner)
     }
   }
   yyextra->code->startCodeLine(yyextra->sourceFileDef);
+  yyextra->insideCodeLine=true;
   if (yyextra->currentFontClass)
   {
     yyextra->code->startFontClass(QCString(yyextra->currentFontClass));
@@ -966,6 +973,7 @@ static void endCodeLine(yyscan_t yyscanner)
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   endFontClass(yyscanner);
   yyextra->code->endCodeLine();
+  yyextra->insideCodeLine=false;
 }
 
 static void nextCodeLine(yyscan_t yyscanner)
@@ -1022,7 +1030,7 @@ static void writeMultiLineCodeLink(yyscan_t yyscanner,CodeOutputInterface &ol,
                   Definition *d,const QCString &text)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  static bool sourceTooltips = Config_getBool(SOURCE_TOOLTIPS);
+  bool sourceTooltips = Config_getBool(SOURCE_TOOLTIPS);
   yyextra->tooltipManager.addTooltip(ol,d);
   QCString ref  = d->getReference();
   QCString file = d->getOutputFileBase();
@@ -1316,8 +1324,7 @@ static int countLines(yyscan_t yyscanner)
   if (p>yyextra->inputString && *(p-1)!='\n')
   { // last line does not end with a \n, so we add an extra
     // line and explicitly terminate the line after parsing.
-    count++,
-    yyextra->needsTermination=TRUE;
+    count++;
   }
   return count;
 }
@@ -1388,7 +1395,7 @@ static void checkContLines(yyscan_t yyscanner,const char *s)
   yyextra->hasContLine = (int *) malloc((numLines) * sizeof(int));
   for (i = 0; i < numLines; i++)
     yyextra->hasContLine[i] = 0;
-  p = prepassFixedForm(s, yyextra->hasContLine);
+  p = prepassFixedForm(s, yyextra->hasContLine,yyextra->fixedCommentAfter);
   yyextra->hasContLine[0] = 0;
 }
 
@@ -1433,7 +1440,7 @@ void FortranCodeParser::resetCodeParserState()
   yyextra->currentDefinition = 0;
   yyextra->currentMemberDef = 0;
   yyextra->currentFontClass = 0;
-  yyextra->needsTermination = FALSE;
+  yyextra->insideCodeLine = FALSE;
   BEGIN( Start );
 }
 
@@ -1468,15 +1475,17 @@ void FortranCodeParser::parseCode(CodeOutputInterface & codeOutIntf,
   yyextra->code = &codeOutIntf;
   yyextra->inputString   = input.data();
   yyextra->inputPosition = 0;
+  yyextra->fileName      = fileDef ? fileDef->fileName():"";
   yyextra->isFixedForm = recognizeFixedForm(input,p->format);
   yyextra->contLineNr = 1;
   yyextra->hasContLine = NULL;
   if (yyextra->isFixedForm)
   {
     checkContLines(yyscanner,yyextra->inputString);
+    yyextra->fixedCommentAfter = Config_getInt(FORTRAN_COMMENT_AFTER);
   }
   yyextra->currentFontClass = 0;
-  yyextra->needsTermination = FALSE;
+  yyextra->insideCodeLine = FALSE;
   yyextra->searchCtx = searchCtx;
   yyextra->collectXRefs = collectXRefs;
   if (startLine!=-1)
@@ -1512,12 +1521,11 @@ void FortranCodeParser::parseCode(CodeOutputInterface & codeOutIntf,
   fortrancodeYYrestart(0, yyscanner);
   BEGIN( Start );
   fortrancodeYYlex(yyscanner);
-  if (yyextra->needsTermination)
+  if (yyextra->insideCodeLine)
   {
-    endFontClass(yyscanner);
-    yyextra->code->endCodeLine();
+    endCodeLine(yyscanner);
   }
-  if (isExampleBlock && yyextra->sourceFileDef)
+  if (!fileDef && isExampleBlock && yyextra->sourceFileDef)
   {
     // delete the temporary file definition used for this example
     delete yyextra->sourceFileDef;
@@ -1532,6 +1540,14 @@ void FortranCodeParser::parseCode(CodeOutputInterface & codeOutIntf,
   printlex(yy_flex_debug, FALSE, __FILE__, fileDef ? qPrint(fileDef->fileName()): NULL);
 }
 
+static inline void pop_state(yyscan_t yyscanner)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  if ( yyg->yy_start_stack_ptr <= 0 )
+    warn(yyextra->fileName,yyextra->yyLineNr,"Unexpected statement '%s'",yytext );
+  else
+    yy_pop_state(yyscanner);
+}
 //---------------------------------------------------------
 
 #if USE_STATE2STRING

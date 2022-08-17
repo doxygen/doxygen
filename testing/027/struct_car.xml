@@ -11,6 +11,7 @@
         <definition>Vehicle Car::base</definition>
         <argsstring/>
         <name>base</name>
+        <qualifiedname>Car::base</qualifiedname>
         <briefdescription>
           <para>Base class. </para>
         </briefdescription>

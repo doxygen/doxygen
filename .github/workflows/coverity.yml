@@ -1,0 +1,80 @@
+name: Coverity for doxygen
+
+# Just for tests
+#on: [push, pull_request]
+
+# The right schedule
+on:
+  schedule:
+    - cron: '30 2 * * *'  # Run once per day, to avoid Coverity's submission limits
+
+
+permissions:
+  contents: read
+
+jobs:
+  check_date:
+    runs-on: ubuntu-20.04
+    name: Check latest commit
+    outputs:
+      should_run: ${{ steps.should_run.outputs.should_run }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: print latest_commit
+        run: echo ${{ github.sha }}
+
+      - id: should_run
+        continue-on-error: true
+        name: check latest commit is less than a day
+        if: ${{ github.event_name == 'schedule' }}
+        run: test -z $(git rev-list  --after="24 hours"  ${{ github.sha }}) && echo "::set-output name=should_run::false"
+
+  scan:
+    needs: check_date
+    if: ${{ needs.check_date.outputs.should_run != 'false' }}
+    runs-on: ubuntu-20.04
+
+    env:
+      CC: gcc
+      DEBIAN_FRONTEND: noninteractive
+
+    steps:
+      - name: Checkout doxygen
+        uses: actions/checkout@v3
+
+      - name: Download Coverity
+        run: |
+          wget -q https://scan.coverity.com/download/cxx/linux64 --post-data "token=$TOKEN&project=doxygen%2Fdoxygen" -O coverity_tool.tgz
+          mkdir cov-scan
+          tar ax -f coverity_tool.tgz --strip-components=1 -C cov-scan
+        env:
+          TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
+
+      - name: Setup environment
+        run: |
+          echo "$(pwd)/cov-scan/bin" >> $GITHUB_PATH
+          echo "NPROC=$(getconf _NPROCESSORS_ONLN)" >> $GITHUB_ENV
+
+      - name: Configure doxygen
+        run: |
+          mkdir build
+          cmake -S . -B build -D CMAKE_BUILD_TYPE=Release -G "Unix Makefiles"
+
+      - name: Run coverity build/scan
+        run: |
+          cd build && cov-build --dir cov-int make -j${NPROC}
+
+      - name: Submit results
+        run: |
+          cd build
+          tar zcf cov-scan.tgz cov-int
+          curl --form token=$TOKEN \
+               --form email=$EMAIL \
+               --form file=@cov-scan.tgz \
+               --form version="$(git rev-parse HEAD)" \
+               --form description="Automatic GHA scan" \
+               'https://scan.coverity.com/builds?project=doxygen%2Fdoxygen'
+        env:
+          TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
+          EMAIL: ${{ secrets.COVERITY_SCAN_EMAIL }}
+

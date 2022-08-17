@@ -115,8 +115,6 @@ class ClassDef : public Definition
                         Singleton, //=Entry::CLASS_SEC
                       };
 
-    virtual ~ClassDef() {}
-
     //-----------------------------------------------------------------------------------
     // --- getters
     //-----------------------------------------------------------------------------------
@@ -218,16 +216,14 @@ class ClassDef : public Definition
      */
     virtual FileDef      *getFileDef() const = 0;
 
-    /** Returns the Java package this class is in or 0 if not applicable.
-     */
-
+    /** Returns the member with the given name */
     virtual const MemberDef *getMemberByName(const QCString &) const = 0;
 
     /** Returns TRUE iff \a bcd is a direct or indirect base class of this
      *  class. This function will recursively traverse all branches of the
      *  inheritance tree.
      */
-    virtual bool isBaseClass(const ClassDef *bcd,bool followInstances,int level=0) const = 0;
+    virtual int isBaseClass(const ClassDef *bcd,bool followInstances) const = 0;
 
     /** Returns TRUE iff \a bcd is a direct or indirect sub class of this
      *  class.

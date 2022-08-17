@@ -123,7 +123,7 @@ inline void writeXMLCodeString(TextStream &t,const QCString &str, int &col)
     {
       case '\t':
       {
-        static int tabSize = Config_getInt(TAB_SIZE);
+        int tabSize = Config_getInt(TAB_SIZE);
 	int spacesToNextTabStop = tabSize - (col%tabSize);
 	col+=spacesToNextTabStop;
 	while (spacesToNextTabStop--) t << "<sp/>";
@@ -334,7 +334,7 @@ void XMLCodeGenerator::writeLineNumber(const QCString &extRef,const QCString &co
   if (!compId.isEmpty())
   {
     m_refId=compId;
-    if (!anchorId.isEmpty()) m_refId+=(QCString)"_1"+anchorId;
+    if (!anchorId.isEmpty()) m_refId+=QCString("_1")+anchorId;
     m_isMemberRef = anchorId!=0;
     if (!extRef.isEmpty()) m_external=extRef;
   }
@@ -424,17 +424,21 @@ static void writeXMLDocBlock(TextStream &t,
   QCString stext = text.stripWhiteSpace();
   if (stext.isEmpty()) return;
   // convert the documentation string into an abstract syntax tree
-  std::unique_ptr<IDocParser> parser { createDocParser() };
-  std::unique_ptr<DocNode>    root   { validatingParseDoc(*parser.get(),
-                                       fileName,lineNr,scope,md,text,FALSE,FALSE,
-                                       QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT)) };
-  // create a code generator
-  auto xmlCodeGen = std::make_unique<XMLCodeGenerator>(t);
-  // create a parse tree visitor for XML
-  auto visitor = std::make_unique<XmlDocVisitor>(t,*xmlCodeGen,scope?scope->getDefFileExtension():QCString(""));
-  // visit all nodes
-  root->accept(visitor.get());
-  // clean up
+  auto parser { createDocParser() };
+  auto ast    { validatingParseDoc(*parser.get(),
+                                   fileName,lineNr,scope,md,text,FALSE,FALSE,
+                                   QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT)) };
+  auto astImpl = dynamic_cast<const DocNodeAST*>(ast.get());
+  if (astImpl)
+  {
+    // create a code generator
+    auto xmlCodeGen = std::make_unique<XMLCodeGenerator>(t);
+    // create a parse tree visitor for XML
+    XmlDocVisitor visitor(t,*xmlCodeGen,scope?scope->getDefFileExtension():QCString(""));
+    // visit all nodes
+    std::visit(visitor,astImpl->root);
+    // clean up
+  }
 }
 
 void writeXMLCodeBlock(TextStream &t,FileDef *fd)
@@ -500,7 +504,7 @@ static void stripQualifiers(QCString &typeStr)
 
 static QCString classOutputFileBase(const ClassDef *cd)
 {
-  //static bool inlineGroupedClasses = Config_getBool(INLINE_GROUPED_CLASSES);
+  //bool inlineGroupedClasses = Config_getBool(INLINE_GROUPED_CLASSES);
   //if (inlineGroupedClasses && cd->partOfGroups()!=0)
   return cd->getOutputFileBase();
   //else
@@ -509,7 +513,7 @@ static QCString classOutputFileBase(const ClassDef *cd)
 
 static QCString memberOutputFileBase(const MemberDef *md)
 {
-  //static bool inlineGroupedClasses = Config_getBool(INLINE_GROUPED_CLASSES);
+  //bool inlineGroupedClasses = Config_getBool(INLINE_GROUPED_CLASSES);
   //if (inlineGroupedClasses && md->getClassDef() && md->getClassDef()->partOfGroups()!=0)
   //  return md->getClassDef()->getXmlOutputFileBase();
   //else
@@ -567,12 +571,6 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
   ti << "    <member refid=\"" << memberOutputFileBase(md)
      << "_1" << md->anchor() << "\" kind=\"" << memType << "\"><name>"
      << convertToXML(md->name()) << "</name></member>\n";
-
-  QCString scopeName;
-  if (md->getClassDef())
-    scopeName=md->getClassDef()->name();
-  else if (md->getNamespaceDef())
-    scopeName=md->getNamespaceDef()->name();
 
   t << "      <memberdef kind=\"";
   //enum { define_t,variable_t,typedef_t,enum_t,function_t } xmlType = function_t;
@@ -819,7 +817,13 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
     t << "</type>\n";
   }
 
-  t << "        <name>" << convertToXML(md->name()) << "</name>\n";
+  QCString name = md->name();
+  QCString qualifiedName = md->qualifiedName();;
+  t << "        <name>" << convertToXML(name) << "</name>\n";
+  if (name!=qualifiedName)
+  {
+    t << "        <qualifiedname>" << convertToXML(qualifiedName) << "</qualifiedname>\n";
+  }
 
   if (md->memberType() == MemberType_Property)
   {
@@ -862,6 +866,7 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
   {
     const ArgumentList &declAl = md->declArgumentList();
     const ArgumentList &defAl = md->argumentList();
+    bool isFortran = md->getLanguage()==SrcLangExt_Fortran;
     if (declAl.hasParameters())
     {
       auto defIt = defAl.begin();
@@ -881,7 +886,13 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
           writeXMLString(t,a.attrib);
           t << "</attributes>\n";
         }
-        if (!a.type.isEmpty())
+        if (isFortran && defArg && !defArg->type.isEmpty())
+        {
+          t << "          <type>";
+          linkifyText(TextGeneratorXMLImpl(t),def,md->getBodyDef(),md,defArg->type);
+          t << "</type>\n";
+        }
+        else if (!a.type.isEmpty())
         {
           t << "          <type>";
           linkifyText(TextGeneratorXMLImpl(t),def,md->getBodyDef(),md,a.type);
@@ -1761,7 +1772,7 @@ static void generateXMLForPage(PageDef *pd,TextStream &ti,bool isExample)
   QCString pageName = pd->getOutputFileBase();
   if (pd->getGroupDef())
   {
-    pageName+=(QCString)"_"+pd->name();
+    pageName+=QCString("_")+pd->name();
   }
   if (pageName=="index") pageName="indexpage"; // to prevent overwriting the generated index page.
 
@@ -1790,7 +1801,7 @@ static void generateXMLForPage(PageDef *pd,TextStream &ti,bool isExample)
     QCString title;
     if (mainPageHasTitle())
     {
-      title = filterTitle(convertCharEntitiesToUTF8(Doxygen::mainPage->title()).str());
+      title = filterTitle(convertCharEntitiesToUTF8(Doxygen::mainPage->title()));
     }
     else
     {
@@ -1804,7 +1815,7 @@ static void generateXMLForPage(PageDef *pd,TextStream &ti,bool isExample)
     const SectionInfo *si = SectionManager::instance().find(pd->name());
     if (si)
     {
-      t << "    <title>" << convertToXML(filterTitle(convertCharEntitiesToUTF8(si->title()).str()))
+      t << "    <title>" << convertToXML(filterTitle(convertCharEntitiesToUTF8(si->title())))
         << "</title>\n";
     }
   }
@@ -1821,7 +1832,7 @@ static void generateXMLForPage(PageDef *pd,TextStream &ti,bool isExample)
       if (isSection(si->type()))
       {
         //printf("  level=%d title=%s\n",level,qPrint(si->title));
-        int nextLevel = (int)si->type();
+        int nextLevel = static_cast<int>(si->type());
         if (nextLevel>level)
         {
           for (l=level;l<nextLevel;l++)

@@ -8,6 +8,7 @@
         <definition>void Receiver::Command</definition>
         <argsstring>(int commandId)</argsstring>
         <name>Command</name>
+        <qualifiedname>Receiver::Command</qualifiedname>
         <param>
           <type>int</type>
           <declname>commandId</declname>

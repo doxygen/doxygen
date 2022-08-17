@@ -1,0 +1,11 @@
+# Manual test for function Config::updateObsolete
+#
+# Usage:
+#
+# cat obsolete | ../build/bin/doxygen -s -u - | grep -e 'DOT_COMMON_ATTR.*F1.*123' -e 'DOT_EDGE_ATTR.*F1.*123'
+#
+# Check output manually. Expected two lines in stderr and two lines in stdout.
+
+# obsoleted attributes:
+DOT_FONTNAME=F1
+DOT_FONTSIZE=123

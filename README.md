@@ -5,8 +5,8 @@ Doxygen
 Doxygen is the de facto standard tool for generating documentation from
 annotated C++ sources, but it also supports other popular programming
 languages such as C, Objective-C, C#, PHP, Java, Python, IDL
-(Corba, Microsoft, and UNO/OpenOffice flavors), Fortran, VHDL,
-and to some extent D.
+(Corba, Microsoft, and UNO/OpenOffice flavors), Fortran,
+and to some extent D. Doxygen also supports the hardware description language VHDL.
 
 Doxygen can help you in three ways:
 
@@ -35,7 +35,7 @@ Developers
 
 * Coverity Scan Build Status: <a href="https://scan.coverity.com/projects/2860"> <img alt="Coverity Scan Build Status" src="https://scan.coverity.com/projects/2860/badge.svg"/> </a>
 
-* Doxygen's Doxygen Documentation: <a href="https://codedocs.xyz/doxygen/doxygen/"><img src="https://codedocs.xyz/doxygen/doxygen.svg"/></a>
+* Doxygen's <a href="http://doxygen.github.io/doxygen/">internal source code documentation</a>
 
 * Install: Please read the installation section of the manual (https://www.doxygen.nl/manual/install.html)
 

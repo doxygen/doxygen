@@ -1,9 +1,6 @@
 /******************************************************************************
  *
- *
- *
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2022 by Dimitri van Heesch.
  * Authors: Dimitri van Heesch, Miguel Lobo.
  *
  * Permission to use, copy, modify, and distribute this software and its
@@ -25,6 +22,7 @@
 
 #include "perlmodgen.h"
 #include "docparser.h"
+#include "docnode.h"
 #include "message.h"
 #include "doxygen.h"
 #include "pagedef.h"
@@ -285,149 +283,116 @@ void PerlModOutput::iclose(char c)
 /*! @brief Concrete visitor implementation for PerlMod output. */
 class PerlModDocVisitor : public DocVisitor
 {
-public:
-  PerlModDocVisitor(PerlModOutput &);
-  virtual ~PerlModDocVisitor() { }
+  public:
+    PerlModDocVisitor(PerlModOutput &);
+    virtual ~PerlModDocVisitor() { }
 
-  void finish();
+    void finish();
 
-  //--------------------------------------
-  // visitor functions for leaf nodes
-  //--------------------------------------
+    //--------------------------------------
+    // visitor functions for leaf nodes
+    //--------------------------------------
 
-  void visit(DocWord *);
-  void visit(DocLinkedWord *);
-  void visit(DocWhiteSpace *);
-  void visit(DocSymbol *);
-  void visit(DocEmoji *);
-  void visit(DocURL *);
-  void visit(DocLineBreak *);
-  void visit(DocHorRuler *);
-  void visit(DocStyleChange *);
-  void visit(DocVerbatim *);
-  void visit(DocAnchor *);
-  void visit(DocInclude *);
-  void visit(DocIncOperator *);
-  void visit(DocFormula *);
-  void visit(DocIndexEntry *);
-  void visit(DocSimpleSectSep *);
-  void visit(DocCite *);
+    void operator()(const DocWord &);
+    void operator()(const DocLinkedWord &);
+    void operator()(const DocWhiteSpace &);
+    void operator()(const DocSymbol &);
+    void operator()(const DocEmoji &);
+    void operator()(const DocURL &);
+    void operator()(const DocLineBreak &);
+    void operator()(const DocHorRuler &);
+    void operator()(const DocStyleChange &);
+    void operator()(const DocVerbatim &);
+    void operator()(const DocAnchor &);
+    void operator()(const DocInclude &);
+    void operator()(const DocIncOperator &);
+    void operator()(const DocFormula &);
+    void operator()(const DocIndexEntry &);
+    void operator()(const DocSimpleSectSep &);
+    void operator()(const DocCite &);
+    void operator()(const DocSeparator &);
 
-  //--------------------------------------
-  // visitor functions for compound nodes
-  //--------------------------------------
+    //--------------------------------------
+    // visitor functions for compound nodes
+    //--------------------------------------
 
-  void visitPre(DocAutoList *);
-  void visitPost(DocAutoList *);
-  void visitPre(DocAutoListItem *);
-  void visitPost(DocAutoListItem *);
-  void visitPre(DocPara *) ;
-  void visitPost(DocPara *);
-  void visitPre(DocRoot *);
-  void visitPost(DocRoot *);
-  void visitPre(DocSimpleSect *);
-  void visitPost(DocSimpleSect *);
-  void visitPre(DocTitle *);
-  void visitPost(DocTitle *);
-  void visitPre(DocSimpleList *);
-  void visitPost(DocSimpleList *);
-  void visitPre(DocSimpleListItem *);
-  void visitPost(DocSimpleListItem *);
-  void visitPre(DocSection *);
-  void visitPost(DocSection *);
-  void visitPre(DocHtmlList *);
-  void visitPost(DocHtmlList *) ;
-  void visitPre(DocHtmlListItem *);
-  void visitPost(DocHtmlListItem *);
-  //void visitPre(DocHtmlPre *);
-  //void visitPost(DocHtmlPre *);
-  void visitPre(DocHtmlDescList *);
-  void visitPost(DocHtmlDescList *);
-  void visitPre(DocHtmlDescTitle *);
-  void visitPost(DocHtmlDescTitle *);
-  void visitPre(DocHtmlDescData *);
-  void visitPost(DocHtmlDescData *);
-  void visitPre(DocHtmlTable *);
-  void visitPost(DocHtmlTable *);
-  void visitPre(DocHtmlRow *);
-  void visitPost(DocHtmlRow *) ;
-  void visitPre(DocHtmlCell *);
-  void visitPost(DocHtmlCell *);
-  void visitPre(DocHtmlCaption *);
-  void visitPost(DocHtmlCaption *);
-  void visitPre(DocInternal *);
-  void visitPost(DocInternal *);
-  void visitPre(DocHRef *);
-  void visitPost(DocHRef *);
-  void visitPre(DocHtmlHeader *);
-  void visitPost(DocHtmlHeader *);
-  void visitPre(DocImage *);
-  void visitPost(DocImage *);
-  void visitPre(DocDotFile *);
-  void visitPost(DocDotFile *);
-  void visitPre(DocMscFile *);
-  void visitPost(DocMscFile *);
-  void visitPre(DocDiaFile *);
-  void visitPost(DocDiaFile *);
-  void visitPre(DocLink *);
-  void visitPost(DocLink *);
-  void visitPre(DocRef *);
-  void visitPost(DocRef *);
-  void visitPre(DocSecRefItem *);
-  void visitPost(DocSecRefItem *);
-  void visitPre(DocSecRefList *);
-  void visitPost(DocSecRefList *);
-  //void visitPre(DocLanguage *);
-  //void visitPost(DocLanguage *);
-  void visitPre(DocParamSect *);
-  void visitPost(DocParamSect *);
-  void visitPre(DocParamList *);
-  void visitPost(DocParamList *);
-  void visitPre(DocXRefItem *);
-  void visitPost(DocXRefItem *);
-  void visitPre(DocInternalRef *);
-  void visitPost(DocInternalRef *);
-  void visitPre(DocText *);
-  void visitPost(DocText *);
-  void visitPre(DocHtmlBlockQuote *);
-  void visitPost(DocHtmlBlockQuote *);
-  void visitPre(DocVhdlFlow *);
-  void visitPost(DocVhdlFlow *);
-  void visitPre(DocParBlock *);
-  void visitPost(DocParBlock *);
+    void operator()(const DocAutoList &);
+    void operator()(const DocAutoListItem &);
+    void operator()(const DocPara &) ;
+    void operator()(const DocRoot &);
+    void operator()(const DocSimpleSect &);
+    void operator()(const DocTitle &);
+    void operator()(const DocSimpleList &);
+    void operator()(const DocSimpleListItem &);
+    void operator()(const DocSection &);
+    void operator()(const DocHtmlList &);
+    void operator()(const DocHtmlListItem &);
+    void operator()(const DocHtmlDescList &);
+    void operator()(const DocHtmlDescTitle &);
+    void operator()(const DocHtmlDescData &);
+    void operator()(const DocHtmlTable &);
+    void operator()(const DocHtmlRow &);
+    void operator()(const DocHtmlCell &);
+    void operator()(const DocHtmlCaption &);
+    void operator()(const DocInternal &);
+    void operator()(const DocHRef &);
+    void operator()(const DocHtmlDetails &);
+    void operator()(const DocHtmlHeader &);
+    void operator()(const DocImage &);
+    void operator()(const DocDotFile &);
+    void operator()(const DocMscFile &);
+    void operator()(const DocDiaFile &);
+    void operator()(const DocLink &);
+    void operator()(const DocRef &);
+    void operator()(const DocSecRefItem &);
+    void operator()(const DocSecRefList &);
+    void operator()(const DocParamSect &);
+    void operator()(const DocParamList &);
+    void operator()(const DocXRefItem &);
+    void operator()(const DocInternalRef &);
+    void operator()(const DocText &);
+    void operator()(const DocHtmlBlockQuote &);
+    void operator()(const DocVhdlFlow &);
+    void operator()(const DocParBlock &);
 
-private:
+  private:
+    template<class T>
+    void visitChildren(const T &t)
+    {
+      for (const auto &child : t.children())
+      {
+         std::visit(*this, child);
+      }
+    }
 
-  //--------------------------------------
-  // helper functions
-  //--------------------------------------
+    //--------------------------------------
+    // helper functions
+    //--------------------------------------
 
-  void addLink(const QCString &ref, const QCString &file,
-	       const QCString &anchor);
+    void addLink(const QCString &ref, const QCString &file,
+        const QCString &anchor);
 
-  void enterText();
-  void leaveText();
+    void enterText();
+    void leaveText();
 
-  void openItem(const QCString &);
-  void closeItem();
-  void singleItem(const QCString &);
-  void openSubBlock(const QCString & = QCString());
-  void closeSubBlock();
-  //void openOther();
-  //void closeOther();
+    void openItem(const QCString &);
+    void closeItem();
+    void singleItem(const QCString &);
+    void openSubBlock(const QCString & = QCString());
+    void closeSubBlock();
 
-  //--------------------------------------
-  // state variables
-  //--------------------------------------
+    //--------------------------------------
+    // state variables
+    //--------------------------------------
 
-  PerlModOutput &m_output;
-  bool m_textmode;
-  bool m_textblockstart;
-  QCString m_other;
+    PerlModOutput &m_output;
+    bool m_textmode;
+    bool m_textblockstart;
+    QCString m_other;
 };
 
 PerlModDocVisitor::PerlModDocVisitor(PerlModOutput &output)
-  : DocVisitor(DocVisitor_Other), m_output(output), m_textmode(false), m_textblockstart(FALSE)
+  : m_output(output), m_textmode(false), m_textblockstart(FALSE)
 {
   m_output.openList("doc");
 }
@@ -519,43 +484,43 @@ void PerlModDocVisitor::closeSubBlock()
   */
 //}
 
-void PerlModDocVisitor::visit(DocWord *w)
+void PerlModDocVisitor::operator()(const DocWord &w)
 {
   enterText();
-  m_output.addQuoted(w->word());
+  m_output.addQuoted(w.word());
 }
 
-void PerlModDocVisitor::visit(DocLinkedWord *w)
+void PerlModDocVisitor::operator()(const DocLinkedWord &w)
 {
   openItem("url");
-  addLink(w->ref(), w->file(), w->anchor());
-  m_output.addFieldQuotedString("content", w->word());
+  addLink(w.ref(), w.file(), w.anchor());
+  m_output.addFieldQuotedString("content", w.word());
   closeItem();
 }
 
-void PerlModDocVisitor::visit(DocWhiteSpace *)
+void PerlModDocVisitor::operator()(const DocWhiteSpace &)
 {
   enterText();
   m_output.add(' ');
 }
 
-void PerlModDocVisitor::visit(DocSymbol *sy)
+void PerlModDocVisitor::operator()(const DocSymbol &sy)
 {
-  const DocSymbol::PerlSymb *res = HtmlEntityMapper::instance()->perl(sy->symbol());
+  const HtmlEntityMapper::PerlSymb *res = HtmlEntityMapper::instance()->perl(sy.symbol());
   const char *accent=0;
-  if (res-> symb)
+  if (res->symb)
   {
     switch (res->type)
     {
-      case DocSymbol::Perl_string:
+      case HtmlEntityMapper::Perl_string:
         enterText();
         m_output.add(res->symb);
         break;
-      case DocSymbol::Perl_char:
+      case HtmlEntityMapper::Perl_char:
         enterText();
         m_output.add(res->symb[0]);
         break;
-      case DocSymbol::Perl_symbol:
+      case HtmlEntityMapper::Perl_symbol:
         leaveText();
         openItem("symbol");
         m_output.addFieldQuotedString("symbol", res->symb);
@@ -564,28 +529,28 @@ void PerlModDocVisitor::visit(DocSymbol *sy)
       default:
         switch(res->type)
         {
-          case DocSymbol::Perl_umlaut:
+          case HtmlEntityMapper::Perl_umlaut:
             accent = "umlaut";
             break;
-          case DocSymbol::Perl_acute:
+          case HtmlEntityMapper::Perl_acute:
             accent = "acute";
             break;
-          case DocSymbol::Perl_grave:
+          case HtmlEntityMapper::Perl_grave:
             accent = "grave";
             break;
-          case DocSymbol::Perl_circ:
+          case HtmlEntityMapper::Perl_circ:
             accent = "circ";
             break;
-          case DocSymbol::Perl_slash:
+          case HtmlEntityMapper::Perl_slash:
             accent = "slash";
             break;
-          case DocSymbol::Perl_tilde:
+          case HtmlEntityMapper::Perl_tilde:
             accent = "tilde";
             break;
-          case DocSymbol::Perl_cedilla:
+          case HtmlEntityMapper::Perl_cedilla:
             accent = "cedilla";
             break;
-          case DocSymbol::Perl_ring:
+          case HtmlEntityMapper::Perl_ring:
             accent = "ring";
             break;
           default:
@@ -605,37 +570,45 @@ void PerlModDocVisitor::visit(DocSymbol *sy)
   }
   else
   {
-    err("perl: non supported HTML-entity found: %s\n",HtmlEntityMapper::instance()->html(sy->symbol(),TRUE));
+    err("perl: non supported HTML-entity found: %s\n",HtmlEntityMapper::instance()->html(sy.symbol(),TRUE));
   }
 }
-void PerlModDocVisitor::visit(DocEmoji *sy)
+
+void PerlModDocVisitor::operator()(const DocEmoji &sy)
 {
   enterText();
-  const char *name = EmojiEntityMapper::instance()->name(sy->index());
+  const char *name = EmojiEntityMapper::instance()->name(sy.index());
   if (name)
   {
     m_output.add(name);
   }
   else
   {
-    m_output.add(sy->name());
+    m_output.add(sy.name());
   }
 }
 
-void PerlModDocVisitor::visit(DocURL *u)
+void PerlModDocVisitor::operator()(const DocURL &u)
 {
   openItem("url");
-  m_output.addFieldQuotedString("content", u->url());
+  m_output.addFieldQuotedString("content", u.url());
   closeItem();
 }
 
-void PerlModDocVisitor::visit(DocLineBreak *) { singleItem("linebreak"); }
-void PerlModDocVisitor::visit(DocHorRuler *) { singleItem("hruler"); }
+void PerlModDocVisitor::operator()(const DocLineBreak &)
+{
+  singleItem("linebreak");
+}
 
-void PerlModDocVisitor::visit(DocStyleChange *s)
+void PerlModDocVisitor::operator()(const DocHorRuler &)
+{
+  singleItem("hruler");
+}
+
+void PerlModDocVisitor::operator()(const DocStyleChange &s)
 {
   const char *style = 0;
-  switch (s->style())
+  switch (s.style())
   {
     case DocStyleChange::Bold:          style = "bold"; break;
     case DocStyleChange::S:             style = "s"; break;
@@ -649,21 +622,25 @@ void PerlModDocVisitor::visit(DocStyleChange *s)
     case DocStyleChange::Superscript:   style = "superscript"; break;
     case DocStyleChange::Center:        style = "center"; break;
     case DocStyleChange::Small:         style = "small"; break;
+    case DocStyleChange::Cite:          style = "cite"; break;
     case DocStyleChange::Preformatted:  style = "preformatted"; break;
     case DocStyleChange::Div:           style = "div"; break;
     case DocStyleChange::Span:          style = "span"; break;
+    case DocStyleChange::Summary: /* emulation of the <summary> tag inside a <details> tag */
+      style = "summary";
+      break;
 
   }
   openItem("style");
   m_output.addFieldQuotedString("style", style)
-    .addFieldBoolean("enable", s->enable());
+    .addFieldBoolean("enable", s.enable());
   closeItem();
 }
 
-void PerlModDocVisitor::visit(DocVerbatim *s)
+void PerlModDocVisitor::operator()(const DocVerbatim &s)
 {
   const char *type = 0;
-  switch (s->type())
+  switch (s.type())
   {
     case DocVerbatim::Code:
 #if 0
@@ -672,6 +649,8 @@ void PerlModDocVisitor::visit(DocVerbatim *s)
       m_output.add("</programlisting>");
       return;
 #endif
+    case DocVerbatim::JavaDocCode:
+    case DocVerbatim::JavaDocLiteral:
     case DocVerbatim::Verbatim:  type = "preformatted"; break;
     case DocVerbatim::HtmlOnly:  type = "htmlonly";     break;
     case DocVerbatim::RtfOnly:   type = "rtfonly";      break;
@@ -684,69 +663,69 @@ void PerlModDocVisitor::visit(DocVerbatim *s)
     case DocVerbatim::PlantUML:  type = "plantuml";     break;
   }
   openItem(type);
-  if (s->hasCaption())
+  if (s.hasCaption())
   {
      openSubBlock("caption");
-     for (const auto &n : s->children()) n->accept(this);
+     visitChildren(s);
      closeSubBlock();
   }
-  m_output.addFieldQuotedString("content", s->text());
+  m_output.addFieldQuotedString("content", s.text());
   closeItem();
 }
 
-void PerlModDocVisitor::visit(DocAnchor *anc)
+void PerlModDocVisitor::operator()(const DocAnchor &anc)
 {
-  QCString anchor = anc->file() + "_1" + anc->anchor();
+  QCString anchor = anc.file() + "_1" + anc.anchor();
   openItem("anchor");
   m_output.addFieldQuotedString("id", anchor);
   closeItem();
 }
 
-void PerlModDocVisitor::visit(DocInclude *inc)
+void PerlModDocVisitor::operator()(const DocInclude &inc)
 {
   const char *type = 0;
-  switch(inc->type())
+  switch (inc.type())
   {
-  case DocInclude::IncWithLines:
-    return;
-  case DocInclude::Include:
-    return;
-  case DocInclude::DontInclude:	return;
-  case DocInclude::DontIncWithLines: return;
-  case DocInclude::HtmlInclude:	type = "htmlonly"; break;
-  case DocInclude::LatexInclude: type = "latexonly"; break;
-  case DocInclude::RtfInclude: type = "rtfonly"; break;
-  case DocInclude::ManInclude: type = "manonly"; break;
-  case DocInclude::XmlInclude: type = "xmlonly"; break;
-  case DocInclude::DocbookInclude: type = "docbookonly"; break;
-  case DocInclude::VerbInclude:	type = "preformatted"; break;
-  case DocInclude::Snippet: return;
-  case DocInclude::SnipWithLines: return;
-  case DocInclude::SnippetDoc:
-  case DocInclude::IncludeDoc:
-    err("Internal inconsistency: found switch SnippetDoc / IncludeDoc in file: %s"
-        "Please create a bug report\n",__FILE__);
-    break;
+    case DocInclude::IncWithLines:
+      return;
+    case DocInclude::Include:
+      return;
+    case DocInclude::DontInclude:	return;
+    case DocInclude::DontIncWithLines: return;
+    case DocInclude::HtmlInclude:	type = "htmlonly"; break;
+    case DocInclude::LatexInclude: type = "latexonly"; break;
+    case DocInclude::RtfInclude: type = "rtfonly"; break;
+    case DocInclude::ManInclude: type = "manonly"; break;
+    case DocInclude::XmlInclude: type = "xmlonly"; break;
+    case DocInclude::DocbookInclude: type = "docbookonly"; break;
+    case DocInclude::VerbInclude:	type = "preformatted"; break;
+    case DocInclude::Snippet: return;
+    case DocInclude::SnipWithLines: return;
+    case DocInclude::SnippetDoc:
+    case DocInclude::IncludeDoc:
+      err("Internal inconsistency: found switch SnippetDoc / IncludeDoc in file: %s"
+          "Please create a bug report\n",__FILE__);
+      break;
   }
   openItem(type);
-  m_output.addFieldQuotedString("content", inc->text());
+  m_output.addFieldQuotedString("content", inc.text());
   closeItem();
 }
 
-void PerlModDocVisitor::visit(DocIncOperator *)
+void PerlModDocVisitor::operator()(const DocIncOperator &)
 {
 #if 0
   //printf("DocIncOperator: type=%d first=%d, last=%d text='%s'\n",
-  //    op->type(),op->isFirst(),op->isLast(),op->text().data());
-  if (op->isFirst())
+  //    op.type(),op.isFirst(),op.isLast(),op.text().data());
+  if (op.isFirst())
   {
     m_output.add("<programlisting>");
   }
-  if (op->type()!=DocIncOperator::Skip)
+  if (op.type()!=DocIncOperator::Skip)
   {
-    parseCode(m_ci,op->context(),op->text(),FALSE,0);
+    parseCode(m_ci,op.context(),op.text(),FALSE,0);
   }
-  if (op->isLast())
+  if (op.isLast())
   {
     m_output.add("</programlisting>");
   }
@@ -757,16 +736,16 @@ void PerlModDocVisitor::visit(DocIncOperator *)
 #endif
 }
 
-void PerlModDocVisitor::visit(DocFormula *f)
+void PerlModDocVisitor::operator()(const DocFormula &f)
 {
   openItem("formula");
   QCString id;
-  id += QCString().setNum(f->id());
-  m_output.addFieldQuotedString("id", id).addFieldQuotedString("content", f->text());
+  id += QCString().setNum(f.id());
+  m_output.addFieldQuotedString("id", id).addFieldQuotedString("content", f.text());
   closeItem();
 }
 
-void PerlModDocVisitor::visit(DocIndexEntry *)
+void PerlModDocVisitor::operator()(const DocIndexEntry &)
 {
 #if 0
   m_output.add("<indexentry>"
@@ -778,14 +757,14 @@ void PerlModDocVisitor::visit(DocIndexEntry *)
 #endif
 }
 
-void PerlModDocVisitor::visit(DocSimpleSectSep *)
+void PerlModDocVisitor::operator()(const DocSimpleSectSep &)
 {
 }
 
-void PerlModDocVisitor::visit(DocCite *cite)
+void PerlModDocVisitor::operator()(const DocCite &cite)
 {
   openItem("cite");
-  m_output.addFieldQuotedString("text", cite->text());
+  m_output.addFieldQuotedString("text", cite.text());
   closeItem();
 }
 
@@ -794,30 +773,24 @@ void PerlModDocVisitor::visit(DocCite *cite)
 // visitor functions for compound nodes
 //--------------------------------------
 
-void PerlModDocVisitor::visitPre(DocAutoList *l)
+void PerlModDocVisitor::operator()(const DocAutoList &l)
 {
   openItem("list");
-  m_output.addFieldQuotedString("style", l->isEnumList() ? "ordered" : "itemized");
+  m_output.addFieldQuotedString("style", l.isEnumList() ? "ordered" : "itemized");
   openSubBlock("content");
-}
-
-void PerlModDocVisitor::visitPost(DocAutoList *)
-{
+  visitChildren(l);
   closeSubBlock();
   closeItem();
 }
 
-void PerlModDocVisitor::visitPre(DocAutoListItem *)
+void PerlModDocVisitor::operator()(const DocAutoListItem &li)
 {
   openSubBlock();
-}
-
-void PerlModDocVisitor::visitPost(DocAutoListItem *)
-{
+  visitChildren(li);
   closeSubBlock();
 }
 
-void PerlModDocVisitor::visitPre(DocPara *)
+void PerlModDocVisitor::operator()(const DocPara &p)
 {
   if (m_textblockstart)
     m_textblockstart = false;
@@ -827,28 +800,22 @@ void PerlModDocVisitor::visitPre(DocPara *)
   openItem("para");
   openSubBlock("content");
   */
-}
-
-void PerlModDocVisitor::visitPost(DocPara *)
-{
+  visitChildren(p);
   /*
   closeSubBlock();
   closeItem();
   */
 }
 
-void PerlModDocVisitor::visitPre(DocRoot *)
+void PerlModDocVisitor::operator()(const DocRoot &r)
 {
+  visitChildren(r);
 }
 
-void PerlModDocVisitor::visitPost(DocRoot *)
-{
-}
-
-void PerlModDocVisitor::visitPre(DocSimpleSect *s)
+void PerlModDocVisitor::operator()(const DocSimpleSect &s)
 {
   const char *type = 0;
-  switch (s->type())
+  switch (s.type())
   {
   case DocSimpleSect::See:		type = "see"; break;
   case DocSimpleSect::Return:		type = "return"; break;
@@ -875,62 +842,61 @@ void PerlModDocVisitor::visitPre(DocSimpleSect *s)
   m_output.openHash();
   //openOther();
   openSubBlock(type);
-}
-
-void PerlModDocVisitor::visitPost(DocSimpleSect *)
-{
+  if (s.title())
+  {
+    std::visit(*this,*s.title());
+  }
+  visitChildren(s);
   closeSubBlock();
   //closeOther();
   m_output.closeHash();
 }
 
-void PerlModDocVisitor::visitPre(DocTitle *)
+void PerlModDocVisitor::operator()(const DocTitle &t)
 {
   openItem("title");
   openSubBlock("content");
-}
-
-void PerlModDocVisitor::visitPost(DocTitle *)
-{
+  visitChildren(t);
   closeSubBlock();
   closeItem();
 }
 
-void PerlModDocVisitor::visitPre(DocSimpleList *)
+void PerlModDocVisitor::operator()(const DocSimpleList &l)
 {
   openItem("list");
   m_output.addFieldQuotedString("style", "itemized");
   openSubBlock("content");
-}
-
-void PerlModDocVisitor::visitPost(DocSimpleList *)
-{
+  visitChildren(l);
   closeSubBlock();
   closeItem();
 }
 
-void PerlModDocVisitor::visitPre(DocSimpleListItem *) { openSubBlock(); }
-void PerlModDocVisitor::visitPost(DocSimpleListItem *) { closeSubBlock(); }
-
-void PerlModDocVisitor::visitPre(DocSection *s)
+void PerlModDocVisitor::operator()(const DocSimpleListItem &li)
 {
-  QCString sect = QCString().sprintf("sect%d",s->level());
+  openSubBlock();
+  if (li.paragraph())
+  {
+    std::visit(*this,*li.paragraph());
+  }
+  closeSubBlock();
+}
+
+void PerlModDocVisitor::operator()(const DocSection &s)
+{
+  QCString sect = QCString().sprintf("sect%d",s.level());
   openItem(sect);
-  m_output.addFieldQuotedString("title", s->title());
+  m_output.addFieldQuotedString("title", s.title());
   openSubBlock("content");
-}
-
-void PerlModDocVisitor::visitPost(DocSection *)
-{
+  visitChildren(s);
   closeSubBlock();
   closeItem();
 }
 
-void PerlModDocVisitor::visitPre(DocHtmlList *l)
+void PerlModDocVisitor::operator()(const DocHtmlList &l)
 {
   openItem("list");
-  m_output.addFieldQuotedString("style", (l->type() == DocHtmlList::Ordered) ? "ordered" : "itemized");
-  for (const auto &opt : l->attribs())
+  m_output.addFieldQuotedString("style", (l.type() == DocHtmlList::Ordered) ? "ordered" : "itemized");
+  for (const auto &opt : l.attribs())
   {
     if (opt.name=="type")
     {
@@ -942,17 +908,14 @@ void PerlModDocVisitor::visitPre(DocHtmlList *l)
     }
   }
   openSubBlock("content");
-}
-
-void PerlModDocVisitor::visitPost(DocHtmlList *)
-{
+  visitChildren(l);
   closeSubBlock();
   closeItem();
 }
 
-void PerlModDocVisitor::visitPre(DocHtmlListItem *l)
+void PerlModDocVisitor::operator()(const DocHtmlListItem &l)
 {
-  for (const auto &opt : l->attribs())
+  for (const auto &opt : l.attribs())
   {
     if (opt.name=="value")
     {
@@ -960,169 +923,139 @@ void PerlModDocVisitor::visitPre(DocHtmlListItem *l)
     }
   }
   openSubBlock();
+  visitChildren(l);
+  closeSubBlock();
 }
-void PerlModDocVisitor::visitPost(DocHtmlListItem *) { closeSubBlock(); }
 
-//void PerlModDocVisitor::visitPre(DocHtmlPre *)
-//{
-//  openItem("preformatted");
-//  openSubBlock("content");
-//  //m_insidePre=TRUE;
-//}
-
-//void PerlModDocVisitor::visitPost(DocHtmlPre *)
-//{
-//  //m_insidePre=FALSE;
-//  closeSubBlock();
-//  closeItem();
-//}
-
-void PerlModDocVisitor::visitPre(DocHtmlDescList *)
+void PerlModDocVisitor::operator()(const DocHtmlDescList &dl)
 {
 #if 0
   m_output.add("<variablelist>\n");
 #endif
-}
-
-void PerlModDocVisitor::visitPost(DocHtmlDescList *)
-{
+  visitChildren(dl);
 #if 0
   m_output.add("</variablelist>\n");
 #endif
 }
 
-void PerlModDocVisitor::visitPre(DocHtmlDescTitle *)
+void PerlModDocVisitor::operator()(const DocHtmlDescTitle &dt)
 {
 #if 0
   m_output.add("<varlistentry><term>");
 #endif
-}
-
-void PerlModDocVisitor::visitPost(DocHtmlDescTitle *)
-{
+  visitChildren(dt);
 #if 0
   m_output.add("</term></varlistentry>\n");
 #endif
 }
 
-void PerlModDocVisitor::visitPre(DocHtmlDescData *)
+void PerlModDocVisitor::operator()(const DocHtmlDescData &dd)
 {
 #if 0
   m_output.add("<listitem>");
 #endif
-}
-
-void PerlModDocVisitor::visitPost(DocHtmlDescData *)
-{
+  visitChildren(dd);
 #if 0
   m_output.add("</listitem>\n");
 #endif
 }
 
-void PerlModDocVisitor::visitPre(DocHtmlTable *)
+void PerlModDocVisitor::operator()(const DocHtmlTable &t)
 {
 #if 0
-  m_output.add("<table rows=\""); m_output.add(t->numRows());
-  m_output.add("\" cols=\""); m_output.add(t->numCols()); m_output.add("\">");
+  m_output.add("<table rows=\""); m_output.add(t.numRows());
+  m_output.add("\" cols=\""); m_output.add(t.numCols()); m_output.add("\">");
 #endif
-}
-
-void PerlModDocVisitor::visitPost(DocHtmlTable *)
-{
+  if (t.caption())
+  {
+    std::visit(*this,*t.caption());
+  }
+  visitChildren(t);
 #if 0
   m_output.add("</table>\n");
 #endif
 }
 
-void PerlModDocVisitor::visitPre(DocHtmlRow *)
+void PerlModDocVisitor::operator()(const DocHtmlRow &r)
 {
 #if 0
   m_output.add("<row>\n");
 #endif
-}
-
-void PerlModDocVisitor::visitPost(DocHtmlRow *)
-{
+  visitChildren(r);
 #if 0
   m_output.add("</row>\n");
 #endif
 }
 
-void PerlModDocVisitor::visitPre(DocHtmlCell *)
+void PerlModDocVisitor::operator()(const DocHtmlCell &c)
 {
 #if 0
-  if (c->isHeading()) m_output.add("<entry thead=\"yes\">"); else m_output.add("<entry thead=\"no\">");
+  if (c.isHeading()) m_output.add("<entry thead=\"yes\">"); else m_output.add("<entry thead=\"no\">");
 #endif
-}
-
-void PerlModDocVisitor::visitPost(DocHtmlCell *)
-{
+  visitChildren(c);
 #if 0
   m_output.add("</entry>");
 #endif
 }
 
-void PerlModDocVisitor::visitPre(DocHtmlCaption *)
+void PerlModDocVisitor::operator()(const DocHtmlCaption &c)
 {
 #if 0
   m_output.add("<caption>");
 #endif
-}
-
-void PerlModDocVisitor::visitPost(DocHtmlCaption *)
-{
+  visitChildren(c);
 #if 0
   m_output.add("</caption>\n");
 #endif
 }
 
-void PerlModDocVisitor::visitPre(DocInternal *)
+void PerlModDocVisitor::operator()(const DocInternal &i)
 {
 #if 0
   m_output.add("<internal>");
 #endif
-}
-
-void PerlModDocVisitor::visitPost(DocInternal *)
-{
+  visitChildren(i);
 #if 0
   m_output.add("</internal>");
 #endif
 }
 
-void PerlModDocVisitor::visitPre(DocHRef *)
+void PerlModDocVisitor::operator()(const DocHRef &href)
 {
 #if 0
-  m_output.add("<ulink url=\""); m_output.add(href->url()); m_output.add("\">");
+  m_output.add("<ulink url=\""); m_output.add(href.url()); m_output.add("\">");
 #endif
-}
-
-void PerlModDocVisitor::visitPost(DocHRef *)
-{
+  visitChildren(href);
 #if 0
   m_output.add("</ulink>");
 #endif
 }
 
-void PerlModDocVisitor::visitPre(DocHtmlHeader *)
+void PerlModDocVisitor::operator()(const DocHtmlDetails &details)
+{
+  openItem("details");
+  openSubBlock("content");
+  visitChildren(details);
+  closeSubBlock();
+  closeItem();
+}
+
+void PerlModDocVisitor::operator()(const DocHtmlHeader &header)
 {
 #if 0
-  m_output.add("<sect"); m_output.add(header->level()); m_output.add(">");
+  m_output.add("<sect"); m_output.add(header.level()); m_output.add(">");
+#endif
+  visitChildren(header);
+#if 0
+  m_output.add("</sect"); m_output.add(header.level()); m_output.add(">\n");
 #endif
 }
 
-void PerlModDocVisitor::visitPost(DocHtmlHeader *)
-{
-#if 0
-  m_output.add("</sect"); m_output.add(header->level()); m_output.add(">\n");
-#endif
-}
-
-void PerlModDocVisitor::visitPre(DocImage *)
+void PerlModDocVisitor::operator()(const DocImage &img)
 {
 #if 0
   m_output.add("<image type=\"");
-  switch(img->type())
+  switch(img.type())
   {
   case DocImage::Html:  m_output.add("html"); break;
   case DocImage::Latex: m_output.add("latex"); break;
@@ -1130,204 +1063,167 @@ void PerlModDocVisitor::visitPre(DocImage *)
   }
   m_output.add("\"");
 
-  QCString baseName=img->name();
+  QCString baseName=img.name();
   int i;
   if ((i=baseName.findRev('/'))!=-1 || (i=baseName.findRev('\\'))!=-1)
   {
     baseName=baseName.right(baseName.length()-i-1);
   }
   m_output.add(" name=\""); m_output.add(baseName); m_output.add("\"");
-  if (!img->width().isEmpty())
+  if (!img.width().isEmpty())
   {
     m_output.add(" width=\"");
-    m_output.addQuoted(img->width());
+    m_output.addQuoted(img.width());
     m_output.add("\"");
   }
-  else if (!img->height().isEmpty())
+  else if (!img.height().isEmpty())
   {
     m_output.add(" height=\"");
-    m_output.addQuoted(img->height());
+    m_output.addQuoted(img.height());
     m_output.add("\"");
   }
   m_output.add(">");
 #endif
-}
-
-void PerlModDocVisitor::visitPost(DocImage *)
-{
+  visitChildren(img);
 #if 0
   m_output.add("</image>");
 #endif
 }
 
-void PerlModDocVisitor::visitPre(DocDotFile *)
+void PerlModDocVisitor::operator()(const DocDotFile &df)
 {
 #if 0
   m_output.add("<dotfile name=\""); m_output.add(df->file()); m_output.add("\">");
 #endif
-}
-
-void PerlModDocVisitor::visitPost(DocDotFile *)
-{
+  visitChildren(df);
 #if 0
   m_output.add("</dotfile>");
 #endif
 }
-void PerlModDocVisitor::visitPre(DocMscFile *)
+void PerlModDocVisitor::operator()(const DocMscFile &df)
 {
 #if 0
   m_output.add("<mscfile name=\""); m_output.add(df->file()); m_output.add("\">");
 #endif
-}
-
-void PerlModDocVisitor::visitPost(DocMscFile *)
-{
+  visitChildren(df);
 #if 0
   m_output.add("<mscfile>");
 #endif
 }
 
-void PerlModDocVisitor::visitPre(DocDiaFile *)
+void PerlModDocVisitor::operator()(const DocDiaFile &df)
 {
 #if 0
   m_output.add("<diafile name=\""); m_output.add(df->file()); m_output.add("\">");
 #endif
-}
-
-void PerlModDocVisitor::visitPost(DocDiaFile *)
-{
+  visitChildren(df);
 #if 0
   m_output.add("</diafile>");
 #endif
 }
 
 
-void PerlModDocVisitor::visitPre(DocLink *lnk)
+void PerlModDocVisitor::operator()(const DocLink &lnk)
 {
   openItem("link");
-  addLink(lnk->ref(), lnk->file(), lnk->anchor());
-}
-
-void PerlModDocVisitor::visitPost(DocLink *)
-{
+  addLink(lnk.ref(), lnk.file(), lnk.anchor());
+  visitChildren(lnk);
   closeItem();
 }
 
-void PerlModDocVisitor::visitPre(DocRef *ref)
+void PerlModDocVisitor::operator()(const DocRef &ref)
 {
   openItem("ref");
-  if (!ref->hasLinkText())
-    m_output.addFieldQuotedString("text", ref->targetTitle());
+  if (!ref.hasLinkText())
+    m_output.addFieldQuotedString("text", ref.targetTitle());
   openSubBlock("content");
-}
-
-void PerlModDocVisitor::visitPost(DocRef *)
-{
+  visitChildren(ref);
   closeSubBlock();
   closeItem();
 }
 
-void PerlModDocVisitor::visitPre(DocSecRefItem *)
+void PerlModDocVisitor::operator()(const DocSecRefItem &ref)
 {
 #if 0
   m_output.add("<tocitem id=\""); m_output.add(ref->file()); m_output.add("_1"); m_output.add(ref->anchor()); m_output.add("\">");
 #endif
-}
-
-void PerlModDocVisitor::visitPost(DocSecRefItem *)
-{
+  visitChildren(ref);
 #if 0
   m_output.add("</tocitem>");
 #endif
 }
 
-void PerlModDocVisitor::visitPre(DocSecRefList *)
+void PerlModDocVisitor::operator()(const DocSecRefList &l)
 {
 #if 0
   m_output.add("<toclist>");
 #endif
-}
-
-void PerlModDocVisitor::visitPost(DocSecRefList *)
-{
+  visitChildren(l);
 #if 0
   m_output.add("</toclist>");
 #endif
 }
 
-//void PerlModDocVisitor::visitPre(DocLanguage *l)
-//{
-//  openItem("language");
-//  m_output.addFieldQuotedString("id", l->id());
-//}
-//
-//void PerlModDocVisitor::visitPost(DocLanguage *)
-//{
-//  closeItem();
-//}
-
-void PerlModDocVisitor::visitPre(DocParamSect *s)
+void PerlModDocVisitor::operator()(const DocParamSect &s)
 {
   leaveText();
   const char *type = 0;
-  switch(s->type())
+  switch(s.type())
   {
-  case DocParamSect::Param:     type = "params"; break;
-  case DocParamSect::RetVal:    type = "retvals"; break;
-  case DocParamSect::Exception: type = "exceptions"; break;
-  case DocParamSect::TemplateParam: type = "templateparam"; break;
-  case DocParamSect::Unknown:
-    err("unknown parameter section found\n");
-    break;
+    case DocParamSect::Param:     type = "params"; break;
+    case DocParamSect::RetVal:    type = "retvals"; break;
+    case DocParamSect::Exception: type = "exceptions"; break;
+    case DocParamSect::TemplateParam: type = "templateparam"; break;
+    case DocParamSect::Unknown:
+      err("unknown parameter section found\n");
+      break;
   }
   m_output.openHash();
   //openOther();
   openSubBlock(type);
-}
-
-void PerlModDocVisitor::visitPost(DocParamSect *)
-{
+  visitChildren(s);
   closeSubBlock();
   //closeOther();
   m_output.closeHash();
 }
 
-void PerlModDocVisitor::visitPre(DocParamList *pl)
+void PerlModDocVisitor::operator()(const DocSeparator &)
+{
+}
+
+void PerlModDocVisitor::operator()(const DocParamList &pl)
 {
   leaveText();
-  m_output.openHash()
-    .openList("parameters");
-  for (const auto &param : pl->parameters())
+  m_output.openHash().openList("parameters");
+  for (const auto &param : pl.parameters())
   {
     QCString name;
-    if (param->kind()==DocNode::Kind_Word)
+    const DocWord *word = std::get_if<DocWord>(&param);
+    const DocLinkedWord *linkedWord = std::get_if<DocLinkedWord>(&param);
+    if (word)
     {
-      name = ((DocWord*)param.get())->word();
+      name = word->word();
     }
-    else if (param->kind()==DocNode::Kind_LinkedWord)
+    else if (linkedWord)
     {
-      name = ((DocLinkedWord*)param.get())->word();
+      name = linkedWord->word();
     }
 
     QCString dir = "";
-    DocParamSect *sect = 0;
-    if (pl->parent() && pl->parent()->kind()==DocNode::Kind_ParamSect)
-    {
-      sect=(DocParamSect*)pl->parent();
-    }
+    const DocParamSect *sect = std::get_if<DocParamSect>(pl.parent());
     if (sect && sect->hasInOutSpecifier())
     {
-      if (pl->direction()!=DocParamSect::Unspecified)
+      if (pl.direction()!=DocParamSect::Unspecified)
       {
-        if (pl->direction()==DocParamSect::In)
+        if (pl.direction()==DocParamSect::In)
         {
           dir = "in";
         }
-        else if (pl->direction()==DocParamSect::Out)
+        else if (pl.direction()==DocParamSect::Out)
         {
           dir = "out";
         }
-        else if (pl->direction()==DocParamSect::InOut)
+        else if (pl.direction()==DocParamSect::InOut)
         {
           dir = "in,out";
         }
@@ -1340,16 +1236,16 @@ void PerlModDocVisitor::visitPre(DocParamList *pl)
   }
   m_output.closeList()
     .openList("doc");
-}
-
-void PerlModDocVisitor::visitPost(DocParamList *)
-{
+  for (const auto &par : pl.paragraphs())
+  {
+    std::visit(*this,par);
+  }
   leaveText();
   m_output.closeList()
     .closeHash();
 }
 
-void PerlModDocVisitor::visitPre(DocXRefItem *x)
+void PerlModDocVisitor::operator()(const DocXRefItem &x)
 {
 #if 0
   m_output.add("<xrefsect id=\"");
@@ -1360,14 +1256,11 @@ void PerlModDocVisitor::visitPre(DocXRefItem *x)
   m_output.add("</xreftitle>");
   m_output.add("<xrefdescription>");
 #endif
-  if (x->title().isEmpty()) return;
+  if (x.title().isEmpty()) return;
   openItem("xrefitem");
   openSubBlock("content");
-}
-
-void PerlModDocVisitor::visitPost(DocXRefItem *x)
-{
-  if (x->title().isEmpty()) return;
+  visitChildren(x);
+  if (x.title().isEmpty()) return;
   closeSubBlock();
   closeItem();
 #if 0
@@ -1376,53 +1269,37 @@ void PerlModDocVisitor::visitPost(DocXRefItem *x)
 #endif
 }
 
-void PerlModDocVisitor::visitPre(DocInternalRef *ref)
+void PerlModDocVisitor::operator()(const DocInternalRef &ref)
 {
   openItem("ref");
-  addLink(QCString(),ref->file(),ref->anchor());
+  addLink(QCString(),ref.file(),ref.anchor());
   openSubBlock("content");
-}
-
-void PerlModDocVisitor::visitPost(DocInternalRef *)
-{
+  visitChildren(ref);
   closeSubBlock();
   closeItem();
 }
 
-void PerlModDocVisitor::visitPre(DocText *)
+void PerlModDocVisitor::operator()(const DocText &t)
 {
+  visitChildren(t);
 }
 
-void PerlModDocVisitor::visitPost(DocText *)
-{
-}
-
-void PerlModDocVisitor::visitPre(DocHtmlBlockQuote *)
+void PerlModDocVisitor::operator()(const DocHtmlBlockQuote &q)
 {
   openItem("blockquote");
   openSubBlock("content");
-}
-
-void PerlModDocVisitor::visitPost(DocHtmlBlockQuote *)
-{
+  visitChildren(q);
   closeSubBlock();
   closeItem();
 }
 
-void PerlModDocVisitor::visitPre(DocVhdlFlow *)
+void PerlModDocVisitor::operator()(const DocVhdlFlow &)
 {
 }
 
-void PerlModDocVisitor::visitPost(DocVhdlFlow *)
+void PerlModDocVisitor::operator()(const DocParBlock &pb)
 {
-}
-
-void PerlModDocVisitor::visitPre(DocParBlock *)
-{
-}
-
-void PerlModDocVisitor::visitPost(DocParBlock *)
-{
+  visitChildren(pb);
 }
 
 
@@ -1465,16 +1342,23 @@ static void addPerlModDocBlock(PerlModOutput &output,
 {
   QCString stext = text.stripWhiteSpace();
   if (stext.isEmpty())
+  {
     output.addField(name).add("{}");
-  else {
-    std::unique_ptr<IDocParser> parser { createDocParser() };
-    std::unique_ptr<DocRoot>    root   { validatingParseDoc(*parser.get(),
-                                         fileName,lineNr,scope,md,stext,FALSE,FALSE,
-                                         QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT)) };
+  }
+  else
+  {
+    auto parser { createDocParser() };
+    auto ast    { validatingParseDoc(*parser.get(),
+                                     fileName,lineNr,scope,md,stext,FALSE,FALSE,
+                                     QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT)) };
     output.openHash(name);
-    auto visitor = std::make_unique<PerlModDocVisitor>(output);
-    root->accept(visitor.get());
-    visitor->finish();
+    auto astImpl = dynamic_cast<const DocNodeAST*>(ast.get());
+    if (astImpl)
+    {
+      PerlModDocVisitor visitor(output);
+      std::visit(visitor,astImpl->root);
+      visitor.finish();
+    }
     output.closeHash();
   }
 }
@@ -1597,6 +1481,7 @@ void PerlModGenerator::generatePerlModForMember(const MemberDef *md,const Defini
     case MemberType_Dictionary:  memType="dictionary"; break;
   }
 
+  bool isFortran = md->getLanguage()==SrcLangExt_Fortran;
   name = md->name();
   if (md->isAnonymous()) name = "__unnamed" + name.right(name.length() - 1)+"__";
 
@@ -1640,7 +1525,9 @@ void PerlModGenerator::generatePerlModForMember(const MemberDef *md,const Defini
 	if (defArg && !defArg->name.isEmpty() && defArg->name!=a.name)
 	  m_output.addFieldQuotedString("definition_name", defArg->name);
 
-	if (!a.type.isEmpty())
+        if (isFortran && defArg && !defArg->type.isEmpty())
+	  m_output.addFieldQuotedString("type", defArg->type);
+	else if (!a.type.isEmpty())
 	  m_output.addFieldQuotedString("type", a.type);
 
 	if (!a.array.isEmpty())
@@ -1759,8 +1646,6 @@ void PerlModGenerator::addListOfAllMembers(const ClassDef *cd)
     {
       const MemberDef *md=mi->memberDef();
       const ClassDef  *mcd=md->getClassDef();
-      const Definition *d=md->getGroupDef();
-      if (d==0) d = mcd;
 
       m_output.openHash()
         .addFieldQuotedString("name", md->name())
@@ -2174,7 +2059,7 @@ void PerlModGenerator::generatePerlModForPage(PageDef *pd)
 
   const SectionInfo *si = SectionManager::instance().find(pd->name());
   if (si)
-    m_output.addFieldQuotedString("title4", filterTitle(si->title().str()));
+    m_output.addFieldQuotedString("title4", filterTitle(si->title()));
 
   addPerlModDocBlock(m_output,"detailed",pd->docFile(),pd->docLine(),0,0,pd->documentation());
   m_output.closeHash();

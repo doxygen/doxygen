@@ -169,6 +169,7 @@ documentation:
 \refitem cmdpublic \\public
 \refitem cmdpublicsection \\publicsection
 \refitem cmdpure \\pure
+\refitem cmdraisewarning \\raisewarning
 \refitem cmdref \\ref
 \refitem cmdrefitem \\refitem
 \refitem cmdrelated \\related
@@ -188,6 +189,7 @@ documentation:
 \refitem cmdsection \\section
 \refitem cmdsee \\see
 \refitem cmdshort \\short
+\refitem cmdshowdate \\showdate
 \refitem cmdshowinitializer \\showinitializer
 \refitem cmdshowrefby \\showrefby
 \refitem cmdshowrefs \\showrefs
@@ -760,12 +762,16 @@ Structural indicators
       \ref cmdmemberof "\\memberof"
 
 <hr>
-\section cmdingroup \\ingroup (<groupname> [<groupname> <groupname>])
+\section cmdingroup \\ingroup (<groupname> [<groupname>]*)
 
   \addindex \\ingroup
-  If the \c \\ingroup command is placed in a comment block of a
-  class, file or namespace, then it will be added to the group or
-  groups identified by \<groupname\>.
+  If the \c \\ingroup command is placed in a comment block of a compound entity
+  (like class, file or namespace), then it will be added to the group(s)
+  identified by the `<groupname>`(s).
+  In case of members (like variable, functions, typedefs and enums) the member will
+  be added only to one group (to avoid ambiguous linking targets in case 
+  a member is not documented in the context of its class, namespace
+  or file, but only visible as part of a group).
 
   \sa page \ref grouping "Grouping", sections \ref cmddefgroup "\\defgroup",
   \ref cmdaddtogroup "\\addtogroup", and \ref cmdweakgroup "\\weakgroup"
@@ -1420,6 +1426,60 @@ contains \c TEST, or \c DEV
   for an example.
 
 <hr>
+\section cmdshowdate \\showdate "<format>" [ <date> ]
+
+  \addindex \\showdate
+  Shows the date based on the given \<format\> and \<date\>. Where the \<format\> is a string in which the following tokens have a special meaning:
+  - \%y The last two decimal digits of the year. If the result is a single digit it is prefixed by 0.
+  - \%Y The year as a decimal number.
+
+  - \%m The month as a decimal number. If the result is a single digit, it is prefixed with 0.
+  - \%0m The month as a decimal number. If the result is a single digit, it is prefixed with 0.
+  - \%b The abbreviated month name.
+  - \%lb As \%b but when not by default  the case and when possible the first character is converted to uppercase.
+  - \%B The full month name.
+  - \%lB As \%B but when not by default  the case and when possible the first character is converted to uppercase.
+
+  - \%d The day of month as a decimal number.
+  - \%0d The day of month as a decimal number.
+
+  - \%u The weekday as a decimal number (1-7), where Monday is 1.
+  - \%w The weekday as a decimal number (0-6), where Sunday is 0.
+  - \%a The abbreviated weekday name.
+  - \%la As \%a but when not by default  the case and when possible the first character is converted to uppercase.
+  - \%A The full weekday name.
+  - \%lA As \%A but when not by default  the case and when possible the first character is converted to uppercase.
+
+  - \%\% A \% character.
+
+  Note that the \<format\> has to be between double quotes.
+
+  In case the \<date\> is specified it to has to have the following representation:
+  - one or 2 digits for the day
+  - a minus sign
+  - one or 2 digits for the month
+  - a minus sign
+  - 4 digits for the year
+  .
+  in case the \<date\> is not specified the current date is used.
+
+  Here is an example:
+  \code
+  - \showdate "%lA %0d-%0m-%Y" 14-3-2015
+  - \showdate "%a %d-%m-%y" 14-3-2015
+  - \showdate "%m.%d%y" 14-3-2015
+  \endcode
+  In case `OUTPUT_LANGUAGE=english` this results in:
+  - Saturday 14-03-2015
+  - Sat 14-3-15
+  - 3.1415
+  .
+  In case `OUTPUT_LANGUAGE=dutch` this results in:
+  - Zaterdag 14-03-15
+  - za 14-3-2015
+  - 3.1415
+  .
+<hr>
 \section cmddeprecated \\deprecated { description }
 
   \addindex \\deprecated
@@ -1442,6 +1502,34 @@ contains \c TEST, or \c DEV
   All the text, including the command, till the end of the line is ignored.
   The command will most commonly be used in combination with \ref cfg_aliases "ALIASES"
   to ignore not supported commands that are present for e.g. other processing tools.
+<hr>
+\section cmdraisewarning \\raisewarning ( text to be shown as warning )
+
+  \addindex \\raisewarning
+  All the text, excluding the command, till the end of the line is literally shown
+  as a documentation warning. The text, including the command, is removed from the output.
+  The command will most commonly be used in combination with \ref cfg_aliases "ALIASES"
+  to show a specific warning.
+  \par Example:
+\verbatim
+\raisewarning My specific warnning
+
+\warnNoDoc
+
+\warnNoDoc{My specific warnning}
+\endverbatim
+   together with:
+\verbatim
+ALIASES  = warnNoDoc="\raisewarning Missing documentation"
+ALIASES += warnNoDoc{1}="\raisewarning Incomplete documentation: \1"
+\endverbatim
+   will  result in:
+\verbatim
+   ex_1.md:1: warning: My specific warnning
+   ex_1.md:3: warning: Missing documentation
+   ex_1.md:5: warning: Incomplete documentation: My specific warnning
+\endverbatim
+
 <hr>
 \section cmdelse \\else
 
@@ -2653,7 +2741,7 @@ Commands for visual enhancements
   ... the \a x and \a y coordinates are used to ...
 
   Equivalent to \ref cmde "\\e" and \ref cmdem "\\em".
-  To emphasize multiple words use \<em\>multiple words\</em\>.
+  To emphasize multiple words use \ref htmltag_EM "\<em\>"multiple words\ref htmltag_endEM "\</em\>".
 
 <hr>
 \section cmdarg \\arg { item-description }
@@ -2693,8 +2781,8 @@ Commands for visual enhancements
 
   \addindex \\b
   Displays the argument \<word\> using a bold font.
-  Equivalent to \<b\>word\</b\>.
-  To put multiple words in bold use \<b\>multiple words\</b\>.
+  Equivalent to \ref htmltag_B "\<b\>"word\ref htmltag_endB "\</b\>".
+  To put multiple words in bold use \ref htmltag_B "\<b\>"multiple words\ref htmltag_endB "\</b\>".
 
 <hr>
 \section cmdc \\c <word>
@@ -2702,7 +2790,7 @@ Commands for visual enhancements
   \addindex \\c
   Displays the argument \<word\> using a typewriter font.
   Use this to refer to a word of code.
-  Equivalent to \<tt\>word\</tt\>.
+  Equivalent to \ref htmltag_TT "\<tt\>"word\ref htmltag_endTT "\</tt\>".
 
   \par Example:
   Typing:
@@ -2713,7 +2801,7 @@ Commands for visual enhancements
      ... This function returns \c void and not \c int ...
 
   Equivalent to \ref cmdp "\\p"
-  To have multiple words in typewriter font use \<tt\>multiple words\</tt\>.
+  To have multiple words in typewriter font use \ref htmltag_TT "\<tt\>"multiple words\ref htmltag_endTT "\</tt\>".
 
 <hr>
 \section cmdcode \\code['{'<word>'}']
@@ -3152,7 +3240,7 @@ class Receiver
   ... this is a \e really good example ...
 
   Equivalent to \ref cmda "\\a" and \ref cmdem "\\em".
-  To emphasize multiple words use \<em\>multiple words\</em\>.
+  To emphasize multiple words use \ref htmltag_EM "\<em\>"multiple words\ref htmltag_endEM "\</em\>".
 
 <hr>
 \section cmdem \\em <word>
@@ -3170,7 +3258,7 @@ class Receiver
   ... this is a \em really good example ...
 
   Equivalent to \ref cmda "\\a" and \ref cmde "\\e".
-  To emphasize multiple words use \<em\>multiple words\</em\>.
+  To emphasize multiple words use \ref htmltag_EM "\<em\>"multiple words\ref htmltag_endEM "\</em\>".
 
 <hr>
 \section cmdendcode \\endcode
@@ -3425,7 +3513,7 @@ class Receiver
 
   \b Note:
     environment variables (like \$(HOME) ) are resolved inside a
-    \LaTeX-only block.
+    \LaTeX\-only block.
 
   \sa sections \ref cmdrtfonly "\\rtfonly",
                \ref cmdxmlonly "\\xmlonly",
@@ -3493,7 +3581,7 @@ class Receiver
 \section cmdn \\n
 
   \addindex \\n
-  Forces a new line. Equivalent to \<br\> and inspired by
+  Forces a new line. Equivalent to \ref htmltag_BR "\<br\>" and inspired by
   the \c printf function.
 
 <hr>
@@ -3512,7 +3600,7 @@ class Receiver
   ... the \p x and \p y coordinates are used to ...
 
   Equivalent to \ref cmdc "\\c"
-  To have multiple words in typewriter font use \<tt\>multiple words\</tt\>.
+  To have multiple words in typewriter font use \ref htmltag_TT "\<tt\>"multiple words\ref htmltag_endTT "\</tt\>".
 
 <hr>
 \section cmdrtfonly \\rtfonly

@@ -79,6 +79,10 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
     {
       return "nn";
     }
+    virtual QCString getLanguageString()
+    {
+      return "0x814 Norwegian";
+    }
 
     // --- Language translation methods -------------------
 
@@ -144,7 +148,7 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
      */
     virtual QCString trGeneratedAutomatically(const QCString &s)
     { QCString result="Generert automatisk av Doxygen";
-      if (!s.isEmpty()) result+=(QCString)" for "+s;
+      if (!s.isEmpty()) result+=" for "+s;
       result+=" fra kildekoden.";
       return result;
     }
@@ -189,10 +193,6 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
     /*! This is put above each page as a link to the list of documented files */
     virtual QCString trFileList()
     { return "Fil-liste"; }
-
-    /*! This is put above each page as a link to the list of all verbatim headers */
-    virtual QCString trHeaderFiles()
-    { return "Header-filer"; }
 
     /*! This is put above each page as a link to all members of compounds. */
     virtual QCString trCompoundMembers()
@@ -329,10 +329,6 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
       return result;
     }
 
-    /*! This is an introduction to the page with the list of all header files. */
-    virtual QCString trHeaderFilesDescription()
-    { return "Her er alle header-filene som utgjør API'et:"; }
-
     /*! This is an introduction to the page with the list of all examples */
     virtual QCString trExamplesDescription()
     { return "Her er en liste over alle eksemplene:"; }
@@ -344,12 +340,6 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
     /*! This is an introduction to the page with the list of class/file groups */
     virtual QCString trModulesDescription()
     { return "Her er en liste over alle moduler:"; }
-
-    /*! This sentences is used in the annotated class/file lists if no brief
-     * description is given.
-     */
-    virtual QCString trNoDescriptionAvailable()
-    { return "Ingen beskrivelse tilgjengelig"; }
 
     // index titles (the project name is prepended for these)
 
@@ -406,6 +396,10 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
       {
         return "Datastrukturdokumentasjon";
       }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+          return trDesignUnitDocumentation();
+      }
       else
       {
         return "Klassedokumentasjon";
@@ -423,12 +417,6 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
      */
     virtual QCString trExampleDocumentation()
     { return "Eksempeldokumentasjon"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all related pages.
-     */
-    virtual QCString trPageDocumentation()
-    { return "Sidedokumentasjon"; }
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
@@ -526,33 +514,21 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
      */
     virtual QCString trGeneratedAt(const QCString &date,const QCString &projName)
     {
-      QCString result=(QCString)"Generert "+date;
-      if (!projName.isEmpty()) result+=(QCString)" for "+projName;
-      result+=(QCString)" av";
+      QCString result="Generert "+date;
+      if (!projName.isEmpty()) result+=" for "+projName;
+      result+=" av";
       return result;
     }
 
     /*! this text is put before a class diagram */
     virtual QCString trClassDiagram(const QCString &clName)
     {
-      return (QCString)"Arvediagram for "+clName+":";
+      return "Arvediagram for "+clName+":";
     }
-
-    /*! this text is generated when the \\internal command is used. */
-    virtual QCString trForInternalUseOnly()
-    { return "Kun for intern bruk."; }
-
-    /*! this text is generated when the \\reimp command is used. */
-    virtual QCString trReimplementedForInternalReasons()
-    { return "Reimplementert av interne grunner; API er ikke påvirket."; }
 
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
     { return "Advarsel"; }
-
-    /*! this text is generated when the \\bug command is used. */
-    virtual QCString trBugsAndLimitations()
-    { return "Feil og begrensninger"; }
 
     /*! this text is generated when the \\version command is used. */
     virtual QCString trVersion()
@@ -624,7 +600,7 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
                                     ClassDef::CompoundType compType,
                                     bool isTemplate)
     {
-      QCString result=(QCString)clName;
+      QCString result=clName;
       switch(compType)
       {
         case ClassDef::Class:      result+=" Klasse"; break;
@@ -784,7 +760,7 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
         bool single)
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
-      QCString result=(QCString)"Dokumentasjonen for ";
+      QCString result="Dokumentasjonen for ";
       switch(compType)
       {
         case ClassDef::Class:      result+="denne klasse"; break;
@@ -824,10 +800,6 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
 // new since 0.49-991003
 //////////////////////////////////////////////////////////////////////////
 
-    virtual QCString trSources()
-    {
-      return "Kilder";
-    }
     virtual QCString trDefinedAtLineInSourceFile()
     {
       return "Definisjon på linje @0 i filen @1.";
@@ -853,12 +825,12 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
     /*! this text is put before a collaboration diagram */
     virtual QCString trCollaborationDiagram(const QCString &clName)
     {
-      return (QCString)"Samarbeidsdiagram for "+clName+":";
+      return "Samarbeidsdiagram for "+clName+":";
     }
     /*! this text is put before an include dependency graph */
     virtual QCString trInclDepGraph(const QCString &fName)
     {
-      return (QCString)"Avhengighetsgraf for "+fName+":";
+      return "Avhengighetsgraf for "+fName+":";
     }
 
     /*! header that is put before the list of constructor/destructors. */
@@ -1138,12 +1110,7 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
     /*! Used as the title of a Java package */
     virtual QCString trPackage(const QCString &name)
     {
-      return (QCString)"Package "+name;
-    }
-    /*! Title of the package index page */
-    virtual QCString trPackageList()
-    {
-      return "Pakke-liste";
+      return "Package "+name;
     }
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
@@ -1154,11 +1121,6 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
     virtual QCString trPackages()
     {
       return "Pakker";
-    }
-    /*! Used as a chapter title for Latex & RTF output */
-    virtual QCString trPackageDocumentation()
-    {
-      return "Pakke-dokumentasjon";
     }
     /*! Text shown before a multi-line define */
     virtual QCString trDefineValue()
@@ -1300,17 +1262,6 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trField(bool first_capital, bool singular)
-    {
-      QCString result((first_capital ? "Felt" : "felt"));
-      if (!singular)  result+="";
-      return result;
-    }
-
-    /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names
-     *  of the category.
-     */
     virtual QCString trGlobal(bool first_capital, bool singular)
     {
       QCString result((first_capital ? "Global" : "global"));
@@ -1416,14 +1367,18 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
     /*! Used as a heading for a list of Java class functions with package
      * scope.
      */
-    virtual QCString trPackageMembers()
+    virtual QCString trPackageFunctions()
     {
       return "Pakkefunksjoner";
+    }
+    virtual QCString trPackageMembers()
+    {
+      return "Pakkemedlemmer";
     }
     /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
-    virtual QCString trStaticPackageMembers()
+    virtual QCString trStaticPackageFunctions()
     {
       return "Statiske Pakkefunksjoner";
     }
@@ -1535,14 +1490,6 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
     virtual QCString trDirectories()
     { return "Kataloger"; }
 
-    /*! This returns a sentences that introduces the directory hierarchy.
-     *  and the fact that it is sorted alphabetically per level
-     */
-    virtual QCString trDirDescription()
-    { return "Denne katalogen er grovsortert alfabetisk "
-             "(ikke nødvendigvis korrekt).";
-    }
-
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.
      */
@@ -1573,6 +1520,22 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
               "funksjonen ovenfor i argument(ene) den aksepterer.";
     }
 
+    virtual QCString trDayOfWeek(int dayOfWeek, bool first_capital, bool full)
+    {
+      static const char *days_short[]   = { "må.", "ty.", "on.", "to.", "fr.", "la.", "sø." };
+      static const char *days_full[]    = { "måndag", "tysdag", "onsdag", "torsdag", "fredag", "laurdag", "søndag" };
+      QCString text  = full? days_full[dayOfWeek-1] : days_short[dayOfWeek-1];
+      if (first_capital) return text.mid(0,1).upper()+text.mid(1);
+      else return text;
+    }
+    virtual QCString trMonth(int month, bool first_capital, bool full)
+    {
+      static const char *months_short[] = { "jan", "feb", "mar", "apr", "mai", "jun", "jul", "aug", "sep", "okt", "nov", "des" };
+      static const char *months_full[]  = { "januar", "februar", "mars", "april", "mai", "juni", "juli", "august", "september", "oktober", "november", "desember" };
+      QCString text  = full? months_full[month-1] : months_short[month-1];
+      if (first_capital) return text.mid(0,1).upper()+text.mid(1);
+      else return text;
+    }
 };
 
 #endif

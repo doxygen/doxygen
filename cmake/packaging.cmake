@@ -18,7 +18,8 @@ set(CPACK_PACKAGE_VENDOR   "Dimitri van Heesch")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Generate documentation from C, C++, Java, Python and other languages")
 set(CPACK_PACKAGE_DESCRIPTION "Doxygen is the de facto standard tool for generating documentation from annotated C++ sources.
  But many other popular programming languages are supported:
- C, Objective-C, C#, PHP, Java, Python, Fortran, VHDL, D (some extent) and IDL (Corba, Microsoft, and UNO/OpenOffice flavors).
+ C, Objective-C, C#, PHP, Java, Python, Fortran, D (some extent), and IDL (Corba, Microsoft, and UNO/OpenOffice flavors).
+ Doxygen also supports the hardware description language VHDL.
  .
  Three usages:
  .

@@ -87,7 +87,7 @@
 //    something else.  It is difficult to find the general translation
 //    for all kinds in the Czech language.
 
-class TranslatorCzech : public Translator
+class TranslatorCzech : public TranslatorAdapter_1_9_4
 {
   public:
     // --- Language control methods -------------------
@@ -110,6 +110,10 @@ class TranslatorCzech : public Translator
     virtual QCString trISOLang()
     {
       return "cs";
+    }
+    virtual QCString getLanguageString()
+    {
+      return "0x405 Czech";
     }
 
     // --- Language translation methods -------------------
@@ -462,12 +466,6 @@ class TranslatorCzech : public Translator
     virtual QCString trExampleDocumentation()
     { return "Dokumentace příkladů"; }
 
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all related pages.
-     */
-    virtual QCString trPageDocumentation()
-    { return "Dokumentace souvisejících stránek"; }
-
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
     { return "Referenční příručka"; }
@@ -558,9 +556,9 @@ class TranslatorCzech : public Translator
      */
     virtual QCString trGeneratedAt(const QCString &date,const QCString &projName)
     {
-      QCString result=(QCString)"Vygenerováno dne: "+date;
+      QCString result="Vygenerováno dne: "+date;
       if (!projName.isEmpty()) result += QCString(", pro projekt: ") + projName;
-      result+=(QCString)", programem";
+      result+=", programem";
       return result;
     }
 
@@ -569,10 +567,6 @@ class TranslatorCzech : public Translator
     {
       return QCString("Diagram dědičnosti pro třídu ") + clName+":";
     }
-
-    /*! this text is generated when the \\internal command is used. */
-    virtual QCString trForInternalUseOnly()
-    { return "Pouze pro vnitřní použití."; }
 
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
@@ -819,7 +813,7 @@ class TranslatorCzech : public Translator
     virtual QCString trGeneratedFromFiles(ClassDef::CompoundType compType,
         bool single)
     { // single is true implies a single file
-      QCString result=(QCString)"Dokumentace pro ";
+      QCString result="Dokumentace pro ";
       switch(compType)
       {
         case ClassDef::Class:      result+="tuto třídu"; break;
@@ -885,12 +879,12 @@ class TranslatorCzech : public Translator
     /*! this text is put before a collaboration diagram */
     virtual QCString trCollaborationDiagram(const QCString &clName)
     {
-      return (QCString)"Diagram pro "+clName+":";
+      return "Diagram pro "+clName+":";
     }
     /*! this text is put before an include dependency graph */
     virtual QCString trInclDepGraph(const QCString &fName)
     {
-      return (QCString)"Graf závislostí na vkládaných souborech pro "+fName+":";
+      return "Graf závislostí na vkládaných souborech pro "+fName+":";
     }
     /*! header that is put before the list of constructor/destructors. */
     virtual QCString trConstructorDocumentation()
@@ -1185,11 +1179,6 @@ class TranslatorCzech : public Translator
     {
       return QCString("Balík ") + name;
     }
-    /*! Title of the package index page */
-    virtual QCString trPackageList()
-    {
-      return "Seznam balíků";
-    }
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
     {
@@ -1451,14 +1440,18 @@ class TranslatorCzech : public Translator
     /*! Used as a heading for a list of Java class functions with package
      * scope.
      */
-    virtual QCString trPackageMembers()
+    virtual QCString trPackageFunctions()
     {
       return "Funkce v balíku";
+    }
+    virtual QCString trPackageMembers()
+    {
+      return "Členy v balíku";
     }
     /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
-    virtual QCString trStaticPackageMembers()
+    virtual QCString trStaticPackageFunctions()
     {
       return "Statické funkce v balíku";
     }
@@ -1570,15 +1563,6 @@ class TranslatorCzech : public Translator
      */
     virtual QCString trDirectories()
     { return "Adresáře"; }
-
-    /*! This returns a sentences that introduces the directory hierarchy.
-     *  and the fact that it is sorted alphabetically per level
-     */
-    virtual QCString trDirDescription()
-    {
-        return "Následující hierarchie adresářů je zhruba, "
-                      "ale ne úplně, řazena podle abecedy:";
-    }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.
@@ -1790,7 +1774,7 @@ class TranslatorCzech : public Translator
         bool single)
     {
       // single is true implies a single file
-      QCString result=(QCString)"Dokumentace ";
+      QCString result="Dokumentace ";
       switch(compType)
       {
         case ClassDef::Class:      result+="k tomuto modulu"; break;
@@ -1880,7 +1864,7 @@ class TranslatorCzech : public Translator
      */
     virtual QCString trFileIn(const QCString &name)
     {
-      return (QCString)"Soubor v "+name;
+      return "Soubor v "+name;
     }
 
     /*! when clicking a directory dependency label, a page with a
@@ -1889,7 +1873,7 @@ class TranslatorCzech : public Translator
      */
     virtual QCString trIncludesFileIn(const QCString &name)
     {
-      return (QCString)"Vkládá (include) soubor z "+name;
+      return "Vkládá (include) soubor z "+name;
     }
 
     /** Compiles a date string.
@@ -1917,6 +1901,22 @@ class TranslatorCzech : public Translator
         sdate+=stime;
       }
       return sdate;
+    }
+    virtual QCString trDayOfWeek(int dayOfWeek, bool first_capital, bool full)
+    {
+      static const char *days_short[]   = { "po", "út", "st", "čt", "pá", "so", "ne" };
+      static const char *days_full[]    = { "pondělí", "úterý", "středa", "čtvrtek", "pátek", "sobota", "neděle" };
+      QCString text  = full? days_full[dayOfWeek-1] : days_short[dayOfWeek-1];
+      if (first_capital) return text.mid(0,1).upper()+text.mid(1);
+      else return text;
+    }
+    virtual QCString trMonth(int month, bool first_capital, bool full)
+    {
+      static const char *months_short[] = { "led", "úno", "bře", "dub", "kvě", "čvn", "čvc", "srp", "zář", "říj", "lis", "pro" };
+      static const char *months_full[]  = { "leden", "únor", "březen", "duben", "květen", "červen", "červenec", "srpen", "září", "říjen", "listopad", "prosinec" };
+      QCString text  = full? months_full[month-1] : months_short[month-1];
+      if (first_capital) return text.mid(0,1).upper()+text.mid(1);
+      else return text;
     }
 
 //////////////////////////////////////////////////////////////////////////

@@ -183,7 +183,7 @@ static QCString encodeDirName(const QCString &anchor)
   // convert to md5 hash
   uchar md5_sig[16];
   char sigStr[33];
-  MD5Buffer((const unsigned char *)anchor.data(),anchor.length(),md5_sig);
+  MD5Buffer(anchor.data(),anchor.length(),md5_sig);
   MD5SigToString(md5_sig,sigStr);
   return sigStr;
 
@@ -268,18 +268,18 @@ void DirDefImpl::writeBriefDescription(OutputList &ol)
 {
   if (hasBriefDescription())
   {
-    std::unique_ptr<IDocParser> parser { createDocParser() };
-    std::unique_ptr<DocRoot> rootNode  { validatingParseDoc(
+    auto parser { createDocParser() };
+    auto ast    { validatingParseDoc(
          *parser.get(), briefFile(),briefLine(),this,0,briefDescription(),TRUE,FALSE,
          QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT)) };
-    if (rootNode && !rootNode->isEmpty())
+    if (!ast->isEmpty())
     {
       ol.startParagraph();
       ol.pushGeneratorState();
       ol.disableAllBut(OutputGenerator::Man);
       ol.writeString(" - ");
       ol.popGeneratorState();
-      ol.writeDoc(rootNode.get(),this,0);
+      ol.writeDoc(ast.get(),this,0);
       ol.pushGeneratorState();
       ol.disable(OutputGenerator::RTF);
       ol.writeString(" \n");
@@ -342,7 +342,7 @@ void DirDefImpl::writeSubDirList(OutputList &ol)
     ol.startMemberList();
     for(const auto dd : m_subdirs)
     {
-      if (dd->hasDocumentation() || dd->getFiles().empty())
+      if (dd->hasDocumentation() || !dd->getFiles().empty())
       {
         ol.startMemberDeclaration();
         ol.startMemberItem(dd->anchor(),0);
@@ -376,7 +376,12 @@ void DirDefImpl::writeFileList(OutputList &ol)
   int numFiles = 0;
   for (const auto &fd : m_fileList)
   {
-    if (fd->hasDocumentation())
+    bool genSourceFile;
+    if (fileVisibleInIndex(fd,genSourceFile))
+    {
+      numFiles++;
+    }
+    else if (genSourceFile)
     {
       numFiles++;
     }
@@ -391,7 +396,9 @@ void DirDefImpl::writeFileList(OutputList &ol)
     ol.startMemberList();
     for (const auto &fd : m_fileList)
     {
-      if (fd->hasDocumentation())
+      bool doc,src;
+      doc = fileVisibleInIndex(fd,src);
+      if (doc || src)
       {
         ol.startMemberDeclaration();
         ol.startMemberItem(fd->anchor(),0);
@@ -457,7 +464,7 @@ QCString DirDefImpl::shortTitle() const
 
 bool DirDefImpl::hasDetailedDescription() const
 {
-  static bool repeatBrief = Config_getBool(REPEAT_BRIEF);
+  bool repeatBrief = Config_getBool(REPEAT_BRIEF);
   return (!briefDescription().isEmpty() && repeatBrief) || !documentation().isEmpty();
 }
 
@@ -500,7 +507,7 @@ void DirDefImpl::writeTagFile(TextStream &tagFile)
 
 void DirDefImpl::writeDocumentation(OutputList &ol)
 {
-  static bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
+  bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
   ol.pushGeneratorState();
 
   QCString title=theTranslator->trDirReference(m_dispName);
@@ -551,8 +558,11 @@ void DirDefImpl::writeDocumentation(OutputList &ol)
         break;
       case LayoutDocEntry::DetailedDesc:
         {
-          const LayoutDocEntrySection *ls = (const LayoutDocEntrySection*)lde.get();
-          writeDetailedDescription(ol,ls->title(lang));
+          const LayoutDocEntrySection *ls = dynamic_cast<const LayoutDocEntrySection*>(lde.get());
+          if (ls)
+          {
+            writeDetailedDescription(ol,ls->title(lang));
+          }
         }
         break;
       case LayoutDocEntry::ClassIncludes:
@@ -668,7 +678,7 @@ void DirDefImpl::addUsesDependency(const DirDef *dir,const FileDef *srcFd,
     //printf("  => new file\n");
     auto newUsedDir = std::make_unique<UsedDir>(dir);
     newUsedDir->addFileDep(srcFd,dstFd, srcDirect, dstDirect);
-    usedDir = m_usedDirs.add(dir->getOutputFileBase(),std::move(newUsedDir));
+    m_usedDirs.add(dir->getOutputFileBase(),std::move(newUsedDir));
     added=TRUE;
   }
   if (added)
@@ -742,7 +752,7 @@ bool DirDefImpl::isParentOf(const DirDef *dir) const
 
 bool DirDefImpl::depGraphIsTrivial() const
 {
-  return m_usedDirs.empty();
+  return m_usedDirs.empty() && m_parent==nullptr;
 }
 
 
@@ -871,7 +881,7 @@ static void writePartialFilePath(OutputList &ol,const DirDef *root,const FileDef
 
 void DirRelation::writeDocumentation(OutputList &ol)
 {
-  static bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
+  bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Html);
 
@@ -935,7 +945,7 @@ static void computeCommonDirPrefix()
   {
     // start will full path of first dir
     path=(*it)->name();
-    int i=path.findRev('/',(int)path.length()-2);
+    int i=path.findRev('/',path.length()-2);
     path=path.left(i+1);
     bool done=FALSE;
     if (i==-1)
@@ -955,7 +965,7 @@ static void computeCommonDirPrefix()
           {
             if (dirName.left(l)!=path) // dirName does not start with path
             {
-              i=path.findRev('/',(int)l-2);
+              i=path.findRev('/',l-2);
               if (i==-1) // no unique prefix -> stop
               {
                 path="";
@@ -972,7 +982,7 @@ static void computeCommonDirPrefix()
           {
             path=dir->name();
             l=path.length();
-            i=path.findRev('/',(int)l-2);
+            i=path.findRev('/',l-2);
             if (i==-1) // no unique prefix -> stop
             {
               path="";
@@ -1029,7 +1039,7 @@ void buildDirectories()
   for (const auto &dir : *Doxygen::dirLinkedMap)
   {
     QCString name = dir->name();
-    int i=name.findRev('/',(int)name.length()-2);
+    int i=name.findRev('/',name.length()-2);
     if (i>0)
     {
       DirDef *parent = Doxygen::dirLinkedMap->find(name.left(i+1));

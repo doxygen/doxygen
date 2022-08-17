@@ -18,6 +18,7 @@
 #include "doxygen.h"
 #include "config.h"
 #include "image.h"
+#include "dotnode.h"
 
 #include <algorithm>
 #include <iterator>
@@ -62,20 +63,20 @@ typedef std::vector< std::pair< std::unique_ptr<DirRelation>, bool> > DirRelatio
 /** Returns a DOT color name according to the directory depth. */
 static QCString getDirectoryBackgroundColor(int depthIndex)
 {
-  static int hue   = Config_getInt(HTML_COLORSTYLE_HUE);
-  static int sat   = Config_getInt(HTML_COLORSTYLE_SAT);
-  static int gamma = Config_getInt(HTML_COLORSTYLE_GAMMA);
+  int hue   = Config_getInt(HTML_COLORSTYLE_HUE);
+  int sat   = Config_getInt(HTML_COLORSTYLE_SAT);
+  int gamma = Config_getInt(HTML_COLORSTYLE_GAMMA);
   assert(depthIndex>=0 && depthIndex<=Config_getInt(DIR_GRAPH_MAX_DEPTH));
-  float fraction = (float)depthIndex/(float)Config_getInt(DIR_GRAPH_MAX_DEPTH);
+  float fraction = static_cast<float>(depthIndex)/static_cast<float>(Config_getInt(DIR_GRAPH_MAX_DEPTH));
   const char hex[] = "0123456789abcdef";
   int range = 0x40; // range from darkest color to lightest color
-  int luma   = 0xef-(int)(fraction*range); // interpolation
+  int luma   = 0xef-static_cast<int>(fraction*range); // interpolation
   double r,g,b;
   ColoredImage::hsl2rgb(hue/360.0,sat/255.0,
                         pow(luma/255.0,gamma/100.0),&r,&g,&b);
-  int red   = (int)(r*255.0);
-  int green = (int)(g*255.0);
-  int blue  = (int)(b*255.0);
+  int red   = static_cast<int>(r*255.0);
+  int green = static_cast<int>(g*255.0);
+  int blue  = static_cast<int>(b*255.0);
   assert(red>=0   && red<=255);
   assert(green>=0 && green<=255);
   assert(blue>=0  && blue<=255);
@@ -117,24 +118,28 @@ static const char* getDirectoryBorderColor(const DotDirProperty &property)
 /** Returns a DOT node style according to the directory properties. */
 static std::string getDirectoryBorderStyle(const DotDirProperty &property)
 {
-  std::string style;
-  if (!property.isPeripheral)
-  {
-    style += "filled,";
-  }
+  std::string style = "filled";
   if (property.isOriginal)
   {
-    style += "bold,";
+    style += ",bold";
   }
   if (property.isIncomplete)
   {
-    style += "dashed,";
+    style += ",dashed";
   }
   else if (property.isTruncated && property.isOrphaned)
   {
-    style += "dashed,";
+    style += ",dashed";
   }
   return style;
+}
+
+static TextStream &common_attributes(TextStream &t, const DirDef *const dir, const DotDirProperty &prop)
+{
+  return t <<
+    "style=\""   << getDirectoryBorderStyle(prop) << "\", "
+    "URL=\""     << addHtmlExtensionIfMissing(dir->getOutputFileBase()) << "\","
+    "tooltip=\"" << escapeTooltip(dir->briefDescriptionAsTooltip()) << "\"";
 }
 
 /**
@@ -149,13 +154,11 @@ static void drawDirectory(TextStream &t, const DirDef *const directory, const Do
     DirDefMap &directoriesInGraph,int startLevel)
 {
   t << "  " << directory->getOutputFileBase() << " ["
-      "shape=box, "
-      "label=\""     << directory->shortName()                                       << "\", "
-      "style=\""     << getDirectoryBorderStyle(property)                            << "\", "
+      "label=\""     << DotNode::convertLabel(directory->shortName())                << "\", "
       "fillcolor=\"" << getDirectoryBackgroundColor(directory->level()-startLevel)   << "\", "
-      "color=\""     << getDirectoryBorderColor(property)                            << "\", "
-      "URL=\""       << addHtmlExtensionIfMissing(directory->getOutputFileBase())    << "\""
-      "];\n";
+      "color=\""     << getDirectoryBorderColor(property)                            << "\", ";
+  common_attributes(t, directory, property)
+      << "];\n";
   directoriesInGraph.insert(std::make_pair(directory->getOutputFileBase().str(), directory));
 }
 
@@ -178,21 +181,19 @@ static void drawClusterOpening(TextStream &outputStream, const DirDef *const dir
       "    graph [ "
       "bgcolor=\""  << getDirectoryBackgroundColor(directory->level()-startLevel) << "\", "
       "pencolor=\"" << getDirectoryBorderColor(directoryProperty) << "\", "
-      "style=\""    << getDirectoryBorderStyle(directoryProperty) << "\", "
       "label=\"";
   if (isAncestor)
   {
-    outputStream << directory->shortName();
+    outputStream << DotNode::convertLabel(directory->shortName());
   }
   outputStream << "\", "
-      "fontname=\"" << Config_getString(DOT_FONTNAME) << "\", "
-      "fontsize=\"" << Config_getInt(DOT_FONTSIZE) << "\", "
-      "URL=\"" << addHtmlExtensionIfMissing(directory->getOutputFileBase()) << "\""
-      "]\n";
+       << Config_getString(DOT_COMMON_ATTR) << " ";
+  common_attributes(outputStream, directory, directoryProperty)
+      << "]\n";
   if (!isAncestor)
   {
     outputStream << "    " << directory->getOutputFileBase() << " [shape=plaintext, "
-        "label=\"" << directory->shortName() << "\""
+        "label=\"" << DotNode::convertLabel(directory->shortName()) << "\""
         "];\n";
     directoriesInGraph.insert(std::make_pair(directory->getOutputFileBase().str(), directory));
   }
@@ -383,12 +384,12 @@ void writeDotDirDepGraph(TextStream &t,const DirDef *dd,bool linkRelations)
         size_t nrefs = udir->filePairs().size();
         t << "  " << dir->getOutputFileBase() << "->"
           << usedDir->getOutputFileBase();
-        t << " [headlabel=\"" << (uint)nrefs << "\", labeldistance=1.5";
+        t << " [headlabel=\"" << nrefs << "\", labeldistance=1.5";
         if (linkRelations)
         {
           t << " headhref=\"" << addHtmlExtensionIfMissing(relationName) << "\"";
         }
-        t << "];\n";
+        t << " color=\"steelblue1\" fontcolor=\"steelblue1\"];\n";
       }
     }
   }

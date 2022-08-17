@@ -115,6 +115,11 @@ static bool nameIsActuallyPartOfType(QCString &name);
 #undef	YY_INPUT
 #define	YY_INPUT(buf,result,max_size) result=yyread(yyscanner,buf,max_size);
 
+// otherwise the filename would be the name of the converted file (*.cpp instead of *.l)
+static inline const char *getLexerFILE() {return __FILE__;}
+#define LEX_NO_INPUT_FILENAME
+#include "doxygen_lex.h"
+
 %}
 
 B       [ \t]
@@ -432,8 +437,8 @@ CPPC  "/\/"
 						// and need to correct it to avoid seeing a nameless parameter
 						// "struct A" as a parameter with type "struct" and name "A".
 						int sv=0;
-						if      (a.type.left(6)=="const ")    sv=6;
-						else if (a.type.left(9)=="volatile ") sv=9;
+						if      (a.type.startsWith("const "))    sv=6;
+						else if (a.type.startsWith("volatile ")) sv=9;
 
 						if (a.type.mid(sv)=="struct"    ||
 						    a.type.mid(sv)=="union"     ||

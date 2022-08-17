@@ -20,7 +20,6 @@
 
 #include <set>
 
-#include "index.h"
 #include "definition.h"
 #include "memberlist.h"
 #include "containers.h"
@@ -73,8 +72,6 @@ bool compareFileDefs(const FileDef *fd1, const FileDef *fd2);
 class FileDef : public DefinitionMutable, public Definition
 {
   public:
-   ~FileDef() {}
-
     // ----------------------------------------------------------------------
 
     virtual DefType definitionType() const = 0;
@@ -124,8 +121,8 @@ class FileDef : public DefinitionMutable, public Definition
 
     virtual PackageDef *packageDef() const = 0;
     virtual DirDef *getDirDef() const = 0;
-    virtual LinkedRefMap<const NamespaceDef> getUsedNamespaces() const = 0;
-    virtual LinkedRefMap<const ClassDef> getUsedClasses() const = 0;
+    virtual const LinkedRefMap<const NamespaceDef> &getUsedNamespaces() const = 0;
+    virtual const LinkedRefMap<const ClassDef> &getUsedClasses() const = 0;
     virtual const IncludeInfoList &includeFileList() const = 0;
     virtual const IncludeInfoList &includedByFileList() const = 0;
     virtual void getAllIncludeFilesRecursively(StringVector &incFiles) const = 0;

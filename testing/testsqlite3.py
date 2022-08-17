@@ -1,4 +1,4 @@
-#! /usr/bin/python
+#!/usr/bin/env python
 from xml.etree import cElementTree as ET
 import os
 import sqlite3

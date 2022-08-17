@@ -244,7 +244,7 @@ QCString DotGroupCollaboration::writeGraph( TextStream &t,
   const QCString &path, const QCString &fileName, const QCString &relPath,
   bool generateImageMap,int graphId)
 {
-  m_doNotAddImageToIndex = TRUE;
+  m_doNotAddImageToIndex = textFormat!=EOF_Html;
 
   return DotGraph::writeGraph(t, graphFormat, textFormat, path, fileName, relPath, generateImageMap, graphId);
 }
@@ -298,12 +298,12 @@ void DotGroupCollaboration::Edge::write( TextStream &t ) const
   }
   switch( eType )
   {
-  case thierarchy:
-    arrowStyle = "dir=\"back\", style=\"solid\"";
-    break;
-  default:
-    t << ", color=\"" << linkTypeColor[(int)eType] << "\"";
-    break;
+    case thierarchy:
+      arrowStyle = "dir=\"back\", style=\"solid\"";
+      break;
+    default:
+      t << ", color=\"" << linkTypeColor[static_cast<int>(eType)] << "\"";
+      break;
   }
   t << ", " << arrowStyle;
   t << "];\n";
@@ -316,25 +316,6 @@ bool DotGroupCollaboration::isTrivial() const
 
 void DotGroupCollaboration::writeGraphHeader(TextStream &t,const QCString &title) const
 {
-  int fontSize      = Config_getInt(DOT_FONTSIZE);
-  QCString fontName = Config_getString(DOT_FONTNAME);
-  t << "digraph ";
-  if (title.isEmpty())
-  {
-    t << "\"Dot Graph\"";
-  }
-  else
-  {
-    t << "\"" << convertToXML(title) << "\"";
-  }
-  t << "\n";
-  t << "{\n";
-  if (Config_getBool(DOT_TRANSPARENT))
-  {
-    t << "  bgcolor=\"transparent\";\n";
-  }
-  t << "  edge [fontname=\"" << fontName << "\",fontsize=\"" << fontSize << "\","
-    "labelfontname=\"" << fontName << "\",labelfontsize=\"" << fontSize << "\"];\n";
-  t << "  node [fontname=\"" << fontName << "\",fontsize=\"" << fontSize << "\",shape=box];\n";
+  DotGraph::writeGraphHeader(t, title);
   t << "  rankdir=LR;\n";
 }

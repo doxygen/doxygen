@@ -24,12 +24,13 @@
 #ifndef ECLIPSEHELP_H
 #define ECLIPSEHELP_H
 
-#include <fstream>
+#include <memory>
 
-#include "index.h"
+#include "qcstring.h"
 
 /* -- forward declarations */
 class Definition;
+class MemberDef;
 
 /** Generator for Eclipse help files.
  *
@@ -37,11 +38,12 @@ class Definition;
  * These files can be used to generate a help plugin readable
  * by the Eclipse IDE.
  */
-class EclipseHelp : public IndexIntf
+class EclipseHelp
 {
   public:
     EclipseHelp();
     virtual ~EclipseHelp();
+    EclipseHelp(EclipseHelp &&);
 
     /* -- index interface */
     virtual void initialize();
@@ -58,21 +60,8 @@ class EclipseHelp : public IndexIntf
     virtual void addStyleSheetFile(const QCString &name);
 
   private:
-    int m_depth;
-    bool m_endtag;
-    int m_openTags;
-
-    std::ofstream m_tocstream;
-    QCString m_pathprefix;
-
-    /* -- avoid copying */
-    EclipseHelp(const EclipseHelp &);
-    EclipseHelp & operator = (const EclipseHelp &);
-
-    /* -- formatting helpers */
-    void indent();
-    void closedTag();
-    void openedTag();
+    struct Private;
+    std::unique_ptr<Private> p;
 };
 
 #endif /* ECLIPSEHELP_H */

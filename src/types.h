@@ -104,6 +104,8 @@ enum MemberListType
   MemberListType_declarationLists   = 0x2000,
   MemberListType_documentationLists = 0x4000,
 
+  MemberListType_undefined               = -1,
+
   MemberListType_pubMethods              = 0,
   MemberListType_proMethods              = 1,
   MemberListType_pacMethods              = 2,
@@ -297,6 +299,7 @@ enum FortranFormat
   FortranFormat_Free,
   FortranFormat_Fixed
 };
+
 
 class LocalToc
 {

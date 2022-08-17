@@ -25,6 +25,7 @@
 #include <algorithm>
 #include <functional>
 #include <fstream>
+#include <ctime>
 
 #include <ctype.h>
 #include "types.h"
@@ -60,7 +61,7 @@ class Dir;
 class TextGeneratorIntf
 {
   public:
-    virtual ~TextGeneratorIntf() {}
+    virtual ~TextGeneratorIntf() = default;
     virtual void writeString(const QCString &,bool) const = 0;
     virtual void writeBreak(int indent) const = 0;
     virtual void writeLink(const QCString &extRef,const QCString &file,
@@ -72,15 +73,14 @@ class TextGeneratorIntf
 class TextGeneratorOLImpl : public TextGeneratorIntf
 {
   public:
-    virtual ~TextGeneratorOLImpl() {}
-    TextGeneratorOLImpl(OutputDocInterface &od);
+    TextGeneratorOLImpl(BaseOutputDocInterface &od);
     void writeString(const QCString &s,bool keepSpaces) const;
     void writeBreak(int indent) const;
     void writeLink(const QCString &extRef,const QCString &file,
                    const QCString &anchor,const QCString &text
                   ) const;
   private:
-    OutputDocInterface &m_od;
+    BaseOutputDocInterface &m_od;
 };
 
 //--------------------------------------------------------------------
@@ -137,19 +137,19 @@ bool resolveLink(/* in */  const QCString &scName,
                  /* out */ QCString &resAnchor
                 );
 
-bool generateLink(OutputDocInterface &od,const QCString &,
+bool generateLink(OutputList &ol,const QCString &,
                          const QCString &,bool inSeeBlock,const QCString &);
 
-void generateFileRef(OutputDocInterface &od,const QCString &,
+void generateFileRef(OutputList &ol,const QCString &,
                              const QCString &linkTxt=QCString());
 
-void writePageRef(OutputDocInterface &od,const QCString &cn,const QCString &mn);
+void writePageRef(OutputList &ol,const QCString &cn,const QCString &mn);
 
-QCString getCanonicalTemplateSpec(const Definition *d,const FileDef *fs,const QCString& spec);
+//QCString getCanonicalTemplateSpec(const Definition *d,const FileDef *fs,const QCString& spec);
 
 bool matchArguments2(const Definition *srcScope,const FileDef *srcFileScope,const ArgumentList *srcAl,
                      const Definition *dstScope,const FileDef *dstFileScope,const ArgumentList *dstAl,
-                     bool checkCV
+                     bool checkCV,SrcLangExt lang
                     );
 
 void mergeArguments(ArgumentList &,ArgumentList &,bool forceNameOverwrite=FALSE);
@@ -226,7 +226,7 @@ QCString convertToLaTeX(const QCString &s,bool insideTabbing=FALSE,bool keepSpac
 
 QCString convertToXML(const QCString &s, bool keepEntities=FALSE);
 
-QCString convertToDocBook(const QCString &s);
+QCString convertToDocBook(const QCString &s, const bool retainNewline = false);
 
 QCString convertToJSString(const QCString &s);
 
@@ -293,7 +293,8 @@ void filterLatexString(TextStream &t,const QCString &str,
                        bool insidePre,
                        bool insideItem,
                        bool insideTable,
-                       bool keepSpaces);
+                       bool keepSpaces,
+                       const bool retainNewline = false);
 
 QCString latexEscapeLabelName(const QCString &s);
 QCString latexEscapeIndexChars(const QCString &s);
@@ -314,7 +315,20 @@ QCString stripExtension(const QCString &fName);
 
 void replaceNamespaceAliases(QCString &scope,int i);
 
-int computeQualifiedIndex(const QCString &name);
+//! Return the index of the last :: in the string \a name that is still before the first <
+inline int computeQualifiedIndex(const QCString &name)
+{
+  int l = static_cast<int>(name.length());
+  int lastSepPos = -1;
+  const char *p = name.data();
+  for (int i=0;i<l-1;i++)
+  {
+    char c=*p++;
+    if (c==':' && *p==':') lastSepPos=i;
+    if (c=='<') break;
+  }
+  return lastSepPos;
+}
 
 void addDirPrefix(QCString &fileName);
 
@@ -378,8 +392,8 @@ struct ColoredImgDataItem
   const char *name;
   unsigned short width;
   unsigned short height;
-  unsigned char *content;
-  unsigned char *alpha;
+  const unsigned char *content;
+  const unsigned char *alpha;
 };
 
 void writeColoredImgData(const QCString &dir,ColoredImgDataItem data[]);
@@ -429,5 +443,12 @@ FortranFormat convertFileNameFortranParserCode(QCString fn);
 
 QCString integerToAlpha(int n, bool upper=true);
 QCString integerToRoman(int n, bool upper=true);
+
+std::tm getCurrentDateTime();
+bool valid_tm( const std::tm& tm, int *weekday);
+int getYear(std::tm dat);
+int getMonth(std::tm dat);
+int getDay(std::tm dat);
+int getDayOfWeek(std::tm dat);
 
 #endif

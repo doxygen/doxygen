@@ -45,7 +45,6 @@ class MemberVector;
 class MemberDef : public Definition
 {
   public:
-    virtual ~MemberDef() {}
     virtual DefType definitionType() const = 0;
     // move this member into a different scope
     virtual MemberDef *deepCopy() const =0;
@@ -172,6 +171,7 @@ class MemberDef : public Definition
     virtual bool isTemplateSpecialization() const = 0;
     virtual bool isObjCMethod() const = 0;
     virtual bool isObjCProperty() const = 0;
+    virtual bool isCSharpProperty() const = 0;
     virtual bool isConstructor() const = 0;
     virtual bool isDestructor() const = 0;
     virtual bool hasOneLineInitializer() const = 0;
@@ -235,7 +235,6 @@ class MemberDef : public Definition
     // callgraph related members
     virtual bool hasCallGraph() const = 0;
     virtual bool hasCallerGraph() const = 0;
-    virtual bool visibleMemberGroup(bool hideNoHeader) const = 0;
     // referenced related members
     virtual bool hasReferencesRelation() const = 0;
     virtual bool hasReferencedByRelation() const = 0;
@@ -418,7 +417,7 @@ class MemberDefMutable : public DefinitionMutable, public MemberDef
                  bool inGroup,bool showEnumValues=FALSE,bool
                  showInline=FALSE) const = 0;
     virtual void writeMemberDocSimple(OutputList &ol,const Definition *container) const = 0;
-    virtual void writeTagFile(TextStream &) const = 0;
+    virtual void writeTagFile(TextStream &,bool useQualifiedName) const = 0;
     virtual void writeLink(OutputList &ol,
                  const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
                  bool onlyText=FALSE) const = 0;

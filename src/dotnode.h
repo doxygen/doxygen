@@ -81,6 +81,8 @@ class DotNode
     void writeXML(TextStream &t,bool isClassGraph) const;
     void writeDocbook(TextStream &t,bool isClassGraph) const;
     void writeDEF(TextStream &t) const;
+    void writeLabel(TextStream &t, GraphType gt) const;
+    void writeUrl(TextStream &t) const;
     void writeBox(TextStream &t,GraphType gt,GraphOutputFormat f,
                   bool hasNonReachableChildren) const;
     void writeArrow(TextStream &t,GraphType gt,GraphOutputFormat f,const DotNode *cn,
@@ -99,13 +101,13 @@ class DotNode
     void clearWriteFlag();
     void renumberNodes(int &number);
     void markRenumbered()          { m_renumbered = true; }
-    void markHasDocumentation()    { m_hasDoc = true; }
+    DotNode& markHasDocumentation() { m_hasDoc = true; return *this;}
     void setSubgraphId(int id)     { m_subgraphId = id; }
 
     void colorConnectedNodes(int curColor);
     void setDistance(int distance);
     void markAsVisible(bool b=TRUE) { m_visible=b; }
-    void markAsTruncated(bool b=TRUE) { m_truncated=b ? Truncated : Untruncated; }
+    DotNode& markAsTruncated(bool b=TRUE) { m_truncated=b ? Truncated : Untruncated; return *this;}
     const DotNodeRefVector &children() const { return m_children; }
     const DotNodeRefVector &parents() const { return m_parents; }
     const EdgeInfoVector &edgeInfo() const { return m_edgeInfo; }
@@ -137,5 +139,7 @@ class DotNodeMap : public std::map<std::string,DotNode*>
 class DotNodeDeque : public std::deque<DotNode*>
 {
 };
+
+QCString escapeTooltip(const QCString &tooltip);
 
 #endif

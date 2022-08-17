@@ -46,7 +46,9 @@ static std::map< std::string, Debug::DebugMask > s_labels =
   { "plantuml",          Debug::Plantuml          },
   { "fortranfixed2free", Debug::FortranFixed2Free },
   { "cite",              Debug::Cite              },
-  { "rtf",               Debug::Rtf               }
+  { "rtf",               Debug::Rtf               },
+  { "qhp",               Debug::Qhp               },
+  { "tag",               Debug::Tag               },
 };
 
 //------------------------------------------------------------------------
@@ -82,13 +84,13 @@ static int labelToEnumValue(const QCString &l)
 int Debug::setFlag(const QCString &lab)
 {
   int retVal = labelToEnumValue(lab);
-  curMask = (DebugMask)(curMask | retVal);
+  curMask = static_cast<DebugMask>(curMask | retVal);
   return retVal;
 }
 
 void Debug::clearFlag(const QCString &lab)
 {
-  curMask = (DebugMask)(curMask & ~labelToEnumValue(lab));
+  curMask = static_cast<DebugMask>(curMask & ~labelToEnumValue(lab));
 }
 
 void Debug::setPriority(int p)

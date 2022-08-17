@@ -68,8 +68,8 @@ class HtmlHelpRecoder
 
     QCString recode(const QCString &s)
     {
-      int iSize        = s.length();
-      int oSize        = iSize*4+1;
+      size_t iSize     = s.length();
+      size_t oSize     = iSize*4+1;
       QCString output(oSize);
       size_t iLeft     = iSize;
       size_t oLeft     = oSize;
@@ -77,7 +77,7 @@ class HtmlHelpRecoder
       char *oPtr       = output.rawData();
       if (!portable_iconv(m_fromUtf8,&iPtr,&iLeft,&oPtr,&oLeft))
       {
-        oSize -= (int)oLeft;
+        oSize -= oLeft;
         output.resize(oSize+1);
         output.at(oSize)='\0';
         return output;
@@ -88,7 +88,7 @@ class HtmlHelpRecoder
       }
     }
   private:
-    void *m_iconv_null = (void*)(-1);
+    void *m_iconv_null = reinterpret_cast<void*>(-1);
     void *m_fromUtf8 = m_iconv_null;
 
 };
@@ -316,10 +316,13 @@ class HtmlHelp::Private
     Private() : index(recoder) {}
     void createProjectFile();
     std::ofstream cts,kts;
+    QCString prevFile;
+    QCString prevAnc;
     bool ctsItemPresent = false;
     int dc = 0;
     StringSet indexFiles;
     StringSet imageFiles;
+    StringSet styleFiles;
     HtmlHelpRecoder recoder;
     HtmlHelpIndex index;
 };
@@ -329,111 +332,9 @@ class HtmlHelp::Private
  *  The object has to be \link initialize() initialized\endlink before it can
  *  be used.
  */
-HtmlHelp::HtmlHelp() : p(std::make_unique<Private>())
-{
-}
-
-HtmlHelp::~HtmlHelp()
-{
-}
-
-/* language codes for Html help
-   0x405 Czech
-   0x406 Danish
-   0x413 Dutch
-   0xC09 English (Australia)
-   0x809 English (Britain)
-   0x1009 English (Canada)
-   0x1809 English (Ireland)
-   0x1409 English (New Zealand)
-   0x1C09 English (South Africa)
-   0x409 English (United States)
-   0x40B Finnish
-   0x40C French
-   0x407 German
-   0x408 Greece
-   0x40E Hungarian
-   0x410 Italian
-   0x814 Norwegian
-   0x415 Polish
-   0x816 Portuguese(Portugal)
-   0x416 Portuguese(Brazil)
-   0x419 Russian
-   0x80A Spanish(Mexico)
-   0xC0A Spanish(Modern Sort)
-   0x40A Spanish(Traditional Sort)
-   0x41D Swedish
-   0x41F Turkey
-   0x411 Japanese
-   0x412 Korean
-   0x804 Chinese (PRC)
-   0x404 Chinese (Taiwan)
-
-   New LCIDs:
-   0x421 Indonesian
-   0x41A Croatian
-   0x418 Romanian
-   0x424 Slovenian
-   0x41B Slovak
-   0x422 Ukrainian
-   0x81A Serbian (Serbia, Latin)
-   0x403 Catalan
-   0x426 Latvian
-   0x427 Lithuanian
-   0x436 Afrikaans
-   0x42A Vietnamese
-   0x429 Persian (Iran)
-   0xC01 Arabic (Egypt) - I don't know which version of arabic is used inside translator_ar.h ,
-   so I have chosen Egypt at random
-
-*/
-static StringUnorderedMap s_languageDict =
-{
-  { "czech",       "0x405 Czech"                     },
-  { "danish",      "0x406 Danish"                    },
-  { "dutch",       "0x413 Dutch"                     },
-  { "finnish",     "0x40B Finnish"                   },
-  { "french",      "0x40C French"                    },
-  { "german",      "0x407 German"                    },
-  { "greek",       "0x408 Greece"                    },
-  { "hungarian",   "0x40E Hungarian"                 },
-  { "italian",     "0x410 Italian"                   },
-  { "norwegian",   "0x814 Norwegian"                 },
-  { "polish",      "0x415 Polish"                    },
-  { "portuguese",  "0x816 Portuguese(Portugal)"      },
-  { "brazilian",   "0x416 Portuguese(Brazil)"        },
-  { "russian",     "0x419 Russian"                   },
-  { "spanish",     "0x40A Spanish(Traditional Sort)" },
-  { "swedish",     "0x41D Swedish"                   },
-  { "turkish",     "0x41F Turkey"                    },
-  { "japanese",    "0x411 Japanese"                  },
-  { "japanese-en", "0x411 Japanese"                  },
-  { "korean",      "0x412 Korean"                    },
-  { "korean-en",   "0x412 Korean"                    },
-  { "chinese",     "0x804 Chinese (PRC)"             },
-  { "chinese-traditional", "0x404 Chinese (Taiwan)"  },
-  { "indonesian",  "0x421 Indonesian"                },
-  { "croatian",    "0x41A Croatian"                  },
-  { "romanian",    "0x418 Romanian"                  },
-  { "slovene",     "0x424 Slovenian"                 },
-  { "slovak",      "0x41B Slovak"                    },
-  { "ukrainian",   "0x422 Ukrainian"                 },
-  { "serbian",     "0x81A Serbian (Serbia, Latin)"   },
-  { "catalan",     "0x403 Catalan"                   },
-  { "lithuanian",  "0x427 Lithuanian"                },
-  { "afrikaans",   "0x436 Afrikaans"                 },
-  { "vietnamese",  "0x42A Vietnamese"                },
-  { "persian",     "0x429 Persian (Iran)"            },
-  { "arabic",      "0xC01 Arabic (Egypt)"            },
-  { "latvian",     "0x426 Latvian"                   },
-  { "macedonian",  "0x042f Macedonian (Former Yugoslav Republic of Macedonia)" },
-  { "armenian",    "0x42b Armenian"                  },
-  //Code for Esperanto should be as shown below but the htmlhelp compiler 1.3 does not support this
-  // (and no newer version is available).
-  //So do a fallback to the default language (see getLanguageString())
-  //{ "esperanto",   "0x48f Esperanto" },
-  { "serbian-cyrillic", "0xC1A Serbian (Serbia, Cyrillic)" }
-};
+HtmlHelp::HtmlHelp() : p(std::make_unique<Private>()) {}
+HtmlHelp::~HtmlHelp() = default;
+HtmlHelp::HtmlHelp(HtmlHelp &&) = default;
 
 /*! This will create a contents file (index.hhc) and a index file (index.hhk)
  *  and write the header of those files.
@@ -445,7 +346,7 @@ void HtmlHelp::initialize()
   p->recoder.initialize();
 
   /* open the contents file */
-  QCString fName = Config_getString(HTML_OUTPUT) + "/index.hhc";
+  QCString fName = Config_getString(HTML_OUTPUT) + "/" + hhcFileName;
   p->cts.open(fName.str(),std::ofstream::out | std::ofstream::binary);
   if (!p->cts.is_open())
   {
@@ -459,8 +360,8 @@ void HtmlHelp::initialize()
          "</OBJECT>\n"
          "<UL>\n";
 
-  /* open the contents file */
-  fName = Config_getString(HTML_OUTPUT) + "/index.hhk";
+  /* open the index file */
+  fName = Config_getString(HTML_OUTPUT) + "/" + hhkFileName;
   p->kts.open(fName.str(),std::ofstream::out | std::ofstream::binary);
   if (!p->kts.is_open())
   {
@@ -476,32 +377,15 @@ void HtmlHelp::initialize()
 
 }
 
-
-QCString HtmlHelp::getLanguageString()
-{
-  if (!theTranslator->idLanguage().isEmpty())
-  {
-    auto it = s_languageDict.find(theTranslator->idLanguage().str());
-    if (it!=s_languageDict.end())
-    {
-      return QCString(it->second);
-    }
-  }
-  // default language
-  return "0x409 English (United States)";
-}
-
-
-
 void HtmlHelp::Private::createProjectFile()
 {
   /* Write the project file */
-  QCString fName = Config_getString(HTML_OUTPUT) + "/index.hhp";
+  QCString fName = Config_getString(HTML_OUTPUT) + "/" + hhpFileName;
   std::ofstream t(fName.str(),std::ofstream::out | std::ofstream::binary);
   if (t.is_open())
   {
-    const char *hhcFile = "\"index.hhc\"";
-    const char *hhkFile = "\"index.hhk\"";
+    QCString hhcFile = "\"" + hhcFileName  + "\"";
+    QCString hhkFile = "\"" + hhkFileName  + "\"";
     bool hhkPresent = index.size()>0;
     if (!ctsItemPresent) hhcFile = "";
     if (!hhkPresent) hhkFile = "";
@@ -514,11 +398,11 @@ void HtmlHelp::Private::createProjectFile()
     }
     t << "Compatibility=1.1\n"
          "Full-text search=Yes\n";
-    if (ctsItemPresent) t << "Contents file=index.hhc\n";
+    if (ctsItemPresent) t << "Contents file=" + hhcFileName + "\n";
     t << "Default Window=main\n"
          "Default topic=" << indexName << "\n";
-    if (hhkPresent) t << "Index file=index.hhk\n";
-    t << "Language=" << getLanguageString() << "\n";
+    if (hhkPresent) t << "Index file=" + hhkFileName + "\n";
+    t << "Language=" << theTranslator->getLanguageString() << "\n";
     if (Config_getBool(BINARY_TOC)) t << "Binary TOC=YES\n";
     if (Config_getBool(GENERATE_CHI)) t << "Create CHI file=YES\n";
     t << "Title=" << recoder.recode(Config_getString(PROJECT_NAME)) << "\n\n";
@@ -557,6 +441,10 @@ void HtmlHelp::Private::createProjectFile()
     {
       t << s.c_str() << "\n";
     }
+    for (auto &s : styleFiles)
+    {
+      t << s.c_str() << "\n";
+    }
     t.close();
   }
   else
@@ -571,7 +459,7 @@ void HtmlHelp::addIndexFile(const QCString &s)
 }
 
 /*! Finalizes the HTML help. This will finish and close the
- *  contents file (index.hhc) and the index file (index.hhk).
+ *  htmlhelp contents file  and the htmlhelp index file.
  *  \sa initialize()
  */
 void HtmlHelp::finalize()
@@ -636,16 +524,6 @@ void HtmlHelp::addContentsItem(bool isDir,
                                bool /* addToNavIndex */,
                                const Definition * /* def */)
 {
-  static bool binaryTOC = Config_getBool(BINARY_TOC);
-  // If we're using a binary toc then folders cannot have links.
-  // Tried this and I didn't see any problems, when not using
-  // the resetting of file and anchor the TOC works better
-  // (prev / next button)
-  //if(Config_getBool(BINARY_TOC) && isDir)
-  //{
-    //file = 0;
-    //anchor = 0;
-  //}
   p->ctsItemPresent = true;
   int i; for (i=0;i<p->dc;i++) p->cts << "  ";
   p->cts << "<LI><OBJECT type=\"text/sitemap\">";
@@ -662,23 +540,28 @@ void HtmlHelp::addContentsItem(bool isDir,
     }
     else
     {
-      if (!(binaryTOC && isDir))
+      QCString currFile = addHtmlExtensionIfMissing(file);
+      QCString currAnc = anchor;
+      p->cts << "<param name=\"Local\" value=\"";
+      p->cts << currFile;
+      if (p->prevFile == currFile && p->prevAnc.isEmpty() && currAnc.isEmpty())
       {
-        p->cts << "<param name=\"Local\" value=\"";
-        p->cts << addHtmlExtensionIfMissing(file);
-        if (!anchor.isEmpty()) p->cts << "#" << anchor;
-        p->cts << "\">";
+        currAnc = "top";
       }
+      if (!currAnc.isEmpty()) p->cts << "#" << currAnc;
+      p->cts << "\">";
+      p->prevFile = currFile;
+      p->prevAnc = currAnc;
     }
   }
   p->cts << "<param name=\"ImageNumber\" value=\"";
   if (isDir)  // added - KPW
   {
-    p->cts << (int)BOOK_CLOSED ;
+    p->cts << static_cast<int>(BOOK_CLOSED);
   }
   else
   {
-    p->cts << (int)TEXT;
+    p->cts << static_cast<int>(TEXT);
   }
   p->cts << "\">";
   p->cts << "</OBJECT>\n";
@@ -690,7 +573,7 @@ void HtmlHelp::addIndexItem(const Definition *context,const MemberDef *md,
 {
   if (md)
   {
-    static bool separateMemberPages = Config_getBool(SEPARATE_MEMBER_PAGES);
+    bool separateMemberPages = Config_getBool(SEPARATE_MEMBER_PAGES);
     if (context==0) // global member
     {
       if (md->getGroupDef())
@@ -701,9 +584,10 @@ void HtmlHelp::addIndexItem(const Definition *context,const MemberDef *md,
     if (context==0) return; // should not happen
 
     QCString cfname  = md->getOutputFileBase();
+    QCString argStr  = md->argsString();
     QCString cfiname = context->getOutputFileBase();
     QCString level1  = context->name();
-    QCString level2  = md->name();
+    QCString level2  = md->name() + argStr;
     QCString contRef = separateMemberPages ? cfname : cfiname;
     QCString memRef  = cfname;
     QCString anchor  = !sectionAnchor.isEmpty() ? sectionAnchor : md->anchor();
@@ -715,6 +599,11 @@ void HtmlHelp::addIndexItem(const Definition *context,const MemberDef *md,
     QCString level1  = !word.isEmpty() ? word : context->name();
     p->index.addItem(level1,QCString(),context->getOutputFileBase(),sectionAnchor,TRUE,FALSE);
   }
+}
+
+void HtmlHelp::addStyleSheetFile(const QCString &fileName)
+{
+  p->styleFiles.insert(fileName.str());
 }
 
 void HtmlHelp::addImageFile(const QCString &fileName)

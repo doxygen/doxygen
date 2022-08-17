@@ -31,6 +31,7 @@ GENERATE_XML      = NO
 HTML_COLORSTYLE_SAT = 0
 ENABLED_SECTIONS  = logo_on
 ENABLE_PREPROCESSING = NO
+HTML_COLORSTYLE   = LIGHT
 CASE_SENSE_NAMES  = NO
 IMAGE_PATH        = . images
 INPUT             = index.doc install.doc starting.doc docblocks.doc markdown.doc \
@@ -49,8 +50,9 @@ SEARCHENGINE      = NO
 PDF_HYPERLINKS    = YES
 USE_PDFLATEX      = YES
 STRIP_CODE_COMMENTS = NO
-HTML_STYLESHEET   = doxygen_manual.css
+HTML_EXTRA_STYLESHEET   = doxygen_manual.css
 HTML_EXTRA_FILES  = doxygen_logo.svg
+HTML_EXTRA_FILES += translator_report.txt
 ALIASES           = LaTeX="\f({\LaTeX}\f)"
 ALIASES          += TeX="\f({\TeX}\f)"
 ALIASES          += forceNewPage="\latexonly \newpage \endlatexonly"

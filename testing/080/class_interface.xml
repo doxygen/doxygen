@@ -8,6 +8,7 @@
         <definition>void Interface::load</definition>
         <argsstring>()</argsstring>
         <name>load</name>
+        <qualifiedname>Interface::load</qualifiedname>
         <briefdescription>
           <para>Load things. </para>
         </briefdescription>
@@ -25,6 +26,7 @@
         <definition>virtual void Interface::doLoad</definition>
         <argsstring>()=0</argsstring>
         <name>doLoad</name>
+        <qualifiedname>Interface::doLoad</qualifiedname>
         <briefdescription>
           <para>Pure virtual implementation for <ref refid="class_interface_1ab58d3008a7001cbb47f2fa5a5a1aeefa" kindref="member">load()</ref> </para>
         </briefdescription>
@@ -40,6 +42,7 @@
         <definition>virtual void Interface::doOtherStuff</definition>
         <argsstring>()</argsstring>
         <name>doOtherStuff</name>
+        <qualifiedname>Interface::doOtherStuff</qualifiedname>
         <briefdescription>
           <para>Non-pure virtual function. </para>
         </briefdescription>
@@ -55,6 +58,7 @@
         <definition>virtual void Interface::doSomethingUndocumented</definition>
         <argsstring>()</argsstring>
         <name>doSomethingUndocumented</name>
+        <qualifiedname>Interface::doSomethingUndocumented</qualifiedname>
         <briefdescription>
         </briefdescription>
         <detaileddescription>
@@ -68,6 +72,7 @@
         <definition>void Interface::someUtility</definition>
         <argsstring>()</argsstring>
         <name>someUtility</name>
+        <qualifiedname>Interface::someUtility</qualifiedname>
         <briefdescription>
           <para>A non-virtual private function, not extracted. </para>
         </briefdescription>

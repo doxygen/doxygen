@@ -41,6 +41,7 @@ CommandMap cmdMap[] =
   { "copydetails",   CMD_COPYDETAILS },
   { "copyright",     CMD_COPYRIGHT },
   { "date",          CMD_DATE },
+  { "showdate",      CMD_SHOWDATE },
   { "dontinclude",   CMD_DONTINCLUDE },
   { "dotfile",       CMD_DOTFILE },
   { "e",             CMD_EMPHASIS },
@@ -63,6 +64,7 @@ CommandMap cmdMap[] =
   { "internal",      CMD_INTERNAL },
   { "invariant",     CMD_INVARIANT },
   { "javalink",      CMD_JAVALINK },
+  { "javalinkplain", CMD_JAVALINK },
   { "latexinclude",  CMD_LATEXINCLUDE },
   { "latexonly",     CMD_LATEXONLY },
   { "li",            CMD_LI },
@@ -83,7 +85,6 @@ CommandMap cmdMap[] =
   { "return",        CMD_RETURN },
   { "returns",       CMD_RETURN },
   { "retval",        CMD_RETVAL },
-  { "rtfonly",       CMD_RTFONLY },
   { "sa",            CMD_SA },
   { "secreflist",    CMD_SECREFLIST },
   { "section",       CMD_SECTION },
@@ -155,6 +156,9 @@ CommandMap cmdMap[] =
   { "maninclude",    CMD_MANINCLUDE },
   { "xmlinclude",    CMD_XMLINCLUDE },
   { "iline",         CMD_ILINE },
+  { "ifile",         CMD_IFILE },
+  { "iliteral",      CMD_ILITERAL },
+  { "endiliteral",   CMD_ENDILITERAL },
   { 0,               0 },
 };
 
@@ -167,6 +171,7 @@ CommandMap htmlTagMap[] =
   { "table",      HTML_TABLE },
   { "caption",    HTML_CAPTION },
   { "small",      HTML_SMALL },
+  { "cite",       HTML_CITE },
   { "code",       HTML_CODE },
   { "dfn",        HTML_CODE },
   { "var",        HTML_EMPHASIS },
@@ -206,6 +211,7 @@ CommandMap htmlTagMap[] =
   { "u",          HTML_UNDERLINE },
   { "ins",        HTML_INS },
   { "del",        HTML_DEL },
+  { "details",    HTML_DETAILS },
 
   { "c",            XML_C },
   // { "code",       XML_CODE },  <= ambiguous <code> is also a HTML tag

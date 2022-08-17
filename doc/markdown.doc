@@ -227,6 +227,16 @@ In addition doxygen provides a similar way to link a documented entity:
 
     [The link text](@ref MyClass)
 
+in case the first non whitespace character of the reference is a \c # this
+is interpreted as a doxygen link and replaced as a \ref cmdref "\@ref" command:
+
+    [The link text](#MyClass)
+
+will be interpreted as:
+
+    @ref MyClass "The link text"
+
+
 \subsubsection md_reflinks Reference Links
 
 Instead of putting the URL inline, you can also define the link separately
@@ -449,6 +459,25 @@ Another way to denote fenced code blocks is to use 3 or more backticks (```):
     also a fenced code block
     ```
 
+For the image formats `dot`, `msc` and `plantuml` the fenced block will be shown as 
+an image provided the image format is enabled (see \ref cfg_have_dot "HAVE_DOT" and
+\ref cfg_plantuml_jar_path "PLANTUML_JAR_PATH"), otherwise it is shown as plain code.
+
+Example:
+~~~~~~{.unparsed}
+```plantuml
+Alice -> Bob
+```
+~~~~~~
+or
+~~~~~~{.unparsed}
+```plantuml
+@startuml
+Alice -> Bob
+@enduml
+```
+~~~~~~
+
 \subsection md_header_id Header Id Attributes
 
 Standard Markdown has no support for labeling headers, which
@@ -466,11 +495,32 @@ To link to a section in the same comment block you can use
 
     [Link text](#labelid)
 
-to link to a section in general, doxygen allows you to use \@ref
+to link to a section in general, doxygen allows you to use \ref cmdref "\@ref"
 
     [Link text](@ref labelid)
 
 Note this only works for the headers of level 1 to 4.
+
+\subsection md_image_attributes Image Attributes
+
+Standard Markdown has no support for controlling image dimensions
+which results in less flexibility when writing docs.
+
+PHP Markdown Extra allows you to add extra attributes to an
+image as in:
+
+    ![Caption text](/path/to/img.jpg){attributes}
+
+To allow for output format specific attributes the following syntax is supported
+
+    ![Caption text](/path/to/img.jpg){format: attributes, format: attributes}
+
+For a description of the possibilities see the paragraph
+\ref image_sizeindicator "Size indication" for the \ref cmdimage "\\image" command.
+
+For example:
+
+    ![Doxygen Logo](https://www.doxygen.org/images/doxygen.png){html: width=50%, latex: width=5cm}
 
 \section markdown_dox Doxygen specifics
 
@@ -706,7 +756,7 @@ new lines are allowed.
 Also for links there are limits; the link text, and link title each can
 contain only one new line, the URL may not contain any newlines.
 
-\section markdown_debug Debugging of problems
+\section markdown_debug Debugging problems
 
 When doxygen parses the source code it first extracts the comments blocks,
 then passes these through the Markdown preprocessor. The output of the

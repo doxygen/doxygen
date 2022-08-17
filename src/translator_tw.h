@@ -36,7 +36,7 @@
 // files frees the maintainer from thinking about whether the
 // first, the second, or both files should be included or not, and
 // why.  This holds namely for localized translators because their
-// base class is changed occasionaly to adapter classes when the
+// base class is changed occasionally to adapter classes when the
 // Translator class changes the interface, or back to the
 // Translator class (by the local maintainer) when the localized
 // translator is made up-to-date again.
@@ -89,6 +89,10 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
     virtual QCString trISOLang()
     {
       return "zh-Hant";
+    }
+    virtual QCString getLanguageString()
+    {
+      return "0x404 Chinese (Taiwan)";
     }
 
     // --- Language translation methods -------------------
@@ -155,7 +159,7 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
      */
     virtual QCString trGeneratedAutomatically(const QCString &s)
     { QCString result="本文件由Doxygen";
-      if (!s.isEmpty()) result+=(QCString)" 自 "+s;
+      if (!s.isEmpty()) result+=" 自 "+s;
       result+=" 的原始碼中自動產生.";
       return result;
     }
@@ -399,6 +403,10 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
       {
         return "資料結構說明文件";
       }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+          return trDesignUnitDocumentation();
+      }
       else
       {
         return "類別說明文件";
@@ -416,12 +424,6 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
      */
     virtual QCString trExampleDocumentation()
     { return "範例說明文件"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all related pages.
-     */
-    virtual QCString trPageDocumentation()
-    { return "頁面說明文件"; }
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
@@ -519,21 +521,17 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
      */
     virtual QCString trGeneratedAt(const QCString &date,const QCString &projName)
     {
-      QCString result=(QCString)"產生日期:"+date;
-      if (!projName.isEmpty()) result+=(QCString)", 專案:"+projName;
-      result+=(QCString)", 產生器:";
+      QCString result="產生日期:"+date;
+      if (!projName.isEmpty()) result+=", 專案:"+projName;
+      result+=", 產生器:";
       return result;
     }
 
     /*! this text is put before a class diagram */
     virtual QCString trClassDiagram(const QCString &clName)
     {
-      return (QCString)"類別"+clName+"的繼承圖:";
+      return "類別"+clName+"的繼承圖:";
     }
-
-    /*! this text is generated when the \\internal command is used. */
-    virtual QCString trForInternalUseOnly()
-    { return "僅供內部使用."; }
 
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
@@ -609,7 +607,7 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
                                     ClassDef::CompoundType compType,
                                     bool isTemplate)
     {
-      QCString result=(QCString)clName+" ";
+      QCString result=clName+" ";
       switch(compType)
       {
         case ClassDef::Class:      result+=" 類別"; break;
@@ -768,7 +766,7 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
     virtual QCString trGeneratedFromFiles(ClassDef::CompoundType compType,bool)
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
-      QCString result=(QCString)"此";
+      QCString result="此";
       switch(compType)
       {
         case ClassDef::Class:      result+="類別(class)"; break;
@@ -833,12 +831,12 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
     /*! this text is put before a collaboration diagram */
     virtual QCString trCollaborationDiagram(const QCString &clName)
     {
-      return (QCString)""+clName+"的合作圖:";
+      return ""+clName+"的合作圖:";
     }
     /*! this text is put before an include dependency graph */
     virtual QCString trInclDepGraph(const QCString &fName)
     {
-      return (QCString)""+fName+"的包含相依圖:";
+      return ""+fName+"的包含相依圖:";
     }
     /*! header that is put before the list of constructor/destructors. */
     virtual QCString trConstructorDocumentation()
@@ -1119,12 +1117,7 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
     /*! Used as the title of a Java package */
     virtual QCString trPackage(const QCString &name)
     {
-      return (QCString)"Package "+name;
-    }
-    /*! Title of the package index page */
-    virtual QCString trPackageList()
-    {
-      return "Package列表";
+      return "Package "+name;
     }
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
@@ -1366,14 +1359,18 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
     /*! Used as a heading for a list of Java class functions with package
      * scope.
      */
-    virtual QCString trPackageMembers()
+    virtual QCString trPackageFunctions()
     {
       return "Package 函數列表";
+    }
+    virtual QCString trPackageMembers()
+    {
+      return "Package 成員列表";
     }
     /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
-    virtual QCString trStaticPackageMembers()
+    virtual QCString trStaticPackageFunctions()
     {
       return "靜態 Package 函數列表";
     }
@@ -1484,13 +1481,6 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
      */
     virtual QCString trDirectories()
     { return "目錄"; }
-
-    /*! This returns a sentences that introduces the directory hierarchy.
-     *  and the fact that it is sorted alphabetically per level
-     */
-    virtual QCString trDirDescription()
-    { return "這個目錄階層經過簡略的字母排序: ";
-    }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.
@@ -1618,7 +1608,7 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
                                     ClassDef::CompoundType compType,
                                     bool isTemplate)
     {
-      QCString result=(QCString)clName;
+      QCString result=clName;
       switch(compType)
       {
         case ClassDef::Class:      result+="模組"; break;
@@ -1685,7 +1675,7 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
         bool /* single */)
     { // here s is one of " Module", " Struct" or " Union"
       // single is true implies a single file
-      QCString result=(QCString)"這個";
+      QCString result="這個";
       switch(compType)
       {
         case ClassDef::Class:      result+="模組"; break;
@@ -1769,7 +1759,7 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
      */
     virtual QCString trFileIn(const QCString &name)
     {
-      return (QCString)"檔案在"+name;
+      return "檔案在"+name;
     }
 
     /*! when clicking a directory dependency label, a page with a
@@ -1778,7 +1768,7 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
      */
     virtual QCString trIncludesFileIn(const QCString &name)
     {
-      return (QCString)"含入檔案在"+name;
+      return "含入檔案在"+name;
     }
 
     /** Compiles a date string.
@@ -1806,6 +1796,20 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
         sdate+=stime;
       }
       return sdate;
+    }
+    virtual QCString trDayOfWeek(int dayOfWeek, bool, bool full)
+    {
+      static const char *days_short[]   = { "周一", "周二", "周三", "周四", "周五", "周六", "周日" };
+      static const char *days_full[]    = { "星期一", "星期二", "星期三", "星期四", "星期五", "星期六", "星期日" };
+      QCString text  = full? days_full[dayOfWeek-1] : days_short[dayOfWeek-1];
+      return text;
+    }
+    virtual QCString trMonth(int month, bool, bool full)
+    {
+      static const char *months_short[] = { "1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月" };
+      static const char *months_full[]  = { "一月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "十一月", "十二月" };
+      QCString text  = full? months_full[month-1] : months_short[month-1];
+      return text;
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1943,14 +1947,14 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
     /** UNO IDL service page title */
     virtual QCString trServiceReference(const QCString &sName)
     {
-      QCString result=(QCString)sName;
+      QCString result=sName;
       result+="服務參考";
       return result;
     }
     /** UNO IDL singleton page title */
     virtual QCString trSingletonReference(const QCString &sName)
     {
-      QCString result=(QCString)sName;
+      QCString result=sName;
       result+="Singleton參考";
       return result;
     }
@@ -1958,7 +1962,7 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
     virtual QCString trServiceGeneratedFromFiles(bool)
     {
       // single is true implies a single file
-      QCString result=(QCString)"本服務的文件由以下的檔案"
+      QCString result="本服務的文件由以下的檔案"
                                 "所產生";
       result+=":";
       return result;
@@ -1967,7 +1971,7 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
     virtual QCString trSingletonGeneratedFromFiles(bool)
     {
       // single is true implies a single file
-      QCString result=(QCString)"本singleton的文件由下面的檔案"
+      QCString result="本singleton的文件由下面的檔案"
                                 "所產生";
       result+=":";
       return result;

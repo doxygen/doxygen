@@ -39,6 +39,10 @@ class TranslatorRussian : public TranslatorAdapter_1_8_15
 
     virtual QCString trISOLang()
     { return "ru"; }
+    virtual QCString getLanguageString()
+    {
+      return "0x419 Russian";
+    }
 
     // --- Language translation methods -------------------
 
@@ -339,6 +343,10 @@ class TranslatorRussian : public TranslatorAdapter_1_8_15
       {
         return "Структуры данных";
       }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+          return trDesignUnitDocumentation();
+      }
       else
       {
         return "Классы";
@@ -356,12 +364,6 @@ class TranslatorRussian : public TranslatorAdapter_1_8_15
      */
     virtual QCString trExampleDocumentation()
     { return "Примеры"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all related pages.
-     */
-    virtual QCString trPageDocumentation()
-    { return "Тематические описания"; }
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
@@ -469,10 +471,6 @@ class TranslatorRussian : public TranslatorAdapter_1_8_15
     {
       return QCString("Граф наследования:")+clName+":";
     }
-
-    /*! this text is generated when the \\internal command is used. */
-    virtual QCString trForInternalUseOnly()
-    { return "Только для внутреннего использования"; }
 
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
@@ -804,12 +802,12 @@ class TranslatorRussian : public TranslatorAdapter_1_8_15
     /*! this text is put before a collaboration diagram */
     virtual QCString trCollaborationDiagram(const QCString &clName)
     {
-      return (QCString)"Граф связей класса "+clName+":";
+      return "Граф связей класса "+clName+":";
     }
     /*! this text is put before an include dependency graph */
     virtual QCString trInclDepGraph(const QCString &fName)
     {
-      return (QCString)"Граф включаемых заголовочных файлов для "+fName+":";
+      return "Граф включаемых заголовочных файлов для "+fName+":";
     }
     /*! header that is put before the list of constructor/destructors. */
     virtual QCString trConstructorDocumentation()
@@ -1093,11 +1091,6 @@ class TranslatorRussian : public TranslatorAdapter_1_8_15
     {
       return QCString("Пакет ")+name;
     }
-    /*! Title of the package index page */
-    virtual QCString trPackageList()
-    {
-      return "Полный список пакетов ";
-    }
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
     {
@@ -1331,14 +1324,18 @@ class TranslatorRussian : public TranslatorAdapter_1_8_15
     /*! Used as a heading for a list of Java class functions with package
      * scope.
      */
-    virtual QCString trPackageMembers()
+    virtual QCString trPackageFunctions()
     {
       return "Функции с областью видимости пакета";
+    }
+    virtual QCString trPackageMembers()
+    {
+      return "Члены с областью видимости пакета";
     }
     /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
-    virtual QCString trStaticPackageMembers()
+    virtual QCString trStaticPackageFunctions()
     {
       return "Статические функции с областью видимости пакета";
     }
@@ -1449,12 +1446,6 @@ class TranslatorRussian : public TranslatorAdapter_1_8_15
      */
     virtual QCString trDirectories()
     { return "Алфавитный указатель директорий"; }
-
-    /*! This returns a sentences that introduces the directory hierarchy.
-     *  and the fact that it is sorted alphabetically per level
-     */
-    virtual QCString trDirDescription()
-    { return "Дерево директорий"; }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.
@@ -1593,7 +1584,7 @@ class TranslatorRussian : public TranslatorAdapter_1_8_15
                                     ClassDef::CompoundType compType,
                                     bool isTemplate)
     {
-      QCString result=(QCString)clName;
+      QCString result=clName;
       if (isTemplate)
       {
 	switch(compType)
@@ -1675,7 +1666,7 @@ class TranslatorRussian : public TranslatorAdapter_1_8_15
         bool single)
     { // here s is one of " Module", " Struct" or " Union"
       // single is true implies a single file
-      QCString result=(QCString)"Документация по ";
+      QCString result="Документация по ";
       switch(compType)
       {
         case ClassDef::Class:      result+="модулю"; break;
@@ -1761,7 +1752,7 @@ class TranslatorRussian : public TranslatorAdapter_1_8_15
      */
     virtual QCString trFileIn(const QCString &name)
     {
-      return (QCString)"Файл в "+name;
+      return "Файл в "+name;
     }
 
     /*! when clicking a directory dependency label, a page with a
@@ -1770,7 +1761,7 @@ class TranslatorRussian : public TranslatorAdapter_1_8_15
      */
     virtual QCString trIncludesFileIn(const QCString &name)
     {
-      return (QCString)"Включает файл в "+name;
+      return "Включает файл в "+name;
     }
 
     /** Compiles a date string.
@@ -1798,6 +1789,20 @@ class TranslatorRussian : public TranslatorAdapter_1_8_15
         sdate+=stime;
       }
       return sdate;
+    }
+    virtual QCString trDayOfWeek(int dayOfWeek, bool, bool full)
+    {
+      static const char *days_short[]   = { "Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс" };
+      static const char *days_full[]    = { "понедельник", "вторник", "среда", "четверг", "пятница", "суббота", "воскресенье" };
+      QCString text  = full? days_full[dayOfWeek-1] : days_short[dayOfWeek-1];
+      return text;
+    }
+    virtual QCString trMonth(int month, bool, bool full)
+    {
+      static const char *months_short[] = { "янв", "фев", "мар", "апр", "май", "июн", "июл", "авг", "сен", "окт", "ноя", "дек" };
+      static const char *months_full[]  = { "Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь" };
+      QCString text  = full? months_full[month-1] : months_short[month-1];
+      return text;
     }
 
 ///////////////////////////////////////////////////////////////////////
@@ -1935,14 +1940,14 @@ class TranslatorRussian : public TranslatorAdapter_1_8_15
     /** UNO IDL service page title */
     virtual QCString trServiceReference(const QCString &sName)
     {
-      QCString result=(QCString)sName;
+      QCString result=sName;
       result+=" Ссылка на сервис";
       return result;
     }
     /** UNO IDL singleton page title */
     virtual QCString trSingletonReference(const QCString &sName)
     {
-      QCString result=(QCString)sName;
+      QCString result=sName;
       result+=" Ссылка на одиночку";
       return result;
     }
@@ -1950,7 +1955,7 @@ class TranslatorRussian : public TranslatorAdapter_1_8_15
     virtual QCString trServiceGeneratedFromFiles(bool single)
     {
       // single is true implies a single file
-      QCString result=(QCString)"Документация для этого сервиса "
+      QCString result="Документация для этого сервиса "
                                 "сгенерирована из следующего файл";
       if (single) result+="а:"; else result+="ов:";
       return result;
@@ -1959,7 +1964,7 @@ class TranslatorRussian : public TranslatorAdapter_1_8_15
     virtual QCString trSingletonGeneratedFromFiles(bool single)
     {
       // single is true implies a single file
-      QCString result=(QCString)"Документация по этому одиночке "
+      QCString result="Документация по этому одиночке "
                                 "сгенерирована из следующего файл";
       if (single) result+="а:"; else result+="ов:";
       return result;

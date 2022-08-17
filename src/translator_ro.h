@@ -78,6 +78,10 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
     {
       return "ro";
     }
+    virtual QCString getLanguageString()
+    {
+      return "0x418 Romanian";
+    }
 
     // --- Language translation methods -------------------
 
@@ -144,7 +148,7 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
      */
     virtual QCString trGeneratedAutomatically(const QCString &s)
     { QCString result="Generat automat de Doxygen";
-      if (!s.isEmpty()) result+=(QCString)" pentru "+s;
+      if (!s.isEmpty()) result+=" pentru "+s;
       result+=" din codul sursă.";
       return result;
     }
@@ -402,6 +406,10 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
       {
         return "Documentaţia Structurilor de Date";
       }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+          return trDesignUnitDocumentation();
+      }
       else
       {
         return "Documentaţia Claselor";
@@ -420,12 +428,6 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
      */
     virtual QCString trExampleDocumentation()
     { return "Documentaţia Exemplelor"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all related pages.
-     */
-    virtual QCString trPageDocumentation()
-    { return "Documentaţii înrudite"; }
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
@@ -518,21 +520,17 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
      */
     virtual QCString trGeneratedAt(const QCString &date,const QCString &projName)
     {
-      QCString result=(QCString)"Generat "+date;
-      if (!projName.isEmpty()) result+=(QCString)" pentru "+projName;
-      result+=(QCString)" de către";
+      QCString result="Generat "+date;
+      if (!projName.isEmpty()) result+=" pentru "+projName;
+      result+=" de către";
       return result;
     }
 
     /*! this text is put before a class diagram */
     virtual QCString trClassDiagram(const QCString &clName)
     {
-      return (QCString)"Diagrama de relaţii pentru "+clName;
+      return "Diagrama de relaţii pentru "+clName;
     }
-
-    /*! this text is generated when the \\internal command is used. */
-    virtual QCString trForInternalUseOnly()
-    { return "Doar pentru uz intern."; }
 
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
@@ -620,7 +618,7 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
         default: break;
       }
       if (isTemplate) result+=" (Template) ";
-      result+=(QCString)clName;
+      result+=clName;
 
       return result;
     }
@@ -770,7 +768,7 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
         bool single)
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
-      QCString result=(QCString)"Documentaţia pentru această ";
+      QCString result="Documentaţia pentru această ";
       switch(compType)
       {
         case ClassDef::Class:      result+="clasă"; break;
@@ -835,12 +833,12 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
     /*! this text is put before a collaboration diagram */
     virtual QCString trCollaborationDiagram(const QCString &clName)
     {
-      return (QCString)"Diagrama de relaţii pentru "+clName+":";
+      return "Diagrama de relaţii pentru "+clName+":";
     }
     /*! this text is put before an include dependency graph */
     virtual QCString trInclDepGraph(const QCString &fName)
     {
-      return (QCString)"Graful dependenţelor prin incluziune pentru "+fName+":";
+      return "Graful dependenţelor prin incluziune pentru "+fName+":";
     }
     /*! header that is put before the list of constructor/destructors. */
     virtual QCString trConstructorDocumentation()
@@ -1117,12 +1115,7 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
     /*! Used as the title of a Java package */
     virtual QCString trPackage(const QCString &name)
     {
-      return (QCString)"Pachet "+name;
-    }
-    /*! Title of the package index page */
-    virtual QCString trPackageList()
-    {
-      return "Lista Pachetelor";
+      return "Pachet "+name;
     }
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
@@ -1379,14 +1372,18 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
     /*! Used as a heading for a list of Java class functions with package
      * scope.
      */
-    virtual QCString trPackageMembers()
+    virtual QCString trPackageFunctions()
     {
       return "Funcţii în pachet";
+    }
+    virtual QCString trPackageMembers()
+    {
+      return "Membrii în pachet";
     }
     /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
-    virtual QCString trStaticPackageMembers()
+    virtual QCString trStaticPackageFunctions()
     {
       return "Funcţii statice în pachet";
     }
@@ -1497,14 +1494,6 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
       */
      virtual QCString trDirectories()
      { return "Directoare"; }
-
-     /*! This returns a sentences that introduces the directory hierarchy.
-      *  and the fact that it is sorted alphabetically per level
-      */
-     virtual QCString trDirDescription()
-     { return "Această ierarhie de directoare este sortată în general, "
-              "dar nu complet, în ordine alfabetică:";
-     }
 
      /*! This returns the title of a directory page. The name of the
       *  directory is passed via \a dirName.
@@ -1656,7 +1645,7 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
         default: break;
       }
       if (isTemplate) result+="(Template) ";
-	  result+=(QCString)clName;
+	  result+=clName;
       return result;
     }
     /*! used as the title of the HTML page of a module (Fortran) */
@@ -1712,7 +1701,7 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
         bool single)
     { // here s is one of " Module", " Struct" or " Union"
       // single is true implies a single file
-      QCString result=(QCString)"Documentaţia ";
+      QCString result="Documentaţia ";
       switch(compType)
       {
         case ClassDef::Class:      result+="modulului"; break;
@@ -1801,7 +1790,7 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
      */
     virtual QCString trFileIn(const QCString &name)
     {
-      return (QCString)"Fișierul din "+name;
+      return "Fișierul din "+name;
     }
 
     /*! when clicking a directory dependency label, a page with a
@@ -1810,7 +1799,7 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
      */
     virtual QCString trIncludesFileIn(const QCString &name)
     {
-      return (QCString)"Include fișierul din "+name;
+      return "Include fișierul din "+name;
     }
 
     /** Compiles a date string.
@@ -1838,6 +1827,22 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
         sdate+=stime;
       }
       return sdate;
+    }
+    virtual QCString trDayOfWeek(int dayOfWeek, bool first_capital, bool full)
+    {
+      static const char *days_short[]   = { "lun.", "mar.", "mie.", "joi", "vin.", "sâm.", "dum." };
+      static const char *days_full[]    = { "luni", "mar?i", "miercuri", "joi", "vineri", "sâmbătă", "duminică" };
+      QCString text  = full? days_full[dayOfWeek-1] : days_short[dayOfWeek-1];
+      if (first_capital) return text.mid(0,1).upper()+text.mid(1);
+      else return text;
+    }
+    virtual QCString trMonth(int month, bool first_capital, bool full)
+    {
+      static const char *months_short[] = { "ian.", "feb.", "mar.", "apr.", "mai", "iun.", "iul.", "aug.", "sept.", "oct.", "nov.", "dec." };
+      static const char *months_full[]  = { "ianuarie", "februarie", "martie", "aprilie", "mai", "iunie", "iulie", "august", "septembrie", "octombrie", "noiembrie", "decembrie" };
+      QCString text  = full? months_full[month-1] : months_short[month-1];
+      if (first_capital) return text.mid(0,1).upper()+text.mid(1);
+      else return text;
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1977,14 +1982,14 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
     /** UNO IDL service page title */
     virtual QCString trServiceReference(const QCString &sName)
     {
-      QCString result=(QCString)sName;
+      QCString result=sName;
       result+=" Referință Serviciu";
       return result;
     }
     /** UNO IDL singleton page title */
     virtual QCString trSingletonReference(const QCString &sName)
     {
-      QCString result=(QCString)sName;
+      QCString result=sName;
       result+=" Referință Singleton";
       return result;
     }
@@ -1992,7 +1997,7 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
     virtual QCString trServiceGeneratedFromFiles(bool single)
     {
       // single is true implies a single file
-      QCString result=(QCString)"Documentația pentru acest serviciu "
+      QCString result="Documentația pentru acest serviciu "
                                 "a fost generată din ";
       if (single)
         result += "următorul fișier:";
@@ -2004,7 +2009,7 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
     virtual QCString trSingletonGeneratedFromFiles(bool single)
     {
       // single is true implies a single file
-      QCString result=(QCString)"Documentația pentru acest singleton "
+      QCString result="Documentația pentru acest singleton "
                                 "a fost generată din ";
       if (single)
         result += "următorul fișier:";

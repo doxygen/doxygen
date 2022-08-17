@@ -32,7 +32,7 @@ class ManGenerator : public OutputGenerator
 
     OutputType type() const { return Man; }
 
-    void writeDoc(DocNode *,const Definition *,const MemberDef *,int);
+    void writeDoc(const IDocNodeAST *ast,const Definition *,const MemberDef *,int);
 
     static void init();
     void cleanup();
@@ -253,8 +253,6 @@ class ManGenerator : public OutputGenerator
     void endLabels();
 
     void writeCodeAnchor(const QCString &) {}
-    void setCurrentDoc(const Definition *,const QCString &,bool) {}
-    void addWord(const QCString &,bool) {}
 
   private:
     bool m_firstCol = true;

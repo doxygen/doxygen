@@ -88,6 +88,17 @@ For lists, items can also be appended using:
       TAG += value [value, ...]
 \endverbatim
 Values that contain spaces should be placed between quotes (\" \").
+<br>
+Note:<br>
+Use doxygen to compare the used configuration file with the template configuration file:
+\verbatim
+      doxygen -x [configFile]
+\endverbatim
+Use doxygen to compare the used configuration file with the template configuration file
+without replacing the environment variables or CMake type replacement variables:
+\verbatim
+      doxygen -x_noenv [configFile]
+\endverbatim
 ]]>
     </docs>
   </header>
@@ -275,11 +286,24 @@ Go to the <a href="commands.html">next</a> section or return to the
       <docs>
 <![CDATA[
  If the \c CREATE_SUBDIRS tag is set to \c YES then doxygen will create
- 4096 sub-directories (in 2 levels) under the output directory of each output
+ up to 4096 sub-directories (in 2 levels) under the output directory of each output
  format and will distribute the generated files over these directories.
  Enabling this option can be useful when feeding doxygen a huge amount of source
  files, where putting all generated files in the same directory would otherwise
  causes performance problems for the file system.
+ Adapt \c CREATE_SUBDIRS_LEVEL to control the number of sub-directories.
+]]>
+      </docs>
+    </option>
+    <option type='int' id='CREATE_SUBDIRS_LEVEL' minval='0' maxval='8' defval='8'
+            depends='CREATE_SUBDIRS'>
+      <docs>
+<![CDATA[
+ Controls the number of sub-directories that will be created when \c CREATE_SUBDIRS tag
+ is set to \c YES. Level 0 represents 16 directories, and every level increment
+ doubles the number of directories, resulting in 4096 directories at level 8 which is the
+ default and also the maximum value. The sub-directories are organized in 2 levels, the first
+ level always has a fixed numer of 16 directories.
 ]]>
       </docs>
     </option>
@@ -305,6 +329,7 @@ Go to the <a href="commands.html">next</a> section or return to the
       <value name='Arabic'/>
       <value name='Armenian'/>
       <value name='Brazilian'/>
+      <value name='Bulgarian'/>
       <value name='Catalan'/>
       <value name='Chinese'/>
       <value name='Chinese-Traditional'/>
@@ -319,6 +344,7 @@ Go to the <a href="commands.html">next</a> section or return to the
       <value name='French'/>
       <value name='German'/>
       <value name='Greek'/>
+      <value name='Hindi'/>
       <value name='Hungarian'/>
       <value name='Indonesian'/>
       <value name='Italian'/>
@@ -421,7 +447,7 @@ Go to the <a href="commands.html">next</a> section or return to the
 ]]>
       </docs>
     </option>
-    <option type='list' id='STRIP_FROM_PATH' format='string' depends='FULL_PATH_NAMES'>
+    <option type='list' id='STRIP_FROM_PATH' format='dir' depends='FULL_PATH_NAMES'>
       <docs>
 <![CDATA[
  The \c STRIP_FROM_PATH tag
@@ -436,7 +462,7 @@ Go to the <a href="commands.html">next</a> section or return to the
 ]]>
       </docs>
     </option>
-    <option type='list' id='STRIP_FROM_INC_PATH' format='string'>
+    <option type='list' id='STRIP_FROM_INC_PATH' format='dir'>
       <docs>
 <![CDATA[
  The \c STRIP_FROM_INC_PATH tag can be used to strip a user-defined part of
@@ -817,7 +843,7 @@ Go to the <a href="commands.html">next</a> section or return to the
     <option type='int' id='NUM_PROC_THREADS' defval='1' minval='0' maxval='32'>
       <docs>
 <![CDATA[
- The \c NUM_PROC_THREADS specifies the number threads doxygen is allowed to use during
+ The \c NUM_PROC_THREADS specifies the number of threads doxygen is allowed to use during
  processing. When set to \c 0 doxygen will based this on the number of cores
  available in the system. You can set it explicitly to a value larger than 0
  to get more control over the balance between CPU load and processing speed.
@@ -979,7 +1005,7 @@ Go to the <a href="commands.html">next</a> section or return to the
  whose names only differ in casing), the option must be set to \c YES to properly deal with such files
  in case they appear in the input.
 
- For filesystems that are not case sensitive the option should be be set to \c NO to properly
+ For filesystems that are not case sensitive the option should be set to \c NO to properly
  deal with output files written for symbols that only differ in casing, such as for two classes,
  one named \c CLASS and the other named \c Class, and to also support references to files without
  having to specify the exact matching casing.
@@ -1371,6 +1397,25 @@ FILE_VERSION_FILTER = "cleartool desc -fmt \%Vn"
  Optionally the format may contain
  <code>$version</code>, which will be replaced by the version of the file (if it could
  be obtained via \ref cfg_file_version_filter "FILE_VERSION_FILTER")
+
+ \sa \ref cfg_warn_line_format "WARN_LINE_FORMAT"
+]]>
+      </docs>
+    </option>
+    <option type='string' id='WARN_LINE_FORMAT' format='string' defval='at line $line of file $file'>
+      <docs>
+<![CDATA[
+ In the `$text` part of the \ref cfg_warn_format "WARN_FORMAT" command it is
+ possible that a reference to a more specific place is given.  To make it easier
+ to jump to this place (outside of doxygen) the user can define a custom
+ "cut" / "paste" string.
+
+ Example:
+ \verbatim
+  WARN_LINE_FORMAT = "'vi $file +$line'"
+ \endverbatim
+
+ \sa \ref cfg_warn_format "WARN_FORMAT"
 ]]>
       </docs>
     </option>
@@ -1379,7 +1424,10 @@ FILE_VERSION_FILTER = "cleartool desc -fmt \%Vn"
 <![CDATA[
  The \c WARN_LOGFILE tag can be used to specify a file to which warning
  and error messages should be written. If left blank the output is written
- to standard error (`stderr`).
+ to standard error (`stderr`). In case the file specified cannot be opened for
+ writing the warning and error messages are written to standard error. When as
+ file `-` is specified the warning and error messages are written to standard output
+ (`stdout`).
 ]]>
       </docs>
     </option>
@@ -1631,6 +1679,17 @@ FILE_VERSION_FILTER = "cleartool desc -fmt \%Vn"
  is part of the input, its contents will be placed on the main page (`index.html`).
  This can be useful if you have a project on for instance GitHub and want to reuse
  the introduction page also for the doxygen output.
+]]>
+      </docs>
+    </option>
+    <option type='int' id='FORTRAN_COMMENT_AFTER' defval='72' minval='7' maxval='10000'>
+      <docs>
+<![CDATA[
+ The Fortran standard specifies that for fixed formatted Fortran code all characters
+ from position 72 are to be considered as comment. A common extension is to allow
+ longer lines before the automatic comment starts.
+ The setting \c FORTRAN_COMMENT_AFTER will also make it possible that longer lines can be
+ processed before the automatic comment starts.
 ]]>
       </docs>
     </option>
@@ -2059,6 +2118,21 @@ hr.footer {
 ]]>
       </docs>
     </option>
+    <option type='enum' id='HTML_COLORSTYLE' defval='AUTO_LIGHT' depends='GENERATE_HTML'>
+      <docs>
+<![CDATA[
+ The \c HTML_COLORSTYLE tag can be used to specify if the generated HTML output should be rendered with
+ a dark or light theme. Default setting \c AUTO_LIGHT enables light output unless the user preference is dark output.
+ Other options are \c DARK to always use dark mode, \c LIGHT to always use light mode, \c AUTO_DARK to default to dark
+ mode unless the user prefers light mode, and \c TOGGLE to let the user toggle between dark and light mode via a button. 
+]]>
+      </docs>
+      <value name="LIGHT" desc="Always generate light output."/>
+      <value name="DARK" desc="Always generate dark output."/>
+      <value name="AUTO_LIGHT" desc="Automatically set the mode according to the user preference, use light mode if no preference is set (the default)."/>
+      <value name="AUTO_DARK" desc="Automatically set the mode according to the user preference, use dark mode if no preference is set."/>
+      <value name="TOGGLE" desc="Allow to user to switch between light and dark mode via a button."/>
+    </option>
     <option type='int' id='HTML_COLORSTYLE_HUE' minval='0' maxval='359' defval='220' depends='GENERATE_HTML'>
       <docs>
 <![CDATA[
@@ -2460,6 +2534,14 @@ The \c DOCSET_PUBLISHER_NAME tag identifies the documentation publisher.
 ]]>
       </docs>
     </option>
+    <option type='bool' id='OBFUSCATE_EMAILS' defval='1' depends='GENERATE_HTML'>
+      <docs>
+<![CDATA[
+If the \c OBFUSCATE_EMAILS tag is set to \c YES, doxygen will
+obfuscate email addresses.
+]]>
+      </docs>
+    </option>
     <option type='enum' id='HTML_FORMULA_FORMAT' defval='png' depends='GENERATE_HTML'>
       <docs>
 <![CDATA[
@@ -2480,17 +2562,6 @@ The \c DOCSET_PUBLISHER_NAME tag identifies the documentation publisher.
  When you change the font size after a successful doxygen run you need
  to manually remove any `form_*.png` images from the HTML
  output directory to force them to be regenerated.
-]]>
-      </docs>
-    </option>
-    <option type='bool' id='FORMULA_TRANSPARENT' defval='1' depends='GENERATE_HTML'>
-      <docs>
-<![CDATA[
- Use the \c FORMULA_TRANSPARENT tag to determine whether or not the images
- generated for formulas are transparent PNGs. Transparent PNGs are
- not supported properly for IE 6.0, but are supported on all modern browsers.
- <br>Note that when changing this option you need to delete any `form_*.png` files
- in the HTML output directory before the changes have effect.
 ]]>
       </docs>
     </option>
@@ -2523,7 +2594,7 @@ The \c DOCSET_PUBLISHER_NAME tag identifies the documentation publisher.
  With \c MATHJAX_VERSION it is possible to specify the MathJax version to be used.
  Note that the different versions of MathJax have different requirements with regards to
  the different settings, so it is possible that also other MathJax settings have to be changed
- when switching between the different MathJax versions. 
+ when switching between the different MathJax versions.
 ]]>
       </docs>
       <value name="MathJax_2"/>
@@ -2871,7 +2942,7 @@ doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty
            version of the word "Bibliography".
            This setting is typically used in combination with the block name `CITATIONS_PRESENT`.
  <dt><code>$latexbibstyle</code><dd>will be replaced with the latex bib style to be used as
-           as set by \ref cfg_latex_bib_style "LATEX_BIB_STYLE", in case nothing is set the bib style
+           set by \ref cfg_latex_bib_style "LATEX_BIB_STYLE", in case nothing is set the bib style
            `plain` is used.
            This setting is typically used in combination with the block name `CITATIONS_PRESENT`.
  <dt><code>$latexbibfiles</code><dd>will be replaced by the comma separated list of `bib`. files
@@ -2881,6 +2952,7 @@ doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty
  <dt><code>$papertype</code><dd>will be replaced by the paper type as set in
            \ref cfg_paper_type "PAPER_TYPE" and the word "paper" is directly appended to it to have
            a correct \f$\mbox{\LaTeX}\f$ paper type.
+ <dt><code>$langISO</code><dd>will be replaced by the ISO language name.
  <dt><code>$languagesupport</code><dd>will be replaced by an output language dependent setting
            of packages required for translating terms of the specified language.
  <dt><code>$latexfontenc</code><dd>will be replaced by an output language dependent setting
@@ -3388,6 +3460,9 @@ If set to \c NO, doxygen will warn if an a database file is already found and no
  The \c INCLUDE_PATH tag can be used to specify one or more directories that
  contain include files that are not input files but should be processed by
  the preprocessor.
+
+ Note that the \c INCLUDE_PATH is not recursive, so the setting of \ref cfg_recursive "RECURSIVE" 
+ has no effect here.
 ]]>
       </docs>
     </option>
@@ -3545,32 +3620,49 @@ to be found in the default search path.
 ]]>
       </docs>
     </option>
-    <option type='string' id='DOT_FONTNAME' format='string' defval='Helvetica' depends='HAVE_DOT'>
+    <option type='string' id='DOT_COMMON_ATTR' format='string' depends='HAVE_DOT'
+      defval='fontname=Helvetica,fontsize=10'>
       <docs>
 <![CDATA[
+ \c DOT_COMMON_ATTR is common attributes for nodes, edges and labels of subgraphs.
  When you want a differently looking font in the dot files that doxygen generates
- you can specify the font name
- using \c DOT_FONTNAME. You need to make sure dot is able to find the font,
- which can be done by putting it in a standard location or by setting the
- \c DOTFONTPATH environment variable or by setting \ref cfg_dot_fontpath "DOT_FONTPATH" to the
+ you can specify fontname, fontcolor and fontsize attributes.
+ For details please see
+ <a href=https://graphviz.org/doc/info/attrs.html>Node, Edge and Graph Attributes specification</a>
+ You need to make sure dot is able to find the font,
+ which can be done by putting it in a standard location
+ or by setting the \c DOTFONTPATH environment variable or by
+ setting \ref cfg_dot_fontpath "DOT_FONTPATH" to the
  directory containing the font.
+ Default graphviz fontsize is 14.
 ]]>
       </docs>
     </option>
-    <option type='int' id='DOT_FONTSIZE' minval='4' maxval='24' defval='10' depends='HAVE_DOT'>
+    <option type='string' id='DOT_EDGE_ATTR' format='string' depends='HAVE_DOT'
+      defval='labelfontname=Helvetica,labelfontsize=10'>
       <docs>
 <![CDATA[
- The \c DOT_FONTSIZE tag can be used to set the size (in points) of the font of dot graphs.
+ \c DOT_EDGE_ATTR is concatenated with \ref cfg_dot_common_attr "DOT_COMMON_ATTR".
+ For elegant style you can add 'arrowhead=open, arrowtail=open, arrowsize=0.5'.
+ <a href=https://graphviz.org/doc/info/arrows.html>Complete documentation about arrows shapes.</a>
+]]>
+      </docs>
+    </option>
+    <option type='string' id='DOT_NODE_ATTR' format='string' depends='HAVE_DOT'
+      defval='shape=box,height=0.2,width=0.4'>
+      <docs>
+<![CDATA[
+ \c DOT_NODE_ATTR is concatenated with \ref cfg_dot_common_attr "DOT_COMMON_ATTR".
+ For view without boxes around nodes set 'shape=plain' or 'shape=plaintext'
+ <a href=https://www.graphviz.org/doc/info/shapes.html>Shapes specification</a>
 ]]>
       </docs>
     </option>
     <option type='string' id='DOT_FONTPATH' format='dir' defval='' depends='HAVE_DOT'>
       <docs>
 <![CDATA[
- By default doxygen will tell \c dot to use the default font as specified with \ref cfg_dot_fontname "DOT_FONTNAME".
- If you specify a
- different font using \ref cfg_dot_fontname "DOT_FONTNAME" you can set the path where \c dot
- can find it using this tag.
+ You can set the path where \c dot can find font specified with
+ fontname in \ref cfg_dot_common_attr "DOT_COMMON_ATTR" and others dot attributes.
 ]]>
       </docs>
     </option>
@@ -3585,10 +3677,10 @@ to be found in the default search path.
  will be shown as texts / links.
 ]]>
       </docs>
-      <value name="NO" />
-      <value name="YES" />
-      <value name="TEXT" />
-      <value name="GRAPH" />
+      <value name="NO" bool_representation="NO" />
+      <value name="YES" bool_representation="YES" />
+      <value name="TEXT" bool_representation="YES" />
+      <value name="GRAPH" bool_representation="YES" />
     </option>
     <option type='bool' id='COLLABORATION_GRAPH' defval='1' depends='HAVE_DOT'>
       <docs>
@@ -3605,6 +3697,8 @@ to be found in the default search path.
 <![CDATA[
  If the \c GROUP_GRAPHS tag is set to \c YES then doxygen
  will generate a graph for groups, showing the direct groups dependencies.
+
+ See also the chapter \ref grouping "Grouping" in the manual.
 ]]>
       </docs>
     </option>
@@ -3776,7 +3870,7 @@ UML notation for the relationships.
 ]]>
       </docs>
     </option>
-    <option type='string' id='DOT_PATH' format='dir' defval='' depends='HAVE_DOT'>
+    <option type='string' id='DOT_PATH' format='filedir' defval='' depends='HAVE_DOT'>
       <docs>
 <![CDATA[
  The \c DOT_PATH tag can be used to specify the path where the \c dot tool can be found.
@@ -3811,11 +3905,12 @@ UML notation for the relationships.
 ]]>
       </docs>
     </option>
-    <option type='string' id='PLANTUML_JAR_PATH' format='dir' defval=''>
+    <option type='string' id='PLANTUML_JAR_PATH' format='filedir' defval=''>
       <docs>
 <![CDATA[
  When using plantuml, the \c PLANTUML_JAR_PATH tag should be used to specify the path where
- java can find the \c plantuml.jar file. If left blank, it is assumed PlantUML is not used or
+ java can find the \c plantuml.jar file or to the filename of \c jar file to be used.
+ If left blank, it is assumed PlantUML is not used or
  called during a preprocessing step. Doxygen will generate a warning when it encounters a
  \ref cmdstartuml "\\startuml" command in this case and will not generate output for the diagram.
 ]]>
@@ -3863,19 +3958,6 @@ UML notation for the relationships.
 ]]>
       </docs>
     </option>
-    <option type='bool' id='DOT_TRANSPARENT' defval='0' depends='HAVE_DOT'>
-      <docs>
-<![CDATA[
- Set the \c DOT_TRANSPARENT tag to \c YES to generate images with a transparent
- background. This is disabled by default, because dot on Windows does not
- seem to support this out of the box.
- <br>
- Warning: Depending on the platform used,
- enabling this option may lead to badly anti-aliased labels on the edges of
- a graph (i.e. they become hard to read).
-]]>
-      </docs>
-    </option>
     <option type='bool' id='DOT_MULTI_TARGETS' defval='0' depends='HAVE_DOT'>
       <docs>
 <![CDATA[
@@ -3892,6 +3974,9 @@ UML notation for the relationships.
  If the \c GENERATE_LEGEND tag is set to \c YES doxygen will
  generate a legend page explaining the meaning of the various boxes and
  arrows in the dot generated graphs.
+ \note This tag requires that \ref cfg_uml_look "UML_LOOK" isn't set, i.e. the
+ doxygen internal graphical representation for inheritance and collaboration diagrams
+ is used.
 ]]>
       </docs>
     </option>
@@ -3933,5 +4018,9 @@ This setting is not only used for dot files but also for msc temporary files.
     <option type='obsolete' orgtype='bool' id='RTF_SOURCE_CODE'/>
     <option type='obsolete' orgtype='bool' id='LATEX_SOURCE_CODE'/>
     <option type='obsolete' orgtype='bool' id='CLASS_DIAGRAMS'/>
+    <option type='obsolete' orgtype='int' id='DOT_FONTSIZE'/>
+    <option type='obsolete' orgtype='string' id='DOT_FONTNAME'/>
+    <option type='obsolete' orgtype='bool' id='FORMULA_TRANSPARENT'/>
+    <option type='obsolete' orgtype='bool' id='DOT_TRANSPARENT'/>
   </group>
 </doxygenconfig>

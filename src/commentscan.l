@@ -87,6 +87,7 @@ static bool handleFile(yyscan_t yyscanner,const QCString &, const StringVector &
 static bool handleDir(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleExample(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleDetails(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleRaiseWarning(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleNoop(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleName(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleTodo(yyscan_t yyscanner,const QCString &, const StringVector &);
@@ -188,6 +189,7 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "copydetails",     { &handleCopyDetails,      CommandSpacing::Block     }},
   { "copydoc",         { &handleCopyDoc,          CommandSpacing::Block     }},
   { "copyright",       { 0,                       CommandSpacing::Block     }},
+  { "showdate",        { 0,                       CommandSpacing::Inline    }},
   { "date",            { 0,                       CommandSpacing::Block     }},
   { "def",             { &handleDef,              CommandSpacing::Invisible }},
   { "defgroup",        { &handleDefGroup,         CommandSpacing::Invisible }},
@@ -260,6 +262,7 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "public",          { &handlePublic,           CommandSpacing::Invisible }},
   { "publicsection",   { &handlePublicSection,    CommandSpacing::Invisible }},
   { "pure",            { &handlePure,             CommandSpacing::Invisible }},
+  { "raisewarning",    { &handleRaiseWarning,     CommandSpacing::Invisible }},
   { "refitem",         { &handleRefItem,          CommandSpacing::Inline    }},
   { "related",         { &handleRelated,          CommandSpacing::Invisible }},
   { "relatedalso",     { &handleRelatedAlso,      CommandSpacing::Invisible }},
@@ -307,7 +310,8 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "weakgroup",       { &handleWeakGroup,        CommandSpacing::Invisible }},
   { "xmlinclude",      { 0,                       CommandSpacing::Inline    }},
   { "xmlonly",         { &handleFormatBlock,      CommandSpacing::Invisible }},
-  { "xrefitem",        { &handleXRefItem,         CommandSpacing::XRef      }}
+  { "xrefitem",        { &handleXRefItem,         CommandSpacing::XRef      }},
+  { "iliteral",        { &handleFormatBlock,      CommandSpacing::Inline    }},
 };
 
 #define YY_NO_INPUT 1
@@ -408,12 +412,18 @@ struct commentscanYY_state
 
   QCString         guardExpr;
   int              roundCount = 0;
+  int              HTMLDetails = 0;
 
   bool             insideParBlock = FALSE;
   bool             inInternalDocs = FALSE;
   int              prevPosition = 0;
   DocGroup         docGroup;
   bool             markdownSupport = TRUE;
+
+  QCString         raiseWarning;
+
+  QCString         htmlAnchorStr;
+  bool             htmlAnchor = false;
 };
 
 
@@ -447,6 +457,7 @@ static void handleGuard(yyscan_t yyscanner,const QCString &expr);
 static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
 static void addCite(yyscan_t yyscanner);
 static void addIline(yyscan_t yyscanner,int lineNr);
+static void addIlineBreak(yyscan_t yyscanner,int lineNr);
 
 #define unput_string(yytext,yyleng) do { for (int i=(int)yyleng-1;i>=0;i--) unput(yytext[i]); } while(0)
 
@@ -455,17 +466,21 @@ static void addIline(yyscan_t yyscanner,int lineNr);
 #undef        YY_INPUT
 #define        YY_INPUT(buf,result,max_size) result=yyread(yyscanner,buf,max_size);
 
+// otherwise the filename would be the name of the converted file (*.cpp instead of *.l)
+static inline const char *getLexerFILE() {return __FILE__;}
+#include "doxygen_lex.h"
+
 %}
 
        /* start command character */
-CMD          ("\\"|"@")
+CMD       ("\\"|"@")
 XREFCMD   {CMD}("bug"|"deprecated"|"test"|"todo"|"xrefitem")
 PRE       [pP][rR][eE]
-TABLE          [tT][aA][bB][lL][eE]
-P          [pP]
+TABLE     [tT][aA][bB][lL][eE]
+P         [pP]
 UL        [uU][lL]
-OL          [oO][lL]
-DL          [dD][lL]
+OL        [oO][lL]
+DL        [dD][lL]
 IMG       [iI][mM][gG]
 HR        [hH][rR]
 PARA      [pP][aA][rR][aA]
@@ -473,8 +488,13 @@ CODE      [cC][oO][dD][eE]
 CAPTION   [cC][aA][pP][tT][iI][oO][nN]
 CENTER    [cC][eE][nN][tT][eE][rR]
 DIV       [dD][iI][vV]
+DETAILS   [dD][eE][tT][aA][iI][lL][sS]
 DETAILEDHTML {CENTER}|{DIV}|{PRE}|{UL}|{TABLE}|{OL}|{DL}|{P}|[Hh][1-6]|{IMG}|{HR}|{PARA}
 DETAILEDHTMLOPT {CODE}
+SUMMARY   [sS][uU][mM][mM][aA][rR][yY]
+REMARKS   [rR][eE][mM][aA][rR][kK][sS]
+AHTML     [aA]{BN}*
+ANCHTML   ([iI][dD]|[nN][aA][mM][eE])"="("\""{LABELID}"\""|"'"{LABELID}"'"|{LABELID})
 BN        [ \t\n\r]
 BL        [ \t\r]*"\n"
 B         [ \t]
@@ -483,9 +503,9 @@ BS        ^(({B}*"/""/")?)(({B}*"*"+)?){B}*
 ATTR      ({B}+[^>\n]*)?
 DOCNL     "\n"|"\\ilinebr"
 LC        "\\"{B}*"\n"
-NW          [^a-z_A-Z0-9]
-FILESCHAR [a-z_A-Z0-9\x80-\xFF\\:\\\/\-\+@&#]
-FILEECHAR [a-z_A-Z0-9\x80-\xFF\-\+@&#]
+NW        [^a-z_A-Z0-9]
+FILESCHAR [a-z_A-Z0-9\x80-\xFF\\:\\\/\-\+=@&#]
+FILEECHAR [a-z_A-Z0-9\x80-\xFF\-\+=@&#]
 FILE      ({FILESCHAR}*{FILEECHAR}+("."{FILESCHAR}*{FILEECHAR}+)*)|("\""[^\n\"]*"\"")
 ID        [$a-z_A-Z\x80-\xFF][$a-z_A-Z0-9\x80-\xFF]*
 LABELID   [a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF\-]*
@@ -495,7 +515,7 @@ CITEID    {CITESCHAR}{CITEECHAR}*("."{CITESCHAR}{CITEECHAR}*)*|"\""{CITESCHAR}{C
 SCOPEID   {ID}({ID}*{BN}*"::"{BN}*)*({ID}?)
 SCOPENAME "$"?(({ID}?{BN}*("::"|"."){BN}*)*)((~{BN}*)?{ID})
 TMPLSPEC  "<"{BN}*[^>]+{BN}*">"
-MAILADDR   [a-z_A-Z0-9.+\-]+"@"[a-z_A-Z0-9\-]+("."[a-z_A-Z0-9\-]+)+[a-z_A-Z0-9\-]+
+MAILADDR  ("mailto:")?[a-z_A-Z0-9\x80-\xff.+-]+"@"[a-z_A-Z0-9\x80-\xff-]+("."[a-z_A-Z0-9\x80-\xff\-]+)+[a-z_A-Z0-9\x80-\xff\-]+
 RCSTAG    "$"{ID}":"[^\n$]+"$"
 
   // C start comment 
@@ -553,12 +573,14 @@ STopt  [^\n@\\]*
 %x      ReadFormulaLong
 %x      AnchorLabel
 %x      HtmlComment
+%x      HtmlA
 %x      SkipLang
 %x      CiteLabel
 %x      CopyDoc
 %x      GuardExpr
 %x      CdataSection
 %x      Noop
+%x      RaiseWarning
 
 %%
 
@@ -607,19 +629,87 @@ STopt  [^\n@\\]*
                                           // continue with the same input
                                           REJECT;
                                         }
-<Comment>"<summary>"                    { // start of a .NET XML style brief description
-                                          setOutput(yyscanner,OutputBrief);
-                                          addOutput(yyscanner,yytext);
-                                        }
-<Comment>"<remarks>"                    { // start of a .NET XML style detailed description
+<Comment>"<"{DETAILS}{ATTR}">"          { // start of a HTML style details description
+                                          yyextra->HTMLDetails++;
                                           setOutput(yyscanner,OutputDoc);
                                           addOutput(yyscanner,yytext);
                                         }
-<Comment>"</summary>"                   { // start of a .NET XML style detailed description
+<Comment>"</"{DETAILS}">"               { // end of a HTML style details description
+                                          if (yyextra->HTMLDetails) yyextra->HTMLDetails--;
                                           addOutput(yyscanner,yytext);
-                                          setOutput(yyscanner,OutputDoc);
                                         }
-<Comment>"</remarks>"                   { // end of a brief or detailed description
+<Comment>"<"{AHTML}                     { // potential start of HTML anchor, see issue 9200
+                                          yyextra->htmlAnchorStr = yytext;
+                                          yyextra->htmlAnchor = false;
+                                          BEGIN(HtmlA);
+                                        }
+<HtmlA>{ANCHTML}                        { // only labels that can be converted to doxygen anchor
+                                          yyextra->htmlAnchorStr += yytext;
+                                          QCString tag(yytext);
+                                          int s=tag.find("=");
+                                          char c=tag[s+1];
+                                          QCString id;
+                                          if (c=='\'' || c=='"') // valid start
+                                          {
+                                            int e=tag.find(c,s+2);
+                                            if (e!=-1) // found matching end
+                                            {
+                                              id=tag.mid(s+2,e-s-2); // extract id
+                                              addAnchor(yyscanner,id);
+                                            }
+                                          }
+                                          else
+                                          {
+                                            id=tag.mid(s+1);
+                                            addAnchor(yyscanner,id);
+                                          }
+                                          if (!id.isEmpty() && !yyextra->htmlAnchor)
+                                          {
+                                            // only use first analogous to what is in docparser
+                                            addOutput(yyscanner,"@anchor ");
+                                            addOutput(yyscanner,id.data());
+                                            addOutput(yyscanner," ");
+                                            yyextra->htmlAnchor = true;
+                                          }
+                                        }
+<HtmlA>("\""[^\n\"]*"\""|"'"[^\n']*"'") {
+                                          yyextra->htmlAnchorStr += yytext;
+                                        }
+<HtmlA>">"|"/>"                         {
+                                          if (!yyextra->htmlAnchor)
+                                          {
+                                            addOutput(yyscanner,yyextra->htmlAnchorStr);
+                                            addOutput(yyscanner,yytext);
+                                          }
+                                          else
+                                          {
+                                            if (yyleng == 1) // to keep <a></a> pairs, otherwise single </a> present
+                                            {
+                                              addOutput(yyscanner,"<a>");
+                                            }
+                                          }
+                                          BEGIN(Comment);
+                                        }
+<HtmlA>{DOCNL}                          { // newline
+                                          yyextra->htmlAnchorStr += yytext;
+                                          if (*yytext == '\n') yyextra->lineNr++;
+                                        }
+<HtmlA>.                                { // catch-all for anything else
+                                          yyextra->htmlAnchorStr += yytext;
+                                        }
+<Comment>"<"{SUMMARY}">"                { // start of a .NET XML style brief description
+                                          if (!yyextra->HTMLDetails) setOutput(yyscanner,OutputBrief);
+                                          addOutput(yyscanner,yytext);
+                                        }
+<Comment>"<"{REMARKS}">"                { // start of a .NET XML style detailed description
+                                          setOutput(yyscanner,OutputDoc);
+                                          addOutput(yyscanner,yytext);
+                                        }
+<Comment>"</"{SUMMARY}">"               { // start of a .NET XML style detailed description
+                                          addOutput(yyscanner,yytext);
+                                          if (!yyextra->HTMLDetails) setOutput(yyscanner,OutputDoc);
+                                        }
+<Comment>"</"{REMARKS}">"               { // end of a brief or detailed description
                                           setOutput(yyscanner,OutputDoc);
                                           addOutput(yyscanner,yytext);
                                         }
@@ -743,8 +833,13 @@ STopt  [^\n@\\]*
 <Comment>{B}*{CMD}"~"[a-z_A-Z-]*        { // language switch command
                                           QCString langId = QCString(yytext).stripWhiteSpace().mid(2);
                                           if (!langId.isEmpty() &&
-                                              qstricmp(Config_getEnumAsString(OUTPUT_LANGUAGE).data(),langId.data())!=0)
+                                              qstricmp(Config_getEnumAsString(OUTPUT_LANGUAGE),langId)!=0)
                                           { // enable language specific section
+                                            if (!Config_isAvailableEnum(OUTPUT_LANGUAGE,langId))
+                                            {
+                                               warn(yyextra->fileName,yyextra->lineNr,
+                                               "non supported language '%s' specified in '%s'",langId.data(),QCString(yytext).stripWhiteSpace().data());
+                                            }
                                             BEGIN(SkipLang);
                                           }
                                         }
@@ -857,7 +952,7 @@ STopt  [^\n@\\]*
                                           addOutput(yyscanner,yytext[0]);
                                           addOutput(yyscanner,yytext[2]);
                                         }
-<Comment>".,"                           { // . with comma such as "e.g.,"
+<Comment>"."[,:;]                       { // . with some puntuations such as "e.g.," or "e.g.:"
                                           addOutput(yyscanner,yytext);
                                         }
 <Comment>"...\\"[ \t]                   { // ellipsis with escaped space.
@@ -979,6 +1074,7 @@ STopt  [^\n@\\]*
                                           yyextra->formulaNewLines++;
                                           yyextra->formulaText+=*yytext;
                                           yyextra->lineNr++;
+                                          addIline(yyscanner,yyextra->lineNr);
                                         }
 <ReadFormulaLong,ReadFormulaShort,ReadFormulaRound>.     { // any other character
                                           yyextra->formulaText+=*yytext;
@@ -1009,7 +1105,8 @@ STopt  [^\n@\\]*
   /* ------------ handle argument of namespace command --------------- */
 
 <NameSpaceDocArg1>{SCOPENAME}           { // handle argument
-                                          yyextra->current->name = substitute(QCString(yytext),QCString("."),QCString("::"));
+                                          lineCount(yyscanner);
+                                          yyextra->current->name = substitute(removeRedundantWhiteSpace(QCString(yytext)),QCString("."),QCString("::"));
                                           BEGIN( Comment );
                                         }
 <NameSpaceDocArg1>{LC}                  { // line continuation
@@ -1077,10 +1174,12 @@ STopt  [^\n@\\]*
   /* ------ handle argument of class/struct/union command --------------- */
 
 <ClassDocArg1>{SCOPENAME}{TMPLSPEC}     {
+                                          lineCount(yyscanner);
                                           yyextra->current->name = substitute(removeRedundantWhiteSpace(QCString(yytext)),".","::");
                                           BEGIN( ClassDocArg2 );
                                         }
 <ClassDocArg1>{SCOPENAME}               { // first argument
+                                          lineCount(yyscanner);
                                           yyextra->current->name = substitute(QCString(yytext),".","::");
                                           if (yyextra->current->section==Entry::PROTOCOLDOC_SEC)
                                           {
@@ -1090,6 +1189,7 @@ STopt  [^\n@\\]*
                                           BEGIN( ClassDocArg2 );
                                         }
 <CategoryDocArg1>{SCOPENAME}{B}*"("[^\)]+")" {
+                                          lineCount(yyscanner);
                                           yyextra->current->name = substitute(QCString(yytext),".","::");
                                           BEGIN( ClassDocArg2 );
                                         }
@@ -1150,7 +1250,7 @@ STopt  [^\n@\\]*
                                           //lastDefGroup.groupname = yytext;
                                           //lastDefGroup.pri = yyextra->current->groupingPri();
                                           // the .html stuff is for Qt compatibility
-                                          if (yyextra->current->name.right(5)==".html")
+                                          if (yyextra->current->name.endsWith(".html"))
                                           {
                                             yyextra->current->name=yyextra->current->name.left(yyextra->current->name.length()-5);
                                           }
@@ -1455,6 +1555,10 @@ STopt  [^\n@\\]*
                                           addOutput(yyscanner,'\n');
                                           BEGIN( Comment );
                                         }
+<SubpageLabel>.                         {
+                                          unput(yytext[0]);
+                                          BEGIN( Comment );
+                                        }
 <SubpageTitle>{DOCNL}                   { // no title, end command
                                           addOutput(yyscanner,yytext);
                                           BEGIN( Comment );
@@ -1493,7 +1597,7 @@ STopt  [^\n@\\]*
 
   /* ----- handle arguments of the preformatted block commands ------- */
 
-<FormatBlock>{CMD}("endverbatim"|"endiverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endrtfonly"|"endmanonly"|"enddot"|"endcode"|"endicode"|"endmsc")/{NW} { // possible ends
+<FormatBlock>{CMD}("endverbatim"|"endiverbatim"|"endiliteral"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endrtfonly"|"endmanonly"|"enddot"|"endcode"|"endicode"|"endmsc")/{NW} { // possible ends
                                           addOutput(yyscanner,yytext);
                                           if (&yytext[4]==yyextra->blockName) // found end of the block
                                           {
@@ -1516,14 +1620,18 @@ STopt  [^\n@\\]*
                                         }
 <FormatBlock>{CCS}                       { // start of a C-comment
                                           if (!(yyextra->blockName=="code"  || yyextra->blockName=="verbatim" ||
-                                                yyextra->blockName=="icode" || yyextra->blockName=="iverbatim")
+                                                yyextra->blockName=="icode" || yyextra->blockName=="iverbatim"||
+                                                yyextra->blockName=="iliteral"
+                                               )
                                              ) yyextra->commentCount++;
                                           addOutput(yyscanner,yytext);
                                         }
 <FormatBlock>{CCE}                       { // end of a C-comment
                                           addOutput(yyscanner,yytext);
                                           if (!(yyextra->blockName=="code"  || yyextra->blockName=="verbatim" ||
-                                                yyextra->blockName=="icode" || yyextra->blockName=="iverbatim")
+                                                yyextra->blockName=="icode" || yyextra->blockName=="iverbatim"||
+                                                yyextra->blockName=="iliteral"
+                                               )
                                              )
                                           {
                                             yyextra->commentCount--;
@@ -1585,7 +1693,7 @@ STopt  [^\n@\\]*
                                           if (*yytext=='\n') yyextra->lineNr++;
                                           //next line is commented out due to bug620924
                                           //addOutput(yyscanner,'\n');
-                                          addIline(yyscanner,yyextra->lineNr);
+                                          addIlineBreak(yyscanner,yyextra->lineNr);
                                           BEGIN( Comment );
                                         }
 <GuardParam>{LC}                        { // line continuation
@@ -1598,7 +1706,7 @@ STopt  [^\n@\\]*
 <GuardParamEnd>{B}*{DOCNL}              {
                                           lineCount(yyscanner);
                                           yyextra->spaceBeforeIf.resize(0);
-                                          addIline(yyscanner,yyextra->lineNr);
+                                          addIlineBreak(yyscanner,yyextra->lineNr);
                                           BEGIN(Comment);
                                         }
 <GuardParamEnd>{B}*                     {
@@ -1607,12 +1715,12 @@ STopt  [^\n@\\]*
                                             addOutput(yyscanner,yyextra->spaceBeforeIf);
                                           }
                                           yyextra->spaceBeforeIf.resize(0);
-                                          addIline(yyscanner,yyextra->lineNr);
+                                          addIlineBreak(yyscanner,yyextra->lineNr);
                                           BEGIN(Comment);
                                         }
 <GuardParamEnd>.                        {
                                           unput(*yytext);
-                                          addIline(yyscanner,yyextra->lineNr);
+                                          addIlineBreak(yyscanner,yyextra->lineNr);
                                           BEGIN(Comment);
                                         }
 
@@ -1764,11 +1872,26 @@ STopt  [^\n@\\]*
 
   /* ----- handle argument of noop command ------- */
 <Noop>{DOCNL}                           { // end of argument
+                                          if (*yytext=='\n')
+                                          {
+                                            yyextra->lineNr++;
+                                            addOutput(yyscanner,'\n');
+                                          }
+                                          BEGIN( Comment );
+                                        }
+<Noop>.                                 { // ignore other stuff
+                                        }
+  /* ----- handle argument of raisewarning command ------- */
+<RaiseWarning>{DOCNL}                   { // end of argument
+                                          warn_doc_error(yyextra->fileName,yyextra->lineNr,
+                                                         "%s",qPrint(yyextra->raiseWarning));
+                                          yyextra->raiseWarning = "";
                                           if (*yytext=='\n') yyextra->lineNr++;
                                           addOutput(yyscanner,'\n');
                                           BEGIN( Comment );
                                         }
-<Noop>.                                 { // ignore other stuff
+<RaiseWarning>.                         { // ignore other stuff
+                                          yyextra->raiseWarning += yytext;
                                         }
   /* ----- handle argument of ingroup command ------- */
 
@@ -1902,8 +2025,13 @@ STopt  [^\n@\\]*
 
 <SkipLang>[\\@]"~"[a-zA-Z-]*            { /* language switch */
                                           QCString langId(&yytext[2]);
-                                          if (langId.isEmpty() ||
-                                              qstricmp(Config_getEnumAsString(OUTPUT_LANGUAGE).data(),langId.data())==0)
+                                          if (!langId.isEmpty() && !Config_isAvailableEnum(OUTPUT_LANGUAGE,langId))
+                                          {
+                                             warn(yyextra->fileName,yyextra->lineNr,
+                                             "non supported language '%s' specified in '%s'",langId.data(),QCString(yytext).stripWhiteSpace().data());
+                                          }
+                                          else if (langId.isEmpty() ||
+                                              qstricmp(Config_getEnumAsString(OUTPUT_LANGUAGE),langId)==0)
                                           { // enable language specific section
                                             BEGIN(Comment);
                                           }
@@ -1941,19 +2069,40 @@ STopt  [^\n@\\]*
 
   /* ----- handle argument of the copydoc command ------- */
 
-<CopyDoc><<EOF>>                        |
-<CopyDoc>{DOCNL}                        {
-                                          if (*yytext=='\n') yyextra->lineNr++;
-                                          addOutput(yyscanner,'\n');
+<CopyDoc><<EOF>>                        {
                                           setOutput(yyscanner,OutputDoc);
-                                          addOutput(yyscanner," \\copydetails ");
+                                          addOutput(yyscanner," \\ilinebr\\ilinebr\\copydetails ");
                                           addOutput(yyscanner,yyextra->copyDocArg);
                                           addOutput(yyscanner,"\n");
                                           BEGIN(Comment);
                                         }
-<CopyDoc>[^\n\\]+                       {
+<CopyDoc>{DOCNL}                        {
+                                          if (*yytext=='\n') yyextra->lineNr++;
+                                          if (yyextra->braceCount==0)
+                                          {
+                                            setOutput(yyscanner,OutputDoc);
+                                            addOutput(yyscanner," \\ilinebr\\ilinebr\\copydetails ");
+                                            addOutput(yyscanner,yyextra->copyDocArg);
+                                            addOutput(yyscanner,"\n");
+                                            BEGIN(Comment);
+                                          }
+                                        }
+<CopyDoc>{LC}                           { // line continuation
+                                          yyextra->lineNr++;
+                                        }
+<CopyDoc>[^@\\\n()]+                    { // non-special characters
                                           yyextra->copyDocArg+=yytext;
                                           addOutput(yyscanner,yytext);
+                                        }
+<CopyDoc>"("                            {
+                                          yyextra->copyDocArg+=yytext;
+                                          addOutput(yyscanner,yytext);
+                                          yyextra->braceCount++;
+                                        }
+<CopyDoc>")"                            {
+                                          yyextra->copyDocArg+=yytext;
+                                          addOutput(yyscanner,yytext);
+                                          yyextra->braceCount--;
                                         }
 <CopyDoc>.                              {
                                           yyextra->copyDocArg+=yytext;
@@ -1961,9 +2110,9 @@ STopt  [^\n@\\]*
                                         }
 
  /*
-<*>.  { fprintf(stderr,"Lex scanner %s %sdefault rule for state %s: #%s#\n", __FILE__,yyextra->fileName ? ("(" + yyextra->fileName +") ").data(): "",stateToString(YY_START),yytext);}
-<*>\n  { fprintf(stderr,"Lex scanner %s %sdefault rule newline for state %s.\n", __FILE__, yyextra->fileName ? ("(" + yyextra->fileName +") ").data(): "",stateToString(YY_START));}
-  */
+<*>.  { fprintf(stderr,"Lex scanner %s %sdefault rule for state %s: #%s#\n", __FILE__,!yyextra->fileName.isEmpty() ? ("(" + yyextra->fileName +") ").data(): "",stateToString(YY_START),yytext);}
+<*>\n  { fprintf(stderr,"Lex scanner %s %sdefault rule newline for state %s.\n", __FILE__, !yyextra->fileName.isEmpty() ? ("(" + yyextra->fileName +") ").data(): "",stateToString(YY_START));}
+ */
 
 %%
 
@@ -2149,6 +2298,7 @@ static bool handleMainpage(yyscan_t yyscanner,const QCString &, const StringVect
   {
     yyextra->current->name = "mainpage";
   }
+  setOutput(yyscanner,OutputDoc);
   BEGIN( PageDocArg2 );
   return stop;
 }
@@ -2223,6 +2373,14 @@ static bool handleDetails(yyscan_t yyscanner,const QCString &, const StringVecto
                                                 // as a new paragraph
   }
   setOutput(yyscanner,OutputDoc);
+  return FALSE;
+}
+
+static bool handleRaiseWarning(yyscan_t yyscanner,const QCString &, const StringVector &)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->raiseWarning = "";
+  BEGIN( RaiseWarning );
   return FALSE;
 }
 
@@ -2334,6 +2492,7 @@ static bool handleRelated(yyscan_t yyscanner,const QCString &cmd, const StringVe
         "found multiple \\relates, \\relatesalso or \\memberof commands in a comment block, using last definition");
   }
   yyextra->current->relatesType = Simple;
+  yyextra->currentCmd = cmd;
   BEGIN(RelatesParam1);
   return FALSE;
 }
@@ -2833,7 +2992,12 @@ static bool handleCopyDetails(yyscan_t yyscanner,const QCString &, const StringV
 static bool handleCopyDoc(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  setOutput(yyscanner,OutputBrief);
+  if (yyextra->current->brief.isEmpty() && yyextra->current->doc.isEmpty())
+  { // if we don't have a brief or detailed description yet,
+    // then the @copybrief should end up in the brief description.
+    // otherwise it will be copied inline (see bug691315 & bug700788)
+    setOutput(yyscanner,OutputBrief);
+  }
   if (!yyextra->spaceBeforeCmd.isEmpty())
   {
     addOutput(yyscanner,yyextra->spaceBeforeCmd);
@@ -2841,6 +3005,7 @@ static bool handleCopyDoc(yyscan_t yyscanner,const QCString &, const StringVecto
   }
   addOutput(yyscanner,"\\copybrief ");
   yyextra->copyDocArg.resize(0);
+  yyextra->braceCount = 0;
   BEGIN(CopyDoc);
   return FALSE;
 }
@@ -3027,8 +3192,7 @@ static QCString addFormula(yyscan_t yyscanner)
   std::unique_lock<std::mutex> lock(g_formulaMutex);
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   QCString formLabel;
-  QCString fText=yyextra->formulaText.simplifyWhiteSpace();
-  int id = FormulaManager::instance().addFormula(fText.str());
+  int id = FormulaManager::instance().addFormula(yyextra->formulaText.str());
   formLabel.sprintf("\\_form#%d",id);
   for (int i=0;i<yyextra->formulaNewLines;i++) formLabel+="@_fakenl"; // add fake newlines to
                                                          // keep the warnings
@@ -3321,6 +3485,13 @@ static void addIline(yyscan_t yyscanner,int lineNr)
   addOutput(yyscanner, cmd);
 }
 
+static void addIlineBreak(yyscan_t yyscanner,int lineNr)
+{
+  char cmd[30];
+  sprintf(cmd,"\\iline %d \\ilinebr ",lineNr);
+  addOutput(yyscanner, cmd);
+}
+
 static void endBrief(yyscan_t yyscanner,bool addToOutput)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
@@ -3329,7 +3500,15 @@ static void endBrief(yyscan_t yyscanner,bool addToOutput)
     // found some brief description and not just whitespace
     yyextra->briefEndsAtDot=FALSE;
     setOutput(yyscanner,OutputDoc);
+    addIline(yyscanner,yyextra->lineNr);
     if (addToOutput) addOutput(yyscanner,yytext);
+  }
+  else
+  {
+    int saveLineNr = yyextra->lineNr;
+    lineCount(yyscanner);
+    yyextra->current->briefLine = yyextra->lineNr;
+    yyextra->lineNr = saveLineNr;
   }
 }
 

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # python script to generate configoptions.cpp and config.doc from config.xml
 #
 # Copyright (C) 1997-2015 by Dimitri van Heesch.
@@ -173,9 +173,9 @@ def prepCDocs(node):
                      "default value", defval)
         elif (type == 'bool'):
             if (node.hasAttribute('altdefval')):
-              doc += "<br/>%s: %s." % ("The default value is", "system dependent")
+                doc += "<br/>%s: %s." % ("The default value is", "system dependent")
             else:
-              doc += "<br/>%s: %s." % ("The default value is", "YES" if (defval == "1") else "NO")
+                doc += "<br/>%s: %s." % ("The default value is", "YES" if (defval == "1") else "NO")
         elif (type == 'list'):
             if format == 'string':
                 values = collectValues(node)
@@ -232,6 +232,7 @@ def prepCDocs(node):
     docC = transformDocs(doc)
     return docC;
 
+
 def parseOption(node):
     # Handling part for Doxyfile
     name = node.getAttribute('id')
@@ -285,6 +286,8 @@ def parseOption(node):
             print("  cs->setWidgetType(ConfigString::Image);")
         elif format == 'dir':
             print("  cs->setWidgetType(ConfigString::Dir);")
+        elif format == 'filedir':
+            print("  cs->setWidgetType(ConfigString::FileAndDir);")
         if depends != '':
             print("  cs->addDependency(\"%s\");" % (depends))
     elif type == 'enum':
@@ -435,11 +438,24 @@ def parseGroupMapSetter(node):
             type = n.getAttribute('type')
             name = n.getAttribute('id')
             if type=='enum':
-                print("    %-22s update_%-46s { m_%s = %s(v); return v; }" % (name+'_t',name+'('+name+'_t '+' v)',name,name+'_enum2str'))
+                print("    [[maybe_unused]] %-22s update_%-46s { m_%s = %s(v); return v; }" % (name+'_t',name+'('+name+'_t '+' v)',name,name+'_enum2str'))
             elif type in map:
-                print("    %-22s update_%-46s { m_%s = v; return m_%s; }" % (map[type],name+'('+map[type]+' v)',name,name))
+                print("    [[maybe_unused]] %-22s update_%-46s { m_%s = v; return m_%s; }" % (map[type],name+'('+map[type]+' v)',name,name))
             if len(setting) > 0:
                 print("#endif")
+
+def parseGroupMapAvailable(node):
+    for n in node.childNodes:
+        if n.nodeType == Node.ELEMENT_NODE:
+            setting = n.getAttribute('setting')
+            type = n.getAttribute('type')
+            name = n.getAttribute('id')
+            if type=='enum':
+                if len(setting) > 0:
+                    print("#if %s" % (setting))
+                print("    %-22s isAvailable_%-41s { return v.lower() == %s_enum2str(%s_str2enum(v)).lower(); }" % ('bool',name+'(QCString v)',name,name));
+                if len(setting) > 0:
+                    print("#endif")
 
 def parseGroupMapVar(node):
     map = { 'bool':'bool', 'string':'QCString', 'enum':'QCString', 'int':'int', 'list':'StringVector' }
@@ -469,6 +485,19 @@ def parseGroupInit(node):
             if len(setting) > 0:
                 print("#endif")
 
+def getEnum2BoolMapping(node):
+    def escape(value):
+        return re.sub(r'[^\w]','_',value)
+    mapping = []
+    for nv in node.childNodes:
+        if nv.nodeName == "value":
+            name = nv.getAttribute("name")
+            bool_rep = nv.getAttribute("bool_representation")
+            if name and bool_rep:
+                bool_value = "true" if bool_rep and bool_rep.upper() == 'YES' else "false"
+                mapping.append( "{{ \"{0}\", \"{1}\" }}".format(escape(name),bool_value))
+    return mapping
+
 def parseGroupMapInit(node):
     map = { 'bool':'Bool', 'string':'String', 'enum':'String', 'int':'Int', 'list':'List' }
     for n in node.childNodes:
@@ -479,7 +508,11 @@ def parseGroupMapInit(node):
             type = n.getAttribute('type')
             name = n.getAttribute('id')
             if type in map:
-                print("    { %-25s Info{ %-13s &ConfigValues::m_%s }}," % ('\"'+name+'\",','Info::'+map[type]+',',name))
+                if type == "enum":
+                    mappingStr = "{%s}" % (', '.join(getEnum2BoolMapping(n)))
+                    print("    { %-26s Info{ %-13s &ConfigValues::m_%-23s %s}}," % ('\"'+name+'\",','Info::'+map[type]+',',name+",", mappingStr))
+                else:
+                    print("    { %-26s Info{ %-13s &ConfigValues::m_%-24s}}," % ('\"'+name+'\",','Info::'+map[type]+',',name))
             if len(setting) > 0:
                 print("#endif")
 
@@ -757,14 +790,19 @@ def main():
             if n.nodeType == Node.ELEMENT_NODE:
                 if n.nodeName == "group":
                     parseGroupMapSetter(n)
+        for n in elem.childNodes:
+            if n.nodeType == Node.ELEMENT_NODE:
+                if n.nodeName == "group":
+                    parseGroupMapAvailable(n)
         print("    void init();")
         print("    StringVector fields() const;")
         print("    struct Info")
         print("    {")
         print("      enum Type { Bool, Int, String, List, Unknown };")
+        print("      using Enum2BoolMap = std::unordered_map<std::string,bool>;");
         print("      Info(Type t,bool         ConfigValues::*b) : type(t), value(b) {}")
         print("      Info(Type t,int          ConfigValues::*i) : type(t), value(i) {}")
-        print("      Info(Type t,QCString     ConfigValues::*s) : type(t), value(s) {}")
+        print("      Info(Type t,QCString     ConfigValues::*s, Enum2BoolMap boolMap = {}) : type(t), value(s), m_boolMap(boolMap) {}")
         print("      Info(Type t,StringVector ConfigValues::*l) : type(t), value(l) {}")
         print("      Type type;")
         print("      union Item")
@@ -778,8 +816,12 @@ def main():
         print("        QCString     ConfigValues::*s;")
         print("        StringVector ConfigValues::*l;")
         print("      } value;")
+        print("      bool getBooleanRepresentation() const;")
+        print("    private:")
+        print("      Enum2BoolMap m_boolMap;")
         print("    };")
         print("    const Info *get(const QCString &tag) const;")
+        print("")
         print("  private:")
         for n in elem.childNodes:
             if n.nodeType == Node.ELEMENT_NODE:
@@ -841,6 +883,20 @@ def main():
         print("")
         print("  };")
         print("}")
+        print("")
+        print("bool ConfigValues::Info::getBooleanRepresentation() const")
+        print("{")
+        print("  if (!m_boolMap.empty())")
+        print("  {")
+        print("    auto it = m_boolMap.find((ConfigValues::instance().*(value.s)).str());")
+        print("    if (it!=m_boolMap.end())")
+        print("    {")
+        print("      return it->second;");
+        print("    }")
+        print("  }")
+        print("  return false;")
+        print("}")
+        print("")
     elif (sys.argv[1] == "-cpp"):
         print("/* WARNING: This file is generated!")
         print(" * Do not edit this file, but edit config.xml instead and run")

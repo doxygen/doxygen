@@ -36,7 +36,6 @@
       <para>Page brief description. </para>
     </briefdescription>
     <detaileddescription>
-      <para>Page brief description.</para>
       <para>Text at page level. See <ref refid="mypage_1mysect" kindref="member">Section Title.</ref> for more. </para>
       <sect1 id="mypage_1mysect">
         <title>Section Title.</title>

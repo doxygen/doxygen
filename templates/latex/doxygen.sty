@@ -151,6 +151,7 @@
 
 % Used by @verbatim ... @endverbatim
 \newenvironment{DoxyVerb}{%
+  \par%
   \footnotesize%
   \verbatim%
 }{%
@@ -317,12 +318,6 @@
   \begin{DoxyDesc}{#1}%
 }{%
   \end{DoxyDesc}%
-}
-
-% Used by @internal
-\newenvironment{DoxyInternal}[1]{%
-  \paragraph*{#1}%
-}{%
 }
 
 % Used by @par and @paragraph

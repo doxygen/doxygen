@@ -87,7 +87,7 @@ class LinkedMap
     //! Return a non-owning pointer to the newly added object, or to the existing object if
     //! it was already inserted before under the given key.
     template<class...Args>
-    T *add(const char *k, Args&&... args)
+    [[maybe_unused]] T *add(const char *k, Args&&... args)
     {
       T *result = find(k);
       if (result==nullptr)
@@ -102,7 +102,7 @@ class LinkedMap
     }
 
     template<class...Args>
-    T *add(const QCString &k, Args&&... args)
+    [[maybe_unused]] T *add(const QCString &k, Args&&... args)
     {
       std::string key = k.str();
       T *result = find(key);
@@ -120,7 +120,7 @@ class LinkedMap
     //! added under the same key). Ownership is transferred.
     //! Return a non-owning pointer to the newly added object, or to the existing object if
     //! it was already inserted before under the given key.
-    T *add(const char *k, Ptr &&ptr)
+    [[maybe_unused]] T *add(const char *k, Ptr &&ptr)
     {
       T *result = find(k);
       if (result==nullptr)
@@ -133,7 +133,7 @@ class LinkedMap
       return result;
     }
 
-    T *add(const QCString &k, Ptr &&ptr)
+    [[maybe_unused]] T *add(const QCString &k, Ptr &&ptr)
     {
       std::string key = k.str();
       T *result = find(key);

@@ -14,8 +14,8 @@ options {
   OUTPUT_LANGUAGE = "c++";
   NAMESPACE = "vhdl::parser";
   STATIC=false;
-  PARSER_INCLUDES="vhdljjparser.h";
-  TOKEN_MANAGER_INCLUDES="vhdlstring.h";
+  PARSER_INCLUDE="vhdljjparser.h";
+  TOKEN_MANAGER_INCLUDE="vhdlstring.h";
  // TOKEN_MANAGER_USES_PARSER = true;
   TOKEN_MANAGER_SUPER_CLASS = "TokenParser";
  // DEBUG_PARSER  = true;
@@ -128,6 +128,7 @@ SKIP :
   {
    {
      QCString q = filter2008VhdlComment(image.data());
+     parser->outlineParser()->lineCount(image.data());
      parser->outlineParser()->handleCommentBlock(QCString(q),TRUE);image.clear();
    }
   }

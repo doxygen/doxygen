@@ -13,6 +13,7 @@
 
 include (${TOP}/cmake/version.cmake)
 string(TIMESTAMP DATE "%d-%m-%Y")
+string(TIMESTAMP YEAR "%Y")
 
 find_package(PythonInterp REQUIRED)
 find_program(EPSTOPDF NAMES epstopdf )
@@ -63,6 +64,7 @@ set(DOC_FILES
         expert_list_string.png
         expert_string_dir.png
         expert_string_file.png
+        expert_string_filedir.png
         expert_string_image.png
         expert_string_string.png
         external.doc
@@ -168,7 +170,7 @@ configure_file(${PROJECT_SOURCE_DIR}/doc/doxyindexer.1      ${PROJECT_BINARY_DIR
 # doc/language.doc (see tag Doxyfile:INPUT)
 add_custom_command(
         COMMAND ${PYTHON_EXECUTABLE} translator.py ${PROJECT_SOURCE_DIR}
-        DEPENDS ${PROJECT_SOURCE_DIR}/doc/maintainers.txt ${PROJECT_SOURCE_DIR}/doc/language.tpl ${PROJECT_BINARY_DIR}/doc/translator.py ${LANG_FILES}
+        DEPENDS ${PROJECT_SOURCE_DIR}/VERSION ${PROJECT_SOURCE_DIR}/doc/maintainers.txt ${PROJECT_SOURCE_DIR}/doc/language.tpl ${PROJECT_BINARY_DIR}/doc/translator.py ${LANG_FILES}
         OUTPUT language.doc
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/doc
 )

@@ -76,7 +76,6 @@ inline QCString compileOptions(const QCString &def,SrcLangExt langId1,const QCSt
          "|"+QCString().setNum(langId5)+"="+value5;
 }
 
-
 static bool elemIsVisible(const XMLHandlers::Attributes &attrib,bool defVal=TRUE)
 {
   QCString visible = XMLHandlers::value(attrib,"visible");
@@ -91,15 +90,29 @@ static bool elemIsVisible(const XMLHandlers::Attributes &attrib,bool defVal=TRUE
     }
     else if (opt && opt->type==ConfigValues::Info::String)
     {
-      return ConfigValues::instance().*(opt->value.s) != "NO";
+      return opt->getBooleanRepresentation();
     }
     else if (!opt)
     {
-      err("found unsupported value %s for visible attribute in layout file\n",
-          qPrint(visible));
+      err("found unsupported value '%s' for visible attribute in layout file, reverting to '%s'\n",
+          qPrint(visible),(defVal?"yes":"no"));
+      return defVal;
     }
   }
-  return visible!="no" && visible!="0";
+  QCString visibleLow = visible.lower();
+  if (visibleLow=="no" || visibleLow=="false" || visibleLow=="0") return FALSE;
+  else if (visibleLow=="yes" || visibleLow=="true" || visibleLow=="1") return TRUE;
+  else
+  {
+    err("found unsupported value '%s' for visible attribute in layout file, reverting to '%s'\n",
+        qPrint(visible),(defVal?"yes":"no"));
+    return defVal;
+  }
+}
+
+static bool parentIsVisible(LayoutNavEntry *parent)
+{
+  return parent==0 || parent->visible();
 }
 
 //---------------------------------------------------------------------------------
@@ -122,17 +135,15 @@ LayoutNavEntry *LayoutNavEntry::find(LayoutNavEntry::Kind kind,
   return result;
 }
 
-
-
 QCString LayoutNavEntry::url() const
 {
   QCString url = baseFile().stripWhiteSpace();
   if ((kind()!=LayoutNavEntry::User && kind()!=LayoutNavEntry::UserGroup) ||
-      (kind()==LayoutNavEntry::UserGroup && url.left(9)=="usergroup"))
+      (kind()==LayoutNavEntry::UserGroup && url.startsWith("usergroup")))
   {
     url = addHtmlExtensionIfMissing(url);
   }
-  else if (url.left(5)=="@ref " || url.left(5)=="\\ref ")
+  else if (url.startsWith("@ref ") || url.startsWith("\\ref "))
   {
     const Definition *d = 0;
     QCString anchor;
@@ -183,11 +194,10 @@ class LayoutParser
 
     void startSimpleEntry(LayoutDocEntry::Kind k,const XMLHandlers::Attributes &attrib)
     {
-      bool isVisible = elemIsVisible(attrib);
-      if (m_part!=-1 && isVisible)
+      bool isVisible = elemIsVisible(attrib) && parentIsVisible(m_rootNav);
+      if (m_part!=LayoutDocManager::Undefined && isVisible)
       {
-        LayoutDocManager::instance().addEntry((LayoutDocManager::LayoutPart)m_part,
-                                              new LayoutDocEntrySimple(k));
+        LayoutDocManager::instance().addEntry(m_part,new LayoutDocEntrySimple(k));
       }
     }
 
@@ -196,15 +206,14 @@ class LayoutParser
     void startSectionEntry(LayoutDocEntry::Kind k,const XMLHandlers::Attributes &attrib,
                            const QCString &title)
     {
-      bool isVisible = elemIsVisible(attrib);
+      bool isVisible = elemIsVisible(attrib) && parentIsVisible(m_rootNav);
       QCString userTitle = XMLHandlers::value(attrib,"title");
       //printf("startSectionEntry: title='%s' userTitle='%s'\n",
       //    qPrint(title),qPrint(userTitle));
       if (userTitle.isEmpty())  userTitle = title;
-      if (m_part!=-1 && isVisible)
+      if (m_part!=LayoutDocManager::Undefined && isVisible)
       {
-        LayoutDocManager::instance().addEntry((LayoutDocManager::LayoutPart)m_part,
-                                              new LayoutDocEntrySection(k,userTitle));
+        LayoutDocManager::instance().addEntry(m_part,new LayoutDocEntrySection(k,userTitle));
       }
     }
 
@@ -219,10 +228,9 @@ class LayoutParser
       if (userTitle.isEmpty())     userTitle     = title;
       if (userSubscript.isEmpty()) userSubscript = subscript;
       //printf("memberdecl: %s\n",qPrint(userTitle));
-      if (m_part!=-1 /*&& isVisible*/)
+      if (m_part!=LayoutDocManager::Undefined)
       {
-        LayoutDocManager::instance().addEntry((LayoutDocManager::LayoutPart)m_part,
-                                              new LayoutDocEntryMemberDecl(type,userTitle,userSubscript));
+        LayoutDocManager::instance().addEntry(m_part,new LayoutDocEntryMemberDecl(type,userTitle,userSubscript));
       }
     }
 
@@ -232,9 +240,9 @@ class LayoutParser
       QCString userTitle = XMLHandlers::value(attrib,"title");
       if (userTitle.isEmpty()) userTitle = title;
       //printf("memberdef: %s\n",qPrint(userTitle));
-      if (m_part!=-1 /*&& isVisible*/)
+      if (m_part!=LayoutDocManager::Undefined)
       {
-        LayoutDocManager::instance().addEntry((LayoutDocManager::LayoutPart)m_part,
+        LayoutDocManager::instance().addEntry(m_part,
                                               new LayoutDocEntryMemberDef(type,userTitle));
       }
     }
@@ -247,7 +255,10 @@ class LayoutParser
     {
       m_scope="navindex/";
       m_rootNav = LayoutDocManager::instance().rootNavEntry();
-      if (m_rootNav) m_rootNav->clear();
+      if (m_rootNav)
+      {
+        m_rootNav->clear();
+      }
     }
 
     void endNavIndex()
@@ -264,13 +275,13 @@ class LayoutParser
 
     void startNavEntry(const XMLHandlers::Attributes &attrib)
     {
-      static bool javaOpt    = Config_getBool(OPTIMIZE_OUTPUT_JAVA);
-      static bool fortranOpt = Config_getBool(OPTIMIZE_FOR_FORTRAN);
-      static bool vhdlOpt    = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
-      static bool sliceOpt   = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
-      static bool hasGraphicalHierarchy = Config_getBool(HAVE_DOT) &&
+      bool javaOpt    = Config_getBool(OPTIMIZE_OUTPUT_JAVA);
+      bool fortranOpt = Config_getBool(OPTIMIZE_FOR_FORTRAN);
+      bool vhdlOpt    = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
+      bool sliceOpt   = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
+      bool hasGraphicalHierarchy = Config_getBool(HAVE_DOT) &&
                                           Config_getBool(GRAPHICAL_HIERARCHY);
-      static bool extractAll = Config_getBool(EXTRACT_ALL);
+      bool extractAll = Config_getBool(EXTRACT_ALL);
       static struct NavEntryMap
       {
         const char *typeStr;       // type attribute name in the XML file
@@ -305,13 +316,13 @@ class LayoutParser
         { "namespaces",
           LayoutNavEntry::Namespaces,
           javaOpt || vhdlOpt   ? theTranslator->trPackages() : fortranOpt || sliceOpt ? theTranslator->trModules() : theTranslator->trNamespaces(),
-          javaOpt || vhdlOpt   ? theTranslator->trPackages() : fortranOpt || sliceOpt ? theTranslator->trModulesList() : theTranslator->trNamespaceList(),
+          javaOpt || vhdlOpt   ? theTranslator->trPackageList() : fortranOpt || sliceOpt ? theTranslator->trModulesList() : theTranslator->trNamespaceList(),
           javaOpt || vhdlOpt   ? theTranslator->trPackageListDescription() : fortranOpt || sliceOpt ? theTranslator->trModulesListDescription(extractAll) : theTranslator->trNamespaceListDescription(extractAll),
           "namespaces"
         },
         { "namespacelist",
           LayoutNavEntry::NamespaceList,
-          javaOpt || vhdlOpt   ? theTranslator->trPackages() : fortranOpt || sliceOpt ? theTranslator->trModulesList() : theTranslator->trNamespaceList(),
+          javaOpt || vhdlOpt   ? theTranslator->trPackageList() : fortranOpt || sliceOpt ? theTranslator->trModulesList() : theTranslator->trNamespaceList(),
           QCString(),
           javaOpt || vhdlOpt   ? theTranslator->trPackageListDescription() : fortranOpt || sliceOpt ? theTranslator->trModulesListDescription(extractAll) : theTranslator->trNamespaceListDescription(extractAll),
           "namespaces"
@@ -463,13 +474,6 @@ class LayoutParser
           theTranslator->trFileMembersDescription(extractAll),
           "globals"
         },
-        //{ "dirs",
-        //  LayoutNavEntry::Dirs,
-        //  theTranslator->trDirectories(),
-        //  QCString(),
-        //  theTranslator->trDirDescription(),
-        //  "dirs"
-        //},
         { "examples",
           LayoutNavEntry::Examples,
           theTranslator->trExamples(),
@@ -492,7 +496,7 @@ class LayoutParser
           "usergroup"
         },
         { 0, // end of list
-          (LayoutNavEntry::Kind)0,
+          static_cast<LayoutNavEntry::Kind>(0),
           QCString(),
           QCString(),
           QCString(),
@@ -528,7 +532,7 @@ class LayoutParser
       }
       QCString baseFile = mapping[i].baseFile;
       QCString title = XMLHandlers::value(attrib,"title");
-      bool isVisible = elemIsVisible(attrib);
+      bool isVisible = elemIsVisible(attrib) && parentIsVisible(m_rootNav);
       if (title.isEmpty()) // use default title
       {
         title = mapping[i].mainName; // use title for main row
@@ -552,7 +556,14 @@ class LayoutParser
       {
         if (!url.isEmpty())
         {
-          baseFile=url;
+          if (url == "[none]")
+          {
+            baseFile = QCString();
+          }
+          else
+          {
+            baseFile=url;
+          }
         }
         else
         {
@@ -574,87 +585,86 @@ class LayoutParser
     {
       LayoutDocManager::instance().clear(LayoutDocManager::Class);
       m_scope="class/";
-      m_part = (int)LayoutDocManager::Class;
+      m_part = LayoutDocManager::Class;
     }
 
     void endClass()
     {
       m_scope="";
-      m_part = -1;
+      m_part = LayoutDocManager::Undefined;
     }
 
     void startNamespace(const XMLHandlers::Attributes &)
     {
       LayoutDocManager::instance().clear(LayoutDocManager::Namespace);
       m_scope="namespace/";
-      m_part = (int)LayoutDocManager::Namespace;
+      m_part = LayoutDocManager::Namespace;
     }
 
     void endNamespace()
     {
       m_scope="";
-      m_part = -1;
+      m_part = LayoutDocManager::Undefined;
     }
 
     void startConcept(const XMLHandlers::Attributes &)
     {
       LayoutDocManager::instance().clear(LayoutDocManager::Concept);
       m_scope="concept/";
-      m_part = (int)LayoutDocManager::Concept;
+      m_part = LayoutDocManager::Concept;
     }
 
     void endConcept()
     {
       m_scope="";
-      m_part = -1;
+      m_part = LayoutDocManager::Undefined;
     }
 
     void startFile(const XMLHandlers::Attributes &)
     {
       LayoutDocManager::instance().clear(LayoutDocManager::File);
       m_scope="file/";
-      m_part = (int)LayoutDocManager::File;
+      m_part = LayoutDocManager::File;
     }
 
     void endFile()
     {
       m_scope="";
-      m_part = -1;
+      m_part = LayoutDocManager::Undefined;
     }
 
     void startGroup(const XMLHandlers::Attributes &)
     {
       LayoutDocManager::instance().clear(LayoutDocManager::Group);
       m_scope="group/";
-      m_part = (int)LayoutDocManager::Group;
+      m_part = LayoutDocManager::Group;
     }
 
     void endGroup()
     {
       m_scope="";
-      m_part = -1;
+      m_part = LayoutDocManager::Undefined;
     }
 
     void startDirectory(const XMLHandlers::Attributes &)
     {
       LayoutDocManager::instance().clear(LayoutDocManager::Directory);
       m_scope="directory/";
-      m_part = (int)LayoutDocManager::Directory;
+      m_part = LayoutDocManager::Directory;
     }
 
     void endDirectory()
     {
       m_scope="";
-      m_part = -1;
+      m_part = LayoutDocManager::Undefined;
     }
 
     void startMemberDef(const XMLHandlers::Attributes &)
     {
       m_scope+="memberdef/";
-      if (m_part!=-1)
+      if (m_part!=LayoutDocManager::Undefined)
       {
-        LayoutDocManager::instance().addEntry((LayoutDocManager::LayoutPart)m_part,
-                                              new LayoutDocEntrySimple(LayoutDocEntry::MemberDefStart));
+        LayoutDocManager::instance().addEntry(m_part,new LayoutDocEntrySimple(LayoutDocEntry::MemberDefStart));
       }
     }
 
@@ -664,10 +674,9 @@ class LayoutParser
       if (i!=-1)
       {
         m_scope=m_scope.left(i);
-        if (m_part!=-1)
+        if (m_part!=LayoutDocManager::Undefined)
         {
-          LayoutDocManager::instance().addEntry((LayoutDocManager::LayoutPart)m_part,
-                                              new LayoutDocEntrySimple(LayoutDocEntry::MemberDefEnd));
+          LayoutDocManager::instance().addEntry(m_part,new LayoutDocEntrySimple(LayoutDocEntry::MemberDefEnd));
         }
       }
     }
@@ -675,10 +684,9 @@ class LayoutParser
     void startMemberDecl(const XMLHandlers::Attributes &)
     {
       m_scope+="memberdecl/";
-      if (m_part!=-1)
+      if (m_part!=LayoutDocManager::Undefined)
       {
-        LayoutDocManager::instance().addEntry((LayoutDocManager::LayoutPart)m_part,
-                                              new LayoutDocEntrySimple(LayoutDocEntry::MemberDeclStart));
+        LayoutDocManager::instance().addEntry(m_part,new LayoutDocEntrySimple(LayoutDocEntry::MemberDeclStart));
       }
     }
 
@@ -688,10 +696,9 @@ class LayoutParser
       if (i!=-1)
       {
         m_scope=m_scope.left(i);
-        if (m_part!=-1)
+        if (m_part!=LayoutDocManager::Undefined)
         {
-          LayoutDocManager::instance().addEntry((LayoutDocManager::LayoutPart)m_part,
-                                              new LayoutDocEntrySimple(LayoutDocEntry::MemberDeclEnd));
+          LayoutDocManager::instance().addEntry(m_part,new LayoutDocEntrySimple(LayoutDocEntry::MemberDeclEnd));
         }
       }
     }
@@ -702,7 +709,7 @@ class LayoutParser
    ~LayoutParser() { delete m_rootNav; }
 
     QCString m_scope;
-    int m_part = -1;
+    LayoutDocManager::LayoutPart m_part = LayoutDocManager::Undefined;
     LayoutNavEntry *m_rootNav = 0;
     bool m_invalidEntry = false;
     static int m_userGroupCount;
@@ -710,6 +717,8 @@ class LayoutParser
 };
 
 //---------------------------------------------------------------------------------
+
+namespace {
 
 struct ElementCallbacks
 {
@@ -889,11 +898,11 @@ static const std::map< std::string, ElementCallbacks > g_elementHandlers =
                                                     endCb()
                                                   } },
   { "class/memberdecl/packagemethods",            { startCb(&LayoutParser::startMemberDeclEntry, MemberListType_pacMethods,
-                                                            []() { return compileOptions(theTranslator->trPackageMembers()); }),
+                                                            []() { return compileOptions(theTranslator->trPackageFunctions()); }),
                                                     endCb()
                                                   } },
   { "class/memberdecl/packagestaticmethods",      { startCb(&LayoutParser::startMemberDeclEntry, MemberListType_pacStaticMethods,
-                                                            []() { return compileOptions(theTranslator->trStaticPackageMembers()); }),
+                                                            []() { return compileOptions(theTranslator->trStaticPackageFunctions()); }),
                                                     endCb()
                                                   } },
   { "class/memberdecl/packageattributes",         { startCb(&LayoutParser::startMemberDeclEntry, MemberListType_pacAttribs,
@@ -1499,6 +1508,9 @@ static const std::map< std::string, ElementCallbacks > g_elementHandlers =
 
 };
 
+
+} // namespace
+
 void LayoutParser::startElement( const std::string &name, const XMLHandlers::Attributes& attrib )
 {
   //printf("startElement [%s]::[%s]\n",qPrint(m_scope),qPrint(name));
@@ -1579,7 +1591,7 @@ LayoutDocManager & LayoutDocManager::instance()
 
 const LayoutDocEntryList &LayoutDocManager::docEntries(LayoutDocManager::LayoutPart part) const
 {
-  return d->docEntries[(int)part];
+  return d->docEntries[static_cast<int>(part)];
 }
 
 LayoutNavEntry* LayoutDocManager::rootNavEntry() const
@@ -1589,12 +1601,12 @@ LayoutNavEntry* LayoutDocManager::rootNavEntry() const
 
 void LayoutDocManager::addEntry(LayoutDocManager::LayoutPart p,LayoutDocEntry *e)
 {
-  d->docEntries[(int)p].push_back(std::unique_ptr<LayoutDocEntry>(e));
+  d->docEntries[static_cast<int>(p)].push_back(std::unique_ptr<LayoutDocEntry>(e));
 }
 
 void LayoutDocManager::clear(LayoutDocManager::LayoutPart p)
 {
-  d->docEntries[(int)p].clear();
+  d->docEntries[static_cast<int>(p)].clear();
 }
 
 void LayoutDocManager::parse(const QCString &fileName)
@@ -1646,8 +1658,8 @@ QCString extractLanguageSpecificTitle(const QCString &input,SrcLangExt lang)
     e=input.find('|',s);
     i=input.find('=',s);
     assert(i>s);
-    int key=input.mid(s,i-s).toInt();
-    if (key==(int)lang) // found matching key
+    size_t key=input.mid(s,i-s).toUInt();
+    if (key==lang) // found matching key
     {
       if (e==-1) e=input.length();
       return input.mid(i+1,e-i-1);

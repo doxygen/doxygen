@@ -83,6 +83,10 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
     {
       return "ja";
     }
+    virtual QCString getLanguageString()
+    {
+      return "0x411 Japanese";
+    }
     virtual QCString latexFontenc()
     {
       return "";
@@ -94,6 +98,10 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
     virtual QCString latexDocumentPost()
     {
       return "\\end{CJK}\n";
+    }
+    virtual bool needsPunctuation()
+    {
+      return false;
     }
 
     /*! used in the compound documentation before a list of related functions. */
@@ -169,7 +177,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
      */
     virtual QCString trGeneratedAutomatically(const QCString &s)
     { QCString result = "Doxygen により";
-      if (!s.isEmpty()) result=(QCString)" "+s+"の";
+      if (!s.isEmpty()) result=" "+s+"の";
       result+="ソースコードから抽出しました。";
       return result;
     }
@@ -424,6 +432,10 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
       {
         return "データ構造詳解";
       }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+          return trDesignUnitDocumentation();
+      }
       else
       {
         return "クラス詳解";
@@ -441,12 +453,6 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
      */
     virtual QCString trExampleDocumentation()
     { return "各例詳解"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all related pages.
-     */
-    virtual QCString trPageDocumentation()
-    { return "ページ詳解"; }
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
@@ -536,8 +542,8 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
      */
     virtual QCString trGeneratedAt(const QCString &date,const QCString &projName)
     {
-      QCString result = (QCString)date+"作成";
-      if (!projName.isEmpty()) result+=(QCString)" - " + projName;
+      QCString result = date+"作成";
+      if (!projName.isEmpty()) result+=" - " + projName;
       result+=" / 構成: ";
       return result;
     }
@@ -545,12 +551,8 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
     /*! this text is put before a class diagram */
     virtual QCString trClassDiagram(const QCString &clName)
     {
-      return (QCString)clName+" の継承関係図";
+      return clName+" の継承関係図";
     }
-
-    /*! this text is generated when the \\internal command is used. */
-    virtual QCString trForInternalUseOnly()
-    { return "内部処理用です。"; }
 
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
@@ -627,7 +629,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
                                  ClassDef::CompoundType compType,
                                  bool isTemplate)
     {
-      QCString result=(QCString)clName+" ";
+      QCString result=clName+" ";
       switch(compType)
       {
         case ClassDef::Class:      result+="クラス"; break;
@@ -646,14 +648,14 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
     /*! used as the title of the HTML page of a file */
     virtual QCString trFileReference(const QCString &fileName)
     {
-      QCString result=(QCString)fileName+" ファイル";
+      QCString result=fileName+" ファイル";
       return result;
     }
 
     /*! used as the title of the HTML page of a namespace */
     virtual QCString trNamespaceReference(const QCString &namespaceName)
     {
-      QCString result=(QCString)namespaceName+" 名前空間";
+      QCString result=namespaceName+" 名前空間";
       return result;
     }
 
@@ -792,7 +794,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
         bool /*single*/)
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
-      QCString result=(QCString)"この";
+      QCString result="この";
       switch(compType)
       {
         case ClassDef::Class:      result+="クラス"; break;
@@ -852,12 +854,12 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
     /*! this text is put before a collaboration diagram */
     virtual QCString trCollaborationDiagram(const QCString &clName)
     {
-      return (QCString)clName+" 連携図";
+      return clName+" 連携図";
     }
     /*! this text is put before an include dependency graph */
     virtual QCString trInclDepGraph(const QCString &fName)
     {
-    return (QCString)fName+" の依存先関係図:";
+    return fName+" の依存先関係図:";
     }
     /*! header that is put before the list of constructor/destructors. */
     virtual QCString trConstructorDocumentation()
@@ -1130,12 +1132,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
     /*! Used as the title of a Java package */
     virtual QCString trPackage(const QCString &name)
     {
-      return (QCString)name+" パッケージ";
-    }
-    /*! Title of the package index page */
-    virtual QCString trPackageList()
-    {
-      return "パッケージ一覧";
+      return name+" パッケージ";
     }
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
@@ -1377,14 +1374,19 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
     /*! Used as a heading for a list of Java class functions with package
      * scope.
      */
-    virtual QCString trPackageMembers()
+    virtual QCString trPackageFunctions()
     {
       return "関数";
     }
+    virtual QCString trPackageMembers()
+    {
+      return "パッケージ内のメンバ";
+    }
+
     /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
-    virtual QCString trStaticPackageMembers()
+    virtual QCString trStaticPackageFunctions()
     {
       return "静的関数";
     }
@@ -1495,14 +1497,6 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
      */
     virtual QCString trDirectories()
     { return "ディレクトリ"; }
-
-    /*! This returns a sentences that introduces the directory hierarchy.
-     *  and the fact that it is sorted alphabetically per level
-     */
-    virtual QCString trDirDescription()
-    { return "このディレクトリ一覧はおおまかにはソートされていますが、"
-             "完全にアルファベット順でソートされてはいません。";
-    }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.
@@ -1651,7 +1645,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
         default: break;
       }
       if (isTemplate) result += "テンプレート ";
-      result+=(QCString)clName;
+      result+=clName;
       return result;
     }
     /*! used as the title of the HTML page of a module (Fortran) */
@@ -1783,7 +1777,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
      */
     virtual QCString trFileIn(const QCString &name)
     {
-      return (QCString)name+"にあるファイル";
+      return name+"にあるファイル";
     }
 
     /*! when clicking a directory dependency label, a page with a
@@ -1792,7 +1786,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
      */
     virtual QCString trIncludesFileIn(const QCString &name)
     {
-      return (QCString)name+"にあるファイルを include している";
+      return name+"にあるファイルを include している";
     }
 
     /** Compiles a date string.
@@ -1810,6 +1804,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
                                 bool includeTime)
     {
       static const char *days[]   = { "月", "火", "水", "木", "金", "土", "日" };
+      static const char *months[] = { "1","2","3","4","5","6","7","8","9","10","11","12" };
       QCString sdate;
       sdate.sprintf("%.4d年%.2d月%.2d日(%s)",year,month,day,days[dayOfWeek-1]);
       if (includeTime)
@@ -1819,6 +1814,20 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
         sdate+=stime;
       }
       return sdate;
+    }
+    virtual QCString trDayOfWeek(int dayOfWeek, bool, bool full)
+    {
+      static const char *days_short[]   = { "月", "火", "水", "木", "金", "土", "日" };
+      static const char *days_full[]    = { "月曜日", "火曜日", "水曜日", "木曜日", "金曜日", "土曜日", "日曜日" };
+      QCString text  = full? days_full[dayOfWeek-1] : days_short[dayOfWeek-1];
+      return text;
+    }
+    virtual QCString trMonth(int month, bool, bool full)
+    {
+      static const char *months_short[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12" };
+      static const char *months_full[]  = { "1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月" };
+      QCString text  = full? months_full[month-1] : months_short[month-1];
+      return text;
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1955,14 +1964,14 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
     /** UNO IDL service page title */
     virtual QCString trServiceReference(const QCString &sName)
     {
-      QCString result=(QCString)sName;
+      QCString result=sName;
       result+=" サービス詳解";
       return result;
     }
     /** UNO IDL singleton page title */
     virtual QCString trSingletonReference(const QCString &sName)
     {
-      QCString result=(QCString)sName;
+      QCString result=sName;
       result+=" Singleton 詳解";
       return result;
     }

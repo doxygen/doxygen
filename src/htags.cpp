@@ -160,8 +160,8 @@ QCString Htags::path2URL(const QCString &path)
 {
   QCString url,symName=path;
   QCString dir = g_inputDir.absPath();
-  int dl=dir.length();
-  if ((int)symName.length()>dl+1)
+  size_t dl=dir.length();
+  if (symName.length()>dl+1)
   {
     symName = symName.mid(dl+1);
   }

@@ -30,18 +30,20 @@
 #include <algorithm>
 #include <fstream>
 #include <iostream>
+#include <iomanip>
 
+#include "config.h"
 #include "regex.h"
 #include "configimpl.h"
 #include "version.h"
 #include "portable.h"
 #include "message.h"
-#include "lang_cfg.h"
 #include "language.h"
 #include "configoptions.h"
 #include "fileinfo.h"
 #include "dir.h"
 #include "textstream.h"
+#include "dotattributes.h"
 
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
@@ -84,6 +86,8 @@ static QCString configStringRecode(
     const QCString &str,
     const QCString &fromEncoding,
     const QCString &toEncoding);
+
+static bool containsEnvVar(QCString &str);
 
 #define MAX_INCLUDE_DEPTH 10
 #define YY_NEVER_INTERACTIVE 1
@@ -141,10 +145,10 @@ void ConfigOption::writeIntValue(TextStream &t,int i,bool initSpace)
   t << i;
 }
 
-void ConfigOption::writeStringValue(TextStream &t,const QCString &s,bool initSpace)
+void ConfigOption::writeStringValue(TextStream &t,const QCString &s,bool initSpace, bool wasQuoted)
 {
   char c;
-  bool needsEscaping=FALSE;
+  bool needsEscaping=wasQuoted;
   // convert the string back to it original g_encoding
   QCString se = configStringRecode(s,"UTF-8",m_encoding);
   if (se.isEmpty()) return;
@@ -182,7 +186,12 @@ void ConfigOption::writeStringList(TextStream &t,const StringVector &l)
     QCString s=p.c_str();
     if (!first)
       t << "                        ";
-    writeStringValue(t,s);
+    bool wasQuoted = ((s.at(0)=='"') && (s.at(s.length()-1)=='"'));
+    if (wasQuoted)
+    {
+      s = s.mid(1,s.length()-2);
+    }
+    writeStringValue(t,s,true,wasQuoted);
     first=FALSE;
   }
 }
@@ -192,10 +201,14 @@ void ConfigOption::writeStringList(TextStream &t,const StringVector &l)
 
 ConfigImpl *ConfigImpl::m_instance = 0;
 
-void ConfigInt::convertStrToVal()
+void ConfigInt::convertStrToVal(Config::CompareMode compareMode)
 {
   if (!m_valueString.isEmpty())
   {
+    if (compareMode == Config::CompareMode::CompressedNoEnv)
+    {
+       if (containsEnvVar(m_valueString)) return;
+    }
     bool ok;
     int val = m_valueString.toInt(&ok);
     if (!ok || val<m_minVal || val>m_maxVal)
@@ -230,10 +243,14 @@ static bool convertStringToBool(const QCString &str,bool &isValid)
   return false;
 }
 
-void ConfigBool::convertStrToVal()
+void ConfigBool::convertStrToVal(Config::CompareMode compareMode)
 {
   if (!m_valueString.stripWhiteSpace().isEmpty())
   {
+    if (compareMode == Config::CompareMode::CompressedNoEnv)
+    {
+       if (containsEnvVar(m_valueString)) return;
+    }
     bool isValid=false;
     bool b = convertStringToBool(m_valueString,isValid);
     if (isValid)
@@ -248,12 +265,16 @@ void ConfigBool::convertStrToVal()
   }
 }
 
-void ConfigEnum::convertStrToVal()
+void ConfigEnum::convertStrToVal(Config::CompareMode compareMode)
 {
   if (m_value.isEmpty())
   {
     m_value = m_defValue;
     return;
+  }
+  if (compareMode == Config::CompareMode::CompressedNoEnv)
+  {
+     if (containsEnvVar(m_value)) return;
   }
   QCString val = m_value.stripWhiteSpace().lower();
   for (const auto &s : m_valueRange)
@@ -281,7 +302,7 @@ QCString &ConfigImpl::getString(const char *fileName,int num,const char *name) c
   {
     config_term("%s<%d>: Internal error: Requested option %s not of string type!\n",fileName,num,name);
   }
-  return *((ConfigString *)it->second)->valueRef();
+  return *(dynamic_cast<ConfigString *>(it->second))->valueRef();
 }
 
 StringVector &ConfigImpl::getList(const char *fileName,int num,const char *name) const
@@ -295,7 +316,7 @@ StringVector &ConfigImpl::getList(const char *fileName,int num,const char *name)
   {
     config_term("%s<%d>: Internal error: Requested option %s not of list type!\n",fileName,num,name);
   }
-  return *((ConfigList *)it->second)->valueRef();
+  return *(dynamic_cast<ConfigList *>(it->second))->valueRef();
 }
 
 QCString &ConfigImpl::getEnum(const char *fileName,int num,const char *name) const
@@ -309,7 +330,7 @@ QCString &ConfigImpl::getEnum(const char *fileName,int num,const char *name) con
   {
     config_term("%s<%d>: Internal error: Requested option %s not of enum type!\n",fileName,num,name);
   }
-  return *((ConfigEnum *)it->second)->valueRef();
+  return *(dynamic_cast<ConfigEnum *>(it->second))->valueRef();
 }
 
 int &ConfigImpl::getInt(const char *fileName,int num,const char *name) const
@@ -323,7 +344,7 @@ int &ConfigImpl::getInt(const char *fileName,int num,const char *name) const
   {
     config_term("%s<%d>: Internal error: Requested option %s not of integer type!\n",fileName,num,name);
   }
-  return *((ConfigInt *)it->second)->valueRef();
+  return *(dynamic_cast<ConfigInt *>(it->second))->valueRef();
 }
 
 bool &ConfigImpl::getBool(const char *fileName,int num,const char *name) const
@@ -337,7 +358,7 @@ bool &ConfigImpl::getBool(const char *fileName,int num,const char *name) const
   {
     config_term("%s<%d>: Internal error: Requested option %s not of boolean type!\n",fileName,num,name);
   }
-  return *((ConfigBool *)it->second)->valueRef();
+  return *(dynamic_cast<ConfigBool *>(it->second))->valueRef();
 }
 
 /* ------------------------------------------ */
@@ -402,7 +423,7 @@ bool ConfigList::isDefault()
   return true;
 }
 
-void ConfigList::compareDoxyfile(TextStream &t)
+void ConfigList::compareDoxyfile(TextStream &t, Config::CompareMode)
 {
   if (!isDefault()) writeTemplate(t,TRUE,TRUE);
 }
@@ -443,7 +464,7 @@ void ConfigEnum::writeTemplate(TextStream &t,bool sl,bool)
   t << "\n";
 }
 
-void ConfigEnum::compareDoxyfile(TextStream &t)
+void ConfigEnum::compareDoxyfile(TextStream &t, Config::CompareMode)
 {
   if (!isDefault()) writeTemplate(t,TRUE,TRUE);
 }
@@ -477,7 +498,7 @@ void ConfigString::writeTemplate(TextStream &t,bool sl,bool)
   t << "\n";
 }
 
-void ConfigString::compareDoxyfile(TextStream &t)
+void ConfigString::compareDoxyfile(TextStream &t, Config::CompareMode)
 {
   if (!isDefault()) writeTemplate(t,TRUE,TRUE);
 }
@@ -520,9 +541,9 @@ void ConfigInt::writeTemplate(TextStream &t,bool sl,bool upd)
   t << "\n";
 }
 
-void ConfigInt::compareDoxyfile(TextStream &t)
+void ConfigInt::compareDoxyfile(TextStream &t,Config::CompareMode compareMode)
 {
-  if (!isDefault()) writeTemplate(t,TRUE,TRUE);
+  if (!isDefault() || ((compareMode == Config::CompareMode::CompressedNoEnv) && containsEnvVar(m_valueString))) writeTemplate(t,TRUE,TRUE);
 }
 
 void ConfigInt::writeXMLDoxyfile(TextStream &t)
@@ -562,9 +583,9 @@ void ConfigBool::writeTemplate(TextStream &t,bool sl,bool upd)
   t << "\n";
 }
 
-void ConfigBool::compareDoxyfile(TextStream &t)
+void ConfigBool::compareDoxyfile(TextStream &t,Config::CompareMode compareMode)
 {
-  if (!isDefault()) writeTemplate(t,TRUE,TRUE);
+  if (!isDefault() || ((compareMode == Config::CompareMode::CompressedNoEnv) && containsEnvVar(m_valueString))) writeTemplate(t,TRUE,TRUE);
 }
 
 void ConfigBool::writeXMLDoxyfile(TextStream &t)
@@ -615,6 +636,11 @@ static ConfigImpl       *g_config;
 #undef  YY_INPUT
 #define YY_INPUT(buf,result,max_size) result=yyread(buf,max_size);
 
+// otherwise the filename would be the name of the converted file (*.cpp instead of *.l)
+static inline const char *getLexerFILE() {return __FILE__;}
+#define LEX_NO_REENTRANT
+#include "doxygen_lex.h"
+
 static yy_size_t yyread(char *buf,yy_size_t max_size)
 {
   // no file included
@@ -632,7 +658,7 @@ static yy_size_t yyread(char *buf,yy_size_t max_size)
   else
   {
     //assert(g_includeStack.current()->newState==YY_CURRENT_BUFFER);
-    return (yy_size_t)fread(buf,1,max_size,g_includeStack.back()->filePtr);
+    return static_cast<yy_size_t>(fread(buf,1,max_size,g_includeStack.back()->filePtr));
   }
 }
 
@@ -643,22 +669,22 @@ static QCString configStringRecode(
     const QCString &outputEncoding)
 {
   if (inputEncoding.isEmpty() || outputEncoding.isEmpty() || inputEncoding==outputEncoding) return str;
-  int inputSize=str.length();
-  int outputSize=inputSize*4+1;
+  size_t inputSize=str.length();
+  size_t outputSize=inputSize*4+1;
   QCString output(outputSize);
   void *cd = portable_iconv_open(outputEncoding.data(),inputEncoding.data());
-  if (cd==(void *)(-1))
+  if (cd==reinterpret_cast<void *>(-1))
   {
     config_term("Error: unsupported character conversion: '%s'->'%s'\n",
         qPrint(inputEncoding),qPrint(outputEncoding));
   }
-  size_t iLeft=(size_t)inputSize;
-  size_t oLeft=(size_t)outputSize;
+  size_t iLeft=inputSize;
+  size_t oLeft=outputSize;
   const char *inputPtr  = str.data();
   char *outputPtr = output.rawData();
   if (!portable_iconv(cd, &inputPtr, &iLeft, &outputPtr, &oLeft))
   {
-    outputSize-=(int)oLeft;
+    outputSize-=oLeft;
     output.resize(outputSize+1);
     output.at(outputSize)='\0';
     //printf("iconv: input size=%d output size=%d\n[%s]\n",size,newSize,qPrint(srcBuf));
@@ -674,7 +700,7 @@ static QCString configStringRecode(
 
 static void checkEncoding()
 {
-  ConfigString *option = (ConfigString*)g_config->get("DOXYFILE_ENCODING");
+  ConfigString *option = dynamic_cast<ConfigString*>(g_config->get("DOXYFILE_ENCODING"));
   g_encoding = *option->valueRef();
 }
 
@@ -774,21 +800,24 @@ static void processList()
   int l = s.length();
 
   QCString elemStr;
+  bool wasQuote=false;
 
   // helper to push elemStr to the list and clear it
-  auto addElem = [&elemStr]()
+  auto addElem = [&elemStr,&wasQuote]()
   {
     if (!elemStr.isEmpty())
     {
       QCString e = configStringRecode(elemStr,g_encoding,"UTF-8");
       //printf("Processed list element '%s'\n",qPrint(e));
+      if (wasQuote) e = "\""+e+"\"";
+      wasQuote = false;
       g_list->push_back(e.str());
       elemStr="";
     }
   };
 
   bool needsSeparator=false;
-  int insideQuote=false;
+  bool insideQuote=false;
   bool warned=false;
   for (int i=0;i<l;i++)
   {
@@ -814,6 +843,7 @@ static void processList()
       if (!insideQuote)
       {
         insideQuote=true;
+        wasQuote=true;
       }
       else // this quote ends an element
       {
@@ -984,28 +1014,28 @@ static void readIncludeFile(const QCString &incName)
                                                  BEGIN(SkipInvalid);
                                                  break;
                                                case ConfigOption::O_List:
-                                                 g_list = ((ConfigList *)option)->valueRef();
+                                                 g_list = dynamic_cast<ConfigList *>(option)->valueRef();
                                                  g_list->clear();
                                                  g_listStr="";
                                                  BEGIN(GetStrList);
                                                  break;
                                                case ConfigOption::O_Enum:
-                                                 g_string = ((ConfigEnum *)option)->valueRef();
+                                                 g_string = dynamic_cast<ConfigEnum *>(option)->valueRef();
                                                  g_string->resize(0);
                                                  BEGIN(GetString);
                                                  break;
                                                case ConfigOption::O_String:
-                                                 g_string = ((ConfigString *)option)->valueRef();
+                                                 g_string = dynamic_cast<ConfigString *>(option)->valueRef();
                                                  g_string->resize(0);
                                                  BEGIN(GetString);
                                                  break;
                                                case ConfigOption::O_Int:
-                                                 g_string = ((ConfigInt *)option)->valueStringRef();
+                                                 g_string = dynamic_cast<ConfigInt *>(option)->valueStringRef();
                                                  g_string->resize(0);
                                                  BEGIN(GetString);
                                                  break;
                                                case ConfigOption::O_Bool:
-                                                 g_string = ((ConfigBool *)option)->valueStringRef();
+                                                 g_string = dynamic_cast<ConfigBool *>(option)->valueStringRef();
                                                  g_string->resize(0);
                                                  BEGIN(GetString);
                                                  break;
@@ -1021,17 +1051,17 @@ static void readIncludeFile(const QCString &incName)
                                                               "         To avoid this warning please remove this line from your configuration "
                                                               "file or upgrade it using \"doxygen -u\"\n", qPrint(g_cmd),g_yyLineNr,qPrint(g_yyFileName));
                                                  }
-                                                 ((ConfigObsolete*)option)->markAsPresent();
-                                                 if (((ConfigObsolete*)option)->orgType()==ConfigOption::O_List)
+                                                 dynamic_cast<ConfigObsolete*>(option)->markAsPresent();
+                                                 if (dynamic_cast<ConfigObsolete*>(option)->orgType()==ConfigOption::O_List)
                                                  {
-                                                   g_list = ((ConfigObsolete*)option)->valueListRef();
+                                                   g_list = dynamic_cast<ConfigObsolete*>(option)->valueListRef();
                                                    g_list->clear();
                                                    g_listStr="";
                                                    BEGIN(GetStrList);
                                                  }
                                                  else
                                                  {
-                                                   g_string = ((ConfigObsolete*)option)->valueStringRef();
+                                                   g_string = dynamic_cast<ConfigObsolete*>(option)->valueStringRef();
                                                    g_string->resize(0);
                                                    BEGIN(GetString);
                                                  }
@@ -1072,7 +1102,7 @@ static void readIncludeFile(const QCString &incName)
                                                 BEGIN(SkipInvalid);
                                                 break;
                                               case ConfigOption::O_List:
-                                                g_list = ((ConfigList *)option)->valueRef();
+                                                g_list = dynamic_cast<ConfigList *>(option)->valueRef();
                                                 g_listStr="";
                                                 BEGIN(GetStrList);
                                                 break;
@@ -1088,9 +1118,9 @@ static void readIncludeFile(const QCString &incName)
                                                  config_warn("Tag '%s' at line %d of file %s has become obsolete.\n"
                                                             "To avoid this warning please update your configuration "
                                                             "file using \"doxygen -u\"\n", qPrint(g_cmd),g_yyLineNr,qPrint(g_yyFileName));
-                                                 if (((ConfigObsolete*)option)->orgType()==ConfigOption::O_List)
+                                                 if (dynamic_cast<ConfigObsolete*>(option)->orgType()==ConfigOption::O_List)
                                                  {
-                                                   g_list = ((ConfigObsolete*)option)->valueListRef();
+                                                   g_list = dynamic_cast<ConfigObsolete*>(option)->valueListRef();
                                                    g_listStr="";
                                                    BEGIN(GetStrList);
                                                  }
@@ -1220,14 +1250,14 @@ void ConfigImpl::writeTemplate(TextStream &t,bool sl,bool upd)
   }
 }
 
-void ConfigImpl::compareDoxyfile(TextStream &t)
+void ConfigImpl::compareDoxyfile(TextStream &t,Config::CompareMode compareMode)
 {
   t << "# Difference with default Doxyfile " << getFullVersion();
   t << "\n";
   for (const auto &option : m_options)
   {
     option->m_userComment = "";
-    option->compareDoxyfile(t);
+    option->compareDoxyfile(t,compareMode);
   }
 }
 
@@ -1242,11 +1272,11 @@ void ConfigImpl::writeXMLDoxyfile(TextStream &t)
   t << "</doxyfile>\n";
 }
 
-void ConfigImpl::convertStrToVal()
+void ConfigImpl::convertStrToVal(Config::CompareMode compareMode)
 {
   for (const auto &option : m_options)
   {
-    option->convertStrToVal();
+    option->convertStrToVal(compareMode);
   }
 }
 void ConfigImpl::emptyValueToDefault()
@@ -1255,6 +1285,17 @@ void ConfigImpl::emptyValueToDefault()
   {
     option->emptyValueToDefault();
   }
+}
+
+static const reg::Ex reEnvVar(R"(\$\((\a[\w.-]*)\))");                 // e.g. $(HOME)
+static const reg::Ex reEnvVarExt(R"(\$\((\a[\w.-]*\(\a[\w.-]*\))\))"); // e.g. $(PROGRAMFILES(X86))
+static const reg::Ex reEnvVarCMake(R"(@\a\w*)");                       // CMake type replacement
+
+static bool containsEnvVar(QCString &str)
+{
+  reg::Match m;
+  std::string s = str.str();
+  return reg::search(s,m,reEnvVar) || reg::search(s,m,reEnvVarExt) || reg::search(s,m,reEnvVarCMake);
 }
 
 static void substEnvVarsInString(QCString &str)
@@ -1282,10 +1323,7 @@ static void substEnvVarsInString(QCString &str)
     return result;
   };
 
-  // match e.g. re1=$(HOME) but also re2=$(PROGRAMFILES(X86))
-  static const reg::Ex re1(R"(\$\((\a[\w.-]*)\))");
-  static const reg::Ex re2(R"(\$\((\a[\w.-]*\(\a[\w.-]*\))\))");
-  str = QCString(replace(replace(str.str(),re1),re2)).stripWhiteSpace();
+  str = QCString(replace(replace(str.str(),reEnvVar),reEnvVarExt)).stripWhiteSpace();
 }
 
 static void substEnvVarsInStrList(StringVector &sl)
@@ -1294,7 +1332,15 @@ static void substEnvVarsInStrList(StringVector &sl)
   for (const auto &s : sl)
   {
     QCString result = s.c_str();
-    bool wasQuoted = (result.find(' ')!=-1) || (result.find('\t')!=-1) || (result.find('"')!=-1);
+    bool wasQuoted = ((result.at(0)=='"') && (result.at(result.length()-1)=='"'));
+    if (wasQuoted)
+    {
+      result = result.mid(1,result.length()-2);
+    }
+    else
+    {
+      wasQuoted = (result.find(' ')!=-1) || (result.find('\t')!=-1) || (result.find('"')!=-1);
+    }
     // here we strip the quote again
     substEnvVarsInString(result);
 
@@ -1514,7 +1560,6 @@ static bool checkFileName(const QCString &s,const char *optionName)
   return true;
 }
 
-#include "config.h"
 
 void Config::init()
 {
@@ -1551,7 +1596,63 @@ static void checkList(const StringVector &list,const char *name, bool equalRequi
   }
 }
 
-void Config::checkAndCorrect(bool quiet)
+static void adjustBoolSetting(const char *depOption, const char *optionName,bool expectedValue)
+{
+  // lookup option by name
+  const ConfigValues::Info *option = ConfigValues::instance().get(optionName);
+  if (option && option->type==ConfigValues::Info::Bool) // safety check
+  {
+    if (ConfigValues::instance().*(option->value.b)!=expectedValue) // current value differs from expectation
+    {
+      err("When enabling %s the %s option should be disabled. I'll adjust it for you.\n",depOption,optionName);
+      ConfigValues::instance().*(option->value.b)=expectedValue; // adjust option
+    }
+  }
+}
+
+static void adjustStringSetting(const char *depOption, const char *optionName,const QCString &expectedValue)
+{
+  // lookup option by name
+  const ConfigValues::Info *option = ConfigValues::instance().get(optionName);
+  if (option && option->type==ConfigValues::Info::String) // safety check
+  {
+    if (ConfigValues::instance().*(option->value.s)!=expectedValue) // current value differs from expectation
+    {
+      err("When enabling %s the %s option should have value '%s'. I'll adjust it for you.\n",depOption,optionName,qPrint(expectedValue));
+      ConfigValues::instance().*(option->value.s)=expectedValue; // adjust option
+    }
+  }
+}
+
+static void adjustColorStyleSetting(const char *depOption)
+{
+  auto updateColorStyle = [&depOption](HTML_COLORSTYLE_t curStyle,HTML_COLORSTYLE_t newStyle)
+  {
+    err("When enabling '%s' the 'HTML_COLORSTYLE' option should be either 'LIGHT' or 'DARK' but has value '%s'. I'll adjust it for you to '%s'.\n",
+        depOption,
+        qPrint(HTML_COLORSTYLE_enum2str(curStyle)),
+        qPrint(HTML_COLORSTYLE_enum2str(newStyle)));
+    Config_updateEnum(HTML_COLORSTYLE,newStyle);
+  };
+  auto colorStyle = Config_getEnum(HTML_COLORSTYLE);
+  switch (colorStyle)
+  {
+    case HTML_COLORSTYLE_t::LIGHT:
+    case HTML_COLORSTYLE_t::DARK:
+      // no adjustment needed
+      break;
+    case HTML_COLORSTYLE_t::AUTO_LIGHT:
+    case HTML_COLORSTYLE_t::TOGGLE:
+      updateColorStyle(colorStyle,HTML_COLORSTYLE_t::LIGHT);
+      break;
+    case HTML_COLORSTYLE_t::AUTO_DARK:
+      updateColorStyle(colorStyle,HTML_COLORSTYLE_t::DARK);
+      break;
+  }
+}
+
+
+void Config::checkAndCorrect(bool quiet, const bool check)
 {
   ConfigValues::instance().init();
 
@@ -1611,7 +1712,7 @@ void Config::checkAndCorrect(bool quiet)
   //------------------------
   // Test to see if HTML header is valid
   QCString headerFile = Config_getString(HTML_HEADER);
-  if (!headerFile.isEmpty())
+  if (check && !headerFile.isEmpty())
   {
     FileInfo fi(headerFile.str());
     if (!fi.exists())
@@ -1624,7 +1725,7 @@ void Config::checkAndCorrect(bool quiet)
   //------------------------
   // Test to see if HTML footer is valid
   QCString footerFile = Config_getString(HTML_FOOTER);
-  if (!footerFile.isEmpty())
+  if (check && !footerFile.isEmpty())
   {
     FileInfo fi(footerFile.str());
     if (!fi.exists())
@@ -1656,7 +1757,7 @@ void Config::checkAndCorrect(bool quiet)
     }
 
     QCString mathJaxCodefile = Config_getString(MATHJAX_CODEFILE);
-    if (!mathJaxCodefile.isEmpty())
+    if (check && !mathJaxCodefile.isEmpty())
     {
       FileInfo fi(mathJaxCodefile.str());
       if (!fi.exists())
@@ -1686,7 +1787,7 @@ void Config::checkAndCorrect(bool quiet)
   //------------------------
   // Test to see if LaTeX header is valid
   QCString latexHeaderFile = Config_getString(LATEX_HEADER);
-  if (!latexHeaderFile.isEmpty())
+  if (check && !latexHeaderFile.isEmpty())
   {
     FileInfo fi(latexHeaderFile.str());
     if (!fi.exists())
@@ -1699,7 +1800,7 @@ void Config::checkAndCorrect(bool quiet)
   //------------------------
   // Test to see if LaTeX footer is valid
   QCString latexFooterFile = Config_getString(LATEX_FOOTER);
-  if (!latexFooterFile.isEmpty())
+  if (check && !latexFooterFile.isEmpty())
   {
     FileInfo fi(latexFooterFile.str());
     if (!fi.exists())
@@ -1743,8 +1844,8 @@ void Config::checkAndCorrect(bool quiet)
   for (const auto &alias : aliasList)
   {
     // match aliases of the form re1='name=' and re2='name{2} ='
-    static const reg::Ex re1(R"(^\a\w*\s*=)");
-    static const reg::Ex re2(R"(^\a\w*{\d+}\s*=)");
+    static const reg::Ex re1(R"(^\a[\w-]*\s*=)");
+    static const reg::Ex re2(R"(^\a[\w-]*{\d+}\s*=)");
     if (!reg::search(alias,re1) && !reg::search(alias,re2))
     {
       err("Illegal ALIASES format '%s'. Use \"name=value\" or \"name{n}=value\", where n is the number of arguments\n",
@@ -1775,46 +1876,32 @@ void Config::checkAndCorrect(bool quiet)
     checkList(Config_getList(EXTRA_SEARCH_MAPPINGS),"EXTRA_SEARCH_MAPPING",TRUE,TRUE);
   }
 
-  //------------------------
-  // check if GENERATE_TREEVIEW and GENERATE_HTMLHELP are both enabled
-  if (Config_getBool(GENERATE_TREEVIEW) && Config_getBool(GENERATE_HTMLHELP))
+  int numThreads = Config_getInt(NUM_PROC_THREADS);
+  if (numThreads==0)
   {
-    err("When enabling GENERATE_HTMLHELP the tree view (GENERATE_TREEVIEW) should be disabled. I'll do it for you.\n");
-    Config_updateBool(GENERATE_TREEVIEW,FALSE);
+     numThreads = static_cast<int>(std::thread::hardware_concurrency());
+     Config_updateInt(NUM_PROC_THREADS,numThreads);
   }
 
   //------------------------
-  // check if GENERATE_HTMLHELP and HTML_FILE_EXTENSION is not .html
-  if (Config_getString(HTML_FILE_EXTENSION)!=".html" && Config_getBool(GENERATE_HTMLHELP))
+
+  // check for settings that are inconsistent with having GENERATE_HTMLHELP enabled
+  if (Config_getBool(GENERATE_HTMLHELP))
   {
-    err("When enabling GENERATE_HTMLHELP the HTML_FILE_EXTENSION should be \".html\". I'll do it for you.\n");
-    Config_updateString(HTML_FILE_EXTENSION,".html");
+    const char *depOption = "GENERATE_HTMLHELP";
+    adjustBoolSetting(  depOption, "GENERATE_TREEVIEW",   false  );
+    adjustBoolSetting(  depOption, "SEARCHENGINE",        false  );
+    adjustBoolSetting(  depOption, "HTML_DYNAMIC_MENUS",  false  );
+    adjustBoolSetting(  depOption, "HTML_DYNAMIC_SECTIONS",false  );
+    adjustStringSetting(depOption, "HTML_FILE_EXTENSION", ".html");
+    adjustColorStyleSetting(depOption);
   }
 
-  //------------------------
-  // check if SEARCHENGINE and GENERATE_HTMLHELP are both enabled
-  if (Config_getBool(SEARCHENGINE) && Config_getBool(GENERATE_HTMLHELP))
+  // check for settings that are inconsistent with having INLINE_GROUPED_CLASSES enabled
+  if (Config_getBool(INLINE_GROUPED_CLASSES))
   {
-    err("When enabling GENERATE_HTMLHELP the search engine (SEARCHENGINE) should be disabled. I'll do it for you.\n");
-    Config_updateBool(SEARCHENGINE,FALSE);
-  }
-
-  //------------------------
-  // check if SEPARATE_MEMBER_PAGES and INLINE_GROUPED_CLASSES are both enabled
-  if (Config_getBool(SEPARATE_MEMBER_PAGES) && Config_getBool(INLINE_GROUPED_CLASSES))
-  {
-    err("When enabling INLINE_GROUPED_CLASSES the SEPARATE_MEMBER_PAGES option should be disabled. I'll do it for you.\n");
-    Config_updateBool(SEPARATE_MEMBER_PAGES,FALSE);
-  }
-
-  //------------------------
-  // correct DOT_FONTNAME if needed
-  QCString dotFontName=Config_getString(DOT_FONTNAME);
-  if (dotFontName=="FreeSans" || dotFontName=="FreeSans.ttf")
-  {
-    warn_uncond("doxygen no longer ships with the FreeSans font.\n"
-               "  You may want to clear or change DOT_FONTNAME.\n"
-               "  Otherwise you run the risk that the wrong font is being used for dot generated graphs.\n");
+    const char *depOption = "INLINE_GROUPED_CLASSES";
+    adjustBoolSetting(depOption, "SEPARATE_MEMBER_PAGES", false);
   }
 
   //------------------------
@@ -1831,37 +1918,6 @@ void Config::checkAndCorrect(bool quiet)
   Config_updateInt(DOT_NUM_THREADS,dotNumThreads);
 
   //------------------------
-  // check dot path
-  QCString dotPath = Config_getString(DOT_PATH);
-  if (!dotPath.isEmpty())
-  {
-    FileInfo fi(dotPath.str());
-    if (fi.exists() && fi.isFile()) // user specified path + exec
-    {
-      dotPath=fi.dirPath(TRUE)+"/";
-    }
-    else
-    {
-      QCString dotExe = dotPath+"/dot"+Portable::commandExtension();
-      FileInfo dp(dotExe.str());
-      if (!dp.exists() || !dp.isFile())
-      {
-        warn_uncond("the dot tool could not be found at %s\n",qPrint(dotPath));
-        dotPath="";
-      }
-      else
-      {
-        dotPath=dp.dirPath(TRUE)+"/";
-      }
-    }
-#if defined(_WIN32) // convert slashes
-    uint i=0,l=dotPath.length();
-    for (i=0;i<l;i++) if (dotPath.at(i)=='/') dotPath.at(i)='\\';
-#endif
-    Config_updateString(DOT_PATH,dotPath);
-  }
-
-  //------------------------
   // check plantuml path
   QCString plantumlJarPath = Config_getString(PLANTUML_JAR_PATH);
   if (!plantumlJarPath.isEmpty())
@@ -1873,22 +1929,22 @@ void Config::checkAndCorrect(bool quiet)
       FileInfo jar(plantumlJar.str());
       if (jar.exists() && jar.isFile())
       {
-        plantumlJarPath = jar.dirPath(TRUE)+Portable::pathSeparator();
+        plantumlJarPath = plantumlJar;
       }
       else
       {
-        err("Jar file plantuml.jar not found at location "
+        err("Jar file 'plantuml.jar' not found at location "
                    "specified via PLANTUML_JAR_PATH: '%s'\n",qPrint(plantumlJarPath));
         plantumlJarPath="";
       }
     }
-    else if (pu.exists() && pu.isFile() && plantumlJarPath.right(4)==".jar") // PLANTUML_JAR_PATH is file
+    else if (pu.exists() && pu.isFile()) // PLANTUML_JAR_PATH is file
     {
-      plantumlJarPath = pu.dirPath(TRUE)+Portable::pathSeparator();
+      // Nothing to be done
     }
     else
     {
-      err("path specified via PLANTUML_JAR_PATH does not exist or not a directory: %s\n",
+      err("PLANTUML_JAR_PATH is not a directory with a 'plantuml.jar' file or is not an existing file: %s\n",
                  qPrint(plantumlJarPath));
       plantumlJarPath="";
     }
@@ -1997,41 +2053,16 @@ void Config::checkAndCorrect(bool quiet)
   }
 
   //------------------------
-  // some default settings for vhdl
-  if (Config_getBool(OPTIMIZE_OUTPUT_VHDL) &&
-      (Config_getBool(INLINE_INHERITED_MEMB) ||
-       Config_getBool(INHERIT_DOCS) ||
-       !Config_getBool(HIDE_SCOPE_NAMES) ||
-       !Config_getBool(EXTRACT_PRIVATE) ||
-       !Config_getBool(EXTRACT_PACKAGE)
-      )
-     )
+  // check for settings that are inconsistent with having OPTIMIZED_OUTPUT_VHDL enabled
+  if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
   {
-    bool b1 = Config_getBool(INLINE_INHERITED_MEMB);
-    bool b2 = Config_getBool(INHERIT_DOCS);
-    bool b3 = Config_getBool(HIDE_SCOPE_NAMES);
-    bool b4 = Config_getBool(EXTRACT_PRIVATE);
-    bool b5 = Config_getBool(SKIP_FUNCTION_MACROS);
-    bool b6 = Config_getBool(EXTRACT_PACKAGE);
-    const char *s1,*s2,*s3,*s4,*s5,*s6;
-    if (b1)  s1="  INLINE_INHERITED_MEMB  = NO (was YES)\n"; else s1="";
-    if (b2)  s2="  INHERIT_DOCS           = NO (was YES)\n"; else s2="";
-    if (!b3) s3="  HIDE_SCOPE_NAMES       = YES (was NO)\n"; else s3="";
-    if (!b4) s4="  EXTRACT_PRIVATE        = YES (was NO)\n"; else s4="";
-    if (b5)  s5="  ENABLE_PREPROCESSING   = NO (was YES)\n"; else s5="";
-    if (!b6) s6="  EXTRACT_PACKAGE        = YES (was NO)\n"; else s6="";
-
-
-    warn_uncond("enabling OPTIMIZE_OUTPUT_VHDL assumes the following settings:\n"
-               "%s%s%s%s%s%s",s1,s2,s3,s4,s5,s6
-              );
-
-    Config_updateBool(INLINE_INHERITED_MEMB, FALSE);
-    Config_updateBool(INHERIT_DOCS,          FALSE);
-    Config_updateBool(HIDE_SCOPE_NAMES,      TRUE);
-    Config_updateBool(EXTRACT_PRIVATE,       TRUE);
-    Config_updateBool(ENABLE_PREPROCESSING,  FALSE);
-    Config_updateBool(EXTRACT_PACKAGE,       TRUE);
+    const char *depOption = "OPTIMIZE_OUTPUT_VHDL";
+    adjustBoolSetting(depOption,"INLINE_INHERITED_MEMB",false);
+    adjustBoolSetting(depOption,"INHERIT_DOCS",         false);
+    adjustBoolSetting(depOption,"HIDE_SCOPE_NAMES",     true );
+    adjustBoolSetting(depOption,"EXTRACT_PRIVATE",      true );
+    adjustBoolSetting(depOption,"ENABLE_PREPROCESSING", false);
+    adjustBoolSetting(depOption,"EXTRACT_PACKAGE",      true );
   }
 
   if (!checkFileName(Config_getString(GENERATE_TAGFILE),"GENERATE_TAGFILE"))
@@ -2063,6 +2094,12 @@ void Config::checkAndCorrect(bool quiet)
 
 }
 
+static void updateAttribute(DotAttributes& attr, QCString name, ConfigObsolete* value)
+{
+  if (value==0 || value->valueStringRef()->isEmpty()) return;
+  attr.updateValue(name,*value->valueStringRef());
+}
+
 void Config::updateObsolete()
 {
   //------------------------
@@ -2091,6 +2128,29 @@ void Config::updateObsolete()
       }
     }
   }
+
+  auto fontname = dynamic_cast<ConfigObsolete*>(ConfigImpl::instance()->get("DOT_FONTNAME"));
+  auto fontsize = dynamic_cast<ConfigObsolete*>(ConfigImpl::instance()->get("DOT_FONTSIZE"));
+
+  // correct DOT_FONTNAME if needed
+  if (fontname &&
+      (*fontname->valueStringRef() == "FreeSans"
+      || *fontname->valueStringRef() == "FreeSans.ttf"))
+    warn_uncond("doxygen no longer ships with the FreeSans font.\n"
+               "  You may want to clear or change DOT_FONTNAME.\n"
+               "  Otherwise you run the risk that the wrong font is being used for dot generated graphs.\n");
+
+  QCString& commonAttrStr = *dynamic_cast<ConfigString*>(ConfigImpl::instance()->get("DOT_COMMON_ATTR"))->valueRef();
+  DotAttributes commonAttr(commonAttrStr);
+  updateAttribute(commonAttr, "fontname", fontname);
+  updateAttribute(commonAttr, "fontsize", fontsize);
+  commonAttrStr = commonAttr.str();
+
+  QCString& edgeAttrStr = *dynamic_cast<ConfigString*>(ConfigImpl::instance()->get("DOT_EDGE_ATTR"))->valueRef();
+  DotAttributes edgeAttr(edgeAttrStr);
+  updateAttribute(edgeAttr, "labelfontname", fontname);
+  updateAttribute(edgeAttr, "labelfontsize", fontsize);
+  edgeAttrStr = edgeAttr.str();
 }
 
 void Config::writeTemplate(TextStream &t,bool shortList,bool update)
@@ -2098,10 +2158,10 @@ void Config::writeTemplate(TextStream &t,bool shortList,bool update)
   ConfigImpl::instance()->writeTemplate(t,shortList,update);
 }
 
-void Config::compareDoxyfile(TextStream &t)
+void Config::compareDoxyfile(TextStream &t,Config::CompareMode compareMode)
 {
-  postProcess(FALSE, TRUE);
-  ConfigImpl::instance()->compareDoxyfile(t);
+  postProcess(FALSE, compareMode);
+  ConfigImpl::instance()->compareDoxyfile(t, compareMode);
 }
 
 void Config::writeXMLDoxyfile(TextStream &t)
@@ -2116,17 +2176,18 @@ bool Config::parse(const QCString &fileName,bool update)
 
   // Internally we use the default format UTF-8 and
   // when updating etc. the output is in this format as well and not in the read format
-  ConfigString *option = (ConfigString*)g_config->get("DOXYFILE_ENCODING");
+  ConfigString *option = dynamic_cast<ConfigString*>(g_config->get("DOXYFILE_ENCODING"));
   option->init();
 
   return parseRes;
 }
 
-void Config::postProcess(bool clearHeaderAndFooter, bool compare)
+void Config::postProcess(bool clearHeaderAndFooter, Config::CompareMode compareMode)
 {
-  ConfigImpl::instance()->substituteEnvironmentVars();
-  if (!compare)ConfigImpl::instance()->emptyValueToDefault();
-  ConfigImpl::instance()->convertStrToVal();
+  auto configInst = ConfigImpl::instance();
+  if (compareMode != CompareMode::CompressedNoEnv) configInst->substituteEnvironmentVars();
+  if (compareMode == CompareMode::Full)            configInst->emptyValueToDefault();
+  configInst->convertStrToVal(compareMode);
 
   // avoid bootstrapping issues when the g_config file already
   // refers to the files that we are supposed to parse.

@@ -42,6 +42,7 @@ class Markdown
     QCString processQuotations(const QCString &s,int refIndent);
     QCString processBlocks(const QCString &s,int indent);
     QCString isBlockCommand(const char *data,int offset,int size);
+    int isSpecialCommand(const char *data,int offset,int size);
     void findEndOfLine(const char *data,int size,int &pi,int&i,int &end);
     int processHtmlTagWrite(const char *data,int offset,int size,bool doWrite);
     int processHtmlTag(const char *data,int offset,int size);
@@ -57,9 +58,10 @@ class Markdown
     int processLink(const char *data,int,int size);
     int findEmphasisChar(const char *data, int size, char c, int c_size);
     void processInline(const char *data,int size);
-    void writeMarkdownImage(const char *fmt, bool explicitTitle,
+    void writeMarkdownImage(const char *fmt, bool inline_img, bool explicitTitle,
                             const QCString &title, const QCString &content,
-                            const QCString &link, const FileDef *fd);
+                            const QCString &link, const QCString &attributes,
+                            const FileDef *fd);
     int isHeaderline(const char *data, int size, bool allowAdjustLevel);
     int isAtxHeader(const char *data,int size,
                        QCString &header,QCString &id,bool allowAdjustLevel);

@@ -41,13 +41,9 @@ struct DocSets::Private
 };
 
 
-DocSets::DocSets() : p(std::make_unique<Private>())
-{
-}
-
-DocSets::~DocSets()
-{
-}
+DocSets::DocSets() : p(std::make_unique<Private>()) {}
+DocSets::~DocSets() = default;
+DocSets::DocSets(DocSets &&) = default;
 
 void DocSets::initialize()
 {
@@ -311,7 +307,7 @@ void DocSets::addIndexItem(const Definition *context,const MemberDef *md,
       {
         if (md && (md->isObjCMethod() || md->isObjCProperty()))
           lang="occ";  // Objective C/C++
-        else if (fd && fd->name().right(2).lower()==".c")
+        else if (fd && fd->name().lower().endsWith(".c"))
           lang="c";    // Plain C
         else if (cd==0 && nd==0)
           lang="c";    // Plain C symbol outside any class or namespace
@@ -415,14 +411,10 @@ void DocSets::addIndexItem(const Definition *context,const MemberDef *md,
     {
       scope = nd->name();
     }
-    const MemberDef *declMd = md->memberDeclaration();
-    if (declMd==0) declMd = md;
+    fd = md->getFileDef();
+    if (fd)
     {
-      fd = md->getFileDef();
-      if (fd)
-      {
-        decl = fd->name();
-      }
+      decl = fd->name();
     }
     writeToken(p->tts,md,type,lang,scope,md->anchor(),decl);
   }
@@ -454,7 +446,7 @@ void DocSets::addIndexItem(const Definition *context,const MemberDef *md,
       else if (cd->compoundType()==ClassDef::Protocol)
       {
         type="intf";
-        if (scope.right(2)=="-p") scope=scope.left(scope.length()-2);
+        if (scope.endsWith("-p")) scope=scope.left(scope.length()-2);
       }
       else if (cd->compoundType()==ClassDef::Interface)
       {
@@ -498,7 +490,7 @@ void DocSets::writeToken(TextStream &t,
   t << "  <Token>\n";
   t << "    <TokenIdentifier>\n";
   QCString name = d->name();
-  if (name.right(2)=="-p")  name=name.left(name.length()-2);
+  if (name.endsWith("-p"))  name=name.left(name.length()-2);
   t << "      <Name>" << convertToXML(name) << "</Name>\n";
   if (!lang.isEmpty())
   {

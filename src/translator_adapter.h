@@ -13,7 +13,6 @@
 class TranslatorAdapterBase : public Translator
 {
   protected:
-    virtual ~TranslatorAdapterBase() {}
     TranslatorEnglish english;
 
     /*! An auxiliary inline method used by the updateNeededMessage()
@@ -41,7 +40,17 @@ class TranslatorAdapterBase : public Translator
 
 };
 
-class TranslatorAdapter_1_9_2 : public TranslatorAdapterBase
+class TranslatorAdapter_1_9_4 : public TranslatorAdapterBase
+{
+  public:
+    virtual QCString updateNeededMessage()
+    { return createUpdateNeededMessage(idLanguage(),"release 1.9.4"); }
+
+    virtual QCString trPackageList()
+    { return english.trPackageList(); }
+};
+
+class TranslatorAdapter_1_9_2 : public TranslatorAdapter_1_9_4
 {
   public:
     virtual QCString updateNeededMessage()
