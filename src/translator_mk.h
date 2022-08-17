@@ -1718,6 +1718,20 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
       return "Ограничувања на Тип";
     }
 
+    virtual QCString trDayOfWeek(int dayOfWeek, bool, bool full)
+    {
+      static const char *days_short[]   = { "пон.", "вт.", "сре.", "чет.", "пет.", "саб.", "нед." };
+      static const char *days_full[]    = { "понеделник", "вторник", "среда", "четврток", "петок", "сабота", "недела" };
+      QCString text  = full? days_full[dayOfWeek-1] : days_short[dayOfWeek-1];
+      return text;
+    }
+    virtual QCString trMonth(int month, bool, bool full)
+    {
+      static const char *months_short[] = { "јан.", "фев.", "мар.", "апр.", "мај", "јун.", "јул.", "авг.", "септ.", "окт.", "ноем.", "дек." };
+      static const char *months_full[]  = { "јануари", "февруари", "март", "април", "мај", "јуни", "јули", "август", "септември", "октомври", "ноември", "декември" };
+      QCString text  = full? months_full[month-1] : months_short[month-1];
+      return text;
+    }
 };
 
 #endif

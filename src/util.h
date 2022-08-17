@@ -25,6 +25,7 @@
 #include <algorithm>
 #include <functional>
 #include <fstream>
+#include <ctime>
 
 #include <ctype.h>
 #include "types.h"
@@ -442,5 +443,12 @@ FortranFormat convertFileNameFortranParserCode(QCString fn);
 
 QCString integerToAlpha(int n, bool upper=true);
 QCString integerToRoman(int n, bool upper=true);
+
+std::tm getCurrentDateTime();
+bool valid_tm( const std::tm& tm, int *weekday);
+int getYear(std::tm dat);
+int getMonth(std::tm dat);
+int getDay(std::tm dat);
+int getDayOfWeek(std::tm dat);
 
 #endif

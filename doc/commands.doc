@@ -189,6 +189,7 @@ documentation:
 \refitem cmdsection \\section
 \refitem cmdsee \\see
 \refitem cmdshort \\short
+\refitem cmdshowdate \\showdate
 \refitem cmdshowinitializer \\showinitializer
 \refitem cmdshowrefby \\showrefby
 \refitem cmdshowrefs \\showrefs
@@ -1424,6 +1425,60 @@ contains \c TEST, or \c DEV
   sectioning command is encountered. See section \ref cmdauthor "\\author"
   for an example.
 
+<hr>
+\section cmdshowdate \\showdate "<format>" [ <date> ]
+
+  \addindex \\showdate
+  Shows the date based on the given \<format\> and \<date\>. Where the \<format\> is a string in which the following tokens have a special meaning:
+  - \%y The last two decimal digits of the year. If the result is a single digit it is prefixed by 0.
+  - \%Y The year as a decimal number.
+
+  - \%m The month as a decimal number. If the result is a single digit, it is prefixed with 0.
+  - \%0m The month as a decimal number. If the result is a single digit, it is prefixed with 0.
+  - \%b The abbreviated month name.
+  - \%lb As \%b but when not by default  the case and when possible the first character is converted to uppercase.
+  - \%B The full month name.
+  - \%lB As \%B but when not by default  the case and when possible the first character is converted to uppercase.
+
+  - \%d The day of month as a decimal number.
+  - \%0d The day of month as a decimal number.
+
+  - \%u The weekday as a decimal number (1-7), where Monday is 1.
+  - \%w The weekday as a decimal number (0-6), where Sunday is 0.
+  - \%a The abbreviated weekday name.
+  - \%la As \%a but when not by default  the case and when possible the first character is converted to uppercase.
+  - \%A The full weekday name.
+  - \%lA As \%A but when not by default  the case and when possible the first character is converted to uppercase.
+
+  - \%\% A \% character.
+
+  Note that the \<format\> has to be between double quotes.
+
+  In case the \<date\> is specified it to has to have the following representation:
+  - one or 2 digits for the day
+  - a minus sign
+  - one or 2 digits for the month
+  - a minus sign
+  - 4 digits for the year
+  .
+  in case the \<date\> is not specified the current date is used.
+
+  Here is an example:
+  \code
+  - \showdate "%lA %0d-%0m-%Y" 14-3-2015
+  - \showdate "%a %d-%m-%y" 14-3-2015
+  - \showdate "%m.%d%y" 14-3-2015
+  \endcode
+  In case `OUTPUT_LANGUAGE=english` this results in:
+  - Saturday 14-03-2015
+  - Sat 14-3-15
+  - 3.1415
+  .
+  In case `OUTPUT_LANGUAGE=dutch` this results in:
+  - Zaterdag 14-03-15
+  - za 14-3-2015
+  - 3.1415
+  .
 <hr>
 \section cmddeprecated \\deprecated { description }
 

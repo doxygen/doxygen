@@ -1720,6 +1720,22 @@ class TranslatorSerbian : public TranslatorAdapter_1_6_0
       return "Interfejsi";  //!< Radna okruzenja. Ali to je dve reci.
     }
 
+    virtual QCString trDayOfWeek(int dayOfWeek, bool first_capital, bool full)
+    {
+      static const char *days_short[]   = { "pon", "uto", "sre", "čet", "pet", "sub", "ned" };
+      static const char *days_full[]    = { "ponedeljak", "utorak", "sreda", "četvrtak", "petak", "subota", "nedelja" };
+      QCString text  = full? days_full[dayOfWeek-1] : days_short[dayOfWeek-1];
+      if (first_capital) return text.mid(0,1).upper()+text.mid(1);
+      else return text;
+    }
+    virtual QCString trMonth(int month, bool first_capital, bool full)
+    {
+      static const char *months_short[] = { "jan", "feb", "mar", "apr", "maj", "jun", "jul", "avg", "sep", "okt", "nov", "dec" };
+      static const char *months_full[]  = { "januar", "februar", "mart", "april", "maj", "jun", "jul", "avgust", "septembar", "oktobar", "novembar", "decembar" };
+      QCString text  = full? months_full[month-1] : months_short[month-1];
+      if (first_capital) return text.mid(0,1).upper()+text.mid(1);
+      else return text;
+    }
 };
 
 #endif

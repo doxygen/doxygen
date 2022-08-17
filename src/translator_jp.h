@@ -1804,6 +1804,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
                                 bool includeTime)
     {
       static const char *days[]   = { "月", "火", "水", "木", "金", "土", "日" };
+      static const char *months[] = { "1","2","3","4","5","6","7","8","9","10","11","12" };
       QCString sdate;
       sdate.sprintf("%.4d年%.2d月%.2d日(%s)",year,month,day,days[dayOfWeek-1]);
       if (includeTime)
@@ -1813,6 +1814,20 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
         sdate+=stime;
       }
       return sdate;
+    }
+    virtual QCString trDayOfWeek(int dayOfWeek, bool, bool full)
+    {
+      static const char *days_short[]   = { "月", "火", "水", "木", "金", "土", "日" };
+      static const char *days_full[]    = { "月曜日", "火曜日", "水曜日", "木曜日", "金曜日", "土曜日", "日曜日" };
+      QCString text  = full? days_full[dayOfWeek-1] : days_short[dayOfWeek-1];
+      return text;
+    }
+    virtual QCString trMonth(int month, bool, bool full)
+    {
+      static const char *months_short[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12" };
+      static const char *months_full[]  = { "1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月" };
+      QCString text  = full? months_full[month-1] : months_short[month-1];
+      return text;
     }
 
 //////////////////////////////////////////////////////////////////////////

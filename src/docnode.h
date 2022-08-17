@@ -1044,6 +1044,7 @@ class DocPara : public DocCompoundNode
     void handleVhdlFlow(DocNodeVariant *thisVariant);
     void handleILine(DocNodeVariant *thisVariant);
     void handleIFile(DocNodeVariant *thisVariant);
+    void handleShowDate(DocNodeVariant *thisVariant);
     int handleStartCode(DocNodeVariant *thisVariant);
     int handleHtmlHeader(DocNodeVariant *thisVariant,const HtmlAttribList &tagHtmlAttribs,int level);
 

@@ -1428,7 +1428,7 @@ QCString fileToString(const QCString &name,bool filter,bool isSourceCode)
   return "";
 }
 
-static std::tm getCurrentDateTime()
+std::tm getCurrentDateTime()
 {
   QCString sourceDateEpoch = Portable::getenv("SOURCE_DATE_EPOCH");
   if (!sourceDateEpoch.isEmpty()) // see https://reproducible-builds.org/specs/source-date-epoch/
@@ -1474,10 +1474,40 @@ QCString dateToString(bool includeTime)
                                    includeTime);
 }
 
-QCString yearToString()
+static QCString yearToString()
 {
   auto current = getCurrentDateTime();
   return QCString().setNum(current.tm_year+1900);
+}
+
+bool valid_tm( const std::tm& tm, int *weekday )
+{
+  auto cpy = tm ;
+  const auto as_time_t = std::mktime( std::addressof(cpy) ) ;
+  if (as_time_t == -1) return false;
+
+  cpy = *std::localtime( std::addressof(as_time_t) ) ;
+
+  *weekday = cpy.tm_wday;
+  return tm.tm_mday == cpy.tm_mday && // valid day
+         tm.tm_mon == cpy.tm_mon && // valid month
+         tm.tm_year == cpy.tm_year; // valid year
+}
+int getYear(std::tm dat)
+{
+  return dat.tm_year+1900;
+}
+int getMonth(std::tm dat)
+{
+  return dat.tm_mon+1;
+}
+int getDay(std::tm dat)
+{
+  return dat.tm_mday;
+}
+int getDayOfWeek(std::tm dat)
+{
+  return (dat.tm_wday+6)%7+1;
 }
 
 void trimBaseClassScope(const BaseClassList &bcl,QCString &s,int level=0)

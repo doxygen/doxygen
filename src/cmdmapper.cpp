@@ -40,6 +40,7 @@ CommandMap cmdMap[] =
   { "copydetails",   CMD_COPYDETAILS },
   { "copyright",     CMD_COPYRIGHT },
   { "date",          CMD_DATE },
+  { "showdate",      CMD_SHOWDATE },
   { "dontinclude",   CMD_DONTINCLUDE },
   { "dotfile",       CMD_DOTFILE },
   { "e",             CMD_EMPHASIS },
