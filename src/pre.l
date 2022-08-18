@@ -634,7 +634,6 @@ WSopt [ \t\r]*
                                           if ((yyextra->includeStack.empty() || yyextra->curlyCount>0) &&
                                               yyextra->macroExpansion &&
                                               (def=isDefined(yyscanner,yytext)) &&
-                                              /*(def->isPredefined || macroIsAccessible(def)) && */
                                               (!yyextra->expandOnlyPredef || def->isPredefined)
                                              )
                                           {
@@ -643,7 +642,9 @@ WSopt [ \t\r]*
                                             yyextra->defArgsStr=yytext;
                                             if (def->nargs==-1) // no function macro
                                             {
-                                              QCString result = def->isPredefined ? def->definition : expandMacro(yyscanner,yyextra->defArgsStr);
+                                              QCString result = def->isPredefined && !def->expandAsDefined ? 
+                                                def->definition :
+                                                expandMacro(yyscanner,yyextra->defArgsStr);
                                               outputString(yyscanner,result);
                                             }
                                             else // zero or more arguments
@@ -663,11 +664,12 @@ WSopt [ \t\r]*
                                               yyextra->macroExpansion &&
                                               (def=isDefined(yyscanner,yytext)) &&
                                               def->nargs==-1 &&
-                                              /*(def->isPredefined || macroIsAccessible(def)) &&*/
                                               (!yyextra->expandOnlyPredef || def->isPredefined)
                                              )
                                           {
-                                            QCString result=def->isPredefined ? def->definition : expandMacro(yyscanner,yytext);
+                                            QCString result=def->isPredefined && !def->expandAsDefined ?
+                                              def->definition :
+                                              expandMacro(yyscanner,yytext);
                                             outputString(yyscanner,result);
                                           }
                                           else
@@ -2648,10 +2650,10 @@ static bool expandExpression(yyscan_t yyscanner,QCString &expr,QCString *rest,in
             expanded = expandExpression(yyscanner,resultExpr,&restExpr,0,level+1);
             state->expandedDict.erase(toStdString(macroName));
           }
-    else if (def && def->nonRecursive)
-    {
-      expanded = true;
-    }
+          else if (def && def->nonRecursive)
+          {
+            expanded = true;
+          }
           if (expanded)
           {
             expr=expr.left(p)+resultExpr+restExpr;
@@ -2973,6 +2975,7 @@ static void addDefine(yyscan_t yyscanner)
       Doxygen::expandAsDefinedSet.find(def.name.str())!=Doxygen::expandAsDefinedSet.end())
   {
     def.isPredefined=TRUE;
+    def.expandAsDefined=TRUE;
   }
   auto it = state->localDefines.find(def.name.str());
   if (it!=state->localDefines.end()) // redefine

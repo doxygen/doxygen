@@ -42,6 +42,7 @@ class Define
     bool varArgs = FALSE;
     bool isPredefined = FALSE;
     bool nonRecursive = FALSE;
+    bool expandAsDefined = FALSE;
 };
 
 /** List of all macro definitions */
