@@ -995,7 +995,7 @@ Go to the <a href="commands.html">next</a> section or return to the
 ]]>
       </docs>
     </option>
-    <option type='bool' id='CASE_SENSE_NAMES' defval='0' altdefval='Portable::fileSystemIsCaseSensitive()'>
+    <option type='enum' id='CASE_SENSE_NAMES' defval='SYSTEM'>
       <docs>
 <![CDATA[
  With the correct setting of option \c CASE_SENSE_NAMES doxygen will better be able to match the
@@ -1014,6 +1014,9 @@ Go to the <a href="commands.html">next</a> section or return to the
  whereas on Linux or other Unix flavors it should typically be set to \c YES.
 ]]>
       </docs>
+      <value name="SYSTEM" />
+      <value name="NO"/>
+      <value name="YES" />
     </option>
     <option type='bool' id='HIDE_SCOPE_NAMES' defval='0'>
       <docs>
