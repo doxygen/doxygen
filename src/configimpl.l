@@ -630,7 +630,10 @@ static std::vector< std::unique_ptr<ConfigFileState> > g_includeStack;
 static bool              g_configUpdate = FALSE;
 static QCString          g_encoding;
 static ConfigImpl       *g_config;
+static Config::CompareMode g_compareMode = Config::CompareMode::Full;
+static QCString          g_localStoreRepl;
 
+#define unput_string(yytext,yyleng) do { for (int i=(int)yyleng-1;i>=0;i--) unput(yytext[i]); } while(0)
 /* -----------------------------------------------------------------
  */
 #undef  YY_INPUT
@@ -730,6 +733,14 @@ static QCString stripComment(const QCString &s)
     }
   }
   return s;
+}
+
+static void processStoreRepl(QCString &storeReplStr)
+{
+  // strip leading and trailing whitespace
+  QCString s = stripComment(storeReplStr.stripWhiteSpace());
+  // recode the string
+  storeReplStr=configStringRecode(s,g_encoding,"UTF-8");
 }
 
 static void processString()
@@ -970,13 +981,16 @@ static void readIncludeFile(const QCString &incName)
 %}
 
 %option noyywrap
-%option nounput
+
+REGEX_a [a-z_A-Z\x80-\xFF]
+REGEX_w [a-z_A-Z0-9\x80-\xFF]
 
 %x      Start
 %x      SkipInvalid
 %x      GetString
 %x      GetStrList
 %x      Include
+%x      StoreRepl
 
 %%
 
@@ -1144,6 +1158,31 @@ static void readIncludeFile(const QCString &incName)
 <Start>"@INCLUDE_PATH"[ \t]*"="         { BEGIN(GetStrList); g_list=&g_includePathList; g_list->clear(); g_listStr=""; }
   /* include a g_config file */
 <Start>"@INCLUDE"[ \t]*"="              { BEGIN(Include);}
+<Start>"$("{REGEX_a}({REGEX_w}|[.-])*")" | // e.g. $(HOME)
+<Start>"$("{REGEX_a}({REGEX_w}|[.-])*"("{REGEX_a}({REGEX_w}|[.-])*"))" { // e.g. $(PROGRAMFILES(X86))
+                                          g_localStoreRepl = yytext;
+                                          if (g_compareMode == Config::CompareMode::CompressedNoEnv) // the x_noenv
+                                          {
+                                            BEGIN(StoreRepl);
+                                          }
+                                          else
+                                          {
+                                            substEnvVarsInString(g_localStoreRepl);
+                                            unput_string(g_localStoreRepl.data(),g_localStoreRepl.length());
+                                          }
+                                        }
+<Start>"@"{REGEX_a}{REGEX_w}*"@"        {
+                                          if (g_compareMode == Config::CompareMode::CompressedNoEnv) // the x_noenv
+                                          {
+                                            g_localStoreRepl = yytext;
+                                            BEGIN(StoreRepl);
+                                          }
+                                          else
+                                          {
+                                            config_warn("ignoring unknown '%s' at line %d, file %s\n",
+                                                        yytext,g_yyLineNr,qPrint(g_yyFileName));
+                                          }
+                                        }
 <Include>([^ \"\t\r\n]+)|("\""[^\n\"]+"\"") {
                                           readIncludeFile(configStringRecode(yytext,g_encoding,"UTF-8"));
                                           BEGIN(Start);
@@ -1170,6 +1209,25 @@ static void readIncludeFile(const QCString &incName)
                                         }
 
 <Start>[a-z_A-Z0-9]+                    { config_warn("ignoring unknown tag '%s' at line %d, file %s\n",yytext,g_yyLineNr,qPrint(g_yyFileName)); }
+   /*-------------- GetString ---------------*/
+
+<StoreRepl>\n                           {
+                                          g_localStoreRepl += yytext;
+                                          processStoreRepl(g_localStoreRepl);
+                                          g_config->appendStoreRepl(g_localStoreRepl + "\n");
+                                          g_localStoreRepl.resize(0);
+                                          g_yyLineNr++; // end of string
+                                          BEGIN(Start);
+                                        }
+<StoreRepl>\\[ \r\t]*\n                 { g_yyLineNr++; // line continuation
+                                          g_localStoreRepl += yytext;
+                                        }
+<StoreRepl>"\\"                         { // escape character
+                                          g_localStoreRepl += yytext;
+                                        }
+<StoreRepl>[^\n\\]+                     { // string part without escape characters
+                                          g_localStoreRepl += yytext;
+                                        }
    /*-------------- GetString ---------------*/
 
 <GetString>\n                           { processString();
@@ -1259,6 +1317,11 @@ void ConfigImpl::compareDoxyfile(TextStream &t,Config::CompareMode compareMode)
     option->m_userComment = "";
     option->compareDoxyfile(t,compareMode);
   }
+  if (!m_storeRepl.isEmpty())
+  {
+    t << "\n";
+    t << takeStoreRepl() << "\n";
+  }
 }
 
 void ConfigImpl::writeXMLDoxyfile(TextStream &t)
@@ -1289,7 +1352,7 @@ void ConfigImpl::emptyValueToDefault()
 
 static const reg::Ex reEnvVar(R"(\$\((\a[\w.-]*)\))");                 // e.g. $(HOME)
 static const reg::Ex reEnvVarExt(R"(\$\((\a[\w.-]*\(\a[\w.-]*\))\))"); // e.g. $(PROGRAMFILES(X86))
-static const reg::Ex reEnvVarCMake(R"(@\a\w*)");                       // CMake type replacement
+static const reg::Ex reEnvVarCMake(R"(@\a\w*@)");                      // CMake type replacement
 
 static bool containsEnvVar(QCString &str)
 {
@@ -2169,8 +2232,9 @@ void Config::writeXMLDoxyfile(TextStream &t)
   ConfigImpl::instance()->writeXMLDoxyfile(t);
 }
 
-bool Config::parse(const QCString &fileName,bool update)
+bool Config::parse(const QCString &fileName,bool update, Config::CompareMode compareMode)
 {
+  g_compareMode = compareMode;
   bool parseRes = ConfigImpl::instance()->parse(fileName,update);
   if (!parseRes) return parseRes;
 
