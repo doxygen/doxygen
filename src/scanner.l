@@ -5615,12 +5615,12 @@ NONLopt [^\n]*
 <ClassTemplSpec>.                       {
                                           yyextra->current->name += yytext;
                                         }
-<CompoundName>{SCOPENAME}{BN}*";"       { // forward declaration?
+<CompoundName>({SCOPENAME}|{CSSCOPENAME}){BN}*";"       { // forward declaration?
                                           if (yyextra->insideCS && yyextra->current->type == "namespace")
                                           {
                                             // file scoped CSharp namespace
                                             lineCount(yyscanner);
-                                            yyextra->current->name = yytext;
+                                            yyextra->current->name = substitute(yytext,".","::");
                                             yyextra->current->name=yyextra->current->name.left(yyextra->current->name.length()-1).stripWhiteSpace();
                                             yyextra->fakeNS++;
                                             unput('{'); // fake start of body
