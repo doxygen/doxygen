@@ -1804,7 +1804,6 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
                                 bool includeTime)
     {
       static const char *days[]   = { "月", "火", "水", "木", "金", "土", "日" };
-      static const char *months[] = { "1","2","3","4","5","6","7","8","9","10","11","12" };
       QCString sdate;
       sdate.sprintf("%.4d年%.2d月%.2d日(%s)",year,month,day,days[dayOfWeek-1]);
       if (includeTime)
