@@ -34,7 +34,7 @@
  * Updated to 1.8.4 by Bartomeu Creus Navarro (17-julio-2013)
  */
 
-class TranslatorSpanish : public TranslatorAdapter_1_8_15
+class TranslatorSpanish : public TranslatorAdapter_1_8_19
 {
   public:
 
