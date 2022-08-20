@@ -297,7 +297,7 @@ INCLUDE_PATH           = libmd5 \
                          libmscgen
 INCLUDE_FILE_PATTERNS  =
 PREDEFINED             =
-EXPAND_AS_DEFINED      =
+EXPAND_AS_DEFINED      = DOC_NODES DN_SEP DN
 SKIP_FUNCTION_MACROS   = YES
 #---------------------------------------------------------------------------
 # Configuration options related to external references
