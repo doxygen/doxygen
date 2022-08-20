@@ -1430,27 +1430,29 @@ contains \c TEST, or \c DEV
 
   \addindex \\showdate
   Shows the date based on the given \<format\> and \<date\>. Where the \<format\> is a string in which the following tokens have a special meaning:
-  - \%y The last two decimal digits of the year. If the result is a single digit it is prefixed by 0.
-  - \%Y The year as a decimal number.
-
-  - \%m The month as a decimal number. If the result is a single digit, it is prefixed with 0.
-  - \%0m The month as a decimal number. If the result is a single digit, it is prefixed with 0.
-  - \%b The abbreviated month name.
-  - \%lb As \%b but when not by default  the case and when possible the first character is converted to uppercase.
-  - \%B The full month name.
-  - \%lB As \%B but when not by default  the case and when possible the first character is converted to uppercase.
-
-  - \%d The day of month as a decimal number.
-  - \%0d The day of month as a decimal number.
-
-  - \%u The weekday as a decimal number (1-7), where Monday is 1.
-  - \%w The weekday as a decimal number (0-6), where Sunday is 0.
-  - \%a The abbreviated weekday name.
-  - \%la As \%a but when not by default  the case and when possible the first character is converted to uppercase.
-  - \%A The full weekday name.
-  - \%lA As \%A but when not by default  the case and when possible the first character is converted to uppercase.
-
-  - \%\% A \% character.
+  | Code | Description |
+  | :--- | :---------- |
+  | \%y | The last two decimal digits of the year. If the result is a single digit it is prefixed by 0.
+  | \%Y | The year as a decimal number.
+  | &nbsp; | &nbsp;
+  | \%m | The month as a decimal number.
+  | \%0m | The month as a decimal number. If the result is a single digit, it is prefixed with 0.
+  | \%b | The abbreviated month name.
+  | \%lb | As \%b but when not by default the case and when possible the first character is converted to uppercase.
+  | \%B | The full month name.
+  | \%lB | As \%B but when not by default the case and when possible the first character is converted to uppercase.
+  | &nbsp; | &nbsp;
+  | \%d | The day of month as a decimal number.
+  | \%0d | The day of month as a decimal number. If the result is a single digit, it is prefixed with 0.
+  | &nbsp; | &nbsp;
+  | \%u | The weekday as a decimal number (1-7), where Monday is 1.
+  | \%w | The weekday as a decimal number (0-6), where Sunday is 0.
+  | \%a | The abbreviated weekday name.
+  | \%la | As \%a but when not by default  the case and when possible the first character is converted to uppercase.
+  | \%A | The full weekday name.
+  | \%lA | As \%A but when not by default  the case and when possible the first character is converted to uppercase.
+  | &nbsp; | &nbsp;
+  | \%\% | A \% character.
 
   Note that the \<format\> has to be between double quotes.
 
