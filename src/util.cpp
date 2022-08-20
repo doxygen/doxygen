@@ -3594,11 +3594,20 @@ int getUtf8Char(const char *input,char ids[MAX_UTF8_CHAR_SIZE],CaseModifier modi
 }
 #endif
 
+bool getCaseSenseNames()
+{
+  auto caseSenseNames = Config_getEnum(CASE_SENSE_NAMES);
+
+  if (caseSenseNames == CASE_SENSE_NAMES_t::YES) return true;
+  else if (caseSenseNames == CASE_SENSE_NAMES_t::NO) return false;
+  else return Portable::fileSystemIsCaseSensitive();
+}
+
 // note that this function is not reentrant due to the use of static growBuf!
 QCString escapeCharsInString(const QCString &name,bool allowDots,bool allowUnderscore)
 {
   if (name.isEmpty()) return name;
-  bool caseSenseNames = Config_getBool(CASE_SENSE_NAMES);
+  bool caseSenseNames = getCaseSenseNames();
   bool allowUnicodeNames = Config_getBool(ALLOW_UNICODE_NAMES);
   GrowBuf growBuf;
   signed char c;
@@ -3680,7 +3689,7 @@ QCString escapeCharsInString(const QCString &name,bool allowDots,bool allowUnder
 QCString unescapeCharsInString(const QCString &s)
 {
   if (s.isEmpty()) return s;
-  bool caseSenseNames = Config_getBool(CASE_SENSE_NAMES);
+  bool caseSenseNames = getCaseSenseNames();
   QCString result;
   const char *p = s.data();
   if (p)
@@ -6457,7 +6466,7 @@ QCString filterTitle(const QCString &title)
 
 bool patternMatch(const FileInfo &fi,const StringVector &patList)
 {
-  bool caseSenseNames = Config_getBool(CASE_SENSE_NAMES);
+  bool caseSenseNames = getCaseSenseNames();
   bool found = FALSE;
 
   // For platforms where the file system is non case sensitive overrule the setting
