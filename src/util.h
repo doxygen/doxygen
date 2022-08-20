@@ -283,6 +283,8 @@ PageDef *addRelatedPage(const QCString &name,
                         SrcLangExt lang=SrcLangExt_Unknown
                        );
 
+bool getCaseSenseNames();
+
 QCString escapeCharsInString(const QCString &name,bool allowDots,bool allowUnderscore=FALSE);
 QCString unescapeCharsInString(const QCString &s);
 
