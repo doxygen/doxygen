@@ -44,10 +44,10 @@ function initMenu(relPath,searchEnabled,serverSide,searchPage,search) {
     }
     return result;
   }
-  var searchBox;
+  var searchBoxHtml;
   if (searchEnabled) {
     if (serverSide) {
-      searchBox='<div id="MSearchBox" class="MSearchBoxInactive">'+
+      searchBoxHtml='<div id="MSearchBox" class="MSearchBoxInactive">'+
                  '<div class="left">'+
                   '<form id="FSearchBox" action="'+relPath+searchPage+
                     '" method="get"><span id="MSearchSelectExt">&#160;</span>'+
@@ -59,7 +59,7 @@ function initMenu(relPath,searchEnabled,serverSide,searchPage,search) {
                  '<div class="right"></div>'+
                 '</div>';
     } else {
-      searchBox='<div id="MSearchBox" class="MSearchBoxInactive">'+
+      searchBoxHtml='<div id="MSearchBox" class="MSearchBoxInactive">'+
                  '<span class="left">'+
                   '<span id="MSearchSelect" onmouseover="return searchBox.OnSearchSelectShow()"'+
                      ' onmouseout="return searchBox.OnSearchSelectHide()">&#160;</span>'+
@@ -85,7 +85,7 @@ function initMenu(relPath,searchEnabled,serverSide,searchPage,search) {
                         '</div>');
   $('#main-nav').append(makeTree(menudata,relPath));
   $('#main-nav').children(':first').addClass('sm sm-dox').attr('id','main-menu');
-  if (searchBox) {
+  if (searchBoxHtml) {
     $('#main-menu').append('<li id="searchBoxPos2" style="float:right"></li>');
   }
   var $mainMenuState = $('#main-menu-state');
@@ -114,13 +114,16 @@ function initMenu(relPath,searchEnabled,serverSide,searchPage,search) {
       if (newWidth!=prevWidth) {
         if ($(window).outerWidth()<768) {
           $mainMenuState.prop('checked',false); $menu.hide();
-          $('#searchBoxPos1').html(searchBox);
+          $('#searchBoxPos1').html(searchBoxHtml);
           $('#searchBoxPos2').hide();
         } else {
           $menu.show();
           $('#searchBoxPos1').empty();
-          $('#searchBoxPos2').html(searchBox);
+          $('#searchBoxPos2').html(searchBoxHtml);
           $('#searchBoxPos2').show();
+        }
+        if (typeof searchBox!=='undefined') {
+          searchBox.CloseResultsWindow();
         }
         prevWidth = newWidth;
       }

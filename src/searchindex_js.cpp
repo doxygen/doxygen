@@ -407,57 +407,11 @@ void writeJavaScriptSearchIndex()
       QCString baseName;
       baseName.sprintf("%s_%x",sii.name.data(),p);
 
-      QCString fileName = searchDirName + "/"+baseName+Doxygen::htmlFileExtension;
       QCString dataFileName = searchDirName + "/"+baseName+".js";
 
-      std::ofstream t(fileName.str(), std::ofstream::out | std::ofstream::binary);
       std::ofstream ti(dataFileName.str(), std::ofstream::out | std::ofstream::binary);
-      if (t.is_open() && ti.is_open())
+      if (ti.is_open())
       {
-        {
-          t << "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\""
-            " \"https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n";
-          t << "<html xmlns=\"http://www.w3.org/1999/xhtml\">\n";
-          t << "<head><title></title>\n";
-          t << "<meta http-equiv=\"Content-Type\" content=\"text/xhtml;charset=UTF-8\"/>\n";
-          t << "<meta name=\"generator\" content=\"Doxygen " << getDoxygenVersion() << "\"/>\n";
-          t << "<link rel=\"stylesheet\" type=\"text/css\" href=\"../doxygen.css\"/>\n";
-          t << "<link rel=\"stylesheet\" type=\"text/css\" href=\"search.css\"/>\n";
-          t << "<script type=\"text/javascript\" src=\"" << baseName << ".js\"></script>\n";
-          t << "<script type=\"text/javascript\" src=\"search.js\"></script>\n";
-          t << "</head>\n";
-          t << "<body class=\"SRPage\">\n";
-          t << "<div id=\"SRIndex\">\n";
-          t << "<div class=\"SRStatus\" id=\"Loading\">" << theTranslator->trLoading() << "</div>\n";
-          t << "<div id=\"SRResults\"></div>\n"; // here the results will be inserted
-          t << "<script type=\"text/javascript\">\n";
-          t << "/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */\n";
-          t << "createResults();\n"; // this function will insert the results
-          t << "/* @license-end */\n";
-          t << "</script>\n";
-          t << "<div class=\"SRStatus\" id=\"Searching\">"
-            << theTranslator->trSearching() << "</div>\n";
-          t << "<div class=\"SRStatus\" id=\"NoMatches\">"
-            << theTranslator->trNoMatches() << "</div>\n";
-
-          t << "<script type=\"text/javascript\">\n";
-          t << "/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */\n";
-          t << "document.getElementById(\"Loading\").style.display=\"none\";\n";
-          t << "document.getElementById(\"NoMatches\").style.display=\"none\";\n";
-          t << "var searchResults = new SearchResults(\"searchResults\");\n";
-          t << "searchResults.Search();\n";
-          t << "window.addEventListener(\"message\", function(event) {\n";
-          t << "  if (event.data == \"take_focus\") {\n";
-          t << "    var elem = searchResults.NavNext(0);\n";
-          t << "    if (elem) elem.focus();\n";
-          t << "  }\n";
-          t << "});\n";
-          t << "/* @license-end */\n";
-          t << "</script>\n";
-          t << "</div>\n"; // SRIndex
-          t << "</body>\n";
-          t << "</html>\n";
-        }
 
         ti << "var searchData=\n";
         // format
@@ -621,7 +575,7 @@ void writeJavaScriptSearchIndex()
       }
       else
       {
-        err("Failed to open file '%s' for writing...\n",qPrint(fileName));
+        err("Failed to open file '%s' for writing...\n",qPrint(dataFileName));
       }
       p++;
     }
@@ -683,30 +637,6 @@ void writeJavaScriptSearchIndex()
       t << "};\n\n";
     }
     ResourceMgr::instance().copyResource("search.js",searchDirName);
-  }
-
-  {
-    QCString noMatchesFileName =searchDirName+"/nomatches"+Doxygen::htmlFileExtension;
-    std::ofstream t(noMatchesFileName.str(), std::ofstream::out | std::ofstream::binary);
-    if (t.is_open())
-    {
-      t << "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" "
-           "\"https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n";
-      t << "<html xmlns=\"http://www.w3.org/1999/xhtml\">\n";
-      t << "<head><title></title>\n";
-      t << "<meta http-equiv=\"Content-Type\" content=\"text/xhtml;charset=UTF-8\"/>\n";
-      t << "<link rel=\"stylesheet\" type=\"text/css\" href=\"../doxygen.css\"/>\n";
-      t << "<link rel=\"stylesheet\" type=\"text/css\" href=\"search.css\"/>\n";
-      t << "<script type=\"text/javascript\" src=\"search.js\"></script>\n";
-      t << "</head>\n";
-      t << "<body class=\"SRPage\">\n";
-      t << "<div id=\"SRIndex\">\n";
-      t << "<div class=\"SRStatus\" id=\"NoMatches\">"
-        << theTranslator->trNoMatches() << "</div>\n";
-      t << "</div>\n";
-      t << "</body>\n";
-      t << "</html>\n";
-    }
   }
 
   Doxygen::indexList->addStyleSheetFile("search/search.js");
