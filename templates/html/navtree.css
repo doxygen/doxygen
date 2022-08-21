@@ -122,7 +122,6 @@
 }
 
 #nav-tree {
-  background-image:var(--header-gradient-image);
   background-repeat:repeat-x;
   background-color: var(--nav-background-color);
   -webkit-overflow-scrolling : touch; /* iOS 5+ */

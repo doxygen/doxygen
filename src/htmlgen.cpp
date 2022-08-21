@@ -1325,18 +1325,16 @@ void HtmlGenerator::startFile(const QCString &name,const QCString &,
 
   m_t << "<!-- " << theTranslator->trGeneratedBy() << " Doxygen "
       << getDoxygenVersion() << " -->\n";
-  //bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
   bool searchEngine = Config_getBool(SEARCHENGINE);
   if (searchEngine /*&& !generateTreeView*/)
   {
     m_t << "<script type=\"text/javascript\">\n";
     m_t << "/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */\n";
     m_t << "var searchBox = new SearchBox(\"searchBox\", \""
-        << m_relPath<< "search\",'" << Doxygen::htmlFileExtension << "');\n";
+        << m_relPath<< "search/\",'" << Doxygen::htmlFileExtension << "');\n";
     m_t << "/* @license-end */\n";
     m_t << "</script>\n";
   }
-  //generateDynamicSections(t,relPath);
   m_sectionCount=0;
 }
 
@@ -1355,10 +1353,17 @@ void HtmlGenerator::writeSearchInfo(TextStream &t,const QCString &)
     t << "\n";
     t << "<!-- iframe showing the search results (closed by default) -->\n";
     t << "<div id=\"MSearchResultsWindow\">\n";
-    t << "<iframe src=\"javascript:void(0)\" frameborder=\"0\" \n";
-    t << "        name=\"MSearchResults\" id=\"MSearchResults\">\n";
-    t << "</iframe>\n";
-    t << "</div>\n";
+    t << "<div id=\"MSearchResults\">\n";
+    t << "<div class=\"SRPage\">\n";
+    t << "<div id=\"SRIndex\">\n";
+    t << "<div id=\"SRResults\"></div>\n"; // here the results will be inserted
+    t << "<div class=\"SRStatus\" id=\"Loading\">"   << theTranslator->trLoading()   << "</div>\n";
+    t << "<div class=\"SRStatus\" id=\"Searching\">" << theTranslator->trSearching() << "</div>\n";
+    t << "<div class=\"SRStatus\" id=\"NoMatches\">" << theTranslator->trNoMatches() << "</div>\n";
+    t << "</div>\n"; // SRIndex
+    t << "</div>\n"; // SRPage
+    t << "</div>\n"; // MSearchResults
+    t << "</div>\n"; // MSearchResultsWindow
     t << "\n";
   }
 }
@@ -2881,7 +2886,7 @@ void HtmlGenerator::writeSearchPage()
     t << "<script type=\"text/javascript\">\n";
 		t << "/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */\n";
 		t << "var searchBox = new SearchBox(\"searchBox\", \""
-      << "search\",'" << Doxygen::htmlFileExtension << "');\n";
+      << "search/\",'" << Doxygen::htmlFileExtension << "');\n";
 		t << "/* @license-end */\n";
     t << "</script>\n";
     if (!Config_getBool(DISABLE_INDEX))
@@ -2937,7 +2942,7 @@ void HtmlGenerator::writeExternalSearchPage()
     t << "<script type=\"text/javascript\">\n";
 		t << "/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */\n";
 		t << "var searchBox = new SearchBox(\"searchBox\", \""
-      << "search\",'" << Doxygen::htmlFileExtension << "');\n";
+      << "search/\",'" << Doxygen::htmlFileExtension << "');\n";
 		t << "/* @license-end */\n";
     t << "</script>\n";
     if (!Config_getBool(DISABLE_INDEX))

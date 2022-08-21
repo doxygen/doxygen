@@ -172,6 +172,9 @@ iframe#MSearchResults {
     border: 1px solid var(--search-results-border-color);
     background-color: var(--search-results-background-color);
     z-index:10000;
+    width: 300px;
+    height: 400px;
+    overflow: auto;
 }
 
 /* ----------------------------------- */
@@ -179,7 +182,6 @@ iframe#MSearchResults {
 
 #SRIndex {
     clear:both; 
-    padding-bottom: 15px;
 }
 
 .SREntry {
@@ -192,7 +194,7 @@ iframe#MSearchResults {
     padding: 1px 5px;
 }
 
-body.SRPage {
+div.SRPage {
     margin: 5px 2px;
     background-color: var(--search-results-background-color);
 }
