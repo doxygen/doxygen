@@ -531,6 +531,30 @@ class PrintDocVisitor
       indent_post();
       printf("</details>\n");
     }
+    void operator()(const DocHtmlPicture &picture)
+    {
+      indent_pre();
+      printf("<picture");
+      for (const auto &opt : picture.attribs())
+      {
+        printf(" %s=\"%s\"",qPrint(opt.name),qPrint(opt.value));
+      }
+      printf(">\n");
+      visitChildren(picture);
+      indent_post();
+      printf("</picture>\n");
+    }
+    void operator()(const DocHtmlSource &source)
+    {
+      indent_pre();
+      printf("<source");
+      for (const auto &opt : source.attribs())
+      {
+        printf(" %s=\"%s\"",qPrint(opt.name),qPrint(opt.value));
+      }
+      printf("/>\n");
+      indent_post();
+    }
     void operator()(const DocHtmlHeader &header)
     {
       indent_pre();

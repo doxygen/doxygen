@@ -1153,6 +1153,16 @@ void RTFDocVisitor::operator()(const DocHtmlDetails &d)
   m_lastIsPara=TRUE;
 }
 
+void RTFDocVisitor::operator()(const DocHtmlPicture &p)
+{
+  if (m_hide) return;
+  visitChildren(p);
+}
+
+void RTFDocVisitor::operator()(const DocHtmlSource &p)
+{
+}
+
 void RTFDocVisitor::operator()(const DocHtmlHeader &header)
 {
   if (m_hide) return;

@@ -1183,6 +1183,25 @@ DB_VIS_C
   m_t << "\n";
 }
 
+void DocbookDocVisitor::operator()(const DocHtmlPicture &d)
+{
+DB_VIS_C
+  if (m_hide) return;
+  m_t << "\n";
+  m_t << "<picture>";
+  visitChildren(d);
+  m_t << "</picture>";
+  m_t << "\n";
+}
+
+void DocbookDocVisitor::operator()(const DocHtmlSource &d)
+{
+DB_VIS_C
+  if (m_hide) return;
+  m_t << "<source>\n";
+  m_t << "</source>\n";
+}
+
 void DocbookDocVisitor::operator()(const DocHtmlHeader &h)
 {
 DB_VIS_C

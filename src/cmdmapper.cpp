@@ -208,6 +208,8 @@ CommandMap htmlTagMap[] =
   { "ins",        HTML_INS },
   { "del",        HTML_DEL },
   { "details",    HTML_DETAILS },
+  { "picture",    HTML_PICTURE },
+  { "source",     HTML_SOURCE },
 
   { "c",            XML_C },
   // { "code",       XML_CODE },  <= ambiguous <code> is also a HTML tag

@@ -103,6 +103,8 @@ class TextDocVisitor : public DocVisitor
     void operator()(const DocHtmlBlockQuote &q)  { visitChildren(q);  }
     void operator()(const DocVhdlFlow &)         {                    }
     void operator()(const DocParBlock &pb)       { visitChildren(pb); }
+    void operator()(const DocHtmlPicture &p )    { visitChildren(p);  }
+    void operator()(const DocHtmlSource &s )     {                    }
 
   private:
 

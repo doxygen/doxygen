@@ -1308,6 +1308,60 @@ int DocHtmlDetails::parse(DocNodeVariant *thisVariant)
   return (retval==RetVal_EndHtmlDetails) ? RetVal_OK : retval;
 }
 
+// Parsing the <picture> object. There should be one or more <source> objects, followed by an <img> object.
+int DocHtmlPicture::parse(DocNodeVariant *thisVariant)
+{
+  DBG(("DocHtmlPicture::parse() start\n"));
+
+  int retval=RetVal_OK;
+
+  int tok;
+  while ((tok=parser()->tokenizer.lex()))
+  {
+    switch (tok)
+    {
+    case TK_WHITESPACE:
+    case TK_NEWPARA:
+        continue;
+    case TK_HTMLTAG:
+      {
+        int tagId=Mappers::htmlTagMapper->map(parser()->context.token->name);
+        if (tagId==HTML_SOURCE && !parser()->context.token->endTag) // found <source> tag
+        {
+          DBG(("AddDocHtmlSource\n"));
+          children().append<DocHtmlSource>(parser(),thisVariant,parser()->context.token->attribs);
+          retval = RetVal_PictureSource;
+        }
+        else if (tagId==HTML_IMG && !parser()->context.token->endTag) // found <img> tag
+        {
+          DBG(("AddImg\n"));
+          parser()->handleImg(thisVariant,children(),parser()->context.token->attribs);
+          //retval = RetVal_Image;
+          //goto endpicture;
+        }
+        else if (tagId==HTML_PICTURE && parser()->context.token->endTag) // found </picture> tag
+        {
+          DBG(("End picture"));
+          retval=RetVal_EndHtmlPicture;
+          goto endpicture;
+        }
+        else
+        {
+          warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Unexpected html tag <%s%s> found within <picture> context",
+              parser()->context.token->endTag?"/":"",qPrint(parser()->context.token->name));
+        }
+      }
+      break;
+    default:
+      parser()->errorHandleDefaultToken(thisVariant,tok,children(),"<picture> tag");
+      break;
+    }
+  }
+endpicture:
+  DBG(("DocHtmlPicture::parse() end retval=%s\n",DocTokenizer::retvalToString(retval)));
+  return (retval==RetVal_EndHtmlPicture) ? RetVal_OK : retval;
+}
+
 int DocHRef::parse(DocNodeVariant *thisVariant)
 {
   int retval=RetVal_OK;
@@ -4483,7 +4537,7 @@ int DocPara::handleHtmlStartTag(DocNodeVariant *thisVariant,const QCString &tagN
   int tagId = Mappers::htmlTagMapper->map(tagName);
   if (parser()->context.token->emptyTag && !(tagId&XML_CmdMask) &&
       tagId!=HTML_UNKNOWN && tagId!=HTML_IMG && tagId!=HTML_BR && tagId!=HTML_HR && tagId!=HTML_P
-      && tagId!=HTML_DIV && tagId!=HTML_SPAN)
+      && tagId!=HTML_DIV && tagId!=HTML_SPAN && tagId!=HTML_SOURCE)
   {
       warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"HTML tag ('<%s/>') may not use the 'empty tag' XHTML syntax.",
                      qPrint(tagName));
@@ -4665,6 +4719,20 @@ int DocPara::handleHtmlStartTag(DocNodeVariant *thisVariant,const QCString &tagN
       {
         auto vDocHtmlBlockQuote = children().append<DocHtmlBlockQuote>(parser(),thisVariant,tagHtmlAttribs);
         retval = children().get_last<DocHtmlBlockQuote>()->parse(vDocHtmlBlockQuote);
+      }
+      break;
+    case HTML_PICTURE:
+      if (!parser()->context.token->emptyTag)
+      {
+        auto vDocHtmlPicture = children().append<DocHtmlPicture>(parser(),thisVariant,
+                                         tagHtmlAttribs);
+        retval=children().get_last<DocHtmlPicture>()->parse(vDocHtmlPicture);
+      }
+      break;
+    case HTML_SOURCE:
+      if (insidePicture(thisVariant))
+      {
+        children().append<DocHtmlSource>(parser(),thisVariant,tagHtmlAttribs);
       }
       break;
 
@@ -5058,6 +5126,12 @@ int DocPara::handleHtmlEndTag(DocNodeVariant *thisVariant,const QCString &tagNam
     case HTML_A:
       //warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Unexpected tag </a> found");
       // ignore </a> tag (can be part of <a name=...></a>
+      break;
+    case HTML_PICTURE:
+      retval=RetVal_EndHtmlPicture;
+      break;
+    case HTML_SOURCE:
+      warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Unexpected tag </source> found");
       break;
 
     case XML_TERM:

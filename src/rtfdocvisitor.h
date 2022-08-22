@@ -98,6 +98,8 @@ class RTFDocVisitor : public DocVisitor
     void operator()(const DocHtmlBlockQuote &);
     void operator()(const DocVhdlFlow &);
     void operator()(const DocParBlock &);
+    void operator()(const DocHtmlPicture &);
+    void operator()(const DocHtmlSource &);
 
   private:
     template<class T>

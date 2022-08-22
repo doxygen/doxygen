@@ -354,6 +354,8 @@ class PerlModDocVisitor : public DocVisitor
     void operator()(const DocHtmlBlockQuote &);
     void operator()(const DocVhdlFlow &);
     void operator()(const DocParBlock &);
+    void operator()(const DocHtmlPicture &);
+    void operator()(const DocHtmlSource &);
 
   private:
     template<class T>
@@ -1038,6 +1040,19 @@ void PerlModDocVisitor::operator()(const DocHtmlDetails &details)
   visitChildren(details);
   closeSubBlock();
   closeItem();
+}
+
+void PerlModDocVisitor::operator()(const DocHtmlPicture &picture)
+{
+  openItem("picture");
+  openSubBlock("content");
+  visitChildren(picture);
+  closeSubBlock();
+  closeItem();
+}
+
+void PerlModDocVisitor::operator()(const DocHtmlSource &source)
+{
 }
 
 void PerlModDocVisitor::operator()(const DocHtmlHeader &header)

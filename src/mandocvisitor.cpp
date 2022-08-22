@@ -963,6 +963,16 @@ void ManDocVisitor::operator()(const DocHtmlBlockQuote &q)
   m_firstCol=TRUE;
 }
 
+void ManDocVisitor::operator()(const DocHtmlPicture &q)
+{
+  if (m_hide) return;
+  visitChildren(q);
+}
+
+void ManDocVisitor::operator()(const DocHtmlSource &q)
+{
+}
+
 void ManDocVisitor::operator()(const DocVhdlFlow &)
 {
 }

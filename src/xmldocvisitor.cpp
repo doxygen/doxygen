@@ -895,6 +895,25 @@ void XmlDocVisitor::operator()(const DocHtmlDetails &d)
   m_t << "</details>";
 }
 
+void XmlDocVisitor::operator()(const DocHtmlPicture &d)
+{
+  if (m_hide) return;
+  m_t << "<picture>";
+  visitChildren(d);
+  m_t << "</picture>";
+}
+
+void XmlDocVisitor::operator()(const DocHtmlSource &d)
+{
+  if (m_hide) return;
+  m_t << "<source ";
+  for (const auto &opt : d.attribs())
+  {
+    m_t << " " << opt.name << "=\"" << opt.value << "\"";
+  }
+  m_t << "/>";
+}
+
 void XmlDocVisitor::operator()(const DocHtmlHeader &header)
 {
   if (m_hide) return;
