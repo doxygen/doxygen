@@ -1342,7 +1342,7 @@ QCString getFileFilter(const QCString &name,bool isSourceCode)
 }
 
 
-QCString transcodeCharacterStringToUTF8(QCString inputEncoding, const QCString &input)
+QCString transcodeCharacterStringToUTF8(const QCString &inputEncoding, const QCString &input)
 {
   bool error=FALSE;
   const char *outputEncoding = "UTF-8";
@@ -6459,6 +6459,8 @@ QCString filterTitle(const QCString &title)
   return QCString(tf);
 }
 
+//---------------------------------------------------------------------------------------------------
+
 template<class PatternList, class PatternElem, typename PatternGet = QCString(*)(const PatternElem &)>
 bool genericPatternMatch(const FileInfo &fi,
                          const PatternList &patList,
@@ -6527,7 +6529,7 @@ QCString getEncoding(const FileInfo &fi)
 {
   InputFileEncoding elem;
   auto getter = [](const InputFileEncoding &e) { return e.pattern; };
-  if (genericPatternMatch(fi,Doxygen::inputFileEncoding,elem,getter)) // check for file specific encoding
+  if (genericPatternMatch(fi,Doxygen::inputFileEncodingList,elem,getter)) // check for file specific encoding
   {
     return elem.encoding;
   }

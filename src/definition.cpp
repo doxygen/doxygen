@@ -852,8 +852,7 @@ bool readCodeFragment(const QCString &fileName,
       Debug::print(Debug::FilterOutput,0,"-------------\n%s\n-------------\n",qPrint(result));
     }
   }
-  FileInfo fi(fileName.str());
-  result = transcodeCharacterStringToUTF8(getEncoding(fi),result);
+  result = transcodeCharacterStringToUTF8(getEncoding(FileInfo(fileName.str())),result);
   if (!result.isEmpty() && result.at(result.length()-1)!='\n') result += "\n";
   //printf("readCodeFragment(%d-%d)=%s\n",startLine,endLine,qPrint(result));
   return found;

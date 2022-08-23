@@ -170,7 +170,7 @@ DefinesPerFileList    Doxygen::macroDefinitions;
 bool                  Doxygen::clangAssistedParsing = FALSE;
 QCString              Doxygen::verifiedDotPath;
 volatile bool         Doxygen::terminating = false;
-std::vector<InputFileEncoding> Doxygen::inputFileEncoding;
+InputFileEncodingList Doxygen::inputFileEncodingList;
 
 // locally accessible globals
 static std::multimap< std::string, const Entry* > g_classEntries;
@@ -11486,7 +11486,7 @@ void adjustConfiguration()
         portable_iconv_close(cd);
       }
 
-      Doxygen::inputFileEncoding.push_back(InputFileEncoding(pattern, encoding));
+      Doxygen::inputFileEncodingList.push_back(InputFileEncoding(pattern, encoding));
     }
   }
 

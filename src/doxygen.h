@@ -69,10 +69,12 @@ struct LookupInfo
 struct InputFileEncoding
 {
   InputFileEncoding() {}
-  InputFileEncoding(QCString pat, QCString enc) : pattern(pat), encoding(enc) {}
+  InputFileEncoding(const QCString &pat, const QCString &enc) : pattern(pat), encoding(enc) {}
   QCString pattern;
   QCString encoding;
 };
+
+using InputFileEncodingList = std::vector<InputFileEncoding>;
 
 using ClangUsrMap = std::unordered_map<std::string,const Definition *>;
 
@@ -128,7 +130,7 @@ class Doxygen
     static bool                      clangAssistedParsing;
     static QCString                  verifiedDotPath;
     static volatile bool             terminating;
-    static std::vector<InputFileEncoding> inputFileEncoding;
+    static InputFileEncodingList     inputFileEncodingList;
 };
 
 /** Deleter that only deletes an object if doxygen is not already terminating */
