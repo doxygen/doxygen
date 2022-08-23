@@ -1342,10 +1342,9 @@ QCString getFileFilter(const QCString &name,bool isSourceCode)
 }
 
 
-QCString transcodeCharacterStringToUTF8(const QCString &input)
+QCString transcodeCharacterStringToUTF8(const QCString &inputEncoding, const QCString &input)
 {
   bool error=FALSE;
-  QCString inputEncoding = Config_getString(INPUT_ENCODING);
   const char *outputEncoding = "UTF-8";
   if (inputEncoding.isEmpty() || qstricmp(inputEncoding,outputEncoding)==0) return input;
   int inputSize=input.length();
@@ -6420,7 +6419,7 @@ bool readInputFile(const QCString &fileName,BufStr &inBuf,bool filter,bool isSou
   {
     // do character transcoding if needed.
     transcodeCharacterBuffer(fileName,inBuf,inBuf.curPos(),
-        Config_getString(INPUT_ENCODING),"UTF-8");
+        getEncoding(fi),"UTF-8");
   }
 
   //inBuf.addChar('\n'); /* to prevent problems under Windows ? */
@@ -6460,11 +6459,13 @@ QCString filterTitle(const QCString &title)
   return QCString(tf);
 }
 
-//----------------------------------------------------------------------------
-// returns TRUE if the name of the file represented by 'fi' matches
-// one of the file patterns in the 'patList' list.
+//---------------------------------------------------------------------------------------------------
 
-bool patternMatch(const FileInfo &fi,const StringVector &patList)
+template<class PatternList, class PatternElem, typename PatternGet = QCString(*)(const PatternElem &)>
+bool genericPatternMatch(const FileInfo &fi,
+                         const PatternList &patList,
+                         PatternElem &elem,
+                         PatternGet getter)
 {
   bool caseSenseNames = getCaseSenseNames();
   bool found = FALSE;
@@ -6481,8 +6482,9 @@ bool patternMatch(const FileInfo &fi,const StringVector &patList)
     std::string fp = fi.filePath();
     std::string afp= fi.absFilePath();
 
-    for (auto pattern: patList)
+    for (const auto &li : patList)
     {
+      std::string pattern = getter(li).str();
       if (!pattern.empty())
       {
         size_t i=pattern.find('=');
@@ -6499,13 +6501,42 @@ bool patternMatch(const FileInfo &fi,const StringVector &patList)
         found = re.isValid() && (reg::match(fn,re) ||
                                  (fn!=fp && reg::match(fp,re)) ||
                                  (fn!=afp && fp!=afp && reg::match(afp,re)));
-        if (found) break;
+        if (found)
+        {
+          elem = li;
+          break;
+        }
         //printf("Matching '%s' against pattern '%s' found=%d\n",
         //    qPrint(fi->fileName()),qPrint(pattern),found);
       }
     }
   }
   return found;
+}
+
+//----------------------------------------------------------------------------
+// returns TRUE if the name of the file represented by 'fi' matches
+// one of the file patterns in the 'patList' list.
+
+bool patternMatch(const FileInfo &fi,const StringVector &patList)
+{
+  std::string elem;
+  auto getter = [](std::string s) { return QCString(s); };
+  return genericPatternMatch(fi,patList,elem,getter);
+}
+
+QCString getEncoding(const FileInfo &fi)
+{
+  InputFileEncoding elem;
+  auto getter = [](const InputFileEncoding &e) { return e.pattern; };
+  if (genericPatternMatch(fi,Doxygen::inputFileEncodingList,elem,getter)) // check for file specific encoding
+  {
+    return elem.encoding;
+  }
+  else // fall back to default encoding
+  {
+    return Config_getString(INPUT_ENCODING);
+  }
 }
 
 QCString externalLinkTarget(const bool parent)

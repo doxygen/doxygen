@@ -66,6 +66,16 @@ struct LookupInfo
   QCString   resolvedType;
 };
 
+struct InputFileEncoding
+{
+  InputFileEncoding() {}
+  InputFileEncoding(const QCString &pat, const QCString &enc) : pattern(pat), encoding(enc) {}
+  QCString pattern;
+  QCString encoding;
+};
+
+using InputFileEncodingList = std::vector<InputFileEncoding>;
+
 using ClangUsrMap = std::unordered_map<std::string,const Definition *>;
 
 /*! \brief This class serves as a namespace for global variables used by doxygen.
@@ -120,6 +130,7 @@ class Doxygen
     static bool                      clangAssistedParsing;
     static QCString                  verifiedDotPath;
     static volatile bool             terminating;
+    static InputFileEncodingList     inputFileEncodingList;
 };
 
 /** Deleter that only deletes an object if doxygen is not already terminating */
