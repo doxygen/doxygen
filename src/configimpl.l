@@ -675,7 +675,8 @@ static QCString configStringRecode(
   void *cd = portable_iconv_open(outputEncoding.data(),inputEncoding.data());
   if (cd==reinterpret_cast<void *>(-1))
   {
-    config_term("Error: unsupported character conversion: '%s'->'%s'\n",
+    config_term("Error: unsupported character conversion: '%s'->'%s'\n"
+                "Check the 'DOXYFILE_ENCODING' setting in the config file!\n",
         qPrint(inputEncoding),qPrint(outputEncoding));
   }
   size_t iLeft=inputSize;
@@ -1864,6 +1865,10 @@ void Config::checkAndCorrect(bool quiet, const bool check)
   //------------------------
   // check FILTER_SOURCE_PATTERNS
   checkList(Config_getList(FILTER_SOURCE_PATTERNS),"FILTER_SOURCE_PATTERNS",FALSE,FALSE);
+
+  //------------------------
+  // check INPUT_FILE_ENCODING
+  checkList(Config_getList(INPUT_FILE_ENCODING),"INPUT_FILE_ENCODING",TRUE,TRUE);
 
   //------------------------
   // check TAGFILES
