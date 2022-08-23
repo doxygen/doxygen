@@ -1426,10 +1426,10 @@ contains \c TEST, or \c DEV
   for an example.
 
 <hr>
-\section cmdshowdate \\showdate "<format>" [ <date> ]
+\section cmdshowdate \\showdate "<format>" [ <date_time> ]
 
   \addindex \\showdate
-  Shows the date based on the given \<format\> and \<date\>. Where the \<format\> is a string in which the following tokens have a special meaning:
+  Shows the date and time based on the given \<format\> and \<date_time\>. Where the \<format\> is a string in which the following tokens have a special meaning:
   | Code | Description |
   | :--- | :---------- |
   | \%y | The last two decimal digits of the year. If the result is a single digit it is prefixed by 0.
@@ -1452,34 +1452,58 @@ contains \c TEST, or \c DEV
   | \%A | The full weekday name.
   | \%lA | As \%A but when not by default  the case and when possible the first character is converted to uppercase.
   | &nbsp; | &nbsp;
+  | \%H |The hour (0-23).
+  | \%0H | The hour (0-23). If the result is a single digit, it is prefixed with 0.
+  | \%I | The hour (0-11).
+  | \%0I | The hour (0-11). If the result is a single digit, it is prefixed with 0.
+  | \%M | The minute.
+  | \%0M | The minute. If the result is a single digit, it is prefixed with 0.
+  | \%S | The second.
+  | \%0S | The second. If the result is a single digit, it is prefixed with 0.
+  | &nbsp; | &nbsp;
   | \%\% | A \% character.
 
   Note that the \<format\> has to be between double quotes.
 
-  In case the \<date\> is specified it to has to have the following representation:
-  - one or 2 digits for the day
-  - a minus sign
-  - one or 2 digits for the month
-  - a minus sign
-  - 4 digits for the year
+  In case the \<date_time\> is specified it has to have the following representation:
+  - optional `date` where `date` is:
+    - one or 2 digits for the day
+    - a minus sign
+    - one or 2 digits for the month
+    - a minus sign
+    - 4 digits for the year
+  - optional `time` where `time` is:
+    - whitespace
+    - one or 2 digits for the hours
+    - a colon sign
+    - one or 2 digits for the minutes
+    - optionally
+      - a colon sign
+      - 2 digits for the seconds
   .
-  in case the \<date\> is not specified the current date is used.
+  in case the \<date_time\> is not specified the current date and time are used.
 
   Here is an example:
   \code
   - \showdate "%lA %0d-%0m-%Y" 14-3-2015
   - \showdate "%a %d-%m-%y" 14-3-2015
   - \showdate "%m.%d%y" 14-3-2015
+  - \showdate "%lA %0d-%0m-%Y %H:%M:%S" 14-3-2015 03:04:15
+  - \showdate "%lA %0d-%0m-%Y %H:%M:%S" 14-3-2015 03:04
   \endcode
   In case `OUTPUT_LANGUAGE=english` this results in:
   - Saturday 14-03-2015
   - Sat 14-3-15
   - 3.1415
+  - Saturday 14-03-15 3:4:15
+  - Saturday 14-03-15 3:4:0
   .
   In case `OUTPUT_LANGUAGE=dutch` this results in:
   - Zaterdag 14-03-15
   - za 14-3-2015
   - 3.1415
+  - Zaterdag 14-03-15 3:4:15
+  - Zaterdag 14-03-15 3:4:0
   .
 <hr>
 \section cmddeprecated \\deprecated { description }
