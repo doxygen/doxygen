@@ -12,14 +12,14 @@ jobs:
         config:
         - {
             name: "Ubuntu Latest GCC Release",
-            os: ubuntu-18.04,
+            os: ubuntu-20.04,
             build_type: "Release", cc: "gcc", cxx: "g++",
             build_gen: "Unix Makefiles",
             cmake_extra_opts: "-Dbuild_search=YES -Dbuild_app=YES -Dbuild_parse=YES -Dbuild_xmlparser=YES -Duse_sqlite3=ON"
           }
         - {
             name: "Ubuntu Latest GCC Debug",
-            os: ubuntu-18.04,
+            os: ubuntu-20.04,
             build_type: "Debug", cc: "gcc", cxx: "g++",
             build_gen: "Unix Makefiles",
             cmake_extra_opts: "-Dbuild_search=YES -Dbuild_app=YES -Dbuild_parse=YES -Dbuild_xmlparser=YES -Duse_sqlite3=ON"
@@ -123,11 +123,11 @@ jobs:
         clang++ -v
       if: matrix.config.os == 'ubuntu-20.04'
     
-    - name: Install libxapian (Ubuntu 18.04)
+    - name: Install libxapian (Ubuntu 20.04)
       run: |
         sudo apt update
         sudo apt install libxapian-dev
-      if: matrix.config.os == 'ubuntu-18.04'
+      if: matrix.config.os == 'ubuntu-20.04'
           
     - name: Extract MikTex zip (Windows)
       shell: bash
