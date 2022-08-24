@@ -74,6 +74,7 @@
 #include "utf8.h"
 #include "textstream.h"
 #include "indexlist.h"
+#include "datetime.h"
 
 #define ENABLE_TRACINGSUPPORT 0
 
@@ -1425,88 +1426,6 @@ QCString fileToString(const QCString &name,bool filter,bool isSourceCode)
     err("cannot open file '%s' for reading\n",qPrint(name));
   }
   return "";
-}
-
-std::tm getCurrentDateTime()
-{
-  QCString sourceDateEpoch = Portable::getenv("SOURCE_DATE_EPOCH");
-  if (!sourceDateEpoch.isEmpty()) // see https://reproducible-builds.org/specs/source-date-epoch/
-  {
-    bool ok;
-    uint64 epoch = sourceDateEpoch.toUInt64(&ok);
-    if (!ok)
-    {
-      static bool warnedOnce=FALSE;
-      if (!warnedOnce)
-      {
-        warn_uncond("Environment variable SOURCE_DATE_EPOCH does not contain a valid number; value is '%s'\n",
-            qPrint(sourceDateEpoch));
-        warnedOnce=TRUE;
-      }
-    }
-    else // use given epoch value as current 'built' time
-    {
-      auto epoch_start    = std::chrono::time_point<std::chrono::system_clock>{};
-      auto epoch_seconds  = std::chrono::seconds(epoch);
-      auto build_time     = epoch_start + epoch_seconds;
-      std::time_t time    = std::chrono::system_clock::to_time_t(build_time);
-      return *gmtime(&time);
-    }
-  }
-
-  // return current local time
-  auto now = std::chrono::system_clock::now();
-  std::time_t time = std::chrono::system_clock::to_time_t(now);
-  return *localtime(&time);
-}
-
-QCString dateToString(bool includeTime)
-{
-  auto current = getCurrentDateTime();
-  return theTranslator->trDateTime(current.tm_year + 1900,
-                                   current.tm_mon + 1,
-                                   current.tm_mday,
-                                   (current.tm_wday+6)%7+1, // map: Sun=0..Sat=6 to Mon=1..Sun=7
-                                   current.tm_hour,
-                                   current.tm_min,
-                                   current.tm_sec,
-                                   includeTime);
-}
-
-static QCString yearToString()
-{
-  auto current = getCurrentDateTime();
-  return QCString().setNum(current.tm_year+1900);
-}
-
-bool valid_tm( const std::tm& tm, int *weekday )
-{
-  auto cpy = tm ;
-  const auto as_time_t = std::mktime( std::addressof(cpy) ) ;
-  if (as_time_t == -1) return false;
-
-  cpy = *std::localtime( std::addressof(as_time_t) ) ;
-
-  *weekday = cpy.tm_wday;
-  return tm.tm_mday == cpy.tm_mday && // valid day
-         tm.tm_mon == cpy.tm_mon && // valid month
-         tm.tm_year == cpy.tm_year; // valid year
-}
-int getYear(std::tm dat)
-{
-  return dat.tm_year+1900;
-}
-int getMonth(std::tm dat)
-{
-  return dat.tm_mon+1;
-}
-int getDay(std::tm dat)
-{
-  return dat.tm_mday;
-}
-int getDayOfWeek(std::tm dat)
-{
-  return (dat.tm_wday+6)%7+1;
 }
 
 void trimBaseClassScope(const BaseClassList &bcl,QCString &s,int level=0)

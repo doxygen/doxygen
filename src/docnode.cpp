@@ -32,6 +32,7 @@
 #include "doctokenizer.h"
 #include "plantuml.h"
 #include "language.h"
+#include "datetime.h"
 
 // debug off
 #define DBG(x) do {} while(0)
@@ -3224,249 +3225,40 @@ void DocPara::handleShowDate(DocNodeVariant *thisVariant)
 
   parser()->tokenizer.setStateShowDate();
   tok = parser()->tokenizer.lex();
-  std::tm dat = tm{};
+
   QCString specDate = parser()->context.token->name.stripWhiteSpace();
-  if (specDate.isEmpty())
-  {
-    dat = getCurrentDateTime();
-  }
-  else if (tok!=TK_WORD)
+  if (!specDate.isEmpty() && tok!=TK_WORD)
   {
     warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"invalid date argument for command '\\showdate'");
     parser()->tokenizer.setStatePara();
     return;
   }
-  else
-  {
-    int day=0, month=0, year=0;
-    int hr=0, min=0, sec=0;
-    dat = getCurrentDateTime(); // Filling with default values
-    if (sscanf(specDate.data(),"%d-%d-%d %d:%d:%d", &day, &month, &year, &hr, &min, &sec) == 6)
-    {
-      dat.tm_year = year-1900;
-      dat.tm_mon  = month-1;
-      dat.tm_mday = day;
-      dat.tm_hour = hr;
-      dat.tm_min  = min;
-      dat.tm_sec  = sec;
-    }
-    else if (sscanf(specDate.data(),"%d-%d-%d %d:%d", &day, &month, &year, &hr, &min) == 5)
-    {
-      dat.tm_year = year-1900;
-      dat.tm_mon  = month-1;
-      dat.tm_mday = day;
-      dat.tm_hour = hr;
-      dat.tm_min  = min;
-      dat.tm_sec  = 0;
-    }
-    else if (sscanf(specDate.data(),"%d-%d-%d", &day, &month, &year) == 3)
-    {
-      dat.tm_year = year-1900;
-      dat.tm_mon  = month-1;
-      dat.tm_mday = day;
-      dat.tm_hour = 0;
-      dat.tm_min  = 0;
-      dat.tm_sec  = 0;
-    }
-    else if (sscanf(specDate.data(),"%d:%d:%d", &hr, &min, &sec) == 3)
-    {
-      dat.tm_hour = hr;
-      dat.tm_min  = min;
-      dat.tm_sec  = sec;
-    }
-    else if (sscanf(specDate.data(),"%d:%d", &hr, &min) == 2)
-    {
-      dat.tm_hour = hr;
-      dat.tm_min  = min;
-      dat.tm_sec  = 0;
-    }
-    else
-    {
-      warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"invalid or non representable date argument for command '\\showdate'");
-      parser()->tokenizer.setStatePara();
-      return;
-    }
-    int weekday;
-    // there are some problems when the hr:min:sec are on 00:00:00 in determining the weekday
-    hr = dat.tm_hour;
-    dat.tm_hour = 12;
-    if (!valid_tm(dat,&weekday))
-    {
-      warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"invalid or non representable date argument for command '\\showdate'");
-      parser()->tokenizer.setStatePara();
-      return;
-    }
-    dat.tm_wday = weekday;
-    dat.tm_hour = hr;
 
+  std::tm dat{};
+  int format=0;
+  QCString err = dateTimeFromString(specDate,dat,format);
+  if (!err.isEmpty())
+  {
+    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"invalid date argument for command '\\showdate': %s",qPrint(err));
+    parser()->tokenizer.setStatePara();
+    return;
   }
 
-  GrowBuf growBuf;
-  signed char c;
-  const char *p=fmt.data();
-  while ((c=*p++)!=0)
+  int usedFormat=0;
+  QCString dateTimeStr = formatDateTime(fmt,dat,usedFormat);
+
+  // warn the user if the format contains markers that are not explicitly filled in
+  for (int i=0;i<SF_NumBits;i++)
   {
-    switch (c)
+    int bitMask = 1<<i;
+    if ((usedFormat&bitMask) && !(format&bitMask))
     {
-      case '%':
-        switch (*p)
-        {
-          case '%':
-            growBuf.addChar('%');
-            break;
-          /* single digit prefixed with a zero */
-          case '0':
-            p++;
-            switch (*p)
-            {
-              /* month */
-              case 'm':
-                {
-                  char tmp[10];
-                  sprintf(tmp,"%02d",getMonth(dat));
-                  growBuf.addStr(tmp);
-                }
-                break;
-              /* day */
-              case 'd':
-                {
-                  char tmp[10];
-                  sprintf(tmp,"%02d",getDay(dat));
-                  growBuf.addStr(tmp);
-                }
-                break;
-              /* (24-)hour */
-              case 'H':
-                {
-                  char tmp[10];
-                  sprintf(tmp,"%02d",dat.tm_hour);
-                  growBuf.addStr(tmp);
-                }
-                break;
-              /* (12-)hour */
-              case 'I':
-                {
-                  char tmp[10];
-                  sprintf(tmp,"%02d",dat.tm_hour%12);
-                  growBuf.addStr(tmp);
-                }
-                break;
-              /* minute */
-              case 'M':
-                {
-                  char tmp[10];
-                  sprintf(tmp,"%02d",dat.tm_min);
-                  growBuf.addStr(tmp);
-                }
-                break;
-              /* second */
-              case 'S':
-                {
-                  char tmp[10];
-                  sprintf(tmp,"%02d",dat.tm_sec);
-                  growBuf.addStr(tmp);
-                }
-                break;
-              default:
-                /* we just handle the % and 0 here */
-                p--;
-                growBuf.addChar('%');
-                growBuf.addChar('0');
-                break;
-            }
-            break;
-          /* first character set to capital*/
-          case 'l':
-            p++;
-            switch (*p)
-            {
-              /* month */
-              case 'b':
-                growBuf.addStr(theTranslator->trMonth(getMonth(dat),true,false));
-                break;
-              case 'B':
-                growBuf.addStr(theTranslator->trMonth(getMonth(dat),true,true));
-                break;
-              /* day of week */
-              case 'a':
-                growBuf.addStr(theTranslator->trDayOfWeek(getDayOfWeek(dat),true,false));
-                break;
-              case 'A':
-                growBuf.addStr(theTranslator->trDayOfWeek(getDayOfWeek(dat),true,true));
-                break;
-              default:
-                /* we just handle the % and l here */
-                p--;
-                growBuf.addChar('%');
-                growBuf.addChar('l');
-                break;
-            }
-            break;
-          /* year */
-          case 'y':
-            growBuf.addStr(QCString().setNum(getYear(dat)).mid(2));
-            break;
-          case 'Y':
-            growBuf.addStr(QCString().setNum(getYear(dat)));
-            break;
-          /* month */
-          case 'm':
-            growBuf.addStr(QCString().setNum(getMonth(dat)));
-            break;
-          case 'b':
-            growBuf.addStr(theTranslator->trMonth(getMonth(dat),false,false));
-            break;
-          case 'B':
-            growBuf.addStr(theTranslator->trMonth(getMonth(dat),false,true));
-            break;
-          /* day */
-          case 'd':
-            growBuf.addStr(QCString().setNum(getDay(dat)));
-            break;
-          /* day of week */
-          case 'u':
-            growBuf.addStr(QCString().setNum(getDayOfWeek(dat))); // Monday = 1 ... Sunday = 7
-            break;
-          case 'w':
-            growBuf.addStr(QCString().setNum(getDayOfWeek(dat)%7)); // Sunday = 0 .. Saturday = 6
-            break;
-          case 'a':
-            growBuf.addStr(theTranslator->trDayOfWeek(getDayOfWeek(dat),false,false));
-            break;
-          case 'A':
-            growBuf.addStr(theTranslator->trDayOfWeek(getDayOfWeek(dat),false,true));
-            break;
-          /* (24-)hour */
-          case 'H':
-            growBuf.addStr(QCString().setNum(dat.tm_hour));
-            break;
-          /* (12-)hour */
-          case 'I':
-            growBuf.addStr(QCString().setNum(dat.tm_hour%12));
-            break;
-          /* minute */
-          case 'M':
-            growBuf.addStr(QCString().setNum(dat.tm_min));
-            break;
-          /* second */
-          case 'S':
-            growBuf.addStr(QCString().setNum(dat.tm_sec));
-            break;
-          default:
-            growBuf.addChar('%');
-            growBuf.addChar(c);
-            break;
-        }
-        p++;
-        break;
-      default:
-        growBuf.addChar(c);
-        break;
+      warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"'\\showdate' format '%s' has %s related markers not specified in date parameter '%s'. Using current time values.",
+          qPrint(fmt),SF_bit2str(i),qPrint(specDate));
     }
   }
-  growBuf.addChar(0);
 
-  children().append<DocWord>(parser(),thisVariant,growBuf.get());
+  children().append<DocWord>(parser(),thisVariant,dateTimeStr);
   parser()->tokenizer.setStatePara();
 }
 void DocPara::handleILine(DocNodeVariant *)
