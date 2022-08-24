@@ -769,7 +769,7 @@ Structural indicators
   (like class, file or namespace), then it will be added to the group(s)
   identified by the `<groupname>`(s).
   In case of members (like variable, functions, typedefs and enums) the member will
-  be added only to one group (to avoid ambiguous linking targets in case 
+  be added only to one group (to avoid ambiguous linking targets in case
   a member is not documented in the context of its class, namespace
   or file, but only visible as part of a group).
 
@@ -1426,60 +1426,77 @@ contains \c TEST, or \c DEV
   for an example.
 
 <hr>
-\section cmdshowdate \\showdate "<format>" [ <date> ]
+\section cmdshowdate \\showdate "<format>" [ <date_time> ]
 
   \addindex \\showdate
-  Shows the date based on the given \<format\> and \<date\>. Where the \<format\> is a string in which the following tokens have a special meaning:
+  Shows the date and time based on the given \<format\> and \<date_time\>. Where the \<format\> is a string in which the following tokens have a special meaning:
   | Code | Description |
   | :--- | :---------- |
-  | \%y | The last two decimal digits of the year. If the result is a single digit it is prefixed by 0.
-  | \%Y | The year as a decimal number.
-  | &nbsp; | &nbsp;
-  | \%m | The month as a decimal number.
-  | \%0m | The month as a decimal number. If the result is a single digit, it is prefixed with 0.
-  | \%b | The abbreviated month name.
-  | \%lb | As \%b but when not by default the case and when possible the first character is converted to uppercase.
-  | \%B | The full month name.
-  | \%lB | As \%B but when not by default the case and when possible the first character is converted to uppercase.
-  | &nbsp; | &nbsp;
-  | \%d | The day of month as a decimal number.
-  | \%0d | The day of month as a decimal number. If the result is a single digit, it is prefixed with 0.
-  | &nbsp; | &nbsp;
+  | \%y | Year without century as a zero-padded decimal number.
+  | \%Y | Year with century as a decimal number.
+  | \%m | Month as a zero-padded decimal number.
+  | \%-m | The month as a decimal number.
+  | \%b | Month as locale’s abbreviated name.
+  | \%B | Month as locale’s full name.
+  | \%d | Day of the month as a zero-padded decimal number.
+  | \%-d | Day of the month as a decimal number.
   | \%u | The weekday as a decimal number (1-7), where Monday is 1.
   | \%w | The weekday as a decimal number (0-6), where Sunday is 0.
-  | \%a | The abbreviated weekday name.
-  | \%la | As \%a but when not by default  the case and when possible the first character is converted to uppercase.
-  | \%A | The full weekday name.
-  | \%lA | As \%A but when not by default  the case and when possible the first character is converted to uppercase.
+  | \%a | Weekday as locale’s abbreviated name.
+  | \%A | Weekday as locale’s full name.
+  | &nbsp; | &nbsp;
+  | \%H | Hour (24-hour clock) as a zero-padded decimal number.
+  | \%-H | Hour (24-hour clock) as a decimal number.
+  | \%I | Hour (12-hour clock) as a zero-padded decimal number.
+  | \%-I | Hour (12-hour clock) as a decimal number.
+  | \%M | Minute as a zero-padded decimal number.
+  | \%-M | Minute as a decimal number.
+  | \%S | Second as a zero-padded decimal number.
+  | \%-S | Second as a decimal number.
   | &nbsp; | &nbsp;
   | \%\% | A \% character.
 
   Note that the \<format\> has to be between double quotes.
 
-  In case the \<date\> is specified it to has to have the following representation:
-  - one or 2 digits for the day
-  - a minus sign
-  - one or 2 digits for the month
-  - a minus sign
-  - 4 digits for the year
+  In case the \<date_time\> is specified it has to have the following representation:
+  - optional `date` where `date` is:
+    - 4 digits for the year
+    - a minus sign
+    - one or 2 digits for the month
+    - a minus sign
+    - one or 2 digits for the day
+  - optional `time` where `time` is:
+    - whitespace
+    - one or 2 digits for the hours
+    - a colon sign
+    - one or 2 digits for the minutes
+    - when the format contains \%S or \%-S
+      - a colon sign
+      - 2 digits for the seconds
   .
-  in case the \<date\> is not specified the current date is used.
+  in case the \<date_time\> is not specified the current date and time are used.
 
   Here is an example:
   \code
-  - \showdate "%lA %0d-%0m-%Y" 14-3-2015
-  - \showdate "%a %d-%m-%y" 14-3-2015
-  - \showdate "%m.%d%y" 14-3-2015
+  - \showdate "%A %d-%m-%Y" 2015-3-14
+  - \showdate "%a %d-%m-%y" 2015-3-14
+  - \showdate "%-m.%d%y" 2015-3-14
+  - \showdate "%A %d-%m-%Y %H:%M:%S" 2015-3-14 03:04:15
+  - \showdate "%A %d-%m-%Y %H:%M" 2015-3-14 03:04
   \endcode
   In case `OUTPUT_LANGUAGE=english` this results in:
   - Saturday 14-03-2015
-  - Sat 14-3-15
+  - Sat 14-03-15
   - 3.1415
+  - Saturday 14-03-15 03:04:15
+  - Saturday 14-03-15 03:04
   .
   In case `OUTPUT_LANGUAGE=dutch` this results in:
-  - Zaterdag 14-03-15
-  - za 14-3-2015
+  - zaterdag 14-03-15
+  - za 14-03-2015
   - 3.1415
+  - zaterdag 14-03-15 03:04:15
+  - zaterdag 14-03-15 03:04
   .
 <hr>
 \section cmddeprecated \\deprecated { description }
