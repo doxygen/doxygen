@@ -36,7 +36,6 @@ static std::map< std::string, Debug::DebugMask > s_labels =
   { "classes",           Debug::Classes           },
   { "commentcnv",        Debug::CommentCnv        },
   { "commentscan",       Debug::CommentScan       },
-  { "validate",          Debug::Validate          },
   { "printtree",         Debug::PrintTree         },
   { "time",              Debug::Time              },
   { "extcmd",            Debug::ExtCmd            },
