@@ -17,6 +17,7 @@
 #include <chrono>
 #include <memory>
 #include <array>
+#include <functional>
 
 #include "regex.h"
 #include "datetime.h"
