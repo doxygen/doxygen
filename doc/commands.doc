@@ -1453,6 +1453,7 @@ contains \c TEST, or \c DEV
   | \%-M | Minute as a decimal number.
   | \%S | Second as a zero-padded decimal number.
   | \%-S | Second as a decimal number.
+  | \%p | Locale’s equivalent of either AM or PM.
   | &nbsp; | &nbsp;
   | \%\% | A \% character.
 

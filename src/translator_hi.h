@@ -74,7 +74,7 @@
  * instantiations = उदाहरणीकरणगण
  * interface = अंतराफलक
  * interfaces = अंतराफलकगण
- * inherit = 
+ * inherit =
  * inheritance = वरासत
  * inherited = वरासित
  * library = संग्रह
@@ -1802,6 +1802,11 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
       static const char *months_full[]  = { "जनवरी", "फरवरी", "मार्च", "अप्रैल", "मई", "जून", "जुलाई", "अगस्त", "सितम्बर", "अक्तूबर", "नवम्बर", "दिसम्बर" };
       QCString text  = full? months_full[month-1] : months_short[month-1];
       return text;
+    }
+    virtual QCString trDayPeriod(int period)
+    {
+      static const char *dayPeriod[] = { "am", "pm" };
+      return dayPeriod[period];
     }
 
 //////////////////////////////////////////////////////////////////////////

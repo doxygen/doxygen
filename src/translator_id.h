@@ -1798,15 +1798,18 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
     {
       static const char *days_short[]   = { "Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min" };
       static const char *days_full[]    = { "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu" };
-      QCString text  = full? days_full[dayOfWeek-1] : days_short[dayOfWeek-1];
-      return text;
+      return full? days_full[dayOfWeek-1] : days_short[dayOfWeek-1];
     }
     virtual QCString trMonth(int month, bool, bool full)
     {
       static const char *months_short[] = { "Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des" };
       static const char *months_full[]  = { "Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember" };
-      QCString text  = full? months_full[month-1] : months_short[month-1];
-      return text;
+      return full? months_full[month-1] : months_short[month-1];
+    }
+    virtual QCString trDayPeriod(int period)
+    {
+      static const char *dayPeriod[] = { "AM", "PM" };
+      return dayPeriod[period];
     }
 
 //////////////////////////////////////////////////////////////////////////

@@ -1179,6 +1179,11 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
       if (first_capital) return text.mid(0,1).upper()+text.mid(1);
       else return text;
     }
+    virtual QCString trDayPeriod(int period)
+    {
+      static const char *dayPeriod[] = { "dop.", "pop." };
+      return dayPeriod[period];
+    }
 };
 
 #endif

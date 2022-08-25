@@ -3217,7 +3217,7 @@ void DocPara::handleShowDate(DocNodeVariant *thisVariant)
   tok = parser()->tokenizer.lex();
   if (tok!=TK_WORD)
   {
-    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"invalid format argument for command '\\showdate'");
+    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"invalid <format> argument for command '\\showdate'");
     parser()->tokenizer.setStatePara();
     return;
   }
@@ -3229,7 +3229,7 @@ void DocPara::handleShowDate(DocNodeVariant *thisVariant)
   QCString specDate = parser()->context.token->name.stripWhiteSpace();
   if (!specDate.isEmpty() && tok!=TK_WORD)
   {
-    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"invalid date argument for command '\\showdate'");
+    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"invalid <date_time> argument for command '\\showdate'");
     parser()->tokenizer.setStatePara();
     return;
   }
@@ -3239,7 +3239,7 @@ void DocPara::handleShowDate(DocNodeVariant *thisVariant)
   QCString err = dateTimeFromString(specDate,dat,specFormat);
   if (!err.isEmpty())
   {
-    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"invalid date argument for command '\\showdate': %s",qPrint(err));
+    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"invalid <date_time> argument for command '\\showdate': %s",qPrint(err));
     parser()->tokenizer.setStatePara();
     return;
   }
@@ -3253,7 +3253,7 @@ void DocPara::handleShowDate(DocNodeVariant *thisVariant)
     int bitMask = 1<<i;
     if ((usedFormat&bitMask) && !(specFormat&bitMask)) // a part was used in the format string but its value was not specified.
     {
-      warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"'\\showdate' format '%s' has %s related markers which are not specified in date parameter '%s'. Filling in the current value for %s instead.",
+      warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"'\\showdate' <format> parameter '%s' has %s related markers which are not specified in the <date_time> parameter '%s'. Filling in the current value for %s instead.",
           qPrint(fmt),SF_bit2str(i),qPrint(specDate),SF_bit2str(i));
     }
   }

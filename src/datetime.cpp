@@ -209,6 +209,7 @@ QCString formatDateTime(const QCString &format,const std::tm &dt,int &formatUsed
           case 'A': growBuf.addStr(theTranslator->trDayOfWeek(getDayOfWeek(dt),false,true));   formatUsed|=SF_Date;    break;
           case 'H': growBuf.addInt(fmt_selected,dt.tm_hour);                                   formatUsed|=SF_Time;    break;
           case 'I': growBuf.addInt(fmt_selected,dt.tm_hour%12);                                formatUsed|=SF_Time;    break;
+          case 'p': growBuf.addStr(theTranslator->trDayPeriod(dt.tm_hour>=12?1:0));            formatUsed|=SF_Time;    break;
           case 'M': growBuf.addInt(fmt_selected,dt.tm_min);                                    formatUsed|=SF_Time;    break;
           case 'S': growBuf.addInt(fmt_selected,dt.tm_sec);                                    formatUsed|=SF_Seconds; break;
           default:

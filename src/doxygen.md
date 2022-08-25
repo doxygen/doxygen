@@ -1,7 +1,7 @@
 %Doxygen Internals {#mainpage}
 =================
 
-Generated on \showdate "%A, %B %-d, %Y"
+Generated on \showdate "%A, %B %-d, %Y at %-I:%M %p"
 
 Introduction
 ============

@@ -1938,6 +1938,11 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_4
       if (first_capital) return text.mid(0,1).upper()+text.mid(1);
       else return text;
     }
+    virtual QCString trDayPeriod(int period)
+    {
+      static const char *dayPeriod[] = { "fm", "em" };
+      return dayPeriod[period];
+    }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.7.5
