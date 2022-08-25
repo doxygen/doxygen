@@ -2158,10 +2158,10 @@ bool getDefsNew(const QCString &scName,
   {
     scope = currentFile;
   }
-  //printf("@@  -> found scope scope=%s member=%s out=%s\n",qPrint(scName),qPrint(mibName),qPrint(scope?scope->name():""));
+  //printf("@@  -> found scope scope=%s member=%s out=%s\n",qPrint(scName),qPrint(mbName),qPrint(scope?scope->name():""));
   //
   const Definition *symbol = resolver.resolveSymbol(scope,mbName,args,checkCV);
-  //printf("@@  -> found symbol in=%s out=%s\n",qPrint(memberName),qPrint(symbol?symbol->name():QCString()));
+  //printf("@@  -> found symbol in=%s out=%s\n",qPrint(mbName),qPrint(symbol?symbol->qualifiedName():QCString()));
   if (symbol && symbol->definitionType()==Definition::TypeMember)
   {
     md = toMemberDef(symbol);
