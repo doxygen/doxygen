@@ -55,7 +55,7 @@ constexpr const char *SF_bit2str(int bitNumber)
 QCString dateTimeFromString(const QCString &spec,std::tm &dt,int &format);
 
 
-/** Return a string representation for a given std::tm value that is formated according to the
+/** Return a string representation for a given std::tm value that is formatted according to the
  *  pattern given by a format.
  *  @param[in] format the string used for format the date and time, e.g. `%Y-%m-%d`
  *  @param[in] dt     the date and time value to fill in

@@ -3235,8 +3235,8 @@ void DocPara::handleShowDate(DocNodeVariant *thisVariant)
   }
 
   std::tm dat{};
-  int format=0;
-  QCString err = dateTimeFromString(specDate,dat,format);
+  int specFormat=0;
+  QCString err = dateTimeFromString(specDate,dat,specFormat);
   if (!err.isEmpty())
   {
     warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"invalid date argument for command '\\showdate': %s",qPrint(err));
@@ -3251,10 +3251,10 @@ void DocPara::handleShowDate(DocNodeVariant *thisVariant)
   for (int i=0;i<SF_NumBits;i++)
   {
     int bitMask = 1<<i;
-    if ((usedFormat&bitMask) && !(format&bitMask))
+    if ((usedFormat&bitMask) && !(specFormat&bitMask)) // a part was used in the format string but its value was not specified.
     {
-      warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"'\\showdate' format '%s' has %s related markers not specified in date parameter '%s'. Using current time values.",
-          qPrint(fmt),SF_bit2str(i),qPrint(specDate));
+      warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"'\\showdate' format '%s' has %s related markers which are not specified in date parameter '%s'. Filling in the current value for %s instead.",
+          qPrint(fmt),SF_bit2str(i),qPrint(specDate),SF_bit2str(i));
     }
   }
 
