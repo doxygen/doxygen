@@ -1840,7 +1840,7 @@ class TranslatorLatvian : public TranslatorAdapter_1_8_4
     }
     virtual QCString trDayPeriod(int period)
     {
-      static const char *dayPeriod[] = { "priekšpusdienā", "pēcpusdienā" };
+      static const char *dayPeriod[] = { "priekšp.", "pēcp." };
       return dayPeriod[period];
     }
 
