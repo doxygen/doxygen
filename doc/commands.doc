@@ -112,7 +112,6 @@ documentation:
 \refitem cmdfcurlyopen \\f{
 \refitem cmdfcurlyclose \\f}
 \refitem cmdfile \\file
-\refitem cmdlineinfo \\lineinfo
 \refitem cmdfileinfo \\fileinfo
 \refitem cmdfn \\fn
 \refitem cmdheaderfile \\headerfile
@@ -139,6 +138,7 @@ documentation:
 \refitem cmdlatexonly \\latexonly
 \refitem cmdli \\li
 \refitem cmdline \\line
+\refitem cmdlineinfo \\lineinfo
 \refitem cmdlink \\link
 \refitem cmdmainpage \\mainpage
 \refitem cmdmaninclude \\maninclude

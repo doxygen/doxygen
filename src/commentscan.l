@@ -2664,7 +2664,11 @@ static bool handleFileInfo(yyscan_t yyscanner,const QCString &, const StringVect
   };
 
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  addOutput(yyscanner," ");
+  if (!yyextra->spaceBeforeCmd.isEmpty())
+  {
+    addOutput(yyscanner,yyextra->spaceBeforeCmd);
+    yyextra->spaceBeforeCmd.resize(0);
+  }
   bool first = true;
   FileInfo fi(yyextra->fileName.str());
   for (const auto &opt_ : optList)
@@ -2700,14 +2704,20 @@ static bool handleFileInfo(yyscan_t yyscanner,const QCString &, const StringVect
       addOutput(yyscanner,yyextra->fileName);
     }
   }
+  addOutput(yyscanner," ");
   return FALSE;
 }
 
 static bool handleLineInfo(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  addOutput(yyscanner," ");
+  if (!yyextra->spaceBeforeCmd.isEmpty())
+  {
+    addOutput(yyscanner,yyextra->spaceBeforeCmd);
+    yyextra->spaceBeforeCmd.resize(0);
+  }
   addOutput(yyscanner,QCString().setNum(yyextra->lineNr));
+  addOutput(yyscanner," ");
   return FALSE;
 }
 
