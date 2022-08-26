@@ -1846,7 +1846,7 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
     }
     virtual QCString trDayPeriod(int period)
     {
-      static const char *dayPeriod[] = { "AM", "PM" };
+      static const char *dayPeriod[] = { "a.m.", "p.m." };
       return dayPeriod[period];
     }
 

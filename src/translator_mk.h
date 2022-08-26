@@ -1734,7 +1734,7 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
     }
     virtual QCString trDayPeriod(int period)
     {
-      static const char *dayPeriod[] = { "претпладне", "попладне" };
+      static const char *dayPeriod[] = { "претпл.", "попл." };
       return dayPeriod[period];
     }
 };
