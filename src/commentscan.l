@@ -35,6 +35,8 @@ typedef yyguts_t *yyscan_t;
 #include <stack>
 #include <string>
 #include <mutex>
+#include <functional>
+#include <unordered_map>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -42,6 +44,7 @@ typedef yyguts_t *yyscan_t;
 #include <ctype.h>
 
 #include "qcstring.h"
+#include "fileinfo.h"
 #include "cite.h"
 #include "commentscan.h"
 #include "condparser.h"
@@ -142,6 +145,8 @@ static bool handleParBlock(yyscan_t yyscanner,const QCString &, const StringVect
 static bool handleEndParBlock(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleParam(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleRetval(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleFileInfo(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleLineInfo(yyscan_t yyscanner,const QCString &, const StringVector &);
 
 #if USE_STATE2STRING
 static const char *stateToString(int state);
@@ -312,6 +317,8 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "xmlonly",         { &handleFormatBlock,      CommandSpacing::Invisible }},
   { "xrefitem",        { &handleXRefItem,         CommandSpacing::XRef      }},
   { "iliteral",        { &handleFormatBlock,      CommandSpacing::Inline    }},
+  { "fileinfo",        { &handleFileInfo,         CommandSpacing::Inline    }},
+  { "lineinfo",        { &handleLineInfo,         CommandSpacing::Inline    }},
 };
 
 #define YY_NO_INPUT 1
@@ -2641,6 +2648,66 @@ static bool handleAddIndex(yyscan_t yyscanner,const QCString &, const StringVect
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   addOutput(yyscanner,"@addindex ");
   BEGIN(LineParam);
+  return FALSE;
+}
+
+static bool handleFileInfo(yyscan_t yyscanner,const QCString &, const StringVector &optList)
+{
+  using OutputWriter = std::function<void(yyscan_t,FileInfo &)>;
+  static std::unordered_map<std::string,OutputWriter> options =
+  { // name,        writer
+    { "name",      [](yyscan_t yyscanner,FileInfo &fi) { addOutput(yyscanner,fi.baseName());      } },
+    { "extension", [](yyscan_t yyscanner,FileInfo &fi) { addOutput(yyscanner,fi.extension(true)); } },
+    { "filename",  [](yyscan_t yyscanner,FileInfo &fi) { addOutput(yyscanner,fi.fileName());      } },
+    { "directory", [](yyscan_t yyscanner,FileInfo &fi) { addOutput(yyscanner,fi.dirPath());       } },
+    { "full",      [](yyscan_t yyscanner,FileInfo &fi) { addOutput(yyscanner,fi.absFilePath());   } },
+  };
+
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  addOutput(yyscanner," ");
+  bool first = true;
+  FileInfo fi(yyextra->fileName.str());
+  for (const auto &opt_ : optList)
+  {
+    QCString optStripped = QCString(opt_).stripWhiteSpace();
+    std::string opt = optStripped.lower().str();
+    auto it = options.find(opt);
+    if (it != options.end())
+    {
+      if (!first)
+      {
+        warn(yyextra->fileName,yyextra->lineNr,"Multiple options specified with \\fileinfo, discarding '%s'", qPrint(optStripped));
+      }
+      else
+      {
+        it->second(yyscanner,fi);
+      }
+      first = false;
+    }
+    else
+    {
+      warn(yyextra->fileName,yyextra->lineNr,"Unknown option specified with \\fileinfo: '%s'", qPrint(optStripped));
+    }
+  }
+  if (first) // no options specified
+  {
+    if (Config_getBool(FULL_PATH_NAMES))
+    {
+      addOutput(yyscanner,stripFromPath(yyextra->fileName));
+    }
+    else
+    {
+      addOutput(yyscanner,yyextra->fileName);
+    }
+  }
+  return FALSE;
+}
+
+static bool handleLineInfo(yyscan_t yyscanner,const QCString &, const StringVector &)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  addOutput(yyscanner," ");
+  addOutput(yyscanner,QCString().setNum(yyextra->lineNr));
   return FALSE;
 }
 

@@ -112,6 +112,8 @@ documentation:
 \refitem cmdfcurlyopen \\f{
 \refitem cmdfcurlyclose \\f}
 \refitem cmdfile \\file
+\refitem cmdlineinfo \\lineinfo
+\refitem cmdfileinfo \\fileinfo
 \refitem cmdfn \\fn
 \refitem cmdheaderfile \\headerfile
 \refitem cmdhidecallergraph \\hidecallergraph
@@ -637,6 +639,28 @@ Structural indicators
 
   \note In the above example \ref cfg_javadoc_autobrief "JAVADOC_AUTOBRIEF"
   has been set to \c YES in the configuration file.
+
+<hr>
+\section cmdfileinfo \\fileinfo['{'option'}']
+
+  \addindex \\fileinfo
+  Shows (part) of the file name in which this command is placed.
+  The `option` can be `file`, `extension`, `filename`, `directory` or, `full`,
+  with `file` the name of the file without extension, `extension` the extension of the file, `filename` the
+  filename i.e. `file` plus `extension`, `directory` the directory of the given file and `full` the full path
+  and filename of the given file.
+
+  \note the command \\fileinfo cannot be used as argument to the \ref cmdfile "\\file" command
+
+  \see section \ref cmdlineinfo "\\lineinfo"
+
+<hr>
+\section cmdlineinfo \\lineinfo
+
+  \addindex \\lineinfo
+  Shows the line number inside the file at which this command is placed.
+
+  \see section \ref cmdfileinfo "\\fileinfo"
 
 <hr>
 \section cmdfn \\fn (function declaration)
