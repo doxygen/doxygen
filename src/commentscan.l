@@ -2656,11 +2656,11 @@ static bool handleFileInfo(yyscan_t yyscanner,const QCString &, const StringVect
   using OutputWriter = std::function<void(yyscan_t,FileInfo &)>;
   static std::unordered_map<std::string,OutputWriter> options =
   { // name,        writer
-    { "name",      [](yyscan_t yyscanner,FileInfo &fi) { addOutput(yyscanner,fi.baseName());      } },
-    { "extension", [](yyscan_t yyscanner,FileInfo &fi) { addOutput(yyscanner,fi.extension(true)); } },
-    { "filename",  [](yyscan_t yyscanner,FileInfo &fi) { addOutput(yyscanner,fi.fileName());      } },
-    { "directory", [](yyscan_t yyscanner,FileInfo &fi) { addOutput(yyscanner,fi.dirPath());       } },
-    { "full",      [](yyscan_t yyscanner,FileInfo &fi) { addOutput(yyscanner,fi.absFilePath());   } },
+    { "name",      [](yyscan_t s,FileInfo &fi) { addOutput(s,fi.baseName());      } },
+    { "extension", [](yyscan_t s,FileInfo &fi) { addOutput(s,fi.extension(true)); } },
+    { "filename",  [](yyscan_t s,FileInfo &fi) { addOutput(s,fi.fileName());      } },
+    { "directory", [](yyscan_t s,FileInfo &fi) { addOutput(s,fi.dirPath());       } },
+    { "full",      [](yyscan_t s,FileInfo &fi) { addOutput(s,fi.absFilePath());   } },
   };
 
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
