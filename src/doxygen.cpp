@@ -11340,7 +11340,7 @@ void readConfiguration(int argc, char **argv)
     exit(0);
   }
 
-  if (!Config::parse(configName,updateConfig))
+  if (!Config::parse(configName,updateConfig,diffList))
   {
     err("could not open or read configuration file %s!\n",qPrint(configName));
     cleanUpDoxygen();
