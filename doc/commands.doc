@@ -112,8 +112,8 @@ documentation:
 \refitem cmdfcurlyopen \\f{
 \refitem cmdfcurlyclose \\f}
 \refitem cmdfile \\file
-\refitem cmdfileline \\fileline
-\refitem cmdfilename \\filename
+\refitem cmdlineinfo \\lineinfo
+\refitem cmdfileinfo \\fileinfo
 \refitem cmdfn \\fn
 \refitem cmdheaderfile \\headerfile
 \refitem cmdhidecallergraph \\hidecallergraph
@@ -641,25 +641,26 @@ Structural indicators
   has been set to \c YES in the configuration file.
 
 <hr>
-\section cmdfilename \\filename['{'option'}']
+\section cmdfileinfo \\fileinfo['{'option'}']
 
-  \addindex \\filename
-  Shows the name of the current file.  The `option` can be `file`, `extension`, `filename`, `directory` or, `full`,
+  \addindex \\fileinfo
+  Shows (part) of the file name in which this command is placed.
+  The `option` can be `file`, `extension`, `filename`, `directory` or, `full`,
   with `file` the name of the file without extension, `extension` the extension of the file, `filename` the
   filename i.e. `file` plus `extension`, `directory` the directory of the given file and `full` the full path
   and filename of the given file.
 
-  \note the command \\filename cannot be used as argument to the \ref cmdfile "\\file" command
+  \note the command \\fileinfo cannot be used as argument to the \ref cmdfile "\\file" command
 
-  \see section \ref cmdfileline "\\fileline"
+  \see section \ref cmdlineinfo "\\lineinfo"
 
 <hr>
-\section cmdfileline \\fileline
+\section cmdlineinfo \\lineinfo
 
-  \addindex \\fileline
-  Shows the line number inside the current file.
+  \addindex \\lineinfo
+  Shows the line number inside the file at which this command is placed.
 
-  \see section \ref cmdfilename "\\filename"
+  \see section \ref cmdfileinfo "\\fileinfo"
 
 <hr>
 \section cmdfn \\fn (function declaration)
