@@ -3275,7 +3275,7 @@ NONLopt [^\n]*
                                           yyextra->lastStringContext=YY_START;
                                           BEGIN(CopyGString);
                                         }
-<GCopyQuare>\'                          {
+<GCopySquare>\'                         {
                                           *yyextra->pCopySquareGString << *yytext;
                                           if (yyextra->insidePHP)
                                           {
