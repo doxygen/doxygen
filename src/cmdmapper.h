@@ -146,7 +146,11 @@ enum CommandType
   CMD_ILITERAL     = 117,
   CMD_ENDILITERAL  = 118,
   CMD_IFILE        = 119,
-  CMD_SHOWDATE     = 120
+  CMD_SHOWDATE     = 120,
+  CMD_ISTARTCODE   = 121,
+  CMD_ENDICODE     = 122,
+  CMD_IVERBATIM    = 123,
+  CMD_ENDIVERBATIM = 124
 };
 
 enum HtmlTagType

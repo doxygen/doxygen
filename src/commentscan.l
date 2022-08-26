@@ -183,6 +183,7 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "cite",            { &handleCite,             CommandSpacing::Inline    }},
   { "class",           { &handleClass,            CommandSpacing::Invisible }},
   { "code",            { &handleFormatBlock,      CommandSpacing::Block     }},
+  { "icode",           { &handleFormatBlock,      CommandSpacing::Block     }},
   { "concept",         { &handleConcept,          CommandSpacing::Invisible }},
   { "copybrief",       { &handleCopyBrief,        CommandSpacing::Invisible }},
   { "copydetails",     { &handleCopyDetails,      CommandSpacing::Block     }},
@@ -302,6 +303,7 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "until",           { 0,                       CommandSpacing::Block     }},
   { "var",             { &handleFn,               CommandSpacing::Invisible }},
   { "verbatim",        { &handleFormatBlock,      CommandSpacing::Block     }},
+  { "iverbatim",       { &handleFormatBlock,      CommandSpacing::Block     }},
   { "verbinclude",     { 0,                       CommandSpacing::Inline    }},
   { "version",         { 0,                       CommandSpacing::Block     }},
   { "warning",         { 0,                       CommandSpacing::Block     }},
@@ -1595,7 +1597,7 @@ STopt  [^\n@\\]*
 
   /* ----- handle arguments of the preformatted block commands ------- */
 
-<FormatBlock>{CMD}("endverbatim"|"endiliteral"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endrtfonly"|"endmanonly"|"enddot"|"endcode"|"endmsc")/{NW} { // possible ends
+<FormatBlock>{CMD}("endverbatim"|"endiverbatim"|"endiliteral"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endrtfonly"|"endmanonly"|"enddot"|"endcode"|"endicode"|"endmsc")/{NW} { // possible ends
                                           addOutput(yyscanner,yytext);
                                           if (&yytext[4]==yyextra->blockName) // found end of the block
                                           {
@@ -1617,12 +1619,20 @@ STopt  [^\n@\\]*
                                           addOutput(yyscanner,'\n');
                                         }
 <FormatBlock>{CCS}                       { // start of a C-comment
-                                          if (!(yyextra->blockName=="code" || yyextra->blockName=="verbatim" || yyextra->blockName=="iliteral")) yyextra->commentCount++;
+                                          if (!(yyextra->blockName=="code"  || yyextra->blockName=="verbatim" ||
+                                                yyextra->blockName=="icode" || yyextra->blockName=="iverbatim"||
+                                                yyextra->blockName=="iliteral"
+                                               )
+                                             ) yyextra->commentCount++;
                                           addOutput(yyscanner,yytext);
                                         }
 <FormatBlock>{CCE}                       { // end of a C-comment
                                           addOutput(yyscanner,yytext);
-                                          if (!(yyextra->blockName=="code" || yyextra->blockName=="verbatim" || yyextra->blockName=="iliteral"))
+                                          if (!(yyextra->blockName=="code"  || yyextra->blockName=="verbatim" ||
+                                                yyextra->blockName=="icode" || yyextra->blockName=="iverbatim"||
+                                                yyextra->blockName=="iliteral"
+                                               )
+                                             )
                                           {
                                             yyextra->commentCount--;
                                             if (yyextra->commentCount<0)
