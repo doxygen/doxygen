@@ -2565,6 +2565,7 @@ static int getNextId(const QCString &expr,int p,int *l)
  */
 static bool expandExpression(yyscan_t yyscanner,QCString &expr,QCString *rest,int pos,int level)
 {
+  struct yyguts_t * yyg = (struct yyguts_t*)yyscanner;
   YY_EXTRA_TYPE state = preYYget_extra(yyscanner);
   //printf(">expandExpression(expr='%s',rest='%s',pos=%d,level=%d)\n",qPrint(expr),rest ? qPrint(*rest) : "", pos, level);
   if (expr.isEmpty())
@@ -2598,6 +2599,9 @@ static bool expandExpression(yyscan_t yyscanner,QCString &expr,QCString *rest,in
       if (state->expandedDict.find(macroName.str())==state->expandedDict.end()) // expand macro
       {
         Define *def=isDefined(yyscanner,macroName);
+        // In case EXPAND_ONLY_PREDEF is enabled prevent expansion unless the macro was explicitly
+        // predefined
+        if (yyextra->expandOnlyPredef && def && !def->isPredefined) def=nullptr;
         if (macroName=="defined")
         {
           //printf("found defined inside macro definition '%s'\n",qPrint(expr.right(expr.length()-p)));
