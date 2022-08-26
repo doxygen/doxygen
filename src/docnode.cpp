@@ -3867,6 +3867,12 @@ int DocPara::handleCommand(DocNodeVariant *thisVariant,const QCString &cmdName, 
         retval = RetVal_Paragraph;
       }
       break;
+    case CMD_ISTARTCODE:
+      {
+        parser()->tokenizer.setStateICode();
+        retval = handleStartCode(thisVariant);
+      }
+      break;
     case CMD_STARTCODE:
       {
         parser()->tokenizer.setStateCode();
@@ -3974,9 +3980,17 @@ int DocPara::handleCommand(DocNodeVariant *thisVariant,const QCString &cmdName, 
         parser()->tokenizer.setStatePara();
       }
       break;
+    case CMD_IVERBATIM:
     case CMD_VERBATIM:
       {
-        parser()->tokenizer.setStateVerbatim();
+        if (cmdId == CMD_VERBATIM)
+        {
+          parser()->tokenizer.setStateVerbatim();
+        }
+        else
+        {
+          parser()->tokenizer.setStateIVerbatim();
+        }
         retval = parser()->tokenizer.lex();
         children().append<DocVerbatim>(parser(),thisVariant,parser()->context.context,parser()->context.token->verb,DocVerbatim::Verbatim,parser()->context.isExample,parser()->context.exampleName);
         if (retval==0) warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"verbatim section ended without end marker");
@@ -4135,6 +4149,7 @@ int DocPara::handleCommand(DocNodeVariant *thisVariant,const QCString &cmdName, 
     case CMD_ENDPARBLOCK:
       retval=RetVal_EndParBlock;
       break;
+    case CMD_ENDICODE:
     case CMD_ENDCODE:
     case CMD_ENDHTMLONLY:
     case CMD_ENDMANONLY:
@@ -4144,6 +4159,7 @@ int DocPara::handleCommand(DocNodeVariant *thisVariant,const QCString &cmdName, 
     case CMD_ENDDBONLY:
     case CMD_ENDLINK:
     case CMD_ENDVERBATIM:
+    case CMD_ENDIVERBATIM:
     case CMD_ENDILITERAL:
     case CMD_ENDDOT:
     case CMD_ENDMSC:

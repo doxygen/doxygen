@@ -354,7 +354,9 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
 %x St_TitleA
 %x St_TitleV
 %x St_Code
+%x St_iCode
 %x St_CodeOpt
+%x St_iCodeOpt
 %x St_XmlCode
 %x St_HtmlOnly
 %x St_HtmlOnlyOption
@@ -364,6 +366,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
 %x St_XmlOnly
 %x St_DbOnly
 %x St_Verbatim
+%x St_iVerbatim
 %x St_ILiteral
 %x St_ILiteralOpt
 %x St_Dot
@@ -771,13 +774,29 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          yyextra->token->name = yyextra->token->name.mid(i+1,yyextra->token->name.length()-i-2);
                          BEGIN(St_Code);
                        }
+<St_iCodeOpt>{BLANK}*"{"(".")?{LABELID}"}" {
+                         yyextra->token->name = yytext;
+                         int i=yyextra->token->name.find('{'); /* } to keep vi happy */
+                         yyextra->token->name = yyextra->token->name.mid(i+1,yyextra->token->name.length()-i-2);
+                         BEGIN(St_iCode);
+                       }
 <St_CodeOpt>"\\ilinebr" |
 <St_CodeOpt>\n         |
 <St_CodeOpt>.          {
                          unput_string(yytext,yyleng);
                          BEGIN(St_Code);
                        }
+<St_iCodeOpt>"\\ilinebr" |
+<St_iCodeOpt>\n         |
+<St_iCodeOpt>.          {
+                         unput_string(yytext,yyleng);
+                         BEGIN(St_iCode);
+                       }
 <St_Code>{WS}*{CMD}"endcode" {
+                         lineCount(yytext,yyleng);
+                         return RetVal_OK;
+                       }
+<St_iCode>{WS}*{CMD}"endicode" {
                          lineCount(yytext,yyleng);
                          return RetVal_OK;
                        }
@@ -785,9 +804,9 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          lineCount(yytext,yyleng);
                          return RetVal_OK;
                        }
-<St_Code,St_XmlCode>[^\\@\n<]+  |
-<St_Code,St_XmlCode>\n          |
-<St_Code,St_XmlCode>.           {
+<St_Code,St_iCode,St_XmlCode>[^\\@\n<]+  |
+<St_Code,St_iCode,St_XmlCode>\n          |
+<St_Code,St_iCode,St_XmlCode>.           {
                          lineCount(yytext,yyleng);
                          yyextra->token->verb+=yytext;
                        }
@@ -866,9 +885,13 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          yyextra->token->verb=yyextra->token->verb.mid(1,yyextra->token->verb.length()-2);
                          return RetVal_OK;
                        }
-<St_Verbatim,St_ILiteral>[^\\@\n]+ |
-<St_Verbatim,St_ILiteral>\n        |
-<St_Verbatim,St_ILiteral>.         { /* Verbatim / javadac literal/code text */
+<St_iVerbatim>{CMD}"endiverbatim" {
+                         yyextra->token->verb=stripEmptyLines(yyextra->token->verb);
+                         return RetVal_OK;
+                       }
+<St_Verbatim,St_iVerbatim,St_ILiteral>[^\\@\n]+ |
+<St_Verbatim,St_iVerbatim,St_ILiteral>\n        |
+<St_Verbatim,St_iVerbatim,St_ILiteral>.         { /* Verbatim text */
                          lineCount(yytext,yyleng);
                          yyextra->token->verb+=yytext;
                        }
@@ -1381,6 +1404,10 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                                       yyextra->endMarker="endverbatim";
                                       BEGIN(St_SecSkip);
                                     }
+<St_Sections>{CMD}"iverbatim"/[^a-z_A-Z0-9]  {
+                                      yyextra->endMarker="endiverbatim";
+                                      BEGIN(St_SecSkip);
+                                    }
 <St_Sections>{CMD}"iliteral"/[^a-z_A-Z0-9]  {
                                       yyextra->endMarker="endiliteral";
                                       BEGIN(St_SecSkip);
@@ -1423,6 +1450,10 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                                     }
 <St_Sections>{CMD}"code"/[^a-z_A-Z0-9] {
                                       yyextra->endMarker="endcode";
+                                      BEGIN(St_SecSkip);
+                                    }
+<St_Sections>{CMD}"icode"/[^a-z_A-Z0-9] {
+                                      yyextra->endMarker="endicode";
                                       BEGIN(St_SecSkip);
                                     }
 <St_Sections>"<!--"                 {
@@ -1784,6 +1815,15 @@ void DocTokenizer::setStateCode()
   BEGIN(St_CodeOpt);
 }
 
+void DocTokenizer::setStateICode()
+{
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->token->verb="";
+  yyextra->token->name="";
+  BEGIN(St_iCodeOpt);
+}
+
 void DocTokenizer::setStateXmlCode()
 {
   yyscan_t yyscanner = p->yyscanner;
@@ -1864,6 +1904,14 @@ void DocTokenizer::setStateVerbatim()
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yyextra->token->verb="";
   BEGIN(St_Verbatim);
+}
+
+void DocTokenizer::setStateIVerbatim()
+{
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->token->verb="";
+  BEGIN(St_iVerbatim);
 }
 
 void DocTokenizer::setStateDot()
