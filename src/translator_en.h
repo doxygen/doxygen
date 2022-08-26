@@ -1829,15 +1829,18 @@ class TranslatorEnglish : public Translator
     {
       static const char *days_short[]   = { "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" };
       static const char *days_full[]    = { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" };
-      QCString text  = full? days_full[dayOfWeek-1] : days_short[dayOfWeek-1];
-      return text;
+      return full? days_full[dayOfWeek-1] : days_short[dayOfWeek-1];
     }
     virtual QCString trMonth(int month, bool, bool full)
     {
       static const char *months_short[] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
       static const char *months_full[]  = { "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" };
-      QCString text  = full? months_full[month-1] : months_short[month-1];
-      return text;
+      return full? months_full[month-1] : months_short[month-1];
+    }
+    virtual QCString trDayPeriod(int period)
+    {
+      static const char *dayPeriod[] = { "AM", "PM" };
+      return dayPeriod[period];
     }
 
 //////////////////////////////////////////////////////////////////////////

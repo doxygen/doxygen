@@ -35,6 +35,8 @@ typedef yyguts_t *yyscan_t;
 #include <stack>
 #include <string>
 #include <mutex>
+#include <functional>
+#include <unordered_map>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -42,6 +44,7 @@ typedef yyguts_t *yyscan_t;
 #include <ctype.h>
 
 #include "qcstring.h"
+#include "fileinfo.h"
 #include "cite.h"
 #include "commentscan.h"
 #include "condparser.h"
@@ -142,6 +145,8 @@ static bool handleParBlock(yyscan_t yyscanner,const QCString &, const StringVect
 static bool handleEndParBlock(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleParam(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleRetval(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleFileInfo(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleLineInfo(yyscan_t yyscanner,const QCString &, const StringVector &);
 
 #if USE_STATE2STRING
 static const char *stateToString(int state);
@@ -183,6 +188,7 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "cite",            { &handleCite,             CommandSpacing::Inline    }},
   { "class",           { &handleClass,            CommandSpacing::Invisible }},
   { "code",            { &handleFormatBlock,      CommandSpacing::Block     }},
+  { "icode",           { &handleFormatBlock,      CommandSpacing::Block     }},
   { "concept",         { &handleConcept,          CommandSpacing::Invisible }},
   { "copybrief",       { &handleCopyBrief,        CommandSpacing::Invisible }},
   { "copydetails",     { &handleCopyDetails,      CommandSpacing::Block     }},
@@ -302,6 +308,7 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "until",           { 0,                       CommandSpacing::Block     }},
   { "var",             { &handleFn,               CommandSpacing::Invisible }},
   { "verbatim",        { &handleFormatBlock,      CommandSpacing::Block     }},
+  { "iverbatim",       { &handleFormatBlock,      CommandSpacing::Block     }},
   { "verbinclude",     { 0,                       CommandSpacing::Inline    }},
   { "version",         { 0,                       CommandSpacing::Block     }},
   { "warning",         { 0,                       CommandSpacing::Block     }},
@@ -310,6 +317,8 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "xmlonly",         { &handleFormatBlock,      CommandSpacing::Invisible }},
   { "xrefitem",        { &handleXRefItem,         CommandSpacing::XRef      }},
   { "iliteral",        { &handleFormatBlock,      CommandSpacing::Inline    }},
+  { "fileinfo",        { &handleFileInfo,         CommandSpacing::Inline    }},
+  { "lineinfo",        { &handleLineInfo,         CommandSpacing::Inline    }},
 };
 
 #define YY_NO_INPUT 1
@@ -1595,7 +1604,7 @@ STopt  [^\n@\\]*
 
   /* ----- handle arguments of the preformatted block commands ------- */
 
-<FormatBlock>{CMD}("endverbatim"|"endiliteral"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endrtfonly"|"endmanonly"|"enddot"|"endcode"|"endmsc")/{NW} { // possible ends
+<FormatBlock>{CMD}("endverbatim"|"endiverbatim"|"endiliteral"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endrtfonly"|"endmanonly"|"enddot"|"endcode"|"endicode"|"endmsc")/{NW} { // possible ends
                                           addOutput(yyscanner,yytext);
                                           if (&yytext[4]==yyextra->blockName) // found end of the block
                                           {
@@ -1617,12 +1626,20 @@ STopt  [^\n@\\]*
                                           addOutput(yyscanner,'\n');
                                         }
 <FormatBlock>{CCS}                       { // start of a C-comment
-                                          if (!(yyextra->blockName=="code" || yyextra->blockName=="verbatim" || yyextra->blockName=="iliteral")) yyextra->commentCount++;
+                                          if (!(yyextra->blockName=="code"  || yyextra->blockName=="verbatim" ||
+                                                yyextra->blockName=="icode" || yyextra->blockName=="iverbatim"||
+                                                yyextra->blockName=="iliteral"
+                                               )
+                                             ) yyextra->commentCount++;
                                           addOutput(yyscanner,yytext);
                                         }
 <FormatBlock>{CCE}                       { // end of a C-comment
                                           addOutput(yyscanner,yytext);
-                                          if (!(yyextra->blockName=="code" || yyextra->blockName=="verbatim" || yyextra->blockName=="iliteral"))
+                                          if (!(yyextra->blockName=="code"  || yyextra->blockName=="verbatim" ||
+                                                yyextra->blockName=="icode" || yyextra->blockName=="iverbatim"||
+                                                yyextra->blockName=="iliteral"
+                                               )
+                                             )
                                           {
                                             yyextra->commentCount--;
                                             if (yyextra->commentCount<0)
@@ -2631,6 +2648,76 @@ static bool handleAddIndex(yyscan_t yyscanner,const QCString &, const StringVect
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   addOutput(yyscanner,"@addindex ");
   BEGIN(LineParam);
+  return FALSE;
+}
+
+static bool handleFileInfo(yyscan_t yyscanner,const QCString &, const StringVector &optList)
+{
+  using OutputWriter = std::function<void(yyscan_t,FileInfo &)>;
+  static std::unordered_map<std::string,OutputWriter> options =
+  { // name,        writer
+    { "name",      [](yyscan_t s,FileInfo &fi) { addOutput(s,fi.baseName());      } },
+    { "extension", [](yyscan_t s,FileInfo &fi) { addOutput(s,fi.extension(true)); } },
+    { "filename",  [](yyscan_t s,FileInfo &fi) { addOutput(s,fi.fileName());      } },
+    { "directory", [](yyscan_t s,FileInfo &fi) { addOutput(s,fi.dirPath());       } },
+    { "full",      [](yyscan_t s,FileInfo &fi) { addOutput(s,fi.absFilePath());   } },
+  };
+
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  if (!yyextra->spaceBeforeCmd.isEmpty())
+  {
+    addOutput(yyscanner,yyextra->spaceBeforeCmd);
+    yyextra->spaceBeforeCmd.resize(0);
+  }
+  bool first = true;
+  FileInfo fi(yyextra->fileName.str());
+  for (const auto &opt_ : optList)
+  {
+    QCString optStripped = QCString(opt_).stripWhiteSpace();
+    std::string opt = optStripped.lower().str();
+    auto it = options.find(opt);
+    if (it != options.end())
+    {
+      if (!first)
+      {
+        warn(yyextra->fileName,yyextra->lineNr,"Multiple options specified with \\fileinfo, discarding '%s'", qPrint(optStripped));
+      }
+      else
+      {
+        it->second(yyscanner,fi);
+      }
+      first = false;
+    }
+    else
+    {
+      warn(yyextra->fileName,yyextra->lineNr,"Unknown option specified with \\fileinfo: '%s'", qPrint(optStripped));
+    }
+  }
+  if (first) // no options specified
+  {
+    if (Config_getBool(FULL_PATH_NAMES))
+    {
+      addOutput(yyscanner,stripFromPath(yyextra->fileName));
+    }
+    else
+    {
+      addOutput(yyscanner,yyextra->fileName);
+    }
+  }
+  addOutput(yyscanner," ");
+  return FALSE;
+}
+
+static bool handleLineInfo(yyscan_t yyscanner,const QCString &, const StringVector &)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  if (!yyextra->spaceBeforeCmd.isEmpty())
+  {
+    addOutput(yyscanner,yyextra->spaceBeforeCmd);
+    yyextra->spaceBeforeCmd.resize(0);
+  }
+  addOutput(yyscanner,QCString().setNum(yyextra->lineNr));
+  addOutput(yyscanner," ");
   return FALSE;
 }
 

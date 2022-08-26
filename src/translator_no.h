@@ -1536,6 +1536,11 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
       if (first_capital) return text.mid(0,1).upper()+text.mid(1);
       else return text;
     }
+    virtual QCString trDayPeriod(int period)
+    {
+      static const char *dayPeriod[] = { "f.m.", "e.m." };
+      return dayPeriod[period];
+    }
 };
 
 #endif
