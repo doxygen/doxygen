@@ -1458,6 +1458,22 @@ FILE_VERSION_FILTER = "cleartool desc -fmt \%Vn"
  Doxygen uses `libiconv` (or the `iconv` built into `libc`) for the transcoding.
  See <a href="https://www.gnu.org/software/libiconv/">the libiconv documentation</a> for
  the list of possible encodings.
+
+ \sa  \ref cfg_input_file_encoding "INPUT_FILE_ENCODING"
+]]>
+      </docs>
+    </option>
+    <option type='list' id='INPUT_FILE_ENCODING' format='string'>
+      <docs>
+<![CDATA[
+ This tag can be used to specify the character encoding of the source files that doxygen
+ parses
+ The \c INPUT_FILE_ENCODING tag can be used to specify character encoding on a per file pattern
+ basis. Doxygen will compare the file name with each pattern and apply the
+ encoding instead of the default \ref cfg_input_encoding "INPUT_ENCODING") if there is a match.
+ The character encodings are a list of the form: pattern=encoding (like `*.php=ISO-8859-1`).
+
+ See cfg_input_encoding "INPUT_ENCODING" for further information on supported encodings.
 ]]>
       </docs>
     </option>
@@ -1631,6 +1647,9 @@ FILE_VERSION_FILTER = "cleartool desc -fmt \%Vn"
  <br>Note that the filter must not add or remove lines; it is applied before the
  code is scanned, but not when the output code is generated. If lines are added
  or removed, the anchors will not be placed correctly.
+ <br>Note that doxygen will use the data processed and written to standard output for further processing,
+ therefore nothing else, like debug statements or used commands (so in case of a Windows batch file
+ always use `@echo OFF`), should be written to standard output.
  <br>Note that for custom extensions or not directly supported extensions you also
  need to set \ref cfg_extension_mapping "EXTENSION_MAPPING" for the extension
  otherwise the files are not properly processed by doxygen.<br>

@@ -25,7 +25,6 @@
 #include <algorithm>
 #include <functional>
 #include <fstream>
-#include <ctime>
 
 #include <ctype.h>
 #include "types.h"
@@ -358,7 +357,7 @@ bool checkIfTypedef(const Definition *scope,const FileDef *fileScope,const QCStr
 
 QCString parseCommentAsText(const Definition *scope,const MemberDef *member,const QCString &doc,const QCString &fileName,int lineNr);
 
-QCString transcodeCharacterStringToUTF8(const QCString &input);
+QCString transcodeCharacterStringToUTF8(const QCString &inputEncoding,const QCString &input);
 
 QCString recodeString(const QCString &str,const char *fromEncoding,const char *toEncoding);
 
@@ -446,11 +445,6 @@ FortranFormat convertFileNameFortranParserCode(QCString fn);
 QCString integerToAlpha(int n, bool upper=true);
 QCString integerToRoman(int n, bool upper=true);
 
-std::tm getCurrentDateTime();
-bool valid_tm( const std::tm& tm, int *weekday);
-int getYear(std::tm dat);
-int getMonth(std::tm dat);
-int getDay(std::tm dat);
-int getDayOfWeek(std::tm dat);
+QCString getEncoding(const FileInfo &fi);
 
 #endif

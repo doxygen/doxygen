@@ -381,9 +381,10 @@ const Definition *SymbolResolver::Private::getResolvedSymbolRec(
   auto &range = Doxygen::symbolMap->find(name);
   if (range.empty())
   {
+    //printf("%d ] not symbols\n",--level);
     return 0;
   }
-  //printf("found symbol!\n");
+  //printf("found symbol %zu times!\n",range.size());
 
   bool hasUsingStatements =
     (m_fileScope && (!m_fileScope->getUsedNamespaces().empty() ||
@@ -926,12 +927,14 @@ done:
   return result;
 }
 
+#if 0
 static bool isParentScope(const Definition *parent,const Definition *item)
 {
   if (parent==item || item==0 || item==Doxygen::globalScope) return false;
   if (parent==0 || parent==Doxygen::globalScope)             return true;
   return isParentScope(parent->getOuterScope(),item);
 }
+#endif
 
 int SymbolResolver::Private::isAccessibleFromWithExpScope(
                                      VisitedNamespaces &visitedNamespaces,
@@ -953,8 +956,8 @@ int SymbolResolver::Private::isAccessibleFromWithExpScope(
   accessStack.push(scope,m_fileScope,item,explicitScopePart);
 
 
-  //printf("  <isAccessibleFromWithExpScope(%s,%s,%s)\n",scope?qPrint(scope->name()):"<global>",
-  //                                      item?qPrint(item->name()):"<none>",
+  //printf(" <isAccessibleFromWithExpScope(%s,%s,%s)\n",scope?qPrint(scope->name()):"<global>",
+  //                                      item?qPrint(item->qualifiedName()):"<none>",
   //                                      qPrint(explicitScopePart));
   int result=0; // assume we found it
   const Definition *newScope = followPath(scope,explicitScopePart);
@@ -1035,6 +1038,8 @@ int SymbolResolver::Private::isAccessibleFromWithExpScope(
           }
         }
       }
+#if 0  // this caused problems resolving A::f() in the docs when there was a A::f(int) but also a
+       // global function f() that exactly matched the argument list.
       else if (isParentScope(scope,newScope) && newScope->definitionType()==Definition::TypeClass)
       {
         // if we a look for a type B and have explicit scope A, then it is also fine if B
@@ -1042,6 +1047,7 @@ int SymbolResolver::Private::isAccessibleFromWithExpScope(
         result = 1;
         goto done;
       }
+#endif
       // repeat for the parent scope
       if (scope!=Doxygen::globalScope)
       {

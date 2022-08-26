@@ -371,6 +371,17 @@ void DocParser::checkUnOrMultipleDocumentedParams()
                             qPrint(substitute(errMsg,"%","%%")));
       }
     }
+    else
+    {
+      if (!context.paramsFound.size() && Config_getBool(WARN_IF_DOC_ERROR))
+      {
+        warn_doc_error(context.memberDef->docFile(),
+                       context.memberDef->docLine(),
+                       "%s",
+                       qPrint(context.memberDef->qualifiedName() +
+                              " has @param documentation sections but no arguments"));
+      }
+    }
   }
 }
 
@@ -1746,8 +1757,10 @@ static uint isVerbatimSection(const char *data,uint i,uint len,QCString &endMark
   if (i==0 || (data[i-1]!='@' && data[i-1]!='\\')) // not an escaped command
   {
     CHECK_FOR_COMMAND("dot",endMarker="enddot");
+    CHECK_FOR_COMMAND("icode",endMarker="endicode");
     CHECK_FOR_COMMAND("code",endMarker="endcode");
     CHECK_FOR_COMMAND("msc",endMarker="endmsc");
+    CHECK_FOR_COMMAND("iverbatim",endMarker="endiverbatim");
     CHECK_FOR_COMMAND("verbatim",endMarker="endverbatim");
     CHECK_FOR_COMMAND("iliteral",endMarker="endiliteral");
     CHECK_FOR_COMMAND("latexonly",endMarker="endlatexonly");

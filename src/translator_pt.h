@@ -1859,6 +1859,11 @@ class TranslatorPortuguese : public Translator
       if (first_capital) return text.mid(0,1).upper()+text.mid(1);
       else return text;
     }
+    virtual QCString trDayPeriod(int period)
+    {
+      static const char *dayPeriod[] = { "AM", "PM" };
+      return dayPeriod[period];
+    }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.7.5
@@ -2352,12 +2357,12 @@ class TranslatorPortuguese : public Translator
 	{
 	  return "Definição de conceito";
 	}
-	
+
 	//////////////////////////////////////////////////////////////////////////
 	// new since 1.9.4
 	//////////////////////////////////////////////////////////////////////////
     virtual QCString trPackageList()
-    { return "Lista de pacotes"; }	
+    { return "Lista de pacotes"; }
 };
 
 #endif
