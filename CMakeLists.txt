@@ -42,8 +42,6 @@ if(enable_coverage)
   endif()
 endif()
 
-set(GENERATED_SRC "${PROJECT_BINARY_DIR}/generated_src" CACHE INTERNAL "Stores generated files")
-
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/Sanitizers")
 set(TOP "${PROJECT_SOURCE_DIR}")
@@ -168,6 +166,7 @@ include_directories(${ICONV_INCLUDE_DIR})
 #set(DOXYDOCS ${PROJECT_SOURCE_DIR}/doc CACHE INTERNAL "Path to doxygen docs")
 set(DOXYDOCS ${PROJECT_BINARY_DIR}/doc)
 set(ENV{DOXYGEN_DOCDIR} ${DOXYDOCS})
+set(GENERATED_SRC "${PROJECT_BINARY_DIR}/generated_src" CACHE INTERNAL "Stores generated files")
 set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 

@@ -1,3 +1,3 @@
 file (STRINGS "${TOP}/VERSION" VERSION)
 set(ENV{VERSION} "${VERSION}")
-configure_file("${TOP}/VERSION" "${GENERATED_SRC}/VERSION")
+configure_file("${TOP}/VERSION" "${PROJECT_BINARY_DIR}/VERSION")
