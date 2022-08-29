@@ -170,6 +170,7 @@ DefinesPerFileList    Doxygen::macroDefinitions;
 bool                  Doxygen::clangAssistedParsing = FALSE;
 QCString              Doxygen::verifiedDotPath;
 volatile bool         Doxygen::terminating = false;
+InputFileEncodingList Doxygen::inputFileEncodingList;
 
 // locally accessible globals
 static std::multimap< std::string, const Entry* > g_classEntries;
@@ -10827,8 +10828,6 @@ template<class T> std::function< std::unique_ptr<T>() > make_parser_factory()
   return []() { return std::make_unique<T>(); };
 }
 
-#include "dotattributes.h"
-
 void initDoxygen()
 {
   initResources();
@@ -11341,7 +11340,7 @@ void readConfiguration(int argc, char **argv)
     exit(0);
   }
 
-  if (!Config::parse(configName,updateConfig))
+  if (!Config::parse(configName,updateConfig,diffList))
   {
     err("could not open or read configuration file %s!\n",qPrint(configName));
     cleanUpDoxygen();
@@ -11438,6 +11437,54 @@ void adjustConfiguration()
         msg("Adding custom extension mapping: '%s' will be treated as language '%s'\n",
             qPrint(ext),qPrint(language));
       }
+    }
+  }
+  // create input file exncodings
+
+  // check INPUT_ENCODING
+  void *cd = portable_iconv_open("UTF-8",Config_getString(INPUT_ENCODING).data());
+  if (cd==reinterpret_cast<void *>(-1))
+  {
+    term("unsupported character conversion: '%s'->'%s': %s\n"
+        "Check the 'INPUT_ENCODING' setting in the config file!\n",
+        qPrint(Config_getString(INPUT_ENCODING)),qPrint("UTF-8"),strerror(errno));
+  }
+  else
+  {
+    portable_iconv_close(cd);
+  }
+
+  // check and split INPUT_FILE_ENCODING
+  const StringVector &fileEncod = Config_getList(INPUT_FILE_ENCODING);
+  for (const auto &mapping : fileEncod)
+  {
+    QCString mapStr = mapping.c_str();
+    int i=mapStr.find('=');
+    if (i==-1)
+    {
+      continue;
+    }
+    else
+    {
+      QCString pattern = mapStr.left(i).stripWhiteSpace().lower();
+      QCString encoding = mapStr.mid(i+1).stripWhiteSpace().lower();
+      if (pattern.isEmpty() || encoding.isEmpty())
+      {
+        continue;
+      }
+      cd = portable_iconv_open("UTF-8",encoding.data());
+      if (cd==reinterpret_cast<void *>(-1))
+      {
+        term("unsupported character conversion: '%s'->'%s': %s\n"
+            "Check the 'INPUT_FILE_ENCODING' setting in the config file!\n",
+            qPrint(encoding),qPrint("UTF-8"),strerror(errno));
+      }
+      else
+      {
+        portable_iconv_close(cd);
+      }
+
+      Doxygen::inputFileEncodingList.push_back(InputFileEncoding(pattern, encoding));
     }
   }
 

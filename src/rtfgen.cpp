@@ -17,8 +17,6 @@
  *
  */
 
-#include <chrono>
-#include <ctime>
 #include <stdlib.h>
 
 #include "rtfgen.h"
@@ -48,17 +46,14 @@
 #include "dir.h"
 #include "utf8.h"
 #include "debug.h"
-
+#include "datetime.h"
 
 //#define DBG_RTF(x) x;
 #define DBG_RTF(x)
 
 static QCString dateToRTFDateString()
 {
-  auto now = std::chrono::system_clock::now();
-  auto time = std::chrono::system_clock::to_time_t(now);
-  auto tm = *localtime(&time);
-
+  auto tm = getCurrentDateTime();
   QCString result;
   result.sprintf("\\yr%d\\mo%d\\dy%d\\hr%d\\min%d\\sec%d",
       tm.tm_year+1900, tm.tm_mon+1, tm.tm_mday,

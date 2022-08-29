@@ -1804,6 +1804,11 @@ class TranslatorRussian : public TranslatorAdapter_1_8_15
       QCString text  = full? months_full[month-1] : months_short[month-1];
       return text;
     }
+    virtual QCString trDayPeriod(int period)
+    {
+      static const char *dayPeriod[] = { "AM", "PM" };
+      return dayPeriod[period];
+    }
 
 ///////////////////////////////////////////////////////////////////////
 // new since 1.7.5

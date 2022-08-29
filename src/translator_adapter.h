@@ -324,6 +324,9 @@ class TranslatorAdapter_1_7_5 : public TranslatorAdapter_1_8_0
                                 int hour,int minutes,int seconds,
                                 bool includeTime)
     { return english.trDateTime(year,month,day,dayOfWeek,hour,minutes,seconds,includeTime); }
+    virtual QCString trDayPeriod(int period)
+    { return english.trDayPeriod(period); }
+
 };
 
 /** Adapter class for languages that only contain translations up to
