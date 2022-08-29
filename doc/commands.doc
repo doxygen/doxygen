@@ -645,10 +645,16 @@ Structural indicators
 
   \addindex \\fileinfo
   Shows (part) of the file name in which this command is placed.
-  The `option` can be `file`, `extension`, `filename`, `directory` or, `full`,
-  with `file` the name of the file without extension, `extension` the extension of the file, `filename` the
-  filename i.e. `file` plus `extension`, `directory` the directory of the given file and `full` the full path
-  and filename of the given file.
+  The `option` can be `name`, `extension`, `filename`, `directory` or, `full`,
+  with
+  - `name` the name of the file without extension
+  - `extension` the extension of the file
+  - `filename` the filename i.e. `name` plus `extension`
+  - `directory` the directory of the given file
+  - `full` the full path and filename of the given file.
+
+  In case no option is specified the `filename` is used unless
+  \ref cfg_full_path_names "FULL_PATH_NAMES" is set to `YES` in which case `full` is used.
 
   \note the command \\fileinfo cannot be used as argument to the \ref cmdfile "\\file" command
 
