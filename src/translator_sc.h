@@ -1776,6 +1776,11 @@ class TranslatorSerbianCyrillic : public TranslatorAdapter_1_6_0
       QCString text  = full? months_full[month-1] : months_short[month-1];
       return text;
     }
+    virtual QCString trDayPeriod(int period)
+    {
+      static const char *dayPeriod[] = { "пре подне", "по подне" };
+      return dayPeriod[period];
+    }
 };
 
 #endif

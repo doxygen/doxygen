@@ -32,6 +32,7 @@
 #include "doctokenizer.h"
 #include "plantuml.h"
 #include "language.h"
+#include "datetime.h"
 
 // debug off
 #define DBG(x) do {} while(0)
@@ -3216,7 +3217,7 @@ void DocPara::handleShowDate(DocNodeVariant *thisVariant)
   tok = parser()->tokenizer.lex();
   if (tok!=TK_WORD)
   {
-    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"invalid format argument for command '\\showdate'");
+    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"invalid <format> argument for command '\\showdate'");
     parser()->tokenizer.setStatePara();
     return;
   }
@@ -3224,153 +3225,40 @@ void DocPara::handleShowDate(DocNodeVariant *thisVariant)
 
   parser()->tokenizer.setStateShowDate();
   tok = parser()->tokenizer.lex();
-  std::tm dat = tm{};
-  if (tok == 0)
+
+  QCString specDate = parser()->context.token->name.stripWhiteSpace();
+  if (!specDate.isEmpty() && tok!=TK_WORD)
   {
-    dat = getCurrentDateTime();
-  }
-  else if (tok!=TK_WORD)
-  {
-    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"invalid date argument for command '\\showdate'");
+    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"invalid <date_time> argument for command '\\showdate'");
     parser()->tokenizer.setStatePara();
     return;
   }
-  else
-  {
-    int day, month, year;
-    sscanf(parser()->context.token->name.stripWhiteSpace().data(),"%d-%d-%d", &day, &month, &year);
-    dat.tm_year = year-1900;
-    dat.tm_mon  = month-1;
-    dat.tm_mday = day;
-    int weekday;
-    if (!valid_tm(dat,&weekday))
-    {
-      warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"invalid or non representable date argument for command '\\showdate'");
-      parser()->tokenizer.setStatePara();
-      return;
-    }
-    dat.tm_wday = weekday;
 
+  std::tm dat{};
+  int specFormat=0;
+  QCString err = dateTimeFromString(specDate,dat,specFormat);
+  if (!err.isEmpty())
+  {
+    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"invalid <date_time> argument for command '\\showdate': %s",qPrint(err));
+    parser()->tokenizer.setStatePara();
+    return;
   }
 
-  GrowBuf growBuf;
-  signed char c;
-  const char *p=fmt.data();
-  while ((c=*p++)!=0)
+  int usedFormat=0;
+  QCString dateTimeStr = formatDateTime(fmt,dat,usedFormat);
+
+  // warn the user if the format contains markers that are not explicitly filled in
+  for (int i=0;i<SF_NumBits;i++)
   {
-    switch (c)
+    int bitMask = 1<<i;
+    if ((usedFormat&bitMask) && !(specFormat&bitMask)) // a part was used in the format string but its value was not specified.
     {
-      case '%':
-        switch (*p)
-        {
-          case '%':
-            growBuf.addChar('%');
-            break;
-          /* single digit prefixed with a zero */
-          case '0':
-            p++;
-            switch (*p)
-            {
-              /* month */
-              case 'm':
-                {
-                  char tmp[10];
-                  sprintf(tmp,"%02d",getMonth(dat));
-                  growBuf.addStr(tmp);
-                }
-                break;
-              /* day */
-              case 'd':
-                {
-                  char tmp[10];
-                  sprintf(tmp,"%02d",getDay(dat));
-                  growBuf.addStr(tmp);
-                }
-                break;
-              default:
-                /* we just handle the % and 0 here */
-                p--;
-                growBuf.addChar('%');
-                growBuf.addChar('0');
-                break;
-            }
-            break;
-          /* first character set to capital*/
-          case 'l':
-            p++;
-            switch (*p)
-            {
-              /* month */
-              case 'b':
-                growBuf.addStr(theTranslator->trMonth(getMonth(dat),true,false));
-                break;
-              case 'B':
-                growBuf.addStr(theTranslator->trMonth(getMonth(dat),true,true));
-                break;
-              /* day of week */
-              case 'a':
-                growBuf.addStr(theTranslator->trDayOfWeek(getDayOfWeek(dat),true,false));
-                break;
-              case 'A':
-                growBuf.addStr(theTranslator->trDayOfWeek(getDayOfWeek(dat),true,true));
-                break;
-              default:
-                /* we just handle the % and l here */
-                p--;
-                growBuf.addChar('%');
-                growBuf.addChar('l');
-                break;
-            }
-            break;
-          /* year */
-          case 'y':
-            growBuf.addStr(QCString().setNum(getYear(dat)).mid(2));
-            break;
-          case 'Y':
-            growBuf.addStr(QCString().setNum(getYear(dat)));
-            break;
-          /* month */
-          case 'm':
-            growBuf.addStr(QCString().setNum(getMonth(dat)));
-            break;
-          case 'b':
-            growBuf.addStr(theTranslator->trMonth(getMonth(dat),false,false));
-            break;
-          case 'B':
-            growBuf.addStr(theTranslator->trMonth(getMonth(dat),false,true));
-            break;
-          /* day */
-          case 'd':
-            growBuf.addStr(QCString().setNum(getDay(dat)));
-            break;
-          /* day of week */
-          case 'u':
-            growBuf.addStr(QCString().setNum(getDayOfWeek(dat))); // Monday = 1 ... Sunday = 7
-            break;
-          case 'w':
-            growBuf.addStr(QCString().setNum(getDayOfWeek(dat)%7)); // Sunday = 0 .. Saturday = 6
-            break;
-          case 'a':
-            growBuf.addStr(theTranslator->trDayOfWeek(getDayOfWeek(dat),false,false));
-            break;
-          case 'A':
-            growBuf.addStr(theTranslator->trDayOfWeek(getDayOfWeek(dat),false,true));
-            break;
-          default:
-            growBuf.addChar('%');
-            growBuf.addChar(c);
-            break;
-        }
-        p++;
-        break;
-      default:
-        growBuf.addChar(c);
-        break;
+      warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"'\\showdate' <format> parameter '%s' has %s related markers which are not specified in the <date_time> parameter '%s'. Filling in the current value for %s instead.",
+          qPrint(fmt),SF_bit2str(i),qPrint(specDate),SF_bit2str(i));
     }
   }
-  growBuf.addChar(0);
 
-  children().append<DocWord>(parser(),thisVariant,growBuf.get());
+  children().append<DocWord>(parser(),thisVariant,dateTimeStr);
   parser()->tokenizer.setStatePara();
 }
 void DocPara::handleILine(DocNodeVariant *)
@@ -3979,6 +3867,12 @@ int DocPara::handleCommand(DocNodeVariant *thisVariant,const QCString &cmdName, 
         retval = RetVal_Paragraph;
       }
       break;
+    case CMD_ISTARTCODE:
+      {
+        parser()->tokenizer.setStateICode();
+        retval = handleStartCode(thisVariant);
+      }
+      break;
     case CMD_STARTCODE:
       {
         parser()->tokenizer.setStateCode();
@@ -4086,9 +3980,17 @@ int DocPara::handleCommand(DocNodeVariant *thisVariant,const QCString &cmdName, 
         parser()->tokenizer.setStatePara();
       }
       break;
+    case CMD_IVERBATIM:
     case CMD_VERBATIM:
       {
-        parser()->tokenizer.setStateVerbatim();
+        if (cmdId == CMD_VERBATIM)
+        {
+          parser()->tokenizer.setStateVerbatim();
+        }
+        else
+        {
+          parser()->tokenizer.setStateIVerbatim();
+        }
         retval = parser()->tokenizer.lex();
         children().append<DocVerbatim>(parser(),thisVariant,parser()->context.context,parser()->context.token->verb,DocVerbatim::Verbatim,parser()->context.isExample,parser()->context.exampleName);
         if (retval==0) warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"verbatim section ended without end marker");
@@ -4247,6 +4149,7 @@ int DocPara::handleCommand(DocNodeVariant *thisVariant,const QCString &cmdName, 
     case CMD_ENDPARBLOCK:
       retval=RetVal_EndParBlock;
       break;
+    case CMD_ENDICODE:
     case CMD_ENDCODE:
     case CMD_ENDHTMLONLY:
     case CMD_ENDMANONLY:
@@ -4256,6 +4159,7 @@ int DocPara::handleCommand(DocNodeVariant *thisVariant,const QCString &cmdName, 
     case CMD_ENDDBONLY:
     case CMD_ENDLINK:
     case CMD_ENDVERBATIM:
+    case CMD_ENDIVERBATIM:
     case CMD_ENDILITERAL:
     case CMD_ENDDOT:
     case CMD_ENDMSC:

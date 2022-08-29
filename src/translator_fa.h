@@ -1787,6 +1787,11 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
       QCString text  = full? months_full[month-1] : months_short[month-1];
       return text;
     }
+    virtual QCString trDayPeriod(int period)
+    {
+      static const char *dayPeriod[] = { "قبل‌ازظهر", "بعدازظهر" };
+      return dayPeriod[period];
+    }
 
 };
 

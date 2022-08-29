@@ -74,6 +74,7 @@
 #include "utf8.h"
 #include "textstream.h"
 #include "indexlist.h"
+#include "datetime.h"
 
 #define ENABLE_TRACINGSUPPORT 0
 
@@ -1342,10 +1343,9 @@ QCString getFileFilter(const QCString &name,bool isSourceCode)
 }
 
 
-QCString transcodeCharacterStringToUTF8(const QCString &input)
+QCString transcodeCharacterStringToUTF8(const QCString &inputEncoding, const QCString &input)
 {
   bool error=FALSE;
-  QCString inputEncoding = Config_getString(INPUT_ENCODING);
   const char *outputEncoding = "UTF-8";
   if (inputEncoding.isEmpty() || qstricmp(inputEncoding,outputEncoding)==0) return input;
   int inputSize=input.length();
@@ -1426,88 +1426,6 @@ QCString fileToString(const QCString &name,bool filter,bool isSourceCode)
     err("cannot open file '%s' for reading\n",qPrint(name));
   }
   return "";
-}
-
-std::tm getCurrentDateTime()
-{
-  QCString sourceDateEpoch = Portable::getenv("SOURCE_DATE_EPOCH");
-  if (!sourceDateEpoch.isEmpty()) // see https://reproducible-builds.org/specs/source-date-epoch/
-  {
-    bool ok;
-    uint64 epoch = sourceDateEpoch.toUInt64(&ok);
-    if (!ok)
-    {
-      static bool warnedOnce=FALSE;
-      if (!warnedOnce)
-      {
-        warn_uncond("Environment variable SOURCE_DATE_EPOCH does not contain a valid number; value is '%s'\n",
-            qPrint(sourceDateEpoch));
-        warnedOnce=TRUE;
-      }
-    }
-    else // use given epoch value as current 'built' time
-    {
-      auto epoch_start    = std::chrono::time_point<std::chrono::system_clock>{};
-      auto epoch_seconds  = std::chrono::seconds(epoch);
-      auto build_time     = epoch_start + epoch_seconds;
-      std::time_t time    = std::chrono::system_clock::to_time_t(build_time);
-      return *gmtime(&time);
-    }
-  }
-
-  // return current local time
-  auto now = std::chrono::system_clock::now();
-  std::time_t time = std::chrono::system_clock::to_time_t(now);
-  return *localtime(&time);
-}
-
-QCString dateToString(bool includeTime)
-{
-  auto current = getCurrentDateTime();
-  return theTranslator->trDateTime(current.tm_year + 1900,
-                                   current.tm_mon + 1,
-                                   current.tm_mday,
-                                   (current.tm_wday+6)%7+1, // map: Sun=0..Sat=6 to Mon=1..Sun=7
-                                   current.tm_hour,
-                                   current.tm_min,
-                                   current.tm_sec,
-                                   includeTime);
-}
-
-static QCString yearToString()
-{
-  auto current = getCurrentDateTime();
-  return QCString().setNum(current.tm_year+1900);
-}
-
-bool valid_tm( const std::tm& tm, int *weekday )
-{
-  auto cpy = tm ;
-  const auto as_time_t = std::mktime( std::addressof(cpy) ) ;
-  if (as_time_t == -1) return false;
-
-  cpy = *std::localtime( std::addressof(as_time_t) ) ;
-
-  *weekday = cpy.tm_wday;
-  return tm.tm_mday == cpy.tm_mday && // valid day
-         tm.tm_mon == cpy.tm_mon && // valid month
-         tm.tm_year == cpy.tm_year; // valid year
-}
-int getYear(std::tm dat)
-{
-  return dat.tm_year+1900;
-}
-int getMonth(std::tm dat)
-{
-  return dat.tm_mon+1;
-}
-int getDay(std::tm dat)
-{
-  return dat.tm_mday;
-}
-int getDayOfWeek(std::tm dat)
-{
-  return (dat.tm_wday+6)%7+1;
 }
 
 void trimBaseClassScope(const BaseClassList &bcl,QCString &s,int level=0)
@@ -2240,10 +2158,10 @@ bool getDefsNew(const QCString &scName,
   {
     scope = currentFile;
   }
-  //printf("@@  -> found scope scope=%s member=%s out=%s\n",qPrint(scName),qPrint(mibName),qPrint(scope?scope->name():""));
+  //printf("@@  -> found scope scope=%s member=%s out=%s\n",qPrint(scName),qPrint(mbName),qPrint(scope?scope->name():""));
   //
   const Definition *symbol = resolver.resolveSymbol(scope,mbName,args,checkCV);
-  //printf("@@  -> found symbol in=%s out=%s\n",qPrint(memberName),qPrint(symbol?symbol->name():QCString()));
+  //printf("@@  -> found symbol in=%s out=%s\n",qPrint(mbName),qPrint(symbol?symbol->qualifiedName():QCString()));
   if (symbol && symbol->definitionType()==Definition::TypeMember)
   {
     md = toMemberDef(symbol);
@@ -6420,7 +6338,7 @@ bool readInputFile(const QCString &fileName,BufStr &inBuf,bool filter,bool isSou
   {
     // do character transcoding if needed.
     transcodeCharacterBuffer(fileName,inBuf,inBuf.curPos(),
-        Config_getString(INPUT_ENCODING),"UTF-8");
+        getEncoding(fi),"UTF-8");
   }
 
   //inBuf.addChar('\n'); /* to prevent problems under Windows ? */
@@ -6460,11 +6378,13 @@ QCString filterTitle(const QCString &title)
   return QCString(tf);
 }
 
-//----------------------------------------------------------------------------
-// returns TRUE if the name of the file represented by 'fi' matches
-// one of the file patterns in the 'patList' list.
+//---------------------------------------------------------------------------------------------------
 
-bool patternMatch(const FileInfo &fi,const StringVector &patList)
+template<class PatternList, class PatternElem, typename PatternGet = QCString(*)(const PatternElem &)>
+bool genericPatternMatch(const FileInfo &fi,
+                         const PatternList &patList,
+                         PatternElem &elem,
+                         PatternGet getter)
 {
   bool caseSenseNames = getCaseSenseNames();
   bool found = FALSE;
@@ -6481,8 +6401,9 @@ bool patternMatch(const FileInfo &fi,const StringVector &patList)
     std::string fp = fi.filePath();
     std::string afp= fi.absFilePath();
 
-    for (auto pattern: patList)
+    for (const auto &li : patList)
     {
+      std::string pattern = getter(li).str();
       if (!pattern.empty())
       {
         size_t i=pattern.find('=');
@@ -6499,13 +6420,42 @@ bool patternMatch(const FileInfo &fi,const StringVector &patList)
         found = re.isValid() && (reg::match(fn,re) ||
                                  (fn!=fp && reg::match(fp,re)) ||
                                  (fn!=afp && fp!=afp && reg::match(afp,re)));
-        if (found) break;
+        if (found)
+        {
+          elem = li;
+          break;
+        }
         //printf("Matching '%s' against pattern '%s' found=%d\n",
         //    qPrint(fi->fileName()),qPrint(pattern),found);
       }
     }
   }
   return found;
+}
+
+//----------------------------------------------------------------------------
+// returns TRUE if the name of the file represented by 'fi' matches
+// one of the file patterns in the 'patList' list.
+
+bool patternMatch(const FileInfo &fi,const StringVector &patList)
+{
+  std::string elem;
+  auto getter = [](std::string s) { return QCString(s); };
+  return genericPatternMatch(fi,patList,elem,getter);
+}
+
+QCString getEncoding(const FileInfo &fi)
+{
+  InputFileEncoding elem;
+  auto getter = [](const InputFileEncoding &e) { return e.pattern; };
+  if (genericPatternMatch(fi,Doxygen::inputFileEncodingList,elem,getter)) // check for file specific encoding
+  {
+    return elem.encoding;
+  }
+  else // fall back to default encoding
+  {
+    return Config_getString(INPUT_ENCODING);
+  }
 }
 
 QCString externalLinkTarget(const bool parent)

@@ -252,6 +252,7 @@ add_library(doxymain STATIC
     condparser.cpp
     context.cpp
     cppvalue.cpp
+    datetime.cpp
     defgen.cpp
     definition.cpp
     dia.cpp
