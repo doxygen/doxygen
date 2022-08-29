@@ -3253,7 +3253,16 @@ void FlowChart::addFlowChart(int type,const QCString &text,const QCString &exp, 
     expression=substitute(expression,"\"","\\\"");
   }
 
-  if (type & (START_NO | VARIABLE_NO))
+  if (type & VARIABLE_NO)
+  {
+  // Ignore the empty section of the VHDL variable definition.
+  // This is section between `process` and `begin` keywords, where any source text is missing, probably a bug in the VHDL source parser.
+    if(text.isEmpty()) return;
+
+    flowList.insert(flowList.begin(),FlowChart(type,typeString,expression,label));
+    flowList.front().line=1; // TODO: use getLine(); of the parser
+  }
+  else if (type & START_NO)
   {
     flowList.insert(flowList.begin(),FlowChart(type,typeString,expression,label));
     flowList.front().line=1; // TODO: use getLine(); of the parser
