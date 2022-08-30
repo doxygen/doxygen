@@ -111,7 +111,12 @@ WARN_LOGFILE           =
 #---------------------------------------------------------------------------
 # Configuration options related to the input files
 #---------------------------------------------------------------------------
-INPUT                  = src \
+INPUT                  = \
+                         doc_internal/commands_history.md \
+                         doc_internal/commands_internal.md \
+                         doc_internal/releases.md \
+                         doc_internal/tags_history.md \
+                         src \
                          vhdlparser \
                          libxml
 INPUT_ENCODING         = UTF-8
@@ -161,7 +166,7 @@ HTML_FILE_EXTENSION    = .html
 HTML_HEADER            =
 HTML_FOOTER            =
 HTML_STYLESHEET        =
-HTML_EXTRA_STYLESHEET  =
+HTML_EXTRA_STYLESHEET  = doc_internal/doc_internal.css
 HTML_EXTRA_FILES       =
 HTML_COLORSTYLE        = TOGGLE
 HTML_COLORSTYLE_HUE    = 220

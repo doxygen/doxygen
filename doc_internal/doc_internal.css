@@ -1,0 +1,12 @@
+ul.multicol, dl.multicol {
+        -moz-column-gap: 1em;
+        -webkit-column-gap: 1em;
+        column-gap: 1em;
+        -moz-column-count: 3;
+        -webkit-column-count: 3;
+        column-count: 3;
+        list-style-type: none;
+}
+ul.multicol {
+        font-family: courier;
+}
