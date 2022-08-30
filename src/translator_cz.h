@@ -126,7 +126,7 @@
  Translator class (by the local maintainer) when the localized
  translator is made up-to-date again.
 */
-class TranslatorCzech : public Translator
+class TranslatorCzech : public TranslatorAdapter_1_9_5
 {
   public:
 
