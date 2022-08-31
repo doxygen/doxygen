@@ -356,9 +356,12 @@ void DotNode::deleteNodes(DotNode *node)
 
 void DotNode::writeLabel(TextStream &t, GraphType gt) const
 {
-  t << "label=";
   if (m_classDef && Config_getBool(UML_LOOK) && (gt==Inheritance || gt==Collaboration))
   {
+    // Set shape to the record-based type.
+    // Record-based shape represent recursive lists of fields, which are drawn as alternating horizontal and vertical rows of boxes. Special characters are: Literal braces, vertical bars and angle brackets.
+    // Only shape types: record and Mrecord support record-based label. See dot User's Manual, Ch. 21, p. 6.
+    t << "shape=record,label=";
     // add names shown as relations to a set, so we don't show
     // them as attributes as well
     StringUnorderedSet arrowNames;
@@ -429,6 +432,7 @@ void DotNode::writeLabel(TextStream &t, GraphType gt) const
   }
   else if (Config_getString(DOT_NODE_ATTR).contains("shape=plain"))
   {
+    t << "label=";
     if (m_isRoot)
       t << "<<b>" << convertToXML(m_label) << "</b>>";
     else if (m_truncated == Truncated)
@@ -438,7 +442,7 @@ void DotNode::writeLabel(TextStream &t, GraphType gt) const
   }
   else // standard look
   {
-    t << '"' << convertLabel(m_label) << '"';
+    t << "label=" << '"' << convertLabel(m_label) << '"';
   }
 }
 
