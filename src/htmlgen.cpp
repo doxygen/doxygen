@@ -627,6 +627,20 @@ static void fillColorStyleMap(const QCString &definitions,StringUnorderedMap &ma
   }
 }
 
+static void fillColorStyleMaps()
+{
+  ResourceMgr &mgr = ResourceMgr::instance();
+  auto colorStyle = Config_getEnum(HTML_COLORSTYLE);
+  if (colorStyle==HTML_COLORSTYLE_t::LIGHT)
+  {
+    fillColorStyleMap(replaceColorMarkers(mgr.getAsString("lightmode_settings.css")),g_lightMap);
+  }
+  else if (colorStyle==HTML_COLORSTYLE_t::DARK)
+  {
+    fillColorStyleMap(replaceColorMarkers(mgr.getAsString("darkmode_settings.css")),g_darkMap);
+  }
+}
+
 static QCString replaceVariables(const QCString &input)
 {
   auto doReplacements = [&input](const StringUnorderedMap &mapping) -> QCString
@@ -1066,16 +1080,9 @@ void HtmlGenerator::init()
   }
   createSubDirs(d);
 
+  fillColorStyleMaps();
+
   ResourceMgr &mgr = ResourceMgr::instance();
-  auto colorStyle = Config_getEnum(HTML_COLORSTYLE);
-  if (colorStyle==HTML_COLORSTYLE_t::LIGHT)
-  {
-    fillColorStyleMap(replaceColorMarkers(mgr.getAsString("lightmode_settings.css")),g_lightMap);
-  }
-  else if (colorStyle==HTML_COLORSTYLE_t::DARK)
-  {
-    fillColorStyleMap(replaceColorMarkers(mgr.getAsString("darkmode_settings.css")),g_darkMap);
-  }
 
   {
     QCString tabsCss;
@@ -1108,7 +1115,7 @@ void HtmlGenerator::init()
     mgr.copyResource("menu.js",dname);
   }
 
-  if (colorStyle==HTML_COLORSTYLE_t::TOGGLE)
+  if (Config_getBool(HTML_COLORSTYLE)==HTML_COLORSTYLE_t::TOGGLE)
   {
     //mgr.copyResource("darkmode_toggle.js",dname);
     std::ofstream f(dname.str()+"/darkmode_toggle.js",std::ofstream::out | std::ofstream::binary);
@@ -1287,6 +1294,7 @@ static void writeDefaultStyleSheet(TextStream &t)
 
 void HtmlGenerator::writeStyleSheetFile(TextStream &t)
 {
+  fillColorStyleMaps();
   writeDefaultStyleSheet(t);
 }
 
