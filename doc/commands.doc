@@ -3835,29 +3835,6 @@ class Receiver
   writing three consecutive dashes to the output instead of one m-dash character (---).
 
 <hr>
-\htmlonly</p><center><p>\endhtmlonly
-<h2>
-\htmlonly --- \endhtmlonly
-Commands included for Qt compatibility
-\htmlonly --- \endhtmlonly
-</h2>
-\htmlonly</p></center><p>\endhtmlonly
-
-The following commands are supported to remain compatible to the Qt class
-browser generator. Do \e not use these commands in your own documentation.
-<ul>
-<li>\\annotatedclasslist
-<li>\\classhierarchy
-<li>\\define
-<li>\\functionindex
-<li>\\header
-<li>\\headerfilelist
-<li>\\inherit
-<li>\\l
-<li>\\postheader
-</ul>
-<hr>
-
 
 \htmlonly
 Go to the <a href="htmlcmds.html">next</a> section or return to the
