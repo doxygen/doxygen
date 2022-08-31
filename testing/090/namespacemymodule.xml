@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="namespacemymodule" kind="namespace" language="Fortran">
+    <compoundname>mymodule</compoundname>
+    <innerclass refid="interfacemymodule_1_1abstractproc" prot="public">mymodule::abstractproc</innerclass>
+    <innerclass refid="interfacemymodule_1_1externalproc" prot="public">mymodule::externalproc</innerclass>
+    <innerclass refid="interfacemymodule_1_1genericproc" prot="public">mymodule::genericproc</innerclass>
+    <innerclass refid="interfacemymodule_1_1operator_07_8cross_8_08" prot="private">mymodule::operator(.cross.)</innerclass>
+    <innerclass refid="interfacemymodule_1_1operator_07_2_2_08" prot="private">mymodule::operator(//)</innerclass>
+    <sectiondef kind="func">
+      <memberdef kind="function" id="090__interfaces_8f90_1ac4fecdb729ae02a9b45e07b39a06bd4a" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>subroutine</type>
+        <definition>subroutine mymodule::firstproc</definition>
+        <argsstring>(i)</argsstring>
+        <name>firstproc</name>
+        <qualifiedname>mymodule::firstproc</qualifiedname>
+        <param>
+          <type>integer, intent(in)</type>
+          <defname>i</defname>
+        </param>
+        <briefdescription>
+          <para>short doc </para>
+        </briefdescription>
+        <detaileddescription>
+          <para>
+            <parameterlist kind="param">
+              <parameteritem>
+                <parameternamelist>
+                  <parametername direction="in">i</parametername>
+                </parameternamelist>
+                <parameterdescription>
+                  <para>integer argument </para>
+                </parameterdescription>
+              </parameteritem>
+            </parameterlist>
+          </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="090_interfaces.f90" line="58" column="1" bodyfile="090_interfaces.f90" bodystart="59" bodyend="59"/>
+      </memberdef>
+      <memberdef kind="function" id="090__interfaces_8f90_1ad9576415f0501f163aba191413e7ec8f" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>subroutine</type>
+        <definition>subroutine mymodule::secondproc</definition>
+        <argsstring>(r)</argsstring>
+        <name>secondproc</name>
+        <qualifiedname>mymodule::secondproc</qualifiedname>
+        <param>
+          <type>real, intent(out)</type>
+          <defname>r</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="090_interfaces.f90" line="62" column="1" bodyfile="090_interfaces.f90" bodystart="63" bodyend="63"/>
+      </memberdef>
+      <memberdef kind="function" id="090__interfaces_8f90_1a22b2dd2f9930f8f57c569fa7e9ba14fb" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>subroutine</type>
+        <definition>subroutine mymodule::otherproc</definition>
+        <argsstring>(somearg)</argsstring>
+        <name>otherproc</name>
+        <qualifiedname>mymodule::otherproc</qualifiedname>
+        <param>
+          <type>character(len=*), intent(in)</type>
+          <defname>somearg</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="090_interfaces.f90" line="66" column="1" bodyfile="090_interfaces.f90" bodystart="67" bodyend="67"/>
+      </memberdef>
+      <memberdef kind="function" id="090__interfaces_8f90_1a4c2aa3cb114644b49099023a681ac49b" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>pure real function, dimension(3)</type>
+        <definition>pure real function, dimension(3) mymodule::cross_product</definition>
+        <argsstring>(v, w)</argsstring>
+        <name>cross_product</name>
+        <qualifiedname>mymodule::cross_product</qualifiedname>
+        <param>
+          <type>real, dimension(3), intent(in)</type>
+          <defname>v</defname>
+        </param>
+        <param>
+          <type>real, dimension(3), intent(in)</type>
+          <defname>w</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="090_interfaces.f90" line="70" column="1" bodyfile="090_interfaces.f90" bodystart="71" bodyend="74"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="090_interfaces.f90" line="10" column="1"/>
+  </compounddef>
+</doxygen>

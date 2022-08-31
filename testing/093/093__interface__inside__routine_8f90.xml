@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="093__interface__inside__routine_8f90" kind="file" language="Fortran">
+    <compoundname>093_interface_inside_routine.f90</compoundname>
+    <sectiondef kind="func">
+      <memberdef kind="function" id="093__interface__inside__routine_8f90_1a017cb3f837c9c8e003a9931b9e1405b1" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>subroutine</type>
+        <definition>subroutine use_tst</definition>
+        <argsstring>(interfarg)</argsstring>
+        <name>use_tst</name>
+        <param>
+          <type>external integer function(character(len=*), intent(in) str)</type>
+          <defname>interfarg</defname>
+        </param>
+        <briefdescription>
+          <para>Test for interface. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="093_interface_inside_routine.f90" line="7" column="1" bodyfile="093_interface_inside_routine.f90" bodystart="8" bodyend="17"/>
+      </memberdef>
+      <memberdef kind="function" id="093__interface__inside__routine_8f90_1a5e4d223ee08b0fa3c460f84b5ba36753" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>subroutine</type>
+        <definition>subroutine use_tst::inner_routine</definition>
+        <argsstring/>
+        <name>inner_routine</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="093_interface_inside_routine.f90" line="16" column="1" bodyfile="093_interface_inside_routine.f90" bodystart="17" bodyend="16"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="093_interface_inside_routine.f90"/>
+  </compounddef>
+</doxygen>
