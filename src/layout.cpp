@@ -343,14 +343,14 @@ class LayoutParser
         },
         { "classindex",
           LayoutNavEntry::ClassIndex,
-          fortranOpt ? theTranslator->trDataTypes() : vhdlOpt ? theTranslator->trDesignUnits() : theTranslator->trCompoundIndex(),
+          fortranOpt ? theTranslator->trCompoundIndexFortran() : vhdlOpt ? theTranslator->trDesignUnitIndex() : theTranslator->trCompoundIndex(),
           QCString(),
           QCString(),
           "classes"
         },
         { "classes",
           LayoutNavEntry::Classes,
-          fortranOpt ? theTranslator->trCompoundListFortran() : vhdlOpt ? theTranslator->trDesignUnitList() : theTranslator->trClasses(),
+          fortranOpt ? theTranslator->trDataTypes() : vhdlOpt ? theTranslator->trDesignUnits() : theTranslator->trClasses(),
           theTranslator->trCompoundList(),
           fortranOpt ? theTranslator->trCompoundListDescriptionFortran() : vhdlOpt ? theTranslator->trDesignUnitListDescription() : theTranslator->trCompoundListDescription(),
           "annotated"
