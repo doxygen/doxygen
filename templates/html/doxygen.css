@@ -275,6 +275,16 @@ ul {
   overflow: visible;
 }
 
+ul.multicol {
+        -moz-column-gap: 1em;
+        -webkit-column-gap: 1em;
+        column-gap: 1em;
+        -moz-column-count: 3;
+        -webkit-column-count: 3;
+        column-count: 3;
+        list-style-type: none;
+}
+
 #side-nav ul {
   overflow: visible; /* reset ul rule for scroll bar in GENERATE_TREEVIEW window */
 }
