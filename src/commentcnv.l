@@ -361,14 +361,14 @@ SLASHopt [/]*
                                      yyextra->commentStack.push(yyextra->lineNr);
                                    }
 <Scan>"#"("#")?		           {
-                                     if (yyextra->lang!=SrcLangExt_Python)
+                                     if (yyextra->lang!=SrcLangExt_Python && yyextra->lang!=SrcLangExt_PHP)
 				     {
 				       REJECT;
 				     }
 				     else
 				     {
                                        copyToOutput(yyscanner,yytext,(int)yyleng); 
-                                       yyextra->nestingCount=0; // Python doesn't have an end comment for #
+                                       yyextra->nestingCount=0; // Python and PHP don't have an end comment for #
                                        clearCommentStack(yyscanner); /*  to be on the save side */
 				       BEGIN(CComment);
                                        yyextra->commentStack.push(yyextra->lineNr);
@@ -730,7 +730,7 @@ SLASHopt [/]*
 				     }
                                    }
 <CComment,CNComment>"\n"/[ \t]*[^ \t#\-] 	   {
-                                     if (yyextra->lang==SrcLangExt_Python)
+                                     if (yyextra->lang==SrcLangExt_Python || yyextra->lang==SrcLangExt_PHP)
                                      {
                                        if (yyextra->pythonDocString)
                                        {
