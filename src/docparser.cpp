@@ -373,7 +373,7 @@ void DocParser::checkUnOrMultipleDocumentedParams()
     }
     else
     {
-      if (!context.paramsFound.size() && Config_getBool(WARN_IF_DOC_ERROR))
+      if (context.paramsFound.empty() && Config_getBool(WARN_IF_DOC_ERROR))
       {
         warn_doc_error(context.memberDef->docFile(),
                        context.memberDef->docLine(),
@@ -1999,7 +1999,10 @@ IDocNodeASTPtr validatingParseDoc(IDocParser &parserIntf,
     std::visit(PrintDocVisitor{},ast->root);
   }
 
-  parser->checkUnOrMultipleDocumentedParams();
+  if (md && md->isFunction())
+  {
+    parser->checkUnOrMultipleDocumentedParams();
+  }
   if (parser->context.memberDef) parser->context.memberDef->detectUndocumentedParams(parser->context.hasParamCommand,parser->context.hasReturnCommand);
 
   // TODO: These should be called at the end of the program.
