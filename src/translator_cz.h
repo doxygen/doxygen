@@ -20,6 +20,9 @@
 
 // Updates:
 // --------
+// 2022/08/30 - Updated for "new since 1.9.6" by: <petyovsky@vut.cz>
+//              Changed translation: `trMemberFunctionDocumentation()`.
+//              Added new translation: `trFlowchart()`.
 // 2022/08/25 - Updated for "new since 1.9.4" by: <petyovsky@vut.cz>
 //              removed all implicit conversion from QCString to const char *,
 //              fixed issues: #7434, #8404, #9192,
@@ -200,7 +203,16 @@ class TranslatorCzech : public Translator
 
     /*! header that is put before the list of member functions. */
     virtual QCString trMemberFunctionDocumentation()
-    { return "Dokumentace členských funkcí"; }
+    {
+      if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+        return "Dokumentace členských funkcí/procedur/procesů";
+      }
+      else
+      {
+        return "Dokumentace členských funkcí";
+      }
+    }
 
     /*! header that is put before the list of member attributes. */
     virtual QCString trMemberDataDocumentation()
@@ -2460,6 +2472,22 @@ class TranslatorCzech : public Translator
 
     virtual QCString trPackageList()
     { return "Seznam balíků"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.6
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This is used for translation of the word that will be
+     *  followed by a single name of the VHDL process flowchart.
+     */
+    virtual QCString trFlowchart()
+    { return "Vývojový diagram: "; }
+
+    /*! Please translate also updated body of the method
+     *  trMemberFunctionDocumentation(), now better adapted for
+     *  VHDL sources documentation.
+     *  Done.
+     */
 };
 
 #endif // TRANSLATOR_CZ_H

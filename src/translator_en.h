@@ -107,7 +107,16 @@ class TranslatorEnglish : public Translator
 
     /*! header that is put before the list of member functions. */
     virtual QCString trMemberFunctionDocumentation()
-    { return "Member Function Documentation"; }
+    {
+      if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+        return "Member Function/Procedure/Process Documentation";
+      }
+      else
+      {
+        return "Member Function Documentation";
+      }
+    }
 
     /*! header that is put before the list of member attributes. */
     virtual QCString trMemberDataDocumentation()
@@ -2317,6 +2326,21 @@ class TranslatorEnglish : public Translator
 
     virtual QCString trPackageList()
     { return "Package List"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.6
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This is used for translation of the word that will be
+     *  followed by a single name of the VHDL process flowchart.
+     */
+    virtual QCString trFlowchart()
+    { return "Flowchart: "; }
+
+    /*! Please translate also updated body of the method
+     *  trMemberFunctionDocumentation(), now better adapted for
+     *  VHDL sources documentation.
+     */
 };
 
 #endif

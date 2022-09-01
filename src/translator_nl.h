@@ -53,7 +53,16 @@ class TranslatorDutch : public Translator
     QCString trMemberEnumerationDocumentation()
     { return "Documentatie van enumeratie members"; }
     QCString trMemberFunctionDocumentation()
-    { return "Documentatie van functie members"; }
+    {
+      if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+        return "Documentatie van functie/procedure/process members";
+      }
+      else
+      {
+        return "Documentatie van functie members";
+      }
+    }
     QCString trMemberDataDocumentation()
     { return "Documentatie van data members"; }
     QCString trMore()
@@ -1868,6 +1877,22 @@ class TranslatorDutch : public Translator
 
     virtual QCString trPackageList()
     { return "Package Lijst"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.6
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This is used for translation of the word that will be
+     *  followed by a single name of the VHDL process flowchart.
+     */
+    virtual QCString trFlowchart()
+    { return "Stroomschema: "; }
+
+    /*! Please translate also updated body of the method
+     *  trMemberFunctionDocumentation(), now better adapted for
+     *  VHDL sources documentation.
+     *  Done.
+     */
 };
 
 #endif
