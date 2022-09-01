@@ -67,7 +67,8 @@ jobs:
       uses: actions/checkout@v3
       
     - name: Check file types
-      run:
+      run: |
+        pwd
         file `find . name`
       if: matrix.config.name == 'Ubuntu Latest GCC Release'
 
