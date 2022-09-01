@@ -2342,9 +2342,9 @@ static bool endScope(yyscan_t yyscanner,Entry *scope, bool isGlobalRoot)
 
         // remove prefix
         QCString name = ce->name.lower();
-        int i = name.findRev(":");
-        if (i != -1)
-          name.remove(0, i+1);
+        int ii = name.findRev(":");
+        if (ii != -1)
+          name.remove(0, ii+1);
         Argument *arg = findArgument(scope->parent(), name);
         if (arg != 0) 
         {
