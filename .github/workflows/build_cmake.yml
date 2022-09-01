@@ -70,7 +70,7 @@ jobs:
       shell: bash
       run: |
         pwd
-        file `find . name`
+        file `find .`
       if: matrix.config.name == 'Ubuntu Latest GCC Release'
 
 #    - name: Download MikTex (Windows)
