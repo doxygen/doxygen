@@ -503,7 +503,7 @@ class LayoutParser
           QCString()
         }
       };
-      LayoutNavEntry::Kind kind;
+      LayoutNavEntry::Kind kind = static_cast<LayoutNavEntry::Kind>(0);
       // find type in the table
       int i=0;
       QCString type = XMLHandlers::value(attrib,"type");
@@ -1658,7 +1658,7 @@ QCString extractLanguageSpecificTitle(const QCString &input,SrcLangExt lang)
     e=input.find('|',s);
     i=input.find('=',s);
     assert(i>s);
-    size_t key=input.mid(s,i-s).toUInt();
+    SrcLangExt key= static_cast<SrcLangExt>(input.mid(s,i-s).toUInt());
     if (key==lang) // found matching key
     {
       if (e==-1) e=input.length();

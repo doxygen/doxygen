@@ -3729,7 +3729,7 @@ static void writeObjCMethodCall(yyscan_t yyscanner,ObjCCallCtx *ctx)
           }
           else // illegal marker
           {
-            ASSERT("invalid escape sequence"==0);
+            ASSERT(0); // "invalid escape sequence"
           }
         }
       }

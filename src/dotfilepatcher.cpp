@@ -331,7 +331,7 @@ bool DotFilePatcher::run() const
     return FALSE;
   }
   TextStream t(&fo);
-  int width,height;
+  int width=0,height=0;
   bool insideHeader=FALSE;
   bool replacedHeader=FALSE;
   bool foundSize=FALSE;

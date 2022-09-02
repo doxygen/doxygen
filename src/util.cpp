@@ -6591,7 +6591,7 @@ bool copyFile(const QCString &src,const QCString &dest)
 QCString extractBlock(const QCString &text,const QCString &marker)
 {
   QCString result;
-  int p=0,i;
+  int p=0,i=-1;
   bool found=FALSE;
 
   // find the character positions of the markers
