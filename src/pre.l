@@ -1883,7 +1883,8 @@ static void setFileName(yyscan_t yyscanner,const QCString &name)
   state->insideIDL = getLanguageFromFileName(state->fileName)==SrcLangExt_IDL;
   state->insideCS = getLanguageFromFileName(state->fileName)==SrcLangExt_CSharp;
   state->insideFtn = getLanguageFromFileName(state->fileName)==SrcLangExt_Fortran;
-  state->isSource = guessSection(state->fileName);
+  int isSource = guessSection(state->fileName);
+  state->isSource = isSource==Entry::HEADER_SEC || isSource==Entry::SOURCE_SEC;
 }
 
 static void incrLevel(yyscan_t yyscanner)

@@ -495,7 +495,7 @@ def getEnum2BoolMapping(node):
             bool_rep = nv.getAttribute("bool_representation")
             if name and bool_rep:
                 bool_value = "true" if bool_rep and bool_rep.upper() == 'YES' else "false"
-                mapping.append( "{{ \"{0}\", \"{1}\" }}".format(escape(name),bool_value))
+                mapping.append( "{{ \"{0}\", {1} }}".format(escape(name),bool_value))
     return mapping
 
 def parseGroupMapInit(node):

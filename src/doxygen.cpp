@@ -476,7 +476,7 @@ static void buildFileList(const Entry *root)
     FileDef *fd=findFileDef(Doxygen::inputNameLinkedMap,root->name,ambig);
     if (!fd || ambig)
     {
-      int save_ambig = ambig;
+      bool save_ambig = ambig;
       // use the directory of the file to see if the described file is in the same
       // directory as the describing file.
       QCString fn = root->fileName;
