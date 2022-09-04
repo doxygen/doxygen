@@ -1290,6 +1290,16 @@ static void writeDefaultStyleSheet(TextStream &t)
   }
 
   t << replaceVariables(ResourceMgr::instance().getAsString("doxygen.css"));
+
+  // For Webkit based the scrollbar styling cannot be overruled (bug in chromium?).
+  // To allow the user to style the scrollbars differently we should only add it in case
+  // the user did not specify any extra stylesheets.
+  bool addScrollbarStyling = Config_getList(HTML_EXTRA_STYLESHEET).empty();
+  if (addScrollbarStyling)
+  {
+    t << replaceVariables(ResourceMgr::instance().getAsString("scrollbar.css"));
+  }
+
 }
 
 void HtmlGenerator::writeStyleSheetFile(TextStream &t)
