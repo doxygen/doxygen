@@ -48,6 +48,9 @@
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
 
+// For debugging
+#define SHOW_INCLUDES 0
+
 #define USE_STATE2STRING 0
 
 #if USE_STATE2STRING

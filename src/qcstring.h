@@ -594,24 +594,6 @@ inline QCString operator+( const char *s1, const QCString &s2 )
     return tmp;
 }
 
-#define HAD_PLUS_OPERATOR_FOR_CHAR 0
-#if HAS_PLUS_OPERATOR_FOR_CHAR
-inline QCString operator+( const QCString &s1, char c2 )
-{
-    QCString tmp( s1.data() );
-    tmp.append(c2);
-    return tmp;
-}
-
-inline QCString operator+( char c1, const QCString &s2 )
-{
-    QCString tmp;
-    tmp.append(c1);
-    tmp.append(s2);
-    return tmp;
-}
-#endif
-
 inline const char *qPrint(const char *s)
 {
   if (s) return s; else return "";
