@@ -1612,7 +1612,7 @@ const char* prepassFixedForm(const char* contents, int *hasContLine,int fixedCom
 
   int j = -1;
   sizCont = strlen(contents);
-  for(int i=0;i<sizCont;i++) {
+  for(size_t i=0;i<sizCont;i++) {
     column++;
     char c = contents[i];
     if (artificialComment && c != '\n')

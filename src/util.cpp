@@ -7255,7 +7255,7 @@ bool recognizeFixedForm(const QCString &contents, FortranFormat format)
   size_t sizCont;
 
   sizCont = contents.length();
-  for (int i=0;i<sizCont;i++)
+  for (size_t i=0;i<sizCont;i++)
   {
     column++;
 
