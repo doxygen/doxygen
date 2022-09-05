@@ -2850,7 +2850,7 @@ Commands for visual enhancements
   will result in the following text:<br><br>
      ... This function returns \c void and not \c int ...
 
-  Equivalent to \ref cmdp "\\p"
+  Equivalent to \ref cmdp "\\p".
   To have multiple words in typewriter font use \ref htmltag_TT "\<tt\>"multiple words\ref htmltag_endTT "\</tt\>".
 
 <hr>
@@ -3649,7 +3649,7 @@ class Receiver
   This will result in the following text:<br><br>
   ... the \p x and \p y coordinates are used to ...
 
-  Equivalent to \ref cmdc "\\c"
+  Equivalent to \ref cmdc "\\c".
   To have multiple words in typewriter font use \ref htmltag_TT "\<tt\>"multiple words\ref htmltag_endTT "\</tt\>".
 
 <hr>
