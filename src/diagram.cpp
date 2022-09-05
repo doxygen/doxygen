@@ -186,8 +186,9 @@ static uint virtToMask(Specifier p)
   {
     case Normal:    return 0xffffffff;
     case Virtual:   return 0xf0f0f0f0;
-    case Pure   :   return 0;
+    default:        break;
   }
+  return 0;
 }
 
 // pre: dil is not empty
