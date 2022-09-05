@@ -186,7 +186,7 @@ static uint virtToMask(Specifier p)
   {
     case Normal:    return 0xffffffff;
     case Virtual:   return 0xf0f0f0f0;
-    default:        return 0;
+    default:        break;
   }
   return 0;
 }

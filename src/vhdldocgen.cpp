@@ -2669,7 +2669,6 @@ bool VhdlDocGen::isSubClass(ClassDef* cd,ClassDef *scd, bool followInstances,int
   {
     err("Possible recursive class relation while inside %s and looking for %s\n",qPrint(cd->name()),qPrint(scd->name()));
     abort();
-    return false;
   }
 
   for (const auto &bcd :cd->subClasses())

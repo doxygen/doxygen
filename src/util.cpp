@@ -7252,8 +7252,10 @@ bool recognizeFixedForm(const QCString &contents, FortranFormat format)
   if (format == FortranFormat_Fixed) return TRUE;
   if (format == FortranFormat_Free)  return FALSE;
   int tabSize=Config_getInt(TAB_SIZE);
+  size_t sizCont;
 
-  for (int i=0;;i++)
+  sizCont = contents.length();
+  for (size_t i=0;i<sizCont;i++)
   {
     column++;
 
