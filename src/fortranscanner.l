@@ -1608,9 +1608,11 @@ const char* prepassFixedForm(const char* contents, int *hasContLine,int fixedCom
   int newContentsSize = (int)strlen(contents)+3; // \000, \n (when necessary) and one spare character (to avoid reallocation)
   char* newContents = (char*)malloc(newContentsSize);
   int curLine = 1;
+  size_t sizCont;
 
   int j = -1;
-  for(int i=0;;i++) {
+  sizCont = strlen(contents);
+  for(int i=0;i<sizCont;i++) {
     column++;
     char c = contents[i];
     if (artificialComment && c != '\n')
