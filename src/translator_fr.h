@@ -836,7 +836,7 @@ class TranslatorFrench : public TranslatorAdapter_1_8_19
       }
       if (feminine) result+= " a été générée à partir ";
       else result+=" a été généré à partir ";
-      if (feminine) result+="du fichier suivant :";
+      if (single) result+="du fichier suivant :";
       else result+="des fichiers suivants :";
       return result;
     }
