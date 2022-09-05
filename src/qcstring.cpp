@@ -442,7 +442,7 @@ int qstricmp( const char *s1, const char *s2 )
       return s1 == s2 ? 0 : static_cast<int>(s2 - s1);
     }
     int res;
-    uchar c;
+    char c;
     for ( ; !(res = ((c=toLowerChar(*s1)) - toLowerChar(*s2))); s1++, s2++ )
     {
       if ( !c )				// strings are equal
