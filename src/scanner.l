@@ -3449,6 +3449,12 @@ NONLopt [^\n]*
                                           }
                                           else
                                           {
+                                            if ((yyextra->current->name == "int")  || (yyextra->current->name == "short") ||
+                                                (yyextra->current->name == "long") || (yyextra->current->name == "char"))
+                                            {
+                                              yyextra->current->name = yyextra->current->type + " " + yyextra->current->name;
+                                              yyextra->current->type = "";
+                                            }
                                             if (yyextra->current->type.isEmpty()) // anonymous padding field, e.g. "int :7;"
                                             {
                                               addType(yyscanner);
