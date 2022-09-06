@@ -4895,6 +4895,10 @@ NONLopt [^\n]*
                                           yyextra->current->args += " noexcept ";
                                           yyextra->current->spec |= Entry::NoExcept;
                                         }
+<FuncQual>{BN}*"noexcept"{BN}*"("{B}*false{B}*")"{BN}* { // noexcept(false) expression
+                                          lineCount(yyscanner) ;
+                                          yyextra->current->args += " noexcept(false)";
+                                        }
 <FuncQual>{BN}*"noexcept"{BN}*"("       { // noexcept expression
                                           lineCount(yyscanner) ;
                                           yyextra->current->args += " noexcept(";
