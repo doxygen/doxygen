@@ -1826,20 +1826,20 @@ QCString DocParser::processCopyDoc(const char *data,uint &len)
             context.copyStack.push_back(def);
             if (isBrief)
             {
-              buf.addStr("\\ifile \""+QCString(def->briefFile())+"\" ");
+              buf.addStr(" \\ilinebr\\ifile \""+QCString(def->briefFile())+"\" ");
               buf.addStr("\\iline "+QCString().setNum(def->briefLine())+" ");
               uint l=static_cast<uint>(brief.length());
               buf.addStr(processCopyDoc(brief.data(),l));
             }
             else
             {
-              buf.addStr("\\ifile \""+QCString(def->docFile())+"\" ");
+              buf.addStr(" \\ilinebr\\ifile \""+QCString(def->docFile())+"\" ");
               buf.addStr("\\iline "+QCString().setNum(def->docLine())+" ");
               uint l=static_cast<uint>(doc.length());
               buf.addStr(processCopyDoc(doc.data(),l));
             }
             context.copyStack.pop_back();
-            buf.addStr("\\ifile \""+context.fileName+"\" ");
+            buf.addStr(" \\ilinebr\\ifile \""+context.fileName+"\" ");
             buf.addStr("\\iline "+QCString().setNum(lineNr)+" ");
           }
           else
