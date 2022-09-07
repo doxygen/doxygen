@@ -9676,27 +9676,6 @@ static void runQHelpGenerator()
   Dir::setCurrent(oldDir);
 }
 
-#if defined(_WIN32)
-static QCString fixSlashes(QCString &s)
-{
-  QCString result;
-  uint i;
-  for (i=0;i<s.length();i++)
-  {
-    switch(s.at(i))
-    {
-      case '/':
-      case '\\':
-        result+="\\\\";
-        break;
-      default:
-        result+=s.at(i);
-    }
-  }
-  return result;
-}
-#endif
-
 //----------------------------------------------------------------------------
 
 static void computeVerifiedDotPath()
@@ -10872,7 +10851,7 @@ void initDoxygen()
   initNamespaceMemberIndices();
   initFileMemberIndices();
 
-#ifdef USE_LIBCLANG
+#if USE_LIBCLANG
   Doxygen::clangUsrMap   = new ClangUsrMap;
 #endif
   Doxygen::memberNameLinkedMap = new MemberNameLinkedMap;
