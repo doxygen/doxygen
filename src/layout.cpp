@@ -503,17 +503,13 @@ class LayoutParser
           QCString()
         }
       };
-      LayoutNavEntry::Kind kind = static_cast<LayoutNavEntry::Kind>(0);
       // find type in the table
       int i=0;
       QCString type = XMLHandlers::value(attrib,"type");
       while (mapping[i].typeStr)
       {
         if (mapping[i].typeStr==type)
-        {
-          kind = mapping[i].kind;
           break;
-        }
         i++;
       }
       if (mapping[i].typeStr==0)
@@ -530,6 +526,7 @@ class LayoutParser
         m_invalidEntry=TRUE;
         return;
       }
+      LayoutNavEntry::Kind kind = mapping[i].kind;
       QCString baseFile = mapping[i].baseFile;
       QCString title = XMLHandlers::value(attrib,"title");
       bool isVisible = elemIsVisible(attrib) && parentIsVisible(m_rootNav);
