@@ -2328,6 +2328,14 @@ class TranslatorFrench : public TranslatorAdapter_1_8_19
         return "Documentation des champs de données";
     }
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.8.19
+//////////////////////////////////////////////////////////////////////////
+
+    /** VHDL design unit documentation */
+    virtual QCString trDesignUnitDocumentation()
+    { return "Documentation de l'unité de conception"; }
+
 };
 
 #endif
