@@ -105,7 +105,7 @@
 
 class TranslatorFrench : public TranslatorAdapter_1_8_19
 {
-   public:
+  public:
 
     // --- Language control methods -------------------
 
@@ -115,8 +115,8 @@ class TranslatorFrench : public TranslatorAdapter_1_8_19
      * (e.g. "czech", "japanese", "russian", etc.). It should be equal to
      * the identification used in language.cpp.
      */
-       virtual QCString idLanguage()
-      { return "french"; }
+    virtual QCString idLanguage()
+    { return "french"; }
 
     /*! Used to get the LaTeX command(s) for the language support.
      *  This method should return string with commands that switch
