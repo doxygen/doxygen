@@ -818,8 +818,7 @@ class TranslatorFrench : public TranslatorAdapter_1_8_19
      */
     virtual QCString trGeneratedFromFiles(ClassDef::CompoundType compType,
         bool single)
-    { // here s is one of " Class", " Struct" or " Union"
-      // single is true implies a single file
+    { // single is true implies a single file
       bool vhdlOpt = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
       bool feminine = true;
       QCString result="La documentation de ";
