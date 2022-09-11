@@ -65,7 +65,7 @@ DOC_NODES
 #undef DN_SEP
 
 // getter functions to return the name of a doc node type
-#define DN(x) constexpr const char *docNodeName(const x &n) { return #x; }
+#define DN(x) constexpr const char *docNodeName(const x &/* n */) { return #x; }
 #define DN_SEP
 DOC_NODES
 #undef DN

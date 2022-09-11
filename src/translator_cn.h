@@ -1918,13 +1918,13 @@ class TranslatorChinese : public TranslatorAdapter_1_9_4
       return result;
     }
     /** UNO IDL service page */
-    virtual QCString trServiceGeneratedFromFiles(bool single)
+    virtual QCString trServiceGeneratedFromFiles(bool /* single */)
     {
       // single is true implies a single file
       return "该服务的文档由下列文件生成:";
     }
     /** UNO IDL singleton page */
-    virtual QCString trSingletonGeneratedFromFiles(bool single)
+    virtual QCString trSingletonGeneratedFromFiles(bool /* single */)
     {
       // single is true implies a single file
       return "该单例的文档由下列文件生成:";
@@ -2169,7 +2169,7 @@ class TranslatorChinese : public TranslatorAdapter_1_9_4
 //////////////////////////////////////////////////////////////////////////
 
     /** C++20 concept */
-    virtual QCString trConcept(bool first_capital, bool singular)
+    virtual QCString trConcept(bool /* first_capital */, bool /* singular */)
     {
       return "概念";
     }
@@ -2194,7 +2194,7 @@ class TranslatorChinese : public TranslatorAdapter_1_9_4
     { return "概念文档"; }
 
     /*! used as an introduction to the concept list */
-    virtual QCString trConceptListDescription(bool extractAll)
+    virtual QCString trConceptListDescription(bool /* extractAll */)
     {
       return "以下是带有简要说明的概念";
     }

@@ -461,7 +461,7 @@ class MemberDefAliasImpl : public DefinitionAliasMixin<MemberDef>
     { return getMdAlias()->objCMethodName(localLink,showStatic); }
     virtual Protection protection() const
     { return getMdAlias()->protection(); }
-    virtual Specifier virtualness(int count) const
+    virtual Specifier virtualness(int /* count */) const
     { return getMdAlias()->virtualness(); }
     virtual MemberType memberType() const
     { return getMdAlias()->memberType(); }
@@ -737,7 +737,7 @@ class MemberDefAliasImpl : public DefinitionAliasMixin<MemberDef>
     { return getMdAlias()->typeConstraints(); }
     virtual QCString documentation() const
     { return getMdAlias()->documentation(); }
-    virtual QCString briefDescription(bool abbr=FALSE) const
+    virtual QCString briefDescription(bool /* abbr=FALSE */) const
     { return getMdAlias()->briefDescription(); }
     virtual QCString fieldType() const
     { return getMdAlias()->fieldType(); }
@@ -756,7 +756,7 @@ class MemberDefAliasImpl : public DefinitionAliasMixin<MemberDef>
 
     virtual void warnIfUndocumented() const {}
     virtual void warnIfUndocumentedParams() const {}
-    virtual void detectUndocumentedParams(bool hasParamCommand,bool hasReturnCommand) const {}
+    virtual void detectUndocumentedParams(bool /* hasParamCommand */,bool /* hasReturnCommand */) const {}
     virtual void setMemberGroup(MemberGroup *grp) { m_memberGroup = grp; }
     virtual MemberDefMutable *createTemplateInstanceMember(const ArgumentList &formalArgs,
                const std::unique_ptr<ArgumentList> &actualArgs) const
@@ -3229,7 +3229,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
                                    const QCString &scName,
                                    const Definition *container,
                                    bool inGroup,
-                                   bool showEnumValues,
+                                   bool  /* showEnumValues */,
                                    bool showInline
                                   ) const
 {

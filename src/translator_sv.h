@@ -2375,7 +2375,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_4
 //////////////////////////////////////////////////////////////////////////
 
     /** C++20 concept */
-    virtual QCString trConcept(bool first_capital, bool singular)
+    virtual QCString trConcept(bool first_capital, bool /* singular */)
     {
       QCString result((first_capital ? "Koncept" : "koncept"));
       return result;

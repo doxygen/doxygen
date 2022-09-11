@@ -51,7 +51,7 @@ static QCString escapeId(const QCString &s)
   return res;
 }
 
-void TooltipManager::addTooltip(CodeOutputInterface &ol,const Definition *d)
+void TooltipManager::addTooltip(CodeOutputInterface &/* ol */,const Definition *d)
 {
   bool sourceTooltips = Config_getBool(SOURCE_TOOLTIPS);
   if (!sourceTooltips) return;

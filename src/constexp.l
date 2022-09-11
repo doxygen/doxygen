@@ -168,7 +168,7 @@ bool ConstExpressionParser::parse(const char *fileName,int lineNr,const std::str
 }
 
 extern "C" {
-  int constexpYYwrap(yyscan_t yyscanner) { return 1; }
+  int constexpYYwrap(yyscan_t /* yyscanner */) { return 1; }
 }
 
 #if USE_STATE2STRING

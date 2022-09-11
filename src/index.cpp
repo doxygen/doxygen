@@ -191,7 +191,7 @@ static void endQuickIndexList(OutputList &ol)
 }
 
 static void startQuickIndexItem(OutputList &ol,const QCString &l,
-                                bool hl,bool compact,bool &first)
+                                bool hl,bool /* compact */,bool &first)
 {
   first=FALSE;
   ol.writeString("      <li");
@@ -2076,7 +2076,7 @@ class AlphaIndexTableCell
 using UsedIndexLetters = std::set<std::string>;
 
 // write an alphabetical index of all class with a header for each letter
-static void writeAlphabeticalClassList(OutputList &ol, ClassDef::CompoundType ct, int annotatedCount)
+static void writeAlphabeticalClassList(OutputList &ol, ClassDef::CompoundType ct, int /* annotatedCount */)
 {
   bool sliceOpt = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
 

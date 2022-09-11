@@ -912,7 +912,7 @@ class ClangTUParser::Private
 {
 };
 
-void ClangTUParser::switchToFile(const FileDef *fd)
+void ClangTUParser::switchToFile(const FileDef *)
 {
 }
 

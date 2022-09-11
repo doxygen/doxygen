@@ -134,8 +134,8 @@ class CodeOutputInterface
      */
     virtual void writeCodeAnchor(const QCString &name) = 0;
 
-    virtual void setCurrentDoc(const Definition *context,const QCString &anchor,bool isSourceFile) {}
-    virtual void addWord(const QCString &word,bool hiPriority) {}
+    virtual void setCurrentDoc(const Definition * /* context */,const QCString & /* anchor */,bool /* isSourceFile */) {}
+    virtual void addWord(const QCString & /* word */,bool /* hiPriority */) {}
 
     /*! Starts a source code fragment. The fragment will be
      *  fed to the code parser (see code.h) for syntax highlighting

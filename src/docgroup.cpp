@@ -73,7 +73,7 @@ void DocGroup::enterCompound(const QCString &fileName,int line,const QCString &n
   //printf("groupEnterCompound(%s)\n",qPrint(name));
 }
 
-void DocGroup::leaveCompound(const QCString &,int,const QCString & name)
+void DocGroup::leaveCompound(const QCString &,int,const QCString &/* name */)
 {
   //printf("groupLeaveCompound(%s)\n",qPrint(name));
   //if (m_memberGroupId!=DOX_NOGROUP)

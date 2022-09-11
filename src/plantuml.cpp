@@ -89,7 +89,7 @@ QCString PlantumlManager::writePlantUMLSource(const QCString &outDirArg,const QC
   return baseName;
 }
 
-void PlantumlManager::generatePlantUMLOutput(const QCString &baseName,const QCString &outDir,OutputFormat format)
+void PlantumlManager::generatePlantUMLOutput(const QCString &baseName,const QCString &/* outDir */,OutputFormat format)
 {
   QCString imgName = baseName;
   // The basename contains path, we need to strip the path from the filename in order

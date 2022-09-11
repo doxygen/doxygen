@@ -529,7 +529,7 @@ void DotNode::writeBox(TextStream &t,
 
 void DotNode::writeArrow(TextStream &t,
                          GraphType gt,
-                         GraphOutputFormat format,
+                         GraphOutputFormat /* format */,
                          const DotNode *cn,
                          const EdgeInfo *ei,
                          bool topDown,

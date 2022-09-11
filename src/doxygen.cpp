@@ -5331,7 +5331,7 @@ static bool findGlobalMember(const Entry *root,
                            const QCString &tempArg,
                            const QCString &,
                            const QCString &decl,
-                           uint64 spec)
+                           uint64 /* spec */)
 {
   Debug::print(Debug::FindMembers,0,
        "2. findGlobalMember(namespace=%s,type=%s,name=%s,tempArg=%s,decl=%s)\n",
@@ -10796,7 +10796,7 @@ static const char *getArg(int argc,char **argv,int &optInd)
 class NullOutlineParser : public OutlineParserInterface
 {
   public:
-    void parseInput(const QCString &file, const char *buf,const std::shared_ptr<Entry> &, ClangTUParser*) {}
+    void parseInput(const QCString &/* file */, const char * /* buf */,const std::shared_ptr<Entry> &, ClangTUParser*) {}
     bool needsPreprocessing(const QCString &) const { return FALSE; }
     void parsePrototype(const QCString &) {}
 };

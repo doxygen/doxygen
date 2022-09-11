@@ -2077,9 +2077,9 @@ void HtmlGenerator::endMemberDocList()
   DBG_HTML(m_t << "<!-- endMemberDocList -->\n";)
 }
 
-void HtmlGenerator::startMemberDoc( const QCString &clName, const QCString &memName,
+void HtmlGenerator::startMemberDoc( const QCString &/* clName */, const QCString &/* memName */,
                                     const QCString &anchor, const QCString &title,
-                                    int memCount, int memTotal, bool showInline)
+                                    int memCount, int memTotal, bool /* showInline */)
 {
   DBG_HTML(m_t << "<!-- startMemberDoc -->\n";)
   m_t << "\n<h2 class=\"memtitle\">"
@@ -2837,7 +2837,7 @@ void HtmlGenerator::endContents()
   m_t << "</div><!-- contents -->\n";
 }
 
-void HtmlGenerator::startPageDoc(const QCString &pageTitle)
+void HtmlGenerator::startPageDoc(const QCString &/* pageTitle */)
 {
   m_t << "<div>";
 }
