@@ -2147,16 +2147,14 @@ hr.footer {
       <docs>
 <![CDATA[
  The \c HTML_COLORSTYLE tag can be used to specify if the generated HTML output should be rendered with
- a dark or light theme. Default setting \c AUTO_LIGHT enables light output unless the user preference is dark output.
- Other options are \c DARK to always use dark mode, \c LIGHT to always use light mode, \c AUTO_DARK to default to dark
- mode unless the user prefers light mode, and \c TOGGLE to let the user toggle between dark and light mode via a button. 
+ a dark or light theme.
 ]]>
       </docs>
-      <value name="LIGHT" desc="Always generate light output."/>
-      <value name="DARK" desc="Always generate dark output."/>
-      <value name="AUTO_LIGHT" desc="Automatically set the mode according to the user preference, use light mode if no preference is set (the default)."/>
-      <value name="AUTO_DARK" desc="Automatically set the mode according to the user preference, use dark mode if no preference is set."/>
-      <value name="TOGGLE" desc="Allow to user to switch between light and dark mode via a button."/>
+      <value name="LIGHT" desc="always generate light mode output"/>
+      <value name="DARK" desc="always generate dark mode output"/>
+      <value name="AUTO_LIGHT" desc="automatically set the mode according to the user preference, use light mode if no preference is set (the default)"/>
+      <value name="AUTO_DARK" desc="automatically set the mode according to the user preference, use dark mode if no preference is set"/>
+      <value name="TOGGLE" desc="allow to user to switch between light and dark mode via a button"/>
     </option>
     <option type='int' id='HTML_COLORSTYLE_HUE' minval='0' maxval='359' defval='220' depends='GENERATE_HTML'>
       <docs>
