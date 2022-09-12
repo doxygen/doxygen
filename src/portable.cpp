@@ -185,7 +185,7 @@ int Portable::system(const QCString &command,const QCString &args,bool commandHa
       WaitForSingleObject(sInfo.hProcess,INFINITE);
       /* get process exit code */
       DWORD exitCode;
-      bool retval = !GetExitCodeProcess(sInfo.hProcess,&exitCode);
+      bool retval = GetExitCodeProcess(sInfo.hProcess,&exitCode);
       CloseHandle(sInfo.hProcess);
       delete[] commandw;
       delete[] argsw;
