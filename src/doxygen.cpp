@@ -11573,7 +11573,7 @@ static void writeTagFile()
   tagFile << "</tagfile>\n";
 }
 
-static void exitDoxygen()
+static void exitDoxygen() noexcept
 {
   if (!g_successfulRun)  // premature exit
   {
