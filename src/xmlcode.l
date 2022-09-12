@@ -53,6 +53,8 @@ typedef yyguts_t *yyscan_t;
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
 
+#define USE_STATE2STRING 0
+
 struct xmlcodeYY_state
 {
   CodeOutputInterface * code;
