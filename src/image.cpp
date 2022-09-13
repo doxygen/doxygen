@@ -186,13 +186,13 @@ Image::Image(uint w,uint h)
                         &red2,&green2,&blue2
                        );
 
-  palette[2].red   = static_cast<int>(red1   * 255.0);
-  palette[2].green = static_cast<int>(green1 * 255.0);
-  palette[2].blue  = static_cast<int>(blue1  * 255.0);
+  palette[2].red   = static_cast<Byte>(red1   * 255.0);
+  palette[2].green = static_cast<Byte>(green1 * 255.0);
+  palette[2].blue  = static_cast<Byte>(blue1  * 255.0);
 
-  palette[3].red   = static_cast<int>(red2   * 255.0);
-  palette[3].green = static_cast<int>(green2 * 255.0);
-  palette[3].blue  = static_cast<int>(blue2  * 255.0);
+  palette[3].red   = static_cast<Byte>(red2   * 255.0);
+  palette[3].green = static_cast<Byte>(green2 * 255.0);
+  palette[3].blue  = static_cast<Byte>(blue2  * 255.0);
 
   m_data.resize(w*h);
   m_width = w;
@@ -438,15 +438,15 @@ ColoredImage::ColoredImage(uint width,uint height,
   uint i;
   for (i=0;i<width*height;i++)
   {
-    uchar r,g,b,a;
+    Byte r,g,b,a;
     double red,green,blue;
     hsl2rgb(hue/360.0,                            // hue
             saturation/255.0,                     // saturation
             pow(greyLevels[i]/255.0,gamma/100.0), // luma (gamma corrected)
             &red,&green,&blue);
-    r = static_cast<int>(red  *255.0);
-    g = static_cast<int>(green*255.0);
-    b = static_cast<int>(blue *255.0);
+    r = static_cast<Byte>(red  *255.0);
+    g = static_cast<Byte>(green*255.0);
+    b = static_cast<Byte>(blue *255.0);
     a = alphaLevels ? alphaLevels[i] : 255;
     m_data[i*4+0]=r;
     m_data[i*4+1]=g;
