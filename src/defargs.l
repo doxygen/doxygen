@@ -107,7 +107,7 @@ struct defargsYY_state
 static const char *stateToString(int state);
 #endif
 
-static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
+static int yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
 static bool nameIsActuallyPartOfType(QCString &name);
 
 /* -----------------------------------------------------------------
@@ -620,7 +620,7 @@ CPPC  "/\/"
 /* ----------------------------------------------------------------------------
  */
 
-static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size)
+static int yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yy_size_t c=0;
@@ -629,7 +629,7 @@ static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size)
       *buf = yyextra->inputString[yyextra->inputPosition++] ;
       c++; buf++;
   }
-  return c;
+  return static_cast<int>(c);
 }
 
 /*

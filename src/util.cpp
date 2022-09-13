@@ -6094,8 +6094,8 @@ static QCString expandAliasRec(StringUnorderedSet &aliasesProcessed,const QCStri
   if (result == s)
   {
     std::string orgStr = s.str();
-    int ridx = orgStr.rfind('-');
-    if (ridx != -1) return expandAliasRec(aliasesProcessed,s.left(ridx),allowRecursion) + s.right(s.length() - ridx);
+    size_t ridx = orgStr.rfind('-');
+    if (ridx != std::string::npos) return expandAliasRec(aliasesProcessed,s.left(ridx),allowRecursion) + s.right(s.length() - ridx);
   }
 
   return result;
@@ -7259,7 +7259,7 @@ bool recognizeFixedForm(const QCString &contents, FortranFormat format)
   {
     column++;
 
-    switch(contents[i])
+    switch(contents.at(i))
     {
       case '\n':
         column=0;

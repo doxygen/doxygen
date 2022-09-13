@@ -142,7 +142,7 @@ static void searchFoundDef(yyscan_t yyscanner);
 static void searchFoundClass(yyscan_t yyscanner);
 static QCString findPackageScope(yyscan_t yyscanner,const QCString &fileName);
 
-static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
+static int yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
 
 //-----------------------------------------------------------------------------
 /* ----------------------------------------------------------------- */
@@ -1479,14 +1479,14 @@ STARTDOCSYMS      "##"
 
 //----------------------------------------------------------------------------
 
-static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size)
+static int yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yy_size_t c=0;
   const char *p = yyextra->inputString + yyextra->inputPosition;
   while ( c < max_size && *p ) { *buf++ = *p++; c++; }
   yyextra->inputPosition+=c;
-  return c;
+  return static_cast<int>(c);
 }
 
 static void initParser(yyscan_t yyscanner)

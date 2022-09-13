@@ -100,7 +100,7 @@ static void nextCodeLine(yyscan_t yyscanner);
 static void codifyLines(yyscan_t yyscanner,const QCString &text);
 static void startFontClass(yyscan_t yyscanner,const char *s);
 static int countLines(yyscan_t yyscanner);
-static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
+static int yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
 static void lineCount(yyscan_t yyscanner);
 static void handleCCode(yyscan_t yyscanner);
 
@@ -1110,7 +1110,7 @@ static int countLines(yyscan_t yyscanner)
   return count;
 }
 
-static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size)
+static int yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yy_size_t inputPosition = yyextra->inputPosition;
@@ -1122,7 +1122,7 @@ static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size)
     c++;
   }
   yyextra->inputPosition += c;
-  return c;
+  return static_cast<int>(c);
 }
 
 static void lineCount(yyscan_t yyscanner)
