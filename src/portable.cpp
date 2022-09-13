@@ -469,8 +469,8 @@ void Portable::sysTimerStart()
 void Portable::sysTimerStop()
 {
   std::chrono::steady_clock::time_point endTime = std::chrono::steady_clock::now();
-  g_sysElapsedTime+= std::chrono::duration_cast<
-                         std::chrono::microseconds>(endTime - g_startTime).count()/1000000.0;
+  g_sysElapsedTime+= static_cast<double>(std::chrono::duration_cast<
+                         std::chrono::microseconds>(endTime - g_startTime).count())/1000000.0;
 }
 
 double Portable::getSysElapsedTime()

@@ -70,7 +70,7 @@ static QCString getDirectoryBackgroundColor(int depthIndex)
   float fraction = static_cast<float>(depthIndex)/static_cast<float>(Config_getInt(DIR_GRAPH_MAX_DEPTH));
   const char hex[] = "0123456789abcdef";
   int range = 0x40; // range from darkest color to lightest color
-  int luma   = 0xef-static_cast<int>(fraction*range); // interpolation
+  int luma   = 0xef-static_cast<int>(fraction*static_cast<float>(range)); // interpolation
   double r,g,b;
   ColoredImage::hsl2rgb(hue/360.0,sat/255.0,
                         pow(luma/255.0,gamma/100.0),&r,&g,&b);
