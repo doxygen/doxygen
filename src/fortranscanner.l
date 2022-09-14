@@ -1826,13 +1826,17 @@ const char* prepassFixedForm(const char* contents, int *hasContLine,int fixedCom
     free(newContents);
     return NULL;
   }
-  newContentsSize = (int)strlen(newContents);
-  if (newContents[newContentsSize - 1] != '\n')
+
+  if (newContents[j] == '\n')
   {
-    // to be on the safe side
-    newContents = (char*)realloc(newContents, newContentsSize+2);
-    newContents[newContentsSize] = '\n';
-    newContents[newContentsSize + 1] = '\000';
+    newContents = (char*)realloc(newContents, j+2);
+    newContents[j + 1] = '\000';
+  }
+  else
+  {
+    newContents = (char*)realloc(newContents, j+3);
+    newContents[j + 1] = '\n';
+    newContents[j + 2] = '\000';
   }
   return newContents;
 }
