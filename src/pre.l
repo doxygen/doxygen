@@ -2752,7 +2752,7 @@ static const char *processUntilMatchingTerminator(const char *inputStr,QCString 
  */
 static QCString removeIdsAndMarkers(const QCString &s)
 {
-  //printf("removeIdsAndMarkers(%s)\n",s);
+  //printf("removeIdsAndMarkers(%s)\n",qPrint(s));
   if (s.isEmpty()) return s;
   const char *p=s.data();
   char c;
@@ -2762,6 +2762,65 @@ static QCString removeIdsAndMarkers(const QCString &s)
   {
     while ((c=*p))
     {
+      if (c=='(') // potential cast, ignore it
+      {
+        const char *q = p;
+        q++;
+        while (*q == ' ') q++;
+        if (q[0] =='u' && q[1] == 'n' && q[2] == 's' && q[3] =='i' && q[4] =='g' && q[5] =='n' && q[6] =='e' && q[7] =='d') q+=8;
+        else if (q[0] =='s' && q[1] =='i' && q[2] =='g' && q[3] =='n' && q[4] =='e' && q[5] =='d') q+=6;
+        while (*q == ' ') q++;
+        if (q[0] =='i' && q[1] == 'n' && q[2] == 't') q+=3;
+        else if (q[0] =='b' && q[1] == 'o' && q[2] == 'o' && q[3] =='l') q+=4;
+        else if (q[0] =='l' && q[1] == 'o' && q[2] == 'n' && q[3] =='g') q+=4;
+        else if (q[0] =='c' && q[1] == 'h' && q[2] == 'a' && q[3] =='r') q+=4;
+        else if (q[0] =='s' && q[1] == 'h' && q[2] == 'o' && q[3] =='r' && q[4] =='t') q+=5;
+        else if (q[0] =='f' && q[1] == 'l' && q[2] == 'o' && q[3] =='a' && q[4] =='t') q+=5;
+        else if (q[0] =='d' && q[1] == 'o' && q[2] == 'u' && q[3] =='b' && q[4] =='l' && q[4] =='e') q+=6;
+        while (*q == ' ') q++;
+        if (*q == ')')
+        {
+          q++;
+          p = q;
+          continue;
+        }
+      }
+      else if (c=='s') // potential sizeof
+      {
+        const char *q = p;
+        if (q[1] == 'i' && q[2] == 'z' && q[3] =='e' && q[4] =='o' && q[4] =='f')
+        {
+          q+=6;
+          while (*q == ' ') q++;
+          if (*q == '(')
+          {
+            q++;
+            while (*q == ' ') q++;
+            if (q[0] =='u' && q[1] == 'n' && q[2] == 's' && q[3] =='i' && q[4] =='g' && q[5] =='n' && q[6] =='e' && q[7] =='d') q+=8;
+            else if (q[0] =='s' && q[1] =='i' && q[2] =='g' && q[3] =='n' && q[4] =='e' && q[5] =='d') q+=6;
+            while (*q == ' ') q++;
+            size_t siz = 0;
+            if (q[0] =='i' && q[1] == 'n' && q[2] == 't') { q+=3; siz = sizeof(int);}
+            else if (q[0] =='b' && q[1] == 'o' && q[2] == 'o' && q[3] =='l') { q+=4; siz = sizeof(bool);}
+            else if (q[0] =='l' && q[1] == 'o' && q[2] == 'n' && q[3] =='g') { q+=4; siz = sizeof(long);}
+            else if (q[0] =='c' && q[1] == 'h' && q[2] == 'a' && q[3] =='r') { q+=4; siz = sizeof(char);}
+            else if (q[0] =='s' && q[1] == 'h' && q[2] == 'o' && q[3] =='r' && q[4] =='t') { q+=5; siz = sizeof(short);}
+            else if (q[0] =='f' && q[1] == 'l' && q[2] == 'o' && q[3] =='a' && q[4] =='t') { q+=5; siz = sizeof(float);}
+            else if (q[0] =='d' && q[1] == 'o' && q[2] == 'u' && q[3] =='b' && q[4] =='l' && q[4] =='e') { q+=6; siz = sizeof(double);}
+            while (*q == ' ') q++;
+            if (*q == ')' && siz != 0)
+            {
+              q++;
+              p = q;
+              char tmp[10];
+              sprintf(tmp,"%d",siz);
+              result += tmp;
+              continue;
+            }
+          }
+        }
+      }
+
       if (c=='@') // replace @@ with @ and remove @E
       {
         if (*(p+1)=='@')
