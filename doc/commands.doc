@@ -3157,6 +3157,13 @@ class Receiver
   \ref image_sizeindicator "Size indication" with the
   \ref cmdimage "\\image" command.
 
+  \note doxygen does not support the Plantuml commands like `@startjson`, by design, directly but
+  the support can be accomplished, by the user, by adding to the doxygen settings file:
+  \verbatim
+  ALIASES += startjson=@startuml{json}
+  ALIASES += endjson=@enduml
+  \endverbatim
+
   \note doxygen creates a temporary file that is automatically removed unless
   the \ref cfg_dot_cleanup "DOT_CLEANUP" tag is set to `NO`.
 
