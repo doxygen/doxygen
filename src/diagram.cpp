@@ -628,14 +628,14 @@ void TreeDiagram::drawBoxes(TextStream &t,Image *image,
           }
           else
           {
-            xf = di->xfPos()/static_cast<float>(gridWidth);
+            xf = di->xfPos()/gridWidth;
             if (doBase)
             {
-              yf = di->yfPos()/static_cast<float>(gridHeight)+static_cast<float>(superRows)-1;
+              yf = di->yfPos()/gridHeight+static_cast<float>(superRows)-1;
             }
             else
             {
-              yf = static_cast<float>(superRows)-1-di->yfPos()/static_cast<float>(gridHeight);
+              yf = static_cast<float>(superRows)-1-di->yfPos()/gridHeight;
             }
           }
         }
@@ -684,14 +684,14 @@ void TreeDiagram::drawBoxes(TextStream &t,Image *image,
         }
         else
         {
-          xf=di->xfPos()/static_cast<float>(gridWidth);
+          xf=di->xfPos()/gridWidth;
           if (doBase)
           {
-            yf = di->yfPos()/static_cast<float>(gridHeight)+static_cast<float>(superRows)-1;
+            yf = di->yfPos()/gridHeight+static_cast<float>(superRows)-1;
           }
           else
           {
-            yf = static_cast<float>(superRows)-1-di->yfPos()/static_cast<float>(gridHeight);
+            yf = static_cast<float>(superRows)-1-di->yfPos()/gridHeight;
           }
           writeVectorBox(t,di.get(),xf,yf);
         }
@@ -752,13 +752,13 @@ void TreeDiagram::drawConnectors(TextStream &t,Image *image,
             t << protToString(di->protection()) << "\n";
             if (doBase)
             {
-              t << "1 " << (di->xfPos()/static_cast<float>(gridWidth)) << " "
-                << (di->yfPos()/static_cast<float>(gridHeight)+static_cast<float>(superRows)-1) << " in\n";
+              t << "1 " << (di->xfPos()/gridWidth) << " "
+                << (di->yfPos()/gridHeight+static_cast<float>(superRows)-1) << " in\n";
             }
             else
             {
-              t << "0 " << (di->xfPos()/static_cast<float>(gridWidth)) << " "
-                << (static_cast<float>(superRows)-0.25f-di->yfPos()/static_cast<float>(gridHeight))
+              t << "0 " << (di->xfPos()/gridWidth) << " "
+                << (static_cast<float>(superRows)-0.25f-di->yfPos()/gridHeight)
                 << " in\n";
             }
           }
@@ -785,15 +785,15 @@ void TreeDiagram::drawConnectors(TextStream &t,Image *image,
           }
           else
           {
-            xf = di->parentItem()->xfPos()/static_cast<float>(gridWidth);
+            xf = di->parentItem()->xfPos()/gridWidth;
             if (doBase)
             {
-              ysf = di->yfPos()/static_cast<float>(gridHeight)+static_cast<float>(superRows)-1;
+              ysf = di->yfPos()/gridHeight+static_cast<float>(superRows)-1;
               yf = ysf + 0.5f;
             }
             else
             {
-              ysf = static_cast<float>(superRows)-0.25f-di->yfPos()/static_cast<float>(gridHeight);
+              ysf = static_cast<float>(superRows)-0.25f-di->yfPos()/gridHeight;
               yf = ysf - 0.25f;
             }
           }
@@ -919,13 +919,13 @@ void TreeDiagram::drawConnectors(TextStream &t,Image *image,
             t << protToString(di->protection()) << "\n";
             if (doBase)
             {
-              t << "1 " << di->xfPos()/static_cast<float>(gridWidth) << " "
-                << (di->yfPos()/static_cast<float>(gridHeight)+static_cast<float>(superRows)-1) << " in\n";
+              t << "1 " << di->xfPos()/gridWidth << " "
+                << (di->yfPos()/gridHeight+static_cast<float>(superRows)-1) << " in\n";
             }
             else
             {
-              t << "0 " << di->xfPos()/static_cast<float>(gridWidth) << " "
-                << (static_cast<float>(superRows)-0.25f-di->yfPos()/static_cast<float>(gridHeight))
+              t << "0 " << di->xfPos()/gridWidth << " "
+                << (static_cast<float>(superRows)-0.25f-di->yfPos()/gridHeight)
                 << " in\n";
             }
           }
@@ -959,13 +959,13 @@ void TreeDiagram::drawConnectors(TextStream &t,Image *image,
             t << protToString(p) << "\n";
             if (doBase)
             {
-              t << "0 " << di->xfPos()/static_cast<float>(gridWidth)  << " "
-                << (di->yfPos()/static_cast<float>(gridHeight)+static_cast<float>(superRows)-1) << " out\n";
+              t << "0 " << di->xfPos()/gridWidth  << " "
+                << (di->yfPos()/gridHeight+static_cast<float>(superRows)-1) << " out\n";
             }
             else
             {
-              t << "1 " << di->xfPos()/static_cast<float>(gridWidth)  << " "
-                << (static_cast<float>(superRows)-1.75f-di->yfPos()/static_cast<float>(gridHeight))
+              t << "1 " << di->xfPos()/gridWidth  << " "
+                << (static_cast<float>(superRows)-1.75f-di->yfPos()/gridHeight)
                 << " out\n";
             }
           }
@@ -994,16 +994,16 @@ void TreeDiagram::drawConnectors(TextStream &t,Image *image,
               t << protToString(p) << "\n";
               if (doBase)
               {
-                t << first->xfPos()/static_cast<float>(gridWidth) << " "
-                  << last->xfPos()/static_cast<float>(gridWidth) << " "
-                  << (first->yfPos()/static_cast<float>(gridHeight)+static_cast<float>(superRows)-1)
+                t << first->xfPos()/gridWidth << " "
+                  << last->xfPos()/gridWidth << " "
+                  << (first->yfPos()/gridHeight+static_cast<float>(superRows)-1)
                   << " conn\n";
               }
               else
               {
-                t << first->xfPos()/static_cast<float>(gridWidth) << " "
-                  << last->xfPos()/static_cast<float>(gridWidth) << " "
-                  << (static_cast<float>(superRows)-first->yfPos()/static_cast<float>(gridHeight))
+                t << first->xfPos()/gridWidth << " "
+                  << last->xfPos()/gridWidth << " "
+                  << (static_cast<float>(superRows)-first->yfPos()/gridHeight)
                   << " conn\n";
               }
             }
