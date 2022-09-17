@@ -1827,7 +1827,13 @@ const char* prepassFixedForm(const char* contents, int *hasContLine,int fixedCom
     return NULL;
   }
 
-  if (newContents[j] == '\n')
+  if (sizCont==0)
+  {
+    newContents = (char*)realloc(newContents, 2);
+    newContents[0] = '\n';
+    newContents[1] = '\000';
+  }
+  else if (newContents[j] == '\n')
   {
     newContents = (char*)realloc(newContents, j+2);
     newContents[j + 1] = '\000';
