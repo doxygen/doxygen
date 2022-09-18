@@ -628,7 +628,7 @@ void MemberList::writeDeclarations(OutputList &ol,
         {
           //printf("Member group has docs!\n");
           ol.startMemberGroupDocs();
-          ol.generateDoc(mg->docFile(),mg->docLine(),ctx,0,mg->documentation()+"\n",FALSE,FALSE,
+          ol.generateDoc(mg->docFile(),mg->docLine(),mg->memberContainer(),0,mg->documentation()+"\n",FALSE,FALSE,
               QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
           ol.endMemberGroupDocs();
         }

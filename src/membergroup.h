@@ -78,6 +78,7 @@ class MemberGroup
     int numDocMembers() const;
     int numDocEnumValues() const;
     const Definition *container() const;
+    const Definition *memberContainer() const;
 
     int countInheritableMembers(const ClassDef *inheritedFrom) const;
     void addListReferences(Definition *d);

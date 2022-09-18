@@ -155,8 +155,8 @@ void DocGroup::close(Entry *e,const QCString &fileName,int line,bool foundInline
     {
       auto &info = it->second;
       info->doc = m_memberGroupDocs;
-      info->docFile = fileName;
-      info->docLine = line;
+      //info->docFile = fileName;
+      //info->docLine = line;
     }
     m_memberGroupId=DOX_NOGROUP;
     m_memberGroupRelates.resize(0);
