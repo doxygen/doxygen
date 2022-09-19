@@ -4,6 +4,9 @@ on: [push, pull_request]
 
 jobs:
   build:
+    permissions:
+      contents: write # to push pages branch (peaceiris/actions-gh-pages)
+
     name: ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.os }}
     strategy:
