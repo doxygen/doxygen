@@ -393,9 +393,15 @@ jobs:
       if: matrix.config.name == 'Ubuntu Latest GCC Release'
       
     - name: Generate Internal documentation
-      shell: bash
+      shell: cmake -P {0}
       run: |
-        build/bin/doxygen Doxyfile
+        execute_process(
+          COMMAND cmake --build build --target docs_internal
+          RESULT_VARIABLE result
+        )
+        if (NOT result EQUAL 0)
+          message(FATAL_ERROR "Building internal documentation failed")
+        endif()
       if: matrix.config.name == 'Ubuntu Latest GCC Release'
 
     - name: Publish Internal documentation to Github pages
