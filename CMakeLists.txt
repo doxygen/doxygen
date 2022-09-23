@@ -220,6 +220,7 @@ if (build_doc)
     add_subdirectory(doc)
 endif ()
 
+add_subdirectory(doc_internal)
 add_subdirectory(addon)
 
 enable_testing()
