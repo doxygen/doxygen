@@ -408,6 +408,6 @@ jobs:
       uses: peaceiris/actions-gh-pages@v3
       with:
          github_token: ${{ secrets.GITHUB_TOKEN }}
-         publish_dir: doxygen_docs/html
+         publish_dir: build/doxygen_docs/html
       if: ${{ github.event_name == 'push' && matrix.config.name == 'Ubuntu Latest GCC Release' }}
 
