@@ -80,6 +80,9 @@
 #elif defined(__QNX__)
 #define GHC_OS_QNX
 #define GHC_NO_DIRENT_D_TYPE
+#elif defined(__HAIKU__)
+#define GHC_OS_HAIKU
+#define GHC_NO_DIRENT_D_TYPE
 #else
 #error "Operating system currently not supported!"
 #endif
