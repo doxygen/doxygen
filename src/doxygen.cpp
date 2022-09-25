@@ -1713,7 +1713,7 @@ static void buildNamespaceList(const Entry *root)
           {
             nd->setLanguage(root->lang);
           }
-          if (root->tagInfo()==0) // if we found the namespace in a tag file
+          if (root->tagInfo()==0 && nd->isLinkableInProject()) // if we found the namespace in a tag file
             // and also in a project file, then remove
             // the tag file reference
           {

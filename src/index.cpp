@@ -1650,7 +1650,7 @@ static void writeNamespaceTreeElement(const NamespaceDef *nd,FTVHelp *ftv,
     bool hasChildren = namespaceHasNestedNamespace(nd) ||
       namespaceHasNestedClass(nd,false,ClassDef::Class) ||
       namespaceHasNestedConcept(nd);
-    bool isLinkable  = nd->isLinkableInProject();
+    bool isLinkable  = nd->isLinkable();
     int visibleMembers = countVisibleMembers(nd);
 
     //printf("namespace %s hasChildren=%d visibleMembers=%d\n",qPrint(nd->name()),hasChildren,visibleMembers);
@@ -1704,7 +1704,7 @@ static void writeNamespaceTree(const NamespaceLinkedRefMap &nsLinkedMap,FTVHelp 
 {
   for (const auto &nd : nsLinkedMap)
   {
-    if (nd->isLinkableInProject())
+    if (nd->isLinkable())
     {
       writeNamespaceTreeElement(nd,ftv,rootOnly,addToIndex);
     }
@@ -1716,7 +1716,7 @@ static void writeNamespaceTree(const NamespaceLinkedMap &nsLinkedMap,FTVHelp *ft
 {
   for (const auto &nd : nsLinkedMap)
   {
-    if (nd->isLinkableInProject())
+    if (nd->isLinkable())
     {
       writeNamespaceTreeElement(nd.get(),ftv,rootOnly,addToIndex);
     }
