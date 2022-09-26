@@ -2752,7 +2752,51 @@ static const char *processUntilMatchingTerminator(const char *inputStr,QCString 
  */
 static QCString removeIdsAndMarkers(const QCString &s)
 {
-  //printf("removeIdsAndMarkers(%s)\n",s);
+  static const std::vector<std::string> signs = { "signed", "unsigned" };
+  struct TypeInfo { std::string name; size_t size; };
+  static const std::vector<TypeInfo> types = {
+    { "int",       sizeof(int)       },
+    { "bool",      sizeof(bool)      },
+    { "long long", sizeof(long long) }, // longest first
+    { "long",      sizeof(long)      },
+    { "char",      sizeof(char)      },
+    { "short",     sizeof(short)     },
+    { "float",     sizeof(float)     },
+    { "double",    sizeof(double)    },
+  };
+
+  // Check if string p starts with basic types ending with a ')', such as 'signed long)' or ' float )'
+  // and return the pointer just past the ')' and the size of the type as a tuple.
+  // If the pattern is not found the tuple (nullptr,0) is returned.
+  auto process_cast_or_sizeof = [](const char *p) -> std::pair<const char *,size_t>
+  {
+    const char *q = p;
+    while (*q==' ' || *q=='\t') q++;
+    bool found=false;
+    size_t size = sizeof(int); // '(signed)' or '(unsigned)' is an int type
+    for (const auto &s : signs)
+    {
+      if (qstrncmp(q,s.c_str(),s.length())==0) { q+=s.length(); found=true; }
+    }
+    if (!found || *q==' ' || *q=='\t' || *q==')') // continue searching
+    {
+      while (*q==' ' || *q=='\t') q++;
+      for (const auto &t : types)
+      {
+        if (qstrncmp(q,t.name.c_str(),t.name.length())==0)
+        {
+          q += t.name.length();
+          size = t.size;
+          break;
+        }
+      }
+      while (*q==' ' || *q=='\t') q++;
+      if (*q==')') return std::make_pair(++q,size);
+    }
+    return std::make_pair(nullptr,0);
+  };
+
+  //printf("removeIdsAndMarkers(%s)\n",qPrint(s));
   if (s.isEmpty()) return s;
   const char *p=s.data();
   char c;
@@ -2762,6 +2806,33 @@ static QCString removeIdsAndMarkers(const QCString &s)
   {
     while ((c=*p))
     {
+      if (c=='(') // potential cast, ignore it
+      {
+        const char *q = process_cast_or_sizeof(p+1).first;
+        //printf("potential cast:\nin:  %s\nout: %s\n",p,q);
+        if (q)
+        {
+          p=q;
+          continue;
+        }
+      }
+      else if (c=='s' && qstrncmp(p,"sizeof",6)==0) // sizeof(...)
+      {
+        const char *q = p+6;
+        while (*q==' ' || *q=='\t') q++;
+        if (*q=='(')
+        {
+          auto r = process_cast_or_sizeof(q+1);
+          //printf("sizeof:\nin:  %s\nout: %zu%s\n--> sizeof=%zu\n",p,r.second,r.first,r.second);
+          if (r.first)
+          {
+            result+=QCString().setNum(r.second);
+            p=r.first;
+            continue;
+          }
+        }
+      }
+
       if (c=='@') // replace @@ with @ and remove @E
       {
         if (*(p+1)=='@')
@@ -2778,7 +2849,7 @@ static QCString removeIdsAndMarkers(const QCString &s)
       {
         result+=c;
         p++;
-        inNum=TRUE;     
+        inNum=TRUE;
       }
       else if (c=='\'') // quoted character
       {
