@@ -2752,6 +2752,50 @@ static const char *processUntilMatchingTerminator(const char *inputStr,QCString 
  */
 static QCString removeIdsAndMarkers(const QCString &s)
 {
+  static const std::vector<std::string> signs = { "signed", "unsigned" };
+  struct TypeInfo { std::string name; size_t size; };
+  static const std::vector<TypeInfo> types = {
+    { "int",       sizeof(int)       },
+    { "bool",      sizeof(bool)      },
+    { "long long", sizeof(long long) }, // longest first
+    { "long",      sizeof(long)      },
+    { "char",      sizeof(char)      },
+    { "short",     sizeof(short)     },
+    { "float",     sizeof(float)     },
+    { "double",    sizeof(double)    },
+  };
+
+  // Check if string p starts with basic types ending with a ')', such as 'signed long)' or ' float )'
+  // and return the pointer just past the ')' and the size of the type as a tuple.
+  // If the pattern is not found the tuple (nullptr,0) is returned.
+  auto process_cast_or_sizeof = [](const char *p) -> std::pair<const char *,size_t>
+  {
+    const char *q = p;
+    while (*q==' ' || *q=='\t') q++;
+    bool found=false;
+    size_t size = sizeof(int); // '(signed)' or '(unsigned)' is an int type
+    for (const auto &s : signs)
+    {
+      if (qstrncmp(q,s.c_str(),s.length())==0) { q+=s.length(); found=true; }
+    }
+    if (!found || *q==' ' || *q=='\t' || *q==')') // continue searching
+    {
+      while (*q==' ' || *q=='\t') q++;
+      for (const auto &t : types)
+      {
+        if (qstrncmp(q,t.name.c_str(),t.name.length())==0)
+        {
+          q += t.name.length();
+          size = t.size;
+          break;
+        }
+      }
+      while (*q==' ' || *q=='\t') q++;
+      if (*q==')') return std::make_pair(++q,size);
+    }
+    return std::make_pair(nullptr,0);
+  };
+
   //printf("removeIdsAndMarkers(%s)\n",qPrint(s));
   if (s.isEmpty()) return s;
   const char *p=s.data();
@@ -2764,59 +2808,27 @@ static QCString removeIdsAndMarkers(const QCString &s)
     {
       if (c=='(') // potential cast, ignore it
       {
-        const char *q = p;
-        q++;
-        while (*q == ' ') q++;
-        if (q[0] =='u' && q[1] == 'n' && q[2] == 's' && q[3] =='i' && q[4] =='g' && q[5] =='n' && q[6] =='e' && q[7] =='d') q+=8;
-        else if (q[0] =='s' && q[1] =='i' && q[2] =='g' && q[3] =='n' && q[4] =='e' && q[5] =='d') q+=6;
-        while (*q == ' ') q++;
-        if (q[0] =='i' && q[1] == 'n' && q[2] == 't') q+=3;
-        else if (q[0] =='b' && q[1] == 'o' && q[2] == 'o' && q[3] =='l') q+=4;
-        else if (q[0] =='l' && q[1] == 'o' && q[2] == 'n' && q[3] =='g') q+=4;
-        else if (q[0] =='c' && q[1] == 'h' && q[2] == 'a' && q[3] =='r') q+=4;
-        else if (q[0] =='s' && q[1] == 'h' && q[2] == 'o' && q[3] =='r' && q[4] =='t') q+=5;
-        else if (q[0] =='f' && q[1] == 'l' && q[2] == 'o' && q[3] =='a' && q[4] =='t') q+=5;
-        else if (q[0] =='d' && q[1] == 'o' && q[2] == 'u' && q[3] =='b' && q[4] =='l' && q[4] =='e') q+=6;
-        while (*q == ' ') q++;
-        if (*q == ')')
+        const char *q = process_cast_or_sizeof(p+1).first;
+        //printf("potential cast:\nin:  %s\nout: %s\n",p,q);
+        if (q)
         {
-          q++;
-          p = q;
+          p=q;
           continue;
         }
       }
-      else if (c=='s') // potential sizeof
+      else if (c=='s' && qstrncmp(p,"sizeof",6)==0) // sizeof(...)
       {
-        const char *q = p;
-        if (q[1] == 'i' && q[2] == 'z' && q[3] =='e' && q[4] =='o' && q[4] =='f')
+        const char *q = p+6;
+        while (*q==' ' || *q=='\t') q++;
+        if (*q=='(')
         {
-          q+=6;
-          while (*q == ' ') q++;
-          if (*q == '(')
+          auto r = process_cast_or_sizeof(q+1);
+          //printf("sizeof:\nin:  %s\nout: %zu%s\n--> sizeof=%zu\n",p,r.second,r.first,r.second);
+          if (r.first)
           {
-            q++;
-            while (*q == ' ') q++;
-            if (q[0] =='u' && q[1] == 'n' && q[2] == 's' && q[3] =='i' && q[4] =='g' && q[5] =='n' && q[6] =='e' && q[7] =='d') q+=8;
-            else if (q[0] =='s' && q[1] =='i' && q[2] =='g' && q[3] =='n' && q[4] =='e' && q[5] =='d') q+=6;
-            while (*q == ' ') q++;
-            size_t siz = 0;
-            if (q[0] =='i' && q[1] == 'n' && q[2] == 't') { q+=3; siz = sizeof(int);}
-            else if (q[0] =='b' && q[1] == 'o' && q[2] == 'o' && q[3] =='l') { q+=4; siz = sizeof(bool);}
-            else if (q[0] =='l' && q[1] == 'o' && q[2] == 'n' && q[3] =='g') { q+=4; siz = sizeof(long);}
-            else if (q[0] =='c' && q[1] == 'h' && q[2] == 'a' && q[3] =='r') { q+=4; siz = sizeof(char);}
-            else if (q[0] =='s' && q[1] == 'h' && q[2] == 'o' && q[3] =='r' && q[4] =='t') { q+=5; siz = sizeof(short);}
-            else if (q[0] =='f' && q[1] == 'l' && q[2] == 'o' && q[3] =='a' && q[4] =='t') { q+=5; siz = sizeof(float);}
-            else if (q[0] =='d' && q[1] == 'o' && q[2] == 'u' && q[3] =='b' && q[4] =='l' && q[4] =='e') { q+=6; siz = sizeof(double);}
-            while (*q == ' ') q++;
-            if (*q == ')' && siz != 0)
-            {
-              q++;
-              p = q;
-              char tmp[10];
-              sprintf(tmp,"%d",siz);
-              result += tmp;
-              continue;
-            }
+            result+=QCString().setNum(r.second);
+            p=r.first;
+            continue;
           }
         }
       }
@@ -2837,7 +2849,7 @@ static QCString removeIdsAndMarkers(const QCString &s)
       {
         result+=c;
         p++;
-        inNum=TRUE;     
+        inNum=TRUE;
       }
       else if (c=='\'') // quoted character
       {
