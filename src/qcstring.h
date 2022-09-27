@@ -425,6 +425,18 @@ class QCString
       return *this;
     }
 
+    QCString &setNum(long long n)
+    {
+      m_rep = std::to_string(n);
+      return *this;
+    }
+
+    QCString &setNum(unsigned long long n)
+    {
+      m_rep = std::to_string(n);
+      return *this;
+    }
+
     QCString &setNum(ulong n)
     {
       m_rep = std::to_string(n);
