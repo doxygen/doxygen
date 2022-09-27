@@ -2759,6 +2759,7 @@ static QCString removeIdsAndMarkers(const QCString &s)
     { "long long int", sizeof(long long int) },
     { "long int",      sizeof(long int)      },
     { "long long",     sizeof(long long)     },
+    { "long double",   sizeof(long double)   },
     { "int",           sizeof(int)           },
     { "short",         sizeof(short)         },
     { "bool",          sizeof(bool)          },
