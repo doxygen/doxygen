@@ -1827,18 +1827,18 @@ const char* prepassFixedForm(const char* contents, int *hasContLine,int fixedCom
     return NULL;
   }
 
-  if (sizCont==0)
+  if (j==-1) // contents was empty
   {
     newContents = (char*)realloc(newContents, 2);
     newContents[0] = '\n';
     newContents[1] = '\000';
   }
-  else if (newContents[j] == '\n')
+  else if (newContents[j] == '\n') // content ended with newline
   {
     newContents = (char*)realloc(newContents, j+2);
     newContents[j + 1] = '\000';
   }
-  else
+  else // content did not end with a newline
   {
     newContents = (char*)realloc(newContents, j+3);
     newContents[j + 1] = '\n';
