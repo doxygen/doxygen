@@ -2755,14 +2755,18 @@ static QCString removeIdsAndMarkers(const QCString &s)
   static const std::vector<std::string> signs = { "signed", "unsigned" };
   struct TypeInfo { std::string name; size_t size; };
   static const std::vector<TypeInfo> types = {
-    { "int",       sizeof(int)       },
-    { "bool",      sizeof(bool)      },
-    { "long long", sizeof(long long) }, // longest first
-    { "long",      sizeof(long)      },
-    { "char",      sizeof(char)      },
-    { "short",     sizeof(short)     },
-    { "float",     sizeof(float)     },
-    { "double",    sizeof(double)    },
+    { "short int",     sizeof(short int)     },
+    { "long long int", sizeof(long long int) },
+    { "long int",      sizeof(long int)      },
+    { "long long",     sizeof(long long)     },
+    { "long double",   sizeof(long double)   },
+    { "int",           sizeof(int)           },
+    { "short",         sizeof(short)         },
+    { "bool",          sizeof(bool)          },
+    { "long",          sizeof(long)          },
+    { "char",          sizeof(char)          },
+    { "float",         sizeof(float)         },
+    { "double",        sizeof(double)        },
   };
 
   // Check if string p starts with basic types ending with a ')', such as 'signed long)' or ' float )'
@@ -2774,9 +2778,9 @@ static QCString removeIdsAndMarkers(const QCString &s)
     while (*q==' ' || *q=='\t') q++;
     bool found=false;
     size_t size = sizeof(int); // '(signed)' or '(unsigned)' is an int type
-    for (const auto &s : signs)
+    for (const auto &sgn : signs)
     {
-      if (qstrncmp(q,s.c_str(),s.length())==0) { q+=s.length(); found=true; }
+      if (qstrncmp(q,sgn.c_str(),sgn.length())==0) { q+=sgn.length(); found=true; }
     }
     if (!found || *q==' ' || *q=='\t' || *q==')') // continue searching
     {
