@@ -138,7 +138,7 @@ static void appStringLower(QCString& qcs,const char* text);
 static void codifyMapLines(yyscan_t yyscanner,const QCString &text);
 static void writeFuncProto(yyscan_t yyscanner);
 static void writeProcessProto(yyscan_t yyscanner);
-static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
+static int yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
 
 #if USE_STATE2STRING
 static const char *stateToString(int state);
@@ -921,7 +921,7 @@ XILINX      "INST"|"NET"|"PIN"|"BLKNM"|"BUFG"|"COLLAPSE"|"CPLD"|"COMPGRP"|"CONFI
 /*@ ----------------------------------------------------------------------------
  */
 
-static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size)
+static int yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yy_size_t inputPosition = yyextra->inputPosition;
@@ -933,7 +933,7 @@ static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size)
     c++;
   }
   yyextra->inputPosition += c;
-  return c;
+  return static_cast<int>(c);
 }
 
 static void setCurrentDoc(yyscan_t yyscanner,const QCString &anchor)

@@ -101,7 +101,7 @@ static const char *stateToString(int state);
 #endif
 
 
-static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
+static int yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
 static void handleHtmlTag(yyscan_t yyscanner,const char *text);
 static void processSection(yyscan_t yyscanner);
 
@@ -1536,14 +1536,14 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
 
 //--------------------------------------------------------------------------
 
-static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size)
+static int yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yy_size_t c=0;
   const char *p = yyextra->inputString + yyextra->inputPos;
   while ( c < max_size && *p ) { *buf++ = *p++; c++; }
   yyextra->inputPos+=c;
-  return c;
+  return static_cast<int>(c);
 }
 
 static void processSection(yyscan_t yyscanner)

@@ -647,24 +647,24 @@ static inline const char *getLexerFILE() {return __FILE__;}
 #define LEX_NO_REENTRANT
 #include "doxygen_lex.h"
 
-static yy_size_t yyread(char *buf,yy_size_t max_size)
+static int yyread(char *buf,yy_size_t max_size)
 {
   // no file included
   if (g_includeStack.empty())
   {
     yy_size_t c=0;
-    if (g_inputString==0) return c;
+    if (g_inputString==0) return static_cast<int>(c);
     while( c < max_size && g_inputString[g_inputPosition] )
     {
       *buf = g_inputString[g_inputPosition++] ;
       c++; buf++;
     }
-    return c;
+    return static_cast<int>(c);
   }
   else
   {
     //assert(g_includeStack.current()->newState==YY_CURRENT_BUFFER);
-    return static_cast<yy_size_t>(fread(buf,1,max_size,g_includeStack.back()->filePtr));
+    return static_cast<int>(fread(buf,1,max_size,g_includeStack.back()->filePtr));
   }
 }
 

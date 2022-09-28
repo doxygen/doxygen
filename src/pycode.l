@@ -147,7 +147,7 @@ static bool findMemberLink(yyscan_t yyscanner, CodeOutputInterface &ol,
 static void findMemberLink(yyscan_t yyscanner, CodeOutputInterface &ol,
                            const QCString &symName);
 static void adjustScopesAndSuites(yyscan_t yyscanner,unsigned indentLength);
-static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
+static int yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
 static inline void pop_state(yyscan_t yyscanner);
 
 #if 0 // TODO: call me to store local variables and get better syntax highlighting, see code.l
@@ -879,7 +879,7 @@ static void addVariable(yyscan_t yyscanner, QCString type, QCString name)
 
 //-------------------------------------------------------------------------------
 
-static yy_size_t yyread(yyscan_t yyscanner, char *buf,yy_size_t max_size)
+static int yyread(yyscan_t yyscanner, char *buf,yy_size_t max_size)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yy_size_t inputPosition = yyextra->inputPosition;
@@ -891,7 +891,7 @@ static yy_size_t yyread(yyscan_t yyscanner, char *buf,yy_size_t max_size)
     c++;
   }
   yyextra->inputPosition += c;
-  return c;
+  return static_cast<int>(c);
 }
 
 //-------------------------------------------------------------------------------

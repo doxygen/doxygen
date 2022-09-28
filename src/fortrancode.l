@@ -210,7 +210,7 @@ static void addUse(yyscan_t yyscanner,const QCString &moduleName);
 static void addLocalVar(yyscan_t yyscanner,const QCString &varName);
 static MemberDef *getFortranDefs(yyscan_t yyscanner,const QCString &memberName, const QCString &moduleName,
                                  const UseMap &useMap);
-static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
+static int yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
 static inline void pop_state(yyscan_t yyscanner);
 
 
@@ -850,7 +850,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
 /*@ ----------------------------------------------------------------------------
  */
 
-static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size)
+static int yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yy_size_t inputPosition = yyextra->inputPosition;
@@ -862,7 +862,7 @@ static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size)
     c++;
   }
   yyextra->inputPosition += c;
-  return c;
+  return static_cast<int>(c);
 }
 
 static void endFontClass(yyscan_t yyscanner)

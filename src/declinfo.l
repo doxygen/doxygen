@@ -79,7 +79,7 @@ static const char *stateToString(int state);
 
 static void addType(yyscan_t yyscanner);
 static void addTypeName(yyscan_t yyscanner);
-static yy_size_t yyread(char *buf,yy_size_t max_size, yyscan_t yyscanner);
+static int yyread(char *buf,yy_size_t max_size, yyscan_t yyscanner);
 
 /* -----------------------------------------------------------------
  */
@@ -295,7 +295,7 @@ static void addTypeName(yyscan_t yyscanner)
   yyextra->name.resize(0);
 }
 
-static yy_size_t yyread(char *buf,yy_size_t max_size, yyscan_t yyscanner)
+static int yyread(char *buf,yy_size_t max_size, yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yy_size_t c=0;
@@ -304,7 +304,7 @@ static yy_size_t yyread(char *buf,yy_size_t max_size, yyscan_t yyscanner)
     *buf = yyextra->inputString[yyextra->inputPosition++] ;
     c++; buf++;
   }
-  return c;
+  return static_cast<int>(c);
 }
 
 /*@ public interface------------------------------------------------------------
