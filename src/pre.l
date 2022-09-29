@@ -268,7 +268,7 @@ struct preYY_state
   int                lastCContext   = 0;
   int                lastCPPContext = 0;
   BufStr            *inputBuf       = 0;
-  yy_size_t          inputBufPos    = 0;
+  int                inputBufPos    = 0;
   BufStr            *outputBuf      = 0;
   int                roundCount     = 0;
   bool               quoteArg       = false;
@@ -339,7 +339,7 @@ static void      endCondSection(yyscan_t yyscanner);
 static void  addMacroDefinition(yyscan_t yyscanner);
 static void           addDefine(yyscan_t yyscanner);
 static void         setFileName(yyscan_t yyscanner,const QCString &name);
-static yy_size_t         yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
+static int               yyread(yyscan_t yyscanner,char *buf,int max_size);
 static Define *       isDefined(yyscan_t yyscanner,const QCString &name);
 
 /* ----------------------------------------------------------------- */
@@ -1855,11 +1855,11 @@ WSopt [ \t\r]*
 
 /////////////////////////////////////////////////////////////////////////////////////
 
-static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size)
+static int yyread(yyscan_t yyscanner,char *buf,int max_size)
 {
   YY_EXTRA_TYPE state = preYYget_extra(yyscanner);
-  yy_size_t bytesInBuf = state->inputBuf->curPos()-state->inputBufPos;
-  yy_size_t bytesToCopy = std::min(max_size,bytesInBuf);
+  int bytesInBuf = static_cast<int>(state->inputBuf->curPos())-state->inputBufPos;
+  int bytesToCopy = std::min(max_size,bytesInBuf);
   memcpy(buf,state->inputBuf->data()+state->inputBufPos,bytesToCopy);
   state->inputBufPos+=bytesToCopy;
   return bytesToCopy;

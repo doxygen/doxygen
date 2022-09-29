@@ -234,7 +234,7 @@ static bool checkForKnRstyleC(yyscan_t yyscanner);
 static void splitKnRArg(yyscan_t yyscanner,QCString &oldStyleArgPtr,QCString &oldStyleArgName);
 static void addKnRArgInfo(yyscan_t yyscanner,const QCString &type,const QCString &name,
                           const QCString &brief,const QCString &docs);
-static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
+static int yyread(yyscan_t yyscanner,char *buf,int max_size);
 
 /* ----------------------------------------------------------------- */
 #undef  YY_INPUT
@@ -7104,10 +7104,10 @@ NONLopt [^\n]*
 %%
 
 //----------------------------------------------------------------------------
-static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size)
+static int yyread(yyscan_t yyscanner,char *buf,int max_size)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yy_size_t c=0;
+  int c=0;
   while( c < max_size && yyextra->inputString[yyextra->inputPosition] )
   {
     *buf = yyextra->inputString[yyextra->inputPosition++] ;

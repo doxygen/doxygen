@@ -217,7 +217,7 @@ static QCString extractFromParens(const QCString &name);
 static QCString extractBind(const QCString &name);
 
 
-static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
+static int yyread(yyscan_t yyscanner,char *buf,int max_size);
 static void startCommentBlock(yyscan_t yyscanner,bool);
 static void handleCommentBlock(yyscan_t yyscanner,const QCString &doc,bool brief);
 static void subrHandleCommentBlock(yyscan_t yyscanner,const QCString &doc,bool brief);
@@ -2410,10 +2410,10 @@ static bool endScope(yyscan_t yyscanner,Entry *scope, bool isGlobalRoot)
   return TRUE;
 }
 
-static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size)
+static int yyread(yyscan_t yyscanner,char *buf,int max_size)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yy_size_t c=0;
+  int c=0;
   while ( c < max_size && yyextra->inputString[yyextra->inputPosition] )
   {
     *buf = yyextra->inputString[yyextra->inputPosition++] ;

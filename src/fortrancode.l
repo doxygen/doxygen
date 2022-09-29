@@ -136,7 +136,7 @@ struct fortrancodeYY_state
   CodeOutputInterface * code = 0;
 
   const char *  inputString = 0;     //!< the code fragment as text
-  yy_size_t     inputPosition = 0;   //!< read offset during parsing
+  int           inputPosition = 0;   //!< read offset during parsing
   int           inputLines = 0;      //!< number of line in the code fragment
   QCString      fileName;
   int           yyLineNr = 0;        //!< current line number
@@ -210,7 +210,7 @@ static void addUse(yyscan_t yyscanner,const QCString &moduleName);
 static void addLocalVar(yyscan_t yyscanner,const QCString &varName);
 static MemberDef *getFortranDefs(yyscan_t yyscanner,const QCString &memberName, const QCString &moduleName,
                                  const UseMap &useMap);
-static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
+static int yyread(yyscan_t yyscanner,char *buf,int max_size);
 static inline void pop_state(yyscan_t yyscanner);
 
 
@@ -850,12 +850,12 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
 /*@ ----------------------------------------------------------------------------
  */
 
-static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size)
+static int yyread(yyscan_t yyscanner,char *buf,int max_size)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yy_size_t inputPosition = yyextra->inputPosition;
+  int inputPosition = yyextra->inputPosition;
   const char *s = yyextra->inputString + inputPosition;
-  yy_size_t c=0;
+  int c=0;
   while( c < max_size && *s)
   {
     *buf++ = *s++;

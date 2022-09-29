@@ -77,7 +77,7 @@ struct pycodeYY_state
 
   CodeOutputInterface * code = 0;
   const char *  inputString = 0;     //!< the code fragment as text
-  yy_size_t     inputPosition = 0;   //!< read offset during parsing
+  int           inputPosition = 0;   //!< read offset during parsing
   QCString      fileName;
   const char *  currentFontClass = 0;
   bool          insideCodeLine = FALSE;
@@ -147,7 +147,7 @@ static bool findMemberLink(yyscan_t yyscanner, CodeOutputInterface &ol,
 static void findMemberLink(yyscan_t yyscanner, CodeOutputInterface &ol,
                            const QCString &symName);
 static void adjustScopesAndSuites(yyscan_t yyscanner,unsigned indentLength);
-static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
+static int yyread(yyscan_t yyscanner,char *buf,int max_size);
 static inline void pop_state(yyscan_t yyscanner);
 
 #if 0 // TODO: call me to store local variables and get better syntax highlighting, see code.l
@@ -879,12 +879,12 @@ static void addVariable(yyscan_t yyscanner, QCString type, QCString name)
 
 //-------------------------------------------------------------------------------
 
-static yy_size_t yyread(yyscan_t yyscanner, char *buf,yy_size_t max_size)
+static int yyread(yyscan_t yyscanner, char *buf,int max_size)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yy_size_t inputPosition = yyextra->inputPosition;
+  int inputPosition = yyextra->inputPosition;
   const char *s = yyextra->inputString + inputPosition;
-  yy_size_t c=0;
+  int c=0;
   while( c < max_size && *s )
   {
     *buf++ = *s++;
