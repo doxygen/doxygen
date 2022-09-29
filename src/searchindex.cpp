@@ -232,7 +232,7 @@ void SearchIndex::addWord(const QCString &word,bool hiPriority)
 
 static void writeInt(std::ostream &f,size_t index)
 {
-  f.put(static_cast<int>(index>>24));
+  f.put(static_cast<int>((index>>24)&0xff));
   f.put(static_cast<int>((index>>16)&0xff));
   f.put(static_cast<int>((index>>8)&0xff));
   f.put(static_cast<int>(index&0xff));
