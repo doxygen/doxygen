@@ -93,7 +93,7 @@ struct FileState
   int curlyCount = 0;
   BufStr fileBuf;
   BufStr *oldFileBuf = 0;
-  yy_size_t oldFileBufPos = 0;
+  int oldFileBufPos = 0;
   YY_BUFFER_STATE bufState = 0;
   QCString fileName;
 };

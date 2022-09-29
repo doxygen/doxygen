@@ -42,7 +42,7 @@ struct xmlYY_state
   std::string   fileName;
   int           lineNr = 1;
   const char *  inputString = 0;     //!< the code fragment as text
-  yy_size_t     inputPosition = 0;   //!< read offset during parsing
+  int           inputPosition = 0;   //!< read offset during parsing
   std::string   name;
   bool          isEnd = false;
   bool          selfClose = false;
@@ -61,7 +61,7 @@ struct xmlYY_state
 static const char *stateToString(int state);
 #endif
 
-static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
+static int yyread(yyscan_t yyscanner,char *buf,int max_size);
 static void initElement(yyscan_t yyscanner);
 static void addCharacters(yyscan_t yyscanner);
 static void addElement(yyscan_t yyscanner);
@@ -218,12 +218,12 @@ ENDCDATA        "]]>"
 
 //----------------------------------------------------------------------------------------
 
-static yy_size_t yyread(yyscan_t yyscanner,char *buf,size_t max_size)
+static int yyread(yyscan_t yyscanner,char *buf,int max_size)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yy_size_t inputPosition = yyextra->inputPosition;
+  int inputPosition = yyextra->inputPosition;
   const char *s = yyextra->inputString + inputPosition;
-  yy_size_t c=0;
+  int c=0;
   while( c < max_size && *s)
   {
     *buf++ = *s++;

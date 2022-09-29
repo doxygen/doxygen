@@ -1929,7 +1929,7 @@ static void parsePrototype(yyscan_t yyscanner,const QCString &text)
   yyextra->packageCommentAllowed = FALSE;
 
   const char *orgInputString;
-  yy_size_t orgInputPosition;
+  int orgInputPosition;
   YY_BUFFER_STATE orgState;
 
   // save scanner state
