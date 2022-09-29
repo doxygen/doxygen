@@ -49,6 +49,8 @@ class DiagramItem
     void move(int dx,int dy) { m_x=static_cast<uint>(m_x+dx); m_y=static_cast<uint>(m_y+dy); }
     uint xPos() const { return m_x; }
     uint yPos() const { return m_y; }
+    float xfPos() const { return static_cast<float>(m_x); }
+    float yfPos() const { return static_cast<float>(m_y); }
     uint avgChildPos() const;
     uint numChildren() const;
     void addChild(DiagramItem *di);
@@ -525,7 +527,7 @@ void TreeDiagram::computeExtremes(uint *maxLabelLen,uint *maxXPos)
     for (const auto &di : *dr) // for each item in a row
     {
       if (di->isInList()) done=TRUE;
-      if (maxXPos) mx=std::max(mx,static_cast<uint>(di->xPos()));
+      if (maxXPos) mx=std::max(mx,di->xPos());
       if (maxLabelLen) ml=std::max(ml,Image::stringLength(di->label()));
     }
     if (done) break;
@@ -626,14 +628,14 @@ void TreeDiagram::drawBoxes(TextStream &t,Image *image,
           }
           else
           {
-            xf = di->xPos()/static_cast<float>(gridWidth);
+            xf = di->xfPos()/gridWidth;
             if (doBase)
             {
-              yf = di->yPos()/static_cast<float>(gridHeight)+superRows-1;
+              yf = di->yfPos()/gridHeight+static_cast<float>(superRows)-1;
             }
             else
             {
-              yf = superRows-1-di->yPos()/static_cast<float>(gridHeight);
+              yf = static_cast<float>(superRows)-1-di->yfPos()/gridHeight;
             }
           }
         }
@@ -682,14 +684,14 @@ void TreeDiagram::drawBoxes(TextStream &t,Image *image,
         }
         else
         {
-          xf=di->xPos()/static_cast<float>(gridWidth);
+          xf=di->xfPos()/gridWidth;
           if (doBase)
           {
-            yf = di->yPos()/static_cast<float>(gridHeight)+superRows-1;
+            yf = di->yfPos()/gridHeight+static_cast<float>(superRows)-1;
           }
           else
           {
-            yf = superRows-1-di->yPos()/static_cast<float>(gridHeight);
+            yf = static_cast<float>(superRows)-1-di->yfPos()/gridHeight;
           }
           writeVectorBox(t,di.get(),xf,yf);
         }
@@ -750,13 +752,13 @@ void TreeDiagram::drawConnectors(TextStream &t,Image *image,
             t << protToString(di->protection()) << "\n";
             if (doBase)
             {
-              t << "1 " << (di->xPos()/static_cast<float>(gridWidth)) << " "
-                << (di->yPos()/static_cast<float>(gridHeight)+superRows-1) << " in\n";
+              t << "1 " << (di->xfPos()/gridWidth) << " "
+                << (di->yfPos()/gridHeight+static_cast<float>(superRows)-1) << " in\n";
             }
             else
             {
-              t << "0 " << (di->xPos()/static_cast<float>(gridWidth)) << " "
-                << (static_cast<float>(superRows)-0.25f-di->yPos()/static_cast<float>(gridHeight))
+              t << "0 " << (di->xfPos()/gridWidth) << " "
+                << (static_cast<float>(superRows)-0.25f-di->yfPos()/gridHeight)
                 << " in\n";
             }
           }
@@ -783,15 +785,15 @@ void TreeDiagram::drawConnectors(TextStream &t,Image *image,
           }
           else
           {
-            xf = di->parentItem()->xPos()/static_cast<float>(gridWidth);
+            xf = di->parentItem()->xfPos()/gridWidth;
             if (doBase)
             {
-              ysf = di->yPos()/static_cast<float>(gridHeight)+superRows-1;
+              ysf = di->yfPos()/gridHeight+static_cast<float>(superRows)-1;
               yf = ysf + 0.5f;
             }
             else
             {
-              ysf = static_cast<float>(superRows)-0.25f-di->yPos()/static_cast<float>(gridHeight);
+              ysf = static_cast<float>(superRows)-0.25f-di->yfPos()/gridHeight;
               yf = ysf - 0.25f;
             }
           }
@@ -917,13 +919,13 @@ void TreeDiagram::drawConnectors(TextStream &t,Image *image,
             t << protToString(di->protection()) << "\n";
             if (doBase)
             {
-              t << "1 " << di->xPos()/static_cast<float>(gridWidth) << " "
-                << (di->yPos()/static_cast<float>(gridHeight)+superRows-1) << " in\n";
+              t << "1 " << di->xfPos()/gridWidth << " "
+                << (di->yfPos()/gridHeight+static_cast<float>(superRows)-1) << " in\n";
             }
             else
             {
-              t << "0 " << di->xPos()/static_cast<float>(gridWidth) << " "
-                << (static_cast<float>(superRows)-0.25f-di->yPos()/static_cast<float>(gridHeight))
+              t << "0 " << di->xfPos()/gridWidth << " "
+                << (static_cast<float>(superRows)-0.25f-di->yfPos()/gridHeight)
                 << " in\n";
             }
           }
@@ -957,13 +959,13 @@ void TreeDiagram::drawConnectors(TextStream &t,Image *image,
             t << protToString(p) << "\n";
             if (doBase)
             {
-              t << "0 " << di->xPos()/static_cast<float>(gridWidth)  << " "
-                << (di->yPos()/static_cast<float>(gridHeight)+superRows-1) << " out\n";
+              t << "0 " << di->xfPos()/gridWidth  << " "
+                << (di->yfPos()/gridHeight+static_cast<float>(superRows)-1) << " out\n";
             }
             else
             {
-              t << "1 " << di->xPos()/static_cast<float>(gridWidth)  << " "
-                << (static_cast<float>(superRows)-1.75f-di->yPos()/static_cast<float>(gridHeight))
+              t << "1 " << di->xfPos()/gridWidth  << " "
+                << (static_cast<float>(superRows)-1.75f-di->yfPos()/gridHeight)
                 << " out\n";
             }
           }
@@ -992,16 +994,16 @@ void TreeDiagram::drawConnectors(TextStream &t,Image *image,
               t << protToString(p) << "\n";
               if (doBase)
               {
-                t << first->xPos()/static_cast<float>(gridWidth) << " "
-                  << last->xPos()/static_cast<float>(gridWidth) << " "
-                  << (first->yPos()/static_cast<float>(gridHeight)+superRows-1)
+                t << first->xfPos()/gridWidth << " "
+                  << last->xfPos()/gridWidth << " "
+                  << (first->yfPos()/gridHeight+static_cast<float>(superRows)-1)
                   << " conn\n";
               }
               else
               {
-                t << first->xPos()/static_cast<float>(gridWidth) << " "
-                  << last->xPos()/static_cast<float>(gridWidth) << " "
-                  << (static_cast<float>(superRows)-first->yPos()/static_cast<float>(gridHeight))
+                t << first->xfPos()/gridWidth << " "
+                  << last->xfPos()/gridWidth << " "
+                  << (static_cast<float>(superRows)-first->yfPos()/gridHeight)
                   << " conn\n";
               }
             }
@@ -1071,7 +1073,7 @@ void ClassDiagram::writeFigure(TextStream &output,const QCString &path,
 
   // compute the image height in centimeters based on the estimates
   float realHeight = static_cast<float>(std::min(rows,12u)); // real height in cm
-  float realWidth  = realHeight * estWidth/static_cast<float>(estHeight);
+  float realWidth  = realHeight * static_cast<float>(estWidth)/static_cast<float>(estHeight);
   if (realWidth>pageWidth) // assume that the page width is about 15 cm
   {
     realHeight*=pageWidth/realWidth;
@@ -1110,7 +1112,7 @@ void ClassDiagram::writeFigure(TextStream &output,const QCString &path,
     t << "%%For: \n";
     t << "%Magnification: 1.00\n";
     t << "%%Orientation: Portrait\n";
-    t << "%%BoundingBox: 0 0 500 " << estHeight*500.0f/static_cast<float>(estWidth) << "\n";
+    t << "%%BoundingBox: 0 0 500 " << static_cast<float>(estHeight)*500.0f/static_cast<float>(estWidth) << "\n";
     t << "%%Pages: 0\n";
     t << "%%BeginSetup\n";
     t << "%%EndSetup\n";
@@ -1124,7 +1126,7 @@ void ClassDiagram::writeFigure(TextStream &output,const QCString &path,
     t << "/marginwidth 10 def\n";
     t << "/distx 20 def\n";
     t << "/disty 40 def\n";
-    t << "/boundaspect " << estWidth/static_cast<float>(estHeight) << " def  % aspect ratio of the BoundingBox (width/height)\n";
+    t << "/boundaspect " << static_cast<float>(estWidth)/static_cast<float>(estHeight) << " def  % aspect ratio of the BoundingBox (width/height)\n";
     t << "/boundx 500 def\n";
     t << "/boundy boundx boundaspect div def\n";
     t << "/xspacing 0 def\n";

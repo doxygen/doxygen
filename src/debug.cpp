@@ -121,7 +121,8 @@ class Timer
     }
     double elapsedTimeS()
     {
-      return (std::chrono::duration_cast<
+      return static_cast<double>(
+              std::chrono::duration_cast<
                   std::chrono::microseconds>(
                   std::chrono::steady_clock::now() - m_startTime).count()) / 1000000.0;
     }
