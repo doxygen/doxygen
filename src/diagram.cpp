@@ -582,6 +582,7 @@ void TreeDiagram::drawBoxes(TextStream &t,Image *image,
   if (it!=m_rows.end() && !doBase) ++it;
   bool firstRow = doBase;
   bool done=FALSE;
+  float superRowsF = static_cast<float>(superRows);
   for (;it!=m_rows.end() && !done;++it) // for each row
   {
     const auto &dr = *it;
@@ -631,11 +632,11 @@ void TreeDiagram::drawBoxes(TextStream &t,Image *image,
             xf = di->xfPos()/gridWidth;
             if (doBase)
             {
-              yf = di->yfPos()/gridHeight+static_cast<float>(superRows)-1;
+              yf = di->yfPos()/gridHeight+superRowsF-1.0f;
             }
             else
             {
-              yf = static_cast<float>(superRows)-1-di->yfPos()/gridHeight;
+              yf = superRowsF-1.0f-di->yfPos()/gridHeight;
             }
           }
         }
@@ -687,11 +688,11 @@ void TreeDiagram::drawBoxes(TextStream &t,Image *image,
           xf=di->xfPos()/gridWidth;
           if (doBase)
           {
-            yf = di->yfPos()/gridHeight+static_cast<float>(superRows)-1;
+            yf = di->yfPos()/gridHeight+superRowsF-1.0f;
           }
           else
           {
-            yf = static_cast<float>(superRows)-1-di->yfPos()/gridHeight;
+            yf = superRowsF-1.0f-di->yfPos()/gridHeight;
           }
           writeVectorBox(t,di.get(),xf,yf);
         }
@@ -708,6 +709,7 @@ void TreeDiagram::drawConnectors(TextStream &t,Image *image,
 {
   bool done=FALSE;
   auto it = m_rows.begin();
+  float superRowsF = static_cast<float>(superRows);
   for (;it!=m_rows.end() && !done;++it) // for each row
   {
     const auto &dr = *it;
@@ -753,12 +755,12 @@ void TreeDiagram::drawConnectors(TextStream &t,Image *image,
             if (doBase)
             {
               t << "1 " << (di->xfPos()/gridWidth) << " "
-                << (di->yfPos()/gridHeight+static_cast<float>(superRows)-1) << " in\n";
+                << (di->yfPos()/gridHeight+superRowsF-1.0f) << " in\n";
             }
             else
             {
               t << "0 " << (di->xfPos()/gridWidth) << " "
-                << (static_cast<float>(superRows)-0.25f-di->yfPos()/gridHeight)
+                << (superRowsF-0.25f-di->yfPos()/gridHeight)
                 << " in\n";
             }
           }
@@ -788,12 +790,12 @@ void TreeDiagram::drawConnectors(TextStream &t,Image *image,
             xf = di->parentItem()->xfPos()/gridWidth;
             if (doBase)
             {
-              ysf = di->yfPos()/gridHeight+static_cast<float>(superRows)-1;
+              ysf = di->yfPos()/gridHeight+superRowsF-1.0f;
               yf = ysf + 0.5f;
             }
             else
             {
-              ysf = static_cast<float>(superRows)-0.25f-di->yfPos()/gridHeight;
+              ysf = superRowsF-0.25f-di->yfPos()/gridHeight;
               yf = ysf - 0.25f;
             }
           }
@@ -920,12 +922,12 @@ void TreeDiagram::drawConnectors(TextStream &t,Image *image,
             if (doBase)
             {
               t << "1 " << di->xfPos()/gridWidth << " "
-                << (di->yfPos()/gridHeight+static_cast<float>(superRows)-1) << " in\n";
+                << (di->yfPos()/gridHeight+superRowsF-1.0f) << " in\n";
             }
             else
             {
               t << "0 " << di->xfPos()/gridWidth << " "
-                << (static_cast<float>(superRows)-0.25f-di->yfPos()/gridHeight)
+                << (superRowsF-0.25f-di->yfPos()/gridHeight)
                 << " in\n";
             }
           }
@@ -960,12 +962,12 @@ void TreeDiagram::drawConnectors(TextStream &t,Image *image,
             if (doBase)
             {
               t << "0 " << di->xfPos()/gridWidth  << " "
-                << (di->yfPos()/gridHeight+static_cast<float>(superRows)-1) << " out\n";
+                << (di->yfPos()/gridHeight+superRowsF-1.0f) << " out\n";
             }
             else
             {
               t << "1 " << di->xfPos()/gridWidth  << " "
-                << (static_cast<float>(superRows)-1.75f-di->yfPos()/gridHeight)
+                << (superRowsF-1.75f-di->yfPos()/gridHeight)
                 << " out\n";
             }
           }
@@ -996,14 +998,14 @@ void TreeDiagram::drawConnectors(TextStream &t,Image *image,
               {
                 t << first->xfPos()/gridWidth << " "
                   << last->xfPos()/gridWidth << " "
-                  << (first->yfPos()/gridHeight+static_cast<float>(superRows)-1)
+                  << (first->yfPos()/gridHeight+superRowsF-1.0f)
                   << " conn\n";
               }
               else
               {
                 t << first->xfPos()/gridWidth << " "
                   << last->xfPos()/gridWidth << " "
-                  << (static_cast<float>(superRows)-first->yfPos()/gridHeight)
+                  << (superRowsF-first->yfPos()/gridHeight)
                   << " conn\n";
               }
             }
@@ -1036,13 +1038,15 @@ ClassDiagram::ClassDiagram(const ClassDef *root) : p(std::make_unique<Private>(r
   uint xsuper = superItem->xPos();
   if (xbase>xsuper)
   {
-    superItem->move(static_cast<int>(xbase-xsuper),0);
-    p->super.moveChildren(superItem,static_cast<int>(xbase-xsuper));
+    int dist=static_cast<int>(xbase-xsuper);
+    superItem->move(dist,0);
+    p->super.moveChildren(superItem,dist);
   }
   else if (xbase<xsuper)
   {
-    baseItem->move(static_cast<int>(xsuper-xbase),0);
-    p->base.moveChildren(baseItem,static_cast<int>(xsuper-xbase));
+    int dist=static_cast<int>(xsuper-xbase);
+    baseItem->move(dist,0);
+    p->base.moveChildren(baseItem,dist);
   }
 }
 
@@ -1063,8 +1067,8 @@ void ClassDiagram::writeFigure(TextStream &output,const QCString &path,
   uint cols=(std::max(baseMaxX,superMaxX)+gridWidth*2-1)/gridWidth;
 
   // Estimate the image aspect width and height in pixels.
-  uint estHeight = rows*40;
-  uint estWidth  = cols*(20+std::max(baseMaxLabelWidth,superMaxLabelWidth));
+  float estHeight = rows*40.0f;
+  float estWidth  = cols*(20.0f+std::max(baseMaxLabelWidth,superMaxLabelWidth));
   //printf("Estimated size %d x %d\n",estWidth,estHeight);
 
   const float pageWidth = 14.0f; // estimated page width in cm.
@@ -1073,7 +1077,7 @@ void ClassDiagram::writeFigure(TextStream &output,const QCString &path,
 
   // compute the image height in centimeters based on the estimates
   float realHeight = static_cast<float>(std::min(rows,12u)); // real height in cm
-  float realWidth  = realHeight * static_cast<float>(estWidth)/static_cast<float>(estHeight);
+  float realWidth  = realHeight * estWidth/estHeight;
   if (realWidth>pageWidth) // assume that the page width is about 15 cm
   {
     realHeight*=pageWidth/realWidth;
@@ -1112,7 +1116,7 @@ void ClassDiagram::writeFigure(TextStream &output,const QCString &path,
     t << "%%For: \n";
     t << "%Magnification: 1.00\n";
     t << "%%Orientation: Portrait\n";
-    t << "%%BoundingBox: 0 0 500 " << static_cast<float>(estHeight)*500.0f/static_cast<float>(estWidth) << "\n";
+    t << "%%BoundingBox: 0 0 500 " << estHeight*500.0f/estWidth << "\n";
     t << "%%Pages: 0\n";
     t << "%%BeginSetup\n";
     t << "%%EndSetup\n";
@@ -1126,7 +1130,7 @@ void ClassDiagram::writeFigure(TextStream &output,const QCString &path,
     t << "/marginwidth 10 def\n";
     t << "/distx 20 def\n";
     t << "/disty 40 def\n";
-    t << "/boundaspect " << static_cast<float>(estWidth)/static_cast<float>(estHeight) << " def  % aspect ratio of the BoundingBox (width/height)\n";
+    t << "/boundaspect " << estWidth/estHeight << " def  % aspect ratio of the BoundingBox (width/height)\n";
     t << "/boundx 500 def\n";
     t << "/boundy boundx boundaspect div def\n";
     t << "/xspacing 0 def\n";
