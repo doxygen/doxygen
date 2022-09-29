@@ -461,7 +461,7 @@ static inline void addOutput(yyscan_t yyscanner,const QCString &s);
 static inline void addOutput(yyscan_t yyscanner,char c);
 static void endBrief(yyscan_t yyscanner,bool addToOutput=TRUE);
 static void handleGuard(yyscan_t yyscanner,const QCString &expr);
-static int yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
+static int yyread(yyscan_t yyscanner,char *buf,int max_size);
 static void addCite(yyscan_t yyscanner);
 static void addIline(yyscan_t yyscanner,int lineNr);
 static void addIlineBreak(yyscan_t yyscanner,int lineNr);
@@ -3589,18 +3589,18 @@ static void endBrief(yyscan_t yyscanner,bool addToOutput)
   }
 }
 
-static int yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size)
+static int yyread(yyscan_t yyscanner,char *buf,int max_size)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yyextra->prevPosition=yyextra->inputPosition;
-  yy_size_t c=0;
+  int c=0;
   while( c < max_size && yyextra->inputString[yyextra->inputPosition] )
   {
     *buf = yyextra->inputString[yyextra->inputPosition++] ;
     //printf("%d (%c)\n",*buf,*buf);
     c++; buf++;
   }
-  return static_cast<int>(c);
+  return c;
 }
 
 //----------------------------------------------------------------------------

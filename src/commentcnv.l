@@ -72,7 +72,7 @@ struct commentcnvYY_state
 {
   BufStr * inBuf = 0;
   BufStr * outBuf = 0;
-  yy_size_t inBufPos = 0;
+  int      inBufPos = 0;
   int      col = 0;
   int      blockHeadCol = 0;
   bool     mlBrief = FALSE;
@@ -116,7 +116,7 @@ static void startCondSection(yyscan_t yyscanner,const QCString &sectId);
 static void endCondSection(yyscan_t yyscanner);
 static void handleCondSectionId(yyscan_t yyscanner,const char *expression);
 static void replaceAliases(yyscan_t yyscanner,const QCString &s);
-static int yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
+static int yyread(yyscan_t yyscanner,char *buf,int max_size);
 static void replaceComment(yyscan_t yyscanner,int offset);
 static void clearCommentStack(yyscan_t yyscanner);
 
@@ -1150,14 +1150,14 @@ static void replaceAliases(yyscan_t yyscanner,const QCString &s)
 }
 
 
-static int yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size)
+static int yyread(yyscan_t yyscanner,char *buf,int max_size)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yy_size_t bytesInBuf = yyextra->inBuf->curPos()-yyextra->inBufPos;
-  yy_size_t bytesToCopy = std::min(max_size,bytesInBuf);
+  int bytesInBuf = static_cast<int>(yyextra->inBuf->curPos())-yyextra->inBufPos;
+  int bytesToCopy = std::min(max_size,bytesInBuf);
   memcpy(buf,yyextra->inBuf->data()+yyextra->inBufPos,bytesToCopy);
   yyextra->inBufPos+=bytesToCopy;
-  return static_cast<int>(bytesToCopy);
+  return bytesToCopy;
 }
 
 static void replaceComment(yyscan_t yyscanner,int offset)

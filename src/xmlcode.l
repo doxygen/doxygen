@@ -62,7 +62,7 @@ struct xmlcodeYY_state
   QCString      parmType;
   QCString      parmName;
   const char *  inputString = 0;     //!< the code fragment as text
-  yy_size_t     inputPosition = 0;   //!< read offset during parsing
+  int           inputPosition = 0;   //!< read offset during parsing
   QCString      fileName;
   int           inputLines = 0;      //!< number of line in the code fragment
   int           yyLineNr = 0;        //!< current line number
@@ -100,7 +100,7 @@ static void nextCodeLine(yyscan_t yyscanner);
 static void codifyLines(yyscan_t yyscanner,const char *text);
 static void startFontClass(yyscan_t yyscanner,const char *s);
 static int  countLines(yyscan_t yyscanner);
-static int yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
+static int yyread(yyscan_t yyscanner,char *buf,int max_size);
 
 #undef YY_INPUT
 #define YY_INPUT(buf,result,max_size) result=yyread(yyscanner,buf,max_size);
@@ -204,19 +204,19 @@ string      \"([^"&]|{esc})*\"|\'([^'&]|{esc})*\'
 
 //----------------------------------------------------------------------------------------
 
-static int yyread(yyscan_t yyscanner,char *buf,size_t max_size)
+static int yyread(yyscan_t yyscanner,char *buf,int max_size)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yy_size_t inputPosition = yyextra->inputPosition;
+  int inputPosition = yyextra->inputPosition;
   const char *s = yyextra->inputString + inputPosition;
-  yy_size_t c=0;
+  int c=0;
   while( c < max_size && *s)
   {
     *buf++ = *s++;
     c++;
   }
   yyextra->inputPosition += c;
-  return static_cast<int>(c);
+  return c;
 }
 
 static void codify(yyscan_t yyscanner,const char* text)

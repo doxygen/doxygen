@@ -49,7 +49,7 @@ struct lexcodeYY_state
      CodeOutputInterface * code;
      CCodeParser ccodeParser;
      const char   *inputString;     //!< the code fragment as text
-     yy_size_t     inputPosition;   //!< read offset during parsing
+     int           inputPosition;   //!< read offset during parsing
      int           inputLines;      //!< number of line in the code fragment
      QCString      fileName;
      int           yyLineNr;        //!< current line number
@@ -100,7 +100,7 @@ static void nextCodeLine(yyscan_t yyscanner);
 static void codifyLines(yyscan_t yyscanner,const QCString &text);
 static void startFontClass(yyscan_t yyscanner,const char *s);
 static int countLines(yyscan_t yyscanner);
-static int yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
+static int yyread(yyscan_t yyscanner,char *buf,int max_size);
 static void lineCount(yyscan_t yyscanner);
 static void handleCCode(yyscan_t yyscanner);
 
@@ -1110,19 +1110,19 @@ static int countLines(yyscan_t yyscanner)
   return count;
 }
 
-static int yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size)
+static int yyread(yyscan_t yyscanner,char *buf,int max_size)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yy_size_t inputPosition = yyextra->inputPosition;
+  int inputPosition = yyextra->inputPosition;
   const char *s = yyextra->inputString + inputPosition;
-  yy_size_t c=0;
+  int c=0;
   while( c < max_size && *s )
   {
     *buf++ = *s++;
     c++;
   }
   yyextra->inputPosition += c;
-  return static_cast<int>(c);
+  return c;
 }
 
 static void lineCount(yyscan_t yyscanner)

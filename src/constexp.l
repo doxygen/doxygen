@@ -42,7 +42,7 @@
 static const char *stateToString(int state);
 #endif
 
-static int yyread(char *buf,yy_size_t max_size,yyscan_t yyscanner);
+static int yyread(char *buf,int max_size,yyscan_t yyscanner);
 
 #undef  YY_INPUT
 #define YY_INPUT(buf,result,max_size) result=yyread(buf,max_size,yyscanner);
@@ -110,16 +110,16 @@ CONSTSUFFIX ([uU][lL]?[lL]?)|([lL][lL]?[uU]?)
 
 %%
 
-static int yyread(char *buf,yy_size_t max_size,yyscan_t yyscanner)
+static int yyread(char *buf,int max_size,yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = static_cast<struct yyguts_t*>(yyscanner);
-  yy_size_t c=0;
+  int c=0;
   while( c < max_size && yyextra->inputString[yyextra->inputPosition] )
   {
     *buf = yyextra->inputString[yyextra->inputPosition++] ;
     c++; buf++;
   }
-  return static_cast<int>(c);
+  return c;
 }
 
 struct ConstExpressionParser::Private

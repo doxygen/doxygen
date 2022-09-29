@@ -252,7 +252,7 @@ static QCString escapeObject(yyscan_t yyscanner,const char *s);
 static QCString escapeWord(yyscan_t yyscanner,const char *s);
 static QCString escapeComment(yyscan_t yyscanner,const char *s);
 static bool skipLanguageSpecificKeyword(yyscan_t yyscanner,const char *kw);
-static int yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
+static int yyread(yyscan_t yyscanner,char *buf,int max_size);
 static void addVariable(yyscan_t yyscanner,QCString type,QCString name);
 static bool startsWithKeyword(const QCString &str,const QCString &kw);
 
@@ -3839,19 +3839,19 @@ static bool isCastKeyword(const char *keyword)
   return kw=="const_cast" || kw=="static_cast" || kw=="dynamic_cast" || kw=="reinterpret_cast";
 }
 
-static int yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size)
+static int yyread(yyscan_t yyscanner,char *buf,int max_size)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yy_size_t inputPosition = yyextra->inputPosition;
   const char *s = yyextra->inputString + inputPosition;
-  yy_size_t c=0;
+  int c=0;
   while( c < max_size && *s )
   {
     *buf++ = *s++;
     c++;
   }
   yyextra->inputPosition += c;
-  return static_cast<int>(c);
+  return c;
 }
 
 
