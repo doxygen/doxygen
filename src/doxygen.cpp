@@ -221,8 +221,8 @@ class Statistics
     void end()
     {
       std::chrono::steady_clock::time_point endTime = std::chrono::steady_clock::now();
-      stats.back().elapsed = std::chrono::duration_cast<
-                                std::chrono::microseconds>(endTime - startTime).count()/1000000.0;
+      stats.back().elapsed = static_cast<double>(std::chrono::duration_cast<
+                                std::chrono::microseconds>(endTime - startTime).count())/1000000.0;
     }
     void print()
     {
