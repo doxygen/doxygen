@@ -1067,8 +1067,8 @@ void ClassDiagram::writeFigure(TextStream &output,const QCString &path,
   uint cols=(std::max(baseMaxX,superMaxX)+gridWidth*2-1)/gridWidth;
 
   // Estimate the image aspect width and height in pixels.
-  float estHeight = rows*40.0f;
-  float estWidth  = cols*(20.0f+std::max(baseMaxLabelWidth,superMaxLabelWidth));
+  float estHeight = static_cast<float>(rows)*40.0f;
+  float estWidth  = static_cast<float>(cols)*(20+static_cast<float>(std::max(baseMaxLabelWidth,superMaxLabelWidth)));
   //printf("Estimated size %d x %d\n",estWidth,estHeight);
 
   const float pageWidth = 14.0f; // estimated page width in cm.
