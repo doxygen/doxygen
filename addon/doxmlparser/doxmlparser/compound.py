@@ -1351,7 +1351,7 @@ class compounddefType(GeneratedsSuper):
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
     superclass = None
-    def __init__(self, id=None, kind=None, language=None, prot=None, final=None, inline=None, sealed=None, abstract=None, compoundname=None, title=None, basecompoundref=None, derivedcompoundref=None, includes=None, includedby=None, incdepgraph=None, invincdepgraph=None, innerdir=None, innerfile=None, innerclass=None, innernamespace=None, innerpage=None, innergroup=None, templateparamlist=None, sectiondef=None, tableofcontents=None, requiresclause=None, initializer=None, briefdescription=None, detaileddescription=None, inheritancegraph=None, collaborationgraph=None, programlisting=None, location=None, listofallmembers=None, gds_collector_=None, **kwargs_):
+    def __init__(self, id=None, kind=None, language=None, prot=None, final=None, inline=None, sealed=None, abstract=None, compoundname=None, title=None, basecompoundref=None, derivedcompoundref=None, includes=None, includedby=None, incdepgraph=None, invincdepgraph=None, innerdir=None, innerfile=None, innerclass=None, innerconcept=None, innernamespace=None, innerpage=None, innergroup=None, templateparamlist=None, sectiondef=None, tableofcontents=None, requiresclause=None, initializer=None, briefdescription=None, detaileddescription=None, inheritancegraph=None, collaborationgraph=None, programlisting=None, location=None, listofallmembers=None, gds_collector_=None, **kwargs_):
         self.gds_collector_ = gds_collector_
         self.gds_elementtree_node_ = None
         self.original_tagname_ = None
@@ -1416,6 +1416,11 @@ class compounddefType(GeneratedsSuper):
         else:
             self.innerclass = innerclass
         self.innerclass_nsprefix_ = None
+        if innerconcept is None:
+            self.innerconcept = []
+        else:
+            self.innerconcept = innerconcept
+        self.innerconcept_nsprefix_ = None
         if innernamespace is None:
             self.innernamespace = []
         else:
@@ -1559,6 +1564,16 @@ class compounddefType(GeneratedsSuper):
         self.innerclass.insert(index, value)
     def replace_innerclass_at(self, index, value):
         self.innerclass[index] = value
+    def get_innerconcept(self):
+        return self.innerconcept
+    def set_innerconcept(self, innerconcept):
+        self.innerconcept = innerconcept
+    def add_innerconcept(self, value):
+        self.innerconcept.append(value)
+    def insert_innerconcept_at(self, index, value):
+        self.innerconcept.insert(index, value)
+    def replace_innerconcept_at(self, index, value):
+        self.innerconcept[index] = value
     def get_innernamespace(self):
         return self.innernamespace
     def set_innernamespace(self, innernamespace):
@@ -1740,6 +1755,7 @@ class compounddefType(GeneratedsSuper):
             self.innerdir or
             self.innerfile or
             self.innerclass or
+            self.innerconcept or
             self.innernamespace or
             self.innerpage or
             self.innergroup or
@@ -1847,6 +1863,9 @@ class compounddefType(GeneratedsSuper):
         for innerclass_ in self.innerclass:
             namespaceprefix_ = self.innerclass_nsprefix_ + ':' if (UseCapturedNS_ and self.innerclass_nsprefix_) else ''
             innerclass_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='innerclass', pretty_print=pretty_print)
+        for innerconcept_ in self.innerconcept:
+            namespaceprefix_ = self.innerconcept_nsprefix_ + ':' if (UseCapturedNS_ and self.innerconcept_nsprefix_) else ''
+            innerconcept_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='innerconcept', pretty_print=pretty_print)
         for innernamespace_ in self.innernamespace:
             namespaceprefix_ = self.innernamespace_nsprefix_ + ':' if (UseCapturedNS_ and self.innernamespace_nsprefix_) else ''
             innernamespace_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='innernamespace', pretty_print=pretty_print)
@@ -2001,6 +2020,11 @@ class compounddefType(GeneratedsSuper):
             obj_.build(child_, gds_collector_=gds_collector_)
             self.innerclass.append(obj_)
             obj_.original_tagname_ = 'innerclass'
+        elif nodeName_ == 'innerconcept':
+            obj_ = refType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            self.innerconcept.append(obj_)
+            obj_.original_tagname_ = 'innerconcept'
         elif nodeName_ == 'innernamespace':
             obj_ = refType.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)

@@ -1162,6 +1162,15 @@ static void writeInnerClasses(const ClassLinkedRefMap &cl,TextStream &t)
   }
 }
 
+static void writeInnerConcepts(const ConceptLinkedRefMap &cl,TextStream &t)
+{
+  for (const auto &cd : cl)
+  {
+    t << "    <innerconcept refid=\"" << cd->getOutputFileBase()
+      << "\">" << convertToXML(cd->name()) << "</innerconcept>\n";
+  }
+}
+
 static void writeInnerNamespaces(const NamespaceLinkedRefMap &nl,TextStream &t)
 {
   for (const auto &nd : nl)
@@ -1507,6 +1516,7 @@ static void generateXMLForNamespace(const NamespaceDef *nd,TextStream &ti)
   t << "</compoundname>\n";
 
   writeInnerClasses(nd->getClasses(),t);
+  writeInnerConcepts(nd->getConcepts(),t);
   writeInnerNamespaces(nd->getNamespaces(),t);
 
   for (const auto &mg : nd->getMemberGroups())
@@ -1620,6 +1630,7 @@ static void generateXMLForFile(FileDef *fd,TextStream &ti)
   }
 
   writeInnerClasses(fd->getClasses(),t);
+  writeInnerConcepts(fd->getConcepts(),t);
   writeInnerNamespaces(fd->getNamespaces(),t);
 
   for (const auto &mg : fd->getMemberGroups())
@@ -1690,6 +1701,7 @@ static void generateXMLForGroup(const GroupDef *gd,TextStream &ti)
 
   writeInnerFiles(gd->getFiles(),t);
   writeInnerClasses(gd->getClasses(),t);
+  writeInnerConcepts(gd->getConcepts(),t);
   writeInnerNamespaces(gd->getNamespaces(),t);
   writeInnerPages(gd->getPages(),t);
   writeInnerGroups(gd->getSubGroups(),t);
