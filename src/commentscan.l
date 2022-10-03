@@ -420,6 +420,7 @@ struct commentscanYY_state
   QCString         guardExpr;
   int              roundCount = 0;
   int              HTMLDetails = 0;
+  std::vector<int> HTMLDetailsSummary;
 
   bool             insideParBlock = FALSE;
   bool             inInternalDocs = FALSE;
@@ -638,11 +639,16 @@ STopt  [^\n@\\]*
                                         }
 <Comment>"<"{DETAILS}{ATTR}">"          { // start of a HTML style details description
                                           yyextra->HTMLDetails++;
+                                          yyextra->HTMLDetailsSummary.push_back(0);
                                           setOutput(yyscanner,OutputDoc);
                                           addOutput(yyscanner,yytext);
                                         }
 <Comment>"</"{DETAILS}">"               { // end of a HTML style details description
-                                          if (yyextra->HTMLDetails) yyextra->HTMLDetails--;
+                                          if (yyextra->HTMLDetails)
+                                          {
+                                            yyextra->HTMLDetails--;
+                                            yyextra->HTMLDetailsSummary.pop_back();
+                                          }
                                           addOutput(yyscanner,yytext);
                                         }
 <Comment>"<"{AHTML}                     { // potential start of HTML anchor, see issue 9200
@@ -706,15 +712,35 @@ STopt  [^\n@\\]*
                                         }
 <Comment>"<"{SUMMARY}">"                { // start of a .NET XML style brief description
                                           if (!yyextra->HTMLDetails) setOutput(yyscanner,OutputBrief);
-                                          addOutput(yyscanner,yytext);
+                                          else
+                                          {
+                                            int id = yyextra->HTMLDetailsSummary[yyextra->HTMLDetails-1];
+                                            if (id == 0)
+                                            {
+                                              addOutput(yyscanner,"\\htmlonly </p> \\endhtmlonly");
+                                              addOutput(yyscanner,yytext);
+                                            }
+                                            else addOutput(yyscanner,"<p>");
+                                            yyextra->HTMLDetailsSummary.pop_back();
+                                            yyextra->HTMLDetailsSummary.push_back(id+1);
+                                          }
                                         }
 <Comment>"<"{REMARKS}">"                { // start of a .NET XML style detailed description
                                           setOutput(yyscanner,OutputDoc);
                                           addOutput(yyscanner,yytext);
                                         }
 <Comment>"</"{SUMMARY}">"               { // start of a .NET XML style detailed description
-                                          addOutput(yyscanner,yytext);
-                                          if (!yyextra->HTMLDetails) setOutput(yyscanner,OutputDoc);
+                                          if (yyextra->HTMLDetails)
+                                          {
+                                            int id = yyextra->HTMLDetailsSummary[yyextra->HTMLDetails-1];
+                                            if (id == 1)
+                                            {
+                                              addOutput(yyscanner,yytext);
+                                              addOutput(yyscanner,"\\htmlonly <p> \\endhtmlonly");
+                                            }
+                                            else addOutput(yyscanner,"</p>");
+                                          }
+                                          else setOutput(yyscanner,OutputDoc);
                                         }
 <Comment>"</"{REMARKS}">"               { // end of a brief or detailed description
                                           setOutput(yyscanner,OutputDoc);
