@@ -31,6 +31,8 @@ def main():
         else:
             line = re.sub(r'(#  ).*generateDS(.* -o ").*(/addon/doxmlparser/doxmlparser/.* ).*(/templates/xml/)',
                            '\\1.../generateDS\\2...\\3...\\4',line)
+        if line.find("              self") == 0:
+            line = "  " + line
         outputFile.write(str.encode(line))
         outputFile.write(str.encode('\n'))
 
