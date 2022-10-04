@@ -419,7 +419,6 @@ struct commentscanYY_state
 
   QCString         guardExpr;
   int              roundCount = 0;
-  int              HTMLDetails = 0;
   std::vector<int> HTMLDetailsSummary;
 
   bool             insideParBlock = FALSE;
@@ -638,15 +637,13 @@ STopt  [^\n@\\]*
                                           REJECT;
                                         }
 <Comment>"<"{DETAILS}{ATTR}">"          { // start of a HTML style details description
-                                          yyextra->HTMLDetails++;
                                           yyextra->HTMLDetailsSummary.push_back(0);
                                           setOutput(yyscanner,OutputDoc);
                                           addOutput(yyscanner,yytext);
                                         }
 <Comment>"</"{DETAILS}">"               { // end of a HTML style details description
-                                          if (yyextra->HTMLDetails)
+                                          if (yyextra->HTMLDetailsSummary.size())
                                           {
-                                            yyextra->HTMLDetails--;
                                             yyextra->HTMLDetailsSummary.pop_back();
                                           }
                                           addOutput(yyscanner,yytext);
@@ -711,10 +708,10 @@ STopt  [^\n@\\]*
                                           yyextra->htmlAnchorStr += yytext;
                                         }
 <Comment>"<"{SUMMARY}">"                { // start of a .NET XML style brief description
-                                          if (!yyextra->HTMLDetails) setOutput(yyscanner,OutputBrief);
+                                          if (!yyextra->HTMLDetailsSummary.size()) setOutput(yyscanner,OutputBrief);
                                           else
                                           {
-                                            int id = yyextra->HTMLDetailsSummary[yyextra->HTMLDetails-1];
+                                            int id = yyextra->HTMLDetailsSummary[yyextra->HTMLDetailsSummary.size()-1];
                                             if (id == 0)
                                             {
                                               addOutput(yyscanner,"\\htmlonly </p> \\endhtmlonly");
@@ -730,9 +727,9 @@ STopt  [^\n@\\]*
                                           addOutput(yyscanner,yytext);
                                         }
 <Comment>"</"{SUMMARY}">"               { // start of a .NET XML style detailed description
-                                          if (yyextra->HTMLDetails)
+                                          if (yyextra->HTMLDetailsSummary.size())
                                           {
-                                            int id = yyextra->HTMLDetailsSummary[yyextra->HTMLDetails-1];
+                                            int id = yyextra->HTMLDetailsSummary[yyextra->HTMLDetailsSummary.size()-1];
                                             if (id == 1)
                                             {
                                               addOutput(yyscanner,yytext);
