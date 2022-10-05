@@ -1279,9 +1279,7 @@ static void writeInnerConcepts(const ConceptLinkedRefMap &cl, struct Refid outer
 {
   for (const auto &cd : cl)
   {
-    struct Refid inner_refid = insertRefid(
-      cd->getGroupDef() ? cd->getOutputFileBase()+"_"+cd->name() : cd->getOutputFileBase()
-    );
+    struct Refid inner_refid = insertRefid(cd->getOutputFileBase());
 
     bindIntParameter(contains_insert,":inner_rowid", inner_refid.rowid);
     bindIntParameter(contains_insert,":outer_rowid", outer_refid.rowid);
