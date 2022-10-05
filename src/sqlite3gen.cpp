@@ -1275,6 +1275,20 @@ static void writeInnerClasses(const ClassLinkedRefMap &cl, struct Refid outer_re
   }
 }
 
+static void writeInnerConcepts(const conceptLinkedRefMap &cl, struct Refid outer_refid)
+{
+  for (const auto &cd : cl)
+  {
+    struct Refid inner_refid = insertRefid(
+      cd->getGroupDef() ? cd->getOutputFileBase()+"_"+cd->name() : cd->getOutputFileBase()
+    );
+
+    bindIntParameter(contains_insert,":inner_rowid", inner_refid.rowid);
+    bindIntParameter(contains_insert,":outer_rowid", outer_refid.rowid);
+    step(contains_insert);
+  }
+}
+
 static void writeInnerPages(const PageLinkedRefMap &pl, struct Refid outer_refid)
 {
   for (const auto &pd : pl)
@@ -2079,6 +2093,9 @@ static void generateSqlite3ForNamespace(const NamespaceDef *nd)
   // + contained class definitions
   writeInnerClasses(nd->getClasses(),refid);
 
+  // + contained concept definitions
+  writeInnerConcepts(nd->getConcepts(),refid);
+
   // + contained namespace definitions
   writeInnerNamespaces(nd->getNamespaces(),refid);
 
@@ -2225,6 +2242,9 @@ static void generateSqlite3ForFile(const FileDef *fd)
   // + contained class definitions
   writeInnerClasses(fd->getClasses(),refid);
 
+  // + contained concept definitions
+  writeInnerConcepts(fd->getConcepts(),refid);
+
   // + contained namespace definitions
   writeInnerNamespaces(fd->getNamespaces(),refid);
 
@@ -2285,6 +2305,9 @@ static void generateSqlite3ForGroup(const GroupDef *gd)
 
   // + classes
   writeInnerClasses(gd->getClasses(),refid);
+
+  // + concepts 
+  writeInnerConcepts(gd->getConcepts(),refid);
 
   // + namespaces
   writeInnerNamespaces(gd->getNamespaces(),refid);
