@@ -335,7 +335,6 @@ bool DotFilePatcher::run() const
   bool insideHeader=FALSE;
   bool replacedHeader=FALSE;
   bool foundSize=FALSE;
-  int lineNr=1;
   std::string lineStr;
   static const reg::Ex reSVG(R"([\[<]!-- SVG [0-9]+)");
   static const reg::Ex reMAP(R"(<!-- MAP [0-9]+)");
@@ -463,7 +462,6 @@ bool DotFilePatcher::run() const
     {
       t << line;
     }
-    lineNr++;
   }
   fi.close();
   if (isSVGFile && interactiveSVG_local && replacedHeader)
