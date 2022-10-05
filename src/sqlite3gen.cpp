@@ -1275,7 +1275,7 @@ static void writeInnerClasses(const ClassLinkedRefMap &cl, struct Refid outer_re
   }
 }
 
-static void writeInnerConcepts(const conceptLinkedRefMap &cl, struct Refid outer_refid)
+static void writeInnerConcepts(const ConceptLinkedRefMap &cl, struct Refid outer_refid)
 {
   for (const auto &cd : cl)
   {
