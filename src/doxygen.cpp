@@ -1345,11 +1345,11 @@ static void resolveClassNestingRelations()
   ClassDefSet visitedClasses;
 
   bool done=FALSE;
-  int iteration=0;
+  //int iteration=0;
   while (!done)
   {
     done=TRUE;
-    ++iteration;
+    //++iteration;
     struct ClassAlias
     {
       ClassAlias(const QCString &name,std::unique_ptr<ClassDef> cd,DefinitionMutable *ctx) :
