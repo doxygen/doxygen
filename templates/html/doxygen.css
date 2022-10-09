@@ -1641,3 +1641,23 @@ u {
 	text-decoration: underline;
 }
 
+details>summary {
+  list-style-type: none;
+}
+
+details > summary::-webkit-details-marker {
+    display: none;
+}
+
+details>summary::before {
+    content: "\25ba";
+    padding-right:4px;
+    font-size: 80%;
+}
+
+details[open]>summary::before {
+    content: "\25bc";
+    padding-right:4px;
+    font-size: 80%;
+}
+
