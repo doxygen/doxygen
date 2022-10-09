@@ -3531,7 +3531,7 @@ static void countRelatedPages(int &docPages,int &indexPages)
   docPages=indexPages=0;
   for (const auto &pd : *Doxygen::pageLinkedMap)
   {
-    if (pd->visibleInIndex())
+    if (pd->visibleInIndex() && !pd->hasParentPage())
     {
       indexPages++;
     }
@@ -3557,7 +3557,7 @@ static bool mainPageHasOwnTitle()
 
 static void writePages(const PageDef *pd,FTVHelp *ftv)
 {
-  //printf("writePages()=%s pd=%p mainpage=%p\n",qPrint(pd->name()),pd,Doxygen::mainPage);
+  //printf("writePages()=%s pd=%p mainpage=%p\n",qPrint(pd->name()),(void*)pd,(void*)Doxygen::mainPage.get());
   LayoutNavEntry *lne = LayoutDocManager::instance().rootNavEntry()->find(LayoutNavEntry::Pages);
   bool addToIndex = lne==0 || lne->visible();
   if (!addToIndex) return;
@@ -3578,7 +3578,7 @@ static void writePages(const PageDef *pd,FTVHelp *ftv)
     {
       //printf("*** adding %s hasSubPages=%d hasSections=%d\n",qPrint(pageTitle),hasSubPages,hasSections);
       ftv->addContentsItem(
-          hasSubPages,pageTitle,
+          hasSubPages || hasSections,pageTitle,
           pd->getReference(),pd->getOutputFileBase(),
           QCString(),hasSubPages,TRUE,pd);
     }
@@ -3587,7 +3587,7 @@ static void writePages(const PageDef *pd,FTVHelp *ftv)
       Doxygen::indexList->addContentsItem(
           hasSubPages || hasSections,pageTitle,
           pd->getReference(),pd->getOutputFileBase(),
-          QCString(),hasSubPages,TRUE);
+          QCString(),hasSubPages,TRUE,pd);
     }
   }
   if (hasSubPages && ftv) ftv->incContentsDepth();
@@ -4346,21 +4346,22 @@ static void writeIndex(OutputList &ol)
 
   if (Doxygen::mainPage)
   {
-    if (
-        (!projectName.isEmpty() && mainPageHasTitle() && qstricmp(title,projectName)!=0)
-       ) // to avoid duplicate entries in the treeview
+    bool hasSubs = Doxygen::mainPage->hasSubPages() || Doxygen::mainPage->hasSections();
+    bool hasTitle = !projectName.isEmpty() && mainPageHasTitle() && qstricmp(title,projectName)!=0;
+    //printf("** mainPage title=%s hasTitle=%d hasSubs=%d\n",qPrint(title),hasTitle,hasSubs);
+    if (hasTitle) // to avoid duplicate entries in the treeview
     {
-      Doxygen::indexList->addContentsItem(Doxygen::mainPage->hasSubPages() || Doxygen::mainPage->hasSections(),title,QCString(),indexName,QCString(),Doxygen::mainPage->hasSubPages(),TRUE);
-      if (Doxygen::mainPage->hasSubPages()) Doxygen::indexList->incContentsDepth();
-
+      Doxygen::indexList->addContentsItem(hasSubs,
+                                          title,
+                                          QCString(),
+                                          indexName,
+                                          QCString(),
+                                          hasSubs,
+                                          TRUE);
     }
-    if (Doxygen::mainPage->hasSubPages() || Doxygen::mainPage->hasSections())
+    if (hasSubs)
     {
       writePages(Doxygen::mainPage.get(),0);
-    }
-    if (!projectName.isEmpty() && mainPageHasTitle() && qstricmp(title,projectName)!=0 && Doxygen::mainPage->hasSubPages())
-    {
-      if (Doxygen::mainPage->hasSubPages()) Doxygen::indexList->decContentsDepth();
     }
   }
 
