@@ -44,7 +44,6 @@ static Boolean        lex_utf8 = FALSE;
 /* Local function prototypes */
 static void newline(const char *text, unsigned int n);
 static char *trimQstring(char *s);
-static const char *stateToString(int state);
 
 #if USE_STATE2STRING
 static const char *stateToString(int state);

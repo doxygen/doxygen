@@ -3055,15 +3055,6 @@ QCString Markdown::processBlocks(const QCString &s,const int indent)
   int i=0,end=0,pi=-1,ref,level;
   QCString id,link,title;
 
-  // get indent for the first line
-  end = i+1;
-  int sp=0;
-  while (end<=size && data[end-1]!='\n')
-  {
-    if (data[end-1]==' ') sp++;
-    end++;
-  }
-
 #if 0 // commented m_out, since starting with a comment block is probably a usage error
       // see also http://stackoverflow.com/q/20478611/784672
 

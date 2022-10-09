@@ -6821,7 +6821,7 @@ NONLopt [^\n]*
                                           }
                                         }
 <DocCopyBlock>^{B}*"*"+/{BN}+           { // start of a comment line
-                                          if ((yyextra->docBlockName=="verbatim") | (yyextra->docBlockName=="code") || (yyextra->docBlockName=="iliteral"))
+                                          if ((yyextra->docBlockName=="verbatim") || (yyextra->docBlockName=="code") || (yyextra->docBlockName=="iliteral"))
                                           {
                                             REJECT;
                                           }
