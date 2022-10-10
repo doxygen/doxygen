@@ -184,6 +184,77 @@ bool DotManager::run() const
     setPath=TRUE;
   }
   Portable::sysTimerStart();
+
+  // calling dot for every single graph is incredibly slow on Windows
+  // group runner tasks per directory and run them in bulk to speed them up
+  // we are also going to pass all formats at once: dot -Tpng -Tpdf -O *.dot
+  // creating file.dot.png and file.dot.pdf for every .dot file in the directory
+  {
+    std::map<std::string, std::set<std::string>> directoryAndOutputTypeMap;
+    for (auto & dr : m_runners)
+    {
+        std::string directory = dr.first.substr(0, dr.first.find_last_of('/'));
+        auto directoryIt = directoryAndOutputTypeMap.find(directory);
+        if (directoryIt == directoryAndOutputTypeMap.end())
+            directoryAndOutputTypeMap[directory] = {};
+        for (auto type: dr.second->get_job_format_types())
+        {
+            directoryAndOutputTypeMap[directory].emplace(type);
+        }
+    }
+    std::vector<std::string> work_queue;
+    for (auto directoryAndTypes : directoryAndOutputTypeMap)
+    {
+        std::stringstream ss;
+        ss << "cd " << directoryAndTypes.first << " && " << Doxygen::verifiedDotPath;
+        for(auto type: directoryAndTypes.second)
+            ss << " -T" << type;
+        ss << " -O *.dot";
+        work_queue.push_back(ss.str());
+    }
+    std::vector<std::thread> threads;
+    std::mutex work_mutex;
+    auto work_queue_size = work_queue.size();
+    for (unsigned k = 0; k < std::max((unsigned int) 1, std::thread::hardware_concurrency()); ++k)
+    {
+        threads.emplace_back([&queue=work_queue,&mutex=work_mutex, n_batches=work_queue_size]()
+        {
+            while(1)
+            {
+                std::string dotCommand;
+                {
+                    std::lock_guard<std::mutex> locker(mutex);
+                    if (queue.empty())
+                        break;
+                    dotCommand = queue.back();
+                    queue.pop_back();
+                    msg("Running dot batch %zu/%zu\n", n_batches-queue.size(), n_batches);
+                }
+                std::system(dotCommand.c_str());
+            }
+        });
+    }
+    for (auto& t : threads)
+        t.join();
+    for (auto directoryAndTypes : directoryAndOutputTypeMap)
+    {
+        auto directory = Dir(directoryAndTypes.first);
+        for(const auto& file : directory.iterator())
+        {
+            auto pos = file.path().find(".dot.");
+            if(pos != std::string::npos)
+            {
+                std::string dotLessFileName = file.path().replace(pos, 4, "");
+                pos = dotLessFileName.find(".cmapx");
+                if (pos != std::string::npos)
+                {
+                    dotLessFileName = dotLessFileName.replace(pos+1, 5, "map");
+                }
+                directory.rename(file.path(), dotLessFileName);
+            }
+        }
+    }
+  }
   // fill work queue with dot operations
   size_t prev=1;
   if (m_workers.size()==0) // no threads to work with
