@@ -2095,6 +2095,10 @@ void Config::checkAndCorrect(bool quiet, const bool check)
   // check QHP creation requirements
   if (Config_getBool(GENERATE_QHP))
   {
+    if (!Config_getBool(GENERATE_HTML))
+    {
+      warn_uncond("GENERATE_QHP=YES requires GENERATE_HTML=YES.\n");
+    }
     if (Config_getString(QHP_NAMESPACE).isEmpty())
     {
       err("GENERATE_QHP=YES requires QHP_NAMESPACE to be set. Using 'org.doxygen.doc' as default!.\n");
