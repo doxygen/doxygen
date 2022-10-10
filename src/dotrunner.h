@@ -53,6 +53,9 @@ class DotRunner
     /** Prevent cleanup of the dot file (for user provided dot files) */
     void preventCleanUp() { m_cleanUp = false; }
 
+    /** Return the format types for the different jobs */
+    std::vector<std::string> get_job_format_types();
+
     /** Runs dot for all jobs added. */
     bool run();
 

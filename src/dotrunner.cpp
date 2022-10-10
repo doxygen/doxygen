@@ -174,6 +174,18 @@ QCString getBaseNameOfOutput(const QCString &output)
   return output.left(index);
 }
 
+std::vector<std::string> DotRunner::get_job_format_types()
+{
+    std::vector<std::string> types;
+    for (auto& s : m_jobs)
+    {
+        std::stringstream ss;
+        ss << s.format;
+        types.push_back(ss.str());
+    }
+    return types;
+}
+
 bool DotRunner::run()
 {
   int exitCode=0;
