@@ -59,6 +59,9 @@ class DotRunner
     /** Runs dot for all jobs added. */
     bool run();
 
+    /** Skip dot creation step */
+    void skip();
+
     QCString getMd5Hash() { return m_md5Hash; }
 
     static bool readBoundingBox(const QCString &fileName, int* width, int* height, bool isEps);
@@ -69,6 +72,7 @@ class DotRunner
     QCString m_dotExe;
     bool     m_cleanUp;
     std::vector<DotJob>  m_jobs;
+    bool     m_skip;
 };
 
 /** Queue of dot jobs to run. */

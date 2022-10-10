@@ -200,6 +200,7 @@ bool DotManager::run() const
         for (auto type: dr.second->get_job_format_types())
         {
             directoryAndOutputTypeMap[directory].emplace(type);
+            dr.second->skip();
         }
     }
     std::vector<std::string> work_queue;
