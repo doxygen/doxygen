@@ -1352,6 +1352,14 @@ Section indicators
   sectioning command is encountered. See section \ref cmdauthor "\\author"
   for an example.
 
+  The description will also add an item to a separate Bug list and
+  the two instances of the description will be cross-referenced.
+  Each item in the Bug list will be preceded by a header that
+  indicates the origin of the item.
+
+  The Bug list and the corresponding entries can be disabled by setting the
+  \ref cfg_generate_buglist "GENERATE_BUGLIST" to `NO`.
+
 <hr>
 \section cmdcond \\cond [(section-label)]
 
@@ -1536,6 +1544,21 @@ contains \c TEST, or \c DEV
   Starts a paragraph indicating that this documentation block belongs to
   a deprecated entity. Can be used to describe alternatives,
   expected life span, etc.
+  The paragraph will be indented.
+  The text of the paragraph has no special internal structure. All visual
+  enhancement commands may be used inside the paragraph.
+  Multiple adjacent \c \\deprecated commands will be joined into a single paragraph.
+  Each deprecation description will start on a new line.
+  The \c \\deprecated command ends when a blank line or some other
+  sectioning command is encountered.
+
+  The description will also add an item to a separate Deprecated list and
+  the two instances of the description will be cross-referenced.
+  Each item in the Deprecated list will be preceded by a header that
+  indicates the origin of the item.
+
+  The Deprecated list and the corresponding entries can be disabled by setting the
+  \ref cfg_generate_deprecatedlist "GENERATE_DEPRECATEDLIST" to `NO`.
 
 <hr>
 \section cmddetails \\details { detailed description }
@@ -2011,11 +2034,23 @@ void setPosition(double x,double y,double z,double t)
 \section cmdtest \\test { paragraph describing a test case }
 
   \addindex \\test
-  Starts a paragraph where a test case can be described.
-  The description will also add the test case to a separate test list.
-  The two instances of the description will be cross-referenced.
-  Each test case in the test list will be preceded by a header that
-  indicates the origin of the test case.
+  Starts a paragraph where one or more test cases can be described.
+  The paragraph will be indented.
+  The text of the paragraph has no special internal structure. All visual
+  enhancement commands may be used inside the paragraph.
+  Multiple adjacent \c \\test commands will be joined into a single paragraph.
+  Each test case description will start on a new line.
+  Alternatively, one \c \\test command may mention several test cases.
+  The \c \\test command ends when a blank line or some other
+  sectioning command is encountered.
+
+  The description will also add an item to a separate Test list and
+  the two instances of the description will be cross-referenced.
+  Each item in the Test list will be preceded by a header that
+  indicates the origin of the item.
+
+  The Test list and the corresponding entries can be disabled by setting the
+  \ref cfg_generate_testlist "GENERATE_TESTLIST" to `NO`.
 
 <hr>
 \section cmdthrow \\throw <exception-object> { exception description }
@@ -2038,11 +2073,23 @@ void setPosition(double x,double y,double z,double t)
 \section cmdtodo \\todo { paragraph describing what is to be done }
 
   \addindex \\todo
-  Starts a paragraph where a TODO item is described.
-  The description will also add an item to a separate TODO list.
-  The two instances of the description will be cross-referenced.
-  Each item in the TODO list will be preceded by a header that
+  Starts a paragraph where one or more todo items are described.
+  The paragraph will be indented.
+  The text of the paragraph has no special internal structure. All visual
+  enhancement commands may be used inside the paragraph.
+  Multiple adjacent \c \\todo commands will be joined into a single paragraph.
+  Each todo description will start on a new line.
+  Alternatively, one \c \\todo command may mention
+  several tod descriptioons. The \c \\todo command ends when a blank line or some other
+  sectioning command is encountered.
+
+  The description will also add an item to a separate Todo list and
+  the two instances of the description will be cross-referenced.
+  Each item in the Todo list will be preceded by a header that
   indicates the origin of the item.
+
+  The Todo list and the corresponding entries can be disabled by setting the
+  \ref cfg_generate_todolist "GENERATE_TODOLIST" to `NO`.
 
 <hr>
 \section cmdversion \\version { version number }
