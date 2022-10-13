@@ -189,6 +189,7 @@ bool DotManager::run() const
   // group runner tasks per directory and run them in bulk to speed them up
   // we are also going to pass all formats at once: dot -Tpng -Tpdf -O *.dot
   // creating file.dot.png and file.dot.pdf for every .dot file in the directory
+  if (Config_getBool(CREATE_SUBDIRS))
   {
     std::map<std::string, std::set<std::string>> directoryAndOutputTypeMap;
     for (auto & dr : m_runners)
