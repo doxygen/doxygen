@@ -1186,6 +1186,21 @@ Go to the <a href="commands.html">next</a> section or return to the
 ]]>
       </docs>
     </option>
+    <option type='list' id='GENERATE_XREFLIST' format='string'>
+      <docs>
+<![CDATA[
+ The \c GENERATE_XREFLIST tag can be used to enable (\c YES) or
+ disable (\c NO) a user defined xref list. This list is created by
+ putting \ref cmdxrefitem "\\xrefitem" commands in the documentation.
+ The format is `key=val`, where `key` is the exact `key` as used in the
+ \ref cmdxrefitem "\\xrefitem" command.
+
+ For instance to disable the user defined xref list `reminders`
+ added  by means of  `\xrefitem reminders ...`<br>
+ use: `GENERATE_XREFLIST = reminders=NO`.
+]]>
+      </docs>
+    </option>
     <option type='list' id='ENABLED_SECTIONS' format='string'>
       <docs>
 <![CDATA[

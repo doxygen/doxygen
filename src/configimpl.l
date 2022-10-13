@@ -1921,6 +1921,10 @@ void Config::checkAndCorrect(bool quiet, const bool check)
   }
 
   //------------------------
+  // check GENERATE_XREFLIST
+  checkList(Config_getList(GENERATE_XREFLIST),"GENERATE_XREFLIST",TRUE,TRUE);
+
+  //------------------------
   // check EXTENSION_MAPPING
   checkList(Config_getList(EXTENSION_MAPPING),"EXTENSION_MAPPING",TRUE,TRUE);
 

@@ -2085,6 +2085,9 @@ void setPosition(double x,double y,double z,double t)
  cross-referenced between the place of occurrence and a related page,
  which will be generated. On the related page all sections of
  the same type will be collected.
+ A user defined xref list and the corresponding entries can be disabled by setting the
+ correspondig item with the command
+ \ref cfg_generate_xreflist "GENERATE_XREFLIST" to `NO`.
 
  The first argument \<key\> is an
  identifier uniquely representing the type of the section. The second argument

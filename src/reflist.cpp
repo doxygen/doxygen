@@ -20,6 +20,7 @@
 #include "util.h"
 #include "definition.h"
 #include "config.h"
+#include "doxygen.h"
 
 RefList::RefList(const QCString &listName, const QCString &pageTitle, const QCString &secTitle) :
        m_listName(listName), m_fileName(convertNameToFile(listName,FALSE,TRUE)),
@@ -49,6 +50,7 @@ bool RefList::isEnabled() const
   else if (m_listName=="test"       && !Config_getBool(GENERATE_TESTLIST))       return false;
   else if (m_listName=="bug"        && !Config_getBool(GENERATE_BUGLIST))        return false;
   else if (m_listName=="deprecated" && !Config_getBool(GENERATE_DEPRECATEDLIST)) return false;
+  else if (std::find(Doxygen::generateXRefList.begin(), Doxygen::generateXRefList.end(), m_listName.str()) != Doxygen::generateXRefList.end()) return false;
   return true;
 }
 

@@ -171,6 +171,7 @@ bool                  Doxygen::clangAssistedParsing = FALSE;
 QCString              Doxygen::verifiedDotPath;
 volatile bool         Doxygen::terminating = false;
 InputFileEncodingList Doxygen::inputFileEncodingList;
+std::vector<std::string> Doxygen::generateXRefList;
 
 // locally accessible globals
 static std::multimap< std::string, const Entry* > g_classEntries;
@@ -11418,7 +11419,59 @@ void adjustConfiguration()
       }
     }
   }
-  // create input file exncodings
+
+  /**************************************************************************
+   *            Add lists for generate xref lists
+   **************************************************************************/
+
+  const StringVector &genXRefs = Config_getList(GENERATE_XREFLIST);
+  for (const auto &genXRef : genXRefs)
+  {
+    QCString qStr = genXRef.c_str();
+    int i=qStr.find('=');
+    if (i==-1)
+    {
+      continue;
+    }
+    else
+    {
+      std::string xref = qStr.left(i).stripWhiteSpace().str();
+      QCString val = qStr.mid(i+1).stripWhiteSpace().lower();
+      if (xref.empty() || val.isEmpty())
+      {
+        continue;
+      }
+
+      // We only record the lists that are not to be show
+      if (val=="yes")
+      {
+        // check for xref
+        // if present remove else don't do anything
+        if (std::find(Doxygen::generateXRefList.begin(), Doxygen::generateXRefList.end(), xref) != Doxygen::generateXRefList.end())
+        {
+          Doxygen::generateXRefList.erase(std::find(Doxygen::generateXRefList.begin(), Doxygen::generateXRefList.end(), xref));
+        }
+      }
+      else if (val=="no")
+      {
+        // check for xref
+        // if present don't do anything else push_back
+        if (std::find(Doxygen::generateXRefList.begin(), Doxygen::generateXRefList.end(), xref) == Doxygen::generateXRefList.end())
+        {
+          Doxygen::generateXRefList.push_back(xref);
+        }
+      }
+      else 
+      {
+        err("Unknown value '%s' for '%s', value should be 'YES' or 'NO' (value is ignored)\n"
+            "    Check the GENERATE_XREFLIST setting in the config file.\n",
+            qPrint(val),qPrint(xref));
+      }
+    }
+  }
+
+
+  // create input file encodings
 
   // check INPUT_ENCODING
   void *cd = portable_iconv_open("UTF-8",Config_getString(INPUT_ENCODING).data());
