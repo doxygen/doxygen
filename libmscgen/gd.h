@@ -101,7 +101,7 @@ extern "C" {
    pixels are represented by integers, which
    must be 32 bits wide or more.
 
-   True colors are repsented as follows:
+   True colors are represented as follows:
    
    ARGB
 	
@@ -268,7 +268,7 @@ enum gdPaletteQuantizationMethod {
  *  GD_GENERALIZED_CUBIC - Generalized cubic
  *  GD_HERMITE			 - Hermite
  *  GD_HAMMING			 - Hamming
- *  GD_HANNING			 - Hannig
+ *  GD_HANNING			 - Hanning
  *  GD_MITCHELL			 - Mitchell
  *  GD_NEAREST_NEIGHBOUR - Nearest neighbour interpolation
  *  GD_POWER			 - Power
@@ -333,7 +333,7 @@ typedef double (* interpolation_method )(double);
      <Accessor Macros>
 
    (Previous versions of this library encouraged directly manipulating
-   the contents ofthe struct but we are attempting to move away from
+   the contents of the struct but we are attempting to move away from
    this practice so the fields are no longer documented here.  If you
    need to poke at the internals of this struct, feel free to look at
    *gd.h*.)
@@ -1499,7 +1499,7 @@ BGD_DECLARE(void) gdImageFlipHorizontal(gdImagePtr im);
 BGD_DECLARE(void) gdImageFlipVertical(gdImagePtr im);
 BGD_DECLARE(void) gdImageFlipBoth(gdImagePtr im);
 
-#define GD_FLIP_HORINZONTAL 1
+#define GD_FLIP_HORIZONTAL 1
 #define GD_FLIP_VERTICAL 2
 #define GD_FLIP_BOTH 3
 
@@ -1572,7 +1572,7 @@ BGD_DECLARE(int) gdTransformAffineBoundingBox(gdRectPtr src, const double affine
  *
  * Constants:
  *   GD_CMP_IMAGE       - Actual image IS different
- *   GD_CMP_NUM_COLORS  - Number of colors in pallette differ
+ *   GD_CMP_NUM_COLORS  - Number of colors in palette differ
  *   GD_CMP_COLOR       - Image colors differ
  *   GD_CMP_SIZE_X      - Image width differs
  *   GD_CMP_SIZE_Y      - Image heights differ

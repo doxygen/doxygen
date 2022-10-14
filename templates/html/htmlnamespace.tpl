@@ -9,6 +9,10 @@
 {% endif %}
 {% endblock %}
 
+{% block ingroups %}
+{% include 'htmlpartofgroups.tpl' %}
+{% endblock %}
+
 {% block title %}
   {# write summary links in the title area #}
   <div class="summary">

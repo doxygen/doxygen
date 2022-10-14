@@ -119,7 +119,7 @@ static int getGdoPen(struct ADrawTag *ctx)
 
 
 /** Given a colour value, convert to a gd colour reference.
- * This searches the current pallette of colours for the passed colour and
+ * This searches the current palette of colours for the passed colour and
  * returns an existing reference if possible.  Otherwise a new colour reference
  * is allocated and returned.
  */
@@ -180,7 +180,7 @@ unsigned int gdoTextWidth(struct ADrawTag *ctx,
                           const char *string)
 {
 #ifndef USE_FREETYPE
-    const unsigned int l = strlen(string);
+    const unsigned int l = (unsigned int)strlen(string);
 
     /* Remove 1 pixel since there is usually an uneven gap at
      *  the right of the last character for the fixed width

@@ -1,13 +1,11 @@
 /******************************************************************************
  *
- * 
- *
- * Copyright (C) 2011 by Dimitri van Heesch
+ * Copyright (C) 2020 by Dimitri van Heesch
  * Based on a patch by David Munger
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -16,83 +14,62 @@
  *
  */
 
-#ifndef CITEDB_H
-#define CITEDB_H
+#ifndef CITE_H
+#define CITE_H
 
-#include <qdict.h>
+#include <memory>
 
-class FTextStream;
-
-/// String constants for citations
-struct CiteConsts
-{
-  static const QCString fileName;
-  static const QCString anchorPrefix;
-};
+#include "qcstring.h"
 
 /// Citation-related data.
 struct CiteInfo
 {
-  CiteInfo(const char *label_, const char *text_=0, const char *fullText_=0,
-      const char *ref_=0) :
-    label(label_), text(text_), fullText(fullText_), ref(ref_)
-  { }
-
-  CiteInfo(const CiteInfo &o)
-  { label=o.label.copy(); text=o.text.copy(); fullText=o.fullText.copy(); ref=o.ref.copy(); }
-
-  QCString label; 
-  QCString text;
-  QCString fullText;
-  QCString ref;
-
+    virtual ~CiteInfo() = default;
+    virtual QCString label() const = 0;
+    virtual QCString text() const = 0;
 };
 
 /**
- * @brief Cite database access class.
- * @details This class provides access do the database of bibliographic 
+ * @brief Citation manager class.
+ * @details This class provides access do the database of bibliographic
  * references through the bibtex backend.
  */
-class CiteDict 
+class CitationManager
 {
   public:
-    /** Create the database, with an expected maximum of \a size entries */
-    CiteDict(int size);
-
-//    /** Resolve references to citations */
-//    void resolve();
+    static CitationManager &instance();
 
     /** Insert a citation identified by \a label into the database */
-    void insert(const char *label);
+    void insert(const QCString &label);
 
-    /** Return the citation info for a given \a label */
-    CiteInfo *find(const char *label) const;
+    /** Return the citation info for a given \a label.
+     *  Ownership of the info stays with the manager.
+     */
+    const CiteInfo *find(const QCString &label) const;
 
     /** Generate the citations page */
-    void generatePage() const;
+    void generatePage();
 
     /** clears the database */
     void clear();
 
-    /** return TRUE if there are no citations. 
-     *  Only valid after calling resolve() 
+    /** return TRUE if there are no citations.
      */
     bool isEmpty() const;
 
-    /** writes the latex code for the standard bibliography 
-     *  section to text stream \a t 
+    /** lists the bibtex cite files in a comma separated list
      */
-    void writeLatexBibliography(FTextStream &t);
+    QCString latexBibFiles();
+
+    QCString fileName() const;
+    QCString anchorPrefix() const;
 
   private:
-//    bool writeAux();
-//    bool writeBst();
-//    bool execute();
-//    void parse();
-//    void clean();
-    QDict<CiteInfo> m_entries;
-//    QList<QCString> m_ordering;
-    QCString m_baseFileName;
+    /** Create the database, with an expected maximum of \a size entries */
+    CitationManager();
+    void insertCrossReferencesForBibFile(const QCString &bibFile);
+    struct Private;
+    std::unique_ptr<Private> p;
 };
 
-#endif
+#endif // CITE_H

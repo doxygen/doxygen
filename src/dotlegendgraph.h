@@ -22,7 +22,7 @@
 class DotLegendGraph : public DotGraph
 {
   public:
-    void writeGraph(const char *path);
+    void writeGraph(const QCString &path);
 
   private:
     virtual QCString getBaseName() const;

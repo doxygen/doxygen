@@ -64,7 +64,7 @@ CHECK_REQUIRED_VARIABLE(PRE_CONFIGURE_GIT_VERSION_FILE)
 CHECK_REQUIRED_VARIABLE(POST_CONFIGURE_GIT_VERSION_FILE)
 CHECK_OPTIONAL_VARIABLE(GIT_STATE_FILE "${GENERATED_SRC}/git_state")
 #CHECK_REQUIRED_VARIABLE(GIT_STATE_FILE)
-CHECK_OPTIONAL_VARIABLE(GIT_WORKING_DIR "${CMAKE_SOURCE_DIR}")
+CHECK_OPTIONAL_VARIABLE(GIT_WORKING_DIR "${PROJECT_SOURCE_DIR}")
 
 # Check the optional git variable.
 # If it's not set, we'll try to find it using the CMake packaging system.
@@ -150,6 +150,19 @@ function(CheckGit _working_dir _state_changed _state)
     # (Passing by reference in CMake is awkward...)
     set(${_state} ${state} PARENT_SCOPE)
 
+    if(EXISTS "${POST_CONFIGURE_GIT_VERSION_FILE}")
+        if("${PRE_CONFIGURE_GIT_VERSION_FILE}" IS_NEWER_THAN "${POST_CONFIGURE_GIT_VERSION_FILE}")
+            file(REMOVE "${POST_CONFIGURE_GIT_VERSION_FILE}")
+            file(REMOVE "${GIT_STATE_FILE}")
+            set(${_state_changed} "true" PARENT_SCOPE)
+            return()
+        endif()
+    else()
+       file(REMOVE "${GIT_STATE_FILE}")
+       set(${_state_changed} "true" PARENT_SCOPE)
+       return()
+    endif()
+
     # Check if the state has changed compared to the backup on disk.
     if(EXISTS "${GIT_STATE_FILE}")
         file(READ "${GIT_STATE_FILE}" OLD_HEAD_CONTENTS)
@@ -178,6 +191,7 @@ function(SetupGitMonitoring)
         ALL
 	DEPENDS ${PRE_CONFIGURE_GIT_VERSION_FILE}
 	BYPRODUCTS ${POST_CONFIGURE_GIT_VERSION_FILE}
+	BYPRODUCTS ${GIT_STATE_FILE}
         COMMENT "Checking the git repository for changes..."
         COMMAND
             ${CMAKE_COMMAND}

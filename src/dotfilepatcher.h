@@ -16,17 +16,17 @@
 #ifndef DOTFILEPATCHER_H
 #define DOTFILEPATCHER_H
 
-#include "qcstring.h"
-#include "qlist.h"
+#include <vector>
 
-class FTextStream;
+#include "qcstring.h"
+
+class TextStream;
 
 /** Helper class to insert a set of map file into an output file */
 class DotFilePatcher
 {
   public:
-    DotFilePatcher(const char *patchFile);
-
+    DotFilePatcher(const QCString &patchFile);
     int addMap(const QCString &mapFile,const QCString &relPath,
                bool urlOnly,const QCString &context,const QCString &label);
 
@@ -41,19 +41,23 @@ class DotFilePatcher
     bool run() const;
     bool isSVGFile() const;
 
-    static bool convertMapFile(FTextStream &t,const char *mapName,
-                               const QCString relPath, bool urlOnly=FALSE,
+    static bool convertMapFile(TextStream &t,const QCString &mapName,
+                               const QCString &relPath, bool urlOnly=FALSE,
                                const QCString &context=QCString());
 
-    static bool writeSVGFigureLink(FTextStream &out,const QCString &relPath,
+    static bool writeSVGFigureLink(TextStream &out,const QCString &relPath,
                                    const QCString &baseName,const QCString &absImgName);
 
-    static bool writeVecGfxFigure(FTextStream& out, const QCString& baseName,
+    static bool writeVecGfxFigure(TextStream& out, const QCString& baseName,
                                   const QCString& figureName);
 
   private:
     struct Map
     {
+      Map(const QCString &mf,const QCString &rp,bool uo,const QCString &ctx,
+          const QCString &lab,bool zoom=false,int gId=-1) :
+        mapFile(mf), relPath(rp), urlOnly(uo), context(ctx),
+        label(lab), zoomable(zoom), graphId(gId) {}
       QCString mapFile;
       QCString relPath;
       bool     urlOnly;
@@ -62,7 +66,7 @@ class DotFilePatcher
       bool     zoomable;
       int      graphId;
     };
-    QList<Map> m_maps;
+    std::vector<Map> m_maps;
     QCString m_patchFile;
 };
 

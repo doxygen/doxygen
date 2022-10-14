@@ -1,39 +1,25 @@
+/*****************************************************************************
+ * Copyright (C) 1997-2019 by Dimitri van Heesch.
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation under the terms of the GNU General Public License is hereby 
+ * granted. No representations are made about the suitability of this software 
+ * for any purpose. It is provided "as is" without express or implied warranty.
+ * See the GNU General Public License for more details.
+ *
+ * Documents produced by Doxygen are derivative works derived from the
+ * input used in their production; they are not affected by this license.
+ */
+
+#include <algorithm>
+
 #include "arguments.h"
-#include <assert.h>
 
 /*! the argument list is documented if one of its
- *  arguments is documented 
+ *  arguments is documented
  */
 bool ArgumentList::hasDocumentation() const
 {
-  bool hasDocs=FALSE;
-  ArgumentListIterator ali(*this);
-  Argument *a;
-  for (ali.toFirst();!hasDocs && (a=ali.current());++ali)
-  {
-    hasDocs = a->hasDocumentation(); 
-  }
-  return hasDocs;
-}
-
-ArgumentList *ArgumentList::deepCopy() const
-{
-  ArgumentList *argList = new ArgumentList;
-  argList->setAutoDelete(TRUE);
-
-  QListIterator<Argument> ali(*this);
-  Argument *a;
-  for (;(a=ali.current());++ali)
-  {
-    argList->append(new Argument(*a));
-  }
-  argList->constSpecifier     = constSpecifier;
-  argList->volatileSpecifier  = volatileSpecifier;
-  argList->pureSpecifier      = pureSpecifier;
-  argList->trailingReturnType = trailingReturnType;
-  argList->isDeleted          = isDeleted;
-  argList->refQualifier       = refQualifier;
-
-  return argList;
+  return std::any_of(begin(),end(),[](const Argument &a){ return a.hasDocumentation(); });
 }
 

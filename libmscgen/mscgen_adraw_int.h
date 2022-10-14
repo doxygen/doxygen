@@ -29,7 +29,7 @@
  * Preprocessor Macros
  ***************************************************************************/
 
-/* Define macro to supress unused parameter warnings */
+/* Define macro to suppress unused parameter warnings */
 #ifndef UNUSED
 # ifdef __GNUC__
 #  define UNUSED __attribute__((unused))

@@ -1,5 +1,5 @@
-#ifndef _GDFONTS_H_
-#define _GDFONTS_H_ 1
+#ifndef GDFONTS_H
+#define GDFONTS_H 1
 
 #ifdef __cplusplus
 extern "C"

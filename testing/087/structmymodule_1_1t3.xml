@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="structmymodule_1_1t3" kind="type" language="Fortran" prot="public">
+    <compoundname>mymodule::t3</compoundname>
+    <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="structmymodule_1_1t3_1a8c70e7ad082657d4ddd9967c11ea5c68" prot="private" static="no" mutable="no">
+        <type>integer</type>
+        <definition>integer mymodule::t3::privatevariable</definition>
+        <argsstring/>
+        <name>privatevariable</name>
+        <qualifiedname>mymodule::t3::privatevariable</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="087_public_type.F90" line="28" column="1" bodyfile="087_public_type.F90" bodystart="28" bodyend="28"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="087_public_type.F90" line="26" column="1" bodyfile="087_public_type.F90" bodystart="26" bodyend="29"/>
+    <listofallmembers>
+      <member refid="structmymodule_1_1t3_1a8c70e7ad082657d4ddd9967c11ea5c68" prot="private" virt="non-virtual">
+        <scope>mymodule::t3</scope>
+        <name>privatevariable</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

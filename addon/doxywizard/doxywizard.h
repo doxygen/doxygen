@@ -3,8 +3,8 @@
  * Copyright (C) 1997-2019 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -20,6 +20,7 @@
 class Expert;
 class Wizard;
 class QLabel;
+class QCheckBox;
 class QLineEdit;
 class QPushButton;
 class QTextBrowser;
@@ -40,6 +41,10 @@ class MainWindow : public QMainWindow
     void closeEvent(QCloseEvent *event);
     QString configFileName() const { return m_fileName; }
     void updateTitle();
+    // access routines for outputLog pane
+    void outputLogStart();
+    void outputLogText(QString text);
+    void outputLogFinish();
 
   public slots:
     void manual();
@@ -65,7 +70,7 @@ class MainWindow : public QMainWindow
     void configChanged();
     void clearRecent();
     void selectRunTab();
-    
+
   private:
     MainWindow();
     void saveConfig(const QString &fileName);
@@ -78,9 +83,11 @@ class MainWindow : public QMainWindow
     bool discardUnsavedChanges(bool saveOption=true);
 
     QLineEdit *m_workingDir;
+    QLineEdit *m_runOptions;
     QPushButton *m_selWorkingDir;
     QPushButton *m_run;
     QPushButton *m_saveLog;
+    QCheckBox   *m_showCondensedSettings;
     QPushButton *m_launchHtml;
     QPushButton *m_launchPdf;
     QTextBrowser *m_outputLog;
@@ -91,11 +98,23 @@ class MainWindow : public QMainWindow
     QSettings m_settings;
     QMenu *m_recentMenu;
     QStringList m_recentFiles;
+    QAction *m_resetDefault;
+    QAction *m_clearRecent;
     QProcess *m_runProcess;
     QTimer *m_timer;
     QTabWidget *m_tabs;
+    int m_outputLogTextCount = 0;
     bool m_running;
     bool m_modified;
 };
 
+/*! \brief This class serves as a namespace for global variables used by the doxygen wizard.
+ *
+ *  All fields in this class are public and static, so they can be used directly.
+ */
+class DoxygenWizard
+{
+  public:
+    static bool debugFlag;
+};
 #endif

@@ -9,6 +9,10 @@
 {% endif %}
 {% endblock %}
 
+{% block ingroups %}
+{% include 'htmlpartofgroups.tpl' %}
+{% endblock %}
+
 {% block title %}
   {# write summary links in the title area #}
   <div class="summary">
@@ -429,7 +433,7 @@
     {{ compound.generatedFromFiles }}
     <ul>
     {% for file in compound.usedFiles %}
-      <li>{% if file.sourceFileName %}
+      <li>{% if file.sourceFileName and file.isLinkable %}
             <a class="el" href="{{ file.sourceFileName }}{{ config.HTML_FILE_EXTENSION }}">
           {% endif %}
           {% if not file.sourceFileName and file.isLinkable %}
@@ -440,7 +444,7 @@
           {% else %}
             {{ file.name|stripPath }}
           {% endif %}
-          {% if file.sourceFileName or file.isLinkable %}
+          {% if file.isLinkable %}
             </a>
           {% endif %}
           {% if file.versionInfo %} {{ file.versionInfo }}{% endif %}
@@ -448,6 +452,6 @@
     {% endfor %}
     </ul>
   {% endif %}
-</div>
+</div><!-- contents -->
 {% endblock %}
 

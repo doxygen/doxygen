@@ -435,7 +435,7 @@ static unsigned HuffmanTree_make2DTree(HuffmanTree* tree)
 
   if(!uivector_resize(&tree->tree2d, tree->numcodes * 2)) return 9901; /*if failed return not enough memory error*/
   /*convert tree1d[] to tree2d[][]. In the 2D array, a value of 32767 means uninited, a value >= numcodes is an address to another bit, a value < numcodes is a code. The 2 rows are the 2 possible bit values (0 or 1), there are as many columns as codes - 1
-  a good huffmann tree has N * 2 - 1 nodes, of which N - 1 are internal nodes. Here, the internal nodes are stored (what their 0 and 1 option point to). There is only memory for such good tree currently, if there are more nodes (due to too long length codes), error 55 will happen*/
+  a good huffman tree has N * 2 - 1 nodes, of which N - 1 are internal nodes. Here, the internal nodes are stored (what their 0 and 1 option point to). There is only memory for such good tree currently, if there are more nodes (due to too long length codes), error 55 will happen*/
   for(n = 0;  n < tree->numcodes * 2; n++) tree->tree2d.data[n] = 32767; /*32767 here means the tree2d isn't filled there yet*/
 
   for(n = 0; n < tree->numcodes; n++) /*the codes*/
@@ -544,7 +544,7 @@ static unsigned HuffmanTree_makeFromFrequencies(HuffmanTree* tree, const unsigne
 
   if(numcodes == 0) return 80; /*error: a tree of 0 symbols is not supposed to be made*/
   tree->numcodes = (unsigned)numcodes; /*number of symbols*/
-  uivector_resize(&tree->lengths, 0);
+  if (!uivector_resize(&tree->lengths, 0)) return 9955;
   if(!uivector_resizev(&tree->lengths, tree->numcodes, 0)) return 9905;
 
   if(numpresent == 0) /*there are no symbols at all, in that case add one symbol of value 0 to the tree (see RFC 1951 section 3.2.7) */
@@ -1509,7 +1509,7 @@ static unsigned getNumColorChannels(unsigned colorType)
     case 4: return 2; /*grey + alpha*/
     case 6: return 4; /*RGBA*/
   }
-  return 0; /*unexisting color type*/
+  return 0; /*nonexistent color type*/
 }
 
 static unsigned getBpp(unsigned colorType, unsigned bitDepth)
@@ -2023,7 +2023,7 @@ static void filterScanline(unsigned char* out, const unsigned char* scanline, co
         for(i = bytewidth; i <    length; i++) out[i] = (unsigned char)(scanline[i] - paethPredictor(scanline[i - bytewidth], 0, 0));
       }
       break;
-  default: return; /*unexisting filter type given*/
+  default: return; /*nonexistent filter type given*/
   }
 }
 
@@ -2341,10 +2341,10 @@ void LodePNG_encode(LodePNG_Encoder* encoder, unsigned char** out, size_t* outsi
   }
 
   if(encoder->settings.zlibsettings.windowSize > 32768) { encoder->error = 60; return; } /*error: windowsize larger than allowed*/
-  if(encoder->settings.zlibsettings.btype > 2) { encoder->error = 61; return; } /*error: unexisting btype*/
-  if(encoder->infoPng.interlaceMethod > 1) { encoder->error = 71; return; } /*error: unexisting interlace mode*/
-  if((encoder->error = checkColorValidity(info.color.colorType, info.color.bitDepth))) return; /*error: unexisting color type given*/
-  if((encoder->error = checkColorValidity(encoder->infoRaw.color.colorType, encoder->infoRaw.color.bitDepth))) return; /*error: unexisting color type given*/
+  if(encoder->settings.zlibsettings.btype > 2) { encoder->error = 61; return; } /*error: nonexistent btype*/
+  if(encoder->infoPng.interlaceMethod > 1) { encoder->error = 71; return; } /*error: nonexistent interlace mode*/
+  if((encoder->error = checkColorValidity(info.color.colorType, info.color.bitDepth))) return; /*error: nonexistent color type given*/
+  if((encoder->error = checkColorValidity(encoder->infoRaw.color.colorType, encoder->infoRaw.color.bitDepth))) return; /*error: nonexistent color type given*/
 
   if(!LodePNG_InfoColor_equal(&encoder->infoRaw.color, &info.color))
   {

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="namespacelibrary_1_1v1" kind="namespace" language="C++">
+    <compoundname>library::v1</compoundname>
+    <innerclass refid="classlibrary_1_1v1_1_1foo" prot="public">library::v1::foo</innerclass>
+    <innernamespace refid="namespacelibrary_1_1v1_1_1_n_s">library::v1::NS</innernamespace>
+    <sectiondef kind="func">
+      <memberdef kind="function" id="namespacelibrary_1_1v1_1a2257981298fec15f79c54c28880ac15c" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void library::v1::func</definition>
+        <argsstring>()</argsstring>
+        <name>func</name>
+        <qualifiedname>library::v1::func</qualifiedname>
+        <briefdescription>
+          <para>a method </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="057_inlinenamespace.cpp" line="19" column="14" declfile="057_inlinenamespace.cpp" declline="19" declcolumn="14"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+      <para>the first namespace </para>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="057_inlinenamespace.cpp" line="10" column="5"/>
+  </compounddef>
+</doxygen>

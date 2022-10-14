@@ -22,3 +22,7 @@ More text
 [U]: http://example.com/last-line
 
 Dash - NDash -- MDash --- EDash \- ENDash \-- EMDash \--- E3Dash \-\-\-
+
+## Markdown in HTML
+
+<h3>**Header3** blah _blah_ `blah`</h3>

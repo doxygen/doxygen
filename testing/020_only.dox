@@ -1,4 +1,4 @@
-// objective: test the \*only and \*endonly commands
+// objective: test the \*only and \end*only commands
 // check: indexpage.xml
 /** \mainpage
  * Text.

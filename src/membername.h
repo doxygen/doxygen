@@ -1,12 +1,12 @@
 /******************************************************************************
  *
- * 
+ *
  *
  * Copyright (C) 1997-2015 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -18,87 +18,113 @@
 #ifndef MEMBERNAME_H
 #define MEMBERNAME_H
 
-#include <qlist.h>
 #include "memberdef.h"
-#include "sortdict.h"
+#include "linkedmap.h"
 
-/** Class representing all MemberDef objects with the same name */
-class MemberName : public QList<MemberDef>
+class MemberName
 {
   public:
-    MemberName(const char *name);
-   ~MemberName();
-    const char *memberName() const { return name; }
+    using Ptr = std::unique_ptr<MemberDef>;
+    using Vec = std::vector<Ptr>;
+    using iterator = typename Vec::iterator;
+    using const_iterator = typename Vec::const_iterator;
+    using reverse_iterator = typename Vec::reverse_iterator;
+    using const_reverse_iterator = typename Vec::const_reverse_iterator;
+
+    MemberName(const QCString &name) : m_name(name) {}
+    QCString memberName() const { return m_name; }
+
+    iterator begin()                       { return m_members.begin();   }
+    iterator end()                         { return m_members.end();     }
+    const_iterator begin() const           { return m_members.begin();   }
+    const_iterator end() const             { return m_members.end();     }
+    const_iterator cbegin() const          { return m_members.cbegin();  }
+    const_iterator cend() const            { return m_members.cend();    }
+    reverse_iterator rbegin()              { return m_members.rbegin();  }
+    reverse_iterator rend()                { return m_members.rend();    }
+    const_reverse_iterator crbegin() const { return m_members.crbegin(); }
+    const_reverse_iterator crend() const   { return m_members.crend();   }
+    bool empty() const                     { return m_members.empty();   }
+    size_t size() const                    { return m_members.size();    }
+    Ptr &back()                            { return m_members.back();    }
+    const Ptr &back() const                { return m_members.back();    }
+    Ptr &front()                           { return m_members.front();   }
+    const Ptr &front() const               { return m_members.front();   }
+    void push_back(Ptr &&p)                { m_members.push_back(std::move(p)); }
 
   private:
-    int compareValues(const MemberDef *item1,const MemberDef *item2) const;
-    QCString name;
+    QCString m_name;
+    Vec m_members;
 };
 
-/** Iterator for MemberDef objects in a MemberName list. */
-class MemberNameIterator : public QListIterator<MemberDef>
+/** Ordered dictionary of MemberName objects. */
+class MemberNameLinkedMap : public LinkedMap<MemberName>
 {
-  public:
-    MemberNameIterator( const MemberName &list);
-};
-
-/** Sorted dictionary of MemberName objects. */
-class MemberNameSDict : public SDict<MemberName>
-{
-  public:
-    MemberNameSDict(int size) : SDict<MemberName>(size) {}
-   ~MemberNameSDict() {}
-
-  private:
-   int compareValues(const MemberName *item1,const MemberName *item2) const;
 };
 
 /** Data associated with a MemberDef in an inheritance relation. */
-struct MemberInfo
-{
-  MemberInfo(MemberDef *md,Protection p,Specifier v,bool inh) :
-        memberDef(md), prot(p), virt(v), inherited(inh), ambigClass(0) {}
- ~MemberInfo() {}
-  MemberDef *memberDef;
-  Protection prot;
-  Specifier  virt;
-  bool       inherited;
-  QCString   scopePath;
-  QCString   ambiguityResolutionScope; 
-  ClassDef  *ambigClass;
-};
-
-/** Class representing all MemberInfo objects with the same name */
-class MemberNameInfo : public QList<MemberInfo>
+class MemberInfo
 {
   public:
-    MemberNameInfo(const char *name);  
-   ~MemberNameInfo() {}
-    const char *memberName() const { return name; }
+    MemberInfo(const MemberDef *md,Protection p,Specifier v,bool inh) :
+          m_memberDef(md), m_prot(p), m_virt(v), m_inherited(inh) {}
+   ~MemberInfo() = default;
+
+    // getters
+    const MemberDef *memberDef()                { return m_memberDef; }
+    const MemberDef *memberDef() const          { return m_memberDef; }
+    Protection prot() const                     { return m_prot;      }
+    Specifier  virt() const                     { return m_virt;      }
+    bool       inherited() const                { return m_inherited; }
+    QCString   scopePath() const                { return m_scopePath; }
+    QCString   ambiguityResolutionScope() const { return m_ambiguityResolutionScope; }
+    const ClassDef  *ambigClass() const         { return m_ambigClass; }
+
+    // setters
+    void setAmbiguityResolutionScope(const QCString &s) { m_ambiguityResolutionScope = s; }
+    void setScopePath(const QCString &s)                { m_scopePath = s; }
+    void setAmbigClass(const ClassDef *cd)              { m_ambigClass = cd; }
+
   private:
-    int compareValues(const MemberInfo *item1,const MemberInfo *item2) const;
-    QCString name;
+    const MemberDef *m_memberDef;
+    Protection     m_prot;
+    Specifier      m_virt;
+    bool           m_inherited;
+    QCString       m_scopePath;
+    QCString       m_ambiguityResolutionScope;
+    const ClassDef *m_ambigClass = 0;
 };
 
-/** Iterator for MemberInfo objects in a MemberNameInfo list. */
-class MemberNameInfoIterator : public QListIterator<MemberInfo>
+class MemberNameInfo
 {
   public:
-    MemberNameInfoIterator(const MemberNameInfo &mnii) 
-      : QListIterator<MemberInfo>(mnii) {}
-};
+    using Ptr = std::unique_ptr<MemberInfo>;
+    using Vec = std::vector<Ptr>;
+    using iterator = typename Vec::iterator;
+    using const_iterator = typename Vec::const_iterator;
 
-/** Sorted dictionary of MemberNameInfo objects. */
-class MemberNameInfoSDict : public SDict<MemberNameInfo>
-{
-  public:
-    MemberNameInfoSDict(int size) : SDict<MemberNameInfo>(size) {}
-   ~MemberNameInfoSDict() {}
+    MemberNameInfo(const QCString &name) : m_name(name) {}
+    QCString memberName() const { return m_name; }
+
+    iterator begin()                       { return m_members.begin();   }
+    iterator end()                         { return m_members.end();     }
+    const_iterator begin() const           { return m_members.begin();   }
+    const_iterator end() const             { return m_members.end();     }
+    bool empty() const                     { return m_members.empty();   }
+    size_t size() const                    { return m_members.size();    }
+    Ptr &back()                            { return m_members.back();    }
+    const Ptr &back() const                { return m_members.back();    }
+    Ptr &front()                           { return m_members.front();   }
+    const Ptr &front() const               { return m_members.front();   }
+    void push_back(Ptr &&p)                { m_members.push_back(std::move(p)); }
+
   private:
-    int compareValues(const MemberNameInfo *item1,const MemberNameInfo *item2) const
-    {
-      return qstricmp(item1->memberName(), item2->memberName());
-    }
+    QCString m_name;
+    Vec m_members;
+};
+
+class MemberNameInfoLinkedMap : public LinkedMap<MemberNameInfo>
+{
 };
 
 #endif

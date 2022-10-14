@@ -33,6 +33,9 @@
 #include "mscgen_safe.h"
 #include "mscgen_lexer.h"
 #include "mscgen_language.h"  /* Token definitions from Yacc/Bison */
+
+#define USE_STATE2STRING 0
+
 /* Counter for error reporting */
 static unsigned long  lex_linenum = 1;
 static char          *lex_line = NULL;
@@ -41,7 +44,10 @@ static Boolean        lex_utf8 = FALSE;
 /* Local function prototypes */
 static void newline(const char *text, unsigned int n);
 static char *trimQstring(char *s);
+
+#if USE_STATE2STRING
 static const char *stateToString(int state);
+#endif
 %}
 
 /* Not used, so prevent compiler warning */
@@ -142,7 +148,7 @@ NOTE|note                             yylval.arctype = MSC_ARC_NOTE;     return 
 %%
 
 /* Handle a new line of input.
- *  This counts the line number and duplicates the string incase we need
+ *  This counts the line number and duplicates the string in case we need
  *  it for error reporting.  The line is then returned back for parsing
  *  without the newline characters prefixed.
  */
@@ -234,5 +240,14 @@ Boolean lex_getutf8(void)
     return lex_utf8;
 }
 
+void lex_resetparser()
+{
+  lex_linenum = 1;
+  lex_line = NULL;
+  lex_utf8 = FALSE;
+}
+
+#if USE_STATE2STRING
 #include "mscgen_lexer.l.h"
+#endif
 /* END OF FILE */

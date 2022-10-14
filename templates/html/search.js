@@ -1,25 +1,26 @@
 /*
- @licstart  The following is the entire license notice for the
- JavaScript code in this file.
+ @licstart  The following is the entire license notice for the JavaScript code in this file.
 
- Copyright (C) 1997-2017 by Dimitri van Heesch
+ The MIT License (MIT)
 
- This program is free software; you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation; either version 2 of the License, or
- (at your option) any later version.
+ Copyright (C) 1997-2020 by Dimitri van Heesch
 
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
+ Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+ and associated documentation files (the "Software"), to deal in the Software without restriction,
+ including without limitation the rights to use, copy, modify, merge, publish, distribute,
+ sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
 
- You should have received a copy of the GNU General Public License along
- with this program; if not, write to the Free Software Foundation, Inc.,
- 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ The above copyright notice and this permission notice shall be included in all copies or
+ substantial portions of the Software.
 
- @licend  The above is the entire license notice
- for the JavaScript code in this file
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+ BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+ @licend  The above is the entire license notice for the JavaScript code in this file
  */
 function convertToId(search)
 {
@@ -72,6 +73,8 @@ function getYPos(item)
   return y;
 }
 
+var searchResults = new SearchResults("searchResults");
+
 /* A class handling everything associated with the search panel.
 
    Parameters:
@@ -79,9 +82,10 @@ function getYPos(item)
           storing this instance.  Is needed to be able to set timeouts.
    resultPath - path to use for external files
 */
-function SearchBox(name, resultsPath, inFrame, label)
+function SearchBox(name, resultsPath, extension)
 {
   if (!name || !resultsPath) {  alert("Missing parameters to SearchBox."); }
+  if (!extension || extension == "") { extension = ".html"; }
 
   // ---------- Instance variables
   this.name                  = name;
@@ -94,8 +98,7 @@ function SearchBox(name, resultsPath, inFrame, label)
   this.hideTimeout           = 0;
   this.searchIndex           = 0;
   this.searchActive          = false;
-  this.insideFrame           = inFrame;
-  this.searchLabel           = label;
+  this.extension             = extension;
 
   // ----------- DOM Elements
 
@@ -133,30 +136,14 @@ function SearchBox(name, resultsPath, inFrame, label)
     var searchSelectWindow = this.DOMSearchSelectWindow();
     var searchField        = this.DOMSearchSelect();
 
-    if (this.insideFrame)
-    {
-      var left = getXPos(searchField);
-      var top  = getYPos(searchField);
-      left += searchField.offsetWidth + 6;
-      top += searchField.offsetHeight;
+    var left = getXPos(searchField);
+    var top  = getYPos(searchField);
+    top += searchField.offsetHeight;
 
-      // show search selection popup
-      searchSelectWindow.style.display='block';
-      left -= searchSelectWindow.offsetWidth;
-      searchSelectWindow.style.left =  left + 'px';
-      searchSelectWindow.style.top  =  top  + 'px';
-    }
-    else
-    {
-      var left = getXPos(searchField);
-      var top  = getYPos(searchField);
-      top += searchField.offsetHeight;
-
-      // show search selection popup
-      searchSelectWindow.style.display='block';
-      searchSelectWindow.style.left =  left + 'px';
-      searchSelectWindow.style.top  =  top  + 'px';
-    }
+    // show search selection popup
+    searchSelectWindow.style.display='block';
+    searchSelectWindow.style.left =  left + 'px';
+    searchSelectWindow.style.top  =  top  + 'px';
 
     // stop selection hide timer
     if (this.hideTimeout)
@@ -200,9 +187,9 @@ function SearchBox(name, resultsPath, inFrame, label)
         }
         return;
       }
-      else if (window.frames.MSearchResults.searchResults)
+      else
       {
-        var elem = window.frames.MSearchResults.searchResults.NavNext(0);
+        var elem = searchResults.NavNext(0);
         if (elem) elem.focus();
       }
     }
@@ -339,55 +326,66 @@ function SearchBox(name, resultsPath, inFrame, label)
       idxChar = searchValue.substr(0, 2);
     }
 
-    var resultsPage;
-    var resultsPageWithSearch;
-    var hasResultsPage;
+    var jsFile;
 
     var idx = indexSectionsWithContent[this.searchIndex].indexOf(idxChar);
     if (idx!=-1)
     {
        var hexCode=idx.toString(16);
-       resultsPage = this.resultsPath + '/' + indexSectionNames[this.searchIndex] + '_' + hexCode + '.html';
-       resultsPageWithSearch = resultsPage+'?'+escape(searchValue);
-       hasResultsPage = true;
-    }
-    else // nothing available for this search term
-    {
-       resultsPage = this.resultsPath + '/nomatches.html';
-       resultsPageWithSearch = resultsPage;
-       hasResultsPage = false;
+       jsFile = this.resultsPath + indexSectionNames[this.searchIndex] + '_' + hexCode + '.js';
     }
 
-    window.frames.MSearchResults.location = resultsPageWithSearch;
+    var loadJS = function(url, impl, loc){
+      var scriptTag = document.createElement('script');
+      scriptTag.src = url;
+      scriptTag.onload = impl;
+      scriptTag.onreadystatechange = impl;
+      loc.appendChild(scriptTag);
+    }
+
     var domPopupSearchResultsWindow = this.DOMPopupSearchResultsWindow();
+    var domSearchBox = this.DOMSearchBox();
+    var domPopupSearchResults = this.DOMPopupSearchResults();
+    var domSearchClose = this.DOMSearchClose();
+    var resultsPath = this.resultsPath;
 
-    if (domPopupSearchResultsWindow.style.display!='block')
-    {
-       var domSearchBox = this.DOMSearchBox();
-       this.DOMSearchClose().style.display = 'inline';
-       if (this.insideFrame)
-       {
-         var domPopupSearchResults = this.DOMPopupSearchResults();
-         domPopupSearchResultsWindow.style.position = 'relative';
-         domPopupSearchResultsWindow.style.display  = 'block';
-         var width = document.body.clientWidth - 8; // the -8 is for IE :-(
-         domPopupSearchResultsWindow.style.width    = width + 'px';
-         domPopupSearchResults.style.width          = width + 'px';
-       }
-       else
-       {
-         var domPopupSearchResults = this.DOMPopupSearchResults();
-         var left = getXPos(domSearchBox) + 150; // domSearchBox.offsetWidth;
-         var top  = getYPos(domSearchBox) + 20;  // domSearchBox.offsetHeight + 1;
-         domPopupSearchResultsWindow.style.display = 'block';
-         left -= domPopupSearchResults.offsetWidth;
-         domPopupSearchResultsWindow.style.top     = top  + 'px';
-         domPopupSearchResultsWindow.style.left    = left + 'px';
-       }
+    var handleResults = function() {
+      document.getElementById("Loading").style.display="none";
+      if (typeof searchData !== 'undefined') {
+        createResults(resultsPath);
+        document.getElementById("NoMatches").style.display="none";
+      }
+ 
+      searchResults.Search(searchValue);
+
+      if (domPopupSearchResultsWindow.style.display!='block')
+      {
+        domSearchClose.style.display = 'inline-block';
+        var left = getXPos(domSearchBox) + 150;
+        var top  = getYPos(domSearchBox) + 20;
+        domPopupSearchResultsWindow.style.display = 'block';
+        left -= domPopupSearchResults.offsetWidth;
+        var maxWidth  = document.body.clientWidth;
+        var maxHeight = document.body.clientHeight;
+        var width = 300;
+        if (left<10) left=10;
+        if (width+left+8>maxWidth) width=maxWidth-left-8;
+        var height = 400;
+        if (height+top+8>maxHeight) height=maxHeight-top-8;
+        domPopupSearchResultsWindow.style.top     = top  + 'px';
+        domPopupSearchResultsWindow.style.left    = left + 'px';
+        domPopupSearchResultsWindow.style.width   = width + 'px';
+        domPopupSearchResultsWindow.style.height  = height + 'px';
+      }
+    }
+
+    if (jsFile) {
+      loadJS(jsFile, handleResults, this.DOMPopupSearchResultsWindow());
+    } else {
+      handleResults();
     }
 
     this.lastSearchValue = searchValue;
-    this.lastResultsPage = resultsPage;
   }
 
   // -------- Activation Functions
@@ -401,22 +399,15 @@ function SearchBox(name, resultsPath, inFrame, label)
        )
     {
       this.DOMSearchBox().className = 'MSearchBoxActive';
-
-      var searchField = this.DOMSearchField();
-
-      if (searchField.value == this.searchLabel) // clear "Search" term upon entry
-      {
-        searchField.value = '';
-        this.searchActive = true;
-      }
+      this.searchActive = true;
     }
     else if (!isActive) // directly remove the panel
     {
       this.DOMSearchBox().className = 'MSearchBoxInactive';
-      this.DOMSearchField().value   = this.searchLabel;
       this.searchActive             = false;
       this.lastSearchValue          = ''
       this.lastResultsPage          = '';
+      this.DOMSearchField().value   = '';
     }
   }
 }
@@ -439,12 +430,12 @@ function SearchResults(name)
 
       while (element && element!=parentElement)
       {
-        if (element.nodeName == 'DIV' && element.className == 'SRChildren')
+        if (element.nodeName.toLowerCase() == 'div' && element.className == 'SRChildren')
         {
           return element;
         }
 
-        if (element.nodeName == 'DIV' && element.hasChildNodes())
+        if (element.nodeName.toLowerCase() == 'div' && element.hasChildNodes())
         {
            element = element.firstChild;
         }
@@ -645,7 +636,7 @@ function SearchResults(name)
         }
         else // return focus to search field
         {
-           parent.document.getElementById("MSearchField").focus();
+           document.getElementById("MSearchField").focus();
         }
       }
       else if (this.lastKey==40) // Down
@@ -675,8 +666,8 @@ function SearchResults(name)
       }
       else if (this.lastKey==27) // Escape
       {
-        parent.searchBox.CloseResultsWindow();
-        parent.document.getElementById("MSearchField").focus();
+        searchBox.CloseResultsWindow();
+        document.getElementById("MSearchField").focus();
       }
       else if (this.lastKey==13) // Enter
       {
@@ -718,8 +709,8 @@ function SearchResults(name)
       }
       else if (this.lastKey==27) // Escape
       {
-        parent.searchBox.CloseResultsWindow();
-        parent.document.getElementById("MSearchField").focus();
+        searchBox.CloseResultsWindow();
+        document.getElementById("MSearchField").focus();
       }
       else if (this.lastKey==13) // Enter
       {
@@ -742,9 +733,10 @@ function setClassAttr(elem,attr)
   elem.setAttribute('className',attr);
 }
 
-function createResults()
+function createResults(resultsPath)
 {
   var results = document.getElementById("SRResults");
+  results.innerHTML = '';
   for (var e=0; e<searchData.length; e++)
   {
     var id = searchData[e][0];
@@ -761,10 +753,15 @@ function createResults()
     srEntry.appendChild(srLink);
     if (searchData[e][1].length==2) // single result
     {
-      srLink.setAttribute('href',searchData[e][1][1][0]);
+      srLink.setAttribute('href',resultsPath+searchData[e][1][1][0]);
+      srLink.setAttribute('onclick','searchBox.CloseResultsWindow()');
       if (searchData[e][1][1][1])
       {
        srLink.setAttribute('target','_parent');
+      }
+      else
+      {
+       srLink.setAttribute('target','_blank');
       }
       var srScope = document.createElement('span');
       setClassAttr(srScope,'SRScope');
@@ -782,10 +779,15 @@ function createResults()
         srChild.setAttribute('id','Item'+e+'_c'+c);
         setKeyActions(srChild,'return searchResults.NavChild(event,'+e+','+c+')');
         setClassAttr(srChild,'SRScope');
-        srChild.setAttribute('href',searchData[e][1][c+1][0]);
+        srChild.setAttribute('href',resultsPath+searchData[e][1][c+1][0]);
+        srChild.setAttribute('onclick','searchBox.CloseResultsWindow()');
         if (searchData[e][1][c+1][1])
         {
          srChild.setAttribute('target','_parent');
+        }
+        else
+        {
+         srChild.setAttribute('target','_blank');
         }
         srChild.innerHTML = searchData[e][1][c+1][2];
         srChildren.appendChild(srChild);

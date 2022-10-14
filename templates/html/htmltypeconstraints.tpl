@@ -1,6 +1,6 @@
 {# obj should be a class or member #}
 {% if obj.typeConstraints %}
-  <div class="typecontraint">
+  <div class="typeconstraint">
   <dl><dt><b>{{ tr.typeConstraints }}</b></dt>
   <dd><table border="0" cellspacing="2" cellpadding="0">
   {% for arg in obj.typeConstraints %}

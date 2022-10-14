@@ -2,8 +2,8 @@
  * Copyright (C) 1997-2015 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -19,6 +19,8 @@
  *         !     NOT operator
  */
 
+#include <algorithm>
+
 #include "condparser.h"
 #include "config.h"
 #include "message.h"
@@ -27,19 +29,20 @@
 
 /**
  * parses and evaluates the given expression.
- * @returns 
+ * @returns
  * - On error, an error message is returned.
  * - On success, the result of the expression is either "1" or "0".
  */
-bool CondParser::parse(const char *fileName,int lineNr,const char *expr)
+bool CondParser::parse(const QCString &fileName,int lineNr,const QCString &expr)
 {
+  if (expr.isEmpty()) return false;
   m_expr      = expr;
   m_tokenType = NOTHING;
 
   // initialize all variables
-  m_e = m_expr;    // let m_e point to the start of the expression
+  m_e = m_expr.data();    // let m_e point to the start of the expression
 
-  bool answer=FALSE;
+  bool answer=false;
   getToken();
   if (m_tokenType==DELIMITER && m_token.isEmpty())
   {
@@ -48,35 +51,11 @@ bool CondParser::parse(const char *fileName,int lineNr,const char *expr)
   else if (m_err.isEmpty())
   {
     answer = parseLevel1();
-
-#if 0
-    // check for garbage at the end of the expression
-    // an expression ends with a character '\0' and token_type = delimiter
-    if (m_tokenType!=DELIMITER || !m_token.isEmpty())
-    {
-      if (m_tokenType == DELIMITER)
-      {
-        if (m_token=="(" || m_token==")")
-        {
-          m_err=QCString("Unexpected parenthesis ")+m_token+"'";
-        }
-        else
-        {
-          // user entered a not existing operator like "//"
-          m_err=QCString("Unexpected operator ")+m_token+"'";
-        }
-      }
-      else
-      {
-        m_err=QCString("Unexpected part '")+m_token+"'";
-      }
-    }
-#endif
   }
-  if (m_err)
+  if (!m_err.isEmpty())
   {
     warn(fileName,lineNr,"problem evaluating expression '%s': %s",
-        expr,m_err.data());
+        qPrint(expr),qPrint(m_err));
   }
   //printf("expr='%s' answer=%d\n",expr,answer);
   return answer;
@@ -102,8 +81,7 @@ static bool isAlpha(const char c)
 
 static bool isAlphaNumSpec(const char c)
 {
-  return isAlpha(c) || (c>='0' && c<='9') || c=='-' || c=='.' ||
-    (((unsigned char)c)>=0x80 && ((unsigned char)c)<=0xFF);
+  return isAlpha(c) || (c>='0' && c<='9') || c=='-' || c=='.' || (static_cast<unsigned char>(c)>=0x80);
 }
 
 /**
@@ -124,18 +102,18 @@ int CondParser::getOperatorId(const QCString &opName)
 
 /**
  * Get next token in the current string expr.
- * Uses the data in m_expr pointed to by m_e to 
+ * Uses the data in m_expr pointed to by m_e to
  * produce m_tokenType and m_token, set m_err in case of an error
  */
 void CondParser::getToken()
 {
   m_tokenType = NOTHING;
-  m_token.resize(0);     
+  m_token.resize(0);
 
   //printf("\tgetToken e:{%c}, ascii=%i, col=%i\n", *e, *e, e-expr);
 
   // skip over whitespaces
-  while (*m_e == ' ' || *m_e == '\t')     // space or tab
+  while (*m_e == ' ' || *m_e == '\t' || *m_e == '\n')     // space or tab or newline
   {
     m_e++;
   }
@@ -257,7 +235,7 @@ bool CondParser::parseLevel3()
 
 bool CondParser::parseVar()
 {
-  bool ans = 0;
+  bool ans = false;
   switch (m_tokenType)
   {
     case VARIABLE:
@@ -302,9 +280,9 @@ bool CondParser::evalOperator(int opId, bool lhs, bool rhs)
 /**
  * evaluate a variable
  */
-bool CondParser::evalVariable(const char *varName)
+bool CondParser::evalVariable(const QCString &varName)
 {
-  if (Config_getList(ENABLED_SECTIONS).find(varName)==-1) return FALSE;
-  return TRUE;
+  const StringVector &list = Config_getList(ENABLED_SECTIONS);
+  return std::find(list.begin(),list.end(),varName.str())!=list.end();
 }
 

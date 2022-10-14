@@ -2,6 +2,10 @@
 // check: group__g1.xml
 // check: group__g2.xml
 // check: group__g3.xml
+// check: group___a.xml
+// check: group___b.xml
+// check: group___c.xml
+// check: group___d.xml
 
 /** \defgroup g1 First Group
  *  Text for first group.
@@ -38,7 +42,7 @@ void func_g3();
 /** \} */
 
 /** \addtogroup g3
- *  \{ 
+ *  \{
  */
 
 /** Another function added to the third group */
@@ -46,3 +50,30 @@ void func_g3_add();
 
 /** \} */
 
+/**
+  @defgroup A A
+  @{
+ */
+
+/** @defgroup B B
+   @{
+ */
+
+/// \}
+
+/** @defgroup C C
+   @{
+ */
+
+/** @} */
+
+/**
+  @defgroup D D
+  @{
+ */
+
+/// @}
+
+/**
+@}
+*/
