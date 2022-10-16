@@ -239,7 +239,7 @@ jobs:
       if: matrix.config.os == 'windows-latest'
     
     - name: Install Qt
-      uses: jurplel/install-qt-action@v2
+      uses: jurplel/install-qt-action@v3
     
     - name: Check tool versions (Linux / MacOS)
       shell: bash
