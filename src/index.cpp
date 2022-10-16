@@ -4931,6 +4931,7 @@ static void writeIndexHierarchyEntries(OutputList &ol,const LayoutNavEntryList &
           writeExampleIndex(ol);
           break;
         case LayoutNavEntry::User:
+          if (addToIndex)
           {
             // prepend a ! or ^ marker to the URL to avoid tampering with it
             QCString url = correctURL(lne->url(),"!"); // add ! to relative URL
