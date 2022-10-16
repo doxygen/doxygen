@@ -642,7 +642,7 @@ STopt  [^\n@\\]*
                                           addOutput(yyscanner,yytext);
                                         }
 <Comment>"</"{DETAILS}">"               { // end of a HTML style details description
-                                          if (yyextra->HTMLDetailsSummary.size())
+                                          if (!yyextra->HTMLDetailsSummary.empty())
                                           {
                                             yyextra->HTMLDetailsSummary.pop_back();
                                           }
@@ -708,16 +708,22 @@ STopt  [^\n@\\]*
                                           yyextra->htmlAnchorStr += yytext;
                                         }
 <Comment>"<"{SUMMARY}">"                { // start of a .NET XML style brief description
-                                          if (!yyextra->HTMLDetailsSummary.size()) setOutput(yyscanner,OutputBrief);
+                                          if (yyextra->HTMLDetailsSummary.empty())
+                                          {
+                                            setOutput(yyscanner,OutputBrief);
+                                          }
                                           else
                                           {
-                                            int id = yyextra->HTMLDetailsSummary[yyextra->HTMLDetailsSummary.size()-1];
+                                            int id = yyextra->HTMLDetailsSummary.back();
                                             if (id == 0)
                                             {
                                               addOutput(yyscanner,"\\htmlonly </p> \\endhtmlonly");
                                               addOutput(yyscanner,yytext);
                                             }
-                                            else addOutput(yyscanner,"<p>");
+                                            else
+                                            {
+                                              addOutput(yyscanner,"<p>");
+                                            }
                                             yyextra->HTMLDetailsSummary.pop_back();
                                             yyextra->HTMLDetailsSummary.push_back(id+1);
                                           }
@@ -727,9 +733,9 @@ STopt  [^\n@\\]*
                                           addOutput(yyscanner,yytext);
                                         }
 <Comment>"</"{SUMMARY}">"               { // start of a .NET XML style detailed description
-                                          if (yyextra->HTMLDetailsSummary.size())
+                                          if (!yyextra->HTMLDetailsSummary.empty())
                                           {
-                                            int id = yyextra->HTMLDetailsSummary[yyextra->HTMLDetailsSummary.size()-1];
+                                            int id = yyextra->HTMLDetailsSummary.back();
                                             if (id == 1)
                                             {
                                               addOutput(yyscanner,yytext);
