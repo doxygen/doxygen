@@ -902,10 +902,8 @@ Structural indicators
   \addindex \\name
 
   This command turns a comment block into a header
-  definition of a member group. The
-  comment block should be followed by a
-  <code>///\@{ ... ///\@}</code> block containing the
-  members of the group.
+  definition of a member group. The comment block should be followed by a
+  `@{` ... `@}` block containing the members of the group.
 
   See section \ref memgroup for an example.
 
@@ -2076,7 +2074,7 @@ void setPosition(double x,double y,double z,double t)
   for an example.
 
 <hr>
-\section cmdxrefitem \\xrefitem <key> "(heading)" "(list title)" { text }
+\section cmdxrefitem \\xrefitem <key> "heading" "list title" { text }
 
  \addindex \\xrefitem
  This command is a generalization of commands such as \ref cmdtodo "\\todo"
@@ -2091,7 +2089,8 @@ void setPosition(double x,double y,double z,double t)
  is a quoted string representing the heading of the section under which
  text passed as the fourth argument is put. The third argument (list title)
  is used as the title for the related page containing all items with the
- same key. The keys \c "todo", \c "test", \c "bug" and \c "deprecated" are predefined.
+ same key. The second and third string argument cannot contain a newline.
+ The keys \c "todo", \c "test", \c "bug" and \c "deprecated" are predefined.
 
  To get an idea on how to use the \c \\xrefitem command and what its effect
  is, consider the todo list, which (for English output) can be seen an
