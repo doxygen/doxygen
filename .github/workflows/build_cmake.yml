@@ -143,7 +143,7 @@ jobs:
       run: |
         ./miktexsetup_standalone --verbose \
                       --local-package-repository=C:/miktex-repository \
-                      --remote-package-repository="https://ctan.math.illinois.edu/systems/win32/miktex/tm/packages/" \
+                      --remote-package-repository="https://ctan.math.illinois.edu/systems/win32/miktex/tm/packages/next/" \
                       --package-set=essential \
                       download
       if: matrix.config.os == 'windows-latest'
