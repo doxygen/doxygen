@@ -405,7 +405,7 @@ jobs:
       if: matrix.config.name == 'Ubuntu Latest GCC Release'
 
     - name: Publish Internal documentation to Github pages
-      uses: peaceiris/actions-gh-pages@v3.8
+      uses: peaceiris/actions-gh-pages@v3
       with:
          github_token: ${{ secrets.GITHUB_TOKEN }}
          publish_dir: build/doxygen_docs/html
