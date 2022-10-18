@@ -69,21 +69,21 @@ jobs:
     - name: Checkout doxygen
       uses: actions/checkout@v3
       
-    - name: Download MikTex (Windows)
-      run: |
-        $wc = New-Object System.Net.WebClient;
-        $maxAttempts=5;
-        $attemptCount=0;
-        Do {
-          $attemptCount++;
-          Try {
-            $wc.DownloadFile("http://mirror.easyname.at/ctan/systems/win32/miktex/setup/windows-x64/miktexsetup-5.1-x64.zip","miktexsetup-5.1-x64.zip")
-          } Catch [Exception] {
-            Write-Host $_.Exception | format-list -force
-          }
-        } while (((Test-Path "miktexsetup-5.1-x64.zip") -eq $false) -and ($attemptCount -le $maxAttempts))  
-      shell: pwsh
-      if: matrix.config.os == 'windows-latest'
+#    - name: Download MikTex (Windows)
+#      run: |
+#        $wc = New-Object System.Net.WebClient;
+#        $maxAttempts=5;
+#        $attemptCount=0;
+#        Do {
+#          $attemptCount++;
+#          Try {
+#            $wc.DownloadFile("http://mirror.easyname.at/ctan/systems/win32/miktex/setup/windows-x64/miktexsetup-5.1-x64.zip","miktexsetup-5.1-x64.zip")
+#          } Catch [Exception] {
+#            Write-Host $_.Exception | format-list -force
+#          }
+#        } while (((Test-Path "miktexsetup-5.1-x64.zip") -eq $false) -and ($attemptCount -le $maxAttempts))  
+#      shell: pwsh
+#      if: matrix.config.os == 'windows-latest'
       
     - name: Install libiconv (Windows)
       uses: suisei-cn/actions-download-file@v1
@@ -132,40 +132,40 @@ jobs:
         sudo apt install libxapian-dev
       if: matrix.config.os == 'ubuntu-20.04'
           
-    - name: Extract MikTex zip (Windows)
-      shell: bash
-      run: |
-        unzip miktexsetup-5.1-x64.zip
-      if: matrix.config.os == 'windows-latest'
+#    - name: Extract MikTex zip (Windows)
+#      shell: bash
+#      run: |
+#        unzip miktexsetup-5.1-x64.zip
+#      if: matrix.config.os == 'windows-latest'
 
-    - name: Download MikTex packages (Windows)
-      shell: bash
-      run: |
-        ./miktexsetup_standalone --verbose \
-                      --local-package-repository=C:/miktex-repository \
-                      --remote-package-repository="http://mirror.easyname.at/ctan/systems/win32/miktex/tm/packages/" \
-                      --package-set=essential \
-                      download
-      if: matrix.config.os == 'windows-latest'
+#    - name: Download MikTex packages (Windows)
+#      shell: bash
+#      run: |
+#        ./miktexsetup_standalone --verbose \
+#                      --local-package-repository=C:/miktex-repository \
+#                      --remote-package-repository="http://mirror.easyname.at/ctan/systems/win32/miktex/tm/packages/" \
+#                      --package-set=essential \
+#                      download
+#      if: matrix.config.os == 'windows-latest'
 
-    - name: Install MikTex packages (Windows)
-      shell: bash
-      run: |
-        ./miktexsetup_standalone --local-package-repository=C:/miktex-repository \
-                      --package-set=essential \
-                      --shared \
-                      install
-      if: matrix.config.os == 'windows-latest'
+#    - name: Install MikTex packages (Windows)
+#      shell: bash
+#      run: |
+#        ./miktexsetup_standalone --local-package-repository=C:/miktex-repository \
+#                      --package-set=essential \
+#                      --shared \
+#                      install
+#      if: matrix.config.os == 'windows-latest'
 
-    - name: Setting MikTex paths (Windows)
-      shell: bash
-      run: |
-        echo "C:/Program Files/MiKTeX/miktex/bin/x64/" >> $GITHUB_PATH
-        export PATH="/c/Program Files/MiKTeX/miktex/bin/x64/:$PATH"
-        
-        echo "Configuring MiKTeX to install missing packages on the fly"
-        initexmf --admin --verbose --set-config-value='[MPM]AutoInstall=1'
-      if: matrix.config.os == 'windows-latest'
+#    - name: Setting MikTex paths (Windows)
+#      shell: bash
+#      run: |
+#        echo "C:/Program Files/MiKTeX/miktex/bin/x64/" >> $GITHUB_PATH
+#        export PATH="/c/Program Files/MiKTeX/miktex/bin/x64/:$PATH"
+#        
+#        echo "Configuring MiKTeX to install missing packages on the fly"
+#        initexmf --admin --verbose --set-config-value='[MPM]AutoInstall=1'
+#      if: matrix.config.os == 'windows-latest'
 
     - name: Install Ghostscript (Linux)
       run: |
