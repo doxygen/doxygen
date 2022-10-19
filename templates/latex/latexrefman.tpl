@@ -9,6 +9,7 @@
 \usepackage{<{package|stripExtension:'.sty'}>}
 <% endfor %>
 \usepackage{graphicx}
+\usepackage{svg}
 \usepackage[utf8]{inputenc}
 \usepackage{makeidx}
 \usepackage{multicol}

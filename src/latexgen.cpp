@@ -294,8 +294,8 @@ static void writeLatexMakefile()
   }
   TextStream t(&f);
   // inserted by KONNO Akihisa <konno@researchers.jp> 2002-03-05
-  QCString latex_command = theTranslator->latexCommandName().quoted();
-  QCString mkidx_command = Config_getString(MAKEINDEX_CMD_NAME).quoted();
+  QCString latex_command = theTranslator->latexCommandName();
+  QCString mkidx_command = Config_getString(MAKEINDEX_CMD_NAME);
   QCString bibtex_command = "bibtex";
   QCString manual_file = "refman";
   const int latex_count = 8;
@@ -387,8 +387,8 @@ static void writeMakeBat()
 #if defined(_MSC_VER)
   QCString dir=Config_getString(LATEX_OUTPUT);
   QCString fileName=dir+"/make.bat";
-  QCString latex_command = theTranslator->latexCommandName().quoted();
-  QCString mkidx_command = Config_getString(MAKEINDEX_CMD_NAME).quoted();
+  QCString latex_command = theTranslator->latexCommandName();
+  QCString mkidx_command = Config_getString(MAKEINDEX_CMD_NAME);
   QCString bibtex_command = "bibtex";
   QCString manual_file = "refman";
   const int latex_count = 8;

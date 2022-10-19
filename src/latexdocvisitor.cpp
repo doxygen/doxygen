@@ -75,6 +75,7 @@ static void insertDimension(TextStream &t, QCString dimension, const char *orien
 
 static void visitPreStart(TextStream &t, bool hasCaption, QCString name,  QCString width,  QCString height, bool inlineImage = FALSE)
 {
+    bool isSvg = name.right(4)==".svg";
     if (inlineImage)
     {
       t << "\n\\begin{DoxyInlineImage}\n";
@@ -92,10 +93,15 @@ static void visitPreStart(TextStream &t, bool hasCaption, QCString name,  QCStri
       }
     }
 
-    t << "\\includegraphics";
+    if (isSvg)
+      t << "\\includesvg";
+    else 
+      t << "\\includegraphics";
+
     if (!width.isEmpty() || !height.isEmpty())
     {
       t << "[";
+      if (isSvg) t << "inkscapelatex=false,";
     }
     if (!width.isEmpty())
     {
@@ -114,13 +120,27 @@ static void visitPreStart(TextStream &t, bool hasCaption, QCString name,  QCStri
     if (width.isEmpty() && height.isEmpty())
     {
       /* default setting */
-      if (inlineImage)
+      if (isSvg)
       {
-        t << "[height=\\baselineskip,keepaspectratio=true]";
+        if (inlineImage)
+        {
+          t << "[inkscapelatex=false,height=\\baselineskip]";
+        }
+        else
+        {
+          t << "[inkscapelatex=false,width=\\textwidth,height=0.5\\textheight]";
+        }
       }
       else
       {
-        t << "[width=\\textwidth,height=\\textheight/2,keepaspectratio=true]";
+        if (inlineImage)
+        {
+          t << "[height=\\baselineskip,keepaspectratio=true]";
+        }
+        else
+        {
+          t << "[width=\\textwidth,height=\\textheight/2,keepaspectratio=true]";
+        }
       }
     }
     else
