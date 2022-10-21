@@ -412,12 +412,6 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
     virtual QCString trFileDocumentation()
     { return "Documentació dels Fitxers"; }
 
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all examples.
-     */
-    virtual QCString trExampleDocumentation()
-    { return "Documentació dels Exemples"; }
-
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
     { return "Manual de Referència"; }

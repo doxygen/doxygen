@@ -436,12 +436,6 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
     virtual QCString trFileDocumentation()
     { return "파일 문서화"; }
 
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all examples.
-     */
-    virtual QCString trExampleDocumentation()
-    { return "예제 문서화"; }
-
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
     { return "참조 매뉴얼"; }

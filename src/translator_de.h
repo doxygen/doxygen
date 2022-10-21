@@ -505,12 +505,6 @@ class TranslatorGerman : public TranslatorAdapter_1_8_15
     virtual QCString trFileDocumentation()
     { return "Datei-Dokumentation"; }
 
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all examples.
-     */
-    virtual QCString trExampleDocumentation()
-    { return "Dokumentation der Beispiele"; }
-
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
     { return "Nachschlagewerk"; }

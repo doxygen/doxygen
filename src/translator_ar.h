@@ -395,12 +395,6 @@ class TranslatorArabic : public TranslatorAdapter_1_4_6
     virtual QCString trFileDocumentation()
     { return "توثيق الملفات"; }
 
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all examples.
-     */
-    virtual QCString trExampleDocumentation()
-    { return "توثيق الأمثلة"; }
-
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
     { return "الكتيب المرجعي"; }

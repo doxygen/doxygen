@@ -362,12 +362,6 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
     virtual QCString trFileDocumentation()
     { return "Ֆայլեր"; }
 
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all examples.
-     */
-    virtual QCString trExampleDocumentation()
-    { return "Օրինակներ"; }
-
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
     { return "Հղումների ձեռնարկ"; }

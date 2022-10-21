@@ -431,12 +431,6 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
     virtual QCString trFileDocumentation()
     { return "Thông tin về File"; }
 
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all examples.
-     */
-    virtual QCString trExampleDocumentation()
-    { return "Thông tin về các ví dụ"; }
-
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
     { return "Thông tin tham chiếu"; }

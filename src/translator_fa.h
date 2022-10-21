@@ -404,12 +404,6 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
     virtual QCString trFileDocumentation()
     { return "مستندات فایل"; }
 
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all examples.
-     */
-    virtual QCString trExampleDocumentation()
-    { return "مستندات مثال"; }
-
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
     { return "راهنمای مرجع"; }

@@ -349,9 +349,6 @@ class TranslatorChinese : public TranslatorAdapter_1_9_4
     virtual QCString trFileDocumentation()
     { return "文件说明"; }
 
-    virtual QCString trExampleDocumentation()
-    { return "示例说明"; }
-
     virtual QCString trReferenceManual()
     { return "参考手册"; }
 

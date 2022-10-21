@@ -397,12 +397,6 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
     virtual QCString trFileDocumentation()
     { return "Документија на Датотеки"; }
 
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all examples.
-     */
-    virtual QCString trExampleDocumentation()
-    { return "Документаија на Примери"; }
-
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
     { return "Прирачник"; }

@@ -472,12 +472,6 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
     virtual QCString trFileDocumentation()
     { return "फ़ाइल दस्तावेज़ीकरण"; }
 
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all examples.
-     */
-    virtual QCString trExampleDocumentation()
-    { return "उदाहरण दस्तावेज़ीकरण"; }
-
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
     { return "संदर्भ पुस्तिका"; }

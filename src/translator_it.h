@@ -422,12 +422,6 @@ class TranslatorItalian : public TranslatorAdapter_1_8_15
     QCString trFileDocumentation()
     { return "Documentazione dei file"; }
 
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all examples.
-     */
-    QCString trExampleDocumentation()
-    { return "Documentazione degli esempi"; }
-
     /*! This is used in LaTeX as the title of the document */
     QCString trReferenceManual()
     { return "Manuale di riferimento"; }

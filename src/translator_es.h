@@ -403,12 +403,6 @@ class TranslatorSpanish : public TranslatorAdapter_1_8_19
     virtual QCString trFileDocumentation()
     { return "Documentación de archivos"; }
 
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all examples.
-     */
-    virtual QCString trExampleDocumentation()
-    { return "Documentación de ejemplos"; }
-
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
     { return "Manual de referencia"; }

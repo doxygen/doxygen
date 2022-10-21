@@ -196,7 +196,6 @@ class Translator
     virtual QCString trModuleDocumentation() = 0;
     virtual QCString trClassDocumentation() = 0;
     virtual QCString trFileDocumentation() = 0;
-    virtual QCString trExampleDocumentation() = 0;
     virtual QCString trReferenceManual() = 0;
     virtual QCString trDefines() = 0;
     virtual QCString trTypedefs() = 0;

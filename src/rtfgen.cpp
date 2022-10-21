@@ -902,7 +902,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
       {
         //m_t << "}\n";
         bool isFirst=true;
-        m_t << "{\\tc \\v " << theTranslator->trExampleDocumentation() << "}\n";
+        m_t << "{\\tc \\v " << theTranslator->trExamples() << "}\n";
         for (const auto &pd : *Doxygen::exampleLinkedMap)
         {
           m_t << "\\par " << rtf_Style_Reset << "\n";

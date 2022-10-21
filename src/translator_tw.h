@@ -419,12 +419,6 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
     virtual QCString trFileDocumentation()
     { return "檔案說明文件"; }
 
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all examples.
-     */
-    virtual QCString trExampleDocumentation()
-    { return "範例說明文件"; }
-
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
     { return "參考手冊"; }

@@ -394,12 +394,6 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
     virtual QCString trFileDocumentation()
     { return "Leër Dokumentasie"; }
 
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all examples.
-     */
-    virtual QCString trExampleDocumentation()
-    { return "Voorbeeld Dokumentasie"; }
-
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
     { return "Verwysings Handleiding"; }

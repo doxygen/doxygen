@@ -412,12 +412,6 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
     virtual QCString trFileDocumentation()
     { return "Fildokumentasjon"; }
 
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all examples.
-     */
-    virtual QCString trExampleDocumentation()
-    { return "Eksempeldokumentasjon"; }
-
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
     { return "Referansemanual"; }

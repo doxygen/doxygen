@@ -532,12 +532,6 @@ class TranslatorCzech : public Translator
     virtual QCString trFileDocumentation()
     { return "Dokumentace souborů"; }
 
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all examples.
-     */
-    virtual QCString trExampleDocumentation()
-    { return "Dokumentace příkladů"; }
-
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
     { return "Referenční příručka"; }

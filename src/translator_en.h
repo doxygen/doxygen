@@ -428,12 +428,6 @@ class TranslatorEnglish : public Translator
     virtual QCString trFileDocumentation()
     { return "File Documentation"; }
 
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all examples.
-     */
-    virtual QCString trExampleDocumentation()
-    { return "Example Documentation"; }
-
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
     { return "Reference Manual"; }

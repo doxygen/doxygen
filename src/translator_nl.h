@@ -195,8 +195,6 @@ class TranslatorDutch : public Translator
     }
     QCString trFileDocumentation()
     { return "Bestand Documentatie"; }
-    QCString trExampleDocumentation()
-    { return "Documentatie van voorbeelden"; }
     QCString trReferenceManual()
     { return "Naslagwerk"; }
 
