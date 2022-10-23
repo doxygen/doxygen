@@ -4011,7 +4011,56 @@ int DocPara::handleCommand(DocNodeVariant *thisVariant,const QCString &cmdName, 
         parser()->defaultHandleTitleAndSize(CMD_DOT,vDocVerbatim,dv->children(),width,height);
         parser()->tokenizer.setStateDot();
         retval = parser()->tokenizer.lex();
-        dv->setText(parser()->context.token->verb);
+        // with interactive SVG it is important that a digraph has a title
+        // as otherwise an invalid svg file will be created by doxygen.
+        if ((Config_getEnum(DOT_IMAGE_FORMAT) == DOT_IMAGE_FORMAT_t::svg) && Config_getBool(INTERACTIVE_SVG))
+        {
+          QCString orgVerb = parser()->context.token->verb + "\n"; // so we now for sure we have a "\n" at the end
+          QCString newVerb;
+          int start = 0;
+          int end = 0;
+          int size = orgVerb.size();
+          while (end<size)
+          {
+            while (end<size && orgVerb[end] != '\n') end++;
+            QCString newStr = orgVerb.mid(start,end-start);
+            QCString newStrStripped = newStr.stripWhiteSpace();
+            if (newStrStripped.startsWith("digraph"))
+            {
+              if (newStrStripped.length() == 7)
+              {
+                // no label
+                newVerb += "digraph \"inline_dotgraph\"\n";
+              }
+              else if (newStrStripped.mid(7).stripWhiteSpace().at(0) == '{')
+              {
+                // no label direct {
+                newVerb += "digraph \"inline_dotgraph\" ";
+                newVerb += newStrStripped.mid(7);
+                newVerb += "\n";
+              }
+              else
+              {
+                newVerb += newStr + "\n";
+              }
+              end++;
+              start = end;
+              newVerb += orgVerb.mid(start);
+              break;
+            }
+            else
+            {
+              newVerb += newStr + "\n";
+            }
+            end++;
+            start = end;
+          }
+          dv->setText(newVerb);
+        }
+        else
+        {
+          dv->setText(parser()->context.token->verb);
+        }
         dv->setWidth(width);
         dv->setHeight(height);
         dv->setLocation(parser()->context.fileName,parser()->tokenizer.getLineNr());
