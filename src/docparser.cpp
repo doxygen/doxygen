@@ -976,7 +976,15 @@ void DocParser::defaultHandleTitleAndSize(const int cmd, DocNodeVariant *parent,
     }
     else if (tok==TK_HTMLTAG)
     {
-      tokenizer.unputString(context.token->name);
+      QCString fullTag = context.token->name;
+      if (!context.token->attribsStr.isEmpty())
+      {
+        fullTag += " " + context.token->attribsStr;
+      }
+      if (context.token->emptyTag) fullTag += " /";
+      else if (context.token->endTag) fullTag = "/" + fullTag;
+      fullTag = "<" + fullTag + ">";
+      tokenizer.unputString(fullTag);
       break;
     }
     if (!defaultHandleToken(parent,tok,children))
@@ -1024,9 +1032,21 @@ void DocParser::defaultHandleTitleAndSize(const int cmd, DocNodeVariant *parent,
       tokenizer.unputString(context.token->name);
       tokenizer.unputString(tok==TK_COMMAND_AT ? "@" : "\\");
     }
-    else if (tok==TK_SYMBOL || tok==TK_HTMLTAG)
+    else if (tok==TK_SYMBOL)
     {
       tokenizer.unputString(context.token->name);
+    }
+    else if (tok==TK_HTMLTAG)
+    {
+      QCString fullTag = context.token->name;
+      if (!context.token->attribsStr.isEmpty())
+      {
+        fullTag += " " + context.token->attribsStr;
+      }
+      if (context.token->emptyTag) fullTag += " /";
+      else if (context.token->endTag) fullTag = "/" + fullTag;
+      fullTag = "<" + fullTag + ">";
+      tokenizer.unputString(fullTag);
     }
   }
   tokenizer.setStatePara();

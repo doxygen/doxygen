@@ -2698,7 +2698,157 @@ void DocTitle::parse(DocNodeVariant *thisVariant)
   int tok;
   while ((tok=parser()->tokenizer.lex()))
   {
-    if (!parser()->defaultHandleToken(thisVariant,tok,children()))
+    if (tok == TK_HTMLTAG)
+    {
+      QCString tagName = parser()->context.token->name;
+      HtmlAttribList tagHtmlAttribs = parser()->context.token->attribs;
+      int tagId = Mappers::htmlTagMapper->map(tagName);
+      if (parser()->context.token->emptyTag && !(tagId&XML_CmdMask) &&
+          tagId!=HTML_UNKNOWN && tagId!=HTML_IMG && tagId!=HTML_BR && tagId!=HTML_HR && tagId!=HTML_P
+          && tagId!=HTML_DIV && tagId!=HTML_SPAN)
+      {
+          warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"HTML tag ('<%s/>') may not use the 'empty tag' XHTML syntax.",
+                     qPrint(tagName));
+      }
+      switch (tagId)
+      {
+        case HTML_BOLD:
+          if (parser()->context.token->emptyTag) break;
+          else if (!parser()->context.token->endTag) parser()->handleStyleEnter(thisVariant,children(),DocStyleChange::Bold,tagName,&parser()->context.token->attribs);
+          else parser()->handleStyleLeave(thisVariant,children(),DocStyleChange::Bold,tagName);
+          break;
+        case HTML_S:
+          if (parser()->context.token->emptyTag) break;
+          else if (!parser()->context.token->endTag) parser()->handleStyleEnter(thisVariant,children(),DocStyleChange::S,tagName,&parser()->context.token->attribs);
+          else parser()->handleStyleLeave(thisVariant,children(),DocStyleChange::S,tagName);
+          break;
+        case HTML_STRIKE:
+          if (parser()->context.token->emptyTag) break;
+          else if (!parser()->context.token->endTag) parser()->handleStyleEnter(thisVariant,children(),DocStyleChange::Strike,tagName,&parser()->context.token->attribs);
+          else parser()->handleStyleLeave(thisVariant,children(),DocStyleChange::Strike,tagName);
+          break;
+        case HTML_DEL:
+          if (parser()->context.token->emptyTag) break;
+          else if (!parser()->context.token->endTag) parser()->handleStyleEnter(thisVariant,children(),DocStyleChange::Del,tagName,&parser()->context.token->attribs);
+          else parser()->handleStyleLeave(thisVariant,children(),DocStyleChange::Del,tagName);
+          break;
+        case HTML_UNDERLINE:
+          if (parser()->context.token->emptyTag) break;
+          else if (!parser()->context.token->endTag) parser()->handleStyleEnter(thisVariant,children(),DocStyleChange::Underline,tagName,&parser()->context.token->attribs);
+          else parser()->handleStyleLeave(thisVariant,children(),DocStyleChange::Underline,tagName);
+          break;
+        case HTML_INS:
+          if (parser()->context.token->emptyTag) break;
+          else if (!parser()->context.token->endTag) parser()->handleStyleEnter(thisVariant,children(),DocStyleChange::Ins,tagName,&parser()->context.token->attribs);
+          else parser()->handleStyleLeave(thisVariant,children(),DocStyleChange::Ins,tagName);
+          break;
+        case HTML_CODE:
+          if (parser()->context.token->emptyTag) break;
+          if (/*getLanguageFromFileName(parser()->context.fileName)==SrcLangExt_CSharp ||*/ parser()->context.xmlComment)
+              // for C# source or inside a <summary> or <remark> section we
+             // treat <code> as an XML tag (so similar to @code)
+          {
+            warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"xml/html tag </%s> not allowed in title section when in XML mode", qPrint(tagName));
+            children().append<DocWord>(parser(),thisVariant,"<"+tagName+">");
+          }
+          else // normal HTML markup
+          {
+            if (parser()->context.token->emptyTag) break;
+            else if (!parser()->context.token->endTag) parser()->handleStyleEnter(thisVariant,children(),DocStyleChange::Code,tagName,&parser()->context.token->attribs);
+            else parser()->handleStyleLeave(thisVariant,children(),DocStyleChange::Code,tagName);
+          }
+          break;
+        case HTML_EMPHASIS:
+          if (parser()->context.token->emptyTag) break;
+          else if (!parser()->context.token->endTag) parser()->handleStyleEnter(thisVariant,children(),DocStyleChange::Italic,tagName,&parser()->context.token->attribs);
+          else parser()->handleStyleLeave(thisVariant,children(),DocStyleChange::Italic,tagName);
+          break;
+        case HTML_DIV:
+          if (parser()->context.token->emptyTag)
+          {
+            parser()->handleStyleEnter(thisVariant,children(),DocStyleChange::Div,tagName,&parser()->context.token->attribs);
+            parser()->handleStyleLeave(thisVariant,children(),DocStyleChange::Div,tagName);
+          }
+          else if (!parser()->context.token->endTag) parser()->handleStyleEnter(thisVariant,children(),DocStyleChange::Div,tagName,&parser()->context.token->attribs);
+          else parser()->handleStyleLeave(thisVariant,children(),DocStyleChange::Div,tagName);
+          break;
+        case HTML_SPAN:
+          if (parser()->context.token->emptyTag)
+          {
+            parser()->handleStyleEnter(thisVariant,children(),DocStyleChange::Span,tagName,&parser()->context.token->attribs);
+            parser()->handleStyleLeave(thisVariant,children(),DocStyleChange::Span,tagName);
+          }
+          else if (!parser()->context.token->endTag) parser()->handleStyleEnter(thisVariant,children(),DocStyleChange::Div,tagName,&parser()->context.token->attribs);
+          else parser()->handleStyleLeave(thisVariant,children(),DocStyleChange::Div,tagName);
+          break;
+        case HTML_SUB:
+          if (parser()->context.token->emptyTag) break;
+          else if (!parser()->context.token->endTag) parser()->handleStyleEnter(thisVariant,children(),DocStyleChange::Subscript,tagName,&parser()->context.token->attribs);
+          else parser()->handleStyleLeave(thisVariant,children(),DocStyleChange::Subscript,tagName);
+          break;
+        case HTML_SUP:
+          if (parser()->context.token->emptyTag) break;
+          else if (!parser()->context.token->endTag) parser()->handleStyleEnter(thisVariant,children(),DocStyleChange::Superscript,tagName,&parser()->context.token->attribs);
+          else parser()->handleStyleLeave(thisVariant,children(),DocStyleChange::Superscript,tagName);
+          break;
+        case HTML_CENTER:
+          if (parser()->context.token->emptyTag) break;
+          else if (!parser()->context.token->endTag) parser()->handleStyleEnter(thisVariant,children(),DocStyleChange::Center,tagName,&parser()->context.token->attribs);
+          else parser()->handleStyleLeave(thisVariant,children(),DocStyleChange::Center,tagName);
+          break;
+        case HTML_SMALL:
+          if (parser()->context.token->emptyTag) break;
+          else if (!parser()->context.token->endTag) parser()->handleStyleEnter(thisVariant,children(),DocStyleChange::Small,tagName,&parser()->context.token->attribs);
+          else parser()->handleStyleLeave(thisVariant,children(),DocStyleChange::Small,tagName);
+          break;
+        case HTML_CITE:
+          if (parser()->context.token->emptyTag) break;
+          else if (!parser()->context.token->endTag) parser()->handleStyleEnter(thisVariant,children(),DocStyleChange::Cite,tagName,&parser()->context.token->attribs);
+          else parser()->handleStyleLeave(thisVariant,children(),DocStyleChange::Cite,tagName);
+          break;
+        case HTML_BR:
+          children().append<DocLineBreak>(parser(),thisVariant,parser()->context.token->attribs);
+          break;
+        case HTML_A:
+          if (!parser()->context.token->endTag)
+          {
+            parser()->handleAHref(thisVariant,children(),parser()->context.token->attribs);
+          }
+          break;
+        case XML_C:
+          if (parser()->context.token->emptyTag) break;
+          else if (!parser()->context.token->endTag) parser()->handleStyleEnter(thisVariant,children(),DocStyleChange::Code,tagName,&parser()->context.token->attribs);
+          else parser()->handleStyleLeave(thisVariant,children(),DocStyleChange::Code,tagName);
+          break;
+        case HTML_UNKNOWN:
+          {
+            QCString errTag = tagName;
+            if (!parser()->context.token->attribsStr.isEmpty())
+            {
+              errTag += " " + parser()->context.token->attribsStr;
+            }
+            if (parser()->context.token->emptyTag) errTag += " /";
+            else if (parser()->context.token->endTag) errTag = "/" + errTag;
+            warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Unsupported xml/html tag <%s> found", qPrint(errTag));
+            children().append<DocWord>(parser(),thisVariant,"<"+errTag+">");
+          }
+          break;
+        default:
+          {
+            QCString errTag = tagName;
+            if (!parser()->context.token->attribsStr.isEmpty())
+            {
+              errTag += " " + parser()->context.token->attribsStr;
+            }
+            if (parser()->context.token->emptyTag) errTag += " /";
+            else if (parser()->context.token->endTag) errTag = "/" + errTag;
+            warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Unexpected xml/html tag <%s> found", qPrint(errTag));
+            children().append<DocWord>(parser(),thisVariant,"</"+errTag+">");
+          }
+          break;
+      }
+    }
+    else if (!parser()->defaultHandleToken(thisVariant,tok,children()))
     {
       parser()->errorHandleDefaultToken(thisVariant,tok,children(),"title section");
     }
@@ -4801,10 +4951,10 @@ int DocPara::handleHtmlStartTag(DocNodeVariant *thisVariant,const QCString &tagN
       warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Unsupported xml/html tag <%s> found", qPrint(tagName));
       children().append<DocWord>(parser(),thisVariant, "<"+tagName+parser()->context.token->attribsStr+">");
       break;
-  case XML_INHERITDOC:
+    case XML_INHERITDOC:
       handleInheritDoc(thisVariant);
       break;
-  default:
+    default:
       // we should not get here!
       ASSERT(0);
       break;
