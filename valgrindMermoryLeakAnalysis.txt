@@ -1,3 +1,5 @@
+flex 2.6.4
+bison (GNU Bison) 3.7.5
 valgrind --leak-check=full ../../build/doxygen/build/bin/doxygen "${paramonte_doc_kernel_dir}/config.txt"
 
 lookup cache used 8338/65536 hits=17083 misses=10050
