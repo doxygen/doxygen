@@ -1744,7 +1744,8 @@ void FortranCodeParser::parseCode(CodeOutputInterface & codeOutIntf,
     endFontClass(yyscanner);
     yyextra->code->endCodeLine();
   }
-  if (!fileDef && isExampleBlock && yyextra->sourceFileDef)
+// The correction `!fileDef && ` is introduced in Doxygen 1.9.5 to resolve the Fortran parser segfault, but does not appear to resolve it.
+  if (!fileDef && isExampleBlock && yyextra->sourceFileDef) 
   {
     // delete the temporary file definition used for this example
     delete yyextra->sourceFileDef;
