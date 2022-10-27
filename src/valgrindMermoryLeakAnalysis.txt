@@ -1,0 +1,72 @@
+valgrind --leak-check=full ../../build/doxygen/build/bin/doxygen "${paramonte_doc_kernel_dir}/config.txt"
+
+lookup cache used 8338/65536 hits=17083 misses=10050
+finished...
+==23902==
+==23902== HEAP SUMMARY:
+==23902==     in use at exit: 10,054,832 bytes in 69,342 blocks
+==23902==   total heap usage: 43,651,527 allocs, 43,582,185 frees, 104,248,900,830 bytes allocated
+==23902==
+==23902== 16 bytes in 2 blocks are definitely lost in loss record 4 of 254
+==23902==    at 0x4842749: malloc (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==23902==    by 0x6FE0B9: pushBuffer(yyguts_t*, QCString const&) (in /home/amir/git/paramonte/build/doxygen/build/bin/doxygen)
+==23902==    by 0x703982: FortranOutlineParser::parsePrototype(QCString const&) (in /home/amir/git/paramonte/build/doxygen/build/bin/doxygen)
+==23902==    by 0x6BAF89: commentscanYYlex(yyguts_t*) (in /home/amir/git/paramonte/build/doxygen/build/bin/doxygen)
+==23902==    by 0x6C6338: CommentScanner::parseCommentBlock(OutlineParserInterface*, Entry*, QCString const&, QCString const&, int&, bool, bool, bool, Protection&, int&, bool&, bool) (in /home/amir/git/paramonte/build/doxygen/build/bin/doxygen)
+==23902==    by 0x7017AF: handleCommentBlock(yyguts_t*, QCString const&, bool) (in /home/amir/git/paramonte/build/doxygen/build/bin/doxygen)
+==23902==    by 0x6FA33B: fortranscannerYYlex(yyguts_t*) (in /home/amir/git/paramonte/build/doxygen/build/bin/doxygen)
+==23902==    by 0x7035B5: parseMain(yyguts_t*, QCString const&, char const*, std::shared_ptr<Entry> const&, FortranFormat) (in /home/amir/git/paramonte/build/doxygen/build/bin/doxygen)
+==23902==    by 0x7038D7: FortranOutlineParser::parseInput(QCString const&, char const*, std::shared_ptr<Entry> const&, ClangTUParser*) (in /home/amir/git/paramonte/build/doxygen/build/bin/doxygen)
+==23902==    by 0x24FD12: parseFile(OutlineParserInterface&, FileDef*, QCString const&, ClangTUParser*, bool) (in /home/amir/git/paramonte/build/doxygen/build/bin/doxygen)
+==23902==    by 0x25051F: parseFilesSingleThreading(std::shared_ptr<Entry> const&) (in /home/amir/git/paramonte/build/doxygen/build/bin/doxygen)
+==23902==    by 0x25AF05: parseInput() (in /home/amir/git/paramonte/build/doxygen/build/bin/doxygen)
+==23902==
+==23902== 752 bytes in 94 blocks are definitely lost in loss record 83 of 254
+==23902==    at 0x4842749: malloc (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==23902==    by 0x6FE0B9: pushBuffer(yyguts_t*, QCString const&) (in /home/amir/git/paramonte/build/doxygen/build/bin/doxygen)
+==23902==    by 0x6F7981: fortranscannerYYlex(yyguts_t*) (in /home/amir/git/paramonte/build/doxygen/build/bin/doxygen)
+==23902==    by 0x7035B5: parseMain(yyguts_t*, QCString const&, char const*, std::shared_ptr<Entry> const&, FortranFormat) (in /home/amir/git/paramonte/build/doxygen/build/bin/doxygen)
+==23902==    by 0x7038D7: FortranOutlineParser::parseInput(QCString const&, char const*, std::shared_ptr<Entry> const&, ClangTUParser*) (in /home/amir/git/paramonte/build/doxygen/build/bin/doxygen)
+==23902==    by 0x24FD12: parseFile(OutlineParserInterface&, FileDef*, QCString const&, ClangTUParser*, bool) (in /home/amir/git/paramonte/build/doxygen/build/bin/doxygen)
+==23902==    by 0x25051F: parseFilesSingleThreading(std::shared_ptr<Entry> const&) (in /home/amir/git/paramonte/build/doxygen/build/bin/doxygen)
+==23902==    by 0x25AF05: parseInput() (in /home/amir/git/paramonte/build/doxygen/build/bin/doxygen)
+==23902==    by 0x2105C0: main (in /home/amir/git/paramonte/build/doxygen/build/bin/doxygen)
+==23902==
+==23902== 1,464 bytes in 183 blocks are definitely lost in loss record 106 of 254
+==23902==    at 0x4842749: malloc (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==23902==    by 0x6FE0B9: pushBuffer(yyguts_t*, QCString const&) (in /home/amir/git/paramonte/build/doxygen/build/bin/doxygen)
+==23902==    by 0x6F11A4: fortranscannerYYlex(yyguts_t*) (in /home/amir/git/paramonte/build/doxygen/build/bin/doxygen)
+==23902==    by 0x7035B5: parseMain(yyguts_t*, QCString const&, char const*, std::shared_ptr<Entry> const&, FortranFormat) (in /home/amir/git/paramonte/build/doxygen/build/bin/doxygen)
+==23902==    by 0x7038D7: FortranOutlineParser::parseInput(QCString const&, char const*, std::shared_ptr<Entry> const&, ClangTUParser*) (in /home/amir/git/paramonte/build/doxygen/build/bin/doxygen)
+==23902==    by 0x24FD12: parseFile(OutlineParserInterface&, FileDef*, QCString const&, ClangTUParser*, bool) (in /home/amir/git/paramonte/build/doxygen/build/bin/doxygen)
+==23902==    by 0x25051F: parseFilesSingleThreading(std::shared_ptr<Entry> const&) (in /home/amir/git/paramonte/build/doxygen/build/bin/doxygen)
+==23902==    by 0x25AF05: parseInput() (in /home/amir/git/paramonte/build/doxygen/build/bin/doxygen)
+==23902==    by 0x2105C0: main (in /home/amir/git/paramonte/build/doxygen/build/bin/doxygen)
+==23902==
+==23902== 2,736 bytes in 152 blocks are definitely lost in loss record 127 of 254
+==23902==    at 0x4847C73: realloc (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==23902==    by 0x6FE0B9: pushBuffer(yyguts_t*, QCString const&) (in /home/amir/git/paramonte/build/doxygen/build/bin/doxygen)
+==23902==    by 0x6F7981: fortranscannerYYlex(yyguts_t*) (in /home/amir/git/paramonte/build/doxygen/build/bin/doxygen)
+==23902==    by 0x7035B5: parseMain(yyguts_t*, QCString const&, char const*, std::shared_ptr<Entry> const&, FortranFormat) (in /home/amir/git/paramonte/build/doxygen/build/bin/doxygen)
+==23902==    by 0x7038D7: FortranOutlineParser::parseInput(QCString const&, char const*, std::shared_ptr<Entry> const&, ClangTUParser*) (in /home/amir/git/paramonte/build/doxygen/build/bin/doxygen)
+==23902==    by 0x24FD12: parseFile(OutlineParserInterface&, FileDef*, QCString const&, ClangTUParser*, bool) (in /home/amir/git/paramonte/build/doxygen/build/bin/doxygen)
+==23902==    by 0x25051F: parseFilesSingleThreading(std::shared_ptr<Entry> const&) (in /home/amir/git/paramonte/build/doxygen/build/bin/doxygen)
+==23902==    by 0x25AF05: parseInput() (in /home/amir/git/paramonte/build/doxygen/build/bin/doxygen)
+==23902==    by 0x2105C0: main (in /home/amir/git/paramonte/build/doxygen/build/bin/doxygen)
+==23902==
+==23902== LEAK SUMMARY:
+==23902==    definitely lost: 4,968 bytes in 431 blocks
+==23902==    indirectly lost: 0 bytes in 0 blocks
+==23902==      possibly lost: 0 bytes in 0 blocks
+==23902==    still reachable: 10,049,864 bytes in 68,911 blocks
+==23902==                       of which reachable via heuristic:
+==23902==                         multipleinheritance: 36,960 bytes in 924 blocks
+==23902==         suppressed: 0 bytes in 0 blocks
+==23902== Reachable blocks (those to which a pointer was found) are not shown.
+==23902== To see them, rerun with: --leak-check=full --show-leak-kinds=all
+==23902==
+==23902== Use --track-origins=yes to see where uninitialised values come from
+==23902== For lists of detected and suppressed errors, rerun with: -s
+==23902== ERROR SUMMARY: 4889 errors from 22 contexts (suppressed: 0 from 0)
+./build.sh: line 185: syntax error near unexpected token `&'
+         ./build.sh: line 185: `&2'
