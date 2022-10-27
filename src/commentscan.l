@@ -35,6 +35,8 @@ typedef yyguts_t *yyscan_t;
 #include <stack>
 #include <string>
 #include <mutex>
+#include <functional>
+#include <unordered_map>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -42,6 +44,7 @@ typedef yyguts_t *yyscan_t;
 #include <ctype.h>
 
 #include "qcstring.h"
+#include "fileinfo.h"
 #include "cite.h"
 #include "commentscan.h"
 #include "condparser.h"
@@ -141,6 +144,8 @@ static bool handleParBlock(yyscan_t yyscanner,const QCString &, const StringVect
 static bool handleEndParBlock(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleParam(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleRetval(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleFileInfo(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleLineInfo(yyscan_t yyscanner,const QCString &, const StringVector &);
 
 #if USE_STATE2STRING
 static const char *stateToString(int state);
@@ -305,7 +310,9 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "weakgroup",       { &handleWeakGroup,        CommandSpacing::Invisible }},
   { "xmlinclude",      { 0,                       CommandSpacing::Inline    }},
   { "xmlonly",         { &handleFormatBlock,      CommandSpacing::Invisible }},
-  { "xrefitem",        { &handleXRefItem,         CommandSpacing::XRef      }}
+  { "xrefitem",        { &handleXRefItem,         CommandSpacing::XRef      }},
+  { "fileinfo",        { &handleFileInfo,         CommandSpacing::Inline    }},
+  { "lineinfo",        { &handleLineInfo,         CommandSpacing::Inline    }},
 };
 
 #define YY_NO_INPUT 1
@@ -445,6 +452,7 @@ static void handleGuard(yyscan_t yyscanner,const QCString &expr);
 static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
 static void addCite(yyscan_t yyscanner);
 static void addIline(yyscan_t yyscanner,int lineNr);
+static void addIlineBreak(yyscan_t yyscanner,int lineNr);
 
 #define unput_string(yytext,yyleng) do { for (int i=(int)yyleng-1;i>=0;i--) unput(yytext[i]); } while(0)
 
@@ -453,17 +461,21 @@ static void addIline(yyscan_t yyscanner,int lineNr);
 #undef        YY_INPUT
 #define        YY_INPUT(buf,result,max_size) result=yyread(yyscanner,buf,max_size);
 
+// otherwise the filename would be the name of the converted file (*.cpp instead of *.l)
+static inline const char *getLexerFILE() {return __FILE__;}
+#include "doxygen_lex.h"
+
 %}
 
        /* start command character */
-CMD          ("\\"|"@")
+CMD       ("\\"|"@")
 XREFCMD   {CMD}("bug"|"deprecated"|"test"|"todo"|"xrefitem")
 PRE       [pP][rR][eE]
-TABLE          [tT][aA][bB][lL][eE]
-P          [pP]
+TABLE     [tT][aA][bB][lL][eE]
+P         [pP]
 UL        [uU][lL]
-OL          [oO][lL]
-DL          [dD][lL]
+OL        [oO][lL]
+DL        [dD][lL]
 IMG       [iI][mM][gG]
 HR        [hH][rR]
 PARA      [pP][aA][rR][aA]
@@ -471,8 +483,13 @@ CODE      [cC][oO][dD][eE]
 CAPTION   [cC][aA][pP][tT][iI][oO][nN]
 CENTER    [cC][eE][nN][tT][eE][rR]
 DIV       [dD][iI][vV]
+DETAILS   [dD][eE][tT][aA][iI][lL][sS]
 DETAILEDHTML {CENTER}|{DIV}|{PRE}|{UL}|{TABLE}|{OL}|{DL}|{P}|[Hh][1-6]|{IMG}|{HR}|{PARA}
 DETAILEDHTMLOPT {CODE}
+SUMMARY   [sS][uU][mM][mM][aA][rR][yY]
+REMARKS   [rR][eE][mM][aA][rR][kK][sS]
+AHTML     [aA]{BN}*
+ANCHTML   ([iI][dD]|[nN][aA][mM][eE])"="("\""{LABELID}"\""|"'"{LABELID}"'"|{LABELID})
 BN        [ \t\n\r]
 BL        [ \t\r]*"\n"
 B         [ \t]
@@ -481,9 +498,9 @@ BS        ^(({B}*"/""/")?)(({B}*"*"+)?){B}*
 ATTR      ({B}+[^>\n]*)?
 DOCNL     "\n"|"\\ilinebr"
 LC        "\\"{B}*"\n"
-NW          [^a-z_A-Z0-9]
-FILESCHAR [a-z_A-Z0-9\x80-\xFF\\:\\\/\-\+@&#]
-FILEECHAR [a-z_A-Z0-9\x80-\xFF\-\+@&#]
+NW        [^a-z_A-Z0-9]
+FILESCHAR [a-z_A-Z0-9\x80-\xFF\\:\\\/\-\+=@&#]
+FILEECHAR [a-z_A-Z0-9\x80-\xFF\-\+=@&#]
 FILE      ({FILESCHAR}*{FILEECHAR}+("."{FILESCHAR}*{FILEECHAR}+)*)|("\""[^\n\"]*"\"")
 ID        [$a-z_A-Z\x80-\xFF][$a-z_A-Z0-9\x80-\xFF]*
 LABELID   [a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF\-]*
@@ -493,7 +510,7 @@ CITEID    {CITESCHAR}{CITEECHAR}*("."{CITESCHAR}{CITEECHAR}*)*|"\""{CITESCHAR}{C
 SCOPEID   {ID}({ID}*{BN}*"::"{BN}*)*({ID}?)
 SCOPENAME "$"?(({ID}?{BN}*("::"|"."){BN}*)*)((~{BN}*)?{ID})
 TMPLSPEC  "<"{BN}*[^>]+{BN}*">"
-MAILADDR   [a-z_A-Z0-9.+\-]+"@"[a-z_A-Z0-9\-]+("."[a-z_A-Z0-9\-]+)+[a-z_A-Z0-9\-]+
+MAILADDR  ("mailto:")?[a-z_A-Z0-9\x80-\xff.+-]+"@"[a-z_A-Z0-9\x80-\xff-]+("."[a-z_A-Z0-9\x80-\xff\-]+)+[a-z_A-Z0-9\x80-\xff\-]+
 RCSTAG    "$"{ID}":"[^\n$]+"$"
 
   // C start comment 
@@ -551,6 +568,7 @@ STopt  [^\n@\\]*
 %x      ReadFormulaLong
 %x      AnchorLabel
 %x      HtmlComment
+%x      HtmlA
 %x      SkipLang
 %x      CiteLabel
 %x      CopyDoc
@@ -855,7 +873,7 @@ STopt  [^\n@\\]*
                                           addOutput(yyscanner,yytext[0]);
                                           addOutput(yyscanner,yytext[2]);
                                         }
-<Comment>".,"                           { // . with comma such as "e.g.,"
+<Comment>"."[,:;]                       { // . with some puntuations such as "e.g.," or "e.g.:"
                                           addOutput(yyscanner,yytext);
                                         }
 <Comment>"...\\"[ \t]                   { // ellipsis with escaped space.
@@ -977,6 +995,7 @@ STopt  [^\n@\\]*
                                           yyextra->formulaNewLines++;
                                           yyextra->formulaText+=*yytext;
                                           yyextra->lineNr++;
+                                          addIline(yyscanner,yyextra->lineNr);
                                         }
 <ReadFormulaLong,ReadFormulaShort,ReadFormulaRound>.     { // any other character
                                           yyextra->formulaText+=*yytext;
@@ -1007,7 +1026,8 @@ STopt  [^\n@\\]*
   /* ------------ handle argument of namespace command --------------- */
 
 <NameSpaceDocArg1>{SCOPENAME}           { // handle argument
-                                          yyextra->current->name = substitute(QCString(yytext),QCString("."),QCString("::"));
+                                          lineCount(yyscanner);
+                                          yyextra->current->name = substitute(removeRedundantWhiteSpace(QCString(yytext)),QCString("."),QCString("::"));
                                           BEGIN( Comment );
                                         }
 <NameSpaceDocArg1>{LC}                  { // line continuation
@@ -1075,10 +1095,12 @@ STopt  [^\n@\\]*
   /* ------ handle argument of class/struct/union command --------------- */
 
 <ClassDocArg1>{SCOPENAME}{TMPLSPEC}     {
+                                          lineCount(yyscanner);
                                           yyextra->current->name = substitute(removeRedundantWhiteSpace(QCString(yytext)),".","::");
                                           BEGIN( ClassDocArg2 );
                                         }
 <ClassDocArg1>{SCOPENAME}               { // first argument
+                                          lineCount(yyscanner);
                                           yyextra->current->name = substitute(QCString(yytext),".","::");
                                           if (yyextra->current->section==Entry::PROTOCOLDOC_SEC)
                                           {
@@ -1088,6 +1110,7 @@ STopt  [^\n@\\]*
                                           BEGIN( ClassDocArg2 );
                                         }
 <CategoryDocArg1>{SCOPENAME}{B}*"("[^\)]+")" {
+                                          lineCount(yyscanner);
                                           yyextra->current->name = substitute(QCString(yytext),".","::");
                                           BEGIN( ClassDocArg2 );
                                         }
@@ -1148,7 +1171,7 @@ STopt  [^\n@\\]*
                                           //lastDefGroup.groupname = yytext;
                                           //lastDefGroup.pri = yyextra->current->groupingPri();
                                           // the .html stuff is for Qt compatibility
-                                          if (yyextra->current->name.right(5)==".html")
+                                          if (yyextra->current->name.endsWith(".html"))
                                           {
                                             yyextra->current->name=yyextra->current->name.left(yyextra->current->name.length()-5);
                                           }
@@ -1453,6 +1476,10 @@ STopt  [^\n@\\]*
                                           addOutput(yyscanner,'\n');
                                           BEGIN( Comment );
                                         }
+<SubpageLabel>.                         {
+                                          unput(yytext[0]);
+                                          BEGIN( Comment );
+                                        }
 <SubpageTitle>{DOCNL}                   { // no title, end command
                                           addOutput(yyscanner,yytext);
                                           BEGIN( Comment );
@@ -1579,7 +1606,7 @@ STopt  [^\n@\\]*
                                           if (*yytext=='\n') yyextra->lineNr++;
                                           //next line is commented out due to bug620924
                                           //addOutput(yyscanner,'\n');
-                                          addIline(yyscanner,yyextra->lineNr);
+                                          addIlineBreak(yyscanner,yyextra->lineNr);
                                           BEGIN( Comment );
                                         }
 <GuardParam>{LC}                        { // line continuation
@@ -1592,7 +1619,7 @@ STopt  [^\n@\\]*
 <GuardParamEnd>{B}*{DOCNL}              {
                                           lineCount(yyscanner);
                                           yyextra->spaceBeforeIf.resize(0);
-                                          addIline(yyscanner,yyextra->lineNr);
+                                          addIlineBreak(yyscanner,yyextra->lineNr);
                                           BEGIN(Comment);
                                         }
 <GuardParamEnd>{B}*                     {
@@ -1601,12 +1628,12 @@ STopt  [^\n@\\]*
                                             addOutput(yyscanner,yyextra->spaceBeforeIf);
                                           }
                                           yyextra->spaceBeforeIf.resize(0);
-                                          addIline(yyscanner,yyextra->lineNr);
+                                          addIlineBreak(yyscanner,yyextra->lineNr);
                                           BEGIN(Comment);
                                         }
 <GuardParamEnd>.                        {
                                           unput(*yytext);
-                                          addIline(yyscanner,yyextra->lineNr);
+                                          addIlineBreak(yyscanner,yyextra->lineNr);
                                           BEGIN(Comment);
                                         }
 
@@ -1935,19 +1962,40 @@ STopt  [^\n@\\]*
 
   /* ----- handle argument of the copydoc command ------- */
 
-<CopyDoc><<EOF>>                        |
-<CopyDoc>{DOCNL}                        {
-                                          if (*yytext=='\n') yyextra->lineNr++;
-                                          addOutput(yyscanner,'\n');
+<CopyDoc><<EOF>>                        {
                                           setOutput(yyscanner,OutputDoc);
-                                          addOutput(yyscanner," \\copydetails ");
+                                          addOutput(yyscanner," \\ilinebr\\ilinebr\\copydetails ");
                                           addOutput(yyscanner,yyextra->copyDocArg);
                                           addOutput(yyscanner,"\n");
                                           BEGIN(Comment);
                                         }
-<CopyDoc>[^\n\\]+                       {
+<CopyDoc>{DOCNL}                        {
+                                          if (*yytext=='\n') yyextra->lineNr++;
+                                          if (yyextra->braceCount==0)
+                                          {
+                                            setOutput(yyscanner,OutputDoc);
+                                            addOutput(yyscanner," \\ilinebr\\ilinebr\\copydetails ");
+                                            addOutput(yyscanner,yyextra->copyDocArg);
+                                            addOutput(yyscanner,"\n");
+                                            BEGIN(Comment);
+                                          }
+                                        }
+<CopyDoc>{LC}                           { // line continuation
+                                          yyextra->lineNr++;
+                                        }
+<CopyDoc>[^@\\\n()]+                    { // non-special characters
                                           yyextra->copyDocArg+=yytext;
                                           addOutput(yyscanner,yytext);
+                                        }
+<CopyDoc>"("                            {
+                                          yyextra->copyDocArg+=yytext;
+                                          addOutput(yyscanner,yytext);
+                                          yyextra->braceCount++;
+                                        }
+<CopyDoc>")"                            {
+                                          yyextra->copyDocArg+=yytext;
+                                          addOutput(yyscanner,yytext);
+                                          yyextra->braceCount--;
                                         }
 <CopyDoc>.                              {
                                           yyextra->copyDocArg+=yytext;
@@ -1955,9 +2003,9 @@ STopt  [^\n@\\]*
                                         }
 
  /*
-<*>.  { fprintf(stderr,"Lex scanner %s %sdefault rule for state %s: #%s#\n", __FILE__,yyextra->fileName ? ("(" + yyextra->fileName +") ").data(): "",stateToString(YY_START),yytext);}
-<*>\n  { fprintf(stderr,"Lex scanner %s %sdefault rule newline for state %s.\n", __FILE__, yyextra->fileName ? ("(" + yyextra->fileName +") ").data(): "",stateToString(YY_START));}
-  */
+<*>.  { fprintf(stderr,"Lex scanner %s %sdefault rule for state %s: #%s#\n", __FILE__,!yyextra->fileName.isEmpty() ? ("(" + yyextra->fileName +") ").data(): "",stateToString(YY_START),yytext);}
+<*>\n  { fprintf(stderr,"Lex scanner %s %sdefault rule newline for state %s.\n", __FILE__, !yyextra->fileName.isEmpty() ? ("(" + yyextra->fileName +") ").data(): "",stateToString(YY_START));}
+ */
 
 %%
 
@@ -2143,6 +2191,7 @@ static bool handleMainpage(yyscan_t yyscanner,const QCString &, const StringVect
   {
     yyextra->current->name = "mainpage";
   }
+  setOutput(yyscanner,OutputDoc);
   BEGIN( PageDocArg2 );
   return stop;
 }
@@ -2328,6 +2377,7 @@ static bool handleRelated(yyscan_t yyscanner,const QCString &cmd, const StringVe
         "found multiple \\relates, \\relatesalso or \\memberof commands in a comment block, using last definition");
   }
   yyextra->current->relatesType = Simple;
+  yyextra->currentCmd = cmd;
   BEGIN(RelatesParam1);
   return FALSE;
 }
@@ -2476,6 +2526,77 @@ static bool handleAddIndex(yyscan_t yyscanner,const QCString &, const StringVect
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   addOutput(yyscanner,"@addindex ");
   BEGIN(LineParam);
+  return FALSE;
+}
+
+
+static bool handleFileInfo(yyscan_t yyscanner,const QCString &, const StringVector &optList)
+{
+  using OutputWriter = std::function<void(yyscan_t,FileInfo &)>;
+  static std::unordered_map<std::string,OutputWriter> options =
+  { // name,        writer
+    { "name",      [](yyscan_t s,FileInfo &fi) { addOutput(s,fi.baseName());      } },
+    { "extension", [](yyscan_t s,FileInfo &fi) { addOutput(s,fi.extension(true)); } },
+    { "filename",  [](yyscan_t s,FileInfo &fi) { addOutput(s,fi.fileName());      } },
+    { "directory", [](yyscan_t s,FileInfo &fi) { addOutput(s,fi.dirPath());       } },
+    { "full",      [](yyscan_t s,FileInfo &fi) { addOutput(s,fi.absFilePath());   } },
+  };
+
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  if (!yyextra->spaceBeforeCmd.isEmpty())
+  {
+    addOutput(yyscanner,yyextra->spaceBeforeCmd);
+    yyextra->spaceBeforeCmd.resize(0);
+  }
+  bool first = true;
+  FileInfo fi(yyextra->fileName.str());
+  for (const auto &opt_ : optList)
+  {
+    QCString optStripped = QCString(opt_).stripWhiteSpace();
+    std::string opt = optStripped.lower().str();
+    auto it = options.find(opt);
+    if (it != options.end())
+    {
+      if (!first)
+      {
+        warn(yyextra->fileName,yyextra->lineNr,"Multiple options specified with \\fileinfo, discarding '%s'", qPrint(optStripped));
+      }
+      else
+      {
+        it->second(yyscanner,fi);
+      }
+      first = false;
+    }
+    else
+    {
+      warn(yyextra->fileName,yyextra->lineNr,"Unknown option specified with \\fileinfo: '%s'", qPrint(optStripped));
+    }
+  }
+  if (first) // no options specified
+  {
+    if (Config_getBool(FULL_PATH_NAMES))
+    {
+      addOutput(yyscanner,stripFromPath(yyextra->fileName));
+    }
+    else
+    {
+      addOutput(yyscanner,yyextra->fileName);
+    }
+  }
+  addOutput(yyscanner," ");
+  return FALSE;
+}
+
+static bool handleLineInfo(yyscan_t yyscanner,const QCString &, const StringVector &)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  if (!yyextra->spaceBeforeCmd.isEmpty())
+  {
+    addOutput(yyscanner,yyextra->spaceBeforeCmd);
+    yyextra->spaceBeforeCmd.resize(0);
+  }
+  addOutput(yyscanner,QCString().setNum(yyextra->lineNr));
+  addOutput(yyscanner," ");
   return FALSE;
 }
 
@@ -2827,7 +2948,12 @@ static bool handleCopyDetails(yyscan_t yyscanner,const QCString &, const StringV
 static bool handleCopyDoc(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  setOutput(yyscanner,OutputBrief);
+  if (yyextra->current->brief.isEmpty() && yyextra->current->doc.isEmpty())
+  { // if we don't have a brief or detailed description yet,
+    // then the @copybrief should end up in the brief description.
+    // otherwise it will be copied inline (see bug691315 & bug700788)
+    setOutput(yyscanner,OutputBrief);
+  }
   if (!yyextra->spaceBeforeCmd.isEmpty())
   {
     addOutput(yyscanner,yyextra->spaceBeforeCmd);
@@ -2835,6 +2961,7 @@ static bool handleCopyDoc(yyscan_t yyscanner,const QCString &, const StringVecto
   }
   addOutput(yyscanner,"\\copybrief ");
   yyextra->copyDocArg.resize(0);
+  yyextra->braceCount = 0;
   BEGIN(CopyDoc);
   return FALSE;
 }
@@ -3021,8 +3148,7 @@ static QCString addFormula(yyscan_t yyscanner)
   std::unique_lock<std::mutex> lock(g_formulaMutex);
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   QCString formLabel;
-  QCString fText=yyextra->formulaText.simplifyWhiteSpace();
-  int id = FormulaManager::instance().addFormula(fText.str());
+  int id = FormulaManager::instance().addFormula(yyextra->formulaText.str());
   formLabel.sprintf("\\_form#%d",id);
   for (int i=0;i<yyextra->formulaNewLines;i++) formLabel+="@_fakenl"; // add fake newlines to
                                                          // keep the warnings
@@ -3206,6 +3332,7 @@ static inline void setOutput(yyscan_t yyscanner,OutputContext ctx)
       if (oldContext!=yyextra->inContext)
       {
         stripTrailingWhiteSpace(yyextra->current->doc);
+        if (yyextra->current->doc.isEmpty()) yyextra->current->docLine = yyextra->lineNr;
         if (yyextra->current->docFile.isEmpty())
         {
           yyextra->current->docFile = yyextra->fileName;
@@ -3217,6 +3344,7 @@ static inline void setOutput(yyscan_t yyscanner,OutputContext ctx)
     case OutputBrief:
       if (oldContext!=yyextra->inContext)
       {
+        if (yyextra->current->brief.isEmpty()) yyextra->current->briefLine = yyextra->lineNr;
         if (yyextra->current->briefFile.isEmpty())
         {
           yyextra->current->briefFile = yyextra->fileName;
@@ -3313,6 +3441,13 @@ static void addIline(yyscan_t yyscanner,int lineNr)
   addOutput(yyscanner, cmd);
 }
 
+static void addIlineBreak(yyscan_t yyscanner,int lineNr)
+{
+  char cmd[30];
+  sprintf(cmd,"\\iline %d \\ilinebr ",lineNr);
+  addOutput(yyscanner, cmd);
+}
+
 static void endBrief(yyscan_t yyscanner,bool addToOutput)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
@@ -3321,7 +3456,15 @@ static void endBrief(yyscan_t yyscanner,bool addToOutput)
     // found some brief description and not just whitespace
     yyextra->briefEndsAtDot=FALSE;
     setOutput(yyscanner,OutputDoc);
+    addIline(yyscanner,yyextra->lineNr);
     if (addToOutput) addOutput(yyscanner,yytext);
+  }
+  else
+  {
+    int saveLineNr = yyextra->lineNr;
+    lineCount(yyscanner);
+    yyextra->current->briefLine = yyextra->lineNr;
+    yyextra->lineNr = saveLineNr;
   }
 }
 
