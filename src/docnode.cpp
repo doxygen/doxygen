@@ -137,7 +137,6 @@ const char *DocStyleChange::styleString() const
     case DocStyleChange::Del:          return "del";
     case DocStyleChange::Underline:    return "u";
     case DocStyleChange::Ins:          return "ins";
-    case DocStyleChange::Summary:      return "summary";
   }
   return "<invalid>";
 }
@@ -1286,9 +1285,36 @@ endheader:
 }
 //---------------------------------------------------------------------------
 
+void DocHtmlSummary::parse(DocNodeVariant *thisVariant)
+{
+  DBG(("DocHtmlSummary::parse() start\n"));
+  auto ns = AutoNodeStack(parser(),thisVariant);
+  parser()->tokenizer.setStateTitle();
+  int tok;
+  while ((tok=parser()->tokenizer.lex()))
+  {
+    int tagId;
+    // check of </summary>
+    if (tok==TK_HTMLTAG &&
+        (tagId=Mappers::htmlTagMapper->map(parser()->context.token->name)) && tagId==XML_SUMMARY &&
+        parser()->context.token->endTag
+       )
+    {
+      break;
+    }
+    else if (!parser()->defaultHandleToken(thisVariant,tok,children()))
+    {
+      parser()->errorHandleDefaultToken(thisVariant,tok,children(),"summary section");
+    }
+  }
+  parser()->tokenizer.setStatePara();
+}
+
+//---------------------------------------------------------------------------
+
 int DocHtmlDetails::parse(DocNodeVariant *thisVariant)
 {
-  DBG(("DocHtmlHtmlDetails::parse() start\n"));
+  DBG(("DocHtmlDetails::parse() start\n"));
   int retval=0;
   auto ns = AutoNodeStack(parser(),thisVariant);
 
@@ -1305,9 +1331,20 @@ int DocHtmlDetails::parse(DocNodeVariant *thisVariant)
   while (retval==TK_NEWPARA);
   if (par) par->markLast();
 
-  DBG(("DocHtmlHtmlDetails::parse() end retval=%s\n",DocTokenizer::retvalToString(retval)));
+  DBG(("DocHtmlDetails::parse() end retval=%s\n",DocTokenizer::retvalToString(retval)));
   return (retval==RetVal_EndHtmlDetails) ? RetVal_OK : retval;
 }
+
+void DocHtmlDetails::parseSummary(DocNodeVariant *thisVariant,HtmlAttribList &attribs)
+{
+  DBG(("DocHtmlDetails::parseSummary() start\n"));
+  m_summary = std::make_unique<DocNodeVariant>(DocHtmlSummary(parser(),thisVariant,attribs));
+  DocHtmlSummary *summary = &std::get<DocHtmlSummary>(*m_summary);
+  summary->parse(m_summary.get());
+  DBG(("DocHtmlDetails::parseSummary() end\n"));
+}
+
+//---------------------------------------------------------------------------
 
 int DocHRef::parse(DocNodeVariant *thisVariant)
 {
@@ -4577,7 +4614,13 @@ int DocPara::handleHtmlStartTag(DocNodeVariant *thisVariant,const QCString &tagN
       {
         if (!parser()->context.token->emptyTag)
         {
-          parser()->handleStyleEnter(thisVariant,children(),DocStyleChange::Summary,tagName,&parser()->context.token->attribs);
+          DocNodeVariant *n=parent();
+          while (n && !std::holds_alternative<DocHtmlDetails>(*n)) n=::parent(n);
+          DocHtmlDetails *d = std::get_if<DocHtmlDetails>(n);
+          if (d)
+          {
+            d->parseSummary(n,parser()->context.token->attribs);
+          }
         }
       }
       break;
@@ -4968,10 +5011,6 @@ int DocPara::handleHtmlEndTag(DocNodeVariant *thisVariant,const QCString &tagNam
       //children().push_back(std::make_unique<DocStyleChange>(this,parser()->context.nodeStack.size(),DocStyleChange::Bold,FALSE));
       break;
     case XML_SUMMARY:
-      if (insideDetails(thisVariant))
-      {
-        parser()->handleStyleLeave(thisVariant,children(),DocStyleChange::Summary,tagName);
-      }
       break;
     case XML_REMARKS:
     case XML_PARA:

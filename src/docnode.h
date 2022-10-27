@@ -46,7 +46,7 @@ class DocParser;
 /* 40 */  DN(DocSimpleSect)     DN_SEP DN(DocSimpleSectSep) DN_SEP DN(DocParamSect)      DN_SEP DN(DocPara)         DN_SEP DN(DocParamList)   DN_SEP   \
 /* 45 */  DN(DocSimpleListItem) DN_SEP DN(DocHtmlListItem)  DN_SEP DN(DocHtmlDescData)   DN_SEP DN(DocHtmlCell)     DN_SEP DN(DocHtmlCaption) DN_SEP   \
 /* 50 */  DN(DocHtmlRow)        DN_SEP DN(DocHtmlTable)     DN_SEP DN(DocHtmlBlockQuote) DN_SEP DN(DocText)         DN_SEP DN(DocRoot)        DN_SEP   \
-/* 55 */  DN(DocHtmlDetails)                                                                                                                           \
+/* 55 */  DN(DocHtmlDetails)    DN_SEP DN(DocHtmlSummary)                                                                                              \
 
 // forward declarations
 #define DN(x) class x;
@@ -272,8 +272,7 @@ class DocStyleChange : public DocNode
                  Del           = (1<<12),
                  Ins           = (1<<13),
                  S             = (1<<14),
-                 Summary       = (1<<16),
-                 Cite          = (1<<17)
+                 Cite          = (1<<15)
                };
 
     DocStyleChange(DocParser *parser,DocNodeVariant *parent,size_t position,Style s,
@@ -793,6 +792,19 @@ class DocHRef : public DocCompoundNode
     QCString   m_file;
 };
 
+/** Node Html summary */
+class DocHtmlSummary : public DocCompoundNode
+{
+  public:
+    DocHtmlSummary(DocParser *parser,DocNodeVariant *parent,const HtmlAttribList &attribs) :
+       DocCompoundNode(parser,parent), m_attribs(attribs) {}
+    const HtmlAttribList &attribs() const { return m_attribs; }
+    void parse(DocNodeVariant*);
+
+  private:
+    HtmlAttribList m_attribs;
+};
+
 /** Node Html details */
 class DocHtmlDetails : public DocCompoundNode
 {
@@ -801,9 +813,12 @@ class DocHtmlDetails : public DocCompoundNode
        DocCompoundNode(parser,parent), m_attribs(attribs) {}
     const HtmlAttribList &attribs() const { return m_attribs; }
     int parse(DocNodeVariant*);
+    void parseSummary(DocNodeVariant *,HtmlAttribList &attribs);
+    const DocNodeVariant *summary() const { return m_summary.get(); }
 
   private:
     HtmlAttribList m_attribs;
+    std::unique_ptr<DocNodeVariant> m_summary;
 };
 
 /** Node Html heading */
@@ -1264,6 +1279,12 @@ class DocRoot : public DocCompoundNode
 };
 
 //--------------------------------------------------------------------------------------
+
+/// returns the parent node of a given node \a n or 0 if the node has no parent.
+constexpr DocNodeVariant *parent(DocNodeVariant *n)
+{
+  return n ? std::visit([](auto &&x)->decltype(auto) { return x.parent(); }, *n) : nullptr;
+}
 
 /// returns the parent node of a given node \a n or 0 if the node has no parent.
 constexpr const DocNodeVariant *parent(const DocNodeVariant *n)

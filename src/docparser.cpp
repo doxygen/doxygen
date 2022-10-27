@@ -562,6 +562,10 @@ void DocParser::errorHandleDefaultToken(DocNodeVariant *parent,int tok,
       warn_doc_error(context.fileName,tokenizer.getLineNr(),"Unsupported symbol %s found as part of a %s",
            qPrint(context.token->name), qPrint(txt));
       break;
+    case TK_HTMLTAG:
+      warn_doc_error(context.fileName,tokenizer.getLineNr(),"Unsupported HTML tag <%s%s> found as part of a %s",
+           context.token->endTag ? "/" : "",qPrint(context.token->name), qPrint(txt));
+      break;
     default:
       children.append<DocWord>(this,parent,context.token->name);
       warn_doc_error(context.fileName,tokenizer.getLineNr(),"Unexpected token %s found as part of a %s",

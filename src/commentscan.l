@@ -712,20 +712,9 @@ STopt  [^\n@\\]*
                                           {
                                             setOutput(yyscanner,OutputBrief);
                                           }
-                                          else
+                                          else // HTML5 style <summary> as part of <details> section.
                                           {
-                                            int id = yyextra->HTMLDetailsSummary.back();
-                                            if (id == 0)
-                                            {
-                                              addOutput(yyscanner,"\\htmlonly </p> \\endhtmlonly");
-                                              addOutput(yyscanner,yytext);
-                                            }
-                                            else
-                                            {
-                                              addOutput(yyscanner,"<p>");
-                                            }
-                                            yyextra->HTMLDetailsSummary.pop_back();
-                                            yyextra->HTMLDetailsSummary.push_back(id+1);
+                                            addOutput(yyscanner,yytext);
                                           }
                                         }
 <Comment>"<"{REMARKS}">"                { // start of a .NET XML style detailed description
@@ -735,15 +724,12 @@ STopt  [^\n@\\]*
 <Comment>"</"{SUMMARY}">"               { // start of a .NET XML style detailed description
                                           if (!yyextra->HTMLDetailsSummary.empty())
                                           {
-                                            int id = yyextra->HTMLDetailsSummary.back();
-                                            if (id == 1)
-                                            {
-                                              addOutput(yyscanner,yytext);
-                                              addOutput(yyscanner,"\\htmlonly <p> \\endhtmlonly");
-                                            }
-                                            else addOutput(yyscanner,"</p>");
+                                            addOutput(yyscanner,yytext);
                                           }
-                                          else setOutput(yyscanner,OutputDoc);
+                                          else
+                                          {
+                                            setOutput(yyscanner,OutputDoc);
+                                          }
                                         }
 <Comment>"</"{REMARKS}">"               { // end of a brief or detailed description
                                           setOutput(yyscanner,OutputDoc);

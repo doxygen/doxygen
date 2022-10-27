@@ -378,8 +378,6 @@ void LatexDocVisitor::operator()(const DocStyleChange &s)
       break;
     case DocStyleChange::Div:  /* HTML only */ break;
     case DocStyleChange::Span: /* HTML only */ break;
-    case DocStyleChange::Summary: /* emulation of the <summary> tag inside a <details> tag */
-      if (s.enable()) m_t << "{\\bfseries{";      else m_t << "}}\\newline";
       break;
   }
 }
@@ -1409,12 +1407,33 @@ void LatexDocVisitor::operator()(const DocHRef &href)
   m_t << "}}";
 }
 
+void LatexDocVisitor::operator()(const DocHtmlSummary &d)
+{
+  if (m_hide) return;
+  m_t << "{\\bfseries{";
+  visitChildren(d);
+  m_t << "}}";
+}
+
 void LatexDocVisitor::operator()(const DocHtmlDetails &d)
 {
   if (m_hide) return;
   m_t << "\n\n";
+  auto summary = d.summary();
+  if (summary)
+  {
+    std::visit(*this,*summary);
+    m_t << "\\begin{adjustwidth}{1em}{0em}\n";
+  }
   visitChildren(d);
-  m_t << "\n\n";
+  if (summary)
+  {
+    m_t << "\\end{adjustwidth}\n";
+  }
+  else
+  {
+    m_t << "\n\n";
+  }
 }
 
 void LatexDocVisitor::operator()(const DocHtmlHeader &header)

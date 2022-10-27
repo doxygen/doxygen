@@ -119,6 +119,7 @@ static bool mustBeOutsideParagraph(const DocNodeVariant &n)
                                  /* <blockquote> */ DocHtmlBlockQuote,
                                  /* \parblock */    DocParBlock,
                                  /* <details> */    DocHtmlDetails,
+                                 /* <summary> */    DocHtmlSummary,
                                                     DocIncOperator >(n))
   {
     return TRUE;
@@ -524,9 +525,6 @@ void HtmlDocVisitor::operator()(const DocStyleChange &s)
       break;
     case DocStyleChange::Span:
       if (s.enable()) m_t << "<span" << htmlAttribsToString(s.attribs()) << ">";  else m_t << "</span>";
-      break;
-    case DocStyleChange::Summary:
-      if (s.enable()) m_t << "<summary" << htmlAttribsToString(s.attribs()) << ">";  else m_t << "</summary>";
       break;
   }
 }
@@ -1275,7 +1273,8 @@ static bool determineIfNeedsTag(const DocPara &p)
                          DocXRefItem,
                          DocHtmlBlockQuote,
                          DocParBlock,
-                         DocHtmlDetails
+                         DocHtmlDetails,
+                         DocHtmlSummary
                          >(*p.parent()))
     {
       needsTag = TRUE;
@@ -1628,11 +1627,24 @@ void HtmlDocVisitor::operator()(const DocHRef &href)
   m_t << "</a>";
 }
 
+void HtmlDocVisitor::operator()(const DocHtmlSummary &s)
+{
+  if (m_hide) return;
+  m_t << "<summary " << htmlAttribsToString(s.attribs()) << ">\n";
+  visitChildren(s);
+  m_t << "</summary>\n";
+}
+
 void HtmlDocVisitor::operator()(const DocHtmlDetails &d)
 {
   if (m_hide) return;
   forceEndParagraph(d);
   m_t << "<details " << htmlAttribsToString(d.attribs()) << ">\n";
+  auto summary = d.summary();
+  if (summary)
+  {
+    std::visit(*this,*summary);
+  }
   visitChildren(d);
   m_t << "</details>\n";
   forceStartParagraph(d);

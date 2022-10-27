@@ -306,7 +306,6 @@ DB_VIS_C
     case DocStyleChange::Ins:        break;
     case DocStyleChange::Div:  /* HTML only */ break;
     case DocStyleChange::Span: /* HTML only */ break;
-    case DocStyleChange::Summary: /* emulation of the <summary> tag inside a <details> tag */
       if (s.enable()) m_t << "<para><emphasis role=\"bold\">";      else m_t << "</emphasis></para>";
       break;
   }
@@ -1172,11 +1171,25 @@ DB_VIS_C
   m_t << "</link>";
 }
 
+void DocbookDocVisitor::operator()(const DocHtmlSummary &s)
+{
+DB_VIS_C
+  if (m_hide) return;
+  m_t << "<para><emphasis role=\"bold\">";
+  visitChildren(s);
+  m_t << "</emphasis></para>";
+}
+
 void DocbookDocVisitor::operator()(const DocHtmlDetails &d)
 {
 DB_VIS_C
   if (m_hide) return;
   m_t << "\n";
+  auto summary = d.summary();
+  if (summary)
+  {
+    std::visit(*this,*summary);
+  }
   m_t << "<para>";
   visitChildren(d);
   m_t << "</para>";

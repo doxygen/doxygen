@@ -188,10 +188,6 @@ void ManDocVisitor::operator()(const DocStyleChange &s)
       break;
     case DocStyleChange::Div:  /* HTML only */ break;
     case DocStyleChange::Span: /* HTML only */ break;
-    case DocStyleChange::Summary: /* emulation of the <summary> tag inside a <details> tag */
-      if (s.enable()) m_t << "\\fB";      else m_t << "\\fP\n.PP\n";
-      m_firstCol=FALSE;
-      break;
   }
 }
 
@@ -776,6 +772,13 @@ void ManDocVisitor::operator()(const DocHRef &href)
   m_t << "\\fP";
 }
 
+void ManDocVisitor::operator()(const DocHtmlSummary &s)
+{
+  m_t << "\\fB";
+  visitChildren(s);
+  m_t << "\\fP\n.PP\n";
+}
+
 void ManDocVisitor::operator()(const DocHtmlDetails &d)
 {
   if (m_hide) return;
@@ -784,10 +787,19 @@ void ManDocVisitor::operator()(const DocHtmlDetails &d)
     m_t << "\n";
     m_t << ".PP\n";
   }
-  m_t << ".RS 4\n"; // TODO: add support for nested detailes sections
+  auto summary = d.summary();
+  if (summary)
+  {
+    std::visit(*this,*summary);
+    m_t << ".PP\n";
+    m_t << ".RS 4\n";
+  }
   visitChildren(d);
   if (!m_firstCol) m_t << "\n";
-  m_t << ".RE\n";
+  if (summary)
+  {
+    m_t << ".RE\n";
+  }
   m_t << ".PP\n";
   m_firstCol=TRUE;
 }
