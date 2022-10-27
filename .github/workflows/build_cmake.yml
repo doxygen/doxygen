@@ -152,7 +152,7 @@ jobs:
       shell: bash
       run: |
         ./miktexsetup_standalone --local-package-repository="C:/miktex-repository" \
-                      --log-file="C:/miktex-repository/out.log" \
+                      --verbose \
                       --package-set=essential \
                       --shared \
                       install
