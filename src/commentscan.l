@@ -2583,7 +2583,7 @@ static bool handleFileInfo(yyscan_t yyscanner,const QCString &, const StringVect
       addOutput(yyscanner,yyextra->fileName);
     }
   }
-  addOutput(yyscanner," ");
+  addOutput(yyscanner,"");
   return FALSE;
 }
 
