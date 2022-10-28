@@ -63,7 +63,7 @@ typedef yyguts_t *yyscan_t;
 #include "fortranscanner.h"
 #include "containers.h"
 
-const int fixedCommentAfter = 72;
+const int fixedCommentAfter = 10000;
 
 // Toggle for some debugging info
 //#define DBG_CTX(x) fprintf x
