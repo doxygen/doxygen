@@ -357,8 +357,9 @@ bool DotFilePatcher::run() const
           foundSize = count==2 && (width>500 || height>450);
           if (foundSize) insideHeader=TRUE;
         }
-        else if (insideHeader && !replacedHeader && line.find("<title>")!=-1)
+        else if (insideHeader && !replacedHeader && line.find("<g id=\"graph")!=-1)
         {
+          line="";
           if (foundSize)
           {
             // insert special replacement header for interactive SVGs
