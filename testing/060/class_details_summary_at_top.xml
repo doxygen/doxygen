@@ -7,7 +7,7 @@
     <detaileddescription>
       <para>Before details. <details><summary>Summary on top</summary><para>Details body </para></details>After details. </para>
     </detaileddescription>
-    <location file="060_details.cpp" line="15" column="1" bodyfile="060_details.cpp" bodystart="15" bodyend="15"/>
+    <location file="060_details.cpp" line="16" column="1" bodyfile="060_details.cpp" bodystart="16" bodyend="16"/>
     <listofallmembers>
     </listofallmembers>
   </compounddef>

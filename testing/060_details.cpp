@@ -4,6 +4,7 @@
 // check: class_details_summary_at_top.xml
 // check: class_details_summary_at_bottom.xml
 // check: class_details_without_summary.xml
+// check: class_details_multi_summary.xml
 /**
  * Before details.
  * <details>
@@ -51,3 +52,17 @@ class DetailsCSStyle {};
  * </details>
  */
 class DetailsNested {};
+
+/**
+ * Multiple summary sections
+ * <details>
+ * <summary>First summary</summary>
+ * More details.
+ * <summary>Second summary</summary>
+ * More details.
+ * <summary>Third summary</summary>
+ * Last part.
+ * </details>
+ */
+class DetailsMultiSummary {};
+
