@@ -1333,7 +1333,7 @@ void HtmlDocVisitor::operator()(const DocPara &p)
     if (strlen(contexts[t]))
       m_t << "<p class=\"" << contexts[t] << "\"" << htmlAttribsToString(p.attribs()) << ">";
     else
-      m_t << "<p " << htmlAttribsToString(p.attribs()) << ">";
+      m_t << "<p" << htmlAttribsToString(p.attribs()) << ">";
   }
 
   visitChildren(p);

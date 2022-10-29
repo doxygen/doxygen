@@ -4619,7 +4619,14 @@ int DocPara::handleHtmlStartTag(DocNodeVariant *thisVariant,const QCString &tagN
           DocHtmlDetails *d = std::get_if<DocHtmlDetails>(n);
           if (d)
           {
-            d->parseSummary(n,parser()->context.token->attribs);
+            if (!d->summary()) // details section does not have a summary yet
+            {
+              d->parseSummary(n,parser()->context.token->attribs);
+            }
+            else
+            {
+              retval = TK_NEWPARA;
+            }
           }
         }
       }
@@ -5011,6 +5018,7 @@ int DocPara::handleHtmlEndTag(DocNodeVariant *thisVariant,const QCString &tagNam
       //children().push_back(std::make_unique<DocStyleChange>(this,parser()->context.nodeStack.size(),DocStyleChange::Bold,FALSE));
       break;
     case XML_SUMMARY:
+      retval=TK_NEWPARA;
       break;
     case XML_REMARKS:
     case XML_PARA:
