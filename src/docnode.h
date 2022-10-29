@@ -1068,7 +1068,6 @@ class DocPara : public DocCompoundNode
     void setAttribs(const HtmlAttribList &attribs) { m_attribs = attribs; }
 
   private:
-    QCString  m_sectionId;
     bool      m_isFirst = false;
     bool      m_isLast = false;
     HtmlAttribList m_attribs;
