@@ -1691,7 +1691,7 @@ void LatexGenerator::endMemberDescription()
 }
 
 
-void LatexGenerator::writeNonBreakableSpace(int)
+void LatexGenerator::writeNonBreakableSpace(int n)
 {
   //printf("writeNonBreakableSpace()\n");
   if (m_insideTabbing)
@@ -1700,7 +1700,12 @@ void LatexGenerator::writeNonBreakableSpace(int)
   }
   else
   {
-    m_t << "~";
+    m_t << "$";
+    for (int i=0;i<n;i++)
+    {
+      m_t << "~";
+    }
+    m_t << "$";
   }
 }
 
