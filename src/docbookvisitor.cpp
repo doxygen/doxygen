@@ -306,8 +306,6 @@ DB_VIS_C
     case DocStyleChange::Ins:        break;
     case DocStyleChange::Div:  /* HTML only */ break;
     case DocStyleChange::Span: /* HTML only */ break;
-      if (s.enable()) m_t << "<para><emphasis role=\"bold\">";      else m_t << "</emphasis></para>";
-      break;
   }
 }
 

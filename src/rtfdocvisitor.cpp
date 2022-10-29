@@ -286,8 +286,6 @@ void RTFDocVisitor::operator()(const DocStyleChange &s)
       break;
     case DocStyleChange::Div:  /* HTML only */ break;
     case DocStyleChange::Span: /* HTML only */ break;
-      if (s.enable()) m_t << "{\\b ";      else m_t << "}\\par ";
-      break;
   }
 }
 
