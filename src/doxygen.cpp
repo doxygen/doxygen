@@ -10430,7 +10430,10 @@ static void readDir(FileInfo *fi,
     if (exclSet==0 || exclSet->find(cfi.absFilePath())==exclSet->end())
     { // file should not be excluded
       //printf("killSet->find(%s)\n",qPrint(cfi->absFilePath()));
-      if (!cfi.exists() || !cfi.isReadable())
+      if (Config_getBool(EXCLUDE_SYMLINKS) && cfi.isSymLink())
+      {
+      }
+      else if (!cfi.exists() || !cfi.isReadable())
       {
         if (errorIfNotExist)
         {
@@ -10438,7 +10441,6 @@ static void readDir(FileInfo *fi,
         }
       }
       else if (cfi.isFile() &&
-          (!Config_getBool(EXCLUDE_SYMLINKS) || !cfi.isSymLink()) &&
           (patList==0 || patternMatch(cfi,*patList)) &&
           (exclPatList==0 || !patternMatch(cfi,*exclPatList)) &&
           (killSet==0 || killSet->find(cfi.absFilePath())==killSet->end())
@@ -10462,7 +10464,6 @@ static void readDir(FileInfo *fi,
         if (killSet) killSet->insert(fullName);
       }
       else if (recursive &&
-          (!Config_getBool(EXCLUDE_SYMLINKS) || !cfi.isSymLink()) &&
           cfi.isDir() &&
           (exclPatList==0 || !patternMatch(cfi,*exclPatList)) &&
           cfi.fileName().at(0)!='.') // skip "." ".." and ".dir"
@@ -10515,51 +10516,51 @@ void readFileOrDirectory(const QCString &s,
   {
     if (exclSet==0 || exclSet->find(fi.absFilePath())==exclSet->end())
     {
-      if (!fi.exists() || !fi.isReadable())
+      if (Config_getBool(EXCLUDE_SYMLINKS) && fi.isSymLink())
+      {
+      }
+      else if (!fi.exists() || !fi.isReadable())
       {
         if (errorIfNotExist)
         {
           warn_uncond("source '%s' is not a readable file or directory... skipping.\n",qPrint(s));
         }
       }
-      else if (!Config_getBool(EXCLUDE_SYMLINKS) || !fi.isSymLink())
+      else if (fi.isFile())
       {
-        if (fi.isFile())
+        std::string dirPath = fi.dirPath(true);
+        std::string filePath = fi.absFilePath();
+        if (paths && !dirPath.empty())
         {
-          std::string dirPath = fi.dirPath(true);
-          std::string filePath = fi.absFilePath();
-          if (paths && !dirPath.empty())
+          paths->insert(dirPath);
+        }
+        //printf("killSet.find(%s)=%d\n",qPrint(fi.absFilePath()),killSet.find(fi.absFilePath())!=killSet.end());
+        if (killSet==0 || killSet->find(filePath)==killSet->end())
+        {
+          std::string name=fi.fileName();
+          if (fnMap)
           {
-            paths->insert(dirPath);
+            std::unique_ptr<FileDef> fd { createFileDef(QCString(dirPath+"/"),QCString(name)) };
+            if (!name.empty())
+            {
+              FileName *fn = fnMap->add(QCString(name),QCString(filePath));
+              fn->push_back(std::move(fd));
+            }
           }
-          //printf("killSet.find(%s)=%d\n",qPrint(fi.absFilePath()),killSet.find(fi.absFilePath())!=killSet.end());
-          if (killSet==0 || killSet->find(filePath)==killSet->end())
+          if (resultList || resultSet)
           {
-            std::string name=fi.fileName();
-            if (fnMap)
-            {
-              std::unique_ptr<FileDef> fd { createFileDef(QCString(dirPath+"/"),QCString(name)) };
-              if (!name.empty())
-              {
-                FileName *fn = fnMap->add(QCString(name),QCString(filePath));
-                fn->push_back(std::move(fd));
-              }
-            }
-            if (resultList || resultSet)
-            {
-              if (resultList) resultList->push_back(filePath);
-              if (resultSet) resultSet->insert(filePath);
-            }
+            if (resultList) resultList->push_back(filePath);
+            if (resultSet) resultSet->insert(filePath);
+          }
 
-            if (killSet) killSet->insert(fi.absFilePath());
-          }
+          if (killSet) killSet->insert(fi.absFilePath());
         }
-        else if (fi.isDir()) // readable dir
-        {
-          readDir(&fi,fnMap,exclSet,patList,
-              exclPatList,resultList,resultSet,errorIfNotExist,
-              recursive,killSet,paths);
-        }
+      }
+      else if (fi.isDir()) // readable dir
+      {
+        readDir(&fi,fnMap,exclSet,patList,
+            exclPatList,resultList,resultSet,errorIfNotExist,
+            recursive,killSet,paths);
       }
     }
   }
