@@ -1029,7 +1029,10 @@ void ClassDefImpl::internalInsertMember(const MemberDef *md,
     {
       addMemberToList(MemberListType_relatedMembers,md,FALSE);
     }
-    else if (md->isFunction() && md->protection()==Private && md->virtualness()!=Normal && Config_getBool(EXTRACT_PRIV_VIRTUAL))
+    else if (md->isFunction() &&
+             md->protection()==Private &&
+             (md->virtualness()!=Normal || md->isOverride() || md->isFinal()) &&
+             Config_getBool(EXTRACT_PRIV_VIRTUAL))
     {
       addMemberToList(MemberListType_functionMembers,md,FALSE);
     }

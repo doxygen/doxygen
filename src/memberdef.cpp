@@ -1697,7 +1697,7 @@ void MemberDefImpl::_computeLinkableInProject()
     return;
   }
   if ((!protectionLevelVisible(m_impl->prot) && m_impl->mtype!=MemberType_Friend) &&
-       !(m_impl->prot==Private && m_impl->virt!=Normal && extractPrivateVirtual))
+       !(m_impl->prot==Private && (m_impl->virt!=Normal || isOverride() || isFinal()) && extractPrivateVirtual))
   {
     //printf("private and invisible!\n");
     m_isLinkableCached = 1; // hidden due to protection
@@ -1940,7 +1940,7 @@ bool MemberDefImpl::isBriefSectionVisible() const
   // is set to YES
   bool visibleIfPrivate = (protectionLevelVisible(protection()) ||
                            m_impl->mtype==MemberType_Friend ||
-                           (m_impl->prot==Private && m_impl->virt!=Normal && extractPrivateVirtual && hasDocs)
+                           (m_impl->prot==Private && (m_impl->virt!=Normal || isOverride() || isFinal()) && extractPrivateVirtual && hasDocs)
                           );
 
   // hide member if it overrides a member in a superclass and has no
@@ -2261,14 +2261,19 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
   // *** write name
   if (!isAnonymous()) // hide anonymous stuff
   {
-    bool extractPrivate = Config_getBool(EXTRACT_PRIVATE);
     bool extractPrivateVirtual = Config_getBool(EXTRACT_PRIV_VIRTUAL);
     bool extractStatic  = Config_getBool(EXTRACT_STATIC);
     MemberDefMutable *annMemb = toMemberDefMutable(m_impl->annMemb);
+    bool visibleIfPrivate = (protectionLevelVisible(protection()) ||
+                             m_impl->mtype==MemberType_Friend ||
+                             (m_impl->prot==Private &&
+                                (m_impl->virt!=Normal || isOverride() || isFinal()) &&
+                                extractPrivateVirtual && hasDocumentation()
+                             ));
     //printf("Member name=`%s gd=%p md->groupDef=%p inGroup=%d isLinkable()=%d hasDocumentation=%d\n",qPrint(name()),gd,getGroupDef(),inGroup,isLinkable(),hasDocumentation());
     if (!name().isEmpty() && // name valid
         (hasDetailedDescription() || isReference()) && // has docs
-        !(m_impl->prot==Private && !extractPrivate && (m_impl->virt==Normal || !extractPrivateVirtual) && m_impl->mtype!=MemberType_Friend) && // hidden due to protection
+        visibleIfPrivate &&
         !(isStatic() && getClassDef()==0 && !extractStatic) // hidden due to static-ness
        )
     {
@@ -2585,7 +2590,7 @@ bool MemberDefImpl::hasDetailedDescription() const
     // only include members that are non-private unless EXTRACT_PRIVATE is
     // set to YES or the member is part of a   group
     bool privateFilter = protectionLevelVisible(protection()) || m_impl->mtype==MemberType_Friend ||
-                         (m_impl->prot==Private && m_impl->virt!=Normal && extractPrivateVirtual);
+                         (m_impl->prot==Private && (m_impl->virt!=Normal || isOverride() || isFinal()) && extractPrivateVirtual);
 
     // hide friend (class|struct|union) member if HIDE_FRIEND_COMPOUNDS
     // is true
