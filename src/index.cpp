@@ -4553,9 +4553,13 @@ static void writeIndex(OutputList &ol)
     }
     if (Config_getBool(SHOW_NAMESPACES) && (documentedNamespaces>0))
     {
-      ol.startIndexSection(isNamespaceIndex);
-      ol.parseText(/*projPrefix+*/(fortranOpt?theTranslator->trModulesIndex():theTranslator->trNamespaceIndex()));
-      ol.endIndexSection(isNamespaceIndex);
+      LayoutNavEntry *lne = LayoutDocManager::instance().rootNavEntry()->find(LayoutNavEntry::Namespaces);
+      if (lne)
+      {
+        ol.startIndexSection(isNamespaceIndex);
+        ol.parseText(/*projPrefix+*/(fortranOpt?theTranslator->trModulesIndex():theTranslator->trNamespaceIndex()));
+        ol.endIndexSection(isNamespaceIndex);
+      }
     }
     if (documentedConcepts>0)
     {
@@ -4571,13 +4575,17 @@ static void writeIndex(OutputList &ol)
     }
     if (hierarchyClasses>0)
     {
-      ol.startIndexSection(isClassHierarchyIndex);
-      ol.parseText(/*projPrefix+*/
-          (fortranOpt ? theTranslator->trCompoundIndexFortran() :
-           vhdlOpt    ? theTranslator->trHierarchicalIndex()    :
-                        theTranslator->trHierarchicalIndex()
-          ));
-      ol.endIndexSection(isClassHierarchyIndex);
+      LayoutNavEntry *lne = LayoutDocManager::instance().rootNavEntry()->find(LayoutNavEntry::ClassHierarchy);
+      if (lne)
+      {
+        ol.startIndexSection(isClassHierarchyIndex);
+        ol.parseText(/*projPrefix+*/
+            (fortranOpt ? theTranslator->trCompoundIndexFortran() :
+             vhdlOpt    ? theTranslator->trHierarchicalIndex()    :
+                          theTranslator->trHierarchicalIndex()
+            ));
+        ol.endIndexSection(isClassHierarchyIndex);
+      }
     }
     if (hierarchyExceptions>0)
     {
