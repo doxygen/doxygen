@@ -303,7 +303,7 @@ Go to the <a href="commands.html">next</a> section or return to the
  is set to \c YES. Level 0 represents 16 directories, and every level increment
  doubles the number of directories, resulting in 4096 directories at level 8 which is the
  default and also the maximum value. The sub-directories are organized in 2 levels, the first
- level always has a fixed numer of 16 directories.
+ level always has a fixed number of 16 directories.
 ]]>
       </docs>
     </option>
