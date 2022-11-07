@@ -203,6 +203,10 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
     virtual QCString trDetailedDescription()
     { return "विस्तृत विवरण"; }
 
+    /*! header that is used when the summary tag is missing inside the details tag */
+    virtual QCString trDetails()
+    { return "विवरण"; }
+
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
     { return "सदस्य प्ररुप-परिभाषा दस्तावेज़ीकरण"; }

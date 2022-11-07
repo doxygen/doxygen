@@ -88,6 +88,10 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
     virtual QCString trDetailedDescription()
     { return "Детален опис"; }
 
+    /*! header that is used when the summary tag is missing inside the details tag */
+    virtual QCString trDetails()
+    { return "Детали"; }
+
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
     { return "Документација на членови дефиниции на тип"; }

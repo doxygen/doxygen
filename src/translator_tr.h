@@ -96,6 +96,10 @@ class TranslatorTurkish : public TranslatorAdapter_1_7_5
     virtual QCString trDetailedDescription()
     { return "Ayrıntılı tanımlama"; }
 
+    /*! header that is used when the summary tag is missing inside the details tag */
+    virtual QCString trDetails()
+    { return "Ayrıntılar"; }
+
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
     { return "Üye Typedef Dokümantasyonu"; }

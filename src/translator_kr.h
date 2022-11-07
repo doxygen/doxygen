@@ -120,6 +120,10 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
     virtual QCString trDetailedDescription()
     { return "상세한 설명"; }
 
+    /*! header that is used when the summary tag is missing inside the details tag */
+    virtual QCString trDetails()
+    { return "상세"; }
+
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
     { return "멤버 타입정의 문서화"; }

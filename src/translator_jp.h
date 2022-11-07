@@ -116,6 +116,10 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
     virtual QCString trDetailedDescription()
     { return "詳解"; }
 
+    /*! header that is used when the summary tag is missing inside the details tag */
+    virtual QCString trDetails()
+    { return "詳細"; }
+
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
     { return "型定義メンバ詳解"; }

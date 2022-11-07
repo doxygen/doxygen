@@ -54,6 +54,10 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
     virtual QCString trDetailedDescription()
     { return "Детальний опис"; }
 
+    /*! header that is used when the summary tag is missing inside the details tag */
+    virtual QCString trDetails()
+    { return "Подробиці"; }
+
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
     { return "Опис типів користувача"; }

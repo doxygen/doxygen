@@ -104,6 +104,8 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
     { return "(To nisu member funkcije.)"; }
     QCString trDetailedDescription()
     { return "Detaljno objašnjenje"; }
+    QCString trDetails()
+    { return "Detalji"; }
     QCString trMemberTypedefDocumentation()
     { return "Dokumentacija typedef članova"; }
     QCString trMemberEnumerationDocumentation()

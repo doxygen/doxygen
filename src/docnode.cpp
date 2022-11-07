@@ -1331,6 +1331,13 @@ int DocHtmlDetails::parse(DocNodeVariant *thisVariant)
   while (retval==TK_NEWPARA);
   if (par) par->markLast();
 
+  if (!summary())
+  {
+    HtmlAttribList summaryAttribs;
+    m_summary = std::make_unique<DocNodeVariant>(DocHtmlSummary(parser(),thisVariant,summaryAttribs));
+    DocHtmlSummary *summary = &std::get<DocHtmlSummary>(*m_summary);
+    summary->children().append<DocWord>(parser(),thisVariant,theTranslator->trDetails());
+  }
   DBG(("DocHtmlDetails::parse() end retval=%s\n",DocTokenizer::retvalToString(retval)));
   return (retval==RetVal_EndHtmlDetails) ? RetVal_OK : retval;
 }
