@@ -103,6 +103,10 @@ class TranslatorLatvian : public TranslatorAdapter_1_8_4
     virtual QCString trDetailedDescription()
     { return "Detalizēts apraksts"; }
 
+    /*! header that is used when the summary tag is missing inside the details tag */
+    virtual QCString trDetails()
+    { return "Sīkāka informācija"; }
+
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
     { return "Elementa Typedef dokumentācija"; }

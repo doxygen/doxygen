@@ -95,6 +95,10 @@ class TranslatorChinese : public TranslatorAdapter_1_9_4
     virtual QCString trDetailedDescription()
     { return "详细描述"; }
 
+    /*! header that is used when the summary tag is missing inside the details tag */
+    virtual QCString trDetails()
+    { return "详细信息"; }
+
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
     { return "成员类型定义说明"; }

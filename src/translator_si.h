@@ -45,6 +45,9 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
     { return "(To niso metode.)"; }
     QCString trDetailedDescription()
     { return "Podroben opis"; }
+    virtual QCString trDetails()
+    { return "Podrobnosti"; }
+
     QCString trMemberTypedefDocumentation()
     { return "Opis uporabniško definiranih tipov"; }
     QCString trMemberEnumerationDocumentation()

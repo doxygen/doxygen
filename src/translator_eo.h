@@ -100,6 +100,10 @@ class TranslatorEsperanto : public TranslatorAdapter_1_8_4
     virtual QCString trDetailedDescription()
     { return "Detala Priskribo"; }
 
+    /*! header that is used when the summary tag is missing inside the details tag */
+    virtual QCString trDetails()
+    { return "Detaloj"; }
+
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
     { return "Dokumentado de la Membraj Tipodifinoj"; }

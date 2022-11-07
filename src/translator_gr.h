@@ -98,6 +98,10 @@ class TranslatorGreek : public TranslatorAdapter_1_9_4
     virtual QCString trDetailedDescription()
     { return "Λεπτομερής Περιγραφή"; }
 
+    /*! header that is used when the summary tag is missing inside the details tag */
+    virtual QCString trDetails()
+    { return "Λεπτομέρειες"; }
+
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
     { return "Τεκμηρίωση Μελών Ορισμών Τύπων"; }
