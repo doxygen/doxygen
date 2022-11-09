@@ -334,7 +334,7 @@ void ManGenerator::codify(const QCString &str)
                     m_col+=spacesToNextTabStop;
                     break;
         case '\n':  m_t << "\n"; m_firstCol=TRUE; m_col=0; break;
-        case '\\':  m_t << "\\"; m_col++; break;
+        case '\\':  m_t << "\\\\"; m_col++; break;
         case '\"':  // no break!
         default:    p=writeUTF8Char(m_t,p-1); m_firstCol=FALSE; m_col++; break;
       }
