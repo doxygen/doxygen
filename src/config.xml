@@ -1375,6 +1375,17 @@ FILE_VERSION_FILTER = "cleartool desc -fmt \%Vn"
 ]]>
       </docs>
     </option>
+    <option type='bool' id='WARN_IF_ENUM_MEMBER_UNDOCUMENTED' defval='0'>
+      <docs>
+<![CDATA[
+ If \c WARN_IF_ENUM_MEMBER_UNDOCUMENTED option is set to \c YES, doxygen will warn
+ about enumeration members that are not documented. 
+ If set to \c NO, doxygen will accept enumeration members.
+ If \ref cfg_extract_all "EXTRACT_ALL" is set to \c YES then this flag will
+ automatically be disabled.
+]]>
+      </docs>
+    </option>
     <option type='enum' id='WARN_AS_ERROR' defval='NO'>
       <docs>
 <![CDATA[
