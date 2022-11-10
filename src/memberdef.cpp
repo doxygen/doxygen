@@ -3907,7 +3907,7 @@ void MemberDefImpl::warnIfUndocumented() const
   }
   
   // if it is an enum, we check that its members are documented
-  if (!extractAll && isEnumerate() && Config_getBool(WARN_IF_ENUM_MEMBER_UNDOCUMENTED)
+  if (!extractAll && isEnumerate() && Config_getBool(WARN_IF_ENUM_MEMBER_UNDOCUMENTED))
   {
     for (const auto &fmd : enumFieldList())
     {
