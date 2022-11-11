@@ -1351,7 +1351,7 @@ QCString DefinitionImpl::navigationPathAsString() const
     result+=(toFileDef(m_impl->def))->getDirDef()->navigationPathAsString();
   }
   result+="<li class=\"navelem\">";
-  if (m_impl->def->isLinkable())
+  if (m_impl->def->isLinkableInProject())
   {
     if (m_impl->def->definitionType()==Definition::TypeGroup &&
         !toGroupDef(m_impl->def)->groupTitle().isEmpty())
