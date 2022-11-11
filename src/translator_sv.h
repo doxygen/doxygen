@@ -205,6 +205,10 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_4
     virtual QCString trDetailedDescription()
     { return "Detaljerad beskrivning"; }
 
+    /*! header that is used when the summary tag is missing inside the details tag */
+    virtual QCString trDetails()
+    { return "Detaljer"; }
+
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
     { return "Dokumentation av typdefinierade medlemmar"; }

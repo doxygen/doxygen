@@ -193,6 +193,10 @@ class TranslatorCzech : public Translator
     virtual QCString trDetailedDescription()
     { return "Detailní popis"; }
 
+    /*! header that is used when the summary tag is missing inside the details tag */
+    virtual QCString trDetails()
+    { return "Podrobnosti"; }
+
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
     { return "Dokumentace členských typů"; }

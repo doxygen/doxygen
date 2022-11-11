@@ -48,6 +48,9 @@ class TranslatorDutch : public Translator
     { return "(Merk op dat dit geen member functies zijn.)"; }
     QCString trDetailedDescription()
     { return "Gedetailleerde Beschrijving"; }
+    virtual QCString trDetails()
+    { return "Details"; }
+
     QCString trMemberTypedefDocumentation()
     { return "Documentatie van type definitie members"; }
     QCString trMemberEnumerationDocumentation()

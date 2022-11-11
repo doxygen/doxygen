@@ -152,6 +152,7 @@ class Translator
     virtual QCString trRelatedFunctions() = 0;
     virtual QCString trRelatedSubscript() = 0;
     virtual QCString trDetailedDescription() = 0;
+    virtual QCString trDetails() = 0;
     virtual QCString trMemberTypedefDocumentation() = 0;
     virtual QCString trMemberEnumerationDocumentation() = 0;
     virtual QCString trMemberFunctionDocumentation() = 0;

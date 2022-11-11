@@ -114,6 +114,10 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
     virtual QCString trDetailedDescription()
     { return "توضيحات جزئی"; }
 
+    /*! header that is used when the summary tag is missing inside the details tag */
+    virtual QCString trDetails()
+    { return "جزئیات"; }
+
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
     { return "مستندات تعریف گونه ها"; }

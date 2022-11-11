@@ -123,6 +123,10 @@ class TranslatorHungarian : public TranslatorAdapter_1_8_15
     virtual QCString trDetailedDescription()
     { return "Részletes leírás"; }
 
+    /*! header that is used when the summary tag is missing inside the details tag */
+    virtual QCString trDetails()
+    { return "Részletek"; }
+
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
     { return "Típusdefiníció-tagok dokumentációja"; }

@@ -77,6 +77,10 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
     QCString trDetailedDescription()
     { return "Opis szczegółowy"; }
 
+    /*! header that is used when the summary tag is missing inside the details tag */
+    virtual QCString trDetails()
+    { return "Szczegóły"; }
+
     /*! header that is put before the list of typedefs. */
     QCString trMemberTypedefDocumentation()
     { return "Dokumentacja składowych definicji typu"; }

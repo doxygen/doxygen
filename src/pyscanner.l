@@ -356,7 +356,8 @@ STARTDOCSYMS      "##"
                         if (yyextra->yyLineNr != 1) REJECT;
                       }
     {POUNDCOMMENT}    { // normal comment
-                        yyextra->packageCommentAllowed = FALSE;
+                        // issue 9672
+                        //yyextra->packageCommentAllowed = FALSE;
                       }
     {IDENTIFIER}      { // some other identifier
                         yyextra->packageCommentAllowed = FALSE;
