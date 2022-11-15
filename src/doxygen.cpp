@@ -58,6 +58,7 @@
 #include "docbookgen.h"
 #include "defgen.h"
 #include "perlmodgen.h"
+#include "validatinggen.h"
 #include "reflist.h"
 #include "pagedef.h"
 #include "bufstr.h"
@@ -12466,6 +12467,12 @@ void generateOutput()
     g_outputList->add<RTFGenerator>();
     RTFGenerator::init();
   }
+  if (!(generateHtml && generateLatex && generateDocbook && generateMan && generateRtf))
+  {
+    g_outputList->add<ValidatingGenerator>();
+    ValidatingGenerator::init();
+  }
+
   if (Config_getBool(USE_HTAGS))
   {
     Htags::useHtags = TRUE;
