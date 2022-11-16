@@ -4497,7 +4497,8 @@ NONLopt [^\n]*
   /*- Function argument reading rules ---------------------------------------*/
 
 <ReadFuncArgType>[^ \/\r\t\n\[\]\)\(\"\'#]+ { *yyextra->copyArgString+=yytext;
-                                          yyextra->fullArgString+=yytext;
+                                          if (yyextra->insideCS) yyextra->fullArgString+=substitute(yytext,".","::");
+                                          else yyextra->fullArgString+=yytext;
                                         }
 <CopyArgString,CopyArgPHPString>[^\n\\\"\']+            { *yyextra->copyArgString+=yytext;
                                           yyextra->fullArgString+=yytext;

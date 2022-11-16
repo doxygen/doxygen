@@ -1713,8 +1713,9 @@ static void buildNamespaceList(const Entry *root)
           {
             nd->setLanguage(root->lang);
           }
-          if (root->tagInfo()==0 && nd->isLinkableInProject()) // if we found the namespace in a tag file
-            // and also in a project file, then remove
+          if (root->tagInfo()==0 && nd->isReference() && !(root->doc.isEmpty() && root->brief.isEmpty()))
+            // if we previously found namespace nd in a tag file and now we find a
+            // documented namespace with the same name in the project, then remove
             // the tag file reference
           {
             nd->setReference("");
@@ -11797,7 +11798,7 @@ void searchInputFiles()
   }
   if (Doxygen::inputNameLinkedMap->empty())
   {
-    warn_uncond("No files to be processed, please check your settings, in particular INPUT, FILE_PATTERNS, and RECURSIVE");
+    warn_uncond("No files to be processed, please check your settings, in particular INPUT, FILE_PATTERNS, and RECURSIVE\n");
   }
   g_s.end();
 }
