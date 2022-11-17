@@ -36,6 +36,8 @@
 #include "classdef.h"
 #include "util.h"
 #include "resourcemgr.h"
+#include "filesystem.hpp"
+
 
 static int folderId=1;
 
@@ -661,7 +663,7 @@ static bool generateJSTree(NavIndexEntryList &navIndex,TextStream &t,
 static void generateJSNavTree(const FTVNodes &nodeList)
 {
   QCString htmlOutput = Config_getString(HTML_OUTPUT);
-  std::ofstream f(htmlOutput.str()+"/navtreedata.js",std::ofstream::out | std::ofstream::binary);
+  std::ofstream f(ghc::filesystem::path(htmlOutput.str()+"/navtreedata.js"),std::ofstream::out | std::ofstream::binary);
   NavIndexEntryList navIndex;
   if (f.is_open())
   {
@@ -791,7 +793,7 @@ void FTVHelp::generateTreeViewScripts()
   // copy resize.js & navtree.css
   auto &mgr = ResourceMgr::instance();
   {
-    std::ofstream f(htmlOutput.str()+"/resize.js",std::ofstream::out | std::ofstream::binary);
+    std::ofstream f(ghc::filesystem::path(htmlOutput.str()+"/resize.js"),std::ofstream::out | std::ofstream::binary);
     if (f.is_open())
     {
       TextStream t(&f);
@@ -799,7 +801,7 @@ void FTVHelp::generateTreeViewScripts()
     }
   }
   {
-    std::ofstream f(htmlOutput.str()+"/navtree.css",std::ofstream::out | std::ofstream::binary);
+    std::ofstream f(ghc::filesystem::path(htmlOutput.str()+"/navtree.css"),std::ofstream::out | std::ofstream::binary);
     if (f.is_open())
     {
       TextStream t(&f);

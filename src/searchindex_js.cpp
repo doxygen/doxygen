@@ -584,7 +584,7 @@ void writeJavaScriptSearchIndex()
   }
 
   {
-    std::ofstream t(searchDirName.str()+"/searchdata.js",
+    std::ofstream t(ghc::filesystem::path(searchDirName.str()+"/searchdata.js"),
                     std::ofstream::out | std::ofstream::binary);
     if (t.is_open())
     {

@@ -1211,7 +1211,7 @@ void HtmlGenerator::writeSearchData(const QCString &dname)
   Doxygen::indexList->addImageFile("search/mag_seld.svg");
 
   QCString searchDirName = dname;
-  std::ofstream f(searchDirName.str()+"/search.css",std::ofstream::out | std::ofstream::binary);
+  std::ofstream f(ghc::filesystem::path(searchDirName.str()+"/search.css"),std::ofstream::out | std::ofstream::binary);
   if (f.is_open())
   {
     TextStream t(&f);
