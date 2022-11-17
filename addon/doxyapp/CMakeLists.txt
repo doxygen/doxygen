@@ -4,7 +4,6 @@ include_directories(
 	${PROJECT_SOURCE_DIR}/src
 	${PROJECT_SOURCE_DIR}/libversion
 	${GENERATED_SRC}
-	${PROJECT_SOURCE_DIR}/qtools
 	${ICONV_INCLUDE_DIR}
 	${CLANG_INCLUDEDIR}
 )
@@ -12,6 +11,8 @@ include_directories(
 add_executable(doxyapp
 doxyapp.cpp
 )
+include(ApplyEditbin)
+apply_editbin(doxyapp console)
 add_sanitizers(doxyapp)
 
 if (use_libclang)
@@ -36,7 +37,6 @@ endif()
 
 target_link_libraries(doxyapp
 doxymain
-qtools
 md5
 xml
 lodepng

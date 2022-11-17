@@ -20,9 +20,10 @@
 #define DIAGRAM_H
 
 #include <memory>
-#include <iostream>
+#include "qcstring.h"
 
 class ClassDef;
+class TextStream;
 
 /** Class representing a built-in class diagram. */
 class ClassDiagram
@@ -30,10 +31,10 @@ class ClassDiagram
   public:
     ClassDiagram(const ClassDef *root);
    ~ClassDiagram();
-    void writeFigure(std::ostream &t,const char *path,
-                     const char *file) const;
-    void writeImage(std::ostream &t,const char *path,const char *relPath,
-                     const char *file,bool generateMap=true) const;
+    void writeFigure(TextStream &t,const QCString &path,
+                     const QCString &file) const;
+    void writeImage(TextStream &t,const QCString &path,const QCString &relPath,
+                     const QCString &file,bool generateMap=true) const;
   private:
     struct Private;
     std::unique_ptr<Private> p;

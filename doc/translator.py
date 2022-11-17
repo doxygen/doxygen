@@ -624,8 +624,8 @@ class Transl:
                 else:
                     self.__unexpectedToken(status, tokenId, tokenLineNo)
 
-            elif status == 8:    # zero expected
-                if tokenId == 'num' and tokenStr == '0':
+            elif status == 8:    # zero expected (or default for the destructor)
+                if (tokenId == 'num' and tokenStr == '0') or (tokenId == 'id' and tokenStr == 'default'):
                     status = 9
                 else:
                     self.__unexpectedToken(status, tokenId, tokenLineNo)
@@ -875,8 +875,14 @@ class Transl:
                             assert False
 
                         assert(uniPrototype not in self.prototypeDic)
-                        # Insert new dictionary item.
-                        self.prototypeDic[uniPrototype] = prototype
+                        # Insert new dictionary item, unless they have a default in translator.h
+                        if (not (prototype=="virtual QCString latexDocumentPost()" or
+                                 prototype=="virtual QCString latexDocumentPre()" or
+                                 prototype=="virtual QCString latexCommandName()" or
+                                 prototype=="virtual QCString latexFont()" or
+                                 prototype=="virtual QCString latexFontenc()" or
+                                 prototype=="virtual bool needsPunctuation()")):
+                            self.prototypeDic[uniPrototype] = prototype
                         status = 2      # body consumed
                         methodId = None # outside of any method
                 elif tokenId == 'lcurly':
@@ -1122,13 +1128,13 @@ class Transl:
         # be set.
         if not self.note and self.status == '' and \
            (self.translateMeFlag or self.txtMAX_DOT_GRAPH_HEIGHT_flag):
-           self.note = ''
-           if self.translateMeFlag:
-               self.note += 'The "%s" found in a comment.' % self.translateMeText
-           if self.note != '':
-               self.note += '\n\t\t'
-           if self.txtMAX_DOT_GRAPH_HEIGHT_flag:
-               self.note += 'The MAX_DOT_GRAPH_HEIGHT found in trLegendDocs()'
+            self.note = ''
+            if self.translateMeFlag:
+                self.note += 'The "%s" found in a comment.' % self.translateMeText
+            if self.note != '':
+                self.note += '\n\t\t'
+            if self.txtMAX_DOT_GRAPH_HEIGHT_flag:
+                self.note += 'The MAX_DOT_GRAPH_HEIGHT found in trLegendDocs()'
 
         # If everything seems OK, but there are obsolete methods, set
         # the note to clean-up source. This note will be used only when
@@ -1776,6 +1782,12 @@ class TrManager:
         """Checks the modtime of files and generates language.doc."""
         self.__loadMaintainers()
 
+        # Check the last modification time of the VERSION file.
+        fVerName = os.path.join(self.org_doxy_path, "VERSION")
+        tim = os.path.getmtime(fVerName)
+        if tim > self.lastModificationTime:
+            self.lastModificationTime = tim
+
         # Check the last modification time of the template file. It is the
         # last file from the group that decide whether the documentation
         # should or should not be generated.
@@ -1818,9 +1830,8 @@ class TrManager:
         tplDic['supportedLangReadableStr'] = self.supportedLangReadableStr
         tplDic['translatorReportFileName'] = self.translatorReportFileName
 
-        ahref = '<a href="../doc/' + self.translatorReportFileName
-        ahref += '"\n><code>doxygen/doc/'  + self.translatorReportFileName
-        ahref += '</code></a>'
+        ahref = '<a href="' + self.translatorReportFileName
+        ahref += '"\n><code>'  + self.translatorReportFileName + '</code></a>'
         tplDic['translatorReportLink'] = ahref
         tplDic['numLangStr'] = str(self.numLang)
 
@@ -1881,7 +1892,7 @@ class TrManager:
                 if classId in self.__translDic:
                     lang = self.__translDic[classId].langReadable
                     mm = 'see the %s language' % lang
-                    ee = '&nbsp;'
+                    ee = '&#160;'
 
             if not mm and obj.classId in self.__maintainersDic:
                 # Build a string of names separated by the HTML break element.

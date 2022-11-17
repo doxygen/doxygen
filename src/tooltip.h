@@ -24,7 +24,7 @@ class CodeOutputInterface;
 class TooltipManager
 {
   public:
-    static TooltipManager &instance();
+    TooltipManager();
    ~TooltipManager();
 
     /** add a tooltip for a given symbol definition */
@@ -34,7 +34,6 @@ class TooltipManager
     void writeTooltips(CodeOutputInterface &ol);
 
   private:
-    TooltipManager();
     class Private;
     std::unique_ptr<Private> p;
 };

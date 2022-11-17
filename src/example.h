@@ -19,7 +19,7 @@
 #include <algorithm>
 #include <vector>
 
-#include <qcstring.h>
+#include "qcstring.h"
 
 class ClassDef;
 class MemberName;

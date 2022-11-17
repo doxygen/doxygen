@@ -42,7 +42,7 @@ struct xmlYY_state
   std::string   fileName;
   int           lineNr = 1;
   const char *  inputString = 0;     //!< the code fragment as text
-  yy_size_t     inputPosition = 0;   //!< read offset during parsing
+  int           inputPosition = 0;   //!< read offset during parsing
   std::string   name;
   bool          isEnd = false;
   bool          selfClose = false;
@@ -61,7 +61,7 @@ struct xmlYY_state
 static const char *stateToString(int state);
 #endif
 
-static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
+static int yyread(yyscan_t yyscanner,char *buf,int max_size);
 static void initElement(yyscan_t yyscanner);
 static void addCharacters(yyscan_t yyscanner);
 static void addElement(yyscan_t yyscanner);
@@ -218,12 +218,12 @@ ENDCDATA        "]]>"
 
 //----------------------------------------------------------------------------------------
 
-static yy_size_t yyread(yyscan_t yyscanner,char *buf,size_t max_size)
+static int yyread(yyscan_t yyscanner,char *buf,int max_size)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yy_size_t inputPosition = yyextra->inputPosition;
+  int inputPosition = yyextra->inputPosition;
   const char *s = yyextra->inputString + inputPosition;
-  yy_size_t c=0;
+  int c=0;
   while( c < max_size && *s)
   {
     *buf++ = *s++;
@@ -440,12 +440,13 @@ void XMLParser::parse(const char *fileName,const char *inputStr, bool debugEnabl
   FILE *output = 0;
   const char *enter_txt = 0;
   const char *finished_txt = 0;
-  if      (yy_flex_debug) { output=stderr; enter_txt="entering"; finished_txt="finished"; }
-  else if (debugEnabled)  { output=stdout; enter_txt="Entering"; finished_txt="Finished"; }
+  const char *pre_txt = 0;
+  if      (yy_flex_debug) { output=stderr; pre_txt="--"; enter_txt="entering"; finished_txt="finished"; }
+  else if (debugEnabled)  { output=stdout; pre_txt="";   enter_txt="Entering"; finished_txt="Finished"; }
 
   if (output)
   {
-    fprintf(output,"--%s lexical analyzer: %s (for: %s)\n",enter_txt, __FILE__, fileName);
+    fprintf(output,"%s%s lexical analyzer: %s (for: %s)\n",pre_txt,enter_txt, __FILE__, fileName);
   }
 
   BEGIN(Initial);
@@ -475,7 +476,7 @@ void XMLParser::parse(const char *fileName,const char *inputStr, bool debugEnabl
 
   if (output)
   {
-    fprintf(output,"--%s lexical analyzer: %s (for: %s)\n",finished_txt, __FILE__, fileName);
+    fprintf(output,"%s%s lexical analyzer: %s (for: %s)\n",pre_txt,finished_txt, __FILE__, fileName);
   }
 }
 

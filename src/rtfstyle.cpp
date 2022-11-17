@@ -20,8 +20,6 @@
 #include "message.h"
 #include "regex.h"
 
-RTFListItemInfo rtf_listItemInfo[rtf_maxIndentLevels];
-
 QCString rtf_title;
 QCString rtf_subject;
 QCString rtf_comments;
@@ -272,15 +270,15 @@ bool StyleData::setStyle(const std::string &command, const std::string &styleNam
 }
 
 
-void loadStylesheet(const char *name, StyleDataMap& map)
+void loadStylesheet(const QCString &name, StyleDataMap& map)
 {
-  std::ifstream file(name);
+  std::ifstream file(name.str());
   if (!file.is_open())
   {
-    err("Can't open RTF style sheet file %s. Using defaults.",name);
+    err("Can't open RTF style sheet file %s. Using defaults.",qPrint(name));
     return;
   }
-  msg("Loading RTF style sheet %s...\n",name);
+  msg("Loading RTF style sheet %s...\n",qPrint(name));
 
   uint lineNr=1;
 
@@ -314,15 +312,15 @@ void loadStylesheet(const char *name, StyleDataMap& map)
 
 StyleDataMap rtf_Style;
 
-void loadExtensions(const char *name)
+void loadExtensions(const QCString &name)
 {
-  std::ifstream file(name);
+  std::ifstream file(name.str());
   if (!file.is_open())
   {
-    err("Can't open RTF extensions file %s. Using defaults.",name);
+    err("Can't open RTF extensions file %s. Using defaults.",qPrint(name));
     return;
   }
-  msg("Loading RTF extensions %s...\n",name);
+  msg("Loading RTF extensions %s...\n",qPrint(name));
 
   uint lineNr=1;
 

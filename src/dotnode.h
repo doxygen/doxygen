@@ -25,6 +25,7 @@
 
 class ClassDef;
 class DotNode;
+class TextStream;
 
 /** Attributes of an edge of a dot graph */
 class EdgeInfo
@@ -57,7 +58,7 @@ class DotNode
   public:
     static void deleteNodes(DotNode* node);
     static QCString convertLabel(const QCString& l);
-    DotNode(int n,const char *lab,const char *tip,const char *url,
+    DotNode(int n,const QCString &lab,const QCString &tip,const QCString &url,
         bool rootNode=FALSE,const ClassDef *cd=0);
     ~DotNode();
 
@@ -66,8 +67,8 @@ class DotNode
     void addChild(DotNode *n,
                   int edgeColor=EdgeInfo::Purple,
                   int edgeStyle=EdgeInfo::Solid,
-                  const char *edgeLab=0,
-                  const char *edgeURL=0,
+                  const QCString &edgeLab=QCString(),
+                  const QCString &edgeURL=QCString(),
                   int edgeLabCol=-1);
     void addParent(DotNode *n);
     void deleteNode(DotNodeRefVector &deletedList);
@@ -75,14 +76,16 @@ class DotNode
     void removeParent(DotNode *n);
     int  findParent( DotNode *n );
 
-    void write(std::ostream &t,GraphType gt,GraphOutputFormat f,
+    void write(TextStream &t,GraphType gt,GraphOutputFormat f,
                bool topDown,bool toChildren,bool backArrows) const;
-    void writeXML(std::ostream &t,bool isClassGraph) const;
-    void writeDocbook(std::ostream &t,bool isClassGraph) const;
-    void writeDEF(std::ostream &t) const;
-    void writeBox(std::ostream &t,GraphType gt,GraphOutputFormat f,
+    void writeXML(TextStream &t,bool isClassGraph) const;
+    void writeDocbook(TextStream &t,bool isClassGraph) const;
+    void writeDEF(TextStream &t) const;
+    void writeLabel(TextStream &t, GraphType gt) const;
+    void writeUrl(TextStream &t) const;
+    void writeBox(TextStream &t,GraphType gt,GraphOutputFormat f,
                   bool hasNonReachableChildren) const;
-    void writeArrow(std::ostream &t,GraphType gt,GraphOutputFormat f,const DotNode *cn,
+    void writeArrow(TextStream &t,GraphType gt,GraphOutputFormat f,const DotNode *cn,
                     const EdgeInfo *ei,bool topDown, bool pointBack=TRUE) const;
 
     QCString label() const         { return m_label; }
@@ -98,14 +101,13 @@ class DotNode
     void clearWriteFlag();
     void renumberNodes(int &number);
     void markRenumbered()          { m_renumbered = true; }
-    void markHasDocumentation()    { m_hasDoc = true; }
+    DotNode& markHasDocumentation() { m_hasDoc = true; return *this;}
     void setSubgraphId(int id)     { m_subgraphId = id; }
 
     void colorConnectedNodes(int curColor);
     void setDistance(int distance);
-    const DotNode *findDocNode() const; // only works for acyclic graphs!
     void markAsVisible(bool b=TRUE) { m_visible=b; }
-    void markAsTruncated(bool b=TRUE) { m_truncated=b ? Truncated : Untruncated; }
+    DotNode& markAsTruncated(bool b=TRUE) { m_truncated=b ? Truncated : Untruncated; return *this;}
     const DotNodeRefVector &children() const { return m_children; }
     const DotNodeRefVector &parents() const { return m_parents; }
     const EdgeInfoVector &edgeInfo() const { return m_edgeInfo; }
@@ -137,5 +139,7 @@ class DotNodeMap : public std::map<std::string,DotNode*>
 class DotNodeDeque : public std::deque<DotNode*>
 {
 };
+
+QCString escapeTooltip(const QCString &tooltip);
 
 #endif

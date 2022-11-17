@@ -151,7 +151,7 @@ If you want to refer from one compressed HTML file
 called \c b.chm, the
 link in \c a.chm must have the following format:
 \verbatim
-<a href="b.chm::/file.html">
+<a href="mk:@MSITStore:b.chm::/file.html">
 \endverbatim
 Unfortunately this only works if both compressed HTML files are in the same
 directory.
@@ -164,7 +164,7 @@ Suppose you have a project \e a referring to a project \e b using tag file
 \c a.chm and the \c index.chm for project \e b into \c b.chm. In the
 configuration file for project \e a you write:
 \verbatim
-TAGFILES = b.tag=b.chm::
+TAGFILES = b.tag=mk:@MSITStore:b.chm::
 \endverbatim
 
 \section faq_html I don't like the quick index that is put above each HTML page, what do I do?
@@ -184,13 +184,11 @@ in the HEAD section of the HTML page.
 
 \section faq_use_qt Why does doxygen use Qt?
 
-The most important reason is to have a platform abstraction for most
-Unices and Windows by means of the QFile, QFileInfo, QDir, QDate,
-QTime and QIODevice classes.
-Another reason is for the nice and bug free utility classes, like QList,
-QDict, QString, QArray, QTextStream, QRegExp, QXML etc.
+In the past (prior to version 1.9.2) doxygen used a part of Qt 2.x for various
+utility classes. These have been replaced by STL container classes in the meantime.
 
-The GUI front-end doxywizard uses Qt for... well... the GUI!
+The GUI front-end called Doxywizard is based on a modern version of Qt.
+Doxygen itself can also be used without the GUI.
 
 \section faq_excl_dir How can I exclude all test directories from my directory tree?
 
@@ -305,6 +303,14 @@ This was a nightmare to maintain, so I wanted a similar tool. I looked at
 Doc++ but that just wasn't good enough (it didn't support signals and
 slots and did not have the Qt look and feel I had grown to like),
 so I started to write my own tool...
+
+\section faq_bin How to prevent interleaved output
+
+When redirecting all the console output of doxygen, i.e. messages and warnings, this can be interleaved or
+in a non-expected order.
+The, technical, reason for this is that the `stdout` can be buffered.
+It is possible to overcome this by means of the `-b` of doxygen, like e.g `doxygen -b > out.txt 2>&1`.
+Note this might cost a little more time though.
 
 \htmlonly
 Go to the <a href="trouble.html">next</a> section or return to the

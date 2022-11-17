@@ -42,7 +42,7 @@
  files frees the maintainer from thinking about whether the
  first, the second, or both files should be included or not, and
  why.  This holds namely for localized translators because their
- base class is changed occasionaly to adapter classes when the
+ base class is changed occasionally to adapter classes when the
  Translator class changes the interface, or back to the
  Translator class (by the local maintainer) when the localized
  translator is made up-to-date again.
@@ -99,6 +99,10 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
     {
       return "vi";
     }
+    virtual QCString getLanguageString()
+    {
+      return "0x42A Vietnamese";
+    }
     // --- Language translation methods -------------------
 
     /*! used in the compound documentation before a list of related functions. */
@@ -112,6 +116,10 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
     /*! header that is put before the detailed description of files, classes and namespaces. */
     virtual QCString trDetailedDescription()
     { return "Mô tả chi tiết"; }
+
+    /*! header that is used when the summary tag is missing inside the details tag */
+    virtual QCString trDetails()
+    { return "Chi tiết"; }
 
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
@@ -161,9 +169,9 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
     /*! this is put at the author sections at the bottom of man pages.
      *  parameter s is name of the project name.
      */
-    virtual QCString trGeneratedAutomatically(const char *s)
+    virtual QCString trGeneratedAutomatically(const QCString &s)
     { QCString result="Được tạo ra bởi Doxygen";
-      if (s) result+=(QCString)" cho "+s;
+      if (!s.isEmpty()) result+=" cho "+s;
       result+=" từ mã nguồn.";
       return result;
     }
@@ -411,6 +419,10 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
       {
         return "Thông tin về cấu trúc cơ sở dữ liệu";
       }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+          return trDesignUnitDocumentation();
+      }
       else
       {
         return "Thông tin về Class";
@@ -428,12 +440,6 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
      */
     virtual QCString trExampleDocumentation()
     { return "Thông tin về các ví dụ"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all related pages.
-     */
-    virtual QCString trPageDocumentation()
-    { return "Trang Thông tin"; }
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
@@ -523,23 +529,19 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
     /*! This is used in the standard footer of each page and indicates when
      *  the page was generated
      */
-    virtual QCString trGeneratedAt(const char *date,const char *projName)
+    virtual QCString trGeneratedAt(const QCString &date,const QCString &projName)
     {
-      QCString result=(QCString)"Được biên soạn vào "+date;
-      if (projName) result+=(QCString)" cho mã nguồn dự án "+projName;
-      result+=(QCString)" bởi";
+      QCString result="Được biên soạn vào "+date;
+      if (!projName.isEmpty()) result+=" cho mã nguồn dự án "+projName;
+      result+=" bởi";
       return result;
     }
 
     /*! this text is put before a class diagram */
-    virtual QCString trClassDiagram(const char *clName)
+    virtual QCString trClassDiagram(const QCString &clName)
     {
-      return (QCString)"Sơ đồ kế thừa cho "+clName+":";
+      return "Sơ đồ kế thừa cho "+clName+":";
     }
-
-    /*! this text is generated when the \\internal command is used. */
-    virtual QCString trForInternalUseOnly()
-    { return "Chỉ cho sử dụng nội bộ."; }
 
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
@@ -611,11 +613,11 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
 //////////////////////////////////////////////////////////////////////////
 
     /*! used as the title of the HTML page of a class/struct/union */
-    virtual QCString trCompoundReference(const char *clName,
+    virtual QCString trCompoundReference(const QCString &clName,
                                     ClassDef::CompoundType compType,
                                     bool isTemplate)
     {
-      QCString result=(QCString)clName;
+      QCString result=clName;
       switch(compType)
       {
         case ClassDef::Class:      result+=" Class"; break;
@@ -633,7 +635,7 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
     }
 
     /*! used as the title of the HTML page of a file */
-    virtual QCString trFileReference(const char *fileName)
+    virtual QCString trFileReference(const QCString &fileName)
     {
       QCString result=fileName;
       result+=" File Tham chiếu";
@@ -641,7 +643,7 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
     }
 
     /*! used as the title of the HTML page of a namespace */
-    virtual QCString trNamespaceReference(const char *namespaceName)
+    virtual QCString trNamespaceReference(const QCString &namespaceName)
     {
       QCString result=namespaceName;
       result+=" Namespace Tham chiếu";
@@ -774,7 +776,7 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
     virtual QCString trGeneratedFromFiles(ClassDef::CompoundType compType,bool)
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
-      QCString result=(QCString)"Thông tin cho ";
+      QCString result="Thông tin cho ";
       switch(compType)
       {
         case ClassDef::Class:      result+="class"; break;
@@ -837,14 +839,14 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
 //////////////////////////////////////////////////////////////////////////
 
     /*! this text is put before a collaboration diagram */
-    virtual QCString trCollaborationDiagram(const char *clName)
+    virtual QCString trCollaborationDiagram(const QCString &clName)
     {
-      return (QCString)"Sơ đồ liên kết cho "+clName+":";
+      return "Sơ đồ liên kết cho "+clName+":";
     }
     /*! this text is put before an include dependency graph */
-    virtual QCString trInclDepGraph(const char *fName)
+    virtual QCString trInclDepGraph(const QCString &fName)
     {
-      return (QCString)"Kèm theo graph phụ thuộc cho "+fName+":";
+      return "Kèm theo graph phụ thuộc cho "+fName+":";
     }
     /*! header that is put before the list of constructor/destructors. */
     virtual QCString trConstructorDocumentation()
@@ -1122,14 +1124,9 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
       }
     }
     /*! Used as the title of a Java package */
-    virtual QCString trPackage(const char *name)
+    virtual QCString trPackage(const QCString &name)
     {
-      return (QCString)"Gói "+name;
-    }
-    /*! Title of the package index page */
-    virtual QCString trPackageList()
-    {
-      return "Danh sách gói";
+      return "Gói "+name;
     }
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
@@ -1386,14 +1383,18 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
     /*! Used as a heading for a list of Java class functions with package
      * scope.
      */
-    virtual QCString trPackageMembers()
+    virtual QCString trPackageFunctions()
     {
       return "Các hàm Package";
+    }
+    virtual QCString trPackageMembers()
+    {
+      return "Members Package";
     }
     /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
-    virtual QCString trStaticPackageMembers()
+    virtual QCString trStaticPackageFunctions()
     {
       return "Các hàm Static Package";
     }
@@ -1505,18 +1506,10 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
     virtual QCString trDirectories()
     { return "Các thư mục"; }
 
-    /*! This returns a sentences that introduces the directory hierarchy.
-     *  and the fact that it is sorted alphabetically per level
-     */
-    virtual QCString trDirDescription()
-    { return "Thư mục đã được sắp xếp theo al-pha-bê, "
-             "nhưng chưa đầy đủ:";
-    }
-
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.
      */
-    virtual QCString trDirReference(const char *dirName)
+    virtual QCString trDirReference(const QCString &dirName)
     { QCString result=dirName; result+=" Tham chiếu thư mục"; return result; }
 
     /*! This returns the word directory with or without starting capital
@@ -1643,11 +1636,11 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
     }
 
     /*! used as the title of the HTML page of a module/type (Fortran) */
-    virtual QCString trCompoundReferenceFortran(const char *clName,
+    virtual QCString trCompoundReferenceFortran(const QCString &clName,
                                     ClassDef::CompoundType compType,
                                     bool isTemplate)
     {
-      QCString result=(QCString)clName;
+      QCString result=clName;
       switch(compType)
       {
         case ClassDef::Class:      result+=" Module"; break;
@@ -1664,7 +1657,7 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
       return result;
     }
     /*! used as the title of the HTML page of a module (Fortran) */
-    virtual QCString trModuleReference(const char *namespaceName)
+    virtual QCString trModuleReference(const QCString &namespaceName)
     {
       QCString result=namespaceName;
       result+=" Tham chiếu Module";
@@ -1715,7 +1708,7 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
         bool single)
     { // here s is one of " Module", " Struct" or " Union"
       // single is true implies a single file
-      QCString result=(QCString)"Thông tin cho ";
+      QCString result="Thông tin cho ";
       switch(compType)
       {
         case ClassDef::Class:      result+="module"; break;
@@ -1758,6 +1751,25 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
       return "Ràng buộc của kiểu (Type)";
     }
 
+    virtual QCString trDayOfWeek(int dayOfWeek, bool, bool full)
+    {
+      static const char *days_short[]   = { "T2", "T3", "T4", "T5", "T6", "T7", "CN" };
+      static const char *days_full[]    = { "Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy", "Chủ Nhật" };
+      QCString text  = full? days_full[dayOfWeek-1] : days_short[dayOfWeek-1];
+      return text;
+    }
+    virtual QCString trMonth(int month, bool, bool full)
+    {
+      static const char *months_short[] = { "Thg1", "Thg2", "Thg3", "Thg4", "Thg5", "Thg6", "Thg7", "Thg8", "Thg9", "Thg10", "Thg11", "Thg12" };
+      static const char *months_full[]  = { "Tháng Giêng", "Tháng Hai", "Tháng Ba", "Tháng Tư", "Tháng Năm", "Tháng Sáu", "Tháng Bảy", "Tháng Tám", "Tháng Chín", "Tháng Mười", "Tháng Mười Một", "Tháng Mười Hai" };
+      QCString text  = full? months_full[month-1] : months_short[month-1];
+      return text;
+    }
+    virtual QCString trDayPeriod(int period)
+    {
+      static const char *dayPeriod[] = { "SA", "CH" };
+      return dayPeriod[period];
+    }
 };
 
 #endif

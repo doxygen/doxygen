@@ -9,6 +9,7 @@
         <definition>int Object::ref</definition>
         <argsstring/>
         <name>ref</name>
+        <qualifiedname>Object::ref</qualifiedname>
         <briefdescription>
           <para>Reference count. </para>
         </briefdescription>
@@ -19,12 +20,13 @@
         <location file="027_extends.c" line="21" column="7" bodyfile="027_extends.c" bodystart="21" bodyend="-1"/>
       </memberdef>
     </sectiondef>
-    <sectiondef kind="public-func">
-      <memberdef kind="function" id="struct_object_1a71225073d06a793b9a6ea9263ed37b12" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+    <sectiondef kind="public-static-func">
+      <memberdef kind="function" id="struct_object_1a71225073d06a793b9a6ea9263ed37b12" prot="public" static="yes" const="no" explicit="no" inline="no" virt="non-virtual">
         <type><ref refid="struct_object" kindref="compound">Object</ref> *</type>
         <definition>static Object * objRef</definition>
         <argsstring>(Object *obj)</argsstring>
         <name>objRef</name>
+        <qualifiedname>Object::objRef</qualifiedname>
         <param>
           <type><ref refid="struct_object" kindref="compound">Object</ref> *</type>
           <declname>obj</declname>
@@ -38,11 +40,12 @@
         </inbodydescription>
         <location file="027_extends.c" line="29" column="16" declfile="027_extends.c" declline="29" declcolumn="16"/>
       </memberdef>
-      <memberdef kind="function" id="struct_object_1a924ee0cecc906d148022b3f0d6325cfb" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+      <memberdef kind="function" id="struct_object_1a924ee0cecc906d148022b3f0d6325cfb" prot="public" static="yes" const="no" explicit="no" inline="no" virt="non-virtual">
         <type><ref refid="struct_object" kindref="compound">Object</ref> *</type>
         <definition>static Object * objUnref</definition>
         <argsstring>(Object *obj)</argsstring>
         <name>objUnref</name>
+        <qualifiedname>Object::objUnref</qualifiedname>
         <param>
           <type><ref refid="struct_object" kindref="compound">Object</ref> *</type>
           <declname>obj</declname>

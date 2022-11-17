@@ -20,23 +20,25 @@
 #include "config.h"
 #include "message.h"
 #include "docparser.h"
+#include "docnode.h"
 #include "doxygen.h"
-#include "index.h"
+#include "indexlist.h"
 #include "util.h"
 #include "mscgen_api.h"
 #include "dir.h"
+#include "textstream.h"
 
 static const int maxCmdLine = 40960;
 
-static bool convertMapFile(std::ostream &t,const char *mapName,const QCString relPath,
+static bool convertMapFile(TextStream &t,const QCString &mapName,const QCString &relPath,
                            const QCString &context)
 {
-  std::ifstream f(mapName,std::ifstream::in);
+  std::ifstream f(mapName.str(),std::ifstream::in);
   if (!f.is_open())
   {
     err("failed to open map file %s for inclusion in the docs!\n"
         "If you installed Graphviz/dot after a previous failing run, \n"
-        "try deleting the output directory and rerun doxygen.\n",mapName);
+        "try deleting the output directory and rerun doxygen.\n",qPrint(mapName));
     return false;
   }
   const int maxLineLen=1024;
@@ -68,11 +70,14 @@ static bool convertMapFile(std::ostream &t,const char *mapName,const QCString re
       if ( isRef )
       {
         // handle doxygen \ref tag URL reference
-        DocRef *df = new DocRef( (DocNode*) 0, url, context );
+
+        auto parser { createDocParser() };
+        auto dfAst  { createRef( *parser.get(), url, context ) };
+        auto dfAstImpl = dynamic_cast<const DocNodeAST*>(dfAst.get());
+        const DocRef *df = std::get_if<DocRef>(&dfAstImpl->root);
         t << externalRef(relPath,df->ref(),TRUE);
-        if (!df->file().isEmpty()) t << df->file() << Doxygen::htmlFileExtension;
+        if (!df->file().isEmpty()) t << addHtmlExtensionIfMissing(df->file());
         if (!df->anchor().isEmpty()) t << "#" << df->anchor();
-        delete df;
       }
       else
       {
@@ -87,8 +92,10 @@ static bool convertMapFile(std::ostream &t,const char *mapName,const QCString re
   return true;
 }
 
-void writeMscGraphFromFile(const char *inFile,const char *outDir,
-                           const char *outFile,MscOutputFormat format)
+void writeMscGraphFromFile(const QCString &inFile,const QCString &outDir,
+                           const QCString &outFile,MscOutputFormat format,
+                           const QCString &srcFile,int srcLine
+                          )
 {
   QCString absOutFile = outDir;
   absOutFile+=Portable::pathSeparator();
@@ -114,10 +121,10 @@ void writeMscGraphFromFile(const char *inFile,const char *outDir,
       return;
   }
   int code;
-  if ((code=mscgen_generate(inFile,imgName,msc_format))!=0)
+  if ((code=mscgen_generate(inFile.data(),imgName.data(),msc_format))!=0)
   {
-    err("Problems generating msc output (error=%s). Look for typos in you msc file %s\n",
-        mscgen_error2str(code),inFile);
+    err_full(srcFile,srcLine,"Problems generating msc output (error=%s). Look for typos in you msc file %s\n",
+        mscgen_error2str(code),qPrint(inFile));
     return;
   }
 
@@ -125,11 +132,12 @@ void writeMscGraphFromFile(const char *inFile,const char *outDir,
   {
     QCString epstopdfArgs(maxCmdLine);
     epstopdfArgs.sprintf("\"%s.eps\" --outfile=\"%s.pdf\"",
-                         absOutFile.data(),absOutFile.data());
+                         qPrint(absOutFile),qPrint(absOutFile));
     Portable::sysTimerStart();
     if (Portable::system("epstopdf",epstopdfArgs)!=0)
     {
-      err("Problems running epstopdf. Check your TeX installation!\n");
+      err_full(srcFile,srcLine,"Problems running epstopdf when processing '%s.eps'. Check your TeX installation!\n",
+          qPrint(absOutFile));
     }
     Portable::sysTimerStop();
   }
@@ -140,34 +148,35 @@ void writeMscGraphFromFile(const char *inFile,const char *outDir,
 
 static QCString getMscImageMapFromFile(const QCString& inFile, const QCString& outDir,
                                 const QCString& relPath,const QCString& context,
-                                bool writeSVGMap)
+                                bool writeSVGMap,const QCString &srcFile,int srcLine)
 {
   QCString outFile = inFile + ".map";
 
   int code;
-  if ((code=mscgen_generate(inFile,outFile,
+  if ((code=mscgen_generate(inFile.data(),outFile.data(),
                             writeSVGMap ? mscgen_format_svgmap : mscgen_format_pngmap))!=0)
   {
-    err("Problems generating msc output (error=%s). Look for typos in you msc file %s\n",
-        mscgen_error2str(code),inFile.data());
+    err_full(srcFile,srcLine,"Problems generating msc output (error=%s). Look for typos in you msc file %s\n",
+        mscgen_error2str(code),qPrint(inFile));
     return "";
   }
 
-  std::stringstream t;
+  TextStream t;
   convertMapFile(t, outFile, relPath, context);
-  QCString result = t.str();
 
   Dir().remove(outFile.str());
 
-  return result;
+  return t.str();
 }
 
-void writeMscImageMapFromFile(std::ostream &t,const QCString &inFile,
+void writeMscImageMapFromFile(TextStream &t,const QCString &inFile,
                               const QCString &outDir,
                               const QCString &relPath,
                               const QCString &baseName,
                               const QCString &context,
-			      MscOutputFormat format
+			      MscOutputFormat format,
+                              const QCString &srcFile,
+                              int srcLine
  			    )
 {
   QCString mapName = baseName+".map";
@@ -186,7 +195,7 @@ void writeMscImageMapFromFile(std::ostream &t,const QCString &inFile,
     default:
       t << "unknown";
   }
-  QCString imap = getMscImageMapFromFile(inFile,outDir,relPath,context,format==MSC_SVG);
+  QCString imap = getMscImageMapFromFile(inFile,outDir,relPath,context,format==MSC_SVG,srcFile,srcLine);
   if (!imap.isEmpty())
   {
     t << "\" alt=\""

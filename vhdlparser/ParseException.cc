@@ -53,7 +53,7 @@ namespace parser {
   /**
    * This is the last token that has been consumed successfully.  If
    * this object has been created due to a parse error, the token
-   * followng this token will (therefore) be the first error token.
+   * following this token will (therefore) be the first error token.
    */
   Token currentToken;
 
@@ -62,14 +62,14 @@ namespace parser {
    * of integers represents a sequence of tokens (by their ordinal
    * values) that is expected at this point of the parse.
    */
-  int** expectedTokenSequences;
+  int** expectedTokenSequences = 0;
 
   /**
    * This is a reference to the "tokenImage" array of the generated
    * parser within which the parse error occurred.  This array is
    * defined in the generated ...Constants class.
    */
-  JJString* tokenImage;
+  JJString* tokenImage = 0;
 
   /**
    * It uses "currentToken" and "expectedTokenSequences" to generate a parse
@@ -181,4 +181,4 @@ namespace parser {
 
 }
 }
-/* JavaCC - OriginalChecksum=7a72405661a136830ccf7f3cab0fffdc (do not edit this line) */
+/* JavaCC - OriginalChecksum=bb2d200bbdb84c3b7aff4c7f96769833 (do not edit this line) */

@@ -10,6 +10,7 @@
         <definition>void library::v2::func</definition>
         <argsstring>()</argsstring>
         <name>func</name>
+        <qualifiedname>library::v2::func</qualifiedname>
         <briefdescription>
           <para>a method </para>
         </briefdescription>

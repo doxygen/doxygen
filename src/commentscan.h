@@ -81,12 +81,12 @@ class CommentScanner
                            bool markdownEnabled
                           );
     void initGroupInfo(Entry *entry);
-    void enterFile(const char *fileName,int lineNr);
-    void leaveFile(const char *fileName,int lineNr);
-    void enterCompound(const char *fileName,int line,const char *name);
-    void leaveCompound(const char *fileName,int line,const char *name);
-    void open(Entry *e,const char *fileName,int line,bool implicit=false);
-    void close(Entry *e,const char *fileName,int line,bool foundInline,bool implicit=false);
+    void enterFile(const QCString &fileName,int lineNr);
+    void leaveFile(const QCString &fileName,int lineNr);
+    void enterCompound(const QCString &fileName,int line,const QCString &name);
+    void leaveCompound(const QCString &fileName,int line,const QCString &name);
+    void open(Entry *e,const QCString &fileName,int line,bool implicit=false);
+    void close(Entry *e,const QCString &fileName,int line,bool foundInline,bool implicit=false);
   private:
     struct Private;
     std::unique_ptr<Private> p;

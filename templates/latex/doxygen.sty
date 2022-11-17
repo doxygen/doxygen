@@ -20,7 +20,10 @@
 \RequirePackage{adjustbox}
 \RequirePackage{amssymb}
 \RequirePackage{stackengine}
+\RequirePackage{enumitem}
+\RequirePackage{alphalph}
 \RequirePackage[normalem]{ulem} % for strikeout, but don't modify emphasis
+\RequirePackage{enumitem}
 
 %---------- Internal commands used in this style file ----------------
 
@@ -148,6 +151,7 @@
 
 % Used by @verbatim ... @endverbatim
 \newenvironment{DoxyVerb}{%
+  \par%
   \footnotesize%
   \verbatim%
 }{%
@@ -163,18 +167,30 @@
 }
 
 % Used by numbered lists (using '-#' or <ol> ... </ol>)
-\newenvironment{DoxyEnumerate}{%
-  \enumerate%
-}{%
-  \endenumerate%
-}
+\setlistdepth{12}
+\newlist{DoxyEnumerate}{enumerate}{12}
+\setlist[DoxyEnumerate,1]{label=\arabic*.}
+\setlist[DoxyEnumerate,2]{label=(\enumalphalphcnt*)}
+\setlist[DoxyEnumerate,3]{label=\roman*.}
+\setlist[DoxyEnumerate,4]{label=\enumAlphAlphcnt*.}
+\setlist[DoxyEnumerate,5]{label=\arabic*.}
+\setlist[DoxyEnumerate,6]{label=(\enumalphalphcnt*)}
+\setlist[DoxyEnumerate,7]{label=\roman*.}
+\setlist[DoxyEnumerate,8]{label=\enumAlphAlphcnt*.}
+\setlist[DoxyEnumerate,9]{label=\arabic*.}
+\setlist[DoxyEnumerate,10]{label=(\enumalphalphcnt*)}
+\setlist[DoxyEnumerate,11]{label=\roman*.}
+\setlist[DoxyEnumerate,12]{label=\enumAlphAlphcnt*.}
 
 % Used by bullet lists (using '-', @li, @arg, or <ul> ... </ul>)
-\newenvironment{DoxyItemize}{%
-  \itemize%
-}{%
-  \enditemize%
-}
+\setlistdepth{12}
+\newlist{DoxyItemize}{itemize}{12}
+\setlist[DoxyItemize]{label=\textperiodcentered}
+
+\setlist[DoxyItemize,1]{label=\textbullet}
+\setlist[DoxyItemize,2]{label=\normalfont\bfseries \textendash}
+\setlist[DoxyItemize,3]{label=\textasteriskcentered}
+\setlist[DoxyItemize,4]{label=\textperiodcentered}
 
 % Used by description lists (using <dl> ... </dl>)
 \newenvironment{DoxyDescription}{%
@@ -302,12 +318,6 @@
   \begin{DoxyDesc}{#1}%
 }{%
   \end{DoxyDesc}%
-}
-
-% Used by @internal
-\newenvironment{DoxyInternal}[1]{%
-  \paragraph*{#1}%
-}{%
 }
 
 % Used by @par and @paragraph
@@ -574,3 +584,13 @@
 \H@refstepcounter{figure}%
 \@dblarg{\@caption{figure}}}
 \makeatother
+
+% Define alpha enumarative names for counters > 26
+\makeatletter
+\def\enumalphalphcnt#1{\expandafter\@enumalphalphcnt\csname c@#1\endcsname}
+\def\@enumalphalphcnt#1{\alphalph{#1}}
+\def\enumAlphAlphcnt#1{\expandafter\@enumAlphAlphcnt\csname c@#1\endcsname}
+\def\@enumAlphAlphcnt#1{\AlphAlph{#1}}
+\makeatother
+\AddEnumerateCounter{\enumalphalphcnt}{\@enumalphalphcnt}{aa}
+\AddEnumerateCounter{\enumAlphAlphcnt}{\@enumAlphAlphcnt}{AA}

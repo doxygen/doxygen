@@ -30,6 +30,12 @@
          <!ATTLIST script
        added 
          async       (async)        #IMPLIED
+
+     Adjustemens:
+     - added picture tag
+       - added source tag
+     - adjusted possible children of a number of elements so they support the picture tag
+     - added details and summary tag
 -->
 
 <!--================ Character mnemonic entities =========================-->
@@ -206,7 +212,7 @@
 <!--=================== Text Elements ====================================-->
 
 <!ENTITY % special.extra
-   "object | applet | img | map | iframe">
+   "object | applet | img | map | iframe | picture | details | summary">
 	
 <!ENTITY % special.basic
 	"br | span | bdo">
@@ -247,10 +253,10 @@
 <!ENTITY % blocktext "pre | hr | blockquote | address | center | noframes">
 
 <!ENTITY % block
-    "p | %heading; | div | %lists; | %blocktext; | isindex |fieldset | table">
+    "p | %heading; | div | %lists; | %blocktext; | isindex |fieldset | table | details | summary">
 
 <!-- %Flow; mixes block and inline and is used for list items etc. -->
-<!ENTITY % Flow "(#PCDATA | %block; | form | %inline; | %misc;)*">
+<!ENTITY % Flow "(#PCDATA | %block; | form | %inline; | %misc; | picture)*">
 
 <!--================== Content models for exclusions =====================-->
 
@@ -437,6 +443,18 @@
 
 <!ELEMENT div %Flow;>  <!-- generic language/style container -->
 <!ATTLIST div
+  %attrs;
+  %TextAlign;
+  >
+
+<!ELEMENT details %Flow;>  <!-- generic language/style container -->
+<!ATTLIST details
+  %attrs;
+  %TextAlign;
+  >
+
+<!ELEMENT summary %Flow;>  <!-- generic language/style container -->
+<!ATTLIST summary
   %attrs;
   %TextAlign;
   >
@@ -859,6 +877,16 @@
   hspace      %Pixels;       #IMPLIED
   vspace      %Pixels;       #IMPLIED
   >
+
+<!ELEMENT source EMPTY>
+<!ATTLIST source
+  %attrs;
+  media       %MediaDesc;    #REQUIRED
+  srcset      %URI;          #REQUIRED
+  >
+
+<!ELEMENT picture (source+, img)>
+<!ATTLIST picture %attrs;>
 
 <!-- usemap points to a map element which may be in this document
   or an external document, although the latter is not widely supported -->

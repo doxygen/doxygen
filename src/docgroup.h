@@ -27,12 +27,12 @@ class DocGroup
     DocGroup() {};
 
   public:
-    void enterFile(const char *fileName,int);
-    void leaveFile(const char *fileName,int line);
-    void enterCompound(const char *fileName,int line,const char *name);
-    void leaveCompound(const char *,int,const char * /*name*/);
-    void open(Entry *e,const char *,int,bool implicit=false);
-    void close(Entry *e,const char *fileName,int line,bool foundInline,bool implicit=false);
+    void enterFile(const QCString &fileName,int);
+    void leaveFile(const QCString &fileName,int line);
+    void enterCompound(const QCString &fileName,int line,const QCString &name);
+    void leaveCompound(const QCString &,int,const QCString & /*name*/);
+    void open(Entry *e,const QCString &,int,bool implicit=false);
+    void close(Entry *e,const QCString &fileName,int line,bool foundInline,bool implicit=false);
     void initGroupInfo(Entry *e);
     bool isEmpty() const;
     void clearHeader();

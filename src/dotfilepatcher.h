@@ -17,16 +17,16 @@
 #define DOTFILEPATCHER_H
 
 #include <vector>
-#include <iostream>
 
 #include "qcstring.h"
+
+class TextStream;
 
 /** Helper class to insert a set of map file into an output file */
 class DotFilePatcher
 {
   public:
-    DotFilePatcher(const char *patchFile);
-
+    DotFilePatcher(const QCString &patchFile);
     int addMap(const QCString &mapFile,const QCString &relPath,
                bool urlOnly,const QCString &context,const QCString &label);
 
@@ -41,14 +41,14 @@ class DotFilePatcher
     bool run() const;
     bool isSVGFile() const;
 
-    static bool convertMapFile(std::ostream &t,const char *mapName,
-                               const QCString relPath, bool urlOnly=FALSE,
+    static bool convertMapFile(TextStream &t,const QCString &mapName,
+                               const QCString &relPath, bool urlOnly=FALSE,
                                const QCString &context=QCString());
 
-    static bool writeSVGFigureLink(std::ostream &out,const QCString &relPath,
+    static bool writeSVGFigureLink(TextStream &out,const QCString &relPath,
                                    const QCString &baseName,const QCString &absImgName);
 
-    static bool writeVecGfxFigure(std::ostream& out, const QCString& baseName,
+    static bool writeVecGfxFigure(TextStream& out, const QCString& baseName,
                                   const QCString& figureName);
 
   private:

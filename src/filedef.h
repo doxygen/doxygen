@@ -20,20 +20,21 @@
 
 #include <set>
 
-#include "index.h"
 #include "definition.h"
 #include "memberlist.h"
 #include "containers.h"
-#include "classlist.h"
 
 class MemberList;
 class FileDef;
 class FileList;
 class ClassDef;
+class ConceptDef;
 class MemberDef;
 class OutputList;
 class NamespaceDef;
 class NamespaceLinkedRefMap;
+class ConceptLinkedRefMap;
+class ClassLinkedRefMap;
 class PackageDef;
 class DirDef;
 class ClangTUParser;
@@ -71,8 +72,6 @@ bool compareFileDefs(const FileDef *fd1, const FileDef *fd2);
 class FileDef : public DefinitionMutable, public Definition
 {
   public:
-   ~FileDef() {}
-
     // ----------------------------------------------------------------------
 
     virtual DefType definitionType() const = 0;
@@ -122,8 +121,8 @@ class FileDef : public DefinitionMutable, public Definition
 
     virtual PackageDef *packageDef() const = 0;
     virtual DirDef *getDirDef() const = 0;
-    virtual LinkedRefMap<const NamespaceDef> getUsedNamespaces() const = 0;
-    virtual LinkedRefMap<const ClassDef> getUsedClasses() const = 0;
+    virtual const LinkedRefMap<const NamespaceDef> &getUsedNamespaces() const = 0;
+    virtual const LinkedRefMap<const ClassDef> &getUsedClasses() const = 0;
     virtual const IncludeInfoList &includeFileList() const = 0;
     virtual const IncludeInfoList &includedByFileList() const = 0;
     virtual void getAllIncludeFilesRecursively(StringVector &incFiles) const = 0;
@@ -133,8 +132,9 @@ class FileDef : public DefinitionMutable, public Definition
 
     /* user defined member groups */
     virtual const MemberGroupList &getMemberGroups() const = 0;
-    virtual NamespaceLinkedRefMap getNamespaces() const = 0;
-    virtual ClassLinkedRefMap getClasses() const = 0;
+    virtual const NamespaceLinkedRefMap &getNamespaces() const = 0;
+    virtual const ConceptLinkedRefMap &getConcepts() const = 0;
+    virtual const ClassLinkedRefMap &getClasses() const = 0;
 
     virtual QCString title() const = 0;
     virtual bool hasDetailedDescription() const = 0;
@@ -154,7 +154,7 @@ class FileDef : public DefinitionMutable, public Definition
     virtual void writeMemberPages(OutputList &ol) = 0;
     virtual void writeQuickMemberLinks(OutputList &ol,const MemberDef *currentMd) const = 0;
     virtual void writeSummaryLinks(OutputList &ol) const = 0;
-    virtual void writeTagFile(std::ostream &t) = 0;
+    virtual void writeTagFile(TextStream &t) = 0;
 
     virtual void writeSourceHeader(OutputList &ol) = 0;
     virtual void writeSourceBody(OutputList &ol,ClangTUParser *clangParser) = 0;
@@ -164,6 +164,7 @@ class FileDef : public DefinitionMutable, public Definition
 
     virtual void insertMember(MemberDef *md) = 0;
     virtual void insertClass(const ClassDef *cd) = 0;
+    virtual void insertConcept(const ConceptDef *cd) = 0;
     virtual void insertNamespace(const NamespaceDef *nd) = 0;
     virtual void computeAnchors() = 0;
 
@@ -177,8 +178,8 @@ class FileDef : public DefinitionMutable, public Definition
     virtual bool generateSourceFile() const = 0;
     virtual void sortMemberLists() = 0;
 
-    virtual void addIncludeDependency(const FileDef *fd,const char *incName,bool local,bool imported) = 0;
-    virtual void addIncludedByDependency(const FileDef *fd,const char *incName,bool local,bool imported) = 0;
+    virtual void addIncludeDependency(const FileDef *fd,const QCString &incName,bool local,bool imported) = 0;
+    virtual void addIncludedByDependency(const FileDef *fd,const QCString &incName,bool local,bool imported) = 0;
 
     virtual void addMembersToMemberGroup() = 0;
     virtual void distributeMemberGroupDocumentation() = 0;
@@ -188,7 +189,7 @@ class FileDef : public DefinitionMutable, public Definition
     virtual void addListReferences() = 0;
 };
 
-FileDef *createFileDef(const std::string &p,const std::string &n,const char *ref=0,const char *dn=0);
+FileDef *createFileDef(const QCString &p,const QCString &n,const QCString &ref=QCString(),const QCString &dn=QCString());
 
 
 // --- Cast functions

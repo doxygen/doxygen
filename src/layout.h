@@ -30,7 +30,7 @@ class MemberList;
 /** @brief Base class representing a piece of a documentation page */
 struct LayoutDocEntry
 {
-  virtual ~LayoutDocEntry() {}
+  virtual ~LayoutDocEntry() = default;
   enum Kind {
               // Generic items for all pages
               MemberGroups,
@@ -45,19 +45,22 @@ struct LayoutDocEntry
               ClassCollaborationGraph, ClassAllMembersLink,
               ClassUsedFiles,
 
+              // Concept specific items
+              ConceptDefinition,
+
               // Namespace specific items
               NamespaceNestedNamespaces, NamespaceNestedConstantGroups,
-              NamespaceClasses, NamespaceInterfaces, NamespaceStructs, NamespaceExceptions,
+              NamespaceClasses, NamespaceConcepts, NamespaceInterfaces, NamespaceStructs, NamespaceExceptions,
               NamespaceInlineClasses,
 
               // File specific items
-              FileClasses, FileInterfaces, FileStructs, FileExceptions, FileConstantGroups, FileNamespaces,
+              FileClasses, FileConcepts, FileInterfaces, FileStructs, FileExceptions, FileConstantGroups, FileNamespaces,
               FileIncludes, FileIncludeGraph,
               FileIncludedByGraph, FileSourceLink,
               FileInlineClasses,
 
               // Group specific items
-              GroupClasses, GroupInlineClasses, GroupNamespaces,
+              GroupClasses, GroupConcepts, GroupInlineClasses, GroupNamespaces,
               GroupDirs, GroupNestedGroups, GroupFiles,
               GroupGraph, GroupPageDocs,
 
@@ -130,6 +133,7 @@ struct LayoutNavEntry
       Namespaces,
       NamespaceList,
       NamespaceMembers,
+      Concepts,
       Classes,
       ClassList,
       ClassIndex,
@@ -173,10 +177,10 @@ struct LayoutNavEntry
     void addChild(LayoutNavEntry *e) { m_children.push_back(std::unique_ptr<LayoutNavEntry>(e)); }
     void prependChild(LayoutNavEntry *e) { m_children.insert(m_children.begin(),std::unique_ptr<LayoutNavEntry>(e)); }
     const LayoutNavEntryList &children() const { return m_children; }
-    LayoutNavEntry *find(LayoutNavEntry::Kind k,const char *file=0) const;
+    LayoutNavEntry *find(LayoutNavEntry::Kind k,const QCString &file=QCString()) const;
 
   private:
-    LayoutNavEntry() : m_parent(0), m_kind(None), m_visible(FALSE) {}
+    LayoutNavEntry() : m_parent(0), m_kind(None), m_visible(true) {}
     LayoutNavEntry *m_parent;
     Kind m_kind;
     bool m_visible;
@@ -196,7 +200,8 @@ class LayoutDocManager
   public:
     enum LayoutPart
     {
-      Class, Namespace, File, Group, Directory,
+      Undefined = -1,
+      Class, Concept, Namespace, File, Group, Directory,
       NrParts
     };
     /** Returns a reference to this singleton. */
@@ -209,7 +214,7 @@ class LayoutDocManager
     LayoutNavEntry *rootNavEntry() const;
 
     /** Parses a user provided layout */
-    void parse(const char *fileName);
+    void parse(const QCString &fileName);
     void init();
   private:
     void addEntry(LayoutPart p,LayoutDocEntry*e);
@@ -220,7 +225,7 @@ class LayoutDocManager
     friend class LayoutParser;
 };
 
-void writeDefaultLayoutFile(const char *fileName);
+void writeDefaultLayoutFile(const QCString &fileName);
 
 #endif
 

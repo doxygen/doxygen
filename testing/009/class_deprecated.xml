@@ -8,6 +8,7 @@
         <definition>void Deprecated::deprecated</definition>
         <argsstring>()</argsstring>
         <name>deprecated</name>
+        <qualifiedname>Deprecated::deprecated</qualifiedname>
         <briefdescription>
         </briefdescription>
         <detaileddescription>

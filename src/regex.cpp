@@ -30,6 +30,27 @@
 namespace reg
 {
 
+static inline bool isspace(char c)
+{
+  return c==' ' || c=='\t' || c=='\n' || c=='\r';
+}
+
+static inline bool isalpha(char c)
+{
+  return static_cast<unsigned char>(c)>=128 || (c>='a' && c<='z') || (c>='A' && c<='Z');
+}
+
+static inline bool isdigit(char c)
+{
+  return c>='0' && c<='9';
+}
+
+static inline bool isalnum(char c)
+{
+  return isalpha(c) || isdigit(c);
+}
+
+
 /** Class representing a token in the compiled regular expression token stream.
  *  A token has a kind and an optional value whose meaning depends on the kind.
  *  It is also possible to store a (from,to) character range in a token.
@@ -157,7 +178,8 @@ class Ex::Private
 #if ENABLE_DEBUG
     void dump();
 #endif
-    bool matchAt(size_t tokenPos,const std::string &str,Match &match,size_t pos,int level) const;
+    bool matchAt(size_t tokenPos,size_t tokenLen,const std::string &str,
+                 Match &match,size_t pos,int level) const;
 
     /** Flag indicating the expression was successfully compiled */
     bool error = false;
@@ -356,6 +378,14 @@ void Ex::Private::compile()
             prevTokenPos+=ddiff;
             tokenPos+=ddiff;
           }
+          if (data[prevTokenPos].kind()==PToken::Kind::EndCapture)
+          {
+            // find the beginning of the capture range
+            while (prevTokenPos>0 && data[prevTokenPos].kind()!=PToken::Kind::BeginCapture)
+            {
+              prevTokenPos--;
+            }
+          }
           data.insert(data.begin()+prevTokenPos,
                       c=='?' ? PToken(PToken::Kind::Optional) : PToken(PToken::Kind::Star));
           tokenPos++;
@@ -409,16 +439,17 @@ void Ex::Private::dump()
 
 /** Internal matching routine.
  *  @param tokenPos Offset into the token stream.
+ *  @param tokenLen The length of the token stream.
  *  @param str      The input string to match against.
  *  @param match    The object used to store the matching results.
  *  @param pos      The position in the input string to start with matching
  *  @param level    Recursion level (used for debugging)
  */
-bool Ex::Private::matchAt(size_t tokenPos,const std::string &str,Match &match,const size_t pos,int level) const
+bool Ex::Private::matchAt(size_t tokenPos,size_t tokenLen,const std::string &str,Match &match,const size_t pos,int level) const
 {
-  DBG("%d:matchAt(tokenPos=%zu, str='%s', pos=%zu)\n",level,tokenPos,str.c_str(),pos);
-  auto isStartIdChar = [](char c) { return std::isalpha(c) || c=='_' || c<0; };
-  auto isIdChar      = [](char c) { return std::isalnum(c) || c=='_' || c<0; };
+  DBG("%d:matchAt(tokenPos=%zu, str='%s', pos=%zu)\n",level,tokenPos,pos<str.length() ? str.substr(pos).c_str() : "",pos);
+  auto isStartIdChar = [](char c) { return isalpha(c) || c=='_'; };
+  auto isIdChar      = [](char c) { return isalnum(c) || c=='_'; };
   auto matchCharClass = [this,isStartIdChar,isIdChar](size_t tp,char c) -> bool
   {
     PToken tok = data[tp];
@@ -431,8 +462,8 @@ bool Ex::Private::matchAt(size_t tokenPos,const std::string &str,Match &match,co
       // first check for built-in ranges
       if ((tok.kind()==PToken::Kind::Alpha      && isStartIdChar(c)) ||
           (tok.kind()==PToken::Kind::AlphaNum   && isIdChar(c))      ||
-          (tok.kind()==PToken::Kind::WhiteSpace && std::isspace(c))  ||
-          (tok.kind()==PToken::Kind::Digit      && std::isdigit(c))
+          (tok.kind()==PToken::Kind::WhiteSpace && isspace(c))  ||
+          (tok.kind()==PToken::Kind::Digit      && isdigit(c))
          )
       {
         found=true;
@@ -452,8 +483,8 @@ bool Ex::Private::matchAt(size_t tokenPos,const std::string &str,Match &match,co
     return negate ? !found : found;
   };
   size_t index = pos;
-  enum SequenceType { Star, Optional };
-  auto processSequence = [this,&tokenPos,&index,&str,&matchCharClass,
+  enum SequenceType { Star, Optional, OptionalRange };
+  auto processSequence = [this,&tokenPos,&tokenLen,&index,&str,&matchCharClass,
                           &isStartIdChar,&isIdChar,&match,&level,&pos](SequenceType type) -> bool
   {
     size_t startIndex = index;
@@ -481,12 +512,12 @@ bool Ex::Private::matchAt(size_t tokenPos,const std::string &str,Match &match,co
     }
     else if (tok.kind()==PToken::Kind::WhiteSpace) // '\s*' -> eat spaces
     {
-      while (index<=str.length() && std::isspace(str[index])) { index++; if (type==Optional) break; }
+      while (index<=str.length() && isspace(str[index])) { index++; if (type==Optional) break; }
       tokenPos++;
     }
     else if (tok.kind()==PToken::Kind::Digit) // '\d*' -> eat digits
     {
-      while (index<=str.length() && std::isdigit(str[index])) { index++; if (type==Optional) break; }
+      while (index<=str.length() && isdigit(str[index])) { index++; if (type==Optional) break; }
       tokenPos++;
     }
     else if (tok.kind()==PToken::Kind::Any) // '.*' -> eat all
@@ -494,25 +525,39 @@ bool Ex::Private::matchAt(size_t tokenPos,const std::string &str,Match &match,co
       if (type==Optional) index++; else index = str.length();
       tokenPos++;
     }
+    else if (type==OptionalRange && tok.kind()==PToken::Kind::BeginCapture)
+    {
+      size_t tokenStart = ++tokenPos;
+      while (tokenPos<tokenLen && data[tokenPos].kind()!=PToken::Kind::EndCapture) { tokenPos++; }
+      Match rangeMatch;
+      rangeMatch.init(&str);
+      bool found = matchAt(tokenStart,tokenPos,str,rangeMatch,index,level+1);
+      if (found)
+      {
+        index+=rangeMatch.length(); // (abc)? matches -> eat all
+      }
+      tokenPos++; // skip over EndCapture
+    }
     tokenPos++; // skip over end marker
-    while ((int)index>=(int)startIndex)
+    while (index>=startIndex)
     {
       // pattern 'x*xy' should match 'xy' and 'xxxxy'
-      bool found = matchAt(tokenPos,str,match,index,level+1);
+      bool found = matchAt(tokenPos,tokenLen,str,match,index,level+1);
       if (found)
       {
         match.setMatch(pos,index-pos+match.length());
         return true;
       }
+      if (index==0) break;
       index--;
     }
     return false;
   };
 
-  while (tokenPos<data.size())
+  while (tokenPos<tokenLen)
   {
     PToken tok = data[tokenPos];
-    //DBG("loop tokenPos=%zu token=%s\n",tokenPos,tok.kindStr());
+    DBG("loop tokenPos=%zu token=%s\n",tokenPos,tok.kindStr());
     if (tok.kind()==PToken::Kind::Character) // match literal character
     {
       char c_tok = tok.asciiValue();
@@ -537,11 +582,11 @@ bool Ex::Private::matchAt(size_t tokenPos,const std::string &str,Match &match,co
           index++;
           break;
         case PToken::Kind::WhiteSpace:
-          if (index>=str.length() || !std::isspace(str[index])) return false;
+          if (index>=str.length() || !isspace(str[index])) return false;
           index++;
           break;
         case PToken::Kind::Digit:
-          if (index>=str.length() || !std::isdigit(str[index])) return false;
+          if (index>=str.length() || !isdigit(str[index])) return false;
           index++;
           break;
         case PToken::Kind::BeginOfLine:
@@ -582,7 +627,14 @@ bool Ex::Private::matchAt(size_t tokenPos,const std::string &str,Match &match,co
         case PToken::Kind::Star:
           return processSequence(Star);
         case PToken::Kind::Optional:
-          return processSequence(Optional);
+          if (tokenPos<tokenLen-1 && data[tokenPos+1].kind()==PToken::Kind::BeginCapture)
+          {
+            return processSequence(OptionalRange); // (...)?
+          }
+          else
+          {
+            return processSequence(Optional); // x?
+          }
         default:
           return false;
       }
@@ -661,7 +713,7 @@ bool Ex::match(const std::string &str,Match &match,size_t pos) const
   PToken tok = p->data[0];
   if (tok.kind()==PToken::Kind::BeginOfLine) // only test match at the given position
   {
-    found = p->matchAt(0,str,match,pos,0);
+    found = p->matchAt(0,p->data.size(),str,match,pos,0);
   }
   else
   {
@@ -678,7 +730,7 @@ bool Ex::match(const std::string &str,Match &match,size_t pos) const
     }
     while (pos<str.length()) // search for a match starting at pos
     {
-      found = p->matchAt(0,str,match,pos,0);
+      found = p->matchAt(0,p->data.size(),str,match,pos,0);
       if (found) break;
       pos++;
     }

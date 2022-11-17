@@ -14,10 +14,12 @@
 */
 
 #include <sstream>
+#include <mutex>
+#include <regex>
 
 #include "config.h"
 #include "doxygen.h"
-#include "index.h"
+#include "indexlist.h"
 #include "md5.h"
 #include "message.h"
 #include "util.h"
@@ -38,31 +40,36 @@
 *  are compared with \a md5. If equal FALSE is returned.
 *  The .md5 is created or updated after successful creation of the output file.
 */
-static bool checkMd5Signature(const QCString &baseName,
-                              const QCString &md5)
+static bool sameMd5Signature(const QCString &baseName,
+                             const QCString &md5)
 {
+  bool same = false;
+  char md5stored[33];
+  md5stored[0]=0;
   std::ifstream f(baseName.str()+".md5",std::ifstream::in | std::ifstream::binary);
   if (f.is_open())
   {
     // read checksum
-    QCString md5stored(33);
-    f.read(md5stored.rawData(),32);
+    f.read(md5stored,32);
     md5stored[32]='\0';
     // compare checksum
     if (!f.fail() && md5==md5stored)
     {
-      // bail out if equal
-      return false;
+      same = true;
     }
+    //printf("sameSignature(%s,%s==%s)=%d\n",qPrint(baseName),md5stored,qPrint(md5),same);
   }
-  return true;
+  else
+  {
+    //printf("sameSignature(%s) not found\n",qPrint(baseName));
+  }
+  return same;
 }
 
-static bool checkDeliverables(const QCString &file1,
-                              const QCString &file2=QCString())
+static bool deliverablesPresent(const QCString &file1,const QCString &file2)
 {
-  bool file1Ok = TRUE;
-  bool file2Ok = TRUE;
+  bool file1Ok = true;
+  bool file2Ok = true;
   if (!file1.isEmpty())
   {
     FileInfo fi(file1.str());
@@ -76,15 +83,15 @@ static bool checkDeliverables(const QCString &file1,
   return file1Ok && file2Ok;
 }
 
-static bool insertMapFile(std::ostream &out,const QCString &mapFile,
+static bool insertMapFile(TextStream &out,const QCString &mapFile,
                           const QCString &relPath,const QCString &mapLabel)
 {
   FileInfo fi(mapFile.str());
   if (fi.exists() && fi.size()>0) // reuse existing map file
   {
-    std::stringstream t;
+    TextStream t;
     DotFilePatcher::convertMapFile(t,mapFile,relPath,false);
-    if (t.tellg()>0)
+    if (!t.empty())
     {
       out << "<map name=\"" << mapLabel << "\" id=\"" << mapLabel << "\">\n";
       out << t.str();
@@ -103,19 +110,21 @@ QCString DotGraph::imgName() const
                       ("." + getDotImageExtension()) : (Config_getBool(USE_PDFLATEX) ? ".pdf" : ".eps"));
 }
 
+std::mutex g_dotIndexListMutex;
+
 QCString DotGraph::writeGraph(
-        std::ostream& t,           // output stream for the code file (html, ...)
+        TextStream& t,            // output stream for the code file (html, ...)
         GraphOutputFormat gf,     // bitmap(png/svg) or ps(eps/pdf)
         EmbeddedOutputFormat ef,  // html, latex, ...
-        const char* path,         // output folder
-        const char* fileName,     // name of the code file (for code patcher)
-        const char* relPath,      // output folder relative to code file
+        const QCString &path,     // output folder
+        const QCString &fileName, // name of the code file (for code patcher)
+        const QCString &relPath,  // output folder relative to code file
         bool generateImageMap,    // in case of bitmap, shall there be code generated?
         int graphId)              // number of this graph in the current code, used in svg code
 {
   m_graphFormat = gf;
   m_textFormat = ef;
-  m_dir = Dir(path);
+  m_dir = Dir(path.str());
   m_fileName = fileName;
   m_relPath = relPath;
   m_generateImageMap = generateImageMap;
@@ -128,7 +137,11 @@ QCString DotGraph::writeGraph(
 
   m_regenerate = prepareDotFile();
 
-  if (!m_doNotAddImageToIndex) Doxygen::indexList->addImageFile(imgName());
+  if (!m_doNotAddImageToIndex)
+  {
+    std::lock_guard<std::mutex> lock(g_dotIndexListMutex);
+    Doxygen::indexList->addImageFile(imgName());
+  }
 
   generateCode(t);
 
@@ -142,19 +155,19 @@ bool DotGraph::prepareDotFile()
     term("Output dir %s does not exist!\n", m_dir.path().c_str());
   }
 
-  QCString sigStr(33);
+  char sigStr[33];
   uchar md5_sig[16];
   // calculate md5
-  MD5Buffer((const unsigned char*)m_theGraph.data(), m_theGraph.length(), md5_sig);
+  MD5Buffer(m_theGraph.data(), m_theGraph.length(), md5_sig);
   // convert result to a string
-  MD5SigToString(md5_sig, sigStr.rawData(), 33);
+  MD5SigToString(md5_sig, sigStr);
 
   // already queued files are processed again in case the output format has changed
 
-  if (!checkMd5Signature(absBaseName(), sigStr) &&
-      checkDeliverables(absImgName(),
-                        m_graphFormat == GOF_BITMAP && m_generateImageMap ? absMapName() : QCString()
-                       )
+  if (sameMd5Signature(absBaseName(), sigStr) &&
+      deliverablesPresent(absImgName(),
+                          m_graphFormat == GOF_BITMAP && m_generateImageMap ? absMapName() : QCString()
+                         )
      )
   {
     // all needed files are there
@@ -167,7 +180,7 @@ bool DotGraph::prepareDotFile()
   std::ofstream f(absDotName().str(),std::ofstream::out | std::ofstream::binary);
   if (!f.is_open())
   {
-    err("Could not open file %s for writing\n",absDotName().data());
+    err("Could not open file %s for writing\n",qPrint(absDotName()));
     return TRUE;
   }
   f << m_theGraph;
@@ -176,27 +189,27 @@ bool DotGraph::prepareDotFile()
   if (m_graphFormat == GOF_BITMAP)
   {
     // run dot to create a bitmap image
-    DotRunner * dotRun = DotManager::instance()->createRunner(absDotName().data(), sigStr.data());
-    dotRun->addJob(Config_getEnum(DOT_IMAGE_FORMAT), absImgName());
-    if (m_generateImageMap) dotRun->addJob(MAP_CMD, absMapName());
+    DotRunner * dotRun = DotManager::instance()->createRunner(absDotName(), sigStr);
+    dotRun->addJob(Config_getEnumAsString(DOT_IMAGE_FORMAT), absImgName(), absDotName(), 1);
+    if (m_generateImageMap) dotRun->addJob(MAP_CMD, absMapName(), absDotName(), 1);
   }
   else if (m_graphFormat == GOF_EPS)
   {
     // run dot to create a .eps image
-    DotRunner *dotRun = DotManager::instance()->createRunner(absDotName().data(), sigStr.data());
+    DotRunner *dotRun = DotManager::instance()->createRunner(absDotName(), sigStr);
     if (Config_getBool(USE_PDFLATEX))
     {
-      dotRun->addJob("pdf",absImgName());
+      dotRun->addJob("pdf",absImgName(),absDotName(),1);
     }
     else
     {
-      dotRun->addJob("ps",absImgName());
+      dotRun->addJob("ps",absImgName(),absDotName(),1);
     }
   }
   return TRUE;
 }
 
-void DotGraph::generateCode(std::ostream &t)
+void DotGraph::generateCode(TextStream &t)
 {
   QCString imgExt = getDotImageExtension();
   if (m_graphFormat==GOF_BITMAP && m_textFormat==EOF_DocBook)
@@ -223,11 +236,11 @@ void DotGraph::generateCode(std::ostream &t)
         if (m_regenerate)
         {
           DotManager::instance()->
-               createFilePatcher(absImgName().data())->
+               createFilePatcher(absImgName())->
                addSVGConversion(m_relPath,FALSE,QCString(),m_zoomable,m_graphId);
         }
         int mapId = DotManager::instance()->
-               createFilePatcher(m_fileName.data())->
+               createFilePatcher(m_fileName)->
                addSVGObject(m_baseName,absImgName(),m_relPath);
         t << "<!-- SVG " << mapId << " -->\n";
       }
@@ -242,7 +255,7 @@ void DotGraph::generateCode(std::ostream &t)
       if (m_regenerate || !insertMapFile(t, absMapName(), m_relPath, correctId(getMapLabel())))
       {
         int mapId = DotManager::instance()->
-          createFilePatcher(m_fileName.data())->
+          createFilePatcher(m_fileName)->
           addMap(absMapName(), m_relPath, m_urlOnly, QCString(), getMapLabel());
         t << "<!-- MAP " << mapId << " -->\n";
       }
@@ -253,17 +266,15 @@ void DotGraph::generateCode(std::ostream &t)
     if (m_regenerate || !DotFilePatcher::writeVecGfxFigure(t,m_baseName,absBaseName()))
     {
       int figId = DotManager::instance()->
-                  createFilePatcher(m_fileName.data())->
+                  createFilePatcher(m_fileName)->
                   addFigure(m_baseName,absBaseName(),FALSE /*TRUE*/);
       t << "\n% FIG " << figId << "\n";
     }
   }
 }
 
-void DotGraph::writeGraphHeader(std::ostream &t,const QCString &title)
+void DotGraph::writeGraphHeader(TextStream &t,const QCString &title)
 {
-  int fontSize      = Config_getInt(DOT_FONTSIZE);
-  QCString fontName = Config_getString(DOT_FONTNAME);
   t << "digraph ";
   if (title.isEmpty())
   {
@@ -280,19 +291,14 @@ void DotGraph::writeGraphHeader(std::ostream &t,const QCString &title)
     t << " // INTERACTIVE_SVG=YES\n";
   }
   t << " // LATEX_PDF_SIZE\n"; // write placeholder for LaTeX PDF bounding box size replacement
-  if (Config_getBool(DOT_TRANSPARENT))
-  {
-    t << "  bgcolor=\"transparent\";\n";
-  }
-  t << "  edge [fontname=\"" << fontName << "\","
-         "fontsize=\"" << fontSize << "\","
-         "labelfontname=\"" << fontName << "\","
-         "labelfontsize=\"" << fontSize << "\"];\n";
-  t << "  node [fontname=\"" << fontName << "\","
-         "fontsize=\"" << fontSize << "\",shape=record];\n";
+  t << "  bgcolor=\"transparent\";\n";
+  QCString c = Config_getString(DOT_COMMON_ATTR);
+  if (!c.isEmpty()) c += ",";
+  t << "  edge [" << c << Config_getString(DOT_EDGE_ATTR) << "];\n";
+  t << "  node [" << c << Config_getString(DOT_NODE_ATTR) << "];\n";
 }
 
-void DotGraph::writeGraphFooter(std::ostream &t)
+void DotGraph::writeGraphFooter(TextStream &t)
 {
   t << "}\n";
 }
@@ -307,7 +313,7 @@ void DotGraph::computeGraph(DotNode *root,
                             QCString &graphStr)
 {
   //printf("computeMd5Signature\n");
-  std::stringstream md5stream;
+  TextStream md5stream;
   writeGraphHeader(md5stream,title);
   if (!rank.isEmpty())
   {
@@ -323,7 +329,7 @@ void DotGraph::computeGraph(DotNode *root,
       {
         const auto &children = pn->children();
         auto child_it = std::find(children.begin(),children.end(),root);
-        int index = child_it - children.begin();
+        size_t index = child_it - children.begin();
         root->writeArrow(md5stream,                              // stream
             gt,                                                  // graph type
             format,                                              // output format

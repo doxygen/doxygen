@@ -17,7 +17,8 @@
 
 #include <map>
 #include <string>
-#include <iostream>
+
+class TextStream;
 
 /** @brief Singleton helper class to map emoji entities to other formats */
 class EmojiEntityMapper
@@ -27,7 +28,7 @@ class EmojiEntityMapper
     static void deleteInstance();
     const char *name(int index) const;
     const char *unicode(int index) const;
-    void writeEmojiFile(std::ostream &t);
+    void writeEmojiFile(TextStream &t);
     int symbol2index(const std::string &symName) const;
 
   private:

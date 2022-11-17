@@ -29,18 +29,17 @@ struct DocVisitor::Private
   std::stack<bool> hidden;
 };
 
-DocVisitor::DocVisitor(int id) : m_p(std::make_unique<Private>())
+DocVisitor::DocVisitor() : m_p(std::make_unique<Private>())
 {
-  m_p->id = id;
 }
 
 DocVisitor::~DocVisitor()
 {
 }
 
-CodeParserInterface &DocVisitor::getCodeParser(const char *extension)
+CodeParserInterface &DocVisitor::getCodeParser(const QCString &extension)
 {
-  std::string ext(extension?extension:"");
+  std::string ext = extension.str();
   // for each extension we create a code parser once per visitor, so that
   // the context of the same parser object is reused throughout multiple passes for instance
   // for code fragments shown via dontinclude.
@@ -52,11 +51,6 @@ CodeParserInterface &DocVisitor::getCodeParser(const char *extension)
     it = result.first;
   }
   return *it->second.get();
-}
-
-int DocVisitor::id() const
-{
-  return m_p->id;
 }
 
 void DocVisitor::pushHidden(bool hide)

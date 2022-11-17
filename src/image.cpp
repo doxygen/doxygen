@@ -158,59 +158,18 @@ static Color palette[] =
   { 0x00, 0x00, 0x00, 0xff },
   { 0xff, 0xff, 0xc0, 0xff },
   { 0x9f, 0x9f, 0x60, 0xff },
-  { 0x90, 0x00, 0x00, 0xff },
-  { 0x00, 0x90, 0x00, 0xff },
-  { 0x00, 0x00, 0x90, 0xff },
-  { 0xc0, 0xc0, 0xc0, 0xff }
-};
-
-// for alpha we use x^(1/1.3)
-static Color palette2[] =
-{
-  { 0x00, 0x00, 0x00, 0x00 },
-  { 0x00, 0x00, 0x00, 0x2e },
-  { 0x00, 0x00, 0x00, 0x48 },
-  { 0x00, 0x00, 0x00, 0x5d },
-  { 0x00, 0x00, 0x00, 0x6f },
-  { 0x00, 0x00, 0x00, 0x80 },
-  { 0x00, 0x00, 0x00, 0x8f },
-  { 0x00, 0x00, 0x00, 0x9e },
-  { 0x00, 0x00, 0x00, 0xac },
-  { 0x00, 0x00, 0x00, 0xb9 },
-  { 0x00, 0x00, 0x00, 0xc5 },
-  { 0x00, 0x00, 0x00, 0xd2 },
-  { 0x00, 0x00, 0x00, 0xdd },
-  { 0x00, 0x00, 0x00, 0xe9 },
-  { 0x00, 0x00, 0x00, 0xf4 },
-  { 0x00, 0x00, 0x00, 0xff }
-};
-
-static Color palette3[] =
-{
-  { 0xff, 0xff, 0xff, 0xff },
-  { 0xe0, 0xe0, 0xe0, 0xff },
-  { 0xd0, 0xd0, 0xd0, 0xff },
+  { 0xa7, 0x38, 0x30, 0xff },
+  { 0x29, 0x70, 0x18, 0xff },
+  { 0x97, 0xCC, 0xE8, 0xff },
   { 0xc0, 0xc0, 0xc0, 0xff },
-  { 0xb0, 0xb0, 0xb0, 0xff },
-  { 0xa0, 0xa0, 0xa0, 0xff },
-  { 0x90, 0x90, 0x90, 0xff },
-  { 0x80, 0x80, 0x80, 0xff },
-  { 0x70, 0x70, 0x70, 0xff },
-  { 0x60, 0x60, 0x60, 0xff },
-  { 0x50, 0x50, 0x50, 0xff },
-  { 0x40, 0x40, 0x40, 0xff },
-  { 0x30, 0x30, 0x30, 0xff },
-  { 0x20, 0x20, 0x20, 0xff },
-  { 0x10, 0x10, 0x10, 0xff },
-  { 0x00, 0x00, 0x00, 0xff }
+  { 0xff, 0xff, 0xff, 0xff }
 };
-
 
 Image::Image(uint w,uint h)
 {
-  static int hue   = Config_getInt(HTML_COLORSTYLE_HUE);
-  static int sat   = Config_getInt(HTML_COLORSTYLE_SAT);
-  static int gamma = Config_getInt(HTML_COLORSTYLE_GAMMA);
+  int hue   = Config_getInt(HTML_COLORSTYLE_HUE);
+  int sat   = Config_getInt(HTML_COLORSTYLE_SAT);
+  int gamma = Config_getInt(HTML_COLORSTYLE_GAMMA);
 
   double red1,green1,blue1;
   double red2,green2,blue2;
@@ -227,23 +186,21 @@ Image::Image(uint w,uint h)
                         &red2,&green2,&blue2
                        );
 
-  palette[2].red   = (int)(red1   * 255.0);
-  palette[2].green = (int)(green1 * 255.0);
-  palette[2].blue  = (int)(blue1  * 255.0);
+  palette[2].red   = static_cast<Byte>(red1   * 255.0);
+  palette[2].green = static_cast<Byte>(green1 * 255.0);
+  palette[2].blue  = static_cast<Byte>(blue1  * 255.0);
 
-  palette[3].red   = (int)(red2   * 255.0);
-  palette[3].green = (int)(green2 * 255.0);
-  palette[3].blue  = (int)(blue2  * 255.0);
+  palette[3].red   = static_cast<Byte>(red2   * 255.0);
+  palette[3].green = static_cast<Byte>(green2 * 255.0);
+  palette[3].blue  = static_cast<Byte>(blue2  * 255.0);
 
-  m_data = new uchar[w*h];
-  memset(m_data,0,w*h);
+  m_data.resize(w*h);
   m_width = w;
   m_height = h;
 }
 
 Image::~Image()
 {
-  delete[] m_data;
 }
 
 void Image::setPixel(uint x,uint y,uchar val)
@@ -297,12 +254,13 @@ void Image::writeChar(uint x,uint y,char c,uchar fg)
   }
 }
 
-void Image::writeString(uint x,uint y,const char *s,uchar fg)
+void Image::writeString(uint x,uint y,const QCString &s,uchar fg)
 {
-  if (s)
+  if (!s.isEmpty())
   {
+    const char *p = s.data();
     char c;
-    while ((c=*s++))
+    while ((c=*p++))
     {
       writeChar(x,y,c,fg);
       x+=charWidth[c-' '];
@@ -310,13 +268,14 @@ void Image::writeString(uint x,uint y,const char *s,uchar fg)
   }
 }
 
-uint Image::stringLength(const char *s)
+uint Image::stringLength(const QCString &s)
 {
   uint w=0;
-  if (s)
+  if (!s.isEmpty())
   {
+    const char *p = s.data();
     char c;
-    while ((c=*s++)) w+=charWidth[c-' '];
+    while ((c=*p++)) w+=charWidth[c-' '];
   }
   return w;
 }
@@ -379,17 +338,14 @@ void Image::fillRect(uint x,uint y,uint width,uint height,uchar colIndex,uint ma
         setPixel(xp,yp,colIndex);
 }
 
-bool Image::save(const char *fileName,int mode)
+bool Image::save(const QCString &fileName)
 {
-  static bool useTransparency = Config_getBool(FORMULA_TRANSPARENT);
   uchar* buffer;
   size_t bufferSize;
   LodePNG_Encoder encoder;
   LodePNG_Encoder_init(&encoder);
-  uint numCols = mode==0 ? 8 : 16;
-  Color *pPal = mode==0         ? palette  :
-                useTransparency ? palette2 :
-                                  palette3 ;
+  uint numCols = 9;
+  Color *pPal = palette;
   uint i;
   for (i=0;i<numCols;i++,pPal++)
   {
@@ -398,8 +354,8 @@ bool Image::save(const char *fileName,int mode)
   }
   encoder.infoPng.color.colorType = 3;
   encoder.infoRaw.color.colorType = 3;
-  LodePNG_encode(&encoder, &buffer, &bufferSize, m_data, m_width, m_height);
-  LodePNG_saveFile(buffer, bufferSize, fileName);
+  LodePNG_encode(&encoder, &buffer, &bufferSize, &m_data[0], m_width, m_height);
+  LodePNG_saveFile(buffer, bufferSize, fileName.data());
   free(buffer);
   LodePNG_Encoder_cleanup(&encoder);
   return TRUE;
@@ -427,7 +383,7 @@ void ColoredImage::hsl2rgb(double h,double s,double l,
     m       = l + l - v;
     sv      = (v - m ) / v;
     h      *= 6.0;
-    sextant = (int)h;
+    sextant = static_cast<int>(h);
     fract   = h - sextant;
     vsf     = v * sv * fract;
     mid1    = m + vsf;
@@ -478,19 +434,19 @@ ColoredImage::ColoredImage(uint width,uint height,
   m_hasAlpha = alphaLevels!=0;
   m_width    = width;
   m_height   = height;
-  m_data     = (uchar*)malloc(width*height*4);
+  m_data.resize(width*height*4);
   uint i;
   for (i=0;i<width*height;i++)
   {
-    uchar r,g,b,a;
+    Byte r,g,b,a;
     double red,green,blue;
     hsl2rgb(hue/360.0,                            // hue
             saturation/255.0,                     // saturation
             pow(greyLevels[i]/255.0,gamma/100.0), // luma (gamma corrected)
             &red,&green,&blue);
-    r = (int)(red  *255.0);
-    g = (int)(green*255.0);
-    b = (int)(blue *255.0);
+    r = static_cast<Byte>(red  *255.0);
+    g = static_cast<Byte>(green*255.0);
+    b = static_cast<Byte>(blue *255.0);
     a = alphaLevels ? alphaLevels[i] : 255;
     m_data[i*4+0]=r;
     m_data[i*4+1]=g;
@@ -501,10 +457,9 @@ ColoredImage::ColoredImage(uint width,uint height,
 
 ColoredImage::~ColoredImage()
 {
-  free(m_data);
 }
 
-bool ColoredImage::save(const char *fileName)
+bool ColoredImage::save(const QCString &fileName)
 {
   uchar *buffer;
   size_t bufferSize;
@@ -512,8 +467,8 @@ bool ColoredImage::save(const char *fileName)
   LodePNG_Encoder_init(&encoder);
   encoder.infoPng.color.colorType = m_hasAlpha ? 6 : 2; // 2=RGB 24 bit, 6=RGBA 32 bit
   encoder.infoRaw.color.colorType = 6; // 6=RGBA 32 bit
-  LodePNG_encode(&encoder, &buffer, &bufferSize, m_data, m_width, m_height);
-  LodePNG_saveFile(buffer, bufferSize, fileName);
+  LodePNG_encode(&encoder, &buffer, &bufferSize, &m_data[0], m_width, m_height);
+  LodePNG_saveFile(buffer, bufferSize, fileName.data());
   LodePNG_Encoder_cleanup(&encoder);
   free(buffer);
   return TRUE;

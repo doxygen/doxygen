@@ -51,7 +51,7 @@ class ParseException {
   /**
    * This is the last token that has been consumed successfully.  If
    * this object has been created due to a parse error, the token
-   * followng this token will (therefore) be the first error token.
+   * following this token will (therefore) be the first error token.
    */
   Token currentToken;
 
@@ -60,14 +60,14 @@ class ParseException {
    * of integers represents a sequence of tokens (by their ordinal
    * values) that is expected at this point of the parse.
    */
-  int** expectedTokenSequences;
+  int** expectedTokenSequences = 0;
 
   /**
    * This is a reference to the "tokenImage" array of the generated
    * parser within which the parse error occurred.  This array is
    * defined in the generated ...Constants class.
    */
-  JJString* tokenImage;
+  JJString* tokenImage = 0;
 
   /**
    * It uses "currentToken" and "expectedTokenSequences" to generate a parse
@@ -98,4 +98,4 @@ class ParseException {
 }
 
 #endif
-/* JavaCC - OriginalChecksum=6705523c0ea4e83f3c38da57253c0aea (do not edit this line) */
+/* JavaCC - OriginalChecksum=15877456661be7c62e39a97606c3e899 (do not edit this line) */

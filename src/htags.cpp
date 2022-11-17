@@ -24,6 +24,7 @@
 #include "config.h"
 #include "portable.h"
 #include "fileinfo.h"
+#include "dir.h"
 
 bool Htags::useHtags = FALSE;
 
@@ -87,7 +88,7 @@ bool Htags::execute(const QCString &htmldir)
   commandLine += " \"" + htmldir + "\"";
   std::string oldDir = Dir::currentDirPath();
   Dir::setCurrent(g_inputDir.absPath());
-  //printf("CommandLine=[%s]\n",commandLine.data());
+  //printf("CommandLine=[%s]\n",qPrint(commandLine));
   Portable::sysTimerStart();
   bool result=Portable::system("htags",commandLine,FALSE)==0;
   if (!result)
@@ -128,8 +129,8 @@ bool Htags::loadFilemap(const QCString &htmlDir)
       std::string lineStr;
       while (getline(f,lineStr))
       {
-        QCString line = lineStr;
-        //printf("Read line: %s",line.data());
+        QCString line(lineStr);
+        //printf("Read line: %s",qPrint(line));
         int sep = line.find('\t');
         if (sep!=-1)
         {
@@ -138,14 +139,14 @@ bool Htags::loadFilemap(const QCString &htmlDir)
           int ext=value.findRev('.');
           if (ext!=-1) value=value.left(ext); // strip extension
           g_symbolMap.insert(std::make_pair(key.str(),value.str()));
-          //printf("Key/Value=(%s,%s)\n",key.data(),value.data());
+          //printf("Key/Value=(%s,%s)\n",qPrint(key),qPrint(value));
         }
       }
       return true;
     }
     else
     {
-      err("file %s cannot be opened\n",fileMapName.data());
+      err("file %s cannot be opened\n",qPrint(fileMapName));
     }
   }
   return false;
@@ -159,18 +160,18 @@ QCString Htags::path2URL(const QCString &path)
 {
   QCString url,symName=path;
   QCString dir = g_inputDir.absPath();
-  int dl=dir.length();
-  if ((int)symName.length()>dl+1)
+  size_t dl=dir.length();
+  if (symName.length()>dl+1)
   {
     symName = symName.mid(dl+1);
   }
   if (!symName.isEmpty())
   {
     auto it = g_symbolMap.find(symName.str());
-    //printf("path2URL=%s symName=%s result=%p\n",path.data(),symName.data(),result);
+    //printf("path2URL=%s symName=%s result=%p\n",qPrint(path),qPrint(symName),result);
     if (it!=g_symbolMap.end())
     {
-      url = QCString("HTML/") + it->second;
+      url = QCString("HTML/"+it->second);
     }
   }
   return url;

@@ -13,8 +13,10 @@
  *
  */
 
-#ifndef _DEBUG_H
-#define _DEBUG_H
+#ifndef DEBUG_H
+#define DEBUG_H
+
+class QCString;
 
 /** Class containing a print function for diagnostics. */
 class Debug
@@ -28,7 +30,6 @@ class Debug
                      Classes      = 0x00000010,
                      CommentCnv   = 0x00000020,
                      CommentScan  = 0x00000040,
-                     Validate     = 0x00000080,
                      PrintTree    = 0x00000100,
                      Time         = 0x00000200,
                      ExtCmd       = 0x00000400,
@@ -38,12 +39,15 @@ class Debug
                      Plantuml     = 0x00004000,
                      FortranFixed2Free = 0x00008000,
                      Cite         = 0x00010000,
-                     NoLineNo     = 0x00020000
+                     NoLineNo     = 0x00020000,
+                     Rtf          = 0x00040000,
+                     Qhp          = 0x00080000,
+                     Tag          = 0x00100000,
                    };
     static void print(DebugMask mask,int prio,const char *fmt,...);
 
-    static int  setFlag(const char *label);
-    static void clearFlag(const char *label);
+    static int  setFlag(const QCString &label);
+    static void clearFlag(const QCString &label);
     static bool isFlagSet(DebugMask mask);
     static void printFlags();
     static void setPriority(int p);

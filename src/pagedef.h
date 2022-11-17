@@ -25,12 +25,11 @@ class OutputList;
 class PageDef : public DefinitionMutable, public Definition
 {
   public:
-    virtual ~PageDef() {}
-
     // setters
-    virtual void setFileName(const char *name) = 0;
+    virtual void setFileName(const QCString &name) = 0;
     virtual void setLocalToc(const LocalToc &tl) = 0;
     virtual void setShowLineNo(bool) = 0;
+    virtual void setTitle(const QCString &title) = 0;
 
     // getters
     virtual DefType definitionType() const = 0;
@@ -55,13 +54,13 @@ class PageDef : public DefinitionMutable, public Definition
     virtual bool showLineNo() const = 0;
 
     virtual void writeDocumentation(OutputList &) = 0;
-    virtual void writeTagFile(std::ostream &) = 0;
+    virtual void writeTagFile(TextStream &) = 0;
     virtual void setNestingLevel(int) = 0;
     virtual void writePageDocumentation(OutputList &) const = 0;
 
 };
 
-PageDef *createPageDef(const char *f,int l,const char *n,const char *d,const char *t);
+PageDef *createPageDef(const QCString &f,int l,const QCString &n,const QCString &d,const QCString &t);
 
 // --- Cast functions
 

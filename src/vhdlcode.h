@@ -29,12 +29,12 @@ class VHDLCodeParser : public CodeParserInterface
     VHDLCodeParser();
     virtual ~VHDLCodeParser();
     void parseCode(CodeOutputInterface &codeOutIntf,
-                   const char *scopeName,
+                   const QCString &scopeName,
                    const QCString &input,
                    SrcLangExt lang,
                    bool isExampleBlock,
-                   const char *exampleName=0,
-                   FileDef *fileDef=0,
+                   const QCString &exampleName=QCString(),
+                   const FileDef *fileDef=0,
                    int startLine=-1,
                    int endLine=-1,
                    bool inlineFragment=FALSE,

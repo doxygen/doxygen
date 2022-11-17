@@ -8,6 +8,7 @@
         <definition>int Class1.Property1</definition>
         <argsstring/>
         <name>Property1</name>
+        <qualifiedname>Class1.Property1</qualifiedname>
         <initializer>= 1</initializer>
         <briefdescription>
           <para>Documentation of first property. </para>
@@ -23,6 +24,7 @@
         <definition>string Class1.Property2</definition>
         <argsstring/>
         <name>Property2</name>
+        <qualifiedname>Class1.Property2</qualifiedname>
         <briefdescription>
           <para>Documentation of second property. </para>
         </briefdescription>

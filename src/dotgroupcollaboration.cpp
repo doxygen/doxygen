@@ -13,8 +13,6 @@
 *
 */
 
-#include <sstream>
-
 #include "dotgroupcollaboration.h"
 #include "classlist.h"
 #include "doxygen.h"
@@ -22,6 +20,7 @@
 #include "pagedef.h"
 #include "util.h"
 #include "config.h"
+#include "textstream.h"
 
 DotGroupCollaboration::DotGroupCollaboration(const GroupDef* gd)
 {
@@ -102,7 +101,7 @@ void DotGroupCollaboration::buildGraph(const GroupDef* gd)
   // Add classes
   for (const auto &def : gd->getClasses())
   {
-    tmp_url = def->getReference()+"$"+def->getOutputFileBase()+Doxygen::htmlFileExtension;
+    tmp_url = def->getReference()+"$"+addHtmlExtensionIfMissing(def->getOutputFileBase());
     if (!def->anchor().isEmpty())
     {
       tmp_url+="#"+def->anchor();
@@ -113,21 +112,21 @@ void DotGroupCollaboration::buildGraph(const GroupDef* gd)
   // Add namespaces
   for (const auto &def : gd->getNamespaces())
   {
-    tmp_url = def->getReference()+"$"+def->getOutputFileBase()+Doxygen::htmlFileExtension;
+    tmp_url = def->getReference()+"$"+addHtmlExtensionIfMissing(def->getOutputFileBase());
     addCollaborationMember( def, tmp_url, DotGroupCollaboration::tnamespace );
   }
 
   // Add files
   for (const auto &def : gd->getFiles())
   {
-    tmp_url = def->getReference()+"$"+def->getOutputFileBase()+Doxygen::htmlFileExtension;
+    tmp_url = def->getReference()+"$"+addHtmlExtensionIfMissing(def->getOutputFileBase());
     addCollaborationMember( def, tmp_url, DotGroupCollaboration::tfile );
   }
 
   // Add pages
   for (const auto &def : gd->getPages())
   {
-    tmp_url = def->getReference()+"$"+def->getOutputFileBase()+Doxygen::htmlFileExtension;
+    tmp_url = def->getReference()+"$"+addHtmlExtensionIfMissing(def->getOutputFileBase());
     addCollaborationMember( def, tmp_url, DotGroupCollaboration::tpages );
   }
 
@@ -136,7 +135,7 @@ void DotGroupCollaboration::buildGraph(const GroupDef* gd)
   {
     for(const auto def : gd->getDirs())
     {
-      tmp_url = def->getReference()+"$"+def->getOutputFileBase()+Doxygen::htmlFileExtension;
+      tmp_url = def->getReference()+"$"+addHtmlExtensionIfMissing(def->getOutputFileBase());
       addCollaborationMember( def, tmp_url, DotGroupCollaboration::tdir );
     }
   }
@@ -147,7 +146,7 @@ void DotGroupCollaboration::addMemberList( MemberList* ml )
   if ( ml==0 || ml->empty() ) return;
   for (const auto &def : *ml)
   {
-    QCString tmp_url = def->getReference()+"$"+def->getOutputFileBase()+Doxygen::htmlFileExtension
+    QCString tmp_url = def->getReference()+"$"+addHtmlExtensionIfMissing(def->getOutputFileBase());
       +"#"+def->anchor();
     addCollaborationMember( def, tmp_url, DotGroupCollaboration::tmember );
   }
@@ -209,7 +208,7 @@ QCString DotGroupCollaboration::getBaseName() const
 
 void DotGroupCollaboration::computeTheGraph()
 {
-  std::stringstream md5stream;
+  TextStream md5stream;
   writeGraphHeader(md5stream,m_rootNode->label());
 
   // clean write flags
@@ -240,17 +239,17 @@ QCString DotGroupCollaboration::getMapLabel() const
   return escapeCharsInString(m_baseName, FALSE);
 }
 
-QCString DotGroupCollaboration::writeGraph( std::ostream &t,
+QCString DotGroupCollaboration::writeGraph( TextStream &t,
   GraphOutputFormat graphFormat, EmbeddedOutputFormat textFormat,
-  const char *path, const char *fileName, const char *relPath,
+  const QCString &path, const QCString &fileName, const QCString &relPath,
   bool generateImageMap,int graphId)
 {
-  m_doNotAddImageToIndex = TRUE;
+  m_doNotAddImageToIndex = textFormat!=EOF_Html;
 
   return DotGraph::writeGraph(t, graphFormat, textFormat, path, fileName, relPath, generateImageMap, graphId);
 }
 
-void DotGroupCollaboration::Edge::write( std::ostream &t ) const
+void DotGroupCollaboration::Edge::write( TextStream &t ) const
 {
   const char* linkTypeColor[] = {
     "darkorchid3"
@@ -299,12 +298,12 @@ void DotGroupCollaboration::Edge::write( std::ostream &t ) const
   }
   switch( eType )
   {
-  case thierarchy:
-    arrowStyle = "dir=\"back\", style=\"solid\"";
-    break;
-  default:
-    t << ", color=\"" << linkTypeColor[(int)eType] << "\"";
-    break;
+    case thierarchy:
+      arrowStyle = "dir=\"back\", style=\"solid\"";
+      break;
+    default:
+      t << ", color=\"" << linkTypeColor[static_cast<int>(eType)] << "\"";
+      break;
   }
   t << ", " << arrowStyle;
   t << "];\n";
@@ -315,27 +314,8 @@ bool DotGroupCollaboration::isTrivial() const
   return m_usedNodes.size() <= 1;
 }
 
-void DotGroupCollaboration::writeGraphHeader(std::ostream &t,const QCString &title) const
+void DotGroupCollaboration::writeGraphHeader(TextStream &t,const QCString &title) const
 {
-  int fontSize      = Config_getInt(DOT_FONTSIZE);
-  QCString fontName = Config_getString(DOT_FONTNAME);
-  t << "digraph ";
-  if (title.isEmpty())
-  {
-    t << "\"Dot Graph\"";
-  }
-  else
-  {
-    t << "\"" << convertToXML(title) << "\"";
-  }
-  t << "\n";
-  t << "{\n";
-  if (Config_getBool(DOT_TRANSPARENT))
-  {
-    t << "  bgcolor=\"transparent\";\n";
-  }
-  t << "  edge [fontname=\"" << fontName << "\",fontsize=\"" << fontSize << "\","
-    "labelfontname=\"" << fontName << "\",labelfontsize=\"" << fontSize << "\"];\n";
-  t << "  node [fontname=\"" << fontName << "\",fontsize=\"" << fontSize << "\",shape=box];\n";
+  DotGraph::writeGraphHeader(t, title);
   t << "  rankdir=LR;\n";
 }

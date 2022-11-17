@@ -34,9 +34,11 @@
 #include <QDesktopServices>
 #include <QUrl>
 #include <QTextStream>
+#include <QRegularExpression>
 #include <QDebug>
+#include <QDate>
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <windows.h>
 #endif
 
@@ -62,14 +64,14 @@ MainWindow::MainWindow()
 {
   QMenu *file = menuBar()->addMenu(tr("File"));
   file->addAction(tr("Open..."),
-                  this, SLOT(openConfig()), Qt::CTRL+Qt::Key_O);
+                  this, SLOT(openConfig()), Qt::CTRL|Qt::Key_O);
   m_recentMenu = file->addMenu(tr("Open recent"));
   file->addAction(tr("Save"),
-                  this, SLOT(saveConfig()), Qt::CTRL+Qt::Key_S);
+                  this, SLOT(saveConfig()), Qt::CTRL|Qt::Key_S);
   file->addAction(tr("Save as..."),
-                  this, SLOT(saveConfigAs()), Qt::SHIFT+Qt::CTRL+Qt::Key_S);
+                  this, SLOT(saveConfigAs()), Qt::SHIFT|Qt::CTRL|Qt::Key_S);
   file->addAction(tr("Quit"),
-                  this, SLOT(quit()), Qt::CTRL+Qt::Key_Q);
+                  this, SLOT(quit()), Qt::CTRL|Qt::Key_Q);
 
   QMenu *settings = menuBar()->addMenu(tr("Settings"));
   m_resetDefault = settings->addAction(tr("Reset to factory defaults"),
@@ -275,8 +277,9 @@ void MainWindow::about()
               QString::fromLatin1(qVersion());
        }
   t << QString::fromLatin1(")</center><p><br>"
-       "<center>Written by<br> Dimitri van Heesch<br>&copy; 2000-2021</center><p>"
-       "</qt>");
+       "<center>Written by<br> Dimitri van Heesch<br>&copy; 2000-");
+  t << QDate::currentDate().year();
+  t << QString::fromLatin1("</center><p></qt>");
   QMessageBox::about(this,tr("Doxygen GUI"),msg);
 }
 
@@ -328,11 +331,12 @@ void MainWindow::saveConfig(const QString &fileName)
   {
     QMessageBox::warning(this,
         tr("Error saving"),
-        tr("Error: cannot open the file ")+fileName+tr(" for writing!\n")+
-        tr("Reason given: ")+f.error());
+        QString(tr("Error: cannot open the file "))+fileName+tr(" for writing!\n")+
+        tr("Reason given: ")+QString::number(f.error()));
     return;
   }
   QTextStream t(&f);
+  t.device()->setTextModeEnabled(false);
   m_expert->writeConfig(t,false,false);
   updateConfigFileName(fileName);
   m_modified = false;
@@ -417,19 +421,19 @@ void MainWindow::resetToDefaults()
 
 void MainWindow::loadSettings()
 {
-  QVariant geometry     = m_settings.value(QString::fromLatin1("main/geometry"), QVariant::Invalid);
-  QVariant state        = m_settings.value(QString::fromLatin1("main/state"),    QVariant::Invalid);
-  QVariant wizState     = m_settings.value(QString::fromLatin1("wizard/state"),  QVariant::Invalid);
-  QVariant loadSettings = m_settings.value(QString::fromLatin1("wizard/loadsettings"),  QVariant::Invalid);
-  QVariant workingDir   = m_settings.value(QString::fromLatin1("wizard/workingdir"), QVariant::Invalid);
+  QVariant geometry     = m_settings.value(QString::fromLatin1("main/geometry"));
+  QVariant state        = m_settings.value(QString::fromLatin1("main/state"));
+  QVariant wizState     = m_settings.value(QString::fromLatin1("wizard/state"));
+  QVariant loadSettings = m_settings.value(QString::fromLatin1("wizard/loadsettings"));
+  QVariant workingDir   = m_settings.value(QString::fromLatin1("wizard/workingdir"));
 
-  if (geometry  !=QVariant::Invalid) restoreGeometry(geometry.toByteArray());
-  if (state     !=QVariant::Invalid) restoreState   (state.toByteArray());
-  if (wizState  !=QVariant::Invalid) m_wizard->restoreState(wizState.toByteArray());
-  if (loadSettings!=QVariant::Invalid && loadSettings.toBool())
+  if (!geometry.isNull()) restoreGeometry(geometry.toByteArray());
+  if (!state.isNull()) restoreState   (state.toByteArray());
+  if (!wizState.isNull()) m_wizard->restoreState(wizState.toByteArray());
+  if (!loadSettings.isNull() && loadSettings.toBool())
   {
     m_expert->loadSettings(&m_settings);
-    if (workingDir!=QVariant::Invalid && QDir(workingDir.toString()).exists())
+    if (!workingDir.isNull() && QDir(workingDir.toString()).exists())
     {
       setWorkingDir(workingDir.toString());
     }
@@ -548,15 +552,15 @@ void MainWindow::runDoxygen()
     m_runProcess->setWorkingDirectory(m_workingDir->text());
     QStringList env=QProcess::systemEnvironment();
     // set PWD environment variable to m_workingDir
-    env.replaceInStrings(QRegExp(QString::fromLatin1("^PWD=(.*)"),Qt::CaseInsensitive),
+    env.replaceInStrings(QRegularExpression(QString::fromLatin1("^PWD=(.*)"),QRegularExpression::CaseInsensitiveOption),
                          QString::fromLatin1("PWD=")+m_workingDir->text());
     m_runProcess->setEnvironment(env);
 
     QStringList args;
-#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
-    QStringList runOptions = m_runOptions->text().split(QLatin1Char(' '),Qt::SkipEmptyParts);
-#else
+#if QT_VERSION < QT_VERSION_CHECK(5, 15, 0)
     QStringList runOptions = m_runOptions->text().split(QLatin1Char(' '),QString::SkipEmptyParts);
+#else
+    QStringList runOptions = m_runOptions->text().split(QLatin1Char(' '),Qt::SkipEmptyParts);
 #endif
 
     args << runOptions;
@@ -574,6 +578,7 @@ void MainWindow::runDoxygen()
     }
     QTextStream t(m_runProcess);
     m_expert->writeConfig(t,false,false);
+    t.flush();
     m_runProcess->closeWriteChannel();
 
     if (m_runProcess->state() == QProcess::NotRunning)
@@ -610,11 +615,7 @@ void MainWindow::readStdout()
     {
       text1 += text;
       m_outputLog->clear();
-#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
       m_outputLog->append(APPQT(text1.toHtmlEscaped().trimmed()));
-#else
-      m_outputLog->append(APPQT(Qt::escape(text1).trimmed()));
-#endif
     }
   }
 }
@@ -651,7 +652,7 @@ void MainWindow::showHtmlOutput()
   QString indexFile = m_expert->getHtmlOutputIndex(m_workingDir->text());
   QFileInfo fi(indexFile);
   // TODO: the following doesn't seem to work with IE
-#ifdef WIN32
+#ifdef _WIN32
   //QString indexUrl(QString::fromLatin1("file:///"));
   ShellExecute(NULL, L"open", (LPCWSTR)fi.absoluteFilePath().utf16(), NULL, NULL, SW_SHOWNORMAL);
 #else

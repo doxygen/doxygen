@@ -8,6 +8,7 @@
         <definition>Foo::operator int</definition>
         <argsstring>()</argsstring>
         <name>operator int</name>
+        <qualifiedname>Foo::operator int</qualifiedname>
         <briefdescription>
           <para>Conversion to int. </para>
         </briefdescription>
@@ -22,6 +23,7 @@
         <definition>Foo::operator int</definition>
         <argsstring>() const</argsstring>
         <name>operator int</name>
+        <qualifiedname>Foo::operator int</qualifiedname>
         <briefdescription>
           <para>Conversion to int const. </para>
         </briefdescription>

@@ -34,10 +34,10 @@ require the above tools. If you enable \ref cfg_use_mathjax "USE_MATHJAX" in
 the configuration then the latex formulas will be copied to the HTML "as is" and a
 client side javascript will parse them and turn them into (interactive) images.
 
-There are three ways to include formulas in the documentation.
+There are four ways to include formulas in the documentation.
 <ol>
 <li>Using in-text formulas that appear in the running text. 
-    These formulas should be put between a pair of \\f\$ 
+    These formulas should be put between a pair of \ref cmdfdollar "\\f\$"
     commands, so
 \verbatim
   The distance between \f$(x_1,y_1)\f$ and \f$(x_2,y_2)\f$ is 
@@ -47,8 +47,19 @@ There are three ways to include formulas in the documentation.
   The distance between \f$(x_1,y_1)\f$ and \f$(x_2,y_2)\f$ is 
   \f$\sqrt{(x_2-x_1)^2+(y_2-y_1)^2}\f$.
 <br>
+<li>Using in-text formulas that appear in the running text, contrary to
+    \ref cmdfdollar "\\f$" it will not explicitly open the math mode in \LaTeX.
+    These formulas should be put between \ref cmdfrndclose "\\f(" and
+    \ref cmdfrndopen "\\f)" commands, so
+\verbatim
+  The LaTeX and Tex logos are: \f(\LaTeX \f) and \f(\TeX \f).
+\endverbatim results in:
+
+  The LaTeX and Tex logos are: \f(\LaTeX \f) and \f(\TeX \f).
+<br>
 <li>Unnumbered displayed formulas that are centered on a separate line.
-    These formulas should be put between \\f[ and \\f] commands.
+    These formulas should be put between \ref cmdfbropen "\\f[" and
+    \ref cmdfbrclose "\\f]" commands.
     An example:
 \verbatim
   \f[
@@ -74,9 +85,9 @@ There are three ways to include formulas in the documentation.
           \right|
   \f]
 <li>Formulas or other latex elements that are not in a math 
-    environment can be specified using \\f{environment}, where
+    environment can be specified using \ref cmdfcurlyopen "\\f{environment}", where
     \c environment is the name of the \LaTeX environment, 
-    the corresponding end command is \\f}. Here is an example for an 
+    the corresponding end command is \ref cmdfcurlyclose "\\f}". Here is an example for an 
     equation array
 \verbatim
    \f{eqnarray*}{
@@ -94,9 +105,11 @@ There are three ways to include formulas in the documentation.
           &=& 9.82066032\,\mbox{m/s}^2
    \f}
 </ol>
-For the first two commands one should make sure formulas contain 
-valid commands in \LaTeX's math-mode. For the third command
-the section should contain valid command for the specific environment.
+For the first and third commands one should make sure formulas contain 
+valid commands in \LaTeX's math-mode.
+The second command should valid text-mode commands that also work in math-mode when using
+\ref cfg_use_mathjax "USE_MATHJAX".
+For the fourth command the section should contain valid command for the specific environment.
 
 \warning Currently, doxygen is not very fault tolerant in recovering 
 from typos in formulas. It may be necessary to remove the

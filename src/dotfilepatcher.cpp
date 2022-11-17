@@ -20,6 +20,7 @@
 #include "config.h"
 #include "message.h"
 #include "docparser.h"
+#include "docnode.h"
 #include "doxygen.h"
 #include "util.h"
 #include "dot.h"
@@ -123,7 +124,7 @@ static const char svgZoomFooter[] =
 "</svg>\n"
 ;
 
-static QCString replaceRef(const QCString &buf,const QCString relPath,
+static QCString replaceRef(const QCString &buf,const QCString &relPath,
   bool urlOnly,const QCString &context,const QCString &target=QCString())
 {
   // search for href="...", store ... part in link
@@ -145,17 +146,19 @@ static QCString replaceRef(const QCString &buf,const QCString relPath,
     QCString result;
     if (urlOnly) // for user defined dot graphs
     {
-      if (link.left(5)=="\\ref " || link.left(5)=="@ref ") // \ref url
+      if (link.startsWith("\\ref ") || link.startsWith("@ref ")) // \ref url
       {
         result=href+"=\"";
         // fake ref node to resolve the url
-        DocRef *df = new DocRef( (DocNode*) 0, link.mid(5), context );
+        auto parser { createDocParser() };
+        auto dfAst  { createRef( *parser.get(), link.mid(5), context ) };
+        auto dfAstImpl = dynamic_cast<const DocNodeAST*>(dfAst.get());
+        const DocRef *df = std::get_if<DocRef>(&dfAstImpl->root);
         result+=externalRef(relPath,df->ref(),TRUE);
         if (!df->file().isEmpty())
-          result += df->file().data() + Doxygen::htmlFileExtension;
+          result += addHtmlExtensionIfMissing(df->file());
         if (!df->anchor().isEmpty())
           result += "#" + df->anchor();
-        delete df;
         result += "\"";
       }
       else
@@ -191,7 +194,7 @@ static QCString replaceRef(const QCString &buf,const QCString relPath,
     QCString leftPart = buf.left(indexS);
     QCString rightPart = buf.mid(indexE+1);
     //printf("replaceRef(\n'%s'\n)->\n'%s+%s+%s'\n",
-    //    buf.data(),leftPart.data(),result.data(),rightPart.data());
+    //    qPrint(buf),qPrint(leftPart),qPrint(result),qPrint(rightPart));
     return leftPart + result + rightPart;
   }
   else
@@ -211,23 +214,23 @@ static QCString replaceRef(const QCString &buf,const QCString relPath,
 *                 map file was found
 *  \returns TRUE if successful.
 */
-bool DotFilePatcher::convertMapFile(std::ostream &t,const char *mapName,
-                    const QCString relPath, bool urlOnly,
+bool DotFilePatcher::convertMapFile(TextStream &t,const QCString &mapName,
+                    const QCString &relPath, bool urlOnly,
                     const QCString &context)
 {
-  std::ifstream f(mapName,std::ifstream::in);
+  std::ifstream f(mapName.str(),std::ifstream::in);
   if (!f.is_open())
   {
     err("problems opening map file %s for inclusion in the docs!\n"
       "If you installed Graphviz/dot after a previous failing run, \n"
-      "try deleting the output directory and rerun doxygen.\n",mapName);
+      "try deleting the output directory and rerun doxygen.\n",qPrint(mapName));
     return FALSE;
   }
   std::string line;
   while (getline(f,line)) // foreach line
   {
     QCString buf = line+'\n';
-    if (buf.left(5)=="<area")
+    if (buf.startsWith("<area"))
     {
       QCString replBuf = replaceRef(buf,relPath,urlOnly,context);
       // strip id="..." from replBuf since the id's are not needed and not unique.
@@ -245,55 +248,55 @@ bool DotFilePatcher::convertMapFile(std::ostream &t,const char *mapName,
   return TRUE;
 }
 
-DotFilePatcher::DotFilePatcher(const char *patchFile)
+DotFilePatcher::DotFilePatcher(const QCString &patchFile)
   : m_patchFile(patchFile)
 {
 }
 
 bool DotFilePatcher::isSVGFile() const
 {
-  return m_patchFile.right(4)==".svg";
+  return m_patchFile.endsWith(".svg");
 }
 
 int DotFilePatcher::addMap(const QCString &mapFile,const QCString &relPath,
                            bool urlOnly,const QCString &context,const QCString &label)
 {
-  int id = (int)m_maps.size();
+  size_t id = m_maps.size();
   m_maps.emplace_back(mapFile,relPath,urlOnly,context,label);
-  return id;
+  return static_cast<int>(id);
 }
 
 int DotFilePatcher::addFigure(const QCString &baseName,
                               const QCString &figureName,bool heightCheck)
 {
-  int id = (int)m_maps.size();
+  size_t id = m_maps.size();
   m_maps.emplace_back(figureName,"",heightCheck,"",baseName);
-  return id;
+  return static_cast<int>(id);
 }
 
 int DotFilePatcher::addSVGConversion(const QCString &relPath,bool urlOnly,
                                      const QCString &context,bool zoomable,
                                      int graphId)
 {
-  int id = (int)m_maps.size();
+  size_t id = m_maps.size();
   m_maps.emplace_back("",relPath,urlOnly,context,"",zoomable,graphId);
-  return id;
+  return static_cast<int>(id);
 }
 
 int DotFilePatcher::addSVGObject(const QCString &baseName,
                                  const QCString &absImgName,
                                  const QCString &relPath)
 {
-  int id = (int)m_maps.size();
+  size_t id = m_maps.size();
   m_maps.emplace_back(absImgName,relPath,false,"",baseName);
-  return id;
+  return static_cast<int>(id);
 }
 
 bool DotFilePatcher::run() const
 {
-  //printf("DotFilePatcher::run(): %s\n",m_patchFile.data());
+  //printf("DotFilePatcher::run(): %s\n",qPrint(m_patchFile));
   bool interactiveSVG_local = Config_getBool(INTERACTIVE_SVG);
-  bool isSVGFile = m_patchFile.right(4)==".svg";
+  bool isSVGFile = m_patchFile.endsWith(".svg");
   int graphId = -1;
   QCString relPath;
   if (isSVGFile)
@@ -303,40 +306,44 @@ bool DotFilePatcher::run() const
     graphId = map.graphId;
     relPath = map.relPath;
     //printf("DotFilePatcher::addSVGConversion: file=%s zoomable=%d\n",
-    //    m_patchFile.data(),map->zoomable);
+    //    qPrint(m_patchFile),map->zoomable);
   }
   std::string tmpName = m_patchFile.str()+".tmp";
   std::string patchFile = m_patchFile.str();
   Dir thisDir;
   if (!thisDir.rename(patchFile,tmpName))
   {
-    err("Failed to rename file %s to %s!\n",m_patchFile.data(),tmpName.c_str());
+    err("Failed to rename file %s to %s!\n",qPrint(m_patchFile),tmpName.c_str());
     return FALSE;
   }
   std::ifstream fi(tmpName, std::ifstream::in);
-  std::ofstream t(patchFile, std::ofstream::out | std::ofstream::binary);
+  std::ofstream fo(patchFile, std::ofstream::out | std::ofstream::binary);
   if (!fi.is_open())
   {
     err("problem opening file %s for patching!\n",tmpName.c_str());
     thisDir.rename(tmpName,patchFile);
     return FALSE;
   }
-  if (!t.is_open())
+  if (!fo.is_open())
   {
-    err("problem opening file %s for patching!\n",m_patchFile.data());
+    err("problem opening file %s for patching!\n",qPrint(m_patchFile));
     thisDir.rename(tmpName,patchFile);
     return FALSE;
   }
-  int width,height;
+  TextStream t(&fo);
+  int width=0,height=0;
   bool insideHeader=FALSE;
   bool replacedHeader=FALSE;
   bool foundSize=FALSE;
-  int lineNr=1;
   std::string lineStr;
+  static const reg::Ex reSVG(R"([\[<]!-- SVG [0-9]+)");
+  static const reg::Ex reMAP(R"(<!-- MAP [0-9]+)");
+  static const reg::Ex reFIG(R"(% FIG [0-9]+)");
+
   while (getline(fi,lineStr))
   {
     QCString line = lineStr+'\n';
-    //printf("line=[%s]\n",line.stripWhiteSpace().data());
+    //printf("line=[%s]\n",qPrint(line.stripWhiteSpace()));
     int i;
     if (isSVGFile)
     {
@@ -350,8 +357,9 @@ bool DotFilePatcher::run() const
           foundSize = count==2 && (width>500 || height>450);
           if (foundSize) insideHeader=TRUE;
         }
-        else if (insideHeader && !replacedHeader && line.find("<title>")!=-1)
+        else if (insideHeader && !replacedHeader && line.find("<g id=\"graph")!=-1)
         {
+          line="";
           if (foundSize)
           {
             // insert special replacement header for interactive SVGs
@@ -380,43 +388,43 @@ bool DotFilePatcher::run() const
         t << replaceRef(line,map.relPath,map.urlOnly,map.context,"_top");
       }
     }
-    else if ((i=line.find("<!-- SVG"))!=-1 || (i=line.find("[!-- SVG"))!=-1)
+    else if ((i=findIndex(line.str(),reSVG))!=-1)
     {
       //printf("Found marker at %d\n",i);
       int mapId=-1;
       t << line.left(i);
       int n = sscanf(line.data()+i+1,"!-- SVG %d",&mapId);
-      if (n==1 && mapId>=0 && mapId<(int)m_maps.size())
+      if (n==1 && mapId>=0 && mapId<static_cast<int>(m_maps.size()))
       {
-        int e = QMAX(line.find("--]"),line.find("-->"));
+        int e = std::max(line.find("--]"),line.find("-->"));
         const Map &map = m_maps.at(mapId);
         //printf("DotFilePatcher::writeSVGFigure: file=%s zoomable=%d\n",
-        //  m_patchFile.data(),map.zoomable);
+        //  qPrint(m_patchFile),map.zoomable);
         if (!writeSVGFigureLink(t,map.relPath,map.label,map.mapFile))
         {
-          err("Problem extracting size from SVG file %s\n",map.mapFile.data());
+          err("Problem extracting size from SVG file %s\n",qPrint(map.mapFile));
         }
         if (e!=-1) t << line.mid(e+3);
       }
       else // error invalid map id!
       {
-        err("Found invalid SVG id in file %s!\n",m_patchFile.data());
+        err("Found invalid SVG id in file %s!\n",qPrint(m_patchFile));
         t << line.mid(i);
       }
     }
-    else if ((i=line.find("<!-- MAP"))!=-1)
+    else if ((i=findIndex(line.str(),reMAP))!=-1)
     {
       int mapId=-1;
       t << line.left(i);
       int n = sscanf(line.data()+i,"<!-- MAP %d",&mapId);
-      if (n==1 && mapId>=0 && mapId<(int)m_maps.size())
+      if (n==1 && mapId>=0 && mapId<static_cast<int>(m_maps.size()))
       {
-        std::stringstream tt;
+        TextStream tt;
         const Map &map = m_maps.at(mapId);
         //printf("patching MAP %d in file %s with contents of %s\n",
-        //   mapId,m_patchFile.data(),map.mapFile.data());
+        //   mapId,qPrint(m_patchFile),qPrint(map.mapFile));
         convertMapFile(tt,map.mapFile,map.relPath,map.urlOnly,map.context);
-        if (tt.tellg()>0)
+        if (!tt.empty())
         {
           t << "<map name=\"" << correctId(map.label) << "\" id=\"" << correctId(map.label) << "\">\n";
           t << tt.str();
@@ -425,20 +433,20 @@ bool DotFilePatcher::run() const
       }
       else // error invalid map id!
       {
-        err("Found invalid MAP id in file %s!\n",m_patchFile.data());
+        err("Found invalid MAP id in file %s!\n",qPrint(m_patchFile));
         t << line.mid(i);
       }
     }
-    else if ((i=line.find("% FIG"))!=-1)
+    else if ((i=findIndex(line.str(),reFIG))!=-1)
     {
       int mapId=-1;
       int n = sscanf(line.data()+i+2,"FIG %d",&mapId);
-      //printf("line='%s' n=%d\n",line.data()+i,n);
-      if (n==1 && mapId>=0 && mapId<(int)m_maps.size())
+      //printf("line='%s' n=%d\n",qPrint(line)+i,n);
+      if (n==1 && mapId>=0 && mapId<static_cast<int>(m_maps.size()))
       {
         const Map &map = m_maps.at(mapId);
         //printf("patching FIG %d in file %s with contents of %s\n",
-        //   mapId,m_patchFile.data(),map.mapFile.data());
+        //   mapId,qPrint(m_patchFile),qPrint(map.mapFile));
         if (!writeVecGfxFigure(t,map.label,map.mapFile))
         {
           err("problem writing FIG %d figure!\n",mapId);
@@ -447,7 +455,7 @@ bool DotFilePatcher::run() const
       }
       else // error invalid map id!
       {
-        err("Found invalid bounding FIG %d in file %s!\n",mapId,m_patchFile.data());
+        err("Found invalid bounding FIG %d in file %s!\n",mapId,qPrint(m_patchFile));
         t << line;
       }
     }
@@ -455,36 +463,38 @@ bool DotFilePatcher::run() const
     {
       t << line;
     }
-    lineNr++;
   }
   fi.close();
   if (isSVGFile && interactiveSVG_local && replacedHeader)
   {
     QCString orgName=m_patchFile.left(m_patchFile.length()-4)+"_org.svg";
     t << substitute(svgZoomFooter,"$orgname",stripPath(orgName));
-    t.close();
+    t.flush();
+    fo.close();
     // keep original SVG file so we can refer to it, we do need to replace
     // dummy link by real ones
     fi.open(tmpName,std::ifstream::in);
-    t.open(orgName,std::ofstream::out);
+    fo.open(orgName.str(),std::ofstream::out | std::ofstream::binary);
     if (!fi.is_open())
     {
       err("problem opening file %s for reading!\n",tmpName.c_str());
       return FALSE;
     }
-    if (!t.is_open())
+    if (!fo.is_open())
     {
-      err("problem opening file %s for writing!\n",orgName.data());
+      err("problem opening file %s for writing!\n",qPrint(orgName));
       return FALSE;
     }
+    t.setStream(&fo);
     while (getline(fi,lineStr)) // foreach line
     {
       std::string line = lineStr+'\n';
       const Map &map = m_maps.front(); // there is only one 'map' for a SVG file
       t << replaceRef(line.c_str(),map.relPath,map.urlOnly,map.context,"_top");
     }
+    t.flush();
     fi.close();
-    t.close();
+    fo.close();
   }
   // remove temporary file
   thisDir.remove(tmpName);
@@ -521,14 +531,14 @@ static bool readSVGSize(const QCString &fileName,int *width,int *height)
   return true;
 }
 
-static void writeSVGNotSupported(std::ostream &out)
+static void writeSVGNotSupported(TextStream &out)
 {
   out << "<p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p>";
 }
 
 /// Check if a reference to a SVG figure can be written and do so if possible.
 /// Returns FALSE if not possible (for instance because the SVG file is not yet generated).
-bool DotFilePatcher::writeSVGFigureLink(std::ostream &out,const QCString &relPath,
+bool DotFilePatcher::writeSVGFigureLink(TextStream &out,const QCString &relPath,
                         const QCString &baseName,const QCString &absImgName)
 {
   int width=600,height=600;
@@ -567,7 +577,7 @@ bool DotFilePatcher::writeSVGFigureLink(std::ostream &out,const QCString &relPat
   return TRUE;
 }
 
-bool DotFilePatcher::writeVecGfxFigure(std::ostream &out,const QCString &baseName,
+bool DotFilePatcher::writeVecGfxFigure(TextStream &out,const QCString &baseName,
                                  const QCString &figureName)
 {
   int width=400,height=550;

@@ -1,8 +1,6 @@
 /******************************************************************************
  *
- *
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2021 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -34,6 +32,7 @@
 #include "dotincldepgraph.h"
 #include "pagedef.h"
 #include "docparser.h"
+#include "docnode.h"
 #include "latexdocvisitor.h"
 #include "dirdef.h"
 #include "cite.h"
@@ -44,25 +43,18 @@
 #include "resourcemgr.h"
 #include "portable.h"
 #include "fileinfo.h"
+#include "utf8.h"
 
 static QCString g_header;
 static QCString g_footer;
 
-LatexCodeGenerator::LatexCodeGenerator(std::ostream &t,const QCString &relPath,const QCString &sourceFileName)
-  : m_t(nullptr), m_relPath(relPath), m_sourceFileName(sourceFileName)
+LatexCodeGenerator::LatexCodeGenerator(TextStream &t,const QCString &relPath,const QCString &sourceFileName)
+  : m_t(t), m_relPath(relPath), m_sourceFileName(sourceFileName)
 {
-  m_prettyCode=Config_getBool(LATEX_SOURCE_CODE);
-  setTextStream(t);
 }
 
-LatexCodeGenerator::LatexCodeGenerator() : m_t(nullptr)
+LatexCodeGenerator::LatexCodeGenerator(TextStream &t) : m_t(t)
 {
-  m_prettyCode=Config_getBool(LATEX_SOURCE_CODE);
-}
-
-void LatexCodeGenerator::setTextStream(std::ostream &t)
-{
-  m_t.rdbuf(t.rdbuf());
 }
 
 void LatexCodeGenerator::setRelativePath(const QCString &path)
@@ -75,16 +67,16 @@ void LatexCodeGenerator::setSourceFileName(const QCString &name)
   m_sourceFileName = name;
 }
 
-void LatexCodeGenerator::codify(const char *str)
+void LatexCodeGenerator::codify(const QCString &str)
 {
-  if (str)
+  if (!str.isEmpty())
   {
-    const signed char *p=(const signed char*)str;
-    signed char c;
+    const char *p=str.data();
+    char c;
     //char cs[5];
     int spacesToNextTabStop;
     int tabSize = Config_getInt(TAB_SIZE);
-    static THREAD_LOCAL signed char *result = NULL;
+    static THREAD_LOCAL char *result = NULL;
     static THREAD_LOCAL int lresult = 0;
     int i;
     while ((c=*p))
@@ -117,26 +109,15 @@ void LatexCodeGenerator::codify(const char *str)
 #undef  COPYCHAR
 // helper macro to copy a single utf8 character, dealing with multibyte chars.
 #define COPYCHAR() do {                                           \
-                     if (lresult < (i + 5))                       \
+                     int bytes = getUTF8CharNumBytes(c);          \
+                     if (lresult < (i + bytes + 1))               \
                      {                                            \
                        lresult += 512;                            \
-                       result = (signed char *)realloc(result, lresult); \
+                       result = static_cast<char *>(realloc(result, lresult)); \
                      }                                            \
-                     result[i++]=c; p++;                          \
-                     if (c<0) /* multibyte utf-8 character */     \
+                     for (int j=0; j<bytes && *p; j++)            \
                      {                                            \
-                       /* 1xxx.xxxx: >=2 byte character */        \
                        result[i++]=*p++;                          \
-                       if (((uchar)c&0xE0)==0xE0)                 \
-                       {                                          \
-                         /* 111x.xxxx: >=3 byte character */      \
-                         result[i++]=*p++;                        \
-                       }                                          \
-                       if (((uchar)c&0xF0)==0xF0)                 \
-                       {                                          \
-                         /* 1111.xxxx: 4 byte character */        \
-                         result[i++]=*p++;                        \
-                       }                                          \
                      }                                            \
                      m_col++;                                     \
                    } while(0)
@@ -150,7 +131,7 @@ void LatexCodeGenerator::codify(const char *str)
                      COPYCHAR();
                    }
                    result[i]=0; // add terminator
-                   filterLatexString(m_t,(const char *)result,
+                   filterLatexString(m_t,result,
                                      false, // insideTabbing
                                      true,  // insidePre
                                      false, // insideItem
@@ -164,19 +145,20 @@ void LatexCodeGenerator::codify(const char *str)
 }
 
 
-void LatexCodeGenerator::writeCodeLink(const char *ref,const char *f,
-                                   const char *anchor,const char *name,
-                                   const char *)
+void LatexCodeGenerator::writeCodeLink(CodeSymbolType,
+                                   const QCString &ref,const QCString &f,
+                                   const QCString &anchor,const QCString &name,
+                                   const QCString &)
 {
   bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
   bool usePDFLatex   = Config_getBool(USE_PDFLATEX);
-  int l = qstrlen(name);
-  if (!ref && usePDFLatex && pdfHyperlinks)
+  uint l = name.length();
+  if (ref.isEmpty() && usePDFLatex && pdfHyperlinks)
   {
     m_t << "\\mbox{\\hyperlink{";
-    if (f) m_t << stripPath(f);
-    if (f && anchor) m_t << "_";
-    if (anchor) m_t << anchor;
+    if (!f.isEmpty()) m_t << stripPath(f);
+    if (!f.isEmpty() && !anchor.isEmpty()) m_t << "_";
+    if (!anchor.isEmpty()) m_t << anchor;
     m_t << "}{";
     codify(name);
     m_t << "}}";
@@ -188,7 +170,7 @@ void LatexCodeGenerator::writeCodeLink(const char *ref,const char *f,
   m_col+=l;
 }
 
-void LatexCodeGenerator::writeLineNumber(const char *ref,const char *fileName,const char *anchor,int l)
+void LatexCodeGenerator::writeLineNumber(const QCString &ref,const QCString &fileName,const QCString &anchor,int l,bool writeLineAnchor)
 {
   bool usePDFLatex = Config_getBool(USE_PDFLATEX);
   bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
@@ -197,22 +179,25 @@ void LatexCodeGenerator::writeLineNumber(const char *ref,const char *fileName,co
     m_t << "\\DoxyCodeLine{";
     m_doxyCodeLineOpen = TRUE;
   }
-  if (m_prettyCode)
+  if (Config_getBool(SOURCE_BROWSER))
   {
     QCString lineNumber;
     lineNumber.sprintf("%05d",l);
 
-    if (fileName && !m_sourceFileName.isEmpty())
+    QCString lineAnchor;
+    if (!m_sourceFileName.isEmpty())
     {
-      QCString lineAnchor;
       lineAnchor.sprintf("_l%05d",l);
       lineAnchor.prepend(stripExtensionGeneral(m_sourceFileName, ".tex"));
-      //if (!m_prettyCode) return;
-      if (usePDFLatex && pdfHyperlinks)
-      {
-        m_t << "\\Hypertarget{" << stripPath(lineAnchor) << "}";
-      }
-      writeCodeLink(ref,fileName,anchor,lineNumber,0);
+    }
+    bool showTarget = usePDFLatex && pdfHyperlinks && !lineAnchor.isEmpty() && writeLineAnchor;
+    if (showTarget)
+    {
+      m_t << "\\Hypertarget{" << stripPath(lineAnchor) << "}";
+    }
+    if (!fileName.isEmpty())
+    {
+      writeCodeLink(CodeSymbolType::Default,ref,fileName,anchor,lineNumber,QCString());
     }
     else
     {
@@ -248,7 +233,7 @@ void LatexCodeGenerator::endCodeLine()
   codify("\n");
 }
 
-void LatexCodeGenerator::startFontClass(const char *name)
+void LatexCodeGenerator::startFontClass(const QCString &name)
 {
   m_t << "\\textcolor{" << name << "}{";
 }
@@ -258,12 +243,12 @@ void LatexCodeGenerator::endFontClass()
   m_t << "}";
 }
 
-void LatexCodeGenerator::startCodeFragment(const char *style)
+void LatexCodeGenerator::startCodeFragment(const QCString &style)
 {
   m_t << "\n\\begin{" << style << "}{" << m_usedTableLevel << "}\n";
 }
 
-void LatexCodeGenerator::endCodeFragment(const char *style)
+void LatexCodeGenerator::endCodeFragment(const QCString &style)
 {
   //endCodeLine checks is there is still an open code line, if so closes it.
   endCodeLine();
@@ -274,12 +259,12 @@ void LatexCodeGenerator::endCodeFragment(const char *style)
 
 //-------------------------------
 
-LatexGenerator::LatexGenerator() : OutputGenerator(Config_getString(LATEX_OUTPUT))
+LatexGenerator::LatexGenerator() : OutputGenerator(Config_getString(LATEX_OUTPUT)), m_codeGen(m_t)
 {
   //printf("LatexGenerator::LatexGenerator() m_insideTabbing=FALSE\n");
 }
 
-LatexGenerator::LatexGenerator(const LatexGenerator &og) : OutputGenerator(og)
+LatexGenerator::LatexGenerator(const LatexGenerator &og) : OutputGenerator(og), m_codeGen(m_t)
 {
 }
 
@@ -302,93 +287,99 @@ static void writeLatexMakefile()
 {
   bool generateBib = !CitationManager::instance().isEmpty();
   QCString fileName=Config_getString(LATEX_OUTPUT)+"/Makefile";
-  std::ofstream t(fileName.str(),std::ofstream::out | std::ofstream::binary);
-  if (!t.is_open())
+  std::ofstream f(fileName.str(),std::ofstream::out | std::ofstream::binary);
+  if (!f.is_open())
   {
-    term("Could not open file %s for writing\n",fileName.data());
+    term("Could not open file %s for writing\n",qPrint(fileName));
   }
+  TextStream t(&f);
   // inserted by KONNO Akihisa <konno@researchers.jp> 2002-03-05
-  QCString latex_command = theTranslator->latexCommandName();
-  QCString mkidx_command = Config_getString(MAKEINDEX_CMD_NAME);
+  QCString latex_command = theTranslator->latexCommandName().quoted();
+  QCString mkidx_command = Config_getString(MAKEINDEX_CMD_NAME).quoted();
+  QCString bibtex_command = "bibtex";
+  QCString manual_file = "refman";
+  const int latex_count = 8;
   // end insertion by KONNO Akihisa <konno@researchers.jp> 2002-03-05
+    t << "LATEX_CMD?=" << latex_command << "\n"
+      << "MKIDX_CMD?=" << mkidx_command << "\n"
+      << "BIBTEX_CMD?=" << bibtex_command << "\n"
+      << "LATEX_COUNT?=" << latex_count << "\n"
+      << "MANUAL_FILE?=" << manual_file << "\n"
+      << "\n";
   if (!Config_getBool(USE_PDFLATEX)) // use plain old latex
   {
-    t << "LATEX_CMD=" << latex_command << "\n"
+    t << "all: $(MANUAL_FILE).dvi\n"
       << "\n"
-      << "all: refman.dvi\n"
+      << "ps: $(MANUAL_FILE).ps\n"
       << "\n"
-      << "ps: refman.ps\n"
+      << "pdf: $(MANUAL_FILE).pdf\n"
       << "\n"
-      << "pdf: refman.pdf\n"
+      << "ps_2on1: $(MANUAL_FILE).ps\n"
       << "\n"
-      << "ps_2on1: refman_2on1.ps\n"
+      << "pdf_2on1: $(MANUAL_FILE).pdf\n"
       << "\n"
-      << "pdf_2on1: refman_2on1.pdf\n"
-      << "\n"
-      << "refman.ps: refman.dvi\n"
-      << "\tdvips -o refman.ps refman.dvi\n"
+      << "$(MANUAL_FILE).ps: $(MANUAL_FILE).dvi\n"
+      << "\tdvips -o $(MANUAL_FILE).ps $(MANUAL_FILE).dvi\n"
       << "\n";
-    t << "refman.pdf: refman.ps\n";
-    t << "\tps2pdf refman.ps refman.pdf\n\n";
-    t << "refman.dvi: clean refman.tex doxygen.sty\n"
+    t << "$(MANUAL_FILE).pdf: $(MANUAL_FILE).ps\n";
+    t << "\tps2pdf $(MANUAL_FILE).ps $(MANUAL_FILE).pdf\n\n";
+    t << "$(MANUAL_FILE).dvi: clean $(MANUAL_FILE).tex doxygen.sty\n"
       << "\techo \"Running latex...\"\n"
-      << "\t$(LATEX_CMD) refman.tex\n"
+      << "\t$(LATEX_CMD) $(MANUAL_FILE).tex\n"
       << "\techo \"Running makeindex...\"\n"
-      << "\t" << mkidx_command << " refman.idx\n";
+      << "\t$(MKIDX_CMD) $(MANUAL_FILE).idx\n";
     if (generateBib)
     {
       t << "\techo \"Running bibtex...\"\n";
-      t << "\tbibtex refman\n";
+      t << "\t$(BIBTEX_CMD) $(MANUAL_FILE)\n";
       t << "\techo \"Rerunning latex....\"\n";
-      t << "\t$(LATEX_CMD) refman.tex\n";
+      t << "\t$(LATEX_CMD) $(MANUAL_FILE).tex\n";
     }
     t << "\techo \"Rerunning latex....\"\n"
-      << "\t$(LATEX_CMD) refman.tex\n"
-      << "\tlatex_count=8 ; \\\n"
-      << "\twhile egrep -s 'Rerun (LaTeX|to get cross-references right)' refman.log && [ $$latex_count -gt 0 ] ;\\\n"
+      << "\t$(LATEX_CMD) $(MANUAL_FILE).tex\n"
+      << "\tlatex_count=$(LATEX_COUNT) ; \\\n"
+      << "\twhile egrep -s 'Rerun (LaTeX|to get cross-references right|to get bibliographical references right)' $(MANUAL_FILE).log && [ $$latex_count -gt 0 ] ;\\\n"
       << "\t    do \\\n"
       << "\t      echo \"Rerunning latex....\" ;\\\n"
-      << "\t      $(LATEX_CMD) refman.tex ; \\\n"
+      << "\t      $(LATEX_CMD) $(MANUAL_FILE).tex ; \\\n"
       << "\t      latex_count=`expr $$latex_count - 1` ;\\\n"
       << "\t    done\n"
-      << "\t" << mkidx_command << " refman.idx\n"
-      << "\t$(LATEX_CMD) refman.tex\n\n"
-      << "refman_2on1.ps: refman.ps\n"
-      << "\tpsnup -2 refman.ps >refman_2on1.ps\n"
+      << "\t$(MKIDX_CMD) $(MANUAL_FILE).idx\n"
+      << "\t$(LATEX_CMD) $(MANUAL_FILE).tex\n\n"
+      << "$(MANUAL_FILE).ps: $(MANUAL_FILE).ps\n"
+      << "\tpsnup -2 $(MANUAL_FILE).ps >$(MANUAL_FILE).ps\n"
       << "\n"
-      << "refman_2on1.pdf: refman_2on1.ps\n"
-      << "\tps2pdf refman_2on1.ps refman_2on1.pdf\n";
+      << "$(MANUAL_FILE).pdf: $(MANUAL_FILE).ps\n"
+      << "\tps2pdf $(MANUAL_FILE).ps $(MANUAL_FILE).pdf\n";
   }
   else // use pdflatex for higher quality output
   {
-    t << "LATEX_CMD=" << latex_command << "\n"
-      << "\n";
-    t << "all: refman.pdf\n\n"
-      << "pdf: refman.pdf\n\n";
-    t << "refman.pdf: clean refman.tex\n";
-    t << "\t$(LATEX_CMD) refman\n";
-    t << "\t" << mkidx_command << " refman.idx\n";
+    t << "all: $(MANUAL_FILE).pdf\n\n"
+      << "pdf: $(MANUAL_FILE).pdf\n\n";
+    t << "$(MANUAL_FILE).pdf: clean $(MANUAL_FILE).tex\n";
+    t << "\t$(LATEX_CMD) $(MANUAL_FILE)\n";
+    t << "\t$(MKIDX_CMD) $(MANUAL_FILE).idx\n";
     if (generateBib)
     {
-      t << "\tbibtex refman\n";
-      t << "\t$(LATEX_CMD) refman\n";
+      t << "\t$(BIBTEX_CMD) $(MANUAL_FILE)\n";
+      t << "\t$(LATEX_CMD) $(MANUAL_FILE)\n";
     }
-    t << "\t$(LATEX_CMD) refman\n"
-      << "\tlatex_count=8 ; \\\n"
-      << "\twhile egrep -s 'Rerun (LaTeX|to get cross-references right)' refman.log && [ $$latex_count -gt 0 ] ;\\\n"
+    t << "\t$(LATEX_CMD) $(MANUAL_FILE)\n"
+      << "\tlatex_count=$(LATEX_COUNT) ; \\\n"
+      << "\twhile egrep -s 'Rerun (LaTeX|to get cross-references right|to get bibliographical references right)' $(MANUAL_FILE).log && [ $$latex_count -gt 0 ] ;\\\n"
       << "\t    do \\\n"
       << "\t      echo \"Rerunning latex....\" ;\\\n"
-      << "\t      $(LATEX_CMD) refman ;\\\n"
+      << "\t      $(LATEX_CMD) $(MANUAL_FILE) ;\\\n"
       << "\t      latex_count=`expr $$latex_count - 1` ;\\\n"
       << "\t    done\n"
-      << "\t" << mkidx_command << " refman.idx\n"
-      << "\t$(LATEX_CMD) refman\n\n";
+      << "\t$(MKIDX_CMD) $(MANUAL_FILE).idx\n"
+      << "\t$(LATEX_CMD) $(MANUAL_FILE)\n\n";
   }
 
   t << "\n"
     << "clean:\n"
     << "\trm -f "
-    << "*.ps *.dvi *.aux *.toc *.idx *.ind *.ilg *.log *.out *.brf *.blg *.bbl refman.pdf\n";
+    << "*.ps *.dvi *.aux *.toc *.idx *.ind *.ilg *.log *.out *.brf *.blg *.bbl $(MANUAL_FILE).pdf\n";
 }
 
 static void writeMakeBat()
@@ -396,82 +387,110 @@ static void writeMakeBat()
 #if defined(_MSC_VER)
   QCString dir=Config_getString(LATEX_OUTPUT);
   QCString fileName=dir+"/make.bat";
-  QCString latex_command = theTranslator->latexCommandName();
-  QCString mkidx_command = Config_getString(MAKEINDEX_CMD_NAME);
+  QCString latex_command = theTranslator->latexCommandName().quoted();
+  QCString mkidx_command = Config_getString(MAKEINDEX_CMD_NAME).quoted();
+  QCString bibtex_command = "bibtex";
+  QCString manual_file = "refman";
+  const int latex_count = 8;
   bool generateBib = !CitationManager::instance().isEmpty();
   std::ofstream t(fileName.str(),std::ofstream::out | std::ofstream::binary);
   if (!t.is_open())
   {
-    term("Could not open file %s for writing\n",fileName.data());
+    term("Could not open file %s for writing\n",qPrint(fileName));
   }
   t << "set Dir_Old=%cd%\r\n";
   t << "cd /D %~dp0\r\n\r\n";
-  t << "del /s /f *.ps *.dvi *.aux *.toc *.idx *.ind *.ilg *.log *.out *.brf *.blg *.bbl refman.pdf\r\n\r\n";
+  t << "\r\n";
+  t << "set ORG_LATEX_CMD=%LATEX_CMD%\r\n";
+  t << "set ORG_MKIDX_CMD=%MKIDX_CMD%\r\n";
+  t << "set ORG_BIBTEX_CMD=%BIBTEX_CMD%\r\n";
+  t << "set ORG_LATEX_COUNT=%LATEX_COUNT%\r\n";
+  t << "set ORG_MANUAL_FILE=%MANUAL_FILE%\r\n";
+  t << "if \"X\"%LATEX_CMD% == \"X\" set LATEX_CMD=" << latex_command << "\r\n";
+  t << "if \"X\"%MKIDX_CMD% == \"X\" set MKIDX_CMD=" << mkidx_command << "\r\n";
+  t << "if \"X\"%BIBTEX_CMD% == \"X\" set BIBTEX_CMD=" << bibtex_command << "\r\n";
+  t << "if \"X\"%LATEX_COUNT% == \"X\" set LATEX_COUNT=" << latex_count << "\r\n";
+  t << "if \"X\"%MANUAL_FILE% == \"X\" set MANUAL_FILE=" << manual_file << "\r\n";
+  t << "\r\n";
+  t << "del /s /f *.ps *.dvi *.aux *.toc *.idx *.ind *.ilg *.log *.out *.brf *.blg *.bbl %MANUAL_FILE%.pdf\r\n\r\n";
+  t << "\r\n";
   if (!Config_getBool(USE_PDFLATEX)) // use plain old latex
   {
-    t << "set LATEX_CMD=" << latex_command << "\r\n";
-    t << "%LATEX_CMD% refman.tex\r\n";
+    t << "%LATEX_CMD% %MANUAL_FILE%.tex\r\n";
     t << "echo ----\r\n";
-    t << mkidx_command << " refman.idx\r\n";
+    t << "%MKIDX_CMD% %MANUAL_FILE%.idx\r\n";
     if (generateBib)
     {
-      t << "bibtex refman\r\n";
+      t << "%BIBTEX_CMD% %MANUAL_FILE%\r\n";
       t << "echo ----\r\n";
-      t << "\t%LATEX_CMD% refman.tex\r\n";
+      t << "\t%LATEX_CMD% %MANUAL_FILE%.tex\r\n";
     }
     t << "setlocal enabledelayedexpansion\r\n";
-    t << "set count=8\r\n";
+    t << "set count=%LAT#EX_COUNT%\r\n";
     t << ":repeat\r\n";
     t << "set content=X\r\n";
-    t << "for /F \"tokens=*\" %%T in ( 'findstr /C:\"Rerun LaTeX\" refman.log' ) do set content=\"%%~T\"\r\n";
-    t << "if !content! == X for /F \"tokens=*\" %%T in ( 'findstr /C:\"Rerun to get cross-references right\" refman.log' ) do set content=\"%%~T\"\r\n";
+    t << "for /F \"tokens=*\" %%T in ( 'findstr /C:\"Rerun LaTeX\" %MANUAL_FILE%.log' ) do set content=\"%%~T\"\r\n";
+    t << "if !content! == X for /F \"tokens=*\" %%T in ( 'findstr /C:\"Rerun to get cross-references right\" %MANUAL_FILE%.log' ) do set content=\"%%~T\"\r\n";
+    t << "if !content! == X for /F \"tokens=*\" %%T in ( 'findstr /C:\"Rerun to get bibliographical references right\" %MANUAL_FILE%.log' ) do set content=\"%%~T\"\r\n";
     t << "if !content! == X goto :skip\r\n";
     t << "set /a count-=1\r\n";
     t << "if !count! EQU 0 goto :skip\r\n\r\n";
     t << "echo ----\r\n";
-    t << "%LATEX_CMD% refman.tex\r\n";
+    t << "%LATEX_CMD% %MANUAL_FILE%.tex\r\n";
     t << "goto :repeat\r\n";
     t << ":skip\r\n";
     t << "endlocal\r\n";
-    t << mkidx_command << " refman.idx\r\n";
-    t << "%LATEX_CMD% refman.tex\r\n";
-    t << "dvips -o refman.ps refman.dvi\r\n";
+    t << "%MKIDX_CMD% %MANUAL_FILE%.idx\r\n";
+    t << "%LATEX_CMD% %MANUAL_FILE%.tex\r\n";
+    t << "dvips -o %MANUAL_FILE%.ps %MANUAL_FILE%.dvi\r\n";
     t << Portable::ghostScriptCommand();
     t << " -q -dNOPAUSE -dBATCH -sDEVICE=pdfwrite "
-         "-sOutputFile=refman.pdf -c save pop -f refman.ps\r\n";
+         "-sOutputFile=%MANUAL_FILE%.pdf -c save pop -f %MANUAL_FILE%.ps\r\n";
   }
   else // use pdflatex
   {
-    t << "set LATEX_CMD=" << latex_command << "\r\n";
-    t << "%LATEX_CMD% refman\r\n";
+    t << "%LATEX_CMD% %MANUAL_FILE%\r\n";
     t << "echo ----\r\n";
-    t << mkidx_command << " refman.idx\r\n";
+    t << "%MKIDX_CMD% %MANUAL_FILE%.idx\r\n";
     if (generateBib)
     {
-      t << "bibtex refman\r\n";
-      t << "%LATEX_CMD% refman\r\n";
+      t << "%BIBTEX_CMD% %MANUAL_FILE%\r\n";
+      t << "%LATEX_CMD% %MANUAL_FILE%\r\n";
     }
     t << "echo ----\r\n";
-    t << "%LATEX_CMD% refman\r\n\r\n";
+    t << "%LATEX_CMD% %MANUAL_FILE%\r\n\r\n";
     t << "setlocal enabledelayedexpansion\r\n";
-    t << "set count=8\r\n";
+    t << "set count=%LATEX_COUNT%\r\n";
     t << ":repeat\r\n";
     t << "set content=X\r\n";
-    t << "for /F \"tokens=*\" %%T in ( 'findstr /C:\"Rerun LaTeX\" refman.log' ) do set content=\"%%~T\"\r\n";
-    t << "if !content! == X for /F \"tokens=*\" %%T in ( 'findstr /C:\"Rerun to get cross-references right\" refman.log' ) do set content=\"%%~T\"\r\n";
+    t << "for /F \"tokens=*\" %%T in ( 'findstr /C:\"Rerun LaTeX\" %MANUAL_FILE%.log' ) do set content=\"%%~T\"\r\n";
+    t << "if !content! == X for /F \"tokens=*\" %%T in ( 'findstr /C:\"Rerun to get cross-references right\" %MANUAL_FILE%.log' ) do set content=\"%%~T\"\r\n";
+    t << "if !content! == X for /F \"tokens=*\" %%T in ( 'findstr /C:\"Rerun to get bibliographical references right\" %MANUAL_FILE%.log' ) do set content=\"%%~T\"\r\n";
     t << "if !content! == X goto :skip\r\n";
     t << "set /a count-=1\r\n";
     t << "if !count! EQU 0 goto :skip\r\n\r\n";
     t << "echo ----\r\n";
-    t << "%LATEX_CMD% refman\r\n";
+    t << "%LATEX_CMD% %MANUAL_FILE%\r\n";
     t << "goto :repeat\r\n";
     t << ":skip\r\n";
     t << "endlocal\r\n";
-    t << mkidx_command << " refman.idx\r\n";
-    t << "%LATEX_CMD% refman\r\n";
-    t << "cd /D %Dir_Old%\r\n";
-    t << "set Dir_Old=\r\n";
+    t << "%MKIDX_CMD% %MANUAL_FILE%.idx\r\n";
+    t << "%LATEX_CMD% %MANUAL_FILE%\r\n";
   }
+  t<< "\r\n";
+  t<< "@REM reset environment\r\n";
+  t<< "cd /D %Dir_Old%\r\n";
+  t<< "set Dir_Old=\r\n";
+  t<< "set LATEX_CMD=%ORG_LATEX_CMD%\r\n";
+  t<< "set ORG_LATEX_CMD=\r\n";
+  t<< "set MKIDX_CMD=%ORG_MKIDX_CMD%\r\n";
+  t<< "set ORG_MKIDX_CMD=\r\n";
+  t<< "set BIBTEX_CMD=%ORG_BIBTEX_CMD%\r\n";
+  t<< "set ORG_BIBTEX_CMD=\r\n";
+  t<< "set MANUAL_FILE=%ORG_MANUAL_FILE%\r\n";
+  t<< "set ORG_MANUAL_FILE=\r\n";
+  t<< "set LATEX_COUNT=%ORG_LATEX_COUNT%\r\n";
+  t<< "set ORG_LATEX_COUNT=\r\n";
 #endif
 }
 
@@ -481,13 +500,13 @@ void LatexGenerator::init()
   Dir d(dname.str());
   if (!d.exists() && !d.mkpath(dname.str()))
   {
-    term("Could not create output directory %s\n",dname.data());
+    term("Could not create output directory %s\n",qPrint(dname));
   }
 
   if (!Config_getString(LATEX_HEADER).isEmpty())
   {
     g_header=fileToString(Config_getString(LATEX_HEADER));
-    //printf("g_header='%s'\n",g_header.data());
+    //printf("g_header='%s'\n",qPrint(g_header));
   }
   else
   {
@@ -496,7 +515,7 @@ void LatexGenerator::init()
   if (!Config_getString(LATEX_FOOTER).isEmpty())
   {
     g_footer=fileToString(Config_getString(LATEX_FOOTER));
-    //printf("g_footer='%s'\n",g_footer.data());
+    //printf("g_footer='%s'\n",qPrint(g_footer));
   }
   else
   {
@@ -509,39 +528,45 @@ void LatexGenerator::init()
   createSubDirs(d);
 }
 
-static void writeDefaultStyleSheet(std::ostream &t)
+void LatexGenerator::cleanup()
+{
+  QCString dname = Config_getString(LATEX_OUTPUT);
+  Dir d(dname.str());
+  clearSubDirs(d);
+}
+
+static void writeDefaultStyleSheet(TextStream &t)
 {
   t << ResourceMgr::instance().getAsString("doxygen.sty");
 }
 
-void LatexGenerator::writeHeaderFile(std::ostream &t)
+void LatexGenerator::writeHeaderFile(TextStream &t)
 {
   t << "% Latex header for doxygen " << getDoxygenVersion() << "\n";
   t << ResourceMgr::instance().getAsString("header.tex");
 }
 
-void LatexGenerator::writeFooterFile(std::ostream &t)
+void LatexGenerator::writeFooterFile(TextStream &t)
 {
   t << "% Latex footer for doxygen " << getDoxygenVersion() << "\n";
   t << ResourceMgr::instance().getAsString("footer.tex");
 }
 
-void LatexGenerator::writeStyleSheetFile(std::ostream &t)
+void LatexGenerator::writeStyleSheetFile(TextStream &t)
 {
   t << "% stylesheet for doxygen " << getDoxygenVersion() << "\n";
   writeDefaultStyleSheet(t);
 }
 
-void LatexGenerator::startFile(const char *name,const char *,const char *,int)
+void LatexGenerator::startFile(const QCString &name,const QCString &,const QCString &,int)
 {
 #if 0
   setEncoding(Config_getString(LATEX_OUTPUT_ENCODING));
 #endif
   QCString fileName=name;
   m_relPath = relativePathToRoot(fileName);
-  if (fileName.right(4)!=".tex" && fileName.right(4)!=".sty") fileName+=".tex";
+  if (!fileName.endsWith(".tex") && !fileName.endsWith(".sty")) fileName+=".tex";
   startPlainFile(fileName);
-  m_codeGen.setTextStream(t);
   m_codeGen.setRelativePath(m_relPath);
   m_codeGen.setSourceFileName(stripPath(fileName));
 }
@@ -559,7 +584,7 @@ void LatexGenerator::endFile()
 
 void LatexGenerator::startProjectNumber()
 {
-  t << "\\\\[1ex]\\large ";
+  m_t << "\\\\[1ex]\\large ";
 }
 
 static QCString extraLatexStyleSheet()
@@ -599,7 +624,7 @@ static QCString makeIndex()
     if (latex_mkidx_command[0] == '\\')
       result += latex_mkidx_command;
     else
-      result += '\\'+latex_mkidx_command;
+      result += "\\"+latex_mkidx_command;
   }
   else
   {
@@ -615,7 +640,7 @@ static QCString substituteLatexKeywords(const QCString &str,
   bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
   bool usePdfLatex = Config_getBool(USE_PDFLATEX);
   bool latexBatchmode = Config_getBool(LATEX_BATCHMODE);
-  QCString paperType = Config_getString(PAPER_TYPE);
+  QCString paperType = Config_getEnumAsString(PAPER_TYPE);
 
   QCString style = Config_getString(LATEX_BIB_STYLE);
   if (style.isEmpty())
@@ -623,12 +648,13 @@ static QCString substituteLatexKeywords(const QCString &str,
     style="plain";
   }
 
-  std::stringstream tg;
+  TextStream tg;
   bool timeStamp = Config_getBool(LATEX_TIMESTAMP);
   QCString generatedBy;
   if (timeStamp)
   {
-    generatedBy = theTranslator->trGeneratedAt(dateToString(TRUE), Config_getString(PROJECT_NAME));
+    generatedBy = theTranslator->trGeneratedAt(dateToString(TRUE).data(),
+                                               Config_getString(PROJECT_NAME).data());
   }
   else
   {
@@ -649,27 +675,30 @@ static QCString substituteLatexKeywords(const QCString &str,
   if (latexEmojiDirectory.isEmpty()) latexEmojiDirectory = ".";
   latexEmojiDirectory = substitute(latexEmojiDirectory,"\\","/");
 
-  std::stringstream tg1;
+  TextStream tg1;
   writeExtraLatexPackages(tg1);
   QCString extraLatexPackages = tg1.str();
 
-  std::stringstream tg2;
+  TextStream tg2;
   writeLatexSpecialFormulaChars(tg2);
   QCString latexSpecialFormulaChars = tg2.str();
 
   QCString formulaMacrofile = Config_getString(FORMULA_MACROFILE);
+  QCString stripMacroFile;
   if (!formulaMacrofile.isEmpty())
   {
     FileInfo fi(formulaMacrofile.str());
     formulaMacrofile=fi.absFilePath();
-    QCString stripMacroFile = fi.fileName().data();
+    stripMacroFile = fi.fileName();
     copyFile(formulaMacrofile,Config_getString(LATEX_OUTPUT) + "/" + stripMacroFile);
   }
+
+  QCString projectNumber = Config_getString(PROJECT_NUMBER);
 
   // first substitute generic keywords
   QCString result = substituteKeywords(str,title,
     convertToLaTeX(Config_getString(PROJECT_NAME)),
-    convertToLaTeX(Config_getString(PROJECT_NUMBER)),
+    convertToLaTeX(projectNumber),
         convertToLaTeX(Config_getString(PROJECT_BRIEF)));
 
   // additional LaTeX only keywords
@@ -688,7 +717,7 @@ static QCString substituteLatexKeywords(const QCString &str,
   result = substitute(result,"$makeindex",makeIndex());
   result = substitute(result,"$extralatexpackages",extraLatexPackages);
   result = substitute(result,"$latexspecialformulachars",latexSpecialFormulaChars);
-  result = substitute(result,"$formulamacrofile",formulaMacrofile);
+  result = substitute(result,"$formulamacrofile",stripMacroFile);
 
   // additional LaTeX only conditional blocks
   result = selectBlock(result,"CITATIONS_PRESENT", !CitationManager::instance().isEmpty(),OutputGenerator::Latex);
@@ -699,6 +728,7 @@ static QCString substituteLatexKeywords(const QCString &str,
   result = selectBlock(result,"LATEX_BATCHMODE",latexBatchmode,OutputGenerator::Latex);
   result = selectBlock(result,"LATEX_FONTENC",!latexFontenc.isEmpty(),OutputGenerator::Latex);
   result = selectBlock(result,"FORMULA_MACROFILE",!formulaMacrofile.isEmpty(),OutputGenerator::Latex);
+  result = selectBlock(result,"PROJECT_NUMBER",!projectNumber.isEmpty(),OutputGenerator::Latex);
 
   result = removeEmptyLines(result);
 
@@ -711,45 +741,45 @@ void LatexGenerator::startIndexSection(IndexSections is)
   switch (is)
   {
     case isTitlePageStart:
-      t << substituteLatexKeywords(g_header,convertToLaTeX(Config_getString(PROJECT_NAME)));
+      m_t << substituteLatexKeywords(g_header,convertToLaTeX(Config_getString(PROJECT_NAME)));
       break;
     case isTitlePageAuthor:
       break;
     case isMainPage:
-      if (compactLatex) t << "\\doxysection"; else t << "\\chapter";
-      t << "{"; //Introduction}\n"
+      if (compactLatex) m_t << "\\doxysection"; else m_t << "\\chapter";
+      m_t << "{"; //Introduction}\n"
       break;
-    //case isPackageIndex:
-    //  if (compactLatex) t << "\\doxysection"; else t << "\\chapter";
-    //  t << "{"; //Package Index}\n"
-    //  break;
     case isModuleIndex:
-      if (compactLatex) t << "\\doxysection"; else t << "\\chapter";
-      t << "{"; //Module Index}\n"
+      if (compactLatex) m_t << "\\doxysection"; else m_t << "\\chapter";
+      m_t << "{"; //Module Index}\n"
       break;
     case isDirIndex:
-      if (compactLatex) t << "\\doxysection"; else t << "\\chapter";
-      t << "{"; //Directory Index}\n"
+      if (compactLatex) m_t << "\\doxysection"; else m_t << "\\chapter";
+      m_t << "{"; //Directory Index}\n"
       break;
     case isNamespaceIndex:
-      if (compactLatex) t << "\\doxysection"; else t << "\\chapter";
-      t << "{"; //Namespace Index}\n"
+      if (compactLatex) m_t << "\\doxysection"; else m_t << "\\chapter";
+      m_t << "{"; //Namespace Index}\n"
+      break;
+    case isConceptIndex:
+      if (compactLatex) m_t << "\\doxysection"; else m_t << "\\chapter";
+      m_t << "{"; //Concept Index}\n"
       break;
     case isClassHierarchyIndex:
-      if (compactLatex) t << "\\doxysection"; else t << "\\chapter";
-      t << "{"; //Hierarchical Index}\n"
+      if (compactLatex) m_t << "\\doxysection"; else m_t << "\\chapter";
+      m_t << "{"; //Hierarchical Index}\n"
       break;
     case isCompoundIndex:
-      if (compactLatex) t << "\\doxysection"; else t << "\\chapter";
-      t << "{"; //Annotated Compound Index}\n"
+      if (compactLatex) m_t << "\\doxysection"; else m_t << "\\chapter";
+      m_t << "{"; //Annotated Compound Index}\n"
       break;
     case isFileIndex:
-      if (compactLatex) t << "\\doxysection"; else t << "\\chapter";
-      t << "{"; //Annotated File Index}\n"
+      if (compactLatex) m_t << "\\doxysection"; else m_t << "\\chapter";
+      m_t << "{"; //Annotated File Index}\n"
       break;
     case isPageIndex:
-      if (compactLatex) t << "\\doxysection"; else t << "\\chapter";
-      t << "{"; //Annotated Page Index}\n"
+      if (compactLatex) m_t << "\\doxysection"; else m_t << "\\chapter";
+      m_t << "{"; //Annotated Page Index}\n"
       break;
     case isModuleDocumentation:
       {
@@ -757,8 +787,8 @@ void LatexGenerator::startIndexSection(IndexSections is)
         {
           if (!gd->isReference())
           {
-            if (compactLatex) t << "\\doxysection"; else t << "\\chapter";
-            t << "{"; //Module Documentation}\n";
+            if (compactLatex) m_t << "\\doxysection"; else m_t << "\\chapter";
+            m_t << "{"; //Module Documentation}\n";
             break;
           }
         }
@@ -770,8 +800,8 @@ void LatexGenerator::startIndexSection(IndexSections is)
         {
           if (dd->isLinkableInProject())
           {
-            if (compactLatex) t << "\\doxysection"; else t << "\\chapter";
-            t << "{"; //Module Documentation}\n";
+            if (compactLatex) m_t << "\\doxysection"; else m_t << "\\chapter";
+            m_t << "{"; //Module Documentation}\n";
             break;
           }
         }
@@ -783,8 +813,21 @@ void LatexGenerator::startIndexSection(IndexSections is)
         {
           if (nd->isLinkableInProject() && !nd->isAlias())
           {
-            if (compactLatex) t << "\\doxysection"; else t << "\\chapter";
-            t << "{"; // Namespace Documentation}\n":
+            if (compactLatex) m_t << "\\doxysection"; else m_t << "\\chapter";
+            m_t << "{"; // Namespace Documentation}\n":
+            break;
+          }
+        }
+      }
+      break;
+    case isConceptDocumentation:
+      {
+        for (const auto &cd : *Doxygen::conceptLinkedMap)
+        {
+          if (cd->isLinkableInProject() && !cd->isAlias())
+          {
+            if (compactLatex) m_t << "\\doxysection"; else m_t << "\\chapter";
+            m_t << "{"; // Concept Documentation}\n":
             break;
           }
         }
@@ -800,8 +843,8 @@ void LatexGenerator::startIndexSection(IndexSections is)
               !cd->isAlias()
              )
           {
-            if (compactLatex) t << "\\doxysection"; else t << "\\chapter";
-            t << "{"; //Compound Documentation}\n";
+            if (compactLatex) m_t << "\\doxysection"; else m_t << "\\chapter";
+            m_t << "{"; //Compound Documentation}\n";
             break;
           }
         }
@@ -814,12 +857,12 @@ void LatexGenerator::startIndexSection(IndexSections is)
         {
           for (const auto &fd : *fn)
           {
-            if (fd->isLinkableInProject())
+            if (fd->isLinkableInProject() || fd->generateSourceFile())
             {
               if (isFirst)
               {
-                if (compactLatex) t << "\\doxysection"; else t << "\\chapter";
-                t << "{"; //File Documentation}\n";
+                if (compactLatex) m_t << "\\doxysection"; else m_t << "\\chapter";
+                m_t << "{"; //File Documentation}\n";
                 isFirst=FALSE;
                 break;
               }
@@ -830,14 +873,14 @@ void LatexGenerator::startIndexSection(IndexSections is)
       break;
     case isExampleDocumentation:
       {
-        if (compactLatex) t << "\\doxysection"; else t << "\\chapter";
-        t << "{"; //Example Documentation}\n";
+        if (compactLatex) m_t << "\\doxysection"; else m_t << "\\chapter";
+        m_t << "{"; //Example Documentation}\n";
       }
       break;
     case isPageDocumentation:
       {
-        if (compactLatex) t << "\\doxysection"; else t << "\\chapter";
-        t << "{"; //Page Documentation}\n";
+        if (compactLatex) m_t << "\\doxysection"; else m_t << "\\chapter";
+        m_t << "{"; //Page Documentation}\n";
       }
       break;
     case isPageDocumentation2:
@@ -849,7 +892,6 @@ void LatexGenerator::startIndexSection(IndexSections is)
 
 void LatexGenerator::endIndexSection(IndexSections is)
 {
-  bool sourceBrowser = Config_getBool(SOURCE_BROWSER);
   switch (is)
   {
     case isTitlePageStart:
@@ -860,31 +902,34 @@ void LatexGenerator::endIndexSection(IndexSections is)
       {
         //QCString indexName=Config_getBool(GENERATE_TREEVIEW)?"main":"index";
         QCString indexName="index";
-        t << "}\n\\label{index}";
-        if (Config_getBool(PDF_HYPERLINKS)) t << "\\hypertarget{index}{}";
-        t << "\\input{" << indexName << "}\n";
+        m_t << "}\n\\label{index}";
+        if (Config_getBool(PDF_HYPERLINKS)) m_t << "\\hypertarget{index}{}";
+        m_t << "\\input{" << indexName << "}\n";
       }
       break;
     case isModuleIndex:
-      t << "}\n\\input{modules}\n";
+      m_t << "}\n\\input{modules}\n";
       break;
     case isDirIndex:
-      t << "}\n\\input{dirs}\n";
+      m_t << "}\n\\input{dirs}\n";
       break;
     case isNamespaceIndex:
-      t << "}\n\\input{namespaces}\n";
+      m_t << "}\n\\input{namespaces}\n";
+      break;
+    case isConceptIndex:
+      m_t << "}\n\\input{concepts}\n";
       break;
     case isClassHierarchyIndex:
-      t << "}\n\\input{hierarchy}\n";
+      m_t << "}\n\\input{hierarchy}\n";
       break;
     case isCompoundIndex:
-      t << "}\n\\input{annotated}\n";
+      m_t << "}\n\\input{annotated}\n";
       break;
     case isFileIndex:
-      t << "}\n\\input{files}\n";
+      m_t << "}\n\\input{files}\n";
       break;
     case isPageIndex:
-      t << "}\n\\input{pages}\n";
+      m_t << "}\n\\input{pages}\n";
       break;
     case isModuleDocumentation:
       {
@@ -895,10 +940,10 @@ void LatexGenerator::endIndexSection(IndexSections is)
           {
             if (!found)
             {
-              t << "}\n";
+              m_t << "}\n";
               found=TRUE;
             }
-            t << "\\input{" << gd->getOutputFileBase() << "}\n";
+            m_t << "\\input{" << gd->getOutputFileBase() << "}\n";
           }
         }
       }
@@ -912,10 +957,10 @@ void LatexGenerator::endIndexSection(IndexSections is)
           {
             if (!found)
             {
-              t << "}\n";
+              m_t << "}\n";
               found = TRUE;
             }
-            t << "\\input{" << dd->getOutputFileBase() << "}\n";
+            m_t << "\\input{" << dd->getOutputFileBase() << "}\n";
           }
         }
       }
@@ -929,10 +974,27 @@ void LatexGenerator::endIndexSection(IndexSections is)
           {
             if (!found)
             {
-              t << "}\n";
+              m_t << "}\n";
               found=true;
             }
-            t << "\\input{" << nd->getOutputFileBase() << "}\n";
+            m_t << "\\input{" << nd->getOutputFileBase() << "}\n";
+          }
+        }
+      }
+      break;
+    case isConceptDocumentation:
+      {
+        bool found=FALSE;
+        for (const auto &cd : *Doxygen::conceptLinkedMap)
+        {
+          if (cd->isLinkableInProject() && !cd->isAlias())
+          {
+            if (!found)
+            {
+              m_t << "}\n";
+              found=true;
+            }
+            m_t << "\\input{" << cd->getOutputFileBase() << "}\n";
           }
         }
       }
@@ -950,10 +1012,10 @@ void LatexGenerator::endIndexSection(IndexSections is)
           {
             if (!found)
             {
-              t << "}\n"; // end doxysection or chapter title
+              m_t << "}\n"; // end doxysection or chapter title
               found=TRUE;
             }
-            t << "\\input{" << cd->getOutputFileBase() << "}\n";
+            m_t << "\\input{" << cd->getOutputFileBase() << "}\n";
           }
         }
       }
@@ -969,15 +1031,19 @@ void LatexGenerator::endIndexSection(IndexSections is)
             {
               if (isFirst)
               {
-                t << "}\n"; // end doxysection or chapter title
+                m_t << "}\n"; // end doxysection or chapter title
               }
               isFirst=FALSE;
-              t << "\\input{" << fd->getOutputFileBase() << "}\n";
-              if (sourceBrowser && m_prettyCode && fd->generateSourceFile())
+              m_t << "\\input{" << fd->getOutputFileBase() << "}\n";
+            }
+            if (fd->generateSourceFile())
+            {
+              if (isFirst)
               {
-                //t << "\\include{" << fd->getSourceFileBase() << "}\n";
-                t << "\\input{" << fd->getSourceFileBase() << "}\n";
+                m_t << "}\n"; // end doxysection or chapter title
               }
+              isFirst=FALSE;
+              m_t << "\\input{" << fd->getSourceFileBase() << "}\n";
             }
           }
         }
@@ -985,28 +1051,28 @@ void LatexGenerator::endIndexSection(IndexSections is)
       break;
     case isExampleDocumentation:
       {
-        t << "}\n";
+        m_t << "}\n";
         for (const auto &pd : *Doxygen::exampleLinkedMap)
         {
-          t << "\\input{" << pd->getOutputFileBase() << "}\n";
+          m_t << "\\input{" << pd->getOutputFileBase() << "}\n";
         }
       }
       break;
     case isPageDocumentation:
       {
-        t << "}\n";
+        m_t << "}\n";
 #if 0
         bool first=TRUE;
         for (const auto *pd : Doxygen::pageLinkedMap)
         {
           if (!pd->getGroupDef() && !pd->isReference())
           {
-             if (compactLatex) t << "\\doxysection"; else t << "\\chapter";
-             t << "{" << pd->title();
-             t << "}\n";
+             if (compactLatex) m_t << "\\doxysection"; else m_t << "\\chapter";
+             m_t << "{" << pd->title();
+             m_t << "}\n";
 
-            if (compactLatex || first) t << "\\input" ; else t << "\\include";
-            t << "{" << pd->getOutputFileBase() << "}\n";
+            if (compactLatex || first) m_t << "\\input" ; else m_t << "\\include";
+            m_t << "{" << pd->getOutputFileBase() << "}\n";
             first=FALSE;
           }
         }
@@ -1016,18 +1082,18 @@ void LatexGenerator::endIndexSection(IndexSections is)
     case isPageDocumentation2:
       break;
     case isEndIndex:
-      t << substituteLatexKeywords(g_footer,convertToLaTeX(Config_getString(PROJECT_NAME)));
+      m_t << substituteLatexKeywords(g_footer,convertToLaTeX(Config_getString(PROJECT_NAME)));
       break;
   }
 }
 
-void LatexGenerator::writePageLink(const char *name, bool /*first*/)
+void LatexGenerator::writePageLink(const QCString &name, bool /*first*/)
 {
   //bool &compactLatex = Config_getBool(COMPACT_LATEX);
   // next is remove for bug615957
-  //if (compactLatex || first) t << "\\input" ; else t << "\\include";
-  t << "\\input" ;
-  t << "{" << name << "}\n";
+  //if (compactLatex || first) m_t << "\\input" ; else m_t << "\\include";
+  m_t << "\\input" ;
+  m_t << "{" << name << "}\n";
 }
 
 
@@ -1037,110 +1103,110 @@ void LatexGenerator::writeStyleInfo(int part)
     return;
 
   startPlainFile("doxygen.sty");
-  writeDefaultStyleSheet(t);
+  writeDefaultStyleSheet(m_t);
   endPlainFile();
 
   // workaround for the problem caused by change in LaTeX in version 2019
   // in the unmaintained tabu package
   startPlainFile("tabu_doxygen.sty");
-  t << ResourceMgr::instance().getAsString("tabu_doxygen.sty");
+  m_t << ResourceMgr::instance().getAsString("tabu_doxygen.sty");
   endPlainFile();
   startPlainFile("longtable_doxygen.sty");
-  t << ResourceMgr::instance().getAsString("longtable_doxygen.sty");
+  m_t << ResourceMgr::instance().getAsString("longtable_doxygen.sty");
   endPlainFile();
 }
 
 void LatexGenerator::newParagraph()
 {
-  t << "\n" << "\n";
+  m_t << "\n" << "\n";
 }
 
-void LatexGenerator::startParagraph(const char *)
+void LatexGenerator::startParagraph(const QCString &)
 {
-  t << "\n" << "\n";
+  m_t << "\n" << "\n";
 }
 
 void LatexGenerator::endParagraph()
 {
-  t << "\n" << "\n";
+  m_t << "\n" << "\n";
 }
 
-void LatexGenerator::writeString(const char *text)
+void LatexGenerator::writeString(const QCString &text)
 {
-  t << text;
+  m_t << text;
 }
 
-void LatexGenerator::startIndexItem(const char *ref,const char *fn)
+void LatexGenerator::startIndexItem(const QCString &ref,const QCString &fn)
 {
-  t << "\\item ";
-  if (!ref && fn)
+  m_t << "\\item ";
+  if (ref.isEmpty() && !fn.isEmpty())
   {
-    t << "\\contentsline{section}{";
+    m_t << "\\contentsline{section}{";
   }
 }
 
-void LatexGenerator::endIndexItem(const char *ref,const char *fn)
+void LatexGenerator::endIndexItem(const QCString &ref,const QCString &fn)
 {
-  if (!ref && fn)
+  if (ref.isEmpty() && !fn.isEmpty())
   {
-    t << "}{\\pageref{" << stripPath(fn) << "}}{}\n";
+    m_t << "}{\\pageref{" << stripPath(fn) << "}}{}\n";
   }
 }
 
-//void LatexGenerator::writeIndexFileItem(const char *,const char *text)
+//void LatexGenerator::writeIndexFileItem(const QCString &,const QCString &text)
 //{
-//  t << "\\item\\contentsline{section}{";
+//  m_t << "\\item\\contentsline{section}{";
 //  docify(text);
-//  t << "}{\\pageref{" << stripPath(text) << "}}\n";
+//  m_t << "}{\\pageref{" << stripPath(text) << "}}\n";
 //}
 
 
-void LatexGenerator::startHtmlLink(const char *url)
+void LatexGenerator::startHtmlLink(const QCString &url)
 {
   if (Config_getBool(PDF_HYPERLINKS))
   {
-    t << "\\href{";
-    t << latexFilterURL(url);
-    t << "}";
+    m_t << "\\href{";
+    m_t << latexFilterURL(url);
+    m_t << "}";
   }
-  t << "{\\texttt{ ";
+  m_t << "{\\texttt{ ";
 }
 
 void LatexGenerator::endHtmlLink()
 {
-  t << "}}";
+  m_t << "}}";
 }
 
-//void LatexGenerator::writeMailLink(const char *url)
+//void LatexGenerator::writeMailLink(const QCString &url)
 //{
 //  if (Config_getBool(PDF_HYPERLINKS))
 //  {
-//    t << "\\href{mailto:";
-//    t << url;
-//    t << "}";
+//    m_t << "\\href{mailto:";
+//    m_t << url;
+//    m_t << "}";
 //  }
-//  t << "\\texttt{ ";
+//  m_t << "\\texttt{ ";
 //  docify(url);
-//  t << "}";
+//  m_t << "}";
 //}
 
-void LatexGenerator::writeStartAnnoItem(const char *,const char *,
-                                        const char *path,const char *name)
+void LatexGenerator::writeStartAnnoItem(const QCString &,const QCString &,
+                                        const QCString &path,const QCString &name)
 {
-  t << "\\item\\contentsline{section}\\textbf{ ";
-  if (path) docify(path);
+  m_t << "\\item\\contentsline{section}\\textbf{ ";
+  if (!path.isEmpty()) docify(path);
   docify(name);
-  t << "} ";
+  m_t << "} ";
 }
 
-void LatexGenerator::writeEndAnnoItem(const char *name)
+void LatexGenerator::writeEndAnnoItem(const QCString &name)
 {
-  t << "}{\\pageref{" << stripPath(name) << "}}{}\n";
+  m_t << "}{\\pageref{" << stripPath(name) << "}}{}\n";
 }
 
 void LatexGenerator::startIndexKey()
 {
-  t << "\\item\\contentsline{section}{";
+  m_t << "\\item\\contentsline{section}{";
 }
 
 void LatexGenerator::endIndexKey()
@@ -1149,37 +1215,37 @@ void LatexGenerator::endIndexKey()
 
 void LatexGenerator::startIndexValue(bool hasBrief)
 {
-  t << " ";
-  if (hasBrief) t << "\\\\*";
+  m_t << " ";
+  if (hasBrief) m_t << "\\\\*";
 }
 
-void LatexGenerator::endIndexValue(const char *name,bool /*hasBrief*/)
+void LatexGenerator::endIndexValue(const QCString &name,bool /*hasBrief*/)
 {
-  //if (hasBrief) t << ")";
-  t << "}{\\pageref{" << stripPath(name) << "}}{}\n";
+  //if (hasBrief) m_t << ")";
+  m_t << "}{\\pageref{" << stripPath(name) << "}}{}\n";
 }
 
-//void LatexGenerator::writeClassLink(const char *,const char *,
-//                                    const char *,const char *name)
+//void LatexGenerator::writeClassLink(const QCString &,const QCString &,
+//                                    const QCString &,const QCString &name)
 //{
-//  t << "\\textbf{ ";
+//  m_t << "\\textbf{ ";
 //  docify(name);
-//  t << "}";
+//  m_t << "}";
 //}
 
-void LatexGenerator::startTextLink(const char *f,const char *anchor)
+void LatexGenerator::startTextLink(const QCString &f,const QCString &anchor)
 {
   bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
   if (!m_disableLinks && pdfHyperlinks)
   {
-    t << "\\mbox{\\hyperlink{";
-    if (f) t << stripPath(f);
-    if (anchor) t << "_" << anchor;
-    t << "}{";
+    m_t << "\\mbox{\\hyperlink{";
+    if (!f.isEmpty()) m_t << stripPath(f);
+    if (!anchor.isEmpty()) m_t << "_" << anchor;
+    m_t << "}{";
   }
   else
   {
-    t << "\\textbf{ ";
+    m_t << "\\textbf{ ";
   }
 }
 
@@ -1188,75 +1254,75 @@ void LatexGenerator::endTextLink()
   bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
   if (!m_disableLinks && pdfHyperlinks)
   {
-    t << "}";
+    m_t << "}";
   }
-  t << "}";
+  m_t << "}";
 }
 
-void LatexGenerator::writeObjectLink(const char *ref, const char *f,
-                                     const char *anchor, const char *text)
+void LatexGenerator::writeObjectLink(const QCString &ref, const QCString &f,
+                                     const QCString &anchor, const QCString &text)
 {
   bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
-  if (!m_disableLinks && !ref && pdfHyperlinks)
+  if (!m_disableLinks && ref.isEmpty() && pdfHyperlinks)
   {
-    t << "\\mbox{\\hyperlink{";
-    if (f) t << stripPath(f);
-    if (f && anchor) t << "_";
-    if (anchor) t << anchor;
-    t << "}{";
+    m_t << "\\mbox{\\hyperlink{";
+    if (!f.isEmpty()) m_t << stripPath(f);
+    if (!f.isEmpty() && !anchor.isEmpty()) m_t << "_";
+    if (!anchor.isEmpty()) m_t << anchor;
+    m_t << "}{";
     docify(text);
-    t << "}}";
+    m_t << "}}";
   }
   else
   {
-    t << "\\textbf{ ";
+    m_t << "\\textbf{ ";
     docify(text);
-    t << "}";
+    m_t << "}";
   }
 }
 
 void LatexGenerator::startPageRef()
 {
-  t << " \\doxyref{}{";
+  m_t << " \\doxyref{}{";
 }
 
-void LatexGenerator::endPageRef(const char *clname, const char *anchor)
+void LatexGenerator::endPageRef(const QCString &clname, const QCString &anchor)
 {
-  t << "}{";
-  if (clname) t << clname;
-  if (anchor) t << "_" << anchor;
-  t << "}";
+  m_t << "}{";
+  if (!clname.isEmpty()) m_t << clname;
+  if (!anchor.isEmpty()) m_t << "_" << anchor;
+  m_t << "}";
 }
 
 
-void LatexGenerator::startTitleHead(const char *fileName)
+void LatexGenerator::startTitleHead(const QCString &fileName)
 {
   bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
   bool usePDFLatex   = Config_getBool(USE_PDFLATEX);
-  if (usePDFLatex && pdfHyperlinks && fileName)
+  if (usePDFLatex && pdfHyperlinks && !fileName.isEmpty())
   {
-    t << "\\hypertarget{" << stripPath(fileName) << "}{}";
+    m_t << "\\hypertarget{" << stripPath(fileName) << "}{}";
   }
   if (Config_getBool(COMPACT_LATEX))
   {
-    t << "\\doxysubsection{";
+    m_t << "\\doxysubsection{";
   }
   else
   {
-    t << "\\doxysection{";
+    m_t << "\\doxysection{";
   }
 }
 
-void LatexGenerator::endTitleHead(const char *fileName,const char *name)
+void LatexGenerator::endTitleHead(const QCString &fileName,const QCString &name)
 {
-  t << "}\n";
-  if (name)
+  m_t << "}\n";
+  if (!name.isEmpty())
   {
-    t << "\\label{" << stripPath(fileName) << "}\\index{";
-    t << latexEscapeLabelName(name);
-    t << "@{";
-    t << latexEscapeIndexChars(name);
-    t << "}}\n";
+    m_t << "\\label{" << stripPath(fileName) << "}\\index{";
+    m_t << latexEscapeLabelName(name);
+    m_t << "@{";
+    m_t << latexEscapeIndexChars(name);
+    m_t << "}}\n";
   }
 }
 
@@ -1264,11 +1330,11 @@ void LatexGenerator::startTitle()
 {
   if (Config_getBool(COMPACT_LATEX))
   {
-    t << "\\doxysubsection{";
+    m_t << "\\doxysubsection{";
   }
   else
   {
-    t << "\\doxysection{";
+    m_t << "\\doxysection{";
   }
 }
 
@@ -1281,19 +1347,19 @@ void LatexGenerator::startGroupHeader(int extraIndentLevel)
 
   if (extraIndentLevel==3)
   {
-    t << "\\doxysubparagraph*{";
+    m_t << "\\doxysubparagraph*{";
   }
   else if (extraIndentLevel==2)
   {
-    t << "\\doxyparagraph{";
+    m_t << "\\doxyparagraph{";
   }
   else if (extraIndentLevel==1)
   {
-    t << "\\doxysubsubsection{";
+    m_t << "\\doxysubsubsection{";
   }
   else // extraIndentLevel==0
   {
-    t << "\\doxysubsection{";
+    m_t << "\\doxysubsection{";
   }
   m_disableLinks=TRUE;
 }
@@ -1301,18 +1367,18 @@ void LatexGenerator::startGroupHeader(int extraIndentLevel)
 void LatexGenerator::endGroupHeader(int)
 {
   m_disableLinks=FALSE;
-  t << "}\n";
+  m_t << "}\n";
 }
 
-void LatexGenerator::startMemberHeader(const char *,int)
+void LatexGenerator::startMemberHeader(const QCString &,int)
 {
   if (Config_getBool(COMPACT_LATEX))
   {
-    t << "\\doxysubsubsection*{";
+    m_t << "\\doxysubsubsection*{";
   }
   else
   {
-    t << "\\doxysubsection*{";
+    m_t << "\\doxysubsection*{";
   }
   m_disableLinks=TRUE;
 }
@@ -1320,46 +1386,46 @@ void LatexGenerator::startMemberHeader(const char *,int)
 void LatexGenerator::endMemberHeader()
 {
   m_disableLinks=FALSE;
-  t << "}\n";
+  m_t << "}\n";
 }
 
-void LatexGenerator::startMemberDoc(const char *clname,
-                                    const char *memname,
-                                    const char *,
-                                    const char *title,
+void LatexGenerator::startMemberDoc(const QCString &clname,
+                                    const QCString &memname,
+                                    const QCString &,
+                                    const QCString &title,
                                     int memCount,
                                     int memTotal,
                                     bool showInline)
 {
-  if (memname && memname[0]!='@')
+  if (!memname.isEmpty() && memname[0]!='@')
   {
-    t << "\\index{";
-    if (clname)
+    m_t << "\\index{";
+    if (!clname.isEmpty())
     {
-      t << latexEscapeLabelName(clname);
-      t << "@{";
-      t << latexEscapeIndexChars(clname);
-      t << "}!";
+      m_t << latexEscapeLabelName(clname);
+      m_t << "@{";
+      m_t << latexEscapeIndexChars(clname);
+      m_t << "}!";
     }
-    t << latexEscapeLabelName(memname);
-    t << "@{";
-    t << latexEscapeIndexChars(memname);
-    t << "}}\n";
+    m_t << latexEscapeLabelName(memname);
+    m_t << "@{";
+    m_t << latexEscapeIndexChars(memname);
+    m_t << "}}\n";
 
-    t << "\\index{";
-    t << latexEscapeLabelName(memname);
-    t << "@{";
-    t << latexEscapeIndexChars(memname);
-    t << "}";
-    if (clname)
+    m_t << "\\index{";
+    m_t << latexEscapeLabelName(memname);
+    m_t << "@{";
+    m_t << latexEscapeIndexChars(memname);
+    m_t << "}";
+    if (!clname.isEmpty())
     {
-      t << "!";
-      t << latexEscapeLabelName(clname);
-      t << "@{";
-      t << latexEscapeIndexChars(clname);
-      t << "}";
+      m_t << "!";
+      m_t << latexEscapeLabelName(clname);
+      m_t << "@{";
+      m_t << latexEscapeIndexChars(clname);
+      m_t << "}";
     }
-    t << "}\n";
+    m_t << "}\n";
   }
   static const char *levelLab[] = { "doxysubsubsection","doxyparagraph","doxysubparagraph", "doxysubparagraph" };
   bool compactLatex = Config_getBool(COMPACT_LATEX);
@@ -1367,151 +1433,151 @@ void LatexGenerator::startMemberDoc(const char *clname,
   int level=0;
   if (showInline) level+=2;
   if (compactLatex) level++;
-  t << "\\" << levelLab[level];
+  m_t << "\\" << levelLab[level];
 
-  t << "{";
+  m_t << "{";
   if (pdfHyperlinks)
   {
-    t << "\\texorpdfstring{";
+    m_t << "\\texorpdfstring{";
   }
-  t << latexEscapeIndexChars(title);
+  m_t << latexEscapeIndexChars(title);
   if (pdfHyperlinks)
   {
-    t << "}{" << latexEscapePDFString(title) << "}";
+    m_t << "}{" << latexEscapePDFString(title) << "}";
   }
   if (memTotal>1)
   {
-    t << "\\hspace{0.1cm}{\\footnotesize\\ttfamily [" << memCount << "/" << memTotal << "]}";
+    m_t << "\\hspace{0.1cm}{\\footnotesize\\ttfamily [" << memCount << "/" << memTotal << "]}";
   }
-  t << "}";
-  t << "\n{\\footnotesize\\ttfamily ";
+  m_t << "}";
+  m_t << "\n{\\footnotesize\\ttfamily ";
   //m_disableLinks=TRUE;
 }
 
 void LatexGenerator::endMemberDoc(bool)
 {
   m_disableLinks=FALSE;
-  t << "}\n\n";
-  //if (Config_getBool(COMPACT_LATEX)) t << "\\hfill";
+  m_t << "}\n\n";
+  //if (Config_getBool(COMPACT_LATEX)) m_t << "\\hfill";
 }
 
-void LatexGenerator::startDoxyAnchor(const char *fName,const char *,
-                                     const char *anchor, const char *,
-                                     const char *)
+void LatexGenerator::startDoxyAnchor(const QCString &fName,const QCString &,
+                                     const QCString &anchor, const QCString &,
+                                     const QCString &)
 {
   bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
   bool usePDFLatex   = Config_getBool(USE_PDFLATEX);
-  t << "\\mbox{";
+  m_t << "\\mbox{";
   if (usePDFLatex && pdfHyperlinks)
   {
-    t << "\\Hypertarget{";
-    if (fName) t << stripPath(fName);
-    if (anchor) t << "_" << anchor;
-    t << "}";
+    m_t << "\\Hypertarget{";
+    if (!fName.isEmpty()) m_t << stripPath(fName);
+    if (!anchor.isEmpty()) m_t << "_" << anchor;
+    m_t << "}";
   }
-  t << "\\label{";
-  if (fName) t << stripPath(fName);
-  if (anchor) t << "_" << anchor;
-  t << "}} \n";
+  m_t << "\\label{";
+  if (!fName.isEmpty()) m_t << stripPath(fName);
+  if (!anchor.isEmpty()) m_t << "_" << anchor;
+  m_t << "}} \n";
 }
 
-void LatexGenerator::endDoxyAnchor(const char *fName,const char *anchor)
+void LatexGenerator::endDoxyAnchor(const QCString &fName,const QCString &anchor)
 {
 }
 
-void LatexGenerator::writeAnchor(const char *fName,const char *name)
+void LatexGenerator::writeAnchor(const QCString &fName,const QCString &name)
 {
   //printf("LatexGenerator::writeAnchor(%s,%s)\n",fName,name);
-  t << "\\label{" << stripPath(name) << "}\n";
+  m_t << "\\label{" << stripPath(name) << "}\n";
   bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
   bool usePDFLatex   = Config_getBool(USE_PDFLATEX);
   if (usePDFLatex && pdfHyperlinks)
   {
-    if (fName)
+    if (!fName.isEmpty())
     {
-      t << "\\Hypertarget{" << stripPath(fName) << "_" << stripPath(name) << "}\n";
+      m_t << "\\Hypertarget{" << stripPath(fName) << "_" << stripPath(name) << "}\n";
     }
     else
     {
-      t << "\\Hypertarget{" << stripPath(name) << "}\n";
+      m_t << "\\Hypertarget{" << stripPath(name) << "}\n";
     }
   }
 }
 
 
-//void LatexGenerator::writeLatexLabel(const char *clName,const char *anchor)
+//void LatexGenerator::writeLatexLabel(const QCString &clName,const QCString &anchor)
 //{
 //  writeDoxyAnchor(0,clName,anchor,0);
 //}
 
-void LatexGenerator::addIndexItem(const char *s1,const char *s2)
+void LatexGenerator::addIndexItem(const QCString &s1,const QCString &s2)
 {
-  if (s1)
+  if (!s1.isEmpty())
   {
-    t << "\\index{";
-    t << latexEscapeLabelName(s1);
-    t << "@{";
-    t << latexEscapeIndexChars(s1);
-    t << "}";
-    if (s2)
+    m_t << "\\index{";
+    m_t << latexEscapeLabelName(s1);
+    m_t << "@{";
+    m_t << latexEscapeIndexChars(s1);
+    m_t << "}";
+    if (!s2.isEmpty())
     {
-      t << "!";
-      t << latexEscapeLabelName(s2);
-      t << "@{";
-      t << latexEscapeIndexChars(s2);
-      t << "}";
+      m_t << "!";
+      m_t << latexEscapeLabelName(s2);
+      m_t << "@{";
+      m_t << latexEscapeIndexChars(s2);
+      m_t << "}";
     }
-    t << "}";
+    m_t << "}";
   }
 }
 
 
-void LatexGenerator::startSection(const char *lab,const char *,SectionType type)
+void LatexGenerator::startSection(const QCString &lab,const QCString &,SectionType type)
 {
   bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
   bool usePDFLatex   = Config_getBool(USE_PDFLATEX);
   if (usePDFLatex && pdfHyperlinks)
   {
-    t << "\\hypertarget{" << stripPath(lab) << "}{}";
+    m_t << "\\hypertarget{" << stripPath(lab) << "}{}";
   }
-  t << "\\";
+  m_t << "\\";
   if (Config_getBool(COMPACT_LATEX))
   {
     switch(type)
     {
-      case SectionType::Page:          t << "doxysubsection"; break;
-      case SectionType::Section:       t << "doxysubsubsection"; break;
-      case SectionType::Subsection:    t << "doxyparagraph"; break;
-      case SectionType::Subsubsection: t << "doxysubparagraph"; break;
-      case SectionType::Paragraph:     t << "doxysubparagraph"; break;
+      case SectionType::Page:          m_t << "doxysubsection"; break;
+      case SectionType::Section:       m_t << "doxysubsubsection"; break;
+      case SectionType::Subsection:    m_t << "doxyparagraph"; break;
+      case SectionType::Subsubsection: m_t << "doxysubparagraph"; break;
+      case SectionType::Paragraph:     m_t << "doxysubparagraph"; break;
       default: ASSERT(0); break;
     }
-    t << "{";
+    m_t << "{";
   }
   else
   {
     switch(type)
     {
-      case SectionType::Page:          t << "doxysection"; break;
-      case SectionType::Section:       t << "doxysubsection"; break;
-      case SectionType::Subsection:    t << "doxysubsubsection"; break;
-      case SectionType::Subsubsection: t << "doxyparagraph"; break;
-      case SectionType::Paragraph:     t << "doxysubparagraph"; break;
+      case SectionType::Page:          m_t << "doxysection"; break;
+      case SectionType::Section:       m_t << "doxysubsection"; break;
+      case SectionType::Subsection:    m_t << "doxysubsubsection"; break;
+      case SectionType::Subsubsection: m_t << "doxyparagraph"; break;
+      case SectionType::Paragraph:     m_t << "doxysubparagraph"; break;
       default: ASSERT(0); break;
     }
-    t << "{";
+    m_t << "{";
   }
 }
 
-void LatexGenerator::endSection(const char *lab,SectionType)
+void LatexGenerator::endSection(const QCString &lab,SectionType)
 {
-  t << "}\\label{" << lab << "}\n";
+  m_t << "}\\label{" << lab << "}\n";
 }
 
 
-void LatexGenerator::docify(const char *str)
+void LatexGenerator::docify(const QCString &str)
 {
-  filterLatexString(t,str,
+  filterLatexString(m_t,str,
                     m_insideTabbing, // insideTabbing
                     false,           // insidePre
                     false,           // insideItem
@@ -1530,14 +1596,14 @@ void LatexGenerator::writeChar(char c)
 
 void LatexGenerator::startClassDiagram()
 {
-  //if (Config_getBool(COMPACT_LATEX)) t << "\\doxysubsubsection"; else t << "\\doxysubsection";
-  //t << "{";
+  //if (Config_getBool(COMPACT_LATEX)) m_t << "\\doxysubsubsection"; else m_t << "\\doxysubsection";
+  //m_t << "{";
 }
 
 void LatexGenerator::endClassDiagram(const ClassDiagram &d,
-                                       const char *fileName,const char *)
+                                       const QCString &fileName,const QCString &)
 {
-  d.writeFigure(t,dir(),fileName);
+  d.writeFigure(m_t,dir(),fileName);
 }
 
 
@@ -1545,8 +1611,8 @@ void LatexGenerator::startAnonTypeScope(int indent)
 {
   if (indent==0)
   {
-    t << "\\begin{tabbing}\n";
-    t << "xx\\=xx\\=xx\\=xx\\=xx\\=xx\\=xx\\=xx\\=xx\\=\\kill\n";
+    m_t << "\\begin{tabbing}\n";
+    m_t << "xx\\=xx\\=xx\\=xx\\=xx\\=xx\\=xx\\=xx\\=xx\\=\\kill\n";
     m_insideTabbing=TRUE;
   }
   m_indent=indent;
@@ -1556,7 +1622,7 @@ void LatexGenerator::endAnonTypeScope(int indent)
 {
   if (indent==0)
   {
-    t << "\n" << "\\end{tabbing}";
+    m_t << "\n" << "\\end{tabbing}";
     m_insideTabbing=FALSE;
   }
   m_indent=indent;
@@ -1566,24 +1632,24 @@ void LatexGenerator::startMemberTemplateParams()
 {
   if (templateMemberItem)
   {
-    t << "{\\footnotesize ";
+    m_t << "{\\footnotesize ";
   }
 }
 
-void LatexGenerator::endMemberTemplateParams(const char *,const char *)
+void LatexGenerator::endMemberTemplateParams(const QCString &,const QCString &)
 {
   if (templateMemberItem)
   {
-    t << "}\\\\";
+    m_t << "}\\\\";
   }
 }
 
-void LatexGenerator::startMemberItem(const char *,int annoType,const char *)
+void LatexGenerator::startMemberItem(const QCString &,int annoType,const QCString &)
 {
   //printf("LatexGenerator::startMemberItem(%d)\n",annType);
   if (!m_insideTabbing)
   {
-    t << "\\item \n";
+    m_t << "\\item \n";
     templateMemberItem = (annoType == 3);
   }
 }
@@ -1592,22 +1658,22 @@ void LatexGenerator::endMemberItem()
 {
   if (m_insideTabbing)
   {
-    t << "\\\\";
+    m_t << "\\\\";
   }
   templateMemberItem = FALSE;
-  t << "\n";
+  m_t << "\n";
 }
 
-void LatexGenerator::startMemberDescription(const char *,const char *,bool)
+void LatexGenerator::startMemberDescription(const QCString &,const QCString &,bool)
 {
   if (!m_insideTabbing)
   {
-    t << "\\begin{DoxyCompactList}\\small\\item\\em ";
+    m_t << "\\begin{DoxyCompactList}\\small\\item\\em ";
   }
   else
   {
-    for (int i=0;i<m_indent+2;i++) t << "\\>";
-    t << "{\\em ";
+    for (int i=0;i<m_indent+2;i++) m_t << "\\>";
+    m_t << "{\\em ";
   }
 }
 
@@ -1615,12 +1681,12 @@ void LatexGenerator::endMemberDescription()
 {
   if (!m_insideTabbing)
   {
-    //t << "\\item\\end{DoxyCompactList}";
-    t << "\\end{DoxyCompactList}";
+    //m_t << "\\item\\end{DoxyCompactList}";
+    m_t << "\\end{DoxyCompactList}";
   }
   else
   {
-    t << "}\\\\\n";
+    m_t << "}\\\\\n";
   }
 }
 
@@ -1630,11 +1696,11 @@ void LatexGenerator::writeNonBreakableSpace(int)
   //printf("writeNonBreakableSpace()\n");
   if (m_insideTabbing)
   {
-    t << "\\>";
+    m_t << "\\>";
   }
   else
   {
-    t << "~";
+    m_t << "~";
   }
 }
 
@@ -1652,23 +1718,23 @@ void LatexGenerator::writeNonBreakableSpace(int)
 // - endDescTableRow()
 // endDescTable()
 
-void LatexGenerator::startDescTable(const char *title)
+void LatexGenerator::startDescTable(const QCString &title)
 {
   m_codeGen.incUsedTableLevel();
-  t << "\\begin{DoxyEnumFields}{" << title << "}\n";
+  m_t << "\\begin{DoxyEnumFields}{" << title << "}\n";
 }
 
 void LatexGenerator::endDescTable()
 {
   m_codeGen.decUsedTableLevel();
-  t << "\\end{DoxyEnumFields}\n";
+  m_t << "\\end{DoxyEnumFields}\n";
 }
 
 void LatexGenerator::startDescTableRow()
 {
   // this is needed to prevent the \hypertarget, \label, and \index commands from messing up
   // the row height (based on http://tex.stackexchange.com/a/186102)
-  t << "\\raisebox{\\heightof{T}}[0pt][0pt]{";
+  m_t << "\\raisebox{\\heightof{T}}[0pt][0pt]{";
 }
 
 void LatexGenerator::endDescTableRow()
@@ -1677,7 +1743,7 @@ void LatexGenerator::endDescTableRow()
 
 void LatexGenerator::startDescTableTitle()
 {
-  t << "}";
+  m_t << "}";
 }
 
 void LatexGenerator::endDescTableTitle()
@@ -1686,12 +1752,12 @@ void LatexGenerator::endDescTableTitle()
 
 void LatexGenerator::startDescTableData()
 {
-  t << "&";
+  m_t << "&";
 }
 
 void LatexGenerator::endDescTableData()
 {
-  t << "\\\\\n\\hline\n\n";
+  m_t << "\\\\\n\\hline\n\n";
 }
 
 void LatexGenerator::lastIndexPage()
@@ -1703,7 +1769,7 @@ void LatexGenerator::startMemberList()
 {
   if (!m_insideTabbing)
   {
-    t << "\\begin{DoxyCompactItemize}\n";
+    m_t << "\\begin{DoxyCompactItemize}\n";
   }
 }
 
@@ -1712,41 +1778,41 @@ void LatexGenerator::endMemberList()
   //printf("LatexGenerator::endMemberList(%d)\n",m_insideTabbing);
   if (!m_insideTabbing)
   {
-    t << "\\end{DoxyCompactItemize}\n";
+    m_t << "\\end{DoxyCompactItemize}\n";
   }
 }
 
 
 void LatexGenerator::startMemberGroupHeader(bool hasHeader)
 {
-  if (hasHeader) t << "\\begin{Indent}";
-  t << "\\textbf{ ";
+  if (hasHeader) m_t << "\\begin{Indent}";
+  m_t << "\\textbf{ ";
   // changed back to rev 756 due to bug 660501
   //if (Config_getBool(COMPACT_LATEX))
   //{
-  //  t << "\\doxysubparagraph*{";
+  //  m_t << "\\doxysubparagraph*{";
   //}
   //else
   //{
-  //  t << "\\doxyparagraph*{";
+  //  m_t << "\\doxyparagraph*{";
   //}
 }
 
 void LatexGenerator::endMemberGroupHeader()
 {
   // changed back to rev 756 due to bug 660501
-  t << "}\\par\n";
-  //t << "}\n";
+  m_t << "}\\par\n";
+  //m_t << "}\n";
 }
 
 void LatexGenerator::startMemberGroupDocs()
 {
-  t << "{\\em ";
+  m_t << "{\\em ";
 }
 
 void LatexGenerator::endMemberGroupDocs()
 {
-  t << "}";
+  m_t << "}";
 }
 
 void LatexGenerator::startMemberGroup()
@@ -1755,8 +1821,8 @@ void LatexGenerator::startMemberGroup()
 
 void LatexGenerator::endMemberGroup(bool hasHeader)
 {
-  if (hasHeader)t << "\\end{Indent}";
-  t << "\n";
+  if (hasHeader)m_t << "\\end{Indent}";
+  m_t << "\n";
 }
 
 void LatexGenerator::startDotGraph()
@@ -1766,7 +1832,7 @@ void LatexGenerator::startDotGraph()
 
 void LatexGenerator::endDotGraph(DotClassGraph &g)
 {
-  g.writeGraph(t,GOF_EPS,EOF_LaTeX,dir(),fileName(),m_relPath);
+  g.writeGraph(m_t,GOF_EPS,EOF_LaTeX,dir(),fileName(),m_relPath);
 }
 
 void LatexGenerator::startInclDepGraph()
@@ -1775,7 +1841,7 @@ void LatexGenerator::startInclDepGraph()
 
 void LatexGenerator::endInclDepGraph(DotInclDepGraph &g)
 {
-  g.writeGraph(t,GOF_EPS,EOF_LaTeX,dir(),fileName(),m_relPath);
+  g.writeGraph(m_t,GOF_EPS,EOF_LaTeX,dir(),fileName(),m_relPath);
 }
 
 void LatexGenerator::startGroupCollaboration()
@@ -1784,7 +1850,7 @@ void LatexGenerator::startGroupCollaboration()
 
 void LatexGenerator::endGroupCollaboration(DotGroupCollaboration &g)
 {
-  g.writeGraph(t,GOF_EPS,EOF_LaTeX,dir(),fileName(),m_relPath);
+  g.writeGraph(m_t,GOF_EPS,EOF_LaTeX,dir(),fileName(),m_relPath);
 }
 
 void LatexGenerator::startCallGraph()
@@ -1793,7 +1859,7 @@ void LatexGenerator::startCallGraph()
 
 void LatexGenerator::endCallGraph(DotCallGraph &g)
 {
-  g.writeGraph(t,GOF_EPS,EOF_LaTeX,dir(),fileName(),m_relPath);
+  g.writeGraph(m_t,GOF_EPS,EOF_LaTeX,dir(),fileName(),m_relPath);
 }
 
 void LatexGenerator::startDirDepGraph()
@@ -1802,31 +1868,31 @@ void LatexGenerator::startDirDepGraph()
 
 void LatexGenerator::endDirDepGraph(DotDirDeps &g)
 {
-  g.writeGraph(t,GOF_EPS,EOF_LaTeX,dir(),fileName(),m_relPath);
+  g.writeGraph(m_t,GOF_EPS,EOF_LaTeX,dir(),fileName(),m_relPath);
 }
 
 void LatexGenerator::startDescription()
 {
-  t << "\\begin{description}\n";
+  m_t << "\\begin{description}\n";
 }
 
 void LatexGenerator::endDescription()
 {
-  t << "\\end{description}\n";
+  m_t << "\\end{description}\n";
   m_firstDescItem=TRUE;
 }
 
 void LatexGenerator::startDescItem()
 {
   m_firstDescItem=TRUE;
-  t << "\\item[";
+  m_t << "\\item[";
 }
 
 void LatexGenerator::endDescItem()
 {
   if (m_firstDescItem)
   {
-    t << "]\n";
+    m_t << "]\n";
     m_firstDescItem=FALSE;
   }
   else
@@ -1837,93 +1903,101 @@ void LatexGenerator::endDescItem()
 
 void LatexGenerator::startExamples()
 {
-  t << "\\begin{Desc}\n\\item[";
+  m_t << "\\begin{Desc}\n\\item[";
   docify(theTranslator->trExamples());
-  t << "]";
+  m_t << "]";
 }
 
 void LatexGenerator::endExamples()
 {
-  t << "\\end{Desc}\n";
+  m_t << "\\end{Desc}\n";
 }
 
-void LatexGenerator::startParamList(ParamListTypes,const char *title)
+void LatexGenerator::startParamList(ParamListTypes,const QCString &title)
 {
-  t << "\\begin{Desc}\n\\item[";
+  m_t << "\\begin{Desc}\n\\item[";
   docify(title);
-  t << "]";
+  m_t << "]";
 }
 
 void LatexGenerator::endParamList()
 {
-  t << "\\end{Desc}\n";
+  m_t << "\\end{Desc}\n";
 }
 
 void LatexGenerator::startParameterList(bool openBracket)
 {
   /* start of ParameterType ParameterName list */
-  if (openBracket) t << "(";
-  t << "\\begin{DoxyParamCaption}";
+  if (openBracket) m_t << "(";
+  m_t << "\\begin{DoxyParamCaption}";
 }
 
 void LatexGenerator::endParameterList()
 {
 }
 
-void LatexGenerator::startParameterType(bool first,const char *key)
+void LatexGenerator::startParameterType(bool first,const QCString &key)
 {
-  t << "\\item[{";
-  if (!first && key) docify(key);
+  m_t << "\\item[{";
+  if (!first && !key.isEmpty()) docify(key);
 }
 
 void LatexGenerator::endParameterType()
 {
-  t << "}]";
+  m_t << "}]";
 }
 
 void LatexGenerator::startParameterName(bool /*oneArgOnly*/)
 {
-  t << "{";
+  m_t << "{";
 }
 
 void LatexGenerator::endParameterName(bool last,bool /*emptyList*/,bool closeBracket)
 {
-  t << " }";
+  m_t << " }";
   if (last)
   {
-    t << "\\end{DoxyParamCaption}";
-    if (closeBracket) t << ")";
+    m_t << "\\end{DoxyParamCaption}";
+    if (closeBracket) m_t << ")";
   }
 }
 
-void LatexGenerator::exceptionEntry(const char* prefix,bool closeBracket)
+void LatexGenerator::exceptionEntry(const QCString &prefix,bool closeBracket)
 {
-  if (prefix)
-      t << " " << prefix << "(";
+  if (!prefix.isEmpty())
+  {
+    m_t << " " << prefix << "(";
+  }
   else if (closeBracket)
-      t << ")";
-  t << " ";
+  {
+    m_t << ")";
+  }
+  m_t << " ";
 }
 
-void LatexGenerator::writeDoc(DocNode *n,const Definition *ctx,const MemberDef *,int)
+void LatexGenerator::writeDoc(const IDocNodeAST *ast,const Definition *ctx,const MemberDef *,int)
 {
-  LatexDocVisitor *visitor =
-    new LatexDocVisitor(t,m_codeGen,ctx?ctx->getDefFileExtension():QCString(""),m_insideTabbing);
-  n->accept(visitor);
-  delete visitor;
+  const DocNodeAST *astImpl = dynamic_cast<const DocNodeAST*>(ast);
+  if (astImpl)
+  {
+    LatexDocVisitor visitor(m_t,m_codeGen,
+                            ctx?ctx->getDefFileExtension():QCString(""),
+                            m_insideTabbing);
+    std::visit(visitor,astImpl->root);
+  }
 }
 
-void LatexGenerator::startConstraintList(const char *header)
+void LatexGenerator::startConstraintList(const QCString &header)
 {
-  t << "\\begin{Desc}\n\\item[";
+  m_t << "\\begin{Desc}\n\\item[";
   docify(header);
-  t << "]";
-  t << "\\begin{description}\n";
+  m_t << "]";
+  m_t << "\\begin{description}\n";
 }
 
 void LatexGenerator::startConstraintParam()
 {
-  t << "\\item[{\\em ";
+  m_t << "\\item[{\\em ";
 }
 
 void LatexGenerator::endConstraintParam()
@@ -1932,12 +2006,12 @@ void LatexGenerator::endConstraintParam()
 
 void LatexGenerator::startConstraintType()
 {
-  t << "} : {\\em ";
+  m_t << "} : {\\em ";
 }
 
 void LatexGenerator::endConstraintType()
 {
-  t << "}]";
+  m_t << "}]";
 }
 
 void LatexGenerator::startConstraintDocs()
@@ -1950,36 +2024,36 @@ void LatexGenerator::endConstraintDocs()
 
 void LatexGenerator::endConstraintList()
 {
-  t << "\\end{description}\n";
-  t << "\\end{Desc}\n";
+  m_t << "\\end{description}\n";
+  m_t << "\\end{Desc}\n";
 }
 
 void LatexGenerator::startInlineHeader()
 {
   if (Config_getBool(COMPACT_LATEX))
   {
-    t << "\\doxyparagraph*{";
+    m_t << "\\doxyparagraph*{";
   }
   else
   {
-    t << "\\doxysubsubsection*{";
+    m_t << "\\doxysubsubsection*{";
   }
 }
 
 void LatexGenerator::endInlineHeader()
 {
-  t << "}\n";
+  m_t << "}\n";
 }
 
-void LatexGenerator::lineBreak(const char *)
+void LatexGenerator::lineBreak(const QCString &)
 {
   if (m_insideTabbing)
   {
-    t << "\\\\\n";
+    m_t << "\\\\\n";
   }
   else
   {
-    t << "\\newline\n";
+    m_t << "\\newline\n";
   }
 }
 
@@ -1988,15 +2062,15 @@ void LatexGenerator::startMemberDocSimple(bool isEnum)
   m_codeGen.incUsedTableLevel();
   if (isEnum)
   {
-    t << "\\begin{DoxyEnumFields}{";
+    m_t << "\\begin{DoxyEnumFields}{";
     docify(theTranslator->trEnumerationValues());
   }
   else
   {
-    t << "\\begin{DoxyFields}{";
+    m_t << "\\begin{DoxyFields}{";
     docify(theTranslator->trCompoundMembers());
   }
-  t << "}\n";
+  m_t << "}\n";
 }
 
 void LatexGenerator::endMemberDocSimple(bool isEnum)
@@ -2004,11 +2078,11 @@ void LatexGenerator::endMemberDocSimple(bool isEnum)
   m_codeGen.decUsedTableLevel();
   if (isEnum)
   {
-    t << "\\end{DoxyEnumFields}\n";
+    m_t << "\\end{DoxyEnumFields}\n";
   }
   else
   {
-    t << "\\end{DoxyFields}\n";
+    m_t << "\\end{DoxyFields}\n";
   }
 }
 
@@ -2019,7 +2093,7 @@ void LatexGenerator::startInlineMemberType()
 
 void LatexGenerator::endInlineMemberType()
 {
-  t << "&\n";
+  m_t << "&\n";
   m_insideTabbing = FALSE;
 }
 
@@ -2030,7 +2104,7 @@ void LatexGenerator::startInlineMemberName()
 
 void LatexGenerator::endInlineMemberName()
 {
-  t << "&\n";
+  m_t << "&\n";
   m_insideTabbing = FALSE;
 }
 
@@ -2040,18 +2114,18 @@ void LatexGenerator::startInlineMemberDoc()
 
 void LatexGenerator::endInlineMemberDoc()
 {
-  t << "\\\\\n\\hline\n\n";
+  m_t << "\\\\\n\\hline\n\n";
 }
 
 void LatexGenerator::startLabels()
 {
-  t << "\\hspace{0.3cm}";
+  m_t << "\\hspace{0.3cm}";
 }
 
-void LatexGenerator::writeLabel(const char *l,bool isLast)
+void LatexGenerator::writeLabel(const QCString &l,bool isLast)
 {
-  t << "{\\ttfamily [" << l << "]}";
-  if (!isLast) t << ", ";
+  m_t << "{\\ttfamily [" << l << "]}";
+  if (!isLast) m_t << ", ";
 }
 
 void LatexGenerator::endLabels()

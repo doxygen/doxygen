@@ -31,7 +31,7 @@ class ClassLinkedRefMap : public LinkedRefMap<const ClassDef>
 {
   public:
     bool declVisible(const ClassDef::CompoundType *filter=0) const;
-    void writeDeclaration(OutputList &ol,const ClassDef::CompoundType *filter,const char *header,bool localNames) const;
+    void writeDeclaration(OutputList &ol,const ClassDef::CompoundType *filter,const QCString &header,bool localNames) const;
     void writeDocumentation(OutputList &ol,const Definition * container=0) const;
 };
 

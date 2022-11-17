@@ -34,21 +34,25 @@ CommandMap cmdMap[] =
   { "b",             CMD_BOLD },
   { "c",             CMD_CODE },
   { "cite",          CMD_CITE },
+  { "icode",         CMD_ISTARTCODE },
   { "code",          CMD_STARTCODE },
   { "copydoc",       CMD_COPYDOC },
   { "copybrief",     CMD_COPYBRIEF },
   { "copydetails",   CMD_COPYDETAILS },
   { "copyright",     CMD_COPYRIGHT },
   { "date",          CMD_DATE },
+  { "showdate",      CMD_SHOWDATE },
   { "dontinclude",   CMD_DONTINCLUDE },
   { "dotfile",       CMD_DOTFILE },
   { "e",             CMD_EMPHASIS },
   { "em",            CMD_EMPHASIS },
+  { "endicode",      CMD_ENDICODE },
   { "endcode",       CMD_ENDCODE },
   { "endhtmlonly",   CMD_ENDHTMLONLY },
   { "endlatexonly",  CMD_ENDLATEXONLY },
   { "endlink",       CMD_ENDLINK },
   { "endsecreflist", CMD_ENDSECREFLIST },
+  { "endiverbatim",  CMD_ENDIVERBATIM },
   { "endverbatim",   CMD_ENDVERBATIM },
   { "endxmlonly",    CMD_ENDXMLONLY },
   { "exception",     CMD_EXCEPTION },
@@ -60,6 +64,7 @@ CommandMap cmdMap[] =
   { "internal",      CMD_INTERNAL },
   { "invariant",     CMD_INVARIANT },
   { "javalink",      CMD_JAVALINK },
+  { "javalinkplain", CMD_JAVALINK },
   { "latexinclude",  CMD_LATEXINCLUDE },
   { "latexonly",     CMD_LATEXONLY },
   { "li",            CMD_LI },
@@ -80,7 +85,6 @@ CommandMap cmdMap[] =
   { "return",        CMD_RETURN },
   { "returns",       CMD_RETURN },
   { "retval",        CMD_RETVAL },
-  { "rtfonly",       CMD_RTFONLY },
   { "sa",            CMD_SA },
   { "secreflist",    CMD_SECREFLIST },
   { "section",       CMD_SECTION },
@@ -99,6 +103,7 @@ CommandMap cmdMap[] =
   { "xrefitem",      CMD_XREFITEM },
   { "throw",         CMD_EXCEPTION },
   { "until",         CMD_UNTIL },
+  { "iverbatim",     CMD_IVERBATIM },
   { "verbatim",      CMD_VERBATIM },
   { "verbinclude",   CMD_VERBINCLUDE },
   { "version",       CMD_VERSION },
@@ -150,6 +155,10 @@ CommandMap cmdMap[] =
   { "docbookinclude",CMD_DOCBOOKINCLUDE },
   { "maninclude",    CMD_MANINCLUDE },
   { "xmlinclude",    CMD_XMLINCLUDE },
+  { "iline",         CMD_ILINE },
+  { "ifile",         CMD_IFILE },
+  { "iliteral",      CMD_ILITERAL },
+  { "endiliteral",   CMD_ENDILITERAL },
   { 0,               0 },
 };
 
@@ -162,6 +171,7 @@ CommandMap htmlTagMap[] =
   { "table",      HTML_TABLE },
   { "caption",    HTML_CAPTION },
   { "small",      HTML_SMALL },
+  { "cite",       HTML_CITE },
   { "code",       HTML_CODE },
   { "dfn",        HTML_CODE },
   { "var",        HTML_EMPHASIS },
@@ -201,6 +211,7 @@ CommandMap htmlTagMap[] =
   { "u",          HTML_UNDERLINE },
   { "ins",        HTML_INS },
   { "del",        HTML_DEL },
+  { "details",    HTML_DETAILS },
 
   { "c",            XML_C },
   // { "code",       XML_CODE },  <= ambiguous <code> is also a HTML tag
@@ -233,10 +244,10 @@ CommandMap htmlTagMap[] =
 Mapper *Mappers::cmdMapper     = new Mapper(cmdMap,true);
 Mapper *Mappers::htmlTagMapper = new Mapper(htmlTagMap,false);
 
-int Mapper::map(const char *n)
+int Mapper::map(const QCString &n)
 {
-  QCString name=n;
-  if (name.isEmpty()) return 0;
+  if (n.isEmpty()) return 0;
+  QCString name = n;
   if (!m_cs) name=name.lower();
   auto it = m_map.find(name.str());
   return it!=m_map.end() ? it->second : 0;

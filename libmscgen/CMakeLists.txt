@@ -16,7 +16,7 @@ foreach(lex_file ${LEX_FILES})
     FLEX_TARGET(${lex_file}        ${lex_file}.l        ${GENERATED_SRC}/${lex_file}.cpp        COMPILE_FLAGS "${LEX_FLAGS}")
 endforeach()
 
-add_library(mscgen
+add_library(mscgen STATIC
 gd.c
 gd_security.c
 gdfontt.c

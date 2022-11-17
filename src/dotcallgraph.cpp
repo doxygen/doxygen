@@ -22,9 +22,11 @@
 
 static QCString getUniqueId(const MemberDef *md)
 {
-  QCString result = md->getReference()+"$"+
-         md->getOutputFileBase()+"#"+
-         md->anchor();
+  const MemberDef *def = md->memberDefinition();
+  if (def==0) def = md;
+  QCString result = def->getReference()+"$"+
+         def->getOutputFileBase()+"#"+
+         def->anchor();
   return result;
 }
 
@@ -40,7 +42,7 @@ void DotCallGraph::buildGraph(DotNode *n,const MemberDef *md,int distance)
       if (it!=m_usedNodes.end()) // file is already a node in the graph
       {
         DotNode *bn = it->second;
-        n->addChild(bn,0,0,0);
+        n->addChild(bn,0,0);
         bn->addParent(n);
         bn->setDistance(distance);
       }
@@ -64,7 +66,7 @@ void DotCallGraph::buildGraph(DotNode *n,const MemberDef *md,int distance)
             uniqueId,
             0 //distance
             );
-        n->addChild(bn,0,0,0);
+        n->addChild(bn,0,0);
         bn->addParent(n);
         bn->setDistance(distance);
         m_usedNodes.insert(std::make_pair(uniqueId.str(),bn));
@@ -134,7 +136,7 @@ DotCallGraph::DotCallGraph(const MemberDef *md,bool inverse)
   m_startNode = new DotNode(getNextNodeNumber(),
     linkToText(md->getLanguage(),name,FALSE),
     tooltip,
-    uniqueId.data(),
+    uniqueId,
     TRUE     // root node
   );
   m_startNode->setDistance(0);
@@ -179,14 +181,16 @@ QCString DotCallGraph::getMapLabel() const
 }
 
 QCString DotCallGraph::writeGraph(
-        std::ostream &out,
+        TextStream &out,
         GraphOutputFormat graphFormat,
         EmbeddedOutputFormat textFormat,
-        const char *path,
-        const char *fileName,
-        const char *relPath,bool generateImageMap,
+        const QCString &path,
+        const QCString &fileName,
+        const QCString &relPath,bool generateImageMap,
         int graphId)
 {
+  m_doNotAddImageToIndex = textFormat!=EOF_Html;
+
   return DotGraph::writeGraph(out, graphFormat, textFormat, path, fileName, relPath, generateImageMap, graphId);
 }
 
@@ -202,6 +206,19 @@ bool DotCallGraph::isTooBig() const
 
 int DotCallGraph::numNodes() const
 {
-  return (int)m_startNode->children().size();
+  return static_cast<int>(m_startNode->children().size());
+}
+
+bool DotCallGraph::isTrivial(const MemberDef *md,bool inverse)
+{
+  auto refs = inverse ? md->getReferencedByMembers() : md->getReferencesMembers();
+  for (const auto &rmd : refs)
+  {
+    if (rmd->showInCallGraph())
+    {
+      return FALSE;
+    }
+  }
+  return TRUE;
 }
 

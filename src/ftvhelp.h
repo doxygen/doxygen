@@ -24,48 +24,46 @@
 #ifndef FTVHELP_H
 #define FTVHELP_H
 
-#include <iostream>
+#include <memory>
 #include <vector>
-#include "index.h"
+#include "qcstring.h"
 
 class Definition;
-struct FTVNode;
+class MemberDef;
+class TextStream;
+
 
 /** A class that generates a dynamic tree view side panel.
  */
-class FTVHelp : public IndexIntf
+class FTVHelp
 {
   public:
     FTVHelp(bool LTI);
     ~FTVHelp();
+    FTVHelp(FTVHelp &&);
     void initialize();
     void finalize();
     void incContentsDepth();
     void decContentsDepth();
     void addContentsItem(bool isDir,
-                         const char *name,
-                         const char *ref,
-                         const char *file,
-                         const char *anchor,
+                         const QCString &name,
+                         const QCString &ref,
+                         const QCString &file,
+                         const QCString &anchor,
                          bool separateIndex,
                          bool addToNavIndex,
                          const Definition *def);
-    void addIndexItem(const Definition *,const MemberDef *,const char *,const char *) {}
-    void addIndexFile(const char *) {}
-    void addImageFile(const char *) {}
-    void addStyleSheetFile(const char *) {}
+    void addIndexItem(const Definition *,const MemberDef *,const QCString &,const QCString &) {}
+    void addIndexFile(const QCString &) {}
+    void addImageFile(const QCString &) {}
+    void addStyleSheetFile(const QCString &) {}
     void generateTreeView();
-    void generateTreeViewInline(std::ostream &t);
+    void generateTreeViewInline(TextStream &t);
     static void generateTreeViewImages();
     void generateTreeViewScripts();
   private:
-    void generateTree(std::ostream &t,const std::vector<FTVNode*> &nl,int level,int maxLevel,int &index);
-    QCString generateIndentLabel(FTVNode *n,int level);
-    void generateIndent(std::ostream &t,FTVNode *n,bool opened);
-    void generateLink(std::ostream &t,FTVNode *n);
-    std::vector< std::vector<FTVNode*> > m_indentNodes;
-    int m_indent;
-    bool m_topLevelIndex;
+    struct Private;
+    std::unique_ptr<Private> p;
 };
 
 extern const char *JAVASCRIPT_LICENSE_TEXT;

@@ -36,28 +36,31 @@
 #include "filedef.h"
 #include "filename.h"
 #include "dir.h"
+#include "textstream.h"
 
 #define DEF_DB(x)
 
-static inline void writeDEFString(std::ofstream &t,const char *s)
+static inline void writeDEFString(TextStream &t,const QCString &s)
 {
-  const char* p=s;
-  char c;
-
   t << '\'';
-  while ((c = *(p++)))
+  if (!s.isEmpty())
   {
-    if (c == '\'')
-      t << '\\';
-    t << c;
+    const char* p=s.data();
+    char c;
+
+    while ((c = *(p++)))
+    {
+      if (c == '\'') t << '\\';
+      t << c;
+    }
   }
   t << '\'';
 }
 
 static void generateDEFForMember(const MemberDef *md,
-    std::ofstream &t,
+    TextStream &t,
     const Definition *def,
-    const char* Prefix)
+    const QCString &prefix)
 {
   QCString memPrefix;
 
@@ -80,9 +83,9 @@ static void generateDEFForMember(const MemberDef *md,
   else if (md->getNamespaceDef())
     scopeName=md->getNamespaceDef()->name();
 
-  t << "    " << Prefix << "-member = {\n";
+  t << "    " << prefix << "-member = {\n";
   memPrefix = "      ";
-  memPrefix.append( Prefix );
+  memPrefix.append( prefix );
   memPrefix.append( "-mem-" );
 
   QCString memType;
@@ -290,14 +293,14 @@ static void generateDEFForMember(const MemberDef *md,
     }
   }
 
-  t << "    }; /* " << Prefix << "-member */\n";
+  t << "    }; /* " << prefix << "-member */\n";
 }
 
 
 static void generateDEFClassSection(const ClassDef *cd,
-    std::ofstream &t,
+    TextStream &t,
     const MemberList *ml,
-    const char *kind)
+    const QCString &kind)
 {
   if (cd && ml && !ml->empty())
   {
@@ -312,7 +315,7 @@ static void generateDEFClassSection(const ClassDef *cd,
   }
 }
 
-static void generateDEFForClass(const ClassDef *cd,std::ofstream &t)
+static void generateDEFForClass(const ClassDef *cd,TextStream &t)
 {
   // + brief description
   // + detailed description
@@ -445,9 +448,9 @@ static void generateDEFForClass(const ClassDef *cd,std::ofstream &t)
 }
 
 static void generateDEFSection(const Definition *d,
-    std::ofstream &t,
+    TextStream &t,
     const MemberList *ml,
-    const char *kind)
+    const QCString &kind)
 {
   if (ml && !ml->empty())
   {
@@ -460,7 +463,7 @@ static void generateDEFSection(const Definition *d,
   }
 }
 
-static void generateDEFForNamespace(const NamespaceDef *nd,std::ofstream &t)
+static void generateDEFForNamespace(const NamespaceDef *nd,TextStream &t)
 {
   if (nd->isReference()) return; // skip external references
   t << "  namespace = {\n";
@@ -488,7 +491,7 @@ static void generateDEFForNamespace(const NamespaceDef *nd,std::ofstream &t)
   t << "  };\n";
 }
 
-static void generateDEFForFile(const FileDef *fd,std::ofstream &t)
+static void generateDEFForFile(const FileDef *fd,TextStream &t)
 {
   if (fd->isReference()) return; // skip external references
 
@@ -526,17 +529,18 @@ void generateDEF()
   Dir defDir(outputDirectory.str());
   if (!defDir.exists() && !defDir.mkdir(outputDirectory.str()))
   {
-    err("Could not create def directory in %s\n",outputDirectory.data());
+    err("Could not create def directory in %s\n",qPrint(outputDirectory));
     return;
   }
 
   QCString fileName=outputDirectory+"/doxygen.def";
-  std::ofstream t(fileName.str(),std::ostream::out);
-  if (!t.is_open())
+  std::ofstream f(fileName.str(),std::ostream::out | std::ostream::binary);
+  if (!f.is_open())
   {
-    err("Cannot open file %s for writing!\n",fileName.data());
+    err("Cannot open file %s for writing!\n",qPrint(fileName));
     return;
   }
+  TextStream t(&f);
   t << "AutoGen Definitions dummy;\n";
 
   if (Doxygen::classLinkedMap->size()+

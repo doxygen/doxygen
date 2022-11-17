@@ -13,6 +13,8 @@
  *
  */
 
+#define NOMINMAX
+#define WIN32_LEAN_AND_MEAN
 #include "filesystem.hpp"
 #include "dir.h"
 
@@ -58,8 +60,9 @@ std::string DirEntry::path() const
 struct DirIterator::Private
 {
   Private() : it() {}
-  Private(const std::string &path) : it(path) {}
+  Private(const std::string &path) : it(path,ec) {}
   fs::directory_iterator it;
+  std::error_code ec;
   mutable DirEntry current;
 };
 
@@ -110,7 +113,7 @@ const DirIterator::value_type *DirIterator::operator->() const
 
 bool operator==(const DirIterator &it1,const DirIterator &it2)
 {
-  return it1.p->it!=it2.p->it;
+  return it1.p->it == it2.p->it;
 }
 
 bool operator!=(const DirIterator &it1,const DirIterator &it2)
@@ -196,7 +199,15 @@ bool Dir::exists(const std::string &path,bool acceptsAbsPath) const
 
 bool Dir::exists() const
 {
-  return exists(p->path.string());
+  FileInfo fi(p->path.string());
+  return fi.exists() && fi.isDir();
+}
+
+bool Dir::isEmpty(const std::string subdir) const
+{
+  fs::path pth = path();
+  pth /= subdir;
+  return fs::is_empty(pth);
 }
 
 bool Dir::isRelative() const

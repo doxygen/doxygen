@@ -23,7 +23,7 @@
           <para>
             <ulink url="http://example.com/last-line">Upper-cased reference link on last line</ulink>
           </para>
-          <para>Dash - NDash <ndash/> MDash <mdash/> EDash - ENDash -- EMDash --- E3Dash --- </para>
+          <para>Dash - NDash <ndash/> MDash <mdash/> EDash - ENDash -- EMDash --- E3Dash ---</para>
         </sect2>
         <sect2 id="md_055_markdown_1autotoc_md3">
           <title>Markdown in HTML</title>
