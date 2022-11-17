@@ -22,6 +22,7 @@
 #include "version.h"
 #include "message.h"
 #include "config.h"
+#include "filesystem.hpp"
 
 class ResourceMgr::Private
 {
@@ -59,7 +60,7 @@ bool ResourceMgr::writeCategory(const QCString &categoryName,const QCString &tar
     if (res.category==categoryName)
     {
       std::string pathName = targetDir.str()+"/"+res.name;
-      std::ofstream f(pathName,std::ofstream::out | std::ofstream::binary);
+      std::ofstream f(ghc::filesystem::path(pathName),std::ofstream::out | std::ofstream::binary);
       bool ok=false;
       if (f.is_open())
       {
@@ -88,7 +89,7 @@ bool ResourceMgr::copyResourceAs(const QCString &name,const QCString &targetDir,
     {
       case Resource::Verbatim:
         {
-          std::ofstream f(pathName,mode);
+          std::ofstream f(ghc::filesystem::path(pathName),mode);
           bool ok=false;
           if (f.is_open())
           {
@@ -139,7 +140,7 @@ bool ResourceMgr::copyResourceAs(const QCString &name,const QCString &targetDir,
         break;
       case Resource::CSS:
         {
-          std::ofstream t(pathName,mode);
+          std::ofstream t(ghc::filesystem::path(pathName),mode);
           if (t.is_open())
           {
             QCString buf(res->size+1);
@@ -159,7 +160,7 @@ bool ResourceMgr::copyResourceAs(const QCString &name,const QCString &targetDir,
         break;
       case Resource::SVG:
         {
-          std::ofstream t(pathName,mode);
+          std::ofstream t(ghc::filesystem::path(pathName),mode);
           if (t.is_open())
           {
             QCString buf(res->size+1);

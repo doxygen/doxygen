@@ -56,6 +56,8 @@
 #include "textstream.h"
 #include "indexlist.h"
 
+#include "filesystem.hpp"
+
 //#define DBG_HTML(x) x;
 #define DBG_HTML(x)
 
@@ -1039,6 +1041,8 @@ HtmlGenerator::~HtmlGenerator()
   //printf("HtmlGenerator::~HtmlGenerator()\n");
 }
 
+
+
 void HtmlGenerator::init()
 {
   QCString dname = Config_getString(HTML_OUTPUT);
@@ -1095,7 +1099,7 @@ void HtmlGenerator::init()
       tabsCss = mgr.getAsString("fixed_tabs.css");
     }
 
-    std::ofstream f(dname.str()+"/tabs.css",std::ofstream::out | std::ofstream::binary);
+    std::ofstream f(ghc::filesystem::path(dname.str()+"/tabs.css"),std::ofstream::out | std::ofstream::binary);
     if (f.is_open())
     {
       TextStream t(&f);
@@ -1118,7 +1122,7 @@ void HtmlGenerator::init()
   if (Config_getBool(HTML_COLORSTYLE)==HTML_COLORSTYLE_t::TOGGLE)
   {
     //mgr.copyResource("darkmode_toggle.js",dname);
-    std::ofstream f(dname.str()+"/darkmode_toggle.js",std::ofstream::out | std::ofstream::binary);
+    std::ofstream f(ghc::filesystem::path(dname.str()+"/darkmode_toggle.js"),std::ofstream::out | std::ofstream::binary);
     if (f.is_open())
     {
       TextStream t(&f);
@@ -1127,7 +1131,7 @@ void HtmlGenerator::init()
   }
 
   {
-    std::ofstream f(dname.str()+"/dynsections.js",std::ofstream::out | std::ofstream::binary);
+    std::ofstream f(ghc::filesystem::path(dname.str()+"/dynsections.js"),std::ofstream::out | std::ofstream::binary);
     if (f.is_open())
     {
       TextStream t(&f);
