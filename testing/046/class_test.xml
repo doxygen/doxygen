@@ -8,6 +8,7 @@
         <definition>void Test::method</definition>
         <argsstring>()</argsstring>
         <name>method</name>
+        <qualifiedname>Test::method</qualifiedname>
         <briefdescription>
         </briefdescription>
         <detaileddescription>
@@ -24,6 +25,7 @@
         <definition>void function</definition>
         <argsstring>()</argsstring>
         <name>function</name>
+        <qualifiedname>Test::function</qualifiedname>
         <briefdescription>
         </briefdescription>
         <detaileddescription>
@@ -45,6 +47,7 @@
         <definition>void another</definition>
         <argsstring>()</argsstring>
         <name>another</name>
+        <qualifiedname>Test::another</qualifiedname>
         <briefdescription>
         </briefdescription>
         <detaileddescription>

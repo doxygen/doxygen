@@ -16,6 +16,8 @@
 #ifndef DOTCALLGRAPH_H
 #define DOTCALLGRAPH_H
 
+#include <memory>
+
 #include "dotnode.h"
 #include "dotgraph.h"
 #include "memberdef.h"
@@ -33,6 +35,7 @@ class DotCallGraph : public DotGraph
                         const QCString &path,const QCString &fileName,
                         const QCString &relPath,bool writeImageMap=TRUE,
                         int graphId=-1);
+    static bool isTrivial(const MemberDef *md,bool inverse);
 
   protected:
     virtual QCString getBaseName() const;
@@ -49,5 +52,7 @@ class DotCallGraph : public DotGraph
     QCString        m_diskName;
     const Definition * m_scope;
 };
+
+using DotCallGraphPtr = std::shared_ptr<DotCallGraph>;
 
 #endif

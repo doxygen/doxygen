@@ -36,6 +36,8 @@ class ConceptDef : public Definition
                               const QCString &header,bool localNames) const = 0;
     virtual const NamespaceDef *getNamespaceDef() const = 0;
     virtual const FileDef *getFileDef() const = 0;
+    virtual QCString title() const = 0;
+    virtual int groupId() const = 0;
 };
 
 class ConceptDefMutable : public DefinitionMutable, public ConceptDef
@@ -49,6 +51,7 @@ class ConceptDefMutable : public DefinitionMutable, public ConceptDef
     virtual void writeDocumentation(OutputList &ol) = 0;
     virtual void setInitializer(const QCString &init) = 0;
     virtual void findSectionsInDocumentation() = 0;
+    virtual void setGroupId(int id) = 0;
 };
 
 ConceptDefMutable *createConceptDef(

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="structmymodule_1_1t1" kind="type" language="Fortran" prot="public">
+    <compoundname>mymodule::t1</compoundname>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structmymodule_1_1t1_1a40dabbcb827e13ffbb38bb7e9e5957cc" prot="public" static="no" mutable="no">
+        <type>integer</type>
+        <definition>integer mymodule::t1::publicvariable</definition>
+        <argsstring/>
+        <name>publicvariable</name>
+        <qualifiedname>mymodule::t1::publicvariable</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="087_public_type.F90" line="16" column="1" bodyfile="087_public_type.F90" bodystart="16" bodyend="16"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="087_public_type.F90" line="15" column="1" bodyfile="087_public_type.F90" bodystart="15" bodyend="17"/>
+    <listofallmembers>
+      <member refid="structmymodule_1_1t1_1a40dabbcb827e13ffbb38bb7e9e5957cc" prot="public" virt="non-virtual">
+        <scope>mymodule::t1</scope>
+        <name>publicvariable</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

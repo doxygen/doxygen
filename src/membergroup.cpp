@@ -29,9 +29,11 @@
 #include "entry.h"
 #include "md5.h"
 
-MemberGroup::MemberGroup(const Definition *container,int id,const QCString &hdr,const QCString &d,const QCString &docFile,int docLine)
+MemberGroup::MemberGroup(const Definition *container,int id,const QCString &hdr,
+                         const QCString &d,const QCString &docFile,int docLine,
+                         MemberListContainer con)
   : m_container(container),
-    memberList(std::make_unique<MemberList>(MemberListType_memberGroup)),
+    memberList(std::make_unique<MemberList>(MemberListType_memberGroup,con)),
     grpId(id), grpHeader(hdr), doc(d), m_docFile(docFile), m_docLine(docLine)
 {
   //printf("New member group id=%d header=%s desc=%s\n",id,hdr,d);
@@ -93,17 +95,16 @@ void MemberGroup::writeDeclarations(OutputList &ol,
 {
   //printf("MemberGroup::writeDeclarations() %s\n",qPrint(grpHeader));
   QCString ldoc = doc;
-  if (!ldoc.isEmpty()) ldoc.prepend("<a name=\""+anchor()+"\" id=\""+anchor()+"\"></a>");
   memberList->writeDeclarations(ol,cd,nd,fd,gd,grpHeader,ldoc,FALSE,showInline);
 }
 
-void MemberGroup::writePlainDeclarations(OutputList &ol,
+void MemberGroup::writePlainDeclarations(OutputList &ol,bool inGroup,
                const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
-               const ClassDef *inheritedFrom,const QCString &inheritId
+               int indentLevel,const ClassDef *inheritedFrom,const QCString &inheritId
               ) const
 {
   //printf("MemberGroup::writePlainDeclarations() memberList->count()=%d\n",memberList->count());
-  memberList->writePlainDeclarations(ol,cd,nd,fd,gd,inheritedFrom,inheritId);
+  memberList->writePlainDeclarations(ol,inGroup,cd,nd,fd,gd,indentLevel,inheritedFrom,inheritId);
 }
 
 void MemberGroup::writeDocumentation(OutputList &ol,const QCString &scopeName,
@@ -135,10 +136,10 @@ void MemberGroup::addGroupedInheritedMembers(OutputList &ol,const ClassDef *cd,
     const MemberList *ml = md->getSectionList(m_container);
     if (ml && lt==ml->listType())
     {
-      MemberList mml(lt);
+      MemberList mml(lt,MemberListContainer::Class);
       mml.push_back(md);
       mml.countDecMembers();
-      mml.writePlainDeclarations(ol,cd,0,0,0,inheritedFrom,inheritId);
+      mml.writePlainDeclarations(ol,false,cd,0,0,0,0,inheritedFrom,inheritId);
     }
   }
 }
@@ -186,6 +187,23 @@ void MemberGroup::countDocMembers()
 const Definition *MemberGroup::container() const
 {
   return m_container;
+}
+
+const Definition *MemberGroup::memberContainer() const
+{
+  // return the container for the first member.
+  // Note this can be different from container() in case
+  // the member is rendered as part of a file but the members
+  // are actually of a namespace.
+  const Definition *ctx = 0;
+  if (memberList && !memberList->empty())
+  {
+    const MemberDef *md = memberList->front();
+    ctx = md->getClassDef();
+    if (ctx==0) ctx = md->getNamespaceDef();
+    if (ctx==0) ctx = md->getFileDef();
+  }
+  return ctx==0 ? m_container : ctx;
 }
 
 int MemberGroup::countInheritableMembers(const ClassDef *inheritedFrom) const
@@ -253,35 +271,9 @@ int MemberGroup::numDocEnumValues() const
   return memberList->numDocEnumValues();
 }
 
-void MemberGroup::setInGroup(bool b)
-{
-  memberList->setInGroup(b);
-}
-
-
-QCString MemberGroup::anchor() const
-{
-  uchar md5_sig[16];
-  char sigStr[33];
-  QCString locHeader = grpHeader;
-  if (locHeader.isEmpty()) locHeader="[NOHEADER]";
-  MD5Buffer((const unsigned char *)locHeader.data(),locHeader.length(),md5_sig);
-  MD5SigToString(md5_sig,sigStr);
-  return QCString("amgrp")+sigStr;
-}
-
 void MemberGroup::addListReferences(Definition *def)
 {
   memberList->addListReferences(def);
-  if (def)
-  {
-    QCString name = def->getOutputFileBase()+"#"+anchor();
-    addRefItem(m_xrefListItems,
-        name,
-        theTranslator->trGroup(TRUE,TRUE),
-        name,
-        grpHeader,QCString(),def);
-  }
 }
 
 void MemberGroup::findSectionsInDocumentation(const Definition *d)
@@ -295,9 +287,9 @@ void MemberGroup::setRefItems(const RefItemVector &sli)
   m_xrefListItems.insert(m_xrefListItems.end(), sli.cbegin(), sli.cend());
 }
 
-void MemberGroup::writeTagFile(TextStream &tagFile)
+void MemberGroup::writeTagFile(TextStream &tagFile,bool qualifiedName)
 {
-  memberList->writeTagFile(tagFile);
+  memberList->writeTagFile(tagFile,qualifiedName);
 }
 
 //--------------------------------------------------------------------------

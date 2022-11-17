@@ -24,7 +24,7 @@
 /// Citation-related data.
 struct CiteInfo
 {
-    virtual ~CiteInfo() {}
+    virtual ~CiteInfo() = default;
     virtual QCString label() const = 0;
     virtual QCString text() const = 0;
 };

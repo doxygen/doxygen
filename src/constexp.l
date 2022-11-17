@@ -22,12 +22,13 @@
 %option extra-type="struct constexpYY_state *"
 %top{
 #include <stdint.h>
+// forward declare yyscan_t to improve typesafety
+#include "constexp_p.h"  
 }
 
 %{
 
 #include "constexp.h"  
-#include "constexp_p.h"  
 #include "cppvalue.h"
 #include "ce_parse.hpp" // generated header file
 #include "message.h"
@@ -41,10 +42,15 @@
 static const char *stateToString(int state);
 #endif
 
-static yy_size_t yyread(char *buf,yy_size_t max_size,yyscan_t yyscanner);
+static int yyread(char *buf,int max_size,yyscan_t yyscanner);
 
 #undef  YY_INPUT
 #define YY_INPUT(buf,result,max_size) result=yyread(buf,max_size,yyscanner);
+
+// otherwise the filename would be the name of the converted file (*.cpp instead of *.l)
+static inline const char *getLexerFILE() {return __FILE__;}
+#define LEX_NO_INPUT_FILENAME
+#include "doxygen_lex.h"
 
 %}
 
@@ -104,10 +110,10 @@ CONSTSUFFIX ([uU][lL]?[lL]?)|([lL][lL]?[uU]?)
 
 %%
 
-static yy_size_t yyread(char *buf,yy_size_t max_size,yyscan_t yyscanner)
+static int yyread(char *buf,int max_size,yyscan_t yyscanner)
 {
-  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yy_size_t c=0;
+  struct yyguts_t *yyg = static_cast<struct yyguts_t*>(yyscanner);
+  int c=0;
   while( c < max_size && yyextra->inputString[yyextra->inputPosition] )
   {
     *buf = yyextra->inputString[yyextra->inputPosition++] ;
@@ -156,7 +162,7 @@ bool ConstExpressionParser::parse(const char *fileName,int lineNr,const std::str
 
   //printf("Result: %ld\n",(long)g_resultValue);
   printlex(yy_flex_debug, false, __FILE__, fileName);
-  bool result = (long)yyextra->resultValue!=0;
+  bool result = static_cast<long>(yyextra->resultValue)!=0;
 
   return result;
 }

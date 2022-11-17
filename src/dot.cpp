@@ -17,6 +17,7 @@
 #include <cassert>
 #include <sstream>
 #include <algorithm>
+#include <mutex>
 
 #include "config.h"
 #include "dot.h"
@@ -27,7 +28,7 @@
 #include "message.h"
 #include "doxygen.h"
 #include "language.h"
-#include "index.h"
+#include "indexlist.h"
 #include "dir.h"
 
 #define MAP_CMD "cmapx"
@@ -35,6 +36,8 @@
 //--------------------------------------------------------------------
 
 static QCString g_dotFontPath;
+
+static std::mutex g_dotManagerMutex;
 
 static void setDotFontPath(const QCString &path)
 {
@@ -72,21 +75,10 @@ static void unsetDotFontPath()
 
 //--------------------------------------------------------------------
 
-DotManager *DotManager::m_theInstance = 0;
-
 DotManager *DotManager::instance()
 {
-  if (!m_theInstance)
-  {
-    m_theInstance = new DotManager;
-  }
-  return m_theInstance;
-}
-
-void DotManager::deleteInstance()
-{
-  delete m_theInstance;
-  m_theInstance=0;
+  static DotManager theInstance;
+  return &theInstance;
 }
 
 DotManager::DotManager() : m_runners(), m_filePatchers()
@@ -98,7 +90,7 @@ DotManager::DotManager() : m_runners(), m_filePatchers()
   {
     for (i=0;i<dotNumThreads;i++)
     {
-      std::unique_ptr<DotWorkerThread> thread = std::make_unique<DotWorkerThread>(m_queue);
+      DotWorkerThreadPtr thread(new DotWorkerThread(m_queue));
       thread->start();
       if (thread->isRunning())
       {
@@ -114,11 +106,12 @@ DotManager::DotManager() : m_runners(), m_filePatchers()
 
 DotManager::~DotManager()
 {
-  delete m_queue;
+  if (!Doxygen::terminating) delete m_queue;
 }
 
 DotRunner* DotManager::createRunner(const QCString &absDotName, const QCString& md5Hash)
 {
+  std::lock_guard<std::mutex> lock(g_dotManagerMutex);
   DotRunner* rv = nullptr;
   auto const runit = m_runners.find(absDotName.str());
   if (runit == m_runners.end())
@@ -142,11 +135,12 @@ DotRunner* DotManager::createRunner(const QCString &absDotName, const QCString& 
 
 DotFilePatcher *DotManager::createFilePatcher(const QCString &fileName)
 {
+  std::lock_guard<std::mutex> lock(g_dotManagerMutex);
   auto patcher = m_filePatchers.find(fileName.str());
 
   if (patcher != m_filePatchers.end()) return &(patcher->second);
 
-  auto rv = m_filePatchers.emplace(fileName.str(), fileName.data());
+  auto rv = m_filePatchers.emplace(std::make_pair(fileName.str(), fileName));
   assert(rv.second);
   return &(rv.first->second);
 }
@@ -270,7 +264,8 @@ bool DotManager::run() const
 //--------------------------------------------------------------------
 
 void writeDotGraphFromFile(const QCString &inFile,const QCString &outDir,
-                           const QCString &outFile,GraphOutputFormat format)
+                           const QCString &outFile,GraphOutputFormat format,
+                           const QCString &srcFile,int srcLine)
 {
   Dir d(outDir.str());
   if (!d.exists())
@@ -279,24 +274,24 @@ void writeDotGraphFromFile(const QCString &inFile,const QCString &outDir,
   }
 
   QCString imgExt = getDotImageExtension();
-  QCString imgName = (QCString)outFile+"."+imgExt;
+  QCString imgName = QCString(outFile)+"."+imgExt;
   QCString absImgName = QCString(d.absPath())+"/"+imgName;
   QCString absOutFile = QCString(d.absPath())+"/"+outFile;
 
   DotRunner dotRun(inFile);
   if (format==GOF_BITMAP)
   {
-    dotRun.addJob(Config_getEnum(DOT_IMAGE_FORMAT),absImgName);
+    dotRun.addJob(Config_getEnumAsString(DOT_IMAGE_FORMAT),absImgName,srcFile,srcLine);
   }
   else // format==GOF_EPS
   {
     if (Config_getBool(USE_PDFLATEX))
     {
-      dotRun.addJob("pdf",absOutFile+".pdf");
+      dotRun.addJob("pdf",absOutFile+".pdf",srcFile,srcLine);
     }
     else
     {
-      dotRun.addJob("ps",absOutFile+".eps");
+      dotRun.addJob("ps",absOutFile+".eps",srcFile,srcLine);
     }
   }
 
@@ -318,11 +313,14 @@ void writeDotGraphFromFile(const QCString &inFile,const QCString &outDir,
  *  \param baseName the base name of the output files
  *  \param context the scope in which this graph is found (for resolving links)
  *  \param graphId a unique id for this graph, use for dynamic sections
+ *  \param srcFile the source file
+ *  \param srcLine the line number in the source file
  */
 void writeDotImageMapFromFile(TextStream &t,
                             const QCString &inFile, const QCString &outDir,
                             const QCString &relPath, const QCString &baseName,
-                            const QCString &context,int graphId)
+                            const QCString &context,int graphId,
+                            const QCString &srcFile,int srcLine)
 {
 
   Dir d(outDir.str());
@@ -337,7 +335,7 @@ void writeDotImageMapFromFile(TextStream &t,
   QCString absOutFile = QCString(d.absPath())+"/"+mapName;
 
   DotRunner dotRun(inFile);
-  dotRun.addJob(MAP_CMD,absOutFile);
+  dotRun.addJob(MAP_CMD,absOutFile,srcFile,srcLine);
   dotRun.preventCleanUp();
   if (!dotRun.run())
   {

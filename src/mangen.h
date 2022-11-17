@@ -32,9 +32,10 @@ class ManGenerator : public OutputGenerator
 
     OutputType type() const { return Man; }
 
-    void writeDoc(DocNode *,const Definition *,const MemberDef *,int);
+    void writeDoc(const IDocNodeAST *ast,const Definition *,const MemberDef *,int);
 
     static void init();
+    void cleanup();
     void startFile(const QCString &name,const QCString &manName,const QCString &title,int);
     void writeSearchInfo() {}
     void writeFooter(const QCString &) {}
@@ -72,7 +73,8 @@ class ManGenerator : public OutputGenerator
     void codify(const QCString &text);
     void writeObjectLink(const QCString &ref,const QCString &file,
                          const QCString &anchor,const QCString &name);
-    void writeCodeLink(const QCString &ref,const QCString &file,
+    void writeCodeLink(CodeSymbolType type,
+                       const QCString &ref,const QCString &file,
                        const QCString &anchor,const QCString &name,
                        const QCString &tooltip);
     void writeTooltip(const QCString &, const DocLinkInfo &, const QCString &,
@@ -96,7 +98,6 @@ class ManGenerator : public OutputGenerator
     void insertMemberAlignLeft(int,bool){}
     void startMemberSubtitle() {}
     void endMemberSubtitle() {}
-    //void writeListItem();
     void startItemListItem();
     void endItemListItem();
     void startMemberDocList() {}
@@ -125,7 +126,7 @@ class ManGenerator : public OutputGenerator
     void writeAnchor(const QCString &,const QCString &) {}
     void startCodeFragment(const QCString &);
     void endCodeFragment(const QCString &);
-    void writeLineNumber(const QCString &,const QCString &,const QCString &,int l) { m_t << l << " "; m_col=0; }
+    void writeLineNumber(const QCString &,const QCString &,const QCString &,int l, bool) { m_t << l << " "; m_col=0; }
     void startCodeLine(bool) {}
     void endCodeLine() { codify("\n"); m_col=0; }
     void startEmphasis() { m_t << "\\fI"; m_firstCol=FALSE; }
@@ -166,7 +167,6 @@ class ManGenerator : public OutputGenerator
     void endExamples();
     void startParamList(ParamListTypes,const QCString &title);
     void endParamList();
-    //void writeDescItem();
     void startDescForItem();
     void endDescForItem();
     void startSection(const QCString &,const QCString &,SectionType);
@@ -253,8 +253,6 @@ class ManGenerator : public OutputGenerator
     void endLabels();
 
     void writeCodeAnchor(const QCString &) {}
-    void setCurrentDoc(const Definition *,const QCString &,bool) {}
-    void addWord(const QCString &,bool) {}
 
   private:
     bool m_firstCol = true;

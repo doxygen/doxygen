@@ -36,7 +36,7 @@ class CCodeParser : public CodeParserInterface
                    SrcLangExt lang,
                    bool isExampleBlock,
                    const QCString &exampleName=QCString(),
-                   FileDef *fileDef=0,
+                   const FileDef *fileDef=0,
                    int startLine=-1,
                    int endLine=-1,
                    bool inlineFragment=FALSE,
@@ -46,7 +46,8 @@ class CCodeParser : public CodeParserInterface
                    bool collectXRefs=TRUE
                   );
     void resetCodeParserState();
-    void setStartCodeLine(const bool inp);
+    void setInsideCodeLine(bool inp);
+    bool insideCodeLine() const;
   private:
     struct Private;
     std::unique_ptr<Private> p;

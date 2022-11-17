@@ -22,6 +22,10 @@
 %option extra-type="struct declinfoYY_state *"
 %top{
 #include <stdint.h>
+// forward declare yyscan_t to improve type safety
+#define YY_TYPEDEF_YY_SCANNER_T
+struct yyguts_t;
+typedef yyguts_t *yyscan_t;
 }
 
 %{
@@ -61,6 +65,7 @@ struct declinfoYY_state
      QCString     name;
      QCString     args;
      int          sharpCount;
+     int          roundCount;
      bool         classTempListFound;
      bool         funcTempListFound;
      QCString     exceptionString;
@@ -74,27 +79,29 @@ static const char *stateToString(int state);
 
 static void addType(yyscan_t yyscanner);
 static void addTypeName(yyscan_t yyscanner);
-static yy_size_t yyread(char *buf,yy_size_t max_size, yyscan_t yyscanner);
+static int yyread(char *buf,int max_size, yyscan_t yyscanner);
 
 /* -----------------------------------------------------------------
  */
 #undef	YY_INPUT
 #define	YY_INPUT(buf,result,max_size) result=yyread(buf,max_size,yyscanner);
+
+// otherwise the filename would be the name of the converted file (*.cpp instead of *.l)
+static inline const char *getLexerFILE() {return __FILE__;}
+#define LEX_NO_INPUT_FILENAME
+#include "doxygen_lex.h"
 %}
 
 B       [ \t]
 Bopt    {B}*
-ID	"$"?([a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF]*)|(@[0-9]+)
+ID	([$a-z_A-Z\x80-\xFF][$a-z_A-Z0-9\x80-\xFF]*)|(@[0-9]+)
 
-%x      Start
+%x  Start
 %x	Template
 %x	ReadArgs
 %x	Operator
-%x	FuncPtr
-%x	EndTemplate
-%x	StripTempArgs
-%x	SkipSharp
-%x      ReadExceptions
+%x	DeclType
+%x  ReadExceptions
 
 %%
 
@@ -120,6 +127,16 @@ ID	"$"?([a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF]*)|(@[0-9]+)
   				  addTypeName(yyscanner);
 				  yyextra->name += removeRedundantWhiteSpace(QCString(yytext));
   				}
+<Start>"anonymous_namespace{"[^}]+"}" { // anonymous namespace
+ 				  if (!yyextra->scope.isEmpty())
+				  {
+				    yyextra->scope+=QCString("::")+yytext;
+				  }
+				  else
+				  {
+  				    yyextra->scope = yytext;
+				  }
+                                }
 <Start>([~!]{B}*)?{ID}/({B}*"["{B}*"]")* { // the []'s are for Java, 
                                         // the / was add to deal with multi-
                                         // dimensional C++ arrays like A[][15]
@@ -129,7 +146,7 @@ ID	"$"?([a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF]*)|(@[0-9]+)
 				  yyextra->name += removeRedundantWhiteSpace(QCString(yytext));
   				}
 <Start>{B}*"::"{B}*		{ // found a yyextra->scope specifier
- 				  if (!yyextra->scope.isEmpty())
+ 				  if (!yyextra->scope.isEmpty() && !yyextra->scope.endsWith("::"))
 				  {
 				    yyextra->scope+="::"+yyextra->name; // add yyextra->name to yyextra->scope
 				  }
@@ -158,10 +175,28 @@ ID	"$"?([a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF]*)|(@[0-9]+)
 <Start>{B}*")"			{
   				  yyextra->type+=")";
   				}
+<Start>{B}*"decltype"/{B}*"("	{
+					  yyextra->roundCount=0;
+					  yyextra->type="decltype";
+					  BEGIN(DeclType);
+					}
+<DeclType>{B}*"("	{
+						++yyextra->roundCount;
+						yyextra->type+="(";
+					}
+<DeclType>{B}*")"	{
+						yyextra->type+=")";
+						if (--yyextra->roundCount == 0) {
+							BEGIN(Start);
+						}
+					}
+<DeclType>.	{
+						yyextra->type+=yytext;
+					}
 <Start>{B}*"("			{ // TODO: function pointers
-  				  yyextra->args+="(";
-  				  BEGIN(ReadArgs);
-  				}
+						yyextra->args+="(";
+						BEGIN(ReadArgs);
+					}
 <Start>{B}*"["			{
   				  yyextra->args+="[";
 				  BEGIN(ReadArgs);
@@ -169,22 +204,38 @@ ID	"$"?([a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF]*)|(@[0-9]+)
 <Start>{B}*"<"			{
   				  yyextra->name+="<";
 				  yyextra->sharpCount=0;
+                                  yyextra->roundCount=0;
   				  BEGIN(Template);
   				}
 <Template>"<<"			{ yyextra->name+="<<"; }
 <Template>">>"			{ yyextra->name+=">>"; }
+<Template>"("                   { yyextra->name+="(";
+                                  yyextra->roundCount++;
+                                }
+<Template>")"                   { yyextra->name+=")";
+                                  if (yyextra->roundCount>0)
+                                  {
+                                    yyextra->roundCount--;
+                                  }
+                                }
 <Template>"<"			{
   				  yyextra->name+="<";
-  				  yyextra->sharpCount++;
+                                  if (yyextra->roundCount==0)
+                                  {
+  				    yyextra->sharpCount++;
+                                  }
   				}
 <Template>">"			{
   				  yyextra->name+=">";
-  				  if (yyextra->sharpCount)
-				    --yyextra->sharpCount;
-				  else
-				  {
-				    BEGIN(Start);
-				  }
+                                  if (yyextra->roundCount==0)
+                                  {
+                                    if (yyextra->sharpCount)
+                                      --yyextra->sharpCount;
+                                    else
+                                    {
+                                      BEGIN(Start);
+                                    }
+                                  }
   				}
 <Template>.			{
   				  yyextra->name+=*yytext;
@@ -244,10 +295,10 @@ static void addTypeName(yyscan_t yyscanner)
   yyextra->name.resize(0);
 }
 
-static yy_size_t yyread(char *buf,yy_size_t max_size, yyscan_t yyscanner)
+static int yyread(char *buf,int max_size, yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yy_size_t c=0;
+  int c=0;
   while( c < max_size && yyextra->inputString[yyextra->inputPosition] )
   {
     *buf = yyextra->inputString[yyextra->inputPosition++] ;
@@ -306,28 +357,6 @@ void parseFuncDecl(const QCString &decl,const SrcLangExt lang,QCString &cl,QCStr
     yyextra->name=yyextra->name.left(nb);
   }
 
-#if 0
-  {
-    int l=yyextra->scope.length();
-    int i=0;
-    int skipCount=0;
-    cl.resize(0);
-    ctl.resize(0);
-    for (i=0;i<l;i++)
-    {
-      char c=yyextra->scope.at(i);
-      if (c=='<') 
-	skipCount++;
-      else if (c=='>') 
-	skipCount--;
-      else if (skipCount==0) 
-	cl+=c;
-    }
-  }
-  cl=stripTemplateSpecifiersFromScope(removeRedundantWhiteSpace(yyextra->scope),FALSE); 
-  ctl.resize(0);
-#endif
-
   cl=yyextra->scope;
   n=removeRedundantWhiteSpace(yyextra->name);
   int il,ir;
@@ -344,7 +373,7 @@ void parseFuncDecl(const QCString &decl,const SrcLangExt lang,QCString &cl,QCStr
   a=removeRedundantWhiteSpace(yyextra->args);
   exc=removeRedundantWhiteSpace(yyextra->exceptionString);
   
-  if (!t.isEmpty() && t.at(t.length()-1)==')') // for function pointers
+  if (!t.isEmpty() && !t.startsWith("decltype") && t.at(t.length()-1)==')') // for function pointers
   {
     a.prepend(")");
     t=t.left(t.length()-1);

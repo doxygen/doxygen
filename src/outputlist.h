@@ -20,8 +20,9 @@
 #include <vector>
 #include <memory>
 
-#include "index.h" // for IndexSections
 #include "outputgen.h"
+#include "searchindex.h" // for SIDataCollection
+#include "doxygen.h"
 
 class ClassDiagram;
 class DotClassGraph;
@@ -29,12 +30,11 @@ class DotDirDeps;
 class DotInclDepGraph;
 class DotGfxHierarchyTable;
 class DotGroupCollaboration;
-class DocRoot;
 
 /** Class representing a list of output generators that are written to
  *  in parallel.
  */
-class OutputList : public OutputDocInterface
+class OutputList : public BaseOutputDocInterface
 {
   public:
     OutputList();
@@ -70,7 +70,7 @@ class OutputList : public OutputDocInterface
                      bool indexWords,bool isExample,const QCString &exampleName /*=0*/,
                      bool singleLine /*=FALSE*/,bool linkFromIndex /*=FALSE*/,
                      bool markdownSupport /*=FALSE*/);
-    void writeDoc(DocRoot *root,const Definition *ctx,const MemberDef *md,int id=0);
+    void writeDoc(const IDocNodeAST *ast,const Definition *ctx,const MemberDef *md,int id=0);
     void parseText(const QCString &textStr);
 
     void startIndexSection(IndexSections is)
@@ -141,10 +141,11 @@ class OutputList : public OutputDocInterface
     void writeObjectLink(const QCString &ref,const QCString &file,
                          const QCString &anchor, const QCString &name)
     { forall(&OutputGenerator::writeObjectLink,ref,file,anchor,name); }
-    void writeCodeLink(const QCString &ref,const QCString &file,
+    void writeCodeLink(CodeSymbolType type,
+                       const QCString &ref,const QCString &file,
                        const QCString &anchor,const QCString &name,
                        const QCString &tooltip)
-    { forall(&OutputGenerator::writeCodeLink,ref,file,anchor,name,tooltip); }
+    { forall(&OutputGenerator::writeCodeLink,type,ref,file,anchor,name,tooltip); }
     void writeTooltip(const QCString &id, const DocLinkInfo &docInfo, const QCString &decl,
                       const QCString &desc, const SourceLinkInfo &defInfo, const SourceLinkInfo &declInfo)
     { forall(&OutputGenerator::writeTooltip,id,docInfo,decl,desc,defInfo,declInfo); }
@@ -246,8 +247,8 @@ class OutputList : public OutputDocInterface
     void endCodeLine()
     { forall(&OutputGenerator::endCodeLine); }
     void writeLineNumber(const QCString &ref,const QCString &file,const QCString &anchor,
-                         int lineNumber)
-    { forall(&OutputGenerator::writeLineNumber,ref,file,anchor,lineNumber); }
+                         int lineNumber, bool writeLineAnchor)
+    { forall(&OutputGenerator::writeLineNumber,ref,file,anchor,lineNumber,writeLineAnchor); }
     void startEmphasis()
     { forall(&OutputGenerator::startEmphasis); }
     void endEmphasis()
@@ -475,16 +476,28 @@ class OutputList : public OutputDocInterface
     void endLabels()
     { forall(&OutputGenerator::endLabels); }
 
+    void cleanup()
+    { forall(&OutputGenerator::cleanup); }
+
     void startFontClass(const QCString &c)
     { forall(&OutputGenerator::startFontClass,c); }
     void endFontClass()
     { forall(&OutputGenerator::endFontClass); }
     void writeCodeAnchor(const QCString &name)
     { forall(&OutputGenerator::writeCodeAnchor,name); }
+
     void setCurrentDoc(const Definition *context,const QCString &anchor,bool isSourceFile)
-    { forall(&OutputGenerator::setCurrentDoc,context,anchor,isSourceFile); }
+    { /*forall(&OutputGenerator::setCurrentDoc,context,anchor,isSourceFile);*/
+      m_searchData.setCurrentDoc(context,anchor,isSourceFile);
+    }
     void addWord(const QCString &word,bool hiPriority)
-    { forall(&OutputGenerator::addWord,word,hiPriority); }
+    { /*forall(&OutputGenerator::addWord,word,hiPriority);*/
+      m_searchData.addWord(word,hiPriority);
+    }
+    void indexSearchData()
+    {
+      m_searchData.transfer();
+    }
 
     void startPlainFile(const QCString &name)
     { forall(&OutputGenerator::startPlainFile,name); }
@@ -511,6 +524,7 @@ class OutputList : public OutputDocInterface
 
     std::vector< std::unique_ptr<OutputGenerator> > m_outputs;
     int m_id;
+    SIDataCollection m_searchData;
 
 };
 

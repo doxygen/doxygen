@@ -21,7 +21,7 @@ The [Unicode consortium](http://www.unicode.org/) has defined a set of
 sequences. Doxygen supports the subset of emoji characters as used by GitHub (based on the list
 https://api.github.com/emojis).
 An emoji is created using the \ref cmdemoji "\\emoji" command.
-For example `\emoji smile` (or `\emoji :smile:`) both produce \emoji smile.
+For example `\emoji smile` or `\emoji :smile:` both produce \emoji smile.
 
 \section emojirep Representation
 
@@ -60,6 +60,8 @@ def get_emojis():
     return json.loads(raw_data)
 
 def download_images(dir_name):
+    if not os.path.exists(dir_name):
+        os.makedirs(dir_name)
     json_data = get_emojis()
     num_items = len(json_data)
     cur_item=0

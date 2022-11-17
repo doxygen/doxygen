@@ -47,22 +47,21 @@ class NamespaceLinkedRefMap : public LinkedRefMap<const NamespaceDef>
   public:
     void writeDeclaration(OutputList &ol,const QCString &title,
             bool isConstantGroup=false, bool localName=FALSE);
-    bool declVisible() const;
+    bool declVisible(bool isContantGroup) const;
 };
 
 /** An abstract interface of a namespace symbol. */
 class NamespaceDef : public Definition
 {
   public:
-    virtual ~NamespaceDef() {}
     virtual DefType definitionType() const = 0;
 
     // ---- getters
     virtual QCString getOutputFileBase() const = 0;
     virtual QCString anchor() const = 0;
     virtual int numDocMembers() const = 0;
-    virtual LinkedRefMap<const NamespaceDef> getUsedNamespaces() const = 0;
-    virtual LinkedRefMap<const ClassDef> getUsedClasses() const = 0;
+    virtual const LinkedRefMap<const NamespaceDef> &getUsedNamespaces() const = 0;
+    virtual const LinkedRefMap<const ClassDef> &getUsedClasses() const = 0;
     virtual QCString displayName(bool=TRUE) const = 0;
     virtual QCString localName() const = 0;
     virtual bool isConstantGroup() const = 0;

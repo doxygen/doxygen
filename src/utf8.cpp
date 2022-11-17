@@ -54,13 +54,13 @@ uint8_t getUTF8CharNumBytes(char c)
 //! given the number of bytes it's made of
 static inline uint32_t decode_utf8( const char* data , int numBytes ) noexcept
 {
-  uint32_t cp = (unsigned char)*data;
+  uint32_t cp = static_cast<unsigned char>(*data);
   if (numBytes>1)
   {
     cp &= 0x7F >> numBytes; // Mask out the header bits
     for (int i=1 ; i<numBytes ; i++)
     {
-      cp = (cp<<6) | ((unsigned char)data[i]&0x3F);
+      cp = (cp<<6) | (static_cast<unsigned char>(data[i])&0x3F);
     }
   }
   return cp;
@@ -141,12 +141,12 @@ uint32_t getUnicodeForUTF8CharAt(const std::string &input,size_t pos)
 
 static inline char asciiToLower(uint32_t code)
 {
-  return code>='A' && code<='Z' ? (char)(code+'a'-'A') : (char)code;
+  return code>='A' && code<='Z' ? static_cast<char>(code+'a'-'A') : static_cast<char>(code);
 }
 
 static inline char asciiToUpper(uint32_t code)
 {
-  return code>='a' && code<='z' ? (char)(code+'A'-'a') : (char)code;
+  return code>='a' && code<='z' ? static_cast<char>(code+'A'-'a') : static_cast<char>(code);
 }
 
 static inline std::string caseConvert(const std::string &input,
@@ -212,7 +212,7 @@ const char *writeUTF8Char(TextStream &t,const char *s)
 bool lastUTF8CharIsMultibyte(const std::string &input)
 {
   // last byte is part of a multibyte UTF8 char if bit 8 is set and bit 7 is not
-  return !input.empty() && (((unsigned char)input[input.length()-1])&0xC0)==0x80;
+  return !input.empty() && (static_cast<unsigned char>(input[input.length()-1])&0xC0)==0x80;
 }
 
 bool isUTF8CharUpperCase(const std::string &input,size_t pos)

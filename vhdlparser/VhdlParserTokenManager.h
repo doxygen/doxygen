@@ -45,11 +45,11 @@ bool jjCanMove_1(int hiByte, int i1, int i2, unsigned long long l1, unsigned lon
 Token * jjFillToken();
 
 public:
-    int curLexState;
-    int jjnewStateCnt;
-    int jjround;
-    int jjmatchedPos;
-    int jjmatchedKind;
+    int curLexState = 0;
+    int jjnewStateCnt = 0;
+    int jjround = 0;
+    int jjmatchedPos = 0;
+    int jjmatchedKind = 0;
 
 Token * getNextToken();
 void  SkipLexicalActions(Token *matchedToken);

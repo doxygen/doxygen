@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="interfacemymodule_1_1operator_07_2_2_08" kind="interface" language="Fortran" prot="private">
+    <compoundname>mymodule::operator(//)</compoundname>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="interfacemymodule_1_1operator_07_2_2_08_1a33fa562a998fde6ddba173ee9d52ad6d" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>pure real function, dimension(3)</type>
+        <definition>pure real function, dimension(3) mymodule::operator(//)::cross_product</definition>
+        <argsstring>(v, w)</argsstring>
+        <name>cross_product</name>
+        <qualifiedname>mymodule::operator(//)::cross_product</qualifiedname>
+        <param>
+          <type>real, dimension(3), intent(in)</type>
+          <defname>v</defname>
+        </param>
+        <param>
+          <type>real, dimension(3), intent(in)</type>
+          <defname>w</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="090_interfaces.f90" line="70" column="1" bodyfile="090_interfaces.f90" bodystart="71" bodyend="74"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="090_interfaces.f90" line="51" column="1" bodyfile="090_interfaces.f90" bodystart="51" bodyend="52"/>
+    <listofallmembers>
+      <member refid="interfacemymodule_1_1operator_07_2_2_08_1a33fa562a998fde6ddba173ee9d52ad6d" prot="public" virt="non-virtual">
+        <scope>mymodule::operator(//)</scope>
+        <name>cross_product</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

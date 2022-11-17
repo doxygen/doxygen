@@ -56,5 +56,6 @@ class DotGfxHierarchyTable : public DotGraph
     DotNode *              m_rootSubgraphNode;
 };
 
+using DotGfxHierarchyTablePtr = std::shared_ptr<DotGfxHierarchyTable>;
 
 #endif

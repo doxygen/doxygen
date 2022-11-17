@@ -20,8 +20,6 @@
 #include "message.h"
 #include "regex.h"
 
-RTFListItemInfo rtf_listItemInfo[rtf_maxIndentLevels];
-
 QCString rtf_title;
 QCString rtf_subject;
 QCString rtf_comments;

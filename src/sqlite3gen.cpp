@@ -30,6 +30,7 @@
 #include "util.h"
 #include "outputlist.h"
 #include "docparser.h"
+#include "docnode.h"
 #include "language.h"
 
 #include "version.h"
@@ -175,6 +176,7 @@ const char * table_schema[][2] = {
       "\twrite                TEXT,\n"
       "\tprot                 INTEGER DEFAULT 0, -- 0:public 1:protected 2:private 3:package\n"
       "\tstatic               INTEGER DEFAULT 0, -- 0:no 1:yes\n"
+      "\textern               INTEGER DEFAULT 0, -- 0:no 1:yes\n"
       "\tconst                INTEGER DEFAULT 0, -- 0:no 1:yes\n"
       "\texplicit             INTEGER DEFAULT 0, -- 0:no 1:yes\n"
       "\tinline               INTEGER DEFAULT 0, -- 0:no 1:yes 2:both (set after encountering inline and not-inline)\n"
@@ -608,6 +610,7 @@ SqlStmt memberdef_insert={
     "write,"
     "prot,"
     "static,"
+    "extern,"
     "const,"
     "explicit,"
     "inline,"
@@ -666,6 +669,7 @@ SqlStmt memberdef_insert={
     ":write,"
     ":prot,"
     ":static,"
+    ":extern,"
     ":const,"
     ":explicit,"
     ":inline,"
@@ -925,7 +929,7 @@ static int insertPath(QCString name, bool local=TRUE, bool found=TRUE, int type=
 static void recordMetadata()
 {
   bindTextParameter(meta_insert,":doxygen_version",getFullVersion());
-  bindTextParameter(meta_insert,":schema_version","0.2.0",TRUE); //TODO: this should be a constant somewhere; not sure where
+  bindTextParameter(meta_insert,":schema_version","0.2.1",TRUE); //TODO: this should be a constant somewhere; not sure where
   bindTextParameter(meta_insert,":generated_at",dateToString(TRUE));
   bindTextParameter(meta_insert,":generated_on",dateToString(FALSE));
   bindTextParameter(meta_insert,":project_name",Config_getString(PROJECT_NAME));
@@ -1147,7 +1151,7 @@ static int prepareStatement(sqlite3 *db, SqlStmt &s)
   rc = sqlite3_prepare_v2(db,s.query,-1,&s.stmt,0);
   if (rc!=SQLITE_OK)
   {
-    err("prepare failed for %s\n%s\n", s.query, sqlite3_errmsg(db));
+    err("prepare failed for:\n  %s\n  %s\n", s.query, sqlite3_errmsg(db));
     s.db = NULL;
     return -1;
   }
@@ -1271,6 +1275,18 @@ static void writeInnerClasses(const ClassLinkedRefMap &cl, struct Refid outer_re
   }
 }
 
+static void writeInnerConcepts(const ConceptLinkedRefMap &cl, struct Refid outer_refid)
+{
+  for (const auto &cd : cl)
+  {
+    struct Refid inner_refid = insertRefid(cd->getOutputFileBase());
+
+    bindIntParameter(contains_insert,":inner_rowid", inner_refid.rowid);
+    bindIntParameter(contains_insert,":outer_rowid", outer_refid.rowid);
+    step(contains_insert);
+  }
+}
+
 static void writeInnerPages(const PageLinkedRefMap &pl, struct Refid outer_refid)
 {
   for (const auto &pd : pl)
@@ -1391,26 +1407,30 @@ QCString getSQLDocBlock(const Definition *scope,
   if (doc.isEmpty()) return "";
 
   TextStream t;
-  DocNode *root = validatingParseDoc(
-    fileName,
-    lineNr,
-    const_cast<Definition*>(scope),
-    toMemberDef(def),
-    doc,
-    FALSE,
-    FALSE,
-    0,
-    FALSE,
-    FALSE,
-    Config_getBool(MARKDOWN_SUPPORT)
-  );
-  XMLCodeGenerator codeGen(t);
-  // create a parse tree visitor for XML
-  XmlDocVisitor *visitor = new XmlDocVisitor(t,codeGen,
-                      scope ? scope->getDefFileExtension() : QCString(""));
-  root->accept(visitor);
-  delete visitor;
-  delete root;
+  auto parser { createDocParser() };
+  auto ast    { validatingParseDoc(
+                *parser.get(),
+                fileName,
+                lineNr,
+                const_cast<Definition*>(scope),
+                toMemberDef(def),
+                doc,
+                FALSE,
+                FALSE,
+                0,
+                FALSE,
+                FALSE,
+                Config_getBool(MARKDOWN_SUPPORT))
+              };
+  auto astImpl = dynamic_cast<const DocNodeAST*>(ast.get());
+  if (astImpl)
+  {
+    XMLCodeGenerator codeGen(t);
+    // create a parse tree visitor for XML
+    XmlDocVisitor visitor(t,codeGen,
+        scope ? scope->getDefFileExtension() : QCString(""));
+    std::visit(visitor,astImpl->root);
+  }
   return convertCharEntitiesToUTF8(t.str().c_str());
 }
 
@@ -1612,6 +1632,7 @@ static void generateSqlite3ForMember(const MemberDef *md, struct Refid scope_ref
   bindIntParameter(memberdef_insert,":prot",md->protection());
 
   bindIntParameter(memberdef_insert,":static",md->isStatic());
+  bindIntParameter(memberdef_insert,":extern",md->isExternal());
 
   bool isFunc=FALSE;
   switch (md->memberType())
@@ -1943,7 +1964,10 @@ static void generateSqlite3ForClass(const ClassDef *cd)
       DBG_CTX(("-----> ClassDef includeInfo for %s\n", qPrint(nm)));
       DBG_CTX(("       local    : %d\n", ii->local));
       DBG_CTX(("       imported : %d\n", ii->imported));
-      DBG_CTX(("header: %s\n", qPrint(ii->fileDef->absFilePath())));
+      if (ii->fileDef)
+      {
+          DBG_CTX(("header: %s\n", qPrint(ii->fileDef->absFilePath())));
+      }
       DBG_CTX(("       file_id  : %d\n", file_id));
       DBG_CTX(("       header_id: %d\n", header_id));
 
@@ -2066,6 +2090,9 @@ static void generateSqlite3ForNamespace(const NamespaceDef *nd)
 
   // + contained class definitions
   writeInnerClasses(nd->getClasses(),refid);
+
+  // + contained concept definitions
+  writeInnerConcepts(nd->getConcepts(),refid);
 
   // + contained namespace definitions
   writeInnerNamespaces(nd->getNamespaces(),refid);
@@ -2213,6 +2240,9 @@ static void generateSqlite3ForFile(const FileDef *fd)
   // + contained class definitions
   writeInnerClasses(fd->getClasses(),refid);
 
+  // + contained concept definitions
+  writeInnerConcepts(fd->getConcepts(),refid);
+
   // + contained namespace definitions
   writeInnerNamespaces(fd->getNamespaces(),refid);
 
@@ -2273,6 +2303,9 @@ static void generateSqlite3ForGroup(const GroupDef *gd)
 
   // + classes
   writeInnerClasses(gd->getClasses(),refid);
+
+  // + concepts 
+  writeInnerConcepts(gd->getConcepts(),refid);
 
   // + namespaces
   writeInnerNamespaces(gd->getNamespaces(),refid);
@@ -2361,7 +2394,7 @@ static void generateSqlite3ForPage(const PageDef *pd,bool isExample)
   QCString qrefid = pd->getOutputFileBase();
   if (pd->getGroupDef())
   {
-    qrefid+=(QCString)"_"+pd->name();
+    qrefid+="_"+pd->name();
   }
   if (qrefid=="index") qrefid="indexpage"; // to prevent overwriting the generated index page.
 
@@ -2496,7 +2529,7 @@ void generateSqlite3()
 
   if ( -1 == prepareStatements(db) )
   {
-    err("sqlite generator: prepareStatements failed!");
+    err("sqlite generator: prepareStatements failed!\n");
     return;
   }
 
@@ -2579,7 +2612,7 @@ void generateSqlite3()
 #else // USE_SQLITE3
 void generateSqlite3()
 {
-  err("sqlite3 support has not been compiled in!");
+  err("sqlite3 support has not been compiled in!\n");
 }
 #endif
 // vim: noai:ts=2:sw=2:ss=2:expandtab

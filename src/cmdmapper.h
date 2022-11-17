@@ -13,8 +13,8 @@
  *
  */
 
-#ifndef _CMDMAPPER_H
-#define _CMDMAPPER_H
+#ifndef CMDMAPPER_H
+#define CMDMAPPER_H
 
 #include <map>
 #include <string>
@@ -141,7 +141,16 @@ enum CommandType
   CMD_RTFINCLUDE   = 112,
   CMD_DOCBOOKINCLUDE= 113,
   CMD_MANINCLUDE   = 114,
-  CMD_XMLINCLUDE   = 115
+  CMD_XMLINCLUDE   = 115,
+  CMD_ILINE        = 116,
+  CMD_ILITERAL     = 117,
+  CMD_ENDILITERAL  = 118,
+  CMD_IFILE        = 119,
+  CMD_SHOWDATE     = 120,
+  CMD_ISTARTCODE   = 121,
+  CMD_ENDICODE     = 122,
+  CMD_IVERBATIM    = 123,
+  CMD_ENDIVERBATIM = 124
 };
 
 enum HtmlTagType
@@ -185,6 +194,8 @@ enum HtmlTagType
   HTML_INS       = 36,
   HTML_DEL       = 37,
   HTML_S         = 38,
+  HTML_DETAILS   = 39,
+  HTML_CITE      = 40,
 
   XML_CmdMask    = 0x100,
 

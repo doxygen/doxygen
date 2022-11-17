@@ -8,6 +8,7 @@
         <definition>Foo::Foo</definition>
         <argsstring>()</argsstring>
         <name>Foo</name>
+        <qualifiedname>Foo::Foo</qualifiedname>
         <briefdescription>
         </briefdescription>
         <detaileddescription>
@@ -17,11 +18,12 @@
         </inbodydescription>
         <location file="074_ref.cpp" line="21" column="3"/>
       </memberdef>
-      <memberdef kind="function" id="struct_foo_1a279debd94d894223fa8468933e2d6188" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+      <memberdef kind="function" id="struct_foo_1a95293a996eca95db78ef308372803c62" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type><ref refid="struct_foo" kindref="compound">Foo</ref> &amp;</type>
-        <definition>Foo&amp; Foo::operator&lt;&lt;</definition>
+        <definition>Foo &amp; Foo::operator&lt;&lt;</definition>
         <argsstring>(int i)</argsstring>
         <name>operator&lt;&lt;</name>
+        <qualifiedname>Foo::operator&lt;&lt;</qualifiedname>
         <param>
           <type>int</type>
           <declname>i</declname>
@@ -35,11 +37,12 @@
         </inbodydescription>
         <location file="074_ref.cpp" line="32" column="3"/>
       </memberdef>
-      <memberdef kind="function" id="struct_foo_1a48bcc3de9b2f1ad09a3518a0c9f0da61" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+      <memberdef kind="function" id="struct_foo_1ab797fc172c39b48c0ad7ce6a2a9dd74d" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
         <type>const <ref refid="struct_foo" kindref="compound">Foo</ref> &amp;</type>
-        <definition>const Foo&amp; Foo::operator&lt;&lt;</definition>
+        <definition>const Foo &amp; Foo::operator&lt;&lt;</definition>
         <argsstring>(int i) const</argsstring>
         <name>operator&lt;&lt;</name>
+        <qualifiedname>Foo::operator&lt;&lt;</qualifiedname>
         <param>
           <type>int</type>
           <declname>i</declname>
@@ -58,6 +61,7 @@
         <definition>int Foo::operator()</definition>
         <argsstring>(int i)</argsstring>
         <name>operator()</name>
+        <qualifiedname>Foo::operator()</qualifiedname>
         <param>
           <type>int</type>
           <declname>i</declname>
@@ -76,6 +80,7 @@
         <definition>int Foo::operator()</definition>
         <argsstring>(int i) const</argsstring>
         <name>operator()</name>
+        <qualifiedname>Foo::operator()</qualifiedname>
         <param>
           <type>int</type>
           <declname>i</declname>
@@ -89,11 +94,12 @@
         </inbodydescription>
         <location file="074_ref.cpp" line="41" column="7"/>
       </memberdef>
-      <memberdef kind="function" id="struct_foo_1aa20bd44b1bb87a652ac65170ddfa1a5a" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+      <memberdef kind="function" id="struct_foo_1a9a43153b5cfddc91cb203adb36baed73" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type><ref refid="struct_foo" kindref="compound">Foo</ref> &amp;</type>
-        <definition>Foo&amp; Foo::operator&amp;=</definition>
+        <definition>Foo &amp; Foo::operator&amp;=</definition>
         <argsstring>(const Foo &amp;rhs)</argsstring>
         <name>operator&amp;=</name>
+        <qualifiedname>Foo::operator&amp;=</qualifiedname>
         <param>
           <type>const <ref refid="struct_foo" kindref="compound">Foo</ref> &amp;</type>
           <declname>rhs</declname>
@@ -107,11 +113,12 @@
         </inbodydescription>
         <location file="074_ref.cpp" line="44" column="7"/>
       </memberdef>
-      <memberdef kind="function" id="struct_foo_1ab1a2a53ad5b2a0f97422630330c151fe" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+      <memberdef kind="function" id="struct_foo_1acbe5b0f95d0cc8a1b98cad8ce4b17ae8" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
         <type>const <ref refid="struct_foo" kindref="compound">Foo</ref> &amp;</type>
-        <definition>const Foo&amp; Foo::operator&amp;=</definition>
+        <definition>const Foo &amp; Foo::operator&amp;=</definition>
         <argsstring>(const Foo &amp;rhs) const</argsstring>
         <name>operator&amp;=</name>
+        <qualifiedname>Foo::operator&amp;=</qualifiedname>
         <param>
           <type>const <ref refid="struct_foo" kindref="compound">Foo</ref> &amp;</type>
           <declname>rhs</declname>
@@ -125,11 +132,12 @@
         </inbodydescription>
         <location file="074_ref.cpp" line="47" column="13"/>
       </memberdef>
-      <memberdef kind="function" id="struct_foo_1a0514e1f5b30cbf77e1c39d7aba308656" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+      <memberdef kind="function" id="struct_foo_1a8ceb6108ffeffc18a60d39e12b5ae6bc" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int *</type>
-        <definition>int* Foo::operator-&gt;*</definition>
+        <definition>int * Foo::operator-&gt;*</definition>
         <argsstring>(int *p)</argsstring>
         <name>operator-&gt;*</name>
+        <qualifiedname>Foo::operator-&gt;*</qualifiedname>
         <param>
           <type>int *</type>
           <declname>p</declname>
@@ -150,6 +158,7 @@
         <definition>Foo Foo::fun</definition>
         <argsstring>() const</argsstring>
         <name>fun</name>
+        <qualifiedname>Foo::fun</qualifiedname>
         <briefdescription>
           <para>Fun with itself. </para>
         </briefdescription>
@@ -168,6 +177,7 @@
         <definition>static Foo Foo::fun</definition>
         <argsstring>(Foo a, Foo b)</argsstring>
         <name>fun</name>
+        <qualifiedname>Foo::fun</qualifiedname>
         <param>
           <type>
             <ref refid="struct_foo" kindref="compound">Foo</ref>
@@ -221,10 +231,10 @@
           <para><ref refid="struct_foo" kindref="compound">Foo</ref> constant. </para>
         </simplesect>
         <simplesect kind="see">
-          <para><ref refid="struct_foo_1a279debd94d894223fa8468933e2d6188" kindref="member">less than operator</ref>. </para>
+          <para><ref refid="struct_foo_1a95293a996eca95db78ef308372803c62" kindref="member">less than operator</ref>. </para>
         </simplesect>
         <simplesect kind="see">
-          <para><ref refid="struct_foo_1a48bcc3de9b2f1ad09a3518a0c9f0da61" kindref="member">const less than operator</ref>. </para>
+          <para><ref refid="struct_foo_1ab797fc172c39b48c0ad7ce6a2a9dd74d" kindref="member">const less than operator</ref>. </para>
         </simplesect>
         <simplesect kind="see">
           <para><ref refid="struct_foo_1a3a41dcf8c53f777d50676ea28400a640" kindref="member">call operator</ref>. </para>
@@ -233,13 +243,13 @@
           <para><ref refid="struct_foo_1ae3c9c1f33cdb8b932c6eb104660a262b" kindref="member">const call operator</ref>. </para>
         </simplesect>
         <simplesect kind="see">
-          <para><ref refid="struct_foo_1aa20bd44b1bb87a652ac65170ddfa1a5a" kindref="member">and equal operator</ref>. </para>
+          <para><ref refid="struct_foo_1a9a43153b5cfddc91cb203adb36baed73" kindref="member">and equal operator</ref>. </para>
         </simplesect>
         <simplesect kind="see">
-          <para><ref refid="struct_foo_1ab1a2a53ad5b2a0f97422630330c151fe" kindref="member">const and equal operator</ref>. </para>
+          <para><ref refid="struct_foo_1acbe5b0f95d0cc8a1b98cad8ce4b17ae8" kindref="member">const and equal operator</ref>. </para>
         </simplesect>
         <simplesect kind="see">
-          <para><ref refid="struct_foo_1a0514e1f5b30cbf77e1c39d7aba308656" kindref="member">member pointer operator</ref>. </para>
+          <para><ref refid="struct_foo_1a8ceb6108ffeffc18a60d39e12b5ae6bc" kindref="member">member pointer operator</ref>. </para>
         </simplesect>
       </para>
     </detaileddescription>
@@ -257,11 +267,11 @@
         <scope>Foo</scope>
         <name>fun</name>
       </member>
-      <member refid="struct_foo_1aa20bd44b1bb87a652ac65170ddfa1a5a" prot="public" virt="non-virtual">
+      <member refid="struct_foo_1a9a43153b5cfddc91cb203adb36baed73" prot="public" virt="non-virtual">
         <scope>Foo</scope>
         <name>operator&amp;=</name>
       </member>
-      <member refid="struct_foo_1ab1a2a53ad5b2a0f97422630330c151fe" prot="public" virt="non-virtual">
+      <member refid="struct_foo_1acbe5b0f95d0cc8a1b98cad8ce4b17ae8" prot="public" virt="non-virtual">
         <scope>Foo</scope>
         <name>operator&amp;=</name>
       </member>
@@ -273,15 +283,15 @@
         <scope>Foo</scope>
         <name>operator()</name>
       </member>
-      <member refid="struct_foo_1a0514e1f5b30cbf77e1c39d7aba308656" prot="public" virt="non-virtual">
+      <member refid="struct_foo_1a8ceb6108ffeffc18a60d39e12b5ae6bc" prot="public" virt="non-virtual">
         <scope>Foo</scope>
         <name>operator-&gt;*</name>
       </member>
-      <member refid="struct_foo_1a279debd94d894223fa8468933e2d6188" prot="public" virt="non-virtual">
+      <member refid="struct_foo_1a95293a996eca95db78ef308372803c62" prot="public" virt="non-virtual">
         <scope>Foo</scope>
         <name>operator&lt;&lt;</name>
       </member>
-      <member refid="struct_foo_1a48bcc3de9b2f1ad09a3518a0c9f0da61" prot="public" virt="non-virtual">
+      <member refid="struct_foo_1ab797fc172c39b48c0ad7ce6a2a9dd74d" prot="public" virt="non-virtual">
         <scope>Foo</scope>
         <name>operator&lt;&lt;</name>
       </member>

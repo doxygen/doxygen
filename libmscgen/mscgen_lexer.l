@@ -33,6 +33,9 @@
 #include "mscgen_safe.h"
 #include "mscgen_lexer.h"
 #include "mscgen_language.h"  /* Token definitions from Yacc/Bison */
+
+#define USE_STATE2STRING 0
+
 /* Counter for error reporting */
 static unsigned long  lex_linenum = 1;
 static char          *lex_line = NULL;
@@ -41,7 +44,10 @@ static Boolean        lex_utf8 = FALSE;
 /* Local function prototypes */
 static void newline(const char *text, unsigned int n);
 static char *trimQstring(char *s);
+
+#if USE_STATE2STRING
 static const char *stateToString(int state);
+#endif
 %}
 
 /* Not used, so prevent compiler warning */
@@ -241,5 +247,7 @@ void lex_resetparser()
   lex_utf8 = FALSE;
 }
 
+#if USE_STATE2STRING
 #include "mscgen_lexer.l.h"
+#endif
 /* END OF FILE */

@@ -230,7 +230,7 @@ class Entry
      */
     void reset();
 
-    void markAsProcessed() const { ((Entry*)(this))->section = Entry::EMPTY_SEC; }
+    void markAsProcessed() const { (const_cast<Entry*>(this))->section = Entry::EMPTY_SEC; }
     void setFileDef(FileDef *fd);
     FileDef *fileDef() const { return m_fileDef; }
 

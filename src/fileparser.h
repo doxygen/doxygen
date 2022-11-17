@@ -22,14 +22,13 @@
 class FileCodeParser : public CodeParserInterface
 {
   public:
-    virtual ~FileCodeParser() {}
     void parseCode(CodeOutputInterface &codeOutIntf,
                    const QCString &scopeName,
                    const QCString &input,
                    SrcLangExt lang,
                    bool isExampleBlock,
                    const QCString &exampleName=QCString(),
-                   FileDef *fileDef=0,
+                   const FileDef *fileDef=0,
                    int startLine=-1,
                    int endLine=-1,
                    bool inlineFragment=FALSE,

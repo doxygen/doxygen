@@ -544,7 +544,7 @@ static unsigned HuffmanTree_makeFromFrequencies(HuffmanTree* tree, const unsigne
 
   if(numcodes == 0) return 80; /*error: a tree of 0 symbols is not supposed to be made*/
   tree->numcodes = (unsigned)numcodes; /*number of symbols*/
-  uivector_resize(&tree->lengths, 0);
+  if (!uivector_resize(&tree->lengths, 0)) return 9955;
   if(!uivector_resizev(&tree->lengths, tree->numcodes, 0)) return 9905;
 
   if(numpresent == 0) /*there are no symbols at all, in that case add one symbol of value 0 to the tree (see RFC 1951 section 3.2.7) */

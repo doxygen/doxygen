@@ -22,9 +22,11 @@
 
 static QCString getUniqueId(const MemberDef *md)
 {
-  QCString result = md->getReference()+"$"+
-         md->getOutputFileBase()+"#"+
-         md->anchor();
+  const MemberDef *def = md->memberDefinition();
+  if (def==0) def = md;
+  QCString result = def->getReference()+"$"+
+         def->getOutputFileBase()+"#"+
+         def->anchor();
   return result;
 }
 
@@ -187,6 +189,8 @@ QCString DotCallGraph::writeGraph(
         const QCString &relPath,bool generateImageMap,
         int graphId)
 {
+  m_doNotAddImageToIndex = textFormat!=EOF_Html;
+
   return DotGraph::writeGraph(out, graphFormat, textFormat, path, fileName, relPath, generateImageMap, graphId);
 }
 
@@ -202,6 +206,19 @@ bool DotCallGraph::isTooBig() const
 
 int DotCallGraph::numNodes() const
 {
-  return (int)m_startNode->children().size();
+  return static_cast<int>(m_startNode->children().size());
+}
+
+bool DotCallGraph::isTrivial(const MemberDef *md,bool inverse)
+{
+  auto refs = inverse ? md->getReferencedByMembers() : md->getReferencesMembers();
+  for (const auto &rmd : refs)
+  {
+    if (rmd->showInCallGraph())
+    {
+      return FALSE;
+    }
+  }
+  return TRUE;
 }
 

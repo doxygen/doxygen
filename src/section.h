@@ -77,6 +77,10 @@ class SectionInfo
     void setType(SectionType t)          { m_type       = t;  }
     void setGenerated(bool b)            { m_generated  = b;  }
     void setDefinition(Definition *d)    { m_definition = d;  }
+    void setTitle(const QCString &t)     { m_title      = t;  }
+    void setLevel(int l)                 { m_level      = l;  }
+    void setReference(const QCString &r) { m_ref        = r;  }
+    void setLineNr(int l)                { m_lineNr     = l;  }
 
   private:
     QCString    m_label;
@@ -140,6 +144,28 @@ class SectionManager : public LinkedMap<SectionInfo>
                      const QCString &title, SectionType type, int level,const QCString &ref=QCString())
     {
       return LinkedMap<SectionInfo>::add(label.data(),fileName,lineNr,title,type,level,ref);
+    }
+
+    //! Replace an existing section with a new one
+    //! Return a non-owning pointer to the newly added section
+    SectionInfo *replace(const QCString &label, const QCString &fileName, int lineNr,
+                         const QCString &title, SectionType type, int level,const QCString &ref=QCString())
+    {
+      SectionInfo *si = LinkedMap<SectionInfo>::find(label.data());
+      if (si)
+      {
+        si->setFileName(fileName);
+        si->setLineNr(lineNr);
+        si->setTitle(title);
+        si->setType(type);
+        si->setLevel(level);
+        si->setReference(ref);
+        return si;
+      }
+      else
+      {
+        return LinkedMap<SectionInfo>::add(label.data(),fileName,lineNr,title,type,level,ref);
+      }
     }
 
     //! returns a reference to the singleton

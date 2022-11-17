@@ -81,7 +81,7 @@ static bool isAlpha(const char c)
 
 static bool isAlphaNumSpec(const char c)
 {
-  return isAlpha(c) || (c>='0' && c<='9') || c=='-' || c=='.' || (((unsigned char)c)>=0x80);
+  return isAlpha(c) || (c>='0' && c<='9') || c=='-' || c=='.' || (static_cast<unsigned char>(c)>=0x80);
 }
 
 /**
@@ -113,7 +113,7 @@ void CondParser::getToken()
   //printf("\tgetToken e:{%c}, ascii=%i, col=%i\n", *e, *e, e-expr);
 
   // skip over whitespaces
-  while (*m_e == ' ' || *m_e == '\t')     // space or tab
+  while (*m_e == ' ' || *m_e == '\t' || *m_e == '\n')     // space or tab or newline
   {
     m_e++;
   }

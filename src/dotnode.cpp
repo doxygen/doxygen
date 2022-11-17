@@ -34,7 +34,7 @@ struct EdgeProperties
 /*! mapping from protection levels to color names */
 static const char *normalEdgeColorMap[] =
 {
-  "midnightblue",  // Public
+  "steelblue1",    // Public
   "darkgreen",     // Protected
   "firebrick4",    // Private
   "darkorchid3",   // "use" relation
@@ -61,7 +61,7 @@ static const char *normalEdgeStyleMap[] =
 
 static const char *umlEdgeColorMap[] =
 {
-  "midnightblue",  // Public
+  "steelblue1",    // Public
   "darkgreen",     // Protected
   "firebrick4",    // Private
   "grey25",        // "use" relation
@@ -96,31 +96,7 @@ static EdgeProperties umlEdgeProps =
   umlEdgeColorMap, umlArrowStyleMap, umlEdgeStyleMap
 };
 
-// Extracted from config setting "DOT_UML_DETAILS"
-enum class UmlDetailLevel
-{
-  Default, // == NO, the default setting
-  Full,    // == YES, include type and arguments
-  None     // == NONE, don't include compartments for attributes and methods
-};
-
-// Local helper function for extracting the configured detail level
-static UmlDetailLevel getUmlDetailLevelFromConfig()
-{
-  UmlDetailLevel result = UmlDetailLevel::Default;
-  QCString umlDetailsStr = Config_getEnum(DOT_UML_DETAILS).upper();
-  if (umlDetailsStr == "YES")
-  {
-    result=UmlDetailLevel::Full;
-  }
-  else if (umlDetailsStr == "NONE")
-  {
-    result=UmlDetailLevel::None;
-  }
-  return result;
-}
-
-static QCString escapeTooltip(const QCString &tooltip)
+QCString escapeTooltip(const QCString &tooltip)
 {
   if (tooltip.isEmpty()) return tooltip;
   QCString result;
@@ -155,6 +131,7 @@ static void writeBoxMemberList(TextStream &t,
     }
 
     int count=0;
+    auto dotUmlDetails = Config_getEnum(DOT_UML_DETAILS);
     for (const auto &mma : *ml)
     {
       if (mma->getClassDef() == scope &&
@@ -170,7 +147,7 @@ static void writeBoxMemberList(TextStream &t,
         {
           t << prot << " ";
           QCString label;
-          if(getUmlDetailLevelFromConfig()==UmlDetailLevel::Full)
+          if (dotUmlDetails==DOT_UML_DETAILS_t::YES)
           {
             label+=mma->typeString();
             label+=" ";
@@ -178,7 +155,7 @@ static void writeBoxMemberList(TextStream &t,
           label+=mma->name();
           if (!mma->isObjCMethod() && (mma->isFunction() || mma->isSlot() || mma->isSignal()))
           {
-            if(getUmlDetailLevelFromConfig()==UmlDetailLevel::Full)
+            if (dotUmlDetails==DOT_UML_DETAILS_t::YES)
             {
               label+=mma->argsString();
             }
@@ -377,18 +354,14 @@ void DotNode::deleteNodes(DotNode *node)
   }
 }
 
-void DotNode::writeBox(TextStream &t,
-                       GraphType gt,
-                       GraphOutputFormat /*format*/,
-                       bool hasNonReachableChildren) const
+void DotNode::writeLabel(TextStream &t, GraphType gt) const
 {
-  const char *labCol =
-    m_url.isEmpty() ? "grey75" :  // non link
-    (hasNonReachableChildren ? "red" : "black");
-  t << "  Node" << m_number << " [label=\"";
-
   if (m_classDef && Config_getBool(UML_LOOK) && (gt==Inheritance || gt==Collaboration))
   {
+    // Set shape to the record-based type.
+    // Record-based shape represent recursive lists of fields, which are drawn as alternating horizontal and vertical rows of boxes. Special characters are: Literal braces, vertical bars and angle brackets.
+    // Only shape types: record and Mrecord support record-based label. See dot User's Manual, Ch. 21, p. 6.
+    t << "shape=record,label=";
     // add names shown as relations to a set, so we don't show
     // them as attributes as well
     StringUnorderedSet arrowNames;
@@ -397,7 +370,7 @@ void DotNode::writeBox(TextStream &t,
     {
       if (!ei.label().isEmpty()) // labels joined by \n
       {
-        int i=ei.label().find('\n');
+        int i;
         int p=0;
         QCString lab;
         while ((i=ei.label().find('\n',p))!=-1)
@@ -412,8 +385,9 @@ void DotNode::writeBox(TextStream &t,
     }
 
     //printf("DotNode::writeBox for %s\n",qPrint(m_classDef->name()));
-    t << "{" << convertLabel(m_label) << "\\n";
-    if (getUmlDetailLevelFromConfig()!=UmlDetailLevel::None)
+    t << "\"{" << convertLabel(m_label) << "\\n";
+    auto dotUmlDetails = Config_getEnum(DOT_UML_DETAILS);
+    if (dotUmlDetails!=DOT_UML_DETAILS_t::NONE)
     {
       t << "|";
       writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberListType_pubAttribs),m_classDef,FALSE,&arrowNames);
@@ -454,42 +428,93 @@ void DotNode::writeBox(TextStream &t,
         }
       }
     }
-    t << "}";
+    t << "}\"";
+  }
+  else if (Config_getString(DOT_NODE_ATTR).contains("shape=plain"))
+  {
+    t << "label=";
+    if (m_isRoot)
+      t << "<<b>" << convertToXML(m_label) << "</b>>";
+    else if (m_truncated == Truncated)
+      t << "<<i>" << convertToXML(m_label) << "</i>>";
+    else
+      t << '"' << convertLabel(m_label) << '"';
   }
   else // standard look
   {
-    t << convertLabel(m_label);
+    t << "label=" << '"' << convertLabel(m_label) << '"';
   }
-  t << "\",height=0.2,width=0.4";
-  if (m_isRoot)
+}
+
+void DotNode::writeUrl(TextStream &t) const
+{
+  if (m_url.isEmpty())
+    return;
+  int tagPos = m_url.findRev('$');
+  t << ",URL=\"";
+  QCString noTagURL = m_url;
+  if (tagPos!=-1)
   {
-    t << ",color=\"black\", fillcolor=\"grey75\", style=\"filled\", fontcolor=\"black\"";
+    t << m_url.left(tagPos);
+    noTagURL = m_url.mid(tagPos);
+  }
+  int anchorPos = noTagURL.findRev('#');
+  if (anchorPos==-1)
+  {
+    t << addHtmlExtensionIfMissing(noTagURL) << "\"";
   }
   else
   {
-    if (!Config_getBool(DOT_TRANSPARENT))
+    t << addHtmlExtensionIfMissing(noTagURL.left(anchorPos))
+      << noTagURL.right(noTagURL.length() - anchorPos) << "\"";
+  }
+}
+
+void DotNode::writeBox(TextStream &t,
+                       GraphType gt,
+                       GraphOutputFormat /*format*/,
+                       bool hasNonReachableChildren) const
+{
+  const char *labCol;
+  const char *fillCol = "white";
+  if (m_classDef)
+  {
+    if (m_classDef->hasDocumentation() && hasNonReachableChildren)
     {
-      t << ",color=\"" << labCol << "\", fillcolor=\"";
-      t << "white";
-      t << "\", style=\"filled\"";
+      labCol = "red";
+      fillCol = "#FFF0F0";
     }
-    else
+    else if (m_classDef->hasDocumentation() && !hasNonReachableChildren)
+      labCol = "gray40";
+    else if (!m_classDef->hasDocumentation() && hasNonReachableChildren)
+      labCol = "orangered";
+    else // (!m_classDef->hasDocumentation() && !hasNonReachableChildren)
     {
-      t << ",color=\"" << labCol << "\"";
+      labCol = "grey75";
+      if (m_classDef->templateMaster() && m_classDef->templateMaster()->hasDocumentation())
+        labCol = "gray40";
     }
-    if (!m_url.isEmpty())
-    {
-      int anchorPos = m_url.findRev('#');
-      if (anchorPos==-1)
-      {
-        t << ",URL=\"" << m_url << Doxygen::htmlFileExtension << "\"";
-      }
-      else
-      {
-        t << ",URL=\"" << m_url.left(anchorPos) << Doxygen::htmlFileExtension
-          << m_url.right(m_url.length()-anchorPos) << "\"";
-      }
-    }
+  }
+  else
+  {
+    labCol = m_url.isEmpty() ? "grey60" :  // non link
+    (hasNonReachableChildren ? "red" : "grey40");
+    fillCol = m_url.isEmpty() ? "#E0E0E0" :
+    (hasNonReachableChildren ? "#FFF0F0" : "white");
+  }
+  t << "  Node" << m_number << " [";
+  writeLabel(t,gt);
+  t << ",height=0.2,width=0.4";
+  if (m_isRoot)
+  {
+    t << ",color=\"gray40\", fillcolor=\"grey60\", style=\"filled\", fontcolor=\"black\"";
+  }
+  else
+  {
+    t << ",color=\"" << labCol << "\"";
+    t << ", fillcolor=\"" << fillCol << "\"";
+    t << ", style=\"filled\"";
+    writeUrl(t);
   }
   if (!m_tooltip.isEmpty())
   {
@@ -527,8 +552,7 @@ void DotNode::writeArrow(TextStream &t,
   bool umlUseArrow = aStyle=="odiamond";
 
   if (pointBack && !umlUseArrow) t << "dir=\"back\",";
-  t << "color=\"" << eProps->edgeColorMap[ei->color()]
-    << "\",fontsize=\"" << Config_getInt(DOT_FONTSIZE) << "\",";
+  t << "color=\"" << eProps->edgeColorMap[ei->color()] << "\",";
   t << "style=\"" << eProps->edgeStyleMap[ei->style()] << "\"";
   if (!ei->label().isEmpty())
   {
@@ -547,7 +571,6 @@ void DotNode::writeArrow(TextStream &t,
       t << ",arrowhead=\"" << eProps->arrowStyleMap[ei->color()] << "\"";
   }
 
-  if (format==GOF_BITMAP) t << ",fontname=\"" << Config_getString(DOT_FONTNAME) << "\"";
   t << "];\n";
 }
 
@@ -816,43 +839,38 @@ void DotNode::colorConnectedNodes(int curColor)
   }
 }
 
+#define DEBUG_RENUMBERING 0
+
 void DotNode::renumberNodes(int &number)
 {
-  m_number = number++;
-  for (const auto &cn : m_children)
+  if (!isRenumbered())
   {
-    if (!cn->isRenumbered())
+#if DEBUG_RENUMBERING
+    static int level = 0;
+    printf("%3d: ",subgraphId());
+    for (int i = 0; i < level; i++) printf("  ");
+    printf("> %s old = %d new = %d\n",qPrint(m_label),m_number,number);
+    level++;
+#endif
+    m_number = number++;
+    markRenumbered();
+    for (const auto &cn : m_children)
     {
-      cn->markRenumbered();
       cn->renumberNodes(number);
     }
+    for (const auto &pn : m_parents)
+    {
+      pn->renumberNodes(number);
+    }
+#if DEBUG_RENUMBERING
+    level--;
+    printf("%3d: ",subgraphId());
+    for (int i = 0; i < level; i++) printf("  ");
+    printf("< %s assigned = %d\n",qPrint(m_label),m_number);
+#endif
   }
 }
 
-const DotNode *DotNode::findDocNode() const
-{
-  if (!m_url.isEmpty()) return this;
-  //printf("findDocNode(): '%s'\n",qPrint(m_label));
-  for (const auto &pn : m_parents)
-  {
-    if (!pn->hasDocumentation())
-    {
-      pn->markHasDocumentation();
-      const DotNode *dn = pn->findDocNode();
-      if (dn) return dn;
-    }
-  }
-  for (const auto &cn : m_children)
-  {
-    if (!cn->hasDocumentation())
-    {
-      cn->markHasDocumentation();
-      const DotNode *dn = cn->findDocNode();
-      if (dn) return dn;
-    }
-  }
-  return 0;
-}
 
 
 

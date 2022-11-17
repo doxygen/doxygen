@@ -22,17 +22,20 @@
 #include "dotgraph.h" // only for GraphOutputFormat
 #include "dotfilepatcher.h"
 #include "dotrunner.h"
+#include "doxygen.h"
 
 class DotRunner;
 class DotRunnerQueue;
 class TextStream;
+
+using DotWorkerThreadPtr = std::unique_ptr< DotWorkerThread, NonTerminatingDeleter<DotWorkerThread > >;
 
 /** Singleton that manages parallel dot invocations and patching files for embedding image maps */
 class DotManager
 {
   public:
     static DotManager *instance();
-    static void deleteInstance();
+    //static void deleteInstance();
     DotRunner*      createRunner(const QCString& absDotName, const QCString& md5Hash);
     DotFilePatcher *createFilePatcher(const QCString &fileName);
     bool run() const;
@@ -41,18 +44,19 @@ class DotManager
     DotManager();
     virtual ~DotManager();
 
-    std::map<std::string, std::unique_ptr<DotRunner>>       m_runners;
-    std::map<std::string, DotFilePatcher>  m_filePatchers;
-    static DotManager     *m_theInstance;
-    DotRunnerQueue        *m_queue;
-    std::vector< std::unique_ptr<DotWorkerThread> > m_workers;
+    std::map<std::string, std::unique_ptr<DotRunner> > m_runners;
+    std::map<std::string, DotFilePatcher>              m_filePatchers;
+    DotRunnerQueue                                    *m_queue;
+    std::vector< DotWorkerThreadPtr >                  m_workers;
 };
 
 void writeDotGraphFromFile(const QCString &inFile,const QCString &outDir,
-                           const QCString &outFile,GraphOutputFormat format);
+                           const QCString &outFile,GraphOutputFormat format,
+                           const QCString &srcFile,int srcLine);
 void writeDotImageMapFromFile(TextStream &t,
-                              const QCString& inFile, const QCString& outDir,
-                              const QCString& relPath,const QCString& baseName,
-                              const QCString& context,int graphId=-1);
+                              const QCString &inFile, const QCString& outDir,
+                              const QCString &relPath,const QCString& baseName,
+                              const QCString &context,int graphId,
+                              const QCString &srcFile,int srcLine);
 
 #endif

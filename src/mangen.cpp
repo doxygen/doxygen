@@ -115,6 +115,13 @@ void ManGenerator::init()
   createSubDirs(d);
 }
 
+void ManGenerator::cleanup()
+{
+  QCString dname = Config_getString(MAN_OUTPUT);
+  Dir d(dname.str());
+  clearSubDirs(d);
+}
+
 static QCString buildFileName(const QCString &name)
 {
   QCString fileName;
@@ -238,7 +245,8 @@ void ManGenerator::writeObjectLink(const QCString &,const QCString &,
   startBold(); docify(name); endBold();
 }
 
-void ManGenerator::writeCodeLink(const QCString &,const QCString &,
+void ManGenerator::writeCodeLink(CodeSymbolType,
+                                 const QCString &,const QCString &,
                                  const QCString &, const QCString &name,
                                  const QCString &)
 {
@@ -252,11 +260,6 @@ void ManGenerator::startHtmlLink(const QCString &)
 void ManGenerator::endHtmlLink()
 {
 }
-
-//void ManGenerator::writeMailLink(const QCString &url)
-//{
-//  docify(url);
-//}
 
 void ManGenerator::startGroupHeader(int)
 {
@@ -331,7 +334,7 @@ void ManGenerator::codify(const QCString &str)
                     m_col+=spacesToNextTabStop;
                     break;
         case '\n':  m_t << "\n"; m_firstCol=TRUE; m_col=0; break;
-        case '\\':  m_t << "\\"; m_col++; break;
+        case '\\':  m_t << "\\\\"; m_col++; break;
         case '\"':  // no break!
         default:    p=writeUTF8Char(m_t,p-1); m_firstCol=FALSE; m_col++; break;
       }
@@ -496,12 +499,6 @@ void ManGenerator::startDescItem()
   m_firstCol=FALSE;
 }
 
-//void ManGenerator::endDescTitle()
-//{
-//  endBold();
-//  m_paragraph=TRUE;
-//}
-
 void ManGenerator::startDescForItem()
 {
   if (!m_firstCol) m_t << "\n";
@@ -630,7 +627,7 @@ void ManGenerator::endSection(const QCString &,SectionType type)
   }
   else
   {
-    m_t << "\n";
+    m_t << "\n.PP\n";
     m_firstCol=TRUE;
     m_paragraph=FALSE;
     m_inHeader=FALSE;
@@ -693,11 +690,14 @@ void ManGenerator::endParamList()
 {
 }
 
-void ManGenerator::writeDoc(DocNode *n,const Definition *ctx,const MemberDef *,int)
+void ManGenerator::writeDoc(const IDocNodeAST *ast,const Definition *ctx,const MemberDef *,int)
 {
-  ManDocVisitor *visitor = new ManDocVisitor(m_t,*this,ctx?ctx->getDefFileExtension():QCString(""));
-  n->accept(visitor);
-  delete visitor;
+  const DocNodeAST *astImpl = dynamic_cast<const DocNodeAST *>(ast);
+  if (astImpl)
+  {
+    auto visitor { ManDocVisitor(m_t,*this,ctx?ctx->getDefFileExtension():QCString("")) };
+    std::visit(visitor,astImpl->root);
+  }
   m_firstCol=FALSE;
   m_paragraph = FALSE;
 }

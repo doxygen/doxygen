@@ -205,7 +205,7 @@ bool DotInclDepGraph::isTooBig() const
 
 int DotInclDepGraph::numNodes() const
 {
-  return (int)m_startNode->children().size();
+  return static_cast<int>(m_startNode->children().size());
 }
 
 void DotInclDepGraph::writeXML(TextStream &t)

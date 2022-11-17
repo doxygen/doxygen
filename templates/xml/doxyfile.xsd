@@ -43,11 +43,3 @@
   </xsd:simpleType>
 
 </xsd:schema>
-
-<!--
-<?xml version='1.0' encoding='UTF-8' standalone='no'?>
-<doxyfile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="doxyfile.xsd" version="1.9.2" xml:lang="en-US">
-  <option  id='DOXYFILE_ENCODING' default='yes' type='string'><![CDATA[UTF-8]]></option>
-<value><![CDATA[d:/Programs/CGAL/cgal_fork/AABB_tree/doc/AABB_tree/]]></value>
--->
-

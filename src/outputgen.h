@@ -1,8 +1,6 @@
 /******************************************************************************
  *
- *
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2022 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -23,9 +21,11 @@
 #include <iostream>
 #include <fstream>
 
+#include "types.h"
 #include "index.h"
 #include "section.h"
 #include "textstream.h"
+#include "docparser.h"
 
 class ClassDiagram;
 class DotClassGraph;
@@ -34,7 +34,6 @@ class DotCallGraph;
 class DotDirDeps;
 class DotGfxHierarchyTable;
 class DotGroupCollaboration;
-class DocNode;
 class MemberDef;
 class Definition;
 
@@ -60,7 +59,10 @@ struct SourceLinkInfo
 class CodeOutputInterface
 {
   public:
-    virtual ~CodeOutputInterface() {}
+    virtual ~CodeOutputInterface() = default;
+    CodeOutputInterface() {}
+    CodeOutputInterface(const CodeOutputInterface &) = delete;
+    CodeOutputInterface &operator=(const CodeOutputInterface &) = delete;
 
     /** Identifier for the output file */
     virtual int id() const { return 0; }
@@ -72,6 +74,8 @@ class CodeOutputInterface
     virtual void codify(const QCString &s) = 0;
 
     /*! Writes a link to an object in a code fragment.
+     *  \param type     The type of symbol, used for semantic syntax
+     *                  highlighting, may be Default is no info is available.
      *  \param ref      If this is non-zero, the object is to be found in
      *                  an external documentation file.
      *  \param file     The file in which the object is located.
@@ -80,7 +84,8 @@ class CodeOutputInterface
      *  \param name     The text to display as a placeholder for the link.
      *  \param tooltip  The tooltip to display when the mouse is on the link.
      */
-    virtual void writeCodeLink(const QCString &ref,const QCString &file,
+    virtual void writeCodeLink(CodeSymbolType type,
+                               const QCString &ref,const QCString &file,
                                const QCString &anchor,const QCString &name,
                                const QCString &tooltip) = 0;
 
@@ -89,9 +94,10 @@ class CodeOutputInterface
      *  \param file       The file part of the URL pointing to the docs.
      *  \param anchor     The anchor part of the URL pointing to the docs.
      *  \param lineNumber The line number to write
+     *  \param writeLineAnchor Indicates if an anchor for the line number needs to be written
      */
     virtual void writeLineNumber(const QCString &ref,const QCString &file,
-                                 const QCString &anchor,int lineNumber) = 0;
+                                 const QCString &anchor,int lineNumber, bool writeLineAnchor) = 0;
 
     /*! Writes a tool tip definition
      *  \param id       unique identifier for the tooltip
@@ -128,8 +134,8 @@ class CodeOutputInterface
      */
     virtual void writeCodeAnchor(const QCString &name) = 0;
 
-    virtual void setCurrentDoc(const Definition *context,const QCString &anchor,bool isSourceFile) = 0;
-    virtual void addWord(const QCString &word,bool hiPriority) = 0;
+    virtual void setCurrentDoc(const Definition *context,const QCString &anchor,bool isSourceFile) {}
+    virtual void addWord(const QCString &word,bool hiPriority) {}
 
     /*! Starts a source code fragment. The fragment will be
      *  fed to the code parser (see code.h) for syntax highlighting
@@ -153,7 +159,6 @@ class CodeOutputInterface
 class BaseOutputDocInterface : public CodeOutputInterface
 {
   public:
-    virtual ~BaseOutputDocInterface() {}
     enum ParamListTypes { Param, RetVal, Exception };
     enum SectionTypes { /*See, Return, Author, Version,
                         Since, Date, Bug, Note,
@@ -347,14 +352,11 @@ class OutputGenerator : public BaseOutputDocInterface
 
     void startPlainFile(const QCString &name);
     void endPlainFile();
-    //QCString getContents() const;
     bool isEnabled() const { return m_active; }
     void pushGeneratorState();
     void popGeneratorState();
-    //void setEncoding(const QCString &enc) { encoding = enc; }
-    //virtual void postProcess(QByteArray &) { }
 
-    virtual void writeDoc(DocNode *,const Definition *ctx,const MemberDef *md,int id) = 0;
+    virtual void writeDoc(const IDocNodeAST *ast,const Definition *ctx,const MemberDef *md,int id) = 0;
 
     ///////////////////////////////////////////////////////////////
     // structural output interface
@@ -492,10 +494,11 @@ class OutputGenerator : public BaseOutputDocInterface
     virtual void startInlineMemberDoc() = 0;
     virtual void endInlineMemberDoc() = 0;
 
-
     virtual void startLabels() = 0;
     virtual void writeLabel(const QCString &,bool) = 0;
     virtual void endLabels() = 0;
+
+    virtual void cleanup() = 0;
 
   protected:
     TextStream m_t;
@@ -505,59 +508,6 @@ class OutputGenerator : public BaseOutputDocInterface
     FILE *m_file;
     bool m_active = true;
     std::stack<bool> m_genStack;
-};
-
-/** Interface used for generating documentation.
- *
- *  This abstract class is used by several functions
- *  to generate the output for a specific format.
- *  This interface contains some state saving and changing
- *  functions for dealing with format specific output.
- */
-class OutputDocInterface : public BaseOutputDocInterface
-{
-  public:
-    virtual ~OutputDocInterface() {}
-
-    /*! Disables all output formats except format \a o
-     *  (useful for OutputList only)
-     */
-    virtual void disableAllBut(OutputGenerator::OutputType o) = 0;
-
-    /*! Enables all output formats as far as they have been enabled in
-     *  the config file. (useful for OutputList only)
-     */
-    virtual void enableAll() = 0;
-
-    /*! Disables all output formats (useful for OutputList only) */
-    virtual void disableAll()= 0;
-
-    /*! Disables a specific output format (useful for OutputList only) */
-    virtual void disable(OutputGenerator::OutputType o) = 0;
-
-    /*! Enables a specific output format (useful for OutputList only) */
-    virtual void enable(OutputGenerator::OutputType o) = 0;
-
-    /*! Check whether a specific output format is currently enabled
-     *  (useful for OutputList only)
-     */
-    virtual bool isEnabled(OutputGenerator::OutputType o) = 0;
-
-    /*! Appends the output generated by generator \a g to this
-     *  generator.
-     */
-    //virtual void append(const OutputDocInterface *g) = 0;
-
-    /*! Pushes the state of the current generator (or list of
-     *  generators) on a stack.
-     */
-    virtual void pushGeneratorState() = 0;
-
-    /*! Pops the state of the current generator (or list of
-     *  generators) on a stack. Should be preceded by a call
-     *  the pushGeneratorState().
-     */
-    virtual void popGeneratorState() = 0;
 };
 
 #endif

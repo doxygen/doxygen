@@ -174,32 +174,32 @@ def parse_sections(compounddef,metrics):
 def parse_compound(inDirName,baseName,metrics):
     rootObj = doxmlparser.compound.parse(inDirName+"/"+baseName+".xml",True)
     for compounddef in rootObj.get_compounddef():
-       kind = compounddef.get_kind()
-       if kind==DoxCompoundKind.CLASS:
-           metrics.numClasses+=1
-           if is_documented(compounddef):
-               metrics.numDocClasses+=1
-       elif kind==DoxCompoundKind.STRUCT:
-           metrics.numStructs+=1
-       elif kind==DoxCompoundKind.UNION:
-           metrics.numUnions+=1
-       elif kind==DoxCompoundKind.INTERFACE:
-           metrics.numInterfaces+=1
-       elif kind==DoxCompoundKind.EXCEPTION:
-           metrics.numExceptions+=1
-       elif kind==DoxCompoundKind.NAMESPACE:
-           metrics.numNamespaces+=1
-       elif kind==DoxCompoundKind.FILE:
-           metrics.numFiles+=1
-           if is_documented(compounddef):
-               metrics.numDocFiles+=1
-       elif kind==DoxCompoundKind.GROUP:
-           metrics.numGroups+=1
-       elif kind==DoxCompoundKind.PAGE:
-           metrics.numPages+=1
-       else:
-           continue
-       parse_sections(compounddef,metrics)
+        kind = compounddef.get_kind()
+        if kind==DoxCompoundKind.CLASS:
+            metrics.numClasses+=1
+            if is_documented(compounddef):
+                metrics.numDocClasses+=1
+        elif kind==DoxCompoundKind.STRUCT:
+            metrics.numStructs+=1
+        elif kind==DoxCompoundKind.UNION:
+            metrics.numUnions+=1
+        elif kind==DoxCompoundKind.INTERFACE:
+            metrics.numInterfaces+=1
+        elif kind==DoxCompoundKind.EXCEPTION:
+            metrics.numExceptions+=1
+        elif kind==DoxCompoundKind.NAMESPACE:
+            metrics.numNamespaces+=1
+        elif kind==DoxCompoundKind.FILE:
+            metrics.numFiles+=1
+            if is_documented(compounddef):
+                metrics.numDocFiles+=1
+        elif kind==DoxCompoundKind.GROUP:
+            metrics.numGroups+=1
+        elif kind==DoxCompoundKind.PAGE:
+            metrics.numPages+=1
+        else:
+            continue
+        parse_sections(compounddef,metrics)
 
 def parse_index(inDirName):
     metrics = Metrics()

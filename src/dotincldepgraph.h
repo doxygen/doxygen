@@ -16,6 +16,8 @@
 #ifndef DOTINCLDEPGRAPH_H
 #define DOTINCLDEPGRAPH_H
 
+#include <memory>
+
 #include "qcstring.h"
 #include "filedef.h"
 
@@ -56,5 +58,7 @@ class DotInclDepGraph : public DotGraph
     QCString        m_inclByDepFileName;
     bool            m_inverse;
 };
+
+using DotInclDepGraphPtr = std::shared_ptr<DotInclDepGraph>;
 
 #endif

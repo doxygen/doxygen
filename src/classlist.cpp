@@ -53,7 +53,7 @@ bool ClassLinkedRefMap::declVisible(const ClassDef::CompoundType *filter) const
 void ClassLinkedRefMap::writeDeclaration(OutputList &ol,const ClassDef::CompoundType *filter,
                                       const QCString &header,bool localNames) const
 {
-  static bool extractPrivate = Config_getBool(EXTRACT_PRIVATE);
+  bool extractPrivate = Config_getBool(EXTRACT_PRIVATE);
   bool found=FALSE;
   for (const auto &cd : *this)
   {
@@ -73,10 +73,10 @@ void ClassLinkedRefMap::writeDeclaration(OutputList &ol,const ClassDef::Compound
 
 void ClassLinkedRefMap::writeDocumentation(OutputList &ol,const Definition * container) const
 {
-  static bool fortranOpt = Config_getBool(OPTIMIZE_FOR_FORTRAN);
+  bool fortranOpt = Config_getBool(OPTIMIZE_FOR_FORTRAN);
 
-  static bool inlineGroupedClasses = Config_getBool(INLINE_GROUPED_CLASSES);
-  static bool inlineSimpleClasses = Config_getBool(INLINE_SIMPLE_STRUCTS);
+  bool inlineGroupedClasses = Config_getBool(INLINE_GROUPED_CLASSES);
+  bool inlineSimpleClasses = Config_getBool(INLINE_SIMPLE_STRUCTS);
   if (!inlineGroupedClasses && !inlineSimpleClasses) return;
 
   bool found=FALSE;

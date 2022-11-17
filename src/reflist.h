@@ -13,8 +13,8 @@
  *
  */
 
-#ifndef _REFLIST_H
-#define _REFLIST_H
+#ifndef REFLIST_H
+#define REFLIST_H
 
 #include <vector>
 #include <unordered_map>

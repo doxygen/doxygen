@@ -20,7 +20,8 @@
 #include <vector>
 
 #include "linkedmap.h"
-#include "config.h"
+#include "utf8.h"
+#include "util.h"
 
 class FileDef;
 
@@ -58,11 +59,9 @@ class FileNameFn
     std::string searchKey(std::string input) const
     {
       std::string key = input;
-      if (!Config_getBool(CASE_SENSE_NAMES))
+      if (!getCaseSenseNames())
       {
-        // convert key to lower case
-        std::transform(key.begin(),key.end(),key.begin(),
-                       [](char c){ return (char)std::tolower(c); });
+        key = convertUTF8ToLower(key);
       }
       return key;
     }

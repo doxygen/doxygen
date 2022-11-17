@@ -22,7 +22,6 @@
 #include <QFileInfo>
 #include <QFileDialog>
 #include <QTextStream>
-#include <QTextCodec>
 
 InputStrList::InputStrList( QGridLayout *layout,int &row,
                             const QString & id,
@@ -152,7 +151,7 @@ void InputStrList::setEnabled(bool state)
 void InputStrList::browseFiles()
 {
   QString path = QFileInfo(MainWindow::instance().configFileName()).path();
-  QStringList fileNames = QFileDialog::getOpenFileNames();	
+  QStringList fileNames = QFileDialog::getOpenFileNames();
 
   if (!fileNames.isEmpty())
   {
@@ -180,9 +179,9 @@ void InputStrList::browseFiles()
 }
 
 void InputStrList::browseDir()
-{	
+{
   QString path = QFileInfo(MainWindow::instance().configFileName()).path();
-  QString dirName = QFileDialog::getExistingDirectory();	
+  QString dirName = QFileDialog::getExistingDirectory();
 
   if (!dirName.isNull())
   {
@@ -243,7 +242,7 @@ void InputStrList::reset()
   setValue(m_default);
 }
 
-void InputStrList::writeValue(QTextStream &t,QTextCodec *codec)
+void InputStrList::writeValue(QTextStream &t,TextCodecAdapter *codec)
 {
   bool first=true;
   foreach (QString s, m_strList)

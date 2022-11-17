@@ -78,6 +78,7 @@ class Dir final
 
     DirIterator iterator() const;
 
+    bool isEmpty(const std::string subdir) const;
     bool exists() const;
     std::string filePath(const std::string &path,bool acceptsAbsPath=true) const;
     bool exists(const std::string &path,bool acceptsAbsPath=true) const;

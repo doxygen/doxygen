@@ -182,7 +182,7 @@ void DotGfxHierarchyTable::addClassList(const ClassLinkedMap &cl,ClassDefSet &vi
   {
     //printf("Trying %s subClasses=%d\n",qPrint(cd->name()),cd->subClasses()->count());
     if (cd->getLanguage()==SrcLangExt_VHDL &&
-      (VhdlDocGen::VhdlClasses)cd->protection()!=VhdlDocGen::ENTITYCLASS
+      VhdlDocGen::convert(cd->protection())!=VhdlDocGen::ENTITYCLASS
       )
     {
       continue;
@@ -250,11 +250,7 @@ DotGfxHierarchyTable::DotGfxHierarchyTable(const QCString &prefix,ClassDef::Comp
         n->markAsVisible();
         n->colorConnectedNodes(curColor);
         curColor++;
-        const DotNode *dn=n->findDocNode();
-        if (dn!=0)
-          m_rootSubgraphs.push_back(const_cast<DotNode*>(dn));
-        else
-          m_rootSubgraphs.push_back(n);
+        m_rootSubgraphs.push_back(n);
       }
     }
   }

@@ -3407,9 +3407,7 @@ Token * VhdlParserTokenManager::jjFillToken(){
      endLine = input_stream->getEndLine();
      endColumn = input_stream->getEndColumn();
    }
-   t = Token::newToken(jjmatchedKind);
-   t->kind = jjmatchedKind;
-   t->image = curTokenImage;
+   t = Token::newToken(jjmatchedKind, curTokenImage);
    t->specialToken = nullptr;
    t->next = nullptr;
 
@@ -3521,6 +3519,7 @@ void  VhdlParserTokenManager::SkipLexicalActions(Token *matchedToken){
          image.append(input_stream->GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
    {
      QCString q = filter2008VhdlComment(image.data());
+     parser->outlineParser()->lineCount(image.data());
      parser->outlineParser()->handleCommentBlock(QCString(q),TRUE);image.clear();
    }
          break;

@@ -48,7 +48,7 @@ class ResourceMgr
     bool copyResource(const QCString &name,const QCString &targetDir) const;
 
     /** Copies a registered resource to a given target directory under a given target name */
-    bool copyResourceAs(const QCString &name,const QCString &targetDir,const QCString &targetName) const;
+    bool copyResourceAs(const QCString &name,const QCString &targetDir,const QCString &targetName, bool append=false) const;
 
     /** Gets the resource data as a C string */
     QCString getAsString(const QCString &name) const;

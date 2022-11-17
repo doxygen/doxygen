@@ -39,12 +39,12 @@ class GroupDef;
 struct TagInfo;
 class MemberDefMutable;
 class MemberGroupList;
+class MemberVector;
 
 /** A model of a class/file/namespace member symbol. */
 class MemberDef : public Definition
 {
   public:
-    virtual ~MemberDef() {}
     virtual DefType definitionType() const = 0;
     // move this member into a different scope
     virtual MemberDef *deepCopy() const =0;
@@ -171,6 +171,7 @@ class MemberDef : public Definition
     virtual bool isTemplateSpecialization() const = 0;
     virtual bool isObjCMethod() const = 0;
     virtual bool isObjCProperty() const = 0;
+    virtual bool isCSharpProperty() const = 0;
     virtual bool isConstructor() const = 0;
     virtual bool isDestructor() const = 0;
     virtual bool hasOneLineInitializer() const = 0;
@@ -195,13 +196,13 @@ class MemberDef : public Definition
     //bool hasUserDocumentation() const = 0; // overrides hasUserDocumentation
     virtual bool isDeleted() const = 0;
     virtual bool isBriefSectionVisible() const = 0;
-    virtual bool isDetailedSectionVisible(bool inGroup,bool inFile) const = 0;
-    virtual bool isDetailedSectionLinkable() const = 0;
+    virtual bool isDetailedSectionVisible(MemberListContainer container) const = 0;
+    virtual bool hasDetailedDescription() const = 0;
     virtual bool isFriendClass() const = 0;
     virtual bool isDocumentedFriendClass() const = 0;
 
     virtual const MemberDef *reimplements() const = 0;
-    virtual const MemberList &reimplementedBy() const = 0;
+    virtual const MemberVector &reimplementedBy() const = 0;
     virtual bool isReimplementedBy(const ClassDef *cd) const = 0;
 
     virtual ClassDef *relatedAlso() const = 0;
@@ -210,7 +211,7 @@ class MemberDef : public Definition
     virtual const MemberDef *getAnonymousEnumType() const = 0;
     virtual bool isDocsForDefinition() const = 0;
     virtual const MemberDef *getEnumScope() const = 0;
-    virtual const MemberList &enumFieldList() const = 0;
+    virtual const MemberVector &enumFieldList() const = 0;
     virtual QCString enumBaseType() const = 0;
 
     virtual bool hasExamples() const = 0;
@@ -234,7 +235,6 @@ class MemberDef : public Definition
     // callgraph related members
     virtual bool hasCallGraph() const = 0;
     virtual bool hasCallerGraph() const = 0;
-    virtual bool visibleMemberGroup(bool hideNoHeader) const = 0;
     // referenced related members
     virtual bool hasReferencesRelation() const = 0;
     virtual bool hasReferencedByRelation() const = 0;
@@ -279,15 +279,17 @@ class MemberDef : public Definition
                const std::unique_ptr<ArgumentList> &actualArgs) const = 0;
     virtual void writeDeclaration(OutputList &ol,
                  const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
-                 bool inGroup, const ClassDef *inheritFrom=0,const QCString &inheritId=QCString()) const = 0;
+                 bool inGroup, int indentLevel=0, const ClassDef *inheritFrom=0,const QCString &inheritId=QCString()) const = 0;
     virtual void writeEnumDeclaration(OutputList &typeDecl, const ClassDef *cd,
                 const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd) const = 0;
     virtual void detectUndocumentedParams(bool hasParamCommand,bool hasReturnCommand) const = 0;
     virtual void warnIfUndocumented() const = 0;
     virtual void warnIfUndocumentedParams() const = 0;
+    virtual bool visibleInIndex() const = 0;
 
     // TODO: this is not a getter, should be passed at construction
     virtual void setMemberGroup(MemberGroup *grp) = 0;
+
 };
 
 class MemberDefMutable : public DefinitionMutable, public MemberDef
@@ -404,7 +406,7 @@ class MemberDefMutable : public DefinitionMutable, public MemberDef
     //-----------------------------------------------------------------------------------
 
     virtual void findSectionsInDocumentation() = 0;
-    virtual void addToSearchIndex() const = 0;
+    //virtual void addToSearchIndex() const = 0;
 
     //-----------------------------------------------------------------------------------
     // --- write output ----
@@ -415,7 +417,7 @@ class MemberDefMutable : public DefinitionMutable, public MemberDef
                  bool inGroup,bool showEnumValues=FALSE,bool
                  showInline=FALSE) const = 0;
     virtual void writeMemberDocSimple(OutputList &ol,const Definition *container) const = 0;
-    virtual void writeTagFile(TextStream &) const = 0;
+    virtual void writeTagFile(TextStream &,bool useQualifiedName) const = 0;
     virtual void writeLink(OutputList &ol,
                  const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
                  bool onlyText=FALSE) const = 0;

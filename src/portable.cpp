@@ -105,12 +105,8 @@ int Portable::system(const QCString &command,const QCString &args,bool commandHa
   }
   if (pid==0)
   {
-    const char * argv[4];
-    argv[0] = "sh";
-    argv[1] = "-c";
-    argv[2] = fullCmd.data();
-    argv[3] = 0;
-    execve("/bin/sh",(char * const *)argv,environ);
+    const char * const argv[4] = { "sh", "-c", fullCmd.data(), 0 };
+    execve("/bin/sh",const_cast<char * const*>(argv),environ);
     exit(127);
   }
   for (;;)
@@ -189,13 +185,11 @@ int Portable::system(const QCString &command,const QCString &args,bool commandHa
       WaitForSingleObject(sInfo.hProcess,INFINITE);
       /* get process exit code */
       DWORD exitCode;
-      if (!GetExitCodeProcess(sInfo.hProcess,&exitCode))
-      {
-        exitCode = -1;
-      }
+      bool retval = GetExitCodeProcess(sInfo.hProcess,&exitCode);
       CloseHandle(sInfo.hProcess);
       delete[] commandw;
       delete[] argsw;
+      if (!retval) return -1;
       return exitCode;
     }
   }
@@ -208,9 +202,9 @@ unsigned int Portable::pid()
 {
   unsigned int pid;
 #if !defined(_WIN32) || defined(__CYGWIN__)
-  pid = (unsigned int)getpid();
+  pid = static_cast<unsigned int>(getpid());
 #else
-  pid = (unsigned int)GetCurrentProcessId();
+  pid = static_cast<unsigned int>(GetCurrentProcessId());
 #endif
   return pid;
 }
@@ -475,8 +469,8 @@ void Portable::sysTimerStart()
 void Portable::sysTimerStop()
 {
   std::chrono::steady_clock::time_point endTime = std::chrono::steady_clock::now();
-  g_sysElapsedTime+= std::chrono::duration_cast<
-                         std::chrono::microseconds>(endTime - g_startTime).count()/1000000.0;
+  g_sysElapsedTime+= static_cast<double>(std::chrono::duration_cast<
+                         std::chrono::microseconds>(endTime - g_startTime).count())/1000000.0;
 }
 
 double Portable::getSysElapsedTime()
@@ -605,14 +599,14 @@ size_t Portable::recodeUtf8StringToW(const QCString &inputStr,uint16_t **outBuf)
 {
   if (inputStr.isEmpty() || outBuf==0) return 0; // empty input or invalid output
   void *handle = portable_iconv_open("UTF-16LE","UTF-8");
-  if (handle==(void *)(-1)) return 0; // invalid encoding
+  if (handle==reinterpret_cast<void *>(-1)) return 0; // invalid encoding
   size_t len = inputStr.length();
   uint16_t *buf = new uint16_t[len+1];
   *outBuf = buf;
   size_t inRemains  = len;
   size_t outRemains = len*sizeof(uint16_t)+2; // chars + \0
   const char *p = inputStr.data();
-  portable_iconv(handle,&p,&inRemains,(char**)&buf,&outRemains);
+  portable_iconv(handle,&p,&inRemains,reinterpret_cast<char **>(&buf),&outRemains);
   *buf=0;
   portable_iconv_close(handle);
   return len;

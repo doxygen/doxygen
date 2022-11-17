@@ -27,7 +27,8 @@ class HtmlCodeGenerator : public CodeOutputInterface
     void setId(int id) { m_id = id; }
     void setRelativePath(const QCString &path);
     void codify(const QCString &text);
-    void writeCodeLink(const QCString &ref,const QCString &file,
+    void writeCodeLink(CodeSymbolType type,
+                       const QCString &ref,const QCString &file,
                        const QCString &anchor,const QCString &name,
                        const QCString &tooltip);
     void writeTooltip(const QCString &id,
@@ -37,14 +38,12 @@ class HtmlCodeGenerator : public CodeOutputInterface
                       const SourceLinkInfo &defInfo,
                       const SourceLinkInfo &declInfo
                      );
-    void writeLineNumber(const QCString &,const QCString &,const QCString &,int);
+    void writeLineNumber(const QCString &,const QCString &,const QCString &,int, bool);
     void startCodeLine(bool);
     void endCodeLine();
     void startFontClass(const QCString &s);
     void endFontClass();
     void writeCodeAnchor(const QCString &anchor);
-    void setCurrentDoc(const Definition *,const QCString &,bool) {}
-    void addWord(const QCString &,bool) {}
     void startCodeFragment(const QCString &style);
     void endCodeFragment(const QCString &);
 
@@ -73,6 +72,7 @@ class HtmlGenerator : public OutputGenerator
 
     virtual OutputType type() const { return Html; }
     static void init();
+    void cleanup();
     static void writeStyleSheetFile(TextStream &t);
     static void writeHeaderFile(TextStream &t, const QCString &cssname);
     static void writeFooterFile(TextStream &t);
@@ -83,16 +83,19 @@ class HtmlGenerator : public OutputGenerator
     static void writeExternalSearchPage();
     static QCString writeLogoAsString(const QCString &path);
     static QCString writeSplitBarAsString(const QCString &name,const QCString &relpath);
+    static QCString getMathJaxMacros();
+    static QCString getNavTreeCss();
 
     // ---- CodeOutputInterface
     void codify(const QCString &text)
     { m_codeGen.codify(text); }
-    void writeCodeLink(const QCString &ref,const QCString &file,
+    void writeCodeLink(CodeSymbolType type,
+                       const QCString &ref,const QCString &file,
                        const QCString &anchor,const QCString &name,
                        const QCString &tooltip)
-    { m_codeGen.writeCodeLink(ref,file,anchor,name,tooltip); }
-    void writeLineNumber(const QCString &ref,const QCString &file,const QCString &anchor,int lineNumber)
-    { m_codeGen.writeLineNumber(ref,file,anchor,lineNumber); }
+    { m_codeGen.writeCodeLink(type,ref,file,anchor,name,tooltip); }
+    void writeLineNumber(const QCString &ref,const QCString &file,const QCString &anchor,int lineNumber, bool writeLineAnchor)
+    { m_codeGen.writeLineNumber(ref,file,anchor,lineNumber,writeLineAnchor); }
     void writeTooltip(const QCString &id, const DocLinkInfo &docInfo, const QCString &decl,
                       const QCString &desc, const SourceLinkInfo &defInfo, const SourceLinkInfo &declInfo
                      )
@@ -113,9 +116,7 @@ class HtmlGenerator : public OutputGenerator
     { m_codeGen.endCodeFragment(style); }
     // ---------------------------
 
-    void setCurrentDoc(const Definition *context,const QCString &anchor,bool isSourceFile);
-    void addWord(const QCString &word,bool hiPriority);
-    void writeDoc(DocNode *,const Definition *,const MemberDef *,int id);
+    void writeDoc(const IDocNodeAST *node,const Definition *,const MemberDef *,int id);
 
     void startFile(const QCString &name,const QCString &manName,const QCString &title,int id);
     void writeFooter(const QCString &navPath);

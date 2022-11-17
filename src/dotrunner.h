@@ -31,11 +31,14 @@ class DotRunner
 {
     struct DotJob
     {
-      DotJob(const QCString &f, const QCString &o, const QCString &a)
-        : format(f), output(o), args(a) {}
+      DotJob(const QCString &f, const QCString &o, const QCString &a,
+             const QCString &s,int l)
+        : format(f), output(o), args(a), srcFile(s), srcLine(l) {}
       QCString format;
       QCString output;
       QCString args;
+      QCString srcFile;
+      int srcLine;
     };
 
   public:
@@ -45,7 +48,7 @@ class DotRunner
     /** Adds an additional job to the run.
      *  Performing multiple jobs one file can be faster.
      */
-    void addJob(const QCString &format,const QCString &output);
+    void addJob(const QCString &format,const QCString &output,const QCString &srcFile,int srcLine);
 
     /** Prevent cleanup of the dot file (for user provided dot files) */
     void preventCleanUp() { m_cleanUp = false; }
@@ -87,7 +90,7 @@ class DotWorkerThread
    ~DotWorkerThread();
     void run();
     void start();
-    bool isRunning() { return m_thread && m_thread->joinable(); }
+    bool isRunning() const { return m_thread && m_thread->joinable(); }
     void wait() { m_thread->join(); }
   private:
     std::unique_ptr<std::thread> m_thread;
