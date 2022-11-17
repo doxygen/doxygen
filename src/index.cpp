@@ -50,6 +50,8 @@
 #include "tooltip.h"
 #include "utf8.h"
 
+#include "filesystem.hpp"
+
 #define MAX_ITEMS_BEFORE_MULTIPAGE_INDEX 200
 #define MAX_ITEMS_BEFORE_QUICK_INDEX 30
 

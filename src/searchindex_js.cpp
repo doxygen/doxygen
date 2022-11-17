@@ -34,6 +34,8 @@
 #include "resourcemgr.h"
 #include "indexlist.h"
 
+#include "filesystem.hpp"
+
 QCString searchName(const Definition *d)
 {
   return d->definitionType()==Definition::TypeGroup ?  QCString(toGroupDef(d)->groupTitle()) :
