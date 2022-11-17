@@ -6273,7 +6273,7 @@ bool readInputFile(const QCString &fileName,BufStr &inBuf,bool filter,bool isSou
   QCString filterName = getFileFilter(fileName,isSourceCode);
   if (filterName.isEmpty() || !filter)
   {
-    std::ifstream f(ghc::filesystem::path(fileName),std::ifstream::in | std::ifstream::binary);
+    std::ifstream f(ghc::filesystem::path(fileName.str()),std::ifstream::in | std::ifstream::binary);
     if (!f.is_open())
     {
       err("could not open file %s\n",qPrint(fileName));

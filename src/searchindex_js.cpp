@@ -393,6 +393,8 @@ void createJavaScriptSearchIndex()
   }
 }
 
+#include "filesystem.hpp"
+
 void writeJavaScriptSearchIndex()
 {
   // write index files
@@ -409,7 +411,7 @@ void writeJavaScriptSearchIndex()
 
       QCString dataFileName = searchDirName + "/"+baseName+".js";
 
-      std::ofstream ti(dataFileName.str(), std::ofstream::out | std::ofstream::binary);
+      std::ofstream ti(ghc::filesystem::path(dataFileName.str()), std::ofstream::out | std::ofstream::binary);
       if (ti.is_open())
       {
 
