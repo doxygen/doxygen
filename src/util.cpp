@@ -6258,6 +6258,10 @@ static size_t transcodeCharacterBuffer(const QCString &fileName,BufStr &srcBuf,s
   return newSize;
 }
 
+#include "filesystem.hpp"
+//namespace fs = ghc::filesystem;
+///FIX: error: could not open file F:... with unicode-16 path in windows
+
 //! read a file name \a fileName and optionally filter and transcode it
 bool readInputFile(const QCString &fileName,BufStr &inBuf,bool filter,bool isSourceCode)
 {
@@ -6269,7 +6273,7 @@ bool readInputFile(const QCString &fileName,BufStr &inBuf,bool filter,bool isSou
   QCString filterName = getFileFilter(fileName,isSourceCode);
   if (filterName.isEmpty() || !filter)
   {
-    std::ifstream f(fileName.str(),std::ifstream::in | std::ifstream::binary);
+    std::ifstream f(ghc::filesystem::path(fileName),std::ifstream::in | std::ifstream::binary);
     if (!f.is_open())
     {
       err("could not open file %s\n",qPrint(fileName));
