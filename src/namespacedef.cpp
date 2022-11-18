@@ -639,11 +639,11 @@ void NamespaceDefImpl::writeDetailedDescription(OutputList &ol,const QCString &t
   if (hasDetailedDescription())
   {
     ol.pushGeneratorState();
-      ol.disable(OutputGenerator::Html);
+      ol.disable(OutputType::Html);
       ol.writeRuler();
     ol.popGeneratorState();
     ol.pushGeneratorState();
-      ol.disableAllBut(OutputGenerator::Html);
+      ol.disableAllBut(OutputType::Html);
       ol.writeAnchor(QCString(),"details");
     ol.popGeneratorState();
     ol.startGroupHeader();
@@ -660,12 +660,12 @@ void NamespaceDefImpl::writeDetailedDescription(OutputList &ol,const QCString &t
         !documentation().isEmpty())
     {
       ol.pushGeneratorState();
-        ol.disable(OutputGenerator::Man);
-        ol.disable(OutputGenerator::RTF);
+        ol.disable(OutputType::Man);
+        ol.disable(OutputType::RTF);
         //ol.newParagraph(); // FIXME:PARA
         ol.enableAll();
-        ol.disableAllBut(OutputGenerator::Man);
-        ol.enable(OutputGenerator::Latex);
+        ol.disableAllBut(OutputType::Man);
+        ol.enable(OutputType::Latex);
         ol.writeString("\n\n");
       ol.popGeneratorState();
     }
@@ -691,18 +691,18 @@ void NamespaceDefImpl::writeBriefDescription(OutputList &ol)
     {
       ol.startParagraph();
       ol.pushGeneratorState();
-      ol.disableAllBut(OutputGenerator::Man);
+      ol.disableAllBut(OutputType::Man);
       ol.writeString(" - ");
       ol.popGeneratorState();
       ol.writeDoc(ast.get(),this,0);
       ol.pushGeneratorState();
-      ol.disable(OutputGenerator::RTF);
+      ol.disable(OutputType::RTF);
       ol.writeString(" \n");
-      ol.enable(OutputGenerator::RTF);
+      ol.enable(OutputType::RTF);
 
       if (hasDetailedDescription())
       {
-        ol.disableAllBut(OutputGenerator::Html);
+        ol.disableAllBut(OutputType::Html);
         ol.startTextLink(getOutputFileBase(),"details");
         ol.parseText(theTranslator->trMore());
         ol.endTextLink();
@@ -713,7 +713,7 @@ void NamespaceDefImpl::writeBriefDescription(OutputList &ol)
 
     // FIXME:PARA
     //ol.pushGeneratorState();
-    //ol.disable(OutputGenerator::RTF);
+    //ol.disable(OutputType::RTF);
     //ol.newParagraph();
     //ol.popGeneratorState();
   }
@@ -752,7 +752,7 @@ void NamespaceDefImpl::startMemberDocumentation(OutputList &ol)
 {
   if (Config_getBool(SEPARATE_MEMBER_PAGES))
   {
-    ol.disable(OutputGenerator::Html);
+    ol.disable(OutputType::Html);
     Doxygen::suppressDocWarnings = TRUE;
   }
 }
@@ -761,7 +761,7 @@ void NamespaceDefImpl::endMemberDocumentation(OutputList &ol)
 {
   if (Config_getBool(SEPARATE_MEMBER_PAGES))
   {
-    ol.enable(OutputGenerator::Html);
+    ol.enable(OutputType::Html);
     Doxygen::suppressDocWarnings = FALSE;
   }
 }
@@ -803,7 +803,7 @@ void NamespaceDefImpl::writeAuthorSection(OutputList &ol)
 {
   // write Author section (Man only)
   ol.pushGeneratorState();
-  ol.disableAllBut(OutputGenerator::Man);
+  ol.disableAllBut(OutputType::Man);
   ol.startGroupHeader();
   ol.parseText(theTranslator->trAuthor(TRUE,TRUE));
   ol.endGroupHeader();
@@ -814,7 +814,7 @@ void NamespaceDefImpl::writeAuthorSection(OutputList &ol)
 void NamespaceDefImpl::writeSummaryLinks(OutputList &ol) const
 {
   ol.pushGeneratorState();
-  ol.disableAllBut(OutputGenerator::Html);
+  ol.disableAllBut(OutputType::Html);
   bool first=TRUE;
   SrcLangExt lang = getLanguage();
   for (const auto &lde : LayoutDocManager::instance().docEntries(LayoutDocManager::Namespace))
@@ -889,7 +889,7 @@ void NamespaceDefImpl::addNamespaceAttributes(OutputList &ol)
   if (getLanguage()==SrcLangExt_IDL && isConstantGroup() && m_isPublished)
   {
     ol.pushGeneratorState();
-    ol.disableAllBut(OutputGenerator::Html);
+    ol.disableAllBut(OutputType::Html);
     ol.startLabels();
     ol.writeLabel("published",false);
     ol.endLabels();
@@ -1091,7 +1091,7 @@ void NamespaceDefImpl::writeDocumentation(OutputList &ol)
 void NamespaceDefImpl::writeMemberPages(OutputList &ol)
 {
   ol.pushGeneratorState();
-  ol.disableAllBut(OutputGenerator::Html);
+  ol.disableAllBut(OutputType::Html);
 
   for (const auto &ml : m_memberLists)
   {

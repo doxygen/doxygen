@@ -172,7 +172,7 @@ void PageDefImpl::writeDocumentation(OutputList &ol)
 {
   bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
 
-  //outputList->disable(OutputGenerator::Man);
+  //outputList->disable(OutputType::Man);
   QCString pageName,manPageName;
   pageName    = escapeCharsInString(name(),FALSE,TRUE);
   manPageName = escapeCharsInString(name(),TRUE,TRUE);
@@ -190,16 +190,16 @@ void PageDefImpl::writeDocumentation(OutputList &ol)
     // do not generate sub page output for RTF and LaTeX, as these are
     // part of their parent page
     ol.disableAll();
-    ol.enable(OutputGenerator::Man);
-    ol.enable(OutputGenerator::Html);
+    ol.enable(OutputType::Man);
+    ol.enable(OutputType::Html);
   }
 
   ol.pushGeneratorState();
   //2.{
-  ol.disableAllBut(OutputGenerator::Man);
+  ol.disableAllBut(OutputType::Man);
   startFile(ol,getOutputFileBase(),manPageName,title(),HLI_Pages,!generateTreeView);
   ol.enableAll();
-  ol.disable(OutputGenerator::Man);
+  ol.disable(OutputType::Man);
   startFile(ol,getOutputFileBase(),pageName,title(),HLI_Pages,!generateTreeView);
   ol.popGeneratorState();
   //2.}
@@ -221,13 +221,13 @@ void PageDefImpl::writeDocumentation(OutputList &ol)
   // save old generator state and write title only to Man generator
   ol.pushGeneratorState();
   //2.{
-  ol.disableAllBut(OutputGenerator::Man);
+  ol.disableAllBut(OutputType::Man);
   ol.startTitleHead(manPageName);
   ol.endTitleHead(manPageName, manPageName);
   if (si)
   {
     ol.pushGeneratorState();
-    ol.disableAllBut(OutputGenerator::Man);
+    ol.disableAllBut(OutputType::Man);
     ol.writeString(" - ");
     ol.popGeneratorState();
 
@@ -244,10 +244,10 @@ void PageDefImpl::writeDocumentation(OutputList &ol)
   // for Latex the section is already generated as a chapter in the index!
   ol.pushGeneratorState();
   //2.{
-  ol.disable(OutputGenerator::Latex);
-  ol.disable(OutputGenerator::Docbook);
-  ol.disable(OutputGenerator::RTF);
-  ol.disable(OutputGenerator::Man);
+  ol.disable(OutputType::Latex);
+  ol.disable(OutputType::Docbook);
+  ol.disable(OutputType::RTF);
+  ol.disable(OutputType::Man);
   if (hasTitle() && !name().isEmpty() && si!=0)
   {
     ol.startPageDoc(si->title());
@@ -296,7 +296,7 @@ void PageDefImpl::writePageDocumentation(OutputList &ol) const
   if (hasBriefDescription() && !SectionManager::instance().find(name()))
   {
     ol.pushGeneratorState();
-    ol.disableAllBut(OutputGenerator::Man);
+    ol.disableAllBut(OutputType::Man);
     ol.writeString(" - ");
     ol.popGeneratorState();
   }
@@ -321,9 +321,9 @@ void PageDefImpl::writePageDocumentation(OutputList &ol) const
     // parent page.
     ol.pushGeneratorState();
     ol.disableAll();
-    ol.enable(OutputGenerator::Latex);
-    ol.enable(OutputGenerator::Docbook);
-    ol.enable(OutputGenerator::RTF);
+    ol.enable(OutputType::Latex);
+    ol.enable(OutputType::Docbook);
+    ol.enable(OutputType::RTF);
 
     for (const auto &subPage : m_subPages)
     {

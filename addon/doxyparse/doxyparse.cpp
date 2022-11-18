@@ -53,6 +53,7 @@ class Doxyparse : public CodeOutputInterface
 
     // these are just null functions, they can be used to produce a syntax highlighted
     // and cross-linked version of the source code, but who needs that anyway ;-)
+    OutputType type() const override { return OutputType::Null; }
     void codify(const QCString &) override {}
     void writeCodeLink(CodeSymbolType,const QCString &,const QCString &,const QCString &,const QCString &,const QCString &)  override {}
     void startCodeLine(bool) override {}

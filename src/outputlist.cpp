@@ -38,12 +38,13 @@ static AtomicInt g_outId;
 OutputList::OutputList()
 {
   newId();
-  //printf("OutputList::OutputList()\n");
+  m_codeGenList.setId(m_id);
 }
 
 OutputList::OutputList(const OutputList &ol)
 {
   m_id = ol.m_id;
+  m_codeGenList.setId(m_id);
   for (const auto &og : ol.m_outputs)
   {
     m_outputs.emplace_back(og->clone());
@@ -55,6 +56,7 @@ OutputList &OutputList::operator=(const OutputList &ol)
   if (this!=&ol)
   {
     m_id = ol.m_id;
+    m_codeGenList.setId(m_id);
     for (const auto &og : ol.m_outputs)
     {
       m_outputs.emplace_back(og->clone());
@@ -73,54 +75,66 @@ void OutputList::newId()
   m_id = ++g_outId;
 }
 
-void OutputList::disableAllBut(OutputGenerator::OutputType o)
+void OutputList::syncEnabled()
 {
   for (const auto &og : m_outputs)
   {
-    og->disableIfNot(o);
+    m_codeGenList.setEnabledFiltered(og->type(),og->isEnabled());
   }
+}
+
+void OutputList::disableAllBut(OutputType o)
+{
+  for (const auto &og : m_outputs)
+  {
+    if (og->type()!=o) og->setEnabled(false);
+  }
+  syncEnabled();
 }
 
 void OutputList::enableAll()
 {
   for (const auto &og : m_outputs)
   {
-    og->enable();
+    og->setEnabled(true);
   }
+  syncEnabled();
 }
 
 void OutputList::disableAll()
 {
   for (const auto &og : m_outputs)
   {
-    og->disable();
+    og->setEnabled(false);
   }
+  syncEnabled();
 }
 
-void OutputList::disable(OutputGenerator::OutputType o)
+void OutputList::disable(OutputType o)
 {
   for (const auto &og : m_outputs)
   {
-    og->disableIf(o);
+    if (og->type()==o) og->setEnabled(false);
   }
+  syncEnabled();
 }
 
-void OutputList::enable(OutputGenerator::OutputType o)
+void OutputList::enable(OutputType o)
 {
   for (const auto &og : m_outputs)
   {
-    og->enableIf(o);
+    if (og->type()==o) og->setEnabled(true);
   }
+  syncEnabled();
 }
 
-bool OutputList::isEnabled(OutputGenerator::OutputType o)
+bool OutputList::isEnabled(OutputType o)
 {
-  bool result=FALSE;
   for (const auto &og : m_outputs)
   {
-    result=result || og->isEnabled(o);
+    if (og->type()==o) return og->isEnabled();
   }
-  return result;
+  return false;
 }
 
 void OutputList::pushGeneratorState()
@@ -129,6 +143,7 @@ void OutputList::pushGeneratorState()
   {
     og->pushGeneratorState();
   }
+  syncEnabled();
 }
 
 void OutputList::popGeneratorState()
@@ -137,6 +152,7 @@ void OutputList::popGeneratorState()
   {
     og->popGeneratorState();
   }
+  syncEnabled();
 }
 
 void OutputList::generateDoc(const QCString &fileName,int startLine,
@@ -169,13 +185,23 @@ void OutputList::generateDoc(const QCString &fileName,int startLine,
   }
 }
 
+void OutputList::startFile(const QCString &name,const QCString &manName,const QCString &title)
+{
+  newId();
+  m_codeGenList.setId(m_id);
+  forall(&OutputGenerator::startFile,name,manName,title,m_id);
+}
+
 void OutputList::writeDoc(const IDocNodeAST *ast,const Definition *ctx,const MemberDef *md,int)
 {
   for (const auto &og : m_outputs)
   {
     //printf("og->printDoc(extension=%s)\n",
     //    ctx?qPrint(ctx->getDefFileExtension()):"<null>");
-    if (og->isEnabled()) og->writeDoc(ast,ctx,md,m_id);
+    if (og->isEnabled())
+    {
+      og->writeDoc(ast,ctx,md,m_id);
+    }
   }
 }
 

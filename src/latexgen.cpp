@@ -259,12 +259,16 @@ void LatexCodeGenerator::endCodeFragment(const QCString &style)
 
 //-------------------------------
 
-LatexGenerator::LatexGenerator() : OutputGenerator(Config_getString(LATEX_OUTPUT)), m_codeGen(m_t)
+LatexGenerator::LatexGenerator()
+  : OutputGenerator(Config_getString(LATEX_OUTPUT))
+  , m_codeGen(m_t)
 {
   //printf("LatexGenerator::LatexGenerator() m_insideTabbing=FALSE\n");
 }
 
-LatexGenerator::LatexGenerator(const LatexGenerator &og) : OutputGenerator(og), m_codeGen(m_t)
+LatexGenerator::LatexGenerator(const LatexGenerator &og)
+  : OutputGenerator(og)
+  , m_codeGen(m_t)
 {
 }
 
@@ -720,15 +724,15 @@ static QCString substituteLatexKeywords(const QCString &str,
   result = substitute(result,"$formulamacrofile",stripMacroFile);
 
   // additional LaTeX only conditional blocks
-  result = selectBlock(result,"CITATIONS_PRESENT", !CitationManager::instance().isEmpty(),OutputGenerator::Latex);
-  result = selectBlock(result,"COMPACT_LATEX",compactLatex,OutputGenerator::Latex);
-  result = selectBlock(result,"PDF_HYPERLINKS",pdfHyperlinks,OutputGenerator::Latex);
-  result = selectBlock(result,"USE_PDFLATEX",usePdfLatex,OutputGenerator::Latex);
-  result = selectBlock(result,"LATEX_TIMESTAMP",timeStamp,OutputGenerator::Latex);
-  result = selectBlock(result,"LATEX_BATCHMODE",latexBatchmode,OutputGenerator::Latex);
-  result = selectBlock(result,"LATEX_FONTENC",!latexFontenc.isEmpty(),OutputGenerator::Latex);
-  result = selectBlock(result,"FORMULA_MACROFILE",!formulaMacrofile.isEmpty(),OutputGenerator::Latex);
-  result = selectBlock(result,"PROJECT_NUMBER",!projectNumber.isEmpty(),OutputGenerator::Latex);
+  result = selectBlock(result,"CITATIONS_PRESENT", !CitationManager::instance().isEmpty(),OutputType::Latex);
+  result = selectBlock(result,"COMPACT_LATEX",compactLatex,OutputType::Latex);
+  result = selectBlock(result,"PDF_HYPERLINKS",pdfHyperlinks,OutputType::Latex);
+  result = selectBlock(result,"USE_PDFLATEX",usePdfLatex,OutputType::Latex);
+  result = selectBlock(result,"LATEX_TIMESTAMP",timeStamp,OutputType::Latex);
+  result = selectBlock(result,"LATEX_BATCHMODE",latexBatchmode,OutputType::Latex);
+  result = selectBlock(result,"LATEX_FONTENC",!latexFontenc.isEmpty(),OutputType::Latex);
+  result = selectBlock(result,"FORMULA_MACROFILE",!formulaMacrofile.isEmpty(),OutputType::Latex);
+  result = selectBlock(result,"PROJECT_NUMBER",!projectNumber.isEmpty(),OutputType::Latex);
 
   result = removeEmptyLines(result);
 

@@ -273,12 +273,16 @@ DB_GEN_C1(m_t)
 
 //-------------------------------------------------------------------------------
 
-DocbookGenerator::DocbookGenerator() : OutputGenerator(Config_getString(DOCBOOK_OUTPUT)), m_codeGen(m_t)
+DocbookGenerator::DocbookGenerator()
+  : OutputGenerator(Config_getString(DOCBOOK_OUTPUT))
+  , m_codeGen(m_t)
 {
 DB_GEN_C
 }
 
-DocbookGenerator::DocbookGenerator(const DocbookGenerator &og) : OutputGenerator(og), m_codeGen(m_t)
+DocbookGenerator::DocbookGenerator(const DocbookGenerator &og)
+  : OutputGenerator(og)
+  , m_codeGen(m_t)
 {
 }
 
@@ -629,7 +633,7 @@ DB_GEN_C
   auto astImpl = dynamic_cast<const DocNodeAST*>(ast);
   if (astImpl)
   {
-    auto visitor { DocbookDocVisitor(m_t,*this,ctx?ctx->getDefFileExtension():QCString()) };
+    DocbookDocVisitor visitor(m_t,m_codeGen,ctx?ctx->getDefFileExtension():QCString());
     std::visit(visitor,astImpl->root);
   }
 }

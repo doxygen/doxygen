@@ -157,7 +157,7 @@ QCString substituteClassNames(const QCString &s);
 
 
 QCString clearBlock(const char *s,const char *begin,const char *end);
-QCString selectBlock(const QCString& s,const QCString &name,bool enable, OutputGenerator::OutputType o);
+QCString selectBlock(const QCString& s,const QCString &name,bool enable, OutputType o);
 QCString removeEmptyLines(const QCString &s);
 
 

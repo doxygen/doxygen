@@ -988,8 +988,9 @@ void DefinitionImpl::writeInlineCode(OutputList &ol,const QCString &scopeName) c
         thisMd = toMemberDef(m_impl->def);
       }
 
-      ol.startCodeFragment("DoxyCode");
-      intf->parseCode(ol,               // codeOutIntf
+      auto &codeOL = ol.codeGenerators();
+      codeOL.startCodeFragment("DoxyCode");
+      intf->parseCode(codeOL,           // codeOutIntf
                       scopeName,        // scope
                       codeFragment,     // input
                       m_impl->lang,     // lang
@@ -1002,7 +1003,7 @@ void DefinitionImpl::writeInlineCode(OutputList &ol,const QCString &scopeName) c
                       thisMd,           // memberDef
                       TRUE              // show line numbers
                      );
-      ol.endCodeFragment("DoxyCode");
+      codeOL.endCodeFragment("DoxyCode");
     }
   }
   ol.popGeneratorState();
@@ -1394,7 +1395,7 @@ QCString DefinitionImpl::navigationPathAsString() const
 void DefinitionImpl::writeNavigationPath(OutputList &ol) const
 {
   ol.pushGeneratorState();
-  ol.disableAllBut(OutputGenerator::Html);
+  ol.disableAllBut(OutputType::Html);
 
   QCString navPath;
   navPath += "<div id=\"nav-path\" class=\"navpath\">\n"
@@ -1415,7 +1416,7 @@ void DefinitionImpl::writeToc(OutputList &ol, const LocalToc &localToc) const
   {
     int maxLevel = localToc.htmlLevel();
     ol.pushGeneratorState();
-    ol.disableAllBut(OutputGenerator::Html);
+    ol.disableAllBut(OutputType::Html);
     ol.writeString("<div class=\"toc\">");
     ol.writeString("<h3>");
     ol.writeString(theTranslator->trRTFTableOfContents());
@@ -1484,7 +1485,7 @@ void DefinitionImpl::writeToc(OutputList &ol, const LocalToc &localToc) const
   if (localToc.isDocbookEnabled())
   {
     ol.pushGeneratorState();
-    ol.disableAllBut(OutputGenerator::Docbook);
+    ol.disableAllBut(OutputType::Docbook);
     ol.writeString("    <toc>\n");
     ol.writeString("    <title>" + theTranslator->trRTFTableOfContents() + "</title>\n");
     int level=1,l;
@@ -1537,7 +1538,7 @@ void DefinitionImpl::writeToc(OutputList &ol, const LocalToc &localToc) const
   if (localToc.isLatexEnabled())
   {
     ol.pushGeneratorState();
-    ol.disableAllBut(OutputGenerator::Latex);
+    ol.disableAllBut(OutputType::Latex);
     int maxLevel = localToc.latexLevel();
 
     ol.writeString("\\etocsetnexttocdepth{"+QCString().setNum(maxLevel)+"}\n");

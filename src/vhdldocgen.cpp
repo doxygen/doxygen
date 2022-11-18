@@ -134,9 +134,10 @@ static void writeLink(const MemberDef* mdef,OutputList &ol)
 
 static void startFonts(const QCString& q, const char *keyword,OutputList& ol)
 {
-  ol.startFontClass(keyword);
-  ol.docify(q);
-  ol.endFontClass();
+  auto &codeOL = ol.codeGenerators();
+  codeOL.startFontClass(keyword);
+  codeOL.codify(q);
+  codeOL.endFontClass();
 }
 
 static QCString splitString(QCString& str,char c)
@@ -845,8 +846,8 @@ void VhdlDocGen::writeInlineClassLink(const ClassDef* cd ,OutputList& ol)
 
   //type=type.lower();
   type+=" >> ";
-  ol.disable(OutputGenerator::RTF);
-  ol.disable(OutputGenerator::Man);
+  ol.disable(OutputType::RTF);
+  ol.disable(OutputType::Man);
 
   if (ii==VhdlDocGen::PACKBODYCLASS)
   {
@@ -894,8 +895,8 @@ void VhdlDocGen::writeInlineClassLink(const ClassDef* cd ,OutputList& ol)
     VhdlDocGen::writeVhdlLink(cd,ol,type,nn,opp);
   }
 
-  ol.enable(OutputGenerator::Man);
-  ol.enable(OutputGenerator::RTF);
+  ol.enable(OutputType::Man);
+  ol.enable(OutputType::RTF);
 
 }// write
 
@@ -1473,17 +1474,17 @@ bool VhdlDocGen::writeFuncProcDocu(
     }
 
     ol.docify(" ");
-    ol.disable(OutputGenerator::Man);
+    ol.disable(OutputType::Man);
     ol.startEmphasis();
-    ol.enable(OutputGenerator::Man);
+    ol.enable(OutputType::Man);
     if (!VhdlDocGen::isProcess(md))
     {
      // startFonts(arg.type,"vhdlkeyword",ol);
 		VhdlDocGen::writeFormatString(arg.type,ol,md);
     }
-    ol.disable(OutputGenerator::Man);
+    ol.disable(OutputType::Man);
     ol.endEmphasis();
-    ol.enable(OutputGenerator::Man);
+    ol.enable(OutputType::Man);
 
     if (--index)
     {
@@ -1795,8 +1796,8 @@ void VhdlDocGen::writeVHDLDeclaration(const MemberDefMutable* mdef,OutputList &o
     ol.startDoxyAnchor(cfname,cname,mdef->anchor(),doxyName,doxyArgs);
 
     ol.pushGeneratorState();
-    ol.disable(OutputGenerator::Man);
-    ol.disable(OutputGenerator::Latex);
+    ol.disable(OutputType::Man);
+    ol.disable(OutputType::Latex);
     ol.docify("\n");
     ol.popGeneratorState();
 
@@ -1844,7 +1845,7 @@ void VhdlDocGen::writeVHDLDeclaration(const MemberDefMutable* mdef,OutputList &o
       {
         nn=kl->getOutputFileBase();
         ol.pushGeneratorState();
-        ol.disableAllBut(OutputGenerator::Html);
+        ol.disableAllBut(OutputType::Html);
         ol.docify(" ");
         QCString name=theTranslator_vhdlType(VhdlDocGen::PACKAGE,TRUE);
         ol.startBold();
@@ -1948,7 +1949,7 @@ void VhdlDocGen::writeVHDLDeclaration(const MemberDefMutable* mdef,OutputList &o
         {
           nn=kl->getOutputFileBase();
           ol.pushGeneratorState();
-          ol.disableAllBut(OutputGenerator::Html);
+          ol.disableAllBut(OutputType::Html);
           ol.startEmphasis();
           QCString name("<Entity ");
           if (VhdlDocGen::isConfig(mdef) || VhdlDocGen::isCompInst(mdef))
@@ -1989,16 +1990,16 @@ void VhdlDocGen::writeVHDLDeclaration(const MemberDefMutable* mdef,OutputList &o
     default: break;
   }
 
-  bool htmlOn = ol.isEnabled(OutputGenerator::Html);
+  bool htmlOn = ol.isEnabled(OutputType::Html);
   if (htmlOn && /*Config_getBool(HTML_ALIGN_MEMBERS) &&*/ !ltype.isEmpty())
   {
-    ol.disable(OutputGenerator::Html);
+    ol.disable(OutputType::Html);
   }
   if (!ltype.isEmpty()) ol.docify(" ");
 
   if (htmlOn)
   {
-    ol.enable(OutputGenerator::Html);
+    ol.enable(OutputType::Html);
   }
 
   if (!detailsVisible)// && !m_impl->annMemb)
@@ -2018,7 +2019,7 @@ void VhdlDocGen::writeVHDLDeclaration(const MemberDefMutable* mdef,OutputList &o
     if (detailsVisible)
     {
       ol.pushGeneratorState();
-      ol.disableAllBut(OutputGenerator::Html);
+      ol.disableAllBut(OutputType::Html);
       //ol.endEmphasis();
       ol.docify(" ");
       if (mdef->getGroupDef()!=0 && gd==0) // forward link to the group
@@ -2214,13 +2215,14 @@ void VhdlDocGen::writeSource(const MemberDefMutable *mdef,OutputList& ol,const Q
 
   codeFragment.prepend("\n");
   ol.pushGeneratorState();
-  ol.startCodeFragment("DoxyCode");
-  intf->parseCode(     ol,               // codeOutIntf
-                       QCString(),                // scope
+  auto &codeOL = ol.codeGenerators();
+  codeOL.startCodeFragment("DoxyCode");
+  intf->parseCode(     codeOL,           // codeOutIntf
+                       QCString(),       // scope
                        codeFragment,     // input
                        SrcLangExt_VHDL,  // lang
                        FALSE,            // isExample
-                       QCString(),               // exampleName
+                       QCString(),       // exampleName
                        const_cast<FileDef*>(mdef->getFileDef()), // fileDef
                        mdef->getStartBodyLine(),      // startLine
                        mdef->getEndBodyLine(),        // endLine
@@ -2229,7 +2231,7 @@ void VhdlDocGen::writeSource(const MemberDefMutable *mdef,OutputList& ol,const Q
                        TRUE              // show line numbers
                       );
 
-  ol.endCodeFragment("DoxyCode");
+  codeOL.endCodeFragment("DoxyCode");
   ol.popGeneratorState();
 
   if (cname.isEmpty()) return;

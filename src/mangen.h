@@ -20,8 +20,43 @@
 
 #include "outputgen.h"
 
+/** Generator for Man page code fragments */
+class ManCodeGenerator : public CodeOutputInterface
+{
+  public:
+    ManCodeGenerator(TextStream &t) : m_t(t) {}
+
+    OutputType type() const override { return OutputType::Man; }
+
+    void codify(const QCString &text) override;
+    void writeCodeLink(CodeSymbolType type,
+                       const QCString &ref,const QCString &file,
+                       const QCString &anchor,const QCString &name,
+                       const QCString &tooltip) override;
+    void writeTooltip(const QCString &,
+                      const DocLinkInfo &,
+                      const QCString &,
+                      const QCString &,
+                      const SourceLinkInfo &,
+                      const SourceLinkInfo &
+                     ) override {}
+    void writeLineNumber(const QCString &,const QCString &,const QCString &,int l, bool) override
+    { m_t << l << " "; m_col=0; }
+    void startCodeLine(bool) override {}
+    void endCodeLine() override { codify("\n"); m_col=0; }
+    void startFontClass(const QCString &) override {}
+    void endFontClass() override {}
+    void writeCodeAnchor(const QCString &) override {}
+    void startCodeFragment(const QCString &style) override;
+    void endCodeFragment(const QCString &) override;
+
+  private:
+    int  m_col = 0;
+    TextStream &m_t;
+};
+
 /** Generator for Man page output. */
-class ManGenerator : public OutputGenerator
+class ManGenerator : public OutputGenerator //public CodeOutputForwarder<OutputGenerator,ManCodeGenerator>
 {
   public:
     ManGenerator();
@@ -30,7 +65,7 @@ class ManGenerator : public OutputGenerator
     virtual ~ManGenerator();
     virtual std::unique_ptr<OutputGenerator> clone() const;
 
-    OutputType type() const { return Man; }
+    OutputType type() const { return OutputType::Man; }
 
     void writeDoc(const IDocNodeAST *ast,const Definition *,const MemberDef *,int);
 
@@ -70,16 +105,8 @@ class ManGenerator : public OutputGenerator
     void startIndexItem(const QCString &ref,const QCString &file);
     void endIndexItem(const QCString &ref,const QCString &file);
     void docify(const QCString &text);
-    void codify(const QCString &text);
     void writeObjectLink(const QCString &ref,const QCString &file,
                          const QCString &anchor,const QCString &name);
-    void writeCodeLink(CodeSymbolType type,
-                       const QCString &ref,const QCString &file,
-                       const QCString &anchor,const QCString &name,
-                       const QCString &tooltip);
-    void writeTooltip(const QCString &, const DocLinkInfo &, const QCString &,
-                      const QCString &, const SourceLinkInfo &, const SourceLinkInfo &
-                     ) {}
     void startTextLink(const QCString &,const QCString &) {}
     void endTextLink() {}
     void startHtmlLink(const QCString &url);
@@ -124,11 +151,6 @@ class ManGenerator : public OutputGenerator
 
     void writeRuler()    {}
     void writeAnchor(const QCString &,const QCString &) {}
-    void startCodeFragment(const QCString &);
-    void endCodeFragment(const QCString &);
-    void writeLineNumber(const QCString &,const QCString &,const QCString &,int l, bool) { m_t << l << " "; m_col=0; }
-    void startCodeLine(bool) {}
-    void endCodeLine() { codify("\n"); m_col=0; }
     void startEmphasis() { m_t << "\\fI"; m_firstCol=FALSE; }
     void endEmphasis()   { m_t << "\\fP"; m_firstCol=FALSE; }
     void startBold()     { m_t << "\\fB"; m_firstCol=FALSE; }
@@ -252,15 +274,16 @@ class ManGenerator : public OutputGenerator
     void writeLabel(const QCString &l,bool isLast);
     void endLabels();
 
-    void writeCodeAnchor(const QCString &) {}
+    CodeOutputInterface *codeGen() { return &m_codeGen; }
 
   private:
     bool m_firstCol = true;
-    bool m_paragraph = true;
     int  m_col = 0;
+    bool m_paragraph = true;
     bool m_upperCase = false;
     bool m_insideTabbing = false;
     bool m_inHeader = false;
+    ManCodeGenerator m_codeGen;
 
 };
 

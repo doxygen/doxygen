@@ -223,11 +223,11 @@ void DirDefImpl::writeDetailedDescription(OutputList &ol,const QCString &title)
       !documentation().isEmpty())
   {
     ol.pushGeneratorState();
-      ol.disable(OutputGenerator::Html);
+      ol.disable(OutputType::Html);
       ol.writeRuler();
     ol.popGeneratorState();
     ol.pushGeneratorState();
-      ol.disableAllBut(OutputGenerator::Html);
+      ol.disableAllBut(OutputType::Html);
       ol.writeAnchor(QCString(),"details");
     ol.popGeneratorState();
     ol.startGroupHeader();
@@ -245,12 +245,12 @@ void DirDefImpl::writeDetailedDescription(OutputList &ol,const QCString &title)
         !documentation().isEmpty())
     {
       ol.pushGeneratorState();
-        ol.disable(OutputGenerator::Man);
-        ol.disable(OutputGenerator::RTF);
+        ol.disable(OutputType::Man);
+        ol.disable(OutputType::RTF);
         // ol.newParagraph();  // FIXME:PARA
         ol.enableAll();
-        ol.disableAllBut(OutputGenerator::Man);
-        ol.enable(OutputGenerator::Latex);
+        ol.disableAllBut(OutputType::Man);
+        ol.enable(OutputType::Latex);
         ol.writeString("\n\n");
       ol.popGeneratorState();
     }
@@ -276,20 +276,20 @@ void DirDefImpl::writeBriefDescription(OutputList &ol)
     {
       ol.startParagraph();
       ol.pushGeneratorState();
-      ol.disableAllBut(OutputGenerator::Man);
+      ol.disableAllBut(OutputType::Man);
       ol.writeString(" - ");
       ol.popGeneratorState();
       ol.writeDoc(ast.get(),this,0);
       ol.pushGeneratorState();
-      ol.disable(OutputGenerator::RTF);
+      ol.disable(OutputType::RTF);
       ol.writeString(" \n");
-      ol.enable(OutputGenerator::RTF);
+      ol.enable(OutputType::RTF);
 
       if (Config_getBool(REPEAT_BRIEF) ||
           !documentation().isEmpty()
          )
       {
-        ol.disableAllBut(OutputGenerator::Html);
+        ol.disableAllBut(OutputType::Html);
         ol.startTextLink(QCString(),"details");
         ol.parseText(theTranslator->trMore());
         ol.endTextLink();
@@ -311,7 +311,7 @@ void DirDefImpl::writeDirectoryGraph(OutputList &ol)
     if (!dirDep.isTrivial())
     {
       msg("Generating dependency graph for directory %s\n",qPrint(displayName()));
-      ol.disable(OutputGenerator::Man);
+      ol.disable(OutputType::Man);
       //ol.startParagraph();
       ol.startDirDepGraph();
       ol.parseText(theTranslator->trDirDepGraph(shortName()));
@@ -417,7 +417,7 @@ void DirDefImpl::writeFileList(OutputList &ol)
         if (fd->generateSourceFile())
         {
           ol.pushGeneratorState();
-          ol.disableAllBut(OutputGenerator::Html);
+          ol.disableAllBut(OutputType::Html);
           ol.docify(" ");
           ol.startTextLink(fd->includeName(),QCString());
           ol.docify("[");
@@ -522,10 +522,10 @@ void DirDefImpl::writeDocumentation(OutputList &ol)
 
   startTitle(ol,getOutputFileBase());
   ol.pushGeneratorState();
-    ol.disableAllBut(OutputGenerator::Html);
+    ol.disableAllBut(OutputType::Html);
     ol.parseText(shortTitle());
     ol.enableAll();
-    ol.disable(OutputGenerator::Html);
+    ol.disable(OutputType::Html);
     ol.parseText(title);
   ol.popGeneratorState();
   endTitle(ol,getOutputFileBase(),title);
@@ -883,7 +883,7 @@ void DirRelation::writeDocumentation(OutputList &ol)
 {
   bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
   ol.pushGeneratorState();
-  ol.disableAllBut(OutputGenerator::Html);
+  ol.disableAllBut(OutputType::Html);
 
   QCString shortTitle=theTranslator->trDirRelation(
                       (m_src->shortName()+" &rarr; "+m_dst->dir()->shortName()));
@@ -1108,7 +1108,7 @@ void generateDirDocs(OutputList &ol)
     ol.pushGeneratorState();
     if (!dir->hasDocumentation())
     {
-      ol.disableAllBut(OutputGenerator::Html);
+      ol.disableAllBut(OutputType::Html);
     }
     dir->writeDocumentation(ol);
     ol.popGeneratorState();

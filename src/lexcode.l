@@ -46,7 +46,7 @@ typedef yyguts_t *yyscan_t;
 
 struct lexcodeYY_state
 {
-     CodeOutputInterface * code;
+     CodeOutputInterface *code;
      CCodeParser ccodeParser;
      const char   *inputString;     //!< the code fragment as text
      int           inputPosition;   //!< read offset during parsing

@@ -25,13 +25,15 @@
 
 class TextStream;
 
+/** Generator for LaTeX code fragments */
 class LatexCodeGenerator : public CodeOutputInterface
 {
   public:
     LatexCodeGenerator(TextStream &t,const QCString &relPath,const QCString &sourceFile);
     LatexCodeGenerator(TextStream &t);
-    void setRelativePath(const QCString &path);
-    void setSourceFileName(const QCString &sourceFileName);
+
+    virtual OutputType type() const override { return OutputType::Latex; }
+
     void codify(const QCString &text) override;
     void writeCodeLink(CodeSymbolType type,
                        const QCString &ref,const QCString &file,
@@ -58,6 +60,9 @@ class LatexCodeGenerator : public CodeOutputInterface
     void decUsedTableLevel() { m_usedTableLevel--; }
     int usedTableLevel() const { return m_usedTableLevel; }
 
+    void setRelativePath(const QCString &path);
+    void setSourceFileName(const QCString &sourceFileName);
+
   private:
     void _writeCodeLink(const QCString &className,
                         const QCString &ref,const QCString &file,
@@ -74,7 +79,7 @@ class LatexCodeGenerator : public CodeOutputInterface
 };
 
 /** Generator for LaTeX output. */
-class LatexGenerator : public OutputGenerator
+class LatexGenerator : public OutputGenerator //: public CodeOutputForwarder<OutputGenerator,LatexCodeGenerator>
 {
   public:
     LatexGenerator();
@@ -89,38 +94,7 @@ class LatexGenerator : public OutputGenerator
     static void writeHeaderFile(TextStream &t);
     static void writeFooterFile(TextStream &t);
 
-    virtual OutputType type() const { return Latex; }
-
-    // --- CodeOutputInterface
-    void codify(const QCString &text)
-    { m_codeGen.codify(text); }
-    void writeCodeLink(CodeSymbolType type,
-                       const QCString &ref, const QCString &file,
-                       const QCString &anchor,const QCString &name,
-                       const QCString &tooltip)
-    { m_codeGen.writeCodeLink(type,ref,file,anchor,name,tooltip); }
-    void writeLineNumber(const QCString &ref,const QCString &file,const QCString &anchor,int lineNumber, bool writeLineAnchor)
-    { m_codeGen.writeLineNumber(ref,file,anchor,lineNumber,writeLineAnchor); }
-    void writeTooltip(const QCString &id, const DocLinkInfo &docInfo, const QCString &decl,
-                      const QCString &desc, const SourceLinkInfo &defInfo, const SourceLinkInfo &declInfo
-                     )
-    { m_codeGen.writeTooltip(id,docInfo,decl,desc,defInfo,declInfo); }
-    void startCodeLine(bool hasLineNumbers)
-    { m_codeGen.startCodeLine(hasLineNumbers); }
-    void endCodeLine()
-    { m_codeGen.endCodeLine(); }
-    void startFontClass(const QCString &s)
-    { m_codeGen.startFontClass(s); }
-    void endFontClass()
-    { m_codeGen.endFontClass(); }
-    void writeCodeAnchor(const QCString &anchor)
-    { m_codeGen.writeCodeAnchor(anchor); }
-    void startCodeFragment(const QCString &style)
-    { m_codeGen.startCodeFragment(style); }
-    void endCodeFragment(const QCString &style)
-    { m_codeGen.endCodeFragment(style); }
-    // ---------------------------
-
+    virtual OutputType type() const { return OutputType::Latex; }
 
     void writeDoc(const IDocNodeAST *node,const Definition *ctx,const MemberDef *,int id);
 
@@ -330,6 +304,7 @@ class LatexGenerator : public OutputGenerator
     void setCurrentDoc(const Definition *,const QCString &,bool) {}
     void addWord(const QCString &,bool) {}
 
+    CodeOutputInterface *codeGen() { return &m_codeGen; }
 
   private:
     bool m_insideTabbing = false;

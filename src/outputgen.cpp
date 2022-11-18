@@ -27,6 +27,7 @@
 OutputGenerator::OutputGenerator(const QCString &dir) : m_t(nullptr), m_dir(dir)
 {
   //printf("OutputGenerator::OutputGenerator()\n");
+  m_genStack.push(true);
 }
 
 OutputGenerator::~OutputGenerator()
@@ -87,6 +88,17 @@ QCString OutputGenerator::fileName() const
   return m_fileName;
 }
 
+void OutputGenerator::setEnabled(bool e)
+{
+  m_genStack.pop();
+  m_genStack.push(e);
+}
+
+bool OutputGenerator::isEnabled() const
+{
+  return m_genStack.top();
+}
+
 void OutputGenerator::pushGeneratorState()
 {
   m_genStack.push(isEnabled());
@@ -96,52 +108,12 @@ void OutputGenerator::pushGeneratorState()
 void OutputGenerator::popGeneratorState()
 {
   //printf("%p:popGeneratorState(%d) enabled=%d\n",this,genStack->count(),isEnabled());
-  if (!m_genStack.empty())
-  {
-    bool lb = m_genStack.top();
-    m_genStack.pop();
-    if (lb) enable(); else disable();
-  }
+  bool lb = m_genStack.top();
+  m_genStack.pop();
+  if (m_genStack.empty()) m_genStack.push(lb); // should not happen
 }
 
-void OutputGenerator::enable()
-{
-  if (!m_genStack.empty())
-  {
-    m_active=m_genStack.top();
-  }
-  else
-  {
-    m_active=true;
-  }
-}
-
-void OutputGenerator::disable()
-{
-  m_active=false;
-}
-
-void OutputGenerator::enableIf(OutputGenerator::OutputType o)
-{
-  if (o==type()) enable();
-}
-
-void OutputGenerator::disableIf(OutputGenerator::OutputType o)
-{
-  if (o==type()) disable();
-}
-
-void OutputGenerator::disableIfNot(OutputGenerator::OutputType o)
-{
-  if (o!=type()) disable();
-}
-
-bool OutputGenerator::isEnabled(OutputGenerator::OutputType o)
-{
-  return (o==type() && m_active);
-}
-
-OutputGenerator *OutputGenerator::get(OutputGenerator::OutputType o)
+OutputGenerator *OutputGenerator::get(OutputType o)
 {
   return (o==type()) ? this : 0;
 }

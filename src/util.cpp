@@ -267,11 +267,11 @@ void writePageRef(OutputList &ol,const QCString &cn,const QCString &mn)
 {
   ol.pushGeneratorState();
 
-  ol.disable(OutputGenerator::Html);
-  ol.disable(OutputGenerator::Man);
-  ol.disable(OutputGenerator::Docbook);
-  if (Config_getBool(PDF_HYPERLINKS)) ol.disable(OutputGenerator::Latex);
-  if (Config_getBool(RTF_HYPERLINKS)) ol.disable(OutputGenerator::RTF);
+  ol.disable(OutputType::Html);
+  ol.disable(OutputType::Man);
+  ol.disable(OutputType::Docbook);
+  if (Config_getBool(PDF_HYPERLINKS)) ol.disable(OutputType::Latex);
+  if (Config_getBool(RTF_HYPERLINKS)) ol.disable(OutputType::RTF);
   ol.startPageRef();
   ol.docify(theTranslator->trPageAbbreviation());
   ol.endPageRef(cn,mn);
@@ -1120,17 +1120,17 @@ void writeExamples(OutputList &ol,const ExampleList &list)
   {
     const auto &e = list[entryIndex];
     ol.pushGeneratorState();
-    ol.disable(OutputGenerator::Latex);
-    ol.disable(OutputGenerator::RTF);
-    ol.disable(OutputGenerator::Docbook);
+    ol.disable(OutputType::Latex);
+    ol.disable(OutputType::RTF);
+    ol.disable(OutputType::Docbook);
     // link for Html / man
     //printf("writeObjectLink(file=%s)\n",qPrint(e->file));
     ol.writeObjectLink(QCString(),e.file,e.anchor,e.name);
     ol.popGeneratorState();
 
     ol.pushGeneratorState();
-    ol.disable(OutputGenerator::Man);
-    ol.disable(OutputGenerator::Html);
+    ol.disable(OutputType::Man);
+    ol.disable(OutputType::Html);
     // link for Latex / pdf with anchor because the sources
     // are not hyperlinked (not possible with a verbatim environment).
     ol.writeObjectLink(QCString(),e.file,QCString(),e.name);
@@ -4993,7 +4993,7 @@ bool recursivelyAddGroupListToTitle(OutputList &ol,const Definition *d,bool root
     if (root)
     {
       ol.pushGeneratorState();
-      ol.disableAllBut(OutputGenerator::Html);
+      ol.disableAllBut(OutputType::Html);
       ol.writeString("<div class=\"ingroups\">");
     }
     bool first=true;
@@ -7346,7 +7346,7 @@ QCString clearBlock(const QCString &s,const QCString &begin,const QCString &end)
 }
 //----------------------------------------------------------------------
 
-QCString selectBlock(const QCString& s,const QCString &name,bool enable, OutputGenerator::OutputType o)
+QCString selectBlock(const QCString& s,const QCString &name,bool enable, OutputType o)
 {
   // TODO: this is an expensive function that is called a lot -> optimize it
   QCString begin;
@@ -7355,13 +7355,13 @@ QCString selectBlock(const QCString& s,const QCString &name,bool enable, OutputG
   QCString noend;
   switch (o)
   {
-    case OutputGenerator::Html:
+    case OutputType::Html:
       begin = "<!--BEGIN " + name + "-->";
       end = "<!--END " + name + "-->";
       nobegin = "<!--BEGIN !" + name + "-->";
       noend = "<!--END !" + name + "-->";
       break;
-    case OutputGenerator::Latex:
+    case OutputType::Latex:
       begin = "%%BEGIN " + name;
       end = "%%END " + name;
       nobegin = "%%BEGIN !" + name;

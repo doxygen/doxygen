@@ -433,7 +433,7 @@ void MemberList::writePlainDeclarations(OutputList &ol, bool inGroup,
                   ol.writeDoc(ast.get(),cd,md);
                   if (md->hasDetailedDescription())
                   {
-                    ol.disableAllBut(OutputGenerator::Html);
+                    ol.disableAllBut(OutputType::Html);
                     ol.docify(" ");
                     ol.startTextLink(md->getOutputFileBase(),
                         md->anchor());
@@ -551,7 +551,7 @@ void MemberList::writeDeclarations(OutputList &ol,
                                       m_listType,inheritedFrom,TRUE)>0 )
     {
       ol.pushGeneratorState();
-      ol.disableAllBut(OutputGenerator::Html);
+      ol.disableAllBut(OutputType::Html);
       inheritId = substitute(listTypeAsString(lt),"-","_")+"_"+
                   stripPath(cd->getOutputFileBase());
       if (!title.isEmpty())
@@ -671,7 +671,7 @@ void MemberList::writeDocumentation(OutputList &ol,
   if (!title.isEmpty())
   {
     ol.pushGeneratorState();
-      ol.disable(OutputGenerator::Html);
+      ol.disable(OutputType::Html);
       ol.writeRuler();
     ol.popGeneratorState();
     ol.startGroupHeader(showInline ? 2 : 0);

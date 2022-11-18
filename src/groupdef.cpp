@@ -738,17 +738,17 @@ void GroupDefImpl::writeDetailedDescription(OutputList &ol,const QCString &title
     if (m_pages.size()!=numDocMembers()) // not only pages -> classical layout
     {
       ol.pushGeneratorState();
-        ol.disable(OutputGenerator::Html);
+        ol.disable(OutputType::Html);
         ol.writeRuler();
       ol.popGeneratorState();
       ol.pushGeneratorState();
-        ol.disableAllBut(OutputGenerator::Html);
+        ol.disableAllBut(OutputType::Html);
         ol.writeAnchor(QCString(),"details");
       ol.popGeneratorState();
     }
     else
     {
-      ol.disableAllBut(OutputGenerator::Man); // always print title for man page
+      ol.disableAllBut(OutputType::Man); // always print title for man page
     }
     ol.startGroupHeader();
     ol.parseText(title);
@@ -766,12 +766,12 @@ void GroupDefImpl::writeDetailedDescription(OutputList &ol,const QCString &title
         !documentation().isEmpty())
     {
       ol.pushGeneratorState();
-      ol.disable(OutputGenerator::Man);
-      ol.disable(OutputGenerator::RTF);
+      ol.disable(OutputType::Man);
+      ol.disable(OutputType::RTF);
       // ol.newParagraph(); // FIXME:PARA
       ol.enableAll();
-      ol.disableAllBut(OutputGenerator::Man);
-      ol.enable(OutputGenerator::Latex);
+      ol.disableAllBut(OutputType::Man);
+      ol.enable(OutputType::Latex);
       ol.writeString("\n\n");
       ol.popGeneratorState();
     }
@@ -805,18 +805,18 @@ void GroupDefImpl::writeBriefDescription(OutputList &ol)
     {
       ol.startParagraph();
       ol.pushGeneratorState();
-      ol.disableAllBut(OutputGenerator::Man);
+      ol.disableAllBut(OutputType::Man);
       ol.writeString(" - ");
       ol.popGeneratorState();
       ol.writeDoc(ast.get(),this,0);
       ol.pushGeneratorState();
-      ol.disable(OutputGenerator::RTF);
+      ol.disable(OutputType::RTF);
       ol.writeString(" \n");
-      ol.enable(OutputGenerator::RTF);
+      ol.enable(OutputType::RTF);
 
       if (hasDetailedDescription())
       {
-        ol.disableAllBut(OutputGenerator::Html);
+        ol.disableAllBut(OutputType::Html);
         ol.startTextLink(QCString(),"details");
         ol.parseText(theTranslator->trMore());
         ol.endTextLink();
@@ -837,7 +837,7 @@ void GroupDefImpl::writeGroupGraph(OutputList &ol)
     {
       msg("Generating dependency graph for group %s\n",qPrint(qualifiedName()));
       ol.pushGeneratorState();
-      ol.disable(OutputGenerator::Man);
+      ol.disable(OutputType::Man);
       //ol.startParagraph();
       ol.startGroupCollaboration();
       ol.parseText(theTranslator->trCollaborationDiagram(m_title));
@@ -1021,7 +1021,7 @@ void GroupDefImpl::startMemberDocumentation(OutputList &ol)
   if (Config_getBool(SEPARATE_MEMBER_PAGES))
   {
     ol.pushGeneratorState();
-    ol.disable(OutputGenerator::Html);
+    ol.disable(OutputType::Html);
     Doxygen::suppressDocWarnings = TRUE;
   }
 }
@@ -1040,7 +1040,7 @@ void GroupDefImpl::writeAuthorSection(OutputList &ol)
 {
   // write Author section (Man only)
   ol.pushGeneratorState();
-  ol.disableAllBut(OutputGenerator::Man);
+  ol.disableAllBut(OutputType::Man);
   ol.startGroupHeader();
   ol.parseText(theTranslator->trAuthor(TRUE,TRUE));
   ol.endGroupHeader();
@@ -1051,7 +1051,7 @@ void GroupDefImpl::writeAuthorSection(OutputList &ol)
 void GroupDefImpl::writeSummaryLinks(OutputList &ol) const
 {
   ol.pushGeneratorState();
-  ol.disableAllBut(OutputGenerator::Html);
+  ol.disableAllBut(OutputType::Html);
   bool first=TRUE;
   SrcLangExt lang = getLanguage();
   for (const auto &lde : LayoutDocManager::instance().docEntries(LayoutDocManager::Group))
@@ -1108,16 +1108,16 @@ void GroupDefImpl::writeDocumentation(OutputList &ol)
   writeSummaryLinks(ol);
   ol.startTitleHead(getOutputFileBase());
   ol.pushGeneratorState();
-  ol.disable(OutputGenerator::Man);
+  ol.disable(OutputType::Man);
   ol.parseText(m_title);
   ol.popGeneratorState();
   addGroupListToTitle(ol,this);
   ol.pushGeneratorState();
-  ol.disable(OutputGenerator::Man);
+  ol.disable(OutputType::Man);
   ol.endTitleHead(getOutputFileBase(),m_title);
   ol.popGeneratorState();
   ol.pushGeneratorState();
-  ol.disableAllBut(OutputGenerator::Man);
+  ol.disableAllBut(OutputType::Man);
   ol.endTitleHead(getOutputFileBase(),name());
   if (!m_title.isEmpty())
   {
@@ -1259,7 +1259,7 @@ void GroupDefImpl::writeDocumentation(OutputList &ol)
 void GroupDefImpl::writeMemberPages(OutputList &ol)
 {
   ol.pushGeneratorState();
-  ol.disableAllBut(OutputGenerator::Html);
+  ol.disableAllBut(OutputType::Html);
 
   for (const auto &ml : m_memberLists)
   {

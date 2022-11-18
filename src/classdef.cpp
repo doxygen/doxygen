@@ -1360,16 +1360,16 @@ void ClassDefImpl::writeBriefDescription(OutputList &ol,bool exampleFlag) const
   {
     ol.startParagraph();
     ol.pushGeneratorState();
-    ol.disableAllBut(OutputGenerator::Man);
+    ol.disableAllBut(OutputType::Man);
     ol.writeString(" - ");
     ol.popGeneratorState();
     ol.generateDoc(briefFile(),briefLine(),this,0,
                    briefDescription(),TRUE,FALSE,QCString(),
                    TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
     ol.pushGeneratorState();
-    ol.disable(OutputGenerator::RTF);
+    ol.disable(OutputType::RTF);
     ol.writeString(" \n");
-    ol.enable(OutputGenerator::RTF);
+    ol.enable(OutputType::RTF);
     ol.popGeneratorState();
 
     if (hasDetailedDescription() || exampleFlag)
@@ -1403,7 +1403,7 @@ void ClassDefImpl::writeDetailedDocumentationBody(OutputList &ol) const
       !documentation().isEmpty())
   {
     ol.pushGeneratorState();
-    ol.disable(OutputGenerator::Html);
+    ol.disable(OutputType::Html);
     ol.writeString("\n\n");
     ol.popGeneratorState();
   }
@@ -1448,20 +1448,20 @@ void ClassDefImpl::writeDetailedDescription(OutputList &ol, const QCString &/*pa
   if (hasDetailedDescription() || exampleFlag)
   {
     ol.pushGeneratorState();
-      ol.disable(OutputGenerator::Html);
+      ol.disable(OutputType::Html);
       ol.writeRuler();
     ol.popGeneratorState();
 
     ol.pushGeneratorState();
-      ol.disableAllBut(OutputGenerator::Html);
+      ol.disableAllBut(OutputType::Html);
       ol.writeAnchor(QCString(),anchor.isEmpty() ? QCString("details") : anchor);
     ol.popGeneratorState();
 
     if (!anchor.isEmpty())
     {
       ol.pushGeneratorState();
-      ol.disable(OutputGenerator::Html);
-      ol.disable(OutputGenerator::Man);
+      ol.disable(OutputType::Html);
+      ol.disable(OutputType::Man);
       ol.writeAnchor(getOutputFileBase(),anchor);
       ol.popGeneratorState();
     }
@@ -1513,19 +1513,19 @@ QCString ClassDefImpl::generatedFromFiles() const
 void ClassDefImpl::showUsedFiles(OutputList &ol) const
 {
   ol.pushGeneratorState();
-  ol.disable(OutputGenerator::Man);
+  ol.disable(OutputType::Man);
 
 
   ol.writeRuler();
   ol.pushGeneratorState();
-    ol.disableAllBut(OutputGenerator::Docbook);
+    ol.disableAllBut(OutputType::Docbook);
     ol.startParagraph();
     ol.parseText(generatedFromFiles());
     ol.endParagraph();
   ol.popGeneratorState();
-  ol.disable(OutputGenerator::Docbook);
+  ol.disable(OutputType::Docbook);
     ol.parseText(generatedFromFiles());
-  ol.enable(OutputGenerator::Docbook);
+  ol.enable(OutputType::Docbook);
 
   bool first=TRUE;
   for (const auto &fd : m_impl->files)
@@ -1551,7 +1551,7 @@ void ClassDefImpl::showUsedFiles(OutputList &ol) const
 
     // for HTML
     ol.pushGeneratorState();
-    ol.disableAllBut(OutputGenerator::Html);
+    ol.disableAllBut(OutputType::Html);
     if (fd->generateSourceFile())
     {
       ol.writeObjectLink(QCString(),fd->getSourceFileBase(),QCString(),fname);
@@ -1568,7 +1568,7 @@ void ClassDefImpl::showUsedFiles(OutputList &ol) const
 
     // for other output formats
     ol.pushGeneratorState();
-    ol.disable(OutputGenerator::Html);
+    ol.disable(OutputType::Html);
     if (fd->isLinkable())
     {
       ol.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),QCString(),fname);
@@ -1624,7 +1624,7 @@ void ClassDefImpl::writeInheritanceGraph(OutputList &ol) const
     else if (!inheritanceGraph.isTrivial())
     {
       ol.pushGeneratorState();
-      ol.disable(OutputGenerator::Man);
+      ol.disable(OutputType::Man);
       ol.startDotGraph();
       ol.parseText(theTranslator->trClassDiagram(displayName()));
       ol.endDotGraph(inheritanceGraph);
@@ -1637,9 +1637,9 @@ void ClassDefImpl::writeInheritanceGraph(OutputList &ol) const
   {
     ClassDiagram diagram(this); // create a diagram of this class.
     ol.startClassDiagram();
-    ol.disable(OutputGenerator::Man);
+    ol.disable(OutputType::Man);
     ol.parseText(theTranslator->trClassDiagram(displayName()));
-    ol.enable(OutputGenerator::Man);
+    ol.enable(OutputType::Man);
     ol.endClassDiagram(diagram,getOutputFileBase(),displayName());
     renderDiagram = TRUE;
   }
@@ -1647,7 +1647,7 @@ void ClassDefImpl::writeInheritanceGraph(OutputList &ol) const
   if (renderDiagram) // if we already show the inheritance relations graphically,
                      // then hide the text version
   {
-    ol.disableAllBut(OutputGenerator::Man);
+    ol.disableAllBut(OutputType::Man);
   }
 
   if (!m_impl->inherits.empty())
@@ -1724,7 +1724,7 @@ void ClassDefImpl::writeCollaborationGraph(OutputList &ol) const
     if (!usageImplGraph.isTrivial())
     {
       ol.pushGeneratorState();
-      ol.disable(OutputGenerator::Man);
+      ol.disable(OutputType::Man);
       ol.startDotGraph();
       ol.parseText(theTranslator->trCollaborationDiagram(displayName()));
       ol.endDotGraph(usageImplGraph);
@@ -1913,10 +1913,10 @@ void ClassDefImpl::writeIncludeFiles(OutputList &ol) const
       else
         ol.docify("<");
       ol.pushGeneratorState();
-      ol.disable(OutputGenerator::Html);
+      ol.disable(OutputType::Html);
       ol.docify(nm);
-      ol.disableAllBut(OutputGenerator::Html);
-      ol.enable(OutputGenerator::Html);
+      ol.disableAllBut(OutputType::Html);
+      ol.enable(OutputType::Html);
       if (m_impl->incInfo->fileDef)
       {
         ol.writeObjectLink(QCString(),m_impl->incInfo->fileDef->includeName(),QCString(),nm);
@@ -1971,7 +1971,7 @@ void ClassDefImpl::startMemberDocumentation(OutputList &ol) const
   //printf("%s: ClassDefImpl::startMemberDocumentation()\n",qPrint(name()));
   if (Config_getBool(SEPARATE_MEMBER_PAGES))
   {
-    ol.disable(OutputGenerator::Html);
+    ol.disable(OutputType::Html);
     Doxygen::suppressDocWarnings = TRUE;
   }
 }
@@ -1981,7 +1981,7 @@ void ClassDefImpl::endMemberDocumentation(OutputList &ol) const
   //printf("%s: ClassDefImpl::endMemberDocumentation()\n",qPrint(name()));
   if (Config_getBool(SEPARATE_MEMBER_PAGES))
   {
-    ol.enable(OutputGenerator::Html);
+    ol.enable(OutputType::Html);
     Doxygen::suppressDocWarnings = FALSE;
   }
 }
@@ -2009,7 +2009,7 @@ void ClassDefImpl::endMemberDeclarations(OutputList &ol) const
 void ClassDefImpl::writeAuthorSection(OutputList &ol) const
 {
   ol.pushGeneratorState();
-  ol.disableAllBut(OutputGenerator::Man);
+  ol.disableAllBut(OutputType::Man);
   ol.writeString("\n");
   ol.startGroupHeader();
   ol.parseText(theTranslator->trAuthor(TRUE,TRUE));
@@ -2022,7 +2022,7 @@ void ClassDefImpl::writeAuthorSection(OutputList &ol) const
 void ClassDefImpl::writeSummaryLinks(OutputList &ol) const
 {
   ol.pushGeneratorState();
-  ol.disableAllBut(OutputGenerator::Html);
+  ol.disableAllBut(OutputType::Html);
   bool first=TRUE;
   SrcLangExt lang = getLanguage();
 
@@ -2195,7 +2195,7 @@ void ClassDefImpl::writeInlineDocumentation(OutputList &ol) const
 
   // part 1a
   ol.pushGeneratorState();
-  ol.disableAllBut(OutputGenerator::Html);
+  ol.disableAllBut(OutputType::Html);
   { // only HTML only
     ol.writeAnchor(QCString(),anchor());
     ol.startMemberDoc(QCString(),QCString(),anchor(),name(),1,1,FALSE);
@@ -2210,8 +2210,8 @@ void ClassDefImpl::writeInlineDocumentation(OutputList &ol) const
 
   // part 1b
   ol.pushGeneratorState();
-  ol.disable(OutputGenerator::Html);
-  ol.disable(OutputGenerator::Man);
+  ol.disable(OutputType::Html);
+  ol.disable(OutputType::Man);
   { // for LaTeX/RTF only
     ol.writeAnchor(getOutputFileBase(),anchor());
   }
@@ -2219,7 +2219,7 @@ void ClassDefImpl::writeInlineDocumentation(OutputList &ol) const
 
   // part 1c
   ol.pushGeneratorState();
-  ol.disable(OutputGenerator::Html);
+  ol.disable(OutputType::Html);
   {
     // for LaTeX/RTF/Man
     ol.startGroupHeader(1);
@@ -2297,7 +2297,7 @@ void ClassDefImpl::writeInlineDocumentation(OutputList &ol) const
 
   // part 3: close the block
   ol.pushGeneratorState();
-  ol.disableAllBut(OutputGenerator::Html);
+  ol.disableAllBut(OutputType::Html);
   { // HTML only
     ol.endIndent();
   }
@@ -2314,7 +2314,7 @@ void ClassDefImpl::writeMoreLink(OutputList &ol,const QCString &anchor) const
 
   // HTML only
   ol.pushGeneratorState();
-  ol.disableAllBut(OutputGenerator::Html);
+  ol.disableAllBut(OutputType::Html);
   ol.docify(" ");
   ol.startTextLink(getOutputFileBase(),
       anchor.isEmpty() ? QCString("details") : anchor);
@@ -2326,23 +2326,23 @@ void ClassDefImpl::writeMoreLink(OutputList &ol,const QCString &anchor) const
   {
     ol.pushGeneratorState();
     // LaTeX + RTF
-    ol.disable(OutputGenerator::Html);
-    ol.disable(OutputGenerator::Man);
-    ol.disable(OutputGenerator::Docbook);
+    ol.disable(OutputType::Html);
+    ol.disable(OutputType::Man);
+    ol.disable(OutputType::Docbook);
     if (!(usePDFLatex && pdfHyperlinks))
     {
-      ol.disable(OutputGenerator::Latex);
+      ol.disable(OutputType::Latex);
     }
     if (!rtfHyperlinks)
     {
-      ol.disable(OutputGenerator::RTF);
+      ol.disable(OutputType::RTF);
     }
     ol.docify(" ");
     ol.startTextLink(getOutputFileBase(), anchor);
     ol.parseText(theTranslator->trMore());
     ol.endTextLink();
     // RTF only
-    ol.disable(OutputGenerator::Latex);
+    ol.disable(OutputType::Latex);
     ol.writeString("\\par");
     ol.popGeneratorState();
   }
@@ -2480,7 +2480,7 @@ void ClassDefImpl::addClassAttributes(OutputList &ol) const
   if (getLanguage()==SrcLangExt_IDL && isPublished()) sl.push_back("published");
 
   ol.pushGeneratorState();
-  ol.disableAllBut(OutputGenerator::Html);
+  ol.disableAllBut(OutputType::Html);
   if (!sl.empty())
   {
     ol.startLabels();
@@ -2752,7 +2752,7 @@ void ClassDefImpl::writeMemberPages(OutputList &ol) const
   ///////////////////////////////////////////////////////////////////////////
 
   ol.pushGeneratorState();
-  ol.disableAllBut(OutputGenerator::Html);
+  ol.disableAllBut(OutputType::Html);
 
   for (const auto &ml : m_impl->memberLists)
   {
@@ -2842,7 +2842,7 @@ void ClassDefImpl::writeMemberList(OutputList &ol) const
   if (m_impl->allMemberNameInfoLinkedMap.empty() || cOpt) return;
   // only for HTML
   ol.pushGeneratorState();
-  ol.disableAllBut(OutputGenerator::Html);
+  ol.disableAllBut(OutputType::Html);
 
   HighlightedItem hli;
   if (sliceOpt)
@@ -4447,7 +4447,7 @@ void ClassDefImpl::writeInheritedMemberDeclarations(OutputList &ol,ClassDefSet &
                const ClassDef *inheritedFrom,bool invert,bool showAlways) const
 {
   ol.pushGeneratorState();
-  ol.disableAllBut(OutputGenerator::Html);
+  ol.disableAllBut(OutputType::Html);
   int count = countMembersIncludingGrouped(lt,inheritedFrom,FALSE);
   bool process = count>0;
   //printf("%s: writeInheritedMemberDec: lt=%d process=%d invert=%d always=%d\n",

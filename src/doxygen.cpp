@@ -9424,7 +9424,7 @@ void printNavTree(Entry *root,int indent)
 
 static void generateExampleDocs()
 {
-  g_outputList->disable(OutputGenerator::Man);
+  g_outputList->disable(OutputType::Man);
   for (const auto &pd : *Doxygen::exampleLinkedMap)
   {
     msg("Generating docs for example %s...\n",qPrint(pd->name()));
@@ -9456,7 +9456,7 @@ static void generateExampleDocs()
                         );
     endFile(*g_outputList); // contains g_outputList->endContents()
   }
-  g_outputList->enable(OutputGenerator::Man);
+  g_outputList->enable(OutputType::Man);
 }
 
 //----------------------------------------------------------------------------

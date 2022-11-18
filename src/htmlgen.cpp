@@ -586,15 +586,15 @@ static QCString substituteHtmlKeywords(const QCString &str,
   result = substitute(result,"$relpath^",relPath); //<-- must be last
 
   // additional HTML only conditional blocks
-  result = selectBlock(result,"FULL_SIDEBAR",hasFullSideBar,OutputGenerator::Html);
-  result = selectBlock(result,"DISABLE_INDEX",disableIndex,OutputGenerator::Html);
-  result = selectBlock(result,"GENERATE_TREEVIEW",treeView,OutputGenerator::Html);
-  result = selectBlock(result,"SEARCHENGINE",searchEngine,OutputGenerator::Html);
-  result = selectBlock(result,"TITLEAREA",titleArea,OutputGenerator::Html);
-  result = selectBlock(result,"PROJECT_NAME",hasProjectName,OutputGenerator::Html);
-  result = selectBlock(result,"PROJECT_NUMBER",hasProjectNumber,OutputGenerator::Html);
-  result = selectBlock(result,"PROJECT_BRIEF",hasProjectBrief,OutputGenerator::Html);
-  result = selectBlock(result,"PROJECT_LOGO",hasProjectLogo,OutputGenerator::Html);
+  result = selectBlock(result,"FULL_SIDEBAR",hasFullSideBar,OutputType::Html);
+  result = selectBlock(result,"DISABLE_INDEX",disableIndex,OutputType::Html);
+  result = selectBlock(result,"GENERATE_TREEVIEW",treeView,OutputType::Html);
+  result = selectBlock(result,"SEARCHENGINE",searchEngine,OutputType::Html);
+  result = selectBlock(result,"TITLEAREA",titleArea,OutputType::Html);
+  result = selectBlock(result,"PROJECT_NAME",hasProjectName,OutputType::Html);
+  result = selectBlock(result,"PROJECT_NUMBER",hasProjectNumber,OutputType::Html);
+  result = selectBlock(result,"PROJECT_BRIEF",hasProjectBrief,OutputType::Html);
+  result = selectBlock(result,"PROJECT_LOGO",hasProjectLogo,OutputType::Html);
 
   result = removeEmptyLines(result);
 
@@ -1015,11 +1015,15 @@ void HtmlCodeGenerator::endCodeFragment(const QCString &)
 
 //--------------------------------------------------------------------------
 
-HtmlGenerator::HtmlGenerator() : OutputGenerator(Config_getString(HTML_OUTPUT)), m_codeGen(m_t)
+HtmlGenerator::HtmlGenerator()
+  : OutputGenerator(Config_getString(HTML_OUTPUT))
+  , m_codeGen(m_t)
 {
 }
 
-HtmlGenerator::HtmlGenerator(const HtmlGenerator &og) : OutputGenerator(og), m_codeGen(m_t)
+HtmlGenerator::HtmlGenerator(const HtmlGenerator &og)
+  : OutputGenerator(og)
+  , m_codeGen(m_t)
 {
 }
 
@@ -1331,7 +1335,6 @@ void HtmlGenerator::startFile(const QCString &name,const QCString &,
   m_lastTitle=title;
 
   startPlainFile(fileName);
-  m_codeGen.setId(id);
   m_codeGen.setRelativePath(m_relPath);
   {
     std::lock_guard<std::mutex> lock(g_indexLock);
