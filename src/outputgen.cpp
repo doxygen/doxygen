@@ -27,7 +27,6 @@
 OutputGenerator::OutputGenerator(const QCString &dir) : m_t(nullptr), m_dir(dir)
 {
   //printf("OutputGenerator::OutputGenerator()\n");
-  m_genStack.push(true);
 }
 
 OutputGenerator::~OutputGenerator()
@@ -90,13 +89,19 @@ QCString OutputGenerator::fileName() const
 
 void OutputGenerator::setEnabled(bool e)
 {
-  m_genStack.pop();
-  m_genStack.push(e);
+  if (e && !m_genStack.empty())
+  {
+    m_active=m_genStack.top();
+  }
+  else
+  {
+    m_active=e;
+  }
 }
 
 bool OutputGenerator::isEnabled() const
 {
-  return m_genStack.top();
+  return m_active;
 }
 
 void OutputGenerator::pushGeneratorState()
@@ -108,9 +113,12 @@ void OutputGenerator::pushGeneratorState()
 void OutputGenerator::popGeneratorState()
 {
   //printf("%p:popGeneratorState(%d) enabled=%d\n",this,genStack->count(),isEnabled());
-  bool lb = m_genStack.top();
-  m_genStack.pop();
-  if (m_genStack.empty()) m_genStack.push(lb); // should not happen
+  if (!m_genStack.empty())
+  {
+    bool lb = m_genStack.top();
+    m_genStack.pop();
+    setEnabled(lb);
+  }
 }
 
 OutputGenerator *OutputGenerator::get(OutputType o)

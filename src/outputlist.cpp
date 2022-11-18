@@ -79,12 +79,14 @@ void OutputList::syncEnabled()
 {
   for (const auto &og : m_outputs)
   {
+    //printf("output %d isEnabled=%d\n",og->type(),og->isEnabled());
     m_codeGenList.setEnabledFiltered(og->type(),og->isEnabled());
   }
 }
 
 void OutputList::disableAllBut(OutputType o)
 {
+  //printf("disableAllBut(%d)\n",o);
   for (const auto &og : m_outputs)
   {
     if (og->type()!=o) og->setEnabled(false);
@@ -94,6 +96,7 @@ void OutputList::disableAllBut(OutputType o)
 
 void OutputList::enableAll()
 {
+  //printf("enableAll()\n");
   for (const auto &og : m_outputs)
   {
     og->setEnabled(true);
@@ -103,6 +106,7 @@ void OutputList::enableAll()
 
 void OutputList::disableAll()
 {
+  //printf("enableAll()\n");
   for (const auto &og : m_outputs)
   {
     og->setEnabled(false);
@@ -112,6 +116,7 @@ void OutputList::disableAll()
 
 void OutputList::disable(OutputType o)
 {
+  //printf("disable(%d)\n",o);
   for (const auto &og : m_outputs)
   {
     if (og->type()==o) og->setEnabled(false);
@@ -121,6 +126,7 @@ void OutputList::disable(OutputType o)
 
 void OutputList::enable(OutputType o)
 {
+  //printf("enable(%d)\n",o);
   for (const auto &og : m_outputs)
   {
     if (og->type()==o) og->setEnabled(true);
@@ -139,6 +145,7 @@ bool OutputList::isEnabled(OutputType o)
 
 void OutputList::pushGeneratorState()
 {
+  //printf("pushGeneratorState()\n");
   for (const auto &og : m_outputs)
   {
     og->pushGeneratorState();
@@ -148,6 +155,7 @@ void OutputList::pushGeneratorState()
 
 void OutputList::popGeneratorState()
 {
+  //printf("popGeneratorState()\n");
   for (const auto &og : m_outputs)
   {
     og->popGeneratorState();
