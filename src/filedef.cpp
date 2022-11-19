@@ -1118,10 +1118,11 @@ void FileDefImpl::writeSourceBody(OutputList &ol,ClangTUParser *clangParser)
   if (Doxygen::clangAssistedParsing && clangParser &&
       (getLanguage()==SrcLangExt_Cpp || getLanguage()==SrcLangExt_ObjC))
   {
-    ol.startCodeFragment("DoxyCode");
+    auto &codeOL = ol.codeGenerators();
+    codeOL.startCodeFragment("DoxyCode");
     clangParser->switchToFile(this);
-    clangParser->writeSources(ol,this);
-    ol.endCodeFragment("DoxyCode");
+    clangParser->writeSources(codeOL,this);
+    codeOL.endCodeFragment("DoxyCode");
   }
   else
 #endif
