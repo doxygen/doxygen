@@ -37,6 +37,8 @@
 #include "indexlist.h"
 #include "growbuf.h"
 
+#include "filesystem.hpp"
+
 static const int NUM_HTML_LIST_TYPES = 4;
 static const char types[][NUM_HTML_LIST_TYPES] = {"1", "a", "i", "A"};
 enum contexts_t
@@ -603,7 +605,7 @@ void HtmlDocVisitor::operator()(const DocVerbatim &s)
             dotindex++,
             ".dot"
            );
-        std::ofstream file(fileName.str(),std::ofstream::out | std::ofstream::binary);
+        std::ofstream file(ghc::filesystem::path(fileName.str()),std::ofstream::out | std::ofstream::binary);
         if (!file.is_open())
         {
           err("Could not open file %s for writing\n",qPrint(fileName));
@@ -635,7 +637,7 @@ void HtmlDocVisitor::operator()(const DocVerbatim &s)
             qPrint(Config_getString(HTML_OUTPUT)+"/inline_mscgraph_"),
             mscindex++
             );
-        std::ofstream file(baseName.str()+".msc",std::ofstream::out | std::ofstream::binary);
+        std::ofstream file(ghc::filesystem::path(baseName.str()+".msc"),std::ofstream::out | std::ofstream::binary);
         if (!file.is_open())
         {
           err("Could not open file %s.msc for writing\n",qPrint(baseName));

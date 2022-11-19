@@ -30,6 +30,7 @@
 #include "dotnode.h"
 #include "dotfilepatcher.h"
 #include "fileinfo.h"
+#include "filesystem.hpp"
 
 #define MAP_CMD "cmapx"
 
@@ -177,7 +178,7 @@ bool DotGraph::prepareDotFile()
   // need to rebuild the image
 
   // write .dot file because image was new or has changed
-  std::ofstream f(absDotName().str(),std::ofstream::out | std::ofstream::binary);
+  std::ofstream f(ghc::filesystem::path( absDotName().str() ),std::ofstream::out | std::ofstream::binary);
   if (!f.is_open())
   {
     err("Could not open file %s for writing\n",qPrint(absDotName()));

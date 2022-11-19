@@ -36,6 +36,8 @@
 #include "growbuf.h"
 #include "fileinfo.h"
 
+#include "filesystem.hpp"
+
 #if 0
 #define DB_VIS_C DB_VIS_C1(m_t)
 #define DB_VIS_C1(x) x << "<!-- DB_VIS_C " << __LINE__ << " -->\n";
@@ -369,7 +371,7 @@ DB_VIS_C
             dotindex++
             );
         std::string fileName = baseName.str()+".dot";
-        std::ofstream file(fileName,std::ofstream::out | std::ofstream::binary);
+        std::ofstream file(ghc::filesystem::path(fileName),std::ofstream::out | std::ofstream::binary);
         if (!file.is_open())
         {
           err("Could not open file %s for writing\n",fileName.c_str());
@@ -394,7 +396,7 @@ DB_VIS_C
             mscindex++
             );
         std::string fileName = baseName.str()+".msc";
-        std::ofstream file(fileName,std::ofstream::out | std::ofstream::binary);
+        std::ofstream file(ghc::filesystem::path(fileName),std::ofstream::out | std::ofstream::binary);
         if (!file.is_open())
         {
           err("Could not open file %s for writing\n",fileName.c_str());

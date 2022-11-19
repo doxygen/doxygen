@@ -20,6 +20,7 @@
 #include "config.h"
 #include "message.h"
 #include "doxygen.h"
+#include "filesystem.hpp"
 
 struct EclipseHelp::Private
 {
@@ -71,7 +72,7 @@ void EclipseHelp::initialize()
 {
   // -- open the contents file
   QCString name = Config_getString(HTML_OUTPUT) + "/toc.xml";
-  p->tocstream.open(name.str(), std::ofstream::out | std::ofstream::binary);
+  p->tocstream.open(ghc::filesystem::path(name.str()), std::ofstream::out | std::ofstream::binary);
   if (!p->tocstream.is_open())
   {
     term("Could not open file %s for writing\n", qPrint(name));
