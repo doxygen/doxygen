@@ -349,6 +349,7 @@ void NamespaceDefImpl::insertUsedFile(FileDef *fd)
 
 void NamespaceDefImpl::addInnerCompound(const Definition *d)
 {
+  //printf("%s:NamespaceDefImpl::addInnerCompound(%s)\n",qPrint(name()),qPrint(d->name()));
   m_innerCompounds.add(d->localName(),d);
   if (d->definitionType()==Definition::TypeNamespace)
   {
@@ -1638,62 +1639,70 @@ bool namespaceHasNestedNamespace(const NamespaceDef *nd)
 
 bool namespaceHasNestedConcept(const NamespaceDef *nd)
 {
+  //printf(">namespaceHasNestedConcept(%s)\n",qPrint(nd->name()));
   for (const auto &cnd : nd->getNamespaces())
   {
     if (namespaceHasNestedConcept(cnd))
     {
-      //printf("<namespaceHasVisibleChild(%s,includeClasses=%d): case2\n",qPrint(nd->name()),includeClasses);
+      //printf("<namespaceHasNestedConcept(%s): case1\n",qPrint(nd->name()));
       return true;
     }
   }
   for (const auto &cnd : nd->getConcepts())
   {
+    //printf("candidate %s isLinkableInProject()=%d\n",qPrint(cnd->name()),cnd->isLinkableInProject());
     if (cnd->isLinkableInProject())
     {
+      //printf("<namespaceHasNestedConcept(%s): case2\n",qPrint(nd->name()));
       return true;
     }
   }
+  //printf("<namespaceHasNestedConcept(%s): case3\n",qPrint(nd->name()));
   return false;
 }
 
 bool namespaceHasNestedClass(const NamespaceDef *nd,bool filterClasses,ClassDef::CompoundType ct)
 {
-  //printf(">namespaceHasVisibleChild(%s,includeClasses=%d)\n",qPrint(nd->name()),includeClasses);
+  //printf(">namespaceHasNestedClass(%s,filterClasses=%d)\n",qPrint(nd->name()),filterClasses);
   for (const auto &cnd : nd->getNamespaces())
   {
     if (namespaceHasNestedClass(cnd,filterClasses,ct))
     {
-      //printf("<namespaceHasVisibleChild(%s,includeClasses=%d): case2\n",qPrint(nd->name()),includeClasses);
-      return TRUE;
+      //printf("<namespaceHasNestedClass(%s,filterClasses=%d): case1\n",qPrint(nd->name()),filterClasses);
+      return true;
     }
   }
 
   ClassLinkedRefMap list = nd->getClasses();
   if (filterClasses)
   {
-    if (ct == ClassDef::Interface)
+    switch (ct)
     {
-      list = nd->getInterfaces();
-    }
-    else if (ct == ClassDef::Struct)
-    {
-      list = nd->getStructs();
-    }
-    else if (ct == ClassDef::Exception)
-    {
-      list = nd->getExceptions();
+      case ClassDef::Interface:
+        list = nd->getInterfaces();
+        break;
+      case ClassDef::Struct:
+        list = nd->getStructs();
+        break;
+      case ClassDef::Exception:
+        list = nd->getExceptions();
+        break;
+      default:
+        break;
     }
   }
 
   for (const auto &cd : list)
   {
-    if (cd->isLinkableInProject() && cd->templateMaster()==0)
+    //printf("candidate %s isLinkableInProject()=%d\n",qPrint(cd->name()),cd->isLinkableInProject());
+    if (cd->isLinkableInProject())
     {
-      //printf("<namespaceHasVisibleChild(%s,includeClasses=%d): case3\n",qPrint(nd->name()),includeClasses);
-      return TRUE;
+      //printf("<namespaceHasNestedClass(%s,filterClasses=%d): case2\n",qPrint(nd->name()),filterClasses);
+      return true;
     }
   }
-  return FALSE;
+  //printf("<namespaceHasNestedClass(%s,filterClasses=%d): case3\n",qPrint(nd->name()),filterClasses);
+  return false;
 }
 
 

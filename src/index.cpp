@@ -442,14 +442,14 @@ static void writeClassTreeToOutput(OutputList &ol,const BaseClassList &bcl,int l
     bool b;
     if (cd->getLanguage()==SrcLangExt_VHDL)
     {
-      b=hasVisibleRoot(cd->subClasses());
+      b=classHasVisibleRoot(cd->subClasses());
     }
     else
     {
-      b=hasVisibleRoot(cd->baseClasses());
+      b=classHasVisibleRoot(cd->baseClasses());
     }
 
-    if (cd->isVisibleInHierarchy() && b) // hasVisibleRoot(cd->baseClasses()))
+    if (cd->isVisibleInHierarchy() && b) // classHasVisibleRoot(cd->baseClasses()))
     {
       if (!started)
       {
@@ -786,9 +786,9 @@ static void writeClassTreeForList(OutputList &ol,const ClassLinkedMap &cl,bool &
   bool sliceOpt = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
   for (const auto &cd : cl)
   {
-    //printf("class %s hasVisibleRoot=%d isVisibleInHierarchy=%d\n",
+    //printf("class %s classHasVisibleRoot=%d isVisibleInHierarchy=%d\n",
     //             qPrint(cd->name()),
-    //              hasVisibleRoot(cd->baseClasses()),
+    //              classHasVisibleRoot(cd->baseClasses()),
     //              cd->isVisibleInHierarchy()
     //      );
     bool b;
@@ -798,7 +798,7 @@ static void writeClassTreeForList(OutputList &ol,const ClassLinkedMap &cl,bool &
       {
         continue;
       }
-      b=!hasVisibleRoot(cd->subClasses());
+      b=!classHasVisibleRoot(cd->subClasses());
     }
     else if (sliceOpt && cd->compoundType() != ct)
     {
@@ -806,7 +806,7 @@ static void writeClassTreeForList(OutputList &ol,const ClassLinkedMap &cl,bool &
     }
     else
     {
-      b=!hasVisibleRoot(cd->baseClasses());
+      b=!classHasVisibleRoot(cd->baseClasses());
     }
 
     if (b)  //filter on root classes
@@ -916,7 +916,7 @@ static int countClassesInTreeList(const ClassLinkedMap &cl, ClassDef::CompoundTy
     {
       continue;
     }
-    if (!hasVisibleRoot(cd->baseClasses())) // filter on root classes
+    if (!classHasVisibleRoot(cd->baseClasses())) // filter on root classes
     {
       if (cd->isVisibleInHierarchy()) // should it be visible
       {
@@ -1736,7 +1736,7 @@ static void writeClassTreeInsideNamespaceElement(const NamespaceDef *nd,FTVHelp 
     bool isDir = namespaceHasNestedClass(nd,sliceOpt,ct);
     bool isLinkable  = nd->isLinkableInProject();
 
-    //printf("namespace %s isDir=%d\n",qPrint(nd->name()),isDir);
+    //printf("writeClassTreeInsideNamespaceElement namespace %s isLinkable=%d isDir=%d\n",qPrint(nd->name()),isLinkable,isDir);
 
     QCString ref;
     QCString file;
@@ -4069,12 +4069,15 @@ static void writeConceptList(const ConceptLinkedRefMap &concepts, FTVHelp *ftv,b
 {
   for (const auto &cd : concepts)
   {
-    ftv->addContentsItem(false,cd->displayName(FALSE),cd->getReference(),
-         cd->getOutputFileBase(),QCString(),false,cd->partOfGroups().empty(),cd);
-    if (addToIndex)
+    if (cd->isLinkableInProject())
     {
-      Doxygen::indexList->addContentsItem(false,cd->displayName(FALSE),cd->getReference(),
-         cd->getOutputFileBase(),QCString(),false,cd->partOfGroups().empty());
+      ftv->addContentsItem(false,cd->displayName(FALSE),cd->getReference(),
+          cd->getOutputFileBase(),QCString(),false,cd->partOfGroups().empty(),cd);
+      if (addToIndex)
+      {
+        Doxygen::indexList->addContentsItem(false,cd->displayName(FALSE),cd->getReference(),
+            cd->getOutputFileBase(),QCString(),false,cd->partOfGroups().empty());
+      }
     }
   }
 }
@@ -4101,7 +4104,7 @@ static void writeConceptTreeInsideNamespaceElement(const NamespaceDef *nd,FTVHel
     bool isDir = namespaceHasNestedConcept(nd);
     bool isLinkable  = nd->isLinkableInProject();
 
-    //printf("namespace %s isDir=%d\n",qPrint(nd->name()),isDir);
+    //printf("writeConceptTreeInsideNamespaceElement namespace %s isLinkable=%d isDir=%d\n",qPrint(nd->name()),isLinkable,isDir);
 
     QCString ref;
     QCString file;
@@ -4147,8 +4150,9 @@ static void writeConceptRootList(FTVHelp *ftv,bool addToIndex)
 {
   for (const auto &cd : *Doxygen::conceptLinkedMap)
   {
-    if (cd->getOuterScope()==0 ||
-        cd->getOuterScope()==Doxygen::globalScope)
+    if ((cd->getOuterScope()==0 ||
+        cd->getOuterScope()==Doxygen::globalScope) && cd->isLinkableInProject()
+       )
     {
       //printf("*** adding %s hasSubPages=%d hasSections=%d\n",qPrint(pageTitle),hasSubPages,hasSections);
       ftv->addContentsItem(

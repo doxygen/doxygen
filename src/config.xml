@@ -960,7 +960,8 @@ Go to the <a href="commands.html">next</a> section or return to the
  If the \c HIDE_UNDOC_CLASSES tag is set to \c YES, doxygen will hide all
  undocumented classes that are normally visible in the class hierarchy.
  If set to \c NO, these classes will be included in the
- various overviews.
+ various overviews. This option will also hide undocumented C++ concepts
+ if enabled.
  This option has no effect if \ref cfg_extract_all "EXTRACT_ALL" is enabled.
 ]]>
       </docs>

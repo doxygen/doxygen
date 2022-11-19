@@ -5908,11 +5908,11 @@ class NestingContext::Private : public GenericNodeListContext
         bool b;
         if (cd->getLanguage()==SrcLangExt_VHDL)
         {
-          b=hasVisibleRoot(cd->subClasses());
+          b=classHasVisibleRoot(cd->subClasses());
         }
         else
         {
-          b=hasVisibleRoot(cd->baseClasses());
+          b=classHasVisibleRoot(cd->baseClasses());
         }
 
         if (cd->isVisibleInHierarchy() && b)
@@ -5934,11 +5934,11 @@ class NestingContext::Private : public GenericNodeListContext
           {
             continue;
           }
-          b=!hasVisibleRoot(cd->subClasses());
+          b=!classHasVisibleRoot(cd->subClasses());
         }
         else
         {
-          b=!hasVisibleRoot(cd->baseClasses());
+          b=!classHasVisibleRoot(cd->baseClasses());
         }
         if (b)
         {

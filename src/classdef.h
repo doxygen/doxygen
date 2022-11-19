@@ -482,7 +482,7 @@ inline ClassDefMutable *getClassMutable(const QCString &key)
 {
   return toClassDefMutable(getClass(key));
 }
-bool hasVisibleRoot(const BaseClassList &bcl);
+bool classHasVisibleRoot(const BaseClassList &bcl);
 bool classHasVisibleChildren(const ClassDef *cd);
 bool classVisibleInIndex(const ClassDef *cd);
 int minClassDistance(const ClassDef *cd,const ClassDef *bcd,int level=0);

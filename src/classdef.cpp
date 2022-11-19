@@ -5033,13 +5033,13 @@ ClassDef *getClass(const QCString &n)
   return Doxygen::classLinkedMap->find(n);
 }
 
-bool hasVisibleRoot(const BaseClassList &bcl)
+bool classHasVisibleRoot(const BaseClassList &bcl)
 {
   for (const auto &bcd : bcl)
   {
     const ClassDef *cd=bcd.classDef;
     if (cd->isVisibleInHierarchy()) return true;
-    if (hasVisibleRoot(cd->baseClasses())) return true;
+    if (classHasVisibleRoot(cd->baseClasses())) return true;
   }
   return false;
 }

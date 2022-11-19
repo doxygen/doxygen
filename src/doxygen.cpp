@@ -633,64 +633,6 @@ static void addIncludeFile(DefMutable *cd,FileDef *ifd,const Entry *root)
   }
 }
 
-#if 0
-static bool addNamespace(Entry *root,ClassDef *cd)
-{
-  // see if this class is defined inside a namespace
-  if (root->section & Entry::COMPOUND_MASK)
-  {
-    Entry *e = root->parent;
-    while (e)
-    {
-      if (e->section==Entry::NAMESPACE_SEC)
-      {
-        NamespaceDef *nd=0;
-        QCString nsName = stripAnonymousNamespaceScope(e->name);
-        //printf("addNameSpace() trying: %s\n",qPrint(nsName));
-        if (!nsName.isEmpty() && nsName.at(0)!='@' &&
-            (nd=getResolvedNamespace(nsName))
-           )
-        {
-          cd->setNamespace(nd);
-          cd->setOuterScope(nd);
-          nd->insertClass(cd);
-          return TRUE;
-        }
-      }
-      e=e->parent;
-    }
-  }
-  return FALSE;
-}
-#endif
-
-#if 0
-static Definition *findScope(Entry *root,int level=0)
-{
-  if (root==0) return 0;
-  //printf("start findScope name=%s\n",qPrint(root->name));
-  Definition *result=0;
-  if (root->section&Entry::SCOPE_MASK)
-  {
-    result = findScope(root->parent,level+1); // traverse to the root of the tree
-    if (result)
-    {
-      //printf("Found %s inside %s at level %d\n",qPrint(root->name),qPrint(result->name()),level);
-      // TODO: look at template arguments
-      result = result->findInnerCompound(root->name);
-    }
-    else // reached the global scope
-    {
-      // TODO: look at template arguments
-      result = Doxygen::globalScope->findInnerCompound(root->name);
-      //printf("Found in globalScope %s at level %d\n",qPrint(result->name()),level);
-    }
-  }
-  //printf("end findScope(%s,%d)=%s\n",qPrint(root->name),
-  //       level,result==0 ? "<none>" : qPrint(result->name()));
-  return result;
-}
-#endif
 
 QCString stripTemplateSpecifiers(const QCString &s)
 {
@@ -1102,9 +1044,6 @@ static void addClassToContext(const Entry *root)
       cd->setBodyDef(fd);
 
       cd->setMetaData(root->metaData);
-
-      // see if the class is found inside a namespace
-      //bool found=addNamespace(root,cd);
 
       cd->insertUsedFile(fd);
     }

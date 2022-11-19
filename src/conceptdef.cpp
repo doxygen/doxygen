@@ -215,7 +215,10 @@ ArgumentList ConceptDefImpl::getTemplateParameterList() const
 
 bool ConceptDefImpl::isLinkableInProject() const
 {
-  return hasDocumentation() && !isReference() && !isHidden();
+  bool hideUndoc = Config_getBool(HIDE_UNDOC_CLASSES);
+  return (hasDocumentation() || !hideUndoc) && /* documented */
+         !isHidden() &&                        /* not hidden */
+         !isReference();                       /* not an external reference */
 }
 
 bool ConceptDefImpl::isLinkable() const
