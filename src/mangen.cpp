@@ -316,10 +316,20 @@ void ManGenerator::writeStartAnnoItem(const QCString &,const QCString &,
 {
 }
 
-void ManGenerator::writeObjectLink(const QCString &,const QCString &,
-                                    const QCString &, const QCString &name)
+QCString ManGenerator::objectLinkToString(const QCString &,const QCString &,
+                                          const QCString &, const QCString &name)
 {
-  startBold(); docify(name); endBold();
+  QCString result;
+  result += "\\fB";
+  result += docifyToString(name);
+  result += "\\fP";
+  m_firstCol=FALSE;
+  return result;
+}
+void ManGenerator::writeObjectLink(const QCString &ref,const QCString &f,
+                                    const QCString &anchor, const QCString &text)
+{
+  m_t << objectLinkToString(ref,f,anchor,text);
 }
 
 void ManGenerator::startHtmlLink(const QCString &)
@@ -359,8 +369,9 @@ void ManGenerator::endMemberHeader()
   m_paragraph=FALSE;
 }
 
-void ManGenerator::docify(const QCString &str)
+QCString ManGenerator::docifyToString(const QCString &str)
 {
+  QCString result;
   if (!str.isEmpty())
   {
     const char *p=str.data();
@@ -369,18 +380,23 @@ void ManGenerator::docify(const QCString &str)
     {
       switch(c)
       {
-        case '-':  m_t << "\\-"; break; // see  bug747780
-        case '.':  m_t << "\\&."; break; // see  bug652277
-        case '\\': m_t << "\\\\"; m_col++; break;
-        case '\n': m_t << "\n"; m_col=0; break;
+        case '-':  result += "\\-"; break; // see  bug747780
+        case '.':  result += "\\&."; break; // see  bug652277
+        case '\\': result += "\\\\"; m_col++; break;
+        case '\n': result += "\n"; m_col=0; break;
         case '\"':  c = '\''; // no break!
-        default: m_t << c; m_col++; break;
+        default: result += c; m_col++; break;
       }
     }
     m_firstCol=(c=='\n');
     //printf("%s",str);fflush(stdout);
   }
   m_paragraph=FALSE;
+  return result;
+}
+void ManGenerator::docify(const QCString &str)
+{
+  m_t << docifyToString(str);
 }
 
 void ManGenerator::writeChar(char c)
@@ -866,3 +882,11 @@ void ManGenerator::endHeaderSection()
 {
 }
 
+void ManGenerator::writeInheritedSectionTitle(
+                  const QCString &id,    const QCString &ref,
+                  const QCString &file,  const QCString &anchor,
+                  const QCString &title, const QCString &name)
+{
+  m_t << "\n\n";
+  m_t << theTranslator->trInheritedFrom(docifyToString(title), objectLinkToString(ref, file, anchor, name));
+}

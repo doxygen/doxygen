@@ -550,8 +550,6 @@ void MemberList::writeDeclarations(OutputList &ol,
     if ( cd && !optimizeVhdl && cd->countMembersIncludingGrouped(
                                       m_listType,inheritedFrom,TRUE)>0 )
     {
-      ol.pushGeneratorState();
-      ol.disableAllBut(OutputType::Html);
       inheritId = substitute(listTypeAsString(lt),"-","_")+"_"+
                   stripPath(cd->getOutputFileBase());
       if (!title.isEmpty())
@@ -560,7 +558,6 @@ void MemberList::writeDeclarations(OutputList &ol,
                                       cd->getOutputFileBase(),
                                       cd->anchor(),title,cd->displayName());
       }
-      ol.popGeneratorState();
     }
   }
   else if (num>numEnumValues)

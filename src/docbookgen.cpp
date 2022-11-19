@@ -672,21 +672,29 @@ void DocbookGenerator::docify(const QCString &str)
 DB_GEN_C
   m_t << convertToDocBook(str);
 }
-void DocbookGenerator::writeObjectLink(const QCString &, const QCString &f,
-                                     const QCString &anchor, const QCString &text)
+QCString DocbookGenerator::objectLinkToString(const QCString &, const QCString &f,
+                                              const QCString &anchor, const QCString &text)
 {
 DB_GEN_C
+  QCString result;
   if (!anchor.isEmpty())
   {
-    if (!f.isEmpty()) m_t << "<link linkend=\"_" << stripPath(f) << "_1" << anchor << "\">";
-    else   m_t << "<link linkend=\"_" << anchor << "\">";
+    if (!f.isEmpty()) result += "<link linkend=\"_" + stripPath(f) + "_1" + anchor + "\">";
+    else   result += "<link linkend=\"_" + anchor + "\">";
   }
   else
   {
-    m_t << "<link linkend=\"_" << stripPath(f) << "\">";
+    result += "<link linkend=\"_" + stripPath(f) + "\">";
   }
-  docify(text);
-  m_t << "</link>";
+  result += convertToDocBook(text);
+  result += "</link>";
+  return result;
+}
+void DocbookGenerator::writeObjectLink(const QCString &ref, const QCString &f,
+                                     const QCString &anchor, const QCString &text)
+{
+DB_GEN_C
+  m_t << objectLinkToString(ref,f,anchor,text);
 }
 void DocbookGenerator::startMemberList()
 {
@@ -1257,3 +1265,11 @@ void DocbookGenerator::closeAllSections()
   }
 }
 
+void DocbookGenerator::writeInheritedSectionTitle(
+                  const QCString &id,    const QCString &ref,
+                  const QCString &file,  const QCString &anchor,
+                  const QCString &title, const QCString &name)
+{
+DB_GEN_C
+  m_t << theTranslator->trInheritedFrom(convertToDocBook(title), objectLinkToString(ref, file, anchor, name));
+}

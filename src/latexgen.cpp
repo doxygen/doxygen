@@ -1263,26 +1263,33 @@ void LatexGenerator::endTextLink()
   m_t << "}";
 }
 
-void LatexGenerator::writeObjectLink(const QCString &ref, const QCString &f,
-                                     const QCString &anchor, const QCString &text)
+QCString LatexGenerator::objectLinkToString(const QCString &ref, const QCString &f,
+                                            const QCString &anchor, const QCString &text)
 {
   bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
+  QCString result;
   if (!m_disableLinks && ref.isEmpty() && pdfHyperlinks)
   {
-    m_t << "\\mbox{\\hyperlink{";
-    if (!f.isEmpty()) m_t << stripPath(f);
-    if (!f.isEmpty() && !anchor.isEmpty()) m_t << "_";
-    if (!anchor.isEmpty()) m_t << anchor;
-    m_t << "}{";
-    docify(text);
-    m_t << "}}";
+    result += "\\mbox{\\hyperlink{";
+    if (!f.isEmpty()) result += stripPath(f);
+    if (!f.isEmpty() && !anchor.isEmpty()) result += "_";
+    if (!anchor.isEmpty()) result += anchor;
+    result += "}{";
+    result += convertToLaTeX(text);
+    result += "}}";
   }
   else
   {
-    m_t << "\\textbf{ ";
-    docify(text);
-    m_t << "}";
+    result += "\\textbf{ ";
+    result += convertToLaTeX(text);
+    result += "}";
   }
+  return result;
+}
+void LatexGenerator::writeObjectLink(const QCString &ref, const QCString &f,
+                                     const QCString &anchor, const QCString &text)
+{
+  m_t << objectLinkToString(ref,f,anchor,text);
 }
 
 void LatexGenerator::startPageRef()
@@ -2134,4 +2141,21 @@ void LatexGenerator::writeLabel(const QCString &l,bool isLast)
 
 void LatexGenerator::endLabels()
 {
+}
+
+void LatexGenerator::writeInheritedSectionTitle(
+                  const QCString &id,    const QCString &ref,
+                  const QCString &file,  const QCString &anchor,
+                  const QCString &title, const QCString &name)
+{
+  if (Config_getBool(COMPACT_LATEX))
+  {
+    m_t << "\\doxyparagraph*{";
+  }
+  else
+  {
+    m_t << "\\doxysubsubsection*{";
+  }
+  m_t << theTranslator->trInheritedFrom(convertToLaTeX(title), objectLinkToString(ref, file, anchor, name));
+  m_t << "}\n";
 }

@@ -132,6 +132,8 @@ class LatexGenerator : public OutputGenerator //: public CodeOutputForwarder<Out
     void startIndexItem(const QCString &ref,const QCString &file);
     void endIndexItem(const QCString &ref,const QCString &file);
     void docify(const QCString &text);
+    QCString objectLinkToString(const QCString &ref,const QCString &file,
+                                const QCString &anchor,const QCString &name);
     void writeObjectLink(const QCString &ref,const QCString &file,
                          const QCString &anchor,const QCString &name);
 
@@ -212,7 +214,7 @@ class LatexGenerator : public OutputGenerator //: public CodeOutputForwarder<Out
     void startMemberDeclaration() {}
     void endMemberDeclaration(const QCString &,const QCString &) {}
     void writeInheritedSectionTitle(const QCString &,const QCString &,const QCString &,
-                      const QCString &,const QCString &,const QCString &) {}
+                      const QCString &,const QCString &,const QCString &);
     void startDescList(SectionTypes)     { m_t << "\\begin{Desc}\n\\item["; }
     void endDescList()       { m_t << "\\end{Desc}\n"; }
     void startExamples();
