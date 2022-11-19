@@ -133,7 +133,7 @@ class RTFGenerator : public OutputGenerator
     void endMemberSections() {}
     void startHeaderSection() {}
     void endHeaderSection() {}
-    void startMemberHeader(const QCString &,int) { startGroupHeader(FALSE); }
+    void startMemberHeader(const QCString &,int) { startGroupHeader(0); }
     void endMemberHeader() { endGroupHeader(FALSE); }
     void startMemberSubtitle();
     void endMemberSubtitle();
