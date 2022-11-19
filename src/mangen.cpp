@@ -623,8 +623,8 @@ void ManGenerator::startSection(const QCString &,const QCString &,SectionType ty
   {
     switch(type)
     {
-      case SectionType::Page:          startGroupHeader(FALSE); break;
-      case SectionType::Section:       startGroupHeader(FALSE); break;
+      case SectionType::Page:          startGroupHeader(0); break;
+      case SectionType::Section:       startGroupHeader(0); break;
       case SectionType::Subsection:    startMemberHeader(QCString(), -1); break;
       case SectionType::Subsubsection: startMemberHeader(QCString(), -1); break;
       case SectionType::Paragraph:     startMemberHeader(QCString(), -1); break;
