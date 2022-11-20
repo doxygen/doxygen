@@ -30,8 +30,6 @@
 #include "classlist.h"
 #include "textstream.h"
 
-#include "filesystem.hpp"
-
 //-----------------------------------------------------------------------------
 
 class TreeDiagram;
@@ -1098,7 +1096,6 @@ void ClassDiagram::writeFigure(TextStream &output,const QCString &path,
 
   QCString epsBaseName=QCString(path)+"/"+fileName;
   QCString epsName=epsBaseName+".eps";
-  //std::ofstream f(ghc::filesystem::path(epsName.str()),std::ofstream::out | std::ofstream::binary);
   std::ofstream f(epsName.str(),std::ofstream::out | std::ofstream::binary);
   if (!f.is_open())
   {
