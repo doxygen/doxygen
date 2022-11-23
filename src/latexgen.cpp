@@ -44,6 +44,7 @@
 #include "portable.h"
 #include "fileinfo.h"
 #include "utf8.h"
+#include "datetime.h"
 
 static QCString g_header;
 static QCString g_footer;

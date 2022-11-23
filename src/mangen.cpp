@@ -31,6 +31,7 @@
 #include "language.h"
 #include "dir.h"
 #include "utf8.h"
+#include "datetime.h"
 
 static QCString getExtension()
 {

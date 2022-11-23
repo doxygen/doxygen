@@ -70,4 +70,9 @@ std::tm getCurrentDateTime();
 /** Returns the current year as a string */
 QCString yearToString();
 
+/** Returns the current date, when \c includeTime is set also the time is provided.
+ *  @param[in] includeTime include the time in the output
+ */
+QCString dateToString(bool includeTime);
+
 #endif

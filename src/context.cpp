@@ -55,6 +55,7 @@
 #include "searchindex.h"
 #include "resourcemgr.h"
 #include "dir.h"
+#include "datetime.h"
 
 // TODO: pass the current file to Dot*::writeGraph, so the user can put dot graphs in other
 //       files as well
