@@ -102,8 +102,6 @@ void linkifyText(const TextGeneratorIntf &ol,
 
 QCString fileToString(const QCString &name,bool filter=FALSE,bool isSourceCode=FALSE);
 
-QCString dateToString(bool);
-
 bool getDefs(const QCString &scopeName,
                     const QCString &memberName,
                     const QCString &args,
