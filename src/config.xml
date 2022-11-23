@@ -1882,10 +1882,11 @@ to disable this feature.
     <option type='list' id='IGNORE_PREFIX' format='string' depends='ALPHABETICAL_INDEX'>
       <docs>
 <![CDATA[
- In case all classes in a project start with a common prefix, all classes will
- be put under the same header in the alphabetical index.
- The \c IGNORE_PREFIX tag can be used to specify a prefix
+ The \c IGNORE_PREFIX tag can be used to specify a prefix 
  (or a list of prefixes) that should be ignored while generating the index headers.
+ The \c IGNORE_PREFIX tag works for classes, function and member names.
+ The entity will be placed in the alphabetical list under the first letter of the entity name that remains
+ after removing the prefix.
 ]]>
       </docs>
     </option>
