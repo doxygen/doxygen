@@ -48,6 +48,7 @@
 #include "section.h"
 #include "fileinfo.h"
 #include "dir.h"
+#include "datetime.h"
 
 #include <sys/stat.h>
 #include <string.h>
