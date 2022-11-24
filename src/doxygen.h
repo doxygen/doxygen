@@ -131,6 +131,7 @@ class Doxygen
     static QCString                  verifiedDotPath;
     static volatile bool             terminating;
     static InputFileEncodingList     inputFileEncodingList;
+    static std::vector<std::string>  generateXRefList;
 };
 
 /** Deleter that only deletes an object if doxygen is not already terminating */
