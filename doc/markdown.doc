@@ -522,6 +522,26 @@ For example:
 
     ![Doxygen Logo](https://www.doxygen.org/images/doxygen.png){html: width=50%, latex: width=5cm}
 
+\subsection md_super_sub_script Superscript and subscript
+
+Standard Markdown does not support superscript or subscript. In doxygen there are a number of
+possibilities to create superscript and subscript:
+- through formulas (see section \ref formulas "formulas")
+- by means of the `<SUP>` (see  \ref htmltag_SUP "\<SUP\>") and `<SUB>` (see  \ref htmltag_SUB "\<SUB\>") 
+  HTML commands.
+
+To allow for output format simple superscript and subscript texts it is possible to use:
+- superscript by surrounding the superscripted text by `^` characters
+- subscript by surrounding the subscripted text by `~` characters
+
+Example:
+```
+  H~2~O is a liquid.  2^10^ is 1024.
+```
+will result in:
+
+H~2~O is a liquid.  2^10^ is 1024.
+
 \section markdown_dox Doxygen specifics
 
 Even though doxygen tries to following the Markdown standard as closely as
