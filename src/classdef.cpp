@@ -203,6 +203,7 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
     virtual QCString qualifiedNameWithTemplateParameters(
         const ArgumentLists *actualParams=0,uint *actualParamIndex=0) const;
     virtual bool isAbstract() const;
+    virtual bool isStatic() const;
     virtual bool isObjectiveC() const;
     virtual bool isFortran() const;
     virtual bool isCSharp() const;
@@ -258,6 +259,7 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
     virtual void setCompoundType(CompoundType t);
     virtual void setClassName(const QCString &name);
     virtual void setClassSpecifier(uint64 spec);
+    virtual void setClassStatic(bool stat);
     virtual void setTemplateArguments(const ArgumentList &al);
     virtual void setTemplateBaseClassNames(const TemplateNameMap &templateNames);
     virtual void setTemplateMaster(const ClassDef *tm);
@@ -466,6 +468,8 @@ class ClassDefAliasImpl : public DefinitionAliasMixin<ClassDef>
     { return makeQualifiedNameWithTemplateParameters(this,actualParams,actualParamIndex); }
     virtual bool isAbstract() const
     { return getCdAlias()->isAbstract(); }
+    virtual bool isStatic() const
+    { return getCdAlias()->isStatic(); }
     virtual bool isObjectiveC() const
     { return getCdAlias()->isObjectiveC(); }
     virtual bool isFortran() const
@@ -705,6 +709,7 @@ class ClassDefImpl::IMPL
     bool isJavaEnum = false;
 
     uint64 spec = 0;
+    bool stat = false;
 
     QCString metaData;
 
@@ -2477,6 +2482,7 @@ void ClassDefImpl::addClassAttributes(OutputList &ol) const
   if (isFinal())    sl.push_back("final");
   if (isSealed())   sl.push_back("sealed");
   if (isAbstract()) sl.push_back("abstract");
+  if (isStatic())   sl.append("static");
   if (getLanguage()==SrcLangExt_IDL && isPublished()) sl.push_back("published");
 
   ol.pushGeneratorState();
@@ -4686,6 +4692,11 @@ bool ClassDefImpl::isAbstract() const
   return m_impl->isAbstract || (m_impl->spec&Entry::Abstract);
 }
 
+bool ClassDefImpl::isStatic() const
+{
+  return m_impl->isStatic || m_impl->stat;
+}
+
 bool ClassDefImpl::isFinal() const
 {
   return m_impl->spec&Entry::Final;
@@ -4885,6 +4896,11 @@ bool ClassDefImpl::isJavaEnum() const
 void ClassDefImpl::setClassSpecifier(uint64 spec)
 {
   m_impl->spec = spec;
+}
+
+void ClassDefImpl::setClassStatic(bool stat)
+{
+  m_impl->stat = stat;
 }
 
 bool ClassDefImpl::isExtension() const
