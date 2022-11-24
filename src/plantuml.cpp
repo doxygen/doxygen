@@ -80,7 +80,9 @@ QCString PlantumlManager::writePlantUMLSource(const QCString &outDirArg,const QC
   text+="\n@end"+engine+"\n";
 
   QCString qcOutDir(outDir);
-  uint pos = qcOutDir.findRev("/");
+  int posf = qcOutDir.findRev("/");
+  int posb = qcOutDir.findRev("\\");
+  uint pos = (posf>posb ? posf : posb);
   QCString generateType(qcOutDir.right(qcOutDir.length() - (pos + 1)) );
   Debug::print(Debug::Plantuml,0,"*** %s generateType: %s\n","writePlantUMLSource",qPrint(generateType));
   PlantumlManager::instance().insert(generateType.str(),puName.str(),outDir,format,text,srcFile,srcLine);
@@ -94,8 +96,10 @@ void PlantumlManager::generatePlantUMLOutput(const QCString &baseName,const QCSt
   QCString imgName = baseName;
   // The basename contains path, we need to strip the path from the filename in order
   // to create the image file name which should be included in the index.qhp (Qt help index file).
-  int i;
-  if ((i=imgName.findRev('/'))!=-1) // strip path
+  int posf = imgName.findRev('/');
+  int posb = imgName.findRev('\\');
+  int i = (posf>posb ? posf : posb);
+  if (i!=-1) // strip path
   {
     imgName=imgName.right(imgName.length()-i-1);
   }
