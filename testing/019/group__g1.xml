@@ -4,7 +4,7 @@
     <compoundname>g1</compoundname>
     <title>First Group</title>
     <sectiondef kind="func">
-      <memberdef kind="function" id="group__g1_1gae84463e3941387a9da58279761e18d7e" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+      <memberdef kind="function" id="group__g1_gae84463e3941387a9da58279761e18d7e_1gae84463e3941387a9da58279761e18d7e" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>void</type>
         <definition>void func_g1</definition>
         <argsstring>()</argsstring>
