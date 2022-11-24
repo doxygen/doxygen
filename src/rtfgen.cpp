@@ -840,7 +840,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
 
         m_t << theTranslator->trVersion() << " " << Config_getString(PROJECT_NUMBER) << "\\par";
         m_t << "{\\field\\fldedit {\\*\\fldinst CREATEDATE \\\\*MERGEFORMAT}"
-          "{\\fldrslt "<< dateToString(FALSE) << " }}\\par\n";
+          "{\\fldrslt "<< dateToString(DateTimeType::Date) << " }}\\par\n";
         m_t << "\\page\\page";
         DBG_RTF(m_t << "{\\comment End title page}\n")
 

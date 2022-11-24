@@ -342,7 +342,7 @@ class DoxygenContext::Private
   private:
     // Property getters
     TemplateVariant version() const         { return getDoxygenVersion(); }
-    TemplateVariant date() const            { return dateToString(TRUE); }
+    TemplateVariant date() const            { return dateToString(DateTimeType::DateTime); }
     TemplateVariant mathJaxCodeFile() const { return m_mathJaxCodeFile.get(this); }
     TemplateVariant mathJaxMacros() const   { return m_mathJaxMacros.get(this); }
 

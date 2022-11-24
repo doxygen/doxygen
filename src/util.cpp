@@ -3410,8 +3410,9 @@ QCString substituteKeywords(const QCString &s,const QCString &title,
 {
   QCString result = s;
   if (!title.isEmpty()) result = substitute(result,"$title",title);
-  result = substitute(result,"$datetime",dateToString(TRUE));
-  result = substitute(result,"$date",dateToString(FALSE));
+  result = substitute(result,"$datetime",dateToString(DateTimeType::DateTime));
+  result = substitute(result,"$date",dateToString(DateTimeType::Date));
+  result = substitute(result,"$time",dateToString(DateTimeType::Time));
   result = substitute(result,"$year",yearToString());
   result = substitute(result,"$doxygenversion",getDoxygenVersion());
   result = substitute(result,"$projectname",projName);

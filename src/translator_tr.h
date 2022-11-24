@@ -1798,16 +1798,20 @@ class TranslatorTurkish : public TranslatorAdapter_1_7_5
      */
     virtual QCString trDateTime(int year,int month,int day,int dayOfWeek,
                                 int hour,int minutes,int seconds,
-                                bool includeTime)
+                                DateTimeType includeTime)
     {
     static const char *days[]   = { "Pzt","Sal","Çar","Per","Cma","Cmt","Pzr" };
     static const char *months[] = { "Oca","Şub","Mar","Nis","May","Haz","Tem","Ağu","Eyl","Ekm","Kas","Ara" };
     QCString sdate;
+    if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Date)
+    {
     sdate.sprintf("%s %s %d %d",days[dayOfWeek-1],months[month-1],day,year);
-    if (includeTime)
+    }
+    if (includeTime == DateTimeType::DateTime) sdate += " ";
+    if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Time)
     {
       QCString stime;
-      stime.sprintf(" %.2d:%.2d:%.2d",hour,minutes,seconds);
+      stime.sprintf("%.2d:%.2d:%.2d",hour,minutes,seconds);
       sdate+=stime;
     }
     return sdate;

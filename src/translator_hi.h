@@ -1777,18 +1777,22 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
      */
     virtual QCString trDateTime(
       int year, int month, int day, int dayOfWeek,
-      int hour, int minutes, int seconds, bool includeTime)
+      int hour, int minutes, int seconds, DateTimeType includeTime)
     {
       static const char *days[] = { "सोमवार", "मंगलवार", "बुधवार", "गुरुवार",
                                     "शुक्रवार", "शनिवार", "रविवार" };
       static const char *months[] = { "जनवरी", "फरवरी", "मार्च", "अप्रैल", "मई", "जून",
                                     "जुलाई", "अगस्त", "सितम्बर", "अक्टूबर", "नवम्बर", "दिसम्बर" };
       QCString sdate;
-      sdate.sprintf("%s %s %d %d", days[dayOfWeek - 1], months[month - 1], day, year);
-      if (includeTime)
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Date)
+      {
+        sdate.sprintf("%s %s %d %d", days[dayOfWeek - 1], months[month - 1], day, year);
+      }
+      if (includeTime == DateTimeType::DateTime) sdate += " ";
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Time)
       {
         QCString stime;
-        stime.sprintf(" %.2d:%.2d:%.2d", hour, minutes, seconds);
+        stime.sprintf("%.2d:%.2d:%.2d", hour, minutes, seconds);
         sdate += stime;
       }
       return sdate;

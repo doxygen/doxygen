@@ -20,6 +20,7 @@
 
 #include "classdef.h"
 #include "config.h"
+#include "datetime.h"
 
 /** Abstract base class for all translatable text fragments. */
 class Translator
@@ -606,7 +607,7 @@ class Translator
     virtual QCString trIncludesFileIn(const QCString &name) = 0;
     virtual QCString trDateTime(int year,int month,int day,int dayOfWeek,
                                 int hour,int minutes,int seconds,
-                                bool includeTime) = 0;
+                                DateTimeType includeTime) = 0;
     virtual QCString trDayOfWeek(int dayOfWeek, bool first_capital, bool full) = 0;
     virtual QCString trMonth(int month, bool first_capital, bool full) = 0;
     virtual QCString trDayPeriod(int period) = 0;
