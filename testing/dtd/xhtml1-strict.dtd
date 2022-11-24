@@ -683,7 +683,7 @@
   coords      %Coords;       #IMPLIED
   href        %URI;          #IMPLIED
   nohref      (nohref)       #IMPLIED
-  alt         %Text;         #IMPLIED
+  alt         %Text;         #REQUIRED
   >
 
 <!--================ Forms ===============================================-->
