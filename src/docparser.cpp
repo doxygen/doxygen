@@ -1923,7 +1923,7 @@ IDocNodeASTPtr validatingParseDoc(IDocParser &parserIntf,
       )
      )
   {
-    parser->context.context = ctx->name();
+    parser->context.context = ctx->qualifiedName();
   }
   else if (ctx && ctx->definitionType()==Definition::TypePage)
   {
