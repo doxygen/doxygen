@@ -3419,6 +3419,43 @@ QCString substituteKeywords(const QCString &s,const QCString &title,
   result = substitute(result,"$projectbrief",projBrief);
   result = substitute(result,"$projectlogo",stripPath(Config_getString(PROJECT_LOGO)));
   result = substitute(result,"$langISO",theTranslator->trISOLang());
+
+  static const reg::Ex re(R"(\$showdate\([^\)]*\))");
+  std::string s1 = result.str();
+  reg::Iterator iter(s1,re);
+  reg::Iterator end;
+  result = "";
+  size_t p=0;
+  size_t sl=s1.length();
+  for ( ; iter!=end ; ++iter)
+  {
+    const auto &match = *iter;
+    size_t i = match.position();
+    if (i>p) // add non-matching prefix
+    {
+      result+=s1.substr(p,i-p);
+    }
+    QCString showDate = match.str();
+    showDate = showDate.mid(10,showDate.length()-10-1);
+
+    // get the current date and time
+    std::tm dat{};
+    int specFormat=0;
+    QCString specDate = "";
+    QCString err = dateTimeFromString(specDate,dat,specFormat);
+
+    // do the conversion
+    int usedFormat=0;
+    QCString dateTimeStr = formatDateTime(showDate,dat,usedFormat);
+    result += dateTimeStr;
+
+    p = match.position()+match.length();
+  }
+  if (p<sl) // add trailing remainder
+  {
+    result+=s1.substr(p);
+  }
+
   return result;
 }
 
