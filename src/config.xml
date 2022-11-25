@@ -2088,7 +2088,8 @@ doxygen -w html new_header.html new_footer.html new_stylesheet.css YourConfigFil
  \note The order of the extra style sheet files is of importance (e.g. the last
  style sheet in the list overrules the setting of the previous ones in the list).
  \note Since the styling of scrollbars can currently not be overruled in Webkit/Chromium, the
- styling will be left out of the default doxygen.css if extra stylesheets have be specified.
+ styling will be left out of the default doxygen.css if one or more extra stylesheets
+ have been specified.
  So if scrollbar customization is desired it has to be added explicitly.
 ]]>
       </docs>
