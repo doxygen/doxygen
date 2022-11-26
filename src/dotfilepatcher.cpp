@@ -233,6 +233,14 @@ bool DotFilePatcher::convertMapFile(TextStream &t,const QCString &mapName,
     if (buf.startsWith("<area"))
     {
       QCString replBuf = replaceRef(buf,relPath,urlOnly,context);
+      // in dot version 7.0.2 the alt attribute is, incorrectly, removed.
+      // see https://gitlab.com/graphviz/graphviz/-/issues/265
+      int indexA = replBuf.find("alt=");
+      if (indexA == -1)
+      {
+        replBuf = replBuf.left(5) + " alt=\"\"" + replBuf.right(replBuf.length() - 5);
+      }
+
       // strip id="..." from replBuf since the id's are not needed and not unique.
       int indexS = replBuf.find("id=\""), indexE;
       if (indexS>0 && (indexE=replBuf.find('"',indexS+4))!=-1)
