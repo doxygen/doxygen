@@ -3571,7 +3571,7 @@ class Receiver
   `4in` or a symbolic width like `\textwidth`).
 
   Currently only the options `inline` and `anchor` are supported. In case the option `inline` is
-  specified the image is placed "in the line", when a caption s present it is shown
+  specified the image is placed "in the line", when a caption is present it is shown
   in HTML as tooltip (ignored for the other formats). For the `anchor` option the syntax is:
   `anchor:<anchorId>`.
 
