@@ -1524,29 +1524,39 @@ int Markdown::processLink(const char *data,int offset,int size)
   }
   else
   {
-    SrcLangExt lang = getLanguageFromFileName(link);
-    int lp=-1;
+    int lp = -1;
+    QCString locLink = link;
+    QCString locAnchor;
+    lp = locLink.findRev('#');
+    SrcLangExt lang;
+    if (lp != -1)
+    {
+      locLink = link.left(lp);
+      locAnchor = link.right(link.length() - lp);
+    }
+    lang = getLanguageFromFileName(locLink);
+    lp=-1;
     if ((lp=link.find("@ref "))!=-1 || (lp=link.find("\\ref "))!=-1 || (lang==SrcLangExt_Markdown && !isURL(link)))
         // assume doxygen symbol link
     {
       if (lp==-1) // link to markdown page
       {
         m_out.addStr("@ref ");
-        if (!(Portable::isAbsolutePath(link) || isURL(link)))
+        if (!(Portable::isAbsolutePath(locLink) || isURL(locLink)))
         {
-          FileInfo forg(link.str());
+          FileInfo forg(locLink.str());
           if (forg.exists() && forg.isReadable())
           {
-            link = forg.absFilePath();
+            link = forg.absFilePath() + locAnchor;
           }
           else if (!(forg.exists() && forg.isReadable()))
           {
             FileInfo fi(m_fileName.str());
-            QCString mdFile = m_fileName.left(m_fileName.length()-fi.fileName().length()) + link;
+            QCString mdFile = m_fileName.left(m_fileName.length()-fi.fileName().length()) + locLink;
             FileInfo fmd(mdFile.str());
             if (fmd.exists() && fmd.isReadable())
             {
-              link = fmd.absFilePath().data();
+              link = fmd.absFilePath().data() + locAnchor;
             }
           }
         }
