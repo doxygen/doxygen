@@ -259,7 +259,7 @@ TSCOPE    {ID}("<"[a-z_A-Z0-9 \t\*\&,:]*">")?
 CSSCOPENAME (({ID}?{BN}*"."{BN}*)*)((~{BN}*)?{ID})
 PRE       [pP][rR][eE]
 CODE      [cC][oO][dD][eE]
-CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
+CHARLIT   (("'"\\x[0-9a-fA-F]{1,2}"'")|("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 PHPKW     ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 PHPUSEKW  ("public"|"private"|"protected")
 IDLATTR   ("["[^\]]*"]"){BN}*
@@ -3880,7 +3880,7 @@ NONLopt [^\n]*
                                           yyextra->lastSquareContext = YY_START;
                                           BEGIN(SkipSquare);
                                         }
-<ReadBody,ReadNSBody,ReadBodyIntf>[^\r\n\#{}"@'/<]*     { yyextra->current->program << yytext ; }
+<ReadBody,ReadNSBody,ReadBodyIntf>[^\r\n\#{}"@'/<\\]*     { yyextra->current->program << yytext ; }
 <ReadBody,ReadNSBody,ReadBodyIntf>{CPPC}.*                { yyextra->current->program << yytext ; }
 <ReadBody,ReadNSBody,ReadBodyIntf>"#".* { if (!yyextra->insidePHP)
                                             REJECT;
@@ -4305,6 +4305,7 @@ NONLopt [^\n]*
                                           yyextra->insideObjC=FALSE;
                                           BEGIN( FindMembers );
                                         }
+<ReadBody,ReadNSBody,ReadBodyIntf>\\.   { yyextra->current->program << yytext ; }
 <ReadBody,ReadNSBody,ReadBodyIntf>.     { yyextra->current->program << yytext ; }
 
 <FindMembers>"("/{BN}*"::"*{BN}*({TSCOPE}{BN}*"::")*{TSCOPE}{BN}*")"{BN}*"(" | /* typedef void (A<int>::func_t)(args...) */

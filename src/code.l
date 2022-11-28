@@ -1149,7 +1149,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           generatePHPVariableLink(yyscanner,*yyextra->code,yytext);
                                           yyextra->name+=yytext+7;
                                         }
-<Body,TemplCast>{SCOPENAME}{B}*"<"[^\n\/\-\.\{\"\>\(]*">"{ENDIDopt}/{B}* { // A<T> *pt;
+<Body,TemplCast>{SCOPENAME}{B}*"<"[^\n\/\-\.\{\"\>\(']*">"{ENDIDopt}/{B}* { // A<T> *pt;
                                           if (isCastKeyword(yytext) && YY_START==Body)
                                           {
                                             REJECT;
@@ -1563,7 +1563,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           yyextra->code->codify(yytext);
                                           endFontClass(yyscanner);
                                         }
-<MemberCall2,FuncCall>("::")?{ID}(({B}*"<"[^\n\[\](){}<>]*">")?({B}*"::"{B}*{ID})?)* {
+<MemberCall2,FuncCall>("::")?{ID}(({B}*"<"[^\n\[\](){}<>']*">")?({B}*"::"{B}*{ID})?)* {
                                           if (isCastKeyword(yytext))
                                           {
                                             REJECT;
