@@ -47,7 +47,10 @@ OutputList::OutputList(const OutputList &ol)
   m_codeGenList.setId(m_id);
   for (const auto &og : ol.m_outputs)
   {
-    m_outputs.emplace_back(og->clone());
+    auto docGen = og->clone();
+    docGen->codeGen()->setId(m_id);
+    m_codeGenList.add(docGen->codeGen());
+    m_outputs.emplace_back(std::move(docGen));
   }
 }
 
@@ -59,7 +62,10 @@ OutputList &OutputList::operator=(const OutputList &ol)
     m_codeGenList.setId(m_id);
     for (const auto &og : ol.m_outputs)
     {
-      m_outputs.emplace_back(og->clone());
+      auto docGen = og->clone();
+      docGen->codeGen()->setId(m_id);
+      m_codeGenList.add(docGen->codeGen());
+      m_outputs.emplace_back(std::move(docGen));
     }
   }
   return *this;

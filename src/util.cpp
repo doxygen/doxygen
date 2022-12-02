@@ -4111,7 +4111,7 @@ QCString convertToDocBook(const QCString &s, const bool retainNewline)
         if (*q == ';')
         {
            --p; // we need & as well
-           HtmlEntityMapper::SymType res = HtmlEntityMapper::instance()->name2sym(QCString(p).left(cnt));
+           HtmlEntityMapper::SymType res = HtmlEntityMapper::instance().name2sym(QCString(p).left(cnt));
            if (res == HtmlEntityMapper::Sym_Unknown)
            {
              p++;
@@ -4119,7 +4119,7 @@ QCString convertToDocBook(const QCString &s, const bool retainNewline)
            }
            else
            {
-             growBuf.addStr(HtmlEntityMapper::instance()->docbook(res));
+             growBuf.addStr(HtmlEntityMapper::instance().docbook(res));
              q++;
              p = q;
            }
@@ -4278,9 +4278,9 @@ QCString convertCharEntitiesToUTF8(const QCString &str)
       growBuf.addStr(s.substr(i,p-i));
     }
     QCString entity(match.str());
-    HtmlEntityMapper::SymType symType = HtmlEntityMapper::instance()->name2sym(entity);
+    HtmlEntityMapper::SymType symType = HtmlEntityMapper::instance().name2sym(entity);
     const char *code=0;
-    if (symType!=HtmlEntityMapper::Sym_Unknown && (code=HtmlEntityMapper::instance()->utf8(symType)))
+    if (symType!=HtmlEntityMapper::Sym_Unknown && (code=HtmlEntityMapper::instance().utf8(symType)))
     {
       growBuf.addStr(code);
     }
@@ -5100,7 +5100,7 @@ void filterLatexString(TextStream &t,const QCString &str,
                    if (*q == ';')
                    {
                       --p; // we need & as well
-                      HtmlEntityMapper::SymType res = HtmlEntityMapper::instance()->name2sym(QCString(p).left(cnt));
+                      HtmlEntityMapper::SymType res = HtmlEntityMapper::instance().name2sym(QCString(p).left(cnt));
                       if (res == HtmlEntityMapper::Sym_Unknown)
                       {
                         p++;
@@ -5108,7 +5108,7 @@ void filterLatexString(TextStream &t,const QCString &str,
                       }
                       else
                       {
-                        t << HtmlEntityMapper::instance()->latex(res);
+                        t << HtmlEntityMapper::instance().latex(res);
                         q++;
                         p = q;
                       }

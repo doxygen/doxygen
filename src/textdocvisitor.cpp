@@ -26,20 +26,20 @@
 
 void TextDocVisitor::operator()(const DocSymbol &s)
 {
-  const char *res = HtmlEntityMapper::instance()->html(s.symbol());
+  const char *res = HtmlEntityMapper::instance().html(s.symbol());
   if (res)
   {
     m_t << res;
   }
   else
   {
-    err("text: non supported HTML-entity found: %s\n",HtmlEntityMapper::instance()->html(s.symbol(),TRUE));
+    err("text: non supported HTML-entity found: %s\n",HtmlEntityMapper::instance().html(s.symbol(),TRUE));
   }
 }
 
 void TextDocVisitor::operator()(const DocEmoji &s)
 {
-  const char *res = EmojiEntityMapper::instance()->name(s.index());
+  const char *res = EmojiEntityMapper::instance().name(s.index());
   if (res)
   {
     filter(res);

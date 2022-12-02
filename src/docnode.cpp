@@ -146,7 +146,7 @@ const char *DocStyleChange::styleString() const
 HtmlEntityMapper::SymType DocSymbol::decodeSymbol(const QCString &symName)
 {
   DBG(("decodeSymbol(%s)\n",qPrint(symName)));
-  return HtmlEntityMapper::instance()->name2sym(symName);
+  return HtmlEntityMapper::instance().name2sym(symName);
 }
 
 //----------- DocEmoji
@@ -162,7 +162,7 @@ DocEmoji::DocEmoji(DocParser *parser,DocNodeVariant *parent,const QCString &symN
     if (locSymName.at(0)!=':')     locSymName.prepend(":");
   }
   m_symName = locSymName;
-  m_index = EmojiEntityMapper::instance()->symbol2index(m_symName.str());
+  m_index = EmojiEntityMapper::instance().symbol2index(m_symName.str());
   if (m_index==-1)
   {
     warn_doc_error(parser->context.fileName,parser->tokenizer.getLineNr(),"Found unsupported emoji symbol '%s'\n",qPrint(m_symName));

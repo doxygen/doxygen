@@ -507,7 +507,7 @@ void PerlModDocVisitor::operator()(const DocWhiteSpace &)
 
 void PerlModDocVisitor::operator()(const DocSymbol &sy)
 {
-  const HtmlEntityMapper::PerlSymb *res = HtmlEntityMapper::instance()->perl(sy.symbol());
+  const HtmlEntityMapper::PerlSymb *res = HtmlEntityMapper::instance().perl(sy.symbol());
   const char *accent=0;
   if (res->symb)
   {
@@ -571,14 +571,14 @@ void PerlModDocVisitor::operator()(const DocSymbol &sy)
   }
   else
   {
-    err("perl: non supported HTML-entity found: %s\n",HtmlEntityMapper::instance()->html(sy.symbol(),TRUE));
+    err("perl: non supported HTML-entity found: %s\n",HtmlEntityMapper::instance().html(sy.symbol(),TRUE));
   }
 }
 
 void PerlModDocVisitor::operator()(const DocEmoji &sy)
 {
   enterText();
-  const char *name = EmojiEntityMapper::instance()->name(sy.index());
+  const char *name = EmojiEntityMapper::instance().name(sy.index());
   if (name)
   {
     m_output.add(name);

@@ -244,7 +244,7 @@ void LatexDocVisitor::operator()(const DocSymbol &s)
 {
   if (m_hide) return;
   bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
-  const char *res = HtmlEntityMapper::instance()->latex(s.symbol());
+  const char *res = HtmlEntityMapper::instance().latex(s.symbol());
   if (res)
   {
     if (((s.symbol() == HtmlEntityMapper::Sym_lt) || (s.symbol() == HtmlEntityMapper::Sym_Less))&& (!m_insidePre))
@@ -276,14 +276,14 @@ void LatexDocVisitor::operator()(const DocSymbol &s)
   }
   else
   {
-    err("LaTeX: non supported HTML-entity found: %s\n",HtmlEntityMapper::instance()->html(s.symbol(),TRUE));
+    err("LaTeX: non supported HTML-entity found: %s\n",HtmlEntityMapper::instance().html(s.symbol(),TRUE));
   }
 }
 
 void LatexDocVisitor::operator()(const DocEmoji &s)
 {
   if (m_hide) return;
-  QCString emojiName = EmojiEntityMapper::instance()->name(s.index());
+  QCString emojiName = EmojiEntityMapper::instance().name(s.index());
   if (!emojiName.isEmpty())
   {
     QCString imageName=emojiName.mid(1,emojiName.length()-2); // strip : at start and end

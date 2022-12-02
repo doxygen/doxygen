@@ -351,6 +351,8 @@ class OutputGenerator : public BaseOutputDocInterface
     virtual OutputType type() const = 0;
     virtual std::unique_ptr<OutputGenerator> clone() const = 0;
 
+    virtual CodeOutputInterface *codeGen() = 0;
+
     ///////////////////////////////////////////////////////////////
     // generic generator methods
     ///////////////////////////////////////////////////////////////
