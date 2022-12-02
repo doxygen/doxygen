@@ -3,12 +3,12 @@
 #include <iterator>
 #include <unordered_map>
 #include <string>
-
 #include <ctype.h>
-#include "md5.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+
+#include "md5.h"
 #include "regex.h"
 #include "config.h"
 #include "definitionimpl.h"
@@ -34,6 +34,8 @@
 #include "bufstr.h"
 #include "reflist.h"
 #include "utf8.h"
+#include "indexlist.h"
+#include "fileinfo.h"
 
 //-----------------------------------------------------------------------------------------
 
@@ -208,6 +210,7 @@ static void addToMap(const QCString &name,Definition *d)
   if (!vhdlOpt && index!=-1) symbolName=symbolName.mid(index+2);
   if (!symbolName.isEmpty())
   {
+    //printf("adding symbol %s\n",qPrint(symbolName));
     Doxygen::symbolMap->add(symbolName,d);
 
     d->_setSymbolName(symbolName);
@@ -370,10 +373,10 @@ void DefinitionImpl::addSectionsToIndex()
       }
       QCString title = si->title();
       if (title.isEmpty()) title = si->label();
-      // determine if there is a next level inside this item
+      // determine if there is a next level inside this item, but be aware of the anchor and table section references.
       auto it_next = std::next(it);
       bool isDir = (it_next!=m_impl->sectionRefs.end()) ?
-                       (static_cast<int>((*it_next)->type()) > nextLevel) : FALSE;
+                       (isSection((*it_next)->type()) && static_cast<int>((*it_next)->type()) > nextLevel) : FALSE;
       Doxygen::indexList->addContentsItem(isDir,title,
                                          getReference(),
                                          m_impl->def->getOutputFileBase(),
@@ -765,7 +768,7 @@ bool readCodeFragment(const QCString &fileName,
           }
           else if (pc=='/' && c=='/') // skip single line comment
           {
-            while ((c=*p++)!='\n' && c!=0) pc=c;
+            while ((c=*p++)!='\n' && c!=0);
             if (c=='\n') lineNr++,col=0;
           }
           else if (pc=='/' && c=='*') // skip C style comment
@@ -849,7 +852,7 @@ bool readCodeFragment(const QCString &fileName,
       Debug::print(Debug::FilterOutput,0,"-------------\n%s\n-------------\n",qPrint(result));
     }
   }
-  result = transcodeCharacterStringToUTF8(result);
+  result = transcodeCharacterStringToUTF8(getEncoding(FileInfo(fileName.str())),result);
   if (!result.isEmpty() && result.at(result.length()-1)!='\n') result += "\n";
   //printf("readCodeFragment(%d-%d)=%s\n",startLine,endLine,qPrint(result));
   return found;
@@ -985,8 +988,9 @@ void DefinitionImpl::writeInlineCode(OutputList &ol,const QCString &scopeName) c
         thisMd = toMemberDef(m_impl->def);
       }
 
-      ol.startCodeFragment("DoxyCode");
-      intf->parseCode(ol,               // codeOutIntf
+      auto &codeOL = ol.codeGenerators();
+      codeOL.startCodeFragment("DoxyCode");
+      intf->parseCode(codeOL,           // codeOutIntf
                       scopeName,        // scope
                       codeFragment,     // input
                       m_impl->lang,     // lang
@@ -999,7 +1003,7 @@ void DefinitionImpl::writeInlineCode(OutputList &ol,const QCString &scopeName) c
                       thisMd,           // memberDef
                       TRUE              // show line numbers
                      );
-      ol.endCodeFragment("DoxyCode");
+      codeOL.endCodeFragment("DoxyCode");
     }
   }
   ol.popGeneratorState();
@@ -1348,7 +1352,7 @@ QCString DefinitionImpl::navigationPathAsString() const
     result+=(toFileDef(m_impl->def))->getDirDef()->navigationPathAsString();
   }
   result+="<li class=\"navelem\">";
-  if (m_impl->def->isLinkable())
+  if (m_impl->def->isLinkableInProject())
   {
     if (m_impl->def->definitionType()==Definition::TypeGroup &&
         !toGroupDef(m_impl->def)->groupTitle().isEmpty())
@@ -1365,7 +1369,7 @@ QCString DefinitionImpl::navigationPathAsString() const
     else if (m_impl->def->definitionType()==Definition::TypeClass)
     {
       QCString name = locName;
-      if (name.right(2)=="-p" /*|| name.right(2)=="-g"*/)
+      if (name.endsWith("-p"))
       {
         name = name.left(name.length()-2);
       }
@@ -1391,7 +1395,7 @@ QCString DefinitionImpl::navigationPathAsString() const
 void DefinitionImpl::writeNavigationPath(OutputList &ol) const
 {
   ol.pushGeneratorState();
-  ol.disableAllBut(OutputGenerator::Html);
+  ol.disableAllBut(OutputType::Html);
 
   QCString navPath;
   navPath += "<div id=\"nav-path\" class=\"navpath\">\n"
@@ -1412,7 +1416,7 @@ void DefinitionImpl::writeToc(OutputList &ol, const LocalToc &localToc) const
   {
     int maxLevel = localToc.htmlLevel();
     ol.pushGeneratorState();
-    ol.disableAllBut(OutputGenerator::Html);
+    ol.disableAllBut(OutputType::Html);
     ol.writeString("<div class=\"toc\">");
     ol.writeString("<h3>");
     ol.writeString(theTranslator->trRTFTableOfContents());
@@ -1481,7 +1485,7 @@ void DefinitionImpl::writeToc(OutputList &ol, const LocalToc &localToc) const
   if (localToc.isDocbookEnabled())
   {
     ol.pushGeneratorState();
-    ol.disableAllBut(OutputGenerator::Docbook);
+    ol.disableAllBut(OutputType::Docbook);
     ol.writeString("    <toc>\n");
     ol.writeString("    <title>" + theTranslator->trRTFTableOfContents() + "</title>\n");
     int level=1,l;
@@ -1534,7 +1538,7 @@ void DefinitionImpl::writeToc(OutputList &ol, const LocalToc &localToc) const
   if (localToc.isLatexEnabled())
   {
     ol.pushGeneratorState();
-    ol.disableAllBut(OutputGenerator::Latex);
+    ol.disableAllBut(OutputType::Latex);
     int maxLevel = localToc.latexLevel();
 
     ol.writeString("\\etocsetnexttocdepth{"+QCString().setNum(maxLevel)+"}\n");
@@ -1565,12 +1569,12 @@ QCString DefinitionImpl::documentation() const
 
 int DefinitionImpl::docLine() const
 {
-  return m_impl->details ? m_impl->details->line : 1;
+  return m_impl->details ? m_impl->details->line : m_impl->brief ? m_impl->brief->line : 1;
 }
 
 QCString DefinitionImpl::docFile() const
 {
-  return m_impl->details ? m_impl->details->file : QCString("<"+m_impl->name+">");
+  return m_impl->details ? m_impl->details->file : m_impl->brief ? m_impl->brief->file : QCString("<"+m_impl->name+">");
 }
 
 //----------------------------------------------------------------------------

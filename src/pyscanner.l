@@ -72,7 +72,7 @@ struct pyscannerYY_state
   CommentScanner          commentScanner;
   OutlineParserInterface *thisParser = 0;
   const char *            inputString = 0;
-  yy_size_t               inputPosition = 0;
+  int                     inputPosition = 0;
   Protection              protection = Public;
   std::shared_ptr<Entry>  current_root;
   std::shared_ptr<Entry>  current;
@@ -142,7 +142,7 @@ static void searchFoundDef(yyscan_t yyscanner);
 static void searchFoundClass(yyscan_t yyscanner);
 static QCString findPackageScope(yyscan_t yyscanner,const QCString &fileName);
 
-static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
+static int yyread(yyscan_t yyscanner,char *buf,int max_size);
 
 //-----------------------------------------------------------------------------
 /* ----------------------------------------------------------------- */
@@ -356,7 +356,8 @@ STARTDOCSYMS      "##"
                         if (yyextra->yyLineNr != 1) REJECT;
                       }
     {POUNDCOMMENT}    { // normal comment
-                        yyextra->packageCommentAllowed = FALSE;
+                        // issue 9672
+                        //yyextra->packageCommentAllowed = FALSE;
                       }
     {IDENTIFIER}      { // some other identifier
                         yyextra->packageCommentAllowed = FALSE;
@@ -1187,6 +1188,10 @@ STARTDOCSYMS      "##"
                         yyextra->start_init = FALSE;
                         yyextra->current->initializer << yytext;
                       }
+   "\\\n"             {
+                        yyextra->current->initializer << yytext;
+                        incLineNr(yyscanner);
+                      }
    .                  {
                         yyextra->start_init = FALSE;
                         yyextra->current->initializer << *yytext;
@@ -1284,8 +1289,8 @@ STARTDOCSYMS      "##"
                                 if (!actualDoc.isEmpty())
                                 {
                                   stripIndentation(actualDoc,yyextra->commentIndent);
-                                  actualDoc.prepend("\\verbatim\n");
-                                  actualDoc.append("\\endverbatim ");
+                                  actualDoc.prepend("@iverbatim\n");
+                                  actualDoc.append("@endiverbatim ");
                                 }
                               }
                               //printf("-------> yyextra->current=%p yyextra->bodyEntry=%p\n",yyextra->current,yyextra->bodyEntry);
@@ -1299,8 +1304,8 @@ STARTDOCSYMS      "##"
                                 if (!actualDoc.isEmpty())
                                 {
                                   stripIndentation(actualDoc,yyextra->commentIndent);
-                                  actualDoc.prepend("\\verbatim\n");
-                                  actualDoc.append("\\endverbatim ");
+                                  actualDoc.prepend("@iverbatim\n");
+                                  actualDoc.append("@endiverbatim ");
                                 }
                               }
                               if (yyextra->moduleScope.startsWith("__") &&  yyextra->moduleScope.endsWith("__"))
@@ -1475,10 +1480,10 @@ STARTDOCSYMS      "##"
 
 //----------------------------------------------------------------------------
 
-static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size)
+static int yyread(yyscan_t yyscanner,char *buf,int max_size)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yy_size_t c=0;
+  int c=0;
   const char *p = yyextra->inputString + yyextra->inputPosition;
   while ( c < max_size && *p ) { *buf++ = *p++; c++; }
   yyextra->inputPosition+=c;
@@ -1534,7 +1539,7 @@ static void newVariable(yyscan_t yyscanner)
 static void newFunction(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  if (yyextra->current->name.left(2)=="__" && yyextra->current->name.right(2)=="__")
+  if (yyextra->current->name.startsWith("__") && yyextra->current->name.endsWith("__"))
   {
     // special method name, see
     // http://docs.python.org/ref/specialnames.html
@@ -1800,6 +1805,7 @@ static void parseCompounds(yyscan_t yyscanner,std::shared_ptr<Entry> rt)
       pyscannerYYrestart( 0, yyscanner );
       if (ce->section&Entry::COMPOUND_MASK)
       {
+        yyextra->specialBlock = false;
         yyextra->current_root = ce;
         BEGIN( Search );
       }
@@ -1924,7 +1930,7 @@ static void parsePrototype(yyscan_t yyscanner,const QCString &text)
   yyextra->packageCommentAllowed = FALSE;
 
   const char *orgInputString;
-  yy_size_t orgInputPosition;
+  int orgInputPosition;
   YY_BUFFER_STATE orgState;
 
   // save scanner state

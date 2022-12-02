@@ -45,7 +45,7 @@
  * Kiril Kirilov released released Feb 28, 2022
  *
  */
-class TranslatorBulgarian : public Translator
+class TranslatorBulgarian : public TranslatorAdapter_1_9_4
 {
   public:
 
@@ -101,6 +101,10 @@ class TranslatorBulgarian : public Translator
     /*! header that is put before the detailed description of files, classes and namespaces. */
     virtual QCString trDetailedDescription()
     { return "Подробно описание"; }
+
+    /*! header that is used when the summary tag is missing inside the details tag */
+    virtual QCString trDetails()
+    { return "Подробности"; }
 
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
@@ -1830,6 +1834,23 @@ class TranslatorBulgarian : public Translator
         sdate+=stime;
       }
       return sdate;
+    }
+    virtual QCString trDayOfWeek(int dayOfWeek, bool, bool full)
+    {
+      static const char *days_short[]   = { "пон", "вт", "ср", "четв", "пет", "съб", "нед" };
+      static const char *days_full[]    = { "понеделник", "вторник", "сряда", "четвъртък", "петък", "събота", "неделя" };
+      return full? days_full[dayOfWeek-1] : days_short[dayOfWeek-1];
+    }
+    virtual QCString trMonth(int month, bool, bool full)
+    {
+      static const char *months_short[] = { "яну", "фев", "мар", "апр", "май", "юни", "юли", "авг", "сеп", "окт", "ное", "дек" };
+      static const char *months_full[]  = { "януари", "февруари", "март", "април", "май", "юни", "юли", "август", "септември", "октомври", "ноември", "декември" };
+      return full? months_full[month-1] : months_short[month-1];
+    }
+    virtual QCString trDayPeriod(int period)
+    {
+      static const char *dayPeriod[] = { "пр.об.", "сл.об." };
+      return dayPeriod[period];
     }
 
 //////////////////////////////////////////////////////////////////////////

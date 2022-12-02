@@ -117,7 +117,7 @@ class QCString
 
     explicit QCString( const std::string &s ) : m_rep(s) {}
 
-    QCString( std::string &&s) { m_rep = std::move(s); }
+    QCString( std::string &&s) : m_rep(std::move(s)) {}
 
     /** creates a string with room for size characters
      *  @param[in] size the number of character to allocate (also counting the 0-terminator!)
@@ -425,6 +425,18 @@ class QCString
       return *this;
     }
 
+    QCString &setNum(long long n)
+    {
+      m_rep = std::to_string(n);
+      return *this;
+    }
+
+    QCString &setNum(unsigned long long n)
+    {
+      m_rep = std::to_string(n);
+      return *this;
+    }
+
     QCString &setNum(ulong n)
     {
       m_rep = std::to_string(n);
@@ -465,7 +477,7 @@ class QCString
     }
 #endif
 
-    std::string str() const
+    const std::string &str() const
     {
       return m_rep;
     }
@@ -530,7 +542,7 @@ class QCString
  *****************************************************************************/
 
 inline bool operator==( const QCString &s1, const QCString &s2 )
-{ return qstrcmp(s1.data(),s2.data()) == 0; }
+{ return s1.str() == s2.str(); }
 
 inline bool operator==( const QCString &s1, const char *s2 )
 { return qstrcmp(s1.data(),s2) == 0; }
@@ -539,7 +551,7 @@ inline bool operator==( const char *s1, const QCString &s2 )
 { return qstrcmp(s1,s2.data()) == 0; }
 
 inline bool operator!=( const QCString &s1, const QCString &s2 )
-{ return qstrcmp(s1.data(),s2.data()) != 0; }
+{ return s1.str() != s2.str(); }
 
 inline bool operator!=( const QCString &s1, const char *s2 )
 { return qstrcmp(s1.data(),s2) != 0; }
@@ -593,24 +605,6 @@ inline QCString operator+( const char *s1, const QCString &s2 )
     tmp.append(s2);
     return tmp;
 }
-
-#define HAD_PLUS_OPERATOR_FOR_CHAR 0
-#if HAS_PLUS_OPERATOR_FOR_CHAR
-inline QCString operator+( const QCString &s1, char c2 )
-{
-    QCString tmp( s1.data() );
-    tmp.append(c2);
-    return tmp;
-}
-
-inline QCString operator+( char c1, const QCString &s2 )
-{
-    QCString tmp;
-    tmp.append(c1);
-    tmp.append(s2);
-    return tmp;
-}
-#endif
 
 inline const char *qPrint(const char *s)
 {

@@ -20,7 +20,6 @@
 #include <vector>
 #include <memory>
 
-#include "index.h" // for IndexSections
 #include "outputgen.h"
 #include "searchindex.h" // for SIDataCollection
 #include "doxygen.h"
@@ -31,12 +30,79 @@ class DotDirDeps;
 class DotInclDepGraph;
 class DotGfxHierarchyTable;
 class DotGroupCollaboration;
-class DocRoot;
+
+class OutputCodeList : public CodeOutputInterface
+{
+  public:
+    OutputCodeList() = default;
+    virtual ~OutputCodeList() = default;
+
+    OutputType type() const override { return OutputType::List; }
+
+    void add(CodeOutputInterface *codeGen)
+    {
+      m_outputCodeList.push_back(codeGen);
+    }
+    void setId(int id) override
+    {
+      CodeOutputInterface::setId(id);
+      forall(&CodeOutputInterface::setId,id);
+    }
+    void setEnabledFiltered(OutputType o,bool enabled)
+    {
+      for (const auto &og : m_outputCodeList)
+      {
+        if (og->type()==o) og->setEnabled(enabled);
+      }
+    }
+
+    // ---- CodeOutputInterface forwarding
+
+    void codify(const QCString &s) override
+    { forall(&CodeOutputInterface::codify,s); }
+    void writeCodeLink(CodeSymbolType type,
+                       const QCString &ref,const QCString &file,
+                       const QCString &anchor,const QCString &name,
+                       const QCString &tooltip) override
+    { forall(&CodeOutputInterface::writeCodeLink,type,ref,file,anchor,name,tooltip); }
+    void writeLineNumber(const QCString &ref,const QCString &file,const QCString &anchor,
+                         int lineNumber, bool writeLineAnchor) override
+    { forall(&CodeOutputInterface::writeLineNumber,ref,file,anchor,lineNumber,writeLineAnchor); }
+    void writeTooltip(const QCString &id, const DocLinkInfo &docInfo, const QCString &decl,
+                      const QCString &desc, const SourceLinkInfo &defInfo, const SourceLinkInfo &declInfo) override
+    { forall(&CodeOutputInterface::writeTooltip,id,docInfo,decl,desc,defInfo,declInfo); }
+    void startCodeLine(bool hasLineNumbers) override
+    { forall(&CodeOutputInterface::startCodeLine,hasLineNumbers); }
+    void endCodeLine() override
+    { forall(&CodeOutputInterface::endCodeLine); }
+    void startFontClass(const QCString &c) override
+    { forall(&CodeOutputInterface::startFontClass,c); }
+    void endFontClass() override
+    { forall(&CodeOutputInterface::endFontClass); }
+    void writeCodeAnchor(const QCString &name) override
+    { forall(&CodeOutputInterface::writeCodeAnchor,name); }
+    void startCodeFragment(const QCString &style) override
+    { forall(&CodeOutputInterface::startCodeFragment,style); }
+    void endCodeFragment(const QCString &style) override
+    { forall(&CodeOutputInterface::endCodeFragment,style); }
+
+
+  private:
+    template<typename T,class... Ts,class... As>
+    void forall(void (T::*methodPtr)(Ts...),As&&... args)
+    {
+      for (const auto &og : m_outputCodeList)
+      {
+        if (og->isEnabled()) (og->*methodPtr)(std::forward<As>(args)...);
+      }
+    }
+    std::vector< CodeOutputInterface* > m_outputCodeList;
+};
 
 /** Class representing a list of output generators that are written to
  *  in parallel.
  */
-class OutputList : public OutputDocInterface
+class OutputList : public BaseOutputDocInterface
 {
   public:
     OutputList();
@@ -44,24 +110,28 @@ class OutputList : public OutputDocInterface
     OutputList &operator=(const OutputList &ol);
     virtual ~OutputList();
 
-    template<class Generator>
+    template<class DocGenerator>
     void add()
     {
-      m_outputs.emplace_back(std::make_unique<Generator>());
+      auto docGen = std::make_unique<DocGenerator>();
+      docGen->codeGen()->setId(m_id);
+      m_codeGenList.add(docGen->codeGen());
+      m_outputs.emplace_back(std::move(docGen));
     }
 
-    size_t size() const { return m_outputs.size(); }
-    int id() const { return m_id; }
+    const OutputCodeList &codeGenerators() const { return m_codeGenList; }
+    OutputCodeList &codeGenerators()             { return m_codeGenList; }
 
-    void disableAllBut(OutputGenerator::OutputType o);
+    size_t size() const { return m_outputs.size(); }
+
     void enableAll();
     void disableAll();
-    void disable(OutputGenerator::OutputType o);
-    void enable(OutputGenerator::OutputType o);
-    bool isEnabled(OutputGenerator::OutputType o);
+    void disable(OutputType o);
+    void enable(OutputType o);
+    bool isEnabled(OutputType o);
+    void disableAllBut(OutputType o);
     void pushGeneratorState();
     void popGeneratorState();
-
 
     //////////////////////////////////////////////////
     // OutputDocInterface implementation
@@ -72,8 +142,9 @@ class OutputList : public OutputDocInterface
                      bool indexWords,bool isExample,const QCString &exampleName /*=0*/,
                      bool singleLine /*=FALSE*/,bool linkFromIndex /*=FALSE*/,
                      bool markdownSupport /*=FALSE*/);
-    void writeDoc(DocRoot *root,const Definition *ctx,const MemberDef *md,int id=0);
+    void writeDoc(const IDocNodeAST *ast,const Definition *ctx,const MemberDef *md,int id=0);
     void parseText(const QCString &textStr);
+    void startFile(const QCString &name,const QCString &manName,const QCString &title);
 
     void startIndexSection(IndexSections is)
     { forall(&OutputGenerator::startIndexSection,is); }
@@ -87,11 +158,6 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::endProjectNumber); }
     void writeStyleInfo(int part)
     { forall(&OutputGenerator::writeStyleInfo,part); }
-    void startFile(const QCString &name,const QCString &manName,const QCString &title)
-    {
-      newId();
-      forall(&OutputGenerator::startFile,name,manName,title,m_id);
-    }
     void writeSearchInfo()
     { forall(&OutputGenerator::writeSearchInfo); }
     void writeFooter(const QCString &navPath)
@@ -138,19 +204,9 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::endIndexItem,ref,file); }
     void docify(const QCString &s)
     { forall(&OutputGenerator::docify,s); }
-    void codify(const QCString &s)
-    { forall(&OutputGenerator::codify,s); }
     void writeObjectLink(const QCString &ref,const QCString &file,
                          const QCString &anchor, const QCString &name)
     { forall(&OutputGenerator::writeObjectLink,ref,file,anchor,name); }
-    void writeCodeLink(CodeSymbolType type,
-                       const QCString &ref,const QCString &file,
-                       const QCString &anchor,const QCString &name,
-                       const QCString &tooltip)
-    { forall(&OutputGenerator::writeCodeLink,type,ref,file,anchor,name,tooltip); }
-    void writeTooltip(const QCString &id, const DocLinkInfo &docInfo, const QCString &decl,
-                      const QCString &desc, const SourceLinkInfo &defInfo, const SourceLinkInfo &declInfo)
-    { forall(&OutputGenerator::writeTooltip,id,docInfo,decl,desc,defInfo,declInfo); }
     void startTextLink(const QCString &file,const QCString &anchor)
     { forall(&OutputGenerator::startTextLink,file,anchor); }
     void endTextLink()
@@ -240,17 +296,6 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::writeRuler); }
     void writeAnchor(const QCString &fileName,const QCString &name)
     { forall(&OutputGenerator::writeAnchor,fileName,name); }
-    void startCodeFragment(const QCString &style)
-    { forall(&OutputGenerator::startCodeFragment,style); }
-    void endCodeFragment(const QCString &style)
-    { forall(&OutputGenerator::endCodeFragment,style); }
-    void startCodeLine(bool hasLineNumbers)
-    { forall(&OutputGenerator::startCodeLine,hasLineNumbers); }
-    void endCodeLine()
-    { forall(&OutputGenerator::endCodeLine); }
-    void writeLineNumber(const QCString &ref,const QCString &file,const QCString &anchor,
-                         int lineNumber, bool writeLineAnchor)
-    { forall(&OutputGenerator::writeLineNumber,ref,file,anchor,lineNumber,writeLineAnchor); }
     void startEmphasis()
     { forall(&OutputGenerator::startEmphasis); }
     void endEmphasis()
@@ -481,13 +526,6 @@ class OutputList : public OutputDocInterface
     void cleanup()
     { forall(&OutputGenerator::cleanup); }
 
-    void startFontClass(const QCString &c)
-    { forall(&OutputGenerator::startFontClass,c); }
-    void endFontClass()
-    { forall(&OutputGenerator::endFontClass); }
-    void writeCodeAnchor(const QCString &name)
-    { forall(&OutputGenerator::writeCodeAnchor,name); }
-
     void setCurrentDoc(const Definition *context,const QCString &anchor,bool isSourceFile)
     { /*forall(&OutputGenerator::setCurrentDoc,context,anchor,isSourceFile);*/
       m_searchData.setCurrentDoc(context,anchor,isSourceFile);
@@ -510,6 +548,7 @@ class OutputList : public OutputDocInterface
     void debug();
     void clear();
     void newId();
+    void syncEnabled();
 
     // For each output format that is enabled (OutputGenerator::isEnabled()) we forward
     // the method call.
@@ -527,6 +566,7 @@ class OutputList : public OutputDocInterface
     std::vector< std::unique_ptr<OutputGenerator> > m_outputs;
     int m_id;
     SIDataCollection m_searchData;
+    OutputCodeList m_codeGenList;
 
 };
 

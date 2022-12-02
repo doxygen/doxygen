@@ -48,12 +48,24 @@ class TranslatorDutch : public Translator
     { return "(Merk op dat dit geen member functies zijn.)"; }
     QCString trDetailedDescription()
     { return "Gedetailleerde Beschrijving"; }
+    virtual QCString trDetails()
+    { return "Details"; }
+
     QCString trMemberTypedefDocumentation()
     { return "Documentatie van type definitie members"; }
     QCString trMemberEnumerationDocumentation()
     { return "Documentatie van enumeratie members"; }
     QCString trMemberFunctionDocumentation()
-    { return "Documentatie van functie members"; }
+    {
+      if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+        return "Documentatie van functie/procedure/process members";
+      }
+      else
+      {
+        return "Documentatie van functie members";
+      }
+    }
     QCString trMemberDataDocumentation()
     { return "Documentatie van data members"; }
     QCString trMore()
@@ -705,7 +717,7 @@ class TranslatorDutch : public Translator
         "</ul>\n"
         "De pijlen hebben de volgende betekenis:\n"
         "<ul>\n"
-        "<li>Een donkerblauwe pijl visualizeert een public inheritance "
+        "<li>Een blauwe pijl visualizeert een public inheritance "
         "relatie tussen twee klassen.\n"
         "<li>Een donkergroene pijl wordt gebruikt voor protected inheritance.\n"
         "<li>Een donkerrode pijl wordt gebruikt voor private inheritance.\n"
@@ -1438,6 +1450,27 @@ class TranslatorDutch : public Translator
       }
       return sdate;
     }
+    virtual QCString trDayOfWeek(int dayOfWeek, bool first_capital, bool full)
+    {
+      static const char *days_short[]   = { "ma", "di", "wo", "do", "vr", "za", "zo" };
+      static const char *days_full[]    = { "maandag", "dinsdag", "woensdag", "donderdag", "vrijdag", "zaterdag", "zondag" };
+      QCString text  = full? days_full[dayOfWeek-1] : days_short[dayOfWeek-1];
+      if (first_capital) return text.mid(0,1).upper()+text.mid(1);
+      else return text;
+    }
+    virtual QCString trMonth(int month, bool first_capital, bool full)
+    {
+      static const char *months_short[] = { "jan", "feb", "mrt", "apr", "mei", "jun", "jul", "aug", "sep", "okt", "nov", "dec" };
+      static const char *months_full[]  = { "januari", "februari", "maart", "april", "mei", "juni", "juli", "augustus", "september", "oktober", "november", "december" };
+      QCString text  = full? months_full[month-1] : months_short[month-1];
+      if (first_capital) return text.mid(0,1).upper()+text.mid(1);
+      else return text;
+    }
+    virtual QCString trDayPeriod(int period)
+    {
+      static const char *dayPeriod[] = { "a.m.", "p.m." };
+      return dayPeriod[period];
+    }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.7.5
@@ -1841,6 +1874,28 @@ class TranslatorDutch : public Translator
       return "Concept definitie";
     }
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.4
+//////////////////////////////////////////////////////////////////////////
+
+    virtual QCString trPackageList()
+    { return "Package Lijst"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.6
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This is used for translation of the word that will be
+     *  followed by a single name of the VHDL process flowchart.
+     */
+    virtual QCString trFlowchart()
+    { return "Stroomschema: "; }
+
+    /*! Please translate also updated body of the method
+     *  trMemberFunctionDocumentation(), now better adapted for
+     *  VHDL sources documentation.
+     *  Done.
+     */
 };
 
 #endif

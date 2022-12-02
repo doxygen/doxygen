@@ -79,7 +79,7 @@ static const char *stateToString(int state);
 
 static void addType(yyscan_t yyscanner);
 static void addTypeName(yyscan_t yyscanner);
-static yy_size_t yyread(char *buf,yy_size_t max_size, yyscan_t yyscanner);
+static int yyread(char *buf,int max_size, yyscan_t yyscanner);
 
 /* -----------------------------------------------------------------
  */
@@ -127,6 +127,16 @@ ID	([$a-z_A-Z\x80-\xFF][$a-z_A-Z0-9\x80-\xFF]*)|(@[0-9]+)
   				  addTypeName(yyscanner);
 				  yyextra->name += removeRedundantWhiteSpace(QCString(yytext));
   				}
+<Start>"anonymous_namespace{"[^}]+"}" { // anonymous namespace
+ 				  if (!yyextra->scope.isEmpty())
+				  {
+				    yyextra->scope+=QCString("::")+yytext;
+				  }
+				  else
+				  {
+  				    yyextra->scope = yytext;
+				  }
+                                }
 <Start>([~!]{B}*)?{ID}/({B}*"["{B}*"]")* { // the []'s are for Java, 
                                         // the / was add to deal with multi-
                                         // dimensional C++ arrays like A[][15]
@@ -136,7 +146,7 @@ ID	([$a-z_A-Z\x80-\xFF][$a-z_A-Z0-9\x80-\xFF]*)|(@[0-9]+)
 				  yyextra->name += removeRedundantWhiteSpace(QCString(yytext));
   				}
 <Start>{B}*"::"{B}*		{ // found a yyextra->scope specifier
- 				  if (!yyextra->scope.isEmpty())
+ 				  if (!yyextra->scope.isEmpty() && !yyextra->scope.endsWith("::"))
 				  {
 				    yyextra->scope+="::"+yyextra->name; // add yyextra->name to yyextra->scope
 				  }
@@ -285,10 +295,10 @@ static void addTypeName(yyscan_t yyscanner)
   yyextra->name.resize(0);
 }
 
-static yy_size_t yyread(char *buf,yy_size_t max_size, yyscan_t yyscanner)
+static int yyread(char *buf,int max_size, yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yy_size_t c=0;
+  int c=0;
   while( c < max_size && yyextra->inputString[yyextra->inputPosition] )
   {
     *buf = yyextra->inputString[yyextra->inputPosition++] ;
@@ -346,28 +356,6 @@ void parseFuncDecl(const QCString &decl,const SrcLangExt lang,QCString &cl,QCStr
     yyextra->args.prepend(yyextra->name.right(yyextra->name.length()-nb));
     yyextra->name=yyextra->name.left(nb);
   }
-
-#if 0
-  {
-    int l=yyextra->scope.length();
-    int i=0;
-    int skipCount=0;
-    cl.resize(0);
-    ctl.resize(0);
-    for (i=0;i<l;i++)
-    {
-      char c=yyextra->scope.at(i);
-      if (c=='<') 
-	skipCount++;
-      else if (c=='>') 
-	skipCount--;
-      else if (skipCount==0) 
-	cl+=c;
-    }
-  }
-  cl=stripTemplateSpecifiersFromScope(removeRedundantWhiteSpace(yyextra->scope),FALSE); 
-  ctl.resize(0);
-#endif
 
   cl=yyextra->scope;
   n=removeRedundantWhiteSpace(yyextra->name);

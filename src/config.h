@@ -40,15 +40,18 @@
 #define Config_updateInt(name,value)    (ConfigValues::instance().update_##name(value));
 #define Config_updateEnum(name,value)   (ConfigValues::instance().update_##name(value));
 #define Config_updateList(name,...)   (ConfigValues::instance().update_##name(__VA_ARGS__));
+
+#define Config_isAvailableEnum(name,value)   (ConfigValues::instance().isAvailable_##name(value))
 //#endif
 //! @}
 
-enum class DoxyfileSettings { Full, Compressed, CompressedNoEnv };
 class TextStream;
 
 /** \brief Public function to deal with the configuration file. */
 namespace Config
 {
+  enum class CompareMode { Full, Compressed, CompressedNoEnv };
+
   /*! Initialize configuration variables to their default value */
   void init();
 
@@ -61,7 +64,7 @@ namespace Config
   /*! Writes a the differences between the current configuration and the
    *  template configuration to stream \a t.
    */
-  void compareDoxyfile(TextStream &t, DoxyfileSettings diffList);
+  void compareDoxyfile(TextStream &t, CompareMode compareMode);
 
   /*! Writes a the used settings of the current configuration as XML format
    *  to stream \a t.
@@ -72,15 +75,15 @@ namespace Config
    *  \returns TRUE if successful, FALSE if the file could not be
    *  opened or read.
    */
-  bool parse(const QCString &fileName,bool update=FALSE);
+  bool parse(const QCString &fileName,bool update=FALSE, CompareMode compareMode = CompareMode::Full);
 
   /*! Post processed the parsed data. Replaces raw string values by the actual values.
    *  and replaces environment variables.
    *  \param clearHeaderAndFooter set to TRUE when writing header and footer templates.
-   *  \param compare signals if we in Doxyfile compare (`-x` or `-x_noenv`) mode are or not.
-   *   Influences setting of the default value and replacement of environment variables.
+   *  \param compareMode signals if we in Doxyfile compare (`-x` or `-x_noenv`) mode are or not.
+   *   Influences setting of the default value and replacement of environment variables and CMake type replacement variables.
    */
-  void postProcess(bool clearHeaderAndFooter, DoxyfileSettings compare = DoxyfileSettings::Full);
+  void postProcess(bool clearHeaderAndFooter, CompareMode compareMode = CompareMode::Full);
 
   /*! Check the validity of the parsed options and correct or warn the user where needed.
    * \param quiet setting for the QUIET option (can have been overruled by means of a command line option)

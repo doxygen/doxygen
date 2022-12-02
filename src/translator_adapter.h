@@ -40,7 +40,27 @@ class TranslatorAdapterBase : public Translator
 
 };
 
-class TranslatorAdapter_1_9_2 : public TranslatorAdapterBase
+class TranslatorAdapter_1_9_5 : public TranslatorAdapterBase
+{
+  public:
+    virtual QCString updateNeededMessage()
+    { return createUpdateNeededMessage(idLanguage(),"release 1.9.5"); }
+
+    virtual QCString trFlowchart()
+    { return english.trFlowchart(); }
+};
+
+class TranslatorAdapter_1_9_4 : public TranslatorAdapter_1_9_5
+{
+  public:
+    virtual QCString updateNeededMessage()
+    { return createUpdateNeededMessage(idLanguage(),"release 1.9.4"); }
+
+    virtual QCString trPackageList()
+    { return english.trPackageList(); }
+};
+
+class TranslatorAdapter_1_9_2 : public TranslatorAdapter_1_9_4
 {
   public:
     virtual QCString updateNeededMessage()
@@ -314,6 +334,9 @@ class TranslatorAdapter_1_7_5 : public TranslatorAdapter_1_8_0
                                 int hour,int minutes,int seconds,
                                 bool includeTime)
     { return english.trDateTime(year,month,day,dayOfWeek,hour,minutes,seconds,includeTime); }
+    virtual QCString trDayPeriod(int period)
+    { return english.trDayPeriod(period); }
+
 };
 
 /** Adapter class for languages that only contain translations up to

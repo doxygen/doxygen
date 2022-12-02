@@ -36,7 +36,6 @@ static std::map< std::string, Debug::DebugMask > s_labels =
   { "classes",           Debug::Classes           },
   { "commentcnv",        Debug::CommentCnv        },
   { "commentscan",       Debug::CommentScan       },
-  { "validate",          Debug::Validate          },
   { "printtree",         Debug::PrintTree         },
   { "time",              Debug::Time              },
   { "extcmd",            Debug::ExtCmd            },
@@ -118,16 +117,17 @@ class Timer
   public:
     void start()
     {
-      m_startTime = std::chrono::system_clock::now();
+      m_startTime = std::chrono::steady_clock::now();
     }
     double elapsedTimeS()
     {
-      return (std::chrono::duration_cast<
+      return static_cast<double>(
+              std::chrono::duration_cast<
                   std::chrono::microseconds>(
-                  std::chrono::system_clock::now() - m_startTime).count()) / 1000000.0;
+                  std::chrono::steady_clock::now() - m_startTime).count()) / 1000000.0;
     }
   private:
-    std::chrono::time_point<std::chrono::system_clock> m_startTime;
+    std::chrono::time_point<std::chrono::steady_clock> m_startTime;
 };
 
 static Timer g_runningTime;

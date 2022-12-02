@@ -54,7 +54,7 @@ The following output formats are \e indirectly supported by doxygen:
 <dd>Generated from the \LaTeX output by 
     running <code>make ps</code> in the output directory.
     For the best results \ref cfg_pdf_hyperlinks "PDF_HYPERLINKS" should be set to \c NO.
-<dt><b>PDF</b>\htmlonly &nbsp;&nbsp;&nbsp;\endhtmlonly
+<dt><b>PDF</b>
 <dd>Generated from the \LaTeX output by
     running <code>make pdf</code> in the output directory.
     To improve the PDF output, you typically would want to enable the use 

@@ -30,6 +30,7 @@
 #include "util.h"
 #include "outputlist.h"
 #include "docparser.h"
+#include "docnode.h"
 #include "language.h"
 
 #include "version.h"
@@ -47,6 +48,7 @@
 #include "section.h"
 #include "fileinfo.h"
 #include "dir.h"
+#include "datetime.h"
 
 #include <sys/stat.h>
 #include <string.h>
@@ -1274,6 +1276,18 @@ static void writeInnerClasses(const ClassLinkedRefMap &cl, struct Refid outer_re
   }
 }
 
+static void writeInnerConcepts(const ConceptLinkedRefMap &cl, struct Refid outer_refid)
+{
+  for (const auto &cd : cl)
+  {
+    struct Refid inner_refid = insertRefid(cd->getOutputFileBase());
+
+    bindIntParameter(contains_insert,":inner_rowid", inner_refid.rowid);
+    bindIntParameter(contains_insert,":outer_rowid", outer_refid.rowid);
+    step(contains_insert);
+  }
+}
+
 static void writeInnerPages(const PageLinkedRefMap &pl, struct Refid outer_refid)
 {
   for (const auto &pd : pl)
@@ -1394,27 +1408,30 @@ QCString getSQLDocBlock(const Definition *scope,
   if (doc.isEmpty()) return "";
 
   TextStream t;
-  std::unique_ptr<IDocParser> parser { createDocParser() };
-  std::unique_ptr<DocRoot>    root   {
-    validatingParseDoc(
-    *parser.get(),
-    fileName,
-    lineNr,
-    const_cast<Definition*>(scope),
-    toMemberDef(def),
-    doc,
-    FALSE,
-    FALSE,
-    0,
-    FALSE,
-    FALSE,
-    Config_getBool(MARKDOWN_SUPPORT)
-  ) };
-  XMLCodeGenerator codeGen(t);
-  // create a parse tree visitor for XML
-  auto visitor = std::make_unique<XmlDocVisitor>(t,codeGen,
-                      scope ? scope->getDefFileExtension() : QCString(""));
-  root->accept(visitor.get());
+  auto parser { createDocParser() };
+  auto ast    { validatingParseDoc(
+                *parser.get(),
+                fileName,
+                lineNr,
+                const_cast<Definition*>(scope),
+                toMemberDef(def),
+                doc,
+                FALSE,
+                FALSE,
+                0,
+                FALSE,
+                FALSE,
+                Config_getBool(MARKDOWN_SUPPORT))
+              };
+  auto astImpl = dynamic_cast<const DocNodeAST*>(ast.get());
+  if (astImpl)
+  {
+    XMLCodeGenerator codeGen(t);
+    // create a parse tree visitor for XML
+    XmlDocVisitor visitor(t,codeGen,
+        scope ? scope->getDefFileExtension() : QCString(""));
+    std::visit(visitor,astImpl->root);
+  }
   return convertCharEntitiesToUTF8(t.str().c_str());
 }
 
@@ -2075,6 +2092,9 @@ static void generateSqlite3ForNamespace(const NamespaceDef *nd)
   // + contained class definitions
   writeInnerClasses(nd->getClasses(),refid);
 
+  // + contained concept definitions
+  writeInnerConcepts(nd->getConcepts(),refid);
+
   // + contained namespace definitions
   writeInnerNamespaces(nd->getNamespaces(),refid);
 
@@ -2221,6 +2241,9 @@ static void generateSqlite3ForFile(const FileDef *fd)
   // + contained class definitions
   writeInnerClasses(fd->getClasses(),refid);
 
+  // + contained concept definitions
+  writeInnerConcepts(fd->getConcepts(),refid);
+
   // + contained namespace definitions
   writeInnerNamespaces(fd->getNamespaces(),refid);
 
@@ -2281,6 +2304,9 @@ static void generateSqlite3ForGroup(const GroupDef *gd)
 
   // + classes
   writeInnerClasses(gd->getClasses(),refid);
+
+  // + concepts 
+  writeInnerConcepts(gd->getConcepts(),refid);
 
   // + namespaces
   writeInnerNamespaces(gd->getNamespaces(),refid);

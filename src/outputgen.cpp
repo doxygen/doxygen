@@ -87,6 +87,23 @@ QCString OutputGenerator::fileName() const
   return m_fileName;
 }
 
+void OutputGenerator::setEnabled(bool e)
+{
+  if (e && !m_genStack.empty())
+  {
+    m_active=m_genStack.top();
+  }
+  else
+  {
+    m_active=e;
+  }
+}
+
+bool OutputGenerator::isEnabled() const
+{
+  return m_active;
+}
+
 void OutputGenerator::pushGeneratorState()
 {
   m_genStack.push(isEnabled());
@@ -100,48 +117,11 @@ void OutputGenerator::popGeneratorState()
   {
     bool lb = m_genStack.top();
     m_genStack.pop();
-    if (lb) enable(); else disable();
+    setEnabled(lb);
   }
 }
 
-void OutputGenerator::enable()
-{
-  if (!m_genStack.empty())
-  {
-    m_active=m_genStack.top();
-  }
-  else
-  {
-    m_active=true;
-  }
-}
-
-void OutputGenerator::disable()
-{
-  m_active=false;
-}
-
-void OutputGenerator::enableIf(OutputGenerator::OutputType o)
-{
-  if (o==type()) enable();
-}
-
-void OutputGenerator::disableIf(OutputGenerator::OutputType o)
-{
-  if (o==type()) disable();
-}
-
-void OutputGenerator::disableIfNot(OutputGenerator::OutputType o)
-{
-  if (o!=type()) disable();
-}
-
-bool OutputGenerator::isEnabled(OutputGenerator::OutputType o)
-{
-  return (o==type() && m_active);
-}
-
-OutputGenerator *OutputGenerator::get(OutputGenerator::OutputType o)
+OutputGenerator *OutputGenerator::get(OutputType o)
 {
   return (o==type()) ? this : 0;
 }

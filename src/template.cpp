@@ -388,7 +388,7 @@ int TemplateVariant::toInt() const
     case Type::Int:        return std::get<int>(m_variant);
     case Type::String:     return std::get<QCString>(m_variant).toInt();
     case Type::Struct:     return 0;
-    case Type::List:       return std::get<TemplateListIntfPtr>(m_variant)->count();
+    case Type::List:       return static_cast<int>(std::get<TemplateListIntfPtr>(m_variant)->count());
     case Type::Function:   return 0;
     case Type::WeakStruct: return 0;
   }
@@ -1221,7 +1221,7 @@ class FilterRelative
   public:
     static TemplateVariant apply(const TemplateVariant &v,const TemplateVariant &)
     {
-      if (v.isValid() && v.isString() && v.toString().left(2)=="..")
+      if (v.isValid() && v.isString() && v.toString().startsWith(".."))
       {
         return TRUE;
       }
@@ -3123,7 +3123,7 @@ class TemplateNodeIf : public TemplateNodeCreator<TemplateNodeIf>
       auto tok = parser->takeNextToken();
 
       // elif 'nodes'
-      while (tok && tok->data.left(5)=="elif ")
+      while (tok && tok->data.startsWith("elif "))
       {
         m_ifGuardedNodes.push_back(std::make_unique<GuardedNodes>());
         auto &guardedNodes = m_ifGuardedNodes.back();

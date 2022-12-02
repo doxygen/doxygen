@@ -1,8 +1,6 @@
 /******************************************************************************
 *
-*
-*
-* Copyright (C) 1997-2015 by Dimitri van Heesch.
+* Copyright (C) 1997-2022 by Dimitri van Heesch.
 *
 * Permission to use, copy, modify, and distribute this software and its
 * documentation under the terms of the GNU General Public License is hereby
@@ -19,50 +17,6 @@
 
 #include "config.h"
 #include "outputgen.h"
-
-class DocbookCodeGenerator : public CodeOutputInterface
-{
-  public:
-    DocbookCodeGenerator(TextStream &t);
-    void setRelativePath(const QCString &path) { m_relPath = path; }
-    void setSourceFileName(const QCString &sourceFileName) { m_sourceFileName = sourceFileName; }
-    QCString sourceFileName() { return m_sourceFileName; }
-
-    void codify(const QCString &text);
-    void writeCodeLink(CodeSymbolType type,
-        const QCString &ref,const QCString &file,
-        const QCString &anchor,const QCString &name,
-        const QCString &tooltip);
-    void writeCodeLinkLine(CodeSymbolType type,
-        const QCString &ref,const QCString &file,
-        const QCString &anchor,const QCString &name,
-        const QCString &tooltip, bool);
-    void writeTooltip(const QCString &, const DocLinkInfo &, const QCString &,
-                      const QCString &, const SourceLinkInfo &, const SourceLinkInfo &
-                     );
-    void startCodeLine(bool);
-    void endCodeLine();
-    void startFontClass(const QCString &colorClass);
-    void endFontClass();
-    void writeCodeAnchor(const QCString &);
-    void writeLineNumber(const QCString &extRef,const QCString &compId,
-        const QCString &anchorId,int l, bool writeLineAnchor);
-    void finish();
-    void startCodeFragment(const QCString &style);
-    void endCodeFragment(const QCString &style);
-
-  private:
-    TextStream &m_t;
-    QCString m_refId;
-    QCString m_external;
-    int m_lineNumber = -1;
-    int m_col = 0;
-    bool m_insideCodeLine = false;
-    bool m_insideSpecialHL = false;
-    QCString m_relPath;
-    QCString m_sourceFileName;
-};
-
 
 #if 0
 // define for cases that have been implemented with an empty body
@@ -87,7 +41,53 @@ class DocbookCodeGenerator : public CodeOutputInterface
 #define DB_GEN_NEW
 #endif
 
-class DocbookGenerator : public OutputGenerator
+class DocbookCodeGenerator : public CodeOutputInterface
+{
+  public:
+    DocbookCodeGenerator(TextStream &t);
+
+    OutputType type() const override { return OutputType::Docbook; }
+
+    void codify(const QCString &text) override;
+    void writeCodeLink(CodeSymbolType type,
+        const QCString &ref,const QCString &file,
+        const QCString &anchor,const QCString &name,
+        const QCString &tooltip) override;
+    void writeTooltip(const QCString &, const DocLinkInfo &, const QCString &,
+                      const QCString &, const SourceLinkInfo &, const SourceLinkInfo &
+                     ) override;
+    void startCodeLine(bool) override;
+    void endCodeLine() override;
+    void startFontClass(const QCString &colorClass) override;
+    void endFontClass() override;
+    void writeCodeAnchor(const QCString &) override;
+    void writeLineNumber(const QCString &extRef,const QCString &compId,
+        const QCString &anchorId,int l, bool writeLineAnchor) override;
+    void startCodeFragment(const QCString &style) override;
+    void endCodeFragment(const QCString &style) override;
+
+    void setRelativePath(const QCString &path) { m_relPath = path; }
+    void setSourceFileName(const QCString &sourceFileName) { m_sourceFileName = sourceFileName; }
+    QCString sourceFileName() { return m_sourceFileName; }
+    void finish();
+
+  private:
+    void writeCodeLinkLine(CodeSymbolType type,
+        const QCString &ref,const QCString &file,
+        const QCString &anchor,const QCString &name,
+        const QCString &tooltip, bool);
+    TextStream &m_t;
+    QCString m_refId;
+    QCString m_external;
+    int m_lineNumber = -1;
+    int m_col = 0;
+    bool m_insideCodeLine = false;
+    bool m_insideSpecialHL = false;
+    QCString m_relPath;
+    QCString m_sourceFileName;
+};
+
+class DocbookGenerator : public OutputGenerator //: public CodeOutputForwarder<OutputGenerator,DocbookCodeGenerator>
 {
   public:
     DocbookGenerator();
@@ -99,39 +99,9 @@ class DocbookGenerator : public OutputGenerator
     static void init();
     void cleanup();
 
-    OutputType type() const { return Docbook; }
+    OutputType type() const { return OutputType::Docbook; }
 
-    // --- CodeOutputInterface
-    void codify(const QCString &text)
-    { m_codeGen.codify(text); }
-    void writeCodeLink(CodeSymbolType type,
-                       const QCString &ref, const QCString &file,
-                       const QCString &anchor,const QCString &name,
-                       const QCString &tooltip)
-    { m_codeGen.writeCodeLink(type,ref,file,anchor,name,tooltip); }
-    void writeLineNumber(const QCString &ref,const QCString &file,const QCString &anchor,int lineNumber, bool writeLineAnchor)
-    { m_codeGen.writeLineNumber(ref,file,anchor,lineNumber,writeLineAnchor); }
-    void writeTooltip(const QCString &id, const DocLinkInfo &docInfo, const QCString &decl,
-                      const QCString &desc, const SourceLinkInfo &defInfo, const SourceLinkInfo &declInfo
-                     )
-    { m_codeGen.writeTooltip(id,docInfo,decl,desc,defInfo,declInfo); }
-    void startCodeLine(bool hasLineNumbers)
-    { m_codeGen.startCodeLine(hasLineNumbers); }
-    void endCodeLine()
-    { m_codeGen.endCodeLine(); }
-    void startFontClass(const QCString &s)
-    { m_codeGen.startFontClass(s); }
-    void endFontClass()
-    { m_codeGen.endFontClass(); }
-    void writeCodeAnchor(const QCString &anchor)
-    { m_codeGen.writeCodeAnchor(anchor); }
-    void startCodeFragment(const QCString &style)
-    { m_codeGen.startCodeFragment(style); }
-    void endCodeFragment(const QCString &style)
-    { m_codeGen.endCodeFragment(style); }
-    // ---------------------------
-
-    void writeDoc(DocNode *,const Definition *ctx,const MemberDef *md,int id);
+    void writeDoc(const IDocNodeAST *node,const Definition *ctx,const MemberDef *md,int id);
 
     ///////////////////////////////////////////////////////////////
     // structural output interface
@@ -335,6 +305,8 @@ class DocbookGenerator : public OutputGenerator
 
     void setCurrentDoc(const Definition *,const QCString &,bool) {DB_GEN_EMPTY}
     void addWord(const QCString &,bool) {DB_GEN_EMPTY}
+
+    CodeOutputInterface *codeGen() { return &m_codeGen; }
 
 private:
     void openSection(const QCString &attr=QCString());

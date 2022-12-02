@@ -129,7 +129,7 @@ std::string getUTF8CharAt(const std::string &input,size_t pos)
   if (input.length()<=pos) return std::string();
   int numBytes=getUTF8CharNumBytes(input[pos]);
   if (input.length()<pos+numBytes) return std::string();
-  return input.substr(pos,pos+numBytes);
+  return input.substr(pos,numBytes);
 }
 
 uint32_t getUnicodeForUTF8CharAt(const std::string &input,size_t pos)

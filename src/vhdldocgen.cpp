@@ -39,7 +39,6 @@
 #include "util.h"
 #include "language.h"
 #include "commentscan.h"
-#include "index.h"
 #include "definition.h"
 #include "searchindex.h"
 #include "outputlist.h"
@@ -135,9 +134,10 @@ static void writeLink(const MemberDef* mdef,OutputList &ol)
 
 static void startFonts(const QCString& q, const char *keyword,OutputList& ol)
 {
-  ol.startFontClass(keyword);
-  ol.docify(q);
-  ol.endFontClass();
+  auto &codeOL = ol.codeGenerators();
+  codeOL.startFontClass(keyword);
+  codeOL.codify(q);
+  codeOL.endFontClass();
 }
 
 static QCString splitString(QCString& str,char c)
@@ -846,8 +846,8 @@ void VhdlDocGen::writeInlineClassLink(const ClassDef* cd ,OutputList& ol)
 
   //type=type.lower();
   type+=" >> ";
-  ol.disable(OutputGenerator::RTF);
-  ol.disable(OutputGenerator::Man);
+  ol.disable(OutputType::RTF);
+  ol.disable(OutputType::Man);
 
   if (ii==VhdlDocGen::PACKBODYCLASS)
   {
@@ -895,8 +895,8 @@ void VhdlDocGen::writeInlineClassLink(const ClassDef* cd ,OutputList& ol)
     VhdlDocGen::writeVhdlLink(cd,ol,type,nn,opp);
   }
 
-  ol.enable(OutputGenerator::Man);
-  ol.enable(OutputGenerator::RTF);
+  ol.enable(OutputType::Man);
+  ol.enable(OutputType::RTF);
 
 }// write
 
@@ -1040,7 +1040,7 @@ void VhdlDocGen::parseFuncProto(const QCString &text,QCString& name,QCString& re
 
 QCString VhdlDocGen::getIndexWord(const QCString &c,int index)
 {
-  static const reg::Ex reg(R"([\s|])");
+  static const reg::Ex reg(R"([\s:|])");
   auto ql=split(c.str(),reg);
 
   if (index < static_cast<int>(ql.size()))
@@ -1474,17 +1474,17 @@ bool VhdlDocGen::writeFuncProcDocu(
     }
 
     ol.docify(" ");
-    ol.disable(OutputGenerator::Man);
+    ol.disable(OutputType::Man);
     ol.startEmphasis();
-    ol.enable(OutputGenerator::Man);
+    ol.enable(OutputType::Man);
     if (!VhdlDocGen::isProcess(md))
     {
      // startFonts(arg.type,"vhdlkeyword",ol);
 		VhdlDocGen::writeFormatString(arg.type,ol,md);
     }
-    ol.disable(OutputGenerator::Man);
+    ol.disable(OutputType::Man);
     ol.endEmphasis();
-    ol.enable(OutputGenerator::Man);
+    ol.enable(OutputType::Man);
 
     if (--index)
     {
@@ -1796,8 +1796,8 @@ void VhdlDocGen::writeVHDLDeclaration(const MemberDefMutable* mdef,OutputList &o
     ol.startDoxyAnchor(cfname,cname,mdef->anchor(),doxyName,doxyArgs);
 
     ol.pushGeneratorState();
-    ol.disable(OutputGenerator::Man);
-    ol.disable(OutputGenerator::Latex);
+    ol.disable(OutputType::Man);
+    ol.disable(OutputType::Latex);
     ol.docify("\n");
     ol.popGeneratorState();
 
@@ -1845,7 +1845,7 @@ void VhdlDocGen::writeVHDLDeclaration(const MemberDefMutable* mdef,OutputList &o
       {
         nn=kl->getOutputFileBase();
         ol.pushGeneratorState();
-        ol.disableAllBut(OutputGenerator::Html);
+        ol.disableAllBut(OutputType::Html);
         ol.docify(" ");
         QCString name=theTranslator_vhdlType(VhdlDocGen::PACKAGE,TRUE);
         ol.startBold();
@@ -1949,7 +1949,7 @@ void VhdlDocGen::writeVHDLDeclaration(const MemberDefMutable* mdef,OutputList &o
         {
           nn=kl->getOutputFileBase();
           ol.pushGeneratorState();
-          ol.disableAllBut(OutputGenerator::Html);
+          ol.disableAllBut(OutputType::Html);
           ol.startEmphasis();
           QCString name("<Entity ");
           if (VhdlDocGen::isConfig(mdef) || VhdlDocGen::isCompInst(mdef))
@@ -1990,16 +1990,16 @@ void VhdlDocGen::writeVHDLDeclaration(const MemberDefMutable* mdef,OutputList &o
     default: break;
   }
 
-  bool htmlOn = ol.isEnabled(OutputGenerator::Html);
+  bool htmlOn = ol.isEnabled(OutputType::Html);
   if (htmlOn && /*Config_getBool(HTML_ALIGN_MEMBERS) &&*/ !ltype.isEmpty())
   {
-    ol.disable(OutputGenerator::Html);
+    ol.disable(OutputType::Html);
   }
   if (!ltype.isEmpty()) ol.docify(" ");
 
   if (htmlOn)
   {
-    ol.enable(OutputGenerator::Html);
+    ol.enable(OutputType::Html);
   }
 
   if (!detailsVisible)// && !m_impl->annMemb)
@@ -2019,7 +2019,7 @@ void VhdlDocGen::writeVHDLDeclaration(const MemberDefMutable* mdef,OutputList &o
     if (detailsVisible)
     {
       ol.pushGeneratorState();
-      ol.disableAllBut(OutputGenerator::Html);
+      ol.disableAllBut(OutputType::Html);
       //ol.endEmphasis();
       ol.docify(" ");
       if (mdef->getGroupDef()!=0 && gd==0) // forward link to the group
@@ -2123,7 +2123,7 @@ void VhdlDocGen::writeVHDLDeclarations(const MemberList* ml,OutputList &ol,
     if (membersHaveSpecificType(&mg->members(),type))
     {
       //printf("mg->header=%s\n",qPrint(mg->header()));
-      bool hasHeader=mg->header()!="[NOHEADER]";
+      bool hasHeader=!mg->header().isEmpty();
       ol.startMemberGroupHeader(hasHeader);
       if (hasHeader)
       {
@@ -2215,13 +2215,14 @@ void VhdlDocGen::writeSource(const MemberDefMutable *mdef,OutputList& ol,const Q
 
   codeFragment.prepend("\n");
   ol.pushGeneratorState();
-  ol.startCodeFragment("DoxyCode");
-  intf->parseCode(     ol,               // codeOutIntf
-                       QCString(),                // scope
+  auto &codeOL = ol.codeGenerators();
+  codeOL.startCodeFragment("DoxyCode");
+  intf->parseCode(     codeOL,           // codeOutIntf
+                       QCString(),       // scope
                        codeFragment,     // input
                        SrcLangExt_VHDL,  // lang
                        FALSE,            // isExample
-                       QCString(),               // exampleName
+                       QCString(),       // exampleName
                        const_cast<FileDef*>(mdef->getFileDef()), // fileDef
                        mdef->getStartBodyLine(),      // startLine
                        mdef->getEndBodyLine(),        // endLine
@@ -2230,7 +2231,7 @@ void VhdlDocGen::writeSource(const MemberDefMutable *mdef,OutputList& ol,const Q
                        TRUE              // show line numbers
                       );
 
-  ol.endCodeFragment("DoxyCode");
+  codeOL.endCodeFragment("DoxyCode");
   ol.popGeneratorState();
 
   if (cname.isEmpty()) return;
@@ -2558,7 +2559,7 @@ static void addInstance(ClassDefMutable* classEntity, ClassDefMutable* ar,
   // fprintf(stderr,"\naddInstance %s to %s %s %s\n",qPrint( classEntity->name()),qPrint(cd->name()),qPrint(ar->name()),cur->name);
   n1=classEntity->name();
 
-  if (!cd->isBaseClass(classEntity, true, 0))
+  if (!cd->isBaseClass(classEntity, true))
   {
     cd->insertBaseClass(classEntity,n1,Public,Normal,QCString());
   }
@@ -2670,7 +2671,6 @@ bool VhdlDocGen::isSubClass(ClassDef* cd,ClassDef *scd, bool followInstances,int
   {
     err("Possible recursive class relation while inside %s and looking for %s\n",qPrint(cd->name()),qPrint(scd->name()));
     abort();
-    return FALSE;
   }
 
   for (const auto &bcd :cd->subClasses())
@@ -2680,13 +2680,17 @@ bool VhdlDocGen::isSubClass(ClassDef* cd,ClassDef *scd, bool followInstances,int
     //printf("isSubClass() subclass %s\n",qPrint(ccd->name()));
     if (ccd==scd)
     {
-      found=TRUE;
+      found=true;
     }
     else
     {
       if (level <256)
       {
-        found=ccd->isBaseClass(scd,followInstances,level+1);
+        level = ccd->isBaseClass(scd,followInstances);
+        if (level>0)
+        {
+          found=true;
+        }
       }
     }
   }
@@ -3250,7 +3254,16 @@ void FlowChart::addFlowChart(int type,const QCString &text,const QCString &exp, 
     expression=substitute(expression,"\"","\\\"");
   }
 
-  if (type & (START_NO | VARIABLE_NO))
+  if (type & VARIABLE_NO)
+  {
+  // Ignore the empty section of the VHDL variable definition.
+  // This is section between `process` and `begin` keywords, where any source text is missing, probably a bug in the VHDL source parser.
+    if(text.isEmpty()) return;
+
+    flowList.insert(flowList.begin(),FlowChart(type,typeString,expression,label));
+    flowList.front().line=1; // TODO: use getLine(); of the parser
+  }
+  else if (type & START_NO)
   {
     flowList.insert(flowList.begin(),FlowChart(type,typeString,expression,label));
     flowList.front().line=1; // TODO: use getLine(); of the parser

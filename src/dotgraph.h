@@ -17,6 +17,7 @@
 #define DOTGRAPH_H
 
 #include <iostream>
+#include <map>
 
 #include "qcstring.h"
 #include "dir.h"

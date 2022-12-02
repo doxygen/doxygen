@@ -72,14 +72,14 @@ class TextGeneratorIntf
 class TextGeneratorOLImpl : public TextGeneratorIntf
 {
   public:
-    TextGeneratorOLImpl(OutputDocInterface &od);
+    TextGeneratorOLImpl(BaseOutputDocInterface &od);
     void writeString(const QCString &s,bool keepSpaces) const;
     void writeBreak(int indent) const;
     void writeLink(const QCString &extRef,const QCString &file,
                    const QCString &anchor,const QCString &text
                   ) const;
   private:
-    OutputDocInterface &m_od;
+    BaseOutputDocInterface &m_od;
 };
 
 //--------------------------------------------------------------------
@@ -101,8 +101,6 @@ void linkifyText(const TextGeneratorIntf &ol,
                 );
 
 QCString fileToString(const QCString &name,bool filter=FALSE,bool isSourceCode=FALSE);
-
-QCString dateToString(bool);
 
 bool getDefs(const QCString &scopeName,
                     const QCString &memberName,
@@ -136,13 +134,13 @@ bool resolveLink(/* in */  const QCString &scName,
                  /* out */ QCString &resAnchor
                 );
 
-bool generateLink(OutputDocInterface &od,const QCString &,
+bool generateLink(OutputList &ol,const QCString &,
                          const QCString &,bool inSeeBlock,const QCString &);
 
-void generateFileRef(OutputDocInterface &od,const QCString &,
+void generateFileRef(OutputList &ol,const QCString &,
                              const QCString &linkTxt=QCString());
 
-void writePageRef(OutputDocInterface &od,const QCString &cn,const QCString &mn);
+void writePageRef(OutputList &ol,const QCString &cn,const QCString &mn);
 
 //QCString getCanonicalTemplateSpec(const Definition *d,const FileDef *fs,const QCString& spec);
 
@@ -157,7 +155,7 @@ QCString substituteClassNames(const QCString &s);
 
 
 QCString clearBlock(const char *s,const char *begin,const char *end);
-QCString selectBlock(const QCString& s,const QCString &name,bool enable, OutputGenerator::OutputType o);
+QCString selectBlock(const QCString& s,const QCString &name,bool enable, OutputType o);
 QCString removeEmptyLines(const QCString &s);
 
 
@@ -282,6 +280,8 @@ PageDef *addRelatedPage(const QCString &name,
                         SrcLangExt lang=SrcLangExt_Unknown
                        );
 
+bool getCaseSenseNames();
+
 QCString escapeCharsInString(const QCString &name,bool allowDots,bool allowUnderscore=FALSE);
 QCString unescapeCharsInString(const QCString &s);
 
@@ -314,7 +314,20 @@ QCString stripExtension(const QCString &fName);
 
 void replaceNamespaceAliases(QCString &scope,int i);
 
-int computeQualifiedIndex(const QCString &name);
+//! Return the index of the last :: in the string \a name that is still before the first <
+inline int computeQualifiedIndex(const QCString &name)
+{
+  int l = static_cast<int>(name.length());
+  int lastSepPos = -1;
+  const char *p = name.data();
+  for (int i=0;i<l-1;i++)
+  {
+    char c=*p++;
+    if (c==':' && *p==':') lastSepPos=i;
+    if (c=='<') break;
+  }
+  return lastSepPos;
+}
 
 void addDirPrefix(QCString &fileName);
 
@@ -342,7 +355,7 @@ bool checkIfTypedef(const Definition *scope,const FileDef *fileScope,const QCStr
 
 QCString parseCommentAsText(const Definition *scope,const MemberDef *member,const QCString &doc,const QCString &fileName,int lineNr);
 
-QCString transcodeCharacterStringToUTF8(const QCString &input);
+QCString transcodeCharacterStringToUTF8(const QCString &inputEncoding,const QCString &input);
 
 QCString recodeString(const QCString &str,const char *fromEncoding,const char *toEncoding);
 
@@ -429,5 +442,7 @@ FortranFormat convertFileNameFortranParserCode(QCString fn);
 
 QCString integerToAlpha(int n, bool upper=true);
 QCString integerToRoman(int n, bool upper=true);
+
+QCString getEncoding(const FileInfo &fi);
 
 #endif

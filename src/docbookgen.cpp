@@ -273,12 +273,16 @@ DB_GEN_C1(m_t)
 
 //-------------------------------------------------------------------------------
 
-DocbookGenerator::DocbookGenerator() : OutputGenerator(Config_getString(DOCBOOK_OUTPUT)), m_codeGen(m_t)
+DocbookGenerator::DocbookGenerator()
+  : OutputGenerator(Config_getString(DOCBOOK_OUTPUT))
+  , m_codeGen(m_t)
 {
 DB_GEN_C
 }
 
-DocbookGenerator::DocbookGenerator(const DocbookGenerator &og) : OutputGenerator(og), m_codeGen(m_t)
+DocbookGenerator::DocbookGenerator(const DocbookGenerator &og)
+  : OutputGenerator(og)
+  , m_codeGen(m_t)
 {
 }
 
@@ -335,7 +339,7 @@ DB_GEN_C
   }
   pageName = fileName;
   relPath = relativePathToRoot(fileName);
-  if (fileName.right(4)!=".xml") fileName+=".xml";
+  if (!fileName.endsWith(".xml")) fileName+=".xml";
   startPlainFile(fileName);
   m_codeGen.setRelativePath(relPath);
   m_codeGen.setSourceFileName(stripPath(fileName));
@@ -623,13 +627,15 @@ DB_GEN_C
   }
 }
 
-void DocbookGenerator::writeDoc(DocNode *n,const Definition *ctx,const MemberDef *,int)
+void DocbookGenerator::writeDoc(const IDocNodeAST *ast,const Definition *ctx,const MemberDef *,int)
 {
 DB_GEN_C
-  DocbookDocVisitor *visitor =
-    new DocbookDocVisitor(m_t,*this,ctx?ctx->getDefFileExtension():QCString());
-  n->accept(visitor);
-  delete visitor;
+  auto astImpl = dynamic_cast<const DocNodeAST*>(ast);
+  if (astImpl)
+  {
+    DocbookDocVisitor visitor(m_t,m_codeGen,ctx?ctx->getDefFileExtension():QCString());
+    std::visit(visitor,astImpl->root);
+  }
 }
 
 void DocbookGenerator::startParagraph(const QCString &)
@@ -759,12 +765,12 @@ DB_GEN_C
 void DocbookGenerator::writeNonBreakableSpace(int n)
 {
 DB_GEN_C
-  for (int i=0;i<n;i++) m_t << " ";
+  for (int i=0;i<n;i++) m_t << "&#160;";
 }
 void DocbookGenerator::lineBreak(const QCString &)
 {
 DB_GEN_C
-  m_t << "\n";
+  m_t << "<?linebreak?>";
 }
 void DocbookGenerator::startTypewriter()
 {

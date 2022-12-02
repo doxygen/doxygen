@@ -1,8 +1,6 @@
 /******************************************************************************
  *
- *
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2022 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -27,6 +25,7 @@
 #include "index.h"
 #include "section.h"
 #include "textstream.h"
+#include "docparser.h"
 
 class ClassDiagram;
 class DotClassGraph;
@@ -35,7 +34,6 @@ class DotCallGraph;
 class DotDirDeps;
 class DotGfxHierarchyTable;
 class DotGroupCollaboration;
-class DocNode;
 class MemberDef;
 class Definition;
 
@@ -56,18 +54,26 @@ struct SourceLinkInfo
   QCString anchor;
 };
 
+enum class OutputType { List, Html, Latex, Man, RTF, Docbook, XML, Null };
+
 /** Output interface for code parser.
  */
 class CodeOutputInterface
 {
   public:
-    virtual ~CodeOutputInterface() = default;
-    CodeOutputInterface() {}
+    CodeOutputInterface() = default;
     CodeOutputInterface(const CodeOutputInterface &) = delete;
     CodeOutputInterface &operator=(const CodeOutputInterface &) = delete;
+    virtual ~CodeOutputInterface() = default;
+
+    virtual OutputType type() const = 0;
 
     /** Identifier for the output file */
-    virtual int id() const { return 0; }
+    virtual int id() const { return m_id; }
+    virtual void setId(int id) { m_id=id; }
+
+    virtual void setEnabled(bool e) { m_active = e; }
+    virtual bool isEnabled() const { return m_active; }
 
     /*! Writes an code fragment to the output. This function should keep
      *  spaces visible, should break lines at a newline and should convert
@@ -148,7 +154,12 @@ class CodeOutputInterface
     virtual void startCodeFragment(const QCString &style) = 0;
     /*! Ends a block of code */
     virtual void endCodeFragment(const QCString &style) = 0;
+
+  private:
+    int m_id = -1;
+    bool m_active = true;
 };
+
 
 /** Base Interface used for generating output outside of the
  *  comment blocks.
@@ -158,9 +169,11 @@ class CodeOutputInterface
  *  or a list of formats (see OutputList). This interface
  *  contains functions that generate fragments of the output.
  */
-class BaseOutputDocInterface : public CodeOutputInterface
+class BaseOutputDocInterface
 {
   public:
+    virtual ~BaseOutputDocInterface() = default;
+
     enum ParamListTypes { Param, RetVal, Exception };
     enum SectionTypes { /*See, Return, Author, Version,
                         Since, Date, Bug, Note,
@@ -329,7 +342,6 @@ class BaseOutputDocInterface : public CodeOutputInterface
 class OutputGenerator : public BaseOutputDocInterface
 {
   public:
-    enum OutputType { Html, Latex, Man, RTF, XML, DEF, Perl , Docbook};
 
     OutputGenerator(const QCString &dir);
     OutputGenerator(const OutputGenerator &o);
@@ -342,26 +354,18 @@ class OutputGenerator : public BaseOutputDocInterface
     ///////////////////////////////////////////////////////////////
     // generic generator methods
     ///////////////////////////////////////////////////////////////
-    void enable();
-    void disable();
-    void enableIf(OutputType o);
-    void disableIf(OutputType o);
-    void disableIfNot(OutputType o);
-    bool isEnabled(OutputType o);
+    void pushGeneratorState();
+    void popGeneratorState();
+    void setEnabled(bool e);
+    bool isEnabled() const;
     OutputGenerator *get(OutputType o);
     QCString dir() const;
     QCString fileName() const;
 
     void startPlainFile(const QCString &name);
     void endPlainFile();
-    //QCString getContents() const;
-    bool isEnabled() const { return m_active; }
-    void pushGeneratorState();
-    void popGeneratorState();
-    //void setEncoding(const QCString &enc) { encoding = enc; }
-    //virtual void postProcess(QByteArray &) { }
 
-    virtual void writeDoc(DocNode *,const Definition *ctx,const MemberDef *md,int id) = 0;
+    virtual void writeDoc(const IDocNodeAST *ast,const Definition *ctx,const MemberDef *md,int id) = 0;
 
     ///////////////////////////////////////////////////////////////
     // structural output interface
@@ -499,7 +503,6 @@ class OutputGenerator : public BaseOutputDocInterface
     virtual void startInlineMemberDoc() = 0;
     virtual void endInlineMemberDoc() = 0;
 
-
     virtual void startLabels() = 0;
     virtual void writeLabel(const QCString &,bool) = 0;
     virtual void endLabels() = 0;
@@ -516,55 +519,6 @@ class OutputGenerator : public BaseOutputDocInterface
     std::stack<bool> m_genStack;
 };
 
-/** Interface used for generating documentation.
- *
- *  This abstract class is used by several functions
- *  to generate the output for a specific format.
- *  This interface contains some state saving and changing
- *  functions for dealing with format specific output.
- */
-class OutputDocInterface : public BaseOutputDocInterface
-{
-  public:
-    /*! Disables all output formats except format \a o
-     *  (useful for OutputList only)
-     */
-    virtual void disableAllBut(OutputGenerator::OutputType o) = 0;
 
-    /*! Enables all output formats as far as they have been enabled in
-     *  the config file. (useful for OutputList only)
-     */
-    virtual void enableAll() = 0;
-
-    /*! Disables all output formats (useful for OutputList only) */
-    virtual void disableAll()= 0;
-
-    /*! Disables a specific output format (useful for OutputList only) */
-    virtual void disable(OutputGenerator::OutputType o) = 0;
-
-    /*! Enables a specific output format (useful for OutputList only) */
-    virtual void enable(OutputGenerator::OutputType o) = 0;
-
-    /*! Check whether a specific output format is currently enabled
-     *  (useful for OutputList only)
-     */
-    virtual bool isEnabled(OutputGenerator::OutputType o) = 0;
-
-    /*! Appends the output generated by generator \a g to this
-     *  generator.
-     */
-    //virtual void append(const OutputDocInterface *g) = 0;
-
-    /*! Pushes the state of the current generator (or list of
-     *  generators) on a stack.
-     */
-    virtual void pushGeneratorState() = 0;
-
-    /*! Pops the state of the current generator (or list of
-     *  generators) on a stack. Should be preceded by a call
-     *  the pushGeneratorState().
-     */
-    virtual void popGeneratorState() = 0;
-};
 
 #endif

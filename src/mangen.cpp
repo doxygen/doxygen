@@ -31,6 +31,7 @@
 #include "language.h"
 #include "dir.h"
 #include "utf8.h"
+#include "datetime.h"
 
 static QCString getExtension()
 {
@@ -75,11 +76,88 @@ static QCString getSubdir()
   return dir;
 }
 
-ManGenerator::ManGenerator() : OutputGenerator(Config_getString(MAN_OUTPUT)+"/"+getSubdir())
+//-------------------------------------------------------------------------------
+
+void ManCodeGenerator::startCodeFragment(const QCString &)
+{
+  m_t << ".PP\n";
+  m_t << ".nf\n";
+}
+
+void ManCodeGenerator::endCodeFragment(const QCString &)
+{
+  if (m_col>0) m_t << "\n";
+  m_t << ".fi\n";
+  m_col=0;
+}
+
+void ManCodeGenerator::writeCodeLink(CodeSymbolType,
+                                 const QCString &,const QCString &,
+                                 const QCString &, const QCString &name,
+                                 const QCString &)
+{
+  if (!name.isEmpty())
+  {
+    const char *p=name.data();
+    char c=0;
+    while ((c=*p++))
+    {
+      switch(c)
+      {
+        case '-':  m_t << "\\-"; break; // see  bug747780
+        case '.':  m_t << "\\&."; break; // see  bug652277
+        case '\\': m_t << "\\\\"; m_col++; break;
+        case '\n': m_t << "\n"; m_col=0; break;
+        case '\"':  c = '\''; // no break!
+        default: m_t << c; m_col++; break;
+      }
+    }
+    //printf("%s",str);fflush(stdout);
+  }
+}
+
+void ManCodeGenerator::codify(const QCString &str)
+{
+  //static char spaces[]="        ";
+  if (!str.isEmpty())
+  {
+    const char *p=str.data();
+    char c;
+    int spacesToNextTabStop;
+    while (*p)
+    {
+      c=*p++;
+      switch(c)
+      {
+        case '-':  m_t << "\\-"; break; // see  bug747780
+        case '.':   m_t << "\\&."; break; // see  bug652277
+        case '\t':  spacesToNextTabStop =
+                          Config_getInt(TAB_SIZE) - (m_col%Config_getInt(TAB_SIZE));
+                    m_t << Doxygen::spaces.left(spacesToNextTabStop);
+                    m_col+=spacesToNextTabStop;
+                    break;
+        case '\n':  m_t << "\n"; m_col=0; break;
+        case '\\':  m_t << "\\\\"; m_col++; break;
+        case '\"':  // no break!
+        default:    p=writeUTF8Char(m_t,p-1); m_col++; break;
+      }
+    }
+    //printf("%s",str);fflush(stdout);
+  }
+}
+
+
+//-------------------------------------------------------------------------------
+
+ManGenerator::ManGenerator()
+  : OutputGenerator(Config_getString(MAN_OUTPUT)+"/"+getSubdir())
+  , m_codeGen(m_t)
 {
 }
 
-ManGenerator::ManGenerator(const ManGenerator &og) : OutputGenerator(og)
+ManGenerator::ManGenerator(const ManGenerator &og)
+  : OutputGenerator(og)
+  , m_codeGen(m_t)
 {
 }
 
@@ -245,14 +323,6 @@ void ManGenerator::writeObjectLink(const QCString &,const QCString &,
   startBold(); docify(name); endBold();
 }
 
-void ManGenerator::writeCodeLink(CodeSymbolType,
-                                 const QCString &,const QCString &,
-                                 const QCString &, const QCString &name,
-                                 const QCString &)
-{
-  docify(name);
-}
-
 void ManGenerator::startHtmlLink(const QCString &)
 {
 }
@@ -314,36 +384,6 @@ void ManGenerator::docify(const QCString &str)
   m_paragraph=FALSE;
 }
 
-void ManGenerator::codify(const QCString &str)
-{
-  //static char spaces[]="        ";
-  if (!str.isEmpty())
-  {
-    const char *p=str.data();
-    char c;
-    int spacesToNextTabStop;
-    while (*p)
-    {
-      c=*p++;
-      switch(c)
-      {
-        case '.':   m_t << "\\&."; break; // see  bug652277
-        case '\t':  spacesToNextTabStop =
-                          Config_getInt(TAB_SIZE) - (m_col%Config_getInt(TAB_SIZE));
-                    m_t << Doxygen::spaces.left(spacesToNextTabStop);
-                    m_col+=spacesToNextTabStop;
-                    break;
-        case '\n':  m_t << "\n"; m_firstCol=TRUE; m_col=0; break;
-        case '\\':  m_t << "\\"; m_col++; break;
-        case '\"':  // no break!
-        default:    p=writeUTF8Char(m_t,p-1); m_firstCol=FALSE; m_col++; break;
-      }
-    }
-    //printf("%s",str);fflush(stdout);
-  }
-  m_paragraph=FALSE;
-}
-
 void ManGenerator::writeChar(char c)
 {
   m_firstCol=(c=='\n');
@@ -393,23 +433,6 @@ void ManGenerator::startItemListItem()
 
 void ManGenerator::endItemListItem()
 {
-}
-
-void ManGenerator::startCodeFragment(const QCString &)
-{
-  newParagraph();
-  m_t << ".nf\n";
-  m_firstCol=TRUE;
-  m_paragraph=FALSE;
-}
-
-void ManGenerator::endCodeFragment(const QCString &)
-{
-  if (!m_firstCol) m_t << "\n";
-  m_t << ".fi\n";
-  m_firstCol=TRUE;
-  m_paragraph=FALSE;
-  m_col=0;
 }
 
 void ManGenerator::startMemberDoc(const QCString &,const QCString &,const QCString &,const QCString &,int,int,bool)
@@ -601,8 +624,8 @@ void ManGenerator::startSection(const QCString &,const QCString &,SectionType ty
   {
     switch(type)
     {
-      case SectionType::Page:          startGroupHeader(FALSE); break;
-      case SectionType::Section:       startGroupHeader(FALSE); break;
+      case SectionType::Page:          startGroupHeader(0); break;
+      case SectionType::Section:       startGroupHeader(0); break;
       case SectionType::Subsection:    startMemberHeader(QCString(), -1); break;
       case SectionType::Subsubsection: startMemberHeader(QCString(), -1); break;
       case SectionType::Paragraph:     startMemberHeader(QCString(), -1); break;
@@ -627,7 +650,7 @@ void ManGenerator::endSection(const QCString &,SectionType type)
   }
   else
   {
-    m_t << "\n";
+    m_t << "\n.PP\n";
     m_firstCol=TRUE;
     m_paragraph=FALSE;
     m_inHeader=FALSE;
@@ -690,11 +713,14 @@ void ManGenerator::endParamList()
 {
 }
 
-void ManGenerator::writeDoc(DocNode *n,const Definition *ctx,const MemberDef *,int)
+void ManGenerator::writeDoc(const IDocNodeAST *ast,const Definition *ctx,const MemberDef *,int)
 {
-  ManDocVisitor *visitor = new ManDocVisitor(m_t,*this,ctx?ctx->getDefFileExtension():QCString(""));
-  n->accept(visitor);
-  delete visitor;
+  const DocNodeAST *astImpl = dynamic_cast<const DocNodeAST *>(ast);
+  if (astImpl)
+  {
+    ManDocVisitor visitor(m_t,m_codeGen,ctx?ctx->getDefFileExtension():QCString(""));
+    std::visit(visitor,astImpl->root);
+  }
   m_firstCol=FALSE;
   m_paragraph = FALSE;
 }
@@ -840,3 +866,4 @@ void ManGenerator::endLabels()
 void ManGenerator::endHeaderSection()
 {
 }
+

@@ -97,6 +97,10 @@ class TranslatorEnglish : public Translator
     virtual QCString trDetailedDescription()
     { return "Detailed Description"; }
 
+    /*! header that is used when the summary tag is missing inside the details tag */
+    virtual QCString trDetails()
+    { return "Details"; }
+
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
     { return "Member Typedef Documentation"; }
@@ -107,7 +111,16 @@ class TranslatorEnglish : public Translator
 
     /*! header that is put before the list of member functions. */
     virtual QCString trMemberFunctionDocumentation()
-    { return "Member Function Documentation"; }
+    {
+      if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+        return "Member Function/Procedure/Process Documentation";
+      }
+      else
+      {
+        return "Member Function Documentation";
+      }
+    }
 
     /*! header that is put before the list of member attributes. */
     virtual QCString trMemberDataDocumentation()
@@ -1047,7 +1060,7 @@ class TranslatorEnglish : public Translator
         "The arrows have the following meaning:\n"
         "</p>\n"
         "<ul>\n"
-        "<li>%A dark blue arrow is used to visualize a public inheritance "
+        "<li>%A blue arrow is used to visualize a public inheritance "
         "relation between two classes.</li>\n"
         "<li>%A dark green arrow is used for protected inheritance.</li>\n"
         "<li>%A dark red arrow is used for private inheritance.</li>\n"
@@ -1825,6 +1838,23 @@ class TranslatorEnglish : public Translator
       }
       return sdate;
     }
+    virtual QCString trDayOfWeek(int dayOfWeek, bool, bool full)
+    {
+      static const char *days_short[]   = { "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" };
+      static const char *days_full[]    = { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" };
+      return full? days_full[dayOfWeek-1] : days_short[dayOfWeek-1];
+    }
+    virtual QCString trMonth(int month, bool, bool full)
+    {
+      static const char *months_short[] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
+      static const char *months_full[]  = { "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" };
+      return full? months_full[month-1] : months_short[month-1];
+    }
+    virtual QCString trDayPeriod(int period)
+    {
+      static const char *dayPeriod[] = { "AM", "PM" };
+      return dayPeriod[period];
+    }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.7.5
@@ -2293,6 +2323,28 @@ class TranslatorEnglish : public Translator
     {
       return "Concept definition";
     }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.4
+//////////////////////////////////////////////////////////////////////////
+
+    virtual QCString trPackageList()
+    { return "Package List"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.6
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This is used for translation of the word that will be
+     *  followed by a single name of the VHDL process flowchart.
+     */
+    virtual QCString trFlowchart()
+    { return "Flowchart: "; }
+
+    /*! Please translate also updated body of the method
+     *  trMemberFunctionDocumentation(), now better adapted for
+     *  VHDL sources documentation.
+     */
 };
 
 #endif

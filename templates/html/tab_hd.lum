@@ -1,0 +1,8 @@
+# hovering tab background luma for dark mode
+# width & height
+1 36
+# luma data
+ 81  91  98  96  93  90  88  85  84
+ 81  80  78  77  76  75  74  73  72
+ 72  54  55  56  57  58  59  60  61
+ 62  64  66  68  70  74  76  63  45

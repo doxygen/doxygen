@@ -103,6 +103,10 @@ class TranslatorLatvian : public TranslatorAdapter_1_8_4
     virtual QCString trDetailedDescription()
     { return "Detalizēts apraksts"; }
 
+    /*! header that is used when the summary tag is missing inside the details tag */
+    virtual QCString trDetails()
+    { return "Sīkāka informācija"; }
+
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
     { return "Elementa Typedef dokumentācija"; }
@@ -1821,6 +1825,27 @@ class TranslatorLatvian : public TranslatorAdapter_1_8_4
         sdate+=stime;
       }
       return sdate;
+    }
+    virtual QCString trDayOfWeek(int dayOfWeek, bool first_capital, bool full)
+    {
+      static const char *days_short[]   = { "pirmd.", "otrd.", "trešd.", "ceturtd.", "piektd.", "sestd.", "svētd." };
+      static const char *days_full[]    = { "pirmdiena", "otrdiena", "trešdiena", "ceturtdiena", "piektdiena", "sestdiena", "svētdiena" };
+      QCString text  = full? days_full[dayOfWeek-1] : days_short[dayOfWeek-1];
+      if (first_capital) return text.mid(0,1).upper()+text.mid(1);
+      else return text;
+    }
+    virtual QCString trMonth(int month, bool first_capital, bool full)
+    {
+      static const char *months_short[] = { "janv.", "febr.", "marts", "apr.", "maijs", "jūn.", "jūl.", "aug.", "sept.", "okt.", "nov.", "dec." };
+      static const char *months_full[]  = { "janvāris", "februāris", "marts", "aprīlis", "maijs", "jūnijs", "jūlijs", "augusts", "septembris", "oktobris", "novembris", "decembris" };
+      QCString text  = full? months_full[month-1] : months_short[month-1];
+      if (first_capital) return text.mid(0,1).upper()+text.mid(1);
+      else return text;
+    }
+    virtual QCString trDayPeriod(int period)
+    {
+      static const char *dayPeriod[] = { "priekšp.", "pēcp." };
+      return dayPeriod[period];
     }
 
 //////////////////////////////////////////////////////////////////////////

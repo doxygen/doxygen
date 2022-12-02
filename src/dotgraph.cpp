@@ -15,10 +15,11 @@
 
 #include <sstream>
 #include <mutex>
+#include <regex>
 
 #include "config.h"
 #include "doxygen.h"
-#include "index.h"
+#include "indexlist.h"
 #include "md5.h"
 #include "message.h"
 #include "util.h"
@@ -274,8 +275,6 @@ void DotGraph::generateCode(TextStream &t)
 
 void DotGraph::writeGraphHeader(TextStream &t,const QCString &title)
 {
-  int fontSize      = Config_getInt(DOT_FONTSIZE);
-  QCString fontName = Config_getString(DOT_FONTNAME);
   t << "digraph ";
   if (title.isEmpty())
   {
@@ -292,16 +291,11 @@ void DotGraph::writeGraphHeader(TextStream &t,const QCString &title)
     t << " // INTERACTIVE_SVG=YES\n";
   }
   t << " // LATEX_PDF_SIZE\n"; // write placeholder for LaTeX PDF bounding box size replacement
-  if (Config_getBool(DOT_TRANSPARENT))
-  {
-    t << "  bgcolor=\"transparent\";\n";
-  }
-  t << "  edge [fontname=\"" << fontName << "\","
-         "fontsize=\"" << fontSize << "\","
-         "labelfontname=\"" << fontName << "\","
-         "labelfontsize=\"" << fontSize << "\"];\n";
-  t << "  node [fontname=\"" << fontName << "\","
-         "fontsize=\"" << fontSize << "\",shape=record];\n";
+  t << "  bgcolor=\"transparent\";\n";
+  QCString c = Config_getString(DOT_COMMON_ATTR);
+  if (!c.isEmpty()) c += ",";
+  t << "  edge [" << c << Config_getString(DOT_EDGE_ATTR) << "];\n";
+  t << "  node [" << c << Config_getString(DOT_NODE_ATTR) << "];\n";
 }
 
 void DotGraph::writeGraphFooter(TextStream &t)

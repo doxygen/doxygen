@@ -59,10 +59,9 @@ void writeDiaGraphFromFile(const QCString &inFile,const QCString &outDir,
   diaArgs+=inFile;
   diaArgs+="\"";
 
-  int exitCode;
   //printf("*** running: %s %s outDir:%s %s\n",qPrint(diaExe),qPrint(diaArgs),outDir,outFile);
   Portable::sysTimerStart();
-  if ((exitCode=Portable::system(diaExe,diaArgs,FALSE))!=0)
+  if (Portable::system(diaExe,diaArgs,FALSE)!=0)
   {
     err_full(srcFile,srcLine,"Problems running %s. Check your installation or look typos in you dia file %s\n",
         qPrint(diaExe),qPrint(inFile));

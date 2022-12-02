@@ -40,7 +40,7 @@ class Image
     void drawVertArrow(uint x,uint ys,uint ye,uchar colIndex,uint mask);
     void drawRect(uint x,uint y,uint width,uint height,uchar colIndex,uint mask);
     void fillRect(uint x,uint y,uint width,uint height,uchar colIndex,uint mask);
-    bool save(const QCString &fileName,int mode=0);
+    bool save(const QCString &fileName);
     friend uint stringLength(const QCString &s);
     uint width() const { return m_width; }
     uint height() const { return m_height; }

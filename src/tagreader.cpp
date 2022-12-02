@@ -457,7 +457,7 @@ class TagFileParser
         case InMember:
         case InPackage:
         case InDir:
-          if (m_curString.right(10)=="autotoc_md") return;
+          if (m_curString.endsWith("autotoc_md")) return;
           break;
         default:
           warn("Unexpected tag 'docanchor' found");

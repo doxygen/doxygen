@@ -213,7 +213,6 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     virtual MemberDef *fromAnonymousMember() const;
     virtual bool hasCallGraph() const;
     virtual bool hasCallerGraph() const;
-    virtual bool visibleMemberGroup(bool hideNoHeader) const;
     virtual bool hasReferencesRelation() const;
     virtual bool hasReferencedByRelation() const;
     virtual const MemberDef *templateMaster() const;
@@ -321,7 +320,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     virtual void writeMemberDocSimple(OutputList &ol,const Definition *container) const;
     virtual void writeEnumDeclaration(OutputList &typeDecl,
             const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd) const;
-    virtual void writeTagFile(TextStream &) const;
+    virtual void writeTagFile(TextStream &,bool useQualifiedName) const;
     virtual void warnIfUndocumented() const;
     virtual void warnIfUndocumentedParams() const;
     virtual bool visibleInIndex() const;
@@ -698,8 +697,6 @@ class MemberDefAliasImpl : public DefinitionAliasMixin<MemberDef>
     { return getMdAlias()->hasCallGraph(); }
     virtual bool hasCallerGraph() const
     { return getMdAlias()->hasCallerGraph(); }
-    virtual bool visibleMemberGroup(bool hideNoHeader) const
-    { return getMdAlias()->visibleMemberGroup(hideNoHeader); }
     virtual bool hasReferencesRelation() const
     { return getMdAlias()->hasReferencesRelation(); }
     virtual bool hasReferencedByRelation() const
@@ -871,23 +868,23 @@ static bool writeDefArgumentList(OutputList &ol,const Definition *scope,const Me
 
   //printf("writeDefArgList(%d)\n",defArgList->count());
   ol.pushGeneratorState();
-  //ol.disableAllBut(OutputGenerator::Html);
-  bool htmlOn  = ol.isEnabled(OutputGenerator::Html);
-  bool latexOn = ol.isEnabled(OutputGenerator::Latex);
-  bool docbookOn = ol.isEnabled(OutputGenerator::Docbook);
+  //ol.disableAllBut(OutputType::Html);
+  bool htmlOn  = ol.isEnabled(OutputType::Html);
+  bool latexOn = ol.isEnabled(OutputType::Latex);
+  bool docbookOn = ol.isEnabled(OutputType::Docbook);
   {
     // html and latex
-    if (htmlOn)  ol.enable(OutputGenerator::Html);
-    if (latexOn) ol.enable(OutputGenerator::Latex);
-    if (docbookOn) ol.enable(OutputGenerator::Docbook);
+    if (htmlOn)  ol.enable(OutputType::Html);
+    if (latexOn) ol.enable(OutputType::Latex);
+    if (docbookOn) ol.enable(OutputType::Docbook);
 
     ol.endMemberDocName();
     ol.startParameterList(!md->isObjCMethod());
   }
   ol.enableAll();
-  ol.disable(OutputGenerator::Html);
-  ol.disable(OutputGenerator::Latex);
-  ol.disable(OutputGenerator::Docbook);
+  ol.disable(OutputType::Html);
+  ol.disable(OutputType::Latex);
+  ol.disable(OutputType::Docbook);
   {
     // other formats
     if (!md->isObjCMethod()) ol.docify("("); // start argument list
@@ -964,24 +961,24 @@ static bool writeDefArgumentList(OutputList &ol,const Definition *scope,const Me
     }
     if (!a.name.isEmpty() || a.type=="...") // argument has a name
     {
-      ol.disable(OutputGenerator::Latex);
-      ol.disable(OutputGenerator::Docbook);
-      ol.disable(OutputGenerator::Html);
+      ol.disable(OutputType::Latex);
+      ol.disable(OutputType::Docbook);
+      ol.disable(OutputType::Html);
       ol.docify(" "); /* man page */
-      if (htmlOn) ol.enable(OutputGenerator::Html);
-      ol.disable(OutputGenerator::Man);
+      if (htmlOn) ol.enable(OutputType::Html);
+      ol.disable(OutputType::Man);
       ol.startEmphasis();
-      ol.enable(OutputGenerator::Man);
-      if (latexOn) ol.enable(OutputGenerator::Latex);
-      if (docbookOn) ol.enable(OutputGenerator::Docbook);
+      ol.enable(OutputType::Man);
+      if (latexOn) ol.enable(OutputType::Latex);
+      if (docbookOn) ol.enable(OutputType::Docbook);
       if (a.name.isEmpty()) ol.docify(a.type); else ol.docify(a.name);
-      ol.disable(OutputGenerator::Man);
-      ol.disable(OutputGenerator::Latex);
-      ol.disable(OutputGenerator::Docbook);
+      ol.disable(OutputType::Man);
+      ol.disable(OutputType::Latex);
+      ol.disable(OutputType::Docbook);
       ol.endEmphasis();
-      ol.enable(OutputGenerator::Man);
-      if (latexOn) ol.enable(OutputGenerator::Latex);
-      if (docbookOn) ol.enable(OutputGenerator::Docbook);
+      ol.enable(OutputType::Man);
+      if (latexOn) ol.enable(OutputType::Latex);
+      if (docbookOn) ol.enable(OutputType::Docbook);
     }
     if (!a.array.isEmpty())
     {
@@ -1029,14 +1026,14 @@ static bool writeDefArgumentList(OutputList &ol,const Definition *scope,const Me
     first=FALSE;
   }
   ol.pushGeneratorState();
-  ol.disable(OutputGenerator::Html);
-  ol.disable(OutputGenerator::Latex);
-  ol.disable(OutputGenerator::Docbook);
+  ol.disable(OutputType::Html);
+  ol.disable(OutputType::Latex);
+  ol.disable(OutputType::Docbook);
   if (!md->isObjCMethod()) ol.docify(")"); // end argument list
   ol.enableAll();
-  if (htmlOn) ol.enable(OutputGenerator::Html);
-  if (latexOn) ol.enable(OutputGenerator::Latex);
-  if (docbookOn) ol.enable(OutputGenerator::Docbook);
+  if (htmlOn) ol.enable(OutputType::Html);
+  if (latexOn) ol.enable(OutputType::Latex);
+  if (docbookOn) ol.enable(OutputType::Docbook);
   if (first) ol.startParameterName(defArgList.size()<2);
   ol.endParameterName(TRUE,defArgList.size()<2,!md->isObjCMethod());
   ol.popGeneratorState();
@@ -1356,7 +1353,7 @@ void MemberDefImpl::IMPL::init(Definition *d,
   hasDocumentedParams = FALSE;
   hasDocumentedReturnType = FALSE;
   docProvider = 0;
-  isDMember = d->getDefFileName().right(2).lower()==".d";
+  isDMember = d->getDefFileName().lower().endsWith(".d");
 }
 
 
@@ -1700,7 +1697,7 @@ void MemberDefImpl::_computeLinkableInProject()
     return;
   }
   if ((!protectionLevelVisible(m_impl->prot) && m_impl->mtype!=MemberType_Friend) &&
-       !(m_impl->prot==Private && m_impl->virt!=Normal && extractPrivateVirtual))
+       !(m_impl->prot==Private && (m_impl->virt!=Normal || isOverride() || isFinal()) && extractPrivateVirtual))
   {
     //printf("private and invisible!\n");
     m_isLinkableCached = 1; // hidden due to protection
@@ -1844,8 +1841,6 @@ ClassDef *MemberDefImpl::getClassDefOfAnonymousType() const
     cname=getNamespaceDef()->name();
   }
   QCString ltype(m_impl->type);
-  // strip 'static' keyword from ltype
-  //if (ltype.left(7)=="static ") ltype=ltype.right(ltype.length()-7);
   // strip 'friend' keyword from ltype
   ltype.stripPrefix("friend ");
 
@@ -1945,7 +1940,7 @@ bool MemberDefImpl::isBriefSectionVisible() const
   // is set to YES
   bool visibleIfPrivate = (protectionLevelVisible(protection()) ||
                            m_impl->mtype==MemberType_Friend ||
-                           (m_impl->prot==Private && m_impl->virt!=Normal && extractPrivateVirtual && hasDocs)
+                           (m_impl->prot==Private && (m_impl->virt!=Normal || isOverride() || isFinal()) && extractPrivateVirtual && hasDocs)
                           );
 
   // hide member if it overrides a member in a superclass and has no
@@ -2118,9 +2113,9 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
   if (!detailsVisible)
   {
     ol.pushGeneratorState();
-    ol.disable(OutputGenerator::Man);
-    ol.disable(OutputGenerator::Latex);
-    ol.disable(OutputGenerator::Docbook);
+    ol.disable(OutputType::Man);
+    ol.disable(OutputType::Latex);
+    ol.disable(OutputType::Docbook);
     ol.docify("\n");
     ol.popGeneratorState();
   }
@@ -2240,21 +2235,21 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
                 FALSE                    // autoBreak
                );
   }
-  bool htmlOn = ol.isEnabled(OutputGenerator::Html);
+  bool htmlOn = ol.isEnabled(OutputType::Html);
   if (htmlOn && !ltype.isEmpty())
   {
-    ol.disable(OutputGenerator::Html);
+    ol.disable(OutputType::Html);
   }
   if (!ltype.isEmpty()) ol.docify(" ");
   if (htmlOn)
   {
-    ol.enable(OutputGenerator::Html);
+    ol.enable(OutputType::Html);
   }
 
   if (m_impl->annMemb)
   {
     ol.pushGeneratorState();
-    ol.disableAllBut(OutputGenerator::Html);
+    ol.disableAllBut(OutputType::Html);
     ol.writeNonBreakableSpace(3);
     ol.popGeneratorState();
   }
@@ -2266,14 +2261,19 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
   // *** write name
   if (!isAnonymous()) // hide anonymous stuff
   {
-    bool extractPrivate = Config_getBool(EXTRACT_PRIVATE);
     bool extractPrivateVirtual = Config_getBool(EXTRACT_PRIV_VIRTUAL);
     bool extractStatic  = Config_getBool(EXTRACT_STATIC);
     MemberDefMutable *annMemb = toMemberDefMutable(m_impl->annMemb);
+    bool visibleIfPrivate = (protectionLevelVisible(protection()) ||
+                             m_impl->mtype==MemberType_Friend ||
+                             (m_impl->prot==Private &&
+                                (m_impl->virt!=Normal || isOverride() || isFinal()) &&
+                                extractPrivateVirtual && hasDocumentation()
+                             ));
     //printf("Member name=`%s gd=%p md->groupDef=%p inGroup=%d isLinkable()=%d hasDocumentation=%d\n",qPrint(name()),gd,getGroupDef(),inGroup,isLinkable(),hasDocumentation());
     if (!name().isEmpty() && // name valid
         (hasDetailedDescription() || isReference()) && // has docs
-        !(m_impl->prot==Private && !extractPrivate && (m_impl->virt==Normal || !extractPrivateVirtual) && m_impl->mtype!=MemberType_Friend) && // hidden due to protection
+        visibleIfPrivate &&
         !(isStatic() && getClassDef()==0 && !extractStatic) // hidden due to static-ness
        )
     {
@@ -2454,42 +2454,36 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
       Config_getBool(BRIEF_MEMBER_DESC)
      )
   {
-    std::unique_ptr<IDocParser> parser { createDocParser() };
-    std::unique_ptr<DocRoot>  rootNode { validatingParseDoc(*parser.get(),
-                                         briefFile(),briefLine(),
-                                         getOuterScope()?getOuterScope():d,
-                                         this,briefDescription(),TRUE,FALSE,
-                                         QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT)) };
-
-    if (rootNode && !rootNode->isEmpty())
+    auto parser { createDocParser() };
+    auto ast    { validatingParseDoc(*parser.get(),
+                                     briefFile(),briefLine(),
+                                     getOuterScope()?getOuterScope():d,
+                                     this,briefDescription(),TRUE,FALSE,
+                                     QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT)) };
+    if (!ast->isEmpty())
     {
       ol.startMemberDescription(anchor(),inheritId);
-      ol.writeDoc(rootNode.get(),getOuterScope()?getOuterScope():d,this);
+      ol.writeDoc(ast.get(),getOuterScope()?getOuterScope():d,this);
       if (detailsVisible) // add More.. link only when both brief and details are visible
       {
-        ol.pushGeneratorState();
-        ol.disableAllBut(OutputGenerator::Html);
-        ol.docify(" ");
-        MemberDefMutable *annMemb = NULL;
         if (!isAnonymous()) // hide anonymous stuff
         {
-          annMemb = toMemberDefMutable(m_impl->annMemb);
+          ol.pushGeneratorState();
+          ol.disableAllBut(OutputType::Html);
+          ol.docify(" ");
+          MemberDefMutable *annMemb = toMemberDefMutable(m_impl->annMemb);
+          if (annMemb)
+          {
+            ol.startTextLink(annMemb->getOutputFileBase(),annMemb->anchor());
+            ol.parseText(theTranslator->trMore());
+            ol.endTextLink();
+          }
+          ol.popGeneratorState();
         }
-        if (annMemb)
-        {
-          ol.startTextLink(annMemb->getOutputFileBase(),annMemb->anchor());
-        }
-        else
-        {
-          ol.startTextLink(getOutputFileBase(),anchor());
-        }
-        ol.parseText(theTranslator->trMore());
-        ol.endTextLink();
-        ol.popGeneratorState();
       }
       // for RTF we need to add an extra empty paragraph
       ol.pushGeneratorState();
-      ol.disableAllBut(OutputGenerator::RTF);
+      ol.disableAllBut(OutputType::RTF);
       ol.startParagraph();
       ol.endParagraph();
       ol.popGeneratorState();
@@ -2591,7 +2585,7 @@ bool MemberDefImpl::hasDetailedDescription() const
     // only include members that are non-private unless EXTRACT_PRIVATE is
     // set to YES or the member is part of a   group
     bool privateFilter = protectionLevelVisible(protection()) || m_impl->mtype==MemberType_Friend ||
-                         (m_impl->prot==Private && m_impl->virt!=Normal && extractPrivateVirtual);
+                         (m_impl->prot==Private && (m_impl->virt!=Normal || isOverride() || isFinal()) && extractPrivateVirtual);
 
     // hide friend (class|struct|union) member if HIDE_FRIEND_COMPOUNDS
     // is true
@@ -2760,7 +2754,7 @@ void MemberDefImpl::_writeCallGraph(OutputList &ol) const
     else if (!callGraph.isTrivial())
     {
       msg("Generating call graph for function %s\n",qPrint(qualifiedName()));
-      ol.disable(OutputGenerator::Man);
+      ol.disable(OutputType::Man);
       ol.startCallGraph();
       ol.parseText(theTranslator->trCallGraph());
       ol.endCallGraph(callGraph);
@@ -2782,7 +2776,7 @@ void MemberDefImpl::_writeCallerGraph(OutputList &ol) const
     else if (!callerGraph.isTrivial())
     {
       msg("Generating caller graph for function %s\n",qPrint(qualifiedName()));
-      ol.disable(OutputGenerator::Man);
+      ol.disable(OutputType::Man);
       ol.startCallGraph();
       ol.parseText(theTranslator->trCallerGraph());
       ol.endCallGraph(callerGraph);
@@ -3041,7 +3035,7 @@ void MemberDefImpl::_writeEnumValues(OutputList &ol,const Definition *container,
         ol.startDoxyAnchor(cfname,cname,fmd->anchor(),fmd->name(),fmd->argsString());
         first=FALSE;
         ol.docify(fmd->name());
-        ol.disableAllBut(OutputGenerator::Man);
+        ol.disableAllBut(OutputType::Man);
         ol.writeString(" ");
         ol.enableAll();
         ol.endDoxyAnchor(cfname,fmd->anchor());
@@ -3220,10 +3214,11 @@ void MemberDefImpl::_writeMultiLineInitializer(OutputList &ol,const QCString &sc
     }
     auto intf = Doxygen::parserManager->getCodeParser(langCorrected);
     intf->resetCodeParserState();
-    ol.startCodeFragment("DoxyCode");
-    intf->parseCode(ol,scopeName,m_impl->initializer,srcLangExt,FALSE,QCString(),const_cast<FileDef*>(getFileDef()),
+    auto &codeOL = ol.codeGenerators();
+    codeOL.startCodeFragment("DoxyCode");
+    intf->parseCode(codeOL,scopeName,m_impl->initializer,srcLangExt,FALSE,QCString(),const_cast<FileDef*>(getFileDef()),
                      -1,-1,TRUE,this,FALSE,this);
-    ol.endCodeFragment("DoxyCode");
+    codeOL.endCodeFragment("DoxyCode");
 }
 
 /*! Writes the "detailed documentation" section of this member to
@@ -3443,7 +3438,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
     {
       ol.pushGeneratorState();
       ol.disableAll();
-      ol.enable(OutputGenerator::Html);
+      ol.enable(OutputType::Html);
       ol.writeString("<table class=\"mlabels\">\n");
       ol.writeString("  <tr>\n");
       ol.writeString("  <td class=\"mlabels-left\">\n");
@@ -3546,7 +3541,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
   }
 
   ol.pushGeneratorState();
-  ol.disable(OutputGenerator::Html);
+  ol.disable(OutputType::Html);
   if (!sl.empty())
   {
     ol.startLabels();
@@ -3574,7 +3569,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
   // for HTML write the labels here
   ol.pushGeneratorState();
   ol.disableAll();
-  ol.enable(OutputGenerator::Html);
+  ol.enable(OutputType::Html);
   if (htmlEndLabelTable)
   {
     ol.writeString("  </td>\n");
@@ -3701,7 +3696,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
   ol.endIndent();
 
   // enable LaTeX again
-  //if (Config_getBool(EXTRACT_ALL) && !hasDocs) ol.enable(OutputGenerator::Latex);
+  //if (Config_getBool(EXTRACT_ALL) && !hasDocs) ol.enable(OutputType::Latex);
   ol.popGeneratorState();
 
   warnIfUndocumentedParams();
@@ -3712,7 +3707,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
 static QCString simplifyTypeForTable(const QCString &s)
 {
   QCString ts=removeAnonymousScopes(s);
-  if (ts.right(2)=="::") ts = ts.left(ts.length()-2);
+  if (ts.endsWith("::")) ts = ts.left(ts.length()-2);
   static const reg::Ex re1(R"(\a\w*::)");       // non-template version
   static const reg::Ex re2(R"(\a\w*<[^>]*>::)"); // template version
   reg::Match match;
@@ -3805,6 +3800,11 @@ void MemberDefImpl::writeMemberDocSimple(OutputList &ol, const Definition *conta
   {
     linkifyText(TextGeneratorOLImpl(ol),getOuterScope(),getBodyDef(),this,m_impl->bitfields);
   }
+  if (hasOneLineInitializer() && !isDefine())
+  {
+    ol.writeString(" ");
+    linkifyText(TextGeneratorOLImpl(ol),getOuterScope(),getBodyDef(),this,m_impl->initializer.simplifyWhiteSpace());
+  }
   ol.endInlineMemberName();
 
   ol.startInlineMemberDoc();
@@ -3826,9 +3826,9 @@ void MemberDefImpl::writeMemberDocSimple(OutputList &ol, const Definition *conta
   {
     if (!brief.isEmpty())
     {
-      ol.disable(OutputGenerator::Html);
+      ol.disable(OutputType::Html);
       ol.lineBreak();
-      ol.enable(OutputGenerator::Html);
+      ol.enable(OutputType::Html);
     }
     ol.generateDoc(docFile(),docLine(),
                 getOuterScope()?getOuterScope():container,this,
@@ -4007,14 +4007,14 @@ void MemberDefImpl::warnIfUndocumentedParams() const
   bool isFortran = getLanguage()==SrcLangExt_Fortran;
   bool isFortranSubroutine = isFortran && returnType.find("subroutine")!=-1;
 
-  bool isVoidReturn = (returnType=="void") || (returnType.right(5)==" void");
+  bool isVoidReturn = (returnType=="void") || (returnType.endsWith(" void"));
   if (!isVoidReturn && returnType == "auto")
   {
     const ArgumentList &defArgList=isDocsForDefinition() ?  argumentList() : declArgumentList();
     if (!defArgList.trailingReturnType().isEmpty())
     {
       QCString strippedTrailingReturn = stripTrailingReturn(defArgList.trailingReturnType());
-      isVoidReturn = (strippedTrailingReturn=="void") || (strippedTrailingReturn.right(5)==" void");
+      isVoidReturn = (strippedTrailingReturn=="void") || (strippedTrailingReturn.endsWith(" void"));
     }
   }
   if (!Config_getBool(EXTRACT_ALL) &&
@@ -4084,12 +4084,6 @@ bool MemberDefImpl::hasDocumentation() const
 void MemberDefImpl::setMemberGroup(MemberGroup *grp)
 {
   m_impl->memberGroup = grp;
-}
-
-bool MemberDefImpl::visibleMemberGroup(bool hideNoHeader) const
-{
-  return m_impl->memberGroup!=0 &&
-          (!hideNoHeader || m_impl->memberGroup->header()!="[NOHEADER]");
 }
 
 QCString MemberDefImpl::getScopeString() const
@@ -4192,7 +4186,7 @@ MemberDefMutable *MemberDefImpl::createTemplateInstanceMember(
   }
 
   QCString methodName=name();
-  if (methodName.left(9)=="operator ") // conversion operator
+  if (methodName.startsWith("operator ")) // conversion operator
   {
     methodName=substituteTemplateArgumentsInString(methodName,formalArgs,actualArgs);
   }
@@ -4335,7 +4329,7 @@ Specifier MemberDefImpl::virtualness(int count) const
   return v;
 }
 
-void MemberDefImpl::writeTagFile(TextStream &tagFile) const
+void MemberDefImpl::writeTagFile(TextStream &tagFile,bool useQualifiedName) const
 {
   if (!isLinkableInProject()) return;
   tagFile << "    <member kind=\"";
@@ -4380,7 +4374,7 @@ void MemberDefImpl::writeTagFile(TextStream &tagFile) const
   {
     tagFile << "      <type>" << convertToXML(typeString()) << "</type>\n";
   }
-  tagFile << "      <name>" << convertToXML(name()) << "</name>\n";
+  tagFile << "      <name>" << convertToXML(useQualifiedName ? qualifiedName() : name()) << "</name>\n";
   tagFile << "      <anchorfile>" << addHtmlExtensionIfMissing(getOutputFileBase()) << "</anchorfile>\n";
   tagFile << "      <anchor>" << convertToXML(anchor()) << "</anchor>\n";
   QCString idStr = id();
@@ -4562,12 +4556,12 @@ void MemberDefImpl::writeEnumDeclaration(OutputList &typeDecl,
              )
           {
             typeDecl.pushGeneratorState();
-            typeDecl.disableAllBut(OutputGenerator::Html);
-            typeDecl.enable(OutputGenerator::Latex);
-            typeDecl.enable(OutputGenerator::Docbook);
+            typeDecl.disableAllBut(OutputType::Html);
+            typeDecl.enable(OutputType::Latex);
+            typeDecl.enable(OutputType::Docbook);
             typeDecl.lineBreak();
-            typeDecl.disable(OutputGenerator::Latex);
-            typeDecl.disable(OutputGenerator::Docbook);
+            typeDecl.disable(OutputType::Latex);
+            typeDecl.disable(OutputType::Docbook);
             typeDecl.writeString("&#160;&#160;");
             typeDecl.popGeneratorState();
           }
@@ -4604,16 +4598,16 @@ void MemberDefImpl::writeEnumDeclaration(OutputList &typeDecl,
         }
         if (prevVisible)
         {
-          typeDecl.disable(OutputGenerator::Man);
+          typeDecl.disable(OutputType::Man);
           typeDecl.writeString("\n"); // to prevent too long lines in LaTeX
-          typeDecl.enable(OutputGenerator::Man);
+          typeDecl.enable(OutputType::Man);
           enumMemCount++;
         }
       }
       if (numVisibleEnumValues>enumValuesPerLine)
       {
         typeDecl.pushGeneratorState();
-        typeDecl.disableAllBut(OutputGenerator::Html);
+        typeDecl.disableAllBut(OutputType::Html);
         typeDecl.lineBreak();
         typeDecl.popGeneratorState();
       }

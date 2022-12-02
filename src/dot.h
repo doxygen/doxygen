@@ -22,10 +22,13 @@
 #include "dotgraph.h" // only for GraphOutputFormat
 #include "dotfilepatcher.h"
 #include "dotrunner.h"
+#include "doxygen.h"
 
 class DotRunner;
 class DotRunnerQueue;
 class TextStream;
+
+using DotWorkerThreadPtr = std::unique_ptr< DotWorkerThread, NonTerminatingDeleter<DotWorkerThread > >;
 
 /** Singleton that manages parallel dot invocations and patching files for embedding image maps */
 class DotManager
@@ -41,10 +44,10 @@ class DotManager
     DotManager();
     virtual ~DotManager();
 
-    std::map<std::string, std::unique_ptr<DotRunner>>       m_runners;
-    std::map<std::string, DotFilePatcher>  m_filePatchers;
-    DotRunnerQueue        *m_queue;
-    std::vector< std::unique_ptr<DotWorkerThread> > m_workers;
+    std::map<std::string, std::unique_ptr<DotRunner> > m_runners;
+    std::map<std::string, DotFilePatcher>              m_filePatchers;
+    DotRunnerQueue                                    *m_queue;
+    std::vector< DotWorkerThreadPtr >                  m_workers;
 };
 
 void writeDotGraphFromFile(const QCString &inFile,const QCString &outDir,

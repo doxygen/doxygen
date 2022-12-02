@@ -51,7 +51,7 @@ static QCString escapeId(const QCString &s)
   return res;
 }
 
-void TooltipManager::addTooltip(CodeOutputInterface &ol,const Definition *d)
+void TooltipManager::addTooltip(const Definition *d)
 {
   bool sourceTooltips = Config_getBool(SOURCE_TOOLTIPS);
   if (!sourceTooltips) return;
@@ -81,7 +81,7 @@ void TooltipManager::addTooltip(CodeOutputInterface &ol,const Definition *d)
   }
   id = "a" + id;
   p->tooltipInfo.insert(std::make_pair(id.str(),d));
-  //printf("%p: addTooltip(%s) ol=%d\n",this,id.data(),ol.id());
+  //printf("%p: addTooltip(%s)\n",this,id.data());
 }
 
 void TooltipManager::writeTooltips(CodeOutputInterface &ol)
@@ -128,7 +128,7 @@ void TooltipManager::writeTooltips(CodeOutputInterface &ol)
           decl = md->declaration();
         }
       }
-      ol.writeTooltip(kv.first.c_str(),                // id
+      ol.writeTooltip(kv.first.c_str(),    // id
           docInfo,                         // symName
           decl,                            // decl
           d->briefDescriptionAsTooltip(),  // desc

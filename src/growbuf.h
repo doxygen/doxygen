@@ -1,3 +1,18 @@
+/******************************************************************************
+ *
+ * Copyright (C) 1997-2022 by Dimitri van Heesch.
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
+ * for any purpose. It is provided "as is" without express or implied warranty.
+ * See the GNU General Public License for more details.
+ *
+ * Documents produced by Doxygen are derivative works derived from the
+ * input used in their production; they are not affected by this license.
+ *
+ */
+
 #ifndef GROWBUF_H
 #define GROWBUF_H
 
@@ -91,11 +106,16 @@ class GrowBuf
                           m_pos+=l;
                         }
                       }
+    void addInt(const char *fmt,int value) {
+                      char tmp[50];
+                      snprintf(tmp,50,fmt,value);
+                      addStr(tmp);
+    }
     char *get() { return m_str; }
     const char *get() const { return m_str; }
     size_t getPos() const   { return m_pos; }
     void setPos(size_t newPos) { m_pos = newPos; }
-    char at(size_t i) const { return m_str[i]; }
+    const char &at(size_t i) const { return m_str[i]; }
     bool empty() const { return m_pos==0; }
   private:
     char *m_str;

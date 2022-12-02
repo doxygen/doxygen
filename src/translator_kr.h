@@ -120,6 +120,10 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
     virtual QCString trDetailedDescription()
     { return "상세한 설명"; }
 
+    /*! header that is used when the summary tag is missing inside the details tag */
+    virtual QCString trDetails()
+    { return "상세"; }
+
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
     { return "멤버 타입정의 문서화"; }
@@ -1832,6 +1836,25 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
         sdate+=stime;
       }
       return sdate;
+    }
+    virtual QCString trDayOfWeek(int dayOfWeek, bool, bool full)
+    {
+      static const char *days_short[]   = { "월", "화", "수", "목", "금", "토", "일" };
+      static const char *days_full[]    = { "월요일", "화요일", "수요일", "목요일", "금요일", "토요일", "일요일" };
+      QCString text  = full? days_full[dayOfWeek-1] : days_short[dayOfWeek-1];
+      return text;
+    }
+    virtual QCString trMonth(int month, bool, bool full)
+    {
+      static const char *months_short[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12" };
+      static const char *months_full[]  = { "1월", "2월", "3월", "4월", "5월", "6월", "7월", "8월", "9월", "10월", "11월", "12월" };
+      QCString text  = full? months_full[month-1] : months_short[month-1];
+      return text;
+    }
+    virtual QCString trDayPeriod(int period)
+    {
+      static const char *dayPeriod[] = { "오전", "오후" };
+      return dayPeriod[period];
     }
 
 //////////////////////////////////////////////////////////////////////////

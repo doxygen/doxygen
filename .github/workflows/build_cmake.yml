@@ -4,6 +4,9 @@ on: [push, pull_request]
 
 jobs:
   build:
+    permissions:
+      contents: write # to push pages branch (peaceiris/actions-gh-pages)
+
     name: ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.os }}
     strategy:
@@ -12,14 +15,14 @@ jobs:
         config:
         - {
             name: "Ubuntu Latest GCC Release",
-            os: ubuntu-18.04,
+            os: ubuntu-20.04,
             build_type: "Release", cc: "gcc", cxx: "g++",
             build_gen: "Unix Makefiles",
             cmake_extra_opts: "-Dbuild_search=YES -Dbuild_app=YES -Dbuild_parse=YES -Dbuild_xmlparser=YES -Duse_sqlite3=ON"
           }
         - {
             name: "Ubuntu Latest GCC Debug",
-            os: ubuntu-18.04,
+            os: ubuntu-20.04,
             build_type: "Debug", cc: "gcc", cxx: "g++",
             build_gen: "Unix Makefiles",
             cmake_extra_opts: "-Dbuild_search=YES -Dbuild_app=YES -Dbuild_parse=YES -Dbuild_xmlparser=YES -Duse_sqlite3=ON"
@@ -64,7 +67,7 @@ jobs:
           }
     steps:
     - name: Checkout doxygen
-      uses: actions/checkout@v1
+      uses: actions/checkout@v3
       
     - name: Download MikTex (Windows)
       run: |
@@ -74,11 +77,11 @@ jobs:
         Do {
           $attemptCount++;
           Try {
-            $wc.DownloadFile("https://ctan.math.illinois.edu/systems/win32/miktex/setup/windows-x64/miktexsetup-4.1-x64.zip","miktexsetup-4.1-x64.zip")
+            $wc.DownloadFile("https://ctan.math.illinois.edu/systems/win32/miktex/setup/windows-x64/miktexsetup-5.2.0+b8f430f-x64.zip","miktexsetup-5.2.0+b8f430f-x64.zip")
           } Catch [Exception] {
             Write-Host $_.Exception | format-list -force
           }
-        } while (((Test-Path "miktexsetup-4.1-x64.zip") -eq $false) -and ($attemptCount -le $maxAttempts))  
+        } while (((Test-Path "miktexsetup-5.2.0+b8f430f-x64.zip") -eq $false) -and ($attemptCount -le $maxAttempts))  
       shell: pwsh
       if: matrix.config.os == 'windows-latest'
       
@@ -97,6 +100,7 @@ jobs:
 
     - name: Install LaTeX (MacOS)
       run: |
+        brew update
         brew install --cask mactex;
         echo "/Library/TeX/texbin/" >> $GITHUB_PATH
       if: matrix.config.os == 'macos-latest'
@@ -122,23 +126,23 @@ jobs:
         clang++ -v
       if: matrix.config.os == 'ubuntu-20.04'
     
-    - name: Install libxapian (Ubuntu 18.04)
+    - name: Install libxapian (Ubuntu 20.04)
       run: |
         sudo apt update
         sudo apt install libxapian-dev
-      if: matrix.config.os == 'ubuntu-18.04'
+      if: matrix.config.os == 'ubuntu-20.04'
           
     - name: Extract MikTex zip (Windows)
       shell: bash
       run: |
-        unzip miktexsetup-4.1-x64.zip
+        unzip miktexsetup-5.2.0+b8f430f-x64.zip
       if: matrix.config.os == 'windows-latest'
 
     - name: Download MikTex packages (Windows)
       shell: bash
       run: |
         ./miktexsetup_standalone --verbose \
-                      --local-package-repository=C:/miktex-repository \
+                      --local-package-repository="C:/miktex-repository" \
                       --remote-package-repository="https://ctan.math.illinois.edu/systems/win32/miktex/tm/packages/" \
                       --package-set=essential \
                       download
@@ -147,7 +151,8 @@ jobs:
     - name: Install MikTex packages (Windows)
       shell: bash
       run: |
-        ./miktexsetup_standalone --local-package-repository=C:/miktex-repository \
+        ./miktexsetup_standalone --local-package-repository="C:/miktex-repository" \
+                      --verbose \
                       --package-set=essential \
                       --shared \
                       install
@@ -200,8 +205,9 @@ jobs:
       if: matrix.config.os == 'macos-latest'
     
     - name: Install bison/flex (Windows)
-      run:
-        choco install winflexbison
+      run: |
+        Choco-Install -PackageName winflexbison 
+        #choco install winflexbison
       if: matrix.config.os == 'windows-latest'
 
     - name: Install Graphviz (Linux)
@@ -234,7 +240,7 @@ jobs:
       if: matrix.config.os == 'windows-latest'
     
     - name: Install Qt
-      uses: jurplel/install-qt-action@v2
+      uses: jurplel/install-qt-action@v3
     
     - name: Check tool versions (Linux / MacOS)
       shell: bash
@@ -327,7 +333,7 @@ jobs:
         endif()
 
     - name: Archive build artifacts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: "${{ matrix.config.name }} build artifacts"
         path: build/bin/
@@ -335,9 +341,6 @@ jobs:
     - name: Run tests (Linux / MacOS)
       shell: cmake -P {0}
       run: |
-        include(ProcessorCount)
-        ProcessorCount(N)
-
         set(ENV{CTEST_OUTPUT_ON_FAILURE} "ON")
 
         execute_process(
@@ -352,9 +355,6 @@ jobs:
     - name: Run tests (Windows)
       shell: cmake -P {0}
       run: |
-        include(ProcessorCount)
-        ProcessorCount(N)
-
         set(ENV{CTEST_OUTPUT_ON_FAILURE} "ON")
 
         execute_process(
@@ -379,7 +379,7 @@ jobs:
       if: matrix.config.os != 'windows-latest'
 
     - name: Archive html documentation artifacts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: "Html documentation artifacts"
         path: build/html/
@@ -387,9 +387,28 @@ jobs:
 
 
     - name: Archive Latex documentation artifacts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: "Latex documentation artifacts"
         path: build/latex/doxygen_manual.pdf
       if: matrix.config.name == 'Ubuntu Latest GCC Release'
+      
+    - name: Generate Internal documentation
+      shell: cmake -P {0}
+      run: |
+        execute_process(
+          COMMAND cmake --build build --target docs_internal
+          RESULT_VARIABLE result
+        )
+        if (NOT result EQUAL 0)
+          message(FATAL_ERROR "Building internal documentation failed")
+        endif()
+      if: matrix.config.name == 'Ubuntu Latest GCC Release'
+
+    - name: Publish Internal documentation to Github pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+         github_token: ${{ secrets.GITHUB_TOKEN }}
+         publish_dir: build/doxygen_docs/html
+      if: ${{ github.event_name == 'push' && matrix.config.name == 'Ubuntu Latest GCC Release' }}
 

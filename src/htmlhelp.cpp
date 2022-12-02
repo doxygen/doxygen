@@ -316,6 +316,8 @@ class HtmlHelp::Private
     Private() : index(recoder) {}
     void createProjectFile();
     std::ofstream cts,kts;
+    QCString prevFile;
+    QCString prevAnc;
     bool ctsItemPresent = false;
     int dc = 0;
     StringSet indexFiles;
@@ -330,13 +332,9 @@ class HtmlHelp::Private
  *  The object has to be \link initialize() initialized\endlink before it can
  *  be used.
  */
-HtmlHelp::HtmlHelp() : p(std::make_unique<Private>())
-{
-}
-
-HtmlHelp::~HtmlHelp()
-{
-}
+HtmlHelp::HtmlHelp() : p(std::make_unique<Private>()) {}
+HtmlHelp::~HtmlHelp() = default;
+HtmlHelp::HtmlHelp(HtmlHelp &&) = default;
 
 /*! This will create a contents file (index.hhc) and a index file (index.hhk)
  *  and write the header of those files.
@@ -526,16 +524,6 @@ void HtmlHelp::addContentsItem(bool isDir,
                                bool /* addToNavIndex */,
                                const Definition * /* def */)
 {
-  bool binaryTOC = Config_getBool(BINARY_TOC);
-  // If we're using a binary toc then folders cannot have links.
-  // Tried this and I didn't see any problems, when not using
-  // the resetting of file and anchor the TOC works better
-  // (prev / next button)
-  //if(Config_getBool(BINARY_TOC) && isDir)
-  //{
-    //file = 0;
-    //anchor = 0;
-  //}
   p->ctsItemPresent = true;
   int i; for (i=0;i<p->dc;i++) p->cts << "  ";
   p->cts << "<LI><OBJECT type=\"text/sitemap\">";
@@ -552,13 +540,18 @@ void HtmlHelp::addContentsItem(bool isDir,
     }
     else
     {
-      if (!(binaryTOC && isDir))
+      QCString currFile = addHtmlExtensionIfMissing(file);
+      QCString currAnc = anchor;
+      p->cts << "<param name=\"Local\" value=\"";
+      p->cts << currFile;
+      if (p->prevFile == currFile && p->prevAnc.isEmpty() && currAnc.isEmpty())
       {
-        p->cts << "<param name=\"Local\" value=\"";
-        p->cts << addHtmlExtensionIfMissing(file);
-        if (!anchor.isEmpty()) p->cts << "#" << anchor;
-        p->cts << "\">";
+        currAnc = "top";
       }
+      if (!currAnc.isEmpty()) p->cts << "#" << currAnc;
+      p->cts << "\">";
+      p->prevFile = currFile;
+      p->prevAnc = currAnc;
     }
   }
   p->cts << "<param name=\"ImageNumber\" value=\"";
@@ -591,9 +584,10 @@ void HtmlHelp::addIndexItem(const Definition *context,const MemberDef *md,
     if (context==0) return; // should not happen
 
     QCString cfname  = md->getOutputFileBase();
+    QCString argStr  = md->argsString();
     QCString cfiname = context->getOutputFileBase();
     QCString level1  = context->name();
-    QCString level2  = md->name();
+    QCString level2  = md->name() + argStr;
     QCString contRef = separateMemberPages ? cfname : cfiname;
     QCString memRef  = cfname;
     QCString anchor  = !sectionAnchor.isEmpty() ? sectionAnchor : md->anchor();

@@ -419,21 +419,21 @@ void MemberList::writePlainDeclarations(OutputList &ol, bool inGroup,
               ol.endMemberItem();
               if (!md->briefDescription().isEmpty() && Config_getBool(BRIEF_MEMBER_DESC))
               {
-                std::unique_ptr<IDocParser> parser { createDocParser() };
-                std::unique_ptr<DocRoot>  rootNode { validatingParseDoc(*parser.get(),
-                                                     md->briefFile(),md->briefLine(),
-                                                     cd,md,
-                                                     md->briefDescription(),
-                                                     TRUE,FALSE,
-                                                     QCString(),TRUE,FALSE,
-                                                     Config_getBool(MARKDOWN_SUPPORT)) };
-                if (rootNode && !rootNode->isEmpty())
+                auto parser { createDocParser() };
+                auto ast    { validatingParseDoc(*parser.get(),
+                                                 md->briefFile(),md->briefLine(),
+                                                 cd,md,
+                                                 md->briefDescription(),
+                                                 TRUE,FALSE,
+                                                 QCString(),TRUE,FALSE,
+                                                 Config_getBool(MARKDOWN_SUPPORT)) };
+                if (!ast->isEmpty())
                 {
                   ol.startMemberDescription(md->anchor());
-                  ol.writeDoc(rootNode.get(),cd,md);
+                  ol.writeDoc(ast.get(),cd,md);
                   if (md->hasDetailedDescription())
                   {
-                    ol.disableAllBut(OutputGenerator::Html);
+                    ol.disableAllBut(OutputType::Html);
                     ol.docify(" ");
                     ol.startTextLink(md->getOutputFileBase(),
                         md->anchor());
@@ -551,7 +551,7 @@ void MemberList::writeDeclarations(OutputList &ol,
                                       m_listType,inheritedFrom,TRUE)>0 )
     {
       ol.pushGeneratorState();
-      ol.disableAllBut(OutputGenerator::Html);
+      ol.disableAllBut(OutputType::Html);
       inheritId = substitute(listTypeAsString(lt),"-","_")+"_"+
                   stripPath(cd->getOutputFileBase());
       if (!title.isEmpty())
@@ -614,7 +614,7 @@ void MemberList::writeDeclarations(OutputList &ol,
     //printf("memberGroupList=%p\n",memberGroupList);
     for (const auto &mg : m_memberGroupRefList)
     {
-      bool hasHeader=!mg->header().isEmpty() && mg->header()!="[NOHEADER]";
+      bool hasHeader=!mg->header().isEmpty();
       if (inheritId.isEmpty())
       {
         //printf("mg->header=%s hasHeader=%d\n",qPrint(mg->header()),hasHeader);
@@ -628,7 +628,7 @@ void MemberList::writeDeclarations(OutputList &ol,
         {
           //printf("Member group has docs!\n");
           ol.startMemberGroupDocs();
-          ol.generateDoc(mg->docFile(),mg->docLine(),ctx,0,mg->documentation()+"\n",FALSE,FALSE,
+          ol.generateDoc(mg->docFile(),mg->docLine(),mg->memberContainer(),0,mg->documentation()+"\n",FALSE,FALSE,
               QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
           ol.endMemberGroupDocs();
         }
@@ -671,7 +671,7 @@ void MemberList::writeDocumentation(OutputList &ol,
   if (!title.isEmpty())
   {
     ol.pushGeneratorState();
-      ol.disable(OutputGenerator::Html);
+      ol.disable(OutputType::Html);
       ol.writeRuler();
     ol.popGeneratorState();
     ol.startGroupHeader(showInline ? 2 : 0);
@@ -937,7 +937,7 @@ QCString MemberList::listTypeAsString(MemberListType type)
   return "";
 }
 
-void MemberList::writeTagFile(TextStream &tagFile)
+void MemberList::writeTagFile(TextStream &tagFile,bool useQualifiedName)
 {
   for (const auto &imd : m_members)
   {
@@ -946,7 +946,7 @@ void MemberList::writeTagFile(TextStream &tagFile)
     {
       if (md->getLanguage()!=SrcLangExt_VHDL)
       {
-        md->writeTagFile(tagFile);
+        md->writeTagFile(tagFile,useQualifiedName);
         if (md->memberType()==MemberType_Enumeration && !md->isStrong())
         {
           for (const auto &ivmd : md->enumFieldList())
@@ -954,7 +954,7 @@ void MemberList::writeTagFile(TextStream &tagFile)
             MemberDefMutable *vmd = toMemberDefMutable(ivmd);
             if (vmd)
             {
-              vmd->writeTagFile(tagFile);
+              vmd->writeTagFile(tagFile,useQualifiedName);
             }
           }
         }
@@ -967,7 +967,7 @@ void MemberList::writeTagFile(TextStream &tagFile)
   }
   for (const auto &mg : m_memberGroupRefList)
   {
-    mg->writeTagFile(tagFile);
+    mg->writeTagFile(tagFile,useQualifiedName);
   }
 }
 

@@ -34,7 +34,7 @@
  * Updated to 1.8.4 by Bartomeu Creus Navarro (17-julio-2013)
  */
 
-class TranslatorSpanish : public TranslatorAdapter_1_8_15
+class TranslatorSpanish : public TranslatorAdapter_1_8_19
 {
   public:
 
@@ -90,6 +90,10 @@ class TranslatorSpanish : public TranslatorAdapter_1_8_15
     /*! header that is put before the detailed description of files, classes and namespaces. */
     virtual QCString trDetailedDescription()
     { return "Descripción detallada"; }
+
+    /*! header that is used when the summary tag is missing inside the details tag */
+    virtual QCString trDetails()
+    { return "Detalles"; }
 
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
@@ -1071,7 +1075,7 @@ class TranslatorSpanish : public TranslatorAdapter_1_8_15
         "Las flechas tienen el siguiente significado:\n"
         "</p>\n"
         "<ul>\n"
-        "<li>Una flecha azul oscuro es usada para visualizar una relación herencia publica entre dos clases.\n"
+        "<li>Una azul oscuro es usada para visualizar una relación herencia publica entre dos clases.\n"
         "<li>Una flecha verde oscuro es usada para herencia protegida.\n"
         "<li>Una flecha rojo oscuro es usada para herencia privada.\n"
         "<li>Una flecha segmentada púrpura se usa si la clase es contenida o "
@@ -1878,6 +1882,27 @@ class TranslatorSpanish : public TranslatorAdapter_1_8_15
         sdate+=stime;
       }
       return sdate;
+    }
+    virtual QCString trDayOfWeek(int dayOfWeek, bool first_capital, bool full)
+    {
+      static const char *days_short[]   = { "lu.", "ma.", "mi.", "ju.", "vi.", "sá.", "do." };
+      static const char *days_full[]    = { "lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo" };
+      QCString text  = full? days_full[dayOfWeek-1] : days_short[dayOfWeek-1];
+      if (first_capital) return text.mid(0,1).upper()+text.mid(1);
+      else return text;
+    }
+    virtual QCString trMonth(int month, bool first_capital, bool full)
+    {
+      static const char *months_short[] = { "ene.", "feb.", "mar.", "abr.", "may.", "jun.", "jul.", "ago.", "sep.", "oct.", "nov.", "dic." };
+      static const char *months_full[]  = { "enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre" };
+      QCString text  = full? months_full[month-1] : months_short[month-1];
+      if (first_capital) return text.mid(0,1).upper()+text.mid(1);
+      else return text;
+    }
+    virtual QCString trDayPeriod(int period)
+    {
+      static const char *dayPeriod[] = { "a. m.", "p. m." };
+      return dayPeriod[period];
     }
 
 //////////////////////////////////////////////////////////////////////////

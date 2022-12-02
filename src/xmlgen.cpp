@@ -424,17 +424,21 @@ static void writeXMLDocBlock(TextStream &t,
   QCString stext = text.stripWhiteSpace();
   if (stext.isEmpty()) return;
   // convert the documentation string into an abstract syntax tree
-  std::unique_ptr<IDocParser> parser { createDocParser() };
-  std::unique_ptr<DocNode>    root   { validatingParseDoc(*parser.get(),
-                                       fileName,lineNr,scope,md,text,FALSE,FALSE,
-                                       QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT)) };
-  // create a code generator
-  auto xmlCodeGen = std::make_unique<XMLCodeGenerator>(t);
-  // create a parse tree visitor for XML
-  auto visitor = std::make_unique<XmlDocVisitor>(t,*xmlCodeGen,scope?scope->getDefFileExtension():QCString(""));
-  // visit all nodes
-  root->accept(visitor.get());
-  // clean up
+  auto parser { createDocParser() };
+  auto ast    { validatingParseDoc(*parser.get(),
+                                   fileName,lineNr,scope,md,text,FALSE,FALSE,
+                                   QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT)) };
+  auto astImpl = dynamic_cast<const DocNodeAST*>(ast.get());
+  if (astImpl)
+  {
+    // create a code generator
+    auto xmlCodeGen = std::make_unique<XMLCodeGenerator>(t);
+    // create a parse tree visitor for XML
+    XmlDocVisitor visitor(t,*xmlCodeGen,scope?scope->getDefFileExtension():QCString(""));
+    // visit all nodes
+    std::visit(visitor,astImpl->root);
+    // clean up
+  }
 }
 
 void writeXMLCodeBlock(TextStream &t,FileDef *fd)
@@ -862,6 +866,7 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
   {
     const ArgumentList &declAl = md->declArgumentList();
     const ArgumentList &defAl = md->argumentList();
+    bool isFortran = md->getLanguage()==SrcLangExt_Fortran;
     if (declAl.hasParameters())
     {
       auto defIt = defAl.begin();
@@ -881,7 +886,13 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
           writeXMLString(t,a.attrib);
           t << "</attributes>\n";
         }
-        if (!a.type.isEmpty())
+        if (isFortran && defArg && !defArg->type.isEmpty())
+        {
+          t << "          <type>";
+          linkifyText(TextGeneratorXMLImpl(t),def,md->getBodyDef(),md,defArg->type);
+          t << "</type>\n";
+        }
+        else if (!a.type.isEmpty())
         {
           t << "          <type>";
           linkifyText(TextGeneratorXMLImpl(t),def,md->getBodyDef(),md,a.type);
@@ -1148,6 +1159,15 @@ static void writeInnerClasses(const ClassLinkedRefMap &cl,TextStream &t)
       }
       t << "\">" << convertToXML(cd->name()) << "</innerclass>\n";
     }
+  }
+}
+
+static void writeInnerConcepts(const ConceptLinkedRefMap &cl,TextStream &t)
+{
+  for (const auto &cd : cl)
+  {
+    t << "    <innerconcept refid=\"" << cd->getOutputFileBase()
+      << "\">" << convertToXML(cd->name()) << "</innerconcept>\n";
   }
 }
 
@@ -1496,6 +1516,7 @@ static void generateXMLForNamespace(const NamespaceDef *nd,TextStream &ti)
   t << "</compoundname>\n";
 
   writeInnerClasses(nd->getClasses(),t);
+  writeInnerConcepts(nd->getConcepts(),t);
   writeInnerNamespaces(nd->getNamespaces(),t);
 
   for (const auto &mg : nd->getMemberGroups())
@@ -1609,6 +1630,7 @@ static void generateXMLForFile(FileDef *fd,TextStream &ti)
   }
 
   writeInnerClasses(fd->getClasses(),t);
+  writeInnerConcepts(fd->getConcepts(),t);
   writeInnerNamespaces(fd->getNamespaces(),t);
 
   for (const auto &mg : fd->getMemberGroups())
@@ -1679,6 +1701,7 @@ static void generateXMLForGroup(const GroupDef *gd,TextStream &ti)
 
   writeInnerFiles(gd->getFiles(),t);
   writeInnerClasses(gd->getClasses(),t);
+  writeInnerConcepts(gd->getConcepts(),t);
   writeInnerNamespaces(gd->getNamespaces(),t);
   writeInnerPages(gd->getPages(),t);
   writeInnerGroups(gd->getSubGroups(),t);
@@ -1790,7 +1813,7 @@ static void generateXMLForPage(PageDef *pd,TextStream &ti,bool isExample)
     QCString title;
     if (mainPageHasTitle())
     {
-      title = filterTitle(convertCharEntitiesToUTF8(Doxygen::mainPage->title()).str());
+      title = filterTitle(convertCharEntitiesToUTF8(Doxygen::mainPage->title()));
     }
     else
     {
@@ -1804,7 +1827,7 @@ static void generateXMLForPage(PageDef *pd,TextStream &ti,bool isExample)
     const SectionInfo *si = SectionManager::instance().find(pd->name());
     if (si)
     {
-      t << "    <title>" << convertToXML(filterTitle(convertCharEntitiesToUTF8(si->title()).str()))
+      t << "    <title>" << convertToXML(filterTitle(convertCharEntitiesToUTF8(si->title())))
         << "</title>\n";
     }
   }

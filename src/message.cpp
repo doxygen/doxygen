@@ -21,19 +21,22 @@
 #include "doxygen.h"
 
 #include <mutex>
+#include <atomic>
 
 // globals
 static QCString        g_warnFormat;
+static QCString        g_warnLineFormat;
 static const char *    g_warningStr = "warning: ";
 static const char *    g_errorStr = "error: ";
 static FILE *          g_warnFile = stderr;
 static WARN_AS_ERROR_t g_warnBehavior = WARN_AS_ERROR_t::NO;
-static bool            g_warnStat = false;
+static std::atomic_bool g_warnStat = false;
 static std::mutex      g_mutex;
 
 void initWarningFormat()
 {
   g_warnFormat = Config_getString(WARN_FORMAT);
+  g_warnLineFormat = Config_getString(WARN_LINE_FORMAT);
   QCString logFile = Config_getString(WARN_LOGFILE);
 
   if (!logFile.isEmpty())
@@ -111,6 +114,7 @@ static void format_warn(const QCString &file,int line,const QCString &text)
   }
   if (g_warnBehavior == WARN_AS_ERROR_t::YES)
   {
+    Doxygen::terminating=true;
     exit(1);
   }
   g_warnStat = true;
@@ -125,6 +129,7 @@ static void handle_warn_as_error()
       QCString msgText = " (warning treated as error, aborting now)\n";
       fwrite(msgText.data(),1,msgText.length(),g_warnFile);
     }
+    Doxygen::terminating=true;
     exit(1);
   }
   g_warnStat = true;
@@ -159,6 +164,18 @@ static void do_warn(bool enabled, const QCString &file, int line, const char *pr
   va_end(argsCopy);
 }
 
+QCString warn_line(const QCString &file,int line)
+{
+  QCString fileSubst = file.isEmpty() ? "<unknown>" : file;
+  QCString lineSubst; lineSubst.setNum(line);
+  return  substitute(
+            substitute(
+              g_warnLineFormat,
+              "$file",fileSubst
+            ),
+            "$line",lineSubst
+          );
+}
 void warn(const QCString &file,int line,const char *fmt, ...)
 {
   va_list args;
@@ -243,6 +260,7 @@ void term(const char *fmt, ...)
       fprintf(g_warnFile, "%s\n", "Exiting...");
     }
   }
+  Doxygen::terminating=true;
   exit(1);
 }
 
@@ -284,6 +302,7 @@ extern void finishWarnExit()
 {
   if (g_warnStat && g_warnBehavior == WARN_AS_ERROR_t::FAIL_ON_WARNINGS)
   {
+    Doxygen::terminating=true;
     exit(1);
   }
 }

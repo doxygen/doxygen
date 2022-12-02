@@ -27,6 +27,7 @@
       <xsd:element name="innerdir" type="refType" minOccurs="0" maxOccurs="unbounded" />
       <xsd:element name="innerfile" type="refType" minOccurs="0" maxOccurs="unbounded" />
       <xsd:element name="innerclass" type="refType" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element name="innerconcept" type="refType" minOccurs="0" maxOccurs="unbounded" />
       <xsd:element name="innernamespace" type="refType" minOccurs="0" maxOccurs="unbounded" />
       <xsd:element name="innerpage" type="refType" minOccurs="0" maxOccurs="unbounded" />
       <xsd:element name="innergroup" type="refType" minOccurs="0" maxOccurs="unbounded" />
@@ -431,8 +432,6 @@
       <xsd:element name="cite" type="docMarkupType" />
       <xsd:element name="del" type="docMarkupType" />
       <xsd:element name="ins" type="docMarkupType" />
-      <xsd:element name="details" type="docMarkupType" />
-      <xsd:element name="summary" type="docMarkupType" />
       <xsd:element name="htmlonly" type="docHtmlOnlyType" />
       <xsd:element name="manonly" type="xsd:string" />
       <xsd:element name="xmlonly" type="xsd:string" />
@@ -453,6 +452,10 @@
   </xsd:group>
 
   <xsd:complexType name="docTitleType" mixed="true">
+    <xsd:group ref="docTitleCmdGroup" minOccurs="0" maxOccurs="unbounded" />
+  </xsd:complexType>
+
+  <xsd:complexType name="docSummaryType" mixed="true">
     <xsd:group ref="docTitleCmdGroup" minOccurs="0" maxOccurs="unbounded" />
   </xsd:complexType>
 
@@ -481,6 +484,7 @@
       <xsd:element name="parameterlist" type="docParamListType" />
       <xsd:element name="xrefsect" type="docXRefSectType" />
       <xsd:element name="copydoc" type="docCopyType" />
+      <xsd:element name="details" type="docDetailsType" />
       <xsd:element name="blockquote" type="docBlockQuoteType" />
       <xsd:element name="parblock" type="docParBlockType" />
     </xsd:choice>
@@ -713,6 +717,13 @@
     <xsd:attribute name="link" type="xsd:string" /> 
   </xsd:complexType>
 
+  <xsd:complexType name="docDetailsType">
+    <xsd:sequence>
+      <xsd:element name="summary" type="docSummaryType" minOccurs="0" maxOccurs="1" />
+      <xsd:element name="para" type="docParaType" minOccurs="0" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+
   <xsd:complexType name="docBlockQuoteType">
     <xsd:sequence>
       <xsd:element name="para" type="docParaType" minOccurs="0" maxOccurs="unbounded" />
@@ -826,6 +837,8 @@
       <xsd:enumeration value="XML" />
       <xsd:enumeration value="SQL" />
       <xsd:enumeration value="Markdown" />
+      <xsd:enumeration value="Slice" />
+      <xsd:enumeration value="Lex" />
     </xsd:restriction>
   </xsd:simpleType>
 

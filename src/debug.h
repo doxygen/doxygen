@@ -30,7 +30,6 @@ class Debug
                      Classes      = 0x00000010,
                      CommentCnv   = 0x00000020,
                      CommentScan  = 0x00000040,
-                     Validate     = 0x00000080,
                      PrintTree    = 0x00000100,
                      Time         = 0x00000200,
                      ExtCmd       = 0x00000400,
