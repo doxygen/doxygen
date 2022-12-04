@@ -13,58 +13,58 @@ jobs:
       fail-fast: false
       matrix:
         config:
-#        - {
-#            name: "Ubuntu Latest GCC Release",
-#            os: ubuntu-20.04,
-#            build_type: "Release", cc: "gcc", cxx: "g++",
-#            build_gen: "Unix Makefiles",
-#            cmake_extra_opts: "-Dbuild_search=YES -Dbuild_app=YES -Dbuild_parse=YES -Dbuild_xmlparser=YES -Duse_sqlite3=ON"
-#          }
-#        - {
-#            name: "Ubuntu Latest GCC Debug",
-#            os: ubuntu-20.04,
-#            build_type: "Debug", cc: "gcc", cxx: "g++",
-#            build_gen: "Unix Makefiles",
-#            cmake_extra_opts: "-Dbuild_search=YES -Dbuild_app=YES -Dbuild_parse=YES -Dbuild_xmlparser=YES -Duse_sqlite3=ON"
-#          }
-#        - {
-#            name: "Ubuntu Latest Clang Release",
-#            os: ubuntu-20.04,
-#            build_type: "Release", cc: "clang", cxx: "clang++",
-#            build_gen: "Unix Makefiles",
-#            cmake_extra_opts: "-Duse_libclang=YES -Dstatic_libclang=YES -Duse_libc++=NO -Duse_sqlite3=ON"
-#          }
-#        - {
-#            name: "Ubuntu Latest Clang Debug",
-#            os: ubuntu-20.04,
-#            build_type: "Debug", cc: "clang", cxx: "clang++",
-#            build_gen: "Unix Makefiles",
-#            cmake_extra_opts: "-Duse_libclang=YES -Dstatic_libclang=YES -Duse_libc++=NO -Duse_sqlite3=ON"
-#          }
-#        - {
-#            name: "macOS Latest Release",
-#            os: macos-latest,
-#            build_type: "Release", cc: "clang", cxx: "clang++",
-#            build_gen: "Unix Makefiles"
-#          }
-#        - {
-#            name: "macOS Latest Debug",
-#            os: macos-latest,
-#            build_type: "Debug", cc: "clang", cxx: "clang++",
-#            build_gen: "Unix Makefiles"
-#          }
+        - {
+            name: "Ubuntu Latest GCC Release",
+            os: ubuntu-20.04,
+            build_type: "Release", cc: "gcc", cxx: "g++",
+            build_gen: "Unix Makefiles",
+            cmake_extra_opts: "-Dbuild_search=YES -Dbuild_app=YES -Dbuild_parse=YES -Dbuild_xmlparser=YES -Duse_sqlite3=ON"
+          }
+        - {
+            name: "Ubuntu Latest GCC Debug",
+            os: ubuntu-20.04,
+            build_type: "Debug", cc: "gcc", cxx: "g++",
+            build_gen: "Unix Makefiles",
+            cmake_extra_opts: "-Dbuild_search=YES -Dbuild_app=YES -Dbuild_parse=YES -Dbuild_xmlparser=YES -Duse_sqlite3=ON"
+          }
+        - {
+            name: "Ubuntu Latest Clang Release",
+            os: ubuntu-20.04,
+            build_type: "Release", cc: "clang", cxx: "clang++",
+            build_gen: "Unix Makefiles",
+            cmake_extra_opts: "-Duse_libclang=YES -Dstatic_libclang=YES -Duse_libc++=NO -Duse_sqlite3=ON"
+          }
+        - {
+            name: "Ubuntu Latest Clang Debug",
+            os: ubuntu-20.04,
+            build_type: "Debug", cc: "clang", cxx: "clang++",
+            build_gen: "Unix Makefiles",
+            cmake_extra_opts: "-Duse_libclang=YES -Dstatic_libclang=YES -Duse_libc++=NO -Duse_sqlite3=ON"
+          }
+        - {
+            name: "macOS Latest Release",
+            os: macos-latest,
+            build_type: "Release", cc: "clang", cxx: "clang++",
+            build_gen: "Unix Makefiles"
+          }
+        - {
+            name: "macOS Latest Debug",
+            os: macos-latest,
+            build_type: "Debug", cc: "clang", cxx: "clang++",
+            build_gen: "Unix Makefiles"
+          }
         - {
             name: "Windows Latest MSVC Debug", 
             os: windows-latest,
             build_type: "Debug", cc: "cl", cxx: "cl",
             build_gen: "NMake Makefiles"
           }
-#        - {
-#            name: "Windows Latest MSVC Release", 
-#            os: windows-latest,
-#            build_type: "Release", cc: "cl", cxx: "cl",
-#            build_gen: "NMake Makefiles"
-#          }
+        - {
+            name: "Windows Latest MSVC Release", 
+            os: windows-latest,
+            build_type: "Release", cc: "cl", cxx: "cl",
+            build_gen: "NMake Makefiles"
+          }
     steps:
     - name: Checkout doxygen
       uses: actions/checkout@v3
@@ -345,13 +345,13 @@ jobs:
         name: "${{ matrix.config.name }} build artifacts"
         path: build/bin/
 
-    - name: Run tests (Linux / MacOS)
+    - name: Run tests
       shell: cmake -P {0}
       run: |
         set(ENV{CTEST_OUTPUT_ON_FAILURE} "ON")
 
         execute_process(
-          COMMAND cmake --build build --target tests TEST_FLAGS="--xml --xmlxsd --xhtml --qhp --docbook --rtf"
+          COMMAND cmake --build build --target tests TEST_FLAGS="--xml --xmlxsd --xhtml --qhp --docbook --rtf --pdf"
           RESULT_VARIABLE result
         )
         if (NOT result EQUAL 0)
