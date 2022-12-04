@@ -203,14 +203,14 @@ void DocbookDocVisitor::operator()(const DocSymbol &s)
 {
 DB_VIS_C
   if (m_hide) return;
-  const char *res = HtmlEntityMapper::instance()->docbook(s.symbol());
+  const char *res = HtmlEntityMapper::instance().docbook(s.symbol());
   if (res)
   {
     m_t << res;
   }
   else
   {
-    err("DocBook: non supported HTML-entity found: %s\n",HtmlEntityMapper::instance()->html(s.symbol(),TRUE));
+    err("DocBook: non supported HTML-entity found: %s\n",HtmlEntityMapper::instance().html(s.symbol(),TRUE));
   }
 }
 
@@ -218,7 +218,7 @@ void DocbookDocVisitor::operator()(const DocEmoji &s)
 {
 DB_VIS_C
   if (m_hide) return;
-  const char *res = EmojiEntityMapper::instance()->unicode(s.index());
+  const char *res = EmojiEntityMapper::instance().unicode(s.index());
   if (res)
   {
     m_t << res;

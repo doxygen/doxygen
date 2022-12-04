@@ -337,7 +337,7 @@ void HtmlDocVisitor::operator()(const DocSymbol &s)
   }
   else
   {
-    const char *res = HtmlEntityMapper::instance()->html(s.symbol());
+    const char *res = HtmlEntityMapper::instance().html(s.symbol());
     if (res)
     {
       m_t << res;
@@ -345,7 +345,7 @@ void HtmlDocVisitor::operator()(const DocSymbol &s)
     else
     {
       err("HTML: non supported HTML-entity found: %s\n",
-          HtmlEntityMapper::instance()->html(s.symbol(),TRUE));
+          HtmlEntityMapper::instance().html(s.symbol(),TRUE));
     }
   }
 }
@@ -353,7 +353,7 @@ void HtmlDocVisitor::operator()(const DocSymbol &s)
 void HtmlDocVisitor::operator()(const DocEmoji &s)
 {
   if (m_hide) return;
-  const char *res = EmojiEntityMapper::instance()->unicode(s.index());
+  const char *res = EmojiEntityMapper::instance().unicode(s.index());
   if (res)
   {
     m_t << "<span class=\"emoji\">" << res << "</span>";

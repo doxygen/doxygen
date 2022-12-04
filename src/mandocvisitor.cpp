@@ -75,7 +75,7 @@ void ManDocVisitor::operator()(const DocWhiteSpace &w)
 void ManDocVisitor::operator()(const DocSymbol &s)
 {
   if (m_hide) return;
-  const char *res = HtmlEntityMapper::instance()->man(s.symbol());
+  const char *res = HtmlEntityMapper::instance().man(s.symbol());
   if (res)
   {
     m_t << res;
@@ -91,7 +91,7 @@ void ManDocVisitor::operator()(const DocSymbol &s)
 void ManDocVisitor::operator()(const DocEmoji &s)
 {
   if (m_hide) return;
-  const char *res = EmojiEntityMapper::instance()->name(s.index());
+  const char *res = EmojiEntityMapper::instance().name(s.index());
   if (res)
   {
     m_t << res;

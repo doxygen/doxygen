@@ -56,20 +56,20 @@ class PrintDocVisitor
     void operator()(const DocSymbol &s)
     {
       indent_leaf();
-      const char *res = HtmlEntityMapper::instance()->utf8(s.symbol(),TRUE);
+      const char *res = HtmlEntityMapper::instance().utf8(s.symbol(),TRUE);
       if (res)
       {
         printf("%s",res);
       }
       else
       {
-        printf("print: non supported HTML-entity found: %s\n",HtmlEntityMapper::instance()->html(s.symbol(),TRUE));
+        printf("print: non supported HTML-entity found: %s\n",HtmlEntityMapper::instance().html(s.symbol(),TRUE));
       }
     }
     void operator()(const DocEmoji &s)
     {
       indent_leaf();
-      const char *res = EmojiEntityMapper::instance()->name(s.index());
+      const char *res = EmojiEntityMapper::instance().name(s.index());
       if (res)
       {
         printf("%s",res);

@@ -1950,7 +1950,7 @@ void generateXML()
         QCString s(startLine,len);
         if (s.find("<!-- Automatically insert here the HTML entities -->")!=-1)
         {
-          HtmlEntityMapper::instance()->writeXMLSchema(t);
+          HtmlEntityMapper::instance().writeXMLSchema(t);
         }
         else
         {

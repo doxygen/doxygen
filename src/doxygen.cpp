@@ -10999,7 +10999,7 @@ void readConfiguration(int argc, char **argv)
           if (openOutputFile(argv[optInd+1],f))
           {
             TextStream t(&f);
-            EmojiEntityMapper::instance()->writeEmojiFile(t);
+            EmojiEntityMapper::instance().writeEmojiFile(t);
           }
           cleanUpDoxygen();
           exit(0);

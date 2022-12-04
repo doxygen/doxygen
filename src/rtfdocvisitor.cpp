@@ -128,14 +128,14 @@ void RTFDocVisitor::operator()(const DocSymbol &s)
 {
   if (m_hide) return;
   DBG_RTF("{\\comment RTFDocVisitor::visit(DocSymbol)}\n");
-  const char *res = HtmlEntityMapper::instance()->rtf(s.symbol());
+  const char *res = HtmlEntityMapper::instance().rtf(s.symbol());
   if (res)
   {
     m_t << res;
   }
   else
   {
-    err("RTF: non supported HTML-entity found: %s\n",HtmlEntityMapper::instance()->html(s.symbol(),TRUE));
+    err("RTF: non supported HTML-entity found: %s\n",HtmlEntityMapper::instance().html(s.symbol(),TRUE));
   }
   m_lastIsPara=FALSE;
 }
@@ -144,7 +144,7 @@ void RTFDocVisitor::operator()(const DocEmoji &s)
 {
   if (m_hide) return;
   DBG_RTF("{\\comment RTFDocVisitor::visit(DocEmoji)}\n");
-  const char *res = EmojiEntityMapper::instance()->unicode(s.index());
+  const char *res = EmojiEntityMapper::instance().unicode(s.index());
   if (res)
   {
     const char *p = res;
