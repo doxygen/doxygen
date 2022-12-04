@@ -356,8 +356,8 @@ jobs:
         )
         if (NOT result EQUAL 0)
           message(FATAL_ERROR "Running tests failed!")
-          cat build/testing/test_output_053/latex/refman.log
-          cat build/testing/test_output_065/latex/refman.log
+          $(cat build/testing/test_output_053/latex/refman.log)
+          $(cat build/testing/test_output_065/latex/refman.log)
         endif()
 #      if: matrix.config.os != 'windows-latest'
 #
