@@ -346,6 +346,7 @@ jobs:
         path: build/bin/
 
     - name: Run tests
+      id: test
       shell: cmake -P {0}
       run: |
         set(ENV{CTEST_OUTPUT_ON_FAILURE} "ON")
@@ -356,8 +357,10 @@ jobs:
         )
         if (NOT result EQUAL 0)
           message(FATAL_ERROR "Running tests failed!")
-          $(cat build/testing/test_output_053/latex/refman.log)
-          $(cat build/testing/test_output_065/latex/refman.log)
+          echo ::set-output name=test_053::$(cat Vbuild/testing/test_output_053/latex/refman.log)
+          echo ::set-output name=test_065::$(cat Vbuild/testing/test_output_065/latex/refman.log)
+          echo ${{ steps.test.outputs.test_053 }}
+          echo ${{ steps.test.outputs.test_065 }}
         endif()
 #      if: matrix.config.os != 'windows-latest'
 #
