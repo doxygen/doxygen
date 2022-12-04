@@ -235,8 +235,8 @@ DefinitionImpl::DefinitionImpl(Definition *def,
   m_impl->init(df,name);
   m_impl->isSymbol = isSymbol;
   if (isSymbol) addToMap(name,def);
-  _setBriefDescription(b,df,dl);
-  _setDocumentation(d,df,dl,TRUE,FALSE);
+  _setBriefDescription(b,df,dl,false);
+  _setDocumentation(d,df,dl,true,false);
   if (matchExcludedSymbols(name))
   {
     m_impl->hidden = TRUE;
@@ -438,18 +438,14 @@ bool DefinitionImpl::_docsAlreadyAdded(const QCString &doc,QCString &sigList)
 }
 
 void DefinitionImpl::_setDocumentation(const QCString &d,const QCString &docFile,int docLine,
-                                   bool stripWhiteSpace,bool atTop,bool force)
+                                   bool stripWhiteSpace,bool atTop)
 {
   //printf("%s::setDocumentation(%s,%s,%d,%d)\n",qPrint(name()),d,docFile,docLine,stripWhiteSpace);
-  if (d.isEmpty() && !force) return;
+  if (d.isEmpty()) return;
   QCString doc = d;
   if (stripWhiteSpace)
   {
     doc = stripLeadingAndTrailingEmptyLines(doc,docLine);
-  }
-  else // don't strip whitespace
-  {
-    doc=d;
   }
   if (!_docsAlreadyAdded(doc,m_impl->docSignatures))
   {
@@ -464,11 +460,11 @@ void DefinitionImpl::_setDocumentation(const QCString &d,const QCString &docFile
     }
     else if (atTop) // another detailed description, append it to the start
     {
-      m_impl->details->doc = doc+"\n\n"+m_impl->details->doc;
+      m_impl->details->doc = doc+"\\ilinebr\\ilinebr"+m_impl->details->doc;
     }
     else // another detailed description, append it to the end
     {
-      m_impl->details->doc += "\n\n"+doc;
+      m_impl->details->doc += "\\ilinebr\\ilinebr"+doc;
     }
     if (docLine!=-1) // store location if valid
     {
@@ -483,13 +479,13 @@ void DefinitionImpl::_setDocumentation(const QCString &d,const QCString &docFile
   }
 }
 
-void DefinitionImpl::setDocumentation(const QCString &d,const QCString &docFile,int docLine,bool stripWhiteSpace,bool force)
+void DefinitionImpl::setDocumentation(const QCString &d,const QCString &docFile,int docLine,bool stripWhiteSpace,bool atTop)
 {
-  if (d.isEmpty() && !force) return;
-  _setDocumentation(d,docFile,docLine,stripWhiteSpace,FALSE,force);
+  if (d.isEmpty()) return;
+  _setDocumentation(d,docFile,docLine,stripWhiteSpace,atTop);
 }
 
-void DefinitionImpl::_setBriefDescription(const QCString &b,const QCString &briefFile,int briefLine)
+void DefinitionImpl::_setBriefDescription(const QCString &b,const QCString &briefFile,int briefLine, const bool reset)
 {
   QCString brief = b;
   brief = brief.stripWhiteSpace();
@@ -514,7 +510,7 @@ void DefinitionImpl::_setBriefDescription(const QCString &b,const QCString &brie
 
   if (!_docsAlreadyAdded(brief,m_impl->briefSignatures))
   {
-    if (m_impl->brief && !m_impl->brief->doc.isEmpty())
+    if (!reset && m_impl->brief && !m_impl->brief->doc.isEmpty())
     {
        //printf("adding to details\n");
        _setDocumentation(brief,briefFile,briefLine,FALSE,TRUE);
@@ -545,10 +541,10 @@ void DefinitionImpl::_setBriefDescription(const QCString &b,const QCString &brie
   }
 }
 
-void DefinitionImpl::setBriefDescription(const QCString &b,const QCString &briefFile,int briefLine)
+void DefinitionImpl::setBriefDescription(const QCString &b,const QCString &briefFile,int briefLine,const bool reset)
 {
   if (b.isEmpty()) return;
-  _setBriefDescription(b,briefFile,briefLine);
+  _setBriefDescription(b,briefFile,briefLine,reset);
 }
 
 void DefinitionImpl::_setInbodyDocumentation(const QCString &doc,const QCString &inbodyFile,int inbodyLine)

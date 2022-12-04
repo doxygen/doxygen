@@ -83,8 +83,8 @@ class DefinitionImpl
     void setName(const QCString &name);
     void setId(const QCString &name);
     void setDefFile(const QCString& df,int defLine,int defColumn);
-    void setDocumentation(const QCString &d,const QCString &docFile,int docLine,bool stripWhiteSpace=TRUE,bool force=FALSE);
-    void setBriefDescription(const QCString &b,const QCString &briefFile,int briefLine);
+    void setDocumentation(const QCString &d,const QCString &docFile,int docLine,bool stripWhiteSpace=true,bool atTop=false);
+    void setBriefDescription(const QCString &b,const QCString &briefFile,int briefLine,const bool reset=false);
     void setInbodyDocumentation(const QCString &d,const QCString &docFile,int docLine);
     void setReference(const QCString &r);
     void addSectionsToDefinition(const std::vector<const SectionInfo*> &anchorList);
@@ -128,8 +128,8 @@ class DefinitionImpl
     int  _getXRefListId(const QCString &listName) const;
     void _writeSourceRefList(OutputList &ol,const QCString &scopeName,const QCString &text,
                        const std::unordered_map<std::string,const MemberDef *> &members,bool) const;
-    void _setBriefDescription(const QCString &b,const QCString &briefFile,int briefLine);
-    void _setDocumentation(const QCString &d,const QCString &docFile,int docLine,bool stripWhiteSpace,bool atTop,bool force = false);
+    void _setBriefDescription(const QCString &b,const QCString &briefFile,int briefLine,const bool reset);
+    void _setDocumentation(const QCString &d,const QCString &docFile,int docLine,bool stripWhiteSpace,bool atTop);
     void _setInbodyDocumentation(const QCString &d,const QCString &docFile,int docLine);
     bool _docsAlreadyAdded(const QCString &doc,QCString &sigList);
 
@@ -205,10 +205,10 @@ class DefinitionMixin : public Base
     virtual void setId(const QCString &name) { m_impl.setId(name); }
     virtual void setDefFile(const QCString& df,int defLine,int defColumn)
     { m_impl.setDefFile(df,defLine,defColumn); }
-    virtual void setDocumentation(const QCString &doc,const QCString &docFile,int docLine,bool stripWhiteSpace=TRUE,bool force=FALSE)
-    { m_impl.setDocumentation(doc,docFile,docLine,stripWhiteSpace,force); }
-    virtual void setBriefDescription(const QCString &brief,const QCString &briefFile,int briefLine)
-    { m_impl.setBriefDescription(brief,briefFile,briefLine); }
+    virtual void setDocumentation(const QCString &doc,const QCString &docFile,int docLine,bool stripWhiteSpace=true,bool atTop=false)
+    { m_impl.setDocumentation(doc,docFile,docLine,stripWhiteSpace,atTop); }
+    virtual void setBriefDescription(const QCString &brief,const QCString &briefFile,int briefLine,const bool reset)
+    { m_impl.setBriefDescription(brief,briefFile,briefLine,reset); }
     virtual void setInbodyDocumentation(const QCString &doc,const QCString &docFile,int docLine)
     { m_impl.setInbodyDocumentation(doc,docFile,docLine); }
     virtual void setReference(const QCString &r)

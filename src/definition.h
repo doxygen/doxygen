@@ -319,12 +319,12 @@ class DefinitionMutable
     virtual void setDefFile(const QCString& df,int defLine,int defColumn) = 0;
 
     /*! Sets the documentation of this definition to \a d. */
-    virtual void setDocumentation(const QCString &d,const QCString &docFile,int docLine,bool stripWhiteSpace=TRUE, bool force=FALSE) = 0;
+    virtual void setDocumentation(const QCString &d,const QCString &docFile,int docLine,bool stripWhiteSpace=true, bool atTop=false) = 0;
 
     /*! Sets the brief description of this definition to \a b.
      *  A dot is added to the sentence if not available.
      */
-    virtual void setBriefDescription(const QCString &b,const QCString &briefFile,int briefLine) = 0;
+    virtual void setBriefDescription(const QCString &b,const QCString &briefFile,int briefLine,const bool reset=false) = 0;
 
     /*! Set the documentation that was found inside the body of an item.
      *  If there was already some documentation set, the new documentation
