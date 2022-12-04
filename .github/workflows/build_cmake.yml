@@ -352,13 +352,11 @@ jobs:
         set(ENV{CTEST_OUTPUT_ON_FAILURE} "ON")
 
         execute_process(
-          COMMAND cmake --build build --target tests TEST_FLAGS="--xml --xmlxsd --xhtml --qhp --docbook --rtf --pdf"
+          COMMAND cmake --build build --target tests TEST_FLAGS="--xml --xmlxsd --xhtml --qhp --docbook --rtf"
           RESULT_VARIABLE result
         )
         if (NOT result EQUAL 0)
           message(FATAL_ERROR "Running tests failed!")
-          echo $(cat build/testing/test_output_053/latex/refman.log)
-          echo $(cat build/testing/test_output_065/latex/refman.log)
         endif()
 #      if: matrix.config.os != 'windows-latest'
 #
