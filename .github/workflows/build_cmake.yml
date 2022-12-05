@@ -376,15 +376,6 @@ jobs:
           message(FATAL_ERROR "Running tests failed!")
         endif()
       if: matrix.config.os == 'windows-latest'
-    - name: Get log file
-      if: ${{ failure() }}
-      id: package
-      uses: juliangruber/read-file-action@v1
-      with:
-        path: ./build/testing/test_output_001/latex/refman.log
-    - name: Echo log file
-      if: ${{ failure() }}
-      run: echo "${{ steps.package.outputs.content }}"
 
     - name: Generate documentation
       shell: cmake -P {0}
