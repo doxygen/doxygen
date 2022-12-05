@@ -27,13 +27,13 @@ jobs:
 #            build_gen: "Unix Makefiles",
 #            cmake_extra_opts: "-Dbuild_search=YES -Dbuild_app=YES -Dbuild_parse=YES -Dbuild_xmlparser=YES -Duse_sqlite3=ON"
 #          }
-        - {
-            name: "Ubuntu Latest Clang Release",
-            os: ubuntu-20.04,
-            build_type: "Release", cc: "clang", cxx: "clang++",
-            build_gen: "Unix Makefiles",
-            cmake_extra_opts: "-Duse_libclang=YES -Dstatic_libclang=YES -Duse_libc++=NO -Duse_sqlite3=ON"
-          }
+#        - {
+#            name: "Ubuntu Latest Clang Release",
+#            os: ubuntu-20.04,
+#            build_type: "Release", cc: "clang", cxx: "clang++",
+#            build_gen: "Unix Makefiles",
+#            cmake_extra_opts: "-Duse_libclang=YES -Dstatic_libclang=YES -Duse_libc++=NO -Duse_sqlite3=ON"
+#          }
 #        - {
 #            name: "Ubuntu Latest Clang Debug",
 #            os: ubuntu-20.04,
@@ -59,12 +59,12 @@ jobs:
 #            build_type: "Debug", cc: "cl", cxx: "cl",
 #            build_gen: "NMake Makefiles"
 #          }
-#        - {
-#            name: "Windows Latest MSVC Release", 
-#            os: windows-latest,
-#            build_type: "Release", cc: "cl", cxx: "cl",
-#            build_gen: "NMake Makefiles"
-#          }
+        - {
+            name: "Windows Latest MSVC Release", 
+            os: windows-latest,
+            build_type: "Release", cc: "cl", cxx: "cl",
+            build_gen: "NMake Makefiles"
+          }
     steps:
     - name: Checkout doxygen
       uses: actions/checkout@v3
@@ -109,7 +109,10 @@ jobs:
       uses: teatimeguest/setup-texlive-action@v2
       with:
         packages: >-
-          scheme-full
+          scheme-medium
+          babel-dutch
+          cjk
+          bibtex
       if: matrix.config.os == 'windows-latest'
 
     - name: Install libclang (Ubuntu 20.04)
@@ -352,39 +355,42 @@ jobs:
         set(ENV{CTEST_OUTPUT_ON_FAILURE} "ON")
 
         execute_process(
-          COMMAND cmake --build build --target tests TEST_FLAGS="--xml --xmlxsd --xhtml --qhp --docbook --rtf --pdf"
+          COMMAND cmake --build build --target tests TEST_FLAGS="--xml --xmlxsd --xhtml --qhp --docbook --rtf"
           RESULT_VARIABLE result
         )
-        #if (NOT result EQUAL 0)
-        #  echo "name=tst_053::$(cat build/testing/test_output_053/latex/refman.log)" >> $GITHUB_OUTPUT
-        #  echo ${{ steps.test.outputs.tst_053 }}
-        #  message(FATAL_ERROR "Running tests failed!")
-        #endif()
-    - name: Get log file
-      if: always()
-      id: package
-      uses: juliangruber/read-file-action@v1
-      with:
-        path: ./build/testing/test_output_053/latex/refman.log
+        if (NOT result EQUAL 0)
+          #echo "name=tst_053::$(cat build/testing/test_output_053/latex/refman.log)" >> $GITHUB_OUTPUT
+          #echo ${{ steps.test.outputs.tst_053 }}
+          message(FATAL_ERROR "Running tests failed!")
+        endif()
+#    - name: Get log file
+#      if: always()
+#      id: package
+#      uses: juliangruber/read-file-action@v1
+#      with:
+#        path: ./build/testing/test_output_053/latex/refman.log
+#    - name: Echo log file
+#      if: always()
+#      run: echo "${{ steps.package.outputs.content }}"
+      if: matrix.config.os != 'windows-latest'
+
+    - name: Run tests (Windows)
+      shell: cmake -P {0}
+      run: |
+        set(ENV{CTEST_OUTPUT_ON_FAILURE} "ON")
+
+        execute_process(
+          COMMAND cmake --build build --target tests TEST_FLAGS="--xml --xmlxsd"
+          RESULT_VARIABLE result
+        )
+        if (NOT result EQUAL 0)
+          message(FATAL_ERROR "Running tests failed!")
+        endif()
+      if: matrix.config.os == 'windows-latest'
     - name: Echo log file
       if: always()
       run: echo "${{ steps.package.outputs.content }}"
-
-#      if: matrix.config.os != 'windows-latest'
-#
-#    - name: Run tests (Windows)
-#      shell: cmake -P {0}
-#      run: |
-#        set(ENV{CTEST_OUTPUT_ON_FAILURE} "ON")
-#
-#        execute_process(
-#          COMMAND cmake --build build --target tests TEST_FLAGS="--xml --xmlxsd"
-#          RESULT_VARIABLE result
-#        )
-#        if (NOT result EQUAL 0)
-#          message(FATAL_ERROR "Running tests failed!")
-#        endif()
-#      if: matrix.config.os == 'windows-latest'
+      if: matrix.config.os == 'windows-latest'
 
     - name: Generate documentation
       shell: cmake -P {0}
