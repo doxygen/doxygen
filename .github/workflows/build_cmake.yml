@@ -105,13 +105,6 @@ jobs:
         echo "/Library/TeX/texbin/" >> $GITHUB_PATH
       if: matrix.config.os == 'macos-latest'
     
-    - name: Install LaTeX (Windows)
-      uses: teatimeguest/setup-texlive-action@v2
-      with:
-        packages: >-
-          scheme-full
-      if: matrix.config.os == 'windows-latest'
-
     - name: Install libclang (Ubuntu 20.04)
       run: |
         sudo apt update
@@ -345,8 +338,7 @@ jobs:
         name: "${{ matrix.config.name }} build artifacts"
         path: build/bin/
 
-    - name: Run tests
-      id: test
+    - name: Run tests (Linux / MacOS)
       shell: cmake -P {0}
       run: |
         set(ENV{CTEST_OUTPUT_ON_FAILURE} "ON")
@@ -358,21 +350,21 @@ jobs:
         if (NOT result EQUAL 0)
           message(FATAL_ERROR "Running tests failed!")
         endif()
-#      if: matrix.config.os != 'windows-latest'
-#
-#    - name: Run tests (Windows)
-#      shell: cmake -P {0}
-#      run: |
-#        set(ENV{CTEST_OUTPUT_ON_FAILURE} "ON")
-#
-#        execute_process(
-#          COMMAND cmake --build build --target tests TEST_FLAGS="--xml --xmlxsd"
-#          RESULT_VARIABLE result
-#        )
-#        if (NOT result EQUAL 0)
-#          message(FATAL_ERROR "Running tests failed!")
-#        endif()
-#      if: matrix.config.os == 'windows-latest'
+      if: matrix.config.os != 'windows-latest'
+
+    - name: Run tests (Windows)
+      shell: cmake -P {0}
+      run: |
+        set(ENV{CTEST_OUTPUT_ON_FAILURE} "ON")
+
+        execute_process(
+          COMMAND cmake --build build --target tests TEST_FLAGS="--xml --xmlxsd"
+          RESULT_VARIABLE result
+        )
+        if (NOT result EQUAL 0)
+          message(FATAL_ERROR "Running tests failed!")
+        endif()
+      if: matrix.config.os == 'windows-latest'
 
     - name: Generate documentation
       shell: cmake -P {0}
@@ -384,7 +376,7 @@ jobs:
         if (NOT result EQUAL 0)
           message(FATAL_ERROR "Building documentation failed")
         endif()
-#      if: matrix.config.os != 'windows-latest'
+      if: matrix.config.os != 'windows-latest'
 
     - name: Archive html documentation artifacts
       uses: actions/upload-artifact@v3
