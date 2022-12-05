@@ -173,10 +173,10 @@ jobs:
       with:
         packages: >-
           scheme-medium
+          collection-latexextra
           babel-dutch
           cjk
           bibtex
-          tabu
       if: matrix.config.os == 'windows-latest'
 
     - name: Install Ghostscript (Linux)
