@@ -387,10 +387,6 @@ jobs:
           message(FATAL_ERROR "Running tests failed!")
         endif()
       if: matrix.config.os == 'windows-latest'
-    - name: Echo log file
-      if: always()
-      run: echo "${{ steps.package.outputs.content }}"
-      if: matrix.config.os == 'windows-latest'
 
     - name: Generate documentation
       shell: cmake -P {0}
