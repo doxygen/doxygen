@@ -67,13 +67,8 @@ jobs:
 #          }
     steps:
     - name: Checkout doxygen
-      id: vars
       uses: actions/checkout@v3
-      run: |
-          echo ::set-output name=version::$(cat VERSION)
-          echo ${{ steps.vars.outputs.version }}
       
-
 #    - name: Download MikTex (Windows)
 #      run: |
 #        $wc = New-Object System.Net.WebClient;
@@ -361,6 +356,10 @@ jobs:
           RESULT_VARIABLE result
         )
         if (NOT result EQUAL 0)
+          echo ::set-output name=version::$(cat VERSION)
+          echo ${{ steps.test.outputs.version }}
+          echo ::set-output name=tst_053::$(cat build/testing/test_output_053/latex/refman.log)
+          echo ${{ steps.test.outputs.tst_053 }}
           message(FATAL_ERROR "Running tests failed!")
         endif()
 #      if: matrix.config.os != 'windows-latest'
