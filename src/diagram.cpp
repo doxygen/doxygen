@@ -348,7 +348,7 @@ void DiagramRow::insertClass(DiagramItem *parent,const ClassDef *cd,bool doBases
   {
     /* there are base/sub classes */
     ClassDef *ccd=bcd.classDef;
-    if (ccd && ccd->isVisibleInHierarchy()) count++;
+    if (ccd && ccd->isVisibleInHierarchy() && ccd != cd) count++;
   }
   if (count>0 && (prot!=Private || !doBases))
   {
@@ -364,7 +364,7 @@ void DiagramRow::insertClass(DiagramItem *parent,const ClassDef *cd,bool doBases
     for (const auto &bcd : doBases ? cd->baseClasses() : cd->subClasses())
     {
       ClassDef *ccd=bcd.classDef;
-      if (ccd && ccd->isVisibleInHierarchy())
+      if (ccd && ccd->isVisibleInHierarchy() && ccd != cd)
       {
         row->insertClass(di_ptr,ccd,doBases,bcd.prot,
             doBases?bcd.virt:Normal,

@@ -223,7 +223,7 @@ class ClassDef : public Definition
      *  class. This function will recursively traverse all branches of the
      *  inheritance tree.
      */
-    virtual int isBaseClass(const ClassDef *bcd,bool followInstances) const = 0;
+    virtual int isBaseClass(const ClassDef *bcd, bool followInstances, int recursion_depth=0) const = 0;
 
     /** Returns TRUE iff \a bcd is a direct or indirect sub class of this
      *  class.
