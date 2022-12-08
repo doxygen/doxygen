@@ -37,6 +37,8 @@
 #include <functional>
 #include <atomic>
 
+#include "ctre.hpp"
+
 #include "markdown.h"
 #include "growbuf.h"
 #include "debug.h"
@@ -49,7 +51,6 @@
 #include "section.h"
 #include "message.h"
 #include "portable.h"
-#include "regex.h"
 #include "fileinfo.h"
 #include "utf8.h"
 
@@ -1973,14 +1974,14 @@ static bool isHRuler(const char *data,int size)
 static QCString extractTitleId(QCString &title, int level)
 {
   TRACE(title);
-  // match e.g. '{#id-b11} ' and capture 'id-b11'
-  static const reg::Ex r2(R"({#(\a[\w-]*)}\s*$)");
-  reg::Match match;
   std::string ti = title.str();
-  if (reg::search(ti,match,r2))
+  // match e.g. '{#id-b11} ' and capture 'id-b11'
+  static constexpr auto r2 = ctll::fixed_string{ R"(\{#([[:alpha:]_][[:word:]\-]*)\}\s*$)" };
+  auto match = ctre::search<r2>(ti);
+  if (match)
   {
-    std::string id = match[1].str();
-    title = title.left(match.position());
+    std::string id = match.get<1>().str();
+    title = title.left(match.begin()-ti.begin());
     //printf("found match id='%s' title=%s\n",id.c_str(),qPrint(title));
     TRACE_RESULT(QCString(id));
     return QCString(id);
@@ -3546,19 +3547,19 @@ void MarkdownOutlineParser::parseInput(const QCString &fileName,
       break;
     case ExplicitPageResult::explicitPage:
       {
-        // look for `@page label My Title\n` and capture `label` (match[1]) and ` My Title` (match[2])
-        static const reg::Ex re(R"([\\@]page\s+(\a[\w-]*)(\s*[^\n]*)\n)");
-        reg::Match match;
+        // look for `@page label My Title\n` and capture `label` (label) and ` My Title` (title)
+        static constexpr auto re = ctll::fixed_string{ R"([\\@]page\s+([[:alpha:]_][[:word:]\-]*)(\s*[^\n]*)\n)" };
         std::string s = docs.str();
-        if (reg::search(s,match,re))
+        auto [match, label_match, title_match] = ctre::search<re>(s);
+        if (match)
         {
-          QCString orgLabel    = match[1].str();
+          QCString orgLabel    = label_match.str();
           QCString newLabel    = markdownFileNameToId(fileName);
-          docs = docs.left(match[1].position())+               // part before label
+          docs = docs.left(label_match.begin()-s.begin())+     // part before label
                  newLabel+                                     // new label
-                 match[2].str()+                               // part between orgLabel and \n
+                 title_match.str()+                            // part between orgLabel and \n
                  "\\ilinebr @anchor "+orgLabel+"\n"+           // add original anchor plus \n of above
-                 docs.right(docs.length()-match.length());     // add remainder of docs
+                 docs.right(docs.length()-label_match.size()); // add remainder of docs
         }
       }
       break;

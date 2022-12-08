@@ -16,9 +16,10 @@
 #include <string>
 #include <fstream>
 
+#include "ctre.hpp"
+
 #include "rtfstyle.h"
 #include "message.h"
-#include "regex.h"
 
 QCString rtf_title;
 QCString rtf_subject;
@@ -232,14 +233,14 @@ Rtf_Style_Default rtf_Style_Default[] =
   }
 };
 
-static const reg::Ex s_clause(R"(\\s(\d+)\s*)"); // match, e.g. '\s30' and capture '30'
+static constexpr auto s_clause = ctll::fixed_string{ R"(\\s(\d+)\s*)" }; // match, e.g. '\s30' and capture '30'
 
 StyleData::StyleData(const std::string &reference, const std::string &definition)
 {
-  reg::Match match;
-  if (reg::search(reference,match,s_clause))
+  auto match = ctre::search<s_clause>(reference);
+  if (match)
   {
-    m_index = static_cast<int>(std::stoul(match[1].str()));
+    m_index = std::atoi(match.get<1>().str().c_str());
   }
   else // error
   {
@@ -251,13 +252,13 @@ StyleData::StyleData(const std::string &reference, const std::string &definition
 
 bool StyleData::setStyle(const std::string &command, const std::string &styleName)
 {
-  reg::Match match;
-  if (!reg::search(command,match,s_clause))
+  auto match = ctre::search<s_clause>(command);
+  if (!match)
   {
     err("Style sheet '%s' contains no '\\s' clause.\n{%s}", styleName.c_str(), command.c_str());
     return false;
   }
-  m_index = static_cast<int>(std::stoul(match[1].str()));
+  m_index = std::atoi(match.get<1>().str().c_str());
 
   size_t index = command.find("\\sbasedon");
   if (index!=std::string::npos)
@@ -285,12 +286,14 @@ void loadStylesheet(const QCString &name, StyleDataMap& map)
   for (std::string line ; getline(file,line) ; ) // for each line
   {
     if (line.empty() || line[0]=='#') continue; // skip blanks & comments
-    static const reg::Ex assignment_splitter(R"(\s*=\s*)");
-    reg::Match match;
-    if (reg::search(line,match,assignment_splitter))
+    static constexpr auto assignment_splitter = ctll::fixed_string{ (R"(\s*=\s*)") };
+    auto match = ctre::search<assignment_splitter>(line);
+    if (match)
     {
-      std::string key   = match.prefix().str();
-      std::string value = match.suffix().str();
+      size_t pos = match.begin()-line.begin();
+      size_t len = match.size();
+      std::string key   = line.substr(0,pos);
+      std::string value = line.substr(pos+len);
       auto it = map.find(key);
       if (it!=map.end())
       {
@@ -327,12 +330,14 @@ void loadExtensions(const QCString &name)
   for (std::string line ; getline(file,line) ; ) // for each line
   {
     if (line.empty() || line[0]=='#') continue; // skip blanks & comments
-    static const reg::Ex assignment_splitter(R"(\s*=\s*)");
-    reg::Match match;
-    if (reg::search(line,match,assignment_splitter))
+    static constexpr auto assignment_splitter = ctll::fixed_string{ (R"(\s*=\s*)") };
+    auto match = ctre::search<assignment_splitter>(line);
+    if (match)
     {
-      std::string key   = match.prefix().str();
-      std::string value = match.suffix().str();
+      size_t pos = match.begin()-line.begin();
+      size_t len = match.size();
+      std::string key   = line.substr(0,pos);
+      std::string value = line.substr(pos+len);
       auto it = g_styleMap.find(key);
       if (it!=g_styleMap.end())
       {

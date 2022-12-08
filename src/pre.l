@@ -45,6 +45,8 @@ typedef yyguts_t *yyscan_t;
 #include <ctype.h>
 #include <errno.h>
 
+#include "ctre.hpp"
+
 #include "qcstring.h"
 #include "containers.h"
 #include "pre.h"
@@ -62,7 +64,6 @@ typedef yyguts_t *yyscan_t;
 #include "condparser.h"
 #include "config.h"
 #include "filedef.h"
-#include "regex.h"
 #include "fileinfo.h"
 
 #define YY_NO_UNISTD_H 1
@@ -2179,18 +2180,16 @@ static void processConcatOperators(QCString &expr)
   if (expr.isEmpty()) return;
   //printf("processConcatOperators: in='%s'\n",qPrint(expr));
   std::string e = expr.str();
-  static const reg::Ex r(R"(\s*##\s*)");
-  reg::Iterator end;
+  static constexpr auto r = ctll::fixed_string{ R"(\s*##\s*)" };
 
   size_t i=0;
   for (;;)
   {
-    reg::Iterator it(e,r,i);
-    if (it!=end)
+    auto match = ctre::search<r>(e.c_str()+i);
+    if (match)
     {
-      const auto &match = *it;
-      size_t n = match.position();
-      size_t l = match.length();
+      size_t n = match.begin()-e.c_str();
+      size_t l = match.size();
       //printf("Match: '%s'\n",qPrint(expr.mid(i)));
       if (n+l+1<e.length() && e[static_cast<int>(n+l)]=='@' && expr[static_cast<int>(n+l+1)]=='-')
       {
@@ -3540,18 +3539,16 @@ static void initPredefined(yyscan_t yyscanner,const QCString &fileName)
         i_obrace<i_cbrace
        ) // predefined function macro definition
     {
-      static const reg::Ex reId(R"(\a\w*)");
+      static constexpr auto reId = ctll::fixed_string{ R"([[:alpha:]_][[:word:]]*)" };
       std::map<std::string,int> argMap;
       std::string args  = ds.substr(i_obrace+1,i_cbrace-i_obrace-1); // part between ( and )
       bool   hasVarArgs = args.find("...")!=std::string::npos;
       //printf("predefined function macro '%s'\n",ds.c_str());
       int count = 0;
-      reg::Iterator arg_it(args,reId,0);
-      reg::Iterator arg_end;
       // gather the formal arguments in a dictionary
-      for (; arg_it!=arg_end; ++arg_it)
+      for (auto match : ctre::range<reId>(args))
       {
-        argMap.emplace(arg_it->str(),count++);
+        argMap.emplace(match.str(),count++);
       }
       if (hasVarArgs) // add the variable argument if present
       {
@@ -3561,16 +3558,13 @@ static void initPredefined(yyscan_t yyscanner,const QCString &fileName)
       // strip definition part
       std::string definition;
       std::string in=ds.substr(i_equals+1);
-      reg::Iterator re_it(in,reId);
-      reg::Iterator re_end;
       size_t i=0;
       // substitute all occurrences of formal arguments by their 
       // corresponding markers
-      for (; re_it!=re_end; ++re_it)
+      for (auto match : ctre::range<reId>(in))
       {
-        const auto &match = *re_it;
-        size_t pi = match.position();
-        size_t l  = match.length();
+        size_t pi = match.begin()-in.begin();
+        size_t l  = match.size();
         if (pi>i) definition+=in.substr(i,pi-i);
 
         auto it = argMap.find(match.str());

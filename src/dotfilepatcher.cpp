@@ -15,6 +15,8 @@
 
 #include <sstream>
 
+#include "ctre.hpp"
+
 #include "dotfilepatcher.h"
 #include "dotrunner.h"
 #include "config.h"
@@ -344,15 +346,17 @@ bool DotFilePatcher::run() const
   bool replacedHeader=FALSE;
   bool foundSize=FALSE;
   std::string lineStr;
-  static const reg::Ex reSVG(R"([\[<]!-- SVG [0-9]+)");
-  static const reg::Ex reMAP(R"(<!-- MAP [0-9]+)");
-  static const reg::Ex reFIG(R"(% FIG [0-9]+)");
 
   while (getline(fi,lineStr))
   {
     QCString line = lineStr+'\n';
+    static constexpr auto reSVG = ctll::fixed_string{ R"([\[<]!-- SVG (\d+))" };
+    static constexpr auto reMAP = ctll::fixed_string{ R"(<!-- MAP (\d+))" };
+    static constexpr auto reFIG = ctll::fixed_string{ R"(% FIG (\d+))" };
+    auto matchSVG = ctre::search<reSVG>(lineStr);
+    auto matchMAP = ctre::search<reMAP>(lineStr);
+    auto matchFIG = ctre::search<reFIG>(lineStr);
     //printf("line=[%s]\n",qPrint(line.stripWhiteSpace()));
-    int i;
     if (isSVGFile)
     {
       if (interactiveSVG_local)
@@ -396,13 +400,12 @@ bool DotFilePatcher::run() const
         t << replaceRef(line,map.relPath,map.urlOnly,map.context,"_top");
       }
     }
-    else if ((i=findIndex(line.str(),reSVG))!=-1)
+    else if (matchSVG)
     {
-      //printf("Found marker at %d\n",i);
-      int mapId=-1;
+      size_t i = matchSVG.begin()-lineStr.begin();
       t << line.left(i);
-      int n = sscanf(line.data()+i+1,"!-- SVG %d",&mapId);
-      if (n==1 && mapId>=0 && mapId<static_cast<int>(m_maps.size()))
+      int mapId = std::atoi(std::string(matchSVG.get<1>()).c_str());
+      if (mapId>=0 && mapId<static_cast<int>(m_maps.size()))
       {
         int e = std::max(line.find("--]"),line.find("-->"));
         const Map &map = m_maps.at(mapId);
@@ -420,12 +423,12 @@ bool DotFilePatcher::run() const
         t << line.mid(i);
       }
     }
-    else if ((i=findIndex(line.str(),reMAP))!=-1)
+    else if (matchMAP)
     {
-      int mapId=-1;
+      size_t i = matchMAP.begin()-lineStr.begin();
       t << line.left(i);
-      int n = sscanf(line.data()+i,"<!-- MAP %d",&mapId);
-      if (n==1 && mapId>=0 && mapId<static_cast<int>(m_maps.size()))
+      int mapId = std::atoi(std::string(matchMAP.get<1>()).c_str());
+      if (mapId>=0 && mapId<static_cast<int>(m_maps.size()))
       {
         TextStream tt;
         const Map &map = m_maps.at(mapId);
@@ -445,12 +448,10 @@ bool DotFilePatcher::run() const
         t << line.mid(i);
       }
     }
-    else if ((i=findIndex(line.str(),reFIG))!=-1)
+    else if (matchFIG)
     {
-      int mapId=-1;
-      int n = sscanf(line.data()+i+2,"FIG %d",&mapId);
-      //printf("line='%s' n=%d\n",qPrint(line)+i,n);
-      if (n==1 && mapId>=0 && mapId<static_cast<int>(m_maps.size()))
+      int mapId = std::atoi(std::string(matchFIG.get<1>()).c_str());
+      if (mapId>=0 && mapId<static_cast<int>(m_maps.size()))
       {
         const Map &map = m_maps.at(mapId);
         //printf("patching FIG %d in file %s with contents of %s\n",

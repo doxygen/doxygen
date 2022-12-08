@@ -35,6 +35,8 @@ typedef yyguts_t *yyscan_t;
 #include <string>
 #include <cassert>
 
+#include "ctre.hpp"
+
 #include "doctokenizer.h"
 #include "cmdmapper.h"
 #include "config.h"
@@ -45,7 +47,6 @@ typedef yyguts_t *yyscan_t;
 #include "doxygen.h"
 #include "portable.h"
 #include "cite.h"
-#include "regex.h"
 
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
@@ -425,14 +426,13 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          {
                            lineCount(yytext,yyleng);
                            std::string text(yytext);
-                           static const reg::Ex re(R"([*+][^*+]*$)"); // find last + or *
-                           reg::Match match;
-                           reg::search(text,match,re);
-                           size_t listPos = match.position();
-                           assert(listPos!=std::string::npos);
+                           static constexpr auto re = ctll::fixed_string{ R"([*+][^*+]*$)" }; // find last + or *
+                           auto match = ctre::search<re>(text);
+                           assert(match);
+                           size_t markPos = match.begin()-text.begin();
                            yyextra->token->isEnumList = FALSE;
                            yyextra->token->id         = -1;
-                           yyextra->token->indent     = computeIndent(yytext,listPos);
+                           yyextra->token->indent     = computeIndent(yytext,markPos);
                            return TK_LISTITEM;
                          }
                        }
@@ -444,11 +444,10 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          else
                          {
                            std::string text(yytext);
-                           static const reg::Ex re(R"(\d+)");
-                           reg::Match match;
-                           reg::search(text,match,re);
-                           size_t markPos = match.position();
-                           assert(markPos!=std::string::npos);
+                           static constexpr auto re = ctll::fixed_string{ R"(\d+)" };
+                           auto match = ctre::search<re>(text);
+                           assert(match);
+                           size_t markPos = match.begin()-text.begin();
                            yyextra->token->isEnumList = true;
                            bool ok = false;
                            int id = QCString(match.str()).toInt(&ok);
@@ -480,11 +479,10 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          {
                            lineCount(yytext,yyleng);
                            std::string text=extractPartAfterNewLine(QCString(yytext)).str();
-                           static const reg::Ex re(R"([*+][^*+]*$)"); // find last + or *
-                           reg::Match match;
-                           reg::search(text,match,re);
-                           size_t markPos = match.position();
-                           assert(markPos!=std::string::npos);
+                           static constexpr auto re = ctll::fixed_string{ R"([*+][^*+]*$)" }; // find last + or *
+                           auto match = ctre::search<re>(text);
+                           assert(match);
+                           size_t markPos = match.begin()-text.begin();
                            yyextra->token->isEnumList = FALSE;
                            yyextra->token->id         = -1;
                            yyextra->token->indent     = computeIndent(text.c_str(),markPos);
@@ -500,11 +498,10 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          {
                            lineCount(yytext,yyleng);
                            std::string text=extractPartAfterNewLine(QCString(yytext)).str();
-                           static const reg::Ex re(R"(\d+)");
-                           reg::Match match;
-                           reg::search(text,match,re);
-                           size_t markPos = match.position();
-                           assert(markPos!=std::string::npos);
+                           static constexpr auto re = ctll::fixed_string{ R"(\d+)" };
+                           auto match = ctre::search<re>(text);
+                           assert(match);
+                           size_t markPos = match.begin()-text.begin();
                            yyextra->token->isEnumList = true;
                            bool ok = false;
                            int id = QCString(match.str()).toInt(&ok);

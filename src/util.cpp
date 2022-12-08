@@ -31,6 +31,7 @@
 #include <sstream>
 
 #include "md5.h"
+#include "ctre.hpp"
 
 #include "regex.h"
 #include "util.h"
@@ -192,17 +193,14 @@ QCString removeAnonymousScopes(const QCString &str)
     return false;
   };
 
-  static const reg::Ex re(R"([\s:]*@\d+[\s:]*)");
+  static constexpr auto re = ctll::fixed_string{ R"([\s:]*@\d+[\s:]*)" };
   std::string s = str.str();
-  reg::Iterator iter(s,re);
-  reg::Iterator end;
   size_t p=0;
   size_t sl=s.length();
   bool needsSeparator=false;
-  for ( ; iter!=end ; ++iter)
+  for (auto match : ctre::range<re>(s))
   {
-    const auto &match = *iter;
-    size_t i = match.position();
+    size_t i = match.begin()-s.begin();
     if (i>p) // add non-matching prefix
     {
       if (needsSeparator) result+="::";
@@ -211,7 +209,7 @@ QCString removeAnonymousScopes(const QCString &str)
     }
     std::string delim = match.str();
     needsSeparator = needsSeparator || (startsWithColon(delim) && endsWithColon(delim));
-    p = match.position()+match.length();
+    p = i + match.size();
   }
   if (p<sl) // add trailing remainder
   {
@@ -222,12 +220,21 @@ QCString removeAnonymousScopes(const QCString &str)
 }
 
 // replace anonymous scopes with __anonymous__ or replacement if provided
-QCString replaceAnonymousScopes(const QCString &s,const QCString &replacement)
+QCString replaceAnonymousScopes(const QCString &input,const QCString &replacement)
 {
-  if (s.isEmpty()) return s;
-  static const reg::Ex marker(R"(@\d+)");
-  std::string result = reg::replace(s.str(),marker,
-                                    replacement.isEmpty() ? replacement.data() : "__anonymous__");
+  if (input.isEmpty()) return input;
+  const std::string s = input.str();
+  std::string result;
+  static constexpr auto marker = ctll::fixed_string{ R"(@\d+)" };
+  size_t p=0;
+  for (auto match : ctre::range<marker>(s))
+  {
+    size_t i = match.begin()-s.begin();
+    result+=s.substr(p,i-p);
+    result+=replacement.isEmpty() ? replacement.data() : "__anonymous__";
+    p = i + match.size();
+  }
+  result+=s.substr(p);
   //printf("replaceAnonymousScopes('%s')='%s'\n",qPrint(s),qPrint(result));
   return QCString(result);
 }
@@ -890,9 +897,7 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
   size_t strLen = txtStr.length();
   if (strLen==0) return;
 
-  static const reg::Ex regExp(R"((::)?\a[\w~!\\.:$"]*)");
-  reg::Iterator it(txtStr,regExp);
-  reg::Iterator end;
+  static constexpr auto regExp = ctll::fixed_string{ R"((::)?[[:alpha:]_][[:word:]~!\\\.:$]*)" };
 
   //printf("linkifyText scope=%s fileScope=%s strtxt=%s strlen=%d external=%d\n",
   //    scope ? qPrint(scope->name()):"<none>",
@@ -901,11 +906,10 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
   size_t index=0;
   size_t skipIndex=0;
   size_t floatingIndex=0;
-  for (; it!=end ; ++it) // for each word from the text string
+  for (auto match : ctre::range<regExp>(txtStr))
   {
-    const auto &match = *it;
-    size_t newIndex = match.position();
-    size_t matchLen = match.length();
+    size_t newIndex = match.begin()-txtStr.begin();
+    size_t matchLen = match.size();
     floatingIndex+=newIndex-skipIndex+matchLen;
     if (newIndex>0 && txtStr.at(newIndex-1)=='0') // ignore hex numbers (match x00 in 0x00)
     {
@@ -955,7 +959,7 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
       out.writeString(part.c_str(),keepSpaces);
     }
     // get word from string
-    std::string word=txtStr.substr(newIndex,matchLen);
+    std::string word = match.str();
     QCString matchWord = substitute(substitute(QCString(word),"\\","::"),".","::");
     //printf("linkifyText word=%s matchWord=%s scope=%s\n",
     //    qPrint(word),qPrint(matchWord),scope ? qPrint(scope->name()) : "<none>");
@@ -1093,18 +1097,15 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
 void writeMarkerList(OutputList &ol,const std::string &markerText,size_t numMarkers,
                      std::function<void(size_t)> replaceFunc)
 {
-  static const reg::Ex marker(R"(@(\d+))");
-  reg::Iterator it(markerText,marker);
-  reg::Iterator end;
+  static constexpr auto marker = ctll::fixed_string{ R"(@(\d+))" };
   size_t index=0;
   // now replace all markers in inheritLine with links to the classes
-  for ( ; it!=end ; ++it)
+  for (auto match : ctre::range<marker>(markerText))
   {
-    const auto &match = *it;
-    size_t newIndex = match.position();
-    size_t matchLen = match.length();
+    size_t newIndex = match.begin()-markerText.begin();
+    size_t matchLen = match.size();
     ol.parseText(markerText.substr(index,newIndex-index));
-    unsigned long entryIndex = std::stoul(match[1].str());
+    unsigned long entryIndex = std::stoul(std::string(match.get<1>()));
     if (entryIndex<static_cast<unsigned long>(numMarkers))
     {
       replaceFunc(entryIndex);
@@ -1747,24 +1748,18 @@ static QCString extractCanonicalType(const Definition *d,const FileDef *fs,QCStr
                               // then resolve any identifiers inside.
     {
       std::string ts = templSpec.str();
-      static const reg::Ex re(R"(\a\w*)");
-      reg::Iterator it(ts,re);
-      reg::Iterator end;
+      static constexpr auto re = ctll::fixed_string{ R"([[:alpha:]_][[:word:]]*)" };
 
       size_t tp=0;
-      // for each identifier template specifier
-      //printf("adding resolved %s to %s\n",qPrint(templSpec),qPrint(canType));
-      for (; it!=end ; ++it)
+      for (auto match : ctre::range<re>(ts))
       {
-        const auto &match = *it;
-        size_t ti = match.position();
-        size_t tl = match.length();
-        std::string matchStr = match.str();
+        size_t ti = match.begin()-ts.begin();
+        size_t tl = match.size();
         canType += ts.substr(tp,ti-tp);
-        canType += getCanonicalTypeForIdentifier(d,fs,matchStr.c_str(),lang,0);
-        tp=ti+tl;
+        canType += getCanonicalTypeForIdentifier(d,fs,match.str().c_str(),lang,0);
+        tp = ti + tl;
       }
-      canType+=ts.substr(tp);
+      canType += ts.substr(tp);
     }
 
     pp=p;
@@ -4263,17 +4258,14 @@ QCString convertCharEntitiesToUTF8(const QCString &str)
   if (str.isEmpty()) return QCString();
 
   std::string s = str.data();
-  static const reg::Ex re(R"(&\a\w*;)");
-  reg::Iterator it(s,re);
-  reg::Iterator end;
+  static constexpr auto re = ctll::fixed_string{ R"(&[[:alpha:]_][[:word:]]*;)" };
 
   GrowBuf growBuf;
-  size_t p,i=0,l;
-  for (; it!=end ; ++it)
+  size_t i=0;
+  for (auto match : ctre::range<re>(s))
   {
-    const auto &match = *it;
-    p = match.position();
-    l = match.length();
+    size_t p = match.begin()-s.begin();
+    size_t l = match.size();
     if (p>i)
     {
       growBuf.addStr(s.substr(i,p-i));
@@ -4428,10 +4420,10 @@ void addMembersToMemberGroup(MemberList *ml,
  */
 int extractClassNameFromType(const QCString &type,int &pos,QCString &name,QCString &templSpec,SrcLangExt lang)
 {
-  static const reg::Ex re_norm(R"(\a[\w:]*)");
-  static const reg::Ex re_fortran(R"(\a[\w:()=]*)");
-  static const reg::Ex *re = &re_norm;
+  static constexpr auto re_norm    = ctll::fixed_string{ R"([[:alpha:]_][[:word:]:]*)" };
+  static constexpr auto re_fortran = ctll::fixed_string{ R"([[:alpha:]_][[:word:]:()=]*)" };
 
+  bool useFortranRe=false;
   name.resize(0);
   templSpec.resize(0);
   if (type.isEmpty()) return -1;
@@ -4443,18 +4435,16 @@ int extractClassNameFromType(const QCString &type,int &pos,QCString &name,QCStri
       if (type[pos]==',') return -1;
       if (!type.lower().startsWith("type"))
       {
-        re = &re_fortran;
+        useFortranRe=true;
       }
     }
     std::string s = type.str();
-    reg::Iterator it(s,*re,static_cast<int>(pos));
-    reg::Iterator end;
+    auto match = useFortranRe ? ctre::search<re_fortran>(s.c_str()+pos) : ctre::search<re_norm>(s.c_str()+pos);
 
-    if (it!=end)
+    if (match)
     {
-      const auto &match = *it;
-      size_t i = match.position();
-      size_t l = match.length();
+      size_t i = match.begin()-s.c_str();
+      size_t l = match.size();
       size_t ts = i+l;
       size_t te = ts;
       size_t tl = 0;
@@ -4512,16 +4502,12 @@ QCString normalizeNonTemplateArgumentsInString(
   QCString result = name.left(p);
 
   std::string s = name.mid(p).str();
-  static const reg::Ex re(R"([\a:][\w:]*)");
-  reg::Iterator it(s,re);
-  reg::Iterator end;
+  static constexpr auto re = ctll::fixed_string{ R"([[:alpha:]_:][[:word:]:]*)" };
   size_t pi=0;
-  // for each identifier in the template part (e.g. B<T> -> T)
-  for (; it!=end ; ++it)
+  for (auto match : ctre::range<re>(s))
   {
-    const auto &match = *it;
-    size_t i = match.position();
-    size_t l = match.length();
+    size_t i = match.begin()-s.begin();
+    size_t l = match.size();
     result += s.substr(pi,i-pi);
     QCString n(match.str());
     bool found=FALSE;
@@ -4575,17 +4561,14 @@ QCString substituteTemplateArgumentsInString(
   if (formalArgs.empty()) return nm;
   QCString result;
 
-  static const reg::Ex re(R"(\a[\w:]*)");
+  static constexpr auto re = ctll::fixed_string{ R"([[:alpha:]][[:word:]:]*)" };
   std::string name = nm.str();
-  reg::Iterator it(name,re);
-  reg::Iterator end;
   size_t p=0;
 
-  for (; it!=end ; ++it)
+  for (auto match : ctre::range<re>(name))
   {
-    const auto &match = *it;
-    size_t i = match.position();
-    size_t l = match.length();
+    size_t i = match.begin()-name.begin();
+    size_t l = match.size();
     if (i>p) result += name.substr(p,i-p);
     QCString n(match.str());
     ArgumentList::iterator actIt;
@@ -5430,11 +5413,10 @@ QCString stripPath(const QCString &s)
 bool containsWord(const QCString &str,const char *word)
 {
   if (str.isEmpty() || word==0) return false;
-  static const reg::Ex re(R"(\a+)");
-  std::string s = str.str();
-  for (reg::Iterator it(s,re) ; it!=reg::Iterator() ; ++it)
+  static constexpr auto re = ctll::fixed_string{ R"([[:alpha:]]+)" };
+  for (auto match : ctre::range<re>(str.str()))
   {
-    if (it->str()==word) return true;
+    if (match.str()==word) return true;
   }
   return false;
 }
@@ -5445,32 +5427,28 @@ bool containsWord(const QCString &str,const char *word)
  */
 bool findAndRemoveWord(QCString &sentence,const char *word)
 {
-  static reg::Ex re(R"(\s*(\<\a+\>)\s*)");
+  static constexpr auto re = ctll::fixed_string{ R"(\s*(\<[[:alpha:]]+\>)\s*)" };
   std::string s = sentence.str();
-  reg::Iterator it(s,re);
-  reg::Iterator end;
   std::string result;
   bool found=false;
   size_t p=0;
-  for ( ; it!=end ; ++it)
+  for (auto match : ctre::range<re>(s))
   {
-    const auto match = *it;
-    std::string part = match[1].str();
+    auto &&m1 = match.get<1>();
+    std::string part(m1);
     if (part!=word)
     {
-      size_t i = match.position();
-      size_t l = match.length();
+      size_t i = match.begin()-s.begin();
       result+=s.substr(p,i-p);
       result+=match.str();
-      p=i+l;
+      p=i+match.size();
     }
     else
     {
       found=true;
-      size_t i = match[1].position();
-      size_t l = match[1].length();
+      size_t i = m1.begin()-s.begin();
       result+=s.substr(p,i-p);
-      p=i+l;
+      p=i+m1.size();
     }
   }
   result+=s.substr(p);
@@ -6031,20 +6009,22 @@ static QCString escapeCommas(const QCString &s)
 static QCString expandAliasRec(StringUnorderedSet &aliasesProcessed,const QCString &s,bool allowRecursion)
 {
   QCString result;
-  static const reg::Ex re(R"([\\@](\a[\w-]*))");
+  static constexpr auto re = ctll::fixed_string{ R"([\\@]([[:alpha:]_][[:word:]\-]*))" };
   std::string str = s.str();
-  reg::Match match;
   size_t p = 0;
-  while (search(str,match,re,p))
+  while (p<s.length())
   {
-    size_t i = match.position();
-    size_t l = match.length();
+    auto match = ctre::search<re>(str.c_str()+p);
+    if (!match) break;
+
+    size_t i = match.begin()-str.c_str();
+    size_t l = match.size();
     if (i>p) result+=s.mid(p,i-p);
 
     QCString args = extractAliasArgs(s,i+l);
     bool hasArgs = !args.isEmpty();            // found directly after command
     int argsLen = args.length();
-    QCString cmd = match[1].str();
+    QCString cmd(std::string(match.get<1>()));
     QCString cmdNoArgs = cmd;
     int numArgs=0;
     if (hasArgs)
@@ -6362,18 +6342,14 @@ QCString filterTitle(const QCString &title)
 {
   std::string tf;
   std::string t = title.str();
-  static const reg::Ex re(R"(%[a-z_A-Z]+)");
-  reg::Iterator it(t,re);
-  reg::Iterator end;
+  static constexpr auto re = ctll::fixed_string{ R"(%[[:alpha:]]+)" };
   size_t p = 0;
-  for (; it!=end ; ++it)
+  for (auto match : ctre::range<re>(t))
   {
-    const auto &match = *it;
-    size_t i = match.position();
-    size_t l = match.length();
+    size_t i = match.begin()-t.begin();
     if (i>p) tf+=t.substr(p,i-p);
-    tf+=match.str().substr(1); // skip %
-    p=i+l;
+    tf+=std::string(match.begin()+1,match.end()); // skip %
+    p = i + match.size();
   }
   tf+=t.substr(p);
   return QCString(tf);
@@ -6528,21 +6504,18 @@ QCString replaceColorMarkers(const QCString &str)
   if (str.isEmpty()) return QCString();
   std::string result;
   std::string s=str.str();
-  static const reg::Ex re(R"(##[0-9A-Fa-f][0-9A-Fa-f])");
-  reg::Iterator it(s,re);
-  reg::Iterator end;
+  static constexpr auto re = ctll::fixed_string{ R"(##([[:xdigit:]]{2}))" };
   int hue   = Config_getInt(HTML_COLORSTYLE_HUE);
   int sat   = Config_getInt(HTML_COLORSTYLE_SAT);
   int gamma = Config_getInt(HTML_COLORSTYLE_GAMMA);
   size_t sl=s.length();
   size_t p=0;
-  for (; it!=end ; ++it)
+  for (auto match : ctre::range<re>(s))
   {
-    const auto &match = *it;
-    size_t i = match.position();
-    size_t l = match.length();
+    size_t i = match.begin()-s.begin();
+    size_t l = match.size();
     if (i>p) result+=s.substr(p,i-p);
-    std::string lumStr = match.str().substr(2);
+    std::string lumStr = std::string(match.get<1>());
 #define HEXTONUM(x) (((x)>='0' && (x)<='9') ? ((x)-'0') :       \
                      ((x)>='a' && (x)<='f') ? ((x)-'a'+10) :    \
                      ((x)>='A' && (x)<='F') ? ((x)-'A'+10) : 0)
@@ -6939,35 +6912,17 @@ uint getUtf8CodeToUpper( const QCString& s, int idx )
  */
 QCString extractDirection(QCString &docs)
 {
-  std::string s = docs.str();
-  static const reg::Ex re(R"(\[([ inout,]+)\])");
-  reg::Iterator it(s,re);
-  reg::Iterator end;
-  if (it!=end)
+  static constexpr auto re = ctll::fixed_string{ R"(\[\s*(in|out|inout)(\s*[, ]\s*(in|out))?\s*\])" };
+  auto [ match, p1, _, p2 ] = ctre::search<re>(docs.str());
+  if (match)
   {
-    const auto &match = *it;
-    size_t p = match.position();
-    size_t l = match.length();
-    if (p==0 && l>2)
-    {
-      // make dir the part inside [...] without separators
-      std::string dir = match[1].str();
-      // strip , and ' ' from dir
-      dir.erase(std::remove_if(dir.begin(),dir.end(),
-                               [](const char c) { return c==' ' || c==','; }
-                              ),dir.end());
-      size_t inIndex, outIndex;
-      unsigned char ioMask=0;
-      if (( inIndex=dir.find( "in"))!=std::string::npos) dir.erase( inIndex,2),ioMask|=(1<<0);
-      if ((outIndex=dir.find("out"))!=std::string::npos) dir.erase(outIndex,3),ioMask|=(1<<1);
-      if (dir.empty() && ioMask!=0) // only in and/or out attributes found
-      {
-        docs = s.substr(l); // strip attributes
-        if (ioMask==((1<<0)|(1<<1))) return "[in,out]";
-        else if (ioMask==(1<<0))     return "[in]";
-        else if (ioMask==(1<<1))     return "[out]";
-      }
-    }
+    std::string parts = std::string(p1) + std::string(p2);
+    unsigned int ioMask = (parts.find("in") !=std::string::npos) ? 1 : 0;
+    ioMask             += (parts.find("out")!=std::string::npos) ? 2 : 0;
+    return (ioMask>2) ? "[in,out]" :
+           (ioMask>1) ? "[out]"    :
+           (ioMask>0) ? "[in]"     :
+                        "";
   }
   return "";
 }
@@ -7436,39 +7391,11 @@ StringVector split(const std::string &s,const std::string &delimiter)
   return result;
 }
 
-/// split input string \a s by regular expression delimiter \a delimiter.
-/// returns a vector of non-empty strings that are between the delimiters
-StringVector split(const std::string &s,const reg::Ex &delimiter)
-{
-  StringVector result;
-  reg::Iterator iter(s, delimiter);
-  reg::Iterator end;
-  size_t p=0;
-  for ( ; iter != end; ++iter)
-  {
-    const auto &match = *iter;
-    size_t i=match.position();
-    size_t l=match.length();
-    if (i>p) result.push_back(s.substr(p,i-p));
-    p=i+l;
-  }
-  if (p<s.length()) result.push_back(s.substr(p));
-  return result;
-}
-
 /// find the index of a string in a vector of strings, returns -1 if the string could not be found
 int findIndex(const StringVector &sv,const std::string &s)
 {
   auto it = std::find(sv.begin(),sv.end(),s);
   return it!=sv.end() ? static_cast<int>(it-sv.begin()) : -1;
-}
-
-/// find the index of the first occurrence of pattern \a re in a string \a s
-/// returns -1 if the pattern could not be found
-int findIndex(const std::string &s,const reg::Ex &re)
-{
-  reg::Match match;
-  return reg::search(s,match,re) ? static_cast<int>(match.position()) : -1;
 }
 
 /// create a string where the string in the vector are joined by the given delimiter

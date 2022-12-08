@@ -23,11 +23,12 @@
 #include <fstream>
 #include <sstream>
 
+#include "ctre.hpp"
+
 #include "message.h"
 #include "util.h"
 #include "resourcemgr.h"
 #include "portable.h"
-#include "regex.h"
 #include "fileinfo.h"
 #include "dir.h"
 #include "utf8.h"
@@ -4434,15 +4435,12 @@ class TemplateNodeMarkers : public TemplateNodeCreator<TemplateNodeMarkers>
             c->push();
             std::string str = patternStr.toString().str();
 
-            static const reg::Ex marker(R"(@\d+)");
-            reg::Iterator re_it(str,marker);
-            reg::Iterator end;
             size_t index=0;
-            for ( ; re_it!=end ; ++re_it)
+            static constexpr auto marker = ctll::fixed_string{ R"(@\d+)" };
+            for (auto match : ctre::range<marker>(str))
             {
-              const auto &match = *re_it;
-              size_t newIndex = match.position();
-              size_t matchLen = match.length();
+              size_t newIndex = match.begin()-str.begin();
+              size_t matchLen = match.size();
               std::string part = str.substr(index,newIndex-index);
               if (ci->needsRecoding())
               {

@@ -32,8 +32,9 @@
 #include <iostream>
 #include <iomanip>
 
+#include <ctre.hpp>
+
 #include "config.h"
-#include "regex.h"
 #include "configimpl.h"
 #include "version.h"
 #include "portable.h"
@@ -1354,43 +1355,44 @@ void ConfigImpl::emptyValueToDefault()
   }
 }
 
-static const reg::Ex reEnvVar(R"(\$\((\a[\w.-]*)\))");                 // e.g. $(HOME)
-static const reg::Ex reEnvVarExt(R"(\$\((\a[\w.-]*\(\a[\w.-]*\))\))"); // e.g. $(PROGRAMFILES(X86))
-static const reg::Ex reEnvVarCMake(R"(@\a\w*@)");                      // CMake type replacement
+static constexpr auto reEnvVar = ctll::fixed_string{ R"(\$\(([[:alpha:]_][[:word:]\.\-]*)\))" };  // e.g. $(HOME)
+static constexpr auto reEnvVarExt = ctll::fixed_string{ R"(\$\(([[:alpha:]_][[:word:]\.\-]*\([[:alpha:]_][[:word:]\.\-]*\))\))" }; // e.g. $(PROGRAMFILES(X86))
+static constexpr auto reEnvVarCMake = ctll::fixed_string{ R"(@[[:alpha:]_][[:word:]]*@)" };  // CMake type replacement
 
 static bool containsEnvVar(QCString &str)
 {
-  reg::Match m;
   std::string s = str.str();
-  return reg::search(s,m,reEnvVar) || reg::search(s,m,reEnvVarExt) || reg::search(s,m,reEnvVarCMake);
+  return ctre::search<reEnvVar>(s) || ctre::search<reEnvVarExt>(s) || ctre::search<reEnvVarCMake>(s);
 }
 
 static void substEnvVarsInString(QCString &str)
 {
   if (str.isEmpty()) return;
-  auto replace = [](const std::string &s, const reg::Ex &re) -> std::string
-  {
-    reg::Iterator it(s,re);
-    reg::Iterator end;
-    std::string result;
-    size_t p = 0;
-    for (; it!=end ; ++it)
-    {
-      const auto &match = *it;
-      size_t i = match.position();
-      size_t l = match.length();
-      result+=s.substr(p,i-p);
-      std::string matchContents = match[1].str();
-      QCString env=Portable::getenv(matchContents.c_str()); // get content of $(..) match
-      substEnvVarsInString(env); // recursively expand variables if needed.
-      result+=env.str();
-      p=i+l;
-    }
-    result+=s.substr(p);
-    return result;
-  };
 
-  str = QCString(replace(replace(str.str(),reEnvVar),reEnvVarExt)).stripWhiteSpace();
+  // Note: need C++20 to templatize the lambdas, for now use a macro
+#define ENV_REPLACE(name,reType)                                   \
+  auto name = [](const std::string &s) -> std::string              \
+  {                                                                \
+    size_t p=0;                                                    \
+    std::string result;                                            \
+    for (auto match : ctre::range<reType>(s))                      \
+    {                                                              \
+      auto &&m1 = match.get<1>();                                  \
+      size_t i = match.begin()-s.begin();                          \
+      result += s.substr(p,i-p);                                   \
+      QCString env = Portable::getenv(std::string(m1));            \
+      substEnvVarsInString(env);                                   \
+      result += env.str();                                         \
+      p = i + match.size();                                        \
+    }                                                              \
+    result += s.substr(p);                                         \
+    return result;                                                 \
+  }
+
+  ENV_REPLACE(env_replace,reEnvVar);
+  ENV_REPLACE(env_replace_ext,reEnvVarExt);
+
+  str = QCString(env_replace(env_replace_ext(str.str()))).stripWhiteSpace();
 }
 
 static void substEnvVarsInStrList(StringVector &sl)
@@ -1911,9 +1913,8 @@ void Config::checkAndCorrect(bool quiet, const bool check)
   for (const auto &alias : aliasList)
   {
     // match aliases of the form re1='name=' and re2='name{2} ='
-    static const reg::Ex re1(R"(^\a[\w-]*\s*=)");
-    static const reg::Ex re2(R"(^\a[\w-]*{\d+}\s*=)");
-    if (!reg::search(alias,re1) && !reg::search(alias,re2))
+    static constexpr auto re = ctll::fixed_string{ R"(^[[:alpha:]_][[:word:]\-]*(\{\d+\})?\s*=)" };
+    if (!ctre::search<re>(alias))
     {
       err("Illegal ALIASES format '%s'. Use \"name=value\" or \"name{n}=value\", where n is the number of arguments\n",
           alias.c_str());

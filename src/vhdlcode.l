@@ -35,6 +35,8 @@ typedef yyguts_t *yyscan_t;
 #include <unordered_set>
 #include <string>
 
+#include "ctre.hpp"
+
 /*
  *        includes
  */
@@ -56,7 +58,6 @@ typedef yyguts_t *yyscan_t;
 #include "classdef.h"
 #include "filedef.h"
 #include "tooltip.h"
-#include "regex.h"
 
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
@@ -362,8 +363,7 @@ XILINX      "INST"|"NET"|"PIN"|"BLKNM"|"BUFG"|"COLLAPSE"|"CPLD"|"COMPGRP"|"CONFI
                                       tt=tt.lower();
                                       VhdlDocGen::deleteAllChars(tt,';');
                                       tt.stripWhiteSpace();
-                                      static const reg::Ex regg(R"(\s+)"); // any number of whitespace
-                                      auto ql = split(tt.str(),regg);
+                                      StringVector ql = SPLIT_CTRE(tt.str(),R"(\s+)"); // split tt based on whitespace
                                       int index=findIndex(ql,"if")+1;
                                       index+=findIndex(ql,"case")+1;
                                       index+=findIndex(ql,"loop")+1;
@@ -961,8 +961,7 @@ static bool checkVhdlString(yyscan_t yyscanner,QCString &name)
   if (name.at(0)=='"' && name.at(len-1)=='"' && len > 2)
   {
     std::string inside = name.str().substr(1,len-2);
-    static const reg::Ex regg(R"(\s+)"); // any number of whitespace
-    auto qrl=split(inside,regg);
+    StringVector qrl = SPLIT_CTRE(inside,R"(\s+)"); // split inside based on whitespace
     if (VhdlDocGen::isNumber(qrl[0]))
     {
       yyextra->code->codify("\"");
