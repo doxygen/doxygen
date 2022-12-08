@@ -309,7 +309,8 @@ STARTDOCSYMS      "##"
                         yyextra->packageCommentAllowed = FALSE;
                         BEGIN(VariableDec);
                       }
-     ^{B}{IDENTIFIER}/{B}"="[^=] { // variable
+     ^{B}{IDENTIFIER}/{B}"="[^=] |
+     ^{B}{IDENTIFIER}/{B}":" { // variable
                         if (yyextra->search_count) REJECT;
                         yyextra->indent=computeIndent(yytext);
                         yyextra->current->section   = Entry::VARIABLE_SEC;
@@ -1096,6 +1097,10 @@ STARTDOCSYMS      "##"
                         yyextra->current->initializer.str(yytext);
                         yyextra->current->initializer << " ";
                       }
+   ":"{B}{IDENTIFIER} { //typing
+                        yyextra->start_init = FALSE;
+                        yyextra->current->type = substitute(yytext,":","");
+                      }
    {B}                { // spaces
                         yyextra->current->initializer << yytext;
                       }
@@ -1112,21 +1117,21 @@ STARTDOCSYMS      "##"
                         yyextra->current->initializer << yytext;
                       }
    {STRINGPREFIX}?"'" { // string
-                        if (yyextra->current->type.isEmpty()) yyextra->current->type = "string";
+                        if (yyextra->current->type.isEmpty()) yyextra->current->type = "str";
                         yyextra->current->initializer << yytext;
                         yyextra->copyString=&yyextra->current->initializer;
                         yyextra->stringContext=VariableDec;
                         BEGIN( SingleQuoteString );
                       }
    {STRINGPREFIX}?"\"" { // string
-                        if (yyextra->current->type.isEmpty()) yyextra->current->type = "string";
+                        if (yyextra->current->type.isEmpty()) yyextra->current->type = "str";
                         yyextra->current->initializer << yytext;
                         yyextra->copyString=&yyextra->current->initializer;
                         yyextra->stringContext=VariableDec;
                         BEGIN( DoubleQuoteString );
                       }
    {TRIDOUBLEQUOTE}   { // start of a comment block
-                        if (yyextra->current->type.isEmpty()) yyextra->current->type = "string";
+                        if (yyextra->current->type.isEmpty()) yyextra->current->type = "str";
                         yyextra->current->initializer << yytext;
                         yyextra->doubleQuote=TRUE;
                         yyextra->copyString=&yyextra->current->initializer;
@@ -1135,7 +1140,7 @@ STARTDOCSYMS      "##"
                       }
 
    {TRISINGLEQUOTE}   { // start of a comment block
-                        if (yyextra->current->type.isEmpty()) yyextra->current->type = "string";
+                        if (yyextra->current->type.isEmpty()) yyextra->current->type = "str";
                         yyextra->current->initializer << yytext;
                         yyextra->doubleQuote=FALSE;
                         yyextra->copyString=&yyextra->current->initializer;
@@ -1162,7 +1167,7 @@ STARTDOCSYMS      "##"
                         BEGIN( VariableAtom );
                       }
    "{"                { // dictionary
-                        if (yyextra->start_init) yyextra->current->type = "dictionary";
+                        if (yyextra->start_init) yyextra->current->type = "dict";
                         yyextra->current->initializer << *yytext;
                         yyextra->atomStart='{';
                         yyextra->atomEnd='}';
@@ -1184,6 +1189,7 @@ STARTDOCSYMS      "##"
                                break;
                             }
                           }
+                          if (yyextra->current->type.isEmpty()) yyextra->current->type = QCString(yytext);
                         }
                         yyextra->start_init = FALSE;
                         yyextra->current->initializer << yytext;
