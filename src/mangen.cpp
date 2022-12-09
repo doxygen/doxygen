@@ -256,7 +256,7 @@ void ManGenerator::endFile()
 void ManGenerator::endTitleHead(const QCString &,const QCString &name)
 {
   m_t << ".TH \"" << name << "\" " << getExtension() << " \""
-    << dateToString(FALSE) << "\" \"";
+    << dateToString(DateTimeType::Date) << "\" \"";
   if (!Config_getString(PROJECT_NUMBER).isEmpty())
     m_t << "Version " << Config_getString(PROJECT_NUMBER) << "\" \"";
   if (Config_getString(PROJECT_NAME).isEmpty())

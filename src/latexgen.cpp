@@ -658,7 +658,7 @@ static QCString substituteLatexKeywords(const QCString &str,
   QCString generatedBy;
   if (timeStamp)
   {
-    generatedBy = theTranslator->trGeneratedAt(dateToString(TRUE).data(),
+    generatedBy = theTranslator->trGeneratedAt(dateToString(DateTimeType::DateTime).data(),
                                                Config_getString(PROJECT_NAME).data());
   }
   else

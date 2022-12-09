@@ -388,7 +388,7 @@ static QCString substituteHtmlKeywords(const QCString &str,
 
   if (timeStamp)
   {
-    generatedBy = theTranslator->trGeneratedAt(dateToString(TRUE),
+    generatedBy = theTranslator->trGeneratedAt(dateToString(DateTimeType::DateTime),
                                 convertToHtml(Config_getString(PROJECT_NAME)));
   }
   else
@@ -1403,7 +1403,7 @@ QCString HtmlGenerator::writeLogoAsString(const QCString &path)
   if (timeStamp)
   {
     result += theTranslator->trGeneratedAt(
-               dateToString(TRUE),
+               dateToString(DateTimeType::DateTime),
                Config_getString(PROJECT_NAME)
               );
   }

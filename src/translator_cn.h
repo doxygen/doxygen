@@ -1740,19 +1740,22 @@ class TranslatorChinese : public TranslatorAdapter_1_9_4
 
   virtual QCString trDateTime(int year,int month,int day,int dayOfWeek,
                                 int hour,int minutes,int seconds,
-                                bool includeTime)
+                                DateTimeType includeTime)
   {
     static const char *days[]   = { "一","二","三","四","五","六","日" };
     static const char *months[] = { "一","二","三","四","五","六","七","八","九","十","十一","十二" };
 
     QCString sdate;
 
-    sdate.sprintf("%d年" CN_SPC "%s月" CN_SPC "%d日" CN_SPC "星期%s",year, months[month-1], day, days[dayOfWeek-1]);
-
-    if (includeTime)
+    if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Date)
+    {
+      sdate.sprintf("%d年" CN_SPC "%s月" CN_SPC "%d日" CN_SPC "星期%s",year, months[month-1], day, days[dayOfWeek-1]);
+    }
+    if (includeTime == DateTimeType::DateTime) sdate += " ";
+    if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Time)
     {
       QCString stime;
-      stime.sprintf(" %.2d:%.2d:%.2d",hour,minutes,seconds);
+      stime.sprintf("%.2d:%.2d:%.2d",hour,minutes,seconds);
       sdate+=stime;
     }
     return sdate;

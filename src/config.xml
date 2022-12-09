@@ -1948,8 +1948,9 @@ doxygen -w html new_header.html new_footer.html new_stylesheet.css YourConfigFil
  The following markers have a special meaning inside the header and footer:
  <dl>
  <dt><code>$title</code><dd>will be replaced with the title of the page.
- <dt><code>$datetime</code><dd>will be replaced with current the date and time.
+ <dt><code>$datetime</code><dd>will be replaced with the current date and time.
  <dt><code>$date</code><dd>will be replaced with the current date.
+ <dt><code>$time</code><dd>will be replaced with the current time.
  <dt><code>$year</code><dd>will be replaces with the current year.
  <dt><code>$doxygenversion</code><dd>will be replaced with the version of doxygen
  <dt><code>$projectname</code><dd>will be replaced with the name of
@@ -2942,8 +2943,9 @@ doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty
 <![CDATA[
  <dl>
  <dt><code>$title</code><dd>will be replaced with the project name.
- <dt><code>$datetime</code><dd>will be replaced with current the date and time.
+ <dt><code>$datetime</code><dd>will be replaced with the current date and time.
  <dt><code>$date</code><dd>will be replaced with the current date.
+ <dt><code>$time</code><dd>will be replaced with the current time.
  <dt><code>$year</code><dd>will be replaces with the current year.
  <dt><code>$doxygenversion</code><dd>will be replaced with the version of doxygen
  <dt><code>$projectname</code><dd>will be replaced with the name of

@@ -60,7 +60,7 @@ std::tm getCurrentDateTime()
   return *localtime(&time);
 }
 
-QCString dateToString(bool includeTime)
+QCString dateToString(DateTimeType includeTime)
 {
   auto current = getCurrentDateTime();
   return theTranslator->trDateTime(current.tm_year + 1900,
