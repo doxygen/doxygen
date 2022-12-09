@@ -497,9 +497,16 @@ STARTDOCSYMS      "##"
                         yyextra->current->startLine = yyextra->yyLineNr;
                         yyextra->current->bodyLine  = yyextra->yyLineNr;
                         yyextra->current->type.resize(0);
-                        if (yyextra->current->name.at(0)=='_') // mark as private
+                        if (yyextra->current->name.at(0)=='_')
                         {
-                          yyextra->current->protection=Private;
+                          if (yyextra->current->name.at(1)=='_') // mark as private
+                          {
+                            yyextra->current->protection=Private;
+                          }
+                          else // mark as protected
+                          {
+                            yyextra->current->protection=Protected;
+                          }
                         }
                         newEntry(yyscanner);
                       }
@@ -511,9 +518,16 @@ STARTDOCSYMS      "##"
                         yyextra->current->startLine = yyextra->yyLineNr;
                         yyextra->current->bodyLine  = yyextra->yyLineNr;
                         yyextra->current->type.resize(0);
-                        if (yyextra->current->name.at(0)=='_') // mark as private
+                        if (yyextra->current->name.at(0)=='_')
                         {
-                          yyextra->current->protection=Private;
+                          if (yyextra->current->name.at(1)=='_') // mark as private
+                          {
+                            yyextra->current->protection=Private;
+                          }
+                          else // mark as protected
+                          {
+                            yyextra->current->protection=Protected;
+                          }
                         }
                         newEntry(yyscanner);
                       }
@@ -1531,9 +1545,15 @@ static void newEntry(yyscan_t yyscanner)
 static void newVariable(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  if (!yyextra->current->name.isEmpty() && yyextra->current->name.at(0)=='_') // mark as private
+  if (!yyextra->current->name.isEmpty() && yyextra->current->name.at(0)=='_')
   {
-    yyextra->current->protection=Private;
+    if (yyextra->current->name.at(1)=='_') // mark as private
+    {
+      yyextra->current->protection=Private;
+    }
+    else{
+      yyextra->current->protection=Protected; // mark as protected
+    }
   }
   if (yyextra->current_root->section&Entry::COMPOUND_MASK) // mark as class variable
   {
@@ -1553,7 +1573,14 @@ static void newFunction(yyscan_t yyscanner)
   }
   else if (yyextra->current->name.at(0)=='_')
   {
-    yyextra->current->protection=Private;
+    if (yyextra->current->name.at(1)=='_')
+    {
+      yyextra->current->protection=Private;
+    }
+    else 
+    {
+      yyextra->current->protection=Protected;
+    }
   }
 }
 
