@@ -497,13 +497,13 @@ STARTDOCSYMS      "##"
                         yyextra->current->startLine = yyextra->yyLineNr;
                         yyextra->current->bodyLine  = yyextra->yyLineNr;
                         yyextra->current->type.resize(0);
-                        if (yyextra->current->name.at(0)=='_') 
+                        if (yyextra->current->name.at(0)=='_')
                         {
                           if (yyextra->current->name.at(1)=='_') // mark as private
                           {
                             yyextra->current->protection=Private;
                           }
-                          else // mark as protected // mark as protected
+                          else // mark as protected
                           {
                             yyextra->current->protection=Protected;
                           }
