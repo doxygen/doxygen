@@ -390,7 +390,7 @@ static bool ExistsOnPath(const QCString &fileName)
 bool Portable::checkForExecutable(const QCString &fileName)
 {
 #if defined(_WIN32) && !defined(__CYGWIN__)
-  char *extensions[] = {".bat",".com",".exe"};
+  const char *extensions[] = {".bat",".com",".exe"};
   for (int i = 0; i < sizeof(extensions) / sizeof(*extensions); i++)
   {
     if (ExistsOnPath(fileName + extensions[i])) return true;
@@ -404,10 +404,10 @@ bool Portable::checkForExecutable(const QCString &fileName)
 const char *Portable::ghostScriptCommand()
 {
 #if defined(_WIN32) && !defined(__CYGWIN__)
-    static char *gsexe = NULL;
+    static const char *gsexe = NULL;
     if (!gsexe)
     {
-        char *gsExec[] = {"gswin32c.exe","gswin64c.exe"};
+        const char *gsExec[] = {"gswin32c.exe","gswin64c.exe"};
         for (int i = 0; i < sizeof(gsExec) / sizeof(*gsExec); i++)
         {
             if (ExistsOnPath(gsExec[i]))
