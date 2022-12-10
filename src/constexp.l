@@ -129,16 +129,14 @@ struct ConstExpressionParser::Private
 };
 
 
-ConstExpressionParser::ConstExpressionParser()
+ConstExpressionParser::ConstExpressionParser() : p(std::make_unique<Private>())
 {
-  p = new Private;
   constexpYYlex_init_extra(&p->constexpYY_extra, &p->yyscanner);
 }
 
 ConstExpressionParser::~ConstExpressionParser()
 {
   constexpYYlex_destroy(p->yyscanner);
-  delete p;
 }
 
 bool ConstExpressionParser::parse(const char *fileName,int lineNr,const std::string &s)
