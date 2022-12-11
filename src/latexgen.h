@@ -104,8 +104,8 @@ class LatexGenerator : public OutputGenerator //: public CodeOutputForwarder<Out
     void endFile();
     void clearBuffer();
 
-    void startIndexSection(IndexSections);
-    void endIndexSection(IndexSections);
+    void startIndexSection(IndexSection);
+    void endIndexSection(IndexSection);
     void writePageLink(const QCString &,bool);
     void startProjectNumber();
     void endProjectNumber() {}

@@ -373,12 +373,12 @@ DB_GEN_C
   m_codeGen.setSourceFileName("");
 }
 
-void DocbookGenerator::startIndexSection(IndexSections is)
+void DocbookGenerator::startIndexSection(IndexSection is)
 {
-DB_GEN_C2("IndexSections " << is)
+DB_GEN_C2("IndexSection " << is)
   switch (is)
   {
-    case isTitlePageStart:
+    case IndexSection::isTitlePageStart:
       {
         QCString dbk_projectName = Config_getString(PROJECT_NAME);
         m_t << "    <info>\n";
@@ -386,118 +386,118 @@ DB_GEN_C2("IndexSections " << is)
         m_t << "    </info>\n";
       }
       break;
-    case isTitlePageAuthor:
+    case IndexSection::isTitlePageAuthor:
       break;
-    case isMainPage:
+    case IndexSection::isMainPage:
       m_t << "<chapter>\n";
       m_t << "    <title>";
       break;
-    case isModuleIndex:
-      //Module Index}\n"
+    case IndexSection::isModuleIndex:
+      //Module Index\n"
       break;
-    case isDirIndex:
-      //Directory Index}\n"
+    case IndexSection::isDirIndex:
+      //Directory Index\n"
       break;
-    case isNamespaceIndex:
-      //Namespace Index}\n"
+    case IndexSection::isNamespaceIndex:
+      //Namespace Index\n"
       break;
-    case isConceptIndex:
-      //Concept Index}\n"
+    case IndexSection::isConceptIndex:
+      //Concept Index\n"
       break;
-    case isClassHierarchyIndex:
-      //Hierarchical Index}\n"
+    case IndexSection::isClassHierarchyIndex:
+      //Hierarchical Index\n"
       break;
-    case isCompoundIndex:
+    case IndexSection::isCompoundIndex:
       //m_t << "{"; //Class Index}\n"
       break;
-    case isFileIndex:
-      //Annotated File Index}\n"
+    case IndexSection::isFileIndex:
+      //Annotated File Index\n"
       break;
-    case isPageIndex:
-      //Annotated Page Index}\n"
+    case IndexSection::isPageIndex:
+      //Annotated Page Index\n"
       break;
-    case isModuleDocumentation:
+    case IndexSection::isModuleDocumentation:
       m_t << "<chapter>\n";
       m_t << "    <title>";
       break;
-    case isDirDocumentation:
+    case IndexSection::isDirDocumentation:
       m_t << "<chapter>\n";
       m_t << "    <title>";
       break;
-    case isNamespaceDocumentation:
+    case IndexSection::isNamespaceDocumentation:
       m_t << "<chapter>\n";
       m_t << "    <title>";
       break;
-    case isConceptDocumentation:
+    case IndexSection::isConceptDocumentation:
       m_t << "<chapter>\n";
       m_t << "    <title>";
       break;
-    case isClassDocumentation:
+    case IndexSection::isClassDocumentation:
       m_t << "<chapter>\n";
       m_t << "    <title>";
       break;
-    case isFileDocumentation:
+    case IndexSection::isFileDocumentation:
       m_t << "<chapter>\n";
       m_t << "    <title>";
       break;
-    case isExampleDocumentation:
+    case IndexSection::isExampleDocumentation:
       m_t << "<chapter>\n";
       m_t << "    <title>";
       break;
-    case isPageDocumentation:
+    case IndexSection::isPageDocumentation:
       break;
-    case isPageDocumentation2:
+    case IndexSection::isPageDocumentation2:
       break;
-    case isEndIndex:
+    case IndexSection::isEndIndex:
       break;
   }
 }
 
-void DocbookGenerator::endIndexSection(IndexSections is)
+void DocbookGenerator::endIndexSection(IndexSection is)
 {
-DB_GEN_C2("IndexSections " << is)
+DB_GEN_C2("IndexSection " << is)
   switch (is)
   {
-    case isTitlePageStart:
+    case IndexSection::isTitlePageStart:
       break;
-    case isTitlePageAuthor:
+    case IndexSection::isTitlePageAuthor:
       break;
-    case isMainPage:
+    case IndexSection::isMainPage:
       m_t << "</title>\n";
       m_t << "    <xi:include href=\"mainpage.xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>\n";
       m_t << "</chapter>\n";
       break;
-    case isModuleIndex:
+    case IndexSection::isModuleIndex:
       //m_t << "</chapter>\n";
       break;
-    case isDirIndex:
+    case IndexSection::isDirIndex:
       //m_t << "<xi:include href=\"dirs.xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>";
       //m_t << "</chapter>\n";
       break;
-    case isNamespaceIndex:
+    case IndexSection::isNamespaceIndex:
       //m_t << "<xi:include href=\"namespaces.xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>";
       //m_t << "</chapter>\n";
       break;
-    case isConceptIndex:
+    case IndexSection::isConceptIndex:
       //m_t << "<xi:include href=\"concepts.xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>";
       //m_t << "</chapter>\n";
       break;
-    case isClassHierarchyIndex:
+    case IndexSection::isClassHierarchyIndex:
       //m_t << "<xi:include href=\"hierarchy.xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>";
       //m_t << "</chapter>\n";
       break;
-    case isCompoundIndex:
+    case IndexSection::isCompoundIndex:
       //m_t << "</chapter>\n";
       break;
-    case isFileIndex:
+    case IndexSection::isFileIndex:
       //m_t << "<xi:include href=\"files.xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>";
       //m_t << "</chapter>\n";
       break;
-    case isPageIndex:
+    case IndexSection::isPageIndex:
       //m_t << "<xi:include href=\"pages.xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>";
       //m_t << "</chapter>\n";
       break;
-    case isModuleDocumentation:
+    case IndexSection::isModuleDocumentation:
       {
         m_t << "</title>\n";
         for (const auto &gd : *Doxygen::groupLinkedMap)
@@ -510,7 +510,7 @@ DB_GEN_C2("IndexSections " << is)
       }
       m_t << "</chapter>\n";
       break;
-    case isDirDocumentation:
+    case IndexSection::isDirDocumentation:
       {
         m_t << "</title>\n";
         for (const auto &dd : *Doxygen::dirLinkedMap)
@@ -523,7 +523,7 @@ DB_GEN_C2("IndexSections " << is)
       }
       m_t << "</chapter>\n";
       break;
-    case isNamespaceDocumentation:
+    case IndexSection::isNamespaceDocumentation:
       {
         m_t << "</title>\n";
         for (const auto &nd : *Doxygen::namespaceLinkedMap)
@@ -536,7 +536,7 @@ DB_GEN_C2("IndexSections " << is)
       }
       m_t << "</chapter>\n";
       break;
-    case isConceptDocumentation:
+    case IndexSection::isConceptDocumentation:
       {
         m_t << "</title>\n";
         for (const auto &cd : *Doxygen::conceptLinkedMap)
@@ -549,7 +549,7 @@ DB_GEN_C2("IndexSections " << is)
       }
       m_t << "</chapter>\n";
       break;
-    case isClassDocumentation:
+    case IndexSection::isClassDocumentation:
       {
         m_t << "</title>\n";
         for (const auto &cd : *Doxygen::classLinkedMap)
@@ -566,7 +566,7 @@ DB_GEN_C2("IndexSections " << is)
       }
       m_t << "</chapter>\n";
       break;
-    case isFileDocumentation:
+    case IndexSection::isFileDocumentation:
       {
         m_t << "</title>\n";
         for (const auto &fn : *Doxygen::inputNameLinkedMap)
@@ -586,7 +586,7 @@ DB_GEN_C2("IndexSections " << is)
       }
       m_t << "</chapter>\n";
       break;
-    case isExampleDocumentation:
+    case IndexSection::isExampleDocumentation:
       {
         m_t << "</title>\n";
         for (const auto &pd : *Doxygen::exampleLinkedMap)
@@ -596,11 +596,11 @@ DB_GEN_C2("IndexSections " << is)
       }
       m_t << "</chapter>\n";
       break;
-    case isPageDocumentation:
+    case IndexSection::isPageDocumentation:
       break;
-    case isPageDocumentation2:
+    case IndexSection::isPageDocumentation2:
       break;
-    case isEndIndex:
+    case IndexSection::isEndIndex:
       m_t << "<index/>\n";
       break;
   }

@@ -511,7 +511,7 @@ void DirDefImpl::writeDocumentation(OutputList &ol)
   ol.pushGeneratorState();
 
   QCString title=theTranslator->trDirReference(m_dispName);
-  startFile(ol,getOutputFileBase(),name(),title,HLI_Files,!generateTreeView);
+  startFile(ol,getOutputFileBase(),name(),title,HighlightedItem::Files,!generateTreeView);
 
   if (!generateTreeView)
   {
@@ -890,7 +890,7 @@ void DirRelation::writeDocumentation(OutputList &ol)
   QCString title=theTranslator->trDirRelation(
                  (m_src->displayName()+" -> "+m_dst->dir()->shortName()));
   startFile(ol,getOutputFileBase(),getOutputFileBase(),
-            title,HLI_None,!generateTreeView,m_src->getOutputFileBase());
+            title,HighlightedItem::None,!generateTreeView,m_src->getOutputFileBase());
 
   if (!generateTreeView)
   {

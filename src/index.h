@@ -16,6 +16,7 @@
 #ifndef INDEX_H
 #define INDEX_H
 
+#include <memory>
 #include "qcstring.h"
 
 class Definition;
@@ -24,7 +25,7 @@ class DefinitionMutable;
 class NamespaceDef;
 class MemberDef;
 
-enum IndexSections
+enum class IndexSection
 {
   isTitlePageStart,
   isTitlePageAuthor,
@@ -49,124 +50,141 @@ enum IndexSections
   isEndIndex
 };
 
-enum HighlightedItem
+enum class HighlightedItem
 {
-  HLI_None=0,
-  HLI_Main,
-  HLI_Modules,
-  //HLI_Directories,
-  HLI_Namespaces,
-  HLI_ClassHierarchy,
-  HLI_InterfaceHierarchy,
-  HLI_ExceptionHierarchy,
-  HLI_Classes,
-  HLI_Concepts,
-  HLI_Interfaces,
-  HLI_Structs,
-  HLI_Exceptions,
-  HLI_AnnotatedClasses,
-  HLI_AnnotatedInterfaces,
-  HLI_AnnotatedStructs,
-  HLI_AnnotatedExceptions,
-  HLI_Files,
-  HLI_NamespaceMembers,
-  HLI_Functions,
-  HLI_Globals,
-  HLI_Pages,
-  HLI_Examples,
-  HLI_Search,
-  HLI_UserGroup,
+  None=0,
+  Main,
+  Modules,
+  Namespaces,
+  ClassHierarchy,
+  InterfaceHierarchy,
+  ExceptionHierarchy,
+  Classes,
+  Concepts,
+  Interfaces,
+  Structs,
+  Exceptions,
+  AnnotatedClasses,
+  AnnotatedInterfaces,
+  AnnotatedStructs,
+  AnnotatedExceptions,
+  Files,
+  NamespaceMembers,
+  Functions,
+  Globals,
+  Pages,
+  Examples,
+  Search,
+  UserGroup,
 
-  HLI_ClassVisible,
-  HLI_ConceptVisible,
-  HLI_InterfaceVisible,
-  HLI_StructVisible,
-  HLI_ExceptionVisible,
-  HLI_NamespaceVisible,
-  HLI_FileVisible
+  ClassVisible,
+  ConceptVisible,
+  InterfaceVisible,
+  StructVisible,
+  ExceptionVisible,
+  NamespaceVisible,
+  FileVisible
 };
 
-enum ClassMemberHighlight
-{
-  CMHL_All = 0,
-  CMHL_Functions,
-  CMHL_Variables,
-  CMHL_Typedefs,
-  CMHL_Enums,
-  CMHL_EnumValues,
-  CMHL_Properties,
-  CMHL_Events,
-  CMHL_Related,
-  CMHL_Total = CMHL_Related+1
-};
+// Note: we can't use enum class for the enums below as they are also used as an array index,
+// so we wrap them in a namespace instead
 
-enum FileMemberHighlight
+namespace ClassMemberHighlight
 {
-  FMHL_All = 0,
-  FMHL_Functions,
-  FMHL_Variables,
-  FMHL_Typedefs,
-  FMHL_Sequences,
-  FMHL_Dictionaries,
-  FMHL_Enums,
-  FMHL_EnumValues,
-  FMHL_Defines,
-  FMHL_Total = FMHL_Defines+1
-};
+  enum Enum : int
+  {
+    All = 0,
+    Functions,
+    Variables,
+    Typedefs,
+    Enums,
+    EnumValues,
+    Properties,
+    Events,
+    Related,
+    Total
+  };
+} // namespace ClassMemberHighlight
 
-enum NamespaceMemberHighlight
+namespace FileMemberHighlight
 {
-  NMHL_All = 0,
-  NMHL_Functions,
-  NMHL_Variables,
-  NMHL_Typedefs,
-  NMHL_Sequences,
-  NMHL_Dictionaries,
-  NMHL_Enums,
-  NMHL_EnumValues,
-  NMHL_Total = NMHL_EnumValues+1
-};
+  enum Enum : int
+  {
+    All = 0,
+    Functions,
+    Variables,
+    Typedefs,
+    Sequences,
+    Dictionaries,
+    Enums,
+    EnumValues,
+    Defines,
+    Total
+  };
+} // namespace FileMemberHighlight
 
-enum ClassHighlight
+namespace NamespaceMemberHighlight
 {
-  CHL_All = 0,
-  CHL_Classes,
-  CHL_Structs,
-  CHL_Unions,
-  CHL_Interfaces,
-  CHL_Protocols,
-  CHL_Categories,
-  CHL_Exceptions,
-  CHL_Total = CHL_Exceptions+1
+  enum Enum : int
+  {
+    All = 0,
+    Functions,
+    Variables,
+    Typedefs,
+    Sequences,
+    Dictionaries,
+    Enums,
+    EnumValues,
+    Total
+  };
+} // namespace NamespaceMemberHighlight
+
+class Index
+{
+  public:
+    static Index &instance();
+    void countDataStructures();
+    int numAnnotatedClasses() const;
+    int numAnnotatedClassesPrinted() const;
+    int numHierarchyClasses() const;
+    int numAnnotatedInterfaces() const;
+    int numAnnotatedInterfacesPrinted() const;
+    int numHierarchyInterfaces() const;
+    int numAnnotatedStructs() const;
+    int numAnnotatedStructsPrinted() const;
+    int numAnnotatedExceptions() const;
+    int numAnnotatedExceptionsPrinted() const;
+    int numHierarchyExceptions() const;
+    int numDocumentedGroups() const;
+    int numDocumentedNamespaces() const;
+    int numDocumentedConcepts() const;
+    int numIndexedPages() const;
+    int numDocumentedFiles() const;
+    int numDocumentedPages() const;
+    int numDocumentedDirs() const;
+    int numDocumentedClassMembers(ClassMemberHighlight::Enum e) const;
+    int numDocumentedFileMembers(FileMemberHighlight::Enum e) const;
+    int numDocumentedNamespaceMembers(NamespaceMemberHighlight::Enum e) const;
+    void resetDocumentedClassMembers(int i);
+    void resetDocumentedFileMembers(int i);
+    void resetDocumentedNamespaceMembers(int i);
+    void incrementDocumentedClassMembers(int i);
+    void incrementDocumentedFileMembers(int i);
+    void incrementDocumentedNamespaceMembers(int i);
+  private:
+    Index();
+    ~Index();
+    struct Private;
+    std::unique_ptr<Private> p;
 };
 
 void writeGraphInfo(OutputList &ol);
 void writeIndexHierarchy(OutputList &ol);
 
-void countDataStructures();
-
-extern int annotatedClasses;
-extern int annotatedInterfaces;
-extern int annotatedStructs;
-extern int annotatedExceptions;
-extern int hierarchyClasses;
-extern int hierarchyInterfaces;
-extern int hierarchyExceptions;
-extern int documentedFiles;
-extern int documentedGroups;
-extern int documentedNamespaces;
-extern int documentedConcepts;
-extern int indexedPages;
-extern int documentedClassMembers[CMHL_Total];
-extern int documentedFileMembers[FMHL_Total];
-extern int documentedNamespaceMembers[NMHL_Total];
-extern int documentedDirs;
-extern int documentedPages;
-
 void startTitle(OutputList &ol,const QCString &fileName,const DefinitionMutable *def=0);
 void endTitle(OutputList &ol,const QCString &fileName,const QCString &name);
 void startFile(OutputList &ol,const QCString &name,const QCString &manName,
-               const QCString &title,HighlightedItem hli=HLI_None,
+               const QCString &title,HighlightedItem hli=HighlightedItem::None,
                bool additionalIndices=FALSE,const QCString &altSidebarName=QCString());
 void endFile(OutputList &ol,bool skipNavIndex=FALSE,bool skipEndContents=FALSE,
              const QCString &navPath=QCString());

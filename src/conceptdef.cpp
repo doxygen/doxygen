@@ -491,7 +491,7 @@ void ConceptDefImpl::writeDocumentation(OutputList &ol)
 {
   bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
   QCString pageTitle = theTranslator->trConceptReference(displayName());
-  startFile(ol,getOutputFileBase(),name(),pageTitle,HLI_ConceptVisible,!generateTreeView);
+  startFile(ol,getOutputFileBase(),name(),pageTitle,HighlightedItem::ConceptVisible,!generateTreeView);
 
   // ---- navigation part
   if (!generateTreeView)

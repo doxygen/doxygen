@@ -740,53 +740,53 @@ static QCString substituteLatexKeywords(const QCString &str,
   return result;
 }
 
-void LatexGenerator::startIndexSection(IndexSections is)
+void LatexGenerator::startIndexSection(IndexSection is)
 {
   bool compactLatex = Config_getBool(COMPACT_LATEX);
   switch (is)
   {
-    case isTitlePageStart:
+    case IndexSection::isTitlePageStart:
       m_t << substituteLatexKeywords(g_header,convertToLaTeX(Config_getString(PROJECT_NAME)));
       break;
-    case isTitlePageAuthor:
+    case IndexSection::isTitlePageAuthor:
       break;
-    case isMainPage:
+    case IndexSection::isMainPage:
       if (compactLatex) m_t << "\\doxysection"; else m_t << "\\chapter";
       m_t << "{"; //Introduction}\n"
       break;
-    case isModuleIndex:
+    case IndexSection::isModuleIndex:
       if (compactLatex) m_t << "\\doxysection"; else m_t << "\\chapter";
       m_t << "{"; //Module Index}\n"
       break;
-    case isDirIndex:
+    case IndexSection::isDirIndex:
       if (compactLatex) m_t << "\\doxysection"; else m_t << "\\chapter";
       m_t << "{"; //Directory Index}\n"
       break;
-    case isNamespaceIndex:
+    case IndexSection::isNamespaceIndex:
       if (compactLatex) m_t << "\\doxysection"; else m_t << "\\chapter";
       m_t << "{"; //Namespace Index}\n"
       break;
-    case isConceptIndex:
+    case IndexSection::isConceptIndex:
       if (compactLatex) m_t << "\\doxysection"; else m_t << "\\chapter";
       m_t << "{"; //Concept Index}\n"
       break;
-    case isClassHierarchyIndex:
+    case IndexSection::isClassHierarchyIndex:
       if (compactLatex) m_t << "\\doxysection"; else m_t << "\\chapter";
       m_t << "{"; //Hierarchical Index}\n"
       break;
-    case isCompoundIndex:
+    case IndexSection::isCompoundIndex:
       if (compactLatex) m_t << "\\doxysection"; else m_t << "\\chapter";
       m_t << "{"; //Annotated Compound Index}\n"
       break;
-    case isFileIndex:
+    case IndexSection::isFileIndex:
       if (compactLatex) m_t << "\\doxysection"; else m_t << "\\chapter";
       m_t << "{"; //Annotated File Index}\n"
       break;
-    case isPageIndex:
+    case IndexSection::isPageIndex:
       if (compactLatex) m_t << "\\doxysection"; else m_t << "\\chapter";
       m_t << "{"; //Annotated Page Index}\n"
       break;
-    case isModuleDocumentation:
+    case IndexSection::isModuleDocumentation:
       {
         for (const auto &gd : *Doxygen::groupLinkedMap)
         {
@@ -799,7 +799,7 @@ void LatexGenerator::startIndexSection(IndexSections is)
         }
       }
       break;
-    case isDirDocumentation:
+    case IndexSection::isDirDocumentation:
       {
         for (const auto &dd : *Doxygen::dirLinkedMap)
         {
@@ -812,7 +812,7 @@ void LatexGenerator::startIndexSection(IndexSections is)
         }
       }
       break;
-    case isNamespaceDocumentation:
+    case IndexSection::isNamespaceDocumentation:
       {
         for (const auto &nd : *Doxygen::namespaceLinkedMap)
         {
@@ -825,7 +825,7 @@ void LatexGenerator::startIndexSection(IndexSections is)
         }
       }
       break;
-    case isConceptDocumentation:
+    case IndexSection::isConceptDocumentation:
       {
         for (const auto &cd : *Doxygen::conceptLinkedMap)
         {
@@ -838,7 +838,7 @@ void LatexGenerator::startIndexSection(IndexSections is)
         }
       }
       break;
-    case isClassDocumentation:
+    case IndexSection::isClassDocumentation:
       {
         for (const auto &cd : *Doxygen::classLinkedMap)
         {
@@ -855,7 +855,7 @@ void LatexGenerator::startIndexSection(IndexSections is)
         }
       }
       break;
-    case isFileDocumentation:
+    case IndexSection::isFileDocumentation:
       {
         bool isFirst=TRUE;
         for (const auto &fn : *Doxygen::inputNameLinkedMap)
@@ -876,34 +876,34 @@ void LatexGenerator::startIndexSection(IndexSections is)
         }
       }
       break;
-    case isExampleDocumentation:
+    case IndexSection::isExampleDocumentation:
       {
         if (compactLatex) m_t << "\\doxysection"; else m_t << "\\chapter";
         m_t << "{"; //Example Documentation}\n";
       }
       break;
-    case isPageDocumentation:
+    case IndexSection::isPageDocumentation:
       {
         if (compactLatex) m_t << "\\doxysection"; else m_t << "\\chapter";
         m_t << "{"; //Page Documentation}\n";
       }
       break;
-    case isPageDocumentation2:
+    case IndexSection::isPageDocumentation2:
       break;
-    case isEndIndex:
+    case IndexSection::isEndIndex:
       break;
   }
 }
 
-void LatexGenerator::endIndexSection(IndexSections is)
+void LatexGenerator::endIndexSection(IndexSection is)
 {
   switch (is)
   {
-    case isTitlePageStart:
+    case IndexSection::isTitlePageStart:
       break;
-    case isTitlePageAuthor:
+    case IndexSection::isTitlePageAuthor:
       break;
-    case isMainPage:
+    case IndexSection::isMainPage:
       {
         //QCString indexName=Config_getBool(GENERATE_TREEVIEW)?"main":"index";
         QCString indexName="index";
@@ -912,31 +912,31 @@ void LatexGenerator::endIndexSection(IndexSections is)
         m_t << "\\input{" << indexName << "}\n";
       }
       break;
-    case isModuleIndex:
+    case IndexSection::isModuleIndex:
       m_t << "}\n\\input{modules}\n";
       break;
-    case isDirIndex:
+    case IndexSection::isDirIndex:
       m_t << "}\n\\input{dirs}\n";
       break;
-    case isNamespaceIndex:
+    case IndexSection::isNamespaceIndex:
       m_t << "}\n\\input{namespaces}\n";
       break;
-    case isConceptIndex:
+    case IndexSection::isConceptIndex:
       m_t << "}\n\\input{concepts}\n";
       break;
-    case isClassHierarchyIndex:
+    case IndexSection::isClassHierarchyIndex:
       m_t << "}\n\\input{hierarchy}\n";
       break;
-    case isCompoundIndex:
+    case IndexSection::isCompoundIndex:
       m_t << "}\n\\input{annotated}\n";
       break;
-    case isFileIndex:
+    case IndexSection::isFileIndex:
       m_t << "}\n\\input{files}\n";
       break;
-    case isPageIndex:
+    case IndexSection::isPageIndex:
       m_t << "}\n\\input{pages}\n";
       break;
-    case isModuleDocumentation:
+    case IndexSection::isModuleDocumentation:
       {
         bool found=FALSE;
         for (const auto &gd : *Doxygen::groupLinkedMap)
@@ -953,7 +953,7 @@ void LatexGenerator::endIndexSection(IndexSections is)
         }
       }
       break;
-    case isDirDocumentation:
+    case IndexSection::isDirDocumentation:
       {
         bool found=FALSE;
         for (const auto &dd : *Doxygen::dirLinkedMap)
@@ -970,7 +970,7 @@ void LatexGenerator::endIndexSection(IndexSections is)
         }
       }
       break;
-    case isNamespaceDocumentation:
+    case IndexSection::isNamespaceDocumentation:
       {
         bool found=FALSE;
         for (const auto &nd : *Doxygen::namespaceLinkedMap)
@@ -987,7 +987,7 @@ void LatexGenerator::endIndexSection(IndexSections is)
         }
       }
       break;
-    case isConceptDocumentation:
+    case IndexSection::isConceptDocumentation:
       {
         bool found=FALSE;
         for (const auto &cd : *Doxygen::conceptLinkedMap)
@@ -1004,7 +1004,7 @@ void LatexGenerator::endIndexSection(IndexSections is)
         }
       }
       break;
-    case isClassDocumentation:
+    case IndexSection::isClassDocumentation:
       {
         bool found=FALSE;
         for (const auto &cd : *Doxygen::classLinkedMap)
@@ -1025,7 +1025,7 @@ void LatexGenerator::endIndexSection(IndexSections is)
         }
       }
       break;
-    case isFileDocumentation:
+    case IndexSection::isFileDocumentation:
       {
         bool isFirst=TRUE;
         for (const auto &fn : *Doxygen::inputNameLinkedMap)
@@ -1054,7 +1054,7 @@ void LatexGenerator::endIndexSection(IndexSections is)
         }
       }
       break;
-    case isExampleDocumentation:
+    case IndexSection::isExampleDocumentation:
       {
         m_t << "}\n";
         for (const auto &pd : *Doxygen::exampleLinkedMap)
@@ -1063,7 +1063,7 @@ void LatexGenerator::endIndexSection(IndexSections is)
         }
       }
       break;
-    case isPageDocumentation:
+    case IndexSection::isPageDocumentation:
       {
         m_t << "}\n";
 #if 0
@@ -1084,9 +1084,9 @@ void LatexGenerator::endIndexSection(IndexSections is)
 #endif
       }
       break;
-    case isPageDocumentation2:
+    case IndexSection::isPageDocumentation2:
       break;
-    case isEndIndex:
+    case IndexSection::isEndIndex:
       m_t << substituteLatexKeywords(g_footer,convertToLaTeX(Config_getString(PROJECT_NAME)));
       break;
   }

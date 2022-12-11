@@ -95,8 +95,8 @@ class HtmlGenerator : public OutputGenerator //public CodeOutputForwarder<Output
     void clearBuffer();
     void writeSearchInfo();
 
-    void startIndexSection(IndexSections) {}
-    void endIndexSection(IndexSections) {}
+    void startIndexSection(IndexSection) {}
+    void endIndexSection(IndexSection) {}
     void writePageLink(const QCString &,bool) {}
     void startProjectNumber();
     void endProjectNumber();

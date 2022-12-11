@@ -836,7 +836,7 @@ void FileDefImpl::writeDocumentation(OutputList &ol)
 
   if (getDirDef())
   {
-    startFile(ol,getOutputFileBase(),name(),pageTitle,HLI_FileVisible,!generateTreeView);
+    startFile(ol,getOutputFileBase(),name(),pageTitle,HighlightedItem::FileVisible,!generateTreeView);
     if (!generateTreeView)
     {
       getDirDef()->writeNavigationPath(ol);
@@ -856,7 +856,7 @@ void FileDefImpl::writeDocumentation(OutputList &ol)
   }
   else
   {
-    startFile(ol,getOutputFileBase(),name(),pageTitle,HLI_FileVisible,!generateTreeView);
+    startFile(ol,getOutputFileBase(),name(),pageTitle,HighlightedItem::FileVisible,!generateTreeView);
     if (!generateTreeView)
     {
       ol.endQuickIndices();
@@ -1079,7 +1079,7 @@ void FileDefImpl::writeSourceHeader(OutputList &ol)
   bool genSourceFile = !isDocFile && generateSourceFile();
   if (getDirDef())
   {
-    startFile(ol,getSourceFileBase(),QCString(),pageTitle,HLI_FileVisible,
+    startFile(ol,getSourceFileBase(),QCString(),pageTitle,HighlightedItem::FileVisible,
         !generateTreeView,
         !isDocFile && genSourceFile ? QCString() : getOutputFileBase());
     if (!generateTreeView)
@@ -1093,7 +1093,7 @@ void FileDefImpl::writeSourceHeader(OutputList &ol)
   }
   else
   {
-    startFile(ol,getSourceFileBase(),QCString(),pageTitle,HLI_FileVisible,FALSE,
+    startFile(ol,getSourceFileBase(),QCString(),pageTitle,HighlightedItem::FileVisible,FALSE,
         !isDocFile && genSourceFile ? QCString() : getOutputFileBase());
     startTitle(ol,getSourceFileBase());
     ol.parseText(title);

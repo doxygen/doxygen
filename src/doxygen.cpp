@@ -8126,7 +8126,7 @@ static void generateFileSources()
 
 static void generateFileDocs()
 {
-  if (documentedFiles==0) return;
+  if (Index::instance().numDocumentedFiles()==0) return;
 
   if (!Doxygen::inputNameLinkedMap->empty())
   {
@@ -9296,7 +9296,7 @@ static void resolveUserReferences()
 static void generatePageDocs()
 {
   //printf("documentedPages=%d real=%d\n",documentedPages,Doxygen::pageLinkedMap->count());
-  if (documentedPages==0) return;
+  if (Index::instance().numDocumentedPages()==0) return;
   for (const auto &pd : *Doxygen::pageLinkedMap)
   {
     if (!pd->getGroupDef() && !pd->isReference())
@@ -12310,7 +12310,7 @@ void parseInput()
   g_s.end();
 
   g_s.begin("Counting data structures...\n");
-  countDataStructures();
+  Index::instance().countDataStructures();
   g_s.end();
 
   g_s.begin("Resolving user defined references...\n");

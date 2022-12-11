@@ -146,9 +146,9 @@ class OutputList : public BaseOutputDocInterface
     void parseText(const QCString &textStr);
     void startFile(const QCString &name,const QCString &manName,const QCString &title);
 
-    void startIndexSection(IndexSections is)
+    void startIndexSection(IndexSection is)
     { forall(&OutputGenerator::startIndexSection,is); }
-    void endIndexSection(IndexSections is)
+    void endIndexSection(IndexSection is)
     { forall(&OutputGenerator::endIndexSection,is); }
     void writePageLink(const QCString &name,bool first)
     { forall(&OutputGenerator::writePageLink,name,first); }

@@ -377,8 +377,8 @@ class OutputGenerator : public BaseOutputDocInterface
     virtual void writeSearchInfo() = 0;
     virtual void writeFooter(const QCString &navPath) = 0;
     virtual void endFile() = 0;
-    virtual void startIndexSection(IndexSections) = 0;
-    virtual void endIndexSection(IndexSections) = 0;
+    virtual void startIndexSection(IndexSection) = 0;
+    virtual void endIndexSection(IndexSection) = 0;
     virtual void writePageLink(const QCString &,bool) = 0;
     virtual void startProjectNumber() = 0;
     virtual void endProjectNumber() = 0;

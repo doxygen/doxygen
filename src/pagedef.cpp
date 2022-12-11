@@ -197,10 +197,10 @@ void PageDefImpl::writeDocumentation(OutputList &ol)
   ol.pushGeneratorState();
   //2.{
   ol.disableAllBut(OutputType::Man);
-  startFile(ol,getOutputFileBase(),manPageName,title(),HLI_Pages,!generateTreeView);
+  startFile(ol,getOutputFileBase(),manPageName,title(),HighlightedItem::Pages,!generateTreeView);
   ol.enableAll();
   ol.disable(OutputType::Man);
-  startFile(ol,getOutputFileBase(),pageName,title(),HLI_Pages,!generateTreeView);
+  startFile(ol,getOutputFileBase(),pageName,title(),HighlightedItem::Pages,!generateTreeView);
   ol.popGeneratorState();
   //2.}
 

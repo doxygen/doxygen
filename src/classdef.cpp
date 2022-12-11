@@ -2700,24 +2700,24 @@ void ClassDefImpl::writeDocumentation(OutputList &ol) const
   {
     if (compoundType()==Interface)
     {
-      hli = HLI_InterfaceVisible;
+      hli = HighlightedItem::InterfaceVisible;
     }
     else if (compoundType()==Struct)
     {
-      hli = HLI_StructVisible;
+      hli = HighlightedItem::StructVisible;
     }
     else if (compoundType()==Exception)
     {
-      hli = HLI_ExceptionVisible;
+      hli = HighlightedItem::ExceptionVisible;
     }
     else
     {
-      hli = HLI_ClassVisible;
+      hli = HighlightedItem::ClassVisible;
     }
   }
   else
   {
-    hli = HLI_ClassVisible;
+    hli = HighlightedItem::ClassVisible;
   }
 
   startFile(ol,getOutputFileBase(),name(),pageTitle,hli,!generateTreeView);
@@ -2849,24 +2849,24 @@ void ClassDefImpl::writeMemberList(OutputList &ol) const
   {
     if (compoundType()==Interface)
     {
-      hli = HLI_InterfaceVisible;
+      hli = HighlightedItem::InterfaceVisible;
     }
     else if (compoundType()==Struct)
     {
-      hli = HLI_StructVisible;
+      hli = HighlightedItem::StructVisible;
     }
     else if (compoundType()==Exception)
     {
-      hli = HLI_ExceptionVisible;
+      hli = HighlightedItem::ExceptionVisible;
     }
     else
     {
-      hli = HLI_ClassVisible;
+      hli = HighlightedItem::ClassVisible;
     }
   }
   else
   {
-    hli = HLI_ClassVisible;
+    hli = HighlightedItem::ClassVisible;
   }
 
   QCString memListFile = getMemberListFileName();

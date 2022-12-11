@@ -578,7 +578,7 @@ void RTFGenerator::endProjectNumber()
   DBG_RTF(m_t << "{\\comment endProjectNumber }\n")
 }
 
-void RTFGenerator::startIndexSection(IndexSections is)
+void RTFGenerator::startIndexSection(IndexSection is)
 {
   //QCString paperName;
 
@@ -586,14 +586,14 @@ void RTFGenerator::startIndexSection(IndexSections is)
 
   switch (is)
   {
-    case isTitlePageStart:
+    case IndexSection::isTitlePageStart:
       // basic RTFstart
       // get readyfor author etc
 
       m_t << "{\\info \n";
       m_t << "{\\title {\\comment ";
       break;
-    case isTitlePageAuthor:
+    case IndexSection::isTitlePageAuthor:
       m_t << "}\n";
       if (!rtf_subject.isEmpty())      m_t << "{\\subject "  << rtf_subject      << "}\n";
       if (!rtf_comments.isEmpty())     m_t << "{\\comment "  << rtf_comments     << "}\n";
@@ -604,44 +604,44 @@ void RTFGenerator::startIndexSection(IndexSections is)
       if (!rtf_keywords.isEmpty())     m_t << "{\\keywords " << rtf_keywords     << "}\n";
       m_t << "{\\comment ";
       break;
-    case isMainPage:
+    case IndexSection::isMainPage:
       //Introduction
       beginRTFChapter();
       break;
-    case isModuleIndex:
+    case IndexSection::isModuleIndex:
       //Module Index
       beginRTFChapter();
       break;
-    case isDirIndex:
+    case IndexSection::isDirIndex:
       //Directory Index
       beginRTFChapter();
       break;
-    case isNamespaceIndex:
+    case IndexSection::isNamespaceIndex:
       //Namespace Index
       beginRTFChapter();
       break;
-    case isConceptIndex:
+    case IndexSection::isConceptIndex:
       //Concept Index
       beginRTFChapter();
       break;
-    case isClassHierarchyIndex:
+    case IndexSection::isClassHierarchyIndex:
       //Hierarchical Index
       DBG_RTF(m_t << "{\\comment start classhierarchy}\n")
       beginRTFChapter();
       break;
-    case isCompoundIndex:
+    case IndexSection::isCompoundIndex:
       //Annotated Compound Index
       beginRTFChapter();
       break;
-    case isFileIndex:
+    case IndexSection::isFileIndex:
       //Annotated File Index
       beginRTFChapter();
       break;
-    case isPageIndex:
+    case IndexSection::isPageIndex:
       //Related Page Index
       beginRTFChapter();
       break;
-    case isModuleDocumentation:
+    case IndexSection::isModuleDocumentation:
       {
         //Module Documentation
         for (const auto &gd : *Doxygen::groupLinkedMap)
@@ -654,7 +654,7 @@ void RTFGenerator::startIndexSection(IndexSections is)
         }
       }
       break;
-    case isDirDocumentation:
+    case IndexSection::isDirDocumentation:
       {
         //Directory Documentation
         for (const auto &dd : *Doxygen::dirLinkedMap)
@@ -667,7 +667,7 @@ void RTFGenerator::startIndexSection(IndexSections is)
         }
       }
       break;
-    case isNamespaceDocumentation:
+    case IndexSection::isNamespaceDocumentation:
       {
         // Namespace Documentation
         for (const auto &nd : *Doxygen::namespaceLinkedMap)
@@ -680,7 +680,7 @@ void RTFGenerator::startIndexSection(IndexSections is)
         }
       }
       break;
-    case isConceptDocumentation:
+    case IndexSection::isConceptDocumentation:
       {
         // Concept Documentation
         for (const auto &cd : *Doxygen::conceptLinkedMap)
@@ -693,7 +693,7 @@ void RTFGenerator::startIndexSection(IndexSections is)
         }
       }
       break;
-    case isClassDocumentation:
+    case IndexSection::isClassDocumentation:
       {
         //Compound Documentation
         for (const auto &cd : *Doxygen::classLinkedMap)
@@ -710,7 +710,7 @@ void RTFGenerator::startIndexSection(IndexSections is)
         }
       }
       break;
-    case isFileDocumentation:
+    case IndexSection::isFileDocumentation:
       {
         //File Documentation
         bool isFirst=TRUE;
@@ -735,29 +735,29 @@ void RTFGenerator::startIndexSection(IndexSections is)
         }
       }
       break;
-    case isExampleDocumentation:
+    case IndexSection::isExampleDocumentation:
       {
         //Example Documentation
         beginRTFChapter();
       }
       break;
-    case isPageDocumentation:
+    case IndexSection::isPageDocumentation:
       {
         //Page Documentation
         beginRTFChapter();
       }
       break;
-    case isPageDocumentation2:
+    case IndexSection::isPageDocumentation2:
       {
         m_t << "{\\tc \\v ";
       }
       break;
-    case isEndIndex:
+    case IndexSection::isEndIndex:
       break;
   }
 }
 
-void RTFGenerator::endIndexSection(IndexSections is)
+void RTFGenerator::endIndexSection(IndexSection is)
 {
   bool fortranOpt = Config_getBool(OPTIMIZE_FOR_FORTRAN);
   bool vhdlOpt    = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
@@ -765,14 +765,14 @@ void RTFGenerator::endIndexSection(IndexSections is)
 
   switch (is)
   {
-    case isTitlePageStart:
+    case IndexSection::isTitlePageStart:
       if (!rtf_title.isEmpty())
         // User has overridden document title in extensions file
         m_t << "}" << rtf_title;
       else
         m_t << "}" << projectName;
       break;
-    case isTitlePageAuthor:
+    case IndexSection::isTitlePageAuthor:
       {
         m_t << " doxygen " << getDoxygenVersion() << ".}\n";
         m_t << "{\\creatim " << dateToRTFDateString() << "}\n}";
@@ -855,7 +855,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
         m_t << rtf_Style_Reset << "\n";
       }
       break;
-    case isMainPage:
+    case IndexSection::isMainPage:
       m_t << "\\par " << rtf_Style_Reset << "\n";
       if (!mainPageHasTitle())
       {
@@ -870,17 +870,17 @@ void RTFGenerator::endIndexSection(IndexSections is)
       m_t << "index";
       m_t << ".rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
       break;
-    case isModuleIndex:
+    case IndexSection::isModuleIndex:
       m_t << "\\par " << rtf_Style_Reset << "\n";
       m_t << "{\\tc \\v " << theTranslator->trModuleIndex() << "}\n";
       m_t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"modules.rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
       break;
-    case isDirIndex:
+    case IndexSection::isDirIndex:
       m_t << "\\par " << rtf_Style_Reset << "\n";
       m_t << "{\\tc \\v " << theTranslator->trDirIndex() << "}\n";
       m_t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"dirs.rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
       break;
-    case isNamespaceIndex:
+    case IndexSection::isNamespaceIndex:
       m_t << "\\par " << rtf_Style_Reset << "\n";
       if (fortranOpt)
       {
@@ -893,17 +893,17 @@ void RTFGenerator::endIndexSection(IndexSections is)
 
       m_t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"namespaces.rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
       break;
-    case isConceptIndex:
+    case IndexSection::isConceptIndex:
       m_t << "\\par " << rtf_Style_Reset << "\n";
       m_t << "{\\tc \\v " << theTranslator->trConceptIndex() << "}\n";
       m_t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"concepts.rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
       break;
-    case isClassHierarchyIndex:
+    case IndexSection::isClassHierarchyIndex:
       m_t << "\\par " << rtf_Style_Reset << "\n";
       m_t << "{\\tc \\v " << theTranslator->trHierarchicalIndex() << "}\n";
       m_t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"hierarchy.rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
       break;
-    case isCompoundIndex:
+    case IndexSection::isCompoundIndex:
       m_t << "\\par " << rtf_Style_Reset << "\n";
       if (fortranOpt)
       {
@@ -919,17 +919,17 @@ void RTFGenerator::endIndexSection(IndexSections is)
       }
       m_t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"annotated.rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
       break;
-    case isFileIndex:
+    case IndexSection::isFileIndex:
       m_t << "\\par " << rtf_Style_Reset << "\n";
       m_t << "{\\tc \\v " << theTranslator->trFileIndex() << "}\n";
       m_t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"files.rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
       break;
-    case isPageIndex:
+    case IndexSection::isPageIndex:
       m_t << "\\par " << rtf_Style_Reset << "\n";
       m_t << "{\\tc \\v " << theTranslator->trPageIndex() << "}\n";
       m_t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"pages.rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
       break;
-    case isModuleDocumentation:
+    case IndexSection::isModuleDocumentation:
       {
         bool first=true;
         m_t << "{\\tc \\v " << theTranslator->trModuleDocumentation() << "}\n";
@@ -950,7 +950,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
         }
       }
       break;
-    case isDirDocumentation:
+    case IndexSection::isDirDocumentation:
       {
         bool first=true;
         m_t << "{\\tc \\v " << theTranslator->trDirDocumentation() << "}\n";
@@ -971,7 +971,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
         }
       }
       break;
-    case isNamespaceDocumentation:
+    case IndexSection::isNamespaceDocumentation:
       {
         bool first=true;
         for (const auto &nd : *Doxygen::namespaceLinkedMap)
@@ -991,7 +991,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
         }
       }
       break;
-    case isConceptDocumentation:
+    case IndexSection::isConceptDocumentation:
       {
         bool first=true;
         for (const auto &cd : *Doxygen::conceptLinkedMap)
@@ -1011,7 +1011,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
         }
       }
       break;
-    case isClassDocumentation:
+    case IndexSection::isClassDocumentation:
       {
         bool first=true;
         if (fortranOpt)
@@ -1043,7 +1043,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
         }
       }
       break;
-    case isFileDocumentation:
+    case IndexSection::isFileDocumentation:
       {
         bool isFirst=TRUE;
 
@@ -1080,7 +1080,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
         }
       }
       break;
-    case isExampleDocumentation:
+    case IndexSection::isExampleDocumentation:
       {
         //m_t << "}\n";
         bool isFirst=true;
@@ -1099,15 +1099,15 @@ void RTFGenerator::endIndexSection(IndexSections is)
         }
       }
       break;
-    case isPageDocumentation:
+    case IndexSection::isPageDocumentation:
       break;
-    case isPageDocumentation2:
+    case IndexSection::isPageDocumentation2:
       {
         m_t << "}";
         m_t << "\\par " << rtf_Style_Reset << "\n";
       }
       break;
-    case isEndIndex:
+    case IndexSection::isEndIndex:
       beginRTFChapter();
       m_t << rtf_Style["Heading1"].reference();
       m_t << theTranslator->trRTFGeneralIndex() << "\\par \n";

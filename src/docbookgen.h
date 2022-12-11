@@ -111,8 +111,8 @@ class DocbookGenerator : public OutputGenerator //: public CodeOutputForwarder<O
     void writeSearchInfo(){DB_GEN_EMPTY};
     void writeFooter(const QCString &){DB_GEN_NEW};
     void endFile();
-    void startIndexSection(IndexSections);
-    void endIndexSection(IndexSections);
+    void startIndexSection(IndexSection);
+    void endIndexSection(IndexSection);
     void writePageLink(const QCString &,bool);
     void startProjectNumber(){DB_GEN_NEW};
     void endProjectNumber(){DB_GEN_NEW};
