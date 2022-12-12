@@ -17,6 +17,8 @@
 #define INDEX_H
 
 #include <memory>
+#include <vector>
+#include <map>
 #include "qcstring.h"
 
 class Definition;
@@ -142,8 +144,18 @@ namespace NamespaceMemberHighlight
 class Index
 {
   public:
+    using MemberIndexList = std::vector<const MemberDef *>;
+    using MemberIndexMap = std::map<std::string,MemberIndexList>;
+
     static Index &instance();
+
     void countDataStructures();
+    void addClassMemberNameToIndex(const MemberDef *md);
+    void addFileMemberNameToIndex(const MemberDef *md);
+    void addNamespaceMemberNameToIndex(const MemberDef *md);
+    void sortMemberIndexLists();
+
+    // ---- getters
     int numAnnotatedClasses() const;
     int numAnnotatedClassesPrinted() const;
     int numHierarchyClasses() const;
@@ -165,13 +177,17 @@ class Index
     int numDocumentedClassMembers(ClassMemberHighlight::Enum e) const;
     int numDocumentedFileMembers(FileMemberHighlight::Enum e) const;
     int numDocumentedNamespaceMembers(NamespaceMemberHighlight::Enum e) const;
+    MemberIndexMap isClassIndexLetterUsed(ClassMemberHighlight::Enum e) const;
+    MemberIndexMap isFileIndexLetterUsed(FileMemberHighlight::Enum e) const;
+    MemberIndexMap isNamespaceIndexLetterUsed(NamespaceMemberHighlight::Enum e) const;
+
+  private:
     void resetDocumentedClassMembers(int i);
     void resetDocumentedFileMembers(int i);
     void resetDocumentedNamespaceMembers(int i);
-    void incrementDocumentedClassMembers(int i);
-    void incrementDocumentedFileMembers(int i);
-    void incrementDocumentedNamespaceMembers(int i);
-  private:
+    void incrementDocumentedClassMembers(int i,const std::string &letter,const MemberDef *md);
+    void incrementDocumentedFileMembers(int i,const std::string &letter,const MemberDef *md);
+    void incrementDocumentedNamespaceMembers(int i,const std::string &letter,const MemberDef *md);
     Index();
     ~Index();
     struct Private;
@@ -180,7 +196,6 @@ class Index
 
 void writeGraphInfo(OutputList &ol);
 void writeIndexHierarchy(OutputList &ol);
-
 void startTitle(OutputList &ol,const QCString &fileName,const DefinitionMutable *def=0);
 void endTitle(OutputList &ol,const QCString &fileName,const QCString &name);
 void startFile(OutputList &ol,const QCString &name,const QCString &manName,
@@ -188,17 +203,6 @@ void startFile(OutputList &ol,const QCString &name,const QCString &manName,
                bool additionalIndices=FALSE,const QCString &altSidebarName=QCString());
 void endFile(OutputList &ol,bool skipNavIndex=FALSE,bool skipEndContents=FALSE,
              const QCString &navPath=QCString());
-void endFileWithNavPath(const Definition *d,OutputList &ol);
-
-void initClassMemberIndices();
-void initFileMemberIndices();
-void initNamespaceMemberIndices();
-void addClassMemberNameToIndex(const MemberDef *md);
-void addFileMemberNameToIndex(const MemberDef *md);
-void addNamespaceMemberNameToIndex(const MemberDef *md);
-void sortMemberIndexLists();
-QCString fixSpaces(const QCString &s);
-
-int countVisibleMembers(const NamespaceDef *nd);
+void endFileWithNavPath(OutputList &ol,const Definition *d);
 
 #endif

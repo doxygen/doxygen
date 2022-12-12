@@ -445,4 +445,6 @@ QCString integerToRoman(int n, bool upper=true);
 
 QCString getEncoding(const FileInfo &fi);
 
+inline QCString fixSpaces(const QCString &s) { return substitute(s," ","&#160;"); }
+
 #endif

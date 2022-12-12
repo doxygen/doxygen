@@ -618,7 +618,7 @@ void DirDefImpl::writeDocumentation(OutputList &ol)
 
   ol.endContents();
 
-  endFileWithNavPath(this,ol);
+  endFileWithNavPath(ol,this);
 
   ol.popGeneratorState();
 }
@@ -926,7 +926,7 @@ void DirRelation::writeDocumentation(OutputList &ol)
 
   ol.endContents();
 
-  endFileWithNavPath(m_src,ol);
+  endFileWithNavPath(ol,m_src);
 
   ol.popGeneratorState();
 }

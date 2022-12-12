@@ -7587,13 +7587,14 @@ static void findDocumentedEnumValues()
 
 static void addMembersToIndex()
 {
+  auto &index = Index::instance();
   // for each class member name
   for (const auto &mn : *Doxygen::memberNameLinkedMap)
   {
     // for each member definition
     for (const auto &md : *mn)
     {
-      addClassMemberNameToIndex(md.get());
+      index.addClassMemberNameToIndex(md.get());
     }
   }
   // for each file/namespace function name
@@ -7604,15 +7605,15 @@ static void addMembersToIndex()
     {
       if (md->getNamespaceDef())
       {
-        addNamespaceMemberNameToIndex(md.get());
+        index.addNamespaceMemberNameToIndex(md.get());
       }
       else
       {
-        addFileMemberNameToIndex(md.get());
+        index.addFileMemberNameToIndex(md.get());
       }
     }
   }
-  sortMemberIndexLists();
+  index.sortMemberIndexLists();
 }
 
 //----------------------------------------------------------------------
@@ -10791,9 +10792,6 @@ void initDoxygen()
   // register any additional parsers here...
 
   initDefaultExtensionMapping();
-  initClassMemberIndices();
-  initNamespaceMemberIndices();
-  initFileMemberIndices();
 
 #if USE_LIBCLANG
   Doxygen::clangUsrMap   = new ClangUsrMap;

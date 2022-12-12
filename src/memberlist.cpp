@@ -794,7 +794,7 @@ void MemberList::writeDocumentationPage(OutputList &ol,
         md->writeDocumentation(this,count++,overloadCount,ol,scopeName,container_d,m_container==MemberListContainer::Group);
 
         ol.endContents();
-        endFileWithNavPath(container_d,ol);
+        endFileWithNavPath(ol,container_d);
       }
       else
       {

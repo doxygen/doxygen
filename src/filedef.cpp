@@ -996,7 +996,7 @@ void FileDefImpl::writeDocumentation(OutputList &ol)
 
   ol.endContents();
 
-  endFileWithNavPath(this,ol);
+  endFileWithNavPath(ol,this);
 
   if (Config_getBool(SEPARATE_MEMBER_PAGES))
   {
@@ -1166,7 +1166,7 @@ void FileDefImpl::writeSourceBody(OutputList &ol,ClangTUParser *clangParser)
 void FileDefImpl::writeSourceFooter(OutputList &ol)
 {
   ol.endContents();
-  endFileWithNavPath(this,ol);
+  endFileWithNavPath(ol,this);
   ol.enableAll();
 }
 
@@ -1234,7 +1234,6 @@ void FileDefImpl::insertMember(MemberDef *md)
     allMemberList = m_memberLists.back().get();
   }
   allMemberList->push_back(md);
-  //::addFileMemberNameToIndex(md);
   switch (md->memberType())
   {
     case MemberType_Variable:

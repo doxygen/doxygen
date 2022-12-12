@@ -113,6 +113,7 @@ class NamespaceDefImpl : public DefinitionMixin<NamespaceDefMutable>
     virtual QCString compoundTypeString() const;
 
     virtual void setMetaData(const QCString &m);
+    virtual int countVisibleMembers() const;
 
   private:
     void addMemberToList(MemberListType lt,MemberDef *md);
@@ -240,6 +241,8 @@ class NamespaceDefAliasImpl : public DefinitionAliasMixin<NamespaceDef>
     { return getNSAlias()->title(); }
     virtual QCString compoundTypeString() const
     { return getNSAlias()->compoundTypeString(); }
+    virtual int countVisibleMembers() const
+    { return getNSAlias()->countVisibleMembers(); }
 };
 
 NamespaceDef *createNamespaceDefAlias(const Definition *newScope,const NamespaceDef *nd)
@@ -469,8 +472,6 @@ void NamespaceDefImpl::insertMember(MemberDef *md)
     allMemberList->push_back(md);
     //printf("%s::m_allMembersDict->append(%s)\n",qPrint(name()),qPrint(md->localName()));
     m_allMembers.add(md->localName(),md);
-    //::addNamespaceMemberNameToIndex(md);
-    //bool sortBriefDocs=Config_getBool(SORT_BRIEF_DOCS);
     switch(md->memberType())
     {
       case MemberType_Variable:
@@ -1079,7 +1080,7 @@ void NamespaceDefImpl::writeDocumentation(OutputList &ol)
 
   ol.endContents();
 
-  endFileWithNavPath(this,ol);
+  endFileWithNavPath(ol,this);
 
   if (Config_getBool(SEPARATE_MEMBER_PAGES))
   {
@@ -1272,6 +1273,35 @@ void NamespaceDefImpl::combineUsingRelations(NamespaceDefSet &visitedNamespaces)
     }
   }
 }
+
+int NamespaceDefImpl::countVisibleMembers() const
+{
+  int count=0;
+  for (const auto &lde : LayoutDocManager::instance().docEntries(LayoutDocManager::Namespace))
+  {
+    if (lde->kind()==LayoutDocEntry::MemberDef)
+    {
+      const LayoutDocEntryMemberDef *lmd = dynamic_cast<const LayoutDocEntryMemberDef*>(lde.get());
+      if (lmd)
+      {
+        MemberList *ml = getMemberList(lmd->type);
+        if (ml)
+        {
+          for (const auto &md : *ml)
+          {
+            if (md->visibleInIndex())
+            {
+              count++;
+            }
+          }
+        }
+      }
+    }
+  }
+  return count;
+}
+
+
 
 //-------------------------------------------------------------------------------
 

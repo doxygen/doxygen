@@ -5711,7 +5711,7 @@ class NestingContext::Private : public GenericNodeListContext
         bool hasChildren = namespaceHasNestedNamespace(nd) ||
                            (addClasses  && namespaceHasNestedClass(nd,false,ClassDef::Class)) ||
                            (addConcepts && namespaceHasNestedConcept(nd)) ||
-                           (m_type==ContextTreeType::Namespace && countVisibleMembers(nd));
+                           (m_type==ContextTreeType::Namespace && nd->countVisibleMembers());
         bool isLinkable  = nd->isLinkableInProject();
         if (isLinkable && hasChildren)
         {

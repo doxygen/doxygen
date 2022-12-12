@@ -1120,7 +1120,6 @@ void ClassDefImpl::internalInsertMember(const MemberDef *md,
     m_impl->arrowOperator=md;
   }
 
-  //::addClassMemberNameToIndex(md);
   if (addToAllList &&
       !(Config_getBool(HIDE_FRIEND_COMPOUNDS) &&
         md->isFriend() &&
@@ -2737,7 +2736,7 @@ void ClassDefImpl::writeDocumentation(OutputList &ol) const
   endTitle(ol,getOutputFileBase(),displayName());
   writeDocumentationContents(ol,pageTitle);
 
-  endFileWithNavPath(this,ol);
+  endFileWithNavPath(ol,this);
 
   if (Config_getBool(SEPARATE_MEMBER_PAGES))
   {

@@ -63,6 +63,7 @@ static int  countConcepts();
 static int  countAnnotatedClasses(int *cp,ClassDef::CompoundType ct);
 static void countRelatedPages(int &docPages,int &indexPages);
 
+
 struct Index::Private
 {
   int annotatedClasses            = 0;
@@ -86,6 +87,9 @@ struct Index::Private
   std::array<int,    ClassMemberHighlight::Total> documentedClassMembers     = {};
   std::array<int,     FileMemberHighlight::Total> documentedFileMembers      = {};
   std::array<int,NamespaceMemberHighlight::Total> documentedNamespaceMembers = {};
+  std::array<MemberIndexMap,ClassMemberHighlight::Total>     classIndexLetterUsed;
+  std::array<MemberIndexMap,FileMemberHighlight::Total>      fileIndexLetterUsed;
+  std::array<MemberIndexMap,NamespaceMemberHighlight::Total> namespaceIndexLetterUsed;
 };
 
 Index::Index() : p(std::make_unique<Private>())
@@ -121,17 +125,115 @@ int Index::numDocumentedDirs()             const { return p->documentedDirs; }
 int Index::numDocumentedClassMembers(ClassMemberHighlight::Enum e)         const { return p->documentedClassMembers[e]; }
 int Index::numDocumentedFileMembers(FileMemberHighlight::Enum e)           const { return p->documentedFileMembers[e];  }
 int Index::numDocumentedNamespaceMembers(NamespaceMemberHighlight::Enum e) const { return p->documentedNamespaceMembers[e]; }
-void Index::resetDocumentedClassMembers(int i)         { p->documentedClassMembers[i]    =0; }
-void Index::resetDocumentedFileMembers(int i)          { p->documentedFileMembers[i]     =0; }
-void Index::resetDocumentedNamespaceMembers(int i)     { p->documentedNamespaceMembers[i]=0; }
-void Index::incrementDocumentedClassMembers(int i)     { p->documentedClassMembers[i]++;     }
-void Index::incrementDocumentedFileMembers(int i)      { p->documentedFileMembers[i]++;      }
-void Index::incrementDocumentedNamespaceMembers(int i) { p->documentedNamespaceMembers[i]++; }
 
+Index::MemberIndexMap Index::isClassIndexLetterUsed(ClassMemberHighlight::Enum e) const
+{
+  return p->classIndexLetterUsed[static_cast<int>(e)];
+}
 
+Index::MemberIndexMap Index::isFileIndexLetterUsed(FileMemberHighlight::Enum e) const
+{
+  return p->fileIndexLetterUsed[static_cast<int>(e)];
+}
+
+Index::MemberIndexMap Index::isNamespaceIndexLetterUsed(NamespaceMemberHighlight::Enum e) const
+{
+  return p->namespaceIndexLetterUsed[static_cast<int>(e)];
+}
+
+void Index::resetDocumentedClassMembers(int i)
+{
+  p->documentedClassMembers[i]=0;
+  p->classIndexLetterUsed[i].clear();
+}
+
+void Index::resetDocumentedFileMembers(int i)
+{
+  p->documentedFileMembers[i]=0;
+  p->fileIndexLetterUsed[i].clear();
+}
+
+void Index::resetDocumentedNamespaceMembers(int i)
+{
+  p->documentedNamespaceMembers[i]=0;
+  p->namespaceIndexLetterUsed[i].clear();
+}
+
+static void MemberIndexMap_add(Index::MemberIndexMap &map,const std::string &letter,const MemberDef *md)
+{
+  auto it = map.find(letter);
+  if (it!=map.end())
+  {
+    it->second.push_back(md);
+  }
+  else
+  {
+    map.insert(std::make_pair(letter,std::vector<const MemberDef*>({md})));
+  }
+}
+
+void Index::incrementDocumentedClassMembers(int i,const std::string &letter,const MemberDef *md)
+{
+  p->documentedClassMembers[i]++;
+  MemberIndexMap_add(p->classIndexLetterUsed[i],letter,md);
+}
+
+void Index::incrementDocumentedFileMembers(int i,const std::string &letter,const MemberDef *md)
+{
+  p->documentedFileMembers[i]++;
+  MemberIndexMap_add(p->fileIndexLetterUsed[i],letter,md);
+}
+
+void Index::incrementDocumentedNamespaceMembers(int i,const std::string &letter,const MemberDef *md)
+{
+  p->documentedNamespaceMembers[i]++;
+  MemberIndexMap_add(p->namespaceIndexLetterUsed[i],letter,md);
+}
+
+void Index::sortMemberIndexLists()
+{
+  auto sortMemberIndexList = [](MemberIndexMap &map)
+  {
+    for (auto &kv : map)
+    {
+      std::sort(kv.second.begin(),kv.second.end(),
+          [](const MemberDef *md1,const MemberDef *md2)
+          {
+            int result = qstricmp(md1->name(),md2->name());
+            return result==0 ? qstricmp(md1->qualifiedName(),md2->qualifiedName())<0 : result<0;
+          });
+    }
+  };
+
+  for (auto &idx : p->classIndexLetterUsed)
+  {
+    sortMemberIndexList(idx);
+  }
+  for (auto &idx : p->fileIndexLetterUsed)
+  {
+    sortMemberIndexList(idx);
+  }
+  for (auto &idx : p->namespaceIndexLetterUsed)
+  {
+    sortMemberIndexList(idx);
+  }
+}
 
 void Index::countDataStructures()
 {
+  for (int j=0;j<ClassMemberHighlight::Total;j++)
+  {
+    resetDocumentedClassMembers(j);
+  }
+  for (int j=0;j<NamespaceMemberHighlight::Total;j++)
+  {
+    resetDocumentedNamespaceMembers(j);
+  }
+  for (int j=0;j<NamespaceMemberHighlight::Total;j++)
+  {
+    resetDocumentedFileMembers(j);
+  }
+
   bool sliceOpt = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
   p->annotatedClasses           = countAnnotatedClasses(&p->annotatedClassesPrinted, ClassDef::Class); // "classes" + "annotated"
   p->hierarchyClasses           = countClassHierarchy(ClassDef::Class);     // "hierarchy"
@@ -191,26 +293,6 @@ static void endIndexHierarchy(OutputList &ol,int level)
 
 //----------------------------------------------------------------------------
 
-using MemberIndexList = std::vector<const MemberDef *>;
-using MemberIndexMap = std::map<std::string,MemberIndexList>;
-
-static std::array<MemberIndexMap,ClassMemberHighlight::Total> g_classIndexLetterUsed;
-static std::array<MemberIndexMap,FileMemberHighlight::Total> g_fileIndexLetterUsed;
-static std::array<MemberIndexMap,NamespaceMemberHighlight::Total> g_namespaceIndexLetterUsed;
-
-void MemberIndexMap_add(MemberIndexMap &map,const std::string &letter,const MemberDef *md)
-{
-  auto it = map.find(letter);
-  if (it!=map.end())
-  {
-    it->second.push_back(md);
-  }
-  else
-  {
-    map.insert(std::make_pair(letter,std::vector<const MemberDef*>({md})));
-  }
-}
-
 const int maxItemsBeforeQuickIndex = MAX_ITEMS_BEFORE_QUICK_INDEX;
 
 //----------------------------------------------------------------------------
@@ -254,13 +336,6 @@ static void endQuickIndexItem(OutputList &ol)
   ol.writeString("</span>");
   ol.writeString("</a>");
   ol.writeString("</li>\n");
-}
-
-// don't make this static as it is called from a template function and some
-// old compilers don't support calls to static functions from a template.
-QCString fixSpaces(const QCString &s)
-{
-  return substitute(s," ","&#160;");
 }
 
 void startTitle(OutputList &ol,const QCString &fileName,const DefinitionMutable *def)
@@ -318,7 +393,7 @@ void endFile(OutputList &ol,bool skipNavIndex,bool skipEndContents,
   ol.endFile();
 }
 
-void endFileWithNavPath(const Definition *d,OutputList &ol)
+void endFileWithNavPath(OutputList &ol,const Definition *d)
 {
   bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
   QCString navPath;
@@ -1629,33 +1704,6 @@ static void writeClassTree(const ListType &cl,FTVHelp *ftv,bool addToIndex,bool 
   }
 }
 
-int countVisibleMembers(const NamespaceDef *nd)
-{
-  int count=0;
-  for (const auto &lde : LayoutDocManager::instance().docEntries(LayoutDocManager::Namespace))
-  {
-    if (lde->kind()==LayoutDocEntry::MemberDef)
-    {
-      const LayoutDocEntryMemberDef *lmd = dynamic_cast<const LayoutDocEntryMemberDef*>(lde.get());
-      if (lmd)
-      {
-        MemberList *ml = nd->getMemberList(lmd->type);
-        if (ml)
-        {
-          for (const auto &md : *ml)
-          {
-            if (md->visibleInIndex())
-            {
-              count++;
-            }
-          }
-        }
-      }
-    }
-  }
-  return count;
-}
-
 static void writeNamespaceMembers(const NamespaceDef *nd,bool addToIndex)
 {
   for (const auto &lde : LayoutDocManager::instance().docEntries(LayoutDocManager::Namespace))
@@ -1697,7 +1745,7 @@ static void writeNamespaceTreeElement(const NamespaceDef *nd,FTVHelp *ftv,
       namespaceHasNestedClass(nd,false,ClassDef::Class) ||
       namespaceHasNestedConcept(nd);
     bool isLinkable  = nd->isLinkable();
-    int visibleMembers = countVisibleMembers(nd);
+    int visibleMembers = nd->countVisibleMembers();
 
     //printf("namespace %s hasChildren=%d visibleMembers=%d\n",qPrint(nd->name()),hasChildren,visibleMembers);
 
@@ -2593,7 +2641,7 @@ static void writeNamespaceLinkForMember(OutputList &ol,const MemberDef *md,const
 }
 
 static void writeMemberList(OutputList &ol,bool useSections,const std::string &page,
-                            const MemberIndexMap &memberIndexMap,
+                            const Index::MemberIndexMap &memberIndexMap,
                             Definition::DefType type)
 {
   int index = static_cast<int>(type);
@@ -2614,7 +2662,7 @@ static void writeMemberList(OutputList &ol,bool useSections,const std::string &p
   bool first=TRUE;
   bool firstSection=TRUE;
   bool firstItem=TRUE;
-  const MemberIndexList *mil = 0;
+  const Index::MemberIndexList *mil = 0;
   std::string letter;
   for (const auto &kv : memberIndexMap)
   {
@@ -2699,20 +2747,8 @@ static void writeMemberList(OutputList &ol,bool useSections,const std::string &p
 
 //----------------------------------------------------------------------------
 
-void initClassMemberIndices()
+void Index::addClassMemberNameToIndex(const MemberDef *md)
 {
-  Index &index = Index::instance();
-  int j=0;
-  for (j=0;j<ClassMemberHighlight::Total;j++)
-  {
-    index.resetDocumentedClassMembers(j);
-    g_classIndexLetterUsed[j].clear();
-  }
-}
-
-void addClassMemberNameToIndex(const MemberDef *md)
-{
-  Index &index = Index::instance();
   bool hideFriendCompounds = Config_getBool(HIDE_FRIEND_COMPOUNDS);
   const ClassDef *cd=0;
 
@@ -2734,49 +2770,40 @@ void addClassMemberNameToIndex(const MemberDef *md)
           (!md->isEnumValue() || (md->getEnumScope() && !md->getEnumScope()->isStrong()))
          )
       {
-        MemberIndexMap_add(g_classIndexLetterUsed[ClassMemberHighlight::All],letter,md);
-        index.incrementDocumentedClassMembers(ClassMemberHighlight::All);
+        incrementDocumentedClassMembers(ClassMemberHighlight::All,letter,md);
       }
       if (md->isFunction()  || md->isSlot() || md->isSignal())
       {
-        MemberIndexMap_add(g_classIndexLetterUsed[ClassMemberHighlight::Functions],letter,md);
-        index.incrementDocumentedClassMembers(ClassMemberHighlight::Functions);
+        incrementDocumentedClassMembers(ClassMemberHighlight::Functions,letter,md);
       }
       else if (md->isVariable())
       {
-        MemberIndexMap_add(g_classIndexLetterUsed[ClassMemberHighlight::Variables],letter,md);
-        index.incrementDocumentedClassMembers(ClassMemberHighlight::Variables);
+        incrementDocumentedClassMembers(ClassMemberHighlight::Variables,letter,md);
       }
       else if (md->isTypedef())
       {
-        MemberIndexMap_add(g_classIndexLetterUsed[ClassMemberHighlight::Typedefs],letter,md);
-        index.incrementDocumentedClassMembers(ClassMemberHighlight::Typedefs);
+        incrementDocumentedClassMembers(ClassMemberHighlight::Typedefs,letter,md);
       }
       else if (md->isEnumerate())
       {
-        MemberIndexMap_add(g_classIndexLetterUsed[ClassMemberHighlight::Enums],letter,md);
-        index.incrementDocumentedClassMembers(ClassMemberHighlight::Enums);
+        incrementDocumentedClassMembers(ClassMemberHighlight::Enums,letter,md);
       }
       else if (md->isEnumValue() && md->getEnumScope() && !md->getEnumScope()->isStrong())
       {
-        MemberIndexMap_add(g_classIndexLetterUsed[ClassMemberHighlight::EnumValues],letter,md);
-        index.incrementDocumentedClassMembers(ClassMemberHighlight::EnumValues);
+        incrementDocumentedClassMembers(ClassMemberHighlight::EnumValues,letter,md);
       }
       else if (md->isProperty())
       {
-        MemberIndexMap_add(g_classIndexLetterUsed[ClassMemberHighlight::Properties],letter,md);
-        index.incrementDocumentedClassMembers(ClassMemberHighlight::Properties);
+        incrementDocumentedClassMembers(ClassMemberHighlight::Properties,letter,md);
       }
       else if (md->isEvent())
       {
-        MemberIndexMap_add(g_classIndexLetterUsed[ClassMemberHighlight::Events],letter,md);
-        index.incrementDocumentedClassMembers(ClassMemberHighlight::Events);
+        incrementDocumentedClassMembers(ClassMemberHighlight::Events,letter,md);
       }
       else if (md->isRelated() || md->isForeign() ||
                (md->isFriend() && !isFriendToHide))
       {
-        MemberIndexMap_add(g_classIndexLetterUsed[ClassMemberHighlight::Related],letter,md);
-        index.incrementDocumentedClassMembers(ClassMemberHighlight::Related);
+        incrementDocumentedClassMembers(ClassMemberHighlight::Related,letter,md);
       }
     }
   }
@@ -2784,20 +2811,8 @@ void addClassMemberNameToIndex(const MemberDef *md)
 
 //----------------------------------------------------------------------------
 
-void initNamespaceMemberIndices()
+void Index::addNamespaceMemberNameToIndex(const MemberDef *md)
 {
-  Index &index = Index::instance();
-  int j=0;
-  for (j=0;j<NamespaceMemberHighlight::Total;j++)
-  {
-    index.resetDocumentedNamespaceMembers(j);
-    g_namespaceIndexLetterUsed[j].clear();
-  }
-}
-
-void addNamespaceMemberNameToIndex(const MemberDef *md)
-{
-  Index &index = Index::instance();
   const NamespaceDef *nd=md->getNamespaceDef();
   if (nd && nd->isLinkableInProject() && md->isLinkableInProject())
   {
@@ -2808,44 +2823,35 @@ void addNamespaceMemberNameToIndex(const MemberDef *md)
       letter = convertUTF8ToLower(letter);
       if (!md->isEnumValue() || (md->getEnumScope() && !md->getEnumScope()->isStrong()))
       {
-        MemberIndexMap_add(g_namespaceIndexLetterUsed[NamespaceMemberHighlight::All],letter,md);
-        index.incrementDocumentedNamespaceMembers(NamespaceMemberHighlight::All);
+        incrementDocumentedNamespaceMembers(NamespaceMemberHighlight::All,letter,md);
       }
-
       if (md->isFunction())
       {
-        MemberIndexMap_add(g_namespaceIndexLetterUsed[NamespaceMemberHighlight::Functions],letter,md);
-        index.incrementDocumentedNamespaceMembers(NamespaceMemberHighlight::Functions);
+        incrementDocumentedNamespaceMembers(NamespaceMemberHighlight::Functions,letter,md);
       }
       else if (md->isVariable())
       {
-        MemberIndexMap_add(g_namespaceIndexLetterUsed[NamespaceMemberHighlight::Variables],letter,md);
-        index.incrementDocumentedNamespaceMembers(NamespaceMemberHighlight::Variables);
+        incrementDocumentedNamespaceMembers(NamespaceMemberHighlight::Variables,letter,md);
       }
       else if (md->isTypedef())
       {
-        MemberIndexMap_add(g_namespaceIndexLetterUsed[NamespaceMemberHighlight::Typedefs],letter,md);
-        index.incrementDocumentedNamespaceMembers(NamespaceMemberHighlight::Typedefs);
+        incrementDocumentedNamespaceMembers(NamespaceMemberHighlight::Typedefs,letter,md);
       }
       else if (md->isSequence())
       {
-        MemberIndexMap_add(g_namespaceIndexLetterUsed[NamespaceMemberHighlight::Sequences],letter,md);
-        index.incrementDocumentedNamespaceMembers(NamespaceMemberHighlight::Sequences);
+        incrementDocumentedNamespaceMembers(NamespaceMemberHighlight::Sequences,letter,md);
       }
       else if (md->isDictionary())
       {
-        MemberIndexMap_add(g_namespaceIndexLetterUsed[NamespaceMemberHighlight::Dictionaries],letter,md);
-        index.incrementDocumentedNamespaceMembers(NamespaceMemberHighlight::Dictionaries);
+        incrementDocumentedNamespaceMembers(NamespaceMemberHighlight::Dictionaries,letter,md);
       }
       else if (md->isEnumerate())
       {
-        MemberIndexMap_add(g_namespaceIndexLetterUsed[NamespaceMemberHighlight::Enums],letter,md);
-        index.incrementDocumentedNamespaceMembers(NamespaceMemberHighlight::Enums);
+        incrementDocumentedNamespaceMembers(NamespaceMemberHighlight::Enums,letter,md);
       }
       else if (md->isEnumValue() && md->getEnumScope() && !md->getEnumScope()->isStrong())
       {
-        MemberIndexMap_add(g_namespaceIndexLetterUsed[NamespaceMemberHighlight::EnumValues],letter,md);
-        index.incrementDocumentedNamespaceMembers(NamespaceMemberHighlight::EnumValues);
+        incrementDocumentedNamespaceMembers(NamespaceMemberHighlight::EnumValues,letter,md);
       }
     }
   }
@@ -2853,20 +2859,8 @@ void addNamespaceMemberNameToIndex(const MemberDef *md)
 
 //----------------------------------------------------------------------------
 
-void initFileMemberIndices()
+void Index::addFileMemberNameToIndex(const MemberDef *md)
 {
-  Index &index = Index::instance();
-  int j=0;
-  for (j=0;j<NamespaceMemberHighlight::Total;j++)
-  {
-    index.resetDocumentedFileMembers(j);
-    g_fileIndexLetterUsed[j].clear();
-  }
-}
-
-void addFileMemberNameToIndex(const MemberDef *md)
-{
-  Index &index = Index::instance();
   const FileDef *fd=md->getFileDef();
   if (fd && fd->isLinkableInProject() && md->isLinkableInProject())
   {
@@ -2877,49 +2871,39 @@ void addFileMemberNameToIndex(const MemberDef *md)
       letter = convertUTF8ToLower(letter);
       if (!md->isEnumValue() || (md->getEnumScope() && !md->getEnumScope()->isStrong()))
       {
-        MemberIndexMap_add(g_fileIndexLetterUsed[FileMemberHighlight::All],letter,md);
-        index.incrementDocumentedFileMembers(FileMemberHighlight::All);
+        incrementDocumentedFileMembers(FileMemberHighlight::All,letter,md);
       }
-
       if (md->isFunction())
       {
-        MemberIndexMap_add(g_fileIndexLetterUsed[FileMemberHighlight::Functions],letter,md);
-        index.incrementDocumentedFileMembers(FileMemberHighlight::Functions);
+        incrementDocumentedFileMembers(FileMemberHighlight::Functions,letter,md);
       }
       else if (md->isVariable())
       {
-        MemberIndexMap_add(g_fileIndexLetterUsed[FileMemberHighlight::Variables],letter,md);
-        index.incrementDocumentedFileMembers(FileMemberHighlight::Variables);
+        incrementDocumentedFileMembers(FileMemberHighlight::Variables,letter,md);
       }
       else if (md->isTypedef())
       {
-        MemberIndexMap_add(g_fileIndexLetterUsed[FileMemberHighlight::Typedefs],letter,md);
-        index.incrementDocumentedFileMembers(FileMemberHighlight::Typedefs);
+        incrementDocumentedFileMembers(FileMemberHighlight::Typedefs,letter,md);
       }
       else if (md->isSequence())
       {
-        MemberIndexMap_add(g_fileIndexLetterUsed[FileMemberHighlight::Sequences],letter,md);
-        index.incrementDocumentedFileMembers(FileMemberHighlight::Sequences);
+        incrementDocumentedFileMembers(FileMemberHighlight::Sequences,letter,md);
       }
       else if (md->isDictionary())
       {
-        MemberIndexMap_add(g_fileIndexLetterUsed[FileMemberHighlight::Dictionaries],letter,md);
-        index.incrementDocumentedFileMembers(FileMemberHighlight::Dictionaries);
+        incrementDocumentedFileMembers(FileMemberHighlight::Dictionaries,letter,md);
       }
       else if (md->isEnumerate())
       {
-        MemberIndexMap_add(g_fileIndexLetterUsed[FileMemberHighlight::Enums],letter,md);
-        index.incrementDocumentedFileMembers(FileMemberHighlight::Enums);
+        incrementDocumentedFileMembers(FileMemberHighlight::Enums,letter,md);
       }
       else if (md->isEnumValue() && md->getEnumScope() && !md->getEnumScope()->isStrong())
       {
-        MemberIndexMap_add(g_fileIndexLetterUsed[FileMemberHighlight::EnumValues],letter,md);
-        index.incrementDocumentedFileMembers(FileMemberHighlight::EnumValues);
+        incrementDocumentedFileMembers(FileMemberHighlight::EnumValues,letter,md);
       }
       else if (md->isDefine())
       {
-        MemberIndexMap_add(g_fileIndexLetterUsed[FileMemberHighlight::Defines],letter,md);
-        index.incrementDocumentedFileMembers(FileMemberHighlight::Defines);
+        incrementDocumentedFileMembers(FileMemberHighlight::Defines,letter,md);
       }
     }
   }
@@ -2927,39 +2911,8 @@ void addFileMemberNameToIndex(const MemberDef *md)
 
 //----------------------------------------------------------------------------
 
-static void sortMemberIndexList(MemberIndexMap &map)
-{
-  for (auto &kv : map)
-  {
-    std::sort(kv.second.begin(),kv.second.end(),
-              [](const MemberDef *md1,const MemberDef *md2)
-              {
-                int result = qstricmp(md1->name(),md2->name());
-                return result==0 ? qstricmp(md1->qualifiedName(),md2->qualifiedName())<0 : result<0;
-              });
-  }
-}
-
-void sortMemberIndexLists()
-{
-  for (auto &idx : g_classIndexLetterUsed)
-  {
-    sortMemberIndexList(idx);
-  }
-  for (auto &idx : g_fileIndexLetterUsed)
-  {
-    sortMemberIndexList(idx);
-  }
-  for (auto &idx : g_namespaceIndexLetterUsed)
-  {
-    sortMemberIndexList(idx);
-  }
-}
-
-//----------------------------------------------------------------------------
-
 static void writeQuickMemberIndex(OutputList &ol,
-    const MemberIndexMap &map,const std::string &page,
+    const Index::MemberIndexMap &map,const std::string &page,
     QCString fullName,bool multiPage)
 {
   bool first=TRUE;
@@ -3046,7 +2999,7 @@ static void writeClassMemberIndexFiltered(OutputList &ol, ClassMemberHighlight::
   }
 
   bool first=TRUE;
-  for (const auto &kv : g_classIndexLetterUsed[hl])
+  for (const auto &kv : index.isClassIndexLetterUsed(hl))
   {
     std::string page = kv.first;
     QCString fileName = getCmhlInfo(hl)->fname;
@@ -3099,7 +3052,7 @@ static void writeClassMemberIndexFiltered(OutputList &ol, ClassMemberHighlight::
         // quick alphabetical index
         if (quickIndex)
         {
-          writeQuickMemberIndex(ol,g_classIndexLetterUsed[hl],page,
+          writeQuickMemberIndex(ol,index.isClassIndexLetterUsed(hl),page,
               getCmhlInfo(hl)->fname,multiPageIndex);
         }
       }
@@ -3125,7 +3078,7 @@ static void writeClassMemberIndexFiltered(OutputList &ol, ClassMemberHighlight::
 
     writeMemberList(ol,quickIndex,
         multiPageIndex ? page : std::string(),
-        g_classIndexLetterUsed[hl],
+        index.isClassIndexLetterUsed(hl),
         Definition::TypeClass);
     endFile(ol);
     first=FALSE;
@@ -3198,7 +3151,8 @@ static const FmhlInfo *getFmhlInfo(size_t hl)
 
 static void writeFileMemberIndexFiltered(OutputList &ol, FileMemberHighlight::Enum hl)
 {
-  if (Index::instance().numDocumentedFileMembers(hl)==0) return;
+  const auto &index = Index::instance();
+  if (index.numDocumentedFileMembers(hl)==0) return;
 
   bool disableIndex     = Config_getBool(DISABLE_INDEX);
 
@@ -3224,7 +3178,7 @@ static void writeFileMemberIndexFiltered(OutputList &ol, FileMemberHighlight::En
   }
 
   bool first=TRUE;
-  for (const auto &kv : g_fileIndexLetterUsed[hl])
+  for (const auto &kv : index.isFileIndexLetterUsed(hl))
   {
     std::string page = kv.first;
     QCString fileName = getFmhlInfo(hl)->fname;
@@ -3240,7 +3194,7 @@ static void writeFileMemberIndexFiltered(OutputList &ol, FileMemberHighlight::En
         Doxygen::indexList->addContentsItem(FALSE,cs,QCString(),fileName,QCString(),FALSE,TRUE);
       }
     }
-    bool quickIndex = Index::instance().numDocumentedFileMembers(hl)>maxItemsBeforeQuickIndex;
+    bool quickIndex = index.numDocumentedFileMembers(hl)>maxItemsBeforeQuickIndex;
 
     ol.startFile(fileName+extension,QCString(),title);
     ol.startQuickIndices();
@@ -3274,7 +3228,7 @@ static void writeFileMemberIndexFiltered(OutputList &ol, FileMemberHighlight::En
 
         if (quickIndex)
         {
-          writeQuickMemberIndex(ol,g_fileIndexLetterUsed[hl],page,
+          writeQuickMemberIndex(ol,index.isFileIndexLetterUsed(hl),page,
               getFmhlInfo(hl)->fname,multiPageIndex);
         }
       }
@@ -3300,7 +3254,7 @@ static void writeFileMemberIndexFiltered(OutputList &ol, FileMemberHighlight::En
 
     writeMemberList(ol,quickIndex,
         multiPageIndex ? page : std::string(),
-        g_fileIndexLetterUsed[hl],
+        index.isFileIndexLetterUsed(hl),
         Definition::TypeFile);
     endFile(ol);
     first=FALSE;
@@ -3399,7 +3353,7 @@ static void writeNamespaceMemberIndexFiltered(OutputList &ol,
   }
 
   bool first=TRUE;
-  for (const auto &kv : g_namespaceIndexLetterUsed[hl])
+  for (const auto &kv : index.isNamespaceIndexLetterUsed(hl))
   {
     std::string page = kv.first;
     QCString fileName = getNmhlInfo(hl)->fname;
@@ -3449,7 +3403,7 @@ static void writeNamespaceMemberIndexFiltered(OutputList &ol,
 
         if (quickIndex)
         {
-          writeQuickMemberIndex(ol,g_namespaceIndexLetterUsed[hl],page,
+          writeQuickMemberIndex(ol,index.isNamespaceIndexLetterUsed(hl),page,
               getNmhlInfo(hl)->fname,multiPageIndex);
         }
       }
@@ -3475,7 +3429,7 @@ static void writeNamespaceMemberIndexFiltered(OutputList &ol,
 
     writeMemberList(ol,quickIndex,
         multiPageIndex ? page : std::string(),
-        g_namespaceIndexLetterUsed[hl],
+        index.isNamespaceIndexLetterUsed(hl),
         Definition::TypeNamespace);
     endFile(ol);
     first=FALSE;
@@ -5113,11 +5067,12 @@ static bool quickLinkVisible(LayoutNavEntry::Kind kind)
   return FALSE;
 }
 
-template<class T,std::size_t total>
+template<class T>
 void renderMemberIndicesAsJs(std::ostream &t,
     std::function<int(int)> numDocumented,
-    const std::array<MemberIndexMap,total> &memberLists,
-    const T *(*getInfo)(size_t hl))
+    std::function<Index::MemberIndexMap(int)> getMemberList,
+    const T *(*getInfo)(size_t hl),
+    std::size_t total)
 {
   // index items per category member lists
   bool firstMember=TRUE;
@@ -5146,7 +5101,7 @@ void renderMemberIndicesAsJs(std::ostream &t,
         }
         t << ",children:[\n";
         bool firstLetter=TRUE;
-        for (const auto &kv : memberLists[i])
+        for (const auto &kv : getMemberList(i))
         {
           if (!firstLetter) t << ",\n";
           std::string letter = kv.first;
@@ -5202,21 +5157,30 @@ static bool renderQuickLinksAsJs(std::ostream &t,LayoutNavEntry *root,bool first
           auto numDoc = [](int i) {
             return Index::instance().numDocumentedNamespaceMembers(static_cast<NamespaceMemberHighlight::Enum>(i));
           };
-          renderMemberIndicesAsJs(t,numDoc,g_namespaceIndexLetterUsed,getNmhlInfo);
+          auto memList = [](int i) {
+            return Index::instance().isNamespaceIndexLetterUsed(static_cast<NamespaceMemberHighlight::Enum>(i));
+          };
+          renderMemberIndicesAsJs(t,numDoc,memList,getNmhlInfo,static_cast<std::size_t>(NamespaceMemberHighlight::Total));
         }
         else if (entry->kind()==LayoutNavEntry::ClassMembers)
         {
           auto numDoc = [](int i) {
             return Index::instance().numDocumentedClassMembers(static_cast<ClassMemberHighlight::Enum>(i));
           };
-          renderMemberIndicesAsJs(t,numDoc,g_classIndexLetterUsed,getCmhlInfo);
+          auto memList = [](int i) {
+            return Index::instance().isClassIndexLetterUsed(static_cast<ClassMemberHighlight::Enum>(i));
+          };
+          renderMemberIndicesAsJs(t,numDoc,memList,getCmhlInfo,static_cast<std::size_t>(ClassMemberHighlight::Total));
         }
         else if (entry->kind()==LayoutNavEntry::FileGlobals)
         {
           auto numDoc = [](int i) {
             return Index::instance().numDocumentedFileMembers(static_cast<FileMemberHighlight::Enum>(i));
           };
-          renderMemberIndicesAsJs(t,numDoc,g_fileIndexLetterUsed,getFmhlInfo);
+          auto memList = [](int i) {
+            return Index::instance().isFileIndexLetterUsed(static_cast<FileMemberHighlight::Enum>(i));
+          };
+          renderMemberIndicesAsJs(t,numDoc,memList,getFmhlInfo,static_cast<std::size_t>(FileMemberHighlight::Total));
         }
         else // recursive into child list
         {

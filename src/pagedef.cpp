@@ -278,7 +278,7 @@ void PageDefImpl::writeDocumentation(OutputList &ol)
 
   if (generateTreeView && getOuterScope()!=Doxygen::globalScope && !Config_getBool(DISABLE_INDEX))
   {
-    endFileWithNavPath(getOuterScope(),ol);
+    endFileWithNavPath(ol,getOuterScope());
   }
   else
   {
