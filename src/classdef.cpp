@@ -187,7 +187,7 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
     virtual const ArgumentList &templateArguments() const;
     virtual FileDef *getFileDef() const;
     virtual const MemberDef *getMemberByName(const QCString &) const;
-    virtual int isBaseClass(const ClassDef *bcd,bool followInstances) const;
+    virtual int isBaseClass(const ClassDef *bcd,bool followInstances,const QCString &templSpec) const;
     virtual bool isSubClass(ClassDef *bcd,int level=0) const;
     virtual bool isAccessibleMember(const MemberDef *md) const;
     virtual const TemplateInstanceList &getTemplateInstances() const;
@@ -435,8 +435,8 @@ class ClassDefAliasImpl : public DefinitionAliasMixin<ClassDef>
     { return getCdAlias()->getFileDef(); }
     virtual const MemberDef *getMemberByName(const QCString &s) const
     { return getCdAlias()->getMemberByName(s); }
-    virtual int isBaseClass(const ClassDef *bcd,bool followInstances) const
-    { return getCdAlias()->isBaseClass(bcd,followInstances); }
+    virtual int isBaseClass(const ClassDef *bcd,bool followInstances,const QCString &templSpec) const
+    { return getCdAlias()->isBaseClass(bcd,followInstances,templSpec); }
     virtual bool isSubClass(ClassDef *bcd,int level=0) const
     { return getCdAlias()->isSubClass(bcd,level); }
     virtual bool isAccessibleMember(const MemberDef *md) const
@@ -3370,22 +3370,25 @@ bool ClassDefImpl::hasDocumentation() const
 // returns the distance to the base class definition 'bcd' represents an (in)direct base
 // class of class definition 'cd' or 0 if it does not.
 
-int ClassDefImpl::isBaseClass(const ClassDef *bcd, bool followInstances) const
+int ClassDefImpl::isBaseClass(const ClassDef *bcd, bool followInstances,const QCString &templSpec) const
 {
   int distance=0;
-  //printf("isBaseClass(cd=%s) looking for %s\n",qPrint(name()),qPrint(bcd->name()));
+  //printf("isBaseClass(cd=%s) looking for %s templSpec=%s\n",qPrint(name()),qPrint(bcd->name()),qPrint(templSpec));
   for (const auto &bclass : baseClasses())
   {
     const ClassDef *ccd = bclass.classDef;
-    if (!followInstances && ccd->templateMaster()) ccd=ccd->templateMaster();
-    if (ccd==bcd)
+    if (!followInstances && ccd->templateMaster())
+    {
+      ccd=ccd->templateMaster();
+    }
+    if (ccd==bcd && (templSpec.isEmpty() || templSpec==bclass.templSpecifiers))
     {
       distance=1;
       break; // no shorter path possible
     }
     else
     {
-      int d = ccd->isBaseClass(bcd,followInstances);
+      int d = ccd->isBaseClass(bcd,followInstances,templSpec);
       if (d>256)
       {
         err("Possible recursive class relation while inside %s and looking for base class %s\n",qPrint(name()),qPrint(bcd->name()));
@@ -4197,7 +4200,7 @@ const MemberDef *ClassDefImpl::getMemberByName(const QCString &name) const
 
 bool ClassDefImpl::isAccessibleMember(const MemberDef *md) const
 {
-  return md->getClassDef() && isBaseClass(md->getClassDef(),TRUE);
+  return md->getClassDef() && isBaseClass(md->getClassDef(),TRUE,QCString());
 }
 
 MemberList *ClassDefImpl::getMemberList(MemberListType lt) const

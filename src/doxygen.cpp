@@ -4646,7 +4646,7 @@ static bool findClassRelation(
             }
             Protection prot = bi->prot;
             if (Config_getBool(SIP_SUPPORT)) prot=Public;
-            if (!cd->isSubClass(baseClass) && cd!=baseClass && cd->isBaseClass(baseClass,true)==0) // check for recursion, see bug690787
+            if (!cd->isSubClass(baseClass) && cd!=baseClass && cd->isBaseClass(baseClass,true,templSpec)==0) // check for recursion, see bug690787
             {
               cd->insertBaseClass(baseClass,usedName,prot,bi->virt,templSpec);
               // add this class as super class to the base class
@@ -4723,7 +4723,7 @@ static bool findClassRelation(
             {
               biName="<"+biName.left(biName.length()-2)+">";
             }
-            if (!cd->isSubClass(baseClass) && cd!=baseClass && cd->isBaseClass(baseClass,true)==0) // check for recursion
+            if (!cd->isSubClass(baseClass) && cd!=baseClass && cd->isBaseClass(baseClass,true,templSpec)==0) // check for recursion
             {
               // add base class to this class
               cd->insertBaseClass(baseClass,biName,bi->prot,bi->virt,templSpec);
