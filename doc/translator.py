@@ -194,6 +194,7 @@ class Transl:
                      '%':         'perc',
                      '~':         'tilde',
                      '^':         'caret',
+                     '|':         'pipe',
                    }
 
         # Regular expression for recognizing identifiers.
