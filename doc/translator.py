@@ -246,10 +246,7 @@ class Transl:
                         elif rexId.match(tokenStr):
                             tokenId = 'id'
                         else:
-                            msg = '\aWarning: unknown token "' + tokenStr + '"'
-                            msg += '\tfound on line %d' % tokenLineNo
-                            msg += ' in "' + self.fname + '".\n'
-                            sys.stderr.write(msg)
+                            self.__unexpectedToken(-1, tokenStr, tokenLineNo)
 
                     yield (tokenId, tokenStr, tokenLineNo)
 
@@ -511,7 +508,8 @@ class Transl:
         calledFrom = inspect.stack()[1][3]
         msg = "\a\nUnexpected token '%s' on the line %d in '%s'.\n"
         msg = msg % (tokenId, tokenLineNo, self.fname)
-        msg += 'status = %d in %s()\n' % (status, calledFrom)
+        if status != -1:
+            msg += 'status = %d in %s()\n' % (status, calledFrom)
         sys.stderr.write(msg)
         sys.exit(1)
 
