@@ -105,7 +105,15 @@
 % Necessary for hanging indent
 \newlength{\DoxyCodeWidth}
 
-\newcommand\DoxyCodeLine[1]{\hangpara{\DoxyCodeWidth}{1}{#1}\par}
+\newcommand\DoxyCodeLine[1]{
+  \ifthenelse{\equal{\detokenize{#1}}{}}
+  {
+    \vspace*{\baselineskip}
+  }
+  {
+    \hangpara{\DoxyCodeWidth}{1}{#1}\par
+  }
+}
 
 \newcommand\NiceSpace{%
      \discretionary{}{\kern\fontdimen2\font}{\kern\fontdimen2\font}%
