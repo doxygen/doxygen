@@ -24,4 +24,5 @@ configure_file(${CMAKE_SOURCE_DIR}/doc_internal/Doxyfile.in "${CMAKE_CURRENT_BIN
 add_custom_target(docs_internal
         COMMENT "Generating HTML internal documentation."
         COMMAND ${CMAKE_COMMAND} -E env VERSION=${VERSION} ${DOXYGEN_EXECUTABLE}
+        DEPENDS doxygen
         )
