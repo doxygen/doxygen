@@ -429,6 +429,7 @@ struct commentscanYY_state
 
   QCString         raiseWarning;
 
+  QCString         anchorTitle;
   QCString         htmlAnchorStr;
   bool             htmlAnchor = false;
 };
@@ -455,7 +456,7 @@ static QCString addFormula(yyscan_t yyscanner);
 static void checkFormula(yyscan_t yyscanner);
 static void addSection(yyscan_t yyscanner);
 static inline void setOutput(yyscan_t yyscanner,OutputContext ctx);
-static void addAnchor(yyscan_t yyscanner,const QCString &anchor);
+static void addAnchor(yyscan_t yyscanner,const QCString &anchor, const QCString &title="");
 static inline void addOutput(yyscan_t yyscanner,const char *s);
 static inline void addOutput(yyscan_t yyscanner,const QCString &s);
 static inline void addOutput(yyscan_t yyscanner,char c);
@@ -1600,7 +1601,7 @@ STopt  [^\n@\\]*
   /* ----- handle arguments of the anchor command ------- */
 
 <AnchorLabel>{LABELID}                  { // found argument
-                                          addAnchor(yyscanner,QCString(yytext));
+                                          addAnchor(yyscanner,QCString(yytext), yyextra->anchorTitle);
                                           addOutput(yyscanner,yytext);
                                           BEGIN( Comment );
                                         }
@@ -2592,10 +2593,18 @@ static bool handleSubpage(yyscan_t yyscanner,const QCString &s, const StringVect
   return FALSE;
 }
 
-static bool handleAnchor(yyscan_t yyscanner,const QCString &s, const StringVector &)
+static bool handleAnchor(yyscan_t yyscanner,const QCString &s, const StringVector &optList)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   addOutput(yyscanner,"@"+s+" ");
+  if (optList.empty())
+  {
+    yyextra -> anchorTitle = "";
+  }
+  else
+  {
+    yyextra -> anchorTitle = join(optList," ");
+  }
   BEGIN(AnchorLabel);
   return FALSE;
 }
@@ -3518,7 +3527,7 @@ static inline void setOutput(yyscan_t yyscanner,OutputContext ctx)
 }
 
 
-static void addAnchor(yyscan_t yyscanner,const QCString &anchor)
+static void addAnchor(yyscan_t yyscanner,const QCString &anchor, const QCString &title)
 {
   std::unique_lock<std::mutex> lock(g_sectionMutex);
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
@@ -3545,7 +3554,7 @@ static void addAnchor(yyscan_t yyscanner,const QCString &anchor)
   }
   else
   {
-    si = sm.add(anchor,yyextra->fileName,yyextra->lineNr,QCString(),SectionType::Anchor,0);
+    si = sm.add(anchor,yyextra->fileName,yyextra->lineNr,title,SectionType::Anchor,0);
     yyextra->current->anchors.push_back(si);
   }
 }
