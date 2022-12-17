@@ -53,8 +53,14 @@ class DotRunner
     /** Prevent cleanup of the dot file (for user provided dot files) */
     void preventCleanUp() { m_cleanUp = false; }
 
+    /** Return the format types for the different jobs */
+    std::vector<std::string> get_job_format_types();
+
     /** Runs dot for all jobs added. */
     bool run();
+
+    /** Skip dot creation step */
+    void skip();
 
     QCString getMd5Hash() { return m_md5Hash; }
 
@@ -66,6 +72,7 @@ class DotRunner
     QCString m_dotExe;
     bool     m_cleanUp;
     std::vector<DotJob>  m_jobs;
+    bool     m_skip;
 };
 
 /** Queue of dot jobs to run. */

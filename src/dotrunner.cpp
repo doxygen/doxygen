@@ -148,6 +148,7 @@ DotRunner::DotRunner(const QCString& absDotName, const QCString& md5Hash)
   , m_md5Hash(md5Hash)
   , m_dotExe(Doxygen::verifiedDotPath)
   , m_cleanUp(Config_getBool(DOT_CLEANUP))
+  , m_skip(false)
 {
 }
 
@@ -174,6 +175,18 @@ QCString getBaseNameOfOutput(const QCString &output)
   return output.left(index);
 }
 
+std::vector<std::string> DotRunner::get_job_format_types()
+{
+    std::vector<std::string> types;
+    for (auto& s : m_jobs)
+    {
+        std::stringstream ss;
+        ss << s.format;
+        types.push_back(ss.str());
+    }
+    return types;
+}
+
 bool DotRunner::run()
 {
   int exitCode=0;
@@ -183,31 +196,46 @@ bool DotRunner::run()
   QCString srcFile;
   int srcLine=-1;
 
-  // create output
-  if (Config_getBool(DOT_MULTI_TARGETS))
+  // double check if output files were created by the batched processing
+  if(m_skip)
   {
-    dotArgs=QCString("\"")+m_file+"\"";
-    for (auto& s: m_jobs)
-    {
-      dotArgs+=' ';
-      dotArgs+=s.args;
-    }
-    if (!m_jobs.empty())
-    {
-      srcFile = m_jobs.front().srcFile;
-      srcLine = m_jobs.front().srcLine;
-    }
-    if ((exitCode=Portable::system(m_dotExe,dotArgs,FALSE))!=0) goto error;
+      for (auto &s: m_jobs)
+      {
+          if (!FileInfo(s.output.str()).exists())
+          {
+              m_skip = false;
+          }
+      }
   }
-  else
+
+  // create output
+  if(!m_skip)
   {
-    for (auto& s : m_jobs)
-    {
-      srcFile = s.srcFile;
-      srcLine = s.srcLine;
-      dotArgs=QCString("\"")+m_file+"\" "+s.args;
-      if ((exitCode=Portable::system(m_dotExe,dotArgs,FALSE))!=0) goto error;
-    }
+      if (Config_getBool(DOT_MULTI_TARGETS))
+      {
+          dotArgs = QCString("\"") + m_file + "\"";
+          for (auto &s: m_jobs)
+          {
+              dotArgs += ' ';
+              dotArgs += s.args;
+          }
+          if (!m_jobs.empty())
+          {
+              srcFile = m_jobs.front().srcFile;
+              srcLine = m_jobs.front().srcLine;
+          }
+          if ((exitCode = Portable::system(m_dotExe, dotArgs, FALSE)) != 0) goto error;
+      }
+      else
+      {
+          for (auto &s: m_jobs)
+          {
+              srcFile = s.srcFile;
+              srcLine = s.srcLine;
+              dotArgs = QCString("\"") + m_file + "\" " + s.args;
+              if ((exitCode = Portable::system(m_dotExe, dotArgs, FALSE)) != 0) goto error;
+          }
+      }
   }
 
   // check output
@@ -257,6 +285,10 @@ error:
   return FALSE;
 }
 
+void DotRunner::skip()
+{
+    m_skip = true;
+}
 
 //--------------------------------------------------------------------
 
