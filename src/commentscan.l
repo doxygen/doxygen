@@ -783,7 +783,7 @@ STopt  [^\n@\\]*
 <Comment>{B}*"\\ilinebr"{B}*            { // preserve spacing around \\ilinebr
                                           addOutput(yyscanner,yytext);
                                         }
-<Comment>{B}*{CMD}[a-z_A-Z]+"{"[a-zA-Z_,:0-9\. %]*"}"{B}*  |
+<Comment>{B}*{CMD}[a-z_A-Z]+"{"[^}]*"}"{B}*  |
 <Comment>{B}*{CMD}[a-z_A-Z]+{B}*        { // potentially interesting command
                                           // the {B}* in the front was added for bug620924
                                           QCString fullMatch = QCString(yytext);
