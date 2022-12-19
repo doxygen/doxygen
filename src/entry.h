@@ -299,6 +299,7 @@ class Entry
     LocalToc    localToc;
     QCString    metaData;     //!< Slice metadata
     QCString    req;          //!< C++20 requires clause
+    std::vector<std::string> qualifiers;  //!< qualifiers specified with the qualifier command
 
     /// return the command name used to define GROUPDOC_SEC
     const char *groupDocCmd() const

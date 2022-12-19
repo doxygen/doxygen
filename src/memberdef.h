@@ -290,6 +290,8 @@ class MemberDef : public Definition
     // TODO: this is not a getter, should be passed at construction
     virtual void setMemberGroup(MemberGroup *grp) = 0;
 
+    virtual void addQualifiers(StringVector qualifiers) const = 0;
+    virtual StringVector getQualifiers() const = 0;
 };
 
 class MemberDefMutable : public DefinitionMutable, public MemberDef
@@ -401,6 +403,8 @@ class MemberDefMutable : public DefinitionMutable, public MemberDef
 
     virtual void setRequiresClause(const QCString &req) = 0;
 
+    virtual void addQualifiers(StringVector qualifiers) const = 0;
+
     //-----------------------------------------------------------------------------------
     // --- actions ----
     //-----------------------------------------------------------------------------------
@@ -425,7 +429,6 @@ class MemberDefMutable : public DefinitionMutable, public MemberDef
     // write helpers
     virtual void setAnonymousUsed() const = 0;
     virtual void setFromAnonymousScope(bool b) const = 0;
-
 };
 
 inline ClassDefMutable *MemberDef::getClassDefMutable() const

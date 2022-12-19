@@ -332,6 +332,8 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
                    const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
                    bool onlyText=FALSE) const;
     virtual void resolveUnnamedParameters(const MemberDef *md);
+    virtual void addQualifiers(StringVector qualifiers) const;
+    virtual StringVector getQualifiers() const;
 
   private:
     void _computeLinkableInProject();
@@ -701,6 +703,8 @@ class MemberDefAliasImpl : public DefinitionAliasMixin<MemberDef>
     { return getMdAlias()->hasReferencesRelation(); }
     virtual bool hasReferencedByRelation() const
     { return getMdAlias()->hasReferencedByRelation(); }
+    virtual StringVector getQualifiers() const
+    { return getMdAlias()->getQualifiers(); }
     virtual const MemberDef *templateMaster() const
     { return getMdAlias()->templateMaster(); }
     virtual QCString getScopeString() const
@@ -772,6 +776,10 @@ class MemberDefAliasImpl : public DefinitionAliasMixin<MemberDef>
             const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd) const
     {
       getMdAlias()->writeEnumDeclaration(typeDecl,cd,nd,fd,gd);
+    }
+    virtual void addQualifiers(StringVector qualifiers) const
+    {
+      getMdAlias()->addQualifiers(qualifiers);
     }
   private:
     MemberGroup *m_memberGroup; // group's member definition
@@ -1233,6 +1241,9 @@ class MemberDefImpl::IMPL
 
     // to store the output file base from tag files
     QCString explicitOutputFileBase;
+
+    // to store extra qualifiers
+    StringVector qualifiers;
 
     // objective-c
     bool implOnly = false; // function found in implementation but not
@@ -2737,6 +2748,14 @@ StringVector MemberDefImpl::getLabels(const Definition *container) const
   {
     sl.push_back("implementation");
   }
+  for (const auto &sx : m_impl->qualifiers)
+  {
+    if(std::find(sl.begin(), sl.end(), sx) == sl.end())
+    {
+      sl.push_back(sx);
+    }
+  }
+
   return sl;
 }
 
@@ -5518,6 +5537,22 @@ void MemberDefImpl::mergeMemberSpecifiers(uint64 s)
   m_impl->memSpec|=s;
 }
 
+StringVector MemberDefImpl::getQualifiers() const
+{
+  return m_impl->qualifiers;
+}
+
+void MemberDefImpl::addQualifiers(StringVector qualifiers) const
+{
+  for (const auto &sx :qualifiers)
+  {
+    if(std::find(m_impl->qualifiers.begin(), m_impl->qualifiers.end(), sx) == m_impl->qualifiers.end())
+    {
+      m_impl->qualifiers.push_back(sx);
+    }
+  }
+}
+
 void MemberDefImpl::setBitfields(const QCString &s)
 {
   m_impl->bitfields = QCString(s).simplifyWhiteSpace();
@@ -5961,6 +5996,9 @@ void combineDeclarationAndDefinition(MemberDefMutable *mdec,MemberDefMutable *md
       mdef->enableReferencesRelation(mdec->hasReferencesRelation() || mdef->hasReferencesRelation());
       mdec->enableReferencedByRelation(mdec->hasReferencedByRelation() || mdef->hasReferencedByRelation());
       mdec->enableReferencesRelation(mdec->hasReferencesRelation() || mdef->hasReferencesRelation());
+
+      mdef->addQualifiers(mdec->getQualifiers());
+      mdec->addQualifiers(mdef->getQualifiers());
     }
   }
 }

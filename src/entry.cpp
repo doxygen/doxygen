@@ -110,6 +110,7 @@ Entry::Entry(const Entry &e)
   groups      = e.groups;
   req         = e.req;
   m_fileDef   = e.m_fileDef;
+  qualifiers  = e.qualifiers;
 
   m_parent    = e.m_parent;
   // deep copy child entries
@@ -245,6 +246,7 @@ void Entry::reset()
   sli.clear();
   req.resize(0);
   m_fileDef = 0;
+  qualifiers.clear();
 }
 
 void Entry::setFileDef(FileDef *fd)
