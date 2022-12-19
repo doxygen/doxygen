@@ -80,16 +80,21 @@ static int labelToEnumValue(const QCString &l)
   return (it!=s_labels.end()) ? it->second : 0;
 }
 
-int Debug::setFlag(const QCString &lab)
+int Debug::setFlagStr(const QCString &lab)
 {
   int retVal = labelToEnumValue(lab);
   curMask = static_cast<DebugMask>(curMask | retVal);
   return retVal;
 }
 
-void Debug::clearFlag(const QCString &lab)
+void Debug::setFlag(const DebugMask mask)
 {
-  curMask = static_cast<DebugMask>(curMask & ~labelToEnumValue(lab));
+  curMask = static_cast<DebugMask>(curMask | mask);
+}
+
+void Debug::clearFlag(const DebugMask mask)
+{
+  curMask = static_cast<DebugMask>(curMask & ~mask);
 }
 
 void Debug::setPriority(int p)
