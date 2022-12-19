@@ -393,8 +393,8 @@ class MemberDefMutable : public DefinitionMutable, public MemberDef
     virtual void setCategory(ClassDef *) = 0;
     virtual void setCategoryRelation(const MemberDef *) = 0;
 
-    virtual void setDocumentation(const QCString &d,const QCString &docFile,int docLine,bool stripWhiteSpace=TRUE) = 0;
-    virtual void setBriefDescription(const QCString &b,const QCString &briefFile,int briefLine) = 0;
+    virtual void setDocumentation(const QCString &d,const QCString &docFile,int docLine,bool stripWhiteSpace=true,bool force=false) = 0;
+    virtual void setBriefDescription(const QCString &b,const QCString &briefFile,int briefLine,const bool reset=false) = 0;
     virtual void setInbodyDocumentation(const QCString &d,const QCString &inbodyFile,int inbodyLine) = 0;
 
     virtual void setHidden(bool b) = 0;

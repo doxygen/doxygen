@@ -304,8 +304,8 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     virtual void copyArgumentNames(const MemberDef *bmd);
     virtual void setCategory(ClassDef *);
     virtual void setCategoryRelation(const MemberDef *);
-    virtual void setDocumentation(const QCString &d,const QCString &docFile,int docLine,bool stripWhiteSpace=TRUE);
-    virtual void setBriefDescription(const QCString &b,const QCString &briefFile,int briefLine);
+    virtual void setDocumentation(const QCString &d,const QCString &docFile,int docLine,bool stripWhiteSpace=true,bool force=false);
+    virtual void setBriefDescription(const QCString &b,const QCString &briefFile,int briefLine,const bool reset=false);
     virtual void setInbodyDocumentation(const QCString &d,const QCString &inbodyFile,int inbodyLine);
     virtual void setHidden(bool b);
     virtual void setRequiresClause(const QCString &req);
@@ -1713,15 +1713,15 @@ void MemberDefImpl::_computeLinkableInProject()
   return; // linkable!
 }
 
-void MemberDefImpl::setDocumentation(const QCString &d,const QCString &docFile,int docLine,bool stripWhiteSpace)
+void MemberDefImpl::setDocumentation(const QCString &d,const QCString &docFile,int docLine,bool stripWhiteSpace,bool force)
 {
-  DefinitionMixin::setDocumentation(d,docFile,docLine,stripWhiteSpace);
+  DefinitionMixin::setDocumentation(d,docFile,docLine,stripWhiteSpace,force);
   m_isLinkableCached = 0;
 }
 
-void MemberDefImpl::setBriefDescription(const QCString &b,const QCString &briefFile,int briefLine)
+void MemberDefImpl::setBriefDescription(const QCString &b,const QCString &briefFile,int briefLine,const bool reset)
 {
-  DefinitionMixin::setBriefDescription(b,briefFile,briefLine);
+  DefinitionMixin::setBriefDescription(b,briefFile,briefLine,reset);
   m_isLinkableCached = 0;
 }
 
@@ -5865,18 +5865,40 @@ void combineDeclarationAndDefinition(MemberDefMutable *mdec,MemberDefMutable *md
       // first merge argument documentation
       transferArgumentDocumentation(mdecAl,mdefAl);
 
+      QCString saveBrf;
+      QCString saveBrfFile;
+      int saveBrfLine = -1;
+      QCString saveDet = mdef->documentation();
+      QCString saveDetFile = mdef->docFile();
+      int saveDetLine = mdef->docLine();
+
       /* copy documentation between function definition and declaration */
-      if (!mdec->briefDescription().isEmpty())
+      if (mdef->briefDescription().isEmpty())
       {
         mdef->setBriefDescription(mdec->briefDescription(),mdec->briefFile(),mdec->briefLine());
       }
-      else if (!mdef->briefDescription().isEmpty())
+      else if (mdec->briefDescription().isEmpty())
       {
         mdec->setBriefDescription(mdef->briefDescription(),mdef->briefFile(),mdef->briefLine());
       }
-      if (!mdef->documentation().isEmpty())
+      else // if (!mdef->briefDescription().isEmpty() && !mdec->briefDescription().isEmpty())
+      {
+        if (mdef->briefDescription() != mdec->briefDescription())
+        {
+          saveBrf = mdef->briefDescription();
+          saveBrfFile = mdef->briefFile();
+          saveBrfLine = mdef->briefLine();
+          mdef->setBriefDescription(mdec->briefDescription(),mdec->briefFile(),mdec->briefLine(),true);
+        }
+      }
+
+      if (mdec->documentation().isEmpty() & !mdef->documentation().isEmpty())
       {
         //printf("transferring docs mdef->mdec (%s->%s)\n",mdef->argsString(),mdec->argsString());
+        if (!saveBrf.isEmpty())
+        {
+          mdef->setDocumentation(saveBrf,saveBrfFile,saveBrfLine,true,true);
+        }
         mdec->setDocumentation(mdef->documentation(),mdef->docFile(),mdef->docLine());
         mdec->setDocsForDefinition(mdef->isDocsForDefinition());
         if (mdefAl.hasParameters())
@@ -5886,10 +5908,16 @@ void combineDeclarationAndDefinition(MemberDefMutable *mdec,MemberDefMutable *md
           mdec->moveArgumentList(std::move(mdefAlComb));
         }
       }
-      else if (!mdec->documentation().isEmpty())
+      else if (mdef->documentation().isEmpty() && !mdec->documentation().isEmpty())
       {
         //printf("transferring docs mdec->mdef (%s->%s)\n",mdec->argsString(),mdef->argsString());
-        mdef->setDocumentation(mdec->documentation(),mdec->docFile(),mdec->docLine());
+        if (!saveBrf.isEmpty())
+        {
+          saveBrf = saveBrf + "\\ifile " + mdec->docFile() +" \\iline " + QCString().setNum(mdec->docLine()) + " ";
+          mdec->setDocumentation(saveBrf,saveBrfFile,saveBrfLine,true,true);
+        }
+        QCString mdoc = mdec->documentation();
+        mdef->setDocumentation(mdoc,mdec->docFile(),mdec->docLine());
         mdef->setDocsForDefinition(mdec->isDocsForDefinition());
         if (mdecAl.hasParameters())
         {
@@ -5898,13 +5926,48 @@ void combineDeclarationAndDefinition(MemberDefMutable *mdec,MemberDefMutable *md
           mdef->moveDeclArgumentList(std::move(mdecAlComb));
         }
       }
-      if (!mdef->inbodyDocumentation().isEmpty())
+      else if (mdef->documentation().isEmpty() && mdec->documentation().isEmpty())
+      {
+        if (!saveBrf.isEmpty())
+        {
+          mdec->setDocumentation(saveBrf,saveBrfFile,saveBrfLine);
+          mdef->setDocumentation(saveBrf,saveBrfFile,saveBrfLine);
+        }
+      }
+      else //if (!mdef->documentation().isEmpty() && !mdec->documentation().isEmpty())
+      {
+        if (saveDet != mdec->documentation())
+        {
+          QCString mdoc = mdec->documentation();
+          mdoc = "\\ifile " + mdec->docFile() +" \\iline " + QCString().setNum(mdec->docLine()) + " " + mdoc
+            + " \\ifile " + mdef->docFile() +" \\iline " + QCString().setNum(mdef->docLine()) + " ";
+          mdef->setDocumentation(mdoc,mdec->docFile(),mdec->docLine(),true,true);
+
+          saveDet = "\\ifile " + saveDetFile +" \\iline " + QCString().setNum(saveDetLine) + " " + saveDet;
+          mdec->setDocumentation(saveDet,mdec->docFile(),mdec->docLine());
+        }
+
+        if (!saveBrf.isEmpty())
+        {
+          saveBrf = saveBrf + "\\ifile " + mdec->docFile() +" \\iline " + QCString().setNum(mdec->docLine()) + " ";
+          mdec->setDocumentation(saveBrf,saveBrfFile,saveBrfLine,true,true);
+          mdef->setDocumentation(saveBrf,saveBrfFile,saveBrfLine,true,true);
+        }
+      }
+
+      if (mdec->inbodyDocumentation().isEmpty() && !mdef->inbodyDocumentation().isEmpty())
       {
         mdec->setInbodyDocumentation(mdef->inbodyDocumentation(),mdef->inbodyFile(),mdef->inbodyLine());
       }
-      else if (!mdec->inbodyDocumentation().isEmpty())
+      else if (mdef->inbodyDocumentation().isEmpty() && !mdec->inbodyDocumentation().isEmpty())
       {
         mdef->setInbodyDocumentation(mdec->inbodyDocumentation(),mdec->inbodyFile(),mdec->inbodyLine());
+      }
+      else if (!mdef->inbodyDocumentation().isEmpty() && !mdec->inbodyDocumentation().isEmpty())
+      {
+        QCString mdefInbodyDocumentation = mdef->inbodyDocumentation();
+        mdef->setInbodyDocumentation(mdec->inbodyDocumentation(),mdef->inbodyFile(),mdef->inbodyLine());
+        mdec->setInbodyDocumentation(mdefInbodyDocumentation,mdec->inbodyFile(),mdec->inbodyLine());
       }
       if (mdec->getStartBodyLine()!=-1 && mdef->getStartBodyLine()==-1)
       {
