@@ -12693,14 +12693,10 @@ void generateOutput()
          Portable::getSysElapsedTime()
         );
     g_s.print();
-    bool restore=FALSE;
-    if (Debug::isFlagSet(Debug::Time))
-    {
-      Debug::clearFlag("time");
-      restore=TRUE;
-    }
+
+    Debug::clearFlag("time");
     msg("finished...\n");
-    if (restore) Debug::setFlag("time");
+    Debug::setFlag("time");
   }
   else
   {
