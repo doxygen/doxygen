@@ -12686,6 +12686,10 @@ void generateOutput()
          Portable::getSysElapsedTime()
         );
     g_s.print();
+
+    Debug::clearFlag("time");
+    msg("finished...\n");
+    Debug::setFlag("time");
   }
   else
   {
