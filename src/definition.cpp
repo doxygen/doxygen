@@ -1758,8 +1758,11 @@ Definition *DefinitionImpl::getOuterScope() const
   return m_impl->outerScope;
 }
 
+static std::mutex g_memberReferenceMutex;
+
 const MemberVector &DefinitionImpl::getReferencesMembers() const
 {
+  std::lock_guard<std::mutex> lock(g_memberReferenceMutex);
   if (m_impl->referencesMembers.empty() && !m_impl->sourceRefsDict.empty())
   {
     m_impl->referencesMembers = refMapToVector(m_impl->sourceRefsDict);
@@ -1769,6 +1772,7 @@ const MemberVector &DefinitionImpl::getReferencesMembers() const
 
 const MemberVector &DefinitionImpl::getReferencedByMembers() const
 {
+  std::lock_guard<std::mutex> lock(g_memberReferenceMutex);
   if (m_impl->referencedByMembers.empty() && !m_impl->sourceRefByDict.empty())
   {
     m_impl->referencedByMembers = refMapToVector(m_impl->sourceRefByDict);

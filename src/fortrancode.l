@@ -213,12 +213,6 @@ static MemberDef *getFortranDefs(yyscan_t yyscanner,const QCString &memberName, 
 static int yyread(yyscan_t yyscanner,char *buf,int max_size);
 static inline void pop_state(yyscan_t yyscanner);
 
-
-//-------------------------------------------------------------------
-
-static std::mutex g_docCrossReferenceMutex;
-static std::mutex g_countFlowKeywordsMutex;
-
 /* -----------------------------------------------------------------*/
 #undef  YY_INPUT
 #define YY_INPUT(buf,result,max_size) result=yyread(yyscanner,buf,max_size);
@@ -303,7 +297,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                           }
                                           if (yyextra->currentMemberDef && yyextra->currentMemberDef->isFunction())
                                           {
-                                            std::lock_guard<std::mutex> lock(g_countFlowKeywordsMutex);
+                                            std::lock_guard<std::mutex> lock(Doxygen::countFlowKeywordsMutex);
                                             MemberDefMutable *mdm = toMemberDefMutable(yyextra->currentMemberDef);
                                             if (mdm)
                                             {
@@ -1249,7 +1243,6 @@ static bool getLink(yyscan_t yyscanner,const UseMap &useMap, // dictionary with 
       if (yyextra->currentDefinition && yyextra->currentMemberDef &&
           yyextra->insideBody && yyextra->collectXRefs)
       {
-        std::lock_guard<std::mutex> lock(g_docCrossReferenceMutex);
         addDocCrossReference(toMemberDefMutable(yyextra->currentMemberDef),toMemberDefMutable(md));
       }
       writeMultiLineCodeLink(yyscanner,ol,md,!text.isEmpty() ? text : memberText);

@@ -86,16 +86,14 @@ void TooltipManager::addTooltip(const Definition *d)
 
 void TooltipManager::writeTooltips(CodeOutputInterface &ol)
 {
-  int id = ol.id();
-  std::unordered_map<int, std::set<std::string> >::iterator it;
   // critical section
+  std::lock_guard<std::mutex> lock(g_tooltipsMutex);
+
+  int id = ol.id();
+  auto it = g_tooltipsWrittenPerFile.find(id);
+  if (it==g_tooltipsWrittenPerFile.end()) // new file
   {
-    std::lock_guard<std::mutex> lock(g_tooltipsMutex);
-    it = g_tooltipsWrittenPerFile.find(id);
-    if (it==g_tooltipsWrittenPerFile.end()) // new file
-    {
-      it = g_tooltipsWrittenPerFile.insert(std::make_pair(id,std::set<std::string>())).first;
-    }
+    it = g_tooltipsWrittenPerFile.insert(std::make_pair(id,std::set<std::string>())).first;
   }
 
   for (const auto &kv : p->tooltipInfo)

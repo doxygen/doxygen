@@ -6060,9 +6060,12 @@ CodeSymbolType MemberDefImpl::codeSymbolType() const
 //-------------------------------------------------------------------------------
 // Helpers
 
+static std::mutex g_docCrossReferenceMutex;
+
 void addDocCrossReference(MemberDefMutable *src,MemberDefMutable *dst)
 {
   if (src==0 || dst==0) return;
+  std::lock_guard<std::mutex> lock(g_docCrossReferenceMutex);
   //printf("--> addDocCrossReference src=%s,dst=%s\n",qPrint(src->name()),qPrint(dst->name()));
   if (dst->isTypedef() || dst->isEnumerate()) return; // don't add types
   if ((dst->hasReferencedByRelation() || dst->hasCallerGraph()) &&

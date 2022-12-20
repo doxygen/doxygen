@@ -506,8 +506,9 @@ void NamespaceDefImpl::insertMember(MemberDef *md)
         break;
       default:
         err("NamespaceDefImpl::insertMembers(): "
-            "member '%s' with class scope '%s' inserted in namespace scope '%s'!\n",
+            "member '%s' with unexpected type id %d and class scope '%s' inserted in namespace scope '%s'!\n",
             qPrint(md->name()),
+            md->memberType(),
             md->getClassDef() ? qPrint(md->getClassDef()->name()) : "",
             qPrint(name()));
     }

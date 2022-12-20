@@ -256,13 +256,6 @@ static int yyread(yyscan_t yyscanner,char *buf,int max_size);
 static void addVariable(yyscan_t yyscanner,QCString type,QCString name);
 static bool startsWithKeyword(const QCString &str,const QCString &kw);
 
-//-------------------------------------------------------------------
-
-static std::mutex g_searchIndexMutex;
-static std::mutex g_docCrossReferenceMutex;
-static std::mutex g_addExampleMutex;
-static std::mutex g_countFlowKeywordsMutex;
-
 /* -----------------------------------------------------------------
  */
 #undef  YY_INPUT
@@ -2318,7 +2311,7 @@ static void setCurrentDoc(yyscan_t yyscanner,const QCString &anchor)
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (Doxygen::searchIndex)
   {
-    std::lock_guard<std::mutex> lock(g_searchIndexMutex);
+    std::lock_guard<std::mutex> lock(Doxygen::searchIndexMutex);
     if (yyextra->searchCtx)
     {
       yyextra->code->setCurrentDoc(yyextra->searchCtx,yyextra->searchCtx->anchor(),FALSE);
@@ -2335,7 +2328,7 @@ static void addToSearchIndex(yyscan_t yyscanner,const QCString &text)
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (Doxygen::searchIndex)
   {
-    std::lock_guard<std::mutex> lock(g_searchIndexMutex);
+    std::lock_guard<std::mutex> lock(Doxygen::searchIndexMutex);
     yyextra->code->addWord(text,FALSE);
   }
 }
@@ -2507,7 +2500,7 @@ static void codifyLines(yyscan_t yyscanner,const char *text)
 
 static void incrementFlowKeyWordCount(yyscan_t yyscanner)
 {
-  std::lock_guard<std::mutex> lock(g_countFlowKeywordsMutex);
+  std::lock_guard<std::mutex> lock(Doxygen::countFlowKeywordsMutex);
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (yyextra->currentMemberDef && yyextra->currentMemberDef->isFunction())
   {
@@ -2794,7 +2787,7 @@ static bool getLinkInScope(yyscan_t yyscanner,
       DBG_CTX((stderr,"found it %s!\n",qPrint(md->qualifiedName())));
       if (yyextra->exampleBlock)
       {
-        std::lock_guard<std::mutex> lock(g_addExampleMutex);
+        std::lock_guard<std::mutex> lock(Doxygen::addExampleMutex);
         QCString anchor;
         anchor.sprintf("a%d",yyextra->anchorCount);
         DBG_CTX((stderr,"addExampleFile(%s,%s,%s)\n",qPrint(anchor),qPrint(yyextra->exampleName),
@@ -2819,7 +2812,6 @@ static bool getLinkInScope(yyscan_t yyscanner,
         if (yyextra->currentDefinition && yyextra->currentMemberDef &&
             yyextra->insideBody && yyextra->collectXRefs)
         {
-          std::lock_guard<std::mutex> lock(g_docCrossReferenceMutex);
           addDocCrossReference(toMemberDefMutable(yyextra->currentMemberDef),toMemberDefMutable(md));
         }
         DBG_CTX((stderr,"d->getReference()='%s' d->getOutputBase()='%s' name='%s' member name='%s'\n",qPrint(d->getReference()),qPrint(d->getOutputFileBase()),qPrint(d->name()),qPrint(md->name())));
@@ -2997,7 +2989,7 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
     DBG_CTX((stderr,"is linkable class %s\n",qPrint(clName)));
     if (yyextra->exampleBlock)
     {
-      std::lock_guard<std::mutex> lock(g_addExampleMutex);
+      std::lock_guard<std::mutex> lock(Doxygen::addExampleMutex);
       QCString anchor;
       anchor.sprintf("_a%d",yyextra->anchorCount);
       DBG_CTX((stderr,"addExampleClass(%s,%s,%s)\n",qPrint(anchor),qPrint(yyextra->exampleName),
@@ -3020,7 +3012,6 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
       if (d && d->isLinkable() && md->isLinkable() &&
           yyextra->currentMemberDef && yyextra->collectXRefs)
       {
-        std::lock_guard<std::mutex> lock(g_docCrossReferenceMutex);
         addDocCrossReference(toMemberDefMutable(yyextra->currentMemberDef),toMemberDefMutable(md));
       }
     }
@@ -3057,7 +3048,6 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
           addToSearchIndex(yyscanner,clName);
           if (yyextra->currentMemberDef && yyextra->collectXRefs)
           {
-            std::lock_guard<std::mutex> lock(g_docCrossReferenceMutex);
             addDocCrossReference(toMemberDefMutable(yyextra->currentMemberDef),toMemberDefMutable(md));
           }
           return;
@@ -3093,7 +3083,7 @@ static bool generateClassMemberLink(yyscan_t yyscanner,
 
   if (yyextra->exampleBlock)
   {
-    std::lock_guard<std::mutex> lock(g_addExampleMutex);
+    std::lock_guard<std::mutex> lock(Doxygen::addExampleMutex);
     QCString anchor;
     anchor.sprintf("a%d",yyextra->anchorCount);
     DBG_CTX((stderr,"addExampleFile(%s,%s,%s)\n",qPrint(anchor),qPrint(yyextra->exampleName),
@@ -3127,7 +3117,6 @@ static bool generateClassMemberLink(yyscan_t yyscanner,
       if (yyextra->currentDefinition && yyextra->currentMemberDef &&
           yyextra->insideBody && yyextra->collectXRefs)
       {
-        std::lock_guard<std::mutex> lock(g_docCrossReferenceMutex);
         addDocCrossReference(toMemberDefMutable(yyextra->currentMemberDef),toMemberDefMutable(xmd));
       }
 
@@ -3548,7 +3537,6 @@ static void writeObjCMethodCall(yyscan_t yyscanner,ObjCCallCtx *ctx)
                 writeMultiLineCodeLink(yyscanner,*yyextra->code,ctx->method,name);
                 if (yyextra->currentMemberDef && yyextra->collectXRefs)
                 {
-                  std::lock_guard<std::mutex> lock(g_docCrossReferenceMutex);
                   addDocCrossReference(toMemberDefMutable(yyextra->currentMemberDef),toMemberDefMutable(ctx->method));
                 }
               }
@@ -3623,7 +3611,6 @@ static void writeObjCMethodCall(yyscan_t yyscanner,ObjCCallCtx *ctx)
                 writeMultiLineCodeLink(yyscanner,*yyextra->code,ctx->objectVar,object);
                 if (yyextra->currentMemberDef && yyextra->collectXRefs)
                 {
-                  std::lock_guard<std::mutex> lock(g_docCrossReferenceMutex);
                   addDocCrossReference(toMemberDefMutable(yyextra->currentMemberDef),toMemberDefMutable(ctx->objectVar));
                 }
               }

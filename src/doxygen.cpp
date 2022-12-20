@@ -171,6 +171,9 @@ bool                  Doxygen::clangAssistedParsing = FALSE;
 QCString              Doxygen::verifiedDotPath;
 volatile bool         Doxygen::terminating = false;
 InputFileEncodingList Doxygen::inputFileEncodingList;
+std::mutex            Doxygen::searchIndexMutex;
+std::mutex            Doxygen::countFlowKeywordsMutex;
+std::mutex            Doxygen::addExampleMutex;
 
 // locally accessible globals
 static std::multimap< std::string, const Entry* > g_classEntries;
