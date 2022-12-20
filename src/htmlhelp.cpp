@@ -20,8 +20,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "ctre.hpp"
-
 #include "htmlhelp.h"
 #include "config.h"
 #include "message.h"
@@ -33,6 +31,7 @@
 #include "filedef.h"
 #include "util.h"
 #include "linkedmap.h"
+#include "regex.h"
 #include "fileinfo.h"
 
 //----------------------------------------------------------------------------
@@ -154,10 +153,10 @@ void HtmlHelpIndex::addItem(const QCString &level1,const QCString &level2,
                        const QCString &url,const QCString &anchor,bool hasLink,
                        bool reversed)
 {
-  static constexpr auto re = ctll::fixed_string{ R"(@\d+)" };
+  static const reg::Ex re(R"(@\d+)");
   std::string key = level1.str();
   if (!level2.isEmpty()) key+= std::string("?") + level2.str();
-  if (ctre::search<re>(key)) // skip anonymous stuff
+  if (reg::search(key,re)) // skip anonymous stuff
   {
     return;
   }

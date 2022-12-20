@@ -31,6 +31,7 @@
 #include "docparser.h"
 #include "containers.h"
 #include "outputgen.h"
+#include "regex.h"
 #include "conceptdef.h"
 
 //--------------------------------------------------------------------
@@ -431,66 +432,9 @@ void writeExtraLatexPackages(TextStream &t);
 void writeLatexSpecialFormulaChars(TextStream &t);
 
 StringVector split(const std::string &s,const std::string &delimiter);
-
-// Splits std::string \a str into an a StringVector \a result
-// using delimiter \a DELIM which is a regular expression in the form
-// of a string literal
-//
-// Note: we need to implement this as a macro as it is not possble to
-// pass a constant expression as a parameter (which DELIM needs to be)
-#define SPLIT_CTRE(str,DELIM)                                 \
-  [](const std::string &s_) -> StringVector {                 \
-    StringVector result_;                                     \
-    static constexpr auto re_ = ctll::fixed_string{ DELIM };  \
-    size_t p_ = 0;                                            \
-    for (auto match_ : ctre::range<re_>(s_)) {                \
-      size_t i_ = match_.begin() - s_.begin();                \
-      if (i_>p_) result_.push_back(s_.substr(p_,i_-p_));      \
-      p_ = i_+match_.size();                                  \
-    }                                                         \
-    if (p_<s_.length()) {                                     \
-      result_.push_back(s_.substr(p_));                       \
-    }                                                         \
-    return result_;                                           \
-  }(str)                                                      \
-
-
-// Replaces occurrences of pattern \a PATTERN in string \a str
-// by string \a replacement, and return the result after
-// substitution
-//
-// Note: we need to implement this as a macro as it is not possble to
-// pass a constant expression as a parameter (which PATTERN needs to be)
-#define REPLACE_CTRE(str,PATTERN,replacement)                      \
-  [](const std::string &s_,const std::string &r_) -> std::string { \
-    static constexpr auto re_ = ctll::fixed_string{ PATTERN };     \
-    std::string result_;                                           \
-    result_.reserve(s_.length());                                  \
-    size_t p_ = 0;                                                 \
-    for (auto match_ : ctre::range<re_>(s_)) {                     \
-      size_t i_ = match_.begin()-s_.begin();                       \
-      result_+=s_.substr(p_,i_-p_);                                \
-      result_+=r_;                                                 \
-      p_ = i_+match_.size();                                       \
-    }                                                              \
-    result_+=s_.substr(p_);                                        \
-    return result_;                                                \
-  }(str,replacement)
-
+StringVector split(const std::string &s,const reg::Ex &delimiter);
 int findIndex(const StringVector &sv,const std::string &s);
-
-// Return the index inside \a str at which the first occurrence of
-// \a PATTERN is found or -1 if no such pattern can be found.
-//
-// Note: we need to implement this as a macro as it is not possble to
-// pass a constant expression as a parameter (which PATTERN needs to be)
-#define FIND_INDEX_CTRE(str,PATTERN)                                  \
-  [](const std::string &s_) -> int {                                  \
-    static constexpr auto re_ = ctll::fixed_string{ PATTERN };        \
-    auto match_ = ctre::search<re_>(s_);                              \
-    return match_ ? static_cast<int>(match_.begin()-s_.begin()) : -1; \
-  }(str)
-
+int findIndex(const std::string &s,const reg::Ex &re);
 std::string join(const StringVector &s,const std::string &delimiter);
 
 bool recognizeFixedForm(const QCString &contents, FortranFormat format);

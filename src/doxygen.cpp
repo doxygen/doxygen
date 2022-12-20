@@ -26,8 +26,6 @@
 #include <clocale>
 #include <locale>
 
-#include "ctre.hpp"
-
 #include "version.h"
 #include "doxygen.h"
 #include "scanner.h"
@@ -105,6 +103,7 @@
 #include "threadpool.h"
 #include "clangparser.h"
 #include "symbolresolver.h"
+#include "regex.h"
 #include "fileinfo.h"
 #include "dir.h"
 #include "conceptdef.h"
@@ -2353,9 +2352,10 @@ static MemberDef *addVariableToFile(
     ttype.stripPrefix("typedef ");
     if (ttype.stripPrefix("struct ") || ttype.stripPrefix("union "))
     {
-      static constexpr auto re = ctll::fixed_string{ R"([[:alpha:]_][[:word:]]*)" };
-      auto match = ctre::search<re>(ttype.str());
-      if (match)
+      static const reg::Ex re(R"(\a\w*)");
+      reg::Match match;
+      std::string typ = ttype.str();
+      if (reg::search(typ,match,re))
       {
         QCString typeValue = match.str();
         ClassDefMutable *cd = getClassMutable(typeValue);
@@ -2572,14 +2572,14 @@ static int findFunctionPtr(const std::string &type,SrcLangExt lang, int *pLength
     return -1; // Fortran and VHDL do not have function pointers
   }
 
-  static constexpr auto re = ctll::fixed_string{ R"(\([^)]*[^*][^)]*\))" };
+  static const reg::Ex re(R"(\([^)]*[*^][^)]*\))");
+  reg::Match match;
   size_t i=std::string::npos;
   size_t l=0;
-  auto match = ctre::search<re>(type); // contains (...*...)
-  if (match)
+  if (reg::search(type,match,re)) // contains (...*...)
   {
-    i = match.begin()-type.begin();
-    l = match.size();
+    i = match.position();
+    l = match.length();
   }
   size_t bb=type.find('<');
   size_t be=type.rfind('>');
@@ -2664,12 +2664,12 @@ static bool isVarWithConstructor(const Entry *root)
     }
     for (const Argument &a : root->argList)
     {
-      static constexpr auto initChars = ctll::fixed_string{ R"([\d\"'&*!^]+)" };
+      static const reg::Ex initChars(R"([\d"'&*!^]+)");
+      reg::Match match;
       if (!a.name.isEmpty() || !a.defval.isEmpty())
       {
         std::string name = a.name.str();
-        auto match = ctre::search<initChars>(name);
-        if (match && match.begin()==name.begin())
+        if (reg::search(name,match,initChars) && match.position()==0)
         {
           result=TRUE;
         }
@@ -2699,19 +2699,17 @@ static bool isVarWithConstructor(const Entry *root)
          goto done;
       }
       std::string atype = a.type.str();
-      auto tmatch = ctre::search<initChars>(atype);
-      if (tmatch && tmatch.begin()==atype.begin())
+      if (reg::search(atype,match,initChars) && match.position()==0)
       {
         result=TRUE; // argument type starts with typical initializer char
         goto done;
       }
       std::string resType=resolveTypeDef(ctx,a.type).str();
       if (resType.empty()) resType=atype;
-      static constexpr auto idChars = ctll::fixed_string{ R"([[:alpha:]_][[:word:]]*)" };
-      auto rmatch = ctre::search<idChars>(resType);
-      if (rmatch && rmatch.begin()==resType.begin())
+      static const reg::Ex idChars(R"(\a\w*)");
+      if (reg::search(resType,match,idChars) && match.position()==0) // resType starts with identifier
       {
-        resType=rmatch.str();
+        resType=match.str();
         //printf("resType=%s\n",resType.data());
         if (resType=="int"    || resType=="long"     ||
             resType=="float"  || resType=="double"   ||
@@ -2761,12 +2759,12 @@ static void addVariable(const Entry *root,int isFuncPtr=-1)
 
       type=name;
       std::string sargs = args.str();
-      static constexpr auto reName = ctll::fixed_string{ R"([[:alpha:]_][[:word:]]*)" };
-      auto match = ctre::search<reName>(sargs);
-      if (match)
+      static const reg::Ex reName(R"(\a\w*)");
+      reg::Match match;
+      if (reg::search(sargs,match,reName))
       {
-        name  = match.str();                             // e.g. 'var'  in '(var[10])'
-        sargs = sargs.substr(match.end()-sargs.begin()); // e.g. '[10]) in '(var[10])'
+        name  = match.str();           // e.g. 'var'  in '(var[10])'
+        sargs = match.suffix().str();  // e.g. '[10]) in '(var[10])'
         size_t j = sargs.find(')');
         if (j!=std::string::npos) args=sargs.substr(0,j); // extract, e.g '[10]' from '[10])'
       }
@@ -3989,11 +3987,13 @@ static TemplateNameMap getTemplateArgumentsInName(const ArgumentList &templateAr
   int count=0;
   for (const Argument &arg : templateArguments)
   {
-    static constexpr auto re = ctll::fixed_string{ R"([[:alpha:]_][[:word:]:]*)" };
-    for (auto match : ctre::range<re>(name))
+    static const reg::Ex re(R"(\a[\w:]*)");
+    reg::Iterator it(name,re);
+    reg::Iterator end;
+    for (; it!=end ; ++it)
     {
-      //const auto &match = *it;
-      const std::string n = match.str();
+      const auto &match = *it;
+      std::string n = match.str();
       if (n==arg.name.str())
       {
         if (templateNames.find(n)==templateNames.end())
@@ -5501,13 +5501,16 @@ static QCString substituteTemplatesInString(
     )
 {
   std::string dst;
-  static constexpr auto re = ctll::fixed_string{ R"([[:alpha:]_][[:word:]]*)" };
+  static const reg::Ex re(R"(\a\w*)");
+  reg::Iterator it(src,re);
+  reg::Iterator end;
   //printf("type=%s\n",qPrint(sa->type));
   size_t p=0;
-  for (auto match : ctre::range<re>(src))
+  for (; it!=end ; ++it) // for each word in srcType
   {
-    size_t i = match.begin()-src.begin();
-    size_t l = match.size();
+    const auto &match = *it;
+    size_t i = match.position();
+    size_t l = match.length();
     bool found=FALSE;
     dst+=src.substr(p,i-p);
     std::string name=match.str();
@@ -7677,9 +7680,12 @@ static void addToIndices()
       {
         Doxygen::searchIndex->setCurrentDoc(gd.get(),gd->anchor(),FALSE);
         std::string title = gd->groupTitle().str();
-        static constexpr auto re = ctll::fixed_string{ R"([[:alpha:]_][[:word:]\-]*)" };
-        for (auto match : ctre::range<re>(title))
+        static const reg::Ex re(R"(\a[\w-]*)");
+        reg::Iterator it(title,re);
+        reg::Iterator end;
+        for (; it!=end ; ++it)
         {
+          const auto &match = *it;
           std::string matchStr = match.str();
           Doxygen::searchIndex->addWord(matchStr.c_str(),TRUE);
         }
@@ -9571,13 +9577,14 @@ static void runQHelpGenerator()
       Portable::pclose(f);
 
       int qtVersion=0;
-      static constexpr auto versionReg = ctll::fixed_string{ R"(Qt (\d+)\.(\d+)\.(d\+))" };
-      auto [ match, qmajor, qminor, qpatch ] = ctre::search<versionReg>(std::string(inBuf));
-      if (match)
+      static const reg::Ex versionReg(R"(Qt (\d+)\.(\d+)\.(\d+))");
+      reg::Match match;
+      std::string s = inBuf;
+      if (reg::search(inBuf,match,versionReg))
       {
-        qtVersion = 10000*QCString(qmajor.str()).toInt() +
-                      100*QCString(qminor.str()).toInt() +
-                          QCString(qpatch.str()).toInt();
+        qtVersion = 10000*QCString(match[1].str()).toInt() +
+                      100*QCString(match[2].str()).toInt() +
+                          QCString(match[3].str()).toInt();
       }
       if (qtVersion>0 && (qtVersion<60000 || qtVersion >= 60205))
       {

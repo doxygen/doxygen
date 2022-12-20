@@ -40,8 +40,6 @@ typedef yyguts_t *yyscan_t;
 #include <assert.h>
 #include <ctype.h>
 
-#include "ctre.hpp"
-
 #include "scanner.h"
 #include "entry.h"
 #include "message.h"
@@ -55,6 +53,7 @@ typedef yyguts_t *yyscan_t;
 
 #include "clangparser.h"
 #include "markdown.h"
+#include "regex.h"
 
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
@@ -4047,9 +4046,9 @@ NONLopt [^\n]*
                                                 }
                                                 else
                                                 {
-                                                  static constexpr auto re = ctll::fixed_string{ R"(@\d+$)" };
+                                                  static const reg::Ex re(R"(@\d+$)");
                                                   if (!yyextra->isTypedef && yyextra->memspecEntry &&
-                                                      !ctre::search<re>(yyextra->memspecEntry->name.str())) // not typedef or anonymous type (see bug691071)
+                                                      !reg::search(yyextra->memspecEntry->name.str(),re)) // not typedef or anonymous type (see bug691071)
                                                   {
                                                     // enabled the next two lines for bug 623424
                                                     yyextra->current->doc.resize(0);
@@ -5163,12 +5162,16 @@ NONLopt [^\n]*
                                           yyextra->current->fileName = yyextra->fileName;
                                           yyextra->current->startLine = yyextra->yyBegLineNr;
                                           yyextra->current->startColumn = yyextra->yyBegColNr;
-                                          static constexpr auto re = ctll::fixed_string{ R"(\([^)]*[*&][^)]*\))" }; // '(some*thing)' or '(some&thing)'
+                                          static const reg::Ex re(R"(\([^)]*[*&][^)]*\))");
+                                          reg::Match match;
                                           std::string type = yyextra->current->type.str();
-                                          auto match = ctre::search<re>(type);
-                                          int ti = match ? static_cast<int>(match.begin()-type.begin()) : -1;
-                                          int ts = yyextra->current->type.find('<');
-                                          int te = yyextra->current->type.findRev('>');
+                                          int ti=-1;
+                                          if (reg::search(type,match,re))
+                                          {
+                                            ti = (int)match.position();
+                                          }
+                                          int ts=yyextra->current->type.find('<');
+                                          int te=yyextra->current->type.findRev('>');
 
                                           // bug677315: A<int(void *, char *)> get(); is not a function pointer
                                           bool startsWithTypedef = yyextra->current->type.startsWith("typedef ");
@@ -7317,19 +7320,18 @@ static void splitKnRArg(yyscan_t yyscanner,QCString &oldStyleArgPtr,QCString &ol
   int si = yyextra->current->args.length();
   if (yyextra->oldStyleArgType.isEmpty()) // new argument
   {
-    const std::string args = yyextra->current->args.str();
-    static constexpr auto re = ctll::fixed_string{ R"(\([^)]*\).*)" }; // find first (...)
+    std::string args = yyextra->current->args.str();
+    static const reg::Ex re(R"(\([^)]*\).*)"); // find first (...)
     int bi1=-1;
     int bi2=-1;
-    auto match = ctre::search<re>(args);
-    if (match)
+    reg::Match match;
+    if (reg::search(args,match,re))
     {
-      bi1 = static_cast<int>(match.begin()-args.begin());
-      size_t secondMatchStart = bi1 + match.size(); // search again after first match
-      auto match2 = ctre::search<re>(args.c_str()+secondMatchStart);
-      if (match2)
+      bi1=(int)match.position();
+      size_t secondMatchStart = match.position()+match.length(); // search again after first match
+      if (reg::search(args,match,re,secondMatchStart))
       {
-        bi2 = static_cast<int>(match2.begin()-args.c_str());
+        bi2=(int)match.position();
       }
     }
     char c;

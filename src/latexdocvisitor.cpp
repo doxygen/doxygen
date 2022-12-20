@@ -18,8 +18,6 @@
 
 #include <algorithm>
 
-#include "ctre.hpp"
-
 #include "htmlattrib.h"
 #include "latexdocvisitor.h"
 #include "latexgen.h"
@@ -40,6 +38,7 @@
 #include "emoji.h"
 #include "plantuml.h"
 #include "fileinfo.h"
+#include "regex.h"
 
 const int maxLevels=5;
 static const char *secLabels[maxLevels] =
@@ -58,12 +57,13 @@ static void insertDimension(TextStream &t, QCString dimension, const char *orien
 {
   // dimensions for latex images can be a percentage, in this case they need some extra
   // handling as the % symbol is used for comments
-  static constexpr auto re = ctll::fixed_string{ R"((\d+)%)" };
-  auto match = ctre::search<re>(dimension.str());
-  if (match)
+  static const reg::Ex re(R"((\d+)%)");
+  std::string s = dimension.str();
+  reg::Match match;
+  if (reg::search(s,match,re))
   {
     bool ok;
-    double percent = QCString(match.get<1>().str()).toInt(&ok);
+    double percent = QCString(match[1].str()).toInt(&ok);
     if (ok)
     {
       t << percent/100.0 << "\\text" << orientationString;

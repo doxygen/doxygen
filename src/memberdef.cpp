@@ -18,8 +18,6 @@
 #include <assert.h>
 #include <mutex>
 
-#include "ctre.hpp"
-
 #include "md5.h"
 #include "memberdef.h"
 #include "membername.h"
@@ -46,6 +44,7 @@
 #include "filedef.h"
 #include "config.h"
 #include "definitionimpl.h"
+#include "regex.h"
 
 //-----------------------------------------------------------------------------
 
@@ -1851,9 +1850,9 @@ ClassDef *MemberDefImpl::getClassDefOfAnonymousType() const
   // match expression if it contains at least one @1 marker, e.g.
   // 'struct A::@1::@2::B' matches 'A::@1::@2::B' but 'struct A::B' does not match.
   std::string stype = ltype.str();
-  static constexpr auto r = ctll::fixed_string{ R"([\w@:]*@\d+[\w@:]*)" };
-  auto match = ctre::search<r>(stype);
-  if (match) // found anonymous scope in type
+  static const reg::Ex r(R"([\w@:]*@\d+[\w@:]*)");
+  reg::Match match;
+  if (reg::search(stype,match,r)) // found anonymous scope in type
   {
     QCString annName = match.str();
 
@@ -2151,14 +2150,14 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
   }
   // strip 'friend' keyword from ltype
   ltype.stripPrefix("friend ");
-  bool endAnonScopeNeeded=FALSE;
+  static const reg::Ex r(R"(@\d+)");
+  reg::Match match;
   std::string stype = ltype.str();
-  static constexpr auto r = ctll::fixed_string{ R"(@\d+)" };
-  auto match = ctre::search<r>(stype);
-  if (match)
+  bool endAnonScopeNeeded=FALSE;
+  if (reg::search(stype,match,r)) // member has an anonymous type
   {
-    int i = static_cast<int>(match.begin()-stype.begin());
-    int l = static_cast<int>(match.size());
+    int i = static_cast<int>(match.position());
+    int l = static_cast<int>(match.length());
     //printf("annoClassDef=%p annMemb=%p scopeName='%s' anonymous='%s'\n",
     //    annoClassDef,annMemb,qPrint(cname),qPrint(ltype.mid(i,l)));
 
@@ -3078,7 +3077,7 @@ void MemberDefImpl::_writeEnumValues(OutputList &ol,const Definition *container,
 }
 
 // match from the start of the scope until the last marker
-static constexpr auto reAnonymous = ctll::fixed_string{ R"([\w:@]*@\d+)" };
+static const reg::Ex reAnonymous(R"([\w:@]*@\d+)");
 
 QCString MemberDefImpl::displayDefinition() const
 {
@@ -3112,12 +3111,10 @@ QCString MemberDefImpl::displayDefinition() const
   }
 
   std::string sdef = ldef.str();
-  auto match = ctre::search<reAnonymous>(sdef);
-  if (match)
+  reg::Match match;
+  if (reg::search(sdef,match,reAnonymous))
   {
-    size_t pos = match.begin()-sdef.begin();
-    size_t len = match.size();
-    ldef = sdef.substr(0,pos) + " { ... } " + sdef.substr(pos+len);
+    ldef = match.prefix().str() + " { ... } " + match.suffix().str();
   }
 
   const ClassDef *cd=getClassDef();
@@ -3336,10 +3333,10 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
   bool htmlEndLabelTable=FALSE;
   StringVector sl = getLabels(scopedContainer);
 
-  static constexpr auto r = ctll::fixed_string{ R"(@\d+)" };
+  static const reg::Ex r(R"(@\d+)");
+  reg::Match match;
   std::string sdef = ldef.str();
-  auto match = ctre::search<r>(sdef);
-  if ((isVariable() || isTypedef()) && match)
+  if ((isVariable() || isTypedef()) && reg::search(sdef,match,r))
   {
     // find enum type and insert it in the definition
     bool found=false;
@@ -3349,11 +3346,11 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
       {
         ol.startDoxyAnchor(cfname,cname,memAnchor,doxyName,doxyArgs);
         ol.startMemberDoc(ciname,name(),memAnchor,name(),memCount,memTotal,showInline);
-        size_t pos = match.begin()-sdef.begin();
-        size_t len = match.size();
-        linkifyText(TextGeneratorOLImpl(ol),scopedContainer,getBodyDef(),this,sdef.substr(0,pos).c_str());
+        std::string prefix = match.prefix().str();
+        std::string suffix = match.suffix().str();
+        linkifyText(TextGeneratorOLImpl(ol),scopedContainer,getBodyDef(),this,prefix.c_str());
         vmd->writeEnumDeclaration(ol,getClassDef(),getNamespaceDef(),getFileDef(),getGroupDef());
-        linkifyText(TextGeneratorOLImpl(ol),scopedContainer,getBodyDef(),this,sdef.substr(pos+len).c_str());
+        linkifyText(TextGeneratorOLImpl(ol),scopedContainer,getBodyDef(),this,suffix.c_str());
 
         found=true;
         break;
@@ -3367,14 +3364,13 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
       // search for the last anonymous compound name in the definition
 
       ol.startMemberDocName(isObjCMethod());
-      auto matchAnon = ctre::search<reAnonymous>(sdef);
-      if (matchAnon)
+      if (reg::search(sdef,match,reAnonymous))
       {
-        size_t pos = matchAnon.begin()-sdef.begin();
-        size_t len = matchAnon.size();
-        ol.docify(sdef.substr(0,pos));
+        std::string prefix = match.prefix().str();
+        std::string suffix = match.suffix().str();
+        ol.docify(prefix.c_str());
         ol.docify(" { ... } ");
-        linkifyText(TextGeneratorOLImpl(ol),scopedContainer,getBodyDef(),this,sdef.substr(pos+len).c_str());
+        linkifyText(TextGeneratorOLImpl(ol),scopedContainer,getBodyDef(),this,suffix.c_str());
       }
       else
       {
@@ -3712,21 +3708,13 @@ static QCString simplifyTypeForTable(const QCString &s)
 {
   QCString ts=removeAnonymousScopes(s);
   if (ts.endsWith("::")) ts = ts.left(ts.length()-2);
-  static constexpr auto re = ctll::fixed_string{ R"([[:alpha:]_][[:word:]]*(<[^>]*>)?::)" };
+  static const reg::Ex re1(R"(\a\w*::)");       // non-template version
+  static const reg::Ex re2(R"(\a\w*<[^>]*>::)"); // template version
+  reg::Match match;
   std::string t = ts.str();
-  for (;;)
+  while (reg::search(t,match,re2) || reg::search(t,match,re1))
   {
-    auto match = ctre::search<re>(t);
-    if (match)
-    {
-      size_t pos = match.begin()-t.begin();
-      size_t len = match.size();
-      t = t.substr(0,pos)+t.substr(pos+len); // remove the matched part
-    }
-    else
-    {
-      break;
-    }
+    t = match.prefix().str() + match.suffix().str(); // remove the matched part
   }
   //printf("simplifyTypeForTable(%s)->%s\n",qPrint(s),t.c_str());
   return QCString(t);

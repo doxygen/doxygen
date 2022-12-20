@@ -19,6 +19,7 @@
 #include <map>
 #include <string>
 
+#include "regex.h"
 #include "qcstring.h"
 
 //! Class representing an attribute list of a dot graph object.
@@ -36,29 +37,25 @@ class DotAttributes
     void updateValue(const QCString &key,const QCString &value)
     {
       // look for key\s*=
-      int index = m_input.find(key);
-      if (index!=-1)
+      const reg::Ex re = key.str()+R"(\s*=)";
+      reg::Match match;
+      std::string s = m_input.str();
+      if (reg::search(s,match,re)) // replace existing attribute
       {
-        const char *p = m_input.data()+index+key.length(); // make p point just past the key
-        while (qisspace(*p)) p++;                          // skip whitespace
-        index = (*p=='=') ? p+1-m_input.data() : -1;       // index is position after '=' if found
-      }
-      if (index!=-1)
-      {
-        size_t len      = m_input.length();
-        size_t startPos = static_cast<size_t>(index);
+        size_t len      = s.length();
+        size_t startPos = match.position()+match.length(); // position after =
         size_t pos      = startPos;
-        while (pos<len && qisspace(m_input[pos])) pos++;
-        if (pos<len && m_input[pos]=='"') // quoted value, search for end quote, ignoring escaped quotes
+        while (pos<len && qisspace(s[pos])) pos++;
+        if (pos<len && s[pos]=='"') // quoted value, search for end quote, ignoring escaped quotes
         {
-          char pc=m_input[pos];
+          char pc=s[pos];
           pos++; // skip over start quote
-          while (pos<len && (m_input[pos]!='"' || (m_input[pos]=='"' && pc=='\\'))) pc=m_input[pos++];
+          while (pos<len && (s[pos]!='"' || (s[pos]=='"' && pc=='\\'))) pc=s[pos++];
           if (pos<len) pos++; // skip over end quote
         }
         else // unquoted value, search for attribute separator (space,comma, or semicolon)
         {
-          while (pos<len && m_input[pos]!=',' && m_input[pos]!=';' && !qisspace(m_input[pos])) pos++;
+          while (pos<len && s[pos]!=',' && s[pos]!=';' && !qisspace(s[pos])) pos++;
         }
         // pos is now the position after the value, so replace the part between [start..pos) with the new value
         m_input=m_input.left(startPos)+value.quoted()+m_input.mid(pos);

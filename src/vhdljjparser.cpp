@@ -12,8 +12,6 @@
 
 #include <string>
 
-#include "ctre.hpp"
-
 #include "qcstring.h"
 #include "containers.h"
 #include "vhdljjparser.h"
@@ -33,6 +31,7 @@
 #include "markdown.h"
 #include "VhdlParserTokenManager.h"
 #include "VhdlParserErrorHandler.hpp"
+#include "regex.h"
 
 using namespace vhdl::parser;
 
@@ -272,13 +271,33 @@ void VHDLOutlineParser::handleFlowComment(const char* doc)
 
 int VHDLOutlineParser::checkInlineCode(QCString &doc)
 {
-#define CS_RE     R"([\\@]code)"
-#define CEND_RE   R"(\s*[\\@]endcode)"
-#define CBRIEF_RE R"([\\@]brief)"
+  static const reg::Ex csRe(R"([\\@]code)");
+  static const reg::Ex cendRe(R"(\s*[\\@]endcode)");
+  static const reg::Ex cbriefRe(R"([\\@]brief)");
 
-  int index = FIND_INDEX_CTRE(doc.str(),CS_RE);
+  // helper to simulate behavior of QString.find(const QRegExp &re,int pos)
+  auto findRe = [](const QCString &str,const reg::Ex &re,int pos=0) -> int
+  {
+    if ((int)str.length()<pos) return -1;
+    reg::Match match;
+    const std::string s = str.str();
+    if (reg::search(s,match,re,pos)) // match found
+    {
+      return (int)match.position();
+    }
+    else // not found
+    {
+      return -1;
+    }
+  };
+  auto replaceRe = [](const QCString &str,const reg::Ex &re,const QCString &replacement) -> QCString
+  {
+    return reg::replace(str.str(), re, replacement.str());
+  };
 
-  if (FIND_INDEX_CTRE(doc.str(),CEND_RE)!=-1)
+  int index = findRe(doc,csRe);
+
+  if (findRe(doc,cendRe)!=-1)
     return 1;
 
   if (index < 0)
@@ -286,9 +305,9 @@ int VHDLOutlineParser::checkInlineCode(QCString &doc)
 
   VhdlParser::SharedState *s = &p->shared;
   p->strComment += doc;
-  p->code = FIND_INDEX_CTRE(p->inputString.data()+p->code+1,CS_RE);
+  p->code = findRe(p->inputString,csRe, p->code + 1);
   int com = p->inputString.find(p->strComment.data());
-  int ref = FIND_INDEX_CTRE(p->inputString.data()+p->code+1,CEND_RE);
+  int ref = findRe(p->inputString,cendRe, p->code + 1);
   int len = p->strComment.size();
 
   int ll = com + len;
@@ -306,7 +325,7 @@ int VHDLOutlineParser::checkInlineCode(QCString &doc)
   {
     QCString qcs(qcs_);
     qcs = qcs.simplifyWhiteSpace();
-    if (FIND_INDEX_CTRE(qcs.str(),CS_RE)!=-1)
+    if (findRe(qcs,csRe)!=-1)
     {
       int i = qcs.find('{');
       int j = qcs.find('}');
@@ -316,7 +335,7 @@ int VHDLOutlineParser::checkInlineCode(QCString &doc)
       }
       continue;
     }
-    qcs = REPLACE_CTRE(qcs.str(),CBRIEF_RE, "");
+    qcs = replaceRe(qcs,cbriefRe, "");
     co += qcs;
     co += '\n';
   }

@@ -27,7 +27,6 @@
 #include <map>
 #include <algorithm>
 
-#include "ctre.hpp"
 
 /* --------------------------------------------------------------- */
 
@@ -59,6 +58,7 @@
 #include "plantuml.h"
 #include "vhdljjparser.h"
 #include "VhdlParser.h"
+#include "regex.h"
 #include "plantuml.h"
 #include "textstream.h"
 //#define DEBUGFLOW
@@ -1040,7 +1040,8 @@ void VhdlDocGen::parseFuncProto(const QCString &text,QCString& name,QCString& re
 
 QCString VhdlDocGen::getIndexWord(const QCString &c,int index)
 {
-  StringVector ql = SPLIT_CTRE(c.str(),R"([\s:|])");
+  static const reg::Ex reg(R"([\s:|])");
+  auto ql=split(c.str(),reg);
 
   if (index < static_cast<int>(ql.size()))
   {
@@ -1127,7 +1128,7 @@ QCString VhdlDocGen::getProcessNumber()
 
 void VhdlDocGen::writeFormatString(const QCString& s,OutputList&ol,const MemberDef* mdef)
 {
-  constexpr auto &&reg = R"([\[\]./<>:\s,;'+*|&=()\"\-])";
+  static const reg::Ex reg(R"([\[\]./<>:\s,;'+*|&=()\"-])");
   QCString qcs = s;
   qcs+=QCString(" ");// parsing the last sign
   QCString find=qcs;
@@ -1135,7 +1136,7 @@ void VhdlDocGen::writeFormatString(const QCString& s,OutputList&ol,const MemberD
   char buf[2];
   buf[1]='\0';
 
-  int j = FIND_INDEX_CTRE(temp.str(),reg);
+  int j = findIndex(temp.str(),reg);
 
   ol.startBold();
   if (j>=0)
@@ -1181,7 +1182,7 @@ void VhdlDocGen::writeFormatString(const QCString& s,OutputList&ol,const MemberD
       {
         temp=st;
       }
-      j = FIND_INDEX_CTRE(temp.str(),reg);
+      j = findIndex(temp.str(),reg);
     }//while
   }//if
   else
@@ -1196,8 +1197,8 @@ void VhdlDocGen::writeFormatString(const QCString& s,OutputList&ol,const MemberD
  */
 bool VhdlDocGen::isNumber(const std::string& s)
 {
-  static constexpr auto re = ctll::fixed_string{ R"([0-9][0-9eEfFbBcCdDaA_.#+?xXzZ\-]*)" };
-  return ctre::match<re>(s);
+  static const reg::Ex regg(R"([0-9][0-9eEfFbBcCdDaA_.#+?xXzZ-]*)");
+  return reg::match(s,regg);
 }// isNumber
 
 
@@ -2302,7 +2303,8 @@ void VhdlDocGen::parseUCF(const char*  input,  Entry* entity,const QCString &fil
         }
         else
         {
-          int in=FIND_INDEX_CTRE(temp.str(),R"([\s=])");
+          static const reg::Ex ee(R"([\s=])");
+          int in=findIndex(temp.str(),ee);
           if (in<0) in=0;
           QCString ff=temp.left(in);
           temp.stripPrefix(ff);
@@ -2328,7 +2330,8 @@ static void initUCF(Entry* root,const QCString &type,QCString &qcs,
   VhdlDocGen::deleteAllChars(qcs,';');
   qcs=qcs.stripWhiteSpace();
 
-  int i = FIND_INDEX_CTRE(qcs.str(),R"([\s=])");
+  static const reg::Ex reg(R"([\s=])");
+  int i = findIndex(qcs.str(),reg);
   if (i<0) return;
   if (i==0)
   {
@@ -2408,9 +2411,8 @@ QCString VhdlDocGen::parseForConfig(QCString & entity,QCString & arch)
   QCString label;
   if (!entity.contains(":")) return "";
 
-#undef  RE_EXP
-#define RE_EXP R"([:()\s])"
-  auto ql=SPLIT_CTRE(entity.str(),RE_EXP);
+  static const reg::Ex exp(R"([:()\s])");
+  auto ql=split(entity.str(),exp);
   if (ql.size()<2)
   {
     return "";
@@ -2426,7 +2428,7 @@ QCString VhdlDocGen::parseForConfig(QCString & entity,QCString & arch)
   if (ql.size()==3)
   {
     arch = ql[2];
-    ql=SPLIT_CTRE(arch.str(),RE_EXP);
+    ql=split(arch.str(),exp);
     if (ql.size()>1) // expression
     {
       arch="";
@@ -2439,8 +2441,9 @@ QCString VhdlDocGen::parseForConfig(QCString & entity,QCString & arch)
 
 QCString  VhdlDocGen::parseForBinding(QCString & entity,QCString & arch)
 {
+  static const reg::Ex exp(R"([()\s])");
 
-  auto ql = SPLIT_CTRE(entity.str(),R"([()\s])");
+  auto ql = split(entity.str(),exp);
 
   if (findIndex(ql,"open")!=-1)
   {
@@ -2709,13 +2712,14 @@ void VhdlDocGen::addBaseClass(ClassDef* cd,ClassDef *ent)
         bcd.usedName.append("(2)");
         return;
       }
+      static const reg::Ex reg(R"(\d+)");
       QCString s=n.left(i);
       QCString r=n.right(n.length()-i);
       std::string t=r.str();
       VhdlDocGen::deleteAllChars(r,')');
       VhdlDocGen::deleteAllChars(r,'(');
       r.setNum(r.toInt()+1);
-      t = REPLACE_CTRE(t, R"(\d+)", r.str());
+      reg::replace(t, reg, r.str());
       s.append(t.c_str());
       bcd.usedName=s;
       bcd.templSpecifiers=t;
@@ -2956,7 +2960,8 @@ void FlowChart::printNode(const FlowChart& flo)
     {
       t=flo.text.str();
     }
-    t = REPLACE_CTRE(t,R"(\s)",std::string());
+    static const reg::Ex ep(R"(\s)");
+    t = reg::replace(t,ep,std::string());
     if (t.empty())
     {
       t=" ";

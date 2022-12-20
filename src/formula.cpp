@@ -13,18 +13,6 @@
  *
  */
 
-#include <map>
-#include <vector>
-#include <string>
-#include <utility>
-#include <fstream>
-
-#include "ctre.hpp"
-
-// TODO: remove these dependencies
-#include "doxygen.h"   // for Doxygen::indexList
-#include "indexlist.h" // for Doxygen::indexList
-
 #include "formula.h"
 #include "message.h"
 #include "config.h"
@@ -33,7 +21,18 @@
 #include "image.h"
 #include "fileinfo.h"
 #include "dir.h"
+#include "regex.h"
 #include "linkedmap.h"
+
+#include <map>
+#include <vector>
+#include <string>
+#include <utility>
+#include <fstream>
+
+// TODO: remove these dependencies
+#include "doxygen.h"   // for Doxygen::indexList
+#include "indexlist.h" // for Doxygen::indexList
 
 static int determineInkscapeVersion(Dir &thisDir);
 
@@ -86,26 +85,28 @@ void FormulaManager::initFromRepository(const QCString &dir)
       }
 
       // new format: \_form#<digits>=<digits>x<digits>:formula
-      static constexpr auto re_new = ctll::fixed_string{ R"(\\_form#(\d+)=(\d+)x(\d+):)" };
+      static const reg::Ex re_new(R"(\\_form#(\d+)=(\d+)x(\d+):)");
       // old format: \_form#<digits>:formula
-      static constexpr auto re_old = ctll::fixed_string{ R"(\\_form#\d+:)" };
+      static const reg::Ex re_old(R"(\\_form#(\d+):)");
 
+      reg::Match match;
       int id     = -1;
       int width  = -1;
       int height = -1;
       std::string text;
-
-      auto [ match, idMatch, widthMatch, heightMatch ] = ctre::search<re_new>(line);
-      if (match) // try new format first
+      if (reg::search(line,match,re_new)) // try new format first
       {
-        id     = std::stoi(idMatch.str());
-        width  = std::stoi(widthMatch.str());
-        height = std::stoi(heightMatch.str());
-        text   = line.substr(match.begin()+match.size()-line.begin());
+        id     = std::stoi(match[1].str());
+        width  = std::stoi(match[2].str());
+        height = std::stoi(match[3].str());
+        text   = line.substr(match.position()+match.length());
         //printf("new format found id=%d width=%d height=%d text=%s\n",id,width,height,text.c_str());
       }
-      else if (ctre::search<re_old>(line)) // check for old format
+      else if (reg::search(line,match,re_old)) // check for old format
       {
+        //id     = std::stoi(match[1].str());
+        //text   = line.substr(match.position()+match.length());
+        //printf("old format found id=%d text=%s\n",id,text.c_str());
         msg("old formula.repository format detected; forcing upgrade.\n");
         p->repositoriesValid = false;
         break;

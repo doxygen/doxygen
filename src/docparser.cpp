@@ -19,8 +19,6 @@
 
 #include <ctype.h>
 
-#include "ctre.hpp"
-
 #include "classlist.h"
 #include "cmdmapper.h"
 #include "config.h"
@@ -232,9 +230,12 @@ void DocParser::checkArgumentName()
   //printf("isDocsForDefinition()=%d\n",context.memberDef->isDocsForDefinition());
   if (al.empty()) return; // no argument list
 
-  static constexpr auto re = ctll::fixed_string{ R"(\$?\w+\.*)" };
-  for (auto match : ctre::range<re>(name))
+  static const reg::Ex re(R"(\$?\w+\.*)");
+  reg::Iterator it(name,re);
+  reg::Iterator end;
+  for (; it!=end ; ++it)
   {
+    const auto &match = *it;
     QCString aName=match.str();
     if (lang==SrcLangExt_Fortran) aName=aName.lower();
     //printf("aName='%s'\n",qPrint(aName));
@@ -593,9 +594,9 @@ int DocParser::handleStyleArgument(DocNodeVariant *parent,DocNodeList &children,
           tok!=TK_ENDLIST
         )
   {
-    static constexpr auto specialChar = ctll::fixed_string{ R"([.,|()\[\]:;?])" };
+    static const reg::Ex specialChar(R"([.,|()\[\]:;?])");
     if (tok==TK_WORD && context.token->name.length()==1 &&
-        ctre::match<specialChar>(context.token->name.str()))
+        reg::match(context.token->name.str(),specialChar))
     {
       // special character that ends the markup command
       return tok;

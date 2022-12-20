@@ -19,8 +19,7 @@
 #include <array>
 #include <functional>
 
-#include "ctre.hpp"
-
+#include "regex.h"
 #include "datetime.h"
 #include "config.h"
 #include "portable.h"
@@ -80,6 +79,45 @@ QCString yearToString()
   return QCString().setNum(current.tm_year+1900);
 }
 
+struct SpecFormat
+{
+  const reg::Ex re;
+  int count;
+  int offset;
+  int format;
+};
+
+using TMFieldAssigner = std::function< void(std::tm &,int value) >;
+
+struct DateTimeField
+{
+  TMFieldAssigner assigner;
+  int minVal;
+  int maxVal;
+  const char *name;
+};
+
+static std::array<SpecFormat,5> g_specFormats
+{{
+  // regular expression,                            num values, offset, format bits
+  { std::string(R"((\d+)-(\d+)-(\d+)\s*(\d+):(\d+):(\d+))"),  6,  0,  SF_Date|SF_Time|SF_Seconds }, // format 13-04-2015 12:34:56
+  { std::string(R"((\d+)-(\d+)-(\d+)\s*(\d+):(\d+))"),        5,  0,  SF_Date|SF_Time            }, // format 13-04-2015 12:34
+  { std::string(R"((\d+)-(\d+)-(\d+))"),                      3,  0,  SF_Date                    }, // format 13-04-2015
+  { std::string(R"((\d+):(\d+):(\d+))"),                      3,  3,  SF_Time|SF_Seconds         }, // format 12:34:56
+  { std::string(R"((\d+):(\d+))"),                            2,  3,  SF_Time                    }  // format 12:34
+}};
+
+static std::array<DateTimeField,6> g_assignValues
+{{
+  // assigner,                                            minVal,     maxVal,    name
+  { [](std::tm &tm,int value) { tm.tm_year = value-1900; }, 1900,       9999,    "year"   },
+  { [](std::tm &tm,int value) { tm.tm_mon  = value-1;    },    1,         12,    "month"  },
+  { [](std::tm &tm,int value) { tm.tm_mday = value;      },    1,         31,    "day"    },
+  { [](std::tm &tm,int value) { tm.tm_hour = value;      },    0,         23,    "hour"   },
+  { [](std::tm &tm,int value) { tm.tm_min  = value;      },    0,         59,    "minute" },
+  { [](std::tm &tm,int value) { tm.tm_sec  = value;      },    0,         59,    "second" }
+}};
+
 static void determine_weekday( std::tm& tm )
 {
   auto cpy = tm;
@@ -95,16 +133,6 @@ static void determine_weekday( std::tm& tm )
 
 QCString dateTimeFromString(const QCString &spec,std::tm &dt,int &format)
 {
-  struct DateTimeField
-  {
-    using TMFieldAssigner = std::function< void(std::tm &,int value) >;
-    std::string value;
-    TMFieldAssigner assigner;
-    int minVal;
-    int maxVal;
-    const char *name;
-  };
-
   // for an empty spec field return the current date and time
   dt = getCurrentDateTime();
   if (spec.isEmpty())
@@ -114,43 +142,30 @@ QCString dateTimeFromString(const QCString &spec,std::tm &dt,int &format)
   }
 
   // find a matching pattern
-  static constexpr auto re = ctll::fixed_string{ R"(((\d+)-(\d+)-(\d+))?\s*((\d+):(\d+)(:(\d+))?)?)" };
-  auto&& [ match, dateOpt, yearStr, monthStr, dayStr, timeOpt, hourStr, minStr, secOpt, secStr ] = ctre::match<re>(spec.str());
-  if (match)
+  std::string s = spec.str();
+  for (const auto &fmt : g_specFormats)
   {
-    if (dateOpt) format|=SF_Date;
-    if (timeOpt) format|=SF_Time;
-    if (secOpt)  format|=SF_Seconds;
-
-    const std::array<DateTimeField,6> values
-    {{
-      // value,         assigner,                                               minVal,     maxVal,  name
-      { yearStr.str(),  [](std::tm &tm,int value) { tm.tm_year = value-1900; }, 1900,       9999,    "year"   },
-      { monthStr.str(), [](std::tm &tm,int value) { tm.tm_mon  = value-1;    },    1,         12,    "month"  },
-      { dayStr.str(),   [](std::tm &tm,int value) { tm.tm_mday = value;      },    1,         31,    "day"    },
-      { hourStr.str(),  [](std::tm &tm,int value) { tm.tm_hour = value;      },    0,         23,    "hour"   },
-      { minStr.str(),   [](std::tm &tm,int value) { tm.tm_min  = value;      },    0,         59,    "minute" },
-      { secStr.str(),   [](std::tm &tm,int value) { tm.tm_sec  = value;      },    0,         59,    "second" }
-    }};
-
-    for (const auto &dtf : values)
+    reg::Match m;
+    if (reg::match(s,m,fmt.re)) // match found
     {
-      if (!dtf.value.empty()) // value is specified
+      for (int i=0; i<fmt.count; i++)
       {
-        int value = std::atoi(dtf.value.c_str());
-        if (value<dtf.minVal || value>dtf.maxVal) // value out of range
+        int value = std::atoi(m[i+1].str().c_str());
+        const DateTimeField &dtf = g_assignValues[i+fmt.offset];
+        if (value<dtf.minVal || value>dtf.maxVal) // check if the value is in the expected range
         {
           return QCString().sprintf("value for %s is %d which is outside of the value range [%d..%d]",
               dtf.name, value, dtf.minVal, dtf.maxVal);
         }
         dtf.assigner(dt,value);
       }
+      format = fmt.format;
+      if (format&SF_Date) // if we have a date also determine the weekday
+      {
+        determine_weekday(dt);
+      }
+      return QCString();
     }
-    if (dateOpt)
-    {
-      determine_weekday(dt);
-    }
-    return QCString();
   }
 
   // no matching pattern found

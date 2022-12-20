@@ -2,7 +2,6 @@
 
 include_directories(
     ${PROJECT_SOURCE_DIR}/filesystem
-    ${PROJECT_SOURCE_DIR}/ctre
     ${PROJECT_SOURCE_DIR}/libmd5
     ${PROJECT_SOURCE_DIR}/liblodepng
     ${PROJECT_SOURCE_DIR}/libmscgen
