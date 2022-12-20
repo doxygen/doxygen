@@ -7322,6 +7322,7 @@ static void splitKnRArg(yyscan_t yyscanner,QCString &oldStyleArgPtr,QCString &ol
     int bi1=-1;
     int bi2=-1;
     auto match = ctre::search<re>(args);
+    if (match)
     {
       bi1 = static_cast<int>(match.begin()-args.begin());
       size_t secondMatchStart = bi1 + match.size(); // search again after first match
