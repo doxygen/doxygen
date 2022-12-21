@@ -223,11 +223,14 @@ static QString getDocsForNode(const QDomElement &child)
       }
       docsVal = docsVal.nextSiblingElement();
     }
-    docs+=SA("<br/>");
-    docs+=SA("<br/>");
-    docs+=SA(" The default value is: <code>")+
-          child.attribute(SA("defval"))+
-          SA("</code>.");
+    if (child.attribute(SA("defval")) != SA(""))
+    {
+      docs+=SA("<br/>");
+      docs+=SA("<br/>");
+      docs+=SA(" The default value is: <code>")+
+            child.attribute(SA("defval"))+
+            SA("</code>.");
+    }
     docs+= SA("<br/>");
   }
   else if (type==SA("int"))
