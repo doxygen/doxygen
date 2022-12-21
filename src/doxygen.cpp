@@ -232,7 +232,7 @@ class Statistics
       bool restore=FALSE;
       if (Debug::isFlagSet(Debug::Time))
       {
-        Debug::clearFlag("time");
+        Debug::clearFlag(Debug::Time);
         restore=TRUE;
       }
       msg("----------------------\n");
@@ -240,7 +240,7 @@ class Statistics
       {
         msg("Spent %.6f seconds in %s",s.elapsed,s.name);
       }
-      if (restore) Debug::setFlag("time");
+      if (restore) Debug::setFlag(Debug::Time);
     }
   private:
     struct stat
@@ -10929,7 +10929,7 @@ void readConfiguration(int argc, char **argv)
           cleanUpDoxygen();
           exit(0);
         }
-        retVal = Debug::setFlag(debugLabel);
+        retVal = Debug::setFlagStr(debugLabel);
         if (!retVal)
         {
           err("option \"-d\" has unknown debug specifier: \"%s\".\n",qPrint(debugLabel));
@@ -12697,9 +12697,9 @@ void generateOutput()
         );
     g_s.print();
 
-    Debug::clearFlag("time");
+    Debug::clearFlag(Debug::Time);
     msg("finished...\n");
-    Debug::setFlag("time");
+    Debug::setFlag(Debug::Time);
   }
   else
   {

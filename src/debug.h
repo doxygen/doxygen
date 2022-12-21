@@ -46,8 +46,9 @@ class Debug
                    };
     static void print(DebugMask mask,int prio,const char *fmt,...);
 
-    static int  setFlag(const QCString &label);
-    static void clearFlag(const QCString &label);
+    static int  setFlagStr(const QCString &label);
+    static void setFlag(const DebugMask mask);
+    static void clearFlag(const DebugMask mask);
     static bool isFlagSet(DebugMask mask);
     static void printFlags();
     static void setPriority(int p);
