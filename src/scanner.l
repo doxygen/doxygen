@@ -4689,13 +4689,16 @@ NONLopt [^\n]*
                                           yyextra->fullArgString+=yytext;
                                           BEGIN(CopyArgVerbatim);
                                         }
-<CopyArgVerbatim>[\\@]("endverbatim"|"endiliteral"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endmanonly"|"endrtfonly"|"enddot"|"endmsc"|"enduml"|"endcode"|"f$"|"f]"|"f}"|"f)")/[^a-z_A-Z0-9\-] { // end of verbatim block
+<CopyArgVerbatim>[\\@]("endverbatim"|"endiliteral"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endmanonly"|"endrtfonly"|"enddot"|"endmsc"|"enduml"|"endcode")/[^a-z_A-Z0-9\-] { // end of verbatim block
                                           yyextra->fullArgString+=yytext;
-					  if (yytext[1]=='f' && yyextra->docBlockName==&yytext[1])
+                                          if (&yytext[4]==yyextra->docBlockName)
                                           {
                                             BEGIN(CopyArgCommentLine);
                                           }
-                                          if (&yytext[4]==yyextra->docBlockName)
+                                        }
+<CopyArgVerbatim>[\\@]("f$"|"f]"|"f}"|"f)") { // end of verbatim block
+                                          yyextra->fullArgString+=yytext;
+					  if (yyextra->docBlockName==&yytext[1])
                                           {
                                             BEGIN(CopyArgCommentLine);
                                           }
