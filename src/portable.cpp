@@ -4,6 +4,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <chrono>
+#include <thread>
+#include <mutex>
+#include <map>
 
 #if defined(_WIN32) && !defined(__CYGWIN__)
 #undef UNICODE
@@ -23,6 +26,7 @@ extern char **environ;
 #include <string>
 
 #include "fileinfo.h"
+#include "message.h"
 
 #include "util.h"
 #include "dir.h"
@@ -35,14 +39,72 @@ static bool environmentLoaded = false;
 static std::map<std::string,std::string> proc_env = std::map<std::string,std::string>();
 #endif
 
-static double  g_sysElapsedTime;
-static std::chrono::steady_clock::time_point g_startTime;
+//---------------------------------------------------------------------------------------------------------
+
+/*! Helper class to keep time interval per thread */
+class SysTimeKeeper
+{
+  public:
+    static SysTimeKeeper &instance();
+    //! start a timer for this thread
+    void start()
+    {
+      std::lock_guard<std::mutex> lock(m_mutex);
+      m_startTimes[std::this_thread::get_id()] = std::chrono::steady_clock::now();
+    }
+    //! ends a timer for this thread, accumulate time difference since start
+    void stop()
+    {
+      std::lock_guard<std::mutex> lock(m_mutex);
+      std::chrono::steady_clock::time_point endTime = std::chrono::steady_clock::now();
+      auto it = m_startTimes.find(std::this_thread::get_id());
+      if (it == m_startTimes.end())
+      {
+        err("SysTimeKeeper stop() called without matching start()\n");
+      }
+      double timeSpent = static_cast<double>(std::chrono::duration_cast<
+                         std::chrono::microseconds>(endTime - it->second).count())/1000000.0;
+      //printf("timeSpent on thread %zu: %.4f seconds\n",std::hash<std::thread::id>{}(std::this_thread::get_id()),timeSpent);
+      m_elapsedTime += timeSpent;
+    }
+
+    double elapsedTime() const { return m_elapsedTime; }
+
+  private:
+    struct TimeData
+    {
+      std::chrono::steady_clock::time_point startTime;
+    };
+    std::map<std::thread::id,std::chrono::steady_clock::time_point> m_startTimes;
+    double m_elapsedTime;
+    std::mutex m_mutex;
+};
+
+SysTimeKeeper &SysTimeKeeper::instance()
+{
+  static SysTimeKeeper theInstance;
+  return theInstance;
+}
+
+class AutoTimeKeeper
+{
+  public:
+    AutoTimeKeeper() { SysTimeKeeper::instance().start(); }
+   ~AutoTimeKeeper() { SysTimeKeeper::instance().stop();  }
+};
+
+double Portable::getSysElapsedTime()
+{
+  return SysTimeKeeper::instance().elapsedTime();
+}
+
+//---------------------------------------------------------------------------------------------------------
 
 
 int Portable::system(const QCString &command,const QCString &args,bool commandHasConsole)
 {
-
   if (command.isEmpty()) return 1;
+  AutoTimeKeeper timeKeeper;
 
 #if defined(_WIN32) && !defined(__CYGWIN__)
   QCString commandCorrectedPath = substitute(command,'/','\\');
@@ -459,23 +521,6 @@ int Portable::pclose(FILE *stream)
   #else
   return ::pclose(stream);
   #endif
-}
-
-void Portable::sysTimerStart()
-{
-  g_startTime = std::chrono::steady_clock::now();
-}
-
-void Portable::sysTimerStop()
-{
-  std::chrono::steady_clock::time_point endTime = std::chrono::steady_clock::now();
-  g_sysElapsedTime+= static_cast<double>(std::chrono::duration_cast<
-                         std::chrono::microseconds>(endTime - g_startTime).count())/1000000.0;
-}
-
-double Portable::getSysElapsedTime()
-{
-  return g_sysElapsedTime;
 }
 
 void Portable::sleep(int ms)

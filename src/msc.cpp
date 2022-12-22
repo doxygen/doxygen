@@ -133,13 +133,11 @@ void writeMscGraphFromFile(const QCString &inFile,const QCString &outDir,
     QCString epstopdfArgs(maxCmdLine);
     epstopdfArgs.sprintf("\"%s.eps\" --outfile=\"%s.pdf\"",
                          qPrint(absOutFile),qPrint(absOutFile));
-    Portable::sysTimerStart();
     if (Portable::system("epstopdf",epstopdfArgs)!=0)
     {
       err_full(srcFile,srcLine,"Problems running epstopdf when processing '%s.eps'. Check your TeX installation!\n",
           qPrint(absOutFile));
     }
-    Portable::sysTimerStop();
   }
 
   Doxygen::indexList->addImageFile(imgName);

@@ -277,7 +277,6 @@ void CitationManager::generatePage()
   // 5. run bib2xhtml perl script on the generated file which will insert the
   //    bibliography in citelist.doc
   int exitCode;
-  Portable::sysTimerStop();
   QCString perlArgs = "\""+bib2xhtmlFile+"\" "+bibOutputFiles+" \""+ citeListFile+"\"";
   if (citeDebug) perlArgs+=" -d";
   if ((exitCode=Portable::system("perl",perlArgs)) != 0)
@@ -285,7 +284,6 @@ void CitationManager::generatePage()
     err("Problems running bibtex. Verify that the command 'perl --version' works from the command line. Exit code: %d\n",
         exitCode);
   }
-  Portable::sysTimerStop();
 
   Dir::setCurrent(oldDir);
 

@@ -5363,13 +5363,17 @@ bool MemberDefImpl::fromAnonymousScope() const
   return m_impl->annScope;
 }
 
+static std::mutex g_anonymousUsedMutex;
+
 bool MemberDefImpl::anonymousDeclShown() const
 {
+  std::lock_guard<std::mutex> lock(g_anonymousUsedMutex);
   return m_impl->annUsed;
 }
 
 void MemberDefImpl::setAnonymousUsed() const
 {
+  std::lock_guard<std::mutex> lock(g_anonymousUsedMutex);
   m_impl->annUsed = TRUE;
 }
 

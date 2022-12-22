@@ -1182,13 +1182,13 @@ void DefinitionImpl::addInnerCompound(const Definition *)
   err("DefinitionImpl::addInnerCompound() called\n");
 }
 
+static std::recursive_mutex g_qualifiedNameMutex;
+
 QCString DefinitionImpl::qualifiedName() const
 {
-  //static int count=0;
-  //count++;
+  std::lock_guard<std::recursive_mutex> lock(g_qualifiedNameMutex);
   if (!m_impl->qualifiedName.isEmpty())
   {
-    //count--;
     return m_impl->qualifiedName;
   }
 
@@ -1197,12 +1197,10 @@ QCString DefinitionImpl::qualifiedName() const
   {
     if (m_impl->localName=="<globalScope>")
     {
-      //count--;
       return "";
     }
     else
     {
-      //count--;
       return m_impl->localName;
     }
   }
@@ -1224,6 +1222,7 @@ QCString DefinitionImpl::qualifiedName() const
 
 void DefinitionImpl::setOuterScope(Definition *d)
 {
+  std::lock_guard<std::recursive_mutex> lock(g_qualifiedNameMutex);
   //printf("%s::setOuterScope(%s)\n",qPrint(name()),d?qPrint(d->name()):"<none>");
   Definition *p = m_impl->outerScope;
   bool found=false;

@@ -1,9 +1,6 @@
 /******************************************************************************
  *
- *
- *
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2022 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -19,7 +16,7 @@
 #ifndef IMAGE_H
 #define IMAGE_H
 
-#include <vector>
+#include <memory>
 #include "types.h"
 #include "qcstring.h"
 
@@ -42,14 +39,13 @@ class Image
     void fillRect(uint x,uint y,uint width,uint height,uchar colIndex,uint mask);
     bool save(const QCString &fileName);
     friend uint stringLength(const QCString &s);
-    uint width() const { return m_width; }
-    uint height() const { return m_height; }
+    uint width() const;
+    uint height() const;
     static uint stringLength(const QCString &s);
 
   private:
-    uint m_width;
-    uint m_height;
-    std::vector<uchar> m_data;
+    struct Private;
+    std::unique_ptr<Private> p;
 };
 
 /** Class representing a bitmap image colored based on hue/sat/gamma settings. */
@@ -64,10 +60,8 @@ class ColoredImage
     static void hsl2rgb(double h,double s,double l,
                         double *pRed,double *pGreen,double *pBlue);
   private:
-    uint m_width;
-    uint m_height;
-    std::vector<uchar> m_data;
-    bool m_hasAlpha;
+    struct Private;
+    std::unique_ptr<Private> p;
 };
 
 #endif

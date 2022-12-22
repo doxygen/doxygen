@@ -244,13 +244,11 @@ static void runPlantumlContent(const PlantumlManager::FilesMap &plantumlFiles,
 
       if (cachedContent == nb.content) continue;
 
-      Portable::sysTimerStart();
       if ((exitCode=Portable::system(pumlExe.data(),pumlArguments.data(),TRUE))!=0)
       {
         err_full(nb.srcFile,nb.srcLine,"Problems running PlantUML. Verify that the command 'java -jar \"%s\" -h' works from the command line. Exit code: %d\n",
             plantumlJarPath.data(),exitCode);
       }
-      Portable::sysTimerStop();
 
       if ( (format==PlantumlManager::PUML_EPS) && (Config_getBool(USE_PDFLATEX)) )
       {
@@ -264,12 +262,10 @@ static void runPlantumlContent(const PlantumlManager::FilesMap &plantumlFiles,
             QCString epstopdfArgs(maxCmdLine);
             epstopdfArgs.sprintf("\"%s%s.eps\" --outfile=\"%s%s.pdf\"",
                 pumlOutDir.data(),str.c_str(), pumlOutDir.data(),str.c_str());
-            Portable::sysTimerStart();
             if ((exitCode=Portable::system("epstopdf",epstopdfArgs.data()))!=0)
             {
               err_full(nb.srcFile,nb.srcLine,"Problems running epstopdf. Check your TeX installation! Exit code: %d\n",exitCode);
             }
-            Portable::sysTimerStop();
           }
         }
       }

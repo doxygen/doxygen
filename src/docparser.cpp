@@ -189,12 +189,10 @@ QCString DocParser::findAndCopyImage(const QCString &fileName, DocImage::Type ty
       epstopdfArgs.sprintf("\"%s/%s.eps\" --outfile=\"%s/%s.pdf\"",
                            qPrint(outputDir), qPrint(baseName),
 			   qPrint(outputDir), qPrint(baseName));
-      Portable::sysTimerStart();
       if (Portable::system("epstopdf",epstopdfArgs)!=0)
       {
 	err("Problems running epstopdf. Check your TeX installation!\n");
       }
-      Portable::sysTimerStop();
       return baseName;
     }
   }

@@ -1337,14 +1337,11 @@ void ClassDiagram::writeFigure(TextStream &output,const QCString &path,
     epstopdfArgs.sprintf("\"%s.eps\" --outfile=\"%s.pdf\"",
                    qPrint(epsBaseName),qPrint(epsBaseName));
     //printf("Converting eps using '%s'\n",qPrint(epstopdfArgs));
-    Portable::sysTimerStart();
     if (Portable::system("epstopdf",epstopdfArgs)!=0)
     {
        err("Problems running epstopdf. Check your TeX installation!\n");
-       Portable::sysTimerStop();
        return;
     }
-    Portable::sysTimerStop();
   }
 }
 

@@ -9543,12 +9543,10 @@ static void runHtmlHelpCompiler()
   std::string oldDir = Dir::currentDirPath();
   Dir::setCurrent(Config_getString(HTML_OUTPUT).str());
   Portable::setShortDir();
-  Portable::sysTimerStart();
   if (Portable::system(Config_getString(HHC_LOCATION).data(), qPrint(HtmlHelp::hhpFileName), Debug::isFlagSet(Debug::ExtCmd))!=1)
   {
     err("failed to run html help compiler on %s\n", qPrint(HtmlHelp::hhpFileName));
   }
-  Portable::sysTimerStop();
   Dir::setCurrent(oldDir);
 }
 
@@ -9557,7 +9555,6 @@ static void runQHelpGenerator()
   QCString args = Qhp::qhpFileName + " -o \"" + Qhp::getQchFileName() + "\"";
   std::string oldDir = Dir::currentDirPath();
   Dir::setCurrent(Config_getString(HTML_OUTPUT).str());
-  Portable::sysTimerStart();
 
   QCString qhgLocation=Config_getString(QHG_LOCATION);
   if (Debug::isFlagSet(Debug::Qhp)) // produce info for debugging
@@ -9619,7 +9616,6 @@ static void runQHelpGenerator()
   {
     err("failed to run qhelpgenerator on %s\n",qPrint(Qhp::qhpFileName));
   }
-  Portable::sysTimerStop();
   Dir::setCurrent(oldDir);
 }
 
@@ -12691,9 +12687,12 @@ void generateOutput()
 
   if (Debug::isFlagSet(Debug::Time))
   {
-    msg("Total elapsed time: %.6f seconds\n(of which %.6f seconds waiting for external tools to finish)\n",
+
+    std::size_t numThreads = static_cast<std::size_t>(Config_getInt(NUM_PROC_THREADS));
+    if (numThreads<1) numThreads=1;
+    msg("Total elapsed time: %.6f seconds\n(of which an average of %.6f seconds per thread waiting for external tools to finish)\n",
          (static_cast<double>(Debug::elapsedTime())),
-         Portable::getSysElapsedTime()
+         Portable::getSysElapsedTime()/numThreads
         );
     g_s.print();
 

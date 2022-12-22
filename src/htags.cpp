@@ -89,13 +89,11 @@ bool Htags::execute(const QCString &htmldir)
   std::string oldDir = Dir::currentDirPath();
   Dir::setCurrent(g_inputDir.absPath());
   //printf("CommandLine=[%s]\n",qPrint(commandLine));
-  Portable::sysTimerStart();
   bool result=Portable::system("htags",commandLine,FALSE)==0;
   if (!result)
   {
     err("Problems running %s. Check your installation\n", "htags");
   }
-  Portable::sysTimerStop();
   Dir::setCurrent(oldDir);
   return result;
 }

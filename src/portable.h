@@ -38,8 +38,6 @@ namespace Portable
   bool           fileSystemIsCaseSensitive();
   FILE *         popen(const QCString &name,const QCString &type);
   int            pclose(FILE *stream);
-  void           sysTimerStart();
-  void           sysTimerStop();
   double         getSysElapsedTime();
   void           sleep(int ms);
   bool           isAbsolutePath(const QCString &fileName);
