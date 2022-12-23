@@ -577,70 +577,62 @@ void DefinitionImpl::setInbodyDocumentation(const QCString &d,const QCString &in
 
 //---------------------------------------
 
-struct FilterCacheItem
-{
-  portable_off_t filePos;
-  size_t fileSize;
-};
-
 /*! Cache for storing the result of filtering a file */
 class FilterCache
 {
-  public:
-    FilterCache() : m_endPos(0) { }
-    bool getFileContents(const QCString &fileName,BufStr &str)
+  private:
+    struct FilterCacheItem
     {
+      portable_off_t filePos;
+      size_t fileSize;
+    };
+    using LineOffsets = std::vector<size_t>;
+
+  public:
+    static FilterCache &instance();
+
+    //! collects the part of file \a fileName starting at \a startLine and ending at \a endLine into
+    //! buffer \a str. Applies filtering if FILTER_SOURCE_FILES is enabled and the file extension
+    //! matches a filter. Caches file information so that subsequent extraction of blocks from
+    //! the same file can be performed efficiently
+    bool getFileContents(const QCString &fileName,size_t startLine,size_t endLine, BufStr &str)
+    {
+      std::lock_guard<std::mutex> lock(m_mutex);
       bool filterSourceFiles = Config_getBool(FILTER_SOURCE_FILES);
       QCString filter = getFileFilter(fileName,TRUE);
       bool usePipe = !filter.isEmpty() && filterSourceFiles;
-      FILE *f=0;
-      const int blockSize = 4096;
-      char buf[blockSize];
+      return usePipe ? getFileContentsPipe(fileName,filter,startLine,endLine,str)
+                     : getFileContentsDisk(fileName,startLine,endLine,str);
+    }
+  private:
+    bool getFileContentsPipe(const QCString &fileName,const QCString &filter,
+                             size_t startLine,size_t endLine,BufStr &str)
+    {
       auto it = m_cache.find(fileName.str());
-      if (usePipe && it!=m_cache.end()) // cache hit: reuse stored result
+      if (it!=m_cache.end()) // cache hit: reuse stored result
       {
         auto item = it->second;
         //printf("getFileContents(%s): cache hit\n",qPrint(fileName));
         // file already processed, get the results after filtering from the tmp file
         Debug::print(Debug::FilterOutput,0,"Reusing filter result for %s from %s at offset=%lld size=%zu\n",
                qPrint(fileName),qPrint(Doxygen::filterDBFileName),item.filePos,item.fileSize);
-        f = Portable::fopen(Doxygen::filterDBFileName,"rb");
-        if (f)
-        {
-          bool success=TRUE;
-          str.resize(static_cast<uint>(item.fileSize+1));
-          if (Portable::fseek(f,item.filePos,SEEK_SET)==-1)
-          {
-            err("Failed to seek to position %d in filter database file %s\n",static_cast<int>(item.filePos),qPrint(Doxygen::filterDBFileName));
-            success=FALSE;
-          }
-          if (success)
-          {
-            size_t numBytes = fread(str.data(),1,item.fileSize,f);
-            if (numBytes!=item.fileSize)
-            {
-              err("Failed to read %zu bytes from position %d in filter database file %s: got %zu bytes\n",
-                 item.fileSize,static_cast<int>(item.filePos),qPrint(Doxygen::filterDBFileName),numBytes);
-              success=FALSE;
-            }
-          }
-          str.addChar('\0');
-          fclose(f);
-          return success;
-        }
-        else
-        {
-          err("Failed to open filter database file %s\n",qPrint(Doxygen::filterDBFileName));
-          return FALSE;
-        }
+
+        auto it_off = m_lineOffsets.find(fileName.str());
+        assert(it_off!=m_lineOffsets.end());
+        auto [ startLineOffset, fragmentSize] = getFragmentLocation(it_off->second,startLine,endLine);
+        //printf("%s: existing file [%zu-%zu]->[%zu-%zu] size=%zu\n",
+        //    qPrint(fileName),startLine,endLine,startLineOffset,endLineOffset,fragmentSize);
+        readFragmentFromFile(str, Doxygen::filterDBFileName.data(),
+                             item.filePos+startLineOffset, fragmentSize);
+        return true;
       }
-      else if (usePipe) // cache miss: filter active but file not previously processed
+      else // cache miss: filter active but file not previously processed
       {
         //printf("getFileContents(%s): cache miss\n",qPrint(fileName));
         // filter file
         QCString cmd=filter+" \""+fileName+"\"";
         Debug::print(Debug::ExtCmd,0,"Executing popen(`%s`)\n",qPrint(cmd));
-        f = Portable::popen(cmd,"r");
+        FILE *f = Portable::popen(cmd,"r");
         FILE *bf = Portable::fopen(Doxygen::filterDBFileName,"a+b");
         FilterCacheItem item;
         item.filePos = m_endPos;
@@ -650,12 +642,14 @@ class FilterCache
           err("Error opening filter database file %s\n",qPrint(Doxygen::filterDBFileName));
           str.addChar('\0');
           Portable::pclose(f);
-          return FALSE;
+          return false;
         }
         // append the filtered output to the database file
         size_t size=0;
         while (!feof(f))
         {
+          const int blockSize = 4096;
+          char buf[blockSize];
           size_t bytesRead = fread(buf,1,blockSize,f);
           size_t bytesWritten = fwrite(buf,1,bytesRead,bf);
           if (bytesRead!=bytesWritten)
@@ -666,7 +660,7 @@ class FilterCache
             str.addChar('\0');
             Portable::pclose(f);
             fclose(bf);
-            return FALSE;
+            return false;
           }
           size+=bytesWritten;
           str.addArray(buf,static_cast<uint>(bytesWritten));
@@ -681,28 +675,107 @@ class FilterCache
         m_endPos += size;
         Portable::pclose(f);
         fclose(bf);
+
+        // shrink buffer to [startLine..endLine] part
+        shrinkBuffer(str,fileName,startLine,endLine);
       }
-      else // no filtering
-      {
-        // normal file
-        //printf("getFileContents(%s): no filter\n",qPrint(fileName));
-        f = Portable::fopen(fileName,"r");
-        while (!feof(f))
-        {
-          size_t bytesRead = fread(buf,1,blockSize,f);
-          str.addArray(buf,static_cast<uint>(bytesRead));
-        }
-        str.addChar('\0');
-        fclose(f);
-      }
-      return TRUE;
+      return true;
     }
-  private:
+
+    //! reads the fragment start at \a startLine and ending at \a endLine from file \a fileName
+    //! into buffer \a str
+    bool getFileContentsDisk(const QCString &fileName,size_t startLine,size_t endLine,BufStr &str)
+    {
+      // normal file
+      //printf("getFileContents(%s): no filter\n",qPrint(fileName));
+      auto it = m_lineOffsets.find(fileName.str());
+      if (it == m_lineOffsets.end()) // new file
+      {
+        // read file completely into str buffer
+        readFragmentFromFile(str,fileName,0);
+        // shrink buffer to [startLine..endLine] part
+        shrinkBuffer(str,fileName,startLine,endLine);
+      }
+      else // file already processed before
+      {
+        auto [ startLineOffset, fragmentSize] = getFragmentLocation(it->second,startLine,endLine);
+        //printf("%s: existing file [%zu-%zu] -> start=%zu size=%zu\n",
+        //    qPrint(fileName),startLine,endLine,startLineOffset,fragmentSize);
+        readFragmentFromFile(str,fileName,startLineOffset,fragmentSize);
+      }
+      return true;
+    }
+
+    //! computes the starting offset for each line for file \a fileName, whose contents should
+    //! already be stored in buffer \a str.
+    void compileLineOffsets(const QCString &fileName,const BufStr &str)
+    {
+      const char *p=str.data();
+      // line 1 (index 0) is at offset 0
+      auto it = m_lineOffsets.insert(std::make_pair(fileName.data(),LineOffsets{0})).first;
+      while (*p)
+      {
+        char c;
+        while ((c=*p)!='\n' && c!=0) p++; // search until end of the line
+        p++;
+        it->second.push_back(p-str.data());
+      }
+    }
+
+    //! Returns the byte offset and size within a file of a fragment given the array of
+    //! line offsets and the start emd end line of the fragment.
+    auto getFragmentLocation(const LineOffsets &lineOffsets,
+                             size_t startLine,size_t endLine) -> std::tuple<size_t,size_t>
+    {
+      size_t startLineOffset = lineOffsets[std::min(startLine-1,lineOffsets.size()-1)];
+      size_t endLineOffset   = lineOffsets[std::min(endLine,    lineOffsets.size()-1)];
+      size_t fragmentSize = endLineOffset-startLineOffset;
+      return std::tie(startLineOffset,fragmentSize);
+    };
+
+    //! Shrinks buffer \a str which should hold the contents of \a fileName to the
+    //! fragment starting a line \a startLine and ending at line \a endLine
+    void shrinkBuffer(BufStr &str,const QCString &fileName,int startLine,int endLine)
+    {
+      // compute offsets from start for each line
+      compileLineOffsets(fileName,str);
+      auto it = m_lineOffsets.find(fileName.str());
+      assert(it!=m_lineOffsets.end());
+      const LineOffsets &lineOffsets = it->second;
+      auto [ startLineOffset, fragmentSize] = getFragmentLocation(lineOffsets,startLine,endLine);
+      //printf("%s: new file [%zu-%zu]->[%zu-%zu] size=%zu\n",
+      //    qPrint(fileName),startLine,endLine,startLineOffset,endLineOffset,fragmentSize);
+      str.dropFromStart(startLineOffset);
+      str.resize(fragmentSize+1);
+      str.at(fragmentSize)='\0';
+    }
+
+    //! Reads the fragment start at byte offset \a startOffset of file \a fileName into buffer \a str.
+    //! Result will be a null terminated. If size==0 the whole file will be read and startOffset is ignored.
+    //! If size>0, size bytes will be read.
+    void readFragmentFromFile(BufStr &str,const QCString &fileName,size_t startOffset,size_t size=0)
+    {
+      std::ifstream ifs(fileName.data(), std::ios::in | std::ios::binary | std::ios::ate);
+      if (size==0) { startOffset=0; size = static_cast<size_t>(ifs.tellg()); }
+      ifs.seekg(startOffset, std::ios::beg);
+      str.resize(size+1);
+      ifs.read(str.data(), size);
+      str.skip(size);
+      str.addChar('\0');
+    }
+
+    FilterCache() : m_endPos(0) { }
     std::unordered_map<std::string,FilterCacheItem> m_cache;
+    std::unordered_map<std::string,LineOffsets> m_lineOffsets;
+    std::mutex m_mutex;
     portable_off_t m_endPos;
 };
 
-static FilterCache g_filterCache;
+FilterCache &FilterCache::instance()
+{
+  static FilterCache theInstance;
+  return theInstance;
+}
 
 //-----------------------------------------
 
@@ -721,7 +794,6 @@ static FilterCache g_filterCache;
 bool readCodeFragment(const QCString &fileName,
                       int &startLine,int &endLine,QCString &result)
 {
-  //printf("readCodeFragment(%s,startLine=%d,endLine=%d)\n",fileName,startLine,endLine);
   bool filterSourceFiles = Config_getBool(FILTER_SOURCE_FILES);
   QCString filter = getFileFilter(fileName,TRUE);
   bool usePipe = !filter.isEmpty() && filterSourceFiles;
@@ -729,122 +801,115 @@ bool readCodeFragment(const QCString &fileName,
   SrcLangExt lang = getLanguageFromFileName(fileName);
   const int blockSize = 4096;
   BufStr str(blockSize);
-  g_filterCache.getFileContents(fileName,str);
+  FilterCache::instance().getFileContents(fileName,
+                                          static_cast<size_t>(startLine),
+                                          static_cast<size_t>(endLine),str);
+  //printf("readCodeFragment(%s,startLine=%d,endLine=%d)=\n[[[\n%s]]]\n",qPrint(fileName),startLine,endLine,qPrint(str));
 
   bool found = lang==SrcLangExt_VHDL   ||
                lang==SrcLangExt_Python ||
                lang==SrcLangExt_Fortran;
                // for VHDL, Python, and Fortran no bracket search is possible
   char *p=str.data();
-  if (p)
+  if (p && *p)
   {
     char c=0;
     int col=0;
-    int lineNr=1;
-    // skip until the startLine has reached
-    while (lineNr<startLine && *p)
+    int lineNr=startLine;
+    // skip until the opening bracket or lonely : is found
+    char cn=0;
+    while (*p && !found)
     {
-      while ((c=*p++)!='\n' && c!=0) /* skip */;
-      lineNr++;
-      if (found && c == '\n') c = '\0';
-    }
-    if (*p)
-    {
-      // skip until the opening bracket or lonely : is found
-      char cn=0;
-      while (lineNr<=endLine && *p && !found)
+      int pc=0;
+      while ((c=*p++)!='{' && c!=':' && c!=0)
       {
-        int pc=0;
-        while ((c=*p++)!='{' && c!=':' && c!=0)
+        //printf("parsing char '%c'\n",c);
+        if (c=='\n')
         {
-          //printf("parsing char '%c'\n",c);
-          if (c=='\n')
+          lineNr++,col=0;
+        }
+        else if (c=='\t')
+        {
+          col+=tabSize - (col%tabSize);
+        }
+        else if (pc=='/' && c=='/') // skip single line comment
+        {
+          while ((c=*p++)!='\n' && c!=0);
+          if (c=='\n') lineNr++,col=0;
+        }
+        else if (pc=='/' && c=='*') // skip C style comment
+        {
+          while (((c=*p++)!='/' || pc!='*') && c!=0)
           {
-            lineNr++,col=0;
-          }
-          else if (c=='\t')
-          {
-            col+=tabSize - (col%tabSize);
-          }
-          else if (pc=='/' && c=='/') // skip single line comment
-          {
-            while ((c=*p++)!='\n' && c!=0);
             if (c=='\n') lineNr++,col=0;
+            pc=c;
           }
-          else if (pc=='/' && c=='*') // skip C style comment
-          {
-            while (((c=*p++)!='/' || pc!='*') && c!=0)
-            {
-              if (c=='\n') lineNr++,col=0;
-              pc=c;
-            }
-          }
-          else
-          {
-            col++;
-          }
-          pc = c;
         }
-        if (c==':')
+        else
         {
-          cn=*p++;
-          if (cn!=':') found=TRUE;
+          col++;
         }
-        else if (c=='{')
-        {
-          found=TRUE;
-        }
+        pc = c;
       }
-      //printf(" -> readCodeFragment(%s,%d,%d) lineNr=%d\n",fileName,startLine,endLine,lineNr);
-      if (found)
+      if (c==':')
       {
-        // For code with more than one line,
-        // fill the line with spaces until we are at the right column
-        // so that the opening brace lines up with the closing brace
-        if (endLine!=startLine)
-        {
-          QCString spaces;
-          spaces.fill(' ',col);
-          result+=spaces;
-        }
-        // copy until end of line
-        if (c) result+=c;
-        startLine=lineNr;
-        if (c==':')
-        {
-          result+=cn;
-          if (cn=='\n') lineNr++;
-        }
-        char lineStr[blockSize];
+        cn=*p++;
+        if (cn!=':') found=TRUE;
+      }
+      else if (c=='{')
+      {
+        found=TRUE;
+      }
+    }
+    //printf(" -> readCodeFragment(%s,%d,%d) lineNr=%d\n",fileName,startLine,endLine,lineNr);
+    if (found)
+    {
+      // For code with more than one line,
+      // fill the line with spaces until we are at the right column
+      // so that the opening brace lines up with the closing brace
+      if (endLine!=startLine)
+      {
+        QCString spaces;
+        spaces.fill(' ',col);
+        result+=spaces;
+      }
+      // copy until end of line
+      if (c) result+=c;
+      startLine=lineNr;
+      if (c==':')
+      {
+        result+=cn;
+        if (cn=='\n') lineNr++;
+      }
+      char lineStr[blockSize];
+      do
+      {
+        //printf("reading line %d in range %d-%d\n",lineNr,startLine,endLine);
+        int size_read;
         do
         {
-          //printf("reading line %d in range %d-%d\n",lineNr,startLine,endLine);
-          int size_read;
-          do
+          // read up to maxLineLength-1 bytes, the last byte being zero
+          int i=0;
+          while ((c=*p++) && i<blockSize-1)
           {
-            // read up to maxLineLength-1 bytes, the last byte being zero
-            int i=0;
-            while ((c=*p++) && i<blockSize-1)
-            {
-              lineStr[i++]=c;
-              if (c=='\n') break; // stop at end of the line
-            }
-            lineStr[i]=0;
-            size_read=i;
-            result+=lineStr; // append line to the output
-          } while (size_read == (blockSize-1)); // append more if line does not fit in buffer
-          lineNr++;
-        } while (lineNr<=endLine && *p);
+            lineStr[i++]=c;
+            if (c=='\n') break; // stop at end of the line
+          }
+          lineStr[i]=0;
+          size_read=i;
+          result+=lineStr; // append line to the output
+        } while (size_read == (blockSize-1)); // append more if line does not fit in buffer
+        lineNr++;
+      } while (*p);
 
-        // strip stuff after closing bracket
-        int newLineIndex = result.findRev('\n');
-        int braceIndex   = result.findRev('}');
-        if (braceIndex > newLineIndex)
-        {
-          result.truncate(static_cast<size_t>(braceIndex+1));
-        }
-        endLine=lineNr-1;
+      // strip stuff after closing bracket
+      int newLineIndex = result.findRev('\n');
+      int braceIndex   = result.findRev('}');
+      if (braceIndex > newLineIndex)
+      {
+        result.truncate(static_cast<size_t>(braceIndex+1));
       }
+      endLine=lineNr-1;
     }
     if (usePipe)
     {
