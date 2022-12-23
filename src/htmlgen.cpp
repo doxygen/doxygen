@@ -569,22 +569,27 @@ static QCString substituteHtmlKeywords(const QCString &str,
 
   // first substitute generic keywords
   QCString result = substituteKeywords(str,title,
-    convertToHtml(Config_getString(PROJECT_NAME)),
-    convertToHtml(Config_getString(PROJECT_NUMBER)),
+        convertToHtml(Config_getString(PROJECT_NAME)),
+        convertToHtml(Config_getString(PROJECT_NUMBER)),
         convertToHtml(Config_getString(PROJECT_BRIEF)));
 
-  // additional HTML only keywords
-  result = substitute(result,"$navpath",navPath);
-  result = substitute(result,"$stylesheet",cssFile);
-  result = substitute(result,"$treeview",treeViewCssJs);
-  result = substitute(result,"$searchbox",searchBox);
-  result = substitute(result,"$search",searchCssJs);
-  result = substitute(result,"$mathjax",mathJaxJs);
-  result = substitute(result,"$darkmode",darkModeJs);
-  result = substitute(result,"$generatedby",generatedBy);
-  result = substitute(result,"$extrastylesheet",extraCssText);
-  result = substitute(result,"$relpath$",relPath); //<-- obsolete: for backwards compatibility only
-  result = substitute(result,"$relpath^",relPath); //<-- must be last
+  // then do the HTML specific keywords
+  result = substituteKeywords(result,
+  {
+    // keyword           value getter
+    { "$navpath",        [&]() { return navPath;        } },
+    { "$stylesheet",     [&]() { return cssFile;        } },
+    { "$treeview",       [&]() { return treeViewCssJs;  } },
+    { "$searchbox",      [&]() { return searchBox;      } },
+    { "$search",         [&]() { return searchCssJs;    } },
+    { "$mathjax",        [&]() { return mathJaxJs;      } },
+    { "$darkmode",       [&]() { return darkModeJs;     } },
+    { "$generatedby",    [&]() { return generatedBy;    } },
+    { "$extrastylesheet",[&]() { return extraCssText;   } },
+    { "$relpath$",       [&]() { return relPath;        } } //<-- obsolete: for backwards compatibility only
+  });
+
+  result = substitute(result,"$relpath^",relPath); //<-- must be done after the previous substitutions
 
   // additional HTML only conditional blocks
   result = selectBlock(result,"FULL_SIDEBAR",hasFullSideBar,OutputType::Html);

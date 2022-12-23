@@ -396,7 +396,7 @@ bool DotFilePatcher::run() const
         t << replaceRef(line,map.relPath,map.urlOnly,map.context,"_top");
       }
     }
-    else if ((i=findIndex(line.str(),reSVG))!=-1)
+    else if (line.find("SVG")!=-1 && (i=findIndex(line.str(),reSVG))!=-1)
     {
       //printf("Found marker at %d\n",i);
       int mapId=-1;
@@ -420,7 +420,7 @@ bool DotFilePatcher::run() const
         t << line.mid(i);
       }
     }
-    else if ((i=findIndex(line.str(),reMAP))!=-1)
+    else if (line.find("MAP")!=-1 && (i=findIndex(line.str(),reMAP))!=-1)
     {
       int mapId=-1;
       t << line.left(i);
@@ -445,7 +445,7 @@ bool DotFilePatcher::run() const
         t << line.mid(i);
       }
     }
-    else if ((i=findIndex(line.str(),reFIG))!=-1)
+    else if (line.find("FIG")!=-1 && (i=findIndex(line.str(),reFIG))!=-1)
     {
       int mapId=-1;
       int n = sscanf(line.data()+i+2,"FIG %d",&mapId);

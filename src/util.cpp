@@ -3405,22 +3405,60 @@ QCString showFileDefMatches(const FileNameLinkedMap *fnMap,const QCString &n)
 
 //----------------------------------------------------------------------
 
+QCString substituteKeywords(const QCString &s,const KeywordSubstitutionList &keywords)
+{
+  std::string substRes;
+  const char *p = s.data();
+  if (p)
+  {
+    // reserve some room for expansion
+    substRes.reserve(s.length()+1024);
+    char c;
+    while ((c=*p))
+    {
+      bool found = false;
+      if (c=='$')
+      {
+        for (const auto &kw : keywords)
+        {
+          size_t keyLen = qstrlen(kw.keyword);
+          if (qstrncmp(p,kw.keyword,keyLen)==0)
+          {
+            substRes+=kw.getValue().str();
+            p+=keyLen;
+            found = true;
+            break;
+          }
+        }
+      }
+      if (!found) // copy
+      {
+        substRes+=c;
+        p++;
+      }
+    }
+  }
+  return substRes;
+}
+
 QCString substituteKeywords(const QCString &s,const QCString &title,
          const QCString &projName,const QCString &projNum,const QCString &projBrief)
 {
-  QCString result = s;
-  if (!title.isEmpty()) result = substitute(result,"$title",title);
-  result = substitute(result,"$datetime",dateToString(DateTimeType::DateTime));
-  result = substitute(result,"$date",dateToString(DateTimeType::Date));
-  result = substitute(result,"$time",dateToString(DateTimeType::Time));
-  result = substitute(result,"$year",yearToString());
-  result = substitute(result,"$doxygenversion",getDoxygenVersion());
-  result = substitute(result,"$projectname",projName);
-  result = substitute(result,"$projectnumber",projNum);
-  result = substitute(result,"$projectbrief",projBrief);
-  result = substitute(result,"$projectlogo",stripPath(Config_getString(PROJECT_LOGO)));
-  result = substitute(result,"$langISO",theTranslator->trISOLang());
-  return result;
+  return substituteKeywords(s,
+  {
+    // keyword          value getter
+    { "$title",         [&]() { return !title.isEmpty() ? title : projName;       } },
+    { "$datetime",      [&]() { return dateToString(DateTimeType::DateTime);      } },
+    { "$date",          [&]() { return dateToString(DateTimeType::Date);          } },
+    { "$time",          [&]() { return dateToString(DateTimeType::Time);          } },
+    { "$year",          [&]() { return yearToString();                            } },
+    { "$doxygenversion",[&]() { return getDoxygenVersion();                       } },
+    { "$projectname",   [&]() { return projName;                                  } },
+    { "$projectnumber", [&]() { return projNum;                                   } },
+    { "$projectbrief",  [&]() { return projBrief;                                 } },
+    { "$projectlogo",   [&]() { return stripPath(Config_getString(PROJECT_LOGO)); } },
+    { "$langISO",       [&]() { return theTranslator->trISOLang();                } }
+  });
 }
 
 //----------------------------------------------------------------------
@@ -5370,11 +5408,10 @@ bool checkExtension(const QCString &fName, const QCString &ext)
 QCString addHtmlExtensionIfMissing(const QCString &fName)
 {
   if (fName.isEmpty()) return fName;
-  if (stripPath(fName).find('.')==-1) // no extension
-  {
-    return QCString(fName)+Doxygen::htmlFileExtension;
-  }
-  return fName;
+  int i_fs = fName.findRev('/');
+  int i_bs = fName.findRev('\\');
+  int i    = fName.find('.',std::max({ i_fs, i_bs ,0})); // search for . after path part
+  return i==-1 ? fName+Doxygen::htmlFileExtension : fName;
 }
 
 QCString stripExtensionGeneral(const QCString &fName, const QCString &ext)

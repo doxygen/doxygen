@@ -3313,7 +3313,7 @@ bool ClassDefImpl::isLinkableInProject() const
   }
   else
   {
-    return !name().isEmpty() &&                    /* has a name */
+    return
       !isArtificial() && !isHidden() &&            /* not hidden */
       !isAnonymous() &&                            /* not anonymous */
       protectionLevelVisible(m_impl->prot)      && /* private/internal */
