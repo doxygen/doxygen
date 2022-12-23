@@ -86,7 +86,7 @@ void LatexCodeGenerator::codify(const QCString &str)
       {
         case 0x0c: p++;  // remove ^L
                    break;
-        case ' ':  m_t <<" ";
+        case ' ':  m_t << (m_doxyCodeLineOpen ? "\\ " : " ");
                    m_col++;
                    p++;
                    break;
@@ -96,7 +96,7 @@ void LatexCodeGenerator::codify(const QCString &str)
                    break;
         case '\t': spacesToNextTabStop =
                          tabSize - (m_col%tabSize);
-                   for (i = 0; i < spacesToNextTabStop; i++) m_t <<" ";
+                   for (i = 0; i < spacesToNextTabStop; i++) m_t << (m_doxyCodeLineOpen ? "\\ " : " ");
                    m_col+=spacesToNextTabStop;
                    p++;
                    break;
@@ -204,11 +204,14 @@ void LatexCodeGenerator::writeLineNumber(const QCString &ref,const QCString &fil
     {
       codify(lineNumber);
     }
-    m_t << " ";
+    m_t << "\\ ";
   }
   else
   {
-    m_t << l << " ";
+    QCString lineNumber;
+    lineNumber.sprintf("%05d",l);
+    codify(lineNumber);
+    m_t << "\\ ";
   }
   m_col=0;
 }
