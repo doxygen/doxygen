@@ -61,6 +61,7 @@ class SysTimeKeeper
       if (it == m_startTimes.end())
       {
         err("SysTimeKeeper stop() called without matching start()\n");
+        return;
       }
       double timeSpent = static_cast<double>(std::chrono::duration_cast<
                          std::chrono::microseconds>(endTime - it->second).count())/1000000.0;
@@ -76,7 +77,7 @@ class SysTimeKeeper
       std::chrono::steady_clock::time_point startTime;
     };
     std::map<std::thread::id,std::chrono::steady_clock::time_point> m_startTimes;
-    double m_elapsedTime;
+    double m_elapsedTime = 0;
     std::mutex m_mutex;
 };
 
