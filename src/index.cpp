@@ -5069,8 +5069,8 @@ static bool quickLinkVisible(LayoutNavEntry::Kind kind)
 
 template<class T>
 void renderMemberIndicesAsJs(std::ostream &t,
-    std::function<int(int)> numDocumented,
-    std::function<Index::MemberIndexMap(int)> getMemberList,
+    std::function<std::size_t(std::size_t)> numDocumented,
+    std::function<Index::MemberIndexMap(std::size_t)> getMemberList,
     const T *(*getInfo)(size_t hl),
     std::size_t total)
 {
@@ -5154,30 +5154,30 @@ static bool renderQuickLinksAsJs(std::ostream &t,LayoutNavEntry *root,bool first
         bool hasChildren=FALSE;
         if (entry->kind()==LayoutNavEntry::NamespaceMembers)
         {
-          auto numDoc = [](int i) {
+          auto numDoc = [](std::size_t i) {
             return Index::instance().numDocumentedNamespaceMembers(static_cast<NamespaceMemberHighlight::Enum>(i));
           };
-          auto memList = [](int i) {
+          auto memList = [](std::size_t i) {
             return Index::instance().isNamespaceIndexLetterUsed(static_cast<NamespaceMemberHighlight::Enum>(i));
           };
           renderMemberIndicesAsJs(t,numDoc,memList,getNmhlInfo,static_cast<std::size_t>(NamespaceMemberHighlight::Total));
         }
         else if (entry->kind()==LayoutNavEntry::ClassMembers)
         {
-          auto numDoc = [](int i) {
+          auto numDoc = [](std::size_t i) {
             return Index::instance().numDocumentedClassMembers(static_cast<ClassMemberHighlight::Enum>(i));
           };
-          auto memList = [](int i) {
+          auto memList = [](std::size_t i) {
             return Index::instance().isClassIndexLetterUsed(static_cast<ClassMemberHighlight::Enum>(i));
           };
           renderMemberIndicesAsJs(t,numDoc,memList,getCmhlInfo,static_cast<std::size_t>(ClassMemberHighlight::Total));
         }
         else if (entry->kind()==LayoutNavEntry::FileGlobals)
         {
-          auto numDoc = [](int i) {
+          auto numDoc = [](std::size_t i) {
             return Index::instance().numDocumentedFileMembers(static_cast<FileMemberHighlight::Enum>(i));
           };
-          auto memList = [](int i) {
+          auto memList = [](std::size_t i) {
             return Index::instance().isFileIndexLetterUsed(static_cast<FileMemberHighlight::Enum>(i));
           };
           renderMemberIndicesAsJs(t,numDoc,memList,getFmhlInfo,static_cast<std::size_t>(FileMemberHighlight::Total));
