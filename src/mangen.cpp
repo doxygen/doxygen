@@ -76,6 +76,36 @@ static QCString getSubdir()
   return dir;
 }
 
+static QCString docifyToString(const QCString &str)
+{
+  QCString result;
+  result.reserve(str.length());
+  if (!str.isEmpty())
+  {
+    const char *p=str.data();
+    char c=0;
+    while ((c=*p++))
+    {
+      switch(c)
+      {
+        case '-':  result += "\\-";  break; // see  bug747780
+        case '.':  result += "\\&."; break; // see  bug652277
+        case '\\': result += "\\\\"; break;
+        case '\n': result += "\n";   break;
+        case '\"': c = '\'';   // no break!
+        default:   result += c;      break;
+      }
+    }
+    //printf("%s",str);fflush(stdout);
+  }
+  return result;
+}
+
+static QCString objectLinkToString(const QCString &text)
+{
+  return "\\fB" + docifyToString(text) + "\\fP";
+}
+
 //-------------------------------------------------------------------------------
 
 void ManCodeGenerator::startCodeFragment(const QCString &)
@@ -317,20 +347,10 @@ void ManGenerator::writeStartAnnoItem(const QCString &,const QCString &,
 {
 }
 
-QCString ManGenerator::objectLinkToString(const QCString &,const QCString &,
-                                          const QCString &, const QCString &name)
+void ManGenerator::writeObjectLink(const QCString &,const QCString &,
+                                   const QCString &, const QCString &name)
 {
-  QCString result;
-  result += "\\fB";
-  result += docifyToString(name);
-  result += "\\fP";
-  m_firstCol=FALSE;
-  return result;
-}
-void ManGenerator::writeObjectLink(const QCString &ref,const QCString &f,
-                                    const QCString &anchor, const QCString &text)
-{
-  m_t << objectLinkToString(ref,f,anchor,text);
+  startBold(); docify(name); endBold();
 }
 
 void ManGenerator::startHtmlLink(const QCString &)
@@ -370,9 +390,8 @@ void ManGenerator::endMemberHeader()
   m_paragraph=FALSE;
 }
 
-QCString ManGenerator::docifyToString(const QCString &str)
+void ManGenerator::docify(const QCString &str)
 {
-  QCString result;
   if (!str.isEmpty())
   {
     const char *p=str.data();
@@ -381,23 +400,18 @@ QCString ManGenerator::docifyToString(const QCString &str)
     {
       switch(c)
       {
-        case '-':  result += "\\-"; break; // see  bug747780
-        case '.':  result += "\\&."; break; // see  bug652277
-        case '\\': result += "\\\\"; m_col++; break;
-        case '\n': result += "\n"; m_col=0; break;
-        case '\"':  c = '\''; // no break!
-        default: result += c; m_col++; break;
+        case '-':  m_t << "\\-";           break; // see  bug747780
+        case '.':  m_t << "\\&.";          break; // see  bug652277
+        case '\\': m_t << "\\\\"; m_col++; break;
+        case '\n': m_t << "\n";   m_col=0; break;
+        case '\"': c = '\'';         // no break!
+        default:   m_t << c;      m_col++; break;
       }
     }
     m_firstCol=(c=='\n');
     //printf("%s",str);fflush(stdout);
   }
   m_paragraph=FALSE;
-  return result;
-}
-void ManGenerator::docify(const QCString &str)
-{
-  m_t << docifyToString(str);
 }
 
 void ManGenerator::writeChar(char c)
@@ -889,5 +903,7 @@ void ManGenerator::writeInheritedSectionTitle(
                   const QCString &title, const QCString &name)
 {
   m_t << "\n\n";
-  m_t << theTranslator->trInheritedFrom(docifyToString(title), objectLinkToString(ref, file, anchor, name));
+  m_t << theTranslator->trInheritedFrom(docifyToString(title), objectLinkToString(name));
+  m_firstCol = FALSE;
 }
+

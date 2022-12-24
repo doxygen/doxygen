@@ -1267,12 +1267,13 @@ void LatexGenerator::endTextLink()
   m_t << "}";
 }
 
-QCString LatexGenerator::objectLinkToString(const QCString &ref, const QCString &f,
-                                            const QCString &anchor, const QCString &text)
+static QCString objectLinkToString(const QCString &ref, const QCString &f,
+                                    const QCString &anchor, const QCString &text,
+                                    bool disableLinks)
 {
   bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
   QCString result;
-  if (!m_disableLinks && ref.isEmpty() && pdfHyperlinks)
+  if (!disableLinks && ref.isEmpty() && pdfHyperlinks)
   {
     result += "\\mbox{\\hyperlink{";
     if (!f.isEmpty()) result += stripPath(f);
@@ -1290,10 +1291,11 @@ QCString LatexGenerator::objectLinkToString(const QCString &ref, const QCString 
   }
   return result;
 }
+
 void LatexGenerator::writeObjectLink(const QCString &ref, const QCString &f,
                                      const QCString &anchor, const QCString &text)
 {
-  m_t << objectLinkToString(ref,f,anchor,text);
+  m_t << objectLinkToString(ref,f,anchor,text,m_disableLinks);
 }
 
 void LatexGenerator::startPageRef()
@@ -2160,6 +2162,7 @@ void LatexGenerator::writeInheritedSectionTitle(
   {
     m_t << "\\doxysubsubsection*{";
   }
-  m_t << theTranslator->trInheritedFrom(convertToLaTeX(title), objectLinkToString(ref, file, anchor, name));
+  m_t << theTranslator->trInheritedFrom(convertToLaTeX(title), 
+                                        objectLinkToString(ref, file, anchor, name, m_disableLinks));
   m_t << "}\n";
 }

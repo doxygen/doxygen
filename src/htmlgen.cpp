@@ -767,12 +767,8 @@ void HtmlCodeGenerator::codify(const QCString &str)
   }
 }
 
-static QCString docifyToString(const QCString &str)
+void HtmlCodeGenerator::docify(const QCString &str)
 {
-  QCString result;
-
-  //result+= getHtmlDirEmbeddingChar(getTextDirByConfig(str));
-
   if (!str.isEmpty())
   {
     const char *p=str.data();
@@ -782,48 +778,40 @@ static QCString docifyToString(const QCString &str)
       c=*p++;
       switch(c)
       {
-        case '<':  result+= "&lt;"; break;
-        case '>':  result+= "&gt;"; break;
-        case '&':  result+= "&amp;"; break;
-        case '"':  result+= "&quot;"; break;
+        case '<':  m_t << "&lt;"; break;
+        case '>':  m_t << "&gt;"; break;
+        case '&':  m_t << "&amp;"; break;
+        case '"':  m_t << "&quot;"; break;
         case '\\':
           if (*p=='<')
-            { result+= "&lt;"; p++; }
+            { m_t << "&lt;"; p++; }
           else if (*p=='>')
-            { result+= "&gt;"; p++; }
+            { m_t << "&gt;"; p++; }
 	  else if (*p=='(')
-            { result+= "\\&zwj;("; p++; }
+            { m_t << "\\&zwj;("; p++; }
           else if (*p==')')
-            { result+= "\\&zwj;)"; p++; }
+            { m_t << "\\&zwj;)"; p++; }
           else
-            result+= "\\";
+            m_t << "\\";
           break;
         default:
           {
             uchar uc = static_cast<uchar>(c);
             if (uc<32 && !isspace(c))
             {
-              result+= "&#x24";
-              result+= hex[uc>>4];
-              result+= hex[uc&0xF];
-              result+= ";";
+              m_t << "&#x24" << hex[uc>>4] << hex[uc&0xF] << ";";
             }
             else
             {
-              result+= c;
+              m_t << c;
             }
           }
           break;
       }
     }
   }
-  return result;
 }
 
-void HtmlCodeGenerator::docify(const QCString &str)
-{
-  m_t << docifyToString(str);
-}
 
 void HtmlCodeGenerator::writeLineNumber(const QCString &ref,const QCString &filename,
                                     const QCString &anchor,int l,bool writeLineAnchor)
@@ -1629,34 +1617,25 @@ void HtmlGenerator::writeStartAnnoItem(const QCString &,const QCString &f,
   m_t << "</a> ";
 }
 
-QCString HtmlGenerator::objectLinkToString(const QCString &ref,const QCString &f,
-                                           const QCString &anchor, const QCString &name)
-{
-  QCString result;
-
-  if (!ref.isEmpty())
-  {
-    result += "<a class=\"elRef\" ";
-    result += externalLinkTarget();
-  }
-  else
-  {
-    result += "<a class=\"el\" ";
-  }
-  result += "href=\"";
-  result += externalRef(m_relPath,ref,TRUE);
-  if (!f.isEmpty()) result += addHtmlExtensionIfMissing(f);
-  if (!anchor.isEmpty()) result += "#" + anchor;
-  result += "\">";
-  result += docifyToString(name);
-  result += "</a>";
-  return result;
-}
-
 void HtmlGenerator::writeObjectLink(const QCString &ref,const QCString &f,
                                     const QCString &anchor, const QCString &name)
 {
-  m_t << objectLinkToString(ref,f,anchor,name);
+  if (!ref.isEmpty())
+  {
+    m_t << "<a class=\"elRef\" ";
+    m_t << externalLinkTarget();
+  }
+  else
+  {
+    m_t << "<a class=\"el\" ";
+  }
+  m_t << "href=\"";
+  m_t << externalRef(m_relPath,ref,TRUE);
+  if (!f.isEmpty()) m_t << addHtmlExtensionIfMissing(f);
+  if (!anchor.isEmpty()) m_t << "#" << anchor;
+  m_t << "\">";
+  docify(name);
+  m_t << "</a>";
 }
 
 void HtmlGenerator::startTextLink(const QCString &f,const QCString &anchor)

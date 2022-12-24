@@ -116,8 +116,6 @@ class RTFGenerator : public OutputGenerator
     void startIndexItem(const QCString &ref,const QCString &file);
     void endIndexItem(const QCString &ref,const QCString &file);
     void docify(const QCString &text);
-    QCString objectLinkToString(const QCString &ref,const QCString &file,
-                                const QCString &anchor,const QCString &name);
     void writeObjectLink(const QCString &ref,const QCString &file,
                          const QCString &anchor,const QCString &name);
     void startTextLink(const QCString &f,const QCString &anchor);

@@ -64,6 +64,7 @@ static QCString dateToRTFDateString()
 static QCString docifyToString(const QCString &str)
 {
   QCString result;
+  result.reserve(str.length());
   if (!str.isEmpty())
   {
     const char *p=str.data();
@@ -1440,8 +1441,8 @@ void RTFGenerator::endTextLink()
   }
 }
 
-QCString RTFGenerator::objectLinkToString(const QCString &ref, const QCString &f,
-                                          const QCString &anchor, const QCString &text)
+static QCString objectLinkToString(const QCString &ref,    const QCString &f,
+                                   const QCString &anchor, const QCString &text)
 {
   QCString result;
   if (ref.isEmpty() && Config_getBool(RTF_HYPERLINKS))
@@ -1475,8 +1476,8 @@ QCString RTFGenerator::objectLinkToString(const QCString &ref, const QCString &f
   return result;
 }
 
-void RTFGenerator::writeObjectLink(const QCString &ref, const QCString &f,
-    const QCString &anchor, const QCString &text)
+void RTFGenerator::writeObjectLink(const QCString &ref,    const QCString &f,
+                                   const QCString &anchor, const QCString &text)
 {
   m_t << objectLinkToString(ref,f,anchor,text);
 }
@@ -1769,7 +1770,6 @@ void RTFGenerator::docify(const QCString &str)
   m_t << docifyToString(str);
   m_omitParagraph = FALSE;
 }
-
 
 void RTFGenerator::writeChar(char c)
 {

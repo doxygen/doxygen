@@ -123,8 +123,6 @@ class HtmlGenerator : public OutputGenerator //public CodeOutputForwarder<Output
     void endIndexItem(const QCString &ref,const QCString &file);
     void docify(const QCString &text);
 
-    QCString objectLinkToString(const QCString &ref,const QCString &file,
-                                const QCString &anchor,const QCString &name);
     void writeObjectLink(const QCString &ref,const QCString &file,
                          const QCString &anchor,const QCString &name);
 

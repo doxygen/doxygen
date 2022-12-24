@@ -672,8 +672,8 @@ void DocbookGenerator::docify(const QCString &str)
 DB_GEN_C
   m_t << convertToDocBook(str);
 }
-QCString DocbookGenerator::objectLinkToString(const QCString &, const QCString &f,
-                                              const QCString &anchor, const QCString &text)
+static QCString objectLinkToString(const QCString &, const QCString &f,
+                                   const QCString &anchor, const QCString &text)
 {
 DB_GEN_C
   QCString result;
