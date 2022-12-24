@@ -228,7 +228,7 @@ jobs:
       if: startsWith(matrix.config.os,'ubuntu-')
 
     - name: Install Graphviz (MacOS)
-      run: brew install graphviz
+      run: brew install python-tk graphviz
       if: matrix.config.os == 'macos-latest'
 
     - name: Install Graphviz (Windows)
