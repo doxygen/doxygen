@@ -189,7 +189,7 @@ class RTFGenerator : public OutputGenerator
     void startMemberDeclaration() {}
     void endMemberDeclaration(const QCString &,const QCString &) {}
     void writeInheritedSectionTitle(const QCString &,const QCString &,const QCString &,
-                      const QCString &,const QCString &,const QCString &) {}
+                      const QCString &,const QCString &,const QCString &);
     void startDescList(SectionTypes);
     void startExamples();
     void endExamples();

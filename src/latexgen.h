@@ -212,7 +212,7 @@ class LatexGenerator : public OutputGenerator //: public CodeOutputForwarder<Out
     void startMemberDeclaration() {}
     void endMemberDeclaration(const QCString &,const QCString &) {}
     void writeInheritedSectionTitle(const QCString &,const QCString &,const QCString &,
-                      const QCString &,const QCString &,const QCString &) {}
+                      const QCString &,const QCString &,const QCString &);
     void startDescList(SectionTypes)     { m_t << "\\begin{Desc}\n\\item["; }
     void endDescList()       { m_t << "\\end{Desc}\n"; }
     void startExamples();

@@ -76,6 +76,36 @@ static QCString getSubdir()
   return dir;
 }
 
+static QCString docifyToString(const QCString &str)
+{
+  QCString result;
+  result.reserve(str.length());
+  if (!str.isEmpty())
+  {
+    const char *p=str.data();
+    char c=0;
+    while ((c=*p++))
+    {
+      switch(c)
+      {
+        case '-':  result += "\\-";  break; // see  bug747780
+        case '.':  result += "\\&."; break; // see  bug652277
+        case '\\': result += "\\\\"; break;
+        case '\n': result += "\n";   break;
+        case '\"': c = '\'';   // no break!
+        default:   result += c;      break;
+      }
+    }
+    //printf("%s",str);fflush(stdout);
+  }
+  return result;
+}
+
+static QCString objectLinkToString(const QCString &text)
+{
+  return "\\fB" + docifyToString(text) + "\\fP";
+}
+
 //-------------------------------------------------------------------------------
 
 void ManCodeGenerator::startCodeFragment(const QCString &)
@@ -318,7 +348,7 @@ void ManGenerator::writeStartAnnoItem(const QCString &,const QCString &,
 }
 
 void ManGenerator::writeObjectLink(const QCString &,const QCString &,
-                                    const QCString &, const QCString &name)
+                                   const QCString &, const QCString &name)
 {
   startBold(); docify(name); endBold();
 }
@@ -370,12 +400,12 @@ void ManGenerator::docify(const QCString &str)
     {
       switch(c)
       {
-        case '-':  m_t << "\\-"; break; // see  bug747780
-        case '.':  m_t << "\\&."; break; // see  bug652277
+        case '-':  m_t << "\\-";           break; // see  bug747780
+        case '.':  m_t << "\\&.";          break; // see  bug652277
         case '\\': m_t << "\\\\"; m_col++; break;
-        case '\n': m_t << "\n"; m_col=0; break;
-        case '\"':  c = '\''; // no break!
-        default: m_t << c; m_col++; break;
+        case '\n': m_t << "\n";   m_col=0; break;
+        case '\"': c = '\'';         // no break!
+        default:   m_t << c;      m_col++; break;
       }
     }
     m_firstCol=(c=='\n');
@@ -865,5 +895,15 @@ void ManGenerator::endLabels()
 
 void ManGenerator::endHeaderSection()
 {
+}
+
+void ManGenerator::writeInheritedSectionTitle(
+                  const QCString &id,    const QCString &ref,
+                  const QCString &file,  const QCString &anchor,
+                  const QCString &title, const QCString &name)
+{
+  m_t << "\n\n";
+  m_t << theTranslator->trInheritedFrom(docifyToString(title), objectLinkToString(name));
+  m_firstCol = FALSE;
 }
 

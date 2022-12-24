@@ -182,7 +182,7 @@ class ManGenerator : public OutputGenerator //public CodeOutputForwarder<OutputG
     void startMemberDeclaration() {}
     void endMemberDeclaration(const QCString &,const QCString &) {}
     void writeInheritedSectionTitle(const QCString &,const QCString &,const QCString &,
-                      const QCString &,const QCString &,const QCString &) {}
+                      const QCString &,const QCString &,const QCString &);
     void startDescList(SectionTypes);
     void endDescList()        {}
     void startExamples();

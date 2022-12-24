@@ -166,6 +166,9 @@ class QCString
     /** Truncates the string at position \a pos. */
     bool truncate( size_t pos ) { return resize( pos + 1 ); }
 
+    /** Reserve space for \a size bytes without changing the string contents */
+    void reserve( size_t size ) { m_rep.reserve(size); }
+
     /** Fills a string with a predefined character
      *  @param[in] c the character used to fill the string with.
      *  @param[in] len the number of character to fill. Use -1 to fill the whole string.

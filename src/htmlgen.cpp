@@ -769,8 +769,6 @@ void HtmlCodeGenerator::codify(const QCString &str)
 
 void HtmlCodeGenerator::docify(const QCString &str)
 {
-  //m_t << getHtmlDirEmbeddingChar(getTextDirByConfig(str));
-
   if (!str.isEmpty())
   {
     const char *p=str.data();
@@ -813,6 +811,7 @@ void HtmlCodeGenerator::docify(const QCString &str)
     }
   }
 }
+
 
 void HtmlCodeGenerator::writeLineNumber(const QCString &ref,const QCString &filename,
                                     const QCString &anchor,int l,bool writeLineAnchor)
