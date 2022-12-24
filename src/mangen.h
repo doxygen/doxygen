@@ -104,7 +104,10 @@ class ManGenerator : public OutputGenerator //public CodeOutputForwarder<OutputG
     void endItemList()    { newParagraph(); }
     void startIndexItem(const QCString &ref,const QCString &file);
     void endIndexItem(const QCString &ref,const QCString &file);
+    QCString docifyToString(const QCString &text);
     void docify(const QCString &text);
+    QCString objectLinkToString(const QCString &ref,const QCString &file,
+                                const QCString &anchor,const QCString &name);
     void writeObjectLink(const QCString &ref,const QCString &file,
                          const QCString &anchor,const QCString &name);
     void startTextLink(const QCString &,const QCString &) {}
@@ -182,7 +185,7 @@ class ManGenerator : public OutputGenerator //public CodeOutputForwarder<OutputG
     void startMemberDeclaration() {}
     void endMemberDeclaration(const QCString &,const QCString &) {}
     void writeInheritedSectionTitle(const QCString &,const QCString &,const QCString &,
-                      const QCString &,const QCString &,const QCString &) {}
+                      const QCString &,const QCString &,const QCString &);
     void startDescList(SectionTypes);
     void endDescList()        {}
     void startExamples();

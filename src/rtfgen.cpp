@@ -61,6 +61,29 @@ static QCString dateToRTFDateString()
   return result;
 }
 
+static QCString docifyToString(const QCString &str)
+{
+  QCString result;
+  if (!str.isEmpty())
+  {
+    const char *p=str.data();
+    char c;
+    while (*p)
+    {
+      c=*p++;
+
+      switch (c)
+      {
+        case '{':  result += "\\{";            break;
+        case '}':  result += "\\}";            break;
+        case '\\': result += "\\\\";           break;
+        default:   result += c;                break;
+      }
+    }
+  }
+  return result;
+}
+
 static QCString makeIndexName(const QCString &s,int i)
 {
   QCString result=s;
@@ -1417,9 +1440,10 @@ void RTFGenerator::endTextLink()
   }
 }
 
-void RTFGenerator::writeObjectLink(const QCString &ref, const QCString &f,
-    const QCString &anchor, const QCString &text)
+QCString RTFGenerator::objectLinkToString(const QCString &ref, const QCString &f,
+                                          const QCString &anchor, const QCString &text)
 {
+  QCString result;
   if (ref.isEmpty() && Config_getBool(RTF_HYPERLINKS))
   {
     QCString refName;
@@ -1433,21 +1457,28 @@ void RTFGenerator::writeObjectLink(const QCString &ref, const QCString &f,
       refName+=anchor;
     }
 
-    m_t << "{\\field {\\*\\fldinst { HYPERLINK  \\\\l \"";
-    m_t << rtfFormatBmkStr(refName);
-    m_t << "\" }{}";
-    m_t << "}{\\fldrslt {\\cs37\\ul\\cf2 ";
+    result += "{\\field {\\*\\fldinst { HYPERLINK  \\\\l \"";
+    result += rtfFormatBmkStr(refName);
+    result += "\" }{}";
+    result += "}{\\fldrslt {\\cs37\\ul\\cf2 ";
 
-    docify(text);
+    result += docifyToString(text);
 
-    m_t << "}}}\n";
+    result += "}}}\n";
   }
   else
   {
-    startBold();
-    docify(text);
-    endBold();
+    result += "{\\b ";
+    result += docifyToString(text);
+    result += "}";
   }
+  return result;
+}
+
+void RTFGenerator::writeObjectLink(const QCString &ref, const QCString &f,
+    const QCString &anchor, const QCString &text)
+{
+  m_t << objectLinkToString(ref,f,anchor,text);
 }
 
 void RTFGenerator::startPageRef()
@@ -1734,27 +1765,9 @@ void RTFGenerator::endSection(const QCString &lab,SectionType)
 
 void RTFGenerator::docify(const QCString &str)
 {
-  if (!str.isEmpty())
-  {
-    const char *p=str.data();
-    char c;
-    while (*p)
-    {
-      c=*p++;
-
-      switch (c)
-      {
-        case '{':  m_t << "\\{";            break;
-        case '}':  m_t << "\\}";            break;
-        case '\\': m_t << "\\\\";           break;
-        default:
-          {
-            m_t << c;
-          }
-      }
-      m_omitParagraph = FALSE;
-    }
-  }
+  if (str.isEmpty()) return;
+  m_t << docifyToString(str);
+  m_omitParagraph = FALSE;
 }
 
 
@@ -2752,3 +2765,15 @@ void RTFGenerator::endLabels()
 {
 }
 
+void RTFGenerator::writeInheritedSectionTitle(
+                  const QCString &id,    const QCString &ref,
+                  const QCString &file,  const QCString &anchor,
+                  const QCString &title, const QCString &name)
+{
+  m_t << rtf_Style_Reset;
+  m_t << rtf_Style["Heading4"].reference();
+  m_t << "\n";
+  m_t << theTranslator->trInheritedFrom(docifyToString(title), objectLinkToString(ref, file, anchor, name));
+  m_t << "\\par\n";
+  m_t << rtf_Style_Reset << "\n";
+}

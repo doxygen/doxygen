@@ -139,6 +139,7 @@ class DocbookGenerator : public OutputGenerator //: public CodeOutputForwarder<O
     void writeString(const QCString &);
     void startParagraph(const QCString &);
     void endParagraph();
+    QCString objectLinkToString(const QCString &,const QCString &,const QCString &,const QCString &);
     void writeObjectLink(const QCString &,const QCString &,const QCString &,const QCString &);
     void startHtmlLink(const QCString &){DB_GEN_NEW};
     void endHtmlLink(){DB_GEN_NEW};
@@ -238,7 +239,7 @@ class DocbookGenerator : public OutputGenerator //: public CodeOutputForwarder<O
     void endMemberDeclaration(const QCString &,const QCString &){DB_GEN_EMPTY};
     void writeInheritedSectionTitle(const QCString &,const QCString &,
                                     const QCString &,const QCString &,
-                                    const QCString &,const QCString &){DB_GEN_NEW};
+                                    const QCString &,const QCString &);
     void startIndent(){DB_GEN_EMPTY};
     void endIndent(){DB_GEN_EMPTY};
     void writeSynopsis(){DB_GEN_EMPTY};
