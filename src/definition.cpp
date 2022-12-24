@@ -583,7 +583,7 @@ class FilterCache
   private:
     struct FilterCacheItem
     {
-      portable_off_t filePos;
+      size_t filePos;
       size_t fileSize;
     };
     using LineOffsets = std::vector<size_t>;
@@ -742,7 +742,7 @@ class FilterCache
 
     //! Shrinks buffer \a str which should hold the contents of \a fileName to the
     //! fragment starting a line \a startLine and ending at line \a endLine
-    void shrinkBuffer(BufStr &str,const QCString &fileName,int startLine,int endLine)
+    void shrinkBuffer(BufStr &str,const QCString &fileName,size_t startLine,size_t endLine)
     {
       // compute offsets from start for each line
       compileLineOffsets(fileName,str);
@@ -775,7 +775,7 @@ class FilterCache
     std::unordered_map<std::string,FilterCacheItem> m_cache;
     std::unordered_map<std::string,LineOffsets> m_lineOffsets;
     std::mutex m_mutex;
-    portable_off_t m_endPos;
+    size_t m_endPos;
 };
 
 FilterCache &FilterCache::instance()
