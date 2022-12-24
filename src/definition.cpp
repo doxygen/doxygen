@@ -633,6 +633,13 @@ class FilterCache
         QCString cmd=filter+" \""+fileName+"\"";
         Debug::print(Debug::ExtCmd,0,"Executing popen(`%s`)\n",qPrint(cmd));
         FILE *f = Portable::popen(cmd,"r");
+        if (f==0)
+        {
+          // handle error
+          err("Error opening filter pipe command '%s'\n",qPrint(cmd));
+          str.addChar('\0');
+          return false;
+        }
         FILE *bf = Portable::fopen(Doxygen::filterDBFileName,"a+b");
         FilterCacheItem item;
         item.filePos = m_endPos;
