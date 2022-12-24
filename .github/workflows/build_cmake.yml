@@ -206,11 +206,14 @@ jobs:
       if: startsWith(matrix.config.os,'ubuntu-')
 
     - name: Install xmllint (MacOS)
-      run: brew install libxml2
+      run: |
+         brew update
+         brew install libxml2
       if: matrix.config.os == 'macos-latest'
 
     - name: Install bison (MacOS)
       run: |
+        brew update
         brew install bison;
         echo "/usr/local/opt/bison/bin" >> $GITHUB_PATH
       if: matrix.config.os == 'macos-latest'
@@ -228,7 +231,9 @@ jobs:
       if: startsWith(matrix.config.os,'ubuntu-')
 
     - name: Install Graphviz (MacOS)
-      run: brew install python-tk graphviz
+      run: |
+        brew update
+        brew install python-tk graphviz
       if: matrix.config.os == 'macos-latest'
 
     - name: Install Graphviz (Windows)
