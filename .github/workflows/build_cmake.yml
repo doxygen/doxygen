@@ -232,8 +232,12 @@ jobs:
 
     - name: Install Graphviz (MacOS)
       run: |
-        brew update
-        brew install python-tk graphviz
+      # homebrew fails to update python from 3.9 to 3.10 due to unlinking failure (see https://github.com/actions/runner-images/issues/6817)
+      rm /usr/local/bin/idle3 || true
+      rm /usr/local/bin/pydoc3 || true
+      rm /usr/local/bin/python3 || true
+      rm /usr/local/bin/python3-config || true
+      brew install graphviz
       if: matrix.config.os == 'macos-latest'
 
     - name: Install Graphviz (Windows)
