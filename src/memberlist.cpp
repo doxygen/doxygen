@@ -416,7 +416,7 @@ void MemberList::writePlainDeclarations(OutputList &ol, bool inGroup,
               {
                 ol.endDoxyAnchor(md->getOutputFileBase(),md->anchor());
               }
-              ol.endMemberItem();
+              ol.endMemberItem(0);
               if (!md->briefDescription().isEmpty() && Config_getBool(BRIEF_MEMBER_DESC))
               {
                 auto parser { createDocParser() };

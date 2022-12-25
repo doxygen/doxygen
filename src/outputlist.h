@@ -266,8 +266,8 @@ class OutputList : public BaseOutputDocInterface
     { forall(&OutputGenerator::endAnonTypeScope,i1); }
     void startMemberItem(const QCString &anchor,int i1,const QCString &id=QCString())
     { forall(&OutputGenerator::startMemberItem,anchor,i1,id); }
-    void endMemberItem()
-    { forall(&OutputGenerator::endMemberItem); }
+    void endMemberItem(int annoType = -1)
+    { forall(&OutputGenerator::endMemberItem,annoType); }
     void startMemberTemplateParams()
     { forall(&OutputGenerator::startMemberTemplateParams); }
     void endMemberTemplateParams(const QCString &anchor,const QCString &inheritId)

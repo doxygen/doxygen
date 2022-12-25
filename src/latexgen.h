@@ -163,7 +163,7 @@ class LatexGenerator : public OutputGenerator //: public CodeOutputForwarder<Out
     void startAnonTypeScope(int);
     void endAnonTypeScope(int);
     void startMemberItem(const QCString &,int,const QCString &);
-    void endMemberItem();
+    void endMemberItem(int annoType = -1);
     void startMemberTemplateParams();
     void endMemberTemplateParams(const QCString &,const QCString &);
     void startCompoundTemplateParams() { startSubsubsection(); }

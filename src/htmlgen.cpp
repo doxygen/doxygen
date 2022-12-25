@@ -1916,8 +1916,12 @@ void HtmlGenerator::startMemberItem(const QCString &anchor,int annoType,const QC
   insertMemberAlignLeft(annoType, true);
 }
 
-void HtmlGenerator::endMemberItem()
+void HtmlGenerator::endMemberItem(int annoType)
 {
+  if (annoType == 1)
+  { 
+    insertMemberAlign(false);
+  }
   m_t << "</td></tr>\n";
 }
 

@@ -1377,7 +1377,7 @@ void NamespaceLinkedRefMap::writeDeclaration(OutputList &ol,const QCString &titl
         name = nd->displayName();
       }
       ol.writeObjectLink(nd->getReference(),nd->getOutputFileBase(),QCString(),name);
-      ol.endMemberItem();
+      ol.endMemberItem(0);
       if (!nd->briefDescription().isEmpty() && Config_getBool(BRIEF_MEMBER_DESC))
       {
         ol.startMemberDescription(nd->getOutputFileBase());

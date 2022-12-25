@@ -349,7 +349,7 @@ void DirDefImpl::writeSubDirList(OutputList &ol)
         ol.parseText(theTranslator->trDir(FALSE,TRUE)+" ");
         ol.insertMemberAlign();
         ol.writeObjectLink(dd->getReference(),dd->getOutputFileBase(),QCString(),dd->shortName());
-        ol.endMemberItem();
+        ol.endMemberItem(0);
         if (!dd->briefDescription().isEmpty() && Config_getBool(BRIEF_MEMBER_DESC))
         {
           ol.startMemberDescription(dd->getOutputFileBase());
@@ -426,7 +426,7 @@ void DirDefImpl::writeFileList(OutputList &ol)
           ol.endTextLink();
           ol.popGeneratorState();
         }
-        ol.endMemberItem();
+        ol.endMemberItem(0);
         if (!fd->briefDescription().isEmpty() && Config_getBool(BRIEF_MEMBER_DESC))
         {
           ol.startMemberDescription(fd->getOutputFileBase());

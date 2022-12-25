@@ -208,7 +208,7 @@ class DocbookGenerator : public OutputGenerator //: public CodeOutputForwarder<O
     void startAnonTypeScope(int){DB_GEN_EMPTY};
     void endAnonTypeScope(int){DB_GEN_EMPTY};
     void startMemberItem(const QCString &,int,const QCString &);
-    void endMemberItem();
+    void endMemberItem(int annoType = -1);
     void startMemberTemplateParams();
     void endMemberTemplateParams(const QCString &,const QCString &);
     void startCompoundTemplateParams() { startSubsubsection(); }

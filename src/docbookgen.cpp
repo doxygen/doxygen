@@ -719,7 +719,7 @@ DB_GEN_C
   m_t << "            <listitem><para>";
   m_inListItem[m_levelListItem] = TRUE;
 }
-void DocbookGenerator::endMemberItem()
+void DocbookGenerator::endMemberItem(int)
 {
 DB_GEN_C
   m_t << "</para>\n";

@@ -613,7 +613,7 @@ void ConceptDefImpl::writeDeclarationLink(OutputList &ol,bool &found,const QCStr
       found=TRUE;
     }
     ol.startMemberDeclaration();
-    ol.startMemberItem(anchor(),FALSE);
+    ol.startMemberItem(anchor(),0);
     ol.writeString("concept ");
     QCString cname = displayName(!localNames);
     ol.insertMemberAlign();
@@ -631,7 +631,7 @@ void ConceptDefImpl::writeDeclarationLink(OutputList &ol,bool &found,const QCStr
       ol.docify(cname);
       ol.endBold();
     }
-    ol.endMemberItem();
+    ol.endMemberItem(0);
     // add the brief description if available
     if (!briefDescription().isEmpty() && Config_getBool(BRIEF_MEMBER_DESC))
     {

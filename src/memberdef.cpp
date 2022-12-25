@@ -2090,10 +2090,8 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
 
   // start a new member declaration
   bool isAnonType = annoClassDef || m_impl->annMemb || m_impl->annEnumType;
-  ol.startMemberItem(anchor(),
-                     isAnonType ? 1 : !m_impl->tArgList.empty() ? 3 : 0,
-                     inheritId
-                    );
+  int anonType = isAnonType ? 1 : !m_impl->tArgList.empty() ? 3 : 0;
+  ol.startMemberItem(anchor(), anonType, inheritId);
 
   // If there is no detailed description we need to write the anchor here.
   bool detailsVisible = hasDetailedDescription();
@@ -2168,7 +2166,8 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
       ol.startAnonTypeScope(indentLevel);
       annoClassDef->writeDeclaration(ol,m_impl->annMemb,inGroup,indentLevel+1,inheritedFrom,inheritId);
       //printf(">>>>>>>>>>>>>> startMemberItem(2)\n");
-      ol.startMemberItem(anchor(),2,inheritId);
+      anonType = 2;
+      ol.startMemberItem(anchor(),anonType,inheritId);
       int j;
       for (j=0;j< indentLevel;j++)
       {
@@ -2443,7 +2442,7 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
 
   //printf("endMember %s annoClassDef=%p annEnumType=%p\n",
   //    qPrint(name()),annoClassDef,annEnumType);
-  ol.endMemberItem();
+  ol.endMemberItem(anonType);
   if (endAnonScopeNeeded)
   {
     ol.endAnonTypeScope(indentLevel);

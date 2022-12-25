@@ -865,7 +865,7 @@ void GroupDefImpl::writeFiles(OutputList &ol,const QCString &title)
       ol.docify(theTranslator->trFile(FALSE,TRUE)+" ");
       ol.insertMemberAlign();
       ol.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),QCString(),fd->name());
-      ol.endMemberItem();
+      ol.endMemberItem(0);
       if (!fd->briefDescription().isEmpty() && Config_getBool(BRIEF_MEMBER_DESC))
       {
         ol.startMemberDescription(fd->getOutputFileBase());
@@ -910,7 +910,7 @@ void GroupDefImpl::writeNestedGroups(OutputList &ol,const QCString &title)
         //ol.docify(" ");
         ol.insertMemberAlign();
         ol.writeObjectLink(gd->getReference(),gd->getOutputFileBase(),QCString(),gd->groupTitle());
-        ol.endMemberItem();
+        ol.endMemberItem(0);
         if (!gd->briefDescription().isEmpty() && Config_getBool(BRIEF_MEMBER_DESC))
         {
           ol.startMemberDescription(gd->getOutputFileBase());
@@ -942,7 +942,7 @@ void GroupDefImpl::writeDirs(OutputList &ol,const QCString &title)
       ol.parseText(theTranslator->trDir(FALSE,TRUE));
       ol.insertMemberAlign();
       ol.writeObjectLink(dd->getReference(),dd->getOutputFileBase(),QCString(),dd->shortName());
-      ol.endMemberItem();
+      ol.endMemberItem(0);
       if (!dd->briefDescription().isEmpty() && Config_getBool(BRIEF_MEMBER_DESC))
       {
         ol.startMemberDescription(dd->getOutputFileBase());

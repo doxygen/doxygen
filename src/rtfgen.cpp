@@ -1807,7 +1807,7 @@ void RTFGenerator::startMemberItem(const QCString &,int,const QCString &)
   m_t << rtf_Style_Reset << rtf_BList_DepthStyle() << "\n"; // set style to appropriate depth
 }
 
-void RTFGenerator::endMemberItem()
+void RTFGenerator::endMemberItem(int)
 {
   DBG_RTF(m_t << "{\\comment endMemberItem }\n")
   newParagraph();
