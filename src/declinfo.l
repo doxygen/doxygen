@@ -148,7 +148,7 @@ ID	([$a-z_A-Z\x80-\xFF][$a-z_A-Z0-9\x80-\xFF]*)|(@[0-9]+)
 <Start>{B}*"::"{B}*		{ // found a yyextra->scope specifier
  				  if (!yyextra->scope.isEmpty() && !yyextra->scope.endsWith("::"))
 				  {
-				    yyextra->scope+="::"+yyextra->name; // add yyextra->name to yyextra->scope
+                                    if (!yyextra->name.isEmpty()) yyextra->scope+="::"+yyextra->name; // add yyextra->name to yyextra->scope
 				  }
 				  else
 				  {
