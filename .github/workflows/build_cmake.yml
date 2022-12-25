@@ -232,7 +232,7 @@ jobs:
 
     - name: Install Graphviz (MacOS)
       run: |
-        brew link --overwrite python@3.11
+        brew link --overwrite python@3.10
         brew install graphviz
       if: matrix.config.os == 'macos-latest'
 
