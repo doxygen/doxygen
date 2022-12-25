@@ -236,9 +236,13 @@ jobs:
         rm /usr/local/bin/2to3 || true
         rm /usr/local/bin/2to3-3.11 || true
         rm /usr/local/bin/idle3 || true
+        rm /usr/local/bin/idle3.11 || true
         rm /usr/local/bin/pydoc3 || true
+        rm /usr/local/bin/pydoc3-3.11 || true
         rm /usr/local/bin/python3 || true
+        rm /usr/local/bin/python3-3.11 || true
         rm /usr/local/bin/python3-config || true
+        rm /usr/local/bin/python3-config3.11 || true
         brew install graphviz
       if: matrix.config.os == 'macos-latest'
 
