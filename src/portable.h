@@ -11,12 +11,6 @@
 
 class Buf;
 
-#if defined(_WIN32)
-typedef __int64 portable_off_t;
-#else
-typedef off_t portable_off_t;
-#endif
-
 /** @file
  *  @brief Portable versions of functions that are platform dependent.
  */
@@ -28,8 +22,6 @@ namespace Portable
   QCString       getenv(const QCString &variable);
   void           setenv(const QCString &variable,const QCString &value);
   void           unsetenv(const QCString &variable);
-  portable_off_t fseek(FILE *f,portable_off_t offset, int whence);
-  portable_off_t ftell(FILE *f);
   FILE *         fopen(const QCString &fileName,const QCString &mode);
   int            fclose(FILE *f);
   void           unlink(const QCString &fileName);

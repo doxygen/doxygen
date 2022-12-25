@@ -355,28 +355,6 @@ QCString Portable::getenv(const QCString &variable)
 #endif
 }
 
-portable_off_t Portable::fseek(FILE *f,portable_off_t offset, int whence)
-{
-#if defined(__MINGW32__)
-  return fseeko64(f,offset,whence);
-#elif defined(_WIN32) && !defined(__CYGWIN__)
-  return _fseeki64(f,offset,whence);
-#else
-  return fseeko(f,offset,whence);
-#endif
-}
-
-portable_off_t Portable::ftell(FILE *f)
-{
-#if defined(__MINGW32__)
-  return ftello64(f);
-#elif defined(_WIN32) && !defined(__CYGWIN__)
-  return _ftelli64(f);
-#else
-  return ftello(f);
-#endif
-}
-
 FILE *Portable::fopen(const QCString &fileName,const QCString &mode)
 {
 #if defined(_WIN32) && !defined(__CYGWIN__)
