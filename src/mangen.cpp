@@ -1,8 +1,6 @@
 /******************************************************************************
  *
- *
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2022 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -19,19 +17,20 @@
    nice introductions to groff and man pages. */
 
 #include <stdlib.h>
+#include <string.h>
 
 #include "message.h"
 #include "mangen.h"
 #include "config.h"
 #include "util.h"
 #include "doxygen.h"
-#include <string.h>
 #include "docparser.h"
 #include "mandocvisitor.h"
 #include "language.h"
 #include "dir.h"
 #include "utf8.h"
 #include "datetime.h"
+#include "portable.h"
 
 static QCString getExtension()
 {
@@ -497,7 +496,7 @@ void ManGenerator::startDoxyAnchor(const QCString &,const QCString &manName,
     FileInfo fi(fileName.str());
     if (!fi.exists())
     {
-      std::ofstream linkStream(fileName.str(),std::ofstream::out | std::ofstream::binary);
+      std::ofstream linkStream = Portable::openOutputStream(fileName);
       if (linkStream.is_open())
       {
         linkStream << ".so " << getSubdir() << "/" << buildFileName( manName ) << "\n";

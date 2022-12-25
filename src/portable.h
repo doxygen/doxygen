@@ -5,6 +5,8 @@
 #include <sys/types.h>
 #include <stdint.h>
 
+#include <fstream>
+
 #include "qcstring.h"
 
 class Buf;
@@ -47,6 +49,8 @@ namespace Portable
   const char *   devNull();
   bool           checkForExecutable(const QCString &fileName);
   size_t         recodeUtf8StringToW(const QCString &inputStr,uint16_t **buf);
+  std::ofstream  openOutputStream(const QCString &name,bool append=false);
+  std::ifstream  openInputStream(const QCString &name,bool binary=false,bool openAtEnd=false);
 }
 
 

@@ -123,7 +123,7 @@ void CitationManager::insertCrossReferencesForBibFile(const QCString &bibFile)
     err("bib file %s not found!\n",qPrint(bibFile));
     return;
   }
-  std::ifstream f(bibFile.str(), std::ifstream::in);
+  std::ifstream f = Portable::openInputStream(bibFile);
   if (!f.is_open())
   {
     err("could not open file %s for reading\n",qPrint(bibFile));
@@ -217,7 +217,7 @@ void CitationManager::generatePage()
   QCString outputDir = Config_getString(OUTPUT_DIRECTORY);
   QCString citeListFile = outputDir+"/citelist.doc";
   {
-    std::ofstream t(citeListFile.str(),std::ofstream::out | std::ofstream::binary);
+    std::ofstream t = Portable::openOutputStream(citeListFile);
     if (!t.is_open())
     {
       err("could not open file %s for writing\n",qPrint(citeListFile));
@@ -290,7 +290,7 @@ void CitationManager::generatePage()
   // 6. read back the file
   QCString doc;
   {
-    std::ifstream f(citeListFile.str(),std::ifstream::in);
+    std::ifstream f = Portable::openInputStream(citeListFile);
     if (!f.is_open())
     {
       err("could not open file %s for reading\n",qPrint(citeListFile));

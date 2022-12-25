@@ -121,7 +121,7 @@ bool Htags::loadFilemap(const QCString &htmlDir)
    */
   if (fi.exists() && fi.isReadable())
   {
-    std::ifstream f(fileMapName.str(),std::ifstream::in);
+    std::ifstream f = Portable::openInputStream(fileMapName);
     if (f.is_open())
     {
       std::string lineStr;

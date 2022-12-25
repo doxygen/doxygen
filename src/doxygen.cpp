@@ -10622,7 +10622,7 @@ static void dumpSymbol(TextStream &t,Definition *d)
 
 static void dumpSymbolMap()
 {
-  std::ofstream f("symbols.sql",std::ofstream::out | std::ofstream::binary);
+  std::ofstream f = Portable::openOutputStream("symbols.sql");
   if (f.is_open())
   {
     TextStream t(&f);
@@ -11447,7 +11447,7 @@ static void writeTagFile()
   QCString generateTagFile = Config_getString(GENERATE_TAGFILE);
   if (generateTagFile.isEmpty()) return;
 
-  std::ofstream f(generateTagFile.str(),std::ofstream::out | std::ofstream::binary);
+  std::ofstream f = Portable::openOutputStream(generateTagFile);
   if (!f.is_open())
   {
     err("cannot open tag file %s for writing\n",

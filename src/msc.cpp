@@ -13,8 +13,6 @@
  *
  */
 
-#include <sstream>
-
 #include "msc.h"
 #include "portable.h"
 #include "config.h"
@@ -33,7 +31,7 @@ static const int maxCmdLine = 40960;
 static bool convertMapFile(TextStream &t,const QCString &mapName,const QCString &relPath,
                            const QCString &context)
 {
-  std::ifstream f(mapName.str(),std::ifstream::in);
+  std::ifstream f = Portable::openInputStream(mapName);
   if (!f.is_open())
   {
     err("failed to open map file %s for inclusion in the docs!\n"

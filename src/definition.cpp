@@ -762,7 +762,7 @@ class FilterCache
     //! If size>0, size bytes will be read.
     void readFragmentFromFile(BufStr &str,const QCString &fileName,size_t startOffset,size_t size=0)
     {
-      std::ifstream ifs(fileName.data(), std::ios::in | std::ios::binary | std::ios::ate);
+      std::ifstream ifs = Portable::openInputStream(fileName,true,true);
       if (size==0) { startOffset=0; size = static_cast<size_t>(ifs.tellg()); }
       ifs.seekg(startOffset, std::ios::beg);
       str.resize(size+1);

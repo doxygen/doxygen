@@ -27,7 +27,6 @@
 #include <map>
 #include <algorithm>
 
-
 /* --------------------------------------------------------------- */
 
 // local includes
@@ -189,7 +188,7 @@ void VhdlDocGen::writeOverview()
 
   QCString ov =Config_getString(HTML_OUTPUT);
   QCString fileName=ov+"/vhdl_design.dot";
-  std::ofstream f(fileName.str(),std::ofstream::out | std::ofstream::binary);
+  std::ofstream f = Portable::openOutputStream(fileName);
   if (!f.is_open())
   {
     err("Warning: Cannot open file %s for writing\n",qPrint(fileName));
@@ -3436,7 +3435,7 @@ void FlowChart::writeFlowChart()
 
   QCString ov = Config_getString(HTML_OUTPUT);
   QCString fileName = ov+"/flow_design.dot";
-  std::ofstream f(fileName.str(),std::ofstream::out | std::ofstream::binary);
+  std::ofstream f = Portable::openOutputStream(fileName);
   if (!f.is_open())
   {
     err("Cannot open file %s for writing\n",qPrint(fileName));

@@ -1,9 +1,6 @@
 /******************************************************************************
  *
- *
- *
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2022 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -37,6 +34,7 @@
 #include "emoji.h"
 #include "plantuml.h"
 #include "fileinfo.h"
+#include "portable.h"
 
 //#define DBG_RTF(x) m_t << x
 #define DBG_RTF(x) do {} while(0)
@@ -348,7 +346,7 @@ void RTFDocVisitor::operator()(const DocVerbatim &s)
             dotindex++,
             ".dot"
            );
-        std::ofstream file(fileName.str(),std::ofstream::out | std::ofstream::binary);
+        std::ofstream file = Portable::openOutputStream(fileName);
         if (!file.is_open())
         {
           err("Could not open file %s for writing\n",qPrint(fileName));
@@ -377,7 +375,7 @@ void RTFDocVisitor::operator()(const DocVerbatim &s)
             mscindex++,
             ".msc"
            );
-        std::ofstream file(baseName.str(),std::ofstream::out | std::ofstream::binary);
+        std::ofstream file = Portable::openOutputStream(baseName);
         if (!file.is_open())
         {
           err("Could not open file %s for writing\n",qPrint(baseName));

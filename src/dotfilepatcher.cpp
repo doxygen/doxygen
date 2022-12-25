@@ -13,8 +13,6 @@
 *
 */
 
-#include <sstream>
-
 #include "dotfilepatcher.h"
 #include "dotrunner.h"
 #include "config.h"
@@ -25,6 +23,7 @@
 #include "util.h"
 #include "dot.h"
 #include "dir.h"
+#include "portable.h"
 
 static const char svgZoomHeader[] =
 "<svg id=\"main\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xml:space=\"preserve\" onload=\"init(evt)\">\n"
@@ -218,7 +217,7 @@ bool DotFilePatcher::convertMapFile(TextStream &t,const QCString &mapName,
                     const QCString &relPath, bool urlOnly,
                     const QCString &context)
 {
-  std::ifstream f(mapName.str(),std::ifstream::in);
+  std::ifstream f = Portable::openInputStream(mapName);
   if (!f.is_open())
   {
     err("problems opening map file %s for inclusion in the docs!\n"
@@ -316,26 +315,25 @@ bool DotFilePatcher::run() const
     //printf("DotFilePatcher::addSVGConversion: file=%s zoomable=%d\n",
     //    qPrint(m_patchFile),map->zoomable);
   }
-  std::string tmpName = m_patchFile.str()+".tmp";
-  std::string patchFile = m_patchFile.str();
+  QCString tmpName = m_patchFile+".tmp";
   Dir thisDir;
-  if (!thisDir.rename(patchFile,tmpName))
+  if (!thisDir.rename(m_patchFile.str(),tmpName.str()))
   {
-    err("Failed to rename file %s to %s!\n",qPrint(m_patchFile),tmpName.c_str());
+    err("Failed to rename file %s to %s!\n",qPrint(m_patchFile),qPrint(tmpName));
     return FALSE;
   }
-  std::ifstream fi(tmpName, std::ifstream::in);
-  std::ofstream fo(patchFile, std::ofstream::out | std::ofstream::binary);
+  std::ifstream fi = Portable::openInputStream(tmpName);
+  std::ofstream fo = Portable::openOutputStream(m_patchFile);
   if (!fi.is_open())
   {
-    err("problem opening file %s for patching!\n",tmpName.c_str());
-    thisDir.rename(tmpName,patchFile);
+    err("problem opening file %s for patching!\n",qPrint(tmpName));
+    thisDir.rename(tmpName.str(),m_patchFile.str());
     return FALSE;
   }
   if (!fo.is_open())
   {
     err("problem opening file %s for patching!\n",qPrint(m_patchFile));
-    thisDir.rename(tmpName,patchFile);
+    thisDir.rename(tmpName.str(),m_patchFile.str());
     return FALSE;
   }
   TextStream t(&fo);
@@ -481,11 +479,11 @@ bool DotFilePatcher::run() const
     fo.close();
     // keep original SVG file so we can refer to it, we do need to replace
     // dummy link by real ones
-    fi.open(tmpName,std::ifstream::in);
-    fo.open(orgName.str(),std::ofstream::out | std::ofstream::binary);
+    fi = Portable::openInputStream(tmpName);
+    fo = Portable::openOutputStream(orgName);
     if (!fi.is_open())
     {
-      err("problem opening file %s for reading!\n",tmpName.c_str());
+      err("problem opening file %s for reading!\n",qPrint(tmpName));
       return FALSE;
     }
     if (!fo.is_open())
@@ -505,7 +503,7 @@ bool DotFilePatcher::run() const
     fo.close();
   }
   // remove temporary file
-  thisDir.remove(tmpName);
+  thisDir.remove(tmpName.str());
   return TRUE;
 }
 
@@ -516,7 +514,7 @@ bool DotFilePatcher::run() const
 static bool readSVGSize(const QCString &fileName,int *width,int *height)
 {
   bool found=FALSE;
-  std::ifstream f(fileName.str(),std::ifstream::in);
+  std::ifstream f = Portable::openInputStream(fileName);
   if (!f.is_open())
   {
     return false;

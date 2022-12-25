@@ -233,7 +233,7 @@ static void runPlantumlContent(const PlantumlManager::FilesMap &plantumlFiles,
         cachedContent = fileToString(puFileName);
       }
 
-      std::ofstream file(puFileName.str(),std::ofstream::out | std::ofstream::binary);
+      std::ofstream file = Portable::openOutputStream(puFileName);
       if (!file.is_open())
       {
         err_full(nb.srcFile,nb.srcLine,"Could not open file %s for writing\n",puFileName.data());

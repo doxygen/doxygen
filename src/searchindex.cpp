@@ -16,7 +16,6 @@
 
 #include <ctype.h>
 #include <assert.h>
-#include <sstream>
 #include <mutex>
 #include <map>
 #include <unordered_map>
@@ -32,6 +31,7 @@
 #include "message.h"
 #include "groupdef.h"
 #include "filedef.h"
+#include "portable.h"
 
 
 // file format: (all multi-byte values are stored in big endian format)
@@ -318,7 +318,7 @@ void SearchIndex::write(const QCString &fileName)
   }
 
   //printf("Total size %x bytes (word=%x stats=%x urls=%x)\n",size,wordsOffset,statsOffset,urlsOffset);
-  std::ofstream f(fileName.str(),std::ofstream::out | std::ofstream::binary);
+  std::ofstream f = Portable::openOutputStream(fileName);
   if (f.is_open())
   {
     // write header
@@ -499,7 +499,7 @@ void SearchIndexExternal::addWord(const QCString &word,bool hiPriority)
 
 void SearchIndexExternal::write(const QCString &fileName)
 {
-  std::ofstream t(fileName.str(),std::ofstream::out | std::ofstream::binary);
+  std::ofstream t = Portable::openOutputStream(fileName);
   if (t.is_open())
   {
     t << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";

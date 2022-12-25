@@ -2159,7 +2159,7 @@ static void encodeForOutput(TextStream &t,const QCString &s)
 static bool preProcessFile(Dir &d,const QCString &infName, TextStream &t, bool bIncludeHeader=TRUE)
 {
   static bool rtfDebug = Debug::isFlagSet(Debug::Rtf);
-  std::ifstream f(infName.str(),std::ifstream::in);
+  std::ifstream f = Portable::openInputStream(infName);
   if (!f.is_open())
   {
     err("problems opening rtf file '%s' for reading\n",infName.data());
@@ -2329,7 +2329,7 @@ void testRTFOutput(const QCString &name)
   int bcount=0;
   int line=1;
   int c;
-  std::ifstream f(name.data(),std::ifstream::in);
+  std::ifstream f = Portable::openInputStream(name);
   if (f.is_open())
   {
     while ((c=f.get())!=-1)
@@ -2388,7 +2388,7 @@ bool RTFGenerator::preProcessFileInplace(const QCString &path,const QCString &na
   QCString combinedName = path+"/combined.rtf";
   QCString mainRTFName  = path+"/"+name;
 
-  std::ofstream f(combinedName.str(),std::ofstream::out | std::ofstream::binary);
+  std::ofstream f = Portable::openOutputStream(combinedName);
   if (!f.is_open())
   {
     err("Failed to open %s for writing!\n",combinedName.data());

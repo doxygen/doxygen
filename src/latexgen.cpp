@@ -14,7 +14,6 @@
  */
 
 #include <cstdlib>
-#include <sstream>
 
 #include "latexgen.h"
 #include "config.h"
@@ -45,6 +44,7 @@
 #include "fileinfo.h"
 #include "utf8.h"
 #include "datetime.h"
+#include "portable.h"
 
 static QCString g_header;
 static QCString g_footer;
@@ -295,7 +295,7 @@ static void writeLatexMakefile()
 {
   bool generateBib = !CitationManager::instance().isEmpty();
   QCString fileName=Config_getString(LATEX_OUTPUT)+"/Makefile";
-  std::ofstream f(fileName.str(),std::ofstream::out | std::ofstream::binary);
+  std::ofstream f = Portable::openOutputStream(fileName);
   if (!f.is_open())
   {
     term("Could not open file %s for writing\n",qPrint(fileName));
@@ -401,7 +401,7 @@ static void writeMakeBat()
   QCString manual_file = "refman";
   const int latex_count = 8;
   bool generateBib = !CitationManager::instance().isEmpty();
-  std::ofstream t(fileName.str(),std::ofstream::out | std::ofstream::binary);
+  std::ofstream t = Portable::openOutputStream(fileName);
   if (!t.is_open())
   {
     term("Could not open file %s for writing\n",qPrint(fileName));
@@ -2162,7 +2162,7 @@ void LatexGenerator::writeInheritedSectionTitle(
   {
     m_t << "\\doxysubsubsection*{";
   }
-  m_t << theTranslator->trInheritedFrom(convertToLaTeX(title), 
+  m_t << theTranslator->trInheritedFrom(convertToLaTeX(title),
                                         objectLinkToString(ref, file, anchor, name, m_disableLinks));
   m_t << "}\n";
 }

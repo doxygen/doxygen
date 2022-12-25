@@ -17,9 +17,6 @@
 #include <stdlib.h>
 #include <stack>
 
-#include <fstream>
-#include <iostream>
-
 #include "perlmodgen.h"
 #include "docparser.h"
 #include "docnode.h"
@@ -41,6 +38,7 @@
 #include "htmlentity.h"
 #include "emoji.h"
 #include "dir.h"
+#include "portable.h"
 
 #define PERLOUTPUT_MAX_INDENTATION 40
 
@@ -2135,7 +2133,7 @@ bool PerlModGenerator::generatePerlModOutput()
 
 bool PerlModGenerator::createOutputFile(std::ofstream &f, const QCString &s)
 {
-  f.open(s.str(),std::ofstream::out | std::ofstream::binary);
+  f = Portable::openOutputStream(s);
   if (!f.is_open())
   {
     err("Cannot open file %s for writing!\n", qPrint(s));

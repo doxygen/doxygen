@@ -66,26 +66,26 @@ static void checkPngResult(const QCString &imgName)
 
 static bool resetPDFSize(const int width,const int height, const QCString &base)
 {
-  std::string tmpName   = base.str()+".tmp";
-  std::string patchFile = base.str()+".dot";
+  QCString tmpName   = base+".tmp";
+  QCString patchFile = base+".dot";
   Dir thisDir;
-  if (!thisDir.rename(patchFile,tmpName))
+  if (!thisDir.rename(patchFile.str(),tmpName.str()))
   {
     err("Failed to rename file %s to %s!\n",qPrint(patchFile),qPrint(tmpName));
     return FALSE;
   }
-  std::ifstream fi(tmpName,std::ifstream::in);
-  std::ofstream t(patchFile,std::ofstream::out | std::ofstream::binary);
+  std::ifstream fi = Portable::openInputStream(tmpName);
+  std::ofstream t  = Portable::openOutputStream(patchFile);
   if (!fi.is_open())
   {
     err("problem opening file %s for patching!\n",qPrint(tmpName));
-    thisDir.rename(tmpName,patchFile);
+    thisDir.rename(tmpName.str(),patchFile.str());
     return FALSE;
   }
   if (!t.is_open())
   {
     err("problem opening file %s for patching!\n",qPrint(patchFile));
-    thisDir.rename(tmpName,patchFile);
+    thisDir.rename(tmpName.str(),patchFile.str());
     return FALSE;
   }
   std::string line;
@@ -102,7 +102,7 @@ static bool resetPDFSize(const int width,const int height, const QCString &base)
   fi.close();
   t.close();
   // remove temporary file
-  thisDir.remove(tmpName);
+  thisDir.remove(tmpName.str());
   return TRUE;
 }
 

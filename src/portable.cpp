@@ -39,6 +39,7 @@ static bool environmentLoaded = false;
 static std::map<std::string,std::string> proc_env = std::map<std::string,std::string>();
 #endif
 
+
 //---------------------------------------------------------------------------------------------------------
 
 /*! Helper class to keep time interval per thread */
@@ -658,4 +659,26 @@ size_t Portable::recodeUtf8StringToW(const QCString &inputStr,uint16_t **outBuf)
   return len;
 }
 
+//----------------------------------------------------------------------------------------
+// We need to do this part last as including filesystem.hpp earlier
+// causes the code above to fail to compile on Windows.
+
+#include "filesystem.hpp"
+
+namespace fs = ghc::filesystem;
+
+std::ofstream Portable::openOutputStream(const QCString &fileName,bool append)
+{
+  std::ios_base::openmode mode = std::ofstream::out | std::ofstream::binary;
+  if (append) mode |= std::ofstream::app;
+  return std::ofstream(fs::path(fileName.str()), mode);
+}
+
+std::ifstream Portable::openInputStream(const QCString &fileName,bool binary, bool openAtEnd)
+{
+  std::ios_base::openmode mode = std::ifstream::in | std::ifstream::binary;
+  if (binary)     mode |= std::ios::binary;
+  if (openAtEnd)  mode |= std::ios::ate;
+  return std::ifstream(fs::path(fileName.str()), mode);
+}
 

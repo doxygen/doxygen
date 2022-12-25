@@ -17,7 +17,6 @@
 #include <assert.h>
 
 #include <mutex>
-#include <sstream>
 
 #include "message.h"
 #include "htmlgen.h"
@@ -56,6 +55,7 @@
 #include "textstream.h"
 #include "indexlist.h"
 #include "datetime.h"
+#include "portable.h"
 
 //#define DBG_HTML(x) x;
 #define DBG_HTML(x)
@@ -1104,7 +1104,7 @@ void HtmlGenerator::init()
       tabsCss = mgr.getAsString("fixed_tabs.css");
     }
 
-    std::ofstream f(dname.str()+"/tabs.css",std::ofstream::out | std::ofstream::binary);
+    std::ofstream f = Portable::openOutputStream(dname+"/tabs.css");
     if (f.is_open())
     {
       TextStream t(&f);
@@ -1127,7 +1127,7 @@ void HtmlGenerator::init()
   if (Config_getBool(HTML_COLORSTYLE)==HTML_COLORSTYLE_t::TOGGLE)
   {
     //mgr.copyResource("darkmode_toggle.js",dname);
-    std::ofstream f(dname.str()+"/darkmode_toggle.js",std::ofstream::out | std::ofstream::binary);
+    std::ofstream f = Portable::openOutputStream(dname+"/darkmode_toggle.js");
     if (f.is_open())
     {
       TextStream t(&f);
@@ -1136,7 +1136,7 @@ void HtmlGenerator::init()
   }
 
   {
-    std::ofstream f(dname.str()+"/dynsections.js",std::ofstream::out | std::ofstream::binary);
+    std::ofstream f = Portable::openOutputStream(dname+"/dynsections.js");
     if (f.is_open())
     {
       TextStream t(&f);
@@ -1216,7 +1216,7 @@ void HtmlGenerator::writeSearchData(const QCString &dname)
   Doxygen::indexList->addImageFile("search/mag_seld.svg");
 
   QCString searchDirName = dname;
-  std::ofstream f(searchDirName.str()+"/search.css",std::ofstream::out | std::ofstream::binary);
+  std::ofstream f = Portable::openOutputStream(searchDirName+"/search.css");
   if (f.is_open())
   {
     TextStream t(&f);
@@ -2870,7 +2870,7 @@ void HtmlGenerator::writeSearchPage()
 
   // OPENSEARCH_PROVIDER {
   QCString configFileName = htmlOutput+"/search_config.php";
-  std::ofstream f(configFileName.str(),std::ofstream::out | std::ofstream::binary);
+  std::ofstream f = Portable::openOutputStream(configFileName);
   if (f.is_open())
   {
     TextStream t(&f);
@@ -2901,7 +2901,7 @@ void HtmlGenerator::writeSearchPage()
   // OPENSEARCH_PROVIDER }
 
   QCString fileName = htmlOutput+"/search.php";
-  f.open(fileName.str(),std::ofstream::out | std::ofstream::binary);
+  f = Portable::openOutputStream(fileName);
   if (f.is_open())
   {
     TextStream t(&f);
@@ -2940,7 +2940,7 @@ void HtmlGenerator::writeSearchPage()
   f.close();
 
   QCString scriptName = htmlOutput+"/search/search.js";
-  f.open(scriptName.str(),std::ofstream::out | std::ofstream::binary);
+  f = Portable::openOutputStream(scriptName);
   if (f.is_open())
   {
     TextStream t(&f);
@@ -2957,7 +2957,7 @@ void HtmlGenerator::writeExternalSearchPage()
   bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
   QCString dname = Config_getString(HTML_OUTPUT);
   QCString fileName = dname+"/search"+Doxygen::htmlFileExtension;
-  std::ofstream f(fileName.str(),std::ofstream::out | std::ofstream::binary);
+  std::ofstream f = Portable::openOutputStream(fileName);
   if (f.is_open())
   {
     TextStream t(&f);
@@ -3013,7 +3013,7 @@ void HtmlGenerator::writeExternalSearchPage()
   f.close();
 
   QCString scriptName = dname+"/search/search.js";
-  f.open(scriptName.str(),std::ofstream::out | std::ofstream::binary);
+  f = Portable::openOutputStream(scriptName);
   if (f.is_open())
   {
     TextStream t(&f);

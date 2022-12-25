@@ -1,9 +1,6 @@
 /******************************************************************************
  *
- *
- *
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2022 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -39,6 +36,7 @@
 #include "plantuml.h"
 #include "fileinfo.h"
 #include "regex.h"
+#include "portable.h"
 
 const int maxLevels=5;
 static const char *secLabels[maxLevels] =
@@ -433,7 +431,7 @@ void LatexDocVisitor::operator()(const DocVerbatim &s)
             dotindex++,
             ".dot"
            );
-        std::ofstream file(fileName.str(),std::ofstream::out | std::ofstream::binary);
+        std::ofstream file = Portable::openOutputStream(fileName);
         if (!file.is_open())
         {
           err("Could not open file %s for writing\n",qPrint(fileName));
@@ -460,11 +458,11 @@ void LatexDocVisitor::operator()(const DocVerbatim &s)
             qPrint(Config_getString(LATEX_OUTPUT)+"/inline_mscgraph_"),
             mscindex++
            );
-        std::string fileName = baseName.str()+".msc";
-        std::ofstream file(fileName,std::ofstream::out | std::ofstream::binary);
+        QCString fileName = baseName+".msc";
+        std::ofstream file = Portable::openOutputStream(fileName);
         if (!file.is_open())
         {
-          err("Could not open file %s for writing\n",fileName.c_str());
+          err("Could not open file %s for writing\n",qPrint(fileName));
         }
         else
         {
@@ -476,7 +474,7 @@ void LatexDocVisitor::operator()(const DocVerbatim &s)
 
           writeMscFile(baseName, s);
 
-          if (Config_getBool(DOT_CLEANUP)) Dir().remove(fileName);
+          if (Config_getBool(DOT_CLEANUP)) Dir().remove(fileName.str());
         }
       }
       break;

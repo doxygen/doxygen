@@ -6307,7 +6307,7 @@ bool readInputFile(const QCString &fileName,BufStr &inBuf,bool filter,bool isSou
   QCString filterName = getFileFilter(fileName,isSourceCode);
   if (filterName.isEmpty() || !filter)
   {
-    std::ifstream f(fileName.str(),std::ifstream::in | std::ifstream::binary);
+    std::ifstream f = Portable::openInputStream(fileName,true);
     if (!f.is_open())
     {
       err("could not open file %s\n",qPrint(fileName));
@@ -7233,7 +7233,7 @@ bool openOutputFile(const QCString &outFile,std::ofstream &f)
         dir.remove(backup.fileName());
       dir.rename(fi.fileName(),fi.fileName()+".bak");
     }
-    f.open(outFile.str(),std::ofstream::out | std::ofstream::binary);
+    f = Portable::openOutputStream(outFile);
     fileOpened = f.is_open();
   }
   return fileOpened;

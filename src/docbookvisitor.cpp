@@ -13,8 +13,6 @@
  *
  */
 
-#include <fstream>
-
 #include "docbookvisitor.h"
 #include "docparser.h"
 #include "language.h"
@@ -35,6 +33,7 @@
 #include "plantuml.h"
 #include "growbuf.h"
 #include "fileinfo.h"
+#include "portable.h"
 
 #if 0
 #define DB_VIS_C DB_VIS_C1(m_t)
@@ -368,17 +367,17 @@ DB_VIS_C
             qPrint(Config_getString(DOCBOOK_OUTPUT)+"/inline_dotgraph_"),
             dotindex++
             );
-        std::string fileName = baseName.str()+".dot";
-        std::ofstream file(fileName,std::ofstream::out | std::ofstream::binary);
+        QCString fileName = baseName+".dot";
+        std::ofstream file = Portable::openOutputStream(fileName);
         if (!file.is_open())
         {
-          err("Could not open file %s for writing\n",fileName.c_str());
+          err("Could not open file %s for writing\n",qPrint(fileName));
         }
         file.write( stext.data(), stext.length() );
         file.close();
         writeDotFile(baseName, s);
         m_t << "</para>\n";
-        if (Config_getBool(DOT_CLEANUP)) Dir().remove(fileName);
+        if (Config_getBool(DOT_CLEANUP)) Dir().remove(fileName.str());
       }
       break;
     case DocVerbatim::Msc:
@@ -393,11 +392,11 @@ DB_VIS_C
             (Config_getString(DOCBOOK_OUTPUT)+"/inline_mscgraph_").data(),
             mscindex++
             );
-        std::string fileName = baseName.str()+".msc";
-        std::ofstream file(fileName,std::ofstream::out | std::ofstream::binary);
+        QCString fileName = baseName+".msc";
+        std::ofstream file = Portable::openOutputStream(fileName);
         if (!file.is_open())
         {
-          err("Could not open file %s for writing\n",fileName.c_str());
+          err("Could not open file %s for writing\n",qPrint(fileName));
         }
         QCString text = "msc {";
         text+=stext;
@@ -406,7 +405,7 @@ DB_VIS_C
         file.close();
         writeMscFile(baseName,s);
         m_t << "</para>\n";
-        if (Config_getBool(DOT_CLEANUP)) Dir().remove(fileName);
+        if (Config_getBool(DOT_CLEANUP)) Dir().remove(fileName.str());
       }
       break;
     case DocVerbatim::PlantUML:

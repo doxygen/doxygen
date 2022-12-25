@@ -28,7 +28,6 @@
 #include <errno.h>
 #include <thread>
 #include <algorithm>
-#include <fstream>
 #include <iostream>
 #include <iomanip>
 
@@ -1557,7 +1556,7 @@ static QCString configFileToString(const QCString &name)
   }
   else // read from file
   {
-    std::ifstream f(name.str(),std::istream::in);
+    std::ifstream f = Portable::openInputStream(name);
     if (!f.is_open())
     {
       config_term("file '%s' not found or could not be opened\n",qPrint(name));

@@ -13,6 +13,11 @@
  *
  */
 
+#include <map>
+#include <vector>
+#include <string>
+#include <utility>
+
 #include "formula.h"
 #include "message.h"
 #include "config.h"
@@ -24,12 +29,7 @@
 #include "regex.h"
 #include "linkedmap.h"
 #include "threadpool.h"
-
-#include <map>
-#include <vector>
-#include <string>
-#include <utility>
-#include <fstream>
+#include "portable.h"
 
 // TODO: remove these dependencies
 #include "doxygen.h"   // for Doxygen::indexList
@@ -61,7 +61,7 @@ FormulaManager &FormulaManager::instance()
 
 void FormulaManager::initFromRepository(const QCString &dir)
 {
-  std::ifstream f(dir.str()+"/formula.repository",std::ifstream::in);
+  std::ifstream f = Portable::openInputStream(dir+"/formula.repository");
   if (f.is_open())
   {
     uint formulaCount=0;
@@ -197,7 +197,7 @@ void FormulaManager::createLatexFile(const QCString &fileName,Format format,Mode
 
   // generate a latex file containing one formula per page.
   QCString texName=fileName+".tex";
-  std::ofstream f(texName.str(),std::ofstream::out | std::ofstream::binary);
+  std::ofstream f = Portable::openOutputStream(texName);
   if (f.is_open())
   {
     TextStream t(&f);
@@ -424,8 +424,8 @@ static bool updateEPSBoundingBox(const QCString &formBase,
 {
   // read back %s_tmp.eps and replace
   // bounding box values with x1,y1,x2,y2 and remove the HiResBoundingBox
-  std::ifstream epsIn(formBase.str()+"_tmp.eps",std::ifstream::in);
-  std::ofstream epsOut(formBase.str()+"_tmp_corr.eps",std::ofstream::out | std::ofstream::binary);
+  std::ifstream epsIn  = Portable::openInputStream(formBase+"_tmp.eps");
+  std::ofstream epsOut = Portable::openOutputStream(formBase+"_tmp_corr.eps");
   if (epsIn.is_open() && epsOut.is_open())
   {
     std::string line;
@@ -615,8 +615,7 @@ void FormulaManager::createFormulasTexFile(Dir &thisDir,Format format,HighDPI hd
   // generated images represent (we use this next time to avoid regeneration
   // of the images, and to avoid forcing the user to delete all images in order
   // to let a browser refresh the images).
-  std::ofstream f;
-  f.open("formula.repository",std::ofstream::out | std::ofstream::binary);
+  std::ofstream f = Portable::openOutputStream("formula.repository");
   if (f.is_open())
   {
     TextStream t(&f);
@@ -733,7 +732,7 @@ static int determineInkscapeVersion(const Dir &thisDir)
       }
     }
     // read version file and determine major version
-    std::ifstream inkscapeVersionIn(inkscapeVersionFile.str(),std::ifstream::in);
+    std::ifstream inkscapeVersionIn = Portable::openInputStream(inkscapeVersionFile);
     if (inkscapeVersionIn.is_open())
     {
       std::string line;

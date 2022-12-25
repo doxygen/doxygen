@@ -18,7 +18,6 @@
  */
 
 #include <cstdlib>
-#include <sstream>
 #include <array>
 
 #include <assert.h>
@@ -49,6 +48,7 @@
 #include "filename.h"
 #include "tooltip.h"
 #include "utf8.h"
+#include "portable.h"
 
 #define MAX_ITEMS_BEFORE_MULTIPAGE_INDEX 200
 #define MAX_ITEMS_BEFORE_QUICK_INDEX 30
@@ -5199,7 +5199,7 @@ static void writeMenuData()
   if (!Config_getBool(GENERATE_HTML) || Config_getBool(DISABLE_INDEX)) return;
   QCString outputDir = Config_getBool(HTML_OUTPUT);
   LayoutNavEntry *root = LayoutDocManager::instance().rootNavEntry();
-  std::ofstream t(outputDir.str()+"/menudata.js",std::ofstream::out | std::ofstream::binary);
+  std::ofstream t = Portable::openOutputStream(outputDir+"/menudata.js");
   if (t.is_open())
   {
     t << JAVASCRIPT_LICENSE_TEXT;
