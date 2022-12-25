@@ -232,8 +232,14 @@ jobs:
 
     - name: Install Graphviz (MacOS)
       run: |
-        brew link --overwrite python@3.10
-        brew install graphviz
+        if ! brew install graphviz; then
+          # Workaround issue with unexpected symlinks: https://github.com/actions/runner-images/issues/6817
+          for f in 2to3 idle3 pydoc3 python3 python3-config; do
+            rm /usr/local/bin/$f || true
+          done
+          # Try again
+          brew install graphviz
+        fi
       if: matrix.config.os == 'macos-latest'
 
     - name: Install Graphviz (Windows)
