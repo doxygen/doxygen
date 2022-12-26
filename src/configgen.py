@@ -236,6 +236,8 @@ def prepCDocs(node):
 def parseOption(node):
     # Handling part for Doxyfile
     name = node.getAttribute('id')
+    if len(name)>23:
+        raise Exception('Option name {0} too long ({1}, where max is 23 characters)'.format(name,len(name)))
     type = node.getAttribute('type')
     format = node.getAttribute('format')
     defval = node.getAttribute('defval')
