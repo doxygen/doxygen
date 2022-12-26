@@ -203,4 +203,6 @@ The following table gives an overview of the doxygen special commands and the ve
 <dt>New in 1.9.5</dt><dd>\\fileinfo</dd>
 <dt></dt>             <dd>\\lineinfo</dd>
 <dt></dt>             <dd>\\showdate</dd>
+<dt>New in 1.9.5</dt><dd>\\fileinfo</dd>
+<dt>New in 1.9.6</dt><dd>\\qualifier</dd>
 </dl>
