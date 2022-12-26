@@ -481,6 +481,8 @@ The following table gives an overview of the doxygen configuration settings and 
 <dt></dt>              <dd>DOT_FONTSIZE</dd>
 <dt></dt>              <dd>DOT_TRANSPARENT</dd>
 <dt></dt>              <dd>FORMULA_TRANSPARENT</dd>
+<dt>New in 1.9.6</dt>
+<dt></dt>              <dd>WARN_IF_UNDOC_ENUM_VAL</dd>
 </dl>
 
 ## Directives
