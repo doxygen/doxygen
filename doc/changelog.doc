@@ -1,6 +1,108 @@
 /** \page changelog Changelog
 \tableofcontents{html,latex}
 \section log_1_9 1.9 Series
+
+\subsection log_1_9_6 Release 1.9.6
+\htmlonly
+<b>(release date 27-12-2022)</b>
+</p>
+<h3>Bug fixes</h3>
+<ul>
+<li>issue <a href="https://github.com/doxygen/doxygen/issues/1166">#1166</a>: Read error when multi-byte characters in file path name (Origin: bugzilla #145186) [<a href="https://github.com/doxygen/doxygen/commit/e002e293d9dc956a0634b3a4bcc8d93e655582d5">view</a>]</li>
+<li>issue <a href="https://github.com/doxygen/doxygen/issues/3244">#3244</a>: IGNORE_PREFIX works also on names of functions/methods [<a href="https://github.com/doxygen/doxygen/commit/042c4ddb57d7c7b7123da27336535b8b7760456a">view</a>]</li>
+<li>issue <a href="https://github.com/doxygen/doxygen/issues/3798">#3798</a>: \relates does not find class if it is in an anonymous namespace [<a href="https://github.com/doxygen/doxygen/commit/e927c9bde24911716bcde41f3a907fd79c423be1">view</a>]</li>
+<li>issue <a href="https://github.com/doxygen/doxygen/issues/5621">#5621</a>: First % in markdown inline code segement a la %PATH% is swallowed, bug 736665 [<a href="https://github.com/doxygen/doxygen/commit/4f5f42e6730191adba8dae9317fcb63b8ec570d7">view</a>]</li>
+<li>issue <a href="https://github.com/doxygen/doxygen/issues/9221">#9221</a>: Tag File - option to Strip path [<a href="https://github.com/doxygen/doxygen/commit/58bc7c42544d1161b3eac95003bf5f64a8293acd">view</a>]</li>
+<li>issue <a href="https://github.com/doxygen/doxygen/issues/9317">#9317</a>: File-scoped nested namespaces in C# [<a href="https://github.com/doxygen/doxygen/commit/3733d21cbad70709a150b902de70d0fc03d14f03">view</a>]</li>
+<li>issue <a href="https://github.com/doxygen/doxygen/issues/9319">#9319</a>: Doc build fails with cairo 1.17.6 [<a href="https://github.com/doxygen/doxygen/commit/293d3beaf03c8798899332b7a948b32c4a3da3e9">view</a>]</li>
+<li>issue <a href="https://github.com/doxygen/doxygen/issues/9552">#9552</a>: False warning &quot;@param documentation sections but no arguments&quot; on using declarations/typedefs [<a href="https://github.com/doxygen/doxygen/commit/4e928a8bf837b46d5ef704020449b52c2ff8fbf4">view</a>]</li>
+<li>issue <a href="https://github.com/doxygen/doxygen/issues/9566">#9566</a>: Same member groups in multibyte characters are separately generated. [<a href="https://github.com/doxygen/doxygen/commit/ad475953b25c78cde95547c2b2223ec622d6ace0">view</a>]</li>
+<li>issue <a href="https://github.com/doxygen/doxygen/issues/9582">#9582</a>: `noexcept(false)`-function is labeled as noexcept [<a href="https://github.com/doxygen/doxygen/commit/2b5ca748e1d0d49da94645989b28bc17aca66ab7">view</a>]</li>
+<li>issue <a href="https://github.com/doxygen/doxygen/issues/9584">#9584</a>: Warning &quot;Illegal command \ifile found as part of a \c command&quot; in \copydoc, but not original documentation [<a href="https://github.com/doxygen/doxygen/commit/e7c91b621d23692d1458f9efd905a04cca1389e6">view</a>]</li>
+<li>issue <a href="https://github.com/doxygen/doxygen/issues/9587">#9587</a>: Autolinks to functions do not take effect [<a href="https://github.com/doxygen/doxygen/commit/ade61047308990ec679d1d59f0019a825e87451d">view</a>]</li>
+<li>issue <a href="https://github.com/doxygen/doxygen/issues/9602">#9602</a>: Link to namespace in TAGFILES is not resolved with EXTRACT_ALL=NO [<a href="https://github.com/doxygen/doxygen/commit/4f55156d38db7578c2f9c08e78bd09f6faeae635">view</a>], [<a href="http://github.com/doxygen/doxygen/commit/d30a0fcbe78fff25d54b83476e1b4b054ef5dc9b">view</a>]</li>
+<li>issue <a href="https://github.com/doxygen/doxygen/issues/9604">#9604</a>: PlantUML @start&lt;engine&gt; not recognized [<a href="https://github.com/doxygen/doxygen/commit/af7d6915ae36a0192c6e1a8480a1701b08d8acfe">view</a>]</li>
+<li>issue <a href="https://github.com/doxygen/doxygen/issues/9605">#9605</a>: fix for unknown entities in the preprocessor conditionals [<a href="https://github.com/doxygen/doxygen/commit/25ef956674e29ad81fb463c7f7eb8f6c6721f78f">view</a>], [<a href="http://github.com/doxygen/doxygen/commit/af398b2402496e9d89b7c847b2576e7bcfeeaf1d">view</a>]</li>
+<li>issue <a href="https://github.com/doxygen/doxygen/issues/9616">#9616</a>: Regression in 1.9.4 in HTML Tree View (command \mainpage) [<a href="https://github.com/doxygen/doxygen/commit/c84ec66d1255f8802b35e64c804c57fd67844bdc">view</a>]</li>
+<li>issue <a href="https://github.com/doxygen/doxygen/issues/9617">#9617</a>: visible=&quot;no&quot; ignored in treeview [<a href="https://github.com/doxygen/doxygen/commit/043bfbfe9edf01a1915ac7d19bfb63d91a1a5692">view</a>]</li>
+<li>issue <a href="https://github.com/doxygen/doxygen/issues/9622">#9622</a>: C++ concepts are not linked to namespaces in XML output [<a href="https://github.com/doxygen/doxygen/commit/0188714bfffe9e4000fa8dee0bc05c23cb97f7d7">view</a>], [<a href="http://github.com/doxygen/doxygen/commit/69f1176578bfe22d123318fbc39a38cbc805a77f">view</a>], [<a href="http://github.com/doxygen/doxygen/commit/aab9ef28992ee9d7123eea96d05d791af2cd3817">view</a>], [<a href="http://github.com/doxygen/doxygen/commit/d6e937d17c11a1db2171f35633bd9ada53c88ce2">view</a>]</li>
+<li>issue <a href="https://github.com/doxygen/doxygen/issues/9650">#9650</a>: Private methods marked only as override are not documented when EXTRACT_PRIV_VIRTUAL = YES [<a href="https://github.com/doxygen/doxygen/commit/1945cfb01c688af82b16cd20c8268e41ce53e55f">view</a>]</li>
+<li>issue <a href="https://github.com/doxygen/doxygen/issues/9669">#9669</a>: Namespaces in arguments of a method breaks cref resolving in C# [<a href="https://github.com/doxygen/doxygen/commit/ef95d88da5957bd96d0be3124b0d7a0f5086727c">view</a>]</li>
+<li>issue <a href="https://github.com/doxygen/doxygen/issues/9672">#9672</a>: doxygen does not interpret Python docstrings when typed next to SLURM directives [<a href="https://github.com/doxygen/doxygen/commit/048731906867423283ab10ad6029427bb5a09ba4">view</a>]</li>
+<li>issue <a href="https://github.com/doxygen/doxygen/issues/9678">#9678</a>: Unable to resolve reference to template class or its member inside a namespace [<a href="https://github.com/doxygen/doxygen/commit/5970fe0ec0c37bb6288306b4e606c85a625a3728">view</a>]</li>
+<li>issue <a href="https://github.com/doxygen/doxygen/issues/9682">#9682</a>: Missing HTML pages and broken links for undocumented C++ concepts [<a href="https://github.com/doxygen/doxygen/commit/9fa5db0f59598b767afef30ed321ed4e0eb22eab">view</a>]</li>
+<li>issue <a href="https://github.com/doxygen/doxygen/issues/9697">#9697</a>: Minor correction to documentation [<a href="https://github.com/doxygen/doxygen/commit/7681efc0f0cab88a1e63c7d435145670b21a9840">view</a>]</li>
+<li>issue <a href="https://github.com/doxygen/doxygen/issues/9715">#9715</a>: segmentation fault (recursive classes?) [<a href="https://github.com/doxygen/doxygen/commit/57f5ad207379b49246493850269bc8be49fa95ff">view</a>]</li>
+<li>issue <a href="https://github.com/doxygen/doxygen/issues/9720">#9720</a>: Recursive class relation warning when using type aliases starting with 57f5ad2 [<a href="https://github.com/doxygen/doxygen/commit/f502b1932177fec9c7d424f43415c8b861112da2">view</a>]</li>
+<li>issue <a href="https://github.com/doxygen/doxygen/issues/9721">#9721</a>: \code blocks have blank lines removed in LaTeX/PDF output [<a href="https://github.com/doxygen/doxygen/commit/5976ddabfc95bbd8c365622a35133c32740f07c3">view</a>]</li>
+<li>issue <a href="https://github.com/doxygen/doxygen/issues/9722">#9722</a>: Doxygen Regression when documenting enums for C#(1.94 -&gt; 1.9.5) [<a href="https://github.com/doxygen/doxygen/commit/37e0f9e4abc0c65827131d404e3a0e52ca2b616c">view</a>]</li>
+<li>issue <a href="https://github.com/doxygen/doxygen/issues/9733">#9733</a>: doxygen stops parsing a file if one uses latex formulas and //!&lt; or ///&lt; for inline parameter documentation [<a href="https://github.com/doxygen/doxygen/commit/3f80cc14ed3b97d6a7fea5f1eebf18ed989b8d66">view</a>]</li>
+<li>issue <a href="https://github.com/doxygen/doxygen/issues/9736">#9736</a>: Doxygen will not generate class information for a C# class that contains certain string combinations [<a href="https://github.com/doxygen/doxygen/commit/971da4ba1c78fc9a0dd8294a5fa8b0559f4ae56f">view</a>]</li>
+<li>Apply scrollbar styling when rendering the internal docs with WebKit [<a href="https://github.com/doxygen/doxygen/commit/b04eee0da504f335ad4c3a3267ab42e7c63d875f">view</a>]</li>
+<li>Fix a number of threading issues when NUM_PROC_THREADS!=1 [<a href="https://github.com/doxygen/doxygen/commit/ddfcb502c1666c4b31ccb98f7ee44da387c75b66">view</a>]</li>
+<li>Fixed a couple of threading issues when NUM_PROC_THREADS!=1 [<a href="https://github.com/doxygen/doxygen/commit/b6c9da458bc6abc793db31ed5d39883d048710b6">view</a>]</li>
+<li>Bugfix of malformed UML class diagram generated thru graphviz. [<a href="https://github.com/doxygen/doxygen/commit/c2737f13c0c38be2d1311c630e503dd079c3420e">view</a>]</li>
+<li>Bugfix of malformed VHDL process flowchart generated thru graphviz. [<a href="https://github.com/doxygen/doxygen/commit/7ec6b025432ec7c51951cb215e01eaa768417736">view</a>]</li>
+<li>Area tag does not give `alt=&quot;&quot;` as of dot 7.0.2 [<a href="https://github.com/doxygen/doxygen/commit/2d3ee3d2a23912f73238465f6ea86a56e9640ebb">view</a>], [<a href="http://github.com/doxygen/doxygen/commit/311fa75e10b0b69177c8ac35d9a521f114f4ee72">view</a>], [<a href="http://github.com/doxygen/doxygen/commit/bb57609fa3b9e76d30fa96975afa18c766797c51">view</a>]</li>
+<li>Incorrect interactive svg file for dot [<a href="https://github.com/doxygen/doxygen/commit/b3915db1bf2f6fb65006db35de35d46bf13b5059">view</a>]</li>
+<li>Correcting default HTML stylesheets for color style LIGHT and DARK [<a href="https://github.com/doxygen/doxygen/commit/9a8d98b2f2d79b3efaf153a5fe648fb9f9ec8b6e">view</a>]</li>
+<li>Fixed some issues handling character literals in template arguments [<a href="https://github.com/doxygen/doxygen/commit/ec83bca1cce2080705fae47fd7da1f181ddb3574">view</a>]</li>
+<li>Removing hierarchy / namespace from layout file results in incorrect RTF / LaTeX document [<a href="https://github.com/doxygen/doxygen/commit/033c6e1de1c832c69694dbedbf5c054d379f6810">view</a>]</li>
+<li>Unknown entities in the preprocessor conditionals [<a href="https://github.com/doxygen/doxygen/commit/6839a425e99cfbc55dee97c2fc8894ee22620f61">view</a>]</li>
+<li>Hash comment in php [<a href="https://github.com/doxygen/doxygen/commit/9b1f32aea556997ea9015bf37f966df0379cbb1f">view</a>]</li>
+<li>Incorrect man code output in respect to backslashes [<a href="https://github.com/doxygen/doxygen/commit/2e04b8576a68552865d5b0c42f492b3e3074764c">view</a>]</li>
+<li>Spurious characters in Fortran Fixed to free format conversion [<a href="https://github.com/doxygen/doxygen/commit/d1fc343493c40605cbce2b064d17a978b6b8e5b8">view</a>], [<a href="http://github.com/doxygen/doxygen/commit/dcedd9c1a2702135a8b261afc950dba8b4494a53">view</a>]</li>
+<li>Incorrect handling of escaped ilinebr command [<a href="https://github.com/doxygen/doxygen/commit/fbdcdb5483d4acf9516c94c26b205af674917904">view</a>]</li>
+<li>Incorrect return of getUTF8CharAt giving wrong alphabetical index [<a href="https://github.com/doxygen/doxygen/commit/6fdd3937c79e939f1f0407645b7f56d382a033d6">view</a>]</li>
+<li>Reference to non existing pages with embedded anonymous union / struct [<a href="https://github.com/doxygen/doxygen/commit/552b3b9f0bf8a522323ca86773c0b83bd22d73b5">view</a>]</li>
+</ul>
+<h3>Features</h3>
+<ul>
+<li>Adding Python PEP 526 typing support [<a href="https://github.com/doxygen/doxygen/commit/1fde7846bebadee400b5d60058a2f85ddbac3960">view</a>], [<a href="http://github.com/doxygen/doxygen/commit/474444c73efe72e9f1fcbe49e56acd6ad3f49439">view</a>]</li>
+<li>issue #2580: Formatting-options for $datetime [<a href="https://github.com/doxygen/doxygen/commit/288a442cfeb496c2e11a473cf561b7d51550dbc4">view</a>]</li>
+<li>issue #9702: Add new command \qualifier to add custom tags that would be similar to &quot;inline&quot; and &quot;static&quot; to some functions or classes [<a href="https://github.com/doxygen/doxygen/commit/b0b601f410a0649470ef5afcb38c504d75a680f1">view</a>] and [<a href="https://github.com/doxygen/doxygen/commit/8a26a675a670eb3668c9ce1c13052474b5372ca4">view</a>]</li>
+<li>issue #9549: Feature request: Allow to disable Webkit scrollbar styling [<a href="https://github.com/doxygen/doxygen/commit/34be2a15a9497f265c7df59b53855a2b0a44dec1">view</a>]</li>
+<li>NUM_PROC_THREAD!=1 will now process formulas on multiple threads [<a href="https://github.com/doxygen/doxygen/commit/a833e72a33b643690a4b64531f57646abeab76e4">view</a>]</li>
+<li>Treat <tt>__name</tt> variable as private and <tt>_name</tt> variables as protected in Python [<a href="https://github.com/doxygen/doxygen/commit/952bf8eaadb4c992dd4a13fe19dc8b07b226b129">view</a>]</li>
+<li>Add support for multiple &lt;summary&gt; sections inside &lt;details&gt; [<a href="https://github.com/doxygen/doxygen/commit/db8c371837e634838d12b52fce71841fccf48747">view</a>], [<a href="https://github.com/doxygen/doxygen/commit/503c3f4253c67fa3a8630ebfdb18284968bc7606">view</a>], [<a href="https://github.com/doxygen/doxygen/commit/70576f764ec3237284b7c40b1f3c59814918e81b">view</a>], [<a href="https://github.com/doxygen/doxygen/commit/56b9594ca8fc5cd75f286c1655f767b685b059f4">view</a>], [<a href="http://github.com/doxygen/doxygen/commit/e08c9be0938a96b5489329586ca12e03d1657e15">view</a>], [<a href="https://github.com/doxygen/doxygen/commit/61caf5d22fc908fa39ea2eff460720e545b0637f">view</a>], [<a href="https://github.com/doxygen/doxygen/commit/3624ad8fae4fdfafb85fab5dd7e22da8cb378c70">view</a>] and [<a href="https://github.com/doxygen/doxygen/commit/6ffdab8bb00a769d48cfbdadde8c49e8aca2929f">view</a>]</li>
+<li>Added option WARN_IF_UNDOC_ENUM_VAL to have warnings for undocumented enum values [<a href="https://github.com/doxygen/doxygen/commit/818db51c7e760e7128b039222354c45daee2488f">view</a>], [<a href="https://github.com/doxygen/doxygen/commit/1aa61f958e91c81ed535cd228a5599f06c243986">view</a>]
+</ul>
+<h3>Improved user feedback and documentation</h3>
+<ul>
+<li>Documentation correction in config.xml [<a href="https://github.com/doxygen/doxygen/commit/a0a013aca4d51a15969c5bda5a2a440b86c6b561">view</a>]</li>
+<li>HTML_COLORSTYLE improve documentation [<a href="https://github.com/doxygen/doxygen/commit/39b1f65bcc733ba5b377cb328b462511553003de">view</a>]</li>
+<li>Layout, textual, syntactical changes documentation [<a href="https://github.com/doxygen/doxygen/commit/c30babe9af0dae3509b924b5052aa5e4c0b0f3c8">view</a>]</li>
+<li>Correction and making more uniform texts for the different lists [<a href="https://github.com/doxygen/doxygen/commit/676254ec6eb7dc85b7956cc030df4d49b18cbe15">view</a>]</li>
+<li>Fix unreadable file warnings for broken symlinks with EXCLUDE_SYMLINKS is set [<a href="https://github.com/doxygen/doxygen/commit/79bae9f57d5a438846714540f0f4565924cd0bc1">view</a>]</li>
+<li>Doxywizard: Don&#39;t show default text in case no default value present, [<a href="https://github.com/doxygen/doxygen/commit/c71d315593b5ccf02a6aa7ce9c938d66b8d435cd">view</a>]</li>
+<li>Show &quot;Additional Inherited Members&quot; for LaTeX, RTF, etc. [<a href="https://github.com/doxygen/doxygen/commit/a7018a69740edef837d5838a4eaea20d42e2f942">view</a>]</li>
+<li>Fixed main menu and submenu items for Fortran and VHDL in context of other languages. [<a href="https://github.com/doxygen/doxygen/commit/6fa5b54dfd915ca1316b81e7094447d017e6efa1">view</a>]</li>
+<li>Incorrect documentation for the command `\fileinfo` [<a href="https://github.com/doxygen/doxygen/commit/c624b67e615dfb08910278db86221d3f93caa560">view</a>]</li>
+<li>QHP output requires that HTML output is generated [<a href="https://github.com/doxygen/doxygen/commit/9fafc706c322de1b9bc6b646f2f8d0b0360c4f2f">view</a>]</li>
+<li>Dutch and czech localization update to &quot;new since 1.9.6. [<a href="https://github.com/doxygen/doxygen/commit/079726e942047a6dbd7e8fec76cf36f7cfe88afa">view</a>]</li>
+<li>Portuguese translators updated to 1.9.6 [<a href="https://github.com/doxygen/doxygen/commit/6b00076947f9173effb79dfc04fb0384b05c5d63">view</a>] and Portuguese translators updated to 1.9.6. [<a href="https://github.com/doxygen/doxygen/commit/298030f235863c47f77ac2f657f7c703b2c616d4">view</a>]</li>
+<li>Update translator_fr.h [<a href="https://github.com/doxygen/doxygen/commit/6a14db4425f6d9ce43e896cab6d53a0404b545ee">view</a>], [<a href="http://github.com/doxygen/doxygen/commit/91e5c32ddb8951eeab379aa1f913fa4a9a8275af">view</a>], [<a href="http://github.com/doxygen/doxygen/commit/b5bc5683236280c0e10de5fe08db29c213456b7c">view</a>], [<a href="http://github.com/doxygen/doxygen/commit/c0dafee4ba5e2cd24247aef0f0064c3e294de856">view</a>], [<a href="http://github.com/doxygen/doxygen/commit/f17c0875a24d3cfec03b3170fa46cefae5fed530">view</a>], [<a href="http://github.com/doxygen/doxygen/commit/fba0c36410e6b5d5e9cad618f4c99fa2b95b55b7">view</a>]</li>
+<li>Added translation specialization for VHDL in the `trMemberFunctionDocumentation()` method. [<a href="https://github.com/doxygen/doxygen/commit/c2ab72c0d07ec563f058d08730554ac4812b0b4f">view</a>]</li>
+</ul>
+<h3>Refactoring and cleanup</h3>
+<ul>
+<li>Refactoring: Improve constness of commentcnv interface and added comments [<a href="https://github.com/doxygen/doxygen/commit/b6a71b7a2aa950a189aa5bbd248d1c76fe0e22ba">view</a>]</li>
+<li>Refactoring: Minor cleanup of the constant expression parser [<a href="https://github.com/doxygen/doxygen/commit/c0b9f43d0b0591313d2c18413e9673ea9903c715">view</a>]</li>
+<li>Refactoring: Move global index counters into a Index singleton class [<a href="https://github.com/doxygen/doxygen/commit/7641ce964bce023d9958c0696ced864c755ddb88">view</a>]</li>
+<li>Refactoring: Move javascript license file to header [<a href="https://github.com/doxygen/doxygen/commit/2182574ce34008914f4fe7ed076465f8043954ec">view</a>]</li>
+<li>Refactoring: Use Compile Time Regular Expressions instead of reg::Ex [<a href="https://github.com/doxygen/doxygen/commit/994ae02d70192646defe9410c011a8c5691249a6">view</a>]</li>
+<li>Refactoring: better split output generator and code generator [<a href="https://github.com/doxygen/doxygen/commit/8b14bc5cd1d0569a8ed056b18971bcd8b9ee0fe3">view</a>]</li>
+<li>Refactoring: cleanup index interface and implementation [<a href="https://github.com/doxygen/doxygen/commit/4a2995ef382fcf50ffc26c29bf061cb812f0b794">view</a>]</li>
+<li>Refactoring: some minor performance tweaks [<a href="https://github.com/doxygen/doxygen/commit/ce37ae76fdbfb46534b4424c5ce7944723259370">view</a>]</li>
+<li>Usage of steady_clock [<a href="https://github.com/doxygen/doxygen/commit/876aaf820822a16c45ad7de9eb9e090f8854cc12">view</a>]</li>
+<li>Check debug settings by means of the compiler [<a href="https://github.com/doxygen/doxygen/commit/ecf265be3b3128125df0b14831ba539ef825b577">view</a>]</li>
+<li>Incorrect place of prototype of `dateToString` [<a href="https://github.com/doxygen/doxygen/commit/19d2b7b6210ff4a1e652b9fdebdfd30837b95e05">view</a>], [<a href="http://github.com/doxygen/doxygen/commit/9e41bb2e4c988b40334777fba54231558b9d185f">view</a>]</li>
+<li>Optimize fragment inclusion performance for INLINE_SOURCES=YES [<a href="https://github.com/doxygen/doxygen/commit/3e945b33bce6af8a87de640f3538dce03aaac58f">view</a>]</li>
+<li>Remove redundant functions and typedef [<a href="https://github.com/doxygen/doxygen/commit/d4b2caa78250d8fbbf6b31b5992d18a6f32fe34a">view</a>]</li>
+</ul>
+<p>
+\endhtmlonly
+
 \subsection log_1_9_5 Release 1.9.5
 \htmlonly
 <b>(release date 26-08-2022)</b>
@@ -8,7 +110,7 @@
 <h3>Bug fixes</h3>
 <ul>
 <li>issue <a href="https://github.com/doxygen/doxygen/issues/3165">#3165</a>: EXPAND_ONLY_PREDEF neglected within function macro expansions (Origin: bugzilla #559489) [<a href="https://github.com/doxygen/doxygen/commit/50184bd02e8c8c4558827913907690ef0db72fd1">view</a>]</li>
-  <li>Macros listed with EXPAND_AS_DEFINED were not recursively expanded [<a href="https://github.com/doxygen/doxygen/commit/387f508b2e41179a9f70b2914132c2bf12d07b43">view</a>]</li>
+<li>Macros listed with EXPAND_AS_DEFINED were not recursively expanded [<a href="https://github.com/doxygen/doxygen/commit/387f508b2e41179a9f70b2914132c2bf12d07b43">view</a>]</li>
 <li>issue <a href="https://github.com/doxygen/doxygen/issues/8215">#8215</a>: missing lang attribute and meta description for SEO [<a href="https://github.com/doxygen/doxygen/commit/15825737c8f2cc6ceee34ed986594b0ddbc47ce1">view</a>]</li>
 <li>issue <a href="https://github.com/doxygen/doxygen/issues/9016">#9016</a>: Support collapsible sections in markdown [<a href="https://github.com/doxygen/doxygen/commit/a4e67401cb031ddb21b694e6a1ae62e98ec67d33">view</a>]</li>
 <li>issue <a href="https://github.com/doxygen/doxygen/issues/9047">#9047</a>: Support @param-taint in PHP (permit dashes in command aliases?) [<a href="https://github.com/doxygen/doxygen/commit/6222ce6fc0feaf54d5bf88bca3451bb5727eedfe">view</a>], [<a href="http://github.com/doxygen/doxygen/commit/a3c2018660befc13d99ab5ccbb453ba957fdd497">view</a>]</li>
