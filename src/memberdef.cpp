@@ -3906,6 +3906,19 @@ void MemberDefImpl::warnIfUndocumented() const
   {
     warnIfUndocumentedParams();
   }
+
+  // if it is an enum, we check that its members are documented
+  if (!extractAll && isEnumerate() && Config_getBool(WARN_IF_UNDOC_ENUM_VAL))
+  {
+    for (const auto &fmd : enumFieldList())
+    {
+      if (!fmd->isLinkableInProject())
+      {
+        warn(fmd->getDefFileName(),fmd->getDefLine(), "Documentation for enum member '%s::%s' is missing.",
+             qPrint(qualifiedName()), qPrint(fmd->name()));
+      }
+    }
+  }
 }
 
 bool MemberDefImpl::visibleInIndex() const
