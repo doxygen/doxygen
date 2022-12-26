@@ -1351,7 +1351,7 @@ class compounddefType(GeneratedsSuper):
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
     superclass = None
-    def __init__(self, id=None, kind=None, language=None, prot=None, final=None, inline=None, sealed=None, abstract=None, compoundname=None, title=None, basecompoundref=None, derivedcompoundref=None, includes=None, includedby=None, incdepgraph=None, invincdepgraph=None, innerdir=None, innerfile=None, innerclass=None, innerconcept=None, innernamespace=None, innerpage=None, innergroup=None, templateparamlist=None, sectiondef=None, tableofcontents=None, requiresclause=None, initializer=None, briefdescription=None, detaileddescription=None, inheritancegraph=None, collaborationgraph=None, programlisting=None, location=None, listofallmembers=None, gds_collector_=None, **kwargs_):
+    def __init__(self, id=None, kind=None, language=None, prot=None, final=None, inline=None, sealed=None, abstract=None, compoundname=None, title=None, basecompoundref=None, derivedcompoundref=None, includes=None, includedby=None, incdepgraph=None, invincdepgraph=None, innerdir=None, innerfile=None, innerclass=None, innerconcept=None, innernamespace=None, innerpage=None, innergroup=None, qualifier=None, templateparamlist=None, sectiondef=None, tableofcontents=None, requiresclause=None, initializer=None, briefdescription=None, detaileddescription=None, inheritancegraph=None, collaborationgraph=None, programlisting=None, location=None, listofallmembers=None, gds_collector_=None, **kwargs_):
         self.gds_collector_ = gds_collector_
         self.gds_elementtree_node_ = None
         self.original_tagname_ = None
@@ -1436,6 +1436,11 @@ class compounddefType(GeneratedsSuper):
         else:
             self.innergroup = innergroup
         self.innergroup_nsprefix_ = None
+        if qualifier is None:
+            self.qualifier = []
+        else:
+            self.qualifier = qualifier
+        self.qualifier_nsprefix_ = None
         self.templateparamlist = templateparamlist
         self.templateparamlist_nsprefix_ = None
         if sectiondef is None:
@@ -1604,6 +1609,16 @@ class compounddefType(GeneratedsSuper):
         self.innergroup.insert(index, value)
     def replace_innergroup_at(self, index, value):
         self.innergroup[index] = value
+    def get_qualifier(self):
+        return self.qualifier
+    def set_qualifier(self, qualifier):
+        self.qualifier = qualifier
+    def add_qualifier(self, value):
+        self.qualifier.append(value)
+    def insert_qualifier_at(self, index, value):
+        self.qualifier.insert(index, value)
+    def replace_qualifier_at(self, index, value):
+        self.qualifier[index] = value
     def get_templateparamlist(self):
         return self.templateparamlist
     def set_templateparamlist(self, templateparamlist):
@@ -1759,6 +1774,7 @@ class compounddefType(GeneratedsSuper):
             self.innernamespace or
             self.innerpage or
             self.innergroup or
+            self.qualifier or
             self.templateparamlist is not None or
             self.sectiondef or
             self.tableofcontents is not None or
@@ -1875,6 +1891,10 @@ class compounddefType(GeneratedsSuper):
         for innergroup_ in self.innergroup:
             namespaceprefix_ = self.innergroup_nsprefix_ + ':' if (UseCapturedNS_ and self.innergroup_nsprefix_) else ''
             innergroup_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='innergroup', pretty_print=pretty_print)
+        for qualifier_ in self.qualifier:
+            namespaceprefix_ = self.qualifier_nsprefix_ + ':' if (UseCapturedNS_ and self.qualifier_nsprefix_) else ''
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%squalifier>%s</%squalifier>%s' % (namespaceprefix_ , self.gds_encode(self.gds_format_string(quote_xml(qualifier_), input_name='qualifier')), namespaceprefix_ , eol_))
         if self.templateparamlist is not None:
             namespaceprefix_ = self.templateparamlist_nsprefix_ + ':' if (UseCapturedNS_ and self.templateparamlist_nsprefix_) else ''
             self.templateparamlist.export(outfile, level, namespaceprefix_, namespacedef_='', name_='templateparamlist', pretty_print=pretty_print)
@@ -2040,6 +2060,12 @@ class compounddefType(GeneratedsSuper):
             obj_.build(child_, gds_collector_=gds_collector_)
             self.innergroup.append(obj_)
             obj_.original_tagname_ = 'innergroup'
+        elif nodeName_ == 'qualifier':
+            value_ = child_.text
+            value_ = self.gds_parse_string(value_, node, 'qualifier')
+            value_ = self.gds_validate_string(value_, node, 'qualifier')
+            self.qualifier.append(value_)
+            self.qualifier_nsprefix_ = child_.prefix
         elif nodeName_ == 'templateparamlist':
             obj_ = templateparamlistType.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
@@ -2101,6 +2127,82 @@ class compounddefType(GeneratedsSuper):
             self.listofallmembers = obj_
             obj_.original_tagname_ = 'listofallmembers'
 # end class compounddefType
+
+
+class qualifier(GeneratedsSuper):
+    __hash__ = GeneratedsSuper.__hash__
+    subclass = None
+    superclass = None
+    def __init__(self, gds_collector_=None, **kwargs_):
+        self.gds_collector_ = gds_collector_
+        self.gds_elementtree_node_ = None
+        self.original_tagname_ = None
+        self.parent_object_ = kwargs_.get('parent_object_')
+        self.ns_prefix_ = None
+    def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, qualifier)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
+        if qualifier.subclass:
+            return qualifier.subclass(*args_, **kwargs_)
+        else:
+            return qualifier(*args_, **kwargs_)
+    factory = staticmethod(factory)
+    def get_ns_prefix_(self):
+        return self.ns_prefix_
+    def set_ns_prefix_(self, ns_prefix):
+        self.ns_prefix_ = ns_prefix
+    def hasContent_(self):
+        if (
+
+        ):
+            return True
+        else:
+            return False
+    def export(self, outfile, level, namespaceprefix_='', namespacedef_='', name_='qualifier', pretty_print=True):
+        imported_ns_def_ = GenerateDSNamespaceDefs_.get('qualifier')
+        if imported_ns_def_ is not None:
+            namespacedef_ = imported_ns_def_
+        if pretty_print:
+            eol_ = '\n'
+        else:
+            eol_ = ''
+        if self.original_tagname_ is not None and name_ == 'qualifier':
+            name_ = self.original_tagname_
+        if UseCapturedNS_ and self.ns_prefix_:
+            namespaceprefix_ = self.ns_prefix_ + ':'
+        showIndent(outfile, level, pretty_print)
+        outfile.write('<%s%s%s' % (namespaceprefix_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        already_processed = set()
+        self.exportAttributes(outfile, level, already_processed, namespaceprefix_, name_='qualifier')
+        if self.hasContent_():
+            outfile.write('>%s' % (eol_, ))
+            self.exportChildren(outfile, level + 1, namespaceprefix_, namespacedef_, name_='qualifier', pretty_print=pretty_print)
+            outfile.write('</%s%s>%s' % (namespaceprefix_, name_, eol_))
+        else:
+            outfile.write('/>%s' % (eol_, ))
+    def exportAttributes(self, outfile, level, already_processed, namespaceprefix_='', name_='qualifier'):
+        pass
+    def exportChildren(self, outfile, level, namespaceprefix_='', namespacedef_='', name_='qualifier', fromsubclass_=False, pretty_print=True):
+        pass
+    def build(self, node, gds_collector_=None):
+        self.gds_collector_ = gds_collector_
+        if SaveElementTreeNode:
+            self.gds_elementtree_node_ = node
+        already_processed = set()
+        self.ns_prefix_ = node.prefix
+        self.buildAttributes(node, node.attrib, already_processed)
+        for child in node:
+            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
+            self.buildChildren(child, node, nodeName_, gds_collector_=gds_collector_)
+        return self
+    def buildAttributes(self, node, attrs, already_processed):
+        pass
+    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False, gds_collector_=None):
+        pass
+# end class qualifier
 
 
 class listofallmembersType(GeneratedsSuper):
@@ -3450,7 +3552,7 @@ class memberdefType(GeneratedsSuper):
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
     superclass = None
-    def __init__(self, kind=None, id=None, prot=None, static=None, strong=None, const=None, explicit=None, inline=None, refqual=None, virt=None, volatile=None, mutable=None, noexcept=None, constexpr=None, readable=None, writable=None, initonly=None, settable=None, privatesettable=None, protectedsettable=None, gettable=None, privategettable=None, protectedgettable=None, final=None, sealed=None, new=None, add=None, remove=None, raise_=None, optional=None, required=None, accessor=None, attribute=None, property=None, readonly=None, bound=None, removable=None, constrained=None, transient=None, maybevoid=None, maybedefault=None, maybeambiguous=None, templateparamlist=None, type_=None, definition=None, argsstring=None, name=None, qualifiedname=None, read=None, write=None, bitfield=None, reimplements=None, reimplementedby=None, param=None, enumvalue=None, requiresclause=None, initializer=None, exceptions=None, briefdescription=None, detaileddescription=None, inbodydescription=None, location=None, references=None, referencedby=None, gds_collector_=None, **kwargs_):
+    def __init__(self, kind=None, id=None, prot=None, static=None, strong=None, const=None, explicit=None, inline=None, refqual=None, virt=None, volatile=None, mutable=None, noexcept=None, constexpr=None, readable=None, writable=None, initonly=None, settable=None, privatesettable=None, protectedsettable=None, gettable=None, privategettable=None, protectedgettable=None, final=None, sealed=None, new=None, add=None, remove=None, raise_=None, optional=None, required=None, accessor=None, attribute=None, property=None, readonly=None, bound=None, removable=None, constrained=None, transient=None, maybevoid=None, maybedefault=None, maybeambiguous=None, templateparamlist=None, type_=None, definition=None, argsstring=None, name=None, qualifiedname=None, read=None, write=None, bitfield=None, reimplements=None, reimplementedby=None, qualifier=None, param=None, enumvalue=None, requiresclause=None, initializer=None, exceptions=None, briefdescription=None, detaileddescription=None, inbodydescription=None, location=None, references=None, referencedby=None, gds_collector_=None, **kwargs_):
         self.gds_collector_ = gds_collector_
         self.gds_elementtree_node_ = None
         self.original_tagname_ = None
@@ -3568,6 +3670,11 @@ class memberdefType(GeneratedsSuper):
         else:
             self.reimplementedby = reimplementedby
         self.reimplementedby_nsprefix_ = None
+        if qualifier is None:
+            self.qualifier = []
+        else:
+            self.qualifier = qualifier
+        self.qualifier_nsprefix_ = None
         if param is None:
             self.param = []
         else:
@@ -3673,6 +3780,16 @@ class memberdefType(GeneratedsSuper):
         self.reimplementedby.insert(index, value)
     def replace_reimplementedby_at(self, index, value):
         self.reimplementedby[index] = value
+    def get_qualifier(self):
+        return self.qualifier
+    def set_qualifier(self, qualifier):
+        self.qualifier = qualifier
+    def add_qualifier(self, value):
+        self.qualifier.append(value)
+    def insert_qualifier_at(self, index, value):
+        self.qualifier.insert(index, value)
+    def replace_qualifier_at(self, index, value):
+        self.qualifier[index] = value
     def get_param(self):
         return self.param
     def set_param(self, param):
@@ -4000,6 +4117,7 @@ class memberdefType(GeneratedsSuper):
             self.bitfield is not None or
             self.reimplements or
             self.reimplementedby or
+            self.qualifier or
             self.param or
             self.enumvalue or
             self.requiresclause is not None or
@@ -4210,6 +4328,10 @@ class memberdefType(GeneratedsSuper):
         for reimplementedby_ in self.reimplementedby:
             namespaceprefix_ = self.reimplementedby_nsprefix_ + ':' if (UseCapturedNS_ and self.reimplementedby_nsprefix_) else ''
             reimplementedby_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='reimplementedby', pretty_print=pretty_print)
+        for qualifier_ in self.qualifier:
+            namespaceprefix_ = self.qualifier_nsprefix_ + ':' if (UseCapturedNS_ and self.qualifier_nsprefix_) else ''
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%squalifier>%s</%squalifier>%s' % (namespaceprefix_ , self.gds_encode(self.gds_format_string(quote_xml(qualifier_), input_name='qualifier')), namespaceprefix_ , eol_))
         for param_ in self.param:
             namespaceprefix_ = self.param_nsprefix_ + ':' if (UseCapturedNS_ and self.param_nsprefix_) else ''
             param_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='param', pretty_print=pretty_print)
@@ -4527,6 +4649,12 @@ class memberdefType(GeneratedsSuper):
             obj_.build(child_, gds_collector_=gds_collector_)
             self.reimplementedby.append(obj_)
             obj_.original_tagname_ = 'reimplementedby'
+        elif nodeName_ == 'qualifier':
+            value_ = child_.text
+            value_ = self.gds_parse_string(value_, node, 'qualifier')
+            value_ = self.gds_validate_string(value_, node, 'qualifier')
+            self.qualifier.append(value_)
+            self.qualifier_nsprefix_ = child_.prefix
         elif nodeName_ == 'param':
             obj_ = paramType.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
@@ -27077,6 +27205,7 @@ __all__ = [
     "nodeType",
     "paramType",
     "qualifiedname",
+    "qualifier",
     "read",
     "refTextType",
     "refType",
