@@ -332,7 +332,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
                    const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
                    bool onlyText=FALSE) const;
     virtual void resolveUnnamedParameters(const MemberDef *md);
-    virtual void addQualifiers(StringVector qualifiers) const;
+    virtual void addQualifiers(const StringVector &qualifiers);
     virtual StringVector getQualifiers() const;
 
   private:
@@ -776,10 +776,6 @@ class MemberDefAliasImpl : public DefinitionAliasMixin<MemberDef>
             const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd) const
     {
       getMdAlias()->writeEnumDeclaration(typeDecl,cd,nd,fd,gd);
-    }
-    virtual void addQualifiers(StringVector qualifiers) const
-    {
-      getMdAlias()->addQualifiers(qualifiers);
     }
   private:
     MemberGroup *m_memberGroup; // group's member definition
@@ -2748,9 +2744,11 @@ StringVector MemberDefImpl::getLabels(const Definition *container) const
   {
     sl.push_back("implementation");
   }
+
   for (const auto &sx : m_impl->qualifiers)
   {
-    if(std::find(sl.begin(), sl.end(), sx) == sl.end())
+    bool alreadyAdded = std::find(sl.begin(), sl.end(), sx) != sl.end();
+    if (!alreadyAdded)
     {
       sl.push_back(sx);
     }
@@ -5559,11 +5557,12 @@ StringVector MemberDefImpl::getQualifiers() const
   return m_impl->qualifiers;
 }
 
-void MemberDefImpl::addQualifiers(StringVector qualifiers) const
+void MemberDefImpl::addQualifiers(const StringVector &qualifiers)
 {
-  for (const auto &sx :qualifiers)
+  for (const auto &sx : qualifiers)
   {
-    if(std::find(m_impl->qualifiers.begin(), m_impl->qualifiers.end(), sx) == m_impl->qualifiers.end())
+    bool alreadyAdded = std::find(m_impl->qualifiers.begin(), m_impl->qualifiers.end(), sx) != m_impl->qualifiers.end();
+    if (!alreadyAdded)
     {
       m_impl->qualifiers.push_back(sx);
     }

@@ -260,10 +260,12 @@ class MemberDef : public Definition
     virtual QCString displayName(bool=TRUE) const = 0;
     virtual QCString getDeclType() const = 0;
     virtual StringVector getLabels(const Definition *container) const = 0;
+    virtual StringVector getQualifiers() const = 0;
 
     virtual const ArgumentList &typeConstraints() const = 0;
 
     virtual QCString requiresClause() const = 0;
+
 
     // overrules
     virtual QCString documentation() const = 0;
@@ -290,8 +292,6 @@ class MemberDef : public Definition
     // TODO: this is not a getter, should be passed at construction
     virtual void setMemberGroup(MemberGroup *grp) = 0;
 
-    virtual void addQualifiers(StringVector qualifiers) const = 0;
-    virtual StringVector getQualifiers() const = 0;
 };
 
 class MemberDefMutable : public DefinitionMutable, public MemberDef
@@ -403,7 +403,7 @@ class MemberDefMutable : public DefinitionMutable, public MemberDef
 
     virtual void setRequiresClause(const QCString &req) = 0;
 
-    virtual void addQualifiers(StringVector qualifiers) const = 0;
+    virtual void addQualifiers(const StringVector &qualifiers) = 0;
 
     //-----------------------------------------------------------------------------------
     // --- actions ----

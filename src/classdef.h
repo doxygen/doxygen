@@ -353,6 +353,7 @@ class ClassDef : public Definition
     virtual bool hasNonReferenceSuperClass() const = 0;
 
     virtual QCString requiresClause() const = 0;
+    virtual StringVector getQualifiers() const = 0;
 
     //-----------------------------------------------------------------------------------
     // --- count members ----
@@ -401,6 +402,7 @@ class ClassDefMutable : public DefinitionMutable, public ClassDef
     virtual void setName(const QCString &name) = 0;
     virtual void setMetaData(const QCString &md) = 0;
     virtual void setRequiresClause(const QCString &req) = 0;
+    virtual void addQualifiers(const StringVector &qualifiers) = 0;
 
     //-----------------------------------------------------------------------------------
     // --- actions ----

@@ -1398,6 +1398,11 @@ static void generateXMLForClass(const ClassDef *cd,TextStream &ti)
     t << "    </requiresclause>\n";
   }
 
+  for (const auto &qcd : cd->getQualifiers())
+  {
+    t << "    <qualifier>" << convertToXML(qcd.c_str()) << "</qualifier>\n";
+  }
+
   t << "    <briefdescription>\n";
   writeXMLDocBlock(t,cd->briefFile(),cd->briefLine(),cd,0,cd->briefDescription());
   t << "    </briefdescription>\n";

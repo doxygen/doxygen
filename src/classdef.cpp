@@ -236,6 +236,7 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
     virtual bool isSliceLocal() const;
     virtual bool hasNonReferenceSuperClass() const;
     virtual QCString requiresClause() const;
+    virtual StringVector getQualifiers() const;
     virtual ClassDef *insertTemplateInstance(const QCString &fileName,int startLine,int startColumn,
                                 const QCString &templSpec,bool &freshInstance) const;
 
@@ -258,6 +259,7 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
     virtual void setCompoundType(CompoundType t);
     virtual void setClassName(const QCString &name);
     virtual void setClassSpecifier(uint64 spec);
+    virtual void addQualifiers(const StringVector &qualifiers);
     virtual void setTemplateArguments(const ArgumentList &al);
     virtual void setTemplateBaseClassNames(const TemplateNameMap &templateNames);
     virtual void setTemplateMaster(const ClassDef *tm);
@@ -532,6 +534,8 @@ class ClassDefAliasImpl : public DefinitionAliasMixin<ClassDef>
     { return getCdAlias()->hasNonReferenceSuperClass(); }
     virtual QCString requiresClause() const
     { return getCdAlias()->requiresClause(); }
+    virtual StringVector getQualifiers() const
+    { return getCdAlias()->getQualifiers(); }
 
     virtual int countMembersIncludingGrouped(MemberListType lt,const ClassDef *inheritedFrom,bool additional) const
     { return getCdAlias()->countMembersIncludingGrouped(lt,inheritedFrom,additional); }
@@ -710,6 +714,8 @@ class ClassDefImpl::IMPL
 
     /** C++20 requires clause */
     QCString requiresClause;
+
+    StringVector qualifiers;
 };
 
 void ClassDefImpl::IMPL::init(const QCString &defFileName, const QCString &name,
@@ -2477,6 +2483,15 @@ void ClassDefImpl::addClassAttributes(OutputList &ol) const
   if (isSealed())   sl.push_back("sealed");
   if (isAbstract()) sl.push_back("abstract");
   if (getLanguage()==SrcLangExt_IDL && isPublished()) sl.push_back("published");
+
+  for (const auto &sx : m_impl->qualifiers)
+  {
+    bool alreadyAdded = std::find(sl.begin(), sl.end(), sx) != sl.end();
+    if (!alreadyAdded)
+    {
+      sl.push_back(sx);
+    }
+  }
 
   ol.pushGeneratorState();
   ol.disableAllBut(OutputType::Html);
@@ -4884,6 +4899,23 @@ bool ClassDefImpl::isJavaEnum() const
 void ClassDefImpl::setClassSpecifier(uint64 spec)
 {
   m_impl->spec = spec;
+}
+
+void ClassDefImpl::addQualifiers(const StringVector &qualifiers)
+{
+  for (const auto &sx : qualifiers)
+  {
+    bool alreadyAdded = std::find(m_impl->qualifiers.begin(), m_impl->qualifiers.end(), sx) != m_impl->qualifiers.end();
+    if (!alreadyAdded)
+    {
+      m_impl->qualifiers.push_back(sx);
+    }
+  }
+}
+
+StringVector ClassDefImpl::getQualifiers() const
+{
+  return m_impl->qualifiers;
 }
 
 bool ClassDefImpl::isExtension() const

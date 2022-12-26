@@ -31,6 +31,7 @@
       <xsd:element name="innernamespace" type="refType" minOccurs="0" maxOccurs="unbounded" />
       <xsd:element name="innerpage" type="refType" minOccurs="0" maxOccurs="unbounded" />
       <xsd:element name="innergroup" type="refType" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element name="qualifier" minOccurs="0" maxOccurs="unbounded" />
       <xsd:element name="templateparamlist" type="templateparamlistType" minOccurs="0" />
       <xsd:element name="sectiondef" type="sectiondefType" minOccurs="0" maxOccurs="unbounded" />
       <xsd:element name="tableofcontents" type="tableofcontentsType" minOccurs="0" maxOccurs="1" />

@@ -426,12 +426,16 @@ Structural indicators
       option \ref cfg_references_relation "REFERENCES_RELATION"
 
 <hr>
-\section cmdqualifier \\qualifier "(text)"
+\section cmdqualifier \\qualifier <label> | "(text)"
 
   \addindex \\qualifier
 
-  With this command it is possible to define output labels analogous to the labels
-  like "static", "inline" which are automatically  set.
+  With this command it is possible to add custom qualifier labels
+  to members and classes. These labels will be shown in the output in the same way
+  as the automatically generated labels such as "static", "inline", and "final".
+
+  For instance to indicate that a function is only meant for testing purposes
+  one could add `\qualifier test`
 
 <hr>
 \section cmdcategory \\category <name> [<header-file>] [<header-name>]

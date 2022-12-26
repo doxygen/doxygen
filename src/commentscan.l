@@ -1495,9 +1495,13 @@ STopt  [^\n@\\]*
 
 
   /* ----- handle arguments of the qualifier command ----- */
-<Qualifier>"\""[^\"]*"\""               {
-                                          std::string inp = yytext;
-                                          yyextra->current->qualifiers.push_back(inp.substr(1, inp.size() - 2));
+<Qualifier>{LABELID}                    { // unquoted version, simple label
+                                          yyextra->current->qualifiers.push_back(yytext);
+                                          BEGIN( Comment );
+                                        }
+<Qualifier>"\""[^\"]*"\""               { // quotes version, add without quotes
+                                          std::string inp(yytext);
+                                          yyextra->current->qualifiers.push_back(inp.substr(1,yyleng-2));
                                           BEGIN( Comment );
                                         }
 <Qualifier>{DOCNL}                      { // missing argument
