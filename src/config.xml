@@ -1057,7 +1057,7 @@ Go to the <a href="commands.html">next</a> section or return to the
     <option type='bool' id='SHOW_GROUPED_MEMB_INC' defval='0'>
       <docs>
 <![CDATA[
- If the SHOW_GROUPED_MEMB_INC tag is set to \c YES then Doxygen
+ If the \c SHOW_GROUPED_MEMB_INC tag is set to \c YES then Doxygen
  will add for each grouped member an include statement to the documentation,
  telling the reader which file to include in order to use the member.
 ]]>
@@ -1788,7 +1788,7 @@ FILE_VERSION_FILTER = "cleartool desc -fmt \%Vn"
     <option type='bool' id='SOURCE_TOOLTIPS' defval='1' depends='SOURCE_BROWSER'>
       <docs>
 <![CDATA[
-If SOURCE_TOOLTIPS is enabled (the default) then hovering a hyperlink in the
+If \c SOURCE_TOOLTIPS is enabled (the default) then hovering a hyperlink in the
 source code will show a tooltip with additional information such as prototype,
 brief description and links to the definition and documentation. Since this will
 make the HTML file larger and loading of large files a bit slower, you can opt
