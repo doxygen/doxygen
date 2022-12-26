@@ -91,6 +91,10 @@ class TranslatorSpanish : public TranslatorAdapter_1_8_19
     virtual QCString trDetailedDescription()
     { return "Descripción detallada"; }
 
+    /*! header that is used when the summary tag is missing inside the details tag */
+    virtual QCString trDetails()
+    { return "Detalles"; }
+
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
     { return "Documentación de los 'Typedef' miembros de la clase"; }
@@ -1856,7 +1860,7 @@ class TranslatorSpanish : public TranslatorAdapter_1_8_19
      */
     virtual QCString trDateTime(int year,int month,int day,int dayOfWeek,
                                 int hour,int minutes,int seconds,
-                                bool includeTime)
+                                DateTimeType includeTime)
     {
       static const char *days[]   = { "Lunes","Martes","Miércoles","Jueves",
 									  "Viernes","Sábado","Domingo" };
@@ -1864,11 +1868,15 @@ class TranslatorSpanish : public TranslatorAdapter_1_8_19
 									  "Mayo","Junio","Julio","Agosto",
 									  "Septiembre","Octubre","Noviembre","Diciembre" };
       QCString sdate;
-      sdate.sprintf("%s, %d de %s de %d",days[dayOfWeek-1],day,months[month-1],year);
-      if (includeTime)
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Date)
+      {
+        sdate.sprintf("%s, %d de %s de %d",days[dayOfWeek-1],day,months[month-1],year);
+      }
+      if (includeTime == DateTimeType::DateTime) sdate += " ";
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Time)
       {
         QCString stime;
-        stime.sprintf(" %.2d:%.2d:%.2d",hour,minutes,seconds);
+        stime.sprintf("%.2d:%.2d:%.2d",hour,minutes,seconds);
         sdate+=stime;
       }
       return sdate;

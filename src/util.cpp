@@ -267,11 +267,11 @@ void writePageRef(OutputList &ol,const QCString &cn,const QCString &mn)
 {
   ol.pushGeneratorState();
 
-  ol.disable(OutputGenerator::Html);
-  ol.disable(OutputGenerator::Man);
-  ol.disable(OutputGenerator::Docbook);
-  if (Config_getBool(PDF_HYPERLINKS)) ol.disable(OutputGenerator::Latex);
-  if (Config_getBool(RTF_HYPERLINKS)) ol.disable(OutputGenerator::RTF);
+  ol.disable(OutputType::Html);
+  ol.disable(OutputType::Man);
+  ol.disable(OutputType::Docbook);
+  if (Config_getBool(PDF_HYPERLINKS)) ol.disable(OutputType::Latex);
+  if (Config_getBool(RTF_HYPERLINKS)) ol.disable(OutputType::RTF);
   ol.startPageRef();
   ol.docify(theTranslator->trPageAbbreviation());
   ol.endPageRef(cn,mn);
@@ -1120,17 +1120,17 @@ void writeExamples(OutputList &ol,const ExampleList &list)
   {
     const auto &e = list[entryIndex];
     ol.pushGeneratorState();
-    ol.disable(OutputGenerator::Latex);
-    ol.disable(OutputGenerator::RTF);
-    ol.disable(OutputGenerator::Docbook);
+    ol.disable(OutputType::Latex);
+    ol.disable(OutputType::RTF);
+    ol.disable(OutputType::Docbook);
     // link for Html / man
     //printf("writeObjectLink(file=%s)\n",qPrint(e->file));
     ol.writeObjectLink(QCString(),e.file,e.anchor,e.name);
     ol.popGeneratorState();
 
     ol.pushGeneratorState();
-    ol.disable(OutputGenerator::Man);
-    ol.disable(OutputGenerator::Html);
+    ol.disable(OutputType::Man);
+    ol.disable(OutputType::Html);
     // link for Latex / pdf with anchor because the sources
     // are not hyperlinked (not possible with a verbatim environment).
     ol.writeObjectLink(QCString(),e.file,QCString(),e.name);
@@ -3405,21 +3405,60 @@ QCString showFileDefMatches(const FileNameLinkedMap *fnMap,const QCString &n)
 
 //----------------------------------------------------------------------
 
+QCString substituteKeywords(const QCString &s,const KeywordSubstitutionList &keywords)
+{
+  std::string substRes;
+  const char *p = s.data();
+  if (p)
+  {
+    // reserve some room for expansion
+    substRes.reserve(s.length()+1024);
+    char c;
+    while ((c=*p))
+    {
+      bool found = false;
+      if (c=='$')
+      {
+        for (const auto &kw : keywords)
+        {
+          size_t keyLen = qstrlen(kw.keyword);
+          if (qstrncmp(p,kw.keyword,keyLen)==0)
+          {
+            substRes+=kw.getValue().str();
+            p+=keyLen;
+            found = true;
+            break;
+          }
+        }
+      }
+      if (!found) // copy
+      {
+        substRes+=c;
+        p++;
+      }
+    }
+  }
+  return substRes;
+}
+
 QCString substituteKeywords(const QCString &s,const QCString &title,
          const QCString &projName,const QCString &projNum,const QCString &projBrief)
 {
-  QCString result = s;
-  if (!title.isEmpty()) result = substitute(result,"$title",title);
-  result = substitute(result,"$datetime",dateToString(TRUE));
-  result = substitute(result,"$date",dateToString(FALSE));
-  result = substitute(result,"$year",yearToString());
-  result = substitute(result,"$doxygenversion",getDoxygenVersion());
-  result = substitute(result,"$projectname",projName);
-  result = substitute(result,"$projectnumber",projNum);
-  result = substitute(result,"$projectbrief",projBrief);
-  result = substitute(result,"$projectlogo",stripPath(Config_getString(PROJECT_LOGO)));
-  result = substitute(result,"$langISO",theTranslator->trISOLang());
-  return result;
+  return substituteKeywords(s,
+  {
+    // keyword          value getter
+    { "$title",         [&]() { return !title.isEmpty() ? title : projName;       } },
+    { "$datetime",      [&]() { return dateToString(DateTimeType::DateTime);      } },
+    { "$date",          [&]() { return dateToString(DateTimeType::Date);          } },
+    { "$time",          [&]() { return dateToString(DateTimeType::Time);          } },
+    { "$year",          [&]() { return yearToString();                            } },
+    { "$doxygenversion",[&]() { return getDoxygenVersion();                       } },
+    { "$projectname",   [&]() { return projName;                                  } },
+    { "$projectnumber", [&]() { return projNum;                                   } },
+    { "$projectbrief",  [&]() { return projBrief;                                 } },
+    { "$projectlogo",   [&]() { return stripPath(Config_getString(PROJECT_LOGO)); } },
+    { "$langISO",       [&]() { return theTranslator->trISOLang();                } }
+  });
 }
 
 //----------------------------------------------------------------------
@@ -4111,7 +4150,7 @@ QCString convertToDocBook(const QCString &s, const bool retainNewline)
         if (*q == ';')
         {
            --p; // we need & as well
-           HtmlEntityMapper::SymType res = HtmlEntityMapper::instance()->name2sym(QCString(p).left(cnt));
+           HtmlEntityMapper::SymType res = HtmlEntityMapper::instance().name2sym(QCString(p).left(cnt));
            if (res == HtmlEntityMapper::Sym_Unknown)
            {
              p++;
@@ -4119,7 +4158,7 @@ QCString convertToDocBook(const QCString &s, const bool retainNewline)
            }
            else
            {
-             growBuf.addStr(HtmlEntityMapper::instance()->docbook(res));
+             growBuf.addStr(HtmlEntityMapper::instance().docbook(res));
              q++;
              p = q;
            }
@@ -4278,9 +4317,9 @@ QCString convertCharEntitiesToUTF8(const QCString &str)
       growBuf.addStr(s.substr(i,p-i));
     }
     QCString entity(match.str());
-    HtmlEntityMapper::SymType symType = HtmlEntityMapper::instance()->name2sym(entity);
+    HtmlEntityMapper::SymType symType = HtmlEntityMapper::instance().name2sym(entity);
     const char *code=0;
-    if (symType!=HtmlEntityMapper::Sym_Unknown && (code=HtmlEntityMapper::instance()->utf8(symType)))
+    if (symType!=HtmlEntityMapper::Sym_Unknown && (code=HtmlEntityMapper::instance().utf8(symType)))
     {
       growBuf.addStr(code);
     }
@@ -4993,7 +5032,7 @@ bool recursivelyAddGroupListToTitle(OutputList &ol,const Definition *d,bool root
     if (root)
     {
       ol.pushGeneratorState();
-      ol.disableAllBut(OutputGenerator::Html);
+      ol.disableAllBut(OutputType::Html);
       ol.writeString("<div class=\"ingroups\">");
     }
     bool first=true;
@@ -5100,7 +5139,7 @@ void filterLatexString(TextStream &t,const QCString &str,
                    if (*q == ';')
                    {
                       --p; // we need & as well
-                      HtmlEntityMapper::SymType res = HtmlEntityMapper::instance()->name2sym(QCString(p).left(cnt));
+                      HtmlEntityMapper::SymType res = HtmlEntityMapper::instance().name2sym(QCString(p).left(cnt));
                       if (res == HtmlEntityMapper::Sym_Unknown)
                       {
                         p++;
@@ -5108,7 +5147,7 @@ void filterLatexString(TextStream &t,const QCString &str,
                       }
                       else
                       {
-                        t << HtmlEntityMapper::instance()->latex(res);
+                        t << HtmlEntityMapper::instance().latex(res);
                         q++;
                         p = q;
                       }
@@ -5369,11 +5408,10 @@ bool checkExtension(const QCString &fName, const QCString &ext)
 QCString addHtmlExtensionIfMissing(const QCString &fName)
 {
   if (fName.isEmpty()) return fName;
-  if (stripPath(fName).find('.')==-1) // no extension
-  {
-    return QCString(fName)+Doxygen::htmlFileExtension;
-  }
-  return fName;
+  int i_fs = fName.findRev('/');
+  int i_bs = fName.findRev('\\');
+  int i    = fName.find('.',std::max({ i_fs, i_bs ,0})); // search for . after path part
+  return i==-1 ? fName+Doxygen::htmlFileExtension : fName;
 }
 
 QCString stripExtensionGeneral(const QCString &fName, const QCString &ext)
@@ -6269,7 +6307,7 @@ bool readInputFile(const QCString &fileName,BufStr &inBuf,bool filter,bool isSou
   QCString filterName = getFileFilter(fileName,isSourceCode);
   if (filterName.isEmpty() || !filter)
   {
-    std::ifstream f(fileName.str(),std::ifstream::in | std::ifstream::binary);
+    std::ifstream f = Portable::openInputStream(fileName,true);
     if (!f.is_open())
     {
       err("could not open file %s\n",qPrint(fileName));
@@ -7195,7 +7233,7 @@ bool openOutputFile(const QCString &outFile,std::ofstream &f)
         dir.remove(backup.fileName());
       dir.rename(fi.fileName(),fi.fileName()+".bak");
     }
-    f.open(outFile.str(),std::ofstream::out | std::ofstream::binary);
+    f = Portable::openOutputStream(outFile);
     fileOpened = f.is_open();
   }
   return fileOpened;
@@ -7346,7 +7384,7 @@ QCString clearBlock(const QCString &s,const QCString &begin,const QCString &end)
 }
 //----------------------------------------------------------------------
 
-QCString selectBlock(const QCString& s,const QCString &name,bool enable, OutputGenerator::OutputType o)
+QCString selectBlock(const QCString& s,const QCString &name,bool enable, OutputType o)
 {
   // TODO: this is an expensive function that is called a lot -> optimize it
   QCString begin;
@@ -7355,13 +7393,13 @@ QCString selectBlock(const QCString& s,const QCString &name,bool enable, OutputG
   QCString noend;
   switch (o)
   {
-    case OutputGenerator::Html:
+    case OutputType::Html:
       begin = "<!--BEGIN " + name + "-->";
       end = "<!--END " + name + "-->";
       nobegin = "<!--BEGIN !" + name + "-->";
       noend = "<!--END !" + name + "-->";
       break;
-    case OutputGenerator::Latex:
+    case OutputType::Latex:
       begin = "%%BEGIN " + name;
       end = "%%END " + name;
       nobegin = "%%BEGIN !" + name;

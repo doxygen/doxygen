@@ -117,6 +117,10 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
     virtual QCString trDetailedDescription()
     { return "Mô tả chi tiết"; }
 
+    /*! header that is used when the summary tag is missing inside the details tag */
+    virtual QCString trDetails()
+    { return "Chi tiết"; }
+
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
     { return "Thông tin về Member Typedef"; }

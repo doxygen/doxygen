@@ -51,7 +51,7 @@ INLINE_GROUPED_CLASSES = NO
 INLINE_SIMPLE_STRUCTS  = NO
 TYPEDEF_HIDES_STRUCT   = NO
 LOOKUP_CACHE_SIZE      = 0
-NUM_PROC_THREADS       = 1
+NUM_PROC_THREADS       = 0
 #---------------------------------------------------------------------------
 # Build related configuration options
 #---------------------------------------------------------------------------
@@ -112,6 +112,7 @@ WARN_LOGFILE           =
 # Configuration options related to the input files
 #---------------------------------------------------------------------------
 INPUT                  = \
+                         @CMAKE_SOURCE_DIR@/doc_internal/doxygen.md \
                          @CMAKE_SOURCE_DIR@/doc_internal/commands_history.md \
                          @CMAKE_SOURCE_DIR@/doc_internal/commands_internal.md \
                          @CMAKE_SOURCE_DIR@/doc_internal/releases.md \

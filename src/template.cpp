@@ -20,8 +20,6 @@
 #include <unordered_map>
 #include <deque>
 #include <cstdio>
-#include <fstream>
-#include <sstream>
 
 #include "message.h"
 #include "util.h"
@@ -3893,7 +3891,7 @@ class TemplateNodeCreate : public TemplateNodeCreator<TemplateNodeCreate>
                 outputFile.prepend(ci->outputDirectory()+"/");
               }
               //printf("NoteCreate(%s)\n",qPrint(outputFile));
-              std::ofstream f(outputFile.str(),std::ofstream::out | std::ofstream::binary);
+              std::ofstream f = Portable::openOutputStream(outputFile);
               if (f.is_open())
               {
                 TextStream ts(&f);
@@ -5260,7 +5258,7 @@ class TemplateEngine::Private
       if (kv==m_templateCache.end()) // first time template is referenced
       {
         QCString filePath = m_templateDirName+"/"+fileName;
-        std::ifstream f(filePath.str(),std::ifstream::in | std::ifstream::binary);
+        std::ifstream f = Portable::openInputStream(filePath,true);
         if (f.is_open()) // read template from disk
         {
           FileInfo fi(filePath.str());

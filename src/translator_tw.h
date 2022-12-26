@@ -109,6 +109,10 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
     virtual QCString trDetailedDescription()
     { return "詳細描述"; }
 
+    /*! header that is used when the summary tag is missing inside the details tag */
+    virtual QCString trDetails()
+    { return "詳細資訊"; }
+
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
     { return "型態定義成員說明文件"; }
@@ -1777,16 +1781,20 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
      */
     virtual QCString trDateTime(int year,int month,int day,int dayOfWeek,
                                 int hour,int minutes,int seconds,
-                                bool includeTime)
+                                DateTimeType includeTime)
     {
       static const char *days[]   = { "星期一","星期二","星期三","星期四","星期五","星期六","星期日" };
       static const char *months[] = { "1","2","3","4","5","6","7","8","9","10","11","12" };
       QCString sdate;
-      sdate.sprintf("%d年%s月%d日 %s",year,months[month-1],day,days[dayOfWeek-1]);
-      if (includeTime)
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Date)
+      {
+        sdate.sprintf("%d年%s月%d日 %s",year,months[month-1],day,days[dayOfWeek-1]);
+      }
+      if (includeTime == DateTimeType::DateTime) sdate += " ";
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Time)
       {
         QCString stime;
-        stime.sprintf(" %.2d:%.2d:%.2d",hour,minutes,seconds);
+        stime.sprintf("%.2d:%.2d:%.2d",hour,minutes,seconds);
         sdate+=stime;
       }
       return sdate;

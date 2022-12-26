@@ -116,6 +116,10 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
     virtual QCString trDetailedDescription()
     { return "詳解"; }
 
+    /*! header that is used when the summary tag is missing inside the details tag */
+    virtual QCString trDetails()
+    { return "詳細"; }
+
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
     { return "型定義メンバ詳解"; }
@@ -1795,15 +1799,19 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
      */
     virtual QCString trDateTime(int year,int month,int day,int dayOfWeek,
                                 int hour,int minutes,int seconds,
-                                bool includeTime)
+                                DateTimeType includeTime)
     {
       static const char *days[]   = { "月", "火", "水", "木", "金", "土", "日" };
       QCString sdate;
-      sdate.sprintf("%.4d年%.2d月%.2d日(%s)",year,month,day,days[dayOfWeek-1]);
-      if (includeTime)
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Date)
+      {
+        sdate.sprintf("%.4d年%.2d月%.2d日(%s)",year,month,day,days[dayOfWeek-1]);
+      }
+      if (includeTime == DateTimeType::DateTime) sdate += " ";
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Time)
       {
         QCString stime;
-        stime.sprintf(" %.2d時%.2d分%.2d秒",hour,minutes,seconds);
+        stime.sprintf("%.2d時%.2d分%.2d秒",hour,minutes,seconds);
         sdate+=stime;
       }
       return sdate;

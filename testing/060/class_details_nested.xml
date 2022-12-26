@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="class_details_nested" kind="class" language="C++" prot="public">
+    <compoundname>DetailsNested</compoundname>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+      <para>Nested details <details><summary>Summary at top</summary><para>Some text <details><summary>Nested summary at bottom</summary><para>More details.  </para></details></para></details></para>
+    </detaileddescription>
+    <location file="060_details.cpp" line="54" column="1" bodyfile="060_details.cpp" bodystart="54" bodyend="54"/>
+    <listofallmembers>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

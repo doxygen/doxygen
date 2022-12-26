@@ -37,11 +37,11 @@ class Formula
     QCString text() const { return m_text;   }
     bool isCached() const { return m_cached && !m_forceRegen; }
     bool isCachedDark() const { return m_cached && !m_forceRegen; }
+    void setWidth(int width)    { m_width  = width;  }
+    void setHeight(int height)  { m_height = height; }
 
   private:
     friend class FormulaManager;
-    void setWidth(int width)    { m_width  = width;  }
-    void setHeight(int height)  { m_height = height; }
     void setCached(bool cached) { m_cached = cached; m_forceRegen = m_forceRegen || !cached; }
     void setCachedDark(bool cached) { m_cachedDark = cached; m_forceRegen = m_forceRegen || !cached; }
 
@@ -78,14 +78,13 @@ class FormulaManager
     //! @{
     enum class Format { Bitmap, Vector };
     enum class HighDPI { On, Off };
+    enum class Mode { Dark, Light };
     void generateImages(const QCString &outputDir,Format format,HighDPI hd = HighDPI::Off);
     //! @}
 
   private:
-    enum class Mode { Dark, Light };
     void createFormulasTexFile(Dir &d,Format format,HighDPI hd,Mode mode);
     void createLatexFile(const QCString &fileName,Format format,Mode mode,IntVector &formulasToGenerate);
-    double updateFormulaSize(int pageNum,int x1,int y1,int x2,int y2);
     FormulaManager();
     struct Private;
     std::unique_ptr<Private> p;

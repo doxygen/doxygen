@@ -18,8 +18,7 @@
 
 #include <stdlib.h>
 
-#include <fstream>
-
+#include "portable.h"
 #include "defgen.h"
 #include "doxygen.h"
 #include "message.h"
@@ -534,7 +533,7 @@ void generateDEF()
   }
 
   QCString fileName=outputDirectory+"/doxygen.def";
-  std::ofstream f(fileName.str(),std::ostream::out | std::ostream::binary);
+  std::ofstream f = Portable::openOutputStream(fileName);
   if (!f.is_open())
   {
     err("Cannot open file %s for writing!\n",qPrint(fileName));

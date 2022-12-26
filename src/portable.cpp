@@ -4,6 +4,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <chrono>
+#include <thread>
+#include <mutex>
+#include <map>
 
 #if defined(_WIN32) && !defined(__CYGWIN__)
 #undef UNICODE
@@ -23,6 +26,7 @@ extern char **environ;
 #include <string>
 
 #include "fileinfo.h"
+#include "message.h"
 
 #include "util.h"
 #include "dir.h"
@@ -35,14 +39,74 @@ static bool environmentLoaded = false;
 static std::map<std::string,std::string> proc_env = std::map<std::string,std::string>();
 #endif
 
-static double  g_sysElapsedTime;
-static std::chrono::steady_clock::time_point g_startTime;
+
+//---------------------------------------------------------------------------------------------------------
+
+/*! Helper class to keep time interval per thread */
+class SysTimeKeeper
+{
+  public:
+    static SysTimeKeeper &instance();
+    //! start a timer for this thread
+    void start()
+    {
+      std::lock_guard<std::mutex> lock(m_mutex);
+      m_startTimes[std::this_thread::get_id()] = std::chrono::steady_clock::now();
+    }
+    //! ends a timer for this thread, accumulate time difference since start
+    void stop()
+    {
+      std::lock_guard<std::mutex> lock(m_mutex);
+      std::chrono::steady_clock::time_point endTime = std::chrono::steady_clock::now();
+      auto it = m_startTimes.find(std::this_thread::get_id());
+      if (it == m_startTimes.end())
+      {
+        err("SysTimeKeeper stop() called without matching start()\n");
+        return;
+      }
+      double timeSpent = static_cast<double>(std::chrono::duration_cast<
+                         std::chrono::microseconds>(endTime - it->second).count())/1000000.0;
+      //printf("timeSpent on thread %zu: %.4f seconds\n",std::hash<std::thread::id>{}(std::this_thread::get_id()),timeSpent);
+      m_elapsedTime += timeSpent;
+    }
+
+    double elapsedTime() const { return m_elapsedTime; }
+
+  private:
+    struct TimeData
+    {
+      std::chrono::steady_clock::time_point startTime;
+    };
+    std::map<std::thread::id,std::chrono::steady_clock::time_point> m_startTimes;
+    double m_elapsedTime = 0;
+    std::mutex m_mutex;
+};
+
+SysTimeKeeper &SysTimeKeeper::instance()
+{
+  static SysTimeKeeper theInstance;
+  return theInstance;
+}
+
+class AutoTimeKeeper
+{
+  public:
+    AutoTimeKeeper() { SysTimeKeeper::instance().start(); }
+   ~AutoTimeKeeper() { SysTimeKeeper::instance().stop();  }
+};
+
+double Portable::getSysElapsedTime()
+{
+  return SysTimeKeeper::instance().elapsedTime();
+}
+
+//---------------------------------------------------------------------------------------------------------
 
 
 int Portable::system(const QCString &command,const QCString &args,bool commandHasConsole)
 {
-
   if (command.isEmpty()) return 1;
+  AutoTimeKeeper timeKeeper;
 
 #if defined(_WIN32) && !defined(__CYGWIN__)
   QCString commandCorrectedPath = substitute(command,'/','\\');
@@ -291,28 +355,6 @@ QCString Portable::getenv(const QCString &variable)
 #endif
 }
 
-portable_off_t Portable::fseek(FILE *f,portable_off_t offset, int whence)
-{
-#if defined(__MINGW32__)
-  return fseeko64(f,offset,whence);
-#elif defined(_WIN32) && !defined(__CYGWIN__)
-  return _fseeki64(f,offset,whence);
-#else
-  return fseeko(f,offset,whence);
-#endif
-}
-
-portable_off_t Portable::ftell(FILE *f)
-{
-#if defined(__MINGW32__)
-  return ftello64(f);
-#elif defined(_WIN32) && !defined(__CYGWIN__)
-  return _ftelli64(f);
-#else
-  return ftello(f);
-#endif
-}
-
 FILE *Portable::fopen(const QCString &fileName,const QCString &mode)
 {
 #if defined(_WIN32) && !defined(__CYGWIN__)
@@ -390,7 +432,7 @@ static bool ExistsOnPath(const QCString &fileName)
 bool Portable::checkForExecutable(const QCString &fileName)
 {
 #if defined(_WIN32) && !defined(__CYGWIN__)
-  char *extensions[] = {".bat",".com",".exe"};
+  const char *extensions[] = {".bat",".com",".exe"};
   for (int i = 0; i < sizeof(extensions) / sizeof(*extensions); i++)
   {
     if (ExistsOnPath(fileName + extensions[i])) return true;
@@ -404,10 +446,10 @@ bool Portable::checkForExecutable(const QCString &fileName)
 const char *Portable::ghostScriptCommand()
 {
 #if defined(_WIN32) && !defined(__CYGWIN__)
-    static char *gsexe = NULL;
+    static const char *gsexe = NULL;
     if (!gsexe)
     {
-        char *gsExec[] = {"gswin32c.exe","gswin64c.exe"};
+        const char *gsExec[] = {"gswin32c.exe","gswin64c.exe"};
         for (int i = 0; i < sizeof(gsExec) / sizeof(*gsExec); i++)
         {
             if (ExistsOnPath(gsExec[i]))
@@ -459,23 +501,6 @@ int Portable::pclose(FILE *stream)
   #else
   return ::pclose(stream);
   #endif
-}
-
-void Portable::sysTimerStart()
-{
-  g_startTime = std::chrono::steady_clock::now();
-}
-
-void Portable::sysTimerStop()
-{
-  std::chrono::steady_clock::time_point endTime = std::chrono::steady_clock::now();
-  g_sysElapsedTime+= static_cast<double>(std::chrono::duration_cast<
-                         std::chrono::microseconds>(endTime - g_startTime).count())/1000000.0;
-}
-
-double Portable::getSysElapsedTime()
-{
-  return g_sysElapsedTime;
 }
 
 void Portable::sleep(int ms)
@@ -612,4 +637,26 @@ size_t Portable::recodeUtf8StringToW(const QCString &inputStr,uint16_t **outBuf)
   return len;
 }
 
+//----------------------------------------------------------------------------------------
+// We need to do this part last as including filesystem.hpp earlier
+// causes the code above to fail to compile on Windows.
+
+#include "filesystem.hpp"
+
+namespace fs = ghc::filesystem;
+
+std::ofstream Portable::openOutputStream(const QCString &fileName,bool append)
+{
+  std::ios_base::openmode mode = std::ofstream::out | std::ofstream::binary;
+  if (append) mode |= std::ofstream::app;
+  return std::ofstream(fs::path(fileName.str()), mode);
+}
+
+std::ifstream Portable::openInputStream(const QCString &fileName,bool binary, bool openAtEnd)
+{
+  std::ios_base::openmode mode = std::ifstream::in | std::ifstream::binary;
+  if (binary)     mode |= std::ios::binary;
+  if (openAtEnd)  mode |= std::ios::ate;
+  return std::ifstream(fs::path(fileName.str()), mode);
+}
 

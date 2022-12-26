@@ -1,9 +1,6 @@
 /******************************************************************************
  *
- *
- *
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2022 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -39,6 +36,7 @@
 #include "plantuml.h"
 #include "fileinfo.h"
 #include "regex.h"
+#include "portable.h"
 
 const int maxLevels=5;
 static const char *secLabels[maxLevels] =
@@ -244,7 +242,7 @@ void LatexDocVisitor::operator()(const DocSymbol &s)
 {
   if (m_hide) return;
   bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
-  const char *res = HtmlEntityMapper::instance()->latex(s.symbol());
+  const char *res = HtmlEntityMapper::instance().latex(s.symbol());
   if (res)
   {
     if (((s.symbol() == HtmlEntityMapper::Sym_lt) || (s.symbol() == HtmlEntityMapper::Sym_Less))&& (!m_insidePre))
@@ -276,14 +274,14 @@ void LatexDocVisitor::operator()(const DocSymbol &s)
   }
   else
   {
-    err("LaTeX: non supported HTML-entity found: %s\n",HtmlEntityMapper::instance()->html(s.symbol(),TRUE));
+    err("LaTeX: non supported HTML-entity found: %s\n",HtmlEntityMapper::instance().html(s.symbol(),TRUE));
   }
 }
 
 void LatexDocVisitor::operator()(const DocEmoji &s)
 {
   if (m_hide) return;
-  QCString emojiName = EmojiEntityMapper::instance()->name(s.index());
+  QCString emojiName = EmojiEntityMapper::instance().name(s.index());
   if (!emojiName.isEmpty())
   {
     QCString imageName=emojiName.mid(1,emojiName.length()-2); // strip : at start and end
@@ -378,9 +376,6 @@ void LatexDocVisitor::operator()(const DocStyleChange &s)
       break;
     case DocStyleChange::Div:  /* HTML only */ break;
     case DocStyleChange::Span: /* HTML only */ break;
-    case DocStyleChange::Summary: /* emulation of the <summary> tag inside a <details> tag */
-      if (s.enable()) m_t << "{\\bfseries{";      else m_t << "}}\\newline";
-      break;
   }
 }
 
@@ -436,7 +431,7 @@ void LatexDocVisitor::operator()(const DocVerbatim &s)
             dotindex++,
             ".dot"
            );
-        std::ofstream file(fileName.str(),std::ofstream::out | std::ofstream::binary);
+        std::ofstream file = Portable::openOutputStream(fileName);
         if (!file.is_open())
         {
           err("Could not open file %s for writing\n",qPrint(fileName));
@@ -463,11 +458,11 @@ void LatexDocVisitor::operator()(const DocVerbatim &s)
             qPrint(Config_getString(LATEX_OUTPUT)+"/inline_mscgraph_"),
             mscindex++
            );
-        std::string fileName = baseName.str()+".msc";
-        std::ofstream file(fileName,std::ofstream::out | std::ofstream::binary);
+        QCString fileName = baseName+".msc";
+        std::ofstream file = Portable::openOutputStream(fileName);
         if (!file.is_open())
         {
-          err("Could not open file %s for writing\n",fileName.c_str());
+          err("Could not open file %s for writing\n",qPrint(fileName));
         }
         else
         {
@@ -479,7 +474,7 @@ void LatexDocVisitor::operator()(const DocVerbatim &s)
 
           writeMscFile(baseName, s);
 
-          if (Config_getBool(DOT_CLEANUP)) Dir().remove(fileName);
+          if (Config_getBool(DOT_CLEANUP)) Dir().remove(fileName.str());
         }
       }
       break;
@@ -1409,12 +1404,33 @@ void LatexDocVisitor::operator()(const DocHRef &href)
   m_t << "}}";
 }
 
+void LatexDocVisitor::operator()(const DocHtmlSummary &d)
+{
+  if (m_hide) return;
+  m_t << "{\\bfseries{";
+  visitChildren(d);
+  m_t << "}}";
+}
+
 void LatexDocVisitor::operator()(const DocHtmlDetails &d)
 {
   if (m_hide) return;
   m_t << "\n\n";
+  auto summary = d.summary();
+  if (summary)
+  {
+    std::visit(*this,*summary);
+    m_t << "\\begin{adjustwidth}{1em}{0em}\n";
+  }
   visitChildren(d);
-  m_t << "\n\n";
+  if (summary)
+  {
+    m_t << "\\end{adjustwidth}\n";
+  }
+  else
+  {
+    m_t << "\n\n";
+  }
 }
 
 void LatexDocVisitor::operator()(const DocHtmlHeader &header)

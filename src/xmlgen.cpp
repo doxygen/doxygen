@@ -47,6 +47,7 @@
 #include "resourcemgr.h"
 #include "dir.h"
 #include "utf8.h"
+#include "portable.h"
 
 // no debug info
 #define XML_DB(x) do {} while(0)
@@ -162,7 +163,7 @@ static void writeCombineScript()
 {
   QCString outputDirectory = Config_getString(XML_OUTPUT);
   QCString fileName=outputDirectory+"/combine.xslt";
-  std::ofstream t(fileName.str(),std::ofstream::out | std::ofstream::binary);
+  std::ofstream t = Portable::openOutputStream(fileName);
   if (!t.is_open())
   {
     err("Cannot open file %s for writing!\n",qPrint(fileName));
@@ -854,6 +855,11 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
       << convertToXML(rbmd->name()) << "</reimplementedby>\n";
   }
 
+  for (const auto &qmd : md->getQualifiers())
+  {
+    t << "        <qualifier>" << convertToXML(qmd.c_str()) << "</qualifier>\n";
+  }
+
   if (md->isFriendClass()) // for friend classes we show a link to the class as a "parameter"
   {
     t << "        <param>\n";
@@ -1280,7 +1286,7 @@ static void generateXMLForClass(const ClassDef *cd,TextStream &ti)
 
   QCString outputDirectory = Config_getString(XML_OUTPUT);
   QCString fileName=outputDirectory+"/"+ classOutputFileBase(cd)+".xml";
-  std::ofstream f(fileName.str(),std::ofstream::out | std::ofstream::binary);
+  std::ofstream f = Portable::openOutputStream(fileName);
   if (!f.is_open())
   {
     err("Cannot open file %s for writing!\n",qPrint(fileName));
@@ -1392,6 +1398,11 @@ static void generateXMLForClass(const ClassDef *cd,TextStream &ti)
     t << "    </requiresclause>\n";
   }
 
+  for (const auto &qcd : cd->getQualifiers())
+  {
+    t << "    <qualifier>" << convertToXML(qcd.c_str()) << "</qualifier>\n";
+  }
+
   t << "    <briefdescription>\n";
   writeXMLDocBlock(t,cd->briefFile(),cd->briefLine(),cd,0,cd->briefDescription());
   t << "    </briefdescription>\n";
@@ -1444,7 +1455,7 @@ static void generateXMLForConcept(const ConceptDef *cd,TextStream &ti)
 
   QCString outputDirectory = Config_getString(XML_OUTPUT);
   QCString fileName=outputDirectory+"/"+cd->getOutputFileBase()+".xml";
-  std::ofstream f(fileName.str(),std::ofstream::out | std::ofstream::binary);
+  std::ofstream f = Portable::openOutputStream(fileName);
   if (!f.is_open())
   {
     err("Cannot open file %s for writing!\n",qPrint(fileName));
@@ -1497,7 +1508,7 @@ static void generateXMLForNamespace(const NamespaceDef *nd,TextStream &ti)
 
   QCString outputDirectory = Config_getString(XML_OUTPUT);
   QCString fileName=outputDirectory+"/"+nd->getOutputFileBase()+".xml";
-  std::ofstream f(fileName.str(),std::ofstream::out | std::ofstream::binary);
+  std::ofstream f = Portable::openOutputStream(fileName);
   if (!f.is_open())
   {
     err("Cannot open file %s for writing!\n",qPrint(fileName));
@@ -1573,7 +1584,7 @@ static void generateXMLForFile(FileDef *fd,TextStream &ti)
 
   QCString outputDirectory = Config_getString(XML_OUTPUT);
   QCString fileName=outputDirectory+"/"+fd->getOutputFileBase()+".xml";
-  std::ofstream f(fileName.str(),std::ofstream::out | std::ofstream::binary);
+  std::ofstream f = Portable::openOutputStream(fileName);
   if (!f.is_open())
   {
     err("Cannot open file %s for writing!\n",qPrint(fileName));
@@ -1685,7 +1696,7 @@ static void generateXMLForGroup(const GroupDef *gd,TextStream &ti)
 
   QCString outputDirectory = Config_getString(XML_OUTPUT);
   QCString fileName=outputDirectory+"/"+gd->getOutputFileBase()+".xml";
-  std::ofstream f(fileName.str(),std::ofstream::out | std::ofstream::binary);
+  std::ofstream f = Portable::openOutputStream(fileName);
   if (!f.is_open())
   {
     err("Cannot open file %s for writing!\n",qPrint(fileName));
@@ -1741,7 +1752,7 @@ static void generateXMLForDir(DirDef *dd,TextStream &ti)
 
   QCString outputDirectory = Config_getString(XML_OUTPUT);
   QCString fileName=outputDirectory+"/"+dd->getOutputFileBase()+".xml";
-  std::ofstream f(fileName.str(),std::ofstream::out | std::ofstream::binary);
+  std::ofstream f = Portable::openOutputStream(fileName);
   if (!f.is_open())
   {
     err("Cannot open file %s for writing!\n",qPrint(fileName));
@@ -1794,7 +1805,7 @@ static void generateXMLForPage(PageDef *pd,TextStream &ti,bool isExample)
 
   QCString outputDirectory = Config_getString(XML_OUTPUT);
   QCString fileName=outputDirectory+"/"+pageName+".xml";
-  std::ofstream f(fileName.str(),std::ofstream::out | std::ofstream::binary);
+  std::ofstream f = Portable::openOutputStream(fileName);
   if (!f.is_open())
   {
     err("Cannot open file %s for writing!\n",qPrint(fileName));
@@ -1927,7 +1938,7 @@ void generateXML()
   ResourceMgr::instance().copyResource("doxyfile.xsd",outputDirectory);
 
   QCString fileName=outputDirectory+"/compound.xsd";
-  std::ofstream f(fileName.str(),std::ofstream::out | std::ofstream::binary);
+  std::ofstream f = Portable::openOutputStream(fileName);
   if (!f.is_open())
   {
     err("Cannot open file %s for writing!\n",qPrint(fileName));
@@ -1950,7 +1961,7 @@ void generateXML()
         QCString s(startLine,len);
         if (s.find("<!-- Automatically insert here the HTML entities -->")!=-1)
         {
-          HtmlEntityMapper::instance()->writeXMLSchema(t);
+          HtmlEntityMapper::instance().writeXMLSchema(t);
         }
         else
         {
@@ -1963,7 +1974,7 @@ void generateXML()
   f.close();
 
   fileName=outputDirectory+"/Doxyfile.xml";
-  f.open(fileName.str(),std::ofstream::out | std::ofstream::binary);
+  f = Portable::openOutputStream(fileName);
   if (!f.is_open())
   {
     err("Cannot open file %s for writing\n",fileName.data());
@@ -1977,7 +1988,7 @@ void generateXML()
   f.close();
 
   fileName=outputDirectory+"/index.xml";
-  f.open(fileName.str(),std::ofstream::out | std::ofstream::binary);
+  f = Portable::openOutputStream(fileName);
   if (!f.is_open())
   {
     err("Cannot open file %s for writing!\n",qPrint(fileName));

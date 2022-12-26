@@ -184,27 +184,27 @@ void XmlDocVisitor::operator()(const DocWhiteSpace &w)
 void XmlDocVisitor::operator()(const DocSymbol &s)
 {
   if (m_hide) return;
-  const char *res = HtmlEntityMapper::instance()->xml(s.symbol());
+  const char *res = HtmlEntityMapper::instance().xml(s.symbol());
   if (res)
   {
     m_t << res;
   }
   else
   {
-    err("XML: non supported HTML-entity found: %s\n",HtmlEntityMapper::instance()->html(s.symbol(),TRUE));
+    err("XML: non supported HTML-entity found: %s\n",HtmlEntityMapper::instance().html(s.symbol(),TRUE));
   }
 }
 
 void XmlDocVisitor::operator()(const DocEmoji &s)
 {
   if (m_hide) return;
-  const char *res = EmojiEntityMapper::instance()->name(s.index());
+  const char *res = EmojiEntityMapper::instance().name(s.index());
   if (res)
   {
     QCString name=res;
     name = name.mid(1,name.length()-2);
     m_t << "<emoji name=\"" << name << "\" unicode=\"";
-    filter(EmojiEntityMapper::instance()->unicode(s.index()));
+    filter(EmojiEntityMapper::instance().unicode(s.index()));
     m_t << "\"/>";
   }
   else
@@ -294,9 +294,6 @@ void XmlDocVisitor::operator()(const DocStyleChange &s)
       break;
     case DocStyleChange::Div:  /* HTML only */ break;
     case DocStyleChange::Span: /* HTML only */ break;
-    case DocStyleChange::Summary:
-      if (s.enable()) m_t << "<summary>";  else m_t << "</summary>";
-      break;
   }
 }
 
@@ -887,10 +884,23 @@ void XmlDocVisitor::operator()(const DocHRef &href)
   m_t << "</ulink>";
 }
 
+void XmlDocVisitor::operator()(const DocHtmlSummary &s)
+{
+  if (m_hide) return;
+  m_t << "<summary>";
+  visitChildren(s);
+  m_t << "</summary>";
+}
+
 void XmlDocVisitor::operator()(const DocHtmlDetails &d)
 {
   if (m_hide) return;
   m_t << "<details>";
+  auto summary = d.summary();
+  if (summary)
+  {
+    std::visit(*this,*summary);
+  }
   visitChildren(d);
   m_t << "</details>";
 }

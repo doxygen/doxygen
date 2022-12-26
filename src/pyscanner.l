@@ -309,7 +309,8 @@ STARTDOCSYMS      "##"
                         yyextra->packageCommentAllowed = FALSE;
                         BEGIN(VariableDec);
                       }
-     ^{B}{IDENTIFIER}/{B}"="[^=] { // variable
+     ^{B}{IDENTIFIER}/{B}"="[^=] |
+     ^{B}{IDENTIFIER}/{B}":" { // variable
                         if (yyextra->search_count) REJECT;
                         yyextra->indent=computeIndent(yytext);
                         yyextra->current->section   = Entry::VARIABLE_SEC;
@@ -356,7 +357,8 @@ STARTDOCSYMS      "##"
                         if (yyextra->yyLineNr != 1) REJECT;
                       }
     {POUNDCOMMENT}    { // normal comment
-                        yyextra->packageCommentAllowed = FALSE;
+                        // issue 9672
+                        //yyextra->packageCommentAllowed = FALSE;
                       }
     {IDENTIFIER}      { // some other identifier
                         yyextra->packageCommentAllowed = FALSE;
@@ -495,9 +497,16 @@ STARTDOCSYMS      "##"
                         yyextra->current->startLine = yyextra->yyLineNr;
                         yyextra->current->bodyLine  = yyextra->yyLineNr;
                         yyextra->current->type.resize(0);
-                        if (yyextra->current->name.at(0)=='_') // mark as private
+                        if (yyextra->current->name.at(0)=='_')
                         {
-                          yyextra->current->protection=Private;
+                          if (yyextra->current->name.at(1)=='_') // mark as private
+                          {
+                            yyextra->current->protection=Private;
+                          }
+                          else // mark as protected
+                          {
+                            yyextra->current->protection=Protected;
+                          }
                         }
                         newEntry(yyscanner);
                       }
@@ -509,9 +518,16 @@ STARTDOCSYMS      "##"
                         yyextra->current->startLine = yyextra->yyLineNr;
                         yyextra->current->bodyLine  = yyextra->yyLineNr;
                         yyextra->current->type.resize(0);
-                        if (yyextra->current->name.at(0)=='_') // mark as private
+                        if (yyextra->current->name.at(0)=='_')
                         {
-                          yyextra->current->protection=Private;
+                          if (yyextra->current->name.at(1)=='_') // mark as private
+                          {
+                            yyextra->current->protection=Private;
+                          }
+                          else // mark as protected
+                          {
+                            yyextra->current->protection=Protected;
+                          }
                         }
                         newEntry(yyscanner);
                       }
@@ -1095,6 +1111,10 @@ STARTDOCSYMS      "##"
                         yyextra->current->initializer.str(yytext);
                         yyextra->current->initializer << " ";
                       }
+   ":"{B}{IDENTIFIER} { //typing
+                        yyextra->start_init = FALSE;
+                        yyextra->current->type = substitute(yytext,":","");
+                      }
    {B}                { // spaces
                         yyextra->current->initializer << yytext;
                       }
@@ -1111,21 +1131,21 @@ STARTDOCSYMS      "##"
                         yyextra->current->initializer << yytext;
                       }
    {STRINGPREFIX}?"'" { // string
-                        if (yyextra->current->type.isEmpty()) yyextra->current->type = "string";
+                        if (yyextra->current->type.isEmpty()) yyextra->current->type = "str";
                         yyextra->current->initializer << yytext;
                         yyextra->copyString=&yyextra->current->initializer;
                         yyextra->stringContext=VariableDec;
                         BEGIN( SingleQuoteString );
                       }
    {STRINGPREFIX}?"\"" { // string
-                        if (yyextra->current->type.isEmpty()) yyextra->current->type = "string";
+                        if (yyextra->current->type.isEmpty()) yyextra->current->type = "str";
                         yyextra->current->initializer << yytext;
                         yyextra->copyString=&yyextra->current->initializer;
                         yyextra->stringContext=VariableDec;
                         BEGIN( DoubleQuoteString );
                       }
    {TRIDOUBLEQUOTE}   { // start of a comment block
-                        if (yyextra->current->type.isEmpty()) yyextra->current->type = "string";
+                        if (yyextra->current->type.isEmpty()) yyextra->current->type = "str";
                         yyextra->current->initializer << yytext;
                         yyextra->doubleQuote=TRUE;
                         yyextra->copyString=&yyextra->current->initializer;
@@ -1134,7 +1154,7 @@ STARTDOCSYMS      "##"
                       }
 
    {TRISINGLEQUOTE}   { // start of a comment block
-                        if (yyextra->current->type.isEmpty()) yyextra->current->type = "string";
+                        if (yyextra->current->type.isEmpty()) yyextra->current->type = "str";
                         yyextra->current->initializer << yytext;
                         yyextra->doubleQuote=FALSE;
                         yyextra->copyString=&yyextra->current->initializer;
@@ -1161,7 +1181,7 @@ STARTDOCSYMS      "##"
                         BEGIN( VariableAtom );
                       }
    "{"                { // dictionary
-                        if (yyextra->start_init) yyextra->current->type = "dictionary";
+                        if (yyextra->start_init) yyextra->current->type = "dict";
                         yyextra->current->initializer << *yytext;
                         yyextra->atomStart='{';
                         yyextra->atomEnd='}';
@@ -1183,6 +1203,7 @@ STARTDOCSYMS      "##"
                                break;
                             }
                           }
+                          if (yyextra->current->type.isEmpty()) yyextra->current->type = QCString(yytext);
                         }
                         yyextra->start_init = FALSE;
                         yyextra->current->initializer << yytext;
@@ -1524,9 +1545,15 @@ static void newEntry(yyscan_t yyscanner)
 static void newVariable(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  if (!yyextra->current->name.isEmpty() && yyextra->current->name.at(0)=='_') // mark as private
+  if (!yyextra->current->name.isEmpty() && yyextra->current->name.at(0)=='_')
   {
-    yyextra->current->protection=Private;
+    if (yyextra->current->name.at(1)=='_') // mark as private
+    {
+      yyextra->current->protection=Private;
+    }
+    else{
+      yyextra->current->protection=Protected; // mark as protected
+    }
   }
   if (yyextra->current_root->section&Entry::COMPOUND_MASK) // mark as class variable
   {
@@ -1546,7 +1573,14 @@ static void newFunction(yyscan_t yyscanner)
   }
   else if (yyextra->current->name.at(0)=='_')
   {
-    yyextra->current->protection=Private;
+    if (yyextra->current->name.at(1)=='_')
+    {
+      yyextra->current->protection=Private;
+    }
+    else 
+    {
+      yyextra->current->protection=Protected;
+    }
   }
 }
 

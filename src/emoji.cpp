@@ -1917,20 +1917,10 @@ EmojiEntityMapper::~EmojiEntityMapper()
 }
 
 /** Returns the one and only instance of the Emoji entity mapper */
-EmojiEntityMapper *EmojiEntityMapper::instance()
+EmojiEntityMapper &EmojiEntityMapper::instance()
 {
-  if (s_instance==0)
-  {
-    s_instance = new EmojiEntityMapper;
-  }
-  return s_instance;
-}
-
-/** Deletes the one and only instance of the Emoji entity mapper */
-void EmojiEntityMapper::deleteInstance()
-{
-  delete s_instance;
-  s_instance=0;
+  static EmojiEntityMapper inst;
+  return inst;
 }
 
 /*!

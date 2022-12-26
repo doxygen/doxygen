@@ -1,7 +1,5 @@
 /******************************************************************************
  *
- *
- *
  * Copyright (C) 1997-2015 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
@@ -223,7 +221,7 @@ class ClassDef : public Definition
      *  class. This function will recursively traverse all branches of the
      *  inheritance tree.
      */
-    virtual int isBaseClass(const ClassDef *bcd,bool followInstances) const = 0;
+    virtual int isBaseClass(const ClassDef *bcd,bool followInstances,const QCString &templSpec=QCString()) const = 0;
 
     /** Returns TRUE iff \a bcd is a direct or indirect sub class of this
      *  class.
@@ -355,6 +353,7 @@ class ClassDef : public Definition
     virtual bool hasNonReferenceSuperClass() const = 0;
 
     virtual QCString requiresClause() const = 0;
+    virtual StringVector getQualifiers() const = 0;
 
     //-----------------------------------------------------------------------------------
     // --- count members ----
@@ -403,6 +402,7 @@ class ClassDefMutable : public DefinitionMutable, public ClassDef
     virtual void setName(const QCString &name) = 0;
     virtual void setMetaData(const QCString &md) = 0;
     virtual void setRequiresClause(const QCString &req) = 0;
+    virtual void addQualifiers(const StringVector &qualifiers) = 0;
 
     //-----------------------------------------------------------------------------------
     // --- actions ----
@@ -482,7 +482,7 @@ inline ClassDefMutable *getClassMutable(const QCString &key)
 {
   return toClassDefMutable(getClass(key));
 }
-bool hasVisibleRoot(const BaseClassList &bcl);
+bool classHasVisibleRoot(const BaseClassList &bcl);
 bool classHasVisibleChildren(const ClassDef *cd);
 bool classVisibleInIndex(const ClassDef *cd);
 int minClassDistance(const ClassDef *cd,const ClassDef *bcd,int level=0);

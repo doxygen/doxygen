@@ -187,7 +187,7 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
     virtual const ArgumentList &templateArguments() const;
     virtual FileDef *getFileDef() const;
     virtual const MemberDef *getMemberByName(const QCString &) const;
-    virtual int isBaseClass(const ClassDef *bcd,bool followInstances) const;
+    virtual int isBaseClass(const ClassDef *bcd,bool followInstances,const QCString &templSpec) const;
     virtual bool isSubClass(ClassDef *bcd,int level=0) const;
     virtual bool isAccessibleMember(const MemberDef *md) const;
     virtual const TemplateInstanceList &getTemplateInstances() const;
@@ -236,6 +236,7 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
     virtual bool isSliceLocal() const;
     virtual bool hasNonReferenceSuperClass() const;
     virtual QCString requiresClause() const;
+    virtual StringVector getQualifiers() const;
     virtual ClassDef *insertTemplateInstance(const QCString &fileName,int startLine,int startColumn,
                                 const QCString &templSpec,bool &freshInstance) const;
 
@@ -258,6 +259,7 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
     virtual void setCompoundType(CompoundType t);
     virtual void setClassName(const QCString &name);
     virtual void setClassSpecifier(uint64 spec);
+    virtual void addQualifiers(const StringVector &qualifiers);
     virtual void setTemplateArguments(const ArgumentList &al);
     virtual void setTemplateBaseClassNames(const TemplateNameMap &templateNames);
     virtual void setTemplateMaster(const ClassDef *tm);
@@ -435,8 +437,8 @@ class ClassDefAliasImpl : public DefinitionAliasMixin<ClassDef>
     { return getCdAlias()->getFileDef(); }
     virtual const MemberDef *getMemberByName(const QCString &s) const
     { return getCdAlias()->getMemberByName(s); }
-    virtual int isBaseClass(const ClassDef *bcd,bool followInstances) const
-    { return getCdAlias()->isBaseClass(bcd,followInstances); }
+    virtual int isBaseClass(const ClassDef *bcd,bool followInstances,const QCString &templSpec) const
+    { return getCdAlias()->isBaseClass(bcd,followInstances,templSpec); }
     virtual bool isSubClass(ClassDef *bcd,int level=0) const
     { return getCdAlias()->isSubClass(bcd,level); }
     virtual bool isAccessibleMember(const MemberDef *md) const
@@ -532,6 +534,8 @@ class ClassDefAliasImpl : public DefinitionAliasMixin<ClassDef>
     { return getCdAlias()->hasNonReferenceSuperClass(); }
     virtual QCString requiresClause() const
     { return getCdAlias()->requiresClause(); }
+    virtual StringVector getQualifiers() const
+    { return getCdAlias()->getQualifiers(); }
 
     virtual int countMembersIncludingGrouped(MemberListType lt,const ClassDef *inheritedFrom,bool additional) const
     { return getCdAlias()->countMembersIncludingGrouped(lt,inheritedFrom,additional); }
@@ -710,6 +714,8 @@ class ClassDefImpl::IMPL
 
     /** C++20 requires clause */
     QCString requiresClause;
+
+    StringVector qualifiers;
 };
 
 void ClassDefImpl::IMPL::init(const QCString &defFileName, const QCString &name,
@@ -1029,7 +1035,10 @@ void ClassDefImpl::internalInsertMember(const MemberDef *md,
     {
       addMemberToList(MemberListType_relatedMembers,md,FALSE);
     }
-    else if (md->isFunction() && md->protection()==Private && md->virtualness()!=Normal && Config_getBool(EXTRACT_PRIV_VIRTUAL))
+    else if (md->isFunction() &&
+             md->protection()==Private &&
+             (md->virtualness()!=Normal || md->isOverride() || md->isFinal()) &&
+             Config_getBool(EXTRACT_PRIV_VIRTUAL))
     {
       addMemberToList(MemberListType_functionMembers,md,FALSE);
     }
@@ -1117,7 +1126,6 @@ void ClassDefImpl::internalInsertMember(const MemberDef *md,
     m_impl->arrowOperator=md;
   }
 
-  //::addClassMemberNameToIndex(md);
   if (addToAllList &&
       !(Config_getBool(HIDE_FRIEND_COMPOUNDS) &&
         md->isFriend() &&
@@ -1357,16 +1365,16 @@ void ClassDefImpl::writeBriefDescription(OutputList &ol,bool exampleFlag) const
   {
     ol.startParagraph();
     ol.pushGeneratorState();
-    ol.disableAllBut(OutputGenerator::Man);
+    ol.disableAllBut(OutputType::Man);
     ol.writeString(" - ");
     ol.popGeneratorState();
     ol.generateDoc(briefFile(),briefLine(),this,0,
                    briefDescription(),TRUE,FALSE,QCString(),
                    TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
     ol.pushGeneratorState();
-    ol.disable(OutputGenerator::RTF);
+    ol.disable(OutputType::RTF);
     ol.writeString(" \n");
-    ol.enable(OutputGenerator::RTF);
+    ol.enable(OutputType::RTF);
     ol.popGeneratorState();
 
     if (hasDetailedDescription() || exampleFlag)
@@ -1400,7 +1408,7 @@ void ClassDefImpl::writeDetailedDocumentationBody(OutputList &ol) const
       !documentation().isEmpty())
   {
     ol.pushGeneratorState();
-    ol.disable(OutputGenerator::Html);
+    ol.disable(OutputType::Html);
     ol.writeString("\n\n");
     ol.popGeneratorState();
   }
@@ -1445,20 +1453,20 @@ void ClassDefImpl::writeDetailedDescription(OutputList &ol, const QCString &/*pa
   if (hasDetailedDescription() || exampleFlag)
   {
     ol.pushGeneratorState();
-      ol.disable(OutputGenerator::Html);
+      ol.disable(OutputType::Html);
       ol.writeRuler();
     ol.popGeneratorState();
 
     ol.pushGeneratorState();
-      ol.disableAllBut(OutputGenerator::Html);
+      ol.disableAllBut(OutputType::Html);
       ol.writeAnchor(QCString(),anchor.isEmpty() ? QCString("details") : anchor);
     ol.popGeneratorState();
 
     if (!anchor.isEmpty())
     {
       ol.pushGeneratorState();
-      ol.disable(OutputGenerator::Html);
-      ol.disable(OutputGenerator::Man);
+      ol.disable(OutputType::Html);
+      ol.disable(OutputType::Man);
       ol.writeAnchor(getOutputFileBase(),anchor);
       ol.popGeneratorState();
     }
@@ -1510,19 +1518,19 @@ QCString ClassDefImpl::generatedFromFiles() const
 void ClassDefImpl::showUsedFiles(OutputList &ol) const
 {
   ol.pushGeneratorState();
-  ol.disable(OutputGenerator::Man);
+  ol.disable(OutputType::Man);
 
 
   ol.writeRuler();
   ol.pushGeneratorState();
-    ol.disableAllBut(OutputGenerator::Docbook);
+    ol.disableAllBut(OutputType::Docbook);
     ol.startParagraph();
     ol.parseText(generatedFromFiles());
     ol.endParagraph();
   ol.popGeneratorState();
-  ol.disable(OutputGenerator::Docbook);
+  ol.disable(OutputType::Docbook);
     ol.parseText(generatedFromFiles());
-  ol.enable(OutputGenerator::Docbook);
+  ol.enable(OutputType::Docbook);
 
   bool first=TRUE;
   for (const auto &fd : m_impl->files)
@@ -1548,7 +1556,7 @@ void ClassDefImpl::showUsedFiles(OutputList &ol) const
 
     // for HTML
     ol.pushGeneratorState();
-    ol.disableAllBut(OutputGenerator::Html);
+    ol.disableAllBut(OutputType::Html);
     if (fd->generateSourceFile())
     {
       ol.writeObjectLink(QCString(),fd->getSourceFileBase(),QCString(),fname);
@@ -1565,7 +1573,7 @@ void ClassDefImpl::showUsedFiles(OutputList &ol) const
 
     // for other output formats
     ol.pushGeneratorState();
-    ol.disable(OutputGenerator::Html);
+    ol.disable(OutputType::Html);
     if (fd->isLinkable())
     {
       ol.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),QCString(),fname);
@@ -1621,7 +1629,7 @@ void ClassDefImpl::writeInheritanceGraph(OutputList &ol) const
     else if (!inheritanceGraph.isTrivial())
     {
       ol.pushGeneratorState();
-      ol.disable(OutputGenerator::Man);
+      ol.disable(OutputType::Man);
       ol.startDotGraph();
       ol.parseText(theTranslator->trClassDiagram(displayName()));
       ol.endDotGraph(inheritanceGraph);
@@ -1634,9 +1642,9 @@ void ClassDefImpl::writeInheritanceGraph(OutputList &ol) const
   {
     ClassDiagram diagram(this); // create a diagram of this class.
     ol.startClassDiagram();
-    ol.disable(OutputGenerator::Man);
+    ol.disable(OutputType::Man);
     ol.parseText(theTranslator->trClassDiagram(displayName()));
-    ol.enable(OutputGenerator::Man);
+    ol.enable(OutputType::Man);
     ol.endClassDiagram(diagram,getOutputFileBase(),displayName());
     renderDiagram = TRUE;
   }
@@ -1644,7 +1652,7 @@ void ClassDefImpl::writeInheritanceGraph(OutputList &ol) const
   if (renderDiagram) // if we already show the inheritance relations graphically,
                      // then hide the text version
   {
-    ol.disableAllBut(OutputGenerator::Man);
+    ol.disableAllBut(OutputType::Man);
   }
 
   if (!m_impl->inherits.empty())
@@ -1721,7 +1729,7 @@ void ClassDefImpl::writeCollaborationGraph(OutputList &ol) const
     if (!usageImplGraph.isTrivial())
     {
       ol.pushGeneratorState();
-      ol.disable(OutputGenerator::Man);
+      ol.disable(OutputType::Man);
       ol.startDotGraph();
       ol.parseText(theTranslator->trCollaborationDiagram(displayName()));
       ol.endDotGraph(usageImplGraph);
@@ -1910,10 +1918,10 @@ void ClassDefImpl::writeIncludeFiles(OutputList &ol) const
       else
         ol.docify("<");
       ol.pushGeneratorState();
-      ol.disable(OutputGenerator::Html);
+      ol.disable(OutputType::Html);
       ol.docify(nm);
-      ol.disableAllBut(OutputGenerator::Html);
-      ol.enable(OutputGenerator::Html);
+      ol.disableAllBut(OutputType::Html);
+      ol.enable(OutputType::Html);
       if (m_impl->incInfo->fileDef)
       {
         ol.writeObjectLink(QCString(),m_impl->incInfo->fileDef->includeName(),QCString(),nm);
@@ -1968,7 +1976,7 @@ void ClassDefImpl::startMemberDocumentation(OutputList &ol) const
   //printf("%s: ClassDefImpl::startMemberDocumentation()\n",qPrint(name()));
   if (Config_getBool(SEPARATE_MEMBER_PAGES))
   {
-    ol.disable(OutputGenerator::Html);
+    ol.disable(OutputType::Html);
     Doxygen::suppressDocWarnings = TRUE;
   }
 }
@@ -1978,7 +1986,7 @@ void ClassDefImpl::endMemberDocumentation(OutputList &ol) const
   //printf("%s: ClassDefImpl::endMemberDocumentation()\n",qPrint(name()));
   if (Config_getBool(SEPARATE_MEMBER_PAGES))
   {
-    ol.enable(OutputGenerator::Html);
+    ol.enable(OutputType::Html);
     Doxygen::suppressDocWarnings = FALSE;
   }
 }
@@ -2006,7 +2014,7 @@ void ClassDefImpl::endMemberDeclarations(OutputList &ol) const
 void ClassDefImpl::writeAuthorSection(OutputList &ol) const
 {
   ol.pushGeneratorState();
-  ol.disableAllBut(OutputGenerator::Man);
+  ol.disableAllBut(OutputType::Man);
   ol.writeString("\n");
   ol.startGroupHeader();
   ol.parseText(theTranslator->trAuthor(TRUE,TRUE));
@@ -2019,7 +2027,7 @@ void ClassDefImpl::writeAuthorSection(OutputList &ol) const
 void ClassDefImpl::writeSummaryLinks(OutputList &ol) const
 {
   ol.pushGeneratorState();
-  ol.disableAllBut(OutputGenerator::Html);
+  ol.disableAllBut(OutputType::Html);
   bool first=TRUE;
   SrcLangExt lang = getLanguage();
 
@@ -2192,7 +2200,7 @@ void ClassDefImpl::writeInlineDocumentation(OutputList &ol) const
 
   // part 1a
   ol.pushGeneratorState();
-  ol.disableAllBut(OutputGenerator::Html);
+  ol.disableAllBut(OutputType::Html);
   { // only HTML only
     ol.writeAnchor(QCString(),anchor());
     ol.startMemberDoc(QCString(),QCString(),anchor(),name(),1,1,FALSE);
@@ -2207,8 +2215,8 @@ void ClassDefImpl::writeInlineDocumentation(OutputList &ol) const
 
   // part 1b
   ol.pushGeneratorState();
-  ol.disable(OutputGenerator::Html);
-  ol.disable(OutputGenerator::Man);
+  ol.disable(OutputType::Html);
+  ol.disable(OutputType::Man);
   { // for LaTeX/RTF only
     ol.writeAnchor(getOutputFileBase(),anchor());
   }
@@ -2216,7 +2224,7 @@ void ClassDefImpl::writeInlineDocumentation(OutputList &ol) const
 
   // part 1c
   ol.pushGeneratorState();
-  ol.disable(OutputGenerator::Html);
+  ol.disable(OutputType::Html);
   {
     // for LaTeX/RTF/Man
     ol.startGroupHeader(1);
@@ -2294,7 +2302,7 @@ void ClassDefImpl::writeInlineDocumentation(OutputList &ol) const
 
   // part 3: close the block
   ol.pushGeneratorState();
-  ol.disableAllBut(OutputGenerator::Html);
+  ol.disableAllBut(OutputType::Html);
   { // HTML only
     ol.endIndent();
   }
@@ -2311,7 +2319,7 @@ void ClassDefImpl::writeMoreLink(OutputList &ol,const QCString &anchor) const
 
   // HTML only
   ol.pushGeneratorState();
-  ol.disableAllBut(OutputGenerator::Html);
+  ol.disableAllBut(OutputType::Html);
   ol.docify(" ");
   ol.startTextLink(getOutputFileBase(),
       anchor.isEmpty() ? QCString("details") : anchor);
@@ -2323,23 +2331,23 @@ void ClassDefImpl::writeMoreLink(OutputList &ol,const QCString &anchor) const
   {
     ol.pushGeneratorState();
     // LaTeX + RTF
-    ol.disable(OutputGenerator::Html);
-    ol.disable(OutputGenerator::Man);
-    ol.disable(OutputGenerator::Docbook);
+    ol.disable(OutputType::Html);
+    ol.disable(OutputType::Man);
+    ol.disable(OutputType::Docbook);
     if (!(usePDFLatex && pdfHyperlinks))
     {
-      ol.disable(OutputGenerator::Latex);
+      ol.disable(OutputType::Latex);
     }
     if (!rtfHyperlinks)
     {
-      ol.disable(OutputGenerator::RTF);
+      ol.disable(OutputType::RTF);
     }
     ol.docify(" ");
     ol.startTextLink(getOutputFileBase(), anchor);
     ol.parseText(theTranslator->trMore());
     ol.endTextLink();
     // RTF only
-    ol.disable(OutputGenerator::Latex);
+    ol.disable(OutputType::Latex);
     ol.writeString("\\par");
     ol.popGeneratorState();
   }
@@ -2476,8 +2484,17 @@ void ClassDefImpl::addClassAttributes(OutputList &ol) const
   if (isAbstract()) sl.push_back("abstract");
   if (getLanguage()==SrcLangExt_IDL && isPublished()) sl.push_back("published");
 
+  for (const auto &sx : m_impl->qualifiers)
+  {
+    bool alreadyAdded = std::find(sl.begin(), sl.end(), sx) != sl.end();
+    if (!alreadyAdded)
+    {
+      sl.push_back(sx);
+    }
+  }
+
   ol.pushGeneratorState();
-  ol.disableAllBut(OutputGenerator::Html);
+  ol.disableAllBut(OutputType::Html);
   if (!sl.empty())
   {
     ol.startLabels();
@@ -2697,24 +2714,24 @@ void ClassDefImpl::writeDocumentation(OutputList &ol) const
   {
     if (compoundType()==Interface)
     {
-      hli = HLI_InterfaceVisible;
+      hli = HighlightedItem::InterfaceVisible;
     }
     else if (compoundType()==Struct)
     {
-      hli = HLI_StructVisible;
+      hli = HighlightedItem::StructVisible;
     }
     else if (compoundType()==Exception)
     {
-      hli = HLI_ExceptionVisible;
+      hli = HighlightedItem::ExceptionVisible;
     }
     else
     {
-      hli = HLI_ClassVisible;
+      hli = HighlightedItem::ClassVisible;
     }
   }
   else
   {
-    hli = HLI_ClassVisible;
+    hli = HighlightedItem::ClassVisible;
   }
 
   startFile(ol,getOutputFileBase(),name(),pageTitle,hli,!generateTreeView);
@@ -2734,7 +2751,7 @@ void ClassDefImpl::writeDocumentation(OutputList &ol) const
   endTitle(ol,getOutputFileBase(),displayName());
   writeDocumentationContents(ol,pageTitle);
 
-  endFileWithNavPath(this,ol);
+  endFileWithNavPath(ol,this);
 
   if (Config_getBool(SEPARATE_MEMBER_PAGES))
   {
@@ -2749,7 +2766,7 @@ void ClassDefImpl::writeMemberPages(OutputList &ol) const
   ///////////////////////////////////////////////////////////////////////////
 
   ol.pushGeneratorState();
-  ol.disableAllBut(OutputGenerator::Html);
+  ol.disableAllBut(OutputType::Html);
 
   for (const auto &ml : m_impl->memberLists)
   {
@@ -2839,31 +2856,31 @@ void ClassDefImpl::writeMemberList(OutputList &ol) const
   if (m_impl->allMemberNameInfoLinkedMap.empty() || cOpt) return;
   // only for HTML
   ol.pushGeneratorState();
-  ol.disableAllBut(OutputGenerator::Html);
+  ol.disableAllBut(OutputType::Html);
 
   HighlightedItem hli;
   if (sliceOpt)
   {
     if (compoundType()==Interface)
     {
-      hli = HLI_InterfaceVisible;
+      hli = HighlightedItem::InterfaceVisible;
     }
     else if (compoundType()==Struct)
     {
-      hli = HLI_StructVisible;
+      hli = HighlightedItem::StructVisible;
     }
     else if (compoundType()==Exception)
     {
-      hli = HLI_ExceptionVisible;
+      hli = HighlightedItem::ExceptionVisible;
     }
     else
     {
-      hli = HLI_ClassVisible;
+      hli = HighlightedItem::ClassVisible;
     }
   }
   else
   {
-    hli = HLI_ClassVisible;
+    hli = HighlightedItem::ClassVisible;
   }
 
   QCString memListFile = getMemberListFileName();
@@ -3311,7 +3328,7 @@ bool ClassDefImpl::isLinkableInProject() const
   }
   else
   {
-    return !name().isEmpty() &&                    /* has a name */
+    return
       !isArtificial() && !isHidden() &&            /* not hidden */
       !isAnonymous() &&                            /* not anonymous */
       protectionLevelVisible(m_impl->prot)      && /* private/internal */
@@ -3368,22 +3385,25 @@ bool ClassDefImpl::hasDocumentation() const
 // returns the distance to the base class definition 'bcd' represents an (in)direct base
 // class of class definition 'cd' or 0 if it does not.
 
-int ClassDefImpl::isBaseClass(const ClassDef *bcd, bool followInstances) const
+int ClassDefImpl::isBaseClass(const ClassDef *bcd, bool followInstances,const QCString &templSpec) const
 {
   int distance=0;
-  //printf("isBaseClass(cd=%s) looking for %s\n",qPrint(name()),qPrint(bcd->name()));
+  //printf("isBaseClass(cd=%s) looking for %s templSpec=%s\n",qPrint(name()),qPrint(bcd->name()),qPrint(templSpec));
   for (const auto &bclass : baseClasses())
   {
     const ClassDef *ccd = bclass.classDef;
-    if (!followInstances && ccd->templateMaster()) ccd=ccd->templateMaster();
-    if (ccd==bcd)
+    if (!followInstances && ccd->templateMaster())
+    {
+      ccd=ccd->templateMaster();
+    }
+    if (ccd==bcd && (templSpec.isEmpty() || templSpec==bclass.templSpecifiers))
     {
       distance=1;
       break; // no shorter path possible
     }
     else
     {
-      int d = ccd->isBaseClass(bcd,followInstances);
+      int d = ccd->isBaseClass(bcd,followInstances,templSpec);
       if (d>256)
       {
         err("Possible recursive class relation while inside %s and looking for base class %s\n",qPrint(name()),qPrint(bcd->name()));
@@ -4195,7 +4215,7 @@ const MemberDef *ClassDefImpl::getMemberByName(const QCString &name) const
 
 bool ClassDefImpl::isAccessibleMember(const MemberDef *md) const
 {
-  return md->getClassDef() && isBaseClass(md->getClassDef(),TRUE);
+  return md->getClassDef() && isBaseClass(md->getClassDef(),TRUE,QCString());
 }
 
 MemberList *ClassDefImpl::getMemberList(MemberListType lt) const
@@ -4443,8 +4463,6 @@ void ClassDefImpl::writeInheritedMemberDeclarations(OutputList &ol,ClassDefSet &
                MemberListType lt,int lt2,const QCString &title,
                const ClassDef *inheritedFrom,bool invert,bool showAlways) const
 {
-  ol.pushGeneratorState();
-  ol.disableAllBut(OutputGenerator::Html);
   int count = countMembersIncludingGrouped(lt,inheritedFrom,FALSE);
   bool process = count>0;
   //printf("%s: writeInheritedMemberDec: lt=%d process=%d invert=%d always=%d\n",
@@ -4479,7 +4497,6 @@ void ClassDefImpl::writeInheritedMemberDeclarations(OutputList &ol,ClassDefSet &
       }
     }
   }
-  ol.popGeneratorState();
 }
 
 void ClassDefImpl::writeMemberDeclarations(OutputList &ol,ClassDefSet &visitedClasses,
@@ -4884,6 +4901,23 @@ void ClassDefImpl::setClassSpecifier(uint64 spec)
   m_impl->spec = spec;
 }
 
+void ClassDefImpl::addQualifiers(const StringVector &qualifiers)
+{
+  for (const auto &sx : qualifiers)
+  {
+    bool alreadyAdded = std::find(m_impl->qualifiers.begin(), m_impl->qualifiers.end(), sx) != m_impl->qualifiers.end();
+    if (!alreadyAdded)
+    {
+      m_impl->qualifiers.push_back(sx);
+    }
+  }
+}
+
+StringVector ClassDefImpl::getQualifiers() const
+{
+  return m_impl->qualifiers;
+}
+
 bool ClassDefImpl::isExtension() const
 {
   QCString n = name();
@@ -5030,13 +5064,13 @@ ClassDef *getClass(const QCString &n)
   return Doxygen::classLinkedMap->find(n);
 }
 
-bool hasVisibleRoot(const BaseClassList &bcl)
+bool classHasVisibleRoot(const BaseClassList &bcl)
 {
   for (const auto &bcd : bcl)
   {
     const ClassDef *cd=bcd.classDef;
     if (cd->isVisibleInHierarchy()) return true;
-    if (hasVisibleRoot(cd->baseClasses())) return true;
+    if (classHasVisibleRoot(cd->baseClasses())) return true;
   }
   return false;
 }

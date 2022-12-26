@@ -1,9 +1,6 @@
 /******************************************************************************
  *
- *
- *
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2022 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -16,8 +13,10 @@
  *
  */
 
+#include <vector>
+#include <cmath>
+
 #include "image.h"
-#include <math.h>
 #include "lodepng.h"
 #include "config.h"
 
@@ -36,7 +35,7 @@ const int charSetWidth=80;
 const int charHeight=12;
 const int numChars=96;
 
-unsigned short charPos[numChars]    =
+const unsigned short charPos[numChars]    =
   {
       0,  5,  8, 13, 20, 27, 38, 47,
      50, 54, 58, 65, 72, 76, 83, 87,
@@ -52,7 +51,7 @@ unsigned short charPos[numChars]    =
     594,600,607,613,617,620,624,631
   };
 
-unsigned char charWidth[numChars] =
+const unsigned char charWidth[numChars] =
   {
      5, 3, 5, 7, 7,11, 9, 3,
      4, 4, 7, 7, 4, 7, 4, 4,
@@ -69,7 +68,7 @@ unsigned char charWidth[numChars] =
      6, 7, 6, 4, 3, 4, 7, 5
   };
 
-unsigned char fontRaw[charSetWidth*charHeight] = {
+const unsigned char fontRaw[charSetWidth*charHeight] = {
   0x02, 0x50, 0x01, 0x06, 0x20, 0x60, 0xc6, 0x04, 0x00, 0x00, 0x00, 0x27,
   0x04, 0x1c, 0x38, 0x11, 0xf1, 0xc7, 0xc7, 0x0e, 0x00, 0x00, 0x00, 0x03,
   0x81, 0xf0, 0x10, 0x7c, 0x1e, 0x3e, 0x1f, 0x9f, 0x87, 0x88, 0x24, 0x09,
@@ -152,20 +151,27 @@ unsigned char fontRaw[charSetWidth*charHeight] = {
   0x40, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x40, 0x01, 0xac, 0x00, 0x00
 };
 
-static Color palette[] =
+
+struct Image::Private
 {
-  { 0xff, 0xff, 0xff, 0x00 },
-  { 0x00, 0x00, 0x00, 0xff },
-  { 0xff, 0xff, 0xc0, 0xff },
-  { 0x9f, 0x9f, 0x60, 0xff },
-  { 0xa7, 0x38, 0x30, 0xff },
-  { 0x29, 0x70, 0x18, 0xff },
-  { 0x97, 0xCC, 0xE8, 0xff },
-  { 0xc0, 0xc0, 0xc0, 0xff },
-  { 0xff, 0xff, 0xff, 0xff }
+  uint width;
+  uint height;
+  std::vector<uchar> data;
+  std::vector<Color> palette =
+  {
+    { 0xff, 0xff, 0xff, 0x00 },
+    { 0x00, 0x00, 0x00, 0xff },
+    { 0xff, 0xff, 0xc0, 0xff },
+    { 0x9f, 0x9f, 0x60, 0xff },
+    { 0xa7, 0x38, 0x30, 0xff },
+    { 0x29, 0x70, 0x18, 0xff },
+    { 0x97, 0xCC, 0xE8, 0xff },
+    { 0xc0, 0xc0, 0xc0, 0xff },
+    { 0xff, 0xff, 0xff, 0xff }
+  };
 };
 
-Image::Image(uint w,uint h)
+Image::Image(uint w,uint h) : p(std::make_unique<Private>())
 {
   int hue   = Config_getInt(HTML_COLORSTYLE_HUE);
   int sat   = Config_getInt(HTML_COLORSTYLE_SAT);
@@ -186,35 +192,32 @@ Image::Image(uint w,uint h)
                         &red2,&green2,&blue2
                        );
 
-  palette[2].red   = static_cast<Byte>(red1   * 255.0);
-  palette[2].green = static_cast<Byte>(green1 * 255.0);
-  palette[2].blue  = static_cast<Byte>(blue1  * 255.0);
+  p->palette[2].red   = static_cast<Byte>(red1   * 255.0);
+  p->palette[2].green = static_cast<Byte>(green1 * 255.0);
+  p->palette[2].blue  = static_cast<Byte>(blue1  * 255.0);
 
-  palette[3].red   = static_cast<Byte>(red2   * 255.0);
-  palette[3].green = static_cast<Byte>(green2 * 255.0);
-  palette[3].blue  = static_cast<Byte>(blue2  * 255.0);
+  p->palette[3].red   = static_cast<Byte>(red2   * 255.0);
+  p->palette[3].green = static_cast<Byte>(green2 * 255.0);
+  p->palette[3].blue  = static_cast<Byte>(blue2  * 255.0);
 
-  m_data.resize(w*h);
-  m_width = w;
-  m_height = h;
+  p->data.resize(w*h);
+  p->width = w;
+  p->height = h;
 }
 
-Image::~Image()
-{
-}
+uint Image::width() const  { return p->width; }
+uint Image::height() const { return p->height; }
+
+Image::~Image() = default;
 
 void Image::setPixel(uint x,uint y,uchar val)
 {
-  if (x<m_width && y<m_height)
-    m_data[y*m_width+x] = val;
+  if (x<p->width && y<p->height) p->data[y*p->width+x] = val;
 }
 
 uchar Image::getPixel(uint x,uint y) const
 {
-  if (x<m_width && y<m_height)
-    return m_data[y*m_width+x];
-  else
-    return 0;
+  return (x<p->width && y<p->height) ? p->data[y*p->width+x] : 0;
 }
 
 void Image::writeChar(uint x,uint y,char c,uchar fg)
@@ -258,9 +261,9 @@ void Image::writeString(uint x,uint y,const QCString &s,uchar fg)
 {
   if (!s.isEmpty())
   {
-    const char *p = s.data();
+    const char *ps = s.data();
     char c;
-    while ((c=*p++))
+    while ((c=*ps++))
     {
       writeChar(x,y,c,fg);
       x+=charWidth[c-' '];
@@ -273,9 +276,9 @@ uint Image::stringLength(const QCString &s)
   uint w=0;
   if (!s.isEmpty())
   {
-    const char *p = s.data();
+    const char *ps = s.data();
     char c;
-    while ((c=*p++)) w+=charWidth[c-' '];
+    while ((c=*ps++)) w+=charWidth[c-' '];
   }
   return w;
 }
@@ -344,17 +347,14 @@ bool Image::save(const QCString &fileName)
   size_t bufferSize;
   LodePNG_Encoder encoder;
   LodePNG_Encoder_init(&encoder);
-  uint numCols = 9;
-  Color *pPal = palette;
-  uint i;
-  for (i=0;i<numCols;i++,pPal++)
+  for (const auto &col : p->palette)
   {
     LodePNG_InfoColor_addPalette(&encoder.infoPng.color,
-                                 pPal->red,pPal->green,pPal->blue,pPal->alpha);
+                                 col.red,col.green,col.blue,col.alpha);
   }
   encoder.infoPng.color.colorType = 3;
   encoder.infoRaw.color.colorType = 3;
-  LodePNG_encode(&encoder, &buffer, &bufferSize, &m_data[0], m_width, m_height);
+  LodePNG_encode(&encoder, &buffer, &bufferSize, &p->data[0], p->width, p->height);
   LodePNG_saveFile(buffer, bufferSize, fileName.data());
   free(buffer);
   LodePNG_Encoder_cleanup(&encoder);
@@ -427,14 +427,22 @@ void ColoredImage::hsl2rgb(double h,double s,double l,
   *pBlue  = b;
 }
 
+struct ColoredImage::Private
+{
+  uint width;
+  uint height;
+  std::vector<uchar> data;
+  bool hasAlpha;
+};
+
 ColoredImage::ColoredImage(uint width,uint height,
            const uchar *greyLevels,const uchar *alphaLevels,
-           int saturation,int hue,int gamma)
+           int saturation,int hue,int gamma) : p(std::make_unique<Private>())
 {
-  m_hasAlpha = alphaLevels!=0;
-  m_width    = width;
-  m_height   = height;
-  m_data.resize(width*height*4);
+  p->hasAlpha = alphaLevels!=0;
+  p->width    = width;
+  p->height   = height;
+  p->data.resize(width*height*4);
   uint i;
   for (i=0;i<width*height;i++)
   {
@@ -448,16 +456,14 @@ ColoredImage::ColoredImage(uint width,uint height,
     g = static_cast<Byte>(green*255.0);
     b = static_cast<Byte>(blue *255.0);
     a = alphaLevels ? alphaLevels[i] : 255;
-    m_data[i*4+0]=r;
-    m_data[i*4+1]=g;
-    m_data[i*4+2]=b;
-    m_data[i*4+3]=a;
+    p->data[i*4+0]=r;
+    p->data[i*4+1]=g;
+    p->data[i*4+2]=b;
+    p->data[i*4+3]=a;
   }
 }
 
-ColoredImage::~ColoredImage()
-{
-}
+ColoredImage::~ColoredImage() = default;
 
 bool ColoredImage::save(const QCString &fileName)
 {
@@ -465,9 +471,9 @@ bool ColoredImage::save(const QCString &fileName)
   size_t bufferSize;
   LodePNG_Encoder encoder;
   LodePNG_Encoder_init(&encoder);
-  encoder.infoPng.color.colorType = m_hasAlpha ? 6 : 2; // 2=RGB 24 bit, 6=RGBA 32 bit
+  encoder.infoPng.color.colorType = p->hasAlpha ? 6 : 2; // 2=RGB 24 bit, 6=RGBA 32 bit
   encoder.infoRaw.color.colorType = 6; // 6=RGBA 32 bit
-  LodePNG_encode(&encoder, &buffer, &bufferSize, &m_data[0], m_width, m_height);
+  LodePNG_encode(&encoder, &buffer, &bufferSize, &p->data[0], p->width, p->height);
   LodePNG_saveFile(buffer, bufferSize, fileName.data());
   LodePNG_Encoder_cleanup(&encoder);
   free(buffer);

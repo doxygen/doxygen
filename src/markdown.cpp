@@ -625,6 +625,7 @@ int Markdown::isSpecialCommand(const char *data,int offset,int size)
     { "param",          endOfParam },
     { "property",       endOfLine  },
     { "protocol",       endOfLine  },
+    { "qualifier",      endOfLine  },
     { "ref",            endOfLabel },
     { "refitem",        endOfLine  },
     { "related",        endOfLabel },

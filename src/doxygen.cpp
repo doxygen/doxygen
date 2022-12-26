@@ -171,6 +171,9 @@ bool                  Doxygen::clangAssistedParsing = FALSE;
 QCString              Doxygen::verifiedDotPath;
 volatile bool         Doxygen::terminating = false;
 InputFileEncodingList Doxygen::inputFileEncodingList;
+std::mutex            Doxygen::searchIndexMutex;
+std::mutex            Doxygen::countFlowKeywordsMutex;
+std::mutex            Doxygen::addExampleMutex;
 
 // locally accessible globals
 static std::multimap< std::string, const Entry* > g_classEntries;
@@ -229,7 +232,7 @@ class Statistics
       bool restore=FALSE;
       if (Debug::isFlagSet(Debug::Time))
       {
-        Debug::clearFlag("time");
+        Debug::clearFlag(Debug::Time);
         restore=TRUE;
       }
       msg("----------------------\n");
@@ -237,7 +240,7 @@ class Statistics
       {
         msg("Spent %.6f seconds in %s",s.elapsed,s.name);
       }
-      if (restore) Debug::setFlag("time");
+      if (restore) Debug::setFlag(Debug::Time);
     }
   private:
     struct stat
@@ -633,64 +636,6 @@ static void addIncludeFile(DefMutable *cd,FileDef *ifd,const Entry *root)
   }
 }
 
-#if 0
-static bool addNamespace(Entry *root,ClassDef *cd)
-{
-  // see if this class is defined inside a namespace
-  if (root->section & Entry::COMPOUND_MASK)
-  {
-    Entry *e = root->parent;
-    while (e)
-    {
-      if (e->section==Entry::NAMESPACE_SEC)
-      {
-        NamespaceDef *nd=0;
-        QCString nsName = stripAnonymousNamespaceScope(e->name);
-        //printf("addNameSpace() trying: %s\n",qPrint(nsName));
-        if (!nsName.isEmpty() && nsName.at(0)!='@' &&
-            (nd=getResolvedNamespace(nsName))
-           )
-        {
-          cd->setNamespace(nd);
-          cd->setOuterScope(nd);
-          nd->insertClass(cd);
-          return TRUE;
-        }
-      }
-      e=e->parent;
-    }
-  }
-  return FALSE;
-}
-#endif
-
-#if 0
-static Definition *findScope(Entry *root,int level=0)
-{
-  if (root==0) return 0;
-  //printf("start findScope name=%s\n",qPrint(root->name));
-  Definition *result=0;
-  if (root->section&Entry::SCOPE_MASK)
-  {
-    result = findScope(root->parent,level+1); // traverse to the root of the tree
-    if (result)
-    {
-      //printf("Found %s inside %s at level %d\n",qPrint(root->name),qPrint(result->name()),level);
-      // TODO: look at template arguments
-      result = result->findInnerCompound(root->name);
-    }
-    else // reached the global scope
-    {
-      // TODO: look at template arguments
-      result = Doxygen::globalScope->findInnerCompound(root->name);
-      //printf("Found in globalScope %s at level %d\n",qPrint(result->name()),level);
-    }
-  }
-  //printf("end findScope(%s,%d)=%s\n",qPrint(root->name),
-  //       level,result==0 ? "<none>" : qPrint(result->name()));
-  return result;
-}
-#endif
 
 QCString stripTemplateSpecifiers(const QCString &s)
 {
@@ -1084,6 +1029,7 @@ static void addClassToContext(const Entry *root)
       cd->setHidden(root->hidden);
       cd->setArtificial(root->artificial);
       cd->setClassSpecifier(root->spec);
+      cd->addQualifiers(root->qualifiers);
       cd->setTypeConstraints(root->typeConstr);
       //printf("new ClassDef %s tempArgList=%p specScope=%s\n",qPrint(fullName),root->tArgList,qPrint(root->scopeSpec));
 
@@ -1102,9 +1048,6 @@ static void addClassToContext(const Entry *root)
       cd->setBodyDef(fd);
 
       cd->setMetaData(root->metaData);
-
-      // see if the class is found inside a namespace
-      //bool found=addNamespace(root,cd);
 
       cd->insertUsedFile(fd);
     }
@@ -1713,8 +1656,9 @@ static void buildNamespaceList(const Entry *root)
           {
             nd->setLanguage(root->lang);
           }
-          if (root->tagInfo()==0 && nd->isLinkableInProject()) // if we found the namespace in a tag file
-            // and also in a project file, then remove
+          if (root->tagInfo()==0 && nd->isReference() && !(root->doc.isEmpty() && root->brief.isEmpty()))
+            // if we previously found namespace nd in a tag file and now we find a
+            // documented namespace with the same name in the project, then remove
             // the tag file reference
           {
             nd->setReference("");
@@ -2171,6 +2115,7 @@ static void findUsingDeclImports(const Entry *root)
                 newMd->enableCallerGraph(root->callerGraph);
                 newMd->enableReferencedByRelation(root->referencedByRelation);
                 newMd->enableReferencesRelation(root->referencesRelation);
+                newMd->addQualifiers(root->qualifiers);
                 newMd->setBitfields(md->bitfieldString());
                 newMd->addSectionsToDefinition(root->anchors);
                 newMd->setBodySegment(md->getDefLine(),md->getStartBodyLine(),md->getEndBodyLine());
@@ -2359,6 +2304,7 @@ static MemberDef *addVariableToClass(
   md->setId(root->id);
   addMemberToGroups(root,md.get());
   md->setBodyDef(root->fileDef());
+  md->addQualifiers(root->qualifiers);
 
   //printf("    New member adding to %s (%p)!\n",qPrint(cd->name()),cd);
   cd->insertMember(md.get());
@@ -2588,6 +2534,7 @@ static MemberDef *addVariableToFile(
   md->enableReferencedByRelation(root->referencedByRelation);
   md->enableReferencesRelation(root->referencesRelation);
   md->setExplicitExternal(root->explicitExternal,fileName,root->startLine,root->startColumn);
+  md->addQualifiers(root->qualifiers);
   //md->setOuterScope(fd);
   if (!root->explicitExternal)
   {
@@ -3145,6 +3092,7 @@ static void addInterfaceOrServiceToServiceOrSingleton(
   md->enableCallerGraph(root->callerGraph);
   md->enableReferencedByRelation(root->referencedByRelation);
   md->enableReferencesRelation(root->referencesRelation);
+  md->addQualifiers(root->qualifiers);
 
   Debug::print(Debug::Functions,0,
       "  Interface Member:\n"
@@ -3356,6 +3304,7 @@ static void addMethodToClass(const Entry *root,ClassDefMutable *cd,
   md->enableCallerGraph(root->callerGraph);
   md->enableReferencedByRelation(root->referencedByRelation);
   md->enableReferencesRelation(root->referencesRelation);
+  md->addQualifiers(root->qualifiers);
 
   Debug::print(Debug::Functions,0,
       "  Func Member:\n"
@@ -3475,6 +3424,7 @@ static void addGlobalFunction(const Entry *root,const QCString &rname,const QCSt
   md->enableCallerGraph(root->callerGraph);
   md->enableReferencedByRelation(root->referencedByRelation);
   md->enableReferencesRelation(root->referencesRelation);
+  md->addQualifiers(root->qualifiers);
 
   md->setRefItems(root->sli);
   if (nd && !nd->name().isEmpty() && nd->name().at(0)!='@')
@@ -3746,6 +3696,7 @@ static void buildFunctionList(const Entry *root)
                   md->enableCallerGraph(md->hasCallerGraph() || root->callerGraph);
                   md->enableReferencedByRelation(md->hasReferencedByRelation() || root->referencedByRelation);
                   md->enableReferencesRelation(md->hasReferencesRelation() || root->referencesRelation);
+                  md->addQualifiers(root->qualifiers);
 
                   // merge ingroup specifiers
                   if (md->getGroupDef()==0 && !root->groups.empty())
@@ -3895,11 +3846,13 @@ static void findFriends()
             mmd->enableCallerGraph(mmd->hasCallerGraph() || fmd->hasCallerGraph());
             mmd->enableReferencedByRelation(mmd->hasReferencedByRelation() || fmd->hasReferencedByRelation());
             mmd->enableReferencesRelation(mmd->hasReferencesRelation() || fmd->hasReferencesRelation());
+            mmd->addQualifiers(fmd->getQualifiers());
 
             fmd->enableCallGraph(mmd->hasCallGraph() || fmd->hasCallGraph());
             fmd->enableCallerGraph(mmd->hasCallerGraph() || fmd->hasCallerGraph());
             fmd->enableReferencedByRelation(mmd->hasReferencedByRelation() || fmd->hasReferencedByRelation());
             fmd->enableReferencesRelation(mmd->hasReferencesRelation() || fmd->hasReferencesRelation());
+            fmd->addQualifiers(mmd->getQualifiers());
           }
         }
       }
@@ -4706,7 +4659,7 @@ static bool findClassRelation(
             }
             Protection prot = bi->prot;
             if (Config_getBool(SIP_SUPPORT)) prot=Public;
-            if (!cd->isSubClass(baseClass)) // check for recursion, see bug690787
+            if (!cd->isSubClass(baseClass) && cd!=baseClass && cd->isBaseClass(baseClass,true,templSpec)==0) // check for recursion, see bug690787
             {
               cd->insertBaseClass(baseClass,usedName,prot,bi->virt,templSpec);
               // add this class as super class to the base class
@@ -4783,10 +4736,13 @@ static bool findClassRelation(
             {
               biName="<"+biName.left(biName.length()-2)+">";
             }
-            // add base class to this class
-            cd->insertBaseClass(baseClass,biName,bi->prot,bi->virt,templSpec);
-            // add this class as super class to the base class
-            baseClass->insertSubClass(cd,bi->prot,bi->virt,templSpec);
+            if (!cd->isSubClass(baseClass) && cd!=baseClass && cd->isBaseClass(baseClass,true,templSpec)==0) // check for recursion
+            {
+              // add base class to this class
+              cd->insertBaseClass(baseClass,biName,bi->prot,bi->virt,templSpec);
+              // add this class as super class to the base class
+              baseClass->insertSubClass(cd,bi->prot,bi->virt,templSpec);
+            }
             // the undocumented base was found in this file
             baseClass->insertUsedFile(root->fileDef());
 
@@ -5177,6 +5133,7 @@ static void addMemberDocs(const Entry *root,
   md->enableCallerGraph(root->callerGraph);
   md->enableReferencedByRelation(root->referencedByRelation);
   md->enableReferencesRelation(root->referencesRelation);
+  md->addQualifiers(root->qualifiers);
   ClassDefMutable *cd=md->getClassDefMutable();
   const NamespaceDef *nd=md->getNamespaceDef();
   QCString fullName;
@@ -5278,6 +5235,7 @@ static void addMemberDocs(const Entry *root,
   md->enableCallerGraph(md->hasCallerGraph() || root->callerGraph);
   md->enableReferencedByRelation(md->hasReferencedByRelation() || root->referencedByRelation);
   md->enableReferencesRelation(md->hasReferencesRelation() || root->referencesRelation);
+  md->addQualifiers(root->qualifiers);
 
   md->mergeMemberSpecifiers(spec);
   md->addSectionsToDefinition(root->anchors);
@@ -5304,6 +5262,7 @@ static void addMemberDocs(const Entry *root,
       md->setMemberGroupId(root->mGrpId);
     }
   }
+  md->addQualifiers(root->qualifiers);
 }
 
 //----------------------------------------------------------------------
@@ -5704,6 +5663,7 @@ static void addLocalObjCMethod(const Entry *root,
     md->enableCallerGraph(root->callerGraph);
     md->enableReferencedByRelation(root->referencedByRelation);
     md->enableReferencesRelation(root->referencesRelation);
+    md->addQualifiers(root->qualifiers);
     md->setDocumentation(root->doc,root->docFile,root->docLine);
     md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
     md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
@@ -6125,6 +6085,7 @@ static void addMemberSpecialization(const Entry *root,
   md->enableCallerGraph(root->callerGraph);
   md->enableReferencedByRelation(root->referencedByRelation);
   md->enableReferencesRelation(root->referencesRelation);
+  md->addQualifiers(root->qualifiers);
   md->setDocumentation(root->doc,root->docFile,root->docLine);
   md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
   md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
@@ -6187,6 +6148,7 @@ static void addOverloaded(const Entry *root,MemberName *mn,
     md->enableCallerGraph(root->callerGraph);
     md->enableReferencedByRelation(root->referencedByRelation);
     md->enableReferencesRelation(root->referencesRelation);
+    md->addQualifiers(root->qualifiers);
     QCString doc=getOverloadDocs();
     doc+="<p>";
     doc+=root->doc;
@@ -6784,6 +6746,7 @@ static void findMember(const Entry *root,
           md->enableCallerGraph(root->callerGraph);
           md->enableReferencedByRelation(root->referencedByRelation);
           md->enableReferencesRelation(root->referencesRelation);
+          md->addQualifiers(root->qualifiers);
           md->setDocumentation(root->doc,root->docFile,root->docLine);
           md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
           md->setDocsForDefinition(!root->proto);
@@ -7164,6 +7127,7 @@ static void findEnums(const Entry *root)
       md->enableCallerGraph(root->callerGraph);
       md->enableReferencedByRelation(root->referencedByRelation);
       md->enableReferencesRelation(root->referencesRelation);
+      md->addQualifiers(root->qualifiers);
       //printf("%s::setRefItems(%zu)\n",qPrint(md->name()),root->sli.size());
       md->setRefItems(root->sli);
       //printf("found enum %s nd=%p\n",qPrint(md->name()),nd);
@@ -7644,13 +7608,14 @@ static void findDocumentedEnumValues()
 
 static void addMembersToIndex()
 {
+  auto &index = Index::instance();
   // for each class member name
   for (const auto &mn : *Doxygen::memberNameLinkedMap)
   {
     // for each member definition
     for (const auto &md : *mn)
     {
-      addClassMemberNameToIndex(md.get());
+      index.addClassMemberNameToIndex(md.get());
     }
   }
   // for each file/namespace function name
@@ -7661,15 +7626,15 @@ static void addMembersToIndex()
     {
       if (md->getNamespaceDef())
       {
-        addNamespaceMemberNameToIndex(md.get());
+        index.addNamespaceMemberNameToIndex(md.get());
       }
       else
       {
-        addFileMemberNameToIndex(md.get());
+        index.addFileMemberNameToIndex(md.get());
       }
     }
   }
-  sortMemberIndexLists();
+  index.sortMemberIndexLists();
 }
 
 //----------------------------------------------------------------------
@@ -8183,7 +8148,7 @@ static void generateFileSources()
 
 static void generateFileDocs()
 {
-  if (documentedFiles==0) return;
+  if (Index::instance().numDocumentedFiles()==0) return;
 
   if (!Doxygen::inputNameLinkedMap->empty())
   {
@@ -9353,7 +9318,7 @@ static void resolveUserReferences()
 static void generatePageDocs()
 {
   //printf("documentedPages=%d real=%d\n",documentedPages,Doxygen::pageLinkedMap->count());
-  if (documentedPages==0) return;
+  if (Index::instance().numDocumentedPages()==0) return;
   for (const auto &pd : *Doxygen::pageLinkedMap)
   {
     if (!pd->getGroupDef() && !pd->isReference())
@@ -9423,7 +9388,7 @@ void printNavTree(Entry *root,int indent)
 
 static void generateExampleDocs()
 {
-  g_outputList->disable(OutputGenerator::Man);
+  g_outputList->disable(OutputType::Man);
   for (const auto &pd : *Doxygen::exampleLinkedMap)
   {
     msg("Generating docs for example %s...\n",qPrint(pd->name()));
@@ -9455,7 +9420,7 @@ static void generateExampleDocs()
                         );
     endFile(*g_outputList); // contains g_outputList->endContents()
   }
-  g_outputList->enable(OutputGenerator::Man);
+  g_outputList->enable(OutputType::Man);
 }
 
 //----------------------------------------------------------------------------
@@ -9596,12 +9561,10 @@ static void runHtmlHelpCompiler()
   std::string oldDir = Dir::currentDirPath();
   Dir::setCurrent(Config_getString(HTML_OUTPUT).str());
   Portable::setShortDir();
-  Portable::sysTimerStart();
   if (Portable::system(Config_getString(HHC_LOCATION).data(), qPrint(HtmlHelp::hhpFileName), Debug::isFlagSet(Debug::ExtCmd))!=1)
   {
     err("failed to run html help compiler on %s\n", qPrint(HtmlHelp::hhpFileName));
   }
-  Portable::sysTimerStop();
   Dir::setCurrent(oldDir);
 }
 
@@ -9610,7 +9573,6 @@ static void runQHelpGenerator()
   QCString args = Qhp::qhpFileName + " -o \"" + Qhp::getQchFileName() + "\"";
   std::string oldDir = Dir::currentDirPath();
   Dir::setCurrent(Config_getString(HTML_OUTPUT).str());
-  Portable::sysTimerStart();
 
   QCString qhgLocation=Config_getString(QHG_LOCATION);
   if (Debug::isFlagSet(Debug::Qhp)) // produce info for debugging
@@ -9672,7 +9634,6 @@ static void runQHelpGenerator()
   {
     err("failed to run qhelpgenerator on %s\n",qPrint(Qhp::qhpFileName));
   }
-  Portable::sysTimerStop();
   Dir::setCurrent(oldDir);
 }
 
@@ -10058,7 +10019,7 @@ static std::shared_ptr<Entry> parseFile(OutlineParserInterface &parser,
   BufStr convBuf(preBuf.curPos()+1024);
 
   // convert multi-line C++ comments to C style comments
-  convertCppComments(&preBuf,&convBuf,fileName);
+  convertCppComments(preBuf,convBuf,fileName);
 
   convBuf.addChar('\0');
 
@@ -10430,7 +10391,10 @@ static void readDir(FileInfo *fi,
     if (exclSet==0 || exclSet->find(cfi.absFilePath())==exclSet->end())
     { // file should not be excluded
       //printf("killSet->find(%s)\n",qPrint(cfi->absFilePath()));
-      if (!cfi.exists() || !cfi.isReadable())
+      if (Config_getBool(EXCLUDE_SYMLINKS) && cfi.isSymLink())
+      {
+      }
+      else if (!cfi.exists() || !cfi.isReadable())
       {
         if (errorIfNotExist)
         {
@@ -10438,7 +10402,6 @@ static void readDir(FileInfo *fi,
         }
       }
       else if (cfi.isFile() &&
-          (!Config_getBool(EXCLUDE_SYMLINKS) || !cfi.isSymLink()) &&
           (patList==0 || patternMatch(cfi,*patList)) &&
           (exclPatList==0 || !patternMatch(cfi,*exclPatList)) &&
           (killSet==0 || killSet->find(cfi.absFilePath())==killSet->end())
@@ -10462,7 +10425,6 @@ static void readDir(FileInfo *fi,
         if (killSet) killSet->insert(fullName);
       }
       else if (recursive &&
-          (!Config_getBool(EXCLUDE_SYMLINKS) || !cfi.isSymLink()) &&
           cfi.isDir() &&
           (exclPatList==0 || !patternMatch(cfi,*exclPatList)) &&
           cfi.fileName().at(0)!='.') // skip "." ".." and ".dir"
@@ -10515,51 +10477,51 @@ void readFileOrDirectory(const QCString &s,
   {
     if (exclSet==0 || exclSet->find(fi.absFilePath())==exclSet->end())
     {
-      if (!fi.exists() || !fi.isReadable())
+      if (Config_getBool(EXCLUDE_SYMLINKS) && fi.isSymLink())
+      {
+      }
+      else if (!fi.exists() || !fi.isReadable())
       {
         if (errorIfNotExist)
         {
           warn_uncond("source '%s' is not a readable file or directory... skipping.\n",qPrint(s));
         }
       }
-      else if (!Config_getBool(EXCLUDE_SYMLINKS) || !fi.isSymLink())
+      else if (fi.isFile())
       {
-        if (fi.isFile())
+        std::string dirPath = fi.dirPath(true);
+        std::string filePath = fi.absFilePath();
+        if (paths && !dirPath.empty())
         {
-          std::string dirPath = fi.dirPath(true);
-          std::string filePath = fi.absFilePath();
-          if (paths && !dirPath.empty())
+          paths->insert(dirPath);
+        }
+        //printf("killSet.find(%s)=%d\n",qPrint(fi.absFilePath()),killSet.find(fi.absFilePath())!=killSet.end());
+        if (killSet==0 || killSet->find(filePath)==killSet->end())
+        {
+          std::string name=fi.fileName();
+          if (fnMap)
           {
-            paths->insert(dirPath);
+            std::unique_ptr<FileDef> fd { createFileDef(QCString(dirPath+"/"),QCString(name)) };
+            if (!name.empty())
+            {
+              FileName *fn = fnMap->add(QCString(name),QCString(filePath));
+              fn->push_back(std::move(fd));
+            }
           }
-          //printf("killSet.find(%s)=%d\n",qPrint(fi.absFilePath()),killSet.find(fi.absFilePath())!=killSet.end());
-          if (killSet==0 || killSet->find(filePath)==killSet->end())
+          if (resultList || resultSet)
           {
-            std::string name=fi.fileName();
-            if (fnMap)
-            {
-              std::unique_ptr<FileDef> fd { createFileDef(QCString(dirPath+"/"),QCString(name)) };
-              if (!name.empty())
-              {
-                FileName *fn = fnMap->add(QCString(name),QCString(filePath));
-                fn->push_back(std::move(fd));
-              }
-            }
-            if (resultList || resultSet)
-            {
-              if (resultList) resultList->push_back(filePath);
-              if (resultSet) resultSet->insert(filePath);
-            }
+            if (resultList) resultList->push_back(filePath);
+            if (resultSet) resultSet->insert(filePath);
+          }
 
-            if (killSet) killSet->insert(fi.absFilePath());
-          }
+          if (killSet) killSet->insert(fi.absFilePath());
         }
-        else if (fi.isDir()) // readable dir
-        {
-          readDir(&fi,fnMap,exclSet,patList,
-              exclPatList,resultList,resultSet,errorIfNotExist,
-              recursive,killSet,paths);
-        }
+      }
+      else if (fi.isDir()) // readable dir
+      {
+        readDir(&fi,fnMap,exclSet,patList,
+            exclPatList,resultList,resultSet,errorIfNotExist,
+            recursive,killSet,paths);
       }
     }
   }
@@ -10678,7 +10640,7 @@ static void dumpSymbol(TextStream &t,Definition *d)
 
 static void dumpSymbolMap()
 {
-  std::ofstream f("symbols.sql",std::ofstream::out | std::ofstream::binary);
+  std::ofstream f = Portable::openOutputStream("symbols.sql");
   if (f.is_open())
   {
     TextStream t(&f);
@@ -10847,9 +10809,6 @@ void initDoxygen()
   // register any additional parsers here...
 
   initDefaultExtensionMapping();
-  initClassMemberIndices();
-  initNamespaceMemberIndices();
-  initFileMemberIndices();
 
 #if USE_LIBCLANG
   Doxygen::clangUsrMap   = new ClangUsrMap;
@@ -10984,7 +10943,7 @@ void readConfiguration(int argc, char **argv)
           cleanUpDoxygen();
           exit(0);
         }
-        retVal = Debug::setFlag(debugLabel);
+        retVal = Debug::setFlagStr(debugLabel);
         if (!retVal)
         {
           err("option \"-d\" has unknown debug specifier: \"%s\".\n",qPrint(debugLabel));
@@ -11058,7 +11017,7 @@ void readConfiguration(int argc, char **argv)
           if (openOutputFile(argv[optInd+1],f))
           {
             TextStream t(&f);
-            EmojiEntityMapper::instance()->writeEmojiFile(t);
+            EmojiEntityMapper::instance().writeEmojiFile(t);
           }
           cleanUpDoxygen();
           exit(0);
@@ -11506,7 +11465,7 @@ static void writeTagFile()
   QCString generateTagFile = Config_getString(GENERATE_TAGFILE);
   if (generateTagFile.isEmpty()) return;
 
-  std::ofstream f(generateTagFile.str(),std::ofstream::out | std::ofstream::binary);
+  std::ofstream f = Portable::openOutputStream(generateTagFile);
   if (!f.is_open())
   {
     err("cannot open tag file %s for writing\n",
@@ -11796,7 +11755,7 @@ void searchInputFiles()
   }
   if (Doxygen::inputNameLinkedMap->empty())
   {
-    warn_uncond("No files to be processed, please check your settings, in particular INPUT, FILE_PATTERNS, and RECURSIVE");
+    warn_uncond("No files to be processed, please check your settings, in particular INPUT, FILE_PATTERNS, and RECURSIVE\n");
   }
   g_s.end();
 }
@@ -11961,6 +11920,8 @@ void parseInput()
     {
       Portable::setenv("DOTFONTPATH",qPrint(curFontPath));
     }
+    // issue 9319
+    Portable::setenv("CAIRO_DEBUG_PDF","1");
   }
 
 
@@ -12364,7 +12325,7 @@ void parseInput()
   g_s.end();
 
   g_s.begin("Counting data structures...\n");
-  countDataStructures();
+  Index::instance().countDataStructures();
   g_s.end();
 
   g_s.begin("Resolving user defined references...\n");
@@ -12744,11 +12705,18 @@ void generateOutput()
 
   if (Debug::isFlagSet(Debug::Time))
   {
-    msg("Total elapsed time: %.6f seconds\n(of which %.6f seconds waiting for external tools to finish)\n",
+
+    std::size_t numThreads = static_cast<std::size_t>(Config_getInt(NUM_PROC_THREADS));
+    if (numThreads<1) numThreads=1;
+    msg("Total elapsed time: %.6f seconds\n(of which an average of %.6f seconds per thread waiting for external tools to finish)\n",
          (static_cast<double>(Debug::elapsedTime())),
-         Portable::getSysElapsedTime()
+         Portable::getSysElapsedTime()/numThreads
         );
     g_s.print();
+
+    Debug::clearFlag(Debug::Time);
+    msg("finished...\n");
+    Debug::setFlag(Debug::Time);
   }
   else
   {

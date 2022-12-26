@@ -21,6 +21,46 @@
 #include "config.h"
 #include "outputgen.h"
 
+/** Generator for RTF code fragments */
+class RTFCodeGenerator : public CodeOutputInterface
+{
+  public:
+    RTFCodeGenerator(TextStream &t) : m_t(t) {}
+    OutputType type() const { return OutputType::RTF; }
+    void codify(const QCString &text);
+    void writeCodeLink(CodeSymbolType type,
+                       const QCString &ref,const QCString &file,
+                       const QCString &anchor,const QCString &name,
+                       const QCString &tooltip);
+    void writeTooltip(const QCString &,
+                      const DocLinkInfo &,
+                      const QCString &,
+                      const QCString &,
+                      const SourceLinkInfo &,
+                      const SourceLinkInfo &
+                     ) {}
+    void writeLineNumber(const QCString &,const QCString &,const QCString &,int l, bool);
+    void startCodeLine(bool);
+    void endCodeLine();
+    void startFontClass(const QCString &);
+    void endFontClass();
+    void writeCodeAnchor(const QCString &) {}
+    void startCodeFragment(const QCString &style);
+    void endCodeFragment(const QCString &);
+
+  private:
+    friend class RTFGenerator;
+    void setSourceFileName(const QCString &name);
+    void setIndentLevel(int level) { m_indentLevel=level; }
+    QCString rtf_Code_DepthStyle();
+    int  m_col = 0;
+    TextStream &m_t;
+    bool m_doxyCodeLineOpen = false;
+    QCString m_sourceFileName;
+    int m_indentLevel = 0;
+};
+
+
 /** Generator for RTF output. */
 class RTFGenerator : public OutputGenerator
 {
@@ -35,7 +75,7 @@ class RTFGenerator : public OutputGenerator
     void cleanup();
     static void writeStyleSheetFile(TextStream &t);
     static void writeExtensionsFile(TextStream &t);
-    OutputType type() const { return RTF; }
+    OutputType type() const { return OutputType::RTF; }
 
     void setRelativePath(const QCString &path);
     void setSourceFileName(const QCString &sourceFileName);
@@ -48,8 +88,8 @@ class RTFGenerator : public OutputGenerator
     void endFile();
     void clearBuffer();
 
-    void startIndexSection(IndexSections);
-    void endIndexSection(IndexSections);
+    void startIndexSection(IndexSection);
+    void endIndexSection(IndexSection);
     void writePageLink(const QCString &,bool);
     void startProjectNumber();
     void endProjectNumber();
@@ -76,16 +116,8 @@ class RTFGenerator : public OutputGenerator
     void startIndexItem(const QCString &ref,const QCString &file);
     void endIndexItem(const QCString &ref,const QCString &file);
     void docify(const QCString &text);
-    void codify(const QCString &text);
     void writeObjectLink(const QCString &ref,const QCString &file,
                          const QCString &anchor,const QCString &name);
-    void writeCodeLink(CodeSymbolType type,
-                       const QCString &ref, const QCString &file,
-                       const QCString &anchor,const QCString &name,
-                       const QCString &tooltip);
-    void writeTooltip(const QCString &, const DocLinkInfo &, const QCString &,
-                      const QCString &, const SourceLinkInfo &, const SourceLinkInfo &
-                     ) {}
     void startTextLink(const QCString &f,const QCString &anchor);
     void endTextLink();
     void startHtmlLink(const QCString &url);
@@ -101,7 +133,7 @@ class RTFGenerator : public OutputGenerator
     void endMemberSections() {}
     void startHeaderSection() {}
     void endHeaderSection() {}
-    void startMemberHeader(const QCString &,int) { startGroupHeader(FALSE); }
+    void startMemberHeader(const QCString &,int) { startGroupHeader(0); }
     void endMemberHeader() { endGroupHeader(FALSE); }
     void startMemberSubtitle();
     void endMemberSubtitle();
@@ -125,11 +157,6 @@ class RTFGenerator : public OutputGenerator
     void writeRuler() { rtfwriteRuler_thin(); }
 
     void writeAnchor(const QCString &fileName,const QCString &name);
-    void startCodeFragment(const QCString &style);
-    void endCodeFragment(const QCString &style);
-    void writeLineNumber(const QCString &,const QCString &,const QCString &,int l, bool);
-    void startCodeLine(bool);
-    void endCodeLine();
     void startEmphasis() { m_t << "{\\i ";  }
     void endEmphasis()   { m_t << "}"; }
     void startBold()     { m_t << "{\\b "; }
@@ -162,7 +189,7 @@ class RTFGenerator : public OutputGenerator
     void startMemberDeclaration() {}
     void endMemberDeclaration(const QCString &,const QCString &) {}
     void writeInheritedSectionTitle(const QCString &,const QCString &,const QCString &,
-                      const QCString &,const QCString &,const QCString &) {}
+                      const QCString &,const QCString &,const QCString &);
     void startDescList(SectionTypes);
     void startExamples();
     void endExamples();
@@ -257,12 +284,9 @@ class RTFGenerator : public OutputGenerator
     void writeLabel(const QCString &l,bool isLast);
     void endLabels();
 
-    void startFontClass(const QCString &);
-    void endFontClass();
-
-    void writeCodeAnchor(const QCString &) {}
-
     static bool preProcessFileInplace(const QCString &path,const QCString &name);
+
+    CodeOutputInterface *codeGen() { return &m_codeGen; }
 
   private:
     QCString rtf_BList_DepthStyle();
@@ -270,7 +294,6 @@ class RTFGenerator : public OutputGenerator
     QCString rtf_EList_DepthStyle();
     QCString rtf_LCList_DepthStyle();
     QCString rtf_DList_DepthStyle();
-    QCString rtf_Code_DepthStyle();
     void beginRTFDocument();
     void beginRTFChapter();
     void beginRTFSection();
@@ -284,13 +307,10 @@ class RTFGenerator : public OutputGenerator
     void incIndentLevel();
     void decIndentLevel();
 
-    QCString m_sourceFileName;
-    int  m_col = 0;
     bool m_bstartedBody = false;  // has startbody been called yet?
     bool m_omitParagraph = false; // should a the next paragraph command be ignored?
     int  m_numCols = 0; // number of columns in a table
     QCString m_relPath;
-    bool m_doxyCodeLineOpen = false;
 
     // RTF does not really have a additive indent...manually set list level.
     static const int maxIndentLevels = 13;
@@ -302,6 +322,7 @@ class RTFGenerator : public OutputGenerator
       char type = '1';
     };
     RTFListItemInfo m_listItemInfo[maxIndentLevels];
+    RTFCodeGenerator m_codeGen;
 };
 
 #endif

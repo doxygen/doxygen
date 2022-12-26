@@ -55,6 +55,7 @@
 #include "searchindex.h"
 #include "resourcemgr.h"
 #include "dir.h"
+#include "datetime.h"
 
 // TODO: pass the current file to Dot*::writeGraph, so the user can put dot graphs in other
 //       files as well
@@ -341,7 +342,7 @@ class DoxygenContext::Private
   private:
     // Property getters
     TemplateVariant version() const         { return getDoxygenVersion(); }
-    TemplateVariant date() const            { return dateToString(TRUE); }
+    TemplateVariant date() const            { return dateToString(DateTimeType::DateTime); }
     TemplateVariant mathJaxCodeFile() const { return m_mathJaxCodeFile.get(this); }
     TemplateVariant mathJaxMacros() const   { return m_mathJaxMacros.get(this); }
 
@@ -5710,7 +5711,7 @@ class NestingContext::Private : public GenericNodeListContext
         bool hasChildren = namespaceHasNestedNamespace(nd) ||
                            (addClasses  && namespaceHasNestedClass(nd,false,ClassDef::Class)) ||
                            (addConcepts && namespaceHasNestedConcept(nd)) ||
-                           (m_type==ContextTreeType::Namespace && countVisibleMembers(nd));
+                           (m_type==ContextTreeType::Namespace && nd->countVisibleMembers());
         bool isLinkable  = nd->isLinkableInProject();
         if (isLinkable && hasChildren)
         {
@@ -5908,11 +5909,11 @@ class NestingContext::Private : public GenericNodeListContext
         bool b;
         if (cd->getLanguage()==SrcLangExt_VHDL)
         {
-          b=hasVisibleRoot(cd->subClasses());
+          b=classHasVisibleRoot(cd->subClasses());
         }
         else
         {
-          b=hasVisibleRoot(cd->baseClasses());
+          b=classHasVisibleRoot(cd->baseClasses());
         }
 
         if (cd->isVisibleInHierarchy() && b)
@@ -5934,11 +5935,11 @@ class NestingContext::Private : public GenericNodeListContext
           {
             continue;
           }
-          b=!hasVisibleRoot(cd->subClasses());
+          b=!classHasVisibleRoot(cd->subClasses());
         }
         else
         {
-          b=!hasVisibleRoot(cd->baseClasses());
+          b=!classHasVisibleRoot(cd->baseClasses());
         }
         if (b)
         {

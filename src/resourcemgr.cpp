@@ -15,13 +15,13 @@
 
 #include <map>
 #include <string.h>
-#include <fstream>
 
 #include "resourcemgr.h"
 #include "util.h"
 #include "version.h"
 #include "message.h"
 #include "config.h"
+#include "portable.h"
 
 class ResourceMgr::Private
 {
@@ -58,8 +58,8 @@ bool ResourceMgr::writeCategory(const QCString &categoryName,const QCString &tar
     Resource &res = kv.second;
     if (res.category==categoryName)
     {
-      std::string pathName = targetDir.str()+"/"+res.name;
-      std::ofstream f(pathName,std::ofstream::out | std::ofstream::binary);
+      QCString pathName = targetDir+"/"+res.name;
+      std::ofstream f = Portable::openOutputStream(pathName);
       bool ok=false;
       if (f.is_open())
       {
@@ -78,9 +78,7 @@ bool ResourceMgr::writeCategory(const QCString &categoryName,const QCString &tar
 
 bool ResourceMgr::copyResourceAs(const QCString &name,const QCString &targetDir,const QCString &targetName,bool append) const
 {
-  std::string pathName = targetDir.str()+"/"+targetName.str();
-  std::ios_base::openmode mode = std::ofstream::out | std::ofstream::binary;
-  if (append) mode |= std::ofstream::app;
+  QCString pathName = targetDir+"/"+targetName;
   const Resource *res = get(name);
   if (res)
   {
@@ -88,7 +86,7 @@ bool ResourceMgr::copyResourceAs(const QCString &name,const QCString &targetDir,
     {
       case Resource::Verbatim:
         {
-          std::ofstream f(pathName,mode);
+          std::ofstream f = Portable::openOutputStream(pathName,append);
           bool ok=false;
           if (f.is_open())
           {
@@ -139,7 +137,7 @@ bool ResourceMgr::copyResourceAs(const QCString &name,const QCString &targetDir,
         break;
       case Resource::CSS:
         {
-          std::ofstream t(pathName,mode);
+          std::ofstream t = Portable::openOutputStream(pathName,append);
           if (t.is_open())
           {
             QCString buf(res->size+1);
@@ -159,7 +157,7 @@ bool ResourceMgr::copyResourceAs(const QCString &name,const QCString &targetDir,
         break;
       case Resource::SVG:
         {
-          std::ofstream t(pathName,mode);
+          std::ofstream t = Portable::openOutputStream(pathName,append);
           if (t.is_open())
           {
             QCString buf(res->size+1);

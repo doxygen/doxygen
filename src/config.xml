@@ -303,7 +303,7 @@ Go to the <a href="commands.html">next</a> section or return to the
  is set to \c YES. Level 0 represents 16 directories, and every level increment
  doubles the number of directories, resulting in 4096 directories at level 8 which is the
  default and also the maximum value. The sub-directories are organized in 2 levels, the first
- level always has a fixed numer of 16 directories.
+ level always has a fixed number of 16 directories.
 ]]>
       </docs>
     </option>
@@ -960,7 +960,8 @@ Go to the <a href="commands.html">next</a> section or return to the
  If the \c HIDE_UNDOC_CLASSES tag is set to \c YES, doxygen will hide all
  undocumented classes that are normally visible in the class hierarchy.
  If set to \c NO, these classes will be included in the
- various overviews.
+ various overviews. This option will also hide undocumented C++ concepts
+ if enabled.
  This option has no effect if \ref cfg_extract_all "EXTRACT_ALL" is enabled.
 ]]>
       </docs>
@@ -1372,6 +1373,17 @@ FILE_VERSION_FILTER = "cleartool desc -fmt \%Vn"
  If \ref cfg_extract_all "EXTRACT_ALL" is set to \c YES then this flag will
  automatically be disabled.
  See also \ref cfg_warn_if_incomplete_doc "WARN_IF_INCOMPLETE_DOC"
+]]>
+      </docs>
+    </option>
+    <option type='bool' id='WARN_IF_UNDOC_ENUM_VAL' defval='0'>
+      <docs>
+<![CDATA[
+ If \c WARN_IF_UNDOC_ENUM_VAL option is set to \c YES, doxygen will warn
+ about undocumented enumeration values.
+ If set to \c NO, doxygen will accept undocumented enumeration values.
+ If \ref cfg_extract_all "EXTRACT_ALL" is set to \c YES then this flag will
+ automatically be disabled.
 ]]>
       </docs>
     </option>
@@ -1881,10 +1893,11 @@ to disable this feature.
     <option type='list' id='IGNORE_PREFIX' format='string' depends='ALPHABETICAL_INDEX'>
       <docs>
 <![CDATA[
- In case all classes in a project start with a common prefix, all classes will
- be put under the same header in the alphabetical index.
- The \c IGNORE_PREFIX tag can be used to specify a prefix
+ The \c IGNORE_PREFIX tag can be used to specify a prefix 
  (or a list of prefixes) that should be ignored while generating the index headers.
+ The \c IGNORE_PREFIX tag works for classes, function and member names.
+ The entity will be placed in the alphabetical list under the first letter of the entity name that remains
+ after removing the prefix.
 ]]>
       </docs>
     </option>
@@ -1946,8 +1959,9 @@ doxygen -w html new_header.html new_footer.html new_stylesheet.css YourConfigFil
  The following markers have a special meaning inside the header and footer:
  <dl>
  <dt><code>$title</code><dd>will be replaced with the title of the page.
- <dt><code>$datetime</code><dd>will be replaced with current the date and time.
+ <dt><code>$datetime</code><dd>will be replaced with the current date and time.
  <dt><code>$date</code><dd>will be replaced with the current date.
+ <dt><code>$time</code><dd>will be replaced with the current time.
  <dt><code>$year</code><dd>will be replaces with the current year.
  <dt><code>$doxygenversion</code><dd>will be replaced with the version of doxygen
  <dt><code>$projectname</code><dd>will be replaced with the name of
@@ -2086,7 +2100,8 @@ doxygen -w html new_header.html new_footer.html new_stylesheet.css YourConfigFil
  \note The order of the extra style sheet files is of importance (e.g. the last
  style sheet in the list overrules the setting of the previous ones in the list).
  \note Since the styling of scrollbars can currently not be overruled in Webkit/Chromium, the
- styling will be left out of the default doxygen.css if extra stylesheets have be specified.
+ styling will be left out of the default doxygen.css if one or more extra stylesheets
+ have been specified.
  So if scrollbar customization is desired it has to be added explicitly.
 ]]>
       </docs>
@@ -2939,8 +2954,9 @@ doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty
 <![CDATA[
  <dl>
  <dt><code>$title</code><dd>will be replaced with the project name.
- <dt><code>$datetime</code><dd>will be replaced with current the date and time.
+ <dt><code>$datetime</code><dd>will be replaced with the current date and time.
  <dt><code>$date</code><dd>will be replaced with the current date.
+ <dt><code>$time</code><dd>will be replaced with the current time.
  <dt><code>$year</code><dd>will be replaces with the current year.
  <dt><code>$doxygenversion</code><dd>will be replaced with the version of doxygen
  <dt><code>$projectname</code><dd>will be replaced with the name of

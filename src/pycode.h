@@ -25,7 +25,6 @@
 
 #include "parserintf.h"
 
-class CodeOutputInterface;
 class FileDef;
 class MemberDef;
 class QCString;

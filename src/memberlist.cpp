@@ -433,7 +433,7 @@ void MemberList::writePlainDeclarations(OutputList &ol, bool inGroup,
                   ol.writeDoc(ast.get(),cd,md);
                   if (md->hasDetailedDescription())
                   {
-                    ol.disableAllBut(OutputGenerator::Html);
+                    ol.disableAllBut(OutputType::Html);
                     ol.docify(" ");
                     ol.startTextLink(md->getOutputFileBase(),
                         md->anchor());
@@ -550,8 +550,6 @@ void MemberList::writeDeclarations(OutputList &ol,
     if ( cd && !optimizeVhdl && cd->countMembersIncludingGrouped(
                                       m_listType,inheritedFrom,TRUE)>0 )
     {
-      ol.pushGeneratorState();
-      ol.disableAllBut(OutputGenerator::Html);
       inheritId = substitute(listTypeAsString(lt),"-","_")+"_"+
                   stripPath(cd->getOutputFileBase());
       if (!title.isEmpty())
@@ -560,7 +558,6 @@ void MemberList::writeDeclarations(OutputList &ol,
                                       cd->getOutputFileBase(),
                                       cd->anchor(),title,cd->displayName());
       }
-      ol.popGeneratorState();
     }
   }
   else if (num>numEnumValues)
@@ -671,7 +668,7 @@ void MemberList::writeDocumentation(OutputList &ol,
   if (!title.isEmpty())
   {
     ol.pushGeneratorState();
-      ol.disable(OutputGenerator::Html);
+      ol.disable(OutputType::Html);
       ol.writeRuler();
     ol.popGeneratorState();
     ol.startGroupHeader(showInline ? 2 : 0);
@@ -781,7 +778,7 @@ void MemberList::writeDocumentationPage(OutputList &ol,
       uint &count = it->second.count;
       QCString diskName=md->getOutputFileBase();
       QCString title=md->qualifiedName();
-      startFile(ol,diskName,md->name(),title,HLI_None,!generateTreeView,diskName);
+      startFile(ol,diskName,md->name(),title,HighlightedItem::None,!generateTreeView,diskName);
       if (!generateTreeView)
       {
         container->writeNavigationPath(ol);
@@ -794,7 +791,7 @@ void MemberList::writeDocumentationPage(OutputList &ol,
         md->writeDocumentation(this,count++,overloadCount,ol,scopeName,container_d,m_container==MemberListContainer::Group);
 
         ol.endContents();
-        endFileWithNavPath(container_d,ol);
+        endFileWithNavPath(ol,container_d);
       }
       else
       {

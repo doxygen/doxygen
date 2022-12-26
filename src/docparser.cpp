@@ -189,12 +189,10 @@ QCString DocParser::findAndCopyImage(const QCString &fileName, DocImage::Type ty
       epstopdfArgs.sprintf("\"%s/%s.eps\" --outfile=\"%s/%s.pdf\"",
                            qPrint(outputDir), qPrint(baseName),
 			   qPrint(outputDir), qPrint(baseName));
-      Portable::sysTimerStart();
       if (Portable::system("epstopdf",epstopdfArgs)!=0)
       {
 	err("Problems running epstopdf. Check your TeX installation!\n");
       }
-      Portable::sysTimerStop();
       return baseName;
     }
   }
@@ -561,6 +559,10 @@ void DocParser::errorHandleDefaultToken(DocNodeVariant *parent,int tok,
     case TK_SYMBOL:
       warn_doc_error(context.fileName,tokenizer.getLineNr(),"Unsupported symbol %s found as part of a %s",
            qPrint(context.token->name), qPrint(txt));
+      break;
+    case TK_HTMLTAG:
+      warn_doc_error(context.fileName,tokenizer.getLineNr(),"Unsupported HTML tag <%s%s> found as part of a %s",
+           context.token->endTag ? "/" : "",qPrint(context.token->name), qPrint(txt));
       break;
     default:
       children.append<DocWord>(this,parent,context.token->name);
@@ -1919,7 +1921,7 @@ IDocNodeASTPtr validatingParseDoc(IDocParser &parserIntf,
       )
      )
   {
-    parser->context.context = ctx->name();
+    parser->context.context = ctx->qualifiedName();
   }
   else if (ctx && ctx->definitionType()==Definition::TypePage)
   {

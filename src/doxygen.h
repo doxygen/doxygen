@@ -16,6 +16,8 @@
 #ifndef DOXYGEN_H
 #define DOXYGEN_H
 
+#include <mutex>
+
 #include "containers.h"
 #include "membergroup.h"
 #include "dirdef.h"
@@ -131,6 +133,9 @@ class Doxygen
     static QCString                  verifiedDotPath;
     static volatile bool             terminating;
     static InputFileEncodingList     inputFileEncodingList;
+    static std::mutex                searchIndexMutex;
+    static std::mutex                countFlowKeywordsMutex;
+    static std::mutex                addExampleMutex;
 };
 
 /** Deleter that only deletes an object if doxygen is not already terminating */

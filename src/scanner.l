@@ -85,6 +85,8 @@ struct scannerYY_state
   int              lastClassTemplSpecContext = 0;
   int              lastPreLineCtrlContext = 0;
   int              lastSkipVerbStringContext = 0;
+  int              lastSkipInterpStringContext = 0;
+  int              lastSkipInterpVerbStringContext = 0;
   int              lastCommentInArgContext = 0;
   int              lastRawStringContext = 0;
   int              lastCSConstraint = 0;
@@ -167,6 +169,8 @@ struct scannerYY_state
   TextStream *pCopyHereDocGString = 0;
   TextStream *pCopyRawGString = 0;
   TextStream *pSkipVerbString = 0;
+  TextStream *pSkipInterpString = 0;
+  TextStream *pSkipInterpVerbString = 0;
 
   bool             insideFormula = false;
   bool             insideTryBlock = false;
@@ -253,13 +257,15 @@ BNopt     {BN}*
 BL        [ \t\r]*"\n"
 B         [ \t]
 Bopt      {B}*
+DIGIT     [0-9]
+HEXDIGIT  ({DIGIT}|[a-f]|[A-F])
 ID        [$a-z_A-Z\x80-\xFF][$a-z_A-Z0-9\x80-\xFF]*
 SCOPENAME "$"?(({ID}?{BN}*"::"{BN}*)*)(((~|!){BN}*)?{ID})
 TSCOPE    {ID}("<"[a-z_A-Z0-9 \t\*\&,:]*">")?
 CSSCOPENAME (({ID}?{BN}*"."{BN}*)*)((~{BN}*)?{ID})
 PRE       [pP][rR][eE]
 CODE      [cC][oO][dD][eE]
-CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
+CHARLIT   (("'"\\x[0-9a-fA-F]{1,2}"'")|("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 PHPKW     ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 PHPUSEKW  ("public"|"private"|"protected")
 IDLATTR   ("["[^\]]*"]"){BN}*
@@ -367,6 +373,8 @@ NONLopt [^\n]*
 %x      DefinePHPEnd
 %x      OldStyleArgs
 %x      SkipVerbString
+%x      SkipInterpString
+%x      SkipInterpVerbString
 %x      ObjCMethod
 %x      ObjCReturnType
 %x      ObjCParams
@@ -2966,7 +2974,7 @@ NONLopt [^\n]*
                                           yyextra->fullArgString+=yytext;
                                           lineCount(yyscanner);
                                         }
-<ReadInitializer,ReadInitializerPtr>\"                  {
+<ReadInitializer,ReadInitializerPtr>\"  {
                                           if (yyextra->insideIDL && yyextra->insideCppQuote)
                                           {
                                             BEGIN(EndCppQuote);
@@ -3880,13 +3888,48 @@ NONLopt [^\n]*
                                           yyextra->lastSquareContext = YY_START;
                                           BEGIN(SkipSquare);
                                         }
-<ReadBody,ReadNSBody,ReadBodyIntf>[^\r\n\#{}"@'/<]*     { yyextra->current->program << yytext ; }
+<ReadBody,ReadNSBody,ReadBodyIntf>[^\r\n\#{}"@'/<\\\$]*   { yyextra->current->program << yytext ; }
 <ReadBody,ReadNSBody,ReadBodyIntf>{CPPC}.*                { yyextra->current->program << yytext ; }
 <ReadBody,ReadNSBody,ReadBodyIntf>"#".* { if (!yyextra->insidePHP)
                                             REJECT;
                                           // append PHP comment.
                                           yyextra->current->program << yytext ;
                                         }
+  /* Interpolated string C# */
+<CopyGString,SkipString,SkipCurly,ReadBody,ReadNSBody,ReadBodyIntf>$\"   { if (!yyextra->insideCS) REJECT
+                                          yyextra->current->program << yytext ;
+                                          yyextra->pSkipInterpString = &yyextra->current->program;
+                                          yyextra->lastSkipInterpStringContext=YY_START;
+                                          BEGIN( SkipInterpString );
+                                        }
+<SkipInterpString>([^"\\{}\x000D\x000A\x0085\x2028\x2029]|"{{"|"}}"|"\\'"|"\\\""|"\\\\"|"\\0"|"\\a"|"\\b"|"\\f"|"\\n"|"\\r"|"\\t"|"\\v"|"\\x"{HEXDIGIT}{HEXDIGIT}?{HEXDIGIT}?{HEXDIGIT}?|"\\"[uU]{HEXDIGIT}{HEXDIGIT}{HEXDIGIT}{HEXDIGIT}{HEXDIGIT}{HEXDIGIT}{HEXDIGIT}{HEXDIGIT})* {
+                                          *yyextra->pSkipInterpString << yytext;
+                                        }
+<SkipInterpString>\"                    {
+                                          *yyextra->pSkipInterpString << *yytext;
+                                          BEGIN( yyextra->lastSkipInterpStringContext );
+                                        }
+  /* Verbatim Interpolated string C# */
+<SkipCurly,ReadBody,ReadNSBody,ReadBodyIntf>$@\"   { if (!yyextra->insideCS) REJECT
+                                          yyextra->current->program << yytext ;
+                                          yyextra->pSkipInterpVerbString = &yyextra->current->program;
+                                          yyextra->lastSkipInterpVerbStringContext=YY_START;
+                                          BEGIN( SkipInterpVerbString );
+                                        }
+<SkipInterpVerbString>([^\"{}]|"{{"|"}}"|"\"\"")* {
+                                          *yyextra->pSkipInterpVerbString << yytext;
+                                        }
+<SkipInterpString>"{"[^}]*"}"           {
+                                          *yyextra->pSkipInterpString << yytext;
+                                        }
+<SkipInterpVerbString>"{"[^}]*"}"       {
+                                          *yyextra->pSkipInterpVerbString << yytext;
+                                        }
+<SkipInterpVerbString>\"                {
+                                          *yyextra->pSkipInterpVerbString << *yytext;
+                                          BEGIN( yyextra->lastSkipInterpVerbStringContext );
+                                        }
+<ReadBody,ReadNSBody,ReadBodyIntf>"\$"  { yyextra->current->program << yytext ; }
 <ReadBody,ReadNSBody,ReadBodyIntf>@\"   { yyextra->current->program << yytext ;
                                           yyextra->pSkipVerbString = &yyextra->current->program;
                                           yyextra->lastSkipVerbStringContext=YY_START;
@@ -4305,6 +4348,7 @@ NONLopt [^\n]*
                                           yyextra->insideObjC=FALSE;
                                           BEGIN( FindMembers );
                                         }
+<ReadBody,ReadNSBody,ReadBodyIntf>\\.   { yyextra->current->program << yytext ; }
 <ReadBody,ReadNSBody,ReadBodyIntf>.     { yyextra->current->program << yytext ; }
 
 <FindMembers>"("/{BN}*"::"*{BN}*({TSCOPE}{BN}*"::")*{TSCOPE}{BN}*")"{BN}*"(" | /* typedef void (A<int>::func_t)(args...) */
@@ -4497,7 +4541,8 @@ NONLopt [^\n]*
   /*- Function argument reading rules ---------------------------------------*/
 
 <ReadFuncArgType>[^ \/\r\t\n\[\]\)\(\"\'#]+ { *yyextra->copyArgString+=yytext;
-                                          yyextra->fullArgString+=yytext;
+                                          if (yyextra->insideCS) yyextra->fullArgString+=substitute(yytext,".","::");
+                                          else yyextra->fullArgString+=yytext;
                                         }
 <CopyArgString,CopyArgPHPString>[^\n\\\"\']+            { *yyextra->copyArgString+=yytext;
                                           yyextra->fullArgString+=yytext;
@@ -4687,13 +4732,16 @@ NONLopt [^\n]*
                                           yyextra->fullArgString+=yytext;
                                           BEGIN(CopyArgVerbatim);
                                         }
-<CopyArgVerbatim>[\\@]("endverbatim"|"endiliteral"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endmanonly"|"endrtfonly"|"enddot"|"endmsc"|"enduml"|"endcode"|"f$"|"f]"|"f}"|"f)")/[^a-z_A-Z0-9\-] { // end of verbatim block
+<CopyArgVerbatim>[\\@]("endverbatim"|"endiliteral"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endmanonly"|"endrtfonly"|"enddot"|"endmsc"|"enduml"|"endcode")/[^a-z_A-Z0-9\-] { // end of verbatim block
                                           yyextra->fullArgString+=yytext;
-					  if (yytext[1]=='f' && yyextra->docBlockName==&yytext[1])
+                                          if (&yytext[4]==yyextra->docBlockName)
                                           {
                                             BEGIN(CopyArgCommentLine);
                                           }
-                                          if (&yytext[4]==yyextra->docBlockName)
+                                        }
+<CopyArgVerbatim>[\\@]("f$"|"f]"|"f}"|"f)") { // end of verbatim block
+                                          yyextra->fullArgString+=yytext;
+					  if (yyextra->docBlockName==&yytext[1])
                                           {
                                             BEGIN(CopyArgCommentLine);
                                           }
@@ -5430,10 +5478,11 @@ NONLopt [^\n]*
                                           *yyextra->pCopyRawString += yytext;
                                           BEGIN(RawString);
                                         }
-<SkipCurly,SkipCurlyCpp>[^\n#"'@\\/{}<]+ {
+<SkipCurly,SkipCurlyCpp>[^\n#"'@\\/{}<\$]+ {
                                           lineCount(yyscanner);  // for yyextra->column updates
                                           //addToBody(yytext);
                                         }
+<SkipCurly,SkipCurlyCpp>"\$"            {}
 <SkipCurlyCpp>\n                        {
                                           //addToBody(yytext);
                                           lineCount(yyscanner);
@@ -5619,12 +5668,12 @@ NONLopt [^\n]*
 <ClassTemplSpec>.                       {
                                           yyextra->current->name += yytext;
                                         }
-<CompoundName>{SCOPENAME}{BN}*";"       { // forward declaration?
+<CompoundName>({SCOPENAME}|{CSSCOPENAME}){BN}*";"       { // forward declaration?
                                           if (yyextra->insideCS && yyextra->current->type == "namespace")
                                           {
                                             // file scoped CSharp namespace
                                             lineCount(yyscanner);
-                                            yyextra->current->name = yytext;
+                                            yyextra->current->name = substitute(yytext,".","::");
                                             yyextra->current->name=yyextra->current->name.left(yyextra->current->name.length()-1).stripWhiteSpace();
                                             yyextra->fakeNS++;
                                             unput('{'); // fake start of body

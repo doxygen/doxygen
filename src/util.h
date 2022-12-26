@@ -102,8 +102,6 @@ void linkifyText(const TextGeneratorIntf &ol,
 
 QCString fileToString(const QCString &name,bool filter=FALSE,bool isSourceCode=FALSE);
 
-QCString dateToString(bool);
-
 bool getDefs(const QCString &scopeName,
                     const QCString &memberName,
                     const QCString &args,
@@ -157,7 +155,7 @@ QCString substituteClassNames(const QCString &s);
 
 
 QCString clearBlock(const char *s,const char *begin,const char *end);
-QCString selectBlock(const QCString& s,const QCString &name,bool enable, OutputGenerator::OutputType o);
+QCString selectBlock(const QCString& s,const QCString &name,bool enable, OutputType o);
 QCString removeEmptyLines(const QCString &s);
 
 
@@ -196,6 +194,16 @@ QCString stripFromIncludePath(const QCString &path);
 bool rightScopeMatch(const QCString &scope, const QCString &name);
 
 bool leftScopeMatch(const QCString &scope, const QCString &name);
+
+struct KeywordSubstitution
+{
+  const char *keyword;
+  std::function<QCString()> getValue;
+};
+
+using KeywordSubstitutionList = std::vector<KeywordSubstitution>;
+
+QCString substituteKeywords(const QCString &s,const KeywordSubstitutionList &keywords);
 
 QCString substituteKeywords(const QCString &s,const QCString &title,
          const QCString &projName,const QCString &projNum,const QCString &projBrief);
@@ -446,5 +454,7 @@ QCString integerToAlpha(int n, bool upper=true);
 QCString integerToRoman(int n, bool upper=true);
 
 QCString getEncoding(const FileInfo &fi);
+
+inline QCString fixSpaces(const QCString &s) { return substitute(s," ","&#160;"); }
 
 #endif

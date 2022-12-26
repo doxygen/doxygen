@@ -156,12 +156,6 @@ static void addVariable(yyscan_t yyscanner, QCString type, QCString name);
 
 //-------------------------------------------------------------------
 
-static std::mutex g_searchIndexMutex;
-static std::mutex g_docCrossReferenceMutex;
-static std::mutex g_countFlowKeywordsMutex;
-
-//-------------------------------------------------------------------
-
 #undef YY_INPUT
 #define YY_INPUT(buf,result,max_size) result=yyread(yyscanner,buf,max_size);
 
@@ -503,7 +497,7 @@ TARGET            ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBU
     {FLOWKW}                        {
                                       if (yyextra->currentMemberDef && yyextra->currentMemberDef->isFunction())
                                       {
-                                        std::lock_guard<std::mutex> lock(g_countFlowKeywordsMutex);
+                                        std::lock_guard<std::mutex> lock(Doxygen::countFlowKeywordsMutex);
                                         MemberDefMutable *mdm = toMemberDefMutable(yyextra->currentMemberDef);
                                         if (mdm)
                                         {
@@ -553,7 +547,7 @@ TARGET            ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBU
     {FLOWKW}                        {
                                       if (yyextra->currentMemberDef && yyextra->currentMemberDef->isFunction())
                                       {
-                                        std::lock_guard<std::mutex> lock(g_countFlowKeywordsMutex);
+                                        std::lock_guard<std::mutex> lock(Doxygen::countFlowKeywordsMutex);
                                         MemberDefMutable *mdm = toMemberDefMutable(yyextra->currentMemberDef);
                                         if (mdm)
                                         {
@@ -957,7 +951,7 @@ static void setCurrentDoc(yyscan_t yyscanner, const QCString &anchor)
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (Doxygen::searchIndex)
   {
-    std::lock_guard<std::mutex> lock(g_searchIndexMutex);
+    std::lock_guard<std::mutex> lock(Doxygen::searchIndexMutex);
     if (yyextra->searchCtx)
     {
       yyextra->code->setCurrentDoc(yyextra->searchCtx,yyextra->searchCtx->anchor(),FALSE);
@@ -976,7 +970,7 @@ static void addToSearchIndex(yyscan_t yyscanner, const QCString &text)
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (Doxygen::searchIndex)
   {
-    std::lock_guard<std::mutex> lock(g_searchIndexMutex);
+    std::lock_guard<std::mutex> lock(Doxygen::searchIndexMutex);
     yyextra->code->addWord(text,FALSE);
   }
 }
@@ -1125,7 +1119,7 @@ static void writeMultiLineCodeLink(yyscan_t yyscanner,
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (text.isEmpty()) return;
   bool sourceTooltips = Config_getBool(SOURCE_TOOLTIPS);
-  yyextra->tooltipManager.addTooltip(ol,d);
+  yyextra->tooltipManager.addTooltip(d);
   QCString ref  = d->getReference();
   QCString file = d->getOutputFileBase();
   QCString anchor = d->anchor();
@@ -1252,7 +1246,6 @@ static bool getLinkInScope(yyscan_t yyscanner,
 
       if (yyextra->currentDefinition && yyextra->currentMemberDef && yyextra->collectXRefs && yyextra->insideBody)
       {
-        std::lock_guard<std::mutex> lock(g_docCrossReferenceMutex);
         addDocCrossReference(toMemberDefMutable(yyextra->currentMemberDef),toMemberDefMutable(md));
       }
       //printf("d->getReference()='%s' d->getOutputBase()='%s' name='%s' member name='%s'\n",qPrint(d->getReference()),qPrint(d->getOutputFileBase()),qPrint(d->name()),qPrint(md->name()));
@@ -1363,7 +1356,6 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
       if (d && d->isLinkable() && md->isLinkable() &&
           yyextra->currentMemberDef && yyextra->collectXRefs && yyextra->insideBody)
       {
-        std::lock_guard<std::mutex> lock(g_docCrossReferenceMutex);
         addDocCrossReference(toMemberDefMutable(yyextra->currentMemberDef),toMemberDefMutable(md));
       }
     }
@@ -1391,7 +1383,6 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
           if (d && d->isLinkable() && mmd->isLinkable() &&
               yyextra->currentMemberDef && yyextra->collectXRefs && yyextra->insideBody)
           {
-            std::lock_guard<std::mutex> lock(g_docCrossReferenceMutex);
             addDocCrossReference(toMemberDefMutable(yyextra->currentMemberDef),toMemberDefMutable(mmd));
           }
           return;
@@ -1415,7 +1406,6 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
             if (d && d->isLinkable() && mmd->isLinkable() &&
                 yyextra->currentMemberDef && yyextra->collectXRefs && yyextra->insideBody)
             {
-              std::lock_guard<std::mutex> lock(g_docCrossReferenceMutex);
               addDocCrossReference(toMemberDefMutable(yyextra->currentMemberDef),toMemberDefMutable(mmd));
             }
             return;
@@ -1502,7 +1492,6 @@ static bool findMemberLink(yyscan_t yyscanner,
     {
       if (yyextra->currentMemberDef && yyextra->collectXRefs)
       {
-        std::lock_guard<std::mutex> lock(g_docCrossReferenceMutex);
         addDocCrossReference(toMemberDefMutable(yyextra->currentMemberDef),toMemberDefMutable(toMemberDef(sym)));
       }
     }

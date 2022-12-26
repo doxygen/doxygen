@@ -649,7 +649,7 @@ An emphasis or a strikethrough ends if
 The span of the emphasis or strikethrough is limited to a single paragraph.
 
 Lastly, note that when you want to put emphasis on a piece of text at the start of a line
-by means of `*`s within a C-style doxygen comment block (i.e. `/&zwj;** ... *&zwj;/`)
+by means of `*`s within a C-style doxygen comment block (i.e. `/``** ... *``/`)
 that does not have leading `*` as column "lineup", then doxygen will see the sequence
 of `*`s at the beginning of the line as "lineup" and not as emphasis.
 So the following will not render as bold:

@@ -985,6 +985,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                        }
 <St_TitleN>{HTMLTAG}   {
                          yyextra->token->name = yytext;
+                         handleHtmlTag(yyscanner,yytext);
                          return TK_HTMLTAG;
                        }
 <St_TitleN>\n          { /* new line => end of title */

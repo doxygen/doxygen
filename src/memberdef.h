@@ -260,10 +260,12 @@ class MemberDef : public Definition
     virtual QCString displayName(bool=TRUE) const = 0;
     virtual QCString getDeclType() const = 0;
     virtual StringVector getLabels(const Definition *container) const = 0;
+    virtual StringVector getQualifiers() const = 0;
 
     virtual const ArgumentList &typeConstraints() const = 0;
 
     virtual QCString requiresClause() const = 0;
+
 
     // overrules
     virtual QCString documentation() const = 0;
@@ -401,6 +403,8 @@ class MemberDefMutable : public DefinitionMutable, public MemberDef
 
     virtual void setRequiresClause(const QCString &req) = 0;
 
+    virtual void addQualifiers(const StringVector &qualifiers) = 0;
+
     //-----------------------------------------------------------------------------------
     // --- actions ----
     //-----------------------------------------------------------------------------------
@@ -425,7 +429,6 @@ class MemberDefMutable : public DefinitionMutable, public MemberDef
     // write helpers
     virtual void setAnonymousUsed() const = 0;
     virtual void setFromAnonymousScope(bool b) const = 0;
-
 };
 
 inline ClassDefMutable *MemberDef::getClassDefMutable() const

@@ -14,7 +14,6 @@
  */
 
 #include <cstdlib>
-#include <sstream>
 
 #include "latexgen.h"
 #include "config.h"
@@ -44,6 +43,8 @@
 #include "portable.h"
 #include "fileinfo.h"
 #include "utf8.h"
+#include "datetime.h"
+#include "portable.h"
 
 static QCString g_header;
 static QCString g_footer;
@@ -85,7 +86,7 @@ void LatexCodeGenerator::codify(const QCString &str)
       {
         case 0x0c: p++;  // remove ^L
                    break;
-        case ' ':  m_t <<" ";
+        case ' ':  m_t << (m_doxyCodeLineOpen ? "\\ " : " ");
                    m_col++;
                    p++;
                    break;
@@ -95,7 +96,7 @@ void LatexCodeGenerator::codify(const QCString &str)
                    break;
         case '\t': spacesToNextTabStop =
                          tabSize - (m_col%tabSize);
-                   for (i = 0; i < spacesToNextTabStop; i++) m_t <<" ";
+                   for (i = 0; i < spacesToNextTabStop; i++) m_t << (m_doxyCodeLineOpen ? "\\ " : " ");
                    m_col+=spacesToNextTabStop;
                    p++;
                    break;
@@ -203,11 +204,14 @@ void LatexCodeGenerator::writeLineNumber(const QCString &ref,const QCString &fil
     {
       codify(lineNumber);
     }
-    m_t << " ";
+    m_t << "\\ ";
   }
   else
   {
-    m_t << l << " ";
+    QCString lineNumber;
+    lineNumber.sprintf("%05d",l);
+    codify(lineNumber);
+    m_t << "\\ ";
   }
   m_col=0;
 }
@@ -259,12 +263,16 @@ void LatexCodeGenerator::endCodeFragment(const QCString &style)
 
 //-------------------------------
 
-LatexGenerator::LatexGenerator() : OutputGenerator(Config_getString(LATEX_OUTPUT)), m_codeGen(m_t)
+LatexGenerator::LatexGenerator()
+  : OutputGenerator(Config_getString(LATEX_OUTPUT))
+  , m_codeGen(m_t)
 {
   //printf("LatexGenerator::LatexGenerator() m_insideTabbing=FALSE\n");
 }
 
-LatexGenerator::LatexGenerator(const LatexGenerator &og) : OutputGenerator(og), m_codeGen(m_t)
+LatexGenerator::LatexGenerator(const LatexGenerator &og)
+  : OutputGenerator(og)
+  , m_codeGen(m_t)
 {
 }
 
@@ -287,7 +295,7 @@ static void writeLatexMakefile()
 {
   bool generateBib = !CitationManager::instance().isEmpty();
   QCString fileName=Config_getString(LATEX_OUTPUT)+"/Makefile";
-  std::ofstream f(fileName.str(),std::ofstream::out | std::ofstream::binary);
+  std::ofstream f = Portable::openOutputStream(fileName);
   if (!f.is_open())
   {
     term("Could not open file %s for writing\n",qPrint(fileName));
@@ -393,7 +401,7 @@ static void writeMakeBat()
   QCString manual_file = "refman";
   const int latex_count = 8;
   bool generateBib = !CitationManager::instance().isEmpty();
-  std::ofstream t(fileName.str(),std::ofstream::out | std::ofstream::binary);
+  std::ofstream t = Portable::openOutputStream(fileName);
   if (!t.is_open())
   {
     term("Could not open file %s for writing\n",qPrint(fileName));
@@ -653,7 +661,7 @@ static QCString substituteLatexKeywords(const QCString &str,
   QCString generatedBy;
   if (timeStamp)
   {
-    generatedBy = theTranslator->trGeneratedAt(dateToString(TRUE).data(),
+    generatedBy = theTranslator->trGeneratedAt(dateToString(DateTimeType::DateTime).data(),
                                                Config_getString(PROJECT_NAME).data());
   }
   else
@@ -720,68 +728,68 @@ static QCString substituteLatexKeywords(const QCString &str,
   result = substitute(result,"$formulamacrofile",stripMacroFile);
 
   // additional LaTeX only conditional blocks
-  result = selectBlock(result,"CITATIONS_PRESENT", !CitationManager::instance().isEmpty(),OutputGenerator::Latex);
-  result = selectBlock(result,"COMPACT_LATEX",compactLatex,OutputGenerator::Latex);
-  result = selectBlock(result,"PDF_HYPERLINKS",pdfHyperlinks,OutputGenerator::Latex);
-  result = selectBlock(result,"USE_PDFLATEX",usePdfLatex,OutputGenerator::Latex);
-  result = selectBlock(result,"LATEX_TIMESTAMP",timeStamp,OutputGenerator::Latex);
-  result = selectBlock(result,"LATEX_BATCHMODE",latexBatchmode,OutputGenerator::Latex);
-  result = selectBlock(result,"LATEX_FONTENC",!latexFontenc.isEmpty(),OutputGenerator::Latex);
-  result = selectBlock(result,"FORMULA_MACROFILE",!formulaMacrofile.isEmpty(),OutputGenerator::Latex);
-  result = selectBlock(result,"PROJECT_NUMBER",!projectNumber.isEmpty(),OutputGenerator::Latex);
+  result = selectBlock(result,"CITATIONS_PRESENT", !CitationManager::instance().isEmpty(),OutputType::Latex);
+  result = selectBlock(result,"COMPACT_LATEX",compactLatex,OutputType::Latex);
+  result = selectBlock(result,"PDF_HYPERLINKS",pdfHyperlinks,OutputType::Latex);
+  result = selectBlock(result,"USE_PDFLATEX",usePdfLatex,OutputType::Latex);
+  result = selectBlock(result,"LATEX_TIMESTAMP",timeStamp,OutputType::Latex);
+  result = selectBlock(result,"LATEX_BATCHMODE",latexBatchmode,OutputType::Latex);
+  result = selectBlock(result,"LATEX_FONTENC",!latexFontenc.isEmpty(),OutputType::Latex);
+  result = selectBlock(result,"FORMULA_MACROFILE",!formulaMacrofile.isEmpty(),OutputType::Latex);
+  result = selectBlock(result,"PROJECT_NUMBER",!projectNumber.isEmpty(),OutputType::Latex);
 
   result = removeEmptyLines(result);
 
   return result;
 }
 
-void LatexGenerator::startIndexSection(IndexSections is)
+void LatexGenerator::startIndexSection(IndexSection is)
 {
   bool compactLatex = Config_getBool(COMPACT_LATEX);
   switch (is)
   {
-    case isTitlePageStart:
+    case IndexSection::isTitlePageStart:
       m_t << substituteLatexKeywords(g_header,convertToLaTeX(Config_getString(PROJECT_NAME)));
       break;
-    case isTitlePageAuthor:
+    case IndexSection::isTitlePageAuthor:
       break;
-    case isMainPage:
+    case IndexSection::isMainPage:
       if (compactLatex) m_t << "\\doxysection"; else m_t << "\\chapter";
       m_t << "{"; //Introduction}\n"
       break;
-    case isModuleIndex:
+    case IndexSection::isModuleIndex:
       if (compactLatex) m_t << "\\doxysection"; else m_t << "\\chapter";
       m_t << "{"; //Module Index}\n"
       break;
-    case isDirIndex:
+    case IndexSection::isDirIndex:
       if (compactLatex) m_t << "\\doxysection"; else m_t << "\\chapter";
       m_t << "{"; //Directory Index}\n"
       break;
-    case isNamespaceIndex:
+    case IndexSection::isNamespaceIndex:
       if (compactLatex) m_t << "\\doxysection"; else m_t << "\\chapter";
       m_t << "{"; //Namespace Index}\n"
       break;
-    case isConceptIndex:
+    case IndexSection::isConceptIndex:
       if (compactLatex) m_t << "\\doxysection"; else m_t << "\\chapter";
       m_t << "{"; //Concept Index}\n"
       break;
-    case isClassHierarchyIndex:
+    case IndexSection::isClassHierarchyIndex:
       if (compactLatex) m_t << "\\doxysection"; else m_t << "\\chapter";
       m_t << "{"; //Hierarchical Index}\n"
       break;
-    case isCompoundIndex:
+    case IndexSection::isCompoundIndex:
       if (compactLatex) m_t << "\\doxysection"; else m_t << "\\chapter";
       m_t << "{"; //Annotated Compound Index}\n"
       break;
-    case isFileIndex:
+    case IndexSection::isFileIndex:
       if (compactLatex) m_t << "\\doxysection"; else m_t << "\\chapter";
       m_t << "{"; //Annotated File Index}\n"
       break;
-    case isPageIndex:
+    case IndexSection::isPageIndex:
       if (compactLatex) m_t << "\\doxysection"; else m_t << "\\chapter";
       m_t << "{"; //Annotated Page Index}\n"
       break;
-    case isModuleDocumentation:
+    case IndexSection::isModuleDocumentation:
       {
         for (const auto &gd : *Doxygen::groupLinkedMap)
         {
@@ -794,7 +802,7 @@ void LatexGenerator::startIndexSection(IndexSections is)
         }
       }
       break;
-    case isDirDocumentation:
+    case IndexSection::isDirDocumentation:
       {
         for (const auto &dd : *Doxygen::dirLinkedMap)
         {
@@ -807,7 +815,7 @@ void LatexGenerator::startIndexSection(IndexSections is)
         }
       }
       break;
-    case isNamespaceDocumentation:
+    case IndexSection::isNamespaceDocumentation:
       {
         for (const auto &nd : *Doxygen::namespaceLinkedMap)
         {
@@ -820,7 +828,7 @@ void LatexGenerator::startIndexSection(IndexSections is)
         }
       }
       break;
-    case isConceptDocumentation:
+    case IndexSection::isConceptDocumentation:
       {
         for (const auto &cd : *Doxygen::conceptLinkedMap)
         {
@@ -833,7 +841,7 @@ void LatexGenerator::startIndexSection(IndexSections is)
         }
       }
       break;
-    case isClassDocumentation:
+    case IndexSection::isClassDocumentation:
       {
         for (const auto &cd : *Doxygen::classLinkedMap)
         {
@@ -850,7 +858,7 @@ void LatexGenerator::startIndexSection(IndexSections is)
         }
       }
       break;
-    case isFileDocumentation:
+    case IndexSection::isFileDocumentation:
       {
         bool isFirst=TRUE;
         for (const auto &fn : *Doxygen::inputNameLinkedMap)
@@ -871,34 +879,34 @@ void LatexGenerator::startIndexSection(IndexSections is)
         }
       }
       break;
-    case isExampleDocumentation:
+    case IndexSection::isExampleDocumentation:
       {
         if (compactLatex) m_t << "\\doxysection"; else m_t << "\\chapter";
         m_t << "{"; //Example Documentation}\n";
       }
       break;
-    case isPageDocumentation:
+    case IndexSection::isPageDocumentation:
       {
         if (compactLatex) m_t << "\\doxysection"; else m_t << "\\chapter";
         m_t << "{"; //Page Documentation}\n";
       }
       break;
-    case isPageDocumentation2:
+    case IndexSection::isPageDocumentation2:
       break;
-    case isEndIndex:
+    case IndexSection::isEndIndex:
       break;
   }
 }
 
-void LatexGenerator::endIndexSection(IndexSections is)
+void LatexGenerator::endIndexSection(IndexSection is)
 {
   switch (is)
   {
-    case isTitlePageStart:
+    case IndexSection::isTitlePageStart:
       break;
-    case isTitlePageAuthor:
+    case IndexSection::isTitlePageAuthor:
       break;
-    case isMainPage:
+    case IndexSection::isMainPage:
       {
         //QCString indexName=Config_getBool(GENERATE_TREEVIEW)?"main":"index";
         QCString indexName="index";
@@ -907,31 +915,31 @@ void LatexGenerator::endIndexSection(IndexSections is)
         m_t << "\\input{" << indexName << "}\n";
       }
       break;
-    case isModuleIndex:
+    case IndexSection::isModuleIndex:
       m_t << "}\n\\input{modules}\n";
       break;
-    case isDirIndex:
+    case IndexSection::isDirIndex:
       m_t << "}\n\\input{dirs}\n";
       break;
-    case isNamespaceIndex:
+    case IndexSection::isNamespaceIndex:
       m_t << "}\n\\input{namespaces}\n";
       break;
-    case isConceptIndex:
+    case IndexSection::isConceptIndex:
       m_t << "}\n\\input{concepts}\n";
       break;
-    case isClassHierarchyIndex:
+    case IndexSection::isClassHierarchyIndex:
       m_t << "}\n\\input{hierarchy}\n";
       break;
-    case isCompoundIndex:
+    case IndexSection::isCompoundIndex:
       m_t << "}\n\\input{annotated}\n";
       break;
-    case isFileIndex:
+    case IndexSection::isFileIndex:
       m_t << "}\n\\input{files}\n";
       break;
-    case isPageIndex:
+    case IndexSection::isPageIndex:
       m_t << "}\n\\input{pages}\n";
       break;
-    case isModuleDocumentation:
+    case IndexSection::isModuleDocumentation:
       {
         bool found=FALSE;
         for (const auto &gd : *Doxygen::groupLinkedMap)
@@ -948,7 +956,7 @@ void LatexGenerator::endIndexSection(IndexSections is)
         }
       }
       break;
-    case isDirDocumentation:
+    case IndexSection::isDirDocumentation:
       {
         bool found=FALSE;
         for (const auto &dd : *Doxygen::dirLinkedMap)
@@ -965,7 +973,7 @@ void LatexGenerator::endIndexSection(IndexSections is)
         }
       }
       break;
-    case isNamespaceDocumentation:
+    case IndexSection::isNamespaceDocumentation:
       {
         bool found=FALSE;
         for (const auto &nd : *Doxygen::namespaceLinkedMap)
@@ -982,7 +990,7 @@ void LatexGenerator::endIndexSection(IndexSections is)
         }
       }
       break;
-    case isConceptDocumentation:
+    case IndexSection::isConceptDocumentation:
       {
         bool found=FALSE;
         for (const auto &cd : *Doxygen::conceptLinkedMap)
@@ -999,7 +1007,7 @@ void LatexGenerator::endIndexSection(IndexSections is)
         }
       }
       break;
-    case isClassDocumentation:
+    case IndexSection::isClassDocumentation:
       {
         bool found=FALSE;
         for (const auto &cd : *Doxygen::classLinkedMap)
@@ -1020,7 +1028,7 @@ void LatexGenerator::endIndexSection(IndexSections is)
         }
       }
       break;
-    case isFileDocumentation:
+    case IndexSection::isFileDocumentation:
       {
         bool isFirst=TRUE;
         for (const auto &fn : *Doxygen::inputNameLinkedMap)
@@ -1049,7 +1057,7 @@ void LatexGenerator::endIndexSection(IndexSections is)
         }
       }
       break;
-    case isExampleDocumentation:
+    case IndexSection::isExampleDocumentation:
       {
         m_t << "}\n";
         for (const auto &pd : *Doxygen::exampleLinkedMap)
@@ -1058,7 +1066,7 @@ void LatexGenerator::endIndexSection(IndexSections is)
         }
       }
       break;
-    case isPageDocumentation:
+    case IndexSection::isPageDocumentation:
       {
         m_t << "}\n";
 #if 0
@@ -1079,9 +1087,9 @@ void LatexGenerator::endIndexSection(IndexSections is)
 #endif
       }
       break;
-    case isPageDocumentation2:
+    case IndexSection::isPageDocumentation2:
       break;
-    case isEndIndex:
+    case IndexSection::isEndIndex:
       m_t << substituteLatexKeywords(g_footer,convertToLaTeX(Config_getString(PROJECT_NAME)));
       break;
   }
@@ -1259,26 +1267,35 @@ void LatexGenerator::endTextLink()
   m_t << "}";
 }
 
-void LatexGenerator::writeObjectLink(const QCString &ref, const QCString &f,
-                                     const QCString &anchor, const QCString &text)
+static QCString objectLinkToString(const QCString &ref, const QCString &f,
+                                    const QCString &anchor, const QCString &text,
+                                    bool disableLinks)
 {
   bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
-  if (!m_disableLinks && ref.isEmpty() && pdfHyperlinks)
+  QCString result;
+  if (!disableLinks && ref.isEmpty() && pdfHyperlinks)
   {
-    m_t << "\\mbox{\\hyperlink{";
-    if (!f.isEmpty()) m_t << stripPath(f);
-    if (!f.isEmpty() && !anchor.isEmpty()) m_t << "_";
-    if (!anchor.isEmpty()) m_t << anchor;
-    m_t << "}{";
-    docify(text);
-    m_t << "}}";
+    result += "\\mbox{\\hyperlink{";
+    if (!f.isEmpty()) result += stripPath(f);
+    if (!f.isEmpty() && !anchor.isEmpty()) result += "_";
+    if (!anchor.isEmpty()) result += anchor;
+    result += "}{";
+    result += convertToLaTeX(text);
+    result += "}}";
   }
   else
   {
-    m_t << "\\textbf{ ";
-    docify(text);
-    m_t << "}";
+    result += "\\textbf{ ";
+    result += convertToLaTeX(text);
+    result += "}";
   }
+  return result;
+}
+
+void LatexGenerator::writeObjectLink(const QCString &ref, const QCString &f,
+                                     const QCString &anchor, const QCString &text)
+{
+  m_t << objectLinkToString(ref,f,anchor,text,m_disableLinks);
 }
 
 void LatexGenerator::startPageRef()
@@ -2130,4 +2147,22 @@ void LatexGenerator::writeLabel(const QCString &l,bool isLast)
 
 void LatexGenerator::endLabels()
 {
+}
+
+void LatexGenerator::writeInheritedSectionTitle(
+                  const QCString &id,    const QCString &ref,
+                  const QCString &file,  const QCString &anchor,
+                  const QCString &title, const QCString &name)
+{
+  if (Config_getBool(COMPACT_LATEX))
+  {
+    m_t << "\\doxyparagraph*{";
+  }
+  else
+  {
+    m_t << "\\doxysubsubsection*{";
+  }
+  m_t << theTranslator->trInheritedFrom(convertToLaTeX(title),
+                                        objectLinkToString(ref, file, anchor, name, m_disableLinks));
+  m_t << "}\n";
 }

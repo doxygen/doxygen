@@ -48,6 +48,7 @@
 #include "section.h"
 #include "fileinfo.h"
 #include "dir.h"
+#include "datetime.h"
 
 #include <sys/stat.h>
 #include <string.h>
@@ -930,8 +931,8 @@ static void recordMetadata()
 {
   bindTextParameter(meta_insert,":doxygen_version",getFullVersion());
   bindTextParameter(meta_insert,":schema_version","0.2.1",TRUE); //TODO: this should be a constant somewhere; not sure where
-  bindTextParameter(meta_insert,":generated_at",dateToString(TRUE));
-  bindTextParameter(meta_insert,":generated_on",dateToString(FALSE));
+  bindTextParameter(meta_insert,":generated_at",dateToString(DateTimeType::DateTime));
+  bindTextParameter(meta_insert,":generated_on",dateToString(DateTimeType::Date));
   bindTextParameter(meta_insert,":project_name",Config_getString(PROJECT_NAME));
   bindTextParameter(meta_insert,":project_number",Config_getString(PROJECT_NUMBER));
   bindTextParameter(meta_insert,":project_brief",Config_getString(PROJECT_BRIEF));

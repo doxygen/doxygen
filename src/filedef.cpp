@@ -201,6 +201,7 @@ FileDef *createFileDef(const QCString &p,const QCString &n,const QCString &ref,c
 class DevNullCodeDocInterface : public CodeOutputInterface
 {
   public:
+    virtual OutputType type() const override { return OutputType::Null; }
     virtual void codify(const QCString &) override {}
     virtual void writeCodeLink(CodeSymbolType,
                                const QCString &,const QCString &,
@@ -421,11 +422,11 @@ void FileDefImpl::writeDetailedDescription(OutputList &ol,const QCString &title)
   if (hasDetailedDescription())
   {
     ol.pushGeneratorState();
-      ol.disable(OutputGenerator::Html);
+      ol.disable(OutputType::Html);
       ol.writeRuler();
     ol.popGeneratorState();
     ol.pushGeneratorState();
-      ol.disableAllBut(OutputGenerator::Html);
+      ol.disableAllBut(OutputType::Html);
       ol.writeAnchor(QCString(),"details");
     ol.popGeneratorState();
     ol.startGroupHeader();
@@ -442,12 +443,12 @@ void FileDefImpl::writeDetailedDescription(OutputList &ol,const QCString &title)
         !documentation().isEmpty())
     {
       ol.pushGeneratorState();
-        ol.disable(OutputGenerator::Man);
-        ol.disable(OutputGenerator::RTF);
+        ol.disable(OutputType::Man);
+        ol.disable(OutputType::RTF);
         // ol.newParagraph(); // FIXME:PARA
         ol.enableAll();
-        ol.disableAllBut(OutputGenerator::Man);
-        ol.enable(OutputGenerator::Latex);
+        ol.disableAllBut(OutputType::Man);
+        ol.enable(OutputType::Latex);
         ol.writeString("\n\n");
       ol.popGeneratorState();
     }
@@ -492,20 +493,20 @@ void FileDefImpl::writeBriefDescription(OutputList &ol)
     {
       ol.startParagraph();
       ol.pushGeneratorState();
-      ol.disableAllBut(OutputGenerator::Man);
+      ol.disableAllBut(OutputType::Man);
       ol.writeString(" - ");
       ol.popGeneratorState();
       ol.writeDoc(ast.get(),this,0);
       ol.pushGeneratorState();
-      ol.disable(OutputGenerator::RTF);
+      ol.disable(OutputType::RTF);
       ol.writeString(" \n");
-      ol.enable(OutputGenerator::RTF);
+      ol.enable(OutputType::RTF);
 
       if (Config_getBool(REPEAT_BRIEF) ||
           !documentation().isEmpty()
          )
       {
-        ol.disableAllBut(OutputGenerator::Html);
+        ol.disableAllBut(OutputType::Html);
         ol.startTextLink(QCString(),"details");
         ol.parseText(theTranslator->trMore());
         ol.endTextLink();
@@ -560,10 +561,10 @@ void FileDefImpl::writeIncludeFiles(OutputList &ol)
         ol.docify("\"");
       else
         ol.docify("<");
-      ol.disable(OutputGenerator::Html);
+      ol.disable(OutputType::Html);
       ol.docify(ii.includeName);
       ol.enableAll();
-      ol.disableAllBut(OutputGenerator::Html);
+      ol.disableAllBut(OutputType::Html);
 
       // Here we use the include file name as it appears in the file.
       // we could also we the name as it is used within doxygen,
@@ -607,7 +608,7 @@ void FileDefImpl::writeIncludeGraph(OutputList &ol)
     else if (!incDepGraph.isTrivial())
     {
       ol.startTextBlock();
-      ol.disable(OutputGenerator::Man);
+      ol.disable(OutputType::Man);
       ol.startInclDepGraph();
       ol.parseText(theTranslator->trInclDepGraph(name()));
       ol.endInclDepGraph(incDepGraph);
@@ -632,7 +633,7 @@ void FileDefImpl::writeIncludedByGraph(OutputList &ol)
     else if (!incDepGraph.isTrivial())
     {
       ol.startTextBlock();
-      ol.disable(OutputGenerator::Man);
+      ol.disable(OutputType::Man);
       ol.startInclDepGraph();
       ol.parseText(theTranslator->trInclByDepGraph());
       ol.endInclDepGraph(incDepGraph);
@@ -649,7 +650,7 @@ void FileDefImpl::writeSourceLink(OutputList &ol)
   //printf("%s: generateSourceFile()=%d\n",qPrint(name()),generateSourceFile());
   if (generateSourceFile())
   {
-    ol.disableAllBut(OutputGenerator::Html);
+    ol.disableAllBut(OutputType::Html);
     ol.startParagraph();
     ol.startTextLink(includeName(),QCString());
     ol.parseText(theTranslator->trGotoSourceCode());
@@ -682,13 +683,13 @@ void FileDefImpl::writeInlineClasses(OutputList &ol)
 {
   // temporarily undo the disabling could be done by startMemberDocumentation()
   // as a result of setting SEPARATE_MEMBER_PAGES to YES; see bug730512
-  bool isEnabled = ol.isEnabled(OutputGenerator::Html);
-  ol.enable(OutputGenerator::Html);
+  bool isEnabled = ol.isEnabled(OutputType::Html);
+  ol.enable(OutputType::Html);
 
   m_classes.writeDocumentation(ol,this);
 
   // restore the initial state if needed
-  if (!isEnabled) ol.disable(OutputGenerator::Html);
+  if (!isEnabled) ol.disable(OutputType::Html);
 }
 
 void FileDefImpl::startMemberDeclarations(OutputList &ol)
@@ -705,7 +706,7 @@ void FileDefImpl::startMemberDocumentation(OutputList &ol)
 {
   if (Config_getBool(SEPARATE_MEMBER_PAGES))
   {
-    ol.disable(OutputGenerator::Html);
+    ol.disable(OutputType::Html);
     Doxygen::suppressDocWarnings = TRUE;
   }
 }
@@ -714,7 +715,7 @@ void FileDefImpl::endMemberDocumentation(OutputList &ol)
 {
   if (Config_getBool(SEPARATE_MEMBER_PAGES))
   {
-    ol.enable(OutputGenerator::Html);
+    ol.enable(OutputType::Html);
     Doxygen::suppressDocWarnings = FALSE;
   }
 }
@@ -735,7 +736,7 @@ void FileDefImpl::writeAuthorSection(OutputList &ol)
 {
   // write Author section (Man only)
   ol.pushGeneratorState();
-  ol.disableAllBut(OutputGenerator::Man);
+  ol.disableAllBut(OutputType::Man);
   ol.startGroupHeader();
   ol.parseText(theTranslator->trAuthor(TRUE,TRUE));
   ol.endGroupHeader();
@@ -746,7 +747,7 @@ void FileDefImpl::writeAuthorSection(OutputList &ol)
 void FileDefImpl::writeSummaryLinks(OutputList &ol) const
 {
   ol.pushGeneratorState();
-  ol.disableAllBut(OutputGenerator::Html);
+  ol.disableAllBut(OutputType::Html);
   bool first=TRUE;
   SrcLangExt lang=getLanguage();
   for (const auto &lde : LayoutDocManager::instance().docEntries(LayoutDocManager::File))
@@ -835,7 +836,7 @@ void FileDefImpl::writeDocumentation(OutputList &ol)
 
   if (getDirDef())
   {
-    startFile(ol,getOutputFileBase(),name(),pageTitle,HLI_FileVisible,!generateTreeView);
+    startFile(ol,getOutputFileBase(),name(),pageTitle,HighlightedItem::FileVisible,!generateTreeView);
     if (!generateTreeView)
     {
       getDirDef()->writeNavigationPath(ol);
@@ -844,10 +845,10 @@ void FileDefImpl::writeDocumentation(OutputList &ol)
     QCString pageTitleShort=theTranslator->trFileReference(name());
     startTitle(ol,getOutputFileBase(),this);
     ol.pushGeneratorState();
-      ol.disableAllBut(OutputGenerator::Html);
+      ol.disableAllBut(OutputType::Html);
       ol.parseText(pageTitleShort); // Html only
       ol.enableAll();
-      ol.disable(OutputGenerator::Html);
+      ol.disable(OutputType::Html);
       ol.parseText(pageTitle); // other output formats
     ol.popGeneratorState();
     addGroupListToTitle(ol,this);
@@ -855,7 +856,7 @@ void FileDefImpl::writeDocumentation(OutputList &ol)
   }
   else
   {
-    startFile(ol,getOutputFileBase(),name(),pageTitle,HLI_FileVisible,!generateTreeView);
+    startFile(ol,getOutputFileBase(),name(),pageTitle,HighlightedItem::FileVisible,!generateTreeView);
     if (!generateTreeView)
     {
       ol.endQuickIndices();
@@ -870,7 +871,7 @@ void FileDefImpl::writeDocumentation(OutputList &ol)
 
   if (!m_fileVersion.isEmpty())
   {
-    ol.disableAllBut(OutputGenerator::Html);
+    ol.disableAllBut(OutputType::Html);
     ol.startProjectNumber();
     ol.docify(versionTitle);
     ol.endProjectNumber();
@@ -995,7 +996,7 @@ void FileDefImpl::writeDocumentation(OutputList &ol)
 
   ol.endContents();
 
-  endFileWithNavPath(this,ol);
+  endFileWithNavPath(ol,this);
 
   if (Config_getBool(SEPARATE_MEMBER_PAGES))
   {
@@ -1008,7 +1009,7 @@ void FileDefImpl::writeDocumentation(OutputList &ol)
 void FileDefImpl::writeMemberPages(OutputList &ol)
 {
   ol.pushGeneratorState();
-  ol.disableAllBut(OutputGenerator::Html);
+  ol.disableAllBut(OutputType::Html);
 
   for (const auto &ml : m_memberLists)
   {
@@ -1072,13 +1073,13 @@ void FileDefImpl::writeSourceHeader(OutputList &ol)
     title+=(" ("+m_fileVersion+")");
   }
   QCString pageTitle = theTranslator->trSourceFile(title);
-  ol.disable(OutputGenerator::Man);
+  ol.disable(OutputType::Man);
 
   bool isDocFile = isDocumentationFile();
   bool genSourceFile = !isDocFile && generateSourceFile();
   if (getDirDef())
   {
-    startFile(ol,getSourceFileBase(),QCString(),pageTitle,HLI_FileVisible,
+    startFile(ol,getSourceFileBase(),QCString(),pageTitle,HighlightedItem::FileVisible,
         !generateTreeView,
         !isDocFile && genSourceFile ? QCString() : getOutputFileBase());
     if (!generateTreeView)
@@ -1092,7 +1093,7 @@ void FileDefImpl::writeSourceHeader(OutputList &ol)
   }
   else
   {
-    startFile(ol,getSourceFileBase(),QCString(),pageTitle,HLI_FileVisible,FALSE,
+    startFile(ol,getSourceFileBase(),QCString(),pageTitle,HighlightedItem::FileVisible,FALSE,
         !isDocFile && genSourceFile ? QCString() : getOutputFileBase());
     startTitle(ol,getSourceFileBase());
     ol.parseText(title);
@@ -1117,17 +1118,19 @@ void FileDefImpl::writeSourceBody(OutputList &ol,ClangTUParser *clangParser)
   if (Doxygen::clangAssistedParsing && clangParser &&
       (getLanguage()==SrcLangExt_Cpp || getLanguage()==SrcLangExt_ObjC))
   {
-    ol.startCodeFragment("DoxyCode");
+    auto &codeOL = ol.codeGenerators();
+    codeOL.startCodeFragment("DoxyCode");
     clangParser->switchToFile(this);
-    clangParser->writeSources(ol,this);
-    ol.endCodeFragment("DoxyCode");
+    clangParser->writeSources(codeOL,this);
+    codeOL.endCodeFragment("DoxyCode");
   }
   else
 #endif
   {
     auto intf = Doxygen::parserManager->getCodeParser(getDefFileExtension());
     intf->resetCodeParserState();
-    ol.startCodeFragment("DoxyCode");
+    auto &codeOL = ol.codeGenerators();
+    codeOL.startCodeFragment("DoxyCode");
     bool needs2PassParsing =
         Doxygen::parseSourcesNeeded &&                // we need to parse (filtered) sources for cross-references
         !filterSourceFiles &&                         // but user wants to show sources as-is
@@ -1142,7 +1145,7 @@ void FileDefImpl::writeSourceBody(OutputList &ol,ClangTUParser *clangParser)
                        FALSE,QCString(),this
                       );
     }
-    intf->parseCode(ol,QCString(),
+    intf->parseCode(codeOL,QCString(),
         fileToString(absFilePath(),filterSourceFiles,TRUE),
         getLanguage(),      // lang
         FALSE,              // isExampleBlock
@@ -1156,14 +1159,14 @@ void FileDefImpl::writeSourceBody(OutputList &ol,ClangTUParser *clangParser)
         0,                  // searchCtx
         !needs2PassParsing  // collectXRefs
         );
-    ol.endCodeFragment("DoxyCode");
+    codeOL.endCodeFragment("DoxyCode");
   }
 }
 
 void FileDefImpl::writeSourceFooter(OutputList &ol)
 {
   ol.endContents();
-  endFileWithNavPath(this,ol);
+  endFileWithNavPath(ol,this);
   ol.enableAll();
 }
 
@@ -1231,7 +1234,6 @@ void FileDefImpl::insertMember(MemberDef *md)
     allMemberList = m_memberLists.back().get();
   }
   allMemberList->push_back(md);
-  //::addFileMemberNameToIndex(md);
   switch (md->memberType())
   {
     case MemberType_Variable:
