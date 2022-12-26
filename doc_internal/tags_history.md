@@ -459,7 +459,6 @@ The following table gives an overview of the doxygen configuration settings and 
 <dt></dt>              <dd>LATEX_SOURCE_CODE</dd>
 <dt></dt>              <dd>OUTPUT_TEXT_DIRECTION</dd>
 <dt></dt>              <dd>RTF_SOURCE_CODE</dd>
-<dt></dt>              <dd>SORT_MEMBER_DOCS</dd>
 <dt>New in 1.9.3</dt>
 <dt></dt>              <dd>DIR_GRAPH_MAX_DEPTH</dd>
 <dt></dt>              <dd>DOCSET_FEEDURL</dd>
