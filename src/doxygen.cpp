@@ -7311,7 +7311,7 @@ static void addEnumValuesToEnums(const Entry *root)
                 QCString qualifiedName = root->name;
                 if (isJavaLike)
                 {
-                  qualifiedName=substitute(qualifiedName,".","::");
+                  qualifiedName=substitute(qualifiedName,"::",".");
                 }
                 if (md->qualifiedName()==qualifiedName)       // enum value scope matches that of the enum
                 {
