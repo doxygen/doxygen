@@ -855,6 +855,11 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
       << convertToXML(rbmd->name()) << "</reimplementedby>\n";
   }
 
+  for (const auto &qmd : md->getQualifiers())
+  {
+    t << "        <qualifier>" << convertToXML(qmd.c_str()) << "</qualifier>\n";
+  }
+
   if (md->isFriendClass()) // for friend classes we show a link to the class as a "parameter"
   {
     t << "        <param>\n";

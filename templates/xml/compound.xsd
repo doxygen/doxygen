@@ -149,6 +149,7 @@
       <xsd:element name="bitfield" minOccurs="0" />
       <xsd:element name="reimplements" type="reimplementType" minOccurs="0" maxOccurs="unbounded" />
       <xsd:element name="reimplementedby" type="reimplementType" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element name="qualifier" minOccurs="0" maxOccurs="unbounded" />
       <xsd:element name="param" type="paramType" minOccurs="0" maxOccurs="unbounded" />
       <xsd:element name="enumvalue" type="enumvalueType" minOccurs="0" maxOccurs="unbounded" />
       <xsd:element name="requiresclause" type="linkedTextType" minOccurs="0" />

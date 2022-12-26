@@ -135,6 +135,7 @@ static bool handleProtected(yyscan_t yyscanner,const QCString &, const StringVec
 static bool handleProtectedSection(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handlePublic(yyscan_t yyscanner,const QCString &s, const StringVector &);
 static bool handlePublicSection(yyscan_t yyscanner,const QCString &s, const StringVector &);
+static bool handleQualifier(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleToc(yyscan_t yyscanner,const QCString &s, const StringVector &);
 static bool handleInherit(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleExtends(yyscan_t yyscanner,const QCString &, const StringVector &);
@@ -267,6 +268,7 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "public",          { &handlePublic,           CommandSpacing::Invisible }},
   { "publicsection",   { &handlePublicSection,    CommandSpacing::Invisible }},
   { "pure",            { &handlePure,             CommandSpacing::Invisible }},
+  { "qualifier",       { &handleQualifier,        CommandSpacing::Invisible }},
   { "raisewarning",    { &handleRaiseWarning,     CommandSpacing::Invisible }},
   { "refitem",         { &handleRefItem,          CommandSpacing::Inline    }},
   { "related",         { &handleRelated,          CommandSpacing::Invisible }},
@@ -588,6 +590,7 @@ STopt  [^\n@\\]*
 %x      CdataSection
 %x      Noop
 %x      RaiseWarning
+%x      Qualifier
 
 %%
 
@@ -1491,6 +1494,26 @@ STopt  [^\n@\\]*
                                         }
 
 
+  /* ----- handle arguments of the qualifier command ----- */
+<Qualifier>"\""[^\"]*"\""               {
+                                          std::string inp = yytext;
+                                          yyextra->current->qualifiers.push_back(inp.substr(1, inp.size() - 2));
+                                          BEGIN( Comment );
+                                        }
+<Qualifier>{DOCNL}                      { // missing argument
+                                          warn(yyextra->fileName,yyextra->lineNr,
+                                              "Missing argument of '\\%s' command",qPrint(yyextra->currentCmd)
+                                              );
+                                          unput_string(yytext,yyleng);
+                                          BEGIN( Comment );
+                                        }
+<Qualifier>.                            {
+                                          warn(yyextra->fileName,yyextra->lineNr,
+                                              "Argument of '\\%s' command should be quoted",qPrint(yyextra->currentCmd)
+                                              );
+                                          unput_string(yytext,yyleng);
+                                          BEGIN( Comment );
+                                        }
   /* ----- handle arguments of the relates(also)/addindex commands ----- */
 
 <LineParam>{CMD}{CMD}                   { // escaped command
@@ -2868,6 +2891,14 @@ static bool handleHideCallergraph(yyscan_t yyscanner,const QCString &, const Str
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yyextra->current->callerGraph = FALSE; // OFF
+  return FALSE;
+}
+
+static bool handleQualifier(yyscan_t yyscanner,const QCString &cmd, const StringVector &)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->currentCmd = cmd;
+  BEGIN(Qualifier);
   return FALSE;
 }
 
