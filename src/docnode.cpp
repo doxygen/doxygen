@@ -699,9 +699,19 @@ DocRef::DocRef(DocParser *parser,DocNodeVariant *parent,const QCString &target,c
   QCString     anchor;
   //printf("DocRef::DocRef(target=%s,context=%s)\n",qPrint(target),qPrint(context));
   ASSERT(!target.isEmpty());
-  SrcLangExt lang = getLanguageFromFileName(target);
+  QCString locTarget = target;
+  QCString locAnchor;
+  int lp = -1;
+  lp = locTarget.findRev('#');
+  if (lp != -1)
+  {
+    locTarget = target.left(lp);
+    locAnchor = target.right(target.length() - lp);
+  }
+  SrcLangExt lang = getLanguageFromFileName(locTarget);
+
   m_relPath = parser->context.relPath;
-  const SectionInfo *sec = SectionManager::instance().find(target);
+  const SectionInfo *sec = SectionManager::instance().find(locTarget);
   if (sec==0 && lang==SrcLangExt_Markdown) // lookup as markdown file
   {
     sec = SectionManager::instance().find(markdownFileNameToId(target));
@@ -711,7 +721,7 @@ DocRef::DocRef(DocParser *parser,DocNodeVariant *parent,const QCString &target,c
     PageDef *pd = 0;
     if (sec->type()==SectionType::Page)
     {
-      pd = Doxygen::pageLinkedMap->find(target);
+      pd = Doxygen::pageLinkedMap->find(locTarget);
     }
     m_text         = sec->title();
     if (m_text.isEmpty()) m_text = sec->label();
@@ -732,6 +742,7 @@ DocRef::DocRef(DocParser *parser,DocNodeVariant *parent,const QCString &target,c
     }
     m_isSubPage    = pd && pd->hasParentPage();
     if (sec->type()!=SectionType::Page || m_isSubPage) m_anchor = sec->label();
+    if (m_anchor.isEmpty()) m_anchor = locAnchor;
     //printf("m_text=%s,m_ref=%s,m_file=%s,type=%d\n",
     //    qPrint(m_text),qPrint(m_ref),qPrint(m_file),m_refType);
     return;
