@@ -100,6 +100,11 @@ English:
 English:
 * Updated the language translation to 1.9.2
 
+2022/12/28
+* Uppdaterat översättningarna till 1.9.6
+English:
+* Updated the language translation to 1.9.6
+
 ===================================================================================
   Ordlista
 ===================================================================================
@@ -156,7 +161,7 @@ English:
 #ifndef TRANSLATOR_SE_H
 #define TRANSLATOR_SE_H
 
-class TranslatorSwedish : public TranslatorAdapter_1_9_4
+class TranslatorSwedish : public Translator
 {
   public:
 
@@ -219,7 +224,16 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_4
 
     /*! header that is put before the list of member functions. */
     virtual QCString trMemberFunctionDocumentation()
-    { return "Dokumentation av medlemsfunktioner"; }
+    {
+      if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+        return "Dokumentation av medlemsfunktioner/-procedurer/-processer";
+      }
+      else
+      {
+        return "Dokumentation av medlemsfunktioner";
+      }
+    }
 
     /*! header that is put before the list of member attributes. */
     virtual QCString trMemberDataDocumentation()
@@ -2422,5 +2436,19 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_4
     {
       return "Konceptdefinition";
     }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.4
+//////////////////////////////////////////////////////////////////////////
+
+    virtual QCString trPackageList()
+    { return "Paketlista"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.6
+//////////////////////////////////////////////////////////////////////////
+
+    virtual QCString trFlowchart()
+    { return "Flödesdiagram: "; }
 };
 #endif
