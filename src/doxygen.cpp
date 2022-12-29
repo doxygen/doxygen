@@ -1788,11 +1788,11 @@ static void buildNamespaceList(const Entry *root)
 
 //----------------------------------------------------------------------
 
-static const NamespaceDef *findUsedNamespace(const LinkedRefMap<const NamespaceDef> &unl,
+static NamespaceDef *findUsedNamespace(const LinkedRefMap<NamespaceDef> &unl,
                               const QCString &name)
 {
-  const NamespaceDef *usingNd =0;
-  for (const auto &und : unl)
+  NamespaceDef *usingNd =0;
+  for (auto &und : unl)
   {
     QCString uScope=und->name()+"::";
     usingNd = getResolvedNamespace(uScope+name);
@@ -1814,7 +1814,7 @@ static void findUsingDirectives(const Entry *root)
     }
     if (!name.isEmpty())
     {
-      const NamespaceDef *usingNd = 0;
+      NamespaceDef *usingNd = 0;
       NamespaceDefMutable *nd = 0;
       FileDef      *fd = root->fileDef();
       QCString nsName;
@@ -1863,7 +1863,7 @@ static void findUsingDirectives(const Entry *root)
           usingNd = toNamespaceDefMutable(findUsedNamespace(pnd->getUsedNamespaces(),name));
 
           // goto the parent
-          const Definition *s = pnd->getOuterScope();
+          Definition *s = pnd->getOuterScope();
           if (s && s->definitionType()==Definition::TypeNamespace)
           {
             pnd = toNamespaceDefMutable(toNamespaceDef(s));
@@ -5366,7 +5366,7 @@ static bool findGlobalMember(const Entry *root,
 
       const FileDef *fd=root->fileDef();
       //printf("File %s\n",fd ? qPrint(fd->name()) : "<none>");
-      LinkedRefMap<const NamespaceDef> nl;
+      LinkedRefMap<NamespaceDef> nl;
       if (fd)
       {
         nl = fd->getUsedNamespaces();

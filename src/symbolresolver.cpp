@@ -167,14 +167,14 @@ struct SymbolResolver::Private
 
     const Definition *followPath(const Definition *start,const QCString &path);
 
-    const Definition *endOfPathIsUsedClass(const LinkedRefMap<const ClassDef> &cl,const QCString &localName);
+    const Definition *endOfPathIsUsedClass(const LinkedRefMap<ClassDef> &cl,const QCString &localName);
 
     bool accessibleViaUsingNamespace(StringUnorderedSet &visited,
-                                     const LinkedRefMap<const NamespaceDef> &nl,
+                                     const LinkedRefMap<NamespaceDef> &nl,
                                      const Definition *item,
                                      const QCString &explicitScopePart="",
                                      int level=0);
-    bool accessibleViaUsingClass(const LinkedRefMap<const ClassDef> &cl,
+    bool accessibleViaUsingClass(const LinkedRefMap<ClassDef> &cl,
                                  const Definition *item,
                                  const QCString &explicitScopePart=""
                                 );
@@ -1192,7 +1192,7 @@ const Definition *SymbolResolver::Private::followPath(const Definition *start,co
   return current; // path could be followed
 }
 
-const Definition *SymbolResolver::Private::endOfPathIsUsedClass(const LinkedRefMap<const ClassDef> &cl,const QCString &localName)
+const Definition *SymbolResolver::Private::endOfPathIsUsedClass(const LinkedRefMap<ClassDef> &cl,const QCString &localName)
 {
   for (const auto &cd : cl)
   {
@@ -1205,7 +1205,7 @@ const Definition *SymbolResolver::Private::endOfPathIsUsedClass(const LinkedRefM
 }
 
 bool SymbolResolver::Private::accessibleViaUsingNamespace(StringUnorderedSet &visited,
-                                 const LinkedRefMap<const NamespaceDef> &nl,
+                                 const LinkedRefMap<NamespaceDef> &nl,
                                  const Definition *item,
                                  const QCString &explicitScopePart,
                                  int level)
@@ -1240,7 +1240,7 @@ bool SymbolResolver::Private::accessibleViaUsingNamespace(StringUnorderedSet &vi
 }
 
 
-bool SymbolResolver::Private::accessibleViaUsingClass(const LinkedRefMap<const ClassDef> &cl,
+bool SymbolResolver::Private::accessibleViaUsingClass(const LinkedRefMap<ClassDef> &cl,
                                                       const Definition *item,
                                                       const QCString &explicitScopePart)
 {

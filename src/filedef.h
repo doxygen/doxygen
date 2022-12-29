@@ -121,8 +121,8 @@ class FileDef : public DefinitionMutable, public Definition
 
     virtual PackageDef *packageDef() const = 0;
     virtual DirDef *getDirDef() const = 0;
-    virtual const LinkedRefMap<const NamespaceDef> &getUsedNamespaces() const = 0;
-    virtual const LinkedRefMap<const ClassDef> &getUsedClasses() const = 0;
+    virtual const LinkedRefMap<NamespaceDef> &getUsedNamespaces() const = 0;
+    virtual const LinkedRefMap<ClassDef> &getUsedClasses() const = 0;
     virtual const IncludeInfoList &includeFileList() const = 0;
     virtual const IncludeInfoList &includedByFileList() const = 0;
     virtual void getAllIncludeFilesRecursively(StringVector &incFiles) const = 0;
@@ -171,8 +171,8 @@ class FileDef : public DefinitionMutable, public Definition
     virtual void setPackageDef(PackageDef *pd) = 0;
     virtual void setDirDef(DirDef *dd) = 0;
 
-    virtual void addUsingDirective(const NamespaceDef *nd) = 0;
-    virtual void addUsingDeclaration(const ClassDef *cd) = 0;
+    virtual void addUsingDirective(NamespaceDef *nd) = 0;
+    virtual void addUsingDeclaration(ClassDef *cd) = 0;
     virtual void combineUsingRelations() = 0;
 
     virtual bool generateSourceFile() const = 0;

@@ -60,8 +60,8 @@ class NamespaceDef : public Definition
     virtual QCString getOutputFileBase() const = 0;
     virtual QCString anchor() const = 0;
     virtual int numDocMembers() const = 0;
-    virtual const LinkedRefMap<const NamespaceDef> &getUsedNamespaces() const = 0;
-    virtual const LinkedRefMap<const ClassDef> &getUsedClasses() const = 0;
+    virtual const LinkedRefMap<NamespaceDef> &getUsedNamespaces() const = 0;
+    virtual const LinkedRefMap<ClassDef> &getUsedClasses() const = 0;
     virtual QCString displayName(bool=TRUE) const = 0;
     virtual QCString localName() const = 0;
     virtual bool isConstantGroup() const = 0;
@@ -128,8 +128,8 @@ class NamespaceDefMutable : public DefinitionMutable, public NamespaceDef
     virtual void addListReferences() = 0;
     virtual void setFileName(const QCString &fn) = 0;
     virtual void combineUsingRelations(NamespaceDefSet &visitedNamespace) = 0;
-    virtual void addUsingDirective(const NamespaceDef *nd) = 0;
-    virtual void addUsingDeclaration(const ClassDef *cd) = 0;
+    virtual void addUsingDirective(NamespaceDef *nd) = 0;
+    virtual void addUsingDeclaration(ClassDef *cd) = 0;
     virtual void setInline(bool isInline) = 0;
 };
 
@@ -149,7 +149,6 @@ NamespaceDef            *toNamespaceDef(Definition *d);
 NamespaceDef            *toNamespaceDef(DefinitionMutable *d);
 const NamespaceDef      *toNamespaceDef(const Definition *d);
 NamespaceDefMutable     *toNamespaceDefMutable(Definition *d);
-NamespaceDefMutable     *toNamespaceDefMutable(const Definition *d);
 
 // --- Helpers
 

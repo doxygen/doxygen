@@ -86,8 +86,8 @@ class FileDefImpl : public DefinitionMixin<FileDef>
     virtual bool isIncluded(const QCString &name) const;
     virtual PackageDef *packageDef() const { return m_package; }
     virtual DirDef *getDirDef() const      { return m_dir; }
-    virtual const LinkedRefMap<const NamespaceDef> &getUsedNamespaces() const;
-    virtual const LinkedRefMap<const ClassDef> &getUsedClasses() const  { return m_usingDeclList; }
+    virtual const LinkedRefMap<NamespaceDef> &getUsedNamespaces() const;
+    virtual const LinkedRefMap<ClassDef> &getUsedClasses() const  { return m_usingDeclList; }
     virtual const IncludeInfoList &includeFileList() const    { return m_includeList; }
     virtual const IncludeInfoList &includedByFileList() const { return m_includedByList; }
     virtual void getAllIncludeFilesRecursively(StringVector &incFiles) const;
@@ -122,8 +122,8 @@ class FileDefImpl : public DefinitionMixin<FileDef>
     virtual void computeAnchors();
     virtual void setPackageDef(PackageDef *pd) { m_package=pd; }
     virtual void setDirDef(DirDef *dd) { m_dir=dd; }
-    virtual void addUsingDirective(const NamespaceDef *nd);
-    virtual void addUsingDeclaration(const ClassDef *cd);
+    virtual void addUsingDirective(NamespaceDef *nd);
+    virtual void addUsingDeclaration(ClassDef *cd);
     virtual void combineUsingRelations();
     virtual bool generateSourceFile() const;
     virtual void sortMemberLists();
@@ -163,8 +163,8 @@ class FileDefImpl : public DefinitionMixin<FileDef>
     IncludeInfoList       m_includeList;
     IncludeInfoMap        m_includedByMap;
     IncludeInfoList       m_includedByList;
-    LinkedRefMap<const NamespaceDef> m_usingDirList;
-    LinkedRefMap<const ClassDef> m_usingDeclList;
+    LinkedRefMap<NamespaceDef> m_usingDirList;
+    LinkedRefMap<ClassDef> m_usingDeclList;
     QCString              m_path;
     QCString              m_filePath;
     QCString              m_inclDepFileName;
@@ -1351,19 +1351,19 @@ const MemberDef *FileDefImpl::getSourceMember(int lineNr) const
 }
 
 
-void FileDefImpl::addUsingDirective(const NamespaceDef *nd)
+void FileDefImpl::addUsingDirective(NamespaceDef *nd)
 {
   m_usingDirList.add(nd->qualifiedName(),nd);
   //printf("%p: FileDefImpl::addUsingDirective: %s:%d\n",this,qPrint(name()),usingDirList->count());
 }
 
-const LinkedRefMap<const NamespaceDef> &FileDefImpl::getUsedNamespaces() const
+const LinkedRefMap<NamespaceDef> &FileDefImpl::getUsedNamespaces() const
 {
   //printf("%p: FileDefImpl::getUsedNamespace: %s:%d\n",this,qPrint(name()),usingDirList?usingDirList->count():0);
   return m_usingDirList;
 }
 
-void FileDefImpl::addUsingDeclaration(const ClassDef *cd)
+void FileDefImpl::addUsingDeclaration(ClassDef *cd)
 {
   m_usingDeclList.add(cd->qualifiedName(),cd);
 }
@@ -1401,14 +1401,14 @@ void FileDefImpl::addIncludedUsingDirectives(FileDefSet &visitedFiles)
       // iterate through list from last to first
       for (auto ii_it = m_includeList.rbegin(); ii_it!=m_includeList.rend(); ++ii_it)
       {
-        const auto &ii = *ii_it;
+        auto &ii = *ii_it;
         if (ii.fileDef && ii.fileDef!=this)
         {
           // add using directives
           auto unl = ii.fileDef->getUsedNamespaces();
           for (auto it = unl.rbegin(); it!=unl.rend(); ++it)
           {
-            const auto *nd = *it;
+            auto *nd = *it;
             //printf("  adding using directive for %s\n",qPrint(nd->qualifiedName()));
             m_usingDirList.prepend(nd->qualifiedName(),nd);
           }
@@ -1416,7 +1416,7 @@ void FileDefImpl::addIncludedUsingDirectives(FileDefSet &visitedFiles)
           auto  udl = ii.fileDef->getUsedClasses();
           for (auto it = udl.rbegin(); it!=udl.rend(); ++it)
           {
-            const auto *cd = *it;
+            auto *cd = *it;
             m_usingDeclList.prepend(cd->qualifiedName(),cd);
           }
         }
@@ -1486,7 +1486,7 @@ void FileDefImpl::addListReferences()
 
 void FileDefImpl::combineUsingRelations()
 {
-  LinkedRefMap<const NamespaceDef> usingDirList = m_usingDirList;
+  LinkedRefMap<NamespaceDef> usingDirList = m_usingDirList;
   NamespaceDefSet visitedNamespaces;
   for (auto &nd : usingDirList)
   {

@@ -74,10 +74,10 @@ class NamespaceDefImpl : public DefinitionMixin<NamespaceDefMutable>
     virtual void computeAnchors();
     virtual void countMembers();
     virtual int  numDocMembers() const;
-    virtual void addUsingDirective(const NamespaceDef *nd);
-    virtual const LinkedRefMap<const NamespaceDef> &getUsedNamespaces() const { return m_usingDirList; }
-    virtual void addUsingDeclaration(const ClassDef *cd);
-    virtual const LinkedRefMap<const ClassDef> &getUsedClasses() const { return m_usingDeclList; }
+    virtual void addUsingDirective(NamespaceDef *nd);
+    virtual const LinkedRefMap<NamespaceDef> &getUsedNamespaces() const { return m_usingDirList; }
+    virtual void addUsingDeclaration(ClassDef *cd);
+    virtual const LinkedRefMap<ClassDef> &getUsedClasses() const { return m_usingDeclList; }
     virtual void combineUsingRelations(NamespaceDefSet &visitedNamespace);
     virtual QCString displayName(bool=TRUE) const;
     virtual QCString localName() const;
@@ -141,8 +141,8 @@ class NamespaceDefImpl : public DefinitionMixin<NamespaceDefMutable>
     QCString              fileName;
     FileList              files;
 
-    LinkedRefMap<const NamespaceDef> m_usingDirList;
-    LinkedRefMap<const ClassDef> m_usingDeclList;
+    LinkedRefMap<NamespaceDef> m_usingDirList;
+    LinkedRefMap<ClassDef> m_usingDeclList;
     LinkedRefMap<const Definition> m_innerCompounds;
 
     MemberLinkedRefMap    m_allMembers;
@@ -191,9 +191,9 @@ class NamespaceDefAliasImpl : public DefinitionAliasMixin<NamespaceDef>
     { return getNSAlias()->anchor(); }
     virtual int numDocMembers() const
     { return getNSAlias()->numDocMembers(); }
-    virtual const LinkedRefMap<const NamespaceDef> &getUsedNamespaces() const
+    virtual const LinkedRefMap<NamespaceDef> &getUsedNamespaces() const
     { return getNSAlias()->getUsedNamespaces(); }
-    virtual const LinkedRefMap<const ClassDef> &getUsedClasses() const
+    virtual const LinkedRefMap<ClassDef> &getUsedClasses() const
     { return getNSAlias()->getUsedClasses(); }
     virtual QCString displayName(bool b=TRUE) const
     { return makeDisplayName(this,b); }
@@ -1167,13 +1167,13 @@ int NamespaceDefImpl::numDocMembers() const
   return (allMemberList ? allMemberList->numDocMembers() : 0) + static_cast<int>(m_innerCompounds.size());
 }
 
-void NamespaceDefImpl::addUsingDirective(const NamespaceDef *nd)
+void NamespaceDefImpl::addUsingDirective(NamespaceDef *nd)
 {
   m_usingDirList.add(nd->qualifiedName(),nd);
   //printf("%s: NamespaceDefImpl::addUsingDirective: %s:%zu\n",qPrint(name()),qPrint(nd->qualifiedName()),m_usingDirList.size());
 }
 
-void NamespaceDefImpl::addUsingDeclaration(const ClassDef *cd)
+void NamespaceDefImpl::addUsingDeclaration(ClassDef *cd)
 {
   m_usingDeclList.add(cd->qualifiedName(),cd);
 }
@@ -1250,7 +1250,7 @@ void NamespaceDefImpl::combineUsingRelations(NamespaceDefSet &visitedNamespaces)
   if (visitedNamespaces.find(this)!=visitedNamespaces.end()) return; // already processed
   visitedNamespaces.insert(this);
 
-  LinkedRefMap<const NamespaceDef> usingDirList = m_usingDirList;
+  LinkedRefMap<NamespaceDef> usingDirList = m_usingDirList;
   for (auto &nd : usingDirList)
   {
     NamespaceDefMutable *ndm = toNamespaceDefMutable(nd);
@@ -1606,18 +1606,6 @@ NamespaceDefMutable *toNamespaceDefMutable(Definition *d)
   if (d && typeid(*d)==typeid(NamespaceDefImpl))
   {
     return static_cast<NamespaceDefMutable*>(d);
-  }
-  else
-  {
-    return 0;
-  }
-}
-
-NamespaceDefMutable *toNamespaceDefMutable(const Definition *d)
-{
-  if (d && typeid(*d)==typeid(NamespaceDefImpl))
-  {
-    return const_cast<NamespaceDefMutable*>(static_cast<const NamespaceDefMutable*>(d));
   }
   else
   {
