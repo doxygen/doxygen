@@ -21,8 +21,22 @@ endif()
 
 configure_file(${CMAKE_SOURCE_DIR}/doc_internal/Doxyfile.in "${CMAKE_CURRENT_BINARY_DIR}/Doxyfile" @ONLY)
 
+add_custom_command(
+    COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/doc_internal/cmds_tags.py -cmds ${CMAKE_SOURCE_DIR}/doc_internal ${CMAKE_SOURCE_DIR}/doc_internal/commands_history.md ${PROJECT_BINARY_DIR}/doc_internal/commands_history.md
+    DEPENDS ${CMAKE_CURRENT_LIST_DIR}/cmds_tags.py ${CMAKE_SOURCE_DIR}/doc_internal/commands_history.md
+    OUTPUT ${PROJECT_BINARY_DIR}/doc_internal/commands_history.md
+)
+
+add_custom_command(
+    COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/doc_internal/cmds_tags.py -tags ${CMAKE_SOURCE_DIR}/doc_internal ${CMAKE_SOURCE_DIR}/doc_internal/tags_history.md ${PROJECT_BINARY_DIR}/doc_internal/tags_history.md
+    DEPENDS ${CMAKE_CURRENT_LIST_DIR}/cmds_tags.py ${CMAKE_SOURCE_DIR}/doc_internal/tags_history.md
+    OUTPUT ${PROJECT_BINARY_DIR}/doc_internal/tags_history.md
+)
+
 add_custom_target(docs_internal
         COMMENT "Generating HTML internal documentation."
         COMMAND ${CMAKE_COMMAND} -E env VERSION=${VERSION} ${DOXYGEN_EXECUTABLE}
         DEPENDS doxygen
+        DEPENDS ${PROJECT_BINARY_DIR}/doc_internal/commands_history.md
+        DEPENDS ${PROJECT_BINARY_DIR}/doc_internal/tags_history.md
         )
