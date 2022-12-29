@@ -780,7 +780,7 @@ The same functionality can now be achieved using HAVE_DOT and CLASS_GRAPH. Old s
 <li>Coverity warnings [<a href="https://github.com/doxygen/doxygen/commit/c16cda14f6234ce541d204be1267751f97a6f2a0">view</a>]</li>
 <li>Debug facility for the RTF output [<a href="https://github.com/doxygen/doxygen/commit/9073285a7c9c2f172ce8c573dc269ce73d5b6596">view</a>]</li>
 <li>Detect generateDS and recreate index.py/compound.py automatically [<a href="https://github.com/doxygen/doxygen/commit/a53db9b77a2df94cb9a1eaf4f6c305a92f432a14">view</a>]</li>
-<li>Determine ghostsrcipt directory (Windows) [<a href="https://github.com/doxygen/doxygen/commit/01f47d774853df491c10f9dcd48f342dddcecee0">view</a>]</li>
+<li>Determine ghostscript directory (Windows) [<a href="https://github.com/doxygen/doxygen/commit/01f47d774853df491c10f9dcd48f342dddcecee0">view</a>]</li>
 <li>Determine ghostscript directory (Windows) [<a href="https://github.com/doxygen/doxygen/commit/c7fd5c47d9f0a595a1357a524738760a822ade1c">view</a>]</li>
 <li>Determine latex reruns based on log file contents instead of hardcoded [<a href="https://github.com/doxygen/doxygen/commit/8daae33bfb2716fa3709dafde34eccb78b99b631">view</a>]</li>
 <li>Disable qregex.h and fix some warnings and issues [<a href="https://github.com/doxygen/doxygen/commit/cfdea8320f089c0f25fe72ecfb7ede76e39110d8">view</a>]</li>
