@@ -392,7 +392,6 @@ class DefinitionMutable
 
 Definition          *toDefinition(DefinitionMutable *dm);
 DefinitionMutable   *toDefinitionMutable(Definition *d);
-DefinitionMutable   *toDefinitionMutable(const Definition *d);
 
 /** Reads a fragment from file \a fileName starting with line \a startLine
  *  and ending with line \a endLine. The result is returned as a string

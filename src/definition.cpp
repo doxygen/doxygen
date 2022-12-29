@@ -2037,8 +2037,3 @@ DefinitionMutable *toDefinitionMutable(Definition *d)
   return d->toDefinitionMutable_();
 }
 
-DefinitionMutable *toDefinitionMutable(const Definition *d)
-{
-  return toDefinitionMutable(const_cast<Definition*>(d));
-}
-
