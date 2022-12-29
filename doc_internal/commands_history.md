@@ -31,7 +31,7 @@ The following table gives an overview of the doxygen special commands and the ve
 <dt></dt>             <dd>\\endhtmlonly</dd>
 <dt></dt>             <dd>\\endlatexonly</dd>
 <dt></dt>             <dd>\\endlink</dd>
-<dt></dt>             <dd>endverbatim</dd>
+<dt></dt>             <dd>\\endverbatim</dd>
 <dt></dt>             <dd>\\enum</dd>
 <dt></dt>             <dd>\\example</dd>
 <dt></dt>             <dd>\\exception</dd>
