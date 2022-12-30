@@ -71,7 +71,7 @@ class GroupDefImpl : public DefinitionMixin<GroupDef>
     virtual void addPage(PageDef *def);
     virtual void addExample(PageDef *def);
     virtual void addDir(DirDef *dd);
-    virtual bool insertMember(const MemberDef *def,bool docOnly=FALSE);
+    virtual bool insertMember(MemberDef *def,bool docOnly=FALSE);
     virtual void removeMember(MemberDef *md);
     virtual bool findGroup(const GroupDef *def) const; // true if def is a subgroup of this group
     virtual void writeDocumentation(OutputList &ol);
@@ -115,7 +115,7 @@ class GroupDefImpl : public DefinitionMixin<GroupDef>
 
   private:
     void addMemberListToGroup(MemberList *,bool (MemberDef::*)() const);
-    void addMemberToList(MemberListType lt,const MemberDef *md);
+    void addMemberToList(MemberListType lt,MemberDef *md);
     void writeMemberDeclarations(OutputList &ol,MemberListType lt,const QCString &title);
     void writeMemberDocumentation(OutputList &ol,MemberListType lt,const QCString &title);
     void removeMemberFromList(MemberListType lt,MemberDef *md);
@@ -319,7 +319,7 @@ void GroupDefImpl::addMembersToMemberGroup()
 }
 
 
-bool GroupDefImpl::insertMember(const MemberDef *md,bool docOnly)
+bool GroupDefImpl::insertMember(MemberDef *md,bool docOnly)
 {
   if (md->isHidden()) return FALSE;
   updateLanguage(md);
@@ -1574,7 +1574,7 @@ void GroupDefImpl::addListReferences()
   }
 }
 
-void GroupDefImpl::addMemberToList(MemberListType lt,const MemberDef *md)
+void GroupDefImpl::addMemberToList(MemberListType lt,MemberDef *md)
 {
   bool sortBriefDocs = Config_getBool(SORT_BRIEF_DOCS);
   bool sortMemberDocs = Config_getBool(SORT_MEMBER_DOCS);

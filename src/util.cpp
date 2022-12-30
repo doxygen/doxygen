@@ -4356,9 +4356,9 @@ void addMembersToMemberGroup(MemberList *ml,
 
   struct MoveMemberInfo
   {
-    MoveMemberInfo(const MemberDef *md,MemberGroup *mg,const RefItemVector &rv)
+    MoveMemberInfo(MemberDef *md,MemberGroup *mg,const RefItemVector &rv)
       : memberDef(md), memberGroup(mg), sli(rv) {}
-    const MemberDef *memberDef;
+    MemberDef *memberDef;
     MemberGroup *memberGroup;
     RefItemVector sli;
   };

@@ -32,24 +32,40 @@ int genericCompareMembers(const MemberDef *c1,const MemberDef *c2);
 class MemberVector
 {
   public:
-    /* --- standard vector interface ---- */
-    using Ptr = const MemberDef *;
-    using Vec = std::vector<Ptr>;
-    using iterator = typename Vec::iterator;
-    using const_iterator = typename Vec::const_iterator;
-    using value_type = const MemberDef *;
-    using const_reference = const value_type&;
-    void push_back(const MemberDef *md)     { m_members.push_back(md); }
-    iterator begin()                        { return m_members.begin();   }
-    iterator end()                          { return m_members.end();     }
-    const_iterator begin() const            { return m_members.cbegin();  }
-    const_iterator end() const              { return m_members.cend();    }
-    bool empty() const                      { return m_members.empty();   }
-    size_t size() const                     { return m_members.size();    }
-    const_reference front() const           { return m_members.front();   }
-    const_reference back() const            { return m_members.back();    }
-    const_reference operator[](int index) const { return m_members[index];    }
-    const_reference operator[](size_t index) const { return m_members[index];    }
+    using T                = MemberDef*;
+    using Vec              = std::vector<T>;
+    using value_type       = Vec::value_type;
+    using allocator_type   = Vec::allocator_type;
+    using size_type        = Vec::size_type;
+    using difference_type  = Vec::difference_type;
+    using reference        = Vec::reference;
+    using const_reference  = Vec::const_reference;
+    using iterator         = Vec::iterator;
+    using const_iterator   = Vec::const_iterator;
+
+    void push_back( const T& value )        { m_members.push_back(value); }
+    void push_back( T&& value )             { m_members.push_back(std::move(value)); }
+
+    iterator erase( iterator pos )          { return m_members.erase(pos); }
+    iterator erase( const_iterator pos )    { return m_members.erase(pos); }
+
+          iterator begin()       noexcept   { return m_members.begin(); }
+    const_iterator begin() const noexcept   { return m_members.begin(); }
+          iterator end()         noexcept   { return m_members.end();   }
+    const_iterator end()   const noexcept   { return m_members.end();   }
+
+    size_type size() const noexcept         { return m_members.size();  }
+    bool empty()     const noexcept         { return m_members.empty(); }
+
+          reference front()                 { return m_members.front(); }
+    const_reference front() const           { return m_members.front(); }
+
+          reference back()                  { return m_members.back();  }
+    const_reference back() const            { return m_members.back();  }
+
+          reference operator[]( size_type pos )       { return m_members.operator[](pos); }
+    const_reference operator[]( size_type pos ) const { return m_members.operator[](pos); }
+
 
     static bool lessThan(const MemberDef *md1,const MemberDef *md2)
     {
@@ -59,19 +75,18 @@ class MemberVector
     {
       std::sort(m_members.begin(),m_members.end(),lessThan);
     }
-    void inSort(const MemberDef *md)
+    void inSort(MemberDef *md)
     {
       m_members.insert( std::upper_bound( m_members.begin(), m_members.end(), md, lessThan), md);
     }
     void remove(const MemberDef *md)
     {
       auto it = std::find(m_members.begin(),m_members.end(),md);
-      if (it!=m_members.end()) m_members.erase(it);
+      if (it!=m_members.end()) erase(it);
     }
-    bool contains(const MemberDef *md)
+    bool contains(const MemberDef *md) const
     {
-      auto it = std::find(m_members.begin(),m_members.end(),md);
-      return it!=m_members.end();
+      return std::find(m_members.begin(),m_members.end(),md)!=m_members.end();
     }
   protected:
     Vec m_members;

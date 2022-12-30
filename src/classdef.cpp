@@ -315,8 +315,8 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
     void showUsedFiles(OutputList &ol) const;
 
     void writeDocumentationContents(OutputList &ol,const QCString &pageTitle) const;
-    void internalInsertMember(const MemberDef *md,Protection prot,bool addToAllList);
-    void addMemberToList(MemberListType lt,const MemberDef *md,bool isBrief);
+    void internalInsertMember(MemberDef *md,Protection prot,bool addToAllList);
+    void addMemberToList(MemberListType lt,MemberDef *md,bool isBrief);
     void writeInheritedMemberDeclarations(OutputList &ol,ClassDefSet &visitedClasses,
                                           MemberListType lt,int lt2,const QCString &title,
                                           const ClassDef *inheritedFrom,bool invert,
@@ -879,7 +879,7 @@ void ClassDefImpl::addMembersToMemberGroup()
 }
 
 // adds new member definition to the class
-void ClassDefImpl::internalInsertMember(const MemberDef *md,
+void ClassDefImpl::internalInsertMember(MemberDef *md,
                                     Protection prot,
                                     bool addToAllList
                                    )
@@ -3516,7 +3516,7 @@ void ClassDefImpl::mergeMembers()
         {
           for (auto &srcMi : *srcMni)
           {
-            const MemberDef *srcMd = srcMi->memberDef();
+            MemberDef *srcMd = srcMi->memberDef();
             bool found=FALSE;
             bool ambiguous=FALSE;
             bool hidden=FALSE;
@@ -4087,7 +4087,7 @@ void ClassDefImpl::addMembersToTemplateInstance(const ClassDef *cd,const Argumen
     for (const auto &mi : *mni)
     {
       auto actualArguments_p = stringToArgumentList(getLanguage(),templSpec);
-      const MemberDef *md = mi->memberDef();
+      MemberDef *md = mi->memberDef();
       std::unique_ptr<MemberDefMutable> imd { md->createTemplateInstanceMember(
                           templateArguments,actualArguments_p) };
       //printf("%s->setMemberClass(%p)\n",qPrint(imd->name()),this);
@@ -4254,7 +4254,7 @@ MemberList *ClassDefImpl::getMemberList(MemberListType lt) const
   return 0;
 }
 
-void ClassDefImpl::addMemberToList(MemberListType lt,const MemberDef *md,bool isBrief)
+void ClassDefImpl::addMemberToList(MemberListType lt,MemberDef *md,bool isBrief)
 {
   bool sortBriefDocs = Config_getBool(SORT_BRIEF_DOCS);
   bool sortMemberDocs = Config_getBool(SORT_MEMBER_DOCS);

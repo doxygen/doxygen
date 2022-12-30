@@ -90,8 +90,8 @@ class DefinitionImpl
     void addSectionsToDefinition(const std::vector<const SectionInfo*> &anchorList);
     void setBodySegment(int defLine,int bls,int ble);
     void setBodyDef(const FileDef *fd);
-    void addSourceReferencedBy(const MemberDef *d);
-    void addSourceReferences(const MemberDef *d);
+    void addSourceReferencedBy(MemberDef *d);
+    void addSourceReferences(MemberDef *d);
     void setRefItems(const RefItemVector &sli);
     void mergeRefItems(Definition *d);
     void mergeReferences(const Definition *other);
@@ -127,7 +127,7 @@ class DefinitionImpl
 
     int  _getXRefListId(const QCString &listName) const;
     void _writeSourceRefList(OutputList &ol,const QCString &scopeName,const QCString &text,
-                       const std::unordered_map<std::string,const MemberDef *> &members,bool) const;
+                       const std::unordered_map<std::string,MemberDef *> &members,bool) const;
     void _setBriefDescription(const QCString &b,const QCString &briefFile,int briefLine);
     void _setDocumentation(const QCString &d,const QCString &docFile,int docLine,bool stripWhiteSpace,bool atTop);
     void _setInbodyDocumentation(const QCString &d,const QCString &docFile,int docLine);
@@ -219,9 +219,9 @@ class DefinitionMixin : public Base
     { m_impl.setBodySegment(defLine,bls,ble); }
     virtual void setBodyDef(const FileDef *fd)
     { m_impl.setBodyDef(fd); }
-    virtual void addSourceReferencedBy(const MemberDef *md)
+    virtual void addSourceReferencedBy(MemberDef *md)
     { m_impl.addSourceReferencedBy(md); }
-    virtual void addSourceReferences(const MemberDef *md)
+    virtual void addSourceReferences(MemberDef *md)
     { m_impl.addSourceReferences(md); }
     virtual void setRefItems(const RefItemVector &sli)
     { m_impl.setRefItems(sli); }

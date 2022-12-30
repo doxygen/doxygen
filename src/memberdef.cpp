@@ -266,10 +266,10 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     virtual void setInheritsDocsFrom(const MemberDef *md);
     virtual void setTagInfo(const TagInfo *i);
     virtual void setArgsString(const QCString &as);
-    virtual void setReimplements(const MemberDef *md);
-    virtual void insertReimplementedBy(const MemberDef *md);
+    virtual void setReimplements(MemberDef *md);
+    virtual void insertReimplementedBy(MemberDef *md);
     virtual void setRelatedAlso(ClassDef *cd);
-    virtual void insertEnumField(const MemberDef *md);
+    virtual void insertEnumField(MemberDef *md);
     virtual void setEnumScope(const MemberDef *md,bool livesInsideEnum=FALSE);
     virtual void setEnumClassScope(ClassDef *cd);
     virtual void setDocumentedEnumValues(bool value);
@@ -294,7 +294,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     virtual void enableCallerGraph(bool e);
     virtual void enableReferencedByRelation(bool e);
     virtual void enableReferencesRelation(bool e);
-    virtual void setTemplateMaster(const MemberDef *mt);
+    virtual void setTemplateMaster(MemberDef *mt);
     virtual void addListReference(Definition *d);
     virtual void setDocsForDefinition(bool b);
     virtual void setGroupAlias(const MemberDef *md);
@@ -1176,7 +1176,7 @@ class MemberDefImpl::IMPL
     const MemberDef  *annEnumType = 0;  // the anonymous enum that is the type of this member
     MemberVector enumFields;              // enumeration fields
 
-    const MemberDef  *redefines = 0;    // the members that this member redefines
+    MemberDef  *redefines = 0;    // the members that this member redefines
     MemberVector redefinedBy;             // the list of members that redefine this one
 
     MemberDef  *memDef = 0;       // member definition for this declaration
@@ -1216,7 +1216,7 @@ class MemberDefImpl::IMPL
 
     ArgumentList tArgList;      // template argument list of function template
     ArgumentList typeConstraints; // type constraints for template parameters
-    const MemberDef *templateMaster;
+    MemberDef *templateMaster;
     ArgumentLists defTmpArgLists; // lists of template argument lists
                                          // (for template functions in nested template classes)
 
@@ -1470,12 +1470,12 @@ MemberDefImpl::~MemberDefImpl()
   m_impl=0;
 }
 
-void MemberDefImpl::setReimplements(const MemberDef *md)
+void MemberDefImpl::setReimplements(MemberDef *md)
 {
   m_impl->redefines = md;
 }
 
-void MemberDefImpl::insertReimplementedBy(const MemberDef *md)
+void MemberDefImpl::insertReimplementedBy(MemberDef *md)
 {
   if (m_impl->templateMaster)
   {
@@ -1520,7 +1520,7 @@ bool MemberDefImpl::isReimplementedBy(const ClassDef *cd) const
   return FALSE;
 }
 
-void MemberDefImpl::insertEnumField(const MemberDef *md)
+void MemberDefImpl::insertEnumField(MemberDef *md)
 {
   m_impl->enumFields.push_back(md);
 }
@@ -5735,7 +5735,7 @@ MemberDef *MemberDefImpl::fromAnonymousMember() const
   return m_impl->annMemb;
 }
 
-void MemberDefImpl::setTemplateMaster(const MemberDef *mt)
+void MemberDefImpl::setTemplateMaster(MemberDef *mt)
 {
   m_impl->templateMaster=mt;
   m_isLinkableCached = 0;

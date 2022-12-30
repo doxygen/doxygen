@@ -334,13 +334,13 @@ class MemberDefMutable : public DefinitionMutable, public MemberDef
     virtual void setEnumBaseType(const QCString &type) = 0;
 
     // relation to other members
-    virtual void setReimplements(const MemberDef *md) = 0;
-    virtual void insertReimplementedBy(const MemberDef *md) = 0;
+    virtual void setReimplements(MemberDef *md) = 0;
+    virtual void insertReimplementedBy(MemberDef *md) = 0;
 
     virtual void setRelatedAlso(ClassDef *cd) = 0;
 
     // enumeration specific members
-    virtual void insertEnumField(const MemberDef *md) = 0;
+    virtual void insertEnumField(MemberDef *md) = 0;
     virtual void setEnumScope(const MemberDef *md,bool livesInsideEnum=FALSE) = 0;
     virtual void setEnumClassScope(ClassDef *cd) = 0;
     virtual void setDocumentedEnumValues(bool value) = 0;
@@ -379,7 +379,7 @@ class MemberDefMutable : public DefinitionMutable, public MemberDef
     virtual void enableReferencedByRelation(bool e) = 0;
     virtual void enableReferencesRelation(bool e) = 0;
 
-    virtual void setTemplateMaster(const MemberDef *mt) = 0;
+    virtual void setTemplateMaster(MemberDef *mt) = 0;
     virtual void addListReference(Definition *d) = 0;
     virtual void setDocsForDefinition(bool b) = 0;
     virtual void setGroupAlias(const MemberDef *md) = 0;

@@ -51,8 +51,8 @@ class DefinitionImpl::IMPL
 
     SectionRefs sectionRefs;
 
-    std::unordered_map<std::string,const MemberDef *> sourceRefByDict;
-    std::unordered_map<std::string,const MemberDef *> sourceRefsDict;
+    std::unordered_map<std::string,MemberDef *> sourceRefByDict;
+    std::unordered_map<std::string,MemberDef *> sourceRefsDict;
     RefItemVector xrefListItems;
     GroupList partOfGroups;
 
@@ -1081,7 +1081,7 @@ void DefinitionImpl::writeInlineCode(OutputList &ol,const QCString &scopeName) c
   ol.popGeneratorState();
 }
 
-static inline MemberVector refMapToVector(const std::unordered_map<std::string,const MemberDef *> &map)
+static inline MemberVector refMapToVector(const std::unordered_map<std::string,MemberDef *> &map)
 {
   // convert map to a vector of values
   MemberVector result;
@@ -1100,7 +1100,7 @@ static inline MemberVector refMapToVector(const std::unordered_map<std::string,c
  *  definition is used.
  */
 void DefinitionImpl::_writeSourceRefList(OutputList &ol,const QCString &scopeName,
-    const QCString &text,const std::unordered_map<std::string,const MemberDef *> &membersMap,
+    const QCString &text,const std::unordered_map<std::string,MemberDef *> &membersMap,
     bool /*funcOnly*/) const
 {
   if (!membersMap.empty())
@@ -1212,7 +1212,7 @@ bool DefinitionImpl::hasUserDocumentation() const
 }
 
 
-void DefinitionImpl::addSourceReferencedBy(const MemberDef *md)
+void DefinitionImpl::addSourceReferencedBy(MemberDef *md)
 {
   if (md)
   {
@@ -1228,7 +1228,7 @@ void DefinitionImpl::addSourceReferencedBy(const MemberDef *md)
   }
 }
 
-void DefinitionImpl::addSourceReferences(const MemberDef *md)
+void DefinitionImpl::addSourceReferences(MemberDef *md)
 {
   if (md)
   {
