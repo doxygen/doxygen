@@ -163,9 +163,9 @@ class FileDef : public DefinitionMutable, public Definition
     virtual void setDiskName(const QCString &name) = 0;
 
     virtual void insertMember(MemberDef *md) = 0;
-    virtual void insertClass(const ClassDef *cd) = 0;
-    virtual void insertConcept(const ConceptDef *cd) = 0;
-    virtual void insertNamespace(const NamespaceDef *nd) = 0;
+    virtual void insertClass(ClassDef *cd) = 0;
+    virtual void insertConcept(ConceptDef *cd) = 0;
+    virtual void insertNamespace(NamespaceDef *nd) = 0;
     virtual void computeAnchors() = 0;
 
     virtual void setPackageDef(PackageDef *pd) = 0;

@@ -641,13 +641,9 @@ void MemberList::writeDeclarations(OutputList &ol,
   }
   if (inheritedFrom && cd)
   {
-    const ClassDefMutable *cdm = toClassDefMutable(cd);
-    if (cdm)
-    {
-      // also add members that of this list type, that are grouped together
-      // in a separate list in class 'inheritedFrom'
-      cdm->addGroupedInheritedMembers(ol,m_listType,inheritedFrom,inheritId);
-    }
+    // also add members that of this list type, that are grouped together
+    // in a separate list in class 'inheritedFrom'
+    cd->addGroupedInheritedMembers(ol,m_listType,inheritedFrom,inheritId);
   }
   //printf("----- end writeDeclaration() ----\n");
 }

@@ -53,7 +53,6 @@ class MemberDef : public Definition
     virtual MemberDef *resolveAlias() = 0;
     virtual const MemberDef *resolveAlias() const = 0;
 
-    ClassDefMutable *getClassDefMutable() const;
 
     //-----------------------------------------------------------------------------------
     // ----  getters -----
@@ -78,9 +77,13 @@ class MemberDef : public Definition
     virtual QCString    displayDefinition() const = 0;
 
     // scope query members
-    virtual const FileDef *getFileDef() const = 0;
-    virtual const ClassDef *getClassDef() const = 0;
+    virtual const FileDef *getFileDef() const           = 0;
+    virtual       FileDef *getFileDef()                 = 0;
+    virtual const ClassDef *getClassDef() const         = 0;
+    virtual       ClassDef *getClassDef()               = 0;
     virtual const NamespaceDef* getNamespaceDef() const = 0;
+    virtual       NamespaceDef* getNamespaceDef()       = 0;
+
     virtual const ClassDef *accessorClass() const = 0;
 
     // grabbing the property read/write accessor names
@@ -305,7 +308,7 @@ class MemberDefMutable : public DefinitionMutable, public MemberDef
     // set functions
     virtual void setMemberType(MemberType t) = 0;
     virtual void setDefinition(const QCString &d) = 0;
-    virtual void setFileDef(const FileDef *fd) = 0;
+    virtual void setFileDef(FileDef *fd) = 0;
     virtual void setAnchor() = 0;
     virtual void setProtection(Protection p) = 0;
     virtual void setMemberSpecifiers(uint64 s) = 0;
@@ -313,7 +316,7 @@ class MemberDefMutable : public DefinitionMutable, public MemberDef
     virtual void setInitializer(const QCString &i) = 0;
     virtual void setBitfields(const QCString &s) = 0;
     virtual void setMaxInitLines(int lines) = 0;
-    virtual void setMemberClass(const ClassDef *cd) = 0;
+    virtual void setMemberClass(ClassDef *cd) = 0;
     virtual void setSectionList(const Definition *container,const MemberList *sl) = 0;
     virtual void setGroupDef(const GroupDef *gd,Grouping::GroupPri_t pri,
                      const QCString &fileName,int startLine,bool hasDocs,
@@ -339,7 +342,7 @@ class MemberDefMutable : public DefinitionMutable, public MemberDef
     // enumeration specific members
     virtual void insertEnumField(const MemberDef *md) = 0;
     virtual void setEnumScope(const MemberDef *md,bool livesInsideEnum=FALSE) = 0;
-    virtual void setEnumClassScope(const ClassDef *cd) = 0;
+    virtual void setEnumClassScope(ClassDef *cd) = 0;
     virtual void setDocumentedEnumValues(bool value) = 0;
     virtual void setAnonymousEnumType(const MemberDef *md) = 0;
 
@@ -361,7 +364,7 @@ class MemberDefMutable : public DefinitionMutable, public MemberDef
     virtual void setAccessorType(ClassDef *cd,const QCString &t) = 0;
 
     // namespace related members
-    virtual void setNamespace(const NamespaceDef *nd) = 0;
+    virtual void setNamespace(NamespaceDef *nd) = 0;
 
     // member group related members
     virtual void setMemberGroupId(int id) = 0;
@@ -412,6 +415,8 @@ class MemberDefMutable : public DefinitionMutable, public MemberDef
     virtual void findSectionsInDocumentation() = 0;
     //virtual void addToSearchIndex() const = 0;
 
+    virtual ClassDefMutable *getClassDefMutable() = 0;
+
     //-----------------------------------------------------------------------------------
     // --- write output ----
     //-----------------------------------------------------------------------------------
@@ -431,10 +436,6 @@ class MemberDefMutable : public DefinitionMutable, public MemberDef
     virtual void setFromAnonymousScope(bool b) const = 0;
 };
 
-inline ClassDefMutable *MemberDef::getClassDefMutable() const
-{
-  return toClassDefMutable(getClassDef());
-}
 
 // --- Cast functions
 

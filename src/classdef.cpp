@@ -247,12 +247,11 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
     virtual void insertUsedFile(const FileDef *);
     virtual bool addExample(const QCString &anchor,const QCString &name, const QCString &file);
     virtual void mergeCategory(ClassDef *category);
-    //virtual void setNamespace(NamespaceDef *nd);
     virtual void setFileDef(FileDef *fd);
     virtual void setSubGrouping(bool enabled);
     virtual void setProtection(Protection p);
     virtual void setGroupDefForAllMembers(GroupDef *g,Grouping::GroupPri_t pri,const QCString &fileName,int startLine,bool hasDocs);
-    virtual void addInnerCompound(const Definition *d);
+    virtual void addInnerCompound(Definition *d);
     virtual void addUsedClass(ClassDef *cd,const QCString &accessName,Protection prot);
     virtual void addUsedByClass(ClassDef *cd,const QCString &accessName,Protection prot);
     virtual void setIsStatic(bool b);
@@ -298,7 +297,7 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
 
     virtual void addGroupedInheritedMembers(OutputList &ol,MemberListType lt,
                               const ClassDef *inheritedFrom,const QCString &inheritId) const;
-    virtual void writeTagFile(TextStream &);
+    virtual void writeTagFile(TextStream &) const;
 
     virtual int countMembersIncludingGrouped(MemberListType lt,const ClassDef *inheritedFrom,bool additional) const;
     virtual int countInheritanceNodes() const;
@@ -551,6 +550,35 @@ class ClassDefAliasImpl : public DefinitionAliasMixin<ClassDef>
     virtual ClassDef *insertTemplateInstance(const QCString &fileName,int startLine,int startColumn,
                                              const QCString &templSpec,bool &freshInstance) const
     { return getCdAlias()->insertTemplateInstance(fileName,startLine,startColumn,templSpec,freshInstance); }
+
+    virtual void writeDocumentation(OutputList &ol) const
+    { getCdAlias()->writeDocumentation(ol); }
+    virtual void writeDocumentationForInnerClasses(OutputList &ol) const
+    { getCdAlias()->writeDocumentationForInnerClasses(ol); }
+    virtual void writeMemberPages(OutputList &ol) const
+    { getCdAlias()->writeMemberPages(ol); }
+    virtual void writeMemberList(OutputList &ol) const
+    { getCdAlias()->writeMemberList(ol); }
+    virtual void writeDeclaration(OutputList &ol,const MemberDef *md,bool inGroup,
+                 int indentLevel, const ClassDef *inheritedFrom,const QCString &inheritId) const
+    { getCdAlias()->writeDeclaration(ol,md,inGroup,indentLevel,inheritedFrom,inheritId); }
+    virtual void writeQuickMemberLinks(OutputList &ol,const MemberDef *md) const
+    { getCdAlias()->writeQuickMemberLinks(ol,md); }
+    virtual void writeSummaryLinks(OutputList &ol) const
+    { getCdAlias()->writeSummaryLinks(ol); }
+    virtual void writeInlineDocumentation(OutputList &ol) const
+    { getCdAlias()->writeInlineDocumentation(ol); }
+    virtual void writeTagFile(TextStream &ol) const
+    { getCdAlias()->writeTagFile(ol); }
+    virtual void writeMemberDeclarations(OutputList &ol,ClassDefSet &visitedClasses,
+                 MemberListType lt,const QCString &title,
+                 const QCString &subTitle=QCString(),
+                 bool showInline=FALSE,const ClassDef *inheritedFrom=0,
+                 int lt2=-1,bool invert=FALSE,bool showAlways=FALSE) const
+    { getCdAlias()->writeMemberDeclarations(ol,visitedClasses,lt,title,subTitle,showInline,inheritedFrom,lt2,invert,showAlways); }
+    virtual void addGroupedInheritedMembers(OutputList &ol,MemberListType lt,
+                 const ClassDef *inheritedFrom,const QCString &inheritId) const
+    { getCdAlias()->addGroupedInheritedMembers(ol,lt,inheritedFrom,inheritId); }
 
     virtual void updateBaseClasses(const BaseClassList &) {}
     virtual void updateSubClasses(const BaseClassList &) {}
@@ -2084,7 +2112,7 @@ void ClassDefImpl::writeSummaryLinks(OutputList &ol) const
   ol.popGeneratorState();
 }
 
-void ClassDefImpl::writeTagFile(TextStream &tagFile)
+void ClassDefImpl::writeTagFile(TextStream &tagFile) const
 {
   if (!isLinkableInProject() || isArtificial()) return;
   tagFile << "  <compound kind=\"";
@@ -2828,21 +2856,17 @@ void ClassDefImpl::writeDocumentationForInnerClasses(OutputList &ol) const
   // the definition in proper order!
   for (const auto &innerCd : m_impl->innerClasses)
   {
-    ClassDefMutable *innerCdm = toClassDefMutable(innerCd);
-    if (innerCdm)
+    if (
+        innerCd->isLinkableInProject() && innerCd->templateMaster()==0 &&
+        protectionLevelVisible(innerCd->protection()) &&
+        !innerCd->isEmbeddedInOuterScope()
+       )
     {
-      if (
-          innerCd->isLinkableInProject() && innerCd->templateMaster()==0 &&
-          protectionLevelVisible(innerCd->protection()) &&
-          !innerCd->isEmbeddedInOuterScope()
-         )
-      {
-        msg("Generating docs for nested compound %s...\n",qPrint(innerCd->name()));
-        innerCdm->writeDocumentation(ol);
-        innerCdm->writeMemberList(ol);
-      }
-      innerCdm->writeDocumentationForInnerClasses(ol);
+      msg("Generating docs for nested compound %s...\n",qPrint(innerCd->name()));
+      innerCd->writeDocumentation(ol);
+      innerCd->writeMemberList(ol);
     }
+    innerCd->writeDocumentationForInnerClasses(ol);
   }
 }
 
@@ -3972,7 +3996,7 @@ void ClassDefImpl::setGroupDefForAllMembers(GroupDef *gd,Grouping::GroupPri_t pr
   }
 }
 
-void ClassDefImpl::addInnerCompound(const Definition *d)
+void ClassDefImpl::addInnerCompound(Definition *d)
 {
   //printf("**** %s::addInnerCompound(%s)\n",qPrint(name()),qPrint(d->name()));
   if (d->definitionType()==Definition::TypeClass) // only classes can be
@@ -4768,6 +4792,10 @@ void ClassDefImpl::setSubGrouping(bool enabled)
 void ClassDefImpl::setProtection(Protection p)
 {
   m_impl->prot=p;
+  if (getLanguage()==SrcLangExt_VHDL && VhdlDocGen::convert(p)==VhdlDocGen::ARCHITECTURECLASS)
+  {
+    m_impl->className = name();
+  }
 }
 
 void ClassDefImpl::setIsStatic(bool b)
@@ -5039,19 +5067,6 @@ ClassDefMutable *toClassDefMutable(Definition *d)
     return 0;
   }
 }
-
-ClassDefMutable *toClassDefMutable(const Definition *d)
-{
-  if (d && typeid(*d)==typeid(ClassDefImpl))
-  {
-    return const_cast<ClassDefMutable*>(static_cast<const ClassDefMutable*>(d));
-  }
-  else
-  {
-    return 0;
-  }
-}
-
 
 // --- Helpers
 

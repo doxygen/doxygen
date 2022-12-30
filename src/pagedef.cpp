@@ -46,7 +46,7 @@ class PageDefImpl : public DefinitionMixin<PageDef>
     virtual QCString title() const { return m_title; }
     virtual const GroupDef * getGroupDef() const;
     virtual const PageLinkedRefMap &getSubPages() const { return m_subPages; }
-    virtual void addInnerCompound(const Definition *d);
+    virtual void addInnerCompound(Definition *d);
     virtual bool visibleInIndex() const;
     virtual bool documentedPage() const;
     virtual bool hasSubPages() const;
@@ -119,7 +119,7 @@ void PageDefImpl::setFileName(const QCString &name)
   m_fileName = name;
 }
 
-void PageDefImpl::addInnerCompound(const Definition *def)
+void PageDefImpl::addInnerCompound(Definition *def)
 {
   if (def->definitionType()==Definition::TypePage)
   {

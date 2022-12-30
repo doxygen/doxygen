@@ -1413,8 +1413,8 @@ void distributeClassGroupRelations()
     if (visitedClasses.find(cd.get())==visitedClasses.end() && !cd->partOfGroups().empty())
     {
       //printf("  Candidate for merging\n");
-      const GroupDef *gd = cd->partOfGroups().front();
-      for (const auto &ncd : cd->getClasses())
+      GroupDef *gd = cd->partOfGroups().front();
+      for (auto &ncd : cd->getClasses())
       {
         ClassDefMutable *ncdm = toClassDefMutable(ncd);
         if (ncdm && ncdm->partOfGroups().empty())
@@ -1422,7 +1422,7 @@ void distributeClassGroupRelations()
           //printf("  Adding %s to group '%s'\n",qPrint(ncd->name()),
           //    gd->groupTitle());
           ncdm->makePartOfGroup(gd);
-          const_cast<GroupDef*>(gd)->addClass(ncdm);
+          gd->addClass(ncdm);
         }
       }
       visitedClasses.insert(cd.get()); // only visit every class once
@@ -1578,7 +1578,7 @@ static void processTagLessClasses(const ClassDef *rootCd,
   }
 }
 
-static void findTagLessClasses(std::vector<ClassDefMutable*> &candidates,const ClassDef *cd)
+static void findTagLessClasses(std::vector<ClassDefMutable*> &candidates,ClassDef *cd)
 {
   for (const auto &icd : cd->getClasses())
   {
@@ -1598,7 +1598,7 @@ static void findTagLessClasses(std::vector<ClassDefMutable*> &candidates,const C
 static void findTagLessClasses()
 {
   std::vector<ClassDefMutable *> candidates;
-  for (const auto &cd : *Doxygen::classLinkedMap)
+  for (auto &cd : *Doxygen::classLinkedMap)
   {
     Definition *scope = cd->getOuterScope();
     if (scope && scope->definitionType()!=Definition::TypeClass) // that is not nested
@@ -5923,8 +5923,9 @@ static void addMemberFunction(const Entry *root,
     //printf("Assume template class\n");
     for (const auto &md : *mn)
     {
-      ClassDefMutable *ccd=md->getClassDefMutable();
       MemberDef *cmd=md.get();
+      MemberDefMutable *cdmdm = toMemberDefMutable(cmd);
+      ClassDefMutable *ccd=cdmdm ? cdmdm->getClassDefMutable() : 0;
       //printf("ccd->name()==%s className=%s\n",qPrint(ccd->name()),qPrint(className));
       if (ccd!=0 && rightScopeMatch(ccd->name(),className))
       {
@@ -6122,7 +6123,8 @@ static void addOverloaded(const Entry *root,MemberName *mn,
   }
   if (sameClass)
   {
-    ClassDefMutable *cd = mn->front()->getClassDefMutable();
+    MemberDefMutable *mdm = toMemberDefMutable(mn->front().get());
+    ClassDefMutable *cd = mdm ? mdm->getClassDefMutable() : 0;
     MemberType mtype;
     if      (root->mtype==Signal)  mtype=MemberType_Signal;
     else if (root->mtype==Slot)    mtype=MemberType_Slot;
@@ -7325,7 +7327,7 @@ static void addEnumValuesToEnums(const Entry *root)
                       e->type,e->name,e->args,QCString(),
                       e->protection, Normal,e->stat,Member,
                       MemberType_EnumValue,ArgumentList(),ArgumentList(),e->metaData) };
-                  const NamespaceDef *mnd = md->getNamespaceDef();
+                  NamespaceDef *mnd = md->getNamespaceDef();
                   if      (md->getClassDef())
                     fmd->setMemberClass(md->getClassDef());
                   else if (mnd && (mnd->isLinkable() || mnd->isAnonymous()))

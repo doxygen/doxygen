@@ -1644,19 +1644,13 @@ static void writeClassTree(const ListType &cl,FTVHelp *ftv,bool addToIndex,bool 
   for (const auto &cdi : cl)
   {
     const ClassDef *cd = get_pointer(cdi);
-    ClassDefMutable *cdm = toClassDefMutable(cd);
-    if (cdm && cd->getLanguage()==SrcLangExt_VHDL)
+    if (cd && cd->getLanguage()==SrcLangExt_VHDL)
     {
       if (VhdlDocGen::convert(cd->protection())==VhdlDocGen::PACKAGECLASS ||
           VhdlDocGen::convert(cd->protection())==VhdlDocGen::PACKBODYCLASS
          )// no architecture
       {
         continue;
-      }
-      if (VhdlDocGen::convert(cd->protection())==VhdlDocGen::ARCHITECTURECLASS)
-      {
-        QCString n=cd->name();
-        cdm->setClassName(n);
       }
     }
 

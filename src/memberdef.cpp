@@ -80,8 +80,11 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     virtual const MemberList *getSectionList(const Definition *) const;
     virtual QCString displayDefinition() const;
     virtual const ClassDef *getClassDef() const;
+    virtual       ClassDef *getClassDef();
     virtual const FileDef  *getFileDef() const;
+    virtual       FileDef  *getFileDef();
     virtual const NamespaceDef* getNamespaceDef() const;
+    virtual       NamespaceDef* getNamespaceDef();
     virtual const GroupDef *getGroupDef() const;
     virtual ClassDef *accessorClass() const;
     virtual QCString getReadAccessor() const;
@@ -242,7 +245,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     virtual int getDeclColumn() const;
     virtual void setMemberType(MemberType t);
     virtual void setDefinition(const QCString &d);
-    virtual void setFileDef(const FileDef *fd);
+    virtual void setFileDef(FileDef *fd);
     virtual void setAnchor();
     virtual void setProtection(Protection p);
     virtual void setMemberSpecifiers(uint64 s);
@@ -250,7 +253,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     virtual void setInitializer(const QCString &i);
     virtual void setBitfields(const QCString &s);
     virtual void setMaxInitLines(int lines);
-    virtual void setMemberClass(const ClassDef *cd);
+    virtual void setMemberClass(ClassDef *cd);
     virtual void setSectionList(const Definition *container,const MemberList *sl);
     virtual void setGroupDef(const GroupDef *gd,Grouping::GroupPri_t pri,
                      const QCString &fileName,int startLine,bool hasDocs,
@@ -268,7 +271,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     virtual void setRelatedAlso(ClassDef *cd);
     virtual void insertEnumField(const MemberDef *md);
     virtual void setEnumScope(const MemberDef *md,bool livesInsideEnum=FALSE);
-    virtual void setEnumClassScope(const ClassDef *cd);
+    virtual void setEnumClassScope(ClassDef *cd);
     virtual void setDocumentedEnumValues(bool value);
     virtual void setAnonymousEnumType(const MemberDef *md);
     virtual bool addExample(const QCString &anchor,const QCString &name,const QCString &file);
@@ -281,7 +284,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     virtual void setTypeConstraints(const ArgumentList &al);
     virtual void setType(const QCString &t);
     virtual void setAccessorType(ClassDef *cd,const QCString &t);
-    virtual void setNamespace(const NamespaceDef *nd);
+    virtual void setNamespace(NamespaceDef *nd);
     virtual void setMemberGroup(MemberGroup *grp);
     virtual void setMemberGroupId(int id);
     virtual void makeImplementationDetail();
@@ -334,6 +337,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     virtual void resolveUnnamedParameters(const MemberDef *md);
     virtual void addQualifiers(const StringVector &qualifiers);
     virtual StringVector getQualifiers() const;
+    virtual ClassDefMutable *getClassDefMutable();
 
   private:
     void _computeLinkableInProject();
@@ -393,6 +397,7 @@ class MemberDefAliasImpl : public DefinitionAliasMixin<MemberDef>
     virtual DefType definitionType() const { return TypeMember; }
 
     const MemberDef *getMdAlias() const           { return toMemberDef(getAlias()); }
+          MemberDef *getMdAlias()                 { return toMemberDef(const_cast<Definition*>(getAlias())); }
     virtual       MemberDef *resolveAlias()       { return const_cast<MemberDef*>(getMdAlias()); }
     virtual const MemberDef *resolveAlias() const { return getMdAlias(); }
 
@@ -435,12 +440,22 @@ class MemberDefAliasImpl : public DefinitionAliasMixin<MemberDef>
     { return getMdAlias()->getSectionList(container); }
     virtual QCString displayDefinition() const
     { return getMdAlias()->displayDefinition(); }
+
     virtual const ClassDef *getClassDef() const
     { return getMdAlias()->getClassDef(); }
+    virtual       ClassDef *getClassDef()
+    { return getMdAlias()->getClassDef(); }
+
     virtual const FileDef *getFileDef() const
     { return getMdAlias()->getFileDef(); }
+    virtual       FileDef *getFileDef()
+    { return getMdAlias()->getFileDef(); }
+
     virtual const NamespaceDef* getNamespaceDef() const
     { return getMdAlias()->getNamespaceDef(); }
+    virtual       NamespaceDef* getNamespaceDef()
+    { return getMdAlias()->getNamespaceDef(); }
+
     virtual const ClassDef *accessorClass() const
     { return getMdAlias()->accessorClass(); }
     virtual QCString getReadAccessor() const
@@ -1152,9 +1167,9 @@ class MemberDefImpl::IMPL
               const ArgumentList &al,const QCString &meta
              );
 
-    const ClassDef     *classDef = 0; // member of or related to
-    const FileDef      *fileDef  = 0; // member of file definition
-    const NamespaceDef *nspace   = 0; // the namespace this member is in.
+    ClassDef     *classDef = 0; // member of or related to
+    FileDef      *fileDef  = 0; // member of file definition
+    NamespaceDef *nspace   = 0; // the namespace this member is in.
 
     const MemberDef  *enumScope = 0;    // the enclosing scope, if this is an enum field
     bool        livesInsideEnum = false;
@@ -4185,7 +4200,7 @@ void MemberDefImpl::setEnumScope(const MemberDef *md,bool livesInsideEnum)
   }
 }
 
-void MemberDefImpl::setMemberClass(const ClassDef *cd)
+void MemberDefImpl::setMemberClass(ClassDef *cd)
 {
   m_impl->classDef=cd;
   m_isLinkableCached = 0;
@@ -4193,7 +4208,7 @@ void MemberDefImpl::setMemberClass(const ClassDef *cd)
   setOuterScope(const_cast<ClassDef*>(cd));
 }
 
-void MemberDefImpl::setNamespace(const NamespaceDef *nd)
+void MemberDefImpl::setNamespace(NamespaceDef *nd)
 {
   m_impl->nspace=nd;
   setOuterScope(const_cast<NamespaceDef*>(nd));
@@ -4853,12 +4868,32 @@ const ClassDef *MemberDefImpl::getClassDef() const
   return m_impl->classDef;
 }
 
+ClassDef *MemberDefImpl::getClassDef()
+{
+  return m_impl->classDef;
+}
+
+ClassDefMutable *MemberDefImpl::getClassDefMutable()
+{
+  return toClassDefMutable(m_impl->classDef);
+}
+
 const FileDef  *MemberDefImpl::getFileDef() const
 {
   return m_impl->fileDef;
 }
 
+FileDef  *MemberDefImpl::getFileDef()
+{
+  return m_impl->fileDef;
+}
+
 const NamespaceDef* MemberDefImpl::getNamespaceDef() const
+{
+  return m_impl->nspace;
+}
+
+NamespaceDef* MemberDefImpl::getNamespaceDef()
 {
   return m_impl->nspace;
 }
@@ -5528,7 +5563,7 @@ void MemberDefImpl::setDefinition(const QCString &d)
   m_impl->def=d;
 }
 
-void MemberDefImpl::setFileDef(const FileDef *fd)
+void MemberDefImpl::setFileDef(FileDef *fd)
 {
   m_impl->fileDef=fd;
   m_isLinkableCached = 0;
@@ -5624,7 +5659,7 @@ void MemberDefImpl::setRelatedAlso(ClassDef *cd)
   m_impl->relatedAlso=cd;
 }
 
-void MemberDefImpl::setEnumClassScope(const ClassDef *cd)
+void MemberDefImpl::setEnumClassScope(ClassDef *cd)
 {
   m_impl->classDef = cd;
   m_isLinkableCached = 0;

@@ -116,9 +116,9 @@ class FileDefImpl : public DefinitionMixin<FileDef>
     virtual void parseSource(ClangTUParser *clangParser);
     virtual void setDiskName(const QCString &name);
     virtual void insertMember(MemberDef *md);
-    virtual void insertClass(const ClassDef *cd);
-    virtual void insertConcept(const ConceptDef *cd);
-    virtual void insertNamespace(const NamespaceDef *nd);
+    virtual void insertClass(ClassDef *cd);
+    virtual void insertConcept(ConceptDef *cd);
+    virtual void insertNamespace(NamespaceDef *nd);
     virtual void computeAnchors();
     virtual void setPackageDef(PackageDef *pd) { m_package=pd; }
     virtual void setDirDef(DirDef *dd) { m_dir=dd; }
@@ -1278,7 +1278,7 @@ void FileDefImpl::insertMember(MemberDef *md)
 }
 
 /*! Adds compound definition \a cd to the list of all compounds of this file */
-void FileDefImpl::insertClass(const ClassDef *cd)
+void FileDefImpl::insertClass(ClassDef *cd)
 {
   if (cd->isHidden()) return;
 
@@ -1303,14 +1303,14 @@ void FileDefImpl::insertClass(const ClassDef *cd)
   list.add(cd->name(),cd);
 }
 
-void FileDefImpl::insertConcept(const ConceptDef *cd)
+void FileDefImpl::insertConcept(ConceptDef *cd)
 {
   if (cd->isHidden()) return;
   m_concepts.add(cd->name(),cd);
 }
 
 /*! Adds namespace definition \a nd to the list of all compounds of this file */
-void FileDefImpl::insertNamespace(const NamespaceDef *nd)
+void FileDefImpl::insertNamespace(NamespaceDef *nd)
 {
   if (nd->isHidden()) return;
   m_namespaces.add(nd->name(),nd);

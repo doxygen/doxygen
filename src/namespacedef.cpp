@@ -67,9 +67,9 @@ class NamespaceDefImpl : public DefinitionMixin<NamespaceDefMutable>
     virtual void writeMemberPages(OutputList &ol);
     virtual void writeQuickMemberLinks(OutputList &ol,const MemberDef *currentMd) const;
     virtual void writeTagFile(TextStream &);
-    virtual void insertClass(const ClassDef *cd);
-    virtual void insertConcept(const ConceptDef *cd);
-    virtual void insertNamespace(const NamespaceDef *nd);
+    virtual void insertClass(ClassDef *cd);
+    virtual void insertConcept(ConceptDef *cd);
+    virtual void insertNamespace(NamespaceDef *nd);
     virtual void insertMember(MemberDef *md);
     virtual void computeAnchors();
     virtual void countMembers();
@@ -94,7 +94,7 @@ class NamespaceDefImpl : public DefinitionMixin<NamespaceDefMutable>
     virtual void findSectionsInDocumentation();
     virtual void sortMemberLists();
     virtual const Definition *findInnerCompound(const QCString &name) const;
-    virtual void addInnerCompound(const Definition *d);
+    virtual void addInnerCompound(Definition *d);
     virtual void addListReferences();
     virtual void setFileName(const QCString &fn);
     virtual bool subGrouping() const { return m_subGrouping; }
@@ -350,7 +350,7 @@ void NamespaceDefImpl::insertUsedFile(FileDef *fd)
   }
 }
 
-void NamespaceDefImpl::addInnerCompound(const Definition *d)
+void NamespaceDefImpl::addInnerCompound(Definition *d)
 {
   //printf("%s:NamespaceDefImpl::addInnerCompound(%s)\n",qPrint(name()),qPrint(d->name()));
   m_innerCompounds.add(d->localName(),d);
@@ -368,7 +368,7 @@ void NamespaceDefImpl::addInnerCompound(const Definition *d)
   }
 }
 
-void NamespaceDefImpl::insertClass(const ClassDef *cd)
+void NamespaceDefImpl::insertClass(ClassDef *cd)
 {
   ClassLinkedRefMap &d = classes;
 
@@ -391,12 +391,12 @@ void NamespaceDefImpl::insertClass(const ClassDef *cd)
   d.add(cd->name(),cd);
 }
 
-void NamespaceDefImpl::insertConcept(const ConceptDef *cd)
+void NamespaceDefImpl::insertConcept(ConceptDef *cd)
 {
   m_concepts.add(cd->name(),cd);
 }
 
-void NamespaceDefImpl::insertNamespace(const NamespaceDef *nd)
+void NamespaceDefImpl::insertNamespace(NamespaceDef *nd)
 {
   namespaces.add(nd->name(),nd);
 }

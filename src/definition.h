@@ -352,7 +352,7 @@ class DefinitionMutable
     // --- actions ----
     //-----------------------------------------------------------------------------------
 
-    virtual void makePartOfGroup(const GroupDef *gd) = 0;
+    virtual void makePartOfGroup(GroupDef *gd) = 0;
 
     /*! Add the list of anchors that mark the sections that are found in the
      * documentation.
@@ -361,7 +361,7 @@ class DefinitionMutable
     virtual void addSourceReferencedBy(const MemberDef *d) = 0;
     virtual void addSourceReferences(const MemberDef *d) = 0;
     virtual void mergeRefItems(Definition *d) = 0;
-    virtual void addInnerCompound(const Definition *d) = 0;
+    virtual void addInnerCompound(Definition *d) = 0;
     virtual void addSectionsToIndex() = 0;
     virtual void mergeReferences(const Definition *other) = 0;
     virtual void mergeReferencedBy(const Definition *other) = 0;

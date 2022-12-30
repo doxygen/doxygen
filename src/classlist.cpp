@@ -104,11 +104,7 @@ void ClassLinkedRefMap::writeDocumentation(OutputList &ol,const Definition * con
         ol.endGroupHeader();
         found=TRUE;
       }
-      ClassDefMutable *cdm = toClassDefMutable(cd);
-      if (cdm)
-      {
-        cdm->writeInlineDocumentation(ol);
-      }
+      cd->writeInlineDocumentation(ol);
     }
   }
 }

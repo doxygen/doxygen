@@ -63,13 +63,13 @@ class GroupDefImpl : public DefinitionMixin<GroupDef>
     virtual QCString groupTitle() const { return m_title; }
     virtual void setGroupTitle( const QCString &newtitle );
     virtual bool hasGroupTitle( ) const { return m_titleSet; }
-    virtual void addFile(const FileDef *def);
-    virtual bool addClass(const ClassDef *def);
-    virtual bool addConcept(const ConceptDef *def);
-    virtual bool addNamespace(const NamespaceDef *def);
-    virtual void addGroup(const GroupDef *def);
-    virtual void addPage(const PageDef *def);
-    virtual void addExample(const PageDef *def);
+    virtual void addFile(FileDef *def);
+    virtual bool addClass(ClassDef *def);
+    virtual bool addConcept(ConceptDef *def);
+    virtual bool addNamespace(NamespaceDef *def);
+    virtual void addGroup(GroupDef *def);
+    virtual void addPage(PageDef *def);
+    virtual void addExample(PageDef *def);
     virtual void addDir(DirDef *dd);
     virtual bool insertMember(const MemberDef *def,bool docOnly=FALSE);
     virtual void removeMember(MemberDef *md);
@@ -234,7 +234,7 @@ void GroupDefImpl::findSectionsInDocumentation()
   }
 }
 
-void GroupDefImpl::addFile(const FileDef *def)
+void GroupDefImpl::addFile(FileDef *def)
 {
   bool sortBriefDocs = Config_getBool(SORT_BRIEF_DOCS);
   if (def->isHidden()) return;
@@ -248,7 +248,7 @@ void GroupDefImpl::addFile(const FileDef *def)
     m_fileList.push_back(def);
 }
 
-bool GroupDefImpl::addClass(const ClassDef *cd)
+bool GroupDefImpl::addClass(ClassDef *cd)
 {
   if (cd->isHidden()) return FALSE;
   updateLanguage(cd);
@@ -261,7 +261,7 @@ bool GroupDefImpl::addClass(const ClassDef *cd)
   return FALSE;
 }
 
-bool GroupDefImpl::addConcept(const ConceptDef *cd)
+bool GroupDefImpl::addConcept(ConceptDef *cd)
 {
   if (cd->isHidden()) return FALSE;
   QCString qn = cd->name();
@@ -273,7 +273,7 @@ bool GroupDefImpl::addConcept(const ConceptDef *cd)
   return FALSE;
 }
 
-bool GroupDefImpl::addNamespace(const NamespaceDef *def)
+bool GroupDefImpl::addNamespace(NamespaceDef *def)
 {
   //printf("adding namespace hidden=%d\n",def->isHidden());
   if (def->isHidden()) return false;
@@ -292,15 +292,15 @@ void GroupDefImpl::addDir(DirDef *def)
   m_dirList.push_back(def);
 }
 
-void GroupDefImpl::addPage(const PageDef *def)
+void GroupDefImpl::addPage(PageDef *def)
 {
   if (def->isHidden()) return;
   //printf("Making page %s part of a group\n",qPrint(def->name));
   m_pages.add(def->name(),def);
-  const_cast<PageDef*>(def)->makePartOfGroup(this);
+  def->makePartOfGroup(this);
 }
 
-void GroupDefImpl::addExample(const PageDef *def)
+void GroupDefImpl::addExample(PageDef *def)
 {
   if (def->isHidden()) return;
   m_examples.add(def->name(),def);
@@ -562,7 +562,7 @@ bool GroupDefImpl::findGroup(const GroupDef *def) const
   return FALSE;
 }
 
-void GroupDefImpl::addGroup(const GroupDef *def)
+void GroupDefImpl::addGroup(GroupDef *def)
 {
   //printf("adding group '%s' to group '%s'\n",qPrint(def->name()),qPrint(name()));
   //if (Config_getBool(SORT_MEMBER_DOCS))

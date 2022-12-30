@@ -96,7 +96,7 @@ class DefinitionImpl
     void mergeRefItems(Definition *d);
     void mergeReferences(const Definition *other);
     void mergeReferencedBy(const Definition *other);
-    void addInnerCompound(const Definition *d);
+    void addInnerCompound(Definition *d);
     void setOuterScope(Definition *d);
     void setHidden(bool b);
     void setArtificial(bool b);
@@ -107,7 +107,7 @@ class DefinitionImpl
     bool hasSourceReffedBy() const;
     void writeSourceRefs(OutputList &ol,const QCString &scopeName) const;
     void writeSourceReffedBy(OutputList &ol,const QCString &scopeName) const;
-    void makePartOfGroup(const GroupDef *gd);
+    void makePartOfGroup(GroupDef *gd);
     void writeNavigationPath(OutputList &ol) const;
     QCString navigationPathAsString() const;
     void writeQuickMemberLinks(OutputList &,const MemberDef *) const;
@@ -231,7 +231,7 @@ class DefinitionMixin : public Base
     { m_impl.mergeReferences(other); }
     virtual void mergeReferencedBy(const Definition *other)
     { m_impl.mergeReferencedBy(other); }
-    virtual void addInnerCompound(const Definition *def)
+    virtual void addInnerCompound(Definition *def)
     { m_impl.addInnerCompound(def); }
     virtual void setOuterScope(Definition *def)
     { m_impl.setOuterScope(def); }
@@ -253,7 +253,7 @@ class DefinitionMixin : public Base
     { m_impl.writeSourceRefs(ol,scopeName); }
     virtual void writeSourceReffedBy(OutputList &ol,const QCString &scopeName) const
     { m_impl.writeSourceReffedBy(ol,scopeName); }
-    virtual void makePartOfGroup(const GroupDef *gd)
+    virtual void makePartOfGroup(GroupDef *gd)
     { m_impl.makePartOfGroup(gd); }
     virtual void writeNavigationPath(OutputList &ol) const
     { m_impl.writeNavigationPath(ol); }

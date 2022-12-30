@@ -114,17 +114,17 @@ class NamespaceDefMutable : public DefinitionMutable, public NamespaceDef
     virtual void writeMemberPages(OutputList &ol) = 0;
     virtual void writeQuickMemberLinks(OutputList &ol,const MemberDef *currentMd) const = 0;
     virtual void writeTagFile(TextStream &) = 0;
-    virtual void insertClass(const ClassDef *cd) = 0;
-    virtual void insertConcept(const ConceptDef *cd) = 0;
-    virtual void insertNamespace(const NamespaceDef *nd) = 0;
-    virtual void insertMember(MemberDef *md) = 0; // md cannot be const, since setSectionList is called on it
+    virtual void insertClass(ClassDef *cd) = 0;
+    virtual void insertConcept(ConceptDef *cd) = 0;
+    virtual void insertNamespace(NamespaceDef *nd) = 0;
+    virtual void insertMember(MemberDef *md) = 0;
     virtual void computeAnchors() = 0;
     virtual void countMembers() = 0;
     virtual void addMembersToMemberGroup() = 0;
     virtual void distributeMemberGroupDocumentation() = 0;
     virtual void findSectionsInDocumentation() = 0;
     virtual void sortMemberLists() = 0;
-    virtual void addInnerCompound(const Definition *d) = 0;
+    virtual void addInnerCompound(Definition *d) = 0;
     virtual void addListReferences() = 0;
     virtual void setFileName(const QCString &fn) = 0;
     virtual void combineUsingRelations(NamespaceDefSet &visitedNamespace) = 0;
@@ -140,7 +140,7 @@ NamespaceDefMutable *createNamespaceDef(const QCString &defFileName,int defLine,
                  bool isPublished=false);
 
 /** Factory method to create an alias of an existing namespace. Used for inline namespaces. */
-NamespaceDef *createNamespaceDefAlias(const Definition *newScope, const NamespaceDef *nd);
+NamespaceDef *createNamespaceDefAlias(const Definition *newScope,const NamespaceDef *nd);
 
 
 // --- Cast functions

@@ -1249,7 +1249,7 @@ const Definition *DefinitionImpl::findInnerCompound(const QCString &) const
   return 0;
 }
 
-void DefinitionImpl::addInnerCompound(const Definition *)
+void DefinitionImpl::addInnerCompound(Definition *)
 {
   err("DefinitionImpl::addInnerCompound() called\n");
 }
@@ -1317,7 +1317,7 @@ QCString DefinitionImpl::localName() const
   return m_impl->localName;
 }
 
-void DefinitionImpl::makePartOfGroup(const GroupDef *gd)
+void DefinitionImpl::makePartOfGroup(GroupDef *gd)
 {
   m_impl->partOfGroups.push_back(gd);
 }
