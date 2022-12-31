@@ -3896,7 +3896,7 @@ NONLopt [^\n]*
                                           yyextra->current->program << yytext ;
                                         }
   /* Interpolated string C# */
-<CopyGString,SkipString,SkipCurly,ReadBody,ReadNSBody,ReadBodyIntf>$\"   { if (!yyextra->insideCS) REJECT
+<CopyGString,SkipString,SkipCurly,ReadBody,ReadNSBody,ReadBodyIntf,FindMembers,FindMemberName>$\"   { if (!yyextra->insideCS) REJECT
                                           yyextra->current->program << yytext ;
                                           yyextra->pSkipInterpString = &yyextra->current->program;
                                           yyextra->lastSkipInterpStringContext=YY_START;
@@ -3910,7 +3910,7 @@ NONLopt [^\n]*
                                           BEGIN( yyextra->lastSkipInterpStringContext );
                                         }
   /* Verbatim Interpolated string C# */
-<SkipCurly,ReadBody,ReadNSBody,ReadBodyIntf>$@\"   { if (!yyextra->insideCS) REJECT
+<SkipCurly,ReadBody,ReadNSBody,ReadBodyIntf,FindMembers,FindMemberName>$@\"   { if (!yyextra->insideCS) REJECT
                                           yyextra->current->program << yytext ;
                                           yyextra->pSkipInterpVerbString = &yyextra->current->program;
                                           yyextra->lastSkipInterpVerbStringContext=YY_START;
