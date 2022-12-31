@@ -118,6 +118,10 @@ static void writeBoxMemberList(TextStream &t,
   char prot,const MemberList *ml,const ClassDef *scope,
   bool isStatic=FALSE,const StringUnorderedSet *skipNames=nullptr)
 {
+  QCString tr_start = "<TR><TD VALIGN=\"top\" CELLPADDING=\"1\" CELLSPACING=\"0\">";
+  QCString tr_mid = "</TD><TD VALIGN=\"top\" ALIGN=\"LEFT\" CELLPADDING=\"1\" CELLSPACING=\"0\">";
+  QCString tr_end = "</TD></TR>\n";
+  QCString br = "<BR ALIGN=\"LEFT\"/>";
   if (ml)
   {
     int totalCount=0;
@@ -140,12 +144,12 @@ static void writeBoxMemberList(TextStream &t,
         int numFields = Config_getInt(UML_LIMIT_NUM_FIELDS);
         if (numFields>0 && (totalCount>numFields*3/2 && count>=numFields))
         {
-          t << theTranslator->trAndMore(QCString().sprintf("%d",totalCount-count)) << "\\l";
+          t << tr_start << tr_mid << theTranslator->trAndMore(QCString().sprintf("%d",totalCount-count)) << tr_end;
           break;
         }
         else
         {
-          t << prot << " ";
+          t << tr_start << prot << tr_mid;
           QCString label;
           if (dotUmlDetails==DOT_UML_DETAILS_t::YES)
           {
@@ -164,8 +168,8 @@ static void writeBoxMemberList(TextStream &t,
               label+="()";
             }
           }
-          t << DotNode::convertLabel(label);
-          t << "\\l";
+          t << DotNode::convertLabel(label,true);
+          t << br << tr_end;
           count++;
         }
       }
@@ -181,7 +185,7 @@ static void writeBoxMemberList(TextStream &t,
   }
 }
 
-QCString DotNode::convertLabel(const QCString &l)
+QCString DotNode::convertLabel(const QCString &l, bool htmlLike)
 {
   QCString bBefore("\\_/<({[: =-+@%#~?$"); // break before character set
   QCString bAfter(">]),:;|");              // break after  character set
@@ -194,6 +198,11 @@ QCString DotNode::convertLabel(const QCString &l)
   int charsLeft=len;
   int sinceLast=0;
   int foldLen = Config_getInt(DOT_WRAP_THRESHOLD); // ideal text length
+  QCString br;
+  if (htmlLike)
+    br = "<BR ALIGN=\"LEFT\"/>";
+  else
+    br = "\\l";
   while (idx < p.length())
   {
     c = p[idx++];
@@ -202,12 +211,14 @@ QCString DotNode::convertLabel(const QCString &l)
     {
       case '\\': replacement="\\\\"; break;
       case '\n': replacement="\\n"; break;
-      case '<':  replacement="\\<"; break;
-      case '>':  replacement="\\>"; break;
-      case '|':  replacement="\\|"; break;
-      case '{':  replacement="\\{"; break;
-      case '}':  replacement="\\}"; break;
-      case '"':  replacement="\\\""; break;
+      case '<':  if (htmlLike) replacement="&lt;"; else replacement="\\<"; break;
+      case '>':  if (htmlLike) replacement="&gt;"; else replacement="\\>"; break;
+      case '|':  if (htmlLike) replacement+=c; else replacement="\\|"; break;
+      case '{':  if (htmlLike) replacement+=c; else replacement="\\{"; break;
+      case '}':  if (htmlLike) replacement+=c; else replacement="\\}"; break;
+      case '"':  if (htmlLike) replacement="&quot;"; else replacement="\\\""; break;
+      case '\'': if (htmlLike) replacement="&apos;"; else replacement+=c; break;
+      case '&':  if (htmlLike) replacement="&amp;"; else replacement+=c; break;
       default:   replacement+=c; break;
     }
     // Some heuristics to insert newlines to prevent too long
@@ -220,7 +231,7 @@ QCString DotNode::convertLabel(const QCString &l)
     }
     else if ((pc!=':' || c!=':') && charsLeft>foldLen/3 && sinceLast>foldLen && bBefore.contains(c))
     {
-      result+="\\l";
+      result+=br;
       result+=replacement;
       foldLen = (foldLen+sinceLast+1)/2;
       sinceLast=1;
@@ -229,14 +240,14 @@ QCString DotNode::convertLabel(const QCString &l)
       !isupper(c) && isupper(p[idx]))
     {
       result+=replacement;
-      result+="\\l";
+      result+=br;
       foldLen = (foldLen+sinceLast+1)/2;
       sinceLast=0;
     }
     else if (charsLeft>foldLen/3 && sinceLast>foldLen && bAfter.contains(c) && (c!=':' || p[idx]!=':'))
     {
       result+=replacement;
-      result+="\\l";
+      result+=br;
       foldLen = (foldLen+sinceLast+1)/2;
       sinceLast=0;
     }
@@ -361,7 +372,7 @@ void DotNode::writeLabel(TextStream &t, GraphType gt) const
     // Set shape to the record-based type.
     // Record-based shape represent recursive lists of fields, which are drawn as alternating horizontal and vertical rows of boxes. Special characters are: Literal braces, vertical bars and angle brackets.
     // Only shape types: record and Mrecord support record-based label. See dot User's Manual, Ch. 21, p. 6.
-    t << "shape=record,label=";
+    t << "shape=plain,label=";
     // add names shown as relations to a set, so we don't show
     // them as attributes as well
     StringUnorderedSet arrowNames;
@@ -384,12 +395,16 @@ void DotNode::writeLabel(TextStream &t, GraphType gt) const
       }
     }
 
+    QCString hr_start = "<TR><TD COLSPAN=\"2\" CELLPADDING=\"1\" CELLSPACING=\"0\">";
+    QCString hr_end = "</TD></TR>\n";
+    QCString sep = "<HR/>\n";
     //printf("DotNode::writeBox for %s\n",qPrint(m_classDef->name()));
-    t << "\"{" << convertLabel(m_label) << "\\n";
+    t << "<<TABLE CELLBORDER=\"0\" BORDER=\"1\">";
+    t << hr_start << convertLabel(m_label,true) << hr_end;
     auto dotUmlDetails = Config_getEnum(DOT_UML_DETAILS);
     if (dotUmlDetails!=DOT_UML_DETAILS_t::NONE)
     {
-      t << "|";
+      t << sep;
       writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberListType_pubAttribs),m_classDef,FALSE,&arrowNames);
       writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberListType_pubStaticAttribs),m_classDef,TRUE,&arrowNames);
       writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberListType_properties),m_classDef,FALSE,&arrowNames);
@@ -402,7 +417,7 @@ void DotNode::writeLabel(TextStream &t, GraphType gt) const
         writeBoxMemberList(t,'-',m_classDef->getMemberList(MemberListType_priAttribs),m_classDef,FALSE,&arrowNames);
         writeBoxMemberList(t,'-',m_classDef->getMemberList(MemberListType_priStaticAttribs),m_classDef,TRUE,&arrowNames);
       }
-      t << "|";
+      t << sep;
       writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberListType_pubMethods),m_classDef);
       writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberListType_pubStaticMethods),m_classDef,TRUE);
       writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberListType_pubSlots),m_classDef);
@@ -428,7 +443,7 @@ void DotNode::writeLabel(TextStream &t, GraphType gt) const
         }
       }
     }
-    t << "}\"";
+    t << "</TABLE>>\n";
   }
   else if (Config_getString(DOT_NODE_ATTR).contains("shape=plain"))
   {
