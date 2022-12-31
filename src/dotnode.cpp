@@ -198,7 +198,11 @@ QCString DotNode::convertLabel(const QCString &l, bool htmlLike)
   int charsLeft=len;
   int sinceLast=0;
   int foldLen = Config_getInt(DOT_WRAP_THRESHOLD); // ideal text length
-  QCString br = "<BR ALIGN=\"LEFT\"/>";
+  QCString br;
+  if (htmlLike)
+    br = "<BR ALIGN=\"LEFT\"/>";
+  else
+    br = "\\l";
   while (idx < p.length())
   {
     c = p[idx++];
