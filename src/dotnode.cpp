@@ -118,10 +118,10 @@ static void writeBoxMemberList(TextStream &t,
   char prot,const MemberList *ml,const ClassDef *scope,
   bool isStatic=FALSE,const StringUnorderedSet *skipNames=nullptr)
 {
-  QCString tr_start = "<TR><TD VALIGN=\"top\" CELLPADDING=\"1\" CELLSPACING=\"0\">";
-  QCString tr_mid = "</TD><TD VALIGN=\"top\" ALIGN=\"LEFT\" CELLPADDING=\"1\" CELLSPACING=\"0\">";
-  QCString tr_end = "</TD></TR>\n";
-  QCString br = "<BR ALIGN=\"LEFT\"/>";
+  constexpr auto tr_start = "<TR><TD VALIGN=\"top\" CELLPADDING=\"1\" CELLSPACING=\"0\">";
+  constexpr auto tr_mid = "</TD><TD VALIGN=\"top\" ALIGN=\"LEFT\" CELLPADDING=\"1\" CELLSPACING=\"0\">";
+  constexpr auto tr_end = "</TD></TR>\n";
+  constexpr auto br = "<BR ALIGN=\"LEFT\"/>";
   if (ml)
   {
     int totalCount=0;
@@ -206,20 +206,34 @@ QCString DotNode::convertLabel(const QCString &l, bool htmlLike)
   while (idx < p.length())
   {
     c = p[idx++];
-    QCString replacement;
-    switch(c)
+    char cs[2] = { c, 0 };
+    const char *replacement = cs;
+    if (htmlLike)
     {
-      case '\\': replacement="\\\\"; break;
-      case '\n': replacement="\\n"; break;
-      case '<':  if (htmlLike) replacement="&lt;"; else replacement="\\<"; break;
-      case '>':  if (htmlLike) replacement="&gt;"; else replacement="\\>"; break;
-      case '|':  if (htmlLike) replacement+=c; else replacement="\\|"; break;
-      case '{':  if (htmlLike) replacement+=c; else replacement="\\{"; break;
-      case '}':  if (htmlLike) replacement+=c; else replacement="\\}"; break;
-      case '"':  if (htmlLike) replacement="&quot;"; else replacement="\\\""; break;
-      case '\'': if (htmlLike) replacement="&apos;"; else replacement+=c; break;
-      case '&':  if (htmlLike) replacement="&amp;"; else replacement+=c; break;
-      default:   replacement+=c; break;
+      switch(c)
+      {
+        case '\\': replacement="\\\\";   break;
+        case '\n': replacement="\\n";    break;
+        case '<':  replacement="&lt;";   break;
+        case '>':  replacement="&gt;";   break;
+        case '"':  replacement="&quot;"; break;
+        case '\'': replacement="&apos;"; break;
+        case '&':  replacement="&amp;";  break;
+      }
+    }
+    else
+    {
+      switch(c)
+      {
+        case '\\': replacement="\\\\"; break;
+        case '\n': replacement="\\n";  break;
+        case '<':  replacement="\\<";  break;
+        case '>':  replacement="\\>";  break;
+        case '"':  replacement="\\\""; break;
+        case '|':  replacement="\\|";  break;
+        case '{':  replacement="\\{";  break;
+        case '}':  replacement="\\}";  break;
+      }
     }
     // Some heuristics to insert newlines to prevent too long
     // boxes and at the same time prevent ugly breaks
