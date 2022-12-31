@@ -146,6 +146,7 @@ static bool findMemberLink(yyscan_t yyscanner, CodeOutputInterface &ol,
                            const Definition *sym, const QCString &symName);
 static void findMemberLink(yyscan_t yyscanner, CodeOutputInterface &ol,
                            const QCString &symName);
+static void incrementFlowKeyWordCount(yyscan_t yyscanner);
 static void adjustScopesAndSuites(yyscan_t yyscanner,unsigned indentLength);
 static int yyread(yyscan_t yyscanner,char *buf,int max_size);
 static inline void pop_state(yyscan_t yyscanner);
@@ -495,15 +496,7 @@ TARGET            ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBU
                                     }
 
     {FLOWKW}                        {
-                                      if (yyextra->currentMemberDef && yyextra->currentMemberDef->isFunction())
-                                      {
-                                        std::lock_guard<std::mutex> lock(Doxygen::countFlowKeywordsMutex);
-                                        MemberDefMutable *mdm = toMemberDefMutable(yyextra->currentMemberDef);
-                                        if (mdm)
-                                        {
-                                          mdm->incrementFlowKeyWordCount();
-                                        }
-                                      }
+                                      incrementFlowKeyWordCount(yyscanner);
                                       startFontClass(yyscanner,"keywordflow");
                                       codify(yyscanner,yytext);
                                       endFontClass(yyscanner);
@@ -545,15 +538,7 @@ TARGET            ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBU
                                     }
 
     {FLOWKW}                        {
-                                      if (yyextra->currentMemberDef && yyextra->currentMemberDef->isFunction())
-                                      {
-                                        std::lock_guard<std::mutex> lock(Doxygen::countFlowKeywordsMutex);
-                                        MemberDefMutable *mdm = toMemberDefMutable(yyextra->currentMemberDef);
-                                        if (mdm)
-                                        {
-                                          mdm->incrementFlowKeyWordCount();
-                                        }
-                                      }
+                                      incrementFlowKeyWordCount(yyscanner);
                                       startFontClass(yyscanner,"keywordflow");
                                       codifyLines(yyscanner,yytext);
                                       endFontClass(yyscanner);
@@ -1246,7 +1231,7 @@ static bool getLinkInScope(yyscan_t yyscanner,
 
       if (yyextra->currentDefinition && yyextra->currentMemberDef && yyextra->collectXRefs && yyextra->insideBody)
       {
-        addDocCrossReference(toMemberDefMutable(yyextra->currentMemberDef),toMemberDefMutable(md));
+        addDocCrossReference(yyextra->currentMemberDef,md);
       }
       //printf("d->getReference()='%s' d->getOutputBase()='%s' name='%s' member name='%s'\n",qPrint(d->getReference()),qPrint(d->getOutputFileBase()),qPrint(d->name()),qPrint(md->name()));
 
@@ -1356,7 +1341,7 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
       if (d && d->isLinkable() && md->isLinkable() &&
           yyextra->currentMemberDef && yyextra->collectXRefs && yyextra->insideBody)
       {
-        addDocCrossReference(toMemberDefMutable(yyextra->currentMemberDef),toMemberDefMutable(md));
+        addDocCrossReference(yyextra->currentMemberDef,md);
       }
     }
   }
@@ -1383,7 +1368,7 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
           if (d && d->isLinkable() && mmd->isLinkable() &&
               yyextra->currentMemberDef && yyextra->collectXRefs && yyextra->insideBody)
           {
-            addDocCrossReference(toMemberDefMutable(yyextra->currentMemberDef),toMemberDefMutable(mmd));
+            addDocCrossReference(yyextra->currentMemberDef,mmd);
           }
           return;
         }
@@ -1406,7 +1391,7 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
             if (d && d->isLinkable() && mmd->isLinkable() &&
                 yyextra->currentMemberDef && yyextra->collectXRefs && yyextra->insideBody)
             {
-              addDocCrossReference(toMemberDefMutable(yyextra->currentMemberDef),toMemberDefMutable(mmd));
+              addDocCrossReference(yyextra->currentMemberDef,mmd);
             }
             return;
           }
@@ -1492,7 +1477,7 @@ static bool findMemberLink(yyscan_t yyscanner,
     {
       if (yyextra->currentMemberDef && yyextra->collectXRefs)
       {
-        addDocCrossReference(toMemberDefMutable(yyextra->currentMemberDef),toMemberDefMutable(toMemberDef(sym)));
+        addDocCrossReference(yyextra->currentMemberDef,toMemberDef(sym));
       }
     }
     DBG_CTX((stderr,"cd=%s thisCd=%s\n",cd?qPrint(cd->name()):"<none>",thisCd?qPrint(thisCd->name()):"<none>"));
@@ -1531,6 +1516,20 @@ static void findMemberLink(yyscan_t yyscanner,
   }
   //printf("sym %s not found\n",&yytext[5]);
   if (!found) codify(yyscanner,symName);
+}
+
+static void incrementFlowKeyWordCount(yyscan_t yyscanner)
+{
+  std::lock_guard<std::mutex> lock(Doxygen::countFlowKeywordsMutex);
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  if (yyextra->currentMemberDef && yyextra->currentMemberDef->isFunction())
+  {
+    MemberDefMutable *md = toMemberDefMutable(const_cast<MemberDef*>(yyextra->currentMemberDef));
+    if (md)
+    {
+      md->incrementFlowKeyWordCount();
+    }
+  }
 }
 
 

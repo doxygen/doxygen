@@ -792,6 +792,12 @@ class MemberDefAliasImpl : public DefinitionAliasMixin<MemberDef>
     {
       getMdAlias()->writeEnumDeclaration(typeDecl,cd,nd,fd,gd);
     }
+    virtual void writeLink(OutputList &ol,
+                   const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
+                   bool onlyText=FALSE) const
+    {
+      getMdAlias()->writeLink(ol,cd,nd,fd,gd,onlyText);
+    }
   private:
     MemberGroup *m_memberGroup; // group's member definition
 };
@@ -4611,10 +4617,9 @@ void MemberDefImpl::writeEnumDeclaration(OutputList &typeDecl,
             typeDecl.popGeneratorState();
           }
 
-          MemberDefMutable *fmdm = toMemberDefMutable(fmd);
-          if (fmdm && fmd->hasDocumentation()) // enum value has docs
+          if (fmd->hasDocumentation()) // enum value has docs
           {
-            fmdm->writeLink(typeDecl,cd,nd,fd,gd);
+            fmd->writeLink(typeDecl,cd,nd,fd,gd);
           }
           else // no docs for this enum value
           {
@@ -6151,8 +6156,10 @@ CodeSymbolType MemberDefImpl::codeSymbolType() const
 
 static std::mutex g_docCrossReferenceMutex;
 
-void addDocCrossReference(MemberDefMutable *src,MemberDefMutable *dst)
+void addDocCrossReference(const MemberDef *s,const MemberDef *d)
 {
+  MemberDefMutable *src = toMemberDefMutable(const_cast<MemberDef*>(s));
+  MemberDefMutable *dst = toMemberDefMutable(const_cast<MemberDef*>(d));
   if (src==0 || dst==0) return;
   std::lock_guard<std::mutex> lock(g_docCrossReferenceMutex);
   //printf("--> addDocCrossReference src=%s,dst=%s\n",qPrint(src->name()),qPrint(dst->name()));
@@ -6241,18 +6248,4 @@ MemberDefMutable *toMemberDefMutable(Definition *d)
     return 0;
   }
 }
-
-MemberDefMutable *toMemberDefMutable(const Definition *d)
-{
-  if (d && typeid(*d)==typeid(MemberDefImpl))
-  {
-    return const_cast<MemberDefMutable*>(static_cast<const MemberDefMutable*>(d));
-  }
-  else
-  {
-    return 0;
-  }
-}
-
-
 

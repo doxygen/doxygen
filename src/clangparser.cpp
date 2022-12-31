@@ -709,7 +709,7 @@ void ClangTUParser::linkIdentifier(CodeOutputInterface &ol,const FileDef *fd,
         (p->currentMemberDef!=d || p->currentLine<line)) // avoid self-reference
     {
       std::lock_guard<std::mutex> lock(g_docCrossReferenceMutex);
-      addDocCrossReference(toMemberDefMutable(p->currentMemberDef),toMemberDefMutable(d));
+      addDocCrossReference(p->currentMemberDef,toMemberDef(d));
     }
     writeMultiLineCodeLink(ol,fd,line,column,d,text);
   }

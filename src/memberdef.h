@@ -287,6 +287,9 @@ class MemberDef : public Definition
                  bool inGroup, int indentLevel=0, const ClassDef *inheritFrom=0,const QCString &inheritId=QCString()) const = 0;
     virtual void writeEnumDeclaration(OutputList &typeDecl, const ClassDef *cd,
                 const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd) const = 0;
+    virtual void writeLink(OutputList &ol,
+                 const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
+                 bool onlyText=FALSE) const = 0;
     virtual void detectUndocumentedParams(bool hasParamCommand,bool hasReturnCommand) const = 0;
     virtual void warnIfUndocumented() const = 0;
     virtual void warnIfUndocumentedParams() const = 0;
@@ -427,9 +430,6 @@ class MemberDefMutable : public DefinitionMutable, public MemberDef
                  showInline=FALSE) const = 0;
     virtual void writeMemberDocSimple(OutputList &ol,const Definition *container) const = 0;
     virtual void writeTagFile(TextStream &,bool useQualifiedName) const = 0;
-    virtual void writeLink(OutputList &ol,
-                 const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
-                 bool onlyText=FALSE) const = 0;
 
     // write helpers
     virtual void setAnonymousUsed() const = 0;
@@ -443,7 +443,6 @@ MemberDef            *toMemberDef(Definition *d);
 MemberDef            *toMemberDef(DefinitionMutable *d);
 const MemberDef      *toMemberDef(const Definition *d);
 MemberDefMutable     *toMemberDefMutable(Definition *d);
-MemberDefMutable     *toMemberDefMutable(const Definition *d);
 
 //------------------------------------------------------------------------
 
@@ -458,6 +457,6 @@ MemberDefMutable *createMemberDef(const QCString &defFileName,int defLine,int de
 MemberDef *createMemberDefAlias(const Definition *newScope,const MemberDef *aliasMd);
 
 void combineDeclarationAndDefinition(MemberDefMutable *mdec,MemberDefMutable *mdef);
-void addDocCrossReference(MemberDefMutable *src,MemberDefMutable *dst);
+void addDocCrossReference(const MemberDef *src,const MemberDef *dst);
 
 #endif

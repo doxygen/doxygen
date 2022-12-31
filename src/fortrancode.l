@@ -298,7 +298,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                           if (yyextra->currentMemberDef && yyextra->currentMemberDef->isFunction())
                                           {
                                             std::lock_guard<std::mutex> lock(Doxygen::countFlowKeywordsMutex);
-                                            MemberDefMutable *mdm = toMemberDefMutable(yyextra->currentMemberDef);
+                                            MemberDefMutable *mdm = toMemberDefMutable(const_cast<MemberDef*>(yyextra->currentMemberDef));
                                             if (mdm)
                                             {
                                               mdm->incrementFlowKeyWordCount();
@@ -1243,7 +1243,7 @@ static bool getLink(yyscan_t yyscanner,const UseMap &useMap, // dictionary with 
       if (yyextra->currentDefinition && yyextra->currentMemberDef &&
           yyextra->insideBody && yyextra->collectXRefs)
       {
-        addDocCrossReference(toMemberDefMutable(yyextra->currentMemberDef),toMemberDefMutable(md));
+        addDocCrossReference(yyextra->currentMemberDef,md);
       }
       writeMultiLineCodeLink(yyscanner,ol,md,!text.isEmpty() ? text : memberText);
       addToSearchIndex(yyscanner, !text.isEmpty() ? text : memberText);

@@ -906,7 +906,7 @@ done:
     //printf("setting cached typedef %p in result %p\n",md,result);
     //printf("==> %s (%s,%d)\n",qPrint(result->name()),qPrint(result->getDefFileName()),result->getDefLine());
     //printf("*pResolvedType=%s\n",pResolvedType?pResolvedType->data():"<none>");
-    MemberDefMutable *mdm = toMemberDefMutable(md);
+    MemberDefMutable *mdm = toMemberDefMutable(const_cast<MemberDef*>(md));
     if (mdm)
     {
       mdm->cacheTypedefVal(result,

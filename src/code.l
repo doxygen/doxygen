@@ -2504,7 +2504,7 @@ static void incrementFlowKeyWordCount(yyscan_t yyscanner)
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (yyextra->currentMemberDef && yyextra->currentMemberDef->isFunction())
   {
-    MemberDefMutable *md = toMemberDefMutable(yyextra->currentMemberDef);
+    MemberDefMutable *md = toMemberDefMutable(const_cast<MemberDef*>(yyextra->currentMemberDef));
     if (md)
     {
       md->incrementFlowKeyWordCount();
@@ -2792,7 +2792,7 @@ static bool getLinkInScope(yyscan_t yyscanner,
         anchor.sprintf("a%d",yyextra->anchorCount);
         DBG_CTX((stderr,"addExampleFile(%s,%s,%s)\n",qPrint(anchor),qPrint(yyextra->exampleName),
                                                      qPrint(yyextra->exampleFile)));
-        MemberDefMutable *mdm = toMemberDefMutable(md);
+        MemberDefMutable *mdm = toMemberDefMutable(const_cast<MemberDef*>(md));
         if (mdm && mdm->addExample(anchor,yyextra->exampleName,yyextra->exampleFile))
         {
           ol.writeCodeAnchor(anchor);
@@ -2812,7 +2812,7 @@ static bool getLinkInScope(yyscan_t yyscanner,
         if (yyextra->currentDefinition && yyextra->currentMemberDef &&
             yyextra->insideBody && yyextra->collectXRefs)
         {
-          addDocCrossReference(toMemberDefMutable(yyextra->currentMemberDef),toMemberDefMutable(md));
+          addDocCrossReference(yyextra->currentMemberDef,md);
         }
         DBG_CTX((stderr,"d->getReference()='%s' d->getOutputBase()='%s' name='%s' member name='%s'\n",qPrint(d->getReference()),qPrint(d->getOutputFileBase()),qPrint(d->name()),qPrint(md->name())));
 
@@ -3012,7 +3012,7 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
       if (d && d->isLinkable() && md->isLinkable() &&
           yyextra->currentMemberDef && yyextra->collectXRefs)
       {
-        addDocCrossReference(toMemberDefMutable(yyextra->currentMemberDef),toMemberDefMutable(md));
+        addDocCrossReference(yyextra->currentMemberDef,md);
       }
     }
   }
@@ -3048,7 +3048,7 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
           addToSearchIndex(yyscanner,clName);
           if (yyextra->currentMemberDef && yyextra->collectXRefs)
           {
-            addDocCrossReference(toMemberDefMutable(yyextra->currentMemberDef),toMemberDefMutable(md));
+            addDocCrossReference(yyextra->currentMemberDef,md);
           }
           return;
         }
@@ -3088,7 +3088,7 @@ static bool generateClassMemberLink(yyscan_t yyscanner,
     anchor.sprintf("a%d",yyextra->anchorCount);
     DBG_CTX((stderr,"addExampleFile(%s,%s,%s)\n",qPrint(anchor),qPrint(yyextra->exampleName),
                                                  qPrint(yyextra->exampleFile)));
-    MemberDefMutable *mdm = toMemberDefMutable(xmd);
+    MemberDefMutable *mdm = toMemberDefMutable(const_cast<MemberDef*>(xmd));
     if (mdm && mdm->addExample(anchor,yyextra->exampleName,yyextra->exampleFile))
     {
       ol.writeCodeAnchor(anchor);
@@ -3117,7 +3117,7 @@ static bool generateClassMemberLink(yyscan_t yyscanner,
       if (yyextra->currentDefinition && yyextra->currentMemberDef &&
           yyextra->insideBody && yyextra->collectXRefs)
       {
-        addDocCrossReference(toMemberDefMutable(yyextra->currentMemberDef),toMemberDefMutable(xmd));
+        addDocCrossReference(yyextra->currentMemberDef,xmd);
       }
 
       // write the actual link
@@ -3537,7 +3537,7 @@ static void writeObjCMethodCall(yyscan_t yyscanner,ObjCCallCtx *ctx)
                 writeMultiLineCodeLink(yyscanner,*yyextra->code,ctx->method,name);
                 if (yyextra->currentMemberDef && yyextra->collectXRefs)
                 {
-                  addDocCrossReference(toMemberDefMutable(yyextra->currentMemberDef),toMemberDefMutable(ctx->method));
+                  addDocCrossReference(yyextra->currentMemberDef,ctx->method);
                 }
               }
               else
@@ -3611,7 +3611,7 @@ static void writeObjCMethodCall(yyscan_t yyscanner,ObjCCallCtx *ctx)
                 writeMultiLineCodeLink(yyscanner,*yyextra->code,ctx->objectVar,object);
                 if (yyextra->currentMemberDef && yyextra->collectXRefs)
                 {
-                  addDocCrossReference(toMemberDefMutable(yyextra->currentMemberDef),toMemberDefMutable(ctx->objectVar));
+                  addDocCrossReference(yyextra->currentMemberDef,ctx->objectVar);
                 }
               }
               else if (ctx->objectType &&
