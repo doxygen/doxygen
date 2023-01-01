@@ -1248,11 +1248,6 @@ class MemberDefImpl::IMPL
     QCString cachedTypedefTemplSpec;
     QCString cachedResolvedType;
 
-    // inbody documentation
-    //int inbodyLine;
-    //QCString inbodyFile;
-    //QCString inbodyDocs;
-
     // documentation inheritance
     const MemberDef *docProvider = 0;
 
@@ -1265,8 +1260,8 @@ class MemberDefImpl::IMPL
     // objective-c
     bool implOnly = false; // function found in implementation but not
                            // in the interface
-    mutable bool hasDocumentedParams = false;
-    mutable bool hasDocumentedReturnType = false;
+    bool hasDocumentedParams = false;      // guard to show only the first warning
+    bool hasDocumentedReturnType = false;  // guard to show only the first warning
     bool isDMember = false;
     Relationship related = Member;    // relationship of this to the class
     bool stat = false;                // is it a static function?
@@ -2525,8 +2520,11 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
   //printf("< %s MemberDefImpl::writeDeclaration() inGroup=%d\n",qPrint(qualifiedName()),inGroup);
 }
 
+static std::mutex g_hasDetailedDescriptionMutex;
+
 bool MemberDefImpl::hasDetailedDescription() const
 {
+  std::lock_guard<std::mutex> lock(g_hasDetailedDescriptionMutex);
   //printf(">hasDetailedDescription(cached=%d)\n",m_impl->hasDetailedDescriptionCached);
   if (!m_impl->hasDetailedDescriptionCached)
   {

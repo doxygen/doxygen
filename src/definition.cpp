@@ -88,8 +88,8 @@ class DefinitionImpl::IMPL
     int defLine;
     int defColumn;
 
-    mutable MemberVector referencesMembers;
-    mutable MemberVector referencedByMembers;
+    MemberVector referencesMembers;    // cache for getReferencesMembers()
+    MemberVector referencedByMembers;  // cache for getReferencedByMembers()
 };
 
 
