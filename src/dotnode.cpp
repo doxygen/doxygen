@@ -592,7 +592,7 @@ void DotNode::writeArrow(TextStream &t,
   t << "style=\"" << eProps->edgeStyleMap[ei->style()] << "\"";
   if (!ei->label().isEmpty())
   {
-    t << ",label=\" " << convertLabel(ei->label()) << "\" ";
+    t << ",label=\" " << convertLabel(ei->label()) << "\",fontcolor=\"grey\" ";
   }
   if (Config_getBool(UML_LOOK) &&
     eProps->arrowStyleMap[ei->color()] &&
