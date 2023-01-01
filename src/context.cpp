@@ -4056,7 +4056,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       {
         const ClassDef *cd = md->getClassDef();
         // filter on pure virtual/interface methods
-        if (cd && (md->virtualness()==Pure || cd->compoundType()==ClassDef::Interface))
+        if (cd && (md->virtualness()==Specifier::Pure || cd->compoundType()==ClassDef::Interface))
         {
           list.push_back(MemberContext::alloc(md));
         }
@@ -4071,7 +4071,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       {
         const ClassDef *cd = md->getClassDef();
         // filter on non-pure virtual & non interface methods
-        if (cd && md->virtualness()!=Pure && cd->compoundType()!=ClassDef::Interface)
+        if (cd && md->virtualness()!=Specifier::Pure && cd->compoundType()!=ClassDef::Interface)
         {
           list.push_back(MemberContext::alloc(md));
         }
@@ -4086,7 +4086,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       {
         const ClassDef *cd = md->getClassDef();
         // filter on pure virtual/interface methods
-        if (cd && md->virtualness()==Pure && cd->compoundType()==ClassDef::Interface)
+        if (cd && md->virtualness()==Specifier::Pure && cd->compoundType()==ClassDef::Interface)
         {
           list.push_back(MemberContext::alloc(md));
         }
@@ -4101,7 +4101,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       {
         const ClassDef *cd = md->getClassDef();
         // filter on non-pure virtual & non interface methods
-        if (cd && md->virtualness()!=Pure && cd->compoundType()!=ClassDef::Interface)
+        if (cd && md->virtualness()!=Specifier::Pure && cd->compoundType()!=ClassDef::Interface)
         {
           list.push_back(MemberContext::alloc(md));
         }
@@ -7644,10 +7644,10 @@ class MemberInfoContext::Private
     {
       switch (m_memberInfo->prot())
       {
-        case ::Public:    return "public";
-        case ::Protected: return "protected";
-        case ::Private:   return "private";
-        case ::Package:   return "package";
+        case Protection::Public:    return "public";
+        case Protection::Protected: return "protected";
+        case Protection::Private:   return "private";
+        case Protection::Package:   return "package";
       }
       return "";
     }
@@ -7655,9 +7655,9 @@ class MemberInfoContext::Private
     {
       switch (m_memberInfo->virt())
       {
-        case ::Normal:   return "normal";
-        case ::Virtual:  return "virtual";
-        case ::Pure:     return "pure";
+        case Specifier::Normal:   return "normal";
+        case Specifier::Virtual:  return "virtual";
+        case Specifier::Pure:     return "pure";
       }
       return "";
     }

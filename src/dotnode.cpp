@@ -307,8 +307,8 @@ DotNode::~DotNode()
 }
 
 void DotNode::addChild(DotNode *n,
-  int edgeColor,
-  int edgeStyle,
+  EdgeInfo::Colors edgeColor,
+  EdgeInfo::Styles edgeStyle,
   const QCString &edgeLab,
   const QCString &edgeURL,
   int edgeLabCol

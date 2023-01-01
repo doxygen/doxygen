@@ -416,7 +416,7 @@ bool GroupDefImpl::insertMember(MemberDef *md,bool docOnly)
       addMemberToList(MemberListType_docSignalMembers,md);
       break;
     case MemberType_Slot:
-      if (md->protection()==Public)
+      if (md->protection()==Protection::Public)
       {
         if (!docOnly)
         {
@@ -424,7 +424,7 @@ bool GroupDefImpl::insertMember(MemberDef *md,bool docOnly)
         }
         addMemberToList(MemberListType_docPubSlotMembers,md);
       }
-      else if (md->protection()==Protected)
+      else if (md->protection()==Protection::Protected)
       {
         if (!docOnly)
         {
@@ -512,12 +512,12 @@ void GroupDefImpl::removeMember(MemberDef *md)
         removeMemberFromList(MemberListType_docSignalMembers,md);
         break;
       case MemberType_Slot:
-        if (md->protection()==Public)
+        if (md->protection()==Protection::Public)
         {
           removeMemberFromList(MemberListType_decPubSlotMembers,md);
           removeMemberFromList(MemberListType_docPubSlotMembers,md);
         }
-        else if (md->protection()==Protected)
+        else if (md->protection()==Protection::Protected)
         {
           removeMemberFromList(MemberListType_decProSlotMembers,md);
           removeMemberFromList(MemberListType_docProSlotMembers,md);

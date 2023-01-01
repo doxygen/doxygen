@@ -757,7 +757,7 @@ void ClassDefImpl::IMPL::init(const QCString &defFileName, const QCString &name,
   {
     fileName=ctStr+name;
   }
-  prot=Public;
+  prot=Protection::Public;
   //nspace=0;
   fileDef=0;
   subGrouping=Config_getBool(SUBGROUPING);
@@ -852,7 +852,7 @@ void ClassDefImpl::insertSubClass(ClassDef *cd,Protection p,
 {
   //printf("*** insert sub class %s into %s\n",qPrint(cd->name()),qPrint(name()));
   bool extractPrivate = Config_getBool(EXTRACT_PRIVATE);
-  if (!extractPrivate && cd->protection()==Private) return;
+  if (!extractPrivate && cd->protection()==Protection::Private) return;
   m_impl->inheritedBy.push_back(BaseClassDef(cd,QCString(),p,s,t));
   m_impl->isSimple = FALSE;
 }
@@ -934,14 +934,14 @@ void ClassDefImpl::internalInsertMember(MemberDef *md,
         case MemberType_Slot:   // Qt specific
           switch (prot)
           {
-            case Protected:
-            case Package: // slots in packages are not possible!
+            case Protection::Protected:
+            case Protection::Package: // slots in packages are not possible!
               addMemberToList(MemberListType_proSlots,md,TRUE);
               break;
-            case Public:
+            case Protection::Public:
               addMemberToList(MemberListType_pubSlots,md,TRUE);
               break;
-            case Private:
+            case Protection::Private:
               addMemberToList(MemberListType_priSlots,md,TRUE);
               break;
           }
@@ -953,16 +953,16 @@ void ClassDefImpl::internalInsertMember(MemberDef *md,
             {
               switch (prot)
               {
-                case Protected:
+                case Protection::Protected:
                   addMemberToList(MemberListType_proStaticAttribs,md,TRUE);
                   break;
-                case Package:
+                case Protection::Package:
                   addMemberToList(MemberListType_pacStaticAttribs,md,TRUE);
                   break;
-                case Public:
+                case Protection::Public:
                   addMemberToList(MemberListType_pubStaticAttribs,md,TRUE);
                   break;
-                case Private:
+                case Protection::Private:
                   addMemberToList(MemberListType_priStaticAttribs,md,TRUE);
                   break;
               }
@@ -971,16 +971,16 @@ void ClassDefImpl::internalInsertMember(MemberDef *md,
             {
               switch (prot)
               {
-                case Protected:
+                case Protection::Protected:
                   addMemberToList(MemberListType_proStaticMethods,md,TRUE);
                   break;
-                case Package:
+                case Protection::Package:
                   addMemberToList(MemberListType_pacStaticMethods,md,TRUE);
                   break;
-                case Public:
+                case Protection::Public:
                   addMemberToList(MemberListType_pubStaticMethods,md,TRUE);
                   break;
-                case Private:
+                case Protection::Private:
                   addMemberToList(MemberListType_priStaticMethods,md,TRUE);
                   break;
               }
@@ -992,17 +992,17 @@ void ClassDefImpl::internalInsertMember(MemberDef *md,
             {
               switch (prot)
               {
-                case Protected:
+                case Protection::Protected:
                   addMemberToList(MemberListType_proAttribs,md,TRUE);
                   break;
-                case Package:
+                case Protection::Package:
                   addMemberToList(MemberListType_pacAttribs,md,TRUE);
                   break;
-                case Public:
+                case Protection::Public:
                   addMemberToList(MemberListType_pubAttribs,md,TRUE);
                   isSimple=!md->isFunctionPtr();
                   break;
-                case Private:
+                case Protection::Private:
                   addMemberToList(MemberListType_priAttribs,md,TRUE);
                   break;
               }
@@ -1011,19 +1011,19 @@ void ClassDefImpl::internalInsertMember(MemberDef *md,
             {
               switch (prot)
               {
-                case Protected:
+                case Protection::Protected:
                   addMemberToList(MemberListType_proTypes,md,TRUE);
                   break;
-                case Package:
+                case Protection::Package:
                   addMemberToList(MemberListType_pacTypes,md,TRUE);
                   break;
-                case Public:
+                case Protection::Public:
                   addMemberToList(MemberListType_pubTypes,md,TRUE);
                   isSimple=!md->isEnumerate() &&
                            !md->isEnumValue() &&
                            QCString(md->typeString()).find(")(")==-1; // func ptr typedef
                   break;
-                case Private:
+                case Protection::Private:
                   addMemberToList(MemberListType_priTypes,md,TRUE);
                   break;
               }
@@ -1032,16 +1032,16 @@ void ClassDefImpl::internalInsertMember(MemberDef *md,
             {
               switch (prot)
               {
-                case Protected:
+                case Protection::Protected:
                   addMemberToList(MemberListType_proMethods,md,TRUE);
                   break;
-                case Package:
+                case Protection::Package:
                   addMemberToList(MemberListType_pacMethods,md,TRUE);
                   break;
-                case Public:
+                case Protection::Public:
                   addMemberToList(MemberListType_pubMethods,md,TRUE);
                   break;
-                case Private:
+                case Protection::Private:
                   addMemberToList(MemberListType_priMethods,md,TRUE);
                   break;
               }
@@ -1064,8 +1064,8 @@ void ClassDefImpl::internalInsertMember(MemberDef *md,
       addMemberToList(MemberListType_relatedMembers,md,FALSE);
     }
     else if (md->isFunction() &&
-             md->protection()==Private &&
-             (md->virtualness()!=Normal || md->isOverride() || md->isFinal()) &&
+             md->protection()==Protection::Private &&
+             (md->virtualness()!=Specifier::Normal || md->isOverride() || md->isFinal()) &&
              Config_getBool(EXTRACT_PRIV_VIRTUAL))
     {
       addMemberToList(MemberListType_functionMembers,md,FALSE);
@@ -1144,9 +1144,9 @@ void ClassDefImpl::internalInsertMember(MemberDef *md,
 
   }
 
-  if (md->virtualness()==Pure)
+  if (md->virtualness()==Specifier::Pure)
   {
-    m_impl->isAbstract=TRUE;
+    m_impl->isAbstract=true;
   }
 
   if (md->name()=="operator->")
@@ -1237,14 +1237,14 @@ void ClassDefImpl::insertUsedFile(const FileDef *fd)
 
 static void writeInheritanceSpecifier(OutputList &ol,const BaseClassDef &bcd)
 {
-  if (bcd.prot!=Public || bcd.virt!=Normal)
+  if (bcd.prot!=Protection::Public || bcd.virt!=Specifier::Normal)
   {
     ol.startTypewriter();
     ol.docify(" [");
     StringVector sl;
-    if      (bcd.prot==Protected) sl.push_back("protected");
-    else if (bcd.prot==Private)   sl.push_back("private");
-    if      (bcd.virt==Virtual)   sl.push_back("virtual");
+    if      (bcd.prot==Protection::Protected) sl.push_back("protected");
+    else if (bcd.prot==Protection::Private)   sl.push_back("private");
+    if      (bcd.virt==Specifier::Virtual)    sl.push_back("virtual");
     bool first=true;
     for (const auto &s : sl)
     {
@@ -2151,15 +2151,15 @@ void ClassDefImpl::writeTagFile(TextStream &tagFile) const
       if (!Config_getString(GENERATE_TAGFILE).isEmpty())
       {
         tagFile << "    <base";
-        if (ibcd.prot==Protected)
+        if (ibcd.prot==Protection::Protected)
         {
           tagFile << " protection=\"protected\"";
         }
-        else if (ibcd.prot==Private)
+        else if (ibcd.prot==Protection::Private)
         {
           tagFile << " protection=\"private\"";
         }
-        if (ibcd.virt==Virtual)
+        if (ibcd.virt==Specifier::Virtual)
         {
           tagFile << " virtualness=\"virtual\"";
         }
@@ -2388,7 +2388,7 @@ bool ClassDefImpl::visibleInParentsDeclList() const
   bool extractLocalClasses = Config_getBool(EXTRACT_LOCAL_CLASSES);
   bool linkable = isLinkable();
   return (!isAnonymous() && !isExtension() &&
-          (protection()!=::Private || extractPrivate) &&
+          (protection()!=Protection::Private || extractPrivate) &&
           (linkable || (!hideUndocClasses && (!isLocal() || extractLocalClasses)))
          );
 }
@@ -3078,7 +3078,7 @@ void ClassDefImpl::writeMemberList(OutputList &ol) const
         }
         SrcLangExt lang = md->getLanguage();
         if (
-            (prot!=Public || (virt!=Normal && getLanguage()!=SrcLangExt_ObjC) ||
+            (prot!=Protection::Public || (virt!=Specifier::Normal && getLanguage()!=SrcLangExt_ObjC) ||
              md->isFriend() || md->isRelated() || md->isExplicit() ||
              md->isMutable() || (md->isInline() && Config_getBool(INLINE_INFO)) ||
              md->isSignal() || md->isSlot() ||
@@ -3098,30 +3098,30 @@ void ClassDefImpl::writeMemberList(OutputList &ol) const
           else
           {
             if (Config_getBool(INLINE_INFO) && md->isInline())
-                                       sl.push_back("inline");
-            if (md->isExplicit())      sl.push_back("explicit");
-            if (md->isMutable())       sl.push_back("mutable");
-            if (prot==Protected)       sl.push_back("protected");
-            else if (prot==Private)    sl.push_back("private");
-            else if (prot==Package)    sl.push_back("package");
-            if (virt==Virtual && getLanguage()!=SrcLangExt_ObjC)
-                                       sl.push_back("virtual");
-            else if (virt==Pure)       sl.push_back("pure virtual");
-            if (md->isStatic())        sl.push_back("static");
-            if (md->isSignal())        sl.push_back("signal");
-            if (md->isSlot())          sl.push_back("slot");
+                                                   sl.push_back("inline");
+            if (md->isExplicit())                  sl.push_back("explicit");
+            if (md->isMutable())                   sl.push_back("mutable");
+            if (prot==Protection::Protected)       sl.push_back("protected");
+            else if (prot==Protection::Private)    sl.push_back("private");
+            else if (prot==Protection::Package)    sl.push_back("package");
+            if (virt==Specifier::Virtual && getLanguage()!=SrcLangExt_ObjC)
+                                                   sl.push_back("virtual");
+            else if (virt==Specifier::Pure)        sl.push_back("pure virtual");
+            if (md->isStatic())                    sl.push_back("static");
+            if (md->isSignal())                    sl.push_back("signal");
+            if (md->isSlot())                      sl.push_back("slot");
 // this is the extra member page
-            if (md->isOptional())      sl.push_back("optional");
-            if (md->isAttribute())     sl.push_back("attribute");
-            if (md->isUNOProperty())   sl.push_back("property");
-            if (md->isReadonly())      sl.push_back("readonly");
-            if (md->isBound())         sl.push_back("bound");
-            if (md->isRemovable())     sl.push_back("removable");
-            if (md->isConstrained())   sl.push_back("constrained");
-            if (md->isTransient())     sl.push_back("transient");
-            if (md->isMaybeVoid())     sl.push_back("maybevoid");
-            if (md->isMaybeDefault())  sl.push_back("maybedefault");
-            if (md->isMaybeAmbiguous())sl.push_back("maybeambiguous");
+            if (md->isOptional())                  sl.push_back("optional");
+            if (md->isAttribute())                 sl.push_back("attribute");
+            if (md->isUNOProperty())               sl.push_back("property");
+            if (md->isReadonly())                  sl.push_back("readonly");
+            if (md->isBound())                     sl.push_back("bound");
+            if (md->isRemovable())                 sl.push_back("removable");
+            if (md->isConstrained())               sl.push_back("constrained");
+            if (md->isTransient())                 sl.push_back("transient");
+            if (md->isMaybeVoid())                 sl.push_back("maybevoid");
+            if (md->isMaybeDefault())              sl.push_back("maybedefault");
+            if (md->isMaybeAmbiguous())            sl.push_back("maybeambiguous");
           }
           bool firstSpan=true;
           for (const auto &s : sl)
@@ -3566,7 +3566,7 @@ void ClassDefImpl::mergeMembers()
                 // if scope paths are equal or
                 // if base class is an interface (and thus implicitly virtual).
                 //printf("same member found srcMi->virt=%d dstMi->virt=%d\n",srcMi->virt,dstMi->virt);
-                if ((srcMi->virt()!=Normal && dstMi->virt()!=Normal) ||
+                if ((srcMi->virt()!=Specifier::Normal && dstMi->virt()!=Specifier::Normal) ||
                     bClass->name()+sep+srcMi->scopePath() == dstMi->scopePath() ||
                     dstMd->getClassDef()->compoundType()==Interface
                    )
@@ -3601,11 +3601,17 @@ void ClassDefImpl::mergeMembers()
             //       it seems that the member is not reachable by prefixing a
             //       scope name either (according to my compiler). Currently,
             //       this case is shown anyway.
-            if (!found && srcMd->protection()!=Private && !srcMd->isFriend())
+            if (!found && srcMd->protection()!=Protection::Private && !srcMd->isFriend())
             {
-              Protection prot=srcMd->protection();
-              if (bcd.prot==Protected && prot==Public)  prot=bcd.prot;
-              else if (bcd.prot==Private)               prot=bcd.prot;
+              Protection prot = srcMd->protection();
+              if (bcd.prot==Protection::Protected && prot==Protection::Public)
+              {
+                prot = bcd.prot;
+              }
+              else if (bcd.prot==Protection::Private)
+              {
+                prot = bcd.prot;
+              }
 
               if (inlineInheritedMembers)
               {
@@ -3617,7 +3623,7 @@ void ClassDefImpl::mergeMembers()
               }
 
               Specifier virt=srcMi->virt();
-              if (virt==Normal && bcd.virt!=Normal) virt=bcd.virt;
+              if (virt==Specifier::Normal && bcd.virt!=Specifier::Normal) virt=bcd.virt;
 
               std::unique_ptr<MemberInfo> newMi = std::make_unique<MemberInfo>(srcMd,prot,virt,TRUE);
               newMi->setScopePath(bClass->name()+sep+srcMi->scopePath());
@@ -3663,22 +3669,22 @@ void ClassDefImpl::mergeMembers()
             if (!mi->memberDef()->isFriend()) // don't inherit friends
             {
               Protection prot = mi->prot();
-              if (bcd.prot==Protected)
+              if (bcd.prot==Protection::Protected)
               {
-                if (prot==Public) prot=Protected;
+                if (prot==Protection::Public) prot=Protection::Protected;
               }
-              else if (bcd.prot==Private)
+              else if (bcd.prot==Protection::Private)
               {
-                prot=Private;
+                prot=Protection::Private;
               }
               //printf("%s::%s: prot=%d bcd.prot=%d result=%d\n",
               //    qPrint(name()),qPrint(mi->memberDef->name()),mi->prot,
               //    bcd.prot,prot);
 
-              if (prot!=Private || extractPrivate)
+              if (prot!=Protection::Private || extractPrivate)
               {
                 Specifier virt=mi->virt();
-                if (virt==Normal && bcd.virt!=Normal) virt=bcd.virt;
+                if (virt==Specifier::Normal && bcd.virt!=Specifier::Normal) virt=bcd.virt;
 
                 if (inlineInheritedMembers)
                 {
@@ -3828,7 +3834,7 @@ void ClassDefImpl::addUsedClass(ClassDef *cd,const QCString &accessName,
 {
   bool extractPrivate = Config_getBool(EXTRACT_PRIVATE);
   bool umlLook = Config_getBool(UML_LOOK);
-  if (prot==Private && !extractPrivate) return;
+  if (prot==Protection::Private && !extractPrivate) return;
   //printf("%s::addUsedClass(%s,%s)\n",qPrint(name()),qPrint(cd->name()),accessName);
 
   auto it = std::find_if(m_impl->usesImplClassList.begin(),
@@ -3846,10 +3852,10 @@ void ClassDefImpl::addUsedClass(ClassDef *cd,const QCString &accessName,
   {
     switch(prot)
     {
-      case Public:    acc.prepend("+"); break;
-      case Private:   acc.prepend("-"); break;
-      case Protected: acc.prepend("#"); break;
-      case Package:   acc.prepend("~"); break;
+      case Protection::Public:    acc.prepend("+"); break;
+      case Protection::Private:   acc.prepend("-"); break;
+      case Protection::Protected: acc.prepend("#"); break;
+      case Protection::Package:   acc.prepend("~"); break;
     }
   }
   (*it).addAccessor(acc);
@@ -3860,7 +3866,7 @@ void ClassDefImpl::addUsedByClass(ClassDef *cd,const QCString &accessName,
 {
   bool extractPrivate = Config_getBool(EXTRACT_PRIVATE);
   bool umlLook = Config_getBool(UML_LOOK);
-  if (prot==Private && !extractPrivate) return;
+  if (prot==Protection::Private && !extractPrivate) return;
   //printf("%s::addUsedByClass(%s,%s)\n",qPrint(name()),qPrint(cd->name()),accessName);
   //
   auto it = std::find_if(m_impl->usedByImplClassList.begin(),
@@ -3878,10 +3884,10 @@ void ClassDefImpl::addUsedByClass(ClassDef *cd,const QCString &accessName,
   {
     switch(prot)
     {
-      case Public:    acc.prepend("+"); break;
-      case Private:   acc.prepend("-"); break;
-      case Protected: acc.prepend("#"); break;
-      case Package:   acc.prepend("~"); break;
+      case Protection::Public:    acc.prepend("+"); break;
+      case Protection::Private:   acc.prepend("-"); break;
+      case Protection::Protected: acc.prepend("#"); break;
+      case Protection::Package:   acc.prepend("~"); break;
     }
   }
   (*it).addAccessor(acc);
@@ -5166,13 +5172,13 @@ Protection classInheritedProtectionLevel(const ClassDef *cd,const ClassDef *bcd,
     err("Internal inconsistency: found class %s seem to have a recursive "
         "inheritance relation! Please send a bug report to doxygen@gmail.com\n",qPrint(cd->name()));
   }
-  else if (prot!=Private)
+  else if (prot!=Protection::Private)
   {
     for (const auto &bcdi : cd->baseClasses())
     {
       Protection baseProt = classInheritedProtectionLevel(bcdi.classDef,bcd,bcdi.prot,level+1);
-      if (baseProt==Private)        prot=Private;
-      else if (baseProt==Protected) prot=Protected;
+      if (baseProt==Protection::Private)        prot=Protection::Private;
+      else if (baseProt==Protection::Protected) prot=Protection::Protected;
     }
   }
 exit:

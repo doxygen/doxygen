@@ -73,16 +73,16 @@ struct pyscannerYY_state
   OutlineParserInterface *thisParser = 0;
   const char *            inputString = 0;
   int                     inputPosition = 0;
-  Protection              protection = Public;
+  Protection              protection = Protection::Public;
   std::shared_ptr<Entry>  current_root;
   std::shared_ptr<Entry>  current;
   std::shared_ptr<Entry>  previous;
   std::shared_ptr<Entry>  bodyEntry;
   int                     yyLineNr = 1 ;
   QCString                fileName;
-  MethodTypes             mtype = Method;
+  MethodTypes             mtype = MethodTypes::Method;
   bool                    stat = FALSE;
-  Specifier               virt = Normal;
+  Specifier               virt = Specifier::Normal;
   int                     docBlockContext = 0;
   QCString                docBlock;
   bool                    docBlockInBody = FALSE;
@@ -301,7 +301,7 @@ STARTDOCSYMS      "##"
                        }
      ^{B}{IDENTIFIER}/{B}"="{B}"property" { // property
                         yyextra->current->section   = Entry::VARIABLE_SEC;
-                        yyextra->current->mtype     = Property;
+                        yyextra->current->mtype     = MethodTypes::Property;
                         yyextra->current->name      = QCString(yytext).stripWhiteSpace();
                         yyextra->current->fileName  = yyextra->fileName;
                         yyextra->current->startLine = yyextra->yyLineNr;
@@ -501,11 +501,11 @@ STARTDOCSYMS      "##"
                         {
                           if (yyextra->current->name.at(1)=='_') // mark as private
                           {
-                            yyextra->current->protection=Private;
+                            yyextra->current->protection=Protection::Private;
                           }
                           else // mark as protected
                           {
-                            yyextra->current->protection=Protected;
+                            yyextra->current->protection=Protection::Protected;
                           }
                         }
                         newEntry(yyscanner);
@@ -522,11 +522,11 @@ STARTDOCSYMS      "##"
                         {
                           if (yyextra->current->name.at(1)=='_') // mark as private
                           {
-                            yyextra->current->protection=Private;
+                            yyextra->current->protection=Protection::Private;
                           }
                           else // mark as protected
                           {
-                            yyextra->current->protection=Protected;
+                            yyextra->current->protection=Protection::Protected;
                           }
                         }
                         newEntry(yyscanner);
@@ -1031,7 +1031,7 @@ STARTDOCSYMS      "##"
 
     {SCOPE}            {
                          yyextra->current->extends.push_back(
-                                              BaseInfo(substitute(yytext,".","::"),Public,Normal)
+                                              BaseInfo(substitute(yytext,".","::"),Protection::Public,Specifier::Normal)
                                             );
                          //Has base class-do stuff
                        }
@@ -1162,7 +1162,7 @@ STARTDOCSYMS      "##"
                         BEGIN(TripleString);
                       }
    "("                { // tuple, only when direct after =
-                        if (yyextra->current->mtype!=Property && yyextra->start_init)
+                        if (yyextra->current->mtype!=MethodTypes::Property && yyextra->start_init)
                         {
                           yyextra->current->type = "tuple";
                         }
@@ -1513,10 +1513,10 @@ static int yyread(yyscan_t yyscanner,char *buf,int max_size)
 static void initParser(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yyextra->protection = Public;
-  yyextra->mtype = Method;
+  yyextra->protection = Protection::Public;
+  yyextra->mtype = MethodTypes::Method;
   yyextra->stat = FALSE;
-  yyextra->virt = Normal;
+  yyextra->virt = Specifier::Normal;
   yyextra->previous = 0;
   yyextra->packageCommentAllowed = TRUE;
 }
@@ -1549,10 +1549,10 @@ static void newVariable(yyscan_t yyscanner)
   {
     if (yyextra->current->name.at(1)=='_') // mark as private
     {
-      yyextra->current->protection=Private;
+      yyextra->current->protection=Protection::Private;
     }
     else{
-      yyextra->current->protection=Protected; // mark as protected
+      yyextra->current->protection=Protection::Protected; // mark as protected
     }
   }
   if (yyextra->current_root->section&Entry::COMPOUND_MASK) // mark as class variable
@@ -1569,17 +1569,17 @@ static void newFunction(yyscan_t yyscanner)
   {
     // special method name, see
     // http://docs.python.org/ref/specialnames.html
-    yyextra->current->protection=Public;
+    yyextra->current->protection=Protection::Public;
   }
   else if (yyextra->current->name.at(0)=='_')
   {
     if (yyextra->current->name.at(1)=='_')
     {
-      yyextra->current->protection=Private;
+      yyextra->current->protection=Protection::Private;
     }
     else 
     {
-      yyextra->current->protection=Protected;
+      yyextra->current->protection=Protection::Protected;
     }
   }
 }
@@ -1794,9 +1794,9 @@ static void searchFoundDef(yyscan_t yyscanner)
   yyextra->current->bodyLine  = yyextra->yyLineNr;
   yyextra->current->section = Entry::FUNCTION_SEC;
   yyextra->current->lang = SrcLangExt_Python;
-  yyextra->current->virt = Normal;
+  yyextra->current->virt = Specifier::Normal;
   yyextra->current->stat = yyextra->stat;
-  yyextra->current->mtype = yyextra->mtype = Method;
+  yyextra->current->mtype = yyextra->mtype = MethodTypes::Method;
   yyextra->current->type.resize(0);
   yyextra->current->name.resize(0);
   yyextra->current->args.resize(0);
@@ -1883,12 +1883,12 @@ static void parseMain(yyscan_t yyscanner, const QCString &fileName,const char *f
   yyextra->inputString = fileBuf;
   yyextra->inputPosition = 0;
 
-  yyextra->protection    = Public;
-  yyextra->mtype         = Method;
-  yyextra->stat         = FALSE;
-  yyextra->virt          = Normal;
+  yyextra->protection    = Protection::Public;
+  yyextra->mtype         = MethodTypes::Method;
+  yyextra->stat          = false;
+  yyextra->virt          = Specifier::Normal;
   yyextra->current_root  = rt;
-  yyextra->specialBlock = FALSE;
+  yyextra->specialBlock  = false;
 
   yyextra->yyLineNr= 1 ;
   yyextra->fileName = fileName;

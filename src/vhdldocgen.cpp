@@ -798,9 +798,9 @@ QCString VhdlDocGen::getClassTitle(const ClassDef *cd)
   QCString pageTitle;
   if (cd==0) return "";
   pageTitle=VhdlDocGen::getClassName(cd);
-  int ii=cd->protection();
+  Protection ii=cd->protection();
   pageTitle+=" ";
-  pageTitle+=theTranslator_vhdlType(ii+2,TRUE);
+  pageTitle+=theTranslator_vhdlType(static_cast<int>(ii)+2,TRUE); // TODO: fix ugly hack
   return pageTitle;
 } // getClassTitle
 
@@ -2149,8 +2149,8 @@ void VhdlDocGen::writeVHDLDeclarations(const MemberList* ml,OutputList &ol,
 bool VhdlDocGen::writeClassType( const ClassDef * cd,
     OutputList &ol ,QCString & cname)
 {
-  int id=cd->protection();
-  QCString qcs = theTranslator->trVhdlType(id+2,TRUE);
+  Protection id=cd->protection();
+  QCString qcs = theTranslator->trVhdlType(static_cast<int>(id)+2,TRUE); // TODO: fix ugly hack
   cname=VhdlDocGen::getClassName(cd);
   ol.startBold();
   ol.writeString(qcs);
@@ -2560,7 +2560,7 @@ static void addInstance(ClassDefMutable* classEntity, ClassDefMutable* ar,
 
   if (!cd->isBaseClass(classEntity, true))
   {
-    cd->insertBaseClass(classEntity,n1,Public,Normal,QCString());
+    cd->insertBaseClass(classEntity,n1,Protection::Public,Specifier::Normal,QCString());
   }
   else
   {
@@ -2569,7 +2569,7 @@ static void addInstance(ClassDefMutable* classEntity, ClassDefMutable* ar,
 
   if (!VhdlDocGen::isSubClass(classEntity,cd,true,0))
   {
-    classEntity->insertSubClass(cd,Public,Normal,QCString());
+    classEntity->insertSubClass(cd,Protection::Public,Specifier::Normal,QCString());
     classEntity->setLanguage(SrcLangExt_VHDL);
   }
 
@@ -2578,7 +2578,10 @@ ferr:
   std::unique_ptr<MemberDefMutable> md { createMemberDef(
       ar->getDefFileName(), cur->startLine,cur->startColumn,
       n1,uu,uu, QCString(),
-      Public, Normal, cur->stat,Member,
+      Protection::Public,
+      Specifier::Normal,
+      cur->stat,
+      Relationship::Member,
       MemberType_Variable,
       ArgumentList(),
       ArgumentList(),
@@ -2621,7 +2624,8 @@ void  VhdlDocGen::writeRecordUnit(QCString & largs,QCString & ltype,OutputList& 
   writeLink(mdef,ol);
   ol.startBold();
   ol.insertMemberAlign();
-  if (!ltype.isEmpty()){
+  if (!ltype.isEmpty())
+  {
     VhdlDocGen::formatString(ltype,ol,mdef);
   }
   ol.endBold();

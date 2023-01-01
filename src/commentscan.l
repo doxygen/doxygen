@@ -405,7 +405,7 @@ struct commentscanYY_state
   QCString         newXRefItemKey;
   QCString         xrefItemTitle;
   QCString         xrefListTitle;
-  Protection       protection = Public;
+  Protection       protection = Protection::Public;
 
   bool             xrefAppendFlag = FALSE;
   bool             inGroupParamFound = FALSE;
@@ -1596,7 +1596,7 @@ STopt  [^\n@\\]*
                                           addOutput(yyscanner,yytext);
                                           // we add subpage labels as a kind of "inheritance" relation to prevent
                                           // needing to add another list to the Entry class.
-                                          yyextra->current->extends.push_back(BaseInfo(QCString(yytext),Public,Normal));
+                                          yyextra->current->extends.push_back(BaseInfo(QCString(yytext),Protection::Public,Specifier::Normal));
                                           BEGIN(SubpageTitle);
                                         }
 <SubpageLabel>{DOCNL}                   { // missing argument
@@ -2034,7 +2034,7 @@ STopt  [^\n@\\]*
 
 <InheritParam>({ID}("::"|"."))*{ID}     { // found argument
                                           yyextra->current->extends.push_back(
-                                            BaseInfo(removeRedundantWhiteSpace(QCString(yytext)),Public,Normal)
+                                            BaseInfo(removeRedundantWhiteSpace(QCString(yytext)),Protection::Public,Specifier::Normal)
                                           );
                                           BEGIN( Comment );
                                         }
@@ -2057,7 +2057,7 @@ STopt  [^\n@\\]*
 
 <ExtendsParam>({ID}("::"|"."))*{ID}     { // found argument
                                           yyextra->current->extends.push_back(
-                                            BaseInfo(removeRedundantWhiteSpace(QCString(yytext)),Public,Normal)
+                                            BaseInfo(removeRedundantWhiteSpace(QCString(yytext)),Protection::Public,Specifier::Normal)
                                           );
                                           BEGIN( Comment );
                                         }
@@ -2543,7 +2543,7 @@ static bool handleRelated(yyscan_t yyscanner,const QCString &cmd, const StringVe
     warn(yyextra->fileName,yyextra->lineNr,
         "found multiple \\relates, \\relatesalso or \\memberof commands in a comment block, using last definition");
   }
-  yyextra->current->relatesType = Simple;
+  yyextra->current->relatesType = RelatesType::Simple;
   yyextra->currentCmd = cmd;
   BEGIN(RelatesParam1);
   return FALSE;
@@ -2557,7 +2557,7 @@ static bool handleRelatedAlso(yyscan_t yyscanner,const QCString &cmd, const Stri
     warn(yyextra->fileName,yyextra->lineNr,
         "found multiple \\relates, \\relatesalso or \\memberof commands in a comment block, using last definition");
   }
-  yyextra->current->relatesType = Duplicate;
+  yyextra->current->relatesType = RelatesType::Duplicate;
   yyextra->currentCmd = cmd;
   BEGIN(RelatesParam1);
   return FALSE;
@@ -2571,7 +2571,7 @@ static bool handleMemberOf(yyscan_t yyscanner,const QCString &cmd, const StringV
     warn(yyextra->fileName,yyextra->lineNr,
         "found multiple \\relates, \\relatesalso or \\memberof commands in a comment block, using last definition");
   }
-  yyextra->current->relatesType = MemberOf;
+  yyextra->current->relatesType = RelatesType::MemberOf;
   yyextra->currentCmd = cmd;
   BEGIN(RelatesParam1);
   return FALSE;
@@ -2967,49 +2967,49 @@ static bool handleStatic(yyscan_t yyscanner,const QCString &, const StringVector
 static bool handlePure(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yyextra->current->virt = Pure;
+  yyextra->current->virt = Specifier::Pure;
   return FALSE;
 }
 
 static bool handlePrivate(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yyextra->current->protection = Private;
+  yyextra->current->protection = Protection::Private;
   return FALSE;
 }
 
 static bool handlePrivateSection(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yyextra->current->protection = yyextra->protection = Private;
+  yyextra->current->protection = yyextra->protection = Protection::Private;
   return FALSE;
 }
 
 static bool handleProtected(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yyextra->current->protection = Protected;
+  yyextra->current->protection = Protection::Protected;
   return FALSE;
 }
 
 static bool handleProtectedSection(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yyextra->current->protection = yyextra->protection = Protected ;
+  yyextra->current->protection = yyextra->protection = Protection::Protected ;
   return FALSE;
 }
 
 static bool handlePublic(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yyextra->current->protection = Public;
+  yyextra->current->protection = Protection::Public;
   return FALSE;
 }
 
 static bool handlePublicSection(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yyextra->current->protection = yyextra->protection = Public;
+  yyextra->current->protection = yyextra->protection = Protection::Public;
   return FALSE;
 }
 

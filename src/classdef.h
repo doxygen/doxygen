@@ -486,7 +486,7 @@ bool classHasVisibleRoot(const BaseClassList &bcl);
 bool classHasVisibleChildren(const ClassDef *cd);
 bool classVisibleInIndex(const ClassDef *cd);
 int minClassDistance(const ClassDef *cd,const ClassDef *bcd,int level=0);
-Protection classInheritedProtectionLevel(const ClassDef *cd,const ClassDef *bcd,Protection prot=Public,int level=0);
+Protection classInheritedProtectionLevel(const ClassDef *cd,const ClassDef *bcd,Protection prot=Protection::Public,int level=0);
 
 //------------------------------------------------------------------------
 

@@ -117,19 +117,19 @@ static void generateDEFForMember(const MemberDef *md,
   t << memPrefix << "virt = ";
   switch (md->virtualness())
   {
-    case Normal:  t << "normal;\n"; break;
-    case Virtual: t << "virtual;\n"; break;
-    case Pure:    t << "pure-virtual;\n"; break;
+    case Specifier::Normal:  t << "normal;\n"; break;
+    case Specifier::Virtual: t << "virtual;\n"; break;
+    case Specifier::Pure:    t << "pure-virtual;\n"; break;
     default: ASSERT(0);
   }
 
   t << memPrefix << "prot = ";
   switch(md->protection())
   {
-    case Public:    t << "public;\n"; break;
-    case Protected: t << "protected;\n"; break;
-    case Private:   t << "private;\n"; break;
-    case Package:   t << "package;\n"; break;
+    case Protection::Public:    t << "public;\n"; break;
+    case Protection::Protected: t << "protected;\n"; break;
+    case Protection::Private:   t << "private;\n"; break;
+    case Protection::Package:   t << "package;\n"; break;
   }
 
   if (md->memberType()!=MemberType_Define &&
@@ -346,17 +346,17 @@ static void generateDEFForClass(const ClassDef *cd,TextStream &t)
     t << "    ref-prot = ";
     switch (bcd.prot)
     {
-      case Public:    t << "public;\n"; break;
-      case Package: // package scope is not possible
-      case Protected: t << "protected;\n"; break;
-      case Private:   t << "private;\n"; break;
+      case Protection::Public:    t << "public;\n"; break;
+      case Protection::Package: // package scope is not possible
+      case Protection::Protected: t << "protected;\n"; break;
+      case Protection::Private:   t << "private;\n"; break;
     }
     t << "    ref-virt = ";
     switch(bcd.virt)
     {
-      case Normal:  t << "non-virtual;";  break;
-      case Virtual: t << "virtual;";      break;
-      case Pure:    t << "pure-virtual;"; break;
+      case Specifier::Normal:  t << "non-virtual;";  break;
+      case Specifier::Virtual: t << "virtual;";      break;
+      case Specifier::Pure:    t << "pure-virtual;"; break;
     }
     t << "\n  };\n";
   }
@@ -369,17 +369,17 @@ static void generateDEFForClass(const ClassDef *cd,TextStream &t)
     t << "    ref-prot = ";
     switch (bcd.prot)
     {
-      case Public:    t << "public;\n"; break;
-      case Package: // packet scope is not possible!
-      case Protected: t << "protected;\n"; break;
-      case Private:   t << "private;\n"; break;
+      case Protection::Public:    t << "public;\n"; break;
+      case Protection::Package: // packet scope is not possible!
+      case Protection::Protected: t << "protected;\n"; break;
+      case Protection::Private:   t << "private;\n"; break;
     }
     t << "    ref-virt = ";
     switch (bcd.virt)
     {
-      case Normal:  t << "non-virtual;";  break;
-      case Virtual: t << "virtual;";      break;
-      case Pure:    t << "pure-virtual;"; break;
+      case Specifier::Normal:  t << "non-virtual;";  break;
+      case Specifier::Virtual: t << "virtual;";      break;
+      case Specifier::Pure:    t << "pure-virtual;"; break;
     }
     t << "\n  };\n";
   }

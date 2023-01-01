@@ -587,12 +587,12 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
   t << "_1"      // encoded ':' character (see util.cpp:convertNameToFile)
     << md->anchor();
   t << "\" prot=\"";
-  switch(md->protection())
+  switch (md->protection())
   {
-    case Public:    t << "public";     break;
-    case Protected: t << "protected";  break;
-    case Private:   t << "private";    break;
-    case Package:   t << "package";    break;
+    case Protection::Public:    t << "public";     break;
+    case Protection::Protected: t << "protected";  break;
+    case Protection::Private:   t << "private";    break;
+    case Protection::Package:   t << "package";    break;
   }
   t << "\"";
 
@@ -665,9 +665,9 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
     t << " virt=\"";
     switch (md->virtualness())
     {
-      case Normal:  t << "non-virtual";  break;
-      case Virtual: t << "virtual";      break;
-      case Pure:    t << "pure-virtual"; break;
+      case Specifier::Normal:  t << "non-virtual";  break;
+      case Specifier::Virtual: t << "virtual";      break;
+      case Specifier::Pure:    t << "pure-virtual"; break;
       default: ASSERT(0);
     }
     t << "\"";
@@ -988,10 +988,10 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
         << emd->anchor() << "\" prot=\"";
       switch (emd->protection())
       {
-        case Public:    t << "public";    break;
-        case Protected: t << "protected"; break;
-        case Private:   t << "private";   break;
-        case Package:   t << "package";   break;
+        case Protection::Public:    t << "public";    break;
+        case Protection::Protected: t << "protected"; break;
+        case Protection::Private:   t << "private";   break;
+        case Protection::Package:   t << "package";   break;
       }
       t << "\">\n";
       t << "          <name>";
@@ -1123,17 +1123,17 @@ static void writeListOfAllMembers(const ClassDef *cd,TextStream &t)
           md->anchor() << "\" prot=\"";
         switch (prot)
         {
-          case Public:    t << "public";    break;
-          case Protected: t << "protected"; break;
-          case Private:   t << "private";   break;
-          case Package:   t << "package";   break;
+          case Protection::Public:    t << "public";    break;
+          case Protection::Protected: t << "protected"; break;
+          case Protection::Private:   t << "private";   break;
+          case Protection::Package:   t << "package";   break;
         }
         t << "\" virt=\"";
         switch(virt)
         {
-          case Normal:  t << "non-virtual";  break;
-          case Virtual: t << "virtual";      break;
-          case Pure:    t << "pure-virtual"; break;
+          case Specifier::Normal:  t << "non-virtual";  break;
+          case Specifier::Virtual: t << "virtual";      break;
+          case Specifier::Pure:    t << "pure-virtual"; break;
         }
         t << "\"";
         if (!mi->ambiguityResolutionScope().isEmpty())
@@ -1158,10 +1158,10 @@ static void writeInnerClasses(const ClassLinkedRefMap &cl,TextStream &t)
         << "\" prot=\"";
       switch(cd->protection())
       {
-         case Public:    t << "public";     break;
-         case Protected: t << "protected";  break;
-         case Private:   t << "private";    break;
-         case Package:   t << "package";    break;
+        case Protection::Public:    t << "public";     break;
+        case Protection::Protected: t << "protected";  break;
+        case Protection::Private:   t << "private";    break;
+        case Protection::Package:   t << "package";    break;
       }
       t << "\">" << convertToXML(cd->name()) << "</innerclass>\n";
     }
@@ -1301,10 +1301,10 @@ static void generateXMLForClass(const ClassDef *cd,TextStream &ti)
     << langToString(cd->getLanguage()) << "\" prot=\"";
   switch (cd->protection())
   {
-    case Public:    t << "public";    break;
-    case Protected: t << "protected"; break;
-    case Private:   t << "private";   break;
-    case Package:   t << "package";   break;
+    case Protection::Public:    t << "public";    break;
+    case Protection::Protected: t << "protected"; break;
+    case Protection::Private:   t << "private";   break;
+    case Protection::Package:   t << "package";   break;
   }
   if (cd->isFinal()) t << "\" final=\"yes";
   if (cd->isSealed()) t << "\" sealed=\"yes";
@@ -1323,17 +1323,17 @@ static void generateXMLForClass(const ClassDef *cd,TextStream &ti)
     t << "prot=\"";
     switch (bcd.prot)
     {
-      case Public:    t << "public";    break;
-      case Protected: t << "protected"; break;
-      case Private:   t << "private";   break;
-      case Package: ASSERT(0); break;
+      case Protection::Public:    t << "public";    break;
+      case Protection::Protected: t << "protected"; break;
+      case Protection::Private:   t << "private";   break;
+      case Protection::Package: ASSERT(0); break;
     }
     t << "\" virt=\"";
     switch(bcd.virt)
     {
-      case Normal:  t << "non-virtual";  break;
-      case Virtual: t << "virtual";      break;
-      case Pure:    t <<"pure-virtual"; break;
+      case Specifier::Normal:  t << "non-virtual";  break;
+      case Specifier::Virtual: t << "virtual";      break;
+      case Specifier::Pure:    t <<"pure-virtual"; break;
     }
     t << "\">";
     if (!bcd.templSpecifiers.isEmpty())
@@ -1356,17 +1356,17 @@ static void generateXMLForClass(const ClassDef *cd,TextStream &ti)
       << "\" prot=\"";
     switch (bcd.prot)
     {
-      case Public:    t << "public";    break;
-      case Protected: t << "protected"; break;
-      case Private:   t << "private";   break;
-      case Package: ASSERT(0); break;
+      case Protection::Public:    t << "public";    break;
+      case Protection::Protected: t << "protected"; break;
+      case Protection::Private:   t << "private";   break;
+      case Protection::Package: ASSERT(0); break;
     }
     t << "\" virt=\"";
     switch (bcd.virt)
     {
-      case Normal:  t << "non-virtual";  break;
-      case Virtual: t << "virtual";      break;
-      case Pure:    t << "pure-virtual"; break;
+      case Specifier::Normal:  t << "non-virtual";  break;
+      case Specifier::Virtual: t << "virtual";      break;
+      case Specifier::Pure:    t << "pure-virtual"; break;
     }
     t << "\">" << convertToXML(bcd.classDef->displayName())
       << "</derivedcompoundref>\n";

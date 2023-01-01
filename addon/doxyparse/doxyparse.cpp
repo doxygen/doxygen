@@ -236,16 +236,16 @@ static void referenceTo(const MemberDef* md) {
 }
 
 void protectionInformation(Protection protection) {
-  if (protection == Public) {
+  if (protection == Protection::Public) {
     printProtection("public");
   }
-  else if (protection == Protected) {
+  else if (protection == Protection::Protected) {
     printProtection("protected");
   }
-  else if (protection == Private) {
+  else if (protection == Protection::Private) {
     printProtection("private");
   }
-  else if (protection == Package) {
+  else if (protection == Protection::Package) {
     printProtection("package");
   }
 }

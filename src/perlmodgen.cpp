@@ -1376,10 +1376,10 @@ static const char *getProtectionName(Protection prot)
 {
   switch (prot)
   {
-  case Public:    return "public";
-  case Protected: return "protected";
-  case Private:   return "private";
-  case Package:   return "package";
+    case Protection::Public:    return "public";
+    case Protection::Protected: return "protected";
+    case Protection::Private:   return "private";
+    case Protection::Package:   return "package";
   }
   return 0;
 }
@@ -1388,9 +1388,9 @@ static const char *getVirtualnessName(Specifier virt)
 {
   switch(virt)
   {
-  case Normal:  return "non_virtual";
-  case Virtual: return "virtual";
-  case Pure:    return "pure_virtual";
+    case Specifier::Normal:  return "non_virtual";
+    case Specifier::Virtual: return "virtual";
+    case Specifier::Pure:    return "pure_virtual";
   }
   return 0;
 }

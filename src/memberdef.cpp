@@ -1197,8 +1197,8 @@ class MemberDefImpl::IMPL
     QCString args;            // function arguments/variable array specifiers
     QCString def;             // member definition in code (fully qualified name)
     QCString anc;             // HTML anchor name
-    Specifier virt = Normal;  // normal/virtual/pure virtual
-    Protection prot = Public; // protection type [Public/Protected/Private]
+    Specifier virt = Specifier::Normal;  // normal/virtual/pure virtual
+    Protection prot = Protection::Public; // protection type [Public/Protected/Private]
     QCString decl;            // member declaration in class
 
     QCString bitfields;       // struct member bitfields
@@ -1263,7 +1263,7 @@ class MemberDefImpl::IMPL
     bool hasDocumentedParams = false;      // guard to show only the first warning
     bool hasDocumentedReturnType = false;  // guard to show only the first warning
     bool isDMember = false;
-    Relationship related = Member;    // relationship of this to the class
+    Relationship related = Relationship::Member;    // relationship of this to the class
     bool stat = false;                // is it a static function?
     bool proto = false;               // is it a prototype?
     bool docEnumValues = false;       // is an enum with documented enum values.
@@ -1704,7 +1704,7 @@ void MemberDefImpl::_computeLinkableInProject()
   }
   const NamespaceDef *nspace = getNamespaceDef();
   const FileDef *fileDef = getFileDef();
-  if (!groupDef && nspace && !m_impl->related && !nspace->isLinkableInProject()
+  if (!groupDef && nspace && m_impl->related==Relationship::Member && !nspace->isLinkableInProject()
       && (fileDef==0 || !fileDef->isLinkableInProject()))
   {
     //printf("in a namespace but namespace not linkable!\n");
@@ -1712,7 +1712,7 @@ void MemberDefImpl::_computeLinkableInProject()
     return;
   }
   if (!groupDef && !nspace &&
-      !m_impl->related && !classDef &&
+      m_impl->related==Relationship::Member && !classDef &&
       fileDef && !fileDef->isLinkableInProject())
   {
     //printf("in a file but file not linkable!\n");
@@ -1720,7 +1720,7 @@ void MemberDefImpl::_computeLinkableInProject()
     return;
   }
   if ((!protectionLevelVisible(m_impl->prot) && m_impl->mtype!=MemberType_Friend) &&
-       !(m_impl->prot==Private && (m_impl->virt!=Normal || isOverride() || isFinal()) && extractPrivateVirtual))
+       !(m_impl->prot==Protection::Private && (m_impl->virt!=Specifier::Normal || isOverride() || isFinal()) && extractPrivateVirtual))
   {
     //printf("private and invisible!\n");
     m_isLinkableCached = 1; // hidden due to protection
@@ -1963,7 +1963,8 @@ bool MemberDefImpl::isBriefSectionVisible() const
   // is set to YES
   bool visibleIfPrivate = (protectionLevelVisible(protection()) ||
                            m_impl->mtype==MemberType_Friend ||
-                           (m_impl->prot==Private && (m_impl->virt!=Normal || isOverride() || isFinal()) && extractPrivateVirtual && hasDocs)
+                           (m_impl->prot==Protection::Private &&
+                               (m_impl->virt!=Specifier::Normal || isOverride() || isFinal()) && extractPrivateVirtual && hasDocs)
                           );
 
   // hide member if it overrides a member in a superclass and has no
@@ -2289,8 +2290,8 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
     MemberDefMutable *annMemb = toMemberDefMutable(m_impl->annMemb);
     bool visibleIfPrivate = (protectionLevelVisible(protection()) ||
                              m_impl->mtype==MemberType_Friend ||
-                             (m_impl->prot==Private &&
-                                (m_impl->virt!=Normal || isOverride() || isFinal()) &&
+                             (m_impl->prot==Protection::Private &&
+                                (m_impl->virt!=Specifier::Normal || isOverride() || isFinal()) &&
                                 extractPrivateVirtual && hasDocumentation()
                              ));
     //printf("Member name=`%s gd=%p md->groupDef=%p inGroup=%d isLinkable()=%d hasDocumentation=%d\n",qPrint(name()),gd,getGroupDef(),inGroup,isLinkable(),hasDocumentation());
@@ -2611,7 +2612,7 @@ bool MemberDefImpl::hasDetailedDescription() const
     // only include members that are non-private unless EXTRACT_PRIVATE is
     // set to YES or the member is part of a   group
     bool privateFilter = protectionLevelVisible(protection()) || m_impl->mtype==MemberType_Friend ||
-                         (m_impl->prot==Private && (m_impl->virt!=Normal || isOverride() || isFinal()) && extractPrivateVirtual);
+                         (m_impl->prot==Protection::Private && (m_impl->virt!=Specifier::Normal || isOverride() || isFinal()) && extractPrivateVirtual);
 
     // hide friend (class|struct|union) member if HIDE_FRIEND_COMPOUNDS
     // is true
@@ -2652,7 +2653,7 @@ StringVector MemberDefImpl::getLabels(const Definition *container) const
 
   Specifier lvirt=virtualness();
   if ((!isObjCMethod() || isOptional() || isRequired()) &&
-      (protection()!=Public || lvirt!=Normal ||
+      (protection()!=Protection::Public || lvirt!=Specifier::Normal ||
        isFriend() || isRelated() ||
        (isInline() && inlineInfo) ||
        isSignal() || isSlot() ||
@@ -2675,74 +2676,74 @@ StringVector MemberDefImpl::getLabels(const Definition *container) const
     }
     else
     {
-      if (isFriend()) sl.push_back("friend");
-      else if (isRelated()) sl.push_back("related");
+      if (isFriend())                                   sl.push_back("friend");
+      else if (isRelated())                             sl.push_back("related");
       else
       {
-        if      (isExternal())            sl.push_back("extern");
-        if      (inlineInfo && isInline()) sl.push_back("inline");
-        if      (isExplicit())            sl.push_back("explicit");
-        if      (isMutable())             sl.push_back("mutable");
-        if      (isStatic())              sl.push_back("static");
-        if      (isGettable())            sl.push_back("get");
-        if      (isProtectedGettable())   sl.push_back("protected get");
-        if      (isSettable())            sl.push_back("set");
-        if      (isProtectedSettable())   sl.push_back("protected set");
+        if      (isExternal())                          sl.push_back("extern");
+        if      (inlineInfo && isInline())              sl.push_back("inline");
+        if      (isExplicit())                          sl.push_back("explicit");
+        if      (isMutable())                           sl.push_back("mutable");
+        if      (isStatic())                            sl.push_back("static");
+        if      (isGettable())                          sl.push_back("get");
+        if      (isProtectedGettable())                 sl.push_back("protected get");
+        if      (isSettable())                          sl.push_back("set");
+        if      (isProtectedSettable())                 sl.push_back("protected set");
         if (extractPrivate)
         {
-          if    (isPrivateGettable())     sl.push_back("private get");
-          if    (isPrivateSettable())     sl.push_back("private set");
+          if    (isPrivateGettable())                   sl.push_back("private get");
+          if    (isPrivateSettable())                   sl.push_back("private set");
         }
-        if      (isConstExpr())           sl.push_back("constexpr");
-        if      (isAddable())             sl.push_back("add");
-        if      (!isUNOProperty() && isRemovable()) sl.push_back("remove");
-        if      (isRaisable())            sl.push_back("raise");
-        if      (isReadable())            sl.push_back("read");
-        if      (isWritable())            sl.push_back("write");
-        if      (isFinal())               sl.push_back("final");
-        if      (isAbstract())            sl.push_back("abstract");
-        if      (isOverride())            sl.push_back("override");
-        if      (isInitonly())            sl.push_back("initonly");
-        if      (isSealed())              sl.push_back("sealed");
-        if      (isNew())                 sl.push_back("new");
-        if      (isOptional())            sl.push_back("optional");
-        if      (isRequired())            sl.push_back("required");
+        if      (isConstExpr())                         sl.push_back("constexpr");
+        if      (isAddable())                           sl.push_back("add");
+        if      (!isUNOProperty() && isRemovable())     sl.push_back("remove");
+        if      (isRaisable())                          sl.push_back("raise");
+        if      (isReadable())                          sl.push_back("read");
+        if      (isWritable())                          sl.push_back("write");
+        if      (isFinal())                             sl.push_back("final");
+        if      (isAbstract())                          sl.push_back("abstract");
+        if      (isOverride())                          sl.push_back("override");
+        if      (isInitonly())                          sl.push_back("initonly");
+        if      (isSealed())                            sl.push_back("sealed");
+        if      (isNew())                               sl.push_back("new");
+        if      (isOptional())                          sl.push_back("optional");
+        if      (isRequired())                          sl.push_back("required");
 
-        if      (isNonAtomic())           sl.push_back("nonatomic");
-        else if (isObjCProperty())        sl.push_back("atomic");
+        if      (isNonAtomic())                         sl.push_back("nonatomic");
+        else if (isObjCProperty())                      sl.push_back("atomic");
 
         // mutual exclusive Objective 2.0 property attributes
-        if      (isAssign())              sl.push_back("assign");
-        else if (isCopy())                sl.push_back("copy");
-        else if (isRetain())              sl.push_back("retain");
-        else if (isWeak())                sl.push_back("weak");
+        if      (isAssign())                            sl.push_back("assign");
+        else if (isCopy())                              sl.push_back("copy");
+        else if (isRetain())                            sl.push_back("retain");
+        else if (isWeak())                              sl.push_back("weak");
         else if (lang!=SrcLangExt_CSharp && isStrong()) sl.push_back("strong");
-        else if (isUnretained())          sl.push_back("unsafe_unretained");
+        else if (isUnretained())                        sl.push_back("unsafe_unretained");
 
         if (!isObjCMethod())
         {
-          if      (protection()==Protected) sl.push_back("protected");
-          else if (protection()==Private)   sl.push_back("private");
-          else if (protection()==Package)   sl.push_back("package");
+          if      (protection()==Protection::Protected) sl.push_back("protected");
+          else if (protection()==Protection::Private)   sl.push_back("private");
+          else if (protection()==Protection::Package)   sl.push_back("package");
 
-          if      (lvirt==Virtual)          sl.push_back("virtual");
-          else if (lvirt==Pure)             sl.push_back("pure virtual");
-          if      (isSignal())              sl.push_back("signal");
-          if      (isSlot())                sl.push_back("slot");
-          if      (isDefault())             sl.push_back("default");
-          if      (isDelete())              sl.push_back("delete");
-          if      (isNoExcept())            sl.push_back("noexcept");
-          if      (isAttribute())           sl.push_back("attribute");
-          if      (isUNOProperty())         sl.push_back("property");
-          if      (isReadonly())            sl.push_back("readonly");
-          if      (isBound())               sl.push_back("bound");
-          if      (isUNOProperty() && isRemovable()) sl.push_back("removable");
-          if      (isConstrained())         sl.push_back("constrained");
-          if      (isTransient())           sl.push_back("transient");
-          if      (isMaybeVoid())           sl.push_back("maybevoid");
-          if      (isMaybeDefault())        sl.push_back("maybedefault");
-          if      (isMaybeAmbiguous())      sl.push_back("maybeambiguous");
-          if      (isPublished())           sl.push_back("published"); // enum
+          if      (lvirt==Specifier::Virtual)           sl.push_back("virtual");
+          else if (lvirt==Specifier::Pure)              sl.push_back("pure virtual");
+          if      (isSignal())                          sl.push_back("signal");
+          if      (isSlot())                            sl.push_back("slot");
+          if      (isDefault())                         sl.push_back("default");
+          if      (isDelete())                          sl.push_back("delete");
+          if      (isNoExcept())                        sl.push_back("noexcept");
+          if      (isAttribute())                       sl.push_back("attribute");
+          if      (isUNOProperty())                     sl.push_back("property");
+          if      (isReadonly())                        sl.push_back("readonly");
+          if      (isBound())                           sl.push_back("bound");
+          if      (isUNOProperty() && isRemovable())    sl.push_back("removable");
+          if      (isConstrained())                     sl.push_back("constrained");
+          if      (isTransient())                       sl.push_back("transient");
+          if      (isMaybeVoid())                       sl.push_back("maybevoid");
+          if      (isMaybeDefault())                    sl.push_back("maybedefault");
+          if      (isMaybeAmbiguous())                  sl.push_back("maybeambiguous");
+          if      (isPublished())                       sl.push_back("published"); // enum
         }
         if (isObjCProperty() && isImplementation())
         {
@@ -2846,7 +2847,7 @@ void MemberDefImpl::_writeReimplements(OutputList &ol) const
     {
       ol.startParagraph();
       QCString reimplFromLine;
-      if (bmd->virtualness()!=Pure && bcd->compoundType()!=ClassDef::Interface)
+      if (bmd->virtualness()!=Specifier::Pure && bcd->compoundType()!=ClassDef::Interface)
       {
         reimplFromLine = theTranslator->trReimplementedFromList(1);
       }
@@ -2951,7 +2952,7 @@ void MemberDefImpl::_writeReimplementedBy(OutputList &ol) const
     };
 
     QCString reimplInLine;
-    if (m_impl->virt==Pure || (getClassDef() && getClassDef()->compoundType()==ClassDef::Interface))
+    if (m_impl->virt==Specifier::Pure || (getClassDef() && getClassDef()->compoundType()==ClassDef::Interface))
     {
       reimplInLine = theTranslator->trImplementedInList(static_cast<int>(count));
     }
@@ -4366,13 +4367,13 @@ Specifier MemberDefImpl::virtualness(int count) const
        "Internal inconsistency: recursion detected in overload relation for member %s!"
        ,qPrint(name())
       );
-     return Normal;
+     return Specifier::Normal;
   }
   Specifier v = m_impl->virt;
   const MemberDef *rmd = reimplements();
-  while (rmd && v==Normal)
+  while (rmd && v==Specifier::Normal)
   {
-    v = rmd->virtualness(count+1)==Normal ? Normal : Virtual;
+    v = rmd->virtualness(count+1)==Specifier::Normal ? Specifier::Normal : Specifier::Virtual;
     rmd = rmd->reimplements();
   }
   return v;
@@ -4401,18 +4402,18 @@ void MemberDefImpl::writeTagFile(TextStream &tagFile,bool useQualifiedName) cons
     case MemberType_Sequence:    tagFile << "sequence";    break;
     case MemberType_Dictionary:  tagFile << "dictionary";  break;
   }
-  if (m_impl->prot!=Public)
+  if (m_impl->prot!=Protection::Public)
   {
     tagFile << "\" protection=\"";
-    if (m_impl->prot==Protected)    tagFile << "protected";
-    else if (m_impl->prot==Package) tagFile << "package";
-    else /* Private */              tagFile << "private";
+    if (m_impl->prot==Protection::Protected)    tagFile << "protected";
+    else if (m_impl->prot==Protection::Package) tagFile << "package";
+    else /* Private */                          tagFile << "private";
   }
-  if (m_impl->virt!=Normal)
+  if (m_impl->virt!=Specifier::Normal)
   {
     tagFile << "\" virtualness=\"";
-    if (m_impl->virt==Virtual) tagFile << "virtual";
-    else /* Pure */            tagFile << "pure";
+    if (m_impl->virt==Specifier::Virtual) tagFile << "virtual";
+    else /* Pure */                       tagFile << "pure";
   }
   if (isStatic())
   {
@@ -5023,12 +5024,12 @@ bool MemberDefImpl::isEvent() const
 
 bool MemberDefImpl::isRelated() const
 {
-  return m_impl->related == Related;
+  return m_impl->related == Relationship::Related;
 }
 
 bool MemberDefImpl::isForeign() const
 {
-  return m_impl->related == Foreign;
+  return m_impl->related == Relationship::Foreign;
 }
 
 bool MemberDefImpl::isStatic() const
@@ -5637,13 +5638,13 @@ void MemberDefImpl::setTemplateSpecialization(bool b)
 
 void MemberDefImpl::makeRelated()
 {
-  m_impl->related = Related;
+  m_impl->related = Relationship::Related;
   m_isLinkableCached = 0;
 }
 
 void MemberDefImpl::makeForeign()
 {
-  m_impl->related = Foreign;
+  m_impl->related = Relationship::Foreign;
   m_isLinkableCached = 0;
 }
 

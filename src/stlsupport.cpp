@@ -141,7 +141,7 @@ static void addSTLMember(const std::shared_ptr<Entry> &root,const char *type,con
   std::shared_ptr<Entry> memEntry = std::make_shared<Entry>();
   memEntry->name       = name;
   memEntry->type       = type;
-  memEntry->protection = Public;
+  memEntry->protection = Protection::Public;
   memEntry->section    = Entry::VARIABLE_SEC;
   memEntry->brief      = "STL member";
   memEntry->hidden     = FALSE;
@@ -213,20 +213,21 @@ static void addSTLClass(const std::shared_ptr<Entry> &root,const STLInfo *info)
     memEntry->name       = "operator->";
     memEntry->args       = "()";
     memEntry->type       = "T*";
-    memEntry->protection = Public;
+    memEntry->protection = Protection::Public;
     memEntry->section    = Entry::FUNCTION_SEC;
     memEntry->brief      = "STL member";
     memEntry->hidden     = FALSE;
     memEntry->artificial = FALSE;
     classEntry->moveToSubEntryAndKeep(memEntry);
   }
+  Specifier virt = info->virtualInheritance ? Specifier::Virtual : Specifier::Normal;
   if (info->baseClass1)
   {
-    classEntry->extends.push_back(BaseInfo(info->baseClass1,Public,info->virtualInheritance?Virtual:Normal));
+    classEntry->extends.push_back(BaseInfo(info->baseClass1, Protection::Public, virt));
   }
   if (info->baseClass2)
   {
-    classEntry->extends.push_back(BaseInfo(info->baseClass2,Public,info->virtualInheritance?Virtual:Normal));
+    classEntry->extends.push_back(BaseInfo(info->baseClass2, Protection::Public, virt));
   }
   if (info->iterators)
   {

@@ -6763,9 +6763,9 @@ bool protectionLevelVisible(Protection prot)
   bool extractPrivate = Config_getBool(EXTRACT_PRIVATE);
   bool extractPackage = Config_getBool(EXTRACT_PACKAGE);
 
-  return (prot!=Private && prot!=Package)  ||
-         (prot==Private && extractPrivate) ||
-         (prot==Package && extractPackage);
+  return (prot!=Protection::Private && prot!=Protection::Package)  ||
+         (prot==Protection::Private && extractPrivate) ||
+         (prot==Protection::Package && extractPackage);
 }
 
 //---------------------------------------------------------------------------
@@ -7035,7 +7035,7 @@ void convertProtectionLevel(
   // default representing 1-1 mapping
   *outListType1=inListType;
   *outListType2=-1;
-  if (inProt==Public)
+  if (inProt==Protection::Public)
   {
     switch (inListType) // in the private section of the derived class,
                         // the private section of the base class should not
@@ -7054,7 +7054,7 @@ void convertProtectionLevel(
         break;
     }
   }
-  else if (inProt==Protected) // Protected inheritance
+  else if (inProt==Protection::Protected) // Protected inheritance
   {
     switch (inListType) // in the protected section of the derived class,
                         // both the public and protected members are shown
@@ -7098,7 +7098,7 @@ void convertProtectionLevel(
         break;
     }
   }
-  else if (inProt==Private)
+  else if (inProt==Protection::Private)
   {
     switch (inListType) // in the private section of the derived class,
                         // both the public and protected members are shown

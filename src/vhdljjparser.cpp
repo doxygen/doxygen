@@ -400,7 +400,7 @@ void VHDLOutlineParser::handleCommentBlock(const QCString &doc1, bool brief)
     return;
   }
 
-  Protection protection = Public;
+  Protection protection = Protection::Public;
   VhdlDocGen::prepareComment(doc);
 
   if (p->oldEntry == s->current.get())

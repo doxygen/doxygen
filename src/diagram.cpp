@@ -149,10 +149,10 @@ static uint protToMask(Protection p)
 {
   switch(p)
   {
-    case Public:    return 0xffffffff;
-    case Package: // package is not possible!
-    case Protected: return 0xcccccccc;
-    case Private:   return 0xaaaaaaaa;
+    case Protection::Public:    return 0xffffffff;
+    case Protection::Package: // package is not possible!
+    case Protection::Protected: return 0xcccccccc;
+    case Protection::Private:   return 0xaaaaaaaa;
   }
   return 0;
 }
@@ -161,10 +161,10 @@ static uchar protToColor(Protection p)
 {
   switch(p)
   {
-    case Public:    return 6;
-    case Package: // package is not possible!
-    case Protected: return 5;
-    case Private:   return 4;
+    case Protection::Public:    return 6;
+    case Protection::Package: // package is not possible!
+    case Protection::Protected: return 5;
+    case Protection::Private:   return 4;
   }
   return 0;
 }
@@ -173,10 +173,10 @@ static QCString protToString(Protection p)
 {
   switch(p)
   {
-    case Public:    return "solid";
-    case Package: // package is not possible!
-    case Protected: return "dashed";
-    case Private:   return "dotted";
+    case Protection::Public:    return "solid";
+    case Protection::Package: // package is not possible!
+    case Protection::Protected: return "dashed";
+    case Protection::Private:   return "dotted";
   }
   return QCString();
 }
@@ -185,8 +185,8 @@ static uint virtToMask(Specifier p)
 {
   switch(p)
   {
-    case Normal:    return 0xffffffff;
-    case Virtual:   return 0xf0f0f0f0;
+    case Specifier::Normal:    return 0xffffffff;
+    case Specifier::Virtual:   return 0xf0f0f0f0;
     default:        break;
   }
   return 0;
@@ -196,7 +196,7 @@ static uint virtToMask(Specifier p)
 static Protection getMinProtectionLevel(const DiagramItemList &dil)
 {
   auto it = dil.begin();
-  Protection result = Private;
+  Protection result = Protection::Private;
   if (it!=dil.end())
   {
     result=(*it)->protection();
@@ -205,8 +205,8 @@ static Protection getMinProtectionLevel(const DiagramItemList &dil)
       Protection p=(*it)->protection();
       if (p!=result)
       {
-        if (result==Protected && p==Public) result=p;
-        else if (result==Private) result=p;
+        if (result==Protection::Protected && p==Protection::Public) result=p;
+        else if (result==Protection::Private) result=p;
       }
     }
   }
@@ -237,10 +237,10 @@ static void writeBitmapBox(DiagramItem *di,Image *image,
 static void writeVectorBox(TextStream &t,DiagramItem *di,
                            float x,float y,bool children=FALSE)
 {
-  if (di->virtualness()==Virtual) t << "dashed\n";
+  if (di->virtualness()==Specifier::Virtual) t << "dashed\n";
   t << " (" << convertToPSString(di->label()) << ") " << x << " " << y << " box\n";
   if (children) t << x << " " << y << " mark\n";
-  if (di->virtualness()==Virtual) t << "solid\n";
+  if (di->virtualness()==Specifier::Virtual) t << "solid\n";
 }
 
 static void writeMapArea(TextStream &t,const ClassDef *cd,QCString relPath,
@@ -349,7 +349,7 @@ void DiagramRow::insertClass(DiagramItem *parent,const ClassDef *cd,bool doBases
     ClassDef *ccd=bcd.classDef;
     if (ccd && ccd->isVisibleInHierarchy()) count++;
   }
-  if (count>0 && (prot!=Private || !doBases))
+  if (count>0 && (prot!=Protection::Private || !doBases))
   {
     DiagramRow *row=0;
     if (m_diagram->numRows()<=m_level+1) /* add new row */
@@ -366,8 +366,8 @@ void DiagramRow::insertClass(DiagramItem *parent,const ClassDef *cd,bool doBases
       if (ccd && ccd->isVisibleInHierarchy())
       {
         row->insertClass(di_ptr,ccd,doBases,bcd.prot,
-            doBases?bcd.virt:Normal,
-            doBases?bcd.templSpecifiers:QCString());
+            doBases ? bcd.virt            : Specifier::Normal,
+            doBases ? bcd.templSpecifiers : QCString());
       }
     }
   }
@@ -380,7 +380,7 @@ TreeDiagram::TreeDiagram(const ClassDef *root,bool doBases)
   auto row = std::make_unique<DiagramRow>(this,0);
   DiagramRow *row_ptr = row.get();
   m_rows.push_back(std::move(row));
-  row_ptr->insertClass(0,root,doBases,Public,Normal,QCString());
+  row_ptr->insertClass(0,root,doBases,Protection::Public,Specifier::Normal,QCString());
 }
 
 void TreeDiagram::moveChildren(DiagramItem *root,int dx)

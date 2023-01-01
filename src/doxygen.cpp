@@ -547,7 +547,7 @@ static void addIncludeFile(DefMutable *cd,FileDef *ifd,const Entry *root)
       (!root->doc.stripWhiteSpace().isEmpty() ||
        !root->brief.stripWhiteSpace().isEmpty() ||
        Config_getBool(EXTRACT_ALL)
-      ) && root->protection!=Private
+      ) && root->protection!=Protection::Private
      )
   {
     //printf(">>>>>> includeFile=%s\n",qPrint(root->includeFile));
@@ -1485,7 +1485,7 @@ static ClassDefMutable *createTagLessInstance(const ClassDef *rootCd,const Class
         //printf("    Member %s type=%s\n",qPrint(md->name()),md->typeString());
         MemberDefMutable *imd = createMemberDef(md->getDefFileName(),md->getDefLine(),md->getDefColumn(),
             md->typeString(),md->name(),md->argsString(),md->excpString(),
-            md->protection(),md->virtualness(),md->isStatic(),Member,
+            md->protection(),md->virtualness(),md->isStatic(),Relationship::Member,
             md->memberType(),
             ArgumentList(),ArgumentList(),"");
         imd->setMemberClass(cd);
@@ -2079,7 +2079,7 @@ static void findUsingDeclImports(const Entry *root)
             for (auto &mi : *mni)
             {
               const MemberDef *md = mi->memberDef();
-              if (md && md->protection()!=Private)
+              if (md && md->protection()!=Protection::Private)
               {
                 //printf("found member %s\n",mni->memberName());
                 QCString fileName = root->fileName;
@@ -2093,7 +2093,7 @@ static void findUsingDeclImports(const Entry *root)
                     fileName,root->startLine,root->startColumn,
                     md->typeString(),memName,md->argsString(),
                     md->excpString(),root->protection,root->virt,
-                    md->isStatic(),Member,md->memberType(),
+                    md->isStatic(),Relationship::Member,md->memberType(),
                     templAl,al,root->metaData
                     ) };
                 newMd->setMemberClass(cd);
@@ -2194,7 +2194,7 @@ static MemberDef *addVariableToClass(
   QCString def;
   if (!type.isEmpty())
   {
-    if (related || mtype==MemberType_Friend || Config_getBool(HIDE_SCOPE_NAMES))
+    if (related!=Relationship::Member || mtype==MemberType_Friend || Config_getBool(HIDE_SCOPE_NAMES))
     {
       if (root->spec&Entry::Alias) // turn 'typedef B A' into 'using A = B'
       {
@@ -2248,7 +2248,7 @@ static MemberDef *addVariableToClass(
       {
 
         if (root->lang==SrcLangExt_ObjC &&
-            root->mtype==Property &&
+            root->mtype==MethodTypes::Property &&
             md->memberType()==MemberType_Variable)
         { // Objective-C 2.0 property
           // turn variable into a property
@@ -2272,7 +2272,7 @@ static MemberDef *addVariableToClass(
   std::unique_ptr<MemberDefMutable> md { createMemberDef(
       fileName,root->startLine,root->startColumn,
       type,name,args,root->exception,
-      prot,Normal,root->stat,related,
+      prot,Specifier::Normal,root->stat,related,
       mtype,!root->tArgLists.empty() ? root->tArgLists.back() : ArgumentList(),
       ArgumentList(), root->metaData) };
   md->setTagInfo(root->tagInfo());
@@ -2511,7 +2511,7 @@ static MemberDef *addVariableToFile(
   std::unique_ptr<MemberDefMutable> md { createMemberDef(
       fileName,root->startLine,root->startColumn,
       type,name,args,QCString(),
-      root->protection, Normal,root->stat,Member,
+      root->protection, Specifier::Normal,root->stat,Relationship::Member,
       mtype,!root->tArgLists.empty() ? root->tArgLists.back() : ArgumentList(),
       root->argList, root->metaData) };
   md->setTagInfo(root->tagInfo());
@@ -2853,8 +2853,8 @@ static void addVariable(const Entry *root,int isFuncPtr=-1)
                               args,   // arguments as string
                               FALSE,  // from Anonymous scope
                               0,      // anonymous member
-                              Public, // protection
-                              Member  // related to a class
+                              Protection::Public,   // protection
+                              Relationship::Member  // related to a class
                              );
          }
       }
@@ -2872,9 +2872,9 @@ static void addVariable(const Entry *root,int isFuncPtr=-1)
       mtype=MemberType_Typedef;
     else if (type.startsWith("friend "))
       mtype=MemberType_Friend;
-    else if (root->mtype==Property)
+    else if (root->mtype==MethodTypes::Property)
       mtype=MemberType_Property;
-    else if (root->mtype==Event)
+    else if (root->mtype==MethodTypes::Event)
       mtype=MemberType_Event;
     else if (type.find("sequence<") != -1)
       mtype=sliceOpt ? MemberType_Sequence : MemberType_Typedef;
@@ -2886,7 +2886,7 @@ static void addVariable(const Entry *root,int isFuncPtr=-1)
     if (!root->relates.isEmpty()) // related variable
     {
       isRelated=TRUE;
-      isMemberOf=(root->relatesType == MemberOf);
+      isMemberOf=(root->relatesType==RelatesType::MemberOf);
       if (getClass(root->relates)==0 && !scope.isEmpty())
         scope=mergeScopes(scope,root->relates);
       else
@@ -2909,6 +2909,9 @@ static void addVariable(const Entry *root,int isFuncPtr=-1)
       //bool added=FALSE;
 
       bool inlineSimpleStructs = Config_getBool(INLINE_SIMPLE_STRUCTS);
+      Relationship relationship = isMemberOf ? Relationship::Foreign :
+                                  isRelated  ? Relationship::Related :
+                                               Relationship::Member  ;
       if (si!=-1 && !inlineSimpleStructs) // anonymous scope or type
       {
         QCString pScope;
@@ -2931,7 +2934,7 @@ static void addVariable(const Entry *root,int isFuncPtr=-1)
                                   TRUE,  // from anonymous scope
                                   0,     // from anonymous member
                                   root->protection,
-                                  isMemberOf ? Foreign : isRelated ? Related : Member
+                                  relationship
                                  );
             //added=TRUE;
           }
@@ -2958,7 +2961,8 @@ static void addVariable(const Entry *root,int isFuncPtr=-1)
                          FALSE,  // from anonymous scope
                          md,     // from anonymous member
                          root->protection,
-                         isMemberOf ? Foreign : isRelated ? Related : Member);
+                         relationship
+                        );
     }
     else if (!name.isEmpty()) // global variable
     {
@@ -3070,7 +3074,7 @@ static void addInterfaceOrServiceToServiceOrSingleton(
   }
   std::unique_ptr<MemberDefMutable> md { createMemberDef(
       fileName, root->startLine, root->startColumn, root->type, rname,
-      "", "", root->protection, root->virt, root->stat, Member,
+      "", "", root->protection, root->virt, root->stat, Relationship::Member,
       type, ArgumentList(), root->argList, root->metaData) };
   md->setTagInfo(root->tagInfo());
   md->setMemberClass(cd);
@@ -3110,7 +3114,7 @@ static void addInterfaceOrServiceToServiceOrSingleton(
   // also add the member as a "base" (to get nicer diagrams)
   // "optional" interface/service get Protected which turns into dashed line
   BaseInfo base(rname,
-          (root->spec & (Entry::Optional)) ? Protected : Public,Normal);
+          (root->spec & (Entry::Optional)) ? Protection::Protected : Protection::Public, Specifier::Normal);
   TemplateNameMap templateNames;
   findClassRelation(root,cd,cd,&base,templateNames,DocumentedOnly,true) ||
        findClassRelation(root,cd,cd,&base,templateNames,Undocumented,true);
@@ -3207,11 +3211,11 @@ static void addMethodToClass(const Entry *root,ClassDefMutable *cd,
   name.stripPrefix("::");
 
   MemberType mtype;
-  if (isFriend)                 mtype=MemberType_Friend;
-  else if (root->mtype==Signal) mtype=MemberType_Signal;
-  else if (root->mtype==Slot)   mtype=MemberType_Slot;
-  else if (root->mtype==DCOP)   mtype=MemberType_DCOP;
-  else                          mtype=MemberType_Function;
+  if (isFriend)                              mtype=MemberType_Friend;
+  else if (root->mtype==MethodTypes::Signal) mtype=MemberType_Signal;
+  else if (root->mtype==MethodTypes::Slot)   mtype=MemberType_Slot;
+  else if (root->mtype==MethodTypes::DCOP)   mtype=MemberType_DCOP;
+  else                                       mtype=MemberType_Function;
 
   // strip redundant template specifier for constructors
   int i = -1;
@@ -3237,13 +3241,15 @@ static void addMethodToClass(const Entry *root,ClassDefMutable *cd,
   //   );
 
   // adding class member
+  Relationship relationship = relates.isEmpty() ?                        Relationship::Member  :
+                              root->relatesType==RelatesType::MemberOf ? Relationship::Foreign :
+                                                                         Relationship::Related ;
   std::unique_ptr<MemberDefMutable> md { createMemberDef(
       fileName,root->startLine,root->startColumn,
       type,name,args,root->exception,
       protection,virt,
-      stat && root->relatesType != MemberOf,
-      relates.isEmpty() ? Member :
-          root->relatesType == MemberOf ? Foreign : Related,
+      stat && root->relatesType!=RelatesType::MemberOf,
+      relationship,
       mtype,!root->tArgLists.empty() ? root->tArgLists.back() : ArgumentList(),
       root->argList, root->metaData) };
   md->setTagInfo(root->tagInfo());
@@ -3347,7 +3353,7 @@ static void addGlobalFunction(const Entry *root,const QCString &rname,const QCSt
   std::unique_ptr<MemberDefMutable> md { createMemberDef(
       root->fileName,root->startLine,root->startColumn,
       root->type,name,root->args,root->exception,
-      root->protection,root->virt,root->stat,Member,
+      root->protection,root->virt,root->stat,Relationship::Member,
       MemberType_Function,
       !root->tArgLists.empty() ? root->tArgLists.back() : ArgumentList(),
       root->argList,root->metaData) };
@@ -3442,8 +3448,8 @@ static void addGlobalFunction(const Entry *root,const QCString &rname,const QCSt
   }
 
   addMemberToGroups(root,md.get());
-  if (root->relatesType == Simple) // if this is a relatesalso command,
-                                   // allow find Member to pick it up
+  if (root->relatesType == RelatesType::Simple) // if this is a relatesalso command,
+                                                // allow find Member to pick it up
   {
     root->markAsProcessed(); // Otherwise we have finished with this entry.
   }
@@ -3553,7 +3559,7 @@ static void buildFunctionList(const Entry *root)
                  || root->parent()->section==Entry::OBJCIMPL_SEC
                 ) &&
                !isMember &&
-               (root->relates.isEmpty() || root->relatesType == Duplicate) &&
+               (root->relates.isEmpty() || root->relatesType==RelatesType::Duplicate) &&
                !root->type.startsWith("extern ") && !root->type.startsWith("typedef ")
               )
       // no member => unrelated function
@@ -4118,7 +4124,7 @@ static void findUsedClassesForClass(const Entry *root,
           {
             formTemplateNames = getTemplateArgumentsInName(formalArgs,usedName.str());
           }
-          BaseInfo bi(usedName,Public,Normal);
+          BaseInfo bi(usedName,Protection::Public,Specifier::Normal);
           findClassRelation(root,context,instanceCd,&bi,formTemplateNames,TemplateInstances,isArtificial);
 
           for (const Argument &arg : masterCd->templateArguments())
@@ -4535,8 +4541,8 @@ static bool findClassRelation(
             Debug::Classes,0,"    class relation %s inherited/used by %s found (%s and %s) templSpec='%s'\n",
             qPrint(baseClassName),
             qPrint(root->name),
-            (bi->prot==Private)?"private":((bi->prot==Protected)?"protected":"public"),
-            (bi->virt==Normal)?"normal":"virtual",
+            (bi->prot==Protection::Private)?"private":((bi->prot==Protection::Protected)?"protected":"public"),
+            (bi->virt==Specifier::Normal)?"normal":"virtual",
             qPrint(templSpec)
            );
 
@@ -4658,7 +4664,7 @@ static bool findClassRelation(
               //printf("***** usedName=%s templSpec=%s\n",qPrint(usedName),qPrint(templSpec));
             }
             Protection prot = bi->prot;
-            if (Config_getBool(SIP_SUPPORT)) prot=Public;
+            if (Config_getBool(SIP_SUPPORT)) prot=Protection::Public;
             if (!cd->isSubClass(baseClass) && cd!=baseClass && cd->isBaseClass(baseClass,true,templSpec)==0) // check for recursion, see bug690787
             {
               cd->insertBaseClass(baseClass,usedName,prot,bi->virt,templSpec);
@@ -5446,7 +5452,7 @@ static bool findGlobalMember(const Entry *root,
         }
       }
     }
-    if (!found && root->relatesType != Duplicate && root->section==Entry::FUNCTION_SEC) // no match
+    if (!found && root->relatesType!=RelatesType::Duplicate && root->section==Entry::FUNCTION_SEC) // no match
     {
       QCString fullFuncDecl=decl;
       if (!root->argList.empty()) fullFuncDecl+=argListToString(root->argList,TRUE);
@@ -5651,7 +5657,7 @@ static void addLocalObjCMethod(const Entry *root,
     std::unique_ptr<MemberDefMutable> md { createMemberDef(
         root->fileName,root->startLine,root->startColumn,
         funcType,funcName,funcArgs,exceptions,
-        root->protection,root->virt,root->stat,Member,
+        root->protection,root->virt,root->stat,Relationship::Member,
         MemberType_Function,ArgumentList(),root->argList,root->metaData) };
     md->setTagInfo(root->tagInfo());
     md->setLanguage(root->lang);
@@ -6072,7 +6078,7 @@ static void addMemberSpecialization(const Entry *root,
       root->fileName,root->startLine,root->startColumn,
       funcType,funcName,funcArgs,exceptions,
       declMd ? declMd->protection() : root->protection,
-      root->virt,root->stat,Member,
+      root->virt,root->stat,Relationship::Member,
       mtype,tArgList,root->argList,root->metaData) };
   //printf("new specialized member %s args='%s'\n",qPrint(md->name()),qPrint(funcArgs));
   md->setTagInfo(root->tagInfo());
@@ -6128,10 +6134,10 @@ static void addOverloaded(const Entry *root,MemberName *mn,
     if (cd==0) return;
 
     MemberType mtype;
-    if      (root->mtype==Signal)  mtype=MemberType_Signal;
-    else if (root->mtype==Slot)    mtype=MemberType_Slot;
-    else if (root->mtype==DCOP)    mtype=MemberType_DCOP;
-    else                           mtype=MemberType_Function;
+    if      (root->mtype==MethodTypes::Signal)  mtype=MemberType_Signal;
+    else if (root->mtype==MethodTypes::Slot)    mtype=MemberType_Slot;
+    else if (root->mtype==MethodTypes::DCOP)    mtype=MemberType_DCOP;
+    else                                        mtype=MemberType_Function;
 
     // new overloaded member function
     std::unique_ptr<ArgumentList> tArgList =
@@ -6140,7 +6146,7 @@ static void addOverloaded(const Entry *root,MemberName *mn,
     std::unique_ptr<MemberDefMutable> md { createMemberDef(
         root->fileName,root->startLine,root->startColumn,
         funcType,funcName,funcArgs,exceptions,
-        root->protection,root->virt,root->stat,Related,
+        root->protection,root->virt,root->stat,Relationship::Related,
         mtype,tArgList ? *tArgList : ArgumentList(),root->argList,root->metaData) };
     md->setTagInfo(root->tagInfo());
     md->setLanguage(root->lang);
@@ -6297,7 +6303,7 @@ static void findMember(const Entry *root,
   if (!relates.isEmpty())
   {                             // related member, prefix user specified scope
     isRelated=TRUE;
-    isMemberOf=(root->relatesType == MemberOf);
+    isMemberOf=(root->relatesType == RelatesType::MemberOf);
     if (getClass(relates)==0 && !scopeName.isEmpty())
     {
       scopeName= mergeScopes(scopeName,relates);
@@ -6636,11 +6642,11 @@ static void findMember(const Entry *root,
           MemberType mtype;
           if (mdDefine)
             mtype=MemberType_Define;
-          else if (root->mtype==Signal)
+          else if (root->mtype==MethodTypes::Signal)
             mtype=MemberType_Signal;
-          else if (root->mtype==Slot)
+          else if (root->mtype==MethodTypes::Slot)
             mtype=MemberType_Slot;
-          else if (root->mtype==DCOP)
+          else if (root->mtype==MethodTypes::DCOP)
             mtype=MemberType_DCOP;
           else
             mtype=MemberType_Function;
@@ -6667,7 +6673,7 @@ static void findMember(const Entry *root,
               funcType,funcName,funcArgs,exceptions,
               root->protection,root->virt,
               root->stat,
-              isMemberOf ? Foreign : Related,
+              isMemberOf ? Relationship::Foreign : Relationship::Related,
               mtype,
               (!root->tArgLists.empty() ? root->tArgLists.back() : ArgumentList()),
               funcArgs.isEmpty() ? ArgumentList() : root->argList,
@@ -6764,7 +6770,7 @@ static void findMember(const Entry *root,
           cd->insertMember(md.get());
           cd->insertUsedFile(fd);
           md->setRefItems(root->sli);
-          if (root->relatesType == Duplicate) md->setRelatedAlso(cd);
+          if (root->relatesType==RelatesType::Duplicate) md->setRelatedAlso(cd);
           if (!mdDefine)
           {
             addMemberToGroups(root,md.get());
@@ -6772,7 +6778,7 @@ static void findMember(const Entry *root,
           //printf("Adding member=%s\n",qPrint(md->name()));
           mn->push_back(std::move(md));
         }
-        if (root->relatesType == Duplicate)
+        if (root->relatesType==RelatesType::Duplicate)
         {
           if (!findGlobalMember(root,namespaceName,funcType,funcName,funcTempList,funcArgs,funcDecl,spec))
           {
@@ -6993,7 +6999,7 @@ static void findMemberDocumentation(const Entry *root)
       root->section==Entry::EXPORTED_INTERFACE_SEC
      )
   {
-    if (root->relatesType == Duplicate && !root->relates.isEmpty())
+    if (root->relatesType==RelatesType::Duplicate && !root->relates.isEmpty())
     {
       filterMemberDocumentation(root,"");
     }
@@ -7078,7 +7084,7 @@ static void findEnums(const Entry *root)
     if (!root->relates.isEmpty())
     {   // related member, prefix user specified scope
       isRelated=TRUE;
-      isMemberOf=(root->relatesType == MemberOf);
+      isMemberOf=(root->relatesType==RelatesType::MemberOf);
       if (getClass(root->relates)==0 && !scope.isEmpty())
         scope=mergeScopes(scope,root->relates);
       else
@@ -7111,8 +7117,8 @@ static void findEnums(const Entry *root)
       std::unique_ptr<MemberDefMutable> md { createMemberDef(
           root->fileName,root->startLine,root->startColumn,
           QCString(),name,QCString(),QCString(),
-          root->protection,Normal,FALSE,
-          isMemberOf ? Foreign : isRelated ? Related : Member,
+          root->protection,Specifier::Normal,FALSE,
+          isMemberOf ? Relationship::Foreign : isRelated ? Relationship::Related : Relationship::Member,
           MemberType_Enumeration,
           ArgumentList(),ArgumentList(),root->metaData) };
       md->setTagInfo(root->tagInfo());
@@ -7327,7 +7333,7 @@ static void addEnumValuesToEnums(const Entry *root)
                   std::unique_ptr<MemberDefMutable> fmd { createMemberDef(
                       fileName,e->startLine,e->startColumn,
                       e->type,e->name,e->args,QCString(),
-                      e->protection, Normal,e->stat,Member,
+                      e->protection, Specifier::Normal,e->stat,Relationship::Member,
                       MemberType_EnumValue,ArgumentList(),ArgumentList(),e->metaData) };
                   NamespaceDef *mnd = md->getNamespaceDef();
                   if      (md->getClassDef())
@@ -7862,7 +7868,7 @@ static void computeMemberRelations()
               //       qPrint(bmcd->name()),qPrint(bmd->name()),bmd.get()
               //      );
               if (bmcd && mcd && bmcd!=mcd &&
-                  (bmd->virtualness()!=Normal ||
+                  (bmd->virtualness()!=Specifier::Normal ||
                    bmd->getLanguage()==SrcLangExt_Python || bmd->getLanguage()==SrcLangExt_Java || bmd->getLanguage()==SrcLangExt_PHP ||
                    bmcd->compoundType()==ClassDef::Interface || bmcd->compoundType()==ClassDef::Protocol
                   ) &&
@@ -8301,7 +8307,7 @@ static void buildDefineList()
         std::unique_ptr<MemberDefMutable> md { createMemberDef(
             def.fileName,def.lineNr,def.columnNr,
             "#define",def.name,def.args,QCString(),
-            Public,Normal,FALSE,Member,MemberType_Define,
+            Protection::Public,Specifier::Normal,FALSE,Relationship::Member,MemberType_Define,
             ArgumentList(),ArgumentList(),"") };
 
         if (!def.args.isEmpty())
@@ -8918,7 +8924,7 @@ static void findDefineDocumentation(Entry *root)
     {
       std::unique_ptr<MemberDefMutable> md { createMemberDef(root->tagInfo()->tagName,1,1,
                     "#define",root->name,root->args,QCString(),
-                    Public,Normal,FALSE,Member,MemberType_Define,
+                    Protection::Public,Specifier::Normal,FALSE,Relationship::Member,MemberType_Define,
                     ArgumentList(),ArgumentList(),"") };
       md->setTagInfo(root->tagInfo());
       md->setLanguage(root->lang);
