@@ -6125,6 +6125,8 @@ static void addOverloaded(const Entry *root,MemberName *mn,
   {
     MemberDefMutable *mdm = toMemberDefMutable(mn->front().get());
     ClassDefMutable *cd = mdm ? mdm->getClassDefMutable() : 0;
+    if (cd==0) return;
+
     MemberType mtype;
     if      (root->mtype==Signal)  mtype=MemberType_Signal;
     else if (root->mtype==Slot)    mtype=MemberType_Slot;
