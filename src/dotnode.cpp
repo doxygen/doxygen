@@ -116,12 +116,13 @@ QCString escapeTooltip(const QCString &tooltip)
 
 static void writeBoxMemberList(TextStream &t,
   char prot,const MemberList *ml,const ClassDef *scope,
+  bool &lineWritten,
   bool isStatic=FALSE,const StringUnorderedSet *skipNames=nullptr)
 {
   constexpr auto tr_start = "<TR><TD VALIGN=\"top\" CELLPADDING=\"1\" CELLSPACING=\"0\">";
-  constexpr auto tr_mid = "</TD><TD VALIGN=\"top\" ALIGN=\"LEFT\" CELLPADDING=\"1\" CELLSPACING=\"0\">";
-  constexpr auto tr_end = "</TD></TR>\n";
-  constexpr auto br = "<BR ALIGN=\"LEFT\"/>";
+  constexpr auto tr_mid   = "</TD><TD VALIGN=\"top\" ALIGN=\"LEFT\" CELLPADDING=\"1\" CELLSPACING=\"0\">";
+  constexpr auto tr_end   = "</TD></TR>\n";
+  constexpr auto br       = "<BR ALIGN=\"LEFT\"/>";
   if (ml)
   {
     int totalCount=0;
@@ -145,6 +146,7 @@ static void writeBoxMemberList(TextStream &t,
         if (numFields>0 && (totalCount>numFields*3/2 && count>=numFields))
         {
           t << tr_start << tr_mid << theTranslator->trAndMore(QCString().sprintf("%d",totalCount-count)) << tr_end;
+          lineWritten = true;
           break;
         }
         else
@@ -170,6 +172,7 @@ static void writeBoxMemberList(TextStream &t,
           }
           t << DotNode::convertLabel(label,true);
           t << br << tr_end;
+          lineWritten = true;
           count++;
         }
       }
@@ -179,7 +182,7 @@ static void writeBoxMemberList(TextStream &t,
     {
       if (!mg->members().empty())
       {
-        writeBoxMemberList(t,prot,&mg->members(),scope,isStatic,skipNames);
+        writeBoxMemberList(t,prot,&mg->members(),scope,lineWritten,isStatic,skipNames);
       }
     }
   }
@@ -383,9 +386,8 @@ void DotNode::writeLabel(TextStream &t, GraphType gt) const
 {
   if (m_classDef && Config_getBool(UML_LOOK) && (gt==Inheritance || gt==Collaboration))
   {
-    // Set shape to the record-based type.
-    // Record-based shape represent recursive lists of fields, which are drawn as alternating horizontal and vertical rows of boxes. Special characters are: Literal braces, vertical bars and angle brackets.
-    // Only shape types: record and Mrecord support record-based label. See dot User's Manual, Ch. 21, p. 6.
+    // Set shape to the plain type.
+    // the UML properties and methods are rendered using dot' HTML like table format
     t << "shape=plain,label=";
     // add names shown as relations to a set, so we don't show
     // them as attributes as well
@@ -409,42 +411,46 @@ void DotNode::writeLabel(TextStream &t, GraphType gt) const
       }
     }
 
-    QCString hr_start = "<TR><TD COLSPAN=\"2\" CELLPADDING=\"1\" CELLSPACING=\"0\">";
-    QCString hr_end = "</TD></TR>\n";
-    QCString sep = "<HR/>\n";
+    constexpr auto hr_start = "<TR><TD COLSPAN=\"2\" CELLPADDING=\"1\" CELLSPACING=\"0\">";
+    constexpr auto hr_end = "</TD></TR>\n";
+    constexpr auto sep = "<HR/>\n";
+    constexpr auto empty_line = "<TR><TD COLSPAN=\"2\" CELLPADDING=\"1\" CELLSPACING=\"0\">&nbsp;</TD></TR>\n";
     //printf("DotNode::writeBox for %s\n",qPrint(m_classDef->name()));
     t << "<<TABLE CELLBORDER=\"0\" BORDER=\"1\">";
     t << hr_start << convertLabel(m_label,true) << hr_end;
     auto dotUmlDetails = Config_getEnum(DOT_UML_DETAILS);
     if (dotUmlDetails!=DOT_UML_DETAILS_t::NONE)
     {
+      bool lineWritten = false;
       t << sep;
-      writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberListType_pubAttribs),m_classDef,FALSE,&arrowNames);
-      writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberListType_pubStaticAttribs),m_classDef,TRUE,&arrowNames);
-      writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberListType_properties),m_classDef,FALSE,&arrowNames);
-      writeBoxMemberList(t,'~',m_classDef->getMemberList(MemberListType_pacAttribs),m_classDef,FALSE,&arrowNames);
-      writeBoxMemberList(t,'~',m_classDef->getMemberList(MemberListType_pacStaticAttribs),m_classDef,TRUE,&arrowNames);
-      writeBoxMemberList(t,'#',m_classDef->getMemberList(MemberListType_proAttribs),m_classDef,FALSE,&arrowNames);
-      writeBoxMemberList(t,'#',m_classDef->getMemberList(MemberListType_proStaticAttribs),m_classDef,TRUE,&arrowNames);
+      writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberListType_pubAttribs),m_classDef,lineWritten,FALSE,&arrowNames);
+      writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberListType_pubStaticAttribs),m_classDef,lineWritten,TRUE,&arrowNames);
+      writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberListType_properties),m_classDef,lineWritten,FALSE,&arrowNames);
+      writeBoxMemberList(t,'~',m_classDef->getMemberList(MemberListType_pacAttribs),m_classDef,lineWritten,FALSE,&arrowNames);
+      writeBoxMemberList(t,'~',m_classDef->getMemberList(MemberListType_pacStaticAttribs),m_classDef,lineWritten,TRUE,&arrowNames);
+      writeBoxMemberList(t,'#',m_classDef->getMemberList(MemberListType_proAttribs),m_classDef,lineWritten,FALSE,&arrowNames);
+      writeBoxMemberList(t,'#',m_classDef->getMemberList(MemberListType_proStaticAttribs),m_classDef,lineWritten,TRUE,&arrowNames);
       if (Config_getBool(EXTRACT_PRIVATE))
       {
-        writeBoxMemberList(t,'-',m_classDef->getMemberList(MemberListType_priAttribs),m_classDef,FALSE,&arrowNames);
-        writeBoxMemberList(t,'-',m_classDef->getMemberList(MemberListType_priStaticAttribs),m_classDef,TRUE,&arrowNames);
+        writeBoxMemberList(t,'-',m_classDef->getMemberList(MemberListType_priAttribs),m_classDef,lineWritten,FALSE,&arrowNames);
+        writeBoxMemberList(t,'-',m_classDef->getMemberList(MemberListType_priStaticAttribs),m_classDef,lineWritten,TRUE,&arrowNames);
       }
+      if (!lineWritten) t << empty_line;
       t << sep;
-      writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberListType_pubMethods),m_classDef);
-      writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberListType_pubStaticMethods),m_classDef,TRUE);
-      writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberListType_pubSlots),m_classDef);
-      writeBoxMemberList(t,'~',m_classDef->getMemberList(MemberListType_pacMethods),m_classDef);
-      writeBoxMemberList(t,'~',m_classDef->getMemberList(MemberListType_pacStaticMethods),m_classDef,TRUE);
-      writeBoxMemberList(t,'#',m_classDef->getMemberList(MemberListType_proMethods),m_classDef);
-      writeBoxMemberList(t,'#',m_classDef->getMemberList(MemberListType_proStaticMethods),m_classDef,TRUE);
-      writeBoxMemberList(t,'#',m_classDef->getMemberList(MemberListType_proSlots),m_classDef);
+      lineWritten = false;
+      writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberListType_pubMethods),m_classDef,lineWritten);
+      writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberListType_pubStaticMethods),m_classDef,lineWritten,TRUE);
+      writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberListType_pubSlots),m_classDef,lineWritten);
+      writeBoxMemberList(t,'~',m_classDef->getMemberList(MemberListType_pacMethods),m_classDef,lineWritten);
+      writeBoxMemberList(t,'~',m_classDef->getMemberList(MemberListType_pacStaticMethods),m_classDef,lineWritten,TRUE);
+      writeBoxMemberList(t,'#',m_classDef->getMemberList(MemberListType_proMethods),m_classDef,lineWritten);
+      writeBoxMemberList(t,'#',m_classDef->getMemberList(MemberListType_proStaticMethods),m_classDef,lineWritten,TRUE);
+      writeBoxMemberList(t,'#',m_classDef->getMemberList(MemberListType_proSlots),m_classDef,lineWritten);
       if (Config_getBool(EXTRACT_PRIVATE))
       {
-        writeBoxMemberList(t,'-',m_classDef->getMemberList(MemberListType_priMethods),m_classDef);
-        writeBoxMemberList(t,'-',m_classDef->getMemberList(MemberListType_priStaticMethods),m_classDef,TRUE);
-        writeBoxMemberList(t,'-',m_classDef->getMemberList(MemberListType_priSlots),m_classDef);
+        writeBoxMemberList(t,'-',m_classDef->getMemberList(MemberListType_priMethods),m_classDef,lineWritten);
+        writeBoxMemberList(t,'-',m_classDef->getMemberList(MemberListType_priStaticMethods),m_classDef,lineWritten,TRUE);
+        writeBoxMemberList(t,'-',m_classDef->getMemberList(MemberListType_priSlots),m_classDef,lineWritten);
       }
       if (m_classDef->getLanguage()!=SrcLangExt_Fortran)
       {
@@ -452,10 +458,11 @@ void DotNode::writeLabel(TextStream &t, GraphType gt) const
         {
           if (!mg->members().empty())
           {
-            writeBoxMemberList(t,'*',&mg->members(),m_classDef,FALSE,&arrowNames);
+            writeBoxMemberList(t,'*',&mg->members(),m_classDef,lineWritten,FALSE,&arrowNames);
           }
         }
       }
+      if (!lineWritten) t << empty_line;
     }
     t << "</TABLE>>\n";
   }
