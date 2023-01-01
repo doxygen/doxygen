@@ -64,7 +64,7 @@ static const char *umlEdgeColorMap[] =
   "steelblue1",    // Public
   "darkgreen",     // Protected
   "firebrick4",    // Private
-  "grey25",        // "use" relation
+  "steelblue1",    // "use" relation
   "grey75",        // Undocumented
   "orange",        // template relation
   "orange"         // type constraint
