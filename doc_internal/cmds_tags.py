@@ -45,14 +45,19 @@ def get_versions():
     versions = []
     strip_versions = []
     versions.append("Release_1_8_20")
-    pre = "Release_1_9_"
+
+    pre = "Release_"
     for o in shlex.split(raw_versions):
         if o.startswith(pre):
-            if len(o.replace(pre,"")) == 1 or len(o.replace(pre,"")) == 2:
-                strip_versions.append(int(o.replace(pre,"")))
+          ver = o.split('_')
+          v = int(ver[1])*1000+int(ver[2])
+          if v >= 1009:
+              strip_versions.append(v*1000+int(ver[3]))
     for i in sorted(set(strip_versions)):
-        versions.append(pre + str(i))
+        versions.append(pre + str(int((i/1000)/1000)) + "_" + str(int((i/1000) % 1000)) + "_" + str(i%1000))
+
     versions.append("master")
+    print(versions)
     return versions
 
 
