@@ -51,6 +51,7 @@ class EdgeInfo
         case Protection::Private:   return Red;
         case Protection::Package:   return Purple;
       }
+      return Blue;
     }
   private:
     int m_color;
