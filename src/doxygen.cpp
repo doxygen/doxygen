@@ -12720,7 +12720,7 @@ void generateOutput()
     if (numThreads<1) numThreads=1;
     msg("Total elapsed time: %.6f seconds\n(of which an average of %.6f seconds per thread waiting for external tools to finish)\n",
          (static_cast<double>(Debug::elapsedTime())),
-         Portable::getSysElapsedTime()/numThreads
+         Portable::getSysElapsedTime()/static_cast<double>(numThreads)
         );
     g_s.print();
 
