@@ -914,7 +914,10 @@ void DocbookDocVisitor::operator()(const DocHtmlList &s)
 DB_VIS_C
   if (m_hide) return;
   if (s.children().empty()) return;
-  // opening tag will be handled in DocHtmlListItem
+  // opening tag for ordered list will be handled in DocHtmlListItem
+  // due to (re-)numbering possibilities
+  if (s.type()!=DocHtmlList::Ordered)
+    m_t << "<itemizedlist>\n";
   visitChildren(s);
   if (s.type()==DocHtmlList::Ordered)
     m_t << "</orderedlist>\n";
@@ -979,10 +982,6 @@ DB_VIS_C
       if (value>0)         m_t << " startingnumber=\"" << value << "\"";
       m_t << ">\n";
     }
-  }
-  else
-  {
-    m_t << "<itemizedlist>\n";
   }
   m_t << "<listitem>\n";
   visitChildren(s);
