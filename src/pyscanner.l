@@ -1359,8 +1359,11 @@ STARTDOCSYMS      "##"
                         }
 
 
-    ^{BB}               { // leading whitespace
-                          yyextra->docBlock += yytext;
+    ^{BB}               { // leading whitespace, compensate for """! / '''!
+                          if (yyextra->docBlockSpecial && yyleng >= yyextra->curIndent)
+                            yyextra->docBlock += yytext + yyextra->curIndent;
+                          else
+                            yyextra->docBlock += yytext;
                         }
     [^"'\n \t\\]+       {
                           yyextra->docBlock += yytext;
@@ -1758,6 +1761,10 @@ static void initTriDoubleQuoteBlock(yyscan_t yyscanner)
   yyextra->docBlock.resize(0);
   yyextra->commentIndent = yyextra->curIndent;
   yyextra->doubleQuote = TRUE;
+  if (yyextra->docBlockSpecial)
+  {
+    yyextra->docBlock.fill(' ',yyextra->indent);
+  }
   startCommentBlock(yyscanner,FALSE);
 }
 
@@ -1771,6 +1778,10 @@ static void initTriSingleQuoteBlock(yyscan_t yyscanner)
   yyextra->docBlock.resize(0);
   yyextra->commentIndent = yyextra->curIndent;
   yyextra->doubleQuote = FALSE;
+  if (yyextra->docBlockSpecial)
+  {
+    yyextra->docBlock.fill(' ',yyextra->indent);
+  }
   startCommentBlock(yyscanner,FALSE);
 }
 
