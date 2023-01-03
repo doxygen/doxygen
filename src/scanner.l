@@ -847,7 +847,7 @@ NONLopt [^\n]*
                                           yyextra->current->argList.push_back(a);
                                           BEGIN( ObjCParams );
                                         }
-<ObjCReturnType>[^)]*                   { // TODO: check if nested braches are possible.
+<ObjCReturnType>[^)]*                   { // TODO: check if nested branches are possible.
                                           yyextra->current->type = yytext;
                                         }
 <ObjCReturnType>")"                     {

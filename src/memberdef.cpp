@@ -3180,7 +3180,7 @@ QCString MemberDefImpl::displayDefinition() const
     while (i>=0 && isspace(static_cast<uchar>(ldef.at(i)))) i--;
     if (i>0)
     {
-      // insert braches around the type
+      // insert branches around the type
       QCString tmp("("+ldef.left(i+1)+")"+ldef.mid(i+1));
       ldef=tmp;
     }
@@ -3511,7 +3511,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
       while (i>=0 && isspace(static_cast<uchar>(ldef.at(i)))) i--;
       if (i>0)
       {
-        // insert braches around the type
+        // insert branches around the type
         QCString tmp("("+ldef.left(i+1)+")"+ldef.mid(i+1));
         ldef=tmp;
       }
