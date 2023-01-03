@@ -1507,7 +1507,7 @@ void LatexDocVisitor::operator()(const DocRef &ref)
   }
   else
   {
-    if (!ref.file().isEmpty()) startLink(ref.ref(),ref.file(),ref.anchor(),ref.refToTable());
+    if (!ref.file().isEmpty()) startLink(ref.ref(),ref.file(),ref.anchor(),ref.refToTable(),ref.refToSection());
   }
   if (!ref.hasLinkText())
   {
@@ -1520,7 +1520,7 @@ void LatexDocVisitor::operator()(const DocRef &ref)
   }
   else
   {
-    if (!ref.file().isEmpty()) endLink(ref.ref(),ref.file(),ref.anchor(),ref.refToTable());
+    if (!ref.file().isEmpty()) endLink(ref.ref(),ref.file(),ref.anchor(),ref.refToTable(),ref.refToSection(),ref.sectionType());
   }
 }
 
@@ -1782,7 +1782,7 @@ void LatexDocVisitor::filter(const QCString &str, const bool retainNewLine)
                    );
 }
 
-void LatexDocVisitor::startLink(const QCString &ref,const QCString &file,const QCString &anchor,bool refToTable)
+void LatexDocVisitor::startLink(const QCString &ref,const QCString &file,const QCString &anchor,bool refToTable,bool refToSection)
 {
   bool pdfHyperLinks = Config_getBool(PDF_HYPERLINKS);
   if (ref.isEmpty() && pdfHyperLinks) // internal PDF link
@@ -1791,14 +1791,22 @@ void LatexDocVisitor::startLink(const QCString &ref,const QCString &file,const Q
     {
       m_t << "\\doxytablelink{";
     }
+    else if (refToSection)
+    {
+      m_t << "\\doxysectlink{";
+    }
     else
     {
-      m_t << "\\mbox{\\hyperlink{";
+      m_t << "\\doxylink{";
     }
     if (!file.isEmpty()) m_t << stripPath(file);
     if (!file.isEmpty() && !anchor.isEmpty()) m_t << "_";
     if (!anchor.isEmpty()) m_t << anchor;
     m_t << "}{";
+  }
+  else if (ref.isEmpty() && refToSection)
+  {
+    m_t << "\\doxysectref{";
   }
   else if (ref.isEmpty() && refToTable)
   {
@@ -1814,7 +1822,7 @@ void LatexDocVisitor::startLink(const QCString &ref,const QCString &file,const Q
   }
 }
 
-void LatexDocVisitor::endLink(const QCString &ref,const QCString &file,const QCString &anchor,bool refToTable)
+void LatexDocVisitor::endLink(const QCString &ref,const QCString &file,const QCString &anchor,bool refToTable,bool refToSection, SectionType sectionType)
 {
   m_t << "}";
   bool pdfHyperLinks = Config_getBool(PDF_HYPERLINKS);
@@ -1825,12 +1833,16 @@ void LatexDocVisitor::endLink(const QCString &ref,const QCString &file,const QCS
     m_t << "}{" << file;
     if (!file.isEmpty() && !anchor.isEmpty()) m_t << "_";
     m_t << anchor << "}";
+    if (refToSection)
+    {
+      m_t << "{" << static_cast<int>(sectionType) << "}";
+    }
   }
   if (ref.isEmpty() && pdfHyperLinks) // internal PDF link
   {
-    if (!refToTable)
+    if (refToSection)
     {
-      m_t << "}";
+      m_t << "{" << static_cast<int>(sectionType) << "}";
     }
   }
 }

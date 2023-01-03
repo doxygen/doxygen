@@ -128,9 +128,9 @@ class LatexDocVisitor : public DocVisitor
 
     void filter(const QCString &str, const bool retainNewLine = false);
     void startLink(const QCString &ref,const QCString &file,
-                   const QCString &anchor,bool refToTable=FALSE);
+                   const QCString &anchor,bool refToTable=false,bool refToSection=false);
     void endLink(const QCString &ref,const QCString &file,
-                 const QCString &anchor,bool refToTable=FALSE);
+                 const QCString &anchor,bool refToTable=false,bool refToSection=false, SectionType sectionType = SectionType::Anchor);
     QCString escapeMakeIndexChars(const char *s);
     void startDotFile(const QCString &fileName,const QCString &width,
                       const QCString &height, bool hasCaption,

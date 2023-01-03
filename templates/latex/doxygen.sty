@@ -523,8 +523,26 @@
   \end{list}%
 }
 
+% Used when hyperlinks are turned on
+\newcommand{\doxylink}[2]{%
+  \mbox{\hyperlink{#1}{#2}}%
+}
+
+% Used when hyperlinks are turned on
+% Third argument is the SectionType, see the doxygen internal
+% documentation for the values (relevant: Page ... Subsubsection).
+\newcommand{\doxysectlink}[3]{%
+  \mbox{\hyperlink{#1}{#2}}%
+}
 % Used when hyperlinks are turned off
 \newcommand{\doxyref}[3]{%
+  \textbf{#1} (\textnormal{#2}\,\pageref{#3})%
+}
+
+% Used when hyperlinks are turned off
+% Fourth argument is the SectionType, see the doxygen internal
+% documentation for the values (relevant: Page ... Subsubsection).
+\newcommand{\doxysectref}[4]{%
   \textbf{#1} (\textnormal{#2}\,\pageref{#3})%
 }
 

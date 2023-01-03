@@ -27,6 +27,7 @@
 #include "htmlattrib.h"
 #include "htmlentity.h"
 #include "growvector.h"
+#include "section.h"
 
 class MemberDef;
 class Definition;
@@ -739,6 +740,7 @@ class DocRef : public DocCompoundNode
     QCString ref() const          { return m_ref; }
     QCString anchor() const       { return m_anchor; }
     QCString targetTitle() const  { return m_text; }
+    SectionType sectionType() const { return m_sectionType; }
     bool hasLinkText() const      { return !children().empty(); }
     bool refToAnchor() const      { return m_refType==Anchor; }
     bool refToSection() const     { return m_refType==Section; }
@@ -747,6 +749,7 @@ class DocRef : public DocCompoundNode
 
   private:
     RefType    m_refType = Unknown;
+    SectionType m_sectionType = SectionType::Anchor;
     bool       m_isSubPage = false;
     QCString   m_file;
     QCString   m_relPath;
