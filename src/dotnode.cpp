@@ -276,6 +276,10 @@ QCString DotNode::convertLabel(const QCString &l, bool htmlLike)
     charsLeft--;
     pc=c;
   }
+  if (htmlLike)
+  {
+     result = result.stripWhiteSpace();
+  }
   return result;
 }
 
