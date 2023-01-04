@@ -1521,12 +1521,14 @@ class TrManager:
             color = '#ffffff'    # white
         elif readableStatus.startswith('English'):
             color = '#ccffcc'    # green
-        elif readableStatus.startswith('1.8'):
+        elif readableStatus.startswith('1.9'):
             color = '#ffffcc'    # yellow
+        elif readableStatus.startswith('1.8'):
+            color = '#ffcccc'    # pink
         elif readableStatus.startswith('1.7'):
-            color = '#ffcccc'    # pink
+            color = '#ff5555'    # red
         elif readableStatus.startswith('1.6'):
-            color = '#ffcccc'    # pink
+            color = '#ff5555'    # red
         else:
             color = '#ff5555'    # red
         return color
@@ -1870,9 +1872,13 @@ class TrManager:
         for name, obj in self.langLst:
             # Fill the table data elements for one row. The first element
             # contains the readable name of the language. Only the oldest
-            # translator are colour marked in the language column. Less
+            # translators are color marked in the language column. Less
             # "heavy" color is used (when compared with the Status column).
-            if obj.readableStatus.startswith('1.4'):
+            if obj.readableStatus.startswith('1.7'):
+                bkcolor = self.getBgcolorByReadableStatus('1.7')
+            elif obj.readableStatus.startswith('1.6'):
+                bkcolor = self.getBgcolorByReadableStatus('1.6')
+            elif obj.readableStatus.startswith('1.4'):
                 bkcolor = self.getBgcolorByReadableStatus('1.4')
             else:
                 bkcolor = '#ffffff'
