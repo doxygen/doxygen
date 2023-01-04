@@ -1,5 +1,7 @@
 # TinyDeflate
 
+See https://github.com/bisqwit/TinyDeflate for the original version.
+
 A deflate/gzip decompressor, as a C++17 template function,
 that requires minimal amount of memory to work.
 
