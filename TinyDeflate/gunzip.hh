@@ -430,7 +430,7 @@ namespace gunzip_ns
         static_assert((T)false, "result_of<CallableType> is invalid; use "
             "result_of<CallableType(zero or more argument types)> instead.");
     };
-    #if __cplusplus > 202000UL
+    #if __cplusplus > 201703UL
     template <typename F, typename... Args>
     struct result_of<F(Args...)> : std::invoke_result<F, Args...> {};
     #else
@@ -702,7 +702,7 @@ namespace gunzip_ns
                     // Note: Throws away progress already made traversing the tree
                     return ~std::uint_least32_t(0); // error flag
                 }
-                cur = (unsigned(cur) << 1) | bool(p);
+                cur = (unsigned(cur) << 1) | unsigned(bool(p));
             #ifdef DEFL_DO_HUFF_STATS
                 if(len > maxlen)
                 {

@@ -16,7 +16,16 @@
 #include <cassert>
 #include <cmath>
 
+#ifdef _MSC_VER
+#pragma warning( push )
+#pragma warning( disable : 4242 )
+#pragma warning( disable : 4244 )
+#endif
 #include <gunzip.hh>
+#ifdef _MSC_VER
+#pragma warning( pop )
+#endif
+
 
 #include "dotrunner.h"
 #include "util.h"
@@ -113,39 +122,6 @@ static bool resetPDFSize(const int width,const int height, const QCString &base)
 
 bool DotRunner::readBoundingBox(const QCString &fileName,int *width,int *height,bool isEps)
 {
-#if 0
-  const char *bb = isEps ? "%%PageBoundingBox:" : "/MediaBox [";
-  size_t bblen = strlen(bb);
-  FILE *f = Portable::fopen(fileName,"rb");
-  if (!f)
-  {
-    //printf("readBoundingBox: could not open %s\n",fileName);
-    return FALSE;
-  }
-  const int maxLineLen=1024;
-  char buf[maxLineLen];
-  while (fgets(buf,maxLineLen,f)!=NULL)
-  {
-     const char *p = strstr(buf,bb);
-     if (p) // found PageBoundingBox or /MediaBox string
-     {
-       int x,y;
-       double w,h;
-       fclose(f);
-       if (sscanf(p+bblen,"%d %d %lf %lf",&x,&y,&w,&h)!=4)
-       {
-         //printf("readBoundingBox sscanf fail\n");
-         return FALSE;
-       }
-       *width = static_cast<int>(std::ceil(w));
-       *height = static_cast<int>(std::ceil(h));
-       return TRUE;
-     }
-  }
-  err("Failed to extract bounding box from generated diagram file %s\n",qPrint(fileName));
-  fclose(f);
-  return FALSE;
-#endif
   std::ifstream f = Portable::openInputStream(fileName);
   if (!f.is_open())
   {
