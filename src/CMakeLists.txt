@@ -1,6 +1,7 @@
 # vim:ts=4:sw=4:expandtab:autoindent:
 
 include_directories(
+    ${PROJECT_SOURCE_DIR}/TinyDeflate
     ${PROJECT_SOURCE_DIR}/filesystem
     ${PROJECT_SOURCE_DIR}/libmd5
     ${PROJECT_SOURCE_DIR}/liblodepng

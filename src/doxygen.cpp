@@ -11930,8 +11930,6 @@ void parseInput()
     {
       Portable::setenv("DOTFONTPATH",qPrint(curFontPath));
     }
-    // issue 9319
-    Portable::setenv("CAIRO_DEBUG_PDF","1");
   }
 
 

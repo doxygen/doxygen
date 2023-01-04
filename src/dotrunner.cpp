@@ -16,6 +16,8 @@
 #include <cassert>
 #include <cmath>
 
+#include <gunzip.hh>
+
 #include "dotrunner.h"
 #include "util.h"
 #include "portable.h"
@@ -30,6 +32,9 @@
 // It is anyway hard to view these size of images
 #define MAX_LATEX_GRAPH_INCH  150
 #define MAX_LATEX_GRAPH_SIZE  (MAX_LATEX_GRAPH_INCH * 72)
+
+//#define DBG(x) printf x
+#define DBG(x) do {} while(0)
 
 //-----------------------------------------------------------------------------------------
 
@@ -108,6 +113,7 @@ static bool resetPDFSize(const int width,const int height, const QCString &base)
 
 bool DotRunner::readBoundingBox(const QCString &fileName,int *width,int *height,bool isEps)
 {
+#if 0
   const char *bb = isEps ? "%%PageBoundingBox:" : "/MediaBox [";
   size_t bblen = strlen(bb);
   FILE *f = Portable::fopen(fileName,"rb");
@@ -139,6 +145,104 @@ bool DotRunner::readBoundingBox(const QCString &fileName,int *width,int *height,
   err("Failed to extract bounding box from generated diagram file %s\n",qPrint(fileName));
   fclose(f);
   return FALSE;
+#endif
+  std::ifstream f = Portable::openInputStream(fileName);
+  if (!f.is_open())
+  {
+    err("Failed to open file %s for extracting bounding box\n",qPrint(fileName));
+    return false;
+  }
+
+  // read file contents into string 'contents'
+  std::stringstream buffer;
+  buffer << f.rdbuf();
+  std::string contents = buffer.str();
+
+  // start of bounding box marker we are looking for
+  const std::string boundingBox = isEps ? "%%PageBoundingBox:" : "/MediaBox [";
+
+  // helper routine to extract the bounding boxes width and height
+  auto extractBoundingBox = [&fileName,&boundingBox,&width,&height](const char *s) -> bool
+  {
+    int x,y;
+    double w,h;
+    if (sscanf(s+boundingBox.length(),"%d %d %lf %lf",&x,&y,&w,&h)==4)
+    {
+      *width  = static_cast<int>(std::ceil(w));
+      *height = static_cast<int>(std::ceil(h));
+      return true;
+    }
+    err("Failed to extract bounding box from generated diagram file %s\n",qPrint(fileName));
+    return false;
+  };
+
+  // compressed segment start and end markers
+  const std::string streamStart = "stream\n";
+  const std::string streamEnd = "\nendstream";
+
+  const size_t l = contents.length();
+  size_t i=0;
+  while (i<l)
+  {
+    if (!isEps && contents[i]=='s' && strncmp(&contents[i],streamStart.c_str(),streamStart.length())==0)
+    { // compressed stream start
+      int col=17;
+      i+=streamStart.length();
+      const size_t start=i;
+      DBG(("---- start stream at offset %08x\n",(int)i));
+      while (i<l)
+      {
+        if (contents[i]=='\n' && strncmp(&contents[i],streamEnd.c_str(),streamEnd.length())==0)
+        { // compressed block found in range [start..i]
+          DBG(("\n---- end stream at offset %08x\n",(int)i));
+          // decompress it into decompressBuf
+          std::vector<char> decompressBuf;
+          const char *source = &contents[start];
+          const size_t sourceLen = i-start;
+          size_t sourcePos = 0;
+          decompressBuf.reserve(sourceLen*2);
+          auto getter = [source,&sourcePos,sourceLen]() -> int {
+            return sourcePos<sourceLen ? static_cast<unsigned char>(source[sourcePos++]) : EOF;
+          };
+          auto putter = [&decompressBuf](const char c) -> int {
+            decompressBuf.push_back(c); return c;
+          };
+          Deflate(getter,putter);
+          // convert decompression buffer to string
+          std::string s(decompressBuf.begin(), decompressBuf.end());
+          DBG(("decompressed_data=[[[\n%s\n]]]\n",s.c_str()));
+          // search for bounding box marker
+          const size_t idx = s.find(boundingBox);
+          if (idx!=std::string::npos) // found bounding box in uncompressed data
+          {
+            return extractBoundingBox(s.c_str()+idx);
+          }
+          // continue searching after end stream marker
+          i+=streamEnd.length();
+          break;
+        }
+        else // compressed stream character
+        {
+          if (col>16) { col=0; DBG(("\n%08x: ",static_cast<int>(i))); }
+          DBG(("%02x ",static_cast<unsigned char>(contents[i])));
+          col++;
+          i++;
+        }
+      }
+    }
+    else if (((isEps && contents[i]=='%') || (!isEps && contents[i]=='/')) &&
+             strncmp(&contents[i],boundingBox.c_str(),boundingBox.length())==0)
+    { // uncompressed bounding box
+      return extractBoundingBox(&contents[i]);
+    }
+    else // uncompressed stream character
+    {
+      i++;
+    }
+  }
+  err("Failed to find bounding box in generated diagram file %s\n",qPrint(fileName));
+  // nothing found
+  return false;
 }
 
 //---------------------------------------------------------------------------------
