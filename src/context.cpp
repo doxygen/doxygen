@@ -942,7 +942,7 @@ class TranslateContext::Private
     }
     TemplateVariant related() const
     {
-      return theTranslator->trRelatedFunctions();
+      return theTranslator->trRelatedSymbols();
     }
     TemplateVariant macros() const
     {
@@ -2123,7 +2123,7 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
     }
     TemplateVariant createRelated() const
     {
-      return createMemberList(MemberListType_related,theTranslator->trRelatedFunctions());
+      return createMemberList(MemberListType_related,theTranslator->trRelatedSymbols());
     }
     TemplateVariant createDetailedTypedefs() const
     {
@@ -2151,7 +2151,7 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
     }
     TemplateVariant createDetailedRelated() const
     {
-      return createMemberList(MemberListType_relatedMembers,theTranslator->trRelatedFunctionDocumentation());
+      return createMemberList(MemberListType_relatedMembers,theTranslator->trRelatedSymbolDocumentation());
     }
     TemplateVariant createDetailedVariables() const
     {
@@ -2264,7 +2264,7 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
       ctx->addMemberList(m_classDef,MemberListType_priStaticMethods,theTranslator->trStaticPrivateMembers());
       ctx->addMemberList(m_classDef,MemberListType_priAttribs,theTranslator->trPrivateAttribs());
       ctx->addMemberList(m_classDef,MemberListType_priStaticAttribs,theTranslator->trStaticPrivateAttribs());
-      ctx->addMemberList(m_classDef,MemberListType_related,theTranslator->trRelatedFunctions());
+      ctx->addMemberList(m_classDef,MemberListType_related,theTranslator->trRelatedSymbols());
       return list;
     }
     void addMembers(MemberList &list,const ClassDef *cd,MemberListType lt) const

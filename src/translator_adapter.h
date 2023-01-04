@@ -40,7 +40,22 @@ class TranslatorAdapterBase : public Translator
 
 };
 
-class TranslatorAdapter_1_9_5 : public TranslatorAdapterBase
+class TranslatorAdapter_1_9_6 : public TranslatorAdapterBase
+{
+  public:
+    virtual QCString updateNeededMessage()
+    { return createUpdateNeededMessage(idLanguage(),"release 1.9.5"); }
+
+    /*! Small trick to use the original functions as the wording has been changed */
+    virtual QCString trRelatedSymbols()
+    { return trRelatedFunctions(); }
+    virtual QCString trRelatedSymbolsSubscript()
+    { return trRelatedSubscript(); }
+    virtual QCString trRelatedSymbolDocumentation()
+    { return trRelatedFunctionDocumentation(); }
+};
+
+class TranslatorAdapter_1_9_5 : public TranslatorAdapter_1_9_6
 {
   public:
     virtual QCString updateNeededMessage()

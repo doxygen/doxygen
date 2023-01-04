@@ -947,8 +947,8 @@ static const std::map< std::string, ElementCallbacks > g_elementHandlers =
                                                     endCb()
                                                   } },
   { "class/memberdecl/related",                   { startCb(&LayoutParser::startMemberDeclEntry, MemberListType_related,
-                                                            []() { return compileOptions(theTranslator->trRelatedFunctions()); },
-                                                            []() { return compileOptions(theTranslator->trRelatedSubscript()); }),
+                                                            []() { return compileOptions(theTranslator->trRelatedSymbols()); },
+                                                            []() { return compileOptions(theTranslator->trRelatedSymbolsSubscript()); }),
                                                     endCb()
                                                   } },
   { "class/memberdef",                            { startCb(&LayoutParser::startMemberDef),
@@ -986,7 +986,7 @@ static const std::map< std::string, ElementCallbacks > g_elementHandlers =
                                                     endCb()
                                                   } },
   { "class/memberdef/related",                    { startCb(&LayoutParser::startMemberDefEntry, MemberListType_relatedMembers,
-                                                            []() { return compileOptions(theTranslator->trRelatedFunctionDocumentation()); }),
+                                                            []() { return compileOptions(theTranslator->trRelatedSymbolDocumentation()); }),
                                                     endCb()
                                                   } },
   { "class/memberdef/variables",                  { startCb(&LayoutParser::startMemberDefEntry, MemberListType_variableMembers,

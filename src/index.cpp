@@ -2958,7 +2958,7 @@ static const CmhlInfo *getCmhlInfo(size_t hl)
     CmhlInfo("functions_eval",theTranslator->trEnumerationValues()),
     CmhlInfo("functions_prop",theTranslator->trProperties()),
     CmhlInfo("functions_evnt",theTranslator->trEvents()),
-    CmhlInfo("functions_rela",theTranslator->trRelatedFunctions())
+    CmhlInfo("functions_rela",theTranslator->trRelatedSymbols())
   };
   return &cmhlInfo[hl];
 }
