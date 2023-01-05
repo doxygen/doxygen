@@ -710,22 +710,26 @@ static QCString substituteLatexKeywords(const QCString &str,
         convertToLaTeX(Config_getString(PROJECT_BRIEF),false));
 
   // additional LaTeX only keywords
-  result = substitute(result,"$latexdocumentpre",theTranslator->latexDocumentPre());
-  result = substitute(result,"$latexdocumentpost",theTranslator->latexDocumentPost());
-  result = substitute(result,"$generatedby",generatedBy);
-  result = substitute(result,"$latexbibstyle",style);
-  result = substitute(result,"$latexcitereference",theTranslator->trCiteReferences());
-  result = substitute(result,"$latexbibfiles",CitationManager::instance().latexBibFiles());
-  result = substitute(result,"$papertype",paperType+"paper");
-  result = substitute(result,"$extralatexstylesheet",extraLatexStyleSheet());
-  result = substitute(result,"$languagesupport",theTranslator->latexLanguageSupportCommand());
-  result = substitute(result,"$latexfontenc",latexFontenc);
-  result = substitute(result,"$latexfont",theTranslator->latexFont());
-  result = substitute(result,"$latexemojidirectory",latexEmojiDirectory);
-  result = substitute(result,"$makeindex",makeIndex());
-  result = substitute(result,"$extralatexpackages",extraLatexPackages);
-  result = substitute(result,"$latexspecialformulachars",latexSpecialFormulaChars);
-  result = substitute(result,"$formulamacrofile",stripMacroFile);
+  result = substituteKeywords(result,
+  {
+    // keyword                     value getter
+    { "$latexdocumentpre",         [&]() { return theTranslator->latexDocumentPre();            } },
+    { "$latexdocumentpost",        [&]() { return theTranslator->latexDocumentPost();           } },
+    { "$generatedby",              [&]() { return generatedBy;                                  } },
+    { "$latexbibstyle",            [&]() { return style;                                        } },
+    { "$latexcitereference",       [&]() { return theTranslator->trCiteReferences();            } },
+    { "$latexbibfiles",            [&]() { return CitationManager::instance().latexBibFiles();  } },
+    { "$papertype",                [&]() { return paperType+"paper";                            } },
+    { "$extralatexstylesheet",     [&]() { return extraLatexStyleSheet();                       } },
+    { "$languagesupport",          [&]() { return theTranslator->latexLanguageSupportCommand(); } },
+    { "$latexfontenc",             [&]() { return latexFontenc;                                 } },
+    { "$latexfont",                [&]() { return theTranslator->latexFont();                   } },
+    { "$latexemojidirectory",      [&]() { return latexEmojiDirectory;                          } },
+    { "$makeindex",                [&]() { return makeIndex();                                  } },
+    { "$extralatexpackages",       [&]() { return extraLatexPackages;                           } },
+    { "$latexspecialformulachars", [&]() { return latexSpecialFormulaChars;                     } },
+    { "$formulamacrofile",         [&]() { return stripMacroFile;                               } }
+  });
 
   // additional LaTeX only conditional blocks
   result = selectBlock(result,"CITATIONS_PRESENT", !CitationManager::instance().isEmpty(),OutputType::Latex);
