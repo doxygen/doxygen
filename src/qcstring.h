@@ -268,7 +268,8 @@ class QCString
       {
         while (i<end && !needsQuotes) // check if the to be quoted part has at least one whitespace character
         {
-          needsQuotes = qisspace(m_rep[i++]);
+          needsQuotes = m_rep[i] =='-';
+          needsQuotes |= qisspace(m_rep[i++]);
         }
       }
       QCString result(m_rep.substr(start,1+end-start));
