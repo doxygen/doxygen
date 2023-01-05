@@ -153,8 +153,8 @@ class HtmlGenerator : public OutputGenerator //public CodeOutputForwarder<Output
     void endInlineHeader();
     void startAnonTypeScope(int) {}
     void endAnonTypeScope(int) {}
-    void startMemberItem(const QCString &anchor,int,const QCString &inheritId);
-    void endMemberItem(int annoType = -1);
+    void startMemberItem(const QCString &anchor,MemberItemType,const QCString &inheritId);
+    void endMemberItem(MemberItemType);
     void startMemberTemplateParams();
     void endMemberTemplateParams(const QCString &anchor,const QCString &inheritId);
     void startCompoundTemplateParams();
@@ -168,7 +168,7 @@ class HtmlGenerator : public OutputGenerator //public CodeOutputForwarder<Output
     void endMemberGroup(bool);
 
     void insertMemberAlign(bool);
-    void insertMemberAlignLeft(int,bool);
+    void insertMemberAlignLeft(MemberItemType,bool);
     void startMemberDescription(const QCString &anchor,const QCString &inheritId, bool typ);
     void endMemberDescription();
     void startMemberDeclaration() {}

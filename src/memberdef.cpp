@@ -2108,7 +2108,9 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
 
   // start a new member declaration
   bool isAnonType = annoClassDef || m_impl->annMemb || m_impl->annEnumType;
-  int anonType = isAnonType ? 1 : !m_impl->tArgList.empty() ? 3 : 0;
+  OutputGenerator::MemberItemType anonType = isAnonType ? OutputGenerator::MemberItemType::AnonymousStart :
+                              !m_impl->tArgList.empty() ? OutputGenerator::MemberItemType::Templated      :
+                                                          OutputGenerator::MemberItemType::Normal;
   ol.startMemberItem(anchor(), anonType, inheritId);
 
   // If there is no detailed description we need to write the anchor here.
@@ -2184,7 +2186,7 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
       ol.startAnonTypeScope(indentLevel);
       annoClassDef->writeDeclaration(ol,m_impl->annMemb,inGroup,indentLevel+1,inheritedFrom,inheritId);
       //printf(">>>>>>>>>>>>>> startMemberItem(2)\n");
-      anonType = 2;
+      anonType = OutputGenerator::MemberItemType::AnonymousEnd;
       ol.startMemberItem(anchor(),anonType,inheritId);
       int j;
       for (j=0;j< indentLevel;j++)
@@ -3381,9 +3383,11 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
     }
     if (!found) // anonymous compound
     {
-      //printf("Anonymous compound '%s' sdef='%s'\n",qPrint(cname),qPrint(sdef));
+      ClassDef *annoClassDef=getClassDefOfAnonymousType();
+      QCString typeName;
+      if (annoClassDef) typeName=annoClassDef->compoundTypeString();
       ol.startDoxyAnchor(cfname,cname,memAnchor,doxyName,doxyArgs);
-      ol.startMemberDoc(ciname,name(),memAnchor,"",memCount,memTotal,showInline);
+      ol.startMemberDoc(ciname,name(),memAnchor,"["+typeName+"]",memCount,memTotal,showInline);
       // search for the last anonymous compound name in the definition
 
       ol.startMemberDocName(isObjCMethod());

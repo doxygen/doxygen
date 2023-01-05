@@ -2445,7 +2445,7 @@ void ClassDefImpl::writeDeclarationLink(OutputList &ol,bool &found,const QCStrin
       found=TRUE;
     }
     ol.startMemberDeclaration();
-    ol.startMemberItem(anchor(),0);
+    ol.startMemberItem(anchor(),OutputGenerator::MemberItemType::Normal);
     QCString ctype = compoundTypeString();
     QCString cname = displayName(!localNames);
 
@@ -2479,7 +2479,7 @@ void ClassDefImpl::writeDeclarationLink(OutputList &ol,bool &found,const QCStrin
       ol.insertMemberAlign();
       ol.writeString(VhdlDocGen::getProtectionName(VhdlDocGen::convert(protection())));
     }
-    ol.endMemberItem(0);
+    ol.endMemberItem(OutputGenerator::MemberItemType::Normal);
 
     // add the brief description if available
     if (!briefDescription().isEmpty() && Config_getBool(BRIEF_MEMBER_DESC))
@@ -3319,7 +3319,8 @@ void ClassDefImpl::writeDeclaration(OutputList &ol,const MemberDef *md,bool inGr
     }
   }
   ol.docify(" {");
-  ol.endMemberItem(1);
+  ol.endMemberItem(OutputGenerator::MemberItemType::AnonymousStart);
+  ol.endMemberDeclaration(md ? md->anchor() : QCString(),inheritId);
 
   // write user defined member groups
   for (const auto &mg : m_impl->memberGroups)

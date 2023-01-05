@@ -388,7 +388,7 @@ void MemberList::writePlainDeclarations(OutputList &ol, bool inGroup,
                 first=FALSE;
               }
               ol.startMemberDeclaration();
-              ol.startMemberItem(md->anchor(),0,inheritId);
+              ol.startMemberItem(md->anchor(),OutputGenerator::MemberItemType::Normal,inheritId);
               bool detailsLinkable = md->hasDetailedDescription();
               if (!detailsLinkable)
               {
@@ -416,7 +416,7 @@ void MemberList::writePlainDeclarations(OutputList &ol, bool inGroup,
               {
                 ol.endDoxyAnchor(md->getOutputFileBase(),md->anchor());
               }
-              ol.endMemberItem(0);
+              ol.endMemberItem(OutputGenerator::MemberItemType::Normal);
               if (!md->briefDescription().isEmpty() && Config_getBool(BRIEF_MEMBER_DESC))
               {
                 auto parser { createDocParser() };

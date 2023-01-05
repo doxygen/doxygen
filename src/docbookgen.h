@@ -207,8 +207,8 @@ class DocbookGenerator : public OutputGenerator //: public CodeOutputForwarder<O
     void endInlineHeader(){DB_GEN_NEW};
     void startAnonTypeScope(int){DB_GEN_EMPTY};
     void endAnonTypeScope(int){DB_GEN_EMPTY};
-    void startMemberItem(const QCString &,int,const QCString &);
-    void endMemberItem(int annoType = -1);
+    void startMemberItem(const QCString &,MemberItemType,const QCString &);
+    void endMemberItem(MemberItemType);
     void startMemberTemplateParams();
     void endMemberTemplateParams(const QCString &,const QCString &);
     void startCompoundTemplateParams() { startSubsubsection(); }
@@ -220,7 +220,7 @@ class DocbookGenerator : public OutputGenerator //: public CodeOutputForwarder<O
     void startMemberGroup();
     void endMemberGroup(bool);
     void insertMemberAlign(bool){DB_GEN_EMPTY};
-    void insertMemberAlignLeft(int,bool){DB_GEN_EMPTY};
+    void insertMemberAlignLeft(MemberItemType,bool){DB_GEN_EMPTY};
     void startMemberDoc(const QCString &,const QCString &,
                         const QCString &,const QCString &,int,int,bool);
     void endMemberDoc(bool);

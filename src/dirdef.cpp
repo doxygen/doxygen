@@ -345,11 +345,11 @@ void DirDefImpl::writeSubDirList(OutputList &ol)
       if (dd->hasDocumentation() || !dd->getFiles().empty())
       {
         ol.startMemberDeclaration();
-        ol.startMemberItem(dd->anchor(),0);
+        ol.startMemberItem(dd->anchor(),OutputGenerator::MemberItemType::Normal);
         ol.parseText(theTranslator->trDir(FALSE,TRUE)+" ");
         ol.insertMemberAlign();
         ol.writeObjectLink(dd->getReference(),dd->getOutputFileBase(),QCString(),dd->shortName());
-        ol.endMemberItem(0);
+        ol.endMemberItem(OutputGenerator::MemberItemType::Normal);
         if (!dd->briefDescription().isEmpty() && Config_getBool(BRIEF_MEMBER_DESC))
         {
           ol.startMemberDescription(dd->getOutputFileBase());
@@ -401,7 +401,7 @@ void DirDefImpl::writeFileList(OutputList &ol)
       if (doc || src)
       {
         ol.startMemberDeclaration();
-        ol.startMemberItem(fd->anchor(),0);
+        ol.startMemberItem(fd->anchor(),OutputGenerator::MemberItemType::Normal);
         ol.docify(theTranslator->trFile(FALSE,TRUE)+" ");
         ol.insertMemberAlign();
         if (fd->isLinkable())
@@ -426,7 +426,7 @@ void DirDefImpl::writeFileList(OutputList &ol)
           ol.endTextLink();
           ol.popGeneratorState();
         }
-        ol.endMemberItem(0);
+        ol.endMemberItem(OutputGenerator::MemberItemType::Normal);
         if (!fd->briefDescription().isEmpty() && Config_getBool(BRIEF_MEMBER_DESC))
         {
           ol.startMemberDescription(fd->getOutputFileBase());

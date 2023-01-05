@@ -1801,13 +1801,13 @@ void RTFGenerator::endClassDiagram(const ClassDiagram &d,
   m_t << "}\n";
 }
 
-void RTFGenerator::startMemberItem(const QCString &,int,const QCString &)
+void RTFGenerator::startMemberItem(const QCString &,MemberItemType,const QCString &)
 {
   DBG_RTF(m_t << "{\\comment startMemberItem }\n")
   m_t << rtf_Style_Reset << rtf_BList_DepthStyle() << "\n"; // set style to appropriate depth
 }
 
-void RTFGenerator::endMemberItem(int)
+void RTFGenerator::endMemberItem(MemberItemType)
 {
   DBG_RTF(m_t << "{\\comment endMemberItem }\n")
   newParagraph();

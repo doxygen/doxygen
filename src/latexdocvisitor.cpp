@@ -200,10 +200,10 @@ QCString LatexDocVisitor::escapeMakeIndexChars(const char *s)
 
 
 LatexDocVisitor::LatexDocVisitor(TextStream &t,LatexCodeGenerator &ci,
-                                 const QCString &langExt,bool insideTabbing)
+                                 const QCString &langExt)
   : m_t(t), m_ci(ci), m_insidePre(FALSE),
     m_insideItem(FALSE), m_hide(FALSE),
-    m_insideTabbing(insideTabbing), m_langExt(langExt)
+    m_langExt(langExt)
 {
 }
 
@@ -1772,8 +1772,9 @@ void LatexDocVisitor::operator()(const DocParBlock &pb)
 
 void LatexDocVisitor::filter(const QCString &str, const bool retainNewLine)
 {
+  //printf("LatexDocVisitor::filter(%s) m_insideTabbing=%d\n",qPrint(str),m_ci.insideTabbing());
   filterLatexString(m_t,str,
-                    m_insideTabbing,
+                    m_ci.insideTabbing(),
                     m_insidePre,
                     m_insideItem,
                     m_ci.usedTableLevel()>0,  // insideTable

@@ -133,7 +133,7 @@ void LatexCodeGenerator::codify(const QCString &str)
                    }
                    result[i]=0; // add terminator
                    filterLatexString(m_t,result,
-                                     false, // insideTabbing
+                                     m_insideTabbing, // insideTabbing
                                      true,  // insidePre
                                      false, // insideItem
                                      m_usedTableLevel>0, // insideTable
@@ -705,9 +705,9 @@ static QCString substituteLatexKeywords(const QCString &str,
 
   // first substitute generic keywords
   QCString result = substituteKeywords(str,title,
-    convertToLaTeX(Config_getString(PROJECT_NAME)),
-    convertToLaTeX(projectNumber),
-        convertToLaTeX(Config_getString(PROJECT_BRIEF)));
+        convertToLaTeX(Config_getString(PROJECT_NAME),false),
+        convertToLaTeX(projectNumber,false),
+        convertToLaTeX(Config_getString(PROJECT_BRIEF),false));
 
   // additional LaTeX only keywords
   result = substitute(result,"$latexdocumentpre",theTranslator->latexDocumentPre());
@@ -749,7 +749,7 @@ void LatexGenerator::startIndexSection(IndexSection is)
   switch (is)
   {
     case IndexSection::isTitlePageStart:
-      m_t << substituteLatexKeywords(g_header,convertToLaTeX(Config_getString(PROJECT_NAME)));
+      m_t << substituteLatexKeywords(g_header,convertToLaTeX(Config_getString(PROJECT_NAME),m_codeGen.insideTabbing()));
       break;
     case IndexSection::isTitlePageAuthor:
       break;
@@ -1090,7 +1090,7 @@ void LatexGenerator::endIndexSection(IndexSection is)
     case IndexSection::isPageDocumentation2:
       break;
     case IndexSection::isEndIndex:
-      m_t << substituteLatexKeywords(g_footer,convertToLaTeX(Config_getString(PROJECT_NAME)));
+      m_t << substituteLatexKeywords(g_footer,convertToLaTeX(Config_getString(PROJECT_NAME),m_codeGen.insideTabbing()));
       break;
   }
 }
@@ -1269,7 +1269,7 @@ void LatexGenerator::endTextLink()
 
 static QCString objectLinkToString(const QCString &ref, const QCString &f,
                                     const QCString &anchor, const QCString &text,
-                                    bool disableLinks)
+                                    bool insideTabbing,bool disableLinks)
 {
   bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
   QCString result;
@@ -1280,13 +1280,13 @@ static QCString objectLinkToString(const QCString &ref, const QCString &f,
     if (!f.isEmpty() && !anchor.isEmpty()) result += "_";
     if (!anchor.isEmpty()) result += anchor;
     result += "}{";
-    result += convertToLaTeX(text);
+    result += convertToLaTeX(text,insideTabbing);
     result += "}}";
   }
   else
   {
     result += "\\textbf{ ";
-    result += convertToLaTeX(text);
+    result += convertToLaTeX(text,insideTabbing);
     result += "}";
   }
   return result;
@@ -1295,7 +1295,7 @@ static QCString objectLinkToString(const QCString &ref, const QCString &f,
 void LatexGenerator::writeObjectLink(const QCString &ref, const QCString &f,
                                      const QCString &anchor, const QCString &text)
 {
-  m_t << objectLinkToString(ref,f,anchor,text,m_disableLinks);
+  m_t << objectLinkToString(ref,f,anchor,text,m_codeGen.insideTabbing(),m_disableLinks);
 }
 
 void LatexGenerator::startPageRef()
@@ -1595,7 +1595,7 @@ void LatexGenerator::endSection(const QCString &lab,SectionType)
 void LatexGenerator::docify(const QCString &str)
 {
   filterLatexString(m_t,str,
-                    m_insideTabbing, // insideTabbing
+                    m_codeGen.insideTabbing(), // insideTabbing
                     false,           // insidePre
                     false,           // insideItem
                     m_codeGen.usedTableLevel()>0,  // insideTable
@@ -1630,7 +1630,7 @@ void LatexGenerator::startAnonTypeScope(int indent)
   {
     m_t << "\\begin{tabbing}\n";
     m_t << "xx\\=xx\\=xx\\=xx\\=xx\\=xx\\=xx\\=xx\\=xx\\=\\kill\n";
-    m_insideTabbing=TRUE;
+    m_codeGen.setInsideTabbing(true);
   }
   m_indent=indent;
 }
@@ -1640,7 +1640,7 @@ void LatexGenerator::endAnonTypeScope(int indent)
   if (indent==0)
   {
     m_t << "\n" << "\\end{tabbing}";
-    m_insideTabbing=FALSE;
+    m_codeGen.setInsideTabbing(false);
   }
   m_indent=indent;
 }
@@ -1661,19 +1661,19 @@ void LatexGenerator::endMemberTemplateParams(const QCString &,const QCString &)
   }
 }
 
-void LatexGenerator::startMemberItem(const QCString &,int annoType,const QCString &)
+void LatexGenerator::startMemberItem(const QCString &,MemberItemType type,const QCString &)
 {
   //printf("LatexGenerator::startMemberItem(%d)\n",annType);
-  if (!m_insideTabbing)
+  if (!m_codeGen.insideTabbing())
   {
     m_t << "\\item \n";
-    templateMemberItem = (annoType == 3);
+    templateMemberItem = (type == MemberItemType::Templated);
   }
 }
 
-void LatexGenerator::endMemberItem(int)
+void LatexGenerator::endMemberItem(MemberItemType)
 {
-  if (m_insideTabbing)
+  if (m_codeGen.insideTabbing())
   {
     m_t << "\\\\";
   }
@@ -1683,7 +1683,7 @@ void LatexGenerator::endMemberItem(int)
 
 void LatexGenerator::startMemberDescription(const QCString &,const QCString &,bool)
 {
-  if (!m_insideTabbing)
+  if (!m_codeGen.insideTabbing())
   {
     m_t << "\\begin{DoxyCompactList}\\small\\item\\em ";
   }
@@ -1696,7 +1696,7 @@ void LatexGenerator::startMemberDescription(const QCString &,const QCString &,bo
 
 void LatexGenerator::endMemberDescription()
 {
-  if (!m_insideTabbing)
+  if (!m_codeGen.insideTabbing())
   {
     //m_t << "\\item\\end{DoxyCompactList}";
     m_t << "\\end{DoxyCompactList}";
@@ -1711,7 +1711,7 @@ void LatexGenerator::endMemberDescription()
 void LatexGenerator::writeNonBreakableSpace(int)
 {
   //printf("writeNonBreakableSpace()\n");
-  if (m_insideTabbing)
+  if (m_codeGen.insideTabbing())
   {
     m_t << "\\>";
   }
@@ -1784,7 +1784,7 @@ void LatexGenerator::lastIndexPage()
 
 void LatexGenerator::startMemberList()
 {
-  if (!m_insideTabbing)
+  if (!m_codeGen.insideTabbing())
   {
     m_t << "\\begin{DoxyCompactItemize}\n";
   }
@@ -1792,8 +1792,8 @@ void LatexGenerator::startMemberList()
 
 void LatexGenerator::endMemberList()
 {
-  //printf("LatexGenerator::endMemberList(%d)\n",m_insideTabbing);
-  if (!m_insideTabbing)
+  //printf("LatexGenerator::endMemberList(%d)\n",m_codeGen.InsideTabbing());
+  if (!m_codeGen.insideTabbing())
   {
     m_t << "\\end{DoxyCompactItemize}\n";
   }
@@ -1998,8 +1998,7 @@ void LatexGenerator::writeDoc(const IDocNodeAST *ast,const Definition *ctx,const
   if (astImpl)
   {
     LatexDocVisitor visitor(m_t,m_codeGen,
-                            ctx?ctx->getDefFileExtension():QCString(""),
-                            m_insideTabbing);
+                            ctx?ctx->getDefFileExtension():QCString(""));
     std::visit(visitor,astImpl->root);
   }
 }
@@ -2064,7 +2063,7 @@ void LatexGenerator::endInlineHeader()
 
 void LatexGenerator::lineBreak(const QCString &)
 {
-  if (m_insideTabbing)
+  if (m_codeGen.insideTabbing())
   {
     m_t << "\\\\\n";
   }
@@ -2105,24 +2104,24 @@ void LatexGenerator::endMemberDocSimple(bool isEnum)
 
 void LatexGenerator::startInlineMemberType()
 {
-  m_insideTabbing = TRUE; // to prevent \+ from causing unwanted breaks
+  m_codeGen.setInsideTabbing(true); // to prevent \+ from causing unwanted breaks
 }
 
 void LatexGenerator::endInlineMemberType()
 {
   m_t << "&\n";
-  m_insideTabbing = FALSE;
+  m_codeGen.setInsideTabbing(false);
 }
 
 void LatexGenerator::startInlineMemberName()
 {
-  m_insideTabbing = TRUE; // to prevent \+ from causing unwanted breaks
+  m_codeGen.setInsideTabbing(true); // to prevent \+ from causing unwanted breaks
 }
 
 void LatexGenerator::endInlineMemberName()
 {
   m_t << "&\n";
-  m_insideTabbing = FALSE;
+  m_codeGen.setInsideTabbing(false);
 }
 
 void LatexGenerator::startInlineMemberDoc()
@@ -2162,7 +2161,7 @@ void LatexGenerator::writeInheritedSectionTitle(
   {
     m_t << "\\doxysubsubsection*{";
   }
-  m_t << theTranslator->trInheritedFrom(convertToLaTeX(title),
-                                        objectLinkToString(ref, file, anchor, name, m_disableLinks));
+  m_t << theTranslator->trInheritedFrom(convertToLaTeX(title,m_codeGen.insideTabbing()),
+                                        objectLinkToString(ref, file, anchor, name, m_codeGen.insideTabbing(), m_disableLinks));
   m_t << "}\n";
 }

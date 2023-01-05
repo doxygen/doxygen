@@ -264,10 +264,10 @@ class OutputList : public BaseOutputDocInterface
     { forall(&OutputGenerator::startAnonTypeScope,i1); }
     void endAnonTypeScope(int i1)
     { forall(&OutputGenerator::endAnonTypeScope,i1); }
-    void startMemberItem(const QCString &anchor,int i1,const QCString &id=QCString())
-    { forall(&OutputGenerator::startMemberItem,anchor,i1,id); }
-    void endMemberItem(int annoType = -1)
-    { forall(&OutputGenerator::endMemberItem,annoType); }
+    void startMemberItem(const QCString &anchor,OutputGenerator::MemberItemType type,const QCString &id=QCString())
+    { forall(&OutputGenerator::startMemberItem,anchor,type,id); }
+    void endMemberItem(OutputGenerator::MemberItemType type)
+    { forall(&OutputGenerator::endMemberItem,type); }
     void startMemberTemplateParams()
     { forall(&OutputGenerator::startMemberTemplateParams); }
     void endMemberTemplateParams(const QCString &anchor,const QCString &inheritId)
@@ -290,7 +290,7 @@ class OutputList : public BaseOutputDocInterface
     { forall(&OutputGenerator::endMemberGroup,last); }
     void insertMemberAlign(bool templ=FALSE)
     { forall(&OutputGenerator::insertMemberAlign,templ); }
-    void insertMemberAlignLeft(int typ=0, bool templ=FALSE)
+    void insertMemberAlignLeft(OutputGenerator::MemberItemType typ=OutputGenerator::MemberItemType::Normal, bool templ=FALSE)
     { forall(&OutputGenerator::insertMemberAlignLeft,typ,templ); }
     void writeRuler()
     { forall(&OutputGenerator::writeRuler); }

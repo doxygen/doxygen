@@ -122,7 +122,7 @@ class ManGenerator : public OutputGenerator //public CodeOutputForwarder<OutputG
     void startMemberHeader(const QCString &,int);
     void endMemberHeader();
     void insertMemberAlign(bool) {}
-    void insertMemberAlignLeft(int,bool){}
+    void insertMemberAlignLeft(MemberItemType,bool){}
     void startMemberSubtitle() {}
     void endMemberSubtitle() {}
     void startItemListItem();
@@ -135,8 +135,8 @@ class ManGenerator : public OutputGenerator //public CodeOutputForwarder<OutputG
     void endInlineHeader();
     void startAnonTypeScope(int);
     void endAnonTypeScope(int);
-    void startMemberItem(const QCString &,int,const QCString &);
-    void endMemberItem(int annoType = -1);
+    void startMemberItem(const QCString &,MemberItemType,const QCString &);
+    void endMemberItem(MemberItemType);
     void startMemberTemplateParams() {}
     void endMemberTemplateParams(const QCString &,const QCString &) {}
     void startCompoundTemplateParams() { startSubsubsection(); }

@@ -588,14 +588,14 @@ void ManGenerator::endAnonTypeScope(int indentLevel)
 }
 
 
-void ManGenerator::startMemberItem(const QCString &,int,const QCString &)
+void ManGenerator::startMemberItem(const QCString &,MemberItemType,const QCString &)
 {
   if (m_firstCol && !m_insideTabbing) m_t << ".in +1c\n";
   m_t << "\n.ti -1c\n.RI \"";
   m_firstCol=FALSE;
 }
 
-void ManGenerator::endMemberItem(int)
+void ManGenerator::endMemberItem(MemberItemType)
 {
   m_t << "\"\n.br";
 }

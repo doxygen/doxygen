@@ -1362,7 +1362,7 @@ void NamespaceLinkedRefMap::writeDeclaration(OutputList &ol,const QCString &titl
       if (lang==SrcLangExt_IDL && (isConstantGroup != nd->isConstantGroup()))
           continue; // will be output in another pass, see layout_default.xml
       ol.startMemberDeclaration();
-      ol.startMemberItem(nd->getOutputFileBase(),0);
+      ol.startMemberItem(nd->getOutputFileBase(),OutputGenerator::MemberItemType::Normal);
       QCString ct = nd->compoundTypeString();
       ol.docify(ct);
       ol.docify(" ");
@@ -1377,7 +1377,7 @@ void NamespaceLinkedRefMap::writeDeclaration(OutputList &ol,const QCString &titl
         name = nd->displayName();
       }
       ol.writeObjectLink(nd->getReference(),nd->getOutputFileBase(),QCString(),name);
-      ol.endMemberItem(0);
+      ol.endMemberItem(OutputGenerator::MemberItemType::Normal);
       if (!nd->briefDescription().isEmpty() && Config_getBool(BRIEF_MEMBER_DESC))
       {
         ol.startMemberDescription(nd->getOutputFileBase());
