@@ -3046,7 +3046,13 @@ NONLopt [^\n]*
                                             BEGIN(SkipVerbString);
                                           }
                                         }
-<SkipVerbString>[^\n"]+                 {
+<SkipVerbString>[^\n"\\]+               {
+                                          *yyextra->pSkipVerbString << yytext;
+                                        }
+<SkipVerbString>"\\\\"                  { // escaped backslash
+                                          *yyextra->pSkipVerbString << yytext;
+                                        }
+<SkipVerbString>"\\\""                  { // backslash escaped quote
                                           *yyextra->pSkipVerbString << yytext;
                                         }
 <SkipVerbString>"\"\""                  { // quote escape
