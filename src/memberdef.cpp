@@ -212,7 +212,6 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     virtual int getMemberGroupId() const;
     virtual MemberGroup *getMemberGroup() const;
     virtual bool fromAnonymousScope() const;
-    virtual bool anonymousDeclShown() const;
     virtual MemberDef *fromAnonymousMember() const;
     virtual bool hasCallGraph() const;
     virtual bool hasCallerGraph() const;
@@ -288,7 +287,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     virtual void setMemberGroup(MemberGroup *grp);
     virtual void setMemberGroupId(int id);
     virtual void makeImplementationDetail();
-    virtual void setFromAnonymousScope(bool b) const;
+    virtual void setFromAnonymousScope(bool b);
     virtual void setFromAnonymousMember(MemberDef *m);
     virtual void enableCallGraph(bool e);
     virtual void enableCallerGraph(bool e);
@@ -303,7 +302,6 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     virtual void invalidateCachedArgumentTypes();
     virtual void setMemberDefinition(MemberDef *md);
     virtual void setMemberDeclaration(MemberDef *md);
-    virtual void setAnonymousUsed() const;
     virtual void copyArgumentNames(const MemberDef *bmd);
     virtual void setCategory(ClassDef *);
     virtual void setCategoryRelation(const MemberDef *);
@@ -706,8 +704,6 @@ class MemberDefAliasImpl : public DefinitionAliasMixin<MemberDef>
     { return m_memberGroup; }
     virtual bool fromAnonymousScope() const
     { return getMdAlias()->fromAnonymousScope(); }
-    virtual bool anonymousDeclShown() const
-    { return getMdAlias()->anonymousDeclShown(); }
     virtual MemberDef *fromAnonymousMember() const
     { return getMdAlias()->fromAnonymousMember(); }
     virtual bool hasCallGraph() const
@@ -1269,7 +1265,6 @@ class MemberDefImpl::IMPL
     bool docEnumValues = false;       // is an enum with documented enum values.
 
     mutable bool annScope = false;    // member is part of an anonymous scope
-    mutable bool annUsed = false;     // ugly: needs to be mutable to allow setAnonymousUsed to act as a
     mutable bool hasDetailedDescriptionCached = false;
     bool detailedDescriptionCachedValue = false;
                                       // const member.
@@ -1344,7 +1339,6 @@ void MemberDefImpl::IMPL::init(Definition *d,
   annScope=FALSE;
   memSpec=0;
   annMemb=0;
-  annUsed=FALSE;
   annEnumType=0;
   groupAlias=0;
   explExt=FALSE;
@@ -2108,16 +2102,16 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
   QCString cfname = getOutputFileBase();
 
   // search for the last anonymous scope in the member type
-  ClassDefMutable *annoClassDef=toClassDefMutable(getClassDefOfAnonymousType());
+  ClassDef *annoClassDef=getClassDefOfAnonymousType();
 
   ol.startMemberDeclaration();
 
   // start a new member declaration
   bool isAnonType = annoClassDef || m_impl->annMemb || m_impl->annEnumType;
-  ol.startMemberItem(anchor(),
-                     isAnonType ? 1 : !m_impl->tArgList.empty() ? 3 : 0,
-                     inheritId
-                    );
+  OutputGenerator::MemberItemType anonType = isAnonType ? OutputGenerator::MemberItemType::AnonymousStart :
+                              !m_impl->tArgList.empty() ? OutputGenerator::MemberItemType::Templated      :
+                                                          OutputGenerator::MemberItemType::Normal;
+  ol.startMemberItem(anchor(), anonType, inheritId);
 
   // If there is no detailed description we need to write the anchor here.
   bool detailsVisible = hasDetailedDescription();
@@ -2192,7 +2186,8 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
       ol.startAnonTypeScope(indentLevel);
       annoClassDef->writeDeclaration(ol,m_impl->annMemb,inGroup,indentLevel+1,inheritedFrom,inheritId);
       //printf(">>>>>>>>>>>>>> startMemberItem(2)\n");
-      ol.startMemberItem(anchor(),2,inheritId);
+      anonType = OutputGenerator::MemberItemType::AnonymousEnd;
+      ol.startMemberItem(anchor(),anonType,inheritId);
       int j;
       for (j=0;j< indentLevel;j++)
       {
@@ -2309,8 +2304,6 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
             annMemb->getNamespaceDef(),
             annMemb->getFileDef(),
             annMemb->getGroupDef());
-        annMemb->setAnonymousUsed();
-        setAnonymousUsed();
       }
       else
       {
@@ -2330,11 +2323,6 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
       // there is a brief member description and brief member
       // descriptions are enabled or there is no detailed description.
     {
-      if (annMemb)
-      {
-        annMemb->setAnonymousUsed();
-        setAnonymousUsed();
-      }
       const ClassDef *rcd = cd;
       if (isReference() && getClassDef()) rcd = getClassDef();
       writeLink(ol,rcd,nd,fd,gd,TRUE);
@@ -2467,7 +2455,7 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
 
   //printf("endMember %s annoClassDef=%p annEnumType=%p\n",
   //    qPrint(name()),annoClassDef,annEnumType);
-  ol.endMemberItem();
+  ol.endMemberItem(anonType);
   if (endAnonScopeNeeded)
   {
     ol.endAnonTypeScope(indentLevel);
@@ -3151,7 +3139,7 @@ QCString MemberDefImpl::displayDefinition() const
   reg::Match match;
   if (reg::search(sdef,match,reAnonymous))
   {
-    ldef = match.prefix().str() + " { ... } " + match.suffix().str();
+    ldef = match.prefix().str() + " { ... } " + removeAnonymousScopes(match.suffix().str());
   }
 
   const ClassDef *cd=getClassDef();
@@ -3395,9 +3383,11 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
     }
     if (!found) // anonymous compound
     {
-      //printf("Anonymous compound '%s'\n",qPrint(cname));
+      ClassDef *annoClassDef=getClassDefOfAnonymousType();
+      QCString typeName;
+      if (annoClassDef) typeName=annoClassDef->compoundTypeString();
       ol.startDoxyAnchor(cfname,cname,memAnchor,doxyName,doxyArgs);
-      ol.startMemberDoc(ciname,name(),memAnchor,"",memCount,memTotal,showInline);
+      ol.startMemberDoc(ciname,name(),memAnchor,"["+typeName+"]",memCount,memTotal,showInline);
       // search for the last anonymous compound name in the definition
 
       ol.startMemberDocName(isObjCMethod());
@@ -3407,7 +3397,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
         std::string suffix = match.suffix().str();
         ol.docify(prefix.c_str());
         ol.docify(" { ... } ");
-        linkifyText(TextGeneratorOLImpl(ol),scopedContainer,getBodyDef(),this,suffix.c_str());
+        linkifyText(TextGeneratorOLImpl(ol),scopedContainer,getBodyDef(),this,removeAnonymousScopes(suffix.c_str()));
       }
       else
       {
@@ -4726,27 +4716,6 @@ void MemberDefImpl::enableReferencesRelation(bool e)
   if (e) Doxygen::parseSourcesNeeded = TRUE;
 }
 
-#if 0
-bool MemberDefImpl::protectionVisible() const
-{
-  return m_impl->prot==Public ||
-         (m_impl->prot==Private   && Config_getBool(EXTRACT_PRIVATE))   ||
-         (m_impl->prot==Protected && Config_getBool(EXTRACT_PROTECTED)) ||
-         (m_impl->prot==Package   && Config_getBool(EXTRACT_PACKAGE));
-}
-#endif
-
-#if 0
-void MemberDefImpl::setInbodyDocumentation(const QCString &docs,
-                  const QCString &docFile,int docLine)
-{
-  m_impl->inbodyDocs = docs;
-  m_impl->inbodyDocs = m_impl->inbodyDocs.stripWhiteSpace();
-  m_impl->inbodyLine = docLine;
-  m_impl->inbodyFile = docFile;
-}
-#endif
-
 bool MemberDefImpl::isObjCMethod() const
 {
   if (getClassDef() && getClassDef()->isObjectiveC() && isFunction()) return TRUE;
@@ -5432,20 +5401,6 @@ bool MemberDefImpl::fromAnonymousScope() const
   return m_impl->annScope;
 }
 
-static std::mutex g_anonymousUsedMutex;
-
-bool MemberDefImpl::anonymousDeclShown() const
-{
-  std::lock_guard<std::mutex> lock(g_anonymousUsedMutex);
-  return m_impl->annUsed;
-}
-
-void MemberDefImpl::setAnonymousUsed() const
-{
-  std::lock_guard<std::mutex> lock(g_anonymousUsedMutex);
-  m_impl->annUsed = TRUE;
-}
-
 bool MemberDefImpl::hasCallGraph() const
 {
   return m_impl->hasCallGraph;
@@ -5724,7 +5679,7 @@ void MemberDefImpl::makeImplementationDetail()
   m_impl->implOnly=TRUE;
 }
 
-void MemberDefImpl::setFromAnonymousScope(bool b) const
+void MemberDefImpl::setFromAnonymousScope(bool b)
 {
   m_impl->annScope=b;
 }

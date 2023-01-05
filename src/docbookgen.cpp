@@ -712,14 +712,14 @@ DB_GEN_C
   if (m_inSimpleSect[m_levelListItem]) m_t << "</simplesect>\n";
   m_inSimpleSect[m_levelListItem] = FALSE;
 }
-void DocbookGenerator::startMemberItem(const QCString &,int,const QCString &)
+void DocbookGenerator::startMemberItem(const QCString &,MemberItemType,const QCString &)
 {
 DB_GEN_C
   if (m_inListItem[m_levelListItem]) m_t << "</listitem>\n";
   m_t << "            <listitem><para>";
   m_inListItem[m_levelListItem] = TRUE;
 }
-void DocbookGenerator::endMemberItem()
+void DocbookGenerator::endMemberItem(MemberItemType)
 {
 DB_GEN_C
   m_t << "</para>\n";

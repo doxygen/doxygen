@@ -229,7 +229,7 @@ QCString correctId(const QCString &s);
 
 QCString convertToHtml(const QCString &s,bool keepEntities=TRUE);
 
-QCString convertToLaTeX(const QCString &s,bool insideTabbing=FALSE,bool keepSpaces=FALSE);
+QCString convertToLaTeX(const QCString &s,bool insideTabbing,bool keepSpaces=FALSE);
 
 QCString convertToXML(const QCString &s, bool keepEntities=FALSE);
 

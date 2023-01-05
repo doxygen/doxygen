@@ -388,7 +388,7 @@ void MemberList::writePlainDeclarations(OutputList &ol, bool inGroup,
                 first=FALSE;
               }
               ol.startMemberDeclaration();
-              ol.startMemberItem(md->anchor(),0,inheritId);
+              ol.startMemberItem(md->anchor(),OutputGenerator::MemberItemType::Normal,inheritId);
               bool detailsLinkable = md->hasDetailedDescription();
               if (!detailsLinkable)
               {
@@ -416,7 +416,7 @@ void MemberList::writePlainDeclarations(OutputList &ol, bool inGroup,
               {
                 ol.endDoxyAnchor(md->getOutputFileBase(),md->anchor());
               }
-              ol.endMemberItem();
+              ol.endMemberItem(OutputGenerator::MemberItemType::Normal);
               if (!md->briefDescription().isEmpty() && Config_getBool(BRIEF_MEMBER_DESC))
               {
                 auto parser { createDocParser() };
@@ -470,31 +470,6 @@ void MemberList::writePlainDeclarations(OutputList &ol, bool inGroup,
             }
           }
           break;
-      }
-    }
-  }
-
-  // handle members that are inside anonymous compounds and for which
-  // no variables of the anonymous compound type exist.
-  if (cd)
-  {
-    for (const auto &md : m_members)
-    {
-      if (md->fromAnonymousScope() && !md->anonymousDeclShown())
-      {
-        MemberDefMutable *mdm = toMemberDefMutable(md);
-        if (mdm) mdm->setFromAnonymousScope(FALSE);
-        //printf("anonymous compound members\n");
-        if (md->isBriefSectionVisible())
-        {
-          if (first)
-          {
-            ol.startMemberList();
-            first=FALSE;
-          }
-          md->writeDeclaration(ol,cd,nd,fd,gd,inGroup,indentLevel);
-        }
-        if (mdm) mdm->setFromAnonymousScope(TRUE);
       }
     }
   }

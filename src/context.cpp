@@ -1262,7 +1262,7 @@ static TemplateVariant parseDoc(const Definition *def,const QCString &file,int l
       case ContextOutputFormat_Latex:
         {
           LatexCodeGenerator codeGen(ts,relPath,file);
-          LatexDocVisitor visitor(ts,codeGen,def->getDefFileExtension(),FALSE);
+          LatexDocVisitor visitor(ts,codeGen,def->getDefFileExtension());
           std::visit(visitor,astImpl->root);
         }
         break;

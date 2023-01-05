@@ -1899,7 +1899,7 @@ void HtmlGenerator::endMemberList()
 //  0 = single column right aligned
 //  1 = double column left aligned
 //  2 = single column left aligned
-void HtmlGenerator::startMemberItem(const QCString &anchor,int annoType,const QCString &inheritId)
+void HtmlGenerator::startMemberItem(const QCString &anchor,MemberItemType type,const QCString &inheritId)
 {
   DBG_HTML(m_t << "<!-- startMemberItem() -->\n")
   if (m_emptySection)
@@ -1913,11 +1913,15 @@ void HtmlGenerator::startMemberItem(const QCString &anchor,int annoType,const QC
     m_t << " inherit " << inheritId;
   }
   m_t << "\">";
-  insertMemberAlignLeft(annoType, true);
+  insertMemberAlignLeft(type, true);
 }
 
-void HtmlGenerator::endMemberItem()
+void HtmlGenerator::endMemberItem(MemberItemType type)
 {
+  if (type==MemberItemType::AnonymousStart || type==MemberItemType::AnonymousEnd)
+  {
+    insertMemberAlign(false);
+  }
   m_t << "</td></tr>\n";
 }
 
@@ -1953,15 +1957,15 @@ void HtmlGenerator::insertMemberAlign(bool templ)
   m_t << "&#160;</td><td class=\"" << className << "\" valign=\"bottom\">";
 }
 
-void HtmlGenerator::insertMemberAlignLeft(int annoType, bool initTag)
+void HtmlGenerator::insertMemberAlignLeft(MemberItemType type, bool initTag)
 {
   if (!initTag) m_t << "&#160;</td>";
-  switch(annoType)
+  switch (type)
   {
-    case 0:  m_t << "<td class=\"memItemLeft\" align=\"right\" valign=\"top\">"; break;
-    case 1:  m_t << "<td class=\"memItemLeft\" >"; break;
-    case 2:  m_t << "<td class=\"memItemLeft\" valign=\"top\">"; break;
-    default: m_t << "<td class=\"memTemplParams\" colspan=\"2\">"; break;
+    case MemberItemType::Normal:         m_t << "<td class=\"memItemLeft\" align=\"right\" valign=\"top\">"; break;
+    case MemberItemType::AnonymousStart: m_t << "<td class=\"memItemLeft\" >"; break;
+    case MemberItemType::AnonymousEnd:   m_t << "<td class=\"memItemLeft\" valign=\"top\">"; break;
+    case MemberItemType::Templated:      m_t << "<td class=\"memTemplParams\" colspan=\"2\">"; break;
   }
 }
 

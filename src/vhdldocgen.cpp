@@ -1777,13 +1777,14 @@ void VhdlDocGen::writeVHDLDeclaration(const MemberDefMutable* mdef,OutputList &o
   ClassDef *annoClassDef=mdef->getClassDefOfAnonymousType();
 
   // start a new member declaration
-  uint isAnonymous = annoClassDef!=0; // || m_impl->annMemb || m_impl->annEnumType;
+  OutputGenerator::MemberItemType memType = annoClassDef!=0 ? OutputGenerator::MemberItemType::AnonymousStart :
+                                                              OutputGenerator::MemberItemType::Normal;
   ///printf("startMemberItem for %s\n",qPrint(name()));
   uint64_t mm=mdef->getMemberSpecifiers();
   if (mm==VhdlDocGen::MISCELLANEOUS)
-      isAnonymous=3;
+      memType=OutputGenerator::MemberItemType::Templated;
 
-   ol.startMemberItem( mdef->anchor(), isAnonymous ); //? 1 : m_impl->tArgList ? 3 : 0);
+   ol.startMemberItem( mdef->anchor(), memType );
 
   // If there is no detailed description we need to write the anchor here.
   bool detailsVisible = mdef->hasDetailedDescription();
@@ -1882,7 +1883,7 @@ void VhdlDocGen::writeVHDLDeclaration(const MemberDefMutable* mdef,OutputList &o
       }
       else
       {
-        ol.insertMemberAlignLeft(isAnonymous, false);
+        ol.insertMemberAlignLeft(memType, false);
         ol.docify(" ");
         ol.startBold();
         VhdlDocGen::formatString(ltype,ol,mdef);
@@ -2006,7 +2007,7 @@ void VhdlDocGen::writeVHDLDeclaration(const MemberDefMutable* mdef,OutputList &o
     ol.endDoxyAnchor(cfname,mdef->anchor());
   }
 
-  ol.endMemberItem();
+  ol.endMemberItem(memType);
   if (!mdef->briefDescription().isEmpty() &&   Config_getBool(BRIEF_MEMBER_DESC) /* && !annMemb */)
   {
     QCString s=mdef->briefDescription();

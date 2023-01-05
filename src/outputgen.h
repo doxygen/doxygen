@@ -413,8 +413,9 @@ class OutputGenerator : public BaseOutputDocInterface
     virtual void endInlineHeader() = 0;
     virtual void startAnonTypeScope(int) = 0;
     virtual void endAnonTypeScope(int) = 0;
-    virtual void startMemberItem(const QCString &,int,const QCString &) = 0;
-    virtual void endMemberItem() = 0;
+    enum class MemberItemType { Normal, AnonymousStart, AnonymousEnd, Templated };
+    virtual void startMemberItem(const QCString &,MemberItemType,const QCString &) = 0;
+    virtual void endMemberItem(MemberItemType annoType = MemberItemType::Normal) = 0;
     virtual void startMemberTemplateParams() = 0;
     virtual void endMemberTemplateParams(const QCString &,const QCString &) = 0;
     virtual void startCompoundTemplateParams() = 0;
@@ -426,7 +427,7 @@ class OutputGenerator : public BaseOutputDocInterface
     virtual void startMemberGroup() = 0;
     virtual void endMemberGroup(bool) = 0;
     virtual void insertMemberAlign(bool) = 0;
-    virtual void insertMemberAlignLeft(int,bool) = 0;
+    virtual void insertMemberAlignLeft(MemberItemType,bool) = 0;
     virtual void startMemberDoc(const QCString &,const QCString &,
                                 const QCString &,const QCString &,int,int,bool) = 0;
     virtual void endMemberDoc(bool) = 0;

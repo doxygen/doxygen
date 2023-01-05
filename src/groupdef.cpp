@@ -861,11 +861,11 @@ void GroupDefImpl::writeFiles(OutputList &ol,const QCString &title)
     {
       if (!fd->hasDocumentation()) continue;
       ol.startMemberDeclaration();
-      ol.startMemberItem(fd->getOutputFileBase(),0);
+      ol.startMemberItem(fd->getOutputFileBase(),OutputGenerator::MemberItemType::Normal);
       ol.docify(theTranslator->trFile(FALSE,TRUE)+" ");
       ol.insertMemberAlign();
       ol.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),QCString(),fd->name());
-      ol.endMemberItem();
+      ol.endMemberItem(OutputGenerator::MemberItemType::Normal);
       if (!fd->briefDescription().isEmpty() && Config_getBool(BRIEF_MEMBER_DESC))
       {
         ol.startMemberDescription(fd->getOutputFileBase());
@@ -905,12 +905,12 @@ void GroupDefImpl::writeNestedGroups(OutputList &ol,const QCString &title)
       {
         if (!gd->hasDocumentation()) continue;
         ol.startMemberDeclaration();
-        ol.startMemberItem(gd->getOutputFileBase(),0);
+        ol.startMemberItem(gd->getOutputFileBase(),OutputGenerator::MemberItemType::Normal);
         //ol.docify(theTranslator->trGroup(FALSE,TRUE));
         //ol.docify(" ");
         ol.insertMemberAlign();
         ol.writeObjectLink(gd->getReference(),gd->getOutputFileBase(),QCString(),gd->groupTitle());
-        ol.endMemberItem();
+        ol.endMemberItem(OutputGenerator::MemberItemType::Normal);
         if (!gd->briefDescription().isEmpty() && Config_getBool(BRIEF_MEMBER_DESC))
         {
           ol.startMemberDescription(gd->getOutputFileBase());
@@ -938,11 +938,11 @@ void GroupDefImpl::writeDirs(OutputList &ol,const QCString &title)
     {
       if (!dd->hasDocumentation()) continue;
       ol.startMemberDeclaration();
-      ol.startMemberItem(dd->getOutputFileBase(),0);
+      ol.startMemberItem(dd->getOutputFileBase(),OutputGenerator::MemberItemType::Normal);
       ol.parseText(theTranslator->trDir(FALSE,TRUE));
       ol.insertMemberAlign();
       ol.writeObjectLink(dd->getReference(),dd->getOutputFileBase(),QCString(),dd->shortName());
-      ol.endMemberItem();
+      ol.endMemberItem(OutputGenerator::MemberItemType::Normal);
       if (!dd->briefDescription().isEmpty() && Config_getBool(BRIEF_MEMBER_DESC))
       {
         ol.startMemberDescription(dd->getOutputFileBase());

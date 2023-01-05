@@ -145,14 +145,14 @@ class RTFGenerator : public OutputGenerator
     void endInlineHeader();
     void startAnonTypeScope(int) {}
     void endAnonTypeScope(int) {}
-    void startMemberItem(const QCString &,int,const QCString &);
-    void endMemberItem();
+    void startMemberItem(const QCString &,MemberItemType,const QCString &);
+    void endMemberItem(MemberItemType);
     void startMemberTemplateParams() {}
     void endMemberTemplateParams(const QCString &,const QCString &) {}
     void startCompoundTemplateParams() { startSubsubsection(); }
     void endCompoundTemplateParams() { endSubsubsection(); }
     void insertMemberAlign(bool) {}
-    void insertMemberAlignLeft(int,bool){}
+    void insertMemberAlignLeft(MemberItemType,bool){}
 
     void writeRuler() { rtfwriteRuler_thin(); }
 

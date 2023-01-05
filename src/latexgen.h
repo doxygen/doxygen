@@ -62,6 +62,8 @@ class LatexCodeGenerator : public CodeOutputInterface
 
     void setRelativePath(const QCString &path);
     void setSourceFileName(const QCString &sourceFileName);
+    void setInsideTabbing(bool b) { m_insideTabbing=b; }
+    bool insideTabbing() const { return m_insideTabbing; }
 
   private:
     void _writeCodeLink(const QCString &className,
@@ -76,6 +78,7 @@ class LatexCodeGenerator : public CodeOutputInterface
     int m_col = 0;
     bool m_doxyCodeLineOpen = false;
     int m_usedTableLevel = 0;
+    bool m_insideTabbing = false;
 };
 
 /** Generator for LaTeX output. */
@@ -162,8 +165,8 @@ class LatexGenerator : public OutputGenerator //: public CodeOutputForwarder<Out
     void endInlineHeader();
     void startAnonTypeScope(int);
     void endAnonTypeScope(int);
-    void startMemberItem(const QCString &,int,const QCString &);
-    void endMemberItem();
+    void startMemberItem(const QCString &,MemberItemType,const QCString &);
+    void endMemberItem(MemberItemType);
     void startMemberTemplateParams();
     void endMemberTemplateParams(const QCString &,const QCString &);
     void startCompoundTemplateParams() { startSubsubsection(); }
@@ -177,7 +180,7 @@ class LatexGenerator : public OutputGenerator //: public CodeOutputForwarder<Out
     void endMemberGroup(bool);
 
     void insertMemberAlign(bool) {}
-    void insertMemberAlignLeft(int,bool){}
+    void insertMemberAlignLeft(MemberItemType,bool){}
 
     void writeRuler() { m_t << "\n\n"; }
     void writeAnchor(const QCString &fileName,const QCString &name);
@@ -307,7 +310,6 @@ class LatexGenerator : public OutputGenerator //: public CodeOutputForwarder<Out
     CodeOutputInterface *codeGen() { return &m_codeGen; }
 
   private:
-    bool m_insideTabbing = false;
     bool m_firstDescItem = true;
     bool m_disableLinks = false;
     QCString m_relPath;

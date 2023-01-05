@@ -78,7 +78,7 @@
 
 #define ENABLE_TRACINGSUPPORT 0
 
-#if defined(_OS_MAC_) && ENABLE_TRACINGSUPPORT
+#if defined(__APPLE__) && ENABLE_TRACINGSUPPORT
 #define TRACINGSUPPORT
 #endif
 
@@ -5064,7 +5064,7 @@ void filterLatexString(TextStream &t,const QCString &str,
     bool insideTabbing,bool insidePre,bool insideItem,bool insideTable,bool keepSpaces, const bool retainNewline)
 {
   if (str.isEmpty()) return;
-  //if (strlen(str)<2) stackTrace();
+  //printf("filterLatexString(%s) insideTabbing=%d\n",qPrint(str),insideTabbing);
   const char *p=str.data();
   const char *q;
   int cnt;
@@ -5218,6 +5218,7 @@ void filterLatexString(TextStream &t,const QCString &str,
 
 QCString latexEscapeLabelName(const QCString &s)
 {
+  //printf("latexEscapeLabelName(%s)\n",qPrint(s));
   if (s.isEmpty()) return s;
   QCString tmp(s.length()+1);
   TextStream t;
@@ -5261,6 +5262,7 @@ QCString latexEscapeLabelName(const QCString &s)
 
 QCString latexEscapeIndexChars(const QCString &s)
 {
+  //printf("latexEscapeIndexChars(%s)\n",qPrint(s));
   if (s.isEmpty()) return s;
   QCString tmp(s.length()+1);
   TextStream t;

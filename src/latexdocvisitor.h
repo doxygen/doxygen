@@ -31,7 +31,7 @@ class LatexDocVisitor : public DocVisitor
 {
   public:
     LatexDocVisitor(TextStream &t,LatexCodeGenerator &ci,
-                    const QCString &langExt,bool insideTabbing);
+                    const QCString &langExt);
 
     //--------------------------------------
     // visitor functions for leaf nodes
@@ -164,7 +164,6 @@ class LatexDocVisitor : public DocVisitor
     bool m_insidePre;
     bool m_insideItem;
     bool m_hide;
-    bool m_insideTabbing;
     QCString m_langExt;
 
     struct TableState
