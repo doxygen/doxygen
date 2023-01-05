@@ -20,6 +20,7 @@
 #pragma warning( push )
 #pragma warning( disable : 4242 )
 #pragma warning( disable : 4244 )
+#pragma warning( disable : 4996 )
 #endif
 #include <gunzip.hh>
 #ifdef _MSC_VER
@@ -156,11 +157,28 @@ bool DotRunner::readBoundingBox(const QCString &fileName,int *width,int *height,
   const std::string streamStart = "stream\n";
   const std::string streamEnd = "\nendstream";
 
+  auto detectDeflateStreamStart = [&streamStart](const char *s)
+  {
+    size_t len = streamStart.length();
+    bool streamOK = strncmp(s,streamStart.c_str(),len)==0;
+    if (streamOK) // ASCII marker matches, check stream header bytes as well
+    {
+      unsigned short header1 = static_cast<unsigned char>(s[len])<<8; // CMF byte
+      if (header1) // not end of string
+      {
+        unsigned short header = (static_cast<unsigned char>(s[len+1])) | header1; // FLG byte
+        // check for correct header (see https://www.rfc-editor.org/rfc/rfc1950)
+        return ((header&0x8F20)==0x0800) && (header%31)==0;
+      }
+    }
+    return false;
+  };
+
   const size_t l = contents.length();
   size_t i=0;
   while (i<l)
   {
-    if (!isEps && contents[i]=='s' && strncmp(&contents[i],streamStart.c_str(),streamStart.length())==0)
+    if (!isEps && contents[i]=='s' && detectDeflateStreamStart(&contents[i]))
     { // compressed stream start
       int col=17;
       i+=streamStart.length();

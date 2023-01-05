@@ -430,7 +430,7 @@ namespace gunzip_ns
         static_assert((T)false, "result_of<CallableType> is invalid; use "
             "result_of<CallableType(zero or more argument types)> instead.");
     };
-    #if __cplusplus > 201703UL
+    #if __cplusplus > 202000UL
     template <typename F, typename... Args>
     struct result_of<F(Args...)> : std::invoke_result<F, Args...> {};
     #else
