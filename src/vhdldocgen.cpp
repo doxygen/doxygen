@@ -2006,7 +2006,7 @@ void VhdlDocGen::writeVHDLDeclaration(const MemberDefMutable* mdef,OutputList &o
     ol.endDoxyAnchor(cfname,mdef->anchor());
   }
 
-  ol.endMemberItem();
+  ol.endMemberItem(isAnonymous);
   if (!mdef->briefDescription().isEmpty() &&   Config_getBool(BRIEF_MEMBER_DESC) /* && !annMemb */)
   {
     QCString s=mdef->briefDescription();

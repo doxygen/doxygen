@@ -414,7 +414,7 @@ class OutputGenerator : public BaseOutputDocInterface
     virtual void startAnonTypeScope(int) = 0;
     virtual void endAnonTypeScope(int) = 0;
     virtual void startMemberItem(const QCString &,int,const QCString &) = 0;
-    virtual void endMemberItem() = 0;
+    virtual void endMemberItem(int annoType = -1) = 0;
     virtual void startMemberTemplateParams() = 0;
     virtual void endMemberTemplateParams(const QCString &,const QCString &) = 0;
     virtual void startCompoundTemplateParams() = 0;

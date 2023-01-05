@@ -1671,7 +1671,7 @@ void LatexGenerator::startMemberItem(const QCString &,int annoType,const QCStrin
   }
 }
 
-void LatexGenerator::endMemberItem()
+void LatexGenerator::endMemberItem(int)
 {
   if (m_insideTabbing)
   {

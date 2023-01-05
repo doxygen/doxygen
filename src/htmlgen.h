@@ -154,7 +154,7 @@ class HtmlGenerator : public OutputGenerator //public CodeOutputForwarder<Output
     void startAnonTypeScope(int) {}
     void endAnonTypeScope(int) {}
     void startMemberItem(const QCString &anchor,int,const QCString &inheritId);
-    void endMemberItem();
+    void endMemberItem(int annoType = -1);
     void startMemberTemplateParams();
     void endMemberTemplateParams(const QCString &anchor,const QCString &inheritId);
     void startCompoundTemplateParams();

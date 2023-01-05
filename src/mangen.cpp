@@ -595,7 +595,7 @@ void ManGenerator::startMemberItem(const QCString &,int,const QCString &)
   m_firstCol=FALSE;
 }
 
-void ManGenerator::endMemberItem()
+void ManGenerator::endMemberItem(int)
 {
   m_t << "\"\n.br";
 }
