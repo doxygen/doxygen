@@ -232,7 +232,6 @@ class MemberDef : public Definition
     virtual MemberGroup *getMemberGroup() const = 0;
 
     virtual bool fromAnonymousScope() const = 0;
-    virtual bool anonymousDeclShown() const = 0;
     virtual MemberDef *fromAnonymousMember() const = 0;
 
     // callgraph related members
@@ -432,8 +431,7 @@ class MemberDefMutable : public DefinitionMutable, public MemberDef
     virtual void writeTagFile(TextStream &,bool useQualifiedName) const = 0;
 
     // write helpers
-    virtual void setAnonymousUsed() const = 0;
-    virtual void setFromAnonymousScope(bool b) const = 0;
+    virtual void setFromAnonymousScope(bool b) = 0;
 };
 
 

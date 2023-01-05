@@ -474,31 +474,6 @@ void MemberList::writePlainDeclarations(OutputList &ol, bool inGroup,
     }
   }
 
-  // handle members that are inside anonymous compounds and for which
-  // no variables of the anonymous compound type exist.
-  if (cd)
-  {
-    for (const auto &md : m_members)
-    {
-      if (md->fromAnonymousScope() && !md->anonymousDeclShown())
-      {
-        MemberDefMutable *mdm = toMemberDefMutable(md);
-        if (mdm) mdm->setFromAnonymousScope(FALSE);
-        //printf("anonymous compound members\n");
-        if (md->isBriefSectionVisible())
-        {
-          if (first)
-          {
-            ol.startMemberList();
-            first=FALSE;
-          }
-          md->writeDeclaration(ol,cd,nd,fd,gd,inGroup,indentLevel);
-        }
-        if (mdm) mdm->setFromAnonymousScope(TRUE);
-      }
-    }
-  }
-
   if (!first)
   {
     ol.endMemberList();
