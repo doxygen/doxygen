@@ -284,6 +284,8 @@ class RTFGenerator : public OutputGenerator
     void writeLabel(const QCString &l,bool isLast);
     void endLabels();
 
+    void writeLocalToc(const SectionRefs &,const LocalToc &) {}
+
     static bool preProcessFileInplace(const QCString &path,const QCString &name);
 
     CodeOutputInterface *codeGen() { return &m_codeGen; }
@@ -324,5 +326,8 @@ class RTFGenerator : public OutputGenerator
     RTFListItemInfo m_listItemInfo[maxIndentLevels];
     RTFCodeGenerator m_codeGen;
 };
+
+QCString rtfFormatBmkStr(const QCString &name);
+
 
 #endif

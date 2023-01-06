@@ -274,6 +274,8 @@ class ManGenerator : public OutputGenerator //public CodeOutputForwarder<OutputG
     void writeLabel(const QCString &l,bool isLast);
     void endLabels();
 
+    void writeLocalToc(const SectionRefs &,const LocalToc &) {}
+
     CodeOutputInterface *codeGen() { return &m_codeGen; }
 
   private:

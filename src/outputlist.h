@@ -523,6 +523,9 @@ class OutputList : public BaseOutputDocInterface
     void endLabels()
     { forall(&OutputGenerator::endLabels); }
 
+    void writeLocalToc(const SectionRefs &refs,const LocalToc &lt)
+    { forall(&OutputGenerator::writeLocalToc,refs,lt); }
+
     void cleanup()
     { forall(&OutputGenerator::cleanup); }
 

@@ -303,6 +303,8 @@ class DocbookGenerator : public OutputGenerator //: public CodeOutputForwarder<O
     void writeLabel(const QCString &,bool);
     void endLabels();
 
+    void writeLocalToc(const SectionRefs &sr,const LocalToc &lt);
+
     void setCurrentDoc(const Definition *,const QCString &,bool) {DB_GEN_EMPTY}
     void addWord(const QCString &,bool) {DB_GEN_EMPTY}
 
@@ -326,5 +328,8 @@ private:
     bool m_firstMember = false;
     int m_openSectionCount = 0;
 };
+
+QCString convertToDocBook(const QCString &s, const bool retainNewline = false);
+
 
 #endif

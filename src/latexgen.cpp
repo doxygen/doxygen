@@ -2169,3 +2169,364 @@ void LatexGenerator::writeInheritedSectionTitle(
                                         objectLinkToString(ref, file, anchor, name, m_codeGen.insideTabbing(), m_disableLinks));
   m_t << "}\n";
 }
+
+void LatexGenerator::writeLocalToc(const SectionRefs &,const LocalToc &localToc)
+{
+  if (localToc.isLatexEnabled())
+  {
+    int maxLevel = localToc.latexLevel();
+    m_t << "\\etocsetnexttocdepth{" << maxLevel << "}\n";
+    m_t << "\\localtableofcontents\n";
+  }
+}
+
+//--------------------------------------------------------------------------------------------------
+
+void writeExtraLatexPackages(TextStream &t)
+{
+  // User-specified packages
+  const StringVector &extraPackages = Config_getList(EXTRA_PACKAGES);
+  if (!extraPackages.empty())
+  {
+    t << "% Packages requested by user\n";
+    for (const auto &pkgName : extraPackages)
+    {
+      if ((pkgName[0] == '[') || (pkgName[0] == '{'))
+        t << "\\usepackage" << pkgName.c_str() << "\n";
+      else
+        t << "\\usepackage{" << pkgName.c_str() << "}\n";
+    }
+    t << "\n";
+  }
+}
+
+void writeLatexSpecialFormulaChars(TextStream &t)
+{
+    unsigned char minus[4]; // Superscript minus
+    unsigned char sup2[3]; // Superscript two
+    unsigned char sup3[3];
+    minus[0]= 0xE2;
+    minus[1]= 0x81;
+    minus[2]= 0xBB;
+    minus[3]= 0;
+    sup2[0]= 0xC2;
+    sup2[1]= 0xB2;
+    sup2[2]= 0;
+    sup3[0]= 0xC2;
+    sup3[1]= 0xB3;
+    sup3[2]= 0;
+
+    t << "\\usepackage{newunicodechar}\n"
+         "  \\newunicodechar{" << minus << "}{${}^{-}$}% Superscript minus\n"
+         "  \\newunicodechar{" << sup2  << "}{${}^{2}$}% Superscript two\n"
+         "  \\newunicodechar{" << sup3  << "}{${}^{3}$}% Superscript three\n"
+         "\n";
+}
+
+void filterLatexString(TextStream &t,const QCString &str,
+    bool insideTabbing,bool insidePre,bool insideItem,bool insideTable,bool keepSpaces, const bool retainNewline)
+{
+  if (str.isEmpty()) return;
+  //printf("filterLatexString(%s) insideTabbing=%d\n",qPrint(str),insideTabbing);
+  const char *p=str.data();
+  const char *q;
+  int cnt;
+  unsigned char c;
+  unsigned char pc='\0';
+  while (*p)
+  {
+    c=static_cast<unsigned char>(*p++);
+
+    if (insidePre)
+    {
+      switch(c)
+      {
+        case 0xef: // handle U+FFFD i.e. "Replacement character" caused by octal: 357 277 275 / hexadecimal 0xef 0xbf 0xbd
+                   // the LaTeX command \ucr has been defined in doxygen.sty
+          if (static_cast<unsigned char>(*(p)) == 0xbf && static_cast<unsigned char>(*(p+1)) == 0xbd)
+          {
+            t << "{\\ucr}";
+            p += 2;
+          }
+          else
+            t << static_cast<char>(c);
+          break;
+        case '\\': t << "\\(\\backslash\\)"; break;
+        case '{':  t << "\\{"; break;
+        case '}':  t << "\\}"; break;
+        case '_':  t << "\\_"; break;
+        case '&':  t << "\\&"; break;
+        case '%':  t << "\\%"; break;
+        case '#':  t << "\\#"; break;
+        case '$':  t << "\\$"; break;
+        case '"':  t << "\"{}"; break;
+        case '-':  t << "-\\/"; break;
+        case '^':  insideTable ? t << "\\string^" : t << static_cast<char>(c);    break;
+        case '~':  t << "\\string~";    break;
+        case '\n':  if (retainNewline) t << "\\newline"; else t << ' ';
+                   break;
+        case ' ':  if (keepSpaces) t << "~"; else t << ' ';
+                   break;
+        default:
+                   if (c<32) t << ' '; // non printable control character
+                   else t << static_cast<char>(c);
+                   break;
+      }
+    }
+    else
+    {
+      switch(c)
+      {
+        case 0xef: // handle U+FFFD i.e. "Replacement character" caused by octal: 357 277 275 / hexadecimal 0xef 0xbf 0xbd
+                   // the LaTeX command \ucr has been defined in doxygen.sty
+          if (static_cast<unsigned char>(*(p)) == 0xbf && static_cast<unsigned char>(*(p+1)) == 0xbd)
+          {
+            t << "{\\ucr}";
+            p += 2;
+          }
+          else
+            t << static_cast<char>(c);
+          break;
+        case '#':  t << "\\#";           break;
+        case '$':  t << "\\$";           break;
+        case '%':  t << "\\%";           break;
+        case '^':  t << "$^\\wedge$";    break;
+        case '&':  // possibility to have a special symbol
+                   q = p;
+                   cnt = 2; // we have to count & and ; as well
+                   while ((*q >= 'a' && *q <= 'z') || (*q >= 'A' && *q <= 'Z') || (*q >= '0' && *q <= '9'))
+                   {
+                     cnt++;
+                     q++;
+                   }
+                   if (*q == ';')
+                   {
+                      --p; // we need & as well
+                      HtmlEntityMapper::SymType res = HtmlEntityMapper::instance().name2sym(QCString(p).left(cnt));
+                      if (res == HtmlEntityMapper::Sym_Unknown)
+                      {
+                        p++;
+                        t << "\\&";
+                      }
+                      else
+                      {
+                        t << HtmlEntityMapper::instance().latex(res);
+                        q++;
+                        p = q;
+                      }
+                   }
+                   else
+                   {
+                     t << "\\&";
+                   }
+                   break;
+        case '*':  t << "$\\ast$";       break;
+        case '_':  if (!insideTabbing) t << "\\+";
+                   t << "\\_";
+                   if (!insideTabbing) t << "\\+";
+                   break;
+        case '{':  t << "\\{";           break;
+        case '}':  t << "\\}";           break;
+        case '<':  t << "$<$";           break;
+        case '>':  t << "$>$";           break;
+        case '|':  t << "$\\vert$";      break;
+        case '~':  t << "$\\sim$";       break;
+        case '[':  if (Config_getBool(PDF_HYPERLINKS) || insideItem)
+                     t << "\\mbox{[}";
+                   else
+                     t << "[";
+                   break;
+        case ']':  if (pc=='[') t << "$\\,$";
+                     if (Config_getBool(PDF_HYPERLINKS) || insideItem)
+                       t << "\\mbox{]}";
+                     else
+                       t << "]";
+                   break;
+        case '-':  t << "-\\/";
+                   break;
+        case '\\': t << "\\textbackslash{}";
+                   break;
+        case '"':  t << "\\char`\\\"{}";
+                   break;
+        case '`':  t << "\\`{}";
+                   break;
+        case '\'': t << "\\textquotesingle{}";
+                   break;
+        case '\n':  if (retainNewline) t << "\\newline"; else t << ' ';
+                   break;
+        case ' ':  if (keepSpaces) { if (insideTabbing) t << "\\>"; else t << '~'; } else t << ' ';
+                   break;
+
+        default:
+                   //if (!insideTabbing && forceBreaks && c!=' ' && *p!=' ')
+                   if (!insideTabbing &&
+                       ((c>='A' && c<='Z' && pc!=' ' && !(pc>='A' && pc <= 'Z') && pc!='\0' && *p) || (c==':' && pc!=':') || (pc=='.' && isId(c)))
+                      )
+                   {
+                     t << "\\+";
+                   }
+                   if (c<32)
+                   {
+                     t << ' '; // non-printable control character
+                   }
+                   else
+                   {
+                     t << static_cast<char>(c);
+                   }
+      }
+    }
+    pc = c;
+  }
+}
+
+QCString convertToLaTeX(const QCString &s,bool insideTabbing,bool keepSpaces)
+{
+  TextStream t;
+  filterLatexString(t,s,insideTabbing,false,false,false,keepSpaces);
+  return t.str();
+}
+
+QCString latexEscapeLabelName(const QCString &s)
+{
+  //printf("latexEscapeLabelName(%s)\n",qPrint(s));
+  if (s.isEmpty()) return s;
+  QCString tmp(s.length()+1);
+  TextStream t;
+  const char *p=s.data();
+  char c;
+  int i;
+  while ((c=*p++))
+  {
+    switch (c)
+    {
+      case '|': t << "\\texttt{\"|}"; break;
+      case '!': t << "\"!"; break;
+      case '@': t << "\"@"; break;
+      case '%': t << "\\%";       break;
+      case '{': t << "\\lcurly{}"; break;
+      case '}': t << "\\rcurly{}"; break;
+      case '~': t << "````~"; break; // to get it a bit better in index together with other special characters
+      // NOTE: adding a case here, means adding it to while below as well!
+      default:
+        i=0;
+        // collect as long string as possible, before handing it to docify
+        tmp[i++]=c;
+        while ((c=*p) && c!='@' && c!='[' && c!=']' && c!='!' && c!='{' && c!='}' && c!='|')
+        {
+          tmp[i++]=c;
+          p++;
+        }
+        tmp[i]=0;
+        filterLatexString(t,tmp,
+                          true,  // insideTabbing
+                          false, // insidePre
+                          false, // insideItem
+                          false, // insideTable
+                          false  // keepSpaces
+                         );
+        break;
+    }
+  }
+  return t.str();
+}
+
+QCString latexEscapeIndexChars(const QCString &s)
+{
+  //printf("latexEscapeIndexChars(%s)\n",qPrint(s));
+  if (s.isEmpty()) return s;
+  QCString tmp(s.length()+1);
+  TextStream t;
+  const char *p=s.data();
+  char c;
+  int i;
+  while ((c=*p++))
+  {
+    switch (c)
+    {
+      case '!': t << "\"!"; break;
+      case '"': t << "\"\""; break;
+      case '@': t << "\"@"; break;
+      case '|': t << "\\texttt{\"|}"; break;
+      case '[': t << "["; break;
+      case ']': t << "]"; break;
+      case '{': t << "\\lcurly{}"; break;
+      case '}': t << "\\rcurly{}"; break;
+      // NOTE: adding a case here, means adding it to while below as well!
+      default:
+        i=0;
+        // collect as long string as possible, before handing it to docify
+        tmp[i++]=c;
+        while ((c=*p) && c!='"' && c!='@' && c!='[' && c!=']' && c!='!' && c!='{' && c!='}' && c!='|')
+        {
+          tmp[i++]=c;
+          p++;
+        }
+        tmp[i]=0;
+        filterLatexString(t,tmp,
+                          true,   // insideTabbing
+                          false,  // insidePre
+                          false,  // insideItem
+                          false,  // insideTable
+                          false   // keepSpaces
+                         );
+        break;
+    }
+  }
+  return t.str();
+}
+
+QCString latexEscapePDFString(const QCString &s)
+{
+  if (s.isEmpty()) return s;
+  TextStream t;
+  const char *p=s.data();
+  char c;
+  while ((c=*p++))
+  {
+    switch (c)
+    {
+      case '\\': t << "\\textbackslash{}"; break;
+      case '{':  t << "\\{"; break;
+      case '}':  t << "\\}"; break;
+      case '_':  t << "\\_"; break;
+      case '%':  t << "\\%"; break;
+      case '&':  t << "\\&"; break;
+      default:
+        t << c;
+        break;
+    }
+  }
+  return t.str();
+}
+
+QCString latexFilterURL(const QCString &s)
+{
+  constexpr auto hex = "0123456789ABCDEF";
+  if (s.isEmpty()) return s;
+  TextStream t;
+  const char *p=s.data();
+  char c;
+  while ((c=*p++))
+  {
+    switch (c)
+    {
+      case '#':  t << "\\#"; break;
+      case '%':  t << "\\%"; break;
+      case '\\':  t << "\\\\"; break;
+      default:
+        if (c<0)
+        {
+          unsigned char id = static_cast<unsigned char>(c);
+          t << "\\%" << hex[id>>4] << hex[id&0xF];
+        }
+        else
+        {
+          t << c;
+        }
+        break;
+    }
+  }
+  return t.str();
+}
+
+

@@ -29,6 +29,7 @@
 #include "fileinfo.h"
 #include "dir.h"
 #include "utf8.h"
+#include "latexgen.h"
 
 #define ENABLE_TRACING 0
 

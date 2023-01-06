@@ -24,6 +24,7 @@
 #include "msc.h"
 #include "util.h"
 #include "rtfstyle.h"
+#include "rtfgen.h"
 #include "message.h"
 #include "parserintf.h"
 #include "msc.h"

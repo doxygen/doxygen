@@ -50,6 +50,7 @@
 #include "dirdef.h"
 #include "section.h"
 #include "dir.h"
+#include "growbuf.h"
 
 // no debug info
 #define Docbook_DB(x) do {} while(0)
@@ -1273,3 +1274,124 @@ void DocbookGenerator::writeInheritedSectionTitle(
 DB_GEN_C
   m_t << theTranslator->trInheritedFrom(convertToDocBook(title), objectLinkToString(ref, file, anchor, name));
 }
+
+void DocbookGenerator::writeLocalToc(const SectionRefs &sectionRefs,const LocalToc &localToc)
+{
+  if (localToc.isDocbookEnabled())
+  {
+    m_t << "    <toc>\n";
+    m_t << "    <title>" << theTranslator->trRTFTableOfContents() << "</title>\n";
+    int level=1,l;
+    int maxLevel = localToc.docbookLevel();
+    BoolVector inLi(maxLevel+1,false);
+    for (const SectionInfo *si : sectionRefs)
+    {
+      SectionType type = si->type();
+      if (isSection(type))
+      {
+        //printf("  level=%d title=%s\n",level,qPrint(si->title));
+        int nextLevel = static_cast<int>(type);
+        if (nextLevel>level)
+        {
+          for (l=level;l<nextLevel;l++)
+          {
+            if (l < maxLevel) m_t << "    <tocdiv>\n";
+          }
+        }
+        else if (nextLevel<level)
+        {
+          for (l=level;l>nextLevel;l--)
+          {
+            inLi[l]=FALSE;
+            if (l <= maxLevel) m_t << "    </tocdiv>\n";
+          }
+        }
+        if (nextLevel <= maxLevel)
+        {
+          QCString titleDoc = convertToDocBook(si->title());
+          m_t << "      <tocentry>" << (si->title().isEmpty()?si->label():titleDoc) << "</tocentry>\n";
+        }
+        inLi[nextLevel]=TRUE;
+        level = nextLevel;
+      }
+    }
+    if (level > maxLevel) level = maxLevel;
+    while (level>1 && level <= maxLevel)
+    {
+      inLi[level]=FALSE;
+      m_t << "</tocdiv>\n";
+      level--;
+    }
+    m_t << "    </toc>\n";
+  }
+}
+
+//-------------------------------------------------------------------------------------------------
+
+static constexpr auto hex="0123456789ABCDEF";
+
+/*! Converts a string to an DocBook-encoded string */
+QCString convertToDocBook(const QCString &s, const bool retainNewline)
+{
+  if (s.isEmpty()) return s;
+  GrowBuf growBuf;
+  const char *q;
+  int cnt;
+  const char *p=s.data();
+  char c;
+  while ((c=*p++))
+  {
+    switch (c)
+    {
+      case '\n': if (retainNewline) growBuf.addStr("<literallayout>&#160;&#xa;</literallayout>"); growBuf.addChar(c);   break;
+      case '<':  growBuf.addStr("&lt;");   break;
+      case '>':  growBuf.addStr("&gt;");   break;
+      case '&':  // possibility to have a special symbol
+        q = p;
+        cnt = 2; // we have to count & and ; as well
+        while ((*q >= 'a' && *q <= 'z') || (*q >= 'A' && *q <= 'Z') || (*q >= '0' && *q <= '9'))
+        {
+          cnt++;
+          q++;
+        }
+        if (*q == ';')
+        {
+           --p; // we need & as well
+           HtmlEntityMapper::SymType res = HtmlEntityMapper::instance().name2sym(QCString(p).left(cnt));
+           if (res == HtmlEntityMapper::Sym_Unknown)
+           {
+             p++;
+             growBuf.addStr("&amp;");
+           }
+           else
+           {
+             growBuf.addStr(HtmlEntityMapper::instance().docbook(res));
+             q++;
+             p = q;
+           }
+        }
+        else
+        {
+          growBuf.addStr("&amp;");
+        }
+        break;
+      case '\'': growBuf.addStr("&apos;"); break;
+      case '"':  growBuf.addStr("&quot;"); break;
+      case  1: case  2: case  3: case  4: case  5: case  6: case 7:  case  8:
+      case 11: case 12: case 14: case 15: case 16: case 17: case 18:
+      case 19: case 20: case 21: case 22: case 23: case 24: case 25: case 26:
+      case 27: case 28: case 29: case 30: case 31:
+        growBuf.addStr("&#x24");
+        growBuf.addChar(hex[static_cast<uchar>(c)>>4]);
+        growBuf.addChar(hex[static_cast<uchar>(c)&0xF]);
+        growBuf.addChar(';');
+        break;
+      default:
+        growBuf.addChar(c);
+        break;
+    }
+  }
+  growBuf.addChar(0);
+  return growBuf.get();
+}
+

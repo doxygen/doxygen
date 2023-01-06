@@ -510,6 +510,8 @@ class OutputGenerator : public BaseOutputDocInterface
     virtual void writeLabel(const QCString &,bool) = 0;
     virtual void endLabels() = 0;
 
+    virtual void writeLocalToc(const SectionRefs &,const LocalToc &lt) = 0;
+
     virtual void cleanup() = 0;
 
   protected:

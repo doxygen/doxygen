@@ -300,6 +300,8 @@ class HtmlGenerator : public OutputGenerator //public CodeOutputForwarder<Output
     void writeLabel(const QCString &l,bool isLast);
     void endLabels();
 
+    void writeLocalToc(const SectionRefs &sr,const LocalToc &lt);
+
     CodeOutputInterface *codeGen() { return &m_codeGen; }
 
   private:

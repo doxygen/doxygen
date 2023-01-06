@@ -229,15 +229,9 @@ QCString correctId(const QCString &s);
 
 QCString convertToHtml(const QCString &s,bool keepEntities=TRUE);
 
-QCString convertToLaTeX(const QCString &s,bool insideTabbing,bool keepSpaces=FALSE);
-
 QCString convertToXML(const QCString &s, bool keepEntities=FALSE);
 
-QCString convertToDocBook(const QCString &s, const bool retainNewline = false);
-
 QCString convertToJSString(const QCString &s);
-
-QCString convertToPSString(const QCString &s);
 
 QCString getOverloadDocs();
 
@@ -296,21 +290,6 @@ QCString escapeCharsInString(const QCString &name,bool allowDots,bool allowUnder
 QCString unescapeCharsInString(const QCString &s);
 
 void addGroupListToTitle(OutputList &ol,const Definition *d);
-
-void filterLatexString(TextStream &t,const QCString &str,
-                       bool insideTabbing,
-                       bool insidePre,
-                       bool insideItem,
-                       bool insideTable,
-                       bool keepSpaces,
-                       const bool retainNewline = false);
-
-QCString latexEscapeLabelName(const QCString &s);
-QCString latexEscapeIndexChars(const QCString &s);
-QCString latexEscapePDFString(const QCString &s);
-QCString latexFilterURL(const QCString &s);
-
-QCString rtfFormatBmkStr(const QCString &name);
 
 QCString linkToText(SrcLangExt lang,const QCString &link,bool isFileName);
 
@@ -438,8 +417,6 @@ void convertProtectionLevel(
 
 bool mainPageHasTitle();
 bool openOutputFile(const QCString &outFile,std::ofstream &f);
-void writeExtraLatexPackages(TextStream &t);
-void writeLatexSpecialFormulaChars(TextStream &t);
 
 StringVector split(const std::string &s,const std::string &delimiter);
 StringVector split(const std::string &s,const reg::Ex &delimiter);

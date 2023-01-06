@@ -304,6 +304,8 @@ class LatexGenerator : public OutputGenerator //: public CodeOutputForwarder<Out
     void writeLabel(const QCString &l,bool isLast);
     void endLabels();
 
+    void writeLocalToc(const SectionRefs &sr,const LocalToc &lt);
+
     void setCurrentDoc(const Definition *,const QCString &,bool) {}
     void addWord(const QCString &,bool) {}
 
@@ -317,5 +319,23 @@ class LatexGenerator : public OutputGenerator //: public CodeOutputForwarder<Out
     bool templateMemberItem = false;
     LatexCodeGenerator m_codeGen;
 };
+
+void writeExtraLatexPackages(TextStream &t);
+void writeLatexSpecialFormulaChars(TextStream &t);
+QCString convertToLaTeX(const QCString &s,bool insideTabbing,bool keepSpaces=FALSE);
+
+void filterLatexString(TextStream &t,const QCString &str,
+                       bool insideTabbing,
+                       bool insidePre,
+                       bool insideItem,
+                       bool insideTable,
+                       bool keepSpaces,
+                       const bool retainNewline = false);
+
+QCString latexEscapeLabelName(const QCString &s);
+QCString latexEscapeIndexChars(const QCString &s);
+QCString latexEscapePDFString(const QCString &s);
+QCString latexFilterURL(const QCString &s);
+
 
 #endif

@@ -64,7 +64,7 @@ static QCString g_header;
 static QCString g_footer;
 static QCString g_mathjax_code;
 static QCString g_latex_macro;
-static const char *hex="0123456789ABCDEF";
+static constexpr auto hex="0123456789ABCDEF";
 
 // note: this is only active if DISABLE_INDEX=YES, if DISABLE_INDEX is disabled, this
 // part will be rendered inside menu.js
@@ -3304,5 +3304,74 @@ QCString HtmlGenerator::getNavTreeCss()
 {
   ResourceMgr &mgr = ResourceMgr::instance();
   return replaceVariables(mgr.getAsString("navtree.css"));
+}
+
+void HtmlGenerator::writeLocalToc(const SectionRefs &sectionRefs,const LocalToc &localToc)
+{
+  if (localToc.isHtmlEnabled())
+  {
+    int maxLevel = localToc.htmlLevel();
+    m_t << "<div class=\"toc\">";
+    m_t << "<h3>" << theTranslator->trRTFTableOfContents() << "</h3>\n";
+    m_t << "<ul>";
+    int level=1,l;
+    char cs[2];
+    cs[1]='\0';
+    BoolVector inLi(maxLevel+1,false);
+    for (const SectionInfo *si : sectionRefs)
+    {
+      SectionType type = si->type();
+      if (isSection(type))
+      {
+        //printf("  level=%d title=%s\n",level,qPrint(si->title));
+        int nextLevel = static_cast<int>(type);
+        if (nextLevel>level)
+        {
+          for (l=level;l<nextLevel;l++)
+          {
+            if (l < maxLevel) m_t << "<ul>";
+          }
+        }
+        else if (nextLevel<level)
+        {
+          for (l=level;l>nextLevel;l--)
+          {
+            if (l <= maxLevel && inLi[l]) m_t << "</li>\n";
+            inLi[l]=false;
+            if (l <= maxLevel) m_t << "</ul>\n";
+          }
+        }
+        cs[0]=static_cast<char>('0'+nextLevel);
+        if (nextLevel <= maxLevel && inLi[nextLevel])
+        {
+          m_t << "</li>\n";
+        }
+        QCString titleDoc = convertToHtml(si->title());
+        if (nextLevel <= maxLevel)
+        {
+          m_t << "<li class=\"level"+QCString(cs)+"\">"
+              << "<a href=\"#"+si->label()+"\">"
+              << convertToHtml(filterTitle(si->title().isEmpty()?si->label():titleDoc))
+              << "</a>";
+        }
+        inLi[nextLevel]=true;
+        level = nextLevel;
+      }
+    }
+    if (level > maxLevel) level = maxLevel;
+    while (level>1 && level <= maxLevel)
+    {
+      if (inLi[level])
+      {
+        m_t << "</li>\n";
+      }
+      inLi[level]=FALSE;
+      m_t << "</ul>\n";
+      level--;
+    }
+    if (level <= maxLevel && inLi[level]) m_t << "</li>\n";
+    m_t << "</ul>\n";
+    m_t << "</div>\n";
+  }
 }
 

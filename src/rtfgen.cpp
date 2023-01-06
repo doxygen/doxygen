@@ -17,6 +17,7 @@
  *
  */
 
+#include <mutex>
 #include <stdlib.h>
 
 #include "rtfgen.h"
@@ -2777,3 +2778,50 @@ void RTFGenerator::writeInheritedSectionTitle(
   m_t << "\\par\n";
   m_t << rtf_Style_Reset << "\n";
 }
+
+//----------------------------------------------------------------------
+
+static std::mutex g_rtfFormatMutex;
+static std::unordered_map<std::string,std::string> g_tagMap;
+static QCString g_nextTag( "AAAAAAAAAA" );
+
+QCString rtfFormatBmkStr(const QCString &name)
+{
+  std::lock_guard<std::mutex> lock(g_rtfFormatMutex);
+
+  // To overcome the 40-character tag limitation, we
+  // substitute a short arbitrary string for the name
+  // supplied, and keep track of the correspondence
+  // between names and strings.
+  auto it = g_tagMap.find(name.str());
+  if (it!=g_tagMap.end()) // already known
+  {
+    return QCString(it->second);
+  }
+
+  QCString tag = g_nextTag;
+  auto result = g_tagMap.insert( std::make_pair(name.str(), g_nextTag.str()) );
+
+  if (result.second) // new item was added
+  {
+    // increment the next tag.
+
+    char* nxtTag = g_nextTag.rawData() + g_nextTag.length() - 1;
+    for ( unsigned int i = 0; i < g_nextTag.length(); ++i, --nxtTag )
+    {
+      if ( ( ++(*nxtTag) ) > 'Z' )
+      {
+        *nxtTag = 'A';
+      }
+      else
+      {
+        // Since there was no carry, we can stop now
+        break;
+      }
+    }
+  }
+
+  Debug::print(Debug::Rtf,0,"Name = %s RTF_tag = %s\n",qPrint(name),qPrint(tag));
+  return tag;
+}
+

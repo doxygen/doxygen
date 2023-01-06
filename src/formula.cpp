@@ -30,6 +30,7 @@
 #include "linkedmap.h"
 #include "threadpool.h"
 #include "portable.h"
+#include "latexgen.h"
 
 // TODO: remove these dependencies
 #include "doxygen.h"   // for Doxygen::indexList
