@@ -26,8 +26,6 @@
 //
 //   2001/03/23 Jens Seidel (jensseidel@users.sourceforge.net)
 //    - fixed typos
-//    - changed trPageDocumentation() "Seitenbeschreibung" to
-//      "Zusätzliche Informationen"
 //    - removed old trGeneratedFrom()
 //    - changed "/*!" to "/*" (documentation is inherited from translator_en.h
 //      (INHERIT_DOCS = YES), there's no need to make changes twice)
@@ -170,6 +168,10 @@ class TranslatorGerman : public TranslatorAdapter_1_8_15
     {
       return "de";
     }
+    virtual QCString getLanguageString()
+    {
+      return "0x407 German";
+    }
 
     // --- Language translation methods -------------------
 
@@ -184,6 +186,10 @@ class TranslatorGerman : public TranslatorAdapter_1_8_15
     /*! header that is put before the detailed description of files, classes and namespaces. */
     virtual QCString trDetailedDescription()
     { return "Ausführliche Beschreibung"; }
+
+    /*! header that is used when the summary tag is missing inside the details tag */
+    virtual QCString trDetails()
+    { return "Details"; }
 
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
@@ -509,12 +515,6 @@ class TranslatorGerman : public TranslatorAdapter_1_8_15
     virtual QCString trExampleDocumentation()
     { return "Dokumentation der Beispiele"; }
 
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all related pages.
-     */
-    virtual QCString trPageDocumentation()
-    { return "Zusätzliche Informationen"; }
-
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
     { return "Nachschlagewerk"; }
@@ -616,10 +616,6 @@ class TranslatorGerman : public TranslatorAdapter_1_8_15
     {
       return "Klassendiagramm für "+clName+":";
     }
-
-    /*! this text is generated when the \\internal command is used. */
-    virtual QCString trForInternalUseOnly()
-    { return "Nur für den internen Gebrauch."; }
 
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
@@ -864,11 +860,11 @@ class TranslatorGerman : public TranslatorAdapter_1_8_15
     virtual QCString trGeneratedFromFiles(ClassDef::CompoundType compType,
         bool single)
     { // single is true implies a single file
-      static bool vhdlOpt = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
+      bool vhdlOpt = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
       QCString result="Die Dokumentation für diese";
       switch(compType)
       {
-        case ClassDef::Class:      result+=vhdlOpt?"Entwurfseinheiten":"Klasse"; break;
+        case ClassDef::Class:      result+=vhdlOpt?" Entwurfseinheiten":" Klasse"; break;
         case ClassDef::Struct:     result+=" Struktur"; break;
         case ClassDef::Union:      result+=" Variante"; break;
         case ClassDef::Interface:  result+=" Schnittstelle"; break;
@@ -1184,7 +1180,7 @@ class TranslatorGerman : public TranslatorAdapter_1_8_15
         "Die Pfeile bedeuten:\n"
         "</p>\n"
         "<ul>\n"
-        "<li>Ein dunkelblauer Pfeil stellt eine öffentliche Vererbungsbeziehung "
+        "<li>Ein blauer Pfeil stellt eine öffentliche Vererbungsbeziehung "
         "zwischen zwei Klassen dar.</li>\n"
         "<li>Ein dunkelgrüner Pfeil stellt geschützte Vererbung dar.</li>\n"
         "<li>Ein dunkelroter Pfeil stellt private Vererbung dar.</li>\n"
@@ -1259,11 +1255,6 @@ class TranslatorGerman : public TranslatorAdapter_1_8_15
       return "Paket "+name;
     }
 
-    /*! Title of the package index page */
-    virtual QCString trPackageList()
-    {
-      return "Paketliste";
-    }
 
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
@@ -1505,15 +1496,19 @@ class TranslatorGerman : public TranslatorAdapter_1_8_15
     /*! Used as a heading for a list of Java class functions with package
      * scope.
      */
-    virtual QCString trPackageMembers()
+    virtual QCString trPackageFunctions()
     {
       return "Paketfunktionen";
+    }
+    virtual QCString trPackageMembers()
+    {
+      return "Paketelemente";
     }
 
     /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
-    virtual QCString trStaticPackageMembers()
+    virtual QCString trStaticPackageFunctions()
     {
       return "Statische Paketfunktionen";
     }
@@ -1626,14 +1621,6 @@ class TranslatorGerman : public TranslatorAdapter_1_8_15
      */
     virtual QCString trDirectories()
     { return "Verzeichnisse"; }
-
-    /*! This returns a sentences that introduces the directory hierarchy.
-     *  and the fact that it is sorted alphabetically per level
-     */
-    virtual QCString trDirDescription()
-    { return "Diese Verzeichnishierarchie ist -mit Einschränkungen- "
-         "alphabetisch sortiert:";
-    }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.
@@ -1955,19 +1942,42 @@ class TranslatorGerman : public TranslatorAdapter_1_8_15
      */
     virtual QCString trDateTime(int year,int month,int day,int dayOfWeek,
                                 int hour,int minutes,int seconds,
-                                bool includeTime)
+                                DateTimeType includeTime)
     {
       static const char *days[]   = { "Mon","Die","Mit","Don","Fre","Sam","Son" };
       static const char *months[] = { "Jan","Feb","Mär","Apr","Mai","Jun","Jul","Aug","Sep","Okt","Nov","Dez" };
       QCString sdate;
-      sdate.sprintf("%s %s %d %d",days[dayOfWeek-1],months[month-1],day,year);
-      if (includeTime)
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Date)
+      {
+        sdate.sprintf("%s %s %d %d",days[dayOfWeek-1],months[month-1],day,year);
+      }
+      if (includeTime == DateTimeType::DateTime) sdate += " ";
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Time)
       {
         QCString stime;
-        stime.sprintf(" %.2d:%.2d:%.2d",hour,minutes,seconds);
+        stime.sprintf("%.2d:%.2d:%.2d",hour,minutes,seconds);
         sdate+=stime;
       }
       return sdate;
+    }
+    virtual QCString trDayOfWeek(int dayOfWeek, bool, bool full)
+    {
+      static const char *days_short[]   = { "Mo", "Di", "Mi", "Do", "Fr", "Sa", "So" };
+      static const char *days_full[]    = { "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag" };
+      QCString text  = full? days_full[dayOfWeek-1] : days_short[dayOfWeek-1];
+      return text;
+    }
+    virtual QCString trMonth(int month, bool, bool full)
+    {
+      static const char *months_short[] = { "Jan", "Feb", "Mrz", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez" };
+      static const char *months_full[]  = { "Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember" };
+      QCString text  = full? months_full[month-1] : months_short[month-1];
+      return text;
+    }
+    virtual QCString trDayPeriod(int period)
+    {
+      static const char *dayPeriod[] = { "AM", "PM" };
+      return dayPeriod[period];
     }
 
 //////////////////////////////////////////////////////////////////////////

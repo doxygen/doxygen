@@ -310,7 +310,11 @@ static QCString escapeSpecialChars(const QCString &s)
                  break;
       case '\\': if (!insideQuote) { growBuf.addChar('\\'); } growBuf.addChar('\\'); break;
       case '@':  if (!insideQuote) { growBuf.addChar('\\'); } growBuf.addChar('@'); break;
+      // commented out next line due to regression when using % to suppress a link
+      //case '%':  if (!insideQuote) { growBuf.addChar('\\'); } growBuf.addChar('%'); break;
       case '#':  if (!insideQuote) { growBuf.addChar('\\'); } growBuf.addChar('#'); break;
+      case '$':  if (!insideQuote) { growBuf.addChar('\\'); } growBuf.addChar('$'); break;
+      case '&':  if (!insideQuote) { growBuf.addChar('\\'); } growBuf.addChar('&'); break;
       default:   growBuf.addChar(c); break;
     }
     pc=c;
@@ -432,8 +436,10 @@ QCString Markdown::isBlockCommand(const char *data,int offset,int size)
   {
     { "dot",         getEndBlock   },
     { "code",        getEndCode    },
+    { "icode",       getEndBlock   },
     { "msc",         getEndBlock   },
     { "verbatim",    getEndBlock   },
+    { "iverbatim",   getEndBlock   },
     { "iliteral",    getEndBlock   },
     { "latexonly",   getEndBlock   },
     { "htmlonly",    getEndBlock   },
@@ -619,6 +625,7 @@ int Markdown::isSpecialCommand(const char *data,int offset,int size)
     { "param",          endOfParam },
     { "property",       endOfLine  },
     { "protocol",       endOfLine  },
+    { "qualifier",      endOfLine  },
     { "ref",            endOfLabel },
     { "refitem",        endOfLine  },
     { "related",        endOfLabel },
@@ -1413,7 +1420,6 @@ int Markdown::processLink(const char *data,int offset,int size)
     return 0;
   }
   nlTotal += nl;
-  nl = 0;
 
   // search for optional image attributes
   QCString attributes;
@@ -1452,7 +1458,6 @@ int Markdown::processLink(const char *data,int offset,int size)
         i++;
       }
       nlTotal += nl;
-      nl = 0;
       if (i>=size) return 0; // premature end of comment -> no attributes
       int attributesEnd=i;
       convertStringFragment(attributes,data+attributesStart,attributesEnd-attributesStart);
@@ -2767,7 +2772,7 @@ int Markdown::writeCodeBlock(const char *data,int size,int refIndent)
   int i=0,end;
   //printf("writeCodeBlock: data={%s}\n",qPrint(QCString(data).left(size)));
   // no need for \ilinebr here as the previous line was empty and was skipped
-  m_out.addStr("@verbatim\n");
+  m_out.addStr("@iverbatim\n");
   int emptyLines=0;
   while (i<size)
   {
@@ -2801,7 +2806,7 @@ int Markdown::writeCodeBlock(const char *data,int size,int refIndent)
       break;
     }
   }
-  m_out.addStr("@endverbatim\\ilinebr ");
+  m_out.addStr("@endiverbatim\\ilinebr ");
   while (emptyLines>0) // write skipped empty lines
   {
     // add empty line
@@ -2901,13 +2906,13 @@ void Markdown::writeFencedCodeBlock(const char *data,const char *lng,
     blockStart--;
     blockEnd--;
   }
-  m_out.addStr("@code");
+  m_out.addStr("@icode");
   if (!lang.isEmpty())
   {
     m_out.addStr("{"+lang+"}");
   }
   addStrEscapeUtf8Nbsp(data+blockStart,blockEnd-blockStart);
-  m_out.addStr("@endcode");
+  m_out.addStr("@endicode");
 }
 
 QCString Markdown::processQuotations(const QCString &s,int refIndent)
@@ -2970,7 +2975,38 @@ QCString Markdown::processQuotations(const QCString &s,int refIndent)
     {
       if (isFencedCodeBlock(data+pi,size-pi,currentIndent,lang,blockStart,blockEnd,blockOffset))
       {
-        writeFencedCodeBlock(data+pi,lang.data(),blockStart,blockEnd);
+        auto addSpecialCommand = [&](const QCString &startCmd,const QCString &endCmd)
+        {
+          int cmdPos  = pi+blockStart+1;
+          QCString pl = QCString(data+cmdPos).left(blockEnd-blockStart-1);
+          uint ii     = 0;
+          // check for absence of start command, either @start<cmd>, or \\start<cmd>
+          while (ii<pl.length() && qisspace(pl[ii])) ii++; // skip leading whitespace
+          if (ii+startCmd.length()>=pl.length() || // no room for start command
+              (pl[ii]!='\\' && pl[ii]!='@') ||     // no @ or \ after whitespace
+              qstrncmp(pl.data()+ii+1,startCmd.data(),startCmd.length())!=0) // no start command
+          {
+            pl = "@"+startCmd+"\\ilinebr " + pl + " @"+endCmd;
+          }
+          processSpecialCommand(pl.data(),0,pl.length());
+        };
+
+        if (!Config_getString(PLANTUML_JAR_PATH).isEmpty() && lang=="plantuml")
+        {
+          addSpecialCommand("startuml","enduml");
+        }
+        else if (Config_getBool(HAVE_DOT) && lang=="dot")
+        {
+          addSpecialCommand("dot","enddot");
+        }
+        else if (lang=="msc") // msc is built-in
+        {
+          addSpecialCommand("msc","endmsc");
+        }
+        else // normal code block
+        {
+          writeFencedCodeBlock(data+pi,lang.data(),blockStart,blockEnd);
+        }
         i=pi+blockOffset;
         pi=-1;
         end=i+1;
@@ -3019,16 +3055,6 @@ QCString Markdown::processBlocks(const QCString &s,const int indent)
   int size = s.length();
   int i=0,end=0,pi=-1,ref,level;
   QCString id,link,title;
-  int blockIndent = indent;
-
-  // get indent for the first line
-  end = i+1;
-  int sp=0;
-  while (end<=size && data[end-1]!='\n')
-  {
-    if (data[end-1]==' ') sp++;
-    end++;
-  }
 
 #if 0 // commented m_out, since starting with a comment block is probably a usage error
       // see also http://stackoverflow.com/q/20478611/784672
@@ -3064,7 +3090,6 @@ QCString Markdown::processBlocks(const QCString &s,const int indent)
       {
         //printf("** end of list\n");
         currentIndent = indent;
-        blockIndent = indent;
         insideList = false;
       }
       newBlock = false;
@@ -3077,7 +3102,6 @@ QCString Markdown::processBlocks(const QCString &s,const int indent)
         //printf("** start of list\n");
         insideList = true;
         currentIndent = listIndent;
-        blockIndent = listIndent;
       }
     }
     else if (isEndOfList(data+i,end-i))
@@ -3085,7 +3109,6 @@ QCString Markdown::processBlocks(const QCString &s,const int indent)
       //printf("** end of list\n");
       insideList = false;
       currentIndent = listIndent;
-      blockIndent = listIndent;
     }
     else if (isEmptyLine(data+i,end-i))
     {
@@ -3101,7 +3124,7 @@ QCString Markdown::processBlocks(const QCString &s,const int indent)
     {
       int blockStart,blockEnd,blockOffset;
       QCString lang;
-      blockIndent = currentIndent;
+      int blockIndent = currentIndent;
       //printf("isHeaderLine(%s)=%d\n",QCString(data+i).left(size-i).data(),level);
       QCString endBlockName;
       if (data[i]=='@' || data[i]=='\\') endBlockName = isBlockCommand(data+i,i,size-i);
@@ -3128,7 +3151,6 @@ QCString Markdown::processBlocks(const QCString &s,const int indent)
             {
               m_out.addChar(data[i]);
               m_out.addStr(endBlockName);
-              pi=i;
               i+=l+1;
               break;
             }
@@ -3177,7 +3199,6 @@ QCString Markdown::processBlocks(const QCString &s,const int indent)
         //       qPrint(id),qPrint(link),qPrint(title));
         m_linkRefs.insert({id.lower().str(),LinkRef(link,title)});
         i=ref+pi;
-        pi=-1;
         end=i+1;
       }
       else if (isFencedCodeBlock(data+pi,size-pi,currentIndent,lang,blockStart,blockEnd,blockOffset))
@@ -3526,21 +3547,18 @@ void MarkdownOutlineParser::parseInput(const QCString &fileName,
       break;
     case ExplicitPageResult::explicitPage:
       {
-        // look for `@page label Title\n` and capture `label`
-        static const reg::Ex re(R"([\\@]page\s+(\a[\w-]*)\s*[^\n]*\n)");
+        // look for `@page label My Title\n` and capture `label` (match[1]) and ` My Title` (match[2])
+        static const reg::Ex re(R"([\\@]page\s+(\a[\w-]*)(\s*[^\n]*)\n)");
         reg::Match match;
         std::string s = docs.str();
         if (reg::search(s,match,re))
         {
           QCString orgLabel    = match[1].str();
           QCString newLabel    = markdownFileNameToId(fileName);
-          size_t labelStartPos = match[1].position();
-          size_t labelEndPos   = labelStartPos+match[1].length();
-          size_t lineLen       = match.length();
-          docs = docs.left(labelStartPos)+                     // part before label
+          docs = docs.left(match[1].position())+               // part before label
                  newLabel+                                     // new label
-                 docs.mid(labelEndPos,lineLen-labelEndPos-1)+  // part between orgLabel and \n
-                 "\\ilinebr @anchor "+orgLabel+"\n"+           // add original anchor
+                 match[2].str()+                               // part between orgLabel and \n
+                 "\\ilinebr @anchor "+orgLabel+"\n"+           // add original anchor plus \n of above
                  docs.right(docs.length()-match.length());     // add remainder of docs
         }
       }
@@ -3551,8 +3569,8 @@ void MarkdownOutlineParser::parseInput(const QCString &fileName,
   int lineNr=1;
 
   p->commentScanner.enterFile(fileName,lineNr);
-  Protection prot=Public;
-  bool needsEntry = FALSE;
+  Protection prot = Protection::Public;
+  bool needsEntry = false;
   int position=0;
   QCString processedDocs = markdown.process(docs,lineNr,true);
   while (p->commentScanner.parseCommentBlock(

@@ -20,8 +20,6 @@
 #include <unordered_map>
 #include <deque>
 #include <cstdio>
-#include <fstream>
-#include <sstream>
 
 #include "message.h"
 #include "util.h"
@@ -31,6 +29,7 @@
 #include "fileinfo.h"
 #include "dir.h"
 #include "utf8.h"
+#include "latexgen.h"
 
 #define ENABLE_TRACING 0
 
@@ -231,7 +230,6 @@ class TemplateListGenericConstIterator : public TemplateListIntf::ConstIterator
 {
   public:
     TemplateListGenericConstIterator(const List &l) : m_list(l) { m_index=0; }
-    virtual ~TemplateListGenericConstIterator() {}
     virtual void toFirst()
     {
       m_index=0;
@@ -328,30 +326,30 @@ TemplateVariant::TemplateVariant(TemplateVariant &&v)
 {
   m_raw     = std::move(v.m_raw);
   m_variant = std::move(v.m_variant);
-  v.m_variant.invalidate();
+  v.m_variant = VariantT();
 }
 
 TemplateVariant &TemplateVariant::operator=(TemplateVariant &&v)
 {
   m_raw     = std::move(v.m_raw);
   m_variant = std::move(v.m_variant);
-  v.m_variant.invalidate();
+  v.m_variant = VariantT();
   return *this;
 }
 
 bool TemplateVariant::operator==(TemplateVariant &other) const
 {
-  if (!m_variant.valid())
+  if (!isValid())
   {
     return FALSE;
   }
   if (isBool() && other.isBool())
   {
-    return m_variant.get<static_cast<uint8_t>(Type::Bool)>() == other.m_variant.get<static_cast<uint8_t>(Type::Bool)>();
+    return std::get<bool>(m_variant) == std::get<bool>(other.m_variant);
   }
   else if (isInt() && other.isInt())
   {
-    return m_variant.get<static_cast<uint8_t>(Type::Int)>() == other.m_variant.get<static_cast<uint8_t>(Type::Int)>();
+    return std::get<int>(m_variant) == std::get<int>(other.m_variant);
   }
   else if (isList() && other.isList())
   {
@@ -369,11 +367,11 @@ bool TemplateVariant::toBool() const
   switch (type())
   {
     case Type::None:       return false;
-    case Type::Bool:       return m_variant.get<static_cast<uint8_t>(Type::Bool)>();
-    case Type::Int:        return m_variant.get<static_cast<uint8_t>(Type::Int)>()!=0;
-    case Type::String:     return !m_variant.get<static_cast<uint8_t>(Type::String)>().isEmpty();
+    case Type::Bool:       return std::get<bool>(m_variant);
+    case Type::Int:        return std::get<int>(m_variant)!=0;
+    case Type::String:     return !std::get<QCString>(m_variant).isEmpty();
     case Type::Struct:     return true;
-    case Type::List:       return m_variant.get<static_cast<uint8_t>(Type::List)>()->count()!=0;
+    case Type::List:       return std::get<TemplateListIntfPtr>(m_variant)->count()!=0;
     case Type::Function:   return false;
     case Type::WeakStruct: return true;
   }
@@ -385,11 +383,11 @@ int TemplateVariant::toInt() const
   switch (type())
   {
     case Type::None:       return 0;
-    case Type::Bool:       return m_variant.get<static_cast<uint8_t>(Type::Bool)>() ? 1 : 0;
-    case Type::Int:        return m_variant.get<static_cast<uint8_t>(Type::Int)>();
-    case Type::String:     return !m_variant.get<static_cast<uint8_t>(Type::String)>().toInt();
+    case Type::Bool:       return std::get<bool>(m_variant) ? 1 : 0;
+    case Type::Int:        return std::get<int>(m_variant);
+    case Type::String:     return std::get<QCString>(m_variant).toInt();
     case Type::Struct:     return 0;
-    case Type::List:       return static_cast<int>(m_variant.get<static_cast<uint8_t>(Type::List)>()->count());
+    case Type::List:       return static_cast<int>(std::get<TemplateListIntfPtr>(m_variant)->count());
     case Type::Function:   return 0;
     case Type::WeakStruct: return 0;
   }
@@ -401,9 +399,9 @@ QCString TemplateVariant::toString() const
   switch (type())
   {
     case Type::None:       return QCString();
-    case Type::Bool:       return m_variant.get<static_cast<uint8_t>(Type::Bool)>() ? "true" : "false";
-    case Type::Int:        return QCString().setNum(m_variant.get<static_cast<uint8_t>(Type::Int)>());
-    case Type::String:     return m_variant.get<static_cast<uint8_t>(Type::String)>();
+    case Type::Bool:       return std::get<bool>(m_variant) ? "true" : "false";
+    case Type::Int:        return QCString().setNum(std::get<int>(m_variant));
+    case Type::String:     return std::get<QCString>(m_variant);
     case Type::Struct:     return structToString();
     case Type::List:       return listToString();
     case Type::Function:   return "[function]";
@@ -431,29 +429,29 @@ const char *TemplateVariant::typeAsString() const
 
 TemplateListIntfPtr TemplateVariant::toList()
 {
-  return isList() ? m_variant.get<static_cast<uint8_t>(Type::List)>() : nullptr;
+  return isList() ? std::get<TemplateListIntfPtr>(m_variant) : nullptr;
 }
 const TemplateListIntfPtr TemplateVariant::toList() const
 {
-  return isList() ? m_variant.get<static_cast<uint8_t>(Type::List)>() : nullptr;
+  return isList() ? std::get<TemplateListIntfPtr>(m_variant) : nullptr;
 }
 
 TemplateStructIntfPtr TemplateVariant::toStruct()
 {
-  return isStruct()     ? m_variant.get<static_cast<uint8_t>(Type::Struct)>() :
-         isWeakStruct() ? m_variant.get<static_cast<uint8_t>(Type::WeakStruct)>().lock() :
+  return isStruct()     ? std::get<TemplateStructIntfPtr>(m_variant) :
+         isWeakStruct() ? std::get<TemplateStructIntfWeakPtr>(m_variant).lock() :
          nullptr;
 }
 const TemplateStructIntfPtr TemplateVariant::toStruct() const
 {
-  return isStruct()     ? m_variant.get<static_cast<uint8_t>(Type::Struct)>() :
-         isWeakStruct() ? m_variant.get<static_cast<uint8_t>(Type::WeakStruct)>().lock() :
+  return isStruct()     ? std::get<TemplateStructIntfPtr>(m_variant) :
+         isWeakStruct() ? std::get<TemplateStructIntfWeakPtr>(m_variant).lock() :
          nullptr;
 }
 
 TemplateVariant TemplateVariant::call(const std::vector<TemplateVariant> &args)
 {
-  return isFunction() ? m_variant.get<static_cast<uint8_t>(Type::Function)>()(args) : TemplateVariant();
+  return isFunction() ? std::get<FunctionDelegate>(m_variant)(args) : TemplateVariant();
 }
 
 //- Template struct implementation --------------------------------------------
@@ -744,9 +742,9 @@ class FilterAdd
       {
         return arg;
       }
-      bool lhsIsInt;
+      bool lhsIsInt = false;
       int  lhsValue = variantIntValue(v,lhsIsInt);
-      bool rhsIsInt;
+      bool rhsIsInt = false;
       int  rhsValue = variantIntValue(arg,rhsIsInt);
       if (lhsIsInt && rhsIsInt)
       {
@@ -1222,7 +1220,7 @@ class FilterRelative
   public:
     static TemplateVariant apply(const TemplateVariant &v,const TemplateVariant &)
     {
-      if (v.isValid() && v.isString() && v.toString().left(2)=="..")
+      if (v.isValid() && v.isString() && v.toString().startsWith(".."))
       {
         return TRUE;
       }
@@ -1663,7 +1661,7 @@ static TemplateFilterFactory::AutoRegister<FilterIsAbsoluteURL>      fIsAbsolute
 class ExprAst
 {
   public:
-    virtual ~ExprAst() {}
+    virtual ~ExprAst() = default;
     virtual TemplateVariant resolve(TemplateContext *) { return TemplateVariant(); }
 };
 
@@ -1934,7 +1932,7 @@ class TemplateNode
 {
   public:
     TemplateNode(TemplateNode *parent) : m_parent(parent) {}
-    virtual ~TemplateNode() {}
+    virtual ~TemplateNode() = default;
 
     virtual void render(TextStream &ts, TemplateContext *c) = 0;
 
@@ -3124,7 +3122,7 @@ class TemplateNodeIf : public TemplateNodeCreator<TemplateNodeIf>
       auto tok = parser->takeNextToken();
 
       // elif 'nodes'
-      while (tok && tok->data.left(5)=="elif ")
+      while (tok && tok->data.startsWith("elif "))
       {
         m_ifGuardedNodes.push_back(std::make_unique<GuardedNodes>());
         auto &guardedNodes = m_ifGuardedNodes.back();
@@ -3894,7 +3892,7 @@ class TemplateNodeCreate : public TemplateNodeCreator<TemplateNodeCreate>
                 outputFile.prepend(ci->outputDirectory()+"/");
               }
               //printf("NoteCreate(%s)\n",qPrint(outputFile));
-              std::ofstream f(outputFile.str(),std::ofstream::out | std::ofstream::binary);
+              std::ofstream f = Portable::openOutputStream(outputFile);
               if (f.is_open())
               {
                 TextStream ts(&f);
@@ -5261,7 +5259,7 @@ class TemplateEngine::Private
       if (kv==m_templateCache.end()) // first time template is referenced
       {
         QCString filePath = m_templateDirName+"/"+fileName;
-        std::ifstream f(filePath.str(),std::ifstream::in | std::ifstream::binary);
+        std::ifstream f = Portable::openInputStream(filePath,true);
         if (f.is_open()) // read template from disk
         {
           FileInfo fi(filePath.str());

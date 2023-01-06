@@ -20,7 +20,6 @@
 
 #include <set>
 
-#include "index.h"
 #include "definition.h"
 #include "memberlist.h"
 #include "containers.h"
@@ -73,8 +72,6 @@ bool compareFileDefs(const FileDef *fd1, const FileDef *fd2);
 class FileDef : public DefinitionMutable, public Definition
 {
   public:
-   ~FileDef() {}
-
     // ----------------------------------------------------------------------
 
     virtual DefType definitionType() const = 0;
@@ -124,8 +121,8 @@ class FileDef : public DefinitionMutable, public Definition
 
     virtual PackageDef *packageDef() const = 0;
     virtual DirDef *getDirDef() const = 0;
-    virtual LinkedRefMap<const NamespaceDef> getUsedNamespaces() const = 0;
-    virtual LinkedRefMap<const ClassDef> getUsedClasses() const = 0;
+    virtual const LinkedRefMap<NamespaceDef> &getUsedNamespaces() const = 0;
+    virtual const LinkedRefMap<ClassDef> &getUsedClasses() const = 0;
     virtual const IncludeInfoList &includeFileList() const = 0;
     virtual const IncludeInfoList &includedByFileList() const = 0;
     virtual void getAllIncludeFilesRecursively(StringVector &incFiles) const = 0;
@@ -166,16 +163,16 @@ class FileDef : public DefinitionMutable, public Definition
     virtual void setDiskName(const QCString &name) = 0;
 
     virtual void insertMember(MemberDef *md) = 0;
-    virtual void insertClass(const ClassDef *cd) = 0;
-    virtual void insertConcept(const ConceptDef *cd) = 0;
-    virtual void insertNamespace(const NamespaceDef *nd) = 0;
+    virtual void insertClass(ClassDef *cd) = 0;
+    virtual void insertConcept(ConceptDef *cd) = 0;
+    virtual void insertNamespace(NamespaceDef *nd) = 0;
     virtual void computeAnchors() = 0;
 
     virtual void setPackageDef(PackageDef *pd) = 0;
     virtual void setDirDef(DirDef *dd) = 0;
 
-    virtual void addUsingDirective(const NamespaceDef *nd) = 0;
-    virtual void addUsingDeclaration(const ClassDef *cd) = 0;
+    virtual void addUsingDirective(NamespaceDef *nd) = 0;
+    virtual void addUsingDeclaration(ClassDef *cd) = 0;
     virtual void combineUsingRelations() = 0;
 
     virtual bool generateSourceFile() const = 0;

@@ -252,7 +252,11 @@ PREDEFINED           = "DECLARE_INTERFACE(name)=class name" \
 
 As you can see doxygen's preprocessor is quite powerful, but if you want
 even more flexibility you can always write an input filter and specify it
-after the \ref cfg_input_filter "INPUT_FILTER" tag.
+after the \ref cfg_input_filter "INPUT_FILTER" tag or
+the \ref cfg_filter_patterns "FILTER_PATTERNS" tag
+(or the \ref cfg_filter_source_patterns "FILTER_SOURCE_PATTERNS" tag).<br>
+If you are unsure what the effect of the filter will be
+you can run doxygen as follows: `doxygen -d filteroutput`.
 
 If you are unsure what the effect of doxygen's preprocessing will be
 you can run doxygen as follows:

@@ -33,7 +33,7 @@
  *  2006/10: made class to derive directly from Translator class (reported in Petr Prikryl October 9 translator report)
  *  2006/06: updated translation of new items used since version 1.4.6
  *  2006/05: translated new items used since version 1.4.6
- *           corrected typo in trPackageMembers method
+ *           corrected typo in trPackageFunction method
  *  2005/03: translated new items used since version 1.4.1
  *           removed unused methods listed in Petr Prikryl February 28 translator report
  *  2004/09: translated new items used since version 1.3.9
@@ -116,6 +116,10 @@ class TranslatorItalian : public TranslatorAdapter_1_8_15
     {
       return "it";
     }
+    virtual QCString getLanguageString()
+    {
+      return "0x410 Italian";
+    }
 
     // --- Language translation methods -------------------
 
@@ -130,6 +134,10 @@ class TranslatorItalian : public TranslatorAdapter_1_8_15
     /*! header that is put before the detailed description of files, classes and namespaces. */
     QCString trDetailedDescription()
     { return "Descrizione dettagliata"; }
+
+    /*! header that is used when the summary tag is missing inside the details tag */
+    virtual QCString trDetails()
+    { return "Dettagli"; }
 
     /*! header that is put before the list of typedefs. */
     QCString trMemberTypedefDocumentation()
@@ -424,12 +432,6 @@ class TranslatorItalian : public TranslatorAdapter_1_8_15
     QCString trExampleDocumentation()
     { return "Documentazione degli esempi"; }
 
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all related pages.
-     */
-    QCString trPageDocumentation()
-    { return "Documentazione delle pagine tra loro collegate "; }
-
     /*! This is used in LaTeX as the title of the document */
     QCString trReferenceManual()
     { return "Manuale di riferimento"; }
@@ -531,10 +533,6 @@ class TranslatorItalian : public TranslatorAdapter_1_8_15
     {
       return "Diagramma delle classi per "+clName;
     }
-
-    /*! this text is generated when the \\internal command is used. */
-    QCString trForInternalUseOnly()
-    { return "Solo per uso interno."; }
 
     /*! this text is generated when the \\warning command is used. */
     QCString trWarning()
@@ -1121,11 +1119,6 @@ class TranslatorItalian : public TranslatorAdapter_1_8_15
     {
       return "Package "+name;
     }
-    /*! Title of the package index page */
-    virtual QCString trPackageList()
-    {
-      return "Lista dei package";
-    }
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
     {
@@ -1353,14 +1346,18 @@ class TranslatorItalian : public TranslatorAdapter_1_8_15
     /*! Used as a heading for a list of Java class functions with package
      * scope.
      */
-    virtual QCString trPackageMembers()
+    virtual QCString trPackageFunctions()
     {
       return "Funzioni con visibilità di package";
+    }
+    virtual QCString trPackageMembers()
+    {
+      return "Membri con visibilità di package";
     }
     /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
-    virtual QCString trStaticPackageMembers()
+    virtual QCString trStaticPackageFunctions()
     {
       return "Funzioni statiche con visibilità di package";
     }
@@ -1471,14 +1468,6 @@ class TranslatorItalian : public TranslatorAdapter_1_8_15
      */
     virtual QCString trDirectories()
     { return "Directory"; }
-
-    /*! This returns a sentences that introduces the directory hierarchy.
-     *  and the fact that it is sorted alphabetically per level
-     */
-    virtual QCString trDirDescription()
-    { return "Questa gerarchia di directory è approssimativamente, "
-        "ma non completamente, ordinata in ordine alfabetico:";
-    }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.
@@ -1796,19 +1785,44 @@ class TranslatorItalian : public TranslatorAdapter_1_8_15
      */
     virtual QCString trDateTime(int year,int month,int day,int dayOfWeek,
                                 int hour,int minutes,int seconds,
-                                bool includeTime)
+                                DateTimeType includeTime)
     {
       static const char *days[]   = { "Lun","Mar","Mer","Gio","Ven","Sab","Dom" };
       static const char *months[] = { "Gen","Feb","Mar","Apr","Mag","Giu","Lug","Ago","Set","Ott","Nov","Dic" };
       QCString sdate;
-      sdate.sprintf("%s %d %s %d",days[dayOfWeek-1],day,months[month-1],year);
-      if (includeTime)
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Date)
+      {
+        sdate.sprintf("%s %d %s %d",days[dayOfWeek-1],day,months[month-1],year);
+      }
+      if (includeTime == DateTimeType::DateTime) sdate += " ";
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Time)
       {
         QCString stime;
-        stime.sprintf(" %.2d:%.2d:%.2d",hour,minutes,seconds);
+        stime.sprintf("%.2d:%.2d:%.2d",hour,minutes,seconds);
         sdate+=stime;
       }
       return sdate;
+    }
+    virtual QCString trDayOfWeek(int dayOfWeek, bool first_capital, bool full)
+    {
+      static const char *days_short[]   = { "lun", "mar", "mer", "gio", "ven", "sab", "dom" };
+      static const char *days_full[]    = { "lunedì", "martedì", "mercoledì", "giovedì", "venerdì", "sabato", "domenica" };
+      QCString text  = full? days_full[dayOfWeek-1] : days_short[dayOfWeek-1];
+      if (first_capital) return text.mid(0,1).upper()+text.mid(1);
+      else return text;
+    }
+    virtual QCString trMonth(int month, bool first_capital, bool full)
+    {
+      static const char *months_short[] = { "gen", "feb", "mar", "apr", "mag", "giu", "lug", "ago", "set", "ott", "nov", "dic" };
+      static const char *months_full[]  = { "gennaio", "febbraio", "marzo", "aprile", "maggio", "giugno", "luglio", "agosto", "settembre", "ottobre", "novembre", "dicembre" };
+      QCString text  = full? months_full[month-1] : months_short[month-1];
+      if (first_capital) return text.mid(0,1).upper()+text.mid(1);
+      else return text;
+    }
+    virtual QCString trDayPeriod(int period)
+    {
+      static const char *dayPeriod[] = { "AM", "PM" };
+      return dayPeriod[period];
     }
 
 //////////////////////////////////////////////////////////////////////////

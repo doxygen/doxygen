@@ -223,11 +223,11 @@ void DirDefImpl::writeDetailedDescription(OutputList &ol,const QCString &title)
       !documentation().isEmpty())
   {
     ol.pushGeneratorState();
-      ol.disable(OutputGenerator::Html);
+      ol.disable(OutputType::Html);
       ol.writeRuler();
     ol.popGeneratorState();
     ol.pushGeneratorState();
-      ol.disableAllBut(OutputGenerator::Html);
+      ol.disableAllBut(OutputType::Html);
       ol.writeAnchor(QCString(),"details");
     ol.popGeneratorState();
     ol.startGroupHeader();
@@ -245,12 +245,12 @@ void DirDefImpl::writeDetailedDescription(OutputList &ol,const QCString &title)
         !documentation().isEmpty())
     {
       ol.pushGeneratorState();
-        ol.disable(OutputGenerator::Man);
-        ol.disable(OutputGenerator::RTF);
+        ol.disable(OutputType::Man);
+        ol.disable(OutputType::RTF);
         // ol.newParagraph();  // FIXME:PARA
         ol.enableAll();
-        ol.disableAllBut(OutputGenerator::Man);
-        ol.enable(OutputGenerator::Latex);
+        ol.disableAllBut(OutputType::Man);
+        ol.enable(OutputType::Latex);
         ol.writeString("\n\n");
       ol.popGeneratorState();
     }
@@ -268,28 +268,28 @@ void DirDefImpl::writeBriefDescription(OutputList &ol)
 {
   if (hasBriefDescription())
   {
-    std::unique_ptr<IDocParser> parser { createDocParser() };
-    std::unique_ptr<DocRoot> rootNode  { validatingParseDoc(
+    auto parser { createDocParser() };
+    auto ast    { validatingParseDoc(
          *parser.get(), briefFile(),briefLine(),this,0,briefDescription(),TRUE,FALSE,
          QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT)) };
-    if (rootNode && !rootNode->isEmpty())
+    if (!ast->isEmpty())
     {
       ol.startParagraph();
       ol.pushGeneratorState();
-      ol.disableAllBut(OutputGenerator::Man);
+      ol.disableAllBut(OutputType::Man);
       ol.writeString(" - ");
       ol.popGeneratorState();
-      ol.writeDoc(rootNode.get(),this,0);
+      ol.writeDoc(ast.get(),this,0);
       ol.pushGeneratorState();
-      ol.disable(OutputGenerator::RTF);
+      ol.disable(OutputType::RTF);
       ol.writeString(" \n");
-      ol.enable(OutputGenerator::RTF);
+      ol.enable(OutputType::RTF);
 
       if (Config_getBool(REPEAT_BRIEF) ||
           !documentation().isEmpty()
          )
       {
-        ol.disableAllBut(OutputGenerator::Html);
+        ol.disableAllBut(OutputType::Html);
         ol.startTextLink(QCString(),"details");
         ol.parseText(theTranslator->trMore());
         ol.endTextLink();
@@ -311,7 +311,7 @@ void DirDefImpl::writeDirectoryGraph(OutputList &ol)
     if (!dirDep.isTrivial())
     {
       msg("Generating dependency graph for directory %s\n",qPrint(displayName()));
-      ol.disable(OutputGenerator::Man);
+      ol.disable(OutputType::Man);
       //ol.startParagraph();
       ol.startDirDepGraph();
       ol.parseText(theTranslator->trDirDepGraph(shortName()));
@@ -345,11 +345,11 @@ void DirDefImpl::writeSubDirList(OutputList &ol)
       if (dd->hasDocumentation() || !dd->getFiles().empty())
       {
         ol.startMemberDeclaration();
-        ol.startMemberItem(dd->anchor(),0);
+        ol.startMemberItem(dd->anchor(),OutputGenerator::MemberItemType::Normal);
         ol.parseText(theTranslator->trDir(FALSE,TRUE)+" ");
         ol.insertMemberAlign();
         ol.writeObjectLink(dd->getReference(),dd->getOutputFileBase(),QCString(),dd->shortName());
-        ol.endMemberItem();
+        ol.endMemberItem(OutputGenerator::MemberItemType::Normal);
         if (!dd->briefDescription().isEmpty() && Config_getBool(BRIEF_MEMBER_DESC))
         {
           ol.startMemberDescription(dd->getOutputFileBase());
@@ -401,7 +401,7 @@ void DirDefImpl::writeFileList(OutputList &ol)
       if (doc || src)
       {
         ol.startMemberDeclaration();
-        ol.startMemberItem(fd->anchor(),0);
+        ol.startMemberItem(fd->anchor(),OutputGenerator::MemberItemType::Normal);
         ol.docify(theTranslator->trFile(FALSE,TRUE)+" ");
         ol.insertMemberAlign();
         if (fd->isLinkable())
@@ -417,7 +417,7 @@ void DirDefImpl::writeFileList(OutputList &ol)
         if (fd->generateSourceFile())
         {
           ol.pushGeneratorState();
-          ol.disableAllBut(OutputGenerator::Html);
+          ol.disableAllBut(OutputType::Html);
           ol.docify(" ");
           ol.startTextLink(fd->includeName(),QCString());
           ol.docify("[");
@@ -426,7 +426,7 @@ void DirDefImpl::writeFileList(OutputList &ol)
           ol.endTextLink();
           ol.popGeneratorState();
         }
-        ol.endMemberItem();
+        ol.endMemberItem(OutputGenerator::MemberItemType::Normal);
         if (!fd->briefDescription().isEmpty() && Config_getBool(BRIEF_MEMBER_DESC))
         {
           ol.startMemberDescription(fd->getOutputFileBase());
@@ -464,7 +464,7 @@ QCString DirDefImpl::shortTitle() const
 
 bool DirDefImpl::hasDetailedDescription() const
 {
-  static bool repeatBrief = Config_getBool(REPEAT_BRIEF);
+  bool repeatBrief = Config_getBool(REPEAT_BRIEF);
   return (!briefDescription().isEmpty() && repeatBrief) || !documentation().isEmpty();
 }
 
@@ -472,7 +472,7 @@ void DirDefImpl::writeTagFile(TextStream &tagFile)
 {
   tagFile << "  <compound kind=\"dir\">\n";
   tagFile << "    <name>" << convertToXML(displayName()) << "</name>\n";
-  tagFile << "    <path>" << convertToXML(name()) << "</path>\n";
+  tagFile << "    <path>" << convertToXML(stripFromPath(name())) << "</path>\n";
   tagFile << "    <filename>" << addHtmlExtensionIfMissing(getOutputFileBase()) << "</filename>\n";
   for (const auto &lde : LayoutDocManager::instance().docEntries(LayoutDocManager::Directory))
   {
@@ -507,11 +507,11 @@ void DirDefImpl::writeTagFile(TextStream &tagFile)
 
 void DirDefImpl::writeDocumentation(OutputList &ol)
 {
-  static bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
+  bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
   ol.pushGeneratorState();
 
   QCString title=theTranslator->trDirReference(m_dispName);
-  startFile(ol,getOutputFileBase(),name(),title,HLI_Files,!generateTreeView);
+  startFile(ol,getOutputFileBase(),name(),title,HighlightedItem::Files,!generateTreeView);
 
   if (!generateTreeView)
   {
@@ -522,10 +522,10 @@ void DirDefImpl::writeDocumentation(OutputList &ol)
 
   startTitle(ol,getOutputFileBase());
   ol.pushGeneratorState();
-    ol.disableAllBut(OutputGenerator::Html);
+    ol.disableAllBut(OutputType::Html);
     ol.parseText(shortTitle());
     ol.enableAll();
-    ol.disable(OutputGenerator::Html);
+    ol.disable(OutputType::Html);
     ol.parseText(title);
   ol.popGeneratorState();
   endTitle(ol,getOutputFileBase(),title);
@@ -618,7 +618,7 @@ void DirDefImpl::writeDocumentation(OutputList &ol)
 
   ol.endContents();
 
-  endFileWithNavPath(this,ol);
+  endFileWithNavPath(ol,this);
 
   ol.popGeneratorState();
 }
@@ -678,7 +678,7 @@ void DirDefImpl::addUsesDependency(const DirDef *dir,const FileDef *srcFd,
     //printf("  => new file\n");
     auto newUsedDir = std::make_unique<UsedDir>(dir);
     newUsedDir->addFileDep(srcFd,dstFd, srcDirect, dstDirect);
-    usedDir = m_usedDirs.add(dir->getOutputFileBase(),std::move(newUsedDir));
+    m_usedDirs.add(dir->getOutputFileBase(),std::move(newUsedDir));
     added=TRUE;
   }
   if (added)
@@ -881,16 +881,16 @@ static void writePartialFilePath(OutputList &ol,const DirDef *root,const FileDef
 
 void DirRelation::writeDocumentation(OutputList &ol)
 {
-  static bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
+  bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
   ol.pushGeneratorState();
-  ol.disableAllBut(OutputGenerator::Html);
+  ol.disableAllBut(OutputType::Html);
 
   QCString shortTitle=theTranslator->trDirRelation(
                       (m_src->shortName()+" &rarr; "+m_dst->dir()->shortName()));
   QCString title=theTranslator->trDirRelation(
                  (m_src->displayName()+" -> "+m_dst->dir()->shortName()));
   startFile(ol,getOutputFileBase(),getOutputFileBase(),
-            title,HLI_None,!generateTreeView,m_src->getOutputFileBase());
+            title,HighlightedItem::None,!generateTreeView,m_src->getOutputFileBase());
 
   if (!generateTreeView)
   {
@@ -926,7 +926,7 @@ void DirRelation::writeDocumentation(OutputList &ol)
 
   ol.endContents();
 
-  endFileWithNavPath(m_src,ol);
+  endFileWithNavPath(ol,m_src);
 
   ol.popGeneratorState();
 }
@@ -1108,7 +1108,7 @@ void generateDirDocs(OutputList &ol)
     ol.pushGeneratorState();
     if (!dir->hasDocumentation())
     {
-      ol.disableAllBut(OutputGenerator::Html);
+      ol.disableAllBut(OutputType::Html);
     }
     dir->writeDocumentation(ol);
     ol.popGeneratorState();

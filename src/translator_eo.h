@@ -37,7 +37,7 @@
  files frees the maintainer from thinking about whether the
  first, the second, or both files should be included or not, and
  why.  This holds namely for localized translators because their
- base class is changed occasionaly to adapter classes when the
+ base class is changed occasionally to adapter classes when the
  Translator class changes the interface, or back to the
  Translator class (by the local maintainer) when the localized
  translator is made up-to-date again.
@@ -81,6 +81,11 @@ class TranslatorEsperanto : public TranslatorAdapter_1_8_4
       return "eo";
     }
 
+    // using fallback see translator.h
+    virtual QCString getLanguageString()
+    {
+      return "0x409 English (United States)";
+    }
     // --- Language translation methods -------------------
 
     /*! used in the compound documentation before a list of related functions. */
@@ -94,6 +99,10 @@ class TranslatorEsperanto : public TranslatorAdapter_1_8_4
     /*! header that is put before the detailed description of files, classes and namespaces. */
     virtual QCString trDetailedDescription()
     { return "Detala Priskribo"; }
+
+    /*! header that is used when the summary tag is missing inside the details tag */
+    virtual QCString trDetails()
+    { return "Detaloj"; }
 
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
@@ -393,6 +402,10 @@ class TranslatorEsperanto : public TranslatorAdapter_1_8_4
       {
         return "Datumstruktura Dokumentado";
       }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+          return trDesignUnitDocumentation();
+      }
       else
       {
         return "Klasa Dokumentado";
@@ -410,12 +423,6 @@ class TranslatorEsperanto : public TranslatorAdapter_1_8_4
      */
     virtual QCString trExampleDocumentation()
     { return "Ekzempla Dokumentado"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all related pages.
-     */
-    virtual QCString trPageDocumentation()
-    { return "Paĝa Dokumentado"; }
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
@@ -518,10 +525,6 @@ class TranslatorEsperanto : public TranslatorAdapter_1_8_4
     {
       return "Heredada diagramo por "+clName+":";
     }
-
-    /*! this text is generated when the \\internal command is used. */
-    virtual QCString trForInternalUseOnly()
-    { return "Nur por ena uzado."; }
 
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
@@ -1109,11 +1112,6 @@ class TranslatorEsperanto : public TranslatorAdapter_1_8_4
     {
       return "Pakaĵo "+name;
     }
-    /*! Title of the package index page */
-    virtual QCString trPackageList()
-    {
-      return "Pakaĵa Listo";
-    }
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
     {
@@ -1369,14 +1367,18 @@ class TranslatorEsperanto : public TranslatorAdapter_1_8_4
     /*! Used as a heading for a list of Java class functions with package
      * scope.
      */
-    virtual QCString trPackageMembers()
+    virtual QCString trPackageFunctions()
     {
       return "Pakaĵaj Funkcioj";
+    }
+    virtual QCString trPackageMembers()
+    {
+      return "Pakaĵaj Membroj";
     }
     /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
-    virtual QCString trStaticPackageMembers()
+    virtual QCString trStaticPackageFunctions()
     {
       return "Statikaj Pakaĵaj Funkcioj";
     }
@@ -1487,14 +1489,6 @@ class TranslatorEsperanto : public TranslatorAdapter_1_8_4
      */
     virtual QCString trDirectories()
     { return "Dosierujoj"; }
-
-    /*! This returns a sentences that introduces the directory hierarchy.
-     *  and the fact that it is sorted alphabetically per level
-     */
-    virtual QCString trDirDescription()
-    { return "Tiu ĉi dosieruja hierarkio estas plimalpli, "
-             "sed ne tute, ordigita alfabete:";
-    }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.
@@ -1810,7 +1804,7 @@ class TranslatorEsperanto : public TranslatorAdapter_1_8_4
      */
     virtual QCString trDateTime(int year,int month,int day,int dayOfWeek,
                                 int hour,int minutes,int seconds,
-                                bool includeTime)
+                                DateTimeType includeTime)
     {
       static const char *days[]   = { "lundo","mardo","merkredo",
                                         "ĵaŭdo","vendredo","sabato",
@@ -1823,14 +1817,39 @@ class TranslatorEsperanto : public TranslatorAdapter_1_8_4
                                         "Decembro"
                                     };
       QCString sdate;
-      sdate.sprintf("%s, %d-a de %s %d",days[dayOfWeek-1],day,months[month-1],year);
-      if (includeTime)
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Date)
+      {
+        sdate.sprintf("%s, %d-a de %s %d",days[dayOfWeek-1],day,months[month-1],year);
+      }
+      if (includeTime == DateTimeType::DateTime) sdate += " ";
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Time)
       {
         QCString stime;
-        stime.sprintf(" %.2d:%.2d:%.2d",hour,minutes,seconds);
+        stime.sprintf("%.2d:%.2d:%.2d",hour,minutes,seconds);
         sdate+=stime;
       }
       return sdate;
+    }
+    virtual QCString trDayOfWeek(int dayOfWeek, bool first_capital, bool full)
+    {
+      static const char *days_short[]   = { "lu", "ma", "me", "ĵa", "ve", "sa", "di" };
+      static const char *days_full[]    = { "lundo", "mardo", "merkredo", "ĵaŭdo", "vendredo", "sabato", "dimanĉo" };
+      QCString text  = full? days_full[dayOfWeek-1] : days_short[dayOfWeek-1];
+      if (first_capital) return text.mid(0,1).upper()+text.mid(1);
+      else return text;
+    }
+    virtual QCString trMonth(int month, bool first_capital, bool full)
+    {
+      static const char *months_short[] = { "jan", "feb", "mar", "apr", "maj", "jun", "jul", "aŭg", "sep", "okt", "nov", "dec" };
+      static const char *months_full[]  = { "januaro", "februaro", "marto", "aprilo", "majo", "junio", "julio", "aŭgusto", "septembro", "oktobro", "novembro", "decembro" };
+      QCString text  = full? months_full[month-1] : months_short[month-1];
+      if (first_capital) return text.mid(0,1).upper()+text.mid(1);
+      else return text;
+    }
+    virtual QCString trDayPeriod(int period)
+    {
+      static const char *dayPeriod[] = { "atm", "ptm" };
+      return dayPeriod[period];
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1941,15 +1960,6 @@ class TranslatorEsperanto : public TranslatorAdapter_1_8_4
     {
       return "Dokumentaro de la Metodo";
     }
-
-    /*! Used as the title of the design overview picture created for the
-     *  VHDL output.
-     */
-    virtual QCString trDesignOverview()
-    {
-      return "Fasona Superrigardo";
-    }
-
 };
 
 #endif

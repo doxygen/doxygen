@@ -24,7 +24,7 @@
 */
 #define CN_SPC " "
 
-class TranslatorChinese : public Translator
+class TranslatorChinese : public TranslatorAdapter_1_9_4
 {
   public:
     /*! Used for identification of the language. The identification
@@ -59,6 +59,10 @@ class TranslatorChinese : public Translator
     {
       return "zh";
     }
+    virtual QCString getLanguageString()
+    {
+      return "0x804 Chinese (PRC)";
+    }
     virtual QCString latexFontenc()
     {
       return "";
@@ -70,6 +74,10 @@ class TranslatorChinese : public Translator
     virtual QCString latexDocumentPost()
     {
       return "\\end{CJK}\n";
+    }
+    virtual bool needsPunctuation()
+    {
+      return false;
     }
 
     /*! used in the compound documentation before a list of related functions.
@@ -86,6 +94,10 @@ class TranslatorChinese : public Translator
      */
     virtual QCString trDetailedDescription()
     { return "详细描述"; }
+
+    /*! header that is used when the summary tag is missing inside the details tag */
+    virtual QCString trDetails()
+    { return "详细信息"; }
 
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
@@ -329,6 +341,10 @@ class TranslatorChinese : public Translator
       {
         return "结构体说明";
       }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+          return trDesignUnitDocumentation();
+      }
       else {
         return "类说明";
       }
@@ -339,9 +355,6 @@ class TranslatorChinese : public Translator
 
     virtual QCString trExampleDocumentation()
     { return "示例说明"; }
-
-    virtual QCString trPageDocumentation()
-    { return "页面说明"; }
 
     virtual QCString trReferenceManual()
     { return "参考手册"; }
@@ -402,9 +415,6 @@ class TranslatorChinese : public Translator
     {
       return "类" CN_SPC+clName+CN_SPC "继承关系图:";
     }
-
-     virtual QCString trForInternalUseOnly()
-    { return "仅限内部使用."; }
 
      virtual QCString trWarning()
     { return "警告"; }
@@ -1010,11 +1020,6 @@ class TranslatorChinese : public Translator
       return "包" CN_SPC+name;
     }
 
-    /*! Title of the package index page */
-    virtual QCString trPackageList()
-    {
-      return "包列表";
-    }
 
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
@@ -1302,15 +1307,19 @@ class TranslatorChinese : public Translator
     /*! Used as a heading for a list of Java class functions with package
      * scope.
      */
-    virtual QCString trPackageMembers()
+    virtual QCString trPackageFunctions()
     {
       return "包函数";
+    }
+    virtual QCString trPackageMembers()
+    {
+      return "包成员";
     }
 
     /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
-    virtual QCString trStaticPackageMembers()
+    virtual QCString trStaticPackageFunctions()
     {
       return "静态包函数";
     }
@@ -1429,14 +1438,6 @@ class TranslatorChinese : public Translator
      */
     virtual QCString trDirectories()
     { return "目录"; }
-
-    /*! This returns a sentences that introduces the directory hierarchy.
-     *  and the fact that it is sorted alphabetically per level
-     */
-    virtual QCString trDirDescription()
-    {
-      return "此继承关系列表按字典顺序粗略的排序:" CN_SPC;
-    }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.
@@ -1739,22 +1740,42 @@ class TranslatorChinese : public Translator
 
   virtual QCString trDateTime(int year,int month,int day,int dayOfWeek,
                                 int hour,int minutes,int seconds,
-                                bool includeTime)
+                                DateTimeType includeTime)
   {
     static const char *days[]   = { "一","二","三","四","五","六","日" };
-      static const char *months[] = { "一","二","三","四","五","六","七","八","九","十","十一","十二" };
+    static const char *months[] = { "一","二","三","四","五","六","七","八","九","十","十一","十二" };
 
     QCString sdate;
 
-    sdate.sprintf("%d年" CN_SPC "%s月" CN_SPC "%d日" CN_SPC "星期%s",year, months[month-1], day, days[dayOfWeek-1]);
-
-    if (includeTime)
+    if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Date)
+    {
+      sdate.sprintf("%d年" CN_SPC "%s月" CN_SPC "%d日" CN_SPC "星期%s",year, months[month-1], day, days[dayOfWeek-1]);
+    }
+    if (includeTime == DateTimeType::DateTime) sdate += " ";
+    if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Time)
     {
       QCString stime;
-      stime.sprintf(" %.2d:%.2d:%.2d",hour,minutes,seconds);
+      stime.sprintf("%.2d:%.2d:%.2d",hour,minutes,seconds);
       sdate+=stime;
     }
     return sdate;
+  }
+  virtual QCString trDayOfWeek(int dayOfWeek, bool, bool full)
+  {
+    static const char *days_short[]   = { "周一", "周二", "周三", "周四", "周五", "周六", "周日" };
+    static const char *days_full[]    = { "星期一", "星期二", "星期三", "星期四", "星期五", "星期六", "星期日" };
+    return full? days_full[dayOfWeek-1] : days_short[dayOfWeek-1];
+  }
+  virtual QCString trMonth(int month, bool, bool full)
+  {
+    static const char *months_short[] = { "1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月" };
+    static const char *months_full[]  = { "一月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "十一月", "十二月" };
+    return full? months_full[month-1] : months_short[month-1];
+  }
+  virtual QCString trDayPeriod(int period)
+  {
+    static const char *dayPeriod[] = { "上午", "下午" };
+    return dayPeriod[period];
   }
 
 //////////////////////////////////////////////////////////////////////////

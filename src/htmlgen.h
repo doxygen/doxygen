@@ -18,37 +18,37 @@
 
 #include "outputgen.h"
 
+/** Generator for HTML code fragments */
 class HtmlCodeGenerator : public CodeOutputInterface
 {
   public:
     HtmlCodeGenerator(TextStream &t,const QCString &relPath);
     HtmlCodeGenerator(TextStream &t);
-    int id() const { return m_id; }
-    void setId(int id) { m_id = id; }
-    void setRelativePath(const QCString &path);
-    void codify(const QCString &text);
+
+    OutputType type() const override { return OutputType::Html; }
+
+    void codify(const QCString &text) override;
     void writeCodeLink(CodeSymbolType type,
                        const QCString &ref,const QCString &file,
                        const QCString &anchor,const QCString &name,
-                       const QCString &tooltip);
+                       const QCString &tooltip) override;
     void writeTooltip(const QCString &id,
                       const DocLinkInfo &docInfo,
                       const QCString &decl,
                       const QCString &desc,
                       const SourceLinkInfo &defInfo,
                       const SourceLinkInfo &declInfo
-                     );
-    void writeLineNumber(const QCString &,const QCString &,const QCString &,int, bool);
-    void startCodeLine(bool);
-    void endCodeLine();
-    void startFontClass(const QCString &s);
-    void endFontClass();
-    void writeCodeAnchor(const QCString &anchor);
-    void setCurrentDoc(const Definition *,const QCString &,bool) {}
-    void addWord(const QCString &,bool) {}
-    void startCodeFragment(const QCString &style);
-    void endCodeFragment(const QCString &);
+                     ) override;
+    void writeLineNumber(const QCString &,const QCString &,const QCString &,int, bool) override;
+    void startCodeLine(bool) override;
+    void endCodeLine() override;
+    void startFontClass(const QCString &s) override;
+    void endFontClass() override;
+    void writeCodeAnchor(const QCString &anchor) override;
+    void startCodeFragment(const QCString &style) override;
+    void endCodeFragment(const QCString &) override;
 
+    void setRelativePath(const QCString &path);
   private:
     void _writeCodeLink(const QCString &className,
                         const QCString &ref,const QCString &file,
@@ -59,11 +59,10 @@ class HtmlCodeGenerator : public CodeOutputInterface
     int m_col = 0;
     QCString m_relPath;
     bool m_lineOpen = false;
-    int m_id = 0;
 };
 
 /** Generator for HTML output */
-class HtmlGenerator : public OutputGenerator
+class HtmlGenerator : public OutputGenerator //public CodeOutputForwarder<OutputGenerator,HtmlCodeGenerator>
 {
   public:
     HtmlGenerator();
@@ -72,7 +71,7 @@ class HtmlGenerator : public OutputGenerator
     virtual ~HtmlGenerator();
     virtual std::unique_ptr<OutputGenerator> clone() const;
 
-    virtual OutputType type() const { return Html; }
+    virtual OutputType type() const { return OutputType::Html; }
     static void init();
     void cleanup();
     static void writeStyleSheetFile(TextStream &t);
@@ -86,40 +85,9 @@ class HtmlGenerator : public OutputGenerator
     static QCString writeLogoAsString(const QCString &path);
     static QCString writeSplitBarAsString(const QCString &name,const QCString &relpath);
     static QCString getMathJaxMacros();
+    static QCString getNavTreeCss();
 
-    // ---- CodeOutputInterface
-    void codify(const QCString &text)
-    { m_codeGen.codify(text); }
-    void writeCodeLink(CodeSymbolType type,
-                       const QCString &ref,const QCString &file,
-                       const QCString &anchor,const QCString &name,
-                       const QCString &tooltip)
-    { m_codeGen.writeCodeLink(type,ref,file,anchor,name,tooltip); }
-    void writeLineNumber(const QCString &ref,const QCString &file,const QCString &anchor,int lineNumber, bool writeLineAnchor)
-    { m_codeGen.writeLineNumber(ref,file,anchor,lineNumber,writeLineAnchor); }
-    void writeTooltip(const QCString &id, const DocLinkInfo &docInfo, const QCString &decl,
-                      const QCString &desc, const SourceLinkInfo &defInfo, const SourceLinkInfo &declInfo
-                     )
-    { m_codeGen.writeTooltip(id,docInfo,decl,desc,defInfo,declInfo); }
-    void startCodeLine(bool hasLineNumbers)
-    { m_codeGen.startCodeLine(hasLineNumbers); }
-    void endCodeLine()
-    { m_codeGen.endCodeLine(); }
-    void startFontClass(const QCString &s)
-    { m_codeGen.startFontClass(s); }
-    void endFontClass()
-    { m_codeGen.endFontClass(); }
-    void writeCodeAnchor(const QCString &anchor)
-    { m_codeGen.writeCodeAnchor(anchor); }
-    void startCodeFragment(const QCString &style)
-    { m_codeGen.startCodeFragment(style); }
-    void endCodeFragment(const QCString &style)
-    { m_codeGen.endCodeFragment(style); }
-    // ---------------------------
-
-    void setCurrentDoc(const Definition *context,const QCString &anchor,bool isSourceFile);
-    void addWord(const QCString &word,bool hiPriority);
-    void writeDoc(DocNode *,const Definition *,const MemberDef *,int id);
+    void writeDoc(const IDocNodeAST *node,const Definition *,const MemberDef *,int id);
 
     void startFile(const QCString &name,const QCString &manName,const QCString &title,int id);
     void writeFooter(const QCString &navPath);
@@ -127,8 +95,8 @@ class HtmlGenerator : public OutputGenerator
     void clearBuffer();
     void writeSearchInfo();
 
-    void startIndexSection(IndexSections) {}
-    void endIndexSection(IndexSections) {}
+    void startIndexSection(IndexSection) {}
+    void endIndexSection(IndexSection) {}
     void writePageLink(const QCString &,bool) {}
     void startProjectNumber();
     void endProjectNumber();
@@ -185,8 +153,8 @@ class HtmlGenerator : public OutputGenerator
     void endInlineHeader();
     void startAnonTypeScope(int) {}
     void endAnonTypeScope(int) {}
-    void startMemberItem(const QCString &anchor,int,const QCString &inheritId);
-    void endMemberItem();
+    void startMemberItem(const QCString &anchor,MemberItemType,const QCString &inheritId);
+    void endMemberItem(MemberItemType);
     void startMemberTemplateParams();
     void endMemberTemplateParams(const QCString &anchor,const QCString &inheritId);
     void startCompoundTemplateParams();
@@ -200,7 +168,7 @@ class HtmlGenerator : public OutputGenerator
     void endMemberGroup(bool);
 
     void insertMemberAlign(bool);
-    void insertMemberAlignLeft(int,bool);
+    void insertMemberAlignLeft(MemberItemType,bool);
     void startMemberDescription(const QCString &anchor,const QCString &inheritId, bool typ);
     void endMemberDescription();
     void startMemberDeclaration() {}
@@ -331,6 +299,10 @@ class HtmlGenerator : public OutputGenerator
     void startLabels();
     void writeLabel(const QCString &l,bool isLast);
     void endLabels();
+
+    void writeLocalToc(const SectionRefs &sr,const LocalToc &lt);
+
+    CodeOutputInterface *codeGen() { return &m_codeGen; }
 
   private:
     static void writePageFooter(TextStream &t,const QCString &,const QCString &,const QCString &);

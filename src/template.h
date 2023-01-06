@@ -19,10 +19,10 @@
 #include <vector>
 #include <memory>
 #include <functional>
+#include <variant>
 
 #include "qcstring.h"
 #include "containers.h"
-#include "variant.h"
 
 class TemplateListIntf;
 class TemplateStructIntf;
@@ -102,38 +102,39 @@ class TemplateVariant
     using FunctionDelegate = std::function<TemplateVariant(const std::vector<TemplateVariant>&)>;
 
     /** Symbolic names for the possible types that this variant can hold. */
-    using VariantT = Variant<bool,                      // index==0: Type::Bool
-                             int,                       // index==1: Type::Int
-                             QCString,                  // index==2: Type::String
-                             TemplateStructIntfPtr,     // index==3: Type::Struct
-                             TemplateListIntfPtr,       // index==4: Type::List
-                             FunctionDelegate,          // index==5: Type::Function
-                             TemplateStructIntfWeakPtr  // index==6: Type::WeakStruct
-                            >;
+    using VariantT = std::variant<std::monostate,            // index==0, Invalid/default type
+                                  bool,                      // index==1: Type::Bool
+                                  int,                       // index==2: Type::Int
+                                  QCString,                  // index==3: Type::String
+                                  TemplateStructIntfPtr,     // index==4: Type::Struct
+                                  TemplateListIntfPtr,       // index==5: Type::List
+                                  FunctionDelegate,          // index==6: Type::Function
+                                  TemplateStructIntfWeakPtr  // index==7: Type::WeakStruct
+                                 >;
 
     enum class Type : uint8_t
     {
-      Bool       = 0,
-      Int        = 1,
-      String     = 2,
-      Struct     = 3,
-      List       = 4,
-      Function   = 5,
-      WeakStruct = 6,
-      None       = 255
+      None       = 0,
+      Bool       = 1,
+      Int        = 2,
+      String     = 3,
+      Struct     = 4,
+      List       = 5,
+      Function   = 6,
+      WeakStruct = 7
     };
 
     /** Constructs an invalid variant. */
     TemplateVariant() {}
 
     /** Constructs a new variant with a boolean value \a b. */
-    explicit TemplateVariant(bool b) { m_variant.set<static_cast<uint8_t>(Type::Bool)>(b); }
+    explicit TemplateVariant(bool b) { m_variant = b; }
 
     /** Constructs a new variant with a integer value \a v. */
-    TemplateVariant(int v) { m_variant.set<static_cast<uint8_t>(Type::Int)>(v); }
+    TemplateVariant(int v) { m_variant = v; }
 
     /** Constructs a new variant with a integer value \a v. */
-    TemplateVariant(unsigned int v) { m_variant.set<static_cast<uint8_t>(Type::Int)>(static_cast<int>(v)); }
+    TemplateVariant(unsigned int v) { m_variant = static_cast<int>(v); }
 
     /** Constructs a new variant with a integer value \a v.
      *  We use SFINAE to avoid a compiler error in case size_t already matches the 'unsigned int' overload.
@@ -141,31 +142,31 @@ class TemplateVariant
     template<typename T,
              typename std::enable_if<std::is_same<T,size_t>::value,T>::type* = nullptr
             >
-    TemplateVariant(T v) { m_variant.set<static_cast<uint8_t>(Type::Int)>(static_cast<int>(v)); }
+    TemplateVariant(T v) { m_variant = static_cast<int>(v); }
 
     /** Constructs a new variant with a string value \a s. */
-    TemplateVariant(const char *s,bool raw=FALSE) : m_raw(raw) { m_variant.set<static_cast<uint8_t>(Type::String)>(s); }
+    TemplateVariant(const char *s,bool raw=FALSE) : m_raw(raw) { m_variant = QCString(s); }
 
     /** Constructs a new variant with a string value \a s. */
-    TemplateVariant(const QCString &s,bool raw=FALSE) : m_raw(raw) { m_variant.set<static_cast<uint8_t>(Type::String)>(s.str()); }
+    TemplateVariant(const QCString &s,bool raw=FALSE) : m_raw(raw) { m_variant = s; }
 
     /** Constructs a new variant with a string value \a s. */
-    TemplateVariant(const std::string &s,bool raw=FALSE) : m_raw(raw) { m_variant.set<static_cast<uint8_t>(Type::String)>(s); }
+    TemplateVariant(const std::string &s,bool raw=FALSE) : m_raw(raw) { m_variant = QCString(s); }
 
     /** Constructs a new variant with a struct value \a s.
      *  @note. The variant will hold a counting reference to the object.
      */
-    TemplateVariant(TemplateStructIntfPtr s) { m_variant.set<static_cast<uint8_t>(Type::Struct)>(s); }
+    TemplateVariant(TemplateStructIntfPtr s) { m_variant = s; }
 
     /** Constructs a new variant with a list value \a l.
      *  @note. The variant will hold a counting reference to the object.
      */
-    TemplateVariant(TemplateListIntfPtr l) { m_variant.set<static_cast<uint8_t>(Type::List)>(l); }
+    TemplateVariant(TemplateListIntfPtr l) { m_variant = l; }
 
     /** Constructs a new variant with a struct value \a s.
      *  @note. The variant will hold a non-counting reference to the object.
      */
-    TemplateVariant(TemplateStructIntfWeakPtr s) { m_variant.set<static_cast<uint8_t>(Type::WeakStruct)>(s); }
+    TemplateVariant(TemplateStructIntfWeakPtr s) { m_variant = s; }
 
     /** Constructs a new variant which represents a method call
      *  @param[in] delegate FunctionDelegate object to invoke when
@@ -174,7 +175,7 @@ class TemplateVariant
      *  TemplateVariant::FunctionDelegate::fromFunction() to create
      *  FunctionDelegate objects.
      */
-    TemplateVariant(FunctionDelegate delegate) { m_variant.set<static_cast<uint8_t>(Type::Function)>(delegate); }
+    TemplateVariant(FunctionDelegate delegate) { m_variant = delegate; }
 
     /** Destroys the Variant object */
     ~TemplateVariant()  = default;
@@ -211,21 +212,21 @@ class TemplateVariant
     int toInt() const;
 
     /** Returns TRUE if the variant holds a valid value, or FALSE otherwise */
-    constexpr bool isValid()      const { return m_variant.valid(); }
+    constexpr bool isValid()      const { return std::holds_alternative<std::monostate>(m_variant); }
     /** Returns TRUE if the variant holds a boolean value */
-    constexpr bool isBool()       const { return m_variant.is<static_cast<uint8_t>(Type::Bool)>(); }
+    constexpr bool isBool()       const { return std::holds_alternative<bool>(m_variant); }
     /** Returns TRUE if the variant holds an integer value */
-    constexpr bool isInt()        const { return m_variant.is<static_cast<uint8_t>(Type::Int)>(); }
+    constexpr bool isInt()        const { return std::holds_alternative<int>(m_variant); }
     /** Returns TRUE if the variant holds a string value */
-    constexpr bool isString()     const { return m_variant.is<static_cast<uint8_t>(Type::String)>(); }
+    constexpr bool isString()     const { return std::holds_alternative<QCString>(m_variant); }
     /** Returns TRUE if the variant holds a struct value */
-    constexpr bool isStruct()     const { return m_variant.is<static_cast<uint8_t>(Type::Struct)>(); }
+    constexpr bool isStruct()     const { return std::holds_alternative<TemplateStructIntfPtr>(m_variant); }
     /** Returns TRUE if the variant holds a list value */
-    constexpr bool isList()       const { return m_variant.is<static_cast<uint8_t>(Type::List)>(); }
+    constexpr bool isList()       const { return std::holds_alternative<TemplateListIntfPtr>(m_variant); }
     /** Returns TRUE if the variant holds a function value */
-    constexpr bool isFunction()   const { return m_variant.is<static_cast<uint8_t>(Type::Function)>(); }
+    constexpr bool isFunction()   const { return std::holds_alternative<FunctionDelegate>(m_variant); }
     /** Returns TRUE if the variant holds a struct value */
-    constexpr bool isWeakStruct() const { return m_variant.is<static_cast<uint8_t>(Type::WeakStruct)>(); }
+    constexpr bool isWeakStruct() const { return std::holds_alternative<TemplateStructIntfWeakPtr>(m_variant); }
 
     /** Returns the pointer to list referenced by this variant
      *  or 0 if this variant does not have list type.
@@ -284,7 +285,7 @@ class TemplateListIntf
     {
       public:
         /** Destructor for the iterator */
-        virtual ~ConstIterator() {}
+        virtual ~ConstIterator() = default;
         /** Moves iterator to the first element in the list */
         virtual void toFirst() = 0;
         /** Moves iterator to the last element in the list */
@@ -303,7 +304,7 @@ class TemplateListIntf
     using ConstIteratorPtr = std::unique_ptr<ConstIterator>;
 
     /** Destroys the list */
-    virtual ~TemplateListIntf() {}
+    virtual ~TemplateListIntf() = default;
 
     /** Returns the number of elements in the list */
     virtual size_t count() const = 0;
@@ -349,7 +350,7 @@ class TemplateStructIntf
 {
   public:
     /** Destroys the struct */
-    virtual ~TemplateStructIntf() {}
+    virtual ~TemplateStructIntf() = default;
 
     /** Gets the value for a field name.
      *  @param[in] name The name of the field.
@@ -395,7 +396,7 @@ class TemplateImmutableStruct : public TemplateStructIntf
 class TemplateEscapeIntf
 {
   public:
-    virtual ~TemplateEscapeIntf() {}
+    virtual ~TemplateEscapeIntf() = default;
     /** Create a copy of the escape filter */
     virtual std::unique_ptr<TemplateEscapeIntf> clone() = 0;
     /** Returns the \a input after escaping certain characters */
@@ -410,7 +411,7 @@ class TemplateEscapeIntf
 class TemplateSpacelessIntf
 {
   public:
-    virtual ~TemplateSpacelessIntf() {}
+    virtual ~TemplateSpacelessIntf() = default;
     /** Create a copy of the spaceless filter */
     virtual std::unique_ptr<TemplateSpacelessIntf> clone() = 0;
     /** Returns the \a input after removing redundant whitespace */
@@ -433,7 +434,7 @@ class TemplateSpacelessIntf
 class TemplateContext
 {
   public:
-    virtual ~TemplateContext() {}
+    virtual ~TemplateContext() = default;
 
     /** Push a new scope on the stack. */
     virtual void push() = 0;
@@ -487,7 +488,7 @@ class Template
 {
   public:
     /** Destructor */
-    virtual ~Template() {}
+    virtual ~Template() = default;
 
     /** Renders a template instance to a stream.
      *  @param[in] ts The text stream to write the results to.

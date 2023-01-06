@@ -13,7 +13,6 @@
 class TranslatorAdapterBase : public Translator
 {
   protected:
-    virtual ~TranslatorAdapterBase() {}
     TranslatorEnglish english;
 
     /*! An auxiliary inline method used by the updateNeededMessage()
@@ -41,14 +40,42 @@ class TranslatorAdapterBase : public Translator
 
 };
 
-class TranslatorAdapter_1_9_4 : public TranslatorAdapterBase
+class TranslatorAdapter_1_9_6 : public TranslatorAdapterBase
+{
+  public:
+    virtual QCString updateNeededMessage()
+    { return createUpdateNeededMessage(idLanguage(),"release 1.9.5"); }
+
+    /*! Small trick to use the original functions as the wording has been changed */
+    virtual QCString trRelatedSymbols()
+    { return trRelatedFunctions(); }
+    virtual QCString trRelatedSymbolsSubscript()
+    { return trRelatedSubscript(); }
+    virtual QCString trRelatedSymbolDocumentation()
+    { return trRelatedFunctionDocumentation(); }
+
+    virtual QCString trCompoundType(ClassDef::CompoundType compType, SrcLangExt lang)
+    { return english.trCompoundType(compType, lang); }
+};
+
+class TranslatorAdapter_1_9_5 : public TranslatorAdapter_1_9_6
+{
+  public:
+    virtual QCString updateNeededMessage()
+    { return createUpdateNeededMessage(idLanguage(),"release 1.9.5"); }
+
+    virtual QCString trFlowchart()
+    { return english.trFlowchart(); }
+};
+
+class TranslatorAdapter_1_9_4 : public TranslatorAdapter_1_9_5
 {
   public:
     virtual QCString updateNeededMessage()
     { return createUpdateNeededMessage(idLanguage(),"release 1.9.4"); }
 
-    virtual QCString trCompoundType(ClassDef::CompoundType compType, SrcLangExt lang)
-    { return english.trCompoundType(compType, lang); }
+    virtual QCString trPackageList()
+    { return english.trPackageList(); }
 };
 
 class TranslatorAdapter_1_9_2 : public TranslatorAdapter_1_9_4
@@ -323,8 +350,11 @@ class TranslatorAdapter_1_7_5 : public TranslatorAdapter_1_8_0
     { return english.trIncludesFileIn(name); }
     virtual QCString trDateTime(int year,int month,int day,int dayOfWeek,
                                 int hour,int minutes,int seconds,
-                                bool includeTime)
+                                DateTimeType includeTime)
     { return english.trDateTime(year,month,day,dayOfWeek,hour,minutes,seconds,includeTime); }
+    virtual QCString trDayPeriod(int period)
+    { return english.trDayPeriod(period); }
+
 };
 
 /** Adapter class for languages that only contain translations up to

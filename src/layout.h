@@ -30,7 +30,7 @@ class MemberList;
 /** @brief Base class representing a piece of a documentation page */
 struct LayoutDocEntry
 {
-  virtual ~LayoutDocEntry() {}
+  virtual ~LayoutDocEntry() = default;
   enum Kind {
               // Generic items for all pages
               MemberGroups,

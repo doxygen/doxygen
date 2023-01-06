@@ -48,7 +48,7 @@
 #ifndef TRANSLATOR_GR_H
 #define TRANSLATOR_GR_H
 
-class TranslatorGreek : public Translator
+class TranslatorGreek : public TranslatorAdapter_1_9_4
 {
   public:
 
@@ -97,6 +97,10 @@ class TranslatorGreek : public Translator
     /*! header that is put before the detailed description of files, classes and namespaces. */
     virtual QCString trDetailedDescription()
     { return "Λεπτομερής Περιγραφή"; }
+
+    /*! header that is used when the summary tag is missing inside the details tag */
+    virtual QCString trDetails()
+    { return "Λεπτομέρειες"; }
 
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
@@ -395,6 +399,10 @@ class TranslatorGreek : public Translator
       {
         return "Τεκμηρίωση Δομών Δεδομένων";
       }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+          return trDesignUnitDocumentation();
+      }
       else
       {
         return "Τεκμηρίωση Κλάσεων";
@@ -412,12 +420,6 @@ class TranslatorGreek : public Translator
      */
     virtual QCString trExampleDocumentation()
     { return "Τεκμηρίωση Παραδειγμάτων"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all related pages.
-     */
-    virtual QCString trPageDocumentation()
-    { return "Τεκμηρίωση Σελίδων"; }
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
@@ -520,10 +522,6 @@ class TranslatorGreek : public Translator
     {
       return "Διάγραμμα κληρονομικότητας για την "+clName+":";
     }
-
-    /*! this text is generated when the \\internal command is used. */
-    virtual QCString trForInternalUseOnly()
-    { return "Μόνο για εσωτερική χρήση."; }
 
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
@@ -1114,11 +1112,6 @@ class TranslatorGreek : public Translator
     {
       return "Πακέτο "+name;
     }
-    /*! Title of the package index page */
-    virtual QCString trPackageList()
-    {
-      return "Λίστα Πακέτων";
-    }
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
     {
@@ -1206,6 +1199,10 @@ class TranslatorGreek : public Translator
     virtual QCString trRTFGeneralIndex()
     {
       return "Ευρετήριο";
+    }
+    virtual QCString getLanguageString()
+    {
+      return "0x408 Greece";
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1384,14 +1381,18 @@ class TranslatorGreek : public Translator
     /*! Used as a heading for a list of Java class functions with package
      * scope.
      */
-    virtual QCString trPackageMembers()
+    virtual QCString trPackageFunctions()
     {
       return "Συναρτήσεις Πακέτου";
+    }
+    virtual QCString trPackageMembers()
+    {
+      return "Μέλη Πακέτου";
     }
     /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
-    virtual QCString trStaticPackageMembers()
+    virtual QCString trStaticPackageFunctions()
     {
       return "Στατικές Συναρτήσεις Πακέτου";
     }
@@ -1502,14 +1503,6 @@ class TranslatorGreek : public Translator
      */
     virtual QCString trDirectories()
     { return "Κατάλογοι"; }
-
-    /*! This returns a sentences that introduces the directory hierarchy.
-     *  and the fact that it is sorted alphabetically per level
-     */
-    virtual QCString trDirDescription()
-    {
-			return "Η ιεραρχία καταλόγων ταξινομήθηκε αλφαβητικά, αλλά όχι πολύ αυστηρά:";
-    }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.
@@ -1826,19 +1819,42 @@ class TranslatorGreek : public Translator
      */
     virtual QCString trDateTime(int year,int month,int day,int dayOfWeek,
                                 int hour,int minutes,int seconds,
-                                bool includeTime)
+                                DateTimeType includeTime)
     {
       static const char *days[]   = { "Δευ","Τρι","Τετ","Πεμ","Παρ","Σαβ","Κυρ" };
       static const char *months[] = { "Ιαν","Φεβ","Μαρ","Απρ","Μαι","Ιουν","Ιουλ","Αυγ","Σεπ","Οκτ","Νοε","Δεκ" };
       QCString sdate;
-      sdate.sprintf("%s %.2d %s %d",days[dayOfWeek-1],day,months[month-1],year);
-      if (includeTime)
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Date)
+      {
+        sdate.sprintf("%s %.2d %s %d",days[dayOfWeek-1],day,months[month-1],year);
+      }
+      if (includeTime == DateTimeType::DateTime) sdate += " ";
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Time)
       {
         QCString stime;
-        stime.sprintf(" %.2d:%.2d:%.2d",hour,minutes,seconds);
+        stime.sprintf("%.2d:%.2d:%.2d",hour,minutes,seconds);
         sdate+=stime;
       }
       return sdate;
+    }
+    virtual QCString trDayOfWeek(int dayOfWeek, bool, bool full)
+    {
+      static const char *days_short[]   = { "Δευ", "Τρι", "Τετ", "Πεμ", "Παρ", "Σαβ", "Κυρ" };
+      static const char *days_full[]    = { "Δευτέρα", "Τρίτη", "Τετάρτη", "Πέμπτη", "Παρασκευή", "Σάββατο", "Κυριακή" };
+      QCString text  = full? days_full[dayOfWeek-1] : days_short[dayOfWeek-1];
+      return text;
+    }
+    virtual QCString trMonth(int month, bool, bool full)
+    {
+      static const char *months_short[] = { "Ιαν", "Φεβ", "Μαρ", "Απρ", "Μαϊ", "Ιουν", "Ιουλ", "Αυγ", "Σεπ", "Οκτ", "Νοε", "Δεκ" };
+      static const char *months_full[]  = { "Ιανουάριος", "Φεβρουάριος", "Μάρτιος", "Απρίλιος", "Μάιος", "Ιούνιος", "Ιούλιος", "Αύγουστος", "Σεπτέμβριος", "Οκτώβριος", "Νοέμβριος", "Δεκέμβριος" };
+      QCString text  = full? months_full[month-1] : months_short[month-1];
+      return text;
+    }
+    virtual QCString trDayPeriod(int period)
+    {
+      static const char *dayPeriod[] = { "π.μ.", "μ.μ." };
+      return dayPeriod[period];
     }
 
 //////////////////////////////////////////////////////////////////////////

@@ -98,14 +98,14 @@
 // files frees the maintainer from thinking about whether the
 // first, the second, or both files should be included or not, and
 // why.  This holds namely for localized translators because their
-// base class is changed occasionaly to adapter classes when the
+// base class is changed occasionally to adapter classes when the
 // Translator class changes the interface, or back to the
 // Translator class (by the local maintainer) when the localized
 // translator is made up-to-date again.
 
-class TranslatorFrench : public TranslatorAdapter_1_8_15
+class TranslatorFrench : public TranslatorAdapter_1_9_5
 {
-   public:
+  public:
 
     // --- Language control methods -------------------
 
@@ -115,8 +115,8 @@ class TranslatorFrench : public TranslatorAdapter_1_8_15
      * (e.g. "czech", "japanese", "russian", etc.). It should be equal to
      * the identification used in language.cpp.
      */
-       virtual QCString idLanguage()
-      { return "french"; }
+    virtual QCString idLanguage()
+    { return "french"; }
 
     /*! Used to get the LaTeX command(s) for the language support.
      *  This method should return string with commands that switch
@@ -139,6 +139,10 @@ class TranslatorFrench : public TranslatorAdapter_1_8_15
     {
       return "fr";
     }
+    virtual QCString getLanguageString()
+    {
+      return "0x40C French";
+    }
 
     // --- Language translation methods -------------------
 
@@ -153,6 +157,10 @@ class TranslatorFrench : public TranslatorAdapter_1_8_15
     /*! header that is put before the detailed description of files, classes and namespaces. */
     virtual QCString trDetailedDescription()
     { return "Description détaillée"; }
+
+    /*! header that is used when the summary tag is missing inside the details tag */
+    virtual QCString trDetails()
+    { return "Détails"; }
 
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
@@ -457,6 +465,10 @@ class TranslatorFrench : public TranslatorAdapter_1_8_15
       {
         return "Documentation des structures de données";
       }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+          return trDesignUnitDocumentation();
+      }
       else
       {
         return "Documentation des classes";
@@ -474,12 +486,6 @@ class TranslatorFrench : public TranslatorAdapter_1_8_15
      */
     virtual QCString trExampleDocumentation()
     { return "Documentation des exemples"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all related pages.
-     */
-    virtual QCString trPageDocumentation()
-    { return "Documentation des pages associées"; }
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
@@ -582,10 +588,6 @@ class TranslatorFrench : public TranslatorAdapter_1_8_15
     {
       return "Graphe d'héritage de "+clName+":";
     }
-
-    /*! this text is generated when the \\internal command is used. */
-    virtual QCString trForInternalUseOnly()
-    { return "Pour un usage interne uniquement."; }
 
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
@@ -820,9 +822,8 @@ class TranslatorFrench : public TranslatorAdapter_1_8_15
      */
     virtual QCString trGeneratedFromFiles(ClassDef::CompoundType compType,
         bool single)
-    { // here s is one of " Class", " Struct" or " Union"
-      // single is true implies a single file
-      static bool vhdlOpt = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
+    { // single is true implies a single file
+      bool vhdlOpt = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
       bool feminine = true;
       QCString result="La documentation de ";
       switch(compType)
@@ -838,7 +839,7 @@ class TranslatorFrench : public TranslatorAdapter_1_8_15
       }
       if (feminine) result+= " a été générée à partir ";
       else result+=" a été généré à partir ";
-      if (feminine) result+="du fichier suivant :";
+      if (single) result+="du fichier suivant :";
       else result+="des fichiers suivants :";
       return result;
     }
@@ -1098,6 +1099,7 @@ class TranslatorFrench : public TranslatorAdapter_1_8_15
         "<p><center><img alt=\"\" src=\"graph_legend."+getDotImageExtension()+"\"></center></p>\n"
         "<p>\n"
         "Les rectangles du graphe ci-dessus ont la signification suivante :\n"
+        "</p>\n"
         "<ul>\n"
         "<li>Un rectangle plein noir représente la structure ou la classe pour laquelle "
         "le graphe est généré.\n"
@@ -1107,9 +1109,11 @@ class TranslatorFrench : public TranslatorAdapter_1_8_15
         "pour laquelle des relations d'héritage ou de collaboration manquent. Un graphe est "
         "tronqué s'il n'entre pas dans les limites spécifiées."
         "</ul>\n"
+        "<p>\n"
         "Les flèches ont la signification suivante :\n"
+        "</p>\n"
         "<ul>\n"
-        "<li>Une flèche bleu foncé est utilisée pour visualiser une relation d'héritage publique "
+        "<li>Une bleu foncé est utilisée pour visualiser une relation d'héritage publique "
         "entre deux classes.\n"
         "<li>Une flèche vert foncé est utilisée pour une relation d'héritage protégée.\n"
         "<li>Une flèche rouge foncé est utilisée pour une relation d'héritage privée.\n"
@@ -1177,11 +1181,6 @@ class TranslatorFrench : public TranslatorAdapter_1_8_15
     virtual QCString trPackage(const QCString &name)
     {
       return "Paquetage "+name;
-    }
-    /*! Title of the package index page */
-    virtual QCString trPackageList()
-    {
-      return "Liste des paquetages";
     }
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
@@ -1439,14 +1438,18 @@ class TranslatorFrench : public TranslatorAdapter_1_8_15
     /*! Used as a heading for a list of Java class functions with package
      * scope.
      */
-    virtual QCString trPackageMembers()
+    virtual QCString trPackageFunctions()
     {
       return "Fonctions de paquetage";
+    }
+    virtual QCString trPackageMembers()
+    {
+      return "Membres de paquetage";
     }
     /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
-    virtual QCString trStaticPackageMembers()
+    virtual QCString trStaticPackageFunctions()
     {
       return "Fonctions statiques de paquetage";
     }
@@ -1557,14 +1560,6 @@ class TranslatorFrench : public TranslatorAdapter_1_8_15
      */
     virtual QCString trDirectories()
     { return "Répertoires"; }
-
-    /*! This returns a sentences that introduces the directory hierarchy.
-     *  and the fact that it is sorted alphabetically per level
-     */
-    virtual QCString trDirDescription()
-    { return "Cette hiérarchie de répertoire est triée approximativement, "
-             "mais pas complètement, par ordre alphabétique :";
-    }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.
@@ -1882,19 +1877,44 @@ class TranslatorFrench : public TranslatorAdapter_1_8_15
      */
     virtual QCString trDateTime(int year,int month,int day,int dayOfWeek,
                                 int hour,int minutes,int seconds,
-                                bool includeTime)
+                                DateTimeType includeTime)
     {
       static const char *days[]   = { "Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche" };
       static const char *months[] = { "Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre" };
       QCString sdate;
-      sdate.sprintf("%s %d %s %d",days[dayOfWeek-1],day,months[month-1],year);
-      if (includeTime)
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Date)
+      {
+        sdate.sprintf("%s %d %s %d",days[dayOfWeek-1],day,months[month-1],year);
+      }
+      if (includeTime == DateTimeType::DateTime) sdate += " ";
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Time)
       {
         QCString stime;
-        stime.sprintf(" %.2d:%.2d:%.2d",hour,minutes,seconds);
+        stime.sprintf("%.2d:%.2d:%.2d",hour,minutes,seconds);
         sdate+=stime;
       }
       return sdate;
+    }
+    virtual QCString trDayOfWeek(int dayOfWeek, bool first_capital, bool full)
+    {
+      static const char *days_short[]   = { "lun.", "mar.", "mer.", "jeu.", "ven.", "sam.", "dim." };
+      static const char *days_full[]    = { "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche" };
+      QCString text  = full? days_full[dayOfWeek-1] : days_short[dayOfWeek-1];
+      if (first_capital) return text.mid(0,1).upper()+text.mid(1);
+      else return text;
+    }
+    virtual QCString trMonth(int month, bool first_capital, bool full)
+    {
+      static const char *months_short[] = { "janv.", "févr.", "mars", "avr.", "mai", "juin", "juil.", "août", "sept.", "oct.", "nov.", "déc." };
+      static const char *months_full[]  = { "janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre" };
+      QCString text  = full? months_full[month-1] : months_short[month-1];
+      if (first_capital) return text.mid(0,1).upper()+text.mid(1);
+      else return text;
+    }
+    virtual QCString trDayPeriod(int period)
+    {
+      static const char *dayPeriod[] = { "AM", "PM" };
+      return dayPeriod[period];
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2317,6 +2337,67 @@ class TranslatorFrench : public TranslatorAdapter_1_8_15
     {
         return "Documentation des champs de données";
     }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.8.19
+//////////////////////////////////////////////////////////////////////////
+
+    /** VHDL design unit documentation */
+    virtual QCString trDesignUnitDocumentation()
+    { return "Documentation de l'unité de conception"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.2
+//////////////////////////////////////////////////////////////////////////
+
+    /** C++20 concept */
+    virtual QCString trConcept(bool first_capital, bool singular)
+    {
+      QCString result((first_capital ? "Concept" : "concept"));
+      if (!singular) result+="s";
+      return result;
+    }
+    /*! used as the title of the HTML page of a C++20 concept page */
+    virtual QCString trConceptReference(const QCString &conceptName)
+    {
+      QCString result="Reference du concept ";
+      result+=conceptName;
+      return result;
+    }
+
+    /*! used as the title of page containing all the index of all concepts. */
+    virtual QCString trConceptList()
+    { return "Liste des concepts"; }
+
+    /*! used as the title of chapter containing the index listing all concepts. */
+    virtual QCString trConceptIndex()
+    { return "Index des concepts"; }
+
+    /*! used as the title of chapter containing all information about concepts. */
+    virtual QCString trConceptDocumentation()
+    { return "Documentation des concepts"; }
+
+    /*! used as an introduction to the concept list */
+    virtual QCString trConceptListDescription(bool extractAll)
+    {
+      QCString result="Liste de tous les concepts ";
+      if (!extractAll) result+="documentés ";
+      result+="avec une brève description :";
+      return result;
+    }
+
+    /*! used to introduce the definition of the C++20 concept */
+    virtual QCString trConceptDefinition()
+    {
+      return "Définition du concept";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.4
+//////////////////////////////////////////////////////////////////////////
+
+    virtual QCString trPackageList()
+    { return "Liste des paquetages"; }
 
 };
 

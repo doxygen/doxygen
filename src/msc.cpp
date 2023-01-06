@@ -13,15 +13,14 @@
  *
  */
 
-#include <sstream>
-
 #include "msc.h"
 #include "portable.h"
 #include "config.h"
 #include "message.h"
 #include "docparser.h"
+#include "docnode.h"
 #include "doxygen.h"
-#include "index.h"
+#include "indexlist.h"
 #include "util.h"
 #include "mscgen_api.h"
 #include "dir.h"
@@ -32,7 +31,7 @@ static const int maxCmdLine = 40960;
 static bool convertMapFile(TextStream &t,const QCString &mapName,const QCString &relPath,
                            const QCString &context)
 {
-  std::ifstream f(mapName.str(),std::ifstream::in);
+  std::ifstream f = Portable::openInputStream(mapName);
   if (!f.is_open())
   {
     err("failed to open map file %s for inclusion in the docs!\n"
@@ -70,8 +69,10 @@ static bool convertMapFile(TextStream &t,const QCString &mapName,const QCString 
       {
         // handle doxygen \ref tag URL reference
 
-        std::unique_ptr<IDocParser> parser { createDocParser() };
-        std::unique_ptr<DocRef>     df     { createRef( *parser.get(), url, context ) };
+        auto parser { createDocParser() };
+        auto dfAst  { createRef( *parser.get(), url, context ) };
+        auto dfAstImpl = dynamic_cast<const DocNodeAST*>(dfAst.get());
+        const DocRef *df = std::get_if<DocRef>(&dfAstImpl->root);
         t << externalRef(relPath,df->ref(),TRUE);
         if (!df->file().isEmpty()) t << addHtmlExtensionIfMissing(df->file());
         if (!df->anchor().isEmpty()) t << "#" << df->anchor();
@@ -130,13 +131,11 @@ void writeMscGraphFromFile(const QCString &inFile,const QCString &outDir,
     QCString epstopdfArgs(maxCmdLine);
     epstopdfArgs.sprintf("\"%s.eps\" --outfile=\"%s.pdf\"",
                          qPrint(absOutFile),qPrint(absOutFile));
-    Portable::sysTimerStart();
     if (Portable::system("epstopdf",epstopdfArgs)!=0)
     {
       err_full(srcFile,srcLine,"Problems running epstopdf when processing '%s.eps'. Check your TeX installation!\n",
           qPrint(absOutFile));
     }
-    Portable::sysTimerStop();
   }
 
   Doxygen::indexList->addImageFile(imgName);

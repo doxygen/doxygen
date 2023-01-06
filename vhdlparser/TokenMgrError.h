@@ -41,7 +41,7 @@ public:
    * Indicates the reason why the exception is thrown. It will have
    * one of the above 4 values.
    */
-  int errorCode;
+  int errorCode = -1;
 
   /**
    * Returns a detailed message for the Error when it is thrown by the
@@ -90,4 +90,4 @@ public:
 }
 
 #endif
-/* JavaCC - OriginalChecksum=4ab4cdcdef6a3feec22fd9c00ba86e07 (do not edit this line) */
+/* JavaCC - OriginalChecksum=1d70bcaf73c58a19d4427d29908696e5 (do not edit this line) */

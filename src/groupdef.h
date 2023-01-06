@@ -49,8 +49,6 @@ class MemberDef;
 class GroupDef : public DefinitionMutable, public Definition
 {
   public:
-   ~GroupDef() {}
-
     virtual DefType definitionType() const = 0;
     virtual QCString getOutputFileBase() const = 0;
     virtual QCString anchor() const = 0;
@@ -58,15 +56,15 @@ class GroupDef : public DefinitionMutable, public Definition
     virtual QCString groupTitle() const = 0;
     virtual void setGroupTitle( const QCString &newtitle ) = 0;
     virtual bool hasGroupTitle( ) const = 0;
-    virtual void addFile(const FileDef *def) = 0;
-    virtual bool addClass(const ClassDef *def) = 0;
-    virtual bool addConcept(const ConceptDef *def) = 0;
-    virtual bool addNamespace(const NamespaceDef *def) = 0;
-    virtual void addGroup(const GroupDef *def) = 0;
-    virtual void addPage(const PageDef *def) = 0;
-    virtual void addExample(const PageDef *def) = 0;
+    virtual void addFile(FileDef *def) = 0;
+    virtual bool addClass(ClassDef *def) = 0;
+    virtual bool addConcept(ConceptDef *def) = 0;
+    virtual bool addNamespace(NamespaceDef *def) = 0;
+    virtual void addGroup(GroupDef *def) = 0;
+    virtual void addPage(PageDef *def) = 0;
+    virtual void addExample(PageDef *def) = 0;
     virtual void addDir(DirDef *dd) = 0;
-    virtual bool insertMember(const MemberDef *def,bool docOnly=FALSE) = 0;
+    virtual bool insertMember(MemberDef *def,bool docOnly=FALSE) = 0;
     virtual void removeMember(MemberDef *md) = 0;
     virtual bool findGroup(const GroupDef *def) const = 0;
     virtual void writeDocumentation(OutputList &ol) = 0;
@@ -124,7 +122,7 @@ class GroupLinkedMap : public LinkedMap<GroupDef>
 {
 };
 
-class GroupList : public std::vector<const GroupDef *>
+class GroupList : public std::vector<GroupDef *>
 {
 };
 

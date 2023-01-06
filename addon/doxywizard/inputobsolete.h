@@ -13,6 +13,8 @@
 #ifndef INPUTOBSOLETE_H
 #define INPUTOBSOLETE_H
 
+#include "input.h"
+
 class InputObsolete : public Input
 {
   public:
@@ -28,7 +30,7 @@ class InputObsolete : public Input
     void updateDependencies()    {}
     void reset()                 {}
     bool isDefault()             { return false; }
-    void writeValue(QTextStream &,QTextCodec *) {}
+    void writeValue(QTextStream &,TextCodecAdapter *) {}
     void setTemplateDocs(const QString &) {}
     bool isEmpty()               { return false; };
     Kind orgKind() const         { return m_orgKind; }

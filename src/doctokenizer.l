@@ -101,7 +101,7 @@ static const char *stateToString(int state);
 #endif
 
 
-static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
+static int yyread(yyscan_t yyscanner,char *buf,int max_size);
 static void handleHtmlTag(yyscan_t yyscanner,const char *text);
 static void processSection(yyscan_t yyscanner);
 
@@ -177,7 +177,7 @@ static int computeIndent(const char *str,size_t length)
   if (str==0 || length==std::string::npos) return 0;
   size_t i;
   int indent=0;
-  static int tabSize=Config_getInt(TAB_SIZE);
+  int tabSize=Config_getInt(TAB_SIZE);
   for (i=0;i<length;i++)
   {
     if (str[i]=='\t')
@@ -279,8 +279,8 @@ ATTRIB    {ATTRNAME}{WS}*("="{WS}*(("\""[^\"]*"\"")|("'"[^\']*"'")|[^ \t\r\n'"><
 URLCHAR   [a-z_A-Z0-9\!\~\,\:\;\'\$\?\@\&\%\#\.\-\+\/\=\x80-\xFF]
 URLMASK   ({URLCHAR}+([({]{URLCHAR}*[)}])?)+
 URLPROTOCOL ("http:"|"https:"|"ftp:"|"ftps:"|"sftp:"|"file:"|"news:"|"irc:"|"ircs:")
-FILEICHAR [a-z_A-Z0-9\\:\\\/\-\+&#@]
-FILEECHAR [a-z_A-Z0-9\-\+&#@]
+FILEICHAR [a-z_A-Z0-9\\:\\\/\-\+=&#@]
+FILEECHAR [a-z_A-Z0-9\-\+=&#@]
 FILECHARS {FILEICHAR}*{FILEECHAR}+
 HFILEMASK {FILEICHAR}*("."{FILEICHAR}+)+{FILECHARS}*
 VFILEMASK {FILECHARS}("."{FILECHARS})*
@@ -342,6 +342,8 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
 RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revision"|"Source"|"State")":"[^:\n$][^\n$]*"$"
 LINENR {BLANK}*[1-9][0-9]*
 
+SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[0-9]{1,2})?)?
+
 %option noyywrap
 
 %x St_Para
@@ -352,7 +354,9 @@ LINENR {BLANK}*[1-9][0-9]*
 %x St_TitleA
 %x St_TitleV
 %x St_Code
+%x St_iCode
 %x St_CodeOpt
+%x St_iCodeOpt
 %x St_XmlCode
 %x St_HtmlOnly
 %x St_HtmlOnlyOption
@@ -362,6 +366,7 @@ LINENR {BLANK}*[1-9][0-9]*
 %x St_XmlOnly
 %x St_DbOnly
 %x St_Verbatim
+%x St_iVerbatim
 %x St_ILiteral
 %x St_ILiteralOpt
 %x St_Dot
@@ -387,13 +392,17 @@ LINENR {BLANK}*[1-9][0-9]*
 %x St_Options
 %x St_Block
 %x St_Emoji
-%x St_Iline
+%x St_ILine
+%x St_ShowDate
 
 %x St_Sections
 %s St_SecLabel1
 %s St_SecLabel2
 %s St_SecTitle
 %x St_SecSkip
+
+%x St_QuotedString
+%x St_QuotedContent
 
 %%
 <St_Para>\r            /* skip carriage return */
@@ -765,13 +774,29 @@ LINENR {BLANK}*[1-9][0-9]*
                          yyextra->token->name = yyextra->token->name.mid(i+1,yyextra->token->name.length()-i-2);
                          BEGIN(St_Code);
                        }
+<St_iCodeOpt>{BLANK}*"{"(".")?{LABELID}"}" {
+                         yyextra->token->name = yytext;
+                         int i=yyextra->token->name.find('{'); /* } to keep vi happy */
+                         yyextra->token->name = yyextra->token->name.mid(i+1,yyextra->token->name.length()-i-2);
+                         BEGIN(St_iCode);
+                       }
 <St_CodeOpt>"\\ilinebr" |
 <St_CodeOpt>\n         |
 <St_CodeOpt>.          {
                          unput_string(yytext,yyleng);
                          BEGIN(St_Code);
                        }
+<St_iCodeOpt>"\\ilinebr" |
+<St_iCodeOpt>\n         |
+<St_iCodeOpt>.          {
+                         unput_string(yytext,yyleng);
+                         BEGIN(St_iCode);
+                       }
 <St_Code>{WS}*{CMD}"endcode" {
+                         lineCount(yytext,yyleng);
+                         return RetVal_OK;
+                       }
+<St_iCode>{WS}*{CMD}"endicode" {
                          lineCount(yytext,yyleng);
                          return RetVal_OK;
                        }
@@ -779,9 +804,9 @@ LINENR {BLANK}*[1-9][0-9]*
                          lineCount(yytext,yyleng);
                          return RetVal_OK;
                        }
-<St_Code,St_XmlCode>[^\\@\n<]+  |
-<St_Code,St_XmlCode>\n          |
-<St_Code,St_XmlCode>.           {
+<St_Code,St_iCode,St_XmlCode>[^\\@\n<]+  |
+<St_Code,St_iCode,St_XmlCode>\n          |
+<St_Code,St_iCode,St_XmlCode>.           {
                          lineCount(yytext,yyleng);
                          yyextra->token->verb+=yytext;
                        }
@@ -860,9 +885,13 @@ LINENR {BLANK}*[1-9][0-9]*
                          yyextra->token->verb=yyextra->token->verb.mid(1,yyextra->token->verb.length()-2);
                          return RetVal_OK;
                        }
-<St_Verbatim,St_ILiteral>[^\\@\n]+ |
-<St_Verbatim,St_ILiteral>\n        |
-<St_Verbatim,St_ILiteral>.         { /* Verbatim / javadac literal/code text */
+<St_iVerbatim>{CMD}"endiverbatim" {
+                         yyextra->token->verb=stripEmptyLines(yyextra->token->verb);
+                         return RetVal_OK;
+                       }
+<St_Verbatim,St_iVerbatim,St_ILiteral>[^\\@\n]+ |
+<St_Verbatim,St_iVerbatim,St_ILiteral>\n        |
+<St_Verbatim,St_iVerbatim,St_ILiteral>.         { /* Verbatim text */
                          lineCount(yytext,yyleng);
                          yyextra->token->verb+=yytext;
                        }
@@ -955,7 +984,9 @@ LINENR {BLANK}*[1-9][0-9]*
                          return TK_SYMBOL;
                        }
 <St_TitleN>{HTMLTAG}   {
-                         lineCount(yytext,yyleng);
+                         yyextra->token->name = yytext;
+                         handleHtmlTag(yyscanner,yytext);
+                         return TK_HTMLTAG;
                        }
 <St_TitleN>\n          { /* new line => end of title */
                          unput(*yytext);
@@ -1234,10 +1265,42 @@ LINENR {BLANK}*[1-9][0-9]*
                          return TK_WORD;
                        }
 <St_Emoji>.            {
+                         unput(*yytext);
                          return 0;
                        }
-<St_Iline>{LINENR}/[\n\.]     |
-<St_Iline>{LINENR}{BLANK}     {
+<St_QuotedString>"\""  {
+                         yyextra->token->name="";
+                         BEGIN(St_QuotedContent);
+                       }
+<St_QuotedString>(\n|"\\ilinebr") {
+                         unput_string(yytext,yyleng);
+                         return 0;
+                       }
+<St_QuotedString>.     {
+                         unput(*yytext);
+                         return 0;
+                       }
+<St_QuotedContent>"\"" {
+                         return TK_WORD;
+                       }
+<St_QuotedContent>.    {
+                         yyextra->token->name+=yytext;
+                       }
+<St_ShowDate>{WS}+{SHOWDATE} {
+                         lineCount(yytext,yyleng);
+                         yyextra->token->name=yytext;
+                         return TK_WORD;
+                       }
+<St_ShowDate>(\n|"\\ilinebr") {
+                         unput_string(yytext,yyleng);
+                         return 0;
+                       }
+<St_ShowDate>.         {
+                         unput(*yytext);
+                         return 0;
+                       }
+<St_ILine>{LINENR}/[\n\.]     |
+<St_ILine>{LINENR}{BLANK}     {
                          bool ok = false;
                          int nr = QCString(yytext).toInt(&ok);
                          if (!ok)
@@ -1250,7 +1313,7 @@ LINENR {BLANK}*[1-9][0-9]*
                          }
                          return TK_WORD;
                        }
-<St_Iline>.            {
+<St_ILine>.            {
                          return 0;
                        }
 <St_File>{FILEMASK}    {
@@ -1342,6 +1405,10 @@ LINENR {BLANK}*[1-9][0-9]*
                                       yyextra->endMarker="endverbatim";
                                       BEGIN(St_SecSkip);
                                     }
+<St_Sections>{CMD}"iverbatim"/[^a-z_A-Z0-9]  {
+                                      yyextra->endMarker="endiverbatim";
+                                      BEGIN(St_SecSkip);
+                                    }
 <St_Sections>{CMD}"iliteral"/[^a-z_A-Z0-9]  {
                                       yyextra->endMarker="endiliteral";
                                       BEGIN(St_SecSkip);
@@ -1386,6 +1453,10 @@ LINENR {BLANK}*[1-9][0-9]*
                                       yyextra->endMarker="endcode";
                                       BEGIN(St_SecSkip);
                                     }
+<St_Sections>{CMD}"icode"/[^a-z_A-Z0-9] {
+                                      yyextra->endMarker="endicode";
+                                      BEGIN(St_SecSkip);
+                                    }
 <St_Sections>"<!--"                 {
                                       yyextra->endMarker="-->";
                                       BEGIN(St_SecSkip);
@@ -1424,7 +1495,7 @@ LINENR {BLANK}*[1-9][0-9]*
                          lineCount(yytext,yyleng);
                          yyextra->secTitle = yytext;
                          yyextra->secTitle = yyextra->secTitle.stripWhiteSpace();
-                         if (yyextra->secTitle.right(8)=="\\ilinebr")
+                         if (yyextra->secTitle.endsWith("\\ilinebr"))
                          {
                            yyextra->secTitle.left(yyextra->secTitle.length()-8);
                          }
@@ -1466,10 +1537,10 @@ LINENR {BLANK}*[1-9][0-9]*
 
 //--------------------------------------------------------------------------
 
-static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size)
+static int yyread(yyscan_t yyscanner,char *buf,int max_size)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yy_size_t c=0;
+  int c=0;
   const char *p = yyextra->inputString + yyextra->inputPos;
   while ( c < max_size && *p ) { *buf++ = *p++; c++; }
   yyextra->inputPos+=c;
@@ -1661,6 +1732,13 @@ int DocTokenizer::lex()
   return doctokenizerYYlex(p->yyscanner);
 }
 
+void DocTokenizer::unputString(const QCString &tag)
+{
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  unput_string(tag.data(),tag.length());
+}
+
 void DocTokenizer::findSections(const QCString &input,const Definition *d,
                                 const QCString &fileName)
 {
@@ -1736,6 +1814,15 @@ void DocTokenizer::setStateCode()
   yyextra->token->verb="";
   yyextra->token->name="";
   BEGIN(St_CodeOpt);
+}
+
+void DocTokenizer::setStateICode()
+{
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->token->verb="";
+  yyextra->token->name="";
+  BEGIN(St_iCodeOpt);
 }
 
 void DocTokenizer::setStateXmlCode()
@@ -1818,6 +1905,14 @@ void DocTokenizer::setStateVerbatim()
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yyextra->token->verb="";
   BEGIN(St_Verbatim);
+}
+
+void DocTokenizer::setStateIVerbatim()
+{
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->token->verb="";
+  BEGIN(St_iVerbatim);
 }
 
 void DocTokenizer::setStateDot()
@@ -1970,11 +2065,25 @@ void DocTokenizer::setStateEmoji()
   BEGIN(St_Emoji);
 }
 
-void DocTokenizer::setStateIline()
+void DocTokenizer::setStateILine()
 {
   yyscan_t yyscanner = p->yyscanner;
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  BEGIN(St_Iline);
+  BEGIN(St_ILine);
+}
+
+void DocTokenizer::setStateQuotedString()
+{
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  BEGIN(St_QuotedString);
+}
+
+void DocTokenizer::setStateShowDate()
+{
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  BEGIN(St_ShowDate);
 }
 
 void DocTokenizer::cleanup()

@@ -22,7 +22,6 @@
 #include "util.h"
 #include "language.h"
 #include "commentscan.h"
-#include "index.h"
 #include "definition.h"
 #include "searchindex.h"
 #include "outputlist.h"
@@ -401,7 +400,7 @@ void VHDLOutlineParser::handleCommentBlock(const QCString &doc1, bool brief)
     return;
   }
 
-  Protection protection = Public;
+  Protection protection = Protection::Public;
   VhdlDocGen::prepareComment(doc);
 
   if (p->oldEntry == s->current.get())
@@ -707,7 +706,7 @@ void VHDLOutlineParser::mapLibPackage( Entry* root)
 
 bool VHDLOutlineParser::addLibUseClause(const QCString &type)
 {
-  static bool showIEEESTD=Config_getBool(FORCE_LOCAL_INCLUDES);
+  bool showIEEESTD=Config_getBool(FORCE_LOCAL_INCLUDES);
 
   if (showIEEESTD) // all standard packages and libraries will not be shown
   {
@@ -878,7 +877,7 @@ QCString filter2008VhdlComment(const char *s)
     }
   }
   // special attention in case */ at end of last line
-  int len = growBuf.getPos();
+  size_t len = growBuf.getPos();
   if (growBuf.at(len-1) == '/' && growBuf.at(len-2) == '*')
   {
     len -= 2;

@@ -39,6 +39,10 @@ class TranslatorRussian : public TranslatorAdapter_1_8_15
 
     virtual QCString trISOLang()
     { return "ru"; }
+    virtual QCString getLanguageString()
+    {
+      return "0x419 Russian";
+    }
 
     // --- Language translation methods -------------------
 
@@ -53,6 +57,10 @@ class TranslatorRussian : public TranslatorAdapter_1_8_15
     /*! header that is put before the detailed description of files, classes and namespaces. */
     virtual QCString trDetailedDescription()
     { return "Подробное описание"; }
+
+    /*! header that is used when the summary tag is missing inside the details tag */
+    virtual QCString trDetails()
+    { return "Подробности"; }
 
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
@@ -339,6 +347,10 @@ class TranslatorRussian : public TranslatorAdapter_1_8_15
       {
         return "Структуры данных";
       }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+          return trDesignUnitDocumentation();
+      }
       else
       {
         return "Классы";
@@ -356,12 +368,6 @@ class TranslatorRussian : public TranslatorAdapter_1_8_15
      */
     virtual QCString trExampleDocumentation()
     { return "Примеры"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all related pages.
-     */
-    virtual QCString trPageDocumentation()
-    { return "Тематические описания"; }
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
@@ -469,10 +475,6 @@ class TranslatorRussian : public TranslatorAdapter_1_8_15
     {
       return QCString("Граф наследования:")+clName+":";
     }
-
-    /*! this text is generated when the \\internal command is used. */
-    virtual QCString trForInternalUseOnly()
-    { return "Только для внутреннего использования"; }
 
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
@@ -1093,11 +1095,6 @@ class TranslatorRussian : public TranslatorAdapter_1_8_15
     {
       return QCString("Пакет ")+name;
     }
-    /*! Title of the package index page */
-    virtual QCString trPackageList()
-    {
-      return "Полный список пакетов ";
-    }
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
     {
@@ -1331,14 +1328,18 @@ class TranslatorRussian : public TranslatorAdapter_1_8_15
     /*! Used as a heading for a list of Java class functions with package
      * scope.
      */
-    virtual QCString trPackageMembers()
+    virtual QCString trPackageFunctions()
     {
       return "Функции с областью видимости пакета";
+    }
+    virtual QCString trPackageMembers()
+    {
+      return "Члены с областью видимости пакета";
     }
     /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
-    virtual QCString trStaticPackageMembers()
+    virtual QCString trStaticPackageFunctions()
     {
       return "Статические функции с областью видимости пакета";
     }
@@ -1449,12 +1450,6 @@ class TranslatorRussian : public TranslatorAdapter_1_8_15
      */
     virtual QCString trDirectories()
     { return "Алфавитный указатель директорий"; }
-
-    /*! This returns a sentences that introduces the directory hierarchy.
-     *  and the fact that it is sorted alphabetically per level
-     */
-    virtual QCString trDirDescription()
-    { return "Дерево директорий"; }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.
@@ -1785,19 +1780,42 @@ class TranslatorRussian : public TranslatorAdapter_1_8_15
      */
     virtual QCString trDateTime(int year,int month,int day,int dayOfWeek,
                                 int hour,int minutes,int seconds,
-                                bool includeTime)
+                                DateTimeType includeTime)
     {
       static const char *days[]   = { "Пн","Вт","Ср","Чт","Пт","Сб","Вс" };
       static const char *months[] = { "Янв","Фев","Мар","Апр","Май","Июн","Июл","Авг","Сен","Окт","Ноя","Дек" };
       QCString sdate;
-      sdate.sprintf("%s %d %s %d",days[dayOfWeek-1],day,months[month-1],year);
-      if (includeTime)
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Date)
+      {
+        sdate.sprintf("%s %d %s %d",days[dayOfWeek-1],day,months[month-1],year);
+      }
+      if (includeTime == DateTimeType::DateTime) sdate += " ";
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Time)
       {
         QCString stime;
-        stime.sprintf(" %.2d:%.2d:%.2d",hour,minutes,seconds);
+        stime.sprintf("%.2d:%.2d:%.2d",hour,minutes,seconds);
         sdate+=stime;
       }
       return sdate;
+    }
+    virtual QCString trDayOfWeek(int dayOfWeek, bool, bool full)
+    {
+      static const char *days_short[]   = { "Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс" };
+      static const char *days_full[]    = { "понедельник", "вторник", "среда", "четверг", "пятница", "суббота", "воскресенье" };
+      QCString text  = full? days_full[dayOfWeek-1] : days_short[dayOfWeek-1];
+      return text;
+    }
+    virtual QCString trMonth(int month, bool, bool full)
+    {
+      static const char *months_short[] = { "янв", "фев", "мар", "апр", "май", "июн", "июл", "авг", "сен", "окт", "ноя", "дек" };
+      static const char *months_full[]  = { "Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь" };
+      QCString text  = full? months_full[month-1] : months_short[month-1];
+      return text;
+    }
+    virtual QCString trDayPeriod(int period)
+    {
+      static const char *dayPeriod[] = { "AM", "PM" };
+      return dayPeriod[period];
     }
 
 ///////////////////////////////////////////////////////////////////////

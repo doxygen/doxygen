@@ -72,17 +72,17 @@ struct pyscannerYY_state
   CommentScanner          commentScanner;
   OutlineParserInterface *thisParser = 0;
   const char *            inputString = 0;
-  yy_size_t               inputPosition = 0;
-  Protection              protection = Public;
+  int                     inputPosition = 0;
+  Protection              protection = Protection::Public;
   std::shared_ptr<Entry>  current_root;
   std::shared_ptr<Entry>  current;
   std::shared_ptr<Entry>  previous;
   std::shared_ptr<Entry>  bodyEntry;
   int                     yyLineNr = 1 ;
   QCString                fileName;
-  MethodTypes             mtype = Method;
+  MethodTypes             mtype = MethodTypes::Method;
   bool                    stat = FALSE;
-  Specifier               virt = Normal;
+  Specifier               virt = Specifier::Normal;
   int                     docBlockContext = 0;
   QCString                docBlock;
   bool                    docBlockInBody = FALSE;
@@ -142,7 +142,7 @@ static void searchFoundDef(yyscan_t yyscanner);
 static void searchFoundClass(yyscan_t yyscanner);
 static QCString findPackageScope(yyscan_t yyscanner,const QCString &fileName);
 
-static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
+static int yyread(yyscan_t yyscanner,char *buf,int max_size);
 
 //-----------------------------------------------------------------------------
 /* ----------------------------------------------------------------- */
@@ -197,7 +197,7 @@ SHORTSTRINGITEM   ({SHORTSTRINGCHAR}|{ESCAPESEQ})
 SHORTSTRINGCHAR   [^\\\n"]
 STRINGLITERAL     {STRINGPREFIX}?( {SHORTSTRING} | {LONGSTRING})
 STRINGPREFIX      ("r"|"u"|"ur"|"R"|"U"|"UR"|"Ur"|"uR")
-FLOWKW            ("or"|"and"|"is"|"not"|"print"|"for"|"in"|"if"|"try"|"except"|"yield"|"raise"|"break"|"continue"|"pass"|"if"|"return"|"while"|"elif"|"else"|"finally")
+FLOWKW            ("or"|"and"|"is"|"not"|"print"|"for"|"in"|"try"|"except"|"yield"|"raise"|"break"|"continue"|"pass"|"if"|"return"|"while"|"elif"|"else"|"finally")
 POUNDCOMMENT      "#"[^#\n][^\n]*
 SCRIPTCOMMENT      "#!".*
 
@@ -301,7 +301,7 @@ STARTDOCSYMS      "##"
                        }
      ^{B}{IDENTIFIER}/{B}"="{B}"property" { // property
                         yyextra->current->section   = Entry::VARIABLE_SEC;
-                        yyextra->current->mtype     = Property;
+                        yyextra->current->mtype     = MethodTypes::Property;
                         yyextra->current->name      = QCString(yytext).stripWhiteSpace();
                         yyextra->current->fileName  = yyextra->fileName;
                         yyextra->current->startLine = yyextra->yyLineNr;
@@ -309,7 +309,8 @@ STARTDOCSYMS      "##"
                         yyextra->packageCommentAllowed = FALSE;
                         BEGIN(VariableDec);
                       }
-     ^{B}{IDENTIFIER}/{B}"="[^=] { // variable
+     ^{B}{IDENTIFIER}/{B}"="[^=] |
+     ^{B}{IDENTIFIER}/{B}":" { // variable
                         if (yyextra->search_count) REJECT;
                         yyextra->indent=computeIndent(yytext);
                         yyextra->current->section   = Entry::VARIABLE_SEC;
@@ -356,7 +357,8 @@ STARTDOCSYMS      "##"
                         if (yyextra->yyLineNr != 1) REJECT;
                       }
     {POUNDCOMMENT}    { // normal comment
-                        yyextra->packageCommentAllowed = FALSE;
+                        // issue 9672
+                        //yyextra->packageCommentAllowed = FALSE;
                       }
     {IDENTIFIER}      { // some other identifier
                         yyextra->packageCommentAllowed = FALSE;
@@ -495,9 +497,16 @@ STARTDOCSYMS      "##"
                         yyextra->current->startLine = yyextra->yyLineNr;
                         yyextra->current->bodyLine  = yyextra->yyLineNr;
                         yyextra->current->type.resize(0);
-                        if (yyextra->current->name.at(0)=='_') // mark as private
+                        if (yyextra->current->name.at(0)=='_')
                         {
-                          yyextra->current->protection=Private;
+                          if (yyextra->current->name.at(1)=='_') // mark as private
+                          {
+                            yyextra->current->protection=Protection::Private;
+                          }
+                          else // mark as protected
+                          {
+                            yyextra->current->protection=Protection::Protected;
+                          }
                         }
                         newEntry(yyscanner);
                       }
@@ -509,9 +518,16 @@ STARTDOCSYMS      "##"
                         yyextra->current->startLine = yyextra->yyLineNr;
                         yyextra->current->bodyLine  = yyextra->yyLineNr;
                         yyextra->current->type.resize(0);
-                        if (yyextra->current->name.at(0)=='_') // mark as private
+                        if (yyextra->current->name.at(0)=='_')
                         {
-                          yyextra->current->protection=Private;
+                          if (yyextra->current->name.at(1)=='_') // mark as private
+                          {
+                            yyextra->current->protection=Protection::Private;
+                          }
+                          else // mark as protected
+                          {
+                            yyextra->current->protection=Protection::Protected;
+                          }
                         }
                         newEntry(yyscanner);
                       }
@@ -548,7 +564,7 @@ STARTDOCSYMS      "##"
 }
 
 <FunctionBody>{
-    \n{B}/{IDENTIFIER}{BB}  {
+    \n{B}/{IDENTIFIER}[^{LETTER}{DIGIT}_]  {
                         DBG_CTX((stderr,"indent %d<=%d\n",computeIndent(&yytext[1]),yyextra->indent));
                         if (computeIndent(&yytext[1])<=yyextra->indent)
                         {
@@ -1015,7 +1031,7 @@ STARTDOCSYMS      "##"
 
     {SCOPE}            {
                          yyextra->current->extends.push_back(
-                                              BaseInfo(substitute(yytext,".","::"),Public,Normal)
+                                              BaseInfo(substitute(yytext,".","::"),Protection::Public,Specifier::Normal)
                                             );
                          //Has base class-do stuff
                        }
@@ -1095,6 +1111,10 @@ STARTDOCSYMS      "##"
                         yyextra->current->initializer.str(yytext);
                         yyextra->current->initializer << " ";
                       }
+   ":"{B}{IDENTIFIER} { //typing
+                        yyextra->start_init = FALSE;
+                        yyextra->current->type = substitute(yytext,":","");
+                      }
    {B}                { // spaces
                         yyextra->current->initializer << yytext;
                       }
@@ -1111,21 +1131,21 @@ STARTDOCSYMS      "##"
                         yyextra->current->initializer << yytext;
                       }
    {STRINGPREFIX}?"'" { // string
-                        if (yyextra->current->type.isEmpty()) yyextra->current->type = "string";
+                        if (yyextra->current->type.isEmpty()) yyextra->current->type = "str";
                         yyextra->current->initializer << yytext;
                         yyextra->copyString=&yyextra->current->initializer;
                         yyextra->stringContext=VariableDec;
                         BEGIN( SingleQuoteString );
                       }
    {STRINGPREFIX}?"\"" { // string
-                        if (yyextra->current->type.isEmpty()) yyextra->current->type = "string";
+                        if (yyextra->current->type.isEmpty()) yyextra->current->type = "str";
                         yyextra->current->initializer << yytext;
                         yyextra->copyString=&yyextra->current->initializer;
                         yyextra->stringContext=VariableDec;
                         BEGIN( DoubleQuoteString );
                       }
    {TRIDOUBLEQUOTE}   { // start of a comment block
-                        if (yyextra->current->type.isEmpty()) yyextra->current->type = "string";
+                        if (yyextra->current->type.isEmpty()) yyextra->current->type = "str";
                         yyextra->current->initializer << yytext;
                         yyextra->doubleQuote=TRUE;
                         yyextra->copyString=&yyextra->current->initializer;
@@ -1134,7 +1154,7 @@ STARTDOCSYMS      "##"
                       }
 
    {TRISINGLEQUOTE}   { // start of a comment block
-                        if (yyextra->current->type.isEmpty()) yyextra->current->type = "string";
+                        if (yyextra->current->type.isEmpty()) yyextra->current->type = "str";
                         yyextra->current->initializer << yytext;
                         yyextra->doubleQuote=FALSE;
                         yyextra->copyString=&yyextra->current->initializer;
@@ -1142,7 +1162,7 @@ STARTDOCSYMS      "##"
                         BEGIN(TripleString);
                       }
    "("                { // tuple, only when direct after =
-                        if (yyextra->current->mtype!=Property && yyextra->start_init)
+                        if (yyextra->current->mtype!=MethodTypes::Property && yyextra->start_init)
                         {
                           yyextra->current->type = "tuple";
                         }
@@ -1161,7 +1181,7 @@ STARTDOCSYMS      "##"
                         BEGIN( VariableAtom );
                       }
    "{"                { // dictionary
-                        if (yyextra->start_init) yyextra->current->type = "dictionary";
+                        if (yyextra->start_init) yyextra->current->type = "dict";
                         yyextra->current->initializer << *yytext;
                         yyextra->atomStart='{';
                         yyextra->atomEnd='}';
@@ -1183,9 +1203,14 @@ STARTDOCSYMS      "##"
                                break;
                             }
                           }
+                          if (yyextra->current->type.isEmpty()) yyextra->current->type = QCString(yytext);
                         }
                         yyextra->start_init = FALSE;
                         yyextra->current->initializer << yytext;
+                      }
+   "\\\n"             {
+                        yyextra->current->initializer << yytext;
+                        incLineNr(yyscanner);
                       }
    .                  {
                         yyextra->start_init = FALSE;
@@ -1284,8 +1309,8 @@ STARTDOCSYMS      "##"
                                 if (!actualDoc.isEmpty())
                                 {
                                   stripIndentation(actualDoc,yyextra->commentIndent);
-                                  actualDoc.prepend("\\verbatim\n");
-                                  actualDoc.append("\\endverbatim ");
+                                  actualDoc.prepend("@iverbatim\n");
+                                  actualDoc.append("@endiverbatim ");
                                 }
                               }
                               //printf("-------> yyextra->current=%p yyextra->bodyEntry=%p\n",yyextra->current,yyextra->bodyEntry);
@@ -1299,8 +1324,8 @@ STARTDOCSYMS      "##"
                                 if (!actualDoc.isEmpty())
                                 {
                                   stripIndentation(actualDoc,yyextra->commentIndent);
-                                  actualDoc.prepend("\\verbatim\n");
-                                  actualDoc.append("\\endverbatim ");
+                                  actualDoc.prepend("@iverbatim\n");
+                                  actualDoc.append("@endiverbatim ");
                                 }
                               }
                               if (yyextra->moduleScope.startsWith("__") &&  yyextra->moduleScope.endsWith("__"))
@@ -1334,8 +1359,11 @@ STARTDOCSYMS      "##"
                         }
 
 
-    ^{BB}               { // leading whitespace
-                          yyextra->docBlock += yytext;
+    ^{BB}               { // leading whitespace, compensate for """! / '''!
+                          if (yyextra->docBlockSpecial && yyleng >= yyextra->curIndent)
+                            yyextra->docBlock += yytext + yyextra->curIndent;
+                          else
+                            yyextra->docBlock += yytext;
                         }
     [^"'\n \t\\]+       {
                           yyextra->docBlock += yytext;
@@ -1475,10 +1503,10 @@ STARTDOCSYMS      "##"
 
 //----------------------------------------------------------------------------
 
-static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size)
+static int yyread(yyscan_t yyscanner,char *buf,int max_size)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yy_size_t c=0;
+  int c=0;
   const char *p = yyextra->inputString + yyextra->inputPosition;
   while ( c < max_size && *p ) { *buf++ = *p++; c++; }
   yyextra->inputPosition+=c;
@@ -1488,10 +1516,10 @@ static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size)
 static void initParser(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yyextra->protection = Public;
-  yyextra->mtype = Method;
+  yyextra->protection = Protection::Public;
+  yyextra->mtype = MethodTypes::Method;
   yyextra->stat = FALSE;
-  yyextra->virt = Normal;
+  yyextra->virt = Specifier::Normal;
   yyextra->previous = 0;
   yyextra->packageCommentAllowed = TRUE;
 }
@@ -1520,9 +1548,15 @@ static void newEntry(yyscan_t yyscanner)
 static void newVariable(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  if (!yyextra->current->name.isEmpty() && yyextra->current->name.at(0)=='_') // mark as private
+  if (!yyextra->current->name.isEmpty() && yyextra->current->name.at(0)=='_')
   {
-    yyextra->current->protection=Private;
+    if (yyextra->current->name.at(1)=='_') // mark as private
+    {
+      yyextra->current->protection=Protection::Private;
+    }
+    else{
+      yyextra->current->protection=Protection::Protected; // mark as protected
+    }
   }
   if (yyextra->current_root->section&Entry::COMPOUND_MASK) // mark as class variable
   {
@@ -1534,15 +1568,22 @@ static void newVariable(yyscan_t yyscanner)
 static void newFunction(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  if (yyextra->current->name.left(2)=="__" && yyextra->current->name.right(2)=="__")
+  if (yyextra->current->name.startsWith("__") && yyextra->current->name.endsWith("__"))
   {
     // special method name, see
     // http://docs.python.org/ref/specialnames.html
-    yyextra->current->protection=Public;
+    yyextra->current->protection=Protection::Public;
   }
   else if (yyextra->current->name.at(0)=='_')
   {
-    yyextra->current->protection=Private;
+    if (yyextra->current->name.at(1)=='_')
+    {
+      yyextra->current->protection=Protection::Private;
+    }
+    else 
+    {
+      yyextra->current->protection=Protection::Protected;
+    }
   }
 }
 
@@ -1720,6 +1761,10 @@ static void initTriDoubleQuoteBlock(yyscan_t yyscanner)
   yyextra->docBlock.resize(0);
   yyextra->commentIndent = yyextra->curIndent;
   yyextra->doubleQuote = TRUE;
+  if (yyextra->docBlockSpecial)
+  {
+    yyextra->docBlock.fill(' ',yyextra->indent);
+  }
   startCommentBlock(yyscanner,FALSE);
 }
 
@@ -1733,6 +1778,10 @@ static void initTriSingleQuoteBlock(yyscan_t yyscanner)
   yyextra->docBlock.resize(0);
   yyextra->commentIndent = yyextra->curIndent;
   yyextra->doubleQuote = FALSE;
+  if (yyextra->docBlockSpecial)
+  {
+    yyextra->docBlock.fill(' ',yyextra->indent);
+  }
   startCommentBlock(yyscanner,FALSE);
 }
 
@@ -1756,9 +1805,9 @@ static void searchFoundDef(yyscan_t yyscanner)
   yyextra->current->bodyLine  = yyextra->yyLineNr;
   yyextra->current->section = Entry::FUNCTION_SEC;
   yyextra->current->lang = SrcLangExt_Python;
-  yyextra->current->virt = Normal;
+  yyextra->current->virt = Specifier::Normal;
   yyextra->current->stat = yyextra->stat;
-  yyextra->current->mtype = yyextra->mtype = Method;
+  yyextra->current->mtype = yyextra->mtype = MethodTypes::Method;
   yyextra->current->type.resize(0);
   yyextra->current->name.resize(0);
   yyextra->current->args.resize(0);
@@ -1800,6 +1849,7 @@ static void parseCompounds(yyscan_t yyscanner,std::shared_ptr<Entry> rt)
       pyscannerYYrestart( 0, yyscanner );
       if (ce->section&Entry::COMPOUND_MASK)
       {
+        yyextra->specialBlock = false;
         yyextra->current_root = ce;
         BEGIN( Search );
       }
@@ -1844,12 +1894,12 @@ static void parseMain(yyscan_t yyscanner, const QCString &fileName,const char *f
   yyextra->inputString = fileBuf;
   yyextra->inputPosition = 0;
 
-  yyextra->protection    = Public;
-  yyextra->mtype         = Method;
-  yyextra->stat         = FALSE;
-  yyextra->virt          = Normal;
+  yyextra->protection    = Protection::Public;
+  yyextra->mtype         = MethodTypes::Method;
+  yyextra->stat          = false;
+  yyextra->virt          = Specifier::Normal;
   yyextra->current_root  = rt;
-  yyextra->specialBlock = FALSE;
+  yyextra->specialBlock  = false;
 
   yyextra->yyLineNr= 1 ;
   yyextra->fileName = fileName;
@@ -1924,7 +1974,7 @@ static void parsePrototype(yyscan_t yyscanner,const QCString &text)
   yyextra->packageCommentAllowed = FALSE;
 
   const char *orgInputString;
-  yy_size_t orgInputPosition;
+  int orgInputPosition;
   YY_BUFFER_STATE orgState;
 
   // save scanner state

@@ -43,17 +43,13 @@
  files frees the maintainer from thinking about whether the
  first, the second, or both files should be included or not, and
  why.  This holds namely for localized translators because their
- base class is changed occasionaly to adapter classes when the
+ base class is changed occasionally to adapter classes when the
  Translator class changes the interface, or back to the
  Translator class (by the local maintainer) when the localized
  translator is made up-to-date again.
 */
 class TranslatorKorean : public TranslatorAdapter_1_8_15
 {
-  protected:
-    friend class TranslatorAdapterBase;
-    virtual ~TranslatorKorean() {}
-
   public:
 
     // --- Language control methods -------------------
@@ -102,7 +98,14 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
     {
       return "ko";
     }
-
+    virtual QCString getLanguageString()
+    {
+      return "0x412 Korean";
+    }
+    virtual bool needsPunctuation()
+    {
+      return false;
+    }
     // --- Language translation methods -------------------
 
     /*! used in the compound documentation before a list of related functions. */
@@ -116,6 +119,10 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
     /*! header that is put before the detailed description of files, classes and namespaces. */
     virtual QCString trDetailedDescription()
     { return "상세한 설명"; }
+
+    /*! header that is used when the summary tag is missing inside the details tag */
+    virtual QCString trDetails()
+    { return "상세"; }
 
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
@@ -417,6 +424,10 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
       {
         return "데이터 구조 문서화";
       }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+          return trDesignUnitDocumentation();
+      }
       else
       {
         return "클래스 문서화";
@@ -434,12 +445,6 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
      */
     virtual QCString trExampleDocumentation()
     { return "예제 문서화"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all related pages.
-     */
-    virtual QCString trPageDocumentation()
-    { return "페이지 문서화"; }
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
@@ -542,10 +547,6 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
     {
       return clName+"에 대한 상속 다이어그램 : ";
     }
-
-    /*! this text is generated when the \\internal command is used. */
-    virtual QCString trForInternalUseOnly()
-    { return "내부적적으로만 사용하기 위해."; }
 
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
@@ -1128,11 +1129,6 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
     {
       return name+" 패키지";
     }
-    /*! Title of the package index page */
-    virtual QCString trPackageList()
-    {
-      return "패키지 목록";
-    }
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
     {
@@ -1388,14 +1384,18 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
     /*! Used as a heading for a list of Java class functions with package
      * scope.
      */
-    virtual QCString trPackageMembers()
+    virtual QCString trPackageFunctions()
     {
       return "패키지 함수";
+    }
+    virtual QCString trPackageMembers()
+    {
+      return "패키지 멤버들";
     }
     /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
-    virtual QCString trStaticPackageMembers()
+    virtual QCString trStaticPackageFunctions()
     {
       return "정적 패키지 함수";
     }
@@ -1506,13 +1506,6 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
      */
     virtual QCString trDirectories()
     { return "디렉토리"; }
-
-    /*! This returns a sentences that introduces the directory hierarchy.
-     *  and the fact that it is sorted alphabetically per level
-     */
-    virtual QCString trDirDescription()
-    { return "이 디렉토리 목록은 완전하진 않지만, (대략적으로) 알파벳순으로 정렬되어있습니다.:";
-    }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.
@@ -1830,19 +1823,42 @@ class TranslatorKorean : public TranslatorAdapter_1_8_15
      */
     virtual QCString trDateTime(int year,int month,int day,int dayOfWeek,
                                 int hour,int minutes,int seconds,
-                                bool includeTime)
+                                DateTimeType includeTime)
     {
       static const char *days[]   = { "월","화","수","목","금","토","일" };
       static const char *months[] = { "1월","2월","3월","4월","5월","6월","7월","8월","9월","10월","11월","12월" };
       QCString sdate;
-      sdate.sprintf("%s %s %d %d",days[dayOfWeek-1],months[month-1],day,year);
-      if (includeTime)
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Date)
+      {
+        sdate.sprintf("%s %s %d %d",days[dayOfWeek-1],months[month-1],day,year);
+      }
+      if (includeTime == DateTimeType::DateTime) sdate += " ";
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Time)
       {
         QCString stime;
-        stime.sprintf(" %.2d:%.2d:%.2d",hour,minutes,seconds);
+        stime.sprintf("%.2d:%.2d:%.2d",hour,minutes,seconds);
         sdate+=stime;
       }
       return sdate;
+    }
+    virtual QCString trDayOfWeek(int dayOfWeek, bool, bool full)
+    {
+      static const char *days_short[]   = { "월", "화", "수", "목", "금", "토", "일" };
+      static const char *days_full[]    = { "월요일", "화요일", "수요일", "목요일", "금요일", "토요일", "일요일" };
+      QCString text  = full? days_full[dayOfWeek-1] : days_short[dayOfWeek-1];
+      return text;
+    }
+    virtual QCString trMonth(int month, bool, bool full)
+    {
+      static const char *months_short[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12" };
+      static const char *months_full[]  = { "1월", "2월", "3월", "4월", "5월", "6월", "7월", "8월", "9월", "10월", "11월", "12월" };
+      QCString text  = full? months_full[month-1] : months_short[month-1];
+      return text;
+    }
+    virtual QCString trDayPeriod(int period)
+    {
+      static const char *dayPeriod[] = { "오전", "오후" };
+      return dayPeriod[period];
     }
 
 //////////////////////////////////////////////////////////////////////////

@@ -76,7 +76,6 @@ inline QCString compileOptions(const QCString &def,SrcLangExt langId1,const QCSt
          "|"+QCString().setNum(langId5)+"="+value5;
 }
 
-
 static bool elemIsVisible(const XMLHandlers::Attributes &attrib,bool defVal=TRUE)
 {
   QCString visible = XMLHandlers::value(attrib,"visible");
@@ -91,15 +90,24 @@ static bool elemIsVisible(const XMLHandlers::Attributes &attrib,bool defVal=TRUE
     }
     else if (opt && opt->type==ConfigValues::Info::String)
     {
-      return ConfigValues::instance().*(opt->value.s) != "NO";
+      return opt->getBooleanRepresentation();
     }
     else if (!opt)
     {
-      err("found unsupported value %s for visible attribute in layout file\n",
-          qPrint(visible));
+      err("found unsupported value '%s' for visible attribute in layout file, reverting to '%s'\n",
+          qPrint(visible),(defVal?"yes":"no"));
+      return defVal;
     }
   }
-  return visible!="no" && visible!="0";
+  QCString visibleLow = visible.lower();
+  if (visibleLow=="no" || visibleLow=="false" || visibleLow=="0") return FALSE;
+  else if (visibleLow=="yes" || visibleLow=="true" || visibleLow=="1") return TRUE;
+  else
+  {
+    err("found unsupported value '%s' for visible attribute in layout file, reverting to '%s'\n",
+        qPrint(visible),(defVal?"yes":"no"));
+    return defVal;
+  }
 }
 
 static bool parentIsVisible(LayoutNavEntry *parent)
@@ -131,11 +139,11 @@ QCString LayoutNavEntry::url() const
 {
   QCString url = baseFile().stripWhiteSpace();
   if ((kind()!=LayoutNavEntry::User && kind()!=LayoutNavEntry::UserGroup) ||
-      (kind()==LayoutNavEntry::UserGroup && url.left(9)=="usergroup"))
+      (kind()==LayoutNavEntry::UserGroup && url.startsWith("usergroup")))
   {
     url = addHtmlExtensionIfMissing(url);
   }
-  else if (url.left(5)=="@ref " || url.left(5)=="\\ref ")
+  else if (url.startsWith("@ref ") || url.startsWith("\\ref "))
   {
     const Definition *d = 0;
     QCString anchor;
@@ -267,13 +275,13 @@ class LayoutParser
 
     void startNavEntry(const XMLHandlers::Attributes &attrib)
     {
-      static bool javaOpt    = Config_getBool(OPTIMIZE_OUTPUT_JAVA);
-      static bool fortranOpt = Config_getBool(OPTIMIZE_FOR_FORTRAN);
-      static bool vhdlOpt    = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
-      static bool sliceOpt   = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
-      static bool hasGraphicalHierarchy = Config_getBool(HAVE_DOT) &&
+      bool javaOpt    = Config_getBool(OPTIMIZE_OUTPUT_JAVA);
+      bool fortranOpt = Config_getBool(OPTIMIZE_FOR_FORTRAN);
+      bool vhdlOpt    = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
+      bool sliceOpt   = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
+      bool hasGraphicalHierarchy = Config_getBool(HAVE_DOT) &&
                                           Config_getBool(GRAPHICAL_HIERARCHY);
-      static bool extractAll = Config_getBool(EXTRACT_ALL);
+      bool extractAll = Config_getBool(EXTRACT_ALL);
       static struct NavEntryMap
       {
         const char *typeStr;       // type attribute name in the XML file
@@ -308,13 +316,13 @@ class LayoutParser
         { "namespaces",
           LayoutNavEntry::Namespaces,
           javaOpt || vhdlOpt   ? theTranslator->trPackages() : fortranOpt || sliceOpt ? theTranslator->trModules() : theTranslator->trNamespaces(),
-          javaOpt || vhdlOpt   ? theTranslator->trPackages() : fortranOpt || sliceOpt ? theTranslator->trModulesList() : theTranslator->trNamespaceList(),
+          javaOpt || vhdlOpt   ? theTranslator->trPackageList() : fortranOpt || sliceOpt ? theTranslator->trModulesList() : theTranslator->trNamespaceList(),
           javaOpt || vhdlOpt   ? theTranslator->trPackageListDescription() : fortranOpt || sliceOpt ? theTranslator->trModulesListDescription(extractAll) : theTranslator->trNamespaceListDescription(extractAll),
           "namespaces"
         },
         { "namespacelist",
           LayoutNavEntry::NamespaceList,
-          javaOpt || vhdlOpt   ? theTranslator->trPackages() : fortranOpt || sliceOpt ? theTranslator->trModulesList() : theTranslator->trNamespaceList(),
+          javaOpt || vhdlOpt   ? theTranslator->trPackageList() : fortranOpt || sliceOpt ? theTranslator->trModulesList() : theTranslator->trNamespaceList(),
           QCString(),
           javaOpt || vhdlOpt   ? theTranslator->trPackageListDescription() : fortranOpt || sliceOpt ? theTranslator->trModulesListDescription(extractAll) : theTranslator->trNamespaceListDescription(extractAll),
           "namespaces"
@@ -335,14 +343,14 @@ class LayoutParser
         },
         { "classindex",
           LayoutNavEntry::ClassIndex,
-          fortranOpt ? theTranslator->trDataTypes() : vhdlOpt ? theTranslator->trDesignUnits() : theTranslator->trCompoundIndex(),
+          fortranOpt ? theTranslator->trCompoundIndexFortran() : vhdlOpt ? theTranslator->trDesignUnitIndex() : theTranslator->trCompoundIndex(),
           QCString(),
           QCString(),
           "classes"
         },
         { "classes",
           LayoutNavEntry::Classes,
-          fortranOpt ? theTranslator->trCompoundListFortran() : vhdlOpt ? theTranslator->trDesignUnitList() : theTranslator->trClasses(),
+          fortranOpt ? theTranslator->trDataTypes() : vhdlOpt ? theTranslator->trDesignUnits() : theTranslator->trClasses(),
           theTranslator->trCompoundList(),
           fortranOpt ? theTranslator->trCompoundListDescriptionFortran() : vhdlOpt ? theTranslator->trDesignUnitListDescription() : theTranslator->trCompoundListDescription(),
           "annotated"
@@ -466,13 +474,6 @@ class LayoutParser
           theTranslator->trFileMembersDescription(extractAll),
           "globals"
         },
-        //{ "dirs",
-        //  LayoutNavEntry::Dirs,
-        //  theTranslator->trDirectories(),
-        //  QCString(),
-        //  theTranslator->trDirDescription(),
-        //  "dirs"
-        //},
         { "examples",
           LayoutNavEntry::Examples,
           theTranslator->trExamples(),
@@ -502,17 +503,13 @@ class LayoutParser
           QCString()
         }
       };
-      LayoutNavEntry::Kind kind;
       // find type in the table
       int i=0;
       QCString type = XMLHandlers::value(attrib,"type");
       while (mapping[i].typeStr)
       {
         if (mapping[i].typeStr==type)
-        {
-          kind = mapping[i].kind;
           break;
-        }
         i++;
       }
       if (mapping[i].typeStr==0)
@@ -529,6 +526,7 @@ class LayoutParser
         m_invalidEntry=TRUE;
         return;
       }
+      LayoutNavEntry::Kind kind = mapping[i].kind;
       QCString baseFile = mapping[i].baseFile;
       QCString title = XMLHandlers::value(attrib,"title");
       bool isVisible = elemIsVisible(attrib) && parentIsVisible(m_rootNav);
@@ -897,11 +895,11 @@ static const std::map< std::string, ElementCallbacks > g_elementHandlers =
                                                     endCb()
                                                   } },
   { "class/memberdecl/packagemethods",            { startCb(&LayoutParser::startMemberDeclEntry, MemberListType_pacMethods,
-                                                            []() { return compileOptions(theTranslator->trPackageMembers()); }),
+                                                            []() { return compileOptions(theTranslator->trPackageFunctions()); }),
                                                     endCb()
                                                   } },
   { "class/memberdecl/packagestaticmethods",      { startCb(&LayoutParser::startMemberDeclEntry, MemberListType_pacStaticMethods,
-                                                            []() { return compileOptions(theTranslator->trStaticPackageMembers()); }),
+                                                            []() { return compileOptions(theTranslator->trStaticPackageFunctions()); }),
                                                     endCb()
                                                   } },
   { "class/memberdecl/packageattributes",         { startCb(&LayoutParser::startMemberDeclEntry, MemberListType_pacAttribs,
@@ -949,8 +947,8 @@ static const std::map< std::string, ElementCallbacks > g_elementHandlers =
                                                     endCb()
                                                   } },
   { "class/memberdecl/related",                   { startCb(&LayoutParser::startMemberDeclEntry, MemberListType_related,
-                                                            []() { return compileOptions(theTranslator->trRelatedFunctions()); },
-                                                            []() { return compileOptions(theTranslator->trRelatedSubscript()); }),
+                                                            []() { return compileOptions(theTranslator->trRelatedSymbols()); },
+                                                            []() { return compileOptions(theTranslator->trRelatedSymbolsSubscript()); }),
                                                     endCb()
                                                   } },
   { "class/memberdef",                            { startCb(&LayoutParser::startMemberDef),
@@ -988,7 +986,7 @@ static const std::map< std::string, ElementCallbacks > g_elementHandlers =
                                                     endCb()
                                                   } },
   { "class/memberdef/related",                    { startCb(&LayoutParser::startMemberDefEntry, MemberListType_relatedMembers,
-                                                            []() { return compileOptions(theTranslator->trRelatedFunctionDocumentation()); }),
+                                                            []() { return compileOptions(theTranslator->trRelatedSymbolDocumentation()); }),
                                                     endCb()
                                                   } },
   { "class/memberdef/variables",                  { startCb(&LayoutParser::startMemberDefEntry, MemberListType_variableMembers,
@@ -1657,7 +1655,7 @@ QCString extractLanguageSpecificTitle(const QCString &input,SrcLangExt lang)
     e=input.find('|',s);
     i=input.find('=',s);
     assert(i>s);
-    size_t key=input.mid(s,i-s).toUInt();
+    SrcLangExt key= static_cast<SrcLangExt>(input.mid(s,i-s).toUInt());
     if (key==lang) // found matching key
     {
       if (e==-1) e=input.length();

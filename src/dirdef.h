@@ -110,8 +110,6 @@ class UsedDir
 class DirDef : public DefinitionMutable, public Definition
 {
   public:
-    virtual ~DirDef() {}
-
     class UsedDirLinkedMap : public LinkedMap<UsedDir> {};
 
     // accessors

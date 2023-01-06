@@ -15,7 +15,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <fstream>
 #include <algorithm>
 
 #include "diagram.h"
@@ -26,9 +25,10 @@
 #include "util.h"
 #include "doxygen.h"
 #include "portable.h"
-#include "index.h"
+#include "indexlist.h"
 #include "classlist.h"
 #include "textstream.h"
+#include "growbuf.h"
 
 //-----------------------------------------------------------------------------
 
@@ -49,6 +49,8 @@ class DiagramItem
     void move(int dx,int dy) { m_x=static_cast<uint>(m_x+dx); m_y=static_cast<uint>(m_y+dy); }
     uint xPos() const { return m_x; }
     uint yPos() const { return m_y; }
+    float xfPos() const { return static_cast<float>(m_x); }
+    float yfPos() const { return static_cast<float>(m_y); }
     uint avgChildPos() const;
     uint numChildren() const;
     void addChild(DiagramItem *di);
@@ -148,10 +150,10 @@ static uint protToMask(Protection p)
 {
   switch(p)
   {
-    case Public:    return 0xffffffff;
-    case Package: // package is not possible!
-    case Protected: return 0xcccccccc;
-    case Private:   return 0xaaaaaaaa;
+    case Protection::Public:    return 0xffffffff;
+    case Protection::Package: // package is not possible!
+    case Protection::Protected: return 0xcccccccc;
+    case Protection::Private:   return 0xaaaaaaaa;
   }
   return 0;
 }
@@ -160,10 +162,10 @@ static uchar protToColor(Protection p)
 {
   switch(p)
   {
-    case Public:    return 6;
-    case Package: // package is not possible!
-    case Protected: return 5;
-    case Private:   return 4;
+    case Protection::Public:    return 6;
+    case Protection::Package: // package is not possible!
+    case Protection::Protected: return 5;
+    case Protection::Private:   return 4;
   }
   return 0;
 }
@@ -172,10 +174,10 @@ static QCString protToString(Protection p)
 {
   switch(p)
   {
-    case Public:    return "solid";
-    case Package: // package is not possible!
-    case Protected: return "dashed";
-    case Private:   return "dotted";
+    case Protection::Public:    return "solid";
+    case Protection::Package: // package is not possible!
+    case Protection::Protected: return "dashed";
+    case Protection::Private:   return "dotted";
   }
   return QCString();
 }
@@ -184,18 +186,37 @@ static uint virtToMask(Specifier p)
 {
   switch(p)
   {
-    case Normal:    return 0xffffffff;
-    case Virtual:   return 0xf0f0f0f0;
-    default:        return 0;
+    case Specifier::Normal:    return 0xffffffff;
+    case Specifier::Virtual:   return 0xf0f0f0f0;
+    default:        break;
   }
   return 0;
+}
+
+static QCString convertToPSString(const QCString &s)
+{
+  if (s.isEmpty()) return s;
+  GrowBuf growBuf;
+  const char *p=s.data();
+  char c;
+  while ((c=*p++))
+  {
+    switch (c)
+    {
+      case '(':  growBuf.addStr("\\("); break;
+      case ')': growBuf.addStr("\\)"); break;
+      default:   growBuf.addChar(c);   break;
+    }
+  }
+  growBuf.addChar(0);
+  return growBuf.get();
 }
 
 // pre: dil is not empty
 static Protection getMinProtectionLevel(const DiagramItemList &dil)
 {
   auto it = dil.begin();
-  Protection result = Private;
+  Protection result = Protection::Private;
   if (it!=dil.end())
   {
     result=(*it)->protection();
@@ -204,8 +225,8 @@ static Protection getMinProtectionLevel(const DiagramItemList &dil)
       Protection p=(*it)->protection();
       if (p!=result)
       {
-        if (result==Protected && p==Public) result=p;
-        else if (result==Private) result=p;
+        if (result==Protection::Protected && p==Protection::Public) result=p;
+        else if (result==Protection::Private) result=p;
       }
     }
   }
@@ -216,7 +237,7 @@ static void writeBitmapBox(DiagramItem *di,Image *image,
                            uint x,uint y,uint w,uint h,bool firstRow,
                            bool hasDocs,bool children=FALSE)
 {
-  uchar colFill = hasDocs ? (firstRow ? 0 : 2) : 7;
+  uchar colFill = hasDocs ? (firstRow ? 8 : 2) : 7;
   uchar colBorder = (firstRow || !hasDocs) ? 1 : 3;
   uint l = Image::stringLength(di->label());
   uint mask=virtToMask(di->virtualness());
@@ -236,10 +257,10 @@ static void writeBitmapBox(DiagramItem *di,Image *image,
 static void writeVectorBox(TextStream &t,DiagramItem *di,
                            float x,float y,bool children=FALSE)
 {
-  if (di->virtualness()==Virtual) t << "dashed\n";
+  if (di->virtualness()==Specifier::Virtual) t << "dashed\n";
   t << " (" << convertToPSString(di->label()) << ") " << x << " " << y << " box\n";
   if (children) t << x << " " << y << " mark\n";
-  if (di->virtualness()==Virtual) t << "solid\n";
+  if (di->virtualness()==Specifier::Virtual) t << "solid\n";
 }
 
 static void writeMapArea(TextStream &t,const ClassDef *cd,QCString relPath,
@@ -287,7 +308,7 @@ QCString DiagramItem::label() const
     // we use classDef->name() here and not displayName() in order
     // to get the name used in the inheritance relation.
     QCString n = m_classDef->name();
-    if (/*n.right(2)=="-g" ||*/ n.right(2)=="-p")
+    if (n.endsWith("-p"))
     {
       n = n.left(n.length()-2);
     }
@@ -348,7 +369,7 @@ void DiagramRow::insertClass(DiagramItem *parent,const ClassDef *cd,bool doBases
     ClassDef *ccd=bcd.classDef;
     if (ccd && ccd->isVisibleInHierarchy()) count++;
   }
-  if (count>0 && (prot!=Private || !doBases))
+  if (count>0 && (prot!=Protection::Private || !doBases))
   {
     DiagramRow *row=0;
     if (m_diagram->numRows()<=m_level+1) /* add new row */
@@ -365,8 +386,8 @@ void DiagramRow::insertClass(DiagramItem *parent,const ClassDef *cd,bool doBases
       if (ccd && ccd->isVisibleInHierarchy())
       {
         row->insertClass(di_ptr,ccd,doBases,bcd.prot,
-            doBases?bcd.virt:Normal,
-            doBases?bcd.templSpecifiers:QCString());
+            doBases ? bcd.virt            : Specifier::Normal,
+            doBases ? bcd.templSpecifiers : QCString());
       }
     }
   }
@@ -379,7 +400,7 @@ TreeDiagram::TreeDiagram(const ClassDef *root,bool doBases)
   auto row = std::make_unique<DiagramRow>(this,0);
   DiagramRow *row_ptr = row.get();
   m_rows.push_back(std::move(row));
-  row_ptr->insertClass(0,root,doBases,Public,Normal,QCString());
+  row_ptr->insertClass(0,root,doBases,Protection::Public,Specifier::Normal,QCString());
 }
 
 void TreeDiagram::moveChildren(DiagramItem *root,int dx)
@@ -525,7 +546,7 @@ void TreeDiagram::computeExtremes(uint *maxLabelLen,uint *maxXPos)
     for (const auto &di : *dr) // for each item in a row
     {
       if (di->isInList()) done=TRUE;
-      if (maxXPos) mx=std::max(mx,static_cast<uint>(di->xPos()));
+      if (maxXPos) mx=std::max(mx,di->xPos());
       if (maxLabelLen) ml=std::max(ml,Image::stringLength(di->label()));
     }
     if (done) break;
@@ -580,6 +601,7 @@ void TreeDiagram::drawBoxes(TextStream &t,Image *image,
   if (it!=m_rows.end() && !doBase) ++it;
   bool firstRow = doBase;
   bool done=FALSE;
+  float superRowsF = static_cast<float>(superRows);
   for (;it!=m_rows.end() && !done;++it) // for each row
   {
     const auto &dr = *it;
@@ -626,14 +648,14 @@ void TreeDiagram::drawBoxes(TextStream &t,Image *image,
           }
           else
           {
-            xf = di->xPos()/static_cast<float>(gridWidth);
+            xf = di->xfPos()/gridWidth;
             if (doBase)
             {
-              yf = di->yPos()/static_cast<float>(gridHeight)+superRows-1;
+              yf = di->yfPos()/gridHeight+superRowsF-1.0f;
             }
             else
             {
-              yf = superRows-1-di->yPos()/static_cast<float>(gridHeight);
+              yf = superRowsF-1.0f-di->yfPos()/gridHeight;
             }
           }
         }
@@ -682,14 +704,14 @@ void TreeDiagram::drawBoxes(TextStream &t,Image *image,
         }
         else
         {
-          xf=di->xPos()/static_cast<float>(gridWidth);
+          xf=di->xfPos()/gridWidth;
           if (doBase)
           {
-            yf = di->yPos()/static_cast<float>(gridHeight)+superRows-1;
+            yf = di->yfPos()/gridHeight+superRowsF-1.0f;
           }
           else
           {
-            yf = superRows-1-di->yPos()/static_cast<float>(gridHeight);
+            yf = superRowsF-1.0f-di->yfPos()/gridHeight;
           }
           writeVectorBox(t,di.get(),xf,yf);
         }
@@ -706,6 +728,7 @@ void TreeDiagram::drawConnectors(TextStream &t,Image *image,
 {
   bool done=FALSE;
   auto it = m_rows.begin();
+  float superRowsF = static_cast<float>(superRows);
   for (;it!=m_rows.end() && !done;++it) // for each row
   {
     const auto &dr = *it;
@@ -750,13 +773,13 @@ void TreeDiagram::drawConnectors(TextStream &t,Image *image,
             t << protToString(di->protection()) << "\n";
             if (doBase)
             {
-              t << "1 " << (di->xPos()/static_cast<float>(gridWidth)) << " "
-                << (di->yPos()/static_cast<float>(gridHeight)+superRows-1) << " in\n";
+              t << "1 " << (di->xfPos()/gridWidth) << " "
+                << (di->yfPos()/gridHeight+superRowsF-1.0f) << " in\n";
             }
             else
             {
-              t << "0 " << (di->xPos()/static_cast<float>(gridWidth)) << " "
-                << (static_cast<float>(superRows)-0.25f-di->yPos()/static_cast<float>(gridHeight))
+              t << "0 " << (di->xfPos()/gridWidth) << " "
+                << (superRowsF-0.25f-di->yfPos()/gridHeight)
                 << " in\n";
             }
           }
@@ -783,15 +806,15 @@ void TreeDiagram::drawConnectors(TextStream &t,Image *image,
           }
           else
           {
-            xf = di->parentItem()->xPos()/static_cast<float>(gridWidth);
+            xf = di->parentItem()->xfPos()/gridWidth;
             if (doBase)
             {
-              ysf = di->yPos()/static_cast<float>(gridHeight)+superRows-1;
+              ysf = di->yfPos()/gridHeight+superRowsF-1.0f;
               yf = ysf + 0.5f;
             }
             else
             {
-              ysf = static_cast<float>(superRows)-0.25f-di->yPos()/static_cast<float>(gridHeight);
+              ysf = superRowsF-0.25f-di->yfPos()/gridHeight;
               yf = ysf - 0.25f;
             }
           }
@@ -917,13 +940,13 @@ void TreeDiagram::drawConnectors(TextStream &t,Image *image,
             t << protToString(di->protection()) << "\n";
             if (doBase)
             {
-              t << "1 " << di->xPos()/static_cast<float>(gridWidth) << " "
-                << (di->yPos()/static_cast<float>(gridHeight)+superRows-1) << " in\n";
+              t << "1 " << di->xfPos()/gridWidth << " "
+                << (di->yfPos()/gridHeight+superRowsF-1.0f) << " in\n";
             }
             else
             {
-              t << "0 " << di->xPos()/static_cast<float>(gridWidth) << " "
-                << (static_cast<float>(superRows)-0.25f-di->yPos()/static_cast<float>(gridHeight))
+              t << "0 " << di->xfPos()/gridWidth << " "
+                << (superRowsF-0.25f-di->yfPos()/gridHeight)
                 << " in\n";
             }
           }
@@ -957,13 +980,13 @@ void TreeDiagram::drawConnectors(TextStream &t,Image *image,
             t << protToString(p) << "\n";
             if (doBase)
             {
-              t << "0 " << di->xPos()/static_cast<float>(gridWidth)  << " "
-                << (di->yPos()/static_cast<float>(gridHeight)+superRows-1) << " out\n";
+              t << "0 " << di->xfPos()/gridWidth  << " "
+                << (di->yfPos()/gridHeight+superRowsF-1.0f) << " out\n";
             }
             else
             {
-              t << "1 " << di->xPos()/static_cast<float>(gridWidth)  << " "
-                << (static_cast<float>(superRows)-1.75f-di->yPos()/static_cast<float>(gridHeight))
+              t << "1 " << di->xfPos()/gridWidth  << " "
+                << (superRowsF-1.75f-di->yfPos()/gridHeight)
                 << " out\n";
             }
           }
@@ -992,16 +1015,16 @@ void TreeDiagram::drawConnectors(TextStream &t,Image *image,
               t << protToString(p) << "\n";
               if (doBase)
               {
-                t << first->xPos()/static_cast<float>(gridWidth) << " "
-                  << last->xPos()/static_cast<float>(gridWidth) << " "
-                  << (first->yPos()/static_cast<float>(gridHeight)+superRows-1)
+                t << first->xfPos()/gridWidth << " "
+                  << last->xfPos()/gridWidth << " "
+                  << (first->yfPos()/gridHeight+superRowsF-1.0f)
                   << " conn\n";
               }
               else
               {
-                t << first->xPos()/static_cast<float>(gridWidth) << " "
-                  << last->xPos()/static_cast<float>(gridWidth) << " "
-                  << (static_cast<float>(superRows)-first->yPos()/static_cast<float>(gridHeight))
+                t << first->xfPos()/gridWidth << " "
+                  << last->xfPos()/gridWidth << " "
+                  << (superRowsF-first->yfPos()/gridHeight)
                   << " conn\n";
               }
             }
@@ -1034,13 +1057,15 @@ ClassDiagram::ClassDiagram(const ClassDef *root) : p(std::make_unique<Private>(r
   uint xsuper = superItem->xPos();
   if (xbase>xsuper)
   {
-    superItem->move(static_cast<int>(xbase-xsuper),0);
-    p->super.moveChildren(superItem,static_cast<int>(xbase-xsuper));
+    int dist=static_cast<int>(xbase-xsuper);
+    superItem->move(dist,0);
+    p->super.moveChildren(superItem,dist);
   }
   else if (xbase<xsuper)
   {
-    baseItem->move(static_cast<int>(xsuper-xbase),0);
-    p->base.moveChildren(baseItem,static_cast<int>(xsuper-xbase));
+    int dist=static_cast<int>(xsuper-xbase);
+    baseItem->move(dist,0);
+    p->base.moveChildren(baseItem,dist);
   }
 }
 
@@ -1061,8 +1086,8 @@ void ClassDiagram::writeFigure(TextStream &output,const QCString &path,
   uint cols=(std::max(baseMaxX,superMaxX)+gridWidth*2-1)/gridWidth;
 
   // Estimate the image aspect width and height in pixels.
-  uint estHeight = rows*40;
-  uint estWidth  = cols*(20+std::max(baseMaxLabelWidth,superMaxLabelWidth));
+  float estHeight = static_cast<float>(rows)*40.0f;
+  float estWidth  = static_cast<float>(cols)*(20+static_cast<float>(std::max(baseMaxLabelWidth,superMaxLabelWidth)));
   //printf("Estimated size %d x %d\n",estWidth,estHeight);
 
   const float pageWidth = 14.0f; // estimated page width in cm.
@@ -1071,7 +1096,7 @@ void ClassDiagram::writeFigure(TextStream &output,const QCString &path,
 
   // compute the image height in centimeters based on the estimates
   float realHeight = static_cast<float>(std::min(rows,12u)); // real height in cm
-  float realWidth  = realHeight * estWidth/static_cast<float>(estHeight);
+  float realWidth  = realHeight * estWidth/estHeight;
   if (realWidth>pageWidth) // assume that the page width is about 15 cm
   {
     realHeight*=pageWidth/realWidth;
@@ -1090,7 +1115,7 @@ void ClassDiagram::writeFigure(TextStream &output,const QCString &path,
 
   QCString epsBaseName=QCString(path)+"/"+fileName;
   QCString epsName=epsBaseName+".eps";
-  std::ofstream f(epsName.str(),std::ofstream::out | std::ofstream::binary);
+  std::ofstream f = Portable::openOutputStream(epsName);
   if (!f.is_open())
   {
     term("Could not open file %s for writing\n",qPrint(epsName));
@@ -1110,7 +1135,7 @@ void ClassDiagram::writeFigure(TextStream &output,const QCString &path,
     t << "%%For: \n";
     t << "%Magnification: 1.00\n";
     t << "%%Orientation: Portrait\n";
-    t << "%%BoundingBox: 0 0 500 " << estHeight*500.0f/static_cast<float>(estWidth) << "\n";
+    t << "%%BoundingBox: 0 0 500 " << estHeight*500.0f/estWidth << "\n";
     t << "%%Pages: 0\n";
     t << "%%BeginSetup\n";
     t << "%%EndSetup\n";
@@ -1124,7 +1149,7 @@ void ClassDiagram::writeFigure(TextStream &output,const QCString &path,
     t << "/marginwidth 10 def\n";
     t << "/distx 20 def\n";
     t << "/disty 40 def\n";
-    t << "/boundaspect " << estWidth/static_cast<float>(estHeight) << " def  % aspect ratio of the BoundingBox (width/height)\n";
+    t << "/boundaspect " << estWidth/estHeight << " def  % aspect ratio of the BoundingBox (width/height)\n";
     t << "/boundx 500 def\n";
     t << "/boundy boundx boundaspect div def\n";
     t << "/xspacing 0 def\n";
@@ -1331,14 +1356,11 @@ void ClassDiagram::writeFigure(TextStream &output,const QCString &path,
     epstopdfArgs.sprintf("\"%s.eps\" --outfile=\"%s.pdf\"",
                    qPrint(epsBaseName),qPrint(epsBaseName));
     //printf("Converting eps using '%s'\n",qPrint(epstopdfArgs));
-    Portable::sysTimerStart();
     if (Portable::system("epstopdf",epstopdfArgs)!=0)
     {
        err("Problems running epstopdf. Check your TeX installation!\n");
-       Portable::sysTimerStop();
        return;
     }
-    Portable::sysTimerStop();
   }
 }
 

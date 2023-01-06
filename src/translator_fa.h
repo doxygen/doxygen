@@ -96,6 +96,10 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
       return "fa";
     }
 
+    virtual QCString getLanguageString()
+    {
+      return "0x429 Persian (Iran)";
+    }
     // --- Language translation methods -------------------
 
     /*! used in the compound documentation before a list of related functions. */
@@ -109,6 +113,10 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
     /*! header that is put before the detailed description of files, classes and namespaces. */
     virtual QCString trDetailedDescription()
     { return "توضيحات جزئی"; }
+
+    /*! header that is used when the summary tag is missing inside the details tag */
+    virtual QCString trDetails()
+    { return "جزئیات"; }
 
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
@@ -384,6 +392,10 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
       {
         return "مستندات ساختار داده ها";
       }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+          return trDesignUnitDocumentation();
+      }
       else
       {
         return "مستندات کلاس ها";
@@ -401,12 +413,6 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
      */
     virtual QCString trExampleDocumentation()
     { return "مستندات مثال"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all related pages.
-     */
-    virtual QCString trPageDocumentation()
-    { return "مستندات صفحه"; }
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
@@ -515,10 +521,6 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
     {
       return ""+clName+" نمودار وراثت برای  :";
     }
-
-    /*! this text is generated when the \\internal command is used. */
-    virtual QCString trForInternalUseOnly()
-    { return ".فقط برای استعمال داخلی"; }
 
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
@@ -1103,11 +1105,6 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
     {
       return "Package "+name;
     }
-    /*! Title of the package index page */
-    virtual QCString trPackageList()
-    {
-      return "لیست بسته ها";
-    }
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
     {
@@ -1363,14 +1360,18 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
     /*! Used as a heading for a list of Java class functions with package
      * scope.
      */
-    virtual QCString trPackageMembers()
+    virtual QCString trPackageFunctions()
     {
       return "توابع بسته ها";
+    }
+    virtual QCString trPackageMembers()
+    {
+      return "عضوها بسته ها";
     }
     /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
-    virtual QCString trStaticPackageMembers()
+    virtual QCString trStaticPackageFunctions()
     {
       return "Static Package Functions";
     }
@@ -1481,13 +1482,6 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
      */
     virtual QCString trDirectories()
     { return "شاخه ها"; }
-
-    /*! This returns a sentences that introduces the directory hierarchy.
-     *  and the fact that it is sorted alphabetically per level
-     */
-    virtual QCString trDirDescription()
-    { return "در ذيل ساختار شاخه ها و دايرکتوری ها را نسبتا مرتب شده می بينيد :";
-    }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.
@@ -1769,19 +1763,42 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
      */
     virtual QCString trDateTime(int year,int month,int day,int dayOfWeek,
                                 int hour,int minutes,int seconds,
-                                bool includeTime)
+                                DateTimeType includeTime)
     {
       static const char *days[]   = { "دوشنبه","سه‌شنبه","چهارشنبه","پنجشنبه","جمعه","شنبه","یکشنبه" };
       static const char *months[] = { "ژانویه","فوریه","مارس","آوریل","می","جون","جولای","آگوست","سپتامبر","اکتبر","نوامبر","دسامبر" };
       QCString sdate;
-      sdate.sprintf("%s %d %s %d",days[dayOfWeek-1],day,months[month-1],year);
-      if (includeTime)
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Date)
+      {
+        sdate.sprintf("%s %d %s %d",days[dayOfWeek-1],day,months[month-1],year);
+      }
+      if (includeTime == DateTimeType::DateTime) sdate += " ";
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Time)
       {
         QCString stime;
-        stime.sprintf(" %.2d:%.2d:%.2d",hour,minutes,seconds);
+        stime.sprintf("%.2d:%.2d:%.2d",hour,minutes,seconds);
         sdate+=stime;
       }
       return convertDigitsToFarsi(sdate);
+    }
+    virtual QCString trDayOfWeek(int dayOfWeek, bool, bool full)
+    {
+      static const char *days_short[]   = { "دوشنبه", "سه شنبه", "چهارشنبه", "پنجشنبه", "جمعه", "شنبه", "يكشنبه" };
+      static const char *days_full[]    = { "دوشنبه", "سه شنبه", "چهارشنبه", "پنجشنبه", "جمعه", "شنبه", "يكشنبه" };
+      QCString text  = full? days_full[dayOfWeek-1] : days_short[dayOfWeek-1];
+      return text;
+    }
+    virtual QCString trMonth(int month, bool, bool full)
+    {
+      static const char *months_short[] = { "ژانويه", "فوريه", "مارس", "آوريل", "مه", "ژوئن", "ژوئيه", "اوت", "سپتامبر", "اُكتبر", "نوامبر", "دسامبر" };
+      static const char *months_full[]  = { "ژانويه", "فوريه", "مارس", "آوريل", "مه", "ژوئن", "ژوئيه", "اوت", "سپتامبر", "اُكتبر", "نوامبر", "دسامبر" };
+      QCString text  = full? months_full[month-1] : months_short[month-1];
+      return text;
+    }
+    virtual QCString trDayPeriod(int period)
+    {
+      static const char *dayPeriod[] = { "قبل‌ازظهر", "بعدازظهر" };
+      return dayPeriod[period];
     }
 
 };

@@ -38,18 +38,34 @@ class TranslatorDutch : public Translator
     { return "\\usepackage[dutch]{babel}\n"; }
     QCString trISOLang()
     { return "nl"; }
+    virtual QCString getLanguageString()
+    {
+      return "0x413 Dutch";
+    }
     QCString trRelatedFunctions()
     { return "Gerelateerde functies"; }
     QCString trRelatedSubscript()
     { return "(Merk op dat dit geen member functies zijn.)"; }
     QCString trDetailedDescription()
     { return "Gedetailleerde Beschrijving"; }
+    virtual QCString trDetails()
+    { return "Details"; }
+
     QCString trMemberTypedefDocumentation()
     { return "Documentatie van type definitie members"; }
     QCString trMemberEnumerationDocumentation()
     { return "Documentatie van enumeratie members"; }
     QCString trMemberFunctionDocumentation()
-    { return "Documentatie van functie members"; }
+    {
+      if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+        return "Documentatie van functie/procedure/process members";
+      }
+      else
+      {
+        return "Documentatie van functie members";
+      }
+    }
     QCString trMemberDataDocumentation()
     { return "Documentatie van data members"; }
     QCString trMore()
@@ -166,13 +182,24 @@ class TranslatorDutch : public Translator
     QCString trModuleDocumentation()
     { return "Module Documentatie"; }
     QCString trClassDocumentation()
-    { return "Klassen Documentatie"; }
+    {
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+      {
+        return "Klassen Documentatie";
+      }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+          return trDesignUnitDocumentation();
+      }
+      else
+      {
+        return "Klassen Documentatie";
+      }
+    }
     QCString trFileDocumentation()
     { return "Bestand Documentatie"; }
     QCString trExampleDocumentation()
     { return "Documentatie van voorbeelden"; }
-    QCString trPageDocumentation()
-    { return "Documentatie van gerelateerde pagina's"; }
     QCString trReferenceManual()
     { return "Naslagwerk"; }
 
@@ -213,8 +240,6 @@ class TranslatorDutch : public Translator
     {
       return "Klasse diagram voor "+clName;
     }
-    QCString trForInternalUseOnly()
-    { return "Alleen voor intern gebruik."; }
     QCString trWarning()
     { return "Waarschuwing"; }
     QCString trVersion()
@@ -414,7 +439,7 @@ class TranslatorDutch : public Translator
         bool single)
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
-      static bool vhdlOpt = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
+      bool vhdlOpt = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
       QCString result="De documentatie voor ";
       switch(compType)
       {
@@ -692,7 +717,7 @@ class TranslatorDutch : public Translator
         "</ul>\n"
         "De pijlen hebben de volgende betekenis:\n"
         "<ul>\n"
-        "<li>Een donkerblauwe pijl visualizeert een public inheritance "
+        "<li>Een blauwe pijl visualizeert een public inheritance "
         "relatie tussen twee klassen.\n"
         "<li>Een donkergroene pijl wordt gebruikt voor protected inheritance.\n"
         "<li>Een donkerrode pijl wordt gebruikt voor private inheritance.\n"
@@ -753,11 +778,6 @@ class TranslatorDutch : public Translator
     QCString trPackage(const QCString &name)
     {
       return "Package "+name;
-    }
-    /*! Title of the package index page */
-    QCString trPackageList()
-    {
-      return "Package Lijst";
     }
     /*! The description of the package index page */
     QCString trPackageListDescription()
@@ -845,7 +865,7 @@ class TranslatorDutch : public Translator
      */
     virtual QCString trClass(bool first_capital, bool singular)
     {
-      QCString result((first_capital ? "Klasse" : "klass"));
+      QCString result((first_capital ? "Klasse" : "klasse"));
       if (!singular)  result+="n";
       return result;
     }
@@ -1008,14 +1028,18 @@ class TranslatorDutch : public Translator
     /*! Used as a heading for a list of Java class functions with package
      * scope.
      */
-    virtual QCString trPackageMembers()
+    virtual QCString trPackageFunctions()
     {
       return "Package Functies";
+    }
+    virtual QCString trPackageMembers()
+    {
+      return "Package Members";
     }
     /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
-    virtual QCString trStaticPackageMembers()
+    virtual QCString trStaticPackageFunctions()
     {
       return "Statische Package Functies";
     }
@@ -1126,14 +1150,6 @@ class TranslatorDutch : public Translator
      */
     virtual QCString trDirectories()
     { return "Folders"; }
-
-    /*! This returns a sentences that introduces the directory hierarchy.
-     *  and the fact that it is sorted alphabetically per level
-     */
-    virtual QCString trDirDescription()
-    { return "Deze folder hi&euml;rarchie is min of meer alfabetisch "
-             "gesorteerd:";
-    }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.
@@ -1420,19 +1436,44 @@ class TranslatorDutch : public Translator
     }
     virtual QCString trDateTime(int year,int month,int day,int dayOfWeek,
                                 int hour,int minutes,int seconds,
-                                bool includeTime)
+                                DateTimeType includeTime)
     {
       static const char *days[]   = { "Ma","Di","Wo","Do","Vr","Za","Zo" };
       static const char *months[] = { "Jan","Feb","Maa","Apr","Mei","Jun","Jul","Aug","Sep","Okt","Nov","Dec" };
       QCString sdate;
-      sdate.sprintf("%s %d %s %d",days[dayOfWeek-1],day,months[month-1],year);
-      if (includeTime)
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Date)
+      {
+        sdate.sprintf("%s %d %s %d",days[dayOfWeek-1],day,months[month-1],year);
+      }
+      if (includeTime == DateTimeType::DateTime) sdate += " ";
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Time)
       {
         QCString stime;
-        stime.sprintf(" %.2d:%.2d:%.2d",hour,minutes,seconds);
+        stime.sprintf("%.2d:%.2d:%.2d",hour,minutes,seconds);
         sdate+=stime;
       }
       return sdate;
+    }
+    virtual QCString trDayOfWeek(int dayOfWeek, bool first_capital, bool full)
+    {
+      static const char *days_short[]   = { "ma", "di", "wo", "do", "vr", "za", "zo" };
+      static const char *days_full[]    = { "maandag", "dinsdag", "woensdag", "donderdag", "vrijdag", "zaterdag", "zondag" };
+      QCString text  = full? days_full[dayOfWeek-1] : days_short[dayOfWeek-1];
+      if (first_capital) return text.mid(0,1).upper()+text.mid(1);
+      else return text;
+    }
+    virtual QCString trMonth(int month, bool first_capital, bool full)
+    {
+      static const char *months_short[] = { "jan", "feb", "mrt", "apr", "mei", "jun", "jul", "aug", "sep", "okt", "nov", "dec" };
+      static const char *months_full[]  = { "januari", "februari", "maart", "april", "mei", "juni", "juli", "augustus", "september", "oktober", "november", "december" };
+      QCString text  = full? months_full[month-1] : months_short[month-1];
+      if (first_capital) return text.mid(0,1).upper()+text.mid(1);
+      else return text;
+    }
+    virtual QCString trDayPeriod(int period)
+    {
+      static const char *dayPeriod[] = { "a.m.", "p.m." };
+      return dayPeriod[period];
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1836,6 +1877,54 @@ class TranslatorDutch : public Translator
     {
       return "Concept definitie";
     }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.4
+//////////////////////////////////////////////////////////////////////////
+
+    virtual QCString trPackageList()
+    { return "Package Lijst"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.6
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This is used for translation of the word that will be
+     *  followed by a single name of the VHDL process flowchart.
+     */
+    virtual QCString trFlowchart()
+    { return "Stroomschema: "; }
+
+    /*! Please translate also updated body of the method
+     *  trMemberFunctionDocumentation(), now better adapted for
+     *  VHDL sources documentation.
+     *  Done.
+     */
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.7
+//////////////////////////////////////////////////////////////////////////
+    /*! used in the compound documentation before a list of related symbols.
+     *
+     *  Supersedes trRelatedFunctions
+     */
+    virtual QCString trRelatedSymbols()
+    { return "Gerelateerde symbolen"; }
+
+    /*! subscript for the related symbols
+     *
+     *  Supersedes trRelatedSubscript
+     */
+    virtual QCString trRelatedSymbolsSubscript()
+    { return "(Merk op dat dit geen member symbolen zijn.)"; }
+
+    /*! used in the class documentation as a header before the list of all
+     * related classes.
+     *
+     * Supersedes trRelatedFunctionDocumentation
+     */
+    virtual QCString trRelatedSymbolDocumentation()
+    { return "Documentatie van friends en gerelateerde symbolen"; }
 
     virtual QCString trCompoundType(ClassDef::CompoundType compType, SrcLangExt lang)
     {

@@ -117,7 +117,7 @@ class QCString
 
     explicit QCString( const std::string &s ) : m_rep(s) {}
 
-    QCString( std::string &&s) { m_rep = std::move(s); }
+    QCString( std::string &&s) : m_rep(std::move(s)) {}
 
     /** creates a string with room for size characters
      *  @param[in] size the number of character to allocate (also counting the 0-terminator!)
@@ -165,6 +165,9 @@ class QCString
 
     /** Truncates the string at position \a pos. */
     bool truncate( size_t pos ) { return resize( pos + 1 ); }
+
+    /** Reserve space for \a size bytes without changing the string contents */
+    void reserve( size_t size ) { m_rep.reserve(size); }
 
     /** Fills a string with a predefined character
      *  @param[in] c the character used to fill the string with.
@@ -265,7 +268,8 @@ class QCString
       {
         while (i<end && !needsQuotes) // check if the to be quoted part has at least one whitespace character
         {
-          needsQuotes = qisspace(m_rep[i++]);
+          needsQuotes = m_rep[i] =='-';
+          needsQuotes |= qisspace(m_rep[i++]);
         }
       }
       QCString result(m_rep.substr(start,1+end-start));
@@ -425,6 +429,18 @@ class QCString
       return *this;
     }
 
+    QCString &setNum(long long n)
+    {
+      m_rep = std::to_string(n);
+      return *this;
+    }
+
+    QCString &setNum(unsigned long long n)
+    {
+      m_rep = std::to_string(n);
+      return *this;
+    }
+
     QCString &setNum(ulong n)
     {
       m_rep = std::to_string(n);
@@ -465,7 +481,7 @@ class QCString
     }
 #endif
 
-    std::string str() const
+    const std::string &str() const
     {
       return m_rep;
     }
@@ -530,7 +546,7 @@ class QCString
  *****************************************************************************/
 
 inline bool operator==( const QCString &s1, const QCString &s2 )
-{ return qstrcmp(s1.data(),s2.data()) == 0; }
+{ return s1.str() == s2.str(); }
 
 inline bool operator==( const QCString &s1, const char *s2 )
 { return qstrcmp(s1.data(),s2) == 0; }
@@ -539,7 +555,7 @@ inline bool operator==( const char *s1, const QCString &s2 )
 { return qstrcmp(s1,s2.data()) == 0; }
 
 inline bool operator!=( const QCString &s1, const QCString &s2 )
-{ return qstrcmp(s1.data(),s2.data()) != 0; }
+{ return s1.str() != s2.str(); }
 
 inline bool operator!=( const QCString &s1, const char *s2 )
 { return qstrcmp(s1.data(),s2) != 0; }
@@ -593,24 +609,6 @@ inline QCString operator+( const char *s1, const QCString &s2 )
     tmp.append(s2);
     return tmp;
 }
-
-#define HAD_PLUS_OPERATOR_FOR_CHAR 0
-#if HAS_PLUS_OPERATOR_FOR_CHAR
-inline QCString operator+( const QCString &s1, char c2 )
-{
-    QCString tmp( s1.data() );
-    tmp.append(c2);
-    return tmp;
-}
-
-inline QCString operator+( char c1, const QCString &s2 )
-{
-    QCString tmp;
-    tmp.append(c1);
-    tmp.append(s2);
-    return tmp;
-}
-#endif
 
 inline const char *qPrint(const char *s)
 {

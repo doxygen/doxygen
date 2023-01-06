@@ -69,6 +69,10 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
     {
       return "mk";
     }
+    virtual QCString getLanguageString()
+    {
+      return "0x042f Macedonian (Former Yugoslav Republic of Macedonia)";
+    }
 
     // --- Language translation methods -------------------
 
@@ -83,6 +87,10 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
     /*! header that is put before the detailed description of files, classes and namespaces. */
     virtual QCString trDetailedDescription()
     { return "Детален опис"; }
+
+    /*! header that is used when the summary tag is missing inside the details tag */
+    virtual QCString trDetails()
+    { return "Детали"; }
 
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
@@ -377,6 +385,10 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
       {
         return "Документација на Структури";
       }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+          return trDesignUnitDocumentation();
+      }
       else
       {
         return "Документација на Класи";
@@ -394,12 +406,6 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
      */
     virtual QCString trExampleDocumentation()
     { return "Документаија на Примери"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all related pages.
-     */
-    virtual QCString trPageDocumentation()
-    { return "Документација на Страници"; }
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
@@ -502,10 +508,6 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
     {
       return "Диаграм на наследување за "+clName+":";
     }
-
-    /*! this text is generated when the \\internal command is used. */
-    virtual QCString trForInternalUseOnly()
-    { return "Само за интерна употреба."; }
 
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
@@ -1093,11 +1095,6 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
     {
       return "Пакет "+name;
     }
-    /*! Title of the package index page */
-    virtual QCString trPackageList()
-    {
-      return "Список на Пакети";
-    }
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
     {
@@ -1353,14 +1350,18 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
     /*! Used as a heading for a list of Java class functions with package
      * scope.
      */
-    virtual QCString trPackageMembers()
+    virtual QCString trPackageFunctions()
     {
       return "Функции во Пакетот";
+    }
+    virtual QCString trPackageMembers()
+    {
+      return "Членови во Пакетот";
     }
     /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
-    virtual QCString trStaticPackageMembers()
+    virtual QCString trStaticPackageFunctions()
     {
       return "Статични Функции во Пакетот";
     }
@@ -1471,12 +1472,6 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
      */
     virtual QCString trDirectories()
     { return "Именици"; }
-
-    /*! This returns a sentences that introduces the directory hierarchy.
-     *  and the fact that it is sorted alphabetically per level
-     */
-    virtual QCString trDirDescription()
-    { return "Ова стебло на именици е приближно азбучно подреден:";}
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.
@@ -1727,6 +1722,25 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
       return "Ограничувања на Тип";
     }
 
+    virtual QCString trDayOfWeek(int dayOfWeek, bool, bool full)
+    {
+      static const char *days_short[]   = { "пон.", "вт.", "сре.", "чет.", "пет.", "саб.", "нед." };
+      static const char *days_full[]    = { "понеделник", "вторник", "среда", "четврток", "петок", "сабота", "недела" };
+      QCString text  = full? days_full[dayOfWeek-1] : days_short[dayOfWeek-1];
+      return text;
+    }
+    virtual QCString trMonth(int month, bool, bool full)
+    {
+      static const char *months_short[] = { "јан.", "фев.", "мар.", "апр.", "мај", "јун.", "јул.", "авг.", "септ.", "окт.", "ноем.", "дек." };
+      static const char *months_full[]  = { "јануари", "февруари", "март", "април", "мај", "јуни", "јули", "август", "септември", "октомври", "ноември", "декември" };
+      QCString text  = full? months_full[month-1] : months_short[month-1];
+      return text;
+    }
+    virtual QCString trDayPeriod(int period)
+    {
+      static const char *dayPeriod[] = { "претпл.", "попл." };
+      return dayPeriod[period];
+    }
 };
 
 #endif

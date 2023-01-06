@@ -104,6 +104,10 @@ class TranslatorHungarian : public TranslatorAdapter_1_8_15
     {
       return "hu";
     }
+    virtual QCString getLanguageString()
+    {
+      return "0x40E Hungarian";
+    }
 
     // --- Language translation methods -------------------
 
@@ -118,6 +122,10 @@ class TranslatorHungarian : public TranslatorAdapter_1_8_15
     /*! header that is put before the detailed description of files, classes and namespaces. */
     virtual QCString trDetailedDescription()
     { return "Részletes leírás"; }
+
+    /*! header that is used when the summary tag is missing inside the details tag */
+    virtual QCString trDetails()
+    { return "Részletek"; }
 
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
@@ -418,6 +426,10 @@ class TranslatorHungarian : public TranslatorAdapter_1_8_15
       {
         return "Adatszerkezetek dokumentációja";
       }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+          return trDesignUnitDocumentation();
+      }
       else
       {
         return "Osztályok dokumentációja";
@@ -435,12 +447,6 @@ class TranslatorHungarian : public TranslatorAdapter_1_8_15
      */
     virtual QCString trExampleDocumentation()
     { return "Példák dokumentációja"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all related pages.
-     */
-    virtual QCString trPageDocumentation()
-    { return "Kapcsolódó dokumentációk"; }
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
@@ -543,10 +549,6 @@ class TranslatorHungarian : public TranslatorAdapter_1_8_15
     {
       return QCString("A")+zed(clName[0])+clName+" osztály származási diagramja:";
     }
-
-    /*! this text is generated when the \\internal command is used. */
-    virtual QCString trForInternalUseOnly()
-    { return "CSAK BELSŐ HASZNÁLATRA!"; }
 
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
@@ -1135,11 +1137,6 @@ class TranslatorHungarian : public TranslatorAdapter_1_8_15
     {
       return name+" csomag";
     }
-    /*! Title of the package index page */
-    virtual QCString trPackageList()
-    {
-      return "Csomaglista";
-    }
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
     {
@@ -1396,14 +1393,18 @@ class TranslatorHungarian : public TranslatorAdapter_1_8_15
     /*! Used as a heading for a list of Java class functions with package
      * scope.
      */
-    virtual QCString trPackageMembers()
+    virtual QCString trPackageFunctions()
     {
       return "Csomag függvények";
+    }
+    virtual QCString trPackageMembers()
+    {
+      return "Csomag tagok";
     }
     /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
-    virtual QCString trStaticPackageMembers()
+    virtual QCString trStaticPackageFunctions()
     {
       return "Statikus csomag függvények";
     }
@@ -1514,14 +1515,6 @@ class TranslatorHungarian : public TranslatorAdapter_1_8_15
      */
     virtual QCString trDirectories()
     { return "Könyvtárak"; }
-
-    /*! This returns a sentences that introduces the directory hierarchy.
-     *  and the fact that it is sorted alphabetically per level
-     */
-    virtual QCString trDirDescription()
-    { return "Majdnem (de nem teljesen) betűrendbe szedett "
-             "könyvtárhierarchia:";
-    }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.
@@ -1840,19 +1833,44 @@ class TranslatorHungarian : public TranslatorAdapter_1_8_15
      */
     virtual QCString trDateTime(int year,int month,int day,int dayOfWeek,
                                 int hour,int minutes,int seconds,
-                                bool includeTime)
+                                DateTimeType includeTime)
     {
       static const char *days[]   = { "Hétfő","Kedd","Szerda","Csütörtök","Péntek","Szombat","Vasárnap" };
       static const char *months[] = { "Január","Február","Március","Április","Május","Június","Július","Augusztus","Szeptember","Október","November","December" };
       QCString sdate;
-      sdate.sprintf("%s %s %d %d",days[dayOfWeek-1],months[month-1],day,year);
-      if (includeTime)
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Date)
+      {
+        sdate.sprintf("%s %s %d %d",days[dayOfWeek-1],months[month-1],day,year);
+      }
+      if (includeTime == DateTimeType::DateTime) sdate += " ";
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Time)
       {
         QCString stime;
-        stime.sprintf(" %.2d:%.2d:%.2d",hour,minutes,seconds);
+        stime.sprintf("%.2d:%.2d:%.2d",hour,minutes,seconds);
         sdate+=stime;
       }
       return sdate;
+    }
+    virtual QCString trDayOfWeek(int dayOfWeek, bool first_capital, bool full)
+    {
+      static const char *days_short[]   = { "H", "K", "Sze", "Cs", "P", "Szo", "V" };
+      static const char *days_full[]    = { "hétfő", "kedd", "szerda", "csütörtök", "péntek", "szombat", "vasárnap" };
+      QCString text  = full? days_full[dayOfWeek-1] : days_short[dayOfWeek-1];
+      if (first_capital) return text.mid(0,1).upper()+text.mid(1);
+      else return text;
+    }
+    virtual QCString trMonth(int month, bool first_capital, bool full)
+    {
+      static const char *months_short[] = { "jan.", "febr.", "márc.", "ápr.", "máj.", "jún.", "júl.", "aug.", "szept.", "okt.", "nov.", "dec." };
+      static const char *months_full[]  = { "január", "február", "március", "április", "május", "június", "július", "augusztus", "szeptember", "október", "november", "december" };
+      QCString text  = full? months_full[month-1] : months_short[month-1];
+      if (first_capital) return text.mid(0,1).upper()+text.mid(1);
+      else return text;
+    }
+    virtual QCString trDayPeriod(int period)
+    {
+      static const char *dayPeriod[] = { "de.", "du." };
+      return dayPeriod[period];
     }
 
 //////////////////////////////////////////////////////////////////////////

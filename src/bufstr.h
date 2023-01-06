@@ -77,11 +77,19 @@ class BufStr
     {
       return m_size;
     }
-    char *data() const
+    const char *data() const
     {
       return m_buf;
     }
-    char &at(size_t i) const
+    char *data()
+    {
+      return m_buf;
+    }
+    const char &at(size_t i) const
+    {
+      return m_buf[i];
+    }
+    char &at(size_t i)
     {
       return m_buf[i];
     }
@@ -103,6 +111,20 @@ class BufStr
       if (bytes>0) qmemmove(m_buf,m_buf+bytes,m_size-bytes);
       m_size-=bytes;
       m_writeOffset-=bytes;
+    }
+    void addTerminalCharIfMissing(char c)
+    {
+      if (m_buf && m_writeOffset>1 && m_buf[m_writeOffset-2]!=c && m_buf[m_writeOffset-1]=='\0')
+      {
+        // add missing terminal character and 0 terminator
+        m_buf[m_writeOffset-1] = '\n';
+        addChar('\0');
+      }
+      else if (m_buf && m_writeOffset>0 && m_buf[m_writeOffset-1]!='\0' && m_buf[m_writeOffset-1]!=c)
+      {
+        // add missing terminal character without 0 terminator
+        addChar(c);
+      }
     }
   private:
     void makeRoomFor(size_t size)

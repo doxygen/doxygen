@@ -22,12 +22,12 @@
 #include <functional>
 #include <utility>
 #include <algorithm>
+#include <variant>
 
 #include <assert.h>
 #include <stdio.h>
 #include <stdarg.h>
 
-#include "variant.h"
 #include "xml.h"
 #include "entry.h"
 #include "doxygen.h"
@@ -40,9 +40,6 @@
 #include "section.h"
 #include "containers.h"
 #include "debug.h"
-
-// set to 1 for debugging
-#define DUMP_OUTPUT 0
 
 // ----------------- private part -----------------------------------------------
 
@@ -94,8 +91,8 @@ class TagMemberInfo
     QCString kind;
     QCString clangId;
     std::vector<TagAnchorInfo> docAnchors;
-    Protection prot = Public;
-    Specifier virt = Normal;
+    Protection prot = Protection::Public;
+    Specifier virt = Specifier::Normal;
     bool isStatic = false;
     std::vector<TagEnumValueInfo> enumValues;
     int lineNr;
@@ -204,28 +201,31 @@ using TagDirInfoPtr = std::unique_ptr<TagDirInfo>;
 class TagCompoundVariant
 {
   public:
-    using VariantT = Variant< TagClassInfoPtr,     // 0
-                              TagConceptInfoPtr,   // 1
-                              TagNamespaceInfoPtr, // 2
-                              TagPackageInfoPtr,   // 3
-                              TagFileInfoPtr,      // 4
-                              TagGroupInfoPtr,     // 5
-                              TagPageInfoPtr,      // 6
-                              TagDirInfoPtr>;      // 7
+    using VariantT = std::variant< std::monostate,      // 0
+                                   TagClassInfoPtr,     // 1
+                                   TagConceptInfoPtr,   // 2
+                                   TagNamespaceInfoPtr, // 3
+                                   TagPackageInfoPtr,   // 4
+                                   TagFileInfoPtr,      // 5
+                                   TagGroupInfoPtr,     // 6
+                                   TagPageInfoPtr,      // 7
+                                   TagDirInfoPtr>;      // 8
 
     enum class Type : uint8_t
     {
-      Class       = 0,
-      Concept     = 1,
-      Namespace   = 2,
-      Package     = 3,
-      File        = 4,
-      Group       = 5,
-      Page        = 6,
-      Dir         = 7
+      Uninitialized = 0,
+      Class         = 1,
+      Concept       = 2,
+      Namespace     = 3,
+      Package       = 4,
+      File          = 5,
+      Group         = 6,
+      Page          = 7,
+      Dir           = 8
     };
 
-    TagCompoundVariant() = default;
+    TagCompoundVariant() {}
+    explicit TagCompoundVariant(VariantT &&v) : m_variant(std::move(v)) {}
     TagCompoundVariant(const TagCompoundVariant &) = delete;
     TagCompoundVariant &operator=(const TagCompoundVariant &) = delete;
     TagCompoundVariant(TagCompoundVariant &&) = default;
@@ -233,68 +233,68 @@ class TagCompoundVariant
    ~TagCompoundVariant() = default;
 
     /** Generic non-const getter */
-    template<class R,Type t>
+    template<class R>
     R *get()
     {
-      return m_variant.is <static_cast<uint8_t>(t)>() ?
-             m_variant.get<static_cast<uint8_t>(t)>().get() : 0;
+      std::unique_ptr<R> *p = std::get_if<std::unique_ptr<R>>(&m_variant);
+      return p ? p->get() : 0;
     }
     /** Generic const getter */
-    template<class R,Type t>
+    template<class R>
     const R *get() const
     {
-      return m_variant.is <static_cast<uint8_t>(t)>() ?
-             m_variant.get<static_cast<uint8_t>(t)>().get() : 0;
+      const std::unique_ptr<R> *p = std::get_if<std::unique_ptr<R>>(&m_variant);
+      return p ? p->get() : 0;
     }
 
     /** Generic factory method to create a variant holding a unique pointer to a given compound type */
-    template<class R,Type t,typename... Args>
+    template<class R,typename... Args>
     static TagCompoundVariant make(Args&&... args)
     {
-      TagCompoundVariant v;
-      v.m_variant.set<static_cast<uint8_t>(t)>(std::make_unique<R>(std::forward<Args>(args)...));
-      return v;
+      return TagCompoundVariant(VariantT(std::make_unique<R>(std::forward<Args>(args)...)));
     }
 
     /** @name convenience const and non-const getters for each variant component
      *  @{
      */
-          TagClassInfo     *getClassInfo()           { return get<TagClassInfo,    Type::Class    >(); }
-    const TagClassInfo     *getClassInfo()     const { return get<TagClassInfo,    Type::Class    >(); }
-          TagConceptInfo   *getConceptInfo()         { return get<TagConceptInfo,  Type::Concept  >(); }
-    const TagConceptInfo   *getConceptInfo()   const { return get<TagConceptInfo,  Type::Concept  >(); }
-          TagNamespaceInfo *getNamespaceInfo()       { return get<TagNamespaceInfo,Type::Namespace>(); }
-    const TagNamespaceInfo *getNamespaceInfo() const { return get<TagNamespaceInfo,Type::Namespace>(); }
-          TagPackageInfo   *getPackageInfo()         { return get<TagPackageInfo,  Type::Package  >(); }
-    const TagPackageInfo   *getPackageInfo()   const { return get<TagPackageInfo,  Type::Package  >(); }
-          TagFileInfo      *getFileInfo()            { return get<TagFileInfo,     Type::File     >(); }
-    const TagFileInfo      *getFileInfo()      const { return get<TagFileInfo,     Type::File     >(); }
-          TagGroupInfo     *getGroupInfo()           { return get<TagGroupInfo,    Type::Group    >(); }
-    const TagGroupInfo     *getGroupInfo()     const { return get<TagGroupInfo,    Type::Group    >(); }
-          TagPageInfo      *getPageInfo()            { return get<TagPageInfo,     Type::Page     >(); }
-    const TagPageInfo      *getPageInfo()      const { return get<TagPageInfo,     Type::Page     >(); }
-          TagDirInfo       *getDirInfo()             { return get<TagDirInfo,      Type::Dir      >(); }
-    const TagDirInfo       *getDirInfo()       const { return get<TagDirInfo,      Type::Dir      >(); }
+          TagClassInfo     *getClassInfo()           { return get<TagClassInfo    >(); }
+    const TagClassInfo     *getClassInfo()     const { return get<TagClassInfo    >(); }
+          TagConceptInfo   *getConceptInfo()         { return get<TagConceptInfo  >(); }
+    const TagConceptInfo   *getConceptInfo()   const { return get<TagConceptInfo  >(); }
+          TagNamespaceInfo *getNamespaceInfo()       { return get<TagNamespaceInfo>(); }
+    const TagNamespaceInfo *getNamespaceInfo() const { return get<TagNamespaceInfo>(); }
+          TagPackageInfo   *getPackageInfo()         { return get<TagPackageInfo  >(); }
+    const TagPackageInfo   *getPackageInfo()   const { return get<TagPackageInfo  >(); }
+          TagFileInfo      *getFileInfo()            { return get<TagFileInfo     >(); }
+    const TagFileInfo      *getFileInfo()      const { return get<TagFileInfo     >(); }
+          TagGroupInfo     *getGroupInfo()           { return get<TagGroupInfo    >(); }
+    const TagGroupInfo     *getGroupInfo()     const { return get<TagGroupInfo    >(); }
+          TagPageInfo      *getPageInfo()            { return get<TagPageInfo     >(); }
+    const TagPageInfo      *getPageInfo()      const { return get<TagPageInfo     >(); }
+          TagDirInfo       *getDirInfo()             { return get<TagDirInfo      >(); }
+    const TagDirInfo       *getDirInfo()       const { return get<TagDirInfo      >(); }
     /** @} */
 
     /** Convenience method to get the shared compound info */
     TagCompoundInfo *getCompoundInfo()
     {
-      if (m_variant.valid())
+      switch(type())
       {
-        switch(static_cast<Type>(m_variant.index()))
-        {
-          case Type::Class:     return getClassInfo();
-          case Type::Concept:   return getConceptInfo();
-          case Type::Namespace: return getNamespaceInfo();
-          case Type::Package:   return getPackageInfo();
-          case Type::File:      return getFileInfo();
-          case Type::Group:     return getGroupInfo();
-          case Type::Page:      return getPageInfo();
-          case Type::Dir:       return getDirInfo();
-        }
+        case Type::Uninitialized: return 0;
+        case Type::Class:         return getClassInfo();
+        case Type::Concept:       return getConceptInfo();
+        case Type::Namespace:     return getNamespaceInfo();
+        case Type::Package:       return getPackageInfo();
+        case Type::File:          return getFileInfo();
+        case Type::Group:         return getGroupInfo();
+        case Type::Page:          return getPageInfo();
+        case Type::Dir:           return getDirInfo();
       }
       return 0;
+    }
+    Type type() const
+    {
+      return static_cast<Type>(m_variant.index());
     }
 
   private:
@@ -311,7 +311,7 @@ class TagCompoundVariant
 class TagFileParser
 {
   public:
-    TagFileParser(const char *tagName) : m_tagName(tagName) {}
+    explicit TagFileParser(const char *tagName) : m_tagName(tagName) {}
 
     void setDocumentLocator ( const XMLLocator * locator )
     {
@@ -366,19 +366,19 @@ class TagFileParser
       m_curMember.lineNr = m_locator->lineNr();
       if (protStr=="protected")
       {
-        m_curMember.prot = Protected;
+        m_curMember.prot = Protection::Protected;
       }
       else if (protStr=="private")
       {
-        m_curMember.prot = Private;
+        m_curMember.prot = Protection::Private;
       }
       if (virtStr=="virtual")
       {
-        m_curMember.virt = Virtual;
+        m_curMember.virt = Specifier::Virtual;
       }
       else if (virtStr=="pure")
       {
-        m_curMember.virt = Pure;
+        m_curMember.virt = Specifier::Pure;
       }
       if (staticStr=="yes")
       {
@@ -457,7 +457,7 @@ class TagFileParser
         case InMember:
         case InPackage:
         case InDir:
-          if (m_curString.right(10)=="autotoc_md") return;
+          if (m_curString.endsWith("autotoc_md")) return;
           break;
         default:
           warn("Unexpected tag 'docanchor' found");
@@ -696,19 +696,19 @@ class TagFileParser
       {
         QCString protStr = XMLHandlers::value(attrib,"protection");
         QCString virtStr = XMLHandlers::value(attrib,"virtualness");
-        Protection prot = Public;
-        Specifier  virt = Normal;
+        Protection prot = Protection::Public;
+        Specifier  virt = Specifier::Normal;
         if (protStr=="protected")
         {
-          prot = Protected;
+          prot = Protection::Protected;
         }
         else if (protStr=="private")
         {
-          prot = Private;
+          prot = Protection::Private;
         }
         if (virtStr=="virtual")
         {
-          virt = Virtual;
+          virt = Specifier::Virtual;
         }
         info->bases.push_back(BaseInfo(m_curString,prot,virt));
       }
@@ -956,16 +956,16 @@ class TagFileParser
     //------------------------------------
 
     std::vector< TagCompoundVariant > m_tagFileCompounds;
-    TagCompoundVariant m_curCompound;
+    TagCompoundVariant                m_curCompound;
 
     TagMemberInfo              m_curMember;
     TagEnumValueInfo           m_curEnumValue;
     TagIncludeInfo             m_curIncludes;
 
-    QCString                m_curString;
-    QCString                m_tagName;
-    QCString                m_fileName;
-    QCString                m_title;
+    QCString                   m_curString;
+    QCString                   m_tagName;
+    QCString                   m_fileName;
+    QCString                   m_title;
     State                      m_state = Invalid;
     std::stack<State>          m_stateStack;
     const XMLLocator          *m_locator = nullptr;
@@ -1033,24 +1033,24 @@ struct CompoundFactory
 
 static const std::map< std::string, CompoundFactory > g_compoundFactory =
 {
-  // kind tag      state                            creation function
-  { "class",     { TagFileParser::InClass,     []() { return TagCompoundVariant::make<TagClassInfo,    TagCompoundVariant::Type::Class>(TagClassInfo::Kind::Class);     } } },
-  { "struct",    { TagFileParser::InClass,     []() { return TagCompoundVariant::make<TagClassInfo,    TagCompoundVariant::Type::Class>(TagClassInfo::Kind::Struct);    } } },
-  { "union",     { TagFileParser::InClass,     []() { return TagCompoundVariant::make<TagClassInfo,    TagCompoundVariant::Type::Class>(TagClassInfo::Kind::Union);     } } },
-  { "interface", { TagFileParser::InClass,     []() { return TagCompoundVariant::make<TagClassInfo,    TagCompoundVariant::Type::Class>(TagClassInfo::Kind::Interface); } } },
-  { "enum",      { TagFileParser::InClass,     []() { return TagCompoundVariant::make<TagClassInfo,    TagCompoundVariant::Type::Class>(TagClassInfo::Kind::Enum);      } } },
-  { "exception", { TagFileParser::InClass,     []() { return TagCompoundVariant::make<TagClassInfo,    TagCompoundVariant::Type::Class>(TagClassInfo::Kind::Exception); } } },
-  { "protocol",  { TagFileParser::InClass,     []() { return TagCompoundVariant::make<TagClassInfo,    TagCompoundVariant::Type::Class>(TagClassInfo::Kind::Protocol);  } } },
-  { "category",  { TagFileParser::InClass,     []() { return TagCompoundVariant::make<TagClassInfo,    TagCompoundVariant::Type::Class>(TagClassInfo::Kind::Category);  } } },
-  { "service",   { TagFileParser::InClass,     []() { return TagCompoundVariant::make<TagClassInfo,    TagCompoundVariant::Type::Class>(TagClassInfo::Kind::Service);   } } },
-  { "singleton", { TagFileParser::InClass,     []() { return TagCompoundVariant::make<TagClassInfo,    TagCompoundVariant::Type::Class>(TagClassInfo::Kind::Singleton); } } },
-  { "file",      { TagFileParser::InFile,      []() { return TagCompoundVariant::make<TagFileInfo,     TagCompoundVariant::Type::File>();                               } } },
-  { "namespace", { TagFileParser::InNamespace, []() { return TagCompoundVariant::make<TagNamespaceInfo,TagCompoundVariant::Type::Namespace>();                          } } },
-  { "concept",   { TagFileParser::InConcept,   []() { return TagCompoundVariant::make<TagConceptInfo,  TagCompoundVariant::Type::Concept>();                            } } },
-  { "group",     { TagFileParser::InGroup,     []() { return TagCompoundVariant::make<TagGroupInfo,    TagCompoundVariant::Type::Group>();                              } } },
-  { "page",      { TagFileParser::InPage,      []() { return TagCompoundVariant::make<TagPageInfo,     TagCompoundVariant::Type::Page>();                               } } },
-  { "package",   { TagFileParser::InPackage,   []() { return TagCompoundVariant::make<TagPackageInfo,  TagCompoundVariant::Type::Package>();                            } } },
-  { "dir",       { TagFileParser::InDir,       []() { return TagCompoundVariant::make<TagDirInfo,      TagCompoundVariant::Type::Dir>();                                } } }
+  // kind tag      state                       creation function
+  { "class",     { TagFileParser::InClass,     []() { return TagCompoundVariant::make<TagClassInfo>(TagClassInfo::Kind::Class);     } } },
+  { "struct",    { TagFileParser::InClass,     []() { return TagCompoundVariant::make<TagClassInfo>(TagClassInfo::Kind::Struct);    } } },
+  { "union",     { TagFileParser::InClass,     []() { return TagCompoundVariant::make<TagClassInfo>(TagClassInfo::Kind::Union);     } } },
+  { "interface", { TagFileParser::InClass,     []() { return TagCompoundVariant::make<TagClassInfo>(TagClassInfo::Kind::Interface); } } },
+  { "enum",      { TagFileParser::InClass,     []() { return TagCompoundVariant::make<TagClassInfo>(TagClassInfo::Kind::Enum);      } } },
+  { "exception", { TagFileParser::InClass,     []() { return TagCompoundVariant::make<TagClassInfo>(TagClassInfo::Kind::Exception); } } },
+  { "protocol",  { TagFileParser::InClass,     []() { return TagCompoundVariant::make<TagClassInfo>(TagClassInfo::Kind::Protocol);  } } },
+  { "category",  { TagFileParser::InClass,     []() { return TagCompoundVariant::make<TagClassInfo>(TagClassInfo::Kind::Category);  } } },
+  { "service",   { TagFileParser::InClass,     []() { return TagCompoundVariant::make<TagClassInfo>(TagClassInfo::Kind::Service);   } } },
+  { "singleton", { TagFileParser::InClass,     []() { return TagCompoundVariant::make<TagClassInfo>(TagClassInfo::Kind::Singleton); } } },
+  { "file",      { TagFileParser::InFile,      []() { return TagCompoundVariant::make<TagFileInfo>();                               } } },
+  { "namespace", { TagFileParser::InNamespace, []() { return TagCompoundVariant::make<TagNamespaceInfo>();                          } } },
+  { "concept",   { TagFileParser::InConcept,   []() { return TagCompoundVariant::make<TagConceptInfo>();                            } } },
+  { "group",     { TagFileParser::InGroup,     []() { return TagCompoundVariant::make<TagGroupInfo>();                              } } },
+  { "page",      { TagFileParser::InPage,      []() { return TagCompoundVariant::make<TagPageInfo>();                               } } },
+  { "package",   { TagFileParser::InPackage,   []() { return TagCompoundVariant::make<TagPackageInfo>();                            } } },
+  { "dir",       { TagFileParser::InDir,       []() { return TagCompoundVariant::make<TagDirInfo>();                                } } }
 };
 
 //---------------------------------------------------------------------------------------------------------------
@@ -1110,66 +1110,65 @@ void TagFileParser::startCompound( const XMLHandlers::Attributes& attrib )
   }
 }
 
-#if DUMP_OUTPUT
 /*! Dumps the internal structures. For debugging only! */
 void TagFileParser::dump()
 {
-  msg("Result:\n");
+  Debug::print(Debug::Tag,0,"-------- Results --------\n");
   //============== CLASSES
   for (const auto &comp : m_tagFileCompounds)
   {
-    if (comp->compoundType()==TagCompoundInfo::CompoundType::Class)
+    if (comp.type()==TagCompoundVariant::Type::Class)
     {
-      const TagClassInfo *cd = TagClassInfo::get(comp);
-      msg("class '%s'\n",qPrint(cd->name));
-      msg("  filename '%s'\n",qPrint(cd->filename));
+      const TagClassInfo *cd = comp.getClassInfo();
+      Debug::print(Debug::Tag,0,"class '%s'\n",qPrint(cd->name));
+      Debug::print(Debug::Tag,0,"  filename '%s'\n",qPrint(cd->filename));
       for (const BaseInfo &bi : cd->bases)
       {
-        msg( "  base: %s \n", bi.name.isEmpty() ? "" : qPrint(bi.name) );
+        Debug::print(Debug::Tag,0, "  base: %s \n", bi.name.isEmpty() ? "" : qPrint(bi.name) );
       }
 
       for (const auto &md : cd->members)
       {
-        msg("  member:\n");
-        msg("    kind: '%s'\n",qPrint(md.kind));
-        msg("    name: '%s'\n",qPrint(md.name));
-        msg("    anchor: '%s'\n",qPrint(md.anchor));
-        msg("    arglist: '%s'\n",qPrint(md.arglist));
+        Debug::print(Debug::Tag,0,"  member:\n");
+        Debug::print(Debug::Tag,0,"    kind: '%s'\n",qPrint(md.kind));
+        Debug::print(Debug::Tag,0,"    name: '%s'\n",qPrint(md.name));
+        Debug::print(Debug::Tag,0,"    anchor: '%s'\n",qPrint(md.anchor));
+        Debug::print(Debug::Tag,0,"    arglist: '%s'\n",qPrint(md.arglist));
       }
     }
   }
   //============== CONCEPTS
   for (const auto &comp : m_tagFileCompounds)
   {
-    if (comp->compoundType()==TagCompoundInfo::CompoundType::Concept)
+    if (comp.type()==TagCompoundVariant::Type::Concept)
     {
-      const TagConceptInfo *cd = TagConceptInfo::get(comp);
+      const TagConceptInfo *cd = comp.getConceptInfo();
 
-      msg("concept '%s'\n",qPrint(cd->name));
-      msg("  filename '%s'\n",qPrint(cd->filename));
+      Debug::print(Debug::Tag,0,"concept '%s'\n",qPrint(cd->name));
+      Debug::print(Debug::Tag,0,"  filename '%s'\n",qPrint(cd->filename));
     }
   }
   //============== NAMESPACES
   for (const auto &comp : m_tagFileCompounds)
   {
-    if (comp->compoundType()==TagCompoundInfo::CompoundType::Namespace)
+    if (comp.type()==TagCompoundVariant::Type::Namespace)
     {
-      const TagNamespaceInfo *nd = TagNamespaceInfo::get(comp);
+      const TagNamespaceInfo *nd = comp.getNamespaceInfo();
 
-      msg("namespace '%s'\n",qPrint(nd->name));
-      msg("  filename '%s'\n",qPrint(nd->filename));
+      Debug::print(Debug::Tag,0,"namespace '%s'\n",qPrint(nd->name));
+      Debug::print(Debug::Tag,0,"  filename '%s'\n",qPrint(nd->filename));
       for (const auto &cls : nd->classList)
       {
-        msg( "  class: %s \n", cls.c_str() );
+        Debug::print(Debug::Tag,0, "  class: %s \n", cls.c_str() );
       }
 
       for (const auto &md : nd->members)
       {
-        msg("  member:\n");
-        msg("    kind: '%s'\n",qPrint(md.kind));
-        msg("    name: '%s'\n",qPrint(md.name));
-        msg("    anchor: '%s'\n",qPrint(md.anchor));
-        msg("    arglist: '%s'\n",qPrint(md.arglist));
+        Debug::print(Debug::Tag,0,"  member:\n");
+        Debug::print(Debug::Tag,0,"    kind: '%s'\n",qPrint(md.kind));
+        Debug::print(Debug::Tag,0,"    name: '%s'\n",qPrint(md.name));
+        Debug::print(Debug::Tag,0,"    anchor: '%s'\n",qPrint(md.anchor));
+        Debug::print(Debug::Tag,0,"    arglist: '%s'\n",qPrint(md.arglist));
       }
     }
   }
@@ -1177,33 +1176,33 @@ void TagFileParser::dump()
   //============== FILES
   for (const auto &comp : m_tagFileCompounds)
   {
-    if (comp->compoundType()==TagCompoundInfo::CompoundType::File)
+    if (comp.type()==TagCompoundVariant::Type::File)
     {
-      const TagFileInfo *fd = TagFileInfo::get(comp);
+      const TagFileInfo *fd = comp.getFileInfo();
 
-      msg("file '%s'\n",qPrint(fd->name));
-      msg("  filename '%s'\n",qPrint(fd->filename));
+      Debug::print(Debug::Tag,0,"file '%s'\n",qPrint(fd->name));
+      Debug::print(Debug::Tag,0,"  filename '%s'\n",qPrint(fd->filename));
       for (const auto &ns : fd->namespaceList)
       {
-        msg( "  namespace: %s \n", ns.c_str() );
+        Debug::print(Debug::Tag,0, "  namespace: %s \n", ns.c_str() );
       }
       for (const auto &cs : fd->classList)
       {
-        msg( "  class: %s \n", cs.c_str() );
+        Debug::print(Debug::Tag,0, "  class: %s \n", cs.c_str() );
       }
 
       for (const auto &md : fd->members)
       {
-        msg("  member:\n");
-        msg("    kind: '%s'\n",qPrint(md.kind));
-        msg("    name: '%s'\n",qPrint(md.name));
-        msg("    anchor: '%s'\n",qPrint(md.anchor));
-        msg("    arglist: '%s'\n",qPrint(md.arglist));
+        Debug::print(Debug::Tag,0,"  member:\n");
+        Debug::print(Debug::Tag,0,"    kind: '%s'\n",qPrint(md.kind));
+        Debug::print(Debug::Tag,0,"    name: '%s'\n",qPrint(md.name));
+        Debug::print(Debug::Tag,0,"    anchor: '%s'\n",qPrint(md.anchor));
+        Debug::print(Debug::Tag,0,"    arglist: '%s'\n",qPrint(md.arglist));
       }
 
       for (const auto &ii : fd->includes)
       {
-        msg("  includes id: %s name: %s\n",qPrint(ii.id),qPrint(ii.name));
+        Debug::print(Debug::Tag,0,"  includes id: %s name: %s\n",qPrint(ii.id),qPrint(ii.name));
       }
     }
   }
@@ -1211,40 +1210,40 @@ void TagFileParser::dump()
   //============== GROUPS
   for (const auto &comp : m_tagFileCompounds)
   {
-    if (comp->compoundType()==TagCompoundInfo::CompoundType::Group)
+    if (comp.type()==TagCompoundVariant::Type::Group)
     {
-      const TagGroupInfo *gd = TagGroupInfo::get(comp);
-      msg("group '%s'\n",qPrint(gd->name));
-      msg("  filename '%s'\n",qPrint(gd->filename));
+      const TagGroupInfo *gd = comp.getGroupInfo();
+      Debug::print(Debug::Tag,0,"group '%s'\n",qPrint(gd->name));
+      Debug::print(Debug::Tag,0,"  filename '%s'\n",qPrint(gd->filename));
 
       for (const auto &ns : gd->namespaceList)
       {
-        msg( "  namespace: %s \n", ns.c_str() );
+        Debug::print(Debug::Tag,0, "  namespace: %s \n", ns.c_str() );
       }
       for (const auto &cs : gd->classList)
       {
-        msg( "  class: %s \n", cs.c_str() );
+        Debug::print(Debug::Tag,0, "  class: %s \n", cs.c_str() );
       }
       for (const auto &fi : gd->fileList)
       {
-        msg( "  file: %s \n", fi.c_str() );
+        Debug::print(Debug::Tag,0, "  file: %s \n", fi.c_str() );
       }
       for (const auto &sg : gd->subgroupList)
       {
-        msg( "  subgroup: %s \n", sg.c_str() );
+        Debug::print(Debug::Tag,0, "  subgroup: %s \n", sg.c_str() );
       }
       for (const auto &pg : gd->pageList)
       {
-        msg( "  page: %s \n", pg.c_str() );
+        Debug::print(Debug::Tag,0, "  page: %s \n", pg.c_str() );
       }
 
       for (const auto &md : gd->members)
       {
-        msg("  member:\n");
-        msg("    kind: '%s'\n",qPrint(md.kind));
-        msg("    name: '%s'\n",qPrint(md.name));
-        msg("    anchor: '%s'\n",qPrint(md.anchor));
-        msg("    arglist: '%s'\n",qPrint(md.arglist));
+        Debug::print(Debug::Tag,0,"  member:\n");
+        Debug::print(Debug::Tag,0,"    kind: '%s'\n",qPrint(md.kind));
+        Debug::print(Debug::Tag,0,"    name: '%s'\n",qPrint(md.name));
+        Debug::print(Debug::Tag,0,"    anchor: '%s'\n",qPrint(md.anchor));
+        Debug::print(Debug::Tag,0,"    arglist: '%s'\n",qPrint(md.arglist));
       }
     }
   }
@@ -1252,37 +1251,37 @@ void TagFileParser::dump()
   //============== PAGES
   for (const auto &comp : m_tagFileCompounds)
   {
-    if (comp->compoundType()==TagCompoundInfo::CompoundType::Page)
+    if (comp.type()==TagCompoundVariant::Type::Page)
     {
-      const TagPageInfo *pd = TagPageInfo::get(comp);
-      msg("page '%s'\n",qPrint(pd->name));
-      msg("  title '%s'\n",qPrint(pd->title));
-      msg("  filename '%s'\n",qPrint(pd->filename));
+      const TagPageInfo *pd = comp.getPageInfo();
+      Debug::print(Debug::Tag,0,"page '%s'\n",qPrint(pd->name));
+      Debug::print(Debug::Tag,0,"  title '%s'\n",qPrint(pd->title));
+      Debug::print(Debug::Tag,0,"  filename '%s'\n",qPrint(pd->filename));
     }
   }
 
   //============== DIRS
   for (const auto &comp : m_tagFileCompounds)
   {
-    if (comp->compoundType()==TagCompoundInfo::CompoundType::Dir)
+    if (comp.type()==TagCompoundVariant::Type::Dir)
     {
-      const TagDirInfo *dd = TagDirInfo::get(comp);
+      const TagDirInfo *dd = comp.getDirInfo();
       {
-        msg("dir '%s'\n",qPrint(dd->name));
-        msg("  path '%s'\n",qPrint(dd->path));
+        Debug::print(Debug::Tag,0,"dir '%s'\n",qPrint(dd->name));
+        Debug::print(Debug::Tag,0,"  path '%s'\n",qPrint(dd->path));
         for (const auto &fi : dd->fileList)
         {
-          msg( "  file: %s \n", fi.c_str() );
+          Debug::print(Debug::Tag,0, "  file: %s \n", fi.c_str() );
         }
         for (const auto &sd : dd->subdirList)
         {
-          msg( "  subdir: %s \n", sd.c_str() );
+          Debug::print(Debug::Tag,0, "  subdir: %s \n", sd.c_str() );
         }
       }
     }
   }
+  Debug::print(Debug::Tag,0,"-------------------------\n");
 }
-#endif
 
 void TagFileParser::addDocAnchors(const std::shared_ptr<Entry> &e,const std::vector<TagAnchorInfo> &l)
 {
@@ -1356,64 +1355,64 @@ void TagFileParser::buildMemberList(const std::shared_ptr<Entry> &ce,const std::
     else if (tmi.kind=="enumvalue")
     {
       me->section = Entry::VARIABLE_SEC;
-      me->mtype = Method;
+      me->mtype = MethodTypes::Method;
     }
     else if (tmi.kind=="property")
     {
       me->section = Entry::VARIABLE_SEC;
-      me->mtype = Property;
+      me->mtype = MethodTypes::Property;
     }
     else if (tmi.kind=="event")
     {
       me->section = Entry::VARIABLE_SEC;
-      me->mtype = Event;
+      me->mtype = MethodTypes::Event;
     }
     else if (tmi.kind=="variable")
     {
       me->section = Entry::VARIABLE_SEC;
-      me->mtype = Method;
+      me->mtype = MethodTypes::Method;
     }
     else if (tmi.kind=="typedef")
     {
       me->section = Entry::VARIABLE_SEC; //Entry::TYPEDEF_SEC;
       me->type.prepend("typedef ");
-      me->mtype = Method;
+      me->mtype = MethodTypes::Method;
     }
     else if (tmi.kind=="enumeration")
     {
       me->section = Entry::ENUM_SEC;
-      me->mtype = Method;
+      me->mtype = MethodTypes::Method;
     }
     else if (tmi.kind=="function")
     {
       me->section = Entry::FUNCTION_SEC;
-      me->mtype = Method;
+      me->mtype = MethodTypes::Method;
     }
     else if (tmi.kind=="signal")
     {
       me->section = Entry::FUNCTION_SEC;
-      me->mtype = Signal;
+      me->mtype = MethodTypes::Signal;
     }
     else if (tmi.kind=="prototype")
     {
       me->section = Entry::FUNCTION_SEC;
-      me->mtype = Method;
+      me->mtype = MethodTypes::Method;
     }
     else if (tmi.kind=="friend")
     {
       me->section = Entry::FUNCTION_SEC;
       me->type.prepend("friend ");
-      me->mtype = Method;
+      me->mtype = MethodTypes::Method;
     }
     else if (tmi.kind=="dcop")
     {
       me->section = Entry::FUNCTION_SEC;
-      me->mtype = DCOP;
+      me->mtype = MethodTypes::DCOP;
     }
     else if (tmi.kind=="slot")
     {
       me->section = Entry::FUNCTION_SEC;
-      me->mtype = Slot;
+      me->mtype = MethodTypes::Slot;
     }
     ce->moveToSubEntryAndKeep(me);
   }
@@ -1703,7 +1702,8 @@ void parseTagFile(const std::shared_ptr<Entry> &root,const char *fullName)
   parser.parse(fullName,inputStr.data(),Debug::isFlagSet(Debug::Lex));
   tagFileParser.buildLists(root);
   tagFileParser.addIncludes();
-#if DUMP_OUTPUT
-  tagFileParser.dump();
-#endif
+  if (Debug::isFlagSet(Debug::Tag))
+  {
+    tagFileParser.dump();
+  }
 }

@@ -35,7 +35,7 @@
  files frees the maintainer from thinking about whether the
  first, the second, or both files should be included or not, and
  why.  This holds namely for localized translators because their
- base class is changed occasionaly to adapter classes when the
+ base class is changed occasionally to adapter classes when the
  Translator class changes the interface, or back to the
  Translator class (by the local maintainer) when the localized
  translator is made up-to-date again.
@@ -84,6 +84,10 @@ class TranslatorLatvian : public TranslatorAdapter_1_8_4
     {
       return "lv";
     }
+    virtual QCString getLanguageString()
+    {
+      return "0x426 Latvian";
+    }
 
     // --- Language translation methods -------------------
 
@@ -98,6 +102,10 @@ class TranslatorLatvian : public TranslatorAdapter_1_8_4
     /*! header that is put before the detailed description of files, classes and namespaces. */
     virtual QCString trDetailedDescription()
     { return "Detalizēts apraksts"; }
+
+    /*! header that is used when the summary tag is missing inside the details tag */
+    virtual QCString trDetails()
+    { return "Sīkāka informācija"; }
 
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
@@ -397,6 +405,10 @@ class TranslatorLatvian : public TranslatorAdapter_1_8_4
       {
         return "Datu struktūras dokomentācija";
       }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+          return trDesignUnitDocumentation();
+      }
       else
       {
         return "Klases dokumentācija";
@@ -414,12 +426,6 @@ class TranslatorLatvian : public TranslatorAdapter_1_8_4
      */
     virtual QCString trExampleDocumentation()
     { return "Piemēri"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all related pages.
-     */
-    virtual QCString trPageDocumentation()
-    { return "Lapas dokumentācija"; }
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
@@ -522,10 +528,6 @@ class TranslatorLatvian : public TranslatorAdapter_1_8_4
     {
       return "Mantojamības diagramma klasei "+clName+":";
     }
-
-    /*! this text is generated when the \\internal command is used. */
-    virtual QCString trForInternalUseOnly()
-    { return "Tikai iekšējai lietošanai."; }
 
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
@@ -1115,11 +1117,6 @@ class TranslatorLatvian : public TranslatorAdapter_1_8_4
     {
       return "Pakotne "+name;
     }
-    /*! Title of the package index page */
-    virtual QCString trPackageList()
-    {
-      return "Pakotņu saraksts";
-    }
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
     {
@@ -1375,14 +1372,18 @@ class TranslatorLatvian : public TranslatorAdapter_1_8_4
     /*! Used as a heading for a list of Java class functions with package
      * scope.
      */
-    virtual QCString trPackageMembers()
+    virtual QCString trPackageFunctions()
     {
       return "Pakas funkcijas";
+    }
+    virtual QCString trPackageMembers()
+    {
+      return "Pakas elementi";
     }
     /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
-    virtual QCString trStaticPackageMembers()
+    virtual QCString trStaticPackageFunctions()
     {
       return "Statiskās pakas funkcijas";
     }
@@ -1493,14 +1494,6 @@ class TranslatorLatvian : public TranslatorAdapter_1_8_4
      */
     virtual QCString trDirectories()
     { return "Direktorijas"; }
-
-    /*! This returns a sentences that introduces the directory hierarchy.
-     *  and the fact that it is sorted alphabetically per level
-     */
-    virtual QCString trDirDescription()
-    { return "Šī direktoriju hierarhija ir aptuveni, "
-             "bet ne pilnībā, alfabēta secībā:";
-    }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.
@@ -1819,19 +1812,44 @@ class TranslatorLatvian : public TranslatorAdapter_1_8_4
      */
     virtual QCString trDateTime(int year,int month,int day,int dayOfWeek,
                                 int hour,int minutes,int seconds,
-                                bool includeTime)
+                                DateTimeType includeTime)
     {
       static const char *days[]   = { "Pirm","Otr","Tr","Cet","Piekt","Sest","Sv" };
       static const char *months[] = { "Jan","Feb","Mar","Apr","Mai","Jūn","Jūl","Aug","Sept","Okt","Nov","Dec" };
       QCString sdate;
-      sdate.sprintf("%s %s %d %d",days[dayOfWeek-1],months[month-1],day,year);
-      if (includeTime)
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Date)
+      {
+        sdate.sprintf("%s %s %d %d",days[dayOfWeek-1],months[month-1],day,year);
+      }
+      if (includeTime == DateTimeType::DateTime) sdate += " ";
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Time)
       {
         QCString stime;
-        stime.sprintf(" %.2d:%.2d:%.2d",hour,minutes,seconds);
+        stime.sprintf("%.2d:%.2d:%.2d",hour,minutes,seconds);
         sdate+=stime;
       }
       return sdate;
+    }
+    virtual QCString trDayOfWeek(int dayOfWeek, bool first_capital, bool full)
+    {
+      static const char *days_short[]   = { "pirmd.", "otrd.", "trešd.", "ceturtd.", "piektd.", "sestd.", "svētd." };
+      static const char *days_full[]    = { "pirmdiena", "otrdiena", "trešdiena", "ceturtdiena", "piektdiena", "sestdiena", "svētdiena" };
+      QCString text  = full? days_full[dayOfWeek-1] : days_short[dayOfWeek-1];
+      if (first_capital) return text.mid(0,1).upper()+text.mid(1);
+      else return text;
+    }
+    virtual QCString trMonth(int month, bool first_capital, bool full)
+    {
+      static const char *months_short[] = { "janv.", "febr.", "marts", "apr.", "maijs", "jūn.", "jūl.", "aug.", "sept.", "okt.", "nov.", "dec." };
+      static const char *months_full[]  = { "janvāris", "februāris", "marts", "aprīlis", "maijs", "jūnijs", "jūlijs", "augusts", "septembris", "oktobris", "novembris", "decembris" };
+      QCString text  = full? months_full[month-1] : months_short[month-1];
+      if (first_capital) return text.mid(0,1).upper()+text.mid(1);
+      else return text;
+    }
+    virtual QCString trDayPeriod(int period)
+    {
+      static const char *dayPeriod[] = { "priekšp.", "pēcp." };
+      return dayPeriod[period];
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1944,15 +1962,6 @@ class TranslatorLatvian : public TranslatorAdapter_1_8_4
     {
       return "Metožu dokumentācija";
     }
-
-    /*! Used as the title of the design overview picture created for the
-     *  VHDL output.
-     */
-    virtual QCString trDesignOverview()
-    {
-      return "Dizaina pārskats";
-    }
-
 };
 
 #endif

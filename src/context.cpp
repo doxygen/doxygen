@@ -55,6 +55,7 @@
 #include "searchindex.h"
 #include "resourcemgr.h"
 #include "dir.h"
+#include "datetime.h"
 
 // TODO: pass the current file to Dot*::writeGraph, so the user can put dot graphs in other
 //       files as well
@@ -149,7 +150,6 @@ class GenericConstIterator : public TemplateListIntf::ConstIterator
 {
   public:
     GenericConstIterator(const TemplateVariantList &list) : m_list(list) {}
-    virtual ~GenericConstIterator() {}
     void toFirst()
     {
       m_index=0;
@@ -342,7 +342,7 @@ class DoxygenContext::Private
   private:
     // Property getters
     TemplateVariant version() const         { return getDoxygenVersion(); }
-    TemplateVariant date() const            { return dateToString(TRUE); }
+    TemplateVariant date() const            { return dateToString(DateTimeType::DateTime); }
     TemplateVariant mathJaxCodeFile() const { return m_mathJaxCodeFile.get(this); }
     TemplateVariant mathJaxMacros() const   { return m_mathJaxMacros.get(this); }
 
@@ -662,7 +662,7 @@ class TranslateContext::Private
     {
       if (m_javaOpt || m_vhdlOpt)
       {
-        return theTranslator->trPackages();
+        return theTranslator->trPackageList();
       }
       else if (m_fortranOpt || m_sliceOpt)
       {
@@ -677,7 +677,7 @@ class TranslateContext::Private
     {
       if (m_javaOpt || m_vhdlOpt)
       {
-        return theTranslator->trPackageMembers();
+        return theTranslator->trPackageFunctions();
       }
       else if (m_fortranOpt || m_sliceOpt)
       {
@@ -706,12 +706,12 @@ class TranslateContext::Private
     }
     TemplateVariant fileMembersDescription() const
     {
-      static bool extractAll = Config_getBool(EXTRACT_ALL);
+      bool extractAll = Config_getBool(EXTRACT_ALL);
       return theTranslator->trFileMembersDescription(extractAll);
     }
     TemplateVariant namespaceMembersDescription() const
     {
-      static bool extractAll = Config_getBool(EXTRACT_ALL);
+      bool extractAll = Config_getBool(EXTRACT_ALL);
       return theTranslator->trNamespaceMemberDescription(extractAll);
     }
     TemplateVariant classHierarchyDescription() const
@@ -728,8 +728,8 @@ class TranslateContext::Private
     }
     TemplateVariant classMembersDescription() const
     {
-      static bool extractAll = Config_getBool(EXTRACT_ALL);
-      static bool fortranOpt = Config_getBool(OPTIMIZE_FOR_FORTRAN);
+      bool extractAll = Config_getBool(EXTRACT_ALL);
+      bool fortranOpt = Config_getBool(OPTIMIZE_FOR_FORTRAN);
       if (fortranOpt)
       {
         return theTranslator->trCompoundMembersDescriptionFortran(extractAll);
@@ -913,15 +913,15 @@ class TranslateContext::Private
     }
     TemplateVariant functions() const
     {
-      static bool fortranOpt = Config_getBool(OPTIMIZE_FOR_FORTRAN);
-      static bool vhdlOpt    = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
+      bool fortranOpt = Config_getBool(OPTIMIZE_FOR_FORTRAN);
+      bool vhdlOpt    = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
       return fortranOpt ? theTranslator->trSubprograms()     :
              vhdlOpt    ? theTranslator->trFunctionAndProc() :
                           theTranslator->trFunctions();
     }
     TemplateVariant variables() const
     {
-      static bool sliceOpt   = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
+      bool sliceOpt   = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
       return sliceOpt ? theTranslator->trConstants() : theTranslator->trVariables();
     }
     TemplateVariant typedefs() const
@@ -942,7 +942,7 @@ class TranslateContext::Private
     }
     TemplateVariant related() const
     {
-      return theTranslator->trRelatedFunctions();
+      return theTranslator->trRelatedSymbols();
     }
     TemplateVariant macros() const
     {
@@ -998,7 +998,7 @@ class TranslateContext::Private
     }
     TemplateVariant langString() const
     {
-      return HtmlHelp::getLanguageString();
+      return theTranslator->getLanguageString();
     }
     TemplateVariant code() const
     {
@@ -1035,7 +1035,7 @@ const PropertyMap<TranslateContext::Private> TranslateContext::Private::s_inst {
   {  "classIndex",        &Private::classIndex },
   //%% string concepts
   {  "concepts",          &Private::concepts },
-  //%% string conceptDefintion
+  //%% string conceptDefinition
   {  "conceptDefinition", &Private::conceptDefinition },
   //%% string namespaceIndex
   {  "namespaceIndex",    &Private::namespaceIndex },
@@ -1242,38 +1242,41 @@ static TemplateVariant parseDoc(const Definition *def,const QCString &file,int l
                                 const QCString &relPath,const QCString &docStr,bool isBrief)
 {
   TemplateVariant result;
-  std::unique_ptr<IDocParser> parser { createDocParser() };
-  std::unique_ptr<DocRoot>    root   { validatingParseDoc(
-                                       *parser.get(),file,line,def,0,docStr,TRUE,FALSE,
-                                       QCString(),isBrief,FALSE,Config_getBool(MARKDOWN_SUPPORT))
-                                     };
-  TextStream ts;
-  switch (g_globals.outputFormat)
+  auto parser { createDocParser() };
+  auto ast    { validatingParseDoc(*parser.get(),file,line,def,0,docStr,TRUE,FALSE,
+                                   QCString(),isBrief,FALSE,Config_getBool(MARKDOWN_SUPPORT))
+              };
+  const DocNodeAST *astImpl = dynamic_cast<DocNodeAST*>(ast.get());
+  if (astImpl)
   {
-    case ContextOutputFormat_Html:
-      {
-        HtmlCodeGenerator codeGen(ts,relPath);
-        HtmlDocVisitor visitor(ts,codeGen,def);
-        root->accept(&visitor);
-      }
-      break;
-    case ContextOutputFormat_Latex:
-      {
-        LatexCodeGenerator codeGen(ts,relPath,file);
-        LatexDocVisitor visitor(ts,codeGen,def->getDefFileExtension(),FALSE);
-        root->accept(&visitor);
-      }
-      break;
-    // TODO: support other generators
-    default:
-      err("context.cpp: output format not yet supported\n");
-      break;
+    TextStream ts;
+    switch (g_globals.outputFormat)
+    {
+      case ContextOutputFormat_Html:
+        {
+          HtmlCodeGenerator codeGen(ts,relPath);
+          HtmlDocVisitor visitor(ts,codeGen,def);
+          std::visit(visitor,astImpl->root);
+        }
+        break;
+      case ContextOutputFormat_Latex:
+        {
+          LatexCodeGenerator codeGen(ts,relPath,file);
+          LatexDocVisitor visitor(ts,codeGen,def->getDefFileExtension());
+          std::visit(visitor,astImpl->root);
+        }
+        break;
+        // TODO: support other generators
+      default:
+        err("context.cpp: output format not yet supported\n");
+        break;
+    }
+    bool isEmpty = astImpl->isEmpty();
+    if (isEmpty)
+      result = "";
+    else
+      result = TemplateVariant(ts.str().c_str(),TRUE);
   }
-  bool isEmpty = root->isEmpty();
-  if (isEmpty)
-    result = "";
-  else
-    result = TemplateVariant(ts.str().c_str(),TRUE);
   return result;
 }
 
@@ -1309,7 +1312,7 @@ static TemplateVariant parseCode(const Definition *d,const QCString &scopeName,c
 
 static TemplateVariant parseCode(const FileDef *fd,const QCString &relPath)
 {
-  static bool filterSourceFiles = Config_getBool(FILTER_SOURCE_FILES);
+  bool filterSourceFiles = Config_getBool(FILTER_SOURCE_FILES);
   auto intf = Doxygen::parserManager->getCodeParser(fd->getDefFileExtension());
   intf->resetCodeParserState();
   TextStream t;
@@ -1404,7 +1407,7 @@ class DefinitionContext
         m_sourceDef = TemplateImmutableList::alloc( {} );
       }
     }
-    virtual ~DefinitionContext() {}
+    virtual ~DefinitionContext() = default;
 
   protected:
     // Property getters
@@ -1472,7 +1475,7 @@ class DefinitionContext
 
     QCString relPathAsString() const
     {
-      static bool createSubdirs = Config_getBool(CREATE_SUBDIRS);
+      bool createSubdirs = Config_getBool(CREATE_SUBDIRS);
       return createSubdirs ? QCString("../../") : QCString("");
     }
     virtual TemplateVariant relPath() const     { return relPathAsString(); }
@@ -1548,7 +1551,7 @@ class DefinitionContext
     }
 
   protected:
-    struct Cachable : public Definition::Cookie
+    struct Cachable
     {
       using DC = DefinitionContext<T>;
       CachedItem<TemplateVariant,     DC, &DC::createDetails>        details;
@@ -1716,7 +1719,6 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
        m_classDef(cd)
     {
     }
-    virtual ~Private() {}
 
     // TemplateStructIntf methods
     TemplateVariant get(const QCString &n) const       { return s_inst.get(this,n); }
@@ -1792,8 +1794,8 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
     TemplateVariant hasInheritanceDiagram() const
     {
       bool result=FALSE;
-      static bool haveDot    = Config_getBool(HAVE_DOT);
-      static auto classGraph = Config_getEnum(CLASS_GRAPH);
+      bool haveDot    = Config_getBool(HAVE_DOT);
+      auto classGraph = Config_getEnum(CLASS_GRAPH);
       bool classGraphEnabled = classGraph==CLASS_GRAPH_t::YES || classGraph==CLASS_GRAPH_t::GRAPH;
 
       if (haveDot && classGraphEnabled)
@@ -1810,8 +1812,8 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
     TemplateVariant inheritanceDiagram() const
     {
       TextStream t;
-      static bool haveDot    = Config_getBool(HAVE_DOT);
-      static auto classGraph = Config_getEnum(CLASS_GRAPH);
+      bool haveDot    = Config_getBool(HAVE_DOT);
+      auto classGraph = Config_getEnum(CLASS_GRAPH);
       bool classGraphEnabled = classGraph==CLASS_GRAPH_t::YES || classGraph==CLASS_GRAPH_t::GRAPH;
 
       if (haveDot && classGraphEnabled)
@@ -1898,12 +1900,12 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
     }
     TemplateVariant hasCollaborationDiagram() const
     {
-      static bool haveDot = Config_getBool(HAVE_DOT);
+      bool haveDot = Config_getBool(HAVE_DOT);
       return haveDot && !getCollaborationGraph()->isTrivial();
     }
     TemplateVariant collaborationDiagram() const
     {
-      static bool haveDot = Config_getBool(HAVE_DOT);
+      bool haveDot = Config_getBool(HAVE_DOT);
       TextStream t;
       if (haveDot)
       {
@@ -2093,11 +2095,11 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
     }
     TemplateVariant createPackageMethods() const
     {
-      return createMemberList(MemberListType_pacMethods,theTranslator->trPackageMembers());
+      return createMemberList(MemberListType_pacMethods,theTranslator->trPackageFunctions());
     }
     TemplateVariant createPackageStaticMethods() const
     {
-      return createMemberList(MemberListType_pacStaticMethods,theTranslator->trStaticPackageMembers());
+      return createMemberList(MemberListType_pacStaticMethods,theTranslator->trStaticPackageFunctions());
     }
     TemplateVariant createPackageAttributes() const
     {
@@ -2121,7 +2123,7 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
     }
     TemplateVariant createRelated() const
     {
-      return createMemberList(MemberListType_related,theTranslator->trRelatedFunctions());
+      return createMemberList(MemberListType_related,theTranslator->trRelatedSymbols());
     }
     TemplateVariant createDetailedTypedefs() const
     {
@@ -2149,7 +2151,7 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
     }
     TemplateVariant createDetailedRelated() const
     {
-      return createMemberList(MemberListType_relatedMembers,theTranslator->trRelatedFunctionDocumentation());
+      return createMemberList(MemberListType_relatedMembers,theTranslator->trRelatedSymbolDocumentation());
     }
     TemplateVariant createDetailedVariables() const
     {
@@ -2250,8 +2252,8 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
       ctx->addMemberList(m_classDef,MemberListType_proAttribs,theTranslator->trProtectedAttribs());
       ctx->addMemberList(m_classDef,MemberListType_proStaticAttribs,theTranslator->trStaticProtectedAttribs());
       ctx->addMemberList(m_classDef,MemberListType_pacTypes,theTranslator->trPackageTypes());
-      ctx->addMemberList(m_classDef,MemberListType_pacMethods,theTranslator->trPackageMembers());
-      ctx->addMemberList(m_classDef,MemberListType_pacStaticMethods,theTranslator->trStaticPackageMembers());
+      ctx->addMemberList(m_classDef,MemberListType_pacMethods,theTranslator->trPackageFunctions());
+      ctx->addMemberList(m_classDef,MemberListType_pacStaticMethods,theTranslator->trStaticPackageFunctions());
       ctx->addMemberList(m_classDef,MemberListType_pacAttribs,theTranslator->trPackageAttribs());
       ctx->addMemberList(m_classDef,MemberListType_pacStaticAttribs,theTranslator->trStaticPackageAttribs());
       ctx->addMemberList(m_classDef,MemberListType_properties,theTranslator->trProperties());
@@ -2262,7 +2264,7 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
       ctx->addMemberList(m_classDef,MemberListType_priStaticMethods,theTranslator->trStaticPrivateMembers());
       ctx->addMemberList(m_classDef,MemberListType_priAttribs,theTranslator->trPrivateAttribs());
       ctx->addMemberList(m_classDef,MemberListType_priStaticAttribs,theTranslator->trStaticPrivateAttribs());
-      ctx->addMemberList(m_classDef,MemberListType_related,theTranslator->trRelatedFunctions());
+      ctx->addMemberList(m_classDef,MemberListType_related,theTranslator->trRelatedSymbols());
       return list;
     }
     void addMembers(MemberList &list,const ClassDef *cd,MemberListType lt) const
@@ -2495,7 +2497,6 @@ class NamespaceContext::Private : public DefinitionContext<NamespaceContext::Pri
                                 m_namespaceDef(nd)
     {
     }
-    virtual ~Private() {}
 
     // TemplateStructIntf methods
     TemplateVariant get(const QCString &n) const { return s_inst.get(this,n); }
@@ -2529,7 +2530,7 @@ class NamespaceContext::Private : public DefinitionContext<NamespaceContext::Pri
   private:
     TemplateVariant createClasses() const
     {
-      static bool sliceOpt = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
+      bool sliceOpt = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
       TemplateVariantList classList;
       classList.reserve(m_namespaceDef->getClasses().size());
       for (const auto &cd : m_namespaceDef->getClasses())
@@ -2604,7 +2605,7 @@ class NamespaceContext::Private : public DefinitionContext<NamespaceContext::Pri
     }
     TemplateVariant createVariables() const
     {
-      static bool sliceOpt   = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
+      bool sliceOpt   = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
       return createMemberList(MemberListType_decVarMembers, sliceOpt ? theTranslator->trConstants() :
                                                                        theTranslator->trVariables());
     }
@@ -2632,7 +2633,7 @@ class NamespaceContext::Private : public DefinitionContext<NamespaceContext::Pri
     }
     TemplateVariant createDetailedVariables() const
     {
-      static bool sliceOpt   = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
+      bool sliceOpt   = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
       return createMemberList(MemberListType_docVarMembers, sliceOpt ? theTranslator->trConstantDocumentation() :
                                                                        theTranslator->trVariableDocumentation());
     }
@@ -2742,7 +2743,6 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
     {
       if (fd==0) abort();
     }
-    virtual ~Private() {}
 
     // TemplateStructIntf methods
     TemplateVariant get(const QCString &n) const { return s_inst.get(this,n); }
@@ -2783,13 +2783,13 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
 
     TemplateVariant hasIncludeGraph() const
     {
-      static bool haveDot = Config_getBool(HAVE_DOT);
+      bool haveDot = Config_getBool(HAVE_DOT);
       DotInclDepGraphPtr incGraph = getIncludeGraph();
       return (haveDot && !incGraph->isTooBig() && !incGraph->isTrivial());
     }
     TemplateVariant includeGraph() const
     {
-      static bool haveDot = Config_getBool(HAVE_DOT);
+      bool haveDot = Config_getBool(HAVE_DOT);
       TextStream t;
       if (haveDot)
       {
@@ -2825,13 +2825,13 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
     }
     TemplateVariant hasIncludedByGraph() const
     {
-      static bool haveDot = Config_getBool(HAVE_DOT);
+      bool haveDot = Config_getBool(HAVE_DOT);
       DotInclDepGraphPtr incGraph = getIncludedByGraph();
       return (haveDot && !incGraph->isTooBig() && !incGraph->isTrivial());
     }
     TemplateVariant includedByGraph() const
     {
-      static bool haveDot = Config_getBool(HAVE_DOT);
+      bool haveDot = Config_getBool(HAVE_DOT);
       TextStream t;
       if (haveDot)
       {
@@ -2962,7 +2962,7 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
     }
     TemplateVariant createVariables() const
     {
-      static bool sliceOpt   = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
+      bool sliceOpt   = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
       return createMemberList(MemberListType_decVarMembers, sliceOpt ? theTranslator->trConstants() :
                                                                        theTranslator->trVariables());
     }
@@ -3118,7 +3118,6 @@ class DirContext::Private : public DefinitionContext<DirContext::Private>
     Private(const DirDef *dd) : DefinitionContext<DirContext::Private>(dd) , m_dirDef(dd)
     {
     }
-    virtual ~Private() {}
 
     // TemplateStructIntf methods
     TemplateVariant get(const QCString &n) const { return s_inst.get(this,n); }
@@ -3139,8 +3138,8 @@ class DirContext::Private : public DefinitionContext<DirContext::Private>
     TemplateVariant hasDirGraph() const
     {
       bool result=FALSE;
-      static bool haveDot  = Config_getBool(HAVE_DOT);
-      static bool dirGraph = Config_getBool(DIRECTORY_GRAPH);
+      bool haveDot  = Config_getBool(HAVE_DOT);
+      bool dirGraph = Config_getBool(DIRECTORY_GRAPH);
       if (haveDot && dirGraph)
       {
         DotDirDepsPtr graph = getDirDepsGraph();
@@ -3151,8 +3150,8 @@ class DirContext::Private : public DefinitionContext<DirContext::Private>
     TemplateVariant dirGraph() const
     {
       TextStream t;
-      static bool haveDot  = Config_getBool(HAVE_DOT);
-      static bool dirGraph = Config_getBool(DIRECTORY_GRAPH);
+      bool haveDot  = Config_getBool(HAVE_DOT);
+      bool dirGraph = Config_getBool(DIRECTORY_GRAPH);
       if (haveDot && dirGraph)
       {
         DotDirDepsPtr graph = getDirDepsGraph();
@@ -3275,7 +3274,6 @@ class PageContext::Private : public DefinitionContext<PageContext::Private>
         m_isExample(isExample)
     {
     }
-    virtual ~Private() {}
 
     // TemplateStructIntf methods
     TemplateVariant get(const QCString &n) const { return s_inst.get(this,n); }
@@ -3495,7 +3493,7 @@ class TextGeneratorLatex : public TextGeneratorIntf
                    const QCString &anchor,const QCString &text
                   ) const
     {
-      static bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
+      bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
       if (ref.isEmpty() && pdfHyperlinks)
       {
         m_ts << "\\mbox{\\hyperlink{";
@@ -3554,8 +3552,8 @@ class TextGeneratorFactory
       return 0;
     }
   private:
-    TextGeneratorFactory() {}
-    virtual ~TextGeneratorFactory() {}
+    TextGeneratorFactory() = default;
+    virtual ~TextGeneratorFactory() = default;
 };
 
 TemplateVariant createLinkedText(const Definition *def,const QCString &relPath,const QCString &text)
@@ -3580,7 +3578,6 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
     Private(const MemberDef *md) : DefinitionContext<MemberContext::Private>(md) , m_memberDef(md)
     {
     }
-    virtual ~Private() {}
 
     // TemplateStructIntf methods
     TemplateVariant get(const QCString &n) const { return s_inst.get(this,n); }
@@ -3727,7 +3724,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
     }
     TemplateVariant hasCallGraph() const
     {
-      static bool haveDot = Config_getBool(HAVE_DOT);
+      bool haveDot = Config_getBool(HAVE_DOT);
       if (m_memberDef->hasCallGraph() && haveDot &&
           (m_memberDef->isFunction() || m_memberDef->isSlot() || m_memberDef->isSignal()))
       {
@@ -3785,7 +3782,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
     }
     TemplateVariant hasCallerGraph() const
     {
-      static bool haveDot = Config_getBool(HAVE_DOT);
+      bool haveDot = Config_getBool(HAVE_DOT);
       if (m_memberDef->hasCallerGraph() && haveDot &&
           (m_memberDef->isFunction() || m_memberDef->isSlot() || m_memberDef->isSignal()))
       {
@@ -4059,7 +4056,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       {
         const ClassDef *cd = md->getClassDef();
         // filter on pure virtual/interface methods
-        if (cd && (md->virtualness()==Pure || cd->compoundType()==ClassDef::Interface))
+        if (cd && (md->virtualness()==Specifier::Pure || cd->compoundType()==ClassDef::Interface))
         {
           list.push_back(MemberContext::alloc(md));
         }
@@ -4074,7 +4071,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       {
         const ClassDef *cd = md->getClassDef();
         // filter on non-pure virtual & non interface methods
-        if (cd && md->virtualness()!=Pure && cd->compoundType()!=ClassDef::Interface)
+        if (cd && md->virtualness()!=Specifier::Pure && cd->compoundType()!=ClassDef::Interface)
         {
           list.push_back(MemberContext::alloc(md));
         }
@@ -4089,7 +4086,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       {
         const ClassDef *cd = md->getClassDef();
         // filter on pure virtual/interface methods
-        if (cd && md->virtualness()==Pure && cd->compoundType()==ClassDef::Interface)
+        if (cd && md->virtualness()==Specifier::Pure && cd->compoundType()==ClassDef::Interface)
         {
           list.push_back(MemberContext::alloc(md));
         }
@@ -4104,7 +4101,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       {
         const ClassDef *cd = md->getClassDef();
         // filter on non-pure virtual & non interface methods
-        if (cd && md->virtualness()!=Pure && cd->compoundType()!=ClassDef::Interface)
+        if (cd && md->virtualness()!=Specifier::Pure && cd->compoundType()!=ClassDef::Interface)
         {
           list.push_back(MemberContext::alloc(md));
         }
@@ -4438,7 +4435,6 @@ class ConceptContext::Private : public DefinitionContext<ConceptContext::Private
        m_conceptDef(cd)
     {
     }
-    virtual ~Private() {}
 
     // TemplateStructIntf methods
     TemplateVariant get(const QCString &n) const { return s_inst.get(this,n); }
@@ -4592,8 +4588,8 @@ class ModuleContext::Private : public DefinitionContext<ModuleContext::Private>
     TemplateVariant hasGroupGraph() const
     {
       bool result=FALSE;
-      static bool haveDot     = Config_getBool(HAVE_DOT);
-      static bool groupGraphs = Config_getBool(GROUP_GRAPHS);
+      bool haveDot     = Config_getBool(HAVE_DOT);
+      bool groupGraphs = Config_getBool(GROUP_GRAPHS);
       if (haveDot && groupGraphs)
       {
         DotGroupCollaborationPtr graph = getGroupGraph();
@@ -4604,8 +4600,8 @@ class ModuleContext::Private : public DefinitionContext<ModuleContext::Private>
     TemplateVariant groupGraph() const
     {
       TextStream t;
-      static bool haveDot     = Config_getBool(HAVE_DOT);
-      static bool groupGraphs = Config_getBool(GROUP_GRAPHS);
+      bool haveDot     = Config_getBool(HAVE_DOT);
+      bool groupGraphs = Config_getBool(GROUP_GRAPHS);
       if (haveDot && groupGraphs)
       {
         DotGroupCollaborationPtr graph = getGroupGraph();
@@ -4768,7 +4764,7 @@ class ModuleContext::Private : public DefinitionContext<ModuleContext::Private>
     }
     TemplateVariant createVariables() const
     {
-      static bool sliceOpt   = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
+      bool sliceOpt   = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
       return createMemberList(MemberListType_decVarMembers, sliceOpt ? theTranslator->trConstants() :
                                                                        theTranslator->trVariables());
     }
@@ -5361,7 +5357,7 @@ class NestingNodeContext::Private
     }
     QCString relPathAsString() const
     {
-      static bool createSubdirs = Config_getBool(CREATE_SUBDIRS);
+      bool createSubdirs = Config_getBool(CREATE_SUBDIRS);
       return createSubdirs ? QCString("../../") : QCString("");
     }
 
@@ -5715,7 +5711,7 @@ class NestingContext::Private : public GenericNodeListContext
         bool hasChildren = namespaceHasNestedNamespace(nd) ||
                            (addClasses  && namespaceHasNestedClass(nd,false,ClassDef::Class)) ||
                            (addConcepts && namespaceHasNestedConcept(nd)) ||
-                           (m_type==ContextTreeType::Namespace && countVisibleMembers(nd));
+                           (m_type==ContextTreeType::Namespace && nd->countVisibleMembers());
         bool isLinkable  = nd->isLinkableInProject();
         if (isLinkable && hasChildren)
         {
@@ -5913,11 +5909,11 @@ class NestingContext::Private : public GenericNodeListContext
         bool b;
         if (cd->getLanguage()==SrcLangExt_VHDL)
         {
-          b=hasVisibleRoot(cd->subClasses());
+          b=classHasVisibleRoot(cd->subClasses());
         }
         else
         {
-          b=hasVisibleRoot(cd->baseClasses());
+          b=classHasVisibleRoot(cd->baseClasses());
         }
 
         if (cd->isVisibleInHierarchy() && b)
@@ -5939,11 +5935,11 @@ class NestingContext::Private : public GenericNodeListContext
           {
             continue;
           }
-          b=!hasVisibleRoot(cd->subClasses());
+          b=!classHasVisibleRoot(cd->subClasses());
         }
         else
         {
-          b=!hasVisibleRoot(cd->baseClasses());
+          b=!classHasVisibleRoot(cd->baseClasses());
         }
         if (b)
         {
@@ -6282,8 +6278,8 @@ class NamespaceTreeContext::Private
     TemplateVariant preferredDepth() const       { return m_preferredDepth.get(this); }
     TemplateVariant title() const
     {
-      return Config_getBool(OPTIMIZE_OUTPUT_JAVA)  ? theTranslator->trPackages()     :
-             Config_getBool(OPTIMIZE_OUTPUT_VHDL)  ? theTranslator->trPackages()     :
+      return Config_getBool(OPTIMIZE_OUTPUT_JAVA)  ? theTranslator->trPackageList()  :
+             Config_getBool(OPTIMIZE_OUTPUT_VHDL)  ? theTranslator->trPackageList()  :
              Config_getBool(OPTIMIZE_FOR_FORTRAN)  ? theTranslator->trModulesList()  :
              Config_getBool(OPTIMIZE_OUTPUT_SLICE) ? theTranslator->trModulesList()  :
                                                      theTranslator->trNamespaceList();
@@ -7027,7 +7023,7 @@ class NavPathElemContext::Private
       }
       else if (type==Definition::TypeClass)
       {
-        if (text.right(2)=="-p")
+        if (text.endsWith("-p"))
         {
           text = text.left(text.length()-2);
         }
@@ -7036,7 +7032,7 @@ class NavPathElemContext::Private
     }
     QCString relPathAsString() const
     {
-      static bool createSubdirs = Config_getBool(CREATE_SUBDIRS);
+      bool createSubdirs = Config_getBool(CREATE_SUBDIRS);
       return createSubdirs ? QCString("../../") : QCString("");
     }
   private:
@@ -7419,8 +7415,8 @@ class InheritanceGraphContext::Private
     TemplateVariant createGraph() const
     {
       TextStream t;
-      static bool haveDot            = Config_getBool(HAVE_DOT);
-      static bool graphicalHierarchy = Config_getBool(GRAPHICAL_HIERARCHY);
+      bool haveDot            = Config_getBool(HAVE_DOT);
+      bool graphicalHierarchy = Config_getBool(GRAPHICAL_HIERARCHY);
       if (haveDot && graphicalHierarchy)
       {
         m_hierarchy->createGraph(m_node,t,
@@ -7648,10 +7644,10 @@ class MemberInfoContext::Private
     {
       switch (m_memberInfo->prot())
       {
-        case ::Public:    return "public";
-        case ::Protected: return "protected";
-        case ::Private:   return "private";
-        case ::Package:   return "package";
+        case Protection::Public:    return "public";
+        case Protection::Protected: return "protected";
+        case Protection::Private:   return "private";
+        case Protection::Package:   return "package";
       }
       return "";
     }
@@ -7659,9 +7655,9 @@ class MemberInfoContext::Private
     {
       switch (m_memberInfo->virt())
       {
-        case ::Normal:   return "normal";
-        case ::Virtual:  return "virtual";
-        case ::Pure:     return "pure";
+        case Specifier::Normal:   return "normal";
+        case Specifier::Virtual:  return "virtual";
+        case Specifier::Pure:     return "pure";
       }
       return "";
     }
@@ -7726,7 +7722,7 @@ class AllMembersListContext::Private : public GenericNodeListContext
   public:
     Private(const MemberNameInfoLinkedMap &ml)
     {
-      static bool hideUndocMembers = Config_getBool(HIDE_UNDOC_MEMBERS);
+      bool hideUndocMembers = Config_getBool(HIDE_UNDOC_MEMBERS);
       for (auto &mni : ml)
       {
         for (auto &mi : *mni)
@@ -7790,7 +7786,6 @@ class MemberGroupInfoContext::Private
     TemplateVariant members() const              { return m_members.get(this); }
     TemplateVariant groupTitle() const           { return m_memberGroup->header(); }
     TemplateVariant groupSubtitle() const        { return ""; }
-    TemplateVariant groupAnchor() const          { return m_memberGroup->anchor(); }
     TemplateVariant memberGroups() const         { return m_memberGroups.get(this); }
     TemplateVariant docs() const                 { return m_docs.get(this); }
     TemplateVariant inherited() const            { return FALSE; }
@@ -7827,7 +7822,6 @@ const PropertyMap<MemberGroupInfoContext::Private> MemberGroupInfoContext::Priva
   {  "members",      &Private::members },
   {  "title",        &Private::groupTitle },
   {  "subtitle",     &Private::groupSubtitle },
-  {  "anchor",       &Private::groupAnchor },
   {  "memberGroups", &Private::memberGroups },
   {  "docs",         &Private::docs },
   {  "inherited",    &Private::inherited }

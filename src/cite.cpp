@@ -32,6 +32,13 @@
 const char *bibTmpFile = "bibTmpFile_";
 const char *bibTmpDir  = "bibTmpDir/";
 
+static QCString getBibFile(const QCString &inFile)
+{
+  QCString name = inFile;
+  if (!name.isEmpty() && !name.endsWith(".bib")) name+=".bib";
+  return name;
+}
+
 class CiteInfoImpl : public CiteInfo
 {
   public:
@@ -116,7 +123,7 @@ void CitationManager::insertCrossReferencesForBibFile(const QCString &bibFile)
     err("bib file %s not found!\n",qPrint(bibFile));
     return;
   }
-  std::ifstream f(bibFile.str(), std::ifstream::in);
+  std::ifstream f = Portable::openInputStream(bibFile);
   if (!f.is_open())
   {
     err("could not open file %s for reading\n",qPrint(bibFile));
@@ -202,8 +209,7 @@ void CitationManager::generatePage()
   const StringVector &citeDataList = Config_getList(CITE_BIB_FILES);
   for (const auto &bibdata : citeDataList)
   {
-    QCString bibFile = bibdata.c_str();
-    if (!bibFile.isEmpty() && bibFile.right(4)!=".bib") bibFile+=".bib";
+    QCString bibFile = getBibFile(QCString(bibdata));
     insertCrossReferencesForBibFile(bibFile);
   }
 
@@ -211,7 +217,7 @@ void CitationManager::generatePage()
   QCString outputDir = Config_getString(OUTPUT_DIRECTORY);
   QCString citeListFile = outputDir+"/citelist.doc";
   {
-    std::ofstream t(citeListFile.str(),std::ofstream::out | std::ofstream::binary);
+    std::ofstream t = Portable::openOutputStream(citeListFile);
     if (!t.is_open())
     {
       err("could not open file %s for writing\n",qPrint(citeListFile));
@@ -252,8 +258,7 @@ void CitationManager::generatePage()
   int i = 0;
   for (const auto &bibdata : citeDataList)
   {
-    QCString bibFile = bibdata.c_str();
-    if (!bibFile.isEmpty() && bibFile.right(4)!=".bib") bibFile+=".bib";
+    QCString bibFile = getBibFile(QCString(bibdata));
     FileInfo fi(bibFile.str());
     if (fi.exists())
     {
@@ -272,7 +277,6 @@ void CitationManager::generatePage()
   // 5. run bib2xhtml perl script on the generated file which will insert the
   //    bibliography in citelist.doc
   int exitCode;
-  Portable::sysTimerStop();
   QCString perlArgs = "\""+bib2xhtmlFile+"\" "+bibOutputFiles+" \""+ citeListFile+"\"";
   if (citeDebug) perlArgs+=" -d";
   if ((exitCode=Portable::system("perl",perlArgs)) != 0)
@@ -280,14 +284,13 @@ void CitationManager::generatePage()
     err("Problems running bibtex. Verify that the command 'perl --version' works from the command line. Exit code: %d\n",
         exitCode);
   }
-  Portable::sysTimerStop();
 
   Dir::setCurrent(oldDir);
 
   // 6. read back the file
   QCString doc;
   {
-    std::ifstream f(citeListFile.str(),std::ifstream::in);
+    std::ifstream f = Portable::openInputStream(citeListFile);
     if (!f.is_open())
     {
       err("could not open file %s for reading\n",qPrint(citeListFile));
@@ -341,9 +344,7 @@ void CitationManager::generatePage()
     i = 0;
     for (const auto &bibdata : citeDataList)
     {
-      QCString bibFile = bibdata.c_str();
-      // Note: file can now have multiple dots
-      if (!bibFile.isEmpty() && bibFile.right(4)!=".bib") bibFile+=".bib";
+      QCString bibFile = getBibFile(QCString(bibdata));
       FileInfo fi(bibFile.str());
       if (fi.exists())
       {
@@ -387,9 +388,7 @@ QCString CitationManager::latexBibFiles()
   int i = 0;
   for (const auto &bibdata : citeDataList)
   {
-    QCString bibFile = bibdata.c_str();
-    // Note: file can now have multiple dots
-    if (!bibFile.isEmpty() && bibFile.right(4)!=".bib") bibFile+=".bib";
+    QCString bibFile = getBibFile(QCString(bibdata));
     FileInfo fi(bibFile.str());
     if (fi.exists())
     {

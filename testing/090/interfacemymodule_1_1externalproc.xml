@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="interfacemymodule_1_1externalproc" kind="interface" language="Fortran" prot="public">
+    <compoundname>mymodule::externalproc</compoundname>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="interfacemymodule_1_1externalproc_1a50cefb79127d029dda033934c4f0d4f1" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>real function</type>
+        <definition>real function mymodule::externalproc::externalproc</definition>
+        <argsstring>(r)</argsstring>
+        <name>externalproc</name>
+        <qualifiedname>mymodule::externalproc::externalproc</qualifiedname>
+        <param>
+          <type>real, intent(in)</type>
+          <defname>r</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="090_interfaces.f90" line="22" column="1" bodyfile="090_interfaces.f90" bodystart="23" bodyend="23"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="090_interfaces.f90" line="22" column="1" bodyfile="090_interfaces.f90" bodystart="22" bodyend="23"/>
+    <listofallmembers>
+      <member refid="interfacemymodule_1_1externalproc_1a50cefb79127d029dda033934c4f0d4f1" prot="public" virt="non-virtual">
+        <scope>mymodule::externalproc</scope>
+        <name>externalproc</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

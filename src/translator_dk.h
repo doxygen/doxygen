@@ -123,6 +123,10 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
     {
       return "da";
     }
+    virtual QCString getLanguageString()
+    {
+      return "0x406 Danish";
+    }
 
     // --- Language translation methods -------------------
 
@@ -138,6 +142,10 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
 	 * classes and namespaces. */
     virtual QCString trDetailedDescription()
     { return "Detaljeret beskrivelse"; }
+
+    /*! header that is used when the summary tag is missing inside the details tag */
+    virtual QCString trDetails()
+    { return "Detaljer"; }
 
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
@@ -398,9 +406,16 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
      */
     virtual QCString trClassDocumentation()
     {
-      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C)) {
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+      {
         return "Datastruktur-documentation";
-      } else {
+      }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+          return trDesignUnitDocumentation();
+      }
+      else
+      {
         return "Klasse-dokumentation";
       }
     }
@@ -416,12 +431,6 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
      */
     virtual QCString trExampleDocumentation()
     { return "Eksempel-dokumentation"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all related pages.
-     */
-    virtual QCString trPageDocumentation()
-    { return "Side-dokumentation"; }
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
@@ -527,10 +536,6 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
     {
       return "Stamtræ for "+clName+":";
     }
-
-    /*! this text is generated when the \\internal command is used. */
-    virtual QCString trForInternalUseOnly()
-    { return "Kun til intern brug."; }
 
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
@@ -1084,11 +1089,6 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
     {
       return "Pakke "+name;
     }
-    /*! Title of the package index page */
-    virtual QCString trPackageList()
-    {
-      return "Pakkeoversigt";
-    }
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
     {
@@ -1304,9 +1304,11 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
     /* Java: Entities with package scope... */
     virtual QCString trPackageTypes()
     { return "Typer med pakke-scope"; }
-    virtual QCString trPackageMembers()
+    virtual QCString trPackageFunctions()
     { return "Metoder med pakke-scope"; }
-    virtual QCString trStaticPackageMembers()
+    virtual QCString trPackageMembers()
+    { return "Medlemmer med pakke-scope"; }
+    virtual QCString trStaticPackageFunctions()
     { return "Statiske metoder med pakke-scope"; }
     virtual QCString trPackageAttribs()
     { return "Attributter med pakke-scope"; }
@@ -1406,14 +1408,6 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
      */
     virtual QCString trDirectories()
     { return "Kataloger"; }
-
-    /*! This returns a sentences that introduces the directory hierarchy.
-     *  and the fact that it is sorted alphabetically per level
-     */
-    virtual QCString trDirDescription()
-    { return "Denne katalogstruktur er sorteret næsten - "
-             "men ikke nødvendigvis helt - alfabetisk:";
-    }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.
@@ -1738,19 +1732,44 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
      */
     virtual QCString trDateTime(int year,int month,int day,int dayOfWeek,
                                 int hour,int minutes,int seconds,
-                                bool includeTime)
+                                DateTimeType includeTime)
     {
       static const char *days[]   = { "Man","Tir","Ons","Tor","Fre","Lør","Søn" }; // { "Mon","Tue","Wed","Thu","Fri","Sat","Sun" };
       static const char *months[] = { "Jan","Feb","Mar","Apr","Maj","Jun","Jul","Aug","Sep","Okt","Nov","Dec" };    //  { "Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec" };
       QCString sdate;
-      sdate.sprintf("%s %s %d %d",days[dayOfWeek-1],months[month-1],day,year);
-      if (includeTime)
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Date)
+      {
+        sdate.sprintf("%s %s %d %d",days[dayOfWeek-1],months[month-1],day,year);
+      }
+      if (includeTime == DateTimeType::DateTime) sdate += " ";
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Time)
       {
         QCString stime;
-        stime.sprintf(" %.2d:%.2d:%.2d",hour,minutes,seconds);
+        stime.sprintf("%.2d:%.2d:%.2d",hour,minutes,seconds);
         sdate+=stime;
       }
       return sdate;
+    }
+    virtual QCString trDayOfWeek(int dayOfWeek, bool first_capital, bool full)
+    {
+      static const char *days_short[]   = { "ma", "ti", "on", "to", "fr", "lø", "sø" };
+      static const char *days_full[]    = { "mandag", "tirsdag", "onsdag", "torsdag", "fredag", "lørdag", "søndag" };
+      QCString text  = full? days_full[dayOfWeek-1] : days_short[dayOfWeek-1];
+      if (first_capital) return text.mid(0,1).upper()+text.mid(1);
+      else return text;
+    }
+    virtual QCString trMonth(int month, bool first_capital, bool full)
+    {
+      static const char *months_short[] = { "jan", "feb", "mar", "apr", "maj", "jun", "jul", "aug", "sep", "okt", "nov", "dec" };
+      static const char *months_full[]  = { "januar", "februar", "marts", "april", "maj", "juni", "juli", "august", "september", "oktober", "november", "december" };
+      QCString text  = full? months_full[month-1] : months_short[month-1];
+      if (first_capital) return text.mid(0,1).upper()+text.mid(1);
+      else return text;
+    }
+    virtual QCString trDayPeriod(int period)
+    {
+      static const char *dayPeriod[] = { "AM", "PM" };
+      return dayPeriod[period];
     }
 
 //////////////////////////////////////////////////////////////////////////

@@ -79,6 +79,10 @@ class TranslatorEnglish : public Translator
       return "en-US";
     }
 
+    virtual QCString getLanguageString()
+    {
+      return "0x409 English (United States)";
+    }
     // --- Language translation methods -------------------
 
     /*! used in the compound documentation before a list of related functions. */
@@ -93,6 +97,10 @@ class TranslatorEnglish : public Translator
     virtual QCString trDetailedDescription()
     { return "Detailed Description"; }
 
+    /*! header that is used when the summary tag is missing inside the details tag */
+    virtual QCString trDetails()
+    { return "Details"; }
+
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
     { return "Member Typedef Documentation"; }
@@ -103,7 +111,16 @@ class TranslatorEnglish : public Translator
 
     /*! header that is put before the list of member functions. */
     virtual QCString trMemberFunctionDocumentation()
-    { return "Member Function Documentation"; }
+    {
+      if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+        return "Member Function/Procedure/Process Documentation";
+      }
+      else
+      {
+        return "Member Function Documentation";
+      }
+    }
 
     /*! header that is put before the list of member attributes. */
     virtual QCString trMemberDataDocumentation()
@@ -421,12 +438,6 @@ class TranslatorEnglish : public Translator
     virtual QCString trExampleDocumentation()
     { return "Example Documentation"; }
 
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all related pages.
-     */
-    virtual QCString trPageDocumentation()
-    { return "Page Documentation"; }
-
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
     { return "Reference Manual"; }
@@ -528,10 +539,6 @@ class TranslatorEnglish : public Translator
     {
       return "Inheritance diagram for "+clName+":";
     }
-
-    /*! this text is generated when the \\internal command is used. */
-    virtual QCString trForInternalUseOnly()
-    { return "For internal use only."; }
 
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
@@ -766,7 +773,7 @@ class TranslatorEnglish : public Translator
     virtual QCString trGeneratedFromFiles(ClassDef::CompoundType compType,
         bool single)
     { // single is true implies a single file
-      static bool vhdlOpt = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
+      bool vhdlOpt = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
       QCString result="The documentation for this ";
       switch(compType)
       {
@@ -1053,7 +1060,7 @@ class TranslatorEnglish : public Translator
         "The arrows have the following meaning:\n"
         "</p>\n"
         "<ul>\n"
-        "<li>%A dark blue arrow is used to visualize a public inheritance "
+        "<li>%A blue arrow is used to visualize a public inheritance "
         "relation between two classes.</li>\n"
         "<li>%A dark green arrow is used for protected inheritance.</li>\n"
         "<li>%A dark red arrow is used for private inheritance.</li>\n"
@@ -1121,11 +1128,6 @@ class TranslatorEnglish : public Translator
     virtual QCString trPackage(const QCString &name)
     {
       return "Package "+name;
-    }
-    /*! Title of the package index page */
-    virtual QCString trPackageList()
-    {
-      return "Package List";
     }
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
@@ -1382,14 +1384,18 @@ class TranslatorEnglish : public Translator
     /*! Used as a heading for a list of Java class functions with package
      * scope.
      */
-    virtual QCString trPackageMembers()
+    virtual QCString trPackageFunctions()
     {
       return "Package Functions";
+    }
+    virtual QCString trPackageMembers()
+    {
+      return "Package Members";
     }
     /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
-    virtual QCString trStaticPackageMembers()
+    virtual QCString trStaticPackageFunctions()
     {
       return "Static Package Functions";
     }
@@ -1500,14 +1506,6 @@ class TranslatorEnglish : public Translator
      */
     virtual QCString trDirectories()
     { return "Directories"; }
-
-    /*! This returns a sentences that introduces the directory hierarchy.
-     *  and the fact that it is sorted alphabetically per level
-     */
-    virtual QCString trDirDescription()
-    { return "This directory hierarchy is sorted roughly, "
-             "but not completely, alphabetically:";
-    }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.
@@ -1826,19 +1824,40 @@ class TranslatorEnglish : public Translator
      */
     virtual QCString trDateTime(int year,int month,int day,int dayOfWeek,
                                 int hour,int minutes,int seconds,
-                                bool includeTime)
+                                DateTimeType includeTime)
     {
       static const char *days[]   = { "Mon","Tue","Wed","Thu","Fri","Sat","Sun" };
       static const char *months[] = { "Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec" };
       QCString sdate;
-      sdate.sprintf("%s %s %d %d",days[dayOfWeek-1],months[month-1],day,year);
-      if (includeTime)
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Date)
+      {
+        sdate.sprintf("%s %s %d %d",days[dayOfWeek-1],months[month-1],day,year);
+      }
+      if (includeTime == DateTimeType::DateTime) sdate += " ";
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Time)
       {
         QCString stime;
-        stime.sprintf(" %.2d:%.2d:%.2d",hour,minutes,seconds);
+        stime.sprintf("%.2d:%.2d:%.2d",hour,minutes,seconds);
         sdate+=stime;
       }
       return sdate;
+    }
+    virtual QCString trDayOfWeek(int dayOfWeek, bool, bool full)
+    {
+      static const char *days_short[]   = { "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" };
+      static const char *days_full[]    = { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" };
+      return full? days_full[dayOfWeek-1] : days_short[dayOfWeek-1];
+    }
+    virtual QCString trMonth(int month, bool, bool full)
+    {
+      static const char *months_short[] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
+      static const char *months_full[]  = { "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" };
+      return full? months_full[month-1] : months_short[month-1];
+    }
+    virtual QCString trDayPeriod(int period)
+    {
+      static const char *dayPeriod[] = { "AM", "PM" };
+      return dayPeriod[period];
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2308,6 +2327,53 @@ class TranslatorEnglish : public Translator
     {
       return "Concept definition";
     }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.4
+//////////////////////////////////////////////////////////////////////////
+
+    virtual QCString trPackageList()
+    { return "Package List"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.6
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This is used for translation of the word that will be
+     *  followed by a single name of the VHDL process flowchart.
+     */
+    virtual QCString trFlowchart()
+    { return "Flowchart: "; }
+
+    /*! Please translate also updated body of the method
+     *  trMemberFunctionDocumentation(), now better adapted for
+     *  VHDL sources documentation.
+     */
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.7
+//////////////////////////////////////////////////////////////////////////
+    /*! used in the compound documentation before a list of related symbols.
+     *
+     *  Supersedes trRelatedFunctions
+     */
+    virtual QCString trRelatedSymbols()
+    { return "Related Symbols"; }
+
+    /*! subscript for the related symbols
+     *
+     *  Supersedes trRelatedSubscript
+     */
+    virtual QCString trRelatedSymbolsSubscript()
+    { return "(Note that these are not member symbols.)"; }
+
+    /*! used in the class documentation as a header before the list of all
+     * related classes.
+     *
+     * Supersedes trRelatedFunctionDocumentation
+     */
+    virtual QCString trRelatedSymbolDocumentation()
+    { return "Friends And Related Symbol Documentation"; }
 
     /*! the compound type as used for the xrefitems */
     virtual QCString trCompoundType(ClassDef::CompoundType compType, SrcLangExt lang)

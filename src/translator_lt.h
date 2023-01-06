@@ -69,6 +69,10 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
     {
       return "lt";
     }
+    virtual QCString getLanguageString()
+    {
+      return "0x427 Lithuanian";
+    }
 
     // --- Language translation methods -------------------
 
@@ -83,6 +87,10 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
     /*! header that is put before the detailed description of files, classes and namespaces. */
     virtual QCString trDetailedDescription()
     { return "Smulkus aprašymas"; }
+
+    /*! header that is used when the summary tag is missing inside the details tag */
+    virtual QCString trDetails()
+    { return "Išsamiau"; }
 
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
@@ -382,6 +390,10 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
       {
         return "Duomenų Struktūros Dokumentacija";
       }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+          return trDesignUnitDocumentation();
+      }
       else
       {
         return "Klasės Dokumentacija";
@@ -399,12 +411,6 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
      */
     virtual QCString trExampleDocumentation()
     { return "Pavyzdžio Dokumentacija"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all related pages.
-     */
-    virtual QCString trPageDocumentation()
-    { return "Puslapio Dokumentacija"; }
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
@@ -507,10 +513,6 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
     {
       return "Paveldimumo diagrama "+clName+":"; /*FIXME*/
     }
-
-    /*! this text is generated when the \\internal command is used. */
-    virtual QCString trForInternalUseOnly()
-    { return "Tiktai vidiniam naudojimui."; }
 
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
@@ -1098,11 +1100,6 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
     {
       return "Paketas "+name;
     }
-    /*! Title of the package index page */
-    virtual QCString trPackageList()
-    {
-      return "Paketo Sąrašas";
-    }
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
     {
@@ -1364,14 +1361,18 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
     /*! Used as a heading for a list of Java class functions with package
      * scope.
      */
-    virtual QCString trPackageMembers()
+    virtual QCString trPackageFunctions()
     {
       return "Paketo Funkcijos";
+    }
+    virtual QCString trPackageMembers()
+    {
+      return "Paketo Nariai";
     }
     /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
-    virtual QCString trStaticPackageMembers()
+    virtual QCString trStaticPackageFunctions()
     {
       return "Statinės Paketo Funkcijos";
     }
@@ -1482,13 +1483,6 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
     virtual QCString trDirectories()
     { return "Direktorijos"; }
 
-    /*! This returns a sentences that introduces the directory hierarchy.
-     *  and the fact that it is sorted alphabetically per level
-     */
-    virtual QCString trDirDescription()
-    { return "Ši direktorjų strūktūra grubiai surikiuota abėcėlės tvarka:";
-    }
-
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.
      */
@@ -1519,6 +1513,27 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
     }
 
 
+    virtual QCString trDayOfWeek(int dayOfWeek, bool first_capital, bool full)
+    {
+      static const char *days_short[]   = { "pr", "an", "tr", "kt", "pn", "št", "sk" };
+      static const char *days_full[]    = { "pirmadienis", "antradienis", "trečiadienis", "ketvirtadienis", "penktadienis", "šeštadienis", "sekmadienis" };
+      QCString text  = full? days_full[dayOfWeek-1] : days_short[dayOfWeek-1];
+      if (first_capital) return text.mid(0,1).upper()+text.mid(1);
+      else return text;
+    }
+    virtual QCString trMonth(int month, bool first_capital, bool full)
+    {
+      static const char *months_short[] = { "saus.", "vas.", "kov.", "bal.", "geg.", "birž.", "liep.", "rugp.", "rugs.", "spal.", "lapkr.", "gruod." };
+      static const char *months_full[]  = { "sausis", "vasaris", "kovas", "balandis", "gegužė", "birželis", "liepa", "rugpjūtis", "rugsėjis", "spalis", "lapkritis", "gruodis" };
+      QCString text  = full? months_full[month-1] : months_short[month-1];
+      if (first_capital) return text.mid(0,1).upper()+text.mid(1);
+      else return text;
+    }
+    virtual QCString trDayPeriod(int period)
+    {
+      static const char *dayPeriod[] = { "priešpiet", "popiet" };
+      return dayPeriod[period];
+    }
 };
 
 #endif

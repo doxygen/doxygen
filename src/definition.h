@@ -76,11 +76,6 @@ struct BodyInfo
 class Definition
 {
   public:
-    struct Cookie
-    {
-      virtual ~Cookie() {}
-    };
-
     /*! Types of derived classes */
     enum DefType
     {
@@ -357,16 +352,16 @@ class DefinitionMutable
     // --- actions ----
     //-----------------------------------------------------------------------------------
 
-    virtual void makePartOfGroup(const GroupDef *gd) = 0;
+    virtual void makePartOfGroup(GroupDef *gd) = 0;
 
     /*! Add the list of anchors that mark the sections that are found in the
      * documentation.
      */
     virtual void addSectionsToDefinition(const std::vector<const SectionInfo*> &anchorList) = 0;
-    virtual void addSourceReferencedBy(const MemberDef *d) = 0;
-    virtual void addSourceReferences(const MemberDef *d) = 0;
+    virtual void addSourceReferencedBy(MemberDef *d) = 0;
+    virtual void addSourceReferences(MemberDef *d) = 0;
     virtual void mergeRefItems(Definition *d) = 0;
-    virtual void addInnerCompound(const Definition *d) = 0;
+    virtual void addInnerCompound(Definition *d) = 0;
     virtual void addSectionsToIndex() = 0;
     virtual void mergeReferences(const Definition *other) = 0;
     virtual void mergeReferencedBy(const Definition *other) = 0;
@@ -397,7 +392,6 @@ class DefinitionMutable
 
 Definition          *toDefinition(DefinitionMutable *dm);
 DefinitionMutable   *toDefinitionMutable(Definition *d);
-DefinitionMutable   *toDefinitionMutable(const Definition *d);
 
 /** Reads a fragment from file \a fileName starting with line \a startLine
  *  and ending with line \a endLine. The result is returned as a string

@@ -388,7 +388,7 @@ void MemberList::writePlainDeclarations(OutputList &ol, bool inGroup,
                 first=FALSE;
               }
               ol.startMemberDeclaration();
-              ol.startMemberItem(md->anchor(),0,inheritId);
+              ol.startMemberItem(md->anchor(),OutputGenerator::MemberItemType::Normal,inheritId);
               bool detailsLinkable = md->hasDetailedDescription();
               if (!detailsLinkable)
               {
@@ -416,24 +416,24 @@ void MemberList::writePlainDeclarations(OutputList &ol, bool inGroup,
               {
                 ol.endDoxyAnchor(md->getOutputFileBase(),md->anchor());
               }
-              ol.endMemberItem();
+              ol.endMemberItem(OutputGenerator::MemberItemType::Normal);
               if (!md->briefDescription().isEmpty() && Config_getBool(BRIEF_MEMBER_DESC))
               {
-                std::unique_ptr<IDocParser> parser { createDocParser() };
-                std::unique_ptr<DocRoot>  rootNode { validatingParseDoc(*parser.get(),
-                                                     md->briefFile(),md->briefLine(),
-                                                     cd,md,
-                                                     md->briefDescription(),
-                                                     TRUE,FALSE,
-                                                     QCString(),TRUE,FALSE,
-                                                     Config_getBool(MARKDOWN_SUPPORT)) };
-                if (rootNode && !rootNode->isEmpty())
+                auto parser { createDocParser() };
+                auto ast    { validatingParseDoc(*parser.get(),
+                                                 md->briefFile(),md->briefLine(),
+                                                 cd,md,
+                                                 md->briefDescription(),
+                                                 TRUE,FALSE,
+                                                 QCString(),TRUE,FALSE,
+                                                 Config_getBool(MARKDOWN_SUPPORT)) };
+                if (!ast->isEmpty())
                 {
                   ol.startMemberDescription(md->anchor());
-                  ol.writeDoc(rootNode.get(),cd,md);
+                  ol.writeDoc(ast.get(),cd,md);
                   if (md->hasDetailedDescription())
                   {
-                    ol.disableAllBut(OutputGenerator::Html);
+                    ol.disableAllBut(OutputType::Html);
                     ol.docify(" ");
                     ol.startTextLink(md->getOutputFileBase(),
                         md->anchor());
@@ -474,31 +474,6 @@ void MemberList::writePlainDeclarations(OutputList &ol, bool inGroup,
     }
   }
 
-  // handle members that are inside anonymous compounds and for which
-  // no variables of the anonymous compound type exist.
-  if (cd)
-  {
-    for (const auto &md : m_members)
-    {
-      if (md->fromAnonymousScope() && !md->anonymousDeclShown())
-      {
-        MemberDefMutable *mdm = toMemberDefMutable(md);
-        if (mdm) mdm->setFromAnonymousScope(FALSE);
-        //printf("anonymous compound members\n");
-        if (md->isBriefSectionVisible())
-        {
-          if (first)
-          {
-            ol.startMemberList();
-            first=FALSE;
-          }
-          md->writeDeclaration(ol,cd,nd,fd,gd,inGroup,indentLevel);
-        }
-        if (mdm) mdm->setFromAnonymousScope(TRUE);
-      }
-    }
-  }
-
   if (!first)
   {
     ol.endMemberList();
@@ -531,7 +506,7 @@ void MemberList::writeDeclarations(OutputList &ol,
   (void)showEnumValues; // unused
 
   //printf("----- writeDeclaration() this=%p ---- inheritedFrom=%p\n",this,inheritedFrom);
-  static bool optimizeVhdl = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
+  bool optimizeVhdl = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
   QCString inheritId;
 
   const Definition *ctx = cd;
@@ -550,8 +525,6 @@ void MemberList::writeDeclarations(OutputList &ol,
     if ( cd && !optimizeVhdl && cd->countMembersIncludingGrouped(
                                       m_listType,inheritedFrom,TRUE)>0 )
     {
-      ol.pushGeneratorState();
-      ol.disableAllBut(OutputGenerator::Html);
       inheritId = substitute(listTypeAsString(lt),"-","_")+"_"+
                   stripPath(cd->getOutputFileBase());
       if (!title.isEmpty())
@@ -560,7 +533,6 @@ void MemberList::writeDeclarations(OutputList &ol,
                                       cd->getOutputFileBase(),
                                       cd->anchor(),title,cd->displayName());
       }
-      ol.popGeneratorState();
     }
   }
   else if (num>numEnumValues)
@@ -614,7 +586,7 @@ void MemberList::writeDeclarations(OutputList &ol,
     //printf("memberGroupList=%p\n",memberGroupList);
     for (const auto &mg : m_memberGroupRefList)
     {
-      bool hasHeader=!mg->header().isEmpty() && mg->header()!="[NOHEADER]";
+      bool hasHeader=!mg->header().isEmpty();
       if (inheritId.isEmpty())
       {
         //printf("mg->header=%s hasHeader=%d\n",qPrint(mg->header()),hasHeader);
@@ -628,7 +600,7 @@ void MemberList::writeDeclarations(OutputList &ol,
         {
           //printf("Member group has docs!\n");
           ol.startMemberGroupDocs();
-          ol.generateDoc(mg->docFile(),mg->docLine(),ctx,0,mg->documentation()+"\n",FALSE,FALSE,
+          ol.generateDoc(mg->docFile(),mg->docLine(),mg->memberContainer(),0,mg->documentation()+"\n",FALSE,FALSE,
               QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
           ol.endMemberGroupDocs();
         }
@@ -644,13 +616,9 @@ void MemberList::writeDeclarations(OutputList &ol,
   }
   if (inheritedFrom && cd)
   {
-    const ClassDefMutable *cdm = toClassDefMutable(cd);
-    if (cdm)
-    {
-      // also add members that of this list type, that are grouped together
-      // in a separate list in class 'inheritedFrom'
-      cdm->addGroupedInheritedMembers(ol,m_listType,inheritedFrom,inheritId);
-    }
+    // also add members that of this list type, that are grouped together
+    // in a separate list in class 'inheritedFrom'
+    cd->addGroupedInheritedMembers(ol,m_listType,inheritedFrom,inheritId);
   }
   //printf("----- end writeDeclaration() ----\n");
 }
@@ -671,7 +639,7 @@ void MemberList::writeDocumentation(OutputList &ol,
   if (!title.isEmpty())
   {
     ol.pushGeneratorState();
-      ol.disable(OutputGenerator::Html);
+      ol.disable(OutputType::Html);
       ol.writeRuler();
     ol.popGeneratorState();
     ol.startGroupHeader(showInline ? 2 : 0);
@@ -749,7 +717,7 @@ void MemberList::writeSimpleDocumentation(OutputList &ol,
 void MemberList::writeDocumentationPage(OutputList &ol,
                      const QCString &scopeName, const DefinitionMutable *container) const
 {
-  static bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
+  bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
 
   struct OverloadInfo
   {
@@ -781,7 +749,7 @@ void MemberList::writeDocumentationPage(OutputList &ol,
       uint &count = it->second.count;
       QCString diskName=md->getOutputFileBase();
       QCString title=md->qualifiedName();
-      startFile(ol,diskName,md->name(),title,HLI_None,!generateTreeView,diskName);
+      startFile(ol,diskName,md->name(),title,HighlightedItem::None,!generateTreeView,diskName);
       if (!generateTreeView)
       {
         container->writeNavigationPath(ol);
@@ -794,7 +762,7 @@ void MemberList::writeDocumentationPage(OutputList &ol,
         md->writeDocumentation(this,count++,overloadCount,ol,scopeName,container_d,m_container==MemberListContainer::Group);
 
         ol.endContents();
-        endFileWithNavPath(container_d,ol);
+        endFileWithNavPath(ol,container_d);
       }
       else
       {
@@ -937,7 +905,7 @@ QCString MemberList::listTypeAsString(MemberListType type)
   return "";
 }
 
-void MemberList::writeTagFile(TextStream &tagFile)
+void MemberList::writeTagFile(TextStream &tagFile,bool useQualifiedName)
 {
   for (const auto &imd : m_members)
   {
@@ -946,7 +914,7 @@ void MemberList::writeTagFile(TextStream &tagFile)
     {
       if (md->getLanguage()!=SrcLangExt_VHDL)
       {
-        md->writeTagFile(tagFile);
+        md->writeTagFile(tagFile,useQualifiedName);
         if (md->memberType()==MemberType_Enumeration && !md->isStrong())
         {
           for (const auto &ivmd : md->enumFieldList())
@@ -954,7 +922,7 @@ void MemberList::writeTagFile(TextStream &tagFile)
             MemberDefMutable *vmd = toMemberDefMutable(ivmd);
             if (vmd)
             {
-              vmd->writeTagFile(tagFile);
+              vmd->writeTagFile(tagFile,useQualifiedName);
             }
           }
         }
@@ -967,7 +935,7 @@ void MemberList::writeTagFile(TextStream &tagFile)
   }
   for (const auto &mg : m_memberGroupRefList)
   {
-    mg->writeTagFile(tagFile);
+    mg->writeTagFile(tagFile,useQualifiedName);
   }
 }
 

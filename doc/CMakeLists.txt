@@ -13,6 +13,7 @@
 
 include (${TOP}/cmake/version.cmake)
 string(TIMESTAMP DATE "%d-%m-%Y")
+string(TIMESTAMP YEAR "%Y")
 
 find_package(PythonInterp REQUIRED)
 find_program(EPSTOPDF NAMES epstopdf )

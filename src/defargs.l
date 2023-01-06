@@ -107,7 +107,7 @@ struct defargsYY_state
 static const char *stateToString(int state);
 #endif
 
-static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
+static int yyread(yyscan_t yyscanner,char *buf,int max_size);
 static bool nameIsActuallyPartOfType(QCString &name);
 
 /* -----------------------------------------------------------------
@@ -437,8 +437,8 @@ CPPC  "/\/"
 						// and need to correct it to avoid seeing a nameless parameter
 						// "struct A" as a parameter with type "struct" and name "A".
 						int sv=0;
-						if      (a.type.left(6)=="const ")    sv=6;
-						else if (a.type.left(9)=="volatile ") sv=9;
+						if      (a.type.startsWith("const "))    sv=6;
+						else if (a.type.startsWith("volatile ")) sv=9;
 
 						if (a.type.mid(sv)=="struct"    ||
 						    a.type.mid(sv)=="union"     ||
@@ -620,10 +620,10 @@ CPPC  "/\/"
 /* ----------------------------------------------------------------------------
  */
 
-static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size)
+static int yyread(yyscan_t yyscanner,char *buf,int max_size)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yy_size_t c=0;
+  int c=0;
   while( c < max_size && yyextra->inputString[yyextra->inputPosition] )
   {
       *buf = yyextra->inputString[yyextra->inputPosition++] ;

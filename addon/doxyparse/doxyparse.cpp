@@ -53,6 +53,7 @@ class Doxyparse : public CodeOutputInterface
 
     // these are just null functions, they can be used to produce a syntax highlighted
     // and cross-linked version of the source code, but who needs that anyway ;-)
+    OutputType type() const override { return OutputType::Null; }
     void codify(const QCString &) override {}
     void writeCodeLink(CodeSymbolType,const QCString &,const QCString &,const QCString &,const QCString &,const QCString &)  override {}
     void startCodeLine(bool) override {}
@@ -235,16 +236,16 @@ static void referenceTo(const MemberDef* md) {
 }
 
 void protectionInformation(Protection protection) {
-  if (protection == Public) {
+  if (protection == Protection::Public) {
     printProtection("public");
   }
-  else if (protection == Protected) {
+  else if (protection == Protection::Protected) {
     printProtection("protected");
   }
-  else if (protection == Private) {
+  else if (protection == Protection::Private) {
     printProtection("private");
   }
-  else if (protection == Package) {
+  else if (protection == Protection::Package) {
     printProtection("package");
   }
 }
@@ -470,6 +471,7 @@ int main(int argc,char **argv) {
   Config_updateBool(WARNINGS,FALSE);
   Config_updateBool(WARN_IF_UNDOCUMENTED,FALSE);
   Config_updateBool(WARN_IF_DOC_ERROR,FALSE);
+  Config_updateBool(WARN_IF_UNDOC_ENUM_VAL,FALSE);
   // Extract as much as possible
   Config_updateBool(EXTRACT_ALL,TRUE);
   Config_updateBool(EXTRACT_STATIC,TRUE);

@@ -35,7 +35,7 @@
  files frees the maintainer from thinking about whether the
  first, the second, or both files should be included or not, and
  why.  This holds namely for localized translators because their
- base class is changed occasionaly to adapter classes when the
+ base class is changed occasionally to adapter classes when the
  Translator class changes the interface, or back to the
  Translator class (by the local maintainer) when the localized
  translator is made up-to-date again.
@@ -79,6 +79,10 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
     {
       return "ca";
     }
+    virtual QCString getLanguageString()
+    {
+      return "0x403 Catalan";
+    }
 
     // --- Language translation methods -------------------
 
@@ -93,6 +97,10 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
     /*! header that is put before the detailed description of files, classes and namespaces. */
     virtual QCString trDetailedDescription()
     { return "Descripció Detallada"; }
+
+    /*! header that is used when the summary tag is missing inside the details tag */
+    virtual QCString trDetails()
+    { return "Detalls"; }
 
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
@@ -392,6 +400,10 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
       {
         return "Documentació de les Estructures de Dades";
       }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+          return trDesignUnitDocumentation();
+      }
       else
       {
         return "Documentació de les Classes";
@@ -409,12 +421,6 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
      */
     virtual QCString trExampleDocumentation()
     { return "Documentació dels Exemples"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all related pages.
-     */
-    virtual QCString trPageDocumentation()
-    { return "Documentació de les Pàgines"; }
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
@@ -517,10 +523,6 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
     {
       return "Diagrama d'Herència per a "+clName+":";
     }
-
-    /*! this text is generated when the \\internal command is used. */
-    virtual QCString trForInternalUseOnly()
-    { return "Tan sols per a ús intern."; }
 
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
@@ -1106,11 +1108,6 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
     {
       return "Paquet "+name;
     }
-    /*! Title of the package index page */
-    virtual QCString trPackageList()
-    {
-      return "Llista de Paquets";
-    }
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
     {
@@ -1366,14 +1363,18 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
     /*! Used as a heading for a list of Java class functions with package
      * scope.
      */
-    virtual QCString trPackageMembers()
+    virtual QCString trPackageFunctions()
     {
       return "Funcions de Paquet";
+    }
+    virtual QCString trPackageMembers()
+    {
+      return "Membres de Paquet";
     }
     /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
-    virtual QCString trStaticPackageMembers()
+    virtual QCString trStaticPackageFunctions()
     {
       return "Funcions Estàtiques de Paquet";
     }
@@ -1484,14 +1485,6 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
      */
     virtual QCString trDirectories()
     { return "Directoris"; }
-
-    /*! This returns a sentences that introduces the directory hierarchy.
-     *  and the fact that it is sorted alphabetically per level
-     */
-    virtual QCString trDirDescription()
-    { return "Aquesta jerarquia de directoris està ordenada toscament, "
-             "però no completa, de forma alfabètica:";
-    }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.
@@ -1816,19 +1809,44 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
      */
     virtual QCString trDateTime(int year,int month,int day,int dayOfWeek,
                                 int hour,int minutes,int seconds,
-                                bool includeTime)
+                                DateTimeType includeTime)
     {
       static const char *days[]   = { "Dl","Dt","Dc","Dj","Dv","Ds","Dg" };
       static const char *months[] = { "Gen","Feb","Mar","Abr","Mai","Jun","Jul","Ago","Sep","Oct","Nov","Dec" };
       QCString sdate;
-      sdate.sprintf("%s %s %d %d",days[dayOfWeek-1],months[month-1],day,year);
-      if (includeTime)
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Date)
+      {
+        sdate.sprintf("%s %s %d %d",days[dayOfWeek-1],months[month-1],day,year);
+      }
+      if (includeTime == DateTimeType::DateTime) sdate += " ";
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Time)
       {
         QCString stime;
-        stime.sprintf(" %.2d:%.2d:%.2d",hour,minutes,seconds);
+        stime.sprintf("%.2d:%.2d:%.2d",hour,minutes,seconds);
         sdate+=stime;
       }
       return sdate;
+    }
+    virtual QCString trDayOfWeek(int dayOfWeek, bool first_capital, bool full)
+    {
+      static const char *days_short[]   = { "dl.", "dt.", "dc.", "dj.", "dv.", "ds.", "dg." };
+      static const char *days_full[]    = { "dilluns", "dimarts", "dimecres", "dijous", "divendres", "dissabte", "diumenge" };
+      QCString text  = full? days_full[dayOfWeek-1] : days_short[dayOfWeek-1];
+      if (first_capital) return text.mid(0,1).upper()+text.mid(1);
+      else return text;
+    }
+    virtual QCString trMonth(int month, bool first_capital, bool full)
+    {
+      static const char *months_short[] = { "gen.", "febr.", "març", "abr.", "maig", "juny", "jul.", "ag.", "set.", "oct.", "nov.", "des." };
+      static const char *months_full[]  = { "gener", "febrer", "març", "abril", "maig", "juny", "juliol", "agost", "setembre", "octubre", "novembre", "desembre" };
+      QCString text  = full? months_full[month-1] : months_short[month-1];
+      if (first_capital) return text.mid(0,1).upper()+text.mid(1);
+      else return text;
+    }
+    virtual QCString trDayPeriod(int period)
+    {
+      static const char *dayPeriod[] = { "a.m.", "p.m." };
+      return dayPeriod[period];
     }
 
 //////////////////////////////////////////////////////////////////////////

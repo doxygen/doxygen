@@ -94,12 +94,18 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
     { return "\\usepackage[croatian]{babel}\n"; }
     QCString trISOLang()
     { return "hr"; }
+    virtual QCString getLanguageString()
+    {
+      return "0x41A Croatian";
+    }
     QCString trRelatedFunctions()
     { return "Povezane funkcije"; }
     QCString trRelatedSubscript()
     { return "(To nisu member funkcije.)"; }
     QCString trDetailedDescription()
     { return "Detaljno objašnjenje"; }
+    QCString trDetails()
+    { return "Detalji"; }
     QCString trMemberTypedefDocumentation()
     { return "Dokumentacija typedef članova"; }
     QCString trMemberEnumerationDocumentation()
@@ -234,30 +240,32 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
       }
       else
       {
-		return "Skupno kazalo ";
+	return "Skupno kazalo ";
       }
-	}
+    }
     QCString trFileIndex()
     { return "Kazalo datoteka"; }
     QCString trModuleDocumentation()
     { return "Dokumentacija modula"; }
     QCString trClassDocumentation()
     {
-		if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
-		{
-			return "Dokumentacija struktura podataka";
-		}
-		else
-		{
-			return "Dokumentacija klasa";
-		}
-	}
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+      {
+        return "Dokumentacija struktura podataka";
+      }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+        return trDesignUnitDocumentation();
+      }
+      else
+      {
+        return "Dokumentacija klasa";
+      }
+    }
     QCString trFileDocumentation()
     { return "Dokumentacija datoteka"; }
     QCString trExampleDocumentation()
     { return "Dokumentacija primjera"; }
-    QCString trPageDocumentation()
-    { return "Dokumentacija vezane stranice"; }
     QCString trReferenceManual()
     { return "Priručnik"; }
 
@@ -296,8 +304,6 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
     {
       return QCString("Dijagram klasa za ")+clName;
     }
-    QCString trForInternalUseOnly()
-    { return "Isključivo za internu uporabu."; }
     QCString trWarning()
     { return "Upozorenje"; }
     QCString trVersion()
@@ -828,11 +834,6 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
     {
       return "Paket "+name;
     }
-    /*! Title of the package index page */
-    virtual QCString trPackageList()
-    {
-      return "Lista paketa";
-    }
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
     {
@@ -1060,14 +1061,18 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
     /*! Used as a heading for a list of Java class functions with package
      * scope.
      */
-    virtual QCString trPackageMembers()
+    virtual QCString trPackageFunctions()
     {
       return "Funkcije u paketu";
+    }
+    virtual QCString trPackageMembers()
+    {
+      return "članovi u paketu";
     }
     /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
-    virtual QCString trStaticPackageMembers()
+    virtual QCString trStaticPackageFunctions()
     {
       return "Statičke funkcije u paketu";
     }
@@ -1184,12 +1189,6 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
      */
     virtual QCString trDirectories()
     { return "Direktoriji"; }
-
-    /*! This returns a sentences that introduces the directory hierarchy.
-     *  and the fact that it is sorted alphabetically per level
-     */
-    virtual QCString trDirDescription()
-    { return "Stablo direktorija sortirano abecednim redom:"; }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.
@@ -1501,20 +1500,45 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
      */
     virtual QCString trDateTime(int year,int month,int day,int dayOfWeek,
                                 int hour,int minutes,int seconds,
-                                bool includeTime)
+                                DateTimeType includeTime)
     {
       static const char *days[]   = { "Pon","Uto","Sri","Čet","Pet","Sub","Ned" };
       static const char *months[] = { "Sje","Velj","Ožu","Tra","Svi","Lip","Srp","Kol","Ruj","Lis","Stu","Pro" };
       QCString sdate;
-      sdate.sprintf("%s %s %d %d",days[dayOfWeek-1],months[month-1],day,year);
-      if (includeTime)
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Date)
+      {
+        sdate.sprintf("%s %s %d %d",days[dayOfWeek-1],months[month-1],day,year);
+      }
+      if (includeTime == DateTimeType::DateTime) sdate += " ";
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Time)
       {
         QCString stime;
-        stime.sprintf(" %.2d:%.2d:%.2d",hour,minutes,seconds);
+        stime.sprintf("%.2d:%.2d:%.2d",hour,minutes,seconds);
         sdate+=stime;
       }
       return sdate;
     }
+    virtual QCString trDayOfWeek(int dayOfWeek, bool, bool full)
+    {
+      static const char *days_short[]   = { "pon", "uto", "sri", "čet", "pet", "sub", "ned" };
+      static const char *days_full[]    = { "ponedjeljak", "utorak", "srijeda", "četvrtak", "petak", "subota", "nedjelja" };
+      QCString text  = full? days_full[dayOfWeek-1] : days_short[dayOfWeek-1];
+      return text;
+    }
+    virtual QCString trMonth(int month, bool, bool full)
+    {
+      static const char *months_short[] = { "sij", "vlj", "ožu", "tra", "svi", "lip", "srp", "kol", "ruj", "lis", "stu", "pro" };
+      static const char *months_full[]  = { "siječanj", "veljača", "ožujak", "travanj", "svibanj", "lipanj", "srpanj", "kolovoz", "rujan", "listopad", "studeni", "prosinac" };
+      QCString text  = full? months_full[month-1] : months_short[month-1];
+      return text;
+    }
+    virtual QCString trDayPeriod(int period)
+    {
+      static const char *dayPeriod[] = { "AM", "PM" };
+      return dayPeriod[period];
+    }
+
+
 //////////////////////////////////////////////////////////////////////////
 // new since 1.7.5
 //////////////////////////////////////////////////////////////////////////
