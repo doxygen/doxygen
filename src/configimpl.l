@@ -2170,7 +2170,6 @@ void Config::checkAndCorrect(bool quiet, const bool check)
 
 static void updateAttribute(DotAttributes& attr, QCString name, ConfigObsolete* value)
 {
-  if (value==0 || value->valueStringRef()->isEmpty()) return;
   attr.updateValue(name,*value->valueStringRef());
 }
 
