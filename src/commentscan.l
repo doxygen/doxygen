@@ -3741,7 +3741,9 @@ bool CommentScanner::parseCommentBlock(/* in */     OutlineParserInterface *pars
   printlex(yy_flex_debug, TRUE, __FILE__, !fileName.isEmpty() ? qPrint(fileName): NULL);
   if (!yyextra->current->inbodyDocs.isEmpty() && isInbody) // separate in body fragments
   {
-    yyextra->current->inbodyDocs+="\n\n";
+    char cmd[30];
+    sprintf(cmd,"\n\n\\iline %d \\ilinebr ",lineNr);
+    yyextra->current->inbodyDocs+=cmd;
   }
 
   Debug::print(Debug::CommentScan,0,"-----------\nCommentScanner: %s:%d\n"
