@@ -428,12 +428,6 @@ class TranslatorBulgarian : public TranslatorAdapter_1_9_4
     virtual QCString trFileDocumentation()
     { return "Файлове Документация"; }
 
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all examples.
-     */
-    virtual QCString trExampleDocumentation()
-    { return "Примери Документация"; }
-
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
     { return "Помощно ръководство"; }

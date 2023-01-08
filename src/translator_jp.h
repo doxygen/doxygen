@@ -452,12 +452,6 @@ class TranslatorJapanese : public TranslatorAdapter_1_8_15
     virtual QCString trFileDocumentation()
     { return "ファイル詳解"; }
 
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all examples.
-     */
-    virtual QCString trExampleDocumentation()
-    { return "各例詳解"; }
-
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
     { return "リファレンスマニュアル"; }

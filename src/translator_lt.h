@@ -406,12 +406,6 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
     virtual QCString trFileDocumentation()
     { return "Failo Dokumentacija"; }
 
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all examples.
-     */
-    virtual QCString trExampleDocumentation()
-    { return "Pavyzdžio Dokumentacija"; }
-
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
     { return "Informacinis Vadovas"; }

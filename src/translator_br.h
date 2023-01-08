@@ -448,12 +448,6 @@ class TranslatorBrazilian : public TranslatorAdapter_1_9_6
     virtual QCString trFileDocumentation()
     { return "Arquivos"; }
 
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all examples.
-     */
-    virtual QCString trExampleDocumentation()
-    { return "Exemplos"; }
-
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
     { return "Guia de Referência"; }

@@ -427,12 +427,6 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
     virtual QCString trFileDocumentation()
     { return "Documentaţia Fişierelor"; }
 
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all examples.
-     */
-    virtual QCString trExampleDocumentation()
-    { return "Documentaţia Exemplelor"; }
-
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
     { return "Manual de utilizare"; }

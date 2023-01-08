@@ -152,8 +152,6 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
     { return "Opis razreda"; }
     QCString trFileDocumentation()
     { return "Opis datoteke"; }
-    QCString trExampleDocumentation()
-    { return "Opis primera"; }
     QCString trReferenceManual()
     { return "Priročnik"; }
 

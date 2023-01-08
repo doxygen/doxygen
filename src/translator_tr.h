@@ -410,12 +410,6 @@ class TranslatorTurkish : public TranslatorAdapter_1_7_5
     virtual QCString trFileDocumentation()
     { return "Dosya Dokümantasyonu"; }
 
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all examples.
-     */
-    virtual QCString trExampleDocumentation()
-    { return "Örnek Dokümantasyonu"; }
-
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
     { return "Referans Kitabı"; }

@@ -415,12 +415,6 @@ class TranslatorGreek : public TranslatorAdapter_1_9_4
     virtual QCString trFileDocumentation()
     { return "Τεκμηρίωση Αρχείων"; }
 
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all examples.
-     */
-    virtual QCString trExampleDocumentation()
-    { return "Τεκμηρίωση Παραδειγμάτων"; }
-
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
     { return "Εγχειρίδιο Τεκμηρίωσης"; }

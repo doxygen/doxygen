@@ -399,12 +399,6 @@ class TranslatorSerbian : public TranslatorAdapter_1_6_0
     virtual QCString trFileDocumentation()
     { return "Dokumentacija datoteke"; }
 
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all examples.
-     */
-    virtual QCString trExampleDocumentation()
-    { return "Dokumentacija primera"; }
-
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
     { return "Priručnik"; }

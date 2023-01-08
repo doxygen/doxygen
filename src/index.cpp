@@ -4687,7 +4687,7 @@ static void writeIndex(OutputList &ol)
   if (!Doxygen::exampleLinkedMap->empty())
   {
     ol.startIndexSection(IndexSection::isExampleDocumentation);
-    ol.parseText(/*projPrefix+*/theTranslator->trExampleDocumentation());
+    ol.parseText(/*projPrefix+*/theTranslator->trExamples());
     ol.endIndexSection(IndexSection::isExampleDocumentation);
   }
   ol.endIndexSection(IndexSection::isEndIndex);

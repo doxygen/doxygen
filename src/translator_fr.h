@@ -481,12 +481,6 @@ class TranslatorFrench : public TranslatorAdapter_1_9_5
     virtual QCString trFileDocumentation()
     { return "Documentation des fichiers"; }
 
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all examples.
-     */
-    virtual QCString trExampleDocumentation()
-    { return "Documentation des exemples"; }
-
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
     { return "Manuel de référence"; }

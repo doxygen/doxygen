@@ -442,12 +442,6 @@ class TranslatorHungarian : public TranslatorAdapter_1_8_15
     virtual QCString trFileDocumentation()
     { return "Fájlok dokumentációja"; }
 
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all examples.
-     */
-    virtual QCString trExampleDocumentation()
-    { return "Példák dokumentációja"; }
-
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
     { return "Referencia kézikönyv"; }

@@ -264,8 +264,6 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
     }
     QCString trFileDocumentation()
     { return "Dokumentacija datoteka"; }
-    QCString trExampleDocumentation()
-    { return "Dokumentacija primjera"; }
     QCString trReferenceManual()
     { return "Priručnik"; }
 
