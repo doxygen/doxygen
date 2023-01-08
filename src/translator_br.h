@@ -2433,10 +2433,36 @@ class TranslatorBrazilian : public TranslatorAdapter_1_9_6
         return "Fluxograma: ";
     }
 
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.9.7
+    //////////////////////////////////////////////////////////////////////////
+
     /*! Please translate also updated body of the method
      *  trMemberFunctionDocumentation(), now better adapted for
      *  VHDL sources documentation.
     */    
+    /*! the compound type as used for the xrefitems */
+    virtual QCString trCompoundType(ClassDef::CompoundType compType, SrcLangExt lang)
+    {
+      QCString result;
+      switch(compType)
+      {
+        case ClassDef::Class:
+          if (lang == SrcLangExt_Fortran) trType(true,true);
+          else result=trClass(true,true);
+          break;
+        case ClassDef::Struct:     result="Estrutura"; break;
+        case ClassDef::Union:      result="União"; break;
+        case ClassDef::Interface:  result="Interface"; break;
+        case ClassDef::Protocol:   result="Protocolo"; break;
+        case ClassDef::Category:   result="Categoria"; break;
+        case ClassDef::Exception:  result="Exceção"; break;
+        case ClassDef::Service:    result="Serviço"; break;
+        case ClassDef::Singleton:  result="Singleton"; break;
+        default: break;
+      }
+      return result;
+    }
 };
 
 #endif

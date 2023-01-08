@@ -2490,6 +2490,33 @@ class TranslatorCzech : public TranslatorAdapter_1_9_6
      *  VHDL sources documentation.
      *  Done.
      */
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.7
+//////////////////////////////////////////////////////////////////////////
+
+    /*! the compound type as used for the xrefitems */
+    virtual QCString trCompoundType(ClassDef::CompoundType compType, SrcLangExt lang)
+    {
+      QCString result;
+      switch(compType)
+      {
+        case ClassDef::Class:
+          if (lang == SrcLangExt_Fortran) trType(true,true);
+          else result=trClass(true,true);
+          break;
+        case ClassDef::Struct:     result = "Struktury"; break;
+        case ClassDef::Union:      result = "Unie"; break;
+        case ClassDef::Interface:  result = "Rozhraní"; break;
+        case ClassDef::Protocol:   result = "Protokolu"; break;
+        case ClassDef::Category:   result = "Kategorie"; break;
+        case ClassDef::Exception:  result = "Výjimky"; break;
+        case ClassDef::Service:    result = "Služby"; break;
+        case ClassDef::Singleton:  result = "Singletonu"; break;
+        default: break;
+      }
+      return result;
+    }
 };
 
 #endif // TRANSLATOR_CZ_H

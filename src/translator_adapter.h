@@ -53,6 +53,9 @@ class TranslatorAdapter_1_9_6 : public TranslatorAdapterBase
     { return trRelatedSubscript(); }
     virtual QCString trRelatedSymbolDocumentation()
     { return trRelatedFunctionDocumentation(); }
+
+    virtual QCString trCompoundType(ClassDef::CompoundType compType, SrcLangExt lang)
+    { return english.trCompoundType(compType, lang); }
 };
 
 class TranslatorAdapter_1_9_5 : public TranslatorAdapter_1_9_6

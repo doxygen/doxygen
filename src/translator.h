@@ -733,6 +733,8 @@ class Translator
     virtual QCString trRelatedSymbols() = 0;
     virtual QCString trRelatedSymbolsSubscript() = 0;
     virtual QCString trRelatedSymbolDocumentation() = 0;
+
+    virtual QCString trCompoundType(ClassDef::CompoundType compType, SrcLangExt lang) = 0;
 };
 
 #endif
