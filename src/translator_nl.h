@@ -67,7 +67,16 @@ class TranslatorDutch : public Translator
       }
     }
     QCString trMemberDataDocumentation()
-    { return "Documentatie van data members"; }
+    {
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+      {
+        return "Documentatie van data velden";
+      }
+      else
+      {
+        return "Documentatie van data members";
+      }
+    }
     QCString trMore()
     { return "Meer..."; }
     QCString trListOfAllMembers()
@@ -95,13 +104,40 @@ class TranslatorDutch : public Translator
     QCString trClassHierarchy()
     { return "Klasse Hi&euml;rarchie"; }
     QCString trCompoundList()
-    { return "Klasse Lijst"; }
+    {
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+      {
+        return "Data Structuren Lijst";
+      }
+      else
+      {
+        return "Klasse Lijst";
+      }
+    }
     QCString trFileList()
     { return "Bestandslijst"; }
     QCString trCompoundMembers()
-    { return "Klasse Members"; }
+    {
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+      {
+        return "Data Velden";
+      }
+      else
+      {
+        return "Klasse Members";
+      }
+    }
     QCString trFileMembers()
-    { return "Bestand members"; }
+    {
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+      {
+        return "Glabale members";
+      }
+      else
+      {
+        return "Bestand members";
+      }
+    }
     QCString trRelatedPages()
     { return "Gerelateerde pagina's"; }
     QCString trExamples()
@@ -148,16 +184,53 @@ class TranslatorDutch : public Translator
     {
       QCString result="Hieronder volgt de lijst met alle ";
       if (!extractAll) result+="gedocumenteerde ";
-      result+="klasse members met links naar ";
-      if (!extractAll) result+="de klasse documentatie voor elke member:";
-      else result+="de klassen waartoe ze behoren:";
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+      {
+        result+="struct en union velden";
+      }
+      else
+      {
+        result+="class members";
+      }
+      result+=" met links naar ";
+
+      if (!extractAll)
+      {
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+        {
+          result+="de struct/union documentatie voor elke veld:";
+        }
+        else
+        {
+           result+="de klasse documentatie voor elke member:";
+        }
+      }
+      else
+      {
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+        {
+          result+="de structures/unions waartoe ze behoren:";
+        }
+        else
+        {
+          result+="de klassen waartoe ze behoren:";
+        }
+      }
       return result;
     }
     QCString trFileMembersDescription(bool extractAll)
     {
       QCString result="Hieronder volgt de lijst met alle ";
       if (!extractAll) result+="gedocumenteerde ";
-      result+="bestand members met links naar ";
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+      {
+        result+="functies, variabelen, macros, enumeraties, en typedefs";
+      }
+      else
+      {
+        result+="bestand members";
+      }
+      result+=" met links naar ";
       if (extractAll) result+="de bestand's documentatie voor elke member:";
       else result+="de bestanden waartoe ze behoren:";
       return result;
@@ -176,7 +249,16 @@ class TranslatorDutch : public Translator
     QCString trHierarchicalIndex()
     { return "Hi&euml;rarchische Index"; }
     QCString trCompoundIndex()
-    { return "Klasse Index"; }
+    {
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+      {
+        return "Data Structuren Index";
+      }
+      else
+      {
+        return "Klasse Index";
+      }
+    }
     QCString trFileIndex()
     { return "Bestand Index"; }
     QCString trModuleDocumentation()
@@ -226,7 +308,16 @@ class TranslatorDutch : public Translator
     QCString trVariableDocumentation()
     { return "Documentatie van variabelen"; }
     QCString trCompounds()
-    { return "Klassen"; }
+    {
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+      {
+        return "Data Structuren";
+      }
+      else
+      {
+        return "Klassen";
+      }
+    }
     QCString trGeneratedAt(const QCString &date,const QCString &projName)
     {
       QCString result="Gegenereerd op "+date;
@@ -583,7 +674,14 @@ class TranslatorDutch : public Translator
     }
     QCString trPublicAttribs()
     {
-      return "Public Attributen";
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+      {
+        return "Data Velden";
+      }
+      else
+      {
+        return "Public Attributen";
+      }
     }
     QCString trStaticPublicAttribs()
     {
@@ -770,7 +868,14 @@ class TranslatorDutch : public Translator
     /*! Used for Java classes in the summary section of Java packages */
     QCString trClasses()
     {
-      return "Klassen";
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+      {
+        return "Data Structuren";
+      }
+      else
+      {
+        return "Klassen";
+      }
     }
     /*! Used as the title of a Java package */
     QCString trPackage(const QCString &name)
