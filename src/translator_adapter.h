@@ -56,6 +56,46 @@ class TranslatorAdapter_1_9_6 : public TranslatorAdapterBase
 
     virtual QCString trCompoundType(ClassDef::CompoundType compType, SrcLangExt lang)
     { return english.trCompoundType(compType, lang); }
+
+    virtual QCString trFileMembersDescriptionTotal(FileMemberHighlight::Enum hl)
+    {
+      if (hl==FileMemberHighlight::All)
+      {
+        return trFileMembersDescription(Config_getBool(EXTRACT_ALL));
+      }
+      else
+      {
+        // hack to work around a mozilla bug, which refuses to switch to
+        // normal lists otherwise
+        return "&nbsp;";
+      }
+    }
+    virtual QCString trCompoundMembersDescriptionTotal(ClassMemberHighlight::Enum hl)
+    {
+      if (hl==ClassMemberHighlight::All)
+      {
+        return trCompoundMembersDescription(Config_getBool(EXTRACT_ALL));
+      }
+      else
+      {
+        // hack to work around a mozilla bug, which refuses to switch to
+        // normal lists otherwise
+        return "&nbsp;";
+      }
+    }
+    virtual QCString trNamespaceMembersDescriptionTotal(NamespaceMemberHighlight::Enum hl)
+    {
+      if (hl==NamespaceMemberHighlight::All)
+      {
+        return trNamespaceMemberDescription(Config_getBool(EXTRACT_ALL));
+      }
+      else
+      {
+        // hack to work around a mozilla bug, which refuses to switch to
+        // normal lists otherwise
+        return "&nbsp;";
+      }
+    }
 };
 
 class TranslatorAdapter_1_9_5 : public TranslatorAdapter_1_9_6

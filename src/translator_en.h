@@ -2391,6 +2391,172 @@ class TranslatorEnglish : public Translator
       }
       return result;
     }
+
+    virtual QCString trFileMembersDescriptionTotal(FileMemberHighlight::Enum hl)
+    {
+      bool extractAll = Config_getBool(EXTRACT_ALL);
+      QCString result="Here is a list of all ";
+      if (!extractAll) result+="documented ";
+
+      switch (hl)
+      {
+        case FileMemberHighlight::All:
+          if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+          {
+            result+="functions, variables, defines, enums, and typedefs";
+          }
+          else
+          {
+            result+="file members";
+          }
+          break;
+        case FileMemberHighlight::Functions:
+          result+="functions";
+          break;
+        case FileMemberHighlight::Variables:
+          result+="variables";
+          break;
+        case FileMemberHighlight::Typedefs:
+          result+="typedefs";
+          break;
+        case FileMemberHighlight::Sequences:
+          result+="sequences";
+          break;
+        case FileMemberHighlight::Dictionaries:
+          result+="dictionaries";
+          break;
+        case FileMemberHighlight::Enums:
+          result+="enums";
+          break;
+        case FileMemberHighlight::EnumValues:
+          result+="enum values";
+          break;
+        case FileMemberHighlight::Defines:
+          result+="macros";
+          break;
+      }
+      result+=" with links to ";
+      if (extractAll)
+        result+="the files they belong to:";
+      else
+        result+="the documentation:";
+      return result;
+    }
+    virtual QCString trCompoundMembersDescriptionTotal(ClassMemberHighlight::Enum hl)
+    {
+      bool extractAll = Config_getBool(EXTRACT_ALL);
+      QCString result="Here is a list of all ";
+      if (!extractAll)
+      {
+        result+="documented ";
+      }
+
+      switch (hl)
+      {
+        case ClassMemberHighlight::All:
+          if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+          {
+            result+="struct and union fields";
+          }
+          else
+          {
+            result+="class members";
+          }
+          break;
+        case ClassMemberHighlight::Functions:
+          result+="functions";
+          break;
+        case ClassMemberHighlight::Variables:
+          result+="variables";
+          break;
+        case ClassMemberHighlight::Typedefs:
+          result+="typedefs";
+          break;
+        case ClassMemberHighlight::Enums:
+          result+="enums";
+          break;
+        case ClassMemberHighlight::EnumValues:
+          result+="enum values";
+          break;
+        case ClassMemberHighlight::Properties:
+          result+="properties";
+          break;
+        case ClassMemberHighlight::Events:
+          result+="events";
+          break;
+        case ClassMemberHighlight::Related:
+          result+="related symbols";
+          break;
+      }
+      result+=" with links to ";
+      if (!extractAll)
+      {
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+        {
+          result+="the struct/union documentation for each field:";
+        }
+        else
+        {
+          result+="the class documentation for each member:";
+        }
+      }
+      else
+      {
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+        {
+          result+="the structures/unions they belong to:";
+        }
+        else
+        {
+          result+="the classes they belong to:";
+        }
+      }
+      return result;
+    }
+    virtual QCString trNamespaceMembersDescriptionTotal(NamespaceMemberHighlight::Enum hl)
+    {
+      bool extractAll = Config_getBool(EXTRACT_ALL);
+      QCString result="Here is a list of all ";
+      if (!extractAll) result+="documented ";
+      result+="namespace ";
+      QCString singularResult = "";
+      QCString pluralResult = "";
+      switch (hl)
+      {
+        case NamespaceMemberHighlight::All:
+          singularResult="member";
+          break;
+        case NamespaceMemberHighlight::Functions:
+          singularResult="function";
+          break;
+        case NamespaceMemberHighlight::Variables:
+          singularResult="variable";
+          break;
+        case NamespaceMemberHighlight::Typedefs:
+          singularResult="typedef";
+          break;
+        case NamespaceMemberHighlight::Sequences:
+          singularResult="sequence";
+          break;
+        case NamespaceMemberHighlight::Dictionaries:
+          singularResult="dictionary";
+          pluralResult="dictionaries";
+          break;
+        case NamespaceMemberHighlight::Enums:
+          singularResult="enum";
+          break;
+        case NamespaceMemberHighlight::EnumValues:
+          singularResult="enum value";
+          break;
+      }
+      result+=(pluralResult.isEmpty() ? singularResult+"s" : pluralResult);
+      result+=" with links to ";
+      if (extractAll)
+        result+="the namespace documentation for each " + singularResult + ":";
+      else
+        result+="the namespaces they belong to:";
+      return result;
+    }
 };
 
 #endif
