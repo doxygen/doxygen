@@ -3057,18 +3057,9 @@ static void writeClassMemberIndexFiltered(OutputList &ol, ClassMemberHighlight::
 
     ol.startContents();
 
-    if (hl==ClassMemberHighlight::All)
-    {
-      ol.startTextBlock();
-      ol.parseText(lne ? lne->intro() : theTranslator->trCompoundMembersDescription(Config_getBool(EXTRACT_ALL)));
-      ol.endTextBlock();
-    }
-    else
-    {
-      // hack to work around a mozilla bug, which refuses to switch to
-      // normal lists otherwise
-      ol.writeString("&#160;");
-    }
+    ol.startTextBlock();
+    ol.parseText(hl == ClassMemberHighlight::All && lne ? lne->intro() : theTranslator->trCompoundMembersDescriptionTotal(hl));
+    ol.endTextBlock();
 
     writeMemberList(ol,quickIndex,
         multiPageIndex ? page : std::string(),
@@ -3233,18 +3224,9 @@ static void writeFileMemberIndexFiltered(OutputList &ol, FileMemberHighlight::En
 
     ol.startContents();
 
-    if (hl==FileMemberHighlight::All)
-    {
-      ol.startTextBlock();
-      ol.parseText(lne ? lne->intro() : theTranslator->trFileMembersDescription(Config_getBool(EXTRACT_ALL)));
-      ol.endTextBlock();
-    }
-    else
-    {
-      // hack to work around a mozilla bug, which refuses to switch to
-      // normal lists otherwise
-      ol.writeString("&#160;");
-    }
+    ol.startTextBlock();
+    ol.parseText(hl == FileMemberHighlight::All && lne ? lne->intro() : theTranslator->trFileMembersDescriptionTotal(hl));
+    ol.endTextBlock();
 
     writeMemberList(ol,quickIndex,
         multiPageIndex ? page : std::string(),
@@ -3408,18 +3390,9 @@ static void writeNamespaceMemberIndexFiltered(OutputList &ol,
 
     ol.startContents();
 
-    if (hl==NamespaceMemberHighlight::All)
-    {
-      ol.startTextBlock();
-      ol.parseText(lne ? lne->intro() : theTranslator->trNamespaceMemberDescription(Config_getBool(EXTRACT_ALL)));
-      ol.endTextBlock();
-    }
-    else
-    {
-      // hack to work around a mozilla bug, which refuses to switch to
-      // normal lists otherwise
-      ol.writeString("&#160;");
-    }
+    ol.startTextBlock();
+    ol.parseText(hl == NamespaceMemberHighlight::All && lne ? lne->intro() : theTranslator->trNamespaceMembersDescriptionTotal(hl));
+    ol.endTextBlock();
 
     writeMemberList(ol,quickIndex,
         multiPageIndex ? page : std::string(),

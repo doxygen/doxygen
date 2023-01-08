@@ -21,6 +21,7 @@
 #include "classdef.h"
 #include "config.h"
 #include "datetime.h"
+#include "index.h"
 
 /** Abstract base class for all translatable text fragments. */
 class Translator
@@ -735,6 +736,10 @@ class Translator
     virtual QCString trRelatedSymbolDocumentation() = 0;
 
     virtual QCString trCompoundType(ClassDef::CompoundType compType, SrcLangExt lang) = 0;
+
+    virtual QCString trFileMembersDescriptionTotal(FileMemberHighlight::Enum hl) = 0;
+    virtual QCString trCompoundMembersDescriptionTotal(ClassMemberHighlight::Enum hl) = 0;
+    virtual QCString trNamespaceMembersDescriptionTotal(NamespaceMemberHighlight::Enum hl) = 0;
 };
 
 #endif
