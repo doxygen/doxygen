@@ -2434,6 +2434,9 @@ class TranslatorEnglish : public Translator
         case FileMemberHighlight::Defines:
           result+="macros";
           break;
+        case FileMemberHighlight::Total:
+          ASSERT(0); // cannot happen, element is just the counter
+          break;
       }
       result+=" with links to ";
       if (extractAll)
@@ -2486,6 +2489,9 @@ class TranslatorEnglish : public Translator
           break;
         case ClassMemberHighlight::Related:
           result+="related symbols";
+          break;
+        case ClassMemberHighlight::Total:
+          ASSERT(0); // cannot happen, element is just the counter
           break;
       }
       result+=" with links to ";
@@ -2547,6 +2553,9 @@ class TranslatorEnglish : public Translator
           break;
         case NamespaceMemberHighlight::EnumValues:
           singularResult="enum value";
+          break;
+        case NamespaceMemberHighlight::Total:
+          ASSERT(0); // cannot happen, element is just the counter
           break;
       }
       result+=(pluralResult.isEmpty() ? singularResult+"s" : pluralResult);
