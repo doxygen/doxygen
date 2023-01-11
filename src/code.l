@@ -1046,7 +1046,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           yyextra->theCallContext.popScope(yyextra->name, yyextra->type);
                                           yyextra->bracketCount--;
                                           yyextra->parmType = yyextra->name;
-                                          BEGIN(FuncCall);
+                                          //BEGIN(FuncCall);
                                         }
 <Body>"\\)"|"\\("                       {
                                           yyextra->code->codify(yytext);
@@ -1058,7 +1058,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           {
                                             yyextra->theCallContext.popScope(yyextra->name, yyextra->type);
                                             yyextra->bracketCount--;
-                                            BEGIN(FuncCall);
+                                            //BEGIN(FuncCall);
                                           }
                                         }
 <Body,TemplDecl,ObjCMethod>{TYPEKW}/{B}* {
