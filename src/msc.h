@@ -33,7 +33,8 @@ void writeMscImageMapFromFile(TextStream &t,const QCString &inFile,
                               const QCString &outDir, const QCString &relPath,
                               const QCString &baseName, const QCString &context,
 			      MscOutputFormat format,
-                              const QCString &srcFile,int srcLine
+                              const QCString &srcFile,int srcLine,
+                              QCString width, QCString height
  			    );
 
 #endif

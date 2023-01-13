@@ -441,7 +441,7 @@ void LatexDocVisitor::operator()(const DocVerbatim &s)
           file.write( s.text().data(), s.text().length() );
           file.close();
 
-          startDotFile(fileName,s.width(),s.height(),s.hasCaption(),s.srcFile(),s.srcLine());
+          startDotFile(fileName,s.width(DocOutputTypeLatex),s.height(DocOutputTypeLatex),s.hasCaption(),s.srcFile(),s.srcLine());
           visitChildren(s);
           endDotFile(s.hasCaption());
 
@@ -1452,7 +1452,7 @@ void LatexDocVisitor::operator()(const DocImage &img)
       gfxName=gfxName.left(gfxName.length()-4);
     }
 
-    visitPreStart(m_t,img.hasCaption(), gfxName, img.width(),  img.height(), img.isInlineImage());
+    visitPreStart(m_t,img.hasCaption(), gfxName, img.width(DocOutputTypeLatex),  img.height(DocOutputTypeLatex), img.isInlineImage());
     visitChildren(img);
     visitPostEnd(m_t,img.hasCaption(), img.isInlineImage());
   }
@@ -1465,7 +1465,7 @@ void LatexDocVisitor::operator()(const DocDotFile &df)
 {
   if (m_hide) return;
   if (!Config_getBool(DOT_CLEANUP)) copyFile(df.file(),Config_getString(LATEX_OUTPUT)+"/"+stripPath(df.file()));
-  startDotFile(df.file(),df.width(),df.height(),df.hasCaption(),df.srcFile(),df.srcLine());
+  startDotFile(df.file(),df.width(DocOutputTypeLatex),df.height(DocOutputTypeLatex),df.hasCaption(),df.srcFile(),df.srcLine());
   visitChildren(df);
   endDotFile(df.hasCaption());
 }
@@ -1474,7 +1474,7 @@ void LatexDocVisitor::operator()(const DocMscFile &df)
 {
   if (m_hide) return;
   if (!Config_getBool(DOT_CLEANUP)) copyFile(df.file(),Config_getString(LATEX_OUTPUT)+"/"+stripPath(df.file()));
-  startMscFile(df.file(),df.width(),df.height(),df.hasCaption(),df.srcFile(),df.srcLine());
+  startMscFile(df.file(),df.width(DocOutputTypeLatex),df.height(DocOutputTypeLatex),df.hasCaption(),df.srcFile(),df.srcLine());
   visitChildren(df);
   endMscFile(df.hasCaption());
 }
@@ -1483,7 +1483,7 @@ void LatexDocVisitor::operator()(const DocDiaFile &df)
 {
   if (m_hide) return;
   if (!Config_getBool(DOT_CLEANUP)) copyFile(df.file(),Config_getString(LATEX_OUTPUT)+"/"+stripPath(df.file()));
-  startDiaFile(df.file(),df.width(),df.height(),df.hasCaption(),df.srcFile(),df.srcLine());
+  startDiaFile(df.file(),df.width(DocOutputTypeLatex),df.height(DocOutputTypeLatex),df.hasCaption(),df.srcFile(),df.srcLine());
   visitChildren(df);
   endDiaFile(df.hasCaption());
 }
@@ -1921,7 +1921,7 @@ void LatexDocVisitor::writeMscFile(const QCString &baseName, const DocVerbatim &
   }
   QCString outDir = Config_getString(LATEX_OUTPUT);
   writeMscGraphFromFile(baseName+".msc",outDir,shortName,MSC_EPS,s.srcFile(),s.srcLine());
-  visitPreStart(m_t, s.hasCaption(), shortName, s.width(),s.height());
+  visitPreStart(m_t, s.hasCaption(), shortName, s.width(DocOutputTypeLatex),s.height(DocOutputTypeLatex));
   visitCaption(s.children());
   visitPostEnd(m_t, s.hasCaption());
 }
@@ -1969,7 +1969,7 @@ void LatexDocVisitor::writeDiaFile(const QCString &baseName, const DocVerbatim &
   }
   QCString outDir = Config_getString(LATEX_OUTPUT);
   writeDiaGraphFromFile(baseName+".dia",outDir,shortName,DIA_EPS,s.srcFile(),s.srcLine());
-  visitPreStart(m_t, s.hasCaption(), shortName, s.width(), s.height());
+  visitPreStart(m_t, s.hasCaption(), shortName, s.width(DocOutputTypeLatex), s.height(DocOutputTypeLatex));
   visitCaption(s.children());
   visitPostEnd(m_t, s.hasCaption());
 }
@@ -1989,7 +1989,7 @@ void LatexDocVisitor::writePlantUMLFile(const QCString &baseName, const DocVerba
   QCString outDir = Config_getString(LATEX_OUTPUT);
   PlantumlManager::instance().generatePlantUMLOutput(baseName,outDir,
                               s.useBitmap() ? PlantumlManager::PUML_BITMAP : PlantumlManager::PUML_EPS);
-  visitPreStart(m_t, s.hasCaption(), shortName, s.width(), s.height());
+  visitPreStart(m_t, s.hasCaption(), shortName, s.width(DocOutputTypeLatex), s.height(DocOutputTypeLatex));
   visitCaption(s.children());
   visitPostEnd(m_t, s.hasCaption());
 }

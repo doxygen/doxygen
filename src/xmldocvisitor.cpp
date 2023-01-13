@@ -369,17 +369,17 @@ void XmlDocVisitor::operator()(const DocVerbatim &s)
       m_t << s.text();
       break;
     case DocVerbatim::Dot:
-      visitPreStart(m_t, "dot", s.hasCaption(), *this, s.children(), QCString(""), FALSE, DocImage::Html, s.width(), s.height());
+      visitPreStart(m_t, "dot", s.hasCaption(), *this, s.children(), QCString(""), FALSE, DocImage::Html, s.width(DocOutputTypeHTML), s.height(DocOutputTypeHTML));
       filter(s.text());
       visitPostEnd(m_t, "dot");
       break;
     case DocVerbatim::Msc:
-      visitPreStart(m_t, "msc", s.hasCaption(), *this, s.children(),  QCString(""), FALSE, DocImage::Html, s.width(), s.height());
+      visitPreStart(m_t, "msc", s.hasCaption(), *this, s.children(),  QCString(""), FALSE, DocImage::Html, s.width(DocOutputTypeHTML), s.height(DocOutputTypeHTML));
       filter(s.text());
       visitPostEnd(m_t, "msc");
       break;
     case DocVerbatim::PlantUML:
-      visitPreStart(m_t, "plantuml", s.hasCaption(), *this, s.children(),  QCString(""), FALSE, DocImage::Html, s.width(), s.height(), s.engine());
+      visitPreStart(m_t, "plantuml", s.hasCaption(), *this, s.children(),  QCString(""), FALSE, DocImage::Html, s.width(DocOutputTypeHTML), s.height(DocOutputTypeHTML), s.engine());
       filter(s.text());
       visitPostEnd(m_t, "plantuml");
       break;
@@ -931,8 +931,18 @@ void XmlDocVisitor::operator()(const DocImage &img)
   auto it = std::find_if(attribs.begin(),attribs.end(),
                          [](const auto &att) { return att.name=="alt"; });
   QCString altValue = it!=attribs.end() ? it->value : "";
+  DocOutputType type = DocOutputTypeAll;
+  switch(img.type())
+  {
+    case DocImage::Html:    type = DocOutputTypeHTML; break;
+    case DocImage::Latex:   type = DocOutputTypeLatex; break;
+    case DocImage::Rtf:     type = DocOutputTypeRTF; break;
+    case DocImage::DocBook: type = DocOutputTypeDocbook; break;
+    case DocImage::Xml:     type = DocOutputTypeXML; break;
+  }
+
   visitPreStart(m_t, "image", FALSE, *this, img.children(), baseName, TRUE,
-                img.type(), img.width(), img.height(), QCString(),
+                img.type(), img.width(type), img.height(type), QCString(),
                 altValue, img.isInlineImage());
 
   // copy the image to the output dir
@@ -950,7 +960,7 @@ void XmlDocVisitor::operator()(const DocDotFile &df)
 {
   if (m_hide) return;
   copyFile(df.file(),Config_getString(XML_OUTPUT)+"/"+stripPath(df.file()));
-  visitPreStart(m_t, "dotfile", FALSE, *this, df.children(), stripPath(df.file()), FALSE, DocImage::Html, df.width(), df.height());
+  visitPreStart(m_t, "dotfile", FALSE, *this, df.children(), stripPath(df.file()), FALSE, DocImage::Html, df.width(DocOutputTypeHTML), df.height(DocOutputTypeHTML));
   visitChildren(df);
   visitPostEnd(m_t, "dotfile");
 }
@@ -959,7 +969,7 @@ void XmlDocVisitor::operator()(const DocMscFile &df)
 {
   if (m_hide) return;
   copyFile(df.file(),Config_getString(XML_OUTPUT)+"/"+stripPath(df.file()));
-  visitPreStart(m_t, "mscfile", FALSE, *this, df.children(), stripPath(df.file()), FALSE, DocImage::Html, df.width(), df.height());
+  visitPreStart(m_t, "mscfile", FALSE, *this, df.children(), stripPath(df.file()), FALSE, DocImage::Html, df.width(DocOutputTypeHTML), df.height(DocOutputTypeHTML));
   visitChildren(df);
   visitPostEnd(m_t, "mscfile");
 }
@@ -968,7 +978,7 @@ void XmlDocVisitor::operator()(const DocDiaFile &df)
 {
   if (m_hide) return;
   copyFile(df.file(),Config_getString(XML_OUTPUT)+"/"+stripPath(df.file()));
-  visitPreStart(m_t, "diafile", FALSE, *this, df.children(), stripPath(df.file()), FALSE, DocImage::Html, df.width(), df.height());
+  visitPreStart(m_t, "diafile", FALSE, *this, df.children(), stripPath(df.file()), FALSE, DocImage::Html, df.width(DocOutputTypeHTML), df.height(DocOutputTypeHTML));
   visitChildren(df);
   visitPostEnd(m_t, "diafile");
 }
