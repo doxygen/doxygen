@@ -2093,6 +2093,8 @@ class TranslatorDutch : public Translator
         case FileMemberHighlight::Defines:
           result+="macros";
           break;
+        case FileMemberHighlight::Total: // for completeness
+          break;
       }
       result+=" met links naar ";
       if (extractAll) result+="de bestand's documentatie voor elke member:";
@@ -2151,6 +2153,8 @@ class TranslatorDutch : public Translator
           break;
         case ClassMemberHighlight::Related:
           result+="gerelateerde symbolen";
+          break;
+        case ClassMemberHighlight::Total: // for completeness
           break;
       }
       result+=" met links naar ";
@@ -2220,6 +2224,8 @@ class TranslatorDutch : public Translator
         case NamespaceMemberHighlight::EnumValues:
           singularResult="e enumeratie waarde";
           pluralResult="enumeratie waarden";
+          break;
+        case NamespaceMemberHighlight::Total: // for completeness
           break;
       }
       result+=pluralResult;
