@@ -37,17 +37,7 @@
 #include "printdocvisitor.h"
 #include "util.h"
 #include "indexlist.h"
-
-// debug off
-#define DBG(x) do {} while(0)
-
-// debug to stdout
-//#define DBG(x) printf x
-
-// debug to stderr
-//#define myprintf(...) fprintf(stderr,__VA_ARGS__)
-//#define DBG(x) myprintf x
-
+#include "trace.h"
 
 //---------------------------------------------------------------------------
 
@@ -576,7 +566,7 @@ void DocParser::errorHandleDefaultToken(DocNodeVariant *parent,int tok,
 
 int DocParser::handleStyleArgument(DocNodeVariant *parent,DocNodeList &children,const QCString &cmdName)
 {
-  DBG(("handleStyleArgument(%s)\n",qPrint(cmdName)));
+  AUTO_TRACE("cmdName={}",cmdName);
   QCString saveCmdName = cmdName;
   int tok=tokenizer.lex();
   if (tok!=TK_WHITESPACE)
@@ -608,7 +598,7 @@ int DocParser::handleStyleArgument(DocNodeVariant *parent,DocNodeList &children,
           { // ignore </li> as the end of a style command
             continue;
           }
-          DBG(("handleStyleArgument(%s) end tok=%s\n",qPrint(saveCmdName), DocTokenizer::tokToString(tok)));
+          AUTO_TRACE_EXIT("end tok={}",DocTokenizer::tokToString(tok));
           return tok;
           break;
         default:
@@ -618,7 +608,7 @@ int DocParser::handleStyleArgument(DocNodeVariant *parent,DocNodeList &children,
       break;
     }
   }
-  DBG(("handleStyleArgument(%s) end tok=%s\n",qPrint(saveCmdName), DocTokenizer::tokToString(tok)));
+  AUTO_TRACE_EXIT("end tok={}",DocTokenizer::tokToString(tok));
   return (tok==TK_NEWPARA || tok==TK_LISTITEM || tok==TK_ENDLIST
          ) ? tok : RetVal_OK;
 }
@@ -629,7 +619,7 @@ int DocParser::handleStyleArgument(DocNodeVariant *parent,DocNodeList &children,
 void DocParser::handleStyleEnter(DocNodeVariant *parent,DocNodeList &children,
           DocStyleChange::Style s,const QCString &tagName,const HtmlAttribList *attribs)
 {
-  DBG(("HandleStyleEnter\n"));
+  AUTO_TRACE("tagName={}",tagName);
   children.append<DocStyleChange>(this,parent,context.nodeStack.size(),s,tagName,TRUE,attribs);
   context.styleStack.push(&children.back());
 }
@@ -640,7 +630,7 @@ void DocParser::handleStyleEnter(DocNodeVariant *parent,DocNodeList &children,
 void DocParser::handleStyleLeave(DocNodeVariant *parent,DocNodeList &children,
          DocStyleChange::Style s,const QCString &tagName)
 {
-  DBG(("HandleStyleLeave\n"));
+  AUTO_TRACE("tagName={}",tagName);
   QCString tagNameLower = QCString(tagName).lower();
 
   auto topStyleChange = [](const DocStyleChangeStack &stack) -> const DocStyleChange &
@@ -690,6 +680,7 @@ void DocParser::handleStyleLeave(DocNodeVariant *parent,DocNodeList &children,
  */
 void DocParser::handlePendingStyleCommands(DocNodeVariant *parent,DocNodeList &children)
 {
+  AUTO_TRACE();
   if (!context.styleStack.empty())
   {
     const DocStyleChange *sc = &std::get<DocStyleChange>(*context.styleStack.top());
@@ -706,6 +697,7 @@ void DocParser::handlePendingStyleCommands(DocNodeVariant *parent,DocNodeList &c
 
 void DocParser::handleInitialStyleCommands(DocNodeVariant *parent,DocNodeList &children)
 {
+  AUTO_TRACE();
   while (!context.initialStyleStack.empty())
   {
     const DocStyleChange &sc = std::get<DocStyleChange>(*context.initialStyleStack.top());
@@ -717,6 +709,7 @@ void DocParser::handleInitialStyleCommands(DocNodeVariant *parent,DocNodeList &c
 int DocParser::handleAHref(DocNodeVariant *parent,DocNodeList &children,
                            const HtmlAttribList &tagHtmlAttribs)
 {
+  AUTO_TRACE();
   uint index=0;
   int retval = RetVal_OK;
   for (const auto &opt : tagHtmlAttribs)
@@ -760,6 +753,7 @@ int DocParser::handleAHref(DocNodeVariant *parent,DocNodeList &children,
 
 void DocParser::handleUnclosedStyleCommands()
 {
+  AUTO_TRACE();
   if (!context.initialStyleStack.empty())
   {
     QCString tagName = std::get<DocStyleChange>(*context.initialStyleStack.top()).tagName();
@@ -774,6 +768,7 @@ void DocParser::handleUnclosedStyleCommands()
 void DocParser::handleLinkedWord(DocNodeVariant *parent,DocNodeList &children,bool ignoreAutoLinkFlag)
 {
   QCString name = linkToText(SrcLangExt_Unknown,context.token->name,TRUE);
+  AUTO_TRACE("word={}",name);
   bool autolinkSupport = Config_getBool(AUTOLINK_SUPPORT);
   if (!autolinkSupport && !ignoreAutoLinkFlag) // no autolinking -> add as normal word
   {
@@ -882,6 +877,7 @@ void DocParser::handleLinkedWord(DocNodeVariant *parent,DocNodeList &children,bo
 void DocParser::handleParameterType(DocNodeVariant *parent,DocNodeList &children,const QCString &paramTypes)
 {
   QCString name = context.token->name; // save token name
+  AUTO_TRACE("name={}",name);
   QCString name1;
   int p=0,i,ii;
   while ((i=paramTypes.find('|',p))!=-1)
@@ -904,9 +900,9 @@ void DocParser::handleParameterType(DocNodeVariant *parent,DocNodeList &children
 
 void DocParser::handleInternalRef(DocNodeVariant *parent,DocNodeList &children)
 {
-  //printf("CMD_INTERNALREF\n");
   int tok=tokenizer.lex();
   QCString tokenName = context.token->name;
+  AUTO_TRACE("name={}",tokenName);
   if (tok!=TK_WHITESPACE)
   {
     warn_doc_error(context.fileName,tokenizer.getLineNr(),"expected whitespace after \\%s command",
@@ -927,6 +923,7 @@ void DocParser::handleInternalRef(DocNodeVariant *parent,DocNodeList &children)
 
 void DocParser::handleAnchor(DocNodeVariant *parent,DocNodeList &children)
 {
+  AUTO_TRACE();
   int tok=tokenizer.lex();
   if (tok!=TK_WHITESPACE)
   {
@@ -964,6 +961,7 @@ void DocParser::handleAnchor(DocNodeVariant *parent,DocNodeList &children)
  */
 void DocParser::defaultHandleTitleAndSize(const int cmd, DocNodeVariant *parent, DocNodeList &children, QCString &width,QCString &height)
 {
+  AUTO_TRACE();
   auto ns = AutoNodeStack(this,parent);
 
   // parse title
@@ -1034,10 +1032,12 @@ void DocParser::defaultHandleTitleAndSize(const int cmd, DocNodeVariant *parent,
   tokenizer.setStatePara();
 
   handlePendingStyleCommands(parent,children);
+  AUTO_TRACE_EXIT("width={} height={}",width,height);
 }
 
 void DocParser::handleImage(DocNodeVariant *parent, DocNodeList &children)
 {
+  AUTO_TRACE();
   bool inlineImage = false;
   QCString anchorStr;
 
@@ -1157,16 +1157,15 @@ void DocParser::handleImage(DocNodeVariant *parent, DocNodeList &children)
  */
 bool DocParser::defaultHandleToken(DocNodeVariant *parent,int tok, DocNodeList &children,bool handleWord)
 {
-  DBG(("token %s at %d",DocTokenizer::tokToString(tok),tokenizer.getLineNr()));
+  AUTO_TRACE("token={} handleWord={}",DocTokenizer::tokToString(tok),handleWord);
   if (tok==TK_WORD || tok==TK_LNKWORD || tok==TK_SYMBOL || tok==TK_URL ||
       tok==TK_COMMAND_AT || tok==TK_COMMAND_BS || tok==TK_HTMLTAG
      )
   {
-    DBG((" name=%s",qPrint(context.token->name)));
   }
-  DBG(("\n"));
 reparsetoken:
   QCString tokenName = context.token->name;
+  AUTO_TRACE_ADD("tokenName={}",tokenName);
   switch (tok)
   {
     case TK_COMMAND_AT:
@@ -1234,7 +1233,7 @@ reparsetoken:
             if (tok==TK_NEWPARA) goto handlepara;
             else if (tok==TK_WORD || tok==TK_HTMLTAG)
             {
-	      DBG(("CMD_EMPHASIS: reparsing command %s\n",qPrint(context.token->name)));
+	      AUTO_TRACE_ADD("CMD_EMPHASIS: reparsing");
               goto reparsetoken;
             }
           }
@@ -1248,7 +1247,7 @@ reparsetoken:
             if (tok==TK_NEWPARA) goto handlepara;
             else if (tok==TK_WORD || tok==TK_HTMLTAG)
             {
-	      DBG(("CMD_BOLD: reparsing command %s\n",qPrint(context.token->name)));
+	      AUTO_TRACE_ADD("CMD_BOLD: reparsing");
               goto reparsetoken;
             }
           }
@@ -1262,7 +1261,7 @@ reparsetoken:
             if (tok==TK_NEWPARA) goto handlepara;
             else if (tok==TK_WORD || tok==TK_HTMLTAG)
             {
-	      DBG(("CMD_CODE: reparsing command %s\n",qPrint(context.token->name)));
+	      AUTO_TRACE_ADD("CMD_CODE: reparsing");
               goto reparsetoken;
             }
           }
@@ -1563,11 +1562,12 @@ handlepara:
 
 void DocParser::handleImg(DocNodeVariant *parent, DocNodeList &children,const HtmlAttribList &tagHtmlAttribs)
 {
+  AUTO_TRACE();
   bool found=FALSE;
   uint index=0;
   for (const auto &opt : tagHtmlAttribs)
   {
-    //printf("option name=%s value=%s\n",qPrint(opt.name),qPrint(opt.value));
+    AUTO_TRACE_ADD("option name={} value='{}'",opt.name,opt.value);
     if (opt.name=="src" && !opt.value.isEmpty())
     {
       // copy attributes
@@ -1594,6 +1594,7 @@ void DocParser::handleImg(DocNodeVariant *parent, DocNodeList &children,const Ht
 int DocParser::internalValidatingParseDoc(DocNodeVariant *parent,DocNodeList &children,
                                     const QCString &doc)
 {
+  AUTO_TRACE();
   int retval = RetVal_OK;
 
   if (doc.isEmpty()) return retval;
@@ -1625,9 +1626,7 @@ int DocParser::internalValidatingParseDoc(DocNodeVariant *parent,DocNodeList &ch
   } while (retval==TK_NEWPARA);
   if (lastPar) lastPar->markLast();
 
-  //printf("internalValidateParsingDoc: %p: isFirst=%d isLast=%d\n",
-  //   lastPar,lastPar?lastPar->isFirst():-1,lastPar?lastPar->isLast():-1);
-
+  AUTO_TRACE_EXIT("isFirst={} isLast={}",lastPar?lastPar->isFirst():-1,lastPar?lastPar->isLast():-1);
   return retval;
 }
 
@@ -1635,6 +1634,7 @@ int DocParser::internalValidatingParseDoc(DocNodeVariant *parent,DocNodeList &ch
 
 void DocParser::readTextFileByName(const QCString &file,QCString &text)
 {
+  AUTO_TRACE("file={} text={}",file,text);
   if (Portable::isAbsolutePath(file))
   {
     FileInfo fi(file.str());
@@ -1798,7 +1798,7 @@ static uint skipToEndMarker(const char *data,uint i,uint len,const QCString &end
 
 QCString DocParser::processCopyDoc(const char *data,uint &len)
 {
-  //printf("processCopyDoc start '%s'\n",data);
+  AUTO_TRACE("data={} len={}",Trace::trunc(data),len);
   GrowBuf buf;
   uint i=0;
   int lineNr = tokenizer.getLineNr();
@@ -1887,6 +1887,7 @@ QCString DocParser::processCopyDoc(const char *data,uint &len)
   }
   len = static_cast<uint>(buf.getPos());
   buf.addChar(0);
+  AUTO_TRACE_EXIT("result={}",Trace::trunc(buf.get()));
   return buf.get();
 }
 

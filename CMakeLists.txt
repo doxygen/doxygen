@@ -30,6 +30,7 @@ option(static_libclang "Link to a statically compiled version of LLVM/libclang."
 option(win_static      "Link with /MT in stead of /MD on windows" OFF)
 option(enable_console  "Enable that executables on Windows get the CONSOLE bit set for the doxywizard executable [development]"  OFF)
 option(enable_coverage "Enable coverage reporting for gcc/clang [development]" OFF)
+option(enable_tracing  "Enable tracing for release builds [development]" OFF)
 
 set(force_qt CACHE INTERNAL "Forces doxywizard to build using the specified major version, this can be Qt5 or Qt6")
 set_property(CACHE force_qt PROPERTY STRINGS OFF Qt6 Qt5)
@@ -204,6 +205,7 @@ add_subdirectory(libversion)
 add_subdirectory(libxml)
 add_subdirectory(vhdlparser)
 add_subdirectory(src)
+add_subdirectory(spdlog)
 
 if (build_doc_chm)
     if (WIN32)

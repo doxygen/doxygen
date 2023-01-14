@@ -23,11 +23,7 @@ class Debug
 {
   public:
     enum DebugMask { Quiet        = 0x00000000,
-                     FindMembers  = 0x00000001,
-                     Functions    = 0x00000002,
-                     Variables    = 0x00000004,
                      Preprocessor = 0x00000008,
-                     Classes      = 0x00000010,
                      CommentCnv   = 0x00000020,
                      CommentScan  = 0x00000040,
                      PrintTree    = 0x00000100,

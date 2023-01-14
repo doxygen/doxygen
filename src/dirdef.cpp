@@ -30,6 +30,7 @@
 #include "docparser.h"
 #include "definitionimpl.h"
 #include "filedef.h"
+#include "trace.h"
 
 
 //----------------------------------------------------------------------
@@ -180,11 +181,13 @@ void DirDefImpl::sort()
 
 static QCString encodeDirName(const QCString &anchor)
 {
+  AUTO_TRACE();
   // convert to md5 hash
   uchar md5_sig[16];
   char sigStr[33];
   MD5Buffer(anchor.data(),anchor.length(),md5_sig);
   MD5SigToString(md5_sig,sigStr);
+  AUTO_TRACE_EXIT("result={}",sigStr);
   return sigStr;
 
   // old algorithm
@@ -212,13 +215,14 @@ static QCString encodeDirName(const QCString &anchor)
 
 QCString DirDefImpl::getOutputFileBase() const
 {
-  //printf("DirDefImpl::getOutputFileBase() %s->dir_%s\n",
-  //    qPrint(m_diskName),qPrint(encodeDirName(m_diskName)));
-  return "dir_"+encodeDirName(m_diskName);
+  QCString dir = "dir_"+encodeDirName(m_diskName);
+  AUTO_TRACE("diskName={} result={}",m_diskName,dir);
+  return dir;
 }
 
 void DirDefImpl::writeDetailedDescription(OutputList &ol,const QCString &title)
 {
+  AUTO_TRACE();
   if ((!briefDescription().isEmpty() && Config_getBool(REPEAT_BRIEF)) ||
       !documentation().isEmpty())
   {
@@ -266,6 +270,7 @@ void DirDefImpl::writeDetailedDescription(OutputList &ol,const QCString &title)
 
 void DirDefImpl::writeBriefDescription(OutputList &ol)
 {
+  AUTO_TRACE();
   if (hasBriefDescription())
   {
     auto parser { createDocParser() };
@@ -324,6 +329,7 @@ void DirDefImpl::writeDirectoryGraph(OutputList &ol)
 
 void DirDefImpl::writeSubDirList(OutputList &ol)
 {
+  AUTO_TRACE();
   int numSubdirs = 0;
   for(const auto dd : m_subdirs)
   {
@@ -333,6 +339,7 @@ void DirDefImpl::writeSubDirList(OutputList &ol)
     }
   }
 
+  AUTO_TRACE_ADD("numSubdirs={}",numSubdirs);
   // write subdir list
   if (numSubdirs>0)
   {
@@ -373,6 +380,7 @@ void DirDefImpl::writeSubDirList(OutputList &ol)
 
 void DirDefImpl::writeFileList(OutputList &ol)
 {
+  AUTO_TRACE();
   int numFiles = 0;
   for (const auto &fd : m_fileList)
   {
@@ -387,6 +395,7 @@ void DirDefImpl::writeFileList(OutputList &ol)
     }
   }
 
+  AUTO_TRACE_ADD("numFiles={}",numFiles);
   // write file list
   if (numFiles>0)
   {
@@ -511,6 +520,7 @@ void DirDefImpl::writeDocumentation(OutputList &ol)
   ol.pushGeneratorState();
 
   QCString title=theTranslator->trDirReference(m_dispName);
+  AUTO_TRACE("title={}",title);
   startFile(ol,getOutputFileBase(),name(),title,HighlightedItem::Files,!generateTreeView);
 
   if (!generateTreeView)
@@ -649,12 +659,11 @@ void DirDefImpl::addUsesDependency(const DirDef *dir,const FileDef *srcFd,
                                    const FileDef *dstFd,bool srcDirect, bool dstDirect)
 {
   if (this==dir) return; // do not add self-dependencies
-  //static int count=0;
-  //printf("  %d add dependency %s->%s due to %s->%s\n",
-  //    count++,qPrint(shortName()),
-  //    qPrint(dir->shortName()),
-  //    qPrint(srcFd->name()),
-  //    qPrint(dstFd->name()));
+  AUTO_TRACE("add dependency {}->{} due to {}->{}",
+      qPrint(shortName()),
+      qPrint(dir->shortName()),
+      qPrint(srcFd->name()),
+      qPrint(dstFd->name()));
 
   // levels match => add direct dependency
   bool added=FALSE;
@@ -664,7 +673,7 @@ void DirDefImpl::addUsesDependency(const DirDef *dir,const FileDef *srcFd,
      const FilePair *usedPair = usedDir->findFilePair(FilePair::key(srcFd,dstFd));
      if (usedPair==0) // new file dependency
      {
-       //printf("  => new file\n");
+       AUTO_TRACE_ADD("{} => {} new file dependency",srcFd->name(),dstFd->name());
        usedDir->addFileDep(srcFd,dstFd, srcDirect, dstDirect);
        added=TRUE;
      }
@@ -675,7 +684,7 @@ void DirDefImpl::addUsesDependency(const DirDef *dir,const FileDef *srcFd,
   }
   else // new directory dependency
   {
-    //printf("  => new file\n");
+    AUTO_TRACE_ADD("{} => {} new file dependency",srcFd->name(),dstFd->name());
     auto newUsedDir = std::make_unique<UsedDir>(dir);
     newUsedDir->addFileDep(srcFd,dstFd, srcDirect, dstDirect);
     m_usedDirs.add(dir->getOutputFileBase(),std::move(newUsedDir));
@@ -708,22 +717,20 @@ void DirDefImpl::addUsesDependency(const DirDef *dir,const FileDef *srcFd,
  */
 void DirDefImpl::computeDependencies()
 {
+  AUTO_TRACE();
   for (const auto &fd : m_fileList)
   {
-    //printf("  File %s\n",qPrint(fd->name()));
-    //printf("** dir=%s file=%s\n",qPrint(shortName()),qPrint(fd->name()));
+    AUTO_TRACE_ADD("dir={} file={}",shortName(),fd->name());
     for (const auto &ii : fd->includeFileList())
     {
-      //printf("  > %s\n",qPrint(ii->includeName));
-      //printf("    #include %s\n",qPrint(ii->includeName));
+      AUTO_TRACE_ADD("#include {}",ii.includeName);
       if (ii.fileDef && ii.fileDef->isLinkable()) // linkable file
       {
         DirDef *usedDir = ii.fileDef->getDirDef();
         if (usedDir)
         {
           // add dependency: thisDir->usedDir
-          //static int count=0;
-          //printf("      %d: add dependency %s->%s\n",count++,qPrint(name()),qPrint(usedDir->name()));
+          AUTO_TRACE_ADD("add dependency {}->{}",name(),usedDir->name());
           addUsesDependency(usedDir,fd,ii.fileDef,true,true);
         }
       }
@@ -795,6 +802,7 @@ FilePair *UsedDir::findFilePair(const QCString &name)
 
 DirDef *DirDefImpl::createNewDir(const QCString &path)
 {
+  AUTO_TRACE();
   ASSERT(path!=0);
   DirDef *dir = Doxygen::dirLinkedMap->find(path);
   if (dir==0) // new dir
@@ -802,8 +810,7 @@ DirDef *DirDefImpl::createNewDir(const QCString &path)
     dir = Doxygen::dirLinkedMap->add(path,
             std::unique_ptr<DirDef>(
               createDirDef(path)));
-    //printf("Adding new dir %s\n",path);
-    //printf("createNewDir %s short=%s\n",path,qPrint(dir->shortName()));
+    AUTO_TRACE_ADD("Adding new dir {} shortName {}",path,dir->shortName());
   }
   return dir;
 }
@@ -826,7 +833,7 @@ bool DirDefImpl::matchPath(const QCString &path,const StringVector &l)
  */
 DirDef *DirDefImpl::mergeDirectoryInTree(const QCString &path)
 {
-  //printf("DirDefImpl::mergeDirectoryInTree(%s)\n",qPrint(path));
+  AUTO_TRACE("path={}",path);
   int p=0,i=0;
   DirDef *dir=0;
   while ((i=path.find('/',p))!=-1)
@@ -889,6 +896,7 @@ void DirRelation::writeDocumentation(OutputList &ol)
                       (m_src->shortName()+" &rarr; "+m_dst->dir()->shortName()));
   QCString title=theTranslator->trDirRelation(
                  (m_src->displayName()+" -> "+m_dst->dir()->shortName()));
+  AUTO_TRACE("title={}",title);
   startFile(ol,getOutputFileBase(),getOutputFileBase(),
             title,HighlightedItem::None,!generateTreeView,m_src->getOutputFileBase());
 
@@ -939,6 +947,7 @@ void DirRelation::writeDocumentation(OutputList &ol)
  */
 static void computeCommonDirPrefix()
 {
+  AUTO_TRACE();
   QCString path;
   auto it = Doxygen::dirLinkedMap->begin();
   if (!Doxygen::dirLinkedMap->empty()) // we have at least one dir
@@ -1008,12 +1017,13 @@ static void computeCommonDirPrefix()
   {
     QCString diskName = dir->name().right(dir->name().length()-path.length());
     dir->setDiskName(diskName);
-    //printf("set disk name: %s -> %s\n",qPrint(dir->name()),qPrint(diskName));
+    AUTO_TRACE_ADD("set disk name: {} -> {}",dir->name(),diskName);
   }
 }
 
 void buildDirectories()
 {
+  AUTO_TRACE();
   // for each input file
   for (const auto &fn : *Doxygen::inputNameLinkedMap)
   {
@@ -1047,8 +1057,8 @@ void buildDirectories()
       if (parent)
       {
         parent->addSubDir(dir.get());
-        //printf("DirDefImpl::addSubdir(): Adding subdir\n%s to\n%s\n",
-        //  qPrint(dir->displayName()), qPrint(parent->displayName()));
+        AUTO_TRACE_ADD("DirDefImpl::addSubdir(): Adding subdir {} to {}",
+                        dir->displayName(), parent->displayName());
       }
     }
   }
@@ -1087,6 +1097,7 @@ void buildDirectories()
 
 void computeDirDependencies()
 {
+  AUTO_TRACE();
   // compute nesting level for each directory
   for (const auto &dir : *Doxygen::dirLinkedMap)
   {
@@ -1096,13 +1107,14 @@ void computeDirDependencies()
   // compute uses dependencies between directories
   for (const auto &dir : *Doxygen::dirLinkedMap)
   {
-    //printf("computeDependencies for %s: #dirs=%d\n",qPrint(dir->name()),Doxygen::directories.count());
+    AUTO_TRACE_ADD("computeDependencies for {}: #dirs={}",dir->name(),Doxygen::dirLinkedMap->size());
     dir->computeDependencies();
   }
 }
 
 void generateDirDocs(OutputList &ol)
 {
+  AUTO_TRACE();
   for (const auto &dir : *Doxygen::dirLinkedMap)
   {
     ol.pushGeneratorState();

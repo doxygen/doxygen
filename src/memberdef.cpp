@@ -45,6 +45,7 @@
 #include "config.h"
 #include "definitionimpl.h"
 #include "regex.h"
+#include "trace.h"
 
 //-----------------------------------------------------------------------------
 
@@ -5875,16 +5876,13 @@ static void transferArgumentDocumentation(ArgumentList &decAl,ArgumentList &defA
 
 void combineDeclarationAndDefinition(MemberDefMutable *mdec,MemberDefMutable *mdef)
 {
-  //printf("mdec=%s isPrototype()=%d\n",qPrint(mdec->name()),mdec->isPrototype());
+  AUTO_TRACE("mdec='{}' mdef='{}' mdec.isPrototype={} mdef.isPrototype={}",
+              mdec->name(), mdef->name(), mdec->isPrototype(), mdef->isPrototype());
   if (
       (mdef->isFunction() && !mdef->isStatic() && !mdef->isPrototype()) ||
       (mdef->isVariable() && !mdef->isExternal() && !mdef->isStatic())
      )
   {
-    //printf("mdef=(%p,%s) mdec=(%p,%s)\n",
-    //    mdef, mdef ? qPrint(mdef->name()) : "",
-    //    mdec, mdec ? qPrint(mdec->name()) : "");
-
     bool sameNumTemplateArgs = mdef->templateArguments().size()==mdec->templateArguments().size();
 
     ArgumentList &mdefAl = const_cast<ArgumentList&>(mdef->argumentList());
@@ -5896,11 +5894,7 @@ void combineDeclarationAndDefinition(MemberDefMutable *mdec,MemberDefMutable *md
                        )
        ) /* match found */
     {
-      //printf("Found member %s: definition in %s (doc='%s') and declaration in %s (doc='%s')\n",
-      //    mn->memberName(),
-      //    qPrint(mdef->getFileDef()->name()),qPrint(mdef->documentation()),
-      //    qPrint(mdec->getFileDef()->name()),qPrint(mdec->documentation())
-      //    );
+      AUTO_TRACE_ADD("combining definition and declaration");
 
       if (Config_getBool(RESOLVE_UNNAMED_PARAMS))
       {

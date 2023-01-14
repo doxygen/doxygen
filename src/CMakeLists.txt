@@ -10,6 +10,7 @@ include_directories(
     ${PROJECT_SOURCE_DIR}/libxml
     ${PROJECT_SOURCE_DIR}/vhdlparser
     ${PROJECT_SOURCE_DIR}/src
+    ${PROJECT_SOURCE_DIR}/spdlog/include
     ${CLANG_INCLUDEDIR}
     ${GENERATED_SRC}
 )
@@ -193,6 +194,7 @@ add_library(doxycfg STATIC
     portable_c.c
     message.cpp
     debug.cpp
+    trace.cpp
 )
 add_sanitizers(doxycfg)
 
@@ -340,10 +342,11 @@ add_library(doxymain STATIC
 add_sanitizers(doxymain)
 
 # LLVM/clang headers give a lot of warnings with -Wshadow and -Wcast-align so we disable them for
-# the one file that includes them
+# the one file that includes them.
+# for the -Wbitfield-enum-conversion warning issue https://github.com/llvm/llvm-project/issues/59840 was submitted
 
 if (NOT MSVC)
-set_source_files_properties(clangparser.cpp PROPERTIES COMPILE_FLAGS "-Wno-shadow -Wno-cast-align")
+set_source_files_properties(clangparser.cpp PROPERTIES COMPILE_FLAGS "-Wno-shadow -Wno-cast-align -Wno-bitfield-enum-conversion")
 endif()
 
 ##foreach(lex_file ${LEX_FILES})
@@ -385,6 +388,12 @@ if (use_libclang)
     target_compile_definitions(doxygen PRIVATE ${LLVM_DEFINITIONS})
 endif()
 
+if((CMAKE_BUILD_TYPE EQUAL "DEBUG") OR enable_tracing)
+    target_compile_definitions(doxycfg  PRIVATE -DENABLE_TRACING=1)
+    target_compile_definitions(doxymain PRIVATE -DENABLE_TRACING=1)
+    target_compile_definitions(doxygen  PRIVATE -DENABLE_TRACING=1)
+endif()
+
 target_link_libraries(doxygen PRIVATE
     doxymain
     doxycfg
@@ -394,6 +403,7 @@ target_link_libraries(doxygen PRIVATE
     xml
     doxygen_version
     vhdlparser
+    spdlog
     ${SQLITE3_LIBRARIES}
     ${ICONV_LIBRARIES}
     ${CMAKE_THREAD_LIBS_INIT}
@@ -410,7 +420,6 @@ set_project_warnings(doxygen)
 set_project_coverage(doxycfg)
 set_project_coverage(doxymain)
 set_project_coverage(doxygen)
-
 
 install(TARGETS doxygen DESTINATION bin)
 

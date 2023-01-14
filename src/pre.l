@@ -64,14 +64,11 @@ typedef yyguts_t *yyscan_t;
 #include "filedef.h"
 #include "regex.h"
 #include "fileinfo.h"
+#include "trace.h"
 
 #define YY_NO_UNISTD_H 1
 
 #define USE_STATE2STRING 0
-
-// Toggle for some debugging info
-//#define DBG_CTX(x) fprintf x
-#define DBG_CTX(x) do { } while(0)
 
 #if USE_STATE2STRING
 static const char *stateToString(int state);
@@ -1734,11 +1731,11 @@ WSopt [ \t\r]*
                                           yyextra->defLitText += *yytext;
                                         }
 <<EOF>>                                 {
-                                          DBG_CTX((stderr,"End of include file\n"));
+                                          TRACE("End of include file");
                                           //printf("Include stack depth=%d\n",yyextra->includeStack.size());
                                           if (yyextra->includeStack.empty())
                                           {
-                                            DBG_CTX((stderr,"Terminating scanner!\n"));
+                                            TRACE("Terminating scanner");
                                             yyterminate();
                                           }
                                           else
@@ -1755,7 +1752,7 @@ WSopt [ \t\r]*
                                             yyextra->inputBufPos = fs->oldFileBufPos;
                                             yyextra->curlyCount  = fs->curlyCount;
                                             setFileName(yyscanner,fs->fileName);
-                                            DBG_CTX((stderr,"######## FileName %s\n",qPrint(yyextra->fileName)));
+                                            TRACE("switching to {}",yyextra->fileName);
 
                                             // Deal with file changes due to
                                             // #include's within { .. } blocks
@@ -3196,6 +3193,7 @@ static QCString determineAbsoluteIncludeName(const QCString &curFile,const QCStr
 
 static void readIncludeFile(yyscan_t yyscanner,const QCString &inc)
 {
+  AUTO_TRACE("inc={}",inc);
   YY_EXTRA_TYPE state = preYYget_extra(yyscanner);
   uint i=0;
 
@@ -3283,7 +3281,7 @@ static void readIncludeFile(yyscan_t yyscanner,const QCString &inc)
       lineStr.sprintf("# 1 \"%s\" 1\n",qPrint(state->fileName));
       outputString(yyscanner,lineStr);
 
-      DBG_CTX((stderr,"Switching to include file %s\n",qPrint(incFileName)));
+      AUTO_TRACE_ADD("Switching to include file {}",incFileName);
       state->expectGuard=TRUE;
       state->inputBuf   = &fs->fileBuf;
       state->inputBufPos=0;
@@ -3664,7 +3662,7 @@ Preprocessor::~Preprocessor()
 
 void Preprocessor::processFile(const QCString &fileName,BufStr &input,BufStr &output)
 {
-//  printf("Preprocessor::processFile(%s)\n",fileName);
+  AUTO_TRACE("fileName={}",fileName);
   yyscan_t yyscanner = p->yyscanner;
   YY_EXTRA_TYPE state = preYYget_extra(p->yyscanner);
   struct yyguts_t *yyg = (struct yyguts_t*)p->yyscanner;
@@ -3778,7 +3776,6 @@ void Preprocessor::processFile(const QCString &fileName,BufStr &input,BufStr &ou
 
   //yyextra->defineManager.endContext();
   printlex(yy_flex_debug, FALSE, __FILE__, qPrint(fileName));
-//  printf("Preprocessor::processFile(%s) finished\n",fileName);
 }
 
 #if USE_STATE2STRING

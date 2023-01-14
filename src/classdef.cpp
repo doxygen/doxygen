@@ -50,6 +50,7 @@
 #include "definitionimpl.h"
 #include "symbolresolver.h"
 #include "fileinfo.h"
+#include "trace.h"
 
 //-----------------------------------------------------------------------------
 
@@ -4033,7 +4034,8 @@ ClassDef *ClassDefImpl::insertTemplateInstance(const QCString &fileName,
   if (templateClass==0)
   {
     QCString tcname = removeRedundantWhiteSpace(localName()+templSpec);
-    Debug::print(Debug::Classes,0,"      New template instance class '%s''%s' inside '%s' hidden=%d\n",qPrint(name()),qPrint(templSpec),qPrint(name()),isHidden());
+    AUTO_TRACE("New template instance class name='{}' templSpec='{}' inside '{}' hidden={}",
+        name(),templSpec,name(),isHidden());
 
     ClassDef *foundCd = Doxygen::classLinkedMap->find(tcname);
     if (foundCd)

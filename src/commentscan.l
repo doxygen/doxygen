@@ -61,6 +61,7 @@ typedef yyguts_t *yyscan_t;
 #include "section.h"
 #include "util.h"
 #include "reflist.h"
+#include "trace.h"
 
 #define USE_STATE2STRING 0
 
@@ -3702,10 +3703,11 @@ bool CommentScanner::parseCommentBlock(/* in */     OutlineParserInterface *pars
                        /* in */     bool markdownSupport
                       )
 {
+  AUTO_TRACE("comment='{}' fileName={} lineNr={} isBrief={} isAutoBriefOn={} inInbody={}"
+             " prot={} markdownSupport={}",Trace::trunc(comment),fileName,lineNr,isBrief,
+             isAutoBriefOn,isInbody,prot,markdownSupport);
   yyscan_t yyscanner = p->yyscanner;
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  //printf("parseCommentBlock() isBrief=%d isAutoBriefOn=%d lineNr=%d\n",
-  //    isBrief,isAutoBriefOn,lineNr);
 
   initParser(yyscanner);
   yyextra->guards = std::stack<GuardedSection>();
@@ -3808,8 +3810,8 @@ bool CommentScanner::parseCommentBlock(/* in */     OutlineParserInterface *pars
   if (yyextra->parseMore) position=yyextra->inputPosition; else position=0;
 
   lineNr = yyextra->lineNr;
-  //printf("position=%d yyextra->parseMore=%d newEntryNeeded=%d\n",
-  //  position,yyextra->parseMore,newEntryNeeded);
+  AUTO_TRACE_EXIT("position={} parseMore={} newEntryNeeded={}",
+      position,yyextra->parseMore,newEntryNeeded);
 
   printlex(yy_flex_debug, FALSE, __FILE__, !fileName.isEmpty() ? qPrint(fileName): NULL);
   return yyextra->parseMore;

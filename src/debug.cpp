@@ -28,12 +28,8 @@
 
 static std::map< std::string, Debug::DebugMask > s_labels =
 {
-  { "findmembers",       Debug::FindMembers       },
-  { "functions",         Debug::Functions         },
-  { "variables",         Debug::Variables         },
   { "preprocessor",      Debug::Preprocessor      },
   { "nolineno",          Debug::NoLineNo          },
-  { "classes",           Debug::Classes           },
   { "commentcnv",        Debug::CommentCnv        },
   { "commentscan",       Debug::CommentScan       },
   { "printtree",         Debug::PrintTree         },

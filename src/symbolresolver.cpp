@@ -23,6 +23,7 @@
 #include "namespacedef.h"
 #include "config.h"
 #include "defargs.h"
+#include "trace.h"
 
 static std::recursive_mutex g_cacheMutex;
 static std::recursive_mutex g_cacheTypedefMutex;

@@ -30,14 +30,7 @@
 #include "dir.h"
 #include "utf8.h"
 #include "latexgen.h"
-
-#define ENABLE_TRACING 0
-
-#if ENABLE_TRACING
-#define TRACE(x) printf x
-#else
-#define TRACE(x)
-#endif
+#include "trace.h"
 
 class TemplateToken;
 
@@ -127,18 +120,6 @@ static void removeSpacesAroundEquals(QCString &s)
 }
 
 //----------------------------------------------------------------------------
-
-#if ENABLE_TRACING
-static QCString replace(const QCString &s,char csrc,char cdst)
-{
-  QCString result = s;
-  for (uint i=0;i<result.length();i++)
-  {
-    if (result[i]==csrc) result[i]=cdst;
-  }
-  return result;
-}
-#endif
 
 //- Template struct & list forward declarations ------------------------------
 
@@ -1673,7 +1654,7 @@ class ExprAstNumber : public ExprAst
 {
   public:
     ExprAstNumber(int num) : m_number(num)
-    { TRACE(("ExprAstNumber(%d)\n",num)); }
+    { AUTO_TRACE("num={}",num); }
     int number() const { return m_number; }
     virtual TemplateVariant resolve(TemplateContext *) { return TemplateVariant(m_number); }
   private:
@@ -1685,7 +1666,7 @@ class ExprAstVariable : public ExprAst
 {
   public:
     ExprAstVariable(const QCString &name) : m_name(name)
-    { TRACE(("ExprAstVariable(%s)\n",name.data())); }
+    { AUTO_TRACE("name={}",name); }
     const QCString &name() const { return m_name; }
     virtual TemplateVariant resolve(TemplateContext *c)
     {
@@ -1706,8 +1687,7 @@ class ExprAstFunctionVariable : public ExprAst
   public:
     ExprAstFunctionVariable(ExprAstPtr &&var, ExprAstList &&args)
       : m_var(std::move(var)), m_args(std::move(args))
-    { TRACE(("ExprAstFunctionVariable()\n"));
-    }
+    { AUTO_TRACE(); }
     virtual TemplateVariant resolve(TemplateContext *c)
     {
       std::vector<TemplateVariant> args;
@@ -1733,13 +1713,13 @@ class ExprAstFilter : public ExprAst
 {
   public:
     ExprAstFilter(const QCString &name,ExprAstPtr &&arg) : m_name(name), m_arg(std::move(arg))
-    { TRACE(("ExprAstFilter(%s)\n",name.data())); }
+    { AUTO_TRACE("name={}",name); }
     const QCString &name() const { return m_name; }
     TemplateVariant apply(const TemplateVariant &v,TemplateContext *c)
     {
       TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
       if (ci==0) return v; // should not happen
-      TRACE(("Applying filter '%s' to '%s' (type=%d)\n",qPrint(m_name),qPrint(v.toString()),v.type()));
+      AUTO_TRACE("Applying filter '{}' to '{}' (type={})",m_name,v.toString(),static_cast<int>(v.type()));
       TemplateVariant arg;
       if (m_arg) arg = m_arg->resolve(c);
       bool ok;
@@ -1763,7 +1743,7 @@ class ExprAstFilterAppl : public ExprAst
   public:
     ExprAstFilterAppl(ExprAstPtr &&expr,ExprAstFilterPtr &&filter)
       : m_expr(std::move(expr)), m_filter(std::move(filter))
-    { TRACE(("ExprAstFilterAppl\n")); }
+    { AUTO_TRACE(); }
     virtual TemplateVariant resolve(TemplateContext *c)
     {
       return m_filter->apply(m_expr->resolve(c),c);
@@ -1778,7 +1758,7 @@ class ExprAstLiteral : public ExprAst
 {
   public:
     ExprAstLiteral(const QCString &lit) : m_literal(lit)
-    { TRACE(("ExprAstLiteral(%s)\n",lit.data())); }
+    { AUTO_TRACE("lit={}",lit); }
     const QCString &literal() const { return m_literal; }
     virtual TemplateVariant resolve(TemplateContext *) { return TemplateVariant(m_literal); }
   private:
@@ -1790,7 +1770,7 @@ class ExprAstNegate : public ExprAst
 {
   public:
     ExprAstNegate(ExprAstPtr &&expr) : m_expr(std::move(expr))
-    { TRACE(("ExprAstNegate\n")); }
+    { AUTO_TRACE(); }
     virtual TemplateVariant resolve(TemplateContext *c)
     { return TemplateVariant(!m_expr->resolve(c).toBool()); }
   private:
@@ -1801,7 +1781,7 @@ class ExprAstUnary : public ExprAst
 {
   public:
     ExprAstUnary(Operator::Type op,ExprAstPtr &&expr) : m_operator(op), m_expr(std::move(expr))
-    { TRACE(("ExprAstUnary %s\n",Operator::toString(op))); }
+    { AUTO_TRACE("op={}",Operator::toString(op)); }
     virtual TemplateVariant resolve(TemplateContext *c)
     {
       TemplateVariant expr = m_expr->resolve(c);
@@ -1824,7 +1804,7 @@ class ExprAstBinary : public ExprAst
   public:
     ExprAstBinary(Operator::Type op,ExprAstPtr &&lhs,ExprAstPtr &&rhs)
       : m_operator(op), m_lhs(std::move(lhs)), m_rhs(std::move(rhs))
-    { TRACE(("ExprAstBinary %s\n",Operator::toString(op))); }
+    { AUTO_TRACE("op={}",Operator::toString(op)); }
     virtual TemplateVariant resolve(TemplateContext *c)
     {
       TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
@@ -1968,12 +1948,11 @@ class TemplateNodeList : public std::vector< TemplateNodePtr >
   public:
     void render(TextStream &ts,TemplateContext *c)
     {
-      TRACE(("{TemplateNodeList::render\n"));
+      AUTO_TRACE();
       for (const auto &tn : *this)
       {
         tn->render(ts,c);
       }
-      TRACE(("}TemplateNodeList::render\n"));
     }
 };
 
@@ -2046,15 +2025,14 @@ class ExpressionParser
 
     ExprAstPtr parseExpression()
     {
-      TRACE(("{parseExpression(%s)\n",m_tokenStream));
+      AUTO_TRACE("tokens={}",Trace::trunc(m_tokenStream));
       ExprAstPtr result { parseOrExpression() };
-      TRACE(("}parseExpression(%s)\n",m_tokenStream));
       return result;
     }
 
     ExprAstPtr parseOrExpression()
     {
-      TRACE(("{parseOrExpression(%s)\n",m_tokenStream));
+      AUTO_TRACE("tokens={}",m_tokenStream);
       ExprAstPtr lhs { parseAndExpression() };
       if (lhs)
       {
@@ -2066,13 +2044,12 @@ class ExpressionParser
           lhs = std::make_unique<ExprAstBinary>(Operator::Or,std::move(lhs),std::move(rhs));
         }
       }
-      TRACE(("}parseOrExpression(%s)\n",m_tokenStream));
       return lhs;
     }
 
     ExprAstPtr parseAndExpression()
     {
-      TRACE(("{parseAndExpression(%s)\n",m_tokenStream));
+      AUTO_TRACE("tokens={}",m_tokenStream);
       ExprAstPtr lhs { parseNotExpression() };
       if (lhs)
       {
@@ -2084,13 +2061,12 @@ class ExpressionParser
           lhs = std::make_unique<ExprAstBinary>(Operator::And,std::move(lhs),std::move(rhs));
         }
       }
-      TRACE(("}parseAndExpression(%s)\n",m_tokenStream));
       return lhs;
     }
 
     ExprAstPtr parseNotExpression()
     {
-      TRACE(("{parseNotExpression(%s)\n",m_tokenStream));
+      AUTO_TRACE("tokens={}",m_tokenStream);
       ExprAstPtr result;
       if (m_curToken.type==ExprToken::Operator &&
           m_curToken.op==Operator::Not)
@@ -2108,13 +2084,12 @@ class ExpressionParser
       {
         result = parseCompareExpression();
       }
-      TRACE(("}parseNotExpression(%s)\n",m_tokenStream));
       return result;
     }
 
     ExprAstPtr parseCompareExpression()
     {
-      TRACE(("{parseCompareExpression(%s)\n",m_tokenStream));
+      AUTO_TRACE("tokens={}",m_tokenStream);
       ExprAstPtr lhs { parseAdditiveExpression() };
       if (lhs)
       {
@@ -2134,13 +2109,12 @@ class ExpressionParser
           lhs = std::make_unique<ExprAstBinary>(op,std::move(lhs),std::move(rhs));
         }
       }
-      TRACE(("}parseCompareExpression(%s)\n",m_tokenStream));
       return lhs;
     }
 
     ExprAstPtr parseAdditiveExpression()
     {
-      TRACE(("{parseAdditiveExpression(%s)\n",m_tokenStream));
+      AUTO_TRACE("tokens={}",m_tokenStream);
       ExprAstPtr lhs { parseMultiplicativeExpression() };
       if (lhs)
       {
@@ -2153,13 +2127,12 @@ class ExpressionParser
           lhs = std::make_unique<ExprAstBinary>(op,std::move(lhs),std::move(rhs));
         }
       }
-      TRACE(("}parseAdditiveExpression(%s)\n",m_tokenStream));
       return lhs;
     }
 
     ExprAstPtr parseMultiplicativeExpression()
     {
-      TRACE(("{parseMultiplicativeExpression(%s)\n",m_tokenStream));
+      AUTO_TRACE("tokens={}",m_tokenStream);
       ExprAstPtr lhs = parseUnaryExpression();
       if (lhs)
       {
@@ -2172,13 +2145,12 @@ class ExpressionParser
           lhs = std::make_unique<ExprAstBinary>(op,std::move(lhs),std::move(rhs));
         }
       }
-      TRACE(("}parseMultiplicativeExpression(%s)\n",m_tokenStream));
       return lhs;
     }
 
     ExprAstPtr parseUnaryExpression()
     {
-      TRACE(("{parseUnaryExpression(%s)\n",m_tokenStream));
+      AUTO_TRACE("tokens={}",m_tokenStream);
       ExprAstPtr result;
       if (m_curToken.type==ExprToken::Operator)
       {
@@ -2202,13 +2174,12 @@ class ExpressionParser
       {
         result = parsePrimaryExpression();
       }
-      TRACE(("}parseUnaryExpression(%s)\n",m_tokenStream));
       return result;
     }
 
     ExprAstPtr parsePrimaryExpression()
     {
-      TRACE(("{parsePrimary(%s)\n",m_tokenStream));
+      AUTO_TRACE("tokens={}",m_tokenStream);
       ExprAstPtr result;
       switch (m_curToken.type)
       {
@@ -2246,22 +2217,20 @@ class ExpressionParser
         default:
           warn(m_parser->templateName(),m_line,"unexpected token in expression");
       }
-      TRACE(("}parsePrimary(%s)\n",m_tokenStream));
       return result;
     }
 
     ExprAstPtr parseNumber()
     {
-      TRACE(("{parseNumber(%d)\n",m_curToken.num));
+      AUTO_TRACE("num={}",m_curToken.num);
       ExprAstPtr num = std::make_unique<ExprAstNumber>(m_curToken.num);
       getNextToken();
-      TRACE(("}parseNumber()\n"));
       return num;
     }
 
     ExprAstPtr parseIdentifier()
     {
-      TRACE(("{parseIdentifier(%s)\n",qPrint(m_curToken.id)));
+      AUTO_TRACE("id={}",m_curToken.id);
       ExprAstPtr id = std::make_unique<ExprAstVariable>(m_curToken.id);
       getNextToken();
       TRACE(("}parseIdentifier()\n"));
@@ -2270,7 +2239,7 @@ class ExpressionParser
 
     ExprAstPtr parseLiteral()
     {
-      TRACE(("{parseLiteral(%s)\n",qPrint(m_curToken.id)));
+      AUTO_TRACE("id={}",m_curToken.id);
       ExprAstPtr expr = std::make_unique<ExprAstLiteral>(m_curToken.id);
       getNextToken();
       TRACE(("}parseLiteral()\n"));
@@ -2279,7 +2248,7 @@ class ExpressionParser
 
     ExprAstPtr parseIdentifierOptionalArgs()
     {
-      TRACE(("{parseIdentifierOptionalArgs(%s)\n",qPrint(m_curToken.id)));
+      AUTO_TRACE("id={}",m_curToken.id);
       ExprAstPtr expr { parseIdentifier() };
       if (expr)
       {
@@ -2298,13 +2267,12 @@ class ExpressionParser
           expr = std::make_unique<ExprAstFunctionVariable>(std::move(expr),std::move(args));
         }
       }
-      TRACE(("}parseIdentifierOptionalArgs()\n"));
       return expr;
     }
 
     ExprAstPtr parseFilteredVariable()
     {
-      TRACE(("{parseFilteredVariable()\n"));
+      AUTO_TRACE();
       ExprAstPtr expr = parseIdentifierOptionalArgs();
       if (expr)
       {
@@ -2317,13 +2285,12 @@ class ExpressionParser
           expr = std::make_unique<ExprAstFilterAppl>(std::move(expr),std::move(filter));
         }
       }
-      TRACE(("}parseFilteredVariable()\n"));
       return expr;
     }
 
     ExprAstFilterPtr parseFilter()
     {
-      TRACE(("{parseFilter(%s)\n",qPrint(m_curToken.id)));
+      AUTO_TRACE("id={}",m_curToken.id);
       QCString filterName = m_curToken.id;
       getNextToken();
       ExprAstPtr argExpr;
@@ -2334,13 +2301,13 @@ class ExpressionParser
         argExpr = parsePrimaryExpression();
       }
       ExprAstFilterPtr filter = std::make_unique<ExprAstFilter>(filterName,std::move(argExpr));
-      TRACE(("}parseFilter()\n"));
       return filter;
     }
 
 
     bool getNextToken()
     {
+      AUTO_TRACE("tokens={}",Trace::trunc(m_tokenStream));
       const char *p = m_tokenStream;
       char s[2];
       s[1]=0;
@@ -2533,8 +2500,9 @@ class ExpressionParser
         m_curToken.id = s;
         p++;
       }
-      TRACE(("token type=%d op=%d num=%d id=%s\n",
-          m_curToken.type,m_curToken.op,m_curToken.num,qPrint(m_curToken.id)));
+      AUTO_TRACE_ADD("token type={} op={} num={} id={}",
+                 static_cast<int>(m_curToken.type), Operator::toString(m_curToken.op),
+                 m_curToken.num, m_curToken.id);
 
       m_tokenStream = p;
       return TRUE;
@@ -2928,11 +2896,12 @@ class TemplateNodeText : public TemplateNode
     TemplateNodeText(TemplateParser *,TemplateNode *parent,int,const QCString &data)
       : TemplateNode(parent), m_data(data)
     {
-      TRACE(("TemplateNodeText('%s')\n",replace(data,'\n',' ').data()));
+      AUTO_TRACE("data={}",Trace::trunc(data));
     }
 
     void render(TextStream &ts, TemplateContext *c)
     {
+      AUTO_TRACE();
       TemplateContextImpl* ci = dynamic_cast<TemplateContextImpl*>(c);
       if (ci==0) return; // should not happen
       //printf("TemplateNodeText::render(%s) needsRecoding=%d ci=%p\n",qPrint(m_data),ci->needsRecoding(),ci);
@@ -2972,7 +2941,7 @@ class TemplateNodeVariable : public TemplateNode
     TemplateNodeVariable(TemplateParser *parser,TemplateNode *parent,int line,const QCString &var)
       : TemplateNode(parent), m_templateName(parser->templateName()), m_line(line)
     {
-      TRACE(("TemplateNodeVariable(%s)\n",qPrint(var)));
+      AUTO_TRACE("var={}",var);
       ExpressionParser expParser(parser,line);
       m_var = expParser.parse(var);
       if (m_var==0)
@@ -2986,7 +2955,7 @@ class TemplateNodeVariable : public TemplateNode
 
     void render(TextStream &ts, TemplateContext *c)
     {
-      TRACE(("{TemplateNodeVariable::render\n"));
+      AUTO_TRACE();
       TemplateContextImpl* ci = dynamic_cast<TemplateContextImpl*>(c);
       if (ci==0) return; // should not happen
       ci->setLocation(m_templateName,m_line);
@@ -3020,7 +2989,6 @@ class TemplateNodeVariable : public TemplateNode
           }
         }
       }
-      TRACE(("}TemplateNodeVariable::render\n"));
     }
 
   private:
@@ -3103,7 +3071,7 @@ class TemplateNodeIf : public TemplateNodeCreator<TemplateNodeIf>
     TemplateNodeIf(TemplateParser *parser,TemplateNode *parent,int line,const QCString &data) :
       TemplateNodeCreator<TemplateNodeIf>(parser,parent,line)
     {
-      TRACE(("{TemplateNodeIf(%s)\n",qPrint(data)));
+      AUTO_TRACE("data={}",Trace::trunc(data));
       if (data.isEmpty())
       {
         parser->warn(m_templateName,line,"missing argument for if tag");
@@ -3142,7 +3110,6 @@ class TemplateNodeIf : public TemplateNodeCreator<TemplateNodeIf>
         parser->parse(this,line,stopAt,m_falseNodes);
         parser->removeNextToken(); // skip over endif
       }
-      TRACE(("}TemplateNodeIf(%s)\n",qPrint(data)));
     }
     ~TemplateNodeIf()
     {
@@ -3150,6 +3117,7 @@ class TemplateNodeIf : public TemplateNodeCreator<TemplateNodeIf>
 
     void render(TextStream &ts, TemplateContext *c)
     {
+      AUTO_TRACE();
       TemplateContextImpl* ci = dynamic_cast<TemplateContextImpl*>(c);
       if (ci==0) return; // should not happen
       ci->setLocation(m_templateName,m_line);
@@ -3197,16 +3165,16 @@ class TemplateNodeRepeat : public TemplateNodeCreator<TemplateNodeRepeat>
     TemplateNodeRepeat(TemplateParser *parser,TemplateNode *parent,int line,const QCString &data)
       : TemplateNodeCreator<TemplateNodeRepeat>(parser,parent,line)
     {
-      TRACE(("{TemplateNodeRepeat(%s)\n",qPrint(data)));
+      AUTO_TRACE("data={}",Trace::trunc(data));
       ExpressionParser expParser(parser,line);
       m_expr = expParser.parse(data);
       StringVector stopAt = { "endrepeat" };
       parser->parse(this,line,stopAt,m_repeatNodes);
       parser->removeNextToken(); // skip over endrepeat
-      TRACE(("}TemplateNodeRepeat(%s)\n",qPrint(data)));
     }
     void render(TextStream &ts, TemplateContext *c)
     {
+      AUTO_TRACE();
       TemplateContextImpl* ci = dynamic_cast<TemplateContextImpl*>(c);
       if (ci==0) return; // should not happen
       ci->setLocation(m_templateName,m_line);
@@ -3247,7 +3215,7 @@ class TemplateNodeRange : public TemplateNodeCreator<TemplateNodeRange>
     TemplateNodeRange(TemplateParser *parser,TemplateNode *parent,int line,const QCString &data)
       : TemplateNodeCreator<TemplateNodeRange>(parser,parent,line), m_down(FALSE)
     {
-      TRACE(("{TemplateNodeRange(%s)\n",qPrint(data)));
+      AUTO_TRACE("data={}",Trace::trunc(data));
       QCString start,end;
       int i1 = data.find(" from ");
       int i2 = data.find(" to ");
@@ -3308,11 +3276,11 @@ class TemplateNodeRange : public TemplateNodeCreator<TemplateNodeRange>
       StringVector stopAt = { "endrange" };
       parser->parse(this,line,stopAt,m_loopNodes);
       parser->removeNextToken(); // skip over endrange
-      TRACE(("}TemplateNodeRange(%s)\n",qPrint(data)));
     }
 
     void render(TextStream &ts, TemplateContext *c)
     {
+      AUTO_TRACE();
       TemplateContextImpl* ci = dynamic_cast<TemplateContextImpl*>(c);
       if (ci==0) return; // should not happen
       ci->setLocation(m_templateName,m_line);
@@ -3410,7 +3378,7 @@ class TemplateNodeFor : public TemplateNodeCreator<TemplateNodeFor>
     TemplateNodeFor(TemplateParser *parser,TemplateNode *parent,int line,const QCString &data)
       : TemplateNodeCreator<TemplateNodeFor>(parser,parent,line), m_reversed(FALSE)
     {
-      TRACE(("{TemplateNodeFor(%s)\n",qPrint(data)));
+      AUTO_TRACE("data={}",Trace::trunc(data));
       QCString exprStr;
       int i = data.find(" in ");
       if (i==-1)
@@ -3461,11 +3429,11 @@ class TemplateNodeFor : public TemplateNodeCreator<TemplateNodeFor>
         parser->parse(this,line,stopAt,m_emptyNodes);
         parser->removeNextToken(); // skip over endfor
       }
-      TRACE(("}TemplateNodeFor(%s)\n",qPrint(data)));
     }
 
     void render(TextStream &ts, TemplateContext *c)
     {
+      AUTO_TRACE();
       TemplateContextImpl* ci = dynamic_cast<TemplateContextImpl*>(c);
       if (ci==0) return; // should not happen
       ci->setLocation(m_templateName,m_line);
@@ -3563,15 +3531,14 @@ class TemplateNodeMsg : public TemplateNodeCreator<TemplateNodeMsg>
     TemplateNodeMsg(TemplateParser *parser,TemplateNode *parent,int line,const QCString &)
       : TemplateNodeCreator<TemplateNodeMsg>(parser,parent,line)
     {
-      TRACE(("{TemplateNodeMsg()\n"));
+      AUTO_TRACE();
       StringVector stopAt = { "endmsg" };
       parser->parse(this,line,stopAt,m_nodes);
       parser->removeNextToken(); // skip over endmsg
-      TRACE(("}TemplateNodeMsg()\n"));
     }
     void render(TextStream &, TemplateContext *c)
     {
-      TRACE(("{TemplateNodeMsg::render\n"));
+      AUTO_TRACE();
       TemplateContextImpl* ci = dynamic_cast<TemplateContextImpl*>(c);
       if (ci==0) return; // should not happen
       ci->setLocation(m_templateName,m_line);
@@ -3585,7 +3552,6 @@ class TemplateNodeMsg : public TemplateNodeCreator<TemplateNodeMsg>
       std::cout << "\n";
       ci->setActiveEscapeIntf(escIntf);
       ci->enableSpaceless(enable);
-      TRACE(("}TemplateNodeMsg::render\n"));
     }
   private:
     TemplateNodeList m_nodes;
@@ -3601,7 +3567,7 @@ class TemplateNodeBlock : public TemplateNodeCreator<TemplateNodeBlock>
     TemplateNodeBlock(TemplateParser *parser,TemplateNode *parent,int line,const QCString &data)
       : TemplateNodeCreator<TemplateNodeBlock>(parser,parent,line)
     {
-      TRACE(("{TemplateNodeBlock(%s)\n",qPrint(data)));
+      AUTO_TRACE("data={}",Trace::trunc(data));
       m_blockName = data;
       if (m_blockName.isEmpty())
       {
@@ -3610,7 +3576,6 @@ class TemplateNodeBlock : public TemplateNodeCreator<TemplateNodeBlock>
       StringVector stopAt = { "endblock" };
       parser->parse(this,line,stopAt,m_nodes);
       parser->removeNextToken(); // skip over endblock
-      TRACE(("}TemplateNodeBlock(%s)\n",qPrint(data)));
     }
 
     void render(TextStream &ts, TemplateContext *c)
@@ -3678,7 +3643,7 @@ class TemplateNodeExtend : public TemplateNodeCreator<TemplateNodeExtend>
     TemplateNodeExtend(TemplateParser *parser,TemplateNode *parent,int line,const QCString &data)
       : TemplateNodeCreator<TemplateNodeExtend>(parser,parent,line)
     {
-      TRACE(("{TemplateNodeExtend(%s)\n",qPrint(data)));
+      AUTO_TRACE("data={}",Trace::trunc(data));
       ExpressionParser ep(parser,line);
       if (data.isEmpty())
       {
@@ -3687,11 +3652,11 @@ class TemplateNodeExtend : public TemplateNodeCreator<TemplateNodeExtend>
       m_extendExpr = ep.parse(data);
       StringVector stopAt;
       parser->parse(this,line,stopAt,m_nodes);
-      TRACE(("}TemplateNodeExtend(%s)\n",qPrint(data)));
     }
 
     void render(TextStream &ts, TemplateContext *c)
     {
+      AUTO_TRACE();
       TemplateContextImpl* ci = dynamic_cast<TemplateContextImpl*>(c);
       if (ci==0) return; // should not happen
       ci->setLocation(m_templateName,m_line);
@@ -3755,7 +3720,7 @@ class TemplateNodeInclude : public TemplateNodeCreator<TemplateNodeInclude>
     TemplateNodeInclude(TemplateParser *parser,TemplateNode *parent,int line,const QCString &data)
       : TemplateNodeCreator<TemplateNodeInclude>(parser,parent,line)
     {
-      TRACE(("TemplateNodeInclude(%s)\n",qPrint(data)));
+      AUTO_TRACE("data={}",Trace::trunc(data));
       ExpressionParser ep(parser,line);
       if (data.isEmpty())
       {
@@ -3765,6 +3730,7 @@ class TemplateNodeInclude : public TemplateNodeCreator<TemplateNodeInclude>
     }
     void render(TextStream &ts, TemplateContext *c)
     {
+      AUTO_TRACE();
       TemplateContextImpl* ci = dynamic_cast<TemplateContextImpl*>(c);
       if (ci==0) return; // should not happen
       ci->setLocation(m_templateName,m_line);
@@ -3824,7 +3790,7 @@ class TemplateNodeCreate : public TemplateNodeCreator<TemplateNodeCreate>
     TemplateNodeCreate(TemplateParser *parser,TemplateNode *parent,int line,const QCString &data)
       : TemplateNodeCreator<TemplateNodeCreate>(parser,parent,line)
     {
-      TRACE(("TemplateNodeCreate(%s)\n",qPrint(data)));
+      AUTO_TRACE("data={}",Trace::trunc(data));
       if (data.isEmpty())
       {
         parser->warn(m_templateName,line,"create tag is missing arguments");
@@ -3854,7 +3820,7 @@ class TemplateNodeCreate : public TemplateNodeCreator<TemplateNodeCreate>
     }
     void render(TextStream &, TemplateContext *c)
     {
-      TRACE(("{TemplateNodeCreate::render\n"));
+      AUTO_TRACE();
       TemplateContextImpl* ci = dynamic_cast<TemplateContextImpl*>(c);
       if (ci==0) return; // should not happen
       ci->setLocation(m_templateName,m_line);
@@ -3919,7 +3885,6 @@ class TemplateNodeCreate : public TemplateNodeCreator<TemplateNodeCreate>
           }
         }
       }
-      TRACE(("}TemplateNodeCreate::render\n"));
     }
 
   private:
@@ -3944,7 +3909,7 @@ class TemplateNodeTree : public TemplateNodeCreator<TemplateNodeTree>
     TemplateNodeTree(TemplateParser *parser,TemplateNode *parent,int line,const QCString &data)
       : TemplateNodeCreator<TemplateNodeTree>(parser,parent,line)
     {
-      TRACE(("{TemplateNodeTree(%s)\n",qPrint(data)));
+      AUTO_TRACE("data={}",Trace::trunc(data));
       ExpressionParser ep(parser,line);
       if (data.isEmpty())
       {
@@ -3954,10 +3919,10 @@ class TemplateNodeTree : public TemplateNodeCreator<TemplateNodeTree>
       StringVector stopAt = { "endrecursetree" };
       parser->parse(this,line,stopAt,m_treeNodes);
       parser->removeNextToken(); // skip over endrecursetree
-      TRACE(("}TemplateNodeTree(%s)\n",qPrint(data)));
     }
     QCString renderChildren(const TreeContext *ctx)
     {
+      AUTO_TRACE();
       //printf("TemplateNodeTree::renderChildren(%d)\n",ctx->list->count());
       // render all children of node to a string and return it
       TemplateContext *c = ctx->templateCtx;
@@ -4011,6 +3976,7 @@ class TemplateNodeTree : public TemplateNodeCreator<TemplateNodeTree>
     }
     void render(TextStream &ts, TemplateContext *c)
     {
+      AUTO_TRACE();
       //printf("TemplateNodeTree::render()\n");
       TemplateContextImpl* ci = dynamic_cast<TemplateContextImpl*>(c);
       if (ci==0) return; // should not happen
@@ -4048,7 +4014,7 @@ class TemplateNodeIndexEntry : public TemplateNodeCreator<TemplateNodeIndexEntry
     TemplateNodeIndexEntry(TemplateParser *parser,TemplateNode *parent,int line,const QCString &data)
       : TemplateNodeCreator<TemplateNodeIndexEntry>(parser,parent,line)
     {
-      TRACE(("{TemplateNodeIndexEntry(%s)\n",qPrint(data)));
+      AUTO_TRACE("data={}",Trace::trunc(data));
       ExpressionParser expParser(parser,line);
       std::vector<QCString> args = split(data," ");
       auto it = args.begin();
@@ -4079,10 +4045,10 @@ class TemplateNodeIndexEntry : public TemplateNodeCreator<TemplateNodeIndexEntry
           ++it;
         }
       }
-      TRACE(("}TemplateNodeIndexEntry(%s)\n",qPrint(data)));
     }
     void render(TextStream &, TemplateContext *c)
     {
+      AUTO_TRACE();
       TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
       if (ci==0) return; // should not happen
       if (!m_name.isEmpty())
@@ -4110,7 +4076,7 @@ class TemplateNodeOpenSubIndex : public TemplateNodeCreator<TemplateNodeOpenSubI
     TemplateNodeOpenSubIndex(TemplateParser *parser,TemplateNode *parent,int line,const QCString &data)
       : TemplateNodeCreator<TemplateNodeOpenSubIndex>(parser,parent,line)
     {
-      TRACE(("{TemplateNodeOpenSubIndex(%s)\n",qPrint(data)));
+      AUTO_TRACE("data={}",Trace::trunc(data));
       m_name = data.stripWhiteSpace();
       if (m_name.isEmpty())
       {
@@ -4121,10 +4087,10 @@ class TemplateNodeOpenSubIndex : public TemplateNodeCreator<TemplateNodeOpenSubI
         parser->warn(parser->templateName(),line,"Expected single argument for opensubindex tag got '%s'",qPrint(data));
         m_name="";
       }
-      TRACE(("}TemplateNodeOpenSubIndex(%s)\n",qPrint(data)));
     }
     void render(TextStream &, TemplateContext *c)
     {
+      AUTO_TRACE();
       TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
       if (ci==0) return; // should not happen
       if (!m_name.isEmpty())
@@ -4146,7 +4112,7 @@ class TemplateNodeCloseSubIndex : public TemplateNodeCreator<TemplateNodeCloseSu
     TemplateNodeCloseSubIndex(TemplateParser *parser,TemplateNode *parent,int line,const QCString &data)
       : TemplateNodeCreator<TemplateNodeCloseSubIndex>(parser,parent,line)
     {
-      TRACE(("{TemplateNodeCloseSubIndex(%s)\n",qPrint(data)));
+      AUTO_TRACE("data={}",Trace::trunc(data));
       m_name = data.stripWhiteSpace();
       if (m_name.isEmpty())
       {
@@ -4157,10 +4123,10 @@ class TemplateNodeCloseSubIndex : public TemplateNodeCreator<TemplateNodeCloseSu
         parser->warn(parser->templateName(),line,"Expected single argument for closesubindex tag got '%s'",qPrint(data));
         m_name="";
       }
-      TRACE(("}TemplateNodeCloseSubIndex(%s)\n",qPrint(data)));
     }
     void render(TextStream &, TemplateContext *c)
     {
+      AUTO_TRACE();
       TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
       if (ci==0) return; // should not happen
       if (!m_name.isEmpty())
@@ -4189,7 +4155,7 @@ class TemplateNodeWith : public TemplateNodeCreator<TemplateNodeWith>
     TemplateNodeWith(TemplateParser *parser,TemplateNode *parent,int line,const QCString &data)
       : TemplateNodeCreator<TemplateNodeWith>(parser,parent,line)
     {
-      TRACE(("{TemplateNodeWith(%s)\n",qPrint(data)));
+      AUTO_TRACE("data={}",Trace::trunc(data));
       ExpressionParser expParser(parser,line);
       QCString filteredData = data;
       removeSpacesAroundEquals(filteredData);
@@ -4216,13 +4182,13 @@ class TemplateNodeWith : public TemplateNodeCreator<TemplateNodeWith>
       StringVector stopAt = { "endwith" };
       parser->parse(this,line,stopAt,m_nodes);
       parser->removeNextToken(); // skip over endwith
-      TRACE(("}TemplateNodeWith(%s)\n",qPrint(data)));
     }
     ~TemplateNodeWith()
     {
     }
     void render(TextStream &ts, TemplateContext *c)
     {
+      AUTO_TRACE();
       TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
       if (ci==0) return; // should not happen
       ci->setLocation(m_templateName,m_line);
@@ -4249,7 +4215,7 @@ class TemplateNodeCycle : public TemplateNodeCreator<TemplateNodeCycle>
     TemplateNodeCycle(TemplateParser *parser,TemplateNode *parent,int line,const QCString &data)
       : TemplateNodeCreator<TemplateNodeCycle>(parser,parent,line)
     {
-      TRACE(("{TemplateNodeCycle(%s)\n",qPrint(data)));
+      AUTO_TRACE("data={}",Trace::trunc(data));
       m_index=0;
       ExpressionParser expParser(parser,line);
       std::vector<QCString> args = split(data," ");
@@ -4267,10 +4233,10 @@ class TemplateNodeCycle : public TemplateNodeCreator<TemplateNodeCycle>
       {
           parser->warn(parser->templateName(),line,"expected at least two arguments for cycle command, got %zu",m_args.size());
       }
-      TRACE(("}TemplateNodeCycle(%s)\n",qPrint(data)));
     }
     void render(TextStream &ts, TemplateContext *c)
     {
+      AUTO_TRACE();
       TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
       if (ci==0) return; // should not happen
       ci->setLocation(m_templateName,m_line);
@@ -4329,7 +4295,7 @@ class TemplateNodeSet : public TemplateNodeCreator<TemplateNodeSet>
     TemplateNodeSet(TemplateParser *parser,TemplateNode *parent,int line,const QCString &data)
       : TemplateNodeCreator<TemplateNodeSet>(parser,parent,line)
     {
-      TRACE(("{TemplateNodeSet(%s)\n",qPrint(data)));
+      AUTO_TRACE("data={}",Trace::trunc(data));
       ExpressionParser expParser(parser,line);
       // data format: name=expression
       int j=data.find('=');
@@ -4338,13 +4304,13 @@ class TemplateNodeSet : public TemplateNodeCreator<TemplateNodeSet>
       {
         m_mapping = std::make_unique<Mapping>(data.left(j),std::move(expr));
       }
-      TRACE(("}TemplateNodeSet(%s)\n",qPrint(data)));
     }
     ~TemplateNodeSet()
     {
     }
     void render(TextStream &, TemplateContext *c)
     {
+      AUTO_TRACE();
       TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
       if (ci==0) return; // should not happen
       ci->setLocation(m_templateName,m_line);
@@ -4367,14 +4333,14 @@ class TemplateNodeSpaceless : public TemplateNodeCreator<TemplateNodeSpaceless>
     TemplateNodeSpaceless(TemplateParser *parser,TemplateNode *parent,int line,const QCString &)
       : TemplateNodeCreator<TemplateNodeSpaceless>(parser,parent,line)
     {
-      TRACE(("{TemplateNodeSpaceless()\n"));
+      AUTO_TRACE();
       StringVector stopAt = { "endspaceless" };
       parser->parse(this,line,stopAt,m_nodes);
       parser->removeNextToken(); // skip over endwith
-      TRACE(("}TemplateNodeSpaceless()\n"));
     }
     void render(TextStream &ts, TemplateContext *c)
     {
+      AUTO_TRACE();
       TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
       if (ci==0) return; // should not happen
       ci->setLocation(m_templateName,m_line);
@@ -4396,7 +4362,7 @@ class TemplateNodeMarkers : public TemplateNodeCreator<TemplateNodeMarkers>
     TemplateNodeMarkers(TemplateParser *parser,TemplateNode *parent,int line,const QCString &data)
       : TemplateNodeCreator<TemplateNodeMarkers>(parser,parent,line)
     {
-      TRACE(("{TemplateNodeMarkers(%s)\n",qPrint(data)));
+      AUTO_TRACE("data={}",Trace::trunc(data));
       int i = data.find(" in ");
       int w = data.find(" with ");
       if (i==-1 || w==-1 || w<i)
@@ -4413,10 +4379,10 @@ class TemplateNodeMarkers : public TemplateNodeCreator<TemplateNodeMarkers>
       StringVector stopAt = { "endmarkers" };
       parser->parse(this,line,stopAt,m_nodes);
       parser->removeNextToken(); // skip over endmarkers
-      TRACE(("}TemplateNodeMarkers(%s)\n",qPrint(data)));
     }
     void render(TextStream &ts, TemplateContext *c)
     {
+      AUTO_TRACE();
       TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
       if (ci==0) return; // should not happen
       ci->setLocation(m_templateName,m_line);
@@ -4510,14 +4476,14 @@ class TemplateNodeTabbing : public TemplateNodeCreator<TemplateNodeTabbing>
     TemplateNodeTabbing(TemplateParser *parser,TemplateNode *parent,int line,const QCString &)
       : TemplateNodeCreator<TemplateNodeTabbing>(parser,parent,line)
     {
-      TRACE(("{TemplateNodeTabbing()\n"));
+      AUTO_TRACE();
       StringVector stopAt = { "endtabbing" };
       parser->parse(this,line,stopAt,m_nodes);
       parser->removeNextToken(); // skip over endtabbing
-      TRACE(("}TemplateNodeTabbing()\n"));
     }
     void render(TextStream &ts, TemplateContext *c)
     {
+      AUTO_TRACE();
       TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
       if (ci==0) return; // should not happen
       ci->setLocation(m_templateName,m_line);
@@ -4539,7 +4505,7 @@ class TemplateNodeResource : public TemplateNodeCreator<TemplateNodeResource>
     TemplateNodeResource(TemplateParser *parser,TemplateNode *parent,int line,const QCString &data)
       : TemplateNodeCreator<TemplateNodeResource>(parser,parent,line)
     {
-      TRACE(("{TemplateNodeResource(%s)\n",qPrint(data)));
+      AUTO_TRACE("data={}",Trace::trunc(data));
       ExpressionParser ep(parser,line);
       int i;
       if (data.isEmpty())
@@ -4564,10 +4530,10 @@ class TemplateNodeResource : public TemplateNodeCreator<TemplateNodeResource>
         m_resExpr = ep.parse(data);
         m_asExpr.reset();
       }
-      TRACE(("}TemplateNodeResource(%s)\n",qPrint(data)));
     }
     void render(TextStream &, TemplateContext *c)
     {
+      AUTO_TRACE();
       TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
       if (ci==0) return; // should not happen
       ci->setLocation(m_templateName,m_line);
@@ -4616,7 +4582,7 @@ class TemplateNodeEncoding : public TemplateNodeCreator<TemplateNodeEncoding>
     TemplateNodeEncoding(TemplateParser *parser,TemplateNode *parent,int line,const QCString &data)
       : TemplateNodeCreator<TemplateNodeEncoding>(parser,parent,line)
     {
-      TRACE(("{TemplateNodeEncoding(%s)\n",qPrint(data)));
+      AUTO_TRACE("data={}",Trace::trunc(data));
       ExpressionParser ep(parser,line);
       if (data.isEmpty())
       {
@@ -4630,10 +4596,10 @@ class TemplateNodeEncoding : public TemplateNodeCreator<TemplateNodeEncoding>
       StringVector stopAt = { "endencoding" };
       parser->parse(this,line,stopAt,m_nodes);
       parser->removeNextToken(); // skip over endencoding
-      TRACE(("}TemplateNodeEncoding(%s)\n",qPrint(data)));
     }
     void render(TextStream &ts, TemplateContext *c)
     {
+      AUTO_TRACE();
       TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
       if (ci==0) return; // should not happen
       ci->setLocation(m_templateName,m_line);
@@ -5056,13 +5022,12 @@ void TemplateParser::parse(
                      TemplateNode *parent,int line,const StringVector &stopAt,
                      TemplateNodeList &nodes)
 {
-  TRACE(("{TemplateParser::parse\n"));
+  AUTO_TRACE();
   // process the tokens. Build node list
   while (hasNextToken())
   {
     auto tok = takeNextToken();
-    TRACE(("%p:Token type=%d data='%s' line=%d\n",
-           (void*)parent,tok->type,qPrint(tok->data),tok->line));
+    AUTO_TRACE_ADD("Token type={} data='{}' line={}", static_cast<int>(tok->type),Trace::trunc(tok->data),tok->line);
     switch(tok->type)
     {
       case TemplateToken::Text:
@@ -5083,7 +5048,7 @@ void TemplateParser::parse(
           if (std::find(stopAt.begin(),stopAt.end(),command.str())!=stopAt.end())
           {
             prependToken(std::move(tok));
-            TRACE(("}TemplateParser::parse: stop\n"));
+            AUTO_TRACE_EXIT("stop");
             return;
           }
           QCString arg;
@@ -5127,7 +5092,7 @@ void TemplateParser::parse(
     warn(m_templateName,line,"Unclosed tag in template, expected one of: %s",
         qPrint(options));
   }
-  TRACE(("}TemplateParser::parse: last token\n"));
+  AUTO_TRACE_EXIT("last token");
 }
 
 bool TemplateParser::hasNextToken() const

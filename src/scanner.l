@@ -54,6 +54,7 @@ typedef yyguts_t *yyscan_t;
 #include "clangparser.h"
 #include "markdown.h"
 #include "regex.h"
+#include "trace.h"
 
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
@@ -7539,9 +7540,9 @@ static void newEntry(yyscan_t yyscanner)
 static void handleCommentBlock(yyscan_t yyscanner,const QCString &doc,bool brief)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  AUTO_TRACE("doc='{}' is_brief={}",Trace::trunc(doc),brief);
   bool hideInBodyDocs = Config_getBool(HIDE_IN_BODY_DOCS);
   if (yyextra->docBlockInBody && hideInBodyDocs) return;
-  //printf("parseCommentBlock [%s] brief=%d\n",qPrint(doc),brief);
   int lineNr = brief ? yyextra->current->briefLine : yyextra->current->docLine;   // line of block start
 
   // fill in inbodyFile && inbodyLine the first time, see bug 633891
@@ -7596,11 +7597,11 @@ static void handleCommentBlock(yyscan_t yyscanner,const QCString &doc,bool brief
 
 static void handleParametersCommentBlocks(yyscan_t yyscanner,ArgumentList &al)
 {
+  AUTO_TRACE();
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  //printf(">>>>>>> handleParametersCommentBlocks()\n");
   for (Argument &a : al)
   {
-    //printf("    Param %s docs=%s\n",qPrint(a->name),qPrint(a->docs));
+    AUTO_TRACE_ADD("Param '{}' docs='{}'",a.name,Trace::trunc(a.docs));
     if (!a.docs.isEmpty())
     {
       if  (a.name.isEmpty() && a.type == "...") a.name= "...";
@@ -7660,14 +7661,13 @@ static void handleParametersCommentBlocks(yyscan_t yyscanner,ArgumentList &al)
 
 static void parseCompounds(yyscan_t yyscanner,const std::shared_ptr<Entry> &rt)
 {
+  AUTO_TRACE("name={}",rt->name);
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  //printf("parseCompounds(%s)\n",qPrint(rt->name));
   for (const auto &ce : rt->children())
   {
     if (!ce->program.empty())
     {
-      //printf("-- %s ---------\n%s\n---------------\n",
-      //  qPrint(ce->name),qPrint(ce->program));
+      AUTO_TRACE_ADD("compound name='{}' program='{}'",Trace::trunc(ce->name),Trace::trunc(ce->program.str()));
       // init scanner state
       yyextra->padCount=0;
       //depthIf = 0;
@@ -7778,6 +7778,7 @@ static void parseMain(yyscan_t yyscanner,
                       const std::shared_ptr<Entry> &rt,
                       ClangTUParser *clangParser)
 {
+  AUTO_TRACE("fileName={}",fileName);
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   initParser(yyscanner);
 
@@ -7865,8 +7866,8 @@ static void parseMain(yyscan_t yyscanner,
 
 static void parsePrototype(yyscan_t yyscanner,const QCString &text)
 {
+  AUTO_TRACE("text='{}'",Trace::trunc(text));
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  //printf("**** parsePrototype(%s) begin\n",qPrint(text));
   if (text.isEmpty())
   {
     warn(yyextra->fileName,yyextra->yyLineNr,"Empty prototype found!");
@@ -7910,18 +7911,6 @@ static void parsePrototype(yyscan_t yyscanner,const QCString &text)
   //printf("**** parsePrototype end\n");
 }
 
-//static void handleGroupStartCommand(const char *header)
-//{
-//  memberGroupHeader=header;
-//  startGroupInDoc();
-//}
-//
-//static void handleGroupEndCommand()
-//{
-//  endGroup();
-//  g_previous=0;
-//}
-
 //----------------------------------------------------------------------------
 
 struct COutlineParser::Private
@@ -7948,6 +7937,7 @@ void COutlineParser::parseInput(const QCString &fileName,
                                 const std::shared_ptr<Entry> &root,
                                 ClangTUParser *clangParser)
 {
+  AUTO_TRACE();
   struct yyguts_t *yyg = (struct yyguts_t*)p->yyscanner;
   yyextra->thisParser = this;
 
