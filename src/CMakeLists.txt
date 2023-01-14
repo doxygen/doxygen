@@ -1,16 +1,16 @@
 # vim:ts=4:sw=4:expandtab:autoindent:
 
 include_directories(
-    ${PROJECT_SOURCE_DIR}/TinyDeflate
-    ${PROJECT_SOURCE_DIR}/filesystem
-    ${PROJECT_SOURCE_DIR}/libmd5
-    ${PROJECT_SOURCE_DIR}/liblodepng
-    ${PROJECT_SOURCE_DIR}/libmscgen
+    ${PROJECT_SOURCE_DIR}/deps/TinyDeflate
+    ${PROJECT_SOURCE_DIR}/deps/filesystem
+    ${PROJECT_SOURCE_DIR}/deps/libmd5
+    ${PROJECT_SOURCE_DIR}/deps/liblodepng
+    ${PROJECT_SOURCE_DIR}/deps/libmscgen
     ${PROJECT_SOURCE_DIR}/libversion
     ${PROJECT_SOURCE_DIR}/libxml
     ${PROJECT_SOURCE_DIR}/vhdlparser
     ${PROJECT_SOURCE_DIR}/src
-    ${PROJECT_SOURCE_DIR}/spdlog/include
+    ${PROJECT_SOURCE_DIR}/deps/spdlog/include
     ${CLANG_INCLUDEDIR}
     ${GENERATED_SRC}
 )

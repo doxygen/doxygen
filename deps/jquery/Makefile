@@ -17,8 +17,8 @@ RESULTS = jquery.js doxmenu-min.css
 all: $(RESULTS)
 
 install: $(RESULTS)
-	cp jquery.js ../templates/html/jquery.js
-	cp doxmenu-min.css ../templates/html/tabs.css
+	cp jquery.js ../../templates/html/jquery.js
+	cp doxmenu-min.css ../../templates/html/tabs.css
 
 jquery.js: $(SCRIPTS)
 	cat $(SCRIPTS) > jquery.js
