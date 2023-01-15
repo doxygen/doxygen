@@ -1643,7 +1643,7 @@ static void buildNamespaceList(const Entry *root)
         NamespaceDefMutable *nd = toNamespaceDefMutable(ndi);
         if (nd) // non-inline namespace
         {
-          AUTO_TRACE_ADD("Exising namespace");
+          AUTO_TRACE_ADD("Existing namespace");
           nd->setDocumentation(root->doc,root->docFile,root->docLine);
           nd->setName(fullName); // change name to match docs
           nd->addSectionsToDefinition(root->anchors);
