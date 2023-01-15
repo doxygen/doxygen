@@ -135,6 +135,10 @@ class AutoTrace
 #define AUTO_TRACE_EXIT(...) (void)0
 #endif
 
+#ifdef DOXYGEN_ONLY
+namespace fmt { template<typename T> struct formatter {}; }
+#endif
+
 //! adds support for formatting QCString
 template<> struct fmt::formatter<QCString> : formatter<std::string>
 {

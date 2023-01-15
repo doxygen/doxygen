@@ -302,7 +302,7 @@ INCLUDE_PATH           = @CMAKE_SOURCE_DIR@/deps/libmd5 \
                          @CMAKE_SOURCE_DIR@/deps/liblodepng \
                          @CMAKE_SOURCE_DIR@/deps/libmscgen
 INCLUDE_FILE_PATTERNS  =
-PREDEFINED             =
+PREDEFINED             = DOXYGEN_ONLY
 EXPAND_AS_DEFINED      = DOC_NODES DN_SEP DN
 SKIP_FUNCTION_MACROS   = YES
 #---------------------------------------------------------------------------
