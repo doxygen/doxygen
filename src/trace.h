@@ -16,9 +16,6 @@
 #ifndef TRACE_H
 #define TRACE_H
 
-#include "types.h"
-#include "qcstring.h"
-
 #ifndef ENABLE_TRACING
 #ifndef NDEBUG
 #define ENABLE_TRACING 1
@@ -33,6 +30,9 @@
 #define SPELOG_ACTIVE_LEVEL SPDLOG_LEVEL_INFO  // release build (hide trace/debug levels)
 #endif
 #include "spdlog/spdlog.h"
+
+#include "types.h"
+#include "qcstring.h"
 
 extern std::shared_ptr<spdlog::logger> g_tracer;
 
