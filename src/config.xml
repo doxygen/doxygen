@@ -1395,11 +1395,20 @@ FILE_VERSION_FILTER = "cleartool desc -fmt \%Vn"
  If the \c WARN_AS_ERROR tag is set to \c FAIL_ON_WARNINGS then doxygen will continue
  running as if \c WARN_AS_ERROR tag is set to \c NO, but at the end of the doxygen
  process doxygen will return with a non-zero status.
+ If the \c WARN_AS_ERROR tag is set to \c FAIL_ON_WARNINGS_PRINT then doxygen behaves like
+ \c FAIL_ON_WARNINGS but in case no \ref cfg_warn_logfile "WARN_LOGFILE" is defined
+ doxygen will not write the warning messages in between other
+ messages but write them at the end of a run, in case a
+ \ref cfg_warn_logfile "WARN_LOGFILE" is defined the warning messages will be
+ besides being in the defined file also be shown at the end of a run, unless the
+ \ref cfg_warn_logfile "WARN_LOGFILE" is defined as `-` i.e. standard outpyt (`stdout`)
+ in that case the behavior will remain as with the setting \c FAIL_ON_WARNINGS.
 ]]>
       </docs>
       <value name="NO"/>
       <value name="YES" />
       <value name="FAIL_ON_WARNINGS" />
+      <value name="FAIL_ON_WARNINGS_PRINT" />
     </option>
     <option type='string' id='WARN_FORMAT' format='string' defval='$file:$line: $text'>
       <docs>
