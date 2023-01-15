@@ -434,7 +434,7 @@ void XMLCodeParser::parseCode(CodeOutputInterface &codeOutIntf,
 
   if (input.isEmpty()) return;
 
-  DebugLex debugLex(Debug::Lex_xml, __FILE__, fileDef ? qPrint(fileDef->fileName()): NULL);
+  DebugLex debugLex(Debug::Lex_xmlcode, __FILE__, fileDef ? qPrint(fileDef->fileName()): NULL);
   yyextra->fileName      = fileDef ? fileDef->fileName():"";
 
   yyextra->code = &codeOutIntf;

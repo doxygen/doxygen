@@ -1571,8 +1571,12 @@ void LayoutDocManager::init()
   handlers.error        = [&layoutParser](const std::string &fileName,int lineNr,const std::string &msg) { layoutParser.error(fileName,lineNr,msg); };
   XMLParser parser(handlers);
   layoutParser.setDocumentLocator(&parser);
-  QCString layout_default = ResourceMgr::instance().getAsString("layout_default.xml");
-  parser.parse("layout_default.xml",layout_default.data(),Debug::isFlagSet(Debug::Lex_xml));
+  constexpr auto layoutFile = "layout_default.xml";
+  QCString layout_default = ResourceMgr::instance().getAsString(layoutFile);
+  parser.parse(layoutFile,layout_default.data(),Debug::isFlagSet(Debug::Lex_xml),
+               [&]() { DebugLex::print(Debug::Lex_xml,"Entering","libxml/xml.l",layoutFile); },
+               [&]() { DebugLex::print(Debug::Lex_xml,"Leaving", "libxml/xml.l",layoutFile); }
+              );
 }
 
 LayoutDocManager::~LayoutDocManager()
@@ -1615,7 +1619,10 @@ void LayoutDocManager::parse(const QCString &fileName)
   handlers.error        = [&layoutParser](const std::string &fn,int lineNr,const std::string &msg) { layoutParser.error(fn,lineNr,msg); };
   XMLParser parser(handlers);
   layoutParser.setDocumentLocator(&parser);
-  parser.parse(fileName.data(),fileToString(fileName).data(),Debug::isFlagSet(Debug::Lex_xml));
+  parser.parse(fileName.data(),fileToString(fileName).data(),Debug::isFlagSet(Debug::Lex_xml),
+               [&]() { DebugLex::print(Debug::Lex_xml,"Entering","libxml/xml.l",qPrint(fileName)); },
+               [&]() { DebugLex::print(Debug::Lex_xml,"Leaving", "libxml/xml.l",qPrint(fileName)); }
+              );
 }
 
 //---------------------------------------------------------------------------------

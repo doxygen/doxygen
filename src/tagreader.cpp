@@ -1699,7 +1699,10 @@ void parseTagFile(const std::shared_ptr<Entry> &root,const char *fullName)
   handlers.error         = [&tagFileParser](const std::string &fileName,int lineNr,const std::string &msg) { tagFileParser.error(QCString(fileName),lineNr,QCString(msg)); };
   XMLParser parser(handlers);
   tagFileParser.setDocumentLocator(&parser);
-  parser.parse(fullName,inputStr.data(),Debug::isFlagSet(Debug::Lex_xml));
+  parser.parse(fullName,inputStr.data(),Debug::isFlagSet(Debug::Lex_xml),
+               [&]() { DebugLex::print(Debug::Lex_xml,"Entering","libxml/xml.l",fullName); },
+               [&]() { DebugLex::print(Debug::Lex_xml,"Leaving", "libxml/xml.l",fullName); }
+              );
   tagFileParser.buildLists(root);
   tagFileParser.addIncludes();
   if (Debug::isFlagSet(Debug::Tag))

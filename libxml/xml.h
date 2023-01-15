@@ -78,7 +78,8 @@ class XMLParser : public XMLLocator
      *  @param inputString the contents of the file as a zero terminated UTF-8 string.
      *  @param debugEnabled indicates if debugging via -d lex is enabled or not.
      */
-    void parse(const char *fileName,const char *inputString,bool debugEnabled);
+    void parse(const char *fileName,const char *inputString,bool debugEnabled,
+        std::function<void()> debugStart,std::function<void()> debugEnd);
 
   private:
    virtual int lineNr() const override;

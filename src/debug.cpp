@@ -96,11 +96,11 @@ static uint64_t labelToEnumValue(const QCString &l)
   return (it!=s_labels.end()) ? it->second : 0;
 }
 
-uint64_t Debug::setFlagStr(const QCString &lab)
+bool Debug::setFlagStr(const QCString &lab)
 {
   uint64_t retVal = labelToEnumValue(lab);
   curMask = static_cast<DebugMask>(curMask | retVal);
-  return retVal;
+  return retVal!=0;
 }
 
 void Debug::setFlag(const DebugMask mask)
@@ -128,6 +128,35 @@ void Debug::printFlags()
   for (const auto &v : s_labels)
   {
      msg("\t%s\n",v.first.c_str());
+  }
+}
+
+//------------------------------------------------------------------------
+DebugLex::DebugLex(Debug::DebugMask mask,const char *lexName,const char *fileName) : m_mask(mask), m_lexName(lexName), m_fileName(fileName)
+{
+  print(m_mask,"Entering",qPrint(m_lexName),qPrint(m_fileName));
+}
+
+DebugLex::~DebugLex()
+{
+  print(m_mask,"Finished",qPrint(m_lexName),qPrint(m_fileName));
+}
+
+void DebugLex::print(Debug::DebugMask mask,const char *state,const char *lexName,const char *fileName)
+{
+  if (fileName)
+  {
+    if (Debug::isFlagSet(mask))
+    {
+      fprintf(stderr,"%s lexical analyzer: %s (for: %s)\n",state, lexName, fileName);
+    }
+  }
+  else
+  {
+    if (Debug::isFlagSet(mask))
+    {
+      fprintf(stderr,"%s lexical analyzer: %s\n",state, lexName);
+    }
   }
 }
 
