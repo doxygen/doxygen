@@ -1747,7 +1747,7 @@ void DocTokenizer::findSections(const QCString &input,const Definition *d,
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
 
   if (input.isEmpty()) return;
-  printlex(yy_flex_debug, TRUE, __FILE__, qPrint(fileName));
+  DebugLex debugLex(Debug::Lex_doctokenizer, __FILE__, qPrint(fileName));
   yyextra->inputString = input.data();
   //printf("parsing --->'%s'<---\n",input);
   yyextra->inputPos    = 0;
@@ -1756,7 +1756,6 @@ void DocTokenizer::findSections(const QCString &input,const Definition *d,
   BEGIN(St_Sections);
   yyextra->yyLineNr = 1;
   doctokenizerYYlex(yyscanner);
-  printlex(yy_flex_debug, FALSE, __FILE__, qPrint(fileName));
 }
 
 void DocTokenizer::init(const char *input,const QCString &fileName,bool markdownSupport)
@@ -2128,14 +2127,6 @@ void DocTokenizer::endAutoList()
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yyextra->autoListLevel--;
 }
-
-//REAL_YY_DECL
-//{
-//  printlex(yy_flex_debug, TRUE, __FILE__, g_fileName);
-//  int retval = LOCAL_YY_DECL;
-//  printlex(yy_flex_debug, FALSE, __FILE__, g_fileName);
-//  return retval;
-//}
 
 void DocTokenizer::setLineNr(int lineno)
 {

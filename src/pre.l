@@ -3672,7 +3672,7 @@ void Preprocessor::processFile(const QCString &fileName,BufStr &input,BufStr &ou
   preYYset_debug(Debug::isFlagSet(Debug::Lex_pre)?1:0,yyscanner);
 #endif
 
-  printlex(yy_flex_debug, TRUE, __FILE__, qPrint(fileName));
+  DebugLex debugLex(Debug::Lex_pre, __FILE__, qPrint(fileName));
   size_t orgOffset=output.curPos();
   //printf("##########################\n%s\n####################\n",
   //    qPrint(input));
@@ -3776,7 +3776,6 @@ void Preprocessor::processFile(const QCString &fileName,BufStr &input,BufStr &ou
   }
 
   //yyextra->defineManager.endContext();
-  printlex(yy_flex_debug, FALSE, __FILE__, qPrint(fileName));
 }
 
 #if USE_STATE2STRING

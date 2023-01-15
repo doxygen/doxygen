@@ -118,7 +118,7 @@ void Debug::setPriority(int p)
   curPrio = p;
 }
 
-bool Debug::isFlagSet(DebugMask mask)
+bool Debug::isFlagSet(const DebugMask mask)
 {
   return (curMask & mask)!=0;
 }

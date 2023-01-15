@@ -824,7 +824,7 @@ std::unique_ptr<ArgumentList> stringToArgumentList(SrcLangExt lang, const QCStri
   defargsYYset_debug(Debug::isFlagSet(Debug::Lex_defargs)?1:0,yyscanner);
 #endif
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  printlex(yy_flex_debug, TRUE, __FILE__, NULL);
+  DebugLex debugLex(Debug::Lex_defargs, __FILE__, NULL);
 
   defargsYYrestart( 0, yyscanner );
   BEGIN( Start );
@@ -835,7 +835,6 @@ std::unique_ptr<ArgumentList> stringToArgumentList(SrcLangExt lang, const QCStri
   }
   if (extraTypeChars) *extraTypeChars=yyextra->extraTypeChars;
   //printf("stringToArgumentList(%s) result=%s\n",argsString,qPrint(argListToString(*al)));
-  printlex(yy_flex_debug, FALSE, __FILE__, NULL);
   defargsYYlex_destroy(yyscanner);
   return al;
 }

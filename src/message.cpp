@@ -270,33 +270,6 @@ void warn_flush()
 }
 
 
-void printlex(int dbg, bool enter, const char *lexName, const char *fileName)
-{
-  const char *enter_txt = "entering";
-  const char *enter_txt_uc = "Entering";
-
-  if (!enter)
-  {
-    enter_txt = "finished";
-    enter_txt_uc = "Finished";
-  }
-
-  std::unique_lock<std::mutex> lock(g_mutex);
-  if (dbg)
-  {
-    if (fileName)
-      fprintf(stderr,"--%s lexical analyzer: %s (for: %s)\n",enter_txt, qPrint(lexName), qPrint(fileName));
-    else
-      fprintf(stderr,"--%s lexical analyzer: %s\n",enter_txt, qPrint(lexName));
-  }
-  else
-  {
-    if (fileName)
-      Debug::print(Debug::Lex,0,"%s lexical analyzer: %s (for: %s)\n",enter_txt_uc, qPrint(lexName), qPrint(fileName));
-    else
-      Debug::print(Debug::Lex,0,"%s lexical analyzer: %s\n",enter_txt_uc, qPrint(lexName));
-  }
-}
 
 extern void finishWarnExit()
 {

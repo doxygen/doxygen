@@ -154,13 +154,12 @@ bool ConstExpressionParser::parse(const char *fileName,int lineNr,const std::str
   yyextra->inputPosition = 0;
   constexpYYrestart( yyin, p->yyscanner );
 
-  printlex(yy_flex_debug, true, __FILE__, fileName);
+  DebugLex debugLex(Debug::Lex_constexp, __FILE__, fileName);
   //printf("Expression: '%s'\n",qPrint(s));
 
   constexpYYparse(p->yyscanner);
 
   //printf("Result: %ld\n",(long)g_resultValue);
-  printlex(yy_flex_debug, false, __FILE__, fileName);
   bool result = static_cast<long>(yyextra->resultValue)!=0;
 
   return result;

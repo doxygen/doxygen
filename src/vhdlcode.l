@@ -1601,7 +1601,7 @@ void VHDLCodeParser::parseCode(CodeOutputInterface &od,
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   //printf("***parseCode() exBlock=%d exName=%s fd=%p\n",exBlock,exName,fd);
   if (s.isEmpty()) return;
-  printlex(yy_flex_debug, true, __FILE__, fd ? qPrint(fd->fileName()): NULL);
+  DebugLex debugLex(Debug::Lex_vhdlcode, __FILE__, fd ? qPrint(fd->fileName()): NULL);
   yyextra->fileName      = fd ? fd->fileName():"";
   if (memberDef)
   {
@@ -1672,8 +1672,6 @@ void VHDLCodeParser::parseCode(CodeOutputInterface &od,
 
   // write the tooltips
   yyextra->tooltipManager.writeTooltips(od);
-
-  printlex(yy_flex_debug, false, __FILE__, fd ? qPrint(fd->fileName()): NULL);
 }
 
 #if USE_STATE2STRING

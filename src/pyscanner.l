@@ -2038,9 +2038,8 @@ void PythonOutlineParser::parseInput(const QCString &fileName,
 {
   struct yyguts_t *yyg = (struct yyguts_t*)p->yyscanner;
   yyextra->thisParser = this;
-  printlex(yy_flex_debug, TRUE, __FILE__, qPrint(fileName));
+  DebugLex debugLex(Debug::Lex_pyscanner, __FILE__, qPrint(fileName));
   ::parseMain(p->yyscanner, fileName,fileBuf,root);
-  printlex(yy_flex_debug, FALSE, __FILE__, qPrint(fileName));
 
   // May print the AST for debugging purposes
   // printAST(global_root);

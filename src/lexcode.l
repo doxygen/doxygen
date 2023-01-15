@@ -1216,7 +1216,7 @@ void LexCodeParser::parseCode(CodeOutputInterface &codeOutIntf,
 
   if (input.isEmpty()) return;
 
-  printlex(yy_flex_debug, true, __FILE__, fileDef ? qPrint(fileDef->fileName()): NULL);
+  DebugLex debugLex(Debug::Lex_lexcode, __FILE__, fileDef ? qPrint(fileDef->fileName()): NULL);
 
   yyextra->code = &codeOutIntf;
   yyextra->inputString   = input.data();
@@ -1278,8 +1278,6 @@ void LexCodeParser::parseCode(CodeOutputInterface &codeOutIntf,
     delete yyextra->sourceFileDef;
     yyextra->sourceFileDef=0;
   }
-
-  printlex(yy_flex_debug, false, __FILE__, fileDef ? qPrint(fileDef->fileName()): NULL);
 }
 
 //---------------------------------------------------------------------------------

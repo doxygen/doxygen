@@ -1025,11 +1025,9 @@ void LexOutlineParser::parseInput(const QCString &fileName,
   struct yyguts_t *yyg = (struct yyguts_t*)p->yyscanner;
 
   yyextra->fileName      = fileName;
-  printlex(yy_flex_debug, TRUE, __FILE__, qPrint(fileName));
+  DebugLex debugLex(Debug::Lex_lexscanner, __FILE__, qPrint(fileName));
 
   ::parseMain(p->yyscanner,fileName,fileBuf,root,clangParser);
-
-  printlex(yy_flex_debug, FALSE, __FILE__, qPrint(fileName));
 }
 
 

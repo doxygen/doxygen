@@ -2920,11 +2920,9 @@ void FortranOutlineParser::parseInput(const QCString &fileName,
   struct yyguts_t *yyg = (struct yyguts_t*)p->yyscanner;
   yyextra->thisParser = this;
 
-  printlex(yy_flex_debug, TRUE, __FILE__, qPrint(fileName));
+  DebugLex debugLex(Debug::Lex_fortranscanner, __FILE__, qPrint(fileName));
 
   ::parseMain(p->yyscanner,fileName,fileBuf,root,p->format);
-
-  printlex(yy_flex_debug, FALSE, __FILE__, qPrint(fileName));
 }
 
 bool FortranOutlineParser::needsPreprocessing(const QCString &extension) const

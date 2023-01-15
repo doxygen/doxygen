@@ -3741,7 +3741,7 @@ bool CommentScanner::parseCommentBlock(/* in */     OutlineParserInterface *pars
   yyextra->spaceBeforeCmd.resize(0);
   yyextra->spaceBeforeIf.resize(0);
 
-  printlex(yy_flex_debug, TRUE, __FILE__, !fileName.isEmpty() ? qPrint(fileName): NULL);
+  DebugLex debugLex(Debug::Lex_commentscan, __FILE__, !fileName.isEmpty() ? qPrint(fileName): NULL);
   if (!yyextra->current->inbodyDocs.isEmpty() && isInbody) // separate in body fragments
   {
     char cmd[30];
@@ -3814,7 +3814,6 @@ bool CommentScanner::parseCommentBlock(/* in */     OutlineParserInterface *pars
   AUTO_TRACE_EXIT("position={} parseMore={} newEntryNeeded={}",
       position,yyextra->parseMore,newEntryNeeded);
 
-  printlex(yy_flex_debug, FALSE, __FILE__, !fileName.isEmpty() ? qPrint(fileName): NULL);
   return yyextra->parseMore;
 }
 

@@ -1214,7 +1214,7 @@ void convertCppComments(const BufStr &inBuf,BufStr &outBuf,const QCString &fileN
   clearCommentStack(yyscanner);
   yyextra->vhdl = FALSE;
 
-  printlex(yy_flex_debug, TRUE, __FILE__, qPrint(fileName));
+  DebugLex debugLex(Debug::Lex_commentcnv,__FILE__, qPrint(fileName));
   yyextra->isFixedForm = FALSE;
   if (yyextra->lang==SrcLangExt_Fortran)
   {
@@ -1266,7 +1266,6 @@ void convertCppComments(const BufStr &inBuf,BufStr &outBuf,const QCString &fileN
                  "output=[\n%s]\n-----------\n",qPrint(fileName),yyextra->outBuf.data()
                 );
   }
-  printlex(yy_flex_debug, FALSE, __FILE__, qPrint(fileName));
   commentcnvYYlex_destroy(yyscanner);
 }
 

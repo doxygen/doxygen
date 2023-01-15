@@ -1590,7 +1590,7 @@ void PythonCodeParser::parseCode(CodeOutputInterface &codeOutIntf,
   //printf("***parseCode()\n");
 
   if (input.isEmpty()) return;
-  printlex(yy_flex_debug, TRUE, __FILE__, fileDef ? qPrint(fileDef->fileName()): NULL);
+  DebugLex debugLex(Debug::Lex_pycode, __FILE__, fileDef ? qPrint(fileDef->fileName()): NULL);
   yyextra->fileName      = fileDef ? fileDef->fileName():"";
   yyextra->code = &codeOutIntf;
   yyextra->inputString   = input.data();
@@ -1651,7 +1651,6 @@ void PythonCodeParser::parseCode(CodeOutputInterface &codeOutIntf,
   }
   // write the tooltips
   yyextra->tooltipManager.writeTooltips(codeOutIntf);
-  printlex(yy_flex_debug, FALSE, __FILE__, fileDef ? qPrint(fileDef->fileName()): NULL);
 }
 
 static inline void pop_state(yyscan_t yyscanner)

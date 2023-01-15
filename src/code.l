@@ -3949,7 +3949,7 @@ void CCodeParser::parseCode(CodeOutputInterface &od,const QCString &className,co
 
   if (s.isEmpty()) return;
 
-  printlex(yy_flex_debug, TRUE, __FILE__, fd ? qPrint(fd->fileName()): !exName.isEmpty() ? qPrint(exName) : NULL);
+  DebugLex debugLex(Debug::Lex_code, __FILE__, fd ? qPrint(fd->fileName()): !exName.isEmpty() ? qPrint(exName) : NULL);
 
   yyextra->code = &od;
   yyextra->inputString   = s.data();
@@ -4035,8 +4035,6 @@ void CCodeParser::parseCode(CodeOutputInterface &od,const QCString &className,co
   }
   // write the tooltips
   yyextra->tooltipManager.writeTooltips(od);
-
-  printlex(yy_flex_debug, FALSE, __FILE__, fd ? qPrint(fd->fileName()): NULL);
 }
 
 #if USE_STATE2STRING

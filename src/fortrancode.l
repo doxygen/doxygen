@@ -1465,7 +1465,7 @@ void FortranCodeParser::parseCode(CodeOutputInterface & codeOutIntf,
   //                const MemberDef *,bool,const Definition *searchCtx,
   //                bool collectXRefs, FortranFormat format)
   if (input.isEmpty()) return;
-  printlex(yy_flex_debug, TRUE, __FILE__, fileDef ? qPrint(fileDef->fileName()): NULL);
+  DebugLex debugLex(Debug::Lex_fortrancode, __FILE__, fileDef ? qPrint(fileDef->fileName()): NULL);
   yyextra->code = &codeOutIntf;
   yyextra->inputString   = input.data();
   yyextra->inputPosition = 0;
@@ -1530,8 +1530,6 @@ void FortranCodeParser::parseCode(CodeOutputInterface & codeOutIntf,
 
   // write the tooltips
   yyextra->tooltipManager.writeTooltips(codeOutIntf);
-
-  printlex(yy_flex_debug, FALSE, __FILE__, fileDef ? qPrint(fileDef->fileName()): NULL);
 }
 
 static inline void pop_state(yyscan_t yyscanner)

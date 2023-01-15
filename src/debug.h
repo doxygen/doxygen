@@ -17,8 +17,7 @@
 #define DEBUG_H
 
 #include <cstdint>
-
-class QCString;
+#include "qcstring.h"
 
 /** Class containing a print function for diagnostics. */
 class Debug
@@ -68,7 +67,7 @@ class Debug
     static uint64_t setFlagStr(const QCString &label);
     static void setFlag(const DebugMask mask);
     static void clearFlag(const DebugMask mask);
-    static bool isFlagSet(DebugMask mask);
+    static bool isFlagSet(const DebugMask mask);
     static void printFlags();
     static void setPriority(int p);
 
@@ -79,5 +78,35 @@ class Debug
     static DebugMask curMask;
     static int curPrio;
 };
+
+class DebugLex
+{
+  public:
+    DebugLex(Debug::DebugMask mask,const char *lexName,const char *fileName) : m_mask(mask), m_lexName(lexName), m_fileName(fileName)
+    {
+      printlex("Entering");
+    }
+   ~DebugLex()
+    {
+      printlex("Finished");
+    }
+  private:
+    void printlex(const char *state)
+    {
+      if (!m_fileName.isEmpty())
+      {
+        Debug::print(m_mask,0,"%s lexical analyzer: %s (for: %s)\n",state, qPrint(m_lexName), qPrint(m_fileName));
+      }
+      else
+      {
+        Debug::print(m_mask,0,"%s lexical analyzer: %s\n",state, qPrint(m_lexName));
+      }
+    }
+
+    Debug::DebugMask m_mask;
+    QCString m_lexName;
+    QCString m_fileName;
+};
+
 
 #endif
