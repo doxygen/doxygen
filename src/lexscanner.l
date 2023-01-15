@@ -47,6 +47,7 @@ typedef yyguts_t *yyscan_t;
 #include "message.h"
 #include "util.h"
 #include "scanner.h"
+#include "debug.h"
 
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
@@ -1007,7 +1008,7 @@ LexOutlineParser::LexOutlineParser() : p(std::make_unique<LexOutlineParser::Priv
 {
   lexscannerYYlex_init_extra(&p->state,&p->yyscanner);
 #ifdef FLEX_DEBUG
-  lexscannerYYset_debug(1,p->yyscanner);
+  lexscannerYYset_debug(Debug::isFlagSet(Debug::Lex_lexscanner)?1:0,p->yyscanner);
 #endif
 }
 

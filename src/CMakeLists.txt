@@ -388,7 +388,7 @@ if (use_libclang)
     target_compile_definitions(doxygen PRIVATE ${LLVM_DEFINITIONS})
 endif()
 
-if((CMAKE_BUILD_TYPE EQUAL "DEBUG") OR enable_tracing)
+if((CMAKE_BUILD_TYPE STREQUAL "Debug") OR enable_tracing)
     target_compile_definitions(doxycfg  PRIVATE -DENABLE_TRACING=1)
     target_compile_definitions(doxymain PRIVATE -DENABLE_TRACING=1)
     target_compile_definitions(doxygen  PRIVATE -DENABLE_TRACING=1)

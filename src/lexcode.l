@@ -37,6 +37,7 @@ typedef yyguts_t *yyscan_t;
 #include "lexcode.h"
 #include "filedef.h"
 #include "message.h"
+#include "debug.h"
 
 #define YY_NEVER_INTERACTIVE 1
 #define YY_NO_INPUT 1
@@ -1177,7 +1178,7 @@ LexCodeParser::LexCodeParser() : p(std::make_unique<Private>())
 {
   lexcodeYYlex_init_extra(&p->state, &p->yyscanner);
 #ifdef FLEX_DEBUG
-  lexcodeYYset_debug(1,p->yyscanner);
+  lexcodeYYset_debug(Debug::isFlagSet(Debug::Lex_lexcode)?1:0,p->yyscanner);
 #endif
   resetCodeParserState();
 }

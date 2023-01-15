@@ -64,6 +64,7 @@ typedef yyguts_t *yyscan_t;
 #include "scopedtypevariant.h"
 #include "symbolresolver.h"
 #include "dir.h"
+#include "debug.h"
 
 // Toggle for some debugging info
 //#define DBG_CTX(x) fprintf x
@@ -3901,7 +3902,7 @@ CCodeParser::CCodeParser() : p(std::make_unique<CCodeParser::Private>())
 {
   codeYYlex_init_extra(&p->state,&p->yyscanner);
 #ifdef FLEX_DEBUG
-  codeYYset_debug(1,p->yyscanner);
+  codeYYset_debug(Debug::isFlagSet(Debug::Lex_code)?1:0,p->yyscanner);
 #endif
   resetCodeParserState();
 }

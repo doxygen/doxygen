@@ -32,6 +32,7 @@
 #include "cppvalue.h"
 #include "ce_parse.hpp" // generated header file
 #include "message.h"
+#include "debug.h"
 
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
@@ -144,7 +145,7 @@ bool ConstExpressionParser::parse(const char *fileName,int lineNr,const std::str
   struct yyguts_t *yyg = (struct yyguts_t*)p->yyscanner;
 
 #ifdef FLEX_DEBUG
-  constexpYYset_debug(1,p->yyscanner);
+  constexpYYset_debug(Debug::isFlagSet(Debug::Lex_constexp)?1:0,p->yyscanner);
 #endif
 
   yyextra->constExpFileName = fileName;

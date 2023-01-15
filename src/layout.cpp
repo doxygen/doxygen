@@ -1572,7 +1572,7 @@ void LayoutDocManager::init()
   XMLParser parser(handlers);
   layoutParser.setDocumentLocator(&parser);
   QCString layout_default = ResourceMgr::instance().getAsString("layout_default.xml");
-  parser.parse("layout_default.xml",layout_default.data(),Debug::isFlagSet(Debug::Lex));
+  parser.parse("layout_default.xml",layout_default.data(),Debug::isFlagSet(Debug::Lex_xml));
 }
 
 LayoutDocManager::~LayoutDocManager()
@@ -1615,7 +1615,7 @@ void LayoutDocManager::parse(const QCString &fileName)
   handlers.error        = [&layoutParser](const std::string &fn,int lineNr,const std::string &msg) { layoutParser.error(fn,lineNr,msg); };
   XMLParser parser(handlers);
   layoutParser.setDocumentLocator(&parser);
-  parser.parse(fileName.data(),fileToString(fileName).data(),Debug::isFlagSet(Debug::Lex));
+  parser.parse(fileName.data(),fileToString(fileName).data(),Debug::isFlagSet(Debug::Lex_xml));
 }
 
 //---------------------------------------------------------------------------------

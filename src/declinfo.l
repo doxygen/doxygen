@@ -42,6 +42,7 @@ typedef yyguts_t *yyscan_t;
 #include "util.h"
 #include "message.h"
 #include "types.h"
+#include "debug.h"
 
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
@@ -323,7 +324,7 @@ void parseFuncDecl(const QCString &decl,const SrcLangExt lang,QCString &cl,QCStr
   struct yyguts_t *yyg = (struct yyguts_t*)g_yyscanner;
 
 #ifdef FLEX_DEBUG
-  declinfoYYset_debug(1,g_yyscanner);
+  declinfoYYset_debug(Debug::isFlagSet(Debug::Lex_declinfo)?1:0,g_yyscanner);
 #endif
 
   printlex(yy_flex_debug, TRUE, __FILE__, NULL);

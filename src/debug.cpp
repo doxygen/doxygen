@@ -28,22 +28,42 @@
 
 static std::map< std::string, Debug::DebugMask > s_labels =
 {
-  { "preprocessor",      Debug::Preprocessor      },
-  { "nolineno",          Debug::NoLineNo          },
-  { "commentcnv",        Debug::CommentCnv        },
-  { "commentscan",       Debug::CommentScan       },
-  { "printtree",         Debug::PrintTree         },
-  { "time",              Debug::Time              },
-  { "extcmd",            Debug::ExtCmd            },
-  { "markdown",          Debug::Markdown          },
-  { "filteroutput",      Debug::FilterOutput      },
-  { "lex",               Debug::Lex               },
-  { "plantuml",          Debug::Plantuml          },
-  { "fortranfixed2free", Debug::FortranFixed2Free },
-  { "cite",              Debug::Cite              },
-  { "rtf",               Debug::Rtf               },
-  { "qhp",               Debug::Qhp               },
-  { "tag",               Debug::Tag               },
+  { "preprocessor",       Debug::Preprocessor       },
+  { "nolineno",           Debug::NoLineNo           },
+  { "commentcnv",         Debug::CommentCnv         },
+  { "commentscan",        Debug::CommentScan        },
+  { "printtree",          Debug::PrintTree          },
+  { "time",               Debug::Time               },
+  { "extcmd",             Debug::ExtCmd             },
+  { "markdown",           Debug::Markdown           },
+  { "filteroutput",       Debug::FilterOutput       },
+  { "plantuml",           Debug::Plantuml           },
+  { "fortranfixed2free",  Debug::FortranFixed2Free  },
+  { "cite",               Debug::Cite               },
+  { "rtf",                Debug::Rtf                },
+  { "qhp",                Debug::Qhp                },
+  { "tag",                Debug::Tag                },
+  { "lex",                Debug::Lex                },
+  { "lex:code",           Debug::Lex_code           },
+  { "lex:commentcnv",     Debug::Lex_commentcnv     },
+  { "lex:commentscan",    Debug::Lex_commentscan    },
+  { "lex:configimpl",     Debug::Lex_configimpl     },
+  { "lex:constexp",       Debug::Lex_constexp       },
+  { "lex:declinfo",       Debug::Lex_declinfo       },
+  { "lex:defargs",        Debug::Lex_defargs        },
+  { "lex:doctokenizer",   Debug::Lex_doctokenizer   },
+  { "lex:fortrancode",    Debug::Lex_fortrancode    },
+  { "lex:fortranscanner", Debug::Lex_fortranscanner },
+  { "lex:lexcode",        Debug::Lex_lexcode        },
+  { "lex:lexscanner",     Debug::Lex_lexscanner     },
+  { "lex:pre",            Debug::Lex_pre            },
+  { "lex:pycode",         Debug::Lex_pycode         },
+  { "lex:pyscanner",      Debug::Lex_pyscanner      },
+  { "lex:scanner",        Debug::Lex_scanner        },
+  { "lex:sqlcode",        Debug::Lex_sqlcode        },
+  { "lex:vhdlcode",       Debug::Lex_vhdlcode       },
+  { "lex:xml",            Debug::Lex_xml            },
+  { "lex:xmlcode",        Debug::Lex_xmlcode        },
 };
 
 //------------------------------------------------------------------------
@@ -68,7 +88,7 @@ static char asciiToLower(char in) {
     return in;
 }
 
-static int labelToEnumValue(const QCString &l)
+static uint64_t labelToEnumValue(const QCString &l)
 {
   std::string s = l.str();
   std::transform(s.begin(),s.end(),s.begin(),asciiToLower);
@@ -76,9 +96,9 @@ static int labelToEnumValue(const QCString &l)
   return (it!=s_labels.end()) ? it->second : 0;
 }
 
-int Debug::setFlagStr(const QCString &lab)
+uint64_t Debug::setFlagStr(const QCString &lab)
 {
-  int retVal = labelToEnumValue(lab);
+  uint64_t retVal = labelToEnumValue(lab);
   curMask = static_cast<DebugMask>(curMask | retVal);
   return retVal;
 }

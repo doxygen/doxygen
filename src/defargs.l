@@ -66,6 +66,7 @@ typedef yyguts_t *yyscan_t;
 #include "util.h"
 #include "arguments.h"
 #include "message.h"
+#include "debug.h"
   
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
@@ -820,7 +821,7 @@ std::unique_ptr<ArgumentList> stringToArgumentList(SrcLangExt lang, const QCStri
   defargsYY_state extra(argsString.data(),al,lang);
   defargsYYlex_init_extra(&extra,&yyscanner);
 #ifdef FLEX_DEBUG
-  defargsYYset_debug(1,yyscanner);
+  defargsYYset_debug(Debug::isFlagSet(Debug::Lex_defargs)?1:0,yyscanner);
 #endif
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   printlex(yy_flex_debug, TRUE, __FILE__, NULL);

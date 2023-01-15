@@ -58,6 +58,7 @@ typedef yyguts_t *yyscan_t;
 #include "tooltip.h"
 #include "scopedtypevariant.h"
 #include "symbolresolver.h"
+#include "debug.h"
 
 // Toggle for some debugging info
 //#define DBG_CTX(x) fprintf x
@@ -1545,7 +1546,7 @@ PythonCodeParser::PythonCodeParser() : p(std::make_unique<Private>())
 {
   pycodeYYlex_init_extra(&p->state,&p->yyscanner);
 #ifdef FLEX_DEBUG
-  pycodeYYset_debug(1,p->yyscanner);
+  pycodeYYset_debug(Debug::isFlagSet(Debug::Lex_pycode)?1:0,p->yyscanner);
 #endif
   resetCodeParserState();
 }

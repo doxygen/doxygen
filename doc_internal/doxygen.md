@@ -104,50 +104,25 @@ Finally the data for members of classes, namespaces, and files is stored in
 the subclass MemberDef. This class is used for functions, variables, enums, etc, as indicated by
 MemberDef::memberType().
 
-Producing debug output
-======================
+Producing tracing and debug output
+==================================
 
 Within doxygen there are a number of ways to obtain debug output. Besides the
-invasive method of  putting print statements in the code there are a number of
-easy ways to get debug information.
+invasive method of putting print statements in the code there are a number of
+easier ways to get debug information.
 
-- Compilation of `.l` files<br>
-  This is also an invasive method but it will be automatically done by the
-  `flex / lex` command. The result is that of each input line the (lex) rule(s)
-  that are applied on it are shown.
-  - windows
-    - in the Visual C++ GUI
-      - find the required `.l` file
-      - select the `Properties` of this file
-      - set the item `Write used lex rules` to `Yes`
-      - see to it that the `.l` file is newer than the corresponding `.cpp` file
-        or remove the corresponding `.cpp` file
-    - when using `nmake` the same possibilities exist as described with "unices".
-  - unices
-    - global change<br>
-      In the chapter "Doxygen's internals" a `perl` script is given to toggle the
-      possibility of having the rules debug information.
-    - command line change<br>
-      It is possible to the option `LEX_FLAGS="-d"` with the `make` command on the
-      command line. In this case the `.l` that are converted to the corresponding
-      `.cpp` files during this `make` get the rules debug information.<br>
-      To undo the rules debug information output just recompile the file with
-      just `make`.<br>
-      Note this method applies for all the `.l` files that are rebuild to `.cpp`
-      files so be sure that only the `.l` files(s) of which you want to have the
-      rules debug information is (are) newer than the corresponding `.cpp`
-      file(s).
-- Running doxygen<br>
-  During a run of doxygen it is possible to specify the `-d` option with the
-  following possibilities (each option has to be preceded by `-d`):
-  - findmembers<br>
-    Gives of global, class, module members its scope, arguments and other relevant information.
-  - functions<br>
-    Gives of functions its scope, arguments and other relevant information.
-  - variables<br>
-    Gives of variables its scope and other relevant information.
-  - classes<br>
-    Gives of classes en modules its scope and other relevant information.
+For a debug build (build option `-DCMAKE_BUILD_TYPE=Debug`)
+these options are always available, but for a release build some debug capabilities have to be enabled explicitly
+(see build options `-Denable_tracing=YES` and `-Denable_lex_debug=YES`).
+
+To enable tracing use the `-t` option. You can optionally specify a name of a trace file,
+if omitted `trace.txt` will be used.
+When running doxygen with tracing enabled, doxygen will write a lot of internal information to the trace file,
+which can be used (by experts) to diagnose problems.
+
+During a run of doxygen it is possible to specify the `-d` command line option with one of the
+following values (each option has to be preceded by `-d`):
+
   - preprocessor<br>
     Shows the results of the preprocessing phase, i.e. results from include files,
     <tt>\#define</tt> statements etc., definitions in the doxygen configuration file like:
@@ -179,10 +154,6 @@ easy ways to get debug information.
     command is specified)
   - validate<br>
     Currently not used
-  - lex<br>
-    Provide output of the `lex` files used. When a lexer is started and when a lexer
-    ends the name of the `lex` file is given so it is possible to see in which lexer the
-    problem occurs. This makes it easier to select the file to be compiled in `lex` debug mode.
   - cite<br>
     Retains the temporary files as created and used for the non LaTeX output results of the 
     generation of the bibliographical references.
@@ -202,6 +173,12 @@ easy ways to get debug information.
       also some extra checks are done by means of the `-c` flag of the `qhelpgenerator`.
   - tag<br>
     Shows the results of reading the tag files.
+  - lex<br>
+    Provide output of the `lex` files used. When a lexer is started and when a lexer
+    ends the name of the `lex` file is given so it is possible to see in which lexer the
+    problem occurs. This makes it easier to select the file to be compiled in `lex` debug mode.
+  - lex:lexer<br>
+    Enables output for a specific lexer only, where `lexer` should be replaced by the name of the specific lexer.
 
 Producing output
 ================

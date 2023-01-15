@@ -53,6 +53,7 @@ typedef yyguts_t *yyscan_t;
 #include "arguments.h"
 #include "markdown.h"
 #include "fileinfo.h"
+#include "debug.h"
 
 // Toggle for some debugging info
 //#define DBG_CTX(x) fprintf x
@@ -2020,7 +2021,7 @@ PythonOutlineParser::PythonOutlineParser() : p(std::make_unique<PythonOutlinePar
 {
   pyscannerYYlex_init_extra(&p->state,&p->yyscanner);
 #ifdef FLEX_DEBUG
-  pyscannerYYset_debug(1,p->yyscanner);
+  pyscannerYYset_debug(Debug::isFlagSet(Debug::Lex_pyscanner)?1:0,p->yyscanner);
 #endif
 }
 

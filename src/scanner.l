@@ -55,6 +55,7 @@ typedef yyguts_t *yyscan_t;
 #include "markdown.h"
 #include "regex.h"
 #include "trace.h"
+#include "debug.h"
 
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
@@ -7923,7 +7924,7 @@ COutlineParser::COutlineParser() : p(std::make_unique<COutlineParser::Private>()
 {
   scannerYYlex_init_extra(&p->state,&p->yyscanner);
 #ifdef FLEX_DEBUG
-  scannerYYset_debug(1,p->yyscanner);
+  scannerYYset_debug(Debug::isFlagSet(Debug::Lex_scanner)?1:0,p->yyscanner);
 #endif
 }
 

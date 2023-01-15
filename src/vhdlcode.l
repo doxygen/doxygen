@@ -57,6 +57,7 @@ typedef yyguts_t *yyscan_t;
 #include "filedef.h"
 #include "tooltip.h"
 #include "regex.h"
+#include "debug.h"
 
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
@@ -1566,7 +1567,7 @@ VHDLCodeParser::VHDLCodeParser() : p(std::make_unique<Private>())
 {
   vhdlcodeYYlex_init_extra(&p->state,&p->yyscanner);
 #ifdef FLEX_DEBUG
-  vhdlcodeYYset_debug(1,p->yyscanner);
+  vhdlcodeYYset_debug(Debug::isFlagSet(Debug::Lex_vhdlcode)?1:0,p->yyscanner);
 #endif
   resetCodeParserState();
 }

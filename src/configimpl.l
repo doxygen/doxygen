@@ -43,6 +43,7 @@
 #include "dir.h"
 #include "textstream.h"
 #include "dotattributes.h"
+#include "debug.h"
 
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
@@ -1568,6 +1569,9 @@ static QCString configFileToString(const QCString &name)
 
 bool ConfigImpl::parseString(const QCString &fn,const QCString &str,bool update)
 {
+#ifdef FLEX_DEBUG
+  configimplYYset_debug(Debug::isFlagSet(Debug::Lex_configimpl)?1:0);
+#endif
   g_config = ConfigImpl::instance();
   g_inputString   = str.data();
   g_inputPosition = 0;

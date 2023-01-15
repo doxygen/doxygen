@@ -47,7 +47,7 @@ namespace Trace
     size_t i=0;
     for (; i<numChars && i<s.length(); i++)
     {
-      char c=s[i];
+      char c=s.at(i);
       if      (c=='\n') { result+="\\n"; }
       else if (c=='\t') { result+="\\t"; }
       else if (c=='\r') { result+="\\r"; }

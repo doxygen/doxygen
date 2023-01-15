@@ -48,6 +48,7 @@ typedef yyguts_t *yyscan_t;
 #include "filedef.h"
 #include "tooltip.h"
 #include "message.h"
+#include "debug.h"
 
 #define YY_NEVER_INTERACTIVE 1
 #define YY_NO_INPUT 1
@@ -395,7 +396,7 @@ XMLCodeParser::XMLCodeParser() : p(std::make_unique<Private>())
 {
   xmlcodeYYlex_init_extra(&p->state,&p->yyscanner);
 #ifdef FLEX_DEBUG
-  xmlcodeYYset_debug(1,p->yyscanner);
+  xmlcodeYYset_debug(Debug::isFlagSet(Debug::Lex_xmlcode)?1:0,p->yyscanner);
 #endif
   resetCodeParserState();
 }

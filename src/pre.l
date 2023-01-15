@@ -65,6 +65,7 @@ typedef yyguts_t *yyscan_t;
 #include "regex.h"
 #include "fileinfo.h"
 #include "trace.h"
+#include "debug.h"
 
 #define YY_NO_UNISTD_H 1
 
@@ -3668,7 +3669,7 @@ void Preprocessor::processFile(const QCString &fileName,BufStr &input,BufStr &ou
   struct yyguts_t *yyg = (struct yyguts_t*)p->yyscanner;
 
 #ifdef FLEX_DEBUG
-  preYYset_debug(1,yyscanner);
+  preYYset_debug(Debug::isFlagSet(Debug::Lex_pre)?1:0,yyscanner);
 #endif
 
   printlex(yy_flex_debug, TRUE, __FILE__, qPrint(fileName));

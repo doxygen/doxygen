@@ -31,7 +31,6 @@
 #include <vector>
 #include <stdio.h>
 #include "xml.h"
-//#include "message.h"
 
 #define YY_NEVER_INTERACTIVE 1
 #define YY_NO_INPUT 1
@@ -432,7 +431,7 @@ void XMLParser::parse(const char *fileName,const char *inputStr, bool debugEnabl
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
 
 #ifdef FLEX_DEBUG
-  xmlYYset_debug(1,p->yyscanner);
+  xmlYYset_debug(debugEnabled?1:0,p->yyscanner);
 #endif
 
   if (inputStr==nullptr || inputStr[0]=='\0') return; // empty input

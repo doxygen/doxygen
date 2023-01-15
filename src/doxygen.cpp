@@ -10513,6 +10513,9 @@ static void devUsage()
   msg("Developer parameters:\n");
   msg("  -m          dump symbol map\n");
   msg("  -b          making messages output unbuffered\n");
+#if ENABLE_TRACING
+  msg("  -t [<file>] trace debug info to file (default file trace.txt)\n");
+#endif
   msg("  -T          activates output generation via Django like template\n");
   msg("  -d <level>  enable a debug level, such as (multiple invocations of -d are possible):\n");
   Debug::printFlags();

@@ -62,6 +62,7 @@ typedef yyguts_t *yyscan_t;
 #include "fortrancode.h"
 #include "fortranscanner.h"
 #include "containers.h"
+#include "debug.h"
 
 // Toggle for some debugging info
 //#define DBG_CTX(x) fprintf x
@@ -1417,7 +1418,7 @@ FortranCodeParser::FortranCodeParser(FortranFormat format) : p(std::make_unique<
   p->format = format;
   fortrancodeYYlex_init_extra(&p->state,&p->yyscanner);
 #ifdef FLEX_DEBUG
-  fortrancodeYYset_debug(1,p->yyscanner);
+  fortrancodeYYset_debug(Debug::isFlagSet(Debug::Lex_fortrancode)?1:0,p->yyscanner);
 #endif
   resetCodeParserState();
 }

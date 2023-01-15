@@ -2894,7 +2894,7 @@ struct FortranOutlineParser::Private
   {
     fortranscannerYYlex_init_extra(&extra,&yyscanner);
 #ifdef FLEX_DEBUG
-    fortranscannerYYset_debug(1,yyscanner);
+    fortranscannerYYset_debug(Debug::isFlagSet(Debug::Lex_fortranscanner)?1:0,yyscanner);
 #endif
   }
   ~Private()

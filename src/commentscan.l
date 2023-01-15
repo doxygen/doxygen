@@ -62,6 +62,7 @@ typedef yyguts_t *yyscan_t;
 #include "util.h"
 #include "reflist.h"
 #include "trace.h"
+#include "debug.h"
 
 #define USE_STATE2STRING 0
 
@@ -3680,7 +3681,7 @@ CommentScanner::CommentScanner() : p(std::make_unique<Private>())
 {
   commentscanYYlex_init_extra(&p->extra,&p->yyscanner);
 #ifdef FLEX_DEBUG
-  commentscanYYset_debug(1,p->yyscanner);
+  commentscanYYset_debug(Debug::isFlagSet(Debug::Lex_commentscan)?1:0,p->yyscanner);
 #endif
 }
 

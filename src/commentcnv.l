@@ -1198,7 +1198,7 @@ void convertCppComments(const BufStr &inBuf,BufStr &outBuf,const QCString &fileN
   commentcnvYY_state extra(inBuf,outBuf);
   commentcnvYYlex_init_extra(&extra,&yyscanner);
 #ifdef FLEX_DEBUG
-  commentcnvYYset_debug(1,yyscanner);
+  commentcnvYYset_debug(Debug::isFlagSet(Debug::Lex_commentcnv)?1:0,yyscanner);
 #endif
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   //printf("convertCppComments(%s)\n",fileName);

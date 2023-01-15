@@ -46,6 +46,7 @@ typedef yyguts_t *yyscan_t;
 #include "portable.h"
 #include "cite.h"
 #include "regex.h"
+#include "debug.h"
 
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
@@ -1717,7 +1718,7 @@ DocTokenizer::DocTokenizer() : p(std::make_unique<Private>())
   //printf("%p:DocTokenizer::DocTokenizer()\n",(void*)this);
   doctokenizerYYlex_init_extra(&p->extra,&p->yyscanner);
 #ifdef FLEX_DEBUG
-  doctokenizerYYset_debug(1,p->yyscanner);
+  doctokenizerYYset_debug(Debug::isFlagSet(Debug::Lex_doctokenizer)?1:0,p->yyscanner);
 #endif
 }
 
