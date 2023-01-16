@@ -144,7 +144,7 @@ DebugLex::~DebugLex()
 
 void DebugLex::print(Debug::DebugMask mask,const char *state,const char *lexName,const char *fileName)
 {
-  if (fileName)
+  if (fileName && *fileName)
   {
     if (Debug::isFlagSet(mask))
     {
