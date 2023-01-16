@@ -650,8 +650,8 @@ void MemberList::writeDocumentation(OutputList &ol,
 
   struct OverloadInfo
   {
-    uint count = 1;
-    uint total = 0;
+    uint32_t count = 1;
+    uint32_t total = 0;
   };
   std::unordered_map<std::string,OverloadInfo> overloadInfo;
   // count the number of overloaded members
@@ -671,8 +671,8 @@ void MemberList::writeDocumentation(OutputList &ol,
         !(md->isEnumValue() && !showInline))
     {
       auto it = overloadInfo.find(md->name().str());
-      uint overloadCount = it->second.total;
-      uint &count = it->second.count;
+      uint32_t overloadCount = it->second.total;
+      uint32_t &count = it->second.count;
       MemberDefMutable *mdm = toMemberDefMutable(md);
       if (mdm)
       {
@@ -721,8 +721,8 @@ void MemberList::writeDocumentationPage(OutputList &ol,
 
   struct OverloadInfo
   {
-    uint count = 1;
-    uint total = 0;
+    uint32_t count = 1;
+    uint32_t total = 0;
   };
   std::unordered_map<std::string,OverloadInfo> overloadInfo;
 
@@ -745,8 +745,8 @@ void MemberList::writeDocumentationPage(OutputList &ol,
     if (md && md->hasDetailedDescription())
     {
       auto it = overloadInfo.find(md->name().str());
-      uint overloadCount = it->second.total;
-      uint &count = it->second.count;
+      uint32_t overloadCount = it->second.total;
+      uint32_t &count = it->second.count;
       QCString diskName=md->getOutputFileBase();
       QCString title=md->qualifiedName();
       startFile(ol,diskName,md->name(),title,HighlightedItem::None,!generateTreeView,diskName);

@@ -196,7 +196,7 @@ QCString DotNode::convertLabel(const QCString &l, bool htmlLike)
   if (p.isEmpty()) return QCString();
   QCString result;
   char c,pc=0;
-  uint idx = 0;
+  uint32_t idx = 0;
   int len=p.length();
   int charsLeft=len;
   int sinceLast=0;

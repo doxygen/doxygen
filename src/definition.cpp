@@ -417,7 +417,7 @@ void DefinitionImpl::writeDocAnchorsToTagFile(TextStream &tagFile) const
 
 bool DefinitionImpl::_docsAlreadyAdded(const QCString &doc,QCString &sigList)
 {
-  uchar md5_sig[16];
+  uint8_t md5_sig[16];
   char sigStr[33];
   // to avoid mismatches due to differences in indenting, we first remove
   // double whitespaces...
@@ -496,7 +496,7 @@ void DefinitionImpl::_setBriefDescription(const QCString &b,const QCString &brie
   brief = stripLeadingAndTrailingEmptyLines(brief,briefLine);
   brief = brief.stripWhiteSpace();
   if (brief.isEmpty()) return;
-  uint bl = brief.length();
+  uint32_t bl = brief.length();
   if (bl>0)
   {
     if (!theTranslator || theTranslator->needsPunctuation()) // add punctuation if needed
@@ -670,7 +670,7 @@ class FilterCache
             return false;
           }
           size+=bytesWritten;
-          str.addArray(buf,static_cast<uint>(bytesWritten));
+          str.addArray(buf,static_cast<uint32_t>(bytesWritten));
         }
         str.addChar('\0');
         item.fileSize = size;
@@ -1806,7 +1806,7 @@ QCString DefinitionImpl::externalReference(const QCString &relPath) const
     if (it!=Doxygen::tagDestinationMap.end())
     {
       QCString result(it->second);
-      uint l = result.length();
+      uint32_t l = result.length();
       if (!relPath.isEmpty() && l>0 && result.at(0)=='.')
       { // relative path -> prepend relPath.
         result.prepend(relPath);

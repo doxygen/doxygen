@@ -1772,7 +1772,7 @@ class TranslatorDutch : public Translator
     virtual QCString trFunctionAndProc()
     { return "Functies/Procedures/Processen"; }
     /** VHDL type */
-    virtual QCString trVhdlType(uint64 type,bool single)
+    virtual QCString trVhdlType(uint64_t type,bool single)
     {
       switch(type)
       {

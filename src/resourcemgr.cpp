@@ -15,6 +15,7 @@
 
 #include <map>
 #include <string.h>
+#include <cstdint>
 
 #include "resourcemgr.h"
 #include "util.h"
@@ -103,9 +104,9 @@ bool ResourceMgr::copyResourceAs(const QCString &name,const QCString &targetDir,
         {
           QCString n = name;
           n = n.left(n.length()-4)+".png"; // replace .lum by .png
-          const uchar *data = res->data;
-          ushort width   = (data[0]<<8)+data[1];
-          ushort height  = (data[2]<<8)+data[3];
+          const uint8_t *data = res->data;
+          uint16_t width   = (data[0]<<8)+data[1];
+          uint16_t height  = (data[2]<<8)+data[3];
           ColoredImgDataItem images[2];
           images[0].name    = n.data();
           images[0].width   = width;
@@ -121,9 +122,9 @@ bool ResourceMgr::copyResourceAs(const QCString &name,const QCString &targetDir,
         {
           QCString n = name;
           n = n.left(n.length()-5)+".png"; // replace .luma by .png
-          const uchar *data = res->data;
-          ushort width   = (data[0]<<8)+data[1];
-          ushort height  = (data[2]<<8)+data[3];
+          const uint8_t *data = res->data;
+          uint16_t width   = (data[0]<<8)+data[1];
+          uint16_t height  = (data[2]<<8)+data[3];
           ColoredImgDataItem images[2];
           images[0].name    = n.data();
           images[0].width   = width;

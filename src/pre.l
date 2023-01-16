@@ -39,11 +39,10 @@ typedef yyguts_t *yyscan_t;
 #include <mutex>
 #include <thread>
 #include <algorithm>
-
-#include <stdio.h>
-#include <assert.h>
-#include <ctype.h>
-#include <errno.h>
+#include <cstdio>
+#include <cassert>
+#include <cctype>
+#include <cerrno>
 
 #include "qcstring.h"
 #include "containers.h"
@@ -86,7 +85,7 @@ struct preYY_CondCtx
 
 struct FileState
 {
-  FileState(uint size) : fileBuf(size) {}
+  FileState(uint32_t size) : fileBuf(size) {}
   int lineNr = 1;
   int curlyCount = 0;
   BufStr fileBuf;
@@ -1967,7 +1966,7 @@ static FileState *checkAndOpenFile(yyscan_t yyscanner,const QCString &fileName,b
     }
     //printf("#include %s\n",qPrint(absName));
 
-    fs = new FileState(static_cast<uint>(fi.size())+4096);
+    fs = new FileState(static_cast<uint32_t>(fi.size())+4096);
     if (!readInputFile(absName,fs->fileBuf))
     { // error
       //printf("  error reading\n");
@@ -2089,15 +2088,15 @@ static QCString extractTrailingComment(const QCString &s)
   return "";
 }
 
-static int getNextChar(yyscan_t yyscanner,const QCString &expr,QCString *rest,uint &pos);
-static int getCurrentChar(yyscan_t yyscanner,const QCString &expr,QCString *rest,uint pos);
-static void unputChar(yyscan_t yyscanner,const QCString &expr,QCString *rest,uint &pos,char c);
+static int getNextChar(yyscan_t yyscanner,const QCString &expr,QCString *rest,uint32_t &pos);
+static int getCurrentChar(yyscan_t yyscanner,const QCString &expr,QCString *rest,uint32_t pos);
+static void unputChar(yyscan_t yyscanner,const QCString &expr,QCString *rest,uint32_t &pos,char c);
 static bool expandExpression(yyscan_t yyscanner,QCString &expr,QCString *rest,int pos,int level);
 
 static QCString stringize(const QCString &s)
 {
   QCString result;
-  uint i=0;
+  uint32_t i=0;
   bool inString=FALSE;
   bool inChar=FALSE;
   char c,pc;
@@ -2226,7 +2225,7 @@ static void returnCharToStream(yyscan_t yyscanner,char c)
 }
 
 static inline void addTillEndOfString(yyscan_t yyscanner,const QCString &expr,QCString *rest,
-                                       uint &pos,char term,QCString &arg)
+                                       uint32_t &pos,char term,QCString &arg)
 {
   int cc;
   while ((cc=getNextChar(yyscanner,expr,rest,pos))!=EOF && cc!=0)
@@ -2248,7 +2247,7 @@ static bool replaceFunctionMacro(yyscan_t yyscanner,const QCString &expr,QCStrin
 {
   YY_EXTRA_TYPE state = preYYget_extra(yyscanner);
   //printf(">replaceFunctionMacro(expr='%s',rest='%s',pos=%d,def='%s') level=%d\n",qPrint(expr),rest ? qPrint(*rest) : 0,pos,qPrint(def->name),state->levelGuard.size());
-  uint j=pos;
+  uint32_t j=pos;
   len=0;
   result.resize(0);
   int cc;
@@ -2396,7 +2395,7 @@ static bool replaceFunctionMacro(yyscan_t yyscanner,const QCString &expr,QCStrin
       (argCount>=def->nargs-1 && def->varArgs)) // variadic macro with at least as many
                                                 // params as the non-variadic part (see bug731985)
   {
-    uint k=0;
+    uint32_t k=0;
     // substitution of all formal arguments
     QCString resExpr;
     const QCString d=def->definition.stripWhiteSpace();
@@ -2876,7 +2875,7 @@ static QCString removeIdsAndMarkers(const QCString &s)
         result+="0L";
         p++;
         while ((c=*p) && isId(c)) p++;
-        while ((c=*p) && isspace((uchar)c)) p++;
+        while ((c=*p) && isspace((uint8_t)c)) p++;
         if (*p=='(') // undefined function macro
         {
           p++;
@@ -3115,7 +3114,7 @@ static inline void outputChar(yyscan_t yyscanner,char c)
 static inline void outputArray(yyscan_t yyscanner,const char *a,yy_size_t len)
 {
   YY_EXTRA_TYPE state = preYYget_extra(yyscanner);
-  if (state->includeStack.empty() || state->curlyCount>0) state->outputBuf->addArray(a,static_cast<uint>(len));
+  if (state->includeStack.empty() || state->curlyCount>0) state->outputBuf->addArray(a,static_cast<uint32_t>(len));
 }
 
 static inline void outputString(yyscan_t yyscanner,const QCString &a)
@@ -3196,13 +3195,13 @@ static void readIncludeFile(yyscan_t yyscanner,const QCString &inc)
 {
   AUTO_TRACE("inc={}",inc);
   YY_EXTRA_TYPE state = preYYget_extra(yyscanner);
-  uint i=0;
+  uint32_t i=0;
 
   // find the start of the include file name
   while (i<inc.length() &&
          (inc.at(i)==' ' || inc.at(i)=='"' || inc.at(i)=='<')
         ) i++;
-  uint s=i;
+  uint32_t s=i;
 
   // was it a local include?
   bool localInclude = s>0 && inc.at(s-1)=='"';
@@ -3417,7 +3416,7 @@ static char resolveTrigraph(char c)
 /*@ ----------------------------------------------------------------------------
  */
 
-static int getNextChar(yyscan_t yyscanner,const QCString &expr,QCString *rest,uint &pos)
+static int getNextChar(yyscan_t yyscanner,const QCString &expr,QCString *rest,uint32_t &pos)
 {
   //printf("getNextChar(%s,%s,%d)\n",qPrint(expr),rest ? rest->data() : 0,pos);
   if (pos<expr.length())
@@ -3440,7 +3439,7 @@ static int getNextChar(yyscan_t yyscanner,const QCString &expr,QCString *rest,ui
   }
 }
 
-static int getCurrentChar(yyscan_t yyscanner,const QCString &expr,QCString *rest,uint pos)
+static int getCurrentChar(yyscan_t yyscanner,const QCString &expr,QCString *rest,uint32_t pos)
 {
   //printf("getCurrentChar(%s,%s,%d)\n",qPrint(expr),rest ? rest->data() : 0,pos);
   if (pos<expr.length())
@@ -3463,7 +3462,7 @@ static int getCurrentChar(yyscan_t yyscanner,const QCString &expr,QCString *rest
   }
 }
 
-static void unputChar(yyscan_t yyscanner,const QCString &expr,QCString *rest,uint &pos,char c)
+static void unputChar(yyscan_t yyscanner,const QCString &expr,QCString *rest,uint32_t &pos,char c)
 {
   //printf("unputChar(%s,%s,%d,%c)\n",qPrint(expr),rest ? rest->data() : 0,pos,c);
   if (pos<expr.length())

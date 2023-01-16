@@ -1622,7 +1622,7 @@ void Markdown::processInline(const char *data,int size)
   while (i<size)
   {
     // skip over character that do not trigger a specific action
-    while (end<size && ((action=m_actions[static_cast<uchar>(data[end])])==0)) end++;
+    while (end<size && ((action=m_actions[static_cast<uint8_t>(data[end])])==0)) end++;
     // and add them to the output
     m_out.addStr(data+i,end-i);
     if (end>=size) break;
@@ -2818,7 +2818,7 @@ QCString Markdown::processQuotations(const QCString &s,int refIndent)
         {
           int cmdPos  = pi+blockStart+1;
           QCString pl = QCString(data+cmdPos).left(blockEnd-blockStart-1);
-          uint ii     = 0;
+          uint32_t ii = 0;
           // check for absence of start command, either @start<cmd>, or \\start<cmd>
           while (ii<pl.length() && qisspace(pl[ii])) ii++; // skip leading whitespace
           if (ii+startCmd.length()>=pl.length() || // no room for start command

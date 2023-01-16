@@ -3414,7 +3414,7 @@ class TextGeneratorHtml : public TextGeneratorIntf
             case ' ':  m_ts << "&#160;"; break;
             default:
               {
-                uchar uc = static_cast<uchar>(c);
+                uint8_t uc = static_cast<uint8_t>(c);
                 if (uc<32 && !isspace(c)) // non-printable control characters
                 {
                   m_ts << "&#x24" << hex[uc>>4] << hex[uc&0xF] << ";";

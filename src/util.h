@@ -369,7 +369,7 @@ bool patternMatch(const FileInfo &fi,const StringVector &patList);
 
 QCString externalLinkTarget(const bool parent = false);
 QCString externalRef(const QCString &relPath,const QCString &ref,bool href);
-int nextUtf8CharPosition(const QCString &utf8Str,uint len,uint startPos);
+int nextUtf8CharPosition(const QCString &utf8Str,uint32_t len,uint32_t startPos);
 
 void writeMarkerList(OutputList &ol,const std::string &markerText,size_t numMarkers,
                      std::function<void(size_t)> replaceFunc);

@@ -183,7 +183,7 @@ void CitationManager::insertCrossReferencesForBibFile(const QCString &bibFile)
       int k = line.find('}',i);
       if (j>i && k>j)
       {
-        QCString crossrefName = line.mid(static_cast<size_t>(j+1),static_cast<uint>(k-j-1));
+        QCString crossrefName = line.mid(static_cast<size_t>(j+1),static_cast<uint32_t>(k-j-1));
         // check if the reference with the cross reference is used
         // insert cross reference when cross reference has not yet been added.
         if ((p->entries.find(citeName.str())!=p->entries.end()) &&
@@ -374,7 +374,7 @@ void CitationManager::generatePage()
     // so no problem.
     for (size_t j = 1; j <= citeDataList.size(); j++)
     {
-      QCString bibFile = bibOutputDir + bibTmpFile + QCString().setNum(static_cast<ulong>(j)) + ".bib";
+      QCString bibFile = bibOutputDir + bibTmpFile + QCString().setNum(static_cast<int>(j)) + ".bib";
       thisDir.remove(bibFile.str());
     }
     thisDir.rmdir(bibOutputDir.str());

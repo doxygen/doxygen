@@ -2075,7 +2075,7 @@ void VhdlDocGen::writePlainVHDLDeclarations(
   if (!first) ol.endMemberList();
 }//plainDeclaration
 
-static bool membersHaveSpecificType(const MemberList *ml,uint64 type)
+static bool membersHaveSpecificType(const MemberList *ml,uint64_t type)
 {
   if (ml==0) return FALSE;
   for (const auto &mdd : *ml)
@@ -3067,7 +3067,7 @@ void FlowChart::delFlowList()
 
 void FlowChart::alignCommentNode(TextStream &t,QCString com)
 {
-  uint max=0;
+  uint32_t max=0;
   QCString s;
   StringVector ql=split(com.str(),"\n");
   for (size_t j=0;j<ql.size();j++)
@@ -3108,7 +3108,7 @@ void FlowChart::buildCommentNodes(TextStream & t)
 
   if (size>0)
   {
-    for (uint j=0;j < size-1 ;j++)
+    for (uint32_t j=0;j < size-1 ;j++)
     {
       FlowChart &fll = flowList[j];
       if (fll.type & COMMENT_NO)

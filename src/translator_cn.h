@@ -1962,7 +1962,7 @@ class TranslatorChinese : public TranslatorAdapter_1_9_4
     virtual QCString trFunctionAndProc()
     { return "函数/调用过程/进程语句"; }
     /** VHDL type */
-    virtual QCString trVhdlType(uint64 type,bool single)
+    virtual QCString trVhdlType(uint64_t type,bool single)
     {
       switch(type)
       {

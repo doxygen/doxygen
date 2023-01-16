@@ -27,7 +27,7 @@
  * ---------------
  * History:
  * 20220911:
- *  - Updated to 1.9.6;  
+ *  - Updated to 1.9.6;
  * 20220525:
  * 	- Updated to 1.9.4;
  * 20211003:
@@ -141,7 +141,7 @@ class TranslatorPortuguese : public TranslatorAdapter_1_9_6
 
     /*! header that is put before the list of member functions. */
     QCString trMemberFunctionDocumentation()
-    { 
+    {
         if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
         {
           return "Documentação das funções, procedimentos e processos";
@@ -149,7 +149,7 @@ class TranslatorPortuguese : public TranslatorAdapter_1_9_6
         else
         {
             return "Documentação das funções";
-        }    
+        }
     }
 
     /*! header that is put before the list of member attributes. */
@@ -2095,7 +2095,7 @@ class TranslatorPortuguese : public TranslatorAdapter_1_9_6
     virtual QCString trFunctionAndProc()
     { return "Funções/Procedimentos/Processos"; }
     /** VHDL type */
-    virtual QCString trVhdlType(uint64 type,bool single)
+    virtual QCString trVhdlType(uint64_t type,bool single)
     {
       switch(type)
       {
@@ -2376,7 +2376,7 @@ class TranslatorPortuguese : public TranslatorAdapter_1_9_6
     //////////////////////////////////////////////////////////////////////////
     virtual QCString trPackageList()
     { return "Lista de pacotes"; }
-    
+
     //////////////////////////////////////////////////////////////////////////
     // new since 1.9.6
     //////////////////////////////////////////////////////////////////////////
@@ -2392,8 +2392,8 @@ class TranslatorPortuguese : public TranslatorAdapter_1_9_6
     /*! Please translate also updated body of the method
      *  trMemberFunctionDocumentation(), now better adapted for
      *  VHDL sources documentation.
-    */        
-    
+    */
+
     //////////////////////////////////////////////////////////////////////////
     // new since 1.9.7
     //////////////////////////////////////////////////////////////////////////

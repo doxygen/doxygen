@@ -34,11 +34,11 @@ typedef yyguts_t *yyscan_t;
 #include <vector>
 #include <utility>
 #include <atomic>
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <assert.h>
-#include <ctype.h>
+#include <cstdint>
+#include <cstdio>
+#include <cstdlib>
+#include <cassert>
+#include <cctype>
 
 #include "scanner.h"
 #include "entry.h"
@@ -203,7 +203,7 @@ struct scannerYY_state
 
   int              column = 0;
 
-  uint             fencedSize = 0;
+  uint32_t             fencedSize = 0;
   bool             nestedComment = false;
   std::vector< std::pair<Entry*,std::shared_ptr<Entry> > > outerScopeEntries;
   QCString         programStr;
@@ -1439,7 +1439,7 @@ NONLopt [^\n]*
                                           bool isVolatile=decl.find("volatile")!=-1;
                                           yyextra->current->section = Entry::CLASS_SEC;
                                           addType(yyscanner);
-                                          uint64 spec = yyextra->current->spec;
+                                          uint64_t spec = yyextra->current->spec;
                                           if (yyextra->insidePHP && yyextra->current->spec&Entry::Abstract)
                                           {
                                             // convert Abstract to AbstractClass
@@ -7260,7 +7260,7 @@ static inline int computeIndent(const char *s,int startIndent)
 static void addType(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  uint tl=yyextra->current->type.length();
+  uint32_t tl=yyextra->current->type.length();
   if( tl>0 && !yyextra->current->name.isEmpty() && yyextra->current->type.at(tl-1)!='.')
   {
     yyextra->current->type += ' ' ;
@@ -7395,7 +7395,7 @@ static void splitKnRArg(yyscan_t yyscanner,QCString &oldStyleArgPtr,QCString &ol
       int s=bi2+1; // keep opening (
       yyextra->oldStyleArgType = yyextra->current->args.left(s);
       int i=s;
-      while (i<si && ((c=yyextra->current->args.at(i))=='*' || isspace((uchar)c))) i++;
+      while (i<si && ((c=yyextra->current->args.at(i))=='*' || isspace((uint8_t)c))) i++;
       yyextra->oldStyleArgType += yyextra->current->args.mid(s,i-s);
       s=i;
       while (i<si && isId(yyextra->current->args.at(i))) i++;
@@ -7408,7 +7408,7 @@ static void splitKnRArg(yyscan_t yyscanner,QCString &oldStyleArgPtr,QCString &ol
       yyextra->oldStyleArgType = yyextra->current->args.left(s);
       s++;
       int i=s+1;
-      while (i<si && ((c=yyextra->current->args.at(i))=='*' || isspace((uchar)c))) i++;
+      while (i<si && ((c=yyextra->current->args.at(i))=='*' || isspace((uint8_t)c))) i++;
       yyextra->oldStyleArgType += yyextra->current->args.mid(s,i-s);
       s=i;
       while (i<si && isId(yyextra->current->args.at(i))) i++;
@@ -7421,7 +7421,7 @@ static void splitKnRArg(yyscan_t yyscanner,QCString &oldStyleArgPtr,QCString &ol
       while (i>=0 && isId(yyextra->current->args.at(i))) i--;
       j=i+1;
       // look for start of *'s
-      while (i>=0 && ((c=yyextra->current->args.at(i))=='*' || isspace((uchar)c))) i--;
+      while (i>=0 && ((c=yyextra->current->args.at(i))=='*' || isspace((uint8_t)c))) i--;
       i++;
       if (i!=l)
       {
@@ -7439,7 +7439,7 @@ static void splitKnRArg(yyscan_t yyscanner,QCString &oldStyleArgPtr,QCString &ol
   {
     int l=si,j=0;
     char c;
-    while (j<l && ((c=yyextra->current->args.at(j))=='*' || isspace((uchar)c))) j++;
+    while (j<l && ((c=yyextra->current->args.at(j))=='*' || isspace((uint8_t)c))) j++;
     if (j>0)
     {
       oldStyleArgPtr=yyextra->current->args.left(j);

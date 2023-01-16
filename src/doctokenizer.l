@@ -410,8 +410,8 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
 <St_Para>^{LISTITEM}   { /* list item */
                          lineCount(yytext,yyleng);
                          QCString text(yytext);
-                         uint dashPos = static_cast<uint>(text.findRev('-'));
-                         assert(dashPos!=static_cast<uint>(-1));
+                         uint32_t dashPos = static_cast<uint32_t>(text.findRev('-'));
+                         assert(dashPos!=static_cast<uint32_t>(-1));
                          yyextra->token->isEnumList = text.at(dashPos+1)=='#';
                          yyextra->token->id         = -1;
                          yyextra->token->indent     = computeIndent(yytext,dashPos);
@@ -465,8 +465,8 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
 <St_Para>{BLANK}*(\n|"\\ilinebr"){LISTITEM}     { /* list item on next line */
                          lineCount(yytext,yyleng);
                          QCString text=extractPartAfterNewLine(QCString(yytext));
-                         uint dashPos = static_cast<uint>(text.findRev('-'));
-                         assert(dashPos!=static_cast<uint>(-1));
+                         uint32_t dashPos = static_cast<uint32_t>(text.findRev('-'));
+                         assert(dashPos!=static_cast<uint32_t>(-1));
                          yyextra->token->isEnumList = text.at(dashPos+1)=='#';
                          yyextra->token->id         = -1;
                          yyextra->token->indent     = computeIndent(text.data(),dashPos);
@@ -1087,7 +1087,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          if (yytext[0] =='"')
                          {
                            yyextra->token->name=yytext+1;
-                           yyextra->token->name=yyextra->token->name.left(static_cast<uint>(yyleng)-2);
+                           yyextra->token->name=yyextra->token->name.left(static_cast<uint32_t>(yyleng)-2);
                          }
                          else
                          {
@@ -1228,9 +1228,9 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                        }
 <St_Param>[^ \t\n,@\\]+  {
                          yyextra->token->name = yytext;
-                         if (yyextra->token->name.at(static_cast<uint>(yyleng)-1)==':')
+                         if (yyextra->token->name.at(static_cast<uint32_t>(yyleng)-1)==':')
                          {
-                           yyextra->token->name=yyextra->token->name.left(static_cast<uint>(yyleng)-1);
+                           yyextra->token->name=yyextra->token->name.left(static_cast<uint32_t>(yyleng)-1);
                          }
                          return TK_WORD;
                        }
@@ -1604,7 +1604,7 @@ static void handleHtmlTag(yyscan_t yyscanner,const char *text)
   {
     char c=tagText.at(i);
     // skip spaces
-    while (i<(int)yyleng && isspace((uchar)c)) { c=tagText.at(++i); }
+    while (i<(int)yyleng && isspace((uint8_t)c)) { c=tagText.at(++i); }
     // check for end of the tag
     if (c == '>') break;
     // Check for XML style "empty" tag.
@@ -1615,17 +1615,17 @@ static void handleHtmlTag(yyscan_t yyscanner,const char *text)
     }
     startName=i;
     // search for end of name
-    while (i<(int)yyleng && !isspace((uchar)c) && c!='=' && c!= '>') { c=tagText.at(++i); }
+    while (i<(int)yyleng && !isspace((uint8_t)c) && c!='=' && c!= '>') { c=tagText.at(++i); }
     endName=i;
     HtmlAttrib opt;
     opt.name  = tagText.mid(startName,endName-startName).lower();
     // skip spaces
-    while (i<(int)yyleng && isspace((uchar)c)) { c=tagText.at(++i); }
+    while (i<(int)yyleng && isspace((uint8_t)c)) { c=tagText.at(++i); }
     if (tagText.at(i)=='=') // option has value
     {
       c=tagText.at(++i);
       // skip spaces
-      while (i<(int)yyleng && isspace((uchar)c)) { c=tagText.at(++i); }
+      while (i<(int)yyleng && isspace((uint8_t)c)) { c=tagText.at(++i); }
       if (tagText.at(i)=='\'') // option '...'
       {
         c=tagText.at(++i);
@@ -1649,7 +1649,7 @@ static void handleHtmlTag(yyscan_t yyscanner,const char *text)
       {
         startAttrib=i;
         // search for separator or end symbol
-        while (i<(int)yyleng && !isspace((uchar)c) && c!='>') { c=tagText.at(++i); }
+        while (i<(int)yyleng && !isspace((uint8_t)c) && c!='>') { c=tagText.at(++i); }
         endAttrib=i;
         if (i<(int)yyleng) { c=tagText.at(++i);}
       }

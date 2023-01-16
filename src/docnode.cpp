@@ -145,7 +145,7 @@ DocEmoji::DocEmoji(DocParser *parser,DocNodeVariant *parent,const QCString &symN
       DocNode(parser,parent), m_symName(symName), m_index(-1)
 {
   QCString locSymName = symName;
-  uint len=locSymName.length();
+  uint32_t len=locSymName.length();
   if (len>0)
   {
     if (locSymName.at(len-1)!=':') locSymName.append(":");
@@ -315,11 +315,11 @@ void DocIncOperator::parse(DocNodeVariant *)
 
   m_includeFileName = parser()->context.includeFileName;
   const char *p = parser()->context.includeFileText.data();
-  uint l = parser()->context.includeFileLength;
-  uint o = parser()->context.includeFileOffset;
+  uint32_t l = parser()->context.includeFileLength;
+  uint32_t o = parser()->context.includeFileOffset;
   int il = parser()->context.includeFileLine;
   AUTO_TRACE("text={} off={} len={}",Trace::trunc(p),o,l);
-  uint so = o,bo;
+  uint32_t so = o,bo;
   bool nonEmpty = FALSE;
   switch(type())
   {
@@ -333,7 +333,7 @@ void DocIncOperator::parse(DocNodeVariant *)
           if (nonEmpty) break; // we have a pattern to match
           so=o+1; // no pattern, skip empty line
         }
-        else if (!isspace(static_cast<uchar>(c))) // no white space char
+        else if (!isspace(static_cast<uint8_t>(c))) // no white space char
         {
           nonEmpty=TRUE;
         }
@@ -361,7 +361,7 @@ void DocIncOperator::parse(DocNodeVariant *)
             if (nonEmpty) break; // we have a pattern to match
             so=o+1; // no pattern, skip empty line
           }
-          else if (!isspace(static_cast<uchar>(c))) // no white space char
+          else if (!isspace(static_cast<uint8_t>(c))) // no white space char
           {
             nonEmpty=TRUE;
           }
@@ -392,7 +392,7 @@ void DocIncOperator::parse(DocNodeVariant *)
             if (nonEmpty) break; // we have a pattern to match
             so=o+1; // no pattern, skip empty line
           }
-          else if (!isspace(static_cast<uchar>(c))) // no white space char
+          else if (!isspace(static_cast<uint8_t>(c))) // no white space char
           {
             nonEmpty=TRUE;
           }
@@ -421,7 +421,7 @@ void DocIncOperator::parse(DocNodeVariant *)
             if (nonEmpty) break; // we have a pattern to match
             so=o+1; // no pattern, skip empty line
           }
-          else if (!isspace(static_cast<uchar>(c))) // no white space char
+          else if (!isspace(static_cast<uint8_t>(c))) // no white space char
           {
             nonEmpty=TRUE;
           }
@@ -954,9 +954,9 @@ QCString DocLink::parse(DocNodeVariant *thisVariant,bool isJavaLink,bool isXmlLi
             }
             else if ((p=w.find('}'))!=-1)
             {
-              uint l=w.length();
+              uint32_t l=w.length();
               children().append<DocWord>(parser(),thisVariant,w.left(p));
-              if (static_cast<uint>(p)<l-1) // something left after the } (for instance a .)
+              if (static_cast<uint32_t>(p)<l-1) // something left after the } (for instance a .)
               {
                 result=w.right(static_cast<int>(l)-p-1);
               }
@@ -1679,7 +1679,7 @@ int DocHtmlCell::parseXml(DocNodeVariant *thisVariant)
   return retval;
 }
 
-uint DocHtmlCell::rowSpan() const
+uint32_t DocHtmlCell::rowSpan() const
 {
   for (const auto &attr : attribs())
   {
@@ -1691,7 +1691,7 @@ uint DocHtmlCell::rowSpan() const
   return 0;
 }
 
-uint DocHtmlCell::colSpan() const
+uint32_t DocHtmlCell::colSpan() const
 {
   for (const auto &attr : attribs())
   {
@@ -2035,9 +2035,9 @@ int DocHtmlTable::parseXml(DocNodeVariant *thisVariant)
 /** Helper class to compute the grid for an HTML style table */
 struct ActiveRowSpan
 {
-  ActiveRowSpan(uint rows,uint col) : rowsLeft(rows), column(col) {}
-  uint rowsLeft;
-  uint column;
+  ActiveRowSpan(uint32_t rows,uint32_t col) : rowsLeft(rows), column(col) {}
+  uint32_t rowsLeft;
+  uint32_t column;
 };
 
 /** List of ActiveRowSpan classes. */
@@ -2051,12 +2051,12 @@ void DocHtmlTable::computeTableGrid()
 {
   //printf("computeTableGrid()\n");
   RowSpanList rowSpans;
-  uint maxCols=0;
-  uint rowIdx=1;
+  uint32_t maxCols=0;
+  uint32_t rowIdx=1;
   for (auto &rowNode : children())
   {
-    uint colIdx=1;
-    uint cells=0;
+    uint32_t colIdx=1;
+    uint32_t cells=0;
     DocHtmlRow *row = std::get_if<DocHtmlRow>(&rowNode);
     if (row)
     {
@@ -2066,8 +2066,8 @@ void DocHtmlTable::computeTableGrid()
         DocHtmlCell *cell = std::get_if<DocHtmlCell>(&cellNode);
         if (cell)
         {
-          uint rs = cell->rowSpan();
-          uint cs = cell->colSpan();
+          uint32_t rs = cell->rowSpan();
+          uint32_t cs = cell->colSpan();
 
           for (i=0;i<rowSpans.size();i++)
           {

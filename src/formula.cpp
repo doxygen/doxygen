@@ -65,7 +65,7 @@ void FormulaManager::initFromRepository(const QCString &dir)
   std::ifstream f = Portable::openInputStream(dir+"/formula.repository");
   if (f.is_open())
   {
-    uint formulaCount=0;
+    uint32_t formulaCount=0;
     msg("Reading formula repository...\n");
     std::string readLine;
     std::string line;

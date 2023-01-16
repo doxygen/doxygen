@@ -562,16 +562,16 @@ QCString removeRedundantWhiteSpace(const QCString &s)
   const char *src=s.data();
   char *dst=growBuf;
 
-  uint i=0;
-  uint l=s.length();
-  uint csp=0;
-  uint vosp=0;
-  uint vsp=0;
-  uint osp=0;
+  uint32_t i=0;
+  uint32_t l=s.length();
+  uint32_t csp=0;
+  uint32_t vosp=0;
+  uint32_t vsp=0;
+  uint32_t osp=0;
   char c;
   char pc=0;
   // skip leading whitespace
-  while (i<l && isspace(static_cast<uchar>(src[i])))
+  while (i<l && isspace(static_cast<uint8_t>(src[i])))
   {
     i++;
   }
@@ -657,7 +657,7 @@ QCString removeRedundantWhiteSpace(const QCString &s)
         }
         break;
       case '>': // current char is a >
-        if (i>0 && !isspace(static_cast<uchar>(pc)) &&
+        if (i>0 && !isspace(static_cast<uint8_t>(pc)) &&
             (isId(pc) || pc=='*' || pc=='&' || pc=='.' || pc=='>') && // prev char is an id char or space or *&.
             (osp<8 || (osp==8 && pc!='-')) // string in front is not "operator>" or "operator->"
            )
@@ -672,7 +672,7 @@ QCString removeRedundantWhiteSpace(const QCString &s)
         break;
       case ',': // current char is a ,
         *dst++=c;
-        if (i>0 && !isspace(static_cast<uchar>(pc)) &&
+        if (i>0 && !isspace(static_cast<uint8_t>(pc)) &&
             ((i<l-1 && (isId(nc) || nc=='[')) || // the [ is for attributes (see bug702170)
              (i<l-2 && nc=='$' && isId(src[i+2])) ||   // for PHP: ',$name' -> ', $name'
              (i<l-3 && nc=='&' && src[i+2]=='$' && isId(src[i+3])) // for PHP: ',&$name' -> ', &$name'
@@ -729,7 +729,7 @@ QCString removeRedundantWhiteSpace(const QCString &s)
         // else fallthrough
       case '@':  // '@name' -> ' @name'
       case '\'': // ''name' -> '' name'
-        if (i>0 && i<l-1 && pc!='=' && pc!=':' && !isspace(static_cast<uchar>(pc)) &&
+        if (i>0 && i<l-1 && pc!='=' && pc!=':' && !isspace(static_cast<uint8_t>(pc)) &&
             isId(nc) && osp<8) // ")id" -> ") id"
         {
           *dst++=' ';
@@ -758,8 +758,8 @@ QCString removeRedundantWhiteSpace(const QCString &s)
       case '\n': // fallthrough
       case '\t':
         {
-          if (g_charAroundSpace.charMap[static_cast<uchar>(pc)].before &&
-              g_charAroundSpace.charMap[static_cast<uchar>(nc)].after  &&
+          if (g_charAroundSpace.charMap[static_cast<uint8_t>(pc)].before &&
+              g_charAroundSpace.charMap[static_cast<uint8_t>(nc)].after  &&
               !(pc==',' && nc=='.') &&
               (osp<8 || (osp>=8 && isId(pc) && isId(nc)))
                   // e.g.    'operator >>' -> 'operator>>',
@@ -778,21 +778,21 @@ QCString removeRedundantWhiteSpace(const QCString &s)
       default:
         *dst++=c;
         if (c=='t' && csp==5 && i<l-1 && // found 't' in 'const'
-             !(isId(nc) || nc==')' || nc==',' || isspace(static_cast<uchar>(nc)))
+             !(isId(nc) || nc==')' || nc==',' || isspace(static_cast<uint8_t>(nc)))
            ) // prevent const ::A from being converted to const::A
         {
           *dst++=' ';
           csp=0;
         }
         else if (c=='e' && vosp==8 && i<l-1 && // found 'e' in 'volatile'
-             !(isId(nc) || nc==')' || nc==',' || isspace(static_cast<uchar>(nc)))
+             !(isId(nc) || nc==')' || nc==',' || isspace(static_cast<uint8_t>(nc)))
            ) // prevent volatile ::A from being converted to volatile::A
         {
           *dst++=' ';
           vosp=0;
         }
         else if (c=='l' && vsp==7 && i<l-1 && // found 'l' in 'virtual'
-             !(isId(nc) || nc==')' || nc==',' || isspace(static_cast<uchar>(nc)))
+             !(isId(nc) || nc==')' || nc==',' || isspace(static_cast<uint8_t>(nc)))
             ) // prevent virtual ::A from being converted to virtual::A
         {
           *dst++=' ';
@@ -2819,7 +2819,7 @@ static bool isLowerCase(QCString &s)
   if (s.isEmpty()) return true;
   const char *p=s.data();
   int c;
-  while ((c=static_cast<uchar>(*p++))) if (!islower(c)) return false;
+  while ((c=static_cast<uint8_t>(*p++))) if (!islower(c)) return false;
   return true;
 }
 
@@ -3735,7 +3735,7 @@ QCString convertNameToFile(const QCString &name,bool allowDots,bool allowUndersc
   {
     std::lock_guard<std::mutex> lock(g_usedNamesMutex);
     auto kv = g_usedNames.find(name.str());
-    uint num=0;
+    uint32_t num=0;
     if (kv!=g_usedNames.end())
     {
       num = kv->second;
@@ -3754,7 +3754,7 @@ QCString convertNameToFile(const QCString &name,bool allowDots,bool allowUndersc
     if (resultLen>=128) // prevent names that cannot be created!
     {
       // third algorithm based on MD5 hash
-      uchar md5_sig[16];
+      uint8_t md5_sig[16];
       char sigStr[33];
       MD5Buffer(result.data(),resultLen,md5_sig);
       MD5SigToString(md5_sig,sigStr);
@@ -3768,7 +3768,7 @@ QCString convertNameToFile(const QCString &name,bool allowDots,bool allowUndersc
     int createSubdirsBitmaskL2 = (1<<createSubdirsLevel)-1;
 
     // compute md5 hash to determine sub directory to use
-    uchar md5_sig[16];
+    uint8_t md5_sig[16];
     MD5Buffer(result.data(),result.length(),md5_sig);
     l1Dir = md5_sig[14] & 0xf;
     l2Dir = md5_sig[15] & createSubdirsBitmaskL2;
@@ -4164,7 +4164,7 @@ QCString convertToHtml(const QCString &s,bool keepEntities)
       case '"':  growBuf.addStr("&quot;"); break;
       default:
         {
-          uchar uc = static_cast<uchar>(c);
+          uint8_t uc = static_cast<uint8_t>(c);
           if (uc<32 && !isspace(c))
           {
             growBuf.addStr("&#x24");
@@ -4404,21 +4404,21 @@ int extractClassNameFromType(const QCString &type,int &pos,QCString &name,QCStri
       size_t te = ts;
       size_t tl = 0;
 
-      while (ts<typeLen && type[static_cast<uint>(ts)]==' ') ts++,tl++; // skip any whitespace
-      if (ts<typeLen && type[static_cast<uint>(ts)]=='<') // assume template instance
+      while (ts<typeLen && type[static_cast<uint32_t>(ts)]==' ') ts++,tl++; // skip any whitespace
+      if (ts<typeLen && type[static_cast<uint32_t>(ts)]=='<') // assume template instance
       {
         // locate end of template
         te=ts+1;
         int brCount=1;
         while (te<typeLen && brCount!=0)
         {
-          if (type[static_cast<uint>(te)]=='<')
+          if (type[static_cast<uint32_t>(te)]=='<')
           {
-            if (te<typeLen-1 && type[static_cast<uint>(te)+1]=='<') te++; else brCount++;
+            if (te<typeLen-1 && type[static_cast<uint32_t>(te)+1]=='<') te++; else brCount++;
           }
-          if (type[static_cast<uint>(te)]=='>')
+          if (type[static_cast<uint32_t>(te)]=='>')
           {
-            if (te<typeLen-1 && type[static_cast<uint>(te)+1]=='>') te++; else brCount--;
+            if (te<typeLen-1 && type[static_cast<uint32_t>(te)+1]=='>') te++; else brCount--;
           }
           te++;
         }
@@ -5389,20 +5389,20 @@ bool checkIfTypedef(const Definition *scope,const FileDef *fileScope,const QCStr
     return FALSE;
 }
 
-static int nextUTF8CharPosition(const QCString &utf8Str,uint len,uint startPos)
+static int nextUTF8CharPosition(const QCString &utf8Str,uint32_t len,uint32_t startPos)
 {
   if (startPos>=len) return len;
-  uchar c = static_cast<uchar>(utf8Str[startPos]);
+  uint8_t c = static_cast<uint8_t>(utf8Str[startPos]);
   int bytes=getUTF8CharNumBytes(c);
   if (c=='&') // skip over character entities
   {
     bytes=1;
     int (*matcher)(int) = 0;
-    c = static_cast<uchar>(utf8Str[startPos+bytes]);
+    c = static_cast<uint8_t>(utf8Str[startPos+bytes]);
     if (c=='#') // numerical entity?
     {
       bytes++;
-      c = static_cast<uchar>(utf8Str[startPos+bytes]);
+      c = static_cast<uint8_t>(utf8Str[startPos+bytes]);
       if (c=='x') // hexadecimal entity?
       {
         bytes++;
@@ -5420,7 +5420,7 @@ static int nextUTF8CharPosition(const QCString &utf8Str,uint len,uint startPos)
     }
     if (matcher)
     {
-      while ((c = static_cast<uchar>(utf8Str[startPos+bytes]))!=0 && matcher(c))
+      while ((c = static_cast<uint8_t>(utf8Str[startPos+bytes]))!=0 && matcher(c))
       {
         bytes++;
       }
@@ -5916,25 +5916,25 @@ bool readInputFile(const QCString &fileName,BufStr &inBuf,bool filter,bool isSou
 
   int start=0;
   if (size>=2 &&
-      static_cast<uchar>(inBuf.at(0))==0xFF &&
-      static_cast<uchar>(inBuf.at(1))==0xFE // Little endian BOM
+      static_cast<uint8_t>(inBuf.at(0))==0xFF &&
+      static_cast<uint8_t>(inBuf.at(1))==0xFE // Little endian BOM
      ) // UCS-2LE encoded file
   {
     transcodeCharacterBuffer(fileName,inBuf,inBuf.curPos(),
         "UCS-2LE","UTF-8");
   }
   else if (size>=2 &&
-           static_cast<uchar>(inBuf.at(0))==0xFE &&
-           static_cast<uchar>(inBuf.at(1))==0xFF // big endian BOM
+           static_cast<uint8_t>(inBuf.at(0))==0xFE &&
+           static_cast<uint8_t>(inBuf.at(1))==0xFF // big endian BOM
          ) // UCS-2BE encoded file
   {
     transcodeCharacterBuffer(fileName,inBuf,inBuf.curPos(),
         "UCS-2BE","UTF-8");
   }
   else if (size>=3 &&
-           static_cast<uchar>(inBuf.at(0))==0xEF &&
-           static_cast<uchar>(inBuf.at(1))==0xBB &&
-           static_cast<uchar>(inBuf.at(2))==0xBF
+           static_cast<uint8_t>(inBuf.at(0))==0xEF &&
+           static_cast<uint8_t>(inBuf.at(1))==0xBB &&
+           static_cast<uint8_t>(inBuf.at(2))==0xBF
      ) // UTF-8 encoded file
   {
     inBuf.dropFromStart(3); // remove UTF-8 BOM: no translation needed
@@ -6448,7 +6448,7 @@ void stripIndentation(QCString &doc,const int indentationLevel)
         break;
     }
   }
-  doc.resize(static_cast<uint>(dst-doc.data())+1);
+  doc.resize(static_cast<uint32_t>(dst-doc.data())+1);
 }
 
 
@@ -6475,30 +6475,30 @@ bool fileVisibleInIndex(const FileDef *fd,bool &genSourceFile)
  * @see getNextUtf8OrToLower()
  * @see getNextUtf8OrToUpper()
  */
-uint getUtf8Code( const QCString& s, int idx )
+uint32_t getUtf8Code( const QCString& s, int idx )
 {
   const int length = s.length();
   if (idx >= length) { return 0; }
-  const uint c0 = (uchar)s.at(idx);
+  const uint32_t c0 = (uint8_t)s.at(idx);
   if ( c0 < 0xC2 || c0 >= 0xF8 ) // 1 byte character
   {
     return c0;
   }
   if (idx+1 >= length) { return 0; }
-  const uint c1 = ((uchar)s.at(idx+1)) & 0x3f;
+  const uint32_t c1 = ((uint8_t)s.at(idx+1)) & 0x3f;
   if ( c0 < 0xE0 ) // 2 byte character
   {
     return ((c0 & 0x1f) << 6) | c1;
   }
   if (idx+2 >= length) { return 0; }
-  const uint c2 = ((uchar)s.at(idx+2)) & 0x3f;
+  const uint32_t c2 = ((uint8_t)s.at(idx+2)) & 0x3f;
   if ( c0 < 0xF0 ) // 3 byte character
   {
     return ((c0 & 0x0f) << 12) | (c1 << 6) | c2;
   }
   if (idx+3 >= length) { return 0; }
   // 4 byte character
-  const uint c3 = ((uchar)s.at(idx+3)) & 0x3f;
+  const uint32_t c3 = ((uint8_t)s.at(idx+3)) & 0x3f;
   return ((c0 & 0x07) << 18) | (c1 << 12) | (c2 << 6) | c3;
 }
 
@@ -6511,9 +6511,9 @@ uint getUtf8Code( const QCString& s, int idx )
  * @return the unicode codepoint, 0 - MAX_UNICODE_CODEPOINT, excludes 'A'-'Z'
  * @see getNextUtf8Code()
 */
-uint getUtf8CodeToLower( const QCString& s, int idx )
+uint32_t getUtf8CodeToLower( const QCString& s, int idx )
 {
-  const uint v = getUtf8Code( s, idx );
+  const uint32_t v = getUtf8Code( s, idx );
   return v < 0x7f ? tolower( v ) : v;
 }
 
@@ -6526,9 +6526,9 @@ uint getUtf8CodeToLower( const QCString& s, int idx )
  * @return the unicode codepoint, 0 - MAX_UNICODE_CODEPOINT, excludes 'A'-'Z'
  * @see getNextUtf8Code()
  */
-uint getUtf8CodeToUpper( const QCString& s, int idx )
+uint32_t getUtf8CodeToUpper( const QCString& s, int idx )
 {
-  const uint v = getUtf8Code( s, idx );
+  const uint32_t v = getUtf8Code( s, idx );
   return v < 0x7f ? toupper( v ) : v;
 }
 #endif

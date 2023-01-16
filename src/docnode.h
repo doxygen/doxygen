@@ -16,7 +16,8 @@
 #ifndef DOCNODE_H
 #define DOCNODE_H
 
-#include <stdio.h>
+#include <cstdio>
+#include <cstdint>
 #include <vector>
 #include <memory>
 #include <variant>
@@ -422,7 +423,7 @@ class DocInclude : public DocNode
     QCString file() const        { return m_file; }
     QCString extension() const   { int i=m_file.findRev('.');
                                    if (i!=-1)
-                                     return m_file.right(m_file.length()-static_cast<uint>(i));
+                                     return m_file.right(m_file.length()-static_cast<uint32_t>(i));
                                    else
                                      return QCString();
                                  }
@@ -1161,22 +1162,22 @@ class DocHtmlCell : public DocCompoundNode
     const HtmlAttribList &attribs() const { return m_attribs; }
     int parse(DocNodeVariant *);
     int parseXml(DocNodeVariant *);
-    uint rowIndex() const        { return m_rowIdx; }
-    uint columnIndex() const     { return m_colIdx; }
-    uint rowSpan() const;
-    uint colSpan() const;
+    uint32_t rowIndex() const        { return m_rowIdx; }
+    uint32_t columnIndex() const     { return m_colIdx; }
+    uint32_t rowSpan() const;
+    uint32_t colSpan() const;
     Alignment alignment() const;
     Valignment valignment() const;
 
   private:
-    void setRowIndex(uint idx)    { m_rowIdx = idx; }
-    void setColumnIndex(uint idx) { m_colIdx = idx; }
+    void setRowIndex(uint32_t idx)    { m_rowIdx = idx; }
+    void setColumnIndex(uint32_t idx) { m_colIdx = idx; }
     bool           m_isHeading = false;
     bool           m_isFirst = false;
     bool           m_isLast = false;
     HtmlAttribList m_attribs;
-    uint           m_rowIdx = static_cast<uint>(-1);
-    uint           m_colIdx = static_cast<uint>(-1);
+    uint32_t           m_rowIdx = static_cast<uint32_t>(-1);
+    uint32_t           m_colIdx = static_cast<uint32_t>(-1);
 };
 
 /** Node representing a HTML table caption */
@@ -1209,15 +1210,15 @@ class DocHtmlRow : public DocCompoundNode
     int parse(DocNodeVariant *);
     int parseXml(DocNodeVariant *,bool header);
     bool isHeading() const;
-    void setVisibleCells(uint n) { m_visibleCells = n; }
-    uint visibleCells() const    { return m_visibleCells; }
-    uint rowIndex() const        { return m_rowIdx; }
+    void setVisibleCells(uint32_t n) { m_visibleCells = n; }
+    uint32_t visibleCells() const    { return m_visibleCells; }
+    uint32_t rowIndex() const        { return m_rowIdx; }
 
   private:
-    void setRowIndex(uint idx)   { m_rowIdx = idx; }
+    void setRowIndex(uint32_t idx)   { m_rowIdx = idx; }
     HtmlAttribList m_attribs;
-    uint m_visibleCells = 0;
-    uint m_rowIdx = static_cast<uint>(-1);
+    uint32_t m_visibleCells = 0;
+    uint32_t m_rowIdx = static_cast<uint32_t>(-1);
 };
 
 /** Node representing a HTML table */

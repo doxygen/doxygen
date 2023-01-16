@@ -497,7 +497,7 @@ void RTFGenerator::beginRTFDocument()
   unsigned maxIndex = 0;
   for (const auto &kv : rtf_Style)
   {
-    uint index = kv.second.index();
+    uint32_t index = kv.second.index();
     if (index > maxIndex) maxIndex = index;
   }
   std::vector<const StyleData*> array(maxIndex + 1, 0);
@@ -505,7 +505,7 @@ void RTFGenerator::beginRTFDocument()
 
   for (const auto &kv : rtf_Style)
   {
-    uint index = kv.second.index();
+    uint32_t index = kv.second.index();
     if (array[index] != 0)
     {
       msg("Style '%s' redefines \\s%d.\n", kv.first.c_str(), index);
@@ -2129,7 +2129,7 @@ static void encodeForOutput(TextStream &t,const QCString &s)
 
   for (size_t i=0;i<enc.size();i++)
   {
-    uchar c = static_cast<uchar>(enc.at(i));
+    uint8_t c = static_cast<uint8_t>(enc.at(i));
 
     if (c>=0x80 || multiByte)
     {

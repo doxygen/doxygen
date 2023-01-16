@@ -183,7 +183,7 @@ static QCString encodeDirName(const QCString &anchor)
 {
   AUTO_TRACE();
   // convert to md5 hash
-  uchar md5_sig[16];
+  uint8_t md5_sig[16];
   char sigStr[33];
   MD5Buffer(anchor.data(),anchor.length(),md5_sig);
   MD5SigToString(md5_sig,sigStr);
@@ -965,7 +965,7 @@ static void computeCommonDirPrefix()
     {
       while (!done)
       {
-        uint l = path.length();
+        uint32_t l = path.length();
         size_t count=0;
         for (const auto &dir : *Doxygen::dirLinkedMap)
         {

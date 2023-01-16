@@ -749,7 +749,7 @@ void HtmlCodeGenerator::codify(const QCString &str)
                    break;
         default:
           {
-            uchar uc = static_cast<uchar>(c);
+            uint8_t uc = static_cast<uint8_t>(c);
             if (uc<32)
             {
               m_t << "&#x24" << hex[uc>>4] << hex[uc&0xF] << ";";
@@ -796,7 +796,7 @@ void HtmlCodeGenerator::docify(const QCString &str)
           break;
         default:
           {
-            uchar uc = static_cast<uchar>(c);
+            uint8_t uc = static_cast<uint8_t>(c);
             if (uc<32 && !isspace(c))
             {
               m_t << "&#x24" << hex[uc>>4] << hex[uc&0xF] << ";";

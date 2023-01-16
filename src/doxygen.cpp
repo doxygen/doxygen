@@ -257,7 +257,7 @@ class Statistics
 
 
 static void addMemberDocs(const Entry *root,MemberDefMutable *md, const QCString &funcDecl,
-                   const ArgumentList *al,bool over_load,uint64 spec);
+                   const ArgumentList *al,bool over_load,uint64_t spec);
 static void findMember(const Entry *root,
                        const QCString &relates,
                        const QCString &type,
@@ -847,7 +847,7 @@ std::unique_ptr<ArgumentList> getTemplateArgumentsFromName(
 }
 
 static
-ClassDef::CompoundType convertToCompoundType(int section,uint64 specifier)
+ClassDef::CompoundType convertToCompoundType(int section,uint64_t specifier)
 {
   ClassDef::CompoundType sec=ClassDef::Class;
   if (specifier&Entry::Struct)
@@ -3140,7 +3140,7 @@ static void buildInterfaceAndServiceList(const Entry *root)
 static void addMethodToClass(const Entry *root,ClassDefMutable *cd,
                   const QCString &rtype,const QCString &rname,const QCString &rargs,
                   bool isFriend,
-                  Protection protection,bool stat,Specifier virt,uint64 spec,
+                  Protection protection,bool stat,Specifier virt,uint64_t spec,
                   const QCString &relates
                   )
 {
@@ -4432,7 +4432,7 @@ static bool findClassRelation(
         int i=findTemplateSpecializationPosition(baseClassName);
         int si=baseClassName.findRev("::",i);
         if (si==-1) si=0;
-        if (baseClass==0 && static_cast<uint>(i)!=baseClassName.length())
+        if (baseClass==0 && static_cast<uint32_t>(i)!=baseClassName.length())
           // base class has template specifiers
         {
           // TODO: here we should try to find the correct template specialization
@@ -5009,7 +5009,7 @@ static void addMemberDocs(const Entry *root,
                    MemberDefMutable *md, const QCString &funcDecl,
                    const ArgumentList *al,
                    bool over_load,
-                   uint64 spec
+                   uint64_t spec
                   )
 {
   if (md==0) return;
@@ -5180,7 +5180,7 @@ static bool findGlobalMember(const Entry *root,
                            const QCString &tempArg,
                            const QCString &,
                            const QCString &decl,
-                           uint64 spec)
+                           uint64_t spec)
 {
   AUTO_TRACE("namespace='{}' type='{}' name='{}' tempArg='{}' decl='{}'",namespaceName,type,name,tempArg,decl);
   QCString n=name;
@@ -5526,7 +5526,7 @@ static void addLocalObjCMethod(const Entry *root,
                         const QCString &scopeName,
                         const QCString &funcType,const QCString &funcName,const QCString &funcArgs,
                         const QCString &exceptions,const QCString &funcDecl,
-                        uint64 spec)
+                        uint64_t spec)
 {
   AUTO_TRACE();
   //printf("scopeName='%s' className='%s'\n",qPrint(scopeName),qPrint(className));
@@ -5589,7 +5589,7 @@ static void addMemberFunction(const Entry *root,
                        const QCString &type,
                        const QCString &args,
                        bool isFriend,
-                       uint64 spec,
+                       uint64_t spec,
                        const QCString &relates,
                        const QCString &funcDecl,
                        bool overloaded,
@@ -5922,7 +5922,7 @@ static void addMemberSpecialization(const Entry *root,
                              const QCString &funcArgs,
                              const QCString &funcDecl,
                              const QCString &exceptions,
-                             uint64 spec
+                             uint64_t spec
                             )
 {
   MemberDef *declMd=0;
@@ -5978,7 +5978,7 @@ static void addMemberSpecialization(const Entry *root,
 
 static void addOverloaded(const Entry *root,MemberName *mn,
                           const QCString &funcType,const QCString &funcName,const QCString &funcArgs,
-                          const QCString &funcDecl,const QCString &exceptions,uint64 spec)
+                          const QCString &funcDecl,const QCString &exceptions,uint64_t spec)
 {
   // for unique overloaded member we allow the class to be
   // omitted, this is to be Qt compatible. Using this should
@@ -6082,7 +6082,7 @@ static void findMember(const Entry *root,
   bool isMemberOf=FALSE;
   bool isFriend=FALSE;
   bool done;
-  uint64 spec = root->spec;
+  uint64_t spec = root->spec;
   do
   {
     done=TRUE;
@@ -6259,7 +6259,7 @@ static void findMember(const Entry *root,
   {
     if (funcSpec.isEmpty())
     {
-      uint argListIndex=0;
+      uint32_t argListIndex=0;
       tempScopeName=cd->qualifiedNameWithTemplateParameters(&root->tArgLists,&argListIndex);
     }
     else
@@ -9507,7 +9507,7 @@ static void computeVerifiedDotPath()
       }
     }
 #if defined(_WIN32) // convert slashes
-    uint i=0,l=dotPath.length();
+    uint32_t i=0,l=dotPath.length();
     for (i=0;i<l;i++) if (dotPath.at(i)=='/') dotPath.at(i)='\\';
 #endif
   }
@@ -11595,7 +11595,7 @@ void searchInputFiles()
   for (const auto &s : inputList)
   {
     QCString path=s.c_str();
-    uint l = path.length();
+    uint32_t l = path.length();
     if (l>0)
     {
       // strip trailing slashes
@@ -11697,7 +11697,7 @@ void parseInput()
   int cacheSize = Config_getInt(LOOKUP_CACHE_SIZE);
   if (cacheSize<0) cacheSize=0;
   if (cacheSize>9) cacheSize=9;
-  uint lookupSize = 65536 << cacheSize;
+  uint32_t lookupSize = 65536 << cacheSize;
   Doxygen::typeLookupCache = new Cache<std::string,LookupInfo>(lookupSize);
   Doxygen::symbolLookupCache = new Cache<std::string,LookupInfo>(lookupSize);
 
@@ -11705,7 +11705,7 @@ void parseInput()
   signal(SIGINT, stopDoxygen);
 #endif
 
-  uint pid = Portable::pid();
+  uint32_t pid = Portable::pid();
   Doxygen::filterDBFileName.sprintf("doxygen_filterdb_%d.tmp",pid);
   Doxygen::filterDBFileName.prepend(outputDirectory+"/");
 

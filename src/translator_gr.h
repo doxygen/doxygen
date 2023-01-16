@@ -2045,7 +2045,7 @@ class TranslatorGreek : public TranslatorAdapter_1_9_4
     virtual QCString trFunctionAndProc()
     { return "Συναρτήσεις/Διαδικασίες/Διεργασίες"; }
     /** VHDL type */
-    virtual QCString trVhdlType(uint64 type,bool single)
+    virtual QCString trVhdlType(uint64_t type,bool single)
     {
       switch(type)
       {

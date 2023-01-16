@@ -93,7 +93,7 @@ static std::vector<QCString> split(const QCString &str,const QCString &sep,
 static void removeSpacesAroundEquals(QCString &s)
 {
   //printf(">removeSpacesAroundEquals(%s)\n",qPrint(s));
-  uint i=0, dstIdx=0, l=s.length();
+  uint32_t i=0, dstIdx=0, l=s.length();
   while (i<l)
   {
     char c = s[i++];
@@ -101,7 +101,7 @@ static void removeSpacesAroundEquals(QCString &s)
     {
       bool found=false;
       // look ahead for space or '='
-      uint j=i;
+      uint32_t j=i;
       while (j<l && (s[j]==' '|| s[j]=='='))
       {
         if (s[j]=='=') found=true;
@@ -3478,7 +3478,7 @@ class TemplateNodeFor : public TemplateNodeCreator<TemplateNodeFor>
 
             // add variables for this loop to the context
             //obj->addVariableToContext(index,m_vars,c);
-            uint vi=0;
+            uint32_t vi=0;
             if (m_vars.size()==1) // loop variable represents an item
             {
               c->set(m_vars[vi++],ve);
@@ -3489,7 +3489,7 @@ class TemplateNodeFor : public TemplateNodeCreator<TemplateNodeFor>
               TemplateStructIntfPtr vs = ve.toStruct();
               if (vs)
               {
-                for (uint i=0;i<m_vars.size();i++,vi++)
+                for (uint32_t i=0;i<m_vars.size();i++,vi++)
                 {
                   c->set(m_vars[vi],vs->get(m_vars[vi]));
                 }

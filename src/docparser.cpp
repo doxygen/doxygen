@@ -710,7 +710,7 @@ int DocParser::handleAHref(DocNodeVariant *parent,DocNodeList &children,
                            const HtmlAttribList &tagHtmlAttribs)
 {
   AUTO_TRACE();
-  uint index=0;
+  uint32_t index=0;
   int retval = RetVal_OK;
   for (const auto &opt : tagHtmlAttribs)
   {
@@ -780,7 +780,7 @@ void DocParser::handleLinkedWord(DocNodeVariant *parent,DocNodeList &children,bo
 
   const Definition *compound=0;
   const MemberDef  *member=0;
-  uint len = context.token->name.length();
+  uint32_t len = context.token->name.length();
   ClassDef *cd=0;
   bool ambig;
   FileDef *fd = findFileDef(Doxygen::inputNameLinkedMap,context.fileName,ambig);
@@ -1564,7 +1564,7 @@ void DocParser::handleImg(DocNodeVariant *parent, DocNodeList &children,const Ht
 {
   AUTO_TRACE();
   bool found=FALSE;
-  uint index=0;
+  uint32_t index=0;
   for (const auto &opt : tagHtmlAttribs)
   {
     AUTO_TRACE_ADD("option name={} value='{}'",opt.name,opt.value);
@@ -1679,9 +1679,9 @@ void DocParser::readTextFileByName(const QCString &file,QCString &text)
 
 //---------------------------------------------------------------------------
 
-static QCString extractCopyDocId(const char *data, uint &j, uint len)
+static QCString extractCopyDocId(const char *data, uint32_t &j, uint32_t len)
 {
-  uint s=j;
+  uint32_t s=j;
   int round=0;
   bool insideDQuote=FALSE;
   bool insideSQuote=FALSE;
@@ -1727,7 +1727,7 @@ static QCString extractCopyDocId(const char *data, uint &j, uint len)
   {
     j+=9;
   }
-  uint e=j;
+  uint32_t e=j;
   if (j>0 && data[j-1]=='.') { e--; } // do not include punctuation added by Definition::_setBriefDescription()
   QCString id(data+s,e-s);
   //printf("extractCopyDocId='%s' input='%s'\n",qPrint(id),&data[s]);
@@ -1742,9 +1742,9 @@ static QCString extractCopyDocId(const char *data, uint &j, uint len)
    do if ((i+sizeof(str)<len) && qstrncmp(data+i+1,str,sizeof(str)-1)==0) \
    { j=i+sizeof(str); action; } while(0)
 
-static uint isCopyBriefOrDetailsCmd(const char *data, uint i,uint len,bool &brief)
+static uint32_t isCopyBriefOrDetailsCmd(const char *data, uint32_t i,uint32_t len,bool &brief)
 {
-  uint j=0;
+  uint32_t j=0;
   if (i==0 || (data[i-1]!='@' && data[i-1]!='\\')) // not an escaped command
   {
     CHECK_FOR_COMMAND("copybrief",brief=TRUE);    // @copybrief or \copybrief
@@ -1753,9 +1753,9 @@ static uint isCopyBriefOrDetailsCmd(const char *data, uint i,uint len,bool &brie
   return j;
 }
 
-static uint isVerbatimSection(const char *data,uint i,uint len,QCString &endMarker)
+static uint32_t isVerbatimSection(const char *data,uint32_t i,uint32_t len,QCString &endMarker)
 {
-  uint j=0;
+  uint32_t j=0;
   if (i==0 || (data[i-1]!='@' && data[i-1]!='\\')) // not an escaped command
   {
     CHECK_FOR_COMMAND("dot",endMarker="enddot");
@@ -1777,7 +1777,7 @@ static uint isVerbatimSection(const char *data,uint i,uint len,QCString &endMark
   return j;
 }
 
-static uint skipToEndMarker(const char *data,uint i,uint len,const QCString &endMarker)
+static uint32_t skipToEndMarker(const char *data,uint32_t i,uint32_t len,const QCString &endMarker)
 {
   while (i<len)
   {
@@ -1796,11 +1796,11 @@ static uint skipToEndMarker(const char *data,uint i,uint len,const QCString &end
 }
 
 
-QCString DocParser::processCopyDoc(const char *data,uint &len)
+QCString DocParser::processCopyDoc(const char *data,uint32_t &len)
 {
   AUTO_TRACE("data={} len={}",Trace::trunc(data),len);
   GrowBuf buf;
-  uint i=0;
+  uint32_t i=0;
   int lineNr = tokenizer.getLineNr();
   while (i<len)
   {
@@ -1808,7 +1808,7 @@ QCString DocParser::processCopyDoc(const char *data,uint &len)
     if (c=='@' || c=='\\') // look for a command
     {
       bool isBrief=TRUE;
-      uint j=isCopyBriefOrDetailsCmd(data,i,len,isBrief);
+      uint32_t j=isCopyBriefOrDetailsCmd(data,i,len,isBrief);
       if (j>0)
       {
         // skip whitespace
@@ -1830,14 +1830,14 @@ QCString DocParser::processCopyDoc(const char *data,uint &len)
             {
               buf.addStr(" \\ilinebr\\ifile \""+QCString(def->briefFile())+"\" ");
               buf.addStr("\\iline "+QCString().setNum(def->briefLine())+" ");
-              uint l=static_cast<uint>(brief.length());
+              uint32_t l=static_cast<uint32_t>(brief.length());
               buf.addStr(processCopyDoc(brief.data(),l));
             }
             else
             {
               buf.addStr(" \\ilinebr\\ifile \""+QCString(def->docFile())+"\" ");
               buf.addStr("\\iline "+QCString().setNum(def->docLine())+" ");
-              uint l=static_cast<uint>(doc.length());
+              uint32_t l=static_cast<uint32_t>(doc.length());
               buf.addStr(processCopyDoc(doc.data(),l));
             }
             context.copyStack.pop_back();
@@ -1863,10 +1863,10 @@ QCString DocParser::processCopyDoc(const char *data,uint &len)
       else
       {
         QCString endMarker;
-        uint k = isVerbatimSection(data,i,len,endMarker);
+        uint32_t k = isVerbatimSection(data,i,len,endMarker);
         if (k>0)
         {
-          uint orgPos = i;
+          uint32_t orgPos = i;
           i=skipToEndMarker(data,k,len,endMarker);
           buf.addStr(data+orgPos,i-orgPos);
           // TODO: adjust lineNr
@@ -1885,7 +1885,7 @@ QCString DocParser::processCopyDoc(const char *data,uint &len)
       lineNr += (c=='\n') ? 1 : 0;
     }
   }
-  len = static_cast<uint>(buf.getPos());
+  len = static_cast<uint32_t>(buf.getPos());
   buf.addChar(0);
   AUTO_TRACE_EXIT("result={}",Trace::trunc(buf.get()));
   return buf.get();
@@ -1983,7 +1983,7 @@ IDocNodeASTPtr validatingParseDoc(IDocParser &parserIntf,
 
   //printf("Starting comment block at %s:%d\n",qPrint(parser->context.fileName),startLine);
   parser->tokenizer.setLineNr(startLine);
-  uint ioLen = static_cast<uint>(input.length());
+  uint32_t ioLen = static_cast<uint32_t>(input.length());
   QCString inpStr = parser->processCopyDoc(input.data(),ioLen);
   if (inpStr.isEmpty() || inpStr.at(inpStr.length()-1)!='\n')
   {

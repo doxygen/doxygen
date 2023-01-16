@@ -40,6 +40,7 @@ typedef yyguts_t *yyscan_t;
 #include <string>
 #include <mutex>
 #include <sstream>
+#include <cstdint>
 
 #include <stdio.h>
 #include <assert.h>
@@ -1179,8 +1180,8 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                         }
 <Body>"("{B}*("*"{B}*)+{SCOPENAME}+{B}*")"/{B}* {  // (*p)->func() but not "if (p) ..."
                                           yyextra->code->codify(yytext);
-                                          uint s=0;while (s<(uint)yyleng && !isId(yytext[s])) s++;
-                                          uint e=(uint)yyleng-1;while (e>1 && !isId(yytext[e])) e--;
+                                          uint32_t s=0;while (s<(uint32_t)yyleng && !isId(yytext[s])) s++;
+                                          uint32_t e=(uint32_t)yyleng-1;while (e>1 && !isId(yytext[e])) e--;
                                           QCString varname = ((QCString)yytext).mid(s,e-s+1);
                                           addType(yyscanner);
                                           yyextra->name=varname;
@@ -1200,7 +1201,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                         }
 <FuncCall,Body,MemberCall,MemberCall2,SkipInits,InlineInit>{RAWBEGIN}   {
                                           QCString text(yytext);
-                                          uint i=(uint)text.find('R');
+                                          uint32_t i=(uint32_t)text.find('R');
                                           yyextra->code->codify(text.left(i+1));
                                           startFontClass(yyscanner,"stringliteral");
                                           yyextra->code->codify(QCString(yytext+i+1));
@@ -1706,7 +1707,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           DBG_CTX((stderr,"yyextra->name=%s\n",qPrint(yyextra->name)));
                                           if (index!=-1)
                                           {
-                                            QCString scope = yyextra->name.left((uint)index);
+                                            QCString scope = yyextra->name.left((uint32_t)index);
                                             if (!yyextra->classScope.isEmpty()) scope.prepend((yyextra->classScope+"::"));
                                             const ClassDef *cd=yyextra->symbolResolver.resolveClass(Doxygen::globalScope,scope);
                                             if (cd)
@@ -1846,8 +1847,8 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                         }
 <FuncCall,MemberCall2>("("{B}*("*"{B}*)+{ID}+{B}*")"{B}*)/("."|"->") {
                                           yyextra->code->codify(yytext);
-                                          uint s=0;while (!isId(yytext[s])) s++;
-                                          uint e=(uint)yyleng-1;while (e>1 && !isId(yytext[e])) e--;
+                                          uint32_t s=0;while (!isId(yytext[s])) s++;
+                                          uint32_t e=(uint32_t)yyleng-1;while (e>1 && !isId(yytext[e])) e--;
                                           yyextra->name=((QCString)yytext).mid(s,e-s+1);
                                           BEGIN( MemberCall2 );
                                         }

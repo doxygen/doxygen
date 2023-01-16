@@ -55,7 +55,7 @@
 //-----------------------------------------------------------------------------
 
 static QCString makeQualifiedNameWithTemplateParameters(const ClassDef *cd,
-    const ArgumentLists *actualParams,uint *actualParamIndex)
+    const ArgumentLists *actualParams,uint32_t *actualParamIndex)
 {
   //bool optimizeOutputJava = Config_getBool(OPTIMIZE_OUTPUT_JAVA);
   bool hideScopeNames = Config_getBool(HIDE_SCOPE_NAMES);
@@ -202,7 +202,7 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
     virtual const Definition *findInnerCompound(const QCString &name) const;
     virtual ArgumentLists getTemplateParameterLists() const;
     virtual QCString qualifiedNameWithTemplateParameters(
-        const ArgumentLists *actualParams=0,uint *actualParamIndex=0) const;
+        const ArgumentLists *actualParams=0,uint32_t *actualParamIndex=0) const;
     virtual bool isAbstract() const;
     virtual bool isObjectiveC() const;
     virtual bool isFortran() const;
@@ -258,7 +258,7 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
     virtual void setIsStatic(bool b);
     virtual void setCompoundType(CompoundType t);
     virtual void setClassName(const QCString &name);
-    virtual void setClassSpecifier(uint64 spec);
+    virtual void setClassSpecifier(uint64_t spec);
     virtual void addQualifiers(const StringVector &qualifiers);
     virtual void setTemplateArguments(const ArgumentList &al);
     virtual void setTemplateBaseClassNames(const TemplateNameMap &templateNames);
@@ -464,7 +464,7 @@ class ClassDefAliasImpl : public DefinitionAliasMixin<ClassDef>
     virtual ArgumentLists getTemplateParameterLists() const
     { return getCdAlias()->getTemplateParameterLists(); }
     virtual QCString qualifiedNameWithTemplateParameters(
-        const ArgumentLists *actualParams=0,uint *actualParamIndex=0) const
+        const ArgumentLists *actualParams=0,uint32_t *actualParamIndex=0) const
     { return makeQualifiedNameWithTemplateParameters(this,actualParams,actualParamIndex); }
     virtual bool isAbstract() const
     { return getCdAlias()->isAbstract(); }
@@ -737,7 +737,7 @@ class ClassDefImpl::IMPL
     /** Does this class represent a Java style enum? */
     bool isJavaEnum = false;
 
-    uint64 spec = 0;
+    uint64_t spec = 0;
 
     QCString metaData;
 
@@ -3488,7 +3488,7 @@ void ClassDefImpl::mergeMembers()
   //bool vhdlOpt = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
   SrcLangExt lang = getLanguage();
   QCString sep=getLanguageSpecificSeparator(lang,TRUE);
-  uint sepLen = sep.length();
+  uint32_t sepLen = sep.length();
 
   m_impl->membersMerged=TRUE;
   //printf("  mergeMembers for %s\n",qPrint(name()));
@@ -4169,7 +4169,7 @@ ArgumentLists ClassDefImpl::getTemplateParameterLists() const
 }
 
 QCString ClassDefImpl::qualifiedNameWithTemplateParameters(
-    const ArgumentLists *actualParams,uint *actualParamIndex) const
+    const ArgumentLists *actualParams,uint32_t *actualParamIndex) const
 {
   return makeQualifiedNameWithTemplateParameters(this,actualParams,actualParamIndex);
 }
@@ -4932,7 +4932,7 @@ bool ClassDefImpl::isJavaEnum() const
   return m_impl->isJavaEnum;
 }
 
-void ClassDefImpl::setClassSpecifier(uint64 spec)
+void ClassDefImpl::setClassSpecifier(uint64_t spec)
 {
   m_impl->spec = spec;
 }

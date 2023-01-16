@@ -30,6 +30,7 @@
 #include <algorithm>
 #include <iostream>
 #include <iomanip>
+#include <cstdint>
 
 #include "config.h"
 #include "regex.h"
@@ -946,7 +947,7 @@ static void readIncludeFile(const QCString &incName)
   QCString inc = incName;
   substEnvVarsInString(inc);
   inc = inc.stripWhiteSpace();
-  uint incLen = inc.length();
+  uint32_t incLen = inc.length();
   if (incLen>0 && inc.at(0)=='"' && inc.at(incLen-1)=='"') // strip quotes
   {
     inc=inc.mid(1,incLen-2);
@@ -1545,7 +1546,7 @@ static QCString configFileToString(const QCString &name)
     std::string ret;
     char buffer[4096];
     while (in.read(buffer, sizeof(buffer))) ret.append(buffer, sizeof(buffer));
-    ret.append(buffer, static_cast<uint>(in.gcount()));
+    ret.append(buffer, static_cast<uint32_t>(in.gcount()));
     if (!ret.empty() && ret[ret.length()-1]!='\n') ret+='\n'; // to help the scanner
     return ret;
   };
@@ -2040,7 +2041,7 @@ void Config::checkAndCorrect(bool quiet, const bool check)
     {
       diaPath=dp.dirPath(TRUE)+"/";
 #if defined(_WIN32) // convert slashes
-      uint i=0,l=diaPath.length();
+      uint32_t i=0,l=diaPath.length();
       for (i=0;i<l;i++) if (diaPath.at(i)=='/') diaPath.at(i)='\\';
 #endif
     }

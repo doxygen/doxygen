@@ -404,7 +404,7 @@ CPPC  "/\/"
 					    if (l>0)
 					    {
 					      int i=l-1;
-					      while (i>=0 && (isspace((uchar)yyextra->curArgTypeName.at(i)) || yyextra->curArgTypeName.at(i)=='.')) i--;
+					      while (i>=0 && (isspace((uint8_t)yyextra->curArgTypeName.at(i)) || yyextra->curArgTypeName.at(i)=='.')) i--;
 					      while (i>=0 && (isId(yyextra->curArgTypeName.at(i)) || yyextra->curArgTypeName.at(i)=='$')) i--;
 					      Argument a;
 					      a.attrib  = yyextra->curArgAttrib;

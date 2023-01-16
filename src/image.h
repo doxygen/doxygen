@@ -17,6 +17,7 @@
 #define IMAGE_H
 
 #include <memory>
+#include <cstdint>
 #include "types.h"
 #include "qcstring.h"
 
@@ -24,24 +25,24 @@
 class Image
 {
   public:
-    Image(uint w,uint h);
+    Image(uint32_t w,uint32_t h);
    ~Image();
 
-    void setPixel(uint x,uint y,uchar val);
-    uchar getPixel(uint x,uint y) const;
-    void writeChar(uint x,uint y,char c,uchar fg);
-    void writeString(uint x,uint y,const QCString &s,uchar fg);
-    void drawHorzLine(uint y,uint xs,uint xe,uchar colIndex,uint mask);
-    void drawHorzArrow(uint y,uint xs,uint xe,uchar colIndex,uint mask);
-    void drawVertLine(uint x,uint ys,uint ye,uchar colIndex,uint mask);
-    void drawVertArrow(uint x,uint ys,uint ye,uchar colIndex,uint mask);
-    void drawRect(uint x,uint y,uint width,uint height,uchar colIndex,uint mask);
-    void fillRect(uint x,uint y,uint width,uint height,uchar colIndex,uint mask);
+    void setPixel(uint32_t x,uint32_t y,uint8_t val);
+    uint8_t getPixel(uint32_t x,uint32_t y) const;
+    void writeChar(uint32_t x,uint32_t y,char c,uint8_t fg);
+    void writeString(uint32_t x,uint32_t y,const QCString &s,uint8_t fg);
+    void drawHorzLine(uint32_t y,uint32_t xs,uint32_t xe,uint8_t colIndex,uint32_t mask);
+    void drawHorzArrow(uint32_t y,uint32_t xs,uint32_t xe,uint8_t colIndex,uint32_t mask);
+    void drawVertLine(uint32_t x,uint32_t ys,uint32_t ye,uint8_t colIndex,uint32_t mask);
+    void drawVertArrow(uint32_t x,uint32_t ys,uint32_t ye,uint8_t colIndex,uint32_t mask);
+    void drawRect(uint32_t x,uint32_t y,uint32_t width,uint32_t height,uint8_t colIndex,uint32_t mask);
+    void fillRect(uint32_t x,uint32_t y,uint32_t width,uint32_t height,uint8_t colIndex,uint32_t mask);
     bool save(const QCString &fileName);
-    friend uint stringLength(const QCString &s);
-    uint width() const;
-    uint height() const;
-    static uint stringLength(const QCString &s);
+    friend uint32_t stringLength(const QCString &s);
+    uint32_t width() const;
+    uint32_t height() const;
+    static uint32_t stringLength(const QCString &s);
 
   private:
     struct Private;
@@ -52,8 +53,8 @@ class Image
 class ColoredImage
 {
   public:
-    ColoredImage(uint width,uint height,
-           const uchar *greyLevels,const uchar *alphaLevels,
+    ColoredImage(uint32_t width,uint32_t height,
+           const uint8_t *greyLevels,const uint8_t *alphaLevels,
            int saturation,int hue,int gamma);
    ~ColoredImage();
     bool save(const QCString &fileName);

@@ -1529,7 +1529,7 @@ void LayoutParser::endElement( const std::string &name )
   //printf("endElement [%s]::[%s]\n",qPrint(m_scope),qPrint(name));
   auto it=g_elementHandlers.end();
 
-  if (!m_scope.isEmpty() && m_scope.right(static_cast<uint>(name.length())+1)==name+"/")
+  if (!m_scope.isEmpty() && m_scope.right(static_cast<uint32_t>(name.length())+1)==name+"/")
   { // element ends current scope
     it = g_elementHandlers.find(m_scope.left(m_scope.length()-1).str());
   }

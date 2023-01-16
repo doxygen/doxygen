@@ -103,7 +103,7 @@ inline void writeDocbookCodeString(TextStream &t,const QCString &str, int &col)
       case '"':  t << "&quot;"; col++; break;
       default:
         {
-          uchar uc = static_cast<uchar>(c);
+          uint8_t uc = static_cast<uint8_t>(c);
           static const char *hex="0123456789ABCDEF";
           if (uc<32)
           {
@@ -1382,8 +1382,8 @@ QCString convertToDocBook(const QCString &s, const bool retainNewline)
       case 19: case 20: case 21: case 22: case 23: case 24: case 25: case 26:
       case 27: case 28: case 29: case 30: case 31:
         growBuf.addStr("&#x24");
-        growBuf.addChar(hex[static_cast<uchar>(c)>>4]);
-        growBuf.addChar(hex[static_cast<uchar>(c)&0xF]);
+        growBuf.addChar(hex[static_cast<uint8_t>(c)>>4]);
+        growBuf.addChar(hex[static_cast<uint8_t>(c)&0xF]);
         growBuf.addChar(';');
         break;
       default:

@@ -1022,7 +1022,7 @@ DB_VIS_C
   if (m_hide) return;
   m_t << "<informaltable frame=\"all\">\n";
   m_t << "    <tgroup cols=\"" << t.numColumns() << "\" align=\"left\" colsep=\"1\" rowsep=\"1\">\n";
-  for (uint i = 0; i <t.numColumns(); i++)
+  for (uint32_t i = 0; i <t.numColumns(); i++)
   {
     // do something with colwidth based of cell width specification (be aware of possible colspan in the header)?
     m_t << "      <colspec colname='c" << i+1 << "'/>\n";

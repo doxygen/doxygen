@@ -3403,7 +3403,7 @@ static void addCite(yyscan_t yyscanner)
 // strip trailing whitespace (excluding newlines) from string s
 static void stripTrailingWhiteSpace(QCString &s)
 {
-  uint len = s.length();
+  uint32_t len = s.length();
   int i = (int)len-1;
   char c;
   while (i>=0)

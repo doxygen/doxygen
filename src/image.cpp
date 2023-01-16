@@ -154,9 +154,9 @@ const unsigned char fontRaw[charSetWidth*charHeight] = {
 
 struct Image::Private
 {
-  uint width;
-  uint height;
-  std::vector<uchar> data;
+  uint32_t width;
+  uint32_t height;
+  std::vector<uint8_t> data;
   std::vector<Color> palette =
   {
     { 0xff, 0xff, 0xff, 0x00 },
@@ -171,7 +171,7 @@ struct Image::Private
   };
 };
 
-Image::Image(uint w,uint h) : p(std::make_unique<Private>())
+Image::Image(uint32_t w,uint32_t h) : p(std::make_unique<Private>())
 {
   int hue   = Config_getInt(HTML_COLORSTYLE_HUE);
   int sat   = Config_getInt(HTML_COLORSTYLE_SAT);
@@ -205,39 +205,39 @@ Image::Image(uint w,uint h) : p(std::make_unique<Private>())
   p->height = h;
 }
 
-uint Image::width() const  { return p->width; }
-uint Image::height() const { return p->height; }
+uint32_t Image::width() const  { return p->width; }
+uint32_t Image::height() const { return p->height; }
 
 Image::~Image() = default;
 
-void Image::setPixel(uint x,uint y,uchar val)
+void Image::setPixel(uint32_t x,uint32_t y,uint8_t val)
 {
   if (x<p->width && y<p->height) p->data[y*p->width+x] = val;
 }
 
-uchar Image::getPixel(uint x,uint y) const
+uint8_t Image::getPixel(uint32_t x,uint32_t y) const
 {
   return (x<p->width && y<p->height) ? p->data[y*p->width+x] : 0;
 }
 
-void Image::writeChar(uint x,uint y,char c,uchar fg)
+void Image::writeChar(uint32_t x,uint32_t y,char c,uint8_t fg)
 {
   if (c>=' ')
   {
-    uint xf,yf,ci=c-' ';
-    uint rowOffset=0;
-    uint cw = charWidth[ci];
-    uint cp = charPos[ci];
+    uint32_t xf,yf,ci=c-' ';
+    uint32_t rowOffset=0;
+    uint32_t cw = charWidth[ci];
+    uint32_t cp = charPos[ci];
     for (yf=0;yf<charHeight;yf++)
     {
       unsigned short bitPattern=0;
-      uint bitsLeft=cw;
-      uint byteOffset = rowOffset+(cp>>3);
-      uint bitOffset  = cp&7;
+      uint32_t bitsLeft=cw;
+      uint32_t byteOffset = rowOffset+(cp>>3);
+      uint32_t bitOffset  = cp&7;
       // get the bit pattern for row yf of the character from the font data
       while (bitsLeft>0)
       {
-        uint bits=8-bitOffset;
+        uint32_t bits=8-bitOffset;
         if (bits>bitsLeft) bits=bitsLeft;
         bitPattern<<=bits;
         bitPattern|=((fontRaw[byteOffset]<<bitOffset)&0xff)>>(8-bits);
@@ -245,7 +245,7 @@ void Image::writeChar(uint x,uint y,char c,uchar fg)
         bitOffset=0;
         byteOffset++;
       }
-      uint mask=1<<(cw-1);
+      uint32_t mask=1<<(cw-1);
       // draw character row yf
       for (xf=0;xf<cw;xf++)
       {
@@ -257,7 +257,7 @@ void Image::writeChar(uint x,uint y,char c,uchar fg)
   }
 }
 
-void Image::writeString(uint x,uint y,const QCString &s,uchar fg)
+void Image::writeString(uint32_t x,uint32_t y,const QCString &s,uint8_t fg)
 {
   if (!s.isEmpty())
   {
@@ -271,9 +271,9 @@ void Image::writeString(uint x,uint y,const QCString &s,uchar fg)
   }
 }
 
-uint Image::stringLength(const QCString &s)
+uint32_t Image::stringLength(const QCString &s)
 {
-  uint w=0;
+  uint32_t w=0;
   if (!s.isEmpty())
   {
     const char *ps = s.data();
@@ -283,9 +283,9 @@ uint Image::stringLength(const QCString &s)
   return w;
 }
 
-void Image::drawHorzLine(uint y,uint xs,uint xe,uchar colIndex,uint mask)
+void Image::drawHorzLine(uint32_t y,uint32_t xs,uint32_t xe,uint8_t colIndex,uint32_t mask)
 {
-  uint x,i=0,j=0;
+  uint32_t x,i=0,j=0;
   for (x=xs;x<=xe;x++,j++)
   {
     if (j&1) i++;
@@ -293,38 +293,38 @@ void Image::drawHorzLine(uint y,uint xs,uint xe,uchar colIndex,uint mask)
   }
 }
 
-void Image::drawHorzArrow(uint y,uint xs,uint xe,uchar colIndex,uint mask)
+void Image::drawHorzArrow(uint32_t y,uint32_t xs,uint32_t xe,uint8_t colIndex,uint32_t mask)
 {
   drawHorzLine(y,xs,xe,colIndex,mask);
-  uint i;
+  uint32_t i;
   for (i=0;i<6;i++)
   {
-    uint h=i>>1;
+    uint32_t h=i>>1;
     drawVertLine(xe-i,y-h,y+h,colIndex,0xffffffff);
   }
 }
 
-void Image::drawVertLine(uint x,uint ys,uint ye,uchar colIndex,uint mask)
+void Image::drawVertLine(uint32_t x,uint32_t ys,uint32_t ye,uint8_t colIndex,uint32_t mask)
 {
-  uint y,i=0;
+  uint32_t y,i=0;
   for (y=ys;y<=ye;y++,i++)
   {
     if (mask&(1<<(i&0x1f))) setPixel(x,y,colIndex);
   }
 }
 
-void Image::drawVertArrow(uint x,uint ys,uint ye,uchar colIndex,uint mask)
+void Image::drawVertArrow(uint32_t x,uint32_t ys,uint32_t ye,uint8_t colIndex,uint32_t mask)
 {
   drawVertLine(x,ys,ye,colIndex,mask);
-  uint i;
+  uint32_t i;
   for (i=0;i<6;i++)
   {
-    uint h=i>>1;
+    uint32_t h=i>>1;
     drawHorzLine(ys+i,x-h,x+h,colIndex,0xffffffff);
   }
 }
 
-void Image::drawRect(uint x,uint y,uint w,uint h,uchar colIndex,uint mask)
+void Image::drawRect(uint32_t x,uint32_t y,uint32_t w,uint32_t h,uint8_t colIndex,uint32_t mask)
 {
   drawHorzLine(y,x,x+w-1,colIndex,mask);
   drawHorzLine(y+h-1,x,x+w-1,colIndex,mask);
@@ -332,9 +332,9 @@ void Image::drawRect(uint x,uint y,uint w,uint h,uchar colIndex,uint mask)
   drawVertLine(x+w-1,y,y+h-1,colIndex,mask);
 }
 
-void Image::fillRect(uint x,uint y,uint width,uint height,uchar colIndex,uint mask)
+void Image::fillRect(uint32_t x,uint32_t y,uint32_t width,uint32_t height,uint8_t colIndex,uint32_t mask)
 {
-  uint xp,yp,xi,yi;
+  uint32_t xp,yp,xi,yi;
   for (yp=y,yi=0;yp<y+height;yp++,yi++)
     for (xp=x,xi=0;xp<x+width;xp++,xi++)
       if (mask&(1<<((xi+yi)&0x1f)))
@@ -343,7 +343,7 @@ void Image::fillRect(uint x,uint y,uint width,uint height,uchar colIndex,uint ma
 
 bool Image::save(const QCString &fileName)
 {
-  uchar* buffer;
+  uint8_t* buffer;
   size_t bufferSize;
   LodePNG_Encoder encoder;
   LodePNG_Encoder_init(&encoder);
@@ -429,21 +429,21 @@ void ColoredImage::hsl2rgb(double h,double s,double l,
 
 struct ColoredImage::Private
 {
-  uint width;
-  uint height;
-  std::vector<uchar> data;
+  uint32_t width;
+  uint32_t height;
+  std::vector<uint8_t> data;
   bool hasAlpha;
 };
 
-ColoredImage::ColoredImage(uint width,uint height,
-           const uchar *greyLevels,const uchar *alphaLevels,
+ColoredImage::ColoredImage(uint32_t width,uint32_t height,
+           const uint8_t *greyLevels,const uint8_t *alphaLevels,
            int saturation,int hue,int gamma) : p(std::make_unique<Private>())
 {
   p->hasAlpha = alphaLevels!=0;
   p->width    = width;
   p->height   = height;
   p->data.resize(width*height*4);
-  uint i;
+  uint32_t i;
   for (i=0;i<width*height;i++)
   {
     Byte r,g,b,a;
@@ -467,7 +467,7 @@ ColoredImage::~ColoredImage() = default;
 
 bool ColoredImage::save(const QCString &fileName)
 {
-  uchar *buffer;
+  uint8_t *buffer;
   size_t bufferSize;
   LodePNG_Encoder encoder;
   LodePNG_Encoder_init(&encoder);

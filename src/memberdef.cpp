@@ -77,7 +77,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     virtual QCString extraTypeChars() const;
     virtual const QCString &initializer() const;
     virtual int initializerLines() const;
-    virtual uint64 getMemberSpecifiers() const;
+    virtual uint64_t getMemberSpecifiers() const;
     virtual const MemberList *getSectionList(const Definition *) const;
     virtual QCString displayDefinition() const;
     virtual const ClassDef *getClassDef() const;
@@ -248,8 +248,8 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     virtual void setFileDef(FileDef *fd);
     virtual void setAnchor();
     virtual void setProtection(Protection p);
-    virtual void setMemberSpecifiers(uint64 s);
-    virtual void mergeMemberSpecifiers(uint64 s);
+    virtual void setMemberSpecifiers(uint64_t s);
+    virtual void mergeMemberSpecifiers(uint64_t s);
     virtual void setInitializer(const QCString &i);
     virtual void setBitfields(const QCString &s);
     virtual void setMaxInitLines(int lines);
@@ -370,9 +370,9 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     // PIMPL idiom
     class IMPL;
     IMPL *m_impl;
-    uchar m_isLinkableCached;    // 0 = not cached, 1=FALSE, 2=TRUE
-    uchar m_isConstructorCached; // 0 = not cached, 1=FALSE, 2=TRUE
-    uchar m_isDestructorCached;  // 1 = not cached, 1=FALSE, 2=TRUE
+    uint8_t m_isLinkableCached;    // 0 = not cached, 1=FALSE, 2=TRUE
+    uint8_t m_isConstructorCached; // 0 = not cached, 1=FALSE, 2=TRUE
+    uint8_t m_isDestructorCached;  // 1 = not cached, 1=FALSE, 2=TRUE
 };
 
 MemberDefMutable *createMemberDef(const QCString &defFileName,int defLine,int defColumn,
@@ -433,7 +433,7 @@ class MemberDefAliasImpl : public DefinitionAliasMixin<MemberDef>
     { return getMdAlias()->initializer(); }
     virtual int initializerLines() const
     { return getMdAlias()->initializerLines(); }
-    virtual uint64 getMemberSpecifiers() const
+    virtual uint64_t getMemberSpecifiers() const
     { return getMdAlias()->getMemberSpecifiers(); }
     virtual const MemberList *getSectionList(const Definition *container) const
     { return getMdAlias()->getSectionList(container); }
@@ -825,7 +825,7 @@ static QCString addTemplateNames(const QCString &s,const QCString &n,const QCStr
   while ((i=s.find(clRealName,p))!=-1)
   {
     result+=s.mid(p,i-p);
-    uint j=clRealName.length()+i;
+    uint32_t j=clRealName.length()+i;
     if (s.length()==j || (s.at(j)!='<' && !isId(s.at(j))))
     { // add template names
       //printf("Adding %s+%s\n",qPrint(clRealName),qPrint(t));
@@ -1208,7 +1208,7 @@ class MemberDefImpl::IMPL
     QCString requiresClause;  // requires clause (C++20)
     int initLines = 0;            // number of lines in the initializer
 
-    uint64  memSpec = 0;          // The specifiers present for this member
+    uint64_t  memSpec = 0;          // The specifiers present for this member
     MemberType mtype = MemberType_Define; // returns the kind of member
     int maxInitLines = 0;         // when the initializer will be displayed
     int userInitLines = 0;        // result of explicit \hideinitializer or \showinitializer
@@ -3166,7 +3166,7 @@ QCString MemberDefImpl::displayDefinition() const
     //printf("start >%s<\n",qPrint(ldef));
     int i=l-1;
     while (i>=0 && (isId(ldef.at(i)) || ldef.at(i)==':')) i--;
-    while (i>=0 && isspace(static_cast<uchar>(ldef.at(i)))) i--;
+    while (i>=0 && isspace(static_cast<uint8_t>(ldef.at(i)))) i--;
     if (i>0)
     {
       // insert branches around the type
@@ -3499,7 +3499,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
       //printf("start >%s<\n",qPrint(ldef));
       int i=dl-1;
       while (i>=0 && (isId(ldef.at(i)) || ldef.at(i)==':')) i--;
-      while (i>=0 && isspace(static_cast<uchar>(ldef.at(i)))) i--;
+      while (i>=0 && isspace(static_cast<uint8_t>(ldef.at(i)))) i--;
       if (i>0)
       {
         // insert branches around the type
@@ -4160,7 +4160,7 @@ void MemberDefImpl::setAnchor()
   }
 
   // convert to md5 hash
-  uchar md5_sig[16];
+  uint8_t md5_sig[16];
   char sigStr[33];
   MD5Buffer(memAnchor.data(),memAnchor.length(),md5_sig);
   MD5SigToString(md5_sig,sigStr);
@@ -4276,7 +4276,7 @@ void MemberDefImpl::setInitializer(const QCString &initializer)
   m_impl->initializer=initializer;
   int l=m_impl->initializer.length();
   int p=l-1;
-  while (p>=0 && isspace(static_cast<uchar>(m_impl->initializer.at(p)))) p--;
+  while (p>=0 && isspace(static_cast<uint8_t>(m_impl->initializer.at(p)))) p--;
   m_impl->initializer=m_impl->initializer.left(p+1);
   m_impl->initLines=m_impl->initializer.contains('\n');
   //printf("%s::setInitializer(%s)\n",qPrint(name()),qPrint(m_impl->initializer));
@@ -4536,7 +4536,7 @@ void MemberDefImpl::writeEnumDeclaration(OutputList &typeDecl,
 {
   int enumMemCount=0;
 
-  uint numVisibleEnumValues=0;
+  uint32_t numVisibleEnumValues=0;
   for (const auto &fmd : m_impl->enumFields)
   {
     if (fmd->isBriefSectionVisible()) numVisibleEnumValues++;
@@ -4572,7 +4572,7 @@ void MemberDefImpl::writeEnumDeclaration(OutputList &typeDecl,
     typeDecl.writeChar(' ');
   }
 
-  uint enumValuesPerLine = static_cast<uint>(Config_getInt(ENUM_VALUES_PER_LINE));
+  uint32_t enumValuesPerLine = static_cast<uint32_t>(Config_getInt(ENUM_VALUES_PER_LINE));
   if (numVisibleEnumValues>0 && enumValuesPerLine>0)
   {
     typeDecl.docify("{ ");
@@ -4832,7 +4832,7 @@ int MemberDefImpl::initializerLines() const
   return m_impl->initLines;
 }
 
-uint64 MemberDefImpl::getMemberSpecifiers() const
+uint64_t MemberDefImpl::getMemberSpecifiers() const
 {
   return m_impl->memSpec;
 }
@@ -5537,12 +5537,12 @@ void MemberDefImpl::setProtection(Protection p)
   m_isLinkableCached = 0;
 }
 
-void MemberDefImpl::setMemberSpecifiers(uint64 s)
+void MemberDefImpl::setMemberSpecifiers(uint64_t s)
 {
   m_impl->memSpec=s;
 }
 
-void MemberDefImpl::mergeMemberSpecifiers(uint64 s)
+void MemberDefImpl::mergeMemberSpecifiers(uint64_t s)
 {
   m_impl->memSpec|=s;
 }

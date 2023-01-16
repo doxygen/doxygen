@@ -153,7 +153,7 @@ void LatexCodeGenerator::writeCodeLink(CodeSymbolType,
 {
   bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
   bool usePDFLatex   = Config_getBool(USE_PDFLATEX);
-  uint l = name.length();
+  uint32_t l = name.length();
   if (ref.isEmpty() && usePDFLatex && pdfHyperlinks)
   {
     m_t << "\\mbox{\\hyperlink{";

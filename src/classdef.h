@@ -272,7 +272,7 @@ class ClassDef : public Definition
     virtual ArgumentLists getTemplateParameterLists() const = 0;
 
     virtual QCString qualifiedNameWithTemplateParameters(
-        const ArgumentLists *actualParams=0,uint *actualParamIndex=0) const = 0;
+        const ArgumentLists *actualParams=0,uint32_t *actualParamIndex=0) const = 0;
 
     /** Returns TRUE if there is at least one pure virtual member in this
      *  class.
@@ -414,7 +414,7 @@ class ClassDefMutable : public DefinitionMutable, public ClassDef
     virtual void setIsStatic(bool b) = 0;
     virtual void setCompoundType(CompoundType t) = 0;
     virtual void setClassName(const QCString &name) = 0;
-    virtual void setClassSpecifier(uint64 spec) = 0;
+    virtual void setClassSpecifier(uint64_t spec) = 0;
     virtual void setTemplateArguments(const ArgumentList &al) = 0;
     virtual void setTemplateBaseClassNames(const TemplateNameMap &templateNames) = 0;
     virtual void setTemplateMaster(const ClassDef *tm) = 0;

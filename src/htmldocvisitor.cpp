@@ -377,11 +377,11 @@ void HtmlDocVisitor::writeObfuscatedMailAddress(const QCString &url)
     if (!url.isEmpty())
     {
       const char *p = url.data();
-      uint size=3;
+      uint32_t size=3;
       while (*p)
       {
         m_t << "+'";
-        for (uint j=0;j<size && *p;j++)
+        for (uint32_t j=0;j<size && *p;j++)
         {
           p = writeUTF8Char(m_t,p);
         }
@@ -409,10 +409,10 @@ void HtmlDocVisitor::operator()(const DocURL &u)
     {
       const char *p = url.data();
       // also obfuscate the address as shown on the web page
-      uint size=5;
+      uint32_t size=5;
       while (*p)
       {
-        for (uint j=0;j<size && *p;j++)
+        for (uint32_t j=0;j<size && *p;j++)
         {
           p = writeUTF8Char(m_t,p);
         }
@@ -2085,7 +2085,7 @@ void HtmlDocVisitor::filter(const QCString &str, const bool retainNewline)
         break;
       default:
         {
-          uchar uc = static_cast<uchar>(c);
+          uint8_t uc = static_cast<uint8_t>(c);
           if (uc<32 && !isspace(c)) // non-printable control characters
           {
             m_t << "&#x24" << hex[uc>>4] << hex[uc&0xF] << ";";
@@ -2130,7 +2130,7 @@ QCString HtmlDocVisitor::filterQuotedCdataAttr(const QCString &str)
         break;
       default:
         {
-          uchar uc = static_cast<uchar>(c);
+          uint8_t uc = static_cast<uint8_t>(c);
           if (uc<32 && !isspace(c)) // non-printable control characters
           {
             growBuf.addStr("&#x24");

@@ -20,7 +20,7 @@
  *
  * History:
  * 20220911:
- *  - Updated to 1.9.6; 
+ *  - Updated to 1.9.6;
  * 20220525:
  * 	- Updated to 1.9.4;
  * 20211003:
@@ -2139,7 +2139,7 @@ class TranslatorBrazilian : public TranslatorAdapter_1_9_6
     virtual QCString trFunctionAndProc()
     { return "Funções/Procedimentos/Processos"; }
     /** VHDL type */
-    virtual QCString trVhdlType(uint64 type,bool single)
+    virtual QCString trVhdlType(uint64_t type,bool single)
     {
       switch(type)
       {
@@ -2440,7 +2440,7 @@ class TranslatorBrazilian : public TranslatorAdapter_1_9_6
     /*! Please translate also updated body of the method
      *  trMemberFunctionDocumentation(), now better adapted for
      *  VHDL sources documentation.
-    */    
+    */
     /*! the compound type as used for the xrefitems */
     virtual QCString trCompoundType(ClassDef::CompoundType compType, SrcLangExt lang)
     {

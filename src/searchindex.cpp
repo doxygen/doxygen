@@ -168,9 +168,9 @@ static int charsToIndex(const QCString &word)
   if (word.length()<2) return -1;
 
   // Fast string hashing algorithm
-  //register ushort h=0;
+  //register uint16_t h=0;
   //const char *k = word;
-  //ushort mask=0xfc00;
+  //uint16_t mask=0xfc00;
   //while ( *k )
   //{
   //  h = (h&mask)^(h<<6)^(*k++);
@@ -178,8 +178,8 @@ static int charsToIndex(const QCString &word)
   //return h;
 
   // Simple hashing that allows for substring searching
-  uint c1=static_cast<uchar>(word[0]);
-  uint c2=static_cast<uchar>(word[1]);
+  uint32_t c1=static_cast<uint8_t>(word[0]);
+  uint32_t c2=static_cast<uint8_t>(word[1]);
   return c1*256+c2;
 }
 
@@ -240,8 +240,8 @@ static void writeInt(std::ostream &f,size_t index)
 
 static void writeString(std::ostream &f,const QCString &s)
 {
-  uint l = s.length();
-  for (uint i=0;i<l;i++) f.put(s[i]);
+  uint32_t l = s.length();
+  for (uint32_t i=0;i<l;i++) f.put(s[i]);
   f.put(0);
 }
 
