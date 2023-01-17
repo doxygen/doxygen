@@ -3393,7 +3393,7 @@ class sectiondefType(GeneratedsSuper):
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
     superclass = None
-    def __init__(self, kind=None, header=None, description=None, memberdef=None, gds_collector_=None, **kwargs_):
+    def __init__(self, kind=None, header=None, description=None, memberdef=None, member=None, gds_collector_=None, **kwargs_):
         self.gds_collector_ = gds_collector_
         self.gds_elementtree_node_ = None
         self.original_tagname_ = None
@@ -3410,6 +3410,11 @@ class sectiondefType(GeneratedsSuper):
         else:
             self.memberdef = memberdef
         self.memberdef_nsprefix_ = None
+        if member is None:
+            self.member = []
+        else:
+            self.member = member
+        self.member_nsprefix_ = None
     def factory(*args_, **kwargs_):
         if CurrentSubclassModule_ is not None:
             subclass = getSubclassFromModule_(
@@ -3443,6 +3448,16 @@ class sectiondefType(GeneratedsSuper):
         self.memberdef.insert(index, value)
     def replace_memberdef_at(self, index, value):
         self.memberdef[index] = value
+    def get_member(self):
+        return self.member
+    def set_member(self, member):
+        self.member = member
+    def add_member(self, value):
+        self.member.append(value)
+    def insert_member_at(self, index, value):
+        self.member.insert(index, value)
+    def replace_member_at(self, index, value):
+        self.member[index] = value
     def get_kind(self):
         return self.kind
     def set_kind(self, kind):
@@ -3464,7 +3479,8 @@ class sectiondefType(GeneratedsSuper):
         if (
             self.header is not None or
             self.description is not None or
-            self.memberdef
+            self.memberdef or
+            self.member
         ):
             return True
         else:
@@ -3511,6 +3527,9 @@ class sectiondefType(GeneratedsSuper):
         for memberdef_ in self.memberdef:
             namespaceprefix_ = self.memberdef_nsprefix_ + ':' if (UseCapturedNS_ and self.memberdef_nsprefix_) else ''
             memberdef_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='memberdef', pretty_print=pretty_print)
+        for member_ in self.member:
+            namespaceprefix_ = self.member_nsprefix_ + ':' if (UseCapturedNS_ and self.member_nsprefix_) else ''
+            member_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='member', pretty_print=pretty_print)
     def build(self, node, gds_collector_=None):
         self.gds_collector_ = gds_collector_
         if SaveElementTreeNode:
@@ -3545,6 +3564,11 @@ class sectiondefType(GeneratedsSuper):
             obj_.build(child_, gds_collector_=gds_collector_)
             self.memberdef.append(obj_)
             obj_.original_tagname_ = 'memberdef'
+        elif nodeName_ == 'member':
+            obj_ = memberRefType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            self.member.append(obj_)
+            obj_.original_tagname_ = 'member'
 # end class sectiondefType
 
 
