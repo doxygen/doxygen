@@ -77,6 +77,8 @@ class XMLParser : public XMLLocator
      *  @param fileName the name of the file, used for error reporting.
      *  @param inputString the contents of the file as a zero terminated UTF-8 string.
      *  @param debugEnabled indicates if debugging via -d lex is enabled or not.
+     *  @param debugStart hook that to called before starting with parsing
+     *  @param debugEnd   hook that to called after finishing with parsing
      */
     void parse(const char *fileName,const char *inputString,bool debugEnabled,
         std::function<void()> debugStart,std::function<void()> debugEnd);
