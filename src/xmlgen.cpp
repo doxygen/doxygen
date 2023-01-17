@@ -545,7 +545,7 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
   if (md->isHidden()) return;
 
   // group members are only visible in their group
-  //if (def->definitionType()!=Definition::TypeGroup && md->getGroupDef()) return;
+  bool groupMember = md->getGroupDef() && def->definitionType()!=Definition::TypeGroup;
 
   QCString memType;
   bool isFunc=FALSE;
@@ -573,19 +573,24 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
      << "_1" << md->anchor() << "\" kind=\"" << memType << "\"><name>"
      << convertToXML(md->name()) << "</name></member>\n";
 
-  t << "      <memberdef kind=\"";
-  //enum { define_t,variable_t,typedef_t,enum_t,function_t } xmlType = function_t;
-  t << memType << "\" id=\"";
-  if (md->getGroupDef() && def->definitionType()==Definition::TypeGroup)
+  if (groupMember)
   {
-    t << md->getGroupDef()->getOutputFileBase();
+    t << "      <member refid=\""
+      << md->getGroupDef()->getOutputFileBase()
+      << "_1" << md->anchor() << "\" kind=\"" << memType << "\"><name>"
+      << convertToXML(md->name()) << "</name></member>\n";
+    return;
   }
   else
   {
+    t << "      <memberdef kind=\"";
+    t << memType << "\" id=\"";
     t << memberOutputFileBase(md);
+    t << "_1"      // encoded ':' character (see util.cpp:convertNameToFile)
+      << md->anchor();
   }
-  t << "_1"      // encoded ':' character (see util.cpp:convertNameToFile)
-    << md->anchor();
+  //enum { define_t,variable_t,typedef_t,enum_t,function_t } xmlType = function_t;
+
   t << "\" prot=\"";
   switch (md->protection())
   {
