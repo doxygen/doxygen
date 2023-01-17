@@ -128,11 +128,38 @@
     </xsd:simpleContent>
   </xsd:complexType>
 
+  <xsd:simpleType name="MemberKind">
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="define"/>
+      <xsd:enumeration value="property"/>
+      <xsd:enumeration value="event"/>
+      <xsd:enumeration value="variable"/>
+      <xsd:enumeration value="typedef"/>
+      <xsd:enumeration value="enum"/>
+      <xsd:enumeration value="enumvalue"/>
+      <xsd:enumeration value="function"/>
+      <xsd:enumeration value="signal"/>
+      <xsd:enumeration value="prototype"/>
+      <xsd:enumeration value="friend"/>
+      <xsd:enumeration value="dcop"/>
+      <xsd:enumeration value="slot"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+
+  <xsd:complexType name="MemberType">
+    <xsd:sequence>
+      <xsd:element name="name" type="xsd:string"/>
+    </xsd:sequence>
+    <xsd:attribute name="refid" type="xsd:string" use="required"/>
+    <xsd:attribute name="kind" type="MemberKind" use="required"/>
+  </xsd:complexType>
+
   <xsd:complexType name="sectiondefType">
     <xsd:sequence>
       <xsd:element name="header" type="xsd:string" minOccurs="0" />
       <xsd:element name="description" type="descriptionType" minOccurs="0" />
-      <xsd:element name="memberdef" type="memberdefType" maxOccurs="unbounded" />
+      <xsd:element name="memberdef" type="memberdefType" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element name="member" type="MemberType" minOccurs="0" maxOccurs="unbounded" />
     </xsd:sequence>
     <xsd:attribute name="kind" type="DoxSectionKind" />
   </xsd:complexType>
