@@ -1,20 +1,6 @@
 body {
     background-color: var(--page-background-color);
     color: var(--page-foreground-color);
-    scrollbar-color: var(--scrollbar-thumb-color) var(--scrollbar-background-color);
-}
-
-::-webkit-scrollbar {
-        background-color: var(--scrollbar-background-color);
-	height: 10px;
-        width: 10px;
-}
-::-webkit-scrollbar-thumb {
-        background-color: var(--scrollbar-thumb-color);
-        border-radius: 8px;
-}
-::-webkit-scrollbar-corner {
-        background-color: var(--scrollbar-background-color);
 }
 
 body, table, div, p, dl {
@@ -273,6 +259,16 @@ dl.el {
 
 ul {
   overflow: visible;
+}
+
+ul.multicol {
+        -moz-column-gap: 1em;
+        -webkit-column-gap: 1em;
+        column-gap: 1em;
+        -moz-column-count: 3;
+        -webkit-column-count: 3;
+        column-count: 3;
+        list-style-type: none;
 }
 
 #side-nav ul {
@@ -1643,5 +1639,25 @@ tt, code, kbd, samp
 
 u {
 	text-decoration: underline;
+}
+
+details>summary {
+  list-style-type: none;
+}
+
+details > summary::-webkit-details-marker {
+    display: none;
+}
+
+details>summary::before {
+    content: "\25ba";
+    padding-right:4px;
+    font-size: 80%;
+}
+
+details[open]>summary::before {
+    content: "\25bc";
+    padding-right:4px;
+    font-size: 80%;
 }
 

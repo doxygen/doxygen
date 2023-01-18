@@ -17,9 +17,6 @@
 #include <stdlib.h>
 #include <stack>
 
-#include <fstream>
-#include <iostream>
-
 #include "perlmodgen.h"
 #include "docparser.h"
 #include "docnode.h"
@@ -41,6 +38,7 @@
 #include "htmlentity.h"
 #include "emoji.h"
 #include "dir.h"
+#include "portable.h"
 
 #define PERLOUTPUT_MAX_INDENTATION 40
 
@@ -336,6 +334,7 @@ class PerlModDocVisitor : public DocVisitor
     void operator()(const DocHtmlCaption &);
     void operator()(const DocInternal &);
     void operator()(const DocHRef &);
+    void operator()(const DocHtmlSummary &);
     void operator()(const DocHtmlDetails &);
     void operator()(const DocHtmlHeader &);
     void operator()(const DocImage &);
@@ -506,7 +505,7 @@ void PerlModDocVisitor::operator()(const DocWhiteSpace &)
 
 void PerlModDocVisitor::operator()(const DocSymbol &sy)
 {
-  const HtmlEntityMapper::PerlSymb *res = HtmlEntityMapper::instance()->perl(sy.symbol());
+  const HtmlEntityMapper::PerlSymb *res = HtmlEntityMapper::instance().perl(sy.symbol());
   const char *accent=0;
   if (res->symb)
   {
@@ -570,14 +569,14 @@ void PerlModDocVisitor::operator()(const DocSymbol &sy)
   }
   else
   {
-    err("perl: non supported HTML-entity found: %s\n",HtmlEntityMapper::instance()->html(sy.symbol(),TRUE));
+    err("perl: non supported HTML-entity found: %s\n",HtmlEntityMapper::instance().html(sy.symbol(),TRUE));
   }
 }
 
 void PerlModDocVisitor::operator()(const DocEmoji &sy)
 {
   enterText();
-  const char *name = EmojiEntityMapper::instance()->name(sy.index());
+  const char *name = EmojiEntityMapper::instance().name(sy.index());
   if (name)
   {
     m_output.add(name);
@@ -626,10 +625,6 @@ void PerlModDocVisitor::operator()(const DocStyleChange &s)
     case DocStyleChange::Preformatted:  style = "preformatted"; break;
     case DocStyleChange::Div:           style = "div"; break;
     case DocStyleChange::Span:          style = "span"; break;
-    case DocStyleChange::Summary: /* emulation of the <summary> tag inside a <details> tag */
-      style = "summary";
-      break;
-
   }
   openItem("style");
   m_output.addFieldQuotedString("style", style)
@@ -1031,9 +1026,23 @@ void PerlModDocVisitor::operator()(const DocHRef &href)
 #endif
 }
 
+void PerlModDocVisitor::operator()(const DocHtmlSummary &summary)
+{
+  openItem("summary");
+  openSubBlock("content");
+  visitChildren(summary);
+  closeSubBlock();
+  closeItem();
+}
+
 void PerlModDocVisitor::operator()(const DocHtmlDetails &details)
 {
   openItem("details");
+  auto summary = details.summary();
+  if (summary)
+  {
+    std::visit(*this,*summary);
+  }
   openSubBlock("content");
   visitChildren(details);
   closeSubBlock();
@@ -1367,10 +1376,10 @@ static const char *getProtectionName(Protection prot)
 {
   switch (prot)
   {
-  case Public:    return "public";
-  case Protected: return "protected";
-  case Private:   return "private";
-  case Package:   return "package";
+    case Protection::Public:    return "public";
+    case Protection::Protected: return "protected";
+    case Protection::Private:   return "private";
+    case Protection::Package:   return "package";
   }
   return 0;
 }
@@ -1379,9 +1388,9 @@ static const char *getVirtualnessName(Specifier virt)
 {
   switch(virt)
   {
-  case Normal:  return "non_virtual";
-  case Virtual: return "virtual";
-  case Pure:    return "pure_virtual";
+    case Specifier::Normal:  return "non_virtual";
+    case Specifier::Virtual: return "virtual";
+    case Specifier::Pure:    return "pure_virtual";
   }
   return 0;
 }
@@ -2124,7 +2133,7 @@ bool PerlModGenerator::generatePerlModOutput()
 
 bool PerlModGenerator::createOutputFile(std::ofstream &f, const QCString &s)
 {
-  f.open(s.str(),std::ofstream::out | std::ofstream::binary);
+  f = Portable::openOutputStream(s);
   if (!f.is_open())
   {
     err("Cannot open file %s for writing!\n", qPrint(s));

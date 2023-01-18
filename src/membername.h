@@ -66,12 +66,12 @@ class MemberNameLinkedMap : public LinkedMap<MemberName>
 class MemberInfo
 {
   public:
-    MemberInfo(const MemberDef *md,Protection p,Specifier v,bool inh) :
+    MemberInfo(MemberDef *md,Protection p,Specifier v,bool inh) :
           m_memberDef(md), m_prot(p), m_virt(v), m_inherited(inh) {}
    ~MemberInfo() = default;
 
     // getters
-    const MemberDef *memberDef()                { return m_memberDef; }
+          MemberDef *memberDef()                { return m_memberDef; }
     const MemberDef *memberDef() const          { return m_memberDef; }
     Protection prot() const                     { return m_prot;      }
     Specifier  virt() const                     { return m_virt;      }
@@ -86,7 +86,7 @@ class MemberInfo
     void setAmbigClass(const ClassDef *cd)              { m_ambigClass = cd; }
 
   private:
-    const MemberDef *m_memberDef;
+    MemberDef *    m_memberDef;
     Protection     m_prot;
     Specifier      m_virt;
     bool           m_inherited;

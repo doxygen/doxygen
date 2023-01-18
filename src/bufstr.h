@@ -77,11 +77,19 @@ class BufStr
     {
       return m_size;
     }
-    char *data() const
+    const char *data() const
     {
       return m_buf;
     }
-    char &at(size_t i) const
+    char *data()
+    {
+      return m_buf;
+    }
+    const char &at(size_t i) const
+    {
+      return m_buf[i];
+    }
+    char &at(size_t i)
     {
       return m_buf[i];
     }

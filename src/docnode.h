@@ -16,7 +16,8 @@
 #ifndef DOCNODE_H
 #define DOCNODE_H
 
-#include <stdio.h>
+#include <cstdio>
+#include <cstdint>
 #include <vector>
 #include <memory>
 #include <variant>
@@ -27,6 +28,7 @@
 #include "htmlattrib.h"
 #include "htmlentity.h"
 #include "growvector.h"
+#include "section.h"
 
 class MemberDef;
 class Definition;
@@ -46,7 +48,7 @@ class DocParser;
 /* 40 */  DN(DocSimpleSect)     DN_SEP DN(DocSimpleSectSep) DN_SEP DN(DocParamSect)      DN_SEP DN(DocPara)         DN_SEP DN(DocParamList)   DN_SEP   \
 /* 45 */  DN(DocSimpleListItem) DN_SEP DN(DocHtmlListItem)  DN_SEP DN(DocHtmlDescData)   DN_SEP DN(DocHtmlCell)     DN_SEP DN(DocHtmlCaption) DN_SEP   \
 /* 50 */  DN(DocHtmlRow)        DN_SEP DN(DocHtmlTable)     DN_SEP DN(DocHtmlBlockQuote) DN_SEP DN(DocText)         DN_SEP DN(DocRoot)        DN_SEP   \
-/* 55 */  DN(DocHtmlDetails)                                                                                                                           \
+/* 55 */  DN(DocHtmlDetails)    DN_SEP DN(DocHtmlSummary)                                                                                              \
 
 // forward declarations
 #define DN(x) class x;
@@ -272,8 +274,7 @@ class DocStyleChange : public DocNode
                  Del           = (1<<12),
                  Ins           = (1<<13),
                  S             = (1<<14),
-                 Summary       = (1<<16),
-                 Cite          = (1<<17)
+                 Cite          = (1<<15)
                };
 
     DocStyleChange(DocParser *parser,DocNodeVariant *parent,size_t position,Style s,
@@ -422,7 +423,7 @@ class DocInclude : public DocNode
     QCString file() const        { return m_file; }
     QCString extension() const   { int i=m_file.findRev('.');
                                    if (i!=-1)
-                                     return m_file.right(m_file.length()-static_cast<uint>(i));
+                                     return m_file.right(m_file.length()-static_cast<uint32_t>(i));
                                    else
                                      return QCString();
                                  }
@@ -740,6 +741,7 @@ class DocRef : public DocCompoundNode
     QCString ref() const          { return m_ref; }
     QCString anchor() const       { return m_anchor; }
     QCString targetTitle() const  { return m_text; }
+    SectionType sectionType() const { return m_sectionType; }
     bool hasLinkText() const      { return !children().empty(); }
     bool refToAnchor() const      { return m_refType==Anchor; }
     bool refToSection() const     { return m_refType==Section; }
@@ -748,6 +750,7 @@ class DocRef : public DocCompoundNode
 
   private:
     RefType    m_refType = Unknown;
+    SectionType m_sectionType = SectionType::Anchor;
     bool       m_isSubPage = false;
     QCString   m_file;
     QCString   m_relPath;
@@ -793,6 +796,19 @@ class DocHRef : public DocCompoundNode
     QCString   m_file;
 };
 
+/** Node Html summary */
+class DocHtmlSummary : public DocCompoundNode
+{
+  public:
+    DocHtmlSummary(DocParser *parser,DocNodeVariant *parent,const HtmlAttribList &attribs) :
+       DocCompoundNode(parser,parent), m_attribs(attribs) {}
+    const HtmlAttribList &attribs() const { return m_attribs; }
+    void parse(DocNodeVariant*);
+
+  private:
+    HtmlAttribList m_attribs;
+};
+
 /** Node Html details */
 class DocHtmlDetails : public DocCompoundNode
 {
@@ -801,9 +817,12 @@ class DocHtmlDetails : public DocCompoundNode
        DocCompoundNode(parser,parent), m_attribs(attribs) {}
     const HtmlAttribList &attribs() const { return m_attribs; }
     int parse(DocNodeVariant*);
+    void parseSummary(DocNodeVariant *,HtmlAttribList &attribs);
+    const DocNodeVariant *summary() const { return m_summary.get(); }
 
   private:
     HtmlAttribList m_attribs;
+    std::unique_ptr<DocNodeVariant> m_summary;
 };
 
 /** Node Html heading */
@@ -1053,7 +1072,6 @@ class DocPara : public DocCompoundNode
     void setAttribs(const HtmlAttribList &attribs) { m_attribs = attribs; }
 
   private:
-    QCString  m_sectionId;
     bool      m_isFirst = false;
     bool      m_isLast = false;
     HtmlAttribList m_attribs;
@@ -1144,22 +1162,22 @@ class DocHtmlCell : public DocCompoundNode
     const HtmlAttribList &attribs() const { return m_attribs; }
     int parse(DocNodeVariant *);
     int parseXml(DocNodeVariant *);
-    uint rowIndex() const        { return m_rowIdx; }
-    uint columnIndex() const     { return m_colIdx; }
-    uint rowSpan() const;
-    uint colSpan() const;
+    uint32_t rowIndex() const        { return m_rowIdx; }
+    uint32_t columnIndex() const     { return m_colIdx; }
+    uint32_t rowSpan() const;
+    uint32_t colSpan() const;
     Alignment alignment() const;
     Valignment valignment() const;
 
   private:
-    void setRowIndex(uint idx)    { m_rowIdx = idx; }
-    void setColumnIndex(uint idx) { m_colIdx = idx; }
+    void setRowIndex(uint32_t idx)    { m_rowIdx = idx; }
+    void setColumnIndex(uint32_t idx) { m_colIdx = idx; }
     bool           m_isHeading = false;
     bool           m_isFirst = false;
     bool           m_isLast = false;
     HtmlAttribList m_attribs;
-    uint           m_rowIdx = static_cast<uint>(-1);
-    uint           m_colIdx = static_cast<uint>(-1);
+    uint32_t           m_rowIdx = static_cast<uint32_t>(-1);
+    uint32_t           m_colIdx = static_cast<uint32_t>(-1);
 };
 
 /** Node representing a HTML table caption */
@@ -1192,15 +1210,15 @@ class DocHtmlRow : public DocCompoundNode
     int parse(DocNodeVariant *);
     int parseXml(DocNodeVariant *,bool header);
     bool isHeading() const;
-    void setVisibleCells(uint n) { m_visibleCells = n; }
-    uint visibleCells() const    { return m_visibleCells; }
-    uint rowIndex() const        { return m_rowIdx; }
+    void setVisibleCells(uint32_t n) { m_visibleCells = n; }
+    uint32_t visibleCells() const    { return m_visibleCells; }
+    uint32_t rowIndex() const        { return m_rowIdx; }
 
   private:
-    void setRowIndex(uint idx)   { m_rowIdx = idx; }
+    void setRowIndex(uint32_t idx)   { m_rowIdx = idx; }
     HtmlAttribList m_attribs;
-    uint m_visibleCells = 0;
-    uint m_rowIdx = static_cast<uint>(-1);
+    uint32_t m_visibleCells = 0;
+    uint32_t m_rowIdx = static_cast<uint32_t>(-1);
 };
 
 /** Node representing a HTML table */
@@ -1264,6 +1282,12 @@ class DocRoot : public DocCompoundNode
 };
 
 //--------------------------------------------------------------------------------------
+
+/// returns the parent node of a given node \a n or 0 if the node has no parent.
+constexpr DocNodeVariant *parent(DocNodeVariant *n)
+{
+  return n ? std::visit([](auto &&x)->decltype(auto) { return x.parent(); }, *n) : nullptr;
+}
 
 /// returns the parent node of a given node \a n or 0 if the node has no parent.
 constexpr const DocNodeVariant *parent(const DocNodeVariant *n)

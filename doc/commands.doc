@@ -171,6 +171,7 @@ documentation:
 \refitem cmdpublic \\public
 \refitem cmdpublicsection \\publicsection
 \refitem cmdpure \\pure
+\refitem cmdqualifier \\qualifier
 \refitem cmdraisewarning \\raisewarning
 \refitem cmdref \\ref
 \refitem cmdrefitem \\refitem
@@ -425,6 +426,18 @@ Structural indicators
       option \ref cfg_references_relation "REFERENCES_RELATION"
 
 <hr>
+\section cmdqualifier \\qualifier <label> | "(text)"
+
+  \addindex \\qualifier
+
+  With this command it is possible to add custom qualifier labels
+  to members and classes. These labels will be shown in the output in the same way
+  as the automatically generated labels such as "static", "inline", and "final".
+
+  For instance to indicate that a function is only meant for testing purposes
+  one could add `\qualifier test`
+
+<hr>
 \section cmdcategory \\category <name> [<header-file>] [<header-name>]
 
   \addindex \\category
@@ -645,10 +658,16 @@ Structural indicators
 
   \addindex \\fileinfo
   Shows (part) of the file name in which this command is placed.
-  The `option` can be `file`, `extension`, `filename`, `directory` or, `full`,
-  with `file` the name of the file without extension, `extension` the extension of the file, `filename` the
-  filename i.e. `file` plus `extension`, `directory` the directory of the given file and `full` the full path
-  and filename of the given file.
+  The `option` can be `name`, `extension`, `filename`, `directory` or, `full`,
+  with
+  - `name` the name of the file without extension
+  - `extension` the extension of the file
+  - `filename` the filename i.e. `name` plus `extension`
+  - `directory` the directory of the given file
+  - `full` the full path and filename of the given file.
+
+  In case no option is specified the `filename` is used unless
+  \ref cfg_full_path_names "FULL_PATH_NAMES" is set to `YES` in which case `full` is used.
 
   \note the command \\fileinfo cannot be used as argument to the \ref cmdfile "\\file" command
 
@@ -896,10 +915,8 @@ Structural indicators
   \addindex \\name
 
   This command turns a comment block into a header
-  definition of a member group. The
-  comment block should be followed by a
-  <code>///\@{ ... ///\@}</code> block containing the
-  members of the group.
+  definition of a member group. The comment block should be followed by a
+  `@{` ... `@}` block containing the members of the group.
 
   See section \ref memgroup for an example.
 
@@ -1346,6 +1363,14 @@ Section indicators
   sectioning command is encountered. See section \ref cmdauthor "\\author"
   for an example.
 
+  The description will also add an item to a separate Bug list and
+  the two instances of the description will be cross-referenced.
+  Each item in the Bug list will be preceded by a header that
+  indicates the origin of the item.
+
+  The Bug list and the corresponding entries can be disabled by setting the
+  \ref cfg_generate_buglist "GENERATE_BUGLIST" to `NO`.
+
 <hr>
 \section cmdcond \\cond [(section-label)]
 
@@ -1530,6 +1555,21 @@ contains \c TEST, or \c DEV
   Starts a paragraph indicating that this documentation block belongs to
   a deprecated entity. Can be used to describe alternatives,
   expected life span, etc.
+  The paragraph will be indented.
+  The text of the paragraph has no special internal structure. All visual
+  enhancement commands may be used inside the paragraph.
+  Multiple adjacent \c \\deprecated commands will be joined into a single paragraph.
+  Each deprecation description will start on a new line.
+  The \c \\deprecated command ends when a blank line or some other
+  sectioning command is encountered.
+
+  The description will also add an item to a separate Deprecated list and
+  the two instances of the description will be cross-referenced.
+  Each item in the Deprecated list will be preceded by a header that
+  indicates the origin of the item.
+
+  The Deprecated list and the corresponding entries can be disabled by setting the
+  \ref cfg_generate_deprecatedlist "GENERATE_DEPRECATEDLIST" to `NO`.
 
 <hr>
 \section cmddetails \\details { detailed description }
@@ -2005,11 +2045,23 @@ void setPosition(double x,double y,double z,double t)
 \section cmdtest \\test { paragraph describing a test case }
 
   \addindex \\test
-  Starts a paragraph where a test case can be described.
-  The description will also add the test case to a separate test list.
-  The two instances of the description will be cross-referenced.
-  Each test case in the test list will be preceded by a header that
-  indicates the origin of the test case.
+  Starts a paragraph where one or more test cases can be described.
+  The paragraph will be indented.
+  The text of the paragraph has no special internal structure. All visual
+  enhancement commands may be used inside the paragraph.
+  Multiple adjacent \c \\test commands will be joined into a single paragraph.
+  Each test case description will start on a new line.
+  Alternatively, one \c \\test command may mention several test cases.
+  The \c \\test command ends when a blank line or some other
+  sectioning command is encountered.
+
+  The description will also add an item to a separate Test list and
+  the two instances of the description will be cross-referenced.
+  Each item in the Test list will be preceded by a header that
+  indicates the origin of the item.
+
+  The Test list and the corresponding entries can be disabled by setting the
+  \ref cfg_generate_testlist "GENERATE_TESTLIST" to `NO`.
 
 <hr>
 \section cmdthrow \\throw <exception-object> { exception description }
@@ -2032,11 +2084,23 @@ void setPosition(double x,double y,double z,double t)
 \section cmdtodo \\todo { paragraph describing what is to be done }
 
   \addindex \\todo
-  Starts a paragraph where a TODO item is described.
-  The description will also add an item to a separate TODO list.
-  The two instances of the description will be cross-referenced.
-  Each item in the TODO list will be preceded by a header that
+  Starts a paragraph where one or more todo items are described.
+  The paragraph will be indented.
+  The text of the paragraph has no special internal structure. All visual
+  enhancement commands may be used inside the paragraph.
+  Multiple adjacent \c \\todo commands will be joined into a single paragraph.
+  Each todo description will start on a new line.
+  Alternatively, one \c \\todo command may mention
+  several tod descriptioons. The \c \\todo command ends when a blank line or some other
+  sectioning command is encountered.
+
+  The description will also add an item to a separate Todo list and
+  the two instances of the description will be cross-referenced.
+  Each item in the Todo list will be preceded by a header that
   indicates the origin of the item.
+
+  The Todo list and the corresponding entries can be disabled by setting the
+  \ref cfg_generate_todolist "GENERATE_TODOLIST" to `NO`.
 
 <hr>
 \section cmdversion \\version { version number }
@@ -2070,7 +2134,7 @@ void setPosition(double x,double y,double z,double t)
   for an example.
 
 <hr>
-\section cmdxrefitem \\xrefitem <key> "(heading)" "(list title)" { text }
+\section cmdxrefitem \\xrefitem <key> "heading" "list title" { text }
 
  \addindex \\xrefitem
  This command is a generalization of commands such as \ref cmdtodo "\\todo"
@@ -2085,7 +2149,8 @@ void setPosition(double x,double y,double z,double t)
  is a quoted string representing the heading of the section under which
  text passed as the fourth argument is put. The third argument (list title)
  is used as the title for the related page containing all items with the
- same key. The keys \c "todo", \c "test", \c "bug" and \c "deprecated" are predefined.
+ same key. The second and third string argument cannot contain a newline.
+ The keys \c "todo", \c "test", \c "bug" and \c "deprecated" are predefined.
 
  To get an idea on how to use the \c \\xrefitem command and what its effect
  is, consider the todo list, which (for English output) can be seen an
@@ -2192,9 +2257,10 @@ Commands to create links
   the section. For a section or subsection the title of the section will be
   used as the text of the link. For an anchor the optional text between quotes
   will be used or \<name\> if no text is specified.
-  For \LaTeX documentation the reference command will
-  generate a section number for sections or the text followed by a
-  page number if \<name\> refers to an anchor.
+  For \LaTeX documentation the reference command will be the same unless the
+  \ref cfg_pdf_hyperlinks "PDF_HYPERLINKS" option has been set to `NO`, in this case
+  it generates the section title for sections or the text if \<name\> refers to an anchor
+  followed by a page number.
 
   \sa
     Section \ref cmdpage "\\page" for an example of the \c \\ref command.
@@ -2844,7 +2910,7 @@ Commands for visual enhancements
   will result in the following text:<br><br>
      ... This function returns \c void and not \c int ...
 
-  Equivalent to \ref cmdp "\\p"
+  Equivalent to \ref cmdp "\\p".
   To have multiple words in typewriter font use \ref htmltag_TT "\<tt\>"multiple words\ref htmltag_endTT "\</tt\>".
 
 <hr>
@@ -3150,6 +3216,13 @@ class Receiver
   For a description of the possibilities see the paragraph
   \ref image_sizeindicator "Size indication" with the
   \ref cmdimage "\\image" command.
+
+  \note doxygen does not support the Plantuml commands like `@startjson`, by design, directly but
+  the support can be accomplished, by the user, by adding to the doxygen settings file:
+  \verbatim
+  ALIASES += startjson=@startuml{json}
+  ALIASES += endjson=@enduml
+  \endverbatim
 
   \note doxygen creates a temporary file that is automatically removed unless
   the \ref cfg_dot_cleanup "DOT_CLEANUP" tag is set to `NO`.
@@ -3512,7 +3585,7 @@ class Receiver
   `4in` or a symbolic width like `\textwidth`).
 
   Currently only the options `inline` and `anchor` are supported. In case the option `inline` is
-  specified the image is placed "in the line", when a caption s present it is shown
+  specified the image is placed "in the line", when a caption is present it is shown
   in HTML as tooltip (ignored for the other formats). For the `anchor` option the syntax is:
   `anchor:<anchorId>`.
 
@@ -3643,7 +3716,7 @@ class Receiver
   This will result in the following text:<br><br>
   ... the \p x and \p y coordinates are used to ...
 
-  Equivalent to \ref cmdc "\\c"
+  Equivalent to \ref cmdc "\\c".
   To have multiple words in typewriter font use \ref htmltag_TT "\<tt\>"multiple words\ref htmltag_endTT "\</tt\>".
 
 <hr>
@@ -3835,29 +3908,6 @@ class Receiver
   writing three consecutive dashes to the output instead of one m-dash character (---).
 
 <hr>
-\htmlonly</p><center><p>\endhtmlonly
-<h2>
-\htmlonly --- \endhtmlonly
-Commands included for Qt compatibility
-\htmlonly --- \endhtmlonly
-</h2>
-\htmlonly</p></center><p>\endhtmlonly
-
-The following commands are supported to remain compatible to the Qt class
-browser generator. Do \e not use these commands in your own documentation.
-<ul>
-<li>\\annotatedclasslist
-<li>\\classhierarchy
-<li>\\define
-<li>\\functionindex
-<li>\\header
-<li>\\headerfilelist
-<li>\\inherit
-<li>\\l
-<li>\\postheader
-</ul>
-<hr>
-
 
 \htmlonly
 Go to the <a href="htmlcmds.html">next</a> section or return to the

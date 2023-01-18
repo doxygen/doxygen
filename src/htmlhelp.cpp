@@ -347,7 +347,7 @@ void HtmlHelp::initialize()
 
   /* open the contents file */
   QCString fName = Config_getString(HTML_OUTPUT) + "/" + hhcFileName;
-  p->cts.open(fName.str(),std::ofstream::out | std::ofstream::binary);
+  p->cts = Portable::openOutputStream(fName);
   if (!p->cts.is_open())
   {
     term("Could not open file %s for writing\n",qPrint(fName));
@@ -362,7 +362,7 @@ void HtmlHelp::initialize()
 
   /* open the index file */
   fName = Config_getString(HTML_OUTPUT) + "/" + hhkFileName;
-  p->kts.open(fName.str(),std::ofstream::out | std::ofstream::binary);
+  p->kts = Portable::openOutputStream(fName);
   if (!p->kts.is_open())
   {
     term("Could not open file %s for writing\n",qPrint(fName));
@@ -381,7 +381,7 @@ void HtmlHelp::Private::createProjectFile()
 {
   /* Write the project file */
   QCString fName = Config_getString(HTML_OUTPUT) + "/" + hhpFileName;
-  std::ofstream t(fName.str(),std::ofstream::out | std::ofstream::binary);
+  std::ofstream t = Portable::openOutputStream(fName);
   if (t.is_open())
   {
     QCString hhcFile = "\"" + hhcFileName  + "\"";

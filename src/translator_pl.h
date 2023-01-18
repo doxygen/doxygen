@@ -77,6 +77,10 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
     QCString trDetailedDescription()
     { return "Opis szczegółowy"; }
 
+    /*! header that is used when the summary tag is missing inside the details tag */
+    virtual QCString trDetails()
+    { return "Szczegóły"; }
+
     /*! header that is put before the list of typedefs. */
     QCString trMemberTypedefDocumentation()
     { return "Dokumentacja składowych definicji typu"; }
@@ -390,12 +394,6 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
      */
     QCString trFileDocumentation()
     { return "Dokumentacja plików"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all examples.
-     */
-    QCString trExampleDocumentation()
-    { return "Dokumentacja przykładów"; }
 
     /*! This is used in LaTeX as the title of the document */
     QCString trReferenceManual()
@@ -1754,16 +1752,20 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
      */
     virtual QCString trDateTime(int year,int month,int day,int dayOfWeek,
                                 int hour,int minutes,int seconds,
-                                bool includeTime)
+                                DateTimeType includeTime)
     {
       static const char *days[]   = { "Pn","Wt","Śr","Cz","Pt","So","N" };
       static const char *months[] = { "sty","lut","mar","kwi","maj","cze","lip","sie","wrz","paź","lis","gru" };
       QCString sdate;
-      sdate.sprintf("%s, %d %s %d",days[dayOfWeek-1],day,months[month-1],year);
-      if (includeTime)
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Date)
+      {
+        sdate.sprintf("%s, %d %s %d",days[dayOfWeek-1],day,months[month-1],year);
+      }
+      if (includeTime == DateTimeType::DateTime) sdate += " ";
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Time)
       {
         QCString stime;
-        stime.sprintf(" %.2d:%.2d:%.2d",hour,minutes,seconds);
+        stime.sprintf("%.2d:%.2d:%.2d",hour,minutes,seconds);
         sdate+=stime;
       }
       return sdate;

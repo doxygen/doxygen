@@ -36,6 +36,7 @@
 #include "fileinfo.h"
 #include "indexlist.h"
 #include "growbuf.h"
+#include "portable.h"
 
 static const int NUM_HTML_LIST_TYPES = 4;
 static const char types[][NUM_HTML_LIST_TYPES] = {"1", "a", "i", "A"};
@@ -119,6 +120,7 @@ static bool mustBeOutsideParagraph(const DocNodeVariant &n)
                                  /* <blockquote> */ DocHtmlBlockQuote,
                                  /* \parblock */    DocParBlock,
                                  /* <details> */    DocHtmlDetails,
+                                 /* <summary> */    DocHtmlSummary,
                                                     DocIncOperator >(n))
   {
     return TRUE;
@@ -336,7 +338,7 @@ void HtmlDocVisitor::operator()(const DocSymbol &s)
   }
   else
   {
-    const char *res = HtmlEntityMapper::instance()->html(s.symbol());
+    const char *res = HtmlEntityMapper::instance().html(s.symbol());
     if (res)
     {
       m_t << res;
@@ -344,7 +346,7 @@ void HtmlDocVisitor::operator()(const DocSymbol &s)
     else
     {
       err("HTML: non supported HTML-entity found: %s\n",
-          HtmlEntityMapper::instance()->html(s.symbol(),TRUE));
+          HtmlEntityMapper::instance().html(s.symbol(),TRUE));
     }
   }
 }
@@ -352,7 +354,7 @@ void HtmlDocVisitor::operator()(const DocSymbol &s)
 void HtmlDocVisitor::operator()(const DocEmoji &s)
 {
   if (m_hide) return;
-  const char *res = EmojiEntityMapper::instance()->unicode(s.index());
+  const char *res = EmojiEntityMapper::instance().unicode(s.index());
   if (res)
   {
     m_t << "<span class=\"emoji\">" << res << "</span>";
@@ -375,11 +377,11 @@ void HtmlDocVisitor::writeObfuscatedMailAddress(const QCString &url)
     if (!url.isEmpty())
     {
       const char *p = url.data();
-      uint size=3;
+      uint32_t size=3;
       while (*p)
       {
         m_t << "+'";
-        for (uint j=0;j<size && *p;j++)
+        for (uint32_t j=0;j<size && *p;j++)
         {
           p = writeUTF8Char(m_t,p);
         }
@@ -407,10 +409,10 @@ void HtmlDocVisitor::operator()(const DocURL &u)
     {
       const char *p = url.data();
       // also obfuscate the address as shown on the web page
-      uint size=5;
+      uint32_t size=5;
       while (*p)
       {
-        for (uint j=0;j<size && *p;j++)
+        for (uint32_t j=0;j<size && *p;j++)
         {
           p = writeUTF8Char(m_t,p);
         }
@@ -525,9 +527,6 @@ void HtmlDocVisitor::operator()(const DocStyleChange &s)
     case DocStyleChange::Span:
       if (s.enable()) m_t << "<span" << htmlAttribsToString(s.attribs()) << ">";  else m_t << "</span>";
       break;
-    case DocStyleChange::Summary:
-      if (s.enable()) m_t << "<summary" << htmlAttribsToString(s.attribs()) << ">";  else m_t << "</summary>";
-      break;
   }
 }
 
@@ -605,7 +604,7 @@ void HtmlDocVisitor::operator()(const DocVerbatim &s)
             dotindex++,
             ".dot"
            );
-        std::ofstream file(fileName.str(),std::ofstream::out | std::ofstream::binary);
+        std::ofstream file = Portable::openOutputStream(fileName);
         if (!file.is_open())
         {
           err("Could not open file %s for writing\n",qPrint(fileName));
@@ -637,7 +636,7 @@ void HtmlDocVisitor::operator()(const DocVerbatim &s)
             qPrint(Config_getString(HTML_OUTPUT)+"/inline_mscgraph_"),
             mscindex++
             );
-        std::ofstream file(baseName.str()+".msc",std::ofstream::out | std::ofstream::binary);
+        std::ofstream file = Portable::openOutputStream(baseName.str()+".msc");
         if (!file.is_open())
         {
           err("Could not open file %s.msc for writing\n",qPrint(baseName));
@@ -1275,7 +1274,8 @@ static bool determineIfNeedsTag(const DocPara &p)
                          DocXRefItem,
                          DocHtmlBlockQuote,
                          DocParBlock,
-                         DocHtmlDetails
+                         DocHtmlDetails,
+                         DocHtmlSummary
                          >(*p.parent()))
     {
       needsTag = TRUE;
@@ -1334,7 +1334,7 @@ void HtmlDocVisitor::operator()(const DocPara &p)
     if (strlen(contexts[t]))
       m_t << "<p class=\"" << contexts[t] << "\"" << htmlAttribsToString(p.attribs()) << ">";
     else
-      m_t << "<p " << htmlAttribsToString(p.attribs()) << ">";
+      m_t << "<p" << htmlAttribsToString(p.attribs()) << ">";
   }
 
   visitChildren(p);
@@ -1628,11 +1628,24 @@ void HtmlDocVisitor::operator()(const DocHRef &href)
   m_t << "</a>";
 }
 
+void HtmlDocVisitor::operator()(const DocHtmlSummary &s)
+{
+  if (m_hide) return;
+  m_t << "<summary " << htmlAttribsToString(s.attribs()) << ">\n";
+  visitChildren(s);
+  m_t << "</summary>\n";
+}
+
 void HtmlDocVisitor::operator()(const DocHtmlDetails &d)
 {
   if (m_hide) return;
   forceEndParagraph(d);
   m_t << "<details " << htmlAttribsToString(d.attribs()) << ">\n";
+  auto summary = d.summary();
+  if (summary)
+  {
+    std::visit(*this,*summary);
+  }
   visitChildren(d);
   m_t << "</details>\n";
   forceStartParagraph(d);
@@ -2026,7 +2039,7 @@ void HtmlDocVisitor::operator()(const DocVhdlFlow &vf)
     forceEndParagraph(vf);
     QCString fname=FlowChart::convertNameToFileName();
     m_t << "<p>";
-    m_t << "flowchart: " ; // TODO: translate me
+    m_t << theTranslator->trFlowchart();
     m_t << "<a href=\"";
     m_t << fname;
     m_t << ".svg\">";
@@ -2072,7 +2085,7 @@ void HtmlDocVisitor::filter(const QCString &str, const bool retainNewline)
         break;
       default:
         {
-          uchar uc = static_cast<uchar>(c);
+          uint8_t uc = static_cast<uint8_t>(c);
           if (uc<32 && !isspace(c)) // non-printable control characters
           {
             m_t << "&#x24" << hex[uc>>4] << hex[uc&0xF] << ";";
@@ -2117,7 +2130,7 @@ QCString HtmlDocVisitor::filterQuotedCdataAttr(const QCString &str)
         break;
       default:
         {
-          uchar uc = static_cast<uchar>(c);
+          uint8_t uc = static_cast<uint8_t>(c);
           if (uc<32 && !isspace(c)) // non-printable control characters
           {
             growBuf.addStr("&#x24");

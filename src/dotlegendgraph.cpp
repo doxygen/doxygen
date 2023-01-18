@@ -60,9 +60,9 @@ void DotLegendGraph::computeTheGraph()
   DotNode{15, "Undocumented", "", ""}.writeBox(md5stream, CallGraph, GOF_BITMAP, false);
   md5stream << "  Node16 -> Node9 [dir=\"back\",color=\"steelblue1\",style=\"solid\"];\n";
   md5stream << "  Node16 [label=\"Templ\\< int \\>\",color=\"gray40\",fillcolor=\"white\",style=\"filled\"];\n";
-  md5stream << "  Node17 -> Node16 [dir=\"back\",color=\"orange\",style=\"dashed\",label=\"< int >\",];\n";
+  md5stream << "  Node17 -> Node16 [dir=\"back\",color=\"orange\",style=\"dashed\",label=\"< int >\",fontcolor=\"grey\"];\n";
   md5stream << "  Node17 [label=\"Templ\\< T \\>\",color=\"gray40\",fillcolor=\"white\",style=\"filled\"];\n";
-  md5stream << "  Node18 -> Node9 [dir=\"back\",color=\"darkorchid3\",style=\"dashed\",label=\"m_usedClass\",];\n";
+  md5stream << "  Node18 -> Node9 [dir=\"back\",color=\"darkorchid3\",style=\"dashed\",label=\"m_usedClass\",fontcolor=\"grey\"];\n";
   md5stream << "  Node18 [label=\"Used\",color=\"gray40\",fillcolor=\"white\",style=\"filled\"];\n";
   writeGraphFooter(md5stream);
   m_theGraph = md5stream.str();

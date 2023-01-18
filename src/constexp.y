@@ -265,32 +265,32 @@ primary_expression: constant
 constant: TOK_OCTALINT
 	  {
 	    struct constexpYY_state* yyextra = constexpYYget_extra(yyscanner);
-	    $$ = parseOctal(yyextra->strToken);
+	    $$ = CPPValue::parseOctal(yyextra->strToken);
 	  }
 	| TOK_DECIMALINT
 	  {
 	    struct constexpYY_state* yyextra = constexpYYget_extra(yyscanner);
-	    $$ = parseDecimal(yyextra->strToken);
+	    $$ = CPPValue::parseDecimal(yyextra->strToken);
 	  }
 	| TOK_HEXADECIMALINT
 	  {
 	    struct constexpYY_state* yyextra = constexpYYget_extra(yyscanner);
-	    $$ = parseHexadecimal(yyextra->strToken);
+	    $$ = CPPValue::parseHexadecimal(yyextra->strToken);
 	  }
 	| TOK_BINARYINT
 	  {
 	    struct constexpYY_state* yyextra = constexpYYget_extra(yyscanner);
-	    $$ = parseBinary(yyextra->strToken);
+	    $$ = CPPValue::parseBinary(yyextra->strToken);
 	  }
 	| TOK_CHARACTER
 	  {
 	    struct constexpYY_state* yyextra = constexpYYget_extra(yyscanner);
-	    $$ = parseCharacter(yyextra->strToken);
+	    $$ = CPPValue::parseCharacter(yyextra->strToken);
 	  }
 	| TOK_FLOAT
 	  {
 	    struct constexpYY_state* yyextra = constexpYYget_extra(yyscanner);
-	    $$ = parseFloat(yyextra->strToken);
+	    $$ = CPPValue::parseFloat(yyextra->strToken);
 	  }
 ;
 

@@ -24,6 +24,8 @@ class XMLCodeGenerator : public CodeOutputInterface
     XMLCodeGenerator(TextStream &t);
     virtual ~XMLCodeGenerator() { }
 
+    OutputType type() const override { return OutputType::XML; }
+
     void codify(const QCString &text) override;
     void writeCodeLink(CodeSymbolType type,
                        const QCString &ref,const QCString &file,

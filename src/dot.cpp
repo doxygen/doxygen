@@ -183,7 +183,6 @@ bool DotManager::run() const
     setDotFontPath(Config_getString(DOCBOOK_OUTPUT));
     setPath=TRUE;
   }
-  Portable::sysTimerStart();
   // fill work queue with dot operations
   size_t prev=1;
   if (m_workers.size()==0) // no threads to work with
@@ -228,7 +227,6 @@ bool DotManager::run() const
       m_workers.at(i)->wait();
     }
   }
-  Portable::sysTimerStop();
   if (setPath)
   {
     unsetDotFontPath();

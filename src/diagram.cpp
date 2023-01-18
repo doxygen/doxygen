@@ -15,7 +15,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <fstream>
 #include <algorithm>
 
 #include "diagram.h"
@@ -29,6 +28,7 @@
 #include "indexlist.h"
 #include "classlist.h"
 #include "textstream.h"
+#include "growbuf.h"
 
 //-----------------------------------------------------------------------------
 
@@ -40,19 +40,21 @@ using DiagramItemList = std::vector<DiagramItem*>;
 class DiagramItem
 {
   public:
-    DiagramItem(DiagramItem *p,uint number,const ClassDef *cd,
+    DiagramItem(DiagramItem *p,uint32_t number,const ClassDef *cd,
                 Protection prot,Specifier virt,const QCString &ts);
     QCString label() const;
     QCString fileName() const;
     DiagramItem *parentItem() { return m_parent; }
     DiagramItemList getChildren() { return m_children; }
-    void move(int dx,int dy) { m_x=static_cast<uint>(m_x+dx); m_y=static_cast<uint>(m_y+dy); }
-    uint xPos() const { return m_x; }
-    uint yPos() const { return m_y; }
-    uint avgChildPos() const;
-    uint numChildren() const;
+    void move(int dx,int dy) { m_x=static_cast<uint32_t>(m_x+dx); m_y=static_cast<uint32_t>(m_y+dy); }
+    uint32_t xPos() const { return m_x; }
+    uint32_t yPos() const { return m_y; }
+    float xfPos() const { return static_cast<float>(m_x); }
+    float yfPos() const { return static_cast<float>(m_y); }
+    uint32_t avgChildPos() const;
+    uint32_t numChildren() const;
     void addChild(DiagramItem *di);
-    uint number() const { return m_num; }
+    uint32_t number() const { return m_num; }
     Protection protection() const { return m_prot; }
     Specifier virtualness() const { return m_virt; }
     void putInList() { m_inList=TRUE; }
@@ -61,9 +63,9 @@ class DiagramItem
   private:
     DiagramItemList m_children;
     DiagramItem *m_parent;
-    uint m_x = 0;
-    uint m_y = 0;
-    uint m_num;
+    uint32_t m_x = 0;
+    uint32_t m_y = 0;
+    uint32_t m_num;
     Protection m_prot;
     Specifier m_virt;
     QCString m_templSpec;
@@ -79,20 +81,20 @@ class DiagramRow
     using Vec = std::vector<Ptr>;
     using iterator = typename Vec::iterator;
     using reverse_iterator = typename Vec::reverse_iterator;
-    DiagramRow(TreeDiagram *d,uint l) : m_diagram(d), m_level(l) {}
+    DiagramRow(TreeDiagram *d,uint32_t l) : m_diagram(d), m_level(l) {}
     void insertClass(DiagramItem *parent,const ClassDef *cd,bool doBases,
                      Protection prot,Specifier virt,const QCString &ts);
-    uint number() { return m_level; }
+    uint32_t number() { return m_level; }
 
     DiagramItem *item(int index) { return m_items.at(index).get(); }
-    uint numItems() const { return static_cast<uint>(m_items.size()); }
+    uint32_t numItems() const { return static_cast<uint32_t>(m_items.size()); }
     iterator begin() { return m_items.begin();  }
     iterator end()   { return m_items.end();    }
     reverse_iterator rbegin() { return m_items.rbegin();  }
     reverse_iterator rend()   { return m_items.rend();    }
   private:
     TreeDiagram *m_diagram;
-    uint m_level;
+    uint32_t m_level;
     Vec m_items;
 };
 
@@ -105,27 +107,27 @@ class TreeDiagram
     using iterator = typename Vec::iterator;
     TreeDiagram(const ClassDef *root,bool doBases);
     void computeLayout();
-    uint computeRows();
+    uint32_t computeRows();
     void moveChildren(DiagramItem *root,int dx);
-    void computeExtremes(uint *labelWidth,uint *xpos);
+    void computeExtremes(uint32_t *labelWidth,uint32_t *xpos);
     void drawBoxes(TextStream &t,Image *image,
                    bool doBase,bool bitmap,
-                   uint baseRows,uint superRows,
-                   uint cellWidth,uint cellHeight,
+                   uint32_t baseRows,uint32_t superRows,
+                   uint32_t cellWidth,uint32_t cellHeight,
                    QCString relPath="",
                    bool generateMap=TRUE);
     void drawConnectors(TextStream &t,Image *image,
                    bool doBase,bool bitmap,
-                   uint baseRows,uint superRows,
-                   uint cellWidth,uint cellheight);
+                   uint32_t baseRows,uint32_t superRows,
+                   uint32_t cellWidth,uint32_t cellheight);
     DiagramRow *row(int index) { return m_rows.at(index).get(); }
-    uint numRows() const { return static_cast<uint>(m_rows.size()); }
-    DiagramRow *addRow(uint l)
+    uint32_t numRows() const { return static_cast<uint32_t>(m_rows.size()); }
+    DiagramRow *addRow(uint32_t l)
     { m_rows.push_back(std::make_unique<DiagramRow>(this,l)); return m_rows.back().get(); }
     iterator begin() { return m_rows.begin();  }
     iterator end()   { return m_rows.end();    }
   private:
-    bool layoutTree(DiagramItem *root,uint row);
+    bool layoutTree(DiagramItem *root,uint32_t row);
     TreeDiagram &operator=(const TreeDiagram &);
     TreeDiagram(const TreeDiagram &);
     Vec m_rows;
@@ -135,35 +137,35 @@ class TreeDiagram
 
 //-----------------------------------------------------------------------------
 
-const uint maxTreeWidth = 8;
-const uint gridWidth  = 100;
-const uint gridHeight = 100;
+const uint32_t maxTreeWidth = 8;
+const uint32_t gridWidth  = 100;
+const uint32_t gridHeight = 100;
 
-const uint labelHorSpacing  = 10;  // horizontal distance between labels
-const uint labelVertSpacing = 32;  // vertical distance between labels
-const uint labelHorMargin   = 6;   // horiz. spacing between label and box
-const uint fontHeight       = 12;  // height of a character
+const uint32_t labelHorSpacing  = 10;  // horizontal distance between labels
+const uint32_t labelVertSpacing = 32;  // vertical distance between labels
+const uint32_t labelHorMargin   = 6;   // horiz. spacing between label and box
+const uint32_t fontHeight       = 12;  // height of a character
 
-static uint protToMask(Protection p)
+static uint32_t protToMask(Protection p)
 {
   switch(p)
   {
-    case Public:    return 0xffffffff;
-    case Package: // package is not possible!
-    case Protected: return 0xcccccccc;
-    case Private:   return 0xaaaaaaaa;
+    case Protection::Public:    return 0xffffffff;
+    case Protection::Package: // package is not possible!
+    case Protection::Protected: return 0xcccccccc;
+    case Protection::Private:   return 0xaaaaaaaa;
   }
   return 0;
 }
 
-static uchar protToColor(Protection p)
+static uint8_t protToColor(Protection p)
 {
   switch(p)
   {
-    case Public:    return 6;
-    case Package: // package is not possible!
-    case Protected: return 5;
-    case Private:   return 4;
+    case Protection::Public:    return 6;
+    case Protection::Package: // package is not possible!
+    case Protection::Protected: return 5;
+    case Protection::Private:   return 4;
   }
   return 0;
 }
@@ -172,30 +174,49 @@ static QCString protToString(Protection p)
 {
   switch(p)
   {
-    case Public:    return "solid";
-    case Package: // package is not possible!
-    case Protected: return "dashed";
-    case Private:   return "dotted";
+    case Protection::Public:    return "solid";
+    case Protection::Package: // package is not possible!
+    case Protection::Protected: return "dashed";
+    case Protection::Private:   return "dotted";
   }
   return QCString();
 }
 
-static uint virtToMask(Specifier p)
+static uint32_t virtToMask(Specifier p)
 {
   switch(p)
   {
-    case Normal:    return 0xffffffff;
-    case Virtual:   return 0xf0f0f0f0;
-    default:        return 0;
+    case Specifier::Normal:    return 0xffffffff;
+    case Specifier::Virtual:   return 0xf0f0f0f0;
+    default:        break;
   }
   return 0;
+}
+
+static QCString convertToPSString(const QCString &s)
+{
+  if (s.isEmpty()) return s;
+  GrowBuf growBuf;
+  const char *p=s.data();
+  char c;
+  while ((c=*p++))
+  {
+    switch (c)
+    {
+      case '(':  growBuf.addStr("\\("); break;
+      case ')': growBuf.addStr("\\)"); break;
+      default:   growBuf.addChar(c);   break;
+    }
+  }
+  growBuf.addChar(0);
+  return growBuf.get();
 }
 
 // pre: dil is not empty
 static Protection getMinProtectionLevel(const DiagramItemList &dil)
 {
   auto it = dil.begin();
-  Protection result = Private;
+  Protection result = Protection::Private;
   if (it!=dil.end())
   {
     result=(*it)->protection();
@@ -204,8 +225,8 @@ static Protection getMinProtectionLevel(const DiagramItemList &dil)
       Protection p=(*it)->protection();
       if (p!=result)
       {
-        if (result==Protected && p==Public) result=p;
-        else if (result==Private) result=p;
+        if (result==Protection::Protected && p==Protection::Public) result=p;
+        else if (result==Protection::Private) result=p;
       }
     }
   }
@@ -213,19 +234,19 @@ static Protection getMinProtectionLevel(const DiagramItemList &dil)
 }
 
 static void writeBitmapBox(DiagramItem *di,Image *image,
-                           uint x,uint y,uint w,uint h,bool firstRow,
+                           uint32_t x,uint32_t y,uint32_t w,uint32_t h,bool firstRow,
                            bool hasDocs,bool children=FALSE)
 {
-  uchar colFill = hasDocs ? (firstRow ? 8 : 2) : 7;
-  uchar colBorder = (firstRow || !hasDocs) ? 1 : 3;
-  uint l = Image::stringLength(di->label());
-  uint mask=virtToMask(di->virtualness());
+  uint8_t colFill = hasDocs ? (firstRow ? 8 : 2) : 7;
+  uint8_t colBorder = (firstRow || !hasDocs) ? 1 : 3;
+  uint32_t l = Image::stringLength(di->label());
+  uint32_t mask=virtToMask(di->virtualness());
   image->fillRect(x+1,y+1,w-2,h-2,colFill,mask);
   image->drawRect(x,y,w,h,colBorder,mask);
   image->writeString(x+(w-l)/2, y+(h-fontHeight)/2, di->label(),1);
   if (children)
   {
-    uint i;
+    uint32_t i;
     for (i=0;i<5;i++)
     {
       image->drawHorzLine(y+h+i-6,x+w-2-i,x+w-2,firstRow?1:3,0xffffffff);
@@ -236,14 +257,14 @@ static void writeBitmapBox(DiagramItem *di,Image *image,
 static void writeVectorBox(TextStream &t,DiagramItem *di,
                            float x,float y,bool children=FALSE)
 {
-  if (di->virtualness()==Virtual) t << "dashed\n";
+  if (di->virtualness()==Specifier::Virtual) t << "dashed\n";
   t << " (" << convertToPSString(di->label()) << ") " << x << " " << y << " box\n";
   if (children) t << x << " " << y << " mark\n";
-  if (di->virtualness()==Virtual) t << "solid\n";
+  if (di->virtualness()==Specifier::Virtual) t << "solid\n";
 }
 
 static void writeMapArea(TextStream &t,const ClassDef *cd,QCString relPath,
-                         uint x,uint y,uint w,uint h)
+                         uint32_t x,uint32_t y,uint32_t w,uint32_t h)
 {
   if (cd->isLinkable())
   {
@@ -273,7 +294,7 @@ static void writeMapArea(TextStream &t,const ClassDef *cd,QCString relPath,
 }
 //-----------------------------------------------------------------------------
 
-DiagramItem::DiagramItem(DiagramItem *p,uint number,const ClassDef *cd,
+DiagramItem::DiagramItem(DiagramItem *p,uint32_t number,const ClassDef *cd,
                          Protection pr,Specifier vi,const QCString &ts)
   : m_parent(p), m_num(number), m_prot(pr), m_virt(vi), m_templSpec(ts), m_classDef(cd)
 {
@@ -306,7 +327,7 @@ QCString DiagramItem::fileName() const
   return m_classDef->getOutputFileBase();
 }
 
-uint DiagramItem::avgChildPos() const
+uint32_t DiagramItem::avgChildPos() const
 {
   DiagramItem *di;
   size_t c=m_children.size();
@@ -320,9 +341,9 @@ uint DiagramItem::avgChildPos() const
     return (m_children.at(c/2-1)->xPos()+m_children.at(c/2)->xPos())/2;
 }
 
-uint DiagramItem::numChildren() const
+uint32_t DiagramItem::numChildren() const
 {
-  return static_cast<uint>(m_children.size());
+  return static_cast<uint32_t>(m_children.size());
 }
 
 void DiagramItem::addChild(DiagramItem *di)
@@ -348,7 +369,7 @@ void DiagramRow::insertClass(DiagramItem *parent,const ClassDef *cd,bool doBases
     ClassDef *ccd=bcd.classDef;
     if (ccd && ccd->isVisibleInHierarchy()) count++;
   }
-  if (count>0 && (prot!=Private || !doBases))
+  if (count>0 && (prot!=Protection::Private || !doBases))
   {
     DiagramRow *row=0;
     if (m_diagram->numRows()<=m_level+1) /* add new row */
@@ -365,8 +386,8 @@ void DiagramRow::insertClass(DiagramItem *parent,const ClassDef *cd,bool doBases
       if (ccd && ccd->isVisibleInHierarchy())
       {
         row->insertClass(di_ptr,ccd,doBases,bcd.prot,
-            doBases?bcd.virt:Normal,
-            doBases?bcd.templSpecifiers:QCString());
+            doBases ? bcd.virt            : Specifier::Normal,
+            doBases ? bcd.templSpecifiers : QCString());
       }
     }
   }
@@ -379,7 +400,7 @@ TreeDiagram::TreeDiagram(const ClassDef *root,bool doBases)
   auto row = std::make_unique<DiagramRow>(this,0);
   DiagramRow *row_ptr = row.get();
   m_rows.push_back(std::move(row));
-  row_ptr->insertClass(0,root,doBases,Public,Normal,QCString());
+  row_ptr->insertClass(0,root,doBases,Protection::Public,Specifier::Normal,QCString());
 }
 
 void TreeDiagram::moveChildren(DiagramItem *root,int dx)
@@ -391,7 +412,7 @@ void TreeDiagram::moveChildren(DiagramItem *root,int dx)
   }
 }
 
-bool TreeDiagram::layoutTree(DiagramItem *root,uint r)
+bool TreeDiagram::layoutTree(DiagramItem *root,uint32_t r)
 {
   bool moved=FALSE;
   //printf("layoutTree(%s,%d)\n",qPrint(root->label()),r);
@@ -399,9 +420,9 @@ bool TreeDiagram::layoutTree(DiagramItem *root,uint r)
   if (root->numChildren()>0)
   {
     auto children = root->getChildren();
-    uint k;
-    uint pPos=root->xPos();
-    uint cPos=root->avgChildPos();
+    uint32_t k;
+    uint32_t pPos=root->xPos();
+    uint32_t cPos=root->avgChildPos();
     if (pPos>cPos) // move children
     {
       const auto &row=m_rows.at(r+1);
@@ -486,10 +507,10 @@ void TreeDiagram::computeLayout()
   }
 }
 
-uint TreeDiagram::computeRows()
+uint32_t TreeDiagram::computeRows()
 {
   //printf("TreeDiagram::computeRows()=%d\n",count());
-  uint count=0;
+  uint32_t count=0;
   auto it = m_rows.begin();
   while (it!=m_rows.end() && !(*it)->item(0)->isInList())
   {
@@ -501,8 +522,8 @@ uint TreeDiagram::computeRows()
   if (it!=m_rows.end())
   {
     const auto &row = *it;
-    uint maxListLen=0;
-    uint curListLen=0;
+    uint32_t maxListLen=0;
+    uint32_t curListLen=0;
     DiagramItem *opi=0;
     for (const auto &di : *row) // for each item in a row
     {
@@ -516,16 +537,16 @@ uint TreeDiagram::computeRows()
   return count;
 }
 
-void TreeDiagram::computeExtremes(uint *maxLabelLen,uint *maxXPos)
+void TreeDiagram::computeExtremes(uint32_t *maxLabelLen,uint32_t *maxXPos)
 {
-  uint ml=0,mx=0;
+  uint32_t ml=0,mx=0;
   for (const auto &dr : m_rows) // for each row
   {
     bool done=FALSE;
     for (const auto &di : *dr) // for each item in a row
     {
       if (di->isInList()) done=TRUE;
-      if (maxXPos) mx=std::max(mx,static_cast<uint>(di->xPos()));
+      if (maxXPos) mx=std::max(mx,di->xPos());
       if (maxLabelLen) ml=std::max(ml,Image::stringLength(di->label()));
     }
     if (done) break;
@@ -571,8 +592,8 @@ class DualDirIterator
 
 void TreeDiagram::drawBoxes(TextStream &t,Image *image,
                             bool doBase,bool bitmap,
-                            uint baseRows,uint superRows,
-                            uint cellWidth,uint cellHeight,
+                            uint32_t baseRows,uint32_t superRows,
+                            uint32_t cellWidth,uint32_t cellHeight,
                             QCString relPath,
                             bool generateMap)
 {
@@ -580,10 +601,11 @@ void TreeDiagram::drawBoxes(TextStream &t,Image *image,
   if (it!=m_rows.end() && !doBase) ++it;
   bool firstRow = doBase;
   bool done=FALSE;
+  float superRowsF = static_cast<float>(superRows);
   for (;it!=m_rows.end() && !done;++it) // for each row
   {
     const auto &dr = *it;
-    uint x=0,y=0;
+    uint32_t x=0,y=0;
     float xf=0.0f,yf=0.0f;
     DiagramItem *firstDi = dr->item(0);
     if (firstDi->isInList()) // put boxes in a list
@@ -626,14 +648,14 @@ void TreeDiagram::drawBoxes(TextStream &t,Image *image,
           }
           else
           {
-            xf = di->xPos()/static_cast<float>(gridWidth);
+            xf = di->xfPos()/gridWidth;
             if (doBase)
             {
-              yf = di->yPos()/static_cast<float>(gridHeight)+superRows-1;
+              yf = di->yfPos()/gridHeight+superRowsF-1.0f;
             }
             else
             {
-              yf = superRows-1-di->yPos()/static_cast<float>(gridHeight);
+              yf = superRowsF-1.0f-di->yfPos()/gridHeight;
             }
           }
         }
@@ -682,14 +704,14 @@ void TreeDiagram::drawBoxes(TextStream &t,Image *image,
         }
         else
         {
-          xf=di->xPos()/static_cast<float>(gridWidth);
+          xf=di->xfPos()/gridWidth;
           if (doBase)
           {
-            yf = di->yPos()/static_cast<float>(gridHeight)+superRows-1;
+            yf = di->yfPos()/gridHeight+superRowsF-1.0f;
           }
           else
           {
-            yf = superRows-1-di->yPos()/static_cast<float>(gridHeight);
+            yf = superRowsF-1.0f-di->yfPos()/gridHeight;
           }
           writeVectorBox(t,di.get(),xf,yf);
         }
@@ -701,18 +723,19 @@ void TreeDiagram::drawBoxes(TextStream &t,Image *image,
 
 void TreeDiagram::drawConnectors(TextStream &t,Image *image,
                                  bool doBase,bool bitmap,
-                                 uint baseRows,uint superRows,
-                                 uint cellWidth,uint cellHeight)
+                                 uint32_t baseRows,uint32_t superRows,
+                                 uint32_t cellWidth,uint32_t cellHeight)
 {
   bool done=FALSE;
   auto it = m_rows.begin();
+  float superRowsF = static_cast<float>(superRows);
   for (;it!=m_rows.end() && !done;++it) // for each row
   {
     const auto &dr = *it;
     DiagramItem *rootDi = dr->item(0);
     if (rootDi->isInList()) // row consists of list connectors
     {
-      uint x=0,y=0,ys=0;
+      uint32_t x=0,y=0,ys=0;
       float xf=0.0f,yf=0.0f,ysf=0.0f;
       auto rit = dr->begin();
       while (rit!=dr->end())
@@ -750,13 +773,13 @@ void TreeDiagram::drawConnectors(TextStream &t,Image *image,
             t << protToString(di->protection()) << "\n";
             if (doBase)
             {
-              t << "1 " << (di->xPos()/static_cast<float>(gridWidth)) << " "
-                << (di->yPos()/static_cast<float>(gridHeight)+superRows-1) << " in\n";
+              t << "1 " << (di->xfPos()/gridWidth) << " "
+                << (di->yfPos()/gridHeight+superRowsF-1.0f) << " in\n";
             }
             else
             {
-              t << "0 " << (di->xPos()/static_cast<float>(gridWidth)) << " "
-                << (static_cast<float>(superRows)-0.25f-di->yPos()/static_cast<float>(gridHeight))
+              t << "0 " << (di->xfPos()/gridWidth) << " "
+                << (superRowsF-0.25f-di->yfPos()/gridHeight)
                 << " in\n";
             }
           }
@@ -783,15 +806,15 @@ void TreeDiagram::drawConnectors(TextStream &t,Image *image,
           }
           else
           {
-            xf = di->parentItem()->xPos()/static_cast<float>(gridWidth);
+            xf = di->parentItem()->xfPos()/gridWidth;
             if (doBase)
             {
-              ysf = di->yPos()/static_cast<float>(gridHeight)+superRows-1;
+              ysf = di->yfPos()/gridHeight+superRowsF-1.0f;
               yf = ysf + 0.5f;
             }
             else
             {
-              ysf = static_cast<float>(superRows)-0.25f-di->yPos()/static_cast<float>(gridHeight);
+              ysf = superRowsF-0.25f-di->yfPos()/gridHeight;
               yf = ysf - 0.25f;
             }
           }
@@ -883,7 +906,7 @@ void TreeDiagram::drawConnectors(TextStream &t,Image *image,
     {
       for (const auto &di : *dr)
       {
-        uint x=0,y=0;
+        uint32_t x=0,y=0;
         DiagramItemList dil = di->getChildren();
         DiagramItem *parent  = di->parentItem();
         if (parent) // item has a parent -> connect to it
@@ -917,13 +940,13 @@ void TreeDiagram::drawConnectors(TextStream &t,Image *image,
             t << protToString(di->protection()) << "\n";
             if (doBase)
             {
-              t << "1 " << di->xPos()/static_cast<float>(gridWidth) << " "
-                << (di->yPos()/static_cast<float>(gridHeight)+superRows-1) << " in\n";
+              t << "1 " << di->xfPos()/gridWidth << " "
+                << (di->yfPos()/gridHeight+superRowsF-1.0f) << " in\n";
             }
             else
             {
-              t << "0 " << di->xPos()/static_cast<float>(gridWidth) << " "
-                << (static_cast<float>(superRows)-0.25f-di->yPos()/static_cast<float>(gridHeight))
+              t << "0 " << di->xfPos()/gridWidth << " "
+                << (superRowsF-0.25f-di->yfPos()/gridHeight)
                 << " in\n";
             }
           }
@@ -931,8 +954,8 @@ void TreeDiagram::drawConnectors(TextStream &t,Image *image,
         if (!dil.empty())
         {
           Protection p=getMinProtectionLevel(dil);
-          uint mask=protToMask(p);
-          uchar col=protToColor(p);
+          uint32_t mask=protToMask(p);
+          uint8_t col=protToColor(p);
           if (bitmap)
           {
             x = di->xPos()*(cellWidth+labelHorSpacing)/gridWidth + cellWidth/2;
@@ -957,13 +980,13 @@ void TreeDiagram::drawConnectors(TextStream &t,Image *image,
             t << protToString(p) << "\n";
             if (doBase)
             {
-              t << "0 " << di->xPos()/static_cast<float>(gridWidth)  << " "
-                << (di->yPos()/static_cast<float>(gridHeight)+superRows-1) << " out\n";
+              t << "0 " << di->xfPos()/gridWidth  << " "
+                << (di->yfPos()/gridHeight+superRowsF-1.0f) << " out\n";
             }
             else
             {
-              t << "1 " << di->xPos()/static_cast<float>(gridWidth)  << " "
-                << (static_cast<float>(superRows)-1.75f-di->yPos()/static_cast<float>(gridHeight))
+              t << "1 " << di->xfPos()/gridWidth  << " "
+                << (superRowsF-1.75f-di->yfPos()/gridHeight)
                 << " out\n";
             }
           }
@@ -974,9 +997,9 @@ void TreeDiagram::drawConnectors(TextStream &t,Image *image,
           {
             if (bitmap)
             {
-              uint xs = first->xPos()*(cellWidth+labelHorSpacing)/gridWidth
+              uint32_t xs = first->xPos()*(cellWidth+labelHorSpacing)/gridWidth
                 + cellWidth/2;
-              uint xe = last->xPos()*(cellWidth+labelHorSpacing)/gridWidth
+              uint32_t xe = last->xPos()*(cellWidth+labelHorSpacing)/gridWidth
                 + cellWidth/2;
               if (doBase) // base classes
               {
@@ -992,16 +1015,16 @@ void TreeDiagram::drawConnectors(TextStream &t,Image *image,
               t << protToString(p) << "\n";
               if (doBase)
               {
-                t << first->xPos()/static_cast<float>(gridWidth) << " "
-                  << last->xPos()/static_cast<float>(gridWidth) << " "
-                  << (first->yPos()/static_cast<float>(gridHeight)+superRows-1)
+                t << first->xfPos()/gridWidth << " "
+                  << last->xfPos()/gridWidth << " "
+                  << (first->yfPos()/gridHeight+superRowsF-1.0f)
                   << " conn\n";
               }
               else
               {
-                t << first->xPos()/static_cast<float>(gridWidth) << " "
-                  << last->xPos()/static_cast<float>(gridWidth) << " "
-                  << (static_cast<float>(superRows)-first->yPos()/static_cast<float>(gridHeight))
+                t << first->xfPos()/gridWidth << " "
+                  << last->xfPos()/gridWidth << " "
+                  << (superRowsF-first->yfPos()/gridHeight)
                   << " conn\n";
               }
             }
@@ -1030,17 +1053,19 @@ ClassDiagram::ClassDiagram(const ClassDef *root) : p(std::make_unique<Private>(r
   p->super.computeLayout();
   DiagramItem *baseItem  = p->base.row(0)->item(0);
   DiagramItem *superItem = p->super.row(0)->item(0);
-  uint xbase  = baseItem->xPos();
-  uint xsuper = superItem->xPos();
+  uint32_t xbase  = baseItem->xPos();
+  uint32_t xsuper = superItem->xPos();
   if (xbase>xsuper)
   {
-    superItem->move(static_cast<int>(xbase-xsuper),0);
-    p->super.moveChildren(superItem,static_cast<int>(xbase-xsuper));
+    int dist=static_cast<int>(xbase-xsuper);
+    superItem->move(dist,0);
+    p->super.moveChildren(superItem,dist);
   }
   else if (xbase<xsuper)
   {
-    baseItem->move(static_cast<int>(xsuper-xbase),0);
-    p->base.moveChildren(baseItem,static_cast<int>(xsuper-xbase));
+    int dist=static_cast<int>(xsuper-xbase);
+    baseItem->move(dist,0);
+    p->base.moveChildren(baseItem,dist);
   }
 }
 
@@ -1051,18 +1076,18 @@ ClassDiagram::~ClassDiagram()
 void ClassDiagram::writeFigure(TextStream &output,const QCString &path,
                                const QCString &fileName) const
 {
-  uint baseRows=p->base.computeRows();
-  uint superRows=p->super.computeRows();
-  uint baseMaxX, baseMaxLabelWidth, superMaxX, superMaxLabelWidth;
+  uint32_t baseRows=p->base.computeRows();
+  uint32_t superRows=p->super.computeRows();
+  uint32_t baseMaxX, baseMaxLabelWidth, superMaxX, superMaxLabelWidth;
   p->base.computeExtremes(&baseMaxLabelWidth,&baseMaxX);
   p->super.computeExtremes(&superMaxLabelWidth,&superMaxX);
 
-  uint rows=std::max(1u,baseRows+superRows-1);
-  uint cols=(std::max(baseMaxX,superMaxX)+gridWidth*2-1)/gridWidth;
+  uint32_t rows=std::max(1u,baseRows+superRows-1);
+  uint32_t cols=(std::max(baseMaxX,superMaxX)+gridWidth*2-1)/gridWidth;
 
   // Estimate the image aspect width and height in pixels.
-  uint estHeight = rows*40;
-  uint estWidth  = cols*(20+std::max(baseMaxLabelWidth,superMaxLabelWidth));
+  float estHeight = static_cast<float>(rows)*40.0f;
+  float estWidth  = static_cast<float>(cols)*(20+static_cast<float>(std::max(baseMaxLabelWidth,superMaxLabelWidth)));
   //printf("Estimated size %d x %d\n",estWidth,estHeight);
 
   const float pageWidth = 14.0f; // estimated page width in cm.
@@ -1071,7 +1096,7 @@ void ClassDiagram::writeFigure(TextStream &output,const QCString &path,
 
   // compute the image height in centimeters based on the estimates
   float realHeight = static_cast<float>(std::min(rows,12u)); // real height in cm
-  float realWidth  = realHeight * estWidth/static_cast<float>(estHeight);
+  float realWidth  = realHeight * estWidth/estHeight;
   if (realWidth>pageWidth) // assume that the page width is about 15 cm
   {
     realHeight*=pageWidth/realWidth;
@@ -1090,7 +1115,7 @@ void ClassDiagram::writeFigure(TextStream &output,const QCString &path,
 
   QCString epsBaseName=QCString(path)+"/"+fileName;
   QCString epsName=epsBaseName+".eps";
-  std::ofstream f(epsName.str(),std::ofstream::out | std::ofstream::binary);
+  std::ofstream f = Portable::openOutputStream(epsName);
   if (!f.is_open())
   {
     term("Could not open file %s for writing\n",qPrint(epsName));
@@ -1110,7 +1135,7 @@ void ClassDiagram::writeFigure(TextStream &output,const QCString &path,
     t << "%%For: \n";
     t << "%Magnification: 1.00\n";
     t << "%%Orientation: Portrait\n";
-    t << "%%BoundingBox: 0 0 500 " << estHeight*500.0f/static_cast<float>(estWidth) << "\n";
+    t << "%%BoundingBox: 0 0 500 " << estHeight*500.0f/estWidth << "\n";
     t << "%%Pages: 0\n";
     t << "%%BeginSetup\n";
     t << "%%EndSetup\n";
@@ -1124,7 +1149,7 @@ void ClassDiagram::writeFigure(TextStream &output,const QCString &path,
     t << "/marginwidth 10 def\n";
     t << "/distx 20 def\n";
     t << "/disty 40 def\n";
-    t << "/boundaspect " << estWidth/static_cast<float>(estHeight) << " def  % aspect ratio of the BoundingBox (width/height)\n";
+    t << "/boundaspect " << estWidth/estHeight << " def  % aspect ratio of the BoundingBox (width/height)\n";
     t << "/boundx 500 def\n";
     t << "/boundy boundx boundaspect div def\n";
     t << "/xspacing 0 def\n";
@@ -1331,14 +1356,11 @@ void ClassDiagram::writeFigure(TextStream &output,const QCString &path,
     epstopdfArgs.sprintf("\"%s.eps\" --outfile=\"%s.pdf\"",
                    qPrint(epsBaseName),qPrint(epsBaseName));
     //printf("Converting eps using '%s'\n",qPrint(epstopdfArgs));
-    Portable::sysTimerStart();
     if (Portable::system("epstopdf",epstopdfArgs)!=0)
     {
        err("Problems running epstopdf. Check your TeX installation!\n");
-       Portable::sysTimerStop();
        return;
     }
-    Portable::sysTimerStop();
   }
 }
 
@@ -1347,21 +1369,21 @@ void ClassDiagram::writeImage(TextStream &t,const QCString &path,
                               const QCString &relPath,const QCString &fileName,
                               bool generateMap) const
 {
-  uint baseRows=p->base.computeRows();
-  uint superRows=p->super.computeRows();
-  uint rows=baseRows+superRows-1;
+  uint32_t baseRows=p->base.computeRows();
+  uint32_t superRows=p->super.computeRows();
+  uint32_t rows=baseRows+superRows-1;
 
-  uint lb,ls,xb,xs;
+  uint32_t lb,ls,xb,xs;
   p->base.computeExtremes(&lb,&xb);
   p->super.computeExtremes(&ls,&xs);
 
-  uint cellWidth  = std::max(lb,ls)+labelHorMargin*2;
-  uint maxXPos    = std::max(xb,xs);
-  uint labelVertMargin = 6; //std::max(6,(cellWidth-fontHeight)/6); // aspect at least 1:3
-  uint cellHeight = labelVertMargin*2+fontHeight;
-  uint imageWidth = (maxXPos+gridWidth)*cellWidth/gridWidth+
+  uint32_t cellWidth  = std::max(lb,ls)+labelHorMargin*2;
+  uint32_t maxXPos    = std::max(xb,xs);
+  uint32_t labelVertMargin = 6; //std::max(6,(cellWidth-fontHeight)/6); // aspect at least 1:3
+  uint32_t cellHeight = labelVertMargin*2+fontHeight;
+  uint32_t imageWidth = (maxXPos+gridWidth)*cellWidth/gridWidth+
                     (maxXPos*labelHorSpacing)/gridWidth;
-  uint imageHeight = rows*cellHeight+(rows-1)*labelVertSpacing;
+  uint32_t imageHeight = rows*cellHeight+(rows-1)*labelVertSpacing;
 
   Image image(imageWidth,imageHeight);
 

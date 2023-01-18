@@ -176,7 +176,7 @@ class TextStream final
             >
     TextStream &operator<<( T i)
     {
-      output_int32(static_cast<uint>(i),false);
+      output_int32(static_cast<uint32_t>(i),false);
       return static_cast<TextStream&>(*this);
     }
 

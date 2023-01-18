@@ -67,17 +67,17 @@ class NamespaceDefImpl : public DefinitionMixin<NamespaceDefMutable>
     virtual void writeMemberPages(OutputList &ol);
     virtual void writeQuickMemberLinks(OutputList &ol,const MemberDef *currentMd) const;
     virtual void writeTagFile(TextStream &);
-    virtual void insertClass(const ClassDef *cd);
-    virtual void insertConcept(const ConceptDef *cd);
-    virtual void insertNamespace(const NamespaceDef *nd);
+    virtual void insertClass(ClassDef *cd);
+    virtual void insertConcept(ConceptDef *cd);
+    virtual void insertNamespace(NamespaceDef *nd);
     virtual void insertMember(MemberDef *md);
     virtual void computeAnchors();
     virtual void countMembers();
     virtual int  numDocMembers() const;
-    virtual void addUsingDirective(const NamespaceDef *nd);
-    virtual const LinkedRefMap<const NamespaceDef> &getUsedNamespaces() const { return m_usingDirList; }
-    virtual void addUsingDeclaration(const ClassDef *cd);
-    virtual const LinkedRefMap<const ClassDef> &getUsedClasses() const { return m_usingDeclList; }
+    virtual void addUsingDirective(NamespaceDef *nd);
+    virtual const LinkedRefMap<NamespaceDef> &getUsedNamespaces() const { return m_usingDirList; }
+    virtual void addUsingDeclaration(ClassDef *cd);
+    virtual const LinkedRefMap<ClassDef> &getUsedClasses() const { return m_usingDeclList; }
     virtual void combineUsingRelations(NamespaceDefSet &visitedNamespace);
     virtual QCString displayName(bool=TRUE) const;
     virtual QCString localName() const;
@@ -94,7 +94,7 @@ class NamespaceDefImpl : public DefinitionMixin<NamespaceDefMutable>
     virtual void findSectionsInDocumentation();
     virtual void sortMemberLists();
     virtual const Definition *findInnerCompound(const QCString &name) const;
-    virtual void addInnerCompound(const Definition *d);
+    virtual void addInnerCompound(Definition *d);
     virtual void addListReferences();
     virtual void setFileName(const QCString &fn);
     virtual bool subGrouping() const { return m_subGrouping; }
@@ -113,6 +113,7 @@ class NamespaceDefImpl : public DefinitionMixin<NamespaceDefMutable>
     virtual QCString compoundTypeString() const;
 
     virtual void setMetaData(const QCString &m);
+    virtual int countVisibleMembers() const;
 
   private:
     void addMemberToList(MemberListType lt,MemberDef *md);
@@ -140,8 +141,8 @@ class NamespaceDefImpl : public DefinitionMixin<NamespaceDefMutable>
     QCString              fileName;
     FileList              files;
 
-    LinkedRefMap<const NamespaceDef> m_usingDirList;
-    LinkedRefMap<const ClassDef> m_usingDeclList;
+    LinkedRefMap<NamespaceDef> m_usingDirList;
+    LinkedRefMap<ClassDef> m_usingDeclList;
     LinkedRefMap<const Definition> m_innerCompounds;
 
     MemberLinkedRefMap    m_allMembers;
@@ -190,9 +191,9 @@ class NamespaceDefAliasImpl : public DefinitionAliasMixin<NamespaceDef>
     { return getNSAlias()->anchor(); }
     virtual int numDocMembers() const
     { return getNSAlias()->numDocMembers(); }
-    virtual const LinkedRefMap<const NamespaceDef> &getUsedNamespaces() const
+    virtual const LinkedRefMap<NamespaceDef> &getUsedNamespaces() const
     { return getNSAlias()->getUsedNamespaces(); }
-    virtual const LinkedRefMap<const ClassDef> &getUsedClasses() const
+    virtual const LinkedRefMap<ClassDef> &getUsedClasses() const
     { return getNSAlias()->getUsedClasses(); }
     virtual QCString displayName(bool b=TRUE) const
     { return makeDisplayName(this,b); }
@@ -240,6 +241,8 @@ class NamespaceDefAliasImpl : public DefinitionAliasMixin<NamespaceDef>
     { return getNSAlias()->title(); }
     virtual QCString compoundTypeString() const
     { return getNSAlias()->compoundTypeString(); }
+    virtual int countVisibleMembers() const
+    { return getNSAlias()->countVisibleMembers(); }
 };
 
 NamespaceDef *createNamespaceDefAlias(const Definition *newScope,const NamespaceDef *nd)
@@ -347,8 +350,9 @@ void NamespaceDefImpl::insertUsedFile(FileDef *fd)
   }
 }
 
-void NamespaceDefImpl::addInnerCompound(const Definition *d)
+void NamespaceDefImpl::addInnerCompound(Definition *d)
 {
+  //printf("%s:NamespaceDefImpl::addInnerCompound(%s)\n",qPrint(name()),qPrint(d->name()));
   m_innerCompounds.add(d->localName(),d);
   if (d->definitionType()==Definition::TypeNamespace)
   {
@@ -364,7 +368,7 @@ void NamespaceDefImpl::addInnerCompound(const Definition *d)
   }
 }
 
-void NamespaceDefImpl::insertClass(const ClassDef *cd)
+void NamespaceDefImpl::insertClass(ClassDef *cd)
 {
   ClassLinkedRefMap &d = classes;
 
@@ -387,12 +391,12 @@ void NamespaceDefImpl::insertClass(const ClassDef *cd)
   d.add(cd->name(),cd);
 }
 
-void NamespaceDefImpl::insertConcept(const ConceptDef *cd)
+void NamespaceDefImpl::insertConcept(ConceptDef *cd)
 {
   m_concepts.add(cd->name(),cd);
 }
 
-void NamespaceDefImpl::insertNamespace(const NamespaceDef *nd)
+void NamespaceDefImpl::insertNamespace(NamespaceDef *nd)
 {
   namespaces.add(nd->name(),nd);
 }
@@ -468,8 +472,6 @@ void NamespaceDefImpl::insertMember(MemberDef *md)
     allMemberList->push_back(md);
     //printf("%s::m_allMembersDict->append(%s)\n",qPrint(name()),qPrint(md->localName()));
     m_allMembers.add(md->localName(),md);
-    //::addNamespaceMemberNameToIndex(md);
-    //bool sortBriefDocs=Config_getBool(SORT_BRIEF_DOCS);
     switch(md->memberType())
     {
       case MemberType_Variable:
@@ -504,8 +506,9 @@ void NamespaceDefImpl::insertMember(MemberDef *md)
         break;
       default:
         err("NamespaceDefImpl::insertMembers(): "
-            "member '%s' with class scope '%s' inserted in namespace scope '%s'!\n",
+            "member '%s' with unexpected type id %d and class scope '%s' inserted in namespace scope '%s'!\n",
             qPrint(md->name()),
+            md->memberType(),
             md->getClassDef() ? qPrint(md->getClassDef()->name()) : "",
             qPrint(name()));
     }
@@ -639,11 +642,11 @@ void NamespaceDefImpl::writeDetailedDescription(OutputList &ol,const QCString &t
   if (hasDetailedDescription())
   {
     ol.pushGeneratorState();
-      ol.disable(OutputGenerator::Html);
+      ol.disable(OutputType::Html);
       ol.writeRuler();
     ol.popGeneratorState();
     ol.pushGeneratorState();
-      ol.disableAllBut(OutputGenerator::Html);
+      ol.disableAllBut(OutputType::Html);
       ol.writeAnchor(QCString(),"details");
     ol.popGeneratorState();
     ol.startGroupHeader();
@@ -660,12 +663,12 @@ void NamespaceDefImpl::writeDetailedDescription(OutputList &ol,const QCString &t
         !documentation().isEmpty())
     {
       ol.pushGeneratorState();
-        ol.disable(OutputGenerator::Man);
-        ol.disable(OutputGenerator::RTF);
+        ol.disable(OutputType::Man);
+        ol.disable(OutputType::RTF);
         //ol.newParagraph(); // FIXME:PARA
         ol.enableAll();
-        ol.disableAllBut(OutputGenerator::Man);
-        ol.enable(OutputGenerator::Latex);
+        ol.disableAllBut(OutputType::Man);
+        ol.enable(OutputType::Latex);
         ol.writeString("\n\n");
       ol.popGeneratorState();
     }
@@ -691,18 +694,18 @@ void NamespaceDefImpl::writeBriefDescription(OutputList &ol)
     {
       ol.startParagraph();
       ol.pushGeneratorState();
-      ol.disableAllBut(OutputGenerator::Man);
+      ol.disableAllBut(OutputType::Man);
       ol.writeString(" - ");
       ol.popGeneratorState();
       ol.writeDoc(ast.get(),this,0);
       ol.pushGeneratorState();
-      ol.disable(OutputGenerator::RTF);
+      ol.disable(OutputType::RTF);
       ol.writeString(" \n");
-      ol.enable(OutputGenerator::RTF);
+      ol.enable(OutputType::RTF);
 
       if (hasDetailedDescription())
       {
-        ol.disableAllBut(OutputGenerator::Html);
+        ol.disableAllBut(OutputType::Html);
         ol.startTextLink(getOutputFileBase(),"details");
         ol.parseText(theTranslator->trMore());
         ol.endTextLink();
@@ -713,7 +716,7 @@ void NamespaceDefImpl::writeBriefDescription(OutputList &ol)
 
     // FIXME:PARA
     //ol.pushGeneratorState();
-    //ol.disable(OutputGenerator::RTF);
+    //ol.disable(OutputType::RTF);
     //ol.newParagraph();
     //ol.popGeneratorState();
   }
@@ -752,7 +755,7 @@ void NamespaceDefImpl::startMemberDocumentation(OutputList &ol)
 {
   if (Config_getBool(SEPARATE_MEMBER_PAGES))
   {
-    ol.disable(OutputGenerator::Html);
+    ol.disable(OutputType::Html);
     Doxygen::suppressDocWarnings = TRUE;
   }
 }
@@ -761,7 +764,7 @@ void NamespaceDefImpl::endMemberDocumentation(OutputList &ol)
 {
   if (Config_getBool(SEPARATE_MEMBER_PAGES))
   {
-    ol.enable(OutputGenerator::Html);
+    ol.enable(OutputType::Html);
     Doxygen::suppressDocWarnings = FALSE;
   }
 }
@@ -803,7 +806,7 @@ void NamespaceDefImpl::writeAuthorSection(OutputList &ol)
 {
   // write Author section (Man only)
   ol.pushGeneratorState();
-  ol.disableAllBut(OutputGenerator::Man);
+  ol.disableAllBut(OutputType::Man);
   ol.startGroupHeader();
   ol.parseText(theTranslator->trAuthor(TRUE,TRUE));
   ol.endGroupHeader();
@@ -814,7 +817,7 @@ void NamespaceDefImpl::writeAuthorSection(OutputList &ol)
 void NamespaceDefImpl::writeSummaryLinks(OutputList &ol) const
 {
   ol.pushGeneratorState();
-  ol.disableAllBut(OutputGenerator::Html);
+  ol.disableAllBut(OutputType::Html);
   bool first=TRUE;
   SrcLangExt lang = getLanguage();
   for (const auto &lde : LayoutDocManager::instance().docEntries(LayoutDocManager::Namespace))
@@ -889,7 +892,7 @@ void NamespaceDefImpl::addNamespaceAttributes(OutputList &ol)
   if (getLanguage()==SrcLangExt_IDL && isConstantGroup() && m_isPublished)
   {
     ol.pushGeneratorState();
-    ol.disableAllBut(OutputGenerator::Html);
+    ol.disableAllBut(OutputType::Html);
     ol.startLabels();
     ol.writeLabel("published",false);
     ol.endLabels();
@@ -927,7 +930,7 @@ void NamespaceDefImpl::writeDocumentation(OutputList &ol)
   //bool fortranOpt = Config_getBool(OPTIMIZE_FOR_FORTRAN);
 
   QCString pageTitle = title();
-  startFile(ol,getOutputFileBase(),name(),pageTitle,HLI_NamespaceVisible,!generateTreeView);
+  startFile(ol,getOutputFileBase(),name(),pageTitle,HighlightedItem::NamespaceVisible,!generateTreeView);
 
   if (!generateTreeView)
   {
@@ -1078,7 +1081,7 @@ void NamespaceDefImpl::writeDocumentation(OutputList &ol)
 
   ol.endContents();
 
-  endFileWithNavPath(this,ol);
+  endFileWithNavPath(ol,this);
 
   if (Config_getBool(SEPARATE_MEMBER_PAGES))
   {
@@ -1091,7 +1094,7 @@ void NamespaceDefImpl::writeDocumentation(OutputList &ol)
 void NamespaceDefImpl::writeMemberPages(OutputList &ol)
 {
   ol.pushGeneratorState();
-  ol.disableAllBut(OutputGenerator::Html);
+  ol.disableAllBut(OutputType::Html);
 
   for (const auto &ml : m_memberLists)
   {
@@ -1164,13 +1167,13 @@ int NamespaceDefImpl::numDocMembers() const
   return (allMemberList ? allMemberList->numDocMembers() : 0) + static_cast<int>(m_innerCompounds.size());
 }
 
-void NamespaceDefImpl::addUsingDirective(const NamespaceDef *nd)
+void NamespaceDefImpl::addUsingDirective(NamespaceDef *nd)
 {
   m_usingDirList.add(nd->qualifiedName(),nd);
   //printf("%s: NamespaceDefImpl::addUsingDirective: %s:%zu\n",qPrint(name()),qPrint(nd->qualifiedName()),m_usingDirList.size());
 }
 
-void NamespaceDefImpl::addUsingDeclaration(const ClassDef *cd)
+void NamespaceDefImpl::addUsingDeclaration(ClassDef *cd)
 {
   m_usingDeclList.add(cd->qualifiedName(),cd);
 }
@@ -1247,7 +1250,7 @@ void NamespaceDefImpl::combineUsingRelations(NamespaceDefSet &visitedNamespaces)
   if (visitedNamespaces.find(this)!=visitedNamespaces.end()) return; // already processed
   visitedNamespaces.insert(this);
 
-  LinkedRefMap<const NamespaceDef> usingDirList = m_usingDirList;
+  LinkedRefMap<NamespaceDef> usingDirList = m_usingDirList;
   for (auto &nd : usingDirList)
   {
     NamespaceDefMutable *ndm = toNamespaceDefMutable(nd);
@@ -1271,6 +1274,35 @@ void NamespaceDefImpl::combineUsingRelations(NamespaceDefSet &visitedNamespaces)
     }
   }
 }
+
+int NamespaceDefImpl::countVisibleMembers() const
+{
+  int count=0;
+  for (const auto &lde : LayoutDocManager::instance().docEntries(LayoutDocManager::Namespace))
+  {
+    if (lde->kind()==LayoutDocEntry::MemberDef)
+    {
+      const LayoutDocEntryMemberDef *lmd = dynamic_cast<const LayoutDocEntryMemberDef*>(lde.get());
+      if (lmd)
+      {
+        MemberList *ml = getMemberList(lmd->type);
+        if (ml)
+        {
+          for (const auto &md : *ml)
+          {
+            if (md->visibleInIndex())
+            {
+              count++;
+            }
+          }
+        }
+      }
+    }
+  }
+  return count;
+}
+
+
 
 //-------------------------------------------------------------------------------
 
@@ -1330,7 +1362,7 @@ void NamespaceLinkedRefMap::writeDeclaration(OutputList &ol,const QCString &titl
       if (lang==SrcLangExt_IDL && (isConstantGroup != nd->isConstantGroup()))
           continue; // will be output in another pass, see layout_default.xml
       ol.startMemberDeclaration();
-      ol.startMemberItem(nd->getOutputFileBase(),0);
+      ol.startMemberItem(nd->getOutputFileBase(),OutputGenerator::MemberItemType::Normal);
       QCString ct = nd->compoundTypeString();
       ol.docify(ct);
       ol.docify(" ");
@@ -1345,7 +1377,7 @@ void NamespaceLinkedRefMap::writeDeclaration(OutputList &ol,const QCString &titl
         name = nd->displayName();
       }
       ol.writeObjectLink(nd->getReference(),nd->getOutputFileBase(),QCString(),name);
-      ol.endMemberItem();
+      ol.endMemberItem(OutputGenerator::MemberItemType::Normal);
       if (!nd->briefDescription().isEmpty() && Config_getBool(BRIEF_MEMBER_DESC))
       {
         ol.startMemberDescription(nd->getOutputFileBase());
@@ -1581,18 +1613,6 @@ NamespaceDefMutable *toNamespaceDefMutable(Definition *d)
   }
 }
 
-NamespaceDefMutable *toNamespaceDefMutable(const Definition *d)
-{
-  if (d && typeid(*d)==typeid(NamespaceDefImpl))
-  {
-    return const_cast<NamespaceDefMutable*>(static_cast<const NamespaceDefMutable*>(d));
-  }
-  else
-  {
-    return 0;
-  }
-}
-
 // --- Helpers
 
 
@@ -1638,62 +1658,70 @@ bool namespaceHasNestedNamespace(const NamespaceDef *nd)
 
 bool namespaceHasNestedConcept(const NamespaceDef *nd)
 {
+  //printf(">namespaceHasNestedConcept(%s)\n",qPrint(nd->name()));
   for (const auto &cnd : nd->getNamespaces())
   {
     if (namespaceHasNestedConcept(cnd))
     {
-      //printf("<namespaceHasVisibleChild(%s,includeClasses=%d): case2\n",qPrint(nd->name()),includeClasses);
+      //printf("<namespaceHasNestedConcept(%s): case1\n",qPrint(nd->name()));
       return true;
     }
   }
   for (const auto &cnd : nd->getConcepts())
   {
+    //printf("candidate %s isLinkableInProject()=%d\n",qPrint(cnd->name()),cnd->isLinkableInProject());
     if (cnd->isLinkableInProject())
     {
+      //printf("<namespaceHasNestedConcept(%s): case2\n",qPrint(nd->name()));
       return true;
     }
   }
+  //printf("<namespaceHasNestedConcept(%s): case3\n",qPrint(nd->name()));
   return false;
 }
 
 bool namespaceHasNestedClass(const NamespaceDef *nd,bool filterClasses,ClassDef::CompoundType ct)
 {
-  //printf(">namespaceHasVisibleChild(%s,includeClasses=%d)\n",qPrint(nd->name()),includeClasses);
+  //printf(">namespaceHasNestedClass(%s,filterClasses=%d)\n",qPrint(nd->name()),filterClasses);
   for (const auto &cnd : nd->getNamespaces())
   {
     if (namespaceHasNestedClass(cnd,filterClasses,ct))
     {
-      //printf("<namespaceHasVisibleChild(%s,includeClasses=%d): case2\n",qPrint(nd->name()),includeClasses);
-      return TRUE;
+      //printf("<namespaceHasNestedClass(%s,filterClasses=%d): case1\n",qPrint(nd->name()),filterClasses);
+      return true;
     }
   }
 
   ClassLinkedRefMap list = nd->getClasses();
   if (filterClasses)
   {
-    if (ct == ClassDef::Interface)
+    switch (ct)
     {
-      list = nd->getInterfaces();
-    }
-    else if (ct == ClassDef::Struct)
-    {
-      list = nd->getStructs();
-    }
-    else if (ct == ClassDef::Exception)
-    {
-      list = nd->getExceptions();
+      case ClassDef::Interface:
+        list = nd->getInterfaces();
+        break;
+      case ClassDef::Struct:
+        list = nd->getStructs();
+        break;
+      case ClassDef::Exception:
+        list = nd->getExceptions();
+        break;
+      default:
+        break;
     }
   }
 
   for (const auto &cd : list)
   {
-    if (cd->isLinkableInProject() && cd->templateMaster()==0)
+    //printf("candidate %s isLinkableInProject()=%d\n",qPrint(cd->name()),cd->isLinkableInProject());
+    if (cd->isLinkableInProject())
     {
-      //printf("<namespaceHasVisibleChild(%s,includeClasses=%d): case3\n",qPrint(nd->name()),includeClasses);
-      return TRUE;
+      //printf("<namespaceHasNestedClass(%s,filterClasses=%d): case2\n",qPrint(nd->name()),filterClasses);
+      return true;
     }
   }
-  return FALSE;
+  //printf("<namespaceHasNestedClass(%s,filterClasses=%d): case3\n",qPrint(nd->name()),filterClasses);
+  return false;
 }
 
 

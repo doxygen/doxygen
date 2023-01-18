@@ -17,7 +17,6 @@
 #include <assert.h>
 
 #include <mutex>
-#include <sstream>
 
 #include "message.h"
 #include "htmlgen.h"
@@ -55,6 +54,8 @@
 #include "utf8.h"
 #include "textstream.h"
 #include "indexlist.h"
+#include "datetime.h"
+#include "portable.h"
 
 //#define DBG_HTML(x) x;
 #define DBG_HTML(x)
@@ -63,7 +64,7 @@ static QCString g_header;
 static QCString g_footer;
 static QCString g_mathjax_code;
 static QCString g_latex_macro;
-static const char *hex="0123456789ABCDEF";
+static constexpr auto hex="0123456789ABCDEF";
 
 // note: this is only active if DISABLE_INDEX=YES, if DISABLE_INDEX is disabled, this
 // part will be rendered inside menu.js
@@ -387,7 +388,7 @@ static QCString substituteHtmlKeywords(const QCString &str,
 
   if (timeStamp)
   {
-    generatedBy = theTranslator->trGeneratedAt(dateToString(TRUE),
+    generatedBy = theTranslator->trGeneratedAt(dateToString(DateTimeType::DateTime),
                                 convertToHtml(Config_getString(PROJECT_NAME)));
   }
   else
@@ -568,33 +569,38 @@ static QCString substituteHtmlKeywords(const QCString &str,
 
   // first substitute generic keywords
   QCString result = substituteKeywords(str,title,
-    convertToHtml(Config_getString(PROJECT_NAME)),
-    convertToHtml(Config_getString(PROJECT_NUMBER)),
+        convertToHtml(Config_getString(PROJECT_NAME)),
+        convertToHtml(Config_getString(PROJECT_NUMBER)),
         convertToHtml(Config_getString(PROJECT_BRIEF)));
 
-  // additional HTML only keywords
-  result = substitute(result,"$navpath",navPath);
-  result = substitute(result,"$stylesheet",cssFile);
-  result = substitute(result,"$treeview",treeViewCssJs);
-  result = substitute(result,"$searchbox",searchBox);
-  result = substitute(result,"$search",searchCssJs);
-  result = substitute(result,"$mathjax",mathJaxJs);
-  result = substitute(result,"$darkmode",darkModeJs);
-  result = substitute(result,"$generatedby",generatedBy);
-  result = substitute(result,"$extrastylesheet",extraCssText);
-  result = substitute(result,"$relpath$",relPath); //<-- obsolete: for backwards compatibility only
-  result = substitute(result,"$relpath^",relPath); //<-- must be last
+  // then do the HTML specific keywords
+  result = substituteKeywords(result,
+  {
+    // keyword           value getter
+    { "$navpath",        [&]() { return navPath;        } },
+    { "$stylesheet",     [&]() { return cssFile;        } },
+    { "$treeview",       [&]() { return treeViewCssJs;  } },
+    { "$searchbox",      [&]() { return searchBox;      } },
+    { "$search",         [&]() { return searchCssJs;    } },
+    { "$mathjax",        [&]() { return mathJaxJs;      } },
+    { "$darkmode",       [&]() { return darkModeJs;     } },
+    { "$generatedby",    [&]() { return generatedBy;    } },
+    { "$extrastylesheet",[&]() { return extraCssText;   } },
+    { "$relpath$",       [&]() { return relPath;        } } //<-- obsolete: for backwards compatibility only
+  });
+
+  result = substitute(result,"$relpath^",relPath); //<-- must be done after the previous substitutions
 
   // additional HTML only conditional blocks
-  result = selectBlock(result,"FULL_SIDEBAR",hasFullSideBar,OutputGenerator::Html);
-  result = selectBlock(result,"DISABLE_INDEX",disableIndex,OutputGenerator::Html);
-  result = selectBlock(result,"GENERATE_TREEVIEW",treeView,OutputGenerator::Html);
-  result = selectBlock(result,"SEARCHENGINE",searchEngine,OutputGenerator::Html);
-  result = selectBlock(result,"TITLEAREA",titleArea,OutputGenerator::Html);
-  result = selectBlock(result,"PROJECT_NAME",hasProjectName,OutputGenerator::Html);
-  result = selectBlock(result,"PROJECT_NUMBER",hasProjectNumber,OutputGenerator::Html);
-  result = selectBlock(result,"PROJECT_BRIEF",hasProjectBrief,OutputGenerator::Html);
-  result = selectBlock(result,"PROJECT_LOGO",hasProjectLogo,OutputGenerator::Html);
+  result = selectBlock(result,"FULL_SIDEBAR",hasFullSideBar,OutputType::Html);
+  result = selectBlock(result,"DISABLE_INDEX",disableIndex,OutputType::Html);
+  result = selectBlock(result,"GENERATE_TREEVIEW",treeView,OutputType::Html);
+  result = selectBlock(result,"SEARCHENGINE",searchEngine,OutputType::Html);
+  result = selectBlock(result,"TITLEAREA",titleArea,OutputType::Html);
+  result = selectBlock(result,"PROJECT_NAME",hasProjectName,OutputType::Html);
+  result = selectBlock(result,"PROJECT_NUMBER",hasProjectNumber,OutputType::Html);
+  result = selectBlock(result,"PROJECT_BRIEF",hasProjectBrief,OutputType::Html);
+  result = selectBlock(result,"PROJECT_LOGO",hasProjectLogo,OutputType::Html);
 
   result = removeEmptyLines(result);
 
@@ -624,6 +630,20 @@ static void fillColorStyleMap(const QCString &definitions,StringUnorderedMap &ma
       //printf("var(%s)=%s\n",qPrint(key),qPrint(value));
     }
     p=i+1;
+  }
+}
+
+static void fillColorStyleMaps()
+{
+  ResourceMgr &mgr = ResourceMgr::instance();
+  auto colorStyle = Config_getEnum(HTML_COLORSTYLE);
+  if (colorStyle==HTML_COLORSTYLE_t::LIGHT)
+  {
+    fillColorStyleMap(replaceColorMarkers(mgr.getAsString("lightmode_settings.css")),g_lightMap);
+  }
+  else if (colorStyle==HTML_COLORSTYLE_t::DARK)
+  {
+    fillColorStyleMap(replaceColorMarkers(mgr.getAsString("darkmode_settings.css")),g_darkMap);
   }
 }
 
@@ -729,7 +749,7 @@ void HtmlCodeGenerator::codify(const QCString &str)
                    break;
         default:
           {
-            uchar uc = static_cast<uchar>(c);
+            uint8_t uc = static_cast<uint8_t>(c);
             if (uc<32)
             {
               m_t << "&#x24" << hex[uc>>4] << hex[uc&0xF] << ";";
@@ -749,8 +769,6 @@ void HtmlCodeGenerator::codify(const QCString &str)
 
 void HtmlCodeGenerator::docify(const QCString &str)
 {
-  //m_t << getHtmlDirEmbeddingChar(getTextDirByConfig(str));
-
   if (!str.isEmpty())
   {
     const char *p=str.data();
@@ -778,7 +796,7 @@ void HtmlCodeGenerator::docify(const QCString &str)
           break;
         default:
           {
-            uchar uc = static_cast<uchar>(c);
+            uint8_t uc = static_cast<uint8_t>(c);
             if (uc<32 && !isspace(c))
             {
               m_t << "&#x24" << hex[uc>>4] << hex[uc&0xF] << ";";
@@ -793,6 +811,7 @@ void HtmlCodeGenerator::docify(const QCString &str)
     }
   }
 }
+
 
 void HtmlCodeGenerator::writeLineNumber(const QCString &ref,const QCString &filename,
                                     const QCString &anchor,int l,bool writeLineAnchor)
@@ -1001,11 +1020,15 @@ void HtmlCodeGenerator::endCodeFragment(const QCString &)
 
 //--------------------------------------------------------------------------
 
-HtmlGenerator::HtmlGenerator() : OutputGenerator(Config_getString(HTML_OUTPUT)), m_codeGen(m_t)
+HtmlGenerator::HtmlGenerator()
+  : OutputGenerator(Config_getString(HTML_OUTPUT))
+  , m_codeGen(m_t)
 {
 }
 
-HtmlGenerator::HtmlGenerator(const HtmlGenerator &og) : OutputGenerator(og), m_codeGen(m_t)
+HtmlGenerator::HtmlGenerator(const HtmlGenerator &og)
+  : OutputGenerator(og)
+  , m_codeGen(m_t)
 {
 }
 
@@ -1066,16 +1089,9 @@ void HtmlGenerator::init()
   }
   createSubDirs(d);
 
+  fillColorStyleMaps();
+
   ResourceMgr &mgr = ResourceMgr::instance();
-  auto colorStyle = Config_getEnum(HTML_COLORSTYLE);
-  if (colorStyle==HTML_COLORSTYLE_t::LIGHT)
-  {
-    fillColorStyleMap(replaceColorMarkers(mgr.getAsString("lightmode_settings.css")),g_lightMap);
-  }
-  else if (colorStyle==HTML_COLORSTYLE_t::DARK)
-  {
-    fillColorStyleMap(replaceColorMarkers(mgr.getAsString("darkmode_settings.css")),g_darkMap);
-  }
 
   {
     QCString tabsCss;
@@ -1088,7 +1104,7 @@ void HtmlGenerator::init()
       tabsCss = mgr.getAsString("fixed_tabs.css");
     }
 
-    std::ofstream f(dname.str()+"/tabs.css",std::ofstream::out | std::ofstream::binary);
+    std::ofstream f = Portable::openOutputStream(dname+"/tabs.css");
     if (f.is_open())
     {
       TextStream t(&f);
@@ -1108,10 +1124,10 @@ void HtmlGenerator::init()
     mgr.copyResource("menu.js",dname);
   }
 
-  if (colorStyle==HTML_COLORSTYLE_t::TOGGLE)
+  if (Config_getBool(HTML_COLORSTYLE)==HTML_COLORSTYLE_t::TOGGLE)
   {
     //mgr.copyResource("darkmode_toggle.js",dname);
-    std::ofstream f(dname.str()+"/darkmode_toggle.js",std::ofstream::out | std::ofstream::binary);
+    std::ofstream f = Portable::openOutputStream(dname+"/darkmode_toggle.js");
     if (f.is_open())
     {
       TextStream t(&f);
@@ -1120,7 +1136,7 @@ void HtmlGenerator::init()
   }
 
   {
-    std::ofstream f(dname.str()+"/dynsections.js",std::ofstream::out | std::ofstream::binary);
+    std::ofstream f = Portable::openOutputStream(dname+"/dynsections.js");
     if (f.is_open())
     {
       TextStream t(&f);
@@ -1200,7 +1216,7 @@ void HtmlGenerator::writeSearchData(const QCString &dname)
   Doxygen::indexList->addImageFile("search/mag_seld.svg");
 
   QCString searchDirName = dname;
-  std::ofstream f(searchDirName.str()+"/search.css",std::ofstream::out | std::ofstream::binary);
+  std::ofstream f = Portable::openOutputStream(searchDirName+"/search.css");
   if (f.is_open())
   {
     TextStream t(&f);
@@ -1283,10 +1299,21 @@ static void writeDefaultStyleSheet(TextStream &t)
   }
 
   t << replaceVariables(ResourceMgr::instance().getAsString("doxygen.css"));
+
+  // For Webkit based the scrollbar styling cannot be overruled (bug in chromium?).
+  // To allow the user to style the scrollbars differently we should only add it in case
+  // the user did not specify any extra stylesheets.
+  bool addScrollbarStyling = Config_getList(HTML_EXTRA_STYLESHEET).empty();
+  if (addScrollbarStyling)
+  {
+    t << replaceVariables(ResourceMgr::instance().getAsString("scrollbar.css"));
+  }
+
 }
 
 void HtmlGenerator::writeStyleSheetFile(TextStream &t)
 {
+  fillColorStyleMaps();
   writeDefaultStyleSheet(t);
 }
 
@@ -1313,7 +1340,6 @@ void HtmlGenerator::startFile(const QCString &name,const QCString &,
   m_lastTitle=title;
 
   startPlainFile(fileName);
-  m_codeGen.setId(id);
   m_codeGen.setRelativePath(m_relPath);
   {
     std::lock_guard<std::mutex> lock(g_indexLock);
@@ -1381,7 +1407,7 @@ QCString HtmlGenerator::writeLogoAsString(const QCString &path)
   if (timeStamp)
   {
     result += theTranslator->trGeneratedAt(
-               dateToString(TRUE),
+               dateToString(DateTimeType::DateTime),
                Config_getString(PROJECT_NAME)
               );
   }
@@ -1873,7 +1899,7 @@ void HtmlGenerator::endMemberList()
 //  0 = single column right aligned
 //  1 = double column left aligned
 //  2 = single column left aligned
-void HtmlGenerator::startMemberItem(const QCString &anchor,int annoType,const QCString &inheritId)
+void HtmlGenerator::startMemberItem(const QCString &anchor,MemberItemType type,const QCString &inheritId)
 {
   DBG_HTML(m_t << "<!-- startMemberItem() -->\n")
   if (m_emptySection)
@@ -1887,11 +1913,15 @@ void HtmlGenerator::startMemberItem(const QCString &anchor,int annoType,const QC
     m_t << " inherit " << inheritId;
   }
   m_t << "\">";
-  insertMemberAlignLeft(annoType, true);
+  insertMemberAlignLeft(type, true);
 }
 
-void HtmlGenerator::endMemberItem()
+void HtmlGenerator::endMemberItem(MemberItemType type)
 {
+  if (type==MemberItemType::AnonymousStart || type==MemberItemType::AnonymousEnd)
+  {
+    insertMemberAlign(false);
+  }
   m_t << "</td></tr>\n";
 }
 
@@ -1927,15 +1957,15 @@ void HtmlGenerator::insertMemberAlign(bool templ)
   m_t << "&#160;</td><td class=\"" << className << "\" valign=\"bottom\">";
 }
 
-void HtmlGenerator::insertMemberAlignLeft(int annoType, bool initTag)
+void HtmlGenerator::insertMemberAlignLeft(MemberItemType type, bool initTag)
 {
   if (!initTag) m_t << "&#160;</td>";
-  switch(annoType)
+  switch (type)
   {
-    case 0:  m_t << "<td class=\"memItemLeft\" align=\"right\" valign=\"top\">"; break;
-    case 1:  m_t << "<td class=\"memItemLeft\" >"; break;
-    case 2:  m_t << "<td class=\"memItemLeft\" valign=\"top\">"; break;
-    default: m_t << "<td class=\"memTemplParams\" colspan=\"2\">"; break;
+    case MemberItemType::Normal:         m_t << "<td class=\"memItemLeft\" align=\"right\" valign=\"top\">"; break;
+    case MemberItemType::AnonymousStart: m_t << "<td class=\"memItemLeft\" >"; break;
+    case MemberItemType::AnonymousEnd:   m_t << "<td class=\"memItemLeft\" valign=\"top\">"; break;
+    case MemberItemType::Templated:      m_t << "<td class=\"memTemplParams\" colspan=\"2\">"; break;
   }
 }
 
@@ -2498,38 +2528,39 @@ static void endQuickIndexItem(TextStream &t,const QCString &l)
 
 static bool quickLinkVisible(LayoutNavEntry::Kind kind)
 {
+  const auto &index = Index::instance();
   bool showNamespaces = Config_getBool(SHOW_NAMESPACES);
   switch (kind)
   {
     case LayoutNavEntry::MainPage:           return TRUE;
     case LayoutNavEntry::User:               return TRUE;
     case LayoutNavEntry::UserGroup:          return TRUE;
-    case LayoutNavEntry::Pages:              return indexedPages>0;
-    case LayoutNavEntry::Modules:            return documentedGroups>0;
-    case LayoutNavEntry::Namespaces:         return documentedNamespaces>0 && showNamespaces;
-    case LayoutNavEntry::NamespaceList:      return documentedNamespaces>0 && showNamespaces;
-    case LayoutNavEntry::NamespaceMembers:   return documentedNamespaceMembers[NMHL_All]>0;
-    case LayoutNavEntry::Concepts:           return documentedConcepts>0;
-    case LayoutNavEntry::Classes:            return annotatedClasses>0;
-    case LayoutNavEntry::ClassList:          return annotatedClasses>0;
-    case LayoutNavEntry::ClassIndex:         return annotatedClasses>0;
-    case LayoutNavEntry::ClassHierarchy:     return hierarchyClasses>0;
-    case LayoutNavEntry::ClassMembers:       return documentedClassMembers[CMHL_All]>0;
-    case LayoutNavEntry::Files:              return Config_getBool(SHOW_FILES) && documentedFiles>0;
-    case LayoutNavEntry::FileList:           return Config_getBool(SHOW_FILES) && documentedFiles>0;
-    case LayoutNavEntry::FileGlobals:        return Config_getBool(SHOW_FILES) && documentedFileMembers[FMHL_All]>0;
+    case LayoutNavEntry::Pages:              return index.numIndexedPages()>0;
+    case LayoutNavEntry::Modules:            return index.numDocumentedGroups()>0;
+    case LayoutNavEntry::Namespaces:         return index.numDocumentedNamespaces()>0 && showNamespaces;
+    case LayoutNavEntry::NamespaceList:      return index.numDocumentedNamespaces()>0 && showNamespaces;
+    case LayoutNavEntry::NamespaceMembers:   return index.numDocumentedNamespaceMembers(NamespaceMemberHighlight::All)>0;
+    case LayoutNavEntry::Concepts:           return index.numDocumentedConcepts()>0;
+    case LayoutNavEntry::Classes:            return index.numAnnotatedClasses()>0;
+    case LayoutNavEntry::ClassList:          return index.numAnnotatedClasses()>0;
+    case LayoutNavEntry::ClassIndex:         return index.numAnnotatedClasses()>0;
+    case LayoutNavEntry::ClassHierarchy:     return index.numHierarchyClasses()>0;
+    case LayoutNavEntry::ClassMembers:       return index.numDocumentedClassMembers(ClassMemberHighlight::All)>0;
+    case LayoutNavEntry::Files:              return Config_getBool(SHOW_FILES) && index.numDocumentedFiles()>0;
+    case LayoutNavEntry::FileList:           return Config_getBool(SHOW_FILES) && index.numDocumentedFiles()>0;
+    case LayoutNavEntry::FileGlobals:        return Config_getBool(SHOW_FILES) && index.numDocumentedFileMembers(FileMemberHighlight::All)>0;
     case LayoutNavEntry::Examples:           return !Doxygen::exampleLinkedMap->empty();
-    case LayoutNavEntry::Interfaces:         return annotatedInterfaces>0;
-    case LayoutNavEntry::InterfaceList:      return annotatedInterfaces>0;
-    case LayoutNavEntry::InterfaceIndex:     return annotatedInterfaces>0;
-    case LayoutNavEntry::InterfaceHierarchy: return hierarchyInterfaces>0;
-    case LayoutNavEntry::Structs:            return annotatedStructs>0;
-    case LayoutNavEntry::StructList:         return annotatedStructs>0;
-    case LayoutNavEntry::StructIndex:        return annotatedStructs>0;
-    case LayoutNavEntry::Exceptions:         return annotatedExceptions>0;
-    case LayoutNavEntry::ExceptionList:      return annotatedExceptions>0;
-    case LayoutNavEntry::ExceptionIndex:     return annotatedExceptions>0;
-    case LayoutNavEntry::ExceptionHierarchy: return hierarchyExceptions>0;
+    case LayoutNavEntry::Interfaces:         return index.numAnnotatedInterfaces()>0;
+    case LayoutNavEntry::InterfaceList:      return index.numAnnotatedInterfaces()>0;
+    case LayoutNavEntry::InterfaceIndex:     return index.numAnnotatedInterfaces()>0;
+    case LayoutNavEntry::InterfaceHierarchy: return index.numHierarchyInterfaces()>0;
+    case LayoutNavEntry::Structs:            return index.numAnnotatedStructs()>0;
+    case LayoutNavEntry::StructList:         return index.numAnnotatedStructs()>0;
+    case LayoutNavEntry::StructIndex:        return index.numAnnotatedStructs()>0;
+    case LayoutNavEntry::Exceptions:         return index.numAnnotatedExceptions()>0;
+    case LayoutNavEntry::ExceptionList:      return index.numAnnotatedExceptions()>0;
+    case LayoutNavEntry::ExceptionIndex:     return index.numAnnotatedExceptions()>0;
+    case LayoutNavEntry::ExceptionHierarchy: return index.numHierarchyExceptions()>0;
     case LayoutNavEntry::None:             // should never happen, means not properly initialized
       assert(kind != LayoutNavEntry::None);
       return FALSE;
@@ -2646,48 +2677,47 @@ static void writeDefaultQuickLinks(TextStream &t,bool compact,
   LayoutNavEntry *root = LayoutDocManager::instance().rootNavEntry();
   LayoutNavEntry::Kind kind = LayoutNavEntry::None;
   LayoutNavEntry::Kind altKind = LayoutNavEntry::None; // fall back for the old layout file
-  bool highlightParent=FALSE;
+  bool highlightParent=false;
   switch (hli) // map HLI enums to LayoutNavEntry::Kind enums
   {
-    case HLI_Main:             kind = LayoutNavEntry::MainPage;         break;
-    case HLI_Modules:          kind = LayoutNavEntry::Modules;          break;
-    //case HLI_Directories:      kind = LayoutNavEntry::Dirs;             break;
-    case HLI_Namespaces:       kind = LayoutNavEntry::NamespaceList;    altKind = LayoutNavEntry::Namespaces;  break;
-    case HLI_ClassHierarchy:   kind = LayoutNavEntry::ClassHierarchy;   break;
-    case HLI_InterfaceHierarchy: kind = LayoutNavEntry::InterfaceHierarchy;   break;
-    case HLI_ExceptionHierarchy: kind = LayoutNavEntry::ExceptionHierarchy;   break;
-    case HLI_Classes:          kind = LayoutNavEntry::ClassIndex;       altKind = LayoutNavEntry::Classes;     break;
-    case HLI_Concepts:         kind = LayoutNavEntry::Concepts;         break;
-    case HLI_Interfaces:       kind = LayoutNavEntry::InterfaceIndex;   altKind = LayoutNavEntry::Interfaces;  break;
-    case HLI_Structs:          kind = LayoutNavEntry::StructIndex;      altKind = LayoutNavEntry::Structs;     break;
-    case HLI_Exceptions:       kind = LayoutNavEntry::ExceptionIndex;   altKind = LayoutNavEntry::Exceptions;  break;
-    case HLI_AnnotatedClasses: kind = LayoutNavEntry::ClassList;        altKind = LayoutNavEntry::Classes;     break;
-    case HLI_AnnotatedInterfaces: kind = LayoutNavEntry::InterfaceList; altKind = LayoutNavEntry::Interfaces;  break;
-    case HLI_AnnotatedStructs: kind = LayoutNavEntry::StructList;       altKind = LayoutNavEntry::Structs;     break;
-    case HLI_AnnotatedExceptions: kind = LayoutNavEntry::ExceptionList; altKind = LayoutNavEntry::Exceptions;  break;
-    case HLI_Files:            kind = LayoutNavEntry::FileList;         altKind = LayoutNavEntry::Files;       break;
-    case HLI_NamespaceMembers: kind = LayoutNavEntry::NamespaceMembers; break;
-    case HLI_Functions:        kind = LayoutNavEntry::ClassMembers;     break;
-    case HLI_Globals:          kind = LayoutNavEntry::FileGlobals;      break;
-    case HLI_Pages:            kind = LayoutNavEntry::Pages;            break;
-    case HLI_Examples:         kind = LayoutNavEntry::Examples;         break;
-    case HLI_UserGroup:        kind = LayoutNavEntry::UserGroup;        break;
-    case HLI_ClassVisible:     kind = LayoutNavEntry::ClassList;        altKind = LayoutNavEntry::Classes;
-                               highlightParent = TRUE; break;
-    case HLI_ConceptVisible:   kind = LayoutNavEntry::Concepts;
-                               highlightParent = TRUE; break;
-    case HLI_InterfaceVisible: kind = LayoutNavEntry::InterfaceList;    altKind = LayoutNavEntry::Interfaces;
-                               highlightParent = TRUE; break;
-    case HLI_StructVisible:    kind = LayoutNavEntry::StructList;       altKind = LayoutNavEntry::Structs;
-                               highlightParent = TRUE; break;
-    case HLI_ExceptionVisible: kind = LayoutNavEntry::ExceptionList;    altKind = LayoutNavEntry::Exceptions;
-                               highlightParent = TRUE; break;
-    case HLI_NamespaceVisible: kind = LayoutNavEntry::NamespaceList;    altKind = LayoutNavEntry::Namespaces;
-                               highlightParent = TRUE; break;
-    case HLI_FileVisible:      kind = LayoutNavEntry::FileList;         altKind = LayoutNavEntry::Files;
-                               highlightParent = TRUE; break;
-    case HLI_None:   break;
-    case HLI_Search: break;
+    case HighlightedItem::Main:                kind = LayoutNavEntry::MainPage;         break;
+    case HighlightedItem::Modules:             kind = LayoutNavEntry::Modules;          break;
+    case HighlightedItem::Namespaces:          kind = LayoutNavEntry::NamespaceList;    altKind = LayoutNavEntry::Namespaces;  break;
+    case HighlightedItem::ClassHierarchy:      kind = LayoutNavEntry::ClassHierarchy;   break;
+    case HighlightedItem::InterfaceHierarchy:  kind = LayoutNavEntry::InterfaceHierarchy;   break;
+    case HighlightedItem::ExceptionHierarchy:  kind = LayoutNavEntry::ExceptionHierarchy;   break;
+    case HighlightedItem::Classes:             kind = LayoutNavEntry::ClassIndex;       altKind = LayoutNavEntry::Classes;     break;
+    case HighlightedItem::Concepts:            kind = LayoutNavEntry::Concepts;         break;
+    case HighlightedItem::Interfaces:          kind = LayoutNavEntry::InterfaceIndex;   altKind = LayoutNavEntry::Interfaces;  break;
+    case HighlightedItem::Structs:             kind = LayoutNavEntry::StructIndex;      altKind = LayoutNavEntry::Structs;     break;
+    case HighlightedItem::Exceptions:          kind = LayoutNavEntry::ExceptionIndex;   altKind = LayoutNavEntry::Exceptions;  break;
+    case HighlightedItem::AnnotatedClasses:    kind = LayoutNavEntry::ClassList;        altKind = LayoutNavEntry::Classes;     break;
+    case HighlightedItem::AnnotatedInterfaces: kind = LayoutNavEntry::InterfaceList; altKind = LayoutNavEntry::Interfaces;  break;
+    case HighlightedItem::AnnotatedStructs:    kind = LayoutNavEntry::StructList;       altKind = LayoutNavEntry::Structs;     break;
+    case HighlightedItem::AnnotatedExceptions: kind = LayoutNavEntry::ExceptionList; altKind = LayoutNavEntry::Exceptions;  break;
+    case HighlightedItem::Files:               kind = LayoutNavEntry::FileList;         altKind = LayoutNavEntry::Files;       break;
+    case HighlightedItem::NamespaceMembers:    kind = LayoutNavEntry::NamespaceMembers; break;
+    case HighlightedItem::Functions:           kind = LayoutNavEntry::ClassMembers;     break;
+    case HighlightedItem::Globals:             kind = LayoutNavEntry::FileGlobals;      break;
+    case HighlightedItem::Pages:               kind = LayoutNavEntry::Pages;            break;
+    case HighlightedItem::Examples:            kind = LayoutNavEntry::Examples;         break;
+    case HighlightedItem::UserGroup:           kind = LayoutNavEntry::UserGroup;        break;
+    case HighlightedItem::ClassVisible:        kind = LayoutNavEntry::ClassList;        altKind = LayoutNavEntry::Classes;
+                                               highlightParent = true; break;
+    case HighlightedItem::ConceptVisible:      kind = LayoutNavEntry::Concepts;
+                                               highlightParent = true; break;
+    case HighlightedItem::InterfaceVisible:    kind = LayoutNavEntry::InterfaceList;    altKind = LayoutNavEntry::Interfaces;
+                                               highlightParent = true; break;
+    case HighlightedItem::StructVisible:       kind = LayoutNavEntry::StructList;       altKind = LayoutNavEntry::Structs;
+                                               highlightParent = true; break;
+    case HighlightedItem::ExceptionVisible:    kind = LayoutNavEntry::ExceptionList;    altKind = LayoutNavEntry::Exceptions;
+                                               highlightParent = true; break;
+    case HighlightedItem::NamespaceVisible:    kind = LayoutNavEntry::NamespaceList;    altKind = LayoutNavEntry::Namespaces;
+                                               highlightParent = true; break;
+    case HighlightedItem::FileVisible:         kind = LayoutNavEntry::FileList;         altKind = LayoutNavEntry::Files;
+                                               highlightParent = true; break;
+    case HighlightedItem::None:   break;
+    case HighlightedItem::Search: break;
   }
 
   if (compact && Config_getBool(HTML_DYNAMIC_MENUS))
@@ -2751,7 +2781,7 @@ static void writeDefaultQuickLinks(TextStream &t,bool compact,
         hlEntry = e;
       }
     }
-    renderQuickLinksAsTabs(t,relPath,hlEntry,kind,highlightParent,hli==HLI_Search);
+    renderQuickLinksAsTabs(t,relPath,hlEntry,kind,highlightParent,hli==HighlightedItem::Search);
   }
   else
   {
@@ -2844,7 +2874,7 @@ void HtmlGenerator::writeSearchPage()
 
   // OPENSEARCH_PROVIDER {
   QCString configFileName = htmlOutput+"/search_config.php";
-  std::ofstream f(configFileName.str(),std::ofstream::out | std::ofstream::binary);
+  std::ofstream f = Portable::openOutputStream(configFileName);
   if (f.is_open())
   {
     TextStream t(&f);
@@ -2875,7 +2905,7 @@ void HtmlGenerator::writeSearchPage()
   // OPENSEARCH_PROVIDER }
 
   QCString fileName = htmlOutput+"/search.php";
-  f.open(fileName.str(),std::ofstream::out | std::ofstream::binary);
+  f = Portable::openOutputStream(fileName);
   if (f.is_open())
   {
     TextStream t(&f);
@@ -2891,7 +2921,7 @@ void HtmlGenerator::writeSearchPage()
     t << "</script>\n";
     if (!Config_getBool(DISABLE_INDEX))
     {
-      writeDefaultQuickLinks(t,TRUE,HLI_Search,QCString(),QCString());
+      writeDefaultQuickLinks(t,TRUE,HighlightedItem::Search,QCString(),QCString());
     }
     else
     {
@@ -2914,7 +2944,7 @@ void HtmlGenerator::writeSearchPage()
   f.close();
 
   QCString scriptName = htmlOutput+"/search/search.js";
-  f.open(scriptName.str(),std::ofstream::out | std::ofstream::binary);
+  f = Portable::openOutputStream(scriptName);
   if (f.is_open())
   {
     TextStream t(&f);
@@ -2931,7 +2961,7 @@ void HtmlGenerator::writeExternalSearchPage()
   bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
   QCString dname = Config_getString(HTML_OUTPUT);
   QCString fileName = dname+"/search"+Doxygen::htmlFileExtension;
-  std::ofstream f(fileName.str(),std::ofstream::out | std::ofstream::binary);
+  std::ofstream f = Portable::openOutputStream(fileName);
   if (f.is_open())
   {
     TextStream t(&f);
@@ -2947,7 +2977,7 @@ void HtmlGenerator::writeExternalSearchPage()
     t << "</script>\n";
     if (!Config_getBool(DISABLE_INDEX))
     {
-      writeDefaultQuickLinks(t,TRUE,HLI_Search,QCString(),QCString());
+      writeDefaultQuickLinks(t,TRUE,HighlightedItem::Search,QCString(),QCString());
       if (!Config_getBool(HTML_DYNAMIC_MENUS)) // for dynamic menus, menu.js creates this part
       {
         t << "            <input type=\"text\" id=\"MSearchField\" name=\"query\" value=\"\" placeholder=\"" << theTranslator->trSearch() <<
@@ -2987,7 +3017,7 @@ void HtmlGenerator::writeExternalSearchPage()
   f.close();
 
   QCString scriptName = dname+"/search/search.js";
-  f.open(scriptName.str(),std::ofstream::out | std::ofstream::binary);
+  f = Portable::openOutputStream(scriptName);
   if (f.is_open())
   {
     TextStream t(&f);
@@ -3274,5 +3304,74 @@ QCString HtmlGenerator::getNavTreeCss()
 {
   ResourceMgr &mgr = ResourceMgr::instance();
   return replaceVariables(mgr.getAsString("navtree.css"));
+}
+
+void HtmlGenerator::writeLocalToc(const SectionRefs &sectionRefs,const LocalToc &localToc)
+{
+  if (localToc.isHtmlEnabled())
+  {
+    int maxLevel = localToc.htmlLevel();
+    m_t << "<div class=\"toc\">";
+    m_t << "<h3>" << theTranslator->trRTFTableOfContents() << "</h3>\n";
+    m_t << "<ul>";
+    int level=1,l;
+    char cs[2];
+    cs[1]='\0';
+    BoolVector inLi(maxLevel+1,false);
+    for (const SectionInfo *si : sectionRefs)
+    {
+      SectionType type = si->type();
+      if (isSection(type))
+      {
+        //printf("  level=%d title=%s\n",level,qPrint(si->title));
+        int nextLevel = static_cast<int>(type);
+        if (nextLevel>level)
+        {
+          for (l=level;l<nextLevel;l++)
+          {
+            if (l < maxLevel) m_t << "<ul>";
+          }
+        }
+        else if (nextLevel<level)
+        {
+          for (l=level;l>nextLevel;l--)
+          {
+            if (l <= maxLevel && inLi[l]) m_t << "</li>\n";
+            inLi[l]=false;
+            if (l <= maxLevel) m_t << "</ul>\n";
+          }
+        }
+        cs[0]=static_cast<char>('0'+nextLevel);
+        if (nextLevel <= maxLevel && inLi[nextLevel])
+        {
+          m_t << "</li>\n";
+        }
+        QCString titleDoc = convertToHtml(si->title());
+        if (nextLevel <= maxLevel)
+        {
+          m_t << "<li class=\"level"+QCString(cs)+"\">"
+              << "<a href=\"#"+si->label()+"\">"
+              << convertToHtml(filterTitle(si->title().isEmpty()?si->label():titleDoc))
+              << "</a>";
+        }
+        inLi[nextLevel]=true;
+        level = nextLevel;
+      }
+    }
+    if (level > maxLevel) level = maxLevel;
+    while (level>1 && level <= maxLevel)
+    {
+      if (inLi[level])
+      {
+        m_t << "</li>\n";
+      }
+      inLi[level]=FALSE;
+      m_t << "</ul>\n";
+      level--;
+    }
+    if (level <= maxLevel && inLi[level]) m_t << "</li>\n";
+    m_t << "</ul>\n";
+    m_t << "</div>\n";
+  }
 }
 
