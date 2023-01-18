@@ -1535,6 +1535,9 @@ STopt  [^\n@\\]*
                                           yyextra->lineNr++;
                                           addOutput(yyscanner,'\n');
                                         }
+<LineParam>({CMD}{CMD}){ID}             { // escaped command
+                                          addOutput(yyscanner,yytext);
+                                        }
 <LineParam>.                            { // ignore other stuff
                                           addOutput(yyscanner,*yytext);
                                         }
@@ -1579,11 +1582,11 @@ STopt  [^\n@\\]*
                                           yyextra->sectionTitle+=yytext;
                                           addOutput(yyscanner,yytext);
                                         }
-<SectionTitle>({CMD}{CMD}){ID}          { // unescape escaped command
+<SectionTitle>({CMD}{CMD}){ID}          { // escaped command
                                           yyextra->sectionTitle+=&yytext[1];
                                           addOutput(yyscanner,yytext);
                                         }
-<SectionTitle>{CMD}[$@\\&~<>#%]         { // unescape escaped character
+<SectionTitle>{CMD}[$@\\&~<>#%]         { // unescaped character
                                           yyextra->sectionTitle+=yytext[1];
                                           addOutput(yyscanner,yytext);
                                         }

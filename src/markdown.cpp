@@ -1598,6 +1598,13 @@ int Markdown::processSpecialCommand(const char *data, int offset, int size)
       AUTO_TRACE_EXIT("2");
       return 2;
     }
+    else if (c=='\\' || c=='@')
+    {
+      m_out.addChar(data[0]);
+      m_out.addChar(data[1]);
+      AUTO_TRACE_EXIT("2");
+      return 2;
+    }
     else if (c=='-' && size>3 && data[2]=='-' && data[3]=='-') // \---
     {
       m_out.addStr(&data[1],3);
@@ -1609,6 +1616,17 @@ int Markdown::processSpecialCommand(const char *data, int offset, int size)
       m_out.addStr(&data[1],2);
       AUTO_TRACE_EXIT("3");
       return 3;
+    }
+  }
+  else if (size>1 && data[0]=='@') // escaped characters
+  {
+    char c=data[1];
+    if (c=='\\' || c=='@')
+    {
+      m_out.addChar(data[0]);
+      m_out.addChar(data[1]);
+      AUTO_TRACE_EXIT("2");
+      return 2;
     }
   }
   return 0;
