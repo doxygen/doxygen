@@ -1602,7 +1602,7 @@ int Markdown::processSpecialCommand(const char *data, int offset, int size)
     {
       m_out.addChar(data[0]);
       m_out.addChar(data[1]);
-      TRACE_TRACE_EXIT("2");
+      AUTO_TRACE_EXIT("2");
       return 2;
     }
     else if (c=='-' && size>3 && data[2]=='-' && data[3]=='-') // \---
