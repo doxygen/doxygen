@@ -1209,6 +1209,22 @@ class DoxVirtualKind(str, Enum):
     PUREVIRTUAL='pure-virtual'
 
 
+class MemberKind(str, Enum):
+    DEFINE='define'
+    PROPERTY='property'
+    EVENT='event'
+    VARIABLE='variable'
+    TYPEDEF='typedef'
+    ENUM='enum'
+    ENUMVALUE='enumvalue'
+    FUNCTION='function'
+    SIGNAL='signal'
+    PROTOTYPE='prototype'
+    FRIEND='friend'
+    DCOP='dcop'
+    SLOT='slot'
+
+
 class DoxygenType(GeneratedsSuper):
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
@@ -3389,6 +3405,139 @@ class refTextType(GeneratedsSuper):
 # end class refTextType
 
 
+class MemberType(GeneratedsSuper):
+    __hash__ = GeneratedsSuper.__hash__
+    subclass = None
+    superclass = None
+    def __init__(self, refid=None, kind=None, name=None, gds_collector_=None, **kwargs_):
+        self.gds_collector_ = gds_collector_
+        self.gds_elementtree_node_ = None
+        self.original_tagname_ = None
+        self.parent_object_ = kwargs_.get('parent_object_')
+        self.ns_prefix_ = None
+        self.refid = _cast(None, refid)
+        self.refid_nsprefix_ = None
+        self.kind = _cast(None, kind)
+        self.kind_nsprefix_ = None
+        self.name = name
+        self.name_nsprefix_ = None
+    def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, MemberType)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
+        if MemberType.subclass:
+            return MemberType.subclass(*args_, **kwargs_)
+        else:
+            return MemberType(*args_, **kwargs_)
+    factory = staticmethod(factory)
+    def get_ns_prefix_(self):
+        return self.ns_prefix_
+    def set_ns_prefix_(self, ns_prefix):
+        self.ns_prefix_ = ns_prefix
+    def get_name(self):
+        return self.name
+    def set_name(self, name):
+        self.name = name
+    def get_refid(self):
+        return self.refid
+    def set_refid(self, refid):
+        self.refid = refid
+    def get_kind(self):
+        return self.kind
+    def set_kind(self, kind):
+        self.kind = kind
+    def validate_MemberKind(self, value):
+        # Validate type MemberKind, a restriction on xsd:string.
+        if value is not None and Validate_simpletypes_ and self.gds_collector_ is not None:
+            if not isinstance(value, str):
+                lineno = self.gds_get_node_lineno_()
+                self.gds_collector_.add_message('Value "%(value)s"%(lineno)s is not of the correct base simple type (str)' % {"value": value, "lineno": lineno, })
+                return False
+            value = value
+            enumerations = ['define', 'property', 'event', 'variable', 'typedef', 'enum', 'enumvalue', 'function', 'signal', 'prototype', 'friend', 'dcop', 'slot']
+            if value not in enumerations:
+                lineno = self.gds_get_node_lineno_()
+                self.gds_collector_.add_message('Value "%(value)s"%(lineno)s does not match xsd enumeration restriction on MemberKind' % {"value" : encode_str_2_3(value), "lineno": lineno} )
+                result = False
+    def hasContent_(self):
+        if (
+            self.name is not None
+        ):
+            return True
+        else:
+            return False
+    def export(self, outfile, level, namespaceprefix_='', namespacedef_='', name_='MemberType', pretty_print=True):
+        imported_ns_def_ = GenerateDSNamespaceDefs_.get('MemberType')
+        if imported_ns_def_ is not None:
+            namespacedef_ = imported_ns_def_
+        if pretty_print:
+            eol_ = '\n'
+        else:
+            eol_ = ''
+        if self.original_tagname_ is not None and name_ == 'MemberType':
+            name_ = self.original_tagname_
+        if UseCapturedNS_ and self.ns_prefix_:
+            namespaceprefix_ = self.ns_prefix_ + ':'
+        showIndent(outfile, level, pretty_print)
+        outfile.write('<%s%s%s' % (namespaceprefix_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        already_processed = set()
+        self.exportAttributes(outfile, level, already_processed, namespaceprefix_, name_='MemberType')
+        if self.hasContent_():
+            outfile.write('>%s' % (eol_, ))
+            self.exportChildren(outfile, level + 1, namespaceprefix_, namespacedef_, name_='MemberType', pretty_print=pretty_print)
+            showIndent(outfile, level, pretty_print)
+            outfile.write('</%s%s>%s' % (namespaceprefix_, name_, eol_))
+        else:
+            outfile.write('/>%s' % (eol_, ))
+    def exportAttributes(self, outfile, level, already_processed, namespaceprefix_='', name_='MemberType'):
+        if self.refid is not None and 'refid' not in already_processed:
+            already_processed.add('refid')
+            outfile.write(' refid=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.refid), input_name='refid')), ))
+        if self.kind is not None and 'kind' not in already_processed:
+            already_processed.add('kind')
+            outfile.write(' kind=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.kind), input_name='kind')), ))
+    def exportChildren(self, outfile, level, namespaceprefix_='', namespacedef_='', name_='MemberType', fromsubclass_=False, pretty_print=True):
+        if pretty_print:
+            eol_ = '\n'
+        else:
+            eol_ = ''
+        if self.name is not None:
+            namespaceprefix_ = self.name_nsprefix_ + ':' if (UseCapturedNS_ and self.name_nsprefix_) else ''
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%sname>%s</%sname>%s' % (namespaceprefix_ , self.gds_encode(self.gds_format_string(quote_xml(self.name), input_name='name')), namespaceprefix_ , eol_))
+    def build(self, node, gds_collector_=None):
+        self.gds_collector_ = gds_collector_
+        if SaveElementTreeNode:
+            self.gds_elementtree_node_ = node
+        already_processed = set()
+        self.ns_prefix_ = node.prefix
+        self.buildAttributes(node, node.attrib, already_processed)
+        for child in node:
+            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
+            self.buildChildren(child, node, nodeName_, gds_collector_=gds_collector_)
+        return self
+    def buildAttributes(self, node, attrs, already_processed):
+        value = find_attr_value_('refid', node)
+        if value is not None and 'refid' not in already_processed:
+            already_processed.add('refid')
+            self.refid = value
+        value = find_attr_value_('kind', node)
+        if value is not None and 'kind' not in already_processed:
+            already_processed.add('kind')
+            self.kind = value
+            self.validate_MemberKind(self.kind)    # validate type MemberKind
+    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False, gds_collector_=None):
+        if nodeName_ == 'name':
+            value_ = child_.text
+            value_ = self.gds_parse_string(value_, node, 'name')
+            value_ = self.gds_validate_string(value_, node, 'name')
+            self.name = value_
+            self.name_nsprefix_ = child_.prefix
+# end class MemberType
+
+
 class sectiondefType(GeneratedsSuper):
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
@@ -3565,7 +3714,7 @@ class sectiondefType(GeneratedsSuper):
             self.memberdef.append(obj_)
             obj_.original_tagname_ = 'memberdef'
         elif nodeName_ == 'member':
-            obj_ = memberRefType.factory(parent_object_=self)
+            obj_ = MemberType.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
             self.member.append(obj_)
             obj_.original_tagname_ = 'member'
@@ -27152,6 +27301,7 @@ NamespaceToDefMappings_ = {'http://www.w3.org/XML/1998/namespace': []}
 
 __all__ = [
     "DoxygenType",
+    "MemberType",
     "argsstring",
     "array",
     "attributes",
