@@ -2050,8 +2050,8 @@ SymbolModifiers& SymbolModifiers::operator|=(QCString mdfStringArg)
   else if (mdfString.contains("intent"))
   {
     QCString tmp = extractFromParens(mdfString);
-    bool isin = tmp.contains("in");
-    bool isout = tmp.contains("out");
+    bool isin = tmp.contains("in")!=0;
+    bool isout = tmp.contains("out")!=0;
     if (isin && isout) newMdf.direction = SymbolModifiers::INOUT;
     else if (isin) newMdf.direction = SymbolModifiers::IN;
     else if (isout) newMdf.direction = SymbolModifiers::OUT;
