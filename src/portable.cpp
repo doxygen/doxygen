@@ -262,13 +262,13 @@ int Portable::system(const QCString &command,const QCString &args,bool commandHa
 
 }
 
-unsigned int Portable::pid()
+uint32_t Portable::pid()
 {
-  unsigned int pid;
+  uint32_t pid;
 #if !defined(_WIN32) || defined(__CYGWIN__)
-  pid = static_cast<unsigned int>(getpid());
+  pid = static_cast<uint32_t>(getpid());
 #else
-  pid = static_cast<unsigned int>(GetCurrentProcessId());
+  pid = static_cast<uint32_t>(GetCurrentProcessId());
 #endif
   return pid;
 }
