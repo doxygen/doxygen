@@ -93,7 +93,7 @@ static uint64_t labelToEnumValue(const QCString &l)
   std::string s = l.str();
   std::transform(s.begin(),s.end(),s.begin(),asciiToLower);
   auto it = s_labels.find(s);
-  return (it!=s_labels.end()) ? it->second : 0;
+  return (it!=s_labels.end()) ? it->second : Debug::DebugMask::Quiet;
 }
 
 bool Debug::setFlagStr(const QCString &lab)
