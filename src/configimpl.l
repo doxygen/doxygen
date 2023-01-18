@@ -1590,7 +1590,7 @@ bool ConfigImpl::parseString(const QCString &fn,const QCString &str,bool update)
 
 bool ConfigImpl::parse(const QCString &fn,bool update)
 {
-  int retval;
+  bool retval;
   g_encoding = "UTF-8";
   DebugLex debugLex(Debug::Lex_configimpl, __FILE__, qPrint(fn));
   retval =  parseString(fn,configFileToString(fn), update);

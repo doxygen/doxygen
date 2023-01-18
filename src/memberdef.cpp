@@ -2343,7 +2343,7 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
                 isTypedef() ?
                    substitute(argsString(),")(",") (") :
                    argsString(),         // text
-                m_impl->annMemb,         // autoBreak
+                m_impl->annMemb!=0,      // autoBreak
                 TRUE,                    // external
                 FALSE,                   // keepSpaces
                 indentLevel
