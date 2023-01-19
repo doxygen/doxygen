@@ -2748,7 +2748,8 @@ void Markdown::findEndOfLine(const char *data,int size,
     }
   }
   if (j>0) end+=j-1;
-  AUTO_TRACE_EXIT("pi={} i={} end={}",pi,i,end);
+  //AUTO_TRACE_EXIT("pi={} i={} end={}",pi,i,end);
+  AUTO_TRACE_EXIT("i={} end={}",i,end);
 }
 
 void Markdown::writeFencedCodeBlock(const char *data,const char *lng,
