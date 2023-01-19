@@ -236,14 +236,14 @@ short QCString::toShort(bool *ok, int base) const
   return static_cast<short>(v);
 }
 
-ushort QCString::toUShort(bool *ok,int base) const
+uint16_t QCString::toUShort(bool *ok,int base) const
 {
-  ulong v = toULong( ok, base );
+  unsigned long v = toULong( ok, base );
   if ( ok && *ok && (v > 65535) ) {
     *ok = FALSE;
     v = 0;
   }
-  return static_cast<ushort>(v);
+  return static_cast<uint16_t>(v);
 }
 
 int QCString::toInt(bool *ok, int base) const
@@ -251,9 +251,9 @@ int QCString::toInt(bool *ok, int base) const
   return static_cast<int>(toLong( ok, base ));
 }
 
-uint QCString::toUInt(bool *ok,int base) const
+uint32_t QCString::toUInt(bool *ok,int base) const
 {
-  return static_cast<uint>(toULong( ok, base ));
+  return static_cast<uint32_t>(toULong( ok, base ));
 }
 
 
@@ -309,12 +309,12 @@ bye:
   return is_ok ? val : 0;
 }
 
-ulong QCString::toULong(bool *ok,int base) const
+unsigned long QCString::toULong(bool *ok,int base) const
 {
   const char *p = data();
-  ulong val=0;
+  unsigned long val=0;
   int l = length();
-  const ulong max_mult = 429496729;		// UINT_MAX/10, rounded down
+  const unsigned long max_mult = 429496729;		// UINT_MAX/10, rounded down
   bool is_ok = FALSE;
   if ( !p )
     goto bye;
@@ -328,7 +328,7 @@ ulong QCString::toULong(bool *ok,int base) const
     goto bye;
   while ( l && ok_in_base(*p,base) ) {
     l--;
-    uint dv;
+    uint32_t dv;
     if ( *p>='0' && *p<='9' ) {
       dv = *p-'0';
     } else {
@@ -353,12 +353,12 @@ bye:
   return is_ok ? val : 0;
 }
 
-uint64 QCString::toUInt64(bool *ok,int base) const
+uint64_t QCString::toUInt64(bool *ok,int base) const
 {
   const char *p = data();
-  uint64 val=0;
+  uint64_t val=0;
   int l = length();
-  const uint64 max_mult = 1844674407370955161ULL;  // ULLONG_MAX/10, rounded down
+  const uint64_t max_mult = 1844674407370955161ULL;  // ULLONG_MAX/10, rounded down
   bool is_ok = FALSE;
   if ( !p )
     goto bye;
@@ -372,7 +372,7 @@ uint64 QCString::toUInt64(bool *ok,int base) const
     goto bye;
   while ( l && ok_in_base(*p,base) ) {
     l--;
-    uint dv;
+    uint32_t dv;
     if ( *p>='0' && *p<='9' ) {
       dv = *p-'0';
     } else {
@@ -442,7 +442,7 @@ int qstricmp( const char *s1, const char *s2 )
       return s1 == s2 ? 0 : static_cast<int>(s2 - s1);
     }
     int res;
-    uchar c;
+    char c;
     for ( ; !(res = ((c=toLowerChar(*s1)) - toLowerChar(*s2))); s1++, s2++ )
     {
       if ( !c )				// strings are equal

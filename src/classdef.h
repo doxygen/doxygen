@@ -1,7 +1,5 @@
 /******************************************************************************
  *
- *
- *
  * Copyright (C) 1997-2015 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
@@ -83,9 +81,9 @@ using BaseClassList = std::vector<BaseClassDef>;
 /** Class that contains information about a template instance relation */
 struct TemplateInstanceDef
 {
-  TemplateInstanceDef(const QCString &ts,const ClassDef *cd) : templSpec(ts), classDef(cd) {}
+  TemplateInstanceDef(const QCString &ts,ClassDef *cd) : templSpec(ts), classDef(cd) {}
   QCString templSpec;
-  const ClassDef *classDef;
+  ClassDef *classDef;
 };
 
 using TemplateInstanceList = std::vector<TemplateInstanceDef>;
@@ -223,7 +221,7 @@ class ClassDef : public Definition
      *  class. This function will recursively traverse all branches of the
      *  inheritance tree.
      */
-    virtual int isBaseClass(const ClassDef *bcd,bool followInstances) const = 0;
+    virtual int isBaseClass(const ClassDef *bcd,bool followInstances,const QCString &templSpec=QCString()) const = 0;
 
     /** Returns TRUE iff \a bcd is a direct or indirect sub class of this
      *  class.
@@ -274,7 +272,7 @@ class ClassDef : public Definition
     virtual ArgumentLists getTemplateParameterLists() const = 0;
 
     virtual QCString qualifiedNameWithTemplateParameters(
-        const ArgumentLists *actualParams=0,uint *actualParamIndex=0) const = 0;
+        const ArgumentLists *actualParams=0,uint32_t *actualParamIndex=0) const = 0;
 
     /** Returns TRUE if there is at least one pure virtual member in this
      *  class.
@@ -355,6 +353,7 @@ class ClassDef : public Definition
     virtual bool hasNonReferenceSuperClass() const = 0;
 
     virtual QCString requiresClause() const = 0;
+    virtual StringVector getQualifiers() const = 0;
 
     //-----------------------------------------------------------------------------------
     // --- count members ----
@@ -372,8 +371,31 @@ class ClassDef : public Definition
 
     virtual ClassDef *insertTemplateInstance(const QCString &fileName,int startLine,int startColumn,
                                 const QCString &templSpec,bool &freshInstance) const = 0;
+
+    //-----------------------------------------------------------------------------------
+    // --- write output ----
+    //-----------------------------------------------------------------------------------
+
     virtual void writeDeclarationLink(OutputList &ol,bool &found,
                  const QCString &header,bool localNames) const = 0;
+    virtual void writeDocumentation(OutputList &ol) const = 0;
+    virtual void writeDocumentationForInnerClasses(OutputList &ol) const = 0;
+    virtual void writeMemberPages(OutputList &ol) const = 0;
+    virtual void writeMemberList(OutputList &ol) const = 0;
+    virtual void writeDeclaration(OutputList &ol,const MemberDef *md,bool inGroup,
+                 int indentLevel, const ClassDef *inheritedFrom,const QCString &inheritId) const = 0;
+    virtual void writeQuickMemberLinks(OutputList &ol,const MemberDef *md) const = 0;
+    virtual void writeSummaryLinks(OutputList &ol) const = 0;
+    virtual void writeInlineDocumentation(OutputList &ol) const = 0;
+    virtual void writeTagFile(TextStream &) const = 0;
+    virtual void writeMemberDeclarations(OutputList &ol,ClassDefSet &visitedClasses,
+                 MemberListType lt,const QCString &title,
+                 const QCString &subTitle=QCString(),
+                 bool showInline=FALSE,const ClassDef *inheritedFrom=0,
+                 int lt2=-1,bool invert=FALSE,bool showAlways=FALSE) const = 0;
+    virtual void addGroupedInheritedMembers(OutputList &ol,MemberListType lt,
+                 const ClassDef *inheritedFrom,const QCString &inheritId) const = 0;
+
 
 };
 
@@ -392,7 +414,7 @@ class ClassDefMutable : public DefinitionMutable, public ClassDef
     virtual void setIsStatic(bool b) = 0;
     virtual void setCompoundType(CompoundType t) = 0;
     virtual void setClassName(const QCString &name) = 0;
-    virtual void setClassSpecifier(uint64 spec) = 0;
+    virtual void setClassSpecifier(uint64_t spec) = 0;
     virtual void setTemplateArguments(const ArgumentList &al) = 0;
     virtual void setTemplateBaseClassNames(const TemplateNameMap &templateNames) = 0;
     virtual void setTemplateMaster(const ClassDef *tm) = 0;
@@ -403,6 +425,7 @@ class ClassDefMutable : public DefinitionMutable, public ClassDef
     virtual void setName(const QCString &name) = 0;
     virtual void setMetaData(const QCString &md) = 0;
     virtual void setRequiresClause(const QCString &req) = 0;
+    virtual void addQualifiers(const StringVector &qualifiers) = 0;
 
     //-----------------------------------------------------------------------------------
     // --- actions ----
@@ -413,7 +436,7 @@ class ClassDefMutable : public DefinitionMutable, public ClassDef
     virtual void insertMember(MemberDef *) = 0;
     virtual void insertUsedFile(const FileDef *) = 0;
     virtual void addMembersToTemplateInstance(const ClassDef *cd,const ArgumentList &templateArguments,const QCString &templSpec) = 0;
-    virtual void addInnerCompound(const Definition *d) = 0;
+    virtual void addInnerCompound(Definition *d) = 0;
     virtual bool addExample(const QCString &anchor,const QCString &name, const QCString &file) = 0;
     virtual void addUsedClass(ClassDef *cd,const QCString &accessName,Protection prot) = 0;
     virtual void addUsedByClass(ClassDef *cd,const QCString &accessName,Protection prot) = 0;
@@ -433,28 +456,6 @@ class ClassDefMutable : public DefinitionMutable, public ClassDef
     virtual void countMembers() = 0;
     virtual void sortAllMembersList() = 0;
 
-    //-----------------------------------------------------------------------------------
-    // --- write output ----
-    //-----------------------------------------------------------------------------------
-
-    virtual void writeDocumentation(OutputList &ol) const = 0;
-    virtual void writeDocumentationForInnerClasses(OutputList &ol) const = 0;
-    virtual void writeMemberPages(OutputList &ol) const = 0;
-    virtual void writeMemberList(OutputList &ol) const = 0;
-    virtual void writeDeclaration(OutputList &ol,const MemberDef *md,bool inGroup,
-                 int indentLevel, const ClassDef *inheritedFrom,const QCString &inheritId) const = 0;
-    virtual void writeQuickMemberLinks(OutputList &ol,const MemberDef *md) const = 0;
-    virtual void writeSummaryLinks(OutputList &ol) const = 0;
-    virtual void writeInlineDocumentation(OutputList &ol) const = 0;
-    virtual void writeTagFile(TextStream &) = 0;
-    virtual void writeMemberDeclarations(OutputList &ol,ClassDefSet &visitedClasses,
-                 MemberListType lt,const QCString &title,
-                 const QCString &subTitle=QCString(),
-                 bool showInline=FALSE,const ClassDef *inheritedFrom=0,
-                 int lt2=-1,bool invert=FALSE,bool showAlways=FALSE) const = 0;
-    virtual void addGroupedInheritedMembers(OutputList &ol,MemberListType lt,
-                 const ClassDef *inheritedFrom,const QCString &inheritId) const = 0;
-
 
 };
 
@@ -473,7 +474,6 @@ ClassDef            *toClassDef(Definition *d);
 ClassDef            *toClassDef(DefinitionMutable *d);
 const ClassDef      *toClassDef(const Definition *d);
 ClassDefMutable     *toClassDefMutable(Definition *d);
-ClassDefMutable     *toClassDefMutable(const Definition *d);
 
 // --- Helpers
 //
@@ -482,11 +482,11 @@ inline ClassDefMutable *getClassMutable(const QCString &key)
 {
   return toClassDefMutable(getClass(key));
 }
-bool hasVisibleRoot(const BaseClassList &bcl);
+bool classHasVisibleRoot(const BaseClassList &bcl);
 bool classHasVisibleChildren(const ClassDef *cd);
 bool classVisibleInIndex(const ClassDef *cd);
 int minClassDistance(const ClassDef *cd,const ClassDef *bcd,int level=0);
-Protection classInheritedProtectionLevel(const ClassDef *cd,const ClassDef *bcd,Protection prot=Public,int level=0);
+Protection classInheritedProtectionLevel(const ClassDef *cd,const ClassDef *bcd,Protection prot=Protection::Public,int level=0);
 
 //------------------------------------------------------------------------
 

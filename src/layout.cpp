@@ -343,14 +343,14 @@ class LayoutParser
         },
         { "classindex",
           LayoutNavEntry::ClassIndex,
-          fortranOpt ? theTranslator->trDataTypes() : vhdlOpt ? theTranslator->trDesignUnits() : theTranslator->trCompoundIndex(),
+          fortranOpt ? theTranslator->trCompoundIndexFortran() : vhdlOpt ? theTranslator->trDesignUnitIndex() : theTranslator->trCompoundIndex(),
           QCString(),
           QCString(),
           "classes"
         },
         { "classes",
           LayoutNavEntry::Classes,
-          fortranOpt ? theTranslator->trCompoundListFortran() : vhdlOpt ? theTranslator->trDesignUnitList() : theTranslator->trClasses(),
+          fortranOpt ? theTranslator->trDataTypes() : vhdlOpt ? theTranslator->trDesignUnits() : theTranslator->trClasses(),
           theTranslator->trCompoundList(),
           fortranOpt ? theTranslator->trCompoundListDescriptionFortran() : vhdlOpt ? theTranslator->trDesignUnitListDescription() : theTranslator->trCompoundListDescription(),
           "annotated"
@@ -503,17 +503,13 @@ class LayoutParser
           QCString()
         }
       };
-      LayoutNavEntry::Kind kind;
       // find type in the table
       int i=0;
       QCString type = XMLHandlers::value(attrib,"type");
       while (mapping[i].typeStr)
       {
         if (mapping[i].typeStr==type)
-        {
-          kind = mapping[i].kind;
           break;
-        }
         i++;
       }
       if (mapping[i].typeStr==0)
@@ -530,6 +526,7 @@ class LayoutParser
         m_invalidEntry=TRUE;
         return;
       }
+      LayoutNavEntry::Kind kind = mapping[i].kind;
       QCString baseFile = mapping[i].baseFile;
       QCString title = XMLHandlers::value(attrib,"title");
       bool isVisible = elemIsVisible(attrib) && parentIsVisible(m_rootNav);
@@ -950,8 +947,8 @@ static const std::map< std::string, ElementCallbacks > g_elementHandlers =
                                                     endCb()
                                                   } },
   { "class/memberdecl/related",                   { startCb(&LayoutParser::startMemberDeclEntry, MemberListType_related,
-                                                            []() { return compileOptions(theTranslator->trRelatedFunctions()); },
-                                                            []() { return compileOptions(theTranslator->trRelatedSubscript()); }),
+                                                            []() { return compileOptions(theTranslator->trRelatedSymbols()); },
+                                                            []() { return compileOptions(theTranslator->trRelatedSymbolsSubscript()); }),
                                                     endCb()
                                                   } },
   { "class/memberdef",                            { startCb(&LayoutParser::startMemberDef),
@@ -989,7 +986,7 @@ static const std::map< std::string, ElementCallbacks > g_elementHandlers =
                                                     endCb()
                                                   } },
   { "class/memberdef/related",                    { startCb(&LayoutParser::startMemberDefEntry, MemberListType_relatedMembers,
-                                                            []() { return compileOptions(theTranslator->trRelatedFunctionDocumentation()); }),
+                                                            []() { return compileOptions(theTranslator->trRelatedSymbolDocumentation()); }),
                                                     endCb()
                                                   } },
   { "class/memberdef/variables",                  { startCb(&LayoutParser::startMemberDefEntry, MemberListType_variableMembers,
@@ -1532,7 +1529,7 @@ void LayoutParser::endElement( const std::string &name )
   //printf("endElement [%s]::[%s]\n",qPrint(m_scope),qPrint(name));
   auto it=g_elementHandlers.end();
 
-  if (!m_scope.isEmpty() && m_scope.right(static_cast<uint>(name.length())+1)==name+"/")
+  if (!m_scope.isEmpty() && m_scope.right(static_cast<uint32_t>(name.length())+1)==name+"/")
   { // element ends current scope
     it = g_elementHandlers.find(m_scope.left(m_scope.length()-1).str());
   }
@@ -1574,8 +1571,12 @@ void LayoutDocManager::init()
   handlers.error        = [&layoutParser](const std::string &fileName,int lineNr,const std::string &msg) { layoutParser.error(fileName,lineNr,msg); };
   XMLParser parser(handlers);
   layoutParser.setDocumentLocator(&parser);
-  QCString layout_default = ResourceMgr::instance().getAsString("layout_default.xml");
-  parser.parse("layout_default.xml",layout_default.data(),Debug::isFlagSet(Debug::Lex));
+  constexpr auto layoutFile = "layout_default.xml";
+  QCString layout_default = ResourceMgr::instance().getAsString(layoutFile);
+  parser.parse(layoutFile,layout_default.data(),Debug::isFlagSet(Debug::Lex_xml),
+               [&]() { DebugLex::print(Debug::Lex_xml,"Entering","libxml/xml.l",layoutFile); },
+               [&]() { DebugLex::print(Debug::Lex_xml,"Leaving", "libxml/xml.l",layoutFile); }
+              );
 }
 
 LayoutDocManager::~LayoutDocManager()
@@ -1618,7 +1619,10 @@ void LayoutDocManager::parse(const QCString &fileName)
   handlers.error        = [&layoutParser](const std::string &fn,int lineNr,const std::string &msg) { layoutParser.error(fn,lineNr,msg); };
   XMLParser parser(handlers);
   layoutParser.setDocumentLocator(&parser);
-  parser.parse(fileName.data(),fileToString(fileName).data(),Debug::isFlagSet(Debug::Lex));
+  parser.parse(fileName.data(),fileToString(fileName).data(),Debug::isFlagSet(Debug::Lex_xml),
+               [&]() { DebugLex::print(Debug::Lex_xml,"Entering","libxml/xml.l",qPrint(fileName)); },
+               [&]() { DebugLex::print(Debug::Lex_xml,"Leaving", "libxml/xml.l",qPrint(fileName)); }
+              );
 }
 
 //---------------------------------------------------------------------------------
@@ -1658,7 +1662,7 @@ QCString extractLanguageSpecificTitle(const QCString &input,SrcLangExt lang)
     e=input.find('|',s);
     i=input.find('=',s);
     assert(i>s);
-    size_t key=input.mid(s,i-s).toUInt();
+    SrcLangExt key= static_cast<SrcLangExt>(input.mid(s,i-s).toUInt());
     if (key==lang) // found matching key
     {
       if (e==-1) e=input.length();

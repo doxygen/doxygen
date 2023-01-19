@@ -97,6 +97,10 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
     virtual QCString trDetailedDescription()
     { return "Descriere Detaliată"; }
 
+    /*! header that is used when the summary tag is missing inside the details tag */
+    virtual QCString trDetails()
+    { return "Detalii"; }
+
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
     { return "Documentaţia Definiţiilor de Tipuri (typedef) Membre"; }
@@ -422,12 +426,6 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
      */
     virtual QCString trFileDocumentation()
     { return "Documentaţia Fişierelor"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all examples.
-     */
-    virtual QCString trExampleDocumentation()
-    { return "Documentaţia Exemplelor"; }
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
@@ -1814,16 +1812,20 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
      */
     virtual QCString trDateTime(int year,int month,int day,int dayOfWeek,
                                 int hour,int minutes,int seconds,
-                                bool includeTime)
+                                DateTimeType includeTime)
     {
       static const char *days[]   = { "Luni","Marți","Miercuri","Joi","Vineri","Sâmbătă","Duminică" };
       static const char *months[] = { "Ian","Feb","Mar","Apr","Mai","Iun","Iul","Aug","Sep","Oct","Noi","Dec" };
       QCString sdate;
-      sdate.sprintf("%s %s %d %d",days[dayOfWeek-1],months[month-1],day,year);
-      if (includeTime)
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Date)
+      {
+        sdate.sprintf("%s %s %d %d",days[dayOfWeek-1],months[month-1],day,year);
+      }
+      if (includeTime == DateTimeType::DateTime) sdate += " ";
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Time)
       {
         QCString stime;
-        stime.sprintf(" %.2d:%.2d:%.2d",hour,minutes,seconds);
+        stime.sprintf("%.2d:%.2d:%.2d",hour,minutes,seconds);
         sdate+=stime;
       }
       return sdate;
@@ -1843,6 +1845,11 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
       QCString text  = full? months_full[month-1] : months_short[month-1];
       if (first_capital) return text.mid(0,1).upper()+text.mid(1);
       else return text;
+    }
+    virtual QCString trDayPeriod(int period)
+    {
+      static const char *dayPeriod[] = { "a.m.", "p.m." };
+      return dayPeriod[period];
     }
 
 //////////////////////////////////////////////////////////////////////////

@@ -149,6 +149,7 @@ class DocTokenizer
     void setStateTitle();
     void setStateTitleAttrValue();
     void setStateCode();
+    void setStateICode();
     void setStateXmlCode();
     void setStateHtmlOnly();
     void setStateManOnly();
@@ -157,6 +158,7 @@ class DocTokenizer
     void setStateDbOnly();
     void setStateRtfOnly();
     void setStateVerbatim();
+    void setStateIVerbatim();
     void setStateILiteral();
     void setStateILiteralOpt();
     void setStateDot();

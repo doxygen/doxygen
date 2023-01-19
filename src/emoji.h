@@ -24,8 +24,7 @@ class TextStream;
 class EmojiEntityMapper
 {
   public:
-    static EmojiEntityMapper *instance();
-    static void deleteInstance();
+    static EmojiEntityMapper &instance();
     const char *name(int index) const;
     const char *unicode(int index) const;
     void writeEmojiFile(TextStream &t);

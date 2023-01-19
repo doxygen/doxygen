@@ -13,8 +13,6 @@
 *
 */
 
-#include <sstream>
-
 #include "dotfilepatcher.h"
 #include "dotrunner.h"
 #include "config.h"
@@ -25,6 +23,7 @@
 #include "util.h"
 #include "dot.h"
 #include "dir.h"
+#include "portable.h"
 
 static const char svgZoomHeader[] =
 "<svg id=\"main\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xml:space=\"preserve\" onload=\"init(evt)\">\n"
@@ -218,7 +217,7 @@ bool DotFilePatcher::convertMapFile(TextStream &t,const QCString &mapName,
                     const QCString &relPath, bool urlOnly,
                     const QCString &context)
 {
-  std::ifstream f(mapName.str(),std::ifstream::in);
+  std::ifstream f = Portable::openInputStream(mapName);
   if (!f.is_open())
   {
     err("problems opening map file %s for inclusion in the docs!\n"
@@ -233,6 +232,14 @@ bool DotFilePatcher::convertMapFile(TextStream &t,const QCString &mapName,
     if (buf.startsWith("<area"))
     {
       QCString replBuf = replaceRef(buf,relPath,urlOnly,context);
+      // in dot version 7.0.2 the alt attribute is, incorrectly, removed.
+      // see https://gitlab.com/graphviz/graphviz/-/issues/265
+      int indexA = replBuf.find("alt=");
+      if (indexA == -1)
+      {
+        replBuf = replBuf.left(5) + " alt=\"\"" + replBuf.right(replBuf.length() - 5);
+      }
+
       // strip id="..." from replBuf since the id's are not needed and not unique.
       int indexS = replBuf.find("id=\""), indexE;
       if (indexS>0 && (indexE=replBuf.find('"',indexS+4))!=-1)
@@ -308,34 +315,32 @@ bool DotFilePatcher::run() const
     //printf("DotFilePatcher::addSVGConversion: file=%s zoomable=%d\n",
     //    qPrint(m_patchFile),map->zoomable);
   }
-  std::string tmpName = m_patchFile.str()+".tmp";
-  std::string patchFile = m_patchFile.str();
+  QCString tmpName = m_patchFile+".tmp";
   Dir thisDir;
-  if (!thisDir.rename(patchFile,tmpName))
+  if (!thisDir.rename(m_patchFile.str(),tmpName.str()))
   {
-    err("Failed to rename file %s to %s!\n",qPrint(m_patchFile),tmpName.c_str());
+    err("Failed to rename file %s to %s!\n",qPrint(m_patchFile),qPrint(tmpName));
     return FALSE;
   }
-  std::ifstream fi(tmpName, std::ifstream::in);
-  std::ofstream fo(patchFile, std::ofstream::out | std::ofstream::binary);
+  std::ifstream fi = Portable::openInputStream(tmpName);
+  std::ofstream fo = Portable::openOutputStream(m_patchFile);
   if (!fi.is_open())
   {
-    err("problem opening file %s for patching!\n",tmpName.c_str());
-    thisDir.rename(tmpName,patchFile);
+    err("problem opening file %s for patching!\n",qPrint(tmpName));
+    thisDir.rename(tmpName.str(),m_patchFile.str());
     return FALSE;
   }
   if (!fo.is_open())
   {
     err("problem opening file %s for patching!\n",qPrint(m_patchFile));
-    thisDir.rename(tmpName,patchFile);
+    thisDir.rename(tmpName.str(),m_patchFile.str());
     return FALSE;
   }
   TextStream t(&fo);
-  int width,height;
+  int width=0,height=0;
   bool insideHeader=FALSE;
   bool replacedHeader=FALSE;
   bool foundSize=FALSE;
-  int lineNr=1;
   std::string lineStr;
   static const reg::Ex reSVG(R"([\[<]!-- SVG [0-9]+)");
   static const reg::Ex reMAP(R"(<!-- MAP [0-9]+)");
@@ -358,8 +363,9 @@ bool DotFilePatcher::run() const
           foundSize = count==2 && (width>500 || height>450);
           if (foundSize) insideHeader=TRUE;
         }
-        else if (insideHeader && !replacedHeader && line.find("<title>")!=-1)
+        else if (insideHeader && !replacedHeader && line.find("<g id=\"graph")!=-1)
         {
+          line="";
           if (foundSize)
           {
             // insert special replacement header for interactive SVGs
@@ -388,7 +394,7 @@ bool DotFilePatcher::run() const
         t << replaceRef(line,map.relPath,map.urlOnly,map.context,"_top");
       }
     }
-    else if ((i=findIndex(line.str(),reSVG))!=-1)
+    else if (line.find("SVG")!=-1 && (i=findIndex(line.str(),reSVG))!=-1)
     {
       //printf("Found marker at %d\n",i);
       int mapId=-1;
@@ -412,7 +418,7 @@ bool DotFilePatcher::run() const
         t << line.mid(i);
       }
     }
-    else if ((i=findIndex(line.str(),reMAP))!=-1)
+    else if (line.find("MAP")!=-1 && (i=findIndex(line.str(),reMAP))!=-1)
     {
       int mapId=-1;
       t << line.left(i);
@@ -437,7 +443,7 @@ bool DotFilePatcher::run() const
         t << line.mid(i);
       }
     }
-    else if ((i=findIndex(line.str(),reFIG))!=-1)
+    else if (line.find("FIG")!=-1 && (i=findIndex(line.str(),reFIG))!=-1)
     {
       int mapId=-1;
       int n = sscanf(line.data()+i+2,"FIG %d",&mapId);
@@ -463,7 +469,6 @@ bool DotFilePatcher::run() const
     {
       t << line;
     }
-    lineNr++;
   }
   fi.close();
   if (isSVGFile && interactiveSVG_local && replacedHeader)
@@ -474,11 +479,11 @@ bool DotFilePatcher::run() const
     fo.close();
     // keep original SVG file so we can refer to it, we do need to replace
     // dummy link by real ones
-    fi.open(tmpName,std::ifstream::in);
-    fo.open(orgName.str(),std::ofstream::out | std::ofstream::binary);
+    fi = Portable::openInputStream(tmpName);
+    fo = Portable::openOutputStream(orgName);
     if (!fi.is_open())
     {
-      err("problem opening file %s for reading!\n",tmpName.c_str());
+      err("problem opening file %s for reading!\n",qPrint(tmpName));
       return FALSE;
     }
     if (!fo.is_open())
@@ -498,7 +503,7 @@ bool DotFilePatcher::run() const
     fo.close();
   }
   // remove temporary file
-  thisDir.remove(tmpName);
+  thisDir.remove(tmpName.str());
   return TRUE;
 }
 
@@ -509,7 +514,7 @@ bool DotFilePatcher::run() const
 static bool readSVGSize(const QCString &fileName,int *width,int *height)
 {
   bool found=FALSE;
-  std::ifstream f(fileName.str(),std::ifstream::in);
+  std::ifstream f = Portable::openInputStream(fileName);
   if (!f.is_open())
   {
     return false;

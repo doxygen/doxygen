@@ -88,6 +88,10 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
     virtual QCString trDetailedDescription()
     { return "Детален опис"; }
 
+    /*! header that is used when the summary tag is missing inside the details tag */
+    virtual QCString trDetails()
+    { return "Детали"; }
+
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
     { return "Документација на членови дефиниции на тип"; }
@@ -396,12 +400,6 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
      */
     virtual QCString trFileDocumentation()
     { return "Документија на Датотеки"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all examples.
-     */
-    virtual QCString trExampleDocumentation()
-    { return "Документаија на Примери"; }
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
@@ -1731,6 +1729,11 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
       static const char *months_full[]  = { "јануари", "февруари", "март", "април", "мај", "јуни", "јули", "август", "септември", "октомври", "ноември", "декември" };
       QCString text  = full? months_full[month-1] : months_short[month-1];
       return text;
+    }
+    virtual QCString trDayPeriod(int period)
+    {
+      static const char *dayPeriod[] = { "претпл.", "попл." };
+      return dayPeriod[period];
     }
 };
 

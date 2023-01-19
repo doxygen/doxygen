@@ -39,11 +39,10 @@ typedef yyguts_t *yyscan_t;
 #include <mutex>
 #include <thread>
 #include <algorithm>
-
-#include <stdio.h>
-#include <assert.h>
-#include <ctype.h>
-#include <errno.h>
+#include <cstdio>
+#include <cassert>
+#include <cctype>
+#include <cerrno>
 
 #include "qcstring.h"
 #include "containers.h"
@@ -64,14 +63,12 @@ typedef yyguts_t *yyscan_t;
 #include "filedef.h"
 #include "regex.h"
 #include "fileinfo.h"
+#include "trace.h"
+#include "debug.h"
 
 #define YY_NO_UNISTD_H 1
 
 #define USE_STATE2STRING 0
-
-// Toggle for some debugging info
-//#define DBG_CTX(x) fprintf x
-#define DBG_CTX(x) do { } while(0)
 
 #if USE_STATE2STRING
 static const char *stateToString(int state);
@@ -88,12 +85,12 @@ struct preYY_CondCtx
 
 struct FileState
 {
-  FileState(uint size) : fileBuf(size) {}
+  FileState(uint32_t size) : fileBuf(size) {}
   int lineNr = 1;
   int curlyCount = 0;
   BufStr fileBuf;
   BufStr *oldFileBuf = 0;
-  yy_size_t oldFileBufPos = 0;
+  int oldFileBufPos = 0;
   YY_BUFFER_STATE bufState = 0;
   QCString fileName;
 };
@@ -268,7 +265,7 @@ struct preYY_state
   int                lastCContext   = 0;
   int                lastCPPContext = 0;
   BufStr            *inputBuf       = 0;
-  yy_size_t          inputBufPos    = 0;
+  int                inputBufPos    = 0;
   BufStr            *outputBuf      = 0;
   int                roundCount     = 0;
   bool               quoteArg       = false;
@@ -339,7 +336,7 @@ static void      endCondSection(yyscan_t yyscanner);
 static void  addMacroDefinition(yyscan_t yyscanner);
 static void           addDefine(yyscan_t yyscanner);
 static void         setFileName(yyscan_t yyscanner,const QCString &name);
-static yy_size_t         yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
+static int               yyread(yyscan_t yyscanner,char *buf,int max_size);
 static Define *       isDefined(yyscan_t yyscanner,const QCString &name);
 
 /* ----------------------------------------------------------------- */
@@ -1734,11 +1731,11 @@ WSopt [ \t\r]*
                                           yyextra->defLitText += *yytext;
                                         }
 <<EOF>>                                 {
-                                          DBG_CTX((stderr,"End of include file\n"));
+                                          TRACE("End of include file");
                                           //printf("Include stack depth=%d\n",yyextra->includeStack.size());
                                           if (yyextra->includeStack.empty())
                                           {
-                                            DBG_CTX((stderr,"Terminating scanner!\n"));
+                                            TRACE("Terminating scanner");
                                             yyterminate();
                                           }
                                           else
@@ -1755,7 +1752,7 @@ WSopt [ \t\r]*
                                             yyextra->inputBufPos = fs->oldFileBufPos;
                                             yyextra->curlyCount  = fs->curlyCount;
                                             setFileName(yyscanner,fs->fileName);
-                                            DBG_CTX((stderr,"######## FileName %s\n",qPrint(yyextra->fileName)));
+                                            TRACE("switching to {}",yyextra->fileName);
 
                                             // Deal with file changes due to
                                             // #include's within { .. } blocks
@@ -1855,11 +1852,11 @@ WSopt [ \t\r]*
 
 /////////////////////////////////////////////////////////////////////////////////////
 
-static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size)
+static int yyread(yyscan_t yyscanner,char *buf,int max_size)
 {
   YY_EXTRA_TYPE state = preYYget_extra(yyscanner);
-  yy_size_t bytesInBuf = state->inputBuf->curPos()-state->inputBufPos;
-  yy_size_t bytesToCopy = std::min(max_size,bytesInBuf);
+  int bytesInBuf = static_cast<int>(state->inputBuf->curPos())-state->inputBufPos;
+  int bytesToCopy = std::min(max_size,bytesInBuf);
   memcpy(buf,state->inputBuf->data()+state->inputBufPos,bytesToCopy);
   state->inputBufPos+=bytesToCopy;
   return bytesToCopy;
@@ -1883,7 +1880,8 @@ static void setFileName(yyscan_t yyscanner,const QCString &name)
   state->insideIDL = getLanguageFromFileName(state->fileName)==SrcLangExt_IDL;
   state->insideCS = getLanguageFromFileName(state->fileName)==SrcLangExt_CSharp;
   state->insideFtn = getLanguageFromFileName(state->fileName)==SrcLangExt_Fortran;
-  state->isSource = guessSection(state->fileName);
+  int isSource = guessSection(state->fileName);
+  state->isSource = isSource==Entry::HEADER_SEC || isSource==Entry::SOURCE_SEC;
 }
 
 static void incrLevel(yyscan_t yyscanner)
@@ -1969,7 +1967,7 @@ static FileState *checkAndOpenFile(yyscan_t yyscanner,const QCString &fileName,b
     }
     //printf("#include %s\n",qPrint(absName));
 
-    fs = new FileState(static_cast<uint>(fi.size())+4096);
+    fs = new FileState(static_cast<uint32_t>(fi.size())+4096);
     if (!readInputFile(absName,fs->fileBuf))
     { // error
       //printf("  error reading\n");
@@ -2091,15 +2089,15 @@ static QCString extractTrailingComment(const QCString &s)
   return "";
 }
 
-static int getNextChar(yyscan_t yyscanner,const QCString &expr,QCString *rest,uint &pos);
-static int getCurrentChar(yyscan_t yyscanner,const QCString &expr,QCString *rest,uint pos);
-static void unputChar(yyscan_t yyscanner,const QCString &expr,QCString *rest,uint &pos,char c);
+static int getNextChar(yyscan_t yyscanner,const QCString &expr,QCString *rest,uint32_t &pos);
+static int getCurrentChar(yyscan_t yyscanner,const QCString &expr,QCString *rest,uint32_t pos);
+static void unputChar(yyscan_t yyscanner,const QCString &expr,QCString *rest,uint32_t &pos,char c);
 static bool expandExpression(yyscan_t yyscanner,QCString &expr,QCString *rest,int pos,int level);
 
 static QCString stringize(const QCString &s)
 {
   QCString result;
-  uint i=0;
+  uint32_t i=0;
   bool inString=FALSE;
   bool inChar=FALSE;
   char c,pc;
@@ -2228,7 +2226,7 @@ static void returnCharToStream(yyscan_t yyscanner,char c)
 }
 
 static inline void addTillEndOfString(yyscan_t yyscanner,const QCString &expr,QCString *rest,
-                                       uint &pos,char term,QCString &arg)
+                                       uint32_t &pos,char term,QCString &arg)
 {
   int cc;
   while ((cc=getNextChar(yyscanner,expr,rest,pos))!=EOF && cc!=0)
@@ -2250,7 +2248,7 @@ static bool replaceFunctionMacro(yyscan_t yyscanner,const QCString &expr,QCStrin
 {
   YY_EXTRA_TYPE state = preYYget_extra(yyscanner);
   //printf(">replaceFunctionMacro(expr='%s',rest='%s',pos=%d,def='%s') level=%d\n",qPrint(expr),rest ? qPrint(*rest) : 0,pos,qPrint(def->name),state->levelGuard.size());
-  uint j=pos;
+  uint32_t j=pos;
   len=0;
   result.resize(0);
   int cc;
@@ -2398,7 +2396,7 @@ static bool replaceFunctionMacro(yyscan_t yyscanner,const QCString &expr,QCStrin
       (argCount>=def->nargs-1 && def->varArgs)) // variadic macro with at least as many
                                                 // params as the non-variadic part (see bug731985)
   {
-    uint k=0;
+    uint32_t k=0;
     // substitution of all formal arguments
     QCString resExpr;
     const QCString d=def->definition.stripWhiteSpace();
@@ -2565,6 +2563,7 @@ static int getNextId(const QCString &expr,int p,int *l)
  */
 static bool expandExpression(yyscan_t yyscanner,QCString &expr,QCString *rest,int pos,int level)
 {
+  struct yyguts_t * yyg = (struct yyguts_t*)yyscanner;
   YY_EXTRA_TYPE state = preYYget_extra(yyscanner);
   //printf(">expandExpression(expr='%s',rest='%s',pos=%d,level=%d)\n",qPrint(expr),rest ? qPrint(*rest) : "", pos, level);
   if (expr.isEmpty())
@@ -2585,7 +2584,7 @@ static bool expandExpression(yyscan_t yyscanner,QCString &expr,QCString *rest,in
   QCString macroName;
   QCString expMacro;
   bool definedTest=FALSE;
-  int i=pos,l,p,len;
+  int i=pos,l,p,len=0;
   int startPos = pos;
   int samePosCount=0;
   while ((p=getNextId(expr,i,&l))!=-1) // search for an macro name
@@ -2598,6 +2597,9 @@ static bool expandExpression(yyscan_t yyscanner,QCString &expr,QCString *rest,in
       if (state->expandedDict.find(macroName.str())==state->expandedDict.end()) // expand macro
       {
         Define *def=isDefined(yyscanner,macroName);
+        // In case EXPAND_ONLY_PREDEF is enabled prevent expansion unless the macro was explicitly
+        // predefined
+        if (yyextra->expandOnlyPredef && def && !def->isPredefined) def=nullptr;
         if (macroName=="defined")
         {
           //printf("found defined inside macro definition '%s'\n",qPrint(expr.right(expr.length()-p)));
@@ -2748,7 +2750,55 @@ static const char *processUntilMatchingTerminator(const char *inputStr,QCString 
  */
 static QCString removeIdsAndMarkers(const QCString &s)
 {
-  //printf("removeIdsAndMarkers(%s)\n",s);
+  static const std::vector<std::string> signs = { "signed", "unsigned" };
+  struct TypeInfo { std::string name; size_t size; };
+  static const std::vector<TypeInfo> types = {
+    { "short int",     sizeof(short int)     },
+    { "long long int", sizeof(long long int) },
+    { "long int",      sizeof(long int)      },
+    { "long long",     sizeof(long long)     },
+    { "long double",   sizeof(long double)   },
+    { "int",           sizeof(int)           },
+    { "short",         sizeof(short)         },
+    { "bool",          sizeof(bool)          },
+    { "long",          sizeof(long)          },
+    { "char",          sizeof(char)          },
+    { "float",         sizeof(float)         },
+    { "double",        sizeof(double)        },
+  };
+
+  // Check if string p starts with basic types ending with a ')', such as 'signed long)' or ' float )'
+  // and return the pointer just past the ')' and the size of the type as a tuple.
+  // If the pattern is not found the tuple (nullptr,0) is returned.
+  auto process_cast_or_sizeof = [](const char *p) -> std::pair<const char *,size_t>
+  {
+    const char *q = p;
+    while (*q==' ' || *q=='\t') q++;
+    bool found=false;
+    size_t size = sizeof(int); // '(signed)' or '(unsigned)' is an int type
+    for (const auto &sgn : signs)
+    {
+      if (qstrncmp(q,sgn.c_str(),sgn.length())==0) { q+=sgn.length(); found=true; }
+    }
+    if (!found || *q==' ' || *q=='\t' || *q==')') // continue searching
+    {
+      while (*q==' ' || *q=='\t') q++;
+      for (const auto &t : types)
+      {
+        if (qstrncmp(q,t.name.c_str(),t.name.length())==0)
+        {
+          q += t.name.length();
+          size = t.size;
+          break;
+        }
+      }
+      while (*q==' ' || *q=='\t') q++;
+      if (*q==')') return std::make_pair(++q,size);
+    }
+    return std::make_pair(nullptr,0);
+  };
+
+  //printf("removeIdsAndMarkers(%s)\n",qPrint(s));
   if (s.isEmpty()) return s;
   const char *p=s.data();
   char c;
@@ -2758,6 +2808,33 @@ static QCString removeIdsAndMarkers(const QCString &s)
   {
     while ((c=*p))
     {
+      if (c=='(') // potential cast, ignore it
+      {
+        const char *q = process_cast_or_sizeof(p+1).first;
+        //printf("potential cast:\nin:  %s\nout: %s\n",p,q);
+        if (q)
+        {
+          p=q;
+          continue;
+        }
+      }
+      else if (c=='s' && qstrncmp(p,"sizeof",6)==0) // sizeof(...)
+      {
+        const char *q = p+6;
+        while (*q==' ' || *q=='\t') q++;
+        if (*q=='(')
+        {
+          auto r = process_cast_or_sizeof(q+1);
+          //printf("sizeof:\nin:  %s\nout: %zu%s\n--> sizeof=%zu\n",p,r.second,r.first,r.second);
+          if (r.first)
+          {
+            result+=QCString().setNum(r.second);
+            p=r.first;
+            continue;
+          }
+        }
+      }
+
       if (c=='@') // replace @@ with @ and remove @E
       {
         if (*(p+1)=='@')
@@ -2774,7 +2851,7 @@ static QCString removeIdsAndMarkers(const QCString &s)
       {
         result+=c;
         p++;
-        inNum=TRUE;     
+        inNum=TRUE;
       }
       else if (c=='\'') // quoted character
       {
@@ -2799,7 +2876,7 @@ static QCString removeIdsAndMarkers(const QCString &s)
         result+="0L";
         p++;
         while ((c=*p) && isId(c)) p++;
-        while ((c=*p) && isspace((uchar)c)) p++;
+        while ((c=*p) && isspace((uint8_t)c)) p++;
         if (*p=='(') // undefined function macro
         {
           p++;
@@ -3038,7 +3115,7 @@ static inline void outputChar(yyscan_t yyscanner,char c)
 static inline void outputArray(yyscan_t yyscanner,const char *a,yy_size_t len)
 {
   YY_EXTRA_TYPE state = preYYget_extra(yyscanner);
-  if (state->includeStack.empty() || state->curlyCount>0) state->outputBuf->addArray(a,static_cast<uint>(len));
+  if (state->includeStack.empty() || state->curlyCount>0) state->outputBuf->addArray(a,static_cast<uint32_t>(len));
 }
 
 static inline void outputString(yyscan_t yyscanner,const QCString &a)
@@ -3117,14 +3194,15 @@ static QCString determineAbsoluteIncludeName(const QCString &curFile,const QCStr
 
 static void readIncludeFile(yyscan_t yyscanner,const QCString &inc)
 {
+  AUTO_TRACE("inc={}",inc);
   YY_EXTRA_TYPE state = preYYget_extra(yyscanner);
-  uint i=0;
+  uint32_t i=0;
 
   // find the start of the include file name
   while (i<inc.length() &&
          (inc.at(i)==' ' || inc.at(i)=='"' || inc.at(i)=='<')
         ) i++;
-  uint s=i;
+  uint32_t s=i;
 
   // was it a local include?
   bool localInclude = s>0 && inc.at(s-1)=='"';
@@ -3204,7 +3282,7 @@ static void readIncludeFile(yyscan_t yyscanner,const QCString &inc)
       lineStr.sprintf("# 1 \"%s\" 1\n",qPrint(state->fileName));
       outputString(yyscanner,lineStr);
 
-      DBG_CTX((stderr,"Switching to include file %s\n",qPrint(incFileName)));
+      AUTO_TRACE_ADD("Switching to include file {}",incFileName);
       state->expectGuard=TRUE;
       state->inputBuf   = &fs->fileBuf;
       state->inputBufPos=0;
@@ -3339,7 +3417,7 @@ static char resolveTrigraph(char c)
 /*@ ----------------------------------------------------------------------------
  */
 
-static int getNextChar(yyscan_t yyscanner,const QCString &expr,QCString *rest,uint &pos)
+static int getNextChar(yyscan_t yyscanner,const QCString &expr,QCString *rest,uint32_t &pos)
 {
   //printf("getNextChar(%s,%s,%d)\n",qPrint(expr),rest ? rest->data() : 0,pos);
   if (pos<expr.length())
@@ -3362,7 +3440,7 @@ static int getNextChar(yyscan_t yyscanner,const QCString &expr,QCString *rest,ui
   }
 }
 
-static int getCurrentChar(yyscan_t yyscanner,const QCString &expr,QCString *rest,uint pos)
+static int getCurrentChar(yyscan_t yyscanner,const QCString &expr,QCString *rest,uint32_t pos)
 {
   //printf("getCurrentChar(%s,%s,%d)\n",qPrint(expr),rest ? rest->data() : 0,pos);
   if (pos<expr.length())
@@ -3385,7 +3463,7 @@ static int getCurrentChar(yyscan_t yyscanner,const QCString &expr,QCString *rest
   }
 }
 
-static void unputChar(yyscan_t yyscanner,const QCString &expr,QCString *rest,uint &pos,char c)
+static void unputChar(yyscan_t yyscanner,const QCString &expr,QCString *rest,uint32_t &pos,char c)
 {
   //printf("unputChar(%s,%s,%d,%c)\n",qPrint(expr),rest ? rest->data() : 0,pos,c);
   if (pos<expr.length())
@@ -3585,16 +3663,16 @@ Preprocessor::~Preprocessor()
 
 void Preprocessor::processFile(const QCString &fileName,BufStr &input,BufStr &output)
 {
-//  printf("Preprocessor::processFile(%s)\n",fileName);
+  AUTO_TRACE("fileName={}",fileName);
   yyscan_t yyscanner = p->yyscanner;
   YY_EXTRA_TYPE state = preYYget_extra(p->yyscanner);
   struct yyguts_t *yyg = (struct yyguts_t*)p->yyscanner;
 
 #ifdef FLEX_DEBUG
-  preYYset_debug(1,yyscanner);
+  preYYset_debug(Debug::isFlagSet(Debug::Lex_pre)?1:0,yyscanner);
 #endif
 
-  printlex(yy_flex_debug, TRUE, __FILE__, qPrint(fileName));
+  DebugLex debugLex(Debug::Lex_pre, __FILE__, qPrint(fileName));
   size_t orgOffset=output.curPos();
   //printf("##########################\n%s\n####################\n",
   //    qPrint(input));
@@ -3698,8 +3776,6 @@ void Preprocessor::processFile(const QCString &fileName,BufStr &input,BufStr &ou
   }
 
   //yyextra->defineManager.endContext();
-  printlex(yy_flex_debug, FALSE, __FILE__, qPrint(fileName));
-//  printf("Preprocessor::processFile(%s) finished\n",fileName);
 }
 
 #if USE_STATE2STRING

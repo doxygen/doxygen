@@ -74,10 +74,11 @@
 #include "utf8.h"
 #include "textstream.h"
 #include "indexlist.h"
+#include "datetime.h"
 
 #define ENABLE_TRACINGSUPPORT 0
 
-#if defined(_OS_MAC_) && ENABLE_TRACINGSUPPORT
+#if defined(__APPLE__) && ENABLE_TRACINGSUPPORT
 #define TRACINGSUPPORT
 #endif
 
@@ -266,11 +267,11 @@ void writePageRef(OutputList &ol,const QCString &cn,const QCString &mn)
 {
   ol.pushGeneratorState();
 
-  ol.disable(OutputGenerator::Html);
-  ol.disable(OutputGenerator::Man);
-  ol.disable(OutputGenerator::Docbook);
-  if (Config_getBool(PDF_HYPERLINKS)) ol.disable(OutputGenerator::Latex);
-  if (Config_getBool(RTF_HYPERLINKS)) ol.disable(OutputGenerator::RTF);
+  ol.disable(OutputType::Html);
+  ol.disable(OutputType::Man);
+  ol.disable(OutputType::Docbook);
+  if (Config_getBool(PDF_HYPERLINKS)) ol.disable(OutputType::Latex);
+  if (Config_getBool(RTF_HYPERLINKS)) ol.disable(OutputType::RTF);
   ol.startPageRef();
   ol.docify(theTranslator->trPageAbbreviation());
   ol.endPageRef(cn,mn);
@@ -561,16 +562,16 @@ QCString removeRedundantWhiteSpace(const QCString &s)
   const char *src=s.data();
   char *dst=growBuf;
 
-  uint i=0;
-  uint l=s.length();
-  uint csp=0;
-  uint vosp=0;
-  uint vsp=0;
-  uint osp=0;
+  uint32_t i=0;
+  uint32_t l=s.length();
+  uint32_t csp=0;
+  uint32_t vosp=0;
+  uint32_t vsp=0;
+  uint32_t osp=0;
   char c;
   char pc=0;
   // skip leading whitespace
-  while (i<l && isspace(static_cast<uchar>(src[i])))
+  while (i<l && isspace(static_cast<uint8_t>(src[i])))
   {
     i++;
   }
@@ -656,7 +657,7 @@ QCString removeRedundantWhiteSpace(const QCString &s)
         }
         break;
       case '>': // current char is a >
-        if (i>0 && !isspace(static_cast<uchar>(pc)) &&
+        if (i>0 && !isspace(static_cast<uint8_t>(pc)) &&
             (isId(pc) || pc=='*' || pc=='&' || pc=='.' || pc=='>') && // prev char is an id char or space or *&.
             (osp<8 || (osp==8 && pc!='-')) // string in front is not "operator>" or "operator->"
            )
@@ -671,7 +672,7 @@ QCString removeRedundantWhiteSpace(const QCString &s)
         break;
       case ',': // current char is a ,
         *dst++=c;
-        if (i>0 && !isspace(static_cast<uchar>(pc)) &&
+        if (i>0 && !isspace(static_cast<uint8_t>(pc)) &&
             ((i<l-1 && (isId(nc) || nc=='[')) || // the [ is for attributes (see bug702170)
              (i<l-2 && nc=='$' && isId(src[i+2])) ||   // for PHP: ',$name' -> ', $name'
              (i<l-3 && nc=='&' && src[i+2]=='$' && isId(src[i+3])) // for PHP: ',&$name' -> ', &$name'
@@ -728,7 +729,7 @@ QCString removeRedundantWhiteSpace(const QCString &s)
         // else fallthrough
       case '@':  // '@name' -> ' @name'
       case '\'': // ''name' -> '' name'
-        if (i>0 && i<l-1 && pc!='=' && pc!=':' && !isspace(static_cast<uchar>(pc)) &&
+        if (i>0 && i<l-1 && pc!='=' && pc!=':' && !isspace(static_cast<uint8_t>(pc)) &&
             isId(nc) && osp<8) // ")id" -> ") id"
         {
           *dst++=' ';
@@ -757,8 +758,8 @@ QCString removeRedundantWhiteSpace(const QCString &s)
       case '\n': // fallthrough
       case '\t':
         {
-          if (g_charAroundSpace.charMap[static_cast<uchar>(pc)].before &&
-              g_charAroundSpace.charMap[static_cast<uchar>(nc)].after  &&
+          if (g_charAroundSpace.charMap[static_cast<uint8_t>(pc)].before &&
+              g_charAroundSpace.charMap[static_cast<uint8_t>(nc)].after  &&
               !(pc==',' && nc=='.') &&
               (osp<8 || (osp>=8 && isId(pc) && isId(nc)))
                   // e.g.    'operator >>' -> 'operator>>',
@@ -777,21 +778,21 @@ QCString removeRedundantWhiteSpace(const QCString &s)
       default:
         *dst++=c;
         if (c=='t' && csp==5 && i<l-1 && // found 't' in 'const'
-             !(isId(nc) || nc==')' || nc==',' || isspace(static_cast<uchar>(nc)))
+             !(isId(nc) || nc==')' || nc==',' || isspace(static_cast<uint8_t>(nc)))
            ) // prevent const ::A from being converted to const::A
         {
           *dst++=' ';
           csp=0;
         }
         else if (c=='e' && vosp==8 && i<l-1 && // found 'e' in 'volatile'
-             !(isId(nc) || nc==')' || nc==',' || isspace(static_cast<uchar>(nc)))
+             !(isId(nc) || nc==')' || nc==',' || isspace(static_cast<uint8_t>(nc)))
            ) // prevent volatile ::A from being converted to volatile::A
         {
           *dst++=' ';
           vosp=0;
         }
         else if (c=='l' && vsp==7 && i<l-1 && // found 'l' in 'virtual'
-             !(isId(nc) || nc==')' || nc==',' || isspace(static_cast<uchar>(nc)))
+             !(isId(nc) || nc==')' || nc==',' || isspace(static_cast<uint8_t>(nc)))
             ) // prevent virtual ::A from being converted to virtual::A
         {
           *dst++=' ';
@@ -1119,17 +1120,17 @@ void writeExamples(OutputList &ol,const ExampleList &list)
   {
     const auto &e = list[entryIndex];
     ol.pushGeneratorState();
-    ol.disable(OutputGenerator::Latex);
-    ol.disable(OutputGenerator::RTF);
-    ol.disable(OutputGenerator::Docbook);
+    ol.disable(OutputType::Latex);
+    ol.disable(OutputType::RTF);
+    ol.disable(OutputType::Docbook);
     // link for Html / man
     //printf("writeObjectLink(file=%s)\n",qPrint(e->file));
     ol.writeObjectLink(QCString(),e.file,e.anchor,e.name);
     ol.popGeneratorState();
 
     ol.pushGeneratorState();
-    ol.disable(OutputGenerator::Man);
-    ol.disable(OutputGenerator::Html);
+    ol.disable(OutputType::Man);
+    ol.disable(OutputType::Html);
     // link for Latex / pdf with anchor because the sources
     // are not hyperlinked (not possible with a verbatim environment).
     ol.writeObjectLink(QCString(),e.file,QCString(),e.name);
@@ -1342,10 +1343,9 @@ QCString getFileFilter(const QCString &name,bool isSourceCode)
 }
 
 
-QCString transcodeCharacterStringToUTF8(const QCString &input)
+QCString transcodeCharacterStringToUTF8(const QCString &inputEncoding, const QCString &input)
 {
   bool error=FALSE;
-  QCString inputEncoding = Config_getString(INPUT_ENCODING);
   const char *outputEncoding = "UTF-8";
   if (inputEncoding.isEmpty() || qstricmp(inputEncoding,outputEncoding)==0) return input;
   int inputSize=input.length();
@@ -1426,88 +1426,6 @@ QCString fileToString(const QCString &name,bool filter,bool isSourceCode)
     err("cannot open file '%s' for reading\n",qPrint(name));
   }
   return "";
-}
-
-std::tm getCurrentDateTime()
-{
-  QCString sourceDateEpoch = Portable::getenv("SOURCE_DATE_EPOCH");
-  if (!sourceDateEpoch.isEmpty()) // see https://reproducible-builds.org/specs/source-date-epoch/
-  {
-    bool ok;
-    uint64 epoch = sourceDateEpoch.toUInt64(&ok);
-    if (!ok)
-    {
-      static bool warnedOnce=FALSE;
-      if (!warnedOnce)
-      {
-        warn_uncond("Environment variable SOURCE_DATE_EPOCH does not contain a valid number; value is '%s'\n",
-            qPrint(sourceDateEpoch));
-        warnedOnce=TRUE;
-      }
-    }
-    else // use given epoch value as current 'built' time
-    {
-      auto epoch_start    = std::chrono::time_point<std::chrono::system_clock>{};
-      auto epoch_seconds  = std::chrono::seconds(epoch);
-      auto build_time     = epoch_start + epoch_seconds;
-      std::time_t time    = std::chrono::system_clock::to_time_t(build_time);
-      return *gmtime(&time);
-    }
-  }
-
-  // return current local time
-  auto now = std::chrono::system_clock::now();
-  std::time_t time = std::chrono::system_clock::to_time_t(now);
-  return *localtime(&time);
-}
-
-QCString dateToString(bool includeTime)
-{
-  auto current = getCurrentDateTime();
-  return theTranslator->trDateTime(current.tm_year + 1900,
-                                   current.tm_mon + 1,
-                                   current.tm_mday,
-                                   (current.tm_wday+6)%7+1, // map: Sun=0..Sat=6 to Mon=1..Sun=7
-                                   current.tm_hour,
-                                   current.tm_min,
-                                   current.tm_sec,
-                                   includeTime);
-}
-
-static QCString yearToString()
-{
-  auto current = getCurrentDateTime();
-  return QCString().setNum(current.tm_year+1900);
-}
-
-bool valid_tm( const std::tm& tm, int *weekday )
-{
-  auto cpy = tm ;
-  const auto as_time_t = std::mktime( std::addressof(cpy) ) ;
-  if (as_time_t == -1) return false;
-
-  cpy = *std::localtime( std::addressof(as_time_t) ) ;
-
-  *weekday = cpy.tm_wday;
-  return tm.tm_mday == cpy.tm_mday && // valid day
-         tm.tm_mon == cpy.tm_mon && // valid month
-         tm.tm_year == cpy.tm_year; // valid year
-}
-int getYear(std::tm dat)
-{
-  return dat.tm_year+1900;
-}
-int getMonth(std::tm dat)
-{
-  return dat.tm_mon+1;
-}
-int getDay(std::tm dat)
-{
-  return dat.tm_mday;
-}
-int getDayOfWeek(std::tm dat)
-{
-  return (dat.tm_wday+6)%7+1;
 }
 
 void trimBaseClassScope(const BaseClassList &bcl,QCString &s,int level=0)
@@ -2240,10 +2158,10 @@ bool getDefsNew(const QCString &scName,
   {
     scope = currentFile;
   }
-  //printf("@@  -> found scope scope=%s member=%s out=%s\n",qPrint(scName),qPrint(mibName),qPrint(scope?scope->name():""));
+  //printf("@@  -> found scope scope=%s member=%s out=%s\n",qPrint(scName),qPrint(mbName),qPrint(scope?scope->name():""));
   //
   const Definition *symbol = resolver.resolveSymbol(scope,mbName,args,checkCV);
-  //printf("@@  -> found symbol in=%s out=%s\n",qPrint(memberName),qPrint(symbol?symbol->name():QCString()));
+  //printf("@@  -> found symbol in=%s out=%s\n",qPrint(mbName),qPrint(symbol?symbol->qualifiedName():QCString()));
   if (symbol && symbol->definitionType()==Definition::TypeMember)
   {
     md = toMemberDef(symbol);
@@ -2901,7 +2819,7 @@ static bool isLowerCase(QCString &s)
   if (s.isEmpty()) return true;
   const char *p=s.data();
   int c;
-  while ((c=static_cast<uchar>(*p++))) if (!islower(c)) return false;
+  while ((c=static_cast<uint8_t>(*p++))) if (!islower(c)) return false;
   return true;
 }
 
@@ -3487,21 +3405,60 @@ QCString showFileDefMatches(const FileNameLinkedMap *fnMap,const QCString &n)
 
 //----------------------------------------------------------------------
 
+QCString substituteKeywords(const QCString &s,const KeywordSubstitutionList &keywords)
+{
+  std::string substRes;
+  const char *p = s.data();
+  if (p)
+  {
+    // reserve some room for expansion
+    substRes.reserve(s.length()+1024);
+    char c;
+    while ((c=*p))
+    {
+      bool found = false;
+      if (c=='$')
+      {
+        for (const auto &kw : keywords)
+        {
+          size_t keyLen = qstrlen(kw.keyword);
+          if (qstrncmp(p,kw.keyword,keyLen)==0)
+          {
+            substRes+=kw.getValue().str();
+            p+=keyLen;
+            found = true;
+            break;
+          }
+        }
+      }
+      if (!found) // copy
+      {
+        substRes+=c;
+        p++;
+      }
+    }
+  }
+  return substRes;
+}
+
 QCString substituteKeywords(const QCString &s,const QCString &title,
          const QCString &projName,const QCString &projNum,const QCString &projBrief)
 {
-  QCString result = s;
-  if (!title.isEmpty()) result = substitute(result,"$title",title);
-  result = substitute(result,"$datetime",dateToString(TRUE));
-  result = substitute(result,"$date",dateToString(FALSE));
-  result = substitute(result,"$year",yearToString());
-  result = substitute(result,"$doxygenversion",getDoxygenVersion());
-  result = substitute(result,"$projectname",projName);
-  result = substitute(result,"$projectnumber",projNum);
-  result = substitute(result,"$projectbrief",projBrief);
-  result = substitute(result,"$projectlogo",stripPath(Config_getString(PROJECT_LOGO)));
-  result = substitute(result,"$langISO",theTranslator->trISOLang());
-  return result;
+  return substituteKeywords(s,
+  {
+    // keyword          value getter
+    { "$title",         [&]() { return !title.isEmpty() ? title : projName;       } },
+    { "$datetime",      [&]() { return dateToString(DateTimeType::DateTime);      } },
+    { "$date",          [&]() { return dateToString(DateTimeType::Date);          } },
+    { "$time",          [&]() { return dateToString(DateTimeType::Time);          } },
+    { "$year",          [&]() { return yearToString();                            } },
+    { "$doxygenversion",[&]() { return getDoxygenVersion();                       } },
+    { "$projectname",   [&]() { return projName;                                  } },
+    { "$projectnumber", [&]() { return projNum;                                   } },
+    { "$projectbrief",  [&]() { return projBrief;                                 } },
+    { "$projectlogo",   [&]() { return stripPath(Config_getString(PROJECT_LOGO)); } },
+    { "$langISO",       [&]() { return theTranslator->trISOLang();                } }
+  });
 }
 
 //----------------------------------------------------------------------
@@ -3778,7 +3735,7 @@ QCString convertNameToFile(const QCString &name,bool allowDots,bool allowUndersc
   {
     std::lock_guard<std::mutex> lock(g_usedNamesMutex);
     auto kv = g_usedNames.find(name.str());
-    uint num=0;
+    uint32_t num=0;
     if (kv!=g_usedNames.end())
     {
       num = kv->second;
@@ -3797,7 +3754,7 @@ QCString convertNameToFile(const QCString &name,bool allowDots,bool allowUndersc
     if (resultLen>=128) // prevent names that cannot be created!
     {
       // third algorithm based on MD5 hash
-      uchar md5_sig[16];
+      uint8_t md5_sig[16];
       char sigStr[33];
       MD5Buffer(result.data(),resultLen,md5_sig);
       MD5SigToString(md5_sig,sigStr);
@@ -3811,7 +3768,7 @@ QCString convertNameToFile(const QCString &name,bool allowDots,bool allowUndersc
     int createSubdirsBitmaskL2 = (1<<createSubdirsLevel)-1;
 
     // compute md5 hash to determine sub directory to use
-    uchar md5_sig[16];
+    uint8_t md5_sig[16];
     MD5Buffer(result.data(),result.length(),md5_sig);
     l1Dir = md5_sig[14] & 0xf;
     l2Dir = md5_sig[15] & createSubdirsBitmaskL2;
@@ -4166,71 +4123,6 @@ QCString convertToXML(const QCString &s, bool keepEntities)
   return growBuf.get();
 }
 
-/*! Converts a string to an DocBook-encoded string */
-QCString convertToDocBook(const QCString &s, const bool retainNewline)
-{
-  if (s.isEmpty()) return s;
-  GrowBuf growBuf;
-  const char *q;
-  int cnt;
-  const char *p=s.data();
-  char c;
-  while ((c=*p++))
-  {
-    switch (c)
-    {
-      case '\n': if (retainNewline) growBuf.addStr("<literallayout>&#160;&#xa;</literallayout>"); growBuf.addChar(c);   break;
-      case '<':  growBuf.addStr("&lt;");   break;
-      case '>':  growBuf.addStr("&gt;");   break;
-      case '&':  // possibility to have a special symbol
-        q = p;
-        cnt = 2; // we have to count & and ; as well
-        while ((*q >= 'a' && *q <= 'z') || (*q >= 'A' && *q <= 'Z') || (*q >= '0' && *q <= '9'))
-        {
-          cnt++;
-          q++;
-        }
-        if (*q == ';')
-        {
-           --p; // we need & as well
-           HtmlEntityMapper::SymType res = HtmlEntityMapper::instance()->name2sym(QCString(p).left(cnt));
-           if (res == HtmlEntityMapper::Sym_Unknown)
-           {
-             p++;
-             growBuf.addStr("&amp;");
-           }
-           else
-           {
-             growBuf.addStr(HtmlEntityMapper::instance()->docbook(res));
-             q++;
-             p = q;
-           }
-        }
-        else
-        {
-          growBuf.addStr("&amp;");
-        }
-        break;
-      case '\'': growBuf.addStr("&apos;"); break;
-      case '"':  growBuf.addStr("&quot;"); break;
-      case  1: case  2: case  3: case  4: case  5: case  6: case 7:  case  8:
-      case 11: case 12: case 14: case 15: case 16: case 17: case 18:
-      case 19: case 20: case 21: case 22: case 23: case 24: case 25: case 26:
-      case 27: case 28: case 29: case 30: case 31:
-        growBuf.addStr("&#x24");
-        growBuf.addChar(hex[static_cast<uchar>(c)>>4]);
-        growBuf.addChar(hex[static_cast<uchar>(c)&0xF]);
-        growBuf.addChar(';');
-        break;
-      default:
-        growBuf.addChar(c);
-        break;
-    }
-  }
-  growBuf.addChar(0);
-  return growBuf.get();
-}
-
 /*! Converts a string to a HTML-encoded string */
 QCString convertToHtml(const QCString &s,bool keepEntities)
 {
@@ -4272,7 +4164,7 @@ QCString convertToHtml(const QCString &s,bool keepEntities)
       case '"':  growBuf.addStr("&quot;"); break;
       default:
         {
-          uchar uc = static_cast<uchar>(c);
+          uint8_t uc = static_cast<uint8_t>(c);
           if (uc<32 && !isspace(c))
           {
             growBuf.addStr("&#x24");
@@ -4311,34 +4203,6 @@ QCString convertToJSString(const QCString &s)
   return convertCharEntitiesToUTF8(growBuf.get());
 }
 
-QCString convertToPSString(const QCString &s)
-{
-  if (s.isEmpty()) return s;
-  GrowBuf growBuf;
-  const char *p=s.data();
-  char c;
-  while ((c=*p++))
-  {
-    switch (c)
-    {
-      case '(':  growBuf.addStr("\\("); break;
-      case ')': growBuf.addStr("\\)"); break;
-      default:   growBuf.addChar(c);   break;
-    }
-  }
-  growBuf.addChar(0);
-  return growBuf.get();
-}
-
-QCString convertToLaTeX(const QCString &s,bool insideTabbing,bool keepSpaces)
-{
-  TextStream t;
-  filterLatexString(t,s,insideTabbing,false,false,false,keepSpaces);
-  return t.str();
-}
-
-
-
 QCString convertCharEntitiesToUTF8(const QCString &str)
 {
   if (str.isEmpty()) return QCString();
@@ -4360,9 +4224,9 @@ QCString convertCharEntitiesToUTF8(const QCString &str)
       growBuf.addStr(s.substr(i,p-i));
     }
     QCString entity(match.str());
-    HtmlEntityMapper::SymType symType = HtmlEntityMapper::instance()->name2sym(entity);
+    HtmlEntityMapper::SymType symType = HtmlEntityMapper::instance().name2sym(entity);
     const char *code=0;
-    if (symType!=HtmlEntityMapper::Sym_Unknown && (code=HtmlEntityMapper::instance()->utf8(symType)))
+    if (symType!=HtmlEntityMapper::Sym_Unknown && (code=HtmlEntityMapper::instance().utf8(symType)))
     {
       growBuf.addStr(code);
     }
@@ -4399,9 +4263,9 @@ void addMembersToMemberGroup(MemberList *ml,
 
   struct MoveMemberInfo
   {
-    MoveMemberInfo(const MemberDef *md,MemberGroup *mg,const RefItemVector &rv)
+    MoveMemberInfo(MemberDef *md,MemberGroup *mg,const RefItemVector &rv)
       : memberDef(md), memberGroup(mg), sli(rv) {}
-    const MemberDef *memberDef;
+    MemberDef *memberDef;
     MemberGroup *memberGroup;
     RefItemVector sli;
   };
@@ -4540,21 +4404,21 @@ int extractClassNameFromType(const QCString &type,int &pos,QCString &name,QCStri
       size_t te = ts;
       size_t tl = 0;
 
-      while (ts<typeLen && type[static_cast<uint>(ts)]==' ') ts++,tl++; // skip any whitespace
-      if (ts<typeLen && type[static_cast<uint>(ts)]=='<') // assume template instance
+      while (ts<typeLen && type[static_cast<uint32_t>(ts)]==' ') ts++,tl++; // skip any whitespace
+      if (ts<typeLen && type[static_cast<uint32_t>(ts)]=='<') // assume template instance
       {
         // locate end of template
         te=ts+1;
         int brCount=1;
         while (te<typeLen && brCount!=0)
         {
-          if (type[static_cast<uint>(te)]=='<')
+          if (type[static_cast<uint32_t>(te)]=='<')
           {
-            if (te<typeLen-1 && type[static_cast<uint>(te)+1]=='<') te++; else brCount++;
+            if (te<typeLen-1 && type[static_cast<uint32_t>(te)+1]=='<') te++; else brCount++;
           }
-          if (type[static_cast<uint>(te)]=='>')
+          if (type[static_cast<uint32_t>(te)]=='>')
           {
-            if (te<typeLen-1 && type[static_cast<uint>(te)+1]=='>') te++; else brCount--;
+            if (te<typeLen-1 && type[static_cast<uint32_t>(te)+1]=='>') te++; else brCount--;
           }
           te++;
         }
@@ -5075,7 +4939,7 @@ bool recursivelyAddGroupListToTitle(OutputList &ol,const Definition *d,bool root
     if (root)
     {
       ol.pushGeneratorState();
-      ol.disableAllBut(OutputGenerator::Html);
+      ol.disableAllBut(OutputType::Html);
       ol.writeString("<div class=\"ingroups\">");
     }
     bool first=true;
@@ -5103,346 +4967,6 @@ void addGroupListToTitle(OutputList &ol,const Definition *d)
   recursivelyAddGroupListToTitle(ol,d,TRUE);
 }
 
-void filterLatexString(TextStream &t,const QCString &str,
-    bool insideTabbing,bool insidePre,bool insideItem,bool insideTable,bool keepSpaces, const bool retainNewline)
-{
-  if (str.isEmpty()) return;
-  //if (strlen(str)<2) stackTrace();
-  const char *p=str.data();
-  const char *q;
-  int cnt;
-  unsigned char c;
-  unsigned char pc='\0';
-  while (*p)
-  {
-    c=static_cast<unsigned char>(*p++);
-
-    if (insidePre)
-    {
-      switch(c)
-      {
-        case 0xef: // handle U+FFFD i.e. "Replacement character" caused by octal: 357 277 275 / hexadecimal 0xef 0xbf 0xbd
-                   // the LaTeX command \ucr has been defined in doxygen.sty
-          if (static_cast<unsigned char>(*(p)) == 0xbf && static_cast<unsigned char>(*(p+1)) == 0xbd)
-          {
-            t << "{\\ucr}";
-            p += 2;
-          }
-          else
-            t << static_cast<char>(c);
-          break;
-        case '\\': t << "\\(\\backslash\\)"; break;
-        case '{':  t << "\\{"; break;
-        case '}':  t << "\\}"; break;
-        case '_':  t << "\\_"; break;
-        case '&':  t << "\\&"; break;
-        case '%':  t << "\\%"; break;
-        case '#':  t << "\\#"; break;
-        case '$':  t << "\\$"; break;
-        case '"':  t << "\"{}"; break;
-        case '-':  t << "-\\/"; break;
-        case '^':  insideTable ? t << "\\string^" : t << static_cast<char>(c);    break;
-        case '~':  t << "\\string~";    break;
-        case '\n':  if (retainNewline) t << "\\newline"; else t << ' ';
-                   break;
-        case ' ':  if (keepSpaces) t << "~"; else t << ' ';
-                   break;
-        default:
-                   if (c<32) t << ' '; // non printable control character
-                   else t << static_cast<char>(c);
-                   break;
-      }
-    }
-    else
-    {
-      switch(c)
-      {
-        case 0xef: // handle U+FFFD i.e. "Replacement character" caused by octal: 357 277 275 / hexadecimal 0xef 0xbf 0xbd
-                   // the LaTeX command \ucr has been defined in doxygen.sty
-          if (static_cast<unsigned char>(*(p)) == 0xbf && static_cast<unsigned char>(*(p+1)) == 0xbd)
-          {
-            t << "{\\ucr}";
-            p += 2;
-          }
-          else
-            t << static_cast<char>(c);
-          break;
-        case '#':  t << "\\#";           break;
-        case '$':  t << "\\$";           break;
-        case '%':  t << "\\%";           break;
-        case '^':  t << "$^\\wedge$";    break;
-        case '&':  // possibility to have a special symbol
-                   q = p;
-                   cnt = 2; // we have to count & and ; as well
-                   while ((*q >= 'a' && *q <= 'z') || (*q >= 'A' && *q <= 'Z') || (*q >= '0' && *q <= '9'))
-                   {
-                     cnt++;
-                     q++;
-                   }
-                   if (*q == ';')
-                   {
-                      --p; // we need & as well
-                      HtmlEntityMapper::SymType res = HtmlEntityMapper::instance()->name2sym(QCString(p).left(cnt));
-                      if (res == HtmlEntityMapper::Sym_Unknown)
-                      {
-                        p++;
-                        t << "\\&";
-                      }
-                      else
-                      {
-                        t << HtmlEntityMapper::instance()->latex(res);
-                        q++;
-                        p = q;
-                      }
-                   }
-                   else
-                   {
-                     t << "\\&";
-                   }
-                   break;
-        case '*':  t << "$\\ast$";       break;
-        case '_':  if (!insideTabbing) t << "\\+";
-                   t << "\\_";
-                   if (!insideTabbing) t << "\\+";
-                   break;
-        case '{':  t << "\\{";           break;
-        case '}':  t << "\\}";           break;
-        case '<':  t << "$<$";           break;
-        case '>':  t << "$>$";           break;
-        case '|':  t << "$\\vert$";      break;
-        case '~':  t << "$\\sim$";       break;
-        case '[':  if (Config_getBool(PDF_HYPERLINKS) || insideItem)
-                     t << "\\mbox{[}";
-                   else
-                     t << "[";
-                   break;
-        case ']':  if (pc=='[') t << "$\\,$";
-                     if (Config_getBool(PDF_HYPERLINKS) || insideItem)
-                       t << "\\mbox{]}";
-                     else
-                       t << "]";
-                   break;
-        case '-':  t << "-\\/";
-                   break;
-        case '\\': t << "\\textbackslash{}";
-                   break;
-        case '"':  t << "\\char`\\\"{}";
-                   break;
-        case '`':  t << "\\`{}";
-                   break;
-        case '\'': t << "\\textquotesingle{}";
-                   break;
-        case '\n':  if (retainNewline) t << "\\newline"; else t << ' ';
-                   break;
-        case ' ':  if (keepSpaces) { if (insideTabbing) t << "\\>"; else t << '~'; } else t << ' ';
-                   break;
-
-        default:
-                   //if (!insideTabbing && forceBreaks && c!=' ' && *p!=' ')
-                   if (!insideTabbing &&
-                       ((c>='A' && c<='Z' && pc!=' ' && !(pc>='A' && pc <= 'Z') && pc!='\0' && *p) || (c==':' && pc!=':') || (pc=='.' && isId(c)))
-                      )
-                   {
-                     t << "\\+";
-                   }
-                   if (c<32)
-                   {
-                     t << ' '; // non-printable control character
-                   }
-                   else
-                   {
-                     t << static_cast<char>(c);
-                   }
-      }
-    }
-    pc = c;
-  }
-}
-
-QCString latexEscapeLabelName(const QCString &s)
-{
-  if (s.isEmpty()) return s;
-  QCString tmp(s.length()+1);
-  TextStream t;
-  const char *p=s.data();
-  char c;
-  int i;
-  while ((c=*p++))
-  {
-    switch (c)
-    {
-      case '|': t << "\\texttt{\"|}"; break;
-      case '!': t << "\"!"; break;
-      case '@': t << "\"@"; break;
-      case '%': t << "\\%";       break;
-      case '{': t << "\\lcurly{}"; break;
-      case '}': t << "\\rcurly{}"; break;
-      case '~': t << "````~"; break; // to get it a bit better in index together with other special characters
-      // NOTE: adding a case here, means adding it to while below as well!
-      default:
-        i=0;
-        // collect as long string as possible, before handing it to docify
-        tmp[i++]=c;
-        while ((c=*p) && c!='@' && c!='[' && c!=']' && c!='!' && c!='{' && c!='}' && c!='|')
-        {
-          tmp[i++]=c;
-          p++;
-        }
-        tmp[i]=0;
-        filterLatexString(t,tmp,
-                          true,  // insideTabbing
-                          false, // insidePre
-                          false, // insideItem
-                          false, // insideTable
-                          false  // keepSpaces
-                         );
-        break;
-    }
-  }
-  return t.str();
-}
-
-QCString latexEscapeIndexChars(const QCString &s)
-{
-  if (s.isEmpty()) return s;
-  QCString tmp(s.length()+1);
-  TextStream t;
-  const char *p=s.data();
-  char c;
-  int i;
-  while ((c=*p++))
-  {
-    switch (c)
-    {
-      case '!': t << "\"!"; break;
-      case '"': t << "\"\""; break;
-      case '@': t << "\"@"; break;
-      case '|': t << "\\texttt{\"|}"; break;
-      case '[': t << "["; break;
-      case ']': t << "]"; break;
-      case '{': t << "\\lcurly{}"; break;
-      case '}': t << "\\rcurly{}"; break;
-      // NOTE: adding a case here, means adding it to while below as well!
-      default:
-        i=0;
-        // collect as long string as possible, before handing it to docify
-        tmp[i++]=c;
-        while ((c=*p) && c!='"' && c!='@' && c!='[' && c!=']' && c!='!' && c!='{' && c!='}' && c!='|')
-        {
-          tmp[i++]=c;
-          p++;
-        }
-        tmp[i]=0;
-        filterLatexString(t,tmp,
-                          true,   // insideTabbing
-                          false,  // insidePre
-                          false,  // insideItem
-                          false,  // insideTable
-                          false   // keepSpaces
-                         );
-        break;
-    }
-  }
-  return t.str();
-}
-
-QCString latexEscapePDFString(const QCString &s)
-{
-  if (s.isEmpty()) return s;
-  TextStream t;
-  const char *p=s.data();
-  char c;
-  while ((c=*p++))
-  {
-    switch (c)
-    {
-      case '\\': t << "\\textbackslash{}"; break;
-      case '{':  t << "\\{"; break;
-      case '}':  t << "\\}"; break;
-      case '_':  t << "\\_"; break;
-      case '%':  t << "\\%"; break;
-      case '&':  t << "\\&"; break;
-      default:
-        t << c;
-        break;
-    }
-  }
-  return t.str();
-}
-
-QCString latexFilterURL(const QCString &s)
-{
-  if (s.isEmpty()) return s;
-  TextStream t;
-  const char *p=s.data();
-  char c;
-  while ((c=*p++))
-  {
-    switch (c)
-    {
-      case '#':  t << "\\#"; break;
-      case '%':  t << "\\%"; break;
-      case '\\':  t << "\\\\"; break;
-      default:
-        if (c<0)
-        {
-          unsigned char id = static_cast<unsigned char>(c);
-          t << "\\%" << hex[id>>4] << hex[id&0xF];
-        }
-        else
-        {
-          t << c;
-        }
-        break;
-    }
-  }
-  return t.str();
-}
-
-static std::mutex g_rtfFormatMutex;
-static std::unordered_map<std::string,std::string> g_tagMap;
-static QCString g_nextTag( "AAAAAAAAAA" );
-
-QCString rtfFormatBmkStr(const QCString &name)
-{
-  std::lock_guard<std::mutex> lock(g_rtfFormatMutex);
-
-  // To overcome the 40-character tag limitation, we
-  // substitute a short arbitrary string for the name
-  // supplied, and keep track of the correspondence
-  // between names and strings.
-  auto it = g_tagMap.find(name.str());
-  if (it!=g_tagMap.end()) // already known
-  {
-    return QCString(it->second);
-  }
-
-  QCString tag = g_nextTag;
-  auto result = g_tagMap.insert( std::make_pair(name.str(), g_nextTag.str()) );
-
-  if (result.second) // new item was added
-  {
-    // increment the next tag.
-
-    char* nxtTag = g_nextTag.rawData() + g_nextTag.length() - 1;
-    for ( unsigned int i = 0; i < g_nextTag.length(); ++i, --nxtTag )
-    {
-      if ( ( ++(*nxtTag) ) > 'Z' )
-      {
-        *nxtTag = 'A';
-      }
-      else
-      {
-        // Since there was no carry, we can stop now
-        break;
-      }
-    }
-  }
-
-  Debug::print(Debug::Rtf,0,"Name = %s RTF_tag = %s\n",qPrint(name),qPrint(tag));
-  return tag;
-}
-
 bool checkExtension(const QCString &fName, const QCString &ext)
 {
   return fName.right(ext.length())==ext;
@@ -5451,11 +4975,10 @@ bool checkExtension(const QCString &fName, const QCString &ext)
 QCString addHtmlExtensionIfMissing(const QCString &fName)
 {
   if (fName.isEmpty()) return fName;
-  if (stripPath(fName).find('.')==-1) // no extension
-  {
-    return QCString(fName)+Doxygen::htmlFileExtension;
-  }
-  return fName;
+  int i_fs = fName.findRev('/');
+  int i_bs = fName.findRev('\\');
+  int i    = fName.find('.',std::max({ i_fs, i_bs ,0})); // search for . after path part
+  return i==-1 ? fName+Doxygen::htmlFileExtension : fName;
 }
 
 QCString stripExtensionGeneral(const QCString &fName, const QCString &ext)
@@ -5866,20 +5389,20 @@ bool checkIfTypedef(const Definition *scope,const FileDef *fileScope,const QCStr
     return FALSE;
 }
 
-static int nextUTF8CharPosition(const QCString &utf8Str,uint len,uint startPos)
+static int nextUTF8CharPosition(const QCString &utf8Str,uint32_t len,uint32_t startPos)
 {
   if (startPos>=len) return len;
-  uchar c = static_cast<uchar>(utf8Str[startPos]);
+  uint8_t c = static_cast<uint8_t>(utf8Str[startPos]);
   int bytes=getUTF8CharNumBytes(c);
   if (c=='&') // skip over character entities
   {
     bytes=1;
     int (*matcher)(int) = 0;
-    c = static_cast<uchar>(utf8Str[startPos+bytes]);
+    c = static_cast<uint8_t>(utf8Str[startPos+bytes]);
     if (c=='#') // numerical entity?
     {
       bytes++;
-      c = static_cast<uchar>(utf8Str[startPos+bytes]);
+      c = static_cast<uint8_t>(utf8Str[startPos+bytes]);
       if (c=='x') // hexadecimal entity?
       {
         bytes++;
@@ -5897,7 +5420,7 @@ static int nextUTF8CharPosition(const QCString &utf8Str,uint len,uint startPos)
     }
     if (matcher)
     {
-      while ((c = static_cast<uchar>(utf8Str[startPos+bytes]))!=0 && matcher(c))
+      while ((c = static_cast<uint8_t>(utf8Str[startPos+bytes]))!=0 && matcher(c))
       {
         bytes++;
       }
@@ -6176,8 +5699,8 @@ static QCString expandAliasRec(StringUnorderedSet &aliasesProcessed,const QCStri
   if (result == s)
   {
     std::string orgStr = s.str();
-    int ridx = orgStr.rfind('-');
-    if (ridx != -1) return expandAliasRec(aliasesProcessed,s.left(ridx),allowRecursion) + s.right(s.length() - ridx);
+    size_t ridx = orgStr.rfind('-');
+    if (ridx != std::string::npos) return expandAliasRec(aliasesProcessed,s.left(ridx),allowRecursion) + s.right(s.length() - ridx);
   }
 
   return result;
@@ -6351,7 +5874,7 @@ bool readInputFile(const QCString &fileName,BufStr &inBuf,bool filter,bool isSou
   QCString filterName = getFileFilter(fileName,isSourceCode);
   if (filterName.isEmpty() || !filter)
   {
-    std::ifstream f(fileName.str(),std::ifstream::in | std::ifstream::binary);
+    std::ifstream f = Portable::openInputStream(fileName,true);
     if (!f.is_open())
     {
       err("could not open file %s\n",qPrint(fileName));
@@ -6393,25 +5916,25 @@ bool readInputFile(const QCString &fileName,BufStr &inBuf,bool filter,bool isSou
 
   int start=0;
   if (size>=2 &&
-      static_cast<uchar>(inBuf.at(0))==0xFF &&
-      static_cast<uchar>(inBuf.at(1))==0xFE // Little endian BOM
+      static_cast<uint8_t>(inBuf.at(0))==0xFF &&
+      static_cast<uint8_t>(inBuf.at(1))==0xFE // Little endian BOM
      ) // UCS-2LE encoded file
   {
     transcodeCharacterBuffer(fileName,inBuf,inBuf.curPos(),
         "UCS-2LE","UTF-8");
   }
   else if (size>=2 &&
-           static_cast<uchar>(inBuf.at(0))==0xFE &&
-           static_cast<uchar>(inBuf.at(1))==0xFF // big endian BOM
+           static_cast<uint8_t>(inBuf.at(0))==0xFE &&
+           static_cast<uint8_t>(inBuf.at(1))==0xFF // big endian BOM
          ) // UCS-2BE encoded file
   {
     transcodeCharacterBuffer(fileName,inBuf,inBuf.curPos(),
         "UCS-2BE","UTF-8");
   }
   else if (size>=3 &&
-           static_cast<uchar>(inBuf.at(0))==0xEF &&
-           static_cast<uchar>(inBuf.at(1))==0xBB &&
-           static_cast<uchar>(inBuf.at(2))==0xBF
+           static_cast<uint8_t>(inBuf.at(0))==0xEF &&
+           static_cast<uint8_t>(inBuf.at(1))==0xBB &&
+           static_cast<uint8_t>(inBuf.at(2))==0xBF
      ) // UTF-8 encoded file
   {
     inBuf.dropFromStart(3); // remove UTF-8 BOM: no translation needed
@@ -6420,7 +5943,7 @@ bool readInputFile(const QCString &fileName,BufStr &inBuf,bool filter,bool isSou
   {
     // do character transcoding if needed.
     transcodeCharacterBuffer(fileName,inBuf,inBuf.curPos(),
-        Config_getString(INPUT_ENCODING),"UTF-8");
+        getEncoding(fi),"UTF-8");
   }
 
   //inBuf.addChar('\n'); /* to prevent problems under Windows ? */
@@ -6460,11 +5983,13 @@ QCString filterTitle(const QCString &title)
   return QCString(tf);
 }
 
-//----------------------------------------------------------------------------
-// returns TRUE if the name of the file represented by 'fi' matches
-// one of the file patterns in the 'patList' list.
+//---------------------------------------------------------------------------------------------------
 
-bool patternMatch(const FileInfo &fi,const StringVector &patList)
+template<class PatternList, class PatternElem, typename PatternGet = QCString(*)(const PatternElem &)>
+bool genericPatternMatch(const FileInfo &fi,
+                         const PatternList &patList,
+                         PatternElem &elem,
+                         PatternGet getter)
 {
   bool caseSenseNames = getCaseSenseNames();
   bool found = FALSE;
@@ -6481,8 +6006,9 @@ bool patternMatch(const FileInfo &fi,const StringVector &patList)
     std::string fp = fi.filePath();
     std::string afp= fi.absFilePath();
 
-    for (auto pattern: patList)
+    for (const auto &li : patList)
     {
+      std::string pattern = getter(li).str();
       if (!pattern.empty())
       {
         size_t i=pattern.find('=');
@@ -6499,13 +6025,42 @@ bool patternMatch(const FileInfo &fi,const StringVector &patList)
         found = re.isValid() && (reg::match(fn,re) ||
                                  (fn!=fp && reg::match(fp,re)) ||
                                  (fn!=afp && fp!=afp && reg::match(afp,re)));
-        if (found) break;
+        if (found)
+        {
+          elem = li;
+          break;
+        }
         //printf("Matching '%s' against pattern '%s' found=%d\n",
         //    qPrint(fi->fileName()),qPrint(pattern),found);
       }
     }
   }
   return found;
+}
+
+//----------------------------------------------------------------------------
+// returns TRUE if the name of the file represented by 'fi' matches
+// one of the file patterns in the 'patList' list.
+
+bool patternMatch(const FileInfo &fi,const StringVector &patList)
+{
+  std::string elem;
+  auto getter = [](std::string s) { return QCString(s); };
+  return genericPatternMatch(fi,patList,elem,getter);
+}
+
+QCString getEncoding(const FileInfo &fi)
+{
+  InputFileEncoding elem;
+  auto getter = [](const InputFileEncoding &e) { return e.pattern; };
+  if (genericPatternMatch(fi,Doxygen::inputFileEncodingList,elem,getter)) // check for file specific encoding
+  {
+    return elem.encoding;
+  }
+  else // fall back to default encoding
+  {
+    return Config_getString(INPUT_ENCODING);
+  }
 }
 
 QCString externalLinkTarget(const bool parent)
@@ -6641,7 +6196,7 @@ bool copyFile(const QCString &src,const QCString &dest)
 QCString extractBlock(const QCString &text,const QCString &marker)
 {
   QCString result;
-  int p=0,i;
+  int p=0,i=-1;
   bool found=FALSE;
 
   // find the character positions of the markers
@@ -6775,9 +6330,9 @@ bool protectionLevelVisible(Protection prot)
   bool extractPrivate = Config_getBool(EXTRACT_PRIVATE);
   bool extractPackage = Config_getBool(EXTRACT_PACKAGE);
 
-  return (prot!=Private && prot!=Package)  ||
-         (prot==Private && extractPrivate) ||
-         (prot==Package && extractPackage);
+  return (prot!=Protection::Private && prot!=Protection::Package)  ||
+         (prot==Protection::Private && extractPrivate) ||
+         (prot==Protection::Package && extractPackage);
 }
 
 //---------------------------------------------------------------------------
@@ -6893,7 +6448,7 @@ void stripIndentation(QCString &doc,const int indentationLevel)
         break;
     }
   }
-  doc.resize(static_cast<uint>(dst-doc.data())+1);
+  doc.resize(static_cast<uint32_t>(dst-doc.data())+1);
 }
 
 
@@ -6920,30 +6475,30 @@ bool fileVisibleInIndex(const FileDef *fd,bool &genSourceFile)
  * @see getNextUtf8OrToLower()
  * @see getNextUtf8OrToUpper()
  */
-uint getUtf8Code( const QCString& s, int idx )
+uint32_t getUtf8Code( const QCString& s, int idx )
 {
   const int length = s.length();
   if (idx >= length) { return 0; }
-  const uint c0 = (uchar)s.at(idx);
+  const uint32_t c0 = (uint8_t)s.at(idx);
   if ( c0 < 0xC2 || c0 >= 0xF8 ) // 1 byte character
   {
     return c0;
   }
   if (idx+1 >= length) { return 0; }
-  const uint c1 = ((uchar)s.at(idx+1)) & 0x3f;
+  const uint32_t c1 = ((uint8_t)s.at(idx+1)) & 0x3f;
   if ( c0 < 0xE0 ) // 2 byte character
   {
     return ((c0 & 0x1f) << 6) | c1;
   }
   if (idx+2 >= length) { return 0; }
-  const uint c2 = ((uchar)s.at(idx+2)) & 0x3f;
+  const uint32_t c2 = ((uint8_t)s.at(idx+2)) & 0x3f;
   if ( c0 < 0xF0 ) // 3 byte character
   {
     return ((c0 & 0x0f) << 12) | (c1 << 6) | c2;
   }
   if (idx+3 >= length) { return 0; }
   // 4 byte character
-  const uint c3 = ((uchar)s.at(idx+3)) & 0x3f;
+  const uint32_t c3 = ((uint8_t)s.at(idx+3)) & 0x3f;
   return ((c0 & 0x07) << 18) | (c1 << 12) | (c2 << 6) | c3;
 }
 
@@ -6956,9 +6511,9 @@ uint getUtf8Code( const QCString& s, int idx )
  * @return the unicode codepoint, 0 - MAX_UNICODE_CODEPOINT, excludes 'A'-'Z'
  * @see getNextUtf8Code()
 */
-uint getUtf8CodeToLower( const QCString& s, int idx )
+uint32_t getUtf8CodeToLower( const QCString& s, int idx )
 {
-  const uint v = getUtf8Code( s, idx );
+  const uint32_t v = getUtf8Code( s, idx );
   return v < 0x7f ? tolower( v ) : v;
 }
 
@@ -6971,9 +6526,9 @@ uint getUtf8CodeToLower( const QCString& s, int idx )
  * @return the unicode codepoint, 0 - MAX_UNICODE_CODEPOINT, excludes 'A'-'Z'
  * @see getNextUtf8Code()
  */
-uint getUtf8CodeToUpper( const QCString& s, int idx )
+uint32_t getUtf8CodeToUpper( const QCString& s, int idx )
 {
-  const uint v = getUtf8Code( s, idx );
+  const uint32_t v = getUtf8Code( s, idx );
   return v < 0x7f ? toupper( v ) : v;
 }
 #endif
@@ -7047,7 +6602,7 @@ void convertProtectionLevel(
   // default representing 1-1 mapping
   *outListType1=inListType;
   *outListType2=-1;
-  if (inProt==Public)
+  if (inProt==Protection::Public)
   {
     switch (inListType) // in the private section of the derived class,
                         // the private section of the base class should not
@@ -7066,7 +6621,7 @@ void convertProtectionLevel(
         break;
     }
   }
-  else if (inProt==Protected) // Protected inheritance
+  else if (inProt==Protection::Protected) // Protected inheritance
   {
     switch (inListType) // in the protected section of the derived class,
                         // both the public and protected members are shown
@@ -7110,7 +6665,7 @@ void convertProtectionLevel(
         break;
     }
   }
-  else if (inProt==Private)
+  else if (inProt==Protection::Private)
   {
     switch (inListType) // in the private section of the derived class,
                         // both the public and protected members are shown
@@ -7245,51 +6800,10 @@ bool openOutputFile(const QCString &outFile,std::ofstream &f)
         dir.remove(backup.fileName());
       dir.rename(fi.fileName(),fi.fileName()+".bak");
     }
-    f.open(outFile.str(),std::ofstream::out | std::ofstream::binary);
+    f = Portable::openOutputStream(outFile);
     fileOpened = f.is_open();
   }
   return fileOpened;
-}
-
-void writeExtraLatexPackages(TextStream &t)
-{
-  // User-specified packages
-  const StringVector &extraPackages = Config_getList(EXTRA_PACKAGES);
-  if (!extraPackages.empty())
-  {
-    t << "% Packages requested by user\n";
-    for (const auto &pkgName : extraPackages)
-    {
-      if ((pkgName[0] == '[') || (pkgName[0] == '{'))
-        t << "\\usepackage" << pkgName.c_str() << "\n";
-      else
-        t << "\\usepackage{" << pkgName.c_str() << "}\n";
-    }
-    t << "\n";
-  }
-}
-
-void writeLatexSpecialFormulaChars(TextStream &t)
-{
-    unsigned char minus[4]; // Superscript minus
-    unsigned char sup2[3]; // Superscript two
-    unsigned char sup3[3];
-    minus[0]= 0xE2;
-    minus[1]= 0x81;
-    minus[2]= 0xBB;
-    minus[3]= 0;
-    sup2[0]= 0xC2;
-    sup2[1]= 0xB2;
-    sup2[2]= 0;
-    sup3[0]= 0xC2;
-    sup3[1]= 0xB3;
-    sup3[2]= 0;
-
-    t << "\\usepackage{newunicodechar}\n"
-         "  \\newunicodechar{" << minus << "}{${}^{-}$}% Superscript minus\n"
-         "  \\newunicodechar{" << sup2  << "}{${}^{2}$}% Superscript two\n"
-         "  \\newunicodechar{" << sup3  << "}{${}^{3}$}% Superscript three\n"
-         "\n";
 }
 
 //------------------------------------------------------
@@ -7302,12 +6816,14 @@ bool recognizeFixedForm(const QCString &contents, FortranFormat format)
   if (format == FortranFormat_Fixed) return TRUE;
   if (format == FortranFormat_Free)  return FALSE;
   int tabSize=Config_getInt(TAB_SIZE);
+  size_t sizCont;
 
-  for (int i=0;;i++)
+  sizCont = contents.length();
+  for (size_t i=0;i<sizCont;i++)
   {
     column++;
 
-    switch(contents[i])
+    switch(contents.at(i))
     {
       case '\n':
         column=0;
@@ -7394,7 +6910,7 @@ QCString clearBlock(const QCString &s,const QCString &begin,const QCString &end)
 }
 //----------------------------------------------------------------------
 
-QCString selectBlock(const QCString& s,const QCString &name,bool enable, OutputGenerator::OutputType o)
+QCString selectBlock(const QCString& s,const QCString &name,bool enable, OutputType o)
 {
   // TODO: this is an expensive function that is called a lot -> optimize it
   QCString begin;
@@ -7403,13 +6919,13 @@ QCString selectBlock(const QCString& s,const QCString &name,bool enable, OutputG
   QCString noend;
   switch (o)
   {
-    case OutputGenerator::Html:
+    case OutputType::Html:
       begin = "<!--BEGIN " + name + "-->";
       end = "<!--END " + name + "-->";
       nobegin = "<!--BEGIN !" + name + "-->";
       noend = "<!--END !" + name + "-->";
       break;
-    case OutputGenerator::Latex:
+    case OutputType::Latex:
       begin = "%%BEGIN " + name;
       end = "%%END " + name;
       nobegin = "%%BEGIN !" + name;

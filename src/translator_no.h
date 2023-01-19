@@ -98,6 +98,10 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
     virtual QCString trDetailedDescription()
     { return "Detaljert beskrivelse"; }
 
+    /*! header that is used when the summary tag is missing inside the details tag */
+    virtual QCString trDetails()
+    { return "Detaljar"; }
+
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
     { return "Medlemstypedef-dokumentasjon"; }
@@ -411,12 +415,6 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
      */
     virtual QCString trFileDocumentation()
     { return "Fildokumentasjon"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all examples.
-     */
-    virtual QCString trExampleDocumentation()
-    { return "Eksempeldokumentasjon"; }
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
@@ -1535,6 +1533,11 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
       QCString text  = full? months_full[month-1] : months_short[month-1];
       if (first_capital) return text.mid(0,1).upper()+text.mid(1);
       else return text;
+    }
+    virtual QCString trDayPeriod(int period)
+    {
+      static const char *dayPeriod[] = { "f.m.", "e.m." };
+      return dayPeriod[period];
     }
 };
 

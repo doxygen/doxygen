@@ -54,6 +54,10 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
     virtual QCString trDetailedDescription()
     { return "Детальний опис"; }
 
+    /*! header that is used when the summary tag is missing inside the details tag */
+    virtual QCString trDetails()
+    { return "Подробиці"; }
+
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
     { return "Опис типів користувача"; }
@@ -353,12 +357,6 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
      */
     virtual QCString trFileDocumentation()
     { return "Файли"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all examples.
-     */
-    virtual QCString trExampleDocumentation()
-    { return "Приклади"; }
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
@@ -1774,16 +1772,20 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
      */
     virtual QCString trDateTime(int year,int month,int day,int dayOfWeek,
                                 int hour,int minutes,int seconds,
-                                bool includeTime)
+                                DateTimeType includeTime)
     {
       static const char *days[]   = { "Понеділок","Вівторок","Середа","Четвер","П'ятниця","Субота","Неділя" };
       static const char *months[] = { "січня","лютого","березня","квітня","травня","червня","липня","серпня","вересня","жотня","листопада","грудня" };
       QCString sdate;
-      sdate.sprintf("%s, %d %s %d",days[dayOfWeek-1],day,months[month-1],year);
-      if (includeTime)
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Date)
+      {
+        sdate.sprintf("%s, %d %s %d",days[dayOfWeek-1],day,months[month-1],year);
+      }
+      if (includeTime == DateTimeType::DateTime) sdate += " ";
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Time)
       {
         QCString stime;
-        stime.sprintf(" %.2d:%.2d:%.2d",hour,minutes,seconds);
+        stime.sprintf("%.2d:%.2d:%.2d",hour,minutes,seconds);
         sdate+=stime;
       }
       return sdate;
@@ -1801,6 +1803,11 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
       static const char *months_full[]  = { "січень", "лютий", "березень", "квітень", "травень", "червень", "липень", "серпень", "вересень", "жовтень", "листопад", "грудень" };
       QCString text  = full? months_full[month-1] : months_short[month-1];
       return text;
+    }
+    virtual QCString trDayPeriod(int period)
+    {
+      static const char *dayPeriod[] = { "дп", "пп" };
+      return dayPeriod[period];
     }
 
 //////////////////////////////////////////////////////////////////////////

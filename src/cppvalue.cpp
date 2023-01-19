@@ -18,7 +18,7 @@
 #include "cppvalue.h"
 #include "constexp.h"
 
-CPPValue parseOctal(const std::string& token)
+CPPValue CPPValue::parseOctal(const std::string& token)
 {
   long val = 0;
   for (const char *p = token.c_str(); *p != 0; p++)
@@ -28,7 +28,7 @@ CPPValue parseOctal(const std::string& token)
   return CPPValue(val);
 }
 
-CPPValue parseDecimal(const std::string& token)
+CPPValue CPPValue::parseDecimal(const std::string& token)
 {
   long val = 0;
   for (const char *p = token.c_str(); *p != 0; p++)
@@ -38,7 +38,7 @@ CPPValue parseDecimal(const std::string& token)
   return CPPValue(val);
 }
 
-CPPValue parseHexadecimal(const std::string& token)
+CPPValue CPPValue::parseHexadecimal(const std::string& token)
 {
   long val = 0;
   for (const char *p = token.c_str(); *p != 0; p++)
@@ -51,7 +51,7 @@ CPPValue parseHexadecimal(const std::string& token)
   return CPPValue(val);
 }
 
-CPPValue parseBinary(const std::string& token)
+CPPValue CPPValue::parseBinary(const std::string& token)
 {
   long val = 0;
   for (const char *p = token.c_str(); *p != 0; p++)
@@ -61,7 +61,7 @@ CPPValue parseBinary(const std::string& token)
   return CPPValue(val);
 }
 
-CPPValue parseCharacter(const std::string& token) // does not work for '\n' and the alike
+CPPValue CPPValue::parseCharacter(const std::string& token) // does not work for '\n' and the alike
 {
   if (token[1]=='\\')
   {
@@ -96,7 +96,7 @@ CPPValue parseCharacter(const std::string& token) // does not work for '\n' and 
   return CPPValue(token[1]);
 }
 
-CPPValue parseFloat(const std::string& token)
+CPPValue CPPValue::parseFloat(const std::string& token)
 {
   return CPPValue(std::stod(token));
 }

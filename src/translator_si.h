@@ -45,6 +45,9 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
     { return "(To niso metode.)"; }
     QCString trDetailedDescription()
     { return "Podroben opis"; }
+    virtual QCString trDetails()
+    { return "Podrobnosti"; }
+
     QCString trMemberTypedefDocumentation()
     { return "Opis uporabniško definiranih tipov"; }
     QCString trMemberEnumerationDocumentation()
@@ -149,8 +152,6 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
     { return "Opis razreda"; }
     QCString trFileDocumentation()
     { return "Opis datoteke"; }
-    QCString trExampleDocumentation()
-    { return "Opis primera"; }
     QCString trReferenceManual()
     { return "Priročnik"; }
 
@@ -1178,6 +1179,11 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
       QCString text  = full? months_full[month-1] : months_short[month-1];
       if (first_capital) return text.mid(0,1).upper()+text.mid(1);
       else return text;
+    }
+    virtual QCString trDayPeriod(int period)
+    {
+      static const char *dayPeriod[] = { "dop.", "pop." };
+      return dayPeriod[period];
     }
 };
 

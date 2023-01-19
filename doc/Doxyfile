@@ -56,6 +56,8 @@ HTML_EXTRA_FILES += translator_report.txt
 ALIASES           = LaTeX="\f({\LaTeX}\f)"
 ALIASES          += TeX="\f({\TeX}\f)"
 ALIASES          += forceNewPage="\latexonly \newpage \endlatexonly"
+ALIASES          += startalign=" \latexonly\noalign{\endlatexonly"
+ALIASES          += endalign=" \latexonly}\endlatexonly"
 LATEX_BATCHMODE   = YES
 LATEX_EXTRA_STYLESHEET = manual.sty
 LATEX_EMOJI_DIRECTORY  = ../doc

@@ -82,6 +82,10 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
     virtual QCString trDetailedDescription()
     { return "Detail Beskrywing"; }
 
+    /*! header that is used when the summary tag is missing inside the details tag */
+    virtual QCString trDetails()
+    { return "Besonderhede"; }
+
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
     { return "Lede Typedef Dokumentasie"; }
@@ -393,12 +397,6 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
      */
     virtual QCString trFileDocumentation()
     { return "Leër Dokumentasie"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all examples.
-     */
-    virtual QCString trExampleDocumentation()
-    { return "Voorbeeld Dokumentasie"; }
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
@@ -1728,6 +1726,11 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
       QCString text  = full? months_full[month-1] : months_short[month-1];
       if (first_capital) return text.mid(0,1).upper()+text.mid(1);
       else return text;
+    }
+    virtual QCString trDayPeriod(int period)
+    {
+      static const char *dayPeriod[] = { "vm.", "nm." };
+      return dayPeriod[period];
     }
 };
 

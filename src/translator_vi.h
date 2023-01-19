@@ -117,6 +117,10 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
     virtual QCString trDetailedDescription()
     { return "Mô tả chi tiết"; }
 
+    /*! header that is used when the summary tag is missing inside the details tag */
+    virtual QCString trDetails()
+    { return "Chi tiết"; }
+
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
     { return "Thông tin về Member Typedef"; }
@@ -430,12 +434,6 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
      */
     virtual QCString trFileDocumentation()
     { return "Thông tin về File"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all examples.
-     */
-    virtual QCString trExampleDocumentation()
-    { return "Thông tin về các ví dụ"; }
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
@@ -1760,6 +1758,11 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
       static const char *months_full[]  = { "Tháng Giêng", "Tháng Hai", "Tháng Ba", "Tháng Tư", "Tháng Năm", "Tháng Sáu", "Tháng Bảy", "Tháng Tám", "Tháng Chín", "Tháng Mười", "Tháng Mười Một", "Tháng Mười Hai" };
       QCString text  = full? months_full[month-1] : months_short[month-1];
       return text;
+    }
+    virtual QCString trDayPeriod(int period)
+    {
+      static const char *dayPeriod[] = { "SA", "CH" };
+      return dayPeriod[period];
     }
 };
 

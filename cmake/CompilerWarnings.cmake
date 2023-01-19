@@ -18,6 +18,10 @@ function(set_project_warnings project_name)
               # declared in the for-loop is used outside the for-loop scope
       /w14296 # 'operator': expression is always 'boolean_value'
       /w14311 # 'variable': pointer truncation from 'type1' to 'type2'
+      /w14456 # declaration of 'name' hides previous local declaration
+      /w14457 # declaration of 'name' hides function parameter
+      /w14458 # declaration of 'name' hides class member
+      /w14459 # declaration of 'name' hides global declaration
       /w14545 # expression before comma evaluates to a function which is missing
               # an argument list
       /w14546 # function call before comma missing argument list

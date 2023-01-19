@@ -15,7 +15,6 @@
 
 #include <utility>
 #include <algorithm>
-#include <fstream>
 
 #include "searchindex_js.h"
 #include "doxygen.h"
@@ -33,6 +32,7 @@
 #include "message.h"
 #include "resourcemgr.h"
 #include "indexlist.h"
+#include "portable.h"
 
 QCString searchName(const Definition *d)
 {
@@ -409,7 +409,7 @@ void writeJavaScriptSearchIndex()
 
       QCString dataFileName = searchDirName + "/"+baseName+".js";
 
-      std::ofstream ti(dataFileName.str(), std::ofstream::out | std::ofstream::binary);
+      std::ofstream ti = Portable::openOutputStream(dataFileName);
       if (ti.is_open())
       {
 
@@ -582,8 +582,7 @@ void writeJavaScriptSearchIndex()
   }
 
   {
-    std::ofstream t(searchDirName.str()+"/searchdata.js",
-                    std::ofstream::out | std::ofstream::binary);
+    std::ofstream t = Portable::openOutputStream(searchDirName+"/searchdata.js");
     if (t.is_open())
     {
       t << "var indexSectionsWithContent =\n";

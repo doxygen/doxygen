@@ -74,7 +74,7 @@
  * instantiations = उदाहरणीकरणगण
  * interface = अंतराफलक
  * interfaces = अंतराफलकगण
- * inherit = 
+ * inherit =
  * inheritance = वरासत
  * inherited = वरासित
  * library = संग्रह
@@ -202,6 +202,10 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
     /*! header that is put before the detailed description of files, classes and namespaces. */
     virtual QCString trDetailedDescription()
     { return "विस्तृत विवरण"; }
+
+    /*! header that is used when the summary tag is missing inside the details tag */
+    virtual QCString trDetails()
+    { return "विवरण"; }
 
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
@@ -471,12 +475,6 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
      */
     virtual QCString trFileDocumentation()
     { return "फ़ाइल दस्तावेज़ीकरण"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all examples.
-     */
-    virtual QCString trExampleDocumentation()
-    { return "उदाहरण दस्तावेज़ीकरण"; }
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
@@ -1773,18 +1771,22 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
      */
     virtual QCString trDateTime(
       int year, int month, int day, int dayOfWeek,
-      int hour, int minutes, int seconds, bool includeTime)
+      int hour, int minutes, int seconds, DateTimeType includeTime)
     {
       static const char *days[] = { "सोमवार", "मंगलवार", "बुधवार", "गुरुवार",
                                     "शुक्रवार", "शनिवार", "रविवार" };
       static const char *months[] = { "जनवरी", "फरवरी", "मार्च", "अप्रैल", "मई", "जून",
                                     "जुलाई", "अगस्त", "सितम्बर", "अक्टूबर", "नवम्बर", "दिसम्बर" };
       QCString sdate;
-      sdate.sprintf("%s %s %d %d", days[dayOfWeek - 1], months[month - 1], day, year);
-      if (includeTime)
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Date)
+      {
+        sdate.sprintf("%s %s %d %d", days[dayOfWeek - 1], months[month - 1], day, year);
+      }
+      if (includeTime == DateTimeType::DateTime) sdate += " ";
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Time)
       {
         QCString stime;
-        stime.sprintf(" %.2d:%.2d:%.2d", hour, minutes, seconds);
+        stime.sprintf("%.2d:%.2d:%.2d", hour, minutes, seconds);
         sdate += stime;
       }
       return sdate;
@@ -1802,6 +1804,11 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
       static const char *months_full[]  = { "जनवरी", "फरवरी", "मार्च", "अप्रैल", "मई", "जून", "जुलाई", "अगस्त", "सितम्बर", "अक्तूबर", "नवम्बर", "दिसम्बर" };
       QCString text  = full? months_full[month-1] : months_short[month-1];
       return text;
+    }
+    virtual QCString trDayPeriod(int period)
+    {
+      static const char *dayPeriod[] = { "am", "pm" };
+      return dayPeriod[period];
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2000,7 +2007,7 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
     { return "फलनगण/कार्यविधियाँ/प्रक्रियाएं"; }
 
     /** VHDL type */
-    virtual QCString trVhdlType(uint64 type,bool single)
+    virtual QCString trVhdlType(uint64_t type,bool single)
     {
       switch (type)
       {

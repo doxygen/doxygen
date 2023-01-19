@@ -106,11 +106,16 @@ class GrowBuf
                           m_pos+=l;
                         }
                       }
+    void addInt(const char *fmt,int value) {
+                      char tmp[50];
+                      snprintf(tmp,50,fmt,value);
+                      addStr(tmp);
+    }
     char *get() { return m_str; }
     const char *get() const { return m_str; }
     size_t getPos() const   { return m_pos; }
     void setPos(size_t newPos) { m_pos = newPos; }
-    char at(size_t i) const { return m_str[i]; }
+    const char &at(size_t i) const { return m_str[i]; }
     bool empty() const { return m_pos==0; }
   private:
     char *m_str;

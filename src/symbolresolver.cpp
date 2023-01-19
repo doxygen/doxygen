@@ -23,8 +23,9 @@
 #include "namespacedef.h"
 #include "config.h"
 #include "defargs.h"
+#include "trace.h"
 
-static std::mutex g_cacheMutex;
+static std::recursive_mutex g_cacheMutex;
 static std::recursive_mutex g_cacheTypedefMutex;
 
 //--------------------------------------------------------------------------------------
@@ -167,14 +168,14 @@ struct SymbolResolver::Private
 
     const Definition *followPath(const Definition *start,const QCString &path);
 
-    const Definition *endOfPathIsUsedClass(const LinkedRefMap<const ClassDef> &cl,const QCString &localName);
+    const Definition *endOfPathIsUsedClass(const LinkedRefMap<ClassDef> &cl,const QCString &localName);
 
     bool accessibleViaUsingNamespace(StringUnorderedSet &visited,
-                                     const LinkedRefMap<const NamespaceDef> &nl,
+                                     const LinkedRefMap<NamespaceDef> &nl,
                                      const Definition *item,
                                      const QCString &explicitScopePart="",
                                      int level=0);
-    bool accessibleViaUsingClass(const LinkedRefMap<const ClassDef> &cl,
+    bool accessibleViaUsingClass(const LinkedRefMap<ClassDef> &cl,
                                  const Definition *item,
                                  const QCString &explicitScopePart=""
                                 );
@@ -272,8 +273,9 @@ const ClassDef *SymbolResolver::Private::getResolvedTypeRec(
   }
   *pk='\0';
 
+  const ClassDef *bestMatch=0;
   {
-    std::lock_guard<std::mutex> lock(g_cacheMutex);
+    std::lock_guard<std::recursive_mutex> lock(g_cacheMutex);
     LookupInfo *pval = Doxygen::typeLookupCache->find(key.str());
     //printf("Searching for %s result=%p\n",qPrint(key),(void*)pval);
     if (pval)
@@ -295,40 +297,36 @@ const ClassDef *SymbolResolver::Private::getResolvedTypeRec(
     {
       Doxygen::typeLookupCache->insert(key.str(),LookupInfo());
     }
-  }
 
-  const ClassDef *bestMatch=0;
-  const MemberDef *bestTypedef=0;
-  QCString bestTemplSpec;
-  QCString bestResolvedType;
-  int minDistance=10000; // init at "infinite"
+    const MemberDef *bestTypedef=0;
+    QCString bestTemplSpec;
+    QCString bestResolvedType;
+    int minDistance=10000; // init at "infinite"
 
-  for (Definition *d : range)
-  {
-    getResolvedType(scope,d,explicitScopePart,actTemplParams,
-                    minDistance,bestMatch,bestTypedef,bestTemplSpec,bestResolvedType);
-    if  (minDistance==0) break; // we can stop reaching if we already reached distance 0
-  }
+    for (Definition *d : range)
+    {
+      getResolvedType(scope,d,explicitScopePart,actTemplParams,
+          minDistance,bestMatch,bestTypedef,bestTemplSpec,bestResolvedType);
+      if  (minDistance==0) break; // we can stop reaching if we already reached distance 0
+    }
 
-  if (pTypeDef)
-  {
-    *pTypeDef = bestTypedef;
-  }
-  if (pTemplSpec)
-  {
-    *pTemplSpec = bestTemplSpec;
-  }
-  if (pResolvedType)
-  {
-    *pResolvedType = bestResolvedType;
-  }
+    if (pTypeDef)
+    {
+      *pTypeDef = bestTypedef;
+    }
+    if (pTemplSpec)
+    {
+      *pTemplSpec = bestTemplSpec;
+    }
+    if (pResolvedType)
+    {
+      *pResolvedType = bestResolvedType;
+    }
 
-  //printf("getResolvedSymbolRec: bestMatch=%p pval->resolvedType=%s\n",
-  //    bestMatch,qPrint(bestResolvedType));
+    //printf("getResolvedSymbolRec: bestMatch=%p pval->resolvedType=%s\n",
+    //    bestMatch,qPrint(bestResolvedType));
 
-  {
     // we need to insert the item in the cache again, as it could be removed in the meantime
-    std::lock_guard<std::mutex> lock(g_cacheMutex);
     Doxygen::typeLookupCache->insert(key.str(),
                           LookupInfo(bestMatch,bestTypedef,bestTemplSpec,bestResolvedType));
   }
@@ -381,9 +379,10 @@ const Definition *SymbolResolver::Private::getResolvedSymbolRec(
   auto &range = Doxygen::symbolMap->find(name);
   if (range.empty())
   {
+    //printf("%d ] not symbols\n",--level);
     return 0;
   }
-  //printf("found symbol!\n");
+  //printf("found symbol %zu times!\n",range.size());
 
   bool hasUsingStatements =
     (m_fileScope && (!m_fileScope->getUsedNamespaces().empty() ||
@@ -432,8 +431,9 @@ const Definition *SymbolResolver::Private::getResolvedSymbolRec(
   }
   *pk='\0';
 
+  const Definition *bestMatch=0;
   {
-    std::lock_guard<std::mutex> lock(g_cacheMutex);
+    std::lock_guard<std::recursive_mutex> lock(g_cacheMutex);
     LookupInfo *pval = Doxygen::symbolLookupCache->find(key.str());
     //printf("Searching for %s result=%p\n",qPrint(key),(void*)pval);
     if (pval)
@@ -455,52 +455,48 @@ const Definition *SymbolResolver::Private::getResolvedSymbolRec(
     {
       Doxygen::symbolLookupCache->insert(key.str(),LookupInfo());
     }
-  }
 
-  const Definition *bestMatch=0;
-  const MemberDef *bestTypedef=0;
-  QCString bestTemplSpec;
-  QCString bestResolvedType;
-  int minDistance=10000; // init at "infinite"
+    const MemberDef *bestTypedef=0;
+    QCString bestTemplSpec;
+    QCString bestResolvedType;
+    int minDistance=10000; // init at "infinite"
 
-  for (Definition *d : range)
-  {
-    getResolvedSymbol(scope,d,args,checkCV,explicitScopePart,actTemplParams,
-                      minDistance,bestMatch,bestTypedef,bestTemplSpec,bestResolvedType);
-    if  (minDistance==0) break; // we can stop reaching if we already reached distance 0
-  }
-
-  // in case we are looking for e.g. func() and the real function is func(int x) we also
-  // accept func(), see example 036 in the test set.
-  if (bestMatch==0 && args=="()")
-  {
     for (Definition *d : range)
     {
-      getResolvedSymbol(scope,d,QCString(),false,explicitScopePart,actTemplParams,
-                      minDistance,bestMatch,bestTypedef,bestTemplSpec,bestResolvedType);
+      getResolvedSymbol(scope,d,args,checkCV,explicitScopePart,actTemplParams,
+          minDistance,bestMatch,bestTypedef,bestTemplSpec,bestResolvedType);
       if  (minDistance==0) break; // we can stop reaching if we already reached distance 0
     }
-  }
 
-  if (pTypeDef)
-  {
-    *pTypeDef = bestTypedef;
-  }
-  if (pTemplSpec)
-  {
-    *pTemplSpec = bestTemplSpec;
-  }
-  if (pResolvedType)
-  {
-    *pResolvedType = bestResolvedType;
-  }
+    // in case we are looking for e.g. func() and the real function is func(int x) we also
+    // accept func(), see example 036 in the test set.
+    if (bestMatch==0 && args=="()")
+    {
+      for (Definition *d : range)
+      {
+        getResolvedSymbol(scope,d,QCString(),false,explicitScopePart,actTemplParams,
+            minDistance,bestMatch,bestTypedef,bestTemplSpec,bestResolvedType);
+        if  (minDistance==0) break; // we can stop reaching if we already reached distance 0
+      }
+    }
 
-  //printf("getResolvedSymbolRec: bestMatch=%p pval->resolvedType=%s\n",
-  //    bestMatch,qPrint(bestResolvedType));
+    if (pTypeDef)
+    {
+      *pTypeDef = bestTypedef;
+    }
+    if (pTemplSpec)
+    {
+      *pTemplSpec = bestTemplSpec;
+    }
+    if (pResolvedType)
+    {
+      *pResolvedType = bestResolvedType;
+    }
 
-  {
+    //printf("getResolvedSymbolRec: bestMatch=%p pval->resolvedType=%s\n",
+    //    bestMatch,qPrint(bestResolvedType));
+
     // we need to insert the item in the cache again, as it could be removed in the meantime
-    std::lock_guard<std::mutex> lock(g_cacheMutex);
     Doxygen::symbolLookupCache->insert(key.str(),
                           LookupInfo(bestMatch,bestTypedef,bestTemplSpec,bestResolvedType));
   }
@@ -911,7 +907,7 @@ done:
     //printf("setting cached typedef %p in result %p\n",md,result);
     //printf("==> %s (%s,%d)\n",qPrint(result->name()),qPrint(result->getDefFileName()),result->getDefLine());
     //printf("*pResolvedType=%s\n",pResolvedType?pResolvedType->data():"<none>");
-    MemberDefMutable *mdm = toMemberDefMutable(md);
+    MemberDefMutable *mdm = toMemberDefMutable(const_cast<MemberDef*>(md));
     if (mdm)
     {
       mdm->cacheTypedefVal(result,
@@ -926,12 +922,14 @@ done:
   return result;
 }
 
+#if 0
 static bool isParentScope(const Definition *parent,const Definition *item)
 {
   if (parent==item || item==0 || item==Doxygen::globalScope) return false;
   if (parent==0 || parent==Doxygen::globalScope)             return true;
   return isParentScope(parent->getOuterScope(),item);
 }
+#endif
 
 int SymbolResolver::Private::isAccessibleFromWithExpScope(
                                      VisitedNamespaces &visitedNamespaces,
@@ -953,8 +951,8 @@ int SymbolResolver::Private::isAccessibleFromWithExpScope(
   accessStack.push(scope,m_fileScope,item,explicitScopePart);
 
 
-  //printf("  <isAccessibleFromWithExpScope(%s,%s,%s)\n",scope?qPrint(scope->name()):"<global>",
-  //                                      item?qPrint(item->name()):"<none>",
+  //printf(" <isAccessibleFromWithExpScope(%s,%s,%s)\n",scope?qPrint(scope->name()):"<global>",
+  //                                      item?qPrint(item->qualifiedName()):"<none>",
   //                                      qPrint(explicitScopePart));
   int result=0; // assume we found it
   const Definition *newScope = followPath(scope,explicitScopePart);
@@ -1035,6 +1033,8 @@ int SymbolResolver::Private::isAccessibleFromWithExpScope(
           }
         }
       }
+#if 0  // this caused problems resolving A::f() in the docs when there was a A::f(int) but also a
+       // global function f() that exactly matched the argument list.
       else if (isParentScope(scope,newScope) && newScope->definitionType()==Definition::TypeClass)
       {
         // if we a look for a type B and have explicit scope A, then it is also fine if B
@@ -1042,6 +1042,7 @@ int SymbolResolver::Private::isAccessibleFromWithExpScope(
         result = 1;
         goto done;
       }
+#endif
       // repeat for the parent scope
       if (scope!=Doxygen::globalScope)
       {
@@ -1192,7 +1193,7 @@ const Definition *SymbolResolver::Private::followPath(const Definition *start,co
   return current; // path could be followed
 }
 
-const Definition *SymbolResolver::Private::endOfPathIsUsedClass(const LinkedRefMap<const ClassDef> &cl,const QCString &localName)
+const Definition *SymbolResolver::Private::endOfPathIsUsedClass(const LinkedRefMap<ClassDef> &cl,const QCString &localName)
 {
   for (const auto &cd : cl)
   {
@@ -1205,7 +1206,7 @@ const Definition *SymbolResolver::Private::endOfPathIsUsedClass(const LinkedRefM
 }
 
 bool SymbolResolver::Private::accessibleViaUsingNamespace(StringUnorderedSet &visited,
-                                 const LinkedRefMap<const NamespaceDef> &nl,
+                                 const LinkedRefMap<NamespaceDef> &nl,
                                  const Definition *item,
                                  const QCString &explicitScopePart,
                                  int level)
@@ -1240,7 +1241,7 @@ bool SymbolResolver::Private::accessibleViaUsingNamespace(StringUnorderedSet &vi
 }
 
 
-bool SymbolResolver::Private::accessibleViaUsingClass(const LinkedRefMap<const ClassDef> &cl,
+bool SymbolResolver::Private::accessibleViaUsingClass(const LinkedRefMap<ClassDef> &cl,
                                                       const Definition *item,
                                                       const QCString &explicitScopePart)
 {

@@ -79,6 +79,7 @@ class HtmlDocVisitor : public DocVisitor
     void operator()(const DocHtmlCaption &);
     void operator()(const DocInternal &);
     void operator()(const DocHRef &);
+    void operator()(const DocHtmlSummary &);
     void operator()(const DocHtmlDetails &);
     void operator()(const DocHtmlHeader &);
     void operator()(const DocImage &);

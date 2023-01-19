@@ -26,104 +26,104 @@ of a HTML tag are passed on to the HTML output only
 
 <table class="markdownTable">
 <tr class="markdownTableHead"><th class="markdownTableHeadLeft">HTML Command</th><th class="markdownTableHeadLeft">Description</th></tr>
-<tr><td valign="top"><tt>\anchor htmltag_A_HREF \addindex "\<A HREF=\"...\"\>"\<A HREF="..."\></tt></td><td valign="top">Starts a hyperlink
+<tr><td valign="top">\startalign\anchor htmltag_A_HREF \addindex "\<A HREF=\"...\"\>"\endalign<tt>\<A HREF="..."\></tt></td><td valign="top">Starts a hyperlink
                        (if supported by the output format).</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_A_ID \addindex "\<A ID=\"...\"\>"\<A ID="..."\></tt></td><td valign="top">Starts a named anchor
+<tr><td valign="top">\startalign\anchor htmltag_A_ID \addindex "\<A ID=\"...\"\>"\endalign<tt>\<A ID="..."\></tt></td><td valign="top">Starts a named anchor
                        (if supported by the output format).</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_A_NAME \addindex "\<A NAME=\"...\"\>"\<A NAME="..."\></tt></td><td valign="top">Starts a named anchor
+<tr><td valign="top">\startalign\anchor htmltag_A_NAME \addindex "\<A NAME=\"...\"\>"\endalign<tt>\<A NAME="..."\></tt></td><td valign="top">Starts a named anchor
                        (if supported by the output format).</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_endA \addindex "\</A\>"\</A\></tt></td><td valign="top">Ends a link or anchor</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_B \addindex "\<B\>"\<B\></tt></td><td valign="top">Starts a piece of text displayed in a bold font.</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_endB \addindex "\</B\>"\</B\></tt></td><td valign="top">Ends a \ref htmltag_B "\<B\>" section.</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_BLOCKQUOTE \addindex "\<BLOCKQUOTE\>"\<BLOCKQUOTE\></tt></td><td valign="top">Starts a quotation block.</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_endBLOCKQUOTE \addindex "\</BLOCKQUOTE\>"\</BLOCKQUOTE\></tt></td><td valign="top">Ends the quotation block.</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_BR \addindex "\<BR\>"\<BR\></tt></td><td valign="top">Forces a line break.</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_CENTER \addindex "\<CENTER\>"\<CENTER\></tt></td><td valign="top">starts a section of centered text.</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_endCENTER \addindex "\</CENTER\>"\</CENTER\></tt></td><td valign="top">ends a section of centered text.</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_CAPTION \addindex "\<CAPTION\>"\<CAPTION\></tt></td><td valign="top">Starts a caption. Use within a table only.</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_endCAPTION \addindex "\</CAPTION\>"\</CAPTION\></tt></td><td valign="top">Ends a caption. Use within a table only.</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_CITE \addindex "\<CITE\>"\<CITE\></tt></td><td valign="top">Starts a section of text displayed in a font specific for citations.</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_endCITE \addindex "\</CITE\>"\</CITE\></tt></td><td valign="top">Ends a \ref htmltag_CITE "\<CITE\>" section.</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_CODE \addindex "\<CODE\>"\<CODE\></tt></td><td valign="top">Starts a piece of text displayed in a typewriter font.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_endA \addindex "\</A\>"\endalign<tt>\</A\></tt></td><td valign="top">Ends a link or anchor</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_B \addindex "\<B\>"\endalign<tt>\<B\></tt></td><td valign="top">Starts a piece of text displayed in a bold font.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_endB \addindex "\</B\>"\endalign<tt>\</B\></tt></td><td valign="top">Ends a \ref htmltag_B "\<B\>" section.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_BLOCKQUOTE \addindex "\<BLOCKQUOTE\>"\endalign<tt>\<BLOCKQUOTE\></tt></td><td valign="top">Starts a quotation block.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_endBLOCKQUOTE \addindex "\</BLOCKQUOTE\>"\endalign<tt>\</BLOCKQUOTE\></tt></td><td valign="top">Ends the quotation block.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_BR \addindex "\<BR\>"\endalign<tt>\<BR\></tt></td><td valign="top">Forces a line break.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_CENTER \addindex "\<CENTER\>"\endalign<tt>\<CENTER\></tt></td><td valign="top">starts a section of centered text.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_endCENTER \addindex "\</CENTER\>"\endalign<tt>\</CENTER\></tt></td><td valign="top">ends a section of centered text.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_CAPTION \addindex "\<CAPTION\>"\endalign<tt>\<CAPTION\></tt></td><td valign="top">Starts a caption. Use within a table only.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_endCAPTION \addindex "\</CAPTION\>"\endalign<tt>\</CAPTION\></tt></td><td valign="top">Ends a caption. Use within a table only.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_CITE \addindex "\<CITE\>"\endalign<tt>\<CITE\></tt></td><td valign="top">Starts a section of text displayed in a font specific for citations.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_endCITE \addindex "\</CITE\>"\endalign<tt>\</CITE\></tt></td><td valign="top">Ends a \ref htmltag_CITE "\<CITE\>" section.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_CODE \addindex "\<CODE\>"\endalign<tt>\<CODE\></tt></td><td valign="top">Starts a piece of text displayed in a typewriter font.</td></tr>
                        Note that only for C# code, this command is equivalent to
                        \ref cmdcode "\\code" (see \ref xmltag_code "\<code\>").</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_endCODE \addindex "\</CODE\>"\</CODE\></tt></td><td valign="top">Ends a \ref htmltag_CODE "\<CODE\>" section.
+<tr><td valign="top">\startalign\anchor htmltag_endCODE \addindex "\</CODE\>"\endalign<tt>\</CODE\></tt></td><td valign="top">Ends a \ref htmltag_CODE "\<CODE\>" section.
                        Note that only for C# code, this command is equivalent to
                        \ref cmdendcode "\\endcode" (see \ref xmltag_code "\<code\>").</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_DD \addindex "\<DD\>"\<DD\></tt></td><td valign="top">Starts an item description.</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_endDD \addindex "\</DD\>"\</DD\></tt></td><td valign="top">Ends an item description.</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_DEL \addindex "\<DEL\>"\<DEL\></tt></td><td valign="top">Starts a section of deleted text, typically shown strike through text.</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_endDEL \addindex "\</DEL\>"\</DEL\></tt></td><td valign="top">Ends a section of deleted text.</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_DETAILS \addindex "\<DETAILS\>"\<DETAILS\></tt></td><td valign="top">Starts a section of detailed text that the user can open and close (in HTML output))</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_endDETAILS \addindex "\</DETAILS\>"\</DETAILS\></tt></td><td valign="top">Ends a section of detailed text.</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_DFN \addindex "\<DFN\>"\<DFN\></tt></td><td valign="top">Starts a piece of text displayed in a typewriter font.</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_endDFN \addindex "\</DFN\>"\</DFN\></tt></td><td valign="top">Ends a \ref htmltag_DFN "\<DFN\>" section.</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_DIV \addindex "\<DIV\>"\<DIV></tt></td><td valign="top">Starts a section with a specific style (HTML only)</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_endDIV \addindex "\</DIV\>"\</DIV></tt></td><td valign="top">Ends a section with a specific style (HTML only)</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_DL \addindex "\<DL\>"\<DL\></tt></td><td valign="top">Starts a description list.</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_endDL \addindex "\</DL\>"\</DL\></tt></td><td valign="top">Ends a description list.</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_DT \addindex "\<DT\>"\<DT\></tt></td><td valign="top">Starts an item title.</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_endDT \addindex "\</DT\>"\</DT\></tt></td><td valign="top">Ends an item title.</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_EM \addindex "\<EM\>"\<EM\></tt></td><td valign="top">Starts a piece of text displayed in an italic font.</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_endEM \addindex "\</EM\>"\</EM\></tt></td><td valign="top">Ends a \ref htmltag_EM "\<EM\>" section.</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_HR \addindex "\<HR\>"\<HR\></tt></td><td valign="top">Writes a horizontal ruler.</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_H1 \addindex "\<H1\>"\<H1\></tt></td><td valign="top">Starts an unnumbered section.</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_endH1 \addindex "\</H1\>"\</H1\></tt></td><td valign="top">Ends an unnumbered section.</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_H2 \addindex "\<H2\>"\<H2\></tt></td><td valign="top">Starts an unnumbered subsection.</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_endH2 \addindex "\</H2\>"\</H2\></tt></td><td valign="top">Ends an unnumbered subsection.</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_H3 \addindex "\<H3\>"\<H3\></tt></td><td valign="top">Starts an unnumbered subsubsection.</td></tr></td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_endH3 \addindex "\</H3\>"\</H3\></tt></td><td valign="top">Ends an unnumbered subsubsection.</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_H4 \addindex "\<H4\>"\<H4\></tt></td><td valign="top">Starts an unnumbered subsubsection.</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_endH4 \addindex "\</H4\>"\</H4\></tt></td><td valign="top">Ends an unnumbered subsubsection.</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_H5 \addindex "\<H5\>"\<H5\></tt></td><td valign="top">Starts an unnumbered subsubsection.</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_endH5 \addindex "\</H5\>"\</H5\></tt></td><td valign="top">Ends an unnumbered subsubsection.</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_H6 \addindex "\<H6\>"\<H6\></tt></td><td valign="top">Starts an unnumbered subsubsection.</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_endH6 \addindex "\</H6\>"\</H6\></tt></td><td valign="top">Ends an unnumbered subsubsection.</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_I \addindex "\<I\>"\<I\></tt></td><td valign="top">Starts a piece of text displayed in an italic font.</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_endI \addindex "\</I\>"\</I\></tt></td><td valign="top">Ends a \ref htmltag_I "\<I\>" section.</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_IMG \addindex "\<IMG SRC=\"...\"\>"\<IMG SRC="..." ...\></tt></td><td valign="top">This command is written with its attributes to the HTML output only. The SRC attribute is mandatory.</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_INS \addindex "\<INS\>"\<INS\></tt></td><td valign="top">Starts a section of inserted text, typically shown as underlined text.</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_endINS \addindex "\</INS\>"\</INS\></tt></td><td valign="top">Ends a section of inserted text.</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_LI \addindex "\<LI\>"\<LI\></tt></td><td valign="top">Starts a new list item.</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_endLI \addindex "\</LI\>"\</LI\></tt></td><td valign="top">Ends a list item.</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_OL \addindex "\<OL\>"\<OL\></tt></td><td valign="top">Starts a numbered item list.</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_endOL \addindex "\</OL\>"\</OL\></tt></td><td valign="top">Ends a numbered item list.</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_P \addindex "\<P\>"\<P\></tt></td><td valign="top">Starts a new paragraph.</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_endP \addindex "\</P\>"\</P\></tt></td><td valign="top">Ends a paragraph.</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_PRE \addindex "\<PRE\>"\<PRE\></tt></td><td valign="top">Starts a preformatted fragment.</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_endPRE \addindex "\</PRE\>"\</PRE\></tt></td><td valign="top">Ends a preformatted fragment.</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_SMALL \addindex "\<SMALL\>"\<SMALL\></tt></td><td valign="top">Starts a section of text displayed in a smaller font.</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_endSMALL \addindex "\</SMALL\>"\</SMALL\></tt></td><td valign="top">Ends a \ref htmltag_SMALL "\<SMALL\>" section.</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_SPAN \addindex "\<SPAN\>"\<SPAN></tt></td><td valign="top">Starts an inline text fragment with a specific style (HTML only)</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_endSPAN \addindex "\</SPAN\>"\</SPAN></tt></td><td valign="top">Ends an inline text fragment with a specific style (HTML only)</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_S \addindex "\<S\>"\<S\></tt></td><td valign="top">Starts a section of strike through text.</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_endS \addindex "\</S\>"\</S\></tt></td><td valign="top">Ends a section of strike through text.</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_STRIKE \addindex "\<STRIKE\>"\<STRIKE\></tt></td><td valign="top">Starts a section of strike through text.</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_endSTRIKE \addindex "\</STRIKE\>"\</STRIKE\></tt></td><td valign="top">Ends a section of strike through text.</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_STRONG \addindex "\<STRONG\>"\<STRONG\></tt></td><td valign="top">Starts a section of bold text.</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_endSTRONG \addindex "\</STRONG\>"\</STRONG\></tt></td><td valign="top">Ends a section of bold text.</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_SUB \addindex "\<SUB\>"\<SUB\></tt></td><td valign="top">Starts a piece of text displayed in subscript.</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_endSUB \addindex "\</SUB\>"\</SUB\></tt></td><td valign="top">Ends a \ref htmltag_SUB "\<SUB\>" section.</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_SUP \addindex "\<SUP\>"\<SUP\></tt></td><td valign="top">Starts a piece of text displayed in superscript.</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_endSUP \addindex "\</SUP\>"\</SUP\></tt></td><td valign="top">Ends a \ref htmltag_SUP "\<SUP\>" section.</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_TABLE \addindex "\<TABLE\>"\<TABLE\></tt></td><td valign="top">starts a table.</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_endTABLE \addindex "\</TABLE\>"\</TABLE\></tt></td><td valign="top">ends a table.</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_TD \addindex "\<TD\>"\<TD\></tt></td><td valign="top">Starts a new table data element.</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_endTD \addindex "\</TD\>"\</TD\></tt></td><td valign="top">Ends a table data element.</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_TH \addindex "\<TH\>"\<TH\></tt></td><td valign="top">Starts a new table header.</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_endTH \addindex "\</TH\>"\</TH\></tt></td><td valign="top">Ends a table header.</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_TR \addindex "\<TR\>"\<TR\></tt></td><td valign="top">Starts a new table row.</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_endTR \addindex "\</TR\>"\</TR\></tt></td><td valign="top">Ends a table row.</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_TT \addindex "\<TT\>"\<TT\></tt></td><td valign="top">Starts a piece of text displayed in a typewriter font.</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_endTT \addindex "\</TT\>"\</TT\></tt></td><td valign="top">Ends a \ref htmltag_TT "\<TT\>" section.</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_KBD \addindex "\<KBD\>"\<KBD\></tt></td><td valign="top">Starts a piece of text displayed in a typewriter font.</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_endKBD \addindex "\</KBD\>"\</KBD\></tt></td><td valign="top">Ends a \ref htmltag_KBD "\<KBD\>" section.</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_U \addindex "\<U\>"\<U\></tt></td><td valign="top">Starts a section of underlined text.</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_endU \addindex "\</U\>"\</U\></tt></td><td valign="top">Ends a section of underlined text.</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_UL \addindex "\<UL\>"\<UL\></tt></td><td valign="top">Starts an unnumbered item list.</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_endUL \addindex "\</UL\>"\</UL\></tt></td><td valign="top">Ends an unnumbered item list.</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_VAR \addindex "\<VAR\>"\<VAR\></tt></td><td valign="top">Starts a piece of text displayed in an italic font.</td></tr>
-<tr><td valign="top"><tt>\anchor htmltag_endVAR \addindex "\</VAR\>"\</VAR\></tt></td><td valign="top">Ends a \ref htmltag_VAR "\<VAR\>" section.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_DD \addindex "\<DD\>"\endalign<tt>\<DD\></tt></td><td valign="top">Starts an item description.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_endDD \addindex "\</DD\>"\endalign<tt>\</DD\></tt></td><td valign="top">Ends an item description.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_DEL \addindex "\<DEL\>"\endalign<tt>\<DEL\></tt></td><td valign="top">Starts a section of deleted text, typically shown strike through text.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_endDEL \addindex "\</DEL\>"\endalign<tt>\</DEL\></tt></td><td valign="top">Ends a section of deleted text.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_DETAILS \addindex "\<DETAILS\>"\endalign<tt>\<DETAILS\></tt></td><td valign="top">Starts a section of detailed text that the user can open and close (in HTML output))</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_endDETAILS \addindex "\</DETAILS\>"\endalign<tt>\</DETAILS\></tt></td><td valign="top">Ends a section of detailed text.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_DFN \addindex "\<DFN\>"\endalign<tt>\<DFN\></tt></td><td valign="top">Starts a piece of text displayed in a typewriter font.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_endDFN \addindex "\</DFN\>"\endalign<tt>\</DFN\></tt></td><td valign="top">Ends a \ref htmltag_DFN "\<DFN\>" section.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_DIV \addindex "\<DIV\>"\endalign<tt>\<DIV></tt></td><td valign="top">Starts a section with a specific style (HTML only)</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_endDIV \addindex "\</DIV\>"\endalign<tt>\</DIV></tt></td><td valign="top">Ends a section with a specific style (HTML only)</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_DL \addindex "\<DL\>"\endalign<tt>\<DL\></tt></td><td valign="top">Starts a description list.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_endDL \addindex "\</DL\>"\endalign<tt>\</DL\></tt></td><td valign="top">Ends a description list.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_DT \addindex "\<DT\>"\endalign<tt>\<DT\></tt></td><td valign="top">Starts an item title.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_endDT \addindex "\</DT\>"\endalign<tt>\</DT\></tt></td><td valign="top">Ends an item title.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_EM \addindex "\<EM\>"\endalign<tt>\<EM\></tt></td><td valign="top">Starts a piece of text displayed in an italic font.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_endEM \addindex "\</EM\>"\endalign<tt>\</EM\></tt></td><td valign="top">Ends a \ref htmltag_EM "\<EM\>" section.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_HR \addindex "\<HR\>"\endalign<tt>\<HR\></tt></td><td valign="top">Writes a horizontal ruler.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_H1 \addindex "\<H1\>"\endalign<tt>\<H1\></tt></td><td valign="top">Starts an unnumbered section.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_endH1 \addindex "\</H1\>"\endalign<tt>\</H1\></tt></td><td valign="top">Ends an unnumbered section.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_H2 \addindex "\<H2\>"\endalign<tt>\<H2\></tt></td><td valign="top">Starts an unnumbered subsection.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_endH2 \addindex "\</H2\>"\endalign<tt>\</H2\></tt></td><td valign="top">Ends an unnumbered subsection.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_H3 \addindex "\<H3\>"\endalign<tt>\<H3\></tt></td><td valign="top">Starts an unnumbered subsubsection.</td></tr></td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_endH3 \addindex "\</H3\>"\endalign<tt>\</H3\></tt></td><td valign="top">Ends an unnumbered subsubsection.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_H4 \addindex "\<H4\>"\endalign<tt>\<H4\></tt></td><td valign="top">Starts an unnumbered subsubsection.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_endH4 \addindex "\</H4\>"\endalign<tt>\</H4\></tt></td><td valign="top">Ends an unnumbered subsubsection.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_H5 \addindex "\<H5\>"\endalign<tt>\<H5\></tt></td><td valign="top">Starts an unnumbered subsubsection.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_endH5 \addindex "\</H5\>"\endalign<tt>\</H5\></tt></td><td valign="top">Ends an unnumbered subsubsection.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_H6 \addindex "\<H6\>"\endalign<tt>\<H6\></tt></td><td valign="top">Starts an unnumbered subsubsection.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_endH6 \addindex "\</H6\>"\endalign<tt>\</H6\></tt></td><td valign="top">Ends an unnumbered subsubsection.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_I \addindex "\<I\>"\endalign<tt>\<I\></tt></td><td valign="top">Starts a piece of text displayed in an italic font.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_endI \addindex "\</I\>"\endalign<tt>\</I\></tt></td><td valign="top">Ends a \ref htmltag_I "\<I\>" section.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_IMG \addindex "\<IMG SRC=\"...\"\>"\endalign<tt>\<IMG SRC="..." ...\></tt></td><td valign="top">This command is written with its attributes to the HTML output only. The SRC attribute is mandatory.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_INS \addindex "\<INS\>"\endalign<tt>\<INS\></tt></td><td valign="top">Starts a section of inserted text, typically shown as underlined text.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_endINS \addindex "\</INS\>"\endalign<tt>\</INS\></tt></td><td valign="top">Ends a section of inserted text.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_LI \addindex "\<LI\>"\endalign<tt>\<LI\></tt></td><td valign="top">Starts a new list item.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_endLI \addindex "\</LI\>"\endalign<tt>\</LI\></tt></td><td valign="top">Ends a list item.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_OL \addindex "\<OL\>"\endalign<tt>\<OL\></tt></td><td valign="top">Starts a numbered item list.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_endOL \addindex "\</OL\>"\endalign<tt>\</OL\></tt></td><td valign="top">Ends a numbered item list.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_P \addindex "\<P\>"\endalign<tt>\<P\></tt></td><td valign="top">Starts a new paragraph.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_endP \addindex "\</P\>"\endalign<tt>\</P\></tt></td><td valign="top">Ends a paragraph.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_PRE \addindex "\<PRE\>"\endalign<tt>\<PRE\></tt></td><td valign="top">Starts a preformatted fragment.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_endPRE \addindex "\</PRE\>"\endalign<tt>\</PRE\></tt></td><td valign="top">Ends a preformatted fragment.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_SMALL \addindex "\<SMALL\>"\endalign<tt>\<SMALL\></tt></td><td valign="top">Starts a section of text displayed in a smaller font.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_endSMALL \addindex "\</SMALL\>"\endalign<tt>\</SMALL\></tt></td><td valign="top">Ends a \ref htmltag_SMALL "\<SMALL\>" section.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_SPAN \addindex "\<SPAN\>"\endalign<tt>\<SPAN></tt></td><td valign="top">Starts an inline text fragment with a specific style (HTML only)</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_endSPAN \addindex "\</SPAN\>"\endalign<tt>\</SPAN></tt></td><td valign="top">Ends an inline text fragment with a specific style (HTML only)</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_S \addindex "\<S\>"\endalign<tt>\<S\></tt></td><td valign="top">Starts a section of strike through text.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_endS \addindex "\</S\>"\endalign<tt>\</S\></tt></td><td valign="top">Ends a section of strike through text.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_STRIKE \addindex "\<STRIKE\>"\endalign<tt>\<STRIKE\></tt></td><td valign="top">Starts a section of strike through text.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_endSTRIKE \addindex "\</STRIKE\>"\endalign<tt>\</STRIKE\></tt></td><td valign="top">Ends a section of strike through text.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_STRONG \addindex "\<STRONG\>"\endalign<tt>\<STRONG\></tt></td><td valign="top">Starts a section of bold text.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_endSTRONG \addindex "\</STRONG\>"\endalign<tt>\</STRONG\></tt></td><td valign="top">Ends a section of bold text.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_SUB \addindex "\<SUB\>"\endalign<tt>\<SUB\></tt></td><td valign="top">Starts a piece of text displayed in subscript.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_endSUB \addindex "\</SUB\>"\endalign<tt>\</SUB\></tt></td><td valign="top">Ends a \ref htmltag_SUB "\<SUB\>" section.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_SUP \addindex "\<SUP\>"\endalign<tt>\<SUP\></tt></td><td valign="top">Starts a piece of text displayed in superscript.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_endSUP \addindex "\</SUP\>"\endalign<tt>\</SUP\></tt></td><td valign="top">Ends a \ref htmltag_SUP "\<SUP\>" section.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_TABLE \addindex "\<TABLE\>"\endalign<tt>\<TABLE\></tt></td><td valign="top">starts a table.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_endTABLE \addindex "\</TABLE\>"\endalign<tt>\</TABLE\></tt></td><td valign="top">ends a table.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_TD \addindex "\<TD\>"\endalign<tt>\<TD\></tt></td><td valign="top">Starts a new table data element.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_endTD \addindex "\</TD\>"\endalign<tt>\</TD\></tt></td><td valign="top">Ends a table data element.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_TH \addindex "\<TH\>"\endalign<tt>\<TH\></tt></td><td valign="top">Starts a new table header.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_endTH \addindex "\</TH\>"\endalign<tt>\</TH\></tt></td><td valign="top">Ends a table header.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_TR \addindex "\<TR\>"\endalign<tt>\<TR\></tt></td><td valign="top">Starts a new table row.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_endTR \addindex "\</TR\>"\endalign<tt>\</TR\></tt></td><td valign="top">Ends a table row.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_TT \addindex "\<TT\>"\endalign<tt>\<TT\></tt></td><td valign="top">Starts a piece of text displayed in a typewriter font.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_endTT \addindex "\</TT\>"\endalign<tt>\</TT\></tt></td><td valign="top">Ends a \ref htmltag_TT "\<TT\>" section.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_KBD \addindex "\<KBD\>"\endalign<tt>\<KBD\></tt></td><td valign="top">Starts a piece of text displayed in a typewriter font.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_endKBD \addindex "\</KBD\>"\endalign<tt>\</KBD\></tt></td><td valign="top">Ends a \ref htmltag_KBD "\<KBD\>" section.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_U \addindex "\<U\>"\endalign<tt>\<U\></tt></td><td valign="top">Starts a section of underlined text.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_endU \addindex "\</U\>"\endalign<tt>\</U\></tt></td><td valign="top">Ends a section of underlined text.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_UL \addindex "\<UL\>"\endalign<tt>\<UL\></tt></td><td valign="top">Starts an unnumbered item list.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_endUL \addindex "\</UL\>"\endalign<tt>\</UL\></tt></td><td valign="top">Ends an unnumbered item list.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_VAR \addindex "\<VAR\>"\endalign<tt>\<VAR\></tt></td><td valign="top">Starts a piece of text displayed in an italic font.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_endVAR \addindex "\</VAR\>"\endalign<tt>\</VAR\></tt></td><td valign="top">Ends a \ref htmltag_VAR "\<VAR\>" section.</td></tr>
 </table>
 
 Finally, to put invisible comments inside comment blocks, HTML style

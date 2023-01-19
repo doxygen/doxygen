@@ -369,7 +369,7 @@ int main(int argc,const char **argv)
         std::cout << "Processing " << argv[i] << "..." << std::endl;
         std::string inputStr = fileToString(argv[i]);
         XMLParser parser(handlers);
-        parser.parse(argv[i],inputStr.c_str(),false);
+        parser.parse(argv[i],inputStr.c_str(),false,[](){},[](){});
       }
     }
   }

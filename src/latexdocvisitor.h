@@ -31,7 +31,7 @@ class LatexDocVisitor : public DocVisitor
 {
   public:
     LatexDocVisitor(TextStream &t,LatexCodeGenerator &ci,
-                    const QCString &langExt,bool insideTabbing);
+                    const QCString &langExt);
 
     //--------------------------------------
     // visitor functions for leaf nodes
@@ -80,6 +80,7 @@ class LatexDocVisitor : public DocVisitor
     void operator()(const DocHtmlCell &);
     void operator()(const DocInternal &);
     void operator()(const DocHRef &);
+    void operator()(const DocHtmlSummary &);
     void operator()(const DocHtmlDetails &);
     void operator()(const DocHtmlHeader &);
     void operator()(const DocImage &);
@@ -129,9 +130,9 @@ class LatexDocVisitor : public DocVisitor
 
     void filter(const QCString &str, const bool retainNewLine = false);
     void startLink(const QCString &ref,const QCString &file,
-                   const QCString &anchor,bool refToTable=FALSE);
+                   const QCString &anchor,bool refToTable=false,bool refToSection=false);
     void endLink(const QCString &ref,const QCString &file,
-                 const QCString &anchor,bool refToTable=FALSE);
+                 const QCString &anchor,bool refToTable=false,bool refToSection=false, SectionType sectionType = SectionType::Anchor);
     QCString escapeMakeIndexChars(const char *s);
     void startDotFile(const QCString &fileName,const QCString &width,
                       const QCString &height, bool hasCaption,
@@ -165,7 +166,6 @@ class LatexDocVisitor : public DocVisitor
     bool m_insidePre;
     bool m_insideItem;
     bool m_hide;
-    bool m_insideTabbing;
     QCString m_langExt;
 
     struct TableState

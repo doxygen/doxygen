@@ -45,7 +45,7 @@ MemberGroup::~MemberGroup()
 {
 }
 
-void MemberGroup::insertMember(const MemberDef *md)
+void MemberGroup::insertMember(MemberDef *md)
 {
   //printf("MemberGroup::insertMember memberList=%p count=%d"
   //       " member section list: %p: md=%p:%s\n",
@@ -187,6 +187,23 @@ void MemberGroup::countDocMembers()
 const Definition *MemberGroup::container() const
 {
   return m_container;
+}
+
+const Definition *MemberGroup::memberContainer() const
+{
+  // return the container for the first member.
+  // Note this can be different from container() in case
+  // the member is rendered as part of a file but the members
+  // are actually of a namespace.
+  const Definition *ctx = 0;
+  if (memberList && !memberList->empty())
+  {
+    const MemberDef *md = memberList->front();
+    ctx = md->getClassDef();
+    if (ctx==0) ctx = md->getNamespaceDef();
+    if (ctx==0) ctx = md->getFileDef();
+  }
+  return ctx==0 ? m_container : ctx;
 }
 
 int MemberGroup::countInheritableMembers(const ClassDef *inheritedFrom) const
