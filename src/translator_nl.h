@@ -48,6 +48,9 @@ class TranslatorDutch : public Translator
     { return "(Merk op dat dit geen member functies zijn.)"; }
     QCString trDetailedDescription()
     { return "Gedetailleerde Beschrijving"; }
+    virtual QCString trDetails()
+    { return "Details"; }
+
     QCString trMemberTypedefDocumentation()
     { return "Documentatie van type definitie members"; }
     QCString trMemberEnumerationDocumentation()
@@ -64,7 +67,16 @@ class TranslatorDutch : public Translator
       }
     }
     QCString trMemberDataDocumentation()
-    { return "Documentatie van data members"; }
+    {
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+      {
+        return "Documentatie van data velden";
+      }
+      else
+      {
+        return "Documentatie van data members";
+      }
+    }
     QCString trMore()
     { return "Meer..."; }
     QCString trListOfAllMembers()
@@ -92,13 +104,40 @@ class TranslatorDutch : public Translator
     QCString trClassHierarchy()
     { return "Klasse Hi&euml;rarchie"; }
     QCString trCompoundList()
-    { return "Klasse Lijst"; }
+    {
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+      {
+        return "Data Structuren Lijst";
+      }
+      else
+      {
+        return "Klasse Lijst";
+      }
+    }
     QCString trFileList()
     { return "Bestandslijst"; }
     QCString trCompoundMembers()
-    { return "Klasse Members"; }
+    {
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+      {
+        return "Data Velden";
+      }
+      else
+      {
+        return "Klasse Members";
+      }
+    }
     QCString trFileMembers()
-    { return "Bestand members"; }
+    {
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+      {
+        return "Glabale members";
+      }
+      else
+      {
+        return "Bestand members";
+      }
+    }
     QCString trRelatedPages()
     { return "Gerelateerde pagina's"; }
     QCString trExamples()
@@ -145,16 +184,53 @@ class TranslatorDutch : public Translator
     {
       QCString result="Hieronder volgt de lijst met alle ";
       if (!extractAll) result+="gedocumenteerde ";
-      result+="klasse members met links naar ";
-      if (!extractAll) result+="de klasse documentatie voor elke member:";
-      else result+="de klassen waartoe ze behoren:";
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+      {
+        result+="struct en union velden";
+      }
+      else
+      {
+        result+="klasse members";
+      }
+      result+=" met links naar ";
+
+      if (!extractAll)
+      {
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+        {
+          result+="de struct/union documentatie voor elke veld:";
+        }
+        else
+        {
+           result+="de klasse documentatie voor elke member:";
+        }
+      }
+      else
+      {
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+        {
+          result+="de structures/unions waartoe ze behoren:";
+        }
+        else
+        {
+          result+="de klassen waartoe ze behoren:";
+        }
+      }
       return result;
     }
     QCString trFileMembersDescription(bool extractAll)
     {
       QCString result="Hieronder volgt de lijst met alle ";
       if (!extractAll) result+="gedocumenteerde ";
-      result+="bestand members met links naar ";
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+      {
+        result+="functies, variabelen, macros, enumeraties, en typedefs";
+      }
+      else
+      {
+        result+="bestand members";
+      }
+      result+=" met links naar ";
       if (extractAll) result+="de bestand's documentatie voor elke member:";
       else result+="de bestanden waartoe ze behoren:";
       return result;
@@ -173,7 +249,16 @@ class TranslatorDutch : public Translator
     QCString trHierarchicalIndex()
     { return "Hi&euml;rarchische Index"; }
     QCString trCompoundIndex()
-    { return "Klasse Index"; }
+    {
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+      {
+        return "Data Structuren Index";
+      }
+      else
+      {
+        return "Klasse Index";
+      }
+    }
     QCString trFileIndex()
     { return "Bestand Index"; }
     QCString trModuleDocumentation()
@@ -195,8 +280,6 @@ class TranslatorDutch : public Translator
     }
     QCString trFileDocumentation()
     { return "Bestand Documentatie"; }
-    QCString trExampleDocumentation()
-    { return "Documentatie van voorbeelden"; }
     QCString trReferenceManual()
     { return "Naslagwerk"; }
 
@@ -225,7 +308,16 @@ class TranslatorDutch : public Translator
     QCString trVariableDocumentation()
     { return "Documentatie van variabelen"; }
     QCString trCompounds()
-    { return "Klassen"; }
+    {
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+      {
+        return "Data Structuren";
+      }
+      else
+      {
+        return "Klassen";
+      }
+    }
     QCString trGeneratedAt(const QCString &date,const QCString &projName)
     {
       QCString result="Gegenereerd op "+date;
@@ -582,7 +674,14 @@ class TranslatorDutch : public Translator
     }
     QCString trPublicAttribs()
     {
-      return "Public Attributen";
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+      {
+        return "Data Velden";
+      }
+      else
+      {
+        return "Public Attributen";
+      }
     }
     QCString trStaticPublicAttribs()
     {
@@ -769,7 +868,14 @@ class TranslatorDutch : public Translator
     /*! Used for Java classes in the summary section of Java packages */
     QCString trClasses()
     {
-      return "Klassen";
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+      {
+        return "Data Structuren";
+      }
+      else
+      {
+        return "Klassen";
+      }
     }
     /*! Used as the title of a Java package */
     QCString trPackage(const QCString &name)
@@ -1433,16 +1539,20 @@ class TranslatorDutch : public Translator
     }
     virtual QCString trDateTime(int year,int month,int day,int dayOfWeek,
                                 int hour,int minutes,int seconds,
-                                bool includeTime)
+                                DateTimeType includeTime)
     {
       static const char *days[]   = { "Ma","Di","Wo","Do","Vr","Za","Zo" };
       static const char *months[] = { "Jan","Feb","Maa","Apr","Mei","Jun","Jul","Aug","Sep","Okt","Nov","Dec" };
       QCString sdate;
-      sdate.sprintf("%s %d %s %d",days[dayOfWeek-1],day,months[month-1],year);
-      if (includeTime)
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Date)
+      {
+        sdate.sprintf("%s %d %s %d",days[dayOfWeek-1],day,months[month-1],year);
+      }
+      if (includeTime == DateTimeType::DateTime) sdate += " ";
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Time)
       {
         QCString stime;
-        stime.sprintf(" %.2d:%.2d:%.2d",hour,minutes,seconds);
+        stime.sprintf("%.2d:%.2d:%.2d",hour,minutes,seconds);
         sdate+=stime;
       }
       return sdate;
@@ -1662,7 +1772,7 @@ class TranslatorDutch : public Translator
     virtual QCString trFunctionAndProc()
     { return "Functies/Procedures/Processen"; }
     /** VHDL type */
-    virtual QCString trVhdlType(uint64 type,bool single)
+    virtual QCString trVhdlType(uint64_t type,bool single)
     {
       switch(type)
       {
@@ -1893,6 +2003,239 @@ class TranslatorDutch : public Translator
      *  VHDL sources documentation.
      *  Done.
      */
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.7
+//////////////////////////////////////////////////////////////////////////
+    /*! used in the compound documentation before a list of related symbols.
+     *
+     *  Supersedes trRelatedFunctions
+     */
+    virtual QCString trRelatedSymbols()
+    { return "Gerelateerde symbolen"; }
+
+    /*! subscript for the related symbols
+     *
+     *  Supersedes trRelatedSubscript
+     */
+    virtual QCString trRelatedSymbolsSubscript()
+    { return "(Merk op dat dit geen member symbolen zijn.)"; }
+
+    /*! used in the class documentation as a header before the list of all
+     * related classes.
+     *
+     * Supersedes trRelatedFunctionDocumentation
+     */
+    virtual QCString trRelatedSymbolDocumentation()
+    { return "Documentatie van friends en gerelateerde symbolen"; }
+
+    virtual QCString trCompoundType(ClassDef::CompoundType compType, SrcLangExt lang)
+    {
+      QCString result;
+      switch(compType)
+      {
+        case ClassDef::Class:
+          if (lang == SrcLangExt_Fortran) trType(true,true);
+          else result=trClass(true,true);
+          break;
+        case ClassDef::Struct:     result="Struct"; break;
+        case ClassDef::Union:      result="Union"; break;
+        case ClassDef::Interface:  result="Interface"; break;
+        case ClassDef::Protocol:   result="Protocol"; break;
+        case ClassDef::Category:   result="Category"; break;
+        case ClassDef::Exception:  result="Exception"; break;
+        case ClassDef::Service:    result="Service"; break;
+        case ClassDef::Singleton:  result="Singleton"; break;
+        default: break;
+      }
+      return result;
+    }
+
+    virtual QCString trFileMembersDescriptionTotal(FileMemberHighlight::Enum hl)
+    {
+      bool extractAll = Config_getBool(EXTRACT_ALL);
+      QCString result="Hieronder volgt de lijst met alle ";
+      if (!extractAll) result+="gedocumenteerde ";
+
+      switch (hl)
+      {
+        case FileMemberHighlight::All:
+          if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+          {
+            result+="functies, variabelen, macros, enumeraties, en typedefs";
+          }
+          else
+          {
+            result+="bestand members";
+          }
+          break;
+        case FileMemberHighlight::Functions:
+          result+="functies";
+          break;
+        case FileMemberHighlight::Variables:
+          result+="variabelen";
+          break;
+        case FileMemberHighlight::Typedefs:
+          result+="typedefs";
+          break;
+        case FileMemberHighlight::Sequences:
+          result+="reeksen";
+          break;
+        case FileMemberHighlight::Dictionaries:
+          result+="vertalingslijsten";
+          break;
+        case FileMemberHighlight::Enums:
+          result+="enumeratie";
+          break;
+        case FileMemberHighlight::EnumValues:
+          result+="enumeratie waarden";
+          break;
+        case FileMemberHighlight::Defines:
+          result+="macros";
+          break;
+        case FileMemberHighlight::Total: // for completeness
+          break;
+      }
+      result+=" met links naar ";
+      if (extractAll) result+="de bestand's documentatie voor elke member:";
+      else result+="de bestanden waartoe ze behoren:";
+      return result;
+    }
+        //return trCompoundMembersDescription(Config_getBool(EXTRACT_ALL));
+
+    virtual QCString trCompoundMembersDescriptionTotal(ClassMemberHighlight::Enum hl)
+    {
+      bool extractAll = Config_getBool(EXTRACT_ALL);
+      QCString result="Hieronder volgt de lijst met alle ";
+      if (!extractAll) result+="gedocumenteerde ";
+
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+      {
+        result+="struct en union velden";
+      }
+      else
+      {
+        result+="klasse members";
+      }
+
+      switch (hl)
+      {
+        case ClassMemberHighlight::All:
+          if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+          {
+            result+="struct en union velden";
+          }
+          else
+          {
+            result+="klasse members";
+          }
+          break;
+        case ClassMemberHighlight::Functions:
+          result+="functies";
+          break;
+        case ClassMemberHighlight::Variables:
+          result+="variabelen";
+          break;
+        case ClassMemberHighlight::Typedefs:
+          result+="typedefs";
+          break;
+        case ClassMemberHighlight::Enums:
+          result+="enumeraties";
+          break;
+        case ClassMemberHighlight::EnumValues:
+          result+="enumeratie waarden";
+          break;
+        case ClassMemberHighlight::Properties:
+          result+="properties";
+          break;
+        case ClassMemberHighlight::Events:
+          result+="events";
+          break;
+        case ClassMemberHighlight::Related:
+          result+="gerelateerde symbolen";
+          break;
+        case ClassMemberHighlight::Total: // for completeness
+          break;
+      }
+      result+=" met links naar ";
+      if (!extractAll)
+      {
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+        {
+          result+="de struct/union documentatie voor elke veld:";
+        }
+        else
+        {
+           result+="de klasse documentatie voor elke symbool:";
+        }
+      }
+      else
+      {
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+        {
+          result+="de structures/unions waartoe ze behoren:";
+        }
+        else
+        {
+          result+="de klassen waartoe ze behoren:";
+        }
+      }
+      return result;
+    }
+
+    virtual QCString trNamespaceMembersDescriptionTotal(NamespaceMemberHighlight::Enum hl)
+    {
+      bool extractAll = Config_getBool(EXTRACT_ALL);
+      QCString result="Hier is een lijst van alle ";
+      if (!extractAll) result+="gedocumenteerde ";
+      result+="namespace ";
+      QCString singularResult = "";
+      QCString pluralResult = "";
+      switch (hl)
+      {
+        case NamespaceMemberHighlight::All:
+          singularResult="symbool";
+          pluralResult="symbolen";
+          break;
+        case NamespaceMemberHighlight::Functions:
+          singularResult="e functie";
+          pluralResult="functies";
+          break;
+        case NamespaceMemberHighlight::Variables:
+          singularResult="e variabele";
+          pluralResult="variabelen";
+          break;
+        case NamespaceMemberHighlight::Typedefs:
+          singularResult="e typedef";
+          pluralResult="typedefs";
+          break;
+        case NamespaceMemberHighlight::Sequences:
+          singularResult="e reeks";
+          pluralResult="reeksen";
+          break;
+        case NamespaceMemberHighlight::Dictionaries:
+          singularResult="e vertalingslijst";
+          pluralResult="vertalingslijsten";
+          break;
+        case NamespaceMemberHighlight::Enums:
+          singularResult="e enumeratie";
+          pluralResult="enumeraties";
+          break;
+        case NamespaceMemberHighlight::EnumValues:
+          singularResult="e enumeratie waarde";
+          pluralResult="enumeratie waarden";
+          break;
+        case NamespaceMemberHighlight::Total: // for completeness
+          break;
+      }
+      result+=pluralResult;
+      result+=" met links naar ";
+      if (extractAll)
+        result+="de namespace documentatie voor ieder" + singularResult + ":";
+      else
+        result+="de namespaces waartoe ze behoren:";
+      return result;
+    }
 };
 
 #endif

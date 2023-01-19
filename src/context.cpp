@@ -55,6 +55,7 @@
 #include "searchindex.h"
 #include "resourcemgr.h"
 #include "dir.h"
+#include "datetime.h"
 
 // TODO: pass the current file to Dot*::writeGraph, so the user can put dot graphs in other
 //       files as well
@@ -341,7 +342,7 @@ class DoxygenContext::Private
   private:
     // Property getters
     TemplateVariant version() const         { return getDoxygenVersion(); }
-    TemplateVariant date() const            { return dateToString(TRUE); }
+    TemplateVariant date() const            { return dateToString(DateTimeType::DateTime); }
     TemplateVariant mathJaxCodeFile() const { return m_mathJaxCodeFile.get(this); }
     TemplateVariant mathJaxMacros() const   { return m_mathJaxMacros.get(this); }
 
@@ -941,7 +942,7 @@ class TranslateContext::Private
     }
     TemplateVariant related() const
     {
-      return theTranslator->trRelatedFunctions();
+      return theTranslator->trRelatedSymbols();
     }
     TemplateVariant macros() const
     {
@@ -1261,7 +1262,7 @@ static TemplateVariant parseDoc(const Definition *def,const QCString &file,int l
       case ContextOutputFormat_Latex:
         {
           LatexCodeGenerator codeGen(ts,relPath,file);
-          LatexDocVisitor visitor(ts,codeGen,def->getDefFileExtension(),FALSE);
+          LatexDocVisitor visitor(ts,codeGen,def->getDefFileExtension());
           std::visit(visitor,astImpl->root);
         }
         break;
@@ -2122,7 +2123,7 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
     }
     TemplateVariant createRelated() const
     {
-      return createMemberList(MemberListType_related,theTranslator->trRelatedFunctions());
+      return createMemberList(MemberListType_related,theTranslator->trRelatedSymbols());
     }
     TemplateVariant createDetailedTypedefs() const
     {
@@ -2150,7 +2151,7 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
     }
     TemplateVariant createDetailedRelated() const
     {
-      return createMemberList(MemberListType_relatedMembers,theTranslator->trRelatedFunctionDocumentation());
+      return createMemberList(MemberListType_relatedMembers,theTranslator->trRelatedSymbolDocumentation());
     }
     TemplateVariant createDetailedVariables() const
     {
@@ -2263,7 +2264,7 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
       ctx->addMemberList(m_classDef,MemberListType_priStaticMethods,theTranslator->trStaticPrivateMembers());
       ctx->addMemberList(m_classDef,MemberListType_priAttribs,theTranslator->trPrivateAttribs());
       ctx->addMemberList(m_classDef,MemberListType_priStaticAttribs,theTranslator->trStaticPrivateAttribs());
-      ctx->addMemberList(m_classDef,MemberListType_related,theTranslator->trRelatedFunctions());
+      ctx->addMemberList(m_classDef,MemberListType_related,theTranslator->trRelatedSymbols());
       return list;
     }
     void addMembers(MemberList &list,const ClassDef *cd,MemberListType lt) const
@@ -3413,7 +3414,7 @@ class TextGeneratorHtml : public TextGeneratorIntf
             case ' ':  m_ts << "&#160;"; break;
             default:
               {
-                uchar uc = static_cast<uchar>(c);
+                uint8_t uc = static_cast<uint8_t>(c);
                 if (uc<32 && !isspace(c)) // non-printable control characters
                 {
                   m_ts << "&#x24" << hex[uc>>4] << hex[uc&0xF] << ";";
@@ -4055,7 +4056,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       {
         const ClassDef *cd = md->getClassDef();
         // filter on pure virtual/interface methods
-        if (cd && (md->virtualness()==Pure || cd->compoundType()==ClassDef::Interface))
+        if (cd && (md->virtualness()==Specifier::Pure || cd->compoundType()==ClassDef::Interface))
         {
           list.push_back(MemberContext::alloc(md));
         }
@@ -4070,7 +4071,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       {
         const ClassDef *cd = md->getClassDef();
         // filter on non-pure virtual & non interface methods
-        if (cd && md->virtualness()!=Pure && cd->compoundType()!=ClassDef::Interface)
+        if (cd && md->virtualness()!=Specifier::Pure && cd->compoundType()!=ClassDef::Interface)
         {
           list.push_back(MemberContext::alloc(md));
         }
@@ -4085,7 +4086,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       {
         const ClassDef *cd = md->getClassDef();
         // filter on pure virtual/interface methods
-        if (cd && md->virtualness()==Pure && cd->compoundType()==ClassDef::Interface)
+        if (cd && md->virtualness()==Specifier::Pure && cd->compoundType()==ClassDef::Interface)
         {
           list.push_back(MemberContext::alloc(md));
         }
@@ -4100,7 +4101,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       {
         const ClassDef *cd = md->getClassDef();
         // filter on non-pure virtual & non interface methods
-        if (cd && md->virtualness()!=Pure && cd->compoundType()!=ClassDef::Interface)
+        if (cd && md->virtualness()!=Specifier::Pure && cd->compoundType()!=ClassDef::Interface)
         {
           list.push_back(MemberContext::alloc(md));
         }
@@ -5710,7 +5711,7 @@ class NestingContext::Private : public GenericNodeListContext
         bool hasChildren = namespaceHasNestedNamespace(nd) ||
                            (addClasses  && namespaceHasNestedClass(nd,false,ClassDef::Class)) ||
                            (addConcepts && namespaceHasNestedConcept(nd)) ||
-                           (m_type==ContextTreeType::Namespace && countVisibleMembers(nd));
+                           (m_type==ContextTreeType::Namespace && nd->countVisibleMembers());
         bool isLinkable  = nd->isLinkableInProject();
         if (isLinkable && hasChildren)
         {
@@ -5908,11 +5909,11 @@ class NestingContext::Private : public GenericNodeListContext
         bool b;
         if (cd->getLanguage()==SrcLangExt_VHDL)
         {
-          b=hasVisibleRoot(cd->subClasses());
+          b=classHasVisibleRoot(cd->subClasses());
         }
         else
         {
-          b=hasVisibleRoot(cd->baseClasses());
+          b=classHasVisibleRoot(cd->baseClasses());
         }
 
         if (cd->isVisibleInHierarchy() && b)
@@ -5934,11 +5935,11 @@ class NestingContext::Private : public GenericNodeListContext
           {
             continue;
           }
-          b=!hasVisibleRoot(cd->subClasses());
+          b=!classHasVisibleRoot(cd->subClasses());
         }
         else
         {
-          b=!hasVisibleRoot(cd->baseClasses());
+          b=!classHasVisibleRoot(cd->baseClasses());
         }
         if (b)
         {
@@ -7643,10 +7644,10 @@ class MemberInfoContext::Private
     {
       switch (m_memberInfo->prot())
       {
-        case ::Public:    return "public";
-        case ::Protected: return "protected";
-        case ::Private:   return "private";
-        case ::Package:   return "package";
+        case Protection::Public:    return "public";
+        case Protection::Protected: return "protected";
+        case Protection::Private:   return "private";
+        case Protection::Package:   return "package";
       }
       return "";
     }
@@ -7654,9 +7655,9 @@ class MemberInfoContext::Private
     {
       switch (m_memberInfo->virt())
       {
-        case ::Normal:   return "normal";
-        case ::Virtual:  return "virtual";
-        case ::Pure:     return "pure";
+        case Specifier::Normal:   return "normal";
+        case Specifier::Virtual:  return "virtual";
+        case Specifier::Pure:     return "pure";
       }
       return "";
     }

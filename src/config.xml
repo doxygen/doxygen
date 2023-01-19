@@ -303,7 +303,7 @@ Go to the <a href="commands.html">next</a> section or return to the
  is set to \c YES. Level 0 represents 16 directories, and every level increment
  doubles the number of directories, resulting in 4096 directories at level 8 which is the
  default and also the maximum value. The sub-directories are organized in 2 levels, the first
- level always has a fixed numer of 16 directories.
+ level always has a fixed number of 16 directories.
 ]]>
       </docs>
     </option>
@@ -960,7 +960,8 @@ Go to the <a href="commands.html">next</a> section or return to the
  If the \c HIDE_UNDOC_CLASSES tag is set to \c YES, doxygen will hide all
  undocumented classes that are normally visible in the class hierarchy.
  If set to \c NO, these classes will be included in the
- various overviews.
+ various overviews. This option will also hide undocumented C++ concepts
+ if enabled.
  This option has no effect if \ref cfg_extract_all "EXTRACT_ALL" is enabled.
 ]]>
       </docs>
@@ -1056,7 +1057,7 @@ Go to the <a href="commands.html">next</a> section or return to the
     <option type='bool' id='SHOW_GROUPED_MEMB_INC' defval='0'>
       <docs>
 <![CDATA[
- If the SHOW_GROUPED_MEMB_INC tag is set to \c YES then Doxygen
+ If the \c SHOW_GROUPED_MEMB_INC tag is set to \c YES then Doxygen
  will add for each grouped member an include statement to the documentation,
  telling the reader which file to include in order to use the member.
 ]]>
@@ -1375,6 +1376,17 @@ FILE_VERSION_FILTER = "cleartool desc -fmt \%Vn"
 ]]>
       </docs>
     </option>
+    <option type='bool' id='WARN_IF_UNDOC_ENUM_VAL' defval='0'>
+      <docs>
+<![CDATA[
+ If \c WARN_IF_UNDOC_ENUM_VAL option is set to \c YES, doxygen will warn
+ about undocumented enumeration values.
+ If set to \c NO, doxygen will accept undocumented enumeration values.
+ If \ref cfg_extract_all "EXTRACT_ALL" is set to \c YES then this flag will
+ automatically be disabled.
+]]>
+      </docs>
+    </option>
     <option type='enum' id='WARN_AS_ERROR' defval='NO'>
       <docs>
 <![CDATA[
@@ -1383,11 +1395,20 @@ FILE_VERSION_FILTER = "cleartool desc -fmt \%Vn"
  If the \c WARN_AS_ERROR tag is set to \c FAIL_ON_WARNINGS then doxygen will continue
  running as if \c WARN_AS_ERROR tag is set to \c NO, but at the end of the doxygen
  process doxygen will return with a non-zero status.
+ If the \c WARN_AS_ERROR tag is set to \c FAIL_ON_WARNINGS_PRINT then doxygen behaves like
+ \c FAIL_ON_WARNINGS but in case no \ref cfg_warn_logfile "WARN_LOGFILE" is defined
+ doxygen will not write the warning messages in between other
+ messages but write them at the end of a run, in case a
+ \ref cfg_warn_logfile "WARN_LOGFILE" is defined the warning messages will be
+ besides being in the defined file also be shown at the end of a run, unless the
+ \ref cfg_warn_logfile "WARN_LOGFILE" is defined as `-` i.e. standard outpyt (`stdout`)
+ in that case the behavior will remain as with the setting \c FAIL_ON_WARNINGS.
 ]]>
       </docs>
       <value name="NO"/>
       <value name="YES" />
       <value name="FAIL_ON_WARNINGS" />
+      <value name="FAIL_ON_WARNINGS_PRINT" />
     </option>
     <option type='string' id='WARN_FORMAT' format='string' defval='$file:$line: $text'>
       <docs>
@@ -1776,7 +1797,7 @@ FILE_VERSION_FILTER = "cleartool desc -fmt \%Vn"
     <option type='bool' id='SOURCE_TOOLTIPS' defval='1' depends='SOURCE_BROWSER'>
       <docs>
 <![CDATA[
-If SOURCE_TOOLTIPS is enabled (the default) then hovering a hyperlink in the
+If \c SOURCE_TOOLTIPS is enabled (the default) then hovering a hyperlink in the
 source code will show a tooltip with additional information such as prototype,
 brief description and links to the definition and documentation. Since this will
 make the HTML file larger and loading of large files a bit slower, you can opt
@@ -1881,10 +1902,11 @@ to disable this feature.
     <option type='list' id='IGNORE_PREFIX' format='string' depends='ALPHABETICAL_INDEX'>
       <docs>
 <![CDATA[
- In case all classes in a project start with a common prefix, all classes will
- be put under the same header in the alphabetical index.
- The \c IGNORE_PREFIX tag can be used to specify a prefix
+ The \c IGNORE_PREFIX tag can be used to specify a prefix 
  (or a list of prefixes) that should be ignored while generating the index headers.
+ The \c IGNORE_PREFIX tag works for classes, function and member names.
+ The entity will be placed in the alphabetical list under the first letter of the entity name that remains
+ after removing the prefix.
 ]]>
       </docs>
     </option>
@@ -1946,8 +1968,9 @@ doxygen -w html new_header.html new_footer.html new_stylesheet.css YourConfigFil
  The following markers have a special meaning inside the header and footer:
  <dl>
  <dt><code>$title</code><dd>will be replaced with the title of the page.
- <dt><code>$datetime</code><dd>will be replaced with current the date and time.
+ <dt><code>$datetime</code><dd>will be replaced with the current date and time.
  <dt><code>$date</code><dd>will be replaced with the current date.
+ <dt><code>$time</code><dd>will be replaced with the current time.
  <dt><code>$year</code><dd>will be replaces with the current year.
  <dt><code>$doxygenversion</code><dd>will be replaced with the version of doxygen
  <dt><code>$projectname</code><dd>will be replaced with the name of
@@ -2086,7 +2109,8 @@ doxygen -w html new_header.html new_footer.html new_stylesheet.css YourConfigFil
  \note The order of the extra style sheet files is of importance (e.g. the last
  style sheet in the list overrules the setting of the previous ones in the list).
  \note Since the styling of scrollbars can currently not be overruled in Webkit/Chromium, the
- styling will be left out of the default doxygen.css if extra stylesheets have be specified.
+ styling will be left out of the default doxygen.css if one or more extra stylesheets
+ have been specified.
  So if scrollbar customization is desired it has to be added explicitly.
 ]]>
       </docs>
@@ -2147,16 +2171,14 @@ hr.footer {
       <docs>
 <![CDATA[
  The \c HTML_COLORSTYLE tag can be used to specify if the generated HTML output should be rendered with
- a dark or light theme. Default setting \c AUTO_LIGHT enables light output unless the user preference is dark output.
- Other options are \c DARK to always use dark mode, \c LIGHT to always use light mode, \c AUTO_DARK to default to dark
- mode unless the user prefers light mode, and \c TOGGLE to let the user toggle between dark and light mode via a button. 
+ a dark or light theme.
 ]]>
       </docs>
-      <value name="LIGHT" desc="Always generate light output."/>
-      <value name="DARK" desc="Always generate dark output."/>
-      <value name="AUTO_LIGHT" desc="Automatically set the mode according to the user preference, use light mode if no preference is set (the default)."/>
-      <value name="AUTO_DARK" desc="Automatically set the mode according to the user preference, use dark mode if no preference is set."/>
-      <value name="TOGGLE" desc="Allow to user to switch between light and dark mode via a button."/>
+      <value name="LIGHT" desc="always generate light mode output"/>
+      <value name="DARK" desc="always generate dark mode output"/>
+      <value name="AUTO_LIGHT" desc="automatically set the mode according to the user preference, use light mode if no preference is set (the default)"/>
+      <value name="AUTO_DARK" desc="automatically set the mode according to the user preference, use dark mode if no preference is set"/>
+      <value name="TOGGLE" desc="allow to user to switch between light and dark mode via a button"/>
     </option>
     <option type='int' id='HTML_COLORSTYLE_HUE' minval='0' maxval='359' defval='220' depends='GENERATE_HTML'>
       <docs>
@@ -2941,8 +2963,9 @@ doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty
 <![CDATA[
  <dl>
  <dt><code>$title</code><dd>will be replaced with the project name.
- <dt><code>$datetime</code><dd>will be replaced with current the date and time.
+ <dt><code>$datetime</code><dd>will be replaced with the current date and time.
  <dt><code>$date</code><dd>will be replaced with the current date.
+ <dt><code>$time</code><dd>will be replaced with the current time.
  <dt><code>$year</code><dd>will be replaces with the current year.
  <dt><code>$doxygenversion</code><dd>will be replaced with the version of doxygen
  <dt><code>$projectname</code><dd>will be replaced with the name of

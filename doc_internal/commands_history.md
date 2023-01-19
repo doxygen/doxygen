@@ -31,7 +31,7 @@ The following table gives an overview of the doxygen special commands and the ve
 <dt></dt>             <dd>\\endhtmlonly</dd>
 <dt></dt>             <dd>\\endlatexonly</dd>
 <dt></dt>             <dd>\\endlink</dd>
-<dt></dt>             <dd>endverbatim</dd>
+<dt></dt>             <dd>\\endverbatim</dd>
 <dt></dt>             <dd>\\enum</dd>
 <dt></dt>             <dd>\\example</dd>
 <dt></dt>             <dd>\\exception</dd>
@@ -194,13 +194,5 @@ The following table gives an overview of the doxygen special commands and the ve
 <dt></dt>             <dd>\\maninclude</dd>
 <dt></dt>             <dd>\\rtfinclude</dd>
 <dt></dt>             <dd>\\xmlinclude</dd>
-<dt>New in 1.9.0</dt><dd>\\noop</dd>
-<dt></dt>             <dd>\\static</dd>
-<dt>New in 1.9.2</dt><dd>\\concept</dd>
-<dt></dt>             <dd>\\f(</dd>
-<dt></dt>             <dd>\\f)</dd>
-<dt>New in 1.9.3</dt><dd>\\raisewarning</dd>
-<dt>New in 1.9.5</dt><dd>\\fileinfo</dd>
-<dt></dt>             <dd>\\lineinfo</dd>
-<dt></dt>             <dd>\\showdate</dd>
+<!-- PLACEHOLDER -->
 </dl>

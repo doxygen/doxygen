@@ -98,6 +98,10 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
     virtual QCString trDetailedDescription()
     { return "Detaljert beskrivelse"; }
 
+    /*! header that is used when the summary tag is missing inside the details tag */
+    virtual QCString trDetails()
+    { return "Detaljar"; }
+
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
     { return "Medlemstypedef-dokumentasjon"; }
@@ -411,12 +415,6 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
      */
     virtual QCString trFileDocumentation()
     { return "Fildokumentasjon"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all examples.
-     */
-    virtual QCString trExampleDocumentation()
-    { return "Eksempeldokumentasjon"; }
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()

@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 1997-2018 by Dimitri van Heesch.
+ * Copyright (C) 1997-2022 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -26,7 +26,9 @@
  * VERSION HISTORY
  * ---------------
  * History:
-  * 20220525:
+ * 20220911:
+ *  - Updated to 1.9.6;
+ * 20220525:
  * 	- Updated to 1.9.4;
  * 20211003:
  *  - Updated to 1.9.3;
@@ -67,7 +69,7 @@
 #define TRANSLATOR_PT_H
 
 
-class TranslatorPortuguese : public TranslatorAdapter_1_9_5
+class TranslatorPortuguese : public TranslatorAdapter_1_9_6
 {
   public:
 
@@ -125,6 +127,10 @@ class TranslatorPortuguese : public TranslatorAdapter_1_9_5
     QCString trDetailedDescription()
     { return "Descrição detalhada"; }
 
+    /*! header that is used when the summary tag is missing inside the details tag */
+    virtual QCString trDetails()
+    { return "Detalhes"; }
+
     /*! header that is put before the list of typedefs. */
     QCString trMemberTypedefDocumentation()
     { return "Documentação das definições de tipo"; }
@@ -135,7 +141,16 @@ class TranslatorPortuguese : public TranslatorAdapter_1_9_5
 
     /*! header that is put before the list of member functions. */
     QCString trMemberFunctionDocumentation()
-    { return "Documentação dos métodos"; }
+    {
+        if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+        {
+          return "Documentação das funções, procedimentos e processos";
+        }
+        else
+        {
+            return "Documentação das funções";
+        }
+    }
 
     /*! header that is put before the list of member attributes. */
     QCString trMemberDataDocumentation()
@@ -435,12 +450,6 @@ class TranslatorPortuguese : public TranslatorAdapter_1_9_5
      */
     QCString trFileDocumentation()
     { return "Documentação do ficheiro"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all examples.
-     */
-    QCString trExampleDocumentation()
-    { return "Documentação do exemplo"; }
 
     /*! This is used in LaTeX as the title of the document */
     QCString trReferenceManual()
@@ -1829,16 +1838,20 @@ class TranslatorPortuguese : public TranslatorAdapter_1_9_5
      */
     virtual QCString trDateTime(int year,int month,int day,int dayOfWeek,
                                 int hour,int minutes,int seconds,
-                                bool includeTime)
+                                DateTimeType includeTime)
     {
       static const char *days[]   = { "Segunda","Terça","Quarta","Quinta","Sexta","Sábado","Domingo" };
       static const char *months[] = { "Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro" };
       QCString sdate;
-      sdate.sprintf("%s, %d de %s de %d",days[dayOfWeek-1],day,months[month-1],year);
-      if (includeTime)
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Date)
+      {
+        sdate.sprintf("%s, %d de %s de %d",days[dayOfWeek-1],day,months[month-1],year);
+      }
+      if (includeTime == DateTimeType::DateTime) sdate += " ";
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Time)
       {
         QCString stime;
-        stime.sprintf(" %.2d:%.2d:%.2d",hour,minutes,seconds);
+        stime.sprintf("%.2d:%.2d:%.2d",hour,minutes,seconds);
         sdate+=stime;
       }
       return sdate;
@@ -2082,7 +2095,7 @@ class TranslatorPortuguese : public TranslatorAdapter_1_9_5
     virtual QCString trFunctionAndProc()
     { return "Funções/Procedimentos/Processos"; }
     /** VHDL type */
-    virtual QCString trVhdlType(uint64 type,bool single)
+    virtual QCString trVhdlType(uint64_t type,bool single)
     {
       switch(type)
       {
@@ -2307,62 +2320,106 @@ class TranslatorPortuguese : public TranslatorAdapter_1_9_5
     //////////////////////////////////////////////////////////////////////////
 
     /** VHDL design unit documentation */
-	virtual QCString trDesignUnitDocumentation()
-	{
-	    return "Documentação da Unidade de Projeto";
+    virtual QCString trDesignUnitDocumentation()
+    {
+        return "Documentação da Unidade de Projeto";
     }
 
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.9.2
+    //////////////////////////////////////////////////////////////////////////
 
-	//////////////////////////////////////////////////////////////////////////
-	// new since 1.9.2
-	//////////////////////////////////////////////////////////////////////////
-	/** C++20 concept */
-	virtual QCString trConcept(bool first_capital, bool singular)
-	{
-	  QCString result((first_capital ? "Conceito" : "conceito"));
-	  if (!singular) result+="s";
-	  return result;
-	}
-	/*! used as the title of the HTML page of a C++20 concept page */
-	virtual QCString trConceptReference(const QCString &conceptName)
-	{
-	  QCString result= "Referência do Conceito ";
-	  result+=conceptName;
-	  return result;
-	}
+    /** C++20 concept */
+    virtual QCString trConcept(bool first_capital, bool singular)
+    {
+        QCString result((first_capital ? "Conceito" : "conceito"));
+        if (!singular) result+="s";
+        return result;
+    }
+    /*! used as the title of the HTML page of a C++20 concept page */
+    virtual QCString trConceptReference(const QCString &conceptName)
+    {
+        QCString result= "Referência do Conceito ";
+        result+=conceptName;
+        return result;
+    }
 
-	/*! used as the title of page containing all the index of all concepts. */
-	virtual QCString trConceptList()
-	{ return "Lista de Conceitos"; }
+    /*! used as the title of page containing all the index of all concepts. */
+    virtual QCString trConceptList()
+    { return "Lista de Conceitos"; }
 
-	/*! used as the title of chapter containing the index listing all concepts. */
-	virtual QCString trConceptIndex()
-	{ return "Índice de Conceitos"; }
+    /*! used as the title of chapter containing the index listing all concepts. */
+    virtual QCString trConceptIndex()
+    { return "Índice de Conceitos"; }
 
-	/*! used as the title of chapter containing all information about concepts. */
-	virtual QCString trConceptDocumentation()
-	{ return "Documentação do Conceito"; }
+    /*! used as the title of chapter containing all information about concepts. */
+    virtual QCString trConceptDocumentation()
+    { return "Documentação do Conceito"; }
 
-	/*! used as an introduction to the concept list */
-	virtual QCString trConceptListDescription(bool extractAll)
-	{
-	  QCString result="Esta é a lista de todos os conceitos ";
-	  if (!extractAll) result+="documentados ";
-	  result+="com suas respectivas descrições:";
-	  return result;
-	}
+    /*! used as an introduction to the concept list */
+    virtual QCString trConceptListDescription(bool extractAll)
+    {
+        QCString result="Esta é a lista de todos os conceitos ";
+        if (!extractAll) result+="documentados ";
+        result+="com suas respectivas descrições:";
+        return result;
+    }
 
-	/*! used to introduce the definition of the C++20 concept */
-	virtual QCString trConceptDefinition()
-	{
-	  return "Definição de conceito";
-	}
+    /*! used to introduce the definition of the C++20 concept */
+    virtual QCString trConceptDefinition()
+    {
+        return "Definição de conceito";
+    }
 
-	//////////////////////////////////////////////////////////////////////////
-	// new since 1.9.4
-	//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.9.4
+    //////////////////////////////////////////////////////////////////////////
     virtual QCString trPackageList()
     { return "Lista de pacotes"; }
+
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.9.6
+    //////////////////////////////////////////////////////////////////////////
+
+    /*! This is used for translation of the word that will be
+     *  followed by a single name of the VHDL process flowchart.
+     */
+    virtual QCString trFlowchart()
+    {
+        return "Fluxograma: ";
+    }
+
+    /*! Please translate also updated body of the method
+     *  trMemberFunctionDocumentation(), now better adapted for
+     *  VHDL sources documentation.
+    */
+
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.9.7
+    //////////////////////////////////////////////////////////////////////////
+
+    /*! the compound type as used for the xrefitems */
+    virtual QCString trCompoundType(ClassDef::CompoundType compType, SrcLangExt lang)
+    {
+      QCString result;
+      switch(compType)
+      {
+        case ClassDef::Class:
+          if (lang == SrcLangExt_Fortran) trType(true,true);
+          else result=trClass(true,true);
+          break;
+        case ClassDef::Struct:     result="Estrutura"; break;
+        case ClassDef::Union:      result="União"; break;
+        case ClassDef::Interface:  result="Interface"; break;
+        case ClassDef::Protocol:   result="Protocolo"; break;
+        case ClassDef::Category:   result="Categoria"; break;
+        case ClassDef::Exception:  result="Excepção"; break;
+        case ClassDef::Service:    result="Serviço"; break;
+        case ClassDef::Singleton:  result="Singleton"; break;
+        default: break;
+      }
+      return result;
+    }
 };
 
 #endif

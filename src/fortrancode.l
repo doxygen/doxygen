@@ -62,6 +62,7 @@ typedef yyguts_t *yyscan_t;
 #include "fortrancode.h"
 #include "fortranscanner.h"
 #include "containers.h"
+#include "debug.h"
 
 // Toggle for some debugging info
 //#define DBG_CTX(x) fprintf x
@@ -136,7 +137,7 @@ struct fortrancodeYY_state
   CodeOutputInterface * code = 0;
 
   const char *  inputString = 0;     //!< the code fragment as text
-  yy_size_t     inputPosition = 0;   //!< read offset during parsing
+  int           inputPosition = 0;   //!< read offset during parsing
   int           inputLines = 0;      //!< number of line in the code fragment
   QCString      fileName;
   int           yyLineNr = 0;        //!< current line number
@@ -210,14 +211,8 @@ static void addUse(yyscan_t yyscanner,const QCString &moduleName);
 static void addLocalVar(yyscan_t yyscanner,const QCString &varName);
 static MemberDef *getFortranDefs(yyscan_t yyscanner,const QCString &memberName, const QCString &moduleName,
                                  const UseMap &useMap);
-static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
+static int yyread(yyscan_t yyscanner,char *buf,int max_size);
 static inline void pop_state(yyscan_t yyscanner);
-
-
-//-------------------------------------------------------------------
-
-static std::mutex g_docCrossReferenceMutex;
-static std::mutex g_countFlowKeywordsMutex;
 
 /* -----------------------------------------------------------------*/
 #undef  YY_INPUT
@@ -303,8 +298,8 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                           }
                                           if (yyextra->currentMemberDef && yyextra->currentMemberDef->isFunction())
                                           {
-                                            std::lock_guard<std::mutex> lock(g_countFlowKeywordsMutex);
-                                            MemberDefMutable *mdm = toMemberDefMutable(yyextra->currentMemberDef);
+                                            std::lock_guard<std::mutex> lock(Doxygen::countFlowKeywordsMutex);
+                                            MemberDefMutable *mdm = toMemberDefMutable(const_cast<MemberDef*>(yyextra->currentMemberDef));
                                             if (mdm)
                                             {
                                               mdm->incrementFlowKeyWordCount();
@@ -850,12 +845,12 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
 /*@ ----------------------------------------------------------------------------
  */
 
-static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size)
+static int yyread(yyscan_t yyscanner,char *buf,int max_size)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yy_size_t inputPosition = yyextra->inputPosition;
+  int inputPosition = yyextra->inputPosition;
   const char *s = yyextra->inputString + inputPosition;
-  yy_size_t c=0;
+  int c=0;
   while( c < max_size && *s)
   {
     *buf++ = *s++;
@@ -959,7 +954,7 @@ static void startCodeLine(yyscan_t yyscanner)
                                      !yyextra->includeCodeFragment);
     }
   }
-  yyextra->code->startCodeLine(yyextra->sourceFileDef);
+  yyextra->code->startCodeLine(yyextra->sourceFileDef!=0);
   yyextra->insideCodeLine=true;
   if (yyextra->currentFontClass)
   {
@@ -1031,7 +1026,7 @@ static void writeMultiLineCodeLink(yyscan_t yyscanner,CodeOutputInterface &ol,
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   bool sourceTooltips = Config_getBool(SOURCE_TOOLTIPS);
-  yyextra->tooltipManager.addTooltip(ol,d);
+  yyextra->tooltipManager.addTooltip(d);
   QCString ref  = d->getReference();
   QCString file = d->getOutputFileBase();
   QCString anchor = d->anchor();
@@ -1246,8 +1241,7 @@ static bool getLink(yyscan_t yyscanner,const UseMap &useMap, // dictionary with 
       if (yyextra->currentDefinition && yyextra->currentMemberDef &&
           yyextra->insideBody && yyextra->collectXRefs)
       {
-        std::lock_guard<std::mutex> lock(g_docCrossReferenceMutex);
-        addDocCrossReference(toMemberDefMutable(yyextra->currentMemberDef),toMemberDefMutable(md));
+        addDocCrossReference(yyextra->currentMemberDef,md);
       }
       writeMultiLineCodeLink(yyscanner,ol,md,!text.isEmpty() ? text : memberText);
       addToSearchIndex(yyscanner, !text.isEmpty() ? text : memberText);
@@ -1421,7 +1415,7 @@ FortranCodeParser::FortranCodeParser(FortranFormat format) : p(std::make_unique<
   p->format = format;
   fortrancodeYYlex_init_extra(&p->state,&p->yyscanner);
 #ifdef FLEX_DEBUG
-  fortrancodeYYset_debug(1,p->yyscanner);
+  fortrancodeYYset_debug(Debug::isFlagSet(Debug::Lex_fortrancode)?1:0,p->yyscanner);
 #endif
   resetCodeParserState();
 }
@@ -1468,7 +1462,7 @@ void FortranCodeParser::parseCode(CodeOutputInterface & codeOutIntf,
   //                const MemberDef *,bool,const Definition *searchCtx,
   //                bool collectXRefs, FortranFormat format)
   if (input.isEmpty()) return;
-  printlex(yy_flex_debug, TRUE, __FILE__, fileDef ? qPrint(fileDef->fileName()): NULL);
+  DebugLex debugLex(Debug::Lex_fortrancode, __FILE__, fileDef ? qPrint(fileDef->fileName()): NULL);
   yyextra->code = &codeOutIntf;
   yyextra->inputString   = input.data();
   yyextra->inputPosition = 0;
@@ -1533,8 +1527,6 @@ void FortranCodeParser::parseCode(CodeOutputInterface & codeOutIntf,
 
   // write the tooltips
   yyextra->tooltipManager.writeTooltips(codeOutIntf);
-
-  printlex(yy_flex_debug, FALSE, __FILE__, fileDef ? qPrint(fileDef->fileName()): NULL);
 }
 
 static inline void pop_state(yyscan_t yyscanner)

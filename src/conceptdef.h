@@ -66,7 +66,7 @@ class ConceptLinkedMap : public LinkedMap<ConceptDef>
 {
 };
 
-class ConceptLinkedRefMap : public LinkedRefMap<const ConceptDef>
+class ConceptLinkedRefMap : public LinkedRefMap<ConceptDef>
 {
   public:
     bool declVisible() const;

@@ -47,7 +47,7 @@ class MemberGroup
    ~MemberGroup();
     QCString header() const { return grpHeader; }
     int groupId() const { return grpId; }
-    void insertMember(const MemberDef *md);
+    void insertMember(MemberDef *md);
     void setAnchors();
     void writePlainDeclarations(OutputList &ol,bool inGroup,
                const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
@@ -78,6 +78,7 @@ class MemberGroup
     int numDocMembers() const;
     int numDocEnumValues() const;
     const Definition *container() const;
+    const Definition *memberContainer() const;
 
     int countInheritableMembers(const ClassDef *inheritedFrom) const;
     void addListReferences(Definition *d);

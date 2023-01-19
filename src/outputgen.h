@@ -54,18 +54,26 @@ struct SourceLinkInfo
   QCString anchor;
 };
 
+enum class OutputType { List, Html, Latex, Man, RTF, Docbook, XML, Null };
+
 /** Output interface for code parser.
  */
 class CodeOutputInterface
 {
   public:
-    virtual ~CodeOutputInterface() = default;
-    CodeOutputInterface() {}
+    CodeOutputInterface() = default;
     CodeOutputInterface(const CodeOutputInterface &) = delete;
     CodeOutputInterface &operator=(const CodeOutputInterface &) = delete;
+    virtual ~CodeOutputInterface() = default;
+
+    virtual OutputType type() const = 0;
 
     /** Identifier for the output file */
-    virtual int id() const { return 0; }
+    virtual int id() const { return m_id; }
+    virtual void setId(int id) { m_id=id; }
+
+    virtual void setEnabled(bool e) { m_active = e; }
+    virtual bool isEnabled() const { return m_active; }
 
     /*! Writes an code fragment to the output. This function should keep
      *  spaces visible, should break lines at a newline and should convert
@@ -146,7 +154,12 @@ class CodeOutputInterface
     virtual void startCodeFragment(const QCString &style) = 0;
     /*! Ends a block of code */
     virtual void endCodeFragment(const QCString &style) = 0;
+
+  private:
+    int m_id = -1;
+    bool m_active = true;
 };
+
 
 /** Base Interface used for generating output outside of the
  *  comment blocks.
@@ -156,9 +169,11 @@ class CodeOutputInterface
  *  or a list of formats (see OutputList). This interface
  *  contains functions that generate fragments of the output.
  */
-class BaseOutputDocInterface : public CodeOutputInterface
+class BaseOutputDocInterface
 {
   public:
+    virtual ~BaseOutputDocInterface() = default;
+
     enum ParamListTypes { Param, RetVal, Exception };
     enum SectionTypes { /*See, Return, Author, Version,
                         Since, Date, Bug, Note,
@@ -327,7 +342,6 @@ class BaseOutputDocInterface : public CodeOutputInterface
 class OutputGenerator : public BaseOutputDocInterface
 {
   public:
-    enum OutputType { Html, Latex, Man, RTF, XML, DEF, Perl , Docbook};
 
     OutputGenerator(const QCString &dir);
     OutputGenerator(const OutputGenerator &o);
@@ -337,24 +351,21 @@ class OutputGenerator : public BaseOutputDocInterface
     virtual OutputType type() const = 0;
     virtual std::unique_ptr<OutputGenerator> clone() const = 0;
 
+    virtual CodeOutputInterface *codeGen() = 0;
+
     ///////////////////////////////////////////////////////////////
     // generic generator methods
     ///////////////////////////////////////////////////////////////
-    void enable();
-    void disable();
-    void enableIf(OutputType o);
-    void disableIf(OutputType o);
-    void disableIfNot(OutputType o);
-    bool isEnabled(OutputType o);
+    void pushGeneratorState();
+    void popGeneratorState();
+    void setEnabled(bool e);
+    bool isEnabled() const;
     OutputGenerator *get(OutputType o);
     QCString dir() const;
     QCString fileName() const;
 
     void startPlainFile(const QCString &name);
     void endPlainFile();
-    bool isEnabled() const { return m_active; }
-    void pushGeneratorState();
-    void popGeneratorState();
 
     virtual void writeDoc(const IDocNodeAST *ast,const Definition *ctx,const MemberDef *md,int id) = 0;
 
@@ -366,8 +377,8 @@ class OutputGenerator : public BaseOutputDocInterface
     virtual void writeSearchInfo() = 0;
     virtual void writeFooter(const QCString &navPath) = 0;
     virtual void endFile() = 0;
-    virtual void startIndexSection(IndexSections) = 0;
-    virtual void endIndexSection(IndexSections) = 0;
+    virtual void startIndexSection(IndexSection) = 0;
+    virtual void endIndexSection(IndexSection) = 0;
     virtual void writePageLink(const QCString &,bool) = 0;
     virtual void startProjectNumber() = 0;
     virtual void endProjectNumber() = 0;
@@ -402,8 +413,9 @@ class OutputGenerator : public BaseOutputDocInterface
     virtual void endInlineHeader() = 0;
     virtual void startAnonTypeScope(int) = 0;
     virtual void endAnonTypeScope(int) = 0;
-    virtual void startMemberItem(const QCString &,int,const QCString &) = 0;
-    virtual void endMemberItem() = 0;
+    enum class MemberItemType { Normal, AnonymousStart, AnonymousEnd, Templated };
+    virtual void startMemberItem(const QCString &,MemberItemType,const QCString &) = 0;
+    virtual void endMemberItem(MemberItemType annoType = MemberItemType::Normal) = 0;
     virtual void startMemberTemplateParams() = 0;
     virtual void endMemberTemplateParams(const QCString &,const QCString &) = 0;
     virtual void startCompoundTemplateParams() = 0;
@@ -415,7 +427,7 @@ class OutputGenerator : public BaseOutputDocInterface
     virtual void startMemberGroup() = 0;
     virtual void endMemberGroup(bool) = 0;
     virtual void insertMemberAlign(bool) = 0;
-    virtual void insertMemberAlignLeft(int,bool) = 0;
+    virtual void insertMemberAlignLeft(MemberItemType,bool) = 0;
     virtual void startMemberDoc(const QCString &,const QCString &,
                                 const QCString &,const QCString &,int,int,bool) = 0;
     virtual void endMemberDoc(bool) = 0;
@@ -498,6 +510,8 @@ class OutputGenerator : public BaseOutputDocInterface
     virtual void writeLabel(const QCString &,bool) = 0;
     virtual void endLabels() = 0;
 
+    virtual void writeLocalToc(const SectionRefs &,const LocalToc &lt) = 0;
+
     virtual void cleanup() = 0;
 
   protected:
@@ -509,5 +523,7 @@ class OutputGenerator : public BaseOutputDocInterface
     bool m_active = true;
     std::stack<bool> m_genStack;
 };
+
+
 
 #endif

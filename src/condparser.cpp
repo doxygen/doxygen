@@ -217,7 +217,7 @@ bool CondParser::parseLevel3()
     if (m_token=="(")
     {
       getToken();
-      int ans = parseLevel1();
+      bool ans = parseLevel1();
       if (m_tokenType!=DELIMITER || m_token!=")")
       {
         m_err="Parenthesis ) missing";

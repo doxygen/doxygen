@@ -61,6 +61,8 @@ typedef yyguts_t *yyscan_t;
 #include "section.h"
 #include "util.h"
 #include "reflist.h"
+#include "trace.h"
+#include "debug.h"
 
 #define USE_STATE2STRING 0
 
@@ -135,6 +137,7 @@ static bool handleProtected(yyscan_t yyscanner,const QCString &, const StringVec
 static bool handleProtectedSection(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handlePublic(yyscan_t yyscanner,const QCString &s, const StringVector &);
 static bool handlePublicSection(yyscan_t yyscanner,const QCString &s, const StringVector &);
+static bool handleQualifier(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleToc(yyscan_t yyscanner,const QCString &s, const StringVector &);
 static bool handleInherit(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleExtends(yyscan_t yyscanner,const QCString &, const StringVector &);
@@ -267,6 +270,7 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "public",          { &handlePublic,           CommandSpacing::Invisible }},
   { "publicsection",   { &handlePublicSection,    CommandSpacing::Invisible }},
   { "pure",            { &handlePure,             CommandSpacing::Invisible }},
+  { "qualifier",       { &handleQualifier,        CommandSpacing::Invisible }},
   { "raisewarning",    { &handleRaiseWarning,     CommandSpacing::Invisible }},
   { "refitem",         { &handleRefItem,          CommandSpacing::Inline    }},
   { "related",         { &handleRelated,          CommandSpacing::Invisible }},
@@ -403,7 +407,7 @@ struct commentscanYY_state
   QCString         newXRefItemKey;
   QCString         xrefItemTitle;
   QCString         xrefListTitle;
-  Protection       protection = Public;
+  Protection       protection = Protection::Public;
 
   bool             xrefAppendFlag = FALSE;
   bool             inGroupParamFound = FALSE;
@@ -419,7 +423,7 @@ struct commentscanYY_state
 
   QCString         guardExpr;
   int              roundCount = 0;
-  int              HTMLDetails = 0;
+  std::vector<int> HTMLDetailsSummary;
 
   bool             insideParBlock = FALSE;
   bool             inInternalDocs = FALSE;
@@ -461,7 +465,7 @@ static inline void addOutput(yyscan_t yyscanner,const QCString &s);
 static inline void addOutput(yyscan_t yyscanner,char c);
 static void endBrief(yyscan_t yyscanner,bool addToOutput=TRUE);
 static void handleGuard(yyscan_t yyscanner,const QCString &expr);
-static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
+static int yyread(yyscan_t yyscanner,char *buf,int max_size);
 static void addCite(yyscan_t yyscanner);
 static void addIline(yyscan_t yyscanner,int lineNr);
 static void addIlineBreak(yyscan_t yyscanner,int lineNr);
@@ -588,6 +592,7 @@ STopt  [^\n@\\]*
 %x      CdataSection
 %x      Noop
 %x      RaiseWarning
+%x      Qualifier
 
 %%
 
@@ -637,12 +642,15 @@ STopt  [^\n@\\]*
                                           REJECT;
                                         }
 <Comment>"<"{DETAILS}{ATTR}">"          { // start of a HTML style details description
-                                          yyextra->HTMLDetails++;
+                                          yyextra->HTMLDetailsSummary.push_back(0);
                                           setOutput(yyscanner,OutputDoc);
                                           addOutput(yyscanner,yytext);
                                         }
 <Comment>"</"{DETAILS}">"               { // end of a HTML style details description
-                                          if (yyextra->HTMLDetails) yyextra->HTMLDetails--;
+                                          if (!yyextra->HTMLDetailsSummary.empty())
+                                          {
+                                            yyextra->HTMLDetailsSummary.pop_back();
+                                          }
                                           addOutput(yyscanner,yytext);
                                         }
 <Comment>"<"{AHTML}                     { // potential start of HTML anchor, see issue 9200
@@ -705,16 +713,28 @@ STopt  [^\n@\\]*
                                           yyextra->htmlAnchorStr += yytext;
                                         }
 <Comment>"<"{SUMMARY}">"                { // start of a .NET XML style brief description
-                                          if (!yyextra->HTMLDetails) setOutput(yyscanner,OutputBrief);
-                                          addOutput(yyscanner,yytext);
+                                          if (yyextra->HTMLDetailsSummary.empty())
+                                          {
+                                            setOutput(yyscanner,OutputBrief);
+                                          }
+                                          else // HTML5 style <summary> as part of <details> section.
+                                          {
+                                            addOutput(yyscanner,yytext);
+                                          }
                                         }
 <Comment>"<"{REMARKS}">"                { // start of a .NET XML style detailed description
                                           setOutput(yyscanner,OutputDoc);
                                           addOutput(yyscanner,yytext);
                                         }
 <Comment>"</"{SUMMARY}">"               { // start of a .NET XML style detailed description
-                                          addOutput(yyscanner,yytext);
-                                          if (!yyextra->HTMLDetails) setOutput(yyscanner,OutputDoc);
+                                          if (!yyextra->HTMLDetailsSummary.empty())
+                                          {
+                                            addOutput(yyscanner,yytext);
+                                          }
+                                          else
+                                          {
+                                            setOutput(yyscanner,OutputDoc);
+                                          }
                                         }
 <Comment>"</"{REMARKS}">"               { // end of a brief or detailed description
                                           setOutput(yyscanner,OutputDoc);
@@ -1476,8 +1496,35 @@ STopt  [^\n@\\]*
                                         }
 
 
+  /* ----- handle arguments of the qualifier command ----- */
+<Qualifier>{LABELID}                    { // unquoted version, simple label
+                                          yyextra->current->qualifiers.push_back(yytext);
+                                          BEGIN( Comment );
+                                        }
+<Qualifier>"\""[^\"]*"\""               { // quotes version, add without quotes
+                                          std::string inp(yytext);
+                                          yyextra->current->qualifiers.push_back(inp.substr(1,yyleng-2));
+                                          BEGIN( Comment );
+                                        }
+<Qualifier>{DOCNL}                      { // missing argument
+                                          warn(yyextra->fileName,yyextra->lineNr,
+                                              "Missing argument of '\\%s' command",qPrint(yyextra->currentCmd)
+                                              );
+                                          unput_string(yytext,yyleng);
+                                          BEGIN( Comment );
+                                        }
+<Qualifier>.                            {
+                                          warn(yyextra->fileName,yyextra->lineNr,
+                                              "Argument of '\\%s' command should be quoted",qPrint(yyextra->currentCmd)
+                                              );
+                                          unput_string(yytext,yyleng);
+                                          BEGIN( Comment );
+                                        }
   /* ----- handle arguments of the relates(also)/addindex commands ----- */
 
+<LineParam>{CMD}{CMD}                   { // escaped command
+                                          addOutput(yyscanner,yytext);
+                                        }
 <LineParam>{DOCNL}                      { // end of argument
                                           //if (*yytext=='\n') yyextra->lineNr++;
                                           //addOutput(yyscanner,'\n');
@@ -1487,6 +1534,9 @@ STopt  [^\n@\\]*
 <LineParam>{LC}                         { // line continuation
                                           yyextra->lineNr++;
                                           addOutput(yyscanner,'\n');
+                                        }
+<LineParam>({CMD}{CMD}){ID}             { // escaped command
+                                          addOutput(yyscanner,yytext);
                                         }
 <LineParam>.                            { // ignore other stuff
                                           addOutput(yyscanner,*yytext);
@@ -1532,11 +1582,11 @@ STopt  [^\n@\\]*
                                           yyextra->sectionTitle+=yytext;
                                           addOutput(yyscanner,yytext);
                                         }
-<SectionTitle>({CMD}{CMD}){ID}          { // unescape escaped command
+<SectionTitle>({CMD}{CMD}){ID}          { // escaped command
                                           yyextra->sectionTitle+=&yytext[1];
                                           addOutput(yyscanner,yytext);
                                         }
-<SectionTitle>{CMD}[$@\\&~<>#%]         { // unescape escaped character
+<SectionTitle>{CMD}[$@\\&~<>#%]         { // unescaped character
                                           yyextra->sectionTitle+=yytext[1];
                                           addOutput(yyscanner,yytext);
                                         }
@@ -1551,7 +1601,7 @@ STopt  [^\n@\\]*
                                           addOutput(yyscanner,yytext);
                                           // we add subpage labels as a kind of "inheritance" relation to prevent
                                           // needing to add another list to the Entry class.
-                                          yyextra->current->extends.push_back(BaseInfo(QCString(yytext),Public,Normal));
+                                          yyextra->current->extends.push_back(BaseInfo(QCString(yytext),Protection::Public,Specifier::Normal));
                                           BEGIN(SubpageTitle);
                                         }
 <SubpageLabel>{DOCNL}                   { // missing argument
@@ -1989,7 +2039,7 @@ STopt  [^\n@\\]*
 
 <InheritParam>({ID}("::"|"."))*{ID}     { // found argument
                                           yyextra->current->extends.push_back(
-                                            BaseInfo(removeRedundantWhiteSpace(QCString(yytext)),Public,Normal)
+                                            BaseInfo(removeRedundantWhiteSpace(QCString(yytext)),Protection::Public,Specifier::Normal)
                                           );
                                           BEGIN( Comment );
                                         }
@@ -2012,7 +2062,7 @@ STopt  [^\n@\\]*
 
 <ExtendsParam>({ID}("::"|"."))*{ID}     { // found argument
                                           yyextra->current->extends.push_back(
-                                            BaseInfo(removeRedundantWhiteSpace(QCString(yytext)),Public,Normal)
+                                            BaseInfo(removeRedundantWhiteSpace(QCString(yytext)),Protection::Public,Specifier::Normal)
                                           );
                                           BEGIN( Comment );
                                         }
@@ -2498,7 +2548,7 @@ static bool handleRelated(yyscan_t yyscanner,const QCString &cmd, const StringVe
     warn(yyextra->fileName,yyextra->lineNr,
         "found multiple \\relates, \\relatesalso or \\memberof commands in a comment block, using last definition");
   }
-  yyextra->current->relatesType = Simple;
+  yyextra->current->relatesType = RelatesType::Simple;
   yyextra->currentCmd = cmd;
   BEGIN(RelatesParam1);
   return FALSE;
@@ -2512,7 +2562,7 @@ static bool handleRelatedAlso(yyscan_t yyscanner,const QCString &cmd, const Stri
     warn(yyextra->fileName,yyextra->lineNr,
         "found multiple \\relates, \\relatesalso or \\memberof commands in a comment block, using last definition");
   }
-  yyextra->current->relatesType = Duplicate;
+  yyextra->current->relatesType = RelatesType::Duplicate;
   yyextra->currentCmd = cmd;
   BEGIN(RelatesParam1);
   return FALSE;
@@ -2526,7 +2576,7 @@ static bool handleMemberOf(yyscan_t yyscanner,const QCString &cmd, const StringV
     warn(yyextra->fileName,yyextra->lineNr,
         "found multiple \\relates, \\relatesalso or \\memberof commands in a comment block, using last definition");
   }
-  yyextra->current->relatesType = MemberOf;
+  yyextra->current->relatesType = RelatesType::MemberOf;
   yyextra->currentCmd = cmd;
   BEGIN(RelatesParam1);
   return FALSE;
@@ -2853,6 +2903,14 @@ static bool handleHideCallergraph(yyscan_t yyscanner,const QCString &, const Str
   return FALSE;
 }
 
+static bool handleQualifier(yyscan_t yyscanner,const QCString &cmd, const StringVector &)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->currentCmd = cmd;
+  BEGIN(Qualifier);
+  return FALSE;
+}
+
 static bool handleReferencedByRelation(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
@@ -2914,49 +2972,49 @@ static bool handleStatic(yyscan_t yyscanner,const QCString &, const StringVector
 static bool handlePure(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yyextra->current->virt = Pure;
+  yyextra->current->virt = Specifier::Pure;
   return FALSE;
 }
 
 static bool handlePrivate(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yyextra->current->protection = Private;
+  yyextra->current->protection = Protection::Private;
   return FALSE;
 }
 
 static bool handlePrivateSection(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yyextra->current->protection = yyextra->protection = Private;
+  yyextra->current->protection = yyextra->protection = Protection::Private;
   return FALSE;
 }
 
 static bool handleProtected(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yyextra->current->protection = Protected;
+  yyextra->current->protection = Protection::Protected;
   return FALSE;
 }
 
 static bool handleProtectedSection(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yyextra->current->protection = yyextra->protection = Protected ;
+  yyextra->current->protection = yyextra->protection = Protection::Protected ;
   return FALSE;
 }
 
 static bool handlePublic(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yyextra->current->protection = Public;
+  yyextra->current->protection = Protection::Public;
   return FALSE;
 }
 
 static bool handlePublicSection(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yyextra->current->protection = yyextra->protection = Public;
+  yyextra->current->protection = yyextra->protection = Protection::Public;
   return FALSE;
 }
 
@@ -3348,7 +3406,7 @@ static void addCite(yyscan_t yyscanner)
 // strip trailing whitespace (excluding newlines) from string s
 static void stripTrailingWhiteSpace(QCString &s)
 {
-  uint len = s.length();
+  uint32_t len = s.length();
   int i = (int)len-1;
   char c;
   while (i>=0)
@@ -3589,11 +3647,11 @@ static void endBrief(yyscan_t yyscanner,bool addToOutput)
   }
 }
 
-static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size)
+static int yyread(yyscan_t yyscanner,char *buf,int max_size)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yyextra->prevPosition=yyextra->inputPosition;
-  yy_size_t c=0;
+  int c=0;
   while( c < max_size && yyextra->inputString[yyextra->inputPosition] )
   {
     *buf = yyextra->inputString[yyextra->inputPosition++] ;
@@ -3626,7 +3684,7 @@ CommentScanner::CommentScanner() : p(std::make_unique<Private>())
 {
   commentscanYYlex_init_extra(&p->extra,&p->yyscanner);
 #ifdef FLEX_DEBUG
-  commentscanYYset_debug(1,p->yyscanner);
+  commentscanYYset_debug(Debug::isFlagSet(Debug::Lex_commentscan)?1:0,p->yyscanner);
 #endif
 }
 
@@ -3649,10 +3707,11 @@ bool CommentScanner::parseCommentBlock(/* in */     OutlineParserInterface *pars
                        /* in */     bool markdownSupport
                       )
 {
+  AUTO_TRACE("comment='{}' fileName={} lineNr={} isBrief={} isAutoBriefOn={} inInbody={}"
+             " prot={} markdownSupport={}",Trace::trunc(comment),fileName,lineNr,isBrief,
+             isAutoBriefOn,isInbody,prot,markdownSupport);
   yyscan_t yyscanner = p->yyscanner;
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  //printf("parseCommentBlock() isBrief=%d isAutoBriefOn=%d lineNr=%d\n",
-  //    isBrief,isAutoBriefOn,lineNr);
 
   initParser(yyscanner);
   yyextra->guards = std::stack<GuardedSection>();
@@ -3685,10 +3744,12 @@ bool CommentScanner::parseCommentBlock(/* in */     OutlineParserInterface *pars
   yyextra->spaceBeforeCmd.resize(0);
   yyextra->spaceBeforeIf.resize(0);
 
-  printlex(yy_flex_debug, TRUE, __FILE__, !fileName.isEmpty() ? qPrint(fileName): NULL);
+  DebugLex debugLex(Debug::Lex_commentscan, __FILE__, !fileName.isEmpty() ? qPrint(fileName): NULL);
   if (!yyextra->current->inbodyDocs.isEmpty() && isInbody) // separate in body fragments
   {
-    yyextra->current->inbodyDocs+="\n\n";
+    char cmd[30];
+    sprintf(cmd,"\n\n\\iline %d \\ilinebr ",lineNr);
+    yyextra->current->inbodyDocs+=cmd;
   }
 
   Debug::print(Debug::CommentScan,0,"-----------\nCommentScanner: %s:%d\n"
@@ -3753,10 +3814,9 @@ bool CommentScanner::parseCommentBlock(/* in */     OutlineParserInterface *pars
   if (yyextra->parseMore) position=yyextra->inputPosition; else position=0;
 
   lineNr = yyextra->lineNr;
-  //printf("position=%d yyextra->parseMore=%d newEntryNeeded=%d\n",
-  //  position,yyextra->parseMore,newEntryNeeded);
+  AUTO_TRACE_EXIT("position={} parseMore={} newEntryNeeded={}",
+      position,yyextra->parseMore,newEntryNeeded);
 
-  printlex(yy_flex_debug, FALSE, __FILE__, !fileName.isEmpty() ? qPrint(fileName): NULL);
   return yyextra->parseMore;
 }
 

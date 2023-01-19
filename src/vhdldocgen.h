@@ -80,10 +80,10 @@ class VhdlDocGen
     {
       switch (prot)
       {
-        case Public:    return ENTITYCLASS;
-        case Protected: return PACKBODYCLASS;
-        case Private:   return ARCHITECTURECLASS;
-        case Package:   return PACKAGECLASS;
+        case Protection::Public:    return ENTITYCLASS;
+        case Protection::Protected: return PACKBODYCLASS;
+        case Protection::Private:   return ARCHITECTURECLASS;
+        case Protection::Package:   return PACKAGECLASS;
       }
       return ENTITYCLASS;
     }

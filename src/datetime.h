@@ -35,6 +35,11 @@ constexpr const char *SF_bit2str(int bitNumber)
   return bitNumber>=0 && bitNumber<SF_NumBits ? partNames[bitNumber] : "";
 }
 
+enum class DateTimeType { DateTime,
+                          Date,
+                          Time
+                        };
+
 /** Returns the filled in std::tm for a given string representing a date and/or time.
  *
  *  @param[in] spec The string representation of the date and/or time
@@ -69,5 +74,10 @@ std::tm getCurrentDateTime();
 
 /** Returns the current year as a string */
 QCString yearToString();
+
+/** Returns the current date, when \c includeTime is set also the time is provided.
+ *  @param[in] includeTime include the time in the output
+ */
+QCString dateToString(DateTimeType includeTime);
 
 #endif

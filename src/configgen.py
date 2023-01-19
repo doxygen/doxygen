@@ -236,6 +236,8 @@ def prepCDocs(node):
 def parseOption(node):
     # Handling part for Doxyfile
     name = node.getAttribute('id')
+    if len(name)>23:
+        raise Exception('Option name {0} too long ({1}, where max is 23 characters)'.format(name,len(name)))
     type = node.getAttribute('type')
     format = node.getAttribute('format')
     defval = node.getAttribute('defval')
@@ -495,7 +497,7 @@ def getEnum2BoolMapping(node):
             bool_rep = nv.getAttribute("bool_representation")
             if name and bool_rep:
                 bool_value = "true" if bool_rep and bool_rep.upper() == 'YES' else "false"
-                mapping.append( "{{ \"{0}\", \"{1}\" }}".format(escape(name),bool_value))
+                mapping.append( "{{ \"{0}\", {1} }}".format(escape(name),bool_value))
     return mapping
 
 def parseGroupMapInit(node):

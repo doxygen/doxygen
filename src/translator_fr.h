@@ -103,7 +103,7 @@
 // Translator class (by the local maintainer) when the localized
 // translator is made up-to-date again.
 
-class TranslatorFrench : public TranslatorAdapter_1_8_19
+class TranslatorFrench : public TranslatorAdapter_1_9_5
 {
   public:
 
@@ -157,6 +157,10 @@ class TranslatorFrench : public TranslatorAdapter_1_8_19
     /*! header that is put before the detailed description of files, classes and namespaces. */
     virtual QCString trDetailedDescription()
     { return "Description détaillée"; }
+
+    /*! header that is used when the summary tag is missing inside the details tag */
+    virtual QCString trDetails()
+    { return "Détails"; }
 
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
@@ -476,12 +480,6 @@ class TranslatorFrench : public TranslatorAdapter_1_8_19
      */
     virtual QCString trFileDocumentation()
     { return "Documentation des fichiers"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all examples.
-     */
-    virtual QCString trExampleDocumentation()
-    { return "Documentation des exemples"; }
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
@@ -1873,16 +1871,20 @@ class TranslatorFrench : public TranslatorAdapter_1_8_19
      */
     virtual QCString trDateTime(int year,int month,int day,int dayOfWeek,
                                 int hour,int minutes,int seconds,
-                                bool includeTime)
+                                DateTimeType includeTime)
     {
       static const char *days[]   = { "Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche" };
       static const char *months[] = { "Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre" };
       QCString sdate;
-      sdate.sprintf("%s %d %s %d",days[dayOfWeek-1],day,months[month-1],year);
-      if (includeTime)
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Date)
+      {
+        sdate.sprintf("%s %d %s %d",days[dayOfWeek-1],day,months[month-1],year);
+      }
+      if (includeTime == DateTimeType::DateTime) sdate += " ";
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Time)
       {
         QCString stime;
-        stime.sprintf(" %.2d:%.2d:%.2d",hour,minutes,seconds);
+        stime.sprintf("%.2d:%.2d:%.2d",hour,minutes,seconds);
         sdate+=stime;
       }
       return sdate;
@@ -2104,7 +2106,7 @@ class TranslatorFrench : public TranslatorAdapter_1_8_19
     virtual QCString trFunctionAndProc()
     { return "Fonctions/Procédures/Processes"; }
     /** VHDL type */
-    virtual QCString trVhdlType(uint64 type,bool single)
+    virtual QCString trVhdlType(uint64_t type,bool single)
     {
       switch(type)
       {
@@ -2337,6 +2339,59 @@ class TranslatorFrench : public TranslatorAdapter_1_8_19
     /** VHDL design unit documentation */
     virtual QCString trDesignUnitDocumentation()
     { return "Documentation de l'unité de conception"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.2
+//////////////////////////////////////////////////////////////////////////
+
+    /** C++20 concept */
+    virtual QCString trConcept(bool first_capital, bool singular)
+    {
+      QCString result((first_capital ? "Concept" : "concept"));
+      if (!singular) result+="s";
+      return result;
+    }
+    /*! used as the title of the HTML page of a C++20 concept page */
+    virtual QCString trConceptReference(const QCString &conceptName)
+    {
+      QCString result="Reference du concept ";
+      result+=conceptName;
+      return result;
+    }
+
+    /*! used as the title of page containing all the index of all concepts. */
+    virtual QCString trConceptList()
+    { return "Liste des concepts"; }
+
+    /*! used as the title of chapter containing the index listing all concepts. */
+    virtual QCString trConceptIndex()
+    { return "Index des concepts"; }
+
+    /*! used as the title of chapter containing all information about concepts. */
+    virtual QCString trConceptDocumentation()
+    { return "Documentation des concepts"; }
+
+    /*! used as an introduction to the concept list */
+    virtual QCString trConceptListDescription(bool extractAll)
+    {
+      QCString result="Liste de tous les concepts ";
+      if (!extractAll) result+="documentés ";
+      result+="avec une brève description :";
+      return result;
+    }
+
+    /*! used to introduce the definition of the C++20 concept */
+    virtual QCString trConceptDefinition()
+    {
+      return "Définition du concept";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.4
+//////////////////////////////////////////////////////////////////////////
+
+    virtual QCString trPackageList()
+    { return "Liste des paquetages"; }
 
 };
 

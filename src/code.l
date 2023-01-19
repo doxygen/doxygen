@@ -40,6 +40,7 @@ typedef yyguts_t *yyscan_t;
 #include <string>
 #include <mutex>
 #include <sstream>
+#include <cstdint>
 
 #include <stdio.h>
 #include <assert.h>
@@ -64,6 +65,7 @@ typedef yyguts_t *yyscan_t;
 #include "scopedtypevariant.h"
 #include "symbolresolver.h"
 #include "dir.h"
+#include "debug.h"
 
 // Toggle for some debugging info
 //#define DBG_CTX(x) fprintf x
@@ -252,16 +254,9 @@ static QCString escapeObject(yyscan_t yyscanner,const char *s);
 static QCString escapeWord(yyscan_t yyscanner,const char *s);
 static QCString escapeComment(yyscan_t yyscanner,const char *s);
 static bool skipLanguageSpecificKeyword(yyscan_t yyscanner,const char *kw);
-static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
+static int yyread(yyscan_t yyscanner,char *buf,int max_size);
 static void addVariable(yyscan_t yyscanner,QCString type,QCString name);
 static bool startsWithKeyword(const QCString &str,const QCString &kw);
-
-//-------------------------------------------------------------------
-
-static std::mutex g_searchIndexMutex;
-static std::mutex g_docCrossReferenceMutex;
-static std::mutex g_addExampleMutex;
-static std::mutex g_countFlowKeywordsMutex;
 
 /* -----------------------------------------------------------------
  */
@@ -1149,7 +1144,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           generatePHPVariableLink(yyscanner,*yyextra->code,yytext);
                                           yyextra->name+=yytext+7;
                                         }
-<Body,TemplCast>{SCOPENAME}{B}*"<"[^\n\/\-\.\{\"\>\(]*">"{ENDIDopt}/{B}* { // A<T> *pt;
+<Body,TemplCast>{SCOPENAME}{B}*"<"[^\n\/\-\.\{\"\>\(']*">"{ENDIDopt}/{B}* { // A<T> *pt;
                                           if (isCastKeyword(yytext) && YY_START==Body)
                                           {
                                             REJECT;
@@ -1185,8 +1180,8 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                         }
 <Body>"("{B}*("*"{B}*)+{SCOPENAME}+{B}*")"/{B}* {  // (*p)->func() but not "if (p) ..."
                                           yyextra->code->codify(yytext);
-                                          uint s=0;while (s<(uint)yyleng && !isId(yytext[s])) s++;
-                                          uint e=(uint)yyleng-1;while (e>1 && !isId(yytext[e])) e--;
+                                          uint32_t s=0;while (s<(uint32_t)yyleng && !isId(yytext[s])) s++;
+                                          uint32_t e=(uint32_t)yyleng-1;while (e>1 && !isId(yytext[e])) e--;
                                           QCString varname = ((QCString)yytext).mid(s,e-s+1);
                                           addType(yyscanner);
                                           yyextra->name=varname;
@@ -1206,7 +1201,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                         }
 <FuncCall,Body,MemberCall,MemberCall2,SkipInits,InlineInit>{RAWBEGIN}   {
                                           QCString text(yytext);
-                                          uint i=(uint)text.find('R');
+                                          uint32_t i=(uint32_t)text.find('R');
                                           yyextra->code->codify(text.left(i+1));
                                           startFontClass(yyscanner,"stringliteral");
                                           yyextra->code->codify(QCString(yytext+i+1));
@@ -1563,7 +1558,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           yyextra->code->codify(yytext);
                                           endFontClass(yyscanner);
                                         }
-<MemberCall2,FuncCall>("::")?{ID}(({B}*"<"[^\n\[\](){}<>]*">")?({B}*"::"{B}*{ID})?)* {
+<MemberCall2,FuncCall>("::")?{ID}(({B}*"<"[^\n\[\](){}<>']*">")?({B}*"::"{B}*{ID})?)* {
                                           if (isCastKeyword(yytext))
                                           {
                                             REJECT;
@@ -1712,7 +1707,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           DBG_CTX((stderr,"yyextra->name=%s\n",qPrint(yyextra->name)));
                                           if (index!=-1)
                                           {
-                                            QCString scope = yyextra->name.left((uint)index);
+                                            QCString scope = yyextra->name.left((uint32_t)index);
                                             if (!yyextra->classScope.isEmpty()) scope.prepend((yyextra->classScope+"::"));
                                             const ClassDef *cd=yyextra->symbolResolver.resolveClass(Doxygen::globalScope,scope);
                                             if (cd)
@@ -1852,8 +1847,8 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                         }
 <FuncCall,MemberCall2>("("{B}*("*"{B}*)+{ID}+{B}*")"{B}*)/("."|"->") {
                                           yyextra->code->codify(yytext);
-                                          uint s=0;while (!isId(yytext[s])) s++;
-                                          uint e=(uint)yyleng-1;while (e>1 && !isId(yytext[e])) e--;
+                                          uint32_t s=0;while (!isId(yytext[s])) s++;
+                                          uint32_t e=(uint32_t)yyleng-1;while (e>1 && !isId(yytext[e])) e--;
                                           yyextra->name=((QCString)yytext).mid(s,e-s+1);
                                           BEGIN( MemberCall2 );
                                         }
@@ -2318,7 +2313,7 @@ static void setCurrentDoc(yyscan_t yyscanner,const QCString &anchor)
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (Doxygen::searchIndex)
   {
-    std::lock_guard<std::mutex> lock(g_searchIndexMutex);
+    std::lock_guard<std::mutex> lock(Doxygen::searchIndexMutex);
     if (yyextra->searchCtx)
     {
       yyextra->code->setCurrentDoc(yyextra->searchCtx,yyextra->searchCtx->anchor(),FALSE);
@@ -2335,7 +2330,7 @@ static void addToSearchIndex(yyscan_t yyscanner,const QCString &text)
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (Doxygen::searchIndex)
   {
-    std::lock_guard<std::mutex> lock(g_searchIndexMutex);
+    std::lock_guard<std::mutex> lock(Doxygen::searchIndexMutex);
     yyextra->code->addWord(text,FALSE);
   }
 }
@@ -2507,11 +2502,11 @@ static void codifyLines(yyscan_t yyscanner,const char *text)
 
 static void incrementFlowKeyWordCount(yyscan_t yyscanner)
 {
-  std::lock_guard<std::mutex> lock(g_countFlowKeywordsMutex);
+  std::lock_guard<std::mutex> lock(Doxygen::countFlowKeywordsMutex);
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (yyextra->currentMemberDef && yyextra->currentMemberDef->isFunction())
   {
-    MemberDefMutable *md = toMemberDefMutable(yyextra->currentMemberDef);
+    MemberDefMutable *md = toMemberDefMutable(const_cast<MemberDef*>(yyextra->currentMemberDef));
     if (md)
     {
       md->incrementFlowKeyWordCount();
@@ -2529,7 +2524,7 @@ static void writeMultiLineCodeLink(yyscan_t yyscanner,CodeOutputInterface &ol,
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   bool sourceTooltips = Config_getBool(SOURCE_TOOLTIPS);
-  yyextra->tooltipManager.addTooltip(ol,d);
+  yyextra->tooltipManager.addTooltip(d);
   QCString ref  = d->getReference();
   QCString file = d->getOutputFileBase();
   QCString anchor = d->anchor();
@@ -2794,12 +2789,12 @@ static bool getLinkInScope(yyscan_t yyscanner,
       DBG_CTX((stderr,"found it %s!\n",qPrint(md->qualifiedName())));
       if (yyextra->exampleBlock)
       {
-        std::lock_guard<std::mutex> lock(g_addExampleMutex);
+        std::lock_guard<std::mutex> lock(Doxygen::addExampleMutex);
         QCString anchor;
         anchor.sprintf("a%d",yyextra->anchorCount);
         DBG_CTX((stderr,"addExampleFile(%s,%s,%s)\n",qPrint(anchor),qPrint(yyextra->exampleName),
                                                      qPrint(yyextra->exampleFile)));
-        MemberDefMutable *mdm = toMemberDefMutable(md);
+        MemberDefMutable *mdm = toMemberDefMutable(const_cast<MemberDef*>(md));
         if (mdm && mdm->addExample(anchor,yyextra->exampleName,yyextra->exampleFile))
         {
           ol.writeCodeAnchor(anchor);
@@ -2819,8 +2814,7 @@ static bool getLinkInScope(yyscan_t yyscanner,
         if (yyextra->currentDefinition && yyextra->currentMemberDef &&
             yyextra->insideBody && yyextra->collectXRefs)
         {
-          std::lock_guard<std::mutex> lock(g_docCrossReferenceMutex);
-          addDocCrossReference(toMemberDefMutable(yyextra->currentMemberDef),toMemberDefMutable(md));
+          addDocCrossReference(yyextra->currentMemberDef,md);
         }
         DBG_CTX((stderr,"d->getReference()='%s' d->getOutputBase()='%s' name='%s' member name='%s'\n",qPrint(d->getReference()),qPrint(d->getOutputFileBase()),qPrint(d->name()),qPrint(md->name())));
 
@@ -2997,7 +2991,7 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
     DBG_CTX((stderr,"is linkable class %s\n",qPrint(clName)));
     if (yyextra->exampleBlock)
     {
-      std::lock_guard<std::mutex> lock(g_addExampleMutex);
+      std::lock_guard<std::mutex> lock(Doxygen::addExampleMutex);
       QCString anchor;
       anchor.sprintf("_a%d",yyextra->anchorCount);
       DBG_CTX((stderr,"addExampleClass(%s,%s,%s)\n",qPrint(anchor),qPrint(yyextra->exampleName),
@@ -3020,8 +3014,7 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
       if (d && d->isLinkable() && md->isLinkable() &&
           yyextra->currentMemberDef && yyextra->collectXRefs)
       {
-        std::lock_guard<std::mutex> lock(g_docCrossReferenceMutex);
-        addDocCrossReference(toMemberDefMutable(yyextra->currentMemberDef),toMemberDefMutable(md));
+        addDocCrossReference(yyextra->currentMemberDef,md);
       }
     }
   }
@@ -3057,8 +3050,7 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
           addToSearchIndex(yyscanner,clName);
           if (yyextra->currentMemberDef && yyextra->collectXRefs)
           {
-            std::lock_guard<std::mutex> lock(g_docCrossReferenceMutex);
-            addDocCrossReference(toMemberDefMutable(yyextra->currentMemberDef),toMemberDefMutable(md));
+            addDocCrossReference(yyextra->currentMemberDef,md);
           }
           return;
         }
@@ -3093,12 +3085,12 @@ static bool generateClassMemberLink(yyscan_t yyscanner,
 
   if (yyextra->exampleBlock)
   {
-    std::lock_guard<std::mutex> lock(g_addExampleMutex);
+    std::lock_guard<std::mutex> lock(Doxygen::addExampleMutex);
     QCString anchor;
     anchor.sprintf("a%d",yyextra->anchorCount);
     DBG_CTX((stderr,"addExampleFile(%s,%s,%s)\n",qPrint(anchor),qPrint(yyextra->exampleName),
                                                  qPrint(yyextra->exampleFile)));
-    MemberDefMutable *mdm = toMemberDefMutable(xmd);
+    MemberDefMutable *mdm = toMemberDefMutable(const_cast<MemberDef*>(xmd));
     if (mdm && mdm->addExample(anchor,yyextra->exampleName,yyextra->exampleFile))
     {
       ol.writeCodeAnchor(anchor);
@@ -3127,8 +3119,7 @@ static bool generateClassMemberLink(yyscan_t yyscanner,
       if (yyextra->currentDefinition && yyextra->currentMemberDef &&
           yyextra->insideBody && yyextra->collectXRefs)
       {
-        std::lock_guard<std::mutex> lock(g_docCrossReferenceMutex);
-        addDocCrossReference(toMemberDefMutable(yyextra->currentMemberDef),toMemberDefMutable(xmd));
+        addDocCrossReference(yyextra->currentMemberDef,xmd);
       }
 
       // write the actual link
@@ -3548,8 +3539,7 @@ static void writeObjCMethodCall(yyscan_t yyscanner,ObjCCallCtx *ctx)
                 writeMultiLineCodeLink(yyscanner,*yyextra->code,ctx->method,name);
                 if (yyextra->currentMemberDef && yyextra->collectXRefs)
                 {
-                  std::lock_guard<std::mutex> lock(g_docCrossReferenceMutex);
-                  addDocCrossReference(toMemberDefMutable(yyextra->currentMemberDef),toMemberDefMutable(ctx->method));
+                  addDocCrossReference(yyextra->currentMemberDef,ctx->method);
                 }
               }
               else
@@ -3623,8 +3613,7 @@ static void writeObjCMethodCall(yyscan_t yyscanner,ObjCCallCtx *ctx)
                 writeMultiLineCodeLink(yyscanner,*yyextra->code,ctx->objectVar,object);
                 if (yyextra->currentMemberDef && yyextra->collectXRefs)
                 {
-                  std::lock_guard<std::mutex> lock(g_docCrossReferenceMutex);
-                  addDocCrossReference(toMemberDefMutable(yyextra->currentMemberDef),toMemberDefMutable(ctx->objectVar));
+                  addDocCrossReference(yyextra->currentMemberDef,ctx->objectVar);
                 }
               }
               else if (ctx->objectType &&
@@ -3839,12 +3828,12 @@ static bool isCastKeyword(const char *keyword)
   return kw=="const_cast" || kw=="static_cast" || kw=="dynamic_cast" || kw=="reinterpret_cast";
 }
 
-static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size)
+static int yyread(yyscan_t yyscanner,char *buf,int max_size)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yy_size_t inputPosition = yyextra->inputPosition;
   const char *s = yyextra->inputString + inputPosition;
-  yy_size_t c=0;
+  int c=0;
   while( c < max_size && *s )
   {
     *buf++ = *s++;
@@ -3914,7 +3903,7 @@ CCodeParser::CCodeParser() : p(std::make_unique<CCodeParser::Private>())
 {
   codeYYlex_init_extra(&p->state,&p->yyscanner);
 #ifdef FLEX_DEBUG
-  codeYYset_debug(1,p->yyscanner);
+  codeYYset_debug(Debug::isFlagSet(Debug::Lex_code)?1:0,p->yyscanner);
 #endif
   resetCodeParserState();
 }
@@ -3961,7 +3950,7 @@ void CCodeParser::parseCode(CodeOutputInterface &od,const QCString &className,co
 
   if (s.isEmpty()) return;
 
-  printlex(yy_flex_debug, TRUE, __FILE__, fd ? qPrint(fd->fileName()): !exName.isEmpty() ? qPrint(exName) : NULL);
+  DebugLex debugLex(Debug::Lex_code, __FILE__, fd ? qPrint(fd->fileName()): !exName.isEmpty() ? qPrint(exName) : NULL);
 
   yyextra->code = &od;
   yyextra->inputString   = s.data();
@@ -4047,8 +4036,6 @@ void CCodeParser::parseCode(CodeOutputInterface &od,const QCString &className,co
   }
   // write the tooltips
   yyextra->tooltipManager.writeTooltips(od);
-
-  printlex(yy_flex_debug, FALSE, __FILE__, fd ? qPrint(fd->fileName()): NULL);
 }
 
 #if USE_STATE2STRING

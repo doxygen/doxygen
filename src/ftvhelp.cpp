@@ -36,34 +36,10 @@
 #include "classdef.h"
 #include "util.h"
 #include "resourcemgr.h"
+#include "portable.h"
 
 static int folderId=1;
 
-const char *JAVASCRIPT_LICENSE_TEXT = R"LIC(/*
- @licstart  The following is the entire license notice for the JavaScript code in this file.
-
- The MIT License (MIT)
-
- Copyright (C) 1997-2020 by Dimitri van Heesch
-
- Permission is hereby granted, free of charge, to any person obtaining a copy of this software
- and associated documentation files (the "Software"), to deal in the Software without restriction,
- including without limitation the rights to use, copy, modify, merge, publish, distribute,
- sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
- furnished to do so, subject to the following conditions:
-
- The above copyright notice and this permission notice shall be included in all copies or
- substantial portions of the Software.
-
- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
- BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
- DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
- @licend  The above is the entire license notice for the JavaScript code in this file
-*/
-)LIC";
 
 struct FTVNode;
 using FTVNodePtr     = std::shared_ptr<FTVNode>;
@@ -627,7 +603,7 @@ static bool generateJSTree(NavIndexEntryList &navIndex,TextStream &t,
           fileId+="_dup";
         }
         QCString fileName = htmlOutput+"/"+fileId+".js";
-        std::ofstream f(fileName.str(),std::ofstream::out | std::ofstream::binary);
+        std::ofstream f = Portable::openOutputStream(fileName);
         if (f.is_open())
         {
           TextStream tt(&f);
@@ -661,7 +637,7 @@ static bool generateJSTree(NavIndexEntryList &navIndex,TextStream &t,
 static void generateJSNavTree(const FTVNodes &nodeList)
 {
   QCString htmlOutput = Config_getString(HTML_OUTPUT);
-  std::ofstream f(htmlOutput.str()+"/navtreedata.js",std::ofstream::out | std::ofstream::binary);
+  std::ofstream f = Portable::openOutputStream(htmlOutput+"/navtreedata.js");
   NavIndexEntryList navIndex;
   if (f.is_open())
   {
@@ -713,7 +689,7 @@ static void generateJSNavTree(const FTVNodes &nodeList)
     int subIndex=0;
     int elemCount=0;
     const int maxElemCount=250;
-    std::ofstream tsidx(htmlOutput.str()+"/navtreeindex0.js",std::ofstream::out | std::ofstream::binary);
+    std::ofstream tsidx = Portable::openOutputStream(htmlOutput+"/navtreeindex0.js");
     if (tsidx.is_open())
     {
       t << "var NAVTREEINDEX =\n";
@@ -750,7 +726,7 @@ static void generateJSNavTree(const FTVNodes &nodeList)
           tsidx.close();
           subIndex++;
           QCString fileName = htmlOutput+"/navtreeindex"+QCString().setNum(subIndex)+".js";
-          tsidx.open(fileName.str(),std::ofstream::out | std::ofstream::binary);
+          tsidx = Portable::openOutputStream(fileName);
           if (!tsidx.is_open()) break;
           tsidx << "var NAVTREEINDEX" << subIndex << " =\n";
           tsidx << "{\n";
@@ -791,7 +767,7 @@ void FTVHelp::generateTreeViewScripts()
   // copy resize.js & navtree.css
   auto &mgr = ResourceMgr::instance();
   {
-    std::ofstream f(htmlOutput.str()+"/resize.js",std::ofstream::out | std::ofstream::binary);
+    std::ofstream f = Portable::openOutputStream(htmlOutput+"/resize.js");
     if (f.is_open())
     {
       TextStream t(&f);
@@ -799,7 +775,7 @@ void FTVHelp::generateTreeViewScripts()
     }
   }
   {
-    std::ofstream f(htmlOutput.str()+"/navtree.css",std::ofstream::out | std::ofstream::binary);
+    std::ofstream f = Portable::openOutputStream(htmlOutput+"/navtree.css");
     if (f.is_open())
     {
       TextStream t(&f);

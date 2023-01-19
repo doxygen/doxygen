@@ -37,6 +37,7 @@ typedef yyguts_t *yyscan_t;
 #include "lexcode.h"
 #include "filedef.h"
 #include "message.h"
+#include "debug.h"
 
 #define YY_NEVER_INTERACTIVE 1
 #define YY_NO_INPUT 1
@@ -46,10 +47,10 @@ typedef yyguts_t *yyscan_t;
 
 struct lexcodeYY_state
 {
-     CodeOutputInterface * code;
+     CodeOutputInterface *code;
      CCodeParser ccodeParser;
      const char   *inputString;     //!< the code fragment as text
-     yy_size_t     inputPosition;   //!< read offset during parsing
+     int           inputPosition;   //!< read offset during parsing
      int           inputLines;      //!< number of line in the code fragment
      QCString      fileName;
      int           yyLineNr;        //!< current line number
@@ -74,7 +75,7 @@ struct lexcodeYY_state
      bool          insideCode = FALSE;
      QCString      delimiter;
      QCString      docBlockName;
-     uint          fencedSize = 0;
+     uint32_t      fencedSize = 0;
      bool          nestedComment = false;
 
      bool          exampleBlock;
@@ -100,7 +101,7 @@ static void nextCodeLine(yyscan_t yyscanner);
 static void codifyLines(yyscan_t yyscanner,const QCString &text);
 static void startFontClass(yyscan_t yyscanner,const char *s);
 static int countLines(yyscan_t yyscanner);
-static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
+static int yyread(yyscan_t yyscanner,char *buf,int max_size);
 static void lineCount(yyscan_t yyscanner);
 static void handleCCode(yyscan_t yyscanner);
 
@@ -1110,12 +1111,12 @@ static int countLines(yyscan_t yyscanner)
   return count;
 }
 
-static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size)
+static int yyread(yyscan_t yyscanner,char *buf,int max_size)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yy_size_t inputPosition = yyextra->inputPosition;
+  int inputPosition = yyextra->inputPosition;
   const char *s = yyextra->inputString + inputPosition;
-  yy_size_t c=0;
+  int c=0;
   while( c < max_size && *s )
   {
     *buf++ = *s++;
@@ -1177,7 +1178,7 @@ LexCodeParser::LexCodeParser() : p(std::make_unique<Private>())
 {
   lexcodeYYlex_init_extra(&p->state, &p->yyscanner);
 #ifdef FLEX_DEBUG
-  lexcodeYYset_debug(1,p->yyscanner);
+  lexcodeYYset_debug(Debug::isFlagSet(Debug::Lex_lexcode)?1:0,p->yyscanner);
 #endif
   resetCodeParserState();
 }
@@ -1215,7 +1216,7 @@ void LexCodeParser::parseCode(CodeOutputInterface &codeOutIntf,
 
   if (input.isEmpty()) return;
 
-  printlex(yy_flex_debug, true, __FILE__, fileDef ? qPrint(fileDef->fileName()): NULL);
+  DebugLex debugLex(Debug::Lex_lexcode, __FILE__, fileDef ? qPrint(fileDef->fileName()): NULL);
 
   yyextra->code = &codeOutIntf;
   yyextra->inputString   = input.data();
@@ -1277,8 +1278,6 @@ void LexCodeParser::parseCode(CodeOutputInterface &codeOutIntf,
     delete yyextra->sourceFileDef;
     yyextra->sourceFileDef=0;
   }
-
-  printlex(yy_flex_debug, false, __FILE__, fileDef ? qPrint(fileDef->fileName()): NULL);
 }
 
 //---------------------------------------------------------------------------------

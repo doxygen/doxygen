@@ -85,6 +85,10 @@ class TranslatorArabic : public TranslatorAdapter_1_4_6
     virtual QCString trDetailedDescription()
     { return "وصف تفصيلي"; }
 
+    /*! header that is used when the summary tag is missing inside the details tag */
+    virtual QCString trDetails()
+    { return "التفاصيل"; }
+
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
     { return "توثيق تعريفات النوع الأعضاء"; }
@@ -394,12 +398,6 @@ class TranslatorArabic : public TranslatorAdapter_1_4_6
      */
     virtual QCString trFileDocumentation()
     { return "توثيق الملفات"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all examples.
-     */
-    virtual QCString trExampleDocumentation()
-    { return "توثيق الأمثلة"; }
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()

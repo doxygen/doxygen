@@ -5,6 +5,7 @@
 #include "types.h"
 #include <memory>
 #include <string>
+#include <cstdint>
 
 class CodeOutputInterface;
 class FileDef;
@@ -40,7 +41,7 @@ class ClangTUParser
     /** Looks for \a symbol which should be found at \a line.
      *  returns a clang unique reference to the symbol.
      */
-    std::string lookup(uint line,const char *symbol);
+    std::string lookup(uint32_t line,const char *symbol);
 
     /** writes the syntax highlighted source code for a file
      *  @param[out] ol The output generator list to write to.
@@ -50,20 +51,20 @@ class ClangTUParser
 
   private:
     void detectFunctionBody(const char *s);
-    void writeLineNumber(CodeOutputInterface &ol,const FileDef *fd,uint line,bool writeLineAnchor);
+    void writeLineNumber(CodeOutputInterface &ol,const FileDef *fd,uint32_t line,bool writeLineAnchor);
     void codifyLines(CodeOutputInterface &ol,const FileDef *fd,const char *text,
-                     uint &line,uint &column,const char *fontClass=0);
+                     uint32_t &line,uint32_t &column,const char *fontClass=0);
     void writeMultiLineCodeLink(CodeOutputInterface &ol,
-                                const FileDef *fd,uint &line,uint &column,
+                                const FileDef *fd,uint32_t &line,uint32_t &column,
                                 const Definition *d, const char *text);
     void linkIdentifier(CodeOutputInterface &ol,const FileDef *fd,
-                        uint &line,uint &column,
+                        uint32_t &line,uint32_t &column,
                         const char *text,int tokenIndex);
     void linkMacro(CodeOutputInterface &ol,const FileDef *fd,
-                   uint &line,uint &column,
+                   uint32_t &line,uint32_t &column,
                    const char *text);
     void linkInclude(CodeOutputInterface &ol,const FileDef *fd,
-                   uint &line,uint &column,
+                   uint32_t &line,uint32_t &column,
                    const char *text);
     ClangTUParser(const ClangTUParser &) = delete;
     ClangTUParser &operator=(const ClangTUParser &) = delete;

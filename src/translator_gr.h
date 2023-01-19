@@ -98,6 +98,10 @@ class TranslatorGreek : public TranslatorAdapter_1_9_4
     virtual QCString trDetailedDescription()
     { return "Λεπτομερής Περιγραφή"; }
 
+    /*! header that is used when the summary tag is missing inside the details tag */
+    virtual QCString trDetails()
+    { return "Λεπτομέρειες"; }
+
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
     { return "Τεκμηρίωση Μελών Ορισμών Τύπων"; }
@@ -410,12 +414,6 @@ class TranslatorGreek : public TranslatorAdapter_1_9_4
      */
     virtual QCString trFileDocumentation()
     { return "Τεκμηρίωση Αρχείων"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all examples.
-     */
-    virtual QCString trExampleDocumentation()
-    { return "Τεκμηρίωση Παραδειγμάτων"; }
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
@@ -1815,16 +1813,20 @@ class TranslatorGreek : public TranslatorAdapter_1_9_4
      */
     virtual QCString trDateTime(int year,int month,int day,int dayOfWeek,
                                 int hour,int minutes,int seconds,
-                                bool includeTime)
+                                DateTimeType includeTime)
     {
       static const char *days[]   = { "Δευ","Τρι","Τετ","Πεμ","Παρ","Σαβ","Κυρ" };
       static const char *months[] = { "Ιαν","Φεβ","Μαρ","Απρ","Μαι","Ιουν","Ιουλ","Αυγ","Σεπ","Οκτ","Νοε","Δεκ" };
       QCString sdate;
-      sdate.sprintf("%s %.2d %s %d",days[dayOfWeek-1],day,months[month-1],year);
-      if (includeTime)
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Date)
+      {
+        sdate.sprintf("%s %.2d %s %d",days[dayOfWeek-1],day,months[month-1],year);
+      }
+      if (includeTime == DateTimeType::DateTime) sdate += " ";
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Time)
       {
         QCString stime;
-        stime.sprintf(" %.2d:%.2d:%.2d",hour,minutes,seconds);
+        stime.sprintf("%.2d:%.2d:%.2d",hour,minutes,seconds);
         sdate+=stime;
       }
       return sdate;
@@ -2043,7 +2045,7 @@ class TranslatorGreek : public TranslatorAdapter_1_9_4
     virtual QCString trFunctionAndProc()
     { return "Συναρτήσεις/Διαδικασίες/Διεργασίες"; }
     /** VHDL type */
-    virtual QCString trVhdlType(uint64 type,bool single)
+    virtual QCString trVhdlType(uint64_t type,bool single)
     {
       switch(type)
       {
@@ -2316,6 +2318,29 @@ class TranslatorGreek : public TranslatorAdapter_1_9_4
     virtual QCString trConceptDefinition()
     {
       return "Ορισμός Έννοιας";
+    }
+
+    /*! the compound type as used for the xrefitems */
+    virtual QCString trCompoundType(ClassDef::CompoundType compType, SrcLangExt lang)
+    {
+      QCString result;
+      switch(compType)
+      {
+        case ClassDef::Class:
+          if (lang == SrcLangExt_Fortran) trType(true,true);
+          else result=trClass(true,true);
+          break;
+        case ClassDef::Struct:     result="Δομής"; break;
+        case ClassDef::Union:      result="Ένωσης"; break;
+        case ClassDef::Interface:  result="Διεπαφής"; break;
+        case ClassDef::Protocol:   result="Πρωτοκόλλου"; break;
+        case ClassDef::Category:   result="Κατηγορίας"; break;
+        case ClassDef::Exception:  result="Εξαίρεσης"; break;
+        case ClassDef::Service:    result="Υπηρεσίας"; break;
+        case ClassDef::Singleton:  result="Μονοσύνολου"; break;
+        default: break;
+      }
+      return result;
     }
 };
 
