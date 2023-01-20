@@ -338,6 +338,7 @@ static void           addDefine(yyscan_t yyscanner);
 static void         setFileName(yyscan_t yyscanner,const QCString &name);
 static int               yyread(yyscan_t yyscanner,char *buf,int max_size);
 static Define *       isDefined(yyscan_t yyscanner,const QCString &name);
+static void  determineBlockName(yyscan_t yyscanner);
 
 /* ----------------------------------------------------------------- */
 
@@ -361,11 +362,18 @@ RAWBEGIN  (u|U|L|u8)?R\"[^ \t\(\)\\]{0,16}"("
 RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 
-  // C start comment 
+FORMULA_START  [\\@]("f{"|"f$"|"f["|"f(")
+FORMULA_END    [\\@]("}"|"$"|"]"|")")
+VERBATIM_START [\\@]("verbatim"|"iliteral"|"latexonly"|"htmlonly"|"xmlonly"|"docbookonly"|"rtfonly"|"manonly"|"dot"|"msc"|"startuml"|"code"("{"[^}]*"}")?){BN}+
+VERBATIM_END   [\\@]("endverbatim"|"endiliteral"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endrtfonly"|"endmanonly"|"enddot"|"endmsc"|"enduml"|"endcode")
+LITERAL_BLOCK  {FORMULA_START}|{VERBATIM_START}
+LITERAL_BLOCK_END {FORMULA_END}|{VERBATIM_END}
+
+  // C start comment
 CCS   "/\*"
   // C end comment
 CCE   "*\/"
-  // Cpp comment 
+  // Cpp comment
 CPPC  "/\/"
   // optional characters after import
 ENDIMPORTopt [^\\\n]*
@@ -397,6 +405,7 @@ WSopt [ \t\r]*
 %x      ArgCopyCComment
 %x      CopyCComment
 %x      SkipVerbatim
+%x      SkipCondVerbatim
 %x      SkipCPPComment
 %x      JavaDocVerbatimCode
 %x      RemoveCComment
@@ -417,7 +426,7 @@ WSopt [ \t\r]*
 
 %%
 
-<*>\x06                                 
+<*>\x06
 <*>\x00
 <*>\r
 <*>"??"[=/'()!<>-]                      { // Trigraph
@@ -427,7 +436,7 @@ WSopt [ \t\r]*
                                           yyextra->yyColNr+=(int)yyleng;
                                           yyextra->yyMLines=0;
                                           yyextra->potentialDefine=yytext;
-                                          BEGIN(Command); 
+                                          BEGIN(Command);
                                         }
 <Start>^("%top{"|"%{")                  {
                                           if (getLanguageFromFileName(yyextra->fileName)!=SrcLangExt_Lex) REJECT
@@ -639,7 +648,7 @@ WSopt [ \t\r]*
                                             yyextra->defArgsStr=yytext;
                                             if (def->nargs==-1) // no function macro
                                             {
-                                              QCString result = def->isPredefined && !def->expandAsDefined ? 
+                                              QCString result = def->isPredefined && !def->expandAsDefined ?
                                                 def->definition :
                                                 expandMacro(yyscanner,yyextra->defArgsStr);
                                               outputString(yyscanner,result);
@@ -1009,7 +1018,7 @@ WSopt [ \t\r]*
                                           BEGIN(SkipLine);
                                         }
 <SkipCommand>.
-<SkipLine>[^'"/\n]+                     
+<SkipLine>[^'"/\n]+
 <SkipLine>{CHARLIT}                     { }
 <SkipLine>\"                            {
                                           BEGIN(SkipString);
@@ -1246,8 +1255,30 @@ WSopt [ \t\r]*
                                           outputChar(yyscanner,'/');outputChar(yyscanner,'*');
                                           //yyextra->commentCount++;
                                         }
-<SkipCComment>[\\@][\\@]("f{"|"f$"|"f[""f(") {
-                                          outputArray(yyscanner,yytext,yyleng);
+<SkipCond>[\\@][\\@]                    { }
+<SkipCond>^({B}*"*"+)?{B}{0,3}"~~~"[~]* {
+                                          bool markdownSupport = Config_getBool(MARKDOWN_SUPPORT);
+                                          if (!markdownSupport || !yyextra->isSpecialComment)
+                                          {
+                                            REJECT;
+                                          }
+                                          else
+                                          {
+                                            yyextra->fenceSize=(int)yyleng;
+                                            BEGIN(SkipCondVerbatim);
+                                          }
+                                        }
+<SkipCond>^({B}*"*"+)?{B}{0,3}"```"[`]* {
+                                          bool markdownSupport = Config_getBool(MARKDOWN_SUPPORT);
+                                          if (!markdownSupport || !yyextra->isSpecialComment)
+                                          {
+                                            REJECT;
+                                          }
+                                          else
+                                          {
+                                            yyextra->fenceSize=(int)yyleng;
+                                            BEGIN(SkipCondVerbatim);
+                                          }
                                         }
 <SkipCComment>^({B}*"*"+)?{B}{0,3}"~~~"[~]*   {
                                           bool markdownSupport = Config_getBool(MARKDOWN_SUPPORT);
@@ -1275,25 +1306,14 @@ WSopt [ \t\r]*
                                             BEGIN(SkipVerbatim);
                                           }
                                         }
-<SkipCComment>[\\@][\\@]("verbatim"|"iliteral"|"latexonly"|"htmlonly"|"xmlonly"|"docbookonly"|"rtfonly"|"manonly"|"dot"|"code"("{"[^}]*"}")?){BN}+ {
+<SkipCComment>[\\@]{LITERAL_BLOCK}      { // escaped command
                                           outputArray(yyscanner,yytext,yyleng);
                                           yyextra->yyLineNr+=QCString(yytext).contains('\n');
                                         }
-<SkipCComment>[\\@]("verbatim"|"iliteral"|"latexonly"|"htmlonly"|"xmlonly"|"docbookonly"|"rtfonly"|"manonly"|"dot"|"code"("{"[^}]*"}")?){BN}+      {
+<SkipCComment>{LITERAL_BLOCK}           { // normal block command
                                           outputArray(yyscanner,yytext,yyleng);
                                           yyextra->yyLineNr+=QCString(yytext).contains('\n');
-                                          yyextra->fenceSize=0;
-                                          if (yytext[1]=='f')
-                                          {
-                                            yyextra->blockName="f";
-                                          }
-                                          else
-                                          {
-                                            QCString bn=&yytext[1];
-                                            int i = bn.find('{'); // for \code{.c}
-                                            if (i!=-1) bn=bn.left(i);
-                                            yyextra->blockName=bn.stripWhiteSpace();
-                                          }
+                                          determineBlockName(yyscanner);
                                           BEGIN(SkipVerbatim);
                                         }
 <SkipCond>[\\@][\\@]"cond"[ \t]+        {}// escaped cond command
@@ -1383,10 +1403,18 @@ WSopt [ \t\r]*
                                           BEGIN(SkipCond);
                                         }
 <SkipCond>\n                            { yyextra->yyLineNr++; outputChar(yyscanner,'\n'); }
+<SkipCond>{LITERAL_BLOCK}               {
+                                          auto numNLs = QCString(yytext).contains('\n');
+                                          yyextra->yyLineNr+=numNLs;
+                                          for (int i = 0; i < numNLs; i++) outputChar(yyscanner,'\n');
+                                          determineBlockName(yyscanner);
+                                          BEGIN(SkipCondVerbatim);
+                                        }
+
 <SkipCond>.                             { }
 <SkipCond>[^\/\!*\\@\n]+                { }
-<SkipCond>{CPPC}[/!]                      { yyextra->ccomment=FALSE; }
-<SkipCond>{CCS}[*!]                      { yyextra->ccomment=TRUE; }
+<SkipCond>{CPPC}[/!]                    { yyextra->ccomment=FALSE; }
+<SkipCond>{CCS}[*!]                     { yyextra->ccomment=TRUE; }
 <SkipCond,SkipCComment,SkipCPPComment>[\\@][\\@]"endcond"/[^a-z_A-Z0-9\x80-\xFF] {
                                           if (!yyextra->skip)
                                           {
@@ -1413,15 +1441,37 @@ WSopt [ \t\r]*
                                             BEGIN(yyextra->condCtx);
                                           }
                                         }
-<SkipVerbatim>[\\@]("endverbatim"|"endiliteral"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endrtfonly"|"endmanonly"|"enddot"|"endcode"|"f$"|"f]"|"f}""f}") { /* end of verbatim block */
+<SkipCondVerbatim>{LITERAL_BLOCK_END}   { /* end of verbatim block */
+                                          if (yytext[1]=='f' && yyextra->blockName==&yytext[2])
+                                          {
+                                            BEGIN(SkipCond);
+                                          }
+                                          else if (&yytext[4]==yyextra->blockName)
+                                          {
+                                            BEGIN(SkipCond);
+                                          }
+                                        }
+<SkipVerbatim>{LITERAL_BLOCK_END}       { /* end of verbatim block */
                                           outputArray(yyscanner,yytext,yyleng);
-                                          if (yytext[1]=='f' && yyextra->blockName=="f")
+                                          if (yytext[1]=='f' && yyextra->blockName==&yytext[2])
                                           {
                                             BEGIN(SkipCComment);
                                           }
                                           else if (&yytext[4]==yyextra->blockName)
                                           {
                                             BEGIN(SkipCComment);
+                                          }
+                                        }
+<SkipCondVerbatim>^({B}*"*"+)?{B}{0,3}"~~~"[~]*                 {
+                                          if (yyextra->fenceSize==(yy_size_t)yyleng)
+                                          {
+                                            BEGIN(SkipCond);
+                                          }
+                                        }
+<SkipCondVerbatim>^({B}*"*"+)?{B}{0,3}"```"[`]*                 {
+                                          if (yyextra->fenceSize==(yy_size_t)yyleng)
+                                          {
+                                            BEGIN(SkipCond);
                                           }
                                         }
 <SkipVerbatim>^({B}*"*"+)?{B}{0,3}"~~~"[~]*                 {
@@ -1438,7 +1488,8 @@ WSopt [ \t\r]*
                                             BEGIN(SkipCComment);
                                           }
                                         }
-<SkipVerbatim>{CCE}|{CCS}                       {
+<SkipCondVerbatim>{CCE}|{CCS}           { }
+<SkipVerbatim>{CCE}|{CCS}               {
                                           outputArray(yyscanner,yytext,yyleng);
                                         }
 <JavaDocVerbatimCode>"{"                {
@@ -1477,14 +1528,16 @@ WSopt [ \t\r]*
 <JavaDocVerbatimCode>.                  { /* any other character */
                                           outputArray(yyscanner,yytext,(int)yyleng);
                                         }
+<SkipCondVerbatim>[^{*\\@\x06~`\n\/]+   { }
 <SkipCComment,SkipVerbatim>[^{*\\@\x06~`\n\/]+ {
                                           outputArray(yyscanner,yytext,yyleng);
                                         }
-<SkipCComment,SkipVerbatim>\n           {
+<SkipCComment,SkipVerbatim,SkipCondVerbatim>\n           {
                                           yyextra->yyLineNr++;
                                           outputChar(yyscanner,'\n');
                                         }
-<SkipCComment,SkipVerbatim>.            {
+<SkipCondVerbatim>.                     { }
+<SkipCComment,SkipVerbatim>.            { 
                                           outputChar(yyscanner,*yytext);
                                         }
 <CopyCComment>[^*a-z_A-Z\x80-\xFF\n]*[^*a-z_A-Z\x80-\xFF\\\n] {
@@ -1518,11 +1571,11 @@ WSopt [ \t\r]*
                                           }
                                         }
 <RemoveCComment>{CCE}                   { BEGIN(yyextra->lastCContext); }
-<RemoveCComment>{CPPC}                  
+<RemoveCComment>{CPPC}
 <RemoveCComment>{CCS}
 <RemoveCComment>[^*\x06\n]+
 <RemoveCComment>\n                      { yyextra->yyLineNr++; outputChar(yyscanner,'\n'); }
-<RemoveCComment>.                       
+<RemoveCComment>.
 <SkipCPPComment>[^\n\/\\@]+             {
                                           outputArray(yyscanner,yytext,yyleng);
                                         }
@@ -1797,7 +1850,7 @@ WSopt [ \t\r]*
                                         }
 <*>{CCS}/{CCE}                          |
 <*>{CCS}[*!]?                           {
-                                          if (YY_START==SkipVerbatim || YY_START==SkipCond || YY_START==IDLquote)
+                                          if (YY_START==SkipVerbatim || YY_START == SkipCondVerbatim || YY_START==SkipCond || YY_START==IDLquote)
                                           {
                                             REJECT;
                                           }
@@ -1819,7 +1872,7 @@ WSopt [ \t\r]*
                                           }
                                         }
 <*>{CPPC}[/!]?                          {
-                                          if (YY_START==SkipVerbatim || YY_START==SkipCond || getLanguageFromFileName(yyextra->fileName)==SrcLangExt_Fortran || YY_START==IDLquote)
+                                          if (YY_START==SkipVerbatim || YY_START == SkipCondVerbatim || YY_START==SkipCond || getLanguageFromFileName(yyextra->fileName)==SrcLangExt_Fortran || YY_START==IDLquote)
                                           {
                                             REJECT;
                                           }
@@ -2199,7 +2252,7 @@ static void processConcatOperators(QCString &expr)
       // remove the ## operator and the surrounding whitespace
       e=e.substr(0,n)+e.substr(n+l);
       int k=static_cast<int>(n)-1;
-      while (k>=0 && isId(e[k])) k--; 
+      while (k>=0 && isId(e[k])) k--;
       if (k>0 && e[k]=='-' && e[k-1]=='@')
       {
         // remove no-rescan marker before ID
@@ -3154,6 +3207,39 @@ static inline void extraSpacing(yyscan_t yyscanner)
   }
 }
 
+static void determineBlockName(yyscan_t yyscanner)
+{
+  struct yyguts_t * yyg = (struct yyguts_t*)yyscanner;
+  yyextra->fenceSize=0;
+  char c=0;
+  if (yytext[1]=='f' && ((c=yytext[2])=='[' || c=='{' || c=='(' || c=='$'))
+  {
+    switch (c)
+    {
+      case '[': yyextra->blockName="]"; break;
+      case '{': yyextra->blockName="}"; break;
+      case '(': yyextra->blockName=")"; break;
+      case '$': yyextra->blockName="$"; break;
+      default: break;
+    }
+    yyextra->blockName=yyextra->blockName.stripWhiteSpace();
+  }
+  else
+  {
+    QCString bn=&yytext[1];
+    if (bn=="startuml")
+    {
+      yyextra->blockName="uml";
+    }
+    else
+    {
+      int i = bn.find('{'); // for \code{.c}
+      if (i!=-1) bn=bn.left(i);
+      yyextra->blockName=bn.stripWhiteSpace();
+    }
+  }
+}
+
 static QCString determineAbsoluteIncludeName(const QCString &curFile,const QCString &incFileName)
 {
   bool searchIncludes = Config_getBool(SEARCH_INCLUDES);
@@ -3534,8 +3620,8 @@ static void initPredefined(yyscan_t yyscanner,const QCString &fileName)
       continue; // no define name
     }
 
-    if (i_obrace<i_equals && i_cbrace<i_equals && 
-        i_obrace!=std::string::npos && i_cbrace!=std::string::npos && 
+    if (i_obrace<i_equals && i_cbrace<i_equals &&
+        i_obrace!=std::string::npos && i_cbrace!=std::string::npos &&
         i_obrace<i_cbrace
        ) // predefined function macro definition
     {
@@ -3563,7 +3649,7 @@ static void initPredefined(yyscan_t yyscanner,const QCString &fileName)
       reg::Iterator re_it(in,reId);
       reg::Iterator re_end;
       size_t i=0;
-      // substitute all occurrences of formal arguments by their 
+      // substitute all occurrences of formal arguments by their
       // corresponding markers
       for (; re_it!=re_end; ++re_it)
       {
@@ -3731,7 +3817,7 @@ void Preprocessor::processFile(const QCString &fileName,BufStr &input,BufStr &ou
     int line=1;
     Debug::print(Debug::Preprocessor,0,"---------\n");
     if (!Debug::isFlagSet(Debug::NoLineNo)) Debug::print(Debug::Preprocessor,0,"00001 ");
-    while (orgPos<newPos) 
+    while (orgPos<newPos)
     {
       putchar(*orgPos);
       if (*orgPos=='\n' && !Debug::isFlagSet(Debug::NoLineNo)) Debug::print(Debug::Preprocessor,0,"%05d ",++line);
