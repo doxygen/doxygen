@@ -338,6 +338,7 @@ static void           addDefine(yyscan_t yyscanner);
 static void         setFileName(yyscan_t yyscanner,const QCString &name);
 static int               yyread(yyscan_t yyscanner,char *buf,int max_size);
 static Define *       isDefined(yyscan_t yyscanner,const QCString &name);
+static void  determineBlockName(yyscan_t yyscanner);
 
 /* ----------------------------------------------------------------- */
 
@@ -360,6 +361,13 @@ BN      [ \t\r\n]
 RAWBEGIN  (u|U|L|u8)?R\"[^ \t\(\)\\]{0,16}"("
 RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
+
+FORMULA_START  [\\@]("f{"|"f$"|"f["|"f(")
+FORMULA_END    [\\@]("}"|"$"|"]"|")")
+VERBATIM_START [\\@]("verbatim"|"iliteral"|"latexonly"|"htmlonly"|"xmlonly"|"docbookonly"|"rtfonly"|"manonly"|"dot"|"msc"|"startuml"|"code"("{"[^}]*"}")?){BN}+
+VERBATIM_END   [\\@]("endverbatim"|"endiliteral"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endrtfonly"|"endmanonly"|"enddot"|"endmsc"|"enduml"|"endcode")
+LITERAL_BLOCK  {FORMULA_START}|{VERBATIM_START}
+LITERAL_BLOCK_END {FORMULA_END}|{VERBATIM_END}
 
   // C start comment
 CCS   "/\*"
@@ -1247,9 +1255,6 @@ WSopt [ \t\r]*
                                           outputChar(yyscanner,'/');outputChar(yyscanner,'*');
                                           //yyextra->commentCount++;
                                         }
-<SkipCComment>[\\@][\\@]("f{"|"f$"|"f["|"f(") {
-                                          outputArray(yyscanner,yytext,yyleng);
-                                        }
 <SkipCond>[\\@][\\@]                    { }
 <SkipCond>^({B}*"*"+)?{B}{0,3}"~~~"[~]* {
                                           bool markdownSupport = Config_getBool(MARKDOWN_SUPPORT);
@@ -1301,49 +1306,14 @@ WSopt [ \t\r]*
                                             BEGIN(SkipVerbatim);
                                           }
                                         }
-<SkipCComment>[\\@][\\@]("verbatim"|"iliteral"|"latexonly"|"htmlonly"|"xmlonly"|"docbookonly"|"rtfonly"|"manonly"|"dot"|"msc"|"startuml"|"code"("{"[^}]*"}")?){BN}+ {
+<SkipCComment>[\\@]{LITERAL_BLOCK}      { // escaped command
                                           outputArray(yyscanner,yytext,yyleng);
                                           yyextra->yyLineNr+=QCString(yytext).contains('\n');
                                         }
-<SkipCComment>[\\@]("f{"|"f$"|"f["|"f(") |
-<SkipCComment>[\\@]("verbatim"|"iliteral"|"latexonly"|"htmlonly"|"xmlonly"|"docbookonly"|"rtfonly"|"manonly"|"dot"|"msc"|"startuml"|"code"("{"[^}]*"}")?){BN}+      {
+<SkipCComment>{LITERAL_BLOCK}           { // normal block command
                                           outputArray(yyscanner,yytext,yyleng);
                                           yyextra->yyLineNr+=QCString(yytext).contains('\n');
-                                          yyextra->fenceSize=0;
-                                          if (yytext[1]=='f')
-                                          {
-				            if (yytext[2]=='[')
-				            {
-				              yyextra->blockName="]";
-				            }
-				            else if (yytext[2]=='{')
-				            {
-				              yyextra->blockName="}";
-				            }
-				            else if (yytext[2]=='(')
-				            {
-				              yyextra->blockName=")";
-				            }
-                                            else
-                                            {
-				              yyextra->blockName="$";
-                                            }
-                                            yyextra->blockName=yyextra->blockName.stripWhiteSpace();
-                                          }
-                                          else
-                                          {
-                                            QCString bn=&yytext[1];
-                                            if (bn=="startuml")
-                                            {
-                                              yyextra->blockName="uml";
-                                            }
-                                            else
-                                            {
-                                              int i = bn.find('{'); // for \code{.c}
-                                              if (i!=-1) bn=bn.left(i);
-                                              yyextra->blockName=bn.stripWhiteSpace();
-                                            }
-                                          }
+                                          determineBlockName(yyscanner);
                                           BEGIN(SkipVerbatim);
                                         }
 <SkipCond>[\\@][\\@]"cond"[ \t]+        {}// escaped cond command
@@ -1433,45 +1403,11 @@ WSopt [ \t\r]*
                                           BEGIN(SkipCond);
                                         }
 <SkipCond>\n                            { yyextra->yyLineNr++; outputChar(yyscanner,'\n'); }
-<SkipCond>[\\@]("f{"|"f$"|"f["|"f(")    |
-<SkipCond>[\\@]("verbatim"|"iliteral"|"latexonly"|"htmlonly"|"xmlonly"|"docbookonly"|"rtfonly"|"manonly"|"dot"|"msc"|"startuml"|"code"("{"[^}]*"}")?){BN}+ {
-                                          yyextra->yyLineNr+=QCString(yytext).contains('\n');
-                                          for (int i = 0; i < QCString(yytext).contains('\n'); i++) outputChar(yyscanner,'\n');
-                                          yyextra->fenceSize=0;
-                                          if (yytext[1]=='f')
-                                          {
-				            if (yytext[2]=='[')
-				            {
-				              yyextra->blockName="]";
-				            }
-				            else if (yytext[2]=='{')
-				            {
-				              yyextra->blockName="}";
-				            }
-				            else if (yytext[2]=='(')
-				            {
-				              yyextra->blockName=")";
-				            }
-                                            else
-                                            {
-				              yyextra->blockName="$";
-                                            }
-                                            yyextra->blockName=yyextra->blockName.stripWhiteSpace();
-                                          }
-                                          else
-                                          {
-                                            QCString bn=&yytext[1];
-                                            if (bn=="startuml")
-                                            {
-                                              yyextra->blockName="uml";
-                                            }
-                                            else
-                                            {
-                                              int i = bn.find('{'); // for \code{.c}
-                                              if (i!=-1) bn=bn.left(i);
-                                              yyextra->blockName=bn.stripWhiteSpace();
-                                            }
-                                          }
+<SkipCond>{LITERAL_BLOCK}               {
+                                          auto numNLs = QCString(yytext).contains('\n');
+                                          yyextra->yyLineNr+=numNLs;
+                                          for (int i = 0; i < numNLs; i++) outputChar(yyscanner,'\n');
+                                          determineBlockName(yyscanner);
                                           BEGIN(SkipCondVerbatim);
                                         }
 
@@ -1505,7 +1441,7 @@ WSopt [ \t\r]*
                                             BEGIN(yyextra->condCtx);
                                           }
                                         }
-<SkipCondVerbatim>[\\@]("endverbatim"|"endiliteral"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endrtfonly"|"endmanonly"|"enddot"|"endmsc"|"enduml"|"endcode"|"f$"|"f]"|"f}"|"f)") { /* end of verbatim block */
+<SkipCondVerbatim>{LITERAL_BLOCK_END}   { /* end of verbatim block */
                                           if (yytext[1]=='f' && yyextra->blockName==&yytext[2])
                                           {
                                             BEGIN(SkipCond);
@@ -1515,7 +1451,7 @@ WSopt [ \t\r]*
                                             BEGIN(SkipCond);
                                           }
                                         }
-<SkipVerbatim>[\\@]("endverbatim"|"endiliteral"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endrtfonly"|"endmanonly"|"enddot"|"endmsc"|"enduml"|"endcode"|"f$"|"f]"|"f}"|"f)") { /* end of verbatim block */
+<SkipVerbatim>{LITERAL_BLOCK_END}       { /* end of verbatim block */
                                           outputArray(yyscanner,yytext,yyleng);
                                           if (yytext[1]=='f' && yyextra->blockName==&yytext[2])
                                           {
@@ -3268,6 +3204,39 @@ static inline void extraSpacing(yyscan_t yyscanner)
       yyextra->defExtraSpacing+='\t';
     else
       yyextra->defExtraSpacing+=' ';
+  }
+}
+
+static void determineBlockName(yyscan_t yyscanner)
+{
+  struct yyguts_t * yyg = (struct yyguts_t*)yyscanner;
+  yyextra->fenceSize=0;
+  char c=0;
+  if (yytext[1]=='f' && ((c=yytext[2])=='[' || c=='{' || c=='(' || c=='$'))
+  {
+    switch (c)
+    {
+      case '[': yyextra->blockName="]"; break;
+      case '{': yyextra->blockName="}"; break;
+      case '(': yyextra->blockName=")"; break;
+      case '$': yyextra->blockName="$"; break;
+      default: break;
+    }
+    yyextra->blockName=yyextra->blockName.stripWhiteSpace();
+  }
+  else
+  {
+    QCString bn=&yytext[1];
+    if (bn=="startuml")
+    {
+      yyextra->blockName="uml";
+    }
+    else
+    {
+      int i = bn.find('{'); // for \code{.c}
+      if (i!=-1) bn=bn.left(i);
+      yyextra->blockName=bn.stripWhiteSpace();
+    }
   }
 }
 
