@@ -1599,7 +1599,7 @@ int DocParser::internalValidatingParseDoc(DocNodeVariant *parent,DocNodeList &ch
 
   if (doc.isEmpty()) return retval;
 
-  tokenizer.init(doc.data(),context.fileName,context.markdownSupport);
+  tokenizer.init(doc.data(),context.fileName,context.markdownSupport,context.insideHtmlLink);
 
   // first parse any number of paragraphs
   bool isFirst=TRUE;
