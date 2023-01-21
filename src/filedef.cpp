@@ -1525,7 +1525,7 @@ bool FileDefImpl::isDocumentationFile() const
 void FileDefImpl::acquireFileVersion()
 {
   QCString vercmd = Config_getString(FILE_VERSION_FILTER);
-  if (!vercmd.isEmpty() && !m_filePath.isEmpty() &&
+  if (!vercmd.isEmpty() && !m_filePath.isEmpty() && !isReference() &&
       m_filePath!="generated" && m_filePath!="graph_legend.dox")
   {
     msg("Version of %s : ",qPrint(m_filePath));
