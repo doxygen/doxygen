@@ -3248,8 +3248,10 @@ void DocPara::handleShowDate(DocNodeVariant *thisVariant)
   parser()->tokenizer.setStateShowDate();
   tok = parser()->tokenizer.lex();
 
-  QCString specDate = parser()->context.token->name.stripWhiteSpace();
-  if (!specDate.isEmpty() && tok!=TK_WORD)
+  QCString specDateRaw = tok==TK_WORD ? parser()->context.token->name : QCString();
+  QCString specDate    = specDateRaw.stripWhiteSpace();
+  bool specDateOnlyWS  = !specDateRaw.isEmpty() && specDate.isEmpty();
+  if (!specDate.isEmpty() && tok!=TK_WORD && tok!=0)
   {
     warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"invalid <date_time> argument for command '\\showdate'");
     parser()->tokenizer.setStatePara();
@@ -3281,8 +3283,13 @@ void DocPara::handleShowDate(DocNodeVariant *thisVariant)
   }
 
   children().append<DocWord>(parser(),thisVariant,dateTimeStr);
+  if (specDateOnlyWS) // specDate is only whitespace
+  {
+    children().append<DocWhiteSpace>(parser(),thisVariant," ");
+  }
   parser()->tokenizer.setStatePara();
 }
+
 void DocPara::handleILine(DocNodeVariant *)
 {
   AUTO_TRACE();
