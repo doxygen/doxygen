@@ -10812,13 +10812,14 @@ void readConfiguration(int argc, char **argv)
       case 't':
         {
 #if ENABLE_TRACING
-          if (optInd+1>=argc)
+          if (optInd+1>=argc || argv[optInd+1][0] == '-')
           {
             traceName="trace.txt";
           }
           else
           {
             traceName=argv[optInd+1];
+            optInd++;
           }
 #else
           err("support for option \"-t\" has not been compiled in (use a debug build or a release build with tracing enabled).\n");
