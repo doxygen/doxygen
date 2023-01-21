@@ -363,7 +363,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 
 FORMULA_START  [\\@]("f{"|"f$"|"f["|"f(")
-FORMULA_END    [\\@]("}"|"$"|"]"|")")
+FORMULA_END    [\\@]("f}"|"f$"|"f]"|"f)")
 VERBATIM_START [\\@]("verbatim"|"iliteral"|"latexonly"|"htmlonly"|"xmlonly"|"docbookonly"|"rtfonly"|"manonly"|"dot"|"msc"|"startuml"|"code"("{"[^}]*"}")?){BN}+
 VERBATIM_END   [\\@]("endverbatim"|"endiliteral"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endrtfonly"|"endmanonly"|"enddot"|"endmsc"|"enduml"|"endcode")
 LITERAL_BLOCK  {FORMULA_START}|{VERBATIM_START}
