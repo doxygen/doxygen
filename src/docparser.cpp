@@ -1990,7 +1990,8 @@ IDocNodeASTPtr validatingParseDoc(IDocParser &parserIntf,
     inpStr+='\n';
   }
   //printf("processCopyDoc(in='%s' out='%s')\n",input,qPrint(inpStr));
-  parser->tokenizer.init(inpStr.data(),parser->context.fileName,markdownSupport);
+  parser->tokenizer.init(inpStr.data(),parser->context.fileName,
+                         parser->context.markdownSupport,parser->context.insideHtmlLink);
 
   // build abstract syntax tree
   auto ast = std::make_unique<DocNodeAST>(DocRoot(parser,md!=0,singleLine));
@@ -2054,6 +2055,7 @@ IDocNodeASTPtr validatingParseText(IDocParser &parserIntf,const QCString &input)
   parser->context.retvalsFound.clear();
   parser->context.paramsFound.clear();
   parser->context.searchUrl="";
+  parser->context.markdownSupport = Config_getBool(MARKDOWN_SUPPORT);
 
 
   auto ast = std::make_unique<DocNodeAST>(DocText(parser));
@@ -2061,7 +2063,8 @@ IDocNodeASTPtr validatingParseText(IDocParser &parserIntf,const QCString &input)
   if (!input.isEmpty())
   {
     parser->tokenizer.setLineNr(1);
-    parser->tokenizer.init(input.data(),parser->context.fileName,Config_getBool(MARKDOWN_SUPPORT));
+    parser->tokenizer.init(input.data(),parser->context.fileName,
+                           parser->context.markdownSupport,parser->context.insideHtmlLink);
 
     // build abstract syntax tree
     std::get<DocText>(ast->root).parse(&ast->root);
