@@ -1796,6 +1796,7 @@ void DocTokenizer::setStatePara()
 {
   yyscan_t yyscanner = p->yyscanner;
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->insideHtmlLink = false;
   BEGIN(St_Para);
 }
 
