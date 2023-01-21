@@ -80,7 +80,8 @@ struct doctokenizerYY_state
   QCString fileName;
   bool insidePre = false;
   int sharpCount=0;
-  bool markdownSupport=TRUE;
+  bool markdownSupport=true;
+  bool insideHtmlLink=false;
 
   // context for section finding phase
   const Definition  *definition = 0;
@@ -408,6 +409,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
 %%
 <St_Para>\r            /* skip carriage return */
 <St_Para>^{LISTITEM}   { /* list item */
+                         if (yyextra->insideHtmlLink) REJECT;
                          lineCount(yytext,yyleng);
                          QCString text(yytext);
                          uint32_t dashPos = static_cast<uint32_t>(text.findRev('-'));
@@ -418,7 +420,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          return TK_LISTITEM;
                        }
 <St_Para>^{MLISTITEM}  { /* list item */
-                         if (!yyextra->markdownSupport || yyextra->insidePre)
+                         if (yyextra->insideHtmlLink || !yyextra->markdownSupport || yyextra->insidePre)
                          {
                            REJECT;
                          }
@@ -438,7 +440,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          }
                        }
 <St_Para>^{OLISTITEM}  { /* numbered list item */
-                         if (!yyextra->markdownSupport || yyextra->insidePre)
+                         if (yyextra->insideHtmlLink || !yyextra->markdownSupport || yyextra->insidePre)
                          {
                            REJECT;
                          }
@@ -463,6 +465,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          }
                        }
 <St_Para>{BLANK}*(\n|"\\ilinebr"){LISTITEM}     { /* list item on next line */
+                         if (yyextra->insideHtmlLink) REJECT;
                          lineCount(yytext,yyleng);
                          QCString text=extractPartAfterNewLine(QCString(yytext));
                          uint32_t dashPos = static_cast<uint32_t>(text.findRev('-'));
@@ -473,7 +476,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          return TK_LISTITEM;
                        }
 <St_Para>{BLANK}*(\n|"\\ilinebr"){MLISTITEM}     { /* list item on next line */
-                         if (!yyextra->markdownSupport || yyextra->insidePre)
+                         if (yyextra->insideHtmlLink || !yyextra->markdownSupport || yyextra->insidePre)
                          {
                            REJECT;
                          }
@@ -493,7 +496,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          }
                        }
 <St_Para>{BLANK}*(\n|"\\ilinebr"){OLISTITEM}     { /* list item on next line */
-                         if (!yyextra->markdownSupport || yyextra->insidePre)
+                         if (yyextra->insideHtmlLink || !yyextra->markdownSupport || yyextra->insidePre)
                          {
                            REJECT;
                          }
@@ -519,12 +522,14 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          }
                        }
 <St_Para>^{ENDLIST}       { /* end list */
+                         if (yyextra->insideHtmlLink) REJECT;
                          lineCount(yytext,yyleng);
                          size_t dotPos = static_cast<size_t>(QCString(yytext).findRev('.'));
                          yyextra->token->indent     = computeIndent(yytext,dotPos);
                          return TK_ENDLIST;
                        }
 <St_Para>{BLANK}*(\n|"\\ilinebr"){ENDLIST}      { /* end list on next line */
+                         if (yyextra->insideHtmlLink) REJECT;
                          lineCount(yytext,yyleng);
                          QCString text=extractPartAfterNewLine(QCString(yytext));
                          size_t dotPos = static_cast<size_t>(text.findRev('.'));
@@ -1758,7 +1763,7 @@ void DocTokenizer::findSections(const QCString &input,const Definition *d,
   doctokenizerYYlex(yyscanner);
 }
 
-void DocTokenizer::init(const char *input,const QCString &fileName,bool markdownSupport)
+void DocTokenizer::init(const char *input,const QCString &fileName,bool markdownSupport, bool insideHtmlLink)
 {
   yyscan_t yyscanner = p->yyscanner;
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
@@ -1768,6 +1773,7 @@ void DocTokenizer::init(const char *input,const QCString &fileName,bool markdown
   yyextra->fileName    = fileName;
   yyextra->insidePre   = FALSE;
   yyextra->markdownSupport = markdownSupport;
+  yyextra->insideHtmlLink = insideHtmlLink;
   BEGIN(St_Para);
 }
 
@@ -1790,6 +1796,7 @@ void DocTokenizer::setStatePara()
 {
   yyscan_t yyscanner = p->yyscanner;
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->insideHtmlLink = false;
   BEGIN(St_Para);
 }
 
