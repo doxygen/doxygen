@@ -296,11 +296,11 @@ QCString Markdown::isBlockCommand(const char *data,int offset,int size)
   {
     return openBracket ? QCString("}") : "end"+blockName;
   };
-  static const auto getEndUml     = [](const std::string &blockName,bool,char) -> QCString
+  static const auto getEndUml     = [](const std::string &/* blockName */,bool,char) -> QCString
   {
     return "enduml";
   };
-  static const auto getEndFormula = [](const std::string &blockName,bool,char nextChar) -> QCString
+  static const auto getEndFormula = [](const std::string &/* blockName */,bool,char nextChar) -> QCString
   {
     switch (nextChar)
     {
@@ -2678,7 +2678,7 @@ int Markdown::writeCodeBlock(const char *data,int size,int refIndent)
 // start searching for the end of the line start at offset \a i
 // keeping track of possible blocks that need to be skipped.
 void Markdown::findEndOfLine(const char *data,int size,
-                          int &pi,int&i,int &end)
+                          int &/* pi */,int&i,int &end)
 {
   AUTO_TRACE("data='{}' size={}",Trace::trunc(data),size);
   // find end of the line
@@ -2748,7 +2748,8 @@ void Markdown::findEndOfLine(const char *data,int size,
     }
   }
   if (j>0) end+=j-1;
-  AUTO_TRACE_EXIT("pi={} i={} end={}",pi,i,end);
+  //AUTO_TRACE_EXIT("pi={} i={} end={}",pi,i,end);
+  AUTO_TRACE_EXIT("i={} end={}",i,end);
 }
 
 void Markdown::writeFencedCodeBlock(const char *data,const char *lng,

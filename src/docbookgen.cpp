@@ -1047,7 +1047,7 @@ DB_GEN_C
   m_simpleTable = true;
 }
 
-void DocbookGenerator::endMemberDocSimple(bool isEnum)
+void DocbookGenerator::endMemberDocSimple(bool /* isEnum */)
 {
 DB_GEN_C
   m_t << "    </tbody>\n";

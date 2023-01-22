@@ -1215,7 +1215,7 @@ class TranslatorHungarian : public TranslatorAdapter_1_8_15
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trClass(bool first_capital, bool singular)
+    virtual QCString trClass(bool first_capital, bool /* singular */)
     {
       QCString result((first_capital ? "Osztály" : "osztály"));
       //if (!singular)  result+="ok";

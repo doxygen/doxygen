@@ -1569,7 +1569,7 @@ void PythonCodeParser::resetCodeParserState()
 }
 
 void PythonCodeParser::parseCode(CodeOutputInterface &codeOutIntf,
-    const QCString &scopeName,
+    const QCString &/* scopeName */,
     const QCString &input,
     SrcLangExt /*lang*/,
     bool isExampleBlock,
@@ -1578,8 +1578,8 @@ void PythonCodeParser::parseCode(CodeOutputInterface &codeOutIntf,
     int startLine,
     int endLine,
     bool inlineFragment,
-    const MemberDef *memberDef,
-    bool showLineNumbers,
+    const MemberDef * /* memberDef */,
+    bool /* showLineNumbers */,
     const Definition *searchCtx,
     bool collectXRefs
     )

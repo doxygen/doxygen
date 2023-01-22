@@ -1110,7 +1110,7 @@ void FileDefImpl::writeSourceHeader(OutputList &ol)
   }
 }
 
-void FileDefImpl::writeSourceBody(OutputList &ol,ClangTUParser *clangParser)
+void FileDefImpl::writeSourceBody(OutputList &ol,[[maybe_unused]] ClangTUParser *clangParser)
 {
   bool filterSourceFiles = Config_getBool(FILTER_SOURCE_FILES);
   DevNullCodeDocInterface devNullIntf;
@@ -1170,7 +1170,7 @@ void FileDefImpl::writeSourceFooter(OutputList &ol)
   ol.enableAll();
 }
 
-void FileDefImpl::parseSource(ClangTUParser *clangParser)
+void FileDefImpl::parseSource([[maybe_unused]] ClangTUParser *clangParser)
 {
   bool filterSourceFiles = Config_getBool(FILTER_SOURCE_FILES);
   DevNullCodeDocInterface devNullIntf;

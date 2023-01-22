@@ -2244,7 +2244,7 @@ void HtmlDocVisitor::writeDiaFile(const QCString &fileName, const QCString &relP
 }
 
 void HtmlDocVisitor::writePlantUMLFile(const QCString &fileName, const QCString &relPath,
-                                       const QCString &,const QCString &srcFile,int srcLine)
+                                       const QCString &,const QCString &/* srcFile */,int /* srcLine */)
 {
   QCString baseName=fileName;
   int i;

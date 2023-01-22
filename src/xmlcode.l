@@ -414,7 +414,7 @@ void XMLCodeParser::resetCodeParserState()
 }
 
 void XMLCodeParser::parseCode(CodeOutputInterface &codeOutIntf,
-               const QCString &scopeName,
+               const QCString &/* scopeName */,
                const QCString &input,
                SrcLangExt,
                bool isExampleBlock,
@@ -423,10 +423,10 @@ void XMLCodeParser::parseCode(CodeOutputInterface &codeOutIntf,
                int startLine,
                int endLine,
                bool inlineFragment,
-               const MemberDef *memberDef,
-               bool showLineNumbers,
+               const MemberDef * /* memberDef */,
+               bool /* showLineNumbers */,
                const Definition *searchCtx,
-               bool collectXRefs
+               bool/* collectXRefs */ 
               )
 {
   yyscan_t yyscanner = p->yyscanner;
