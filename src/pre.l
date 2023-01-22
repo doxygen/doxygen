@@ -366,6 +366,7 @@ FORMULA_START  [\\@]("f{"|"f$"|"f["|"f(")
 FORMULA_END    [\\@]("f}"|"f$"|"f]"|"f)")
 VERBATIM_START [\\@]("verbatim"|"iliteral"|"latexonly"|"htmlonly"|"xmlonly"|"docbookonly"|"rtfonly"|"manonly"|"dot"|"msc"|"startuml"|"code"("{"[^}]*"}")?){BN}+
 VERBATIM_END   [\\@]("endverbatim"|"endiliteral"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endrtfonly"|"endmanonly"|"enddot"|"endmsc"|"enduml"|"endcode")
+VERBATIM_LINE  [\\@]"noop"{B}+
 LITERAL_BLOCK  {FORMULA_START}|{VERBATIM_START}
 LITERAL_BLOCK_END {FORMULA_END}|{VERBATIM_END}
 
@@ -1306,9 +1307,13 @@ WSopt [ \t\r]*
                                             BEGIN(SkipVerbatim);
                                           }
                                         }
+<SkipCComment>[\\@]{VERBATIM_LINE}      |
 <SkipCComment>[\\@]{LITERAL_BLOCK}      { // escaped command
                                           outputArray(yyscanner,yytext,yyleng);
                                           yyextra->yyLineNr+=QCString(yytext).contains('\n');
+                                        }
+<SkipCComment>{VERBATIM_LINE}.*/\n      { // normal command
+                                          outputArray(yyscanner,yytext,yyleng);
                                         }
 <SkipCComment>{LITERAL_BLOCK}           { // normal block command
                                           outputArray(yyscanner,yytext,yyleng);
@@ -1403,6 +1408,7 @@ WSopt [ \t\r]*
                                           BEGIN(SkipCond);
                                         }
 <SkipCond>\n                            { yyextra->yyLineNr++; outputChar(yyscanner,'\n'); }
+<SkipCond>{VERBATIM_LINE}.*/\n          { }
 <SkipCond>{LITERAL_BLOCK}               {
                                           auto numNLs = QCString(yytext).contains('\n');
                                           yyextra->yyLineNr+=numNLs;
