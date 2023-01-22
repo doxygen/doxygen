@@ -3691,7 +3691,7 @@ void writeGraphInfo(OutputList &ol)
   QCString imgExt = getDotImageExtension();
   if (imgExt=="svg" && s!=-1 && e!=-1)
   {
-    legendDocs = legendDocs.left(s+8) + "[!-- SVG 0 --]" + legendDocs.mid(e);
+    legendDocs = legendDocs.left(s+8) + "[!-- " + "SVG 0 --]" + legendDocs.mid(e);
     //printf("legendDocs=%s\n",qPrint(legendDocs));
   }
   FileDef *fd = createFileDef("","graph_legend.dox");
