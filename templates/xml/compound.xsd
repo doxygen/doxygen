@@ -252,7 +252,7 @@
     </xsd:sequence>
   </xsd:complexType>
 
-  <xsd:complexType name="enumvalueType" mixed="true">
+  <xsd:complexType name="enumvalueType">
     <xsd:sequence>
       <xsd:element name="name" />
       <xsd:element name="initializer" type="linkedTextType" minOccurs="0" />
