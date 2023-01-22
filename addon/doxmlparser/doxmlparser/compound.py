@@ -5735,7 +5735,6 @@ class enumvalueType(GeneratedsSuper):
             obj_ = self.mixedclass_(MixedContainer.CategorySimple,
                 MixedContainer.TypeString, 'name', valuestr_)
             self.content_.append(obj_)
-            self.name = valuestr_       # missing assignment that was not auto-generated, fixes self.name always equal to None
             self.name_nsprefix_ = child_.prefix
         elif nodeName_ == 'initializer':
             obj_ = linkedTextType.factory(parent_object_=self)
