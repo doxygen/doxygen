@@ -13,8 +13,6 @@
  *
  */
 
-#include <sstream>
-
 #include "msc.h"
 #include "portable.h"
 #include "config.h"
@@ -33,7 +31,7 @@ static const int maxCmdLine = 40960;
 static bool convertMapFile(TextStream &t,const QCString &mapName,const QCString &relPath,
                            const QCString &context)
 {
-  std::ifstream f(mapName.str(),std::ifstream::in);
+  std::ifstream f = Portable::openInputStream(mapName);
   if (!f.is_open())
   {
     err("failed to open map file %s for inclusion in the docs!\n"
@@ -133,20 +131,18 @@ void writeMscGraphFromFile(const QCString &inFile,const QCString &outDir,
     QCString epstopdfArgs(maxCmdLine);
     epstopdfArgs.sprintf("\"%s.eps\" --outfile=\"%s.pdf\"",
                          qPrint(absOutFile),qPrint(absOutFile));
-    Portable::sysTimerStart();
     if (Portable::system("epstopdf",epstopdfArgs)!=0)
     {
       err_full(srcFile,srcLine,"Problems running epstopdf when processing '%s.eps'. Check your TeX installation!\n",
           qPrint(absOutFile));
     }
-    Portable::sysTimerStop();
   }
 
   Doxygen::indexList->addImageFile(imgName);
 
 }
 
-static QCString getMscImageMapFromFile(const QCString& inFile, const QCString& outDir,
+static QCString getMscImageMapFromFile(const QCString& inFile, const QCString& /* outDir */,
                                 const QCString& relPath,const QCString& context,
                                 bool writeSVGMap,const QCString &srcFile,int srcLine)
 {

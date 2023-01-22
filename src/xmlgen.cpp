@@ -47,6 +47,7 @@
 #include "resourcemgr.h"
 #include "dir.h"
 #include "utf8.h"
+#include "portable.h"
 
 // no debug info
 #define XML_DB(x) do {} while(0)
@@ -162,7 +163,7 @@ static void writeCombineScript()
 {
   QCString outputDirectory = Config_getString(XML_OUTPUT);
   QCString fileName=outputDirectory+"/combine.xslt";
-  std::ofstream t(fileName.str(),std::ofstream::out | std::ofstream::binary);
+  std::ofstream t = Portable::openOutputStream(fileName);
   if (!t.is_open())
   {
     err("Cannot open file %s for writing!\n",qPrint(fileName));
@@ -544,7 +545,7 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
   if (md->isHidden()) return;
 
   // group members are only visible in their group
-  //if (def->definitionType()!=Definition::TypeGroup && md->getGroupDef()) return;
+  bool groupMember = md->getGroupDef() && def->definitionType()!=Definition::TypeGroup;
 
   QCString memType;
   bool isFunc=FALSE;
@@ -572,26 +573,31 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
      << "_1" << md->anchor() << "\" kind=\"" << memType << "\"><name>"
      << convertToXML(md->name()) << "</name></member>\n";
 
-  t << "      <memberdef kind=\"";
-  //enum { define_t,variable_t,typedef_t,enum_t,function_t } xmlType = function_t;
-  t << memType << "\" id=\"";
-  if (md->getGroupDef() && def->definitionType()==Definition::TypeGroup)
+  if (groupMember)
   {
-    t << md->getGroupDef()->getOutputFileBase();
+    t << "      <member refid=\""
+      << md->getGroupDef()->getOutputFileBase()
+      << "_1" << md->anchor() << "\" kind=\"" << memType << "\"><name>"
+      << convertToXML(md->name()) << "</name></member>\n";
+    return;
   }
   else
   {
+    t << "      <memberdef kind=\"";
+    t << memType << "\" id=\"";
     t << memberOutputFileBase(md);
+    t << "_1"      // encoded ':' character (see util.cpp:convertNameToFile)
+      << md->anchor();
   }
-  t << "_1"      // encoded ':' character (see util.cpp:convertNameToFile)
-    << md->anchor();
+  //enum { define_t,variable_t,typedef_t,enum_t,function_t } xmlType = function_t;
+
   t << "\" prot=\"";
-  switch(md->protection())
+  switch (md->protection())
   {
-    case Public:    t << "public";     break;
-    case Protected: t << "protected";  break;
-    case Private:   t << "private";    break;
-    case Package:   t << "package";    break;
+    case Protection::Public:    t << "public";     break;
+    case Protection::Protected: t << "protected";  break;
+    case Protection::Private:   t << "private";    break;
+    case Protection::Package:   t << "package";    break;
   }
   t << "\"";
 
@@ -664,9 +670,9 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
     t << " virt=\"";
     switch (md->virtualness())
     {
-      case Normal:  t << "non-virtual";  break;
-      case Virtual: t << "virtual";      break;
-      case Pure:    t << "pure-virtual"; break;
+      case Specifier::Normal:  t << "non-virtual";  break;
+      case Specifier::Virtual: t << "virtual";      break;
+      case Specifier::Pure:    t << "pure-virtual"; break;
       default: ASSERT(0);
     }
     t << "\"";
@@ -854,6 +860,11 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
       << convertToXML(rbmd->name()) << "</reimplementedby>\n";
   }
 
+  for (const auto &qmd : md->getQualifiers())
+  {
+    t << "        <qualifier>" << convertToXML(qmd.c_str()) << "</qualifier>\n";
+  }
+
   if (md->isFriendClass()) // for friend classes we show a link to the class as a "parameter"
   {
     t << "        <param>\n";
@@ -982,10 +993,10 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
         << emd->anchor() << "\" prot=\"";
       switch (emd->protection())
       {
-        case Public:    t << "public";    break;
-        case Protected: t << "protected"; break;
-        case Private:   t << "private";   break;
-        case Package:   t << "package";   break;
+        case Protection::Public:    t << "public";    break;
+        case Protection::Protected: t << "protected"; break;
+        case Protection::Private:   t << "private";   break;
+        case Protection::Package:   t << "package";   break;
       }
       t << "\">\n";
       t << "          <name>";
@@ -1117,17 +1128,17 @@ static void writeListOfAllMembers(const ClassDef *cd,TextStream &t)
           md->anchor() << "\" prot=\"";
         switch (prot)
         {
-          case Public:    t << "public";    break;
-          case Protected: t << "protected"; break;
-          case Private:   t << "private";   break;
-          case Package:   t << "package";   break;
+          case Protection::Public:    t << "public";    break;
+          case Protection::Protected: t << "protected"; break;
+          case Protection::Private:   t << "private";   break;
+          case Protection::Package:   t << "package";   break;
         }
         t << "\" virt=\"";
         switch(virt)
         {
-          case Normal:  t << "non-virtual";  break;
-          case Virtual: t << "virtual";      break;
-          case Pure:    t << "pure-virtual"; break;
+          case Specifier::Normal:  t << "non-virtual";  break;
+          case Specifier::Virtual: t << "virtual";      break;
+          case Specifier::Pure:    t << "pure-virtual"; break;
         }
         t << "\"";
         if (!mi->ambiguityResolutionScope().isEmpty())
@@ -1152,13 +1163,22 @@ static void writeInnerClasses(const ClassLinkedRefMap &cl,TextStream &t)
         << "\" prot=\"";
       switch(cd->protection())
       {
-         case Public:    t << "public";     break;
-         case Protected: t << "protected";  break;
-         case Private:   t << "private";    break;
-         case Package:   t << "package";    break;
+        case Protection::Public:    t << "public";     break;
+        case Protection::Protected: t << "protected";  break;
+        case Protection::Private:   t << "private";    break;
+        case Protection::Package:   t << "package";    break;
       }
       t << "\">" << convertToXML(cd->name()) << "</innerclass>\n";
     }
+  }
+}
+
+static void writeInnerConcepts(const ConceptLinkedRefMap &cl,TextStream &t)
+{
+  for (const auto &cd : cl)
+  {
+    t << "    <innerconcept refid=\"" << cd->getOutputFileBase()
+      << "\">" << convertToXML(cd->name()) << "</innerconcept>\n";
   }
 }
 
@@ -1271,7 +1291,7 @@ static void generateXMLForClass(const ClassDef *cd,TextStream &ti)
 
   QCString outputDirectory = Config_getString(XML_OUTPUT);
   QCString fileName=outputDirectory+"/"+ classOutputFileBase(cd)+".xml";
-  std::ofstream f(fileName.str(),std::ofstream::out | std::ofstream::binary);
+  std::ofstream f = Portable::openOutputStream(fileName);
   if (!f.is_open())
   {
     err("Cannot open file %s for writing!\n",qPrint(fileName));
@@ -1286,10 +1306,10 @@ static void generateXMLForClass(const ClassDef *cd,TextStream &ti)
     << langToString(cd->getLanguage()) << "\" prot=\"";
   switch (cd->protection())
   {
-    case Public:    t << "public";    break;
-    case Protected: t << "protected"; break;
-    case Private:   t << "private";   break;
-    case Package:   t << "package";   break;
+    case Protection::Public:    t << "public";    break;
+    case Protection::Protected: t << "protected"; break;
+    case Protection::Private:   t << "private";   break;
+    case Protection::Package:   t << "package";   break;
   }
   if (cd->isFinal()) t << "\" final=\"yes";
   if (cd->isSealed()) t << "\" sealed=\"yes";
@@ -1308,17 +1328,17 @@ static void generateXMLForClass(const ClassDef *cd,TextStream &ti)
     t << "prot=\"";
     switch (bcd.prot)
     {
-      case Public:    t << "public";    break;
-      case Protected: t << "protected"; break;
-      case Private:   t << "private";   break;
-      case Package: ASSERT(0); break;
+      case Protection::Public:    t << "public";    break;
+      case Protection::Protected: t << "protected"; break;
+      case Protection::Private:   t << "private";   break;
+      case Protection::Package: ASSERT(0); break;
     }
     t << "\" virt=\"";
     switch(bcd.virt)
     {
-      case Normal:  t << "non-virtual";  break;
-      case Virtual: t << "virtual";      break;
-      case Pure:    t <<"pure-virtual"; break;
+      case Specifier::Normal:  t << "non-virtual";  break;
+      case Specifier::Virtual: t << "virtual";      break;
+      case Specifier::Pure:    t <<"pure-virtual"; break;
     }
     t << "\">";
     if (!bcd.templSpecifiers.isEmpty())
@@ -1341,17 +1361,17 @@ static void generateXMLForClass(const ClassDef *cd,TextStream &ti)
       << "\" prot=\"";
     switch (bcd.prot)
     {
-      case Public:    t << "public";    break;
-      case Protected: t << "protected"; break;
-      case Private:   t << "private";   break;
-      case Package: ASSERT(0); break;
+      case Protection::Public:    t << "public";    break;
+      case Protection::Protected: t << "protected"; break;
+      case Protection::Private:   t << "private";   break;
+      case Protection::Package: ASSERT(0); break;
     }
     t << "\" virt=\"";
     switch (bcd.virt)
     {
-      case Normal:  t << "non-virtual";  break;
-      case Virtual: t << "virtual";      break;
-      case Pure:    t << "pure-virtual"; break;
+      case Specifier::Normal:  t << "non-virtual";  break;
+      case Specifier::Virtual: t << "virtual";      break;
+      case Specifier::Pure:    t << "pure-virtual"; break;
     }
     t << "\">" << convertToXML(bcd.classDef->displayName())
       << "</derivedcompoundref>\n";
@@ -1381,6 +1401,11 @@ static void generateXMLForClass(const ClassDef *cd,TextStream &ti)
     t << "    <requiresclause>";
     linkifyText(TextGeneratorXMLImpl(t),cd,cd->getFileDef(),0,cd->requiresClause());
     t << "    </requiresclause>\n";
+  }
+
+  for (const auto &qcd : cd->getQualifiers())
+  {
+    t << "    <qualifier>" << convertToXML(qcd.c_str()) << "</qualifier>\n";
   }
 
   t << "    <briefdescription>\n";
@@ -1435,7 +1460,7 @@ static void generateXMLForConcept(const ConceptDef *cd,TextStream &ti)
 
   QCString outputDirectory = Config_getString(XML_OUTPUT);
   QCString fileName=outputDirectory+"/"+cd->getOutputFileBase()+".xml";
-  std::ofstream f(fileName.str(),std::ofstream::out | std::ofstream::binary);
+  std::ofstream f = Portable::openOutputStream(fileName);
   if (!f.is_open())
   {
     err("Cannot open file %s for writing!\n",qPrint(fileName));
@@ -1488,7 +1513,7 @@ static void generateXMLForNamespace(const NamespaceDef *nd,TextStream &ti)
 
   QCString outputDirectory = Config_getString(XML_OUTPUT);
   QCString fileName=outputDirectory+"/"+nd->getOutputFileBase()+".xml";
-  std::ofstream f(fileName.str(),std::ofstream::out | std::ofstream::binary);
+  std::ofstream f = Portable::openOutputStream(fileName);
   if (!f.is_open())
   {
     err("Cannot open file %s for writing!\n",qPrint(fileName));
@@ -1507,6 +1532,7 @@ static void generateXMLForNamespace(const NamespaceDef *nd,TextStream &ti)
   t << "</compoundname>\n";
 
   writeInnerClasses(nd->getClasses(),t);
+  writeInnerConcepts(nd->getConcepts(),t);
   writeInnerNamespaces(nd->getNamespaces(),t);
 
   for (const auto &mg : nd->getMemberGroups())
@@ -1563,7 +1589,7 @@ static void generateXMLForFile(FileDef *fd,TextStream &ti)
 
   QCString outputDirectory = Config_getString(XML_OUTPUT);
   QCString fileName=outputDirectory+"/"+fd->getOutputFileBase()+".xml";
-  std::ofstream f(fileName.str(),std::ofstream::out | std::ofstream::binary);
+  std::ofstream f = Portable::openOutputStream(fileName);
   if (!f.is_open())
   {
     err("Cannot open file %s for writing!\n",qPrint(fileName));
@@ -1620,6 +1646,7 @@ static void generateXMLForFile(FileDef *fd,TextStream &ti)
   }
 
   writeInnerClasses(fd->getClasses(),t);
+  writeInnerConcepts(fd->getConcepts(),t);
   writeInnerNamespaces(fd->getNamespaces(),t);
 
   for (const auto &mg : fd->getMemberGroups())
@@ -1674,7 +1701,7 @@ static void generateXMLForGroup(const GroupDef *gd,TextStream &ti)
 
   QCString outputDirectory = Config_getString(XML_OUTPUT);
   QCString fileName=outputDirectory+"/"+gd->getOutputFileBase()+".xml";
-  std::ofstream f(fileName.str(),std::ofstream::out | std::ofstream::binary);
+  std::ofstream f = Portable::openOutputStream(fileName);
   if (!f.is_open())
   {
     err("Cannot open file %s for writing!\n",qPrint(fileName));
@@ -1690,6 +1717,7 @@ static void generateXMLForGroup(const GroupDef *gd,TextStream &ti)
 
   writeInnerFiles(gd->getFiles(),t);
   writeInnerClasses(gd->getClasses(),t);
+  writeInnerConcepts(gd->getConcepts(),t);
   writeInnerNamespaces(gd->getNamespaces(),t);
   writeInnerPages(gd->getPages(),t);
   writeInnerGroups(gd->getSubGroups(),t);
@@ -1729,7 +1757,7 @@ static void generateXMLForDir(DirDef *dd,TextStream &ti)
 
   QCString outputDirectory = Config_getString(XML_OUTPUT);
   QCString fileName=outputDirectory+"/"+dd->getOutputFileBase()+".xml";
-  std::ofstream f(fileName.str(),std::ofstream::out | std::ofstream::binary);
+  std::ofstream f = Portable::openOutputStream(fileName);
   if (!f.is_open())
   {
     err("Cannot open file %s for writing!\n",qPrint(fileName));
@@ -1782,7 +1810,7 @@ static void generateXMLForPage(PageDef *pd,TextStream &ti,bool isExample)
 
   QCString outputDirectory = Config_getString(XML_OUTPUT);
   QCString fileName=outputDirectory+"/"+pageName+".xml";
-  std::ofstream f(fileName.str(),std::ofstream::out | std::ofstream::binary);
+  std::ofstream f = Portable::openOutputStream(fileName);
   if (!f.is_open())
   {
     err("Cannot open file %s for writing!\n",qPrint(fileName));
@@ -1915,7 +1943,7 @@ void generateXML()
   ResourceMgr::instance().copyResource("doxyfile.xsd",outputDirectory);
 
   QCString fileName=outputDirectory+"/compound.xsd";
-  std::ofstream f(fileName.str(),std::ofstream::out | std::ofstream::binary);
+  std::ofstream f = Portable::openOutputStream(fileName);
   if (!f.is_open())
   {
     err("Cannot open file %s for writing!\n",qPrint(fileName));
@@ -1938,7 +1966,7 @@ void generateXML()
         QCString s(startLine,len);
         if (s.find("<!-- Automatically insert here the HTML entities -->")!=-1)
         {
-          HtmlEntityMapper::instance()->writeXMLSchema(t);
+          HtmlEntityMapper::instance().writeXMLSchema(t);
         }
         else
         {
@@ -1951,7 +1979,7 @@ void generateXML()
   f.close();
 
   fileName=outputDirectory+"/Doxyfile.xml";
-  f.open(fileName.str(),std::ofstream::out | std::ofstream::binary);
+  f = Portable::openOutputStream(fileName);
   if (!f.is_open())
   {
     err("Cannot open file %s for writing\n",fileName.data());
@@ -1965,7 +1993,7 @@ void generateXML()
   f.close();
 
   fileName=outputDirectory+"/index.xml";
-  f.open(fileName.str(),std::ofstream::out | std::ofstream::binary);
+  f = Portable::openOutputStream(fileName);
   if (!f.is_open())
   {
     err("Cannot open file %s for writing!\n",qPrint(fileName));

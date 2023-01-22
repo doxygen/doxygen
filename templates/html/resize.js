@@ -22,10 +22,11 @@
 
  @licend  The above is the entire license notice for the JavaScript code in this file
  */
+var once=1;
 function initResizable()
 {
   var cookie_namespace = 'doxygen';
-  var sidenav,navtree,content,header,collapsed,collapsedWidth=0,barWidth=6,desktop_vp=768,titleHeight;
+  var sidenav,navtree,content,header,barWidth=6,desktop_vp=768,titleHeight;
 
   function readSetting(cookie)
   {
@@ -47,7 +48,7 @@ function initResizable()
         }
       }
     }
-    return 0;
+    return $TREEVIEW_WIDTH;
   }
 
   function writeSetting(cookie, val)
@@ -101,19 +102,6 @@ function initResizable()
     content.css({height:contentHeight + "px"});
     navtree.css({height:navtreeHeight + "px"});
     sidenav.css({height:sideNavHeight + "px"});
-    var width=$(window).width();
-    if (width!=collapsedWidth) {
-      if (width<desktop_vp && collapsedWidth>=desktop_vp) {
-        if (!collapsed) {
-          collapseExpand();
-        }
-      } else if (width>desktop_vp && collapsedWidth<desktop_vp) {
-        if (collapsed) {
-          collapseExpand();
-        }
-      }
-      collapsedWidth=width;
-    }
     if (location.hash.slice(1)) {
       (document.getElementById(location.hash.slice(1))||document.body).scrollIntoView();
     }
@@ -121,15 +109,17 @@ function initResizable()
 
   function collapseExpand()
   {
+    var newWidth;
     if (sidenav.width()>0) {
-      restoreWidth(0);
-      collapsed=true;
+      newWidth=0;
     }
     else {
       var width = readSetting('width');
-      if (width>200 && width<$(window).width()) { restoreWidth(width); } else { restoreWidth(200); }
-      collapsed=false;
+      newWidth = (width>$TREEVIEW_WIDTH && width<$(window).width()) ? width : $TREEVIEW_WIDTH;
     }
+    restoreWidth(newWidth);
+    var sidenavWidth = $(sidenav).outerWidth();
+    writeSetting('width',sidenavWidth-barWidth);
   }
 
   header  = $("#top");
@@ -156,7 +146,10 @@ function initResizable()
   if (i>=0) window.location.hash=url.substr(i);
   var _preventDefault = function(evt) { evt.preventDefault(); };
   $("#splitbar").bind("dragstart", _preventDefault).bind("selectstart", _preventDefault);
-  $(".ui-resizable-handle").dblclick(collapseExpand);
+  if (once) {
+    $(".ui-resizable-handle").dblclick(collapseExpand);
+    once=0
+  }
   $(window).on('load',resizeHeight);
 }
 /* @license-end */

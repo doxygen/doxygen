@@ -50,6 +50,7 @@
 #include "dirdef.h"
 #include "section.h"
 #include "dir.h"
+#include "growbuf.h"
 
 // no debug info
 #define Docbook_DB(x) do {} while(0)
@@ -102,7 +103,7 @@ inline void writeDocbookCodeString(TextStream &t,const QCString &str, int &col)
       case '"':  t << "&quot;"; col++; break;
       default:
         {
-          uchar uc = static_cast<uchar>(c);
+          uint8_t uc = static_cast<uint8_t>(c);
           static const char *hex="0123456789ABCDEF";
           if (uc<32)
           {
@@ -273,12 +274,16 @@ DB_GEN_C1(m_t)
 
 //-------------------------------------------------------------------------------
 
-DocbookGenerator::DocbookGenerator() : OutputGenerator(Config_getString(DOCBOOK_OUTPUT)), m_codeGen(m_t)
+DocbookGenerator::DocbookGenerator()
+  : OutputGenerator(Config_getString(DOCBOOK_OUTPUT))
+  , m_codeGen(m_t)
 {
 DB_GEN_C
 }
 
-DocbookGenerator::DocbookGenerator(const DocbookGenerator &og) : OutputGenerator(og), m_codeGen(m_t)
+DocbookGenerator::DocbookGenerator(const DocbookGenerator &og)
+  : OutputGenerator(og)
+  , m_codeGen(m_t)
 {
 }
 
@@ -369,12 +374,12 @@ DB_GEN_C
   m_codeGen.setSourceFileName("");
 }
 
-void DocbookGenerator::startIndexSection(IndexSections is)
+void DocbookGenerator::startIndexSection(IndexSection is)
 {
-DB_GEN_C2("IndexSections " << is)
+DB_GEN_C2("IndexSection " << is)
   switch (is)
   {
-    case isTitlePageStart:
+    case IndexSection::isTitlePageStart:
       {
         QCString dbk_projectName = Config_getString(PROJECT_NAME);
         m_t << "    <info>\n";
@@ -382,118 +387,118 @@ DB_GEN_C2("IndexSections " << is)
         m_t << "    </info>\n";
       }
       break;
-    case isTitlePageAuthor:
+    case IndexSection::isTitlePageAuthor:
       break;
-    case isMainPage:
+    case IndexSection::isMainPage:
       m_t << "<chapter>\n";
       m_t << "    <title>";
       break;
-    case isModuleIndex:
-      //Module Index}\n"
+    case IndexSection::isModuleIndex:
+      //Module Index\n"
       break;
-    case isDirIndex:
-      //Directory Index}\n"
+    case IndexSection::isDirIndex:
+      //Directory Index\n"
       break;
-    case isNamespaceIndex:
-      //Namespace Index}\n"
+    case IndexSection::isNamespaceIndex:
+      //Namespace Index\n"
       break;
-    case isConceptIndex:
-      //Concept Index}\n"
+    case IndexSection::isConceptIndex:
+      //Concept Index\n"
       break;
-    case isClassHierarchyIndex:
-      //Hierarchical Index}\n"
+    case IndexSection::isClassHierarchyIndex:
+      //Hierarchical Index\n"
       break;
-    case isCompoundIndex:
+    case IndexSection::isCompoundIndex:
       //m_t << "{"; //Class Index}\n"
       break;
-    case isFileIndex:
-      //Annotated File Index}\n"
+    case IndexSection::isFileIndex:
+      //Annotated File Index\n"
       break;
-    case isPageIndex:
-      //Annotated Page Index}\n"
+    case IndexSection::isPageIndex:
+      //Annotated Page Index\n"
       break;
-    case isModuleDocumentation:
+    case IndexSection::isModuleDocumentation:
       m_t << "<chapter>\n";
       m_t << "    <title>";
       break;
-    case isDirDocumentation:
+    case IndexSection::isDirDocumentation:
       m_t << "<chapter>\n";
       m_t << "    <title>";
       break;
-    case isNamespaceDocumentation:
+    case IndexSection::isNamespaceDocumentation:
       m_t << "<chapter>\n";
       m_t << "    <title>";
       break;
-    case isConceptDocumentation:
+    case IndexSection::isConceptDocumentation:
       m_t << "<chapter>\n";
       m_t << "    <title>";
       break;
-    case isClassDocumentation:
+    case IndexSection::isClassDocumentation:
       m_t << "<chapter>\n";
       m_t << "    <title>";
       break;
-    case isFileDocumentation:
+    case IndexSection::isFileDocumentation:
       m_t << "<chapter>\n";
       m_t << "    <title>";
       break;
-    case isExampleDocumentation:
+    case IndexSection::isExampleDocumentation:
       m_t << "<chapter>\n";
       m_t << "    <title>";
       break;
-    case isPageDocumentation:
+    case IndexSection::isPageDocumentation:
       break;
-    case isPageDocumentation2:
+    case IndexSection::isPageDocumentation2:
       break;
-    case isEndIndex:
+    case IndexSection::isEndIndex:
       break;
   }
 }
 
-void DocbookGenerator::endIndexSection(IndexSections is)
+void DocbookGenerator::endIndexSection(IndexSection is)
 {
-DB_GEN_C2("IndexSections " << is)
+DB_GEN_C2("IndexSection " << is)
   switch (is)
   {
-    case isTitlePageStart:
+    case IndexSection::isTitlePageStart:
       break;
-    case isTitlePageAuthor:
+    case IndexSection::isTitlePageAuthor:
       break;
-    case isMainPage:
+    case IndexSection::isMainPage:
       m_t << "</title>\n";
       m_t << "    <xi:include href=\"mainpage.xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>\n";
       m_t << "</chapter>\n";
       break;
-    case isModuleIndex:
+    case IndexSection::isModuleIndex:
       //m_t << "</chapter>\n";
       break;
-    case isDirIndex:
+    case IndexSection::isDirIndex:
       //m_t << "<xi:include href=\"dirs.xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>";
       //m_t << "</chapter>\n";
       break;
-    case isNamespaceIndex:
+    case IndexSection::isNamespaceIndex:
       //m_t << "<xi:include href=\"namespaces.xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>";
       //m_t << "</chapter>\n";
       break;
-    case isConceptIndex:
+    case IndexSection::isConceptIndex:
       //m_t << "<xi:include href=\"concepts.xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>";
       //m_t << "</chapter>\n";
       break;
-    case isClassHierarchyIndex:
+    case IndexSection::isClassHierarchyIndex:
       //m_t << "<xi:include href=\"hierarchy.xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>";
       //m_t << "</chapter>\n";
       break;
-    case isCompoundIndex:
+    case IndexSection::isCompoundIndex:
       //m_t << "</chapter>\n";
       break;
-    case isFileIndex:
+    case IndexSection::isFileIndex:
       //m_t << "<xi:include href=\"files.xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>";
       //m_t << "</chapter>\n";
       break;
-    case isPageIndex:
+    case IndexSection::isPageIndex:
       //m_t << "<xi:include href=\"pages.xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>";
       //m_t << "</chapter>\n";
       break;
-    case isModuleDocumentation:
+    case IndexSection::isModuleDocumentation:
       {
         m_t << "</title>\n";
         for (const auto &gd : *Doxygen::groupLinkedMap)
@@ -506,7 +511,7 @@ DB_GEN_C2("IndexSections " << is)
       }
       m_t << "</chapter>\n";
       break;
-    case isDirDocumentation:
+    case IndexSection::isDirDocumentation:
       {
         m_t << "</title>\n";
         for (const auto &dd : *Doxygen::dirLinkedMap)
@@ -519,7 +524,7 @@ DB_GEN_C2("IndexSections " << is)
       }
       m_t << "</chapter>\n";
       break;
-    case isNamespaceDocumentation:
+    case IndexSection::isNamespaceDocumentation:
       {
         m_t << "</title>\n";
         for (const auto &nd : *Doxygen::namespaceLinkedMap)
@@ -532,7 +537,7 @@ DB_GEN_C2("IndexSections " << is)
       }
       m_t << "</chapter>\n";
       break;
-    case isConceptDocumentation:
+    case IndexSection::isConceptDocumentation:
       {
         m_t << "</title>\n";
         for (const auto &cd : *Doxygen::conceptLinkedMap)
@@ -545,7 +550,7 @@ DB_GEN_C2("IndexSections " << is)
       }
       m_t << "</chapter>\n";
       break;
-    case isClassDocumentation:
+    case IndexSection::isClassDocumentation:
       {
         m_t << "</title>\n";
         for (const auto &cd : *Doxygen::classLinkedMap)
@@ -562,7 +567,7 @@ DB_GEN_C2("IndexSections " << is)
       }
       m_t << "</chapter>\n";
       break;
-    case isFileDocumentation:
+    case IndexSection::isFileDocumentation:
       {
         m_t << "</title>\n";
         for (const auto &fn : *Doxygen::inputNameLinkedMap)
@@ -582,7 +587,7 @@ DB_GEN_C2("IndexSections " << is)
       }
       m_t << "</chapter>\n";
       break;
-    case isExampleDocumentation:
+    case IndexSection::isExampleDocumentation:
       {
         m_t << "</title>\n";
         for (const auto &pd : *Doxygen::exampleLinkedMap)
@@ -592,11 +597,11 @@ DB_GEN_C2("IndexSections " << is)
       }
       m_t << "</chapter>\n";
       break;
-    case isPageDocumentation:
+    case IndexSection::isPageDocumentation:
       break;
-    case isPageDocumentation2:
+    case IndexSection::isPageDocumentation2:
       break;
-    case isEndIndex:
+    case IndexSection::isEndIndex:
       m_t << "<index/>\n";
       break;
   }
@@ -629,7 +634,7 @@ DB_GEN_C
   auto astImpl = dynamic_cast<const DocNodeAST*>(ast);
   if (astImpl)
   {
-    auto visitor { DocbookDocVisitor(m_t,*this,ctx?ctx->getDefFileExtension():QCString()) };
+    DocbookDocVisitor visitor(m_t,m_codeGen,ctx?ctx->getDefFileExtension():QCString());
     std::visit(visitor,astImpl->root);
   }
 }
@@ -668,21 +673,29 @@ void DocbookGenerator::docify(const QCString &str)
 DB_GEN_C
   m_t << convertToDocBook(str);
 }
-void DocbookGenerator::writeObjectLink(const QCString &, const QCString &f,
-                                     const QCString &anchor, const QCString &text)
+static QCString objectLinkToString(const QCString &, const QCString &f,
+                                   const QCString &anchor, const QCString &text)
 {
 DB_GEN_C
+  QCString result;
   if (!anchor.isEmpty())
   {
-    if (!f.isEmpty()) m_t << "<link linkend=\"_" << stripPath(f) << "_1" << anchor << "\">";
-    else   m_t << "<link linkend=\"_" << anchor << "\">";
+    if (!f.isEmpty()) result += "<link linkend=\"_" + stripPath(f) + "_1" + anchor + "\">";
+    else   result += "<link linkend=\"_" + anchor + "\">";
   }
   else
   {
-    m_t << "<link linkend=\"_" << stripPath(f) << "\">";
+    result += "<link linkend=\"_" + stripPath(f) + "\">";
   }
-  docify(text);
-  m_t << "</link>";
+  result += convertToDocBook(text);
+  result += "</link>";
+  return result;
+}
+void DocbookGenerator::writeObjectLink(const QCString &ref, const QCString &f,
+                                     const QCString &anchor, const QCString &text)
+{
+DB_GEN_C
+  m_t << objectLinkToString(ref,f,anchor,text);
 }
 void DocbookGenerator::startMemberList()
 {
@@ -700,14 +713,14 @@ DB_GEN_C
   if (m_inSimpleSect[m_levelListItem]) m_t << "</simplesect>\n";
   m_inSimpleSect[m_levelListItem] = FALSE;
 }
-void DocbookGenerator::startMemberItem(const QCString &,int,const QCString &)
+void DocbookGenerator::startMemberItem(const QCString &,MemberItemType,const QCString &)
 {
 DB_GEN_C
   if (m_inListItem[m_levelListItem]) m_t << "</listitem>\n";
   m_t << "            <listitem><para>";
   m_inListItem[m_levelListItem] = TRUE;
 }
-void DocbookGenerator::endMemberItem()
+void DocbookGenerator::endMemberItem(MemberItemType)
 {
 DB_GEN_C
   m_t << "</para>\n";
@@ -1034,7 +1047,7 @@ DB_GEN_C
   m_simpleTable = true;
 }
 
-void DocbookGenerator::endMemberDocSimple(bool isEnum)
+void DocbookGenerator::endMemberDocSimple(bool /* isEnum */)
 {
 DB_GEN_C
   m_t << "    </tbody>\n";
@@ -1251,5 +1264,134 @@ void DocbookGenerator::closeAllSections()
   {
     closeSection();
   }
+}
+
+void DocbookGenerator::writeInheritedSectionTitle(
+                  const QCString &id,    const QCString &ref,
+                  const QCString &file,  const QCString &anchor,
+                  const QCString &title, const QCString &name)
+{
+DB_GEN_C
+  m_t << theTranslator->trInheritedFrom(convertToDocBook(title), objectLinkToString(ref, file, anchor, name));
+}
+
+void DocbookGenerator::writeLocalToc(const SectionRefs &sectionRefs,const LocalToc &localToc)
+{
+  if (localToc.isDocbookEnabled())
+  {
+    m_t << "    <toc>\n";
+    m_t << "    <title>" << theTranslator->trRTFTableOfContents() << "</title>\n";
+    int level=1,l;
+    int maxLevel = localToc.docbookLevel();
+    BoolVector inLi(maxLevel+1,false);
+    for (const SectionInfo *si : sectionRefs)
+    {
+      SectionType type = si->type();
+      if (isSection(type))
+      {
+        //printf("  level=%d title=%s\n",level,qPrint(si->title));
+        int nextLevel = static_cast<int>(type);
+        if (nextLevel>level)
+        {
+          for (l=level;l<nextLevel;l++)
+          {
+            if (l < maxLevel) m_t << "    <tocdiv>\n";
+          }
+        }
+        else if (nextLevel<level)
+        {
+          for (l=level;l>nextLevel;l--)
+          {
+            inLi[l]=FALSE;
+            if (l <= maxLevel) m_t << "    </tocdiv>\n";
+          }
+        }
+        if (nextLevel <= maxLevel)
+        {
+          QCString titleDoc = convertToDocBook(si->title());
+          m_t << "      <tocentry>" << (si->title().isEmpty()?si->label():titleDoc) << "</tocentry>\n";
+        }
+        inLi[nextLevel]=TRUE;
+        level = nextLevel;
+      }
+    }
+    if (level > maxLevel) level = maxLevel;
+    while (level>1 && level <= maxLevel)
+    {
+      inLi[level]=FALSE;
+      m_t << "</tocdiv>\n";
+      level--;
+    }
+    m_t << "    </toc>\n";
+  }
+}
+
+//-------------------------------------------------------------------------------------------------
+
+static constexpr auto hex="0123456789ABCDEF";
+
+/*! Converts a string to an DocBook-encoded string */
+QCString convertToDocBook(const QCString &s, const bool retainNewline)
+{
+  if (s.isEmpty()) return s;
+  GrowBuf growBuf;
+  const char *q;
+  int cnt;
+  const char *p=s.data();
+  char c;
+  while ((c=*p++))
+  {
+    switch (c)
+    {
+      case '\n': if (retainNewline) growBuf.addStr("<literallayout>&#160;&#xa;</literallayout>"); growBuf.addChar(c);   break;
+      case '<':  growBuf.addStr("&lt;");   break;
+      case '>':  growBuf.addStr("&gt;");   break;
+      case '&':  // possibility to have a special symbol
+        q = p;
+        cnt = 2; // we have to count & and ; as well
+        while ((*q >= 'a' && *q <= 'z') || (*q >= 'A' && *q <= 'Z') || (*q >= '0' && *q <= '9'))
+        {
+          cnt++;
+          q++;
+        }
+        if (*q == ';')
+        {
+           --p; // we need & as well
+           HtmlEntityMapper::SymType res = HtmlEntityMapper::instance().name2sym(QCString(p).left(cnt));
+           if (res == HtmlEntityMapper::Sym_Unknown)
+           {
+             p++;
+             growBuf.addStr("&amp;");
+           }
+           else
+           {
+             growBuf.addStr(HtmlEntityMapper::instance().docbook(res));
+             q++;
+             p = q;
+           }
+        }
+        else
+        {
+          growBuf.addStr("&amp;");
+        }
+        break;
+      case '\'': growBuf.addStr("&apos;"); break;
+      case '"':  growBuf.addStr("&quot;"); break;
+      case  1: case  2: case  3: case  4: case  5: case  6: case 7:  case  8:
+      case 11: case 12: case 14: case 15: case 16: case 17: case 18:
+      case 19: case 20: case 21: case 22: case 23: case 24: case 25: case 26:
+      case 27: case 28: case 29: case 30: case 31:
+        growBuf.addStr("&#x24");
+        growBuf.addChar(hex[static_cast<uint8_t>(c)>>4]);
+        growBuf.addChar(hex[static_cast<uint8_t>(c)&0xF]);
+        growBuf.addChar(';');
+        break;
+      default:
+        growBuf.addChar(c);
+        break;
+    }
+  }
+  growBuf.addChar(0);
+  return growBuf.get();
 }
 

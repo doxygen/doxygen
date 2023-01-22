@@ -80,7 +80,7 @@ class ConfigOption
     virtual void writeTemplate(TextStream &t,bool sl,bool upd) = 0;
     virtual void compareDoxyfile(TextStream &t,Config::CompareMode compareMode) = 0;
     virtual void writeXMLDoxyfile(TextStream &t) = 0;
-    virtual void convertStrToVal(Config::CompareMode compareMode) {}
+    virtual void convertStrToVal(Config::CompareMode) {}
     virtual void emptyValueToDefault() {}
     virtual void substEnvVars() = 0;
     virtual void init() {}
@@ -565,6 +565,12 @@ class ConfigImpl
     {
       m_userComment += u;
     }
+    /*! Append replacement string
+     */
+    void appendStoreRepl(const QCString &u)
+    {
+      m_storeRepl += u;
+    }
     /*! Take the user start comment and reset it internally
      *  \returns user start comment
      */
@@ -581,6 +587,15 @@ class ConfigImpl
     {
       QCString result=m_userComment;
       m_userComment.resize(0);
+      return substitute(result,"\r","");
+    }
+    /*! Take the replacement string
+     *  \returns the replacement string
+     */
+    QCString takeStoreRepl()
+    {
+      QCString result=m_storeRepl;
+      m_storeRepl.resize(0);
       return substitute(result,"\r","");
     }
 
@@ -603,6 +618,7 @@ class ConfigImpl
     static ConfigImpl *m_instance;
     QCString m_startComment;
     QCString m_userComment;
+    QCString m_storeRepl;
     bool m_initialized;
     QCString m_header;
 };

@@ -75,13 +75,13 @@ namespace Config
    *  \returns TRUE if successful, FALSE if the file could not be
    *  opened or read.
    */
-  bool parse(const QCString &fileName,bool update=FALSE);
+  bool parse(const QCString &fileName,bool update=FALSE, CompareMode compareMode = CompareMode::Full);
 
   /*! Post processed the parsed data. Replaces raw string values by the actual values.
    *  and replaces environment variables.
    *  \param clearHeaderAndFooter set to TRUE when writing header and footer templates.
    *  \param compareMode signals if we in Doxyfile compare (`-x` or `-x_noenv`) mode are or not.
-   *   Influences setting of the default value and replacement of environment variables.
+   *   Influences setting of the default value and replacement of environment variables and CMake type replacement variables.
    */
   void postProcess(bool clearHeaderAndFooter, CompareMode compareMode = CompareMode::Full);
 

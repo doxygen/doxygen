@@ -60,26 +60,21 @@ void writeDiaGraphFromFile(const QCString &inFile,const QCString &outDir,
   diaArgs+="\"";
 
   //printf("*** running: %s %s outDir:%s %s\n",qPrint(diaExe),qPrint(diaArgs),outDir,outFile);
-  Portable::sysTimerStart();
   if (Portable::system(diaExe,diaArgs,FALSE)!=0)
   {
     err_full(srcFile,srcLine,"Problems running %s. Check your installation or look typos in you dia file %s\n",
         qPrint(diaExe),qPrint(inFile));
-    Portable::sysTimerStop();
     goto error;
   }
-  Portable::sysTimerStop();
   if ( (format==DIA_EPS) && (Config_getBool(USE_PDFLATEX)) )
   {
     QCString epstopdfArgs(maxCmdLine);
     epstopdfArgs.sprintf("\"%s.eps\" --outfile=\"%s.pdf\"",
                          qPrint(outFile),qPrint(outFile));
-    Portable::sysTimerStart();
     if (Portable::system("epstopdf",epstopdfArgs)!=0)
     {
       err("Problems running epstopdf. Check your TeX installation!\n");
     }
-    Portable::sysTimerStop();
   }
 
 error:

@@ -57,7 +57,7 @@ class SymbolResolver
                                          bool mayBeUnlinkable=false,
                                          bool mayBeHidden=false)
     {
-      return toClassDefMutable(resolveClass(scope,name,mayBeUnlinkable,mayBeHidden));
+      return toClassDefMutable(const_cast<ClassDef*>(resolveClass(scope,name,mayBeUnlinkable,mayBeHidden)));
     }
 
     /** Find the symbool definition matching name within the scope set.

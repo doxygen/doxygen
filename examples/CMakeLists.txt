@@ -7,6 +7,13 @@ if (DOT)
   set(DIAGRAM_EXAMPLE ${PROJECT_BINARY_DIR}/html/examples/diagrams/html/index.html)
 endif()
 
+add_custom_command(
+    COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/examples/baseexample.cfg" "${PROJECT_BINARY_DIR}/examples/"
+    DEPENDS "${PROJECT_SOURCE_DIR}/examples/baseexample.cfg"
+    OUTPUT "${PROJECT_BINARY_DIR}/examples/baseexample.cfg"
+)
+set_source_files_properties("${PROJECT_BINARY_DIR}/examples/baseexample.cfg" PROPERTIES GENERATED 1)
+
 foreach (f  ${EXAMPLE_FILES})
     add_custom_command(
         COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/examples/${f}" "${PROJECT_BINARY_DIR}/examples/"
@@ -67,7 +74,7 @@ foreach (f_inp  ${BASIC_EXAMPLES})
     add_custom_command(
         COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/html/examples/${f}
         COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/latex/examples/${f}
-	COMMAND ${EXECUTABLE_OUTPUT_PATH}/doxygen ${f}.cfg
+        COMMAND ${CMAKE_COMMAND} -E env PROJECT_BINARY_DIR=${PROJECT_BINARY_DIR} ${EXECUTABLE_OUTPUT_PATH}/doxygen ${f}.cfg
         COMMAND ${PYTHON_EXECUTABLE}  ${TOP}/examples/strip_example.py  < ${PROJECT_BINARY_DIR}/latex/examples/${f}/latex/refman.tex > ${PROJECT_BINARY_DIR}/latex/examples/${f}/latex/refman_doc.tex
 	DEPENDS doxygen ${f}.${f_ext} ${f}.cfg ${TOP}/examples/strip_example.py ${f_dep}
 	OUTPUT ${PROJECT_BINARY_DIR}/html/examples/${f}/html/index.html ${PROJECT_BINARY_DIR}/latex/examples/${f}/latex/refman_doc.tex
@@ -86,7 +93,7 @@ if (DOT)
   add_custom_command(
         COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/html/examples/diagrams
         COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/latex/examples/diagrams
-	COMMAND ${EXECUTABLE_OUTPUT_PATH}/doxygen diagrams.cfg
+        COMMAND ${CMAKE_COMMAND} -E env PROJECT_BINARY_DIR=${PROJECT_BINARY_DIR} ${EXECUTABLE_OUTPUT_PATH}/doxygen diagrams.cfg
         COMMAND ${PYTHON_EXECUTABLE}  ${TOP}/examples/strip_example.py  < ${PROJECT_BINARY_DIR}/latex/examples/diagrams/latex/refman.tex > ${PROJECT_BINARY_DIR}/latex/examples/diagrams/latex/refman_doc.tex
 	DEPENDS doxygen diagrams_a.h diagrams_b.h diagrams_c.h diagrams_d.h diagrams_e.h diagrams.cfg ${TOP}/examples/strip_example.py
 	OUTPUT ${PROJECT_BINARY_DIR}/html/examples/diagrams/html/index.html ${PROJECT_BINARY_DIR}/latex/examples/diagrams/latex/refman_doc.tex

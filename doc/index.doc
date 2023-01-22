@@ -122,13 +122,12 @@ The third part provides information for developers:
 \addindex license
 \addindex GPL
 
-Copyright &copy; 1997-2022 by
-<a href="mailto:doxygen@gmail.com">Dimitri van Heesch</a>.<p>
+Copyright &copy; 1997-\showdate "%Y" by <a href="mailto:doxygen@gmail.com">Dimitri van Heesch</a>.<p>
 
 Permission to use, copy, modify, and distribute this software and its
 documentation under the terms of the GNU General Public License is hereby
 granted. No representations are made about the suitability of this software
-for any purpose. It is provided "as is" without express or implied warranty.
+for any purpose. It is provided \"as&nbsp;is\" without express or implied warranty.
 See the
 <a href="http://www.gnu.org/licenses/old-licenses/gpl-2.0.html">
 GNU General Public License</a>

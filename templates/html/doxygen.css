@@ -1,7 +1,6 @@
 body {
     background-color: var(--page-background-color);
     color: var(--page-foreground-color);
-    scrollbar-color: var(--scrollbar-thumb-color) var(--scrollbar-background-color);
 }
 
 body, table, div, p, dl {
@@ -262,6 +261,16 @@ ul {
   overflow: visible;
 }
 
+ul.multicol {
+        -moz-column-gap: 1em;
+        -webkit-column-gap: 1em;
+        column-gap: 1em;
+        -moz-column-count: 3;
+        -webkit-column-count: 3;
+        column-count: 3;
+        list-style-type: none;
+}
+
 #side-nav ul {
   overflow: visible; /* reset ul rule for scroll bar in GENERATE_TREEVIEW window */
 }
@@ -398,6 +407,13 @@ div.contents {
 
 p.formulaDsp {
 	text-align: center;
+}
+
+img.dark-mode-visible {
+	display: none;
+}
+img.light-mode-visible {
+	display: none;
 }
 
 img.formulaDsp {
@@ -1481,7 +1497,7 @@ tr.heading h2 {
 	border-width: 10px;
 	margin: 0px -10px;
 }
-#powerTip.n:before {
+#powerTip.n:before, #powerTip.ne:before, #powerTip.nw:before {
 	border-top-color: var(--tooltip-border-color);
 	border-width: 11px;
 	margin: 0px -11px;
@@ -1623,5 +1639,25 @@ tt, code, kbd, samp
 
 u {
 	text-decoration: underline;
+}
+
+details>summary {
+  list-style-type: none;
+}
+
+details > summary::-webkit-details-marker {
+    display: none;
+}
+
+details>summary::before {
+    content: "\25ba";
+    padding-right:4px;
+    font-size: 80%;
+}
+
+details[open]>summary::before {
+    content: "\25bc";
+    padding-right:4px;
+    font-size: 80%;
 }
 

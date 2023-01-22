@@ -35,6 +35,8 @@ typedef yyguts_t *yyscan_t;
 #include <stack>
 #include <string>
 #include <mutex>
+#include <functional>
+#include <unordered_map>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -42,6 +44,7 @@ typedef yyguts_t *yyscan_t;
 #include <ctype.h>
 
 #include "qcstring.h"
+#include "fileinfo.h"
 #include "cite.h"
 #include "commentscan.h"
 #include "condparser.h"
@@ -58,6 +61,8 @@ typedef yyguts_t *yyscan_t;
 #include "section.h"
 #include "util.h"
 #include "reflist.h"
+#include "trace.h"
+#include "debug.h"
 
 #define USE_STATE2STRING 0
 
@@ -132,6 +137,7 @@ static bool handleProtected(yyscan_t yyscanner,const QCString &, const StringVec
 static bool handleProtectedSection(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handlePublic(yyscan_t yyscanner,const QCString &s, const StringVector &);
 static bool handlePublicSection(yyscan_t yyscanner,const QCString &s, const StringVector &);
+static bool handleQualifier(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleToc(yyscan_t yyscanner,const QCString &s, const StringVector &);
 static bool handleInherit(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleExtends(yyscan_t yyscanner,const QCString &, const StringVector &);
@@ -142,6 +148,8 @@ static bool handleParBlock(yyscan_t yyscanner,const QCString &, const StringVect
 static bool handleEndParBlock(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleParam(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleRetval(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleFileInfo(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleLineInfo(yyscan_t yyscanner,const QCString &, const StringVector &);
 
 #if USE_STATE2STRING
 static const char *stateToString(int state);
@@ -183,11 +191,13 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "cite",            { &handleCite,             CommandSpacing::Inline    }},
   { "class",           { &handleClass,            CommandSpacing::Invisible }},
   { "code",            { &handleFormatBlock,      CommandSpacing::Block     }},
+  { "icode",           { &handleFormatBlock,      CommandSpacing::Block     }},
   { "concept",         { &handleConcept,          CommandSpacing::Invisible }},
   { "copybrief",       { &handleCopyBrief,        CommandSpacing::Invisible }},
   { "copydetails",     { &handleCopyDetails,      CommandSpacing::Block     }},
   { "copydoc",         { &handleCopyDoc,          CommandSpacing::Block     }},
   { "copyright",       { 0,                       CommandSpacing::Block     }},
+  { "showdate",        { 0,                       CommandSpacing::Inline    }},
   { "date",            { 0,                       CommandSpacing::Block     }},
   { "def",             { &handleDef,              CommandSpacing::Invisible }},
   { "defgroup",        { &handleDefGroup,         CommandSpacing::Invisible }},
@@ -260,6 +270,7 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "public",          { &handlePublic,           CommandSpacing::Invisible }},
   { "publicsection",   { &handlePublicSection,    CommandSpacing::Invisible }},
   { "pure",            { &handlePure,             CommandSpacing::Invisible }},
+  { "qualifier",       { &handleQualifier,        CommandSpacing::Invisible }},
   { "raisewarning",    { &handleRaiseWarning,     CommandSpacing::Invisible }},
   { "refitem",         { &handleRefItem,          CommandSpacing::Inline    }},
   { "related",         { &handleRelated,          CommandSpacing::Invisible }},
@@ -301,6 +312,7 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "until",           { 0,                       CommandSpacing::Block     }},
   { "var",             { &handleFn,               CommandSpacing::Invisible }},
   { "verbatim",        { &handleFormatBlock,      CommandSpacing::Block     }},
+  { "iverbatim",       { &handleFormatBlock,      CommandSpacing::Block     }},
   { "verbinclude",     { 0,                       CommandSpacing::Inline    }},
   { "version",         { 0,                       CommandSpacing::Block     }},
   { "warning",         { 0,                       CommandSpacing::Block     }},
@@ -309,6 +321,8 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "xmlonly",         { &handleFormatBlock,      CommandSpacing::Invisible }},
   { "xrefitem",        { &handleXRefItem,         CommandSpacing::XRef      }},
   { "iliteral",        { &handleFormatBlock,      CommandSpacing::Inline    }},
+  { "fileinfo",        { &handleFileInfo,         CommandSpacing::Inline    }},
+  { "lineinfo",        { &handleLineInfo,         CommandSpacing::Inline    }},
 };
 
 #define YY_NO_INPUT 1
@@ -338,20 +352,27 @@ enum GuardType
 {
   Guard_If,
   Guard_IfNot,
-  Guard_Skip
+  Guard_ElseIf
 };
 
 class GuardedSection
 {
   public:
-    GuardedSection(bool enabled,bool parentVisible)
-      : m_enabled(enabled),m_parentVisible(parentVisible) {}
+    GuardedSection(bool parentVisible)
+      : m_parentVisible(parentVisible) {}
+    void setEnabled(bool enabled) { m_enabled = enabled; }
     bool isEnabled() const { return m_enabled; }
+    void setEnabledFound() { m_enabledFound = true; }
+    bool isEnabledFound() const { return m_enabledFound; }
     bool parentVisible() const { return m_parentVisible; }
+    void setElse() { m_hasElse = true; }
+    bool hasElse() const { return m_hasElse; }
 
   private:
-    bool m_enabled;
     bool m_parentVisible;
+    bool m_enabledFound = false;
+    bool m_enabled = false;
+    bool m_hasElse = false;
 };
 
 /* -----------------------------------------------------------------
@@ -379,7 +400,6 @@ struct commentscanYY_state
   XRefKind         xrefKind    = XRef_Item;  // kind of cross-reference command
   XRefKind         newXRefKind = XRef_Item;  //
   GuardType        guardType = Guard_If;     // kind of guards for conditional section
-  bool             enabledSectionFound = FALSE;
   QCString         functionProto;          // function prototype
   std::stack<GuardedSection> guards;             // tracks nested conditional sections (if,ifnot,..)
   Entry           *current = 0;              // working entry
@@ -393,7 +413,7 @@ struct commentscanYY_state
   QCString         newXRefItemKey;
   QCString         xrefItemTitle;
   QCString         xrefListTitle;
-  Protection       protection = Public;
+  Protection       protection = Protection::Public;
 
   bool             xrefAppendFlag = FALSE;
   bool             inGroupParamFound = FALSE;
@@ -409,7 +429,7 @@ struct commentscanYY_state
 
   QCString         guardExpr;
   int              roundCount = 0;
-  int              HTMLDetails = 0;
+  std::vector<int> HTMLDetailsSummary;
 
   bool             insideParBlock = FALSE;
   bool             inInternalDocs = FALSE;
@@ -451,7 +471,7 @@ static inline void addOutput(yyscan_t yyscanner,const QCString &s);
 static inline void addOutput(yyscan_t yyscanner,char c);
 static void endBrief(yyscan_t yyscanner,bool addToOutput=TRUE);
 static void handleGuard(yyscan_t yyscanner,const QCString &expr);
-static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
+static int yyread(yyscan_t yyscanner,char *buf,int max_size);
 static void addCite(yyscan_t yyscanner);
 static void addIline(yyscan_t yyscanner,int lineNr);
 static void addIlineBreak(yyscan_t yyscanner,int lineNr);
@@ -578,6 +598,7 @@ STopt  [^\n@\\]*
 %x      CdataSection
 %x      Noop
 %x      RaiseWarning
+%x      Qualifier
 
 %%
 
@@ -627,12 +648,15 @@ STopt  [^\n@\\]*
                                           REJECT;
                                         }
 <Comment>"<"{DETAILS}{ATTR}">"          { // start of a HTML style details description
-                                          yyextra->HTMLDetails++;
+                                          yyextra->HTMLDetailsSummary.push_back(0);
                                           setOutput(yyscanner,OutputDoc);
                                           addOutput(yyscanner,yytext);
                                         }
 <Comment>"</"{DETAILS}">"               { // end of a HTML style details description
-                                          if (yyextra->HTMLDetails) yyextra->HTMLDetails--;
+                                          if (!yyextra->HTMLDetailsSummary.empty())
+                                          {
+                                            yyextra->HTMLDetailsSummary.pop_back();
+                                          }
                                           addOutput(yyscanner,yytext);
                                         }
 <Comment>"<"{AHTML}                     { // potential start of HTML anchor, see issue 9200
@@ -695,16 +719,28 @@ STopt  [^\n@\\]*
                                           yyextra->htmlAnchorStr += yytext;
                                         }
 <Comment>"<"{SUMMARY}">"                { // start of a .NET XML style brief description
-                                          if (!yyextra->HTMLDetails) setOutput(yyscanner,OutputBrief);
-                                          addOutput(yyscanner,yytext);
+                                          if (yyextra->HTMLDetailsSummary.empty())
+                                          {
+                                            setOutput(yyscanner,OutputBrief);
+                                          }
+                                          else // HTML5 style <summary> as part of <details> section.
+                                          {
+                                            addOutput(yyscanner,yytext);
+                                          }
                                         }
 <Comment>"<"{REMARKS}">"                { // start of a .NET XML style detailed description
                                           setOutput(yyscanner,OutputDoc);
                                           addOutput(yyscanner,yytext);
                                         }
 <Comment>"</"{SUMMARY}">"               { // start of a .NET XML style detailed description
-                                          addOutput(yyscanner,yytext);
-                                          if (!yyextra->HTMLDetails) setOutput(yyscanner,OutputDoc);
+                                          if (!yyextra->HTMLDetailsSummary.empty())
+                                          {
+                                            addOutput(yyscanner,yytext);
+                                          }
+                                          else
+                                          {
+                                            setOutput(yyscanner,OutputDoc);
+                                          }
                                         }
 <Comment>"</"{REMARKS}">"               { // end of a brief or detailed description
                                           setOutput(yyscanner,OutputDoc);
@@ -1466,8 +1502,35 @@ STopt  [^\n@\\]*
                                         }
 
 
+  /* ----- handle arguments of the qualifier command ----- */
+<Qualifier>{LABELID}                    { // unquoted version, simple label
+                                          yyextra->current->qualifiers.push_back(yytext);
+                                          BEGIN( Comment );
+                                        }
+<Qualifier>"\""[^\"]*"\""               { // quotes version, add without quotes
+                                          std::string inp(yytext);
+                                          yyextra->current->qualifiers.push_back(inp.substr(1,yyleng-2));
+                                          BEGIN( Comment );
+                                        }
+<Qualifier>{DOCNL}                      { // missing argument
+                                          warn(yyextra->fileName,yyextra->lineNr,
+                                              "Missing argument of '\\%s' command",qPrint(yyextra->currentCmd)
+                                              );
+                                          unput_string(yytext,yyleng);
+                                          BEGIN( Comment );
+                                        }
+<Qualifier>.                            {
+                                          warn(yyextra->fileName,yyextra->lineNr,
+                                              "Argument of '\\%s' command should be quoted",qPrint(yyextra->currentCmd)
+                                              );
+                                          unput_string(yytext,yyleng);
+                                          BEGIN( Comment );
+                                        }
   /* ----- handle arguments of the relates(also)/addindex commands ----- */
 
+<LineParam>{CMD}{CMD}                   { // escaped command
+                                          addOutput(yyscanner,yytext);
+                                        }
 <LineParam>{DOCNL}                      { // end of argument
                                           //if (*yytext=='\n') yyextra->lineNr++;
                                           //addOutput(yyscanner,'\n');
@@ -1477,6 +1540,9 @@ STopt  [^\n@\\]*
 <LineParam>{LC}                         { // line continuation
                                           yyextra->lineNr++;
                                           addOutput(yyscanner,'\n');
+                                        }
+<LineParam>({CMD}{CMD}){ID}             { // escaped command
+                                          addOutput(yyscanner,yytext);
                                         }
 <LineParam>.                            { // ignore other stuff
                                           addOutput(yyscanner,*yytext);
@@ -1522,11 +1588,11 @@ STopt  [^\n@\\]*
                                           yyextra->sectionTitle+=yytext;
                                           addOutput(yyscanner,yytext);
                                         }
-<SectionTitle>({CMD}{CMD}){ID}          { // unescape escaped command
+<SectionTitle>({CMD}{CMD}){ID}          { // escaped command
                                           yyextra->sectionTitle+=&yytext[1];
                                           addOutput(yyscanner,yytext);
                                         }
-<SectionTitle>{CMD}[$@\\&~<>#%]         { // unescape escaped character
+<SectionTitle>{CMD}[$@\\&~<>#%]         { // unescaped character
                                           yyextra->sectionTitle+=yytext[1];
                                           addOutput(yyscanner,yytext);
                                         }
@@ -1541,7 +1607,7 @@ STopt  [^\n@\\]*
                                           addOutput(yyscanner,yytext);
                                           // we add subpage labels as a kind of "inheritance" relation to prevent
                                           // needing to add another list to the Entry class.
-                                          yyextra->current->extends.push_back(BaseInfo(QCString(yytext),Public,Normal));
+                                          yyextra->current->extends.push_back(BaseInfo(QCString(yytext),Protection::Public,Specifier::Normal));
                                           BEGIN(SubpageTitle);
                                         }
 <SubpageLabel>{DOCNL}                   { // missing argument
@@ -1594,7 +1660,7 @@ STopt  [^\n@\\]*
 
   /* ----- handle arguments of the preformatted block commands ------- */
 
-<FormatBlock>{CMD}("endverbatim"|"endiliteral"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endrtfonly"|"endmanonly"|"enddot"|"endcode"|"endmsc")/{NW} { // possible ends
+<FormatBlock>{CMD}("endverbatim"|"endiverbatim"|"endiliteral"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endrtfonly"|"endmanonly"|"enddot"|"endcode"|"endicode"|"endmsc")/{NW} { // possible ends
                                           addOutput(yyscanner,yytext);
                                           if (&yytext[4]==yyextra->blockName) // found end of the block
                                           {
@@ -1616,12 +1682,20 @@ STopt  [^\n@\\]*
                                           addOutput(yyscanner,'\n');
                                         }
 <FormatBlock>{CCS}                       { // start of a C-comment
-                                          if (!(yyextra->blockName=="code" || yyextra->blockName=="verbatim" || yyextra->blockName=="iliteral")) yyextra->commentCount++;
+                                          if (!(yyextra->blockName=="code"  || yyextra->blockName=="verbatim" ||
+                                                yyextra->blockName=="icode" || yyextra->blockName=="iverbatim"||
+                                                yyextra->blockName=="iliteral"
+                                               )
+                                             ) yyextra->commentCount++;
                                           addOutput(yyscanner,yytext);
                                         }
 <FormatBlock>{CCE}                       { // end of a C-comment
                                           addOutput(yyscanner,yytext);
-                                          if (!(yyextra->blockName=="code" || yyextra->blockName=="verbatim" || yyextra->blockName=="iliteral"))
+                                          if (!(yyextra->blockName=="code"  || yyextra->blockName=="verbatim" ||
+                                                yyextra->blockName=="icode" || yyextra->blockName=="iverbatim"||
+                                                yyextra->blockName=="iliteral"
+                                               )
+                                             )
                                           {
                                             yyextra->commentCount--;
                                             if (yyextra->commentCount<0)
@@ -1683,14 +1757,16 @@ STopt  [^\n@\\]*
                                           //next line is commented out due to bug620924
                                           //addOutput(yyscanner,'\n');
                                           addIlineBreak(yyscanner,yyextra->lineNr);
-                                          BEGIN( Comment );
+                                          unput(*yytext);
+                                          handleGuard(yyscanner,QCString());
                                         }
 <GuardParam>{LC}                        { // line continuation
                                           yyextra->lineNr++;
                                           addOutput(yyscanner,'\n');
                                         }
-<GuardParam>.                           { // ignore other stuff
-                                          addOutput(yyscanner,*yytext);
+<GuardParam>.                           { // empty condition
+                                          unput(*yytext);
+                                          handleGuard(yyscanner,QCString());
                                         }
 <GuardParamEnd>{B}*{DOCNL}              {
                                           lineCount(yyscanner);
@@ -1717,10 +1793,12 @@ STopt  [^\n@\\]*
 
 <SkipGuardedSection>{CMD}"ifnot"/{NW}   {
                                           yyextra->guardType = Guard_IfNot;
+                                          yyextra->guards.push(GuardedSection(false));
                                           BEGIN( GuardParam );
                                         }
 <SkipGuardedSection>{CMD}"if"/{NW}      {
                                           yyextra->guardType = Guard_If;
+                                          yyextra->guards.push(GuardedSection(false));
                                           BEGIN( GuardParam );
                                         }
 <SkipGuardedSection>{CMD}"endif"/{NW}   {
@@ -1728,16 +1806,25 @@ STopt  [^\n@\\]*
                                           {
                                             warn(yyextra->fileName,yyextra->lineNr,
                                                 "found \\endif without matching start command");
+                                            BEGIN( Comment );
                                           }
                                           else
                                           {
-                                            GuardedSection s = yyextra->guards.top();
                                             yyextra->guards.pop();
-                                            bool parentVisible = s.parentVisible();
-                                            if (parentVisible)
+                                            if (yyextra->guards.empty())
                                             {
-                                              yyextra->enabledSectionFound=TRUE;
                                               BEGIN( GuardParamEnd );
+                                            }
+                                            else
+                                            {
+                                              if (yyextra->guards.top().isEnabled())
+                                              {
+                                                BEGIN( GuardParamEnd );
+                                              }
+                                              else
+                                              {
+                                                BEGIN( SkipGuardedSection );
+                                              }
                                             }
                                           }
                                         }
@@ -1747,13 +1834,35 @@ STopt  [^\n@\\]*
                                             warn(yyextra->fileName,yyextra->lineNr,
                                                 "found \\else without matching start command");
                                           }
+                                          else if (yyextra->guards.top().hasElse())
+                                          {
+                                            warn(yyextra->fileName,yyextra->lineNr,
+                                                "found multiple \\else commands in same \\if construct");
+                                            yyextra->guards.top().setEnabled(false);
+                                            BEGIN( SkipGuardedSection );
+                                          }
+                                          else if (!yyextra->guards.top().parentVisible())
+                                          {
+                                            yyextra->guards.top().setEnabled(false);
+                                            BEGIN( SkipGuardedSection );
+                                          }
                                           else
                                           {
-                                            if (!yyextra->enabledSectionFound && yyextra->guards.top().parentVisible())
+                                            yyextra->spaceBeforeIf = yyextra->spaceBeforeCmd;
+                                            yyextra->guards.top().setElse();
+                                            if (!yyextra->guards.top().parentVisible())
                                             {
-                                              yyextra->guards.pop();
-                                              yyextra->guards.push(GuardedSection(TRUE,TRUE));
-                                              yyextra->enabledSectionFound=TRUE;
+                                              yyextra->guards.top().setEnabled(false);
+                                              BEGIN( SkipGuardedSection );
+                                            }
+                                            else if (yyextra->guards.top().isEnabledFound())
+                                            {
+                                              yyextra->guards.top().setEnabled(false);
+                                              BEGIN( SkipGuardedSection );
+                                            }
+                                            else
+                                            {
+                                              yyextra->guards.top().setEnabled(true);
                                               BEGIN( GuardParamEnd );
                                             }
                                           }
@@ -1764,14 +1873,21 @@ STopt  [^\n@\\]*
                                             warn(yyextra->fileName,yyextra->lineNr,
                                                 "found \\elseif without matching start command");
                                           }
+                                          else if (yyextra->guards.top().hasElse())
+                                          {
+                                            warn(yyextra->fileName,yyextra->lineNr,
+                                                "found \\elseif command after \\else command was given in \\if construct");
+                                            yyextra->guardType = Guard_ElseIf;
+                                            yyextra->spaceBeforeIf = yyextra->spaceBeforeCmd;
+                                            yyextra->guards.top().setEnabled(false);
+                                            BEGIN( GuardParam );
+                                          }
                                           else
                                           {
-                                            if (!yyextra->enabledSectionFound && yyextra->guards.top().parentVisible())
-                                            {
-                                              yyextra->guardType=Guard_If;
-                                              yyextra->guards.pop();
-                                              BEGIN( GuardParam );
-                                            }
+                                            yyextra->guardType = Guard_ElseIf;
+                                            yyextra->spaceBeforeIf = yyextra->spaceBeforeCmd;
+                                            yyextra->guards.top().setEnabled(false);
+                                            BEGIN( GuardParam );
                                           }
                                         }
 <SkipGuardedSection>{DOCNL}             { // skip line
@@ -1971,7 +2087,7 @@ STopt  [^\n@\\]*
 
 <InheritParam>({ID}("::"|"."))*{ID}     { // found argument
                                           yyextra->current->extends.push_back(
-                                            BaseInfo(removeRedundantWhiteSpace(QCString(yytext)),Public,Normal)
+                                            BaseInfo(removeRedundantWhiteSpace(QCString(yytext)),Protection::Public,Specifier::Normal)
                                           );
                                           BEGIN( Comment );
                                         }
@@ -1994,7 +2110,7 @@ STopt  [^\n@\\]*
 
 <ExtendsParam>({ID}("::"|"."))*{ID}     { // found argument
                                           yyextra->current->extends.push_back(
-                                            BaseInfo(removeRedundantWhiteSpace(QCString(yytext)),Public,Normal)
+                                            BaseInfo(removeRedundantWhiteSpace(QCString(yytext)),Protection::Public,Specifier::Normal)
                                           );
                                           BEGIN( Comment );
                                         }
@@ -2480,7 +2596,7 @@ static bool handleRelated(yyscan_t yyscanner,const QCString &cmd, const StringVe
     warn(yyextra->fileName,yyextra->lineNr,
         "found multiple \\relates, \\relatesalso or \\memberof commands in a comment block, using last definition");
   }
-  yyextra->current->relatesType = Simple;
+  yyextra->current->relatesType = RelatesType::Simple;
   yyextra->currentCmd = cmd;
   BEGIN(RelatesParam1);
   return FALSE;
@@ -2494,7 +2610,7 @@ static bool handleRelatedAlso(yyscan_t yyscanner,const QCString &cmd, const Stri
     warn(yyextra->fileName,yyextra->lineNr,
         "found multiple \\relates, \\relatesalso or \\memberof commands in a comment block, using last definition");
   }
-  yyextra->current->relatesType = Duplicate;
+  yyextra->current->relatesType = RelatesType::Duplicate;
   yyextra->currentCmd = cmd;
   BEGIN(RelatesParam1);
   return FALSE;
@@ -2508,7 +2624,7 @@ static bool handleMemberOf(yyscan_t yyscanner,const QCString &cmd, const StringV
     warn(yyextra->fileName,yyextra->lineNr,
         "found multiple \\relates, \\relatesalso or \\memberof commands in a comment block, using last definition");
   }
-  yyextra->current->relatesType = MemberOf;
+  yyextra->current->relatesType = RelatesType::MemberOf;
   yyextra->currentCmd = cmd;
   BEGIN(RelatesParam1);
   return FALSE;
@@ -2633,12 +2749,90 @@ static bool handleAddIndex(yyscan_t yyscanner,const QCString &, const StringVect
   return FALSE;
 }
 
+static bool handleFileInfo(yyscan_t yyscanner,const QCString &, const StringVector &optList)
+{
+  using OutputWriter = std::function<void(yyscan_t,FileInfo &)>;
+  static std::unordered_map<std::string,OutputWriter> options =
+  { // name,        writer
+    { "name",      [](yyscan_t s,FileInfo &fi) { addOutput(s,fi.baseName());      } },
+    { "extension", [](yyscan_t s,FileInfo &fi) { addOutput(s,fi.extension(true)); } },
+    { "filename",  [](yyscan_t s,FileInfo &fi) { addOutput(s,fi.fileName());      } },
+    { "directory", [](yyscan_t s,FileInfo &fi) { addOutput(s,fi.dirPath());       } },
+    { "full",      [](yyscan_t s,FileInfo &fi) { addOutput(s,fi.absFilePath());   } },
+  };
+
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  if (!yyextra->spaceBeforeCmd.isEmpty())
+  {
+    addOutput(yyscanner,yyextra->spaceBeforeCmd);
+    yyextra->spaceBeforeCmd.resize(0);
+  }
+  bool first = true;
+  FileInfo fi(yyextra->fileName.str());
+  for (const auto &opt_ : optList)
+  {
+    QCString optStripped = QCString(opt_).stripWhiteSpace();
+    std::string opt = optStripped.lower().str();
+    auto it = options.find(opt);
+    if (it != options.end())
+    {
+      if (!first)
+      {
+        warn(yyextra->fileName,yyextra->lineNr,"Multiple options specified with \\fileinfo, discarding '%s'", qPrint(optStripped));
+      }
+      else
+      {
+        it->second(yyscanner,fi);
+      }
+      first = false;
+    }
+    else
+    {
+      warn(yyextra->fileName,yyextra->lineNr,"Unknown option specified with \\fileinfo: '%s'", qPrint(optStripped));
+    }
+  }
+  if (first) // no options specified
+  {
+    if (Config_getBool(FULL_PATH_NAMES))
+    {
+      addOutput(yyscanner,stripFromPath(yyextra->fileName));
+    }
+    else
+    {
+      addOutput(yyscanner,yyextra->fileName);
+    }
+  }
+  addOutput(yyscanner," ");
+  return FALSE;
+}
+
+static bool handleLineInfo(yyscan_t yyscanner,const QCString &, const StringVector &)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  if (!yyextra->spaceBeforeCmd.isEmpty())
+  {
+    addOutput(yyscanner,yyextra->spaceBeforeCmd);
+    yyextra->spaceBeforeCmd.resize(0);
+  }
+  addOutput(yyscanner,QCString().setNum(yyextra->lineNr));
+  addOutput(yyscanner," ");
+  return FALSE;
+}
+
 static bool handleIf(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yyextra->enabledSectionFound=FALSE;
   yyextra->guardType = Guard_If;
   yyextra->spaceBeforeIf = yyextra->spaceBeforeCmd;
+  if (yyextra->guards.empty())
+  {
+    yyextra->guards.push(GuardedSection(true));
+  }
+  else
+  {
+    bool enabled  = yyextra->guards.top().isEnabled();
+    yyextra->guards.push(GuardedSection(enabled));
+  }
   BEGIN(GuardParam);
   return FALSE;
 }
@@ -2646,9 +2840,17 @@ static bool handleIf(yyscan_t yyscanner,const QCString &, const StringVector &)
 static bool handleIfNot(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yyextra->enabledSectionFound=FALSE;
   yyextra->guardType = Guard_IfNot;
   yyextra->spaceBeforeIf = yyextra->spaceBeforeCmd;
+  if (yyextra->guards.empty())
+  {
+    yyextra->guards.push(GuardedSection(true));
+  }
+  else
+  {
+    bool enabled  = yyextra->guards.top().isEnabled();
+    yyextra->guards.push(GuardedSection(enabled));
+  }
   BEGIN(GuardParam);
   return FALSE;
 }
@@ -2659,12 +2861,22 @@ static bool handleElseIf(yyscan_t yyscanner,const QCString &, const StringVector
   if (yyextra->guards.empty())
   {
     warn(yyextra->fileName,yyextra->lineNr,
-        "found \\else without matching start command");
+        "found \\elseif without matching start command");
+  }
+  else if (yyextra->guards.top().hasElse())
+  {
+    warn(yyextra->fileName,yyextra->lineNr,
+        "found \\elseif command after \\else command was given in \\if construct");
+    yyextra->guardType = Guard_ElseIf;
+    yyextra->spaceBeforeIf = yyextra->spaceBeforeCmd;
+    yyextra->guards.top().setEnabled(false);
+    BEGIN(GuardParam);
   }
   else
   {
-    yyextra->guardType = yyextra->enabledSectionFound ? Guard_Skip : Guard_If;
+    yyextra->guardType = Guard_ElseIf;
     yyextra->spaceBeforeIf = yyextra->spaceBeforeCmd;
+    yyextra->guards.top().setEnabled(false);
     BEGIN(GuardParam);
   }
   return FALSE;
@@ -2678,10 +2890,28 @@ static bool handleElse(yyscan_t yyscanner,const QCString &, const StringVector &
     warn(yyextra->fileName,yyextra->lineNr,
         "found \\else without matching start command");
   }
+  else if (yyextra->guards.top().hasElse())
+  {
+    warn(yyextra->fileName,yyextra->lineNr,
+        "found multiple \\else commands in same \\if construct");
+    yyextra->guards.top().setEnabled(false);
+    yyextra->guards.top().setElse();
+    BEGIN( SkipGuardedSection );
+  }
   else
   {
+    yyextra->guards.top().setElse();
     yyextra->spaceBeforeIf = yyextra->spaceBeforeCmd;
-    BEGIN( SkipGuardedSection );
+    if (yyextra->guards.top().isEnabledFound())
+    {
+      yyextra->guards.top().setEnabled(false);
+      BEGIN( SkipGuardedSection );
+    }
+    else
+    {
+      yyextra->guards.top().setEnabled(true);
+      BEGIN( GuardParamEnd );
+    }
   }
   return FALSE;
 }
@@ -2698,13 +2928,26 @@ static bool handleEndIf(yyscan_t yyscanner,const QCString &, const StringVector 
   {
     yyextra->guards.pop();
   }
-  yyextra->enabledSectionFound=FALSE;
   if (!yyextra->spaceBeforeCmd.isEmpty())
   {
     addOutput(yyscanner,yyextra->spaceBeforeCmd);
     yyextra->spaceBeforeCmd.resize(0);
   }
-  BEGIN( GuardParamEnd );
+  if (yyextra->guards.empty())
+  {
+    BEGIN( GuardParamEnd );
+  }
+  else
+  {
+    if (yyextra->guards.top().isEnabled())
+    {
+      BEGIN( GuardParamEnd );
+    }
+    else
+    {
+      BEGIN( SkipGuardedSection );
+    }
+  }
   return FALSE;
 }
 
@@ -2762,6 +3005,14 @@ static bool handleHideCallergraph(yyscan_t yyscanner,const QCString &, const Str
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yyextra->current->callerGraph = FALSE; // OFF
+  return FALSE;
+}
+
+static bool handleQualifier(yyscan_t yyscanner,const QCString &cmd, const StringVector &)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->currentCmd = cmd;
+  BEGIN(Qualifier);
   return FALSE;
 }
 
@@ -2826,49 +3077,49 @@ static bool handleStatic(yyscan_t yyscanner,const QCString &, const StringVector
 static bool handlePure(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yyextra->current->virt = Pure;
+  yyextra->current->virt = Specifier::Pure;
   return FALSE;
 }
 
 static bool handlePrivate(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yyextra->current->protection = Private;
+  yyextra->current->protection = Protection::Private;
   return FALSE;
 }
 
 static bool handlePrivateSection(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yyextra->current->protection = yyextra->protection = Private;
+  yyextra->current->protection = yyextra->protection = Protection::Private;
   return FALSE;
 }
 
 static bool handleProtected(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yyextra->current->protection = Protected;
+  yyextra->current->protection = Protection::Protected;
   return FALSE;
 }
 
 static bool handleProtectedSection(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yyextra->current->protection = yyextra->protection = Protected ;
+  yyextra->current->protection = yyextra->protection = Protection::Protected ;
   return FALSE;
 }
 
 static bool handlePublic(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yyextra->current->protection = Public;
+  yyextra->current->protection = Protection::Public;
   return FALSE;
 }
 
 static bool handlePublicSection(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yyextra->current->protection = yyextra->protection = Public;
+  yyextra->current->protection = yyextra->protection = Protection::Public;
   return FALSE;
 }
 
@@ -3260,7 +3511,7 @@ static void addCite(yyscan_t yyscanner)
 // strip trailing whitespace (excluding newlines) from string s
 static void stripTrailingWhiteSpace(QCString &s)
 {
-  uint len = s.length();
+  uint32_t len = s.length();
   int i = (int)len-1;
   char c;
   while (i>=0)
@@ -3501,11 +3752,11 @@ static void endBrief(yyscan_t yyscanner,bool addToOutput)
   }
 }
 
-static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size)
+static int yyread(yyscan_t yyscanner,char *buf,int max_size)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yyextra->prevPosition=yyextra->inputPosition;
-  yy_size_t c=0;
+  int c=0;
   while( c < max_size && yyextra->inputString[yyextra->inputPosition] )
   {
     *buf = yyextra->inputString[yyextra->inputPosition++] ;
@@ -3538,7 +3789,7 @@ CommentScanner::CommentScanner() : p(std::make_unique<Private>())
 {
   commentscanYYlex_init_extra(&p->extra,&p->yyscanner);
 #ifdef FLEX_DEBUG
-  commentscanYYset_debug(1,p->yyscanner);
+  commentscanYYset_debug(Debug::isFlagSet(Debug::Lex_commentscan)?1:0,p->yyscanner);
 #endif
 }
 
@@ -3561,10 +3812,11 @@ bool CommentScanner::parseCommentBlock(/* in */     OutlineParserInterface *pars
                        /* in */     bool markdownSupport
                       )
 {
+  AUTO_TRACE("comment='{}' fileName={} lineNr={} isBrief={} isAutoBriefOn={} inInbody={}"
+             " prot={} markdownSupport={}",Trace::trunc(comment),fileName,lineNr,isBrief,
+             isAutoBriefOn,isInbody,prot,markdownSupport);
   yyscan_t yyscanner = p->yyscanner;
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  //printf("parseCommentBlock() isBrief=%d isAutoBriefOn=%d lineNr=%d\n",
-  //    isBrief,isAutoBriefOn,lineNr);
 
   initParser(yyscanner);
   yyextra->guards = std::stack<GuardedSection>();
@@ -3597,10 +3849,12 @@ bool CommentScanner::parseCommentBlock(/* in */     OutlineParserInterface *pars
   yyextra->spaceBeforeCmd.resize(0);
   yyextra->spaceBeforeIf.resize(0);
 
-  printlex(yy_flex_debug, TRUE, __FILE__, !fileName.isEmpty() ? qPrint(fileName): NULL);
+  DebugLex debugLex(Debug::Lex_commentscan, __FILE__, !fileName.isEmpty() ? qPrint(fileName): NULL);
   if (!yyextra->current->inbodyDocs.isEmpty() && isInbody) // separate in body fragments
   {
-    yyextra->current->inbodyDocs+="\n\n";
+    char cmd[30];
+    sprintf(cmd,"\n\n\\iline %d \\ilinebr ",lineNr);
+    yyextra->current->inbodyDocs+=cmd;
   }
 
   Debug::print(Debug::CommentScan,0,"-----------\nCommentScanner: %s:%d\n"
@@ -3665,10 +3919,9 @@ bool CommentScanner::parseCommentBlock(/* in */     OutlineParserInterface *pars
   if (yyextra->parseMore) position=yyextra->inputPosition; else position=0;
 
   lineNr = yyextra->lineNr;
-  //printf("position=%d yyextra->parseMore=%d newEntryNeeded=%d\n",
-  //  position,yyextra->parseMore,newEntryNeeded);
+  AUTO_TRACE_EXIT("position={} parseMore={} newEntryNeeded={}",
+      position,yyextra->parseMore,newEntryNeeded);
 
-  printlex(yy_flex_debug, FALSE, __FILE__, !fileName.isEmpty() ? qPrint(fileName): NULL);
   return yyextra->parseMore;
 }
 
@@ -3676,9 +3929,12 @@ static void handleGuard(yyscan_t yyscanner,const QCString &expr)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   CondParser prs;
-  bool sectionEnabled=prs.parse(yyextra->fileName,yyextra->lineNr,expr.stripWhiteSpace());
-  bool parentEnabled = TRUE;
-  if (!yyextra->guards.empty()) parentEnabled = yyextra->guards.top().isEnabled();
+  bool sectionEnabled = false;
+  if (!expr.isEmpty())
+  {
+    sectionEnabled=prs.parse(yyextra->fileName,yyextra->lineNr,expr.stripWhiteSpace());
+  }
+  bool parentEnabled = parentEnabled = yyextra->guards.top().parentVisible();
   if (parentEnabled)
   {
     if (
@@ -3686,22 +3942,37 @@ static void handleGuard(yyscan_t yyscanner,const QCString &expr)
         (!sectionEnabled && yyextra->guardType==Guard_IfNot)
        ) // section is visible
     {
-      yyextra->guards.push(GuardedSection(TRUE,TRUE));
-      yyextra->enabledSectionFound=TRUE;
+
+      yyextra->guards.top().setEnabled(true);
+      yyextra->guards.top().setEnabledFound();
       BEGIN( GuardParamEnd );
+    }
+    else if (yyextra->guardType==Guard_ElseIf)
+    {
+      if (yyextra->guards.top().isEnabledFound())
+      {
+        yyextra->guards.top().setEnabled(false);
+        BEGIN( SkipGuardedSection );
+      }
+      else if (sectionEnabled)
+      {
+        yyextra->guards.top().setEnabled(true);
+        yyextra->guards.top().setEnabledFound();
+        BEGIN( GuardParamEnd );
+      }
+      else
+      {
+        yyextra->guards.top().setEnabled(false);
+        BEGIN( SkipGuardedSection );
+      }
     }
     else // section is invisible
     {
-      if (yyextra->guardType!=Guard_Skip)
-      {
-        yyextra->guards.push(GuardedSection(FALSE,TRUE));
-      }
       BEGIN( SkipGuardedSection );
     }
   }
   else // invisible because of parent
   {
-    yyextra->guards.push(GuardedSection(FALSE,FALSE));
     BEGIN( SkipGuardedSection );
   }
 }

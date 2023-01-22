@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="namespacem1" kind="namespace" language="Fortran">
+    <compoundname>m1</compoundname>
+    <innerclass refid="structm1_1_1t1" prot="public">m1::t1</innerclass>
+    <innerclass refid="structm1_1_1t2" prot="public">m1::t2</innerclass>
+    <innerclass refid="structm1_1_1t3" prot="public">m1::t3</innerclass>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="095_inheritance.f03" line="12" column="1"/>
+  </compounddef>
+</doxygen>

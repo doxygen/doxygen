@@ -28,9 +28,9 @@
 #include <errno.h>
 #include <thread>
 #include <algorithm>
-#include <fstream>
 #include <iostream>
 #include <iomanip>
+#include <cstdint>
 
 #include "config.h"
 #include "regex.h"
@@ -44,9 +44,13 @@
 #include "dir.h"
 #include "textstream.h"
 #include "dotattributes.h"
+#include "debug.h"
 
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
+
+// For debugging
+#define SHOW_INCLUDES 0
 
 #define USE_STATE2STRING 0
 
@@ -630,7 +634,10 @@ static std::vector< std::unique_ptr<ConfigFileState> > g_includeStack;
 static bool              g_configUpdate = FALSE;
 static QCString          g_encoding;
 static ConfigImpl       *g_config;
+static Config::CompareMode g_compareMode = Config::CompareMode::Full;
+static QCString          g_localStoreRepl;
 
+#define unput_string(yytext,yyleng) do { for (int i=(int)yyleng-1;i>=0;i--) unput(yytext[i]); } while(0)
 /* -----------------------------------------------------------------
  */
 #undef  YY_INPUT
@@ -641,12 +648,12 @@ static inline const char *getLexerFILE() {return __FILE__;}
 #define LEX_NO_REENTRANT
 #include "doxygen_lex.h"
 
-static yy_size_t yyread(char *buf,yy_size_t max_size)
+static int yyread(char *buf,int max_size)
 {
   // no file included
   if (g_includeStack.empty())
   {
-    yy_size_t c=0;
+    int c=0;
     if (g_inputString==0) return c;
     while( c < max_size && g_inputString[g_inputPosition] )
     {
@@ -658,7 +665,7 @@ static yy_size_t yyread(char *buf,yy_size_t max_size)
   else
   {
     //assert(g_includeStack.current()->newState==YY_CURRENT_BUFFER);
-    return static_cast<yy_size_t>(fread(buf,1,max_size,g_includeStack.back()->filePtr));
+    return static_cast<int>(fread(buf,1,max_size,g_includeStack.back()->filePtr));
   }
 }
 
@@ -675,7 +682,8 @@ static QCString configStringRecode(
   void *cd = portable_iconv_open(outputEncoding.data(),inputEncoding.data());
   if (cd==reinterpret_cast<void *>(-1))
   {
-    config_term("Error: unsupported character conversion: '%s'->'%s'\n",
+    config_term("Error: unsupported character conversion: '%s'->'%s'\n"
+                "Check the 'DOXYFILE_ENCODING' setting in the config file!\n",
         qPrint(inputEncoding),qPrint(outputEncoding));
   }
   size_t iLeft=inputSize;
@@ -730,6 +738,14 @@ static QCString stripComment(const QCString &s)
     }
   }
   return s;
+}
+
+static void processStoreRepl(QCString &storeReplStr)
+{
+  // strip leading and trailing whitespace
+  QCString s = stripComment(storeReplStr.stripWhiteSpace());
+  // recode the string
+  storeReplStr=configStringRecode(s,g_encoding,"UTF-8");
 }
 
 static void processString()
@@ -931,7 +947,7 @@ static void readIncludeFile(const QCString &incName)
   QCString inc = incName;
   substEnvVarsInString(inc);
   inc = inc.stripWhiteSpace();
-  uint incLen = inc.length();
+  uint32_t incLen = inc.length();
   if (incLen>0 && inc.at(0)=='"' && inc.at(incLen-1)=='"') // strip quotes
   {
     inc=inc.mid(1,incLen-2);
@@ -970,13 +986,16 @@ static void readIncludeFile(const QCString &incName)
 %}
 
 %option noyywrap
-%option nounput
+
+REGEX_a [a-z_A-Z\x80-\xFF]
+REGEX_w [a-z_A-Z0-9\x80-\xFF]
 
 %x      Start
 %x      SkipInvalid
 %x      GetString
 %x      GetStrList
 %x      Include
+%x      StoreRepl
 
 %%
 
@@ -1144,6 +1163,31 @@ static void readIncludeFile(const QCString &incName)
 <Start>"@INCLUDE_PATH"[ \t]*"="         { BEGIN(GetStrList); g_list=&g_includePathList; g_list->clear(); g_listStr=""; }
   /* include a g_config file */
 <Start>"@INCLUDE"[ \t]*"="              { BEGIN(Include);}
+<Start>"$("{REGEX_a}({REGEX_w}|[.-])*")" | // e.g. $(HOME)
+<Start>"$("{REGEX_a}({REGEX_w}|[.-])*"("{REGEX_a}({REGEX_w}|[.-])*"))" { // e.g. $(PROGRAMFILES(X86))
+                                          g_localStoreRepl = yytext;
+                                          if (g_compareMode == Config::CompareMode::CompressedNoEnv) // the x_noenv
+                                          {
+                                            BEGIN(StoreRepl);
+                                          }
+                                          else
+                                          {
+                                            substEnvVarsInString(g_localStoreRepl);
+                                            unput_string(g_localStoreRepl.data(),g_localStoreRepl.length());
+                                          }
+                                        }
+<Start>"@"{REGEX_a}{REGEX_w}*"@"        {
+                                          if (g_compareMode == Config::CompareMode::CompressedNoEnv) // the x_noenv
+                                          {
+                                            g_localStoreRepl = yytext;
+                                            BEGIN(StoreRepl);
+                                          }
+                                          else
+                                          {
+                                            config_warn("ignoring unknown '%s' at line %d, file %s\n",
+                                                        yytext,g_yyLineNr,qPrint(g_yyFileName));
+                                          }
+                                        }
 <Include>([^ \"\t\r\n]+)|("\""[^\n\"]+"\"") {
                                           readIncludeFile(configStringRecode(yytext,g_encoding,"UTF-8"));
                                           BEGIN(Start);
@@ -1170,6 +1214,25 @@ static void readIncludeFile(const QCString &incName)
                                         }
 
 <Start>[a-z_A-Z0-9]+                    { config_warn("ignoring unknown tag '%s' at line %d, file %s\n",yytext,g_yyLineNr,qPrint(g_yyFileName)); }
+   /*-------------- GetString ---------------*/
+
+<StoreRepl>\n                           {
+                                          g_localStoreRepl += yytext;
+                                          processStoreRepl(g_localStoreRepl);
+                                          g_config->appendStoreRepl(g_localStoreRepl + "\n");
+                                          g_localStoreRepl.resize(0);
+                                          g_yyLineNr++; // end of string
+                                          BEGIN(Start);
+                                        }
+<StoreRepl>\\[ \r\t]*\n                 { g_yyLineNr++; // line continuation
+                                          g_localStoreRepl += yytext;
+                                        }
+<StoreRepl>"\\"                         { // escape character
+                                          g_localStoreRepl += yytext;
+                                        }
+<StoreRepl>[^\n\\]+                     { // string part without escape characters
+                                          g_localStoreRepl += yytext;
+                                        }
    /*-------------- GetString ---------------*/
 
 <GetString>\n                           { processString();
@@ -1259,6 +1322,11 @@ void ConfigImpl::compareDoxyfile(TextStream &t,Config::CompareMode compareMode)
     option->m_userComment = "";
     option->compareDoxyfile(t,compareMode);
   }
+  if (!m_storeRepl.isEmpty())
+  {
+    t << "\n";
+    t << takeStoreRepl() << "\n";
+  }
 }
 
 void ConfigImpl::writeXMLDoxyfile(TextStream &t)
@@ -1289,12 +1357,13 @@ void ConfigImpl::emptyValueToDefault()
 
 static const reg::Ex reEnvVar(R"(\$\((\a[\w.-]*)\))");                 // e.g. $(HOME)
 static const reg::Ex reEnvVarExt(R"(\$\((\a[\w.-]*\(\a[\w.-]*\))\))"); // e.g. $(PROGRAMFILES(X86))
+static const reg::Ex reEnvVarCMake(R"(@\a\w*@)");                      // CMake type replacement
 
 static bool containsEnvVar(QCString &str)
 {
   reg::Match m;
   std::string s = str.str();
-  return reg::search(s,m,reEnvVar) || reg::search(s,m,reEnvVarExt);
+  return reg::search(s,m,reEnvVar) || reg::search(s,m,reEnvVarExt) || reg::search(s,m,reEnvVarCMake);
 }
 
 static void substEnvVarsInString(QCString &str)
@@ -1477,7 +1546,7 @@ static QCString configFileToString(const QCString &name)
     std::string ret;
     char buffer[4096];
     while (in.read(buffer, sizeof(buffer))) ret.append(buffer, sizeof(buffer));
-    ret.append(buffer, static_cast<uint>(in.gcount()));
+    ret.append(buffer, static_cast<uint32_t>(in.gcount()));
     if (!ret.empty() && ret[ret.length()-1]!='\n') ret+='\n'; // to help the scanner
     return ret;
   };
@@ -1489,7 +1558,7 @@ static QCString configFileToString(const QCString &name)
   }
   else // read from file
   {
-    std::ifstream f(name.str(),std::istream::in);
+    std::ifstream f = Portable::openInputStream(name);
     if (!f.is_open())
     {
       config_term("file '%s' not found or could not be opened\n",qPrint(name));
@@ -1501,6 +1570,9 @@ static QCString configFileToString(const QCString &name)
 
 bool ConfigImpl::parseString(const QCString &fn,const QCString &str,bool update)
 {
+#ifdef FLEX_DEBUG
+  configimplYYset_debug(Debug::isFlagSet(Debug::Lex_configimpl)?1:0);
+#endif
   g_config = ConfigImpl::instance();
   g_inputString   = str.data();
   g_inputPosition = 0;
@@ -1518,11 +1590,10 @@ bool ConfigImpl::parseString(const QCString &fn,const QCString &str,bool update)
 
 bool ConfigImpl::parse(const QCString &fn,bool update)
 {
-  int retval;
+  bool retval;
   g_encoding = "UTF-8";
-  printlex(yy_flex_debug, TRUE, __FILE__, qPrint(fn));
+  DebugLex debugLex(Debug::Lex_configimpl, __FILE__, qPrint(fn));
   retval =  parseString(fn,configFileToString(fn), update);
-  printlex(yy_flex_debug, FALSE, __FILE__, qPrint(fn));
   return retval;
 }
 
@@ -1620,6 +1691,33 @@ static void adjustStringSetting(const char *depOption, const char *optionName,co
       err("When enabling %s the %s option should have value '%s'. I'll adjust it for you.\n",depOption,optionName,qPrint(expectedValue));
       ConfigValues::instance().*(option->value.s)=expectedValue; // adjust option
     }
+  }
+}
+
+static void adjustColorStyleSetting(const char *depOption)
+{
+  auto updateColorStyle = [&depOption](HTML_COLORSTYLE_t curStyle,HTML_COLORSTYLE_t newStyle)
+  {
+    err("When enabling '%s' the 'HTML_COLORSTYLE' option should be either 'LIGHT' or 'DARK' but has value '%s'. I'll adjust it for you to '%s'.\n",
+        depOption,
+        qPrint(HTML_COLORSTYLE_enum2str(curStyle)),
+        qPrint(HTML_COLORSTYLE_enum2str(newStyle)));
+    Config_updateEnum(HTML_COLORSTYLE,newStyle);
+  };
+  auto colorStyle = Config_getEnum(HTML_COLORSTYLE);
+  switch (colorStyle)
+  {
+    case HTML_COLORSTYLE_t::LIGHT:
+    case HTML_COLORSTYLE_t::DARK:
+      // no adjustment needed
+      break;
+    case HTML_COLORSTYLE_t::AUTO_LIGHT:
+    case HTML_COLORSTYLE_t::TOGGLE:
+      updateColorStyle(colorStyle,HTML_COLORSTYLE_t::LIGHT);
+      break;
+    case HTML_COLORSTYLE_t::AUTO_DARK:
+      updateColorStyle(colorStyle,HTML_COLORSTYLE_t::DARK);
+      break;
   }
 }
 
@@ -1838,6 +1936,10 @@ void Config::checkAndCorrect(bool quiet, const bool check)
   checkList(Config_getList(FILTER_SOURCE_PATTERNS),"FILTER_SOURCE_PATTERNS",FALSE,FALSE);
 
   //------------------------
+  // check INPUT_FILE_ENCODING
+  checkList(Config_getList(INPUT_FILE_ENCODING),"INPUT_FILE_ENCODING",TRUE,TRUE);
+
+  //------------------------
   // check TAGFILES
   checkList(Config_getList(TAGFILES),"TAGFILES",FALSE,TRUE);
 
@@ -1866,6 +1968,7 @@ void Config::checkAndCorrect(bool quiet, const bool check)
     adjustBoolSetting(  depOption, "HTML_DYNAMIC_MENUS",  false  );
     adjustBoolSetting(  depOption, "HTML_DYNAMIC_SECTIONS",false  );
     adjustStringSetting(depOption, "HTML_FILE_EXTENSION", ".html");
+    adjustColorStyleSetting(depOption);
   }
 
   // check for settings that are inconsistent with having INLINE_GROUPED_CLASSES enabled
@@ -1938,7 +2041,7 @@ void Config::checkAndCorrect(bool quiet, const bool check)
     {
       diaPath=dp.dirPath(TRUE)+"/";
 #if defined(_WIN32) // convert slashes
-      uint i=0,l=diaPath.length();
+      uint32_t i=0,l=diaPath.length();
       for (i=0;i<l;i++) if (diaPath.at(i)=='/') diaPath.at(i)='\\';
 #endif
     }
@@ -1995,6 +2098,10 @@ void Config::checkAndCorrect(bool quiet, const bool check)
   // check QHP creation requirements
   if (Config_getBool(GENERATE_QHP))
   {
+    if (!Config_getBool(GENERATE_HTML))
+    {
+      warn_uncond("GENERATE_QHP=YES requires GENERATE_HTML=YES.\n");
+    }
     if (Config_getString(QHP_NAMESPACE).isEmpty())
     {
       err("GENERATE_QHP=YES requires QHP_NAMESPACE to be set. Using 'org.doxygen.doc' as default!.\n");
@@ -2067,7 +2174,6 @@ void Config::checkAndCorrect(bool quiet, const bool check)
 
 static void updateAttribute(DotAttributes& attr, QCString name, ConfigObsolete* value)
 {
-  if (value==0 || value->valueStringRef()->isEmpty()) return;
   attr.updateValue(name,*value->valueStringRef());
 }
 
@@ -2140,8 +2246,9 @@ void Config::writeXMLDoxyfile(TextStream &t)
   ConfigImpl::instance()->writeXMLDoxyfile(t);
 }
 
-bool Config::parse(const QCString &fileName,bool update)
+bool Config::parse(const QCString &fileName,bool update, Config::CompareMode compareMode)
 {
+  g_compareMode = compareMode;
   bool parseRes = ConfigImpl::instance()->parse(fileName,update);
   if (!parseRes) return parseRes;
 

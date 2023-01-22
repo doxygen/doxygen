@@ -46,6 +46,7 @@ typedef yyguts_t *yyscan_t;
 #include "portable.h"
 #include "cite.h"
 #include "regex.h"
+#include "debug.h"
 
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
@@ -79,7 +80,8 @@ struct doctokenizerYY_state
   QCString fileName;
   bool insidePre = false;
   int sharpCount=0;
-  bool markdownSupport=TRUE;
+  bool markdownSupport=true;
+  bool insideHtmlLink=false;
 
   // context for section finding phase
   const Definition  *definition = 0;
@@ -101,7 +103,7 @@ static const char *stateToString(int state);
 #endif
 
 
-static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
+static int yyread(yyscan_t yyscanner,char *buf,int max_size);
 static void handleHtmlTag(yyscan_t yyscanner,const char *text);
 static void processSection(yyscan_t yyscanner);
 
@@ -342,6 +344,8 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
 RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revision"|"Source"|"State")":"[^:\n$][^\n$]*"$"
 LINENR {BLANK}*[1-9][0-9]*
 
+SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[0-9]{1,2})?)?
+
 %option noyywrap
 
 %x St_Para
@@ -352,7 +356,9 @@ LINENR {BLANK}*[1-9][0-9]*
 %x St_TitleA
 %x St_TitleV
 %x St_Code
+%x St_iCode
 %x St_CodeOpt
+%x St_iCodeOpt
 %x St_XmlCode
 %x St_HtmlOnly
 %x St_HtmlOnlyOption
@@ -362,6 +368,7 @@ LINENR {BLANK}*[1-9][0-9]*
 %x St_XmlOnly
 %x St_DbOnly
 %x St_Verbatim
+%x St_iVerbatim
 %x St_ILiteral
 %x St_ILiteralOpt
 %x St_Dot
@@ -388,6 +395,7 @@ LINENR {BLANK}*[1-9][0-9]*
 %x St_Block
 %x St_Emoji
 %x St_ILine
+%x St_ShowDate
 
 %x St_Sections
 %s St_SecLabel1
@@ -395,20 +403,24 @@ LINENR {BLANK}*[1-9][0-9]*
 %s St_SecTitle
 %x St_SecSkip
 
+%x St_QuotedString
+%x St_QuotedContent
+
 %%
 <St_Para>\r            /* skip carriage return */
 <St_Para>^{LISTITEM}   { /* list item */
+                         if (yyextra->insideHtmlLink) REJECT;
                          lineCount(yytext,yyleng);
                          QCString text(yytext);
-                         uint dashPos = static_cast<uint>(text.findRev('-'));
-                         assert(dashPos!=static_cast<uint>(-1));
+                         uint32_t dashPos = static_cast<uint32_t>(text.findRev('-'));
+                         assert(dashPos!=static_cast<uint32_t>(-1));
                          yyextra->token->isEnumList = text.at(dashPos+1)=='#';
                          yyextra->token->id         = -1;
                          yyextra->token->indent     = computeIndent(yytext,dashPos);
                          return TK_LISTITEM;
                        }
 <St_Para>^{MLISTITEM}  { /* list item */
-                         if (!yyextra->markdownSupport || yyextra->insidePre)
+                         if (yyextra->insideHtmlLink || !yyextra->markdownSupport || yyextra->insidePre)
                          {
                            REJECT;
                          }
@@ -428,7 +440,7 @@ LINENR {BLANK}*[1-9][0-9]*
                          }
                        }
 <St_Para>^{OLISTITEM}  { /* numbered list item */
-                         if (!yyextra->markdownSupport || yyextra->insidePre)
+                         if (yyextra->insideHtmlLink || !yyextra->markdownSupport || yyextra->insidePre)
                          {
                            REJECT;
                          }
@@ -453,17 +465,18 @@ LINENR {BLANK}*[1-9][0-9]*
                          }
                        }
 <St_Para>{BLANK}*(\n|"\\ilinebr"){LISTITEM}     { /* list item on next line */
+                         if (yyextra->insideHtmlLink) REJECT;
                          lineCount(yytext,yyleng);
                          QCString text=extractPartAfterNewLine(QCString(yytext));
-                         uint dashPos = static_cast<uint>(text.findRev('-'));
-                         assert(dashPos!=static_cast<uint>(-1));
+                         uint32_t dashPos = static_cast<uint32_t>(text.findRev('-'));
+                         assert(dashPos!=static_cast<uint32_t>(-1));
                          yyextra->token->isEnumList = text.at(dashPos+1)=='#';
                          yyextra->token->id         = -1;
                          yyextra->token->indent     = computeIndent(text.data(),dashPos);
                          return TK_LISTITEM;
                        }
 <St_Para>{BLANK}*(\n|"\\ilinebr"){MLISTITEM}     { /* list item on next line */
-                         if (!yyextra->markdownSupport || yyextra->insidePre)
+                         if (yyextra->insideHtmlLink || !yyextra->markdownSupport || yyextra->insidePre)
                          {
                            REJECT;
                          }
@@ -483,7 +496,7 @@ LINENR {BLANK}*[1-9][0-9]*
                          }
                        }
 <St_Para>{BLANK}*(\n|"\\ilinebr"){OLISTITEM}     { /* list item on next line */
-                         if (!yyextra->markdownSupport || yyextra->insidePre)
+                         if (yyextra->insideHtmlLink || !yyextra->markdownSupport || yyextra->insidePre)
                          {
                            REJECT;
                          }
@@ -509,12 +522,14 @@ LINENR {BLANK}*[1-9][0-9]*
                          }
                        }
 <St_Para>^{ENDLIST}       { /* end list */
+                         if (yyextra->insideHtmlLink) REJECT;
                          lineCount(yytext,yyleng);
                          size_t dotPos = static_cast<size_t>(QCString(yytext).findRev('.'));
                          yyextra->token->indent     = computeIndent(yytext,dotPos);
                          return TK_ENDLIST;
                        }
 <St_Para>{BLANK}*(\n|"\\ilinebr"){ENDLIST}      { /* end list on next line */
+                         if (yyextra->insideHtmlLink) REJECT;
                          lineCount(yytext,yyleng);
                          QCString text=extractPartAfterNewLine(QCString(yytext));
                          size_t dotPos = static_cast<size_t>(text.findRev('.'));
@@ -765,13 +780,29 @@ LINENR {BLANK}*[1-9][0-9]*
                          yyextra->token->name = yyextra->token->name.mid(i+1,yyextra->token->name.length()-i-2);
                          BEGIN(St_Code);
                        }
+<St_iCodeOpt>{BLANK}*"{"(".")?{LABELID}"}" {
+                         yyextra->token->name = yytext;
+                         int i=yyextra->token->name.find('{'); /* } to keep vi happy */
+                         yyextra->token->name = yyextra->token->name.mid(i+1,yyextra->token->name.length()-i-2);
+                         BEGIN(St_iCode);
+                       }
 <St_CodeOpt>"\\ilinebr" |
 <St_CodeOpt>\n         |
 <St_CodeOpt>.          {
                          unput_string(yytext,yyleng);
                          BEGIN(St_Code);
                        }
+<St_iCodeOpt>"\\ilinebr" |
+<St_iCodeOpt>\n         |
+<St_iCodeOpt>.          {
+                         unput_string(yytext,yyleng);
+                         BEGIN(St_iCode);
+                       }
 <St_Code>{WS}*{CMD}"endcode" {
+                         lineCount(yytext,yyleng);
+                         return RetVal_OK;
+                       }
+<St_iCode>{WS}*{CMD}"endicode" {
                          lineCount(yytext,yyleng);
                          return RetVal_OK;
                        }
@@ -779,9 +810,9 @@ LINENR {BLANK}*[1-9][0-9]*
                          lineCount(yytext,yyleng);
                          return RetVal_OK;
                        }
-<St_Code,St_XmlCode>[^\\@\n<]+  |
-<St_Code,St_XmlCode>\n          |
-<St_Code,St_XmlCode>.           {
+<St_Code,St_iCode,St_XmlCode>[^\\@\n<]+  |
+<St_Code,St_iCode,St_XmlCode>\n          |
+<St_Code,St_iCode,St_XmlCode>.           {
                          lineCount(yytext,yyleng);
                          yyextra->token->verb+=yytext;
                        }
@@ -860,9 +891,13 @@ LINENR {BLANK}*[1-9][0-9]*
                          yyextra->token->verb=yyextra->token->verb.mid(1,yyextra->token->verb.length()-2);
                          return RetVal_OK;
                        }
-<St_Verbatim,St_ILiteral>[^\\@\n]+ |
-<St_Verbatim,St_ILiteral>\n        |
-<St_Verbatim,St_ILiteral>.         { /* Verbatim / javadac literal/code text */
+<St_iVerbatim>{CMD}"endiverbatim" {
+                         yyextra->token->verb=stripEmptyLines(yyextra->token->verb);
+                         return RetVal_OK;
+                       }
+<St_Verbatim,St_iVerbatim,St_ILiteral>[^\\@\n]+ |
+<St_Verbatim,St_iVerbatim,St_ILiteral>\n        |
+<St_Verbatim,St_iVerbatim,St_ILiteral>.         { /* Verbatim text */
                          lineCount(yytext,yyleng);
                          yyextra->token->verb+=yytext;
                        }
@@ -956,6 +991,7 @@ LINENR {BLANK}*[1-9][0-9]*
                        }
 <St_TitleN>{HTMLTAG}   {
                          yyextra->token->name = yytext;
+                         handleHtmlTag(yyscanner,yytext);
                          return TK_HTMLTAG;
                        }
 <St_TitleN>\n          { /* new line => end of title */
@@ -1056,7 +1092,7 @@ LINENR {BLANK}*[1-9][0-9]*
                          if (yytext[0] =='"')
                          {
                            yyextra->token->name=yytext+1;
-                           yyextra->token->name=yyextra->token->name.left(static_cast<uint>(yyleng)-2);
+                           yyextra->token->name=yyextra->token->name.left(static_cast<uint32_t>(yyleng)-2);
                          }
                          else
                          {
@@ -1197,9 +1233,9 @@ LINENR {BLANK}*[1-9][0-9]*
                        }
 <St_Param>[^ \t\n,@\\]+  {
                          yyextra->token->name = yytext;
-                         if (yyextra->token->name.at(static_cast<uint>(yyleng)-1)==':')
+                         if (yyextra->token->name.at(static_cast<uint32_t>(yyleng)-1)==':')
                          {
-                           yyextra->token->name=yyextra->token->name.left(static_cast<uint>(yyleng)-1);
+                           yyextra->token->name=yyextra->token->name.left(static_cast<uint32_t>(yyleng)-1);
                          }
                          return TK_WORD;
                        }
@@ -1235,6 +1271,37 @@ LINENR {BLANK}*[1-9][0-9]*
                          return TK_WORD;
                        }
 <St_Emoji>.            {
+                         unput(*yytext);
+                         return 0;
+                       }
+<St_QuotedString>"\""  {
+                         yyextra->token->name="";
+                         BEGIN(St_QuotedContent);
+                       }
+<St_QuotedString>(\n|"\\ilinebr") {
+                         unput_string(yytext,yyleng);
+                         return 0;
+                       }
+<St_QuotedString>.     {
+                         unput(*yytext);
+                         return 0;
+                       }
+<St_QuotedContent>"\"" {
+                         return TK_WORD;
+                       }
+<St_QuotedContent>.    {
+                         yyextra->token->name+=yytext;
+                       }
+<St_ShowDate>{WS}+{SHOWDATE} {
+                         lineCount(yytext,yyleng);
+                         yyextra->token->name=yytext;
+                         return TK_WORD;
+                       }
+<St_ShowDate>(\n|"\\ilinebr") {
+                         unput_string(yytext,yyleng);
+                         return 0;
+                       }
+<St_ShowDate>.         {
                          unput(*yytext);
                          return 0;
                        }
@@ -1344,6 +1411,10 @@ LINENR {BLANK}*[1-9][0-9]*
                                       yyextra->endMarker="endverbatim";
                                       BEGIN(St_SecSkip);
                                     }
+<St_Sections>{CMD}"iverbatim"/[^a-z_A-Z0-9]  {
+                                      yyextra->endMarker="endiverbatim";
+                                      BEGIN(St_SecSkip);
+                                    }
 <St_Sections>{CMD}"iliteral"/[^a-z_A-Z0-9]  {
                                       yyextra->endMarker="endiliteral";
                                       BEGIN(St_SecSkip);
@@ -1386,6 +1457,10 @@ LINENR {BLANK}*[1-9][0-9]*
                                     }
 <St_Sections>{CMD}"code"/[^a-z_A-Z0-9] {
                                       yyextra->endMarker="endcode";
+                                      BEGIN(St_SecSkip);
+                                    }
+<St_Sections>{CMD}"icode"/[^a-z_A-Z0-9] {
+                                      yyextra->endMarker="endicode";
                                       BEGIN(St_SecSkip);
                                     }
 <St_Sections>"<!--"                 {
@@ -1468,10 +1543,10 @@ LINENR {BLANK}*[1-9][0-9]*
 
 //--------------------------------------------------------------------------
 
-static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size)
+static int yyread(yyscan_t yyscanner,char *buf,int max_size)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yy_size_t c=0;
+  int c=0;
   const char *p = yyextra->inputString + yyextra->inputPos;
   while ( c < max_size && *p ) { *buf++ = *p++; c++; }
   yyextra->inputPos+=c;
@@ -1534,7 +1609,7 @@ static void handleHtmlTag(yyscan_t yyscanner,const char *text)
   {
     char c=tagText.at(i);
     // skip spaces
-    while (i<(int)yyleng && isspace((uchar)c)) { c=tagText.at(++i); }
+    while (i<(int)yyleng && isspace((uint8_t)c)) { c=tagText.at(++i); }
     // check for end of the tag
     if (c == '>') break;
     // Check for XML style "empty" tag.
@@ -1545,17 +1620,17 @@ static void handleHtmlTag(yyscan_t yyscanner,const char *text)
     }
     startName=i;
     // search for end of name
-    while (i<(int)yyleng && !isspace((uchar)c) && c!='=' && c!= '>') { c=tagText.at(++i); }
+    while (i<(int)yyleng && !isspace((uint8_t)c) && c!='=' && c!= '>') { c=tagText.at(++i); }
     endName=i;
     HtmlAttrib opt;
     opt.name  = tagText.mid(startName,endName-startName).lower();
     // skip spaces
-    while (i<(int)yyleng && isspace((uchar)c)) { c=tagText.at(++i); }
+    while (i<(int)yyleng && isspace((uint8_t)c)) { c=tagText.at(++i); }
     if (tagText.at(i)=='=') // option has value
     {
       c=tagText.at(++i);
       // skip spaces
-      while (i<(int)yyleng && isspace((uchar)c)) { c=tagText.at(++i); }
+      while (i<(int)yyleng && isspace((uint8_t)c)) { c=tagText.at(++i); }
       if (tagText.at(i)=='\'') // option '...'
       {
         c=tagText.at(++i);
@@ -1579,7 +1654,7 @@ static void handleHtmlTag(yyscan_t yyscanner,const char *text)
       {
         startAttrib=i;
         // search for separator or end symbol
-        while (i<(int)yyleng && !isspace((uchar)c) && c!='>') { c=tagText.at(++i); }
+        while (i<(int)yyleng && !isspace((uint8_t)c) && c!='>') { c=tagText.at(++i); }
         endAttrib=i;
         if (i<(int)yyleng) { c=tagText.at(++i);}
       }
@@ -1648,7 +1723,7 @@ DocTokenizer::DocTokenizer() : p(std::make_unique<Private>())
   //printf("%p:DocTokenizer::DocTokenizer()\n",(void*)this);
   doctokenizerYYlex_init_extra(&p->extra,&p->yyscanner);
 #ifdef FLEX_DEBUG
-  doctokenizerYYset_debug(1,p->yyscanner);
+  doctokenizerYYset_debug(Debug::isFlagSet(Debug::Lex_doctokenizer)?1:0,p->yyscanner);
 #endif
 }
 
@@ -1677,7 +1752,7 @@ void DocTokenizer::findSections(const QCString &input,const Definition *d,
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
 
   if (input.isEmpty()) return;
-  printlex(yy_flex_debug, TRUE, __FILE__, qPrint(fileName));
+  DebugLex debugLex(Debug::Lex_doctokenizer, __FILE__, qPrint(fileName));
   yyextra->inputString = input.data();
   //printf("parsing --->'%s'<---\n",input);
   yyextra->inputPos    = 0;
@@ -1686,10 +1761,9 @@ void DocTokenizer::findSections(const QCString &input,const Definition *d,
   BEGIN(St_Sections);
   yyextra->yyLineNr = 1;
   doctokenizerYYlex(yyscanner);
-  printlex(yy_flex_debug, FALSE, __FILE__, qPrint(fileName));
 }
 
-void DocTokenizer::init(const char *input,const QCString &fileName,bool markdownSupport)
+void DocTokenizer::init(const char *input,const QCString &fileName,bool markdownSupport, bool insideHtmlLink)
 {
   yyscan_t yyscanner = p->yyscanner;
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
@@ -1699,6 +1773,7 @@ void DocTokenizer::init(const char *input,const QCString &fileName,bool markdown
   yyextra->fileName    = fileName;
   yyextra->insidePre   = FALSE;
   yyextra->markdownSupport = markdownSupport;
+  yyextra->insideHtmlLink = insideHtmlLink;
   BEGIN(St_Para);
 }
 
@@ -1721,6 +1796,7 @@ void DocTokenizer::setStatePara()
 {
   yyscan_t yyscanner = p->yyscanner;
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->insideHtmlLink = false;
   BEGIN(St_Para);
 }
 
@@ -1745,6 +1821,15 @@ void DocTokenizer::setStateCode()
   yyextra->token->verb="";
   yyextra->token->name="";
   BEGIN(St_CodeOpt);
+}
+
+void DocTokenizer::setStateICode()
+{
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->token->verb="";
+  yyextra->token->name="";
+  BEGIN(St_iCodeOpt);
 }
 
 void DocTokenizer::setStateXmlCode()
@@ -1827,6 +1912,14 @@ void DocTokenizer::setStateVerbatim()
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yyextra->token->verb="";
   BEGIN(St_Verbatim);
+}
+
+void DocTokenizer::setStateIVerbatim()
+{
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->token->verb="";
+  BEGIN(St_iVerbatim);
 }
 
 void DocTokenizer::setStateDot()
@@ -1986,6 +2079,20 @@ void DocTokenizer::setStateILine()
   BEGIN(St_ILine);
 }
 
+void DocTokenizer::setStateQuotedString()
+{
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  BEGIN(St_QuotedString);
+}
+
+void DocTokenizer::setStateShowDate()
+{
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  BEGIN(St_ShowDate);
+}
+
 void DocTokenizer::cleanup()
 {
   yyscan_t yyscanner = p->yyscanner;
@@ -2027,14 +2134,6 @@ void DocTokenizer::endAutoList()
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yyextra->autoListLevel--;
 }
-
-//REAL_YY_DECL
-//{
-//  printlex(yy_flex_debug, TRUE, __FILE__, g_fileName);
-//  int retval = LOCAL_YY_DECL;
-//  printlex(yy_flex_debug, FALSE, __FILE__, g_fileName);
-//  return retval;
-//}
 
 void DocTokenizer::setLineNr(int lineno)
 {

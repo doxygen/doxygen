@@ -194,7 +194,7 @@ or use the built-in unpack feature of modern Windows systems).
 
 Now your environment is setup to generate the required project files for \c doxygen.
 
-cd into the \c doxygen-x.y.z directory, create and cd to a build directory
+change directory to the \c doxygen-x.y.z directory, create and change to a build directory
 \verbatim
 mkdir build
 cd build

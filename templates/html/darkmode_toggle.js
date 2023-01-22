@@ -58,11 +58,47 @@ class DarkModeToggle extends HTMLElement {
                 toggleButton.title = DarkModeToggle.title
                 toggleButton.innerHTML = DarkModeToggle.icon
 
+                function addButton() {
+                  var titleArea = document.getElementById("titlearea");
+                  var searchBox = document.getElementById("MSearchBox");
+                  var mainMenu  = document.getElementById("main-menu");
+                  var navRow1   = document.getElementById("navrow1");
+                  var mainMenuVisible = false;
+                  if (mainMenu) {
+                    var menuStyle = window.getComputedStyle(mainMenu);
+                    mainMenuVisible = menuStyle.display!=='none'
+                  }
+                  var searchBoxPos1 = document.getElementById("searchBoxPos1");
+                  if (searchBox) { // (1) search box visible
+                    searchBox.parentNode.appendChild(toggleButton)
+                  } else if (navRow1) { // (2) no search box, static menu bar
+                    var li = document.createElement('li');
+                    li.style = 'float: right;'
+                    li.appendChild(toggleButton);
+                    toggleButton.style = 'width: 24px; height: 25px; padding-top: 11px; float: right;';
+                    var row = document.querySelector('#navrow1 > ul:first-of-type');
+                    row.appendChild(li)
+                  } else if (mainMenu && mainMenuVisible) { // (3) no search box + dynamic menu bar expanded
+                    var li = document.createElement('li');
+                    li.style = 'float: right;'
+                    li.appendChild(toggleButton);
+                    toggleButton.style = 'width: 14px; height: 36px; padding-top: 10px; float: right;';
+                    mainMenu.appendChild(li)
+                  } else if (searchBoxPos1) { // (4) no search box + dynamic menu bar collapsed
+                    toggleButton.style = 'width: 24px; height: 36px; padding-top: 10px; float: right;';
+                    searchBoxPos1.style = 'top: 0px;'
+                    searchBoxPos1.appendChild(toggleButton);
+                  } else if (titleArea) { // (5) no search box and no navigation tabs
+                    toggleButton.style = 'width: 24px; height: 24px; position: absolute; right: 0px; top: 34px;';
+                    titleArea.append(toggleButton);
+                  }
+                }
+
                 $(document).ready(function(){
-                    document.getElementById("MSearchBox").parentNode.appendChild(toggleButton)
+                    addButton();
                 })
                 $(window).resize(function(){
-                    document.getElementById("MSearchBox").parentNode.appendChild(toggleButton)
+                    addButton();
                 })
                 DarkModeToggle.setDarkModeVisibility(DarkModeToggle.darkModeEnabled)
             })

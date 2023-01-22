@@ -60,7 +60,7 @@ void ClassLinkedRefMap::writeDeclaration(OutputList &ol,const ClassDef::Compound
     //printf("  ClassLinkedRefMap::writeDeclaration for %s\n",cd->name().data());
     if (!cd->isAnonymous() &&
         !cd->isExtension() &&
-        (cd->protection()!=Private || extractPrivate) &&
+        (cd->protection()!=Protection::Private || extractPrivate) &&
         (filter==0 || *filter==cd->compoundType())
        )
     {
@@ -104,11 +104,7 @@ void ClassLinkedRefMap::writeDocumentation(OutputList &ol,const Definition * con
         ol.endGroupHeader();
         found=TRUE;
       }
-      ClassDefMutable *cdm = toClassDefMutable(cd);
-      if (cdm)
-      {
-        cdm->writeInlineDocumentation(ol);
-      }
+      cd->writeInlineDocumentation(ol);
     }
   }
 }
