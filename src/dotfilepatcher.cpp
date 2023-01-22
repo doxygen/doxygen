@@ -410,7 +410,7 @@ bool DotFilePatcher::run() const
         {
           err("Problem extracting size from SVG file %s\n",qPrint(map.mapFile));
         }
-        if (e!=-1) t << line.mid(e+3);
+        if (e!=-1 && line.mid(e+3) != "\n") t << line.mid(e+3);
       }
       else // error invalid map id!
       {
