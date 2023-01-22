@@ -242,7 +242,7 @@ void DotGraph::generateCode(TextStream &t)
         int mapId = DotManager::instance()->
                createFilePatcher(m_fileName)->
                addSVGObject(m_baseName,absImgName(),m_relPath);
-        t << "<!-- SVG " << mapId << " -->\n";
+        t << "<!-- SVG " << mapId << " -->";
       }
       if (!m_noDivTag) t << "</div>\n";
     }
