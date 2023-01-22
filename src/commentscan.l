@@ -352,20 +352,27 @@ enum GuardType
 {
   Guard_If,
   Guard_IfNot,
-  Guard_Skip
+  Guard_ElseIf
 };
 
 class GuardedSection
 {
   public:
-    GuardedSection(bool enabled,bool parentVisible)
-      : m_enabled(enabled),m_parentVisible(parentVisible) {}
+    GuardedSection(bool parentVisible)
+      : m_parentVisible(parentVisible) {}
+    void setEnabled(bool enabled) { m_enabled = enabled; }
     bool isEnabled() const { return m_enabled; }
+    void setEnabledFound() { m_enabledFound = true; }
+    bool isEnabledFound() const { return m_enabledFound; }
     bool parentVisible() const { return m_parentVisible; }
+    void setElse() { m_hasElse = true; }
+    bool hasElse() const { return m_hasElse; }
 
   private:
-    bool m_enabled;
     bool m_parentVisible;
+    bool m_enabledFound = false;
+    bool m_enabled = false;
+    bool m_hasElse = false;
 };
 
 /* -----------------------------------------------------------------
@@ -393,7 +400,6 @@ struct commentscanYY_state
   XRefKind         xrefKind    = XRef_Item;  // kind of cross-reference command
   XRefKind         newXRefKind = XRef_Item;  //
   GuardType        guardType = Guard_If;     // kind of guards for conditional section
-  bool             enabledSectionFound = FALSE;
   QCString         functionProto;          // function prototype
   std::stack<GuardedSection> guards;             // tracks nested conditional sections (if,ifnot,..)
   Entry           *current = 0;              // working entry
@@ -1751,14 +1757,16 @@ STopt  [^\n@\\]*
                                           //next line is commented out due to bug620924
                                           //addOutput(yyscanner,'\n');
                                           addIlineBreak(yyscanner,yyextra->lineNr);
-                                          BEGIN( Comment );
+                                          unput(*yytext);
+                                          handleGuard(yyscanner,QCString());
                                         }
 <GuardParam>{LC}                        { // line continuation
                                           yyextra->lineNr++;
                                           addOutput(yyscanner,'\n');
                                         }
-<GuardParam>.                           { // ignore other stuff
-                                          addOutput(yyscanner,*yytext);
+<GuardParam>.                           { // empty condition
+                                          unput(*yytext);
+                                          handleGuard(yyscanner,QCString());
                                         }
 <GuardParamEnd>{B}*{DOCNL}              {
                                           lineCount(yyscanner);
@@ -1785,10 +1793,12 @@ STopt  [^\n@\\]*
 
 <SkipGuardedSection>{CMD}"ifnot"/{NW}   {
                                           yyextra->guardType = Guard_IfNot;
+                                          yyextra->guards.push(GuardedSection(false));
                                           BEGIN( GuardParam );
                                         }
 <SkipGuardedSection>{CMD}"if"/{NW}      {
                                           yyextra->guardType = Guard_If;
+                                          yyextra->guards.push(GuardedSection(false));
                                           BEGIN( GuardParam );
                                         }
 <SkipGuardedSection>{CMD}"endif"/{NW}   {
@@ -1796,16 +1806,25 @@ STopt  [^\n@\\]*
                                           {
                                             warn(yyextra->fileName,yyextra->lineNr,
                                                 "found \\endif without matching start command");
+                                            BEGIN( Comment );
                                           }
                                           else
                                           {
-                                            GuardedSection s = yyextra->guards.top();
                                             yyextra->guards.pop();
-                                            bool parentVisible = s.parentVisible();
-                                            if (parentVisible)
+                                            if (yyextra->guards.empty())
                                             {
-                                              yyextra->enabledSectionFound=TRUE;
                                               BEGIN( GuardParamEnd );
+                                            }
+                                            else
+                                            {
+                                              if (yyextra->guards.top().isEnabled())
+                                              {
+                                                BEGIN( GuardParamEnd );
+                                              }
+                                              else
+                                              {
+                                                BEGIN( SkipGuardedSection );
+                                              }
                                             }
                                           }
                                         }
@@ -1815,13 +1834,35 @@ STopt  [^\n@\\]*
                                             warn(yyextra->fileName,yyextra->lineNr,
                                                 "found \\else without matching start command");
                                           }
+                                          else if (yyextra->guards.top().hasElse())
+                                          {
+                                            warn(yyextra->fileName,yyextra->lineNr,
+                                                "found multiple \\else commands in same \\if construct");
+                                            yyextra->guards.top().setEnabled(false);
+                                            BEGIN( SkipGuardedSection );
+                                          }
+                                          else if (!yyextra->guards.top().parentVisible())
+                                          {
+                                            yyextra->guards.top().setEnabled(false);
+                                            BEGIN( SkipGuardedSection );
+                                          }
                                           else
                                           {
-                                            if (!yyextra->enabledSectionFound && yyextra->guards.top().parentVisible())
+                                            yyextra->spaceBeforeIf = yyextra->spaceBeforeCmd;
+                                            yyextra->guards.top().setElse();
+                                            if (!yyextra->guards.top().parentVisible())
                                             {
-                                              yyextra->guards.pop();
-                                              yyextra->guards.push(GuardedSection(TRUE,TRUE));
-                                              yyextra->enabledSectionFound=TRUE;
+                                              yyextra->guards.top().setEnabled(false);
+                                              BEGIN( SkipGuardedSection );
+                                            }
+                                            else if (yyextra->guards.top().isEnabledFound())
+                                            {
+                                              yyextra->guards.top().setEnabled(false);
+                                              BEGIN( SkipGuardedSection );
+                                            }
+                                            else
+                                            {
+                                              yyextra->guards.top().setEnabled(true);
                                               BEGIN( GuardParamEnd );
                                             }
                                           }
@@ -1832,14 +1873,21 @@ STopt  [^\n@\\]*
                                             warn(yyextra->fileName,yyextra->lineNr,
                                                 "found \\elseif without matching start command");
                                           }
+                                          else if (yyextra->guards.top().hasElse())
+                                          {
+                                            warn(yyextra->fileName,yyextra->lineNr,
+                                                "found \\elseif command after \\else command was given in \\if construct");
+                                            yyextra->guardType = Guard_ElseIf;
+                                            yyextra->spaceBeforeIf = yyextra->spaceBeforeCmd;
+                                            yyextra->guards.top().setEnabled(false);
+                                            BEGIN( GuardParam );
+                                          }
                                           else
                                           {
-                                            if (!yyextra->enabledSectionFound && yyextra->guards.top().parentVisible())
-                                            {
-                                              yyextra->guardType=Guard_If;
-                                              yyextra->guards.pop();
-                                              BEGIN( GuardParam );
-                                            }
+                                            yyextra->guardType = Guard_ElseIf;
+                                            yyextra->spaceBeforeIf = yyextra->spaceBeforeCmd;
+                                            yyextra->guards.top().setEnabled(false);
+                                            BEGIN( GuardParam );
                                           }
                                         }
 <SkipGuardedSection>{DOCNL}             { // skip line
@@ -2774,9 +2822,17 @@ static bool handleLineInfo(yyscan_t yyscanner,const QCString &, const StringVect
 static bool handleIf(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yyextra->enabledSectionFound=FALSE;
   yyextra->guardType = Guard_If;
   yyextra->spaceBeforeIf = yyextra->spaceBeforeCmd;
+  if (yyextra->guards.empty())
+  {
+    yyextra->guards.push(GuardedSection(true));
+  }
+  else
+  {
+    bool enabled  = yyextra->guards.top().isEnabled();
+    yyextra->guards.push(GuardedSection(enabled));
+  }
   BEGIN(GuardParam);
   return FALSE;
 }
@@ -2784,9 +2840,17 @@ static bool handleIf(yyscan_t yyscanner,const QCString &, const StringVector &)
 static bool handleIfNot(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yyextra->enabledSectionFound=FALSE;
   yyextra->guardType = Guard_IfNot;
   yyextra->spaceBeforeIf = yyextra->spaceBeforeCmd;
+  if (yyextra->guards.empty())
+  {
+    yyextra->guards.push(GuardedSection(true));
+  }
+  else
+  {
+    bool enabled  = yyextra->guards.top().isEnabled();
+    yyextra->guards.push(GuardedSection(enabled));
+  }
   BEGIN(GuardParam);
   return FALSE;
 }
@@ -2797,12 +2861,22 @@ static bool handleElseIf(yyscan_t yyscanner,const QCString &, const StringVector
   if (yyextra->guards.empty())
   {
     warn(yyextra->fileName,yyextra->lineNr,
-        "found \\else without matching start command");
+        "found \\elseif without matching start command");
+  }
+  else if (yyextra->guards.top().hasElse())
+  {
+    warn(yyextra->fileName,yyextra->lineNr,
+        "found \\elseif command after \\else command was given in \\if construct");
+    yyextra->guardType = Guard_ElseIf;
+    yyextra->spaceBeforeIf = yyextra->spaceBeforeCmd;
+    yyextra->guards.top().setEnabled(false);
+    BEGIN(GuardParam);
   }
   else
   {
-    yyextra->guardType = yyextra->enabledSectionFound ? Guard_Skip : Guard_If;
+    yyextra->guardType = Guard_ElseIf;
     yyextra->spaceBeforeIf = yyextra->spaceBeforeCmd;
+    yyextra->guards.top().setEnabled(false);
     BEGIN(GuardParam);
   }
   return FALSE;
@@ -2816,10 +2890,28 @@ static bool handleElse(yyscan_t yyscanner,const QCString &, const StringVector &
     warn(yyextra->fileName,yyextra->lineNr,
         "found \\else without matching start command");
   }
+  else if (yyextra->guards.top().hasElse())
+  {
+    warn(yyextra->fileName,yyextra->lineNr,
+        "found multiple \\else commands in same \\if construct");
+    yyextra->guards.top().setEnabled(false);
+    yyextra->guards.top().setElse();
+    BEGIN( SkipGuardedSection );
+  }
   else
   {
+    yyextra->guards.top().setElse();
     yyextra->spaceBeforeIf = yyextra->spaceBeforeCmd;
-    BEGIN( SkipGuardedSection );
+    if (yyextra->guards.top().isEnabledFound())
+    {
+      yyextra->guards.top().setEnabled(false);
+      BEGIN( SkipGuardedSection );
+    }
+    else
+    {
+      yyextra->guards.top().setEnabled(true);
+      BEGIN( GuardParamEnd );
+    }
   }
   return FALSE;
 }
@@ -2836,13 +2928,26 @@ static bool handleEndIf(yyscan_t yyscanner,const QCString &, const StringVector 
   {
     yyextra->guards.pop();
   }
-  yyextra->enabledSectionFound=FALSE;
   if (!yyextra->spaceBeforeCmd.isEmpty())
   {
     addOutput(yyscanner,yyextra->spaceBeforeCmd);
     yyextra->spaceBeforeCmd.resize(0);
   }
-  BEGIN( GuardParamEnd );
+  if (yyextra->guards.empty())
+  {
+    BEGIN( GuardParamEnd );
+  }
+  else
+  {
+    if (yyextra->guards.top().isEnabled())
+    {
+      BEGIN( GuardParamEnd );
+    }
+    else
+    {
+      BEGIN( SkipGuardedSection );
+    }
+  }
   return FALSE;
 }
 
@@ -3824,9 +3929,12 @@ static void handleGuard(yyscan_t yyscanner,const QCString &expr)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   CondParser prs;
-  bool sectionEnabled=prs.parse(yyextra->fileName,yyextra->lineNr,expr.stripWhiteSpace());
-  bool parentEnabled = TRUE;
-  if (!yyextra->guards.empty()) parentEnabled = yyextra->guards.top().isEnabled();
+  bool sectionEnabled = false;
+  if (!expr.isEmpty())
+  {
+    sectionEnabled=prs.parse(yyextra->fileName,yyextra->lineNr,expr.stripWhiteSpace());
+  }
+  bool parentEnabled = parentEnabled = yyextra->guards.top().parentVisible();
   if (parentEnabled)
   {
     if (
@@ -3834,22 +3942,37 @@ static void handleGuard(yyscan_t yyscanner,const QCString &expr)
         (!sectionEnabled && yyextra->guardType==Guard_IfNot)
        ) // section is visible
     {
-      yyextra->guards.push(GuardedSection(TRUE,TRUE));
-      yyextra->enabledSectionFound=TRUE;
+
+      yyextra->guards.top().setEnabled(true);
+      yyextra->guards.top().setEnabledFound();
       BEGIN( GuardParamEnd );
+    }
+    else if (yyextra->guardType==Guard_ElseIf)
+    {
+      if (yyextra->guards.top().isEnabledFound())
+      {
+        yyextra->guards.top().setEnabled(false);
+        BEGIN( SkipGuardedSection );
+      }
+      else if (sectionEnabled)
+      {
+        yyextra->guards.top().setEnabled(true);
+        yyextra->guards.top().setEnabledFound();
+        BEGIN( GuardParamEnd );
+      }
+      else
+      {
+        yyextra->guards.top().setEnabled(false);
+        BEGIN( SkipGuardedSection );
+      }
     }
     else // section is invisible
     {
-      if (yyextra->guardType!=Guard_Skip)
-      {
-        yyextra->guards.push(GuardedSection(FALSE,TRUE));
-      }
       BEGIN( SkipGuardedSection );
     }
   }
   else // invisible because of parent
   {
-    yyextra->guards.push(GuardedSection(FALSE,FALSE));
     BEGIN( SkipGuardedSection );
   }
 }
