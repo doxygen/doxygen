@@ -673,7 +673,7 @@ void SymbolResolver::Private::getResolvedSymbol(
                          const QCString &args,                                // in
                          bool  checkCV,                                       // in
                          const QCString &explicitScopePart,                   // in
-                         const std::unique_ptr<ArgumentList> &actTemplParams, // in
+                         const std::unique_ptr<ArgumentList> &/* actTemplParams */, // in
                          int &minDistance,                                    // inout
                          const Definition *&bestMatch,                        // out
                          const MemberDef *&bestTypedef,                       // out
@@ -785,7 +785,7 @@ void SymbolResolver::Private::getResolvedSymbol(
 
 
 const ClassDef *SymbolResolver::Private::newResolveTypedef(
-                  const Definition *scope,                             // in
+                  const Definition * /* scope */,                      // in
                   const MemberDef *md,                                 // in
                   const MemberDef **pMemType,                          // out
                   QCString *pTemplSpec,                                // out

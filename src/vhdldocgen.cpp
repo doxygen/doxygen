@@ -2613,7 +2613,7 @@ ferr:
 }
 
 
-void  VhdlDocGen::writeRecordUnit(QCString & largs,QCString & ltype,OutputList& ol ,const MemberDefMutable *mdef)
+void  VhdlDocGen::writeRecordUnit(QCString &/* largs */,QCString & ltype,OutputList& ol ,const MemberDefMutable *mdef)
 {
   int i=mdef->name().find('~');
   if (i>0)

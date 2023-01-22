@@ -306,7 +306,7 @@ void Qhp::decContentsDepth()
   p->sectionTree.decLevel();
 }
 
-void Qhp::addContentsItem(bool isDir, const QCString & name,
+void Qhp::addContentsItem(bool /* isDir */, const QCString & name,
                           const QCString & /*ref*/, const QCString & file,
                           const QCString &anchor, bool /* separateIndex */,
                           bool /* addToNavIndex */,

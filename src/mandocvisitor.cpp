@@ -820,7 +820,7 @@ void ManDocVisitor::operator()(const DocImage &)
 {
 }
 
-void ManDocVisitor::operator()(const DocDotFile &f)
+void ManDocVisitor::operator()(const DocDotFile &)
 {
 }
 

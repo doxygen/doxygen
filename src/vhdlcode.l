@@ -1583,7 +1583,7 @@ void VHDLCodeParser::resetCodeParserState()
 }
 
 void VHDLCodeParser::parseCode(CodeOutputInterface &od,
-                               const QCString &className,
+                               const QCString &/* className */,
                                const QCString &s,
                                SrcLangExt,
                                bool exBlock,

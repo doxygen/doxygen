@@ -80,7 +80,7 @@ class ConfigOption
     virtual void writeTemplate(TextStream &t,bool sl,bool upd) = 0;
     virtual void compareDoxyfile(TextStream &t,Config::CompareMode compareMode) = 0;
     virtual void writeXMLDoxyfile(TextStream &t) = 0;
-    virtual void convertStrToVal(Config::CompareMode compareMode) {}
+    virtual void convertStrToVal(Config::CompareMode) {}
     virtual void emptyValueToDefault() {}
     virtual void substEnvVars() = 0;
     virtual void init() {}

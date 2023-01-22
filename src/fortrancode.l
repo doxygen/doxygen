@@ -1212,13 +1212,10 @@ static MemberDef *getFortranDefs(yyscan_t yyscanner,const QCString &memberName, 
  gets the link to a generic procedure which depends not on the name, but on the parameter list
  @todo implementation
 */
-static bool getGenericProcedureLink(yyscan_t yyscanner,const ClassDef *cd,
-                                    const QCString &memberText,
-                                    CodeOutputInterface &ol)
+static bool getGenericProcedureLink(yyscan_t ,const ClassDef *,
+                                    const QCString &,
+                                    CodeOutputInterface &)
 {
-  (void)cd;
-  (void)memberText;
-  (void)ol;
   return FALSE;
 }
 
@@ -1393,11 +1390,11 @@ static void checkContLines(yyscan_t yyscanner,const char *s)
   yyextra->hasContLine[0] = 0;
 }
 
-void parseFortranCode(CodeOutputInterface &od,const char *,const QCString &s,
-                  bool exBlock, const char *exName,const FileDef *fd,
-                  int startLine,int endLine,bool inlineFragment,
-                  const MemberDef *,bool,const Definition *searchCtx,
-                  bool collectXRefs, FortranFormat format)
+void parseFortranCode(CodeOutputInterface &,const char *,const QCString &,
+                  bool , const char *,const FileDef *,
+                  int ,int ,bool ,
+                  const MemberDef *,bool,const Definition *,
+                  bool , FortranFormat )
 {
   //printf("***parseCode() exBlock=%d exName=%s fd=%p\n",exBlock,exName,fd);
 
@@ -1439,7 +1436,7 @@ void FortranCodeParser::resetCodeParserState()
 }
 
 void FortranCodeParser::parseCode(CodeOutputInterface & codeOutIntf,
-                   const QCString & scopeName,
+                   const QCString & /* scopeName */,
                    const QCString & input,
                    SrcLangExt /*lang*/,
                    bool isExampleBlock,
@@ -1448,8 +1445,8 @@ void FortranCodeParser::parseCode(CodeOutputInterface & codeOutIntf,
                    int startLine,
                    int endLine,
                    bool inlineFragment,
-                   const MemberDef *memberDef,
-                   bool showLineNumbers,
+                   const MemberDef * /* memberDef */,
+                   bool /* showLineNumbers */,
                    const Definition *searchCtx,
                    bool collectXRefs
                   )

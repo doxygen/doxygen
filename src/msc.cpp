@@ -142,7 +142,7 @@ void writeMscGraphFromFile(const QCString &inFile,const QCString &outDir,
 
 }
 
-static QCString getMscImageMapFromFile(const QCString& inFile, const QCString& outDir,
+static QCString getMscImageMapFromFile(const QCString& inFile, const QCString& /* outDir */,
                                 const QCString& relPath,const QCString& context,
                                 bool writeSVGMap,const QCString &srcFile,int srcLine)
 {

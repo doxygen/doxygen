@@ -2138,7 +2138,7 @@ bool getDefsNew(const QCString &scName,
              const FileDef *&fd,
              const NamespaceDef *&nd,
              const GroupDef *&gd,
-             bool forceEmptyScope,
+             bool /* forceEmptyScope */,
              const FileDef *currentFile,
              bool checkCV
             )

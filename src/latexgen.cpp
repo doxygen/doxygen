@@ -1502,7 +1502,7 @@ void LatexGenerator::startDoxyAnchor(const QCString &fName,const QCString &,
   m_t << "}} \n";
 }
 
-void LatexGenerator::endDoxyAnchor(const QCString &fName,const QCString &anchor)
+void LatexGenerator::endDoxyAnchor(const QCString &/* fName */,const QCString &/* anchor */)
 {
 }
 
