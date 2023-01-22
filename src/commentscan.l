@@ -372,7 +372,7 @@ class GuardedSection
     bool m_parentVisible;
     bool m_enabledFound = false;
     bool m_enabled = false;
-    bool m_hasElse = false;;
+    bool m_hasElse = false;
 };
 
 /* -----------------------------------------------------------------
