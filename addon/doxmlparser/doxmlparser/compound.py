@@ -5556,7 +5556,7 @@ class enumvalueType(GeneratedsSuper):
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
     superclass = None
-    def __init__(self, id=None, prot=None, name=None, initializer=None, briefdescription=None, detaileddescription=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
+    def __init__(self, id=None, prot=None, name=None, initializer=None, briefdescription=None, detaileddescription=None, gds_collector_=None, **kwargs_):
         self.gds_collector_ = gds_collector_
         self.gds_elementtree_node_ = None
         self.original_tagname_ = None
@@ -5574,16 +5574,6 @@ class enumvalueType(GeneratedsSuper):
         self.briefdescription_nsprefix_ = None
         self.detaileddescription = detaileddescription
         self.detaileddescription_nsprefix_ = None
-        self.valueOf_ = valueOf_
-        if mixedclass_ is None:
-            self.mixedclass_ = MixedContainer
-        else:
-            self.mixedclass_ = mixedclass_
-        if content_ is None:
-            self.content_ = []
-        else:
-            self.content_ = content_
-        self.valueOf_ = valueOf_
     def factory(*args_, **kwargs_):
         if CurrentSubclassModule_ is not None:
             subclass = getSubclassFromModule_(
@@ -5623,8 +5613,6 @@ class enumvalueType(GeneratedsSuper):
         return self.prot
     def set_prot(self, prot):
         self.prot = prot
-    def get_valueOf_(self): return self.valueOf_
-    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def validate_DoxProtectionKind(self, value):
         # Validate type DoxProtectionKind, a restriction on xsd:string.
         if value is not None and Validate_simpletypes_ and self.gds_collector_ is not None:
@@ -5643,9 +5631,7 @@ class enumvalueType(GeneratedsSuper):
             self.name is not None or
             self.initializer is not None or
             self.briefdescription is not None or
-            self.detaileddescription is not None or
-            (1 if type(self.valueOf_) in [int,float] else self.valueOf_) or
-            self.content_
+            self.detaileddescription is not None
         ):
             return True
         else:
@@ -5681,9 +5667,6 @@ class enumvalueType(GeneratedsSuper):
             already_processed.add('prot')
             outfile.write(' prot=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.prot), input_name='prot')), ))
     def exportChildren(self, outfile, level, namespaceprefix_='', namespacedef_='', name_='enumvalueType', fromsubclass_=False, pretty_print=True):
-        if not fromsubclass_:
-            for item_ in self.content_:
-                item_.export(outfile, level, item_.name, namespaceprefix_, pretty_print=pretty_print)
         if pretty_print:
             eol_ = '\n'
         else:
@@ -5708,11 +5691,6 @@ class enumvalueType(GeneratedsSuper):
         already_processed = set()
         self.ns_prefix_ = node.prefix
         self.buildAttributes(node, node.attrib, already_processed)
-        self.valueOf_ = get_all_text_(node)
-        if node.text is not None:
-            obj_ = self.mixedclass_(MixedContainer.CategoryText,
-                MixedContainer.TypeNone, '', node.text)
-            self.content_.append(obj_)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_, gds_collector_=gds_collector_)
@@ -5728,48 +5706,27 @@ class enumvalueType(GeneratedsSuper):
             self.prot = value
             self.validate_DoxProtectionKind(self.prot)    # validate type DoxProtectionKind
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False, gds_collector_=None):
-        if nodeName_ == 'name' and child_.text is not None:
-            valuestr_ = child_.text
-            valuestr_ = self.gds_parse_string(valuestr_, node, 'name')
-            valuestr_ = self.gds_validate_string(valuestr_, node, 'name')
-            obj_ = self.mixedclass_(MixedContainer.CategorySimple,
-                MixedContainer.TypeString, 'name', valuestr_)
-            self.content_.append(obj_)
+        if nodeName_ == 'name':
+            value_ = child_.text
+            value_ = self.gds_parse_string(value_, node, 'name')
+            value_ = self.gds_validate_string(value_, node, 'name')
+            self.name = value_
             self.name_nsprefix_ = child_.prefix
         elif nodeName_ == 'initializer':
             obj_ = linkedTextType.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
-            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
-                MixedContainer.TypeNone, 'initializer', obj_)
-            self.content_.append(obj_)
-            if hasattr(self, 'add_initializer'):
-                self.add_initializer(obj_.value)
-            elif hasattr(self, 'set_initializer'):
-                self.set_initializer(obj_.value)
+            self.initializer = obj_
+            obj_.original_tagname_ = 'initializer'
         elif nodeName_ == 'briefdescription':
             obj_ = descriptionType.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
-            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
-                MixedContainer.TypeNone, 'briefdescription', obj_)
-            self.content_.append(obj_)
-            if hasattr(self, 'add_briefdescription'):
-                self.add_briefdescription(obj_.value)
-            elif hasattr(self, 'set_briefdescription'):
-                self.set_briefdescription(obj_.value)
+            self.briefdescription = obj_
+            obj_.original_tagname_ = 'briefdescription'
         elif nodeName_ == 'detaileddescription':
             obj_ = descriptionType.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
-            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
-                MixedContainer.TypeNone, 'detaileddescription', obj_)
-            self.content_.append(obj_)
-            if hasattr(self, 'add_detaileddescription'):
-                self.add_detaileddescription(obj_.value)
-            elif hasattr(self, 'set_detaileddescription'):
-                self.set_detaileddescription(obj_.value)
-        if not fromsubclass_ and child_.tail is not None:
-            obj_ = self.mixedclass_(MixedContainer.CategoryText,
-                MixedContainer.TypeNone, '', child_.tail)
-            self.content_.append(obj_)
+            self.detaileddescription = obj_
+            obj_.original_tagname_ = 'detaileddescription'
 # end class enumvalueType
 
 
