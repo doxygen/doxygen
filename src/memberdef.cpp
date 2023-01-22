@@ -2076,6 +2076,14 @@ void MemberDefImpl::_writeTemplatePrefix(OutputList &ol, const Definition *def,
   }
 }
 
+static QCString combineArgsAndException(QCString args,QCString exception)
+{
+  if (exception.isEmpty()) return args;                      // no exception, nothing to combine args
+  int pos   = args.findRev(')');
+  int eqPos = pos!=-1 ? args.find('=',pos) : -1;             // look for '=' in '(args) = something'
+  if (eqPos==-1) return args+" "+exception;                  // append exception at the end
+  return args.left(eqPos)+" "+exception+" "+args.mid(eqPos); // insert exception before =
+}
 
 void MemberDefImpl::writeDeclaration(OutputList &ol,
                const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
@@ -2342,18 +2350,12 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
                    substitute(argsString(),",",", ") :
                 isTypedef() ?
                    substitute(argsString(),")(",") (") :
-                   argsString(),         // text
+                   combineArgsAndException(argsString(),excpString()), // text
                 m_impl->annMemb!=0,      // autoBreak
                 TRUE,                    // external
                 FALSE,                   // keepSpaces
                 indentLevel
                );
-  }
-  // *** write exceptions
-  if (!excpString().isEmpty())
-  {
-    ol.writeString(" ");
-    ol.docify(excpString());
   }
 
   // *** write bitfields
