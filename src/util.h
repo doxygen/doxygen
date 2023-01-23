@@ -72,14 +72,14 @@ class TextGeneratorIntf
 class TextGeneratorOLImpl : public TextGeneratorIntf
 {
   public:
-    TextGeneratorOLImpl(BaseOutputDocInterface &od);
+    TextGeneratorOLImpl(OutputList &ol);
     void writeString(const QCString &s,bool keepSpaces) const;
     void writeBreak(int indent) const;
     void writeLink(const QCString &extRef,const QCString &file,
                    const QCString &anchor,const QCString &text
                   ) const;
   private:
-    BaseOutputDocInterface &m_od;
+    OutputList &m_ol;
 };
 
 //--------------------------------------------------------------------

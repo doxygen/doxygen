@@ -98,7 +98,7 @@ static const char *hex = "0123456789ABCDEF";
 // TextGeneratorOLImpl implementation
 //------------------------------------------------------------------------
 
-TextGeneratorOLImpl::TextGeneratorOLImpl(BaseOutputDocInterface &od) : m_od(od)
+TextGeneratorOLImpl::TextGeneratorOLImpl(OutputList &ol) : m_ol(ol)
 {
 }
 
@@ -116,24 +116,24 @@ void TextGeneratorOLImpl::writeString(const QCString &s,bool keepSpaces) const
       cs[1]='\0';
       while ((c=*p++))
       {
-        if (c==' ') m_od.writeNonBreakableSpace(1);
-        else cs[0]=c,m_od.docify(cs);
+        if (c==' ') m_ol.writeNonBreakableSpace(1);
+        else cs[0]=c,m_ol.docify(cs);
       }
     }
   }
   else
   {
-    m_od.docify(s);
+    m_ol.docify(s);
   }
 }
 
 void TextGeneratorOLImpl::writeBreak(int indent) const
 {
-  m_od.lineBreak("typebreak");
+  m_ol.lineBreak("typebreak");
   int i;
   for (i=0;i<indent;i++)
   {
-    m_od.writeNonBreakableSpace(3);
+    m_ol.writeNonBreakableSpace(3);
   }
 }
 
@@ -142,7 +142,7 @@ void TextGeneratorOLImpl::writeLink(const QCString &extRef,const QCString &file,
                                    ) const
 {
   //printf("TextGeneratorOlImpl::writeLink('%s')\n",text);
-  m_od.writeObjectLink(extRef,file,anchor,text);
+  m_ol.writeObjectLink(extRef,file,anchor,text);
 }
 
 //------------------------------------------------------------------------
@@ -3037,75 +3037,6 @@ QCString linkToText(SrcLangExt lang,const QCString &link,bool isFileName)
   return result;
 }
 
-#if 0
-/*
- * generate a reference to a class, namespace or member.
- * 'scName' is the name of the scope that contains the documentation
- * string that is returned.
- * 'name' is the name that we want to link to.
- * 'name' may have the following formats:
- *    1) "ScopeName"
- *    2) "memberName()"    one of the (overloaded) function or define
- *                         with name memberName.
- *    3) "memberName(...)" a specific (overloaded) function or define
- *                         with name memberName
- *    4) "::name           a global variable or define
- *    4) "\#memberName     member variable, global variable or define
- *    5) ("ScopeName::")+"memberName()"
- *    6) ("ScopeName::")+"memberName(...)"
- *    7) ("ScopeName::")+"memberName"
- * instead of :: the \# symbol may also be used.
- */
-
-bool generateRef(BaseOutputDocInterface &od,const char *scName,
-    const char *name,bool inSeeBlock,const char *rt)
-{
-  //printf("generateRef(scName=%s,name=%s,inSee=%d,rt=%s)\n",scName,name,inSeeBlock,rt);
-
-  Definition *compound;
-  MemberDef *md;
-
-  // create default link text
-  QCString linkText = linkToText(rt,FALSE);
-
-  if (resolveRef(scName,name,inSeeBlock,&compound,&md))
-  {
-    if (md && md->isLinkable()) // link to member
-    {
-      od.writeObjectLink(md->getReference(),
-          md->getOutputFileBase(),
-          md->anchor(),linkText);
-      // generate the page reference (for LaTeX)
-      if (!md->isReference())
-      {
-        writePageRef(od,md->getOutputFileBase(),md->anchor());
-      }
-      return TRUE;
-    }
-    else if (compound && compound->isLinkable()) // link to compound
-    {
-      if (rt==0 && compound->definitionType()==Definition::TypeGroup)
-      {
-        linkText=((GroupDef *)compound)->groupTitle();
-      }
-      if (compound && compound->definitionType()==Definition::TypeFile)
-      {
-        linkText=linkToText(rt,TRUE);
-      }
-      od.writeObjectLink(compound->getReference(),
-          compound->getOutputFileBase(),
-          0,linkText);
-      if (!compound->isReference())
-      {
-        writePageRef(od,compound->getOutputFileBase(),0);
-      }
-      return TRUE;
-    }
-  }
-  od.docify(linkText);
-  return FALSE;
-}
-#endif
 
 bool resolveLink(/* in */ const QCString &scName,
     /* in */ const QCString &lr,

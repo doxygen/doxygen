@@ -161,18 +161,13 @@ class CodeOutputInterface
 };
 
 
-/** Base Interface used for generating output outside of the
- *  comment blocks.
+/** Abstract output generator.
  *
- *  This abstract class is used by output generation functions
- *  to generate the output for a specific format,
- *  or a list of formats (see OutputList). This interface
- *  contains functions that generate fragments of the output.
+ *  Subclass this class to add support for a new output format
  */
-class BaseOutputDocInterface
+class OutputGenerator
 {
   public:
-    virtual ~BaseOutputDocInterface() = default;
 
     enum ParamListTypes { Param, RetVal, Exception };
     enum SectionTypes { /*See, Return, Author, Version,
@@ -184,7 +179,57 @@ class BaseOutputDocInterface
                         Examples
                       };
 
+
+    OutputGenerator(const QCString &dir);
+    OutputGenerator(const OutputGenerator &o);
+    OutputGenerator &operator=(const OutputGenerator &o);
+    virtual ~OutputGenerator();
+
+    virtual OutputType type() const = 0;
+    virtual std::unique_ptr<OutputGenerator> clone() const = 0;
+
+    virtual CodeOutputInterface *codeGen() = 0;
+
+    ///////////////////////////////////////////////////////////////
+    // generic generator methods
+    ///////////////////////////////////////////////////////////////
+    void pushGeneratorState();
+    void popGeneratorState();
+    void setEnabled(bool e);
+    bool isEnabled() const;
+    OutputGenerator *get(OutputType o);
+    QCString dir() const;
+    QCString fileName() const;
+
+    void startPlainFile(const QCString &name);
+    void endPlainFile();
+
+    virtual void writeDoc(const IDocNodeAST *ast,const Definition *ctx,const MemberDef *md,int id) = 0;
+
+    ///////////////////////////////////////////////////////////////
+    // structural output interface
+    ///////////////////////////////////////////////////////////////
     virtual void parseText(const QCString &) {}
+
+    /*! Writes an ASCII string to the output. Converts characters that have
+     *  A special meaning, like \c & in html.
+     */
+    virtual void docify(const QCString &s) = 0;
+
+    virtual void lineBreak(const QCString &style) = 0;
+    virtual void writeNonBreakableSpace(int) = 0;
+
+    /*! Writes a link to an object in the documentation.
+     *  \param ref    If this is non-zero, the object is to be found in
+     *                an external documentation file.
+     *  \param file   The file in which the object is located.
+     *  \param anchor The anchor uniquely identifying the object within
+     *                the file.
+     *  \param name   The text to display as a placeholder for the link.
+     */
+    virtual void writeObjectLink(const QCString &ref,const QCString &file,
+                                 const QCString &anchor, const QCString &name) = 0;
+
 
     /*! Start of a bullet list: e.g. \c \<ul\> in html. startItemListItem() is
      *  Used for the bullet items.
@@ -204,11 +249,6 @@ class BaseOutputDocInterface
     /*! Ends a bullet list: e.g. \c \</ul\> in html */
     virtual void endItemList()    = 0;
 
-    /*! Writes an ASCII string to the output. Converts characters that have
-     *  A special meaning, like \c & in html.
-     */
-    virtual void docify(const QCString &s) = 0;
-
     /*! Writes a single ASCII character to the output. Converts characters
      *  that have a special meaning.
      */
@@ -226,17 +266,6 @@ class BaseOutputDocInterface
     virtual void startParagraph(const QCString &classDef) = 0;
     /*! Ends a paragraph */
     virtual void endParagraph() = 0;
-
-    /*! Writes a link to an object in the documentation.
-     *  \param ref    If this is non-zero, the object is to be found in
-     *                an external documentation file.
-     *  \param file   The file in which the object is located.
-     *  \param anchor The anchor uniquely identifying the object within
-     *                the file.
-     *  \param name   The text to display as a placeholder for the link.
-     */
-    virtual void writeObjectLink(const QCString &ref,const QCString &file,
-                                 const QCString &anchor, const QCString &name) = 0;
 
 
     /*! Starts a (link to an) URL found in the documentation.
@@ -305,7 +334,6 @@ class BaseOutputDocInterface
     virtual void startParamList(ParamListTypes t,const QCString &title) = 0;
     virtual void endParamList() = 0;
 
-    //virtual void writeDescItem() = 0;
     virtual void startTitle() = 0;
     virtual void endTitle()   = 0;
 
@@ -313,10 +341,8 @@ class BaseOutputDocInterface
     virtual void startSection(const QCString &,const QCString &,SectionType) = 0;
     virtual void endSection(const QCString &,SectionType) = 0;
 
-    virtual void lineBreak(const QCString &style) = 0;
     virtual void addIndexItem(const QCString &s1,const QCString &s2) = 0;
 
-    virtual void writeNonBreakableSpace(int) = 0;
     virtual void startDescTable(const QCString &title) = 0;
     virtual void endDescTable() = 0;
     virtual void startDescTableRow() = 0;
@@ -333,45 +359,6 @@ class BaseOutputDocInterface
     virtual void endSubsection() = 0;
     virtual void startSubsubsection() = 0;
     virtual void endSubsubsection() = 0;
-};
-
-/** Abstract output generator.
- *
- *  Subclass this class to add support for a new output format
- */
-class OutputGenerator : public BaseOutputDocInterface
-{
-  public:
-
-    OutputGenerator(const QCString &dir);
-    OutputGenerator(const OutputGenerator &o);
-    OutputGenerator &operator=(const OutputGenerator &o);
-    virtual ~OutputGenerator();
-
-    virtual OutputType type() const = 0;
-    virtual std::unique_ptr<OutputGenerator> clone() const = 0;
-
-    virtual CodeOutputInterface *codeGen() = 0;
-
-    ///////////////////////////////////////////////////////////////
-    // generic generator methods
-    ///////////////////////////////////////////////////////////////
-    void pushGeneratorState();
-    void popGeneratorState();
-    void setEnabled(bool e);
-    bool isEnabled() const;
-    OutputGenerator *get(OutputType o);
-    QCString dir() const;
-    QCString fileName() const;
-
-    void startPlainFile(const QCString &name);
-    void endPlainFile();
-
-    virtual void writeDoc(const IDocNodeAST *ast,const Definition *ctx,const MemberDef *md,int id) = 0;
-
-    ///////////////////////////////////////////////////////////////
-    // structural output interface
-    ///////////////////////////////////////////////////////////////
     virtual void startFile(const QCString &name,const QCString &manName,
                            const QCString &title,int id=0) = 0;
     virtual void writeSearchInfo() = 0;

@@ -45,7 +45,7 @@ class LatexCodeGenerator : public CodeOutputInterface
                       const QCString &,
                       const SourceLinkInfo &,
                       const SourceLinkInfo &
-                     )  override{}
+                     )  override {}
     void writeLineNumber(const QCString &,const QCString &,const QCString &,int,bool) override;
     void startCodeLine(bool) override;
     void endCodeLine() override;

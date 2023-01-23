@@ -161,7 +161,7 @@ class DocbookGenerator : public OutputGenerator //: public CodeOutputForwarder<O
     void endSmall(){DB_GEN_NEW};
     void startExamples();
     void endExamples();
-    void startParamList(BaseOutputDocInterface::ParamListTypes,const QCString &){DB_GEN_NEW};
+    void startParamList(ParamListTypes,const QCString &){DB_GEN_NEW};
     void endParamList(){DB_GEN_NEW};
     void startTitle(){DB_GEN_NEW};
     void endTitle(){DB_GEN_NEW};

@@ -102,7 +102,7 @@ class OutputCodeList : public CodeOutputInterface
 /** Class representing a list of output generators that are written to
  *  in parallel.
  */
-class OutputList : public BaseOutputDocInterface
+class OutputList
 {
   public:
     OutputList();
@@ -367,7 +367,7 @@ class OutputList : public BaseOutputDocInterface
     { forall(&OutputGenerator::startExamples); }
     void endExamples()
     { forall(&OutputGenerator::endExamples); }
-    void startParamList(ParamListTypes t,const QCString &title)
+    void startParamList(OutputGenerator::ParamListTypes t,const QCString &title)
     { forall(&OutputGenerator::startParamList,t,title); }
     void endParamList()
     { forall(&OutputGenerator::endParamList); }
