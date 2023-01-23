@@ -3934,7 +3934,7 @@ static void handleGuard(yyscan_t yyscanner,const QCString &expr)
   {
     sectionEnabled=prs.parse(yyextra->fileName,yyextra->lineNr,expr.stripWhiteSpace());
   }
-  bool parentEnabled = parentEnabled = yyextra->guards.top().parentVisible();
+  bool parentEnabled = yyextra->guards.top().parentVisible();
   if (parentEnabled)
   {
     if (
