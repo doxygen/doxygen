@@ -18,6 +18,7 @@
 #define CITE_H
 
 #include <memory>
+#include <map>
 
 #include "qcstring.h"
 
@@ -68,6 +69,9 @@ class CitationManager
     /** Create the database, with an expected maximum of \a size entries */
     CitationManager();
     void insertCrossReferencesForBibFile(const QCString &bibFile);
+    QCString getFormulas(const QCString &s);
+    QCString replaceFormulas(const QCString &s);
+    std::map< QCString,QCString > m_formulaCite;
     struct Private;
     std::unique_ptr<Private> p;
 };
