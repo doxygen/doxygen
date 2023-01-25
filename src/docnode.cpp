@@ -167,7 +167,7 @@ DocWord::DocWord(DocParser *parser,DocNodeVariant *parent,const QCString &word) 
   //printf("new word %s url=%s\n",qPrint(word),qPrint(parser->context.searchUrl));
   if (Doxygen::searchIndex && !parser->context.searchUrl.isEmpty())
   {
-    parser->searchData.addWord(word,false);
+    Doxygen::searchIndex->addWord(word,false);
   }
 }
 
@@ -184,7 +184,7 @@ DocLinkedWord::DocLinkedWord(DocParser *parser,DocNodeVariant *parent,const QCSt
   //    qPrint(word),qPrint(parser->context.searchUrl),qPrint(tooltip));
   if (Doxygen::searchIndex && !parser->context.searchUrl.isEmpty())
   {
-    parser->searchData.addWord(word,false);
+    Doxygen::searchIndex->addWord(word,false);
   }
 }
 

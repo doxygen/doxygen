@@ -49,14 +49,6 @@ IDocParserPtr createDocParser()
 //---------------------------------------------------------------------------
 DocParser::~DocParser()
 {
-  try
-  {
-    searchData.transfer();
-  }
-  catch(...)
-  {
-    err("Unexpected exception caught in DocParser\n");
-  }
 }
 
 void DocParser::pushContext()
@@ -1945,12 +1937,12 @@ IDocNodeASTPtr validatingParseDoc(IDocParser &parserIntf,
     if (md)
     {
       parser->context.searchUrl=md->getOutputFileBase();
-      parser->searchData.setCurrentDoc(md,md->anchor(),false);
+      Doxygen::searchIndex->setCurrentDoc(md,md->anchor(),false);
     }
     else if (ctx)
     {
       parser->context.searchUrl=ctx->getOutputFileBase();
-      parser->searchData.setCurrentDoc(ctx,ctx->anchor(),false);
+      Doxygen::searchIndex->setCurrentDoc(ctx,ctx->anchor(),false);
     }
   }
   else

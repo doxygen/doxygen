@@ -47,6 +47,8 @@
 
 const size_t numIndexEntries = 256*256;
 
+static std::mutex g_searchIndexMutex;
+
 //--------------------------------------------------------------------
 
 void SearchIndex::IndexWord::addUrlIndex(int idx,bool hiPriority)
@@ -72,6 +74,7 @@ SearchIndex::SearchIndex()
 void SearchIndex::setCurrentDoc(const Definition *ctx,const QCString &anchor,bool isSourceFile)
 {
   if (ctx==0) return;
+  std::lock_guard<std::mutex> lock(g_searchIndexMutex);
   assert(!isSourceFile || ctx->definitionType()==Definition::TypeFile);
   //printf("SearchIndex::setCurrentDoc(%s,%s,%s)\n",name,baseName,anchor);
   QCString url=isSourceFile ? (toFileDef(ctx))->getSourceFileBase() : ctx->getOutputFileBase();
@@ -227,6 +230,7 @@ void SearchIndex::addWordRec(const QCString &word,bool hiPriority,bool recurse)
 
 void SearchIndex::addWord(const QCString &word,bool hiPriority)
 {
+  std::lock_guard<std::mutex> lock(g_searchIndexMutex);
   addWordRec(word,hiPriority,FALSE);
 }
 
@@ -373,31 +377,6 @@ void SearchIndex::write(const QCString &fileName)
 
 }
 
-static std::mutex g_transferSearchIndexMutex;
-
-void SIDataCollection::transfer()
-{
-  if (Doxygen::searchIndex)
-  {
-    std::lock_guard<std::mutex> lock(g_transferSearchIndexMutex);
-    for (const auto &v : m_data)
-    {
-      if (std::holds_alternative<SIData_Word>(v))
-      {
-        const auto &d = std::get<SIData_Word>(v);
-        Doxygen::searchIndex->addWord(d.word,d.hiPrio);
-      }
-      else if (std::holds_alternative<SIData_CurrentDoc>(v))
-      {
-        const auto &d = std::get<SIData_CurrentDoc>(v);
-        Doxygen::searchIndex->setCurrentDoc(d.ctx,d.anchor,d.isSourceFile);
-      }
-    }
-  }
-  m_data.clear();
-}
-
-
 //---------------------------------------------------------------------------
 // the following part is for writing an external search index
 
@@ -464,6 +443,7 @@ static QCString definitionToName(const Definition *ctx)
 
 void SearchIndexExternal::setCurrentDoc(const Definition *ctx,const QCString &anchor,bool isSourceFile)
 {
+  std::lock_guard<std::mutex> lock(g_searchIndexMutex);
   QCString extId = stripPath(Config_getString(EXTERNAL_SEARCH_ID));
   QCString baseName = isSourceFile ? (toFileDef(ctx))->getSourceFileBase() : ctx->getOutputFileBase();
   QCString url = addHtmlExtensionIfMissing(baseName);
@@ -490,6 +470,7 @@ void SearchIndexExternal::setCurrentDoc(const Definition *ctx,const QCString &an
 
 void SearchIndexExternal::addWord(const QCString &word,bool hiPriority)
 {
+  std::lock_guard<std::mutex> lock(g_searchIndexMutex);
   if (word.isEmpty() || !isId(word[0]) || m_current==0) return;
   GrowBuf *pText = hiPriority ? &m_current->importantText : &m_current->normalText;
   if (pText->getPos()>0) pText->addChar(' ');

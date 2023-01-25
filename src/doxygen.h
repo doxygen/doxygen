@@ -133,7 +133,6 @@ class Doxygen
     static QCString                  verifiedDotPath;
     static volatile bool             terminating;
     static InputFileEncodingList     inputFileEncodingList;
-    static std::mutex                searchIndexMutex;
     static std::mutex                countFlowKeywordsMutex;
     static std::mutex                addExampleMutex;
 };

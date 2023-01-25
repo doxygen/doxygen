@@ -21,6 +21,7 @@
 #include "filename.h"
 #include "tooltip.h"
 #include "utf8.h"
+#include "searchindex.h"
 #endif
 
 //--------------------------------------------------------------------------
@@ -527,7 +528,7 @@ void ClangTUParser::writeLineNumber(CodeOutputInterface &ol,const FileDef *fd,ui
   {
     QCString lineAnchor;
     lineAnchor.sprintf("l%05d",line);
-    ol.setCurrentDoc(fd,lineAnchor,TRUE);
+    Doxygen::searchIndex->setCurrentDoc(fd,lineAnchor,TRUE);
   }
 
   //printf("writeLineNumber(%d) g_searchForBody=%d\n",line,g_searchForBody);
@@ -848,7 +849,7 @@ void ClangTUParser::writeSources(CodeOutputInterface &ol,const FileDef *fd)
               linkIdentifier(ol,fd,line,column,s,i);
               if (Doxygen::searchIndex)
               {
-                ol.addWord(s,FALSE);
+                Doxygen::searchIndex->addWord(s,FALSE);
               }
             }
             else

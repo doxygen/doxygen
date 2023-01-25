@@ -172,7 +172,6 @@ bool                  Doxygen::clangAssistedParsing = FALSE;
 QCString              Doxygen::verifiedDotPath;
 volatile bool         Doxygen::terminating = false;
 InputFileEncodingList Doxygen::inputFileEncodingList;
-std::mutex            Doxygen::searchIndexMutex;
 std::mutex            Doxygen::countFlowKeywordsMutex;
 std::mutex            Doxygen::addExampleMutex;
 
@@ -7843,7 +7842,6 @@ static void generateFileSources()
       msg("Parsing code for file %s...\n",qPrint(fd->docName()));
       fd->parseSource(parser);
     }
-    ol.indexSearchData();
   };
   if (!Doxygen::inputNameLinkedMap->empty())
   {
@@ -7972,7 +7970,6 @@ static void generateFileSources()
         for (auto &f : results)
         {
           auto ctx = f.get();
-          ctx->ol.indexSearchData();
         }
       }
       else // single threaded version

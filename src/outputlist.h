@@ -21,7 +21,6 @@
 #include <memory>
 
 #include "outputgen.h"
-#include "searchindex.h" // for SIDataCollection
 #include "doxygen.h"
 
 class ClassDiagram;
@@ -85,7 +84,6 @@ class OutputCodeList : public CodeOutputInterface
     { forall(&CodeOutputInterface::startCodeFragment,style); }
     void endCodeFragment(const QCString &style) override
     { forall(&CodeOutputInterface::endCodeFragment,style); }
-
 
   private:
     template<typename T,class... Ts,class... As>
@@ -529,19 +527,6 @@ class OutputList
     void cleanup()
     { forall(&OutputGenerator::cleanup); }
 
-    void setCurrentDoc(const Definition *context,const QCString &anchor,bool isSourceFile)
-    { /*forall(&OutputGenerator::setCurrentDoc,context,anchor,isSourceFile);*/
-      m_searchData.setCurrentDoc(context,anchor,isSourceFile);
-    }
-    void addWord(const QCString &word,bool hiPriority)
-    { /*forall(&OutputGenerator::addWord,word,hiPriority);*/
-      m_searchData.addWord(word,hiPriority);
-    }
-    void indexSearchData()
-    {
-      m_searchData.transfer();
-    }
-
     void startPlainFile(const QCString &name)
     { forall(&OutputGenerator::startPlainFile,name); }
     void endPlainFile()
@@ -568,7 +553,6 @@ class OutputList
 
     std::vector< std::unique_ptr<OutputGenerator> > m_outputs;
     int m_id;
-    SIDataCollection m_searchData;
     OutputCodeList m_codeGenList;
 
 };
