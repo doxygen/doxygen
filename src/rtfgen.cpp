@@ -2767,7 +2767,7 @@ void RTFGenerator::endLabels()
 }
 
 void RTFGenerator::writeInheritedSectionTitle(
-                  const QCString &id,    const QCString &ref,
+                  const QCString &/*id*/,const QCString &ref,
                   const QCString &file,  const QCString &anchor,
                   const QCString &title, const QCString &name)
 {

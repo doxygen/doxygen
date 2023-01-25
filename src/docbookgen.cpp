@@ -1267,7 +1267,7 @@ void DocbookGenerator::closeAllSections()
 }
 
 void DocbookGenerator::writeInheritedSectionTitle(
-                  const QCString &id,    const QCString &ref,
+                  const QCString &/*id*/,const QCString &ref,
                   const QCString &file,  const QCString &anchor,
                   const QCString &title, const QCString &name)
 {
