@@ -2153,7 +2153,7 @@ void LatexGenerator::endLabels()
 }
 
 void LatexGenerator::writeInheritedSectionTitle(
-                  const QCString &id,    const QCString &ref,
+                  const QCString &/*id*/,const QCString &ref,
                   const QCString &file,  const QCString &anchor,
                   const QCString &title, const QCString &name)
 {

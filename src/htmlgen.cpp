@@ -1332,7 +1332,7 @@ void HtmlGenerator::writeFooterFile(TextStream &t)
 static std::mutex g_indexLock;
 
 void HtmlGenerator::startFile(const QCString &name,const QCString &,
-                              const QCString &title,int id)
+                              const QCString &title,int /*id*/)
 {
   //printf("HtmlGenerator::startFile(%s)\n",qPrint(name));
   m_relPath = relativePathToRoot(name);

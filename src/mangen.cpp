@@ -897,9 +897,9 @@ void ManGenerator::endHeaderSection()
 }
 
 void ManGenerator::writeInheritedSectionTitle(
-                  const QCString &id,    const QCString &ref,
-                  const QCString &file,  const QCString &anchor,
-                  const QCString &title, const QCString &name)
+                  const QCString &/*id*/,    const QCString &/*ref*/,
+                  const QCString &/*file*/,  const QCString &/*anchor*/,
+                  const QCString &title,     const QCString &name)
 {
   m_t << "\n\n";
   m_t << theTranslator->trInheritedFrom(docifyToString(title), objectLinkToString(name));
