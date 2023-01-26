@@ -1017,6 +1017,7 @@
       <xsd:enumeration value="flow"/>
       <xsd:enumeration value="board"/>
       <xsd:enumeration value="git"/>
+      <xsd:enumeration value="ebnf"/>
     </xsd:restriction>
   </xsd:simpleType>
 
