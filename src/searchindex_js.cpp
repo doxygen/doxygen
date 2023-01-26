@@ -572,7 +572,7 @@ void writeJavaScriptSearchIndex()
           ti << "]]]\n";
         }
         ti << "];\n";
-        Doxygen::indexList->addStyleSheetFile(qPrint("search/"+baseName+".js"));
+        Doxygen::indexList->addStyleSheetFile(("search/"+baseName+".js").data());
       }
       else
       {
