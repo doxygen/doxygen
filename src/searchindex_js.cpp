@@ -572,6 +572,7 @@ void writeJavaScriptSearchIndex()
           ti << "]]]\n";
         }
         ti << "];\n";
+        Doxygen::indexList->addStyleSheetFile(qPrint("search/"+baseName+".js"));
       }
       else
       {
@@ -635,6 +636,7 @@ void writeJavaScriptSearchIndex()
       if (j>0) t << "\n";
       t << "};\n\n";
     }
+    Doxygen::indexList->addStyleSheetFile("search/searchdata.js");
     ResourceMgr::instance().copyResource("search.js",searchDirName);
   }
 
