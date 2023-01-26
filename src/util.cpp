@@ -6120,6 +6120,63 @@ bool copyFile(const QCString &src,const QCString &dest)
   return true;
 }
 
+/** split given string into an array based on EOL
+ */
+std::vector<std::string> splitString(const std::string& str)
+{
+    std::vector<std::string> tokens;
+ 
+    std::stringstream ss(str);
+    std::string token;
+    while (std::getline(ss, token, '\n')) {
+        tokens.push_back(token);
+    }
+ 
+    return tokens;
+}
+
+/** removes whitespace at the beginning of each line by a length common to all lines
+ * such that it does not remove non-spacers
+ */ 
+QCString stripLeft(const QCString& text)
+{
+  auto lines = splitString(text.str());
+
+  bool leftSizeSet = false;
+  size_t leftSize = 0;
+
+  // detect how much left space to remove
+  for (size_t i = 0; i < lines.size(); ++i)
+  {
+    auto& line = lines[i];
+    auto lineLen = line.length();
+    size_t j = 0;
+    while (j < lineLen && line[j] == ' ') ++j;
+    if (j > 0 && (j < leftSize || !leftSizeSet)) 
+    {
+      leftSize = j;    
+      leftSizeSet = true;
+    }
+  }
+
+  if (leftSize == 0) return text;
+
+  std::string res = "";
+
+  // remove left space  
+  for (size_t i = 0; i < lines.size(); ++i)
+  {
+    auto& line = lines[i];
+    auto lineLen = line.length();
+    if (lineLen > leftSize)
+      res += lines[i].substr(leftSize, lines[i].length() - leftSize) + '\n';
+    else
+      res += lines[i] + '\n';
+  }
+
+  return res;
+}
+
 /** Returns the section of text, in between a pair of markers.
  *  Full lines are returned, excluding the lines on which the markers appear.
  *  \sa routine lineBlock
@@ -6163,7 +6220,7 @@ QCString extractBlock(const QCString &text,const QCString &marker)
     l2=lp;
   }
   //printf("text=[%s]\n",qPrint(text.mid(l1,l2-l1)));
-  return l2>l1 ? text.mid(l1,l2-l1) : QCString();
+  return l2>l1 ? stripLeft(text.mid(l1,l2-l1)) : QCString();
 }
 
 /** Returns the line number of the line following the line with the marker.
