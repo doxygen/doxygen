@@ -1017,6 +1017,8 @@
       <xsd:enumeration value="flow"/>
       <xsd:enumeration value="board"/>
       <xsd:enumeration value="git"/>
+      <xsd:enumeration value="hcl"/>
+      <xsd:enumeration value="regex"/>
       <xsd:enumeration value="ebnf"/>
     </xsd:restriction>
   </xsd:simpleType>
