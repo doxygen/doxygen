@@ -568,9 +568,9 @@ Go to the <a href="commands.html">next</a> section or return to the
     <option type='enum' id='SNIPPET_TRIMLEFT' defval='NO'>
       <docs>
 <![CDATA[
- Inserted snippet will not trimmed by default.
- 
- Setting \c SNIPPET_TRIM_LEFT to YES will remove lines common starting spaces/tab.
+ Inserted snippet will not be trimmed by default.
+  
+ Setting \c SNIPPET_TRIMLEFT to \c YES will remove from the lines in the snippet the starting spacing and '<tabs>' that is common to all the lines.
 ]]>
       </docs>      
       <value name="NO"/>
