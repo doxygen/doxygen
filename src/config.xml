@@ -565,6 +565,17 @@ Go to the <a href="commands.html">next</a> section or return to the
 ]]>
       </docs>
     </option>
+    <option type='enum' id='SNIPPET_TRIMLEFT' defval='NO'>
+      <docs>
+<![CDATA[
+ Inserted snippet will not trimmed by default.
+ 
+ Setting \c SNIPPET_TRIM_LEFT to YES will remove lines common starting spaces/tab.
+]]>
+      </docs>      
+      <value name="NO"/>
+      <value name="YES" />
+    </option>
     <option type='list' id='ALIASES' format='string'>
       <docs>
 <![CDATA[

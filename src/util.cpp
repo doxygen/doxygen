@@ -6220,7 +6220,10 @@ QCString extractBlock(const QCString &text,const QCString &marker)
     l2=lp;
   }
   //printf("text=[%s]\n",qPrint(text.mid(l1,l2-l1)));
-  return l2>l1 ? stripLeft(text.mid(l1,l2-l1)) : QCString();
+  if (Config_getEnum(SNIPPET_TRIMLEFT) == SNIPPET_TRIMLEFT_t::YES)
+    return l2>l1 ? stripLeft(text.mid(l1,l2-l1)) : QCString();
+  else
+    return l2>l1 ? text.mid(l1,l2-l1) : QCString();
 }
 
 /** Returns the line number of the line following the line with the marker.
