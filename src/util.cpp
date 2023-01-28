@@ -6139,39 +6139,82 @@ std::vector<std::string> splitString(const std::string& str)
  * such that it does not remove non-spacers
  */ 
 QCString stripLeft(const QCString& text)
-{
+{  
   auto lines = splitString(text.str());
+  
+  // to be used in case of implement SNIPPET_TRIMLEFT = TABCONVERT
+  // auto tabSize = Config_getInt(TAB_SIZE); 
 
-  bool leftSizeSet = false;
-  size_t leftSize = 0;
+  // lines common spaces/tabs to trim ( -1 not yet found )
+  int maxSpaces = -1;
+  int maxTabs = -1;
 
   // detect how much left space to remove
   for (size_t i = 0; i < lines.size(); ++i)
   {
+    int spaces = 0; // this line spaces
+    int tabs = 0; // this line tabs
+
     auto& line = lines[i];
     auto lineLen = line.length();
+    if (lineLen == 0) continue;
+
     size_t j = 0;
-    while (j < lineLen && line[j] == ' ') ++j;
-    if (j > 0 && (j < leftSize || !leftSizeSet)) 
+    while (j < lineLen)
     {
-      leftSize = j;    
-      leftSizeSet = true;
+      auto c = line[j];
+      if (tabs == 0 && c == ' ') ++spaces;
+      else if (c == '\t') ++tabs;
+      else break;
+      
+      ++j;
+    }
+    if (j > 0)
+    {
+      if (spaces > 0 && (maxSpaces == -1 || spaces < maxSpaces)) maxSpaces = spaces;
+      if (tabs > 0 && (maxTabs == -1 || tabs < maxTabs)) maxTabs = tabs;
     }
   }
 
-  if (leftSize == 0) return text;
+  if (maxSpaces == -1 && maxTabs == -1) return text;
 
   std::string res = "";
 
-  // remove left space  
+  // remove left spaces/tabs  
   for (size_t i = 0; i < lines.size(); ++i)
   {
     auto& line = lines[i];
     auto lineLen = line.length();
-    if (lineLen > leftSize)
-      res += lines[i].substr(leftSize, lines[i].length() - leftSize) + '\n';
-    else
-      res += lines[i] + '\n';
+    if (lineLen == 0)
+    {
+      res += '\n';
+      continue;
+    }
+
+    // remove commons
+    int s = maxSpaces;
+    int t = maxTabs;
+    size_t j = 0;    
+
+    for (; j < lineLen; ++j)
+    {
+      if (s > 0)
+      {
+        assert(line[j] == ' ');
+        --s;
+      }
+      else if (t > 0)
+      {
+        if (line[j] == ' ') break;
+        
+        assert(line[j] == '\t');
+        --t;
+      }
+      else
+        break;
+    }
+
+    res += lines[i].substr(j, lines[i].length() - j) + '\n';    
   }
 
   return res;
