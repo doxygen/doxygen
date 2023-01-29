@@ -17,6 +17,7 @@
 
 #include "config.h"
 #include "outputgen.h"
+#include "outputlist.h"
 
 #if 0
 // define for cases that have been implemented with an empty body
@@ -87,13 +88,13 @@ class DocbookCodeGenerator : public CodeOutputInterface
     QCString m_sourceFileName;
 };
 
-class DocbookGenerator : public OutputGenerator //: public CodeOutputForwarder<OutputGenerator,DocbookCodeGenerator>
+class DocbookGenerator : public OutputGenerator
 {
   public:
     DocbookGenerator();
     DocbookGenerator(const DocbookGenerator &o);
-    DocbookGenerator &operator=(const DocbookGenerator &o);
-    virtual ~DocbookGenerator();
+    DocbookGenerator &operator=(const DocbookGenerator &o) = delete;
+    virtual ~DocbookGenerator() = default;
     virtual std::unique_ptr<OutputGenerator> clone() const;
 
     static void init();
@@ -316,6 +317,7 @@ private:
     void closeAllSections();
 
     QCString relPath;
+    OutputCodeList       m_codeList;
     DocbookCodeGenerator m_codeGen;
     bool m_denseText = false;
     bool m_inGroup = false;

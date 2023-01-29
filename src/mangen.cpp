@@ -182,27 +182,19 @@ ManGenerator::ManGenerator()
   : OutputGenerator(Config_getString(MAN_OUTPUT)+"/"+getSubdir())
   , m_codeGen(m_t)
 {
+  m_codeList.add(&m_codeGen);
 }
 
 ManGenerator::ManGenerator(const ManGenerator &og)
   : OutputGenerator(og)
   , m_codeGen(m_t)
 {
-}
-
-ManGenerator &ManGenerator::operator=(const ManGenerator &og)
-{
-  OutputGenerator::operator=(og);
-  return *this;
+  m_codeList.add(&m_codeGen);
 }
 
 std::unique_ptr<OutputGenerator> ManGenerator::clone() const
 {
   return std::make_unique<ManGenerator>(*this);
-}
-
-ManGenerator::~ManGenerator()
-{
 }
 
 void ManGenerator::init()

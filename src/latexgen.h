@@ -20,6 +20,7 @@
 
 #include "config.h"
 #include "outputgen.h"
+#include "outputlist.h"
 
 #define LATEX_STYLE_EXTENSION ".sty"
 
@@ -82,13 +83,13 @@ class LatexCodeGenerator : public CodeOutputInterface
 };
 
 /** Generator for LaTeX output. */
-class LatexGenerator : public OutputGenerator //: public CodeOutputForwarder<OutputGenerator,LatexCodeGenerator>
+class LatexGenerator : public OutputGenerator
 {
   public:
     LatexGenerator();
     LatexGenerator(const LatexGenerator &);
-    LatexGenerator &operator=(const LatexGenerator &);
-    virtual ~LatexGenerator();
+    LatexGenerator &operator=(const LatexGenerator &) = delete;
+    virtual ~LatexGenerator() = default;
     virtual std::unique_ptr<OutputGenerator> clone() const;
 
     static void init();
@@ -317,6 +318,7 @@ class LatexGenerator : public OutputGenerator //: public CodeOutputForwarder<Out
     QCString m_relPath;
     int m_indent = 0;
     bool templateMemberItem = false;
+    OutputCodeList m_codeList;
     LatexCodeGenerator m_codeGen;
 };
 

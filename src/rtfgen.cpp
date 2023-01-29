@@ -275,27 +275,19 @@ RTFGenerator::RTFGenerator()
   : OutputGenerator(Config_getString(RTF_OUTPUT))
   , m_codeGen(m_t)
 {
+  m_codeList.add(&m_codeGen);
 }
 
 RTFGenerator::RTFGenerator(const RTFGenerator &og)
   : OutputGenerator(og)
   , m_codeGen(m_t)
 {
-}
-
-RTFGenerator &RTFGenerator::operator=(const RTFGenerator &og)
-{
-  OutputGenerator::operator=(og);
-  return *this;
+  m_codeList.add(&m_codeGen);
 }
 
 std::unique_ptr<OutputGenerator> RTFGenerator::clone() const
 {
   return std::make_unique<RTFGenerator>(*this);
-}
-
-RTFGenerator::~RTFGenerator()
-{
 }
 
 void RTFGenerator::setRelativePath(const QCString &path)

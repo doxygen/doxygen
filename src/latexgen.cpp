@@ -267,28 +267,19 @@ LatexGenerator::LatexGenerator()
   : OutputGenerator(Config_getString(LATEX_OUTPUT))
   , m_codeGen(m_t)
 {
-  //printf("LatexGenerator::LatexGenerator() m_insideTabbing=FALSE\n");
+  m_codeList.add(&m_codeGen);
 }
 
 LatexGenerator::LatexGenerator(const LatexGenerator &og)
   : OutputGenerator(og)
   , m_codeGen(m_t)
 {
-}
-
-LatexGenerator &LatexGenerator::operator=(const LatexGenerator &og)
-{
-  OutputGenerator::operator=(og);
-  return *this;
+  m_codeList.add(&m_codeGen);
 }
 
 std::unique_ptr<OutputGenerator> LatexGenerator::clone() const
 {
   return std::make_unique<LatexGenerator>(*this);
-}
-
-LatexGenerator::~LatexGenerator()
-{
 }
 
 static void writeLatexMakefile()

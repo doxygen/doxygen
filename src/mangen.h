@@ -19,6 +19,7 @@
 #define MANGEN_H
 
 #include "outputgen.h"
+#include "outputlist.h"
 
 /** Generator for Man page code fragments */
 class ManCodeGenerator : public CodeOutputInterface
@@ -56,13 +57,13 @@ class ManCodeGenerator : public CodeOutputInterface
 };
 
 /** Generator for Man page output. */
-class ManGenerator : public OutputGenerator //public CodeOutputForwarder<OutputGenerator,ManCodeGenerator>
+class ManGenerator : public OutputGenerator
 {
   public:
     ManGenerator();
     ManGenerator(const ManGenerator &g);
-    ManGenerator &operator=(const ManGenerator &g);
-    virtual ~ManGenerator();
+    ManGenerator &operator=(const ManGenerator &g) = delete;
+    virtual ~ManGenerator() = default;
     virtual std::unique_ptr<OutputGenerator> clone() const;
 
     OutputType type() const { return OutputType::Man; }
@@ -285,6 +286,7 @@ class ManGenerator : public OutputGenerator //public CodeOutputForwarder<OutputG
     bool m_upperCase = false;
     bool m_insideTabbing = false;
     bool m_inHeader = false;
+    OutputCodeList   m_codeList;
     ManCodeGenerator m_codeGen;
 
 };

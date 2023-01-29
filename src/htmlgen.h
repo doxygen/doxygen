@@ -17,6 +17,7 @@
 #define HTMLGEN_H
 
 #include "outputgen.h"
+#include "outputlist.h"
 
 /** Generator for HTML code fragments */
 class HtmlCodeGenerator : public CodeOutputInterface
@@ -62,13 +63,13 @@ class HtmlCodeGenerator : public CodeOutputInterface
 };
 
 /** Generator for HTML output */
-class HtmlGenerator : public OutputGenerator //public CodeOutputForwarder<OutputGenerator,HtmlCodeGenerator>
+class HtmlGenerator : public OutputGenerator
 {
   public:
     HtmlGenerator();
-    HtmlGenerator &operator=(const HtmlGenerator &g);
+    HtmlGenerator &operator=(const HtmlGenerator &g) = delete;
     HtmlGenerator(const HtmlGenerator &g);
-    virtual ~HtmlGenerator();
+    virtual ~HtmlGenerator() = default;
     virtual std::unique_ptr<OutputGenerator> clone() const;
 
     virtual OutputType type() const { return OutputType::Html; }
@@ -313,6 +314,7 @@ class HtmlGenerator : public OutputGenerator //public CodeOutputForwarder<Output
 
     int m_sectionCount = 0;
     bool m_emptySection = false;
+    OutputCodeList    m_codeList;
     HtmlCodeGenerator m_codeGen;
 };
 

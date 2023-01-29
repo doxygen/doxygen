@@ -279,28 +279,19 @@ DocbookGenerator::DocbookGenerator()
   , m_codeGen(m_t)
 {
 DB_GEN_C
+  m_codeList.add(&m_codeGen);
 }
 
 DocbookGenerator::DocbookGenerator(const DocbookGenerator &og)
   : OutputGenerator(og)
   , m_codeGen(m_t)
 {
-}
-
-DocbookGenerator &DocbookGenerator::operator=(const DocbookGenerator &og)
-{
-  OutputGenerator::operator=(og);
-  return *this;
+  m_codeList.add(&m_codeGen);
 }
 
 std::unique_ptr<OutputGenerator> DocbookGenerator::clone() const
 {
   return std::make_unique<DocbookGenerator>(*this);
-}
-
-DocbookGenerator::~DocbookGenerator()
-{
-DB_GEN_C
 }
 
 void DocbookGenerator::init()

@@ -1024,28 +1024,19 @@ HtmlGenerator::HtmlGenerator()
   : OutputGenerator(Config_getString(HTML_OUTPUT))
   , m_codeGen(m_t)
 {
+  m_codeList.add(&m_codeGen);
 }
 
 HtmlGenerator::HtmlGenerator(const HtmlGenerator &og)
   : OutputGenerator(og)
   , m_codeGen(m_t)
 {
-}
-
-HtmlGenerator &HtmlGenerator::operator=(const HtmlGenerator &og)
-{
-  OutputGenerator::operator=(og);
-  return *this;
+  m_codeList.add(&m_codeGen);
 }
 
 std::unique_ptr<OutputGenerator> HtmlGenerator::clone() const
 {
   return std::make_unique<HtmlGenerator>(*this);
-}
-
-HtmlGenerator::~HtmlGenerator()
-{
-  //printf("HtmlGenerator::~HtmlGenerator()\n");
 }
 
 void HtmlGenerator::init()

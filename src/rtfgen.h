@@ -20,6 +20,7 @@
 
 #include "config.h"
 #include "outputgen.h"
+#include "outputlist.h"
 
 /** Generator for RTF code fragments */
 class RTFCodeGenerator : public CodeOutputInterface
@@ -67,8 +68,8 @@ class RTFGenerator : public OutputGenerator
   public:
     RTFGenerator();
     RTFGenerator(const RTFGenerator &);
-    RTFGenerator &operator=(const RTFGenerator &);
-    virtual ~RTFGenerator();
+    RTFGenerator &operator=(const RTFGenerator &) = delete;
+    virtual ~RTFGenerator() = default;
     virtual std::unique_ptr<OutputGenerator> clone() const;
 
     static void init();
@@ -324,6 +325,7 @@ class RTFGenerator : public OutputGenerator
       char type = '1';
     };
     RTFListItemInfo m_listItemInfo[maxIndentLevels];
+    OutputCodeList m_codeList;
     RTFCodeGenerator m_codeGen;
 };
 
