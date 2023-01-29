@@ -2456,7 +2456,7 @@ void HtmlGenerator::writeDoc(const IDocNodeAST *ast,const Definition *ctx,const 
   if (astImpl)
   {
     m_codeGen.setId(id);
-    HtmlDocVisitor visitor(m_t,m_codeGen,ctx);
+    HtmlDocVisitor visitor(m_t,m_codeList,ctx);
     std::visit(visitor,astImpl->root);
   }
 }

@@ -24,6 +24,7 @@
 #include "util.h"
 #include "defargs.h"
 #include "outputgen.h"
+#include "outputlist.h"
 #include "dot.h"
 #include "dotclassgraph.h"
 #include "dotincldepgraph.h"
@@ -433,9 +434,11 @@ static void writeXMLDocBlock(TextStream &t,
   if (astImpl)
   {
     // create a code generator
-    auto xmlCodeGen = std::make_unique<XMLCodeGenerator>(t);
+    XMLCodeGenerator xmlCodeGen(t);
+    OutputCodeList xmlCodeList;
+    xmlCodeList.add(&xmlCodeGen);
     // create a parse tree visitor for XML
-    XmlDocVisitor visitor(t,*xmlCodeGen,scope?scope->getDefFileExtension():QCString(""));
+    XmlDocVisitor visitor(t,xmlCodeList,scope?scope->getDefFileExtension():QCString(""));
     // visit all nodes
     std::visit(visitor,astImpl->root);
     // clean up
@@ -447,14 +450,16 @@ void writeXMLCodeBlock(TextStream &t,FileDef *fd)
   auto intf=Doxygen::parserManager->getCodeParser(fd->getDefFileExtension());
   SrcLangExt langExt = getLanguageFromFileName(fd->getDefFileExtension());
   intf->resetCodeParserState();
-  XMLCodeGenerator *xmlGen = new XMLCodeGenerator(t);
-  xmlGen->startCodeFragment("DoxyCode");
-  intf->parseCode(*xmlGen,    // codeOutIntf
-                QCString(),           // scopeName
+  XMLCodeGenerator xmlGen(t);
+  OutputCodeList xmlList;
+  xmlList.add(&xmlGen);
+  xmlList.startCodeFragment("DoxyCode");
+  intf->parseCode(xmlList,    // codeOutList
+                QCString(),   // scopeName
                 fileToString(fd->absFilePath(),Config_getBool(FILTER_SOURCE_FILES)),
                 langExt,     // lang
                 FALSE,       // isExampleBlock
-                QCString(),           // exampleName
+                QCString(),  // exampleName
                 fd,          // fileDef
                 -1,          // startLine
                 -1,          // endLine
@@ -462,9 +467,8 @@ void writeXMLCodeBlock(TextStream &t,FileDef *fd)
                 0,           // memberDef
                 TRUE         // showLineNumbers
                 );
-  xmlGen->endCodeFragment("DoxyCode");
-  xmlGen->finish();
-  delete xmlGen;
+  xmlList.endCodeFragment("DoxyCode");
+  xmlGen.finish();
 }
 
 static void writeMemberReference(TextStream &t,const Definition *def,const MemberDef *rmd,const QCString &tagName)

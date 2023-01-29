@@ -625,7 +625,7 @@ DB_GEN_C
   auto astImpl = dynamic_cast<const DocNodeAST*>(ast);
   if (astImpl)
   {
-    DocbookDocVisitor visitor(m_t,m_codeGen,ctx?ctx->getDefFileExtension():QCString());
+    DocbookDocVisitor visitor(m_t,m_codeList,ctx?ctx->getDefFileExtension():QCString());
     std::visit(visitor,astImpl->root);
   }
 }

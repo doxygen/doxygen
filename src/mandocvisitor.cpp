@@ -30,7 +30,7 @@
 
 ManListItemInfo man_listItemInfo[man_maxIndentLevels];
 
-ManDocVisitor::ManDocVisitor(TextStream &t,CodeOutputInterface &ci,
+ManDocVisitor::ManDocVisitor(TextStream &t,OutputCodeList &ci,
                              const QCString &langExt)
   : m_t(t), m_ci(ci), m_insidePre(FALSE), m_hide(FALSE), m_firstCol(FALSE),
     m_indent(0), m_langExt(langExt)

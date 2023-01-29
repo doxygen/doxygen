@@ -275,7 +275,7 @@ static QCString htmlAttribsToString(const HtmlAttribList &attribs, QCString *pAl
 
 //-------------------------------------------------------------------------
 
-HtmlDocVisitor::HtmlDocVisitor(TextStream &t,CodeOutputInterface &ci,
+HtmlDocVisitor::HtmlDocVisitor(TextStream &t,OutputCodeList &ci,
                                const Definition *ctx)
   : m_t(t), m_ci(ci), m_ctx(ctx)
 {

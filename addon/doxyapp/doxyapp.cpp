@@ -29,6 +29,7 @@
 #include "dir.h"
 #include "doxygen.h"
 #include "outputgen.h"
+#include "outputlist.h"
 #include "parserintf.h"
 #include "classdef.h"
 #include "namespacedef.h"
@@ -117,19 +118,18 @@ static void findXRefSymbols(FileDef *fd)
   intf->resetCodeParserState();
 
   // create a new backend object
-  XRefDummyCodeGenerator *xrefGen = new XRefDummyCodeGenerator(fd);
+  XRefDummyCodeGenerator xrefGen(fd);
+  OutputCodeList xrefList;
+  xrefList.add(&xrefGen);
 
   // parse the source code
-  intf->parseCode(*xrefGen,
+  intf->parseCode(xrefList,
                 0,
                 fileToString(fd->absFilePath()),
                 lang,
                 FALSE,
                 0,
                 fd);
-
-  // dismiss the object.
-  delete xrefGen;
 }
 
 static void listSymbol(Definition *d)

@@ -58,7 +58,7 @@ typedef yyguts_t *yyscan_t;
 
 struct xmlcodeYY_state
 {
-  CodeOutputInterface * code;
+  OutputCodeList * code;
   QCString      curClassName;
   QCString      parmType;
   QCString      parmName;
@@ -413,7 +413,7 @@ void XMLCodeParser::resetCodeParserState()
   yyextra->currentMemberDef = 0;
 }
 
-void XMLCodeParser::parseCode(CodeOutputInterface &codeOutIntf,
+void XMLCodeParser::parseCode(OutputCodeList &codeOutIntf,
                const QCString &/* scopeName */,
                const QCString &input,
                SrcLangExt,

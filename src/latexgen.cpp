@@ -1992,7 +1992,7 @@ void LatexGenerator::writeDoc(const IDocNodeAST *ast,const Definition *ctx,const
   const DocNodeAST *astImpl = dynamic_cast<const DocNodeAST*>(ast);
   if (astImpl)
   {
-    LatexDocVisitor visitor(m_t,m_codeGen,
+    LatexDocVisitor visitor(m_t,m_codeList,m_codeGen,
                             ctx?ctx->getDefFileExtension():QCString(""));
     std::visit(visitor,astImpl->root);
   }

@@ -19,7 +19,7 @@
 
 #include "parserintf.h"
 
-class CodeOutputInterface;
+class OutputCodeList;
 class FileDef;
 class MemberDef;
 class QCString;
@@ -32,7 +32,7 @@ class XMLCodeParser : public CodeParserInterface
   public:
     XMLCodeParser();
     virtual ~XMLCodeParser();
-    void parseCode(CodeOutputInterface &codeOutIntf,
+    void parseCode(OutputCodeList &codeOutIntf,
                    const QCString &scopeName,
                    const QCString &input,
                    SrcLangExt,

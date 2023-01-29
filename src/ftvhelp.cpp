@@ -335,7 +335,9 @@ static void generateBriefDoc(TextStream &t,const Definition *def)
     {
       QCString relPath = relativePathToRoot(def->getOutputFileBase());
       HtmlCodeGenerator htmlGen(t,relPath);
-      HtmlDocVisitor visitor(t,htmlGen,def);
+      OutputCodeList htmlList;
+      htmlList.add(&htmlGen);
+      HtmlDocVisitor visitor(t,htmlList,def);
       std::visit(visitor,astImpl->root);
     }
   }

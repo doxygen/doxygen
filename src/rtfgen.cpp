@@ -2543,7 +2543,7 @@ void RTFGenerator::writeDoc(const IDocNodeAST *ast,const Definition *ctx,const M
   auto astImpl = dynamic_cast<const DocNodeAST*>(ast);
   if (astImpl)
   {
-    RTFDocVisitor visitor(m_t,m_codeGen,ctx?ctx->getDefFileExtension():QCString(""));
+    RTFDocVisitor visitor(m_t,m_codeList,ctx?ctx->getDefFileExtension():QCString(""));
     std::visit(visitor,astImpl->root);
   }
   m_omitParagraph = TRUE;

@@ -23,7 +23,7 @@
 #include "docnode.h"
 #include "qcstring.h"
 
-class CodeOutputInterface;
+class OutputCodeList;
 class QCString;
 class TextStream;
 
@@ -31,7 +31,7 @@ class TextStream;
 class DocbookDocVisitor : public DocVisitor
 {
     public:
-    DocbookDocVisitor(TextStream &t,CodeOutputInterface &ci,const QCString &langExt);
+    DocbookDocVisitor(TextStream &t,OutputCodeList &ci,const QCString &langExt);
     ~DocbookDocVisitor();
     //-----------------------------------------
     template<class T>
@@ -143,7 +143,7 @@ class DocbookDocVisitor : public DocVisitor
     // state variables
     //--------------------------------------
     TextStream &m_t;
-    CodeOutputInterface &m_ci;
+    OutputCodeList &m_ci;
     bool m_insidePre = false;
     bool m_hide = false;
     BoolStack m_enabled;

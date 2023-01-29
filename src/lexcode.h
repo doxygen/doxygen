@@ -31,7 +31,7 @@ class LexCodeParser : public CodeParserInterface
   public:
     LexCodeParser();
     virtual ~LexCodeParser();
-    void parseCode(CodeOutputInterface &codeOutIntf,
+    void parseCode(OutputCodeList &codeOutIntf,
                    const QCString &scopeName,
                    const QCString &input,
                    SrcLangExt,

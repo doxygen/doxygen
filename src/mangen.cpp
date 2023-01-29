@@ -739,7 +739,7 @@ void ManGenerator::writeDoc(const IDocNodeAST *ast,const Definition *ctx,const M
   const DocNodeAST *astImpl = dynamic_cast<const DocNodeAST *>(ast);
   if (astImpl)
   {
-    ManDocVisitor visitor(m_t,m_codeGen,ctx?ctx->getDefFileExtension():QCString(""));
+    ManDocVisitor visitor(m_t,m_codeList,ctx?ctx->getDefFileExtension():QCString(""));
     std::visit(visitor,astImpl->root);
   }
   m_firstCol=FALSE;

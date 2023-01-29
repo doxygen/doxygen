@@ -54,7 +54,7 @@ static QCString align(const DocHtmlCell &cell)
   return "";
 }
 
-RTFDocVisitor::RTFDocVisitor(TextStream &t,CodeOutputInterface &ci,
+RTFDocVisitor::RTFDocVisitor(TextStream &t,OutputCodeList &ci,
                              const QCString &langExt)
   : m_t(t), m_ci(ci), m_langExt(langExt)
 {

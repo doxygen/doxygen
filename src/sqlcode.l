@@ -53,7 +53,7 @@ typedef yyguts_t *yyscan_t;
 
 struct sqlcodeYY_state
 {
-     CodeOutputInterface * code;
+     OutputCodeList * code;
      const char   *inputString;     //!< the code fragment as text
      int           inputPosition;   //!< read offset during parsing
      QCString      fileName;
@@ -412,7 +412,7 @@ void SQLCodeParser::resetCodeParserState()
   yyextra->currentMemberDef = 0;
 }
 
-void SQLCodeParser::parseCode(CodeOutputInterface &codeOutIntf,
+void SQLCodeParser::parseCode(OutputCodeList &codeOutIntf,
                const QCString &/* scopeName */,
                const QCString &input,
                SrcLangExt,

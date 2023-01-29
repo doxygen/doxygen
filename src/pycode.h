@@ -35,7 +35,7 @@ class PythonCodeParser : public CodeParserInterface
   public:
     PythonCodeParser();
     virtual ~PythonCodeParser();
-    void parseCode(CodeOutputInterface &codeOutIntf,
+    void parseCode(OutputCodeList &codeOutIntf,
                    const QCString &scopeName,
                    const QCString &input,
                    SrcLangExt lang,

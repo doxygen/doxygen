@@ -144,7 +144,7 @@ static void visitPostEnd(TextStream &t, const char *cmd)
   t << "</" << cmd << ">\n";
 }
 
-XmlDocVisitor::XmlDocVisitor(TextStream &t,CodeOutputInterface &ci,const QCString &langExt)
+XmlDocVisitor::XmlDocVisitor(TextStream &t,OutputCodeList &ci,const QCString &langExt)
   : m_t(t), m_ci(ci), m_insidePre(FALSE), m_hide(FALSE),
     m_langExt(langExt)
 {

@@ -27,6 +27,7 @@
 #include "version.h"
 #include "doxygen.h"
 #include "outputgen.h"
+#include "outputlist.h"
 #include "parserintf.h"
 #include "classlist.h"
 #include "config.h"
@@ -96,13 +97,12 @@ static void findXRefSymbols(FileDef *fd)
   intf->resetCodeParserState();
 
   // create a new backend object
-  Doxyparse *parse = new Doxyparse(fd);
+  Doxyparse parse(fd);
+  OutputCodeList parseList;
+  parseList.add(&parse);
 
   // parse the source code
-  intf->parseCode(*parse, 0, fileToString(fd->absFilePath()), lang, FALSE, 0, fd);
-
-  // dismiss the object.
-  delete parse;
+  intf->parseCode(parseList, 0, fileToString(fd->absFilePath()), lang, FALSE, 0, fd);
 }
 
 static bool ignoreStaticExternalCall(const MemberDef *context, const MemberDef *md) {

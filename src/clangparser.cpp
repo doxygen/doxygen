@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include "message.h"
 #include "outputgen.h"
+#include "outputlist.h"
 #include "filedef.h"
 #include "memberdef.h"
 #include "doxygen.h"
@@ -488,7 +489,7 @@ std::string ClangTUParser::lookup(uint32_t line,const char *symbol)
 }
 
 
-void ClangTUParser::writeLineNumber(CodeOutputInterface &ol,const FileDef *fd,uint32_t line,bool writeLineAnchor)
+void ClangTUParser::writeLineNumber(OutputCodeList &ol,const FileDef *fd,uint32_t line,bool writeLineAnchor)
 {
   const Definition *d = fd ? fd->getSourceDefinition(line) : 0;
   if (d && fd->isLinkable())
@@ -534,7 +535,7 @@ void ClangTUParser::writeLineNumber(CodeOutputInterface &ol,const FileDef *fd,ui
   //printf("writeLineNumber(%d) g_searchForBody=%d\n",line,g_searchForBody);
 }
 
-void ClangTUParser::codifyLines(CodeOutputInterface &ol,const FileDef *fd,const char *text,
+void ClangTUParser::codifyLines(OutputCodeList &ol,const FileDef *fd,const char *text,
                         uint32_t &line,uint32_t &column,const char *fontClass)
 {
   if (fontClass) ol.startFontClass(fontClass);
@@ -571,7 +572,7 @@ void ClangTUParser::codifyLines(CodeOutputInterface &ol,const FileDef *fd,const 
   if (fontClass) ol.endFontClass();
 }
 
-void ClangTUParser::writeMultiLineCodeLink(CodeOutputInterface &ol,
+void ClangTUParser::writeMultiLineCodeLink(OutputCodeList &ol,
                   const FileDef *fd,uint32_t &line,uint32_t &column,
                   const Definition *d,
                   const char *text)
@@ -612,7 +613,7 @@ void ClangTUParser::writeMultiLineCodeLink(CodeOutputInterface &ol,
   }
 }
 
-void ClangTUParser::linkInclude(CodeOutputInterface &ol,const FileDef *fd,
+void ClangTUParser::linkInclude(OutputCodeList &ol,const FileDef *fd,
     uint32_t &line,uint32_t &column,const char *text)
 {
   QCString incName = text;
@@ -651,7 +652,7 @@ void ClangTUParser::linkInclude(CodeOutputInterface &ol,const FileDef *fd,
   }
 }
 
-void ClangTUParser::linkMacro(CodeOutputInterface &ol,const FileDef *fd,
+void ClangTUParser::linkMacro(OutputCodeList &ol,const FileDef *fd,
     uint32_t &line,uint32_t &column,const char *text)
 {
   MemberName *mn=Doxygen::functionNameLinkedMap->find(text);
@@ -670,7 +671,7 @@ void ClangTUParser::linkMacro(CodeOutputInterface &ol,const FileDef *fd,
 }
 
 
-void ClangTUParser::linkIdentifier(CodeOutputInterface &ol,const FileDef *fd,
+void ClangTUParser::linkIdentifier(OutputCodeList &ol,const FileDef *fd,
     uint32_t &line,uint32_t &column,const char *text,int tokenIndex)
 {
   CXCursor c = p->cursors[tokenIndex];
@@ -752,7 +753,7 @@ void ClangTUParser::detectFunctionBody(const char *s)
   }
 }
 
-void ClangTUParser::writeSources(CodeOutputInterface &ol,const FileDef *fd)
+void ClangTUParser::writeSources(OutputCodeList &ol,const FileDef *fd)
 {
   // (re)set global parser state
   p->currentMemberDef=0;

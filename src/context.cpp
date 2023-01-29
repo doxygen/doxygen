@@ -1255,14 +1255,18 @@ static TemplateVariant parseDoc(const Definition *def,const QCString &file,int l
       case ContextOutputFormat_Html:
         {
           HtmlCodeGenerator codeGen(ts,relPath);
-          HtmlDocVisitor visitor(ts,codeGen,def);
+          OutputCodeList codeList;
+          codeList.add(&codeGen);
+          HtmlDocVisitor visitor(ts,codeList,def);
           std::visit(visitor,astImpl->root);
         }
         break;
       case ContextOutputFormat_Latex:
         {
           LatexCodeGenerator codeGen(ts,relPath,file);
-          LatexDocVisitor visitor(ts,codeGen,def->getDefFileExtension());
+          OutputCodeList codeList;
+          codeList.add(&codeGen);
+          LatexDocVisitor visitor(ts,codeList,codeGen,def->getDefFileExtension());
           std::visit(visitor,astImpl->root);
         }
         break;
@@ -1291,14 +1295,18 @@ static TemplateVariant parseCode(const Definition *d,const QCString &scopeName,c
     case ContextOutputFormat_Html:
       {
         HtmlCodeGenerator codeGen(t,relPath);
-        intf->parseCode(codeGen,scopeName,code,d->getLanguage(),FALSE,QCString(),d->getBodyDef(),
+        OutputCodeList codeList;
+        codeList.add(&codeGen);
+        intf->parseCode(codeList,scopeName,code,d->getLanguage(),FALSE,QCString(),d->getBodyDef(),
             startLine,endLine,TRUE,toMemberDef(d),showLineNumbers,d);
       }
       break;
     case ContextOutputFormat_Latex:
       {
         LatexCodeGenerator codeGen(t,relPath,d->docFile());
-        intf->parseCode(codeGen,scopeName,code,d->getLanguage(),FALSE,QCString(),d->getBodyDef(),
+        OutputCodeList codeList;
+        codeList.add(&codeGen);
+        intf->parseCode(codeList,scopeName,code,d->getLanguage(),FALSE,QCString(),d->getBodyDef(),
             startLine,endLine,TRUE,toMemberDef(d),showLineNumbers,d);
       }
       break;
@@ -1321,7 +1329,9 @@ static TemplateVariant parseCode(const FileDef *fd,const QCString &relPath)
     case ContextOutputFormat_Html:
       {
         HtmlCodeGenerator codeGen(t,relPath);
-        intf->parseCode(codeGen,QCString(),
+        OutputCodeList codeList;
+        codeList.add(&codeGen);
+        intf->parseCode(codeList,QCString(),
               fileToString(fd->absFilePath(),filterSourceFiles,TRUE), // the sources
               fd->getLanguage(),  // lang
               FALSE,              // isExampleBlock
@@ -1340,7 +1350,9 @@ static TemplateVariant parseCode(const FileDef *fd,const QCString &relPath)
     case ContextOutputFormat_Latex:
       {
         LatexCodeGenerator codeGen(t,relPath,fd->docFile());
-        intf->parseCode(codeGen,QCString(),
+        OutputCodeList codeList;
+        codeList.add(&codeGen);
+        intf->parseCode(codeList,QCString(),
               fileToString(fd->absFilePath(),filterSourceFiles,TRUE), // the sources
               fd->getLanguage(),  // lang
               FALSE,              // isExampleBlock

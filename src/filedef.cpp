@@ -1112,6 +1112,8 @@ void FileDefImpl::writeSourceBody(OutputList &ol,[[maybe_unused]] ClangTUParser 
 {
   bool filterSourceFiles = Config_getBool(FILTER_SOURCE_FILES);
   DevNullCodeDocInterface devNullIntf;
+  OutputCodeList devNullList;
+  devNullList.add(&devNullIntf);
 #if USE_LIBCLANG
   if (Doxygen::clangAssistedParsing && clangParser &&
       (getLanguage()==SrcLangExt_Cpp || getLanguage()==SrcLangExt_ObjC))
@@ -1137,7 +1139,7 @@ void FileDefImpl::writeSourceBody(OutputList &ol,[[maybe_unused]] ClangTUParser 
     if (needs2PassParsing)
     {
       // parse code for cross-references only (see bug707641)
-      intf->parseCode(devNullIntf,QCString(),
+      intf->parseCode(devNullList,QCString(),
                        fileToString(absFilePath(),TRUE,TRUE),
                        getLanguage(),
                        FALSE,QCString(),this
@@ -1172,12 +1174,14 @@ void FileDefImpl::parseSource([[maybe_unused]] ClangTUParser *clangParser)
 {
   bool filterSourceFiles = Config_getBool(FILTER_SOURCE_FILES);
   DevNullCodeDocInterface devNullIntf;
+  OutputCodeList devNullList;
+  devNullList.add(&devNullIntf);
 #if USE_LIBCLANG
   if (Doxygen::clangAssistedParsing && clangParser &&
       (getLanguage()==SrcLangExt_Cpp || getLanguage()==SrcLangExt_ObjC))
   {
     clangParser->switchToFile(this);
-    clangParser->writeSources(devNullIntf,this);
+    clangParser->writeSources(devNullList,this);
   }
   else
 #endif
@@ -1185,7 +1189,7 @@ void FileDefImpl::parseSource([[maybe_unused]] ClangTUParser *clangParser)
     auto intf = Doxygen::parserManager->getCodeParser(getDefFileExtension());
     intf->resetCodeParserState();
     intf->parseCode(
-            devNullIntf,QCString(),
+            devNullList,QCString(),
             fileToString(absFilePath(),filterSourceFiles,TRUE),
             getLanguage(),
             FALSE,QCString(),this
