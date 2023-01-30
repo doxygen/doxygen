@@ -482,10 +482,11 @@ DB_VIS_C
       m_t << "</literallayout>";
       break;
     case DocInclude::Snippet:
+    case DocInclude::SnippetTrimLeft:
       m_t << "<literallayout><computeroutput>";
       getCodeParser(inc.extension()).parseCode(m_ci,
                                                 inc.context(),
-                                                extractBlock(inc.text(),inc.blockId()),
+                                                extractBlock(inc.text(),inc.blockId(),inc.type()==DocInclude::SnippetTrimLeft),
                                                 langExt,
                                                 inc.isExample(),
                                                 inc.exampleFile()
