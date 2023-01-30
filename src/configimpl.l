@@ -295,6 +295,52 @@ void ConfigEnum::convertStrToVal(Config::CompareMode compareMode)
   m_value = m_defValue;
 }
 
+void ConfigList::convertStrToVal(Config::CompareMode compareMode)
+{
+  if (m_widgetType != Enum) return;
+
+  if (compareMode == Config::CompareMode::CompressedNoEnv)
+  {
+    for (const auto &p : m_value)
+    {
+      QCString s=p.c_str();
+      if (containsEnvVar(s)) return;
+    }
+  }
+
+  m_defaultValue.clear();
+  for (const auto &p : m_value)
+  {
+    QCString val=p.c_str();
+    val = val.stripWhiteSpace().lower();
+    bool found = false;
+    for (const auto &s : m_valueRange)
+    {
+      if (s.lower() == val)
+      {
+        for (const auto &d : m_defaultValue)
+        {
+          if (d == val.data())
+          {
+            found = true;
+            break;
+          }
+        }
+        if (!found) m_defaultValue.push_back(val.data());
+        found = true;
+        break;
+      }
+    }
+    if (!found)
+    {
+      config_warn("argument '%s' for option '%s' is not a valid list enum value, skipping it\n",
+                  qPrint(p),qPrint(m_name));
+    }
+  }
+  m_value = m_defaultValue;
+  m_defaultValue.clear();
+}
+
 QCString &ConfigImpl::getString(const char *fileName,int num,const char *name) const
 {
   auto it = m_dict.find(name);

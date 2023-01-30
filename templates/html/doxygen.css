@@ -733,6 +733,7 @@ dl.reflist dd {
         padding-left: 0px;
 }
 
+.params summary, .retval summary, .tparams summary, .exception summary,
 .params .paramname, .retval .paramname, .tparams .paramname, .exception .paramname {
         font-weight: bold;
         vertical-align: top;

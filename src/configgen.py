@@ -120,6 +120,14 @@ def addValues(var, node):
                 print("  %s->addValue(\"%s\");" % (var, name))
 
 
+def addListEnumValues(var, node):
+    for n in node.childNodes:
+        if (n.nodeName == "value"):
+            if n.nodeType == Node.ELEMENT_NODE:
+                name = n.getAttribute('name')
+                print("  %s->addListEnumValue(\"%s\");" % (var, name))
+
+
 def parseHeader(node,objName):
     doc = ""
     for n in node.childNodes:
@@ -151,9 +159,12 @@ def prepCDocs(node):
                 if (n.getAttribute('doxyfile') != "0"):
                     if n.nodeType == Node.ELEMENT_NODE:
                         doc += parseDocs(n)
-        if (type == 'enum'):
+        if type == 'enum' or (type == 'list' and format =='enum'):
             values = collectValues(node)
-            doc += "<br/>Possible values are: "
+            if type == 'enum':
+                doc += "<br/>Possible values are: "
+            else:
+                doc += "<br/>Possible values are (multiple values are possible): "
             rng = len(values)
             for i in range(rng):
                 val = values[i]
@@ -292,7 +303,7 @@ def parseOption(node):
             print("  cs->setWidgetType(ConfigString::FileAndDir);")
         if depends != '':
             print("  cs->addDependency(\"%s\");" % (depends))
-    elif type == 'enum':
+    elif type =='enum':
         print("  ce = cfg->addEnum(")
         print("              \"%s\"," % (name))
         rng = len(docC)
@@ -334,7 +345,10 @@ def parseOption(node):
             else:
                 print("              \"%s\"" % (line))
         print("             );")
-        addValues("cl", node)
+        if format == 'enum':
+          addListEnumValues("cl", node)
+        else:
+          addValues("cl", node)
         if depends != '':
             print("  cl->addDependency(\"%s\");" % (depends))
         if format == 'file':
@@ -343,6 +357,8 @@ def parseOption(node):
             print("  cl->setWidgetType(ConfigList::Dir);")
         elif format == 'filedir':
             print("  cl->setWidgetType(ConfigList::FileAndDir);")
+        elif format == 'enum':
+            print("  cl->setWidgetType(ConfigList::Enum);")
     elif type == 'obsolete':
         print("  cfg->addObsolete(\"%s\",ConfigOption::O_%s);" % (name,orgtype.capitalize()))
     if len(setting) > 0:
@@ -375,11 +391,14 @@ def parseGroupMapEnums(node):
     for n in node.childNodes:
         if n.nodeType == Node.ELEMENT_NODE:
             type   = n.getAttribute('type')
+            format = n.getAttribute('format')
             name   = n.getAttribute('id')
             defval = n.getAttribute('defval')
-            if type=='enum':
+            if type == 'enum' or (type == 'list' and format =='enum'):
                 print("\nenum class %s_t" % (name))
                 print("{")
+                if type == 'list' and format =='enum':
+                    print("  unknown,")
                 for nv in n.childNodes:
                     if nv.nodeName == "value":
                         value = nv.getAttribute('name')
@@ -398,12 +417,17 @@ def parseGroupMapEnums(node):
                             print("    {{ \"{0}\", {1}_t::{2} }},".format(value.lower(),name,escape(value)))
                 print("  };")
                 print("  auto it = map.find(lc.str());")
-                print("  return it!=map.end() ? it->second : {0}_t::{1};".format(name,escape(defval)))
+                if type == 'list' and format =='enum':
+                    print("  return it!=map.end() ? it->second : {0}_t::unknown;".format(name))
+                else:
+                    print("  return it!=map.end() ? it->second : {0}_t::{1};".format(name,escape(defval)))
                 print("}\n")
                 print("inline QCString {0}_enum2str({1}_t v)".format(name,name))
                 print("{")
                 print("  switch(v)")
                 print("  {")
+                if type == 'list' and format =='enum':
+                    print("    case {0}_t::unknown: return \"\";".format(name))
                 for nv in n.childNodes:
                     if nv.nodeName == "value":
                         value = nv.getAttribute('name')
@@ -438,11 +462,14 @@ def parseGroupMapSetter(node):
             if len(setting) > 0:
                 print("#if %s" % (setting))
             type = n.getAttribute('type')
+            format = n.getAttribute('format')
             name = n.getAttribute('id')
             if type=='enum':
                 print("    [[maybe_unused]] %-22s update_%-46s { m_%s = %s(v); return v; }" % (name+'_t',name+'('+name+'_t '+' v)',name,name+'_enum2str'))
             elif type in map:
                 print("    [[maybe_unused]] %-22s update_%-46s { m_%s = v; return m_%s; }" % (map[type],name+'('+map[type]+' v)',name,name))
+            if type =='list' and format =='enum':
+                print("    [[maybe_unused]] %-22s isSet_%-46s {std::string str = %s_enum2str(v).data();if (str.empty()) return false;StringVector val = m_%s; for (const auto &s : val) { if (s == str) return true; } return false; }" % ('bool',name+'('+name+'_t v)',name,name))
             if len(setting) > 0:
                 print("#endif")
 
@@ -562,10 +589,13 @@ def parseOptionDoc(node, first):
             print("<dt>\\c %s <dd>" % (name))
         print(" \\addindex %s" % (name))
         print(doc)
-        if (type == 'enum'):
+        if type == 'enum' or (type == 'list' and format =='enum'):
             values = collectValues(node)
             print("")
-            print("Possible values are: ")
+            if type == 'enum':
+                print("Possible values are: ")
+            else:
+                print("Possible values are (multiple values are possible): ")
             rng = len(values)
             for i in range(rng):
                 val = values[i]
@@ -600,7 +630,7 @@ def parseOptionDoc(node, first):
                     "YES" if (defval == "1") else "NO"))
             print("")
         elif (type == 'list'):
-            if format == 'string':
+            if format == 'string' or format == 'enum':
                 values = collectValues(node)
                 rng = len(values)
                 for i in range(rng):

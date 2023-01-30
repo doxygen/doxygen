@@ -1210,6 +1210,18 @@ Go to the <a href="commands.html">next</a> section or return to the
 ]]>
       </docs>
     </option>
+    <option type='list' id='COLLAPSIBLE' format='enum'>
+      <docs>
+<![CDATA[
+  With the \c COLLAPSIBLE tag it is possible to make, in the HTML output, sections collapsible like
+  they were embedded into \ref htmltag_DETAILS "\<DETAILS\>" tag.
+]]>
+      </docs>
+      <value name="param"/>
+      <value name="retval"/>
+      <value name="tparam"/>
+      <value name="exception"/>
+    </option>
     <option type='bool' id='SHOW_USED_FILES' defval='1'>
       <docs>
 <![CDATA[

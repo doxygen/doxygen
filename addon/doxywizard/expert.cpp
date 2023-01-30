@@ -159,6 +159,51 @@ void Expert::createTopics(const QDomElement &rootElem)
           SLOT(activateTopic(QTreeWidgetItem *,QTreeWidgetItem *)));
 }
 
+static QString getDocsPossibleValues(const QDomElement &child)
+{
+  QString docs;
+  QDomElement docsVal;
+  int numValues=0;
+  docsVal = child.firstChildElement();
+  while (!docsVal.isNull())
+  {
+    if (docsVal.tagName()==SA("value"))
+    {
+      numValues++;
+    }
+    docsVal = docsVal.nextSiblingElement();
+  }
+  int i=0;
+  docsVal = child.firstChildElement();
+  while (!docsVal.isNull())
+  {
+    if (docsVal.tagName()==SA("value"))
+    {
+      i++;
+      docs += SA("<code>") + docsVal.attribute(SA("name")) + SA("</code>");
+      QString desc = docsVal.attribute(SA("desc"));
+      if (!desc.isEmpty())
+      {
+        docs+= SA(" ")+desc;
+      }
+      if (i==numValues-1)
+      {
+        docs+=SA(" and ");
+      }
+      else if (i==numValues)
+      {
+        docs+=SA(".");
+      }
+      else
+      {
+        docs+=SA(", ");
+      }
+    }
+    docsVal = docsVal.nextSiblingElement();
+  }
+  return docs;
+}
+
 static QString getDocsForNode(const QDomElement &child)
 {
   QString type = child.attribute(SA("type"));
@@ -185,44 +230,7 @@ static QString getDocsForNode(const QDomElement &child)
   {
     docs += SA("<br/>");
     docs += SA("Possible values are: ");
-    int numValues=0;
-    docsVal = child.firstChildElement();
-    while (!docsVal.isNull())
-    {
-      if (docsVal.tagName()==SA("value"))
-      {
-        numValues++;
-      }
-      docsVal = docsVal.nextSiblingElement();
-    }
-    int i=0;
-    docsVal = child.firstChildElement();
-    while (!docsVal.isNull())
-    {
-      if (docsVal.tagName()==SA("value"))
-      {
-        i++;
-        docs += SA("<code>") + docsVal.attribute(SA("name")) + SA("</code>");
-        QString desc = docsVal.attribute(SA("desc"));
-        if (!desc.isEmpty())
-        {
-          docs+= SA(" ")+desc;
-        }
-        if (i==numValues-1)
-        {
-          docs+=SA(" and ");
-        }
-        else if (i==numValues)
-        {
-          docs+=SA(".");
-        }
-        else
-        {
-          docs+=SA(", ");
-        }
-      }
-      docsVal = docsVal.nextSiblingElement();
-    }
+    docs += getDocsPossibleValues(child);
     if (child.attribute(SA("defval")) != SA(""))
     {
       docs+=SA("<br/>");
@@ -259,7 +267,8 @@ static QString getDocsForNode(const QDomElement &child)
   }
   else if (type==SA("list"))
   {
-    if (child.attribute(SA("format"))==SA("string"))
+    QString format = child.attribute(SA("format"));
+    if (format==SA("string"))
     {
       int numValues = 0;
       docsVal = child.firstChildElement();
@@ -316,6 +325,12 @@ static QString getDocsForNode(const QDomElement &child)
         }
       }
       // docs+= SA("<br/>");
+    }
+    else if (format==SA("enum"))
+    {
+      docs += SA("<br/>");
+      docs += SA("Possible values are (multiple values are possible): ");
+      docs += getDocsPossibleValues(child);
     }
   }
   else if (type==SA("string"))
@@ -625,28 +640,55 @@ QWidget *Expert::createTopicWidget(QDomElement &elem)
         {
           mode = InputStrList::ListFileDir;
         }
+        else if (format==SA("enum"))
+        {
+          mode = InputStrList::ListEnum;
+        }
         else // format=="string"
         {
           mode = InputStrList::ListString;
         }
         QStringList sl;
         QDomElement listVal = child.firstChildElement();
-        while (!listVal.isNull())
+        InputStrList *listOption;
+        if (format==SA("enum"))
         {
-          if (listVal.tagName()==SA("value"))
+          listOption =
+            new InputStrList(
+                layout,row,
+                child.attribute(SA("id")),
+                sl,
+                mode,
+                docs
+                );
+          while (!listVal.isNull())
           {
-            sl.append(listVal.attribute(SA("name")));
+            if (listVal.tagName()==SA("value"))
+            {
+              listOption->addValue(listVal.attribute(SA("name")));
+            }
+            listVal = listVal.nextSiblingElement();
           }
-          listVal = listVal.nextSiblingElement();
         }
-        InputStrList *listOption =
-          new InputStrList(
-              layout,row,
-              child.attribute(SA("id")),
-              sl,
-              mode,
-              docs
-              );
+        else
+        {
+          while (!listVal.isNull())
+          {
+            if (listVal.tagName()==SA("value"))
+            {
+              sl.append(listVal.attribute(SA("name")));
+            }
+            listVal = listVal.nextSiblingElement();
+          }
+          listOption =
+            new InputStrList(
+                layout,row,
+                child.attribute(SA("id")),
+                sl,
+                mode,
+                docs
+                );
+        }
         m_options.insert(
             child.attribute(SA("id")),
             listOption
