@@ -2455,7 +2455,7 @@ void HtmlGenerator::writeDoc(const IDocNodeAST *ast,const Definition *ctx,const 
   const DocNodeAST *astImpl = dynamic_cast<const DocNodeAST*>(ast);
   if (astImpl)
   {
-    m_codeGen.setId(id);
+    m_codeList.setId(id);
     HtmlDocVisitor visitor(m_t,m_codeList,ctx);
     std::visit(visitor,astImpl->root);
   }

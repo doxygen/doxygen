@@ -68,10 +68,6 @@ class CodeOutputInterface
 
     virtual OutputType type() const = 0;
 
-    /** Identifier for the output file */
-    virtual int id() const { return m_id; }
-    virtual void setId(int id) { m_id=id; }
-
     virtual void setEnabled(bool e) { m_active = e; }
     virtual bool isEnabled() const { return m_active; }
 
@@ -153,7 +149,6 @@ class CodeOutputInterface
     virtual void endCodeFragment(const QCString &style) = 0;
 
   private:
-    int m_id = -1;
     bool m_active = true;
 };
 

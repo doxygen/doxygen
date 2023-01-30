@@ -30,22 +30,23 @@ class DotInclDepGraph;
 class DotGfxHierarchyTable;
 class DotGroupCollaboration;
 
-class OutputCodeList : public CodeOutputInterface
+class OutputCodeList
 {
   public:
     OutputCodeList() = default;
     virtual ~OutputCodeList() = default;
 
-    OutputType type() const override { return OutputType::List; }
+    OutputType type() const { return OutputType::List; }
 
+    /** Identifier for the output file */
     void add(CodeOutputInterface *codeGen)
     {
       m_outputCodeList.push_back(codeGen);
     }
-    void setId(int id) override
+    virtual int id() const { return m_id; }
+    void setId(int id)
     {
-      CodeOutputInterface::setId(id);
-      forall(&CodeOutputInterface::setId,id);
+      m_id = id;
     }
     void setEnabledFiltered(OutputType o,bool enabled)
     {
@@ -57,32 +58,32 @@ class OutputCodeList : public CodeOutputInterface
 
     // ---- CodeOutputInterface forwarding
 
-    void codify(const QCString &s) override
+    void codify(const QCString &s)
     { forall(&CodeOutputInterface::codify,s); }
     void writeCodeLink(CodeSymbolType type,
                        const QCString &ref,const QCString &file,
                        const QCString &anchor,const QCString &name,
-                       const QCString &tooltip) override
+                       const QCString &tooltip)
     { forall(&CodeOutputInterface::writeCodeLink,type,ref,file,anchor,name,tooltip); }
     void writeLineNumber(const QCString &ref,const QCString &file,const QCString &anchor,
-                         int lineNumber, bool writeLineAnchor) override
+                         int lineNumber, bool writeLineAnchor)
     { forall(&CodeOutputInterface::writeLineNumber,ref,file,anchor,lineNumber,writeLineAnchor); }
     void writeTooltip(const QCString &id, const DocLinkInfo &docInfo, const QCString &decl,
-                      const QCString &desc, const SourceLinkInfo &defInfo, const SourceLinkInfo &declInfo) override
+                      const QCString &desc, const SourceLinkInfo &defInfo, const SourceLinkInfo &declInfo)
     { forall(&CodeOutputInterface::writeTooltip,id,docInfo,decl,desc,defInfo,declInfo); }
-    void startCodeLine(bool hasLineNumbers) override
+    void startCodeLine(bool hasLineNumbers)
     { forall(&CodeOutputInterface::startCodeLine,hasLineNumbers); }
-    void endCodeLine() override
+    void endCodeLine()
     { forall(&CodeOutputInterface::endCodeLine); }
-    void startFontClass(const QCString &c) override
+    void startFontClass(const QCString &c)
     { forall(&CodeOutputInterface::startFontClass,c); }
-    void endFontClass() override
+    void endFontClass()
     { forall(&CodeOutputInterface::endFontClass); }
-    void writeCodeAnchor(const QCString &name) override
+    void writeCodeAnchor(const QCString &name)
     { forall(&CodeOutputInterface::writeCodeAnchor,name); }
-    void startCodeFragment(const QCString &style) override
+    void startCodeFragment(const QCString &style)
     { forall(&CodeOutputInterface::startCodeFragment,style); }
-    void endCodeFragment(const QCString &style) override
+    void endCodeFragment(const QCString &style)
     { forall(&CodeOutputInterface::endCodeFragment,style); }
 
   private:
@@ -95,6 +96,7 @@ class OutputCodeList : public CodeOutputInterface
       }
     }
     std::vector< CodeOutputInterface* > m_outputCodeList;
+    int m_id = -1;
 };
 
 /** Class representing a list of output generators that are written to
@@ -112,8 +114,8 @@ class OutputList
     void add()
     {
       auto docGen = std::make_unique<DocGenerator>();
-      docGen->codeGen()->setId(m_id);
       m_codeGenList.add(docGen->codeGen());
+      m_codeGenList.setId(m_id);
       m_outputs.emplace_back(std::move(docGen));
     }
 
@@ -140,7 +142,7 @@ class OutputList
                      bool indexWords,bool isExample,const QCString &exampleName /*=0*/,
                      bool singleLine /*=FALSE*/,bool linkFromIndex /*=FALSE*/,
                      bool markdownSupport /*=FALSE*/);
-    void writeDoc(const IDocNodeAST *ast,const Definition *ctx,const MemberDef *md,int id=0);
+    void writeDoc(const IDocNodeAST *ast,const Definition *ctx,const MemberDef *md);
     void parseText(const QCString &textStr);
     void startFile(const QCString &name,const QCString &manName,const QCString &title);
 

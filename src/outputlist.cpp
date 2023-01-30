@@ -48,8 +48,8 @@ OutputList::OutputList(const OutputList &ol)
   for (const auto &og : ol.m_outputs)
   {
     auto docGen = og->clone();
-    docGen->codeGen()->setId(m_id);
     m_codeGenList.add(docGen->codeGen());
+    m_codeGenList.setId(m_id);
     m_outputs.emplace_back(std::move(docGen));
   }
 }
@@ -63,8 +63,8 @@ OutputList &OutputList::operator=(const OutputList &ol)
     for (const auto &og : ol.m_outputs)
     {
       auto docGen = og->clone();
-      docGen->codeGen()->setId(m_id);
       m_codeGenList.add(docGen->codeGen());
+      m_codeGenList.setId(m_id);
       m_outputs.emplace_back(std::move(docGen));
     }
   }
@@ -195,7 +195,7 @@ void OutputList::generateDoc(const QCString &fileName,int startLine,
                                      fileName,startLine,
                                      ctx,md,docStr,indexWords,isExample,exampleName,
                                      singleLine,linkFromIndex,markdownSupport) };
-    if (ast) writeDoc(ast.get(),ctx,md,m_id);
+    if (ast) writeDoc(ast.get(),ctx,md);
   }
 }
 
@@ -206,7 +206,7 @@ void OutputList::startFile(const QCString &name,const QCString &manName,const QC
   forall(&OutputGenerator::startFile,name,manName,title,m_id);
 }
 
-void OutputList::writeDoc(const IDocNodeAST *ast,const Definition *ctx,const MemberDef *md,int)
+void OutputList::writeDoc(const IDocNodeAST *ast,const Definition *ctx,const MemberDef *md)
 {
   for (const auto &og : m_outputs)
   {
