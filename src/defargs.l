@@ -445,6 +445,8 @@ CPPC  "/\/"
 						    a.type.mid(sv)=="union"     ||
 						    a.type.mid(sv)=="class"     ||
 						    a.type.mid(sv)=="typename"  ||
+						    a.type=="const"             ||
+						    a.type=="volatile"          ||
 						    nameIsActuallyPartOfType(a.name)
 						   )
 						{
