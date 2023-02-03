@@ -221,6 +221,25 @@ SLASHopt [/]*
                                        yyextra->commentStack.push(yyextra->lineNr);
 				     }
                                    }
+<Scan>"\"\"\""                     { /* start of python long comment */
+                                     if (yyextra->lang!=SrcLangExt_Python)
+				     {
+				       REJECT;
+				     }
+                                     else if (Config_getBool(PYTHON_DOCSTRING))
+                                     {
+				       REJECT;
+                                     }
+				     else
+				     { /* handle as if """! */
+                                       yyextra->pythonDocString = TRUE;
+                                       yyextra->nestingCount=1;
+                                       clearCommentStack(yyscanner); /*  to be on the save side */
+                                       copyToOutput(yyscanner,yytext,(int)yyleng);
+				       BEGIN(CComment);
+                                       yyextra->commentStack.push(yyextra->lineNr);
+				     }
+                                   }
 <Scan>![><!]/.*\n	   {
                                      if (yyextra->lang!=SrcLangExt_Fortran)
 				     {
@@ -1214,7 +1233,12 @@ void convertCppComments(const BufStr &inBuf,BufStr &outBuf,const QCString &fileN
   clearCommentStack(yyscanner);
   yyextra->vhdl = FALSE;
 
-  DebugLex debugLex(Debug::Lex_commentcnv,__FILE__, qPrint(fileName));
+  if (Debug::isFlagSet(Debug::CommentCnv))
+  {
+    Debug::print(Debug::CommentCnv,0,"-----------\nCommentCnv: %s\n"
+                 "input=[\n%s]\n-----------\n",qPrint(fileName),yyextra->inBuf.data()
+                );
+  }
   yyextra->isFixedForm = FALSE;
   if (yyextra->lang==SrcLangExt_Fortran)
   {
