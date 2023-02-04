@@ -1426,9 +1426,10 @@ QCString getSQLDocBlock(const Definition *scope,
   auto astImpl = dynamic_cast<const DocNodeAST*>(ast.get());
   if (astImpl)
   {
-    XMLCodeGenerator codeGen(t);
+    OutputCodeList xmlCodeList;
+    xmlCodeList.add<XMLCodeGenerator>(&t);
     // create a parse tree visitor for XML
-    XmlDocVisitor visitor(t,codeGen,
+    XmlDocVisitor visitor(t,xmlCodeList,
         scope ? scope->getDefFileExtension() : QCString(""));
     std::visit(visitor,astImpl->root);
   }
