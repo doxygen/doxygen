@@ -40,7 +40,7 @@
 #include "filename.h"
 #include "version.h"
 
-class XRefDummyCodeGenerator : public CodeOutputInterface
+class XRefDummyCodeGenerator : public OutputCodeExtension
 {
   public:
     XRefDummyCodeGenerator(FileDef *fd) : m_fd(fd) {}
@@ -48,7 +48,7 @@ class XRefDummyCodeGenerator : public CodeOutputInterface
 
     // these are just null functions, they can be used to produce a syntax highlighted
     // and cross-linked version of the source code, but who needs that anyway ;-)
-    OutputType type() const override { return OutputType::Null; }
+    OutputType type() const override { return OutputType::Extension; }
     void codify(const QCString &) override {}
     void writeCodeLink(CodeSymbolType,const QCString &,const QCString &,const QCString &,const QCString &,const QCString &) override  {}
     void writeLineNumber(const QCString &,const QCString &,const QCString &,int,bool) override {}
@@ -120,7 +120,7 @@ static void findXRefSymbols(FileDef *fd)
   // create a new backend object
   XRefDummyCodeGenerator xrefGen(fd);
   OutputCodeList xrefList;
-  xrefList.add(&xrefGen);
+  xrefList.add(OutputCodeDeferExtension(&xrefGen));
 
   // parse the source code
   intf->parseCode(xrefList,

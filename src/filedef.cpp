@@ -48,6 +48,7 @@
 #include "settings.h"
 #include "definitionimpl.h"
 #include "conceptdef.h"
+#include "outputlist.h"
 
 //---------------------------------------------------------------------------
 
@@ -194,32 +195,6 @@ FileDef *createFileDef(const QCString &p,const QCString &n,const QCString &ref,c
   return new FileDefImpl(p,n,ref,dn);
 }
 
-
-//---------------------------------------------------------------------------
-
-/** Class implementing CodeOutputInterface by throwing away everything. */
-class DevNullCodeDocInterface : public CodeOutputInterface
-{
-  public:
-    virtual OutputType type() const override { return OutputType::Null; }
-    virtual void codify(const QCString &) override {}
-    virtual void writeCodeLink(CodeSymbolType,
-                               const QCString &,const QCString &,
-                               const QCString &,const QCString &,
-                               const QCString &) override {}
-    virtual void writeTooltip(const QCString &, const DocLinkInfo &, const QCString &,
-                              const QCString &, const SourceLinkInfo &, const SourceLinkInfo &
-                             ) override {}
-    virtual void writeLineNumber(const QCString &,const QCString &,
-                                 const QCString &,int,bool) override {}
-    virtual void startCodeLine(bool) override {}
-    virtual void endCodeLine() override {}
-    virtual void startFontClass(const QCString &) override {}
-    virtual void endFontClass() override {}
-    virtual void writeCodeAnchor(const QCString &) override {}
-    virtual void startCodeFragment(const QCString &) override {}
-    virtual void endCodeFragment(const QCString &) override {}
-};
 
 //---------------------------------------------------------------------------
 
@@ -1111,9 +1086,8 @@ void FileDefImpl::writeSourceHeader(OutputList &ol)
 void FileDefImpl::writeSourceBody(OutputList &ol,[[maybe_unused]] ClangTUParser *clangParser)
 {
   bool filterSourceFiles = Config_getBool(FILTER_SOURCE_FILES);
-  DevNullCodeDocInterface devNullIntf;
   OutputCodeList devNullList;
-  devNullList.add(&devNullIntf);
+  devNullList.add<DevNullCodeGenerator>();
 #if USE_LIBCLANG
   if (Doxygen::clangAssistedParsing && clangParser &&
       (getLanguage()==SrcLangExt_Cpp || getLanguage()==SrcLangExt_ObjC))
@@ -1173,9 +1147,8 @@ void FileDefImpl::writeSourceFooter(OutputList &ol)
 void FileDefImpl::parseSource([[maybe_unused]] ClangTUParser *clangParser)
 {
   bool filterSourceFiles = Config_getBool(FILTER_SOURCE_FILES);
-  DevNullCodeDocInterface devNullIntf;
   OutputCodeList devNullList;
-  devNullList.add(&devNullIntf);
+  devNullList.add<DevNullCodeGenerator>();
 #if USE_LIBCLANG
   if (Doxygen::clangAssistedParsing && clangParser &&
       (getLanguage()==SrcLangExt_Cpp || getLanguage()==SrcLangExt_ObjC))

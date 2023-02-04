@@ -20,13 +20,15 @@
 
 #include "config.h"
 #include "outputgen.h"
-#include "outputlist.h"
+
+class OutputCodeList;
 
 /** Generator for RTF code fragments */
-class RTFCodeGenerator : public CodeOutputInterface
+class RTFCodeGenerator
 {
   public:
-    RTFCodeGenerator(TextStream &t) : m_t(t) {}
+    RTFCodeGenerator(TextStream *t);
+
     OutputType type() const { return OutputType::RTF; }
     void codify(const QCString &text);
     void writeCodeLink(CodeSymbolType type,
@@ -55,7 +57,7 @@ class RTFCodeGenerator : public CodeOutputInterface
     void setIndentLevel(int level) { m_indentLevel=level; }
     QCString rtf_Code_DepthStyle();
     int  m_col = 0;
-    TextStream &m_t;
+    TextStream *m_t;
     bool m_doxyCodeLineOpen = false;
     QCString m_sourceFileName;
     int m_indentLevel = 0;
@@ -289,7 +291,7 @@ class RTFGenerator : public OutputGenerator
 
     static bool preProcessFileInplace(const QCString &path,const QCString &name);
 
-    CodeOutputInterface *codeGen() { return &m_codeGen; }
+    void addCodeGen(OutputCodeList &list);
 
   private:
     QCString rtf_BList_DepthStyle();
@@ -325,8 +327,8 @@ class RTFGenerator : public OutputGenerator
       char type = '1';
     };
     RTFListItemInfo m_listItemInfo[maxIndentLevels];
-    OutputCodeList m_codeList;
-    RTFCodeGenerator m_codeGen;
+    std::unique_ptr<OutputCodeList> m_codeList;
+    RTFCodeGenerator *m_codeGen;
 };
 
 QCString rtfFormatBmkStr(const QCString &name);

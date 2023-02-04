@@ -18,6 +18,7 @@
 #include "language.h"
 #include "doxygen.h"
 #include "outputgen.h"
+#include "outputlist.h"
 #include "dot.h"
 #include "message.h"
 #include "config.h"

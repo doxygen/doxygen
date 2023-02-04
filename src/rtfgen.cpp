@@ -48,6 +48,7 @@
 #include "utf8.h"
 #include "debug.h"
 #include "datetime.h"
+#include "outputlist.h"
 
 //#define DBG_RTF(x) x;
 #define DBG_RTF(x)
@@ -96,6 +97,10 @@ static QCString makeIndexName(const QCString &s,int i)
 
 //------------------------------------------------------------------------------------------------
 
+RTFCodeGenerator::RTFCodeGenerator(TextStream *t) : m_t(t)
+{
+}
+
 void RTFCodeGenerator::writeCodeLink(CodeSymbolType,
                                  const QCString &ref,const QCString &f,
                                  const QCString &anchor,const QCString &name,
@@ -114,14 +119,14 @@ void RTFCodeGenerator::writeCodeLink(CodeSymbolType,
       refName+=anchor;
     }
 
-    m_t << "{\\field {\\*\\fldinst { HYPERLINK  \\\\l \"";
-    m_t << rtfFormatBmkStr(refName);
-    m_t << "\" }{}";
-    m_t << "}{\\fldrslt {\\cs37\\ul\\cf2 ";
+    *m_t << "{\\field {\\*\\fldinst { HYPERLINK  \\\\l \"";
+    *m_t << rtfFormatBmkStr(refName);
+    *m_t << "\" }{}";
+    *m_t << "}{\\fldrslt {\\cs37\\ul\\cf2 ";
 
     codify(name);
 
-    m_t << "}}}\n";
+    *m_t << "}}}\n";
   }
   else
   {
@@ -149,16 +154,16 @@ void RTFCodeGenerator::codify(const QCString &str)
       switch(c)
       {
         case '\t':  spacesToNextTabStop = Config_getInt(TAB_SIZE) - (m_col%Config_getInt(TAB_SIZE));
-                    m_t << Doxygen::spaces.left(spacesToNextTabStop);
+                    *m_t << Doxygen::spaces.left(spacesToNextTabStop);
                     m_col+=spacesToNextTabStop;
                     break;
-        case '\n':  m_t << "\\par\n";
+        case '\n':  *m_t << "\\par\n";
                     m_col=0;
                     break;
-        case '{':   m_t << "\\{"; m_col++;          break;
-        case '}':   m_t << "\\}"; m_col++;          break;
-        case '\\':  m_t << "\\\\"; m_col++;         break;
-        default:    p=writeUTF8Char(m_t,p-1); m_col++; break;
+        case '{':   *m_t << "\\{"; m_col++;          break;
+        case '}':   *m_t << "\\}"; m_col++;          break;
+        case '\\':  *m_t << "\\\\"; m_col++;         break;
+        default:    p=writeUTF8Char(*m_t,p-1); m_col++; break;
       }
     }
   }
@@ -166,17 +171,17 @@ void RTFCodeGenerator::codify(const QCString &str)
 
 void RTFCodeGenerator::startCodeFragment(const QCString &)
 {
-  DBG_RTF(m_t << "{\\comment (startCodeFragment) }\n")
-  m_t << "{\n";
-  m_t << rtf_Style_Reset << rtf_Code_DepthStyle();
+  DBG_RTF(*m_t << "{\\comment (startCodeFragment) }\n")
+  *m_t << "{\n";
+  *m_t << rtf_Style_Reset << rtf_Code_DepthStyle();
 }
 
 void RTFCodeGenerator::endCodeFragment(const QCString &)
 {
   endCodeLine();
 
-  DBG_RTF(m_t << "{\\comment (endCodeFragment) }\n")
-  m_t << "}\n";
+  DBG_RTF(*m_t << "{\\comment (endCodeFragment) }\n")
+  *m_t << "}\n";
   //m_omitParagraph = TRUE;
 }
 
@@ -199,12 +204,12 @@ void RTFCodeGenerator::writeLineNumber(const QCString &ref,const QCString &fileN
     bool showTarget = rtfHyperlinks && !lineAnchor.isEmpty() && writeLineAnchor;
     if (showTarget)
     {
-        m_t << "{\\bkmkstart ";
-        m_t << rtfFormatBmkStr(lineAnchor);
-        m_t << "}";
-        m_t << "{\\bkmkend ";
-        m_t << rtfFormatBmkStr(lineAnchor);
-        m_t << "}\n";
+        *m_t << "{\\bkmkstart ";
+        *m_t << rtfFormatBmkStr(lineAnchor);
+        *m_t << "}";
+        *m_t << "{\\bkmkend ";
+        *m_t << rtfFormatBmkStr(lineAnchor);
+        *m_t << "}\n";
     }
     if (!fileName.isEmpty())
     {
@@ -212,13 +217,13 @@ void RTFCodeGenerator::writeLineNumber(const QCString &ref,const QCString &fileN
     }
     else
     {
-      m_t << lineNumber;
+      *m_t << lineNumber;
     }
-    m_t << " ";
+    *m_t << " ";
   }
   else
   {
-    m_t << l << " ";
+    *m_t << l << " ";
   }
   m_col=0;
 }
@@ -231,7 +236,7 @@ void RTFCodeGenerator::startCodeLine(bool)
 
 void RTFCodeGenerator::endCodeLine()
 {
-  if (m_doxyCodeLineOpen) m_t << "\\par\n";
+  if (m_doxyCodeLineOpen) *m_t << "\\par\n";
   m_doxyCodeLineOpen = false;
 }
 
@@ -250,12 +255,12 @@ void RTFCodeGenerator::startFontClass(const QCString &name)
   else if (qname == "vhdlchar")      cod = 25;
   else if (qname == "vhdlkeyword")   cod = 26;
   else if (qname == "vhdllogic")     cod = 27;
-  m_t << "{\\cf" << cod << " ";
+  *m_t << "{\\cf" << cod << " ";
 }
 
 void RTFCodeGenerator::endFontClass()
 {
-  m_t << "}";
+  *m_t << "}";
 }
 
 QCString RTFCodeGenerator::rtf_Code_DepthStyle()
@@ -273,16 +278,23 @@ void RTFCodeGenerator::setSourceFileName(const QCString &name)
 
 RTFGenerator::RTFGenerator()
   : OutputGenerator(Config_getString(RTF_OUTPUT))
-  , m_codeGen(m_t)
+  , m_codeList(std::make_unique<OutputCodeList>())
 {
-  m_codeList.add(&m_codeGen);
+  m_codeList->add<RTFCodeGenerator>(&m_t);
+  m_codeGen = m_codeList->get<RTFCodeGenerator>();
 }
 
 RTFGenerator::RTFGenerator(const RTFGenerator &og)
   : OutputGenerator(og)
-  , m_codeGen(m_t)
+  , m_codeList(std::make_unique<OutputCodeList>())
 {
-  m_codeList.add(&m_codeGen);
+  m_codeList->add<RTFCodeGenerator>(&m_t);
+  m_codeGen = m_codeList->get<RTFCodeGenerator>();
+}
+
+void RTFGenerator::addCodeGen(OutputCodeList &list)
+{
+  list.add(OutputCodeList::OutputCodeVariant(OutputCodeDeferRTF(m_codeGen)));
 }
 
 std::unique_ptr<OutputGenerator> RTFGenerator::clone() const
@@ -297,7 +309,7 @@ void RTFGenerator::setRelativePath(const QCString &path)
 
 void RTFGenerator::setSourceFileName(const QCString &name)
 {
-  m_codeGen.setSourceFileName(name);
+  m_codeGen->setSourceFileName(name);
 }
 
 void RTFGenerator::writeStyleSheetFile(TextStream &t)
@@ -1943,7 +1955,7 @@ void RTFGenerator::incIndentLevel()
     m_indentLevel = maxIndentLevels-1;
     err("Maximum indent level (%d) exceeded while generating RTF output!\n",maxIndentLevels);
   }
-  m_codeGen.setIndentLevel(m_indentLevel);
+  m_codeGen->setIndentLevel(m_indentLevel);
 }
 
 void RTFGenerator::decIndentLevel()
@@ -1954,7 +1966,7 @@ void RTFGenerator::decIndentLevel()
     err("Negative indent level while generating RTF output!\n");
     m_indentLevel=0;
   }
-  m_codeGen.setIndentLevel(m_indentLevel);
+  m_codeGen->setIndentLevel(m_indentLevel);
 }
 
 // a style for list formatted with "list continue" style
@@ -2543,7 +2555,7 @@ void RTFGenerator::writeDoc(const IDocNodeAST *ast,const Definition *ctx,const M
   auto astImpl = dynamic_cast<const DocNodeAST*>(ast);
   if (astImpl)
   {
-    RTFDocVisitor visitor(m_t,m_codeList,ctx?ctx->getDefFileExtension():QCString(""));
+    RTFDocVisitor visitor(m_t,*m_codeList,ctx?ctx->getDefFileExtension():QCString(""));
     std::visit(visitor,astImpl->root);
   }
   m_omitParagraph = TRUE;

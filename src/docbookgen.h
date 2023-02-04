@@ -13,11 +13,10 @@
 #ifndef DOCBOOKGEN_H
 #define DOCBOOKGEN_H
 
-#include <iostream>
+#include <memory>
 
 #include "config.h"
 #include "outputgen.h"
-#include "outputlist.h"
 
 #if 0
 // define for cases that have been implemented with an empty body
@@ -42,30 +41,32 @@
 #define DB_GEN_NEW
 #endif
 
-class DocbookCodeGenerator : public CodeOutputInterface
+class OutputCodeList;
+
+class DocbookCodeGenerator
 {
   public:
-    DocbookCodeGenerator(TextStream &t);
+    DocbookCodeGenerator(TextStream *t);
 
-    OutputType type() const override { return OutputType::Docbook; }
+    OutputType type() const { return OutputType::Docbook; }
 
-    void codify(const QCString &text) override;
+    void codify(const QCString &text);
     void writeCodeLink(CodeSymbolType type,
         const QCString &ref,const QCString &file,
         const QCString &anchor,const QCString &name,
-        const QCString &tooltip) override;
+        const QCString &tooltip);
     void writeTooltip(const QCString &, const DocLinkInfo &, const QCString &,
                       const QCString &, const SourceLinkInfo &, const SourceLinkInfo &
-                     ) override;
-    void startCodeLine(bool) override;
-    void endCodeLine() override;
-    void startFontClass(const QCString &colorClass) override;
-    void endFontClass() override;
-    void writeCodeAnchor(const QCString &) override;
+                     );
+    void startCodeLine(bool);
+    void endCodeLine();
+    void startFontClass(const QCString &colorClass);
+    void endFontClass();
+    void writeCodeAnchor(const QCString &);
     void writeLineNumber(const QCString &extRef,const QCString &compId,
-        const QCString &anchorId,int l, bool writeLineAnchor) override;
-    void startCodeFragment(const QCString &style) override;
-    void endCodeFragment(const QCString &style) override;
+        const QCString &anchorId,int l, bool writeLineAnchor);
+    void startCodeFragment(const QCString &style);
+    void endCodeFragment(const QCString &style);
 
     void setRelativePath(const QCString &path) { m_relPath = path; }
     void setSourceFileName(const QCString &sourceFileName) { m_sourceFileName = sourceFileName; }
@@ -77,7 +78,7 @@ class DocbookCodeGenerator : public CodeOutputInterface
         const QCString &ref,const QCString &file,
         const QCString &anchor,const QCString &name,
         const QCString &tooltip, bool);
-    TextStream &m_t;
+    TextStream *m_t;
     QCString m_refId;
     QCString m_external;
     int m_lineNumber = -1;
@@ -309,16 +310,15 @@ class DocbookGenerator : public OutputGenerator
     void setCurrentDoc(const Definition *,const QCString &,bool) {DB_GEN_EMPTY}
     void addWord(const QCString &,bool) {DB_GEN_EMPTY}
 
-    CodeOutputInterface *codeGen() { return &m_codeGen; }
-
+    void addCodeGen(OutputCodeList &list);
 private:
     void openSection(const QCString &attr=QCString());
     void closeSection();
     void closeAllSections();
 
     QCString relPath;
-    OutputCodeList       m_codeList;
-    DocbookCodeGenerator m_codeGen;
+    std::unique_ptr<OutputCodeList>  m_codeList;
+    DocbookCodeGenerator *m_codeGen = nullptr;
     bool m_denseText = false;
     bool m_inGroup = false;
     int  m_levelListItem = 0;

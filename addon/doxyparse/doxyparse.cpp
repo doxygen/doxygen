@@ -46,7 +46,7 @@
 #include "portable.h"
 #include "dir.h"
 
-class Doxyparse : public CodeOutputInterface
+class Doxyparse : public OutputCodeExtension
 {
   public:
     Doxyparse(const FileDef *fd) : m_fd(fd) {}
@@ -54,7 +54,7 @@ class Doxyparse : public CodeOutputInterface
 
     // these are just null functions, they can be used to produce a syntax highlighted
     // and cross-linked version of the source code, but who needs that anyway ;-)
-    OutputType type() const override { return OutputType::Null; }
+    OutputType type() const override { return OutputType::Extension; }
     void codify(const QCString &) override {}
     void writeCodeLink(CodeSymbolType,const QCString &,const QCString &,const QCString &,const QCString &,const QCString &)  override {}
     void startCodeLine(bool) override {}
@@ -99,7 +99,7 @@ static void findXRefSymbols(FileDef *fd)
   // create a new backend object
   Doxyparse parse(fd);
   OutputCodeList parseList;
-  parseList.add(&parse);
+  parseList.add(OutputCodeDeferExtension(&parse));
 
   // parse the source code
   intf->parseCode(parseList, 0, fileToString(fd->absFilePath()), lang, FALSE, 0, fd);

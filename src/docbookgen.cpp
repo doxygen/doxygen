@@ -51,6 +51,7 @@
 #include "section.h"
 #include "dir.h"
 #include "growbuf.h"
+#include "outputlist.h"
 
 // no debug info
 #define Docbook_DB(x) do {} while(0)
@@ -144,14 +145,14 @@ void writeDocbookLink(TextStream &t,const QCString & /*extRef*/,const QCString &
   t << "</link>";
 }
 
-DocbookCodeGenerator::DocbookCodeGenerator(TextStream &t) : m_t(t)
+DocbookCodeGenerator::DocbookCodeGenerator(TextStream *t) : m_t(t)
 {
 }
 
 void DocbookCodeGenerator::codify(const QCString &text)
 {
   Docbook_DB(("(codify \"%s\")\n",text));
-  writeDocbookCodeString(m_t,text,m_col);
+  writeDocbookCodeString(*m_t,text,m_col);
 }
 
 void DocbookCodeGenerator::writeCodeLink(CodeSymbolType,
@@ -160,7 +161,7 @@ void DocbookCodeGenerator::writeCodeLink(CodeSymbolType,
     const QCString &tooltip)
 {
   Docbook_DB(("(writeCodeLink)\n"));
-  writeDocbookLink(m_t,ref,file,anchor,name,tooltip);
+  writeDocbookLink(*m_t,ref,file,anchor,name,tooltip);
   m_col+=name.length();
 }
 
@@ -171,10 +172,10 @@ void DocbookCodeGenerator::writeCodeLinkLine(CodeSymbolType,
 {
   Docbook_DB(("(writeCodeLinkLine)\n"));
   if (!writeLineAnchor) return;
-  m_t << "<anchor xml:id=\"_" << stripExtensionGeneral(stripPath(file),".xml");
-  m_t << "_1l";
-  writeDocbookString(m_t,name);
-  m_t << "\"/>";
+  *m_t << "<anchor xml:id=\"_" << stripExtensionGeneral(stripPath(file),".xml");
+  *m_t << "_1l";
+  writeDocbookString(*m_t,name);
+  *m_t << "\"/>";
   m_col+=name.length();
 }
 
@@ -194,7 +195,7 @@ void DocbookCodeGenerator::startCodeLine(bool)
 
 void DocbookCodeGenerator::endCodeLine()
 {
-  if (m_insideCodeLine) m_t << "\n";
+  if (m_insideCodeLine) *m_t << "\n";
   Docbook_DB(("(endCodeLine)\n"));
   m_lineNumber = -1;
   m_refId.resize(0);
@@ -205,14 +206,14 @@ void DocbookCodeGenerator::endCodeLine()
 void DocbookCodeGenerator::startFontClass(const QCString &colorClass)
 {
   Docbook_DB(("(startFontClass)\n"));
-  m_t << "<emphasis role=\"" << colorClass << "\">";
+  *m_t << "<emphasis role=\"" << colorClass << "\">";
   m_insideSpecialHL=TRUE;
 }
 
 void DocbookCodeGenerator::endFontClass()
 {
   Docbook_DB(("(endFontClass)\n"));
-  m_t << "</emphasis>"; // non DocBook
+  *m_t << "</emphasis>"; // non DocBook
   m_insideSpecialHL=FALSE;
 }
 
@@ -243,11 +244,11 @@ void DocbookCodeGenerator::writeLineNumber(const QCString &ref,const QCString &f
     {
       codify(lineNumber);
     }
-    m_t << " ";
+    *m_t << " ";
   }
   else
   {
-    m_t << l << " ";
+    *m_t << l << " ";
   }
   m_col=0;
 }
@@ -259,34 +260,41 @@ void DocbookCodeGenerator::finish()
 
 void DocbookCodeGenerator::startCodeFragment(const QCString &)
 {
-DB_GEN_C1(m_t)
-  m_t << "<programlisting linenumbering=\"unnumbered\">";
+DB_GEN_C1(*m_t)
+  *m_t << "<programlisting linenumbering=\"unnumbered\">";
 }
 
 void DocbookCodeGenerator::endCodeFragment(const QCString &)
 {
-DB_GEN_C1(m_t)
+DB_GEN_C1(*m_t)
   //endCodeLine checks is there is still an open code line, if so closes it.
   endCodeLine();
 
-  m_t << "</programlisting>";
+  *m_t << "</programlisting>";
 }
 
 //-------------------------------------------------------------------------------
 
 DocbookGenerator::DocbookGenerator()
   : OutputGenerator(Config_getString(DOCBOOK_OUTPUT))
-  , m_codeGen(m_t)
+  , m_codeList(std::make_unique<OutputCodeList>())
 {
 DB_GEN_C
-  m_codeList.add(&m_codeGen);
+  m_codeList->add<DocbookCodeGenerator>(&m_t);
+  m_codeGen = m_codeList->get<DocbookCodeGenerator>();
 }
 
 DocbookGenerator::DocbookGenerator(const DocbookGenerator &og)
   : OutputGenerator(og)
-  , m_codeGen(m_t)
+  , m_codeList(std::make_unique<OutputCodeList>())
 {
-  m_codeList.add(&m_codeGen);
+  m_codeList->add<DocbookCodeGenerator>(&m_t);
+  m_codeGen = m_codeList->get<DocbookCodeGenerator>();
+}
+
+void DocbookGenerator::addCodeGen(OutputCodeList &list)
+{
+  list.add(OutputCodeList::OutputCodeVariant(OutputCodeDeferDocbook(m_codeGen)));
 }
 
 std::unique_ptr<OutputGenerator> DocbookGenerator::clone() const
@@ -333,8 +341,8 @@ DB_GEN_C
   relPath = relativePathToRoot(fileName);
   if (!fileName.endsWith(".xml")) fileName+=".xml";
   startPlainFile(fileName);
-  m_codeGen.setRelativePath(relPath);
-  m_codeGen.setSourceFileName(stripPath(fileName));
+  m_codeGen->setRelativePath(relPath);
+  m_codeGen->setSourceFileName(stripPath(fileName));
 
   m_t << "<?xml version='1.0' encoding='UTF-8' standalone='no'?>\n";;
   m_t << "<" << fileType << " xmlns=\"http://docbook.org/ns/docbook\" version=\"5.0\" xmlns:xlink=\"http://www.w3.org/1999/xlink\"";
@@ -351,7 +359,7 @@ DB_GEN_C
   m_inGroup = FALSE;
 
   QCString fileType="section";
-  QCString fileName= m_codeGen.sourceFileName();
+  QCString fileName= m_codeGen->sourceFileName();
   if (fileName == "index.xml")
   {
     fileType="book";
@@ -362,7 +370,7 @@ DB_GEN_C
   }
   m_t << "</" << fileType << ">\n";
   endPlainFile();
-  m_codeGen.setSourceFileName("");
+  m_codeGen->setSourceFileName("");
 }
 
 void DocbookGenerator::startIndexSection(IndexSection is)
@@ -625,7 +633,7 @@ DB_GEN_C
   auto astImpl = dynamic_cast<const DocNodeAST*>(ast);
   if (astImpl)
   {
-    DocbookDocVisitor visitor(m_t,m_codeList,ctx?ctx->getDefFileExtension():QCString());
+    DocbookDocVisitor visitor(m_t,*m_codeList,ctx?ctx->getDefFileExtension():QCString());
     std::visit(visitor,astImpl->root);
   }
 }

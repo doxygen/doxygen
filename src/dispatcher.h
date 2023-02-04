@@ -94,6 +94,7 @@ static constexpr void dispatch_call(V &&v,As &&... args)
     DISPATCH_AT(7)
     DISPATCH_AT(8)
     DISPATCH_AT(9)
+    DISPATCH_AT(10)
 #undef DISPATCH_AT
   }
 }

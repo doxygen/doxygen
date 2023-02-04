@@ -19,9 +19,20 @@
 #include <utility>
 #include <vector>
 #include <memory>
+#include <variant>
 
 #include "outputgen.h"
 #include "doxygen.h"
+
+#include "dispatcher.h"
+
+#include "htmlgen.h"
+#include "latexgen.h"
+#include "rtfgen.h"
+#include "mangen.h"
+#include "docbookgen.h"
+#include "xmlgen.h"
+#include "devnullgen.h"
 
 class ClassDiagram;
 class DotClassGraph;
@@ -30,73 +41,228 @@ class DotInclDepGraph;
 class DotGfxHierarchyTable;
 class DotGroupCollaboration;
 
-class OutputCodeList
+/** Namespace containing typed wrappers to refer to member functions using a fixed method name and fixed condition function.
+ *  To be used in combination with display_call_if()
+ */
+namespace OutputCodeIntf
+{
+  template <class T> struct codify            { static constexpr auto method = &T::codify;            };
+  template <class T> struct writeCodeLink     { static constexpr auto method = &T::writeCodeLink;     };
+  template <class T> struct writeLineNumber   { static constexpr auto method = &T::writeLineNumber;   };
+  template <class T> struct writeTooltip      { static constexpr auto method = &T::writeTooltip;      };
+  template <class T> struct startCodeLine     { static constexpr auto method = &T::startCodeLine;     };
+  template <class T> struct endCodeLine       { static constexpr auto method = &T::endCodeLine;       };
+  template <class T> struct startFontClass    { static constexpr auto method = &T::startFontClass;    };
+  template <class T> struct endFontClass      { static constexpr auto method = &T::endFontClass;      };
+  template <class T> struct writeCodeAnchor   { static constexpr auto method = &T::writeCodeAnchor;   };
+  template <class T> struct startCodeFragment { static constexpr auto method = &T::startCodeFragment; };
+  template <class T> struct endCodeFragment   { static constexpr auto method = &T::endCodeFragment;   };
+}
+
+/** Helper template class which defers all methods of OutputCodeIntf to an existing object of the templated type.
+ *  This allows to add the same generator to multiple lists (one that owns the element, and others that reference to it).
+ */
+template<class OutputCodeGen>
+class OutputCodeDefer
 {
   public:
-    OutputCodeList() = default;
-    virtual ~OutputCodeList() = default;
-
-    OutputType type() const { return OutputType::List; }
-
-    /** Identifier for the output file */
-    void add(CodeOutputInterface *codeGen)
-    {
-      m_outputCodeList.push_back(codeGen);
-    }
-    virtual int id() const { return m_id; }
-    void setId(int id)
-    {
-      m_id = id;
-    }
-    void setEnabledFiltered(OutputType o,bool enabled)
-    {
-      for (const auto &og : m_outputCodeList)
-      {
-        if (og->type()==o) og->setEnabled(enabled);
-      }
-    }
-
-    // ---- CodeOutputInterface forwarding
-
-    void codify(const QCString &s)
-    { forall(&CodeOutputInterface::codify,s); }
+    OutputCodeDefer(OutputCodeGen *codeGen) : m_codeGen(codeGen) {}
+    OutputType type() const { return m_codeGen->type(); }
+    void codify(const QCString &s) { m_codeGen->codify(s); }
     void writeCodeLink(CodeSymbolType type,
                        const QCString &ref,const QCString &file,
                        const QCString &anchor,const QCString &name,
                        const QCString &tooltip)
-    { forall(&CodeOutputInterface::writeCodeLink,type,ref,file,anchor,name,tooltip); }
+    { m_codeGen->writeCodeLink(type,ref,file,anchor,name,tooltip); }
+
     void writeLineNumber(const QCString &ref,const QCString &file,const QCString &anchor,
                          int lineNumber, bool writeLineAnchor)
-    { forall(&CodeOutputInterface::writeLineNumber,ref,file,anchor,lineNumber,writeLineAnchor); }
+    { m_codeGen->writeLineNumber(ref,file,anchor,lineNumber,writeLineAnchor); }
+
     void writeTooltip(const QCString &id, const DocLinkInfo &docInfo, const QCString &decl,
                       const QCString &desc, const SourceLinkInfo &defInfo, const SourceLinkInfo &declInfo)
-    { forall(&CodeOutputInterface::writeTooltip,id,docInfo,decl,desc,defInfo,declInfo); }
+    { m_codeGen->writeTooltip(id,docInfo,decl,desc,defInfo,declInfo); }
+
     void startCodeLine(bool hasLineNumbers)
-    { forall(&CodeOutputInterface::startCodeLine,hasLineNumbers); }
+    { m_codeGen->startCodeLine(hasLineNumbers); }
+
     void endCodeLine()
-    { forall(&CodeOutputInterface::endCodeLine); }
+    { m_codeGen->endCodeLine(); }
+
     void startFontClass(const QCString &c)
-    { forall(&CodeOutputInterface::startFontClass,c); }
+    { m_codeGen->startFontClass(c); }
+
     void endFontClass()
-    { forall(&CodeOutputInterface::endFontClass); }
+    { m_codeGen->endFontClass(); }
+
     void writeCodeAnchor(const QCString &name)
-    { forall(&CodeOutputInterface::writeCodeAnchor,name); }
+    { m_codeGen->writeCodeAnchor(name); }
+
     void startCodeFragment(const QCString &style)
-    { forall(&CodeOutputInterface::startCodeFragment,style); }
+    { m_codeGen->startCodeFragment(style); }
+
     void endCodeFragment(const QCString &style)
-    { forall(&CodeOutputInterface::endCodeFragment,style); }
+    { m_codeGen->endCodeFragment(style); }
 
   private:
-    template<typename T,class... Ts,class... As>
-    void forall(void (T::*methodPtr)(Ts...),As&&... args)
+    OutputCodeGen *m_codeGen;
+};
+
+/** Base class that allows alternative implementations outside of the fixed set supported by OutputCodeList.
+ *  Used by doxyapp and doxyparse for instance.
+ */
+class OutputCodeExtension
+{
+  public:
+    virtual ~OutputCodeExtension() = default;
+    virtual OutputType type() const = 0;
+    virtual void codify(const QCString &s) = 0;
+    virtual void writeCodeLink(CodeSymbolType type,
+                       const QCString &ref,const QCString &file,
+                       const QCString &anchor,const QCString &name,
+                       const QCString &tooltip) = 0;
+    virtual void writeLineNumber(const QCString &ref,const QCString &file,const QCString &anchor,
+                         int lineNumber, bool writeLineAnchor) = 0;
+    virtual void writeTooltip(const QCString &id, const DocLinkInfo &docInfo, const QCString &decl,
+                      const QCString &desc, const SourceLinkInfo &defInfo, const SourceLinkInfo &declInfo) = 0;
+    virtual void startCodeLine(bool hasLineNumbers) = 0;
+    virtual void endCodeLine() = 0;
+    virtual void startFontClass(const QCString &c) = 0;
+    virtual void endFontClass() = 0;
+    virtual void writeCodeAnchor(const QCString &name) = 0;
+    virtual void startCodeFragment(const QCString &style) = 0;
+    virtual void endCodeFragment(const QCString &style) = 0;
+};
+
+using OutputCodeDeferHtml      = OutputCodeDefer<HtmlCodeGenerator>;
+using OutputCodeDeferLatex     = OutputCodeDefer<LatexCodeGenerator>;
+using OutputCodeDeferRTF       = OutputCodeDefer<RTFCodeGenerator>;
+using OutputCodeDeferMan       = OutputCodeDefer<ManCodeGenerator>;
+using OutputCodeDeferDocbook   = OutputCodeDefer<DocbookCodeGenerator>;
+using OutputCodeDeferExtension = OutputCodeDefer<OutputCodeExtension>;
+
+/** Class representing a list of different code generators.
+ *  It offers the same interface as the specific code generators,
+ *  and will forward each method to all generators that are enabled.
+ */
+class OutputCodeList
+{
+  public:
+    using OutputCodeVariant = std::variant<HtmlCodeGenerator,
+                                           LatexCodeGenerator,
+                                           RTFCodeGenerator,
+                                           ManCodeGenerator,
+                                           XMLCodeGenerator,
+                                           DocbookCodeGenerator,
+                                           DevNullCodeGenerator,
+                                           OutputCodeDeferHtml,
+                                           OutputCodeDeferLatex,
+                                           OutputCodeDeferRTF,
+                                           OutputCodeDeferMan,
+                                           OutputCodeDeferDocbook,
+                                           OutputCodeDeferExtension
+                                          >;
+
+    int id() const     { return m_id; }
+    void setId(int id) { m_id = id;   }
+
+    /** Add a code generator already wrapped in a variant type. */
+    void add(OutputCodeVariant v)
     {
-      for (const auto &og : m_outputCodeList)
+      m_outputCodeList.push_back(OutputCodeElem(v,true));
+    }
+
+    /** Add a code generator to the list, using a syntax similar to std::make_unique<T>() */
+    template<class T,class... As>
+    void add(As&&... args)
+    {
+      add(OutputCodeVariant{std::in_place_type<T>,std::forward<As>(args)...});
+    }
+
+    /** Returns a pointer to a specific generator in the list */
+    template<class T>
+    T *get()
+    {
+      for (auto &e : m_outputCodeList)
       {
-        if (og->isEnabled()) (og->*methodPtr)(std::forward<As>(args)...);
+        T *t = std::get_if<T>(&e.variant);
+        if (t) return t;
+      }
+      return nullptr;
+    }
+
+    /** Enable or disable a specific generator */
+    void setEnabledFiltered(OutputType o,bool enabled)
+    {
+      for (auto &e : m_outputCodeList)
+      {
+        std::visit([&](auto &&arg) { if (arg.type()==o) e.enabled = enabled; },e.variant);
       }
     }
-    std::vector< CodeOutputInterface* > m_outputCodeList;
+
+    // ---- OutputCodeIntf forwarding
+
+    void codify(const QCString &s)
+    { foreach<OutputCodeIntf::codify>(s); }
+
+    void writeCodeLink(CodeSymbolType type,
+                       const QCString &ref,const QCString &file,
+                       const QCString &anchor,const QCString &name,
+                       const QCString &tooltip)
+    { foreach<OutputCodeIntf::writeCodeLink>(type,ref,file,anchor,name,tooltip); }
+
+    void writeLineNumber(const QCString &ref,const QCString &file,const QCString &anchor,
+                         int lineNumber, bool writeLineAnchor)
+    { foreach<OutputCodeIntf::writeLineNumber>(ref,file,anchor,lineNumber,writeLineAnchor); }
+
+    void writeTooltip(const QCString &id, const DocLinkInfo &docInfo, const QCString &decl,
+                      const QCString &desc, const SourceLinkInfo &defInfo, const SourceLinkInfo &declInfo)
+    { foreach<OutputCodeIntf::writeTooltip>(id,docInfo,decl,desc,defInfo,declInfo); }
+
+    void startCodeLine(bool hasLineNumbers)
+    { foreach<OutputCodeIntf::startCodeLine>(hasLineNumbers); }
+
+    void endCodeLine()
+    { foreach<OutputCodeIntf::endCodeLine>(); }
+
+    void startFontClass(const QCString &c)
+    { foreach<OutputCodeIntf::startFontClass>(c); }
+
+    void endFontClass()
+    { foreach<OutputCodeIntf::endFontClass>(); }
+
+    void writeCodeAnchor(const QCString &name)
+    { foreach<OutputCodeIntf::writeCodeAnchor>(name); }
+
+    void startCodeFragment(const QCString &style)
+    { foreach<OutputCodeIntf::startCodeFragment>(style); }
+
+    void endCodeFragment(const QCString &style)
+    { foreach<OutputCodeIntf::endCodeFragment>(style); }
+
+  private:
+    template<template <class> class GeneratorT, class... As>
+    void foreach(As&&... args)
+    {
+      for (auto &e : m_outputCodeList)
+      {
+        if (e.enabled)
+        {
+          dispatch_call<GeneratorT>(e.variant,std::forward<As>(args)...);
+        }
+      }
+    }
+
+    struct OutputCodeElem
+    {
+      OutputCodeElem(OutputCodeVariant v,bool e) : variant(v),enabled(e) {}
+      OutputCodeVariant variant;
+      bool enabled;
+    };
+
+    std::vector<OutputCodeElem> m_outputCodeList;
     int m_id = -1;
+
 };
 
 /** Class representing a list of output generators that are written to
@@ -114,7 +280,7 @@ class OutputList
     void add()
     {
       auto docGen = std::make_unique<DocGenerator>();
-      m_codeGenList.add(docGen->codeGen());
+      docGen->addCodeGen(m_codeGenList);
       m_codeGenList.setId(m_id);
       m_outputs.emplace_back(std::move(docGen));
     }

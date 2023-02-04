@@ -56,6 +56,7 @@
 #include "resourcemgr.h"
 #include "dir.h"
 #include "datetime.h"
+#include "outputlist.h"
 
 // TODO: pass the current file to Dot*::writeGraph, so the user can put dot graphs in other
 //       files as well
@@ -1254,19 +1255,17 @@ static TemplateVariant parseDoc(const Definition *def,const QCString &file,int l
     {
       case ContextOutputFormat_Html:
         {
-          HtmlCodeGenerator codeGen(ts,relPath);
           OutputCodeList codeList;
-          codeList.add(&codeGen);
+          codeList.add<HtmlCodeGenerator>(&ts,relPath);
           HtmlDocVisitor visitor(ts,codeList,def);
           std::visit(visitor,astImpl->root);
         }
         break;
       case ContextOutputFormat_Latex:
         {
-          LatexCodeGenerator codeGen(ts,relPath,file);
           OutputCodeList codeList;
-          codeList.add(&codeGen);
-          LatexDocVisitor visitor(ts,codeList,codeGen,def->getDefFileExtension());
+          codeList.add<LatexCodeGenerator>(&ts,relPath,file);
+          LatexDocVisitor visitor(ts,codeList,*codeList.get<LatexCodeGenerator>(),def->getDefFileExtension());
           std::visit(visitor,astImpl->root);
         }
         break;
@@ -1294,18 +1293,16 @@ static TemplateVariant parseCode(const Definition *d,const QCString &scopeName,c
   {
     case ContextOutputFormat_Html:
       {
-        HtmlCodeGenerator codeGen(t,relPath);
         OutputCodeList codeList;
-        codeList.add(&codeGen);
+        codeList.add<HtmlCodeGenerator>(&t,relPath);
         intf->parseCode(codeList,scopeName,code,d->getLanguage(),FALSE,QCString(),d->getBodyDef(),
             startLine,endLine,TRUE,toMemberDef(d),showLineNumbers,d);
       }
       break;
     case ContextOutputFormat_Latex:
       {
-        LatexCodeGenerator codeGen(t,relPath,d->docFile());
         OutputCodeList codeList;
-        codeList.add(&codeGen);
+        codeList.add<LatexCodeGenerator>(&t,relPath,d->docFile());
         intf->parseCode(codeList,scopeName,code,d->getLanguage(),FALSE,QCString(),d->getBodyDef(),
             startLine,endLine,TRUE,toMemberDef(d),showLineNumbers,d);
       }
@@ -1328,9 +1325,8 @@ static TemplateVariant parseCode(const FileDef *fd,const QCString &relPath)
   {
     case ContextOutputFormat_Html:
       {
-        HtmlCodeGenerator codeGen(t,relPath);
         OutputCodeList codeList;
-        codeList.add(&codeGen);
+        codeList.add<HtmlCodeGenerator>(&t,relPath);
         intf->parseCode(codeList,QCString(),
               fileToString(fd->absFilePath(),filterSourceFiles,TRUE), // the sources
               fd->getLanguage(),  // lang
@@ -1349,9 +1345,8 @@ static TemplateVariant parseCode(const FileDef *fd,const QCString &relPath)
       break;
     case ContextOutputFormat_Latex:
       {
-        LatexCodeGenerator codeGen(t,relPath,fd->docFile());
         OutputCodeList codeList;
-        codeList.add(&codeGen);
+        codeList.add<LatexCodeGenerator>(&t,relPath,fd->docFile());
         intf->parseCode(codeList,QCString(),
               fileToString(fd->absFilePath(),filterSourceFiles,TRUE), // the sources
               fd->getLanguage(),  // lang

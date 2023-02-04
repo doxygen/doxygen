@@ -36,6 +36,7 @@ class DotGfxHierarchyTable;
 class DotGroupCollaboration;
 class MemberDef;
 class Definition;
+class OutputCodeList;
 
 struct DocLinkInfo
 {
@@ -54,104 +55,7 @@ struct SourceLinkInfo
   QCString anchor;
 };
 
-enum class OutputType { List, Html, Latex, Man, RTF, Docbook, XML, Null };
-
-/** Output interface for code parser.
- */
-class CodeOutputInterface
-{
-  public:
-    CodeOutputInterface() = default;
-    CodeOutputInterface(const CodeOutputInterface &) = delete;
-    CodeOutputInterface &operator=(const CodeOutputInterface &) = delete;
-    virtual ~CodeOutputInterface() = default;
-
-    virtual OutputType type() const = 0;
-
-    virtual void setEnabled(bool e) { m_active = e; }
-    virtual bool isEnabled() const { return m_active; }
-
-    /*! Writes an code fragment to the output. This function should keep
-     *  spaces visible, should break lines at a newline and should convert
-     *  tabs to the right number of spaces.
-     */
-    virtual void codify(const QCString &s) = 0;
-
-    /*! Writes a link to an object in a code fragment.
-     *  \param type     The type of symbol, used for semantic syntax
-     *                  highlighting, may be Default is no info is available.
-     *  \param ref      If this is non-zero, the object is to be found in
-     *                  an external documentation file.
-     *  \param file     The file in which the object is located.
-     *  \param anchor   The anchor uniquely identifying the object within
-     *                  the file.
-     *  \param name     The text to display as a placeholder for the link.
-     *  \param tooltip  The tooltip to display when the mouse is on the link.
-     */
-    virtual void writeCodeLink(CodeSymbolType type,
-                               const QCString &ref,const QCString &file,
-                               const QCString &anchor,const QCString &name,
-                               const QCString &tooltip) = 0;
-
-    /*! Writes the line number of a source listing
-     *  \param ref        External reference (when imported from a tag file)
-     *  \param file       The file part of the URL pointing to the docs.
-     *  \param anchor     The anchor part of the URL pointing to the docs.
-     *  \param lineNumber The line number to write
-     *  \param writeLineAnchor Indicates if an anchor for the line number needs to be written
-     */
-    virtual void writeLineNumber(const QCString &ref,const QCString &file,
-                                 const QCString &anchor,int lineNumber, bool writeLineAnchor) = 0;
-
-    /*! Writes a tool tip definition
-     *  \param id       unique identifier for the tooltip
-     *  \param docInfo  Info about the symbol's documentation.
-     *  \param decl     full declaration of the symbol (for functions)
-     *  \param desc     brief description for the symbol
-     *  \param defInfo  Info about the symbol's definition in the source code
-     *  \param declInfo Info about the symbol's declaration in the source code
-     */
-    virtual void writeTooltip(const QCString &id,
-                              const DocLinkInfo &docInfo,
-                              const QCString &decl,
-                              const QCString &desc,
-                              const SourceLinkInfo &defInfo,
-                              const SourceLinkInfo &declInfo
-                             ) = 0;
-
-    virtual void startCodeLine(bool hasLineNumbers) = 0;
-
-    /*! Ends a line of code started with startCodeLine() */
-    virtual void endCodeLine() = 0;
-
-    /*! Starts a block with a certain meaning. Used for syntax highlighting,
-     *  which elements of the same type are rendered using the same 'font class'.
-     *  \param clsName The category name.
-     */
-    virtual void startFontClass(const QCString &clsName) = 0;
-
-    /*! Ends a block started with startFontClass() */
-    virtual void endFontClass() = 0;
-
-    /*! Write an anchor to a source listing.
-     *  \param name The name of the anchor.
-     */
-    virtual void writeCodeAnchor(const QCString &name) = 0;
-
-    /*! Starts a source code fragment. The fragment will be
-     *  fed to the code parser (see code.h) for syntax highlighting
-     *  and cross-referencing. The fragment ends by a call to
-     *  endCodeFragment()
-     *  @param style The kind of code fragment.
-     */
-    virtual void startCodeFragment(const QCString &style) = 0;
-    /*! Ends a block of code */
-    virtual void endCodeFragment(const QCString &style) = 0;
-
-  private:
-    bool m_active = true;
-};
-
+enum class OutputType { List, Html, Latex, Man, RTF, Docbook, XML, Null, Extension };
 
 /** Abstract output generator.
  *
@@ -180,7 +84,7 @@ class OutputGenerator
     virtual OutputType type() const = 0;
     virtual std::unique_ptr<OutputGenerator> clone() const = 0;
 
-    virtual CodeOutputInterface *codeGen() = 0;
+    //virtual CodeOutputInterface *codeGen() = 0;
 
     ///////////////////////////////////////////////////////////////
     // generic generator methods
@@ -492,6 +396,8 @@ class OutputGenerator
     virtual void writeLocalToc(const SectionRefs &,const LocalToc &lt) = 0;
 
     virtual void cleanup() = 0;
+
+    virtual void addCodeGen(OutputCodeList &list) = 0;
 
   protected:
     TextStream m_t;

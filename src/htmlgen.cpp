@@ -56,6 +56,7 @@
 #include "indexlist.h"
 #include "datetime.h"
 #include "portable.h"
+#include "outputlist.h"
 
 //#define DBG_HTML(x) x;
 #define DBG_HTML(x)
@@ -689,11 +690,11 @@ static QCString replaceVariables(const QCString &input)
 
 //--------------------------------------------------------------------------
 
-HtmlCodeGenerator::HtmlCodeGenerator(TextStream &t) : m_t(t)
+HtmlCodeGenerator::HtmlCodeGenerator(TextStream *t) : m_t(t)
 {
 }
 
-HtmlCodeGenerator::HtmlCodeGenerator(TextStream &t,const QCString &relPath)
+HtmlCodeGenerator::HtmlCodeGenerator(TextStream *t,const QCString &relPath)
   : m_t(t), m_relPath(relPath)
 {
 }
@@ -718,33 +719,33 @@ void HtmlCodeGenerator::codify(const QCString &str)
       {
         case '\t': spacesToNextTabStop =
                          tabSize - (m_col%tabSize);
-                   m_t << Doxygen::spaces.left(spacesToNextTabStop);
+                   *m_t << Doxygen::spaces.left(spacesToNextTabStop);
                    m_col+=spacesToNextTabStop;
                    break;
-        case '\n': m_t << "\n"; m_col=0;
+        case '\n': *m_t << "\n"; m_col=0;
                    break;
         case '\r': break;
-        case '<':  m_t << "&lt;"; m_col++;
+        case '<':  *m_t << "&lt;"; m_col++;
                    break;
-        case '>':  m_t << "&gt;"; m_col++;
+        case '>':  *m_t << "&gt;"; m_col++;
                    break;
-        case '&':  m_t << "&amp;"; m_col++;
+        case '&':  *m_t << "&amp;"; m_col++;
                    break;
-        case '\'': m_t << "&#39;"; m_col++; // &apos; is not valid XHTML
+        case '\'': *m_t << "&#39;"; m_col++; // &apos; is not valid XHTML
                    break;
-        case '"':  m_t << "&quot;"; m_col++;
+        case '"':  *m_t << "&quot;"; m_col++;
                    break;
         case '\\':
                    if (*p=='<')
-                     { m_t << "&lt;"; p++; }
+                     { *m_t << "&lt;"; p++; }
                    else if (*p=='>')
-                     { m_t << "&gt;"; p++; }
+                     { *m_t << "&gt;"; p++; }
 		   else if (*p=='(')
-                     { m_t << "\\&zwj;("; m_col++;p++; }
+                     { *m_t << "\\&zwj;("; m_col++;p++; }
                    else if (*p==')')
-                     { m_t << "\\&zwj;)"; m_col++;p++; }
+                     { *m_t << "\\&zwj;)"; m_col++;p++; }
                    else
-                     m_t << "\\";
+                     *m_t << "\\";
                    m_col++;
                    break;
         default:
@@ -752,12 +753,12 @@ void HtmlCodeGenerator::codify(const QCString &str)
             uint8_t uc = static_cast<uint8_t>(c);
             if (uc<32)
             {
-              m_t << "&#x24" << hex[uc>>4] << hex[uc&0xF] << ";";
+              *m_t << "&#x24" << hex[uc>>4] << hex[uc&0xF] << ";";
               m_col++;
             }
             else
             {
-              p=writeUTF8Char(m_t,p-1);
+              p=writeUTF8Char(*m_t,p-1);
               m_col++;
             }
           }
@@ -778,32 +779,32 @@ void HtmlCodeGenerator::docify(const QCString &str)
       c=*p++;
       switch(c)
       {
-        case '<':  m_t << "&lt;"; break;
-        case '>':  m_t << "&gt;"; break;
-        case '&':  m_t << "&amp;"; break;
-        case '"':  m_t << "&quot;"; break;
+        case '<':  *m_t << "&lt;"; break;
+        case '>':  *m_t << "&gt;"; break;
+        case '&':  *m_t << "&amp;"; break;
+        case '"':  *m_t << "&quot;"; break;
         case '\\':
           if (*p=='<')
-            { m_t << "&lt;"; p++; }
+            { *m_t << "&lt;"; p++; }
           else if (*p=='>')
-            { m_t << "&gt;"; p++; }
+            { *m_t << "&gt;"; p++; }
 	  else if (*p=='(')
-            { m_t << "\\&zwj;("; p++; }
+            { *m_t << "\\&zwj;("; p++; }
           else if (*p==')')
-            { m_t << "\\&zwj;)"; p++; }
+            { *m_t << "\\&zwj;)"; p++; }
           else
-            m_t << "\\";
+            *m_t << "\\";
           break;
         default:
           {
             uint8_t uc = static_cast<uint8_t>(c);
             if (uc<32 && !isspace(c))
             {
-              m_t << "&#x24" << hex[uc>>4] << hex[uc&0xF] << ";";
+              *m_t << "&#x24" << hex[uc>>4] << hex[uc&0xF] << ";";
             }
             else
             {
-              m_t << c;
+              *m_t << c;
             }
           }
           break;
@@ -824,12 +825,12 @@ void HtmlCodeGenerator::writeLineNumber(const QCString &ref,const QCString &file
 
   if (!m_lineOpen)
   {
-    m_t << "<div class=\"line\">";
+    *m_t << "<div class=\"line\">";
     m_lineOpen = TRUE;
   }
 
-  if (writeLineAnchor) m_t << "<a id=\"" << lineAnchor << "\" name=\"" << lineAnchor << "\"></a>";
-  m_t << "<span class=\"lineno\">";
+  if (writeLineAnchor) *m_t << "<a id=\"" << lineAnchor << "\" name=\"" << lineAnchor << "\"></a>";
+  *m_t << "<span class=\"lineno\">";
   if (!filename.isEmpty())
   {
     _writeCodeLink("line",ref,filename,anchor,lineNumber,QCString());
@@ -838,7 +839,7 @@ void HtmlCodeGenerator::writeLineNumber(const QCString &ref,const QCString &file
   {
     codify(lineNumber);
   }
-  m_t << "</span>";
+  *m_t << "</span>";
   m_col=0;
 }
 
@@ -864,22 +865,22 @@ void HtmlCodeGenerator::_writeCodeLink(const QCString &className,
 {
   if (!ref.isEmpty())
   {
-    m_t << "<a class=\"" << className << "Ref\" ";
-    m_t << externalLinkTarget();
+    *m_t << "<a class=\"" << className << "Ref\" ";
+    *m_t << externalLinkTarget();
   }
   else
   {
-    m_t << "<a class=\"" << className << "\" ";
+    *m_t << "<a class=\"" << className << "\" ";
   }
-  m_t << "href=\"";
-  m_t << externalRef(m_relPath,ref,TRUE);
-  if (!f.isEmpty()) m_t << addHtmlExtensionIfMissing(f);
-  if (!anchor.isEmpty()) m_t << "#" << anchor;
-  m_t << "\"";
-  if (!tooltip.isEmpty()) m_t << " title=\"" << convertToHtml(tooltip) << "\"";
-  m_t << ">";
+  *m_t << "href=\"";
+  *m_t << externalRef(m_relPath,ref,TRUE);
+  if (!f.isEmpty()) *m_t << addHtmlExtensionIfMissing(f);
+  if (!anchor.isEmpty()) *m_t << "#" << anchor;
+  *m_t << "\"";
+  if (!tooltip.isEmpty()) *m_t << " title=\"" << convertToHtml(tooltip) << "\"";
+  *m_t << ">";
   docify(name);
-  m_t << "</a>";
+  *m_t << "</a>";
   m_col+=name.length();
 }
 
@@ -888,80 +889,80 @@ void HtmlCodeGenerator::writeTooltip(const QCString &id, const DocLinkInfo &docI
                                      const SourceLinkInfo &defInfo,
                                      const SourceLinkInfo &declInfo)
 {
-  m_t << "<div class=\"ttc\" id=\"" << id << "\">";
-  m_t << "<div class=\"ttname\">";
+  *m_t << "<div class=\"ttc\" id=\"" << id << "\">";
+  *m_t << "<div class=\"ttname\">";
   if (!docInfo.url.isEmpty())
   {
-    m_t << "<a href=\"";
-    m_t << externalRef(m_relPath,docInfo.ref,TRUE);
-    m_t << addHtmlExtensionIfMissing(docInfo.url);
+    *m_t << "<a href=\"";
+    *m_t << externalRef(m_relPath,docInfo.ref,TRUE);
+    *m_t << addHtmlExtensionIfMissing(docInfo.url);
     if (!docInfo.anchor.isEmpty())
     {
-      m_t << "#" << docInfo.anchor;
+      *m_t << "#" << docInfo.anchor;
     }
-    m_t << "\">";
+    *m_t << "\">";
   }
   docify(docInfo.name);
   if (!docInfo.url.isEmpty())
   {
-    m_t << "</a>";
+    *m_t << "</a>";
   }
-  m_t << "</div>";
+  *m_t << "</div>";
   if (!decl.isEmpty())
   {
-    m_t << "<div class=\"ttdeci\">";
+    *m_t << "<div class=\"ttdeci\">";
     docify(decl);
-    m_t << "</div>";
+    *m_t << "</div>";
   }
   if (!desc.isEmpty())
   {
-    m_t << "<div class=\"ttdoc\">";
+    *m_t << "<div class=\"ttdoc\">";
     docify(desc);
-    m_t << "</div>";
+    *m_t << "</div>";
   }
   if (!defInfo.file.isEmpty())
   {
-    m_t << "<div class=\"ttdef\"><b>Definition:</b> ";
+    *m_t << "<div class=\"ttdef\"><b>Definition:</b> ";
     if (!defInfo.url.isEmpty())
     {
-      m_t << "<a href=\"";
-      m_t << externalRef(m_relPath,defInfo.ref,TRUE);
-      m_t << addHtmlExtensionIfMissing(defInfo.url);
+      *m_t << "<a href=\"";
+      *m_t << externalRef(m_relPath,defInfo.ref,TRUE);
+      *m_t << addHtmlExtensionIfMissing(defInfo.url);
       if (!defInfo.anchor.isEmpty())
       {
-        m_t << "#" << defInfo.anchor;
+        *m_t << "#" << defInfo.anchor;
       }
-      m_t << "\">";
+      *m_t << "\">";
     }
-    m_t << defInfo.file << ":" << defInfo.line;
+    *m_t << defInfo.file << ":" << defInfo.line;
     if (!defInfo.url.isEmpty())
     {
-      m_t << "</a>";
+      *m_t << "</a>";
     }
-    m_t << "</div>";
+    *m_t << "</div>";
   }
   if (!declInfo.file.isEmpty())
   {
-    m_t << "<div class=\"ttdecl\"><b>Declaration:</b> ";
+    *m_t << "<div class=\"ttdecl\"><b>Declaration:</b> ";
     if (!declInfo.url.isEmpty())
     {
-      m_t << "<a href=\"";
-      m_t << externalRef(m_relPath,declInfo.ref,TRUE);
-      m_t << addHtmlExtensionIfMissing(declInfo.url);
+      *m_t << "<a href=\"";
+      *m_t << externalRef(m_relPath,declInfo.ref,TRUE);
+      *m_t << addHtmlExtensionIfMissing(declInfo.url);
       if (!declInfo.anchor.isEmpty())
       {
-        m_t << "#" << declInfo.anchor;
+        *m_t << "#" << declInfo.anchor;
       }
-      m_t << "\">";
+      *m_t << "\">";
     }
-    m_t << declInfo.file << ":" << declInfo.line;
+    *m_t << declInfo.file << ":" << declInfo.line;
     if (!declInfo.url.isEmpty())
     {
-      m_t << "</a>";
+      *m_t << "</a>";
     }
-    m_t << "</div>";
+    *m_t << "</div>";
   }
-  m_t << "</div>\n";
+  *m_t << "</div>\n";
 }
 
 
@@ -970,7 +971,7 @@ void HtmlCodeGenerator::startCodeLine(bool)
   m_col=0;
   if (!m_lineOpen)
   {
-    m_t << "<div class=\"line\">";
+    *m_t << "<div class=\"line\">";
     m_lineOpen = TRUE;
   }
 }
@@ -979,34 +980,34 @@ void HtmlCodeGenerator::endCodeLine()
 {
   if (m_col == 0)
   {
-    m_t << " ";
+    *m_t << " ";
     m_col++;
   }
   if (m_lineOpen)
   {
-    m_t << "</div>\n";
+    *m_t << "</div>\n";
     m_lineOpen = FALSE;
   }
 }
 
 void HtmlCodeGenerator::startFontClass(const QCString &s)
 {
-  m_t << "<span class=\"" << s << "\">";
+  *m_t << "<span class=\"" << s << "\">";
 }
 
 void HtmlCodeGenerator::endFontClass()
 {
-  m_t << "</span>";
+  *m_t << "</span>";
 }
 
 void HtmlCodeGenerator::writeCodeAnchor(const QCString &anchor)
 {
-  m_t << "<a id=\"" << anchor << "\" name=\"" << anchor << "\"></a>";
+  *m_t << "<a id=\"" << anchor << "\" name=\"" << anchor << "\"></a>";
 }
 
 void HtmlCodeGenerator::startCodeFragment(const QCString &)
 {
-  m_t << "<div class=\"fragment\">";
+  *m_t << "<div class=\"fragment\">";
 }
 
 void HtmlCodeGenerator::endCodeFragment(const QCString &)
@@ -1014,7 +1015,7 @@ void HtmlCodeGenerator::endCodeFragment(const QCString &)
   //endCodeLine checks is there is still an open code line, if so closes it.
   endCodeLine();
 
-  m_t << "</div><!-- fragment -->";
+  *m_t << "</div><!-- fragment -->";
 }
 
 
@@ -1022,16 +1023,23 @@ void HtmlCodeGenerator::endCodeFragment(const QCString &)
 
 HtmlGenerator::HtmlGenerator()
   : OutputGenerator(Config_getString(HTML_OUTPUT))
-  , m_codeGen(m_t)
+  , m_codeList(std::make_unique<OutputCodeList>())
 {
-  m_codeList.add(&m_codeGen);
+  m_codeList->add<HtmlCodeGenerator>(&m_t);
+  m_codeGen = m_codeList->get<HtmlCodeGenerator>();
 }
 
 HtmlGenerator::HtmlGenerator(const HtmlGenerator &og)
   : OutputGenerator(og)
-  , m_codeGen(m_t)
+  , m_codeList(std::make_unique<OutputCodeList>())
 {
-  m_codeList.add(&m_codeGen);
+  m_codeList->add<HtmlCodeGenerator>(&m_t);
+  m_codeGen = m_codeList->get<HtmlCodeGenerator>();
+}
+
+void HtmlGenerator::addCodeGen(OutputCodeList &list)
+{
+  list.add(OutputCodeList::OutputCodeVariant(OutputCodeDeferHtml(m_codeGen)));
 }
 
 std::unique_ptr<OutputGenerator> HtmlGenerator::clone() const
@@ -1331,7 +1339,7 @@ void HtmlGenerator::startFile(const QCString &name,const QCString &,
   m_lastTitle=title;
 
   startPlainFile(fileName);
-  m_codeGen.setRelativePath(m_relPath);
+  m_codeGen->setRelativePath(m_relPath);
   {
     std::lock_guard<std::mutex> lock(g_indexLock);
     Doxygen::indexList->addIndexFile(fileName);
@@ -2455,8 +2463,8 @@ void HtmlGenerator::writeDoc(const IDocNodeAST *ast,const Definition *ctx,const 
   const DocNodeAST *astImpl = dynamic_cast<const DocNodeAST*>(ast);
   if (astImpl)
   {
-    m_codeList.setId(id);
-    HtmlDocVisitor visitor(m_t,m_codeList,ctx);
+    m_codeList->setId(id);
+    HtmlDocVisitor visitor(m_t,*m_codeList,ctx);
     std::visit(visitor,astImpl->root);
   }
 }

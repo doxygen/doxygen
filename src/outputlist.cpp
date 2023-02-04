@@ -37,6 +37,8 @@ static AtomicInt g_outId;
 
 OutputList::OutputList()
 {
+  static_assert(std::is_copy_constructible_v<HtmlCodeGenerator> &&
+                std::is_copy_assignable_v<HtmlCodeGenerator>);
   newId();
   m_codeGenList.setId(m_id);
 }
@@ -48,8 +50,7 @@ OutputList::OutputList(const OutputList &ol)
   for (const auto &og : ol.m_outputs)
   {
     auto docGen = og->clone();
-    m_codeGenList.add(docGen->codeGen());
-    m_codeGenList.setId(m_id);
+    docGen->addCodeGen(m_codeGenList);
     m_outputs.emplace_back(std::move(docGen));
   }
 }
@@ -63,8 +64,7 @@ OutputList &OutputList::operator=(const OutputList &ol)
     for (const auto &og : ol.m_outputs)
     {
       auto docGen = og->clone();
-      m_codeGenList.add(docGen->codeGen());
-      m_codeGenList.setId(m_id);
+      docGen->addCodeGen(m_codeGenList);
       m_outputs.emplace_back(std::move(docGen));
     }
   }

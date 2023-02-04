@@ -49,6 +49,7 @@
 #include "dir.h"
 #include "utf8.h"
 #include "portable.h"
+#include "outputlist.h"
 
 // no debug info
 #define XML_DB(x) do {} while(0)
@@ -227,7 +228,7 @@ class TextGeneratorXMLImpl : public TextGeneratorIntf
 
 //-------------------------------------------------------------------------------------------
 
-XMLCodeGenerator::XMLCodeGenerator(TextStream &t) : m_t(t), m_lineNumber(-1), m_isMemberRef(FALSE), m_col(0),
+XMLCodeGenerator::XMLCodeGenerator(TextStream *t) : m_t(t), m_lineNumber(-1), m_isMemberRef(FALSE), m_col(0),
       m_insideCodeLine(FALSE), m_normalHLNeedStartTag(TRUE), m_insideSpecialHL(FALSE)
 {
 }
@@ -238,10 +239,10 @@ void XMLCodeGenerator::codify(const QCString &text)
   XML_DB(("(codify \"%s\")\n",text));
   if (m_insideCodeLine && !m_insideSpecialHL && m_normalHLNeedStartTag)
   {
-    m_t << "<highlight class=\"normal\">";
+    *m_t << "<highlight class=\"normal\">";
     m_normalHLNeedStartTag=FALSE;
   }
-  writeXMLCodeString(m_t,text,m_col);
+  writeXMLCodeString(*m_t,text,m_col);
 }
 void XMLCodeGenerator::writeCodeLink(CodeSymbolType,
                    const QCString &ref,const QCString &file,
@@ -251,10 +252,10 @@ void XMLCodeGenerator::writeCodeLink(CodeSymbolType,
   XML_DB(("(writeCodeLink)\n"));
   if (m_insideCodeLine && !m_insideSpecialHL && m_normalHLNeedStartTag)
   {
-    m_t << "<highlight class=\"normal\">";
+    *m_t << "<highlight class=\"normal\">";
     m_normalHLNeedStartTag=FALSE;
   }
-  writeXMLLink(m_t,ref,file,anchor,name,tooltip);
+  writeXMLLink(*m_t,ref,file,anchor,name,tooltip);
   m_col+=name.length();
 }
 void XMLCodeGenerator::writeTooltip(const QCString &, const DocLinkInfo &, const QCString &,
@@ -266,28 +267,28 @@ void XMLCodeGenerator::writeTooltip(const QCString &, const DocLinkInfo &, const
 void XMLCodeGenerator::startCodeLine(bool)
 {
   XML_DB(("(startCodeLine)\n"));
-  m_t << "<codeline";
+  *m_t << "<codeline";
   if (m_lineNumber!=-1)
   {
-    m_t << " lineno=\"" << m_lineNumber << "\"";
+    *m_t << " lineno=\"" << m_lineNumber << "\"";
     if (!m_refId.isEmpty())
     {
-      m_t << " refid=\"" << m_refId << "\"";
+      *m_t << " refid=\"" << m_refId << "\"";
       if (m_isMemberRef)
       {
-        m_t << " refkind=\"member\"";
+        *m_t << " refkind=\"member\"";
       }
       else
       {
-        m_t << " refkind=\"compound\"";
+        *m_t << " refkind=\"compound\"";
       }
     }
     if (!m_external.isEmpty())
     {
-      m_t << " external=\"" << m_external << "\"";
+      *m_t << " external=\"" << m_external << "\"";
     }
   }
-  m_t << ">";
+  *m_t << ">";
   m_insideCodeLine=TRUE;
   m_col=0;
 }
@@ -296,10 +297,10 @@ void XMLCodeGenerator::endCodeLine()
   XML_DB(("(endCodeLine)\n"));
   if (!m_insideSpecialHL && !m_normalHLNeedStartTag)
   {
-    m_t << "</highlight>";
+    *m_t << "</highlight>";
     m_normalHLNeedStartTag=TRUE;
   }
-  m_t << "</codeline>\n"; // non DocBook
+  *m_t << "</codeline>\n"; // non DocBook
   m_lineNumber = -1;
   m_refId.resize(0);
   m_external.resize(0);
@@ -310,16 +311,16 @@ void XMLCodeGenerator::startFontClass(const QCString &colorClass)
   XML_DB(("(startFontClass)\n"));
   if (m_insideCodeLine && !m_insideSpecialHL && !m_normalHLNeedStartTag)
   {
-    m_t << "</highlight>";
+    *m_t << "</highlight>";
     m_normalHLNeedStartTag=TRUE;
   }
-  m_t << "<highlight class=\"" << colorClass << "\">"; // non DocBook
+  *m_t << "<highlight class=\"" << colorClass << "\">"; // non DocBook
   m_insideSpecialHL=TRUE;
 }
 void XMLCodeGenerator::endFontClass()
 {
   XML_DB(("(endFontClass)\n"));
-  m_t << "</highlight>"; // non DocBook
+  *m_t << "</highlight>"; // non DocBook
   m_insideSpecialHL=FALSE;
 }
 void XMLCodeGenerator::writeCodeAnchor(const QCString &)
@@ -348,12 +349,12 @@ void XMLCodeGenerator::finish()
 
 void XMLCodeGenerator::startCodeFragment(const QCString &)
 {
-  m_t << "    <programlisting>\n";
+  *m_t << "    <programlisting>\n";
 }
 
 void XMLCodeGenerator::endCodeFragment(const QCString &)
 {
-  m_t << "    </programlisting>\n";
+  *m_t << "    </programlisting>\n";
 }
 
 //-------------------------------------------------------------------------------------------
@@ -434,9 +435,8 @@ static void writeXMLDocBlock(TextStream &t,
   if (astImpl)
   {
     // create a code generator
-    XMLCodeGenerator xmlCodeGen(t);
     OutputCodeList xmlCodeList;
-    xmlCodeList.add(&xmlCodeGen);
+    xmlCodeList.add<XMLCodeGenerator>(&t);
     // create a parse tree visitor for XML
     XmlDocVisitor visitor(t,xmlCodeList,scope?scope->getDefFileExtension():QCString(""));
     // visit all nodes
@@ -450,9 +450,8 @@ void writeXMLCodeBlock(TextStream &t,FileDef *fd)
   auto intf=Doxygen::parserManager->getCodeParser(fd->getDefFileExtension());
   SrcLangExt langExt = getLanguageFromFileName(fd->getDefFileExtension());
   intf->resetCodeParserState();
-  XMLCodeGenerator xmlGen(t);
   OutputCodeList xmlList;
-  xmlList.add(&xmlGen);
+  xmlList.add<XMLCodeGenerator>(&t);
   xmlList.startCodeFragment("DoxyCode");
   intf->parseCode(xmlList,    // codeOutList
                 QCString(),   // scopeName
@@ -468,7 +467,7 @@ void writeXMLCodeBlock(TextStream &t,FileDef *fd)
                 TRUE         // showLineNumbers
                 );
   xmlList.endCodeFragment("DoxyCode");
-  xmlGen.finish();
+  xmlList.get<XMLCodeGenerator>()->finish();
 }
 
 static void writeMemberReference(TextStream &t,const Definition *def,const MemberDef *rmd,const QCString &tagName)
