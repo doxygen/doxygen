@@ -513,7 +513,7 @@ void writeJavaScriptSearchIndex()
               prefix+=convertToXML(md->argsString());
               // show argument list to disambiguate overloaded functions
             }
-            else if (md) // unique member function
+            else if (md && md->isCallable()) // unique member function
             {
               prefix+="()"; // only to show it is a function
             }

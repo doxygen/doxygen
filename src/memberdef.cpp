@@ -172,7 +172,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     virtual bool isDestructor() const;
     virtual bool hasOneLineInitializer() const;
     virtual bool hasMultiLineInitializer() const;
-    virtual bool showInCallGraph() const;
+    virtual bool isCallable() const;
     virtual bool isStrongEnumValue() const;
     virtual bool livesInsideEnum() const;
     virtual bool isSliceLocal() const;
@@ -627,8 +627,8 @@ class MemberDefAliasImpl : public DefinitionAliasMixin<MemberDef>
     { return getMdAlias()->hasOneLineInitializer(); }
     virtual bool hasMultiLineInitializer() const
     { return getMdAlias()->hasMultiLineInitializer(); }
-    virtual bool showInCallGraph() const
-    { return getMdAlias()->showInCallGraph(); }
+    virtual bool isCallable() const
+    { return getMdAlias()->isCallable(); }
     virtual bool isStrongEnumValue() const
     { return getMdAlias()->isStrongEnumValue(); }
     virtual bool livesInsideEnum() const
@@ -5253,7 +5253,7 @@ bool MemberDefImpl::isTemplateSpecialization() const
   return m_impl->tspec;
 }
 
-bool MemberDefImpl::showInCallGraph() const
+bool MemberDefImpl::isCallable() const
 {
   return isFunction() ||
          isSlot() ||
@@ -6116,7 +6116,7 @@ void addDocCrossReference(const MemberDef *s,const MemberDef *d)
   //printf("--> addDocCrossReference src=%s,dst=%s\n",qPrint(src->name()),qPrint(dst->name()));
   if (dst->isTypedef() || dst->isEnumerate()) return; // don't add types
   if ((dst->hasReferencedByRelation() || dst->hasCallerGraph()) &&
-      src->showInCallGraph()
+      src->isCallable()
      )
   {
     dst->addSourceReferencedBy(src);
@@ -6132,7 +6132,7 @@ void addDocCrossReference(const MemberDef *s,const MemberDef *d)
     }
   }
   if ((src->hasReferencesRelation() || src->hasCallGraph()) &&
-      src->showInCallGraph()
+      src->isCallable()
      )
   {
     src->addSourceReferences(dst);

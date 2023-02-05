@@ -179,7 +179,7 @@ class MemberDef : public Definition
     virtual bool isDestructor() const = 0;
     virtual bool hasOneLineInitializer() const = 0;
     virtual bool hasMultiLineInitializer() const = 0;
-    virtual bool showInCallGraph() const = 0;
+    virtual bool isCallable() const = 0;
     virtual bool isStrongEnumValue() const = 0;
     virtual bool livesInsideEnum() const = 0;
     virtual bool isSliceLocal() const = 0;
