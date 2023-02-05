@@ -167,9 +167,9 @@ class OutputCodeList
     void setId(int id) { m_id = id;   }
 
     /** Add a code generator already wrapped in a variant type. */
-    void add(OutputCodeVariant v)
+    void add(OutputCodeVariant &&v)
     {
-      m_outputCodeList.push_back(OutputCodeElem(v,true));
+      m_outputCodeList.push_back(OutputCodeElem(std::move(v),true));
     }
 
     /** Add a code generator to the list, using a syntax similar to std::make_unique<T>() */
@@ -255,7 +255,7 @@ class OutputCodeList
 
     struct OutputCodeElem
     {
-      OutputCodeElem(OutputCodeVariant v,bool e) : variant(v),enabled(e) {}
+      OutputCodeElem(OutputCodeVariant &&v,bool e) : variant(std::move(v)),enabled(e) {}
       OutputCodeVariant variant;
       bool enabled;
     };
