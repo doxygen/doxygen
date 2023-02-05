@@ -6124,7 +6124,7 @@ bool copyFile(const QCString &src,const QCString &dest)
  *  Full lines are returned, excluding the lines on which the markers appear.
  *  \sa routine lineBlock
  */
-QCString extractBlock(const QCString &text,const QCString &marker)
+QCString extractBlock(const QCString &text,const QCString &marker, const bool trimLeft)
 {
   QCString result;
   int p=0,i=-1;
@@ -6163,7 +6163,41 @@ QCString extractBlock(const QCString &text,const QCString &marker)
     l2=lp;
   }
   //printf("text=[%s]\n",qPrint(text.mid(l1,l2-l1)));
-  return l2>l1 ? text.mid(l1,l2-l1) : QCString();
+  if  (l2>l1 && trimLeft)
+  {
+    QCString res = text.mid(l1,l2-l1);
+    int refIndent = 0;
+    res = detab(res,refIndent);
+    if (refIndent == 0) return res;
+    int ii = 0;
+    int size = res.length();
+    const char *data = res.data();
+    GrowBuf out;
+    out.clear();
+    out.reserve(size);
+    int cnt = 0;
+    while (ii<size)
+    {
+      char c = data[ii++];
+      switch(c)
+      {
+        case '\n':
+          out.addChar(c);
+          cnt=0;
+          break;
+        default:
+          if (cnt >= refIndent) out.addChar(c);
+          cnt++;
+          break;
+      }
+    }
+    out.addChar(0);
+    return out.get();
+  }
+  else
+  {
+    return l2>l1 ? text.mid(l1,l2-l1) : QCString();
+  }
 }
 
 /** Returns the line number of the line following the line with the marker.
@@ -7017,3 +7051,68 @@ QCString integerToRoman(int n, bool upper)
   return result;
 }
 
+QCString detab(const QCString &s,int &refIndent)
+{
+  int tabSize = Config_getInt(TAB_SIZE);
+  int size = s.length();
+  GrowBuf out(size);
+  const char *data = s.data();
+  int i=0;
+  int col=0;
+  constexpr auto doxy_nbsp = "&_doxy_nbsp;";  // doxygen escape command for UTF-8 nbsp
+  const int maxIndent=1000000; // value representing infinity
+  int minIndent=maxIndent;
+  while (i<size)
+  {
+    char c = data[i++];
+    switch(c)
+    {
+      case '\t': // expand tab
+        {
+          int stop = tabSize - (col%tabSize);
+          //printf("expand at %d stop=%d\n",col,stop);
+          col+=stop;
+          while (stop--) out.addChar(' ');
+        }
+        break;
+      case '\n': // reset column counter
+        out.addChar(c);
+        col=0;
+        break;
+      case ' ': // increment column counter
+        out.addChar(c);
+        col++;
+        break;
+      default: // non-whitespace => update minIndent
+        if (c<0 && i<size) // multibyte sequence
+        {
+          // special handling of the UTF-8 nbsp character 0xC2 0xA0
+          int nb = isUTF8NonBreakableSpace(data);
+          if (nb>0)
+          {
+            out.addStr(doxy_nbsp);
+            i+=nb-1;
+          }
+          else
+          {
+            int bytes = getUTF8CharNumBytes(c);
+            for (int j=0;j<bytes-1 && c;j++)
+            {
+              out.addChar(c);
+              c = data[i++];
+            }
+            out.addChar(c);
+          }
+        }
+        else
+        {
+          out.addChar(c);
+        }
+        if (col<minIndent) minIndent=col;
+        col++;
+    }
+  }
+  if (minIndent!=maxIndent) refIndent=minIndent; else refIndent=0;
+  out.addChar(0);
+  return out.get();
+}

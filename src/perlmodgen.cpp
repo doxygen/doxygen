@@ -695,6 +695,7 @@ void PerlModDocVisitor::operator()(const DocInclude &inc)
     case DocInclude::DocbookInclude: type = "docbookonly"; break;
     case DocInclude::VerbInclude:	type = "preformatted"; break;
     case DocInclude::Snippet: return;
+    case DocInclude::SnippetTrimLeft: return;
     case DocInclude::SnipWithLines: return;
     case DocInclude::SnippetDoc:
     case DocInclude::IncludeDoc:

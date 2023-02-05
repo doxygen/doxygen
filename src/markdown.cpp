@@ -120,8 +120,8 @@ enum Alignment { AlignNone, AlignLeft, AlignCenter, AlignRight };
 
 //---------- constants -------
 //
-const char    *g_utf8_nbsp = "\xc2\xa0";      // UTF-8 nbsp
-const char    *g_doxy_nbsp = "&_doxy_nbsp;";  // doxygen escape command for UTF-8 nbsp
+const char *g_utf8_nbsp = "\xc2\xa0";      // UTF-8 nbsp
+const char *g_doxy_nbsp = "&_doxy_nbsp;";  // doxygen escape command for UTF-8 nbsp
 const int codeBlockIndent = 4;
 
 //---------- helpers -------
@@ -3194,73 +3194,6 @@ QCString Markdown::extractPageTitle(QCString &docs,QCString &id, int &prepend)
   return title;
 }
 
-QCString Markdown::detab(const QCString &s,int &refIndent)
-{
-  AUTO_TRACE("s='{}'",Trace::trunc(s));
-  int tabSize = Config_getInt(TAB_SIZE);
-  int size = s.length();
-  m_out.clear();
-  m_out.reserve(size);
-  const char *data = s.data();
-  int i=0;
-  int col=0;
-  const int maxIndent=1000000; // value representing infinity
-  int minIndent=maxIndent;
-  while (i<size)
-  {
-    char c = data[i++];
-    switch(c)
-    {
-      case '\t': // expand tab
-        {
-          int stop = tabSize - (col%tabSize);
-          //printf("expand at %d stop=%d\n",col,stop);
-          col+=stop;
-          while (stop--) m_out.addChar(' ');
-        }
-        break;
-      case '\n': // reset column counter
-        m_out.addChar(c);
-        col=0;
-        break;
-      case ' ': // increment column counter
-        m_out.addChar(c);
-        col++;
-        break;
-      default: // non-whitespace => update minIndent
-        if (c<0 && i<size) // multibyte sequence
-        {
-          // special handling of the UTF-8 nbsp character 0xC2 0xA0
-          int nb = isUTF8NonBreakableSpace(data);
-          if (nb>0)
-          {
-            m_out.addStr(g_doxy_nbsp);
-            i+=nb-1;
-          }
-          else
-          {
-            int bytes = getUTF8CharNumBytes(c);
-            for (int j=0;j<bytes-1 && c;j++)
-            {
-              m_out.addChar(c);
-              c = data[i++];
-            }
-            m_out.addChar(c);
-          }
-        }
-        else
-        {
-          m_out.addChar(c);
-        }
-        if (col<minIndent) minIndent=col;
-        col++;
-    }
-  }
-  if (minIndent!=maxIndent) refIndent=minIndent; else refIndent=0;
-  m_out.addChar(0);
-  AUTO_TRACE_EXIT("refIndent={}",refIndent);
-  return m_out.get();
-}
 
 //---------------------------------------------------------------------------
 

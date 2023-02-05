@@ -38,7 +38,6 @@ class Markdown
     void setIndentLevel(int level) { m_indentLevel = level; }
 
   private:
-    QCString detab(const QCString &s,int &refIndent);
     QCString processQuotations(const QCString &s,int refIndent);
     QCString processBlocks(const QCString &s,int indent);
     QCString isBlockCommand(const char *data,int offset,int size);

@@ -500,12 +500,13 @@ void RTFDocVisitor::operator()(const DocInclude &inc)
       m_t << "}\n";
       break;
     case DocInclude::Snippet:
+    case DocInclude::SnippetTrimLeft:
       m_t << "{\n";
       if (!m_lastIsPara) m_t << "\\par\n";
       m_t << rtf_Style_Reset << getStyle("CodeExample");
       getCodeParser(inc.extension()).parseCode(m_ci,
                                         inc.context(),
-                                        extractBlock(inc.text(),inc.blockId()),
+                                        extractBlock(inc.text(),inc.blockId(),inc.type()==DocInclude::SnippetTrimLeft),
                                         langExt,
                                         inc.isExample(),
                                         inc.exampleFile()

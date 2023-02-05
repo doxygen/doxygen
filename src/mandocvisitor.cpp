@@ -328,12 +328,13 @@ void ManDocVisitor::operator()(const DocInclude &inc)
       m_firstCol=TRUE;
       break;
     case DocInclude::Snippet:
+    case DocInclude::SnippetTrimLeft:
       if (!m_firstCol) m_t << "\n";
       m_t << ".PP\n";
       m_t << ".nf\n";
       getCodeParser(inc.extension()).parseCode(m_ci,
                                         inc.context(),
-                                        extractBlock(inc.text(),inc.blockId()),
+                                        extractBlock(inc.text(),inc.blockId(),inc.type()==DocInclude::SnippetTrimLeft),
                                         langExt,
                                         inc.isExample(),
                                         inc.exampleFile()
