@@ -5257,6 +5257,7 @@ bool MemberDefImpl::isCallable() const
 {
   return isFunction() ||
          isSlot() ||
+         isSignal() ||
          isConstructor() ||
          isDestructor() ||
          isObjCMethod();
