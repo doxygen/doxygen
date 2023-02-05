@@ -221,6 +221,25 @@ SLASHopt [/]*
                                        yyextra->commentStack.push(yyextra->lineNr);
 				     }
                                    }
+<Scan>"\"\"\""                     { /* start of python long comment */
+                                     if (yyextra->lang!=SrcLangExt_Python)
+				     {
+				       REJECT;
+				     }
+                                     else if (Config_getBool(PYTHON_DOCSTRING))
+                                     {
+				       REJECT;
+                                     }
+				     else
+				     { /* handle as if """! */
+                                       yyextra->pythonDocString = TRUE;
+                                       yyextra->nestingCount=1;
+                                       clearCommentStack(yyscanner); /*  to be on the save side */
+                                       copyToOutput(yyscanner,yytext,(int)yyleng);
+				       BEGIN(CComment);
+                                       yyextra->commentStack.push(yyextra->lineNr);
+				     }
+                                   }
 <Scan>![><!]/.*\n	   {
                                      if (yyextra->lang!=SrcLangExt_Fortran)
 				     {
