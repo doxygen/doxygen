@@ -36,7 +36,6 @@ class Markdown
     QCString process(const QCString &input, int &startNewlines, bool fromParseInput = false);
     QCString extractPageTitle(QCString &docs,QCString &id,int &prepend);
     void setIndentLevel(int level) { m_indentLevel = level; }
-    QCString detab(const QCString &s,int &refIndent);
 
   private:
     QCString processQuotations(const QCString &s,int refIndent);

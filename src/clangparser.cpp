@@ -45,56 +45,6 @@ static std::mutex g_docCrossReferenceMutex;
 
 enum class DetectedLang { Cpp, ObjC, ObjCpp };
 
-static QCString detab(const QCString &s)
-{
-  int tabSize = Config_getInt(TAB_SIZE);
-  GrowBuf out;
-  int size = s.length();
-  const char *data = s.data();
-  int i=0;
-  int col=0;
-  const int maxIndent=1000000; // value representing infinity
-  int minIndent=maxIndent;
-  while (i<size)
-  {
-    char c = data[i++];
-    switch(c)
-    {
-      case '\t': // expand tab
-        {
-          int stop = tabSize - (col%tabSize);
-          //printf("expand at %d stop=%d\n",col,stop);
-          col+=stop;
-          while (stop--) out.addChar(' ');
-        }
-        break;
-      case '\n': // reset column counter
-        out.addChar(c);
-        col=0;
-        break;
-      case ' ': // increment column counter
-        out.addChar(c);
-        col++;
-        break;
-      default: // non-whitespace => update minIndent
-        {
-          int bytes = getUTF8CharNumBytes(c);
-          for (int j=0;j<bytes-1 && c!=0; j++)
-          {
-            out.addChar(c);
-            c = data[i++];
-          }
-          out.addChar(c);
-        }
-        if (col<minIndent) minIndent=col;
-        col++;
-    }
-  }
-  out.addChar(0);
-  //printf("detab refIndent=%d\n",refIndent);
-  return out.get();
-}
-
 static const char * keywordToType(const char *keyword)
 {
   static const StringUnorderedSet flowKeywords({
@@ -275,7 +225,8 @@ void ClangTUParser::parse()
   p->numFiles = numUnsavedFiles;
   p->sources.resize(numUnsavedFiles);
   p->ufs.resize(numUnsavedFiles);
-  p->sources[0]      = detab(fileToString(fileName,filterSourceFiles,TRUE));
+  int refIndent = 0;
+  p->sources[0]      = detab(fileToString(fileName,filterSourceFiles,TRUE),refIndent);
   p->ufs[0].Filename = qstrdup(fileName.data());
   p->ufs[0].Contents = p->sources[0].data();
   p->ufs[0].Length   = p->sources[0].length();
@@ -286,7 +237,7 @@ void ClangTUParser::parse()
           ++it, i++)
   {
     p->fileMapping.insert({it->c_str(),static_cast<uint32_t>(i)});
-    p->sources[i]      = detab(fileToString(it->c_str(),filterSourceFiles,TRUE));
+    p->sources[i]      = detab(fileToString(it->c_str(),filterSourceFiles,TRUE),refIndent);
     p->ufs[i].Filename = qstrdup(it->c_str());
     p->ufs[i].Contents = p->sources[i].data();
     p->ufs[i].Length   = p->sources[i].length();

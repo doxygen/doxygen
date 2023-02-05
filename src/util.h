@@ -435,4 +435,6 @@ QCString getEncoding(const FileInfo &fi);
 
 inline QCString fixSpaces(const QCString &s) { return substitute(s," ","&#160;"); }
 
+QCString detab(const QCString &s,int &refIndent);
+
 #endif
