@@ -1233,12 +1233,7 @@ void convertCppComments(const BufStr &inBuf,BufStr &outBuf,const QCString &fileN
   clearCommentStack(yyscanner);
   yyextra->vhdl = FALSE;
 
-  if (Debug::isFlagSet(Debug::CommentCnv))
-  {
-    Debug::print(Debug::CommentCnv,0,"-----------\nCommentCnv: %s\n"
-                 "input=[\n%s]\n-----------\n",qPrint(fileName),yyextra->inBuf.data()
-                );
-  }
+  DebugLex debugLex(Debug::Lex_commentcnv,__FILE__, qPrint(fileName));
   yyextra->isFixedForm = FALSE;
   if (yyextra->lang==SrcLangExt_Fortran)
   {
