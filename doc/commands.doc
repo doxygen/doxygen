@@ -2635,9 +2635,11 @@ Commands for displaying examples
  Note also that the [block_id] markers should appear exactly twice in the
  source file.
 
- The `option` can either be `lineno` or `doc`.
- The `option` `lineno` can be used to enable line numbers for the included code if desired.
- The `option` `doc` can be used to treat the file as documentation rather than code.
+ - The `option` can either be `lineno`, `trimleft` or `doc`.
+ - The `option` `lineno` can be used to enable line numbers for the included code if desired.
+ - The `option` `trimleft` can be used to remove the common spacing in front of all lines
+   (also taking in account the setting of the \ref cfg_tab_size "TAB_SIZE" tag).
+ - The `option` `doc` can be used to treat the file as documentation rather than code.
 
  \note When using the `{doc}` option,
        some commands like \ref cmdcond "\\cond" and \ref cmdif "\\if" don't work with

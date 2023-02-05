@@ -75,6 +75,7 @@
 #include "textstream.h"
 #include "indexlist.h"
 #include "datetime.h"
+#include "markdown.h"
 
 #define ENABLE_TRACINGSUPPORT 0
 
@@ -6124,7 +6125,7 @@ bool copyFile(const QCString &src,const QCString &dest)
  *  Full lines are returned, excluding the lines on which the markers appear.
  *  \sa routine lineBlock
  */
-QCString extractBlock(const QCString &text,const QCString &marker)
+QCString extractBlock(const QCString &text,const QCString &marker, const bool trimLeft)
 {
   QCString result;
   int p=0,i=-1;
@@ -6163,7 +6164,42 @@ QCString extractBlock(const QCString &text,const QCString &marker)
     l2=lp;
   }
   //printf("text=[%s]\n",qPrint(text.mid(l1,l2-l1)));
-  return l2>l1 ? text.mid(l1,l2-l1) : QCString();
+  if  (l2>l1 && trimLeft)
+  {
+    QCString res = text.mid(l1,l2-l1);
+    Markdown md("",0,0);
+    int refIndent = 0;
+    res = md.detab(res,refIndent);
+    if (refIndent == 0) return res;
+    int ii = 0;
+    int size = res.length();
+    const char *data = res.data();
+    GrowBuf out;
+    out.clear();
+    out.reserve(size);
+    int cnt = 0;
+    while (ii<size)
+    {
+      char c = data[ii++];
+      switch(c)
+      {
+        case '\n':
+          out.addChar(c);
+          cnt=0;
+          break;
+        default:
+          if (cnt >= refIndent) out.addChar(c);
+          cnt++;
+          break;
+      }
+    }
+    out.addChar(0);
+    return out.get();
+  }
+  else
+  {
+    return l2>l1 ? text.mid(l1,l2-l1) : QCString();
+  }
 }
 
 /** Returns the line number of the line following the line with the marker.

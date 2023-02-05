@@ -281,6 +281,7 @@ void DocInclude::parse(DocNodeVariant *)
       parser()->readTextFileByName(m_file,m_text);
       break;
     case Snippet:
+    case SnippetTrimLeft:
     case SnipWithLines:
       parser()->readTextFileByName(m_file,m_text);
       // check here for the existence of the blockId inside the file, so we
@@ -3526,6 +3527,10 @@ void DocPara::handleInclude(DocNodeVariant *thisVariant,const QCString &cmdName,
     {
       t = DocInclude::SnippetDoc;
     }
+    else if (t==DocInclude::Snippet && contains("trimleft"))
+    {
+      t = DocInclude::SnippetTrimLeft;
+    }
     tok=parser()->tokenizer.lex();
     if (tok!=TK_WHITESPACE)
     {
@@ -3565,7 +3570,7 @@ void DocPara::handleInclude(DocNodeVariant *thisVariant,const QCString &cmdName,
   }
   QCString fileName = parser()->context.token->name;
   QCString blockId;
-  if (t==DocInclude::Snippet || t==DocInclude::SnipWithLines || t==DocInclude::SnippetDoc)
+  if (t==DocInclude::Snippet || t==DocInclude::SnipWithLines || t==DocInclude::SnippetDoc || t == DocInclude::SnippetTrimLeft)
   {
     if (fileName == "this") fileName=parser()->context.fileName;
     parser()->tokenizer.setStateSnippet();
