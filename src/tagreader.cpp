@@ -1701,7 +1701,7 @@ void parseTagFile(const std::shared_ptr<Entry> &root,const char *fullName)
   tagFileParser.setDocumentLocator(&parser);
   parser.parse(fullName,inputStr.data(),Debug::isFlagSet(Debug::Lex_xml),
                [&]() { DebugLex::print(Debug::Lex_xml,"Entering","libxml/xml.l",fullName); },
-               [&]() { DebugLex::print(Debug::Lex_xml,"Leaving", "libxml/xml.l",fullName); }
+               [&]() { DebugLex::print(Debug::Lex_xml,"Finished", "libxml/xml.l",fullName); }
               );
   tagFileParser.buildLists(root);
   tagFileParser.addIncludes();
