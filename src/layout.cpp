@@ -1575,7 +1575,7 @@ void LayoutDocManager::init()
   QCString layout_default = ResourceMgr::instance().getAsString(layoutFile);
   parser.parse(layoutFile,layout_default.data(),Debug::isFlagSet(Debug::Lex_xml),
                [&]() { DebugLex::print(Debug::Lex_xml,"Entering","libxml/xml.l",layoutFile); },
-               [&]() { DebugLex::print(Debug::Lex_xml,"Leaving", "libxml/xml.l",layoutFile); }
+               [&]() { DebugLex::print(Debug::Lex_xml,"Finished", "libxml/xml.l",layoutFile); }
               );
 }
 
@@ -1621,7 +1621,7 @@ void LayoutDocManager::parse(const QCString &fileName)
   layoutParser.setDocumentLocator(&parser);
   parser.parse(fileName.data(),fileToString(fileName).data(),Debug::isFlagSet(Debug::Lex_xml),
                [&]() { DebugLex::print(Debug::Lex_xml,"Entering","libxml/xml.l",qPrint(fileName)); },
-               [&]() { DebugLex::print(Debug::Lex_xml,"Leaving", "libxml/xml.l",qPrint(fileName)); }
+               [&]() { DebugLex::print(Debug::Lex_xml,"Finished", "libxml/xml.l",qPrint(fileName)); }
               );
 }
 
