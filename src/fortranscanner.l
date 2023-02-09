@@ -2307,7 +2307,7 @@ static void applyModifiers(Entry *ent, const SymbolModifiers& mdfs)
   if (mdfs.nonoverridable)
     ent->spec |= Entry::Final;
   if (mdfs.nopass)
-    ent->stat = TRUE;
+    ent->isStatic = TRUE;
   if (mdfs.deferred)
     ent->virt = Specifier::Pure;
 }
@@ -2649,7 +2649,7 @@ static void initEntry(yyscan_t yyscanner)
   }
   yyextra->current->mtype      = MethodTypes::Method;
   yyextra->current->virt       = Specifier::Normal;
-  yyextra->current->stat       = false;
+  yyextra->current->isStatic   = false;
   yyextra->current->lang       = SrcLangExt_Fortran;
   yyextra->commentScanner.initGroupInfo(yyextra->current.get());
 }

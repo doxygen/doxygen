@@ -3070,7 +3070,7 @@ static bool handleInternal(yyscan_t yyscanner,const QCString &, const StringVect
 static bool handleStatic(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yyextra->current->stat = TRUE;
+  yyextra->current->isStatic = TRUE;
   return FALSE;
 }
 

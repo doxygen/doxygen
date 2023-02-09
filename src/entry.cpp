@@ -58,7 +58,7 @@ Entry::Entry(const Entry &e)
   mtype       = e.mtype;
   spec        = e.spec;
   initLines   = e.initLines;
-  stat        = e.stat;
+  isStatic    = e.isStatic;
   localToc    = e.localToc;
   explicitExternal = e.explicitExternal;
   proto       = e.proto;
@@ -224,7 +224,7 @@ void Entry::reset()
   section = EMPTY_SEC;
   mtype   = MethodTypes::Method;
   virt    = Specifier::Normal;
-  stat    = false;
+  isStatic = false;
   proto   = false;
   explicitExternal = false;
   spec  = 0;
