@@ -280,26 +280,61 @@ RTFGenerator::RTFGenerator()
   : OutputGenerator(Config_getString(RTF_OUTPUT))
   , m_codeList(std::make_unique<OutputCodeList>())
 {
-  m_codeList->add<RTFCodeGenerator>(&m_t);
-  m_codeGen = m_codeList->get<RTFCodeGenerator>();
+  m_codeGen = m_codeList->add<RTFCodeGenerator>(&m_t);
 }
 
-RTFGenerator::RTFGenerator(const RTFGenerator &og)
-  : OutputGenerator(og)
-  , m_codeList(std::make_unique<OutputCodeList>())
+RTFGenerator::RTFGenerator(const RTFGenerator &og) : OutputGenerator(og.m_dir)
 {
-  m_codeList->add<RTFCodeGenerator>(&m_t);
-  m_codeGen = m_codeList->get<RTFCodeGenerator>();
+  m_codeList       = std::make_unique<OutputCodeList>(*og.m_codeList);
+  m_codeGen        = m_codeList->get<RTFCodeGenerator>();
+  m_codeGen->setTextStream(&m_t);
+  m_bstartedBody   = og.m_bstartedBody;
+  m_omitParagraph  = og.m_omitParagraph;
+  m_numCols        = og.m_numCols;
+  m_relPath        = og.m_relPath;
+  m_indentLevel    = og.m_indentLevel;
+  m_listItemInfo   = og.m_listItemInfo;
+}
+
+RTFGenerator &RTFGenerator::operator=(const RTFGenerator &og)
+{
+  if (this!=&og)
+  {
+    m_dir            = og.m_dir;
+    m_codeList       = std::make_unique<OutputCodeList>(*og.m_codeList);
+    m_codeGen        = m_codeList->get<RTFCodeGenerator>();
+    m_codeGen->setTextStream(&m_t);
+    m_bstartedBody   = og.m_bstartedBody;
+    m_omitParagraph  = og.m_omitParagraph;
+    m_numCols        = og.m_numCols;
+    m_relPath        = og.m_relPath;
+    m_indentLevel    = og.m_indentLevel;
+    m_listItemInfo   = og.m_listItemInfo;
+  }
+  return *this;
+}
+
+RTFGenerator::RTFGenerator(RTFGenerator &&og)
+  : OutputGenerator(std::move(og))
+{
+  m_codeList       = std::exchange(og.m_codeList,std::unique_ptr<OutputCodeList>());
+  m_codeGen        = m_codeList->get<RTFCodeGenerator>();
+  m_codeGen->setTextStream(&m_t);
+  m_bstartedBody   = std::exchange(og.m_bstartedBody,false);
+  m_omitParagraph  = std::exchange(og.m_omitParagraph,false);
+  m_numCols        = std::exchange(og.m_numCols,0);
+  m_relPath        = std::exchange(og.m_relPath,QCString());
+  m_indentLevel    = std::exchange(og.m_indentLevel,0);
+  m_listItemInfo   = std::exchange(og.m_listItemInfo,std::array<RTFListItemInfo,maxIndentLevels>());
+}
+
+RTFGenerator::~RTFGenerator()
+{
 }
 
 void RTFGenerator::addCodeGen(OutputCodeList &list)
 {
-  list.add(OutputCodeList::OutputCodeVariant(OutputCodeDeferRTF(m_codeGen)));
-}
-
-std::unique_ptr<OutputGenerator> RTFGenerator::clone() const
-{
-  return std::make_unique<RTFGenerator>(*this);
+  list.add(OutputCodeList::OutputCodeVariant(RTFCodeGeneratorDefer(m_codeGen)));
 }
 
 void RTFGenerator::setRelativePath(const QCString &path)

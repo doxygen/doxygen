@@ -60,6 +60,8 @@ class TextStream final
 
     TextStream(const TextStream &) = delete;
     TextStream &operator=(const TextStream &) = delete;
+    TextStream(TextStream &&) = default;
+    TextStream &operator=(TextStream &&) = delete;
 
     /** Sets or changes the std::ostream to write to.
      *  @note Any data already buffered will be flushed.

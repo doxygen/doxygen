@@ -193,27 +193,61 @@ ManGenerator::ManGenerator()
   : OutputGenerator(Config_getString(MAN_OUTPUT)+"/"+getSubdir())
   , m_codeList(std::make_unique<OutputCodeList>())
 {
-  m_codeList->add<ManCodeGenerator>(&m_t);
-  m_codeGen = m_codeList->get<ManCodeGenerator>();
+  m_codeGen = m_codeList->add<ManCodeGenerator>(&m_t);
 }
 
-ManGenerator::ManGenerator(const ManGenerator &og)
-  : OutputGenerator(og)
-  , m_codeList(std::make_unique<OutputCodeList>())
+ManGenerator::ManGenerator(const ManGenerator &og) : OutputGenerator(og.m_dir)
 {
-  m_codeList->add<ManCodeGenerator>(&m_t);
-  m_codeGen = m_codeList->get<ManCodeGenerator>();
+  m_codeList = std::make_unique<OutputCodeList>(*og.m_codeList);
+  m_codeGen      = m_codeList->get<ManCodeGenerator>();
+  m_codeGen->setTextStream(&m_t);
+  m_firstCol      = og.m_firstCol;
+  m_col           = og.m_col;
+  m_paragraph     = og.m_paragraph;
+  m_upperCase     = og.m_upperCase;
+  m_insideTabbing = og.m_insideTabbing;
+  m_inHeader      = og.m_inHeader;
+}
+
+ManGenerator &ManGenerator::operator=(const ManGenerator &og)
+{
+  if (this!=&og)
+  {
+    m_dir           = og.m_dir;
+    m_codeList = std::make_unique<OutputCodeList>(*og.m_codeList);
+    m_codeGen       = m_codeList->get<ManCodeGenerator>();
+    m_codeGen->setTextStream(&m_t);
+    m_firstCol      = og.m_firstCol;
+    m_col           = og.m_col;
+    m_paragraph     = og.m_paragraph;
+    m_upperCase     = og.m_upperCase;
+    m_insideTabbing = og.m_insideTabbing;
+    m_inHeader      = og.m_inHeader;
+  }
+  return *this;
+}
+
+ManGenerator::ManGenerator(ManGenerator &&og)
+  : OutputGenerator(std::move(og))
+{
+  m_codeList      = std::exchange(og.m_codeList,std::unique_ptr<OutputCodeList>());
+  m_codeGen       = m_codeList->get<ManCodeGenerator>();
+  m_codeGen->setTextStream(&m_t);
+  m_firstCol      = std::exchange(og.m_firstCol,true);
+  m_col           = std::exchange(og.m_col,0);
+  m_paragraph     = std::exchange(og.m_paragraph,true);
+  m_upperCase     = std::exchange(og.m_upperCase,false);
+  m_insideTabbing = std::exchange(og.m_insideTabbing,false);
+  m_inHeader      = std::exchange(og.m_inHeader,false);
+}
+
+ManGenerator::~ManGenerator()
+{
 }
 
 void ManGenerator::addCodeGen(OutputCodeList &list)
 {
-  list.add(OutputCodeList::OutputCodeVariant(OutputCodeDeferMan(m_codeGen)));
-}
-
-
-std::unique_ptr<OutputGenerator> ManGenerator::clone() const
-{
-  return std::make_unique<ManGenerator>(*this);
+  list.add(OutputCodeList::OutputCodeVariant(ManCodeGeneratorDefer(m_codeGen)));
 }
 
 void ManGenerator::init()

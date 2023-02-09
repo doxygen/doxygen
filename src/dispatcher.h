@@ -83,7 +83,9 @@ static constexpr void dispatch_call(V &&v,As &&... args)
   // fills in an unreachable branch for indices equal or higher than size.
   switch (v.index())
   {
-#define DISPATCH_AT(n) case n: detail::Dispatcher< ((n)<size) >::template case_<W,n>(v,std::forward<As>(args)...); break;
+#define DISPATCH_AT(n)            \
+    case n: detail::Dispatcher< ((n)<size) >::template case_<W,n>(v,std::forward<As>(args)...); break;
+
     DISPATCH_AT(0)
     DISPATCH_AT(1)
     DISPATCH_AT(2)
@@ -95,6 +97,16 @@ static constexpr void dispatch_call(V &&v,As &&... args)
     DISPATCH_AT(8)
     DISPATCH_AT(9)
     DISPATCH_AT(10)
+    DISPATCH_AT(11)
+    DISPATCH_AT(12)
+    DISPATCH_AT(13)
+    DISPATCH_AT(14)
+    DISPATCH_AT(15)
+    DISPATCH_AT(16)
+    DISPATCH_AT(17)
+    DISPATCH_AT(18)
+    DISPATCH_AT(19)
+
 #undef DISPATCH_AT
   }
 }

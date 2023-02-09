@@ -268,26 +268,58 @@ LatexGenerator::LatexGenerator()
   : OutputGenerator(Config_getString(LATEX_OUTPUT))
   , m_codeList(std::make_unique<OutputCodeList>())
 {
-  m_codeList->add<LatexCodeGenerator>(&m_t);
-  m_codeGen = m_codeList->get<LatexCodeGenerator>();
+  m_codeGen = m_codeList->add<LatexCodeGenerator>(&m_t);
 }
 
-LatexGenerator::LatexGenerator(const LatexGenerator &og)
-  : OutputGenerator(og)
-  , m_codeList(std::make_unique<OutputCodeList>())
+LatexGenerator::LatexGenerator(const LatexGenerator &og) : OutputGenerator(og.m_dir)
 {
-  m_codeList->add<LatexCodeGenerator>(&m_t);
-  m_codeGen = m_codeList->get<LatexCodeGenerator>();
+  m_codeList           = std::make_unique<OutputCodeList>(*og.m_codeList);
+  m_codeGen            = m_codeList->get<LatexCodeGenerator>();
+  m_codeGen->setTextStream(&m_t);
+  m_firstDescItem      = og.m_firstDescItem;
+  m_disableLinks       = og.m_disableLinks;
+  m_relPath            = og.m_relPath;
+  m_indent             = og.m_indent;
+  m_templateMemberItem = og.m_templateMemberItem;
+}
+
+LatexGenerator &LatexGenerator::operator=(const LatexGenerator &og)
+{
+  if (this!=&og)
+  {
+    m_dir                = og.m_dir;
+    m_codeList           = std::make_unique<OutputCodeList>(*og.m_codeList);
+    m_codeGen            = m_codeList->get<LatexCodeGenerator>();
+    m_codeGen->setTextStream(&m_t);
+    m_firstDescItem      = og.m_firstDescItem;
+    m_disableLinks       = og.m_disableLinks;
+    m_relPath            = og.m_relPath;
+    m_indent             = og.m_indent;
+    m_templateMemberItem = og.m_templateMemberItem;
+  }
+  return *this;
+}
+
+LatexGenerator::LatexGenerator(LatexGenerator &&og)
+  : OutputGenerator(std::move(og))
+{
+  m_codeList           = std::exchange(og.m_codeList,std::unique_ptr<OutputCodeList>());
+  m_codeGen            = m_codeList->get<LatexCodeGenerator>();
+  m_codeGen->setTextStream(&m_t);
+  m_firstDescItem      = std::exchange(og.m_firstDescItem,true);
+  m_disableLinks       = std::exchange(og.m_disableLinks,false);
+  m_relPath            = std::exchange(og.m_relPath,QCString());
+  m_indent             = std::exchange(og.m_indent,0);
+  m_templateMemberItem = std::exchange(og.m_templateMemberItem,false);
+}
+
+LatexGenerator::~LatexGenerator()
+{
 }
 
 void LatexGenerator::addCodeGen(OutputCodeList &list)
 {
-  list.add(OutputCodeList::OutputCodeVariant(OutputCodeDeferLatex(m_codeGen)));
-}
-
-std::unique_ptr<OutputGenerator> LatexGenerator::clone() const
-{
-  return std::make_unique<LatexGenerator>(*this);
+  list.add(OutputCodeList::OutputCodeVariant(LatexCodeGeneratorDefer(m_codeGen)));
 }
 
 static void writeLatexMakefile()
@@ -1650,7 +1682,7 @@ void LatexGenerator::endAnonTypeScope(int indent)
 
 void LatexGenerator::startMemberTemplateParams()
 {
-  if (templateMemberItem)
+  if (m_templateMemberItem)
   {
     m_t << "{\\footnotesize ";
   }
@@ -1658,7 +1690,7 @@ void LatexGenerator::startMemberTemplateParams()
 
 void LatexGenerator::endMemberTemplateParams(const QCString &,const QCString &)
 {
-  if (templateMemberItem)
+  if (m_templateMemberItem)
   {
     m_t << "}\\\\";
   }
@@ -1670,7 +1702,7 @@ void LatexGenerator::startMemberItem(const QCString &,MemberItemType type,const 
   if (!m_codeGen->insideTabbing())
   {
     m_t << "\\item \n";
-    templateMemberItem = (type == MemberItemType::Templated);
+    m_templateMemberItem = (type == MemberItemType::Templated);
   }
 }
 
@@ -1680,7 +1712,7 @@ void LatexGenerator::endMemberItem(MemberItemType)
   {
     m_t << "\\\\";
   }
-  templateMemberItem = FALSE;
+  m_templateMemberItem = FALSE;
   m_t << "\n";
 }
 

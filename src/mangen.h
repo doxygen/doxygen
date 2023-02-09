@@ -27,6 +27,7 @@ class ManCodeGenerator
 {
   public:
     ManCodeGenerator(TextStream *t);
+    void setTextStream(TextStream *t) { m_t = t; }
 
     OutputType type() const { return OutputType::Man; }
 
@@ -61,10 +62,11 @@ class ManGenerator : public OutputGenerator
 {
   public:
     ManGenerator();
-    ManGenerator(const ManGenerator &g);
-    ManGenerator &operator=(const ManGenerator &g) = delete;
-    virtual ~ManGenerator() = default;
-    virtual std::unique_ptr<OutputGenerator> clone() const;
+    ManGenerator(const ManGenerator &);
+    ManGenerator &operator=(const ManGenerator &);
+    ManGenerator(ManGenerator &&);
+    ManGenerator &operator=(ManGenerator &&) = delete;
+   ~ManGenerator();
 
     OutputType type() const { return OutputType::Man; }
 
@@ -78,6 +80,8 @@ class ManGenerator : public OutputGenerator
     void endFile();
     void clearBuffer();
 
+    void startPageDoc(const QCString &) {}
+    void endPageDoc() {}
     void startIndexSection(IndexSection) {}
     void endIndexSection(IndexSection) {}
     void writePageLink(const QCString &,bool) {}

@@ -18,6 +18,8 @@
 #ifndef RTFGEN_H
 #define RTFGEN_H
 
+#include <array>
+
 #include "config.h"
 #include "outputgen.h"
 
@@ -28,6 +30,7 @@ class RTFCodeGenerator
 {
   public:
     RTFCodeGenerator(TextStream *t);
+    void setTextStream(TextStream *t) { m_t = t; }
 
     OutputType type() const { return OutputType::RTF; }
     void codify(const QCString &text);
@@ -70,9 +73,10 @@ class RTFGenerator : public OutputGenerator
   public:
     RTFGenerator();
     RTFGenerator(const RTFGenerator &);
-    RTFGenerator &operator=(const RTFGenerator &) = delete;
-    virtual ~RTFGenerator() = default;
-    virtual std::unique_ptr<OutputGenerator> clone() const;
+    RTFGenerator &operator=(const RTFGenerator &);
+    RTFGenerator(RTFGenerator &&);
+    RTFGenerator &operator=(RTFGenerator &&) = delete;
+   ~RTFGenerator();
 
     static void init();
     void cleanup();
@@ -91,6 +95,8 @@ class RTFGenerator : public OutputGenerator
     void endFile();
     void clearBuffer();
 
+    void startPageDoc(const QCString &) {}
+    void endPageDoc() {}
     void startIndexSection(IndexSection);
     void endIndexSection(IndexSection);
     void writePageLink(const QCString &,bool);
@@ -326,7 +332,7 @@ class RTFGenerator : public OutputGenerator
       int number = 1;
       char type = '1';
     };
-    RTFListItemInfo m_listItemInfo[maxIndentLevels];
+    std::array<RTFListItemInfo,maxIndentLevels> m_listItemInfo;
     std::unique_ptr<OutputCodeList> m_codeList;
     RTFCodeGenerator *m_codeGen;
 };

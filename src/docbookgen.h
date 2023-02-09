@@ -14,6 +14,7 @@
 #define DOCBOOKGEN_H
 
 #include <memory>
+#include <array>
 
 #include "config.h"
 #include "outputgen.h"
@@ -47,6 +48,7 @@ class DocbookCodeGenerator
 {
   public:
     DocbookCodeGenerator(TextStream *t);
+    void setTextStream(TextStream *t) { m_t = t; }
 
     OutputType type() const { return OutputType::Docbook; }
 
@@ -79,24 +81,25 @@ class DocbookCodeGenerator
         const QCString &anchor,const QCString &name,
         const QCString &tooltip, bool);
     TextStream *m_t;
-    QCString m_refId;
-    QCString m_external;
-    int m_lineNumber = -1;
-    int m_col = 0;
-    bool m_insideCodeLine = false;
-    bool m_insideSpecialHL = false;
-    QCString m_relPath;
-    QCString m_sourceFileName;
+    QCString    m_refId;
+    QCString    m_external;
+    int         m_lineNumber = -1;
+    int         m_col = 0;
+    bool        m_insideCodeLine = false;
+    bool        m_insideSpecialHL = false;
+    QCString    m_relPath;
+    QCString    m_sourceFileName;
 };
 
 class DocbookGenerator : public OutputGenerator
 {
   public:
     DocbookGenerator();
-    DocbookGenerator(const DocbookGenerator &o);
-    DocbookGenerator &operator=(const DocbookGenerator &o) = delete;
-    virtual ~DocbookGenerator() = default;
-    virtual std::unique_ptr<OutputGenerator> clone() const;
+    DocbookGenerator(const DocbookGenerator &);
+    DocbookGenerator &operator=(const DocbookGenerator &);
+    DocbookGenerator(DocbookGenerator &&);
+    DocbookGenerator &operator=(DocbookGenerator &&) = delete;
+   ~DocbookGenerator();
 
     static void init();
     void cleanup();
@@ -322,8 +325,8 @@ private:
     bool m_denseText = false;
     bool m_inGroup = false;
     int  m_levelListItem = 0;
-    bool m_inListItem[20] = { false, };
-    bool m_inSimpleSect[20] = { false, };
+    std::array<bool,20> m_inListItem;
+    std::array<bool,20> m_inSimpleSect;
     bool m_descTable = false;
     bool m_simpleTable = false;
     int m_inLevel = -1;

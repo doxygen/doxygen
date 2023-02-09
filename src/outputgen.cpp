@@ -29,34 +29,6 @@ OutputGenerator::OutputGenerator(const QCString &dir) : m_t(nullptr), m_dir(dir)
   //printf("OutputGenerator::OutputGenerator()\n");
 }
 
-OutputGenerator::~OutputGenerator()
-{
-  //printf("OutputGenerator::~OutputGenerator()\n");
-}
-
-OutputGenerator::OutputGenerator(const OutputGenerator &og) : m_t(nullptr)
-{
-  m_dir = og.m_dir;
-  // we don't copy the other fields.
-  // after copying startPlainFile() should be called
-  if (og.m_t.stream()!=nullptr)
-  {
-    throw std::runtime_error("OutputGenerator copy constructor called while a file is processing");
-  }
-}
-
-OutputGenerator &OutputGenerator::operator=(const OutputGenerator &og)
-{
-  m_dir = og.m_dir;
-  // we don't copy the other fields.
-  // after assignment startPlainFile() should be called
-  if (og.m_t.stream()!=nullptr)
-  {
-    throw std::runtime_error("OutputGenerator assignment operator called while a file is processing");
-  }
-  return *this;
-}
-
 void OutputGenerator::startPlainFile(const QCString &name)
 {
   //printf("startPlainFile(%s)\n",qPrint(name));
@@ -85,44 +57,5 @@ QCString OutputGenerator::dir() const
 QCString OutputGenerator::fileName() const
 {
   return m_fileName;
-}
-
-void OutputGenerator::setEnabled(bool e)
-{
-  if (e && !m_genStack.empty())
-  {
-    m_active=m_genStack.top();
-  }
-  else
-  {
-    m_active=e;
-  }
-}
-
-bool OutputGenerator::isEnabled() const
-{
-  return m_active;
-}
-
-void OutputGenerator::pushGeneratorState()
-{
-  m_genStack.push(isEnabled());
-  //printf("%p:pushGeneratorState(%d) enabled=%d\n",this,genStack->count(),isEnabled());
-}
-
-void OutputGenerator::popGeneratorState()
-{
-  //printf("%p:popGeneratorState(%d) enabled=%d\n",this,genStack->count(),isEnabled());
-  if (!m_genStack.empty())
-  {
-    bool lb = m_genStack.top();
-    m_genStack.pop();
-    setEnabled(lb);
-  }
-}
-
-OutputGenerator *OutputGenerator::get(OutputType o)
-{
-  return (o==type()) ? this : 0;
 }
 

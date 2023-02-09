@@ -31,6 +31,7 @@ class LatexCodeGenerator
   public:
     LatexCodeGenerator(TextStream *t,const QCString &relPath,const QCString &sourceFile);
     LatexCodeGenerator(TextStream *t);
+    void setTextStream(TextStream *t) { m_t = t; }
 
     OutputType type() const { return OutputType::Latex; }
 
@@ -87,17 +88,17 @@ class LatexGenerator : public OutputGenerator
   public:
     LatexGenerator();
     LatexGenerator(const LatexGenerator &);
-    LatexGenerator &operator=(const LatexGenerator &) = delete;
-    virtual ~LatexGenerator() = default;
-    virtual std::unique_ptr<OutputGenerator> clone() const;
+    LatexGenerator &operator=(const LatexGenerator &);
+    LatexGenerator(LatexGenerator &&);
+    LatexGenerator &operator=(LatexGenerator &&) = delete;
+   ~LatexGenerator();
+    OutputType type() const { return OutputType::Latex; }
 
     static void init();
     void cleanup();
     static void writeStyleSheetFile(TextStream &t);
     static void writeHeaderFile(TextStream &t);
     static void writeFooterFile(TextStream &t);
-
-    virtual OutputType type() const { return OutputType::Latex; }
 
     void writeDoc(const IDocNodeAST *node,const Definition *ctx,const MemberDef *,int id);
 
@@ -107,6 +108,8 @@ class LatexGenerator : public OutputGenerator
     void endFile();
     void clearBuffer();
 
+    void startPageDoc(const QCString &) {}
+    void endPageDoc() {}
     void startIndexSection(IndexSection);
     void endIndexSection(IndexSection);
     void writePageLink(const QCString &,bool);
@@ -316,7 +319,7 @@ class LatexGenerator : public OutputGenerator
     bool m_disableLinks = false;
     QCString m_relPath;
     int m_indent = 0;
-    bool templateMemberItem = false;
+    bool m_templateMemberItem = false;
     std::unique_ptr<OutputCodeList> m_codeList;
     LatexCodeGenerator *m_codeGen;
 };

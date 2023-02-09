@@ -692,11 +692,13 @@ static QCString replaceVariables(const QCString &input)
 
 HtmlCodeGenerator::HtmlCodeGenerator(TextStream *t) : m_t(t)
 {
+  //printf("%p:HtmlCodeGenerator()\n",(void*)this);
 }
 
 HtmlCodeGenerator::HtmlCodeGenerator(TextStream *t,const QCString &relPath)
   : m_t(t), m_relPath(relPath)
 {
+  //printf("%p:HtmlCodeGenerator()\n",(void*)this);
 }
 
 void HtmlCodeGenerator::setRelativePath(const QCString &path)
@@ -1025,26 +1027,63 @@ HtmlGenerator::HtmlGenerator()
   : OutputGenerator(Config_getString(HTML_OUTPUT))
   , m_codeList(std::make_unique<OutputCodeList>())
 {
-  m_codeList->add<HtmlCodeGenerator>(&m_t);
-  m_codeGen = m_codeList->get<HtmlCodeGenerator>();
+  //printf("%p:HtmlGenerator()\n",(void*)this);
+  m_codeGen = m_codeList->add<HtmlCodeGenerator>(&m_t);
 }
 
-HtmlGenerator::HtmlGenerator(const HtmlGenerator &og)
-  : OutputGenerator(og)
-  , m_codeList(std::make_unique<OutputCodeList>())
+HtmlGenerator::HtmlGenerator(const HtmlGenerator &og) : OutputGenerator(og.m_dir)
 {
-  m_codeList->add<HtmlCodeGenerator>(&m_t);
-  m_codeGen = m_codeList->get<HtmlCodeGenerator>();
+  //printf("%p:HtmlGenerator(copy %p)\n",(void*)this,(void*)&og);
+  m_codeList     = std::make_unique<OutputCodeList>(*og.m_codeList);
+  m_codeGen      = m_codeList->get<HtmlCodeGenerator>();
+  m_codeGen->setTextStream(&m_t);
+  m_lastTitle    = og.m_lastTitle;
+  m_lastFile     = og.m_lastFile;
+  m_relPath      = og.m_relPath;
+  m_sectionCount = og.m_sectionCount;
+  m_emptySection = og.m_emptySection;
+}
+
+HtmlGenerator &HtmlGenerator::operator=(const HtmlGenerator &og)
+{
+  //printf("%p:HtmlGenerator(copy assign %p)\n",(void*)this,(void*)&og);
+  if (this!=&og)
+  {
+    m_dir          = og.m_dir;
+    m_codeList     = std::make_unique<OutputCodeList>(*og.m_codeList);
+    m_codeGen      = m_codeList->get<HtmlCodeGenerator>();
+    m_codeGen->setTextStream(&m_t);
+    m_lastTitle    = og.m_lastTitle;
+    m_lastFile     = og.m_lastFile;
+    m_relPath      = og.m_relPath;
+    m_sectionCount = og.m_sectionCount;
+    m_emptySection = og.m_emptySection;
+  }
+  return *this;
+}
+
+HtmlGenerator::HtmlGenerator(HtmlGenerator &&og)
+  : OutputGenerator(std::move(og))
+{
+  //printf("%p:HtmlGenerator(move %p)\n",(void*)this,(void*)&og);
+  m_codeList     = std::exchange(og.m_codeList,std::unique_ptr<OutputCodeList>());
+  m_codeGen      = m_codeList->get<HtmlCodeGenerator>();
+  m_codeGen->setTextStream(&m_t);
+  m_lastTitle    = std::exchange(og.m_lastTitle,QCString());
+  m_lastFile     = std::exchange(og.m_lastFile,QCString());
+  m_relPath      = std::exchange(og.m_relPath,QCString());
+  m_sectionCount = std::exchange(og.m_sectionCount,0);
+  m_emptySection = std::exchange(og.m_emptySection,false);
+}
+
+HtmlGenerator::~HtmlGenerator()
+{
+  //printf("%p:~HtmlGenerator()\n",(void*)this);
 }
 
 void HtmlGenerator::addCodeGen(OutputCodeList &list)
 {
-  list.add(OutputCodeList::OutputCodeVariant(OutputCodeDeferHtml(m_codeGen)));
-}
-
-std::unique_ptr<OutputGenerator> HtmlGenerator::clone() const
-{
-  return std::make_unique<HtmlGenerator>(*this);
+  list.add(OutputCodeList::OutputCodeVariant(HtmlCodeGeneratorDefer(m_codeGen)));
 }
 
 void HtmlGenerator::init()
@@ -1363,7 +1402,7 @@ void HtmlGenerator::startFile(const QCString &name,const QCString &,
   m_sectionCount=0;
 }
 
-void HtmlGenerator::writeSearchInfo(TextStream &t,const QCString &)
+void HtmlGenerator::writeSearchInfoStatic(TextStream &t,const QCString &)
 {
   bool searchEngine      = Config_getBool(SEARCHENGINE);
   bool serverBasedSearch = Config_getBool(SERVER_BASED_SEARCH);
@@ -1395,7 +1434,7 @@ void HtmlGenerator::writeSearchInfo(TextStream &t,const QCString &)
 
 void HtmlGenerator::writeSearchInfo()
 {
-  writeSearchInfo(m_t,m_relPath);
+  writeSearchInfoStatic(m_t,m_relPath);
 }
 
 
@@ -1726,10 +1765,10 @@ void HtmlGenerator::endSection(const QCString &,SectionType type)
 
 void HtmlGenerator::docify(const QCString &str)
 {
-  docify(str,FALSE);
+  docify_(str,FALSE);
 }
 
-void HtmlGenerator::docify(const QCString &str,bool inHtmlComment)
+void HtmlGenerator::docify_(const QCString &str,bool inHtmlComment)
 {
   if (!str.isEmpty())
   {

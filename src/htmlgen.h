@@ -27,6 +27,8 @@ class HtmlCodeGenerator
     HtmlCodeGenerator(TextStream *t,const QCString &relPath);
     HtmlCodeGenerator(TextStream *t);
 
+    void setTextStream(TextStream *t) { m_t = t; }
+
     OutputType type() const { return OutputType::Html; }
 
     void codify(const QCString &text);
@@ -68,19 +70,21 @@ class HtmlGenerator : public OutputGenerator
 {
   public:
     HtmlGenerator();
-    HtmlGenerator &operator=(const HtmlGenerator &g) = delete;
-    HtmlGenerator(const HtmlGenerator &g);
-    virtual ~HtmlGenerator() = default;
-    virtual std::unique_ptr<OutputGenerator> clone() const;
+    HtmlGenerator(const HtmlGenerator &);
+    HtmlGenerator &operator=(const HtmlGenerator &);
+    HtmlGenerator(HtmlGenerator &&);
+    HtmlGenerator &operator=(HtmlGenerator &&) = delete;
+   ~HtmlGenerator();
 
-    virtual OutputType type() const { return OutputType::Html; }
+    OutputType type() const { return OutputType::Html; }
+
     static void init();
     void cleanup();
     static void writeStyleSheetFile(TextStream &t);
     static void writeHeaderFile(TextStream &t, const QCString &cssname);
     static void writeFooterFile(TextStream &t);
     static void writeTabData();
-    static void writeSearchInfo(TextStream &t,const QCString &relPath);
+    static void writeSearchInfoStatic(TextStream &t,const QCString &relPath);
     static void writeSearchData(const QCString &dir);
     static void writeSearchPage();
     static void writeExternalSearchPage();
@@ -308,15 +312,15 @@ class HtmlGenerator : public OutputGenerator
 
   private:
     static void writePageFooter(TextStream &t,const QCString &,const QCString &,const QCString &);
-    QCString m_lastTitle;
-    QCString m_lastFile;
-    QCString m_relPath;
-    void docify(const QCString &text,bool inHtmlComment);
+    void docify_(const QCString &text,bool inHtmlComment);
 
-    int  m_sectionCount = 0;
-    bool m_emptySection = false;
+    QCString                        m_lastTitle;
+    QCString                        m_lastFile;
+    QCString                        m_relPath;
+    int                             m_sectionCount = 0;
+    bool                            m_emptySection = false;
     std::unique_ptr<OutputCodeList> m_codeList;
-    HtmlCodeGenerator *m_codeGen;
+    HtmlCodeGenerator              *m_codeGen = nullptr;
 };
 
 #endif

@@ -37,22 +37,14 @@ static AtomicInt g_outId;
 
 OutputList::OutputList()
 {
-  static_assert(std::is_copy_constructible_v<HtmlCodeGenerator> &&
-                std::is_copy_assignable_v<HtmlCodeGenerator>);
   newId();
   m_codeGenList.setId(m_id);
 }
 
-OutputList::OutputList(const OutputList &ol)
+OutputList::OutputList(const OutputList &ol) : m_outputGenList(ol.m_outputGenList)
 {
   m_id = ol.m_id;
-  m_codeGenList.setId(m_id);
-  for (const auto &og : ol.m_outputs)
-  {
-    auto docGen = og->clone();
-    docGen->addCodeGen(m_codeGenList);
-    m_outputs.emplace_back(std::move(docGen));
-  }
+  refreshCodeGenerators();
 }
 
 OutputList &OutputList::operator=(const OutputList &ol)
@@ -60,20 +52,20 @@ OutputList &OutputList::operator=(const OutputList &ol)
   if (this!=&ol)
   {
     m_id = ol.m_id;
-    m_codeGenList.setId(m_id);
-    for (const auto &og : ol.m_outputs)
-    {
-      auto docGen = og->clone();
-      docGen->addCodeGen(m_codeGenList);
-      m_outputs.emplace_back(std::move(docGen));
-    }
+    m_outputGenList = ol.m_outputGenList;
+    refreshCodeGenerators();
   }
   return *this;
 }
 
-OutputList::~OutputList()
+void OutputList::refreshCodeGenerators()
 {
-  //printf("OutputList::~OutputList()\n");
+  m_codeGenList.clear();
+  for (auto &e : m_outputGenList)
+  {
+    std::visit([&](auto &&gen) { gen.addCodeGen(m_codeGenList); },e.variant);
+  }
+  m_codeGenList.setId(m_id);
 }
 
 void OutputList::newId()
@@ -83,19 +75,19 @@ void OutputList::newId()
 
 void OutputList::syncEnabled()
 {
-  for (const auto &og : m_outputs)
+  for (const auto &e : m_outputGenList)
   {
     //printf("output %d isEnabled=%d\n",og->type(),og->isEnabled());
-    m_codeGenList.setEnabledFiltered(og->type(),og->isEnabled());
+    std::visit([&](auto &&gen) { m_codeGenList.setEnabledFiltered(gen.type(),e.enabled); },e.variant);
   }
 }
 
 void OutputList::disableAllBut(OutputType o)
 {
   //printf("disableAllBut(%d)\n",o);
-  for (const auto &og : m_outputs)
+  for (auto &e : m_outputGenList)
   {
-    if (og->type()!=o) og->setEnabled(false);
+    std::visit([&](auto &&gen) { if (gen.type()!=o) e.enabled = false; }, e.variant);
   }
   syncEnabled();
 }
@@ -103,9 +95,9 @@ void OutputList::disableAllBut(OutputType o)
 void OutputList::enableAll()
 {
   //printf("enableAll()\n");
-  for (const auto &og : m_outputs)
+  for (auto &e : m_outputGenList)
   {
-    og->setEnabled(true);
+    e.enabled = true;
   }
   syncEnabled();
 }
@@ -113,9 +105,9 @@ void OutputList::enableAll()
 void OutputList::disableAll()
 {
   //printf("enableAll()\n");
-  for (const auto &og : m_outputs)
+  for (auto &e : m_outputGenList)
   {
-    og->setEnabled(false);
+    e.enabled = false;
   }
   syncEnabled();
 }
@@ -123,9 +115,9 @@ void OutputList::disableAll()
 void OutputList::disable(OutputType o)
 {
   //printf("disable(%d)\n",o);
-  for (const auto &og : m_outputs)
+  for (auto &e : m_outputGenList)
   {
-    if (og->type()==o) og->setEnabled(false);
+    std::visit([&](auto &&gen) { if (gen.type()==o) e.enabled = false; }, e.variant);
   }
   syncEnabled();
 }
@@ -133,28 +125,33 @@ void OutputList::disable(OutputType o)
 void OutputList::enable(OutputType o)
 {
   //printf("enable(%d)\n",o);
-  for (const auto &og : m_outputs)
+  for (auto &e : m_outputGenList)
   {
-    if (og->type()==o) og->setEnabled(true);
+    std::visit([&](auto &&gen) { if (gen.type()==o) e.enabled = true; }, e.variant);
   }
   syncEnabled();
 }
 
 bool OutputList::isEnabled(OutputType o)
 {
-  for (const auto &og : m_outputs)
+  bool found   = false;
+  bool enabled = false;
+  for (const auto &e : m_outputGenList)
   {
-    if (og->type()==o) return og->isEnabled();
+    std::visit([&](auto &&gen) {
+        if (gen.type()==o) { enabled = e.enabled; found=true; }
+     }, e.variant);
+    if (found) return enabled;
   }
-  return false;
+  return enabled;
 }
 
 void OutputList::pushGeneratorState()
 {
   //printf("pushGeneratorState()\n");
-  for (const auto &og : m_outputs)
+  for (auto &e : m_outputGenList)
   {
-    og->pushGeneratorState();
+    e.enabledStack.push(e.enabled);
   }
   syncEnabled();
 }
@@ -162,9 +159,13 @@ void OutputList::pushGeneratorState()
 void OutputList::popGeneratorState()
 {
   //printf("popGeneratorState()\n");
-  for (const auto &og : m_outputs)
+  for (auto &e : m_outputGenList)
   {
-    og->popGeneratorState();
+    if (!e.enabledStack.empty())
+    {
+      e.enabled = e.enabledStack.top();
+      e.enabledStack.pop();
+    }
   }
   syncEnabled();
 }
@@ -176,14 +177,10 @@ void OutputList::generateDoc(const QCString &fileName,int startLine,
                   bool singleLine,bool linkFromIndex,
                   bool markdownSupport)
 {
-  int count=0;
   if (docStr.isEmpty()) return;
 
-  for (const auto &og : m_outputs)
-  {
-    if (og->isEnabled()) count++;
-  }
-
+  auto count=std::count_if(m_outputGenList.begin(),m_outputGenList.end(),
+                           [](const auto &e) { return e.enabled; });
   if (count>0)
   {
     // we want to validate irrespective of the number of output formats
@@ -203,43 +200,25 @@ void OutputList::startFile(const QCString &name,const QCString &manName,const QC
 {
   newId();
   m_codeGenList.setId(m_id);
-  forall(&OutputGenerator::startFile,name,manName,title,m_id);
-}
-
-void OutputList::writeDoc(const IDocNodeAST *ast,const Definition *ctx,const MemberDef *md)
-{
-  for (const auto &og : m_outputs)
-  {
-    //printf("og->printDoc(extension=%s)\n",
-    //    ctx?qPrint(ctx->getDefFileExtension()):"<null>");
-    if (og->isEnabled())
-    {
-      og->writeDoc(ast,ctx,md,m_id);
-    }
-  }
+  foreach<OutputGenIntf::startFile>(name,manName,title,m_id);
 }
 
 void OutputList::parseText(const QCString &textStr)
 {
-  int count=0;
-  for (const auto &og : m_outputs)
-  {
-    if (og->isEnabled()) count++;
-  }
 
-  // we want to validate irrespective of the number of output formats
-  // specified as:
-  // - when only XML format there should be warnings as well (XML has its own write routines)
-  // - no formats there should be warnings as well
-  auto parser { createDocParser() };
-  auto textNode { validatingParseText(*parser.get(), textStr) };
+  auto count=std::count_if(m_outputGenList.begin(),m_outputGenList.end(),
+                           [](const auto &e) { return e.enabled; });
 
-  if (textNode && count>0)
+  if (count>0)
   {
-    for (const auto &og : m_outputs)
-    {
-      if (og->isEnabled()) og->writeDoc(textNode.get(),0,0,m_id);
-    }
+    // we want to validate irrespective of the number of output formats
+    // specified as:
+    // - when only XML format there should be warnings as well (XML has its own write routines)
+    // - no formats there should be warnings as well
+    auto parser { createDocParser() };
+    auto ast { validatingParseText(*parser.get(), textStr) };
+
+    if (ast) writeDoc(ast.get(),0,0);
   }
 }
 

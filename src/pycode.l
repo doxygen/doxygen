@@ -1584,7 +1584,7 @@ void PythonCodeParser::parseCode(OutputCodeList &codeOutIntf,
   yyscan_t yyscanner = p->yyscanner;
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
 
-  //printf("***parseCode()\n");
+  //printf("***parseCode(%s)\n",qPrint(input));
 
   if (input.isEmpty()) return;
   DebugLex debugLex(Debug::Lex_pycode, __FILE__, fileDef ? qPrint(fileDef->fileName()): NULL);
