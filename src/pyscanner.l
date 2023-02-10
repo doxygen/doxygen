@@ -666,10 +666,6 @@ STARTDOCSYMS      "##"
 <FunctionDec>{
     {IDENTIFIER}            {
                               //found function name
-                              if (yyextra->current->type.isEmpty())
-                              {
-                                  yyextra->current->type = "def";
-                              }
                               yyextra->current->name = yytext;
                               yyextra->current->name = yyextra->current->name.stripWhiteSpace();
                               newFunction(yyscanner);
@@ -1120,7 +1116,7 @@ STARTDOCSYMS      "##"
                         yyextra->current->initializer << yytext;
                       }
    {INTNUMBER}        { // integer value
-                        if (yyextra->current-> type.isEmpty()) yyextra->current->type = "int";
+                        if (yyextra->current->type.isEmpty()) yyextra->current->type = "int";
                         yyextra->current->initializer << yytext;
                       }
    {FLOATNUMBER}      { // floating point value
