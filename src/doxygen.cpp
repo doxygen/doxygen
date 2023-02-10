@@ -7487,12 +7487,13 @@ static void addMembersToIndex()
 
 static void addToIndices()
 {
+  bool searchIndexExternal = Doxygen::searchIndex && Doxygen::searchIndex->kind()==SearchIndexIntf::External;
   for (const auto &cd : *Doxygen::classLinkedMap)
   {
     if (cd->isLinkableInProject())
     {
       Doxygen::indexList->addIndexItem(cd.get(),0);
-      if (Doxygen::searchIndex)
+      if (searchIndexExternal)
       {
         Doxygen::searchIndex->setCurrentDoc(cd.get(),cd->anchor(),FALSE);
         Doxygen::searchIndex->addWord(cd->localName(),TRUE);
@@ -7505,7 +7506,7 @@ static void addToIndices()
     if (cd->isLinkableInProject())
     {
       Doxygen::indexList->addIndexItem(cd.get(),0);
-      if (Doxygen::searchIndex)
+      if (searchIndexExternal)
       {
         Doxygen::searchIndex->setCurrentDoc(cd.get(),cd->anchor(),FALSE);
         Doxygen::searchIndex->addWord(cd->localName(),TRUE);
@@ -7518,7 +7519,7 @@ static void addToIndices()
     if (nd->isLinkableInProject())
     {
       Doxygen::indexList->addIndexItem(nd.get(),0);
-      if (Doxygen::searchIndex)
+      if (searchIndexExternal)
       {
         Doxygen::searchIndex->setCurrentDoc(nd.get(),nd->anchor(),FALSE);
         Doxygen::searchIndex->addWord(nd->localName(),TRUE);
@@ -7530,7 +7531,7 @@ static void addToIndices()
   {
     for (const auto &fd : *fn)
     {
-      if (Doxygen::searchIndex && fd->isLinkableInProject())
+      if (searchIndexExternal && fd->isLinkableInProject())
       {
         Doxygen::searchIndex->setCurrentDoc(fd.get(),fd->anchor(),FALSE);
         Doxygen::searchIndex->addWord(fd->localName(),TRUE);
@@ -7543,7 +7544,7 @@ static void addToIndices()
     if (gd->isLinkableInProject())
     {
       Doxygen::indexList->addIndexItem(gd.get(),0,QCString(),gd->groupTitle());
-      if (Doxygen::searchIndex)
+      if (searchIndexExternal)
       {
         Doxygen::searchIndex->setCurrentDoc(gd.get(),gd->anchor(),FALSE);
         std::string title = gd->groupTitle().str();
@@ -7568,9 +7569,9 @@ static void addToIndices()
     }
   }
 
-  auto addMemberToSearchIndex = [](const MemberDef *md)
+  auto addMemberToSearchIndex = [](const MemberDef *md,bool searchIndexExternal)
   {
-    if (Doxygen::searchIndex)
+    if (searchIndexExternal)
     {
       Doxygen::searchIndex->setCurrentDoc(md,md->anchor(),FALSE);
       QCString ln=md->localName();
@@ -7601,21 +7602,21 @@ static void addToIndices()
     return scope;
   };
 
-  auto addMemberToIndices = [addMemberToSearchIndex,getScope](const MemberDef *md)
+  auto addMemberToIndices = [addMemberToSearchIndex,getScope](const MemberDef *md,bool searchIndexExternal)
   {
     if (md->isLinkableInProject())
     {
       if (!(md->isEnumerate() && md->isAnonymous()))
       {
         Doxygen::indexList->addIndexItem(getScope(md),md);
-        addMemberToSearchIndex(md);
+        addMemberToSearchIndex(md,searchIndexExternal);
       }
       if (md->isEnumerate())
       {
         for (const auto &fmd : md->enumFieldList())
         {
           Doxygen::indexList->addIndexItem(getScope(fmd),fmd);
-          addMemberToSearchIndex(fmd);
+          addMemberToSearchIndex(fmd,searchIndexExternal);
         }
       }
     }
@@ -7627,7 +7628,7 @@ static void addToIndices()
     // for each member definition
     for (const auto &md : *mn)
     {
-      addMemberToIndices(md.get());
+      addMemberToIndices(md.get(),searchIndexExternal);
     }
   }
   // for each file/namespace function name
@@ -7636,7 +7637,7 @@ static void addToIndices()
     // for each member definition
     for (const auto &md : *mn)
     {
-      addMemberToIndices(md.get());
+      addMemberToIndices(md.get(),searchIndexExternal);
     }
   }
 }
