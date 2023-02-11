@@ -156,7 +156,7 @@ function SearchBox(name, resultsPath, extension)
 
   this.OnSearchSelectHide = function()
   {
-    this.hideTimeout = setTimeout(this.name +".CloseSelectionWindow()",
+    this.hideTimeout = setTimeout(this.CloseSelectionWindow.bind(this),
                                   this.closeSelectionTimeout);
   }
 
@@ -211,7 +211,7 @@ function SearchBox(name, resultsPath, extension)
       if (searchValue != "") // non-empty search
       {
         // set timer for search update
-        this.keyTimeout = setTimeout(this.name + '.Search()',
+        this.keyTimeout = setTimeout(this.Search.bind(this),
                                      this.keyTimeoutLength);
       }
       else // empty search field
