@@ -325,8 +325,8 @@ private:
     bool m_denseText = false;
     bool m_inGroup = false;
     int  m_levelListItem = 0;
-    std::array<bool,20> m_inListItem;
-    std::array<bool,20> m_inSimpleSect;
+    std::array<bool,20> m_inListItem = { false, };
+    std::array<bool,20> m_inSimpleSect = { false, };
     bool m_descTable = false;
     bool m_simpleTable = false;
     int m_inLevel = -1;

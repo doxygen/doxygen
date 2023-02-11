@@ -87,7 +87,7 @@ void OutputList::disableAllBut(OutputType o)
   //printf("disableAllBut(%d)\n",o);
   for (auto &e : m_outputGenList)
   {
-    std::visit([&](auto &&gen) { if (gen.type()!=o) e.enabled = false; }, e.variant);
+    std::visit([&](auto &&gen) { if (gen.type()!=o) e.setEnabled(false); }, e.variant);
   }
   syncEnabled();
 }
@@ -97,7 +97,7 @@ void OutputList::enableAll()
   //printf("enableAll()\n");
   for (auto &e : m_outputGenList)
   {
-    e.enabled = true;
+    e.setEnabled(true);
   }
   syncEnabled();
 }
@@ -107,7 +107,7 @@ void OutputList::disableAll()
   //printf("enableAll()\n");
   for (auto &e : m_outputGenList)
   {
-    e.enabled = false;
+    e.setEnabled(false);
   }
   syncEnabled();
 }
@@ -117,7 +117,7 @@ void OutputList::disable(OutputType o)
   //printf("disable(%d)\n",o);
   for (auto &e : m_outputGenList)
   {
-    std::visit([&](auto &&gen) { if (gen.type()==o) e.enabled = false; }, e.variant);
+    std::visit([&](auto &&gen) { if (gen.type()==o) e.setEnabled(false); }, e.variant);
   }
   syncEnabled();
 }
@@ -127,7 +127,7 @@ void OutputList::enable(OutputType o)
   //printf("enable(%d)\n",o);
   for (auto &e : m_outputGenList)
   {
-    std::visit([&](auto &&gen) { if (gen.type()==o) e.enabled = true; }, e.variant);
+    std::visit([&](auto &&gen) { if (gen.type()==o) e.setEnabled(true); }, e.variant);
   }
   syncEnabled();
 }

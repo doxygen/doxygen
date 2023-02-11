@@ -935,6 +935,7 @@ class OutputList
     {
       explicit OutputGenElem(OutputGenVariant &&v) : variant(std::move(v)) {}
       OutputGenVariant variant;
+      void setEnabled(bool e) { enabled = e && !enabledStack.empty() ? enabledStack.top() : e; }
       bool enabled = true;
       std::stack<bool> enabledStack;
     };
