@@ -3277,6 +3277,13 @@ NONLopt [^\n]*
                                             *yyextra->pCopyRoundGString << yytext;
                                           }
                                         }
+<GCopyRound>"@\""                       {
+                                          if (!yyextra->insideCS) REJECT;
+                                          *yyextra->pCopyRoundGString << yytext;
+                                           yyextra->lastSkipVerbStringContext=YY_START;
+                                           yyextra->pSkipVerbString=yyextra->pCopyRoundGString;
+                                           BEGIN(SkipVerbString);
+                                        }
 <GCopyRound>[^"'()\n\/,]+               {
                                           *yyextra->pCopyRoundGString << yytext;
                                         }
@@ -3904,7 +3911,7 @@ NONLopt [^\n]*
                                           yyextra->current->program << yytext ;
                                         }
   /* Interpolated string C# */
-<CopyGString,SkipString,SkipCurly,ReadBody,ReadNSBody,ReadBodyIntf,FindMembers,FindMemberName>$\"   { if (!yyextra->insideCS) REJECT
+<SkipCurly,ReadBody,ReadNSBody,ReadBodyIntf,FindMembers,FindMemberName>$\"   { if (!yyextra->insideCS) REJECT
                                           yyextra->current->program << yytext ;
                                           yyextra->pSkipInterpString = &yyextra->current->program;
                                           yyextra->lastSkipInterpStringContext=YY_START;
