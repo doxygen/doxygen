@@ -1223,6 +1223,10 @@ void DefinitionImpl::addSourceReferencedBy(MemberDef *md)
     {
       name.prepend(scope+"::");
     }
+    else if (md->isStatic() && md->getFileDef())
+    {
+      name.prepend(md->getFileDef()->name()+":");
+    }
 
     m_impl->sourceRefByDict.insert({name.str(),md});
   }
@@ -1238,6 +1242,10 @@ void DefinitionImpl::addSourceReferences(MemberDef *md)
     if (!scope.isEmpty())
     {
       name.prepend(scope+"::");
+    }
+    else if (md->isStatic() && md->getFileDef())
+    {
+      name.prepend(md->getFileDef()->name()+":");
     }
 
     m_impl->sourceRefsDict.insert({name.str(),md});
