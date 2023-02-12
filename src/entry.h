@@ -247,7 +247,7 @@ class Entry
     MethodTypes mtype;        //!< signal, slot, (dcop) method, or property?
     uint64_t spec;              //!< class/member specifiers
     int  initLines;           //!< define/variable initializer lines to show
-    bool stat;                //!< static ?
+    bool isStatic;            //!< static ?
     bool explicitExternal;    //!< explicitly defined as external?
     bool proto;               //!< prototype ?
     bool subGrouping;         //!< automatically group class members?
