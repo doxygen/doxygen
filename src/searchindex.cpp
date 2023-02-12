@@ -154,14 +154,15 @@ void SearchIndex::setCurrentDoc(const Definition *ctx,const QCString &anchor,boo
   }
 
   auto it = m_url2IdMap.find(baseUrl.str());
-  if (it == m_url2IdMap.end())
+  if (it == m_url2IdMap.end()) // new entry
   {
-    ++m_urlIndex;
+    m_urlIndex = m_urlMaxIndex++;
     m_url2IdMap.insert(std::make_pair(baseUrl.str(),m_urlIndex));
     m_urls.insert(std::make_pair(m_urlIndex,URL(name,url)));
   }
-  else
+  else // existing entry
   {
+    m_urlIndex=it->second;
     m_urls.insert(std::make_pair(it->second,URL(name,url)));
   }
 }
