@@ -82,7 +82,7 @@ struct pyscannerYY_state
   int                     yyLineNr = 1 ;
   QCString                fileName;
   MethodTypes             mtype = MethodTypes::Method;
-  bool                    stat = FALSE;
+  bool                    isStatic = FALSE;
   Specifier               virt = Specifier::Normal;
   int                     docBlockContext = 0;
   QCString                docBlock;
@@ -349,7 +349,7 @@ STARTDOCSYMS      "##"
                         BEGIN( DoubleQuoteString );
                       }
     "@staticmethod"  {
-                        yyextra->stat=TRUE;
+                        yyextra->isStatic=TRUE;
                       }
     "@"{SCOPE}{CALL}? { // decorator
                         lineCount(yyscanner);
@@ -1519,7 +1519,7 @@ static void initParser(yyscan_t yyscanner)
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yyextra->protection = Protection::Public;
   yyextra->mtype = MethodTypes::Method;
-  yyextra->stat = FALSE;
+  yyextra->isStatic = FALSE;
   yyextra->virt = Specifier::Normal;
   yyextra->previous = 0;
   yyextra->packageCommentAllowed = TRUE;
@@ -1532,10 +1532,10 @@ static void initEntry(yyscan_t yyscanner)
   yyextra->current->protection = yyextra->protection ;
   yyextra->current->mtype      = yyextra->mtype;
   yyextra->current->virt       = yyextra->virt;
-  yyextra->current->stat       = yyextra->stat;
+  yyextra->current->isStatic   = yyextra->isStatic;
   yyextra->current->lang       = SrcLangExt_Python;
   yyextra->commentScanner.initGroupInfo(yyextra->current.get());
-  yyextra->stat = FALSE;
+  yyextra->isStatic = FALSE;
 }
 
 static void newEntry(yyscan_t yyscanner)
@@ -1561,7 +1561,7 @@ static void newVariable(yyscan_t yyscanner)
   }
   if (yyextra->current_root->section&Entry::COMPOUND_MASK) // mark as class variable
   {
-    yyextra->current->stat = TRUE;
+    yyextra->current->isStatic = TRUE;
   }
   newEntry(yyscanner);
 }
@@ -1807,14 +1807,14 @@ static void searchFoundDef(yyscan_t yyscanner)
   yyextra->current->section = Entry::FUNCTION_SEC;
   yyextra->current->lang = SrcLangExt_Python;
   yyextra->current->virt = Specifier::Normal;
-  yyextra->current->stat = yyextra->stat;
+  yyextra->current->isStatic = yyextra->isStatic;
   yyextra->current->mtype = yyextra->mtype = MethodTypes::Method;
   yyextra->current->type.resize(0);
   yyextra->current->name.resize(0);
   yyextra->current->args.resize(0);
   yyextra->current->argList.clear();
   yyextra->packageCommentAllowed = FALSE;
-  yyextra->stat=FALSE;
+  yyextra->isStatic=FALSE;
   //printf("searchFoundDef at=%d\n",yyextra->yyLineNr);
 }
 
@@ -1897,7 +1897,7 @@ static void parseMain(yyscan_t yyscanner, const QCString &fileName,const char *f
 
   yyextra->protection    = Protection::Public;
   yyextra->mtype         = MethodTypes::Method;
-  yyextra->stat          = false;
+  yyextra->isStatic      = false;
   yyextra->virt          = Specifier::Normal;
   yyextra->current_root  = rt;
   yyextra->specialBlock  = false;

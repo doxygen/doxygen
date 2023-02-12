@@ -2506,7 +2506,7 @@ void VhdlDocGen::computeVhdlComponentRelations()
 
   for (const auto &cur : getVhdlInstList())
   {
-    if (cur->stat ) //  was bind
+    if (cur->isStatic ) //  was bind
     {
       continue;
     }
@@ -2581,7 +2581,7 @@ ferr:
       n1,uu,uu, QCString(),
       Protection::Public,
       Specifier::Normal,
-      cur->stat,
+      cur->isStatic,
       Relationship::Member,
       MemberType_Variable,
       ArgumentList(),

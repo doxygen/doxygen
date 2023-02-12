@@ -1334,7 +1334,7 @@ void TagFileParser::buildMemberList(const std::shared_ptr<Entry> &ce,const std::
     }
     me->protection = tmi.prot;
     me->virt       = tmi.virt;
-    me->stat       = tmi.isStatic;
+    me->isStatic   = tmi.isStatic;
     me->fileName   = ce->fileName;
     me->id         = tmi.clangId;
     me->startLine  = tmi.lineNr;
