@@ -1227,6 +1227,10 @@ void DefinitionImpl::addSourceReferencedBy(MemberDef *md)
     {
       name.prepend(md->getFileDef()->name()+":");
     }
+    if (md->isCallable())
+    {
+      name.append(md->argsString());
+    }
 
     m_impl->sourceRefByDict.insert({name.str(),md});
   }
@@ -1246,6 +1250,10 @@ void DefinitionImpl::addSourceReferences(MemberDef *md)
     else if (md->isStatic() && md->getFileDef())
     {
       name.prepend(md->getFileDef()->name()+":");
+    }
+    if (md->isCallable())
+    {
+      name.append(md->argsString());
     }
 
     m_impl->sourceRefsDict.insert({name.str(),md});
