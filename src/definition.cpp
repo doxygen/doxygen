@@ -36,6 +36,7 @@
 #include "utf8.h"
 #include "indexlist.h"
 #include "fileinfo.h"
+#include "markdown.h"
 
 //-----------------------------------------------------------------------------------------
 
@@ -400,7 +401,7 @@ void DefinitionImpl::writeDocAnchorsToTagFile(TextStream &tagFile) const
     //printf("%s: writeDocAnchorsToTagFile(%d)\n",qPrint(name()),m_impl->sectionRef.size());
     for (const SectionInfo *si : m_impl->sectionRefs)
     {
-      if (!si->generated() && si->ref().isEmpty() && !si->label().startsWith("autotoc_md"))
+      if (!si->generated() && si->ref().isEmpty() && !set_contains(Markdown::ids(), si->label()))
       {
         //printf("write an entry!\n");
         if (m_impl->def->definitionType()==Definition::TypeMember) tagFile << "  ";
