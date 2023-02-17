@@ -1435,6 +1435,16 @@ void LatexDocVisitor::operator()(const DocHtmlDetails &d)
   }
 }
 
+void LatexDocVisitor::operator()(const DocHtmlPicture &p)
+{
+  if (m_hide) return;
+  visitChildren(p);
+}
+
+void LatexDocVisitor::operator()(const DocHtmlSource &p)
+{
+}
+
 void LatexDocVisitor::operator()(const DocHtmlHeader &header)
 {
   if (m_hide) return;

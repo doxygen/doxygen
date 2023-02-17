@@ -53,6 +53,7 @@ class HtmlDocVisitor : public DocVisitor
     void operator()(const DocSimpleSectSep &);
     void operator()(const DocCite &);
     void operator()(const DocSeparator &);
+    void operator()(const DocHtmlSource &);
 
     //--------------------------------------
     // visitor functions for compound nodes
@@ -97,6 +98,7 @@ class HtmlDocVisitor : public DocVisitor
     void operator()(const DocHtmlBlockQuote &);
     void operator()(const DocVhdlFlow &);
     void operator()(const DocParBlock &);
+    void operator()(const DocHtmlPicture &);
 
   private:
 

@@ -1653,6 +1653,14 @@ void HtmlDocVisitor::operator()(const DocHtmlDetails &d)
   forceStartParagraph(d);
 }
 
+void HtmlDocVisitor::operator()(const DocHtmlPicture &d)
+{
+  if (m_hide) return;
+  m_t << "<picture " << htmlAttribsToString(d.attribs()) << ">\n";
+  visitChildren(d);
+  m_t << "</picture>\n";
+}
+
 void HtmlDocVisitor::operator()(const DocHtmlHeader &header)
 {
   if (m_hide) return;
@@ -1661,6 +1669,12 @@ void HtmlDocVisitor::operator()(const DocHtmlHeader &header)
   visitChildren(header);
   m_t << "</h" << header.level() << ">\n";
   forceStartParagraph(header);
+}
+
+void HtmlDocVisitor::operator()(const DocHtmlSource &d)
+{
+  if (m_hide) return;
+  m_t << "<source " << htmlAttribsToString(d.attribs()) << " />\n";
 }
 
 void HtmlDocVisitor::operator()(const DocImage &img)

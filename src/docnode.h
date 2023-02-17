@@ -48,7 +48,7 @@ class DocParser;
 /* 40 */  DN(DocSimpleSect)     DN_SEP DN(DocSimpleSectSep) DN_SEP DN(DocParamSect)      DN_SEP DN(DocPara)         DN_SEP DN(DocParamList)   DN_SEP   \
 /* 45 */  DN(DocSimpleListItem) DN_SEP DN(DocHtmlListItem)  DN_SEP DN(DocHtmlDescData)   DN_SEP DN(DocHtmlCell)     DN_SEP DN(DocHtmlCaption) DN_SEP   \
 /* 50 */  DN(DocHtmlRow)        DN_SEP DN(DocHtmlTable)     DN_SEP DN(DocHtmlBlockQuote) DN_SEP DN(DocText)         DN_SEP DN(DocRoot)        DN_SEP   \
-/* 55 */  DN(DocHtmlDetails)    DN_SEP DN(DocHtmlSummary)                                                                                              \
+/* 55 */  DN(DocHtmlDetails)    DN_SEP DN(DocHtmlSummary)   DN_SEP DN(DocHtmlPicture)    DN_SEP DN(DocHtmlSource)                                      \
 
 // forward declarations
 #define DN(x) class x;
@@ -538,6 +538,19 @@ class DocIndexEntry : public DocNode
     const MemberDef  *m_member = 0;
 };
 
+/** Node Html source */
+class DocHtmlSource : public DocNode
+{
+  public:
+    DocHtmlSource(DocParser *parser,DocNodeVariant *parent,const HtmlAttribList &attribs) :
+       DocNode(parser,parent), m_attribs(attribs) {}
+
+    const HtmlAttribList &attribs() const { return m_attribs; }
+
+  private:
+    HtmlAttribList m_attribs;
+};
+
 //-----------------------------------------------------------------------
 
 /** Node representing an auto List */
@@ -824,6 +837,19 @@ class DocHtmlDetails : public DocCompoundNode
   private:
     HtmlAttribList m_attribs;
     std::unique_ptr<DocNodeVariant> m_summary;
+};
+
+/** Node Html picture */
+class DocHtmlPicture : public DocCompoundNode
+{
+  public:
+    DocHtmlPicture(DocParser *parser,DocNodeVariant *parent,const HtmlAttribList &attribs) :
+       DocCompoundNode(parser,parent), m_attribs(attribs) {}
+    const HtmlAttribList &attribs() const { return m_attribs; }
+    int parse(DocNodeVariant*);
+
+  private:
+    HtmlAttribList m_attribs;
 };
 
 /** Node Html heading */

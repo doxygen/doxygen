@@ -1491,6 +1491,10 @@ reparsetoken:
             if (!context.token->endTag)
               handleImg(parent,children,context.token->attribs);
 	    break;
+          case HTML_PICTURE:
+            if (!context.token->endTag)
+              handleImg(parent,children,context.token->attribs);
+	    break;
           default:
             return FALSE;
             break;

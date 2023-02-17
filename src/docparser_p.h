@@ -246,5 +246,16 @@ inline bool insideDetails(const DocNodeVariant *n)
   return FALSE;
 }
 
+//---------------------------------------------------------------------------
+
+inline bool insidePicture(const DocNodeVariant *n)
+{
+  while (n)
+  {
+    if (std::holds_alternative<DocHtmlPicture>(*n)) return TRUE;
+    n=parent(n);
+  }
+  return FALSE;
+}
 
 #endif
