@@ -6343,9 +6343,12 @@ static void findMember(const Entry *root,
       for (const auto &imd : *mn)
       {
         MemberDefMutable *md = toMemberDefMutable(imd.get());
-        if (md && md->isEnumerate() && md->isStrong())
+        Definition *mdScope = md->getOuterScope();
+        if (md && md->isEnumerate() && md->isStrong() && mdScope &&
+            // need filter for the correct scope, see issue #9668
+            ((namespaceName.isEmpty() && mdScope==Doxygen::globalScope) || (mdScope->name()==namespaceName)))
         {
-          AUTO_TRACE_ADD("'{}' is a strong enum!",md->name());
+          AUTO_TRACE_ADD("'{}' is a strong enum! (namespace={} md->getOuterScope()->name()={})",md->name(),namespaceName,md->getOuterScope()->name());
           strongEnum = true;
           // pass the scope name name as a 'namespace' to the findGlobalMember function
           if (!namespaceName.isEmpty())
