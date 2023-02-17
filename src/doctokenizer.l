@@ -383,7 +383,9 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
 %x St_Link
 %x St_Cite
 %x St_Ref
+%x St_IRef
 %x St_Ref2
+%x St_IRef2
 %x St_IntRef
 %x St_Text
 %x St_SkipTitle
@@ -1139,6 +1141,25 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
 <St_Ref>.              { // any other character
                          unput(*yytext);
                          return 0;
+                       }
+<St_IRef>{WS}*"\""     { // white space following by quoted string
+                         lineCount(yytext,yyleng);
+                         BEGIN(St_IRef2);
+                       }
+<St_IRef>.             { // any other character
+                         unput(*yytext);
+                         return 0;
+                       }
+<St_IRef2>"\\\""       { 
+                         yyextra->token->name += yytext;
+                       }
+<St_IRef2>"\""{WS}*"\""{WS}* { 
+                         lineCount(yytext,yyleng);
+                         BEGIN(St_Ref2);
+                         return TK_WORD;
+                       }
+<St_IRef2>.            { 
+                         yyextra->token->name += *yytext;
                        }
 <St_IntRef>[A-Z_a-z0-9.:/#\-\+\(\)]+ {
                          yyextra->token->name = yytext;
@@ -2003,6 +2024,14 @@ void DocTokenizer::setStateRef()
   yyscan_t yyscanner = p->yyscanner;
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   BEGIN(St_Ref);
+}
+
+void DocTokenizer::setStateIRef()
+{
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->token->name = "";
+  BEGIN(St_IRef);
 }
 
 void DocTokenizer::setStateInternalRef()

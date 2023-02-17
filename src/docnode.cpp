@@ -2126,6 +2126,7 @@ int DocHtmlDescTitle::parse(DocNodeVariant *thisVariant)
             switch (Mappers::cmdMapper->map(cmdName))
             {
               case CMD_REF:
+              case CMD_IREF:
                 {
                   tok=parser()->tokenizer.lex();
                   if (tok!=TK_WHITESPACE)
@@ -3463,7 +3464,7 @@ void DocPara::handleLink(DocNodeVariant *thisVariant,const QCString &cmdName,boo
   }
 }
 
-void DocPara::handleRef(DocNodeVariant *thisVariant,const QCString &cmdName)
+void DocPara::handleRef(DocNodeVariant *thisVariant,const QCString &cmdName,const int cmdId)
 {
   AUTO_TRACE("cmdName={}",cmdName);
   QCString saveCmdName = cmdName;
@@ -3475,7 +3476,10 @@ void DocPara::handleRef(DocNodeVariant *thisVariant,const QCString &cmdName)
         qPrint(saveCmdName));
     return;
   }
-  parser()->tokenizer.setStateRef();
+  if (cmdId == CMD_IREF)
+    parser()->tokenizer.setStateIRef();
+  else
+    parser()->tokenizer.setStateRef();
   tok=parser()->tokenizer.lex(); // get the reference id
   if (tok!=TK_WORD)
   {
@@ -4349,8 +4353,9 @@ int DocPara::handleCommand(DocNodeVariant *thisVariant,const QCString &cmdName, 
       handleEmoji(thisVariant);
       break;
     case CMD_REF: // fall through
+    case CMD_IREF: // fall through
     case CMD_SUBPAGE:
-      handleRef(thisVariant,cmdName);
+      handleRef(thisVariant,cmdName,cmdId);
       break;
     case CMD_SECREFLIST:
       {

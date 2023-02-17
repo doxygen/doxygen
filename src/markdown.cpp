@@ -1395,7 +1395,7 @@ int Markdown::processLink(const char *data,int offset,int size)
     {
       if (lp==-1) // link to markdown page
       {
-        m_out.addStr("@ref ");
+        m_out.addStr("@iref ");
         if (!(Portable::isAbsolutePath(link) || isURL(link)))
         {
           FileInfo forg(link.str());
@@ -1415,7 +1415,7 @@ int Markdown::processLink(const char *data,int offset,int size)
           }
         }
       }
-      m_out.addStr(link);
+      m_out.addStr(link.quoted(true));
       m_out.addStr(" \"");
       if (explicitTitle && !title.isEmpty())
       {

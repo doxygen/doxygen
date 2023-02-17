@@ -1058,7 +1058,7 @@ class DocPara : public DocCompoundNode
     void handleLink(DocNodeVariant *thisVariant,const QCString &cmdName,bool isJavaLink);
     void handleCite(DocNodeVariant *thisVariant);
     void handleEmoji(DocNodeVariant *thisVariant);
-    void handleRef(DocNodeVariant *thisVariant,const QCString &cmdName);
+    void handleRef(DocNodeVariant *thisVariant,const QCString &cmdName,const int cmdId);
     void handleSection(DocNodeVariant *thisVariant,const QCString &cmdName);
     void handleInheritDoc(DocNodeVariant *thisVariant);
     void handleVhdlFlow(DocNodeVariant *thisVariant);

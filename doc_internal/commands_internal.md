@@ -12,6 +12,7 @@ and the version in which they were introduced.
 \refitem cmdiline \\iline
 \refitem cmdilinebr \\ilinebr
 \refitem cmdiliteral \\iliteral
+\refitem cmdiref \\iref
 \refitem cmdiverbatim \\iverbatim
 \endsecreflist
 
@@ -113,5 +114,16 @@ and the version in which they were introduced.
   Ends a block of text that was started with a \ref cmdiverbatim "\\iverbatim" command.
 
 \since doxygen version 1.9.5
+
+<hr>
+\section cmdiref \\iref "<name>" ["(text)"]
+
+  \addindex \\iref
+  
+  This command has a similar syntax and function as the command `\ref`, but is internally used
+  for markdown replacements of links.
+
+
+\since doxygen version 1.9.7
 
 <hr>
