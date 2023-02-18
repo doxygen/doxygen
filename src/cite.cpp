@@ -29,6 +29,7 @@
 #include "commentscan.h"
 
 #include <map>
+#include <unordered_map>
 #include <string>
 #include <fstream>
 
@@ -61,6 +62,7 @@ class CiteInfoImpl : public CiteInfo
 struct CitationManager::Private
 {
   std::map< std::string,std::unique_ptr<CiteInfoImpl> > entries;
+  std::unordered_map< int,std::string > formulaCite;
 };
 
 CitationManager &CitationManager::instance()
@@ -199,19 +201,21 @@ void CitationManager::insertCrossReferencesForBibFile(const QCString &bibFile)
   }
 }
 
+const std::string g_formulaMarker = "CITE_FORMULA_";
+
 QCString CitationManager::getFormulas(const QCString &s)
 {
   if (s.isEmpty()) return s;
   GrowBuf growBuf;
   GrowBuf formulaBuf;
-  bool startFormula = false;
+  bool insideFormula = false;
   int citeFormulaCnt = 1;
   char tmp[30];
   const char *ps=s.data();
   char c;
   while ((c=*ps++))
   {
-    if (startFormula)
+    if (insideFormula)
     {
       switch (c)
       {
@@ -225,21 +229,24 @@ QCString CitationManager::getFormulas(const QCString &s)
           formulaBuf.addChar(0);
           growBuf.addChar('$');
           growBuf.addStr(formulaBuf.get());
-          startFormula = false;
+          insideFormula = false;
           formulaBuf.clear();
           break;
         case '$':
-          sprintf(tmp,"CITE_FORMULA_%06d",citeFormulaCnt++);
+          sprintf(tmp,"%s%06d",g_formulaMarker.c_str(),citeFormulaCnt);
           formulaBuf.addChar(0);
-          m_formulaCite.emplace(tmp,"\\f$" + QCString(formulaBuf.get()) + "\\f$");
+          p->formulaCite.emplace(citeFormulaCnt,std::string("\\f$") + formulaBuf.get() + "\\f$");
+          citeFormulaCnt++;
           // need { and } due to the capitalization rules of bibtex.
           growBuf.addChar('{');
           growBuf.addStr(tmp);
           growBuf.addChar('}');
-          startFormula = false;
+          insideFormula = false;
           formulaBuf.clear();
           break;
-        default:   formulaBuf.addChar(c); break;
+        default:
+          formulaBuf.addChar(c);
+          break;
       }
     }
     else
@@ -252,17 +259,18 @@ QCString CitationManager::getFormulas(const QCString &s)
           growBuf.addChar(c);
           break;
         case '$':
-          startFormula = true;
+          insideFormula = true;
           break;
-        default:   growBuf.addChar(c); break;
+        default:
+          growBuf.addChar(c);
+          break;
       }
     }
   }
-  if (startFormula)
+  if (insideFormula)
   {
     formulaBuf.addChar(0);
     growBuf.addStr(formulaBuf.get());
-    startFormula = false;
     formulaBuf.clear();
   }
   growBuf.addChar(0);
@@ -272,13 +280,23 @@ QCString CitationManager::getFormulas(const QCString &s)
 QCString CitationManager::replaceFormulas(const QCString &s)
 {
   if (s.isEmpty()) return s;
-  QCString t = s;
-  for (const auto &it : m_formulaCite)
+  QCString t;
+  size_t pos=0;
+  size_t i;
+  while ((i=s.find(g_formulaMarker.c_str(),pos))!=-1)
   {
-    t = substitute(t,it.first,it.second);
+    t += s.mid(pos,i-pos);
+    size_t markerSize = g_formulaMarker.length();
+    size_t markerId = atoi(s.mid(i+markerSize,6).data());
+    auto it = p->formulaCite.find(markerId);
+    if (it != p->formulaCite.end()) t += it->second;
+    pos = i + markerSize+6;
   }
+  t += s.mid(pos);
+  //printf("replaceFormulas(%s)=%s\n",qPrint(s),qPrint(t));
   return t;
 }
+
 void CitationManager::generatePage()
 {
   //printf("** CitationManager::generatePage() count=%d\n",m_ordering.count());
@@ -434,18 +452,18 @@ void CitationManager::generatePage()
     //printf("doc=[%s]\n",qPrint(doc));
   }
 
-  // 6a. place formulas back and run the conversion of \f$ ... \f$ to the internal required format
+  // 7. place formulas back and run the conversion of \f$ ... \f$ to the internal required format
   {
     doc = replaceFormulas(doc);
-    Entry           *current = new(Entry);
-    bool             needsEntry;
+    Entry            current;
+    bool             needsEntry = false;
     CommentScanner   commentScanner;
     int              lineNr = 0;
     int              pos = 0;
     Protection       prot;
     commentScanner.parseCommentBlock(
         NULL,
-        current,
+        &current,
         doc,          // text
         fileName(),   // file
         lineNr,       // line of block start
@@ -457,13 +475,13 @@ void CitationManager::generatePage()
         needsEntry,
         false
         );
-    doc = current->doc;
+    doc = current.doc;
   }
 
-  // 7. add it as a page
+  // 8. add it as a page
   addRelatedPage(fileName(),theTranslator->trCiteReferences(),doc,fileName(),1,1);
 
-  // 8. for latex we just copy the bib files to the output and let
+  // 9. for latex we just copy the bib files to the output and let
   //    latex do this work.
   if (Config_getBool(GENERATE_LATEX))
   {
@@ -491,7 +509,7 @@ void CitationManager::generatePage()
     }
   }
 
-  // 9. Remove temporary files
+  // 10. Remove temporary files
   if (!citeDebug)
   {
     thisDir.remove(citeListFile.str());
