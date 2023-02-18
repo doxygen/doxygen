@@ -69,7 +69,6 @@
 #define GHC_OS_CYGWIN
 #elif defined(__sun) && defined(__SVR4)
 #define GHC_OS_SOLARIS
-#define GHC_NO_DIRENT_D_TYPE
 #elif defined(__svr4__)
 #define GHC_OS_SYS5R4
 #elif defined(BSD)
@@ -79,10 +78,6 @@
 #include <wasi/api.h>
 #elif defined(__QNX__)
 #define GHC_OS_QNX
-#define GHC_NO_DIRENT_D_TYPE
-#elif defined(__HAIKU__)
-#define GHC_OS_HAIKU
-#define GHC_NO_DIRENT_D_TYPE
 #else
 #error "Operating system currently not supported!"
 #endif
