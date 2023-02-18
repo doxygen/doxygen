@@ -1660,10 +1660,11 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                             }
                                           }
                                         }
+<MemberCall,MemberCall2,FuncCall>[;:]   { // recover from unexpected end of call
+                                          unput(*yytext);
+                                          BEGIN(CallEnd);
+                                        }
 <CallEnd>[ \t\n]*                       { codifyLines(yyscanner,yytext); }
-  /*
-<MemberCall2,FuncCall>")"[ \t\n]*[;:]   {
-  */
 <CallEnd>[;:]                           {
                                           codifyLines(yyscanner,yytext);
                                           yyextra->bracketCount=0;
@@ -2160,17 +2161,17 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           yyextra->lastVerbStringContext=YY_START;
                                           BEGIN(SkipVerbString);
                                         }
-<*>{CPPC}                                 {
+<*>{CPPC}                               {
                                           startFontClass(yyscanner,"comment");
                                           yyextra->code->codify(yytext);
                                           yyextra->lastCContext = YY_START ;
                                           BEGIN( SkipCxxComment ) ;
                                         }
-<*>"("|"["                                      {
+<*>"("|"["                              {
                                           yyextra->code->codify(yytext);
                                           yyextra->theCallContext.pushScope(yyextra->name, yyextra->type);
                                         }
-<*>")"|"]"                                      {
+<*>")"|"]"                              {
                                           yyextra->code->codify(yytext);
                                           yyextra->theCallContext.popScope(yyextra->name, yyextra->type);
                                         }
