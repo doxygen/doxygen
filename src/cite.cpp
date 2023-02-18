@@ -24,6 +24,9 @@
 #include "debug.h"
 #include "fileinfo.h"
 #include "dir.h"
+#include "growbuf.h"
+#include "entry.h"
+#include "commentscan.h"
 
 #include <map>
 #include <string>
@@ -196,6 +199,86 @@ void CitationManager::insertCrossReferencesForBibFile(const QCString &bibFile)
   }
 }
 
+QCString CitationManager::getFormulas(const QCString &s)
+{
+  if (s.isEmpty()) return s;
+  GrowBuf growBuf;
+  GrowBuf formulaBuf;
+  bool startFormula = false;
+  int citeFormulaCnt = 1;
+  char tmp[30];
+  const char *ps=s.data();
+  char c;
+  while ((c=*ps++))
+  {
+    if (startFormula)
+    {
+      switch (c)
+      {
+        case '\\':
+          formulaBuf.addChar(c);
+          c = *ps++;
+          formulaBuf.addChar(c);
+          break;
+        case '\n':
+          formulaBuf.addChar(c);
+          formulaBuf.addChar(0);
+          growBuf.addChar('$');
+          growBuf.addStr(formulaBuf.get());
+          startFormula = false;
+          formulaBuf.clear();
+          break;
+        case '$':
+          sprintf(tmp,"CITE_FORMULA_%06d",citeFormulaCnt++);
+          formulaBuf.addChar(0);
+          m_formulaCite.emplace(tmp,"\\f$" + QCString(formulaBuf.get()) + "\\f$");
+          // need { and } due to the capitalization rules of bibtex.
+          growBuf.addChar('{');
+          growBuf.addStr(tmp);
+          growBuf.addChar('}');
+          startFormula = false;
+          formulaBuf.clear();
+          break;
+        default:   formulaBuf.addChar(c); break;
+      }
+    }
+    else
+    {
+      switch (c)
+      {
+        case '\\':
+          growBuf.addChar(c);
+          c = *ps++;
+          growBuf.addChar(c);
+          break;
+        case '$':
+          startFormula = true;
+          break;
+        default:   growBuf.addChar(c); break;
+      }
+    }
+  }
+  if (startFormula)
+  {
+    formulaBuf.addChar(0);
+    growBuf.addStr(formulaBuf.get());
+    startFormula = false;
+    formulaBuf.clear();
+  }
+  growBuf.addChar(0);
+  return growBuf.get();
+}
+
+QCString CitationManager::replaceFormulas(const QCString &s)
+{
+  if (s.isEmpty()) return s;
+  QCString t = s;
+  for (const auto &it : m_formulaCite)
+  {
+    t = substitute(t,it.first,it.second);
+  }
+  return t;
+}
 void CitationManager::generatePage()
 {
   //printf("** CitationManager::generatePage() count=%d\n",m_ordering.count());
@@ -265,7 +348,26 @@ void CitationManager::generatePage()
       if (!bibFile.isEmpty())
       {
         ++i;
-        copyFile(bibFile,bibOutputDir + bibTmpFile + QCString().setNum(i) + ".bib");
+        std::ifstream f_org = Portable::openInputStream(bibFile);
+        if (!f_org.is_open())
+        {
+          err("could not open file %s for reading\n",qPrint(bibFile));
+        }
+        std::ofstream f_out = Portable::openOutputStream(bibOutputDir + bibTmpFile + QCString().setNum(i) + ".bib");
+        if (!f_out.is_open())
+        {
+          err("could not open file %s for reading\n",qPrint(bibOutputDir + bibTmpFile + QCString().setNum(i) + ".bib"));
+        }
+        QCString docs;
+        std::string lineStr;
+        while (getline(f_org,lineStr))
+        {
+          docs += lineStr + "\n";
+        }
+        docs = getFormulas(docs);
+        f_out << docs;
+        if (f_org.is_open()) f_org.close();
+        if (f_out.is_open()) f_out.close();
         bibOutputFiles = bibOutputFiles + " " + bibTmpDir + bibTmpFile + QCString().setNum(i) + ".bib";
       }
     }
@@ -330,6 +432,32 @@ void CitationManager::generatePage()
       if (insideBib) doc+=line+"\n";
     }
     //printf("doc=[%s]\n",qPrint(doc));
+  }
+
+  // 6a. place formulas back and run the conversion of \f$ ... \f$ to the internal required format
+  {
+    doc = replaceFormulas(doc);
+    Entry           *current = new(Entry);
+    bool             needsEntry;
+    CommentScanner   commentScanner;
+    int              lineNr = 0;
+    int              pos = 0;
+    Protection       prot;
+    commentScanner.parseCommentBlock(
+        NULL,
+        current,
+        doc,          // text
+        fileName(),   // file
+        lineNr,       // line of block start
+        false,        // isBrief
+        false,        // isJavaDocStyle
+        false,        // isInBody
+        prot,         // protection
+        pos,          // position,
+        needsEntry,
+        false
+        );
+    doc = current->doc;
   }
 
   // 7. add it as a page
