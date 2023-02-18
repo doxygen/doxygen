@@ -1723,7 +1723,7 @@ NONLopt [^\n]*
                                           lineCount(yyscanner);
                                           yyextra->current->name += *yytext ;
                                         }
-<Operator>"<>"                          { /* skip guided templ specifiers */ }
+<Operator>"<"({B}*{ID}{B}*(","{B}*{BN})*{B}*)?">" { /* skip guided templ specifiers */ }
 <Operator>"("                           {
                                           yyextra->current->name = yyextra->current->name.simplifyWhiteSpace();
                                           unput(*yytext);
