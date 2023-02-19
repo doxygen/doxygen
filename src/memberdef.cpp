@@ -2095,7 +2095,6 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
   // are explicitly grouped.
   if (!inGroup && m_impl->mtype==MemberType_EnumValue) return;
 
-
   const Definition *d=0;
   ASSERT (cd!=0 || nd!=0 || fd!=0 || gd!=0); // member should belong to something
   if (cd) d=cd; else if (nd) d=nd; else if (fd) d=fd; else d=gd;
@@ -2104,6 +2103,10 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
     if (getClassDef())          d = getClassDef();
     else if (getNamespaceDef()) d = getNamespaceDef();
     else if (getFileDef())      d = getFileDef();
+  }
+  else if (d==fd) // see issue #9850, namespace member can be shown in file scope as well
+  {
+    if (getNamespaceDef()) d = getNamespaceDef();
   }
 
   QCString cname  = d->name();
