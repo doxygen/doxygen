@@ -1401,7 +1401,7 @@ FILE_VERSION_FILTER = "cleartool desc -fmt \%Vn"
  messages but write them at the end of a run, in case a
  \ref cfg_warn_logfile "WARN_LOGFILE" is defined the warning messages will be
  besides being in the defined file also be shown at the end of a run, unless the
- \ref cfg_warn_logfile "WARN_LOGFILE" is defined as `-` i.e. standard outpyt (`stdout`)
+ \ref cfg_warn_logfile "WARN_LOGFILE" is defined as `-` i.e. standard output (`stdout`)
  in that case the behavior will remain as with the setting \c FAIL_ON_WARNINGS.
 ]]>
       </docs>
