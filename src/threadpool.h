@@ -99,7 +99,7 @@ class ThreadPool
         std::unique_lock<std::mutex> l(m_mutex);
         for(auto&& u : m_finished)
         {
-          unused_variable(u);
+          (void)u; //unused_variable, to silence the compiler warning about unused variables
           m_work.push_back({}); // insert empty function object to signal abort
         }
       }
@@ -107,10 +107,6 @@ class ThreadPool
       m_finished.clear();
     }
   private:
-
-    // helper to silence the compiler warning about unused variables
-    template <typename ...Args>
-    void unused_variable(Args&& ...args) { (void)(sizeof...(args)); }
 
     // the work that a worker thread does:
     void threadTask()
