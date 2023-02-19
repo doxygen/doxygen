@@ -1395,7 +1395,7 @@ int Markdown::processLink(const char *data,int offset,int size)
     {
       if (lp==-1) // link to markdown page
       {
-        m_out.addStr("@ref ");
+        m_out.addStr("@ref \"");
         if (!(Portable::isAbsolutePath(link) || isURL(link)))
         {
           FileInfo forg(link.str());
@@ -1414,8 +1414,13 @@ int Markdown::processLink(const char *data,int offset,int size)
             }
           }
         }
+        m_out.addStr(link);
+        m_out.addStr("\"");
       }
-      m_out.addStr(link);
+      else
+      {
+        m_out.addStr(link);
+      }
       m_out.addStr(" \"");
       if (explicitTitle && !title.isEmpty())
       {
@@ -1431,12 +1436,11 @@ int Markdown::processLink(const char *data,int offset,int size)
     { // file/url link
       if (link.at(0) == '#')
       {
-        m_out.addStr("@ref ");
+        m_out.addStr("@ref \"");
         m_out.addStr(link.mid(1));
-        m_out.addStr(" \"");
+        m_out.addStr("\" \"");
         m_out.addStr(substitute(content.simplifyWhiteSpace(),"\"","&quot;"));
         m_out.addStr("\"");
-
       }
       else
       {
