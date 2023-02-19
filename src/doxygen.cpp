@@ -6343,8 +6343,8 @@ static void findMember(const Entry *root,
       for (const auto &imd : *mn)
       {
         MemberDefMutable *md = toMemberDefMutable(imd.get());
-        Definition *mdScope = md->getOuterScope();
-        if (md && md->isEnumerate() && md->isStrong() && mdScope &&
+        Definition *mdScope = nullptr;
+        if (md && md->isEnumerate() && md->isStrong() && (mdScope=md->getOuterScope()) &&
             // need filter for the correct scope, see issue #9668
             ((namespaceName.isEmpty() && mdScope==Doxygen::globalScope) || (mdScope->name()==namespaceName)))
         {
