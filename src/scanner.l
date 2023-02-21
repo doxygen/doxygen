@@ -4751,6 +4751,7 @@ NONLopt [^\n]*
                                           yyextra->fullArgString+=yytext;
                                           if (&yytext[4]==yyextra->docBlockName)
                                           {
+                                            yyextra->docBlockName="";
                                             BEGIN(CopyArgCommentLine);
                                           }
                                         }
@@ -4758,6 +4759,7 @@ NONLopt [^\n]*
                                           yyextra->fullArgString+=yytext;
 					  if (yyextra->docBlockName==&yytext[1])
                                           {
+                                            yyextra->docBlockName="";
                                             BEGIN(CopyArgCommentLine);
                                           }
                                         }
@@ -6860,6 +6862,7 @@ NONLopt [^\n]*
                                           yyextra->docBlock << yytext;
                                           if (yyextra->docBlockName=="<pre>")
                                           {
+                                            yyextra->docBlockName="";
                                             BEGIN(DocBlock);
                                           }
                                         }
@@ -6867,6 +6870,7 @@ NONLopt [^\n]*
                                           yyextra->docBlock << yytext;
                                           if (yyextra->docBlockName=="<code>")
                                           {
+                                            yyextra->docBlockName="";
                                             BEGIN(DocBlock);
                                           }
                                         }
@@ -6874,6 +6878,7 @@ NONLopt [^\n]*
                                           yyextra->docBlock << yytext;
                                           if (yyextra->docBlockName==&yytext[1])
                                           {
+                                            yyextra->docBlockName="";
                                             BEGIN(DocBlock);
                                           }
                                         }
@@ -6881,6 +6886,7 @@ NONLopt [^\n]*
                                           yyextra->docBlock << yytext;
                                           if (&yytext[4]==yyextra->docBlockName)
                                           {
+                                            yyextra->docBlockName="";
                                             BEGIN(DocBlock);
                                           }
                                         }
@@ -6959,14 +6965,17 @@ NONLopt [^\n]*
 <DocCopyBlock>[^\<@/\*\]~\$\\\n]+       { // any character that is not special
                                           yyextra->docBlock << yytext;
                                         }
-<DocCopyBlock>{CCS}|{CCE}|{CPPC}           {
-                                          if (yytext[1]=='*')
+<DocCopyBlock>{CCS}|{CCE}|{CPPC}        {
+                                          if (!((yyextra->docBlockName=="code") || (yyextra->docBlockName=="iliteral")))
                                           {
-                                            yyextra->nestedComment=TRUE;
-                                          }
-                                          else if (yytext[0]=='*')
-                                          {
-                                            yyextra->nestedComment=FALSE;
+                                            if (yytext[1]=='*')
+                                            {
+                                              yyextra->nestedComment=true;
+                                            }
+                                            else if (yytext[0]=='*')
+                                            {
+                                              yyextra->nestedComment=false;
+                                            }
                                           }
                                           yyextra->docBlock << yytext;
                                         }
