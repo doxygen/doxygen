@@ -1395,6 +1395,10 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                                       yyextra->secType = SectionType::Anchor;
                                       BEGIN(St_SecLabel1);
                                     }
+<St_Sections>{CMD}"ianchor"{BLANK}+  {
+                                      yyextra->secType = SectionType::Anchor;
+                                      BEGIN(St_SecLabel1);
+                                    }
 <St_Sections>{CMD}"section"{BLANK}+ {
                                       yyextra->secType = SectionType::Section;
                                       BEGIN(St_SecLabel2);

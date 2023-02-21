@@ -4228,6 +4228,7 @@ int DocPara::handleCommand(DocNodeVariant *thisVariant,const QCString &cmdName, 
         children().append<DocLineBreak>(parser(),thisVariant);
       }
       break;
+    case CMD_IANCHOR:
     case CMD_ANCHOR:
       {
         parser()->handleAnchor(thisVariant,children());
