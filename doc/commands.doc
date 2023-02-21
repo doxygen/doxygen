@@ -2204,14 +2204,11 @@ Commands to create links
   This command adds (text) to the \LaTeX , DocBook and RTF index.
 
 <hr>
-\section cmdanchor \\anchor['{'text'}'] <word>
+\section cmdanchor \\anchor <word>
 
   \addindex \\anchor
   This command places an invisible, named anchor into the documentation
   to which you can refer with the \ref cmdref "\\ref" command.
-
-  The text of the option `text` with the command is the text to be used as
-  `text` with the \ref cmdref "\\ref" command.
 
   \sa section \ref cmdref "\\ref".
 

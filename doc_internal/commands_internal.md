@@ -7,6 +7,7 @@ and the version in which they were introduced.
 \refitem cmdendicode \\endicode
 \refitem cmdendiliteral \\endiliteral
 \refitem cmdendiverbatim \\endiverbatim
+\refitem cmdicode \\ianchor
 \refitem cmdicode \\icode
 \refitem cmdifile \\ifile
 \refitem cmdiline \\iline
@@ -14,6 +15,16 @@ and the version in which they were introduced.
 \refitem cmdiliteral \\iliteral
 \refitem cmdiverbatim \\iverbatim
 \endsecreflist
+
+<hr>
+\section cmdianchor \\ianchor{title} anchor
+
+  \addindex \\ianchor
+  This command has a similar syntax and function as the command `\anchor`, but is internally used
+  for @page command in markdown files. Unlike `\anchor` it has an additional 'title' option that
+  is used as the link text in references to the page.
+
+\since doxygen version 1.9.7
 
 <hr>
 \section cmdilinebr \\ilinebr

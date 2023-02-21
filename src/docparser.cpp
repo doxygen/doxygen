@@ -1318,6 +1318,7 @@ reparsetoken:
           }
           break;
         case CMD_ANCHOR:
+        case CMD_IANCHOR:
           {
             handleAnchor(parent,children);
           }

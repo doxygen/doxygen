@@ -179,6 +179,7 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "addindex",        { &handleAddIndex,         CommandSpacing::Invisible }},
   { "addtogroup",      { &handleAddToGroup,       CommandSpacing::Invisible }},
   { "anchor",          { &handleAnchor,           CommandSpacing::Invisible }},
+  { "ianchor",         { &handleAnchor,           CommandSpacing::Invisible }},
   { "arg",             { 0,                       CommandSpacing::Block     }},
   { "attention",       { 0,                       CommandSpacing::Block     }},
   { "author",          { 0,                       CommandSpacing::Block     }},

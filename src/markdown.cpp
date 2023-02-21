@@ -2546,7 +2546,7 @@ void Markdown::writeOneLineHeaderOrRuler(const char *data,int size)
     {
       if (!id.isEmpty())
       {
-        m_out.addStr("\\anchor{" + header + "} "+id+"\\ilinebr ");
+        m_out.addStr("\\ianchor{" + header + "} "+id+"\\ilinebr ");
       }
       hTag.sprintf("h%d",level);
       m_out.addStr("<"+hTag+">");
@@ -3314,19 +3314,19 @@ void MarkdownOutlineParser::parseInput(const QCString &fileName,
            FileInfo(mdfileAsMainPage.str()).absFilePath()) // file reference with path
          )
       {
-        docs.prepend("@anchor{" + title + "} " + id + "\\ilinebr ");
+        docs.prepend("@ianchor{" + title + "} " + id + "\\ilinebr ");
         docs.prepend("@mainpage "+title+"\\ilinebr ");
       }
       else if (id=="mainpage" || id=="index")
       {
         if (title.isEmpty()) title = titleFn;
-        docs.prepend("@anchor{" + title + "} " + id + "\\ilinebr ");
+        docs.prepend("@ianchor{" + title + "} " + id + "\\ilinebr ");
         docs.prepend("@mainpage "+title+"\\ilinebr ");
       }
       else
       {
         if (title.isEmpty()) {title = titleFn;prepend=0;}
-        if (!wasEmpty) docs.prepend("@anchor{" + title + "} " +  markdownFileNameToId(fileName) + "\\ilinebr ");
+        if (!wasEmpty) docs.prepend("@ianchor{" + title + "} " +  markdownFileNameToId(fileName) + "\\ilinebr ");
         docs.prepend("@page "+id+" "+title+"\\ilinebr ");
       }
       for (int i = 0; i < prepend; i++) docs.prepend("\n");
@@ -3346,7 +3346,7 @@ void MarkdownOutlineParser::parseInput(const QCString &fileName,
           docs = docs.left(match[1].position())+               // part before label
                  newLabel+                                     // new label
                  match[2].str()+                               // part between orgLabel and \n
-                 "\\ilinebr @anchor{" + orgTitle + "} "+orgLabel+"\n"+           // add original anchor plus \n of above
+                 "\\ilinebr @ianchor{" + orgTitle + "} "+orgLabel+"\n"+           // add original anchor plus \n of above
                  docs.right(docs.length()-match.length());     // add remainder of docs
         }
       }
