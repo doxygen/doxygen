@@ -21,7 +21,7 @@ and the version in which they were introduced.
 
   \addindex \\ianchor
   This command has a similar syntax and function as the command `\anchor`, but is internally used
-  for @page command in markdown files. Unlike `\anchor` it has an additional 'title' option that
+  for the `@page` command in markdown files. Unlike `\anchor` it has an additional `title` option that
   is used as the link text in references to the page.
 
 \since doxygen version 1.9.7
