@@ -1847,7 +1847,7 @@ static bool isHRuler(const char *data,int size)
   return n>=3; // at least 3 characters needed for a hruler
 }
 
-QCString Markdown::extractTitleId(QCString &title, int level)
+QCString Markdown::extractTitleId(QCString &title, int level, bool *pIsIdGenerated)
 {
   AUTO_TRACE("title={} level={}",Trace::trunc(title),level);
   // match e.g. '{#id-b11} ' and capture 'id-b11'
@@ -1858,7 +1858,7 @@ QCString Markdown::extractTitleId(QCString &title, int level)
   {
     std::string id = match[1].str();
     title = title.left(match.position());
-    if (AnchorGenerator::instance().isGenerated(id))
+    if (AnchorGenerator::instance().reserve(id)>0)
     {
       warn(m_fileName, m_lineNr, "An automatically generated id already has the name '%s'!", id.c_str());
     }
@@ -1869,6 +1869,7 @@ QCString Markdown::extractTitleId(QCString &title, int level)
   if ((level>0) && (level<=Config_getInt(TOC_INCLUDE_HEADINGS)))
   {
     QCString id = AnchorGenerator::instance().generate(ti);
+    if (pIsIdGenerated) *pIsIdGenerated=true;
     //printf("auto-generated id='%s' title='%s'\n",qPrint(id),qPrint(title));
     AUTO_TRACE_EXIT("id={}",id);
     return id;
@@ -1879,7 +1880,7 @@ QCString Markdown::extractTitleId(QCString &title, int level)
 
 
 int Markdown::isAtxHeader(const char *data,int size,
-                       QCString &header,QCString &id,bool allowAdjustLevel)
+                       QCString &header,QCString &id,bool allowAdjustLevel,bool *pIsIdGenerated)
 {
   AUTO_TRACE("data='{}' size={} header={} id={} allowAdjustLevel={}",Trace::trunc(data),size,Trace::trunc(header),id,allowAdjustLevel);
   int i = 0, end;
@@ -1905,7 +1906,7 @@ int Markdown::isAtxHeader(const char *data,int size,
 
   // store result
   convertStringFragment(header,data+i,end-i);
-  id = extractTitleId(header, level);
+  id = extractTitleId(header, level, pIsIdGenerated);
   if (!id.isEmpty()) // strip #'s between title and id
   {
     i=header.length()-1;
@@ -3150,7 +3151,7 @@ static ExplicitPageResult isExplicitPage(const QCString &docs)
 
 QCString Markdown::extractPageTitle(QCString &docs, QCString &id, int &prepend, bool &isIdGenerated)
 {
-  AUTO_TRACE("docs={} id={} prepend={}",Trace::trunc(docs),id,prepend);
+  AUTO_TRACE("docs={} prepend={}",Trace::trunc(docs),id,prepend);
   // first first non-empty line
   prepend = 0;
   QCString title;
@@ -3178,14 +3179,13 @@ QCString Markdown::extractPageTitle(QCString &docs, QCString &id, int &prepend, 
     {
       convertStringFragment(title,data+i,end1-i-1);
       docs+="\n\n"+docs_org.mid(end2);
-      id = extractTitleId(title, 0);
-      isIdGenerated = !id.isEmpty();
+      id = extractTitleId(title, 0, &isIdGenerated);
       //printf("extractPageTitle(title='%s' docs='%s' id='%s')\n",title.data(),docs.data(),id.data());
       AUTO_TRACE_EXIT("result={}",Trace::trunc(title));
       return title;
     }
   }
-  if (i<end1 && isAtxHeader(data+i,end1-i,title,id,FALSE)>0)
+  if (i<end1 && isAtxHeader(data+i,end1-i,title,id,FALSE,&isIdGenerated)>0)
   {
     docs+="\n";
     docs+=docs_org.mid(end1);
@@ -3193,10 +3193,9 @@ QCString Markdown::extractPageTitle(QCString &docs, QCString &id, int &prepend, 
   else
   {
     docs=docs_org;
-    id = extractTitleId(title, 0);
-    isIdGenerated = !id.isEmpty();
+    id = extractTitleId(title, 0, &isIdGenerated);
   }
-  AUTO_TRACE_EXIT("result={}",Trace::trunc(title));
+  AUTO_TRACE_EXIT("result={} id={}",Trace::trunc(title),id);
   return title;
 }
 

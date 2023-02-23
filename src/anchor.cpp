@@ -98,6 +98,12 @@ bool AnchorGenerator::isGenerated(const std::string &anchor) const
   return p->anchorsUsed.find(anchor)!=p->anchorsUsed.end();
 }
 
+int AnchorGenerator::reserve(const std::string &anchor)
+{
+  std::lock_guard lock(p->mutex);
+  return p->idCount[anchor]++;
+}
+
 bool AnchorGenerator::looksGenerated(const std::string &anchor)
 {
   return Config_getEnum(MARKDOWN_ID_STYLE)==MARKDOWN_ID_STYLE_t::DOXYGEN &&

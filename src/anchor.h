@@ -34,6 +34,9 @@ class AnchorGenerator
     /** Returns true iff \a anchor is one of the generated anchors */
     bool isGenerated(const std::string &anchor) const;
 
+    /** Reserves a non-generated anchor */
+    int reserve(const std::string &anchor);
+
     /** Returns true if \a anchor is a potentially generated anchor.
      *  Note this is a much weaker check than isGenerated() and may not always work.
      */
