@@ -245,6 +245,11 @@ void lex_resetparser()
   lex_linenum = 1;
   lex_line = NULL;
   lex_utf8 = FALSE;
+#ifdef FLEX_DEBUG
+  // in case of a debug build stll disable debug information
+  // as it disrupts the normal doxygen output
+  yy_flex_debug = 0;
+#endif
 }
 
 #if USE_STATE2STRING

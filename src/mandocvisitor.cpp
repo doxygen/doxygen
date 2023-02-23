@@ -30,7 +30,7 @@
 
 ManListItemInfo man_listItemInfo[man_maxIndentLevels];
 
-ManDocVisitor::ManDocVisitor(TextStream &t,CodeOutputInterface &ci,
+ManDocVisitor::ManDocVisitor(TextStream &t,OutputCodeList &ci,
                              const QCString &langExt)
   : m_t(t), m_ci(ci), m_insidePre(FALSE), m_hide(FALSE), m_firstCol(FALSE),
     m_indent(0), m_langExt(langExt)
@@ -328,12 +328,13 @@ void ManDocVisitor::operator()(const DocInclude &inc)
       m_firstCol=TRUE;
       break;
     case DocInclude::Snippet:
+    case DocInclude::SnippetTrimLeft:
       if (!m_firstCol) m_t << "\n";
       m_t << ".PP\n";
       m_t << ".nf\n";
       getCodeParser(inc.extension()).parseCode(m_ci,
                                         inc.context(),
-                                        extractBlock(inc.text(),inc.blockId()),
+                                        extractBlock(inc.text(),inc.blockId(),inc.type()==DocInclude::SnippetTrimLeft),
                                         langExt,
                                         inc.isExample(),
                                         inc.exampleFile()

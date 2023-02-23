@@ -18,35 +18,39 @@
 
 #include "outputgen.h"
 
+class OutputCodeList;
+
 /** Generator for HTML code fragments */
-class HtmlCodeGenerator : public CodeOutputInterface
+class HtmlCodeGenerator
 {
   public:
-    HtmlCodeGenerator(TextStream &t,const QCString &relPath);
-    HtmlCodeGenerator(TextStream &t);
+    HtmlCodeGenerator(TextStream *t,const QCString &relPath);
+    HtmlCodeGenerator(TextStream *t);
 
-    OutputType type() const override { return OutputType::Html; }
+    void setTextStream(TextStream *t) { m_t = t; }
 
-    void codify(const QCString &text) override;
+    OutputType type() const { return OutputType::Html; }
+
+    void codify(const QCString &text);
     void writeCodeLink(CodeSymbolType type,
                        const QCString &ref,const QCString &file,
                        const QCString &anchor,const QCString &name,
-                       const QCString &tooltip) override;
+                       const QCString &tooltip);
     void writeTooltip(const QCString &id,
                       const DocLinkInfo &docInfo,
                       const QCString &decl,
                       const QCString &desc,
                       const SourceLinkInfo &defInfo,
                       const SourceLinkInfo &declInfo
-                     ) override;
-    void writeLineNumber(const QCString &,const QCString &,const QCString &,int, bool) override;
-    void startCodeLine(bool) override;
-    void endCodeLine() override;
-    void startFontClass(const QCString &s) override;
-    void endFontClass() override;
-    void writeCodeAnchor(const QCString &anchor) override;
-    void startCodeFragment(const QCString &style) override;
-    void endCodeFragment(const QCString &) override;
+                     );
+    void writeLineNumber(const QCString &,const QCString &,const QCString &,int, bool);
+    void startCodeLine(bool);
+    void endCodeLine();
+    void startFontClass(const QCString &s);
+    void endFontClass();
+    void writeCodeAnchor(const QCString &anchor);
+    void startCodeFragment(const QCString &style);
+    void endCodeFragment(const QCString &);
 
     void setRelativePath(const QCString &path);
   private:
@@ -55,30 +59,32 @@ class HtmlCodeGenerator : public CodeOutputInterface
                         const QCString &anchor,const QCString &name,
                         const QCString &tooltip);
     void docify(const QCString &str);
-    TextStream &m_t;
+    TextStream *m_t;
     int m_col = 0;
     QCString m_relPath;
     bool m_lineOpen = false;
 };
 
 /** Generator for HTML output */
-class HtmlGenerator : public OutputGenerator //public CodeOutputForwarder<OutputGenerator,HtmlCodeGenerator>
+class HtmlGenerator : public OutputGenerator
 {
   public:
     HtmlGenerator();
-    HtmlGenerator &operator=(const HtmlGenerator &g);
-    HtmlGenerator(const HtmlGenerator &g);
-    virtual ~HtmlGenerator();
-    virtual std::unique_ptr<OutputGenerator> clone() const;
+    HtmlGenerator(const HtmlGenerator &);
+    HtmlGenerator &operator=(const HtmlGenerator &);
+    HtmlGenerator(HtmlGenerator &&);
+    HtmlGenerator &operator=(HtmlGenerator &&) = delete;
+   ~HtmlGenerator();
 
-    virtual OutputType type() const { return OutputType::Html; }
+    OutputType type() const { return OutputType::Html; }
+
     static void init();
     void cleanup();
     static void writeStyleSheetFile(TextStream &t);
     static void writeHeaderFile(TextStream &t, const QCString &cssname);
     static void writeFooterFile(TextStream &t);
     static void writeTabData();
-    static void writeSearchInfo(TextStream &t,const QCString &relPath);
+    static void writeSearchInfoStatic(TextStream &t,const QCString &relPath);
     static void writeSearchData(const QCString &dir);
     static void writeSearchPage();
     static void writeExternalSearchPage();
@@ -302,18 +308,19 @@ class HtmlGenerator : public OutputGenerator //public CodeOutputForwarder<Output
 
     void writeLocalToc(const SectionRefs &sr,const LocalToc &lt);
 
-    CodeOutputInterface *codeGen() { return &m_codeGen; }
+    void addCodeGen(OutputCodeList &list);
 
   private:
     static void writePageFooter(TextStream &t,const QCString &,const QCString &,const QCString &);
-    QCString m_lastTitle;
-    QCString m_lastFile;
-    QCString m_relPath;
-    void docify(const QCString &text,bool inHtmlComment);
+    void docify_(const QCString &text,bool inHtmlComment);
 
-    int m_sectionCount = 0;
-    bool m_emptySection = false;
-    HtmlCodeGenerator m_codeGen;
+    QCString                        m_lastTitle;
+    QCString                        m_lastFile;
+    QCString                        m_relPath;
+    int                             m_sectionCount = 0;
+    bool                            m_emptySection = false;
+    std::unique_ptr<OutputCodeList> m_codeList;
+    HtmlCodeGenerator              *m_codeGen = nullptr;
 };
 
 #endif

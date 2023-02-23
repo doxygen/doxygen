@@ -35,7 +35,7 @@ void DotCallGraph::buildGraph(DotNode *n,const MemberDef *md,int distance)
   auto refs = m_inverse ? md->getReferencedByMembers() : md->getReferencesMembers();
   for (const auto &rmd : refs)
   {
-    if (rmd->showInCallGraph())
+    if (rmd->isCallable())
     {
       QCString uniqueId = getUniqueId(rmd);
       auto it = m_usedNodes.find(uniqueId.str());
@@ -214,7 +214,7 @@ bool DotCallGraph::isTrivial(const MemberDef *md,bool inverse)
   auto refs = inverse ? md->getReferencedByMembers() : md->getReferencesMembers();
   for (const auto &rmd : refs)
   {
-    if (rmd->showInCallGraph())
+    if (rmd->isCallable())
     {
       return FALSE;
     }

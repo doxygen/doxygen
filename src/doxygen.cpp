@@ -1039,7 +1039,7 @@ static void addClassToContext(const Entry *root)
       }
       cd->setRequiresClause(root->req);
       cd->setProtection(root->protection);
-      cd->setIsStatic(root->stat);
+      cd->setIsStatic(root->isStatic);
 
       // file definition containing the class cd
       cd->setBodySegment(root->startLine,root->bodyLine,root->endBodyLine);
@@ -2247,7 +2247,7 @@ static MemberDef *addVariableToClass(
   std::unique_ptr<MemberDefMutable> md { createMemberDef(
       fileName,root->startLine,root->startColumn,
       type,name,args,root->exception,
-      prot,Specifier::Normal,root->stat,related,
+      prot,Specifier::Normal,root->isStatic,related,
       mtype,!root->tArgLists.empty() ? root->tArgLists.back() : ArgumentList(),
       ArgumentList(), root->metaData) };
   md->setTagInfo(root->tagInfo());
@@ -2430,7 +2430,7 @@ static MemberDef *addVariableToFile(
                           md->argsString()!=args &&
                           args.find('[')!=-1;
         bool staticsInDifferentFiles =
-                          root->stat && md->isStatic() &&
+                          root->isStatic && md->isStatic() &&
                           root->fileName!=md->getDefFileName();
 
         if (md->getFileDef() &&
@@ -2472,7 +2472,7 @@ static MemberDef *addVariableToFile(
   std::unique_ptr<MemberDefMutable> md { createMemberDef(
       fileName,root->startLine,root->startColumn,
       type,name,args,QCString(),
-      root->protection, Specifier::Normal,root->stat,Relationship::Member,
+      root->protection, Specifier::Normal,root->isStatic,Relationship::Member,
       mtype,!root->tArgLists.empty() ? root->tArgLists.back() : ArgumentList(),
       root->argList, root->metaData) };
   md->setTagInfo(root->tagInfo());
@@ -3035,7 +3035,7 @@ static void addInterfaceOrServiceToServiceOrSingleton(
   }
   std::unique_ptr<MemberDefMutable> md { createMemberDef(
       fileName, root->startLine, root->startColumn, root->type, rname,
-      "", "", root->protection, root->virt, root->stat, Relationship::Member,
+      "", "", root->protection, root->virt, root->isStatic, Relationship::Member,
       type, ArgumentList(), root->argList, root->metaData) };
   md->setTagInfo(root->tagInfo());
   md->setMemberClass(cd);
@@ -3060,7 +3060,7 @@ static void addInterfaceOrServiceToServiceOrSingleton(
   md->addQualifiers(root->qualifiers);
 
   AUTO_TRACE("Interface member: fileName='{}' type='{}' name='{}' mtype='{}' prot={} virt={} state={} proto={} def='{}'",
-      fileName,root->type,rname,type,root->protection,root->virt,root->stat,root->proto,def);
+      fileName,root->type,rname,type,root->protection,root->virt,root->isStatic,root->proto,def);
 
   // add member to the class cd
   cd->insertMember(md.get());
@@ -3282,7 +3282,7 @@ static void addGlobalFunction(const Entry *root,const QCString &rname,const QCSt
   std::unique_ptr<MemberDefMutable> md { createMemberDef(
       root->fileName,root->startLine,root->startColumn,
       root->type,name,root->args,root->exception,
-      root->protection,root->virt,root->stat,Relationship::Member,
+      root->protection,root->virt,root->isStatic,Relationship::Member,
       MemberType_Function,
       !root->tArgLists.empty() ? root->tArgLists.back() : ArgumentList(),
       root->argList,root->metaData) };
@@ -3459,7 +3459,7 @@ static void buildFunctionList(const Entry *root)
       {
         AUTO_TRACE_ADD("member '{}' of class '{}'", rname,cd->name());
         addMethodToClass(root,cd,root->type,rname,root->args,isFriend,
-                         root->protection,root->stat,root->virt,root->spec,root->relates);
+                         root->protection,root->isStatic,root->virt,root->spec,root->relates);
       }
       else if (!((root->parent()->section & Entry::COMPOUND_MASK)
                  || root->parent()->section==Entry::OBJCIMPL_SEC
@@ -3533,7 +3533,7 @@ static void buildFunctionList(const Entry *root)
               }
 
               bool staticsInDifferentFiles =
-                root->stat && md->isStatic() && root->fileName!=md->getDefFileName();
+                root->isStatic && md->isStatic() && root->fileName!=md->getDefFileName();
 
               if (
                   matchArguments2(md->getOuterScope(),mfd,&mdAl,
@@ -5536,7 +5536,7 @@ static void addLocalObjCMethod(const Entry *root,
     std::unique_ptr<MemberDefMutable> md { createMemberDef(
         root->fileName,root->startLine,root->startColumn,
         funcType,funcName,funcArgs,exceptions,
-        root->protection,root->virt,root->stat,Relationship::Member,
+        root->protection,root->virt,root->isStatic,Relationship::Member,
         MemberType_Function,ArgumentList(),root->argList,root->metaData) };
     md->setTagInfo(root->tagInfo());
     md->setLanguage(root->lang);
@@ -5806,7 +5806,7 @@ static void addMemberFunction(const Entry *root,
         {
           AUTO_TRACE_ADD("add template specialization");
           addMethodToClass(root,ccd,type,md->name(),args,isFriend,
-              root->protection,root->stat,root->virt,spec,relates);
+              root->protection,root->isStatic,root->virt,spec,relates);
           return;
         }
         if (argListToString(md->argumentList(),FALSE,FALSE) ==
@@ -5941,7 +5941,7 @@ static void addMemberSpecialization(const Entry *root,
       root->fileName,root->startLine,root->startColumn,
       funcType,funcName,funcArgs,exceptions,
       declMd ? declMd->protection() : root->protection,
-      root->virt,root->stat,Relationship::Member,
+      root->virt,root->isStatic,Relationship::Member,
       mtype,tArgList,root->argList,root->metaData) };
   //printf("new specialized member %s args='%s'\n",qPrint(md->name()),qPrint(funcArgs));
   md->setTagInfo(root->tagInfo());
@@ -6009,7 +6009,7 @@ static void addOverloaded(const Entry *root,MemberName *mn,
     std::unique_ptr<MemberDefMutable> md { createMemberDef(
         root->fileName,root->startLine,root->startColumn,
         funcType,funcName,funcArgs,exceptions,
-        root->protection,root->virt,root->stat,Relationship::Related,
+        root->protection,root->virt,root->isStatic,Relationship::Related,
         mtype,tArgList ? *tArgList : ArgumentList(),root->argList,root->metaData) };
     md->setTagInfo(root->tagInfo());
     md->setLanguage(root->lang);
@@ -6343,9 +6343,12 @@ static void findMember(const Entry *root,
       for (const auto &imd : *mn)
       {
         MemberDefMutable *md = toMemberDefMutable(imd.get());
-        if (md && md->isEnumerate() && md->isStrong())
+        Definition *mdScope = nullptr;
+        if (md && md->isEnumerate() && md->isStrong() && (mdScope=md->getOuterScope()) &&
+            // need filter for the correct scope, see issue #9668
+            ((namespaceName.isEmpty() && mdScope==Doxygen::globalScope) || (mdScope->name()==namespaceName)))
         {
-          AUTO_TRACE_ADD("'{}' is a strong enum!",md->name());
+          AUTO_TRACE_ADD("'{}' is a strong enum! (namespace={} md->getOuterScope()->name()={})",md->name(),namespaceName,md->getOuterScope()->name());
           strongEnum = true;
           // pass the scope name name as a 'namespace' to the findGlobalMember function
           if (!namespaceName.isEmpty())
@@ -6507,7 +6510,7 @@ static void findMember(const Entry *root,
               root->fileName,root->startLine,root->startColumn,
               funcType,funcName,funcArgs,exceptions,
               root->protection,root->virt,
-              root->stat,
+              root->isStatic,
               isMemberOf ? Relationship::Foreign : Relationship::Related,
               mtype,
               (!root->tArgLists.empty() ? root->tArgLists.back() : ArgumentList()),
@@ -7168,7 +7171,7 @@ static void addEnumValuesToEnums(const Entry *root)
                   std::unique_ptr<MemberDefMutable> fmd { createMemberDef(
                       fileName,e->startLine,e->startColumn,
                       e->type,e->name,e->args,QCString(),
-                      e->protection, Specifier::Normal,e->stat,Relationship::Member,
+                      e->protection, Specifier::Normal,e->isStatic,Relationship::Member,
                       MemberType_EnumValue,ArgumentList(),ArgumentList(),e->metaData) };
                   NamespaceDef *mnd = md->getNamespaceDef();
                   if      (md->getClassDef())

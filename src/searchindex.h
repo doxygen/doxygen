@@ -106,6 +106,7 @@ class SearchIndex
     std::unordered_map<std::string,int> m_url2IdMap;
     std::map<int,URL> m_urls;
     int m_urlIndex = -1;
+    int m_urlMaxIndex = 0;
 };
 
 /** Writes search index that should be used with an externally provided search engine,

@@ -22,14 +22,14 @@
 
 class Definition;
 class MemberDef;
-class CodeOutputInterface;
+class OutputCodeList;
 class TextStream;
 
 /*! @brief Concrete visitor implementation for HTML output. */
 class HtmlDocVisitor : public DocVisitor
 {
   public:
-    HtmlDocVisitor(TextStream &t,CodeOutputInterface &ci,const Definition *ctx);
+    HtmlDocVisitor(TextStream &t,OutputCodeList &ci,const Definition *ctx);
 
     //--------------------------------------
     // visitor functions for leaf nodes
@@ -141,7 +141,7 @@ class HtmlDocVisitor : public DocVisitor
     //--------------------------------------
 
     TextStream &m_t;
-    CodeOutputInterface &m_ci;
+    OutputCodeList &m_ci;
     bool m_insidePre = false;
     bool m_hide = false;
     bool m_insideTitle = false;

@@ -22,6 +22,7 @@
 #include "language.h"
 #include "doxygen.h"
 #include "outputgen.h"
+#include "outputlist.h"
 #include "dot.h"
 #include "util.h"
 #include "message.h"
@@ -199,9 +200,9 @@ QCString LatexDocVisitor::escapeMakeIndexChars(const char *s)
 }
 
 
-LatexDocVisitor::LatexDocVisitor(TextStream &t,LatexCodeGenerator &ci,
+LatexDocVisitor::LatexDocVisitor(TextStream &t,OutputCodeList &ci,LatexCodeGenerator &lcg,
                                  const QCString &langExt)
-  : m_t(t), m_ci(ci), m_insidePre(FALSE),
+  : m_t(t), m_ci(ci), m_lcg(lcg), m_insidePre(FALSE),
     m_insideItem(FALSE), m_hide(FALSE),
     m_langExt(langExt)
 {
@@ -563,11 +564,12 @@ void LatexDocVisitor::operator()(const DocInclude &inc)
       m_t << "\\end{DoxyVerbInclude}\n";
       break;
     case DocInclude::Snippet:
+    case DocInclude::SnippetTrimLeft:
       {
         m_ci.startCodeFragment("DoxyCodeInclude");
         getCodeParser(inc.extension()).parseCode(m_ci,
                                                   inc.context(),
-                                                  extractBlock(inc.text(),inc.blockId()),
+                                                  extractBlock(inc.text(),inc.blockId(),inc.type()==DocInclude::SnippetTrimLeft),
                                                   langExt,
                                                   inc.isExample(),
                                                   inc.exampleFile()
@@ -1574,7 +1576,7 @@ void LatexDocVisitor::operator()(const DocParamSect &s)
   if (m_hide) return;
   bool hasInOutSpecs = s.hasInOutSpecifier();
   bool hasTypeSpecs  = s.hasTypeSpecifier();
-  m_ci.incUsedTableLevel();
+  m_lcg.incUsedTableLevel();
   switch(s.type())
   {
     case DocParamSect::Param:
@@ -1602,7 +1604,7 @@ void LatexDocVisitor::operator()(const DocParamSect &s)
   }
   m_t << "}\n";
   visitChildren(s);
-  m_ci.decUsedTableLevel();
+  m_lcg.decUsedTableLevel();
   switch(s.type())
   {
     case DocParamSect::Param:
@@ -1774,10 +1776,10 @@ void LatexDocVisitor::filter(const QCString &str, const bool retainNewLine)
 {
   //printf("LatexDocVisitor::filter(%s) m_insideTabbing=%d\n",qPrint(str),m_ci.insideTabbing());
   filterLatexString(m_t,str,
-                    m_ci.insideTabbing(),
+                    m_lcg.insideTabbing(),
                     m_insidePre,
                     m_insideItem,
-                    m_ci.usedTableLevel()>0,  // insideTable
+                    m_lcg.usedTableLevel()>0,  // insideTable
                     false, // keepSpaces
                     retainNewLine
                    );

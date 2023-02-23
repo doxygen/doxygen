@@ -513,7 +513,7 @@ void writeJavaScriptSearchIndex()
               prefix+=convertToXML(md->argsString());
               // show argument list to disambiguate overloaded functions
             }
-            else if (md) // unique member function
+            else if (md && md->isCallable()) // unique member function
             {
               prefix+="()"; // only to show it is a function
             }
@@ -572,6 +572,7 @@ void writeJavaScriptSearchIndex()
           ti << "]]]\n";
         }
         ti << "];\n";
+        Doxygen::indexList->addStyleSheetFile(("search/"+baseName+".js").data());
       }
       else
       {
@@ -635,6 +636,7 @@ void writeJavaScriptSearchIndex()
       if (j>0) t << "\n";
       t << "};\n\n";
     }
+    Doxygen::indexList->addStyleSheetFile("search/searchdata.js");
     ResourceMgr::instance().copyResource("search.js",searchDirName);
   }
 

@@ -18,6 +18,7 @@
 #include "language.h"
 #include "doxygen.h"
 #include "outputgen.h"
+#include "outputlist.h"
 #include "dot.h"
 #include "message.h"
 #include "config.h"
@@ -275,7 +276,7 @@ static QCString htmlAttribsToString(const HtmlAttribList &attribs, QCString *pAl
 
 //-------------------------------------------------------------------------
 
-HtmlDocVisitor::HtmlDocVisitor(TextStream &t,CodeOutputInterface &ci,
+HtmlDocVisitor::HtmlDocVisitor(TextStream &t,OutputCodeList &ci,
                                const Definition *ctx)
   : m_t(t), m_ci(ci), m_ctx(ctx)
 {
@@ -763,12 +764,13 @@ void HtmlDocVisitor::operator()(const DocInclude &inc)
       forceStartParagraph(inc);
       break;
     case DocInclude::Snippet:
+    case DocInclude::SnippetTrimLeft:
       {
          forceEndParagraph(inc);
          m_ci.startCodeFragment("DoxyCode");
          getCodeParser(inc.extension()).parseCode(m_ci,
                                            inc.context(),
-                                           extractBlock(inc.text(),inc.blockId()),
+                                           extractBlock(inc.text(),inc.blockId(),inc.type()==DocInclude::SnippetTrimLeft),
                                            langExt,
                                            inc.isExample(),
                                            inc.exampleFile(),

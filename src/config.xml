@@ -704,6 +704,16 @@ Go to the <a href="commands.html">next</a> section or return to the
 ]]>
       </docs>
     </option>
+    <option type='enum' id='MARKDOWN_ID_STYLE' defval='DOXYGEN' depends='MARKDOWN_SUPPORT'>
+      <docs>
+<![CDATA[
+ The \c MARKDOWN_ID_STYLE tag can be used to specify the algorithm used to generate identifiers for the Markdown headings.
+ Note: Every identifier is unique.
+]]>
+      </docs>
+      <value name="DOXYGEN" desc="Use a fixed 'autotoc_md' string followed by a sequence number starting at 0."/>
+      <value name="GITHUB" desc="Use the lower case version of title with any whitespace replaced by '-' and punctations characters removed."/>
+    </option>
     <option type='bool' id='AUTOLINK_SUPPORT' defval='1'>
       <docs>
 <![CDATA[
@@ -1401,7 +1411,7 @@ FILE_VERSION_FILTER = "cleartool desc -fmt \%Vn"
  messages but write them at the end of a run, in case a
  \ref cfg_warn_logfile "WARN_LOGFILE" is defined the warning messages will be
  besides being in the defined file also be shown at the end of a run, unless the
- \ref cfg_warn_logfile "WARN_LOGFILE" is defined as `-` i.e. standard outpyt (`stdout`)
+ \ref cfg_warn_logfile "WARN_LOGFILE" is defined as `-` i.e. standard output (`stdout`)
  in that case the behavior will remain as with the setting \c FAIL_ON_WARNINGS.
 ]]>
       </docs>

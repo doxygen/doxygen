@@ -37,6 +37,7 @@
 #include "util.h"
 #include "resourcemgr.h"
 #include "portable.h"
+#include "outputlist.h"
 
 static int folderId=1;
 
@@ -334,8 +335,9 @@ static void generateBriefDoc(TextStream &t,const Definition *def)
     if (astImpl)
     {
       QCString relPath = relativePathToRoot(def->getOutputFileBase());
-      HtmlCodeGenerator htmlGen(t,relPath);
-      HtmlDocVisitor visitor(t,htmlGen,def);
+      OutputCodeList htmlList;
+      htmlList.add<HtmlCodeGenerator>(&t,relPath);
+      HtmlDocVisitor visitor(t,htmlList,def);
       std::visit(visitor,astImpl->root);
     }
   }

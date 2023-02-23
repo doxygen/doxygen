@@ -44,15 +44,13 @@
 #include "doxygen.h"
 #include "commentscan.h"
 #include "entry.h"
-#include "commentcnv.h"
 #include "config.h"
-#include "section.h"
 #include "message.h"
 #include "portable.h"
 #include "regex.h"
 #include "fileinfo.h"
-#include "utf8.h"
 #include "trace.h"
+#include "anchor.h"
 
 enum class ExplicitPageResult
 {
@@ -120,8 +118,8 @@ enum Alignment { AlignNone, AlignLeft, AlignCenter, AlignRight };
 
 //---------- constants -------
 //
-const char    *g_utf8_nbsp = "\xc2\xa0";      // UTF-8 nbsp
-const char    *g_doxy_nbsp = "&_doxy_nbsp;";  // doxygen escape command for UTF-8 nbsp
+const char *g_utf8_nbsp = "\xc2\xa0";      // UTF-8 nbsp
+const char *g_doxy_nbsp = "&_doxy_nbsp;";  // doxygen escape command for UTF-8 nbsp
 const int codeBlockIndent = 4;
 
 //---------- helpers -------
@@ -1395,7 +1393,7 @@ int Markdown::processLink(const char *data,int offset,int size)
     {
       if (lp==-1) // link to markdown page
       {
-        m_out.addStr("@ref ");
+        m_out.addStr("@ref \"");
         if (!(Portable::isAbsolutePath(link) || isURL(link)))
         {
           FileInfo forg(link.str());
@@ -1414,8 +1412,13 @@ int Markdown::processLink(const char *data,int offset,int size)
             }
           }
         }
+        m_out.addStr(link);
+        m_out.addStr("\"");
       }
-      m_out.addStr(link);
+      else
+      {
+        m_out.addStr(link);
+      }
       m_out.addStr(" \"");
       if (explicitTitle && !title.isEmpty())
       {
@@ -1431,12 +1434,11 @@ int Markdown::processLink(const char *data,int offset,int size)
     { // file/url link
       if (link.at(0) == '#')
       {
-        m_out.addStr("@ref ");
+        m_out.addStr("@ref \"");
         m_out.addStr(link.mid(1));
-        m_out.addStr(" \"");
+        m_out.addStr("\" \"");
         m_out.addStr(substitute(content.simplifyWhiteSpace(),"\"","&quot;"));
         m_out.addStr("\"");
-
       }
       else
       {
@@ -1845,7 +1847,7 @@ static bool isHRuler(const char *data,int size)
   return n>=3; // at least 3 characters needed for a hruler
 }
 
-static QCString extractTitleId(QCString &title, int level)
+QCString Markdown::extractTitleId(QCString &title, int level)
 {
   AUTO_TRACE("title={} level={}",Trace::trunc(title),level);
   // match e.g. '{#id-b11} ' and capture 'id-b11'
@@ -1856,15 +1858,17 @@ static QCString extractTitleId(QCString &title, int level)
   {
     std::string id = match[1].str();
     title = title.left(match.position());
+    if (AnchorGenerator::instance().isGenerated(id))
+    {
+      warn(m_fileName, m_lineNr, "An automatically generated id already has the name '%s'!", id.c_str());
+    }
     //printf("found match id='%s' title=%s\n",id.c_str(),qPrint(title));
     AUTO_TRACE_EXIT("id={}",id);
-    return QCString(id);
+    return id;
   }
-  if ((level > 0) && (level <= Config_getInt(TOC_INCLUDE_HEADINGS)))
+  if ((level>0) && (level<=Config_getInt(TOC_INCLUDE_HEADINGS)))
   {
-    static AtomicInt autoId { 0 };
-    QCString id;
-    id.sprintf("autotoc_md%d",autoId++);
+    QCString id = AnchorGenerator::instance().generate(ti);
     //printf("auto-generated id='%s' title='%s'\n",qPrint(id),qPrint(title));
     AUTO_TRACE_EXIT("id={}",id);
     return id;
@@ -2542,7 +2546,7 @@ void Markdown::writeOneLineHeaderOrRuler(const char *data,int size)
     {
       if (!id.isEmpty())
       {
-        m_out.addStr("\\anchor "+id+"\\ilinebr ");
+        m_out.addStr("\\ianchor{" + header + "} "+id+"\\ilinebr ");
       }
       hTag.sprintf("h%d",level);
       m_out.addStr("<"+hTag+">");
@@ -3144,7 +3148,7 @@ static ExplicitPageResult isExplicitPage(const QCString &docs)
   return ExplicitPageResult::notExplicit;
 }
 
-QCString Markdown::extractPageTitle(QCString &docs,QCString &id, int &prepend)
+QCString Markdown::extractPageTitle(QCString &docs, QCString &id, int &prepend, bool &isIdGenerated)
 {
   AUTO_TRACE("docs={} id={} prepend={}",Trace::trunc(docs),id,prepend);
   // first first non-empty line
@@ -3175,6 +3179,7 @@ QCString Markdown::extractPageTitle(QCString &docs,QCString &id, int &prepend)
       convertStringFragment(title,data+i,end1-i-1);
       docs+="\n\n"+docs_org.mid(end2);
       id = extractTitleId(title, 0);
+      isIdGenerated = !id.isEmpty();
       //printf("extractPageTitle(title='%s' docs='%s' id='%s')\n",title.data(),docs.data(),id.data());
       AUTO_TRACE_EXIT("result={}",Trace::trunc(title));
       return title;
@@ -3189,78 +3194,12 @@ QCString Markdown::extractPageTitle(QCString &docs,QCString &id, int &prepend)
   {
     docs=docs_org;
     id = extractTitleId(title, 0);
+    isIdGenerated = !id.isEmpty();
   }
   AUTO_TRACE_EXIT("result={}",Trace::trunc(title));
   return title;
 }
 
-QCString Markdown::detab(const QCString &s,int &refIndent)
-{
-  AUTO_TRACE("s='{}'",Trace::trunc(s));
-  int tabSize = Config_getInt(TAB_SIZE);
-  int size = s.length();
-  m_out.clear();
-  m_out.reserve(size);
-  const char *data = s.data();
-  int i=0;
-  int col=0;
-  const int maxIndent=1000000; // value representing infinity
-  int minIndent=maxIndent;
-  while (i<size)
-  {
-    char c = data[i++];
-    switch(c)
-    {
-      case '\t': // expand tab
-        {
-          int stop = tabSize - (col%tabSize);
-          //printf("expand at %d stop=%d\n",col,stop);
-          col+=stop;
-          while (stop--) m_out.addChar(' ');
-        }
-        break;
-      case '\n': // reset column counter
-        m_out.addChar(c);
-        col=0;
-        break;
-      case ' ': // increment column counter
-        m_out.addChar(c);
-        col++;
-        break;
-      default: // non-whitespace => update minIndent
-        if (c<0 && i<size) // multibyte sequence
-        {
-          // special handling of the UTF-8 nbsp character 0xC2 0xA0
-          int nb = isUTF8NonBreakableSpace(data);
-          if (nb>0)
-          {
-            m_out.addStr(g_doxy_nbsp);
-            i+=nb-1;
-          }
-          else
-          {
-            int bytes = getUTF8CharNumBytes(c);
-            for (int j=0;j<bytes-1 && c;j++)
-            {
-              m_out.addChar(c);
-              c = data[i++];
-            }
-            m_out.addChar(c);
-          }
-        }
-        else
-        {
-          m_out.addChar(c);
-        }
-        if (col<minIndent) minIndent=col;
-        col++;
-    }
-  }
-  if (minIndent!=maxIndent) refIndent=minIndent; else refIndent=0;
-  m_out.addChar(0);
-  AUTO_TRACE_EXIT("refIndent={}",refIndent);
-  return m_out.get();
-}
 
 //---------------------------------------------------------------------------
 
@@ -3322,14 +3261,7 @@ QCString markdownFileNameToId(const QCString &fileName)
   QCString baseFn  = stripFromPath(absFileName.c_str());
   int i = baseFn.findRev('.');
   if (i!=-1) baseFn = baseFn.left(i);
-  QCString baseName = baseFn;
-  char *p = baseName.rawData();
-  char c;
-  while ((c=*p))
-  {
-    if (!isId(c)) *p='_'; // escape characters that do not yield an identifier by underscores
-    p++;
-  }
+  QCString baseName = escapeCharsInString(baseFn,false,false);
   //printf("markdownFileNameToId(%s)=md_%s\n",qPrint(fileName),qPrint(baseName));
   QCString res = "md_"+baseName;
   AUTO_TRACE_EXIT("result={}",res);
@@ -3366,8 +3298,9 @@ void MarkdownOutlineParser::parseInput(const QCString &fileName,
   Debug::print(Debug::Markdown,0,"======== Markdown =========\n---- input ------- \n%s\n",qPrint(fileBuf));
   QCString id;
   Markdown markdown(fileName,1,0);
-  QCString title=markdown.extractPageTitle(docs,id,prepend).stripWhiteSpace();
-  if (id.startsWith("autotoc_md")) id = "";
+  bool isIdGenerated = false;
+  QCString title = markdown.extractPageTitle(docs, id, prepend, isIdGenerated).stripWhiteSpace();
+  if (isIdGenerated) id = "";
   int indentLevel=title.isEmpty() ? 0 : -1;
   markdown.setIndentLevel(indentLevel);
   QCString fn      = FileInfo(fileName.str()).fileName();
@@ -3384,19 +3317,19 @@ void MarkdownOutlineParser::parseInput(const QCString &fileName,
            FileInfo(mdfileAsMainPage.str()).absFilePath()) // file reference with path
          )
       {
-        docs.prepend("@anchor " + id + "\\ilinebr ");
+        docs.prepend("@ianchor{" + title + "} " + id + "\\ilinebr ");
         docs.prepend("@mainpage "+title+"\\ilinebr ");
       }
       else if (id=="mainpage" || id=="index")
       {
         if (title.isEmpty()) title = titleFn;
-        docs.prepend("@anchor " + id + "\\ilinebr ");
+        docs.prepend("@ianchor{" + title + "} " + id + "\\ilinebr ");
         docs.prepend("@mainpage "+title+"\\ilinebr ");
       }
       else
       {
         if (title.isEmpty()) {title = titleFn;prepend=0;}
-        if (!wasEmpty) docs.prepend("@anchor " +  markdownFileNameToId(fileName) + "\\ilinebr ");
+        if (!wasEmpty) docs.prepend("@ianchor{" + title + "} " +  markdownFileNameToId(fileName) + "\\ilinebr ");
         docs.prepend("@page "+id+" "+title+"\\ilinebr ");
       }
       for (int i = 0; i < prepend; i++) docs.prepend("\n");
@@ -3410,11 +3343,13 @@ void MarkdownOutlineParser::parseInput(const QCString &fileName,
         if (reg::search(s,match,re))
         {
           QCString orgLabel    = match[1].str();
+          QCString orgTitle    = match[2].str();
+          orgTitle = orgTitle.stripWhiteSpace();
           QCString newLabel    = markdownFileNameToId(fileName);
           docs = docs.left(match[1].position())+               // part before label
                  newLabel+                                     // new label
                  match[2].str()+                               // part between orgLabel and \n
-                 "\\ilinebr @anchor "+orgLabel+"\n"+           // add original anchor plus \n of above
+                 "\\ilinebr @ianchor{" + orgTitle + "} "+orgLabel+"\n"+           // add original anchor plus \n of above
                  docs.right(docs.length()-match.length());     // add remainder of docs
         }
       }

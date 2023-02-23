@@ -2311,7 +2311,7 @@ static bool replaceFunctionMacro(yyscan_t yyscanner,const QCString &expr,QCStrin
   len=0;
   result.resize(0);
   int cc;
-  while ((cc=getCurrentChar(yyscanner,expr,rest,j))!=EOF && isspace(cc))
+  while ((cc=getCurrentChar(yyscanner,expr,rest,j))!=EOF && cc!='\n' && isspace(cc))
   {
     len++;
     getNextChar(yyscanner,expr,rest,j);

@@ -96,7 +96,7 @@ struct ObjCCallCtx
 
 struct codeYY_state
 {
-  CodeOutputInterface * code = 0;
+  OutputCodeList * code = 0;
 
   std::unordered_map< std::string, ScopedTypeVariant > codeClassMap;
   QCString      curClassName;
@@ -214,7 +214,7 @@ static void endFontClass(yyscan_t yyscanner);
 static void codifyLines(yyscan_t yyscanner,const QCString &text);
 static void codifyLines(yyscan_t yyscanner,const char *text);
 static void incrementFlowKeyWordCount(yyscan_t yyscanner);
-static void writeMultiLineCodeLink(yyscan_t yyscanner,CodeOutputInterface &ol,
+static void writeMultiLineCodeLink(yyscan_t yyscanner,OutputCodeList &ol,
                                    const Definition *d,
                                    const QCString &text);
 static void addType(yyscan_t yyscanner);
@@ -227,26 +227,26 @@ static void updateCallContextForSmartPointer(yyscan_t yyscanner);
 static bool getLinkInScope(yyscan_t yyscanner,const QCString &c,  // scope
                            const QCString &m,  // member
                            const QCString &memberText, // exact text
-                           CodeOutputInterface &ol,
+                           OutputCodeList &ol,
                            const QCString &text,
                            bool varOnly=FALSE
                           );
 static bool getLink(yyscan_t yyscanner,const QCString &className,
                     const QCString &memberName,
-                    CodeOutputInterface &ol,
+                    OutputCodeList &ol,
                     const QCString &text=QCString(),
                     bool varOnly=FALSE);
-static void generateClassOrGlobalLink(yyscan_t yyscanner,CodeOutputInterface &ol,const QCString &clName,
+static void generateClassOrGlobalLink(yyscan_t yyscanner,OutputCodeList &ol,const QCString &clName,
                                       bool typeOnly=FALSE,bool varOnly=FALSE);
-static void generateClassOrGlobalLink(yyscan_t yyscanner,CodeOutputInterface &ol,const char *clName,
+static void generateClassOrGlobalLink(yyscan_t yyscanner,OutputCodeList &ol,const char *clName,
                                       bool typeOnly=FALSE,bool varOnly=FALSE);
-static bool generateClassMemberLink(yyscan_t yyscanner,CodeOutputInterface &ol,const MemberDef *xmd,const QCString &memName);
-static bool generateClassMemberLink(yyscan_t yyscanner,CodeOutputInterface &ol,const Definition *def,const QCString &memName);
-static void generateMemberLink(yyscan_t yyscanner,CodeOutputInterface &ol,const QCString &varName,
+static bool generateClassMemberLink(yyscan_t yyscanner,OutputCodeList &ol,const MemberDef *xmd,const QCString &memName);
+static bool generateClassMemberLink(yyscan_t yyscanner,OutputCodeList &ol,const Definition *def,const QCString &memName);
+static void generateMemberLink(yyscan_t yyscanner,OutputCodeList &ol,const QCString &varName,
             const QCString &memName);
-static void generatePHPVariableLink(yyscan_t yyscanner,CodeOutputInterface &ol,const char *varName);
-static void generateFunctionLink(yyscan_t yyscanner,CodeOutputInterface &ol,const QCString &funcName);
-static void generateFunctionLink(yyscan_t yyscanner,CodeOutputInterface &ol,const char *funcName);
+static void generatePHPVariableLink(yyscan_t yyscanner,OutputCodeList &ol,const char *varName);
+static void generateFunctionLink(yyscan_t yyscanner,OutputCodeList &ol,const QCString &funcName);
+static void generateFunctionLink(yyscan_t yyscanner,OutputCodeList &ol,const char *funcName);
 static int countLines(yyscan_t yyscanner);
 static void writeObjCMethodCall(yyscan_t yyscanner,ObjCCallCtx *ctx);
 static QCString escapeName(yyscan_t yyscanner,const char *s);
@@ -1660,10 +1660,11 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                             }
                                           }
                                         }
+<MemberCall,MemberCall2,FuncCall>[;:]   { // recover from unexpected end of call
+                                          unput(*yytext);
+                                          BEGIN(CallEnd);
+                                        }
 <CallEnd>[ \t\n]*                       { codifyLines(yyscanner,yytext); }
-  /*
-<MemberCall2,FuncCall>")"[ \t\n]*[;:]   {
-  */
 <CallEnd>[;:]                           {
                                           codifyLines(yyscanner,yytext);
                                           yyextra->bracketCount=0;
@@ -2160,17 +2161,17 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           yyextra->lastVerbStringContext=YY_START;
                                           BEGIN(SkipVerbString);
                                         }
-<*>{CPPC}                                 {
+<*>{CPPC}                               {
                                           startFontClass(yyscanner,"comment");
                                           yyextra->code->codify(yytext);
                                           yyextra->lastCContext = YY_START ;
                                           BEGIN( SkipCxxComment ) ;
                                         }
-<*>"("|"["                                      {
+<*>"("|"["                              {
                                           yyextra->code->codify(yytext);
                                           yyextra->theCallContext.pushScope(yyextra->name, yyextra->type);
                                         }
-<*>")"|"]"                                      {
+<*>")"|"]"                              {
                                           yyextra->code->codify(yytext);
                                           yyextra->theCallContext.popScope(yyextra->name, yyextra->type);
                                         }
@@ -2324,7 +2325,7 @@ static void setCurrentDoc(yyscan_t yyscanner,const QCString &anchor)
   }
 }
 
-static void addToSearchIndex(yyscan_t yyscanner,const QCString &text)
+static void addToSearchIndex(yyscan_t /*yyscanner*/,const QCString &text)
 {
   if (Doxygen::searchIndex)
   {
@@ -2515,7 +2516,7 @@ static void incrementFlowKeyWordCount(yyscan_t yyscanner)
  * line numbers for each line. If \a text contains newlines, the link will be
  * split into multiple links with the same destination, one for each line.
  */
-static void writeMultiLineCodeLink(yyscan_t yyscanner,CodeOutputInterface &ol,
+static void writeMultiLineCodeLink(yyscan_t yyscanner,OutputCodeList &ol,
                                    const Definition *d,
                                    const QCString &text)
 {
@@ -2766,7 +2767,7 @@ static bool getLinkInScope(yyscan_t yyscanner,
                            const QCString &c,  // scope
                            const QCString &m,  // member
                            const QCString &memberText, // exact text
-                           CodeOutputInterface &ol,
+                           OutputCodeList &ol,
                            const QCString &text,
                            bool varOnly
                           )
@@ -2827,7 +2828,7 @@ static bool getLinkInScope(yyscan_t yyscanner,
 static bool getLink(yyscan_t yyscanner,
                     const QCString &className,
                     const QCString &memberName,
-                    CodeOutputInterface &ol,
+                    OutputCodeList &ol,
                     const QCString &text,
                     bool varOnly)
 {
@@ -2850,7 +2851,7 @@ static bool getLink(yyscan_t yyscanner,
 }
 
 static void generateClassOrGlobalLink(yyscan_t yyscanner,
-                                      CodeOutputInterface &ol,
+                                      OutputCodeList &ol,
                                       const QCString &clName,
                                       bool typeOnly,
                                       bool varOnly)
@@ -3061,14 +3062,14 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
   }
 }
 
-static void generateClassOrGlobalLink(yyscan_t yyscanner,CodeOutputInterface &ol,const char *clName,
+static void generateClassOrGlobalLink(yyscan_t yyscanner,OutputCodeList &ol,const char *clName,
                                       bool typeOnly,bool varOnly)
 {
   generateClassOrGlobalLink(yyscanner,ol,QCString(clName),typeOnly,varOnly);
 }
 
 static bool generateClassMemberLink(yyscan_t yyscanner,
-                                    CodeOutputInterface &ol,
+                                    OutputCodeList &ol,
                                     const MemberDef *xmd,
                                     const QCString &memName)
 {
@@ -3130,7 +3131,7 @@ static bool generateClassMemberLink(yyscan_t yyscanner,
 }
 
 static bool generateClassMemberLink(yyscan_t yyscanner,
-                                    CodeOutputInterface &ol,
+                                    OutputCodeList &ol,
                                     const Definition *def,
                                     const QCString &memName)
 {
@@ -3173,7 +3174,7 @@ static bool generateClassMemberLink(yyscan_t yyscanner,
 }
 
 static void generateMemberLink(yyscan_t yyscanner,
-                               CodeOutputInterface &ol,
+                               OutputCodeList &ol,
                                const QCString &varName,
                                const QCString &memName)
 {
@@ -3266,7 +3267,7 @@ static void generateMemberLink(yyscan_t yyscanner,
   return;
 }
 
-static void generatePHPVariableLink(yyscan_t yyscanner,CodeOutputInterface &ol,const char *varName)
+static void generatePHPVariableLink(yyscan_t yyscanner,OutputCodeList &ol,const char *varName)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   QCString name(varName+7); // strip $this->
@@ -3278,7 +3279,7 @@ static void generatePHPVariableLink(yyscan_t yyscanner,CodeOutputInterface &ol,c
   }
 }
 
-static void generateFunctionLink(yyscan_t yyscanner,CodeOutputInterface &ol,const QCString &funcName)
+static void generateFunctionLink(yyscan_t yyscanner,OutputCodeList &ol,const QCString &funcName)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   //CodeClassDef *ccd=0;
@@ -3387,7 +3388,7 @@ exit:
   return;
 }
 
-static void generateFunctionLink(yyscan_t yyscanner,CodeOutputInterface &ol,const char *funcName)
+static void generateFunctionLink(yyscan_t yyscanner,OutputCodeList &ol,const char *funcName)
 {
   generateFunctionLink(yyscanner,ol,QCString(funcName));
 }
@@ -3934,7 +3935,7 @@ bool CCodeParser::insideCodeLine() const
   return yyextra->insideCodeLine;
 }
 
-void CCodeParser::parseCode(CodeOutputInterface &od,const QCString &className,const QCString &s,
+void CCodeParser::parseCode(OutputCodeList &od,const QCString &className,const QCString &s,
                 SrcLangExt lang,bool exBlock, const QCString &exName,const FileDef *fd,
                 int startLine,int endLine,bool inlineFragment,
                 const MemberDef *memberDef,bool showLineNumbers,const Definition *searchCtx,

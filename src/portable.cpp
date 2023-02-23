@@ -649,10 +649,10 @@ std::ofstream Portable::openOutputStream(const QCString &fileName,bool append)
 {
   std::ios_base::openmode mode = std::ofstream::out | std::ofstream::binary;
   if (append) mode |= std::ofstream::app;
-#ifdef _WIN32
+#if defined(__clang__) && defined(__MINGW32__)
   return std::ofstream(fs::path(fileName.str()).wstring(), mode);
 #else
-  return std::ofstream(fs::path(fileName.str()).string(), mode);
+  return std::ofstream(fs::path(fileName.str()), mode);
 #endif
 }
 
@@ -661,10 +661,10 @@ std::ifstream Portable::openInputStream(const QCString &fileName,bool binary, bo
   std::ios_base::openmode mode = std::ifstream::in | std::ifstream::binary;
   if (binary)     mode |= std::ios::binary;
   if (openAtEnd)  mode |= std::ios::ate;
-#ifdef _WIN32
+#if defined(__clang__) && defined(__MINGW32__)
   return std::ifstream(fs::path(fileName.str()).wstring(), mode);
 #else
-  return std::ifstream(fs::path(fileName.str()).string(), mode);
+  return std::ifstream(fs::path(fileName.str()), mode);
 #endif
 }
 

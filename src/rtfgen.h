@@ -18,14 +18,20 @@
 #ifndef RTFGEN_H
 #define RTFGEN_H
 
+#include <array>
+
 #include "config.h"
 #include "outputgen.h"
 
+class OutputCodeList;
+
 /** Generator for RTF code fragments */
-class RTFCodeGenerator : public CodeOutputInterface
+class RTFCodeGenerator
 {
   public:
-    RTFCodeGenerator(TextStream &t) : m_t(t) {}
+    RTFCodeGenerator(TextStream *t);
+    void setTextStream(TextStream *t) { m_t = t; }
+
     OutputType type() const { return OutputType::RTF; }
     void codify(const QCString &text);
     void writeCodeLink(CodeSymbolType type,
@@ -54,7 +60,7 @@ class RTFCodeGenerator : public CodeOutputInterface
     void setIndentLevel(int level) { m_indentLevel=level; }
     QCString rtf_Code_DepthStyle();
     int  m_col = 0;
-    TextStream &m_t;
+    TextStream *m_t;
     bool m_doxyCodeLineOpen = false;
     QCString m_sourceFileName;
     int m_indentLevel = 0;
@@ -68,8 +74,9 @@ class RTFGenerator : public OutputGenerator
     RTFGenerator();
     RTFGenerator(const RTFGenerator &);
     RTFGenerator &operator=(const RTFGenerator &);
-    virtual ~RTFGenerator();
-    virtual std::unique_ptr<OutputGenerator> clone() const;
+    RTFGenerator(RTFGenerator &&);
+    RTFGenerator &operator=(RTFGenerator &&) = delete;
+   ~RTFGenerator();
 
     static void init();
     void cleanup();
@@ -88,6 +95,8 @@ class RTFGenerator : public OutputGenerator
     void endFile();
     void clearBuffer();
 
+    void startPageDoc(const QCString &) {}
+    void endPageDoc() {}
     void startIndexSection(IndexSection);
     void endIndexSection(IndexSection);
     void writePageLink(const QCString &,bool);
@@ -288,7 +297,7 @@ class RTFGenerator : public OutputGenerator
 
     static bool preProcessFileInplace(const QCString &path,const QCString &name);
 
-    CodeOutputInterface *codeGen() { return &m_codeGen; }
+    void addCodeGen(OutputCodeList &list);
 
   private:
     QCString rtf_BList_DepthStyle();
@@ -323,8 +332,9 @@ class RTFGenerator : public OutputGenerator
       int number = 1;
       char type = '1';
     };
-    RTFListItemInfo m_listItemInfo[maxIndentLevels];
-    RTFCodeGenerator m_codeGen;
+    std::array<RTFListItemInfo,maxIndentLevels> m_listItemInfo;
+    std::unique_ptr<OutputCodeList> m_codeList;
+    RTFCodeGenerator *m_codeGen;
 };
 
 QCString rtfFormatBmkStr(const QCString &name);

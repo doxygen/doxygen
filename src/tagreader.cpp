@@ -40,6 +40,7 @@
 #include "section.h"
 #include "containers.h"
 #include "debug.h"
+#include "anchor.h"
 
 // ----------------- private part -----------------------------------------------
 
@@ -457,7 +458,7 @@ class TagFileParser
         case InMember:
         case InPackage:
         case InDir:
-          if (m_curString.endsWith("autotoc_md")) return;
+          if (AnchorGenerator::looksGenerated(m_curString.str())) return;
           break;
         default:
           warn("Unexpected tag 'docanchor' found");
@@ -1334,7 +1335,7 @@ void TagFileParser::buildMemberList(const std::shared_ptr<Entry> &ce,const std::
     }
     me->protection = tmi.prot;
     me->virt       = tmi.virt;
-    me->stat       = tmi.isStatic;
+    me->isStatic   = tmi.isStatic;
     me->fileName   = ce->fileName;
     me->id         = tmi.clangId;
     me->startLine  = tmi.lineNr;
@@ -1701,7 +1702,7 @@ void parseTagFile(const std::shared_ptr<Entry> &root,const char *fullName)
   tagFileParser.setDocumentLocator(&parser);
   parser.parse(fullName,inputStr.data(),Debug::isFlagSet(Debug::Lex_xml),
                [&]() { DebugLex::print(Debug::Lex_xml,"Entering","libxml/xml.l",fullName); },
-               [&]() { DebugLex::print(Debug::Lex_xml,"Leaving", "libxml/xml.l",fullName); }
+               [&]() { DebugLex::print(Debug::Lex_xml,"Finished", "libxml/xml.l",fullName); }
               );
   tagFileParser.buildLists(root);
   tagFileParser.addIncludes();

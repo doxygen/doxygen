@@ -89,7 +89,7 @@ struct vhdlcodeYY_state
   const MemberDef *   vhdlMember = 0;
   QCString      funcProto;
 
-  CodeOutputInterface * code = 0;
+  OutputCodeList * code = 0;
   const char *  inputString = 0;     //!< the code fragment as text
   int           inputPosition = 0;   //!< read offset during parsing
   QCString      fileName;
@@ -117,9 +117,9 @@ struct vhdlcodeYY_state
 
 
 static void writeFont(yyscan_t yyscanner,const char *s,const QCString &text);
-static void generateMemLink(yyscan_t yyscanner,CodeOutputInterface &ol,QCString &clName,QCString& memberName);
+static void generateMemLink(yyscan_t yyscanner,OutputCodeList &ol,QCString &clName,QCString& memberName);
 static bool writeColoredWord(yyscan_t yyscanner,QCString& word );
-static void generateClassOrGlobalLink(yyscan_t yyscanner,CodeOutputInterface &ol,const QCString &clName, bool typeOnly=false, const QCString &curr_class=QCString());
+static void generateClassOrGlobalLink(yyscan_t yyscanner,OutputCodeList &ol,const QCString &clName, bool typeOnly=false, const QCString &curr_class=QCString());
 static void setCurrentDoc(yyscan_t yyscanner,const QCString &anchor);
 static bool checkVhdlString(yyscan_t yyscanner,QCString &name);
 static void addToSearchIndex(yyscan_t yyscanner,const QCString &text);
@@ -128,10 +128,10 @@ static void endCodeLine(yyscan_t yyscanner);
 static void nextCodeLine(yyscan_t yyscanner);
 static void writeWord(yyscan_t yyscanner,const QCString &word,const QCString &curr_class=QCString(),bool classLink=false);
 static void codifyLines(yyscan_t yyscanner,const QCString &text,const QCString &cl=QCString(),bool classlink=false,bool comment=false);
-static void writeMultiLineCodeLink(yyscan_t yyscanner,CodeOutputInterface &ol,
+static void writeMultiLineCodeLink(yyscan_t yyscanner,OutputCodeList &ol,
                   const Definition *d,
                   const QCString &text);
-static void generateFuncLink(yyscan_t yyscanner,CodeOutputInterface &ol,const MemberDef* mdef);
+static void generateFuncLink(yyscan_t yyscanner,OutputCodeList &ol,const MemberDef* mdef);
 static int  countLines(yyscan_t yyscanner);
 static void endFontClass(yyscan_t yyscanner);
 static void startFontClass(yyscan_t yyscanner,const char *s);
@@ -991,7 +991,7 @@ static bool checkVhdlString(yyscan_t yyscanner,QCString &name)
   return false;
 }
 
-static void addToSearchIndex(yyscan_t yyscanner,const QCString &text)
+static void addToSearchIndex(yyscan_t /*yyscanner*/,const QCString &text)
 {
   if (Doxygen::searchIndex)
   {
@@ -1231,7 +1231,7 @@ static void codifyLines(yyscan_t yyscanner,const QCString &text,const QCString &
  * line numbers for each line. If \a text contains newlines, the link will be
  * split into multiple links with the same destination, one for each line.
  */
-static void writeMultiLineCodeLink(yyscan_t yyscanner,CodeOutputInterface &ol,
+static void writeMultiLineCodeLink(yyscan_t yyscanner,OutputCodeList &ol,
                   const Definition *d,
                   const QCString &text)
 {
@@ -1271,7 +1271,7 @@ static void writeMultiLineCodeLink(yyscan_t yyscanner,CodeOutputInterface &ol,
 
 /*! writes a link to a function or procedure
  */
-static void generateFuncLink(yyscan_t yyscanner,CodeOutputInterface &ol,const MemberDef* mdef)
+static void generateFuncLink(yyscan_t yyscanner,OutputCodeList &ol,const MemberDef* mdef)
 {
   //printf("generateFuncLink(FuncName=%s)\n",qPrint(mdef->name()));
   QCString memberName=mdef->name();
@@ -1287,7 +1287,7 @@ static void generateFuncLink(yyscan_t yyscanner,CodeOutputInterface &ol,const Me
 } // generateFuncLink
 
 
-static void generateMemLink(yyscan_t yyscanner,CodeOutputInterface &ol,QCString &clName,QCString& memberName)
+static void generateMemLink(yyscan_t yyscanner,OutputCodeList &ol,QCString &clName,QCString& memberName)
 {
   if (memberName.isEmpty()) return;
   if (clName.isEmpty())
@@ -1324,7 +1324,7 @@ static void generateMemLink(yyscan_t yyscanner,CodeOutputInterface &ol,QCString 
 }// generateMemLink
 
 
-static void generateClassOrGlobalLink(yyscan_t yyscanner,CodeOutputInterface &ol,
+static void generateClassOrGlobalLink(yyscan_t yyscanner,OutputCodeList &ol,
                               const QCString &clName, bool /*typeOnly*/, const QCString &curr_class)
 {
   QCString className=clName;
@@ -1581,7 +1581,7 @@ void VHDLCodeParser::resetCodeParserState()
   p->state.vhdlKeyDict.clear();
 }
 
-void VHDLCodeParser::parseCode(CodeOutputInterface &od,
+void VHDLCodeParser::parseCode(OutputCodeList &od,
                                const QCString &/* className */,
                                const QCString &s,
                                SrcLangExt,

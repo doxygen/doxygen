@@ -23,37 +23,38 @@
 
 #define LATEX_STYLE_EXTENSION ".sty"
 
-class TextStream;
+class OutputCodeList;
 
 /** Generator for LaTeX code fragments */
-class LatexCodeGenerator : public CodeOutputInterface
+class LatexCodeGenerator
 {
   public:
-    LatexCodeGenerator(TextStream &t,const QCString &relPath,const QCString &sourceFile);
-    LatexCodeGenerator(TextStream &t);
+    LatexCodeGenerator(TextStream *t,const QCString &relPath,const QCString &sourceFile);
+    LatexCodeGenerator(TextStream *t);
+    void setTextStream(TextStream *t) { m_t = t; }
 
-    virtual OutputType type() const override { return OutputType::Latex; }
+    OutputType type() const { return OutputType::Latex; }
 
-    void codify(const QCString &text) override;
+    void codify(const QCString &text);
     void writeCodeLink(CodeSymbolType type,
                        const QCString &ref,const QCString &file,
                        const QCString &anchor,const QCString &name,
-                       const QCString &tooltip) override;
+                       const QCString &tooltip);
     void writeTooltip(const QCString &,
                       const DocLinkInfo &,
                       const QCString &,
                       const QCString &,
                       const SourceLinkInfo &,
                       const SourceLinkInfo &
-                     )  override {}
-    void writeLineNumber(const QCString &,const QCString &,const QCString &,int,bool) override;
-    void startCodeLine(bool) override;
-    void endCodeLine() override;
-    void startFontClass(const QCString &) override;
-    void endFontClass() override;
-    void writeCodeAnchor(const QCString &) override {}
-    void startCodeFragment(const QCString &style) override;
-    void endCodeFragment(const QCString &style) override;
+                     )  {}
+    void writeLineNumber(const QCString &,const QCString &,const QCString &,int,bool);
+    void startCodeLine(bool);
+    void endCodeLine();
+    void startFontClass(const QCString &);
+    void endFontClass();
+    void writeCodeAnchor(const QCString &) {}
+    void startCodeFragment(const QCString &style);
+    void endCodeFragment(const QCString &style);
 
     // extra methods not part of CodeOutputInterface
     void incUsedTableLevel() { m_usedTableLevel++; }
@@ -72,7 +73,7 @@ class LatexCodeGenerator : public CodeOutputInterface
                         const QCString &tooltip);
     void docify(const QCString &str);
     bool m_streamSet = false;
-    TextStream &m_t;
+    TextStream *m_t;
     QCString m_relPath;
     QCString m_sourceFileName;
     int m_col = 0;
@@ -82,22 +83,22 @@ class LatexCodeGenerator : public CodeOutputInterface
 };
 
 /** Generator for LaTeX output. */
-class LatexGenerator : public OutputGenerator //: public CodeOutputForwarder<OutputGenerator,LatexCodeGenerator>
+class LatexGenerator : public OutputGenerator
 {
   public:
     LatexGenerator();
     LatexGenerator(const LatexGenerator &);
     LatexGenerator &operator=(const LatexGenerator &);
-    virtual ~LatexGenerator();
-    virtual std::unique_ptr<OutputGenerator> clone() const;
+    LatexGenerator(LatexGenerator &&);
+    LatexGenerator &operator=(LatexGenerator &&) = delete;
+   ~LatexGenerator();
+    OutputType type() const { return OutputType::Latex; }
 
     static void init();
     void cleanup();
     static void writeStyleSheetFile(TextStream &t);
     static void writeHeaderFile(TextStream &t);
     static void writeFooterFile(TextStream &t);
-
-    virtual OutputType type() const { return OutputType::Latex; }
 
     void writeDoc(const IDocNodeAST *node,const Definition *ctx,const MemberDef *,int id);
 
@@ -107,6 +108,8 @@ class LatexGenerator : public OutputGenerator //: public CodeOutputForwarder<Out
     void endFile();
     void clearBuffer();
 
+    void startPageDoc(const QCString &) {}
+    void endPageDoc() {}
     void startIndexSection(IndexSection);
     void endIndexSection(IndexSection);
     void writePageLink(const QCString &,bool);
@@ -309,15 +312,16 @@ class LatexGenerator : public OutputGenerator //: public CodeOutputForwarder<Out
     void setCurrentDoc(const Definition *,const QCString &,bool) {}
     void addWord(const QCString &,bool) {}
 
-    CodeOutputInterface *codeGen() { return &m_codeGen; }
+    void addCodeGen(OutputCodeList &list);
 
   private:
     bool m_firstDescItem = true;
     bool m_disableLinks = false;
     QCString m_relPath;
     int m_indent = 0;
-    bool templateMemberItem = false;
-    LatexCodeGenerator m_codeGen;
+    bool m_templateMemberItem = false;
+    std::unique_ptr<OutputCodeList> m_codeList;
+    LatexCodeGenerator *m_codeGen;
 };
 
 void writeExtraLatexPackages(TextStream &t);

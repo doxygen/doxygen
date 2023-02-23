@@ -21,7 +21,7 @@
 
 #include "tooltip.h"
 #include "definition.h"
-#include "outputgen.h"
+#include "outputlist.h"
 #include "util.h"
 #include "filedef.h"
 #include "doxygen.h"
@@ -84,7 +84,7 @@ void TooltipManager::addTooltip(const Definition *d)
   //printf("%p: addTooltip(%s)\n",this,id.data());
 }
 
-void TooltipManager::writeTooltips(CodeOutputInterface &ol)
+void TooltipManager::writeTooltips(OutputCodeList &ol)
 {
   // critical section
   std::lock_guard<std::mutex> lock(g_tooltipsMutex);

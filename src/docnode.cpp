@@ -34,6 +34,7 @@
 #include "language.h"
 #include "datetime.h"
 #include "trace.h"
+#include "anchor.h"
 
 #define INTERNAL_ASSERT(x) do {} while(0)
 //#define INTERNAL_ASSERT(x) if (!(x)) TRACE("INTERNAL_ASSERT({}) failed retval={:#x}: file={} line={}",#x,retval,__FILE__,__LINE__)
@@ -281,6 +282,7 @@ void DocInclude::parse(DocNodeVariant *)
       parser()->readTextFileByName(m_file,m_text);
       break;
     case Snippet:
+    case SnippetTrimLeft:
     case SnipWithLines:
       parser()->readTextFileByName(m_file,m_text);
       // check here for the existence of the blockId inside the file, so we
@@ -3526,6 +3528,10 @@ void DocPara::handleInclude(DocNodeVariant *thisVariant,const QCString &cmdName,
     {
       t = DocInclude::SnippetDoc;
     }
+    else if (t==DocInclude::Snippet && contains("trimleft"))
+    {
+      t = DocInclude::SnippetTrimLeft;
+    }
     tok=parser()->tokenizer.lex();
     if (tok!=TK_WHITESPACE)
     {
@@ -3565,7 +3571,7 @@ void DocPara::handleInclude(DocNodeVariant *thisVariant,const QCString &cmdName,
   }
   QCString fileName = parser()->context.token->name;
   QCString blockId;
-  if (t==DocInclude::Snippet || t==DocInclude::SnipWithLines || t==DocInclude::SnippetDoc)
+  if (t==DocInclude::Snippet || t==DocInclude::SnipWithLines || t==DocInclude::SnippetDoc || t == DocInclude::SnippetTrimLeft)
   {
     if (fileName == "this") fileName=parser()->context.fileName;
     parser()->tokenizer.setStateSnippet();
@@ -4223,6 +4229,7 @@ int DocPara::handleCommand(DocNodeVariant *thisVariant,const QCString &cmdName, 
         children().append<DocLineBreak>(parser(),thisVariant);
       }
       break;
+    case CMD_IANCHOR:
     case CMD_ANCHOR:
       {
         parser()->handleAnchor(thisVariant,children());
@@ -5362,7 +5369,7 @@ endparagraph:
 
 int DocSection::parse(DocNodeVariant *thisVariant)
 {
-  AUTO_TRACE("start {} level={}",parser()->context.token->sectionId,m_level);
+  AUTO_TRACE("start {} level={}", parser()->context.token->sectionId, m_level);
   int retval=RetVal_OK;
   auto ns = AutoNodeStack(parser(),thisVariant);
 
@@ -5437,8 +5444,14 @@ int DocSection::parse(DocNodeVariant *thisVariant)
     }
     else if (retval==RetVal_Subsubsection && m_level<=Doxygen::subpageNestingLevel+2)
     {
-      if ((m_level<=1+Doxygen::subpageNestingLevel) && !parser()->context.token->sectionId.startsWith("autotoc_md"))
-          warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Unexpected subsubsection command found inside %s!",g_sectionLevelToName[m_level]);
+      if ((m_level <= 1 + Doxygen::subpageNestingLevel) &&
+          AnchorGenerator::instance().isGenerated(parser()->context.token->sectionId.str()))
+      {
+        warn_doc_error(parser()->context.fileName,
+                       parser()->tokenizer.getLineNr(),
+                       "Unexpected subsubsection command found inside %s!",
+                       g_sectionLevelToName[m_level]);
+      }
       // then parse any number of nested sections
       while (retval==RetVal_Subsubsection) // more sections follow
       {
@@ -5447,12 +5460,17 @@ int DocSection::parse(DocNodeVariant *thisVariant)
                                 parser()->context.token->sectionId);
         retval = children().get_last<DocSection>()->parse(vDocSection);
       }
-      if (!(m_level<Doxygen::subpageNestingLevel+2 && retval == RetVal_Subsection)) break;
+      if (!(m_level < Doxygen::subpageNestingLevel + 2 && retval == RetVal_Subsection)) break;
     }
     else if (retval==RetVal_Paragraph && m_level<=std::min(5,Doxygen::subpageNestingLevel+3))
     {
-      if ((m_level<=2+Doxygen::subpageNestingLevel) && !parser()->context.token->sectionId.startsWith("autotoc_md"))
-        warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Unexpected paragraph command found inside %s!",g_sectionLevelToName[m_level]);
+      if ((m_level <= 2 + Doxygen::subpageNestingLevel) &&
+          AnchorGenerator::instance().isGenerated(parser()->context.token->sectionId.str()))
+      {
+        warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),
+                       "Unexpected paragraph command found inside %s!",
+                       g_sectionLevelToName[m_level]);
+      }
       // then parse any number of nested sections
       while (retval==RetVal_Paragraph) // more sections follow
       {
@@ -5478,7 +5496,7 @@ int DocSection::parse(DocNodeVariant *thisVariant)
                   retval==RetVal_EndInternal
                  );
 
-  AUTO_TRACE_EXIT("retval={}",DocTokenizer::retvalToString(retval));
+  AUTO_TRACE_EXIT("retval={}", DocTokenizer::retvalToString(retval));
   return retval;
 }
 
@@ -5600,7 +5618,7 @@ void DocRoot::parse(DocNodeVariant *thisVariant)
 
   // first parse any number of paragraphs
   bool isFirst=TRUE;
-  DocPara *lastPar=0;
+  DocPara *lastPar = nullptr;
   do
   {
     {
@@ -5617,11 +5635,14 @@ void DocRoot::parse(DocNodeVariant *thisVariant)
         lastPar = par;
       }
     }
-    if (retval==RetVal_Paragraph)
+    if (retval == RetVal_Paragraph)
     {
-      if (!parser()->context.token->sectionId.startsWith("autotoc_md"))
+      if (!AnchorGenerator::instance().isGenerated(parser()->context.token->sectionId.str()))
       {
-         warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"found paragraph command (id: '%s') outside of subsubsection context!",qPrint(parser()->context.token->sectionId));
+        warn_doc_error(parser()->context.fileName,
+                       parser()->tokenizer.getLineNr(),
+                       "found paragraph command (id: '%s') outside of subsubsection context!",
+                       qPrint(parser()->context.token->sectionId));
       }
       while (retval==RetVal_Paragraph)
       {
@@ -5650,8 +5671,13 @@ void DocRoot::parse(DocNodeVariant *thisVariant)
     }
     if (retval==RetVal_Subsubsection)
     {
-      if (!(parser()->context.token->sectionId.startsWith("autotoc_md")))
-        warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"found subsubsection command (id: '%s') outside of subsection context!",qPrint(parser()->context.token->sectionId));
+      if (!AnchorGenerator::instance().isGenerated(parser()->context.token->sectionId.str()))
+      {
+        warn_doc_error(parser()->context.fileName,
+                       parser()->tokenizer.getLineNr(),
+                       "found subsubsection command (id: '%s') outside of subsection context!",
+                       qPrint(parser()->context.token->sectionId));
+      }
       while (retval==RetVal_Subsubsection)
       {
         if (!parser()->context.token->sectionId.isEmpty())
@@ -5679,9 +5705,12 @@ void DocRoot::parse(DocNodeVariant *thisVariant)
     }
     if (retval==RetVal_Subsection)
     {
-      if (!parser()->context.token->sectionId.startsWith("autotoc_md"))
+      if (!AnchorGenerator::instance().isGenerated(parser()->context.token->sectionId.str()))
       {
-        warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"found subsection command (id: '%s') outside of section context!",qPrint(parser()->context.token->sectionId));
+        warn_doc_error(parser()->context.fileName,
+                       parser()->tokenizer.getLineNr(),
+                       "found subsection command (id: '%s') outside of section context!",
+                       qPrint(parser()->context.token->sectionId));
       }
       while (retval==RetVal_Subsection)
       {
@@ -5748,6 +5777,4 @@ void DocRoot::parse(DocNodeVariant *thisVariant)
   }
 
   parser()->handleUnclosedStyleCommands();
-
 }
-

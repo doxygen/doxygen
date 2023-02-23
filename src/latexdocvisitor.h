@@ -22,6 +22,7 @@
 #include "docvisitor.h"
 #include "docnode.h"
 
+class OutputCodeList;
 class LatexCodeGenerator;
 class TextStream;
 
@@ -30,7 +31,7 @@ class TextStream;
 class LatexDocVisitor : public DocVisitor
 {
   public:
-    LatexDocVisitor(TextStream &t,LatexCodeGenerator &ci,
+    LatexDocVisitor(TextStream &t,OutputCodeList &ci,LatexCodeGenerator &lcg,
                     const QCString &langExt);
 
     //--------------------------------------
@@ -160,7 +161,8 @@ class LatexDocVisitor : public DocVisitor
     //--------------------------------------
 
     TextStream &m_t;
-    LatexCodeGenerator &m_ci;
+    OutputCodeList &m_ci;
+    LatexCodeGenerator &m_lcg;
     bool m_insidePre;
     bool m_insideItem;
     bool m_hide;

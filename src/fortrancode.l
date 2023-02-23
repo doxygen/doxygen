@@ -135,7 +135,7 @@ struct fortrancodeYY_state
   bool          isExternal = false;
   QCString      str=QCString();             //!< contents of fortran string
 
-  CodeOutputInterface * code = 0;
+  OutputCodeList * code = 0;
 
   const char *  inputString = 0;     //!< the code fragment as text
   int           inputPosition = 0;   //!< read offset during parsing
@@ -194,17 +194,17 @@ static void startCodeLine(yyscan_t yyscanner);
 static void endCodeLine(yyscan_t yyscanner);
 static void nextCodeLine(yyscan_t yyscanner);
 static void codifyLines(yyscan_t yyscanner,const QCString &text);
-static void writeMultiLineCodeLink(yyscan_t yyscanner,CodeOutputInterface &ol,
+static void writeMultiLineCodeLink(yyscan_t yyscanner,OutputCodeList &ol,
                   Definition *d,const QCString &text);
 static bool getGenericProcedureLink(yyscan_t yyscanner,const ClassDef *cd,
                                     const QCString &memberText,
-                                    CodeOutputInterface &ol);
+                                    OutputCodeList &ol);
 static bool getLink(yyscan_t yyscanner,const UseMap &useMap, // map with used modules
                     const QCString &memberText,  // exact member text
-                    CodeOutputInterface &ol,
+                    OutputCodeList &ol,
                     const QCString &text);
-static void generateLink(yyscan_t yyscanner,CodeOutputInterface &ol, const QCString &lname);
-static void generateLink(yyscan_t yyscanner,CodeOutputInterface &ol, const char *lname);
+static void generateLink(yyscan_t yyscanner,OutputCodeList &ol, const QCString &lname);
+static void generateLink(yyscan_t yyscanner,OutputCodeList &ol, const char *lname);
 static int countLines(yyscan_t yyscanner);
 static void startScope(yyscan_t yyscanner);
 static void endScope(yyscan_t yyscanner);
@@ -900,7 +900,7 @@ static void setCurrentDoc(yyscan_t yyscanner,const QCString &anchor)
   }
 }
 
-static void addToSearchIndex(yyscan_t yyscanner,const QCString &text)
+static void addToSearchIndex(yyscan_t /*yyscanner*/,const QCString &text)
 {
   if (Doxygen::searchIndex)
   {
@@ -1021,7 +1021,7 @@ static void codifyLines(yyscan_t yyscanner,const QCString &text)
  * line numbers for each line. If \a text contains newlines, the link will be
  * split into multiple links with the same destination, one for each line.
  */
-static void writeMultiLineCodeLink(yyscan_t yyscanner,CodeOutputInterface &ol,
+static void writeMultiLineCodeLink(yyscan_t yyscanner,OutputCodeList &ol,
                   Definition *d,const QCString &text)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
@@ -1214,14 +1214,14 @@ static MemberDef *getFortranDefs(yyscan_t yyscanner,const QCString &memberName, 
 */
 static bool getGenericProcedureLink(yyscan_t ,const ClassDef *,
                                     const QCString &,
-                                    CodeOutputInterface &)
+                                    OutputCodeList &)
 {
   return FALSE;
 }
 
 static bool getLink(yyscan_t yyscanner,const UseMap &useMap, // dictionary with used modules
                     const QCString &memberText,  // exact member text
-                    CodeOutputInterface &ol,
+                    OutputCodeList &ol,
                     const QCString &text)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
@@ -1252,7 +1252,7 @@ static bool getLink(yyscan_t yyscanner,const UseMap &useMap, // dictionary with 
 }
 
 
-static void generateLink(yyscan_t yyscanner,CodeOutputInterface &ol, const QCString &lname)
+static void generateLink(yyscan_t yyscanner,OutputCodeList &ol, const QCString &lname)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   ClassDef *cd=0;
@@ -1295,7 +1295,7 @@ static void generateLink(yyscan_t yyscanner,CodeOutputInterface &ol, const QCStr
   }
 }
 
-static void generateLink(yyscan_t yyscanner,CodeOutputInterface &ol, const char *lname)
+static void generateLink(yyscan_t yyscanner,OutputCodeList &ol, const char *lname)
 {
   generateLink(yyscanner,ol,QCString(lname));
 }
@@ -1390,7 +1390,7 @@ static void checkContLines(yyscan_t yyscanner,const char *s)
   yyextra->hasContLine[0] = 0;
 }
 
-void parseFortranCode(CodeOutputInterface &,const char *,const QCString &,
+void parseFortranCode(OutputCodeList &,const char *,const QCString &,
                   bool , const char *,const FileDef *,
                   int ,int ,bool ,
                   const MemberDef *,bool,const Definition *,
@@ -1435,7 +1435,7 @@ void FortranCodeParser::resetCodeParserState()
   BEGIN( Start );
 }
 
-void FortranCodeParser::parseCode(CodeOutputInterface & codeOutIntf,
+void FortranCodeParser::parseCode(OutputCodeList & codeOutIntf,
                    const QCString & /* scopeName */,
                    const QCString & input,
                    SrcLangExt /*lang*/,
@@ -1456,7 +1456,7 @@ void FortranCodeParser::parseCode(CodeOutputInterface & codeOutIntf,
   //::parseFortranCode(codeOutIntf,scopeName,input,isExampleBlock,exampleName,
   //                   fileDef,startLine,endLine,inlineFragment,memberDef,
   //                   showLineNumbers,searchCtx,collectXRefs,m_format);
-  //  parseFortranCode(CodeOutputInterface &od,const char *,const QCString &s,
+  //  parseFortranCode(OutputCodeList &od,const char *,const QCString &s,
   //                bool exBlock, const char *exName,FileDef *fd,
   //                int startLine,int endLine,bool inlineFragment,
   //                const MemberDef *,bool,const Definition *searchCtx,

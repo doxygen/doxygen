@@ -116,7 +116,7 @@ struct scannerYY_state
   int              yyBegColNr   = 1 ;
   QCString         fileName;
   MethodTypes      mtype = MethodTypes::Method;
-  bool             stat = false;
+  bool             isStatic = false;
   Specifier        virt = Specifier::Normal;
   Specifier        baseVirt = Specifier::Normal;
   QCString         msType;
@@ -775,7 +775,8 @@ NONLopt [^\n]*
                                             yyextra->language = yyextra->current->lang = SrcLangExt_ObjC;
                                             yyextra->insideObjC = TRUE;
                                             yyextra->current->virt = Specifier::Virtual;
-                                            yyextra->current->stat=yytext[0]=='+';
+
+                                            yyextra->current->isStatic=yytext[0]=='+';
                                             initMethodProtection(yyscanner,Protection::Public);
                                             BEGIN( ObjCMethod );
                                           }
@@ -1063,22 +1064,22 @@ NONLopt [^\n]*
                                           lineCount(yyscanner);
                                         }
 <FindMembers>{B}*"static"{BN}*/"{"      { yyextra->current->type += " static ";
-                                          yyextra->current->stat = TRUE;
+                                          yyextra->current->isStatic = TRUE;
                                           lineCount(yyscanner);
                                         }
 <FindMembers>{B}*"static"{BN}+          { yyextra->current->type += " static ";
-                                          yyextra->current->stat = TRUE;
+                                          yyextra->current->isStatic = TRUE;
                                           lineCount(yyscanner);
                                         }
 <FindMembers>{B}*"extern"{BN}+          { if (yyextra->insideJava) REJECT;
-                                          yyextra->current->stat = FALSE;
+                                          yyextra->current->isStatic = FALSE;
                                           yyextra->current->explicitExternal = TRUE;
                                           lineCount(yyscanner);
                                         }
 <FindMembers>{B}*"const"{BN}+           { if (yyextra->insideCS)
                                           {
                                             yyextra->current->type += " const ";
-                                            if (yyextra->insideCS) yyextra->current->stat = TRUE;
+                                            if (yyextra->insideCS) yyextra->current->isStatic = TRUE;
                                             lineCount(yyscanner);
                                           }
                                           else
@@ -1674,7 +1675,7 @@ NONLopt [^\n]*
                                           lineCount(yyscanner);
                                           yyextra->current->name += *yytext ;
                                         }
-<Operator>"<>"                          { /* skip guided templ specifiers */ }
+<Operator>"<"({B}*{ID}{B}*(","{B}*{BN})*{B}*)?">" { /* skip guided templ specifiers */ }
 <Operator>"("                           {
                                           yyextra->current->name = yyextra->current->name.simplifyWhiteSpace();
                                           unput(*yytext);
@@ -2321,7 +2322,7 @@ NONLopt [^\n]*
                                                 yyextra->current->name  = yytext;
                                               else
                                                 yyextra->current->name += yytext;
-                                              yyextra->current->stat = TRUE;
+                                              yyextra->current->isStatic = TRUE;
                                             }
                                             else
                                             {
@@ -2331,7 +2332,7 @@ NONLopt [^\n]*
                                                 yyextra->current->name += yytext;
                                               if (yyextra->current->name.startsWith("static "))
                                               {
-                                                yyextra->current->stat = TRUE;
+                                                yyextra->current->isStatic = TRUE;
                                                 yyextra->current->name= yyextra->current->name.mid(7);
                                               }
                                               else if (yyextra->current->name.startsWith("inline "))
@@ -3228,6 +3229,13 @@ NONLopt [^\n]*
                                             *yyextra->pCopyRoundGString << yytext;
                                           }
                                         }
+<GCopyRound>"@\""                       {
+                                          if (!yyextra->insideCS) REJECT;
+                                          *yyextra->pCopyRoundGString << yytext;
+                                           yyextra->lastSkipVerbStringContext=YY_START;
+                                           yyextra->pSkipVerbString=yyextra->pCopyRoundGString;
+                                           BEGIN(SkipVerbString);
+                                        }
 <GCopyRound>[^"'()\n\/,]+               {
                                           *yyextra->pCopyRoundGString << yytext;
                                         }
@@ -3450,7 +3458,7 @@ NONLopt [^\n]*
                                           {
                                             yyextra->current->type.prepend("typedef ");
                                           }
-                                          bool stat = yyextra->current->stat;
+                                          bool isStatic = yyextra->current->isStatic;
                                           Protection prot = yyextra->current->protection;
                                           bool isConcept = yyextra->current->section==Entry::CONCEPT_SEC;
                                           if (isConcept) // C++20 concept
@@ -3476,7 +3484,7 @@ NONLopt [^\n]*
                                           }
                                           if ( *yytext == ',')
                                           {
-                                            yyextra->current->stat = stat; // the static attribute holds for all variables
+                                            yyextra->current->isStatic = isStatic; // the static attribute holds for all variables
                                             yyextra->current->protection = prot;
                                             yyextra->current->name.resize(0);
                                             yyextra->current->args.resize(0);
@@ -3855,7 +3863,7 @@ NONLopt [^\n]*
                                           yyextra->current->program << yytext ;
                                         }
   /* Interpolated string C# */
-<CopyGString,SkipString,SkipCurly,ReadBody,ReadNSBody,ReadBodyIntf,FindMembers,FindMemberName>$\"   { if (!yyextra->insideCS) REJECT
+<SkipCurly,ReadBody,ReadNSBody,ReadBodyIntf,FindMembers,FindMemberName>$\"   { if (!yyextra->insideCS) REJECT
                                           yyextra->current->program << yytext ;
                                           yyextra->pSkipInterpString = &yyextra->current->program;
                                           yyextra->lastSkipInterpStringContext=YY_START;
@@ -4212,7 +4220,7 @@ NONLopt [^\n]*
                                               varEntry->protection = yyextra->current->protection ;
                                               varEntry->mtype = yyextra->current->mtype;
                                               varEntry->virt = yyextra->current->virt;
-                                              varEntry->stat = yyextra->current->stat;
+                                              varEntry->isStatic = yyextra->current->isStatic;
                                               varEntry->section = Entry::VARIABLE_SEC;
                                               varEntry->name = yyextra->msName.stripWhiteSpace();
                                               varEntry->type = yyextra->current->type.simplifyWhiteSpace()+" ";
@@ -4695,6 +4703,7 @@ NONLopt [^\n]*
                                           yyextra->fullArgString+=yytext;
                                           if (&yytext[4]==yyextra->docBlockName)
                                           {
+                                            yyextra->docBlockName="";
                                             BEGIN(CopyArgCommentLine);
                                           }
                                         }
@@ -4702,6 +4711,7 @@ NONLopt [^\n]*
                                           yyextra->fullArgString+=yytext;
                                           if (yyextra->docBlockName==&yytext[1])
                                           {
+                                            yyextra->docBlockName="";
                                             BEGIN(CopyArgCommentLine);
                                           }
                                         }
@@ -6526,7 +6536,7 @@ NONLopt [^\n]*
                                             {
                                               // static Java initializer
                                               yyextra->needsSemi = FALSE;
-                                              if (yyextra->current->stat)
+                                              if (yyextra->current->isStatic)
                                               {
                                                 yyextra->current->name="[static initializer]";
                                                 yyextra->current->type.resize(0);
@@ -6804,6 +6814,7 @@ NONLopt [^\n]*
                                           yyextra->docBlock << yytext;
                                           if (yyextra->docBlockName=="<pre>")
                                           {
+                                            yyextra->docBlockName="";
                                             BEGIN(DocBlock);
                                           }
                                         }
@@ -6811,6 +6822,7 @@ NONLopt [^\n]*
                                           yyextra->docBlock << yytext;
                                           if (yyextra->docBlockName=="<code>")
                                           {
+                                            yyextra->docBlockName="";
                                             BEGIN(DocBlock);
                                           }
                                         }
@@ -6818,6 +6830,7 @@ NONLopt [^\n]*
                                           yyextra->docBlock << yytext;
                                           if (yyextra->docBlockName==&yytext[1])
                                           {
+                                            yyextra->docBlockName="";
                                             BEGIN(DocBlock);
                                           }
                                         }
@@ -6825,6 +6838,7 @@ NONLopt [^\n]*
                                           yyextra->docBlock << yytext;
                                           if (&yytext[4]==yyextra->docBlockName)
                                           {
+                                            yyextra->docBlockName="";
                                             BEGIN(DocBlock);
                                           }
                                         }
@@ -6903,14 +6917,17 @@ NONLopt [^\n]*
 <DocCopyBlock>[^\<@/\*\]~\$\\\n]+       { // any character that is not special
                                           yyextra->docBlock << yytext;
                                         }
-<DocCopyBlock>{CCS}|{CCE}|{CPPC}           {
-                                          if (yytext[1]=='*')
+<DocCopyBlock>{CCS}|{CCE}|{CPPC}        {
+                                          if (!((yyextra->docBlockName=="code") || (yyextra->docBlockName=="iliteral")))
                                           {
-                                            yyextra->nestedComment=TRUE;
-                                          }
-                                          else if (yytext[0]=='*')
-                                          {
-                                            yyextra->nestedComment=FALSE;
+                                            if (yytext[1]=='*')
+                                            {
+                                              yyextra->nestedComment=true;
+                                            }
+                                            else if (yytext[0]=='*')
+                                            {
+                                              yyextra->nestedComment=false;
+                                            }
                                           }
                                           yyextra->docBlock << yytext;
                                         }
@@ -7137,7 +7154,7 @@ static void initParser(yyscan_t yyscanner)
   yyextra->roundCount = 0;
   yyextra->curlyCount = 0;
   yyextra->mtype = MethodTypes::Method;
-  yyextra->stat = FALSE;
+  yyextra->isStatic = FALSE;
   yyextra->virt = Specifier::Normal;
   yyextra->baseVirt = Specifier::Normal;
   yyextra->isTypedef = FALSE;
@@ -7160,7 +7177,7 @@ static void initEntry(yyscan_t yyscanner)
   yyextra->current->protection = yyextra->protection ;
   yyextra->current->mtype      = yyextra->mtype;
   yyextra->current->virt       = yyextra->virt;
-  yyextra->current->stat       = yyextra->stat;
+  yyextra->current->isStatic   = yyextra->isStatic;
   yyextra->current->lang       = yyextra->language;
   //printf("*** initEntry(yyscanner) yyextra->language=%d\n",yyextra->language);
   yyextra->commentScanner.initGroupInfo(yyextra->current.get());
@@ -7650,7 +7667,7 @@ static void parseCompounds(yyscan_t yyscanner,const std::shared_ptr<Entry> &rt)
       yyextra->insideObjC = ce->lang==SrcLangExt_ObjC;
       //printf("---> Inner block starts at line %d objC=%d\n",yyextra->yyLineNr,yyextra->insideObjC);
       yyextra->current = std::make_shared<Entry>();
-      yyextra->stat = FALSE;
+      yyextra->isStatic = FALSE;
       initEntry(yyscanner);
 
       // deep copy group list from parent (see bug 727732)
@@ -7696,7 +7713,7 @@ static void parseCompounds(yyscan_t yyscanner,const std::shared_ptr<Entry> &rt)
       {
         if (ce->section == Entry::NAMESPACE_SEC ) // unnamed namespace
         {
-          yyextra->current->stat = yyextra->stat = TRUE;
+          yyextra->current->isStatic = yyextra->isStatic = TRUE;
         }
         yyextra->current->protection = yyextra->protection = ce->protection;
       }
@@ -7706,7 +7723,7 @@ static void parseCompounds(yyscan_t yyscanner,const std::shared_ptr<Entry> &rt)
       }
       yyextra->mtype = MethodTypes::Method;
       yyextra->virt = Specifier::Normal;
-      //printf("name=%s yyextra->current->stat=%d yyextra->stat=%d\n",qPrint(ce->name),yyextra->current->stat,yyextra->stat);
+      //printf("name=%s yyextra->current->isStatic=%d yyextra->isStatic=%d\n",qPrint(ce->name),yyextra->current->isStatic,yyextra->isStatic);
 
       //memberGroupId = DOX_NOGROUP;
       //memberGroupRelates.resize(0);
@@ -7753,7 +7770,7 @@ static void parseMain(yyscan_t yyscanner,
   //depthIf       = 0;
   yyextra->protection    = Protection::Public;
   yyextra->mtype         = MethodTypes::Method;
-  yyextra->stat          = FALSE;
+  yyextra->isStatic      = FALSE;
   yyextra->virt          = Specifier::Normal;
   yyextra->current_root  = rt;
   yyextra->yyLineNr      = 1 ;

@@ -1136,6 +1136,10 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          unput_string(yytext,yyleng);
                          return 0;
                        }
+<St_Ref>"\""[^"\n]+"\"" { // quoted first argument -> return without quotes
+                         yyextra->token->name=QCString(yytext).mid(1,yyleng-2);
+                         return TK_WORD;
+                       }
 <St_Ref>.              { // any other character
                          unput(*yytext);
                          return 0;
@@ -1388,6 +1392,10 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                                       }
                                     }
 <St_Sections>{CMD}"anchor"{BLANK}+  {
+                                      yyextra->secType = SectionType::Anchor;
+                                      BEGIN(St_SecLabel1);
+                                    }
+<St_Sections>{CMD}"ianchor"{BLANK}+  {
                                       yyextra->secType = SectionType::Anchor;
                                       BEGIN(St_SecLabel1);
                                     }

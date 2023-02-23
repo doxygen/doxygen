@@ -76,7 +76,7 @@ struct pycodeYY_state
   QCString      curClassName;
   StringVector  curClassBases;
 
-  CodeOutputInterface * code = 0;
+  OutputCodeList * code = 0;
   const char *  inputString = 0;     //!< the code fragment as text
   int           inputPosition = 0;   //!< read offset during parsing
   QCString      fileName;
@@ -131,21 +131,21 @@ static const ClassDef *stripClassName(yyscan_t yyscanner,const QCString &s,Defin
 static void codify(yyscan_t yyscanner,const QCString &text);
 static void endCodeLine(yyscan_t yyscanner);
 static void nextCodeLine(yyscan_t yyscanner);
-static void writeMultiLineCodeLink(yyscan_t yyscanner, CodeOutputInterface &ol, const Definition *d, const QCString &text);
+static void writeMultiLineCodeLink(yyscan_t yyscanner, OutputCodeList &ol, const Definition *d, const QCString &text);
 static void startFontClass(yyscan_t yyscanner,const char *s);
 static void endFontClass(yyscan_t yyscanner);
 static void codifyLines(yyscan_t yyscanner,const QCString &text);
 static bool getLinkInScope(yyscan_t yyscanner, const QCString &c, const QCString &m,
-                           const QCString &memberText, CodeOutputInterface &ol, const QCString &text);
+                           const QCString &memberText, OutputCodeList &ol, const QCString &text);
 static bool getLink(yyscan_t yyscanner, const QCString &className, const QCString &memberName,
-                    CodeOutputInterface &ol, const QCString &text=QCString());
-static void generateClassOrGlobalLink(yyscan_t yyscanner, CodeOutputInterface &ol,
+                    OutputCodeList &ol, const QCString &text=QCString());
+static void generateClassOrGlobalLink(yyscan_t yyscanner, OutputCodeList &ol,
                                       const QCString &clName, bool typeOnly=FALSE);
-static void generateFunctionLink(yyscan_t yyscanner, CodeOutputInterface &ol,
+static void generateFunctionLink(yyscan_t yyscanner, OutputCodeList &ol,
                                 const QCString &funcName);
-static bool findMemberLink(yyscan_t yyscanner, CodeOutputInterface &ol,
+static bool findMemberLink(yyscan_t yyscanner, OutputCodeList &ol,
                            const Definition *sym, const QCString &symName);
-static void findMemberLink(yyscan_t yyscanner, CodeOutputInterface &ol,
+static void findMemberLink(yyscan_t yyscanner, OutputCodeList &ol,
                            const QCString &symName);
 static void incrementFlowKeyWordCount(yyscan_t yyscanner);
 static void adjustScopesAndSuites(yyscan_t yyscanner,unsigned indentLength);
@@ -950,7 +950,7 @@ static void setCurrentDoc(yyscan_t yyscanner, const QCString &anchor)
 
 //-------------------------------------------------------------------------------
 
-static void addToSearchIndex(yyscan_t yyscanner, const QCString &text)
+static void addToSearchIndex(yyscan_t /* yyscanner */, const QCString &text)
 {
   if (Doxygen::searchIndex)
   {
@@ -1095,7 +1095,7 @@ static void nextCodeLine(yyscan_t yyscanner)
  * split into multiple links with the same destination, one for each line.
  */
 static void writeMultiLineCodeLink(yyscan_t yyscanner,
-                  CodeOutputInterface &ol,
+                  OutputCodeList &ol,
                   const Definition *d,
                   const QCString &text)
 {
@@ -1200,7 +1200,7 @@ static bool getLinkInScope(yyscan_t yyscanner,
                            const QCString &c,  // scope
                            const QCString &m,  // member
                            const QCString &memberText, // exact text
-                           CodeOutputInterface &ol,
+                           OutputCodeList &ol,
                            const QCString &text
                           )
 {
@@ -1246,7 +1246,7 @@ static bool getLinkInScope(yyscan_t yyscanner,
 static bool getLink(yyscan_t yyscanner,
                     const QCString &className,
                     const QCString &memberName,
-                    CodeOutputInterface &ol,
+                    OutputCodeList &ol,
                     const QCString &text)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
@@ -1272,7 +1272,7 @@ static bool getLink(yyscan_t yyscanner,
   finds its class or global id and links to it.
 */
 static void generateClassOrGlobalLink(yyscan_t yyscanner,
-                                      CodeOutputInterface &ol,
+                                      OutputCodeList &ol,
                                       const QCString &clName,
                                       bool typeOnly)
 {
@@ -1413,7 +1413,7 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
 
 */
 static void generateFunctionLink(yyscan_t yyscanner,
-                                CodeOutputInterface &ol,
+                                OutputCodeList &ol,
                                 const QCString &funcName)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
@@ -1456,7 +1456,7 @@ static void generateFunctionLink(yyscan_t yyscanner,
 //-------------------------------------------------------------------------------
 
 static bool findMemberLink(yyscan_t yyscanner,
-                           CodeOutputInterface &ol,
+                           OutputCodeList &ol,
                            const Definition *sym,
                            const QCString &symName)
 {
@@ -1494,7 +1494,7 @@ static bool findMemberLink(yyscan_t yyscanner,
 //-------------------------------------------------------------------------------
 
 static void findMemberLink(yyscan_t yyscanner,
-                           CodeOutputInterface &ol,
+                           OutputCodeList &ol,
                            const QCString &symName)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
@@ -1565,7 +1565,7 @@ void PythonCodeParser::resetCodeParserState()
   BEGIN( Body );
 }
 
-void PythonCodeParser::parseCode(CodeOutputInterface &codeOutIntf,
+void PythonCodeParser::parseCode(OutputCodeList &codeOutIntf,
     const QCString &/* scopeName */,
     const QCString &input,
     SrcLangExt /*lang*/,
@@ -1584,7 +1584,7 @@ void PythonCodeParser::parseCode(CodeOutputInterface &codeOutIntf,
   yyscan_t yyscanner = p->yyscanner;
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
 
-  //printf("***parseCode()\n");
+  //printf("***parseCode(%s)\n",qPrint(input));
 
   if (input.isEmpty()) return;
   DebugLex debugLex(Debug::Lex_pycode, __FILE__, fileDef ? qPrint(fileDef->fileName()): NULL);

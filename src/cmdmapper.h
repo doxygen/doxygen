@@ -150,7 +150,8 @@ enum CommandType
   CMD_ISTARTCODE   = 121,
   CMD_ENDICODE     = 122,
   CMD_IVERBATIM    = 123,
-  CMD_ENDIVERBATIM = 124
+  CMD_ENDIVERBATIM = 124,
+  CMD_IANCHOR      = 125
 };
 
 enum HtmlTagType

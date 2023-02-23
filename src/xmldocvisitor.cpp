@@ -144,7 +144,7 @@ static void visitPostEnd(TextStream &t, const char *cmd)
   t << "</" << cmd << ">\n";
 }
 
-XmlDocVisitor::XmlDocVisitor(TextStream &t,CodeOutputInterface &ci,const QCString &langExt)
+XmlDocVisitor::XmlDocVisitor(TextStream &t,OutputCodeList &ci,const QCString &langExt)
   : m_t(t), m_ci(ci), m_insidePre(FALSE), m_hide(FALSE),
     m_langExt(langExt)
 {
@@ -478,10 +478,11 @@ void XmlDocVisitor::operator()(const DocInclude &inc)
       m_t << "</verbatim>";
       break;
     case DocInclude::Snippet:
+    case DocInclude::SnippetTrimLeft:
       m_t << "<programlisting filename=\"" << inc.file() << "\">";
       getCodeParser(inc.extension()).parseCode(m_ci,
                                         inc.context(),
-                                        extractBlock(inc.text(),inc.blockId()),
+                                        extractBlock(inc.text(),inc.blockId(),inc.type()==DocInclude::SnippetTrimLeft),
                                         langExt,
                                         inc.isExample(),
                                         inc.exampleFile()

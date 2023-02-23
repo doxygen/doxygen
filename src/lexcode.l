@@ -33,6 +33,7 @@ typedef yyguts_t *yyscan_t;
 #include "config.h"
 #include "doxygen.h"
 #include "outputgen.h"
+#include "outputlist.h"
 #include "code.h"
 #include "lexcode.h"
 #include "filedef.h"
@@ -48,7 +49,7 @@ typedef yyguts_t *yyscan_t;
 
 struct lexcodeYY_state
 {
-     CodeOutputInterface *code;
+     OutputCodeList *code;
      CCodeParser ccodeParser;
      const char   *inputString;     //!< the code fragment as text
      int           inputPosition;   //!< read offset during parsing
@@ -1196,7 +1197,7 @@ void LexCodeParser::resetCodeParserState()
   yyextra->currentMemberDef = 0;
 }
 
-void LexCodeParser::parseCode(CodeOutputInterface &codeOutIntf,
+void LexCodeParser::parseCode(OutputCodeList &codeOutIntf,
                const QCString &scopeName,
                const QCString &input,
                SrcLangExt,

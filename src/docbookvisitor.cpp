@@ -152,7 +152,7 @@ void DocbookDocVisitor::visitPostEnd(TextStream &t, bool hasCaption, bool inline
   }
 }
 
-DocbookDocVisitor::DocbookDocVisitor(TextStream &t,CodeOutputInterface &ci,const QCString &langExt)
+DocbookDocVisitor::DocbookDocVisitor(TextStream &t,OutputCodeList &ci,const QCString &langExt)
   : m_t(t), m_ci(ci),m_langExt(langExt)
 {
 DB_VIS_C
@@ -482,10 +482,11 @@ DB_VIS_C
       m_t << "</literallayout>";
       break;
     case DocInclude::Snippet:
+    case DocInclude::SnippetTrimLeft:
       m_t << "<literallayout><computeroutput>";
       getCodeParser(inc.extension()).parseCode(m_ci,
                                                 inc.context(),
-                                                extractBlock(inc.text(),inc.blockId()),
+                                                extractBlock(inc.text(),inc.blockId(),inc.type()==DocInclude::SnippetTrimLeft),
                                                 langExt,
                                                 inc.isExample(),
                                                 inc.exampleFile()

@@ -20,50 +20,53 @@
 
 #include "outputgen.h"
 
+class OutputCodeList;
+
 /** Generator for Man page code fragments */
-class ManCodeGenerator : public CodeOutputInterface
+class ManCodeGenerator
 {
   public:
-    ManCodeGenerator(TextStream &t) : m_t(t) {}
+    ManCodeGenerator(TextStream *t);
+    void setTextStream(TextStream *t) { m_t = t; }
 
-    OutputType type() const override { return OutputType::Man; }
+    OutputType type() const { return OutputType::Man; }
 
-    void codify(const QCString &text) override;
+    void codify(const QCString &text);
     void writeCodeLink(CodeSymbolType type,
                        const QCString &ref,const QCString &file,
                        const QCString &anchor,const QCString &name,
-                       const QCString &tooltip) override;
+                       const QCString &tooltip);
     void writeTooltip(const QCString &,
                       const DocLinkInfo &,
                       const QCString &,
                       const QCString &,
                       const SourceLinkInfo &,
                       const SourceLinkInfo &
-                     ) override {}
-    void writeLineNumber(const QCString &,const QCString &,const QCString &,int l, bool) override
-    { m_t << l << " "; m_col=0; }
-    void startCodeLine(bool) override {}
-    void endCodeLine() override { codify("\n"); m_col=0; }
-    void startFontClass(const QCString &) override {}
-    void endFontClass() override {}
-    void writeCodeAnchor(const QCString &) override {}
-    void startCodeFragment(const QCString &style) override;
-    void endCodeFragment(const QCString &) override;
+                     ) {}
+    void writeLineNumber(const QCString &,const QCString &,const QCString &,int l, bool);
+    void startCodeLine(bool) {}
+    void endCodeLine() { codify("\n"); m_col=0; }
+    void startFontClass(const QCString &) {}
+    void endFontClass() {}
+    void writeCodeAnchor(const QCString &) {}
+    void startCodeFragment(const QCString &style);
+    void endCodeFragment(const QCString &);
 
   private:
     int  m_col = 0;
-    TextStream &m_t;
+    TextStream *m_t;
 };
 
 /** Generator for Man page output. */
-class ManGenerator : public OutputGenerator //public CodeOutputForwarder<OutputGenerator,ManCodeGenerator>
+class ManGenerator : public OutputGenerator
 {
   public:
     ManGenerator();
-    ManGenerator(const ManGenerator &g);
-    ManGenerator &operator=(const ManGenerator &g);
-    virtual ~ManGenerator();
-    virtual std::unique_ptr<OutputGenerator> clone() const;
+    ManGenerator(const ManGenerator &);
+    ManGenerator &operator=(const ManGenerator &);
+    ManGenerator(ManGenerator &&);
+    ManGenerator &operator=(ManGenerator &&) = delete;
+   ~ManGenerator();
 
     OutputType type() const { return OutputType::Man; }
 
@@ -77,6 +80,8 @@ class ManGenerator : public OutputGenerator //public CodeOutputForwarder<OutputG
     void endFile();
     void clearBuffer();
 
+    void startPageDoc(const QCString &) {}
+    void endPageDoc() {}
     void startIndexSection(IndexSection) {}
     void endIndexSection(IndexSection) {}
     void writePageLink(const QCString &,bool) {}
@@ -276,7 +281,7 @@ class ManGenerator : public OutputGenerator //public CodeOutputForwarder<OutputG
 
     void writeLocalToc(const SectionRefs &,const LocalToc &) {}
 
-    CodeOutputInterface *codeGen() { return &m_codeGen; }
+    void addCodeGen(OutputCodeList &list);
 
   private:
     bool m_firstCol = true;
@@ -285,7 +290,8 @@ class ManGenerator : public OutputGenerator //public CodeOutputForwarder<OutputG
     bool m_upperCase = false;
     bool m_insideTabbing = false;
     bool m_inHeader = false;
-    ManCodeGenerator m_codeGen;
+    std::unique_ptr<OutputCodeList> m_codeList;
+    ManCodeGenerator *m_codeGen;
 
 };
 

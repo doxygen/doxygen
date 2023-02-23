@@ -388,7 +388,8 @@ void writeColoredImgData(const QCString &dir,ColoredImgDataItem data[]);
 QCString replaceColorMarkers(const QCString &str);
 
 bool copyFile(const QCString &src,const QCString &dest);
-QCString extractBlock(const QCString &text,const QCString &marker);
+QCString extractBlock(const QCString &text,const QCString &marker, const bool trimLeft=false);
+
 int lineBlock(const QCString &text,const QCString &marker);
 
 bool isURL(const QCString &url);
@@ -433,5 +434,7 @@ QCString integerToRoman(int n, bool upper=true);
 QCString getEncoding(const FileInfo &fi);
 
 inline QCString fixSpaces(const QCString &s) { return substitute(s," ","&#160;"); }
+
+QCString detab(const QCString &s,int &refIndent);
 
 #endif
