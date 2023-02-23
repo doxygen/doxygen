@@ -437,8 +437,8 @@ static void writeMakeBat()
   {
     term("Could not open file %s for writing\n",qPrint(fileName));
   }
-  t << "set Dir_Old=%cd%\r\n";
-  t << "cd /D %~dp0\r\n\r\n";
+  t << "pushd %~dp0\r\n";
+  t << "if not %errorlevel% == 0 goto :end\r\n";
   t << "\r\n";
   t << "set ORG_LATEX_CMD=%LATEX_CMD%\r\n";
   t << "set ORG_MKIDX_CMD=%MKIDX_CMD%\r\n";
@@ -518,8 +518,7 @@ static void writeMakeBat()
   }
   t<< "\r\n";
   t<< "@REM reset environment\r\n";
-  t<< "cd /D %Dir_Old%\r\n";
-  t<< "set Dir_Old=\r\n";
+  t<< "popd\r\n";
   t<< "set LATEX_CMD=%ORG_LATEX_CMD%\r\n";
   t<< "set ORG_LATEX_CMD=\r\n";
   t<< "set MKIDX_CMD=%ORG_MKIDX_CMD%\r\n";
@@ -530,6 +529,8 @@ static void writeMakeBat()
   t<< "set ORG_MANUAL_FILE=\r\n";
   t<< "set LATEX_COUNT=%ORG_LATEX_COUNT%\r\n";
   t<< "set ORG_LATEX_COUNT=\r\n";
+  t<< "\r\n";
+  t<< ":end\r\n";
 #endif
 }
 
