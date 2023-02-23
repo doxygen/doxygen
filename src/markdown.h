@@ -34,7 +34,7 @@ class Markdown
   public:
     Markdown(const QCString &fileName,int lineNr,int indentLevel=0);
     QCString process(const QCString &input, int &startNewlines, bool fromParseInput = false);
-    QCString extractPageTitle(QCString &docs,QCString &id,int &prepend);
+    QCString extractPageTitle(QCString &docs, QCString &id, int &prepend, bool &isIdGenerated);
     void setIndentLevel(int level) { m_indentLevel = level; }
 
   private:
@@ -69,7 +69,8 @@ class Markdown
                 int blockStart,int blockEnd);
     int writeBlockQuote(const char *data,int size);
     int writeCodeBlock(const char *data,int size,int refIndent);
-    int writeTableBlock(const char *data,int size);
+    int writeTableBlock(const char *data, int size);
+    QCString extractTitleId(QCString &title, int level);
 
   private:
     struct LinkRef
@@ -87,7 +88,6 @@ class Markdown
     GrowBuf        m_out;
     Markdown::Action_t m_actions[256];
 };
-
 
 class MarkdownOutlineParser : public OutlineParserInterface
 {

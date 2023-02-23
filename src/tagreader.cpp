@@ -40,6 +40,7 @@
 #include "section.h"
 #include "containers.h"
 #include "debug.h"
+#include "anchor.h"
 
 // ----------------- private part -----------------------------------------------
 
@@ -457,7 +458,7 @@ class TagFileParser
         case InMember:
         case InPackage:
         case InDir:
-          if (m_curString.endsWith("autotoc_md")) return;
+          if (AnchorGenerator::looksGenerated(m_curString.str())) return;
           break;
         default:
           warn("Unexpected tag 'docanchor' found");

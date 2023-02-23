@@ -44,15 +44,13 @@
 #include "doxygen.h"
 #include "commentscan.h"
 #include "entry.h"
-#include "commentcnv.h"
 #include "config.h"
-#include "section.h"
 #include "message.h"
 #include "portable.h"
 #include "regex.h"
 #include "fileinfo.h"
-#include "utf8.h"
 #include "trace.h"
+#include "anchor.h"
 
 enum class ExplicitPageResult
 {
@@ -1849,7 +1847,7 @@ static bool isHRuler(const char *data,int size)
   return n>=3; // at least 3 characters needed for a hruler
 }
 
-static QCString extractTitleId(QCString &title, int level)
+QCString Markdown::extractTitleId(QCString &title, int level)
 {
   AUTO_TRACE("title={} level={}",Trace::trunc(title),level);
   // match e.g. '{#id-b11} ' and capture 'id-b11'
@@ -1860,15 +1858,17 @@ static QCString extractTitleId(QCString &title, int level)
   {
     std::string id = match[1].str();
     title = title.left(match.position());
+    if (AnchorGenerator::instance().isGenerated(id))
+    {
+      warn(m_fileName, m_lineNr, "An automatically generated id already has the name '%s'!", id.c_str());
+    }
     //printf("found match id='%s' title=%s\n",id.c_str(),qPrint(title));
     AUTO_TRACE_EXIT("id={}",id);
-    return QCString(id);
+    return id;
   }
-  if ((level > 0) && (level <= Config_getInt(TOC_INCLUDE_HEADINGS)))
+  if ((level>0) && (level<=Config_getInt(TOC_INCLUDE_HEADINGS)))
   {
-    static AtomicInt autoId { 0 };
-    QCString id;
-    id.sprintf("autotoc_md%d",autoId++);
+    QCString id = AnchorGenerator::instance().generate(ti);
     //printf("auto-generated id='%s' title='%s'\n",qPrint(id),qPrint(title));
     AUTO_TRACE_EXIT("id={}",id);
     return id;
@@ -3148,7 +3148,7 @@ static ExplicitPageResult isExplicitPage(const QCString &docs)
   return ExplicitPageResult::notExplicit;
 }
 
-QCString Markdown::extractPageTitle(QCString &docs,QCString &id, int &prepend)
+QCString Markdown::extractPageTitle(QCString &docs, QCString &id, int &prepend, bool &isIdGenerated)
 {
   AUTO_TRACE("docs={} id={} prepend={}",Trace::trunc(docs),id,prepend);
   // first first non-empty line
@@ -3179,6 +3179,7 @@ QCString Markdown::extractPageTitle(QCString &docs,QCString &id, int &prepend)
       convertStringFragment(title,data+i,end1-i-1);
       docs+="\n\n"+docs_org.mid(end2);
       id = extractTitleId(title, 0);
+      isIdGenerated = !id.isEmpty();
       //printf("extractPageTitle(title='%s' docs='%s' id='%s')\n",title.data(),docs.data(),id.data());
       AUTO_TRACE_EXIT("result={}",Trace::trunc(title));
       return title;
@@ -3193,6 +3194,7 @@ QCString Markdown::extractPageTitle(QCString &docs,QCString &id, int &prepend)
   {
     docs=docs_org;
     id = extractTitleId(title, 0);
+    isIdGenerated = !id.isEmpty();
   }
   AUTO_TRACE_EXIT("result={}",Trace::trunc(title));
   return title;
@@ -3296,8 +3298,9 @@ void MarkdownOutlineParser::parseInput(const QCString &fileName,
   Debug::print(Debug::Markdown,0,"======== Markdown =========\n---- input ------- \n%s\n",qPrint(fileBuf));
   QCString id;
   Markdown markdown(fileName,1,0);
-  QCString title=markdown.extractPageTitle(docs,id,prepend).stripWhiteSpace();
-  if (id.startsWith("autotoc_md")) id = "";
+  bool isIdGenerated = false;
+  QCString title = markdown.extractPageTitle(docs, id, prepend, isIdGenerated).stripWhiteSpace();
+  if (isIdGenerated) id = "";
   int indentLevel=title.isEmpty() ? 0 : -1;
   markdown.setIndentLevel(indentLevel);
   QCString fn      = FileInfo(fileName.str()).fileName();

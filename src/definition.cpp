@@ -1,3 +1,17 @@
+/******************************************************************************
+ *
+ * Copyright (C) 1997-2023 by Dimitri van Heesch.
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
+ * for any purpose. It is provided "as is" without express or implied warranty.
+ * See the GNU General Public License for more details.
+ *
+ * Documents produced by Doxygen are derivative works derived from the
+ * input used in their production; they are not affected by this license.
+ *
+ */
 
 #include <algorithm>
 #include <iterator>
@@ -8,6 +22,7 @@
 #include <stdlib.h>
 #include <assert.h>
 
+#include "anchor.h"
 #include "md5.h"
 #include "regex.h"
 #include "config.h"
@@ -400,7 +415,7 @@ void DefinitionImpl::writeDocAnchorsToTagFile(TextStream &tagFile) const
     //printf("%s: writeDocAnchorsToTagFile(%d)\n",qPrint(name()),m_impl->sectionRef.size());
     for (const SectionInfo *si : m_impl->sectionRefs)
     {
-      if (!si->generated() && si->ref().isEmpty() && !si->label().startsWith("autotoc_md"))
+      if (!si->generated() && si->ref().isEmpty() && !AnchorGenerator::instance().isGenerated(si->label().str()))
       {
         //printf("write an entry!\n");
         if (m_impl->def->definitionType()==Definition::TypeMember) tagFile << "  ";
