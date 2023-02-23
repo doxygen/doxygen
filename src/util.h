@@ -195,12 +195,6 @@ bool rightScopeMatch(const QCString &scope, const QCString &name);
 
 bool leftScopeMatch(const QCString &scope, const QCString &name);
 
-template<class T>
-inline bool set_contains(const std::set<T> &set, const T &value)
-{
-  return set.find(value) != set.end();
-}
-
 struct KeywordSubstitution
 {
   const char *keyword;

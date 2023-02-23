@@ -34,12 +34,8 @@ class Markdown
   public:
     Markdown(const QCString &fileName,int lineNr,int indentLevel=0);
     QCString process(const QCString &input, int &startNewlines, bool fromParseInput = false);
-    QCString extractPageTitle(QCString &docs,
-                              QCString &id,
-                              int &prepend,
-                              bool *extractedId = nullptr);
+    QCString extractPageTitle(QCString &docs, QCString &id, int &prepend, bool &isIdGenerated);
     void setIndentLevel(int level) { m_indentLevel = level; }
-    static const std::set<QCString> &ids();
 
   private:
     QCString processQuotations(const QCString &s,int refIndent);
@@ -74,7 +70,6 @@ class Markdown
     int writeBlockQuote(const char *data,int size);
     int writeCodeBlock(const char *data,int size,int refIndent);
     int writeTableBlock(const char *data, int size);
-
     QCString extractTitleId(QCString &title, int level);
 
   private:

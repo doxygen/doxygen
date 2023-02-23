@@ -34,6 +34,7 @@
 #include "language.h"
 #include "datetime.h"
 #include "trace.h"
+#include "anchor.h"
 
 #define INTERNAL_ASSERT(x) do {} while(0)
 //#define INTERNAL_ASSERT(x) if (!(x)) TRACE("INTERNAL_ASSERT({}) failed retval={:#x}: file={} line={}",#x,retval,__FILE__,__LINE__)
@@ -5443,12 +5444,14 @@ int DocSection::parse(DocNodeVariant *thisVariant)
     }
     else if (retval==RetVal_Subsubsection && m_level<=Doxygen::subpageNestingLevel+2)
     {
-      if ((m_level <= 1 + Doxygen::subpageNestingLevel)
-          && set_contains(Markdown::ids(), parser()->context.token->sectionId))
+      if ((m_level <= 1 + Doxygen::subpageNestingLevel) &&
+          AnchorGenerator::instance().isGenerated(parser()->context.token->sectionId.str()))
+      {
         warn_doc_error(parser()->context.fileName,
                        parser()->tokenizer.getLineNr(),
                        "Unexpected subsubsection command found inside %s!",
                        g_sectionLevelToName[m_level]);
+      }
       // then parse any number of nested sections
       while (retval==RetVal_Subsubsection) // more sections follow
       {
@@ -5457,14 +5460,17 @@ int DocSection::parse(DocNodeVariant *thisVariant)
                                 parser()->context.token->sectionId);
         retval = children().get_last<DocSection>()->parse(vDocSection);
       }
-      if (!(m_level < Doxygen::subpageNestingLevel + 2 && retval == RetVal_Subsection))
-        break;
+      if (!(m_level < Doxygen::subpageNestingLevel + 2 && retval == RetVal_Subsection)) break;
     }
     else if (retval==RetVal_Paragraph && m_level<=std::min(5,Doxygen::subpageNestingLevel+3))
     {
-      if ((m_level <= 2 + Doxygen::subpageNestingLevel)
-          && set_contains(Markdown::ids(), parser()->context.token->sectionId))
-        warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Unexpected paragraph command found inside %s!",g_sectionLevelToName[m_level]);
+      if ((m_level <= 2 + Doxygen::subpageNestingLevel) &&
+          AnchorGenerator::instance().isGenerated(parser()->context.token->sectionId.str()))
+      {
+        warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),
+                       "Unexpected paragraph command found inside %s!",
+                       g_sectionLevelToName[m_level]);
+      }
       // then parse any number of nested sections
       while (retval==RetVal_Paragraph) // more sections follow
       {
@@ -5631,7 +5637,7 @@ void DocRoot::parse(DocNodeVariant *thisVariant)
     }
     if (retval == RetVal_Paragraph)
     {
-      if (!set_contains(Markdown::ids(), parser()->context.token->sectionId))
+      if (!AnchorGenerator::instance().isGenerated(parser()->context.token->sectionId.str()))
       {
         warn_doc_error(parser()->context.fileName,
                        parser()->tokenizer.getLineNr(),
@@ -5665,8 +5671,13 @@ void DocRoot::parse(DocNodeVariant *thisVariant)
     }
     if (retval==RetVal_Subsubsection)
     {
-      if (!set_contains(Markdown::ids(), parser()->context.token->sectionId))
-        warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"found subsubsection command (id: '%s') outside of subsection context!",qPrint(parser()->context.token->sectionId));
+      if (!AnchorGenerator::instance().isGenerated(parser()->context.token->sectionId.str()))
+      {
+        warn_doc_error(parser()->context.fileName,
+                       parser()->tokenizer.getLineNr(),
+                       "found subsubsection command (id: '%s') outside of subsection context!",
+                       qPrint(parser()->context.token->sectionId));
+      }
       while (retval==RetVal_Subsubsection)
       {
         if (!parser()->context.token->sectionId.isEmpty())
@@ -5694,8 +5705,12 @@ void DocRoot::parse(DocNodeVariant *thisVariant)
     }
     if (retval==RetVal_Subsection)
     {
-      if (!set_contains(Markdown::ids(), parser()->context.token->sectionId)) {
-        warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"found subsection command (id: '%s') outside of section context!",qPrint(parser()->context.token->sectionId));
+      if (!AnchorGenerator::instance().isGenerated(parser()->context.token->sectionId.str()))
+      {
+        warn_doc_error(parser()->context.fileName,
+                       parser()->tokenizer.getLineNr(),
+                       "found subsection command (id: '%s') outside of section context!",
+                       qPrint(parser()->context.token->sectionId));
       }
       while (retval==RetVal_Subsection)
       {

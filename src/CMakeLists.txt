@@ -227,6 +227,7 @@ add_library(doxymain STATIC
     ${GENERATED_SRC}/ce_parse.h
     ${GENERATED_SRC}/resources.cpp
     #
+    anchor.cpp
     arguments.cpp
     cite.cpp
     clangparser.cpp
