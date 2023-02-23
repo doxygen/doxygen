@@ -58,7 +58,7 @@ std::string AnchorGenerator::generate(const std::string &label)
     // replace whitespace with '-'
     std::replace_if(result.begin(),result.end(),[](auto c) { return std::isspace(c); },'-');
     // remove punctuation characters
-    result.erase(std::remove_if(result.begin(),result.end(),[](auto c) { return std::ispunct(c); }),result.end());
+    result.erase(std::remove_if(result.begin(),result.end(),[](auto c) { return c!='-' && std::ispunct(c); }),result.end());
     // convert to lower case
     result = convertUTF8ToLower(result);
     if (result.empty()) // fallback use doxygen style anchor
