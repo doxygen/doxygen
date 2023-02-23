@@ -40,6 +40,7 @@
 #include "section.h"
 #include "containers.h"
 #include "debug.h"
+#include "config.h"
 
 // ----------------- private part -----------------------------------------------
 
@@ -457,7 +458,10 @@ class TagFileParser
         case InMember:
         case InPackage:
         case InDir:
-          if (m_curString.endsWith("autotoc_md")) return;
+          static HEADING_AUTO_IDENTIFIER_t behavior = Config_getEnum(HEADING_AUTO_IDENTIFIER);
+          if (behavior == HEADING_AUTO_IDENTIFIER_t::DOXYGEN)
+            if (m_curString.startsWith("autotoc_md"))
+              return;
           break;
         default:
           warn("Unexpected tag 'docanchor' found");

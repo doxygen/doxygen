@@ -704,6 +704,16 @@ Go to the <a href="commands.html">next</a> section or return to the
 ]]>
       </docs>
     </option>
+    <option type='enum' id='HEADING_AUTO_IDENTIFIER' defval='DOXYGEN' depends='MARKDOWN_SUPPORT'>
+      <docs>
+<![CDATA[
+ The \c HEADING_AUTO_IDENTIFIER tag can be used to specify the behavior used to generate ids for the Markdown headings.
+ Note: Every id is unique.
+]]>
+      </docs>
+      <value name="DOXYGEN" desc="Use autotoc_md + a number starting at 0."/>
+      <value name="GITHUB" desc="Uppercase to lowercase, replace all sort of spaces with '-', remove all punctations."/>
+    </option>
     <option type='bool' id='AUTOLINK_SUPPORT' defval='1'>
       <docs>
 <![CDATA[
