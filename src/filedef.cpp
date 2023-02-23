@@ -1426,7 +1426,7 @@ bool FileDefImpl::generateSourceFile() const
   bool verbatimHeaders = Config_getBool(VERBATIM_HEADERS);
   return !isReference() &&
          (sourceBrowser ||
-           (verbatimHeaders && guessSection(name())==Entry::HEADER_SEC)
+           (verbatimHeaders && (guessSection(name())==Entry::HEADER_SEC || !m_includedByMap.empty()))
          ) &&
          !isDocumentationFile();
 }
