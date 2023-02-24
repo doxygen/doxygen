@@ -286,7 +286,7 @@ QCString CitationManager::replaceFormulas(const QCString &s)
   while ((i=s.find(g_formulaMarker.c_str(),pos))!=-1)
   {
     t += s.mid(pos,i-pos);
-    size_t markerSize = g_formulaMarker.length();
+    int markerSize = static_cast<int>( g_formulaMarker.length());
     size_t markerId = atoi(s.mid(i+markerSize,6).data());
     auto it = p->formulaCite.find(markerId);
     if (it != p->formulaCite.end()) t += it->second;
