@@ -726,12 +726,11 @@ int DocParser::handleAHref(DocNodeVariant *parent,DocNodeList &children,
       attrList.erase(attrList.begin()+index);
       QCString relPath;
       if (opt.value.at(0) != '#') relPath = context.relPath;
-      auto vDocHRef = children.append<DocHRef>(this, parent, attrList,
-                                               opt.value, relPath,
-                                               convertNameToFile(context.fileName, FALSE, TRUE));
-      DocHRef *href = children.get_last<DocHRef>();
+      children.append<DocHRef>(this, parent, attrList,
+                               opt.value, relPath,
+                               convertNameToFile(context.fileName, FALSE, TRUE));
       context.insideHtmlLink=TRUE;
-      retval = href->parse(vDocHRef);
+      retval = children.get_last<DocHRef>()->parse();
       context.insideHtmlLink=FALSE;
       break;
     }
@@ -909,8 +908,8 @@ void DocParser::handleInternalRef(DocNodeVariant *parent,DocNodeList &children)
         DocTokenizer::tokToString(tok),qPrint(tokenName));
     return;
   }
-  auto vDocInternalRef = children.append<DocInternalRef>(this,parent,context.token->name);
-  children.get_last<DocInternalRef>()->parse(vDocInternalRef);
+  children.append<DocInternalRef>(this,parent,context.token->name);
+  children.get_last<DocInternalRef>()->parse();
 }
 
 void DocParser::handleAnchor(DocNodeVariant *parent,DocNodeList &children)
@@ -1130,9 +1129,9 @@ void DocParser::handleImage(DocNodeVariant *parent, DocNodeList &children)
     children.append<DocAnchor>(this,parent,anchorStr,true);
   }
   HtmlAttribList attrList;
-  auto vDocImage = children.append<DocImage>(this,parent,attrList,
+  children.append<DocImage>(this,parent,attrList,
                  findAndCopyImage(context.token->name,t),t,"",inlineImage);
-  children.get_last<DocImage>()->parse(vDocImage);
+  children.get_last<DocImage>()->parse();
 }
 
 
@@ -1603,10 +1602,10 @@ int DocParser::internalValidatingParseDoc(DocNodeVariant *parent,DocNodeList &ch
   }
   do
   {
-    auto vDocPara = children.append<DocPara>(this,parent);
+    children.append<DocPara>(this,parent);
     DocPara *par  = children.get_last<DocPara>();
     if (isFirst) { par->markFirst(); isFirst=FALSE; }
-    retval=par->parse(vDocPara);
+    retval=par->parse();
     if (!par->isEmpty())
     {
       if (lastPar) lastPar->markLast(FALSE);
@@ -1988,7 +1987,7 @@ IDocNodeASTPtr validatingParseDoc(IDocParser &parserIntf,
 
   // build abstract syntax tree
   auto ast = std::make_unique<DocNodeAST>(DocRoot(parser,md!=0,singleLine));
-  std::get<DocRoot>(ast->root).parse(&ast->root);
+  std::get<DocRoot>(ast->root).parse();
 
   if (Debug::isFlagSet(Debug::PrintTree))
   {
@@ -2060,7 +2059,7 @@ IDocNodeASTPtr validatingParseText(IDocParser &parserIntf,const QCString &input)
                            parser->context.markdownSupport,parser->context.insideHtmlLink);
 
     // build abstract syntax tree
-    std::get<DocText>(ast->root).parse(&ast->root);
+    std::get<DocText>(ast->root).parse();
 
     if (Debug::isFlagSet(Debug::PrintTree))
     {
