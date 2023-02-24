@@ -281,13 +281,13 @@ QCString CitationManager::replaceFormulas(const QCString &s)
 {
   if (s.isEmpty()) return s;
   QCString t;
-  size_t pos=0;
-  size_t i;
+  int pos=0;
+  int i;
   while ((i=s.find(g_formulaMarker.c_str(),pos))!=-1)
   {
     t += s.mid(pos,i-pos);
-    size_t markerSize = g_formulaMarker.length();
-    size_t markerId = atoi(s.mid(i+markerSize,6).data());
+    int markerSize = static_cast<int>( g_formulaMarker.length());
+    int markerId = atoi(s.mid(i+markerSize,6).data());
     auto it = p->formulaCite.find(markerId);
     if (it != p->formulaCite.end()) t += it->second;
     pos = i + markerSize+6;
