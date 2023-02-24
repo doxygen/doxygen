@@ -281,8 +281,8 @@ QCString CitationManager::replaceFormulas(const QCString &s)
 {
   if (s.isEmpty()) return s;
   QCString t;
-  size_t pos=0;
-  size_t i;
+  int pos=0;
+  int i;
   while ((i=s.find(g_formulaMarker.c_str(),pos))!=-1)
   {
     t += s.mid(pos,i-pos);
