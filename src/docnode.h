@@ -1434,7 +1434,7 @@ std::unique_ptr<DocNodeVariant> createDocNode(Args&&...args)
 {
   auto node = std::make_unique<DocNodeVariant>(T(std::forward<Args>(args)...));
   std::get_if<T>(node.get())->setThisVariant(node.get());
-  return std::move(node);
+  return node;
 }
 
 #endif
