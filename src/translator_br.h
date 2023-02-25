@@ -19,8 +19,12 @@
  *    Thanks to Jorge Ramos, Fernando Carijo and others for their contributions.
  *
  * History:
- * 20230219:
+ * 20230225:
  *  - Updated to 1.9.7;
+ *  - Adding the namespace PortugueseTranslatorUtils to hold common 
+ *    functions shared by both Portuguese translators;
+ *  - Some translations used by TranslatorPortuguese have been merged
+ *    into this translator to make both classes more similar.
  * 20220911:
  *  - Updated to 1.9.6;
  * 20220525:
@@ -60,12 +64,11 @@
 #ifndef TRANSLATOR_BR_H
 #define TRANSLATOR_BR_H
 
-class TranslatorBrazilian : public Translator
+namespace PortugueseTranslatorUtils
 {
-  protected:
-    /*! Returns the gender of the given component in Portuguese.
-     */
-    bool isClassMemberHighlightMasculine(ClassMemberHighlight::Enum hl)
+    /*! Returns true if the gender of the given component is masculine in
+    Portuguese. */
+    inline bool isClassMemberHighlightMasculine(ClassMemberHighlight::Enum hl)
     {
       switch (hl)
       {
@@ -95,9 +98,9 @@ class TranslatorBrazilian : public Translator
       }    
     }
     
-    /*! Returns the gender of the given component in Portuguese.
-     */
-    bool isFileMemberHighlightMasculine(FileMemberHighlight::Enum hl)
+    /*! Returns true if the gender of the given component is masculine in
+    Portuguese. */
+    inline bool isFileMemberHighlightMasculine(FileMemberHighlight::Enum hl)
     {
       switch (hl)
       {
@@ -117,9 +120,9 @@ class TranslatorBrazilian : public Translator
       }    
     }
     
-    /*! Returns the gender of the given component in Portuguese.
-     */
-    bool isNamespaceMemberHighlightMasculine(NamespaceMemberHighlight::Enum hl)
+    /*! Returns true if the gender of the given component is masculine in
+    Brazilian Portuguese and European Portuguese. */
+    inline bool isNamespaceMemberHighlightMasculine(NamespaceMemberHighlight::Enum hl)
     {
       switch (hl)
       {
@@ -137,6 +140,10 @@ class TranslatorBrazilian : public Translator
           return true;
       }
     }
+};
+
+class TranslatorBrazilian : public Translator
+{
   public:
 
     // --- Language control methods -------------------
@@ -2562,7 +2569,7 @@ class TranslatorBrazilian : public Translator
     virtual QCString trFileMembersDescriptionTotal(FileMemberHighlight::Enum hl)
     {
       bool extractAll = Config_getBool(EXTRACT_ALL);
-      bool masculine = isFileMemberHighlightMasculine(hl);
+      bool masculine = PortugueseTranslatorUtils::isFileMemberHighlightMasculine(hl);
       QCString result="Esta é a list de ";
       result+= (masculine?"todos os ":"todas as ");
       switch (hl)
@@ -2619,7 +2626,7 @@ class TranslatorBrazilian : public Translator
     virtual QCString trCompoundMembersDescriptionTotal(ClassMemberHighlight::Enum hl)
     {
       bool extractAll = Config_getBool(EXTRACT_ALL);
-      bool masculine = isClassMemberHighlightMasculine(hl);
+      bool masculine = PortugueseTranslatorUtils::isClassMemberHighlightMasculine(hl);
       QCString result="Esta é a list de ";
       result+= (masculine?"todos os ":"todas as ");
       switch (hl)
@@ -2694,7 +2701,7 @@ class TranslatorBrazilian : public Translator
     virtual QCString trNamespaceMembersDescriptionTotal(NamespaceMemberHighlight::Enum hl)
     {
       bool extractAll = Config_getBool(EXTRACT_ALL);
-      bool masculine = isNamespaceMemberHighlightMasculine(hl);
+      bool masculine = PortugueseTranslatorUtils::isNamespaceMemberHighlightMasculine(hl);
       QCString result="Esta é a list de ";
       result+= (masculine?"todos os ":"todas as ");
       QCString singularResult = "";
