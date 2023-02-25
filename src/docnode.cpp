@@ -1254,7 +1254,7 @@ int DocHtmlHeader::parse(DocNodeVariant *thisVariant)
           break;
         default:
 	  char tmp[20];
-	  sprintf(tmp,"<h%d>tag",m_level);
+	  qsnprintf(tmp,20,"<h%d>tag",m_level);
           parser()->errorHandleDefaultToken(thisVariant,tok,children(),tmp);
       }
     }

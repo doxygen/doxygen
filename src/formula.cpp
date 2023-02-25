@@ -249,12 +249,13 @@ void FormulaManager::createLatexFile(const QCString &fileName,Format format,Mode
 static bool createDVIFile(const QCString &fileName)
 {
   QCString latexCmd = "latex";
-  char args[4096];
+  const size_t argsLen = 4096;
+  char args[argsLen];
   int rerunCount=1;
   while (rerunCount<8)
   {
     //printf("Running latex...\n");
-    sprintf(args,"-interaction=batchmode %s >%s",qPrint(fileName),Portable::devNull());
+    qsnprintf(args,argsLen,"-interaction=batchmode %s >%s",qPrint(fileName),Portable::devNull());
     if ((Portable::system(latexCmd,args)!=0) || (Portable::system(latexCmd,args)!=0))
     {
       err("Problems running latex. Check your installation or look "
@@ -275,10 +276,11 @@ static bool createDVIFile(const QCString &fileName)
 
 static bool createPostscriptFile(const QCString &fileName,const QCString &formBase,int pageIndex)
 {
-  char args[4096];
+  const size_t argsLen = 4096;
+  char args[argsLen];
   // run dvips to convert the page with number pageIndex to an
   // postscript file.
-  sprintf(args,"-q -D 600 -n 1 -p %d -o %s_tmp.ps %s.dvi",pageIndex,qPrint(formBase),qPrint(fileName));
+  qsnprintf(args,argsLen,"-q -D 600 -n 1 -p %d -o %s_tmp.ps %s.dvi",pageIndex,qPrint(formBase),qPrint(fileName));
   if (Portable::system("dvips",args)!=0)
   {
     err("Problems running dvips. Check your installation!\n");
@@ -289,9 +291,10 @@ static bool createPostscriptFile(const QCString &fileName,const QCString &formBa
 
 static bool createEPSbboxFile(const QCString &formBase)
 {
-  char args[4096];
+  const size_t argsLen = 4096;
+  char args[argsLen];
   // extract the bounding box for the postscript file
-  sprintf(args,"-q -dBATCH -dNOPAUSE -P- -dNOSAFER -sDEVICE=bbox %s_tmp.ps 2>%s_tmp.epsi",
+  qsnprintf(args,argsLen,"-q -dBATCH -dNOPAUSE -P- -dNOSAFER -sDEVICE=bbox %s_tmp.ps 2>%s_tmp.epsi",
       qPrint(formBase),qPrint(formBase));
   if (Portable::system(Portable::ghostScriptCommand(),args)!=0)
   {
@@ -354,9 +357,10 @@ static double updateFormulaSize(Formula *formula,int x1,int y1,int x2,int y2)
 
 static bool createCroppedPDF(const QCString &formBase,int x1,int y1,int x2,int y2)
 {
-  char args[4096];
+  const size_t argsLen = 4096;
+  char args[argsLen];
   // crop the image to its bounding box
-  sprintf(args,"-q -dBATCH -dNOPAUSE -P- -dNOSAFER -sDEVICE=pdfwrite"
+  qsnprintf(args,argsLen,"-q -dBATCH -dNOPAUSE -P- -dNOSAFER -sDEVICE=pdfwrite"
               " -o %s_tmp.pdf -c \"[/CropBox [%d %d %d %d] /PAGES pdfmark\" -f %s_tmp.ps",
       qPrint(formBase),x1,y1,x2,y2,qPrint(formBase));
   if (Portable::system(Portable::ghostScriptCommand(),args)!=0)
@@ -369,9 +373,10 @@ static bool createCroppedPDF(const QCString &formBase,int x1,int y1,int x2,int y
 
 static bool createCroppedEPS(const QCString &formBase)
 {
-  char args[4096];
+  const size_t argsLen = 4096;
+  char args[argsLen];
   // crop the image to its bounding box
-  sprintf(args,"-q -dBATCH -dNOPAUSE -P- -dNOSAFER -sDEVICE=eps2write"
+  qsnprintf(args,argsLen,"-q -dBATCH -dNOPAUSE -P- -dNOSAFER -sDEVICE=eps2write"
               " -o %s_tmp.eps -f %s_tmp.ps",qPrint(formBase),qPrint(formBase));
   if (Portable::system(Portable::ghostScriptCommand(),args)!=0)
   {
@@ -383,8 +388,9 @@ static bool createCroppedEPS(const QCString &formBase)
 
 static bool createSVGFromPDF(const QCString &formBase,const QCString &outFile)
 {
-  char args[4096];
-  sprintf(args,"%s_tmp.pdf %s",qPrint(formBase),qPrint(outFile));
+  const size_t argsLen = 4096;
+  char args[argsLen];
+  qsnprintf(args,argsLen,"%s_tmp.pdf %s",qPrint(formBase),qPrint(outFile));
   if (Portable::system("pdf2svg",args)!=0)
   {
     err("Problems running pdf2svg. Check your installation!\n");
@@ -395,7 +401,8 @@ static bool createSVGFromPDF(const QCString &formBase,const QCString &outFile)
 
 static bool createSVGFromPDFviaInkscape(const Dir &thisDir,const QCString &formBase,const QCString &outFile)
 {
-  char args[4096];
+  const size_t argsLen = 4096;
+  char args[argsLen];
   int inkscapeVersion = determineInkscapeVersion(thisDir);
   if (inkscapeVersion == -1)
   {
@@ -404,11 +411,11 @@ static bool createSVGFromPDFviaInkscape(const Dir &thisDir,const QCString &formB
   }
   else if (inkscapeVersion == 0)
   {
-    sprintf(args,"-l %s -z %s_tmp.pdf 2>%s",qPrint(outFile),qPrint(formBase),Portable::devNull());
+    qsnprintf(args,argsLen,"-l %s -z %s_tmp.pdf 2>%s",qPrint(outFile),qPrint(formBase),Portable::devNull());
   }
   else // inkscapeVersion >= 1
   {
-    sprintf(args,"--export-type=svg --export-filename=%s %s_tmp.pdf 2>%s",qPrint(outFile),qPrint(formBase),Portable::devNull());
+    qsnprintf(args,argsLen,"--export-type=svg --export-filename=%s %s_tmp.pdf 2>%s",qPrint(outFile),qPrint(formBase),Portable::devNull());
   }
   if (Portable::system("inkscape",args)!=0)
   {
@@ -459,8 +466,9 @@ static bool updateEPSBoundingBox(const QCString &formBase,
 
 static bool createPNG(const QCString &formBase,const QCString &outFile,double scaleFactor)
 {
-  char args[4096];
-  sprintf(args,"-q -dNOSAFER -dBATCH -dNOPAUSE -dEPSCrop -sDEVICE=pnggray -dGraphicsAlphaBits=4 -dTextAlphaBits=4 "
+  const size_t argsLen = 4096;
+  char args[argsLen];
+  qsnprintf(args,argsLen,"-q -dNOSAFER -dBATCH -dNOPAUSE -dEPSCrop -sDEVICE=pnggray -dGraphicsAlphaBits=4 -dTextAlphaBits=4 "
                "-r%d -sOutputFile=%s %s_tmp_corr.eps",static_cast<int>(scaleFactor*72),qPrint(outFile),qPrint(formBase));
   if (Portable::system(Portable::ghostScriptCommand(),args)!=0)
   {

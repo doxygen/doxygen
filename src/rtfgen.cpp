@@ -2173,7 +2173,7 @@ static void encodeForOutput(TextStream &t,const QCString &s)
     if (c>=0x80 || multiByte)
     {
       char esc[10];
-      sprintf(esc,"\\'%X",c);        // escape sequence for SBCS and DBCS(1st&2nd bytes).
+      qsnprintf(esc,10,"\\'%X",c);        // escape sequence for SBCS and DBCS(1st&2nd bytes).
       t << esc;
 
       if (!multiByte)
