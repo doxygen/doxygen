@@ -63,14 +63,15 @@ class Markdown
                             const FileDef *fd);
     int isHeaderline(const char *data, int size, bool allowAdjustLevel);
     int isAtxHeader(const char *data,int size,
-                       QCString &header,QCString &id,bool allowAdjustLevel);
+                       QCString &header,QCString &id,bool allowAdjustLevel,
+                       bool *pIsIdGenerated=nullptr);
     void writeOneLineHeaderOrRuler(const char *data,int size);
     void writeFencedCodeBlock(const char *data,const char *lng,
                 int blockStart,int blockEnd);
     int writeBlockQuote(const char *data,int size);
     int writeCodeBlock(const char *data,int size,int refIndent);
     int writeTableBlock(const char *data, int size);
-    QCString extractTitleId(QCString &title, int level);
+    QCString extractTitleId(QCString &title, int level,bool *pIsIdGenerated=nullptr);
 
   private:
     struct LinkRef
