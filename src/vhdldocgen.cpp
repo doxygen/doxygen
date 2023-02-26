@@ -1102,7 +1102,7 @@ static int recordCounter=0;
 QCString VhdlDocGen::getRecordNumber()
 {
   char buf[12];
-  sprintf(buf,"%d",recordCounter++);
+  qsnprintf(buf,12,"%d",recordCounter++);
   QCString qcs(&buf[0]);
   return qcs;
 }
@@ -1114,9 +1114,9 @@ QCString VhdlDocGen::getRecordNumber()
 QCString VhdlDocGen::getProcessNumber()
 {
   static int stringCounter;
-  char buf[8];
   QCString qcs("PROCESS_");
-  sprintf(buf,"%d",stringCounter++);
+  char buf[8];
+  qsnprintf(buf,8,"%d",stringCounter++);
   qcs.append(&buf[0]);
   return qcs;
 }

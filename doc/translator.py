@@ -731,7 +731,7 @@ class Transl:
         the source file."""
 
         assert(self.classId != 'Translator')
-        assert(self.baseClassId != None)
+        assert self.baseClassId != None, 'Class ' + self.classId + ' from the file ' + self.fname + ' does not have a base class.'
 
         # The following finite automaton slightly differs from the one
         # inside self.collectPureVirtualPrototypes(). It produces the

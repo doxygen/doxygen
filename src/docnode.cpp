@@ -1253,8 +1253,8 @@ int DocHtmlHeader::parse()
           }
           break;
         default:
-	  char tmp[20];
-	  sprintf(tmp,"<h%d>tag",m_level);
+	        char tmp[20];
+	        qsnprintf(tmp,20,"<h%d>tag",m_level);
           parser()->errorHandleDefaultToken(thisVariant(),tok,children(),tmp);
       }
     }
