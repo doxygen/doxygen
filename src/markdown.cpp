@@ -3181,7 +3181,7 @@ QCString Markdown::extractPageTitle(QCString &docs, QCString &id, int &prepend, 
       docs+="\n\n"+docs_org.mid(end2);
       id = extractTitleId(title, 0, &isIdGenerated);
       //printf("extractPageTitle(title='%s' docs='%s' id='%s')\n",title.data(),docs.data(),id.data());
-      AUTO_TRACE_EXIT("result={}",Trace::trunc(title));
+      AUTO_TRACE_EXIT("result={} id={} isIdGenerated={}",Trace::trunc(title),id,isIdGenerated);
       return title;
     }
   }
@@ -3195,7 +3195,7 @@ QCString Markdown::extractPageTitle(QCString &docs, QCString &id, int &prepend, 
     docs=docs_org;
     id = extractTitleId(title, 0, &isIdGenerated);
   }
-  AUTO_TRACE_EXIT("result={} id={}",Trace::trunc(title),id);
+  AUTO_TRACE_EXIT("result={} id={} isIdGenerated={}",Trace::trunc(title),id,isIdGenerated);
   return title;
 }
 
@@ -3299,7 +3299,12 @@ void MarkdownOutlineParser::parseInput(const QCString &fileName,
   Markdown markdown(fileName,1,0);
   bool isIdGenerated = false;
   QCString title = markdown.extractPageTitle(docs, id, prepend, isIdGenerated).stripWhiteSpace();
-  if (isIdGenerated) id = "";
+  QCString generatedId;
+  if (isIdGenerated)
+  {
+    generatedId = id;
+    id = "";
+  }
   int indentLevel=title.isEmpty() ? 0 : -1;
   markdown.setIndentLevel(indentLevel);
   QCString fn      = FileInfo(fileName.str()).fileName();
@@ -3328,7 +3333,14 @@ void MarkdownOutlineParser::parseInput(const QCString &fileName,
       else
       {
         if (title.isEmpty()) {title = titleFn;prepend=0;}
-        if (!wasEmpty) docs.prepend("@ianchor{" + title + "} " +  markdownFileNameToId(fileName) + "\\ilinebr ");
+        if (!wasEmpty)
+        {
+          docs.prepend("@ianchor{" + title + "} " +  markdownFileNameToId(fileName) + "\\ilinebr ");
+        }
+        else if (!generatedId.isEmpty())
+        {
+          docs.prepend("@ianchor " +  generatedId + "\\ilinebr ");
+        }
         docs.prepend("@page "+id+" "+title+"\\ilinebr ");
       }
       for (int i = 0; i < prepend; i++) docs.prepend("\n");

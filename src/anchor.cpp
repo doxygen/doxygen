@@ -45,7 +45,7 @@ std::string AnchorGenerator::generate(const std::string &label)
 {
   std::lock_guard lock(p->mutex);
 
-  std::string result = label;
+  std::string result;
 
   auto createDoxygenStyleAnchor = [&]()
   {
@@ -55,12 +55,29 @@ std::string AnchorGenerator::generate(const std::string &label)
 
   auto createGitHubStyleAnchor = [&]()
   {
-    // replace whitespace with '-'
-    std::replace_if(result.begin(),result.end(),[](auto c) { return std::isspace(c); },'-');
-    // remove punctuation characters
-    result.erase(std::remove_if(result.begin(),result.end(),[](auto c) { return c!='-' && std::ispunct(c); }),result.end());
-    // convert to lower case
-    result = convertUTF8ToLower(result);
+    result="";
+    size_t pos=0;
+    while (pos<label.length())
+    {
+      uint8_t bytes       = getUTF8CharNumBytes(label[pos]);
+      std::string charStr = getUTF8CharAt(label,pos);
+      uint32_t cUnicode   = getUnicodeForUTF8CharAt(label,pos);
+      char c = charStr[0];
+      if (qisspace(c) || c=='-')
+      {
+        result+='-';
+      }
+      else if (c!='_' && isUTF8PunctuationCharacter(cUnicode))
+      {
+        // skip punctuation characters
+      }
+      else // normal UTF8 character
+      {
+        result+=convertUTF8ToLower(charStr);
+      }
+      pos+=bytes;
+    }
+    //printf("label='%s' result='%s'\n",qPrint(label),qPrint(result));
     if (result.empty()) // fallback use doxygen style anchor
     {
       createDoxygenStyleAnchor();

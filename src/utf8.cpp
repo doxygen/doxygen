@@ -231,3 +231,9 @@ int isUTF8NonBreakableSpace(const char *input)
           static_cast<unsigned char>(input[1])==0xA0) ? 2 : 0;
 }
 
+bool isUTF8PunctuationCharacter(uint32_t unicode)
+{
+  bool b = isPunctuationCharacter(unicode);
+  return b;
+}
+
