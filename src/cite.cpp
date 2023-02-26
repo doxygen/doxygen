@@ -210,7 +210,8 @@ QCString CitationManager::getFormulas(const QCString &s)
   GrowBuf formulaBuf;
   bool insideFormula = false;
   int citeFormulaCnt = 1;
-  char tmp[30];
+  const size_t tmpLen = 30;
+  char tmp[tmpLen];
   const char *ps=s.data();
   char c;
   while ((c=*ps++))
@@ -233,7 +234,7 @@ QCString CitationManager::getFormulas(const QCString &s)
           formulaBuf.clear();
           break;
         case '$':
-          sprintf(tmp,"%s%06d",g_formulaMarker.c_str(),citeFormulaCnt);
+          qsnprintf(tmp,tmpLen,"%s%06d",g_formulaMarker.c_str(),citeFormulaCnt);
           formulaBuf.addChar(0);
           p->formulaCite.emplace(citeFormulaCnt,std::string("\\f$") + formulaBuf.get() + "\\f$");
           citeFormulaCnt++;

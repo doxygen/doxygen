@@ -3731,14 +3731,14 @@ static inline void addOutput(yyscan_t yyscanner,char c)
 static void addIline(yyscan_t yyscanner,int lineNr)
 {
   char cmd[20];
-  sprintf(cmd,"\\iline %d ",lineNr);
+  qsnprintf(cmd,20,"\\iline %d ",lineNr);
   addOutput(yyscanner, cmd);
 }
 
 static void addIlineBreak(yyscan_t yyscanner,int lineNr)
 {
   char cmd[30];
-  sprintf(cmd,"\\iline %d \\ilinebr ",lineNr);
+  qsnprintf(cmd,30,"\\iline %d \\ilinebr ",lineNr);
   addOutput(yyscanner, cmd);
 }
 
@@ -3863,7 +3863,7 @@ bool CommentScanner::parseCommentBlock(/* in */     OutlineParserInterface *pars
   if (!yyextra->current->inbodyDocs.isEmpty() && isInbody) // separate in body fragments
   {
     char cmd[30];
-    sprintf(cmd,"\n\n\\iline %d \\ilinebr ",lineNr);
+    qsnprintf(cmd,30,"\n\n\\iline %d \\ilinebr ",lineNr);
     yyextra->current->inbodyDocs+=cmd;
   }
 

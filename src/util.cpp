@@ -5737,12 +5737,13 @@ void stackTrace()
 #ifdef TRACINGSUPPORT
   void *backtraceFrames[128];
   int frameCount = backtrace(backtraceFrames, 128);
-  static char cmd[40960];
+  const size_t cmdLen = 40960;
+  static char cmd[cmdLen];
   char *p = cmd;
-  p += sprintf(p,"/usr/bin/atos -p %d ", (int)getpid());
+  p += qsnprintf(p,cmdLen,"/usr/bin/atos -p %d ", (int)getpid());
   for (int x = 0; x < frameCount; x++)
   {
-    p += sprintf(p,"%p ", backtraceFrames[x]);
+    p += qsnprintf(p,cmdLen,"%p ", backtraceFrames[x]);
   }
   fprintf(stderr,"========== STACKTRACE START ==============\n");
   if (FILE *fp = Portable::popen(cmd, "r"))
