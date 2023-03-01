@@ -1435,6 +1435,11 @@ int Markdown::processLink(const char *data,int offset,int size)
       if (link.at(0) == '#')
       {
         m_out.addStr("@ref \"");
+        if ((Config_getEnum(MARKDOWN_ID_STYLE) == MARKDOWN_ID_STYLE_t::GITHUB) &&
+            ((link.at(1) == '-') || (link.at(1)>='1' && link.at(1)<='9')))
+        {  
+          m_out.addStr("autotoc_md");
+        }
         m_out.addStr(link.mid(1));
         m_out.addStr("\" \"");
         m_out.addStr(substitute(content.simplifyWhiteSpace(),"\"","&quot;"));

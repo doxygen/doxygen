@@ -84,6 +84,7 @@ std::string AnchorGenerator::generate(const std::string &label)
     }
     else
     {
+      if ((result[0] == '-') || (result[0]>='1' && result[0]<='9')) result = "autotoc_md" + result;
       int &count = p->idCount[result];
       // Add end digits if an identical header already exists
       if (count>0)
