@@ -1435,7 +1435,7 @@ int Markdown::processLink(const char *data,int offset,int size)
       if (link.at(0) == '#')
       {
         m_out.addStr("@ref \"");
-        m_out.addStr(link.mid(1));
+        m_out.addStr(AnchorGenerator::addPrefixIfNeeded(link.mid(1).str()));
         m_out.addStr("\" \"");
         m_out.addStr(substitute(content.simplifyWhiteSpace(),"\"","&quot;"));
         m_out.addStr("\"");

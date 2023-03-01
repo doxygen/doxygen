@@ -42,6 +42,8 @@ class AnchorGenerator
      */
     static bool looksGenerated(const std::string &anchor);
 
+    static std::string addPrefixIfNeeded(const std::string &anchor);
+
   private:
     AnchorGenerator();
    ~AnchorGenerator();

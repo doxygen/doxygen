@@ -41,6 +41,21 @@ AnchorGenerator &AnchorGenerator::instance()
   return am;
 }
 
+constexpr auto prefix = "autotoc_md";
+
+std::string AnchorGenerator::addPrefixIfNeeded(const std::string &anchor)
+{
+  if (Config_getEnum(MARKDOWN_ID_STYLE)==MARKDOWN_ID_STYLE_t::GITHUB &&
+      (anchor.empty() || anchor.at(0)=='-' || (anchor.at(0)>='0' && anchor.at(0)<='9')))
+  {
+    return prefix+anchor;
+  }
+  else
+  {
+    return anchor;
+  }
+}
+
 std::string AnchorGenerator::generate(const std::string &label)
 {
   std::lock_guard lock(p->mutex);
@@ -50,7 +65,7 @@ std::string AnchorGenerator::generate(const std::string &label)
   auto createDoxygenStyleAnchor = [&]()
   {
     // overwrite result with the doxygen style anchor
-    result = "autotoc_md"+std::to_string(p->anchorCount++);
+    result = prefix+std::to_string(p->anchorCount++);
   };
 
   auto createGitHubStyleAnchor = [&]()
@@ -84,6 +99,7 @@ std::string AnchorGenerator::generate(const std::string &label)
     }
     else
     {
+      result = addPrefixIfNeeded(result);
       int &count = p->idCount[result];
       // Add end digits if an identical header already exists
       if (count>0)
