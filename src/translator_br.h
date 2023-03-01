@@ -140,7 +140,7 @@ namespace PortugueseTranslatorUtils
           return true;
       }
     }
-};
+}
 
 class TranslatorBrazilian : public Translator
 {
