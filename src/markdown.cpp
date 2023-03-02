@@ -2094,7 +2094,9 @@ static bool isFencedCodeBlock(const char *data,int size,int refIndent,
   } // not enough tildes
   if (i<size && data[i]=='{') i++; // skip over optional {
   int startLang=i;
-  if (data[i] != ' ')
+  lang = "";
+  char c = data[i];
+  if (c == '{' || (c>='A' && c<='Z') || (c>='a' && c<='z'))
   {
     while (i<size && (data[i]!='\n' && data[i]!='}' && data[i]!=' ')) i++;
     convertStringFragment(lang,data+startLang,i-startLang);
@@ -2109,7 +2111,6 @@ static bool isFencedCodeBlock(const char *data,int size,int refIndent,
       int endTildes=0;
       while (i<size && data[i]==tildaChar) endTildes++,i++;
       while (i<size && data[i]==' ') i++;
-      if (i==size || data[i]=='\n')
       {
         if (endTildes==startTildes)
         {
@@ -2776,8 +2777,9 @@ void Markdown::writeFencedCodeBlock(const char *data,const char *lng,
   {
     m_out.addStr("{"+lang+"}");
   }
+  m_out.addStr(" ");
   addStrEscapeUtf8Nbsp(data+blockStart,blockEnd-blockStart);
-  m_out.addStr("@endicode");
+  m_out.addStr("@endicode ");
 }
 
 QCString Markdown::processQuotations(const QCString &s,int refIndent)
