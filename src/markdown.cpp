@@ -2094,9 +2094,12 @@ static bool isFencedCodeBlock(const char *data,int size,int refIndent,
   } // not enough tildes
   if (i<size && data[i]=='{') i++; // skip over optional {
   int startLang=i;
-  while (i<size && (data[i]!='\n' && data[i]!='}' && data[i]!=' ')) i++;
-  convertStringFragment(lang,data+startLang,i-startLang);
-  while (i<size && data[i]!='\n') i++; // proceed to the end of the line
+  if (data[i] != ' ')
+  {
+    while (i<size && (data[i]!='\n' && data[i]!='}' && data[i]!=' ')) i++;
+    convertStringFragment(lang,data+startLang,i-startLang);
+    if (data[i] == '}')i++;
+  }
   start=i;
   while (i<size)
   {
