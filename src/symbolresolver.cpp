@@ -1133,7 +1133,7 @@ const Definition *SymbolResolver::Private::followPath(const Definition *start,co
         next = classMember;
       }
     }
-    else if (current->definitionType()==Definition::TypeNamespace)
+    else if (current!=Doxygen::globalScope && current->definitionType()==Definition::TypeNamespace)
     {
       const MemberDef *namespaceMember = toNamespaceDef(current)->getMemberByName(qualScopePart);
       if (namespaceMember && namespaceMember->isEnumerate())
