@@ -1902,11 +1902,9 @@ IDocNodeASTPtr validatingParseDoc(IDocParser &parserIntf,
   //                                     input);
   //printf("========== validating %s at line %d\n",qPrint(fileName),startLine);
   //printf("---------------- input --------------------\n%s\n----------- end input -------------------\n",qPrint(input));
-  //parser->context.token = new TokenInfo;
 
-  // store parser state so we can re-enter this function if needed
-  //bool fortranOpt = Config_getBool(OPTIMIZE_FOR_FORTRAN);
-  parser->pushContext();
+  // set initial token
+  parser->context.token = parser->tokenizer.newToken();
 
   if (ctx && ctx!=Doxygen::globalScope &&
       (ctx->definitionType()==Definition::TypeClass ||
@@ -2006,8 +2004,8 @@ IDocNodeASTPtr validatingParseDoc(IDocParser &parserIntf,
   //Mappers::cmdMapper->freeInstance();
   //Mappers::htmlTagMapper->freeInstance();
 
-  // restore original parser state
-  parser->popContext();
+  // reset token
+  parser->tokenizer.replaceToken(0);
 
   //printf(">>>>>> end validatingParseDoc(%s,%s)\n",ctx?qPrint(ctx->name()):"<none>",
   //                                     md?qPrint(md->name()):"<none>");
@@ -2021,8 +2019,8 @@ IDocNodeASTPtr validatingParseText(IDocParser &parserIntf,const QCString &input)
   assert(parser!=0);
   if (parser==0) return 0;
 
-  // store parser state so we can re-enter this function if needed
-  parser->pushContext();
+  // set initial token
+  parser->context.token = parser->tokenizer.newToken();
 
   //printf("------------ input ---------\n%s\n"
   //       "------------ end input -----\n",input);
@@ -2068,8 +2066,8 @@ IDocNodeASTPtr validatingParseText(IDocParser &parserIntf,const QCString &input)
     }
   }
 
-  // restore original parser state
-  parser->popContext();
+  // reset token
+  parser->tokenizer.replaceToken(0);
   return ast;
 }
 

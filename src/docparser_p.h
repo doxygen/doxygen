@@ -56,11 +56,11 @@ using DocStyleChangeStack = IterableStack<const DocNodeVariant *>;
  */
 struct DocParserContext
 {
-  const Definition *scope;
+  const Definition *scope = 0;
   QCString context;
-  bool inSeeBlock;
-  bool xmlComment;
-  bool insideHtmlLink;
+  bool inSeeBlock = false;
+  bool xmlComment = false;
+  bool insideHtmlLink = false;
   DocNodeStack nodeStack;
   DocStyleChangeStack styleStack;
   DocStyleChangeStack initialStyleStack;
@@ -68,25 +68,25 @@ struct DocParserContext
   QCString fileName;
   QCString relPath;
 
-  bool         hasParamCommand;
-  bool         hasReturnCommand;
+  bool         hasParamCommand = false;
+  bool         hasReturnCommand = false;
   StringMultiSet retvalsFound;
   StringMultiSet paramsFound;
-  const MemberDef *  memberDef;
-  bool         isExample;
+  const MemberDef *  memberDef = 0;
+  bool         isExample = false;
   QCString     exampleName;
   QCString     searchUrl;
 
   QCString     includeFileName;
   QCString     includeFileText;
-  uint32_t     includeFileOffset;
-  uint32_t     includeFileLength;
+  uint32_t     includeFileOffset = 0;
+  uint32_t     includeFileLength = 0;
   int          includeFileLine;
-  bool         includeFileShowLineNo;
+  bool         includeFileShowLineNo = false;
 
-  TokenInfo *token;
-  int      lineNo;
-  bool     markdownSupport;
+  TokenInfo *token = 0;
+  int      lineNo = 0;
+  bool     markdownSupport = false;
 };
 
 class DocParser : public IDocParser
