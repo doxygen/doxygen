@@ -103,7 +103,7 @@ class Definition
     virtual bool isAlias() const = 0;
 
     /*! Returns the name of the definition */
-    virtual QCString name() const = 0;
+    virtual const QCString &name() const = 0;
 
     /*! Returns TRUE iff this definition has an artificially generated name
      * (typically starting with a @) that is used for nameless definitions
@@ -114,7 +114,7 @@ class Definition
     virtual QCString displayName(bool includeScope=TRUE) const = 0;
 
     /*! Returns the local name without any scope qualifiers. */
-    virtual QCString localName() const = 0;
+    virtual const QCString &localName() const = 0;
 
     /*! Returns the fully qualified name of this definition
      */

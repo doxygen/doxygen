@@ -33,9 +33,9 @@ class DefinitionImpl
         bool isSymbol=TRUE);
     virtual ~DefinitionImpl();
 
-    QCString name() const;
+    const QCString &name() const;
     bool isAnonymous() const;
-    QCString localName() const;
+    const QCString &localName() const;
     QCString qualifiedName() const;
     QCString symbolName() const;
     QCString getSourceFileBase() const;
@@ -152,9 +152,9 @@ class DefinitionMixin : public Base
     virtual bool isAlias() const { return FALSE; }
 
     //======== Definition
-    virtual QCString name() const { return m_impl.name(); }
+    virtual const QCString &name() const { return m_impl.name(); }
     virtual bool isAnonymous() const { return m_impl.isAnonymous(); }
-    virtual QCString localName() const { return m_impl.localName(); }
+    virtual const QCString &localName() const { return m_impl.localName(); }
     virtual QCString qualifiedName() const { return m_impl.qualifiedName(); }
     virtual QCString symbolName() const { return m_impl.symbolName(); }
     virtual QCString getSourceFileBase() const { return m_impl.getSourceFileBase(); }
@@ -299,13 +299,14 @@ class DefinitionAliasImpl
     virtual ~DefinitionAliasImpl();
     void init();
     void deinit();
-    QCString name() const;
+    const QCString &name() const;
     QCString qualifiedName() const;
   private:
+    void updateQualifiedName() const;
     Definition *m_def;
     const Definition *m_scope;
     QCString m_symbolName;
-    QCString m_qualifiedName;
+    mutable QCString m_qualifiedName;
 };
 
 template<class Base>
@@ -323,11 +324,11 @@ class DefinitionAliasMixin : public Base
     virtual bool isAlias() const { return TRUE; }
 
     //======== Definition
-    virtual QCString name() const
+    virtual const QCString &name() const
     { return m_impl.name(); }
     virtual bool isAnonymous() const
     { return m_alias->isAnonymous(); }
-    virtual QCString localName() const
+    virtual const QCString &localName() const
     { return m_alias->localName(); }
     virtual QCString qualifiedName() const
     { return m_impl.qualifiedName(); }

@@ -80,7 +80,6 @@ class NamespaceDefImpl : public DefinitionMixin<NamespaceDefMutable>
     virtual const LinkedRefMap<ClassDef> &getUsedClasses() const { return m_usingDeclList; }
     virtual void combineUsingRelations(NamespaceDefSet &visitedNamespace);
     virtual QCString displayName(bool=TRUE) const;
-    virtual QCString localName() const;
     virtual void setInline(bool isInline) { m_inline = isInline; }
     virtual bool isConstantGroup() const { return CONSTANT_GROUP == m_type; }
     virtual bool isModule()        const { return NAMESPACE == m_type || MODULE == m_type; }
@@ -108,6 +107,7 @@ class NamespaceDefImpl : public DefinitionMixin<NamespaceDefMutable>
     virtual ClassLinkedRefMap getExceptions() const { return exceptions; }
     virtual NamespaceLinkedRefMap getNamespaces() const { return namespaces; }
     virtual ConceptLinkedRefMap getConcepts() const { return m_concepts; }
+    virtual void setName(const QCString &name);
 
     virtual QCString title() const;
     virtual QCString compoundTypeString() const;
@@ -137,6 +137,7 @@ class NamespaceDefImpl : public DefinitionMixin<NamespaceDefMutable>
 
     void writeNamespaceDeclarations(OutputList &ol,const QCString &title,
             bool isConstantGroup=false);
+    void updateLocalName();
 
     QCString              fileName;
     FileList              files;
@@ -197,7 +198,7 @@ class NamespaceDefAliasImpl : public DefinitionAliasMixin<NamespaceDef>
     { return getNSAlias()->getUsedClasses(); }
     virtual QCString displayName(bool b=TRUE) const
     { return makeDisplayName(this,b); }
-    virtual QCString localName() const
+    virtual const QCString &localName() const
     { return getNSAlias()->localName(); }
     virtual bool isConstantGroup() const
     { return getNSAlias()->isConstantGroup(); }
@@ -297,6 +298,25 @@ NamespaceDefImpl::NamespaceDefImpl(const QCString &df,int dl,int dc,
   {
     m_type = NAMESPACE;
   }
+
+  updateLocalName();
+}
+
+void NamespaceDefImpl::updateLocalName()
+{
+  QCString locName=name();
+  int i=locName.findRev("::");
+  if (i!=-1)
+  {
+    locName=locName.mid(i+2);
+  }
+  setLocalName(locName);
+}
+
+void NamespaceDefImpl::setName(const QCString &name)
+{
+  DefinitionMixin<NamespaceDefMutable>::setName(name);
+  updateLocalName();
 }
 
 NamespaceDefImpl::~NamespaceDefImpl()
@@ -1232,17 +1252,6 @@ void NamespaceDefImpl::addListReferences()
 QCString NamespaceDefImpl::displayName(bool includeScope) const
 {
   return makeDisplayName(this,includeScope);
-}
-
-QCString NamespaceDefImpl::localName() const
-{
-  QCString result=name();
-  int i=result.findRev("::");
-  if (i!=-1)
-  {
-    result=result.mid(i+2);
-  }
-  return result;
 }
 
 void NamespaceDefImpl::combineUsingRelations(NamespaceDefSet &visitedNamespaces)

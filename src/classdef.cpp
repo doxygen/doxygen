@@ -269,7 +269,6 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
     virtual void setCategoryOf(ClassDef *cd);
     virtual void setUsedOnly(bool b);
     virtual void setTagLessReference(const ClassDef *cd);
-    virtual void setName(const QCString &name);
     virtual void setMetaData(const QCString &md);
     virtual void findSectionsInDocumentation();
     virtual void addMembersToMemberGroup();
@@ -4986,11 +4985,6 @@ bool ClassDefImpl::subGrouping() const
 bool ClassDefImpl::isSliceLocal() const
 {
   return m_impl->spec&Entry::Local;
-}
-
-void ClassDefImpl::setName(const QCString &name)
-{
-  DefinitionMixin::setName(name);
 }
 
 void ClassDefImpl::setMetaData(const QCString &md)

@@ -1343,7 +1343,7 @@ void DefinitionImpl::setOuterScope(Definition *d)
   m_impl->hidden = m_impl->hidden || d->isHidden();
 }
 
-QCString DefinitionImpl::localName() const
+const QCString &DefinitionImpl::localName() const
 {
   return m_impl->localName;
 }
@@ -1850,7 +1850,7 @@ QCString DefinitionImpl::externalReference(const QCString &relPath) const
   return relPath;
 }
 
-QCString DefinitionImpl::name() const
+const QCString &DefinitionImpl::name() const
 {
   return m_impl->name;
 }
@@ -1900,24 +1900,35 @@ void DefinitionAliasImpl::deinit()
   removeFromMap(m_symbolName,m_def);
 }
 
-QCString DefinitionAliasImpl::qualifiedName() const
+void DefinitionAliasImpl::updateQualifiedName() const
 {
-  //printf("start %s::qualifiedName() localName=%s\n",qPrint(name()),qPrint(m_impl->localName));
-  if (m_scope==0)
+  std::lock_guard<std::recursive_mutex> lock(g_qualifiedNameMutex);
+  if (m_qualifiedName.isEmpty())
   {
-    return m_def->localName();
-  }
-  else
-  {
-    return m_scope->qualifiedName()+
-           getLanguageSpecificSeparator(m_scope->getLanguage())+
-           m_def->localName();
+    //printf("start %s::qualifiedName() localName=%s\n",qPrint(name()),qPrint(m_impl->localName));
+    if (m_scope==0)
+    {
+      m_qualifiedName = m_def->localName();
+    }
+    else
+    {
+      m_qualifiedName = m_scope->qualifiedName()+
+        getLanguageSpecificSeparator(m_scope->getLanguage())+
+        m_def->localName();
+    }
   }
 }
 
-QCString DefinitionAliasImpl::name() const
+QCString DefinitionAliasImpl::qualifiedName() const
 {
-  return qualifiedName();
+  updateQualifiedName();
+  return m_qualifiedName;
+}
+
+const QCString &DefinitionAliasImpl::name() const
+{
+  updateQualifiedName();
+  return m_qualifiedName;
 }
 
 //---------------------------------------------------------------------------------

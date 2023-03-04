@@ -405,7 +405,7 @@ class MemberDefAliasImpl : public DefinitionAliasMixin<MemberDef>
     }
     virtual void moveTo(Definition *) {}
 
-    virtual QCString name() const
+    virtual const QCString &name() const
     { return getMdAlias()->name(); }
     virtual CodeSymbolType codeSymbolType() const
     { return getMdAlias()->codeSymbolType(); }

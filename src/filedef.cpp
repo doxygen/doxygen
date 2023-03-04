@@ -64,7 +64,7 @@ class FileDefImpl : public DefinitionMixin<FileDef>
 
     virtual DefType definitionType() const { return TypeFile; }
     virtual CodeSymbolType codeSymbolType() const { return CodeSymbolType::Default; }
-    virtual QCString name() const;
+    virtual const QCString &name() const;
 
     virtual QCString displayName(bool=TRUE) const { return name(); }
     virtual QCString fileName() const { return m_fileName; }
@@ -1291,7 +1291,7 @@ void FileDefImpl::insertNamespace(NamespaceDef *nd)
   m_namespaces.add(nd->name(),nd);
 }
 
-QCString FileDefImpl::name() const
+const QCString &FileDefImpl::name() const
 {
   if (Config_getBool(FULL_PATH_NAMES))
     return m_fileName;

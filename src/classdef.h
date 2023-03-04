@@ -422,7 +422,6 @@ class ClassDefMutable : public DefinitionMutable, public ClassDef
     virtual void setCategoryOf(ClassDef *cd) = 0;
     virtual void setUsedOnly(bool b) = 0;
     virtual void setTagLessReference(const ClassDef *cd) = 0;
-    virtual void setName(const QCString &name) = 0;
     virtual void setMetaData(const QCString &md) = 0;
     virtual void setRequiresClause(const QCString &req) = 0;
     virtual void addQualifiers(const StringVector &qualifiers) = 0;
