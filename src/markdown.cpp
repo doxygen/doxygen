@@ -2073,6 +2073,8 @@ static bool isFencedCodeBlock(const char *data,int size,int refIndent,
                              QCString &lang,int &start,int &end,int &offset)
 {
   AUTO_TRACE("data='{}' size={} refIndent={}",Trace::trunc(data),size,refIndent);
+  auto isWordChar = [ ](char c) { return (c>='A' && c<='Z') || (c>='a' && c<='z'); };
+  auto isLangChar = [&](char c) { return c=='.' || isWordChar(c);                  };
   // rules: at least 3 ~~~, end of the block same amount of ~~~'s, otherwise
   // return FALSE
   int i=0;
@@ -2092,11 +2094,33 @@ static bool isFencedCodeBlock(const char *data,int size,int refIndent,
     AUTO_TRACE_EXIT("result=false: no fence marker found #tildes={}",startTildes);
     return FALSE;
   } // not enough tildes
-  if (i<size && data[i]=='{') i++; // skip over optional {
-  int startLang=i;
-  while (i<size && (data[i]!='\n' && data[i]!='}' && data[i]!=' ')) i++;
-  convertStringFragment(lang,data+startLang,i-startLang);
-  while (i<size && data[i]!='\n') i++; // proceed to the end of the line
+  if (i<size && data[i]=='{') // extract .py from ```{.py} ... ```
+  {
+    i++; // skip over {
+    int startLang=i;
+    while (i<size && (data[i]!='\n' && data[i]!='}')) i++; // find matching }
+    if (i<size && data[i]=='}')
+    {
+      convertStringFragment(lang,data+startLang,i-startLang);
+      i++;
+    }
+    else // missing closing bracket, treat `{` as part of the content
+    {
+      i=startLang-1;
+      lang="";
+    }
+  }
+  else if (i<size && isLangChar(data[i])) /// extract python or .py from ```python...``` or ```.py...```
+  {
+    int startLang=i;
+    i++;
+    while (i<size && isWordChar(data[i])) i++; // find end of language specifier
+    convertStringFragment(lang,data+startLang,i-startLang);
+  }
+  else // no language specified
+  {
+    lang="";
+  }
   start=i;
   while (i<size)
   {
@@ -2106,19 +2130,18 @@ static bool isFencedCodeBlock(const char *data,int size,int refIndent,
       int endTildes=0;
       while (i<size && data[i]==tildaChar) endTildes++,i++;
       while (i<size && data[i]==' ') i++;
-      if (i==size || data[i]=='\n')
       {
         if (endTildes==startTildes)
         {
           offset=i;
-          AUTO_TRACE_EXIT("result=true: found end marker at offset {}",offset);
+          AUTO_TRACE_EXIT("result=true: found end marker at offset {} lang='{}'",offset,lang);
           return TRUE;
         }
       }
     }
     i++;
   }
-  AUTO_TRACE_EXIT("result=false: no end marker found");
+  AUTO_TRACE_EXIT("result=false: no end marker found lang={}'",lang);
   return FALSE;
 }
 
@@ -2773,8 +2796,9 @@ void Markdown::writeFencedCodeBlock(const char *data,const char *lng,
   {
     m_out.addStr("{"+lang+"}");
   }
+  m_out.addStr(" ");
   addStrEscapeUtf8Nbsp(data+blockStart,blockEnd-blockStart);
-  m_out.addStr("@endicode");
+  m_out.addStr("@endicode ");
 }
 
 QCString Markdown::processQuotations(const QCString &s,int refIndent)
