@@ -23,7 +23,7 @@
 
 inline char toLowerChar(char c)
 {
-  return static_cast<char>(tolower(static_cast<unsigned char>(c)));
+  return c>='A' && c<='Z' ? c|0x20 : c;
 }
 
 QCString &QCString::sprintf( const char *format, ... )
