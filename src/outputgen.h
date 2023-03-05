@@ -64,6 +64,7 @@ enum class OutputType { List, Html, Latex, Man, RTF, Docbook, XML, Null, Extensi
 class OutputGenerator
 {
   public:
+    OutputGenerator() : m_t(40*1024) {}
 
     enum ParamListTypes { Param, RetVal, Exception };
     enum SectionTypes { /*See, Return, Author, Version,

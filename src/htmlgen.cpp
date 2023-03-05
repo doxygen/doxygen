@@ -758,7 +758,12 @@ void HtmlCodeGenerator::codify(const QCString &str)
               *m_t << "&#x24" << hex[uc>>4] << hex[uc&0xF] << ";";
               m_col++;
             }
-            else
+            else if (uc<0x80) // printable ASCII char
+            {
+              *m_t << c;
+              m_col++;
+            }
+            else // multibyte UTF-8 char
             {
               p=writeUTF8Char(*m_t,p-1);
               m_col++;
