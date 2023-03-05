@@ -3636,17 +3636,7 @@ where `loc1` and `loc2` can be relative or absolute paths or URLs.
       </docs>
     </option>
   </group>
-  <group name='Dot' docs='Configuration options related to the dot tool'>
-    <option type='string' id='DIA_PATH' format='dir' defval=''>
-      <docs>
-<![CDATA[
-You can include diagrams made with dia in doxygen documentation. Doxygen will then run
-dia to produce the diagram and insert it in the documentation. The DIA_PATH tag allows
-you to specify the directory where the dia binary resides. If left empty dia is assumed
-to be found in the default search path.
-]]>
-      </docs>
-    </option>
+  <group name='Dot' docs='Configuration options related to diagram generator tools'>
     <option type='bool' id='HIDE_UNDOC_RELATIONS' defval='1'>
       <docs>
 <![CDATA[
@@ -3949,12 +3939,13 @@ UML notation for the relationships.
 ]]>
       </docs>
     </option>
-    <option type='list' id='MSCFILE_DIRS' format='dir'>
+    <option type='string' id='DIA_PATH' format='dir' defval=''>
       <docs>
 <![CDATA[
- The \c MSCFILE_DIRS tag can be used to specify one or more directories that
- contain msc files that are included in the documentation (see the
- \ref cmdmscfile "\\mscfile" command).
+You can include diagrams made with dia in doxygen documentation. Doxygen will then run
+dia to produce the diagram and insert it in the documentation. The DIA_PATH tag allows
+you to specify the directory where the dia binary resides. If left empty dia is assumed
+to be found in the default search path.
 ]]>
       </docs>
     </option>
@@ -4049,6 +4040,28 @@ If the \c DOT_CLEANUP tag is set to \c YES, doxygen will
 remove the intermediate files that are used to generate the various graphs.
  <br>Note:
 This setting is not only used for dot files but also for msc temporary files.
+]]>
+      </docs>
+    </option>
+    <option type='string' id='MSCGEN_TOOL' format='file' defval=''>
+      <docs>
+<![CDATA[
+ You can define message sequence charts within doxygen comments using the \ref cmdmsc "\\msc"
+ command. If the \c MSCGEN_TOOL tag is left empty (the default), then doxygen will use a built-in
+ version of mscgen tool to produce the charts.
+ Alternatively, the \c MSCGEN_TOOL tag can also specify the name an external tool.
+ For instance, specifying `prog` as the value, doxygen will call the tool
+ as `prog -T <outfile_format> -o <outputfile> <inputfile>`. The external tool
+ should support output file formats "png", "eps", "svg", and "ismap".
+]]>
+      </docs>
+    </option>
+    <option type='list' id='MSCFILE_DIRS' format='dir'>
+      <docs>
+<![CDATA[
+ The \c MSCFILE_DIRS tag can be used to specify one or more directories that
+ contain msc files that are included in the documentation (see the
+ \ref cmdmscfile "\\mscfile" command).
 ]]>
       </docs>
     </option>
