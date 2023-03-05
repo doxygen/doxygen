@@ -3727,10 +3727,13 @@ to be found in the default search path.
     <option type='enum' id='CLASS_GRAPH' defval='YES'>
       <docs>
 <![CDATA[
- If the \c CLASS_GRAPH tag is set to \c YES (or \c GRAPH) then doxygen
+ If the \c CLASS_GRAPH tag is set to \c YES or \c GRAPH or \c BUILTIN then doxygen
  will generate a graph for each documented class showing the direct and
- indirect inheritance relations. In case \ref cfg_have_dot "HAVE_DOT" is set as well
- `dot` will be used to draw the graph, otherwise the built-in generator will be used.
+ indirect inheritance relations.
+ In case the \c CLASS_GRAPH tag is set to \c YES or \c GRAPH and \ref cfg_have_dot "HAVE_DOT" is
+ enabled as well, then `dot` will be used to draw the graph.
+ In case the \c CLASS_GRAPH tag is set to \c YES and \ref cfg_have_dot "HAVE_DOT" is disabled
+ or if the \c CLASS_GRAPH tag is set to \c BUILTIN, then the built-in generator will be used.
  If the \c CLASS_GRAPH tag is set to \c TEXT the direct and indirect inheritance relations
  will be shown as texts / links.
 ]]>
@@ -3739,6 +3742,7 @@ to be found in the default search path.
       <value name="YES" bool_representation="YES" />
       <value name="TEXT" bool_representation="YES" />
       <value name="GRAPH" bool_representation="YES" />
+      <value name="BUILTIN" bool_representation="YES" />
     </option>
     <option type='bool' id='COLLABORATION_GRAPH' defval='1' depends='HAVE_DOT'>
       <docs>
