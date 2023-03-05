@@ -952,7 +952,11 @@ Structural indicators
 
   If the documentation for the overloaded member function is not located
   in front of the function declaration or definition, the optional
-  argument should be used to specify the correct function.
+  argument should be used to specify the correct declaration of the
+  overloaded function. Of course when the `\overload` command is directly
+  in front of the overloaded member function and the optional argument is
+  used this should also be the correct declaration of the overloaded
+  function.
 
   Any other documentation that is inside the documentation block will
   by appended after the generated message.
@@ -963,7 +967,7 @@ Structural indicators
     To prevent that document reorders the documentation you should set
     \ref cfg_sort_member_docs "SORT_MEMBER_DOCS" to \c NO in this case.
   \par Note 2:
-    The \c \\overload command does not work inside a one-line comment.
+    Only one `\overload` command can be present in a comment block.
   \par Example:
   \include overload.cpp
   \htmlonly
