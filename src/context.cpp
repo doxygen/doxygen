@@ -1810,7 +1810,7 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
         DotClassGraphPtr cg = getClassGraph();
         result = !cg->isTrivial() && !cg->isTooBig();
       }
-      else if (classGraphEnabled || classGraph==CLASS_GRAPH_t::INTERNAL_GRAPH)
+      else if (classGraphEnabled || classGraph==CLASS_GRAPH_t::BUILTIN)
       {
         result = numInheritanceNodes()>0;
       }
@@ -1855,7 +1855,7 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
         }
         g_globals.dynSectionId++;
       }
-      else if (classGraphEnabled || classGraph==CLASS_GRAPH_t::INTERNAL_GRAPH)
+      else if (classGraphEnabled || classGraph==CLASS_GRAPH_t::BUILTIN)
       {
         ClassDiagram d(m_classDef);
         switch (g_globals.outputFormat)
