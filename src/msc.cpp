@@ -98,11 +98,12 @@ static bool convertMapFile(TextStream &t,const QCString &mapName,const QCString 
   return true;
 }
 
-bool do_mscgen_generate(const QCString& inFile,const QCString& outFile,mscgen_format_t msc_format,
-                     const QCString &srcFile,int srcLine)
+static bool do_mscgen_generate(const QCString& inFile,const QCString& outFile,mscgen_format_t msc_format,
+                               const QCString &srcFile,int srcLine)
 {
-  QCString const& external_mscgen = Config_getString(MSCGEN).stripWhiteSpace();
-  if (!external_mscgen.isEmpty()) {
+  auto mscgen_tool = Config_getString(MSCGEN_TOOL).stripWhiteSpace();
+  if (!mscgen_tool.isEmpty()) // use external mscgen tool
+  {
     QCString type;
     switch (msc_format)
     {
@@ -120,20 +121,24 @@ bool do_mscgen_generate(const QCString& inFile,const QCString& outFile,mscgen_fo
         type = "ismap";
         break;
     }
-    int exitcode = Portable::system(external_mscgen,"-T"+type+" -o "+outFile+" "+inFile);
-    if (exitcode==0)
-      return true;
-    err_full(srcFile,srcLine,"Problems running external tool %s given via MSCGEN (exit status: %d)."
-                             " Look for typos in your msc file and check error messages above.",
-        external_mscgen.data(),exitcode);
-    return false;
+    int exitcode = Portable::system(mscgen_tool,"-T"+type+" -o "+outFile+" "+inFile);
+    if (exitcode!=0)
+    {
+      err_full(srcFile,srcLine,"Problems running external tool %s given via MSCGEN_TOOL (exit status: %d)."
+          " Look for typos in your msc file and check error messages above.",
+          qPrint(mscgen_tool),exitcode);
+      return false;
+    }
   }
-  int code = mscgen_generate(inFile.data(),outFile.data(),msc_format);
-  if (code!=0)
+  else // use built-in mscgen tool
   {
-    err_full(srcFile,srcLine,"Problems generating msc output (error=%s). Look for typos in you msc file %s\n",
-        mscgen_error2str(code),qPrint(inFile));
-    return false;
+    int code = mscgen_generate(inFile.data(),outFile.data(),msc_format);
+    if (code!=0)
+    {
+      err_full(srcFile,srcLine,"Problems generating msc output (error=%s). Look for typos in you msc file %s\n",
+          mscgen_error2str(code),qPrint(inFile));
+      return false;
+    }
   }
   return true;
 }
@@ -167,7 +172,9 @@ void writeMscGraphFromFile(const QCString &inFile,const QCString &outDir,
       return;
   }
   if (!do_mscgen_generate(inFile,imgName,msc_format,srcFile,srcLine))
+  {
     return;
+  }
 
   if ( (format==MSC_EPS) && (Config_getBool(USE_PDFLATEX)) )
   {
