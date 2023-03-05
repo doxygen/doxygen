@@ -257,7 +257,9 @@ void DocSets::addContentsItem(bool isDir,
       }
       else if (!file.isEmpty()) // doxygen generated file
       {
-        p->nts << addHtmlExtensionIfMissing(file);
+        QCString fn = file;
+        addHtmlExtensionIfMissing(fn);
+        p->nts << fn;
       }
       p->nts << "</Path>\n";
       if (!file.isEmpty() && !anchor.isEmpty())
@@ -505,7 +507,9 @@ void DocSets::writeToken(TextStream &t,
     t << "      <Scope>" << convertToXML(scope) << "</Scope>\n";
   }
   t << "    </TokenIdentifier>\n";
-  t << "    <Path>" << addHtmlExtensionIfMissing(d->getOutputFileBase()) << "</Path>\n";
+  QCString fn = d->getOutputFileBase();
+  addHtmlExtensionIfMissing(fn);
+  t << "    <Path>" << fn << "</Path>\n";
   if (!anchor.isEmpty())
   {
     t << "    <Anchor>" << anchor << "</Anchor>\n";

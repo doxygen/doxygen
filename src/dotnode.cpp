@@ -501,12 +501,14 @@ void DotNode::writeUrl(TextStream &t) const
   int anchorPos = noTagURL.findRev('#');
   if (anchorPos==-1)
   {
-    t << addHtmlExtensionIfMissing(noTagURL) << "\"";
+    addHtmlExtensionIfMissing(noTagURL);
+    t << noTagURL << "\"";
   }
-  else
+  else // insert extensiom before anchor
   {
-    t << addHtmlExtensionIfMissing(noTagURL.left(anchorPos))
-      << noTagURL.right(noTagURL.length() - anchorPos) << "\"";
+    QCString fn = noTagURL.left(anchorPos);
+    addHtmlExtensionIfMissing(fn);
+    t << fn << noTagURL.right(noTagURL.length() - anchorPos) << "\"";
   }
 }
 

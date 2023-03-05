@@ -419,7 +419,9 @@ void DefinitionImpl::writeDocAnchorsToTagFile(TextStream &tagFile) const
       {
         //printf("write an entry!\n");
         if (m_impl->def->definitionType()==Definition::TypeMember) tagFile << "  ";
-        tagFile << "    <docanchor file=\"" << addHtmlExtensionIfMissing(si->fileName()) << "\"";
+        QCString fn = si->fileName();
+        addHtmlExtensionIfMissing(fn);
+        tagFile << "    <docanchor file=\"" << fn << "\"";
         if (!si->title().isEmpty())
         {
           tagFile << " title=\"" << convertToXML(si->title()) << "\"";
@@ -1456,16 +1458,18 @@ QCString DefinitionImpl::navigationPathAsString() const
   result+="<li class=\"navelem\">";
   if (m_impl->def->isLinkableInProject())
   {
+    QCString fn = m_impl->def->getOutputFileBase();
+    addHtmlExtensionIfMissing(fn);
     if (m_impl->def->definitionType()==Definition::TypeGroup &&
         !toGroupDef(m_impl->def)->groupTitle().isEmpty())
     {
-      result+="<a class=\"el\" href=\"$relpath^"+addHtmlExtensionIfMissing(m_impl->def->getOutputFileBase())+"\">"+
+      result+="<a class=\"el\" href=\"$relpath^"+fn+"\">"+
               convertToHtml(toGroupDef(m_impl->def)->groupTitle())+"</a>";
     }
     else if (m_impl->def->definitionType()==Definition::TypePage &&
              toPageDef(m_impl->def)->hasTitle())
     {
-      result+="<a class=\"el\" href=\"$relpath^"+addHtmlExtensionIfMissing(m_impl->def->getOutputFileBase())+"\">"+
+      result+="<a class=\"el\" href=\"$relpath^"+fn+"\">"+
             convertToHtml((toPageDef(m_impl->def))->title())+"</a>";
     }
     else if (m_impl->def->definitionType()==Definition::TypeClass)
@@ -1475,13 +1479,13 @@ QCString DefinitionImpl::navigationPathAsString() const
       {
         name = name.left(name.length()-2);
       }
-      result+="<a class=\"el\" href=\"$relpath^"+addHtmlExtensionIfMissing(m_impl->def->getOutputFileBase());
+      result+="<a class=\"el\" href=\"$relpath^"+fn;
       if (!m_impl->def->anchor().isEmpty()) result+="#"+m_impl->def->anchor();
       result+="\">"+convertToHtml(name)+"</a>";
     }
     else
     {
-      result+="<a class=\"el\" href=\"$relpath^"+addHtmlExtensionIfMissing(m_impl->def->getOutputFileBase())+"\">"+
+      result+="<a class=\"el\" href=\"$relpath^"+fn+"\">"+
               convertToHtml(locName)+"</a>";
     }
   }

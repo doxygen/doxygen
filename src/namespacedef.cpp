@@ -580,9 +580,11 @@ bool NamespaceDefImpl::hasDetailedDescription() const
 
 void NamespaceDefImpl::writeTagFile(TextStream &tagFile)
 {
+  QCString fn = getOutputFileBase();
+  addHtmlExtensionIfMissing(fn);
   tagFile << "  <compound kind=\"namespace\">\n";
   tagFile << "    <name>" << convertToXML(name()) << "</name>\n";
-  tagFile << "    <filename>" << addHtmlExtensionIfMissing(getOutputFileBase()) << "</filename>\n";
+  tagFile << "    <filename>" << fn << "</filename>\n";
   QCString idStr = id();
   if (!idStr.isEmpty())
   {
@@ -1142,6 +1144,8 @@ void NamespaceDefImpl::writeQuickMemberLinks(OutputList &ol,const MemberDef *cur
       {
         if (md->isLinkableInProject())
         {
+          QCString fn = md->getOutputFileBase();
+          addHtmlExtensionIfMissing(fn);
           if (md==currentMd) // selected item => highlight
           {
             ol.writeString("          <tr><td class=\"navtabHL\">");
@@ -1153,7 +1157,7 @@ void NamespaceDefImpl::writeQuickMemberLinks(OutputList &ol,const MemberDef *cur
           ol.writeString("<a class=\"navtab\" ");
           ol.writeString("href=\"");
           if (createSubDirs) ol.writeString("../../");
-          ol.writeString(addHtmlExtensionIfMissing(md->getOutputFileBase())+"#"+md->anchor());
+          ol.writeString(fn+"#"+md->anchor());
           ol.writeString("\">");
           ol.writeString(convertToHtml(md->localName()));
           ol.writeString("</a>");

@@ -159,10 +159,12 @@ void PageDefImpl::writeTagFile(TextStream &tagFile)
   }
   if (!found) // not one of the generated related pages
   {
+    QCString fn = getOutputFileBase();
+    addHtmlExtensionIfMissing(fn);
     tagFile << "  <compound kind=\"page\">\n";
     tagFile << "    <name>" << name() << "</name>\n";
     tagFile << "    <title>" << convertToXML(title()) << "</title>\n";
-    tagFile << "    <filename>" << addHtmlExtensionIfMissing(getOutputFileBase()) << "</filename>\n";
+    tagFile << "    <filename>" << fn << "</filename>\n";
     writeDocAnchorsToTagFile(tagFile);
     tagFile << "  </compound>\n";
   }

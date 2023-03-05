@@ -155,9 +155,15 @@ static QCString replaceRef(const QCString &buf,const QCString &relPath,
         const DocRef *df = std::get_if<DocRef>(&dfAstImpl->root);
         result+=externalRef(relPath,df->ref(),TRUE);
         if (!df->file().isEmpty())
-          result += addHtmlExtensionIfMissing(df->file());
+        {
+          QCString fn = df->file();
+          addHtmlExtensionIfMissing(fn);
+          result += fn;
+        }
         if (!df->anchor().isEmpty())
+        {
           result += "#" + df->anchor();
+        }
         result += "\"";
       }
       else

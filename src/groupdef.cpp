@@ -610,10 +610,12 @@ void GroupDefImpl::computeAnchors()
 
 void GroupDefImpl::writeTagFile(TextStream &tagFile)
 {
+  QCString fn = getOutputFileBase();
+  addHtmlExtensionIfMissing(fn);
   tagFile << "  <compound kind=\"group\">\n";
   tagFile << "    <name>" << convertToXML(name()) << "</name>\n";
   tagFile << "    <title>" << convertToXML(m_title) << "</title>\n";
-  tagFile << "    <filename>" << addHtmlExtensionIfMissing(getOutputFileBase()) << "</filename>\n";
+  tagFile << "    <filename>" << fn << "</filename>\n";
   for (const auto &lde : LayoutDocManager::instance().docEntries(LayoutDocManager::Group))
   {
     switch (lde->kind())
@@ -1285,6 +1287,8 @@ void GroupDefImpl::writeQuickMemberLinks(OutputList &ol,const MemberDef *current
     {
       if (md->isLinkableInProject())
       {
+        QCString fn = md->getOutputFileBase();
+        addHtmlExtensionIfMissing(fn);
         if (md==currentMd) // selected item => highlight
         {
           ol.writeString("          <tr><td class=\"navtabHL\">");
@@ -1296,7 +1300,7 @@ void GroupDefImpl::writeQuickMemberLinks(OutputList &ol,const MemberDef *current
         ol.writeString("<a class=\"navtab\" ");
         ol.writeString("href=\"");
         if (createSubDirs) ol.writeString("../../");
-        ol.writeString(addHtmlExtensionIfMissing(md->getOutputFileBase())+"#"+md->anchor());
+        ol.writeString(fn+"#"+md->anchor());
         ol.writeString("\">");
         ol.writeString(convertToHtml(md->localName()));
         ol.writeString("</a>");

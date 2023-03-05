@@ -174,7 +174,8 @@ void HtmlHelpIndex::addItem(const QCString &level1,const QCString &level2,
 
 static QCString field2URL(const IndexField *f,bool checkReversed)
 {
-  QCString result = addHtmlExtensionIfMissing(f->url);
+  QCString result = f->url;
+  addHtmlExtensionIfMissing(result);
   if (!f->anchor.isEmpty() && (!checkReversed || f->reversed))
   {
     // HTML Help needs colons in link anchors to be escaped in the .hhk file.
@@ -540,7 +541,8 @@ void HtmlHelp::addContentsItem(bool isDir,
     }
     else
     {
-      QCString currFile = addHtmlExtensionIfMissing(file);
+      QCString currFile = file;
+      addHtmlExtensionIfMissing(currFile);
       QCString currAnc = anchor;
       p->cts << "<param name=\"Local\" value=\"";
       p->cts << currFile;

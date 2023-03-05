@@ -74,8 +74,16 @@ static bool convertMapFile(TextStream &t,const QCString &mapName,const QCString 
         auto dfAstImpl = dynamic_cast<const DocNodeAST*>(dfAst.get());
         const DocRef *df = std::get_if<DocRef>(&dfAstImpl->root);
         t << externalRef(relPath,df->ref(),TRUE);
-        if (!df->file().isEmpty()) t << addHtmlExtensionIfMissing(df->file());
-        if (!df->anchor().isEmpty()) t << "#" << df->anchor();
+        if (!df->file().isEmpty())
+        {
+          QCString fn = df->file();
+          addHtmlExtensionIfMissing(fn);
+          t << fn;
+        }
+        if (!df->anchor().isEmpty())
+        {
+          t << "#" << df->anchor();
+        }
       }
       else
       {

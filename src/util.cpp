@@ -4903,13 +4903,16 @@ bool checkExtension(const QCString &fName, const QCString &ext)
   return fName.right(ext.length())==ext;
 }
 
-QCString addHtmlExtensionIfMissing(const QCString &fName)
+void addHtmlExtensionIfMissing(QCString &fName)
 {
-  if (fName.isEmpty()) return fName;
+  if (fName.isEmpty()) return;
   int i_fs = fName.findRev('/');
   int i_bs = fName.findRev('\\');
   int i    = fName.find('.',std::max({ i_fs, i_bs ,0})); // search for . after path part
-  return i==-1 ? fName+Doxygen::htmlFileExtension : fName;
+  if (i==-1)
+  {
+    fName+=Doxygen::htmlFileExtension;
+  }
 }
 
 QCString stripExtensionGeneral(const QCString &fName, const QCString &ext)

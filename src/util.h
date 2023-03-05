@@ -295,7 +295,7 @@ QCString linkToText(SrcLangExt lang,const QCString &link,bool isFileName);
 
 bool checkExtension(const QCString &fName, const QCString &ext);
 
-QCString addHtmlExtensionIfMissing(const QCString &fName);
+void addHtmlExtensionIfMissing(QCString &fName);
 
 QCString stripExtensionGeneral(const QCString &fName, const QCString &ext);
 

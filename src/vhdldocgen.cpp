@@ -334,10 +334,9 @@ static void writeColumn(TextStream &t,const MemberDef *md,bool start)
   t << "<TD ALIGN=\"LEFT\" ";
   if (md)
   {
-    t << "href=\"";
-    t << addHtmlExtensionIfMissing(md->getOutputFileBase());
-    t << "#" << md->anchor();
-    t<<"\" ";
+    QCString fn = md->getOutputFileBase();
+    addHtmlExtensionIfMissing(fn);
+    t << "href=\"" << fn << "#" << md->anchor() <<"\" ";
 
     t<<" TOOLTIP=\"";
     if (!toolTip.isEmpty())
@@ -405,7 +404,9 @@ static void writeClassToDot(TextStream &t,ClassDef* cd)
   t << cd->name();
   t << "\" ";
   t << "href=\"";
-  t << addHtmlExtensionIfMissing(cd->getOutputFileBase());
+  QCString fn = cd->getOutputFileBase();
+  addHtmlExtensionIfMissing(fn);
+  t << fn;
   t << "\" ";
   t << ">";
   t << cd->name();
@@ -1723,10 +1724,12 @@ void VhdlDocGen::writeTagFile(MemberDefMutable *mdef,TextStream &tagFile)
   if (VhdlDocGen::isAlias(mdef))        tagFile << "alias";
   if (VhdlDocGen::isCompInst(mdef))     tagFile << "configuration";
 
+  QCString fn = mdef->getOutputFileBase();
+  addHtmlExtensionIfMissing(fn);
   tagFile << "\">\n";
   tagFile << "      <type>" << convertToXML(mdef->typeString()) << "</type>\n";
   tagFile << "      <name>" << convertToXML(mdef->name()) << "</name>\n";
-  tagFile << "      <anchorfile>" << convertToXML(addHtmlExtensionIfMissing(mdef->getOutputFileBase())) << "</anchorfile>\n";
+  tagFile << "      <anchorfile>" << convertToXML(fn) << "</anchorfile>\n";
   tagFile << "      <anchor>" << convertToXML(mdef->anchor()) << "</anchor>\n";
 
   if (VhdlDocGen::isVhdlFunction(mdef))

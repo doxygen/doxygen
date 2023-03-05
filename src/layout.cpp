@@ -141,7 +141,7 @@ QCString LayoutNavEntry::url() const
   if ((kind()!=LayoutNavEntry::User && kind()!=LayoutNavEntry::UserGroup) ||
       (kind()==LayoutNavEntry::UserGroup && url.startsWith("usergroup")))
   {
-    url = addHtmlExtensionIfMissing(url);
+    addHtmlExtensionIfMissing(url);
   }
   else if (url.startsWith("@ref ") || url.startsWith("\\ref "))
   {
@@ -152,7 +152,8 @@ QCString LayoutNavEntry::url() const
     {
       if (d && d->isLinkable())
       {
-        url=addHtmlExtensionIfMissing(d->getOutputFileBase());
+        url = d->getOutputFileBase();
+        addHtmlExtensionIfMissing(url);
         if (!anchor.isEmpty())
         {
           url+="#"+anchor;

@@ -237,7 +237,7 @@ static QCString node2URL(const FTVNodePtr &n,bool overruleFile=FALSE,bool srcLin
         url = fd->getOutputFileBase();
       }
     }
-    url = addHtmlExtensionIfMissing(url);
+    addHtmlExtensionIfMissing(url);
     if (!n->anchor.isEmpty()) url+="#"+n->anchor;
   }
   return url;
@@ -434,8 +434,9 @@ void FTVHelp::Private::generateTree(TextStream &t, const FTVNodes &nl,int level,
       }
       if (srcRef)
       {
-        t << "<a href=\"" << addHtmlExtensionIfMissing(srcRef->getSourceFileBase())
-          << "\">";
+        QCString fn=srcRef->getSourceFileBase();
+        addHtmlExtensionIfMissing(fn);
+        t << "<a href=\"" << fn << "\">";
       }
       if (n->def && n->def->definitionType()==Definition::TypeGroup)
       {

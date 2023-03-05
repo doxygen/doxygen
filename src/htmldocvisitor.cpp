@@ -1991,8 +1991,10 @@ void HtmlDocVisitor::operator()(const DocXRefItem &x)
   bool anonymousEnum = x.file()=="@";
   if (!anonymousEnum)
   {
+    QCString fn = x.file();
+    addHtmlExtensionIfMissing(fn);
     m_t << "<dl class=\"" << x.key() << "\"><dt><b><a class=\"el\" href=\""
-        << x.relPath() << addHtmlExtensionIfMissing(x.file())
+        << x.relPath() << fn
         << "#" << x.anchor() << "\">";
   }
   else
@@ -2170,7 +2172,9 @@ void HtmlDocVisitor::startLink(const QCString &ref,const QCString &file,
   m_t << externalRef(relPath,ref,TRUE);
   if (!file.isEmpty())
   {
-    m_t << addHtmlExtensionIfMissing(file);
+    QCString fn = file;
+    addHtmlExtensionIfMissing(fn);
+    m_t << fn;
   }
   if (!anchor.isEmpty()) m_t << "#" << anchor;
   m_t << "\"";

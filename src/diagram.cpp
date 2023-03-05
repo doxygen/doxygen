@@ -276,7 +276,9 @@ static void writeMapArea(TextStream &t,const ClassDef *cd,QCString relPath,
     }
     t << "href=\"";
     t << externalRef(relPath,ref,TRUE);
-    t << addHtmlExtensionIfMissing(cd->getOutputFileBase());
+    QCString fn = cd->getOutputFileBase();
+    addHtmlExtensionIfMissing(fn);
+    t << fn;
     if (!cd->anchor().isEmpty())
     {
       t << "#" << cd->anchor();

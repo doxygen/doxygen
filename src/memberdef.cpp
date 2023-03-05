@@ -4417,8 +4417,10 @@ void MemberDefImpl::writeTagFile(TextStream &tagFile,bool useQualifiedName) cons
   {
     tagFile << "      <type>" << convertToXML(typeString()) << "</type>\n";
   }
+  QCString fn = getOutputFileBase();
+  addHtmlExtensionIfMissing(fn);
   tagFile << "      <name>" << convertToXML(useQualifiedName ? qualifiedName() : name()) << "</name>\n";
-  tagFile << "      <anchorfile>" << addHtmlExtensionIfMissing(getOutputFileBase()) << "</anchorfile>\n";
+  tagFile << "      <anchorfile>" << convertToXML(fn) << "</anchorfile>\n";
   tagFile << "      <anchor>" << convertToXML(anchor()) << "</anchor>\n";
   QCString idStr = id();
   if (!idStr.isEmpty())
@@ -4432,7 +4434,7 @@ void MemberDefImpl::writeTagFile(TextStream &tagFile,bool useQualifiedName) cons
     {
       if (!fmd->isReference())
       {
-        tagFile << "      <enumvalue file=\"" << convertToXML(addHtmlExtensionIfMissing(getOutputFileBase()));
+        tagFile << "      <enumvalue file=\"" << convertToXML(fn);
         tagFile << "\" anchor=\"" << convertToXML(fmd->anchor());
         idStr = fmd->id();
         if (!idStr.isEmpty())

@@ -172,7 +172,7 @@ static QCString makeFileName(const QCString & withoutExtension)
     }
     else // add specified HTML extension
     {
-      result = addHtmlExtensionIfMissing(result);
+      addHtmlExtensionIfMissing(result);
     }
   }
   return result;

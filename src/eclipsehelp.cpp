@@ -173,6 +173,8 @@ void EclipseHelp::addContentsItem(
   p->closedTag();
   if (!file.isEmpty())
   {
+    QCString fn = file;
+    addHtmlExtensionIfMissing(fn);
     switch (file[0]) // check for special markers (user defined URLs)
     {
       case '^':
@@ -189,8 +191,7 @@ void EclipseHelp::addContentsItem(
       default:
         p->indent();
         p->tocstream << "<topic label=\"" << convertToXML(name) << "\"";
-        p->tocstream << " href=\"" << convertToXML(p->pathprefix)
-                    << addHtmlExtensionIfMissing(file);
+        p->tocstream << " href=\"" << convertToXML(p->pathprefix) << fn;
         if (!anchor.isEmpty())
         {
           p->tocstream << "#" << anchor;

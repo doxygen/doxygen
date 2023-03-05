@@ -1826,13 +1826,15 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
       if (haveDot && classGraphEnabled)
       {
         DotClassGraphPtr cg = getClassGraph();
+        QCString fn = m_classDef->getOutputFileBase();
+        addHtmlExtensionIfMissing(fn);
         switch (g_globals.outputFormat)
         {
           case ContextOutputFormat_Html:
             {
               cg->writeGraph(t,GOF_BITMAP,EOF_Html,
                              g_globals.outputDir,
-                             g_globals.outputDir+Portable::pathSeparator()+addHtmlExtensionIfMissing(m_classDef->getOutputFileBase()),
+                             g_globals.outputDir+Portable::pathSeparator()+fn,
                              relPathAsString(),TRUE,TRUE,g_globals.dynSectionId
                             );
             }
@@ -1917,13 +1919,15 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
       if (haveDot)
       {
         DotClassGraphPtr cg = getCollaborationGraph();
+        QCString fn = m_classDef->getOutputFileBase();
+        addHtmlExtensionIfMissing(fn);
         switch (g_globals.outputFormat)
         {
           case ContextOutputFormat_Html:
             {
               cg->writeGraph(t,GOF_BITMAP,EOF_Html,
                              g_globals.outputDir,
-                             g_globals.outputDir+Portable::pathSeparator()+addHtmlExtensionIfMissing(m_classDef->getOutputFileBase()),
+                             g_globals.outputDir+Portable::pathSeparator()+fn,
                              relPathAsString(),TRUE,TRUE,g_globals.dynSectionId
                             );
             }
@@ -2801,13 +2805,15 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
       if (haveDot)
       {
         DotInclDepGraphPtr cg = getIncludeGraph();
+        QCString fn = m_fileDef->getOutputFileBase();
+        addHtmlExtensionIfMissing(fn);
         switch (g_globals.outputFormat)
         {
           case ContextOutputFormat_Html:
             {
               cg->writeGraph(t,GOF_BITMAP,EOF_Html,
                   g_globals.outputDir,
-                  g_globals.outputDir+Portable::pathSeparator()+addHtmlExtensionIfMissing(m_fileDef->getOutputFileBase()),
+                  g_globals.outputDir+Portable::pathSeparator()+fn,
                   relPathAsString(),TRUE,g_globals.dynSectionId
                   );
             }
@@ -2843,13 +2849,15 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
       if (haveDot)
       {
         DotInclDepGraphPtr cg = getIncludedByGraph();
+        QCString fn = m_fileDef->getOutputFileBase();
+        addHtmlExtensionIfMissing(fn);
         switch (g_globals.outputFormat)
         {
           case ContextOutputFormat_Html:
             {
               cg->writeGraph(t,GOF_BITMAP,EOF_Html,
                   g_globals.outputDir,
-                  g_globals.outputDir+Portable::pathSeparator()+addHtmlExtensionIfMissing(m_fileDef->getOutputFileBase()),
+                  g_globals.outputDir+Portable::pathSeparator()+fn,
                   relPathAsString(),TRUE,g_globals.dynSectionId
                   );
             }
@@ -3162,6 +3170,8 @@ class DirContext::Private : public DefinitionContext<DirContext::Private>
       if (haveDot && dirGraph)
       {
         DotDirDepsPtr graph = getDirDepsGraph();
+        QCString fn = m_dirDef->getOutputFileBase();
+        addHtmlExtensionIfMissing(fn);
         switch (g_globals.outputFormat)
         {
           case ContextOutputFormat_Html:
@@ -3169,7 +3179,7 @@ class DirContext::Private : public DefinitionContext<DirContext::Private>
               graph->writeGraph(t,GOF_BITMAP,
                                 EOF_Html,
                                 g_globals.outputDir,
-                                g_globals.outputDir+Portable::pathSeparator()+addHtmlExtensionIfMissing(m_dirDef->getOutputFileBase()),
+                                g_globals.outputDir+Portable::pathSeparator()+fn,
                                 relPathAsString(),
                                 TRUE,
                                 g_globals.dynSectionId,
@@ -3465,7 +3475,12 @@ class TextGeneratorHtml : public TextGeneratorIntf
       }
       m_ts << "href=\"";
       m_ts << externalRef(m_relPath,ref,TRUE);
-      if (!f.isEmpty()) m_ts << addHtmlExtensionIfMissing(f);
+      if (!f.isEmpty())
+      {
+        QCString fn = f;
+        addHtmlExtensionIfMissing(fn);
+        m_ts << fn;
+      }
       if (!anchor.isEmpty()) m_ts << "#" << anchor;
       m_ts << "\">";
       m_ts << convertToHtml(name);
@@ -3745,6 +3760,8 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       if (hasCallGraph().toBool())
       {
         DotCallGraphPtr cg = getCallGraph();
+        QCString fn = m_memberDef->getOutputFileBase();
+        addHtmlExtensionIfMissing(fn);
         TextStream t;
         switch (g_globals.outputFormat)
         {
@@ -3752,7 +3769,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
             {
               cg->writeGraph(t,GOF_BITMAP,EOF_Html,
                   g_globals.outputDir,
-                  g_globals.outputDir+Portable::pathSeparator()+addHtmlExtensionIfMissing(m_memberDef->getOutputFileBase()),
+                  g_globals.outputDir+Portable::pathSeparator()+fn,
                   relPathAsString(),TRUE,g_globals.dynSectionId
                   );
             }
@@ -3803,6 +3820,8 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       if (hasCallerGraph().toBool())
       {
         DotCallGraphPtr cg = getCallerGraph();
+        QCString fn = m_memberDef->getOutputFileBase();
+        addHtmlExtensionIfMissing(fn);
         TextStream t;
         switch (g_globals.outputFormat)
         {
@@ -3810,7 +3829,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
             {
               cg->writeGraph(t,GOF_BITMAP,EOF_Html,
                   g_globals.outputDir,
-                  g_globals.outputDir+Portable::pathSeparator()+addHtmlExtensionIfMissing(m_memberDef->getOutputFileBase()),
+                  g_globals.outputDir+Portable::pathSeparator()+fn,
                   relPathAsString(),TRUE,g_globals.dynSectionId
                   );
             }
@@ -4612,6 +4631,8 @@ class ModuleContext::Private : public DefinitionContext<ModuleContext::Private>
       if (haveDot && groupGraphs)
       {
         DotGroupCollaborationPtr graph = getGroupGraph();
+        QCString fn = m_groupDef->getOutputFileBase();
+        addHtmlExtensionIfMissing(fn);
         switch (g_globals.outputFormat)
         {
           case ContextOutputFormat_Html:
@@ -4619,7 +4640,7 @@ class ModuleContext::Private : public DefinitionContext<ModuleContext::Private>
               graph->writeGraph(t,GOF_BITMAP,
                                 EOF_Html,
                                 g_globals.outputDir,
-                                g_globals.outputDir+Portable::pathSeparator()+addHtmlExtensionIfMissing(m_groupDef->getOutputFileBase()),
+                                g_globals.outputDir+Portable::pathSeparator()+fn,
                                 relPathAsString(),
                                 TRUE,
                                 g_globals.dynSectionId);

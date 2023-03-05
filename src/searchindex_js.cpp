@@ -463,8 +463,9 @@ void writeJavaScriptSearchIndex()
           {
             ti << "],[";
           }
-          ti << "'" << externalRef("../",d->getReference(),TRUE)
-            << addHtmlExtensionIfMissing(d->getOutputFileBase());
+          QCString fn = d->getOutputFileBase();
+          addHtmlExtensionIfMissing(fn);
+          ti << "'" << externalRef("../",d->getReference(),TRUE) << fn;
           if (!anchor.isEmpty())
           {
             ti << "#" << anchor;

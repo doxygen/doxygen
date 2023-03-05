@@ -876,7 +876,12 @@ void HtmlCodeGenerator::_writeCodeLink(const QCString &className,
   }
   *m_t << "href=\"";
   *m_t << externalRef(m_relPath,ref,TRUE);
-  if (!f.isEmpty()) *m_t << addHtmlExtensionIfMissing(f);
+  if (!f.isEmpty())
+  {
+    QCString fn = f;
+    addHtmlExtensionIfMissing(fn);
+    *m_t << fn;
+  }
   if (!anchor.isEmpty()) *m_t << "#" << anchor;
   *m_t << "\"";
   if (!tooltip.isEmpty()) *m_t << " title=\"" << convertToHtml(tooltip) << "\"";
@@ -893,11 +898,13 @@ void HtmlCodeGenerator::writeTooltip(const QCString &id, const DocLinkInfo &docI
 {
   *m_t << "<div class=\"ttc\" id=\"" << id << "\">";
   *m_t << "<div class=\"ttname\">";
+  QCString url = docInfo.url;
+  addHtmlExtensionIfMissing(url);
   if (!docInfo.url.isEmpty())
   {
     *m_t << "<a href=\"";
     *m_t << externalRef(m_relPath,docInfo.ref,TRUE);
-    *m_t << addHtmlExtensionIfMissing(docInfo.url);
+    *m_t << url;
     if (!docInfo.anchor.isEmpty())
     {
       *m_t << "#" << docInfo.anchor;
@@ -929,7 +936,7 @@ void HtmlCodeGenerator::writeTooltip(const QCString &id, const DocLinkInfo &docI
     {
       *m_t << "<a href=\"";
       *m_t << externalRef(m_relPath,defInfo.ref,TRUE);
-      *m_t << addHtmlExtensionIfMissing(defInfo.url);
+      *m_t << url;
       if (!defInfo.anchor.isEmpty())
       {
         *m_t << "#" << defInfo.anchor;
@@ -950,7 +957,7 @@ void HtmlCodeGenerator::writeTooltip(const QCString &id, const DocLinkInfo &docI
     {
       *m_t << "<a href=\"";
       *m_t << externalRef(m_relPath,declInfo.ref,TRUE);
-      *m_t << addHtmlExtensionIfMissing(declInfo.url);
+      *m_t << url;
       if (!declInfo.anchor.isEmpty())
       {
         *m_t << "#" << declInfo.anchor;
@@ -1374,7 +1381,8 @@ void HtmlGenerator::startFile(const QCString &name,const QCString &,
 {
   //printf("HtmlGenerator::startFile(%s)\n",qPrint(name));
   m_relPath = relativePathToRoot(name);
-  QCString fileName = addHtmlExtensionIfMissing(name);
+  QCString fileName = name;
+  addHtmlExtensionIfMissing(fileName);
   m_lastTitle=title;
 
   startPlainFile(fileName);
@@ -1623,7 +1631,12 @@ void HtmlGenerator::startIndexItem(const QCString &ref,const QCString &f)
     }
     m_t << "href=\"";
     m_t << externalRef(m_relPath,ref,TRUE);
-    if (!f.isEmpty()) m_t << addHtmlExtensionIfMissing(f);
+    if (!f.isEmpty())
+    {
+      QCString fn=f;
+      addHtmlExtensionIfMissing(fn);
+      m_t << fn;
+    }
     m_t << "\">";
   }
   else
@@ -1650,7 +1663,9 @@ void HtmlGenerator::writeStartAnnoItem(const QCString &,const QCString &f,
 {
   m_t << "<li>";
   if (!path.isEmpty()) docify(path);
-  m_t << "<a class=\"el\" href=\"" << addHtmlExtensionIfMissing(f) << "\">";
+  QCString fn = f;
+  addHtmlExtensionIfMissing(fn);
+  m_t << "<a class=\"el\" href=\"" << fn << "\">";
   docify(name);
   m_t << "</a> ";
 }
@@ -1669,7 +1684,12 @@ void HtmlGenerator::writeObjectLink(const QCString &ref,const QCString &f,
   }
   m_t << "href=\"";
   m_t << externalRef(m_relPath,ref,TRUE);
-  if (!f.isEmpty()) m_t << addHtmlExtensionIfMissing(f);
+  if (!f.isEmpty())
+  {
+    QCString fn = f;
+    addHtmlExtensionIfMissing(fn);
+    m_t << fn;
+  }
   if (!anchor.isEmpty()) m_t << "#" << anchor;
   m_t << "\">";
   docify(name);
@@ -1679,7 +1699,12 @@ void HtmlGenerator::writeObjectLink(const QCString &ref,const QCString &f,
 void HtmlGenerator::startTextLink(const QCString &f,const QCString &anchor)
 {
   m_t << "<a href=\"";
-  if (!f.isEmpty())   m_t << m_relPath << addHtmlExtensionIfMissing(f);
+  if (!f.isEmpty())
+  {
+    QCString fn = f;
+    addHtmlExtensionIfMissing(fn);
+    m_t << m_relPath << fn;
+  }
   if (!anchor.isEmpty()) m_t << "#" << anchor;
   m_t << "\">";
 }
@@ -2839,6 +2864,8 @@ QCString HtmlGenerator::writeSplitBarAsString(const QCString &name,const QCStrin
   // write split bar
   if (generateTreeView)
   {
+    QCString fn = name;
+    addHtmlExtensionIfMissing(fn);
     if (!Config_getBool(DISABLE_INDEX) || !Config_getBool(FULL_SIDEBAR))
     {
       result += QCString(
@@ -2856,8 +2883,7 @@ QCString HtmlGenerator::writeSplitBarAsString(const QCString &name,const QCStrin
      "</div>\n"
      "<script type=\"text/javascript\">\n"
      "/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */\n"
-     "$(document).ready(function(){initNavTree('") +
-     QCString(addHtmlExtensionIfMissing(name)) +
+     "$(document).ready(function(){initNavTree('") + fn +
      QCString("','") + relpath +
      QCString("'); initResizable(); });\n"
      "/* @license-end */\n"
@@ -3289,7 +3315,9 @@ void HtmlGenerator::writeInheritedSectionTitle(
     classLink += "href=\"";
     classLink+=m_relPath;
   }
-  classLink=classLink+addHtmlExtensionIfMissing(file)+a;
+  QCString fn = file;
+  addHtmlExtensionIfMissing(fn);
+  classLink=classLink+fn+a;
   classLink+=QCString("\">")+convertToHtml(name,FALSE)+"</a>";
   m_t << "<tr class=\"inherit_header " << id << "\">"
     << "<td colspan=\"2\" onclick=\"javascript:toggleInherit('" << id << "')\">"
@@ -3311,7 +3339,9 @@ void HtmlGenerator::writeSummaryLink(const QCString &file,const QCString &anchor
   m_t << "<a href=\"";
   if (!file.isEmpty())
   {
-    m_t << m_relPath << addHtmlExtensionIfMissing(file);
+    QCString fn = file;
+    addHtmlExtensionIfMissing(fn);
+    m_t << m_relPath << fn;
   }
   else if (!anchor.isEmpty())
   {
