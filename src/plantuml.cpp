@@ -22,6 +22,7 @@
 #include "debug.h"
 #include "fileinfo.h"
 #include "dir.h"
+#include "indexlist.h"
 
 QCString PlantumlManager::writePlantUMLSource(const QCString &outDirArg,const QCString &fileName,
                                               const QCString &content,OutputFormat format, const QCString &engine,
@@ -37,7 +38,7 @@ QCString PlantumlManager::writePlantUMLSource(const QCString &outDirArg,const QC
   Debug::print(Debug::Plantuml,0,"*** %s outDir: %s\n","writePlantUMLSource",qPrint(outDir));
 
   // strip any trailing slashes and backslashes
-  uint l;
+  uint32_t l;
   while ((l=outDir.length())>0 && (outDir.at(l-1)=='/' || outDir.at(l-1)=='\\'))
   {
     outDir = outDir.left(l-1);
@@ -79,7 +80,7 @@ QCString PlantumlManager::writePlantUMLSource(const QCString &outDirArg,const QC
   text+="\n@end"+engine+"\n";
 
   QCString qcOutDir(outDir);
-  uint pos = qcOutDir.findRev("/");
+  uint32_t pos = qcOutDir.findRev("/");
   QCString generateType(qcOutDir.right(qcOutDir.length() - (pos + 1)) );
   Debug::print(Debug::Plantuml,0,"*** %s generateType: %s\n","writePlantUMLSource",qPrint(generateType));
   PlantumlManager::instance().insert(generateType.str(),puName.str(),outDir,format,text,srcFile,srcLine);
@@ -88,7 +89,7 @@ QCString PlantumlManager::writePlantUMLSource(const QCString &outDirArg,const QC
   return baseName;
 }
 
-void PlantumlManager::generatePlantUMLOutput(const QCString &baseName,const QCString &outDir,OutputFormat format)
+void PlantumlManager::generatePlantUMLOutput(const QCString &baseName,const QCString &/* outDir */,OutputFormat format)
 {
   QCString imgName = baseName;
   // The basename contains path, we need to strip the path from the filename in order
@@ -232,7 +233,7 @@ static void runPlantumlContent(const PlantumlManager::FilesMap &plantumlFiles,
         cachedContent = fileToString(puFileName);
       }
 
-      std::ofstream file(puFileName.str(),std::ofstream::out | std::ofstream::binary);
+      std::ofstream file = Portable::openOutputStream(puFileName);
       if (!file.is_open())
       {
         err_full(nb.srcFile,nb.srcLine,"Could not open file %s for writing\n",puFileName.data());
@@ -243,13 +244,11 @@ static void runPlantumlContent(const PlantumlManager::FilesMap &plantumlFiles,
 
       if (cachedContent == nb.content) continue;
 
-      Portable::sysTimerStart();
       if ((exitCode=Portable::system(pumlExe.data(),pumlArguments.data(),TRUE))!=0)
       {
         err_full(nb.srcFile,nb.srcLine,"Problems running PlantUML. Verify that the command 'java -jar \"%s\" -h' works from the command line. Exit code: %d\n",
             plantumlJarPath.data(),exitCode);
       }
-      Portable::sysTimerStop();
 
       if ( (format==PlantumlManager::PUML_EPS) && (Config_getBool(USE_PDFLATEX)) )
       {
@@ -263,12 +262,10 @@ static void runPlantumlContent(const PlantumlManager::FilesMap &plantumlFiles,
             QCString epstopdfArgs(maxCmdLine);
             epstopdfArgs.sprintf("\"%s%s.eps\" --outfile=\"%s%s.pdf\"",
                 pumlOutDir.data(),str.c_str(), pumlOutDir.data(),str.c_str());
-            Portable::sysTimerStart();
             if ((exitCode=Portable::system("epstopdf",epstopdfArgs.data()))!=0)
             {
               err_full(nb.srcFile,nb.srcLine,"Problems running epstopdf. Check your TeX installation! Exit code: %d\n",exitCode);
             }
-            Portable::sysTimerStop();
           }
         }
       }

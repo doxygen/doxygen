@@ -41,8 +41,6 @@ void initWarningFormat();
 void warn_flush();
 extern void finishWarnExit();
 
-extern void printlex(int dbg, bool enter, const char *lexName, const char *fileName);
-
 #undef PRINTFLIKE
 
 #endif

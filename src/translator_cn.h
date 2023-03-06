@@ -95,6 +95,10 @@ class TranslatorChinese : public TranslatorAdapter_1_9_4
     virtual QCString trDetailedDescription()
     { return "详细描述"; }
 
+    /*! header that is used when the summary tag is missing inside the details tag */
+    virtual QCString trDetails()
+    { return "详细信息"; }
+
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
     { return "成员类型定义说明"; }
@@ -348,9 +352,6 @@ class TranslatorChinese : public TranslatorAdapter_1_9_4
 
     virtual QCString trFileDocumentation()
     { return "文件说明"; }
-
-    virtual QCString trExampleDocumentation()
-    { return "示例说明"; }
 
     virtual QCString trReferenceManual()
     { return "参考手册"; }
@@ -1736,22 +1737,42 @@ class TranslatorChinese : public TranslatorAdapter_1_9_4
 
   virtual QCString trDateTime(int year,int month,int day,int dayOfWeek,
                                 int hour,int minutes,int seconds,
-                                bool includeTime)
+                                DateTimeType includeTime)
   {
     static const char *days[]   = { "一","二","三","四","五","六","日" };
-      static const char *months[] = { "一","二","三","四","五","六","七","八","九","十","十一","十二" };
+    static const char *months[] = { "一","二","三","四","五","六","七","八","九","十","十一","十二" };
 
     QCString sdate;
 
-    sdate.sprintf("%d年" CN_SPC "%s月" CN_SPC "%d日" CN_SPC "星期%s",year, months[month-1], day, days[dayOfWeek-1]);
-
-    if (includeTime)
+    if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Date)
+    {
+      sdate.sprintf("%d年" CN_SPC "%s月" CN_SPC "%d日" CN_SPC "星期%s",year, months[month-1], day, days[dayOfWeek-1]);
+    }
+    if (includeTime == DateTimeType::DateTime) sdate += " ";
+    if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Time)
     {
       QCString stime;
-      stime.sprintf(" %.2d:%.2d:%.2d",hour,minutes,seconds);
+      stime.sprintf("%.2d:%.2d:%.2d",hour,minutes,seconds);
       sdate+=stime;
     }
     return sdate;
+  }
+  virtual QCString trDayOfWeek(int dayOfWeek, bool, bool full)
+  {
+    static const char *days_short[]   = { "周一", "周二", "周三", "周四", "周五", "周六", "周日" };
+    static const char *days_full[]    = { "星期一", "星期二", "星期三", "星期四", "星期五", "星期六", "星期日" };
+    return full? days_full[dayOfWeek-1] : days_short[dayOfWeek-1];
+  }
+  virtual QCString trMonth(int month, bool, bool full)
+  {
+    static const char *months_short[] = { "1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月" };
+    static const char *months_full[]  = { "一月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "十一月", "十二月" };
+    return full? months_full[month-1] : months_short[month-1];
+  }
+  virtual QCString trDayPeriod(int period)
+  {
+    static const char *dayPeriod[] = { "上午", "下午" };
+    return dayPeriod[period];
   }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1901,13 +1922,13 @@ class TranslatorChinese : public TranslatorAdapter_1_9_4
       return result;
     }
     /** UNO IDL service page */
-    virtual QCString trServiceGeneratedFromFiles(bool single)
+    virtual QCString trServiceGeneratedFromFiles(bool /* single */)
     {
       // single is true implies a single file
       return "该服务的文档由下列文件生成:";
     }
     /** UNO IDL singleton page */
-    virtual QCString trSingletonGeneratedFromFiles(bool single)
+    virtual QCString trSingletonGeneratedFromFiles(bool /* single */)
     {
       // single is true implies a single file
       return "该单例的文档由下列文件生成:";
@@ -1941,7 +1962,7 @@ class TranslatorChinese : public TranslatorAdapter_1_9_4
     virtual QCString trFunctionAndProc()
     { return "函数/调用过程/进程语句"; }
     /** VHDL type */
-    virtual QCString trVhdlType(uint64 type,bool single)
+    virtual QCString trVhdlType(uint64_t type,bool single)
     {
       switch(type)
       {
@@ -2152,7 +2173,7 @@ class TranslatorChinese : public TranslatorAdapter_1_9_4
 //////////////////////////////////////////////////////////////////////////
 
     /** C++20 concept */
-    virtual QCString trConcept(bool first_capital, bool singular)
+    virtual QCString trConcept(bool /* first_capital */, bool /* singular */)
     {
       return "概念";
     }
@@ -2177,7 +2198,7 @@ class TranslatorChinese : public TranslatorAdapter_1_9_4
     { return "概念文档"; }
 
     /*! used as an introduction to the concept list */
-    virtual QCString trConceptListDescription(bool extractAll)
+    virtual QCString trConceptListDescription(bool /* extractAll */)
     {
       return "以下是带有简要说明的概念";
     }
@@ -2186,6 +2207,29 @@ class TranslatorChinese : public TranslatorAdapter_1_9_4
     virtual QCString trConceptDefinition()
     {
       return "概念定义";
+    }
+
+    /*! the compound type as used for the xrefitems */
+    virtual QCString trCompoundType(ClassDef::CompoundType compType, SrcLangExt lang)
+    {
+      QCString result;
+      switch(compType)
+      {
+        case ClassDef::Class:
+          if (lang == SrcLangExt_Fortran) trType(true,true);
+          else result=trClass(true,true);
+          break;
+        case ClassDef::Struct:     result="结构体"; break;
+        case ClassDef::Union:      result="联合体"; break;
+        case ClassDef::Interface:  result="接口"; break;
+        case ClassDef::Protocol:   result="协议"; break;
+        case ClassDef::Category:   result="分类"; break;
+        case ClassDef::Exception:  result="异常"; break;
+        case ClassDef::Service:    result="Service"; break;
+        case ClassDef::Singleton:  result="Singleton"; break;
+        default: break;
+      }
+      return result;
     }
 
 };

@@ -66,6 +66,7 @@ typedef yyguts_t *yyscan_t;
 #include "util.h"
 #include "arguments.h"
 #include "message.h"
+#include "debug.h"
   
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
@@ -107,7 +108,7 @@ struct defargsYY_state
 static const char *stateToString(int state);
 #endif
 
-static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
+static int yyread(yyscan_t yyscanner,char *buf,int max_size);
 static bool nameIsActuallyPartOfType(QCString &name);
 
 /* -----------------------------------------------------------------
@@ -403,7 +404,7 @@ CPPC  "/\/"
 					    if (l>0)
 					    {
 					      int i=l-1;
-					      while (i>=0 && (isspace((uchar)yyextra->curArgTypeName.at(i)) || yyextra->curArgTypeName.at(i)=='.')) i--;
+					      while (i>=0 && (isspace((uint8_t)yyextra->curArgTypeName.at(i)) || yyextra->curArgTypeName.at(i)=='.')) i--;
 					      while (i>=0 && (isId(yyextra->curArgTypeName.at(i)) || yyextra->curArgTypeName.at(i)=='$')) i--;
 					      Argument a;
 					      a.attrib  = yyextra->curArgAttrib;
@@ -437,13 +438,15 @@ CPPC  "/\/"
 						// and need to correct it to avoid seeing a nameless parameter
 						// "struct A" as a parameter with type "struct" and name "A".
 						int sv=0;
-						if      (a.type.left(6)=="const ")    sv=6;
-						else if (a.type.left(9)=="volatile ") sv=9;
+						if      (a.type.startsWith("const "))    sv=6;
+						else if (a.type.startsWith("volatile ")) sv=9;
 
 						if (a.type.mid(sv)=="struct"    ||
 						    a.type.mid(sv)=="union"     ||
 						    a.type.mid(sv)=="class"     ||
 						    a.type.mid(sv)=="typename"  ||
+						    a.type=="const"             ||
+						    a.type=="volatile"          ||
 						    nameIsActuallyPartOfType(a.name)
 						   )
 						{
@@ -620,10 +623,10 @@ CPPC  "/\/"
 /* ----------------------------------------------------------------------------
  */
 
-static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size)
+static int yyread(yyscan_t yyscanner,char *buf,int max_size)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yy_size_t c=0;
+  int c=0;
   while( c < max_size && yyextra->inputString[yyextra->inputPosition] )
   {
       *buf = yyextra->inputString[yyextra->inputPosition++] ;
@@ -820,10 +823,10 @@ std::unique_ptr<ArgumentList> stringToArgumentList(SrcLangExt lang, const QCStri
   defargsYY_state extra(argsString.data(),al,lang);
   defargsYYlex_init_extra(&extra,&yyscanner);
 #ifdef FLEX_DEBUG
-  defargsYYset_debug(1,yyscanner);
+  defargsYYset_debug(Debug::isFlagSet(Debug::Lex_defargs)?1:0,yyscanner);
 #endif
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  printlex(yy_flex_debug, TRUE, __FILE__, NULL);
+  DebugLex debugLex(Debug::Lex_defargs, __FILE__, NULL);
 
   defargsYYrestart( 0, yyscanner );
   BEGIN( Start );
@@ -834,7 +837,6 @@ std::unique_ptr<ArgumentList> stringToArgumentList(SrcLangExt lang, const QCStri
   }
   if (extraTypeChars) *extraTypeChars=yyextra->extraTypeChars;
   //printf("stringToArgumentList(%s) result=%s\n",argsString,qPrint(argListToString(*al)));
-  printlex(yy_flex_debug, FALSE, __FILE__, NULL);
   defargsYYlex_destroy(yyscanner);
   return al;
 }

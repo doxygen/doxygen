@@ -17,7 +17,7 @@
 #define SYMBOLMAP_H
 
 #include <algorithm>
-#include <map>
+#include <unordered_map>
 #include <vector>
 #include <string>
 #include <utility>
@@ -31,38 +31,54 @@ class SymbolMap
 {
   public:
     using Ptr = T *;
-    using Map = std::multimap<std::string,Ptr>;
+    using VectorPtr = std::vector<Ptr>;
+    using Map = std::unordered_map<std::string,VectorPtr>;
     using iterator = typename Map::iterator;
     using const_iterator = typename Map::const_iterator;
 
     //! Add a symbol \a def into the map under key \a name
     void add(const QCString &name,Ptr def)
     {
-      m_map.insert({name.str(),def});
+      auto it = m_map.find(name.str());
+      if (it!=m_map.end())
+      {
+        it->second.push_back(def);
+      }
+      else
+      {
+        m_map.emplace(std::make_pair(name.str(),VectorPtr({def})));
+      }
     }
 
     //! Remove a symbol \a def from the map that was stored under key \a name
     void remove(const QCString &name,Ptr def)
     {
-      auto range = find(name);
-      for (auto it=range.first; it!=range.second; )
+      VectorPtr &v = find(name);
+      auto it = std::find(v.begin(),v.end(),def);
+      if (it!=v.end())
       {
-        if (it->second==def) it = m_map.erase(it); else ++it;
+        v.erase(it);
+        if (v.empty())
+        {
+          m_map.erase(name.str());
+        }
       }
     }
 
     //! Find the list of symbols stored under key \a name
     //! Returns a pair of iterators pointing to the start and end of the range of matching symbols
-    std::pair<const_iterator,const_iterator> find(const QCString &name) const
+    const VectorPtr &find(const QCString &name) const
     {
-      return m_map.equal_range(name.str());
+      auto it = m_map.find(name.str());
+      return it==m_map.end() ? m_noMatch : it->second;
     }
 
     //! Find the list of symbols stored under key \a name
     //! Returns a pair of iterators pointing to the start and end of the range of matching symbols
-    std::pair<iterator,iterator> find(const QCString &name)
+    VectorPtr &find(const QCString &name)
     {
-      return m_map.equal_range(name.str());
+      auto it = m_map.find(name.str());
+      return it==m_map.end() ? m_noMatch : it->second;
     }
 
     iterator begin()             { return m_map.begin();  }
@@ -70,10 +86,10 @@ class SymbolMap
     const_iterator begin() const { return m_map.cbegin(); }
     const_iterator end() const   { return m_map.cend();   }
     bool empty() const           { return m_map.empty();  }
-    size_t size() const          { return m_map.size();   }
 
   private:
     Map m_map;
+    VectorPtr m_noMatch;
 };
 
 #endif

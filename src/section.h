@@ -54,11 +54,11 @@ class SectionInfo
         m_label(label), m_title(title), m_type(type), m_ref(ref),
         m_lineNr(lineNr), m_fileName(fileName), m_level(level)
     {
-      //printf("SectionInfo(%p)\n",this);
+      //printf("SectionInfo(%p) fileName=%s\n",(void*)this,qPrint(fileName));
     }
     ~SectionInfo()
     {
-      //printf("~SectionInfo(%p)\n",this);
+      //printf("~SectionInfo(%p)\n",(void*)this);
     }
 
     // getters

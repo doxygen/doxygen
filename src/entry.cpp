@@ -38,8 +38,8 @@ Entry::Entry()
   section = EMPTY_SEC;
   //printf("Entry::Entry() tArgList=0\n");
   mGrpId = -1;
-  hasTagInfo = FALSE;
-  relatesType = Simple;
+  hasTagInfo = false;
+  relatesType = RelatesType::Simple;
   hidden = FALSE;
   groupDocType = GROUPDOC_NORMAL;
   reset();
@@ -58,7 +58,7 @@ Entry::Entry(const Entry &e)
   mtype       = e.mtype;
   spec        = e.spec;
   initLines   = e.initLines;
-  stat        = e.stat;
+  isStatic    = e.isStatic;
   localToc    = e.localToc;
   explicitExternal = e.explicitExternal;
   proto       = e.proto;
@@ -110,6 +110,7 @@ Entry::Entry(const Entry &e)
   groups      = e.groups;
   req         = e.req;
   m_fileDef   = e.m_fileDef;
+  qualifiers  = e.qualifiers;
 
   m_parent    = e.m_parent;
   // deep copy child entries
@@ -199,7 +200,7 @@ void Entry::reset()
   docFile.resize(0);
   docLine=-1;
   relates.resize(0);
-  relatesType=Simple;
+  relatesType=RelatesType::Simple;
   brief.resize(0);
   briefFile.resize(0);
   briefLine=-1;
@@ -221,17 +222,17 @@ void Entry::reset()
   referencedByRelation = entryReferencedByRelation;
   referencesRelation   = entryReferencesRelation;
   section = EMPTY_SEC;
-  mtype   = Method;
-  virt    = Normal;
-  stat    = FALSE;
-  proto   = FALSE;
-  explicitExternal = FALSE;
+  mtype   = MethodTypes::Method;
+  virt    = Specifier::Normal;
+  isStatic = false;
+  proto   = false;
+  explicitExternal = false;
   spec  = 0;
   lang = SrcLangExt_Unknown;
-  hidden = FALSE;
-  artificial = FALSE;
-  subGrouping = TRUE;
-  protection = Public;
+  hidden = false;
+  artificial = false;
+  subGrouping = true;
+  protection = Protection::Public;
   groupDocType = GROUPDOC_NORMAL;
   id.resize(0);
   metaData.resize(0);
@@ -245,6 +246,7 @@ void Entry::reset()
   sli.clear();
   req.resize(0);
   m_fileDef = 0;
+  qualifiers.clear();
 }
 
 void Entry::setFileDef(FileDef *fd)

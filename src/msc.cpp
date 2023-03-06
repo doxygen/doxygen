@@ -13,8 +13,6 @@
  *
  */
 
-#include <sstream>
-
 #include "msc.h"
 #include "portable.h"
 #include "config.h"
@@ -22,7 +20,7 @@
 #include "docparser.h"
 #include "docnode.h"
 #include "doxygen.h"
-#include "index.h"
+#include "indexlist.h"
 #include "util.h"
 #include "mscgen_api.h"
 #include "dir.h"
@@ -33,7 +31,7 @@ static const int maxCmdLine = 40960;
 static bool convertMapFile(TextStream &t,const QCString &mapName,const QCString &relPath,
                            const QCString &context)
 {
-  std::ifstream f(mapName.str(),std::ifstream::in);
+  std::ifstream f = Portable::openInputStream(mapName);
   if (!f.is_open())
   {
     err("failed to open map file %s for inclusion in the docs!\n"
@@ -76,8 +74,16 @@ static bool convertMapFile(TextStream &t,const QCString &mapName,const QCString 
         auto dfAstImpl = dynamic_cast<const DocNodeAST*>(dfAst.get());
         const DocRef *df = std::get_if<DocRef>(&dfAstImpl->root);
         t << externalRef(relPath,df->ref(),TRUE);
-        if (!df->file().isEmpty()) t << addHtmlExtensionIfMissing(df->file());
-        if (!df->anchor().isEmpty()) t << "#" << df->anchor();
+        if (!df->file().isEmpty())
+        {
+          QCString fn = df->file();
+          addHtmlExtensionIfMissing(fn);
+          t << fn;
+        }
+        if (!df->anchor().isEmpty())
+        {
+          t << "#" << df->anchor();
+        }
       }
       else
       {
@@ -89,6 +95,51 @@ static bool convertMapFile(TextStream &t,const QCString &mapName,const QCString 
     }
   }
 
+  return true;
+}
+
+static bool do_mscgen_generate(const QCString& inFile,const QCString& outFile,mscgen_format_t msc_format,
+                               const QCString &srcFile,int srcLine)
+{
+  auto mscgen_tool = Config_getString(MSCGEN_TOOL).stripWhiteSpace();
+  if (!mscgen_tool.isEmpty()) // use external mscgen tool
+  {
+    QCString type;
+    switch (msc_format)
+    {
+      case mscgen_format_png:
+        type = "png";
+        break;
+      case mscgen_format_eps:
+        type = "eps";
+        break;
+      case mscgen_format_svg:
+        type = "svg";
+        break;
+      case mscgen_format_pngmap:
+      case mscgen_format_svgmap:
+        type = "ismap";
+        break;
+    }
+    int exitcode = Portable::system(mscgen_tool,"-T"+type+" -o "+outFile+" "+inFile);
+    if (exitcode!=0)
+    {
+      err_full(srcFile,srcLine,"Problems running external tool %s given via MSCGEN_TOOL (exit status: %d)."
+          " Look for typos in your msc file and check error messages above.",
+          qPrint(mscgen_tool),exitcode);
+      return false;
+    }
+  }
+  else // use built-in mscgen tool
+  {
+    int code = mscgen_generate(inFile.data(),outFile.data(),msc_format);
+    if (code!=0)
+    {
+      err_full(srcFile,srcLine,"Problems generating msc output (error=%s). Look for typos in you msc file %s\n",
+          mscgen_error2str(code),qPrint(inFile));
+      return false;
+    }
+  }
   return true;
 }
 
@@ -120,11 +171,8 @@ void writeMscGraphFromFile(const QCString &inFile,const QCString &outDir,
     default:
       return;
   }
-  int code;
-  if ((code=mscgen_generate(inFile.data(),imgName.data(),msc_format))!=0)
+  if (!do_mscgen_generate(inFile,imgName,msc_format,srcFile,srcLine))
   {
-    err_full(srcFile,srcLine,"Problems generating msc output (error=%s). Look for typos in you msc file %s\n",
-        mscgen_error2str(code),qPrint(inFile));
     return;
   }
 
@@ -133,33 +181,27 @@ void writeMscGraphFromFile(const QCString &inFile,const QCString &outDir,
     QCString epstopdfArgs(maxCmdLine);
     epstopdfArgs.sprintf("\"%s.eps\" --outfile=\"%s.pdf\"",
                          qPrint(absOutFile),qPrint(absOutFile));
-    Portable::sysTimerStart();
     if (Portable::system("epstopdf",epstopdfArgs)!=0)
     {
       err_full(srcFile,srcLine,"Problems running epstopdf when processing '%s.eps'. Check your TeX installation!\n",
           qPrint(absOutFile));
     }
-    Portable::sysTimerStop();
   }
 
   Doxygen::indexList->addImageFile(imgName);
 
 }
 
-static QCString getMscImageMapFromFile(const QCString& inFile, const QCString& outDir,
+static QCString getMscImageMapFromFile(const QCString& inFile, const QCString& /* outDir */,
                                 const QCString& relPath,const QCString& context,
                                 bool writeSVGMap,const QCString &srcFile,int srcLine)
 {
   QCString outFile = inFile + ".map";
 
-  int code;
-  if ((code=mscgen_generate(inFile.data(),outFile.data(),
-                            writeSVGMap ? mscgen_format_svgmap : mscgen_format_pngmap))!=0)
-  {
-    err_full(srcFile,srcLine,"Problems generating msc output (error=%s). Look for typos in you msc file %s\n",
-        mscgen_error2str(code),qPrint(inFile));
+  if (!do_mscgen_generate(inFile,outFile,
+                            writeSVGMap ? mscgen_format_svgmap : mscgen_format_pngmap,
+                            srcFile,srcLine))
     return "";
-  }
 
   TextStream t;
   convertMapFile(t, outFile, relPath, context);

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="class_details_summary_at_bottom" kind="class" language="C++" prot="public">
+    <compoundname>DetailsSummaryAtBottom</compoundname>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+      <para>Before details. <details><summary>Summary at the bottom</summary><para>Details body  </para></details>After details. </para>
+    </detaileddescription>
+    <location file="060_details.cpp" line="35" column="1" bodyfile="060_details.cpp" bodystart="35" bodyend="35"/>
+    <listofallmembers>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

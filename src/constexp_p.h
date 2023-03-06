@@ -39,8 +39,8 @@ struct constexpYY_state
 };
 constexpYY_state* constexpYYget_extra(yyscan_t yyscanner );
 
-extern int constexpYYlex(YYSTYPE *lvalp, yyscan_t);
-extern int constexpYYparse(yyscan_t);
+int constexpYYlex(YYSTYPE *lvalp, yyscan_t);
+int constexpYYparse(yyscan_t);
 
 
 #endif

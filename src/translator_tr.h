@@ -96,6 +96,10 @@ class TranslatorTurkish : public TranslatorAdapter_1_7_5
     virtual QCString trDetailedDescription()
     { return "Ayrıntılı tanımlama"; }
 
+    /*! header that is used when the summary tag is missing inside the details tag */
+    virtual QCString trDetails()
+    { return "Ayrıntılar"; }
+
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
     { return "Üye Typedef Dokümantasyonu"; }
@@ -405,12 +409,6 @@ class TranslatorTurkish : public TranslatorAdapter_1_7_5
      */
     virtual QCString trFileDocumentation()
     { return "Dosya Dokümantasyonu"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all examples.
-     */
-    virtual QCString trExampleDocumentation()
-    { return "Örnek Dokümantasyonu"; }
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
@@ -1794,19 +1792,42 @@ class TranslatorTurkish : public TranslatorAdapter_1_7_5
      */
     virtual QCString trDateTime(int year,int month,int day,int dayOfWeek,
                                 int hour,int minutes,int seconds,
-                                bool includeTime)
+                                DateTimeType includeTime)
     {
     static const char *days[]   = { "Pzt","Sal","Çar","Per","Cma","Cmt","Pzr" };
     static const char *months[] = { "Oca","Şub","Mar","Nis","May","Haz","Tem","Ağu","Eyl","Ekm","Kas","Ara" };
     QCString sdate;
+    if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Date)
+    {
     sdate.sprintf("%s %s %d %d",days[dayOfWeek-1],months[month-1],day,year);
-    if (includeTime)
+    }
+    if (includeTime == DateTimeType::DateTime) sdate += " ";
+    if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Time)
     {
       QCString stime;
-      stime.sprintf(" %.2d:%.2d:%.2d",hour,minutes,seconds);
+      stime.sprintf("%.2d:%.2d:%.2d",hour,minutes,seconds);
       sdate+=stime;
     }
     return sdate;
+    }
+    virtual QCString trDayOfWeek(int dayOfWeek, bool, bool full)
+    {
+      static const char *days_short[]   = { "Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz" };
+      static const char *days_full[]    = { "Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi", "Pazar" };
+      QCString text  = full? days_full[dayOfWeek-1] : days_short[dayOfWeek-1];
+      return text;
+    }
+    virtual QCString trMonth(int month, bool, bool full)
+    {
+      static const char *months_short[] = { "Oca", "Şub", "Mar", "Nis", "May", "Haz", "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara" };
+      static const char *months_full[]  = { "Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık" };
+      QCString text  = full? months_full[month-1] : months_short[month-1];
+      return text;
+    }
+    virtual QCString trDayPeriod(int period)
+    {
+      static const char *dayPeriod[] = { "ÖÖ", "ÖS" };
+      return dayPeriod[period];
     }
 
 };

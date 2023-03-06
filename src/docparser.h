@@ -98,5 +98,4 @@ void docFindSections(const QCString &input,
                      const Definition *d,
                      const QCString &fileName);
 
-
 #endif

@@ -44,9 +44,6 @@
 {% resource 'splitbar.lum' %}
 
 {# general search resources #}
-{% resource 'search_l.png' as 'search/search_l.png' %}
-{% resource 'search_m.png' as 'search/search_m.png' %}
-{% resource 'search_r.png' as 'search/search_r.png' %}
 {% if config.DISABLE_INDEX %}
   {% if config.GENERATE_TREEVIEW and config.FULL_SIDEBAR %}
   {% resource 'search_sidebar.css'   as 'search/search.css'   %}

@@ -40,6 +40,7 @@ typedef yyguts_t *yyscan_t;
 #include <string>
 #include <mutex>
 #include <sstream>
+#include <cstdint>
 
 #include <stdio.h>
 #include <assert.h>
@@ -64,6 +65,7 @@ typedef yyguts_t *yyscan_t;
 #include "scopedtypevariant.h"
 #include "symbolresolver.h"
 #include "dir.h"
+#include "debug.h"
 
 // Toggle for some debugging info
 //#define DBG_CTX(x) fprintf x
@@ -94,7 +96,7 @@ struct ObjCCallCtx
 
 struct codeYY_state
 {
-  CodeOutputInterface * code = 0;
+  OutputCodeList * code = 0;
 
   std::unordered_map< std::string, ScopedTypeVariant > codeClassMap;
   QCString      curClassName;
@@ -110,6 +112,7 @@ struct codeYY_state
   int           yyLineNr = 0;        //!< current line number
   yy_size_t     yyColNr = 0;         //!< current column number
   bool          insideCodeLine = FALSE;
+  bool          skipCodify = FALSE;  //!< for CSharp files scoped namespace {
 
   bool          exampleBlock = FALSE;
   QCString      exampleName;
@@ -179,7 +182,10 @@ struct codeYY_state
   std::unordered_map< int, QCString>  commentMap;
   int           braceCount=0;
 
+  using UsingContext = std::map<std::string,const NamespaceDef*>;
+
   VariableContext theVarContext;
+  UsingContext    theUsingContext;
   CallContext     theCallContext;
   SymbolResolver  symbolResolver;
   TooltipManager  tooltipManager;
@@ -208,12 +214,12 @@ static void endFontClass(yyscan_t yyscanner);
 static void codifyLines(yyscan_t yyscanner,const QCString &text);
 static void codifyLines(yyscan_t yyscanner,const char *text);
 static void incrementFlowKeyWordCount(yyscan_t yyscanner);
-static void writeMultiLineCodeLink(yyscan_t yyscanner,CodeOutputInterface &ol,
+static void writeMultiLineCodeLink(yyscan_t yyscanner,OutputCodeList &ol,
                                    const Definition *d,
                                    const QCString &text);
 static void addType(yyscan_t yyscanner);
 static void addParmType(yyscan_t yyscanner);
-static void addUsingDirective(yyscan_t yyscanner,const char *name);
+static void addUsingDirective(yyscan_t yyscanner,const QCString &name);
 static void setParameterList(yyscan_t yyscanner,const MemberDef *md);
 static const ClassDef *stripClassName(yyscan_t yyscanner,const QCString &s,const Definition *d);
 static const MemberDef *setCallContextForVar(yyscan_t yyscanner,const QCString &name);
@@ -221,26 +227,26 @@ static void updateCallContextForSmartPointer(yyscan_t yyscanner);
 static bool getLinkInScope(yyscan_t yyscanner,const QCString &c,  // scope
                            const QCString &m,  // member
                            const QCString &memberText, // exact text
-                           CodeOutputInterface &ol,
+                           OutputCodeList &ol,
                            const QCString &text,
                            bool varOnly=FALSE
                           );
 static bool getLink(yyscan_t yyscanner,const QCString &className,
                     const QCString &memberName,
-                    CodeOutputInterface &ol,
+                    OutputCodeList &ol,
                     const QCString &text=QCString(),
                     bool varOnly=FALSE);
-static void generateClassOrGlobalLink(yyscan_t yyscanner,CodeOutputInterface &ol,const QCString &clName,
+static void generateClassOrGlobalLink(yyscan_t yyscanner,OutputCodeList &ol,const QCString &clName,
                                       bool typeOnly=FALSE,bool varOnly=FALSE);
-static void generateClassOrGlobalLink(yyscan_t yyscanner,CodeOutputInterface &ol,const char *clName,
+static void generateClassOrGlobalLink(yyscan_t yyscanner,OutputCodeList &ol,const char *clName,
                                       bool typeOnly=FALSE,bool varOnly=FALSE);
-static bool generateClassMemberLink(yyscan_t yyscanner,CodeOutputInterface &ol,const MemberDef *xmd,const QCString &memName);
-static bool generateClassMemberLink(yyscan_t yyscanner,CodeOutputInterface &ol,const Definition *def,const QCString &memName);
-static void generateMemberLink(yyscan_t yyscanner,CodeOutputInterface &ol,const QCString &varName,
+static bool generateClassMemberLink(yyscan_t yyscanner,OutputCodeList &ol,const MemberDef *xmd,const QCString &memName);
+static bool generateClassMemberLink(yyscan_t yyscanner,OutputCodeList &ol,const Definition *def,const QCString &memName);
+static void generateMemberLink(yyscan_t yyscanner,OutputCodeList &ol,const QCString &varName,
             const QCString &memName);
-static void generatePHPVariableLink(yyscan_t yyscanner,CodeOutputInterface &ol,const char *varName);
-static void generateFunctionLink(yyscan_t yyscanner,CodeOutputInterface &ol,const QCString &funcName);
-static void generateFunctionLink(yyscan_t yyscanner,CodeOutputInterface &ol,const char *funcName);
+static void generatePHPVariableLink(yyscan_t yyscanner,OutputCodeList &ol,const char *varName);
+static void generateFunctionLink(yyscan_t yyscanner,OutputCodeList &ol,const QCString &funcName);
+static void generateFunctionLink(yyscan_t yyscanner,OutputCodeList &ol,const char *funcName);
 static int countLines(yyscan_t yyscanner);
 static void writeObjCMethodCall(yyscan_t yyscanner,ObjCCallCtx *ctx);
 static QCString escapeName(yyscan_t yyscanner,const char *s);
@@ -248,17 +254,9 @@ static QCString escapeObject(yyscan_t yyscanner,const char *s);
 static QCString escapeWord(yyscan_t yyscanner,const char *s);
 static QCString escapeComment(yyscan_t yyscanner,const char *s);
 static bool skipLanguageSpecificKeyword(yyscan_t yyscanner,const char *kw);
-static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
+static int yyread(yyscan_t yyscanner,char *buf,int max_size);
 static void addVariable(yyscan_t yyscanner,QCString type,QCString name);
 static bool startsWithKeyword(const QCString &str,const QCString &kw);
-
-//-------------------------------------------------------------------
-
-static std::mutex g_searchIndexMutex;
-static std::mutex g_docCrossReferenceMutex;
-static std::mutex g_addExampleMutex;
-static std::mutex g_countFlowKeywordsMutex;
-static std::mutex g_usingDirectiveMutex;
 
 /* -----------------------------------------------------------------
  */
@@ -276,7 +274,7 @@ Bopt    {B}*
 BN      [ \t\n\r]
 ID      [$a-z_A-Z\x80-\xFF][$a-z_A-Z0-9\x80-\xFF]*
 SEP     ("::"|"\\")
-SCOPENAME ({SEP}{BN}*)?({ID}{BN}*{SEP}{BN}*)*("~"{BN}*)?{ID}
+SCOPENAME ("::"{BN}*)?({ID}{BN}*{SEP}{BN}*)*("~"{BN}*)?{ID}
 TEMPLIST "<"[^\"\}\{\(\)\/\n\>]*">"
 SCOPETNAME (((({ID}{TEMPLIST}?){BN}*)?{SEP}{BN}*)*)((~{BN}*)?{ID})
 SCOPEPREFIX ({ID}{TEMPLIST}?{BN}*{SEP}{BN}*)+
@@ -623,8 +621,8 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           if (yyextra->sourceFileDef)
                                           {
                                             const FileDef *fd=yyextra->sourceFileDef;
-                                            yyextra->insideObjC = fd->name().lower().right(2)==".m" ||
-                                                           fd->name().lower().right(3)==".mm";
+                                            yyextra->insideObjC = fd->name().lower().endsWith(".m") ||
+                                                                  fd->name().lower().endsWith(".mm");
                                             DBG_CTX((stderr,"insideObjC=%d\n",yyextra->insideObjC));
                                           }
                                           else
@@ -658,9 +656,18 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           BEGIN(Body);
                                         }
 <ClassName,ClassVar>";"                 {
-                                          yyextra->code->codify(yytext);
-                                          yyextra->searchingForBody=FALSE;
-                                          BEGIN( Body );
+                                          if (yyextra->lang==SrcLangExt_CSharp)
+                                          {
+                                            yyextra->code->codify(yytext);
+                                            yyextra->skipCodify = true;
+                                            unput('{');
+                                          }
+                                          else
+                                          {
+                                            yyextra->code->codify(yytext);
+                                            yyextra->searchingForBody=FALSE;
+                                            BEGIN( Body );
+                                          }
                                         }
 <ClassName,ClassVar>[*&^%]+             {
                                           yyextra->type=yyextra->curClassName;
@@ -774,7 +781,8 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
 <Bases>^{Bopt}/"@"{ID}                    | // Objective-C interface
 <Bases,ClassName,ClassVar,CppCliTypeModifierFollowup>{B}*"{"{B}* {
                                           yyextra->theVarContext.pushScope();
-                                          yyextra->code->codify(yytext);
+                                          if (!yyextra->skipCodify) yyextra->code->codify(yytext);
+                                          yyextra->skipCodify = false;
                                           if (YY_START==ClassVar && yyextra->curClassName.isEmpty())
                                           {
                                             yyextra->curClassName = yyextra->name;
@@ -932,13 +940,18 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           endFontClass(yyscanner);
                                           BEGIN(UsingName);
                                         }
+<Body>"using"{BN}+                      {
+                                          startFontClass(yyscanner,"keyword");
+                                          codifyLines(yyscanner,yytext);
+                                          endFontClass(yyscanner);
+                                          BEGIN(UsingName);
+                                        }
 <ConceptName>{ID}("::"{ID})*              {
-                                          addUsingDirective(yyscanner,yytext);
                                           generateClassOrGlobalLink(yyscanner,*yyextra->code,yytext);
                                         }
 <ConceptName>"="                        { codifyLines(yyscanner,yytext); BEGIN(Body); }
-<UsingName>{ID}("::"{ID})*              {
-                                          addUsingDirective(yyscanner,yytext);
+<UsingName>{ID}(("::"|"."){ID})*        {
+                                          addUsingDirective(yyscanner,substitute(yytext,".","::"));
                                           generateClassOrGlobalLink(yyscanner,*yyextra->code,yytext);
                                           BEGIN(Body);
                                         }
@@ -1131,7 +1144,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           generatePHPVariableLink(yyscanner,*yyextra->code,yytext);
                                           yyextra->name+=yytext+7;
                                         }
-<Body,TemplCast>{SCOPENAME}{B}*"<"[^\n\/\-\.\{\"\>\(]*">"{ENDIDopt}/{B}* { // A<T> *pt;
+<Body,TemplCast>{SCOPENAME}{B}*"<"[^\n\/\-\.\{\"\>\(']*">"{ENDIDopt}/{B}* { // A<T> *pt;
                                           if (isCastKeyword(yytext) && YY_START==Body)
                                           {
                                             REJECT;
@@ -1147,6 +1160,18 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           generateFunctionLink(yyscanner,*yyextra->code,yytext);
                                           yyextra->name+=yytext;
                                         }
+<Body>{ID}("."{ID})+/{BN}+              { // CSharp/Java scope
+                                          if (yyextra->lang==SrcLangExt_CSharp || yyextra->lang==SrcLangExt_Java)
+                                          {
+                                            addType(yyscanner);
+                                            generateClassOrGlobalLink(yyscanner,*yyextra->code,yytext);
+                                            yyextra->name+=yytext;
+                                          }
+                                          else
+                                          {
+                                            REJECT;
+                                          }
+                                        }
 <Body>{SCOPENAME}/{B}*                  { // p->func()
                                           if (startsWithKeyword(yytext,"typedef")) REJECT;
                                           addType(yyscanner);
@@ -1155,8 +1180,8 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                         }
 <Body>"("{B}*("*"{B}*)+{SCOPENAME}+{B}*")"/{B}* {  // (*p)->func() but not "if (p) ..."
                                           yyextra->code->codify(yytext);
-                                          uint s=0;while (s<(uint)yyleng && !isId(yytext[s])) s++;
-                                          uint e=(uint)yyleng-1;while (e>1 && !isId(yytext[e])) e--;
+                                          uint32_t s=0;while (s<(uint32_t)yyleng && !isId(yytext[s])) s++;
+                                          uint32_t e=(uint32_t)yyleng-1;while (e>1 && !isId(yytext[e])) e--;
                                           QCString varname = ((QCString)yytext).mid(s,e-s+1);
                                           addType(yyscanner);
                                           yyextra->name=varname;
@@ -1176,7 +1201,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                         }
 <FuncCall,Body,MemberCall,MemberCall2,SkipInits,InlineInit>{RAWBEGIN}   {
                                           QCString text(yytext);
-                                          uint i=(uint)text.find('R');
+                                          uint32_t i=(uint32_t)text.find('R');
                                           yyextra->code->codify(text.left(i+1));
                                           startFontClass(yyscanner,"stringliteral");
                                           yyextra->code->codify(QCString(yytext+i+1));
@@ -1186,7 +1211,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           yyextra->delimiter=yyextra->delimiter.left(yyextra->delimiter.length()-1);
                                           BEGIN( RawString );
                                         }
-<FuncCall,Body,MemberCall,MemberCall2,SkipInits,InlineInit>\"   {
+<FuncCall,Body,MemberCall,MemberCall2,SkipInits,InlineInit,ClassVar>\"   {
                                           startFontClass(yyscanner,"stringliteral");
                                           yyextra->code->codify(yytext);
                                           yyextra->lastStringContext=YY_START;
@@ -1533,7 +1558,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           yyextra->code->codify(yytext);
                                           endFontClass(yyscanner);
                                         }
-<MemberCall2,FuncCall>("::")?{ID}(({B}*"<"[^\n\[\](){}<>]*">")?({B}*"::"{B}*{ID})?)* {
+<MemberCall2,FuncCall>("::")?{ID}(({B}*"<"[^\n\[\](){}<>']*">")?({B}*"::"{B}*{ID})?)* {
                                           if (isCastKeyword(yytext))
                                           {
                                             REJECT;
@@ -1635,10 +1660,11 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                             }
                                           }
                                         }
+<MemberCall,MemberCall2,FuncCall>[;:]   { // recover from unexpected end of call
+                                          unput(*yytext);
+                                          BEGIN(CallEnd);
+                                        }
 <CallEnd>[ \t\n]*                       { codifyLines(yyscanner,yytext); }
-  /*
-<MemberCall2,FuncCall>")"[ \t\n]*[;:]   {
-  */
 <CallEnd>[;:]                           {
                                           codifyLines(yyscanner,yytext);
                                           yyextra->bracketCount=0;
@@ -1682,7 +1708,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           DBG_CTX((stderr,"yyextra->name=%s\n",qPrint(yyextra->name)));
                                           if (index!=-1)
                                           {
-                                            QCString scope = yyextra->name.left((uint)index);
+                                            QCString scope = yyextra->name.left((uint32_t)index);
                                             if (!yyextra->classScope.isEmpty()) scope.prepend((yyextra->classScope+"::"));
                                             const ClassDef *cd=yyextra->symbolResolver.resolveClass(Doxygen::globalScope,scope);
                                             if (cd)
@@ -1822,8 +1848,8 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                         }
 <FuncCall,MemberCall2>("("{B}*("*"{B}*)+{ID}+{B}*")"{B}*)/("."|"->") {
                                           yyextra->code->codify(yytext);
-                                          uint s=0;while (!isId(yytext[s])) s++;
-                                          uint e=(uint)yyleng-1;while (e>1 && !isId(yytext[e])) e--;
+                                          uint32_t s=0;while (!isId(yytext[s])) s++;
+                                          uint32_t e=(uint32_t)yyleng-1;while (e>1 && !isId(yytext[e])) e--;
                                           yyextra->name=((QCString)yytext).mid(s,e-s+1);
                                           BEGIN( MemberCall2 );
                                         }
@@ -2135,17 +2161,17 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           yyextra->lastVerbStringContext=YY_START;
                                           BEGIN(SkipVerbString);
                                         }
-<*>{CPPC}                                 {
+<*>{CPPC}                               {
                                           startFontClass(yyscanner,"comment");
                                           yyextra->code->codify(yytext);
                                           yyextra->lastCContext = YY_START ;
                                           BEGIN( SkipCxxComment ) ;
                                         }
-<*>"("|"["                                      {
+<*>"("|"["                              {
                                           yyextra->code->codify(yytext);
                                           yyextra->theCallContext.pushScope(yyextra->name, yyextra->type);
                                         }
-<*>")"|"]"                                      {
+<*>")"|"]"                              {
                                           yyextra->code->codify(yytext);
                                           yyextra->theCallContext.popScope(yyextra->name, yyextra->type);
                                         }
@@ -2189,15 +2215,10 @@ static void addVariable(yyscan_t yyscanner,QCString type,QCString name)
   DBG_CTX((stderr,"VariableContext::addVariable(%s,%s)\n",qPrint(type),qPrint(name)));
   QCString ltype = type.simplifyWhiteSpace();
   QCString lname = name.simplifyWhiteSpace();
-  if (ltype.left(7)=="struct ")
-  {
-    ltype = ltype.right(ltype.length()-7);
-  }
-  else if (ltype.left(6)=="union ")
-  {
-    ltype = ltype.right(ltype.length()-6);
-  }
+  ltype.stripPrefix("struct ");
+  ltype.stripPrefix("union ");
   if (ltype.isEmpty() || lname.isEmpty()) return;
+  ltype = substitute(ltype,".","::");
   DBG_CTX((stderr,"** addVariable trying: type='%s' name='%s' currentDefinition=%s\n",
         qPrint(ltype),qPrint(lname),yyextra->currentDefinition?qPrint(yyextra->currentDefinition->name()):"<none>"));
   auto it = yyextra->codeClassMap.find(ltype.str());
@@ -2208,20 +2229,33 @@ static void addVariable(yyscan_t yyscanner,QCString type,QCString name)
   }
   else
   {
-    const ClassDef *varDef = yyextra->symbolResolver.resolveClass(yyextra->currentDefinition,ltype);
-    int i=0;
-    if (varDef)
+    auto findVariableType = [&yyscanner,&yyg,&ltype,&lname,&name](const Definition *d) -> const ClassDef *
     {
-      DBG_CTX((stderr,"** addVariable type='%s' name='%s'\n",qPrint(ltype),qPrint(lname)));
-      yyextra->theVarContext.addVariable(lname,ScopedTypeVariant(varDef)); // add it to a list
-    }
-    else if ((i=ltype.find('<'))!=-1)
+      const ClassDef *varDef = yyextra->symbolResolver.resolveClass(d,ltype);
+      int i=0;
+      if (varDef)
+      {
+        DBG_CTX((stderr,"** addVariable type='%s' name='%s'\n",qPrint(ltype),qPrint(lname)));
+        yyextra->theVarContext.addVariable(lname,ScopedTypeVariant(varDef)); // add it to a list
+      }
+      else if ((i=ltype.find('<'))!=-1)
+      {
+        // probably a template class
+        QCString typeName(ltype.left(i));
+        addVariable(yyscanner,typeName,name);
+      }
+      return varDef;
+    };
+    const ClassDef *varDef = findVariableType(yyextra->currentDefinition);
+    if (varDef==0) // also check via using directive
     {
-      // probably a template class
-      QCString typeName(ltype.left(i));
-      addVariable(yyscanner,typeName,name);
+      for (const auto &kv : yyextra->theUsingContext)
+      {
+        varDef = findVariableType(kv.second);
+        if (varDef!=0) break;
+      }
     }
-    else
+    if (varDef==0)
     {
       if (!yyextra->theVarContext.atGlobalScope()) // for local variables add a dummy entry so the name
         // is hidden to avoid false links to global variables with the same name
@@ -2280,25 +2314,22 @@ static void setCurrentDoc(yyscan_t yyscanner,const QCString &anchor)
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (Doxygen::searchIndex)
   {
-    std::lock_guard<std::mutex> lock(g_searchIndexMutex);
     if (yyextra->searchCtx)
     {
-      yyextra->code->setCurrentDoc(yyextra->searchCtx,yyextra->searchCtx->anchor(),FALSE);
+      Doxygen::searchIndex->setCurrentDoc(yyextra->searchCtx,yyextra->searchCtx->anchor(),FALSE);
     }
     else
     {
-      yyextra->code->setCurrentDoc(yyextra->sourceFileDef,anchor,TRUE);
+      Doxygen::searchIndex->setCurrentDoc(yyextra->sourceFileDef,anchor,TRUE);
     }
   }
 }
 
-static void addToSearchIndex(yyscan_t yyscanner,const QCString &text)
+static void addToSearchIndex(yyscan_t /*yyscanner*/,const QCString &text)
 {
-  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (Doxygen::searchIndex)
   {
-    std::lock_guard<std::mutex> lock(g_searchIndexMutex);
-    yyextra->code->addWord(text,FALSE);
+    Doxygen::searchIndex->addWord(text,FALSE);
   }
 }
 
@@ -2469,11 +2500,11 @@ static void codifyLines(yyscan_t yyscanner,const char *text)
 
 static void incrementFlowKeyWordCount(yyscan_t yyscanner)
 {
-  std::lock_guard<std::mutex> lock(g_countFlowKeywordsMutex);
+  std::lock_guard<std::mutex> lock(Doxygen::countFlowKeywordsMutex);
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (yyextra->currentMemberDef && yyextra->currentMemberDef->isFunction())
   {
-    MemberDefMutable *md = toMemberDefMutable(yyextra->currentMemberDef);
+    MemberDefMutable *md = toMemberDefMutable(const_cast<MemberDef*>(yyextra->currentMemberDef));
     if (md)
     {
       md->incrementFlowKeyWordCount();
@@ -2485,13 +2516,13 @@ static void incrementFlowKeyWordCount(yyscan_t yyscanner)
  * line numbers for each line. If \a text contains newlines, the link will be
  * split into multiple links with the same destination, one for each line.
  */
-static void writeMultiLineCodeLink(yyscan_t yyscanner,CodeOutputInterface &ol,
+static void writeMultiLineCodeLink(yyscan_t yyscanner,OutputCodeList &ol,
                                    const Definition *d,
                                    const QCString &text)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   bool sourceTooltips = Config_getBool(SOURCE_TOOLTIPS);
-  yyextra->tooltipManager.addTooltip(ol,d);
+  yyextra->tooltipManager.addTooltip(d);
   QCString ref  = d->getReference();
   QCString file = d->getOutputFileBase();
   QCString anchor = d->anchor();
@@ -2544,17 +2575,16 @@ static void addParmType(yyscan_t yyscanner)
   yyextra->parmName.resize(0) ;
 }
 
-// TODO: make this have a scope only effect, at least not modifying the FileDef object.
-static void addUsingDirective(yyscan_t yyscanner,const char *name)
+static void addUsingDirective(yyscan_t yyscanner,const QCString &name)
 {
-  std::lock_guard<std::mutex> lock(g_usingDirectiveMutex);
+  //printf("AddUsingDirective(%s)\n",qPrint(name));
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  if (yyextra->sourceFileDef && name)
+  if (yyextra->sourceFileDef && !name.isEmpty())
   {
     const NamespaceDef *nd = Doxygen::namespaceLinkedMap->find(name);
     if (nd)
     {
-      const_cast<FileDef*>(yyextra->sourceFileDef)->addUsingDirective(nd);
+      yyextra->theUsingContext.insert(std::make_pair(name.str(),nd));
     }
   }
 }
@@ -2737,7 +2767,7 @@ static bool getLinkInScope(yyscan_t yyscanner,
                            const QCString &c,  // scope
                            const QCString &m,  // member
                            const QCString &memberText, // exact text
-                           CodeOutputInterface &ol,
+                           OutputCodeList &ol,
                            const QCString &text,
                            bool varOnly
                           )
@@ -2757,12 +2787,12 @@ static bool getLinkInScope(yyscan_t yyscanner,
       DBG_CTX((stderr,"found it %s!\n",qPrint(md->qualifiedName())));
       if (yyextra->exampleBlock)
       {
-        std::lock_guard<std::mutex> lock(g_addExampleMutex);
+        std::lock_guard<std::mutex> lock(Doxygen::addExampleMutex);
         QCString anchor;
         anchor.sprintf("a%d",yyextra->anchorCount);
         DBG_CTX((stderr,"addExampleFile(%s,%s,%s)\n",qPrint(anchor),qPrint(yyextra->exampleName),
                                                      qPrint(yyextra->exampleFile)));
-        MemberDefMutable *mdm = toMemberDefMutable(md);
+        MemberDefMutable *mdm = toMemberDefMutable(const_cast<MemberDef*>(md));
         if (mdm && mdm->addExample(anchor,yyextra->exampleName,yyextra->exampleFile))
         {
           ol.writeCodeAnchor(anchor);
@@ -2782,8 +2812,7 @@ static bool getLinkInScope(yyscan_t yyscanner,
         if (yyextra->currentDefinition && yyextra->currentMemberDef &&
             yyextra->insideBody && yyextra->collectXRefs)
         {
-          std::lock_guard<std::mutex> lock(g_docCrossReferenceMutex);
-          addDocCrossReference(toMemberDefMutable(yyextra->currentMemberDef),toMemberDefMutable(md));
+          addDocCrossReference(yyextra->currentMemberDef,md);
         }
         DBG_CTX((stderr,"d->getReference()='%s' d->getOutputBase()='%s' name='%s' member name='%s'\n",qPrint(d->getReference()),qPrint(d->getOutputFileBase()),qPrint(d->name()),qPrint(md->name())));
 
@@ -2792,12 +2821,6 @@ static bool getLinkInScope(yyscan_t yyscanner,
         return TRUE;
       }
     }
-    else // found member, but it is not linkable, so make sure content inside is not assigned
-         // to the previous member, see bug762760
-    {
-      DBG_CTX((stderr,"unlinkable member %s\n",qPrint(md->name())));
-      yyextra->currentMemberDef = 0;
-    }
   }
   return FALSE;
 }
@@ -2805,7 +2828,7 @@ static bool getLinkInScope(yyscan_t yyscanner,
 static bool getLink(yyscan_t yyscanner,
                     const QCString &className,
                     const QCString &memberName,
-                    CodeOutputInterface &ol,
+                    OutputCodeList &ol,
                     const QCString &text,
                     bool varOnly)
 {
@@ -2828,13 +2851,12 @@ static bool getLink(yyscan_t yyscanner,
 }
 
 static void generateClassOrGlobalLink(yyscan_t yyscanner,
-                                      CodeOutputInterface &ol,
+                                      OutputCodeList &ol,
                                       const QCString &clName,
                                       bool typeOnly,
                                       bool varOnly)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  int i=0;
   QCString className=clName;
   if (!className.isEmpty() && className[0]=='~') // correct for matching negated values i.s.o. destructors.
   {
@@ -2855,7 +2877,7 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
   }
   else if (yyextra->lang==SrcLangExt_CSharp || yyextra->lang==SrcLangExt_Java)
   {
-    className = substitute(className,".","::"); // for PHP namespaces
+    className = substitute(className,".","::"); // for C#/Java namespaces
   }
   const ScopedTypeVariant *lcd=0;
   const ClassDef *cd=0;
@@ -2865,25 +2887,54 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
   DBG_CTX((stderr,"generateClassOrGlobalLink(className=%s)\n",qPrint(className)));
   if (!yyextra->isPrefixedWithThis || (lcd=yyextra->theVarContext.findVariable(className))==0) // not a local variable
   {
-    const Definition *d = yyextra->currentDefinition;
-    DBG_CTX((stderr,"d=%s yyextra->sourceFileDef=%s\n",d?qPrint(d->name()):"<none>",yyextra->sourceFileDef?qPrint(yyextra->sourceFileDef->name()):"<none>"));
-    cd = yyextra->symbolResolver.resolveClass(d,className);
-    md = yyextra->symbolResolver.getTypedef();
-    DBG_CTX((stderr,"non-local variable name=%s cd=%s md=%s!\n",
-         qPrint(className),cd?qPrint(cd->name()):"<none>",
-         md?qPrint(md->name()):"<none>"));
-    i=className.find('<');
+    int i=className.find('<');
     QCString bareName = className;
     if (i!=-1) bareName = bareName.left(i);
-    if (cd==0 && md==0 && i!=-1)
+
+    auto checkForClass = [&yyg,&bareName,&className](const Definition *d,
+                                                     const ClassDef *&cd_,const MemberDef *&md_)
     {
-      DBG_CTX((stderr,"bareName=%s\n",qPrint(bareName)));
-      if (bareName!=className)
+      cd_ = yyextra->symbolResolver.resolveClass(d,className);
+      md_ = yyextra->symbolResolver.getTypedef();
+      DBG_CTX((stderr,"non-local variable name=%s cd=%s md=%s!\n",
+            qPrint(className),cd_?qPrint(cd_->name()):"<none>",
+            md_?qPrint(md_->name()):"<none>"));
+      if (cd_==0 && md_==0 && !bareName.isEmpty())
       {
-        cd = yyextra->symbolResolver.resolveClass(d,bareName); // try unspecialized version
-        md = yyextra->symbolResolver.getTypedef();
+        DBG_CTX((stderr,"bareName=%s\n",qPrint(bareName)));
+        if (bareName!=className)
+        {
+          cd_ = yyextra->symbolResolver.resolveClass(d,bareName); // try unspecialized version
+          md_ = yyextra->symbolResolver.getTypedef();
+        }
+      }
+    };
+    const Definition *d = yyextra->currentDefinition;
+    DBG_CTX((stderr,"d=%s yyextra->sourceFileDef=%s\n",d?qPrint(d->name()):"<none>",yyextra->sourceFileDef?qPrint(yyextra->sourceFileDef->name()):"<none>"));
+    checkForClass(d,cd,md);
+    if (cd==0 && md==0 && d && d->definitionType()==Definition::TypeClass)
+    {
+      const FileDef *fd = toClassDef(d)->getFileDef();
+      if (fd)
+      {
+        // also check for using directive in the file that defines this class
+        for (const auto &nd : fd->getUsedNamespaces())
+        {
+          checkForClass(nd,cd,md);
+          if (cd!=0 || md!=0) break;
+        }
       }
     }
+    if (cd==0 && md==0)
+    {
+      // also check via using directive
+      for (const auto &kv : yyextra->theUsingContext)
+      {
+        checkForClass(kv.second,cd,md);
+        if (cd!=0 || md!=0) break;
+      }
+    }
+
     const NamespaceDef *nd = getResolvedNamespace(className);
     if (nd && nd->isLinkable())
     {
@@ -2938,7 +2989,7 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
     DBG_CTX((stderr,"is linkable class %s\n",qPrint(clName)));
     if (yyextra->exampleBlock)
     {
-      std::lock_guard<std::mutex> lock(g_addExampleMutex);
+      std::lock_guard<std::mutex> lock(Doxygen::addExampleMutex);
       QCString anchor;
       anchor.sprintf("_a%d",yyextra->anchorCount);
       DBG_CTX((stderr,"addExampleClass(%s,%s,%s)\n",qPrint(anchor),qPrint(yyextra->exampleName),
@@ -2961,8 +3012,7 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
       if (d && d->isLinkable() && md->isLinkable() &&
           yyextra->currentMemberDef && yyextra->collectXRefs)
       {
-        std::lock_guard<std::mutex> lock(g_docCrossReferenceMutex);
-        addDocCrossReference(toMemberDefMutable(yyextra->currentMemberDef),toMemberDefMutable(md));
+        addDocCrossReference(yyextra->currentMemberDef,md);
       }
     }
   }
@@ -2974,7 +3024,7 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
       if (md==0) // not found as a typedef
       {
         md = setCallContextForVar(yyscanner,clName);
-        DBG_CTX((stderr,"setCallContextForVar(%s) md=%p yyextra->currentDefinition=%p\n",qPrint(clName),(void*)md,(void*)yyextra->currentDefinition));
+        DBG_CTX((stderr,"setCallContextForVar(%s) md=%p yyextra->currentDefinition=%s\n",qPrint(clName),(void*)md,yyextra->currentDefinition ? qPrint(yyextra->currentDefinition->name()) : "<none>"));
         if (md && yyextra->currentDefinition)
         {
           DBG_CTX((stderr,"%s accessible from %s? %d md->getOuterScope=%s\n",
@@ -2998,8 +3048,7 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
           addToSearchIndex(yyscanner,clName);
           if (yyextra->currentMemberDef && yyextra->collectXRefs)
           {
-            std::lock_guard<std::mutex> lock(g_docCrossReferenceMutex);
-            addDocCrossReference(toMemberDefMutable(yyextra->currentMemberDef),toMemberDefMutable(md));
+            addDocCrossReference(yyextra->currentMemberDef,md);
           }
           return;
         }
@@ -3013,14 +3062,14 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
   }
 }
 
-static void generateClassOrGlobalLink(yyscan_t yyscanner,CodeOutputInterface &ol,const char *clName,
+static void generateClassOrGlobalLink(yyscan_t yyscanner,OutputCodeList &ol,const char *clName,
                                       bool typeOnly,bool varOnly)
 {
   generateClassOrGlobalLink(yyscanner,ol,QCString(clName),typeOnly,varOnly);
 }
 
 static bool generateClassMemberLink(yyscan_t yyscanner,
-                                    CodeOutputInterface &ol,
+                                    OutputCodeList &ol,
                                     const MemberDef *xmd,
                                     const QCString &memName)
 {
@@ -3034,12 +3083,12 @@ static bool generateClassMemberLink(yyscan_t yyscanner,
 
   if (yyextra->exampleBlock)
   {
-    std::lock_guard<std::mutex> lock(g_addExampleMutex);
+    std::lock_guard<std::mutex> lock(Doxygen::addExampleMutex);
     QCString anchor;
     anchor.sprintf("a%d",yyextra->anchorCount);
     DBG_CTX((stderr,"addExampleFile(%s,%s,%s)\n",qPrint(anchor),qPrint(yyextra->exampleName),
                                                  qPrint(yyextra->exampleFile)));
-    MemberDefMutable *mdm = toMemberDefMutable(xmd);
+    MemberDefMutable *mdm = toMemberDefMutable(const_cast<MemberDef*>(xmd));
     if (mdm && mdm->addExample(anchor,yyextra->exampleName,yyextra->exampleFile))
     {
       ol.writeCodeAnchor(anchor);
@@ -3068,8 +3117,7 @@ static bool generateClassMemberLink(yyscan_t yyscanner,
       if (yyextra->currentDefinition && yyextra->currentMemberDef &&
           yyextra->insideBody && yyextra->collectXRefs)
       {
-        std::lock_guard<std::mutex> lock(g_docCrossReferenceMutex);
-        addDocCrossReference(toMemberDefMutable(yyextra->currentMemberDef),toMemberDefMutable(xmd));
+        addDocCrossReference(yyextra->currentMemberDef,xmd);
       }
 
       // write the actual link
@@ -3083,7 +3131,7 @@ static bool generateClassMemberLink(yyscan_t yyscanner,
 }
 
 static bool generateClassMemberLink(yyscan_t yyscanner,
-                                    CodeOutputInterface &ol,
+                                    OutputCodeList &ol,
                                     const Definition *def,
                                     const QCString &memName)
 {
@@ -3126,7 +3174,7 @@ static bool generateClassMemberLink(yyscan_t yyscanner,
 }
 
 static void generateMemberLink(yyscan_t yyscanner,
-                               CodeOutputInterface &ol,
+                               OutputCodeList &ol,
                                const QCString &varName,
                                const QCString &memName)
 {
@@ -3219,7 +3267,7 @@ static void generateMemberLink(yyscan_t yyscanner,
   return;
 }
 
-static void generatePHPVariableLink(yyscan_t yyscanner,CodeOutputInterface &ol,const char *varName)
+static void generatePHPVariableLink(yyscan_t yyscanner,OutputCodeList &ol,const char *varName)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   QCString name(varName+7); // strip $this->
@@ -3231,7 +3279,7 @@ static void generatePHPVariableLink(yyscan_t yyscanner,CodeOutputInterface &ol,c
   }
 }
 
-static void generateFunctionLink(yyscan_t yyscanner,CodeOutputInterface &ol,const QCString &funcName)
+static void generateFunctionLink(yyscan_t yyscanner,OutputCodeList &ol,const QCString &funcName)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   //CodeClassDef *ccd=0;
@@ -3242,7 +3290,7 @@ static void generateFunctionLink(yyscan_t yyscanner,CodeOutputInterface &ol,cons
   QCString funcWithScope=locFunc;
   QCString funcWithFullScope=locFunc;
   QCString fullScope=locScope;
-  DBG_CTX((stdout,"*** locScope=%s locFunc=%s\n",qPrint(locScope),qPrint(locFunc)));
+  DBG_CTX((stderr,"*** locScope=%s locFunc=%s\n",qPrint(locScope),qPrint(locFunc)));
   int len=2;
   int i=locFunc.findRev("::");
   if (yyextra->currentMemberDef && yyextra->currentMemberDef->resolveAlias()->getClassDef() &&
@@ -3340,7 +3388,7 @@ exit:
   return;
 }
 
-static void generateFunctionLink(yyscan_t yyscanner,CodeOutputInterface &ol,const char *funcName)
+static void generateFunctionLink(yyscan_t yyscanner,OutputCodeList &ol,const char *funcName)
 {
   generateFunctionLink(yyscanner,ol,QCString(funcName));
 }
@@ -3489,8 +3537,7 @@ static void writeObjCMethodCall(yyscan_t yyscanner,ObjCCallCtx *ctx)
                 writeMultiLineCodeLink(yyscanner,*yyextra->code,ctx->method,name);
                 if (yyextra->currentMemberDef && yyextra->collectXRefs)
                 {
-                  std::lock_guard<std::mutex> lock(g_docCrossReferenceMutex);
-                  addDocCrossReference(toMemberDefMutable(yyextra->currentMemberDef),toMemberDefMutable(ctx->method));
+                  addDocCrossReference(yyextra->currentMemberDef,ctx->method);
                 }
               }
               else
@@ -3564,8 +3611,7 @@ static void writeObjCMethodCall(yyscan_t yyscanner,ObjCCallCtx *ctx)
                 writeMultiLineCodeLink(yyscanner,*yyextra->code,ctx->objectVar,object);
                 if (yyextra->currentMemberDef && yyextra->collectXRefs)
                 {
-                  std::lock_guard<std::mutex> lock(g_docCrossReferenceMutex);
-                  addDocCrossReference(toMemberDefMutable(yyextra->currentMemberDef),toMemberDefMutable(ctx->objectVar));
+                  addDocCrossReference(yyextra->currentMemberDef,ctx->objectVar);
                 }
               }
               else if (ctx->objectType &&
@@ -3670,7 +3716,7 @@ static void writeObjCMethodCall(yyscan_t yyscanner,ObjCCallCtx *ctx)
           }
           else // illegal marker
           {
-            ASSERT("invalid escape sequence"==0);
+            ASSERT(0); // "invalid escape sequence"
           }
         }
       }
@@ -3780,12 +3826,12 @@ static bool isCastKeyword(const char *keyword)
   return kw=="const_cast" || kw=="static_cast" || kw=="dynamic_cast" || kw=="reinterpret_cast";
 }
 
-static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size)
+static int yyread(yyscan_t yyscanner,char *buf,int max_size)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yy_size_t inputPosition = yyextra->inputPosition;
   const char *s = yyextra->inputString + inputPosition;
-  yy_size_t c=0;
+  int c=0;
   while( c < max_size && *s )
   {
     *buf++ = *s++;
@@ -3855,7 +3901,7 @@ CCodeParser::CCodeParser() : p(std::make_unique<CCodeParser::Private>())
 {
   codeYYlex_init_extra(&p->state,&p->yyscanner);
 #ifdef FLEX_DEBUG
-  codeYYset_debug(1,p->yyscanner);
+  codeYYset_debug(Debug::isFlagSet(Debug::Lex_code)?1:0,p->yyscanner);
 #endif
   resetCodeParserState();
 }
@@ -3889,7 +3935,7 @@ bool CCodeParser::insideCodeLine() const
   return yyextra->insideCodeLine;
 }
 
-void CCodeParser::parseCode(CodeOutputInterface &od,const QCString &className,const QCString &s,
+void CCodeParser::parseCode(OutputCodeList &od,const QCString &className,const QCString &s,
                 SrcLangExt lang,bool exBlock, const QCString &exName,const FileDef *fd,
                 int startLine,int endLine,bool inlineFragment,
                 const MemberDef *memberDef,bool showLineNumbers,const Definition *searchCtx,
@@ -3902,7 +3948,7 @@ void CCodeParser::parseCode(CodeOutputInterface &od,const QCString &className,co
 
   if (s.isEmpty()) return;
 
-  printlex(yy_flex_debug, TRUE, __FILE__, fd ? qPrint(fd->fileName()): NULL);
+  DebugLex debugLex(Debug::Lex_code, __FILE__, fd ? qPrint(fd->fileName()): !exName.isEmpty() ? qPrint(exName) : NULL);
 
   yyextra->code = &od;
   yyextra->inputString   = s.data();
@@ -3951,7 +3997,7 @@ void CCodeParser::parseCode(CodeOutputInterface &od,const QCString &className,co
   {
     setCurrentDoc(yyscanner,"l00001");
   }
-  yyextra->currentDefinition = getResolvedNamespace(className);
+  yyextra->currentDefinition = searchCtx ? searchCtx : getResolvedNamespace(className);
   yyextra->currentMemberDef = 0;
   yyextra->searchingForBody = exBlock;
   yyextra->insideBody = FALSE;
@@ -3988,8 +4034,6 @@ void CCodeParser::parseCode(CodeOutputInterface &od,const QCString &className,co
   }
   // write the tooltips
   yyextra->tooltipManager.writeTooltips(od);
-
-  printlex(yy_flex_debug, FALSE, __FILE__, fd ? qPrint(fd->fileName()): NULL);
 }
 
 #if USE_STATE2STRING

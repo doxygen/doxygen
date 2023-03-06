@@ -92,7 +92,7 @@ doxygen -w rtf rtfstyle.cfg
 </ul>
 \warning When using a custom header you are responsible 
   for the proper inclusion of any scripts and style sheets that doxygen 
-  needs, which is dependent on the configuration options and may changes
+  needs, which is dependent on the configuration options and may change
   when upgrading to a new doxygen release.
 
 \note

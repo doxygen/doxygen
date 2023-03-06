@@ -55,6 +55,8 @@
 #include "searchindex.h"
 #include "resourcemgr.h"
 #include "dir.h"
+#include "datetime.h"
+#include "outputlist.h"
 
 // TODO: pass the current file to Dot*::writeGraph, so the user can put dot graphs in other
 //       files as well
@@ -341,7 +343,7 @@ class DoxygenContext::Private
   private:
     // Property getters
     TemplateVariant version() const         { return getDoxygenVersion(); }
-    TemplateVariant date() const            { return dateToString(TRUE); }
+    TemplateVariant date() const            { return dateToString(DateTimeType::DateTime); }
     TemplateVariant mathJaxCodeFile() const { return m_mathJaxCodeFile.get(this); }
     TemplateVariant mathJaxMacros() const   { return m_mathJaxMacros.get(this); }
 
@@ -941,7 +943,7 @@ class TranslateContext::Private
     }
     TemplateVariant related() const
     {
-      return theTranslator->trRelatedFunctions();
+      return theTranslator->trRelatedSymbols();
     }
     TemplateVariant macros() const
     {
@@ -1034,7 +1036,7 @@ const PropertyMap<TranslateContext::Private> TranslateContext::Private::s_inst {
   {  "classIndex",        &Private::classIndex },
   //%% string concepts
   {  "concepts",          &Private::concepts },
-  //%% string conceptDefintion
+  //%% string conceptDefinition
   {  "conceptDefinition", &Private::conceptDefinition },
   //%% string namespaceIndex
   {  "namespaceIndex",    &Private::namespaceIndex },
@@ -1253,15 +1255,17 @@ static TemplateVariant parseDoc(const Definition *def,const QCString &file,int l
     {
       case ContextOutputFormat_Html:
         {
-          HtmlCodeGenerator codeGen(ts,relPath);
-          HtmlDocVisitor visitor(ts,codeGen,def);
+          OutputCodeList codeList;
+          codeList.add<HtmlCodeGenerator>(&ts,relPath);
+          HtmlDocVisitor visitor(ts,codeList,def);
           std::visit(visitor,astImpl->root);
         }
         break;
       case ContextOutputFormat_Latex:
         {
-          LatexCodeGenerator codeGen(ts,relPath,file);
-          LatexDocVisitor visitor(ts,codeGen,def->getDefFileExtension(),FALSE);
+          OutputCodeList codeList;
+          codeList.add<LatexCodeGenerator>(&ts,relPath,file);
+          LatexDocVisitor visitor(ts,codeList,*codeList.get<LatexCodeGenerator>(),def->getDefFileExtension());
           std::visit(visitor,astImpl->root);
         }
         break;
@@ -1289,15 +1293,17 @@ static TemplateVariant parseCode(const Definition *d,const QCString &scopeName,c
   {
     case ContextOutputFormat_Html:
       {
-        HtmlCodeGenerator codeGen(t,relPath);
-        intf->parseCode(codeGen,scopeName,code,d->getLanguage(),FALSE,QCString(),d->getBodyDef(),
+        OutputCodeList codeList;
+        codeList.add<HtmlCodeGenerator>(&t,relPath);
+        intf->parseCode(codeList,scopeName,code,d->getLanguage(),FALSE,QCString(),d->getBodyDef(),
             startLine,endLine,TRUE,toMemberDef(d),showLineNumbers,d);
       }
       break;
     case ContextOutputFormat_Latex:
       {
-        LatexCodeGenerator codeGen(t,relPath,d->docFile());
-        intf->parseCode(codeGen,scopeName,code,d->getLanguage(),FALSE,QCString(),d->getBodyDef(),
+        OutputCodeList codeList;
+        codeList.add<LatexCodeGenerator>(&t,relPath,d->docFile());
+        intf->parseCode(codeList,scopeName,code,d->getLanguage(),FALSE,QCString(),d->getBodyDef(),
             startLine,endLine,TRUE,toMemberDef(d),showLineNumbers,d);
       }
       break;
@@ -1319,8 +1325,9 @@ static TemplateVariant parseCode(const FileDef *fd,const QCString &relPath)
   {
     case ContextOutputFormat_Html:
       {
-        HtmlCodeGenerator codeGen(t,relPath);
-        intf->parseCode(codeGen,QCString(),
+        OutputCodeList codeList;
+        codeList.add<HtmlCodeGenerator>(&t,relPath);
+        intf->parseCode(codeList,QCString(),
               fileToString(fd->absFilePath(),filterSourceFiles,TRUE), // the sources
               fd->getLanguage(),  // lang
               FALSE,              // isExampleBlock
@@ -1338,8 +1345,9 @@ static TemplateVariant parseCode(const FileDef *fd,const QCString &relPath)
       break;
     case ContextOutputFormat_Latex:
       {
-        LatexCodeGenerator codeGen(t,relPath,fd->docFile());
-        intf->parseCode(codeGen,QCString(),
+        OutputCodeList codeList;
+        codeList.add<LatexCodeGenerator>(&t,relPath,fd->docFile());
+        intf->parseCode(codeList,QCString(),
               fileToString(fd->absFilePath(),filterSourceFiles,TRUE), // the sources
               fd->getLanguage(),  // lang
               FALSE,              // isExampleBlock
@@ -1802,7 +1810,7 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
         DotClassGraphPtr cg = getClassGraph();
         result = !cg->isTrivial() && !cg->isTooBig();
       }
-      else if (classGraphEnabled)
+      else if (classGraphEnabled || classGraph==CLASS_GRAPH_t::BUILTIN)
       {
         result = numInheritanceNodes()>0;
       }
@@ -1818,13 +1826,15 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
       if (haveDot && classGraphEnabled)
       {
         DotClassGraphPtr cg = getClassGraph();
+        QCString fn = m_classDef->getOutputFileBase();
+        addHtmlExtensionIfMissing(fn);
         switch (g_globals.outputFormat)
         {
           case ContextOutputFormat_Html:
             {
               cg->writeGraph(t,GOF_BITMAP,EOF_Html,
                              g_globals.outputDir,
-                             g_globals.outputDir+Portable::pathSeparator()+addHtmlExtensionIfMissing(m_classDef->getOutputFileBase()),
+                             g_globals.outputDir+Portable::pathSeparator()+fn,
                              relPathAsString(),TRUE,TRUE,g_globals.dynSectionId
                             );
             }
@@ -1845,7 +1855,7 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
         }
         g_globals.dynSectionId++;
       }
-      else if (classGraphEnabled)
+      else if (classGraphEnabled || classGraph==CLASS_GRAPH_t::BUILTIN)
       {
         ClassDiagram d(m_classDef);
         switch (g_globals.outputFormat)
@@ -1909,13 +1919,15 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
       if (haveDot)
       {
         DotClassGraphPtr cg = getCollaborationGraph();
+        QCString fn = m_classDef->getOutputFileBase();
+        addHtmlExtensionIfMissing(fn);
         switch (g_globals.outputFormat)
         {
           case ContextOutputFormat_Html:
             {
               cg->writeGraph(t,GOF_BITMAP,EOF_Html,
                              g_globals.outputDir,
-                             g_globals.outputDir+Portable::pathSeparator()+addHtmlExtensionIfMissing(m_classDef->getOutputFileBase()),
+                             g_globals.outputDir+Portable::pathSeparator()+fn,
                              relPathAsString(),TRUE,TRUE,g_globals.dynSectionId
                             );
             }
@@ -2122,7 +2134,7 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
     }
     TemplateVariant createRelated() const
     {
-      return createMemberList(MemberListType_related,theTranslator->trRelatedFunctions());
+      return createMemberList(MemberListType_related,theTranslator->trRelatedSymbols());
     }
     TemplateVariant createDetailedTypedefs() const
     {
@@ -2150,7 +2162,7 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
     }
     TemplateVariant createDetailedRelated() const
     {
-      return createMemberList(MemberListType_relatedMembers,theTranslator->trRelatedFunctionDocumentation());
+      return createMemberList(MemberListType_relatedMembers,theTranslator->trRelatedSymbolDocumentation());
     }
     TemplateVariant createDetailedVariables() const
     {
@@ -2263,7 +2275,7 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
       ctx->addMemberList(m_classDef,MemberListType_priStaticMethods,theTranslator->trStaticPrivateMembers());
       ctx->addMemberList(m_classDef,MemberListType_priAttribs,theTranslator->trPrivateAttribs());
       ctx->addMemberList(m_classDef,MemberListType_priStaticAttribs,theTranslator->trStaticPrivateAttribs());
-      ctx->addMemberList(m_classDef,MemberListType_related,theTranslator->trRelatedFunctions());
+      ctx->addMemberList(m_classDef,MemberListType_related,theTranslator->trRelatedSymbols());
       return list;
     }
     void addMembers(MemberList &list,const ClassDef *cd,MemberListType lt) const
@@ -2793,13 +2805,15 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
       if (haveDot)
       {
         DotInclDepGraphPtr cg = getIncludeGraph();
+        QCString fn = m_fileDef->getOutputFileBase();
+        addHtmlExtensionIfMissing(fn);
         switch (g_globals.outputFormat)
         {
           case ContextOutputFormat_Html:
             {
               cg->writeGraph(t,GOF_BITMAP,EOF_Html,
                   g_globals.outputDir,
-                  g_globals.outputDir+Portable::pathSeparator()+addHtmlExtensionIfMissing(m_fileDef->getOutputFileBase()),
+                  g_globals.outputDir+Portable::pathSeparator()+fn,
                   relPathAsString(),TRUE,g_globals.dynSectionId
                   );
             }
@@ -2835,13 +2849,15 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
       if (haveDot)
       {
         DotInclDepGraphPtr cg = getIncludedByGraph();
+        QCString fn = m_fileDef->getOutputFileBase();
+        addHtmlExtensionIfMissing(fn);
         switch (g_globals.outputFormat)
         {
           case ContextOutputFormat_Html:
             {
               cg->writeGraph(t,GOF_BITMAP,EOF_Html,
                   g_globals.outputDir,
-                  g_globals.outputDir+Portable::pathSeparator()+addHtmlExtensionIfMissing(m_fileDef->getOutputFileBase()),
+                  g_globals.outputDir+Portable::pathSeparator()+fn,
                   relPathAsString(),TRUE,g_globals.dynSectionId
                   );
             }
@@ -3154,6 +3170,8 @@ class DirContext::Private : public DefinitionContext<DirContext::Private>
       if (haveDot && dirGraph)
       {
         DotDirDepsPtr graph = getDirDepsGraph();
+        QCString fn = m_dirDef->getOutputFileBase();
+        addHtmlExtensionIfMissing(fn);
         switch (g_globals.outputFormat)
         {
           case ContextOutputFormat_Html:
@@ -3161,7 +3179,7 @@ class DirContext::Private : public DefinitionContext<DirContext::Private>
               graph->writeGraph(t,GOF_BITMAP,
                                 EOF_Html,
                                 g_globals.outputDir,
-                                g_globals.outputDir+Portable::pathSeparator()+addHtmlExtensionIfMissing(m_dirDef->getOutputFileBase()),
+                                g_globals.outputDir+Portable::pathSeparator()+fn,
                                 relPathAsString(),
                                 TRUE,
                                 g_globals.dynSectionId,
@@ -3413,7 +3431,7 @@ class TextGeneratorHtml : public TextGeneratorIntf
             case ' ':  m_ts << "&#160;"; break;
             default:
               {
-                uchar uc = static_cast<uchar>(c);
+                uint8_t uc = static_cast<uint8_t>(c);
                 if (uc<32 && !isspace(c)) // non-printable control characters
                 {
                   m_ts << "&#x24" << hex[uc>>4] << hex[uc&0xF] << ";";
@@ -3457,7 +3475,12 @@ class TextGeneratorHtml : public TextGeneratorIntf
       }
       m_ts << "href=\"";
       m_ts << externalRef(m_relPath,ref,TRUE);
-      if (!f.isEmpty()) m_ts << addHtmlExtensionIfMissing(f);
+      if (!f.isEmpty())
+      {
+        QCString fn = f;
+        addHtmlExtensionIfMissing(fn);
+        m_ts << fn;
+      }
       if (!anchor.isEmpty()) m_ts << "#" << anchor;
       m_ts << "\">";
       m_ts << convertToHtml(name);
@@ -3737,6 +3760,8 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       if (hasCallGraph().toBool())
       {
         DotCallGraphPtr cg = getCallGraph();
+        QCString fn = m_memberDef->getOutputFileBase();
+        addHtmlExtensionIfMissing(fn);
         TextStream t;
         switch (g_globals.outputFormat)
         {
@@ -3744,7 +3769,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
             {
               cg->writeGraph(t,GOF_BITMAP,EOF_Html,
                   g_globals.outputDir,
-                  g_globals.outputDir+Portable::pathSeparator()+addHtmlExtensionIfMissing(m_memberDef->getOutputFileBase()),
+                  g_globals.outputDir+Portable::pathSeparator()+fn,
                   relPathAsString(),TRUE,g_globals.dynSectionId
                   );
             }
@@ -3795,6 +3820,8 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       if (hasCallerGraph().toBool())
       {
         DotCallGraphPtr cg = getCallerGraph();
+        QCString fn = m_memberDef->getOutputFileBase();
+        addHtmlExtensionIfMissing(fn);
         TextStream t;
         switch (g_globals.outputFormat)
         {
@@ -3802,7 +3829,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
             {
               cg->writeGraph(t,GOF_BITMAP,EOF_Html,
                   g_globals.outputDir,
-                  g_globals.outputDir+Portable::pathSeparator()+addHtmlExtensionIfMissing(m_memberDef->getOutputFileBase()),
+                  g_globals.outputDir+Portable::pathSeparator()+fn,
                   relPathAsString(),TRUE,g_globals.dynSectionId
                   );
             }
@@ -4055,7 +4082,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       {
         const ClassDef *cd = md->getClassDef();
         // filter on pure virtual/interface methods
-        if (cd && (md->virtualness()==Pure || cd->compoundType()==ClassDef::Interface))
+        if (cd && (md->virtualness()==Specifier::Pure || cd->compoundType()==ClassDef::Interface))
         {
           list.push_back(MemberContext::alloc(md));
         }
@@ -4070,7 +4097,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       {
         const ClassDef *cd = md->getClassDef();
         // filter on non-pure virtual & non interface methods
-        if (cd && md->virtualness()!=Pure && cd->compoundType()!=ClassDef::Interface)
+        if (cd && md->virtualness()!=Specifier::Pure && cd->compoundType()!=ClassDef::Interface)
         {
           list.push_back(MemberContext::alloc(md));
         }
@@ -4085,7 +4112,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       {
         const ClassDef *cd = md->getClassDef();
         // filter on pure virtual/interface methods
-        if (cd && md->virtualness()==Pure && cd->compoundType()==ClassDef::Interface)
+        if (cd && md->virtualness()==Specifier::Pure && cd->compoundType()==ClassDef::Interface)
         {
           list.push_back(MemberContext::alloc(md));
         }
@@ -4100,7 +4127,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       {
         const ClassDef *cd = md->getClassDef();
         // filter on non-pure virtual & non interface methods
-        if (cd && md->virtualness()!=Pure && cd->compoundType()!=ClassDef::Interface)
+        if (cd && md->virtualness()!=Specifier::Pure && cd->compoundType()!=ClassDef::Interface)
         {
           list.push_back(MemberContext::alloc(md));
         }
@@ -4604,6 +4631,8 @@ class ModuleContext::Private : public DefinitionContext<ModuleContext::Private>
       if (haveDot && groupGraphs)
       {
         DotGroupCollaborationPtr graph = getGroupGraph();
+        QCString fn = m_groupDef->getOutputFileBase();
+        addHtmlExtensionIfMissing(fn);
         switch (g_globals.outputFormat)
         {
           case ContextOutputFormat_Html:
@@ -4611,7 +4640,7 @@ class ModuleContext::Private : public DefinitionContext<ModuleContext::Private>
               graph->writeGraph(t,GOF_BITMAP,
                                 EOF_Html,
                                 g_globals.outputDir,
-                                g_globals.outputDir+Portable::pathSeparator()+addHtmlExtensionIfMissing(m_groupDef->getOutputFileBase()),
+                                g_globals.outputDir+Portable::pathSeparator()+fn,
                                 relPathAsString(),
                                 TRUE,
                                 g_globals.dynSectionId);
@@ -5710,7 +5739,7 @@ class NestingContext::Private : public GenericNodeListContext
         bool hasChildren = namespaceHasNestedNamespace(nd) ||
                            (addClasses  && namespaceHasNestedClass(nd,false,ClassDef::Class)) ||
                            (addConcepts && namespaceHasNestedConcept(nd)) ||
-                           (m_type==ContextTreeType::Namespace && countVisibleMembers(nd));
+                           (m_type==ContextTreeType::Namespace && nd->countVisibleMembers());
         bool isLinkable  = nd->isLinkableInProject();
         if (isLinkable && hasChildren)
         {
@@ -5908,11 +5937,11 @@ class NestingContext::Private : public GenericNodeListContext
         bool b;
         if (cd->getLanguage()==SrcLangExt_VHDL)
         {
-          b=hasVisibleRoot(cd->subClasses());
+          b=classHasVisibleRoot(cd->subClasses());
         }
         else
         {
-          b=hasVisibleRoot(cd->baseClasses());
+          b=classHasVisibleRoot(cd->baseClasses());
         }
 
         if (cd->isVisibleInHierarchy() && b)
@@ -5934,11 +5963,11 @@ class NestingContext::Private : public GenericNodeListContext
           {
             continue;
           }
-          b=!hasVisibleRoot(cd->subClasses());
+          b=!classHasVisibleRoot(cd->subClasses());
         }
         else
         {
-          b=!hasVisibleRoot(cd->baseClasses());
+          b=!classHasVisibleRoot(cd->baseClasses());
         }
         if (b)
         {
@@ -7022,7 +7051,7 @@ class NavPathElemContext::Private
       }
       else if (type==Definition::TypeClass)
       {
-        if (text.right(2)=="-p")
+        if (text.endsWith("-p"))
         {
           text = text.left(text.length()-2);
         }
@@ -7643,10 +7672,10 @@ class MemberInfoContext::Private
     {
       switch (m_memberInfo->prot())
       {
-        case ::Public:    return "public";
-        case ::Protected: return "protected";
-        case ::Private:   return "private";
-        case ::Package:   return "package";
+        case Protection::Public:    return "public";
+        case Protection::Protected: return "protected";
+        case Protection::Private:   return "private";
+        case Protection::Package:   return "package";
       }
       return "";
     }
@@ -7654,9 +7683,9 @@ class MemberInfoContext::Private
     {
       switch (m_memberInfo->virt())
       {
-        case ::Normal:   return "normal";
-        case ::Virtual:  return "virtual";
-        case ::Pure:     return "pure";
+        case Specifier::Normal:   return "normal";
+        case Specifier::Virtual:  return "virtual";
+        case Specifier::Pure:     return "pure";
       }
       return "";
     }

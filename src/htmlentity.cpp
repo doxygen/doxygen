@@ -13,18 +13,17 @@
  *
  */
 
+#include <vector>
+
 #include "htmlentity.h"
 #include "message.h"
 #include "textstream.h"
-
-//! Number of doxygen commands mapped as if it were HTML entities
-static const int g_numberHtmlMappedCmds = 11;
 
 //! @brief Structure defining all HTML4 entities, doxygen extensions and doxygen commands representing special symbols.
 //! @details In case an entity does not exist a NULL is given for the entity. The first column contains the symbolic code
 //!          for the entity, see also doxparser.h The second column contains the name of the entity (without the starting \& and
 //!          ending ;)
-static struct htmlEntityInfo
+struct HtmlEntityInfo
 {
   HtmlEntityMapper::SymType symb;
   const char *item;
@@ -36,7 +35,9 @@ static struct htmlEntityInfo
   const char *man;
   const char *rtf;
   HtmlEntityMapper::PerlSymb perl;
-} g_htmlEntities[] =
+};
+
+static const std::vector<HtmlEntityInfo> g_htmlEntities
 {
 #undef SYM
 // helper macro to force consistent entries for the symbol and item columns
@@ -301,34 +302,33 @@ static struct htmlEntityInfo
   { SYM(apos),     "'",            "'",          "'",                    "&apos;",        "\\textquotesingle{}",    "'",      "'",           { "\\\'",       HtmlEntityMapper::Perl_string  }},
 
   // doxygen commands represented as HTML entities
-  { SYM(BSlash),   "\\",           "\\",         "\\",                   "\\",            "\\textbackslash{}",      "\\\\",   "\\\\",        { "\\\\",       HtmlEntityMapper::Perl_string  }},
-  { SYM(At),       "@",            "@",          "@",                    "@",             "@",                      "@",      "@",           { "@",          HtmlEntityMapper::Perl_char    }},
-  { SYM(Less),     "<",            "&lt;",       "&lt;",                 "&lt;",          "<",                      "<",      "<",           { "<",          HtmlEntityMapper::Perl_char    }},
-  { SYM(Greater),  ">",            "&gt;",       "&gt;",                 "&gt;",          ">",                      ">",      ">",           { ">",          HtmlEntityMapper::Perl_char    }},
-  { SYM(Amp),      "&",            "&amp;",      "&amp;",                "&amp;",         "\\&",                    "&",      "&",           { "&",          HtmlEntityMapper::Perl_char    }},
-  { SYM(Dollar),   "$",            "$",          "$",                    "$",             "\\$",                    "$",      "$",           { "$",          HtmlEntityMapper::Perl_char    }},
-  { SYM(Hash),     "#;",           "#",          "#",                    "#",             "\\#",                    "#",      "#",           { "#",          HtmlEntityMapper::Perl_char    }},
-  { SYM(DoubleColon), "::",        "::",         "::",                   "::",            "::",                     "::",     "::",          { "::",         HtmlEntityMapper::Perl_string  }},
-  { SYM(Percent),  "%",            "%",          "%",                    "%",             "\\%",                    "%",      "%",           { "%",          HtmlEntityMapper::Perl_char    }},
-  { SYM(Pipe),     "|",            "|",          "|",                    "|",             "$|$",                    "|",      "|",           { "|",          HtmlEntityMapper::Perl_char    }},
-  { SYM(Quot),     "\"",           "\"",         "\"",                   "&quot;",        "\"{}",                   "\"",     "\"",          { "\"",         HtmlEntityMapper::Perl_char    }},
-  { SYM(Minus),    "-",            "-",          "-",                    "-",             "-\\/",                   "-",      "-",           { "-",          HtmlEntityMapper::Perl_char    }},
-  { SYM(Plus),     "+",            "+",          "+",                    "+",             "+",                      "+",      "+",           { "+",          HtmlEntityMapper::Perl_char    }},
-  { SYM(Dot),      ".",            ".",          ".",                    ".",             ".",                      ".",      ".",           { ".",          HtmlEntityMapper::Perl_char    }},
-  { SYM(Colon),    ":",            ":",          ":",                    ":",             ":",                      ":",      ":",           { ":",          HtmlEntityMapper::Perl_char    }},
-  { SYM(Equal),    "=",            "=",          "=",                    "=",             "=",                      "=",      "=",           { "=",          HtmlEntityMapper::Perl_char    }}
+/* 1  */  { SYM(BSlash),   "\\",           "\\",         "\\",                   "\\",            "\\textbackslash{}",      "\\\\",   "\\\\",        { "\\\\",       HtmlEntityMapper::Perl_string  }},
+/* 2  */  { SYM(At),       "@",            "@",          "@",                    "@",             "@",                      "@",      "@",           { "@",          HtmlEntityMapper::Perl_char    }},
+/* 3  */  { SYM(Less),     "<",            "&lt;",       "&lt;",                 "&lt;",          "<",                      "<",      "<",           { "<",          HtmlEntityMapper::Perl_char    }},
+/* 4  */  { SYM(Greater),  ">",            "&gt;",       "&gt;",                 "&gt;",          ">",                      ">",      ">",           { ">",          HtmlEntityMapper::Perl_char    }},
+/* 5  */  { SYM(Amp),      "&",            "&amp;",      "&amp;",                "&amp;",         "\\&",                    "&",      "&",           { "&",          HtmlEntityMapper::Perl_char    }},
+/* 6  */  { SYM(Dollar),   "$",            "$",          "$",                    "$",             "\\$",                    "$",      "$",           { "$",          HtmlEntityMapper::Perl_char    }},
+/* 7  */  { SYM(Hash),     "#;",           "#",          "#",                    "#",             "\\#",                    "#",      "#",           { "#",          HtmlEntityMapper::Perl_char    }},
+/* 8  */  { SYM(DoubleColon), "::",        "::",         "::",                   "::",            "::",                     "::",     "::",          { "::",         HtmlEntityMapper::Perl_string  }},
+/* 9  */  { SYM(Percent),  "%",            "%",          "%",                    "%",             "\\%",                    "%",      "%",           { "%",          HtmlEntityMapper::Perl_char    }},
+/* 10 */  { SYM(Pipe),     "|",            "|",          "|",                    "|",             "$|$",                    "|",      "|",           { "|",          HtmlEntityMapper::Perl_char    }},
+/* 11 */  { SYM(Quot),     "\"",           "\"",         "\"",                   "&quot;",        "\"{}",                   "\"",     "\"",          { "\"",         HtmlEntityMapper::Perl_char    }},
+/* 12 */  { SYM(Minus),    "-",            "-",          "-",                    "-",             "-\\/",                   "-",      "-",           { "-",          HtmlEntityMapper::Perl_char    }},
+/* 13 */  { SYM(Plus),     "+",            "+",          "+",                    "+",             "+",                      "+",      "+",           { "+",          HtmlEntityMapper::Perl_char    }},
+/* 14 */  { SYM(Dot),      ".",            ".",          ".",                    ".",             ".",                      ".",      ".",           { ".",          HtmlEntityMapper::Perl_char    }},
+/* 15 */  { SYM(Colon),    ":",            ":",          ":",                    ":",             ":",                      ":",      ":",           { ":",          HtmlEntityMapper::Perl_char    }},
+/* 16 */  { SYM(Equal),    "=",            "=",          "=",                    "=",             "=",                      "=",      "=",           { "=",          HtmlEntityMapper::Perl_char    }}
 };
 
-static const int g_numHtmlEntities = static_cast<int>(sizeof(g_htmlEntities)/ sizeof(*g_htmlEntities));
+//! Number of doxygen commands mapped as if it were HTML entities
+static const int g_numberHtmlMappedCmds = 16;
 
-HtmlEntityMapper *HtmlEntityMapper::s_instance = 0;
 
 HtmlEntityMapper::HtmlEntityMapper()
 {
-
-  for (int i = 0; i < g_numHtmlEntities; i++)
+  for (const auto &entity : g_htmlEntities)
   {
-    m_name2sym.insert(std::make_pair(g_htmlEntities[i].item,g_htmlEntities[i].symb));
+    m_name2sym.insert(std::make_pair(entity.item,entity.symb));
   }
   validate();
 }
@@ -338,22 +338,11 @@ HtmlEntityMapper::~HtmlEntityMapper()
 }
 
 /** Returns the one and only instance of the HTML entity mapper */
-HtmlEntityMapper *HtmlEntityMapper::instance()
+HtmlEntityMapper &HtmlEntityMapper::instance()
 {
-  if (s_instance==0)
-  {
-    s_instance = new HtmlEntityMapper;
-  }
-  return s_instance;
+  static HtmlEntityMapper inst;
+  return inst;
 }
-
-/** Deletes the one and only instance of the HTML entity mapper */
-void HtmlEntityMapper::deleteInstance()
-{
-  delete s_instance;
-  s_instance=0;
-}
-
 
 /*! @brief Access routine to the UTF8 code of the HTML entity
  *
@@ -476,10 +465,10 @@ HtmlEntityMapper::SymType HtmlEntityMapper::name2sym(const QCString &symName) co
 
 void HtmlEntityMapper::writeXMLSchema(TextStream &t)
 {
-  for (int i=0;i<g_numHtmlEntities - g_numberHtmlMappedCmds;i++)
+  for (size_t i=0;i<g_htmlEntities.size() - g_numberHtmlMappedCmds;i++)
   {
     QCString bareName = g_htmlEntities[i].xml;
-    if (!bareName.isEmpty() && bareName.at(0)=='<' && bareName.right(2)=="/>")
+    if (!bareName.isEmpty() && bareName.at(0)=='<' && bareName.endsWith("/>"))
     {
       bareName = bareName.mid(1,bareName.length()-3); // strip < and />
       t << "      <xsd:element name=\"" << bareName << "\" type=\"docEmptyType\" />\n";
@@ -492,11 +481,13 @@ void HtmlEntityMapper::writeXMLSchema(TextStream &t)
  */
 void HtmlEntityMapper::validate()
 {
-  for (int i = 0; i < g_numHtmlEntities; i++)
+  int i=0;
+  for (const auto &entity : g_htmlEntities)
   {
-    if (i != g_htmlEntities[i].symb)
+    if (i != entity.symb)
     {
-      warn_uncond("Internal inconsistency, htmlentries code %d (item=%s)\n",i,g_htmlEntities[i].item);
+      warn_uncond("Internal inconsistency, htmlentries code %d (item=%s)\n",i,entity.item);
     }
+    i++;
   }
 }

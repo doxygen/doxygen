@@ -22,7 +22,6 @@
 #include "util.h"
 #include "language.h"
 #include "commentscan.h"
-#include "index.h"
 #include "definition.h"
 #include "searchindex.h"
 #include "outputlist.h"
@@ -401,7 +400,7 @@ void VHDLOutlineParser::handleCommentBlock(const QCString &doc1, bool brief)
     return;
   }
 
-  Protection protection = Public;
+  Protection protection = Protection::Public;
   VhdlDocGen::prepareComment(doc);
 
   if (p->oldEntry == s->current.get())
@@ -511,7 +510,7 @@ void VHDLOutlineParser::addCompInst(const char *n, const char* instName, const c
 }
 
 void VHDLOutlineParser::addVhdlType(const char *n,int startLine,int section,
-    uint64 spec,const char* args,const char* type,Protection prot)
+    uint64_t spec,const char* args,const char* type,Protection prot)
 {
   VhdlParser::SharedState *s = &p->shared;
   QCString name(n);
@@ -548,7 +547,7 @@ void VHDLOutlineParser::addVhdlType(const char *n,int startLine,int section,
   }
 }
 
-void VHDLOutlineParser::createFunction(const char *imp,uint64 spec,const char *fn)
+void VHDLOutlineParser::createFunction(const char *imp,uint64_t spec,const char *fn)
 {
   VhdlParser::SharedState *s = &p->shared;
   QCString impure(imp);

@@ -12,7 +12,6 @@
  */
 
 #include <algorithm>
-#include <fstream>
 #include <memory>
 #include <string.h>
 #include <vector>
@@ -27,6 +26,7 @@
 #include "qhp.h"
 #include "textstream.h"
 #include "util.h"
+#include "portable.h"
 
 static inline void writeIndent(TextStream &t,int indent)
 {
@@ -172,7 +172,7 @@ static QCString makeFileName(const QCString & withoutExtension)
     }
     else // add specified HTML extension
     {
-      result = addHtmlExtensionIfMissing(result);
+      addHtmlExtensionIfMissing(result);
     }
   }
   return result;
@@ -187,13 +187,9 @@ static QCString makeRef(const QCString & withoutExtension, const QCString & anch
   return result+"#"+anchor;
 }
 
-Qhp::Qhp() : p(std::make_unique<Private>())
-{
-}
-
-Qhp::~Qhp()
-{
-}
+Qhp::Qhp() : p(std::make_unique<Private>()) {}
+Qhp::~Qhp() = default;
+Qhp::Qhp(Qhp &&) = default;
 
 void Qhp::initialize()
 {
@@ -211,7 +207,7 @@ void Qhp::initialize()
   ..
   */
   QCString fileName = Config_getString(HTML_OUTPUT) + "/" + qhpFileName;
-  p->docFile.open( fileName.str(), std::ofstream::out | std::ofstream::binary);
+  p->docFile = Portable::openOutputStream(fileName);
   if (!p->docFile.is_open())
   {
     term("Could not open file %s for writing\n", fileName.data());
@@ -310,7 +306,7 @@ void Qhp::decContentsDepth()
   p->sectionTree.decLevel();
 }
 
-void Qhp::addContentsItem(bool isDir, const QCString & name,
+void Qhp::addContentsItem(bool /* isDir */, const QCString & name,
                           const QCString & /*ref*/, const QCString & file,
                           const QCString &anchor, bool /* separateIndex */,
                           bool /* addToNavIndex */,

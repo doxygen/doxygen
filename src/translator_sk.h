@@ -71,6 +71,10 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_15
     virtual QCString trDetailedDescription()
     { return "Detailný popis"; }
 
+    /*! header that is used when the summary tag is missing inside the details tag */
+    virtual QCString trDetails()
+    { return "Podrobnosti"; }
+
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
     { return "Dokumentácia k členským typom"; }
@@ -381,12 +385,6 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_15
      */
     virtual QCString trFileDocumentation()
     { return "Dokumentácia súborov"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *	the documentation of all examples.
-     */
-    virtual QCString trExampleDocumentation()
-    { return "Dokumentácia príkladov"; }
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
@@ -1764,19 +1762,44 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_15
      */
     virtual QCString trDateTime(int year,int month,int day,int dayOfWeek,
                                 int hour,int minutes,int seconds,
-                                bool includeTime)
+                                DateTimeType includeTime)
     {
       static const char *days[]   = { "po","ut","st","št","pi","so","ne" };
       static const char *months[] = { "jan","feb","mar","apr","máj","jún","júl","aug","sep","okt","nov","dec" };
       QCString sdate;
-      sdate.sprintf("%s %d. %s %d",days[dayOfWeek-1],day,months[month-1],year);
-      if (includeTime)
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Date)
+      {
+        sdate.sprintf("%s %d. %s %d",days[dayOfWeek-1],day,months[month-1],year);
+      }
+      if (includeTime == DateTimeType::DateTime) sdate += " ";
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Time)
       {
         QCString stime;
-        stime.sprintf(" %.2d.%.2d:%.2d",hour,minutes,seconds);
+        stime.sprintf("%.2d.%.2d:%.2d",hour,minutes,seconds);
         sdate+=stime;
       }
       return sdate;
+    }
+    virtual QCString trDayOfWeek(int dayOfWeek, bool first_capital, bool full)
+    {
+      static const char *days_short[]   = { "po", "ut", "st", "št", "pi", "so", "ne" };
+      static const char *days_full[]    = { "pondelok", "utorok", "streda", "štvrtok", "piatok", "sobota", "nedeľa" };
+      QCString text  = full? days_full[dayOfWeek-1] : days_short[dayOfWeek-1];
+      if (first_capital) return text.mid(0,1).upper()+text.mid(1);
+      else return text;
+    }
+    virtual QCString trMonth(int month, bool first_capital, bool full)
+    {
+      static const char *months_short[] = { "jan", "feb", "mar", "apr", "máj", "jún", "júl", "aug", "sep", "okt", "nov", "dec" };
+      static const char *months_full[]  = { "január", "február", "marec", "apríl", "máj", "jún", "júl", "august", "september", "október", "november", "december" };
+      QCString text  = full? months_full[month-1] : months_short[month-1];
+      if (first_capital) return text.mid(0,1).upper()+text.mid(1);
+      else return text;
+    }
+    virtual QCString trDayPeriod(int period)
+    {
+      static const char *dayPeriod[] = { "AM", "PM" };
+      return dayPeriod[period];
     }
 
 //////////////////////////////////////////////////////////////////////////

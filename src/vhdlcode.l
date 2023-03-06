@@ -57,6 +57,7 @@ typedef yyguts_t *yyscan_t;
 #include "filedef.h"
 #include "tooltip.h"
 #include "regex.h"
+#include "debug.h"
 
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
@@ -88,9 +89,9 @@ struct vhdlcodeYY_state
   const MemberDef *   vhdlMember = 0;
   QCString      funcProto;
 
-  CodeOutputInterface * code = 0;
+  OutputCodeList * code = 0;
   const char *  inputString = 0;     //!< the code fragment as text
-  yy_size_t     inputPosition = 0;   //!< read offset during parsing
+  int           inputPosition = 0;   //!< read offset during parsing
   QCString      fileName;
   int           inputLines = 0;      //!< number of line in the code fragment
   int           yyLineNr = 0;        //!< current line number
@@ -116,9 +117,9 @@ struct vhdlcodeYY_state
 
 
 static void writeFont(yyscan_t yyscanner,const char *s,const QCString &text);
-static void generateMemLink(yyscan_t yyscanner,CodeOutputInterface &ol,QCString &clName,QCString& memberName);
+static void generateMemLink(yyscan_t yyscanner,OutputCodeList &ol,QCString &clName,QCString& memberName);
 static bool writeColoredWord(yyscan_t yyscanner,QCString& word );
-static void generateClassOrGlobalLink(yyscan_t yyscanner,CodeOutputInterface &ol,const QCString &clName, bool typeOnly=false, const QCString &curr_class=QCString());
+static void generateClassOrGlobalLink(yyscan_t yyscanner,OutputCodeList &ol,const QCString &clName, bool typeOnly=false, const QCString &curr_class=QCString());
 static void setCurrentDoc(yyscan_t yyscanner,const QCString &anchor);
 static bool checkVhdlString(yyscan_t yyscanner,QCString &name);
 static void addToSearchIndex(yyscan_t yyscanner,const QCString &text);
@@ -127,10 +128,10 @@ static void endCodeLine(yyscan_t yyscanner);
 static void nextCodeLine(yyscan_t yyscanner);
 static void writeWord(yyscan_t yyscanner,const QCString &word,const QCString &curr_class=QCString(),bool classLink=false);
 static void codifyLines(yyscan_t yyscanner,const QCString &text,const QCString &cl=QCString(),bool classlink=false,bool comment=false);
-static void writeMultiLineCodeLink(yyscan_t yyscanner,CodeOutputInterface &ol,
+static void writeMultiLineCodeLink(yyscan_t yyscanner,OutputCodeList &ol,
                   const Definition *d,
                   const QCString &text);
-static void generateFuncLink(yyscan_t yyscanner,CodeOutputInterface &ol,const MemberDef* mdef);
+static void generateFuncLink(yyscan_t yyscanner,OutputCodeList &ol,const MemberDef* mdef);
 static int  countLines(yyscan_t yyscanner);
 static void endFontClass(yyscan_t yyscanner);
 static void startFontClass(yyscan_t yyscanner,const char *s);
@@ -138,7 +139,7 @@ static void appStringLower(QCString& qcs,const char* text);
 static void codifyMapLines(yyscan_t yyscanner,const QCString &text);
 static void writeFuncProto(yyscan_t yyscanner);
 static void writeProcessProto(yyscan_t yyscanner);
-static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
+static int yyread(yyscan_t yyscanner,char *buf,int max_size);
 
 #if USE_STATE2STRING
 static const char *stateToString(int state);
@@ -921,12 +922,12 @@ XILINX      "INST"|"NET"|"PIN"|"BLKNM"|"BUFG"|"COLLAPSE"|"CPLD"|"COMPGRP"|"CONFI
 /*@ ----------------------------------------------------------------------------
  */
 
-static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size)
+static int yyread(yyscan_t yyscanner,char *buf,int max_size)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yy_size_t inputPosition = yyextra->inputPosition;
+  int inputPosition = yyextra->inputPosition;
   const char *s = yyextra->inputString + inputPosition;
-  yy_size_t c=0;
+  int c=0;
   while( c < max_size && *s)
   {
     *buf++ = *s++;
@@ -943,11 +944,11 @@ static void setCurrentDoc(yyscan_t yyscanner,const QCString &anchor)
   {
     if (yyextra->searchCtx)
     {
-      yyextra->code->setCurrentDoc(yyextra->searchCtx,yyextra->searchCtx->anchor(),false);
+      Doxygen::searchIndex->setCurrentDoc(yyextra->searchCtx,yyextra->searchCtx->anchor(),false);
     }
     else
     {
-      yyextra->code->setCurrentDoc(yyextra->sourceFileDef,anchor,true);
+      Doxygen::searchIndex->setCurrentDoc(yyextra->sourceFileDef,anchor,true);
     }
   }
 }
@@ -990,12 +991,11 @@ static bool checkVhdlString(yyscan_t yyscanner,QCString &name)
   return false;
 }
 
-static void addToSearchIndex(yyscan_t yyscanner,const QCString &text)
+static void addToSearchIndex(yyscan_t /*yyscanner*/,const QCString &text)
 {
-  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (Doxygen::searchIndex)
   {
-    yyextra->code->addWord(text,false);
+    Doxygen::searchIndex->addWord(text,false);
   }
 }
 
@@ -1057,7 +1057,7 @@ static void startCodeLine(yyscan_t yyscanner)
                                      !yyextra->includeCodeFragment);
     }
   }
-  yyextra->code->startCodeLine(yyextra->sourceFileDef);
+  yyextra->code->startCodeLine(yyextra->sourceFileDef!=0);
   yyextra->insideCodeLine=true;
   if (yyextra->currentFontClass)
   {
@@ -1231,14 +1231,14 @@ static void codifyLines(yyscan_t yyscanner,const QCString &text,const QCString &
  * line numbers for each line. If \a text contains newlines, the link will be
  * split into multiple links with the same destination, one for each line.
  */
-static void writeMultiLineCodeLink(yyscan_t yyscanner,CodeOutputInterface &ol,
+static void writeMultiLineCodeLink(yyscan_t yyscanner,OutputCodeList &ol,
                   const Definition *d,
                   const QCString &text)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (text.isEmpty()) return;
   bool sourceTooltips = Config_getBool(SOURCE_TOOLTIPS);
-  yyextra->tooltipManager.addTooltip(ol,d);
+  yyextra->tooltipManager.addTooltip(d);
   QCString ref  = d->getReference();
   QCString file = d->getOutputFileBase();
   QCString anchor = d->anchor();
@@ -1271,7 +1271,7 @@ static void writeMultiLineCodeLink(yyscan_t yyscanner,CodeOutputInterface &ol,
 
 /*! writes a link to a function or procedure
  */
-static void generateFuncLink(yyscan_t yyscanner,CodeOutputInterface &ol,const MemberDef* mdef)
+static void generateFuncLink(yyscan_t yyscanner,OutputCodeList &ol,const MemberDef* mdef)
 {
   //printf("generateFuncLink(FuncName=%s)\n",qPrint(mdef->name()));
   QCString memberName=mdef->name();
@@ -1287,7 +1287,7 @@ static void generateFuncLink(yyscan_t yyscanner,CodeOutputInterface &ol,const Me
 } // generateFuncLink
 
 
-static void generateMemLink(yyscan_t yyscanner,CodeOutputInterface &ol,QCString &clName,QCString& memberName)
+static void generateMemLink(yyscan_t yyscanner,OutputCodeList &ol,QCString &clName,QCString& memberName)
 {
   if (memberName.isEmpty()) return;
   if (clName.isEmpty())
@@ -1324,7 +1324,7 @@ static void generateMemLink(yyscan_t yyscanner,CodeOutputInterface &ol,QCString 
 }// generateMemLink
 
 
-static void generateClassOrGlobalLink(yyscan_t yyscanner,CodeOutputInterface &ol,
+static void generateClassOrGlobalLink(yyscan_t yyscanner,OutputCodeList &ol,
                               const QCString &clName, bool /*typeOnly*/, const QCString &curr_class)
 {
   QCString className=clName;
@@ -1566,7 +1566,7 @@ VHDLCodeParser::VHDLCodeParser() : p(std::make_unique<Private>())
 {
   vhdlcodeYYlex_init_extra(&p->state,&p->yyscanner);
 #ifdef FLEX_DEBUG
-  vhdlcodeYYset_debug(1,p->yyscanner);
+  vhdlcodeYYset_debug(Debug::isFlagSet(Debug::Lex_vhdlcode)?1:0,p->yyscanner);
 #endif
   resetCodeParserState();
 }
@@ -1581,8 +1581,8 @@ void VHDLCodeParser::resetCodeParserState()
   p->state.vhdlKeyDict.clear();
 }
 
-void VHDLCodeParser::parseCode(CodeOutputInterface &od,
-                               const QCString &className,
+void VHDLCodeParser::parseCode(OutputCodeList &od,
+                               const QCString &/* className */,
                                const QCString &s,
                                SrcLangExt,
                                bool exBlock,
@@ -1600,7 +1600,7 @@ void VHDLCodeParser::parseCode(CodeOutputInterface &od,
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   //printf("***parseCode() exBlock=%d exName=%s fd=%p\n",exBlock,exName,fd);
   if (s.isEmpty()) return;
-  printlex(yy_flex_debug, true, __FILE__, fd ? qPrint(fd->fileName()): NULL);
+  DebugLex debugLex(Debug::Lex_vhdlcode, __FILE__, fd ? qPrint(fd->fileName()): NULL);
   yyextra->fileName      = fd ? fd->fileName():"";
   if (memberDef)
   {
@@ -1671,8 +1671,6 @@ void VHDLCodeParser::parseCode(CodeOutputInterface &od,
 
   // write the tooltips
   yyextra->tooltipManager.writeTooltips(od);
-
-  printlex(yy_flex_debug, false, __FILE__, fd ? qPrint(fd->fileName()): NULL);
 }
 
 #if USE_STATE2STRING

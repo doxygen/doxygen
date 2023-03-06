@@ -20,6 +20,8 @@
 
 #include "classdef.h"
 #include "config.h"
+#include "datetime.h"
+#include "index.h"
 
 /** Abstract base class for all translatable text fragments. */
 class Translator
@@ -152,6 +154,7 @@ class Translator
     virtual QCString trRelatedFunctions() = 0;
     virtual QCString trRelatedSubscript() = 0;
     virtual QCString trDetailedDescription() = 0;
+    virtual QCString trDetails() = 0;
     virtual QCString trMemberTypedefDocumentation() = 0;
     virtual QCString trMemberEnumerationDocumentation() = 0;
     virtual QCString trMemberFunctionDocumentation() = 0;
@@ -196,7 +199,6 @@ class Translator
     virtual QCString trModuleDocumentation() = 0;
     virtual QCString trClassDocumentation() = 0;
     virtual QCString trFileDocumentation() = 0;
-    virtual QCString trExampleDocumentation() = 0;
     virtual QCString trReferenceManual() = 0;
     virtual QCString trDefines() = 0;
     virtual QCString trTypedefs() = 0;
@@ -605,7 +607,10 @@ class Translator
     virtual QCString trIncludesFileIn(const QCString &name) = 0;
     virtual QCString trDateTime(int year,int month,int day,int dayOfWeek,
                                 int hour,int minutes,int seconds,
-                                bool includeTime) = 0;
+                                DateTimeType includeTime) = 0;
+    virtual QCString trDayOfWeek(int dayOfWeek, bool first_capital, bool full) = 0;
+    virtual QCString trMonth(int month, bool first_capital, bool full) = 0;
+    virtual QCString trDayPeriod(int period) = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.7.5
@@ -662,7 +667,7 @@ class Translator
     virtual QCString trDesignUnitIndex() = 0;
     virtual QCString trDesignUnits() = 0;
     virtual QCString trFunctionAndProc() = 0;
-    virtual QCString trVhdlType(uint64 type,bool single) = 0;
+    virtual QCString trVhdlType(uint64_t type,bool single) = 0;
     virtual QCString trCustomReference(const QCString &name) = 0;
 
     virtual QCString trConstants() = 0;
@@ -717,6 +722,24 @@ class Translator
 // new since 1.9.4
 //////////////////////////////////////////////////////////////////////////
     virtual QCString trPackageList() = 0;
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.6
+//////////////////////////////////////////////////////////////////////////
+    virtual QCString trFlowchart() = 0;
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.7
+//////////////////////////////////////////////////////////////////////////
+    virtual QCString trRelatedSymbols() = 0;
+    virtual QCString trRelatedSymbolsSubscript() = 0;
+    virtual QCString trRelatedSymbolDocumentation() = 0;
+
+    virtual QCString trCompoundType(ClassDef::CompoundType compType, SrcLangExt lang) = 0;
+
+    virtual QCString trFileMembersDescriptionTotal(FileMemberHighlight::Enum hl) = 0;
+    virtual QCString trCompoundMembersDescriptionTotal(ClassMemberHighlight::Enum hl) = 0;
+    virtual QCString trNamespaceMembersDescriptionTotal(NamespaceMemberHighlight::Enum hl) = 0;
 };
 
 #endif

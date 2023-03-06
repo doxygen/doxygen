@@ -1,9 +1,6 @@
 /******************************************************************************
  *
- *
- *
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2022 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -25,6 +22,7 @@
 #include "language.h"
 #include "doxygen.h"
 #include "outputgen.h"
+#include "outputlist.h"
 #include "dot.h"
 #include "util.h"
 #include "message.h"
@@ -39,6 +37,7 @@
 #include "plantuml.h"
 #include "fileinfo.h"
 #include "regex.h"
+#include "portable.h"
 
 const int maxLevels=5;
 static const char *secLabels[maxLevels] =
@@ -201,11 +200,11 @@ QCString LatexDocVisitor::escapeMakeIndexChars(const char *s)
 }
 
 
-LatexDocVisitor::LatexDocVisitor(TextStream &t,LatexCodeGenerator &ci,
-                                 const QCString &langExt,bool insideTabbing)
-  : m_t(t), m_ci(ci), m_insidePre(FALSE),
+LatexDocVisitor::LatexDocVisitor(TextStream &t,OutputCodeList &ci,LatexCodeGenerator &lcg,
+                                 const QCString &langExt)
+  : m_t(t), m_ci(ci), m_lcg(lcg), m_insidePre(FALSE),
     m_insideItem(FALSE), m_hide(FALSE),
-    m_insideTabbing(insideTabbing), m_langExt(langExt)
+    m_langExt(langExt)
 {
 }
 
@@ -244,7 +243,7 @@ void LatexDocVisitor::operator()(const DocSymbol &s)
 {
   if (m_hide) return;
   bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
-  const char *res = HtmlEntityMapper::instance()->latex(s.symbol());
+  const char *res = HtmlEntityMapper::instance().latex(s.symbol());
   if (res)
   {
     if (((s.symbol() == HtmlEntityMapper::Sym_lt) || (s.symbol() == HtmlEntityMapper::Sym_Less))&& (!m_insidePre))
@@ -276,14 +275,14 @@ void LatexDocVisitor::operator()(const DocSymbol &s)
   }
   else
   {
-    err("LaTeX: non supported HTML-entity found: %s\n",HtmlEntityMapper::instance()->html(s.symbol(),TRUE));
+    err("LaTeX: non supported HTML-entity found: %s\n",HtmlEntityMapper::instance().html(s.symbol(),TRUE));
   }
 }
 
 void LatexDocVisitor::operator()(const DocEmoji &s)
 {
   if (m_hide) return;
-  QCString emojiName = EmojiEntityMapper::instance()->name(s.index());
+  QCString emojiName = EmojiEntityMapper::instance().name(s.index());
   if (!emojiName.isEmpty())
   {
     QCString imageName=emojiName.mid(1,emojiName.length()-2); // strip : at start and end
@@ -378,12 +377,6 @@ void LatexDocVisitor::operator()(const DocStyleChange &s)
       break;
     case DocStyleChange::Div:  /* HTML only */ break;
     case DocStyleChange::Span: /* HTML only */ break;
-    case DocStyleChange::Details: /* emulation of the <details> tag */
-      if (!s.enable()) m_t << "\n\n";
-      break;
-    case DocStyleChange::Summary: /* emulation of the <summary> tag inside a <details> tag */
-      if (s.enable()) m_t << "{\\bfseries{";      else m_t << "}}";
-      break;
   }
 }
 
@@ -439,7 +432,7 @@ void LatexDocVisitor::operator()(const DocVerbatim &s)
             dotindex++,
             ".dot"
            );
-        std::ofstream file(fileName.str(),std::ofstream::out | std::ofstream::binary);
+        std::ofstream file = Portable::openOutputStream(fileName);
         if (!file.is_open())
         {
           err("Could not open file %s for writing\n",qPrint(fileName));
@@ -466,11 +459,11 @@ void LatexDocVisitor::operator()(const DocVerbatim &s)
             qPrint(Config_getString(LATEX_OUTPUT)+"/inline_mscgraph_"),
             mscindex++
            );
-        std::string fileName = baseName.str()+".msc";
-        std::ofstream file(fileName,std::ofstream::out | std::ofstream::binary);
+        QCString fileName = baseName+".msc";
+        std::ofstream file = Portable::openOutputStream(fileName);
         if (!file.is_open())
         {
-          err("Could not open file %s for writing\n",fileName.c_str());
+          err("Could not open file %s for writing\n",qPrint(fileName));
         }
         else
         {
@@ -482,7 +475,7 @@ void LatexDocVisitor::operator()(const DocVerbatim &s)
 
           writeMscFile(baseName, s);
 
-          if (Config_getBool(DOT_CLEANUP)) Dir().remove(fileName);
+          if (Config_getBool(DOT_CLEANUP)) Dir().remove(fileName.str());
         }
       }
       break;
@@ -571,11 +564,12 @@ void LatexDocVisitor::operator()(const DocInclude &inc)
       m_t << "\\end{DoxyVerbInclude}\n";
       break;
     case DocInclude::Snippet:
+    case DocInclude::SnippetTrimLeft:
       {
         m_ci.startCodeFragment("DoxyCodeInclude");
         getCodeParser(inc.extension()).parseCode(m_ci,
                                                   inc.context(),
-                                                  extractBlock(inc.text(),inc.blockId()),
+                                                  extractBlock(inc.text(),inc.blockId(),inc.type()==DocInclude::SnippetTrimLeft),
                                                   langExt,
                                                   inc.isExample(),
                                                   inc.exampleFile()
@@ -1412,6 +1406,35 @@ void LatexDocVisitor::operator()(const DocHRef &href)
   m_t << "}}";
 }
 
+void LatexDocVisitor::operator()(const DocHtmlSummary &d)
+{
+  if (m_hide) return;
+  m_t << "{\\bfseries{";
+  visitChildren(d);
+  m_t << "}}";
+}
+
+void LatexDocVisitor::operator()(const DocHtmlDetails &d)
+{
+  if (m_hide) return;
+  m_t << "\n\n";
+  auto summary = d.summary();
+  if (summary)
+  {
+    std::visit(*this,*summary);
+    m_t << "\\begin{adjustwidth}{1em}{0em}\n";
+  }
+  visitChildren(d);
+  if (summary)
+  {
+    m_t << "\\end{adjustwidth}\n";
+  }
+  else
+  {
+    m_t << "\n\n";
+  }
+}
+
 void LatexDocVisitor::operator()(const DocHtmlHeader &header)
 {
   if (m_hide) return;
@@ -1426,7 +1449,7 @@ void LatexDocVisitor::operator()(const DocImage &img)
   {
     if (m_hide) return;
     QCString gfxName = img.name();
-    if (gfxName.right(4)==".eps" || gfxName.right(4)==".pdf")
+    if (gfxName.endsWith(".eps") || gfxName.endsWith(".pdf"))
     {
       gfxName=gfxName.left(gfxName.length()-4);
     }
@@ -1486,7 +1509,7 @@ void LatexDocVisitor::operator()(const DocRef &ref)
   }
   else
   {
-    if (!ref.file().isEmpty()) startLink(ref.ref(),ref.file(),ref.anchor(),ref.refToTable());
+    if (!ref.file().isEmpty()) startLink(ref.ref(),ref.file(),ref.anchor(),ref.refToTable(),ref.refToSection());
   }
   if (!ref.hasLinkText())
   {
@@ -1499,7 +1522,7 @@ void LatexDocVisitor::operator()(const DocRef &ref)
   }
   else
   {
-    if (!ref.file().isEmpty()) endLink(ref.ref(),ref.file(),ref.anchor(),ref.refToTable());
+    if (!ref.file().isEmpty()) endLink(ref.ref(),ref.file(),ref.anchor(),ref.refToTable(),ref.refToSection(),ref.sectionType());
   }
 }
 
@@ -1553,7 +1576,7 @@ void LatexDocVisitor::operator()(const DocParamSect &s)
   if (m_hide) return;
   bool hasInOutSpecs = s.hasInOutSpecifier();
   bool hasTypeSpecs  = s.hasTypeSpecifier();
-  m_ci.incUsedTableLevel();
+  m_lcg.incUsedTableLevel();
   switch(s.type())
   {
     case DocParamSect::Param:
@@ -1581,7 +1604,7 @@ void LatexDocVisitor::operator()(const DocParamSect &s)
   }
   m_t << "}\n";
   visitChildren(s);
-  m_ci.decUsedTableLevel();
+  m_lcg.decUsedTableLevel();
   switch(s.type())
   {
     case DocParamSect::Param:
@@ -1751,17 +1774,18 @@ void LatexDocVisitor::operator()(const DocParBlock &pb)
 
 void LatexDocVisitor::filter(const QCString &str, const bool retainNewLine)
 {
+  //printf("LatexDocVisitor::filter(%s) m_insideTabbing=%d\n",qPrint(str),m_ci.insideTabbing());
   filterLatexString(m_t,str,
-                    m_insideTabbing,
+                    m_lcg.insideTabbing(),
                     m_insidePre,
                     m_insideItem,
-                    m_ci.usedTableLevel()>0,  // insideTable
+                    m_lcg.usedTableLevel()>0,  // insideTable
                     false, // keepSpaces
                     retainNewLine
                    );
 }
 
-void LatexDocVisitor::startLink(const QCString &ref,const QCString &file,const QCString &anchor,bool refToTable)
+void LatexDocVisitor::startLink(const QCString &ref,const QCString &file,const QCString &anchor,bool refToTable,bool refToSection)
 {
   bool pdfHyperLinks = Config_getBool(PDF_HYPERLINKS);
   if (ref.isEmpty() && pdfHyperLinks) // internal PDF link
@@ -1770,14 +1794,22 @@ void LatexDocVisitor::startLink(const QCString &ref,const QCString &file,const Q
     {
       m_t << "\\doxytablelink{";
     }
+    else if (refToSection)
+    {
+      m_t << "\\doxysectlink{";
+    }
     else
     {
-      m_t << "\\mbox{\\hyperlink{";
+      m_t << "\\doxylink{";
     }
     if (!file.isEmpty()) m_t << stripPath(file);
     if (!file.isEmpty() && !anchor.isEmpty()) m_t << "_";
     if (!anchor.isEmpty()) m_t << anchor;
     m_t << "}{";
+  }
+  else if (ref.isEmpty() && refToSection)
+  {
+    m_t << "\\doxysectref{";
   }
   else if (ref.isEmpty() && refToTable)
   {
@@ -1793,7 +1825,7 @@ void LatexDocVisitor::startLink(const QCString &ref,const QCString &file,const Q
   }
 }
 
-void LatexDocVisitor::endLink(const QCString &ref,const QCString &file,const QCString &anchor,bool refToTable)
+void LatexDocVisitor::endLink(const QCString &ref,const QCString &file,const QCString &anchor,bool /*refToTable*/,bool refToSection, SectionType sectionType)
 {
   m_t << "}";
   bool pdfHyperLinks = Config_getBool(PDF_HYPERLINKS);
@@ -1804,12 +1836,16 @@ void LatexDocVisitor::endLink(const QCString &ref,const QCString &file,const QCS
     m_t << "}{" << file;
     if (!file.isEmpty() && !anchor.isEmpty()) m_t << "_";
     m_t << anchor << "}";
+    if (refToSection)
+    {
+      m_t << "{" << static_cast<int>(sectionType) << "}";
+    }
   }
   if (ref.isEmpty() && pdfHyperLinks) // internal PDF link
   {
-    if (!refToTable)
+    if (refToSection)
     {
-      m_t << "}";
+      m_t << "{" << static_cast<int>(sectionType) << "}";
     }
   }
 }

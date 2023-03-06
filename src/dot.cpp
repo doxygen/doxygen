@@ -28,7 +28,7 @@
 #include "message.h"
 #include "doxygen.h"
 #include "language.h"
-#include "index.h"
+#include "indexlist.h"
 #include "dir.h"
 
 #define MAP_CMD "cmapx"
@@ -90,7 +90,7 @@ DotManager::DotManager() : m_runners(), m_filePatchers()
   {
     for (i=0;i<dotNumThreads;i++)
     {
-      std::unique_ptr<DotWorkerThread> thread = std::make_unique<DotWorkerThread>(m_queue);
+      DotWorkerThreadPtr thread(new DotWorkerThread(m_queue));
       thread->start();
       if (thread->isRunning())
       {
@@ -106,7 +106,7 @@ DotManager::DotManager() : m_runners(), m_filePatchers()
 
 DotManager::~DotManager()
 {
-  delete m_queue;
+  if (!Doxygen::terminating) delete m_queue;
 }
 
 DotRunner* DotManager::createRunner(const QCString &absDotName, const QCString& md5Hash)
@@ -183,7 +183,6 @@ bool DotManager::run() const
     setDotFontPath(Config_getString(DOCBOOK_OUTPUT));
     setPath=TRUE;
   }
-  Portable::sysTimerStart();
   // fill work queue with dot operations
   size_t prev=1;
   if (m_workers.size()==0) // no threads to work with
@@ -228,7 +227,6 @@ bool DotManager::run() const
       m_workers.at(i)->wait();
     }
   }
-  Portable::sysTimerStop();
   if (setPath)
   {
     unsetDotFontPath();
