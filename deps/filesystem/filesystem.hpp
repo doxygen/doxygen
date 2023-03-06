@@ -78,6 +78,8 @@
 #include <wasi/api.h>
 #elif defined(__QNX__)
 #define GHC_OS_QNX
+#elif defined(__HAIKU__)
+#define GHC_OS_HAIKU
 #else
 #error "Operating system currently not supported!"
 #endif
@@ -306,7 +308,7 @@
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 // ghc::filesystem version in decimal (major * 10000 + minor * 100 + patch)
-#define GHC_FILESYSTEM_VERSION 10512L
+#define GHC_FILESYSTEM_VERSION 10514L
 
 #if !defined(GHC_WITH_EXCEPTIONS) && (defined(__EXCEPTIONS) || defined(__cpp_exceptions) || defined(_CPPUNWIND))
 #define GHC_WITH_EXCEPTIONS
@@ -1955,10 +1957,15 @@ GHC_INLINE void create_symlink(const path& target_name, const path& new_symlink,
 #if defined(__GNUC__) && __GNUC__ >= 8
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wcast-function-type"
+#elif defined(_MSC_VER) && !defined(__INTEL_COMPILER) && !defined(__clang__)
+#pragma warning(push)
+#pragma warning(disable : 4191)
 #endif
     static CreateSymbolicLinkW_fp api_call = reinterpret_cast<CreateSymbolicLinkW_fp>(GetProcAddress(GetModuleHandleW(L"kernel32.dll"), "CreateSymbolicLinkW"));
 #if defined(__GNUC__) && __GNUC__ >= 8
 #pragma GCC diagnostic pop
+#elif defined(_MSC_VER) && !defined(__INTEL_COMPILER) && !defined(__clang__)
+#pragma warning(pop)
 #endif
     if (api_call) {
         if (api_call(GHC_NATIVEWP(new_symlink), GHC_NATIVEWP(target_name), to_directory ? 1 : 0) == 0) {
@@ -1979,10 +1986,15 @@ GHC_INLINE void create_hardlink(const path& target_name, const path& new_hardlin
 #if defined(__GNUC__) && __GNUC__ >= 8
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wcast-function-type"
+#elif defined(_MSC_VER) && !defined(__INTEL_COMPILER) && !defined(__clang__)
+#pragma warning(push)
+#pragma warning(disable : 4191)
 #endif
     static CreateHardLinkW_fp api_call = reinterpret_cast<CreateHardLinkW_fp>(GetProcAddress(GetModuleHandleW(L"kernel32.dll"), "CreateHardLinkW"));
 #if defined(__GNUC__) && __GNUC__ >= 8
 #pragma GCC diagnostic pop
+#elif defined(_MSC_VER) && !defined(__INTEL_COMPILER) && !defined(__clang__)
+#pragma warning(pop)
 #endif
     if (api_call) {
         if (api_call(GHC_NATIVEWP(new_hardlink), GHC_NATIVEWP(target_name), NULL) == 0) {
@@ -2241,10 +2253,10 @@ GHC_INLINE time_t timeFromFILETIME(const FILETIME& ft)
 
 GHC_INLINE void timeToFILETIME(time_t t, FILETIME& ft)
 {
-    LONGLONG ll;
-    ll = Int32x32To64(t, 10000000) + 116444736000000000;
-    ft.dwLowDateTime = static_cast<DWORD>(ll);
-    ft.dwHighDateTime = static_cast<DWORD>(ll >> 32);
+    ULARGE_INTEGER ull;
+    ull.QuadPart = static_cast<ULONGLONG>((t * 10000000LL) + 116444736000000000LL);
+    ft.dwLowDateTime = ull.LowPart;
+    ft.dwHighDateTime = ull.HighPart;
 }
 
 template <typename INFO>
@@ -2260,41 +2272,43 @@ GHC_INLINE uintmax_t hard_links_from_INFO<BY_HANDLE_FILE_INFORMATION>(const BY_H
 }
 
 template <typename INFO>
-GHC_INLINE DWORD reparse_tag_from_INFO(const INFO*)
+GHC_INLINE bool is_symlink_from_INFO(const path &p, const INFO* info, std::error_code& ec)
 {
-    return 0;
+    if ((info->dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT)) {
+        auto reparseData = detail::getReparseData(p, ec);
+        if (!ec && reparseData && IsReparseTagMicrosoft(reparseData->ReparseTag) && reparseData->ReparseTag == IO_REPARSE_TAG_SYMLINK) {
+            return true;
+        }
+    }
+    return false;
 }
 
 template <>
-GHC_INLINE DWORD reparse_tag_from_INFO(const WIN32_FIND_DATAW* info)
+GHC_INLINE bool is_symlink_from_INFO(const path &, const WIN32_FIND_DATAW* info, std::error_code&)
 {
-    return info->dwReserved0;
+    // dwReserved0 is undefined unless dwFileAttributes includes the
+    // FILE_ATTRIBUTE_REPARSE_POINT attribute according to microsoft
+    // documentation. In practice, dwReserved0 is not reset which
+    // causes it to report the incorrect symlink status.
+    // Note that microsoft documentation does not say whether there is
+    // a null value for dwReserved0, so we test for symlink directly
+    // instead of returning the tag which requires returning a null
+    // value for non-reparse-point files.
+    return (info->dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) && info->dwReserved0 == IO_REPARSE_TAG_SYMLINK;
 }
 
 template <typename INFO>
 GHC_INLINE file_status status_from_INFO(const path& p, const INFO* info, std::error_code& ec, uintmax_t* sz = nullptr, time_t* lwt = nullptr)
 {
     file_type ft = file_type::unknown;
-    if (sizeof(INFO) == sizeof(WIN32_FIND_DATAW)) {
-        if (detail::reparse_tag_from_INFO(info) == IO_REPARSE_TAG_SYMLINK) {
-            ft = file_type::symlink;
-        }
+    if (is_symlink_from_INFO(p, info, ec)) {
+        ft = file_type::symlink;
+    }
+    else if ((info->dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
+        ft = file_type::directory;
     }
     else {
-        if ((info->dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT)) {
-            auto reparseData = detail::getReparseData(p, ec);
-            if (!ec && reparseData && IsReparseTagMicrosoft(reparseData->ReparseTag) && reparseData->ReparseTag == IO_REPARSE_TAG_SYMLINK) {
-                ft = file_type::symlink;
-            }
-        }
-    }
-    if (ft == file_type::unknown) {
-        if ((info->dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
-            ft = file_type::directory;
-        }
-        else {
-            ft = file_type::regular;
-        }
+        ft = file_type::regular;
     }
     perms prms = perms::owner_read | perms::group_read | perms::others_read;
     if (!(info->dwFileAttributes & FILE_ATTRIBUTE_READONLY)) {
@@ -3365,10 +3379,14 @@ GHC_INLINE path::impl_string_type::const_iterator path::iterator::increment(cons
             }
         }
         else {
+#ifdef GHC_OS_WINDOWS
             if (fromStart && i != _last && *i == ':') {
                 ++i;
             }
             else {
+#else
+            {
+#endif
                 i = std::find(i, _last, preferred_separator);
             }
         }
@@ -3912,11 +3930,14 @@ GHC_INLINE bool copy_file(const path& from, const path& to, copy_options options
         ec = tecf;
         return false;
     }
-    if (exists(st) && (!is_regular_file(st) || equivalent(from, to, ec) || (options & (copy_options::skip_existing | copy_options::overwrite_existing | copy_options::update_existing)) == copy_options::none)) {
-        ec = tect ? tect : detail::make_error_code(detail::portable_error::exists);
-        return false;
-    }
     if (exists(st)) {
+        if ((options & copy_options::skip_existing) == copy_options::skip_existing) {
+            return false;
+        }
+        if (!is_regular_file(st) || equivalent(from, to, ec) || (options & (copy_options::overwrite_existing | copy_options::update_existing)) == copy_options::none) {
+            ec = tect ? tect : detail::make_error_code(detail::portable_error::exists);
+            return false;
+        }
         if ((options & copy_options::update_existing) == copy_options::update_existing) {
             auto from_time = last_write_time(from, ec);
             if (ec) {
@@ -3956,15 +3977,33 @@ GHC_INLINE bool copy_file(const path& from, const path& to, copy_options options
         ::close(in);
         return false;
     }
+    if (st.permissions() != sf.permissions()) {
+        if (::fchmod(out, static_cast<mode_t>(sf.permissions() & perms::all)) != 0) {
+            ec = detail::make_system_error();
+            ::close(in);
+            ::close(out);
+            return false;
+        }
+    }
     ssize_t br, bw;
-    while ((br = ::read(in, buffer.data(), buffer.size())) > 0) {
+    while (true) {
+        do { br = ::read(in, buffer.data(), buffer.size()); } while(errno == EINTR);
+        if(!br) {
+            break;
+        }
+        if(br < 0) {
+            ec = detail::make_system_error();
+            ::close(in);
+            ::close(out);
+            return false;
+        }
         ssize_t offset = 0;
         do {
             if ((bw = ::write(out, buffer.data() + offset, static_cast<size_t>(br))) > 0) {
                 br -= bw;
                 offset += bw;
             }
-            else if (bw < 0) {
+            else if (bw < 0 && errno != EINTR) {
                 ec = detail::make_system_error();
                 ::close(in);
                 ::close(out);
@@ -4199,6 +4238,13 @@ GHC_INLINE path current_path(std::error_code& ec)
         return path();
     }
     return path(std::wstring(buffer.get()), path::native_format);
+#elif defined(__GLIBC__)
+    std::unique_ptr<char, decltype(&std::free)> buffer { ::getcwd(NULL, 0), std::free };
+    if (buffer == nullptr) {
+        ec = detail::make_system_error();
+        return path();
+    }
+    return path(buffer.get());
 #else
     size_t pathlen = static_cast<size_t>(std::max(int(::pathconf(".", _PC_PATH_MAX)), int(PATH_MAX)));
     std::unique_ptr<char[]> buffer(new char[pathlen + 1]);
@@ -4604,9 +4650,9 @@ GHC_INLINE void last_write_time(const path& p, file_time_type new_time, std::err
     if (!::SetFileTime(file.get(), 0, 0, &ft)) {
         ec = detail::make_system_error();
     }
-#elif defined(GHC_OS_MACOS)
-#ifdef __MAC_OS_X_VERSION_MIN_REQUIRED
-#if __MAC_OS_X_VERSION_MIN_REQUIRED < 101300
+#elif defined(GHC_OS_MACOS) && \
+    (__MAC_OS_X_VERSION_MIN_REQUIRED < __MAC_10_13) || (__IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_11_0) || \
+    (__TV_OS_VERSION_MIN_REQUIRED < __TVOS_11_0) || (__WATCH_OS_VERSION_MIN_REQUIRED < __WATCHOS_4_0)
     struct ::stat fs;
     if (::stat(p.c_str(), &fs) == 0) {
         struct ::timeval tv[2];
@@ -4620,18 +4666,6 @@ GHC_INLINE void last_write_time(const path& p, file_time_type new_time, std::err
     }
     ec = detail::make_system_error();
     return;
-#else
-    struct ::timespec times[2];
-    times[0].tv_sec = 0;
-    times[0].tv_nsec = UTIME_OMIT;
-    times[1].tv_sec = std::chrono::duration_cast<std::chrono::seconds>(d).count();
-    times[1].tv_nsec = 0;  // std::chrono::duration_cast<std::chrono::nanoseconds>(d).count() % 1000000000;
-    if (::utimensat(AT_FDCWD, p.c_str(), times, AT_SYMLINK_NOFOLLOW) != 0) {
-        ec = detail::make_system_error();
-    }
-    return;
-#endif
-#endif
 #else
 #ifndef UTIME_OMIT
 #define UTIME_OMIT ((1l << 30) - 2l)
@@ -5259,7 +5293,7 @@ GHC_INLINE void directory_entry::refresh()
 {
     std::error_code ec;
     refresh(ec);
-    if (ec) {
+    if (ec && (_status.type() == file_type::none || _symlink_status.type() != file_type::symlink)) {
         throw filesystem_error(detail::systemErrorText(ec.value()), _path, ec);
     }
 }
@@ -5670,7 +5704,7 @@ public:
         , _entry(nullptr)
     {
         if (!path.empty()) {
-            _dir = ::opendir(path.native().c_str());
+            do { _dir = ::opendir(path.native().c_str()); } while(errno == EINTR);
             if (!_dir) {
                 auto error = errno;
                 _base = filesystem::path();
@@ -5697,7 +5731,7 @@ public:
             do {
                 skip = false;
                 errno = 0;
-                _entry = ::readdir(_dir);
+                do { _entry = ::readdir(_dir); } while(errno == EINTR);
                 if (_entry) {
                     _dir_entry._path = _base;
                     _dir_entry._path.append_name(_entry->d_name);
@@ -5711,7 +5745,7 @@ public:
                     ::closedir(_dir);
                     _dir = nullptr;
                     _dir_entry._path.clear();
-                    if (errno) {
+                    if (errno && errno != EINTR) {
                         ec = detail::make_system_error();
                     }
                     break;
