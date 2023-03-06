@@ -11836,8 +11836,6 @@ void parseInput()
     {
       warn_uncond("failed to open layout file '%s' for reading! Using default settings.\n",qPrint(layoutFileName));
     }
-    QCString layout_default = ResourceMgr::instance().getAsString("layout_default.xml");
-    LayoutDocManager::instance().parse("layout_default.xml",layout_default.data(),Debug::isFlagSet(Debug::Lex));
   }
 
   /**************************************************************************

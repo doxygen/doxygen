@@ -218,7 +218,7 @@ class LayoutDocManager
 
     /** Parses a user provided layout */
     void parse(const QCString &fileName);
-    void parse(const QCString &fileName, const char*data, const bool flag);
+    void parse(const QCString &fileName, const char*data);
     void init();
   private:
     void addEntry(LayoutPart p,LayoutDocEntry*e);

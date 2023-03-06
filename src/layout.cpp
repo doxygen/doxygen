@@ -1588,10 +1588,10 @@ void LayoutDocManager::clear(LayoutDocManager::LayoutPart p)
 
 void LayoutDocManager::parse(const QCString &fileName)
 {
-  parse(fileName,fileToString(fileName).data(),Debug::isFlagSet(Debug::Lex));
+  parse(fileName,fileToString(fileName).data());
 }
 
-void LayoutDocManager::parse(const QCString &fileName, const char *data, const bool flag)
+void LayoutDocManager::parse(const QCString &fileName, const char *data)
 {
   LayoutParser &layoutParser = LayoutParser::instance();
   XMLHandlers handlers;
@@ -1600,7 +1600,7 @@ void LayoutDocManager::parse(const QCString &fileName, const char *data, const b
   handlers.error        = [&layoutParser](const std::string &fn,int lineNr,const std::string &msg) { layoutParser.error(fn,lineNr,msg); };
   XMLParser parser(handlers);
   layoutParser.setDocumentLocator(&parser);
-  parser.parse(fileName.data(),fileToString(fileName).data(),Debug::isFlagSet(Debug::Lex_xml),
+  parser.parse(fileName.data(),data,Debug::isFlagSet(Debug::Lex_xml),
                [&]() { DebugLex::print(Debug::Lex_xml,"Entering","libxml/xml.l",qPrint(fileName)); },
                [&]() { DebugLex::print(Debug::Lex_xml,"Finished", "libxml/xml.l",qPrint(fileName)); }
               );
