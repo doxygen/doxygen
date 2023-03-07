@@ -30,7 +30,7 @@ class MemberList;
 /** @brief Base class representing a piece of a documentation page */
 struct LayoutDocEntry
 {
-  virtual ~LayoutDocEntry() {}
+  virtual ~LayoutDocEntry() = default;
   enum Kind {
               // Generic items for all pages
               MemberGroups,
@@ -180,7 +180,7 @@ struct LayoutNavEntry
     LayoutNavEntry *find(LayoutNavEntry::Kind k,const QCString &file=QCString()) const;
 
   private:
-    LayoutNavEntry() : m_parent(0), m_kind(None), m_visible(FALSE) {}
+    LayoutNavEntry() : m_parent(0), m_kind(None), m_visible(true) {}
     LayoutNavEntry *m_parent;
     Kind m_kind;
     bool m_visible;
@@ -200,6 +200,7 @@ class LayoutDocManager
   public:
     enum LayoutPart
     {
+      Undefined = -1,
       Class, Concept, Namespace, File, Group, Directory,
       NrParts
     };

@@ -35,14 +35,14 @@ void DotCallGraph::buildGraph(DotNode *n,const MemberDef *md,int distance)
   auto refs = m_inverse ? md->getReferencedByMembers() : md->getReferencesMembers();
   for (const auto &rmd : refs)
   {
-    if (rmd->showInCallGraph())
+    if (rmd->isCallable())
     {
       QCString uniqueId = getUniqueId(rmd);
       auto it = m_usedNodes.find(uniqueId.str());
       if (it!=m_usedNodes.end()) // file is already a node in the graph
       {
         DotNode *bn = it->second;
-        n->addChild(bn,0,0);
+        n->addChild(bn,EdgeInfo::Blue,EdgeInfo::Solid);
         bn->addParent(n);
         bn->setDistance(distance);
       }
@@ -66,7 +66,7 @@ void DotCallGraph::buildGraph(DotNode *n,const MemberDef *md,int distance)
             uniqueId,
             0 //distance
             );
-        n->addChild(bn,0,0);
+        n->addChild(bn,EdgeInfo::Blue,EdgeInfo::Solid);
         bn->addParent(n);
         bn->setDistance(distance);
         m_usedNodes.insert(std::make_pair(uniqueId.str(),bn));
@@ -189,6 +189,8 @@ QCString DotCallGraph::writeGraph(
         const QCString &relPath,const bool toIndex,bool generateImageMap,
         int graphId)
 {
+  m_doNotAddImageToIndex = textFormat!=EOF_Html || !toIndex;
+
   return DotGraph::writeGraph(out, graphFormat, textFormat, path, fileName, relPath, toIndex, generateImageMap, graphId);
 }
 
@@ -204,7 +206,7 @@ bool DotCallGraph::isTooBig() const
 
 int DotCallGraph::numNodes() const
 {
-  return (int)m_startNode->children().size();
+  return static_cast<int>(m_startNode->children().size());
 }
 
 bool DotCallGraph::isTrivial(const MemberDef *md,bool inverse)
@@ -212,7 +214,7 @@ bool DotCallGraph::isTrivial(const MemberDef *md,bool inverse)
   auto refs = inverse ? md->getReferencedByMembers() : md->getReferencesMembers();
   for (const auto &rmd : refs)
   {
-    if (rmd->showInCallGraph())
+    if (rmd->isCallable())
     {
       return FALSE;
     }

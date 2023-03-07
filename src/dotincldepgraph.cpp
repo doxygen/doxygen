@@ -46,7 +46,7 @@ void DotInclDepGraph::buildGraph(DotNode *n,const FileDef *fd,int distance)
       if (it!=m_usedNodes.end()) // file is already a node in the graph
       {
         DotNode *bn = it->second;
-        n->addChild(bn,0,0);
+        n->addChild(bn,EdgeInfo::Blue,EdgeInfo::Solid);
         bn->addParent(n);
         bn->setDistance(distance);
       }
@@ -65,7 +65,7 @@ void DotInclDepGraph::buildGraph(DotNode *n,const FileDef *fd,int distance)
                          tmp_url,           // url
                          FALSE,             // rootNode
                          0);                // cd
-        n->addChild(bn,0,0);
+        n->addChild(bn,EdgeInfo::Blue,EdgeInfo::Solid);
         bn->addParent(n);
         m_usedNodes.insert(std::make_pair(in.str(),bn));
         bn->setDistance(distance);
@@ -206,7 +206,7 @@ bool DotInclDepGraph::isTooBig() const
 
 int DotInclDepGraph::numNodes() const
 {
-  return (int)m_startNode->children().size();
+  return static_cast<int>(m_startNode->children().size());
 }
 
 void DotInclDepGraph::writeXML(TextStream &t)

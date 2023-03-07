@@ -47,6 +47,7 @@ typedef yyguts_t *yyscan_t;
 #include "message.h"
 #include "util.h"
 #include "scanner.h"
+#include "debug.h"
 
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
@@ -72,7 +73,7 @@ struct lexscannerYY_state
   bool             insideCode = FALSE;
   QCString         delimiter;
   QCString         docBlockName;
-  uint             fencedSize = 0;
+  uint32_t         fencedSize = 0;
   bool             nestedComment = false;
 
   QCString         prefix = "yy";
@@ -97,7 +98,7 @@ static const char *stateToString(int state);
 
 // forward declarations for statefull functions
 static void handleCCode(yyscan_t yyscanner);
-static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
+static int yyread(yyscan_t yyscanner,char *buf,int max_size);
 
 /* ----------------------------------------------------------------- */
 #undef  YY_INPUT
@@ -929,10 +930,10 @@ NONLopt [^\n]*
 %%
 
 //----------------------------------------------------------------------------
-static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size)
+static int yyread(yyscan_t yyscanner,char *buf,int max_size)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yy_size_t c=0;
+  int c=0;
   while( c < max_size && yyextra->inputString[yyextra->inputPosition] )
   {
     *buf = yyextra->inputString[yyextra->inputPosition++] ;
@@ -1007,7 +1008,7 @@ LexOutlineParser::LexOutlineParser() : p(std::make_unique<LexOutlineParser::Priv
 {
   lexscannerYYlex_init_extra(&p->state,&p->yyscanner);
 #ifdef FLEX_DEBUG
-  lexscannerYYset_debug(1,p->yyscanner);
+  lexscannerYYset_debug(Debug::isFlagSet(Debug::Lex_lexscanner)?1:0,p->yyscanner);
 #endif
 }
 
@@ -1024,11 +1025,9 @@ void LexOutlineParser::parseInput(const QCString &fileName,
   struct yyguts_t *yyg = (struct yyguts_t*)p->yyscanner;
 
   yyextra->fileName      = fileName;
-  printlex(yy_flex_debug, TRUE, __FILE__, qPrint(fileName));
+  DebugLex debugLex(Debug::Lex_lexscanner, __FILE__, qPrint(fileName));
 
   ::parseMain(p->yyscanner,fileName,fileBuf,root,clangParser);
-
-  printlex(yy_flex_debug, FALSE, __FILE__, qPrint(fileName));
 }
 
 

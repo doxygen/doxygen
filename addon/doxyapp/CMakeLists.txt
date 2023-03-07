@@ -11,6 +11,8 @@ include_directories(
 add_executable(doxyapp
 doxyapp.cpp
 )
+include(ApplyEditbin)
+apply_editbin(doxyapp console)
 add_sanitizers(doxyapp)
 
 if (use_libclang)
@@ -42,6 +44,7 @@ mscgen
 doxygen_version
 doxycfg
 vhdlparser
+spdlog
 ${ICONV_LIBRARIES}
 ${CMAKE_THREAD_LIBS_INIT}
 ${SQLITE3_LIBRARIES}

@@ -23,7 +23,6 @@
 \RequirePackage{enumitem}
 \RequirePackage{alphalph}
 \RequirePackage[normalem]{ulem} % for strikeout, but don't modify emphasis
-\RequirePackage{enumitem}
 
 %---------- Internal commands used in this style file ----------------
 
@@ -106,7 +105,15 @@
 % Necessary for hanging indent
 \newlength{\DoxyCodeWidth}
 
-\newcommand\DoxyCodeLine[1]{\hangpara{\DoxyCodeWidth}{1}{#1}\par}
+\newcommand\DoxyCodeLine[1]{
+  \ifthenelse{\equal{\detokenize{#1}}{}}
+  {
+    \vspace*{\baselineskip}
+  }
+  {
+    \hangpara{\DoxyCodeWidth}{1}{#1}\par
+  }
+}
 
 \newcommand\NiceSpace{%
      \discretionary{}{\kern\fontdimen2\font}{\kern\fontdimen2\font}%
@@ -151,6 +158,7 @@
 
 % Used by @verbatim ... @endverbatim
 \newenvironment{DoxyVerb}{%
+  \par%
   \footnotesize%
   \verbatim%
 }{%
@@ -317,12 +325,6 @@
   \begin{DoxyDesc}{#1}%
 }{%
   \end{DoxyDesc}%
-}
-
-% Used by @internal
-\newenvironment{DoxyInternal}[1]{%
-  \paragraph*{#1}%
-}{%
 }
 
 % Used by @par and @paragraph
@@ -521,8 +523,26 @@
   \end{list}%
 }
 
+% Used when hyperlinks are turned on
+\newcommand{\doxylink}[2]{%
+  \mbox{\hyperlink{#1}{#2}}%
+}
+
+% Used when hyperlinks are turned on
+% Third argument is the SectionType, see the doxygen internal
+% documentation for the values (relevant: Page ... Subsubsection).
+\newcommand{\doxysectlink}[3]{%
+  \mbox{\hyperlink{#1}{#2}}%
+}
 % Used when hyperlinks are turned off
 \newcommand{\doxyref}[3]{%
+  \textbf{#1} (\textnormal{#2}\,\pageref{#3})%
+}
+
+% Used when hyperlinks are turned off
+% Fourth argument is the SectionType, see the doxygen internal
+% documentation for the values (relevant: Page ... Subsubsection).
+\newcommand{\doxysectref}[4]{%
   \textbf{#1} (\textnormal{#2}\,\pageref{#3})%
 }
 

@@ -21,6 +21,11 @@
 #include <stdarg.h>
 #include <ctype.h>
 
+inline char toLowerChar(char c)
+{
+  return c>='A' && c<='Z' ? c|0x20 : c;
+}
+
 QCString &QCString::sprintf( const char *format, ... )
 {
   va_list ap;
@@ -37,7 +42,7 @@ QCString &QCString::sprintf( const char *format, ... )
 
 int QCString::find( char c, int index, bool cs ) const
 {
-  if (index<0 || index>=(int)length()) return -1; // index outside string
+  if (index<0 || index>=static_cast<int>(length())) return -1; // index outside string
   const char *pos;
   if (cs)
   {
@@ -46,11 +51,11 @@ int QCString::find( char c, int index, bool cs ) const
   else
   {
     pos = data()+index;
-    c = (char)tolower((unsigned char)c);
-    while (*pos && tolower((unsigned char)*pos)!=c) pos++;
+    c = toLowerChar(c);
+    while (*pos && toLowerChar(*pos)!=c) pos++;
     if (!*pos && c) pos=0; // not found
   }
-  return pos ? (int)(pos - data()) : -1;
+  return pos ? static_cast<int>(pos - data()) : -1;
 }
 
 int QCString::find( const char *str, int index, bool cs ) const
@@ -75,7 +80,7 @@ int QCString::find( const char *str, int index, bool cs ) const
     }
     if (!*pos) pos = 0; // not found
   }
-  return pos ? (int)(pos - data()) : -1;
+  return pos ? static_cast<int>(pos - data()) : -1;
 }
 
 int QCString::find( const QCString &str, int index, bool cs ) const
@@ -94,7 +99,7 @@ int QCString::findRev( char c, int index, bool cs) const
     if (cs)
     {
       pos = strrchr(b,c);
-      return pos ? (int)(pos - b) : -1;
+      return pos ? static_cast<int>(pos - b) : -1;
     }
     index=len;
   }
@@ -109,10 +114,10 @@ int QCString::findRev( char c, int index, bool cs) const
   }
   else
   {
-    c = (char)tolower((unsigned char)c);
-    while ( pos>=b && tolower((unsigned char)*pos)!=c) pos--;
+    c = toLowerChar(c);
+    while ( pos>=b && toLowerChar(*pos)!=c) pos--;
   }
-  return pos>=b ? (int)(pos - b) : -1;
+  return pos>=b ? static_cast<int>(pos - b) : -1;
 }
 
 int QCString::findRev( const char *str, int index, bool cs) const
@@ -146,10 +151,10 @@ int QCString::contains( char c, bool cs ) const
   }
   else
   {
-    c = (char)tolower((unsigned char)c);
+    c = toLowerChar(c);
     while (*pos)
     {
-      if (tolower((unsigned char)*pos)==c) count++;
+      if (toLowerChar(*pos)==c) count++;
       pos++;
     }
   }
@@ -200,7 +205,7 @@ QCString QCString::simplifyWhiteSpace() const
   if ( to > first && *(to-1) == 0x20 )
     to--;
   *to = '\0';
-  result.resize( (int)(to - result.data()) + 1 );
+  result.resize( static_cast<int>(to - result.data()) + 1 );
   return result;
 }
 
@@ -228,27 +233,27 @@ short QCString::toShort(bool *ok, int base) const
     *ok = FALSE;
     v = 0;
   }
-  return (short)v;
+  return static_cast<short>(v);
 }
 
-ushort QCString::toUShort(bool *ok,int base) const
+uint16_t QCString::toUShort(bool *ok,int base) const
 {
-  ulong v = toULong( ok, base );
+  unsigned long v = toULong( ok, base );
   if ( ok && *ok && (v > 65535) ) {
     *ok = FALSE;
     v = 0;
   }
-  return (ushort)v;
+  return static_cast<uint16_t>(v);
 }
 
 int QCString::toInt(bool *ok, int base) const
 {
-  return (int)toLong( ok, base );
+  return static_cast<int>(toLong( ok, base ));
 }
 
-uint QCString::toUInt(bool *ok,int base) const
+uint32_t QCString::toUInt(bool *ok,int base) const
 {
-  return (uint)toULong( ok, base );
+  return static_cast<uint32_t>(toULong( ok, base ));
 }
 
 
@@ -304,12 +309,12 @@ bye:
   return is_ok ? val : 0;
 }
 
-ulong QCString::toULong(bool *ok,int base) const
+unsigned long QCString::toULong(bool *ok,int base) const
 {
   const char *p = data();
-  ulong val=0;
+  unsigned long val=0;
   int l = length();
-  const ulong max_mult = 429496729;		// UINT_MAX/10, rounded down
+  const unsigned long max_mult = 429496729;		// UINT_MAX/10, rounded down
   bool is_ok = FALSE;
   if ( !p )
     goto bye;
@@ -323,7 +328,7 @@ ulong QCString::toULong(bool *ok,int base) const
     goto bye;
   while ( l && ok_in_base(*p,base) ) {
     l--;
-    uint dv;
+    uint32_t dv;
     if ( *p>='0' && *p<='9' ) {
       dv = *p-'0';
     } else {
@@ -348,12 +353,12 @@ bye:
   return is_ok ? val : 0;
 }
 
-uint64 QCString::toUInt64(bool *ok,int base) const
+uint64_t QCString::toUInt64(bool *ok,int base) const
 {
   const char *p = data();
-  uint64 val=0;
+  uint64_t val=0;
   int l = length();
-  const uint64 max_mult = 1844674407370955161ULL;  // ULLONG_MAX/10, rounded down
+  const uint64_t max_mult = 1844674407370955161ULL;  // ULLONG_MAX/10, rounded down
   bool is_ok = FALSE;
   if ( !p )
     goto bye;
@@ -367,7 +372,7 @@ uint64 QCString::toUInt64(bool *ok,int base) const
     goto bye;
   while ( l && ok_in_base(*p,base) ) {
     l--;
-    uint dv;
+    uint32_t dv;
     if ( *p>='0' && *p<='9' ) {
       dv = *p-'0';
     } else {
@@ -397,15 +402,15 @@ bye:
 void *qmemmove( void *dst, const void *src, size_t len )
 {
     char *d;
-    char *s;
+    const char *s;
     if ( dst > src ) {
-	d = (char *)dst + len - 1;
-	s = (char *)src + len - 1;
+	d = static_cast<char *>(dst) + len - 1;
+	s = static_cast<const char *>(src) + len - 1;
 	while ( len-- )
 	    *d-- = *s--;
     } else if ( dst < src ) {
-	d = (char *)dst;
-	s = (char *)src;
+	d = static_cast<char *>(dst);
+	s = static_cast<const char *>(src);
 	while ( len-- )
 	    *d++ = *s++;
     }
@@ -430,32 +435,35 @@ char *qstrncpy( char *dst, const char *src, size_t len )
     return dst;
 }
 
-int qstricmp( const char *str1, const char *str2 )
+int qstricmp( const char *s1, const char *s2 )
 {
-    const uchar *s1 = (const uchar *)str1;
-    const uchar *s2 = (const uchar *)str2;
-    int res;
-    uchar c;
     if ( !s1 || !s2 )
-	return s1 == s2 ? 0 : (int)(s2 - s1);
-    for ( ; !(res = (c=(char)tolower(*s1)) - tolower(*s2)); s1++, s2++ )
-	if ( !c )				// strings are equal
-	    break;
+    {
+      return s1 == s2 ? 0 : static_cast<int>(s2 - s1);
+    }
+    int res;
+    char c;
+    for ( ; !(res = ((c=toLowerChar(*s1)) - toLowerChar(*s2))); s1++, s2++ )
+    {
+      if ( !c )				// strings are equal
+        break;
+    }
     return res;
 }
 
-int qstrnicmp( const char *str1, const char *str2, size_t len )
+int qstrnicmp( const char *s1, const char *s2, size_t len )
 {
-    const uchar *s1 = (const uchar *)str1;
-    const uchar *s2 = (const uchar *)str2;
-    int res;
-    uchar c;
     if ( !s1 || !s2 )
-	return (int)(s2 - s1);
-    for ( ; len--; s1++, s2++ ) {
-	if ( (res = (c=(char)tolower(*s1)) - tolower(*s2)) )
+    {
+      return static_cast<int>(s2 - s1);
+    }
+    for ( ; len--; s1++, s2++ )
+    {
+        char c = toLowerChar(*s1);
+        int res = c-toLowerChar(*s2);
+	if ( res!=0 ) // strings are not equal
 	    return res;
-	if ( !c )				// strings are equal
+	if ( c==0 ) // strings are equal
 	    break;
     }
     return 0;
@@ -483,7 +491,7 @@ QCString substitute(const QCString &s,const QCString &src,const QCString &dst)
   char *r;
   for (r=result.rawData(), p=s.data(); (q=strstr(p,src.data()))!=0; p=q+srcLen)
   {
-    int l = (int)(q-p);
+    int l = static_cast<int>(q-p);
     memcpy(r,p,l);
     r+=l;
 
@@ -537,7 +545,7 @@ QCString substitute(const QCString &s,const QCString &src,const QCString &dst,in
     }
 
     // skip a consecutive sequence of src when necessary
-    int l = (int)((q + seq * srcLen)-p);
+    int l = static_cast<int>((q + seq * srcLen)-p);
     memcpy(r,p,l);
     r+=l;
 
@@ -553,7 +561,7 @@ QCString substitute(const QCString &s,const QCString &src,const QCString &dst,in
     r+=dstLen;
   }
   qstrcpy(r,p);
-  result.resize((int)strlen(result.data())+1);
+  result.resize(static_cast<int>(strlen(result.data())+1));
   //printf("substitute(%s,%s,%s)->%s\n",s,src,dst,result.data());
   return result;
 }

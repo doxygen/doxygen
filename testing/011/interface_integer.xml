@@ -9,6 +9,7 @@
         <definition>int Integer::integer</definition>
         <argsstring/>
         <name>integer</name>
+        <qualifiedname>Integer::integer</qualifiedname>
         <briefdescription>
         </briefdescription>
         <detaileddescription>
@@ -25,6 +26,7 @@
         <definition>int Integer::integer</definition>
         <argsstring>()</argsstring>
         <name>integer</name>
+        <qualifiedname>-[Integer integer]</qualifiedname>
         <briefdescription>
         </briefdescription>
         <detaileddescription>
@@ -39,6 +41,7 @@
         <definition>id Integer::integer:</definition>
         <argsstring>(int _integer)</argsstring>
         <name>integer:</name>
+        <qualifiedname>-[Integer integer:]</qualifiedname>
         <param>
           <type>int</type>
           <declname>_integer</declname>

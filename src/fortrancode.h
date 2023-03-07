@@ -20,7 +20,7 @@
 
 #include "parserintf.h"
 
-class CodeOutputInterface;
+class OutputCodeList;
 class FileDef;
 class MemberDef;
 class QCString;
@@ -31,7 +31,7 @@ class FortranCodeParser : public CodeParserInterface
   public:
     FortranCodeParser(FortranFormat format=FortranFormat_Unknown);
     virtual ~FortranCodeParser();
-    void parseCode(CodeOutputInterface &codeOutIntf,
+    void parseCode(OutputCodeList &codeOutIntf,
                    const QCString &scopeName,
                    const QCString &input,
                    SrcLangExt lang,

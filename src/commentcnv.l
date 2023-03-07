@@ -47,8 +47,8 @@ typedef yyguts_t *yyscan_t;
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
 
-#define ADDCHAR(c)    yyextra->outBuf->addChar(c)
-#define ADDARRAY(a,s) yyextra->outBuf->addArray(a,s)
+#define ADDCHAR(c)    yyextra->outBuf.addChar(c)
+#define ADDARRAY(a,s) yyextra->outBuf.addArray(a,s)
 
 #define USE_STATE2STRING 0
   
@@ -70,9 +70,10 @@ struct CommentCtx
   
 struct commentcnvYY_state
 {
-  BufStr * inBuf = 0;
-  BufStr * outBuf = 0;
-  yy_size_t inBufPos = 0;
+  commentcnvYY_state(const BufStr &i,BufStr &o) : inBuf(i), outBuf(o) {}
+  const BufStr &inBuf;
+  BufStr &outBuf;
+  int      inBufPos = 0;
   int      col = 0;
   int      blockHeadCol = 0;
   bool     mlBrief = FALSE;
@@ -116,7 +117,7 @@ static void startCondSection(yyscan_t yyscanner,const QCString &sectId);
 static void endCondSection(yyscan_t yyscanner);
 static void handleCondSectionId(yyscan_t yyscanner,const char *expression);
 static void replaceAliases(yyscan_t yyscanner,const QCString &s);
-static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
+static int yyread(yyscan_t yyscanner,char *buf,int max_size);
 static void replaceComment(yyscan_t yyscanner,int offset);
 static void clearCommentStack(yyscan_t yyscanner);
 
@@ -212,6 +213,25 @@ SLASHopt [/]*
 				     }
 				     else
 				     {
+                                       yyextra->pythonDocString = TRUE;
+                                       yyextra->nestingCount=1;
+                                       clearCommentStack(yyscanner); /*  to be on the save side */
+                                       copyToOutput(yyscanner,yytext,(int)yyleng);
+				       BEGIN(CComment);
+                                       yyextra->commentStack.push(yyextra->lineNr);
+				     }
+                                   }
+<Scan>"\"\"\""                     { /* start of python long comment */
+                                     if (yyextra->lang!=SrcLangExt_Python)
+				     {
+				       REJECT;
+				     }
+                                     else if (Config_getBool(PYTHON_DOCSTRING))
+                                     {
+				       REJECT;
+                                     }
+				     else
+				     { /* handle as if """! */
                                        yyextra->pythonDocString = TRUE;
                                        yyextra->nestingCount=1;
                                        clearCommentStack(yyscanner); /*  to be on the save side */
@@ -360,6 +380,13 @@ SLASHopt [/]*
 				       BEGIN(CNComment); 
                                      yyextra->commentStack.push(yyextra->lineNr);
                                    }
+<Scan>"#"[^\n]*\n                  {
+                                     if (yyextra->lang!=SrcLangExt_PHP)
+				     {
+				       REJECT;
+				     }
+                                     copyToOutput(yyscanner,yytext,(int)yyleng);
+                                   }
 <Scan>"#"("#")?		           {
                                      if (yyextra->lang!=SrcLangExt_Python)
 				     {
@@ -439,7 +466,7 @@ SLASHopt [/]*
                                      copyToOutput(yyscanner,yytext,(int)yyleng);
                                      yyextra->lastCommentContext = YY_START;
                                      yyextra->javaBlock=0;
-                                     yyextra->blockName=QCString(yytext).stripWhiteSpace().left(3);
+                                     yyextra->blockName=QCString(yytext).stripWhiteSpace().left(3); // take the ``` or ~~~ part
                                      BEGIN(VerbatimCode);
                                    }
 <CComment,ReadLine>[\\@]("dot"|"code"|"msc"|"startuml")/[^a-z_A-Z0-9] { /* start of a verbatim block */
@@ -663,6 +690,10 @@ SLASHopt [/]*
 				       BEGIN(Scan);
 				     }
                                    }
+<CComment,CNComment>"/""/"+/"*/"   { /* we are already in C-comment so not a start of a nested comment but 
+                                      * just the end of the comment (the end part is handled later). */
+                                     copyToOutput(yyscanner,yytext,(int)yyleng);
+                                   }
 <CComment,CNComment>"/"+"*"                  { /* nested C comment */
                                      if (yyextra->lang==SrcLangExt_Python ||
                                          yyextra->lang==SrcLangExt_Markdown)
@@ -838,6 +869,8 @@ SLASHopt [/]*
 				     copyToOutput(yyscanner,yytext,(int)yyleng); 
 				     yyextra->inSpecialComment=FALSE;
 				     yyextra->inRoseComment=FALSE;
+                                     yyextra->readLineCtx = Scan; // reset, otherwise there will be problems with:
+                                                                  //   static void handleCondSectionId
 				     BEGIN(Scan); 
                                    }
 <ReadLine>{CCS}"*"                    {
@@ -895,10 +928,10 @@ SLASHopt [/]*
                                      handleCondSectionId(yyscanner," "); // fake section id causing the section to be hidden unconditionally
 				     if (*yytext=='\n') { yyextra->lineNr++; copyToOutput(yyscanner,"\n",1);}
   				   }
-<CComment,ReadLine>[\\@][a-z_A-Z][a-z_A-Z0-9]*  { // expand alias without arguments
+<CComment,ReadLine>[\\@][a-z_A-Z][a-z_A-Z0-9-]*  { // expand alias without arguments
 				     replaceAliases(yyscanner,QCString(yytext));
   				   }
-<CComment,ReadLine>[\\@][a-z_A-Z][a-z_A-Z0-9]*"{" { // expand alias with arguments
+<CComment,ReadLine>[\\@][a-z_A-Z][a-z_A-Z0-9-]*"{" { // expand alias with arguments
                                      yyextra->lastBlockContext=YY_START;
 				     yyextra->blockCount=1;
 				     yyextra->aliasString=yytext;
@@ -1009,7 +1042,7 @@ static void replaceCommentMarker(yyscan_t yyscanner,const char *s,int len)
 static inline int computeIndent(const char *s)
 {
   int col=0;
-  static int tabSize=Config_getInt(TAB_SIZE);
+  int tabSize=Config_getInt(TAB_SIZE);
   const char *p=s;
   char c;
   while ((c=*p++))
@@ -1137,12 +1170,12 @@ static void replaceAliases(yyscan_t yyscanner,const QCString &s)
 }
 
 
-static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size)
+static int yyread(yyscan_t yyscanner,char *buf,int max_size)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yy_size_t bytesInBuf = yyextra->inBuf->curPos()-yyextra->inBufPos;
-  yy_size_t bytesToCopy = std::min(max_size,bytesInBuf);
-  memcpy(buf,yyextra->inBuf->data()+yyextra->inBufPos,bytesToCopy);
+  int bytesInBuf = static_cast<int>(yyextra->inBuf.curPos())-yyextra->inBufPos;
+  int bytesToCopy = std::min(max_size,bytesInBuf);
+  memcpy(buf,yyextra->inBuf.data()+yyextra->inBufPos,bytesToCopy);
   yyextra->inBufPos+=bytesToCopy;
   return bytesToCopy;
 }
@@ -1178,18 +1211,16 @@ static void replaceComment(yyscan_t yyscanner,int offset)
  *  -# It replaces aliases with their definition (see ALIASES)
  *  -# It handles conditional sections (cond...endcond blocks)
  */
-void convertCppComments(BufStr *inBuf,BufStr *outBuf,const QCString &fileName)
+void convertCppComments(const BufStr &inBuf,BufStr &outBuf,const QCString &fileName)
 {
   yyscan_t yyscanner;
-  commentcnvYY_state extra;
+  commentcnvYY_state extra(inBuf,outBuf);
   commentcnvYYlex_init_extra(&extra,&yyscanner);
 #ifdef FLEX_DEBUG
-  commentcnvYYset_debug(1,yyscanner);
+  commentcnvYYset_debug(Debug::isFlagSet(Debug::Lex_commentcnv)?1:0,yyscanner);
 #endif
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   //printf("convertCppComments(%s)\n",fileName);
-  yyextra->inBuf    = inBuf;
-  yyextra->outBuf   = outBuf;
   yyextra->inBufPos = 0;
   yyextra->col      = 0;
   yyextra->mlBrief = Config_getBool(MULTILINE_CPP_IS_BRIEF);
@@ -1202,12 +1233,12 @@ void convertCppComments(BufStr *inBuf,BufStr *outBuf,const QCString &fileName)
   clearCommentStack(yyscanner);
   yyextra->vhdl = FALSE;
 
-  printlex(yy_flex_debug, TRUE, __FILE__, qPrint(fileName));
+  DebugLex debugLex(Debug::Lex_commentcnv,__FILE__, qPrint(fileName));
   yyextra->isFixedForm = FALSE;
   if (yyextra->lang==SrcLangExt_Fortran)
   {
     FortranFormat fmt = convertFileNameFortranParserCode(fileName);
-    yyextra->isFixedForm = recognizeFixedForm(QCString(inBuf->data()),fmt);
+    yyextra->isFixedForm = recognizeFixedForm(QCString(inBuf.data()),fmt);
   }
 
   if (yyextra->lang==SrcLangExt_Markdown)
@@ -1249,12 +1280,11 @@ void convertCppComments(BufStr *inBuf,BufStr *outBuf,const QCString &fileName)
   yyextra->nestingCount = 0;
   if (Debug::isFlagSet(Debug::CommentCnv))
   {
-    yyextra->outBuf->at(yyextra->outBuf->curPos())='\0';
+    yyextra->outBuf.at(yyextra->outBuf.curPos())='\0';
     Debug::print(Debug::CommentCnv,0,"-----------\nCommentCnv: %s\n"
-                 "output=[\n%s]\n-----------\n",qPrint(fileName),yyextra->outBuf->data()
+                 "output=[\n%s]\n-----------\n",qPrint(fileName),yyextra->outBuf.data()
                 );
   }
-  printlex(yy_flex_debug, FALSE, __FILE__, qPrint(fileName));
   commentcnvYYlex_destroy(yyscanner);
 }
 

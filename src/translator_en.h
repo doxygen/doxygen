@@ -79,6 +79,10 @@ class TranslatorEnglish : public Translator
       return "en-US";
     }
 
+    virtual QCString getLanguageString()
+    {
+      return "0x409 English (United States)";
+    }
     // --- Language translation methods -------------------
 
     /*! used in the compound documentation before a list of related functions. */
@@ -93,6 +97,10 @@ class TranslatorEnglish : public Translator
     virtual QCString trDetailedDescription()
     { return "Detailed Description"; }
 
+    /*! header that is used when the summary tag is missing inside the details tag */
+    virtual QCString trDetails()
+    { return "Details"; }
+
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
     { return "Member Typedef Documentation"; }
@@ -103,7 +111,16 @@ class TranslatorEnglish : public Translator
 
     /*! header that is put before the list of member functions. */
     virtual QCString trMemberFunctionDocumentation()
-    { return "Member Function Documentation"; }
+    {
+      if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+        return "Member Function/Procedure/Process Documentation";
+      }
+      else
+      {
+        return "Member Function Documentation";
+      }
+    }
 
     /*! header that is put before the list of member attributes. */
     virtual QCString trMemberDataDocumentation()
@@ -143,7 +160,7 @@ class TranslatorEnglish : public Translator
      */
     virtual QCString trGeneratedAutomatically(const QCString &s)
     { QCString result="Generated automatically by Doxygen";
-      if (!s.isEmpty()) result+=(QCString)" for "+s;
+      if (!s.isEmpty()) result+=" for "+s;
       result+=" from the source code.";
       return result;
     }
@@ -415,18 +432,6 @@ class TranslatorEnglish : public Translator
     virtual QCString trFileDocumentation()
     { return "File Documentation"; }
 
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all examples.
-     */
-    virtual QCString trExampleDocumentation()
-    { return "Example Documentation"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all related pages.
-     */
-    virtual QCString trPageDocumentation()
-    { return "Page Documentation"; }
-
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
     { return "Reference Manual"; }
@@ -517,21 +522,17 @@ class TranslatorEnglish : public Translator
      */
     virtual QCString trGeneratedAt(const QCString &date,const QCString &projName)
     {
-      QCString result=(QCString)"Generated on "+date;
-      if (!projName.isEmpty()) result+=(QCString)" for "+projName;
-      result+=(QCString)" by";
+      QCString result="Generated on "+date;
+      if (!projName.isEmpty()) result+=" for "+projName;
+      result+=" by";
       return result;
     }
 
     /*! this text is put before a class diagram */
     virtual QCString trClassDiagram(const QCString &clName)
     {
-      return (QCString)"Inheritance diagram for "+clName+":";
+      return "Inheritance diagram for "+clName+":";
     }
-
-    /*! this text is generated when the \\internal command is used. */
-    virtual QCString trForInternalUseOnly()
-    { return "For internal use only."; }
 
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
@@ -607,7 +608,7 @@ class TranslatorEnglish : public Translator
                                     ClassDef::CompoundType compType,
                                     bool isTemplate)
     {
-      QCString result=(QCString)clName;
+      QCString result=clName;
       switch(compType)
       {
         case ClassDef::Class:      result+=" Class"; break;
@@ -766,10 +767,11 @@ class TranslatorEnglish : public Translator
     virtual QCString trGeneratedFromFiles(ClassDef::CompoundType compType,
         bool single)
     { // single is true implies a single file
-      QCString result=(QCString)"The documentation for this ";
+      bool vhdlOpt = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
+      QCString result="The documentation for this ";
       switch(compType)
       {
-        case ClassDef::Class:      result+="class"; break;
+        case ClassDef::Class:      result+=vhdlOpt?"design unit":"class"; break;
         case ClassDef::Struct:     result+="struct"; break;
         case ClassDef::Union:      result+="union"; break;
         case ClassDef::Interface:  result+="interface"; break;
@@ -831,12 +833,12 @@ class TranslatorEnglish : public Translator
     /*! this text is put before a collaboration diagram */
     virtual QCString trCollaborationDiagram(const QCString &clName)
     {
-      return (QCString)"Collaboration diagram for "+clName+":";
+      return "Collaboration diagram for "+clName+":";
     }
     /*! this text is put before an include dependency graph */
     virtual QCString trInclDepGraph(const QCString &fName)
     {
-      return (QCString)"Include dependency graph for "+fName+":";
+      return "Include dependency graph for "+fName+":";
     }
     /*! header that is put before the list of constructor/destructors. */
     virtual QCString trConstructorDocumentation()
@@ -1052,7 +1054,7 @@ class TranslatorEnglish : public Translator
         "The arrows have the following meaning:\n"
         "</p>\n"
         "<ul>\n"
-        "<li>%A dark blue arrow is used to visualize a public inheritance "
+        "<li>%A blue arrow is used to visualize a public inheritance "
         "relation between two classes.</li>\n"
         "<li>%A dark green arrow is used for protected inheritance.</li>\n"
         "<li>%A dark red arrow is used for private inheritance.</li>\n"
@@ -1119,12 +1121,7 @@ class TranslatorEnglish : public Translator
     /*! Used as the title of a Java package */
     virtual QCString trPackage(const QCString &name)
     {
-      return (QCString)"Package "+name;
-    }
-    /*! Title of the package index page */
-    virtual QCString trPackageList()
-    {
-      return "Package List";
+      return "Package "+name;
     }
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
@@ -1381,14 +1378,18 @@ class TranslatorEnglish : public Translator
     /*! Used as a heading for a list of Java class functions with package
      * scope.
      */
-    virtual QCString trPackageMembers()
+    virtual QCString trPackageFunctions()
     {
       return "Package Functions";
+    }
+    virtual QCString trPackageMembers()
+    {
+      return "Package Members";
     }
     /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
-    virtual QCString trStaticPackageMembers()
+    virtual QCString trStaticPackageFunctions()
     {
       return "Static Package Functions";
     }
@@ -1499,14 +1500,6 @@ class TranslatorEnglish : public Translator
      */
     virtual QCString trDirectories()
     { return "Directories"; }
-
-    /*! This returns a sentences that introduces the directory hierarchy.
-     *  and the fact that it is sorted alphabetically per level
-     */
-    virtual QCString trDirDescription()
-    { return "This directory hierarchy is sorted roughly, "
-             "but not completely, alphabetically:";
-    }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.
@@ -1643,7 +1636,7 @@ class TranslatorEnglish : public Translator
                                     ClassDef::CompoundType compType,
                                     bool isTemplate)
     {
-      QCString result=(QCString)clName;
+      QCString result=clName;
       switch(compType)
       {
         case ClassDef::Class:      result+=" Module"; break;
@@ -1712,7 +1705,7 @@ class TranslatorEnglish : public Translator
         bool single)
     {
       // single is true implies a single file
-      QCString result=(QCString)"The documentation for this ";
+      QCString result="The documentation for this ";
       switch(compType)
       {
         case ClassDef::Class:      result+="module"; break;
@@ -1764,7 +1757,7 @@ class TranslatorEnglish : public Translator
     /*! directory relation for \a name */
     virtual QCString trDirRelation(const QCString &name)
     {
-      return QCString(name)+" Relation";
+      return name+" Relation";
     }
 
     /*! Loading message shown when loading search results */
@@ -1801,7 +1794,7 @@ class TranslatorEnglish : public Translator
      */
     virtual QCString trFileIn(const QCString &name)
     {
-      return (QCString)"File in "+name;
+      return "File in "+name;
     }
 
     /*! when clicking a directory dependency label, a page with a
@@ -1810,7 +1803,7 @@ class TranslatorEnglish : public Translator
      */
     virtual QCString trIncludesFileIn(const QCString &name)
     {
-      return (QCString)"Includes file in "+name;
+      return "Includes file in "+name;
     }
 
     /** Compiles a date string.
@@ -1825,19 +1818,40 @@ class TranslatorEnglish : public Translator
      */
     virtual QCString trDateTime(int year,int month,int day,int dayOfWeek,
                                 int hour,int minutes,int seconds,
-                                bool includeTime)
+                                DateTimeType includeTime)
     {
       static const char *days[]   = { "Mon","Tue","Wed","Thu","Fri","Sat","Sun" };
       static const char *months[] = { "Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec" };
       QCString sdate;
-      sdate.sprintf("%s %s %d %d",days[dayOfWeek-1],months[month-1],day,year);
-      if (includeTime)
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Date)
+      {
+        sdate.sprintf("%s %s %d %d",days[dayOfWeek-1],months[month-1],day,year);
+      }
+      if (includeTime == DateTimeType::DateTime) sdate += " ";
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Time)
       {
         QCString stime;
-        stime.sprintf(" %.2d:%.2d:%.2d",hour,minutes,seconds);
+        stime.sprintf("%.2d:%.2d:%.2d",hour,minutes,seconds);
         sdate+=stime;
       }
       return sdate;
+    }
+    virtual QCString trDayOfWeek(int dayOfWeek, bool, bool full)
+    {
+      static const char *days_short[]   = { "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" };
+      static const char *days_full[]    = { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" };
+      return full? days_full[dayOfWeek-1] : days_short[dayOfWeek-1];
+    }
+    virtual QCString trMonth(int month, bool, bool full)
+    {
+      static const char *months_short[] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
+      static const char *months_full[]  = { "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" };
+      return full? months_full[month-1] : months_short[month-1];
+    }
+    virtual QCString trDayPeriod(int period)
+    {
+      static const char *dayPeriod[] = { "AM", "PM" };
+      return dayPeriod[period];
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1854,7 +1868,7 @@ class TranslatorEnglish : public Translator
 
     /*! Header for the graph showing the directory dependencies */
     virtual QCString trDirDepGraph(const QCString &name)
-    { return QCString("Directory dependency graph for ")+name+":"; }
+    { return "Directory dependency graph for "+name+":"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.8.0
@@ -1882,11 +1896,11 @@ class TranslatorEnglish : public Translator
 
     /*! Header of a Java enum page (Java enums are represented as classes). */
     virtual QCString trEnumReference(const QCString &name)
-    { return QCString(name)+" Enum Reference"; }
+    { return name+" Enum Reference"; }
 
     /*! Used for a section containing inherited members */
     virtual QCString trInheritedFrom(const QCString &members,const QCString &what)
-    { return QCString(members)+" inherited from "+what; }
+    { return members+" inherited from "+what; }
 
     /*! Header of the sections with inherited members specific for the
      *  base class(es)
@@ -1975,14 +1989,14 @@ class TranslatorEnglish : public Translator
     /** UNO IDL service page title */
     virtual QCString trServiceReference(const QCString &sName)
     {
-      QCString result=(QCString)sName;
+      QCString result=sName;
       result+=" Service Reference";
       return result;
     }
     /** UNO IDL singleton page title */
     virtual QCString trSingletonReference(const QCString &sName)
     {
-      QCString result=(QCString)sName;
+      QCString result=sName;
       result+=" Singleton Reference";
       return result;
     }
@@ -1990,8 +2004,8 @@ class TranslatorEnglish : public Translator
     virtual QCString trServiceGeneratedFromFiles(bool single)
     {
       // single is true implies a single file
-      QCString result=(QCString)"The documentation for this service "
-                                "was generated from the following file";
+      QCString result="The documentation for this service "
+                      "was generated from the following file";
       if (single) result+=":"; else result+="s:";
       return result;
     }
@@ -1999,8 +2013,8 @@ class TranslatorEnglish : public Translator
     virtual QCString trSingletonGeneratedFromFiles(bool single)
     {
       // single is true implies a single file
-      QCString result=(QCString)"The documentation for this singleton "
-                                "was generated from the following file";
+      QCString result="The documentation for this singleton "
+                      "was generated from the following file";
       if (single) result+=":"; else result+="s:";
       return result;
     }
@@ -2034,7 +2048,7 @@ class TranslatorEnglish : public Translator
     virtual QCString trFunctionAndProc()
     { return "Functions/Procedures/Processes"; }
     /** VHDL type */
-    virtual QCString trVhdlType(uint64 type,bool single)
+    virtual QCString trVhdlType(uint64_t type,bool single)
     {
       switch(type)
       {
@@ -2120,7 +2134,7 @@ class TranslatorEnglish : public Translator
       }
     }
     virtual QCString trCustomReference(const QCString &name)
-    { return QCString(name)+" Reference"; }
+    { return name+" Reference"; }
 
     /* Slice */
     virtual QCString trConstants()
@@ -2221,7 +2235,7 @@ class TranslatorEnglish : public Translator
     }
     virtual QCString trCompoundReferenceSlice(const QCString &clName, ClassDef::CompoundType compType, bool isLocal)
     {
-      QCString result=(QCString)clName;
+      QCString result=clName;
       if (isLocal) result+=" Local";
       switch(compType)
       {
@@ -2306,6 +2320,248 @@ class TranslatorEnglish : public Translator
     virtual QCString trConceptDefinition()
     {
       return "Concept definition";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.4
+//////////////////////////////////////////////////////////////////////////
+
+    virtual QCString trPackageList()
+    { return "Package List"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.6
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This is used for translation of the word that will be
+     *  followed by a single name of the VHDL process flowchart.
+     */
+    virtual QCString trFlowchart()
+    { return "Flowchart: "; }
+
+    /*! Please translate also updated body of the method
+     *  trMemberFunctionDocumentation(), now better adapted for
+     *  VHDL sources documentation.
+     */
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.7
+//////////////////////////////////////////////////////////////////////////
+    /*! used in the compound documentation before a list of related symbols.
+     *
+     *  Supersedes trRelatedFunctions
+     */
+    virtual QCString trRelatedSymbols()
+    { return "Related Symbols"; }
+
+    /*! subscript for the related symbols
+     *
+     *  Supersedes trRelatedSubscript
+     */
+    virtual QCString trRelatedSymbolsSubscript()
+    { return "(Note that these are not member symbols.)"; }
+
+    /*! used in the class documentation as a header before the list of all
+     * related classes.
+     *
+     * Supersedes trRelatedFunctionDocumentation
+     */
+    virtual QCString trRelatedSymbolDocumentation()
+    { return "Friends And Related Symbol Documentation"; }
+
+    /*! the compound type as used for the xrefitems */
+    virtual QCString trCompoundType(ClassDef::CompoundType compType, SrcLangExt lang)
+    {
+      QCString result;
+      switch(compType)
+      {
+        case ClassDef::Class:
+          if (lang == SrcLangExt_Fortran) trType(true,true);
+          else result=trClass(true,true);
+          break;
+        case ClassDef::Struct:     result="Struct"; break;
+        case ClassDef::Union:      result="Union"; break;
+        case ClassDef::Interface:  result="Interface"; break;
+        case ClassDef::Protocol:   result="Protocol"; break;
+        case ClassDef::Category:   result="Category"; break;
+        case ClassDef::Exception:  result="Exception"; break;
+        case ClassDef::Service:    result="Service"; break;
+        case ClassDef::Singleton:  result="Singleton"; break;
+        default: break;
+      }
+      return result;
+    }
+
+    virtual QCString trFileMembersDescriptionTotal(FileMemberHighlight::Enum hl)
+    {
+      bool extractAll = Config_getBool(EXTRACT_ALL);
+      QCString result="Here is a list of all ";
+      if (!extractAll) result+="documented ";
+
+      switch (hl)
+      {
+        case FileMemberHighlight::All:
+          if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+          {
+            result+="functions, variables, defines, enums, and typedefs";
+          }
+          else
+          {
+            result+="file members";
+          }
+          break;
+        case FileMemberHighlight::Functions:
+          result+="functions";
+          break;
+        case FileMemberHighlight::Variables:
+          result+="variables";
+          break;
+        case FileMemberHighlight::Typedefs:
+          result+="typedefs";
+          break;
+        case FileMemberHighlight::Sequences:
+          result+="sequences";
+          break;
+        case FileMemberHighlight::Dictionaries:
+          result+="dictionaries";
+          break;
+        case FileMemberHighlight::Enums:
+          result+="enums";
+          break;
+        case FileMemberHighlight::EnumValues:
+          result+="enum values";
+          break;
+        case FileMemberHighlight::Defines:
+          result+="macros";
+          break;
+        case FileMemberHighlight::Total: // for completeness
+          break;
+      }
+      result+=" with links to ";
+      if (extractAll)
+        result+="the files they belong to:";
+      else
+        result+="the documentation:";
+      return result;
+    }
+    virtual QCString trCompoundMembersDescriptionTotal(ClassMemberHighlight::Enum hl)
+    {
+      bool extractAll = Config_getBool(EXTRACT_ALL);
+      QCString result="Here is a list of all ";
+      if (!extractAll)
+      {
+        result+="documented ";
+      }
+
+      switch (hl)
+      {
+        case ClassMemberHighlight::All:
+          if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+          {
+            result+="struct and union fields";
+          }
+          else
+          {
+            result+="class members";
+          }
+          break;
+        case ClassMemberHighlight::Functions:
+          result+="functions";
+          break;
+        case ClassMemberHighlight::Variables:
+          result+="variables";
+          break;
+        case ClassMemberHighlight::Typedefs:
+          result+="typedefs";
+          break;
+        case ClassMemberHighlight::Enums:
+          result+="enums";
+          break;
+        case ClassMemberHighlight::EnumValues:
+          result+="enum values";
+          break;
+        case ClassMemberHighlight::Properties:
+          result+="properties";
+          break;
+        case ClassMemberHighlight::Events:
+          result+="events";
+          break;
+        case ClassMemberHighlight::Related:
+          result+="related symbols";
+          break;
+        case ClassMemberHighlight::Total: // for completeness
+          break;
+      }
+      result+=" with links to ";
+      if (!extractAll)
+      {
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+        {
+          result+="the struct/union documentation for each field:";
+        }
+        else
+        {
+          result+="the class documentation for each member:";
+        }
+      }
+      else
+      {
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+        {
+          result+="the structures/unions they belong to:";
+        }
+        else
+        {
+          result+="the classes they belong to:";
+        }
+      }
+      return result;
+    }
+    virtual QCString trNamespaceMembersDescriptionTotal(NamespaceMemberHighlight::Enum hl)
+    {
+      bool extractAll = Config_getBool(EXTRACT_ALL);
+      QCString result="Here is a list of all ";
+      if (!extractAll) result+="documented ";
+      result+="namespace ";
+      QCString singularResult = "";
+      QCString pluralResult = "";
+      switch (hl)
+      {
+        case NamespaceMemberHighlight::All:
+          singularResult="member";
+          break;
+        case NamespaceMemberHighlight::Functions:
+          singularResult="function";
+          break;
+        case NamespaceMemberHighlight::Variables:
+          singularResult="variable";
+          break;
+        case NamespaceMemberHighlight::Typedefs:
+          singularResult="typedef";
+          break;
+        case NamespaceMemberHighlight::Sequences:
+          singularResult="sequence";
+          break;
+        case NamespaceMemberHighlight::Dictionaries:
+          singularResult="dictionary";
+          pluralResult="dictionaries";
+          break;
+        case NamespaceMemberHighlight::Enums:
+          singularResult="enum";
+          break;
+        case NamespaceMemberHighlight::EnumValues:
+          singularResult="enum value";
+          break;
+        case NamespaceMemberHighlight::Total: // for completeness
+          break;
+      }
+      result+=(pluralResult.isEmpty() ? singularResult+"s" : pluralResult);
+      result+=" with links to ";
+      if (extractAll)
+        result+="the namespace documentation for each " + singularResult + ":";
+      else
+        result+="the namespaces they belong to:";
+      return result;
     }
 };
 

@@ -64,7 +64,7 @@ class Ex
      *  - `\s` matches any whitespace as defined by `std::isspace()`
      *  - `\d` matches any digit as defined by `std::digit()`
      *  - `\a` matches any alphabetical characters, same as `[a-z_A-Z\x80-\xFF]`
-     *  - `\w` matches any alpha numercial character, same as `[a-z_A-Z0-9\x80-\xFF]`
+     *  - `\w` matches any alpha numerical character, same as `[a-z_A-Z0-9\x80-\xFF]`
      *  - `\xHH` matches a hexadecimal character, e.g. `\xA0` matches character code 160.
      *
      *  A character range can be used to match a character that falls inside a range

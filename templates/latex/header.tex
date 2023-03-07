@@ -77,6 +77,7 @@
     left=2.5cm,%
     right=2.5cm%
   }
+  \usepackage{changepage}
 
   % Allow a bit of overflow to go unnoticed by other means
   \tolerance=750
@@ -172,8 +173,8 @@
       linkcolor=blue,%
       citecolor=blue,%
       unicode,%
-      pdftitle=$projectname,%
-      pdfsubject=$projectbrief%
+      pdftitle={$projectname},%
+      pdfsubject={$projectbrief}%
     }
 
 %%END PDF_HYPERLINKS
@@ -220,6 +221,9 @@
   \vspace*{7cm}
   \begin{center}%
   {\Large $title}\\
+%%BEGIN PROJECT_NUMBER
+  [1ex]\large $projectnumber \\
+%%END PROJECT_NUMBER
   \vspace*{1cm}
   {\large $generatedby Doxygen $doxygenversion}\\
 %%BEGIN LATEX_TIMESTAMP

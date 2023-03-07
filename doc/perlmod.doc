@@ -19,11 +19,12 @@ useful output, as shown by the Perl Module-based \LaTeX generator.
 
 <p>Please report any bugs or problems you find in the Perl Module 
 backend or the Perl Module-based \LaTeX generator to the 
-doxygen-develop mailing list.  Suggestions are welcome as well.
+<a href="https://github.com/doxygen/doxygen/issues">doxygen issue tracker</a>.
+Suggestions are welcome as well (see also: \ref bug_reports "How to report a bug").
 
 \section using_perlmod_fmt Usage
 
-<p>When the \ref cfg_generate_perlmod "GENERATE_PERLMOD" tag is enabled in the Doxyfile, 
+<p>When the \ref cfg_generate_perlmod "GENERATE_PERLMOD" tag is enabled in the `Doxyfile`, 
 running doxygen generates a number of files in the `perlmod/` 
 subdirectory of your output directory.  These files are the following:
 
@@ -38,7 +39,7 @@ contains the documentation, in the Perl Module format described
 \ref doxymodel_format "below" for details.
 
 <li>`doxyrules.make`:  This file contains the make rules to build 
-and clean the files that are generated from the Doxyfile.  Also 
+and clean the files that are generated from the `Doxyfile`.  Also 
 contains the paths to those files and other relevant information. This 
 file is intended to be included by your own Makefile.
 
@@ -47,7 +48,7 @@ file is intended to be included by your own Makefile.
 
 </ul>
 
-<p>To make use of the documentation stored in DoxyDocs.pm you can use
+<p>To make use of the documentation stored in `DoxyDocs.pm` you can use
 one of the default Perl Module-based generators provided by doxygen
 (at the moment this includes the Perl Module-based \LaTeX generator,
 see \ref perlmod_latex "below") or write your own customized
@@ -89,11 +90,11 @@ suitable to be \LaTeX'ed and presented to the user.
 
 <li>`doxylatex-template.pl`:  This Perl script uses `DoxyModel.pm` 
 to generate `doxytemplate.tex`, a \TeX file defining default 
-values for some macros.  doxytemplate.tex is included by 
+values for some macros.  `doxytemplate.tex` is included by 
 doxyformat.tex to avoid the need of explicitly defining some macros.
 
 <li>`doxylatex.tex`:  This is a very simple \LaTeX document that 
-loads some packages and includes doxyformat.tex and doxydocs.tex. This 
+loads some packages and includes `doxyformat.tex` and `doxydocs.tex`. This 
 document is \LaTeX'ed to produce the PDF and DVI documentation by the 
 rules added to `doxyrules.make`.
 
@@ -112,9 +113,9 @@ packages used by `doxylatex.tex`.
 
 <li>Set both \ref cfg_generate_perlmod "GENERATE_PERLMOD" and 
 \ref cfg_perlmod_latex "PERLMOD_LATEX" tags to 
-\c YES in your Doxyfile.
+\c YES in your `Doxyfile`.
 
-<li>Run doxygen on your Doxyfile:
+<li>Run doxygen on your `Doxyfile`:
 
 <pre>doxygen Doxyfile</pre>
 

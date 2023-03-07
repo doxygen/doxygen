@@ -22,8 +22,7 @@
 class FileCodeParser : public CodeParserInterface
 {
   public:
-    virtual ~FileCodeParser() {}
-    void parseCode(CodeOutputInterface &codeOutIntf,
+    void parseCode(OutputCodeList &codeOutIntf,
                    const QCString &scopeName,
                    const QCString &input,
                    SrcLangExt lang,

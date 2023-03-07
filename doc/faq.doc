@@ -151,7 +151,7 @@ If you want to refer from one compressed HTML file
 called \c b.chm, the
 link in \c a.chm must have the following format:
 \verbatim
-<a href="b.chm::/file.html">
+<a href="mk:@MSITStore:b.chm::/file.html">
 \endverbatim
 Unfortunately this only works if both compressed HTML files are in the same
 directory.
@@ -164,7 +164,7 @@ Suppose you have a project \e a referring to a project \e b using tag file
 \c a.chm and the \c index.chm for project \e b into \c b.chm. In the
 configuration file for project \e a you write:
 \verbatim
-TAGFILES = b.tag=b.chm::
+TAGFILES = b.tag=mk:@MSITStore:b.chm::
 \endverbatim
 
 \section faq_html I don't like the quick index that is put above each HTML page, what do I do?

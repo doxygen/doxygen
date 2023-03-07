@@ -8,6 +8,7 @@
         <definition>void Bug::foo</definition>
         <argsstring>()</argsstring>
         <name>foo</name>
+        <qualifiedname>Bug::foo</qualifiedname>
         <briefdescription>
         </briefdescription>
         <detaileddescription>

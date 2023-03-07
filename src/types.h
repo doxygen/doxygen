@@ -23,19 +23,19 @@
  */
 
 /** Protection level of members */
-enum Protection   { Public, Protected, Private, Package } ;
+enum class Protection   { Public, Protected, Private, Package } ;
 
 /** Virtualness of a member. */
-enum Specifier    { Normal, Virtual, Pure } ;
+enum class Specifier    { Normal, Virtual, Pure } ;
 
 /** Kind of method */
-enum MethodTypes  { Method, Signal, Slot, DCOP, Property, Event };
+enum class MethodTypes  { Method, Signal, Slot, DCOP, Property, Event };
 
 /** Type of member relation */
-enum RelatesType  { Simple, Duplicate, MemberOf };
+enum class RelatesType  { Simple, Duplicate, MemberOf };
 
 /** Kind of member relationship */
-enum Relationship { Member, Related, Foreign };
+enum class Relationship { Member, Related, Foreign };
 
 /** Language as given by extension */
 enum SrcLangExt
@@ -103,6 +103,8 @@ enum MemberListType
   MemberListType_detailedLists      = 0x1000,
   MemberListType_declarationLists   = 0x2000,
   MemberListType_documentationLists = 0x4000,
+
+  MemberListType_undefined               = -1,
 
   MemberListType_pubMethods              = 0,
   MemberListType_proMethods              = 1,
@@ -297,6 +299,7 @@ enum FortranFormat
   FortranFormat_Free,
   FortranFormat_Fixed
 };
+
 
 class LocalToc
 {

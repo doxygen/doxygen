@@ -1,8 +1,6 @@
 /******************************************************************************
  *
- *
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2023 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -76,11 +74,6 @@ struct BodyInfo
 class Definition
 {
   public:
-    struct Cookie
-    {
-      virtual ~Cookie() {}
-    };
-
     /*! Types of derived classes */
     enum DefType
     {
@@ -110,7 +103,7 @@ class Definition
     virtual bool isAlias() const = 0;
 
     /*! Returns the name of the definition */
-    virtual QCString name() const = 0;
+    virtual const QCString &name() const = 0;
 
     /*! Returns TRUE iff this definition has an artificially generated name
      * (typically starting with a @) that is used for nameless definitions
@@ -121,7 +114,7 @@ class Definition
     virtual QCString displayName(bool includeScope=TRUE) const = 0;
 
     /*! Returns the local name without any scope qualifiers. */
-    virtual QCString localName() const = 0;
+    virtual const QCString &localName() const = 0;
 
     /*! Returns the fully qualified name of this definition
      */
@@ -357,16 +350,16 @@ class DefinitionMutable
     // --- actions ----
     //-----------------------------------------------------------------------------------
 
-    virtual void makePartOfGroup(const GroupDef *gd) = 0;
+    virtual void makePartOfGroup(GroupDef *gd) = 0;
 
     /*! Add the list of anchors that mark the sections that are found in the
      * documentation.
      */
     virtual void addSectionsToDefinition(const std::vector<const SectionInfo*> &anchorList) = 0;
-    virtual void addSourceReferencedBy(const MemberDef *d) = 0;
-    virtual void addSourceReferences(const MemberDef *d) = 0;
+    virtual void addSourceReferencedBy(MemberDef *d) = 0;
+    virtual void addSourceReferences(MemberDef *d) = 0;
     virtual void mergeRefItems(Definition *d) = 0;
-    virtual void addInnerCompound(const Definition *d) = 0;
+    virtual void addInnerCompound(Definition *d) = 0;
     virtual void addSectionsToIndex() = 0;
     virtual void mergeReferences(const Definition *other) = 0;
     virtual void mergeReferencedBy(const Definition *other) = 0;
@@ -397,7 +390,6 @@ class DefinitionMutable
 
 Definition          *toDefinition(DefinitionMutable *dm);
 DefinitionMutable   *toDefinitionMutable(Definition *d);
-DefinitionMutable   *toDefinitionMutable(const Definition *d);
 
 /** Reads a fragment from file \a fileName starting with line \a startLine
  *  and ending with line \a endLine. The result is returned as a string

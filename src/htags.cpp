@@ -89,13 +89,11 @@ bool Htags::execute(const QCString &htmldir)
   std::string oldDir = Dir::currentDirPath();
   Dir::setCurrent(g_inputDir.absPath());
   //printf("CommandLine=[%s]\n",qPrint(commandLine));
-  Portable::sysTimerStart();
   bool result=Portable::system("htags",commandLine,FALSE)==0;
   if (!result)
   {
     err("Problems running %s. Check your installation\n", "htags");
   }
-  Portable::sysTimerStop();
   Dir::setCurrent(oldDir);
   return result;
 }
@@ -123,7 +121,7 @@ bool Htags::loadFilemap(const QCString &htmlDir)
    */
   if (fi.exists() && fi.isReadable())
   {
-    std::ifstream f(fileMapName.str(),std::ifstream::in);
+    std::ifstream f = Portable::openInputStream(fileMapName);
     if (f.is_open())
     {
       std::string lineStr;
@@ -160,8 +158,8 @@ QCString Htags::path2URL(const QCString &path)
 {
   QCString url,symName=path;
   QCString dir = g_inputDir.absPath();
-  int dl=dir.length();
-  if ((int)symName.length()>dl+1)
+  size_t dl=dir.length();
+  if (symName.length()>dl+1)
   {
     symName = symName.mid(dl+1);
   }

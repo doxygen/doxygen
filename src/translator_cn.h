@@ -24,7 +24,7 @@
 */
 #define CN_SPC " "
 
-class TranslatorChinese : public Translator
+class TranslatorChinese : public TranslatorAdapter_1_9_4
 {
   public:
     /*! Used for identification of the language. The identification
@@ -59,6 +59,10 @@ class TranslatorChinese : public Translator
     {
       return "zh";
     }
+    virtual QCString getLanguageString()
+    {
+      return "0x804 Chinese (PRC)";
+    }
     virtual QCString latexFontenc()
     {
       return "";
@@ -70,6 +74,10 @@ class TranslatorChinese : public Translator
     virtual QCString latexDocumentPost()
     {
       return "\\end{CJK}\n";
+    }
+    virtual bool needsPunctuation()
+    {
+      return false;
     }
 
     /*! used in the compound documentation before a list of related functions.
@@ -86,6 +94,10 @@ class TranslatorChinese : public Translator
      */
     virtual QCString trDetailedDescription()
     { return "详细描述"; }
+
+    /*! header that is used when the summary tag is missing inside the details tag */
+    virtual QCString trDetails()
+    { return "详细信息"; }
 
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
@@ -138,7 +150,7 @@ class TranslatorChinese : public Translator
     virtual QCString trGeneratedAutomatically(const QCString &s)
     { QCString result;
       result = "由" CN_SPC "Doyxgen" CN_SPC "通过分析" CN_SPC;
-      if (!s.isEmpty()) result += ((QCString)s+CN_SPC "的" CN_SPC);
+      if (!s.isEmpty()) result += (s+CN_SPC "的" CN_SPC);
       result+= "源代码自动生成.";
       return result;
     }
@@ -329,6 +341,10 @@ class TranslatorChinese : public Translator
       {
         return "结构体说明";
       }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+          return trDesignUnitDocumentation();
+      }
       else {
         return "类说明";
       }
@@ -336,12 +352,6 @@ class TranslatorChinese : public Translator
 
     virtual QCString trFileDocumentation()
     { return "文件说明"; }
-
-    virtual QCString trExampleDocumentation()
-    { return "示例说明"; }
-
-    virtual QCString trPageDocumentation()
-    { return "页面说明"; }
 
     virtual QCString trReferenceManual()
     { return "参考手册"; }
@@ -392,19 +402,16 @@ class TranslatorChinese : public Translator
     }
 
     virtual QCString trGeneratedAt(const QCString &date,const QCString &projName)
-    { QCString result=(QCString)"生成于" CN_SPC+date;
-      if (!projName.isEmpty()) result+=(QCString)CN_SPC ", 为" CN_SPC+projName;
-      result+=(QCString)"使用" CN_SPC;
+    { QCString result="生成于" CN_SPC+date;
+      if (!projName.isEmpty()) result+=CN_SPC ", 为" CN_SPC+projName;
+      result+="使用" CN_SPC;
       return result;
     }
 
     virtual QCString trClassDiagram(const QCString &clName)
     {
-      return (QCString)"类" CN_SPC+clName+CN_SPC "继承关系图:";
+      return "类" CN_SPC+clName+CN_SPC "继承关系图:";
     }
-
-     virtual QCString trForInternalUseOnly()
-    { return "仅限内部使用."; }
 
      virtual QCString trWarning()
     { return "警告"; }
@@ -464,7 +471,7 @@ class TranslatorChinese : public Translator
                                  bool isTemplate)
       // used as the title of the HTML page of a class/struct/union
     {
-       QCString result=(QCString)clName;
+       QCString result=clName;
       if (isTemplate) result+=CN_SPC "模板";
       switch(compType)
       {
@@ -634,7 +641,7 @@ class TranslatorChinese : public Translator
         bool)
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
-       QCString result=(QCString)"该";
+       QCString result="该";
       switch(compType)
       {
         case ClassDef::Class:      result+="类"; break;
@@ -699,13 +706,13 @@ class TranslatorChinese : public Translator
     /*! this text is put before a collaboration diagram */
     virtual QCString trCollaborationDiagram(const QCString &clName)
     {
-      return (QCString)clName+CN_SPC "的协作图:";
+      return clName+CN_SPC "的协作图:";
     }
 
     /*! this text is put before an include dependency graph */
     virtual QCString trInclDepGraph(const QCString &fName)
     {
-      return (QCString)fName+CN_SPC "的引用(Include)关系图:";
+      return fName+CN_SPC "的引用(Include)关系图:";
     }
 
     /*! header that is put before the list of constructor/destructors. */
@@ -1007,14 +1014,9 @@ class TranslatorChinese : public Translator
     /*! Used as the title of a Java package */
     virtual QCString trPackage(const QCString &name)
     {
-      return (QCString)"包" CN_SPC+name;
+      return "包" CN_SPC+name;
     }
 
-    /*! Title of the package index page */
-    virtual QCString trPackageList()
-    {
-      return "包列表";
-    }
 
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
@@ -1302,15 +1304,19 @@ class TranslatorChinese : public Translator
     /*! Used as a heading for a list of Java class functions with package
      * scope.
      */
-    virtual QCString trPackageMembers()
+    virtual QCString trPackageFunctions()
     {
       return "包函数";
+    }
+    virtual QCString trPackageMembers()
+    {
+      return "包成员";
     }
 
     /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
-    virtual QCString trStaticPackageMembers()
+    virtual QCString trStaticPackageFunctions()
     {
       return "静态包函数";
     }
@@ -1429,14 +1435,6 @@ class TranslatorChinese : public Translator
      */
     virtual QCString trDirectories()
     { return "目录"; }
-
-    /*! This returns a sentences that introduces the directory hierarchy.
-     *  and the fact that it is sorted alphabetically per level
-     */
-    virtual QCString trDirDescription()
-    {
-      return "此继承关系列表按字典顺序粗略的排序:" CN_SPC;
-    }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.
@@ -1578,7 +1576,7 @@ class TranslatorChinese : public Translator
                                     ClassDef::CompoundType compType,
                                     bool isTemplate)
     {
-      QCString result=(QCString)clName;
+      QCString result=clName;
       switch(compType)
       {
         case ClassDef::Class:      result+=CN_SPC "模块"; break;
@@ -1729,32 +1727,52 @@ class TranslatorChinese : public Translator
 
   virtual QCString trFileIn(const QCString &name)
   {
-    return (QCString)"文件在"+CN_SPC+name;
+    return QCString("文件在")+CN_SPC+name;
   }
 
   virtual QCString trIncludesFileIn(const QCString &name)
   {
-    return (QCString)"在" CN_SPC+name+CN_SPC "中引用";
+    return "在" CN_SPC+name+CN_SPC "中引用";
   }
 
   virtual QCString trDateTime(int year,int month,int day,int dayOfWeek,
                                 int hour,int minutes,int seconds,
-                                bool includeTime)
+                                DateTimeType includeTime)
   {
     static const char *days[]   = { "一","二","三","四","五","六","日" };
-      static const char *months[] = { "一","二","三","四","五","六","七","八","九","十","十一","十二" };
+    static const char *months[] = { "一","二","三","四","五","六","七","八","九","十","十一","十二" };
 
     QCString sdate;
 
-    sdate.sprintf("%d年" CN_SPC "%s月" CN_SPC "%d日" CN_SPC "星期%s",year, months[month-1], day, days[dayOfWeek-1]);
-
-    if (includeTime)
+    if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Date)
+    {
+      sdate.sprintf("%d年" CN_SPC "%s月" CN_SPC "%d日" CN_SPC "星期%s",year, months[month-1], day, days[dayOfWeek-1]);
+    }
+    if (includeTime == DateTimeType::DateTime) sdate += " ";
+    if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Time)
     {
       QCString stime;
-      stime.sprintf(" %.2d:%.2d:%.2d",hour,minutes,seconds);
+      stime.sprintf("%.2d:%.2d:%.2d",hour,minutes,seconds);
       sdate+=stime;
     }
     return sdate;
+  }
+  virtual QCString trDayOfWeek(int dayOfWeek, bool, bool full)
+  {
+    static const char *days_short[]   = { "周一", "周二", "周三", "周四", "周五", "周六", "周日" };
+    static const char *days_full[]    = { "星期一", "星期二", "星期三", "星期四", "星期五", "星期六", "星期日" };
+    return full? days_full[dayOfWeek-1] : days_short[dayOfWeek-1];
+  }
+  virtual QCString trMonth(int month, bool, bool full)
+  {
+    static const char *months_short[] = { "1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月" };
+    static const char *months_full[]  = { "一月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "十一月", "十二月" };
+    return full? months_full[month-1] : months_short[month-1];
+  }
+  virtual QCString trDayPeriod(int period)
+  {
+    static const char *dayPeriod[] = { "上午", "下午" };
+    return dayPeriod[period];
   }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1892,25 +1910,25 @@ class TranslatorChinese : public Translator
     /** UNO IDL service page title */
     virtual QCString trServiceReference(const QCString &sName)
     {
-      QCString result=(QCString)sName;
+      QCString result=sName;
       result+= CN_SPC "服务参考";
       return result;
     }
     /** UNO IDL singleton page title */
     virtual QCString trSingletonReference(const QCString &sName)
     {
-      QCString result=(QCString)sName;
+      QCString result=sName;
       result+= CN_SPC "单例参考";
       return result;
     }
     /** UNO IDL service page */
-    virtual QCString trServiceGeneratedFromFiles(bool single)
+    virtual QCString trServiceGeneratedFromFiles(bool /* single */)
     {
       // single is true implies a single file
       return "该服务的文档由下列文件生成:";
     }
     /** UNO IDL singleton page */
-    virtual QCString trSingletonGeneratedFromFiles(bool single)
+    virtual QCString trSingletonGeneratedFromFiles(bool /* single */)
     {
       // single is true implies a single file
       return "该单例的文档由下列文件生成:";
@@ -1944,7 +1962,7 @@ class TranslatorChinese : public Translator
     virtual QCString trFunctionAndProc()
     { return "函数/调用过程/进程语句"; }
     /** VHDL type */
-    virtual QCString trVhdlType(uint64 type,bool single)
+    virtual QCString trVhdlType(uint64_t type,bool single)
     {
       switch(type)
       {
@@ -2109,7 +2127,7 @@ class TranslatorChinese : public Translator
     }
     virtual QCString trCompoundReferenceSlice(const QCString &clName, ClassDef::CompoundType compType, bool isLocal)
     {
-      QCString result=(QCString)clName;
+      QCString result=clName;
       if (isLocal) result+=" 局部";
       switch(compType)
       {
@@ -2155,7 +2173,7 @@ class TranslatorChinese : public Translator
 //////////////////////////////////////////////////////////////////////////
 
     /** C++20 concept */
-    virtual QCString trConcept(bool first_capital, bool singular)
+    virtual QCString trConcept(bool /* first_capital */, bool /* singular */)
     {
       return "概念";
     }
@@ -2180,7 +2198,7 @@ class TranslatorChinese : public Translator
     { return "概念文档"; }
 
     /*! used as an introduction to the concept list */
-    virtual QCString trConceptListDescription(bool extractAll)
+    virtual QCString trConceptListDescription(bool /* extractAll */)
     {
       return "以下是带有简要说明的概念";
     }
@@ -2189,6 +2207,29 @@ class TranslatorChinese : public Translator
     virtual QCString trConceptDefinition()
     {
       return "概念定义";
+    }
+
+    /*! the compound type as used for the xrefitems */
+    virtual QCString trCompoundType(ClassDef::CompoundType compType, SrcLangExt lang)
+    {
+      QCString result;
+      switch(compType)
+      {
+        case ClassDef::Class:
+          if (lang == SrcLangExt_Fortran) trType(true,true);
+          else result=trClass(true,true);
+          break;
+        case ClassDef::Struct:     result="结构体"; break;
+        case ClassDef::Union:      result="联合体"; break;
+        case ClassDef::Interface:  result="接口"; break;
+        case ClassDef::Protocol:   result="协议"; break;
+        case ClassDef::Category:   result="分类"; break;
+        case ClassDef::Exception:  result="异常"; break;
+        case ClassDef::Service:    result="Service"; break;
+        case ClassDef::Singleton:  result="Singleton"; break;
+        default: break;
+      }
+      return result;
     }
 
 };

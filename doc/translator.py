@@ -194,6 +194,7 @@ class Transl:
                      '%':         'perc',
                      '~':         'tilde',
                      '^':         'caret',
+                     '|':         'pipe',
                    }
 
         # Regular expression for recognizing identifiers.
@@ -245,10 +246,7 @@ class Transl:
                         elif rexId.match(tokenStr):
                             tokenId = 'id'
                         else:
-                            msg = '\aWarning: unknown token "' + tokenStr + '"'
-                            msg += '\tfound on line %d' % tokenLineNo
-                            msg += ' in "' + self.fname + '".\n'
-                            sys.stderr.write(msg)
+                            self.__unexpectedToken(-1, tokenStr, tokenLineNo)
 
                     yield (tokenId, tokenStr, tokenLineNo)
 
@@ -510,7 +508,8 @@ class Transl:
         calledFrom = inspect.stack()[1][3]
         msg = "\a\nUnexpected token '%s' on the line %d in '%s'.\n"
         msg = msg % (tokenId, tokenLineNo, self.fname)
-        msg += 'status = %d in %s()\n' % (status, calledFrom)
+        if status != -1:
+            msg += 'status = %d in %s()\n' % (status, calledFrom)
         sys.stderr.write(msg)
         sys.exit(1)
 
@@ -624,8 +623,8 @@ class Transl:
                 else:
                     self.__unexpectedToken(status, tokenId, tokenLineNo)
 
-            elif status == 8:    # zero expected
-                if tokenId == 'num' and tokenStr == '0':
+            elif status == 8:    # zero expected (or default for the destructor)
+                if (tokenId == 'num' and tokenStr == '0') or (tokenId == 'id' and tokenStr == 'default'):
                     status = 9
                 else:
                     self.__unexpectedToken(status, tokenId, tokenLineNo)
@@ -732,7 +731,7 @@ class Transl:
         the source file."""
 
         assert(self.classId != 'Translator')
-        assert(self.baseClassId != None)
+        assert self.baseClassId != None, 'Class ' + self.classId + ' from the file ' + self.fname + ' does not have a base class.'
 
         # The following finite automaton slightly differs from the one
         # inside self.collectPureVirtualPrototypes(). It produces the
@@ -875,8 +874,14 @@ class Transl:
                             assert False
 
                         assert(uniPrototype not in self.prototypeDic)
-                        # Insert new dictionary item.
-                        self.prototypeDic[uniPrototype] = prototype
+                        # Insert new dictionary item, unless they have a default in translator.h
+                        if (not (prototype=="virtual QCString latexDocumentPost()" or
+                                 prototype=="virtual QCString latexDocumentPre()" or
+                                 prototype=="virtual QCString latexCommandName()" or
+                                 prototype=="virtual QCString latexFont()" or
+                                 prototype=="virtual QCString latexFontenc()" or
+                                 prototype=="virtual bool needsPunctuation()")):
+                            self.prototypeDic[uniPrototype] = prototype
                         status = 2      # body consumed
                         methodId = None # outside of any method
                 elif tokenId == 'lcurly':
@@ -1122,13 +1127,13 @@ class Transl:
         # be set.
         if not self.note and self.status == '' and \
            (self.translateMeFlag or self.txtMAX_DOT_GRAPH_HEIGHT_flag):
-           self.note = ''
-           if self.translateMeFlag:
-               self.note += 'The "%s" found in a comment.' % self.translateMeText
-           if self.note != '':
-               self.note += '\n\t\t'
-           if self.txtMAX_DOT_GRAPH_HEIGHT_flag:
-               self.note += 'The MAX_DOT_GRAPH_HEIGHT found in trLegendDocs()'
+            self.note = ''
+            if self.translateMeFlag:
+                self.note += 'The "%s" found in a comment.' % self.translateMeText
+            if self.note != '':
+                self.note += '\n\t\t'
+            if self.txtMAX_DOT_GRAPH_HEIGHT_flag:
+                self.note += 'The MAX_DOT_GRAPH_HEIGHT found in trLegendDocs()'
 
         # If everything seems OK, but there are obsolete methods, set
         # the note to clean-up source. This note will be used only when
@@ -1516,12 +1521,14 @@ class TrManager:
             color = '#ffffff'    # white
         elif readableStatus.startswith('English'):
             color = '#ccffcc'    # green
-        elif readableStatus.startswith('1.8'):
+        elif readableStatus.startswith('1.9'):
             color = '#ffffcc'    # yellow
+        elif readableStatus.startswith('1.8'):
+            color = '#ffcccc'    # pink
         elif readableStatus.startswith('1.7'):
-            color = '#ffcccc'    # pink
+            color = '#ff5555'    # red
         elif readableStatus.startswith('1.6'):
-            color = '#ffcccc'    # pink
+            color = '#ff5555'    # red
         else:
             color = '#ff5555'    # red
         return color
@@ -1776,6 +1783,12 @@ class TrManager:
         """Checks the modtime of files and generates language.doc."""
         self.__loadMaintainers()
 
+        # Check the last modification time of the VERSION file.
+        fVerName = os.path.join(self.org_doxy_path, "VERSION")
+        tim = os.path.getmtime(fVerName)
+        if tim > self.lastModificationTime:
+            self.lastModificationTime = tim
+
         # Check the last modification time of the template file. It is the
         # last file from the group that decide whether the documentation
         # should or should not be generated.
@@ -1818,9 +1831,8 @@ class TrManager:
         tplDic['supportedLangReadableStr'] = self.supportedLangReadableStr
         tplDic['translatorReportFileName'] = self.translatorReportFileName
 
-        ahref = '<a href="../doc/' + self.translatorReportFileName
-        ahref += '"\n><code>doxygen/doc/'  + self.translatorReportFileName
-        ahref += '</code></a>'
+        ahref = '<a href="' + self.translatorReportFileName
+        ahref += '"\n><code>'  + self.translatorReportFileName + '</code></a>'
         tplDic['translatorReportLink'] = ahref
         tplDic['numLangStr'] = str(self.numLang)
 
@@ -1860,9 +1872,13 @@ class TrManager:
         for name, obj in self.langLst:
             # Fill the table data elements for one row. The first element
             # contains the readable name of the language. Only the oldest
-            # translator are colour marked in the language column. Less
+            # translators are color marked in the language column. Less
             # "heavy" color is used (when compared with the Status column).
-            if obj.readableStatus.startswith('1.4'):
+            if obj.readableStatus.startswith('1.7'):
+                bkcolor = self.getBgcolorByReadableStatus('1.7')
+            elif obj.readableStatus.startswith('1.6'):
+                bkcolor = self.getBgcolorByReadableStatus('1.6')
+            elif obj.readableStatus.startswith('1.4'):
                 bkcolor = self.getBgcolorByReadableStatus('1.4')
             else:
                 bkcolor = '#ffffff'
@@ -1881,7 +1897,7 @@ class TrManager:
                 if classId in self.__translDic:
                     lang = self.__translDic[classId].langReadable
                     mm = 'see the %s language' % lang
-                    ee = '&nbsp;'
+                    ee = '&#160;'
 
             if not mm and obj.classId in self.__maintainersDic:
                 # Build a string of names separated by the HTML break element.

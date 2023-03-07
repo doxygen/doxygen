@@ -278,7 +278,7 @@ The fields have the following meaning:
 - *first*: the index of first result returned: \f$\min(n*p,\mbox{\em hits})\f$.
 - *count*: the actual number of results returned: \f$\min(n,\mbox{\em hits}-\mbox{\em first})\f$
 - *page*:  the page number of the result: \f$p\f$
-- *pages*: the total number of pages: \f$\lceil\frac{\mbox{\em hits}}{n}\rceil\f$.
+- *pages*: the total number of pages: \f$\left\lceil\frac{\mbox{\em hits}}{n}\right\rceil\f$.
 - *items*: an array containing the search data per result.
 
 Here is an example of how the element of the *items* array should look like:

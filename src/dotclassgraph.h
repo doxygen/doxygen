@@ -52,7 +52,7 @@ private:
   void buildGraph(const ClassDef *cd,DotNode *n,bool base,int distance);
   bool determineVisibleNodes(DotNode *rootNode,int maxNodes,bool includeParents);
   void determineTruncatedNodes(DotNodeDeque &queue,bool includeParents);
-  void addClass(const ClassDef *cd,DotNode *n,int prot,const QCString &label,
+  void addClass(const ClassDef *cd,DotNode *n,EdgeInfo::Colors color,const QCString &label,
     const QCString &usedName,const QCString &templSpec,
     bool base,int distance);
 

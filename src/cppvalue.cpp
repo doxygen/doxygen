@@ -18,7 +18,7 @@
 #include "cppvalue.h"
 #include "constexp.h"
 
-CPPValue parseOctal(const std::string& token)
+CPPValue CPPValue::parseOctal(const std::string& token)
 {
   long val = 0;
   for (const char *p = token.c_str(); *p != 0; p++)
@@ -28,7 +28,7 @@ CPPValue parseOctal(const std::string& token)
   return CPPValue(val);
 }
 
-CPPValue parseDecimal(const std::string& token)
+CPPValue CPPValue::parseDecimal(const std::string& token)
 {
   long val = 0;
   for (const char *p = token.c_str(); *p != 0; p++)
@@ -38,7 +38,7 @@ CPPValue parseDecimal(const std::string& token)
   return CPPValue(val);
 }
 
-CPPValue parseHexadecimal(const std::string& token)
+CPPValue CPPValue::parseHexadecimal(const std::string& token)
 {
   long val = 0;
   for (const char *p = token.c_str(); *p != 0; p++)
@@ -51,7 +51,7 @@ CPPValue parseHexadecimal(const std::string& token)
   return CPPValue(val);
 }
 
-CPPValue parseBinary(const std::string& token)
+CPPValue CPPValue::parseBinary(const std::string& token)
 {
   long val = 0;
   for (const char *p = token.c_str(); *p != 0; p++)
@@ -61,23 +61,23 @@ CPPValue parseBinary(const std::string& token)
   return CPPValue(val);
 }
 
-CPPValue parseCharacter(const std::string& token) // does not work for '\n' and the alike
+CPPValue CPPValue::parseCharacter(const std::string& token) // does not work for '\n' and the alike
 {
   if (token[1]=='\\')
   {
     switch(token[2])
     {
-      case 'n':  return CPPValue((long)'\n');
-      case 't':  return CPPValue((long)'\t');
-      case 'v':  return CPPValue((long)'\v');
-      case 'b':  return CPPValue((long)'\b');
-      case 'r':  return CPPValue((long)'\r');
-      case 'f':  return CPPValue((long)'\f');
-      case 'a':  return CPPValue((long)'\a');
-      case '\\': return CPPValue((long)'\\');
-      case '?':  return CPPValue((long)'\?');
-      case '\'': return CPPValue((long)'\'');
-      case '"':  return CPPValue((long)'"');
+      case 'n':  return CPPValue('\n');
+      case 't':  return CPPValue('\t');
+      case 'v':  return CPPValue('\v');
+      case 'b':  return CPPValue('\b');
+      case 'r':  return CPPValue('\r');
+      case 'f':  return CPPValue('\f');
+      case 'a':  return CPPValue('\a');
+      case '\\': return CPPValue('\\');
+      case '?':  return CPPValue('\?');
+      case '\'': return CPPValue('\'');
+      case '"':  return CPPValue('"');
       case '0':  // fall through
       case '1':  // fall through
       case '2':  // fall through
@@ -93,10 +93,10 @@ CPPValue parseCharacter(const std::string& token) // does not work for '\n' and 
                  return CPPValue(0L);
     }
   }
-  return CPPValue((long)token[1]);
+  return CPPValue(token[1]);
 }
 
-CPPValue parseFloat(const std::string& token)
+CPPValue CPPValue::parseFloat(const std::string& token)
 {
   return CPPValue(std::stod(token));
 }

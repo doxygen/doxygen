@@ -9,6 +9,7 @@
         <definition>int Object::ref</definition>
         <argsstring/>
         <name>ref</name>
+        <qualifiedname>Object::ref</qualifiedname>
         <briefdescription>
           <para>Reference count. </para>
         </briefdescription>
@@ -25,6 +26,7 @@
         <definition>static Object * objRef</definition>
         <argsstring>(Object *obj)</argsstring>
         <name>objRef</name>
+        <qualifiedname>Object::objRef</qualifiedname>
         <param>
           <type><ref refid="struct_object" kindref="compound">Object</ref> *</type>
           <declname>obj</declname>
@@ -43,6 +45,7 @@
         <definition>static Object * objUnref</definition>
         <argsstring>(Object *obj)</argsstring>
         <name>objUnref</name>
+        <qualifiedname>Object::objUnref</qualifiedname>
         <param>
           <type><ref refid="struct_object" kindref="compound">Object</ref> *</type>
           <declname>obj</declname>

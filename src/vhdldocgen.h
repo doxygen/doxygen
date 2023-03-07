@@ -76,6 +76,17 @@ class VhdlDocGen
       ARCHITECTURECLASS,   // Overlays: Private
       PACKAGECLASS         // Overlays: Package
     };
+    static VhdlClasses convert(Protection prot)
+    {
+      switch (prot)
+      {
+        case Protection::Public:    return ENTITYCLASS;
+        case Protection::Protected: return PACKBODYCLASS;
+        case Protection::Private:   return ARCHITECTURECLASS;
+        case Protection::Package:   return PACKAGECLASS;
+      }
+      return ENTITYCLASS;
+    }
 
     enum VhdlKeyWords
     {

@@ -60,9 +60,10 @@ std::string DirEntry::path() const
 struct DirIterator::Private
 {
   Private() : it() {}
-  Private(const std::string &path) : it(path) {}
+  Private(const std::string &path) : it(path,ec) {}
   fs::directory_iterator it;
-  mutable DirEntry current;
+  std::error_code ec;
+  DirEntry current;
 };
 
 DirIterator::DirIterator() : p(std::make_unique<Private>())

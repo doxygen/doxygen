@@ -8,6 +8,7 @@
         <definition>void Test::test</definition>
         <argsstring>()</argsstring>
         <name>test</name>
+        <qualifiedname>Test::test</qualifiedname>
         <briefdescription>
         </briefdescription>
         <detaileddescription>
