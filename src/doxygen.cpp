@@ -107,6 +107,7 @@
 #include "fileinfo.h"
 #include "dir.h"
 #include "conceptdef.h"
+#include "resourcemgr.h"
 #include "trace.h"
 
 #if USE_SQLITE3
@@ -11829,9 +11830,12 @@ void parseInput()
     msg("Parsing layout file %s...\n",qPrint(layoutFileName));
     LayoutDocManager::instance().parse(layoutFileName);
   }
-  else if (!defaultLayoutUsed)
+  else
   {
-    warn_uncond("failed to open layout file '%s' for reading!\n",qPrint(layoutFileName));
+    if (!defaultLayoutUsed)
+    {
+      warn_uncond("failed to open layout file '%s' for reading! Using default settings.\n",qPrint(layoutFileName));
+    }
   }
 
   /**************************************************************************
