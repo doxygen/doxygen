@@ -399,7 +399,7 @@ Note that the \c visible attribute is just a hint for doxygen.
 If no relevant information is available for a certain piece it is
 omitted even if it is set to \c yes (i.e. no empty sections are generated).<br>
 Not all elements have a \c visible attribute shown in the layout file, though
-this attribibute can be used anyway (the default is `visible="yes"`).
+this attribute can be used anyway (the default is `visible="yes"`).
 
 Some elements have a \c title attribute. This attribute can be used
 to customize the title doxygen will use as a header for the piece.

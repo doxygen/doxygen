@@ -75,7 +75,7 @@ struct LayoutDocEntry
 struct LayoutDocEntrySimple : LayoutDocEntry
 {
   public:
-    LayoutDocEntrySimple(Kind k,bool v) : m_kind(k),m_visible(v) {}
+    LayoutDocEntrySimple(Kind k,bool v) : m_kind(k), m_visible(v) {}
     Kind kind() const { return m_kind; }
     bool visible() const { return m_visible; }
   private:
@@ -217,8 +217,7 @@ class LayoutDocManager
     LayoutNavEntry *rootNavEntry() const;
 
     /** Parses a user provided layout */
-    void parse(const QCString &fileName);
-    void parse(const QCString &fileName, const char*data);
+    void parse(const QCString &fileName, const char* data = nullptr);
     void init();
   private:
     void addEntry(LayoutPart p,LayoutDocEntry*e);
