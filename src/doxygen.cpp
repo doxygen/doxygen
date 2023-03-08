@@ -11831,7 +11831,7 @@ void parseInput()
   }
   else if (!defaultLayoutUsed)
   {
-    warn_uncond("failed to open layout file '%s' for reading!\n",qPrint(layoutFileName));
+      warn_uncond("failed to open layout file '%s' for reading! Using default settings.\n",qPrint(layoutFileName));
   }
 
   /**************************************************************************
