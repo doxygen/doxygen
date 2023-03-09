@@ -25,7 +25,7 @@ jobs:
             os: ubuntu-20.04,
             build_type: "Debug", cc: "gcc", cxx: "g++",
             build_gen: "Unix Makefiles",
-            cmake_extra_opts: "-Dbuild_search=YES -Dbuild_app=YES -Dbuild_parse=YES -Dbuild_xmlparser=YES -Duse_sqlite3=ON"
+            cmake_extra_opts: "-Dbuild_search=YES -Dbuild_app=YES -Dbuild_parse=YES -Dbuild_xmlparser=YES -Duse_sqlite3=ON -DCMAKE_CXX_FLAGS='-Werror=pedantic'"
           }
         - {
             name: "Ubuntu Latest Clang Release",
