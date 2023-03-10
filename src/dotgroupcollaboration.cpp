@@ -53,7 +53,7 @@ static void makeURL(const Definition *def,QCString &url)
   {
     url+="#"+def->anchor();
   }
-};
+}
 
 void DotGroupCollaboration::buildGraph(const GroupDef* gd)
 {
