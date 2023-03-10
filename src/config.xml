@@ -1982,6 +1982,11 @@ doxygen -w html new_header.html new_footer.html new_stylesheet.css YourConfigFil
  <dt><code>$date</code><dd>will be replaced with the current date.
  <dt><code>$time</code><dd>will be replaced with the current time.
  <dt><code>$year</code><dd>will be replaces with the current year.
+ <dt><code>$showdate(<format>)</code><dd>will be replaced with the current date
+           and time according to the format as specified by `<format>`. The
+           `<format>` follows the rules as specified for the
+           \ref cmdshowdate "\\showdate" command with the exception that no `)`
+           is allowed in the `<format>`.
  <dt><code>$doxygenversion</code><dd>will be replaced with the version of doxygen
  <dt><code>$projectname</code><dd>will be replaced with the name of
             the project (see \ref cfg_project_name "PROJECT_NAME")
@@ -2977,6 +2982,11 @@ doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty
  <dt><code>$date</code><dd>will be replaced with the current date.
  <dt><code>$time</code><dd>will be replaced with the current time.
  <dt><code>$year</code><dd>will be replaces with the current year.
+ <dt><code>$showdate(<format>)</code><dd>will be replaced with the current date
+           and time according to the format as specified by `<format>`. The
+           `<format>` follows the rules as specified for the
+           \ref cmdshowdate "\\showdate" command with the exception that no `)`
+           is allowed in the `<format>`.
  <dt><code>$doxygenversion</code><dd>will be replaced with the version of doxygen
  <dt><code>$projectname</code><dd>will be replaced with the name of
            the project (see \ref cfg_project_name "PROJECT_NAME")

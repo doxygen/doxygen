@@ -25,6 +25,7 @@
 #include <algorithm>
 #include <functional>
 #include <fstream>
+#include <variant>
 
 #include <ctype.h>
 #include "types.h"
@@ -198,7 +199,9 @@ bool leftScopeMatch(const QCString &scope, const QCString &name);
 struct KeywordSubstitution
 {
   const char *keyword;
-  std::function<QCString()> getValue;
+  using GetValue          = std::function<QCString()>;
+  using GetValueWithParam = std::function<QCString(const QCString &)>;
+  std::variant<GetValue,GetValueWithParam> getValueVariant;
 };
 
 using KeywordSubstitutionList = std::vector<KeywordSubstitution>;

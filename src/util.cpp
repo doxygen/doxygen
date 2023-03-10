@@ -3355,8 +3355,36 @@ QCString substituteKeywords(const QCString &s,const KeywordSubstitutionList &key
           size_t keyLen = qstrlen(kw.keyword);
           if (qstrncmp(p,kw.keyword,keyLen)==0)
           {
-            substRes+=kw.getValue().str();
-            p+=keyLen;
+            const char *startArg = p+keyLen;
+            bool expectParam = std::holds_alternative<KeywordSubstitution::GetValueWithParam>(kw.getValueVariant);
+            //printf("%s: expectParam=%d *startArg=%c\n",kw.keyword,expectParam,*startArg);
+            if (expectParam && *startArg=='(') // $key(value)
+            {
+              size_t j=1;
+              const char *endArg = 0;
+              while ((c=*(startArg+j)) && c!=')' && c!='\n' && c!=0) j++;
+              if (c==')') endArg=startArg+j;
+              if (endArg)
+              {
+                QCString value = QCString(startArg+1).left(endArg-startArg-1);
+                auto &&getValue = std::get<KeywordSubstitution::GetValueWithParam>(kw.getValueVariant);
+                substRes+=getValue(value).str();
+                p=endArg+1;
+                //printf("found '%s'->'%s'\n",kw.keyword,qPrint(getValue(value)));
+              }
+              else
+              {
+                //printf("missing argument\n");
+                p+=keyLen;
+              }
+            }
+            else if (!expectParam) // $key
+            {
+              auto &&getValue = std::get<KeywordSubstitution::GetValue>(kw.getValueVariant);
+              substRes+=getValue().str();
+              //printf("found '%s'->'%s'\n",kw.keyword,qPrint(getValue()));
+              p+=keyLen;
+            }
             found = true;
             break;
           }
@@ -3370,6 +3398,19 @@ QCString substituteKeywords(const QCString &s,const KeywordSubstitutionList &key
     }
   }
   return substRes;
+}
+
+static QCString showDate(const QCString &fmt)
+{
+   // get the current date and time
+  std::tm dat{};
+  int specFormat=0;
+  QCString specDate = "";
+  QCString err = dateTimeFromString(specDate,dat,specFormat);
+
+  // do the conversion
+  int usedFormat=0;
+  return formatDateTime(fmt,dat,usedFormat);
 }
 
 QCString substituteKeywords(const QCString &s,const QCString &title,
@@ -3388,7 +3429,8 @@ QCString substituteKeywords(const QCString &s,const QCString &title,
     { "$projectnumber", [&]() { return projNum;                                   } },
     { "$projectbrief",  [&]() { return projBrief;                                 } },
     { "$projectlogo",   [&]() { return stripPath(Config_getString(PROJECT_LOGO)); } },
-    { "$langISO",       [&]() { return theTranslator->trISOLang();                } }
+    { "$langISO",       [&]() { return theTranslator->trISOLang();                } },
+    { "$showdate",      [&](const QCString &fmt) { return showDate(fmt);          } }
   });
 }
 
