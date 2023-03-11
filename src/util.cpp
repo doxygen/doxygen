@@ -6880,88 +6880,120 @@ FortranFormat convertFileNameFortranParserCode(QCString fn)
 }
 //------------------------------------------------------------------------
 
-/// Clear a text block \a s from \a begin to \a end markers
-QCString clearBlock(const QCString &s,const QCString &begin,const QCString &end)
+//! remove disabled blocks and all block markers from \a s and return the result as a string
+QCString selectBlocks(const QCString &s,const SelectionBlockList &blockList,const SelectionMarkerInfo &markerInfo)
 {
-  if (s.isEmpty() || begin.isEmpty() || end.isEmpty()) return s;
-  const char *p, *q;
-  size_t beginLen = begin.length();
-  size_t endLen = end.length();
-  size_t resLen = 0;
-  for (p=s.data(); (q=strstr(p,begin.data()))!=0; p=q+endLen)
+  if (s.isEmpty()) return s;
+
+  // helper to find the end of a block
+  auto skipBlock = [&markerInfo](const char *p,const SelectionBlock &blk)
   {
-    resLen += q-p;
-    p = q+beginLen;
-    if ((q=strstr(p,end.data()))==0)
+    char c;
+    while ((c=*p))
     {
-      resLen+=beginLen;
-      break;
+      if (c==markerInfo.markerChar && qstrncmp(p,markerInfo.endStr,markerInfo.endLen)==0) // end marker
+      {
+        size_t len = markerInfo.endLen;
+        bool negate = *(p+markerInfo.endLen)=='!';
+        if (negate) len++;
+        size_t blkNameLen = qstrlen(blk.name);
+        if (qstrncmp(p+len,blk.name,blkNameLen)==0 &&                                // matching marker name
+            qstrncmp(p+len+blkNameLen,markerInfo.closeStr,markerInfo.closeLen)==0) // matching marker closing
+        {
+          //printf("Found end marker %s enabled=%d negate=%d\n",blk.name,blk.enabled,negate);
+          return p+len+blkNameLen+markerInfo.closeLen;
+        }
+        else // not the right marker id
+        {
+          p++;
+        }
+      }
+      else // not and end marker
+      {
+        p++;
+      }
+    }
+    return p;
+  };
+
+  QCString result;
+  result.reserve(s.length());
+  const char *p = s.data();
+  char c;
+  while ((c=*p))
+  {
+    if (c==markerInfo.markerChar) // potential start of marker
+    {
+      if (qstrncmp(p,markerInfo.beginStr,markerInfo.beginLen)==0) // start of begin marker
+      {
+        bool found = false;
+        size_t len = markerInfo.beginLen;
+        bool negate = *(p+len)=='!';
+        if (negate) len++;
+        for (const auto &blk : blockList)
+        {
+          size_t blkNameLen = qstrlen(blk.name);
+          if (qstrncmp(p+len,blk.name,blkNameLen)==0 &&                                // matching marker name
+              qstrncmp(p+len+blkNameLen,markerInfo.closeStr,markerInfo.closeLen)==0) // matching marker closing
+          {
+            bool blockEnabled = blk.enabled!=negate;
+            //printf("Found start marker %s enabled=%d negate=%d\n",blk.name,blk.enabled,negate);
+            p+=len+blkNameLen+markerInfo.closeLen;
+            if (!blockEnabled) // skip until the end of the block
+            {
+              //printf("skipping block\n");
+              p=skipBlock(p,blk);
+            }
+            found=true;
+            break;
+          }
+        }
+        if (!found) // unknown marker id
+        {
+          result+=c;
+          p++;
+        }
+      }
+      else if (qstrncmp(p,markerInfo.endStr,markerInfo.endLen)==0) // start of end marker
+      {
+        bool found = false;
+        size_t len = markerInfo.endLen;
+        bool negate = *(p+len)=='!';
+        if (negate) len++;
+        for (const auto &blk : blockList)
+        {
+          size_t blkNameLen = qstrlen(blk.name);
+          if (qstrncmp(p+len,blk.name,blkNameLen)==0 &&                                // matching marker name
+              qstrncmp(p+len+blkNameLen,markerInfo.closeStr,markerInfo.closeLen)==0) // matching marker closing
+          {
+            //printf("Found end marker %s enabled=%d negate=%d\n",blk.name,blk.enabled,negate);
+            p+=len+blkNameLen+markerInfo.closeLen;
+            found=true;
+            break;
+          }
+        }
+        if (!found) // unknown marker id
+        {
+          result+=c;
+          p++;
+        }
+      }
+      else // not a start or end marker
+      {
+        result+=c;
+        p++;
+      }
+    }
+    else // not a marker character
+    {
+      result+=c;
+      p++;
     }
   }
-  resLen+=qstrlen(p);
-  // resLen is the length of the string without the marked block
-
-  QCString result(resLen+1);
-  char *r;
-  for (r=result.rawData(), p=s.data(); (q=strstr(p,begin.data()))!=0; p=q+endLen)
-  {
-    size_t l = q-p;
-    memcpy(r,p,l);
-    r+=l;
-    p=q+beginLen;
-    if ((q=strstr(p,end.data()))==0)
-    {
-      memcpy(r,begin.data(),beginLen);
-      r+=beginLen;
-      break;
-    }
-  }
-  qstrcpy(r,p);
+  //printf("====\n%s\n-----\n%s\n~~~~\n",qPrint(s),qPrint(result));
   return result;
 }
-//----------------------------------------------------------------------
 
-QCString selectBlock(const QCString& s,const QCString &name,bool enable, OutputType o)
-{
-  // TODO: this is an expensive function that is called a lot -> optimize it
-  QCString begin;
-  QCString end;
-  QCString nobegin;
-  QCString noend;
-  switch (o)
-  {
-    case OutputType::Html:
-      begin = "<!--BEGIN " + name + "-->";
-      end = "<!--END " + name + "-->";
-      nobegin = "<!--BEGIN !" + name + "-->";
-      noend = "<!--END !" + name + "-->";
-      break;
-    case OutputType::Latex:
-      begin = "%%BEGIN " + name;
-      end = "%%END " + name;
-      nobegin = "%%BEGIN !" + name;
-      noend = "%%END !" + name;
-      break;
-    default:
-      break;
-  }
-
-  QCString result = s;
-  if (enable)
-  {
-    result = substitute(result, begin, "");
-    result = substitute(result, end, "");
-    result = clearBlock(result, nobegin, noend);
-  }
-  else
-  {
-    result = substitute(result, nobegin, "");
-    result = substitute(result, noend, "");
-    result = clearBlock(result, begin, end);
-  }
-
-  return result;
-}
 
 QCString removeEmptyLines(const QCString &s)
 {

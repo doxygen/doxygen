@@ -763,16 +763,22 @@ static QCString substituteLatexKeywords(const QCString &str,
     { "$formulamacrofile",         [&]() { return stripMacroFile;                               } }
   });
 
-  // additional LaTeX only conditional blocks
-  result = selectBlock(result,"CITATIONS_PRESENT", !CitationManager::instance().isEmpty(),OutputType::Latex);
-  result = selectBlock(result,"COMPACT_LATEX",compactLatex,OutputType::Latex);
-  result = selectBlock(result,"PDF_HYPERLINKS",pdfHyperlinks,OutputType::Latex);
-  result = selectBlock(result,"USE_PDFLATEX",usePdfLatex,OutputType::Latex);
-  result = selectBlock(result,"LATEX_TIMESTAMP",timeStamp,OutputType::Latex);
-  result = selectBlock(result,"LATEX_BATCHMODE",latexBatchmode,OutputType::Latex);
-  result = selectBlock(result,"LATEX_FONTENC",!latexFontenc.isEmpty(),OutputType::Latex);
-  result = selectBlock(result,"FORMULA_MACROFILE",!formulaMacrofile.isEmpty(),OutputType::Latex);
-  result = selectBlock(result,"PROJECT_NUMBER",!projectNumber.isEmpty(),OutputType::Latex);
+  static const SelectionMarkerInfo latexMarkerInfo = { '%', "%%BEGIN ",8 ,"%%END ",6, "",0 };
+
+  // remove conditional blocks
+  result = selectBlocks(result,
+  {
+    // marker              is enabled
+    { "CITATIONS_PRESENT", !CitationManager::instance().isEmpty() },
+    { "COMPACT_LATEX",     compactLatex                           },
+    { "PDF_HYPERLINKS",    pdfHyperlinks                          },
+    { "USE_PDFLATEX",      usePdfLatex                            },
+    { "LATEX_TIMESTAMP",   timeStamp                              },
+    { "LATEX_BATCHMODE",   latexBatchmode                         },
+    { "LATEX_FONTENC",     !latexFontenc.isEmpty()                },
+    { "FORMULA_MACROFILE", !formulaMacrofile.isEmpty()            },
+    { "PROJECT_NUMBER",    !projectNumber.isEmpty()               }
+  },latexMarkerInfo);
 
   result = removeEmptyLines(result);
 

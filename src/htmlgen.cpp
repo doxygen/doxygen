@@ -592,16 +592,22 @@ static QCString substituteHtmlKeywords(const QCString &str,
 
   result = substitute(result,"$relpath^",relPath); //<-- must be done after the previous substitutions
 
-  // additional HTML only conditional blocks
-  result = selectBlock(result,"FULL_SIDEBAR",hasFullSideBar,OutputType::Html);
-  result = selectBlock(result,"DISABLE_INDEX",disableIndex,OutputType::Html);
-  result = selectBlock(result,"GENERATE_TREEVIEW",treeView,OutputType::Html);
-  result = selectBlock(result,"SEARCHENGINE",searchEngine,OutputType::Html);
-  result = selectBlock(result,"TITLEAREA",titleArea,OutputType::Html);
-  result = selectBlock(result,"PROJECT_NAME",hasProjectName,OutputType::Html);
-  result = selectBlock(result,"PROJECT_NUMBER",hasProjectNumber,OutputType::Html);
-  result = selectBlock(result,"PROJECT_BRIEF",hasProjectBrief,OutputType::Html);
-  result = selectBlock(result,"PROJECT_LOGO",hasProjectLogo,OutputType::Html);
+  static const SelectionMarkerInfo htmlMarkerInfo = { '<', "<!--BEGIN ",10,"<!--END ",8,"-->",3 };
+
+  // remove conditional blocks
+  result = selectBlocks(result,
+  {
+    // keyword,            is enabled
+    { "FULL_SIDEBAR",      hasFullSideBar   },
+    { "DISABLE_INDEX",     disableIndex     },
+    { "GENERATE_TREEVIEW", treeView         },
+    { "SEARCHENGINE",      searchEngine     },
+    { "TITLEAREA",         titleArea        },
+    { "PROJECT_NAME",      hasProjectName   },
+    { "PROJECT_NUMBER",    hasProjectNumber },
+    { "PROJECT_BRIEF",     hasProjectBrief  },
+    { "PROJECT_LOGO",      hasProjectLogo   }
+  },htmlMarkerInfo);
 
   result = removeEmptyLines(result);
 
