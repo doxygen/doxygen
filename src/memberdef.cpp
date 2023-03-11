@@ -361,6 +361,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
                               const ArgumentList &al, bool writeReqClause=true) const;
     bool _hasVisibleCallGraph() const;
     bool _hasVisibleCallerGraph() const;
+    bool _isAnonymousBitField() const;
 
     // disable copying of member defs
     MemberDefImpl(const MemberDefImpl &);
@@ -2085,6 +2086,11 @@ static QCString combineArgsAndException(QCString args,QCString exception)
   return args.left(eqPos)+" "+exception+" "+args.mid(eqPos); // insert exception before =
 }
 
+bool MemberDefImpl::_isAnonymousBitField() const
+{
+  return !m_impl->bitfields.isEmpty() && name().startsWith("__pad"); // anonymous bitfield
+}
+
 void MemberDefImpl::writeDeclaration(OutputList &ol,
                const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
                bool inGroup, int indentLevel, const ClassDef *inheritedFrom,const QCString &inheritId) const
@@ -2290,8 +2296,7 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
   }
 
   // *** write name
-  if (!(isAnonymous() || // hide anonymous stuff
-       (!m_impl->bitfields.isEmpty() && name().startsWith("__pad")))) // anonymous bitfield
+  if (!isAnonymous() && !_isAnonymousBitField()) // hide anonymous stuff
   {
     bool extractPrivateVirtual = Config_getBool(EXTRACT_PRIV_VIRTUAL);
     bool extractStatic  = Config_getBool(EXTRACT_STATIC);
@@ -3926,7 +3931,7 @@ void MemberDefImpl::warnIfUndocumented() const
   if ((!hasUserDocumentation() && !extractAll) &&
       !isFriendClass() &&
       name().find('@')==-1 && d && d->name().find('@')==-1 &&
-      !(!m_impl->bitfields.isEmpty() && name().startsWith("__pad")) && // anonymous bitfield
+      !_isAnonymousBitField() &&
       protectionLevelVisible(m_impl->prot) &&
       !isReference() && !isDeleted()
      )
