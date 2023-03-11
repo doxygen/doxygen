@@ -2290,7 +2290,8 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
   }
 
   // *** write name
-  if (!isAnonymous()) // hide anonymous stuff
+  if (!(isAnonymous() || // hide anonymous stuff
+       (!m_impl->bitfields.isEmpty() && name().startsWith("__pad")))) // anonymous bitfield
   {
     bool extractPrivateVirtual = Config_getBool(EXTRACT_PRIV_VIRTUAL);
     bool extractStatic  = Config_getBool(EXTRACT_STATIC);
@@ -3925,6 +3926,7 @@ void MemberDefImpl::warnIfUndocumented() const
   if ((!hasUserDocumentation() && !extractAll) &&
       !isFriendClass() &&
       name().find('@')==-1 && d && d->name().find('@')==-1 &&
+      !(!m_impl->bitfields.isEmpty() && name().startsWith("__pad")) && // anonymous bitfield
       protectionLevelVisible(m_impl->prot) &&
       !isReference() && !isDeleted()
      )
