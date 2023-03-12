@@ -1831,6 +1831,14 @@ QCString DocParser::processCopyDoc(const char *data,uint32_t &len)
               buf.addStr("\\iline "+QCString().setNum(def->docLine())+" ");
               uint32_t l=static_cast<uint32_t>(doc.length());
               buf.addStr(processCopyDoc(doc.data(),l));
+              if (def->definitionType() == Definition::TypeMember)
+              {
+                const MemberDef *md = static_cast<const MemberDef *>(def);
+                const ArgumentList &docArgList = md->templateMaster() ?
+                                   md->templateMaster()->argumentList() :
+                                   md->argumentList();
+                buf.addStr(inlineArgListToDoc(docArgList));
+              }
             }
             context.copyStack.pop_back();
             buf.addStr(" \\ilinebr\\ifile \""+context.fileName+"\" ");
