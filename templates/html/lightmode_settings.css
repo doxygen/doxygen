@@ -122,6 +122,7 @@
 --code-preprocessor-color: #806020;
 --code-string-literal-color: #002080;
 --code-char-literal-color: #008080;
+--code-xml-cdata-color: black;
 --code-vhdl-digit-color: #FF00FF;
 --code-vhdl-char-color: #000000;
 --code-vhdl-keyword-color: #700070;

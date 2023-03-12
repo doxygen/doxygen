@@ -482,6 +482,10 @@ span.charliteral {
 	color: var(--code-char-literal-color);
 }
 
+span.xmlcdata {
+	color: var(--code-xml-cdata-color);
+}
+
 span.vhdldigit { 
 	color: var(--code-vhdl-digit-color);
 }
