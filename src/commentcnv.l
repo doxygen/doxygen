@@ -666,7 +666,7 @@ SLASHopt [/]*
 <CComment,CNComment>[^ `~<\\!@*\n{\"\/]*     { /* anything that is not a '*' or command */ 
                                      copyToOutput(yyscanner,yytext,(int)yyleng); 
                                    }
-<CComment,CNComment>"*"+[^*\/\\@\n{\"]*      { /* stars without slashes */
+<CComment,CNComment>"*"+[^*\/\\@\n{\"a-zA-Z0_9_]*      { /* stars without slashes */
                                      copyToOutput(yyscanner,yytext,(int)yyleng); 
                                    }
 <CComment>"\"\"\""                 { /* end of Python docstring */
