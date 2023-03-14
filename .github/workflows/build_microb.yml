@@ -1,0 +1,36 @@
+name: Build Windows Package
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-package:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@v2
+
+    - name: Install Visual Studio Build Tools
+      run: |
+        choco install visualstudio2019buildtools
+        choco install visualstudio2019-workload-vctools
+
+    - name: Build project
+      run: |
+        cd MyProject
+        msbuild MyProject.sln /p:Configuration=Release /p:Platform=x64
+
+    - name: Create package directory
+      run: mkdir -p MyPackage/bin/
+
+    - name: Copy binaries to package directory
+      run: cp MyProject/bin/Release/* MyPackage/bin/
+
+    - name: Create ZIP package
+      uses: NCAR/github-actions/create-zip-file@v1
+      with:
+        files: MyPackage/**
+        name: MyPackage-Windows-x64.zip
