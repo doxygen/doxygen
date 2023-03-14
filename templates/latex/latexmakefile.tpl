@@ -9,7 +9,7 @@ refman.pdf: clean refman.tex
 {# TODO: generateBib #}
 	pdflatex refman
 	latex_count=8 ; \
-	while egrep -s 'Rerun (LaTeX|to get cross-references right)' refman.log && [ $$latex_count -gt 0 ] ;\
+	while grep -E -s 'Rerun (LaTeX|to get cross-references right)' refman.log && [ $$latex_count -gt 0 ] ;\
 	    do \
 	      echo "Rerunning latex...." ;\
 	      pdflatex refman ;\
@@ -43,7 +43,7 @@ refman.dvi: clean refman.tex doxygen.sty
 	echo "Rerunning latex...."
 	{{ config.LATEX_CMD_NAME }} refman.tex
 	latex_count=8 ; \
-	while egrep -s 'Rerun (LaTeX|to get cross-references right)' refman.log && [ $$latex_count -gt 0 ] ;\
+	while grep -E -s 'Rerun (LaTeX|to get cross-references right)' refman.log && [ $$latex_count -gt 0 ] ;\
 	    do \
 	      echo "Rerunning latex...." ;\
 	      {{ config.LATEX_CMD_NAME }} refman.tex ;\
