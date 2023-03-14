@@ -1,0 +1,50 @@
+name: Build Debian Package
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-package:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@v2
+
+    - name: Install build dependencies
+      run: sudo apt-get build-dep doxygen
+
+    - name: Build Doxygen from source
+      run: |
+        cd ${{ github.workspace }}
+        ./configure
+        make
+
+    - name: Create package directory
+      run: mkdir -p ${{ github.workspace }}/my-doxygen-package/usr/bin/
+
+    - name: Copy binaries to package directory
+      run: |
+        cp ${{ github.workspace }}/bin/doxygen ${{ github.workspace }}/my-doxygen-package/usr/bin/
+        cp ${{ github.workspace }}/bin/doxyindexer ${{ github.workspace }}/my-doxygen-package/usr/bin/
+
+    - name: Create control file
+      run: |
+        cat <<EOF > ${{ github.workspace }}/my-doxygen-package/DEBIAN/control
+        Package: my-doxygen-package
+        Version: 1.0
+        Architecture: all
+        Maintainer: John Doe <john.doe@example.com>
+        Description: My Doxygen package
+        EOF
+
+    - name: Build package
+      run: sudo dpkg-deb --build ${{ github.workspace }}/my-doxygen-package/
+
+    - name: Upload package as release artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: my-doxygen-package_1.0_all.deb
+        path: ${{ github.workspace }}/my-doxygen-package/my-doxygen-package_1.0_all.deb
