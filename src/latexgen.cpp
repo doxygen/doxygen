@@ -377,7 +377,7 @@ static void writeLatexMakefile()
     t << "\techo \"Rerunning latex....\"\n"
       << "\t$(LATEX_CMD) $(MANUAL_FILE).tex\n"
       << "\tlatex_count=$(LATEX_COUNT) ; \\\n"
-      << "\twhile egrep -s 'Rerun (LaTeX|to get cross-references right|to get bibliographical references right)' $(MANUAL_FILE).log && [ $$latex_count -gt 0 ] ;\\\n"
+      << "\twhile grep -E -s 'Rerun (LaTeX|to get cross-references right|to get bibliographical references right)' $(MANUAL_FILE).log && [ $$latex_count -gt 0 ] ;\\\n"
       << "\t    do \\\n"
       << "\t      echo \"Rerunning latex....\" ;\\\n"
       << "\t      $(LATEX_CMD) $(MANUAL_FILE).tex ; \\\n"
@@ -405,7 +405,7 @@ static void writeLatexMakefile()
     }
     t << "\t$(LATEX_CMD) $(MANUAL_FILE)\n"
       << "\tlatex_count=$(LATEX_COUNT) ; \\\n"
-      << "\twhile egrep -s 'Rerun (LaTeX|to get cross-references right|to get bibliographical references right)' $(MANUAL_FILE).log && [ $$latex_count -gt 0 ] ;\\\n"
+      << "\twhile grep -E -s 'Rerun (LaTeX|to get cross-references right|to get bibliographical references right)' $(MANUAL_FILE).log && [ $$latex_count -gt 0 ] ;\\\n"
       << "\t    do \\\n"
       << "\t      echo \"Rerunning latex....\" ;\\\n"
       << "\t      $(LATEX_CMD) $(MANUAL_FILE) ;\\\n"
