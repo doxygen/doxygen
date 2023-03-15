@@ -485,6 +485,8 @@ static QString getDocsForNode(const QDomElement &child)
   docs.replace(SA("\\>"),SA("&gt;"));
   regexp.setPattern(SA(" (http:[^ \\)]*)([ \\)])"));
   docs.replace(regexp,SA(" <a href=\"\\1\">\\1</a>\\2"));
+  regexp.setPattern(SA(" (https:[^ \\)]*)([ \\)])"));
+  docs.replace(regexp,SA(" <a href=\"\\1\">\\1</a>\\2"));
   // LaTeX name as formula -> LaTeX
   regexp.setPattern(SA("\\\\f\\$\\\\mbox\\{\\\\LaTeX\\}\\\\f\\$"));
   docs.replace(regexp,SA("LaTeX"));
