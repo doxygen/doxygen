@@ -322,6 +322,7 @@ class LatexGenerator : public OutputGenerator
     bool m_templateMemberItem = false;
     std::unique_ptr<OutputCodeList> m_codeList;
     LatexCodeGenerator *m_codeGen;
+    bool m_insideTableEnv = false;
 };
 
 void writeExtraLatexPackages(TextStream &t);
