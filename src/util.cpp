@@ -4097,7 +4097,7 @@ QCString convertToXML(const QCString &s, bool keepEntities)
 }
 
 /*! Converts a string to a HTML-encoded string */
-QCString convertToHtml(const QCString &s,bool keepEntities)
+QCString convertToHtml(const QCString &s,bool keepEntities, size_t maxLen, QCString contStr)
 {
   if (s.isEmpty()) return s;
   GrowBuf growBuf;
@@ -4151,6 +4151,11 @@ QCString convertToHtml(const QCString &s,bool keepEntities)
           }
         }
         break;
+    }
+    if (maxLen != 0 && growBuf.getPos() >= maxLen)
+    {
+      growBuf.addStr(contStr);
+      break;
     }
   }
   growBuf.addChar(0);
