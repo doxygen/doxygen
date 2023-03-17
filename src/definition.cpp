@@ -747,13 +747,16 @@ class FilterCache
     }
 
     //! Returns the byte offset and size within a file of a fragment given the array of
-    //! line offsets and the start emd end line of the fragment.
+    //! line offsets and the start and end line of the fragment.
     auto getFragmentLocation(const LineOffsets &lineOffsets,
                              size_t startLine,size_t endLine) -> std::tuple<size_t,size_t>
     {
-      size_t startLineOffset = lineOffsets[std::min(startLine-1,lineOffsets.size()-1)];
-      size_t endLineOffset   = lineOffsets[std::min(endLine,    lineOffsets.size()-1)];
-      size_t fragmentSize = endLineOffset-startLineOffset;
+      if (startLine > 0) { --startLine; }
+      assert(startLine <= endLine);
+      const size_t startLineOffset = lineOffsets[std::min(startLine,lineOffsets.size()-1)];
+      const size_t endLineOffset   = lineOffsets[std::min(endLine,  lineOffsets.size()-1)];
+      assert(startLineOffset <= endLineOffset);
+      const size_t fragmentSize = endLineOffset-startLineOffset;
       return std::tie(startLineOffset,fragmentSize);
     };
 
