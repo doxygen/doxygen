@@ -4075,6 +4075,14 @@ This setting is not only used for dot files but also for msc temporary files.
 ]]>
       </docs>
     </option>
+    <option type='bool' id='MULTIGROUP_FUNCTIONS' defval='0'>
+      <docs>
+        <![CDATA[
+          If the \c MULTIGROUP_FUNCTIONS tag is set to \c YES, functions can appear
+          in multiple groups. Their first group will be their main group.
+        ]]>
+      </docs>
+    </option>
     <option type='obsolete' orgtype='bool' id='USE_WINDOWS_ENCODING'/>
     <option type='obsolete' orgtype='bool' id='DETAILS_AT_TOP'/>
     <option type='obsolete' orgtype='string' id='QTHELP_FILE'/>
