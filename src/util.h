@@ -248,7 +248,7 @@ QCString stripScope(const QCString &name);
 QCString convertToId(const QCString &s);
 QCString correctId(const QCString &s);
 
-QCString convertToHtml(const QCString &s,bool keepEntities=TRUE,size_t maxLen = 0, QCString contStr = QCString());
+QCString convertToHtml(const QCString &s,bool keepEntities=TRUE);
 
 QCString convertToXML(const QCString &s, bool keepEntities=FALSE);
 

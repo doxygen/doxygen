@@ -184,6 +184,24 @@ static QCString field2URL(const IndexField *f,bool checkReversed)
   return result;
 }
 
+static QCString convertToHtmlAndTruncate(const QCString &s)
+{
+  /* to prevent
+   *  Warning: Keyword string:
+   *    ...
+   *  is too long.  The maximum size is 488 characters.
+   */
+  size_t maxLen=400;
+  if (s.length()>maxLen)
+  {
+    return convertToHtml(s.left(400),true)+"...";
+  }
+  else
+  {
+    return convertToHtml(s,true);
+  }
+}
+
 /*! Writes the sorted list of index items into a html like list.
  *
  *  An list of calls with <code>name = level1,level2</code> as follows:
@@ -212,14 +230,6 @@ static QCString field2URL(const IndexField *f,bool checkReversed)
  */
 void HtmlHelpIndex::writeFields(std::ostream &t)
 {
-  /* to prevent 
-   *  Warning: Keyword string:
-   *    ...
-   *  is too long.  The maximum size is 488 characters.
-   */
-  size_t maxLen = 400;
-  QCString contStr = "...";
-
   std::sort(std::begin(m_map),
             std::end(m_map),
             [](const auto &e1,const auto &e2) { return e1->name < e2->name; }
@@ -273,7 +283,7 @@ void HtmlHelpIndex::writeFields(std::ostream &t)
         t << "  <LI><OBJECT type=\"text/sitemap\">";
         t << "<param name=\"Local\" value=\"" << field2URL(f.get(),FALSE);
         t << "\">";
-        t << "<param name=\"Name\" value=\"" << convertToHtml(m_recoder.recode(level1),TRUE,maxLen,contStr) << "\">"
+        t << "<param name=\"Name\" value=\"" << convertToHtmlAndTruncate(m_recoder.recode(level1)) << "\">"
            "</OBJECT>\n";
       }
       else
@@ -283,14 +293,14 @@ void HtmlHelpIndex::writeFields(std::ostream &t)
           t << "  <LI><OBJECT type=\"text/sitemap\">";
           t << "<param name=\"Local\" value=\"" << field2URL(f.get(),TRUE);
           t << "\">";
-          t << "<param name=\"Name\" value=\"" << convertToHtml(m_recoder.recode(level1),TRUE,maxLen,contStr) << "\">"
+          t << "<param name=\"Name\" value=\"" << convertToHtmlAndTruncate(m_recoder.recode(level1)) << "\">"
                "</OBJECT>\n";
         }
         else
         {
           t << "  <LI><OBJECT type=\"text/sitemap\">";
-          t << "<param name=\"See Also\" value=\"" << convertToHtml(m_recoder.recode(level1),TRUE) << "\">";
-          t << "<param name=\"Name\" value=\"" << convertToHtml(m_recoder.recode(level1),TRUE,maxLen,contStr) << "\">"
+          t << "<param name=\"See Also\" value=\"" << convertToHtml(m_recoder.recode(level1)) << "\">";
+          t << "<param name=\"Name\" value=\"" << convertToHtmlAndTruncate(m_recoder.recode(level1)) << "\">"
                "</OBJECT>\n";
         }
       }
@@ -310,7 +320,7 @@ void HtmlHelpIndex::writeFields(std::ostream &t)
       t << "    <LI><OBJECT type=\"text/sitemap\">";
       t << "<param name=\"Local\" value=\"" << field2URL(f.get(),FALSE);
       t << "\">";
-      t << "<param name=\"Name\" value=\"" << convertToHtml(m_recoder.recode(level2),TRUE,maxLen,contStr) << "\">"
+      t << "<param name=\"Name\" value=\"" << convertToHtmlAndTruncate(m_recoder.recode(level2)) << "\">"
          "</OBJECT>\n";
     }
   }
