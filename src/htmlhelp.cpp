@@ -191,10 +191,21 @@ static QCString convertToHtmlAndTruncate(const QCString &s)
    *    ...
    *  is too long.  The maximum size is 488 characters.
    */
-  size_t maxLen=400;
-  if (s.length()>maxLen)
+  int maxLen=400;
+  size_t maxExpandedLen=maxLen+50; // allow for entity expansion
+  if (static_cast<int>(s.length())>maxLen)
   {
-    return convertToHtml(s.left(400),true)+"...";
+    QCString result;
+    do
+    {
+      result = convertToHtml(s.left(maxLen));
+      maxLen-=10;
+    }
+    while (maxLen>0 && result.length()>maxExpandedLen); // in the rare case that the length of the
+                                                        // expanded string has increased beyond
+                                                        // maxExpandedLen, we keep retrying with a
+                                                        // shorter string
+    return result+"...";
   }
   else
   {
