@@ -7324,6 +7324,33 @@ static void addEnumDocs(const Entry *root,MemberDefMutable *md)
   }
 }
 
+//----------------------------------------------------------------------
+// Search for the name in the associated groups.  If a matching member
+// definition exists, then add the documentation to it and return TRUE,
+// otherwise FALSE.
+
+static bool tryAddEnumDocsToGroupMember(const Entry *root,const QCString &name)
+{
+  for (const auto &g : root->groups)
+  {
+    const GroupDef *gd = Doxygen::groupLinkedMap->find(g.groupname);
+    if (gd)
+    {
+      MemberList *ml = gd->getMemberList(MemberListType_decEnumMembers);
+      if (ml)
+      {
+        MemberDef *md = ml->find(name);
+        if (md)
+        {
+          addEnumDocs(root,toMemberDefMutable(md));
+          return TRUE;
+        }
+      }
+    }
+  }
+
+  return FALSE;
+}
 
 //----------------------------------------------------------------------
 // find the documentation blocks for the enumerations
@@ -7366,49 +7393,56 @@ static void findEnumDocumentation(const Entry *root)
 
     if (!name.isEmpty())
     {
-      bool found=FALSE;
-      MemberName *mn;
-      if (cd)
+      bool found = FALSE;
+      if (root->groups.empty())
       {
-        mn = Doxygen::memberNameLinkedMap->find(name);
-      }
-      else
-      {
-        mn = Doxygen::functionNameLinkedMap->find(name);
-      }
-      if (mn)
-      {
-        for (const auto &imd : *mn)
+        MemberName *mn;
+        if (cd)
         {
-          MemberDefMutable *md = toMemberDefMutable(imd.get());
-          if (md && md->isEnumerate())
+          mn = Doxygen::memberNameLinkedMap->find(name);
+        }
+        else
+        {
+          mn = Doxygen::functionNameLinkedMap->find(name);
+        }
+        if (mn)
+        {
+          for (const auto &imd : *mn)
           {
-            const ClassDef *mcd = md->getClassDef();
-            const NamespaceDef *mnd = md->getNamespaceDef();
-            const FileDef *mfd = md->getFileDef();
-            if (cd && mcd==cd)
+            MemberDefMutable *md = toMemberDefMutable(imd.get());
+            if (md && md->isEnumerate())
             {
-              AUTO_TRACE_ADD("Match found for class scope");
-              addEnumDocs(root,md);
-              found=TRUE;
-              break;
-            }
-            else if (cd==0 && mcd==0 && nd!=0 && mnd==nd)
-            {
-              AUTO_TRACE_ADD("Match found for namespace scope");
-              addEnumDocs(root,md);
-              found=TRUE;
-              break;
-            }
-            else if (cd==0 && nd==0 && mcd==0 && mnd==0 && fd==mfd)
-            {
-              AUTO_TRACE_ADD("Match found for global scope");
-              addEnumDocs(root,md);
-              found=TRUE;
-              break;
+              const ClassDef *mcd = md->getClassDef();
+              const NamespaceDef *mnd = md->getNamespaceDef();
+              const FileDef *mfd = md->getFileDef();
+              if (cd && mcd==cd)
+              {
+                AUTO_TRACE_ADD("Match found for class scope");
+                addEnumDocs(root,md);
+                found = TRUE;
+                break;
+              }
+              else if (cd==0 && mcd==0 && nd!=0 && mnd==nd)
+              {
+                AUTO_TRACE_ADD("Match found for namespace scope");
+                addEnumDocs(root,md);
+                found = TRUE;
+                break;
+              }
+              else if (cd==0 && nd==0 && mcd==0 && mnd==0 && fd==mfd)
+              {
+                AUTO_TRACE_ADD("Match found for global scope");
+                addEnumDocs(root,md);
+                found = TRUE;
+                break;
+              }
             }
           }
         }
+      }
+      else
+      {
+        found = tryAddEnumDocsToGroupMember(root, name);
       }
       if (!found)
       {
