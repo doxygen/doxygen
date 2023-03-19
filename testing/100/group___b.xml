@@ -48,6 +48,7 @@
           <para>f() in <ref refid="more__100__b_8c" kindref="compound">more_100_b.c</ref>. </para>
         </briefdescription>
         <detaileddescription>
+          <para>More for f() in <ref refid="more__100__b_8c" kindref="compound">more_100_b.c</ref> from <ref refid="more__100__c_8c" kindref="compound">more_100_c.c</ref>. </para>
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>

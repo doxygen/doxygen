@@ -5323,13 +5323,16 @@ static bool findGlobalMember(const Entry *root,
         //    qPrint(argListToString(md->argumentList())),
         //    qPrint(argListToString(root->argList)));
 
-        // for static members we also check if the comment block was found in
+        // For static members we also check if the comment block was found in
         // the same file. This is needed because static members with the same
         // name can be in different files. Thus it would be wrong to just
-        // put the comment block at the first syntactically matching member.
+        // put the comment block at the first syntactically matching member. If
+        // the comment block belongs to a group of the static member, then add
+        // the documentation even if it is in a different file.
         if (matching && md->isStatic() &&
             md->getDefFileName()!=root->fileName &&
-            mn->size()>1)
+            mn->size()>1 &&
+            !isEntryInGroupOfMember(root,md.get()))
         {
           matching = FALSE;
         }
