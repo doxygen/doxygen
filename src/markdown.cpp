@@ -3365,6 +3365,11 @@ void MarkdownOutlineParser::parseInput(const QCString &fileName,
         {
           docs.prepend("@ianchor " +  generatedId + "\\ilinebr ");
         }
+        else
+        {
+          QCString autoId = AnchorGenerator::instance().generate(title.str());
+          docs.prepend("@ianchor " +  autoId + "\\ilinebr ");
+        }
         docs.prepend("@page "+id+" "+title+"\\ilinebr ");
       }
       for (int i = 0; i < prepend; i++) docs.prepend("\n");
