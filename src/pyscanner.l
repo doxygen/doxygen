@@ -1197,6 +1197,13 @@ STARTDOCSYMS      "##"
                         yyextra->atomCount=1;
                         BEGIN( VariableAtom );
                       }
+    {STARTDOCSYMS}"<"/.* {  // start of a special comment
+                        yyextra->curIndent=computeIndent(yytext);
+                        yyextra->packageCommentAllowed = FALSE;
+                        initSpecialBlock(yyscanner);
+                        yyextra->docBlockContext = VariableEnd;
+                        BEGIN(SpecialComment);
+                      }
    "#".*              { // comment
                         BEGIN( VariableEnd );
                       }
@@ -1402,7 +1409,14 @@ STARTDOCSYMS      "##"
                         }
     \n                  { // new line that ends the comment
                           handleCommentBlock(yyscanner, yyextra->docBlock, yyextra->docBrief);
-                          incLineNr(yyscanner);
+                          if (yyextra->docBlockContext == VariableEnd)
+                          {
+                            unput(*yytext);
+                          }
+                          else
+                          {
+                            incLineNr(yyscanner);
+                          }
                           BEGIN(yyextra->docBlockContext);
                         }
     .                   { // anything we missed
