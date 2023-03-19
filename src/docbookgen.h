@@ -112,7 +112,7 @@ class DocbookGenerator : public OutputGenerator
     // structural output interface
     ///////////////////////////////////////////////////////////////
     void startFile(const QCString &name,const QCString &manName,
-                           const QCString &title,int id);
+                           const QCString &title,int id,int hierarchyLevel);
     void writeSearchInfo(){DB_GEN_EMPTY};
     void writeFooter(const QCString &){DB_GEN_NEW};
     void endFile();

@@ -89,7 +89,7 @@ class RTFGenerator : public OutputGenerator
 
     void writeDoc(const IDocNodeAST *ast,const Definition *,const MemberDef *,int);
 
-    void startFile(const QCString &name,const QCString &manName,const QCString &title,int id);
+    void startFile(const QCString &name,const QCString &manName,const QCString &title,int id,int hierarchyLevel);
     void writeSearchInfo() {}
     void writeFooter(const QCString &) {}
     void endFile();

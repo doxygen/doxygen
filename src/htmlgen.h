@@ -95,7 +95,7 @@ class HtmlGenerator : public OutputGenerator
 
     void writeDoc(const IDocNodeAST *node,const Definition *,const MemberDef *,int id);
 
-    void startFile(const QCString &name,const QCString &manName,const QCString &title,int id);
+    void startFile(const QCString &name,const QCString &manName,const QCString &title,int id, int hierarchyLevel);
     void writeFooter(const QCString &navPath);
     void endFile();
     void clearBuffer();

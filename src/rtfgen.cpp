@@ -609,7 +609,7 @@ void RTFGenerator::beginRTFSection()
   m_t << rtf_Style["Heading2"].reference() << "\n";
 }
 
-void RTFGenerator::startFile(const QCString &name,const QCString &,const QCString &,int)
+void RTFGenerator::startFile(const QCString &name,const QCString &,const QCString &,int,int)
 {
   //setEncoding(QCString().sprintf("CP%s",theTranslator->trRTFansicp()));
   QCString fileName=name;

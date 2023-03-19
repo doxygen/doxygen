@@ -123,7 +123,7 @@ class MemberList : public MemberVector
                bool showEnumValues=FALSE,bool showInline=FALSE) const;
     void writeSimpleDocumentation(OutputList &ol,const Definition *container) const;
     void writeDocumentationPage(OutputList &ol,
-               const QCString &scopeName, const DefinitionMutable *container) const;
+               const QCString &scopeName, const DefinitionMutable *container, int hierarchyLevel=0) const;
     void writeTagFile(TextStream &,bool useQualifiedName=false);
     bool declVisible() const;
     void addMemberGroup(MemberGroup *mg);

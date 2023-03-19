@@ -517,7 +517,7 @@ class OutputList
                      bool singleLine /*=FALSE*/,bool linkFromIndex /*=FALSE*/,
                      bool markdownSupport /*=FALSE*/);
 
-    void startFile(const QCString &name,const QCString &manName,const QCString &title);
+    void startFile(const QCString &name,const QCString &manName,const QCString &title, int hierarchyLevel=0);
     void parseText(const QCString &textStr);
 
     //////////////////////////////////////////////////

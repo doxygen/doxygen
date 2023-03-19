@@ -68,7 +68,7 @@ class GroupDef : public DefinitionMutable, public Definition
     virtual void removeMember(MemberDef *md) = 0;
     virtual bool findGroup(const GroupDef *def) const = 0;
     virtual void writeDocumentation(OutputList &ol) = 0;
-    virtual void writeMemberPages(OutputList &ol) = 0;
+    virtual void writeMemberPages(OutputList &ol, int hierarchyLevel) = 0;
     virtual void writeQuickMemberLinks(OutputList &ol,const MemberDef *currentMd) const = 0;
     virtual void writeTagFile(TextStream &) = 0;
     virtual size_t numDocMembers() const = 0;

@@ -281,6 +281,7 @@ LatexGenerator::LatexGenerator(const LatexGenerator &og) : OutputGenerator(og.m_
   m_relPath            = og.m_relPath;
   m_indent             = og.m_indent;
   m_templateMemberItem = og.m_templateMemberItem;
+  m_hierarchyLevel     = og.m_hierarchyLevel;
 }
 
 LatexGenerator &LatexGenerator::operator=(const LatexGenerator &og)
@@ -296,6 +297,7 @@ LatexGenerator &LatexGenerator::operator=(const LatexGenerator &og)
     m_relPath            = og.m_relPath;
     m_indent             = og.m_indent;
     m_templateMemberItem = og.m_templateMemberItem;
+    m_hierarchyLevel     = og.m_hierarchyLevel;
   }
   return *this;
 }
@@ -311,6 +313,7 @@ LatexGenerator::LatexGenerator(LatexGenerator &&og)
   m_relPath            = std::exchange(og.m_relPath,QCString());
   m_indent             = std::exchange(og.m_indent,0);
   m_templateMemberItem = std::exchange(og.m_templateMemberItem,false);
+  m_hierarchyLevel     = og.m_hierarchyLevel;
 }
 
 LatexGenerator::~LatexGenerator()
@@ -598,12 +601,13 @@ void LatexGenerator::writeStyleSheetFile(TextStream &t)
   writeDefaultStyleSheet(t);
 }
 
-void LatexGenerator::startFile(const QCString &name,const QCString &,const QCString &,int)
+void LatexGenerator::startFile(const QCString &name,const QCString &,const QCString &,int,int hierarchyLevel)
 {
 #if 0
   setEncoding(Config_getString(LATEX_OUTPUT_ENCODING));
 #endif
   QCString fileName=name;
+  m_hierarchyLevel = hierarchyLevel;
   m_relPath = relativePathToRoot(fileName);
   if (!fileName.endsWith(".tex") && !fileName.endsWith(".sty")) fileName+=".tex";
   startPlainFile(fileName);
@@ -940,6 +944,18 @@ void LatexGenerator::startIndexSection(IndexSection is)
   }
 }
 
+static void includeSubGroupsRecursive(TextStream &t, const GroupDef *gd)
+{
+  t << "\\input{" << gd->getOutputFileBase() << "}\n";
+  for (const auto &subgd : gd->getSubGroups())
+  {
+    if (!subgd->isReference() && subgd->partOfGroups().front() == gd)
+    {
+      includeSubGroupsRecursive(t, subgd);
+    }
+  }
+}
+
 void LatexGenerator::endIndexSection(IndexSection is)
 {
   switch (is)
@@ -983,17 +999,12 @@ void LatexGenerator::endIndexSection(IndexSection is)
       break;
     case IndexSection::isModuleDocumentation:
       {
-        bool found=FALSE;
+        m_t << "}\n";
         for (const auto &gd : *Doxygen::groupLinkedMap)
         {
-          if (!gd->isReference())
+          if (!gd->isReference() && !gd->isASubGroup())
           {
-            if (!found)
-            {
-              m_t << "}\n";
-              found=TRUE;
-            }
-            m_t << "\\input{" << gd->getOutputFileBase() << "}\n";
+            includeSubGroupsRecursive(m_t, gd.get());
           }
         }
       }
@@ -1362,14 +1373,12 @@ void LatexGenerator::startTitleHead(const QCString &fileName)
   {
     m_t << "\\hypertarget{" << stripPath(fileName) << "}{}";
   }
+  int hierarchyLevel = m_hierarchyLevel;
   if (Config_getBool(COMPACT_LATEX))
   {
-    m_t << "\\doxysubsection{";
+    ++hierarchyLevel;
   }
-  else
-  {
-    m_t << "\\doxysection{";
-  }
+  m_t << "\\doxy" << QCString("sub").repeat(hierarchyLevel) << "section{";
 }
 
 void LatexGenerator::endTitleHead(const QCString &fileName,const QCString &name)
@@ -1404,7 +1413,7 @@ void LatexGenerator::startGroupHeader(int extraIndentLevel)
     extraIndentLevel++;
   }
 
-  if (extraIndentLevel==3)
+  if (extraIndentLevel>=3)
   {
     m_t << "\\doxysubparagraph*{";
   }
@@ -1412,13 +1421,10 @@ void LatexGenerator::startGroupHeader(int extraIndentLevel)
   {
     m_t << "\\doxyparagraph{";
   }
-  else if (extraIndentLevel==1)
+  else
   {
-    m_t << "\\doxysubsubsection{";
-  }
-  else // extraIndentLevel==0
-  {
-    m_t << "\\doxysubsection{";
+    extraIndentLevel += m_hierarchyLevel;
+    m_t << "\\doxysub" << QCString("sub").repeat(extraIndentLevel) << "section{";
   }
   m_disableLinks=TRUE;
 }
@@ -1431,14 +1437,13 @@ void LatexGenerator::endGroupHeader(int)
 
 void LatexGenerator::startMemberHeader(const QCString &,int)
 {
+  int l = m_hierarchyLevel + 1;
   if (Config_getBool(COMPACT_LATEX))
   {
-    m_t << "\\doxysubsubsection*{";
+    ++l;
   }
-  else
-  {
-    m_t << "\\doxysubsection*{";
-  }
+
+  m_t << "\\doxysub" << QCString("sub").repeat(l) << "section*{";
   m_disableLinks=TRUE;
 }
 
@@ -1486,13 +1491,20 @@ void LatexGenerator::startMemberDoc(const QCString &clname,
     }
     m_t << "}\n";
   }
-  static const char *levelLab[] = { "doxysubsubsection","doxyparagraph","doxysubparagraph", "doxysubparagraph" };
   bool compactLatex = Config_getBool(COMPACT_LATEX);
   bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
-  int level=0;
-  if (showInline) level+=2;
-  if (compactLatex) level++;
-  m_t << "\\" << levelLab[level];
+  if (showInline)
+  {
+    m_t << "\\doxysubparagraph";
+  }
+  else if (compactLatex)
+  {
+    m_t << "\\doxyparagraph";
+  }
+  else
+  {
+    m_t << "\\doxysubsub" << QCString("sub").repeat(m_hierarchyLevel) << "section";
+  }
 
   m_t << "{";
   if (pdfHyperlinks)
@@ -2041,7 +2053,8 @@ void LatexGenerator::writeDoc(const IDocNodeAST *ast,const Definition *ctx,const
   if (astImpl)
   {
     LatexDocVisitor visitor(m_t,*m_codeList,*m_codeGen,
-                            ctx?ctx->getDefFileExtension():QCString(""));
+                            ctx?ctx->getDefFileExtension():QCString(""),
+                            m_hierarchyLevel);
     std::visit(visitor,astImpl->root);
   }
 }
@@ -2095,7 +2108,7 @@ void LatexGenerator::startInlineHeader()
   }
   else
   {
-    m_t << "\\doxysubsubsection*{";
+    m_t << "\\doxysub" << QCString("sub").repeat(m_hierarchyLevel) << "section*{";
   }
 }
 
@@ -2204,7 +2217,7 @@ void LatexGenerator::writeInheritedSectionTitle(
   }
   else
   {
-    m_t << "\\doxysubsubsection*{";
+    m_t << "\\doxysub" << QCString("sub").repeat(m_hierarchyLevel) << "section*{";
   }
   m_t << theTranslator->trInheritedFrom(convertToLaTeX(title,m_codeGen->insideTabbing()),
                                         objectLinkToString(ref, file, anchor, name, m_codeGen->insideTabbing(), m_disableLinks));

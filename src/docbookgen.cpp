@@ -368,7 +368,7 @@ void DocbookGenerator::cleanup()
 }
 
 
-void DocbookGenerator::startFile(const QCString &name,const QCString &,const QCString &,int)
+void DocbookGenerator::startFile(const QCString &name,const QCString &,const QCString &,int,int)
 {
 DB_GEN_C
   QCString fileName=name;

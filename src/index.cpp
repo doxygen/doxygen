@@ -356,10 +356,10 @@ void endTitle(OutputList &ol,const QCString &fileName,const QCString &name)
 
 void startFile(OutputList &ol,const QCString &name,const QCString &manName,
                const QCString &title,HighlightedItem hli,bool additionalIndices,
-               const QCString &altSidebarName)
+               const QCString &altSidebarName, int hierarchyLevel)
 {
   bool disableIndex     = Config_getBool(DISABLE_INDEX);
-  ol.startFile(name,manName,title);
+  ol.startFile(name,manName,title,hierarchyLevel);
   ol.startQuickIndices();
   if (!disableIndex)
   {
