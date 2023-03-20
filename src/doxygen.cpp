@@ -5222,6 +5222,12 @@ static bool findGlobalMember(const Entry *root,
     bool found=FALSE;
     for (const auto &md : *mn)
     {
+      // If the entry has groups, then restrict the search to members which are
+      // in one of the groups of the entry.
+      if (!root->groups.empty() && !isEntryInGroupOfMember(root, md.get()))
+      {
+        continue;
+      }
       const NamespaceDef *nd=0;
       if (md->isAlias() && md->getOuterScope() &&
           md->getOuterScope()->definitionType()==Definition::TypeNamespace)

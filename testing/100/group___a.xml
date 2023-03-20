@@ -15,8 +15,7 @@
             <para>A in <ref refid="100__a_8c" kindref="compound">100_a.c</ref>. </para>
           </briefdescription>
           <detaileddescription>
-            <para>More for A in <ref refid="100__a_8c" kindref="compound">100_a.c</ref> from <ref refid="more__100__c_8c" kindref="compound">more_100_c.c</ref>.</para>
-            <para>More for A in <ref refid="more__100__b_8c" kindref="compound">more_100_b.c</ref> from <ref refid="more__100__c_8c" kindref="compound">more_100_c.c</ref>. </para>
+            <para>More for A in <ref refid="100__a_8c" kindref="compound">100_a.c</ref> from <ref refid="more__100__c_8c" kindref="compound">more_100_c.c</ref>. </para>
           </detaileddescription>
         </enumvalue>
         <enumvalue id="group___a_1ggaa57b8491d1d8fc1014dd54bcf83b130aa1d5389f0fe7d7497267c2a70ae6a4881" prot="public">
@@ -25,8 +24,7 @@
             <para>B in <ref refid="100__a_8c" kindref="compound">100_a.c</ref>. </para>
           </briefdescription>
           <detaileddescription>
-            <para>More for B in <ref refid="100__a_8c" kindref="compound">100_a.c</ref> from <ref refid="more__100__c_8c" kindref="compound">more_100_c.c</ref>.</para>
-            <para>More for B in <ref refid="more__100__b_8c" kindref="compound">more_100_b.c</ref> from <ref refid="more__100__c_8c" kindref="compound">more_100_c.c</ref>. </para>
+            <para>More for B in <ref refid="100__a_8c" kindref="compound">100_a.c</ref> from <ref refid="more__100__c_8c" kindref="compound">more_100_c.c</ref>. </para>
           </detaileddescription>
         </enumvalue>
         <briefdescription>
@@ -50,8 +48,7 @@
           <para>T in <ref refid="100__a_8c" kindref="compound">100_a.c</ref>. </para>
         </briefdescription>
         <detaileddescription>
-          <para>More for T in <ref refid="100__a_8c" kindref="compound">100_a.c</ref> from <ref refid="more__100__c_8c" kindref="compound">more_100_c.c</ref>.</para>
-          <para>More for T in <ref refid="more__100__b_8c" kindref="compound">more_100_b.c</ref> from <ref refid="more__100__c_8c" kindref="compound">more_100_c.c</ref>. </para>
+          <para>More for T in <ref refid="100__a_8c" kindref="compound">100_a.c</ref> from <ref refid="more__100__c_8c" kindref="compound">more_100_c.c</ref>. </para>
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
@@ -68,12 +65,11 @@
           <para>i in <ref refid="100__a_8c" kindref="compound">100_a.c</ref>. </para>
         </briefdescription>
         <detaileddescription>
-          <para>More for i in <ref refid="100__a_8c" kindref="compound">100_a.c</ref> from <ref refid="more__100__c_8c" kindref="compound">more_100_c.c</ref>.</para>
-          <para>More for i in <ref refid="more__100__b_8c" kindref="compound">more_100_b.c</ref> from <ref refid="more__100__c_8c" kindref="compound">more_100_c.c</ref>. </para>
+          <para>More for i in <ref refid="100__a_8c" kindref="compound">100_a.c</ref> from <ref refid="more__100__c_8c" kindref="compound">more_100_c.c</ref>. </para>
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="100_a.c" line="76" column="5" bodyfile="100_a.c" bodystart="76" bodyend="-1"/>
+        <location file="100_a.c" line="79" column="5" bodyfile="100_a.c" bodystart="79" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="group___a_1gabf2bc2545a4a5f5683d9ef3ed0d977e0" prot="public" static="yes" mutable="no">
         <type>int</type>
@@ -88,7 +84,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="100_a.c" line="83" column="12" bodyfile="100_a.c" bodystart="83" bodyend="-1"/>
+        <location file="100_a.c" line="86" column="12" bodyfile="100_a.c" bodystart="86" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <sectiondef kind="func">
