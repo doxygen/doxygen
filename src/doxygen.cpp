@@ -5169,6 +5169,28 @@ static const ClassDef *findClassDefinition(FileDef *fd,NamespaceDef *nd,
   return tcd;
 }
 
+//----------------------------------------------------------------------------
+// Returns TRUE, if the entry belongs to the group of the member definition,
+// otherwise FALSE.
+
+static bool isEntryInGroupOfMember(const Entry *root,const MemberDef *md)
+{
+  const GroupDef *gd = md->getGroupDef();
+  if (!gd)
+  {
+    return FALSE;
+  }
+
+  for (const auto &g : root->groups)
+  {
+    if (g.groupname == gd->name())
+    {
+      return TRUE;
+    }
+  }
+
+  return FALSE;
+}
 
 //----------------------------------------------------------------------
 // Adds the documentation contained in 'root' to a global function
@@ -8871,8 +8893,8 @@ static void findDefineDocumentation(Entry *root)
           MemberDefMutable *md = toMemberDefMutable(imd.get());
           if (md && md->memberType()==MemberType_Define)
           {
-            if (haveEqualFileNames(root, md))
-              // doc and define in the same file assume they belong together.
+            if (haveEqualFileNames(root, md) || isEntryInGroupOfMember(root, md))
+              // doc and define in the same file or group assume they belong together.
             {
               md->setDocumentation(root->doc,root->docFile,root->docLine);
               md->setDocsForDefinition(!root->proto);
