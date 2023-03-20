@@ -4,6 +4,7 @@
 !// check: group___a.xml
 !// check: group___b.xml
 !// check: group___c.xml
+!// check: structs.xml
 
 /**
  * @file
@@ -50,3 +51,22 @@ static void f(void) {};
  * @ingroup A
  */
 void g(void) {};
+
+/**
+ * @brief Struct s in 100_a.c.
+ *
+ * @ingroup A
+ */
+struct s {
+  /**
+   * @brief Member s.
+   */
+  int s;
+};
+
+/**
+ * @brief T in 100_a.c.
+ *
+ * @ingroup A
+ */
+typedef struct s T;

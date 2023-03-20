@@ -4,6 +4,7 @@
     <compoundname>A</compoundname>
     <title>A</title>
     <innerfile refid="100__a_8c">100_a.c</innerfile>
+    <innerclass refid="structs" prot="public">s</innerclass>
     <sectiondef kind="enum">
       <memberdef kind="enum" id="group___a_1gaa57b8491d1d8fc1014dd54bcf83b130a" prot="public" static="no" strong="no">
         <type/>
@@ -36,7 +37,25 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="100_a.c" line="21" column="1" bodyfile="100_a.c" bodystart="21" bodyend="31"/>
+        <location file="100_a.c" line="22" column="1" bodyfile="100_a.c" bodystart="22" bodyend="32"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="typedef">
+      <memberdef kind="typedef" id="group___a_1ga4ed70e44cd9d80a2082e1ae033eb7fc3" prot="public" static="no">
+        <type>struct <ref refid="structs" kindref="compound">s</ref></type>
+        <definition>struct s T</definition>
+        <argsstring/>
+        <name>T</name>
+        <briefdescription>
+          <para>T in <ref refid="100__a_8c" kindref="compound">100_a.c</ref>. </para>
+        </briefdescription>
+        <detaileddescription>
+          <para>More for T in <ref refid="100__a_8c" kindref="compound">100_a.c</ref> from <ref refid="more__100__c_8c" kindref="compound">more_100_c.c</ref>.</para>
+          <para>More for T in <ref refid="more__100__b_8c" kindref="compound">more_100_b.c</ref> from <ref refid="more__100__c_8c" kindref="compound">more_100_c.c</ref>. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="100_a.c" line="72" column="16" bodyfile="100_a.c" bodystart="72" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <sectiondef kind="func">
@@ -56,7 +75,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="100_a.c" line="45" column="13" bodyfile="100_a.c" bodystart="45" bodyend="45"/>
+        <location file="100_a.c" line="46" column="13" bodyfile="100_a.c" bodystart="46" bodyend="46"/>
       </memberdef>
       <memberdef kind="function" id="group___a_1ga5806fbe7d2114068e8085236b6f8098d" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>void</type>
@@ -74,7 +93,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="100_a.c" line="52" column="6" bodyfile="100_a.c" bodystart="52" bodyend="52"/>
+        <location file="100_a.c" line="53" column="6" bodyfile="100_a.c" bodystart="53" bodyend="53"/>
       </memberdef>
     </sectiondef>
     <sectiondef kind="define">
@@ -89,7 +108,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="100_a.c" line="38" column="9"/>
+        <location file="100_a.c" line="39" column="9"/>
       </memberdef>
     </sectiondef>
     <briefdescription>

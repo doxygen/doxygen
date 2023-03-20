@@ -4,6 +4,7 @@
     <compoundname>C</compoundname>
     <title>C</title>
     <innerfile refid="more__100__c_8c">more_100_c.c</innerfile>
+    <innerclass refid="structs" prot="public">s</innerclass>
     <briefdescription>
     </briefdescription>
     <detaileddescription>

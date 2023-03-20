@@ -125,3 +125,29 @@
  *
  * More for g() in more_100_a.c from more_100_c.c.
  */
+
+/**
+ * @struct s
+ *
+ * @ingroup A
+ *
+ * @ingroup C
+ *
+ * More for s in 100_a.c from more_100_c.c.
+ */
+
+/**
+ * @typedef struct s T
+ *
+ * @ingroup A
+ *
+ * More for T in 100_a.c from more_100_c.c.
+ */
+
+/**
+ * @typedef struct s T
+ *
+ * @ingroup B
+ *
+ * More for T in more_100_b.c from more_100_c.c.
+ */

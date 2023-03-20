@@ -35,6 +35,22 @@
         <location file="more_100_b.c" line="14" column="1" bodyfile="more_100_b.c" bodystart="14" bodyend="24"/>
       </memberdef>
     </sectiondef>
+    <sectiondef kind="typedef">
+      <memberdef kind="typedef" id="group___b_1ga5a6fd16639bb7ebdbd75952dc246cf51" prot="public" static="no">
+        <type>struct <ref refid="structs" kindref="compound">s</ref></type>
+        <definition>typedef struct s T</definition>
+        <argsstring/>
+        <name>T</name>
+        <briefdescription>
+          <para>T in <ref refid="more__100__b_8c" kindref="compound">more_100_b.c</ref>. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="more_100_b.c" line="45" column="16" bodyfile="more_100_b.c" bodystart="45" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
     <sectiondef kind="func">
       <memberdef kind="function" id="group___b_1gabc536d5f4f9a56b7edcce32ed3a06140" prot="public" static="yes" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>void</type>

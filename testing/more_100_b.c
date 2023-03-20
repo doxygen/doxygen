@@ -36,3 +36,10 @@ enum E {
  * @ingroup B
  */
 static void f(void) {};
+
+/**
+ * @brief T in more_100_b.c.
+ *
+ * @ingroup B
+ */
+typedef struct s T;
