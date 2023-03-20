@@ -479,6 +479,7 @@ int Markdown::isSpecialCommand(const char *data,int offset,int size)
     { "fn",             endOfFunc  },
     { "headerfile",     endOfLine  },
     { "htmlinclude",    endOfLine  },
+    { "ianchor",        endOfLabel },
     { "idlexcept",      endOfLine  },
     { "if",             endOfGuard },
     { "ifnot",          endOfGuard },
