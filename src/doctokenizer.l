@@ -409,7 +409,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
 %%
 <St_Para>\r            /* skip carriage return */
 <St_Para>^{LISTITEM}   { /* list item */
-                         if (yyextra->insideHtmlLink) REJECT;
+                         if (yyextra->insideHtmlLink || yyextra->insidePre) REJECT;
                          lineCount(yytext,yyleng);
                          QCString text(yytext);
                          uint32_t dashPos = static_cast<uint32_t>(text.findRev('-'));
@@ -465,7 +465,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          }
                        }
 <St_Para>{BLANK}*(\n|"\\ilinebr"){LISTITEM}     { /* list item on next line */
-                         if (yyextra->insideHtmlLink) REJECT;
+                         if (yyextra->insideHtmlLink || yyextra->insidePre) REJECT;
                          lineCount(yytext,yyleng);
                          QCString text=extractPartAfterNewLine(QCString(yytext));
                          uint32_t dashPos = static_cast<uint32_t>(text.findRev('-'));
@@ -522,14 +522,14 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          }
                        }
 <St_Para>^{ENDLIST}       { /* end list */
-                         if (yyextra->insideHtmlLink) REJECT;
+                         if (yyextra->insideHtmlLink || yyextra->insidePre) REJECT;
                          lineCount(yytext,yyleng);
                          size_t dotPos = static_cast<size_t>(QCString(yytext).findRev('.'));
                          yyextra->token->indent     = computeIndent(yytext,dotPos);
                          return TK_ENDLIST;
                        }
 <St_Para>{BLANK}*(\n|"\\ilinebr"){ENDLIST}      { /* end list on next line */
-                         if (yyextra->insideHtmlLink) REJECT;
+                         if (yyextra->insideHtmlLink || yyextra->insidePre) REJECT;
                          lineCount(yytext,yyleng);
                          QCString text=extractPartAfterNewLine(QCString(yytext));
                          size_t dotPos = static_cast<size_t>(text.findRev('.'));
