@@ -29,3 +29,10 @@ enum E {
    */
   B
 };
+
+/**
+ * @brief D in 100_a.c.
+ *
+ * @ingroup A
+ */
+#define D 1

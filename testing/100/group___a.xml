@@ -35,6 +35,20 @@
         <location file="100_a.c" line="21" column="1" bodyfile="100_a.c" bodystart="21" bodyend="31"/>
       </memberdef>
     </sectiondef>
+    <sectiondef kind="define">
+      <memberdef kind="define" id="group___a_1gaf316c33cc298530f245e8b55330e86b5" prot="public" static="no">
+        <name>D</name>
+        <initializer>1</initializer>
+        <briefdescription>
+          <para>D in <ref refid="100__a_8c" kindref="compound">100_a.c</ref>. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="100_a.c" line="38" column="9" bodyfile="100_a.c" bodystart="38" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
     <briefdescription>
     </briefdescription>
     <detaileddescription>

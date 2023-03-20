@@ -53,3 +53,19 @@
  *
  * More for E in more_100_b.c from more_100_c.c.
  */
+
+/**
+ * @def D
+ *
+ * @ingroup A
+ *
+ * More for D in 100_a.c from more_100_c.c.
+ */
+
+/**
+ * @def D
+ *
+ * @ingroup B
+ *
+ * More for D in more_100_b.c from more_100_c.c.
+ */
