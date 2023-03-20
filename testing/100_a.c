@@ -36,3 +36,17 @@ enum E {
  * @ingroup A
  */
 #define D 1
+
+/**
+ * @brief f() in 100_a.c.
+ *
+ * @ingroup A
+ */
+static void f(void) {};
+
+/**
+ * @brief g() in 100_a.c.
+ *
+ * @ingroup A
+ */
+void g(void) {};

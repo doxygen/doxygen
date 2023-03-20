@@ -29,3 +29,10 @@ enum E {
  * @ingroup B
  */
 #define D 1
+
+/**
+ * @brief f() in more_100_b.c.
+ *
+ * @ingroup B
+ */
+static void f(void) {};

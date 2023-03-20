@@ -35,6 +35,43 @@
         <location file="100_a.c" line="21" column="1" bodyfile="100_a.c" bodystart="21" bodyend="31"/>
       </memberdef>
     </sectiondef>
+    <sectiondef kind="func">
+      <memberdef kind="function" id="group___a_1gabc536d5f4f9a56b7edcce32ed3a06140" prot="public" static="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>static void f</definition>
+        <argsstring>(void)</argsstring>
+        <name>f</name>
+        <param>
+          <type>void</type>
+        </param>
+        <briefdescription>
+          <para>f() in <ref refid="100__a_8c" kindref="compound">100_a.c</ref>. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="100_a.c" line="45" column="13" bodyfile="100_a.c" bodystart="45" bodyend="45"/>
+      </memberdef>
+      <memberdef kind="function" id="group___a_1ga5806fbe7d2114068e8085236b6f8098d" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void g</definition>
+        <argsstring>(void)</argsstring>
+        <name>g</name>
+        <param>
+          <type>void</type>
+        </param>
+        <briefdescription>
+          <para><ref refid="group___a_1ga5806fbe7d2114068e8085236b6f8098d" kindref="member">g()</ref> in <ref refid="100__a_8c" kindref="compound">100_a.c</ref>. </para>
+        </briefdescription>
+        <detaileddescription>
+          <para>More for <ref refid="group___a_1ga5806fbe7d2114068e8085236b6f8098d" kindref="member">g()</ref> in more_100_a.c from <ref refid="more__100__c_8c" kindref="compound">more_100_c.c</ref>. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="100_a.c" line="52" column="6" bodyfile="100_a.c" bodystart="52" bodyend="52"/>
+      </memberdef>
+    </sectiondef>
     <sectiondef kind="define">
       <memberdef kind="define" id="group___a_1gaf316c33cc298530f245e8b55330e86b5" prot="public" static="no">
         <name>D</name>

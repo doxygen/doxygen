@@ -69,3 +69,27 @@
  *
  * More for D in more_100_b.c from more_100_c.c.
  */
+
+/**
+ * @fn static void f(void)
+ *
+ * @ingroup A
+ *
+ * More for f() in 100_a.c from more_100_c.c.
+ */
+
+/**
+ * @fn static void f(void)
+ *
+ * @ingroup B
+ *
+ * More for f() in more_100_b.c from more_100_c.c.
+ */
+
+/**
+ * @fn void g(void)
+ *
+ * @ingroup A
+ *
+ * More for g() in more_100_a.c from more_100_c.c.
+ */
