@@ -55,6 +55,38 @@
  */
 
 /**
+ * @var E::A
+ *
+ * @ingroup A
+ *
+ * More for A in 100_a.c from more_100_c.c.
+ */
+
+/**
+ * @var E::B
+ *
+ * @ingroup A
+ *
+ * More for B in 100_a.c from more_100_c.c.
+ */
+
+/**
+ * @var E::A
+ *
+ * @ingroup B
+ *
+ * More for A in more_100_b.c from more_100_c.c.
+ */
+
+/**
+ * @var E::B
+ *
+ * @ingroup B
+ *
+ * More for B in more_100_b.c from more_100_c.c.
+ */
+
+/**
  * @def D
  *
  * @ingroup A
