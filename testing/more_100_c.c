@@ -151,3 +151,27 @@
  *
  * More for T in more_100_b.c from more_100_c.c.
  */
+
+/**
+ * @var i
+ *
+ * @ingroup A
+ *
+ * More for i in 100_a.c from more_100_c.c.
+ */
+
+/**
+ * @var i
+ *
+ * @ingroup B
+ *
+ * More for i in more_100_b.c from more_100_c.c.
+ */
+
+/**
+ * @var j
+ *
+ * @ingroup A
+ *
+ * More for j in 100_a.c from more_100_c.c.
+ */

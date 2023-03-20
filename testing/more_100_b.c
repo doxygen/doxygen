@@ -43,3 +43,10 @@ static void f(void) {};
  * @ingroup B
  */
 typedef struct s T;
+
+/**
+ * @brief i in more_100_a.c.
+ *
+ * @ingroup B
+ */
+static int i;

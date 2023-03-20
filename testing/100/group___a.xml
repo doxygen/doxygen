@@ -58,6 +58,39 @@
         <location file="100_a.c" line="72" column="16" bodyfile="100_a.c" bodystart="72" bodyend="-1"/>
       </memberdef>
     </sectiondef>
+    <sectiondef kind="var">
+      <memberdef kind="variable" id="group___a_1ga7e98b8a17c0aad30ba64d47b74e2a6c1" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>i</definition>
+        <argsstring/>
+        <name>i</name>
+        <briefdescription>
+          <para>i in <ref refid="100__a_8c" kindref="compound">100_a.c</ref>. </para>
+        </briefdescription>
+        <detaileddescription>
+          <para>More for i in <ref refid="100__a_8c" kindref="compound">100_a.c</ref> from <ref refid="more__100__c_8c" kindref="compound">more_100_c.c</ref>.</para>
+          <para>More for i in <ref refid="more__100__b_8c" kindref="compound">more_100_b.c</ref> from <ref refid="more__100__c_8c" kindref="compound">more_100_c.c</ref>. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="100_a.c" line="76" column="5" bodyfile="100_a.c" bodystart="76" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="group___a_1gabf2bc2545a4a5f5683d9ef3ed0d977e0" prot="public" static="yes" mutable="no">
+        <type>int</type>
+        <definition>j</definition>
+        <argsstring/>
+        <name>j</name>
+        <briefdescription>
+          <para>j in <ref refid="100__a_8c" kindref="compound">100_a.c</ref>. </para>
+        </briefdescription>
+        <detaileddescription>
+          <para>More for j in <ref refid="100__a_8c" kindref="compound">100_a.c</ref> from <ref refid="more__100__c_8c" kindref="compound">more_100_c.c</ref>. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="100_a.c" line="83" column="12" bodyfile="100_a.c" bodystart="83" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
     <sectiondef kind="func">
       <memberdef kind="function" id="group___a_1gabc536d5f4f9a56b7edcce32ed3a06140" prot="public" static="yes" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>void</type>

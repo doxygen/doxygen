@@ -70,3 +70,17 @@ struct s {
  * @ingroup A
  */
 typedef struct s T;
+
+/**
+ * @brief i in 100_a.c.
+ *
+ * @ingroup A
+ */
+int i;
+
+/**
+ * @brief j in 100_a.c.
+ *
+ * @ingroup A
+ */
+static int j;
