@@ -103,7 +103,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="more_100_b.c" line="31" column="9"/>
+        <location file="more_100_b.c" line="31" column="9" bodyfile="more_100_b.c" bodystart="31" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <briefdescription>

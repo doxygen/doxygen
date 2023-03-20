@@ -13,7 +13,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="018_def.c" line="8" column="9"/>
+        <location file="018_def.c" line="8" column="9" bodyfile="018_def.c" bodystart="8" bodyend="-1"/>
       </memberdef>
       <memberdef kind="define" id="018__def_8c_1adc4f42710326718e200d81a0c68cd1f0" prot="public" static="no">
         <name>MACRO4</name>

@@ -137,7 +137,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="100_a.c" line="39" column="9"/>
+        <location file="100_a.c" line="39" column="9" bodyfile="100_a.c" bodystart="39" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <briefdescription>

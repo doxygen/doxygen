@@ -8833,6 +8833,29 @@ static bool haveEqualFileNames(const Entry *root,const MemberDef *md)
 
 //----------------------------------------------------------------------------
 
+static void addDefineDoc(const Entry *root, MemberDefMutable *md)
+{
+  md->setDocumentation(root->doc,root->docFile,root->docLine);
+  md->setDocsForDefinition(!root->proto);
+  md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+  if (md->inbodyDocumentation().isEmpty())
+  {
+    md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
+  }
+  if (md->getStartBodyLine()==-1 && root->bodyLine!=-1)
+  {
+    md->setBodySegment(root->startLine,root->bodyLine,root->endBodyLine);
+    md->setBodyDef(root->fileDef());
+  }
+  md->addSectionsToDefinition(root->anchors);
+  md->setMaxInitLines(root->initLines);
+  md->setRefItems(root->sli);
+  if (root->mGrpId!=-1) md->setMemberGroupId(root->mGrpId);
+  addMemberToGroups(root,md);
+}
+
+//----------------------------------------------------------------------------
+
 static void findDefineDocumentation(Entry *root)
 {
   if ((root->section==Entry::DEFINEDOC_SEC ||
@@ -8871,20 +8894,7 @@ static void findDefineDocumentation(Entry *root)
           MemberDefMutable *md = toMemberDefMutable(imd.get());
           if (md && md->memberType()==MemberType_Define)
           {
-            md->setDocumentation(root->doc,root->docFile,root->docLine);
-            md->setDocsForDefinition(!root->proto);
-            md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
-            if (md->inbodyDocumentation().isEmpty())
-            {
-              md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
-            }
-            md->setBodySegment(root->startLine,root->bodyLine,root->endBodyLine);
-            md->setBodyDef(root->fileDef());
-            md->addSectionsToDefinition(root->anchors);
-            md->setMaxInitLines(root->initLines);
-            md->setRefItems(root->sli);
-            if (root->mGrpId!=-1) md->setMemberGroupId(root->mGrpId);
-            addMemberToGroups(root,md);
+            addDefineDoc(root,md);
           }
         }
       }
@@ -8905,20 +8915,7 @@ static void findDefineDocumentation(Entry *root)
             if (haveEqualFileNames(root, md) || isEntryInGroupOfMember(root, md))
               // doc and define in the same file or group assume they belong together.
             {
-              md->setDocumentation(root->doc,root->docFile,root->docLine);
-              md->setDocsForDefinition(!root->proto);
-              md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
-              if (md->inbodyDocumentation().isEmpty())
-              {
-                md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
-              }
-              md->setBodySegment(root->startLine,root->bodyLine,root->endBodyLine);
-              md->setBodyDef(root->fileDef());
-              md->addSectionsToDefinition(root->anchors);
-              md->setRefItems(root->sli);
-              md->setLanguage(root->lang);
-              if (root->mGrpId!=-1) md->setMemberGroupId(root->mGrpId);
-              addMemberToGroups(root,md);
+              addDefineDoc(root,md);
             }
           }
         }
