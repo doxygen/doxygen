@@ -8786,6 +8786,21 @@ static void flushUnresolvedRelations()
 }
 
 //----------------------------------------------------------------------------
+// Returns TRUE if the entry and member definition have equal file names,
+// otherwise FALSE.
+
+static bool haveEqualFileNames(const Entry *root,const MemberDef *md)
+{
+  const FileDef *fd = md->getFileDef();
+  if (!fd)
+  {
+    return FALSE;
+  }
+
+  return fd->absFilePath() == root->fileName;
+}
+
+//----------------------------------------------------------------------------
 
 static void findDefineDocumentation(Entry *root)
 {
@@ -8856,8 +8871,7 @@ static void findDefineDocumentation(Entry *root)
           MemberDefMutable *md = toMemberDefMutable(imd.get());
           if (md && md->memberType()==MemberType_Define)
           {
-            const FileDef *fd=md->getFileDef();
-            if (fd && fd->absFilePath()==root->fileName)
+            if (haveEqualFileNames(root, md))
               // doc and define in the same file assume they belong together.
             {
               md->setDocumentation(root->doc,root->docFile,root->docLine);
