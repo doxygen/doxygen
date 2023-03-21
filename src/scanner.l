@@ -2315,9 +2315,9 @@ NONLopt [^\n]*
                                             yyextra->current->name="this";
                                             BEGIN(CSIndexer);
                                           }
-                                          else if (yyextra->insideCpp && qstrcmp(yytext,"static_assert")==0)
+                                          else if (yyextra->insideCpp && (qstrcmp(yytext,"static_assert")==0 || qstrcmp(yytext,"_Static_assert")==0))
                                           {
-                                            // C++11 static_assert
+                                            // C/C++11 static_assert
                                             BEGIN(StaticAssert);
                                           }
                                           else if (yyextra->insideCpp && qstrcmp(yytext,"decltype")==0)
