@@ -4,6 +4,36 @@
     <compoundname>A</compoundname>
     <title>A</title>
     <innerfile refid="100__a_8c">100_a.c</innerfile>
+    <sectiondef kind="enum">
+      <memberdef kind="enum" id="group___a_1gaa57b8491d1d8fc1014dd54bcf83b130a" prot="public" static="no" strong="no">
+        <type/>
+        <name>E</name>
+        <enumvalue id="group___a_1ggaa57b8491d1d8fc1014dd54bcf83b130aa42a4ade1acd55a49164099104990e09f" prot="public">
+          <name>A</name>
+          <briefdescription>
+            <para>A in <ref refid="100__a_8c" kindref="compound">100_a.c</ref>. </para>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="group___a_1ggaa57b8491d1d8fc1014dd54bcf83b130aa3f2a77ecd272aa6d6b5902faa5e5fc68" prot="public">
+          <name>B</name>
+          <briefdescription>
+            <para>B in <ref refid="100__a_8c" kindref="compound">100_a.c</ref>. </para>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <briefdescription>
+          <para>E in <ref refid="100__a_8c" kindref="compound">100_a.c</ref>. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="100_a.c" line="21" column="1" bodyfile="100_a.c" bodystart="21" bodyend="31"/>
+      </memberdef>
+    </sectiondef>
     <briefdescription>
     </briefdescription>
     <detaileddescription>

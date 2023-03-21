@@ -33,3 +33,23 @@
  *
  * More for more_100_b.c from more_100_c.c
  */
+
+/**
+ * @enum E
+ *
+ * @ingroup A
+ *
+ * @ingroup C
+ *
+ * More for E in 100_a.c from more_100_c.c.
+ */
+
+/**
+ * @enum E
+ *
+ * @ingroup B
+ *
+ * @ingroup C
+ *
+ * More for E in more_100_b.c from more_100_c.c.
+ */

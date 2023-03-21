@@ -12,3 +12,20 @@
  *
  * @brief 100_a.c
  */
+
+/**
+ * @brief E in 100_a.c
+ *
+ * @ingroup A
+ */
+enum E {
+  /**
+   * @brief A in 100_a.c
+   */
+  A,
+
+  /**
+   * @brief B in 100_a.c
+   */
+  B
+};
