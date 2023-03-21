@@ -64,6 +64,7 @@ class GroupDefImpl : public DefinitionMixin<GroupDef>
     virtual void setGroupTitle( const QCString &newtitle );
     virtual bool hasGroupTitle( ) const { return m_titleSet; }
     virtual void addFile(FileDef *def);
+    virtual bool containsFile(const FileDef *def) const;
     virtual bool addClass(ClassDef *def);
     virtual bool addConcept(ConceptDef *def);
     virtual bool addNamespace(NamespaceDef *def);
@@ -246,6 +247,11 @@ void GroupDefImpl::addFile(FileDef *def)
                        def);
   else
     m_fileList.push_back(def);
+}
+
+bool GroupDefImpl::containsFile(const FileDef *def) const
+{
+  return std::find(m_fileList.cbegin(),m_fileList.cend(), def) != m_fileList.cend();
 }
 
 bool GroupDefImpl::addClass(ClassDef *cd)

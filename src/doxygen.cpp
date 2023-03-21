@@ -512,9 +512,12 @@ static void buildFileList(const Entry *root)
         GroupDef *gd=0;
         if (!g.groupname.isEmpty() && (gd=Doxygen::groupLinkedMap->find(g.groupname)))
         {
-          gd->addFile(fd);
-          fd->makePartOfGroup(gd);
-          //printf("File %s: in group %s\n",qPrint(fd->name()),qPrint(gd->name()));
+          if (!gd->containsFile(fd))
+          {
+            gd->addFile(fd);
+            fd->makePartOfGroup(gd);
+            //printf("File %s: in group %s\n",qPrint(fd->name()),qPrint(gd->name()));
+          }
         }
       }
     }
