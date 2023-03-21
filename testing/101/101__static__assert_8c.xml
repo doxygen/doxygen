@@ -2,45 +2,6 @@
 <doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
   <compounddef id="101__static__assert_8c" kind="file" language="C++">
     <compoundname>101_static_assert.c</compoundname>
-    <sectiondef kind="func">
-      <memberdef kind="function" id="101__static__assert_8c_1a31c0e596d73098611cd8254fed4a90f7" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
-        <type/>
-        <definition>_Static_assert</definition>
-        <argsstring>(2==2)</argsstring>
-        <name>_Static_assert</name>
-        <param>
-          <type>2</type>
-          <defval>=2</defval>
-        </param>
-        <briefdescription>
-        </briefdescription>
-        <detaileddescription>
-        </detaileddescription>
-        <inbodydescription>
-        </inbodydescription>
-        <location file="101_static_assert.c" line="17" column="1" declfile="101_static_assert.c" declline="17" declcolumn="1"/>
-      </memberdef>
-      <memberdef kind="function" id="101__static__assert_8c_1ad1f6bbba2550915df9a7f2aed9c06015" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
-        <type/>
-        <definition>_Static_assert</definition>
-        <argsstring>(3==3, "m3")</argsstring>
-        <name>_Static_assert</name>
-        <param>
-          <type>3</type>
-          <defval>=3</defval>
-        </param>
-        <param>
-          <type>"m3"</type>
-        </param>
-        <briefdescription>
-        </briefdescription>
-        <detaileddescription>
-        </detaileddescription>
-        <inbodydescription>
-        </inbodydescription>
-        <location file="101_static_assert.c" line="18" column="1" declfile="101_static_assert.c" declline="18" declcolumn="1"/>
-      </memberdef>
-    </sectiondef>
     <briefdescription>
     </briefdescription>
     <detaileddescription>
