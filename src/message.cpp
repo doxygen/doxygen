@@ -19,6 +19,8 @@
 #include "portable.h"
 #include "message.h"
 #include "doxygen.h"
+#include "fileinfo.h"
+#include "dir.h"
 
 #include <mutex>
 #include <atomic>
@@ -54,11 +56,22 @@ void initWarningFormat()
     {
       g_warnFile = stdout;
     }
-    else if (!(g_warnFile = Portable::fopen(g_warnlogFile,"w")))
+    else
     {
-      // point it to something valid, because warn() relies on it
-      g_warnFile = stderr;
-      err("Cannot open '%s' for writing, redirecting 'WARN_LOGFILE' output to 'stderr'\n",g_warnlogFile.data());
+      FileInfo fi(g_warnlogFile.str());
+      Dir d(fi.dirPath().c_str());
+      if (!d.exists() && !d.mkdir(fi.dirPath().c_str()))
+      {
+        // point it to something valid, because warn() relies on it
+        g_warnFile = stderr;
+        err("Cannot create directory for '%s', redirecting 'WARN_LOGFILE' output to 'stderr'\n",g_warnlogFile.data());
+      }
+      else if (!(g_warnFile = Portable::fopen(g_warnlogFile,"w")))
+      {
+        // point it to something valid, because warn() relies on it
+        g_warnFile = stderr;
+        err("Cannot open '%s' for writing, redirecting 'WARN_LOGFILE' output to 'stderr'\n",g_warnlogFile.data());
+      }
     }
   }
   else
