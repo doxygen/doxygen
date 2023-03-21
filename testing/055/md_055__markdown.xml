@@ -6,9 +6,12 @@
     <briefdescription>
     </briefdescription>
     <detaileddescription>
-      <sect1 id="md_055__markdown_1autotoc_md0">
+      <para>
+        <anchor id="md_055__markdown_1autotoc_md0"/>
+      </para>
+      <sect1 id="md_055__markdown_1autotoc_md1">
         <title>Foo</title>
-        <sect2 id="md_055__markdown_1autotoc_md1">
+        <sect2 id="md_055__markdown_1autotoc_md2">
           <title>Bar</title>
           <para>
             <ulink url="http://example.com/inline">Inline link</ulink>
@@ -17,7 +20,7 @@
             <ulink url="http://example.com/reference">Reference link</ulink>
           </para>
         </sect2>
-        <sect2 id="md_055__markdown_1autotoc_md2">
+        <sect2 id="md_055__markdown_1autotoc_md3">
           <title>Baz</title>
           <para>More text</para>
           <para>
@@ -25,7 +28,7 @@
           </para>
           <para>Dash - NDash <ndash/> MDash <mdash/> EDash - ENDash -- EMDash --- E3Dash ---</para>
         </sect2>
-        <sect2 id="md_055__markdown_1autotoc_md3">
+        <sect2 id="md_055__markdown_1autotoc_md4">
           <title>Markdown in HTML</title>
           <para>
             <heading level="3"><bold>Header3</bold> blah <emphasis>blah</emphasis> <computeroutput>blah</computeroutput></heading>
