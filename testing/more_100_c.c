@@ -17,3 +17,19 @@
 /**
  * @defgroup C C
  */
+
+/**
+ * @file 100_a.c
+ *
+ * @ingroup A
+ *
+ * More for 100_a.c from more_100_c.c
+ */
+
+/**
+ * @file more_100_b.c
+ *
+ * @ingroup B
+ *
+ * More for more_100_b.c from more_100_c.c
+ */
