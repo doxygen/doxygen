@@ -9552,6 +9552,7 @@ static void generateConfigFile(const QCString &configFile,bool shortList,
       {
         msg("\n\nConfiguration file '%s' updated.\n\n",qPrint(configFile));
       }
+      f.close();
     }
   }
   else
@@ -10868,6 +10869,7 @@ void readConfiguration(int argc, char **argv)
             TextStream t(&f);
             RTFGenerator::writeExtensionsFile(t);
           }
+          f.close();
           cleanUpDoxygen();
           exit(0);
         }
@@ -10897,6 +10899,7 @@ void readConfiguration(int argc, char **argv)
             TextStream t(&f);
             EmojiEntityMapper::instance().writeEmojiFile(t);
           }
+          f.close();
           cleanUpDoxygen();
           exit(0);
         }
@@ -10932,6 +10935,7 @@ void readConfiguration(int argc, char **argv)
             cleanUpDoxygen();
             exit(1);
           }
+          f.close();
           cleanUpDoxygen();
           exit(0);
         }
@@ -10979,6 +10983,7 @@ void readConfiguration(int argc, char **argv)
             TextStream t(&f);
             HtmlGenerator::writeStyleSheetFile(t);
           }
+          f.close();
           cleanUpDoxygen();
           exit(0);
         }
@@ -11025,6 +11030,7 @@ void readConfiguration(int argc, char **argv)
             TextStream t(&f);
             LatexGenerator::writeStyleSheetFile(t);
           }
+          f.close();
           cleanUpDoxygen();
           exit(0);
         }
