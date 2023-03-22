@@ -279,7 +279,7 @@ NamespaceDefImpl::NamespaceDefImpl(const QCString &df,int dl,int dc,
   {
     setFileName(name);
   }
-  setReference(lref);
+  setReference(lref,fName);
   m_inline=FALSE;
   m_subGrouping=Config_getBool(SUBGROUPING);
   if (type=="module")
@@ -1499,7 +1499,7 @@ bool NamespaceDefImpl::isLinkableInProject() const
 
 bool NamespaceDefImpl::isLinkable() const
 {
-  return isLinkableInProject() || isReference();
+  return isLinkableInProject() || (isReference() && !isInValidTagReference());
 }
 
 const MemberDef * NamespaceDefImpl::getMemberByName(const QCString &n) const

@@ -147,7 +147,7 @@ bool DirDefImpl::isLinkableInProject() const
 
 bool DirDefImpl::isLinkable() const
 {
-  return isReference() || isLinkableInProject();
+  return (isReference() && !isInValidTagReference()) || isLinkableInProject();
 }
 
 void DirDefImpl::addSubDir(DirDef *subdir)

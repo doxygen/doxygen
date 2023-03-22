@@ -83,7 +83,7 @@ class FileDefImpl : public DefinitionMixin<FileDef>
     virtual QCString getPath() const { return m_path; }
     virtual QCString getVersion() const { return m_fileVersion; }
     virtual bool isLinkableInProject() const;
-    virtual bool isLinkable() const { return isLinkableInProject() || isReference(); }
+    virtual bool isLinkable() const { return isLinkableInProject() || (isReference() && !isInValidTagReference()); }
     virtual bool isIncluded(const QCString &name) const;
     virtual PackageDef *packageDef() const { return m_package; }
     virtual DirDef *getDirDef() const      { return m_dir; }
@@ -209,7 +209,7 @@ FileDefImpl::FileDefImpl(const QCString &p,const QCString &nm,
   m_path=p;
   m_filePath=m_path+nm;
   m_fileName=nm;
-  setReference(lref);
+  setReference(lref,dn);
   setDiskName(!dn.isEmpty() ? dn : nm);
   m_package           = 0;
   m_isSource          = guessSection(nm)==Entry::SOURCE_SEC;

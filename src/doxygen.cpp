@@ -377,7 +377,7 @@ static void buildGroupListFiltered(const Entry *root,bool additional, bool inclu
           gd = Doxygen::groupLinkedMap->add(root->name,
                std::unique_ptr<GroupDef>(
                   createGroupDef(root->fileName,root->startLine,root->name,root->type,root->tagInfo()->fileName)));
-          gd->setReference(root->tagInfo()->tagName);
+          gd->setReference(root->tagInfo()->tagName,root->tagInfo()->fileName);
         }
         else
         {
@@ -1656,7 +1656,7 @@ static void buildNamespaceList(const Entry *root)
             // documented namespace with the same name in the project, then remove
             // the tag file reference
           {
-            nd->setReference("");
+            nd->setReference("","");
             nd->setFileName(fullName);
           }
           nd->setMetaData(root->metaData);

@@ -623,13 +623,19 @@ static void writeClassTreeToOutput(OutputList &ol,const BaseClassList &bcl,int l
         ol.startIndexItem(QCString(),QCString());
         ol.parseText(cd->name());
         ol.endIndexItem(QCString(),QCString());
+        if (cd->isReference())
+        {
+          ol.startTypewriter();
+          ol.docify(" [external]");
+          ol.endTypewriter();
+        }
         if (addToIndex)
         {
           Doxygen::indexList->addContentsItem(hasChildren,cd->displayName(),QCString(),QCString(),QCString());
         }
         if (ftv)
         {
-          ftv->addContentsItem(hasChildren,cd->displayName(),QCString(),QCString(),QCString(),FALSE,FALSE,cd);
+          ftv->addContentsItem(hasChildren,cd->displayName(),cd->isReference()?"[external]":QCString(),QCString(),QCString(),FALSE,FALSE,cd);
         }
       }
       if (hasChildren)
@@ -975,13 +981,19 @@ static void writeClassTreeForList(OutputList &ol,const ClassLinkedMap &cl,bool &
           ol.startIndexItem(QCString(),QCString());
           ol.parseText(cd->displayName());
           ol.endIndexItem(QCString(),QCString());
+          if (cd->isReference())
+          {
+            ol.startTypewriter();
+            ol.docify(" [external]");
+            ol.endTypewriter();
+          }
           if (addToIndex)
           {
             Doxygen::indexList->addContentsItem(hasChildren,cd->displayName(),QCString(),QCString(),QCString(),FALSE,FALSE);
           }
           if (ftv)
           {
-            ftv->addContentsItem(hasChildren,cd->displayName(),QCString(),QCString(),QCString(),FALSE,FALSE,cd.get());
+            ftv->addContentsItem(hasChildren,cd->displayName(),cd->isReference()?"[external]":QCString(),QCString(),QCString(),FALSE,FALSE,cd.get());
           }
         }
         if (cd->getLanguage()==SrcLangExt_VHDL && hasChildren)
