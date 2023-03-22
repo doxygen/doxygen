@@ -310,12 +310,24 @@ STARTDOCSYMS      "##"
                         yyextra->packageCommentAllowed = FALSE;
                         BEGIN(VariableDec);
                       }
-     ^{B}{IDENTIFIER}/{B}"="[^=] |
-     ^{B}{IDENTIFIER}/{B}":" { // variable
+     ^{B}{IDENTIFIER}/{B}"="[^=] { //variabele
                         if (yyextra->search_count) REJECT;
                         yyextra->indent=computeIndent(yytext);
                         yyextra->current->section   = Entry::VARIABLE_SEC;
                         yyextra->current->name      = QCString(yytext).stripWhiteSpace();
+                        yyextra->current->fileName  = yyextra->fileName;
+                        yyextra->current->startLine = yyextra->yyLineNr;
+                        yyextra->current->bodyLine  = yyextra->yyLineNr;
+                        yyextra->packageCommentAllowed = FALSE;
+                        BEGIN(VariableDec);
+                      }
+     ^{B}{IDENTIFIER}/{B}":" { // variable
+                        if (yyextra->search_count) REJECT;
+                        QCString id = QCString(yytext).stripWhiteSpace();
+                        if (id =="try" || id == "else" || id == "except" || id == "finally") REJECT;
+                        yyextra->indent=computeIndent(yytext);
+                        yyextra->current->section   = Entry::VARIABLE_SEC;
+                        yyextra->current->name      = id;
                         yyextra->current->fileName  = yyextra->fileName;
                         yyextra->current->startLine = yyextra->yyLineNr;
                         yyextra->current->bodyLine  = yyextra->yyLineNr;
