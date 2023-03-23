@@ -3385,7 +3385,7 @@ void MarkdownOutlineParser::parseInput(const QCString &fileName,
         {
           docs.prepend("@ianchor " +  generatedId + "\\ilinebr ");
         }
-        else
+        else if (Config_getEnum(MARKDOWN_ID_STYLE)==MARKDOWN_ID_STYLE_t::GITHUB)
         {
           QCString autoId = AnchorGenerator::instance().generate(title.str());
           docs.prepend("@ianchor{" + title + "} " +  autoId + "\\ilinebr ");
