@@ -1338,16 +1338,22 @@ STopt  [^\n@\\]*
 
   /* --------- handle arguments of page/mainpage command ------------------- */
 
-<PageDocArg1>[^\n]*"\\ilinebr @ianchor/"\{[^\]\n]*\}{B}{FILE} { // special case where the Markdown processor has rewritten
+<PageDocArg1>[^\n]*"\\ilinebr @ianchor"\{[^\]\n]*\}{B}{FILE} { // special case where the Markdown processor has rewritten
                                                                // "@page label Title" as
                                                                // "@page md_label Title\ilinebr @ianchor{Title} label"
-                                          //QCString text = yytext;
-                                          //int start = text.find('{');
-                                          //int end   = text.find('}',start+1);
-                                          //yyextra->current->name = text.mid(end+2);
-                                          //yyextra->current->args = text.mid(start+1,end-start-1);
+                                          QCString text = yytext;
+                                          int start = text.find('{');
+                                          int end   = text.find('}',start+1);
+                                          yyextra->current->name = text.mid(end+2);
+                                          int istart = yyextra->current->name.find("\\ilinebr");
+                                          if (istart != -1)
+                                          {
+                                            QCString rest =  yyextra->current->name.mid(istart);
+                                            unput_string(rest,rest.length());
+                                            yyextra->current->name = yyextra->current->name.mid(0,istart);
+                                          }
+                                          yyextra->current->args = text.mid(start+1,end-start-1);
                                           //printf("name='%s' title='%s'\n",qPrint(yyextra->current->name),qPrint(yyextra->current->args));
-                                          unput_string("@ianchor",8);
                                           BEGIN( PageDocArg2 );
                                         }
 <PageDocArg1>{FILE}                     { // first argument; page name
