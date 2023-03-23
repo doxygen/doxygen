@@ -22,12 +22,32 @@ LongForm expand_known_abbr(nonDictWords nonDictWords, Dictionary D) {
   return retvec;
 }
 
-int vowels(string word) {
-  return 0;
+bool is_vowels(char word) {
+  switch ( word ) {
+    case 'a':
+    case 'e':
+    case 'i':
+    case 'o':
+    case 'u':
+      return true;
+    default:
+      return false;
+  }
 }
 
-int consonants(string word) {
-  return 0;
+int is_consonant(char word) {
+  return !is_vowels(word);
+}
+
+void check_vowels_consonants(string word, int &vowels, int &consonants) {
+  for(auto each: word) {
+    if(is_vowels(each)) {
+      vowels+=1;
+    }
+    if(is_consonant(each)) {
+      consonants+=1;
+    }
+  }
 }
 
 
@@ -48,7 +68,10 @@ LongForm expansion_matching(nonDictWords nonDictWords, Dictionary D) {
   C c = nullptr;
   for(auto token: toExpand) {
     for(auto dictionary: D) {
-      if(vowels(token) > consonants(token)) {
+      int vowels;
+      int consonants;
+      check_vowels_consonants(token, vowels, consonants);
+      if(vowels > consonants) {
         phi = [&D]( string token ){ return 0; };
       } else {
         phi = [&D]( string token ){ return 0; };
