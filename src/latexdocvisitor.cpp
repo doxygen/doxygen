@@ -52,14 +52,16 @@ const char *LatexDocVisitor::getSectionName(int level) const
   bool compactLatex = Config_getBool(COMPACT_LATEX);
   int l = level;
   if (compactLatex) l++;
-  if (Doxygen::insideMainPage) l--;
 
   if (l <= 2)
   {
     // Sections get special treatment because they inherit the parent's level
-    l += m_hierarchyLevel;
+    l += m_hierarchyLevel; /* May be -1 if generating main page */
     if (l > maxLevels - 1)
       l = maxLevels - 1;
+    else if (l < 0)
+      /* Should not happen; level is always >= 1 and hierarchyLevel >= -1 */
+      l = 0;
 
     return secLabels[l];
   }

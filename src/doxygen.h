@@ -93,7 +93,6 @@ class Doxygen
     static PageLinkedMap            *exampleLinkedMap;
     static PageLinkedMap            *pageLinkedMap;
     static std::unique_ptr<PageDef>  mainPage;
-    static bool                      insideMainPage;
     static FileNameLinkedMap        *includeNameLinkedMap;
     static FileNameLinkedMap        *exampleNameLinkedMap;
     static StringSet                 inputPaths;
@@ -125,7 +124,6 @@ class Doxygen
     static bool                      suppressDocWarnings;
     static QCString                  filterDBFileName;
     static IndexList                *indexList;
-    static int                       subpageNestingLevel;
     static QCString                  spaces;
     static bool                      generatingXmlOutput;
     static DefinesPerFileList        macroDefinitions;
