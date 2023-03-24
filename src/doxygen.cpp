@@ -13,10 +13,10 @@
  *
  */
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cerrno>
 #include <sys/stat.h>
-#include <errno.h>
 
 #include <algorithm>
 #include <unordered_map>
@@ -9552,7 +9552,6 @@ static void generateConfigFile(const QCString &configFile,bool shortList,
       {
         msg("\n\nConfiguration file '%s' updated.\n\n",qPrint(configFile));
       }
-      f.close();
     }
   }
   else
@@ -10755,6 +10754,20 @@ void readConfiguration(int argc, char **argv)
 {
   QCString versionString = getFullVersion();
 
+  // helper that calls \a func to write to file \a fileName via a TextStream
+  auto writeFile = [](const char *fileName,std::function<void(TextStream&)> func) -> bool
+  {
+    std::ofstream f;
+    if (openOutputFile(fileName,f))
+    {
+      TextStream t(&f);
+      func(t);
+      return true;
+    }
+    return false;
+  };
+
+
   /**************************************************************************
    *             Handle arguments                                           *
    **************************************************************************/
@@ -10863,13 +10876,7 @@ void readConfiguration(int argc, char **argv)
             cleanUpDoxygen();
             exit(1);
           }
-          std::ofstream f;
-          if (openOutputFile(argv[optInd+1],f))
-          {
-            TextStream t(&f);
-            RTFGenerator::writeExtensionsFile(t);
-          }
-          f.close();
+          writeFile(argv[optInd+1],RTFGenerator::writeExtensionsFile);
           cleanUpDoxygen();
           exit(0);
         }
@@ -10893,13 +10900,7 @@ void readConfiguration(int argc, char **argv)
             cleanUpDoxygen();
             exit(1);
           }
-          std::ofstream f;
-          if (openOutputFile(argv[optInd+1],f))
-          {
-            TextStream t(&f);
-            EmojiEntityMapper::instance().writeEmojiFile(t);
-          }
-          f.close();
+          writeFile(argv[optInd+1],[](TextStream &t) { EmojiEntityMapper::instance().writeEmojiFile(t); });
           cleanUpDoxygen();
           exit(0);
         }
@@ -10923,19 +10924,12 @@ void readConfiguration(int argc, char **argv)
             cleanUpDoxygen();
             exit(1);
           }
-          std::ofstream f;
-          if (openOutputFile(argv[optInd+1],f))
-          {
-            TextStream t(&f);
-            RTFGenerator::writeStyleSheetFile(t);
-          }
-          else
+          if (!writeFile(argv[optInd+1],RTFGenerator::writeStyleSheetFile))
           {
             err("error opening RTF style sheet file %s!\n",argv[optInd+1]);
             cleanUpDoxygen();
             exit(1);
           }
-          f.close();
           cleanUpDoxygen();
           exit(0);
         }
@@ -10962,28 +10956,10 @@ void readConfiguration(int argc, char **argv)
           Config::postProcess(TRUE);
           Config::updateObsolete();
           Config::checkAndCorrect(Config_getBool(QUIET), false);
-
           setTranslator(Config_getEnum(OUTPUT_LANGUAGE));
-
-          std::ofstream f;
-          if (openOutputFile(argv[optInd+1],f))
-          {
-            TextStream t(&f);
-            HtmlGenerator::writeHeaderFile(t, argv[optInd+3]);
-          }
-          f.close();
-          if (openOutputFile(argv[optInd+2],f))
-          {
-            TextStream t(&f);
-            HtmlGenerator::writeFooterFile(t);
-          }
-          f.close();
-          if (openOutputFile(argv[optInd+3],f))
-          {
-            TextStream t(&f);
-            HtmlGenerator::writeStyleSheetFile(t);
-          }
-          f.close();
+          writeFile(argv[optInd+1],[&](TextStream &t) { HtmlGenerator::writeHeaderFile(t,argv[optInd+3]); });
+          writeFile(argv[optInd+2],HtmlGenerator::writeFooterFile);
+          writeFile(argv[optInd+3],HtmlGenerator::writeStyleSheetFile);
           cleanUpDoxygen();
           exit(0);
         }
@@ -11009,28 +10985,10 @@ void readConfiguration(int argc, char **argv)
           Config::postProcess(TRUE);
           Config::updateObsolete();
           Config::checkAndCorrect(Config_getBool(QUIET), false);
-
           setTranslator(Config_getEnum(OUTPUT_LANGUAGE));
-
-          std::ofstream f;
-          if (openOutputFile(argv[optInd+1],f))
-          {
-            TextStream t(&f);
-            LatexGenerator::writeHeaderFile(t);
-          }
-          f.close();
-          if (openOutputFile(argv[optInd+2],f))
-          {
-            TextStream t(&f);
-            LatexGenerator::writeFooterFile(t);
-          }
-          f.close();
-          if (openOutputFile(argv[optInd+3],f))
-          {
-            TextStream t(&f);
-            LatexGenerator::writeStyleSheetFile(t);
-          }
-          f.close();
+          writeFile(argv[optInd+1],LatexGenerator::writeHeaderFile);
+          writeFile(argv[optInd+2],LatexGenerator::writeFooterFile);
+          writeFile(argv[optInd+3],LatexGenerator::writeStyleSheetFile);
           cleanUpDoxygen();
           exit(0);
         }
@@ -11653,7 +11611,7 @@ void searchInputFiles()
 void parseInput()
 {
   AUTO_TRACE();
-  atexit(exitDoxygen);
+  std::atexit(exitDoxygen);
 
 #if USE_LIBCLANG
   Doxygen::clangAssistedParsing = Config_getBool(CLANG_ASSISTED_PARSING);
