@@ -938,30 +938,6 @@ void LatexGenerator::startIndexSection(IndexSection is)
   }
 }
 
-static void includeSubGroupsRecursive(TextStream &t, const GroupDef *gd)
-{
-  t << "\\input{" << gd->getOutputFileBase() << "}\n";
-  for (const auto &subgd : gd->getSubGroups())
-  {
-    if (!subgd->isReference() && subgd->partOfGroups().front() == gd)
-    {
-      includeSubGroupsRecursive(t, subgd);
-    }
-  }
-}
-
-static void includeSubPagesRecursive(TextStream &t, const PageDef *pd)
-{
-  t << "\\input{" << pd->getOutputFileBase() << "}\n";
-  for (const auto &subpd : pd->getSubPages())
-  {
-    if (!subpd->isReference())
-    {
-      includeSubPagesRecursive(t, subpd);
-    }
-  }
-}
-
 void LatexGenerator::endIndexSection(IndexSection is)
 {
   switch (is)
@@ -974,7 +950,7 @@ void LatexGenerator::endIndexSection(IndexSection is)
       {
         if (Doxygen::mainPage)
         {
-          includeSubPagesRecursive(m_t, Doxygen::mainPage.get());
+          writePageLink(Doxygen::mainPage->getOutputFileBase(), FALSE);
         }
       }
       break;
@@ -1009,7 +985,7 @@ void LatexGenerator::endIndexSection(IndexSection is)
         {
           if (!gd->isReference() && !gd->isASubGroup())
           {
-            includeSubGroupsRecursive(m_t, gd.get());
+            writePageLink(gd->getOutputFileBase(), FALSE);
           }
         }
       }
@@ -1131,7 +1107,7 @@ void LatexGenerator::endIndexSection(IndexSection is)
           if (!pd->getGroupDef() && !pd->isReference() && !pd->hasParentPage()
             && pd->name() != "citelist" && Doxygen::mainPage.get() != pd.get())
           {
-            includeSubPagesRecursive(m_t, pd.get());
+            writePageLink(pd->getOutputFileBase(), FALSE);
           }
         }
       }
@@ -1144,6 +1120,14 @@ void LatexGenerator::endIndexSection(IndexSection is)
   }
 }
 
+void LatexGenerator::writePageLink(const QCString &name, bool /*first*/)
+{
+  //bool &compactLatex = Config_getBool(COMPACT_LATEX);
+  // next is remove for bug615957
+  //if (compactLatex || first) m_t << "\\input" ; else m_t << "\\include";
+  m_t << "\\input" ;
+  m_t << "{" << name << "}\n";
+}
 
 void LatexGenerator::writeStyleInfo(int part)
 {

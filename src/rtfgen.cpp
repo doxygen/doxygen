@@ -816,37 +816,6 @@ void RTFGenerator::startIndexSection(IndexSection is)
   }
 }
 
-static void includeSubGroupsRecursive(TextStream &t, const GroupDef *gd)
-{
-  t << "\\par " << rtf_Style_Reset << "\n";
-  t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
-  t << gd->getOutputFileBase();
-  t << ".rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
-  for (const auto &subgd : gd->getSubGroups())
-  {
-    if (!subgd->isReference() && subgd->partOfGroups().front() == gd)
-    {
-      includeSubGroupsRecursive(t, subgd);
-    }
-  }
-}
-
-static void includeSubPagesRecursive(TextStream &t, const PageDef *pd)
-{
-  t << "\\par " << rtf_Style_Reset << "\n";
-  t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
-  t << pd->getOutputFileBase();
-  t << ".rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
-  for (const auto &subpd : pd->getSubPages())
-  {
-    if (!subpd->isReference())
-    {
-      includeSubPagesRecursive(t, subpd);
-    }
-  }
-}
-
-
 void RTFGenerator::endIndexSection(IndexSection is)
 {
   bool fortranOpt = Config_getBool(OPTIMIZE_FOR_FORTRAN);
@@ -948,7 +917,7 @@ void RTFGenerator::endIndexSection(IndexSection is)
     case IndexSection::isMainPage:
       if (Doxygen::mainPage)
       {
-        includeSubPagesRecursive(m_t, Doxygen::mainPage.get());
+        writePageLink(Doxygen::mainPage->getOutputFileBase(), TRUE);
       }
       break;
     case IndexSection::isModuleIndex:
@@ -1017,7 +986,7 @@ void RTFGenerator::endIndexSection(IndexSection is)
         {
           if (!gd->isReference() && !gd->isASubGroup())
           {
-            includeSubGroupsRecursive(m_t, gd.get());
+            writePageLink(gd->getOutputFileBase(), FALSE);
           }
         }
       }
@@ -1179,7 +1148,7 @@ void RTFGenerator::endIndexSection(IndexSection is)
           if (!pd->getGroupDef() && !pd->isReference() && !pd->hasParentPage()
             && Doxygen::mainPage.get() != pd.get())
           {
-            includeSubPagesRecursive(m_t, pd.get());
+            writePageLink(pd->getOutputFileBase(), FALSE);
           }
         }
       }
@@ -1196,6 +1165,14 @@ void RTFGenerator::endIndexSection(IndexSection is)
 
       break;
    }
+}
+
+void RTFGenerator::writePageLink(const QCString &name,bool)
+{
+   m_t << "\\par " << rtf_Style_Reset << "\n";
+   m_t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
+   m_t << name;
+   m_t << ".rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
 }
 
 void RTFGenerator::lastIndexPage()

@@ -332,6 +332,7 @@ private:
     int m_inLevel = -1;
     bool m_firstMember = false;
     int m_openSectionCount = 0;
+    QCString m_pageLinks;
 };
 
 QCString convertToDocBook(const QCString &s, const bool retainNewline = false);

@@ -1259,6 +1259,21 @@ void GroupDefImpl::writeDocumentation(OutputList &ol)
 
   //---------------------------------------- end flexible part -------------------------------
 
+  for (auto &subgd : getSubGroups())
+  {
+    if (!subgd->isReference())
+    {
+      if (subgd->partOfGroups().front() == this)
+      {
+        ol.writePageLink(subgd->getOutputFileBase(), FALSE);
+      }
+      else
+      {
+        // Could write a note explaining that the subgroup belongs to another
+        // group and add a link here.
+      }
+    }
+  }
   endFile(ol);
 
   ol.popGeneratorState();

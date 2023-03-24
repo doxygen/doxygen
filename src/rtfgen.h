@@ -99,7 +99,7 @@ class RTFGenerator : public OutputGenerator
     void endPageDoc() {}
     void startIndexSection(IndexSection);
     void endIndexSection(IndexSection);
-    void writePageLink(const QCString &,bool) {};
+    void writePageLink(const QCString &,bool);
     void startProjectNumber();
     void endProjectNumber();
     void writeStyleInfo(int part);

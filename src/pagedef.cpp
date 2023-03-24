@@ -313,6 +313,24 @@ void PageDefImpl::writePageDocumentation(OutputList &ol) const
       TRUE                 // markdown support
       );
   ol.endTextBlock();
+
+  if (hasSubPages())
+  {
+    // for printed documentation we write subpages as section's of the
+    // parent page.
+    ol.pushGeneratorState();
+    ol.disableAll();
+    ol.enable(OutputType::Latex);
+    ol.enable(OutputType::Docbook);
+    ol.enable(OutputType::RTF);
+
+    for (const auto &subPage : m_subPages)
+    {
+      ol.writePageLink(subPage->getOutputFileBase(), FALSE);
+    }
+
+    ol.popGeneratorState();
+  }
 }
 
 bool PageDefImpl::visibleInIndex() const
