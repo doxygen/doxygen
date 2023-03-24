@@ -95,6 +95,10 @@ void LatexCodeGenerator::codify(const QCString &str)
                    m_col++;
                    p++;
                    break;
+        case '`':  *m_t <<"\\`{}";
+                   m_col++;
+                   p++;
+                   break;
         case '\t': spacesToNextTabStop =
                          tabSize - (m_col%tabSize);
                    for (i = 0; i < spacesToNextTabStop; i++) *m_t << (m_doxyCodeLineOpen ? "\\ " : " ");
