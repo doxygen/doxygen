@@ -751,10 +751,10 @@ class FilterCache
     auto getFragmentLocation(const LineOffsets &lineOffsets,
                              size_t startLine,size_t endLine) -> std::tuple<size_t,size_t>
     {
-      if (startLine > 0) { --startLine; }
+      assert(startLine > 0);
       assert(startLine <= endLine);
-      const size_t startLineOffset = lineOffsets[std::min(startLine,lineOffsets.size()-1)];
-      const size_t endLineOffset   = lineOffsets[std::min(endLine,  lineOffsets.size()-1)];
+      const size_t startLineOffset = lineOffsets[std::min(startLine-1,lineOffsets.size()-1)];
+      const size_t endLineOffset   = lineOffsets[std::min(endLine,    lineOffsets.size()-1)];
       assert(startLineOffset <= endLineOffset);
       const size_t fragmentSize = endLineOffset-startLineOffset;
       return std::tie(startLineOffset,fragmentSize);
@@ -829,8 +829,8 @@ bool readCodeFragment(const QCString &fileName,
   const int blockSize = 4096;
   BufStr str(blockSize);
   FilterCache::instance().getFileContents(fileName,
-                                          static_cast<size_t>(startLine),
-                                          static_cast<size_t>(endLine),str);
+                                          static_cast<size_t>(std::max(1,startLine)),
+                                          static_cast<size_t>(std::max({1,startLine,endLine})),str);
   //printf("readCodeFragment(%s,startLine=%d,endLine=%d)=\n[[[\n%s]]]\n",qPrint(fileName),startLine,endLine,qPrint(str));
 
   bool found = lang==SrcLangExt_VHDL   ||
