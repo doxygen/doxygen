@@ -310,7 +310,7 @@ STARTDOCSYMS      "##"
                         yyextra->packageCommentAllowed = FALSE;
                         BEGIN(VariableDec);
                       }
-     ^{B}{IDENTIFIER}/{B}"="[^=] { //variabele
+     ^{B}{IDENTIFIER}/{B}"="[^=] { // variable
                         if (yyextra->search_count) REJECT;
                         yyextra->indent=computeIndent(yytext);
                         yyextra->current->section   = Entry::VARIABLE_SEC;
