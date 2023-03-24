@@ -84,7 +84,7 @@ void initWarningFormat()
     g_warningStr = g_errorStr;
   }
   // make sure the g_warnFile is closed in case we call exit
-  std::atexit([](){ if (g_warnFile!=stderr && g_warnFile!=stdout) { printf("closing warn log\n"); Portable::fclose(g_warnFile); } });
+  std::atexit([](){ if (g_warnFile!=stderr && g_warnFile!=stdout) Portable::fclose(g_warnFile); });
 }
 
 
