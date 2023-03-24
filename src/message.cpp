@@ -13,7 +13,11 @@
  *
  */
 
-#include <stdio.h>
+#include <cstdio>
+#include <cstdlib>
+#include <mutex>
+#include <atomic>
+
 #include "config.h"
 #include "debug.h"
 #include "portable.h"
@@ -21,9 +25,6 @@
 #include "doxygen.h"
 #include "fileinfo.h"
 #include "dir.h"
-
-#include <mutex>
-#include <atomic>
 
 // globals
 static QCString        g_warnFormat;
@@ -82,6 +83,8 @@ void initWarningFormat()
   {
     g_warningStr = g_errorStr;
   }
+  // make sure the g_warnFile is closed in case we call exit
+  std::atexit([](){ if (g_warnFile!=stderr && g_warnFile!=stdout) { printf("closing warn log\n"); Portable::fclose(g_warnFile); } });
 }
 
 
