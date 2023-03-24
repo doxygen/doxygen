@@ -1345,6 +1345,13 @@ STopt  [^\n@\\]*
                                           int start = text.find('{');
                                           int end   = text.find('}',start+1);
                                           yyextra->current->name = text.mid(end+2);
+                                          int istart = yyextra->current->name.find("\\ilinebr");
+                                          if (istart != -1)
+                                          {
+                                            QCString rest =  yyextra->current->name.mid(istart);
+                                            unput_string(rest,rest.length());
+                                            yyextra->current->name = yyextra->current->name.mid(0,istart);
+                                          }
                                           yyextra->current->args = text.mid(start+1,end-start-1);
                                           //printf("name='%s' title='%s'\n",qPrint(yyextra->current->name),qPrint(yyextra->current->args));
                                           BEGIN( PageDocArg2 );

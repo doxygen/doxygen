@@ -383,6 +383,25 @@ int Markdown::isSpecialCommand(const char *data,int offset,int size)
     return 0;
   };
 
+  static const auto endOfLabelOpt = [](const char *data_,int offset_,int size_) -> int
+  {
+    int index=offset_;
+    if (index<size_ && data_[index]==' ') // skip over optional spaces
+    {
+      index++;
+      while (index<size_ && data_[index]==' ') index++;
+    }
+    if (index<size_ && data_[index]=='{') // find matching '}'
+    {
+      index++;
+      char c;
+      while (index<size_ && (c=data_[index])!='}' && c!='\\' && c!='@' && c!='\n') index++;
+      if (index==size_ || data_[index]!='}') return 0; // invalid option
+      offset_=index+1; // part after {...} is the option
+    }
+    return endOfLabel(data_,offset_,size_);
+  };
+
   static const auto endOfParam = [](const char *data_,int offset_,int size_) -> int
   {
     int index=offset_;
@@ -479,7 +498,7 @@ int Markdown::isSpecialCommand(const char *data,int offset,int size)
     { "fn",             endOfFunc  },
     { "headerfile",     endOfLine  },
     { "htmlinclude",    endOfLine  },
-    { "ianchor",        endOfLabel },
+    { "ianchor",        endOfLabelOpt },
     { "idlexcept",      endOfLine  },
     { "if",             endOfGuard },
     { "ifnot",          endOfGuard },
@@ -3365,6 +3384,11 @@ void MarkdownOutlineParser::parseInput(const QCString &fileName,
         else if (!generatedId.isEmpty())
         {
           docs.prepend("@ianchor " +  generatedId + "\\ilinebr ");
+        }
+        else if (Config_getEnum(MARKDOWN_ID_STYLE)==MARKDOWN_ID_STYLE_t::GITHUB)
+        {
+          QCString autoId = AnchorGenerator::instance().generate(title.str());
+          docs.prepend("@ianchor{" + title + "} " +  autoId + "\\ilinebr ");
         }
         docs.prepend("@page "+id+" "+title+"\\ilinebr ");
       }
