@@ -4423,6 +4423,12 @@ static void writeIndex(OutputList &ol)
   ol.enable(OutputType::Docbook);
   ol.enable(OutputType::RTF);
 
+  if (Doxygen::mainPage)
+  {
+    msg("Generating main page...\n");
+    Doxygen::mainPage->writeDocumentation(ol);
+  }
+
   ol.startFile("refman",QCString(),QCString());
   ol.startIndexSection(IndexSection::isTitlePageStart);
   ol.disable(OutputType::Latex);

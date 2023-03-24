@@ -972,9 +972,10 @@ void LatexGenerator::endIndexSection(IndexSection is)
       break;
     case IndexSection::isMainPage:
       {
-        //QCString indexName=Config_getBool(GENERATE_TREEVIEW)?"main":"index";
-        QCString indexName="index";
-        includeSubPagesRecursive(m_t, Doxygen::mainPage.get());
+        if (Doxygen::mainPage)
+        {
+          includeSubPagesRecursive(m_t, Doxygen::mainPage.get());
+        }
       }
       break;
     case IndexSection::isModuleIndex:

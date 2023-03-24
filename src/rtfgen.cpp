@@ -946,11 +946,10 @@ void RTFGenerator::endIndexSection(IndexSection is)
       }
       break;
     case IndexSection::isMainPage:
-      m_t << "\\par " << rtf_Style_Reset << "\n";
-      m_t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
-      //if (Config_getBool(GENERATE_TREEVIEW)) m_t << "main"; else m_t << "index";
-      m_t << "index";
-      m_t << ".rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
+      if (Doxygen::mainPage)
+      {
+        includeSubPagesRecursive(m_t, Doxygen::mainPage.get());
+      }
       break;
     case IndexSection::isModuleIndex:
       m_t << "\\par " << rtf_Style_Reset << "\n";

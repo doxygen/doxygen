@@ -9166,9 +9166,6 @@ static void generatePageDocs()
 {
   //printf("documentedPages=%d real=%d\n",documentedPages,Doxygen::pageLinkedMap->count());
   if (Index::instance().numDocumentedPages()==0) return;
-
-  msg("Generating main page...\n");
-  Doxygen::mainPage->writeDocumentation(*g_outputList);
   for (const auto &pd : *Doxygen::pageLinkedMap)
   {
     if (!pd->getGroupDef() && !pd->isReference())
