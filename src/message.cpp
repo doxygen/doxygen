@@ -83,8 +83,15 @@ void initWarningFormat()
   {
     g_warningStr = g_errorStr;
   }
-  // make sure the g_warnFile is closed in case we call exit
-  std::atexit([](){ if (g_warnFile!=stderr && g_warnFile!=stdout) Portable::fclose(g_warnFile); });
+
+  // make sure the g_warnFile is closed in case we call exit and it is still open
+  std::atexit([](){
+      if (g_warnFile && g_warnFile!=stderr && g_warnFile!=stdout)
+      {
+        Portable::fclose(g_warnFile);
+        g_warnFile = nullptr;
+      }
+  });
 }
 
 
@@ -300,6 +307,7 @@ extern void finishWarnExit()
   if (g_warnBehavior == WARN_AS_ERROR_t::FAIL_ON_WARNINGS_PRINT && g_warnlogFile != "-")
   {
     Portable::fclose(g_warnFile);
+    g_warnFile = nullptr;
   }
   if (g_warnStat && g_warnBehavior == WARN_AS_ERROR_t::FAIL_ON_WARNINGS_PRINT && g_warnlogFile != "-")
   {
