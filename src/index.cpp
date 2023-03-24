@@ -4455,14 +4455,6 @@ static void writeIndex(OutputList &ol)
   if (Doxygen::mainPage)
   {
     ol.startIndexSection(IndexSection::isMainPage);
-    if (mainPageHasTitle())
-    {
-      ol.parseText(Doxygen::mainPage->title());
-    }
-    else
-    {
-      ol.parseText(/*projPrefix+*/theTranslator->trMainPage());
-    }
     ol.endIndexSection(IndexSection::isMainPage);
   }
   const auto &index = Index::instance();

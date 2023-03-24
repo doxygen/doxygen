@@ -240,18 +240,24 @@ void PageDefImpl::writeDocumentation(OutputList &ol)
   ol.pushGeneratorState();
   //2.{
   ol.disable(OutputType::Man);
-  if (hasTitle() && !name().isEmpty() && si!=0)
+  QCString title;
+  if (this == Doxygen::mainPage.get() && !hasTitle())
+    title = theTranslator->trMainPage();
+  else
+    title = m_title;
+
+  if (!title.isEmpty() && !name().isEmpty() && si!=0)
   {
     ol.startPageDoc(si->title());
     //ol.startSection(si->label,si->title,si->type);
-    startTitle(ol,getOutputFileBase(),this);
-    ol.generateDoc(docFile(),getStartBodyLine(),this,0,si->title(),TRUE,FALSE,
-                   QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
-    //stringToSearchIndex(getOutputFileBase(),
-    //                    theTranslator->trPage(TRUE,TRUE)+" "+si->title,
-    //                    si->title);
-    //ol.endSection(si->label,si->type);
-    endTitle(ol,getOutputFileBase(),name());
+    ol.startHeaderSection();
+    ol.startTitleHead(getOutputFileBase());
+    ol.parseText(title);
+    ol.endTitleHead(getOutputFileBase(),title);
+    ol.endHeaderSection();
+
+    /*ol.generateDoc(docFile(),getStartBodyLine(),this,0,si->title(),TRUE,FALSE,
+                   QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT));*/
   }
   else
     ol.startPageDoc("");

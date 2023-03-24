@@ -99,7 +99,7 @@ class RTFGenerator : public OutputGenerator
     void endPageDoc() {}
     void startIndexSection(IndexSection);
     void endIndexSection(IndexSection);
-    void writePageLink(const QCString &,bool);
+    void writePageLink(const QCString &,bool) {};
     void startProjectNumber();
     void endProjectNumber();
     void writeStyleInfo(int part);
@@ -322,6 +322,7 @@ class RTFGenerator : public OutputGenerator
     bool m_omitParagraph = false; // should a the next paragraph command be ignored?
     int  m_numCols = 0; // number of columns in a table
     QCString m_relPath;
+    int  m_hierarchyLevel = 0;
 
     // RTF does not really have a additive indent...manually set list level.
     static const int maxIndentLevels = 13;
