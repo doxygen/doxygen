@@ -76,8 +76,44 @@ QCString PlantumlManager::writePlantUMLSource(const QCString &outDirArg,const QC
   Debug::print(Debug::Plantuml,0,"*** %s imgName: %s\n","writePlantUMLSource",qPrint(imgName));
 
   QCString text = "@start"+engine+" "+imgName+"\n";
-  text+=content;
-  text+="\n@end"+engine+"\n";
+  StringVector contentList;
+  contentList = split(content.str(),"\n");
+  bool initial = true;
+  for (const auto &cont : contentList)
+  {
+    if (initial)
+    {
+      QCString contStrip = QCString(cont).stripWhiteSpace();
+      if (contStrip[0] == '\'')
+      {
+        text += cont + "\n"; // plantuml comment line
+      }
+      else if (contStrip.startsWith("@start"))
+      {
+        int atSign = cont.find('@');
+        int spSign = QCString(cont).mid(atSign).find(' ');
+        if (spSign != -1)
+        {
+          text += QCString(cont).left(spSign);
+        }
+        else
+        {
+          text += cont;
+        }
+        text += " " + imgName + "\n";
+      }
+      else
+      {
+        text += cont + "\n";
+        initial = false;
+      }
+    }
+    else
+    {
+      text += cont + "\n";
+    }
+  }
+  text+="@end"+engine+"\n";
 
   QCString qcOutDir(outDir);
   uint32_t pos = qcOutDir.findRev("/");
