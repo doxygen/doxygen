@@ -76,44 +76,42 @@ QCString PlantumlManager::writePlantUMLSource(const QCString &outDirArg,const QC
   Debug::print(Debug::Plantuml,0,"*** %s imgName: %s\n","writePlantUMLSource",qPrint(imgName));
 
   QCString text = "@start"+engine+" "+imgName+"\n";
-  StringVector contentList;
-  contentList = split(content.str(),"\n");
-  bool initial = true;
-  for (const auto &cont : contentList)
+  text.reserve(text.length()+content.length()+100); // add room for image name and end marker
+  const char *p = content.data();
+  if (p)
   {
-    if (initial)
+    char c;
+    bool insideComment = false;
+    bool initial       = true;
+    while ((c=*p++))
     {
-      QCString contStrip = QCString(cont).stripWhiteSpace();
-      if (contStrip[0] == '\'')
+      text+=c;
+      switch (c)
       {
-        text += cont + "\n"; // plantuml comment line
-      }
-      else if (contStrip.startsWith("@start"))
-      {
-        int atSign = cont.find('@');
-        int spSign = QCString(cont).mid(atSign).find(' ');
-        if (spSign != -1)
-        {
-          text += QCString(cont).left(spSign);
-        }
-        else
-        {
-          text += cont;
-        }
-        text += " " + imgName + "\n";
-      }
-      else
-      {
-        text += cont + "\n";
-        initial = false;
+        case '\'': insideComment=true; break;
+        case '\n': insideComment=false; break;
+        case '\t': break;
+        case ' ':  break;
+        case '@':
+          if (initial && qstrncmp(p,"start",5)==0) // @start...
+          {
+            while ((c=*p++) && isId(c)) text+=c;
+            // insert the image name
+            text+=' ';
+            text+=imgName;
+            if (c) text+=c;
+          }
+          break;
+        default:
+          if (!insideComment) initial=false;
+          break;
       }
     }
-    else
-    {
-      text += cont + "\n";
-    }
+    text+='\n';
   }
   text+="@end"+engine+"\n";
+
+  //printf("content\n====\n%s\n=====\n->\n-----\n%s\n------\n",qPrint(content),qPrint(text));
 
   QCString qcOutDir(outDir);
   uint32_t pos = qcOutDir.findRev("/");
