@@ -212,6 +212,9 @@ CommandMap htmlTagMap[] =
   { "u",          HTML_UNDERLINE },
   { "ins",        HTML_INS },
   { "del",        HTML_DEL },
+  { "thead",      HTML_THEAD },
+  { "tbody",      HTML_TBODY },
+  { "tfoot",      HTML_TFOOT },
   { "details",    HTML_DETAILS },
 
   { "c",            XML_C },

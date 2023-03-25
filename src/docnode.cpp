@@ -1940,7 +1940,19 @@ getrow:
   if (tok==TK_HTMLTAG)
   {
     int tagId=Mappers::htmlTagMapper->map(parser()->context.token->name);
-    if (tagId==HTML_TR && !parser()->context.token->endTag) // found <tr> tag
+    if (tagId==HTML_THEAD && !parser()->context.token->endTag) // found <thead> tag
+    {
+      goto getrow;
+    }
+    else if (tagId==HTML_TBODY && !parser()->context.token->endTag) // found <tbody> tag
+    {
+      goto getrow;
+    }
+    else if (tagId==HTML_TFOOT && !parser()->context.token->endTag) // found <tfoot> tag
+    {
+      goto getrow;
+    }
+    else if (tagId==HTML_TR && !parser()->context.token->endTag) // found <tr> tag
     {
       // no caption, just rows
       retval=RetVal_TableRow;
@@ -4548,6 +4560,11 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
     case HTML_TH:
       retval = RetVal_TableHCell;
       break;
+    case HTML_THEAD:
+    case HTML_TBODY:
+    case HTML_TFOOT:
+      // for time being ignore </t....> tag
+      break;
     case HTML_CAPTION:
       warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Unexpected tag <caption> found");
       break;
@@ -4849,6 +4866,7 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
       break;
   default:
       // we should not get here!
+      warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Unexpected start tag %s\n",qPrint(tagName));
       ASSERT(0);
       break;
   }
@@ -4972,6 +4990,11 @@ int DocPara::handleHtmlEndTag(const QCString &tagName)
       break;
     case HTML_TH:
       // ignore </th> tag
+      break;
+    case HTML_THEAD:
+    case HTML_TBODY:
+    case HTML_TFOOT:
+      // for time being ignore </t....> tag
       break;
     case HTML_CAPTION:
       warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Unexpected tag </caption> found");
