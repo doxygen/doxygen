@@ -108,8 +108,8 @@ struct pyscannerYY_state
   int                     braceCount = 0;
   bool                    lexInit = FALSE;
   bool                    packageCommentAllowed = FALSE;
-  bool                    start_init = FALSE;
-  int                     search_count = 0;
+  bool                    startInit = FALSE;
+  int                     searchCount = 0;
   QCString                argType;
   bool                    funcParamsEnd = FALSE;
   std::vector<QCString>   decorators;
@@ -129,6 +129,7 @@ static void newEntry(yyscan_t yyscanner);
 static void addEntry(yyscan_t yyscanner);
 static void docVariable(yyscan_t yyscanner,const char *name);
 static void newVariable(yyscan_t yyscanner);
+static void addVariable(yyscan_t yyscanner);
 static void newFunction(yyscan_t yyscanner);
 static QCString findPackageScopeFromPath(yyscan_t yyscanner,const QCString &path);
 static void addFrom(yyscan_t yyscanner,bool all);
@@ -314,7 +315,7 @@ STARTDOCSYMS      "##"
                         BEGIN(VariableDec);
                       }
      ^{B}{IDENTIFIER}/{B}"="[^=] { // variable
-                        if (yyextra->search_count) REJECT;
+                        if (yyextra->searchCount>0) REJECT;
                         yyextra->indent=computeIndent(yytext);
                         yyextra->current->section   = Entry::VARIABLE_SEC;
                         yyextra->current->name      = QCString(yytext).stripWhiteSpace();
@@ -325,7 +326,7 @@ STARTDOCSYMS      "##"
                         BEGIN(VariableDec);
                       }
      ^{B}{IDENTIFIER}/{B}":" { // variable
-                        if (yyextra->search_count) REJECT;
+                        if (yyextra->searchCount>0) REJECT;
                         QCString id = QCString(yytext).stripWhiteSpace();
                         if (id =="try" || id == "else" || id == "except" || id == "finally") REJECT;
                         yyextra->indent=computeIndent(yytext);
@@ -341,7 +342,7 @@ STARTDOCSYMS      "##"
                                                                // so we will skip it later on in a general rule
                                                                // Also note ")" this is to catch also (a,b). the "("
                                                                // is caught in the rule: [(], the ")" will be handled in [)]
-                        if (yyextra->search_count > 1) REJECT;
+                        if (yyextra->searchCount>1) REJECT;
                         yyextra->indent=computeIndent(yytext);
                         yyextra->current->section   = Entry::VARIABLE_SEC;
                         yyextra->current->name      = QCString(yytext).stripWhiteSpace();
@@ -349,7 +350,7 @@ STARTDOCSYMS      "##"
                         yyextra->current->startLine = yyextra->yyLineNr;
                         yyextra->current->bodyLine  = yyextra->yyLineNr;
                         yyextra->packageCommentAllowed = FALSE;
-                        newVariable(yyscanner);
+                        addVariable(yyscanner);
                       }
      "'"              { // start of a single quoted string
                         yyextra->stringContext=YY_START;
@@ -404,10 +405,19 @@ STARTDOCSYMS      "##"
                         BEGIN(SpecialComment);
                       }
     [(]               { // we have to do something with (
-                        yyextra->search_count += 1;
+                        yyextra->searchCount++;
                       }
     [)]               { // we have to do something with )
-                        yyextra->search_count -= 1;
+                        if (yyextra->searchCount>0)
+                        {
+                          yyextra->searchCount--;
+                        }
+                      }
+    "="               {
+                        yyextra->current->doc.resize(0);
+                        yyextra->current->brief.resize(0);
+                      }
+    {IDENTIFIER}      {
                       }
     [^\n]             { // any other character...
                         // This is the major default
@@ -1135,12 +1145,12 @@ STARTDOCSYMS      "##"
 <VariableDec>{
    "="                { // the assignment operator
                         //printf("====== VariableDec at line %d\n",yyextra->yyLineNr);
-                        yyextra->start_init = TRUE;
+                        yyextra->startInit = TRUE;
                         yyextra->current->initializer.str(yytext);
                         yyextra->current->initializer << " ";
                       }
    ":"{B}{IDENTIFIER} { //typing
-                        yyextra->start_init = FALSE;
+                        yyextra->startInit = FALSE;
                         yyextra->current->type = substitute(yytext,":","");
                       }
    {B}                { // spaces
@@ -1190,7 +1200,7 @@ STARTDOCSYMS      "##"
                         BEGIN(TripleString);
                       }
    "("                { // tuple, only when direct after =
-                        if (yyextra->current->mtype!=MethodTypes::Property && yyextra->start_init)
+                        if (yyextra->current->mtype!=MethodTypes::Property && yyextra->startInit)
                         {
                           yyextra->current->type = "tuple";
                         }
@@ -1201,7 +1211,7 @@ STARTDOCSYMS      "##"
                         BEGIN( VariableAtom );
                       }
    "["                { // list
-                        if (yyextra->start_init) yyextra->current->type = "list";
+                        if (yyextra->startInit) yyextra->current->type = "list";
                         yyextra->current->initializer << *yytext;
                         yyextra->atomStart='[';
                         yyextra->atomEnd=']';
@@ -1209,7 +1219,7 @@ STARTDOCSYMS      "##"
                         BEGIN( VariableAtom );
                       }
    "{"                { // dictionary
-                        if (yyextra->start_init) yyextra->current->type = "dict";
+                        if (yyextra->startInit) yyextra->current->type = "dict";
                         yyextra->current->initializer << *yytext;
                         yyextra->atomStart='{';
                         yyextra->atomEnd='}';
@@ -1240,7 +1250,7 @@ STARTDOCSYMS      "##"
                           }
                           if (yyextra->current->type.isEmpty()) yyextra->current->type = QCString(yytext);
                         }
-                        yyextra->start_init = FALSE;
+                        yyextra->startInit = FALSE;
                         yyextra->current->initializer << yytext;
                       }
    "\\\n"             {
@@ -1248,7 +1258,7 @@ STARTDOCSYMS      "##"
                         incLineNr(yyscanner);
                       }
    .                  {
-                        yyextra->start_init = FALSE;
+                        yyextra->startInit = FALSE;
                         yyextra->current->initializer << *yytext;
                       }
    \n                 {
@@ -1273,7 +1283,7 @@ STARTDOCSYMS      "##"
                         }
                         if (yyextra->atomCount==0)
                         {
-                          yyextra->start_init = FALSE;
+                          yyextra->startInit = FALSE;
                           BEGIN(VariableDec);
                         }
                       }
@@ -1610,16 +1620,10 @@ static void addEntry(yyscan_t yyscanner)
   yyextra->current->briefFile  = briefFile;
 }
 
-static void docVariable(yyscan_t yyscanner,const char *name)
+static void setProtection(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yyextra->current->name = name;
-  yyextra->current->section=Entry::VARIABLE_SEC;
-  yyextra->current->fileName  = yyextra->fileName;
-  yyextra->current->startLine = yyextra->yyLineNr;
-  yyextra->current->bodyLine  = yyextra->yyLineNr;
-  yyextra->current->type.resize(0);
-  if (yyextra->current->name.at(0)=='_')
+  if (!yyextra->current->name.isEmpty() && yyextra->current->name.at(0)=='_')
   {
     if (yyextra->current->name.at(1)=='_') // mark as private
     {
@@ -1632,24 +1636,38 @@ static void docVariable(yyscan_t yyscanner,const char *name)
   }
 }
 
+static void docVariable(yyscan_t yyscanner,const char *name)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->current->name = name;
+  yyextra->current->section=Entry::VARIABLE_SEC;
+  yyextra->current->fileName  = yyextra->fileName;
+  yyextra->current->startLine = yyextra->yyLineNr;
+  yyextra->current->bodyLine  = yyextra->yyLineNr;
+  yyextra->current->type.resize(0);
+  setProtection(yyscanner);
+}
+
 static void newVariable(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  if (!yyextra->current->name.isEmpty() && yyextra->current->name.at(0)=='_')
-  {
-    if (yyextra->current->name.at(1)=='_') // mark as private
-    {
-      yyextra->current->protection=Protection::Private;
-    }
-    else{
-      yyextra->current->protection=Protection::Protected; // mark as protected
-    }
-  }
+  setProtection(yyscanner);
   if (yyextra->current_root->section&Entry::COMPOUND_MASK) // mark as class variable
   {
     yyextra->current->isStatic = TRUE;
   }
   newEntry(yyscanner);
+}
+
+static void addVariable(yyscan_t yyscanner)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  setProtection(yyscanner);
+  if (yyextra->current_root->section&Entry::COMPOUND_MASK) // mark as class variable
+  {
+    yyextra->current->isStatic = TRUE;
+  }
+  addEntry(yyscanner);
 }
 
 static void newFunction(yyscan_t yyscanner)
@@ -1661,16 +1679,9 @@ static void newFunction(yyscan_t yyscanner)
     // http://docs.python.org/ref/specialnames.html
     yyextra->current->protection=Protection::Public;
   }
-  else if (yyextra->current->name.at(0)=='_')
+  else
   {
-    if (yyextra->current->name.at(1)=='_')
-    {
-      yyextra->current->protection=Protection::Private;
-    }
-    else 
-    {
-      yyextra->current->protection=Protection::Protected;
-    }
+    setProtection(yyscanner);
   }
 }
 
