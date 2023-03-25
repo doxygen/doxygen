@@ -32,8 +32,14 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
     /* Used to get the command(s) for the language support. */
     virtual QCString latexLanguageSupportCommand()
     {
-        return "\\usepackage[latin]{armtex}\n"
-	       "\\usepackage[armscii8]{inputenc}\n";
+      return "\\usepackage[latin]{armtex}\n"
+             "\\usepackage[armscii8]{inputenc}\n";
+    }
+    virtual QCString trISOLang()
+    { return "hy"; }
+    virtual QCString getLanguageString()
+    {
+      return "0x42b Armenian";
     }
 
     // --- Language translation methods -------------------
@@ -49,6 +55,10 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
     /*! header that is put before the detailed description of files, classes and namespaces. */
     virtual QCString trDetailedDescription()
     { return "Մանրամասն նկարագրություն"; }
+
+    /*! header that is used when the summary tag is missing inside the details tag */
+    virtual QCString trDetails()
+    { return "Մանրամասներ"; }
 
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
@@ -106,9 +116,9 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
     /*! this is put at the author sections at the bottom of man pages.
      *  parameter s is name of the project name.
      */
-    virtual QCString trGeneratedAutomatically(const char *s)
+    virtual QCString trGeneratedAutomatically(const QCString &s)
     { QCString result="Ավտոմատ ստեղծված է ելքային կոդից, Doxygen-ի միջոցով, ";
-      if (s) result+=s+(QCString)" համար:";
+      if (!s.isEmpty()) result+=s+" համար:";
       return result;
     }
 
@@ -340,6 +350,10 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
       {
         return "Տվյալների կառուցվածքներ";
       }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+          return trDesignUnitDocumentation();
+      }
       else
       {
         return "Դասեր";
@@ -351,18 +365,6 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
      */
     virtual QCString trFileDocumentation()
     { return "Ֆայլեր"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all examples.
-     */
-    virtual QCString trExampleDocumentation()
-    { return "Օրինակներ"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all related pages.
-     */
-    virtual QCString trPageDocumentation()
-    { return "Էջեր"; }
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
@@ -455,23 +457,19 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
     /*! This is used in the standard footer of each page and indicates when
      *  the page was generated
      */
-    virtual QCString trGeneratedAt(const char *date,const char *projName)
+    virtual QCString trGeneratedAt(const QCString &date,const QCString &projName)
     {
-      QCString result=(QCString)"Ստեղծվել է "+date;
-      if (projName) result+=projName+QCString(" -ի համար,");
-      result+=(QCString)" հետևյալ համակարգով.";
+      QCString result=QCString("Ստեղծվել է ")+date;
+      if (!projName.isEmpty()) result+=projName+" -ի համար,";
+      result+=" հետևյալ համակարգով.";
       return result;
     }
 
     /*! this text is put before a class diagram */
-    virtual QCString trClassDiagram(const char *clName)
+    virtual QCString trClassDiagram(const QCString &clName)
     {
       return clName+QCString(" -ի ժառանգման գծագիրը.");
     }
-
-    /*! this text is generated when the \\internal command is used. */
-    virtual QCString trForInternalUseOnly()
-    { return "Միայն ներքին օգտագործման համար"; }
 
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
@@ -543,11 +541,11 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
 //////////////////////////////////////////////////////////////////////////
 
     /*! used as the title of the HTML page of a class/struct/union */
-    virtual QCString trCompoundReference(const char *clName,
+    virtual QCString trCompoundReference(const QCString &clName,
                                  ClassDef::CompoundType compType,
                                  bool isTemplate)
     {
-      QCString result=(QCString)clName;
+      QCString result=clName;
       if (isTemplate)
       {
         switch(compType)
@@ -581,13 +579,13 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
     }
 
     /*! used as the title of the HTML page of a file */
-    virtual QCString trFileReference(const char *fileName)
+    virtual QCString trFileReference(const QCString &fileName)
     {
       return fileName+QCString(" ֆայլեր");
     }
 
     /*! used as the title of the HTML page of a namespace */
-    virtual QCString trNamespaceReference(const char *namespaceName)
+    virtual QCString trNamespaceReference(const QCString &namespaceName)
     {
       QCString result=namespaceName;
       result+=" անունների տարածություններ";
@@ -722,7 +720,7 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
     virtual QCString trGeneratedFromFiles(ClassDef::CompoundType compType,
         bool single)
     {
-      QCString result = (QCString)"Այս ";
+      QCString result = "Այս ";
       switch(compType)
       {
         case ClassDef::Class:      result+="դասի"; break;
@@ -785,14 +783,14 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
 //////////////////////////////////////////////////////////////////////////
 
     /*! this text is put before a collaboration diagram */
-    virtual QCString trCollaborationDiagram(const char *clName)
+    virtual QCString trCollaborationDiagram(const QCString &clName)
     {
-      return (QCString)clName+"-ի համագործակցությունների գծագիր.";
+      return clName+"-ի համագործակցությունների գծագիր.";
     }
     /*! this text is put before an include dependency graph */
-    virtual QCString trInclDepGraph(const char *fName)
+    virtual QCString trInclDepGraph(const QCString &fName)
     {
-      return (QCString)fName+"-ի ներառումների կախվածությունների գծագիր.";
+      return fName+"-ի ներառումների կախվածությունների գծագիր.";
     }
     /*! header that is put before the list of constructor/destructors. */
     virtual QCString trConstructorDocumentation()
@@ -1072,14 +1070,9 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
       }
     }
     /*! Used as the title of a Java package */
-    virtual QCString trPackage(const char *name)
+    virtual QCString trPackage(const QCString &name)
     {
-      return (QCString)"Փաթեթ "+name;
-    }
-    /*! Title of the package index page */
-    virtual QCString trPackageList()
-    {
-      return "Փաթեթների ցուցակ";
+      return "Փաթեթ "+name;
     }
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
@@ -1314,14 +1307,18 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
     /*! Used as a heading for a list of Java class functions with package
      * scope.
      */
-    virtual QCString trPackageMembers()
+    virtual QCString trPackageFunctions()
     {
       return "Փաթեթի ֆունկցիաներ";
+    }
+    virtual QCString trPackageMembers()
+    {
+      return "Փաթեթի անդամներ";
     }
     /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
-    virtual QCString trStaticPackageMembers()
+    virtual QCString trStaticPackageFunctions()
     {
       return "Փաթեթի ստատիկ ֆունկցիաներ";
     }
@@ -1433,18 +1430,10 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
     virtual QCString trDirectories()
     { return "Ֆայլադրաններ"; }
 
-    /*! This returns a sentences that introduces the directory hierarchy.
-     *  and the fact that it is sorted alphabetically per level
-     */
-    virtual QCString trDirDescription()
-    { return "Այս ֆայլադարանների հիերարխիան կարգավորված է կոպտորեն, "
-			"բայց ոչ ամբողջապես, այբբենական կարգով.";
-	}
-
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.
      */
-    virtual QCString trDirReference(const char *dirName)
+    virtual QCString trDirReference(const QCString &dirName)
     { QCString result=dirName; result+=" Ֆայլադարան"; return result; }
 
     /*! This returns the word directory with or without starting capital
@@ -1570,11 +1559,11 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
     }
 
     /*! used as the title of the HTML page of a module/type (Fortran) */
-    virtual QCString trCompoundReferenceFortran(const char *clName,
+    virtual QCString trCompoundReferenceFortran(const QCString &clName,
                                     ClassDef::CompoundType compType,
                                     bool isTemplate)
     {
-      QCString result=(QCString)clName;
+      QCString result=clName;
       if (!isTemplate)
       {
         switch(compType)
@@ -1607,7 +1596,7 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
       return result;
     }
     /*! used as the title of the HTML page of a module (Fortran) */
-    virtual QCString trModuleReference(const char *namespaceName)
+    virtual QCString trModuleReference(const QCString &namespaceName)
     {
       return QCString("Մոդուլ ") + namespaceName;
     }
@@ -1656,7 +1645,7 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
         bool single)
     { // here s is one of " Module", " Struct" or " Union"
       // single is true implies a single file
-      QCString result=(QCString)"Այս ";
+      QCString result="Այս ";
       switch(compType)
       {
         case ClassDef::Class:      result+="մոդուլի"; break;
@@ -1703,7 +1692,7 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
 //////////////////////////////////////////////////////////////////////////
 
     /*! directory relation for \a name */
-    virtual QCString trDirRelation(const char *name)
+    virtual QCString trDirRelation(const QCString &name)
     {
       return QCString(name)+" Կապ";
     }
@@ -1740,18 +1729,18 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
      *  table is shown. The heading for the first column mentions the
      *  source file that has a relation to another file.
      */
-    virtual QCString trFileIn(const char *name)
+    virtual QCString trFileIn(const QCString &name)
     {
-      return (QCString)"Ֆայլը " + name + " ում";
+      return "Ֆայլը " + name + " ում";
     }
 
     /*! when clicking a directory dependency label, a page with a
      *  table is shown. The heading for the second column mentions the
      *  destination file that is included.
      */
-    virtual QCString trIncludesFileIn(const char *name)
+    virtual QCString trIncludesFileIn(const QCString &name)
     {
-      return (QCString)"Ներառում է ֆայլը " + name + " ում";
+      return "Ներառում է ֆայլը " + name + " ում";
     }
 
     /** Compiles a date string.
@@ -1766,21 +1755,42 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
      */
     virtual QCString trDateTime(int year,int month,int day,int dayOfWeek,
                                 int hour,int minutes,int seconds,
-                                bool includeTime)
+                                DateTimeType includeTime)
     {
       static const char *days[]   = { "Երկուշաբթի,","Երեքշաբթի,","Չորեքշաբթի,","Հինգշաբթի,",
 								"Ուրբաթ,","Շաբաթ,","Կիրակի," };
       static const char *months[] = { "Հունիսի","Փետրվարի","Մարտի","Ապրրիլի","Մայիսի","Հունիսի",
 								"Հուլիսի","Օգոստոսի","Սեպտեմբերի","Հոկտեբմերի","Նոյեմբերի","Դեկտեմբերի" };
       QCString sdate;
-      sdate.sprintf("%s %d %s %d",days[dayOfWeek-1],day,months[month-1],year);
-      if (includeTime)
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Date)
+      {
+        sdate.sprintf("%s %d %s %d",days[dayOfWeek-1],day,months[month-1],year);
+      }
+      if (includeTime == DateTimeType::DateTime) sdate += " ";
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Time)
       {
         QCString stime;
-        stime.sprintf(" %.2d:%.2d:%.2d ",hour,minutes,seconds);
+        stime.sprintf("%.2d:%.2d:%.2d ",hour,minutes,seconds);
         sdate+=stime;
       }
       return sdate;
+    }
+    virtual QCString trDayOfWeek(int dayOfWeek, bool, bool full)
+    {
+      static const char *days_short[]   = { "Երկ", "Երք", "Չրք", "Հնգ", "Ուր", "Շբթ", "Կիր" };
+      static const char *days_full[]    = { "Երկուշաբթի", "Երեքշաբթի", "Չորեքշաբթի", "Հինգշաբթի", "Ուրբաթ", "Շաբաթ", "Կիրակի" };
+      return full? days_full[dayOfWeek-1] : days_short[dayOfWeek-1];
+    }
+    virtual QCString trMonth(int month, bool, bool full)
+    {
+      static const char *months_short[] = { "Հնվ", "Փտվ", "Մրտ", "Ապր", "Մյս", "Հնս", "Հլս", "Օգս", "Սպտ", "Հկտ", "Նյմ", "Դկտ" };
+      static const char *months_full[]  = { "Հունվար", "Փետրվար", "Մարտ", "Ապրիլ", "Մայիս", "Հունիս", "Հուլիս", "Օգոստոս", "Սեպտեմբեր", "Հոկտեմբեր", "Նոյեմբեր", "Դեկտեմբեր" };
+      return full? months_full[month-1] : months_short[month-1];
+    }
+    virtual QCString trDayPeriod(int period)
+    {
+      static const char *dayPeriod[] = { "AM", "PM" };
+      return dayPeriod[period];
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1796,9 +1806,8 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
     { return "Հեղինակային իրավունք"; }
 
     /*! Header for the graph showing the directory dependencies */
-    virtual QCString trDirDepGraph(const char *name)
+    virtual QCString trDirDepGraph(const QCString &name)
     { return name + QCString("-ի ֆայլադարանների կախվածությունների գծագիր:"); }
 
 };
-
 #endif

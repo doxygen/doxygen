@@ -16,19 +16,27 @@
 #ifndef TEMPLATE_H
 #define TEMPLATE_H
 
-#include <qcstring.h>
-#include <qvaluelist.h>
+#include <vector>
+#include <memory>
+#include <functional>
+#include <variant>
 
-class FTextStream;
+#include "qcstring.h"
+#include "containers.h"
 
 class TemplateListIntf;
 class TemplateStructIntf;
 class TemplateEngine;
+class TextStream;
+
+using TemplateListIntfPtr       = std::shared_ptr<TemplateListIntf>;
+using TemplateStructIntfPtr     = std::shared_ptr<TemplateStructIntf>;
+using TemplateStructIntfWeakPtr = std::weak_ptr<TemplateStructIntf>;
 
 /** @defgroup template_api Template API
  *
  *  This is the API for a
- *  <a href="https://docs.djangoproject.com/en/1.6/topics/templates/">Django</a>
+ *  <a href="https://www.djangoproject.com/">Django</a>
  *  compatible template system written in C++.
  *  It is somewhat inspired by Stephen Kelly's
  *  <a href="http://www.gitorious.org/grantlee/pages/Home">Grantlee</a>.
@@ -90,159 +98,112 @@ class TemplateEngine;
 class TemplateVariant
 {
   public:
-    /** @brief Helper class to create a delegate that can store a function/method call. */
-    class Delegate
+    /** Type representing a function call in a template */
+    using FunctionDelegate = std::function<TemplateVariant(const std::vector<TemplateVariant>&)>;
+
+    /** Symbolic names for the possible types that this variant can hold. */
+    using VariantT = std::variant<std::monostate,            // index==0, Invalid/default type
+                                  bool,                      // index==1: Type::Bool
+                                  int,                       // index==2: Type::Int
+                                  QCString,                  // index==3: Type::String
+                                  TemplateStructIntfPtr,     // index==4: Type::Struct
+                                  TemplateListIntfPtr,       // index==5: Type::List
+                                  FunctionDelegate,          // index==6: Type::Function
+                                  TemplateStructIntfWeakPtr  // index==7: Type::WeakStruct
+                                 >;
+
+    enum class Type : uint8_t
     {
-      public:
-        /** Callback type to use when creating a delegate from a function. */
-        typedef TemplateVariant (*StubType)(const void *obj, const QValueList<TemplateVariant> &args);
-
-        Delegate() : m_objectPtr(0) , m_stubPtr(0) {}
-
-        /** Creates a delegate given an object. The method to call is passed as a template parameter */
-        template <class T, TemplateVariant (T::*TMethod)(const QValueList<TemplateVariant> &) const>
-        static Delegate fromMethod(const T* objectPtr)
-        {
-          Delegate d;
-          d.m_objectPtr = objectPtr;
-          d.m_stubPtr   = &methodStub<T, TMethod>;
-          return d;
-        }
-        /** Creates a delegate given an object, and a plain function. */
-        static Delegate fromFunction(const void *obj,StubType func)
-        {
-          Delegate d;
-          d.m_objectPtr = obj;
-          d.m_stubPtr = func;
-          return d;
-        }
-
-        /** Invokes the function/method stored in the delegate */
-        TemplateVariant operator()(const QValueList<TemplateVariant> &args) const
-        {
-          return (*m_stubPtr)(m_objectPtr, args);
-        }
-
-      private:
-        const void* m_objectPtr;
-        StubType    m_stubPtr;
-
-        template <class T, TemplateVariant (T::*TMethod)(const QValueList<TemplateVariant> &) const>
-        static TemplateVariant methodStub(const void* objectPtr, const QValueList<TemplateVariant> &args)
-        {
-          T* p = (T*)(objectPtr);
-          return (p->*TMethod)(args);
-        }
+      None       = 0,
+      Bool       = 1,
+      Int        = 2,
+      String     = 3,
+      Struct     = 4,
+      List       = 5,
+      Function   = 6,
+      WeakStruct = 7
     };
 
-    /** Types of data that can be stored in a TemplateVariant */
-    enum Type { None, Bool, Integer, String, Struct, List, Function };
-
-    /** Returns the type of the value stored in the variant */
-    Type type() const { return m_type; }
-
-    /** Return a string representation of the type of the value stored in the variant */
-    QCString typeAsString() const
-    {
-      switch (m_type)
-      {
-        case None:     return "none";
-        case Bool:     return "bool";
-        case Integer:  return "integer";
-        case String:   return "string";
-        case Struct:   return "struct";
-        case List:     return "list";
-        case Function: return "function";
-      }
-      return "invalid";
-    }
-
-    /** Returns TRUE if the variant holds a valid value, or FALSE otherwise */
-    bool isValid() const { return m_type!=None; }
-
     /** Constructs an invalid variant. */
-    TemplateVariant() : m_type(None), m_strukt(0), m_raw(FALSE) {}
+    TemplateVariant() {}
 
     /** Constructs a new variant with a boolean value \a b. */
-    explicit TemplateVariant(bool b) : m_type(Bool), m_boolVal(b), m_raw(FALSE) {}
+    explicit TemplateVariant(bool b) { m_variant = b; }
 
     /** Constructs a new variant with a integer value \a v. */
-    TemplateVariant(int v) : m_type(Integer), m_intVal(v), m_raw(FALSE) {}
+    TemplateVariant(int v) { m_variant = v; }
+
+    /** Constructs a new variant with a integer value \a v. */
+    TemplateVariant(unsigned int v) { m_variant = static_cast<int>(v); }
+
+    /** Constructs a new variant with a integer value \a v.
+     *  We use SFINAE to avoid a compiler error in case size_t already matches the 'unsigned int' overload.
+     */
+    template<typename T,
+             typename std::enable_if<std::is_same<T,size_t>::value,T>::type* = nullptr
+            >
+    TemplateVariant(T v) { m_variant = static_cast<int>(v); }
 
     /** Constructs a new variant with a string value \a s. */
-    TemplateVariant(const char *s,bool raw=FALSE) : m_type(String), m_strVal(s), m_strukt(0), m_raw(raw) {}
+    TemplateVariant(const char *s,bool raw=FALSE) : m_raw(raw) { m_variant = QCString(s); }
 
     /** Constructs a new variant with a string value \a s. */
-    TemplateVariant(const QCString &s,bool raw=FALSE) : m_type(String), m_strVal(s), m_strukt(0), m_raw(raw) {}
+    TemplateVariant(const QCString &s,bool raw=FALSE) : m_raw(raw) { m_variant = s; }
+
+    /** Constructs a new variant with a string value \a s. */
+    TemplateVariant(const std::string &s,bool raw=FALSE) : m_raw(raw) { m_variant = QCString(s); }
 
     /** Constructs a new variant with a struct value \a s.
-     *  @note. The variant will hold a reference to the object.
+     *  @note. The variant will hold a counting reference to the object.
      */
-    TemplateVariant(TemplateStructIntf *s);
+    TemplateVariant(TemplateStructIntfPtr s) { m_variant = s; }
 
     /** Constructs a new variant with a list value \a l.
-     *  @note. The variant will hold a reference to the object.
+     *  @note. The variant will hold a counting reference to the object.
      */
-    TemplateVariant(TemplateListIntf *l);
+    TemplateVariant(TemplateListIntfPtr l) { m_variant = l; }
+
+    /** Constructs a new variant with a struct value \a s.
+     *  @note. The variant will hold a non-counting reference to the object.
+     */
+    TemplateVariant(TemplateStructIntfWeakPtr s) { m_variant = s; }
 
     /** Constructs a new variant which represents a method call
-     *  @param[in] delegate Delegate object to invoke when
+     *  @param[in] delegate FunctionDelegate object to invoke when
      *             calling call() on this variant.
-     *  @note Use TemplateVariant::Delegate::fromMethod() and
-     *  TemplateVariant::Delegate::fromFunction() to create
-     *  Delegate objects.
+     *  @note Use TemplateVariant::FunctionDelegate::fromMethod() and
+     *  TemplateVariant::FunctionDelegate::fromFunction() to create
+     *  FunctionDelegate objects.
      */
-    TemplateVariant(const Delegate &delegate) : m_type(Function), m_strukt(0), m_delegate(delegate), m_raw(FALSE) {}
+    TemplateVariant(FunctionDelegate delegate) { m_variant = delegate; }
 
     /** Destroys the Variant object */
-    ~TemplateVariant();
+    ~TemplateVariant()  = default;
 
     /** Constructs a copy of the variant, \a v,
      *  passed as the argument to this constructor.
      */
-    TemplateVariant(const TemplateVariant &v);
+    TemplateVariant(const TemplateVariant &v) = default;
+
+    /** Moves the contents of variant \a v into this variant.
+     *  variant \a v will become invalid
+     */
+    TemplateVariant(TemplateVariant &&v);
 
     /** Assigns the value of the variant \a v to this variant. */
-    TemplateVariant &operator=(const TemplateVariant &v);
+    TemplateVariant &operator=(const TemplateVariant &v) = default;
+
+    /** Move the value of the variant \a v into this variant.
+     *  Variant \a v will become invalid */
+    TemplateVariant &operator=(TemplateVariant &&v);
 
     /** Compares this QVariant with v and returns true if they are equal;
      *  otherwise returns false.
      */
-    bool operator==(TemplateVariant &other)
-    {
-      if (m_type==None)
-      {
-        return FALSE;
-      }
-      if (m_type==TemplateVariant::List && other.m_type==TemplateVariant::List)
-      {
-        return m_list==other.m_list; // TODO: improve me
-      }
-      else if (m_type==TemplateVariant::Struct && other.m_type==TemplateVariant::Struct)
-      {
-        return m_strukt==other.m_strukt; // TODO: improve me
-      }
-      else
-      {
-        return toString()==other.toString();
-      }
-    }
+    bool operator==(TemplateVariant &other) const;
 
     /** Returns the variant as a string. */
-    QCString toString() const
-    {
-      switch (m_type)
-      {
-        case None:     return QCString();
-        case Bool:     return m_boolVal ? "true" : "false";
-        case Integer:  return QCString().setNum(m_intVal);
-        case String:   return m_strVal;
-        case Struct:   return "[struct]";
-        case List:     return "[list]";
-        case Function: return "[function]";
-      }
-      return QCString();
-    }
+    QCString toString() const;
 
     /** Returns the variant as a boolean. */
     bool toBool() const;
@@ -250,30 +211,39 @@ class TemplateVariant
     /** Returns the variant as an integer. */
     int toInt() const;
 
+    /** Returns TRUE if the variant holds a valid value, or FALSE otherwise */
+    constexpr bool isValid()      const { return std::holds_alternative<std::monostate>(m_variant); }
+    /** Returns TRUE if the variant holds a boolean value */
+    constexpr bool isBool()       const { return std::holds_alternative<bool>(m_variant); }
+    /** Returns TRUE if the variant holds an integer value */
+    constexpr bool isInt()        const { return std::holds_alternative<int>(m_variant); }
+    /** Returns TRUE if the variant holds a string value */
+    constexpr bool isString()     const { return std::holds_alternative<QCString>(m_variant); }
+    /** Returns TRUE if the variant holds a struct value */
+    constexpr bool isStruct()     const { return std::holds_alternative<TemplateStructIntfPtr>(m_variant); }
+    /** Returns TRUE if the variant holds a list value */
+    constexpr bool isList()       const { return std::holds_alternative<TemplateListIntfPtr>(m_variant); }
+    /** Returns TRUE if the variant holds a function value */
+    constexpr bool isFunction()   const { return std::holds_alternative<FunctionDelegate>(m_variant); }
+    /** Returns TRUE if the variant holds a struct value */
+    constexpr bool isWeakStruct() const { return std::holds_alternative<TemplateStructIntfWeakPtr>(m_variant); }
+
     /** Returns the pointer to list referenced by this variant
      *  or 0 if this variant does not have list type.
      */
-    TemplateListIntf   *toList() const
-    {
-      return m_type==List ? m_list : 0;
-    }
+    TemplateListIntfPtr toList();
+    const TemplateListIntfPtr toList() const;
 
     /** Returns the pointer to struct referenced by this variant
      *  or 0 if this variant does not have struct type.
      */
-    TemplateStructIntf *toStruct() const
-    {
-      return m_type==Struct ? m_strukt : 0;
-    }
+    TemplateStructIntfPtr toStruct();
+    const TemplateStructIntfPtr toStruct() const;
 
     /** Return the result of apply this function with \a args.
      *  Returns an empty string if the variant type is not a function.
      */
-    TemplateVariant call(const QValueList<TemplateVariant> &args)
-    {
-      if (m_type==Function) return m_delegate(args);
-      return TemplateVariant();
-    }
+    TemplateVariant call(const std::vector<TemplateVariant> &args = std::vector<TemplateVariant>());
 
     /** Sets whether or not the value of the Variant should be
      *  escaped or written as-is (raw).
@@ -284,42 +254,23 @@ class TemplateVariant
     /** Returns whether or not the value of the Value is raw.
      *  @see setRaw()
      */
-    bool raw() const { return m_raw; }
+    constexpr bool raw() const { return m_raw; }
+
+    /** Returns the type held by this variant */
+    constexpr Type type() const { return static_cast<Type>(m_variant.index()); }
+
+    /** Returns a string representation of this variant's type */
+    const char *typeAsString() const;
 
   private:
-    Type                  m_type;
-    QCString              m_strVal;
-    union
-    {
-      int                 m_intVal;
-      bool                m_boolVal;
-      TemplateStructIntf *m_strukt;
-      TemplateListIntf   *m_list;
-    };
-    Delegate              m_delegate;
-    bool                  m_raw;
+    QCString listToString() const;
+    QCString structToString() const;
+
+    VariantT              m_variant;
+    bool                  m_raw = false;
 };
 
-//------------------------------------------------------------------------
-
-template<class T> class TemplateAutoRef
-{
-  public:
-    TemplateAutoRef(T *obj) : m_obj(obj)
-    {
-      m_obj->addRef();
-    }
-   ~TemplateAutoRef()
-    {
-      m_obj->release();
-    }
-    T &operator*() const { return *m_obj; }
-    T *operator->() const { return m_obj; }
-    T *get() const { return m_obj; }
-
-  private:
-   T *m_obj;
-};
+using TemplateVariantList = std::vector<TemplateVariant>;
 
 //------------------------------------------------------------------------
 
@@ -334,7 +285,7 @@ class TemplateListIntf
     {
       public:
         /** Destructor for the iterator */
-        virtual ~ConstIterator() {}
+        virtual ~ConstIterator() = default;
         /** Moves iterator to the first element in the list */
         virtual void toFirst() = 0;
         /** Moves iterator to the last element in the list */
@@ -350,54 +301,46 @@ class TemplateListIntf
          */
         virtual bool current(TemplateVariant &v) const = 0;
     };
+    using ConstIteratorPtr = std::unique_ptr<ConstIterator>;
 
     /** Destroys the list */
-    virtual ~TemplateListIntf() {}
+    virtual ~TemplateListIntf() = default;
 
     /** Returns the number of elements in the list */
-    virtual int count() const = 0;
+    virtual size_t count() const = 0;
 
     /** Returns the element at index position \a index. */
-    virtual TemplateVariant  at(int index) const = 0;
+    virtual TemplateVariant  at(size_t index) const = 0;
 
     /** Creates a new iterator for this list.
      *  @note the user should call delete on the returned pointer.
      */
-    virtual TemplateListIntf::ConstIterator *createIterator() const = 0;
+    virtual TemplateListIntf::ConstIteratorPtr createIterator() const = 0;
 
-    /** Increase object's reference count */
-    virtual int addRef() = 0;
-
-    /** Decreases object's reference count, destroy object if 0 */
-    virtual int release() = 0;
 };
 
-/** @brief Default implementation of a context value of type list. */
-class TemplateList : public TemplateListIntf
+/** @brief Default implementation of a immutable context value of type list. */
+class TemplateImmutableList : public TemplateListIntf
 {
   public:
     // TemplateListIntf methods
-    virtual int  count() const;
-    virtual TemplateVariant at(int index) const;
-    virtual TemplateListIntf::ConstIterator *createIterator() const;
-    virtual int addRef();
-    virtual int release();
+    virtual size_t count() const;
+    virtual TemplateVariant at(size_t index) const;
+    virtual TemplateListIntf::ConstIteratorPtr createIterator() const;
 
-    /** Creates an instance with ref count set to 0 */
-    static TemplateList *alloc();
+    /** Creates an instance and returns a shared pointer to it */
+    static TemplateListIntfPtr alloc(std::initializer_list<TemplateVariant> elements);
+    static TemplateListIntfPtr alloc(const std::vector<TemplateVariant> &elements);
 
-    /** Appends element \a v to the end of the list */
-    virtual void append(const TemplateVariant &v);
+    /** Creates a list */
+    TemplateImmutableList(std::initializer_list<TemplateVariant> elements);
+    TemplateImmutableList(const std::vector<TemplateVariant> &elements);
+    /** Destroys the list */
+    virtual ~TemplateImmutableList();
 
   private:
-    /** Creates a list */
-    TemplateList();
-    /** Destroys the list */
-   ~TemplateList();
-
-    friend class TemplateListConstIterator;
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //------------------------------------------------------------------------
@@ -407,49 +350,45 @@ class TemplateStructIntf
 {
   public:
     /** Destroys the struct */
-    virtual ~TemplateStructIntf() {}
+    virtual ~TemplateStructIntf() = default;
 
     /** Gets the value for a field name.
      *  @param[in] name The name of the field.
      */
-    virtual TemplateVariant get(const char *name) const = 0;
+    virtual TemplateVariant get(const QCString &name) const = 0;
 
-    /** Increase object's reference count */
-    virtual int addRef() = 0;
-
-    /** Decreases object's reference count, destroy object if 0 */
-    virtual int release() = 0;
+    /** Return the list of fields. */
+    virtual StringVector fields() const = 0;
 };
 
+//------------------------------------------------------------------------
 
-/** @brief Default implementation of a context value of type struct. */
-class TemplateStruct : public TemplateStructIntf
+/** @brief Default implementation of an immutable context value of type struct. */
+class TemplateImmutableStruct : public TemplateStructIntf
 {
   public:
     // TemplateStructIntf methods
-    virtual TemplateVariant get(const char *name) const;
-    virtual int addRef();
-    virtual int release();
+    virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
 
-    /** Creates an instance with ref count set to 0. */
-    static TemplateStruct *alloc();
+    using StructField = std::pair<const std::string,TemplateVariant>;
 
-    /** Sets the value the field of a struct
-     *  @param[in] name The name of the field.
-     *  @param[in] v The value to set.
+    /** Creates an instance and returns a shared pointer to it
+     *  @param fields the fields of the struct as key/value pairs.
      */
-    virtual void set(const char *name,const TemplateVariant &v);
+    static TemplateStructIntfPtr alloc(std::initializer_list<StructField> fields);
 
+    /** Creates a struct */
+    TemplateImmutableStruct(std::initializer_list<StructField> fields);
+    /** Destroys the struct */
+    virtual ~TemplateImmutableStruct();
 
   private:
-    /** Creates a struct */
-    TemplateStruct();
-    /** Destroys the struct */
-    virtual ~TemplateStruct();
 
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
+
 
 //------------------------------------------------------------------------
 
@@ -457,6 +396,9 @@ class TemplateStruct : public TemplateStructIntf
 class TemplateEscapeIntf
 {
   public:
+    virtual ~TemplateEscapeIntf() = default;
+    /** Create a copy of the escape filter */
+    virtual std::unique_ptr<TemplateEscapeIntf> clone() = 0;
     /** Returns the \a input after escaping certain characters */
     virtual QCString escape(const QCString &input) = 0;
     /** Setting tabbing mode on or off (for LaTeX) */
@@ -469,6 +411,9 @@ class TemplateEscapeIntf
 class TemplateSpacelessIntf
 {
   public:
+    virtual ~TemplateSpacelessIntf() = default;
+    /** Create a copy of the spaceless filter */
+    virtual std::unique_ptr<TemplateSpacelessIntf> clone() = 0;
     /** Returns the \a input after removing redundant whitespace */
     virtual QCString remove(const QCString &input) = 0;
     /** Reset filter state */
@@ -489,7 +434,7 @@ class TemplateSpacelessIntf
 class TemplateContext
 {
   public:
-    virtual ~TemplateContext() {}
+    virtual ~TemplateContext() = default;
 
     /** Push a new scope on the stack. */
     virtual void push() = 0;
@@ -503,7 +448,7 @@ class TemplateContext
      *  @note When a given key is already present,
      *  its value will be replaced by \a v
      */
-    virtual void set(const char *name,const TemplateVariant &v) = 0;
+    virtual void set(const QCString &name,const TemplateVariant &v) = 0;
 
     /** Gets the value for a given key
      *  @param[in] name The name of key.
@@ -526,12 +471,12 @@ class TemplateContext
     /** Sets the interface that will be used for escaping the result
      *  of variable expansion before writing it to the output.
      */
-    virtual void setEscapeIntf(const QCString &extension, TemplateEscapeIntf *intf) = 0;
+    virtual void setEscapeIntf(const QCString &extension, std::unique_ptr<TemplateEscapeIntf> intf) = 0;
 
     /** Sets the interface that will be used inside a spaceless block
      *  to remove any redundant whitespace.
      */
-    virtual void setSpacelessIntf(TemplateSpacelessIntf *intf) = 0;
+    virtual void setSpacelessIntf(std::unique_ptr<TemplateSpacelessIntf> intf) = 0;
 };
 
 //------------------------------------------------------------------------
@@ -543,14 +488,14 @@ class Template
 {
   public:
     /** Destructor */
-    virtual ~Template() {}
+    virtual ~Template() = default;
 
     /** Renders a template instance to a stream.
      *  @param[in] ts The text stream to write the results to.
      *  @param[in] c The context containing data that can be used
      *  when instantiating the template.
      */
-    virtual void render(FTextStream &ts,TemplateContext *c) = 0;
+    virtual void render(TextStream &ts,TemplateContext *c) = 0;
 };
 
 //------------------------------------------------------------------------
@@ -568,12 +513,7 @@ class TemplateEngine
     /** Creates a new context that can be using to render a template.
      *  @see Template::render()
      */
-    TemplateContext *createContext() const;
-
-    /** Destroys a context created via createContext().
-     *  @param[in] ctx The context.
-     */
-    void destroyContext(TemplateContext *ctx);
+    std::unique_ptr<TemplateContext> createContext() const;
 
     /** Creates a new template whose contents are in a file.
      *  @param[in] fileName The name of the file containing the template data
@@ -588,10 +528,10 @@ class TemplateEngine
     void unload(Template *t);
 
     /** Prints the current template file include stack */
-    void printIncludeContext(const char *fileName,int line) const;
+    void printIncludeContext(const QCString &fileName,int line) const;
 
     /** Sets the search directory where to look for template files */
-    void setTemplateDir(const char *dirName);
+    void setTemplateDir(const QCString &dirName);
 
   private:
     friend class TemplateNodeBlock;
@@ -603,13 +543,13 @@ class TemplateEngine
     /** Sets the extension of the output file. This is used to control the
      *  format of 'special' tags in the template
      */
-    void setOutputExtension(const char *extension);
+    void setOutputExtension(const QCString &extension);
 
     /** Returns the output extension, set via setOutputExtension() */
     QCString outputExtension() const;
 
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 /** @} */

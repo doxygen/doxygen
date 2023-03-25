@@ -7,17 +7,12 @@ function end_form($value)
   global $translator;
   if ($config['DISABLE_INDEX'] == false)
   {
-  echo "            <input type=\"text\" id=\"MSearchField\" name=\"query\" value=\"$value\" size=\"20\" accesskey=\"S\" onfocus=\"searchBox.OnSearchFieldFocus(true)\" onblur=\"searchBox.OnSearchFieldFocus(false)\"/>\n            </form>\n          </div><div class=\"right\"></div>\n        </div>\n      </li>\n    </ul>\n  </div>\n</div>\n";
+    echo "</div>\n";
   }
   if ($config['GENERATE_TREEVIEW'])
   {
     echo $translator['split_bar'];
   }
-}
-
-function end_page()
-{
-  echo "</body></html>";
 }
 
 function search_results()
@@ -67,10 +62,10 @@ function computeIndex($word)
   // Simple hashing that allows for substring search
   if (strlen($word)<2) return -1;
   // high char of the index
-  $hi = ord($word{0});
+  $hi = ord($word[0]);
   if ($hi==0) return -1;
   // low char of the index
-  $lo = ord($word{1});
+  $lo = ord($word[1]);
   if ($lo==0) return -1;
   // return index
   return $hi*256+$lo;
@@ -207,7 +202,7 @@ function combine_results($results,&$docs)
 function filter_results($docs,&$requiredWords,&$forbiddenWords)
 {
   $filteredDocs=array();
-  while (list ($key, $val) = each ($docs)) 
+  foreach ($docs as $key => $val)
   {
     $words = &$docs[$key]["words"];
     $copy=1; // copy entry by default
@@ -327,8 +322,8 @@ function run_query($query)
   $word=strtok($query," ");
   while ($word) // for each word in the search query
   {
-    if (($word{0}=='+')) { $word=substr($word,1); $requiredWords[]=$word; }
-    if (($word{0}=='-')) { $word=substr($word,1); $forbiddenWords[]=$word; }
+    if (($word[0]=='+')) { $word=substr($word,1); $requiredWords[]=$word; }
+    if (($word[0]=='-')) { $word=substr($word,1); $forbiddenWords[]=$word; }
     if (!in_array($word,$foundWords))
     {
       $foundWords[]=$word;
@@ -361,6 +356,5 @@ function main()
   end_form(preg_replace("/[^a-zA-Z0-9\-\_\.\x80-\xFF]/i", " ", $query ));
   // report results to the user
   report_results($sorted);
-  end_page();
 }
 ?>

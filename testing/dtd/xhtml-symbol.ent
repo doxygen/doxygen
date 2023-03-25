@@ -39,7 +39,7 @@
                                     U+0398 ISOgrk3 -->
 <!ENTITY Iota     "&#921;"> <!-- greek capital letter iota, U+0399 -->
 <!ENTITY Kappa    "&#922;"> <!-- greek capital letter kappa, U+039A -->
-<!ENTITY Lambda   "&#923;"> <!-- greek capital letter lamda,
+<!ENTITY Lambda   "&#923;"> <!-- greek capital letter lambda,
                                     U+039B ISOgrk3 -->
 <!ENTITY Mu       "&#924;"> <!-- greek capital letter mu, U+039C -->
 <!ENTITY Nu       "&#925;"> <!-- greek capital letter nu, U+039D -->
@@ -77,7 +77,7 @@
 <!ENTITY iota     "&#953;"> <!-- greek small letter iota, U+03B9 ISOgrk3 -->
 <!ENTITY kappa    "&#954;"> <!-- greek small letter kappa,
                                     U+03BA ISOgrk3 -->
-<!ENTITY lambda   "&#955;"> <!-- greek small letter lamda,
+<!ENTITY lambda   "&#955;"> <!-- greek small letter lambda,
                                     U+03BB ISOgrk3 -->
 <!ENTITY mu       "&#956;"> <!-- greek small letter mu, U+03BC ISOgrk3 -->
 <!ENTITY nu       "&#957;"> <!-- greek small letter nu, U+03BD ISOgrk3 -->

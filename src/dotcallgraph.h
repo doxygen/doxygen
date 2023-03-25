@@ -16,8 +16,10 @@
 #ifndef DOTCALLGRAPH_H
 #define DOTCALLGRAPH_H
 
+#include <memory>
+
+#include "dotnode.h"
 #include "dotgraph.h"
-#include "ftextstream.h"
 #include "memberdef.h"
 
 /** Representation of an call graph */
@@ -28,10 +30,12 @@ class DotCallGraph : public DotGraph
     ~DotCallGraph();
     bool isTrivial() const;
     bool isTooBig() const;
-    QCString writeGraph(FTextStream &t, GraphOutputFormat gf, EmbeddedOutputFormat ef,
-                        const char *path,const char *fileName,
-                        const char *relPath,bool writeImageMap=TRUE,
+    int numNodes() const;
+    QCString writeGraph(TextStream &t, GraphOutputFormat gf, EmbeddedOutputFormat ef,
+                        const QCString &path,const QCString &fileName,
+                        const QCString &relPath,bool writeImageMap=TRUE,
                         int graphId=-1);
+    static bool isTrivial(const MemberDef *md,bool inverse);
 
   protected:
     virtual QCString getBaseName() const;
@@ -40,13 +44,15 @@ class DotCallGraph : public DotGraph
 
   private:
     void buildGraph(DotNode *n,const MemberDef *md,int distance);
-    void determineVisibleNodes(QList<DotNode> &queue, int &maxNodes);
-    void determineTruncatedNodes(QList<DotNode> &queue);
+    void determineVisibleNodes(DotNodeDeque &queue, int &maxNodes);
+    void determineTruncatedNodes(DotNodeDeque &queue);
     DotNode        *m_startNode;
-    QDict<DotNode> *m_usedNodes;
+    DotNodeMap      m_usedNodes;
     bool            m_inverse;
     QCString        m_diskName;
     const Definition * m_scope;
 };
+
+using DotCallGraphPtr = std::shared_ptr<DotCallGraph>;
 
 #endif

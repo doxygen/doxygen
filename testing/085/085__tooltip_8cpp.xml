@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
   <compounddef id="085__tooltip_8cpp" kind="file" language="C++">
     <compoundname>085_tooltip.cpp</compoundname>
     <sectiondef kind="define">
@@ -11,7 +11,7 @@
         <param>
           <defname>mod</defname>
         </param>
-        <initializer>if ((<ref refid="085__tooltip_8cpp_1a5cccf7694b5d688466063895f39ee5d1" kindref="member">unit</ref> = fopen(fn, mod)) == NULL) \
+        <initializer>  if ((<ref refid="085__tooltip_8cpp_1a5cccf7694b5d688466063895f39ee5d1" kindref="member">unit</ref> = fopen(fn, mod)) == NULL) \
   {                                    \
     msg(OPEN_ERR,strerror(errno));     \
   }</initializer>
@@ -26,7 +26,7 @@
       </memberdef>
       <memberdef kind="define" id="085__tooltip_8cpp_1a11a2c0486e2bbd915f975a3517817de6" prot="public" static="no">
         <name>FCLOSE_MACRO</name>
-        <initializer>if (fclose(<ref refid="085__tooltip_8cpp_1a5cccf7694b5d688466063895f39ee5d1" kindref="member">unit</ref>) != 0)               \
+        <initializer>  if (fclose(<ref refid="085__tooltip_8cpp_1a5cccf7694b5d688466063895f39ee5d1" kindref="member">unit</ref>) != 0)               \
   {                                    \
     msg(CLOSE_ERR,strerror(errno));    \
   }</initializer>

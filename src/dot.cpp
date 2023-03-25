@@ -13,15 +13,11 @@
  *
  */
 
-#include <stdlib.h>
-
-#include <qdir.h>
-#include <qfile.h>
-#include <qqueue.h>
-#include <qthread.h>
-#include <qmutex.h>
-#include <qwaitcondition.h>
-#include <qregexp.h>
+#include <cstdlib>
+#include <cassert>
+#include <sstream>
+#include <algorithm>
+#include <mutex>
 
 #include "config.h"
 #include "dot.h"
@@ -30,297 +26,141 @@
 #include "util.h"
 #include "portable.h"
 #include "message.h"
-#include "ftextstream.h"
 #include "doxygen.h"
 #include "language.h"
-#include "index.h"
+#include "indexlist.h"
+#include "dir.h"
 
 #define MAP_CMD "cmapx"
 
-static int DOT_NUM_THREADS;   // will be initialized in initDot
-
 //--------------------------------------------------------------------
-
-void initDot()
-{
-  DotGraph::DOT_FONTNAME = Config_getString(DOT_FONTNAME);
-  if (DotGraph::DOT_FONTNAME.isEmpty())
-  {
-    DotGraph::DOT_FONTNAME="Helvetica";
-  }
-
-  DotGraph::DOT_FONTSIZE = Config_getInt(DOT_FONTSIZE);
-  if (DotGraph::DOT_FONTSIZE<4) DotGraph::DOT_FONTSIZE=4;
-
-  DOT_NUM_THREADS = Config_getInt(DOT_NUM_THREADS);
-  if (DOT_NUM_THREADS > 32) DOT_NUM_THREADS = 32;
-  if (DOT_NUM_THREADS <= 0) DOT_NUM_THREADS = QMAX(2,QThread::idealThreadCount()+1);
-
-  // these are copied to be sure to be thread save
-  DotRunner::DOT_CLEANUP = Config_getBool(DOT_CLEANUP);
-  DotRunner::DOT_MULTI_TARGETS = Config_getBool(DOT_MULTI_TARGETS);
-  DotRunner::DOT_EXE.init(Config_getString(DOT_PATH) + "dot");
-
-  DotGraph::IMG_EXT = getDotImageExtension();
-}
-
 
 static QCString g_dotFontPath;
 
-static void setDotFontPath(const char *path)
+static std::mutex g_dotManagerMutex;
+
+static void setDotFontPath(const QCString &path)
 {
   ASSERT(g_dotFontPath.isEmpty());
-  g_dotFontPath = portable_getenv("DOTFONTPATH");
+  g_dotFontPath = Portable::getenv("DOTFONTPATH");
   QCString newFontPath = Config_getString(DOT_FONTPATH);
-  QCString spath = path;
-  if (!newFontPath.isEmpty() && !spath.isEmpty())
+  if (!newFontPath.isEmpty() && !path.isEmpty())
   {
-    newFontPath.prepend(spath+portable_pathListSeparator());
+    newFontPath.prepend(path+Portable::pathListSeparator());
   }
-  else if (newFontPath.isEmpty() && !spath.isEmpty())
+  else if (newFontPath.isEmpty() && !path.isEmpty())
   {
     newFontPath=path;
   }
   else
   {
-    portable_unsetenv("DOTFONTPATH");
+    Portable::unsetenv("DOTFONTPATH");
     return;
   }
-  portable_setenv("DOTFONTPATH",newFontPath);
+  Portable::setenv("DOTFONTPATH",newFontPath);
 }
 
 static void unsetDotFontPath()
 {
   if (g_dotFontPath.isEmpty())
   {
-    portable_unsetenv("DOTFONTPATH");
+    Portable::unsetenv("DOTFONTPATH");
   }
   else
   {
-    portable_setenv("DOTFONTPATH",g_dotFontPath);
+    Portable::setenv("DOTFONTPATH",g_dotFontPath);
   }
   g_dotFontPath="";
 }
 
-// extract size from a dot generated SVG file
-static bool readSVGSize(const QCString &fileName,int *width,int *height)
-{
-  bool found=FALSE;
-  QFile f(fileName);
-  if (!f.open(IO_ReadOnly))
-  {
-    return FALSE;
-  }
-  const int maxLineLen=4096;
-  char buf[maxLineLen];
-  while (!f.atEnd() && !found)
-  {
-    int numBytes = f.readLine(buf,maxLineLen-1); // read line
-    if (numBytes>0)
-    {
-      buf[numBytes]='\0';
-      if (qstrncmp(buf,"<!--zoomable ",13)==0)
-      {
-        *width=-1;
-        *height=-1;
-        sscanf(buf,"<!--zoomable %d",height);
-        //printf("Found zoomable for %s!\n",fileName.data());
-        found=TRUE;
-      }
-      else if (sscanf(buf,"<svg width=\"%dpt\" height=\"%dpt\"",width,height)==2)
-      {
-        //printf("Found fixed size %dx%d for %s!\n",*width,*height,fileName.data());
-        found=TRUE;
-      }
-    }
-    else // read error!
-    {
-      //printf("Read error %d!\n",numBytes);
-      return FALSE;
-    }
-  }
-  return TRUE;
-}
-
-static void writeSVGNotSupported(FTextStream &out)
-{
-  out << "<p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p>";
-}
-
-// check if a reference to a SVG figure can be written and does so if possible.
-// return FALSE if not possible (for instance because the SVG file is not yet generated).
-bool writeSVGFigureLink(FTextStream &out,const QCString &relPath,
-                        const QCString &baseName,const QCString &absImgName)
-{
-  int width=600,height=600;
-  if (!readSVGSize(absImgName,&width,&height))
-  {
-    return FALSE;
-  }
-  if (width==-1)
-  {
-    if (height<=60) 
-      height=300;
-    else 
-      height+=300; // add some extra space for zooming
-    if (height>600) height=600; // clip to maximum height of 600 pixels
-    out << "<div class=\"zoom\">";
-    //out << "<object type=\"image/svg+xml\" data=\"" 
-    //out << "<embed type=\"image/svg+xml\" src=\"" 
-    out << "<iframe scrolling=\"no\" frameborder=\"0\" src=\"" 
-        << relPath << baseName << ".svg\" width=\"100%\" height=\"" << height << "\">";
-  }
-  else
-  {
-    //out << "<object type=\"image/svg+xml\" data=\"" 
-    //out << "<embed type=\"image/svg+xml\" src=\"" 
-    out << "<iframe scrolling=\"no\" frameborder=\"0\" src=\"" 
-        << relPath << baseName << ".svg\" width=\"" 
-        << ((width*96+48)/72) << "\" height=\"" 
-        << ((height*96+48)/72) << "\">";
-  }
-  writeSVGNotSupported(out);
-  //out << "</object>";
-  //out << "</embed>";
-  out << "</iframe>";
-  if (width==-1)
-  {
-    out << "</div>";
-  }
-
-  return TRUE;
-}
-
 //--------------------------------------------------------------------
-
-DotManager *DotManager::m_theInstance = 0;
 
 DotManager *DotManager::instance()
 {
-  if (!m_theInstance)
-  {
-    m_theInstance = new DotManager;
-  }
-  return m_theInstance;
+  static DotManager theInstance;
+  return &theInstance;
 }
 
-DotManager::DotManager() : m_dotMaps(1009)
+DotManager::DotManager() : m_runners(), m_filePatchers()
 {
-  m_runners.setAutoDelete(TRUE);
-  m_dotMaps.setAutoDelete(TRUE);
   m_queue = new DotRunnerQueue;
   int i;
-  if (DOT_NUM_THREADS!=1)
+  int dotNumThreads = Config_getInt(DOT_NUM_THREADS);
+  if (dotNumThreads!=1)
   {
-    for (i=0;i<DOT_NUM_THREADS;i++)
+    for (i=0;i<dotNumThreads;i++)
     {
-      DotWorkerThread *thread = new DotWorkerThread(m_queue);
+      DotWorkerThreadPtr thread(new DotWorkerThread(m_queue));
       thread->start();
       if (thread->isRunning())
       {
-        m_workers.append(thread);
+        m_workers.push_back(std::move(thread));
       }
       else // no more threads available!
       {
-        delete thread;
       }
     }
-    ASSERT(m_workers.count()>0);
+    ASSERT(m_workers.size()>0);
   }
 }
 
 DotManager::~DotManager()
 {
-  delete m_queue;
+  if (!Doxygen::terminating) delete m_queue;
 }
 
-DotRunner* DotManager::createRunner(const QCString& absDotName, const QCString& md5Hash)
+DotRunner* DotManager::createRunner(const QCString &absDotName, const QCString& md5Hash)
 {
-  DotRunner * run = m_runners.find(absDotName);
-  if (run == 0)
+  std::lock_guard<std::mutex> lock(g_dotManagerMutex);
+  DotRunner* rv = nullptr;
+  auto const runit = m_runners.find(absDotName.str());
+  if (runit == m_runners.end())
   {
-    run = new DotRunner(absDotName, md5Hash);
-    m_runners.insert(absDotName, run);
+    auto insobj = std::make_unique<DotRunner>(absDotName, md5Hash);
+    rv = insobj.get();
+    m_runners.emplace(absDotName.str(), std::move(insobj));
   }
   else
   {
     // we have a match
-    if (md5Hash != QCString(run->getMd5Hash().data()))
+    if (md5Hash != runit->second->getMd5Hash())
     {
-      err("md5 hash does not match for two different runs of %s !\n", absDotName.data());
+      err("md5 hash does not match for two different runs of %s !\n", qPrint(absDotName));
     }
+    rv = runit->second.get();
   }
-  return run;
+  assert(rv);
+  return rv;
 }
 
-
-int DotManager::addMap(const QCString &file,const QCString &mapFile,
-                const QCString &relPath,bool urlOnly,const QCString &context,
-                const QCString &label)
+DotFilePatcher *DotManager::createFilePatcher(const QCString &fileName)
 {
-  DotFilePatcher *map = m_dotMaps.find(file);
-  if (map==0)
-  {
-    map = new DotFilePatcher(file);
-    m_dotMaps.append(file,map);
-  }
-  return map->addMap(mapFile,relPath,urlOnly,context,label);
+  std::lock_guard<std::mutex> lock(g_dotManagerMutex);
+  auto patcher = m_filePatchers.find(fileName.str());
+
+  if (patcher != m_filePatchers.end()) return &(patcher->second);
+
+  auto rv = m_filePatchers.emplace(std::make_pair(fileName.str(), fileName));
+  assert(rv.second);
+  return &(rv.first->second);
 }
 
-int DotManager::addFigure(const QCString &file,const QCString &baseName,
-                          const QCString &figureName,bool heightCheck)
+bool DotManager::run() const
 {
-  DotFilePatcher *map = m_dotMaps.find(file);
-  if (map==0)
+  size_t numDotRuns = m_runners.size();
+  size_t numFilePatchers = m_filePatchers.size();
+  if (numDotRuns+numFilePatchers>1)
   {
-    map = new DotFilePatcher(file);
-    m_dotMaps.append(file,map);
-  }
-  return map->addFigure(baseName,figureName,heightCheck);
-}
-
-int DotManager::addSVGConversion(const QCString &file,const QCString &relPath,
-                       bool urlOnly,const QCString &context,bool zoomable,
-                       int graphId)
-{
-  DotFilePatcher *map = m_dotMaps.find(file);
-  if (map==0)
-  {
-    map = new DotFilePatcher(file);
-    m_dotMaps.append(file,map);
-  }
-  return map->addSVGConversion(relPath,urlOnly,context,zoomable,graphId);
-}
-
-int DotManager::addSVGObject(const QCString &file,const QCString &baseName,
-                             const QCString &absImgName,const QCString &relPath)
-{
-  DotFilePatcher *map = m_dotMaps.find(file);
-  if (map==0)
-  {
-    map = new DotFilePatcher(file);
-    m_dotMaps.append(file,map);
-  }
-  return map->addSVGObject(baseName,absImgName,relPath);
-}
-
-bool DotManager::run()
-{
-  uint numDotRuns = m_runners.count();
-  uint numDotMaps = m_dotMaps.count();
-  if (numDotRuns+numDotMaps>1)
-  {
-    if (m_workers.count()==0)
+    if (m_workers.size()==0)
     {
       msg("Generating dot graphs in single threaded mode...\n");
     }
     else
     {
-      msg("Generating dot graphs using %d parallel threads...\n",QMIN(numDotRuns+numDotMaps,m_workers.count()));
+      msg("Generating dot graphs using %zu parallel threads...\n",std::min(numDotRuns+numFilePatchers,m_workers.size()));
     }
   }
-  int i=1;
-  QDictIterator<DotRunner> li(m_runners);
+  size_t i=1;
 
   bool setPath=FALSE;
   if (Config_getBool(GENERATE_HTML))
@@ -343,53 +183,50 @@ bool DotManager::run()
     setDotFontPath(Config_getString(DOCBOOK_OUTPUT));
     setPath=TRUE;
   }
-  portable_sysTimerStart();
   // fill work queue with dot operations
-  DotRunner *dr;
-  int prev=1;
-  if (m_workers.count()==0) // no threads to work with
+  size_t prev=1;
+  if (m_workers.size()==0) // no threads to work with
   {
-    for (li.toFirst();(dr=li.current());++li)
+    for (auto & dr : m_runners)
     {
-      msg("Running dot for graph %d/%d\n",prev,numDotRuns);
-      dr->run();
+      msg("Running dot for graph %zu/%zu\n",prev,numDotRuns);
+      dr.second->run();
       prev++;
     }
   }
   else // use multiple threads to run instances of dot in parallel
   {
-    for (li.toFirst();(dr=li.current());++li)
+    for (auto & dr: m_runners)
     {
-      m_queue->enqueue(dr);
+      m_queue->enqueue(dr.second.get());
     }
     // wait for the queue to become empty
-    while ((i=m_queue->count())>0)
+    while ((i=m_queue->size())>0)
     {
       i = numDotRuns - i;
       while (i>=prev)
       {
-        msg("Running dot for graph %d/%d\n",prev,numDotRuns);
+        msg("Running dot for graph %zu/%zu\n",prev,numDotRuns);
         prev++;
       }
-      portable_sleep(100);
+      Portable::sleep(100);
     }
-    while ((int)numDotRuns>=prev)
+    while (numDotRuns>=prev)
     {
-      msg("Running dot for graph %d/%d\n",prev,numDotRuns);
+      msg("Running dot for graph %zu/%zu\n",prev,numDotRuns);
       prev++;
     }
     // signal the workers we are done
-    for (i=0;i<(int)m_workers.count();i++)
+    for (i=0;i<m_workers.size();i++)
     {
       m_queue->enqueue(0); // add terminator for each worker
     }
     // wait for the workers to finish
-    for (i=0;i<(int)m_workers.count();i++)
+    for (i=0;i<m_workers.size();i++)
     {
       m_workers.at(i)->wait();
     }
   }
-  portable_sysTimerStop();
   if (setPath)
   {
     unsetDotFontPath();
@@ -397,27 +234,25 @@ bool DotManager::run()
 
   // patch the output file and insert the maps and figures
   i=1;
-  SDict<DotFilePatcher>::Iterator di(m_dotMaps);
-  DotFilePatcher *map;
   // since patching the svg files may involve patching the header of the SVG
   // (for zoomable SVGs), and patching the .html files requires reading that
-  // header after the SVG is patched, we first process the .svg files and 
-  // then the other files. 
-  for (di.toFirst();(map=di.current());++di)
+  // header after the SVG is patched, we first process the .svg files and
+  // then the other files.
+  for (auto & fp : m_filePatchers)
   {
-    if (map->file().right(4)==".svg")
+    if (fp.second.isSVGFile())
     {
-      msg("Patching output file %d/%d\n",i,numDotMaps);
-      if (!map->run()) return FALSE;
+      msg("Patching output file %zu/%zu\n",i,numFilePatchers);
+      if (!fp.second.run()) return FALSE;
       i++;
     }
   }
-  for (di.toFirst();(map=di.current());++di)
+  for (auto& fp : m_filePatchers)
   {
-    if (map->file().right(4)!=".svg")
+    if (!fp.second.isSVGFile())
     {
-      msg("Patching output file %d/%d\n",i,numDotMaps);
-      if (!map->run()) return FALSE;
+      msg("Patching output file %zu/%zu\n",i,numFilePatchers);
+      if (!fp.second.run()) return FALSE;
       i++;
     }
   }
@@ -426,91 +261,35 @@ bool DotManager::run()
 
 //--------------------------------------------------------------------
 
-class GraphLegendDotGraph : public DotGraph
+void writeDotGraphFromFile(const QCString &inFile,const QCString &outDir,
+                           const QCString &outFile,GraphOutputFormat format,
+                           const QCString &srcFile,int srcLine)
 {
-  private:
-    virtual QCString getBaseName() const
-    {
-      return "graph_legend";
-    }
-
-    virtual void computeTheGraph()
-    {
-      FTextStream md5stream(&m_theGraph);
-      writeGraphHeader(md5stream,theTranslator->trLegendTitle());
-      md5stream << "  Node9 [shape=\"box\",label=\"Inherited\",fontsize=\"" << DOT_FONTSIZE << "\",height=0.2,width=0.4,fontname=\"" << DOT_FONTNAME << "\",fillcolor=\"grey75\",style=\"filled\" fontcolor=\"black\"];\n";
-      md5stream << "  Node10 -> Node9 [dir=\"back\",color=\"midnightblue\",fontsize=\"" << DOT_FONTSIZE << "\",style=\"solid\",fontname=\"" << DOT_FONTNAME << "\"];\n";
-      md5stream << "  Node10 [shape=\"box\",label=\"PublicBase\",fontsize=\"" << DOT_FONTSIZE << "\",height=0.2,width=0.4,fontname=\"" << DOT_FONTNAME << "\",color=\"black\",URL=\"$classPublicBase" << Doxygen::htmlFileExtension << "\"];\n";
-      md5stream << "  Node11 -> Node10 [dir=\"back\",color=\"midnightblue\",fontsize=\"" << DOT_FONTSIZE << "\",style=\"solid\",fontname=\"" << DOT_FONTNAME << "\"];\n";
-      md5stream << "  Node11 [shape=\"box\",label=\"Truncated\",fontsize=\"" << DOT_FONTSIZE << "\",height=0.2,width=0.4,fontname=\"" << DOT_FONTNAME << "\",color=\"red\",URL=\"$classTruncated" << Doxygen::htmlFileExtension << "\"];\n";
-      md5stream << "  Node13 -> Node9 [dir=\"back\",color=\"darkgreen\",fontsize=\"" << DOT_FONTSIZE << "\",style=\"solid\",fontname=\"" << DOT_FONTNAME << "\"];\n";
-      md5stream << "  Node13 [shape=\"box\",label=\"ProtectedBase\",fontsize=\"" << DOT_FONTSIZE << "\",height=0.2,width=0.4,fontname=\"" << DOT_FONTNAME << "\",color=\"black\",URL=\"$classProtectedBase" << Doxygen::htmlFileExtension << "\"];\n";
-      md5stream << "  Node14 -> Node9 [dir=\"back\",color=\"firebrick4\",fontsize=\"" << DOT_FONTSIZE << "\",style=\"solid\",fontname=\"" << DOT_FONTNAME << "\"];\n";
-      md5stream << "  Node14 [shape=\"box\",label=\"PrivateBase\",fontsize=\"" << DOT_FONTSIZE << "\",height=0.2,width=0.4,fontname=\"" << DOT_FONTNAME << "\",color=\"black\",URL=\"$classPrivateBase" << Doxygen::htmlFileExtension << "\"];\n";
-      md5stream << "  Node15 -> Node9 [dir=\"back\",color=\"midnightblue\",fontsize=\"" << DOT_FONTSIZE << "\",style=\"solid\",fontname=\"" << DOT_FONTNAME << "\"];\n";
-      md5stream << "  Node15 [shape=\"box\",label=\"Undocumented\",fontsize=\"" << DOT_FONTSIZE << "\",height=0.2,width=0.4,fontname=\"" << DOT_FONTNAME << "\",color=\"grey75\"];\n";
-      md5stream << "  Node16 -> Node9 [dir=\"back\",color=\"midnightblue\",fontsize=\"" << DOT_FONTSIZE << "\",style=\"solid\",fontname=\"" << DOT_FONTNAME << "\"];\n";
-      md5stream << "  Node16 [shape=\"box\",label=\"Templ< int >\",fontsize=\"" << DOT_FONTSIZE << "\",height=0.2,width=0.4,fontname=\"" << DOT_FONTNAME << "\",color=\"black\",URL=\"$classTempl" << Doxygen::htmlFileExtension << "\"];\n";
-      md5stream << "  Node17 -> Node16 [dir=\"back\",color=\"orange\",fontsize=\"" << DOT_FONTSIZE << "\",style=\"dashed\",label=\"< int >\",fontname=\"" << DOT_FONTNAME << "\"];\n";
-      md5stream << "  Node17 [shape=\"box\",label=\"Templ< T >\",fontsize=\"" << DOT_FONTSIZE << "\",height=0.2,width=0.4,fontname=\"" << DOT_FONTNAME << "\",color=\"black\",URL=\"$classTempl" << Doxygen::htmlFileExtension << "\"];\n";
-      md5stream << "  Node18 -> Node9 [dir=\"back\",color=\"darkorchid3\",fontsize=\"" << DOT_FONTSIZE << "\",style=\"dashed\",label=\"m_usedClass\",fontname=\"" << DOT_FONTNAME << "\"];\n";
-      md5stream << "  Node18 [shape=\"box\",label=\"Used\",fontsize=\"" << DOT_FONTSIZE << "\",height=0.2,width=0.4,fontname=\"" << DOT_FONTNAME << "\",color=\"black\",URL=\"$classUsed" << Doxygen::htmlFileExtension << "\"];\n";
-      writeGraphFooter(md5stream);
-    }
-
-    virtual QCString getMapLabel() const
-    {
-      return "";
-    }
-
-    friend void generateGraphLegend(const char* path);
-};
-
-void generateGraphLegend(const char *path)
-{
-  QDir d(path);
-  GraphLegendDotGraph dg;
-  FTextStream ts;
-  dg.writeGraph(ts, GOF_BITMAP, EOF_Html, path, "", "", FALSE, 0);
-
-  if (getDotImageExtension()=="svg")
-  {
-    DotManager::instance()->addSVGObject(
-        dg.absBaseName()+Config_getString(HTML_FILE_EXTENSION),
-        "graph_legend",
-        dg.absImgName(),QCString());
-  }
-
-}
-
-void writeDotGraphFromFile(const char *inFile,const char *outDir,
-                           const char *outFile,GraphOutputFormat format)
-{
-  QDir d(outDir);
+  Dir d(outDir.str());
   if (!d.exists())
   {
-    err("Output dir %s does not exist!\n",outDir); exit(1);
+    term("Output dir %s does not exist!\n",qPrint(outDir));
   }
 
   QCString imgExt = getDotImageExtension();
-  QCString imgName = (QCString)outFile+"."+imgExt;
-  QCString absImgName = d.absPath().utf8()+"/"+imgName;
-  QCString absOutFile = d.absPath().utf8()+"/"+outFile;
+  QCString imgName = QCString(outFile)+"."+imgExt;
+  QCString absImgName = QCString(d.absPath())+"/"+imgName;
+  QCString absOutFile = QCString(d.absPath())+"/"+outFile;
 
-  DotRunner dotRun(inFile, QCString());
+  DotRunner dotRun(inFile);
   if (format==GOF_BITMAP)
   {
-    dotRun.addJob(Config_getEnum(DOT_IMAGE_FORMAT),absImgName);
+    dotRun.addJob(Config_getEnumAsString(DOT_IMAGE_FORMAT),absImgName,srcFile,srcLine);
   }
   else // format==GOF_EPS
   {
     if (Config_getBool(USE_PDFLATEX))
     {
-      dotRun.addJob("pdf",absOutFile+".pdf");
+      dotRun.addJob("pdf",absOutFile+".pdf",srcFile,srcLine);
     }
     else
     {
-      dotRun.addJob("ps",absOutFile+".eps");
+      dotRun.addJob("ps",absOutFile+".eps",srcFile,srcLine);
     }
   }
 
@@ -532,26 +311,29 @@ void writeDotGraphFromFile(const char *inFile,const char *outDir,
  *  \param baseName the base name of the output files
  *  \param context the scope in which this graph is found (for resolving links)
  *  \param graphId a unique id for this graph, use for dynamic sections
+ *  \param srcFile the source file
+ *  \param srcLine the line number in the source file
  */
-void writeDotImageMapFromFile(FTextStream &t,
+void writeDotImageMapFromFile(TextStream &t,
                             const QCString &inFile, const QCString &outDir,
                             const QCString &relPath, const QCString &baseName,
-                            const QCString &context,int graphId)
+                            const QCString &context,int graphId,
+                            const QCString &srcFile,int srcLine)
 {
 
-  QDir d(outDir);
+  Dir d(outDir.str());
   if (!d.exists())
   {
-    err("Output dir %s does not exist!\n",outDir.data()); exit(1);
+    term("Output dir %s does not exist!\n",qPrint(outDir));
   }
 
   QCString mapName = baseName+".map";
   QCString imgExt = getDotImageExtension();
   QCString imgName = baseName+"."+imgExt;
-  QCString absOutFile = d.absPath().utf8()+"/"+mapName;
+  QCString absOutFile = QCString(d.absPath())+"/"+mapName;
 
-  DotRunner dotRun(inFile, QCString());
-  dotRun.addJob(MAP_CMD,absOutFile);
+  DotRunner dotRun(inFile);
+  dotRun.addJob(MAP_CMD,absOutFile,srcFile,srcLine);
   dotRun.preventCleanUp();
   if (!dotRun.run())
   {
@@ -560,28 +342,24 @@ void writeDotImageMapFromFile(FTextStream &t,
 
   if (imgExt=="svg") // vector graphics
   {
-    //writeSVGFigureLink(t,relPath,inFile,inFile+".svg");
-    //DotFilePatcher patcher(inFile+".svg");
-    QCString svgName=outDir+"/"+baseName+".svg";
-    writeSVGFigureLink(t,relPath,baseName,svgName);
+    QCString svgName = outDir+"/"+baseName+".svg";
+    DotFilePatcher::writeSVGFigureLink(t,relPath,baseName,svgName);
     DotFilePatcher patcher(svgName);
     patcher.addSVGConversion("",TRUE,context,TRUE,graphId);
     patcher.run();
   }
   else // bitmap graphics
   {
-    QGString result;
-    FTextStream tt(&result);
-
+    TextStream tt;
     t << "<img src=\"" << relPath << imgName << "\" alt=\""
-      << imgName << "\" border=\"0\" usemap=\"#" << mapName << "\"/>" << endl;
-    convertMapFile(tt, absOutFile, relPath ,TRUE, context);
-    if (!result.isEmpty())
+      << imgName << "\" border=\"0\" usemap=\"#" << mapName << "\"/>\n";
+    DotFilePatcher::convertMapFile(tt, absOutFile, relPath ,TRUE, context);
+    if (!tt.empty())
     {
       t << "<map name=\"" << mapName << "\" id=\"" << mapName << "\">";
-      t << result;
-      t << "</map>" << endl;
+      t << tt.str();
+      t << "</map>\n";
     }
   }
-  d.remove(absOutFile);
+  d.remove(absOutFile.str());
 }

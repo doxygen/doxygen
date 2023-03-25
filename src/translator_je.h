@@ -62,6 +62,15 @@ class TranslatorJapaneseEn : public TranslatorEnglish
     {
       return "128";
     }
+
+    virtual QCString trISOLang()
+    {
+      return "ja";
+    }
+    virtual QCString getLanguageString()
+    {
+      return "0x411 Japanese";
+    }
 };
 
 #endif

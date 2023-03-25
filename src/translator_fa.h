@@ -91,6 +91,15 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
       return "";
     }
 
+    virtual QCString trISOLang()
+    {
+      return "fa";
+    }
+
+    virtual QCString getLanguageString()
+    {
+      return "0x429 Persian (Iran)";
+    }
     // --- Language translation methods -------------------
 
     /*! used in the compound documentation before a list of related functions. */
@@ -104,6 +113,10 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
     /*! header that is put before the detailed description of files, classes and namespaces. */
     virtual QCString trDetailedDescription()
     { return "توضيحات جزئی"; }
+
+    /*! header that is used when the summary tag is missing inside the details tag */
+    virtual QCString trDetails()
+    { return "جزئیات"; }
 
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
@@ -153,9 +166,9 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
     /*! this is put at the author sections at the bottom of man pages.
      *  parameter s is name of the project name.
      */
-    virtual QCString trGeneratedAutomatically(const char *s)
+    virtual QCString trGeneratedAutomatically(const QCString &s)
     { QCString result="تولید شده توسط نرم افزار دی اکسیژن ";
-      if (s) result+=(QCString)" برای "+s;
+      if (!s.isEmpty()) result+=" برای "+s;
       result+=" از کد برنامه ";
       return result;
     }
@@ -379,6 +392,10 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
       {
         return "مستندات ساختار داده ها";
       }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+          return trDesignUnitDocumentation();
+      }
       else
       {
         return "مستندات کلاس ها";
@@ -390,18 +407,6 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
      */
     virtual QCString trFileDocumentation()
     { return "مستندات فایل"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all examples.
-     */
-    virtual QCString trExampleDocumentation()
-    { return "مستندات مثال"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all related pages.
-     */
-    virtual QCString trPageDocumentation()
-    { return "مستندات صفحه"; }
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
@@ -497,23 +502,19 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
     /*! This is used in the standard footer of each page and indicates when
      *  the page was generated
      */
-    virtual QCString trGeneratedAt(const char *date,const char *projName)
+    virtual QCString trGeneratedAt(const QCString &date,const QCString &projName)
     {
       QCString result = HtmlDivEnd + HtmlRightToLeft + QCString("توليد شده در ") +date ;
-      if (projName) result+=(QCString)" برای "+projName;
-      result+=(QCString)" توسط";
+      if (!projName.isEmpty()) result+=" برای "+projName;
+      result+=" توسط";
       return result;
     }
 
     /*! this text is put before a class diagram */
-    virtual QCString trClassDiagram(const char *clName)
+    virtual QCString trClassDiagram(const QCString &clName)
     {
-      return (QCString)""+clName+" نمودار وراثت برای  :";
+      return ""+clName+" نمودار وراثت برای  :";
     }
-
-    /*! this text is generated when the \\internal command is used. */
-    virtual QCString trForInternalUseOnly()
-    { return ".فقط برای استعمال داخلی"; }
 
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
@@ -585,7 +586,7 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
 //////////////////////////////////////////////////////////////////////////
 
     /*! used as the title of the HTML page of a class/struct/union */
-    virtual QCString trCompoundReference(const char *clName,
+    virtual QCString trCompoundReference(const QCString &clName,
                                     ClassDef::CompoundType compType,
                                     bool isTemplate)
     {
@@ -607,7 +608,7 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
     }
 
     /*! used as the title of the HTML page of a file */
-    virtual QCString trFileReference(const char *fileName)
+    virtual QCString trFileReference(const QCString &fileName)
     {
       QCString result=fileName;
       result+=" مرجع پرونده";
@@ -615,7 +616,7 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
     }
 
     /*! used as the title of the HTML page of a namespace */
-    virtual QCString trNamespaceReference(const char *namespaceName)
+    virtual QCString trNamespaceReference(const QCString &namespaceName)
     {
       QCString result=namespaceName;
       result+=" مرجع فضای نام";
@@ -746,7 +747,7 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
         bool single)
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
-      QCString result=(QCString)"مستندات اين  ";
+      QCString result="مستندات اين  ";
       switch(compType)
       {
         case ClassDef::Class:      result+="کلاس"; break;
@@ -809,14 +810,14 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
 //////////////////////////////////////////////////////////////////////////
 
     /*! this text is put before a collaboration diagram */
-    virtual QCString trCollaborationDiagram(const char *clName)
+    virtual QCString trCollaborationDiagram(const QCString &clName)
     {
-      return (QCString)"Collaboration diagram for "+clName+":";
+      return "Collaboration diagram for "+clName+":";
     }
     /*! this text is put before an include dependency graph */
-    virtual QCString trInclDepGraph(const char *fName)
+    virtual QCString trInclDepGraph(const QCString &fName)
     {
-      return (QCString)"نمودار شامل شدن ها برای "+fName+":";
+      return "نمودار شامل شدن ها برای "+fName+":";
     }
     /*! header that is put before the list of constructor/destructors. */
     virtual QCString trConstructorDocumentation()
@@ -1094,14 +1095,9 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
       }
     }
     /*! Used as the title of a Java package */
-    virtual QCString trPackage(const char *name)
+    virtual QCString trPackage(const QCString &name)
     {
-      return (QCString)"Package "+name;
-    }
-    /*! Title of the package index page */
-    virtual QCString trPackageList()
-    {
-      return "لیست بسته ها";
+      return "Package "+name;
     }
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
@@ -1358,14 +1354,18 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
     /*! Used as a heading for a list of Java class functions with package
      * scope.
      */
-    virtual QCString trPackageMembers()
+    virtual QCString trPackageFunctions()
     {
       return "توابع بسته ها";
+    }
+    virtual QCString trPackageMembers()
+    {
+      return "عضوها بسته ها";
     }
     /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
-    virtual QCString trStaticPackageMembers()
+    virtual QCString trStaticPackageFunctions()
     {
       return "Static Package Functions";
     }
@@ -1477,17 +1477,10 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
     virtual QCString trDirectories()
     { return "شاخه ها"; }
 
-    /*! This returns a sentences that introduces the directory hierarchy.
-     *  and the fact that it is sorted alphabetically per level
-     */
-    virtual QCString trDirDescription()
-    { return "در ذيل ساختار شاخه ها و دايرکتوری ها را نسبتا مرتب شده می بينيد :";
-    }
-
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.
      */
-    virtual QCString trDirReference(const char *dirName)
+    virtual QCString trDirReference(const QCString &dirName)
     { QCString result=dirName; result+=" مرجع شاخه ی"; return result; }
 
     /*! This returns the word directory with or without starting capital
@@ -1591,11 +1584,11 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
     }
 
     /*! used as the title of the HTML page of a module/type (Fortran) */
-    virtual QCString trCompoundReferenceFortran(const char *clName,
+    virtual QCString trCompoundReferenceFortran(const QCString &clName,
                                     ClassDef::CompoundType compType,
                                     bool isTemplate)
     {
-      QCString result=(QCString)clName;
+      QCString result=clName;
       switch(compType)
       {
         case ClassDef::Class:      result+=" Module"; break;
@@ -1612,7 +1605,7 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
       return result;
     }
     /*! used as the title of the HTML page of a module (Fortran) */
-    virtual QCString trModuleReference(const char *namespaceName)
+    virtual QCString trModuleReference(const QCString &namespaceName)
     {
       QCString result=namespaceName;
       result+=" Module Reference";
@@ -1653,7 +1646,7 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
         bool single)
     { // here s is one of " Module", " Struct" or " Union"
       // single is true implies a single file
-      QCString result=(QCString)"The documentation for this ";
+      QCString result="The documentation for this ";
       switch(compType)
       {
         case ClassDef::Class:      result+="module"; break;
@@ -1701,7 +1694,7 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
 //////////////////////////////////////////////////////////////////////////
 
     /*! directory relation for \a name */
-    virtual QCString trDirRelation(const char *name)
+    virtual QCString trDirRelation(const QCString &name)
     {
       return QCString(name) + " Relation";
     }
@@ -1738,18 +1731,18 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
      *  table is shown. The heading for the first column mentions the
      *  source file that has a relation to another file.
      */
-    virtual QCString trFileIn(const char *name)
+    virtual QCString trFileIn(const QCString &name)
     {
-      return (QCString)"پرونده ای در "+name;
+      return "پرونده ای در "+name;
     }
 
     /*! when clicking a directory dependency label, a page with a
      *  table is shown. The heading for the second column mentions the
      *  destination file that is included.
      */
-    virtual QCString trIncludesFileIn(const char *name)
+    virtual QCString trIncludesFileIn(const QCString &name)
     {
-      return (QCString)"Includes file in "+name;
+      return "Includes file in "+name;
     }
 
     /** Compiles a date string.
@@ -1764,19 +1757,42 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
      */
     virtual QCString trDateTime(int year,int month,int day,int dayOfWeek,
                                 int hour,int minutes,int seconds,
-                                bool includeTime)
+                                DateTimeType includeTime)
     {
       static const char *days[]   = { "دوشنبه","سه‌شنبه","چهارشنبه","پنجشنبه","جمعه","شنبه","یکشنبه" };
       static const char *months[] = { "ژانویه","فوریه","مارس","آوریل","می","جون","جولای","آگوست","سپتامبر","اکتبر","نوامبر","دسامبر" };
       QCString sdate;
-      sdate.sprintf("%s %d %s %d",days[dayOfWeek-1],day,months[month-1],year);
-      if (includeTime)
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Date)
+      {
+        sdate.sprintf("%s %d %s %d",days[dayOfWeek-1],day,months[month-1],year);
+      }
+      if (includeTime == DateTimeType::DateTime) sdate += " ";
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Time)
       {
         QCString stime;
-        stime.sprintf(" %.2d:%.2d:%.2d",hour,minutes,seconds);
+        stime.sprintf("%.2d:%.2d:%.2d",hour,minutes,seconds);
         sdate+=stime;
       }
       return convertDigitsToFarsi(sdate);
+    }
+    virtual QCString trDayOfWeek(int dayOfWeek, bool, bool full)
+    {
+      static const char *days_short[]   = { "دوشنبه", "سه شنبه", "چهارشنبه", "پنجشنبه", "جمعه", "شنبه", "يكشنبه" };
+      static const char *days_full[]    = { "دوشنبه", "سه شنبه", "چهارشنبه", "پنجشنبه", "جمعه", "شنبه", "يكشنبه" };
+      QCString text  = full? days_full[dayOfWeek-1] : days_short[dayOfWeek-1];
+      return text;
+    }
+    virtual QCString trMonth(int month, bool, bool full)
+    {
+      static const char *months_short[] = { "ژانويه", "فوريه", "مارس", "آوريل", "مه", "ژوئن", "ژوئيه", "اوت", "سپتامبر", "اُكتبر", "نوامبر", "دسامبر" };
+      static const char *months_full[]  = { "ژانويه", "فوريه", "مارس", "آوريل", "مه", "ژوئن", "ژوئيه", "اوت", "سپتامبر", "اُكتبر", "نوامبر", "دسامبر" };
+      QCString text  = full? months_full[month-1] : months_short[month-1];
+      return text;
+    }
+    virtual QCString trDayPeriod(int period)
+    {
+      static const char *dayPeriod[] = { "قبل‌ازظهر", "بعدازظهر" };
+      return dayPeriod[period];
     }
 
 };

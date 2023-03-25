@@ -12,9 +12,13 @@
   @emoji 8ball   @emoji :8ball: from "8ball"<br>
   @emoji a   @emoji :a: from "a"<br>
   @emoji ab   @emoji :ab: from "ab"<br>
+  @emoji abacus   @emoji :abacus: from "abacus"<br>
   @emoji abc   @emoji :abc: from "abc"<br>
   @emoji abcd   @emoji :abcd: from "abcd"<br>
   @emoji accept   @emoji :accept: from "accept"<br>
+  @emoji accordion   @emoji :accordion: from "accordion"<br>
+  @emoji adhesive_bandage   @emoji :adhesive_bandage: from "adhesive_bandage"<br>
+  @emoji adult   @emoji :adult: from "adult"<br>
   @emoji aerial_tramway   @emoji :aerial_tramway: from "aerial_tramway"<br>
   @emoji afghanistan   @emoji :afghanistan: from "afghanistan"<br>
   @emoji airplane   @emoji :airplane: from "airplane"<br>
@@ -27,6 +31,7 @@
   @emoji ambulance   @emoji :ambulance: from "ambulance"<br>
   @emoji american_samoa   @emoji :american_samoa: from "american_samoa"<br>
   @emoji amphora   @emoji :amphora: from "amphora"<br>
+  @emoji anatomical_heart   @emoji :anatomical_heart: from "anatomical_heart"<br>
   @emoji anchor   @emoji :anchor: from "anchor"<br>
   @emoji andorra   @emoji :andorra: from "andorra"<br>
   @emoji angel   @emoji :angel: from "angel"<br>
@@ -66,15 +71,20 @@
   @emoji art   @emoji :art: from "art"<br>
   @emoji articulated_lorry   @emoji :articulated_lorry: from "articulated_lorry"<br>
   @emoji artificial_satellite   @emoji :artificial_satellite: from "artificial_satellite"<br>
+  @emoji artist   @emoji :artist: from "artist"<br>
   @emoji aruba   @emoji :aruba: from "aruba"<br>
+  @emoji ascension_island   @emoji :ascension_island: from "ascension_island"<br>
   @emoji asterisk   @emoji :asterisk: from "asterisk"<br>
   @emoji astonished   @emoji :astonished: from "astonished"<br>
+  @emoji astronaut   @emoji :astronaut: from "astronaut"<br>
   @emoji athletic_shoe   @emoji :athletic_shoe: from "athletic_shoe"<br>
   @emoji atm   @emoji :atm: from "atm"<br>
   @emoji atom_symbol   @emoji :atom_symbol: from "atom_symbol"<br>
   @emoji australia   @emoji :australia: from "australia"<br>
   @emoji austria   @emoji :austria: from "austria"<br>
+  @emoji auto_rickshaw   @emoji :auto_rickshaw: from "auto_rickshaw"<br>
   @emoji avocado   @emoji :avocado: from "avocado"<br>
+  @emoji axe   @emoji :axe: from "axe"<br>
   @emoji azerbaijan   @emoji :azerbaijan: from "azerbaijan"<br>
   @emoji b   @emoji :b: from "b"<br>
   @emoji baby   @emoji :baby: from "baby"<br>
@@ -83,12 +93,17 @@
   @emoji baby_symbol   @emoji :baby_symbol: from "baby_symbol"<br>
   @emoji back   @emoji :back: from "back"<br>
   @emoji bacon   @emoji :bacon: from "bacon"<br>
+  @emoji badger   @emoji :badger: from "badger"<br>
   @emoji badminton   @emoji :badminton: from "badminton"<br>
+  @emoji bagel   @emoji :bagel: from "bagel"<br>
   @emoji baggage_claim   @emoji :baggage_claim: from "baggage_claim"<br>
   @emoji baguette_bread   @emoji :baguette_bread: from "baguette_bread"<br>
   @emoji bahamas   @emoji :bahamas: from "bahamas"<br>
   @emoji bahrain   @emoji :bahrain: from "bahrain"<br>
   @emoji balance_scale   @emoji :balance_scale: from "balance_scale"<br>
+  @emoji bald_man   @emoji :bald_man: from "bald_man"<br>
+  @emoji bald_woman   @emoji :bald_woman: from "bald_woman"<br>
+  @emoji ballet_shoes   @emoji :ballet_shoes: from "ballet_shoes"<br>
   @emoji balloon   @emoji :balloon: from "balloon"<br>
   @emoji ballot_box   @emoji :ballot_box: from "ballot_box"<br>
   @emoji ballot_box_with_check   @emoji :ballot_box_with_check: from "ballot_box_with_check"<br>
@@ -96,11 +111,13 @@
   @emoji banana   @emoji :banana: from "banana"<br>
   @emoji bangbang   @emoji :bangbang: from "bangbang"<br>
   @emoji bangladesh   @emoji :bangladesh: from "bangladesh"<br>
+  @emoji banjo   @emoji :banjo: from "banjo"<br>
   @emoji bank   @emoji :bank: from "bank"<br>
   @emoji bar_chart   @emoji :bar_chart: from "bar_chart"<br>
   @emoji barbados   @emoji :barbados: from "barbados"<br>
   @emoji barber   @emoji :barber: from "barber"<br>
   @emoji baseball   @emoji :baseball: from "baseball"<br>
+  @emoji basket   @emoji :basket: from "basket"<br>
   @emoji basketball   @emoji :basketball: from "basketball"<br>
   @emoji basketball_man   @emoji :basketball_man: from "basketball_man"<br>
   @emoji basketball_woman   @emoji :basketball_woman: from "basketball_woman"<br>
@@ -110,6 +127,8 @@
   @emoji battery   @emoji :battery: from "battery"<br>
   @emoji beach_umbrella   @emoji :beach_umbrella: from "beach_umbrella"<br>
   @emoji bear   @emoji :bear: from "bear"<br>
+  @emoji bearded_person   @emoji :bearded_person: from "bearded_person"<br>
+  @emoji beaver   @emoji :beaver: from "beaver"<br>
   @emoji bed   @emoji :bed: from "bed"<br>
   @emoji bee   @emoji :bee: from "bee"<br>
   @emoji beer   @emoji :beer: from "beer"<br>
@@ -120,19 +139,24 @@
   @emoji belgium   @emoji :belgium: from "belgium"<br>
   @emoji belize   @emoji :belize: from "belize"<br>
   @emoji bell   @emoji :bell: from "bell"<br>
+  @emoji bell_pepper   @emoji :bell_pepper: from "bell_pepper"<br>
   @emoji bellhop_bell   @emoji :bellhop_bell: from "bellhop_bell"<br>
   @emoji benin   @emoji :benin: from "benin"<br>
   @emoji bento   @emoji :bento: from "bento"<br>
   @emoji bermuda   @emoji :bermuda: from "bermuda"<br>
+  @emoji beverage_box   @emoji :beverage_box: from "beverage_box"<br>
   @emoji bhutan   @emoji :bhutan: from "bhutan"<br>
   @emoji bicyclist   @emoji :bicyclist: from "bicyclist"<br>
   @emoji bike   @emoji :bike: from "bike"<br>
   @emoji biking_man   @emoji :biking_man: from "biking_man"<br>
   @emoji biking_woman   @emoji :biking_woman: from "biking_woman"<br>
   @emoji bikini   @emoji :bikini: from "bikini"<br>
+  @emoji billed_cap   @emoji :billed_cap: from "billed_cap"<br>
   @emoji biohazard   @emoji :biohazard: from "biohazard"<br>
   @emoji bird   @emoji :bird: from "bird"<br>
   @emoji birthday   @emoji :birthday: from "birthday"<br>
+  @emoji bison   @emoji :bison: from "bison"<br>
+  @emoji black_cat   @emoji :black_cat: from "black_cat"<br>
   @emoji black_circle   @emoji :black_circle: from "black_circle"<br>
   @emoji black_flag   @emoji :black_flag: from "black_flag"<br>
   @emoji black_heart   @emoji :black_heart: from "black_heart"<br>
@@ -143,43 +167,64 @@
   @emoji black_nib   @emoji :black_nib: from "black_nib"<br>
   @emoji black_small_square   @emoji :black_small_square: from "black_small_square"<br>
   @emoji black_square_button   @emoji :black_square_button: from "black_square_button"<br>
-  @emoji blonde_man   @emoji :blonde_man: from "blonde_man"<br>
+  @emoji blond_haired_man   @emoji :blond_haired_man: from "blond_haired_man"<br>
+  @emoji blond_haired_person   @emoji :blond_haired_person: from "blond_haired_person"<br>
+  @emoji blond_haired_woman   @emoji :blond_haired_woman: from "blond_haired_woman"<br>
   @emoji blonde_woman   @emoji :blonde_woman: from "blonde_woman"<br>
   @emoji blossom   @emoji :blossom: from "blossom"<br>
   @emoji blowfish   @emoji :blowfish: from "blowfish"<br>
   @emoji blue_book   @emoji :blue_book: from "blue_book"<br>
   @emoji blue_car   @emoji :blue_car: from "blue_car"<br>
   @emoji blue_heart   @emoji :blue_heart: from "blue_heart"<br>
+  @emoji blue_square   @emoji :blue_square: from "blue_square"<br>
+  @emoji blueberries   @emoji :blueberries: from "blueberries"<br>
   @emoji blush   @emoji :blush: from "blush"<br>
   @emoji boar   @emoji :boar: from "boar"<br>
   @emoji boat   @emoji :boat: from "boat"<br>
   @emoji bolivia   @emoji :bolivia: from "bolivia"<br>
   @emoji bomb   @emoji :bomb: from "bomb"<br>
+  @emoji bone   @emoji :bone: from "bone"<br>
   @emoji book   @emoji :book: from "book"<br>
   @emoji bookmark   @emoji :bookmark: from "bookmark"<br>
   @emoji bookmark_tabs   @emoji :bookmark_tabs: from "bookmark_tabs"<br>
   @emoji books   @emoji :books: from "books"<br>
   @emoji boom   @emoji :boom: from "boom"<br>
+  @emoji boomerang   @emoji :boomerang: from "boomerang"<br>
   @emoji boot   @emoji :boot: from "boot"<br>
   @emoji bosnia_herzegovina   @emoji :bosnia_herzegovina: from "bosnia_herzegovina"<br>
   @emoji botswana   @emoji :botswana: from "botswana"<br>
+  @emoji bouncing_ball_man   @emoji :bouncing_ball_man: from "bouncing_ball_man"<br>
+  @emoji bouncing_ball_person   @emoji :bouncing_ball_person: from "bouncing_ball_person"<br>
+  @emoji bouncing_ball_woman   @emoji :bouncing_ball_woman: from "bouncing_ball_woman"<br>
   @emoji bouquet   @emoji :bouquet: from "bouquet"<br>
+  @emoji bouvet_island   @emoji :bouvet_island: from "bouvet_island"<br>
   @emoji bow   @emoji :bow: from "bow"<br>
   @emoji bow_and_arrow   @emoji :bow_and_arrow: from "bow_and_arrow"<br>
   @emoji bowing_man   @emoji :bowing_man: from "bowing_man"<br>
   @emoji bowing_woman   @emoji :bowing_woman: from "bowing_woman"<br>
+  @emoji bowl_with_spoon   @emoji :bowl_with_spoon: from "bowl_with_spoon"<br>
   @emoji bowling   @emoji :bowling: from "bowling"<br>
   @emoji boxing_glove   @emoji :boxing_glove: from "boxing_glove"<br>
   @emoji boy   @emoji :boy: from "boy"<br>
+  @emoji brain   @emoji :brain: from "brain"<br>
   @emoji brazil   @emoji :brazil: from "brazil"<br>
   @emoji bread   @emoji :bread: from "bread"<br>
+  @emoji breast_feeding   @emoji :breast_feeding: from "breast_feeding"<br>
+  @emoji bricks   @emoji :bricks: from "bricks"<br>
   @emoji bride_with_veil   @emoji :bride_with_veil: from "bride_with_veil"<br>
   @emoji bridge_at_night   @emoji :bridge_at_night: from "bridge_at_night"<br>
   @emoji briefcase   @emoji :briefcase: from "briefcase"<br>
   @emoji british_indian_ocean_territory   @emoji :british_indian_ocean_territory: from "british_indian_ocean_territory"<br>
   @emoji british_virgin_islands   @emoji :british_virgin_islands: from "british_virgin_islands"<br>
+  @emoji broccoli   @emoji :broccoli: from "broccoli"<br>
   @emoji broken_heart   @emoji :broken_heart: from "broken_heart"<br>
+  @emoji broom   @emoji :broom: from "broom"<br>
+  @emoji brown_circle   @emoji :brown_circle: from "brown_circle"<br>
+  @emoji brown_heart   @emoji :brown_heart: from "brown_heart"<br>
+  @emoji brown_square   @emoji :brown_square: from "brown_square"<br>
   @emoji brunei   @emoji :brunei: from "brunei"<br>
+  @emoji bubble_tea   @emoji :bubble_tea: from "bubble_tea"<br>
+  @emoji bucket   @emoji :bucket: from "bucket"<br>
   @emoji bug   @emoji :bug: from "bug"<br>
   @emoji building_construction   @emoji :building_construction: from "building_construction"<br>
   @emoji bulb   @emoji :bulb: from "bulb"<br>
@@ -194,6 +239,7 @@
   @emoji busstop   @emoji :busstop: from "busstop"<br>
   @emoji bust_in_silhouette   @emoji :bust_in_silhouette: from "bust_in_silhouette"<br>
   @emoji busts_in_silhouette   @emoji :busts_in_silhouette: from "busts_in_silhouette"<br>
+  @emoji butter   @emoji :butter: from "butter"<br>
   @emoji butterfly   @emoji :butterfly: from "butterfly"<br>
   @emoji cactus   @emoji :cactus: from "cactus"<br>
   @emoji cake   @emoji :cake: from "cake"<br>
@@ -211,6 +257,7 @@
   @emoji cancer   @emoji :cancer: from "cancer"<br>
   @emoji candle   @emoji :candle: from "candle"<br>
   @emoji candy   @emoji :candy: from "candy"<br>
+  @emoji canned_food   @emoji :canned_food: from "canned_food"<br>
   @emoji canoe   @emoji :canoe: from "canoe"<br>
   @emoji cape_verde   @emoji :cape_verde: from "cape_verde"<br>
   @emoji capital_abcd   @emoji :capital_abcd: from "capital_abcd"<br>
@@ -221,14 +268,18 @@
   @emoji card_index_dividers   @emoji :card_index_dividers: from "card_index_dividers"<br>
   @emoji caribbean_netherlands   @emoji :caribbean_netherlands: from "caribbean_netherlands"<br>
   @emoji carousel_horse   @emoji :carousel_horse: from "carousel_horse"<br>
+  @emoji carpentry_saw   @emoji :carpentry_saw: from "carpentry_saw"<br>
   @emoji carrot   @emoji :carrot: from "carrot"<br>
+  @emoji cartwheeling   @emoji :cartwheeling: from "cartwheeling"<br>
   @emoji cat   @emoji :cat: from "cat"<br>
   @emoji cat2   @emoji :cat2: from "cat2"<br>
   @emoji cayman_islands   @emoji :cayman_islands: from "cayman_islands"<br>
   @emoji cd   @emoji :cd: from "cd"<br>
   @emoji central_african_republic   @emoji :central_african_republic: from "central_african_republic"<br>
+  @emoji ceuta_melilla   @emoji :ceuta_melilla: from "ceuta_melilla"<br>
   @emoji chad   @emoji :chad: from "chad"<br>
   @emoji chains   @emoji :chains: from "chains"<br>
+  @emoji chair   @emoji :chair: from "chair"<br>
   @emoji champagne   @emoji :champagne: from "champagne"<br>
   @emoji chart   @emoji :chart: from "chart"<br>
   @emoji chart_with_downwards_trend   @emoji :chart_with_downwards_trend: from "chart_with_downwards_trend"<br>
@@ -237,12 +288,15 @@
   @emoji cheese   @emoji :cheese: from "cheese"<br>
   @emoji cherries   @emoji :cherries: from "cherries"<br>
   @emoji cherry_blossom   @emoji :cherry_blossom: from "cherry_blossom"<br>
+  @emoji chess_pawn   @emoji :chess_pawn: from "chess_pawn"<br>
   @emoji chestnut   @emoji :chestnut: from "chestnut"<br>
   @emoji chicken   @emoji :chicken: from "chicken"<br>
+  @emoji child   @emoji :child: from "child"<br>
   @emoji children_crossing   @emoji :children_crossing: from "children_crossing"<br>
   @emoji chile   @emoji :chile: from "chile"<br>
   @emoji chipmunk   @emoji :chipmunk: from "chipmunk"<br>
   @emoji chocolate_bar   @emoji :chocolate_bar: from "chocolate_bar"<br>
+  @emoji chopsticks   @emoji :chopsticks: from "chopsticks"<br>
   @emoji christmas_island   @emoji :christmas_island: from "christmas_island"<br>
   @emoji christmas_tree   @emoji :christmas_tree: from "christmas_tree"<br>
   @emoji church   @emoji :church: from "church"<br>
@@ -256,8 +310,12 @@
   @emoji clap   @emoji :clap: from "clap"<br>
   @emoji clapper   @emoji :clapper: from "clapper"<br>
   @emoji classical_building   @emoji :classical_building: from "classical_building"<br>
+  @emoji climbing   @emoji :climbing: from "climbing"<br>
+  @emoji climbing_man   @emoji :climbing_man: from "climbing_man"<br>
+  @emoji climbing_woman   @emoji :climbing_woman: from "climbing_woman"<br>
   @emoji clinking_glasses   @emoji :clinking_glasses: from "clinking_glasses"<br>
   @emoji clipboard   @emoji :clipboard: from "clipboard"<br>
+  @emoji clipperton_island   @emoji :clipperton_island: from "clipperton_island"<br>
   @emoji clock1   @emoji :clock1: from "clock1"<br>
   @emoji clock10   @emoji :clock10: from "clock10"<br>
   @emoji clock1030   @emoji :clock1030: from "clock1030"<br>
@@ -293,15 +351,21 @@
   @emoji clown_face   @emoji :clown_face: from "clown_face"<br>
   @emoji clubs   @emoji :clubs: from "clubs"<br>
   @emoji cn   @emoji :cn: from "cn"<br>
+  @emoji coat   @emoji :coat: from "coat"<br>
+  @emoji cockroach   @emoji :cockroach: from "cockroach"<br>
   @emoji cocktail   @emoji :cocktail: from "cocktail"<br>
+  @emoji coconut   @emoji :coconut: from "coconut"<br>
   @emoji cocos_islands   @emoji :cocos_islands: from "cocos_islands"<br>
   @emoji coffee   @emoji :coffee: from "coffee"<br>
   @emoji coffin   @emoji :coffin: from "coffin"<br>
+  @emoji coin   @emoji :coin: from "coin"<br>
+  @emoji cold_face   @emoji :cold_face: from "cold_face"<br>
   @emoji cold_sweat   @emoji :cold_sweat: from "cold_sweat"<br>
   @emoji collision   @emoji :collision: from "collision"<br>
   @emoji colombia   @emoji :colombia: from "colombia"<br>
   @emoji comet   @emoji :comet: from "comet"<br>
   @emoji comoros   @emoji :comoros: from "comoros"<br>
+  @emoji compass   @emoji :compass: from "compass"<br>
   @emoji computer   @emoji :computer: from "computer"<br>
   @emoji computer_mouse   @emoji :computer_mouse: from "computer_mouse"<br>
   @emoji confetti_ball   @emoji :confetti_ball: from "confetti_ball"<br>
@@ -316,6 +380,7 @@
   @emoji construction_worker_woman   @emoji :construction_worker_woman: from "construction_worker_woman"<br>
   @emoji control_knobs   @emoji :control_knobs: from "control_knobs"<br>
   @emoji convenience_store   @emoji :convenience_store: from "convenience_store"<br>
+  @emoji cook   @emoji :cook: from "cook"<br>
   @emoji cook_islands   @emoji :cook_islands: from "cook_islands"<br>
   @emoji cookie   @emoji :cookie: from "cookie"<br>
   @emoji cool   @emoji :cool: from "cool"<br>
@@ -330,6 +395,7 @@
   @emoji couple_with_heart_man_man   @emoji :couple_with_heart_man_man: from "couple_with_heart_man_man"<br>
   @emoji couple_with_heart_woman_man   @emoji :couple_with_heart_woman_man: from "couple_with_heart_woman_man"<br>
   @emoji couple_with_heart_woman_woman   @emoji :couple_with_heart_woman_woman: from "couple_with_heart_woman_woman"<br>
+  @emoji couplekiss   @emoji :couplekiss: from "couplekiss"<br>
   @emoji couplekiss_man_man   @emoji :couplekiss_man_man: from "couplekiss_man_man"<br>
   @emoji couplekiss_man_woman   @emoji :couplekiss_man_woman: from "couplekiss_man_woman"<br>
   @emoji couplekiss_woman_woman   @emoji :couplekiss_woman_woman: from "couplekiss_woman_woman"<br>
@@ -341,6 +407,7 @@
   @emoji credit_card   @emoji :credit_card: from "credit_card"<br>
   @emoji crescent_moon   @emoji :crescent_moon: from "crescent_moon"<br>
   @emoji cricket   @emoji :cricket: from "cricket"<br>
+  @emoji cricket_game   @emoji :cricket_game: from "cricket_game"<br>
   @emoji croatia   @emoji :croatia: from "croatia"<br>
   @emoji crocodile   @emoji :crocodile: from "crocodile"<br>
   @emoji croissant   @emoji :croissant: from "croissant"<br>
@@ -353,13 +420,20 @@
   @emoji crystal_ball   @emoji :crystal_ball: from "crystal_ball"<br>
   @emoji cuba   @emoji :cuba: from "cuba"<br>
   @emoji cucumber   @emoji :cucumber: from "cucumber"<br>
+  @emoji cup_with_straw   @emoji :cup_with_straw: from "cup_with_straw"<br>
+  @emoji cupcake   @emoji :cupcake: from "cupcake"<br>
   @emoji cupid   @emoji :cupid: from "cupid"<br>
   @emoji curacao   @emoji :curacao: from "curacao"<br>
+  @emoji curling_stone   @emoji :curling_stone: from "curling_stone"<br>
+  @emoji curly_haired_man   @emoji :curly_haired_man: from "curly_haired_man"<br>
+  @emoji curly_haired_woman   @emoji :curly_haired_woman: from "curly_haired_woman"<br>
   @emoji curly_loop   @emoji :curly_loop: from "curly_loop"<br>
   @emoji currency_exchange   @emoji :currency_exchange: from "currency_exchange"<br>
   @emoji curry   @emoji :curry: from "curry"<br>
+  @emoji cursing_face   @emoji :cursing_face: from "cursing_face"<br>
   @emoji custard   @emoji :custard: from "custard"<br>
   @emoji customs   @emoji :customs: from "customs"<br>
+  @emoji cut_of_meat   @emoji :cut_of_meat: from "cut_of_meat"<br>
   @emoji cyclone   @emoji :cyclone: from "cyclone"<br>
   @emoji cyprus   @emoji :cyprus: from "cyprus"<br>
   @emoji czech_republic   @emoji :czech_republic: from "czech_republic"<br>
@@ -374,6 +448,9 @@
   @emoji dash   @emoji :dash: from "dash"<br>
   @emoji date   @emoji :date: from "date"<br>
   @emoji de   @emoji :de: from "de"<br>
+  @emoji deaf_man   @emoji :deaf_man: from "deaf_man"<br>
+  @emoji deaf_person   @emoji :deaf_person: from "deaf_person"<br>
+  @emoji deaf_woman   @emoji :deaf_woman: from "deaf_woman"<br>
   @emoji deciduous_tree   @emoji :deciduous_tree: from "deciduous_tree"<br>
   @emoji deer   @emoji :deer: from "deer"<br>
   @emoji denmark   @emoji :denmark: from "denmark"<br>
@@ -385,12 +462,18 @@
   @emoji detective   @emoji :detective: from "detective"<br>
   @emoji diamond_shape_with_a_dot_inside   @emoji :diamond_shape_with_a_dot_inside: from "diamond_shape_with_a_dot_inside"<br>
   @emoji diamonds   @emoji :diamonds: from "diamonds"<br>
+  @emoji diego_garcia   @emoji :diego_garcia: from "diego_garcia"<br>
   @emoji disappointed   @emoji :disappointed: from "disappointed"<br>
   @emoji disappointed_relieved   @emoji :disappointed_relieved: from "disappointed_relieved"<br>
+  @emoji disguised_face   @emoji :disguised_face: from "disguised_face"<br>
+  @emoji diving_mask   @emoji :diving_mask: from "diving_mask"<br>
+  @emoji diya_lamp   @emoji :diya_lamp: from "diya_lamp"<br>
   @emoji dizzy   @emoji :dizzy: from "dizzy"<br>
   @emoji dizzy_face   @emoji :dizzy_face: from "dizzy_face"<br>
   @emoji djibouti   @emoji :djibouti: from "djibouti"<br>
+  @emoji dna   @emoji :dna: from "dna"<br>
   @emoji do_not_litter   @emoji :do_not_litter: from "do_not_litter"<br>
+  @emoji dodo   @emoji :dodo: from "dodo"<br>
   @emoji dog   @emoji :dog: from "dog"<br>
   @emoji dog2   @emoji :dog2: from "dog2"<br>
   @emoji dollar   @emoji :dollar: from "dollar"<br>
@@ -406,14 +489,17 @@
   @emoji dress   @emoji :dress: from "dress"<br>
   @emoji dromedary_camel   @emoji :dromedary_camel: from "dromedary_camel"<br>
   @emoji drooling_face   @emoji :drooling_face: from "drooling_face"<br>
+  @emoji drop_of_blood   @emoji :drop_of_blood: from "drop_of_blood"<br>
   @emoji droplet   @emoji :droplet: from "droplet"<br>
   @emoji drum   @emoji :drum: from "drum"<br>
   @emoji duck   @emoji :duck: from "duck"<br>
+  @emoji dumpling   @emoji :dumpling: from "dumpling"<br>
   @emoji dvd   @emoji :dvd: from "dvd"<br>
   @emoji e-mail   @emoji :e-mail: from "e-mail"<br>
   @emoji eagle   @emoji :eagle: from "eagle"<br>
   @emoji ear   @emoji :ear: from "ear"<br>
   @emoji ear_of_rice   @emoji :ear_of_rice: from "ear_of_rice"<br>
+  @emoji ear_with_hearing_aid   @emoji :ear_with_hearing_aid: from "ear_with_hearing_aid"<br>
   @emoji earth_africa   @emoji :earth_africa: from "earth_africa"<br>
   @emoji earth_americas   @emoji :earth_americas: from "earth_americas"<br>
   @emoji earth_asia   @emoji :earth_asia: from "earth_asia"<br>
@@ -424,11 +510,17 @@
   @emoji eight   @emoji :eight: from "eight"<br>
   @emoji eight_pointed_black_star   @emoji :eight_pointed_black_star: from "eight_pointed_black_star"<br>
   @emoji eight_spoked_asterisk   @emoji :eight_spoked_asterisk: from "eight_spoked_asterisk"<br>
+  @emoji eject_button   @emoji :eject_button: from "eject_button"<br>
   @emoji el_salvador   @emoji :el_salvador: from "el_salvador"<br>
   @emoji electric_plug   @emoji :electric_plug: from "electric_plug"<br>
   @emoji elephant   @emoji :elephant: from "elephant"<br>
+  @emoji elevator   @emoji :elevator: from "elevator"<br>
+  @emoji elf   @emoji :elf: from "elf"<br>
+  @emoji elf_man   @emoji :elf_man: from "elf_man"<br>
+  @emoji elf_woman   @emoji :elf_woman: from "elf_woman"<br>
   @emoji email   @emoji :email: from "email"<br>
   @emoji end   @emoji :end: from "end"<br>
+  @emoji england   @emoji :england: from "england"<br>
   @emoji envelope   @emoji :envelope: from "envelope"<br>
   @emoji envelope_with_arrow   @emoji :envelope_with_arrow: from "envelope_with_arrow"<br>
   @emoji equatorial_guinea   @emoji :equatorial_guinea: from "equatorial_guinea"<br>
@@ -443,15 +535,25 @@
   @emoji european_union   @emoji :european_union: from "european_union"<br>
   @emoji evergreen_tree   @emoji :evergreen_tree: from "evergreen_tree"<br>
   @emoji exclamation   @emoji :exclamation: from "exclamation"<br>
+  @emoji exploding_head   @emoji :exploding_head: from "exploding_head"<br>
   @emoji expressionless   @emoji :expressionless: from "expressionless"<br>
   @emoji eye   @emoji :eye: from "eye"<br>
   @emoji eye_speech_bubble   @emoji :eye_speech_bubble: from "eye_speech_bubble"<br>
   @emoji eyeglasses   @emoji :eyeglasses: from "eyeglasses"<br>
   @emoji eyes   @emoji :eyes: from "eyes"<br>
+  @emoji face_exhaling   @emoji :face_exhaling: from "face_exhaling"<br>
+  @emoji face_in_clouds   @emoji :face_in_clouds: from "face_in_clouds"<br>
   @emoji face_with_head_bandage   @emoji :face_with_head_bandage: from "face_with_head_bandage"<br>
+  @emoji face_with_spiral_eyes   @emoji :face_with_spiral_eyes: from "face_with_spiral_eyes"<br>
   @emoji face_with_thermometer   @emoji :face_with_thermometer: from "face_with_thermometer"<br>
+  @emoji facepalm   @emoji :facepalm: from "facepalm"<br>
   @emoji facepunch   @emoji :facepunch: from "facepunch"<br>
   @emoji factory   @emoji :factory: from "factory"<br>
+  @emoji factory_worker   @emoji :factory_worker: from "factory_worker"<br>
+  @emoji fairy   @emoji :fairy: from "fairy"<br>
+  @emoji fairy_man   @emoji :fairy_man: from "fairy_man"<br>
+  @emoji fairy_woman   @emoji :fairy_woman: from "fairy_woman"<br>
+  @emoji falafel   @emoji :falafel: from "falafel"<br>
   @emoji falkland_islands   @emoji :falkland_islands: from "falkland_islands"<br>
   @emoji fallen_leaf   @emoji :fallen_leaf: from "fallen_leaf"<br>
   @emoji family   @emoji :family: from "family"<br>
@@ -480,12 +582,15 @@
   @emoji family_woman_woman_girl   @emoji :family_woman_woman_girl: from "family_woman_woman_girl"<br>
   @emoji family_woman_woman_girl_boy   @emoji :family_woman_woman_girl_boy: from "family_woman_woman_girl_boy"<br>
   @emoji family_woman_woman_girl_girl   @emoji :family_woman_woman_girl_girl: from "family_woman_woman_girl_girl"<br>
+  @emoji farmer   @emoji :farmer: from "farmer"<br>
   @emoji faroe_islands   @emoji :faroe_islands: from "faroe_islands"<br>
   @emoji fast_forward   @emoji :fast_forward: from "fast_forward"<br>
   @emoji fax   @emoji :fax: from "fax"<br>
   @emoji fearful   @emoji :fearful: from "fearful"<br>
+  @emoji feather   @emoji :feather: from "feather"<br>
   @emoji feet   @emoji :feet: from "feet"<br>
   @emoji female_detective   @emoji :female_detective: from "female_detective"<br>
+  @emoji female_sign   @emoji :female_sign: from "female_sign"<br>
   @emoji ferris_wheel   @emoji :ferris_wheel: from "ferris_wheel"<br>
   @emoji ferry   @emoji :ferry: from "ferry"<br>
   @emoji field_hockey   @emoji :field_hockey: from "field_hockey"<br>
@@ -497,6 +602,9 @@
   @emoji finland   @emoji :finland: from "finland"<br>
   @emoji fire   @emoji :fire: from "fire"<br>
   @emoji fire_engine   @emoji :fire_engine: from "fire_engine"<br>
+  @emoji fire_extinguisher   @emoji :fire_extinguisher: from "fire_extinguisher"<br>
+  @emoji firecracker   @emoji :firecracker: from "firecracker"<br>
+  @emoji firefighter   @emoji :firefighter: from "firefighter"<br>
   @emoji fireworks   @emoji :fireworks: from "fireworks"<br>
   @emoji first_quarter_moon   @emoji :first_quarter_moon: from "first_quarter_moon"<br>
   @emoji first_quarter_moon_with_face   @emoji :first_quarter_moon_with_face: from "first_quarter_moon_with_face"<br>
@@ -510,7 +618,10 @@
   @emoji fist_right   @emoji :fist_right: from "fist_right"<br>
   @emoji five   @emoji :five: from "five"<br>
   @emoji flags   @emoji :flags: from "flags"<br>
+  @emoji flamingo   @emoji :flamingo: from "flamingo"<br>
   @emoji flashlight   @emoji :flashlight: from "flashlight"<br>
+  @emoji flat_shoe   @emoji :flat_shoe: from "flat_shoe"<br>
+  @emoji flatbread   @emoji :flatbread: from "flatbread"<br>
   @emoji fleur_de_lis   @emoji :fleur_de_lis: from "fleur_de_lis"<br>
   @emoji flight_arrival   @emoji :flight_arrival: from "flight_arrival"<br>
   @emoji flight_departure   @emoji :flight_departure: from "flight_departure"<br>
@@ -518,11 +629,17 @@
   @emoji floppy_disk   @emoji :floppy_disk: from "floppy_disk"<br>
   @emoji flower_playing_cards   @emoji :flower_playing_cards: from "flower_playing_cards"<br>
   @emoji flushed   @emoji :flushed: from "flushed"<br>
+  @emoji fly   @emoji :fly: from "fly"<br>
+  @emoji flying_disc   @emoji :flying_disc: from "flying_disc"<br>
+  @emoji flying_saucer   @emoji :flying_saucer: from "flying_saucer"<br>
   @emoji fog   @emoji :fog: from "fog"<br>
   @emoji foggy   @emoji :foggy: from "foggy"<br>
+  @emoji fondue   @emoji :fondue: from "fondue"<br>
+  @emoji foot   @emoji :foot: from "foot"<br>
   @emoji football   @emoji :football: from "football"<br>
   @emoji footprints   @emoji :footprints: from "footprints"<br>
   @emoji fork_and_knife   @emoji :fork_and_knife: from "fork_and_knife"<br>
+  @emoji fortune_cookie   @emoji :fortune_cookie: from "fortune_cookie"<br>
   @emoji fountain   @emoji :fountain: from "fountain"<br>
   @emoji fountain_pen   @emoji :fountain_pen: from "fountain_pen"<br>
   @emoji four   @emoji :four: from "four"<br>
@@ -541,6 +658,7 @@
   @emoji frowning   @emoji :frowning: from "frowning"<br>
   @emoji frowning_face   @emoji :frowning_face: from "frowning_face"<br>
   @emoji frowning_man   @emoji :frowning_man: from "frowning_man"<br>
+  @emoji frowning_person   @emoji :frowning_person: from "frowning_person"<br>
   @emoji frowning_woman   @emoji :frowning_woman: from "frowning_woman"<br>
   @emoji fu   @emoji :fu: from "fu"<br>
   @emoji fuelpump   @emoji :fuelpump: from "fuelpump"<br>
@@ -550,21 +668,29 @@
   @emoji gabon   @emoji :gabon: from "gabon"<br>
   @emoji gambia   @emoji :gambia: from "gambia"<br>
   @emoji game_die   @emoji :game_die: from "game_die"<br>
+  @emoji garlic   @emoji :garlic: from "garlic"<br>
   @emoji gb   @emoji :gb: from "gb"<br>
   @emoji gear   @emoji :gear: from "gear"<br>
   @emoji gem   @emoji :gem: from "gem"<br>
   @emoji gemini   @emoji :gemini: from "gemini"<br>
+  @emoji genie   @emoji :genie: from "genie"<br>
+  @emoji genie_man   @emoji :genie_man: from "genie_man"<br>
+  @emoji genie_woman   @emoji :genie_woman: from "genie_woman"<br>
   @emoji georgia   @emoji :georgia: from "georgia"<br>
   @emoji ghana   @emoji :ghana: from "ghana"<br>
   @emoji ghost   @emoji :ghost: from "ghost"<br>
   @emoji gibraltar   @emoji :gibraltar: from "gibraltar"<br>
   @emoji gift   @emoji :gift: from "gift"<br>
   @emoji gift_heart   @emoji :gift_heart: from "gift_heart"<br>
+  @emoji giraffe   @emoji :giraffe: from "giraffe"<br>
   @emoji girl   @emoji :girl: from "girl"<br>
   @emoji globe_with_meridians   @emoji :globe_with_meridians: from "globe_with_meridians"<br>
+  @emoji gloves   @emoji :gloves: from "gloves"<br>
   @emoji goal_net   @emoji :goal_net: from "goal_net"<br>
   @emoji goat   @emoji :goat: from "goat"<br>
+  @emoji goggles   @emoji :goggles: from "goggles"<br>
   @emoji golf   @emoji :golf: from "golf"<br>
+  @emoji golfing   @emoji :golfing: from "golfing"<br>
   @emoji golfing_man   @emoji :golfing_man: from "golfing_man"<br>
   @emoji golfing_woman   @emoji :golfing_woman: from "golfing_woman"<br>
   @emoji gorilla   @emoji :gorilla: from "gorilla"<br>
@@ -572,8 +698,10 @@
   @emoji greece   @emoji :greece: from "greece"<br>
   @emoji green_apple   @emoji :green_apple: from "green_apple"<br>
   @emoji green_book   @emoji :green_book: from "green_book"<br>
+  @emoji green_circle   @emoji :green_circle: from "green_circle"<br>
   @emoji green_heart   @emoji :green_heart: from "green_heart"<br>
   @emoji green_salad   @emoji :green_salad: from "green_salad"<br>
+  @emoji green_square   @emoji :green_square: from "green_square"<br>
   @emoji greenland   @emoji :greenland: from "greenland"<br>
   @emoji grenada   @emoji :grenada: from "grenada"<br>
   @emoji grey_exclamation   @emoji :grey_exclamation: from "grey_exclamation"<br>
@@ -583,10 +711,12 @@
   @emoji grinning   @emoji :grinning: from "grinning"<br>
   @emoji guadeloupe   @emoji :guadeloupe: from "guadeloupe"<br>
   @emoji guam   @emoji :guam: from "guam"<br>
+  @emoji guard   @emoji :guard: from "guard"<br>
   @emoji guardsman   @emoji :guardsman: from "guardsman"<br>
   @emoji guardswoman   @emoji :guardswoman: from "guardswoman"<br>
   @emoji guatemala   @emoji :guatemala: from "guatemala"<br>
   @emoji guernsey   @emoji :guernsey: from "guernsey"<br>
+  @emoji guide_dog   @emoji :guide_dog: from "guide_dog"<br>
   @emoji guinea   @emoji :guinea: from "guinea"<br>
   @emoji guinea_bissau   @emoji :guinea_bissau: from "guinea_bissau"<br>
   @emoji guitar   @emoji :guitar: from "guitar"<br>
@@ -602,18 +732,24 @@
   @emoji hammer_and_wrench   @emoji :hammer_and_wrench: from "hammer_and_wrench"<br>
   @emoji hamster   @emoji :hamster: from "hamster"<br>
   @emoji hand   @emoji :hand: from "hand"<br>
+  @emoji hand_over_mouth   @emoji :hand_over_mouth: from "hand_over_mouth"<br>
   @emoji handbag   @emoji :handbag: from "handbag"<br>
+  @emoji handball_person   @emoji :handball_person: from "handball_person"<br>
   @emoji handshake   @emoji :handshake: from "handshake"<br>
   @emoji hankey   @emoji :hankey: from "hankey"<br>
   @emoji hash   @emoji :hash: from "hash"<br>
   @emoji hatched_chick   @emoji :hatched_chick: from "hatched_chick"<br>
   @emoji hatching_chick   @emoji :hatching_chick: from "hatching_chick"<br>
   @emoji headphones   @emoji :headphones: from "headphones"<br>
+  @emoji headstone   @emoji :headstone: from "headstone"<br>
+  @emoji health_worker   @emoji :health_worker: from "health_worker"<br>
   @emoji hear_no_evil   @emoji :hear_no_evil: from "hear_no_evil"<br>
+  @emoji heard_mcdonald_islands   @emoji :heard_mcdonald_islands: from "heard_mcdonald_islands"<br>
   @emoji heart   @emoji :heart: from "heart"<br>
   @emoji heart_decoration   @emoji :heart_decoration: from "heart_decoration"<br>
   @emoji heart_eyes   @emoji :heart_eyes: from "heart_eyes"<br>
   @emoji heart_eyes_cat   @emoji :heart_eyes_cat: from "heart_eyes_cat"<br>
+  @emoji heart_on_fire   @emoji :heart_on_fire: from "heart_on_fire"<br>
   @emoji heartbeat   @emoji :heartbeat: from "heartbeat"<br>
   @emoji heartpulse   @emoji :heartpulse: from "heartpulse"<br>
   @emoji hearts   @emoji :hearts: from "hearts"<br>
@@ -625,20 +761,26 @@
   @emoji heavy_minus_sign   @emoji :heavy_minus_sign: from "heavy_minus_sign"<br>
   @emoji heavy_multiplication_x   @emoji :heavy_multiplication_x: from "heavy_multiplication_x"<br>
   @emoji heavy_plus_sign   @emoji :heavy_plus_sign: from "heavy_plus_sign"<br>
+  @emoji hedgehog   @emoji :hedgehog: from "hedgehog"<br>
   @emoji helicopter   @emoji :helicopter: from "helicopter"<br>
   @emoji herb   @emoji :herb: from "herb"<br>
   @emoji hibiscus   @emoji :hibiscus: from "hibiscus"<br>
   @emoji high_brightness   @emoji :high_brightness: from "high_brightness"<br>
   @emoji high_heel   @emoji :high_heel: from "high_heel"<br>
+  @emoji hiking_boot   @emoji :hiking_boot: from "hiking_boot"<br>
+  @emoji hindu_temple   @emoji :hindu_temple: from "hindu_temple"<br>
+  @emoji hippopotamus   @emoji :hippopotamus: from "hippopotamus"<br>
   @emoji hocho   @emoji :hocho: from "hocho"<br>
   @emoji hole   @emoji :hole: from "hole"<br>
   @emoji honduras   @emoji :honduras: from "honduras"<br>
   @emoji honey_pot   @emoji :honey_pot: from "honey_pot"<br>
   @emoji honeybee   @emoji :honeybee: from "honeybee"<br>
   @emoji hong_kong   @emoji :hong_kong: from "hong_kong"<br>
+  @emoji hook   @emoji :hook: from "hook"<br>
   @emoji horse   @emoji :horse: from "horse"<br>
   @emoji horse_racing   @emoji :horse_racing: from "horse_racing"<br>
   @emoji hospital   @emoji :hospital: from "hospital"<br>
+  @emoji hot_face   @emoji :hot_face: from "hot_face"<br>
   @emoji hot_pepper   @emoji :hot_pepper: from "hot_pepper"<br>
   @emoji hotdog   @emoji :hotdog: from "hotdog"<br>
   @emoji hotel   @emoji :hotel: from "hotel"<br>
@@ -651,7 +793,9 @@
   @emoji hugs   @emoji :hugs: from "hugs"<br>
   @emoji hungary   @emoji :hungary: from "hungary"<br>
   @emoji hushed   @emoji :hushed: from "hushed"<br>
+  @emoji hut   @emoji :hut: from "hut"<br>
   @emoji ice_cream   @emoji :ice_cream: from "ice_cream"<br>
+  @emoji ice_cube   @emoji :ice_cube: from "ice_cube"<br>
   @emoji ice_hockey   @emoji :ice_hockey: from "ice_hockey"<br>
   @emoji ice_skate   @emoji :ice_skate: from "ice_skate"<br>
   @emoji icecream   @emoji :icecream: from "icecream"<br>
@@ -663,6 +807,7 @@
   @emoji incoming_envelope   @emoji :incoming_envelope: from "incoming_envelope"<br>
   @emoji india   @emoji :india: from "india"<br>
   @emoji indonesia   @emoji :indonesia: from "indonesia"<br>
+  @emoji infinity   @emoji :infinity: from "infinity"<br>
   @emoji information_desk_person   @emoji :information_desk_person: from "information_desk_person"<br>
   @emoji information_source   @emoji :information_source: from "information_source"<br>
   @emoji innocent   @emoji :innocent: from "innocent"<br>
@@ -683,12 +828,16 @@
   @emoji japanese_ogre   @emoji :japanese_ogre: from "japanese_ogre"<br>
   @emoji jeans   @emoji :jeans: from "jeans"<br>
   @emoji jersey   @emoji :jersey: from "jersey"<br>
+  @emoji jigsaw   @emoji :jigsaw: from "jigsaw"<br>
   @emoji jordan   @emoji :jordan: from "jordan"<br>
   @emoji joy   @emoji :joy: from "joy"<br>
   @emoji joy_cat   @emoji :joy_cat: from "joy_cat"<br>
   @emoji joystick   @emoji :joystick: from "joystick"<br>
   @emoji jp   @emoji :jp: from "jp"<br>
+  @emoji judge   @emoji :judge: from "judge"<br>
+  @emoji juggling_person   @emoji :juggling_person: from "juggling_person"<br>
   @emoji kaaba   @emoji :kaaba: from "kaaba"<br>
+  @emoji kangaroo   @emoji :kangaroo: from "kangaroo"<br>
   @emoji kazakhstan   @emoji :kazakhstan: from "kazakhstan"<br>
   @emoji kenya   @emoji :kenya: from "kenya"<br>
   @emoji key   @emoji :key: from "key"<br>
@@ -703,15 +852,24 @@
   @emoji kissing_closed_eyes   @emoji :kissing_closed_eyes: from "kissing_closed_eyes"<br>
   @emoji kissing_heart   @emoji :kissing_heart: from "kissing_heart"<br>
   @emoji kissing_smiling_eyes   @emoji :kissing_smiling_eyes: from "kissing_smiling_eyes"<br>
+  @emoji kite   @emoji :kite: from "kite"<br>
   @emoji kiwi_fruit   @emoji :kiwi_fruit: from "kiwi_fruit"<br>
+  @emoji kneeling_man   @emoji :kneeling_man: from "kneeling_man"<br>
+  @emoji kneeling_person   @emoji :kneeling_person: from "kneeling_person"<br>
+  @emoji kneeling_woman   @emoji :kneeling_woman: from "kneeling_woman"<br>
   @emoji knife   @emoji :knife: from "knife"<br>
+  @emoji knot   @emoji :knot: from "knot"<br>
   @emoji koala   @emoji :koala: from "koala"<br>
   @emoji koko   @emoji :koko: from "koko"<br>
   @emoji kosovo   @emoji :kosovo: from "kosovo"<br>
   @emoji kr   @emoji :kr: from "kr"<br>
   @emoji kuwait   @emoji :kuwait: from "kuwait"<br>
   @emoji kyrgyzstan   @emoji :kyrgyzstan: from "kyrgyzstan"<br>
+  @emoji lab_coat   @emoji :lab_coat: from "lab_coat"<br>
   @emoji label   @emoji :label: from "label"<br>
+  @emoji lacrosse   @emoji :lacrosse: from "lacrosse"<br>
+  @emoji ladder   @emoji :ladder: from "ladder"<br>
+  @emoji lady_beetle   @emoji :lady_beetle: from "lady_beetle"<br>
   @emoji lantern   @emoji :lantern: from "lantern"<br>
   @emoji laos   @emoji :laos: from "laos"<br>
   @emoji large_blue_circle   @emoji :large_blue_circle: from "large_blue_circle"<br>
@@ -722,12 +880,15 @@
   @emoji latin_cross   @emoji :latin_cross: from "latin_cross"<br>
   @emoji latvia   @emoji :latvia: from "latvia"<br>
   @emoji laughing   @emoji :laughing: from "laughing"<br>
+  @emoji leafy_green   @emoji :leafy_green: from "leafy_green"<br>
   @emoji leaves   @emoji :leaves: from "leaves"<br>
   @emoji lebanon   @emoji :lebanon: from "lebanon"<br>
   @emoji ledger   @emoji :ledger: from "ledger"<br>
   @emoji left_luggage   @emoji :left_luggage: from "left_luggage"<br>
   @emoji left_right_arrow   @emoji :left_right_arrow: from "left_right_arrow"<br>
+  @emoji left_speech_bubble   @emoji :left_speech_bubble: from "left_speech_bubble"<br>
   @emoji leftwards_arrow_with_hook   @emoji :leftwards_arrow_with_hook: from "leftwards_arrow_with_hook"<br>
+  @emoji leg   @emoji :leg: from "leg"<br>
   @emoji lemon   @emoji :lemon: from "lemon"<br>
   @emoji leo   @emoji :leo: from "leo"<br>
   @emoji leopard   @emoji :leopard: from "leopard"<br>
@@ -744,15 +905,25 @@
   @emoji lipstick   @emoji :lipstick: from "lipstick"<br>
   @emoji lithuania   @emoji :lithuania: from "lithuania"<br>
   @emoji lizard   @emoji :lizard: from "lizard"<br>
+  @emoji llama   @emoji :llama: from "llama"<br>
+  @emoji lobster   @emoji :lobster: from "lobster"<br>
   @emoji lock   @emoji :lock: from "lock"<br>
   @emoji lock_with_ink_pen   @emoji :lock_with_ink_pen: from "lock_with_ink_pen"<br>
   @emoji lollipop   @emoji :lollipop: from "lollipop"<br>
+  @emoji long_drum   @emoji :long_drum: from "long_drum"<br>
   @emoji loop   @emoji :loop: from "loop"<br>
+  @emoji lotion_bottle   @emoji :lotion_bottle: from "lotion_bottle"<br>
+  @emoji lotus_position   @emoji :lotus_position: from "lotus_position"<br>
+  @emoji lotus_position_man   @emoji :lotus_position_man: from "lotus_position_man"<br>
+  @emoji lotus_position_woman   @emoji :lotus_position_woman: from "lotus_position_woman"<br>
   @emoji loud_sound   @emoji :loud_sound: from "loud_sound"<br>
   @emoji loudspeaker   @emoji :loudspeaker: from "loudspeaker"<br>
   @emoji love_hotel   @emoji :love_hotel: from "love_hotel"<br>
   @emoji love_letter   @emoji :love_letter: from "love_letter"<br>
+  @emoji love_you_gesture   @emoji :love_you_gesture: from "love_you_gesture"<br>
   @emoji low_brightness   @emoji :low_brightness: from "low_brightness"<br>
+  @emoji luggage   @emoji :luggage: from "luggage"<br>
+  @emoji lungs   @emoji :lungs: from "lungs"<br>
   @emoji luxembourg   @emoji :luxembourg: from "luxembourg"<br>
   @emoji lying_face   @emoji :lying_face: from "lying_face"<br>
   @emoji m   @emoji :m: from "m"<br>
@@ -761,6 +932,11 @@
   @emoji madagascar   @emoji :madagascar: from "madagascar"<br>
   @emoji mag   @emoji :mag: from "mag"<br>
   @emoji mag_right   @emoji :mag_right: from "mag_right"<br>
+  @emoji mage   @emoji :mage: from "mage"<br>
+  @emoji mage_man   @emoji :mage_man: from "mage_man"<br>
+  @emoji mage_woman   @emoji :mage_woman: from "mage_woman"<br>
+  @emoji magic_wand   @emoji :magic_wand: from "magic_wand"<br>
+  @emoji magnet   @emoji :magnet: from "magnet"<br>
   @emoji mahjong   @emoji :mahjong: from "mahjong"<br>
   @emoji mailbox   @emoji :mailbox: from "mailbox"<br>
   @emoji mailbox_closed   @emoji :mailbox_closed: from "mailbox_closed"<br>
@@ -770,19 +946,25 @@
   @emoji malaysia   @emoji :malaysia: from "malaysia"<br>
   @emoji maldives   @emoji :maldives: from "maldives"<br>
   @emoji male_detective   @emoji :male_detective: from "male_detective"<br>
+  @emoji male_sign   @emoji :male_sign: from "male_sign"<br>
   @emoji mali   @emoji :mali: from "mali"<br>
   @emoji malta   @emoji :malta: from "malta"<br>
+  @emoji mammoth   @emoji :mammoth: from "mammoth"<br>
   @emoji man   @emoji :man: from "man"<br>
   @emoji man_artist   @emoji :man_artist: from "man_artist"<br>
   @emoji man_astronaut   @emoji :man_astronaut: from "man_astronaut"<br>
+  @emoji man_beard   @emoji :man_beard: from "man_beard"<br>
   @emoji man_cartwheeling   @emoji :man_cartwheeling: from "man_cartwheeling"<br>
   @emoji man_cook   @emoji :man_cook: from "man_cook"<br>
   @emoji man_dancing   @emoji :man_dancing: from "man_dancing"<br>
   @emoji man_facepalming   @emoji :man_facepalming: from "man_facepalming"<br>
   @emoji man_factory_worker   @emoji :man_factory_worker: from "man_factory_worker"<br>
   @emoji man_farmer   @emoji :man_farmer: from "man_farmer"<br>
+  @emoji man_feeding_baby   @emoji :man_feeding_baby: from "man_feeding_baby"<br>
   @emoji man_firefighter   @emoji :man_firefighter: from "man_firefighter"<br>
   @emoji man_health_worker   @emoji :man_health_worker: from "man_health_worker"<br>
+  @emoji man_in_manual_wheelchair   @emoji :man_in_manual_wheelchair: from "man_in_manual_wheelchair"<br>
+  @emoji man_in_motorized_wheelchair   @emoji :man_in_motorized_wheelchair: from "man_in_motorized_wheelchair"<br>
   @emoji man_in_tuxedo   @emoji :man_in_tuxedo: from "man_in_tuxedo"<br>
   @emoji man_judge   @emoji :man_judge: from "man_judge"<br>
   @emoji man_juggling   @emoji :man_juggling: from "man_juggling"<br>
@@ -798,10 +980,14 @@
   @emoji man_teacher   @emoji :man_teacher: from "man_teacher"<br>
   @emoji man_technologist   @emoji :man_technologist: from "man_technologist"<br>
   @emoji man_with_gua_pi_mao   @emoji :man_with_gua_pi_mao: from "man_with_gua_pi_mao"<br>
+  @emoji man_with_probing_cane   @emoji :man_with_probing_cane: from "man_with_probing_cane"<br>
   @emoji man_with_turban   @emoji :man_with_turban: from "man_with_turban"<br>
+  @emoji man_with_veil   @emoji :man_with_veil: from "man_with_veil"<br>
   @emoji mandarin   @emoji :mandarin: from "mandarin"<br>
+  @emoji mango   @emoji :mango: from "mango"<br>
   @emoji mans_shoe   @emoji :mans_shoe: from "mans_shoe"<br>
   @emoji mantelpiece_clock   @emoji :mantelpiece_clock: from "mantelpiece_clock"<br>
+  @emoji manual_wheelchair   @emoji :manual_wheelchair: from "manual_wheelchair"<br>
   @emoji maple_leaf   @emoji :maple_leaf: from "maple_leaf"<br>
   @emoji marshall_islands   @emoji :marshall_islands: from "marshall_islands"<br>
   @emoji martial_arts_uniform   @emoji :martial_arts_uniform: from "martial_arts_uniform"<br>
@@ -810,29 +996,41 @@
   @emoji massage   @emoji :massage: from "massage"<br>
   @emoji massage_man   @emoji :massage_man: from "massage_man"<br>
   @emoji massage_woman   @emoji :massage_woman: from "massage_woman"<br>
+  @emoji mate   @emoji :mate: from "mate"<br>
   @emoji mauritania   @emoji :mauritania: from "mauritania"<br>
   @emoji mauritius   @emoji :mauritius: from "mauritius"<br>
   @emoji mayotte   @emoji :mayotte: from "mayotte"<br>
   @emoji meat_on_bone   @emoji :meat_on_bone: from "meat_on_bone"<br>
+  @emoji mechanic   @emoji :mechanic: from "mechanic"<br>
+  @emoji mechanical_arm   @emoji :mechanical_arm: from "mechanical_arm"<br>
+  @emoji mechanical_leg   @emoji :mechanical_leg: from "mechanical_leg"<br>
   @emoji medal_military   @emoji :medal_military: from "medal_military"<br>
   @emoji medal_sports   @emoji :medal_sports: from "medal_sports"<br>
+  @emoji medical_symbol   @emoji :medical_symbol: from "medical_symbol"<br>
   @emoji mega   @emoji :mega: from "mega"<br>
   @emoji melon   @emoji :melon: from "melon"<br>
   @emoji memo   @emoji :memo: from "memo"<br>
   @emoji men_wrestling   @emoji :men_wrestling: from "men_wrestling"<br>
+  @emoji mending_heart   @emoji :mending_heart: from "mending_heart"<br>
   @emoji menorah   @emoji :menorah: from "menorah"<br>
   @emoji mens   @emoji :mens: from "mens"<br>
+  @emoji mermaid   @emoji :mermaid: from "mermaid"<br>
+  @emoji merman   @emoji :merman: from "merman"<br>
+  @emoji merperson   @emoji :merperson: from "merperson"<br>
   @emoji metal   @emoji :metal: from "metal"<br>
   @emoji metro   @emoji :metro: from "metro"<br>
   @emoji mexico   @emoji :mexico: from "mexico"<br>
+  @emoji microbe   @emoji :microbe: from "microbe"<br>
   @emoji micronesia   @emoji :micronesia: from "micronesia"<br>
   @emoji microphone   @emoji :microphone: from "microphone"<br>
   @emoji microscope   @emoji :microscope: from "microscope"<br>
   @emoji middle_finger   @emoji :middle_finger: from "middle_finger"<br>
+  @emoji military_helmet   @emoji :military_helmet: from "military_helmet"<br>
   @emoji milk_glass   @emoji :milk_glass: from "milk_glass"<br>
   @emoji milky_way   @emoji :milky_way: from "milky_way"<br>
   @emoji minibus   @emoji :minibus: from "minibus"<br>
   @emoji minidisc   @emoji :minidisc: from "minidisc"<br>
+  @emoji mirror   @emoji :mirror: from "mirror"<br>
   @emoji mobile_phone_off   @emoji :mobile_phone_off: from "mobile_phone_off"<br>
   @emoji moldova   @emoji :moldova: from "moldova"<br>
   @emoji monaco   @emoji :monaco: from "monaco"<br>
@@ -842,16 +1040,20 @@
   @emoji mongolia   @emoji :mongolia: from "mongolia"<br>
   @emoji monkey   @emoji :monkey: from "monkey"<br>
   @emoji monkey_face   @emoji :monkey_face: from "monkey_face"<br>
+  @emoji monocle_face   @emoji :monocle_face: from "monocle_face"<br>
   @emoji monorail   @emoji :monorail: from "monorail"<br>
   @emoji montenegro   @emoji :montenegro: from "montenegro"<br>
   @emoji montserrat   @emoji :montserrat: from "montserrat"<br>
   @emoji moon   @emoji :moon: from "moon"<br>
+  @emoji moon_cake   @emoji :moon_cake: from "moon_cake"<br>
   @emoji morocco   @emoji :morocco: from "morocco"<br>
   @emoji mortar_board   @emoji :mortar_board: from "mortar_board"<br>
   @emoji mosque   @emoji :mosque: from "mosque"<br>
+  @emoji mosquito   @emoji :mosquito: from "mosquito"<br>
   @emoji motor_boat   @emoji :motor_boat: from "motor_boat"<br>
   @emoji motor_scooter   @emoji :motor_scooter: from "motor_scooter"<br>
   @emoji motorcycle   @emoji :motorcycle: from "motorcycle"<br>
+  @emoji motorized_wheelchair   @emoji :motorized_wheelchair: from "motorized_wheelchair"<br>
   @emoji motorway   @emoji :motorway: from "motorway"<br>
   @emoji mount_fuji   @emoji :mount_fuji: from "mount_fuji"<br>
   @emoji mountain   @emoji :mountain: from "mountain"<br>
@@ -863,6 +1065,7 @@
   @emoji mountain_snow   @emoji :mountain_snow: from "mountain_snow"<br>
   @emoji mouse   @emoji :mouse: from "mouse"<br>
   @emoji mouse2   @emoji :mouse2: from "mouse2"<br>
+  @emoji mouse_trap   @emoji :mouse_trap: from "mouse_trap"<br>
   @emoji movie_camera   @emoji :movie_camera: from "movie_camera"<br>
   @emoji moyai   @emoji :moyai: from "moyai"<br>
   @emoji mozambique   @emoji :mozambique: from "mozambique"<br>
@@ -873,6 +1076,7 @@
   @emoji musical_note   @emoji :musical_note: from "musical_note"<br>
   @emoji musical_score   @emoji :musical_score: from "musical_score"<br>
   @emoji mute   @emoji :mute: from "mute"<br>
+  @emoji mx_claus   @emoji :mx_claus: from "mx_claus"<br>
   @emoji myanmar   @emoji :myanmar: from "myanmar"<br>
   @emoji nail_care   @emoji :nail_care: from "nail_care"<br>
   @emoji name_badge   @emoji :name_badge: from "name_badge"<br>
@@ -880,10 +1084,12 @@
   @emoji national_park   @emoji :national_park: from "national_park"<br>
   @emoji nauru   @emoji :nauru: from "nauru"<br>
   @emoji nauseated_face   @emoji :nauseated_face: from "nauseated_face"<br>
+  @emoji nazar_amulet   @emoji :nazar_amulet: from "nazar_amulet"<br>
   @emoji necktie   @emoji :necktie: from "necktie"<br>
   @emoji negative_squared_cross_mark   @emoji :negative_squared_cross_mark: from "negative_squared_cross_mark"<br>
   @emoji nepal   @emoji :nepal: from "nepal"<br>
   @emoji nerd_face   @emoji :nerd_face: from "nerd_face"<br>
+  @emoji nesting_dolls   @emoji :nesting_dolls: from "nesting_dolls"<br>
   @emoji netherlands   @emoji :netherlands: from "netherlands"<br>
   @emoji neutral_face   @emoji :neutral_face: from "neutral_face"<br>
   @emoji new   @emoji :new: from "new"<br>
@@ -902,6 +1108,7 @@
   @emoji nigeria   @emoji :nigeria: from "nigeria"<br>
   @emoji night_with_stars   @emoji :night_with_stars: from "night_with_stars"<br>
   @emoji nine   @emoji :nine: from "nine"<br>
+  @emoji ninja   @emoji :ninja: from "ninja"<br>
   @emoji niue   @emoji :niue: from "niue"<br>
   @emoji no_bell   @emoji :no_bell: from "no_bell"<br>
   @emoji no_bicycles   @emoji :no_bicycles: from "no_bicycles"<br>
@@ -930,14 +1137,18 @@
   @emoji octopus   @emoji :octopus: from "octopus"<br>
   @emoji oden   @emoji :oden: from "oden"<br>
   @emoji office   @emoji :office: from "office"<br>
+  @emoji office_worker   @emoji :office_worker: from "office_worker"<br>
   @emoji oil_drum   @emoji :oil_drum: from "oil_drum"<br>
   @emoji ok   @emoji :ok: from "ok"<br>
   @emoji ok_hand   @emoji :ok_hand: from "ok_hand"<br>
   @emoji ok_man   @emoji :ok_man: from "ok_man"<br>
+  @emoji ok_person   @emoji :ok_person: from "ok_person"<br>
   @emoji ok_woman   @emoji :ok_woman: from "ok_woman"<br>
   @emoji old_key   @emoji :old_key: from "old_key"<br>
+  @emoji older_adult   @emoji :older_adult: from "older_adult"<br>
   @emoji older_man   @emoji :older_man: from "older_man"<br>
   @emoji older_woman   @emoji :older_woman: from "older_woman"<br>
+  @emoji olive   @emoji :olive: from "olive"<br>
   @emoji om   @emoji :om: from "om"<br>
   @emoji oman   @emoji :oman: from "oman"<br>
   @emoji on   @emoji :on: from "on"<br>
@@ -946,6 +1157,8 @@
   @emoji oncoming_police_car   @emoji :oncoming_police_car: from "oncoming_police_car"<br>
   @emoji oncoming_taxi   @emoji :oncoming_taxi: from "oncoming_taxi"<br>
   @emoji one   @emoji :one: from "one"<br>
+  @emoji one_piece_swimsuit   @emoji :one_piece_swimsuit: from "one_piece_swimsuit"<br>
+  @emoji onion   @emoji :onion: from "onion"<br>
   @emoji open_book   @emoji :open_book: from "open_book"<br>
   @emoji open_file_folder   @emoji :open_file_folder: from "open_file_folder"<br>
   @emoji open_hands   @emoji :open_hands: from "open_hands"<br>
@@ -954,10 +1167,16 @@
   @emoji ophiuchus   @emoji :ophiuchus: from "ophiuchus"<br>
   @emoji orange   @emoji :orange: from "orange"<br>
   @emoji orange_book   @emoji :orange_book: from "orange_book"<br>
+  @emoji orange_circle   @emoji :orange_circle: from "orange_circle"<br>
+  @emoji orange_heart   @emoji :orange_heart: from "orange_heart"<br>
+  @emoji orange_square   @emoji :orange_square: from "orange_square"<br>
+  @emoji orangutan   @emoji :orangutan: from "orangutan"<br>
   @emoji orthodox_cross   @emoji :orthodox_cross: from "orthodox_cross"<br>
+  @emoji otter   @emoji :otter: from "otter"<br>
   @emoji outbox_tray   @emoji :outbox_tray: from "outbox_tray"<br>
   @emoji owl   @emoji :owl: from "owl"<br>
   @emoji ox   @emoji :ox: from "ox"<br>
+  @emoji oyster   @emoji :oyster: from "oyster"<br>
   @emoji package   @emoji :package: from "package"<br>
   @emoji page_facing_up   @emoji :page_facing_up: from "page_facing_up"<br>
   @emoji page_with_curl   @emoji :page_with_curl: from "page_with_curl"<br>
@@ -967,23 +1186,28 @@
   @emoji palau   @emoji :palau: from "palau"<br>
   @emoji palestinian_territories   @emoji :palestinian_territories: from "palestinian_territories"<br>
   @emoji palm_tree   @emoji :palm_tree: from "palm_tree"<br>
+  @emoji palms_up_together   @emoji :palms_up_together: from "palms_up_together"<br>
   @emoji panama   @emoji :panama: from "panama"<br>
   @emoji pancakes   @emoji :pancakes: from "pancakes"<br>
   @emoji panda_face   @emoji :panda_face: from "panda_face"<br>
   @emoji paperclip   @emoji :paperclip: from "paperclip"<br>
   @emoji paperclips   @emoji :paperclips: from "paperclips"<br>
   @emoji papua_new_guinea   @emoji :papua_new_guinea: from "papua_new_guinea"<br>
+  @emoji parachute   @emoji :parachute: from "parachute"<br>
   @emoji paraguay   @emoji :paraguay: from "paraguay"<br>
   @emoji parasol_on_ground   @emoji :parasol_on_ground: from "parasol_on_ground"<br>
   @emoji parking   @emoji :parking: from "parking"<br>
+  @emoji parrot   @emoji :parrot: from "parrot"<br>
   @emoji part_alternation_mark   @emoji :part_alternation_mark: from "part_alternation_mark"<br>
   @emoji partly_sunny   @emoji :partly_sunny: from "partly_sunny"<br>
+  @emoji partying_face   @emoji :partying_face: from "partying_face"<br>
   @emoji passenger_ship   @emoji :passenger_ship: from "passenger_ship"<br>
   @emoji passport_control   @emoji :passport_control: from "passport_control"<br>
   @emoji pause_button   @emoji :pause_button: from "pause_button"<br>
   @emoji paw_prints   @emoji :paw_prints: from "paw_prints"<br>
   @emoji peace_symbol   @emoji :peace_symbol: from "peace_symbol"<br>
   @emoji peach   @emoji :peach: from "peach"<br>
+  @emoji peacock   @emoji :peacock: from "peacock"<br>
   @emoji peanuts   @emoji :peanuts: from "peanuts"<br>
   @emoji pear   @emoji :pear: from "pear"<br>
   @emoji pen   @emoji :pen: from "pen"<br>
@@ -991,35 +1215,58 @@
   @emoji pencil2   @emoji :pencil2: from "pencil2"<br>
   @emoji penguin   @emoji :penguin: from "penguin"<br>
   @emoji pensive   @emoji :pensive: from "pensive"<br>
+  @emoji people_holding_hands   @emoji :people_holding_hands: from "people_holding_hands"<br>
+  @emoji people_hugging   @emoji :people_hugging: from "people_hugging"<br>
   @emoji performing_arts   @emoji :performing_arts: from "performing_arts"<br>
   @emoji persevere   @emoji :persevere: from "persevere"<br>
+  @emoji person_bald   @emoji :person_bald: from "person_bald"<br>
+  @emoji person_curly_hair   @emoji :person_curly_hair: from "person_curly_hair"<br>
+  @emoji person_feeding_baby   @emoji :person_feeding_baby: from "person_feeding_baby"<br>
   @emoji person_fencing   @emoji :person_fencing: from "person_fencing"<br>
-  @emoji person_frowning   @emoji :person_frowning: from "person_frowning"<br>
-  @emoji person_with_blond_hair   @emoji :person_with_blond_hair: from "person_with_blond_hair"<br>
-  @emoji person_with_pouting_face   @emoji :person_with_pouting_face: from "person_with_pouting_face"<br>
+  @emoji person_in_manual_wheelchair   @emoji :person_in_manual_wheelchair: from "person_in_manual_wheelchair"<br>
+  @emoji person_in_motorized_wheelchair   @emoji :person_in_motorized_wheelchair: from "person_in_motorized_wheelchair"<br>
+  @emoji person_in_tuxedo   @emoji :person_in_tuxedo: from "person_in_tuxedo"<br>
+  @emoji person_red_hair   @emoji :person_red_hair: from "person_red_hair"<br>
+  @emoji person_white_hair   @emoji :person_white_hair: from "person_white_hair"<br>
+  @emoji person_with_probing_cane   @emoji :person_with_probing_cane: from "person_with_probing_cane"<br>
+  @emoji person_with_turban   @emoji :person_with_turban: from "person_with_turban"<br>
+  @emoji person_with_veil   @emoji :person_with_veil: from "person_with_veil"<br>
   @emoji peru   @emoji :peru: from "peru"<br>
+  @emoji petri_dish   @emoji :petri_dish: from "petri_dish"<br>
   @emoji philippines   @emoji :philippines: from "philippines"<br>
   @emoji phone   @emoji :phone: from "phone"<br>
   @emoji pick   @emoji :pick: from "pick"<br>
+  @emoji pickup_truck   @emoji :pickup_truck: from "pickup_truck"<br>
+  @emoji pie   @emoji :pie: from "pie"<br>
   @emoji pig   @emoji :pig: from "pig"<br>
   @emoji pig2   @emoji :pig2: from "pig2"<br>
   @emoji pig_nose   @emoji :pig_nose: from "pig_nose"<br>
   @emoji pill   @emoji :pill: from "pill"<br>
+  @emoji pilot   @emoji :pilot: from "pilot"<br>
+  @emoji pinata   @emoji :pinata: from "pinata"<br>
+  @emoji pinched_fingers   @emoji :pinched_fingers: from "pinched_fingers"<br>
+  @emoji pinching_hand   @emoji :pinching_hand: from "pinching_hand"<br>
   @emoji pineapple   @emoji :pineapple: from "pineapple"<br>
   @emoji ping_pong   @emoji :ping_pong: from "ping_pong"<br>
+  @emoji pirate_flag   @emoji :pirate_flag: from "pirate_flag"<br>
   @emoji pisces   @emoji :pisces: from "pisces"<br>
   @emoji pitcairn_islands   @emoji :pitcairn_islands: from "pitcairn_islands"<br>
   @emoji pizza   @emoji :pizza: from "pizza"<br>
+  @emoji placard   @emoji :placard: from "placard"<br>
   @emoji place_of_worship   @emoji :place_of_worship: from "place_of_worship"<br>
   @emoji plate_with_cutlery   @emoji :plate_with_cutlery: from "plate_with_cutlery"<br>
   @emoji play_or_pause_button   @emoji :play_or_pause_button: from "play_or_pause_button"<br>
+  @emoji pleading_face   @emoji :pleading_face: from "pleading_face"<br>
+  @emoji plunger   @emoji :plunger: from "plunger"<br>
   @emoji point_down   @emoji :point_down: from "point_down"<br>
   @emoji point_left   @emoji :point_left: from "point_left"<br>
   @emoji point_right   @emoji :point_right: from "point_right"<br>
   @emoji point_up   @emoji :point_up: from "point_up"<br>
   @emoji point_up_2   @emoji :point_up_2: from "point_up_2"<br>
   @emoji poland   @emoji :poland: from "poland"<br>
+  @emoji polar_bear   @emoji :polar_bear: from "polar_bear"<br>
   @emoji police_car   @emoji :police_car: from "police_car"<br>
+  @emoji police_officer   @emoji :police_officer: from "police_officer"<br>
   @emoji policeman   @emoji :policeman: from "policeman"<br>
   @emoji policewoman   @emoji :policewoman: from "policewoman"<br>
   @emoji poodle   @emoji :poodle: from "poodle"<br>
@@ -1031,23 +1278,29 @@
   @emoji postbox   @emoji :postbox: from "postbox"<br>
   @emoji potable_water   @emoji :potable_water: from "potable_water"<br>
   @emoji potato   @emoji :potato: from "potato"<br>
+  @emoji potted_plant   @emoji :potted_plant: from "potted_plant"<br>
   @emoji pouch   @emoji :pouch: from "pouch"<br>
   @emoji poultry_leg   @emoji :poultry_leg: from "poultry_leg"<br>
   @emoji pound   @emoji :pound: from "pound"<br>
   @emoji pout   @emoji :pout: from "pout"<br>
   @emoji pouting_cat   @emoji :pouting_cat: from "pouting_cat"<br>
+  @emoji pouting_face   @emoji :pouting_face: from "pouting_face"<br>
   @emoji pouting_man   @emoji :pouting_man: from "pouting_man"<br>
   @emoji pouting_woman   @emoji :pouting_woman: from "pouting_woman"<br>
   @emoji pray   @emoji :pray: from "pray"<br>
   @emoji prayer_beads   @emoji :prayer_beads: from "prayer_beads"<br>
   @emoji pregnant_woman   @emoji :pregnant_woman: from "pregnant_woman"<br>
+  @emoji pretzel   @emoji :pretzel: from "pretzel"<br>
   @emoji previous_track_button   @emoji :previous_track_button: from "previous_track_button"<br>
   @emoji prince   @emoji :prince: from "prince"<br>
   @emoji princess   @emoji :princess: from "princess"<br>
   @emoji printer   @emoji :printer: from "printer"<br>
+  @emoji probing_cane   @emoji :probing_cane: from "probing_cane"<br>
   @emoji puerto_rico   @emoji :puerto_rico: from "puerto_rico"<br>
   @emoji punch   @emoji :punch: from "punch"<br>
+  @emoji purple_circle   @emoji :purple_circle: from "purple_circle"<br>
   @emoji purple_heart   @emoji :purple_heart: from "purple_heart"<br>
+  @emoji purple_square   @emoji :purple_square: from "purple_square"<br>
   @emoji purse   @emoji :purse: from "purse"<br>
   @emoji pushpin   @emoji :pushpin: from "pushpin"<br>
   @emoji put_litter_in_its_place   @emoji :put_litter_in_its_place: from "put_litter_in_its_place"<br>
@@ -1055,6 +1308,7 @@
   @emoji question   @emoji :question: from "question"<br>
   @emoji rabbit   @emoji :rabbit: from "rabbit"<br>
   @emoji rabbit2   @emoji :rabbit2: from "rabbit2"<br>
+  @emoji raccoon   @emoji :raccoon: from "raccoon"<br>
   @emoji racehorse   @emoji :racehorse: from "racehorse"<br>
   @emoji racing_car   @emoji :racing_car: from "racing_car"<br>
   @emoji radio   @emoji :radio: from "radio"<br>
@@ -1066,6 +1320,7 @@
   @emoji rainbow   @emoji :rainbow: from "rainbow"<br>
   @emoji rainbow_flag   @emoji :rainbow_flag: from "rainbow_flag"<br>
   @emoji raised_back_of_hand   @emoji :raised_back_of_hand: from "raised_back_of_hand"<br>
+  @emoji raised_eyebrow   @emoji :raised_eyebrow: from "raised_eyebrow"<br>
   @emoji raised_hand   @emoji :raised_hand: from "raised_hand"<br>
   @emoji raised_hand_with_fingers_splayed   @emoji :raised_hand_with_fingers_splayed: from "raised_hand_with_fingers_splayed"<br>
   @emoji raised_hands   @emoji :raised_hands: from "raised_hands"<br>
@@ -1075,10 +1330,16 @@
   @emoji ram   @emoji :ram: from "ram"<br>
   @emoji ramen   @emoji :ramen: from "ramen"<br>
   @emoji rat   @emoji :rat: from "rat"<br>
+  @emoji razor   @emoji :razor: from "razor"<br>
+  @emoji receipt   @emoji :receipt: from "receipt"<br>
   @emoji record_button   @emoji :record_button: from "record_button"<br>
   @emoji recycle   @emoji :recycle: from "recycle"<br>
   @emoji red_car   @emoji :red_car: from "red_car"<br>
   @emoji red_circle   @emoji :red_circle: from "red_circle"<br>
+  @emoji red_envelope   @emoji :red_envelope: from "red_envelope"<br>
+  @emoji red_haired_man   @emoji :red_haired_man: from "red_haired_man"<br>
+  @emoji red_haired_woman   @emoji :red_haired_woman: from "red_haired_woman"<br>
+  @emoji red_square   @emoji :red_square: from "red_square"<br>
   @emoji registered   @emoji :registered: from "registered"<br>
   @emoji relaxed   @emoji :relaxed: from "relaxed"<br>
   @emoji relieved   @emoji :relieved: from "relieved"<br>
@@ -1098,11 +1359,15 @@
   @emoji rice_scene   @emoji :rice_scene: from "rice_scene"<br>
   @emoji right_anger_bubble   @emoji :right_anger_bubble: from "right_anger_bubble"<br>
   @emoji ring   @emoji :ring: from "ring"<br>
+  @emoji ringed_planet   @emoji :ringed_planet: from "ringed_planet"<br>
   @emoji robot   @emoji :robot: from "robot"<br>
+  @emoji rock   @emoji :rock: from "rock"<br>
   @emoji rocket   @emoji :rocket: from "rocket"<br>
   @emoji rofl   @emoji :rofl: from "rofl"<br>
   @emoji roll_eyes   @emoji :roll_eyes: from "roll_eyes"<br>
+  @emoji roll_of_paper   @emoji :roll_of_paper: from "roll_of_paper"<br>
   @emoji roller_coaster   @emoji :roller_coaster: from "roller_coaster"<br>
+  @emoji roller_skate   @emoji :roller_skate: from "roller_skate"<br>
   @emoji romania   @emoji :romania: from "romania"<br>
   @emoji rooster   @emoji :rooster: from "rooster"<br>
   @emoji rose   @emoji :rose: from "rose"<br>
@@ -1121,26 +1386,42 @@
   @emoji running_woman   @emoji :running_woman: from "running_woman"<br>
   @emoji rwanda   @emoji :rwanda: from "rwanda"<br>
   @emoji sa   @emoji :sa: from "sa"<br>
+  @emoji safety_pin   @emoji :safety_pin: from "safety_pin"<br>
+  @emoji safety_vest   @emoji :safety_vest: from "safety_vest"<br>
   @emoji sagittarius   @emoji :sagittarius: from "sagittarius"<br>
   @emoji sailboat   @emoji :sailboat: from "sailboat"<br>
   @emoji sake   @emoji :sake: from "sake"<br>
+  @emoji salt   @emoji :salt: from "salt"<br>
   @emoji samoa   @emoji :samoa: from "samoa"<br>
   @emoji san_marino   @emoji :san_marino: from "san_marino"<br>
   @emoji sandal   @emoji :sandal: from "sandal"<br>
+  @emoji sandwich   @emoji :sandwich: from "sandwich"<br>
   @emoji santa   @emoji :santa: from "santa"<br>
   @emoji sao_tome_principe   @emoji :sao_tome_principe: from "sao_tome_principe"<br>
+  @emoji sari   @emoji :sari: from "sari"<br>
+  @emoji sassy_man   @emoji :sassy_man: from "sassy_man"<br>
+  @emoji sassy_woman   @emoji :sassy_woman: from "sassy_woman"<br>
   @emoji satellite   @emoji :satellite: from "satellite"<br>
   @emoji satisfied   @emoji :satisfied: from "satisfied"<br>
   @emoji saudi_arabia   @emoji :saudi_arabia: from "saudi_arabia"<br>
+  @emoji sauna_man   @emoji :sauna_man: from "sauna_man"<br>
+  @emoji sauna_person   @emoji :sauna_person: from "sauna_person"<br>
+  @emoji sauna_woman   @emoji :sauna_woman: from "sauna_woman"<br>
+  @emoji sauropod   @emoji :sauropod: from "sauropod"<br>
   @emoji saxophone   @emoji :saxophone: from "saxophone"<br>
+  @emoji scarf   @emoji :scarf: from "scarf"<br>
   @emoji school   @emoji :school: from "school"<br>
   @emoji school_satchel   @emoji :school_satchel: from "school_satchel"<br>
+  @emoji scientist   @emoji :scientist: from "scientist"<br>
   @emoji scissors   @emoji :scissors: from "scissors"<br>
   @emoji scorpion   @emoji :scorpion: from "scorpion"<br>
   @emoji scorpius   @emoji :scorpius: from "scorpius"<br>
+  @emoji scotland   @emoji :scotland: from "scotland"<br>
   @emoji scream   @emoji :scream: from "scream"<br>
   @emoji scream_cat   @emoji :scream_cat: from "scream_cat"<br>
+  @emoji screwdriver   @emoji :screwdriver: from "screwdriver"<br>
   @emoji scroll   @emoji :scroll: from "scroll"<br>
+  @emoji seal   @emoji :seal: from "seal"<br>
   @emoji seat   @emoji :seat: from "seat"<br>
   @emoji secret   @emoji :secret: from "secret"<br>
   @emoji see_no_evil   @emoji :see_no_evil: from "see_no_evil"<br>
@@ -1148,7 +1429,9 @@
   @emoji selfie   @emoji :selfie: from "selfie"<br>
   @emoji senegal   @emoji :senegal: from "senegal"<br>
   @emoji serbia   @emoji :serbia: from "serbia"<br>
+  @emoji service_dog   @emoji :service_dog: from "service_dog"<br>
   @emoji seven   @emoji :seven: from "seven"<br>
+  @emoji sewing_needle   @emoji :sewing_needle: from "sewing_needle"<br>
   @emoji seychelles   @emoji :seychelles: from "seychelles"<br>
   @emoji shallow_pan_of_food   @emoji :shallow_pan_of_food: from "shallow_pan_of_food"<br>
   @emoji shamrock   @emoji :shamrock: from "shamrock"<br>
@@ -1164,24 +1447,32 @@
   @emoji shoe   @emoji :shoe: from "shoe"<br>
   @emoji shopping   @emoji :shopping: from "shopping"<br>
   @emoji shopping_cart   @emoji :shopping_cart: from "shopping_cart"<br>
+  @emoji shorts   @emoji :shorts: from "shorts"<br>
   @emoji shower   @emoji :shower: from "shower"<br>
   @emoji shrimp   @emoji :shrimp: from "shrimp"<br>
+  @emoji shrug   @emoji :shrug: from "shrug"<br>
+  @emoji shushing_face   @emoji :shushing_face: from "shushing_face"<br>
   @emoji sierra_leone   @emoji :sierra_leone: from "sierra_leone"<br>
   @emoji signal_strength   @emoji :signal_strength: from "signal_strength"<br>
   @emoji singapore   @emoji :singapore: from "singapore"<br>
+  @emoji singer   @emoji :singer: from "singer"<br>
   @emoji sint_maarten   @emoji :sint_maarten: from "sint_maarten"<br>
   @emoji six   @emoji :six: from "six"<br>
   @emoji six_pointed_star   @emoji :six_pointed_star: from "six_pointed_star"<br>
+  @emoji skateboard   @emoji :skateboard: from "skateboard"<br>
   @emoji ski   @emoji :ski: from "ski"<br>
   @emoji skier   @emoji :skier: from "skier"<br>
   @emoji skull   @emoji :skull: from "skull"<br>
   @emoji skull_and_crossbones   @emoji :skull_and_crossbones: from "skull_and_crossbones"<br>
+  @emoji skunk   @emoji :skunk: from "skunk"<br>
+  @emoji sled   @emoji :sled: from "sled"<br>
   @emoji sleeping   @emoji :sleeping: from "sleeping"<br>
   @emoji sleeping_bed   @emoji :sleeping_bed: from "sleeping_bed"<br>
   @emoji sleepy   @emoji :sleepy: from "sleepy"<br>
   @emoji slightly_frowning_face   @emoji :slightly_frowning_face: from "slightly_frowning_face"<br>
   @emoji slightly_smiling_face   @emoji :slightly_smiling_face: from "slightly_smiling_face"<br>
   @emoji slot_machine   @emoji :slot_machine: from "slot_machine"<br>
+  @emoji sloth   @emoji :sloth: from "sloth"<br>
   @emoji slovakia   @emoji :slovakia: from "slovakia"<br>
   @emoji slovenia   @emoji :slovenia: from "slovenia"<br>
   @emoji small_airplane   @emoji :small_airplane: from "small_airplane"<br>
@@ -1193,6 +1484,8 @@
   @emoji smile_cat   @emoji :smile_cat: from "smile_cat"<br>
   @emoji smiley   @emoji :smiley: from "smiley"<br>
   @emoji smiley_cat   @emoji :smiley_cat: from "smiley_cat"<br>
+  @emoji smiling_face_with_tear   @emoji :smiling_face_with_tear: from "smiling_face_with_tear"<br>
+  @emoji smiling_face_with_three_hearts   @emoji :smiling_face_with_three_hearts: from "smiling_face_with_three_hearts"<br>
   @emoji smiling_imp   @emoji :smiling_imp: from "smiling_imp"<br>
   @emoji smirk   @emoji :smirk: from "smirk"<br>
   @emoji smirk_cat   @emoji :smirk_cat: from "smirk_cat"<br>
@@ -1204,8 +1497,11 @@
   @emoji snowflake   @emoji :snowflake: from "snowflake"<br>
   @emoji snowman   @emoji :snowman: from "snowman"<br>
   @emoji snowman_with_snow   @emoji :snowman_with_snow: from "snowman_with_snow"<br>
+  @emoji soap   @emoji :soap: from "soap"<br>
   @emoji sob   @emoji :sob: from "sob"<br>
   @emoji soccer   @emoji :soccer: from "soccer"<br>
+  @emoji socks   @emoji :socks: from "socks"<br>
+  @emoji softball   @emoji :softball: from "softball"<br>
   @emoji solomon_islands   @emoji :solomon_islands: from "solomon_islands"<br>
   @emoji somalia   @emoji :somalia: from "somalia"<br>
   @emoji soon   @emoji :soon: from "soon"<br>
@@ -1230,6 +1526,7 @@
   @emoji spider_web   @emoji :spider_web: from "spider_web"<br>
   @emoji spiral_calendar   @emoji :spiral_calendar: from "spiral_calendar"<br>
   @emoji spiral_notepad   @emoji :spiral_notepad: from "spiral_notepad"<br>
+  @emoji sponge   @emoji :sponge: from "sponge"<br>
   @emoji spoon   @emoji :spoon: from "spoon"<br>
   @emoji squid   @emoji :squid: from "squid"<br>
   @emoji sri_lanka   @emoji :sri_lanka: from "sri_lanka"<br>
@@ -1237,17 +1534,23 @@
   @emoji st_helena   @emoji :st_helena: from "st_helena"<br>
   @emoji st_kitts_nevis   @emoji :st_kitts_nevis: from "st_kitts_nevis"<br>
   @emoji st_lucia   @emoji :st_lucia: from "st_lucia"<br>
+  @emoji st_martin   @emoji :st_martin: from "st_martin"<br>
   @emoji st_pierre_miquelon   @emoji :st_pierre_miquelon: from "st_pierre_miquelon"<br>
   @emoji st_vincent_grenadines   @emoji :st_vincent_grenadines: from "st_vincent_grenadines"<br>
   @emoji stadium   @emoji :stadium: from "stadium"<br>
+  @emoji standing_man   @emoji :standing_man: from "standing_man"<br>
+  @emoji standing_person   @emoji :standing_person: from "standing_person"<br>
+  @emoji standing_woman   @emoji :standing_woman: from "standing_woman"<br>
   @emoji star   @emoji :star: from "star"<br>
   @emoji star2   @emoji :star2: from "star2"<br>
   @emoji star_and_crescent   @emoji :star_and_crescent: from "star_and_crescent"<br>
   @emoji star_of_david   @emoji :star_of_david: from "star_of_david"<br>
+  @emoji star_struck   @emoji :star_struck: from "star_struck"<br>
   @emoji stars   @emoji :stars: from "stars"<br>
   @emoji station   @emoji :station: from "station"<br>
   @emoji statue_of_liberty   @emoji :statue_of_liberty: from "statue_of_liberty"<br>
   @emoji steam_locomotive   @emoji :steam_locomotive: from "steam_locomotive"<br>
+  @emoji stethoscope   @emoji :stethoscope: from "stethoscope"<br>
   @emoji stew   @emoji :stew: from "stew"<br>
   @emoji stop_button   @emoji :stop_button: from "stop_button"<br>
   @emoji stop_sign   @emoji :stop_sign: from "stop_sign"<br>
@@ -1257,6 +1560,7 @@
   @emoji stuck_out_tongue   @emoji :stuck_out_tongue: from "stuck_out_tongue"<br>
   @emoji stuck_out_tongue_closed_eyes   @emoji :stuck_out_tongue_closed_eyes: from "stuck_out_tongue_closed_eyes"<br>
   @emoji stuck_out_tongue_winking_eye   @emoji :stuck_out_tongue_winking_eye: from "stuck_out_tongue_winking_eye"<br>
+  @emoji student   @emoji :student: from "student"<br>
   @emoji studio_microphone   @emoji :studio_microphone: from "studio_microphone"<br>
   @emoji stuffed_flatbread   @emoji :stuffed_flatbread: from "stuffed_flatbread"<br>
   @emoji sudan   @emoji :sudan: from "sudan"<br>
@@ -1269,18 +1573,27 @@
   @emoji sunny   @emoji :sunny: from "sunny"<br>
   @emoji sunrise   @emoji :sunrise: from "sunrise"<br>
   @emoji sunrise_over_mountains   @emoji :sunrise_over_mountains: from "sunrise_over_mountains"<br>
+  @emoji superhero   @emoji :superhero: from "superhero"<br>
+  @emoji superhero_man   @emoji :superhero_man: from "superhero_man"<br>
+  @emoji superhero_woman   @emoji :superhero_woman: from "superhero_woman"<br>
+  @emoji supervillain   @emoji :supervillain: from "supervillain"<br>
+  @emoji supervillain_man   @emoji :supervillain_man: from "supervillain_man"<br>
+  @emoji supervillain_woman   @emoji :supervillain_woman: from "supervillain_woman"<br>
   @emoji surfer   @emoji :surfer: from "surfer"<br>
   @emoji surfing_man   @emoji :surfing_man: from "surfing_man"<br>
   @emoji surfing_woman   @emoji :surfing_woman: from "surfing_woman"<br>
   @emoji suriname   @emoji :suriname: from "suriname"<br>
   @emoji sushi   @emoji :sushi: from "sushi"<br>
   @emoji suspension_railway   @emoji :suspension_railway: from "suspension_railway"<br>
+  @emoji svalbard_jan_mayen   @emoji :svalbard_jan_mayen: from "svalbard_jan_mayen"<br>
+  @emoji swan   @emoji :swan: from "swan"<br>
   @emoji swaziland   @emoji :swaziland: from "swaziland"<br>
   @emoji sweat   @emoji :sweat: from "sweat"<br>
   @emoji sweat_drops   @emoji :sweat_drops: from "sweat_drops"<br>
   @emoji sweat_smile   @emoji :sweat_smile: from "sweat_smile"<br>
   @emoji sweden   @emoji :sweden: from "sweden"<br>
   @emoji sweet_potato   @emoji :sweet_potato: from "sweet_potato"<br>
+  @emoji swim_brief   @emoji :swim_brief: from "swim_brief"<br>
   @emoji swimmer   @emoji :swimmer: from "swimmer"<br>
   @emoji swimming_man   @emoji :swimming_man: from "swimming_man"<br>
   @emoji swimming_woman   @emoji :swimming_woman: from "swimming_woman"<br>
@@ -1289,25 +1602,35 @@
   @emoji synagogue   @emoji :synagogue: from "synagogue"<br>
   @emoji syria   @emoji :syria: from "syria"<br>
   @emoji syringe   @emoji :syringe: from "syringe"<br>
+  @emoji t-rex   @emoji :t-rex: from "t-rex"<br>
   @emoji taco   @emoji :taco: from "taco"<br>
   @emoji tada   @emoji :tada: from "tada"<br>
   @emoji taiwan   @emoji :taiwan: from "taiwan"<br>
   @emoji tajikistan   @emoji :tajikistan: from "tajikistan"<br>
+  @emoji takeout_box   @emoji :takeout_box: from "takeout_box"<br>
+  @emoji tamale   @emoji :tamale: from "tamale"<br>
   @emoji tanabata_tree   @emoji :tanabata_tree: from "tanabata_tree"<br>
   @emoji tangerine   @emoji :tangerine: from "tangerine"<br>
   @emoji tanzania   @emoji :tanzania: from "tanzania"<br>
   @emoji taurus   @emoji :taurus: from "taurus"<br>
   @emoji taxi   @emoji :taxi: from "taxi"<br>
   @emoji tea   @emoji :tea: from "tea"<br>
+  @emoji teacher   @emoji :teacher: from "teacher"<br>
+  @emoji teapot   @emoji :teapot: from "teapot"<br>
+  @emoji technologist   @emoji :technologist: from "technologist"<br>
+  @emoji teddy_bear   @emoji :teddy_bear: from "teddy_bear"<br>
   @emoji telephone   @emoji :telephone: from "telephone"<br>
   @emoji telephone_receiver   @emoji :telephone_receiver: from "telephone_receiver"<br>
   @emoji telescope   @emoji :telescope: from "telescope"<br>
   @emoji tennis   @emoji :tennis: from "tennis"<br>
   @emoji tent   @emoji :tent: from "tent"<br>
+  @emoji test_tube   @emoji :test_tube: from "test_tube"<br>
   @emoji thailand   @emoji :thailand: from "thailand"<br>
   @emoji thermometer   @emoji :thermometer: from "thermometer"<br>
   @emoji thinking   @emoji :thinking: from "thinking"<br>
+  @emoji thong_sandal   @emoji :thong_sandal: from "thong_sandal"<br>
   @emoji thought_balloon   @emoji :thought_balloon: from "thought_balloon"<br>
+  @emoji thread   @emoji :thread: from "thread"<br>
   @emoji three   @emoji :three: from "three"<br>
   @emoji thumbsdown   @emoji :thumbsdown: from "thumbsdown"<br>
   @emoji thumbsup   @emoji :thumbsup: from "thumbsup"<br>
@@ -1318,6 +1641,7 @@
   @emoji timer_clock   @emoji :timer_clock: from "timer_clock"<br>
   @emoji timor_leste   @emoji :timor_leste: from "timor_leste"<br>
   @emoji tipping_hand_man   @emoji :tipping_hand_man: from "tipping_hand_man"<br>
+  @emoji tipping_hand_person   @emoji :tipping_hand_person: from "tipping_hand_person"<br>
   @emoji tipping_hand_woman   @emoji :tipping_hand_woman: from "tipping_hand_woman"<br>
   @emoji tired_face   @emoji :tired_face: from "tired_face"<br>
   @emoji tm   @emoji :tm: from "tm"<br>
@@ -1328,6 +1652,9 @@
   @emoji tomato   @emoji :tomato: from "tomato"<br>
   @emoji tonga   @emoji :tonga: from "tonga"<br>
   @emoji tongue   @emoji :tongue: from "tongue"<br>
+  @emoji toolbox   @emoji :toolbox: from "toolbox"<br>
+  @emoji tooth   @emoji :tooth: from "tooth"<br>
+  @emoji toothbrush   @emoji :toothbrush: from "toothbrush"<br>
   @emoji top   @emoji :top: from "top"<br>
   @emoji tophat   @emoji :tophat: from "tophat"<br>
   @emoji tornado   @emoji :tornado: from "tornado"<br>
@@ -1338,10 +1665,13 @@
   @emoji train   @emoji :train: from "train"<br>
   @emoji train2   @emoji :train2: from "train2"<br>
   @emoji tram   @emoji :tram: from "tram"<br>
+  @emoji transgender_flag   @emoji :transgender_flag: from "transgender_flag"<br>
+  @emoji transgender_symbol   @emoji :transgender_symbol: from "transgender_symbol"<br>
   @emoji triangular_flag_on_post   @emoji :triangular_flag_on_post: from "triangular_flag_on_post"<br>
   @emoji triangular_ruler   @emoji :triangular_ruler: from "triangular_ruler"<br>
   @emoji trident   @emoji :trident: from "trident"<br>
   @emoji trinidad_tobago   @emoji :trinidad_tobago: from "trinidad_tobago"<br>
+  @emoji tristan_da_cunha   @emoji :tristan_da_cunha: from "tristan_da_cunha"<br>
   @emoji triumph   @emoji :triumph: from "triumph"<br>
   @emoji trolleybus   @emoji :trolleybus: from "trolleybus"<br>
   @emoji trophy   @emoji :trophy: from "trophy"<br>
@@ -1383,14 +1713,19 @@
   @emoji underage   @emoji :underage: from "underage"<br>
   @emoji unicorn   @emoji :unicorn: from "unicorn"<br>
   @emoji united_arab_emirates   @emoji :united_arab_emirates: from "united_arab_emirates"<br>
+  @emoji united_nations   @emoji :united_nations: from "united_nations"<br>
   @emoji unlock   @emoji :unlock: from "unlock"<br>
   @emoji up   @emoji :up: from "up"<br>
   @emoji upside_down_face   @emoji :upside_down_face: from "upside_down_face"<br>
   @emoji uruguay   @emoji :uruguay: from "uruguay"<br>
   @emoji us   @emoji :us: from "us"<br>
+  @emoji us_outlying_islands   @emoji :us_outlying_islands: from "us_outlying_islands"<br>
   @emoji us_virgin_islands   @emoji :us_virgin_islands: from "us_virgin_islands"<br>
   @emoji uzbekistan   @emoji :uzbekistan: from "uzbekistan"<br>
   @emoji v   @emoji :v: from "v"<br>
+  @emoji vampire   @emoji :vampire: from "vampire"<br>
+  @emoji vampire_man   @emoji :vampire_man: from "vampire_man"<br>
+  @emoji vampire_woman   @emoji :vampire_woman: from "vampire_woman"<br>
   @emoji vanuatu   @emoji :vanuatu: from "vanuatu"<br>
   @emoji vatican_city   @emoji :vatican_city: from "vatican_city"<br>
   @emoji venezuela   @emoji :venezuela: from "venezuela"<br>
@@ -1404,8 +1739,11 @@
   @emoji virgo   @emoji :virgo: from "virgo"<br>
   @emoji volcano   @emoji :volcano: from "volcano"<br>
   @emoji volleyball   @emoji :volleyball: from "volleyball"<br>
+  @emoji vomiting_face   @emoji :vomiting_face: from "vomiting_face"<br>
   @emoji vs   @emoji :vs: from "vs"<br>
   @emoji vulcan_salute   @emoji :vulcan_salute: from "vulcan_salute"<br>
+  @emoji waffle   @emoji :waffle: from "waffle"<br>
+  @emoji wales   @emoji :wales: from "wales"<br>
   @emoji walking   @emoji :walking: from "walking"<br>
   @emoji walking_man   @emoji :walking_man: from "walking_man"<br>
   @emoji walking_woman   @emoji :walking_woman: from "walking_woman"<br>
@@ -1416,6 +1754,7 @@
   @emoji wastebasket   @emoji :wastebasket: from "wastebasket"<br>
   @emoji watch   @emoji :watch: from "watch"<br>
   @emoji water_buffalo   @emoji :water_buffalo: from "water_buffalo"<br>
+  @emoji water_polo   @emoji :water_polo: from "water_polo"<br>
   @emoji watermelon   @emoji :watermelon: from "watermelon"<br>
   @emoji wave   @emoji :wave: from "wave"<br>
   @emoji wavy_dash   @emoji :wavy_dash: from "wavy_dash"<br>
@@ -1424,6 +1763,7 @@
   @emoji wc   @emoji :wc: from "wc"<br>
   @emoji weary   @emoji :weary: from "weary"<br>
   @emoji wedding   @emoji :wedding: from "wedding"<br>
+  @emoji weight_lifting   @emoji :weight_lifting: from "weight_lifting"<br>
   @emoji weight_lifting_man   @emoji :weight_lifting_man: from "weight_lifting_man"<br>
   @emoji weight_lifting_woman   @emoji :weight_lifting_woman: from "weight_lifting_woman"<br>
   @emoji western_sahara   @emoji :western_sahara: from "western_sahara"<br>
@@ -1435,6 +1775,9 @@
   @emoji white_circle   @emoji :white_circle: from "white_circle"<br>
   @emoji white_flag   @emoji :white_flag: from "white_flag"<br>
   @emoji white_flower   @emoji :white_flower: from "white_flower"<br>
+  @emoji white_haired_man   @emoji :white_haired_man: from "white_haired_man"<br>
+  @emoji white_haired_woman   @emoji :white_haired_woman: from "white_haired_woman"<br>
+  @emoji white_heart   @emoji :white_heart: from "white_heart"<br>
   @emoji white_large_square   @emoji :white_large_square: from "white_large_square"<br>
   @emoji white_medium_small_square   @emoji :white_medium_small_square: from "white_medium_small_square"<br>
   @emoji white_medium_square   @emoji :white_medium_square: from "white_medium_square"<br>
@@ -1443,19 +1786,26 @@
   @emoji wilted_flower   @emoji :wilted_flower: from "wilted_flower"<br>
   @emoji wind_chime   @emoji :wind_chime: from "wind_chime"<br>
   @emoji wind_face   @emoji :wind_face: from "wind_face"<br>
+  @emoji window   @emoji :window: from "window"<br>
   @emoji wine_glass   @emoji :wine_glass: from "wine_glass"<br>
   @emoji wink   @emoji :wink: from "wink"<br>
   @emoji wolf   @emoji :wolf: from "wolf"<br>
   @emoji woman   @emoji :woman: from "woman"<br>
   @emoji woman_artist   @emoji :woman_artist: from "woman_artist"<br>
   @emoji woman_astronaut   @emoji :woman_astronaut: from "woman_astronaut"<br>
+  @emoji woman_beard   @emoji :woman_beard: from "woman_beard"<br>
   @emoji woman_cartwheeling   @emoji :woman_cartwheeling: from "woman_cartwheeling"<br>
   @emoji woman_cook   @emoji :woman_cook: from "woman_cook"<br>
+  @emoji woman_dancing   @emoji :woman_dancing: from "woman_dancing"<br>
   @emoji woman_facepalming   @emoji :woman_facepalming: from "woman_facepalming"<br>
   @emoji woman_factory_worker   @emoji :woman_factory_worker: from "woman_factory_worker"<br>
   @emoji woman_farmer   @emoji :woman_farmer: from "woman_farmer"<br>
+  @emoji woman_feeding_baby   @emoji :woman_feeding_baby: from "woman_feeding_baby"<br>
   @emoji woman_firefighter   @emoji :woman_firefighter: from "woman_firefighter"<br>
   @emoji woman_health_worker   @emoji :woman_health_worker: from "woman_health_worker"<br>
+  @emoji woman_in_manual_wheelchair   @emoji :woman_in_manual_wheelchair: from "woman_in_manual_wheelchair"<br>
+  @emoji woman_in_motorized_wheelchair   @emoji :woman_in_motorized_wheelchair: from "woman_in_motorized_wheelchair"<br>
+  @emoji woman_in_tuxedo   @emoji :woman_in_tuxedo: from "woman_in_tuxedo"<br>
   @emoji woman_judge   @emoji :woman_judge: from "woman_judge"<br>
   @emoji woman_juggling   @emoji :woman_juggling: from "woman_juggling"<br>
   @emoji woman_mechanic   @emoji :woman_mechanic: from "woman_mechanic"<br>
@@ -1469,25 +1819,46 @@
   @emoji woman_student   @emoji :woman_student: from "woman_student"<br>
   @emoji woman_teacher   @emoji :woman_teacher: from "woman_teacher"<br>
   @emoji woman_technologist   @emoji :woman_technologist: from "woman_technologist"<br>
+  @emoji woman_with_headscarf   @emoji :woman_with_headscarf: from "woman_with_headscarf"<br>
+  @emoji woman_with_probing_cane   @emoji :woman_with_probing_cane: from "woman_with_probing_cane"<br>
   @emoji woman_with_turban   @emoji :woman_with_turban: from "woman_with_turban"<br>
+  @emoji woman_with_veil   @emoji :woman_with_veil: from "woman_with_veil"<br>
   @emoji womans_clothes   @emoji :womans_clothes: from "womans_clothes"<br>
   @emoji womans_hat   @emoji :womans_hat: from "womans_hat"<br>
   @emoji women_wrestling   @emoji :women_wrestling: from "women_wrestling"<br>
   @emoji womens   @emoji :womens: from "womens"<br>
+  @emoji wood   @emoji :wood: from "wood"<br>
+  @emoji woozy_face   @emoji :woozy_face: from "woozy_face"<br>
   @emoji world_map   @emoji :world_map: from "world_map"<br>
+  @emoji worm   @emoji :worm: from "worm"<br>
   @emoji worried   @emoji :worried: from "worried"<br>
   @emoji wrench   @emoji :wrench: from "wrench"<br>
+  @emoji wrestling   @emoji :wrestling: from "wrestling"<br>
   @emoji writing_hand   @emoji :writing_hand: from "writing_hand"<br>
   @emoji x   @emoji :x: from "x"<br>
+  @emoji yarn   @emoji :yarn: from "yarn"<br>
+  @emoji yawning_face   @emoji :yawning_face: from "yawning_face"<br>
+  @emoji yellow_circle   @emoji :yellow_circle: from "yellow_circle"<br>
   @emoji yellow_heart   @emoji :yellow_heart: from "yellow_heart"<br>
+  @emoji yellow_square   @emoji :yellow_square: from "yellow_square"<br>
   @emoji yemen   @emoji :yemen: from "yemen"<br>
   @emoji yen   @emoji :yen: from "yen"<br>
   @emoji yin_yang   @emoji :yin_yang: from "yin_yang"<br>
+  @emoji yo_yo   @emoji :yo_yo: from "yo_yo"<br>
   @emoji yum   @emoji :yum: from "yum"<br>
   @emoji zambia   @emoji :zambia: from "zambia"<br>
+  @emoji zany_face   @emoji :zany_face: from "zany_face"<br>
   @emoji zap   @emoji :zap: from "zap"<br>
+  @emoji zebra   @emoji :zebra: from "zebra"<br>
   @emoji zero   @emoji :zero: from "zero"<br>
   @emoji zimbabwe   @emoji :zimbabwe: from "zimbabwe"<br>
   @emoji zipper_mouth_face   @emoji :zipper_mouth_face: from "zipper_mouth_face"<br>
+  @emoji zombie   @emoji :zombie: from "zombie"<br>
+  @emoji zombie_man   @emoji :zombie_man: from "zombie_man"<br>
+  @emoji zombie_woman   @emoji :zombie_woman: from "zombie_woman"<br>
   @emoji zzz   @emoji :zzz: from "zzz"<br>
+  @emoji blonde_man   @emoji :blonde_man: from "blonde_man"<br>
+  @emoji person_frowning   @emoji :person_frowning: from "person_frowning"<br>
+  @emoji person_with_blond_hair   @emoji :person_with_blond_hair: from "person_with_blond_hair"<br>
+  @emoji person_with_pouting_face   @emoji :person_with_pouting_face: from "person_with_pouting_face"<br>
   */

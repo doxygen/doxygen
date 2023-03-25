@@ -18,25 +18,24 @@
 #ifndef ENTRY_H
 #define ENTRY_H
 
+#include <vector>
+#include <memory>
+#include <sstream>
+
 #include "types.h"
+#include "arguments.h"
+#include "reflist.h"
+#include "textstream.h"
 
-#include <qlist.h>
-#include <qgstring.h>
-
-struct SectionInfo;
-class QFile;
+class SectionInfo;
 class FileDef;
-class FileStorage;
-class StorageIntf;
-class ArgumentList;
-struct ListItemInfo;
 
 /** This class stores information about an inheritance relation
  */
 struct BaseInfo
 {
   /*! Creates an object representing an inheritance relation */
-  BaseInfo(const char *n,Protection p,Specifier v) :
+  BaseInfo(const QCString &n,Protection p,Specifier v) :
     name(n),prot(p),virt(v) {}
   QCString   name; //!< the name of the base class
   Protection prot; //!< inheritance type
@@ -67,6 +66,7 @@ class Entry
     enum Sections {
       CLASS_SEC        = 0x00000001,
       NAMESPACE_SEC    = 0x00000010,
+      CONCEPT_SEC      = 0x00000020,
       COMPOUND_MASK    = CLASS_SEC,
       SCOPE_MASK       = COMPOUND_MASK | NAMESPACE_SEC,
 
@@ -80,6 +80,7 @@ class Entry
       CATEGORYDOC_SEC  = 0x00040000,
       SERVICEDOC_SEC   = 0x00080000,
       SINGLETONDOC_SEC = 0x00100000,
+      CONCEPTDOC_SEC   = 0x00200000,
       COMPOUNDDOC_MASK = CLASSDOC_SEC | STRUCTDOC_SEC | UNIONDOC_SEC |
                          INTERFACEDOC_SEC | EXCEPTIONDOC_SEC | PROTOCOLDOC_SEC |
                          CATEGORYDOC_SEC | SERVICEDOC_SEC | SINGLETONDOC_SEC,
@@ -118,70 +119,71 @@ class Entry
     };
 
     // class specifiers (add new items to the end)
-    static const uint64 Template        = (1ULL<<0);
-    static const uint64 Generic         = (1ULL<<1);
-    static const uint64 Ref             = (1ULL<<2);
-    static const uint64 Value           = (1ULL<<3);
-    static const uint64 Interface       = (1ULL<<4);
-    static const uint64 Struct          = (1ULL<<5);
-    static const uint64 Union           = (1ULL<<6);
-    static const uint64 Exception       = (1ULL<<7);
-    static const uint64 Protocol        = (1ULL<<8);
-    static const uint64 Category        = (1ULL<<9);
-    static const uint64 SealedClass     = (1ULL<<10);
-    static const uint64 AbstractClass   = (1ULL<<11);
-    static const uint64 Enum            = (1ULL<<12); // for Java-style enums
-    static const uint64 Service         = (1ULL<<13); // UNO IDL
-    static const uint64 Singleton       = (1ULL<<14); // UNO IDL
-    static const uint64 ForwardDecl     = (1ULL<<15); // forward declared template classes
-    static const uint64 Local           = (1ULL<<16); // for Slice types
+    static const uint64_t Template        = (1ULL<<0);
+    static const uint64_t Generic         = (1ULL<<1);
+    static const uint64_t Ref             = (1ULL<<2);
+    static const uint64_t Value           = (1ULL<<3);
+    static const uint64_t Interface       = (1ULL<<4);
+    static const uint64_t Struct          = (1ULL<<5);
+    static const uint64_t Union           = (1ULL<<6);
+    static const uint64_t Exception       = (1ULL<<7);
+    static const uint64_t Protocol        = (1ULL<<8);
+    static const uint64_t Category        = (1ULL<<9);
+    static const uint64_t SealedClass     = (1ULL<<10);
+    static const uint64_t AbstractClass   = (1ULL<<11);
+    static const uint64_t Enum            = (1ULL<<12); // for Java-style enums
+    static const uint64_t Service         = (1ULL<<13); // UNO IDL
+    static const uint64_t Singleton       = (1ULL<<14); // UNO IDL
+    static const uint64_t ForwardDecl     = (1ULL<<15); // forward declared template classes
+    static const uint64_t Local           = (1ULL<<16); // for Slice types
 
     // member specifiers (add new items to the beginning)
-    static const uint64 ConstExpr       = (1ULL<<19); // C++11 constexpr
-    static const uint64 PrivateGettable     = (1ULL<<20); // C# private getter
-    static const uint64 ProtectedGettable   = (1ULL<<21); // C# protected getter
-    static const uint64 PrivateSettable     = (1ULL<<22); // C# private setter
-    static const uint64 ProtectedSettable   = (1ULL<<23); // C# protected setter
-    static const uint64 Inline          = (1ULL<<24);
-    static const uint64 Explicit        = (1ULL<<25);
-    static const uint64 Mutable         = (1ULL<<26);
-    static const uint64 Settable        = (1ULL<<27);
-    static const uint64 Gettable        = (1ULL<<28);
-    static const uint64 Readable        = (1ULL<<29);
-    static const uint64 Writable        = (1ULL<<30);
-    static const uint64 Final           = (1ULL<<31);
-    static const uint64 Abstract        = (1ULL<<32);
-    static const uint64 Addable         = (1ULL<<33);
-    static const uint64 Removable       = (1ULL<<34);
-    static const uint64 Raisable        = (1ULL<<35);
-    static const uint64 Override        = (1ULL<<36);
-    static const uint64 New             = (1ULL<<37);
-    static const uint64 Sealed          = (1ULL<<38);
-    static const uint64 Initonly        = (1ULL<<39);
-    static const uint64 Optional        = (1ULL<<40);
-    static const uint64 Required        = (1ULL<<41);
-    static const uint64 NonAtomic       = (1ULL<<42);
-    static const uint64 Copy            = (1ULL<<43);
-    static const uint64 Retain          = (1ULL<<44);
-    static const uint64 Assign          = (1ULL<<45);
-    static const uint64 Strong          = (1ULL<<46);
-    static const uint64 Weak            = (1ULL<<47);
-    static const uint64 Unretained      = (1ULL<<48);
-    static const uint64 Alias           = (1ULL<<49);
-    static const uint64 ConstExp        = (1ULL<<50);
-    static const uint64 Default         = (1ULL<<51);
-    static const uint64 Delete          = (1ULL<<52);
-    static const uint64 NoExcept        = (1ULL<<53);
-    static const uint64 Attribute       = (1ULL<<54); // UNO IDL attribute
-    static const uint64 Property        = (1ULL<<55); // UNO IDL property
-    static const uint64 Readonly        = (1ULL<<56); // on UNO IDL attribute or property
-    static const uint64 Bound           = (1ULL<<57); // on UNO IDL attribute or property
-    static const uint64 Constrained     = (1ULL<<58); // on UNO IDL property
-    static const uint64 Transient       = (1ULL<<59); // on UNO IDL property
-    static const uint64 MaybeVoid       = (1ULL<<60); // on UNO IDL property
-    static const uint64 MaybeDefault    = (1ULL<<61); // on UNO IDL property
-    static const uint64 MaybeAmbiguous  = (1ULL<<62); // on UNO IDL property
-    static const uint64 Published       = (1ULL<<63); // UNO IDL keyword
+    static const uint64_t EnumStruct      = (1ULL<<18);
+    static const uint64_t ConstExpr       = (1ULL<<19); // C++11 constexpr
+    static const uint64_t PrivateGettable     = (1ULL<<20); // C# private getter
+    static const uint64_t ProtectedGettable   = (1ULL<<21); // C# protected getter
+    static const uint64_t PrivateSettable     = (1ULL<<22); // C# private setter
+    static const uint64_t ProtectedSettable   = (1ULL<<23); // C# protected setter
+    static const uint64_t Inline          = (1ULL<<24);
+    static const uint64_t Explicit        = (1ULL<<25);
+    static const uint64_t Mutable         = (1ULL<<26);
+    static const uint64_t Settable        = (1ULL<<27);
+    static const uint64_t Gettable        = (1ULL<<28);
+    static const uint64_t Readable        = (1ULL<<29);
+    static const uint64_t Writable        = (1ULL<<30);
+    static const uint64_t Final           = (1ULL<<31);
+    static const uint64_t Abstract        = (1ULL<<32);
+    static const uint64_t Addable         = (1ULL<<33);
+    static const uint64_t Removable       = (1ULL<<34);
+    static const uint64_t Raisable        = (1ULL<<35);
+    static const uint64_t Override        = (1ULL<<36);
+    static const uint64_t New             = (1ULL<<37);
+    static const uint64_t Sealed          = (1ULL<<38);
+    static const uint64_t Initonly        = (1ULL<<39);
+    static const uint64_t Optional        = (1ULL<<40);
+    static const uint64_t Required        = (1ULL<<41);
+    static const uint64_t NonAtomic       = (1ULL<<42);
+    static const uint64_t Copy            = (1ULL<<43);
+    static const uint64_t Retain          = (1ULL<<44);
+    static const uint64_t Assign          = (1ULL<<45);
+    static const uint64_t Strong          = (1ULL<<46);
+    static const uint64_t Weak            = (1ULL<<47);
+    static const uint64_t Unretained      = (1ULL<<48);
+    static const uint64_t Alias           = (1ULL<<49);
+    static const uint64_t ConstExp        = (1ULL<<50);
+    static const uint64_t Default         = (1ULL<<51);
+    static const uint64_t Delete          = (1ULL<<52);
+    static const uint64_t NoExcept        = (1ULL<<53);
+    static const uint64_t Attribute       = (1ULL<<54); // UNO IDL attribute
+    static const uint64_t Property        = (1ULL<<55); // UNO IDL property
+    static const uint64_t Readonly        = (1ULL<<56); // on UNO IDL attribute or property
+    static const uint64_t Bound           = (1ULL<<57); // on UNO IDL attribute or property
+    static const uint64_t Constrained     = (1ULL<<58); // on UNO IDL property
+    static const uint64_t Transient       = (1ULL<<59); // on UNO IDL property
+    static const uint64_t MaybeVoid       = (1ULL<<60); // on UNO IDL property
+    static const uint64_t MaybeDefault    = (1ULL<<61); // on UNO IDL property
+    static const uint64_t MaybeAmbiguous  = (1ULL<<62); // on UNO IDL property
+    static const uint64_t Published       = (1ULL<<63); // UNO IDL keyword
 
     enum GroupDocType
     {
@@ -194,54 +196,58 @@ class Entry
     Entry(const Entry &);
    ~Entry();
 
-    /*! Returns the static size of the Entry (so excluding any dynamic memory) */
-    int getSize();
-
-    void addSpecialListItem(const char *listName,int index);
-
-    // while parsing a file these function can be used to navigate/build the tree
-    void setParent(Entry *parent) { m_parent = parent; }
-
     /*! Returns the parent for this Entry or 0 if this entry has no parent. */
     Entry *parent() const { return m_parent; }
 
     /*! Returns the list of children for this Entry
      *  @see addSubEntry() and removeSubEntry()
      */
-    const QList<Entry> *children() const { return m_sublist; }
+    const std::vector< std::shared_ptr<Entry> > &children() const { return m_sublist; }
 
-    /*! Adds entry \a e as a child to this entry */
-    void addSubEntry (Entry* e) ;
+    /*! @name add entry as a child and pass ownership.
+     *  @note This makes the entry passed invalid!
+     *  @{
+     */
+    void moveToSubEntryAndKeep(Entry* e);
+    void moveToSubEntryAndKeep(std::shared_ptr<Entry> e);
+    /*! @} */
+
+    /*! @name add entry as a child, pass ownership and reinitialize entry */
+    void moveToSubEntryAndRefresh(Entry* &e);
+    void moveToSubEntryAndRefresh(std::shared_ptr<Entry> &e);
+
+    /*! make a copy of \a e and add it as a child to this entry */
+    void copyToSubEntry (Entry* e);
+    void copyToSubEntry (const std::shared_ptr<Entry> &e);
 
     /*! Removes entry \a e from the list of children.
-     *  Returns a pointer to the entry or 0 if the entry was not a child.
-     *  Note the entry will not be deleted.
+     *  The entry will be deleted if found.
      */
-    Entry *removeSubEntry(Entry *e);
+    void removeSubEntry(const Entry *e);
 
     /*! Restore the state of this Entry to the default value it has
      *  at construction time.
      */
     void reset();
 
-    void changeSection(int sec) { section = sec; }
+    void markAsProcessed() const { (const_cast<Entry*>(this))->section = Entry::EMPTY_SEC; }
     void setFileDef(FileDef *fd);
     FileDef *fileDef() const { return m_fileDef; }
-
-  public:
 
     // identification
     int          section;     //!< entry type (see Sections);
     QCString	 type;        //!< member type
     QCString	 name;        //!< member name
-    TagInfo     *tagInfo;     //!< tag file info
+    bool         hasTagInfo;  //!< is tag info valid
+    TagInfo      tagInfoData; //!< tag file info data
+    const TagInfo *tagInfo() const { return hasTagInfo ? &tagInfoData : 0; }
 
     // content
     Protection protection;    //!< class protection
     MethodTypes mtype;        //!< signal, slot, (dcop) method, or property?
-    uint64 spec;              //!< class/member specifiers
+    uint64_t spec;              //!< class/member specifiers
     int  initLines;           //!< define/variable initializer lines to show
-    bool stat;                //!< static ?
+    bool isStatic;            //!< static ?
     bool explicitExternal;    //!< explicitly defined as external?
     bool proto;               //!< prototype ?
     bool subGrouping;         //!< automatically group class members?
@@ -252,10 +258,10 @@ class Entry
     Specifier    virt;        //!< virtualness of the entry
     QCString     args;        //!< member argument string
     QCString     bitfields;   //!< member's bit fields
-    ArgumentList *argList;    //!< member arguments as a list
-    QList<ArgumentList> *tArgLists; //!< template argument declarations
-    QGString	 program;     //!< the program text
-    QGString     initializer; //!< initial value (for variables)
+    ArgumentList argList;     //!< member arguments as a list
+    ArgumentLists tArgLists;  //!< template argument declarations
+    TextStream   program;     //!< the program text
+    TextStream   initializer; //!< initial value (for variables)
     QCString     includeFile; //!< include file (2 arg of \\class, must be unique)
     QCString     includeName; //!< include name (3 arg of \\class)
     QCString     doc;         //!< documentation block (partly parsed)
@@ -273,17 +279,18 @@ class Entry
     QCString     write;       //!< property write accessor
     QCString     inside;      //!< name of the class in which documents are found
     QCString     exception;   //!< throw specification
-    ArgumentList *typeConstr; //!< where clause (C#) for type constraints
-    int          bodyLine;    //!< line number of the definition in the source
+    ArgumentList typeConstr;  //!< where clause (C#) for type constraints
+    int          bodyLine;    //!< line number of the body in the source
+    int          bodyColumn;  //!< column of the body in the source
     int          endBodyLine; //!< line number where the definition ends
     int          mGrpId;      //!< member group id
-    QList<BaseInfo> *extends; //!< list of base classes
-    QList<Grouping> *groups;  //!< list of groups this entry belongs to
-    QList<SectionInfo> *anchors; //!< list of anchors defined in this entry
+    std::vector<BaseInfo> extends; //!< list of base classes
+    std::vector<Grouping> groups;  //!< list of groups this entry belongs to
+    std::vector<const SectionInfo*> anchors; //!< list of anchors defined in this entry
     QCString	fileName;     //!< file this entry was extracted from
     int		startLine;    //!< start line of entry in the source
     int		startColumn;  //!< start column of entry in the source
-    QList<ListItemInfo> *sli; //!< special lists (test/todo/bug/deprecated/..) this entry is in
+    RefItemVector sli; //!< special lists (test/todo/bug/deprecated/..) this entry is in
     SrcLangExt  lang;         //!< programming language in which this entry was found
     bool        hidden;       //!< does this represent an entity that is hidden from the output
     bool        artificial;   //!< Artificially introduced item
@@ -291,9 +298,8 @@ class Entry
     QCString    id;           //!< libclang id
     LocalToc    localToc;
     QCString    metaData;     //!< Slice metadata
-
-
-    static int  num;          //!< counts the total number of entries
+    QCString    req;          //!< C++20 requires clause
+    std::vector<std::string> qualifiers;  //!< qualifiers specified with the qualifier command
 
     /// return the command name used to define GROUPDOC_SEC
     const char *groupDocCmd() const
@@ -323,12 +329,11 @@ class Entry
 
   private:
     Entry         *m_parent;    //!< parent node in the tree
-    QList<Entry>  *m_sublist;   //!< entries that are children of this one
+    std::vector< std::shared_ptr<Entry> > m_sublist;
     Entry &operator=(const Entry &);
     FileDef       *m_fileDef;
 };
 
-typedef QList<Entry> EntryList;
-typedef QListIterator<Entry> EntryListIterator;
+typedef std::vector< std::shared_ptr<Entry> > EntryList;
 
 #endif

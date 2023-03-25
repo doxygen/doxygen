@@ -1,0 +1,20 @@
+Doxygen's jquery.js script is composed of minified versions of the following
+packages:
+- jquery    3.6.0:  https://jquery.com/download/
+- jquery.ui 1.13.2: https://github.com/jquery/jquery-ui
+    modules required:
+    - jquery.ui.core          all
+    - jquery.ui.interactions  resizable
+    - jquery.ui.widgets       mouse
+- jquery.scrollTo:   2.1.2: https://github.com/flesler/jquery.scrollTo
+- jquery.powertip:   1.3.1: https://stevenbenner.github.io/jquery-powertip/
+- jquery.touchpunch: 0.2.3: http://touchpunch.furf.com/ + fix for issue 303
+- jquery.smartmenus: 1.1.0: https://www.smartmenus.org/
+
+The Makefile will built the jquery.js files used by doxygen.
+
+Note that there is a performance issue in the default powertip version.
+See https://github.com/stevenbenner/jquery-powertip/issues/178
+Until that is fixed a modified version is shipped with doxygen. This version
+removes the "destroy" functionality which was not used by doxygen anyway.
+

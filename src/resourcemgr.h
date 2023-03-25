@@ -15,12 +15,15 @@
 #ifndef RESOURCEMGR_H
 #define RESOURCEMGR_H
 
-#include <qcstring.h>
+#include <memory>
+#include <initializer_list>
+
+#include "qcstring.h"
 
 /** @brief Compiled resource */
 struct Resource
 {
-  enum Type { Verbatim, Luminance, LumAlpha, CSS };
+  enum Type { Verbatim, Luminance, LumAlpha, CSS, SVG };
   const char *category;
   const char *name;
   const unsigned char *data;
@@ -36,28 +39,28 @@ class ResourceMgr
     static ResourceMgr &instance();
 
     /** Registers an array of resources */
-    void registerResources(const Resource resources[],int numResources);
+    void registerResources(std::initializer_list<Resource> resources);
 
     /** Writes all resource belonging to a given category to a given target directory */
-    bool writeCategory(const char *categoryName,const char *targetDir) const;
+    bool writeCategory(const QCString &categoryName,const QCString &targetDir) const;
 
     /** Copies a registered resource to a given target directory */
-    bool copyResource(const char *name,const char *targetDir) const;
+    bool copyResource(const QCString &name,const QCString &targetDir) const;
 
     /** Copies a registered resource to a given target directory under a given target name */
-    bool copyResourceAs(const char *name,const char *targetDir,const char *targetName) const;
+    bool copyResourceAs(const QCString &name,const QCString &targetDir,const QCString &targetName, bool append=false) const;
 
     /** Gets the resource data as a C string */
-    QCString getAsString(const char *name) const;
+    QCString getAsString(const QCString &name) const;
 
   private:
     /** Returns a pointer to the resource object with the given name. */
-    const Resource *get(const char *name) const;
+    const Resource *get(const QCString &name) const;
 
     ResourceMgr();
    ~ResourceMgr();
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 #endif

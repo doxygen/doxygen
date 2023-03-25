@@ -20,6 +20,11 @@
 %option nounput
 %option reentrant bison-bridge
 %option extra-type="struct constexpYY_state *"
+%top{
+#include <stdint.h>
+// forward declare yyscan_t to improve typesafety
+#include "constexp_p.h"  
+}
 
 %{
 
@@ -27,15 +32,26 @@
 #include "cppvalue.h"
 #include "ce_parse.hpp" // generated header file
 #include "message.h"
+#include "debug.h"
 
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
 
+#define USE_STATE2STRING 0
+
+#if USE_STATE2STRING
+static const char *stateToString(int state);
+#endif
 
 static int yyread(char *buf,int max_size,yyscan_t yyscanner);
 
 #undef  YY_INPUT
 #define YY_INPUT(buf,result,max_size) result=yyread(buf,max_size,yyscanner);
+
+// otherwise the filename would be the name of the converted file (*.cpp instead of *.l)
+static inline const char *getLexerFILE() {return __FILE__;}
+#define LEX_NO_INPUT_FILENAME
+#include "doxygen_lex.h"
 
 %}
 
@@ -69,23 +85,26 @@ CONSTSUFFIX ([uU][lL]?[lL]?)|([lL][lL]?[uU]?)
 "("             		   { return TOK_LPAREN; }
 ")"             		   { return TOK_RPAREN; }
 "'"(([^\'\n\r\\]+)|(\\(([ntvbrfa\\?'\"])|([0-9]+)|([xX][0-9a-fA-F]+))))"'"   { 
-                                     yyextra->g_strToken=yytext;  
+                                     yyextra->strToken=yytext;  
 				     return TOK_CHARACTER; 
 				   }
-0[0-7]*{CONSTSUFFIX}?              { yyextra->g_strToken=yytext; 
+0[0-7]*{CONSTSUFFIX}?              { yyextra->strToken=yytext; 
   				     return TOK_OCTALINT; 
 				   }
-[1-9][0-9]*{CONSTSUFFIX}?          { yyextra->g_strToken=yytext; 
+[1-9][0-9]*{CONSTSUFFIX}?          { yyextra->strToken=yytext; 
   				     return TOK_DECIMALINT; 
 				   }
-(0x|0X)[0-9a-fA-F]+{CONSTSUFFIX}?  { yyextra->g_strToken=yytext+2; 
+(0x|0X)[0-9a-fA-F]+{CONSTSUFFIX}?  { yyextra->strToken=yytext+2; 
                                      return TOK_HEXADECIMALINT; 
                                    }
+(0b|0B)[01]+{CONSTSUFFIX}?         { yyextra->strToken=yytext+2; 
+                                     return TOK_BINARYINT; 
+                                   }
 (([0-9]+\.[0-9]*)|([0-9]*\.[0-9]+))([eE]([\-\+])?[0-9]+)?([fFlL])? { 
-                                     yyextra->g_strToken=yytext; return TOK_FLOAT; 
+                                     yyextra->strToken=yytext; return TOK_FLOAT; 
                                    }
 ([0-9]+[eE])([\-\+])?[0-9]+([fFlL])? { 
-                                     yyextra->g_strToken=yytext; return TOK_FLOAT; 
+                                     yyextra->strToken=yytext; return TOK_FLOAT; 
 			           }
 .				   
 \n
@@ -94,48 +113,62 @@ CONSTSUFFIX ([uU][lL]?[lL]?)|([lL][lL]?[uU]?)
 
 static int yyread(char *buf,int max_size,yyscan_t yyscanner)
 {
-  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  struct yyguts_t *yyg = static_cast<struct yyguts_t*>(yyscanner);
   int c=0;
-  while( c < max_size && yyextra->g_inputString[yyextra->g_inputPosition] )
+  while( c < max_size && yyextra->inputString[yyextra->inputPosition] )
   {
-    *buf = yyextra->g_inputString[yyextra->g_inputPosition++] ;
+    *buf = yyextra->inputString[yyextra->inputPosition++] ;
     c++; buf++;
   }
   return c;
 }
 
-
-static yyscan_t yyscanner;
-static struct constexpYY_state constexpYY_extra;
-
-bool parseconstexp(const char *fileName,int lineNr,const QCString &s)
+struct ConstExpressionParser::Private
 {
-  constexpYYlex_init_extra(&constexpYY_extra, &yyscanner);
-  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyscan_t yyscanner;
+  struct constexpYY_state constexpYY_extra;
+};
+
+
+ConstExpressionParser::ConstExpressionParser() : p(std::make_unique<Private>())
+{
+  constexpYYlex_init_extra(&p->constexpYY_extra, &p->yyscanner);
+}
+
+ConstExpressionParser::~ConstExpressionParser()
+{
+  constexpYYlex_destroy(p->yyscanner);
+}
+
+bool ConstExpressionParser::parse(const char *fileName,int lineNr,const std::string &s)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)p->yyscanner;
 
 #ifdef FLEX_DEBUG
-  yyset_debug(1,yyscanner);
+  constexpYYset_debug(Debug::isFlagSet(Debug::Lex_constexp)?1:0,p->yyscanner);
 #endif
 
-  yyextra->g_constExpFileName = fileName;
-  yyextra->g_constExpLineNr = lineNr;
-  yyextra->g_inputString = s;
-  yyextra->g_inputPosition = 0;
-  constexpYYrestart( yyin, yyscanner );
+  yyextra->constExpFileName = fileName;
+  yyextra->constExpLineNr = lineNr;
+  yyextra->inputString = s;
+  yyextra->inputPosition = 0;
+  constexpYYrestart( yyin, p->yyscanner );
 
-  printlex(yy_flex_debug, TRUE, __FILE__, fileName);
-  //printf("Expression: '%s'\n",s.data());
+  DebugLex debugLex(Debug::Lex_constexp, __FILE__, fileName);
+  //printf("Expression: '%s'\n",qPrint(s));
 
-  constexpYYparse(yyscanner);
+  constexpYYparse(p->yyscanner);
 
   //printf("Result: %ld\n",(long)g_resultValue);
-  printlex(yy_flex_debug, FALSE, __FILE__, fileName);
-  bool result = (long)yyextra->g_resultValue!=0;
+  bool result = static_cast<long>(yyextra->resultValue)!=0;
 
-  constexpYYlex_destroy(yyscanner);
   return result;
 }
 
 extern "C" {
-  int constexpYYwrap(yyscan_t yyscanner) { return 1; }
+  int constexpYYwrap(yyscan_t /* yyscanner */) { return 1; }
 }
+
+#if USE_STATE2STRING
+#include "constexp.l.h"
+#endif

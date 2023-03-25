@@ -28,7 +28,7 @@
  *    @li \link func(int,const Args**... args) Eighth overload\endlink
  *    @li \link func(int,Args...) Ninth overload\endlink
  *
- *  The followings are interpreted the same:
+ *  The following are interpreted the same:
  *    @li \link func(int,const Args&... args) without template argument\endlink
  *    @li \link func<Args...>(int,const Args&... args) with template argument\endlink
  *

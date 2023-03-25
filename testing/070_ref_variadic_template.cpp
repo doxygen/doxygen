@@ -28,7 +28,7 @@
  *    @li \ref func(int,const Args**... args) "Eighth overload"
  *    @li \ref func(int,Args...) "Ninth overload"
  *
- *  The followings are interpreted the same:
+ *  The following are interpreted the same:
  *    @li \ref func(int,const Args&... args) "without template argument"
  *    @li \ref func<Args...>(int,const Args&... args) "with template argument"
  *
