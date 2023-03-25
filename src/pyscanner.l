@@ -212,6 +212,7 @@ STARTDOCSYMS      "##"
 
 %x Search
 %x SearchMemVars
+%x SearchSkipValue
 
   /* Mid-comment states */
 
@@ -551,8 +552,46 @@ STARTDOCSYMS      "##"
                         BEGIN( DoubleQuoteString );
                       }
     \n                { incLineNr(yyscanner); }
+    "="               {
+                        yyextra->current->doc.resize(0);
+                        yyextra->current->brief.resize(0);
+                        BEGIN( SearchSkipValue  );
+                      }
     {IDENTIFIER}      // identifiers
-    [^'"\.#a-z_A-Z\n]+  // other uninteresting stuff
+    [^'"\.#a-z_A-Z=\n]+  // other uninteresting stuff
+    .                 // anything else
+}
+
+<SearchSkipValue>{
+    {TRIDOUBLEQUOTE}  { // start of a comment block
+                        initTriDoubleQuoteBlock(yyscanner);
+                        BEGIN(TripleComment);
+                      }
+
+    {TRISINGLEQUOTE}  { // start of a comment block
+                        initTriSingleQuoteBlock(yyscanner);
+                        BEGIN(TripleComment);
+                      }
+    {STARTDOCSYMS}/[^#]    {  // start of a special comment
+                        initSpecialBlock(yyscanner);
+                        BEGIN(SpecialComment);
+                      }
+    {POUNDCOMMENT}    { // #
+                      }
+    "'"               { // start of a single quoted string
+                        yyextra->stringContext=YY_START;
+                        yyextra->copyString=0;
+                        BEGIN( SingleQuoteString );
+                      }
+    "\""              { // start of a double quoted string
+                        yyextra->stringContext=YY_START;
+                        yyextra->copyString=0;
+                        BEGIN( DoubleQuoteString );
+                      }
+    \n                { incLineNr(yyscanner);
+                        BEGIN(SearchMemVars);
+                      }
+    {IDENTIFIER}      // identifiers
     .                 // anything else
 }
 
