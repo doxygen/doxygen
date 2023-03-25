@@ -504,7 +504,7 @@ STARTDOCSYMS      "##"
 }
 
 <SearchMemVars>{
-    "self."{IDENTIFIER}/{B}"," {
+    "self."{IDENTIFIER}/{B}[,)] {
                         DBG_CTX((stderr,"Found instance method variable %s in %s at %d\n",&yytext[5],qPrint(yyextra->current_root->name.data(),yyextra->yyLineNr)));
                         docVariable(yyscanner,&yytext[5]);
                         addEntry(yyscanner);
@@ -514,7 +514,7 @@ STARTDOCSYMS      "##"
                         docVariable(yyscanner,&yytext[5]);
                         newEntry(yyscanner);
                       }
-    "cls."{IDENTIFIER}/{B}"," {
+    "cls."{IDENTIFIER}/{B}[,)] {
                         DBG_CTX((stderr,"Found class method variable %s in %s at %d\n",&yytext[4],qPrint(yyextra->current_root->name),yyextra->yyLineNr));
                         docVariable(yyscanner,&yytext[4]);
                         addEntry(yyscanner);
