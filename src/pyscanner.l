@@ -126,6 +126,8 @@ static inline int computeIndent(const char *s);
 static void initParser(yyscan_t yyscanner);
 static void initEntry(yyscan_t yyscanner);
 static void newEntry(yyscan_t yyscanner);
+static void addEntry(yyscan_t yyscanner);
+static void docVariable(yyscan_t yyscanner,const char *name);
 static void newVariable(yyscan_t yyscanner);
 static void newFunction(yyscan_t yyscanner);
 static QCString findPackageScopeFromPath(yyscan_t yyscanner,const QCString &path);
@@ -502,46 +504,24 @@ STARTDOCSYMS      "##"
 }
 
 <SearchMemVars>{
+    "self."{IDENTIFIER}/{B}"," {
+                        DBG_CTX((stderr,"Found instance method variable %s in %s at %d\n",&yytext[5],qPrint(yyextra->current_root->name.data(),yyextra->yyLineNr)));
+                        docVariable(yyscanner,&yytext[5]);
+                        addEntry(yyscanner);
+                      }
     "self."{IDENTIFIER}/{B}"=" {
                         DBG_CTX((stderr,"Found instance method variable %s in %s at %d\n",&yytext[5],qPrint(yyextra->current_root->name.data(),yyextra->yyLineNr)));
-                        yyextra->current->name=&yytext[5];
-                        yyextra->current->section=Entry::VARIABLE_SEC;
-                        yyextra->current->fileName  = yyextra->fileName;
-                        yyextra->current->startLine = yyextra->yyLineNr;
-                        yyextra->current->bodyLine  = yyextra->yyLineNr;
-                        yyextra->current->type.resize(0);
-                        if (yyextra->current->name.at(0)=='_')
-                        {
-                          if (yyextra->current->name.at(1)=='_') // mark as private
-                          {
-                            yyextra->current->protection=Protection::Private;
-                          }
-                          else // mark as protected
-                          {
-                            yyextra->current->protection=Protection::Protected;
-                          }
-                        }
+                        docVariable(yyscanner,&yytext[5]);
                         newEntry(yyscanner);
+                      }
+    "cls."{IDENTIFIER}/{B}"," {
+                        DBG_CTX((stderr,"Found class method variable %s in %s at %d\n",&yytext[4],qPrint(yyextra->current_root->name),yyextra->yyLineNr));
+                        docVariable(yyscanner,&yytext[4]);
+                        addEntry(yyscanner);
                       }
     "cls."{IDENTIFIER}/{B}"=" {
                         DBG_CTX((stderr,"Found class method variable %s in %s at %d\n",&yytext[4],qPrint(yyextra->current_root->name),yyextra->yyLineNr));
-                        yyextra->current->name=&yytext[4];
-                        yyextra->current->section=Entry::VARIABLE_SEC;
-                        yyextra->current->fileName  = yyextra->fileName;
-                        yyextra->current->startLine = yyextra->yyLineNr;
-                        yyextra->current->bodyLine  = yyextra->yyLineNr;
-                        yyextra->current->type.resize(0);
-                        if (yyextra->current->name.at(0)=='_')
-                        {
-                          if (yyextra->current->name.at(1)=='_') // mark as private
-                          {
-                            yyextra->current->protection=Protection::Private;
-                          }
-                          else // mark as protected
-                          {
-                            yyextra->current->protection=Protection::Protected;
-                          }
-                        }
+                        docVariable(yyscanner,&yytext[4]);
                         newEntry(yyscanner);
                       }
     {TRIDOUBLEQUOTE}  { // start of a comment block
@@ -1566,6 +1546,51 @@ static void newEntry(yyscan_t yyscanner)
   yyextra->previous = yyextra->current;
   yyextra->current_root->moveToSubEntryAndRefresh(yyextra->current);
   initEntry(yyscanner);
+}
+
+static void addEntry(yyscan_t yyscanner)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+
+  auto doc        = yyextra->current->doc;
+  auto docLine    = yyextra->current->docLine;
+  auto docFile    = yyextra->current->docFile;
+  auto brief      = yyextra->current->brief;
+  auto briefLine  = yyextra->current->briefLine;
+  auto briefFile  = yyextra->current->briefFile;
+
+  yyextra->previous = yyextra->current;
+  yyextra->current_root->moveToSubEntryAndRefresh(yyextra->current);
+  initEntry(yyscanner);
+
+  yyextra->current->doc        = doc;
+  yyextra->current->docLine    = docLine;
+  yyextra->current->docFile    = docFile;
+  yyextra->current->brief      = brief;
+  yyextra->current->briefLine  = briefLine;
+  yyextra->current->briefFile  = briefFile;
+}
+
+static void docVariable(yyscan_t yyscanner,const char *name)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->current->name = name;
+  yyextra->current->section=Entry::VARIABLE_SEC;
+  yyextra->current->fileName  = yyextra->fileName;
+  yyextra->current->startLine = yyextra->yyLineNr;
+  yyextra->current->bodyLine  = yyextra->yyLineNr;
+  yyextra->current->type.resize(0);
+  if (yyextra->current->name.at(0)=='_')
+  {
+    if (yyextra->current->name.at(1)=='_') // mark as private
+    {
+      yyextra->current->protection=Protection::Private;
+    }
+    else // mark as protected
+    {
+      yyextra->current->protection=Protection::Protected;
+    }
+  }
 }
 
 static void newVariable(yyscan_t yyscanner)
