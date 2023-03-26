@@ -44,6 +44,7 @@ CommandMap cmdMap[] =
   { "showdate",      CMD_SHOWDATE },
   { "dontinclude",   CMD_DONTINCLUDE },
   { "dotfile",       CMD_DOTFILE },
+  { "doxysetting",   CMD_DOXYSETTING },
   { "e",             CMD_EMPHASIS },
   { "em",            CMD_EMPHASIS },
   { "endicode",      CMD_ENDICODE },
