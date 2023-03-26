@@ -1248,7 +1248,6 @@ STARTDOCSYMS      "##"
                                break;
                             }
                           }
-                          if (yyextra->current->type.isEmpty()) yyextra->current->type = QCString(yytext);
                         }
                         yyextra->startInit = FALSE;
                         yyextra->current->initializer << yytext;
