@@ -78,7 +78,7 @@ documentation:
 \refitem cmddontinclude \\dontinclude
 \refitem cmddot \\dot
 \refitem cmddotfile \\dotfile
-\refitem cmddoxysetting \\doxysetting
+\refitem cmddoxyconfig \\doxyconfig
 \refitem cmde \\e
 \refitem cmdelse \\else
 \refitem cmdelseif \\elseif
@@ -3354,19 +3354,19 @@ class Receiver
   \ref cmdimage "\\image" command.
 
 <hr>
-\section cmddoxysetting \\doxysetting <setting>
+\section cmddoxyconfig \\doxyconfig <config_option>
 
-  \addindex \\doxysetting
-  Dispays the value of the setting of `<setting>` as used in the doxygen
-  configuration file for this doxygen run.
+  \addindex \\doxyconfig
+  Displays the value of the configuration option `<config_option>` as used in doxygen's
+  configuration file that is in use when this command is processed.
 
   \par Example:
   When creating this manual the following:
   \verbatim
-  ... Project name = \doxysetting  PROJECT_NAME ...
+  ... Project name = \doxyconfig PROJECT_NAME ...
   \endverbatim
   gives:<br>
-  ... Project name = \doxysetting  PROJECT_NAME ...
+  ... Project name = \doxyconfig PROJECT_NAME ...
 
 <hr>
 \section cmde \\e <word>

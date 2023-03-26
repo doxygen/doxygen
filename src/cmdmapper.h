@@ -152,7 +152,7 @@ enum CommandType
   CMD_IVERBATIM    = 123,
   CMD_ENDIVERBATIM = 124,
   CMD_IANCHOR      = 125,
-  CMD_DOXYSETTING  = 126,
+  CMD_DOXYCONFIG   = 126,
 };
 
 enum HtmlTagType

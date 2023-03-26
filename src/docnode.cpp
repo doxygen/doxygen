@@ -3207,50 +3207,51 @@ void DocPara::handleEmoji()
   parser()->tokenizer.setStatePara();
 }
 
-void DocPara::handleDoxySetting()
+void DocPara::handleDoxyConfig()
 {
   // get the argument of the cite command.
   int tok=parser()->tokenizer.lex();
   if (tok!=TK_WHITESPACE)
   {
-    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"expected whitespace after \\%s command",
-        qPrint("doxysetting"));
+    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"expected whitespace after \\doxyconfig command");
     return;
   }
-  parser()->tokenizer.setStateDoxySetting();
+  parser()->tokenizer.setStateDoxyConfig();
   tok=parser()->tokenizer.lex();
   if (tok==0)
   {
     warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected end of comment block while parsing the "
-        "argument of command %s\n", qPrint("doxysetting"));
+        "argument of command \\doxyconfig\n");
     return;
   }
   else if (tok!=TK_WORD && tok!=TK_LNKWORD)
   {
-    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected token %s as the argument of %s",
-        DocTokenizer::tokToString(tok),qPrint("doxysetting"));
+    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected token %s as the argument of \\doxyconfig",
+        DocTokenizer::tokToString(tok));
     return;
   }
   ConfigOption * opt = ConfigImpl::instance()->get(parser()->context.token->name);
   if (opt)
   {
+    QCString optionValue;
     switch (opt->kind())
     {
       case ConfigOption::O_Bool:
-        children().append<DocWord>(parser(),thisVariant(),*(dynamic_cast<ConfigBool*>(opt)->valueStringRef()));
+        optionValue = *(dynamic_cast<ConfigBool*>(opt)->valueStringRef());
         break;
       case ConfigOption::O_String:
-        children().append<DocWord>(parser(),thisVariant(),*(dynamic_cast<ConfigString*>(opt)->valueRef()));
+        optionValue = *(dynamic_cast<ConfigString*>(opt)->valueRef());
         break;
       case ConfigOption::O_Enum:
-        children().append<DocWord>(parser(),thisVariant(),*(dynamic_cast<ConfigEnum*>(opt)->valueRef()));
+        optionValue = *(dynamic_cast<ConfigEnum*>(opt)->valueRef());
         break;
       case ConfigOption::O_Int:
-        children().append<DocWord>(parser(),thisVariant(),*(dynamic_cast<ConfigInt*>(opt)->valueStringRef()));
+        optionValue = *(dynamic_cast<ConfigInt*>(opt)->valueStringRef());
         break;
       case ConfigOption::O_List:
         {
           StringVector *lst = dynamic_cast<ConfigList*>(opt)->valueRef();
+          optionValue="";
           if (!lst->empty())
           {
             std::string lstFormat = theTranslator->trWriteList(lst->size()).str();
@@ -3258,43 +3259,45 @@ void DocPara::handleDoxySetting()
             reg::Iterator it(lstFormat,marker);
             reg::Iterator end;
             size_t index=0;
-            QCString newList;
             // now replace all markers with the real text
             for ( ; it!=end ; ++it)
             {
               const auto &match = *it;
               size_t newIndex = match.position();
               size_t matchLen = match.length();
-              newList += lstFormat.substr(index,newIndex-index);
+              optionValue += lstFormat.substr(index,newIndex-index);
               unsigned long entryIndex = std::stoul(match[1].str());
               if (entryIndex<(unsigned long)lst->size())
               {
-                newList += lst->at(entryIndex);
+                optionValue += lst->at(entryIndex);
               }
               index=newIndex+matchLen;
             }
-            children().append<DocWord>(parser(),thisVariant(),newList);
+            optionValue+=lstFormat.substr(index);
           }
         }
         break;
       case ConfigOption::O_Obsolete:
-        warn(parser()->context.fileName,parser()->tokenizer.getLineNr(), "Obsolete setting for '\\doxysetting': '%s'",
+        warn(parser()->context.fileName,parser()->tokenizer.getLineNr(), "Obsolete setting for '\\doxyconfig': '%s'",
               qPrint(parser()->context.token->name));
-        children().append<DocWord>(parser(),thisVariant(),parser()->context.token->name + " (obsolete)");
         break;
       case ConfigOption::O_Disabled:
         warn(parser()->context.fileName,parser()->tokenizer.getLineNr(),
-              "Disabled setting (i.e. not supported in this doxygen executable) for '\\doxysetting': '%s'",
+              "Disabled setting (i.e. not supported in this doxygen executable) for '\\doxyconfig': '%s'",
               qPrint(parser()->context.token->name));
-        children().append<DocWord>(parser(),thisVariant(),parser()->context.token->name + " (Disabled)");
         break;
-      default:
+      case ConfigOption::O_Info:
+        // nothing to show here
         break;
+    }
+    if (!optionValue.isEmpty())
+    {
+      children().append<DocWord>(parser(),thisVariant(),optionValue);
     }
   }
   else
   {
-    warn(parser()->context.fileName,parser()->tokenizer.getLineNr(), "Unknown setting for '\\doxysetting': '%s'",
+    warn(parser()->context.fileName,parser()->tokenizer.getLineNr(), "Unknown option for '\\doxyconfig': '%s'",
          qPrint(parser()->context.token->name));
     children().append<DocWord>(parser(),thisVariant(),parser()->context.token->name);
   }
@@ -4445,8 +4448,8 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
     case CMD_EMOJI:
       handleEmoji();
       break;
-    case CMD_DOXYSETTING:
-      handleDoxySetting();
+    case CMD_DOXYCONFIG:
+      handleDoxyConfig();
       break;
     case CMD_REF: // fall through
     case CMD_SUBPAGE:

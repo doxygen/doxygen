@@ -268,7 +268,7 @@ PHPTYPE   [\\:a-z_A-Z0-9\x80-\xFF\-]+
 CITESCHAR [a-z_A-Z0-9\x80-\xFF\-\?]
 CITEECHAR [a-z_A-Z0-9\x80-\xFF\-\+:\/\?]
 CITEID    {CITESCHAR}{CITEECHAR}*("."{CITESCHAR}{CITEECHAR}*)*|"\""{CITESCHAR}{CITEECHAR}*("."{CITESCHAR}{CITEECHAR}*)*"\""
-DOXYSET   [a-z_A-Z][a-z_A-Z0-9]*
+DOXYCFG   [A-Z][A-Z_0-9]*
 MAILADDR  ("mailto:")?[a-z_A-Z0-9\x80-\xFF.+-]+"@"[a-z_A-Z0-9\x80-\xFf-]+("."[a-z_A-Z0-9\x80-\xFf\-]+)+[a-z_A-Z0-9\x80-\xFf\-]+
 MAILWS    [\t a-z_A-Z0-9\x80-\xFF+-]
 MAILADDR2 {MAILWS}+{BLANK}+("at"|"AT"|"_at_"|"_AT_"){BLANK}+{MAILWS}+("dot"|"DOT"|"_dot_"|"_DOT_"){BLANK}+{MAILWS}+
@@ -383,7 +383,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
 %x St_Pattern
 %x St_Link
 %x St_Cite
-%x St_DoxySetting
+%x St_DoxyConfig
 %x St_Ref
 %x St_Ref2
 %x St_IntRef
@@ -1114,27 +1114,19 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          unput(*yytext);
                          return 0;
                        }
-<St_DoxySetting>{DOXYSET} { // label to cite
-                         if (yytext[0] =='"')
-                         {
-                           yyextra->token->name=yytext+1;
-                           yyextra->token->name=yyextra->token->name.left(static_cast<int>(yyleng)-2);
-                         }
-                         else
-                         {
-                           yyextra->token->name=yytext;
-                         }
+<St_DoxyConfig>{DOXYCFG} { // config option
+                         yyextra->token->name=yytext;
                          return TK_WORD;
                        }
-<St_DoxySetting>{BLANK} { // white space
+<St_DoxyConfig>{BLANK} { // white space
                          unput(' ');
                          return 0;
                        }
-<St_DoxySetting>(\n|"\\ilinebr")  { // new line
+<St_DoxyConfig>(\n|"\\ilinebr")  { // new line
                          unput_string(yytext,yyleng);
                          return 0;
                        }
-<St_DoxySetting>.      { // any other character
+<St_DoxyConfig>.      { // any other character
                          unput(*yytext);
                          return 0;
                        }
@@ -2032,11 +2024,11 @@ void DocTokenizer::setStateCite()
   BEGIN(St_Cite);
 }
 
-void DocTokenizer::setStateDoxySetting()
+void DocTokenizer::setStateDoxyConfig()
 {
   yyscan_t yyscanner = p->yyscanner;
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  BEGIN(St_DoxySetting);
+  BEGIN(St_DoxyConfig);
 }
 
 void DocTokenizer::setStateRef()
