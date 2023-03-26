@@ -10,6 +10,7 @@ include_directories(
 
 add_executable(doxyparse
 doxyparse.cpp
+${PROJECT_SOURCE_DIR}/templates/icon/doxygen.rc
 )
 
 include(ApplyEditbin)
