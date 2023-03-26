@@ -3254,7 +3254,7 @@ void DocPara::handleDoxyConfig()
           optionValue="";
           if (!lst->empty())
           {
-            std::string lstFormat = theTranslator->trWriteList(lst->size()).str();
+            std::string lstFormat = theTranslator->trWriteList(static_cast<int>(lst->size())).str();
             static const reg::Ex marker(R"(@(\d+))");
             reg::Iterator it(lstFormat,marker);
             reg::Iterator end;
