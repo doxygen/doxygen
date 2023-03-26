@@ -27,6 +27,7 @@
 #include "version.h"
 #include "doxygen.h"
 #include "outputgen.h"
+#include "outputlist.h"
 #include "parserintf.h"
 #include "classlist.h"
 #include "config.h"
@@ -45,7 +46,7 @@
 #include "portable.h"
 #include "dir.h"
 
-class Doxyparse : public CodeOutputInterface
+class Doxyparse : public OutputCodeExtension
 {
   public:
     Doxyparse(const FileDef *fd) : m_fd(fd) {}
@@ -53,6 +54,7 @@ class Doxyparse : public CodeOutputInterface
 
     // these are just null functions, they can be used to produce a syntax highlighted
     // and cross-linked version of the source code, but who needs that anyway ;-)
+    OutputType type() const override { return OutputType::Extension; }
     void codify(const QCString &) override {}
     void writeCodeLink(CodeSymbolType,const QCString &,const QCString &,const QCString &,const QCString &,const QCString &)  override {}
     void startCodeLine(bool) override {}
@@ -60,12 +62,10 @@ class Doxyparse : public CodeOutputInterface
     void writeCodeAnchor(const QCString &) override {}
     void startFontClass(const QCString &) override {}
     void endFontClass() override {}
-    void writeLineNumber(const QCString &,const QCString &,const QCString &,int) override {}
+    void writeLineNumber(const QCString &,const QCString &,const QCString &,int,bool) override {}
     virtual void writeTooltip(const QCString &,const DocLinkInfo &,
                               const QCString &,const QCString &,const SourceLinkInfo &,
                               const SourceLinkInfo &) override {}
-    void setCurrentDoc(const Definition *,const QCString &,bool) override {}
-    void addWord(const QCString &,bool) override {}
     void startCodeFragment(const QCString &) override {}
     void endCodeFragment(const QCString &) override {}
 
@@ -97,13 +97,12 @@ static void findXRefSymbols(FileDef *fd)
   intf->resetCodeParserState();
 
   // create a new backend object
-  Doxyparse *parse = new Doxyparse(fd);
+  Doxyparse parse(fd);
+  OutputCodeList parseList;
+  parseList.add(OutputCodeDeferExtension(&parse));
 
   // parse the source code
-  intf->parseCode(*parse, 0, fileToString(fd->absFilePath()), lang, FALSE, 0, fd);
-
-  // dismiss the object.
-  delete parse;
+  intf->parseCode(parseList, 0, fileToString(fd->absFilePath()), lang, FALSE, 0, fd);
 }
 
 static bool ignoreStaticExternalCall(const MemberDef *context, const MemberDef *md) {
@@ -235,16 +234,16 @@ static void referenceTo(const MemberDef* md) {
 }
 
 void protectionInformation(Protection protection) {
-  if (protection == Public) {
+  if (protection == Protection::Public) {
     printProtection("public");
   }
-  else if (protection == Protected) {
+  else if (protection == Protection::Protected) {
     printProtection("protected");
   }
-  else if (protection == Private) {
+  else if (protection == Protection::Private) {
     printProtection("private");
   }
-  else if (protection == Package) {
+  else if (protection == Protection::Package) {
     printProtection("package");
   }
 }
@@ -470,6 +469,7 @@ int main(int argc,char **argv) {
   Config_updateBool(WARNINGS,FALSE);
   Config_updateBool(WARN_IF_UNDOCUMENTED,FALSE);
   Config_updateBool(WARN_IF_DOC_ERROR,FALSE);
+  Config_updateBool(WARN_IF_UNDOC_ENUM_VAL,FALSE);
   // Extract as much as possible
   Config_updateBool(EXTRACT_ALL,TRUE);
   Config_updateBool(EXTRACT_STATIC,TRUE);

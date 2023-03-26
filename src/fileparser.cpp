@@ -15,8 +15,9 @@
 
 #include "fileparser.h"
 #include "outputgen.h"
+#include "outputlist.h"
 
-void FileCodeParser::parseCode(CodeOutputInterface &codeOutIntf,
+void FileCodeParser::parseCode(OutputCodeList &codeOutIntf,
                const QCString &,    // scopeName
                const QCString &     input,
                SrcLangExt,          // lang
@@ -25,7 +26,7 @@ void FileCodeParser::parseCode(CodeOutputInterface &codeOutIntf,
                const FileDef *      fileDef,
                int                  startLine,
                int                  endLine,
-               bool,                // inlineFragment
+               bool                 inlineFragment,
                const MemberDef *,   // memberDef
                bool                 showLineNumbers,
                const Definition *,  // searchCtx,
@@ -43,7 +44,7 @@ void FileCodeParser::parseCode(CodeOutputInterface &codeOutIntf,
     codeOutIntf.startCodeLine(fileDef != 0 && showLineNumbers);
     if (fileDef != 0 && showLineNumbers)
     {
-      codeOutIntf.writeLineNumber(QCString(),QCString(),QCString(),lineNr);
+      codeOutIntf.writeLineNumber(QCString(),QCString(),QCString(),lineNr,!inlineFragment);
     }
     if (!lineStr.isEmpty()) codeOutIntf.codify(lineStr.data());
     codeOutIntf.endCodeLine();

@@ -6,6 +6,7 @@
       <memberdef kind="enum" id="class_class_1a2f3072754ba509a9e86403439b18fddb" prot="public" static="no" strong="yes">
         <type/>
         <name>Enum1</name>
+        <qualifiedname>Class::Enum1</qualifiedname>
         <enumvalue id="class_class_1a2f3072754ba509a9e86403439b18fddbac5836008c1649301e29351a55db8f65c" prot="public">
           <name>Flag</name>
           <briefdescription>
@@ -26,6 +27,7 @@
       <memberdef kind="enum" id="class_class_1af09ec8b7238c8a302c251b1cfe1de13d" prot="public" static="no" strong="yes">
         <type/>
         <name>Enum2</name>
+        <qualifiedname>Class::Enum2</qualifiedname>
         <enumvalue id="class_class_1af09ec8b7238c8a302c251b1cfe1de13dac5836008c1649301e29351a55db8f65c" prot="public">
           <name>Flag</name>
           <briefdescription>

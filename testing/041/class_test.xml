@@ -8,6 +8,7 @@
         <definition>void Test::drawRect</definition>
         <argsstring>(int, int, int, int)</argsstring>
         <name>drawRect</name>
+        <qualifiedname>Test::drawRect</qualifiedname>
         <param>
           <type>int</type>
           <defname>x</defname>
@@ -38,6 +39,7 @@
         <definition>void Test::drawRect</definition>
         <argsstring>(const Rect &amp;r)</argsstring>
         <name>drawRect</name>
+        <qualifiedname>Test::drawRect</qualifiedname>
         <param>
           <type>const Rect &amp;</type>
           <declname>r</declname>
@@ -56,6 +58,7 @@
         <definition>void Test::drawRect</definition>
         <argsstring>(const Point &amp;topLeft, const Point &amp;bottomRight)</argsstring>
         <name>drawRect</name>
+        <qualifiedname>Test::drawRect</qualifiedname>
         <param>
           <type>const Point &amp;</type>
           <declname>topLeft</declname>

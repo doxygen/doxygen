@@ -17,37 +17,36 @@
 
 class TextStream;
 
-class XMLCodeGenerator : public CodeOutputInterface
+class XMLCodeGenerator
 {
   public:
+    XMLCodeGenerator(TextStream *t);
+   ~XMLCodeGenerator();
 
-    XMLCodeGenerator(TextStream &t);
-    virtual ~XMLCodeGenerator() { }
+    OutputType type() const { return OutputType::XML; }
 
-    void codify(const QCString &text) override;
+    void codify(const QCString &text);
     void writeCodeLink(CodeSymbolType type,
                        const QCString &ref,const QCString &file,
                        const QCString &anchor,const QCString &name,
-                       const QCString &tooltip) override;
+                       const QCString &tooltip);
     void writeTooltip(const QCString &, const DocLinkInfo &, const QCString &,
                       const QCString &, const SourceLinkInfo &, const SourceLinkInfo &
-                     ) override;
-    void startCodeLine(bool) override;
-    void endCodeLine() override;
-    void startFontClass(const QCString &colorClass) override;
-    void endFontClass() override;
-    void writeCodeAnchor(const QCString &) override;
+                     );
+    void startCodeLine(bool);
+    void endCodeLine();
+    void startFontClass(const QCString &colorClass);
+    void endFontClass();
+    void writeCodeAnchor(const QCString &);
     void writeLineNumber(const QCString &extRef,const QCString &compId,
-                         const QCString &anchorId,int l) override;
-    void setCurrentDoc(const Definition *,const QCString &,bool) override {}
-    void addWord(const QCString &,bool) override {}
-    void startCodeFragment(const QCString &) override;
-    void endCodeFragment(const QCString &) override;
+                         const QCString &anchorId,int l,bool writeLineAnchor);
+    void startCodeFragment(const QCString &);
+    void endCodeFragment(const QCString &);
 
     void finish();
 
   private:
-    TextStream &m_t;
+    TextStream *m_t;
     QCString m_refId;
     QCString m_external;
     int m_lineNumber;

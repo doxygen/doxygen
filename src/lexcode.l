@@ -33,10 +33,13 @@ typedef yyguts_t *yyscan_t;
 #include "config.h"
 #include "doxygen.h"
 #include "outputgen.h"
+#include "outputlist.h"
 #include "code.h"
 #include "lexcode.h"
 #include "filedef.h"
 #include "message.h"
+#include "debug.h"
+#include "searchindex.h"
 
 #define YY_NEVER_INTERACTIVE 1
 #define YY_NO_INPUT 1
@@ -46,13 +49,14 @@ typedef yyguts_t *yyscan_t;
 
 struct lexcodeYY_state
 {
-     CodeOutputInterface * code;
+     OutputCodeList *code;
      CCodeParser ccodeParser;
      const char   *inputString;     //!< the code fragment as text
-     yy_size_t     inputPosition;   //!< read offset during parsing
+     int           inputPosition;   //!< read offset during parsing
      int           inputLines;      //!< number of line in the code fragment
+     QCString      fileName;
      int           yyLineNr;        //!< current line number
-     bool          needsTermination;
+     bool          insideCodeLine = false;
 
      bool          lineNumbers = FALSE;
      const Definition   *searchCtx;
@@ -73,7 +77,7 @@ struct lexcodeYY_state
      bool          insideCode = FALSE;
      QCString      delimiter;
      QCString      docBlockName;
-     uint          fencedSize = 0;
+     uint32_t      fencedSize = 0;
      bool          nestedComment = false;
 
      bool          exampleBlock;
@@ -99,12 +103,16 @@ static void nextCodeLine(yyscan_t yyscanner);
 static void codifyLines(yyscan_t yyscanner,const QCString &text);
 static void startFontClass(yyscan_t yyscanner,const char *s);
 static int countLines(yyscan_t yyscanner);
-static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
+static int yyread(yyscan_t yyscanner,char *buf,int max_size);
 static void lineCount(yyscan_t yyscanner);
 static void handleCCode(yyscan_t yyscanner);
 
 #undef YY_INPUT
 #define YY_INPUT(buf,result,max_size) result=yyread(yyscanner,buf,max_size);
+
+// otherwise the filename would be the name of the converted file (*.cpp instead of *.l)
+static inline const char *getLexerFILE() {return __FILE__;}
+#include "doxygen_lex.h"
 
 %}
 
@@ -632,11 +640,11 @@ NONLopt [^\n]*
                           }
 <Comment>{CCS}             { yyextra->CCodeBuffer += yytext ; }
 <Comment>{CPPC}             { yyextra->CCodeBuffer += yytext ; }
-<Comment>{CMD}("code"|"verbatim")       {
+<Comment>{CMD}("code"|"verbatim"|"iliteral")       {
                             yyextra->insideCode=TRUE;
                             yyextra->CCodeBuffer += yytext ;
                           }
-<Comment>{CMD}("endcode"|"endverbatim") {
+<Comment>{CMD}("endcode"|"endverbatim"|"endiliteral") {
                             yyextra->insideCode=FALSE;
                             yyextra->CCodeBuffer += yytext ;
                           }
@@ -761,7 +769,7 @@ NONLopt [^\n]*
                             yyextra->nestedComment=FALSE;
                             BEGIN(DocCopyBlock);
                           }
-<DocBlock>{CMD}("verbatim"|"latexonly"|"htmlonly"|"xmlonly"|"manonly"|"rtfonly"|"docbookonly"|"dot"|"msc"|"code")/[^a-z_A-Z0-9\-] { // verbatim command (which could contain nested comments!)
+<DocBlock>{CMD}("verbatim"|"iliteral"|"latexonly"|"htmlonly"|"xmlonly"|"manonly"|"rtfonly"|"docbookonly"|"dot"|"msc"|"code")/[^a-z_A-Z0-9\-] { // verbatim command (which could contain nested comments!)
                             yyextra->CCodeBuffer += yytext;
                             yyextra->docBlockName=&yytext[1];
                             yyextra->fencedSize=0;
@@ -820,7 +828,7 @@ NONLopt [^\n]*
                               BEGIN(DocBlock);
                             }
                           }
-<DocCopyBlock>[\\@]("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endmanonly"|"endrtfonly"|"enddot"|"endmsc"|"enduml"|"endcode")/[^a-z_A-Z0-9] { // end of verbatim block
+<DocCopyBlock>[\\@]("endverbatim"|"endiliteral"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endmanonly"|"endrtfonly"|"enddot"|"endmsc"|"enduml"|"endcode")/[^a-z_A-Z0-9] { // end of verbatim block
                             yyextra->CCodeBuffer += yytext;
                             if (&yytext[4]==yyextra->docBlockName)
                             {
@@ -829,11 +837,7 @@ NONLopt [^\n]*
                           }
 <DocCopyBlock>^{B}*"*"+/{BN}+ { // start of a comment line
                             yyextra->CCodeBuffer += yytext;
-                            if (yyextra->docBlockName=="verbatim")
-                            {
-                              REJECT;
-                            }
-                            else if (yyextra->docBlockName=="code")
+                            if ((yyextra->docBlockName=="verbatim") || (yyextra->docBlockName=="code") || (yyextra->docBlockName=="iliteral"))
                             {
                               REJECT;
                             }
@@ -843,7 +847,7 @@ NONLopt [^\n]*
                             }
                           }
 <DocCopyBlock>^{B}*"*"+/{B}+"*"{BN}* { // start of a comment line with two *'s
-                            if (yyextra->docBlockName=="code")
+                            if ((yyextra->docBlockName=="code") || (yyextra->docBlockName=="iliteral"))
                             {
                               yyextra->CCodeBuffer += yytext;
                             }
@@ -853,7 +857,7 @@ NONLopt [^\n]*
                             }
                           }
 <DocCopyBlock>^{B}*"*"+/({ID}|"(") { // Assume *var or *(... is part of source code (see bug723516)
-                            if (yyextra->docBlockName=="code")
+                            if ((yyextra->docBlockName=="code") || (yyextra->docBlockName=="iliteral"))
                             {
                               yyextra->CCodeBuffer += yytext;
                             }
@@ -863,7 +867,7 @@ NONLopt [^\n]*
                             }
                           }
 <DocCopyBlock>^{B}*"*"+/{BN}* { // start of a comment line with one *
-                            if (yyextra->docBlockName=="code")
+                            if ((yyextra->docBlockName=="code") || (yyextra->docBlockName=="iliteral"))
                             {
                               if (yyextra->nestedComment) // keep * it is part of the code
                               {
@@ -954,11 +958,11 @@ static void setCurrentDoc(yyscan_t yyscanner,const QCString &anchor)
   {
     if (yyextra->searchCtx)
     {
-      yyextra->code->setCurrentDoc(yyextra->searchCtx,yyextra->searchCtx->anchor(),false);
+      Doxygen::searchIndex->setCurrentDoc(yyextra->searchCtx,yyextra->searchCtx->anchor(),false);
     }
     else
     {
-      yyextra->code->setCurrentDoc(yyextra->sourceFileDef,anchor,true);
+      Doxygen::searchIndex->setCurrentDoc(yyextra->sourceFileDef,anchor,true);
     }
   }
 }
@@ -985,24 +989,28 @@ static void startCodeLine(yyscan_t yyscanner)
       {
         yyextra->code->writeLineNumber(yyextra->currentMemberDef->getReference(),
                             yyextra->currentMemberDef->getOutputFileBase(),
-                            yyextra->currentMemberDef->anchor(),yyextra->yyLineNr);
+                            yyextra->currentMemberDef->anchor(),yyextra->yyLineNr,
+                            !yyextra->includeCodeFragment);
         setCurrentDoc(yyscanner,lineAnchor);
       }
       else
       {
         yyextra->code->writeLineNumber(d->getReference(),
                             d->getOutputFileBase(),
-                            QCString(),yyextra->yyLineNr);
+                            QCString(),yyextra->yyLineNr,
+                            !yyextra->includeCodeFragment);
         setCurrentDoc(yyscanner,lineAnchor);
       }
     }
     else
     {
-      yyextra->code->writeLineNumber(QCString(),QCString(),QCString(),yyextra->yyLineNr);
+      yyextra->code->writeLineNumber(QCString(),QCString(),QCString(),yyextra->yyLineNr,
+                                     !yyextra->includeCodeFragment);
     }
   }
 
   yyextra->code->startCodeLine(yyextra->sourceFileDef && yyextra->lineNumbers);
+  yyextra->insideCodeLine = true;
 
   if (yyextra->currentFontClass)
   {
@@ -1025,13 +1033,17 @@ static void endCodeLine(yyscan_t yyscanner)
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   endFontClass(yyscanner);
   yyextra->code->endCodeLine();
+  yyextra->insideCodeLine = false;
 }
 
 static void nextCodeLine(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   const char *fc = yyextra->currentFontClass;
-  endCodeLine(yyscanner);
+  if (yyextra->insideCodeLine)
+  {
+    endCodeLine(yyscanner);
+  }
   if (yyextra->yyLineNr<yyextra->inputLines)
   {
     yyextra->currentFontClass = fc;
@@ -1058,15 +1070,7 @@ static void codifyLines(yyscan_t yyscanner,const QCString &text)
       memcpy(tmp,sp,l);
       tmp[l]='\0';
       yyextra->code->codify(tmp);
-      if (p)
-      {
-        nextCodeLine(yyscanner);
-      }
-      else
-      {
-        endCodeLine(yyscanner);
-        done=true;
-      }
+      nextCodeLine(yyscanner);
       free(tmp);
     }
     else
@@ -1104,19 +1108,17 @@ static int countLines(yyscan_t yyscanner)
   }
   if (p>yyextra->inputString && *(p-1)!='\n')
   { // last line does not end with a \n, so we add an extra
-    // line and explicitly terminate the line after parsing.
-    count++,
-    yyextra->needsTermination=true;
+    count++;
   }
   return count;
 }
 
-static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size)
+static int yyread(yyscan_t yyscanner,char *buf,int max_size)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yy_size_t inputPosition = yyextra->inputPosition;
+  int inputPosition = yyextra->inputPosition;
   const char *s = yyextra->inputString + inputPosition;
-  yy_size_t c=0;
+  int c=0;
   while( c < max_size && *s )
   {
     *buf++ = *s++;
@@ -1144,7 +1146,7 @@ static void handleCCode(yyscan_t yyscanner)
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (yyextra->CCodeBuffer.isEmpty()) return;
 
-  yyextra->ccodeParser.setStartCodeLine(false);
+  yyextra->ccodeParser.setInsideCodeLine(yyextra->insideCodeLine);
   yyextra->ccodeParser.parseCode(*yyextra->code,
                yyextra->classScope,
                yyextra->CCodeBuffer,
@@ -1161,10 +1163,9 @@ static void handleCCode(yyscan_t yyscanner)
                yyextra->collectXRefs
               );
   yyextra->CCodeBuffer.resize(0);
-  yyextra->ccodeParser.setStartCodeLine(true);
+  yyextra->insideCodeLine = yyextra->ccodeParser.insideCodeLine();
   yyextra->yyLineNr--;
   codifyLines(yyscanner,"\n");
-  return;
 }
 
 // public interface -----------------------------------------------------------
@@ -1179,7 +1180,7 @@ LexCodeParser::LexCodeParser() : p(std::make_unique<Private>())
 {
   lexcodeYYlex_init_extra(&p->state, &p->yyscanner);
 #ifdef FLEX_DEBUG
-  lexcodeYYset_debug(1,p->yyscanner);
+  lexcodeYYset_debug(Debug::isFlagSet(Debug::Lex_lexcode)?1:0,p->yyscanner);
 #endif
   resetCodeParserState();
 }
@@ -1196,7 +1197,7 @@ void LexCodeParser::resetCodeParserState()
   yyextra->currentMemberDef = 0;
 }
 
-void LexCodeParser::parseCode(CodeOutputInterface &codeOutIntf,
+void LexCodeParser::parseCode(OutputCodeList &codeOutIntf,
                const QCString &scopeName,
                const QCString &input,
                SrcLangExt,
@@ -1217,13 +1218,14 @@ void LexCodeParser::parseCode(CodeOutputInterface &codeOutIntf,
 
   if (input.isEmpty()) return;
 
-  printlex(yy_flex_debug, true, __FILE__, fileDef ? qPrint(fileDef->fileName()): NULL);
+  DebugLex debugLex(Debug::Lex_lexcode, __FILE__, fileDef ? qPrint(fileDef->fileName()): NULL);
 
   yyextra->code = &codeOutIntf;
   yyextra->inputString   = input.data();
   yyextra->inputPosition = 0;
+  yyextra->fileName      = fileDef ? fileDef->fileName():"";
   yyextra->currentFontClass = 0;
-  yyextra->needsTermination = false;
+  yyextra->insideCodeLine = false;
 
   yyextra->classScope=scopeName;
   yyextra->currentMemberDef=memberDef;
@@ -1268,7 +1270,7 @@ void LexCodeParser::parseCode(CodeOutputInterface &codeOutIntf,
   BEGIN( DefSection );
   lexcodeYYlex(yyscanner);
 
-  if (yyextra->needsTermination)
+  if (yyextra->insideCodeLine)
   {
     endCodeLine(yyscanner);
   }
@@ -1278,8 +1280,6 @@ void LexCodeParser::parseCode(CodeOutputInterface &codeOutIntf,
     delete yyextra->sourceFileDef;
     yyextra->sourceFileDef=0;
   }
-
-  printlex(yy_flex_debug, false, __FILE__, fileDef ? qPrint(fileDef->fileName()): NULL);
 }
 
 //---------------------------------------------------------------------------------

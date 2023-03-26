@@ -28,25 +28,42 @@
 
 static std::map< std::string, Debug::DebugMask > s_labels =
 {
-  { "findmembers",       Debug::FindMembers       },
-  { "functions",         Debug::Functions         },
-  { "variables",         Debug::Variables         },
-  { "preprocessor",      Debug::Preprocessor      },
-  { "nolineno",          Debug::NoLineNo          },
-  { "classes",           Debug::Classes           },
-  { "commentcnv",        Debug::CommentCnv        },
-  { "commentscan",       Debug::CommentScan       },
-  { "validate",          Debug::Validate          },
-  { "printtree",         Debug::PrintTree         },
-  { "time",              Debug::Time              },
-  { "extcmd",            Debug::ExtCmd            },
-  { "markdown",          Debug::Markdown          },
-  { "filteroutput",      Debug::FilterOutput      },
-  { "lex",               Debug::Lex               },
-  { "plantuml",          Debug::Plantuml          },
-  { "fortranfixed2free", Debug::FortranFixed2Free },
-  { "cite",              Debug::Cite              },
-  { "rtf",               Debug::Rtf               }
+  { "preprocessor",       Debug::Preprocessor       },
+  { "nolineno",           Debug::NoLineNo           },
+  { "commentcnv",         Debug::CommentCnv         },
+  { "commentscan",        Debug::CommentScan        },
+  { "printtree",          Debug::PrintTree          },
+  { "time",               Debug::Time               },
+  { "extcmd",             Debug::ExtCmd             },
+  { "markdown",           Debug::Markdown           },
+  { "filteroutput",       Debug::FilterOutput       },
+  { "plantuml",           Debug::Plantuml           },
+  { "fortranfixed2free",  Debug::FortranFixed2Free  },
+  { "cite",               Debug::Cite               },
+  { "rtf",                Debug::Rtf                },
+  { "qhp",                Debug::Qhp                },
+  { "tag",                Debug::Tag                },
+  { "lex",                Debug::Lex                },
+  { "lex:code",           Debug::Lex_code           },
+  { "lex:commentcnv",     Debug::Lex_commentcnv     },
+  { "lex:commentscan",    Debug::Lex_commentscan    },
+  { "lex:configimpl",     Debug::Lex_configimpl     },
+  { "lex:constexp",       Debug::Lex_constexp       },
+  { "lex:declinfo",       Debug::Lex_declinfo       },
+  { "lex:defargs",        Debug::Lex_defargs        },
+  { "lex:doctokenizer",   Debug::Lex_doctokenizer   },
+  { "lex:fortrancode",    Debug::Lex_fortrancode    },
+  { "lex:fortranscanner", Debug::Lex_fortranscanner },
+  { "lex:lexcode",        Debug::Lex_lexcode        },
+  { "lex:lexscanner",     Debug::Lex_lexscanner     },
+  { "lex:pre",            Debug::Lex_pre            },
+  { "lex:pycode",         Debug::Lex_pycode         },
+  { "lex:pyscanner",      Debug::Lex_pyscanner      },
+  { "lex:scanner",        Debug::Lex_scanner        },
+  { "lex:sqlcode",        Debug::Lex_sqlcode        },
+  { "lex:vhdlcode",       Debug::Lex_vhdlcode       },
+  { "lex:xml",            Debug::Lex_xml            },
+  { "lex:xmlcode",        Debug::Lex_xmlcode        },
 };
 
 //------------------------------------------------------------------------
@@ -71,24 +88,29 @@ static char asciiToLower(char in) {
     return in;
 }
 
-static int labelToEnumValue(const QCString &l)
+static uint64_t labelToEnumValue(const QCString &l)
 {
   std::string s = l.str();
   std::transform(s.begin(),s.end(),s.begin(),asciiToLower);
   auto it = s_labels.find(s);
-  return (it!=s_labels.end()) ? it->second : 0;
+  return (it!=s_labels.end()) ? it->second : Debug::DebugMask::Quiet;
 }
 
-int Debug::setFlag(const QCString &lab)
+bool Debug::setFlagStr(const QCString &lab)
 {
-  int retVal = labelToEnumValue(lab);
-  curMask = (DebugMask)(curMask | retVal);
-  return retVal;
+  uint64_t retVal = labelToEnumValue(lab);
+  curMask = static_cast<DebugMask>(curMask | retVal);
+  return retVal!=0;
 }
 
-void Debug::clearFlag(const QCString &lab)
+void Debug::setFlag(const DebugMask mask)
 {
-  curMask = (DebugMask)(curMask & ~labelToEnumValue(lab));
+  curMask = static_cast<DebugMask>(curMask | mask);
+}
+
+void Debug::clearFlag(const DebugMask mask)
+{
+  curMask = static_cast<DebugMask>(curMask & ~mask);
 }
 
 void Debug::setPriority(int p)
@@ -96,7 +118,7 @@ void Debug::setPriority(int p)
   curPrio = p;
 }
 
-bool Debug::isFlagSet(DebugMask mask)
+bool Debug::isFlagSet(const DebugMask mask)
 {
   return (curMask & mask)!=0;
 }
@@ -110,22 +132,52 @@ void Debug::printFlags()
 }
 
 //------------------------------------------------------------------------
+DebugLex::DebugLex(Debug::DebugMask mask,const char *lexName,const char *fileName) : m_mask(mask), m_lexName(lexName), m_fileName(fileName)
+{
+  print(m_mask,"Entering",qPrint(m_lexName),qPrint(m_fileName));
+}
+
+DebugLex::~DebugLex()
+{
+  print(m_mask,"Finished",qPrint(m_lexName),qPrint(m_fileName));
+}
+
+void DebugLex::print(Debug::DebugMask mask,const char *state,const char *lexName,const char *fileName)
+{
+  if (fileName && *fileName)
+  {
+    if (Debug::isFlagSet(mask))
+    {
+      fprintf(stderr,"%s lexical analyzer: %s (for: %s)\n",state, lexName, fileName);
+    }
+  }
+  else
+  {
+    if (Debug::isFlagSet(mask))
+    {
+      fprintf(stderr,"%s lexical analyzer: %s\n",state, lexName);
+    }
+  }
+}
+
+//------------------------------------------------------------------------
 
 class Timer
 {
   public:
     void start()
     {
-      m_startTime = std::chrono::system_clock::now();
+      m_startTime = std::chrono::steady_clock::now();
     }
     double elapsedTimeS()
     {
-      return (std::chrono::duration_cast<
+      return static_cast<double>(
+              std::chrono::duration_cast<
                   std::chrono::microseconds>(
-                  std::chrono::system_clock::now() - m_startTime).count()) / 1000000.0;
+                  std::chrono::steady_clock::now() - m_startTime).count()) / 1000000.0;
     }
   private:
-    std::chrono::time_point<std::chrono::system_clock> m_startTime;
+    std::chrono::time_point<std::chrono::steady_clock> m_startTime;
 };
 
 static Timer g_runningTime;

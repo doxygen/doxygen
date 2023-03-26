@@ -22,6 +22,7 @@
 #include <cstdint>
 #include <cstdio>
 #include <fstream>
+#include <type_traits>
 
 #include "qcstring.h"
 
@@ -36,20 +37,20 @@ class TextStream final
   public:
     /** Creates an empty stream object.
      */
-    TextStream()
+    explicit TextStream(size_t capacity = INITIAL_CAPACITY)
     {
-      m_buffer.reserve(INITIAL_CAPACITY);
+      m_buffer.reserve(capacity);
     }
     /** Create a text stream object for writing to a std::ostream.
      *  @note data is buffered until flush() is called or the object is destroyed.
      */
-    TextStream(std::ostream *s) : m_s(s)
+    explicit TextStream(std::ostream *s) : m_s(s)
     {
       m_buffer.reserve(INITIAL_CAPACITY);
     }
     /** Create a text stream, initializing the buffer with string \a s
      */
-    TextStream(const std::string &s) : m_buffer(s)
+    explicit TextStream(const std::string &s) : m_buffer(s)
     {
       m_buffer.reserve(s.length()+INITIAL_CAPACITY);
     }
@@ -59,6 +60,8 @@ class TextStream final
 
     TextStream(const TextStream &) = delete;
     TextStream &operator=(const TextStream &) = delete;
+    TextStream(TextStream &&) = default;
+    TextStream &operator=(TextStream &&) = delete;
 
     /** Sets or changes the std::ostream to write to.
      *  @note Any data already buffered will be flushed.
@@ -94,6 +97,27 @@ class TextStream final
     TextStream &operator<<( char c)
     {
       m_buffer+=c;
+      return static_cast<TextStream&>(*this);
+    }
+    /** Adds an unsigned character to the stream */
+    TextStream &operator<<( unsigned char c)
+    {
+      m_buffer+=c;
+      return static_cast<TextStream&>(*this);
+    }
+
+    /** Adds an unsigned character string to the stream */
+    TextStream &operator<<( unsigned char *s)
+    {
+      if (s)
+      {
+        unsigned char *p = s;
+        while(*p)
+        {
+          m_buffer+=*p;
+          p++;
+        }
+      }
       return static_cast<TextStream&>(*this);
     }
 
@@ -146,10 +170,22 @@ class TextStream final
       return static_cast<TextStream&>(*this);
     }
 
+    /** Adds a size_t integer to the stream.
+     *  We use SFINAE to avoid a compiler error in case size_t already matches the 'unsigned int' overload.
+     */
+    template<typename T,
+             typename std::enable_if<std::is_same<T,size_t>::value,T>::type* = nullptr
+            >
+    TextStream &operator<<( T i)
+    {
+      output_int32(static_cast<uint32_t>(i),false);
+      return static_cast<TextStream&>(*this);
+    }
+
     /** Adds a float to the stream */
     TextStream &operator<<( float f)
     {
-      output_double((double)f);
+      output_double(static_cast<double>(f));
       return static_cast<TextStream&>(*this);
     }
 
@@ -233,9 +269,9 @@ class TextStream final
       *p = '\0';
       if ( neg )
       {
-	n = (uint32_t)(-(int32_t)n);
+	n = static_cast<uint32_t>(-static_cast<int32_t>(n));
       }
-      do { *--p = ((char)(n%10)) + '0'; n /= 10; } while ( n );
+      do { *--p = (static_cast<char>(n%10)) + '0'; n /= 10; } while ( n );
       if ( neg ) *--p = '-';
       m_buffer+=p;
     }

@@ -17,7 +17,6 @@
 
 #include "parserintf.h"
 
-class CodeOutputInterface;
 class FileDef;
 class MemberDef;
 
@@ -28,7 +27,7 @@ class VHDLCodeParser : public CodeParserInterface
   public:
     VHDLCodeParser();
     virtual ~VHDLCodeParser();
-    void parseCode(CodeOutputInterface &codeOutIntf,
+    void parseCode(OutputCodeList &codeOutIntf,
                    const QCString &scopeName,
                    const QCString &input,
                    SrcLangExt lang,

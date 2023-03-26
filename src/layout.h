@@ -30,7 +30,7 @@ class MemberList;
 /** @brief Base class representing a piece of a documentation page */
 struct LayoutDocEntry
 {
-  virtual ~LayoutDocEntry() {}
+  virtual ~LayoutDocEntry() = default;
   enum Kind {
               // Generic items for all pages
               MemberGroups,
@@ -75,16 +75,18 @@ struct LayoutDocEntry
 struct LayoutDocEntrySimple : LayoutDocEntry
 {
   public:
-    LayoutDocEntrySimple(Kind k) : m_kind(k) {}
+    LayoutDocEntrySimple(Kind k,bool v) : m_kind(k), m_visible(v) {}
     Kind kind() const { return m_kind; }
+    bool visible() const { return m_visible; }
   private:
     Kind m_kind;
+    bool m_visible;
 };
 
 struct LayoutDocEntrySection: public LayoutDocEntrySimple
 {
-  LayoutDocEntrySection(Kind k,const QCString &tl) :
-    LayoutDocEntrySimple(k), m_title(tl) {}
+  LayoutDocEntrySection(Kind k,const QCString &tl,bool v) :
+    LayoutDocEntrySimple(k,v), m_title(tl) {}
   QCString title(SrcLangExt lang) const;
 private:
   QCString m_title;
@@ -172,6 +174,7 @@ struct LayoutNavEntry
     QCString title() const           { return m_title; }
     QCString intro() const           { return m_intro; }
     QCString url() const;
+    void setVisible(bool v)          { m_visible = v; }
     bool visible()                   { return m_visible; }
     void clear()                     { m_children.clear(); }
     void addChild(LayoutNavEntry *e) { m_children.push_back(std::unique_ptr<LayoutNavEntry>(e)); }
@@ -180,7 +183,7 @@ struct LayoutNavEntry
     LayoutNavEntry *find(LayoutNavEntry::Kind k,const QCString &file=QCString()) const;
 
   private:
-    LayoutNavEntry() : m_parent(0), m_kind(None), m_visible(FALSE) {}
+    LayoutNavEntry() : m_parent(0), m_kind(None), m_visible(true) {}
     LayoutNavEntry *m_parent;
     Kind m_kind;
     bool m_visible;
@@ -200,6 +203,7 @@ class LayoutDocManager
   public:
     enum LayoutPart
     {
+      Undefined = -1,
       Class, Concept, Namespace, File, Group, Directory,
       NrParts
     };
@@ -213,7 +217,7 @@ class LayoutDocManager
     LayoutNavEntry *rootNavEntry() const;
 
     /** Parses a user provided layout */
-    void parse(const QCString &fileName);
+    void parse(const QCString &fileName, const char* data = nullptr);
     void init();
   private:
     void addEntry(LayoutPart p,LayoutDocEntry*e);

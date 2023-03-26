@@ -11,6 +11,9 @@ include_directories(
 add_executable(doxyparse
 doxyparse.cpp
 )
+
+include(ApplyEditbin)
+apply_editbin(doxyparse console)
 add_sanitizers(doxyparse)
 
 if (use_libclang)
@@ -30,6 +33,7 @@ mscgen
 doxygen_version
 doxycfg
 vhdlparser
+spdlog
 ${ICONV_LIBRARIES}
 ${CMAKE_THREAD_LIBS_INIT}
 ${SQLITE3_LIBRARIES}

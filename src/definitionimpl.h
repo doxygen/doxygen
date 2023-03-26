@@ -33,9 +33,9 @@ class DefinitionImpl
         bool isSymbol=TRUE);
     virtual ~DefinitionImpl();
 
-    QCString name() const;
+    const QCString &name() const;
     bool isAnonymous() const;
-    QCString localName() const;
+    const QCString &localName() const;
     QCString qualifiedName() const;
     QCString symbolName() const;
     QCString getSourceFileBase() const;
@@ -90,13 +90,13 @@ class DefinitionImpl
     void addSectionsToDefinition(const std::vector<const SectionInfo*> &anchorList);
     void setBodySegment(int defLine,int bls,int ble);
     void setBodyDef(const FileDef *fd);
-    void addSourceReferencedBy(const MemberDef *d);
-    void addSourceReferences(const MemberDef *d);
+    void addSourceReferencedBy(MemberDef *d);
+    void addSourceReferences(MemberDef *d);
     void setRefItems(const RefItemVector &sli);
     void mergeRefItems(Definition *d);
     void mergeReferences(const Definition *other);
     void mergeReferencedBy(const Definition *other);
-    void addInnerCompound(const Definition *d);
+    void addInnerCompound(Definition *d);
     void setOuterScope(Definition *d);
     void setHidden(bool b);
     void setArtificial(bool b);
@@ -107,7 +107,7 @@ class DefinitionImpl
     bool hasSourceReffedBy() const;
     void writeSourceRefs(OutputList &ol,const QCString &scopeName) const;
     void writeSourceReffedBy(OutputList &ol,const QCString &scopeName) const;
-    void makePartOfGroup(const GroupDef *gd);
+    void makePartOfGroup(GroupDef *gd);
     void writeNavigationPath(OutputList &ol) const;
     QCString navigationPathAsString() const;
     void writeQuickMemberLinks(OutputList &,const MemberDef *) const;
@@ -117,8 +117,6 @@ class DefinitionImpl
     void setLocalName(const QCString &name);
     void addSectionsToIndex();
     void writeToc(OutputList &ol, const LocalToc &lt) const;
-    void setCookie(Definition::Cookie *cookie) const;
-    Definition::Cookie *cookie() const;
     void computeTooltip();
     void _setSymbolName(const QCString &name);
     QCString _symbolName() const;
@@ -129,7 +127,7 @@ class DefinitionImpl
 
     int  _getXRefListId(const QCString &listName) const;
     void _writeSourceRefList(OutputList &ol,const QCString &scopeName,const QCString &text,
-                       const std::unordered_map<std::string,const MemberDef *> &members,bool) const;
+                       const std::unordered_map<std::string,MemberDef *> &members,bool) const;
     void _setBriefDescription(const QCString &b,const QCString &briefFile,int briefLine);
     void _setDocumentation(const QCString &d,const QCString &docFile,int docLine,bool stripWhiteSpace,bool atTop);
     void _setInbodyDocumentation(const QCString &d,const QCString &docFile,int docLine);
@@ -149,14 +147,14 @@ class DefinitionMixin : public Base
         const QCString &defFileName,int defLine,int defColumn,
         const QCString &name,const char *b=0,const char *d=0,
         bool isSymbol=TRUE) : m_impl(this,defFileName,defLine,defColumn,name,b,d,isSymbol) {}
-    virtual ~DefinitionMixin() {}
+    virtual ~DefinitionMixin() = default;
 
     virtual bool isAlias() const { return FALSE; }
 
     //======== Definition
-    virtual QCString name() const { return m_impl.name(); }
+    virtual const QCString &name() const { return m_impl.name(); }
     virtual bool isAnonymous() const { return m_impl.isAnonymous(); }
-    virtual QCString localName() const { return m_impl.localName(); }
+    virtual const QCString &localName() const { return m_impl.localName(); }
     virtual QCString qualifiedName() const { return m_impl.qualifiedName(); }
     virtual QCString symbolName() const { return m_impl.symbolName(); }
     virtual QCString getSourceFileBase() const { return m_impl.getSourceFileBase(); }
@@ -221,9 +219,9 @@ class DefinitionMixin : public Base
     { m_impl.setBodySegment(defLine,bls,ble); }
     virtual void setBodyDef(const FileDef *fd)
     { m_impl.setBodyDef(fd); }
-    virtual void addSourceReferencedBy(const MemberDef *md)
+    virtual void addSourceReferencedBy(MemberDef *md)
     { m_impl.addSourceReferencedBy(md); }
-    virtual void addSourceReferences(const MemberDef *md)
+    virtual void addSourceReferences(MemberDef *md)
     { m_impl.addSourceReferences(md); }
     virtual void setRefItems(const RefItemVector &sli)
     { m_impl.setRefItems(sli); }
@@ -233,7 +231,7 @@ class DefinitionMixin : public Base
     { m_impl.mergeReferences(other); }
     virtual void mergeReferencedBy(const Definition *other)
     { m_impl.mergeReferencedBy(other); }
-    virtual void addInnerCompound(const Definition *def)
+    virtual void addInnerCompound(Definition *def)
     { m_impl.addInnerCompound(def); }
     virtual void setOuterScope(Definition *def)
     { m_impl.setOuterScope(def); }
@@ -255,7 +253,7 @@ class DefinitionMixin : public Base
     { m_impl.writeSourceRefs(ol,scopeName); }
     virtual void writeSourceReffedBy(OutputList &ol,const QCString &scopeName) const
     { m_impl.writeSourceReffedBy(ol,scopeName); }
-    virtual void makePartOfGroup(const GroupDef *gd)
+    virtual void makePartOfGroup(GroupDef *gd)
     { m_impl.makePartOfGroup(gd); }
     virtual void writeNavigationPath(OutputList &ol) const
     { m_impl.writeNavigationPath(ol); }
@@ -275,10 +273,6 @@ class DefinitionMixin : public Base
     { m_impl.addSectionsToIndex(); }
     virtual void writeToc(OutputList &ol, const LocalToc &lt) const
     { m_impl.writeToc(ol,lt); }
-    virtual void setCookie(Definition::Cookie *cookie) const
-    { m_impl.setCookie(cookie); }
-    virtual Definition::Cookie *cookie() const
-    { return m_impl.cookie(); }
     virtual void computeTooltip()
     { m_impl.computeTooltip(); }
     virtual void _setSymbolName(const QCString &name)
@@ -305,13 +299,14 @@ class DefinitionAliasImpl
     virtual ~DefinitionAliasImpl();
     void init();
     void deinit();
-    QCString name() const;
+    const QCString &name() const;
     QCString qualifiedName() const;
   private:
+    void updateQualifiedName() const;
     Definition *m_def;
     const Definition *m_scope;
     QCString m_symbolName;
-    QCString m_qualifiedName;
+    mutable QCString m_qualifiedName;
 };
 
 template<class Base>
@@ -319,7 +314,7 @@ class DefinitionAliasMixin : public Base
 {
   public:
     DefinitionAliasMixin(const Definition *scope,const Definition *alias)
-      : m_impl(this,scope,alias), m_scope(scope), m_alias(alias), m_cookie(0) {}
+      : m_impl(this,scope,alias), m_scope(scope), m_alias(alias) {}
 
     void init() { m_impl.init(); }
     void deinit() { m_impl.deinit(); }
@@ -329,11 +324,11 @@ class DefinitionAliasMixin : public Base
     virtual bool isAlias() const { return TRUE; }
 
     //======== Definition
-    virtual QCString name() const
+    virtual const QCString &name() const
     { return m_impl.name(); }
     virtual bool isAnonymous() const
     { return m_alias->isAnonymous(); }
-    virtual QCString localName() const
+    virtual const QCString &localName() const
     { return m_alias->localName(); }
     virtual QCString qualifiedName() const
     { return m_impl.qualifiedName(); }
@@ -437,14 +432,11 @@ class DefinitionAliasMixin : public Base
     virtual DefinitionMutable *toDefinitionMutable_() { return 0; }
     virtual const DefinitionImpl *toDefinitionImpl_() const { return 0; }
 
-    virtual void setCookie(Definition::Cookie *cookie) const { delete m_cookie; m_cookie = cookie; }
-    virtual Definition::Cookie *cookie() const { return m_cookie; }
     virtual void _setSymbolName(const QCString &name) { m_symbolName = name; }
     virtual QCString _symbolName() const { return m_symbolName; }
     DefinitionAliasImpl m_impl;
     const Definition *m_scope;
     const Definition *m_alias;
-    mutable Definition::Cookie *m_cookie;
     QCString m_symbolName;
 };
 

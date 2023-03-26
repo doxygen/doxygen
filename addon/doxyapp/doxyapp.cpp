@@ -29,6 +29,7 @@
 #include "dir.h"
 #include "doxygen.h"
 #include "outputgen.h"
+#include "outputlist.h"
 #include "parserintf.h"
 #include "classdef.h"
 #include "namespacedef.h"
@@ -39,7 +40,7 @@
 #include "filename.h"
 #include "version.h"
 
-class XRefDummyCodeGenerator : public CodeOutputInterface
+class XRefDummyCodeGenerator : public OutputCodeExtension
 {
   public:
     XRefDummyCodeGenerator(FileDef *fd) : m_fd(fd) {}
@@ -47,9 +48,10 @@ class XRefDummyCodeGenerator : public CodeOutputInterface
 
     // these are just null functions, they can be used to produce a syntax highlighted
     // and cross-linked version of the source code, but who needs that anyway ;-)
+    OutputType type() const override { return OutputType::Extension; }
     void codify(const QCString &) override {}
     void writeCodeLink(CodeSymbolType,const QCString &,const QCString &,const QCString &,const QCString &,const QCString &) override  {}
-    void writeLineNumber(const QCString &,const QCString &,const QCString &,int) override {}
+    void writeLineNumber(const QCString &,const QCString &,const QCString &,int,bool) override {}
     virtual void writeTooltip(const QCString &,const DocLinkInfo &,
                               const QCString &,const QCString &,const SourceLinkInfo &,
                               const SourceLinkInfo &) override {}
@@ -58,8 +60,6 @@ class XRefDummyCodeGenerator : public CodeOutputInterface
     void startFontClass(const QCString &) override {}
     void endFontClass() override {}
     void writeCodeAnchor(const QCString &) override {}
-    void setCurrentDoc(const Definition *,const QCString &,bool) override {}
-    void addWord(const QCString &,bool) override {}
     void startCodeFragment(const QCString &) override {}
     void endCodeFragment(const QCString &) override {}
 
@@ -118,19 +118,18 @@ static void findXRefSymbols(FileDef *fd)
   intf->resetCodeParserState();
 
   // create a new backend object
-  XRefDummyCodeGenerator *xrefGen = new XRefDummyCodeGenerator(fd);
+  XRefDummyCodeGenerator xrefGen(fd);
+  OutputCodeList xrefList;
+  xrefList.add(OutputCodeDeferExtension(&xrefGen));
 
   // parse the source code
-  intf->parseCode(*xrefGen,
+  intf->parseCode(xrefList,
                 0,
                 fileToString(fd->absFilePath()),
                 lang,
                 FALSE,
                 0,
                 fd);
-
-  // dismiss the object.
-  delete xrefGen;
 }
 
 static void listSymbol(Definition *d)
@@ -148,11 +147,14 @@ static void listSymbols()
 {
   for (const auto &kv : *Doxygen::symbolMap)
   {
-    listSymbol(kv.second);
+    for (const auto &def : kv.second)
+    {
+      listSymbol(def);
+    }
   }
 }
 
-static void lookupSymbol(Definition *d)
+static void lookupSymbol(const Definition *d)
 {
   if (d!=Doxygen::globalScope && // skip the global namespace symbol
       d->name().at(0)!='@'       // skip anonymous stuff
@@ -169,20 +171,20 @@ static void lookupSymbol(Definition *d)
     {
       case Definition::TypeClass:
         {
-          ClassDef *cd = dynamic_cast<ClassDef*>(d);
+          const ClassDef *cd = dynamic_cast<const ClassDef*>(d);
           printf("Kind: %s\n",cd->compoundTypeString().data());
         }
         break;
       case Definition::TypeFile:
         {
-          FileDef *fd = dynamic_cast<FileDef*>(d);
+          const FileDef *fd = dynamic_cast<const FileDef*>(d);
           printf("Kind: File: #includes %zu other files\n",
               fd->includeFileList().size());
         }
         break;
       case Definition::TypeNamespace:
         {
-          NamespaceDef *nd = dynamic_cast<NamespaceDef*>(d);
+          const NamespaceDef *nd = dynamic_cast<const NamespaceDef*>(d);
           printf("Kind: Namespace: contains %zu classes and %zu namespaces\n",
               nd->getClasses().size(),
               nd->getNamespaces().size());
@@ -190,7 +192,7 @@ static void lookupSymbol(Definition *d)
         break;
       case Definition::TypeMember:
         {
-          MemberDef *md = dynamic_cast<MemberDef*>(d);
+          const MemberDef *md = dynamic_cast<const MemberDef*>(d);
           printf("Kind: %s\n",md->memberTypeName().data());
         }
         break;
@@ -207,9 +209,9 @@ static void lookupSymbols(const QCString &sym)
   {
     auto range = Doxygen::symbolMap->find(sym);
     bool found=false;
-    for (auto it=range.first; it!=range.second; ++it)
+    for (const Definition *def : range)
     {
-      lookupSymbol(it->second);
+      lookupSymbol(def);
       found=true;
     }
     if (!found)
@@ -264,6 +266,7 @@ int main(int argc,char **argv)
   Config_updateBool(WARNINGS,FALSE);
   Config_updateBool(WARN_IF_UNDOCUMENTED,FALSE);
   Config_updateBool(WARN_IF_DOC_ERROR,FALSE);
+  Config_updateBool(WARN_IF_UNDOC_ENUM_VAL,FALSE);
   // Extract as much as possible
   Config_updateBool(EXTRACT_ALL,TRUE);
   Config_updateBool(EXTRACT_STATIC,TRUE);

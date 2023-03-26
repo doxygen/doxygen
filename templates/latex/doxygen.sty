@@ -105,7 +105,15 @@
 % Necessary for hanging indent
 \newlength{\DoxyCodeWidth}
 
-\newcommand\DoxyCodeLine[1]{\hangpara{\DoxyCodeWidth}{1}{#1}\par}
+\newcommand\DoxyCodeLine[1]{
+  \ifthenelse{\equal{\detokenize{#1}}{}}
+  {
+    \vspace*{\baselineskip}
+  }
+  {
+    \hangpara{\DoxyCodeWidth}{1}{#1}\par
+  }
+}
 
 \newcommand\NiceSpace{%
      \discretionary{}{\kern\fontdimen2\font}{\kern\fontdimen2\font}%
@@ -150,6 +158,7 @@
 
 % Used by @verbatim ... @endverbatim
 \newenvironment{DoxyVerb}{%
+  \par%
   \footnotesize%
   \verbatim%
 }{%
@@ -165,18 +174,30 @@
 }
 
 % Used by numbered lists (using '-#' or <ol> ... </ol>)
-\newenvironment{DoxyEnumerate}{%
-  \enumerate%
-}{%
-  \endenumerate%
-}
+\setlistdepth{12}
+\newlist{DoxyEnumerate}{enumerate}{12}
+\setlist[DoxyEnumerate,1]{label=\arabic*.}
+\setlist[DoxyEnumerate,2]{label=(\enumalphalphcnt*)}
+\setlist[DoxyEnumerate,3]{label=\roman*.}
+\setlist[DoxyEnumerate,4]{label=\enumAlphAlphcnt*.}
+\setlist[DoxyEnumerate,5]{label=\arabic*.}
+\setlist[DoxyEnumerate,6]{label=(\enumalphalphcnt*)}
+\setlist[DoxyEnumerate,7]{label=\roman*.}
+\setlist[DoxyEnumerate,8]{label=\enumAlphAlphcnt*.}
+\setlist[DoxyEnumerate,9]{label=\arabic*.}
+\setlist[DoxyEnumerate,10]{label=(\enumalphalphcnt*)}
+\setlist[DoxyEnumerate,11]{label=\roman*.}
+\setlist[DoxyEnumerate,12]{label=\enumAlphAlphcnt*.}
 
 % Used by bullet lists (using '-', @li, @arg, or <ul> ... </ul>)
-\newenvironment{DoxyItemize}{%
-  \itemize%
-}{%
-  \enditemize%
-}
+\setlistdepth{12}
+\newlist{DoxyItemize}{itemize}{12}
+\setlist[DoxyItemize]{label=\textperiodcentered}
+
+\setlist[DoxyItemize,1]{label=\textbullet}
+\setlist[DoxyItemize,2]{label=\normalfont\bfseries \textendash}
+\setlist[DoxyItemize,3]{label=\textasteriskcentered}
+\setlist[DoxyItemize,4]{label=\textperiodcentered}
 
 % Used by description lists (using <dl> ... </dl>)
 \newenvironment{DoxyDescription}{%
@@ -304,12 +325,6 @@
   \begin{DoxyDesc}{#1}%
 }{%
   \end{DoxyDesc}%
-}
-
-% Used by @internal
-\newenvironment{DoxyInternal}[1]{%
-  \paragraph*{#1}%
-}{%
 }
 
 % Used by @par and @paragraph
@@ -508,8 +523,26 @@
   \end{list}%
 }
 
+% Used when hyperlinks are turned on
+\newcommand{\doxylink}[2]{%
+  \mbox{\hyperlink{#1}{#2}}%
+}
+
+% Used when hyperlinks are turned on
+% Third argument is the SectionType, see the doxygen internal
+% documentation for the values (relevant: Page ... Subsubsection).
+\newcommand{\doxysectlink}[3]{%
+  \mbox{\hyperlink{#1}{#2}}%
+}
 % Used when hyperlinks are turned off
 \newcommand{\doxyref}[3]{%
+  \textbf{#1} (\textnormal{#2}\,\pageref{#3})%
+}
+
+% Used when hyperlinks are turned off
+% Fourth argument is the SectionType, see the doxygen internal
+% documentation for the values (relevant: Page ... Subsubsection).
+\newcommand{\doxysectref}[4]{%
   \textbf{#1} (\textnormal{#2}\,\pageref{#3})%
 }
 
@@ -535,6 +568,7 @@
 \definecolor{preprocessor}{rgb}{0.5,0.38,0.125}
 \definecolor{stringliteral}{rgb}{0.0,0.125,0.25}
 \definecolor{charliteral}{rgb}{0.0,0.5,0.5}
+\definecolor{xmlcdata}{rgb}{0.0,0.0,0.0}
 \definecolor{vhdldigit}{rgb}{1.0,0.0,1.0}
 \definecolor{vhdlkeyword}{rgb}{0.43,0.0,0.43}
 \definecolor{vhdllogic}{rgb}{1.0,0.0,0.0}

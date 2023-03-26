@@ -27,7 +27,7 @@ class ClassLinkedMap : public LinkedMap<ClassDef>
 {
 };
 
-class ClassLinkedRefMap : public LinkedRefMap<const ClassDef>
+class ClassLinkedRefMap : public LinkedRefMap<ClassDef>
 {
   public:
     bool declVisible(const ClassDef::CompoundType *filter=0) const;

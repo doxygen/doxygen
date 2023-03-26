@@ -34,14 +34,14 @@ class Markdown
   public:
     Markdown(const QCString &fileName,int lineNr,int indentLevel=0);
     QCString process(const QCString &input, int &startNewlines, bool fromParseInput = false);
-    QCString extractPageTitle(QCString &docs,QCString &id,int &prepend);
+    QCString extractPageTitle(QCString &docs, QCString &id, int &prepend, bool &isIdGenerated);
     void setIndentLevel(int level) { m_indentLevel = level; }
 
   private:
-    QCString detab(const QCString &s,int &refIndent);
     QCString processQuotations(const QCString &s,int refIndent);
     QCString processBlocks(const QCString &s,int indent);
     QCString isBlockCommand(const char *data,int offset,int size);
+    int isSpecialCommand(const char *data,int offset,int size);
     void findEndOfLine(const char *data,int size,int &pi,int&i,int &end);
     int processHtmlTagWrite(const char *data,int offset,int size,bool doWrite);
     int processHtmlTag(const char *data,int offset,int size);
@@ -57,18 +57,21 @@ class Markdown
     int processLink(const char *data,int,int size);
     int findEmphasisChar(const char *data, int size, char c, int c_size);
     void processInline(const char *data,int size);
-    void writeMarkdownImage(const char *fmt, bool explicitTitle,
+    void writeMarkdownImage(const char *fmt, bool inline_img, bool explicitTitle,
                             const QCString &title, const QCString &content,
-                            const QCString &link, const FileDef *fd);
+                            const QCString &link, const QCString &attributes,
+                            const FileDef *fd);
     int isHeaderline(const char *data, int size, bool allowAdjustLevel);
     int isAtxHeader(const char *data,int size,
-                       QCString &header,QCString &id,bool allowAdjustLevel);
+                       QCString &header,QCString &id,bool allowAdjustLevel,
+                       bool *pIsIdGenerated=nullptr);
     void writeOneLineHeaderOrRuler(const char *data,int size);
     void writeFencedCodeBlock(const char *data,const char *lng,
                 int blockStart,int blockEnd);
     int writeBlockQuote(const char *data,int size);
     int writeCodeBlock(const char *data,int size,int refIndent);
-    int writeTableBlock(const char *data,int size);
+    int writeTableBlock(const char *data, int size);
+    QCString extractTitleId(QCString &title, int level,bool *pIsIdGenerated=nullptr);
 
   private:
     struct LinkRef
@@ -86,7 +89,6 @@ class Markdown
     GrowBuf        m_out;
     Markdown::Action_t m_actions[256];
 };
-
 
 class MarkdownOutlineParser : public OutlineParserInterface
 {

@@ -30,7 +30,7 @@ class CCodeParser : public CodeParserInterface
   public:
     CCodeParser();
     virtual ~CCodeParser();
-    void parseCode(CodeOutputInterface &codeOutIntf,
+    void parseCode(OutputCodeList &codeOutIntf,
                    const QCString &scopeName,
                    const QCString &input,
                    SrcLangExt lang,
@@ -46,7 +46,8 @@ class CCodeParser : public CodeParserInterface
                    bool collectXRefs=TRUE
                   );
     void resetCodeParserState();
-    void setStartCodeLine(const bool inp);
+    void setInsideCodeLine(bool inp);
+    bool insideCodeLine() const;
   private:
     struct Private;
     std::unique_ptr<Private> p;

@@ -109,7 +109,7 @@ void DotGfxHierarchyTable::addHierarchy(DotNode *n,const ClassDef *cd,ClassDefSe
   {
     ClassDef *bClass=bcd.classDef;
     //printf("  Trying sub class='%s' usedNodes=%d\n",qPrint(bClass->name()),m_usedNodes->count());
-    if (bClass && bClass->isVisibleInHierarchy() && hasVisibleRoot(bClass->baseClasses()))
+    if (bClass && bClass->isVisibleInHierarchy() && classHasVisibleRoot(bClass->baseClasses()))
     {
       auto it = m_usedNodes.find(bClass->name().str());
       //printf("  Node '%s' Found visible class='%s'\n",qPrint(n->label()),
@@ -123,7 +123,7 @@ void DotGfxHierarchyTable::addHierarchy(DotNode *n,const ClassDef *cd,ClassDefSe
         auto child_it = std::find(children.begin(),children.end(),bn.get());
         if (child_it==children.end()) // no arrow yet
         {
-          n->addChild(bn.get(),bcd.prot);
+          n->addChild(bn.get(),EdgeInfo::protectionToColor(bcd.prot));
           bn->addParent(n);
           //printf("  Adding node %s to existing base node %s (c=%d,p=%d)\n",
           //       qPrint(n->label()),
@@ -154,7 +154,7 @@ void DotGfxHierarchyTable::addHierarchy(DotNode *n,const ClassDef *cd,ClassDefSe
             tooltip,
             tmp_url
             );
-        n->addChild(bn.get(),bcd.prot);
+        n->addChild(bn.get(),EdgeInfo::protectionToColor(bcd.prot));
         bn->addParent(n);
         root = bn.get();
         //printf("  Adding node %s to new base node %s (c=%d,p=%d)\n",
@@ -182,7 +182,7 @@ void DotGfxHierarchyTable::addClassList(const ClassLinkedMap &cl,ClassDefSet &vi
   {
     //printf("Trying %s subClasses=%d\n",qPrint(cd->name()),cd->subClasses()->count());
     if (cd->getLanguage()==SrcLangExt_VHDL &&
-      (VhdlDocGen::VhdlClasses)cd->protection()!=VhdlDocGen::ENTITYCLASS
+      VhdlDocGen::convert(cd->protection())!=VhdlDocGen::ENTITYCLASS
       )
     {
       continue;
@@ -191,7 +191,7 @@ void DotGfxHierarchyTable::addClassList(const ClassLinkedMap &cl,ClassDefSet &vi
     {
       continue;
     }
-    if (!hasVisibleRoot(cd->baseClasses()) &&
+    if (!classHasVisibleRoot(cd->baseClasses()) &&
       cd->isVisibleInHierarchy()
       ) // root node in the forest
     {
@@ -250,11 +250,7 @@ DotGfxHierarchyTable::DotGfxHierarchyTable(const QCString &prefix,ClassDef::Comp
         n->markAsVisible();
         n->colorConnectedNodes(curColor);
         curColor++;
-        const DotNode *dn=n->findDocNode();
-        if (dn!=0)
-          m_rootSubgraphs.push_back(const_cast<DotNode*>(dn));
-        else
-          m_rootSubgraphs.push_back(n);
+        m_rootSubgraphs.push_back(n);
       }
     }
   }

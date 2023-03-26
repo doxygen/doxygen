@@ -1,14 +1,16 @@
 # vim:ts=4:sw=4:expandtab:autoindent:
 
 include_directories(
-    ${PROJECT_SOURCE_DIR}/filesystem
-    ${PROJECT_SOURCE_DIR}/libmd5
-    ${PROJECT_SOURCE_DIR}/liblodepng
-    ${PROJECT_SOURCE_DIR}/libmscgen
+    ${PROJECT_SOURCE_DIR}/deps/TinyDeflate
+    ${PROJECT_SOURCE_DIR}/deps/filesystem
+    ${PROJECT_SOURCE_DIR}/deps/libmd5
+    ${PROJECT_SOURCE_DIR}/deps/liblodepng
+    ${PROJECT_SOURCE_DIR}/deps/libmscgen
     ${PROJECT_SOURCE_DIR}/libversion
     ${PROJECT_SOURCE_DIR}/libxml
     ${PROJECT_SOURCE_DIR}/vhdlparser
     ${PROJECT_SOURCE_DIR}/src
+    ${PROJECT_SOURCE_DIR}/deps/spdlog/include
     ${CLANG_INCLUDEDIR}
     ${GENERATED_SRC}
 )
@@ -76,15 +78,6 @@ add_custom_command(
 )
 set_source_files_properties(${GENERATED_SRC}/ce_parse.h PROPERTIES GENERATED 1)
 
-# lang_cfg.h
-add_custom_command(
-    COMMENT  "Generating ${GENERATED_SRC}/lang_cfg.h"
-    COMMAND ${CMAKE_COMMAND} -P ${PROJECT_SOURCE_DIR}/cmake/lang_cfg.cmake ${GENERATED_SRC}/lang_cfg.h ${LANG_CODES}
-    DEPENDS ${LANGUAGE_FILES}
-    OUTPUT ${GENERATED_SRC}/lang_cfg.h
-)
-set_source_files_properties(${GENERATED_SRC}/lang_cfg.h PROPERTIES GENERATED 1)
-
 # all resource files
 if (${CMAKE_VERSION} VERSION_EQUAL "3.11.0" OR ${CMAKE_VERSION} VERSION_GREATER "3.11.0")
     file(GLOB RESOURCES CONFIGURE_DEPENDS ${PROJECT_SOURCE_DIR}/templates/*/*)
@@ -101,48 +94,98 @@ add_custom_command(
 )
 set_source_files_properties(${GENERATED_SRC}/resources.cpp PROPERTIES GENERATED 1)
 
-set(LEX_FILES scanner 
+set(LEX_FILES
     code
-    pyscanner
-    pycode
-    fortranscanner
-    fortrancode
-    vhdlcode
-    pre
+    commentcnv
+    commentscan
+    configimpl
+    constexp
     declinfo
     defargs
     doctokenizer
-    commentcnv
-    commentscan
-    constexp
-    xmlcode
-    sqlcode
+    fortrancode
+    fortranscanner
     lexcode
     lexscanner
-    configimpl)
+    pre
+    pycode
+    pyscanner
+    scanner
+    sqlcode
+    vhdlcode
+    xmlcode
+)
 
-# unfortunately ${LEX_FILES_H} and ${LEX_FILES_CPP} don't work in older versions of CMake (like 3.6.2) for add_library
+if (NOT depfile_supported)
+    # In case the DEPFILE possibility is not supported the complete list of lex include files for the dependency has to be used
+    set(LEX_INC_FILES)
+endif()
+
+set(LEX_FILES_H)
+set(LEX_FILES_CPP)
+set(_depfile_args)
+
 foreach(lex_file ${LEX_FILES})
-    set(LEX_FILES_H ${LEX_FILES_H} " " ${GENERATED_SRC}/${lex_file}.l.h CACHE INTERNAL "Stores generated files")
-    set(LEX_FILES_CPP ${LEX_FILES_CPP} " " ${GENERATED_SRC}/${lex_file}.cpp CACHE INTERNAL "Stores generated files")
+    # configimpl is handled specially (it's in the static lib)
+    if (NOT lex_file STREQUAL "configimpl")
+        list(APPEND LEX_FILES_H ${GENERATED_SRC}/${lex_file}.l.h)
+        list(APPEND LEX_FILES_CPP ${GENERATED_SRC}/${lex_file}.cpp)
+    endif()
+
+    set(_generated_files
+        ${GENERATED_SRC}/${lex_file}.l
+        ${GENERATED_SRC}/${lex_file}.corr
+        ${GENERATED_SRC}/${lex_file}.d)
+
+    if (depfile_supported)
+        set(_depfile_args DEPFILE ${GENERATED_SRC}/${lex_file}.d)
+    endif()
     add_custom_command(
-        COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_LIST_DIR}/scan_states.py ${CMAKE_CURRENT_LIST_DIR}/${lex_file}.l > ${GENERATED_SRC}/${lex_file}.l.h
-        DEPENDS ${CMAKE_CURRENT_LIST_DIR}/scan_states.py ${CMAKE_CURRENT_LIST_DIR}/${lex_file}.l
+        OUTPUT ${_generated_files}
+        COMMAND ${PYTHON_EXECUTABLE}
+            ${CMAKE_CURRENT_LIST_DIR}/pre_lex.py
+            ${CMAKE_CURRENT_LIST_DIR}/${lex_file}.l
+            ${_generated_files}
+            ${CMAKE_CURRENT_LIST_DIR}
+        DEPENDS
+            ${CMAKE_CURRENT_LIST_DIR}/pre_lex.py
+            ${CMAKE_CURRENT_LIST_DIR}/${lex_file}.l
+        ${_depfile_args}
+    )
+    set_source_files_properties(${_generated_files} PROPERTIES GENERATED 1)
+
+    add_custom_command(
+        COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_LIST_DIR}/scan_states.py ${GENERATED_SRC}/${lex_file}.l > ${GENERATED_SRC}/${lex_file}.l.h
+        DEPENDS ${CMAKE_CURRENT_LIST_DIR}/scan_states.py ${GENERATED_SRC}/${lex_file}.l
         OUTPUT  ${GENERATED_SRC}/${lex_file}.l.h
     )
     set_source_files_properties(${GENERATED_SRC}/${lex_file}.l.h PROPERTIES GENERATED 1)
-    # for code coverage we need the flex sources in the build src directory
-    add_custom_command(
-        COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/src/${lex_file}.l ${PROJECT_BINARY_DIR}/src/${lex_file}.l
-        DEPENDS ${PROJECT_SOURCE_DIR}/src/${lex_file}.l
-        OUTPUT  ${PROJECT_BINARY_DIR}/src/${lex_file}.l
-    )
+
+    if(enable_coverage)
+        # for code coverage we need the flex sources in the build src directory
+        add_custom_command(
+            COMMAND ${CMAKE_COMMAND} -E copy ${GENERATED_SRC}/${lex_file}.l ${PROJECT_BINARY_DIR}/src/${lex_file}.l
+            DEPENDS ${GENERATED_SRC}/${lex_file}.l
+            OUTPUT  ${PROJECT_BINARY_DIR}/src/${lex_file}.l
+        )
+    endif()
 
     FLEX_TARGET(${lex_file}
-                ${CMAKE_CURRENT_LIST_DIR}/${lex_file}.l
-                ${GENERATED_SRC}/${lex_file}.cpp
+                ${GENERATED_SRC}/${lex_file}.l
+                ${GENERATED_SRC}/${lex_file}_intermediate.cpp
                 COMPILE_FLAGS "${LEX_FLAGS}")
+    add_custom_command(
+        COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_LIST_DIR}/post_lex.py ${GENERATED_SRC}/${lex_file}_intermediate.cpp ${GENERATED_SRC}/${lex_file}.cpp  ${GENERATED_SRC}/${lex_file}.corr ${CMAKE_CURRENT_LIST_DIR}/${lex_file}.l  ${GENERATED_SRC}/${lex_file}.l
+        DEPENDS ${CMAKE_CURRENT_LIST_DIR}/post_lex.py ${GENERATED_SRC}/${lex_file}_intermediate.cpp ${GENERATED_SRC}/${lex_file}.corr
+        OUTPUT  ${GENERATED_SRC}/${lex_file}.cpp
+    )
 endforeach()
+unset(_depfile_args)
+unset(_generated_files)
+
+# Cache generated sources lists
+set(LEX_FILES_H ${LEX_FILES_H} CACHE INTERNAL "Stores generated files")
+set(LEX_FILES_CPP ${LEX_FILES_CPP} CACHE INTERNAL "Stores generated files")
 
 
 BISON_TARGET(constexp
@@ -150,14 +193,15 @@ BISON_TARGET(constexp
              ${GENERATED_SRC}/ce_parse.cpp
              COMPILE_FLAGS "${YACC_FLAGS}")
 
-add_custom_command(
-    COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/src/constexp.y ${PROJECT_BINARY_DIR}/src
-    DEPENDS ${PROJECT_SOURCE_DIR}/src/constexp.y
-    OUTPUT  ${PROJECT_BINARY_DIR}/src/constexp.y
-)
+if(enable_coverage)
+    add_custom_command(
+        COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/src/constexp.y ${PROJECT_BINARY_DIR}/src
+        DEPENDS ${PROJECT_SOURCE_DIR}/src/constexp.y
+        OUTPUT  ${PROJECT_BINARY_DIR}/src/constexp.y
+    )
+endif()
 
 add_library(doxycfg STATIC
-    ${GENERATED_SRC}/lang_cfg.h
     ${GENERATED_SRC}/configvalues.h
     ${GENERATED_SRC}/configimpl.cpp
     ${GENERATED_SRC}/configimpl.l.h
@@ -168,56 +212,22 @@ add_library(doxycfg STATIC
     portable_c.c
     message.cpp
     debug.cpp
+    trace.cpp
 )
 add_sanitizers(doxycfg)
 
 add_library(doxymain STATIC
     # generated for/by flex/bison
-    #${LEX_FILES_H} #unfortunately doesn't work in older versions of CMake (like 3.6.2)
-    #${LEX_FILES_CPP} #unfortunately doesn't work in older versions of CMake (like 3.6.2)
-    ${GENERATED_SRC}/code.l.h
-    ${GENERATED_SRC}/commentcnv.l.h
-    ${GENERATED_SRC}/commentscan.l.h
-    ${GENERATED_SRC}/constexp.cpp
-    ${GENERATED_SRC}/constexp.l.h
-    ${GENERATED_SRC}/declinfo.l.h
-    ${GENERATED_SRC}/defargs.l.h
-    ${GENERATED_SRC}/doctokenizer.l.h
-    ${GENERATED_SRC}/fortrancode.l.h
-    ${GENERATED_SRC}/fortranscanner.l.h
-    ${GENERATED_SRC}/lexcode.l.h
-    ${GENERATED_SRC}/lexscanner.l.h
-    ${GENERATED_SRC}/pre.l.h
-    ${GENERATED_SRC}/pycode.l.h
-    ${GENERATED_SRC}/pyscanner.l.h
-    ${GENERATED_SRC}/scanner.l.h
-    ${GENERATED_SRC}/sqlcode.l.h
-    ${GENERATED_SRC}/vhdlcode.l.h
-    ${GENERATED_SRC}/xmlcode.l.h
-    ${GENERATED_SRC}/code.cpp
-    ${GENERATED_SRC}/commentcnv.cpp
-    ${GENERATED_SRC}/commentscan.cpp
-    ${GENERATED_SRC}/declinfo.cpp
-    ${GENERATED_SRC}/defargs.cpp
-    ${GENERATED_SRC}/doctokenizer.cpp
-    ${GENERATED_SRC}/fortrancode.cpp
-    ${GENERATED_SRC}/fortranscanner.cpp
-    ${GENERATED_SRC}/lexcode.cpp
-    ${GENERATED_SRC}/lexscanner.cpp
-    ${GENERATED_SRC}/pre.cpp
-    ${GENERATED_SRC}/pycode.cpp
-    ${GENERATED_SRC}/pyscanner.cpp
-    ${GENERATED_SRC}/scanner.cpp
-    ${GENERATED_SRC}/sqlcode.cpp
-    ${GENERATED_SRC}/vhdlcode.cpp
-    ${GENERATED_SRC}/xmlcode.cpp
+    ${LEX_FILES_H}
+    ${LEX_FILES_CPP}
     #
     ${GENERATED_SRC}/ce_parse.cpp
     # custom generated files
-    ${GENERATED_SRC}/lang_cfg.h
+    ${GENERATED_SRC}/configvalues.h
     ${GENERATED_SRC}/ce_parse.h
     ${GENERATED_SRC}/resources.cpp
     #
+    anchor.cpp
     arguments.cpp
     cite.cpp
     clangparser.cpp
@@ -228,6 +238,7 @@ add_library(doxymain STATIC
     condparser.cpp
     context.cpp
     cppvalue.cpp
+    datetime.cpp
     defgen.cpp
     definition.cpp
     dia.cpp
@@ -237,6 +248,7 @@ add_library(doxymain STATIC
     docbookgen.cpp
     docbookvisitor.cpp
     docgroup.cpp
+    docnode.cpp
     docparser.cpp
     docsets.cpp
     docvisitor.cpp
@@ -288,7 +300,6 @@ add_library(doxymain STATIC
     plantuml.cpp
     qcstring.cpp
     qhp.cpp
-    qhpxmlwriter.cpp
     reflist.cpp
     regex.cpp
     resourcemgr.cpp
@@ -296,6 +307,7 @@ add_library(doxymain STATIC
     rtfgen.cpp
     rtfstyle.cpp
     searchindex.cpp
+    searchindex_js.cpp
     sqlite3gen.cpp
     stlsupport.cpp
     symbolresolver.cpp
@@ -313,10 +325,11 @@ add_library(doxymain STATIC
 add_sanitizers(doxymain)
 
 # LLVM/clang headers give a lot of warnings with -Wshadow and -Wcast-align so we disable them for
-# the one file that includes them
+# the one file that includes them.
+# for the -Wbitfield-enum-conversion warning issue https://github.com/llvm/llvm-project/issues/59840 was submitted
 
 if (NOT MSVC)
-set_source_files_properties(clangparser.cpp PROPERTIES COMPILE_FLAGS "-Wno-shadow -Wno-cast-align")
+set_source_files_properties(clangparser.cpp PROPERTIES COMPILE_FLAGS "-Wno-shadow -Wno-cast-align -Wno-bitfield-enum-conversion")
 endif()
 
 ##foreach(lex_file ${LEX_FILES})
@@ -326,6 +339,13 @@ endif()
 add_executable(doxygen
     main.cpp
 )
+
+# enable to monitor compilation times
+#set_property(TARGET doxymain PROPERTY RULE_LAUNCH_COMPILE "${CMAKE_COMMAND} -E time")
+
+include(ApplyEditbin)
+apply_editbin(doxygen console)
+
 add_sanitizers(doxygen)
 
 if (use_libclang)
@@ -343,11 +363,18 @@ if (use_libclang)
     add_definitions(${LLVM_DEFINITIONS})
     if (static_libclang)
         set(CLANG_LIBS libclang clangTooling)
+        add_definitions(-DCINDEX_NO_EXPORTS)
     else() # dynamically linked version of clang
         llvm_config(doxymain USE_SHARED support)
         set(CLANG_LIBS libclang clang-cpp)
     endif()
     target_compile_definitions(doxygen PRIVATE ${LLVM_DEFINITIONS})
+endif()
+
+if((CMAKE_BUILD_TYPE STREQUAL "Debug") OR enable_tracing)
+    target_compile_definitions(doxycfg  PRIVATE -DENABLE_TRACING=1)
+    target_compile_definitions(doxymain PRIVATE -DENABLE_TRACING=1)
+    target_compile_definitions(doxygen  PRIVATE -DENABLE_TRACING=1)
 endif()
 
 target_link_libraries(doxygen PRIVATE
@@ -359,6 +386,7 @@ target_link_libraries(doxygen PRIVATE
     xml
     doxygen_version
     vhdlparser
+    spdlog
     ${SQLITE3_LIBRARIES}
     ${ICONV_LIBRARIES}
     ${CMAKE_THREAD_LIBS_INIT}
@@ -376,6 +404,4 @@ set_project_coverage(doxycfg)
 set_project_coverage(doxymain)
 set_project_coverage(doxygen)
 
-
 install(TARGETS doxygen DESTINATION bin)
-

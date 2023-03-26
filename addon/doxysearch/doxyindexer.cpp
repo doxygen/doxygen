@@ -174,7 +174,7 @@ class XMLContentHandler
       TextField    = 7
     };
 
-    /** Handler for a start tag. Called for <doc> and <field> tags */
+    /** Handler for a start tag. Called for `<doc>` and `<field>` tags */
     void startElement(const std::string &name, const XMLHandlers::Attributes &attrib)
     {
       m_data="";
@@ -192,7 +192,7 @@ class XMLContentHandler
       }
     }
 
-    /** Handler for an end tag. Called for </doc> and </field> tags */
+    /** Handler for an end tag. Called for `</doc>` and `</field>` tags */
     void endElement(const std::string &name)
     {
       if (name=="doc") // </doc>
@@ -369,7 +369,7 @@ int main(int argc,const char **argv)
         std::cout << "Processing " << argv[i] << "..." << std::endl;
         std::string inputStr = fileToString(argv[i]);
         XMLParser parser(handlers);
-        parser.parse(argv[i],inputStr.c_str(),false);
+        parser.parse(argv[i],inputStr.c_str(),false,[](){},[](){});
       }
     }
   }

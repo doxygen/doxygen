@@ -13,11 +13,12 @@
 *
 */
 
-#include <sstream>
+#include <mutex>
+#include <regex>
 
 #include "config.h"
 #include "doxygen.h"
-#include "index.h"
+#include "indexlist.h"
 #include "md5.h"
 #include "message.h"
 #include "util.h"
@@ -28,6 +29,7 @@
 #include "dotnode.h"
 #include "dotfilepatcher.h"
 #include "fileinfo.h"
+#include "portable.h"
 
 #define MAP_CMD "cmapx"
 
@@ -44,7 +46,7 @@ static bool sameMd5Signature(const QCString &baseName,
   bool same = false;
   char md5stored[33];
   md5stored[0]=0;
-  std::ifstream f(baseName.str()+".md5",std::ifstream::in | std::ifstream::binary);
+  std::ifstream f = Portable::openInputStream(baseName+".md5",true);
   if (f.is_open())
   {
     // read checksum
@@ -108,6 +110,8 @@ QCString DotGraph::imgName() const
                       ("." + getDotImageExtension()) : (Config_getBool(USE_PDFLATEX) ? ".pdf" : ".eps"));
 }
 
+std::mutex g_dotIndexListMutex;
+
 QCString DotGraph::writeGraph(
         TextStream& t,            // output stream for the code file (html, ...)
         GraphOutputFormat gf,     // bitmap(png/svg) or ps(eps/pdf)
@@ -133,7 +137,11 @@ QCString DotGraph::writeGraph(
 
   m_regenerate = prepareDotFile();
 
-  if (!m_doNotAddImageToIndex) Doxygen::indexList->addImageFile(imgName());
+  if (!m_doNotAddImageToIndex)
+  {
+    std::lock_guard<std::mutex> lock(g_dotIndexListMutex);
+    Doxygen::indexList->addImageFile(imgName());
+  }
 
   generateCode(t);
 
@@ -148,9 +156,9 @@ bool DotGraph::prepareDotFile()
   }
 
   char sigStr[33];
-  uchar md5_sig[16];
+  uint8_t md5_sig[16];
   // calculate md5
-  MD5Buffer((const unsigned char*)m_theGraph.data(), m_theGraph.length(), md5_sig);
+  MD5Buffer(m_theGraph.data(), m_theGraph.length(), md5_sig);
   // convert result to a string
   MD5SigToString(md5_sig, sigStr);
 
@@ -169,7 +177,7 @@ bool DotGraph::prepareDotFile()
   // need to rebuild the image
 
   // write .dot file because image was new or has changed
-  std::ofstream f(absDotName().str(),std::ofstream::out | std::ofstream::binary);
+  std::ofstream f = Portable::openOutputStream(absDotName());
   if (!f.is_open())
   {
     err("Could not open file %s for writing\n",qPrint(absDotName()));
@@ -234,7 +242,7 @@ void DotGraph::generateCode(TextStream &t)
         int mapId = DotManager::instance()->
                createFilePatcher(m_fileName)->
                addSVGObject(m_baseName,absImgName(),m_relPath);
-        t << "<!-- SVG " << mapId << " -->\n";
+        t << "<!-- " << "SVG " << mapId << " -->";
       }
       if (!m_noDivTag) t << "</div>\n";
     }
@@ -267,8 +275,6 @@ void DotGraph::generateCode(TextStream &t)
 
 void DotGraph::writeGraphHeader(TextStream &t,const QCString &title)
 {
-  int fontSize      = Config_getInt(DOT_FONTSIZE);
-  QCString fontName = Config_getString(DOT_FONTNAME);
   t << "digraph ";
   if (title.isEmpty())
   {
@@ -285,16 +291,11 @@ void DotGraph::writeGraphHeader(TextStream &t,const QCString &title)
     t << " // INTERACTIVE_SVG=YES\n";
   }
   t << " // LATEX_PDF_SIZE\n"; // write placeholder for LaTeX PDF bounding box size replacement
-  if (Config_getBool(DOT_TRANSPARENT))
-  {
-    t << "  bgcolor=\"transparent\";\n";
-  }
-  t << "  edge [fontname=\"" << fontName << "\","
-         "fontsize=\"" << fontSize << "\","
-         "labelfontname=\"" << fontName << "\","
-         "labelfontsize=\"" << fontSize << "\"];\n";
-  t << "  node [fontname=\"" << fontName << "\","
-         "fontsize=\"" << fontSize << "\",shape=record];\n";
+  t << "  bgcolor=\"transparent\";\n";
+  QCString c = Config_getString(DOT_COMMON_ATTR);
+  if (!c.isEmpty()) c += ",";
+  t << "  edge [" << c << Config_getString(DOT_EDGE_ATTR) << "];\n";
+  t << "  node [" << c << Config_getString(DOT_NODE_ATTR) << "];\n";
 }
 
 void DotGraph::writeGraphFooter(TextStream &t)

@@ -9,6 +9,7 @@
         <definition>int S::pub1</definition>
         <argsstring/>
         <name>pub1</name>
+        <qualifiedname>S::pub1</qualifiedname>
         <briefdescription>
         </briefdescription>
         <detaileddescription>
@@ -23,6 +24,7 @@
         <definition>int S::pub2</definition>
         <argsstring/>
         <name>pub2</name>
+        <qualifiedname>S::pub2</qualifiedname>
         <briefdescription>
         </briefdescription>
         <detaileddescription>
@@ -39,6 +41,7 @@
         <definition>int S::pro1</definition>
         <argsstring/>
         <name>pro1</name>
+        <qualifiedname>S::pro1</qualifiedname>
         <briefdescription>
         </briefdescription>
         <detaileddescription>
@@ -53,6 +56,7 @@
         <definition>int S::pro2</definition>
         <argsstring/>
         <name>pro2</name>
+        <qualifiedname>S::pro2</qualifiedname>
         <briefdescription>
         </briefdescription>
         <detaileddescription>
@@ -69,6 +73,7 @@
         <definition>int S::pri1</definition>
         <argsstring/>
         <name>pri1</name>
+        <qualifiedname>S::pri1</qualifiedname>
         <briefdescription>
         </briefdescription>
         <detaileddescription>
@@ -83,6 +88,7 @@
         <definition>int S::pri2</definition>
         <argsstring/>
         <name>pri2</name>
+        <qualifiedname>S::pri2</qualifiedname>
         <briefdescription>
         </briefdescription>
         <detaileddescription>

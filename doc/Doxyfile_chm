@@ -15,6 +15,7 @@
       HTML_OUTPUT            = chm
       GENERATE_HTMLHELP      = YES
       GENERATE_TREEVIEW      = NO
+      HTML_DYNAMIC_MENUS     = NO
       HHC_LOCATION           = "$(HTML_HELP_COMPILER)"
       CHM_FILE               = index.chm
       BINARY_TOC             = YES

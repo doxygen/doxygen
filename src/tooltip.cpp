@@ -21,7 +21,7 @@
 
 #include "tooltip.h"
 #include "definition.h"
-#include "outputgen.h"
+#include "outputlist.h"
 #include "util.h"
 #include "filedef.h"
 #include "doxygen.h"
@@ -47,11 +47,11 @@ TooltipManager::~TooltipManager()
 static QCString escapeId(const QCString &s)
 {
   QCString res=s;
-  for (uint i=0;i<res.length();i++) if (!isId(res[i])) res[i]='_';
+  for (uint32_t i=0;i<res.length();i++) if (!isId(res[i])) res[i]='_';
   return res;
 }
 
-void TooltipManager::addTooltip(CodeOutputInterface &ol,const Definition *d)
+void TooltipManager::addTooltip(const Definition *d)
 {
   bool sourceTooltips = Config_getBool(SOURCE_TOOLTIPS);
   if (!sourceTooltips) return;
@@ -62,7 +62,18 @@ void TooltipManager::addTooltip(CodeOutputInterface &ol,const Definition *d)
   {
     id = id.right(id.length()-i-1); // strip path (for CREATE_SUBDIRS=YES)
   }
-  id+=escapeId(Doxygen::htmlFileExtension);
+  // In case an extension is present translate this extension to something understood by the tooltip handler
+  // otherwise extend t with a translated htmlFileExtension.
+  QCString currentExtension = getFileNameExtension(id);
+  if (currentExtension.isEmpty())
+  {
+    id += escapeId(Doxygen::htmlFileExtension);
+  }
+  else
+  {
+    id = stripExtensionGeneral(id,currentExtension) + escapeId(currentExtension);
+  }
+
   QCString anc = d->anchor();
   if (!anc.isEmpty())
   {
@@ -70,21 +81,19 @@ void TooltipManager::addTooltip(CodeOutputInterface &ol,const Definition *d)
   }
   id = "a" + id;
   p->tooltipInfo.insert(std::make_pair(id.str(),d));
-  //printf("%p: addTooltip(%s) ol=%d\n",this,id.data(),ol.id());
+  //printf("%p: addTooltip(%s)\n",this,id.data());
 }
 
-void TooltipManager::writeTooltips(CodeOutputInterface &ol)
+void TooltipManager::writeTooltips(OutputCodeList &ol)
 {
-  int id = ol.id();
-  std::unordered_map<int, std::set<std::string> >::iterator it;
   // critical section
+  std::lock_guard<std::mutex> lock(g_tooltipsMutex);
+
+  int id = ol.id();
+  auto it = g_tooltipsWrittenPerFile.find(id);
+  if (it==g_tooltipsWrittenPerFile.end()) // new file
   {
-    std::lock_guard<std::mutex> lock(g_tooltipsMutex);
-    it = g_tooltipsWrittenPerFile.find(id);
-    if (it==g_tooltipsWrittenPerFile.end()) // new file
-    {
-      it = g_tooltipsWrittenPerFile.insert(std::make_pair(id,std::set<std::string>())).first;
-    }
+    it = g_tooltipsWrittenPerFile.insert(std::make_pair(id,std::set<std::string>())).first;
   }
 
   for (const auto &kv : p->tooltipInfo)
@@ -117,7 +126,7 @@ void TooltipManager::writeTooltips(CodeOutputInterface &ol)
           decl = md->declaration();
         }
       }
-      ol.writeTooltip(kv.first.c_str(),                // id
+      ol.writeTooltip(kv.first.c_str(),    // id
           docInfo,                         // symName
           decl,                            // decl
           d->briefDescriptionAsTooltip(),  // desc

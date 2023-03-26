@@ -33,8 +33,8 @@
 #include <QMessageBox>
 #include <QSettings>
 #include <QTextStream>
-#include <QTextCodec>
 #include <QFileInfo>
+#include <QRegularExpression>
 
 #define SA(x) QString::fromLatin1(x)
 
@@ -223,11 +223,14 @@ static QString getDocsForNode(const QDomElement &child)
       }
       docsVal = docsVal.nextSiblingElement();
     }
-    docs+=SA("<br/>");
-    docs+=SA("<br/>");
-    docs+=SA(" The default value is: <code>")+
-          child.attribute(SA("defval"))+
-          SA("</code>.");
+    if (child.attribute(SA("defval")) != SA(""))
+    {
+      docs+=SA("<br/>");
+      docs+=SA("<br/>");
+      docs+=SA(" The default value is: <code>")+
+            child.attribute(SA("defval"))+
+            SA("</code>.");
+    }
     docs+= SA("<br/>");
   }
   else if (type==SA("int"))
@@ -404,7 +407,7 @@ static QString getDocsForNode(const QDomElement &child)
   // Remove / replace doxygen markup strings
   // the regular expressions are hard to read so the intention will be given
   // Note: see also configgen.py in the src directory for other doxygen parts
-  QRegExp regexp;
+  QRegularExpression regexp;
   // remove \n at end and replace by a space
   regexp.setPattern(SA("\\n$"));
   docs.replace(regexp,SA(" "));
@@ -482,6 +485,8 @@ static QString getDocsForNode(const QDomElement &child)
   docs.replace(SA("\\>"),SA("&gt;"));
   regexp.setPattern(SA(" (http:[^ \\)]*)([ \\)])"));
   docs.replace(regexp,SA(" <a href=\"\\1\">\\1</a>\\2"));
+  regexp.setPattern(SA(" (https:[^ \\)]*)([ \\)])"));
+  docs.replace(regexp,SA(" <a href=\"\\1\">\\1</a>\\2"));
   // LaTeX name as formula -> LaTeX
   regexp.setPattern(SA("\\\\f\\$\\\\mbox\\{\\\\LaTeX\\}\\\\f\\$"));
   docs.replace(regexp,SA("LaTeX"));
@@ -535,6 +540,10 @@ QWidget *Expert::createTopicWidget(QDomElement &elem)
         else if (format==SA("file"))
         {
           mode = InputString::StringFile;
+        }
+        else if (format==SA("filedir"))
+        {
+          mode = InputString::StringFileDir;
         }
         else if (format==SA("image"))
         {
@@ -752,7 +761,7 @@ void Expert::loadSettings(QSettings *s)
   {
     i.next();
     QVariant var = s->value(SA("config/")+i.key());
-    if (i.value())
+    if (i.value() && var.isValid())
     {
       //printf("Loading key %s: type=%d value='%s'\n",qPrintable(i.key()),var.type(),qPrintable(var.toString()));
       i.value()->value() = var;
@@ -781,7 +790,7 @@ void Expert::loadConfig(const QString &fileName)
   parseConfig(fileName,m_options);
 }
 
-void Expert::saveTopic(QTextStream &t,QDomElement &elem,QTextCodec *codec,
+void Expert::saveTopic(QTextStream &t,QDomElement &elem,TextCodecAdapter *codec,
                        bool brief,bool condensed)
 {
   if (!brief)
@@ -843,22 +852,14 @@ bool Expert::writeConfig(QTextStream &t,bool brief, bool condensed)
     t << convertToComment(m_header);
   }
 
-  QTextCodec *codec = 0;
   Input *option = m_options[QString::fromLatin1("DOXYFILE_ENCODING")];
-  if (option)
-  {
-    codec = QTextCodec::codecForName(option->value().toString().toLatin1());
-    if (codec==0) // fallback: use UTF-8
-    {
-      codec = QTextCodec::codecForName("UTF-8");
-    }
-  }
+  TextCodecAdapter codec(option->value().toString().toLatin1());
   QDomElement childElem = m_rootElement.firstChildElement();
   while (!childElem.isNull())
   {
     if (childElem.tagName()==SA("group"))
     {
-      saveTopic(t,childElem,codec,brief,condensed);
+      saveTopic(t,childElem,&codec,brief,condensed);
     }
     childElem = childElem.nextSiblingElement();
   }

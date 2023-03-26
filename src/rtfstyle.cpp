@@ -20,8 +20,6 @@
 #include "message.h"
 #include "regex.h"
 
-RTFListItemInfo rtf_listItemInfo[rtf_maxIndentLevels];
-
 QCString rtf_title;
 QCString rtf_subject;
 QCString rtf_comments;
@@ -282,7 +280,7 @@ void loadStylesheet(const QCString &name, StyleDataMap& map)
   }
   msg("Loading RTF style sheet %s...\n",qPrint(name));
 
-  uint lineNr=1;
+  uint32_t lineNr=1;
 
   for (std::string line ; getline(file,line) ; ) // for each line
   {
@@ -324,7 +322,7 @@ void loadExtensions(const QCString &name)
   }
   msg("Loading RTF extensions %s...\n",qPrint(name));
 
-  uint lineNr=1;
+  uint32_t lineNr=1;
 
   for (std::string line ; getline(file,line) ; ) // for each line
   {

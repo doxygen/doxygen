@@ -39,7 +39,7 @@ class InputBool : public QObject, public Input
     void setEnabled(bool);
     void updateDependencies();
     bool isDefault();
-    void writeValue(QTextStream &t,QTextCodec *codec);
+    void writeValue(QTextStream &t,TextCodecAdapter *codec);
     void setTemplateDocs(const QString &docs) { m_tdocs = docs; }
     static bool convertToBool(const QVariant &v,bool &isValid);
 

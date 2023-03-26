@@ -13,7 +13,6 @@
 class TranslatorAdapterBase : public Translator
 {
   protected:
-    virtual ~TranslatorAdapterBase() {}
     TranslatorEnglish english;
 
     /*! An auxiliary inline method used by the updateNeededMessage()
@@ -41,7 +40,85 @@ class TranslatorAdapterBase : public Translator
 
 };
 
-class TranslatorAdapter_1_9_2 : public TranslatorAdapterBase
+class TranslatorAdapter_1_9_6 : public TranslatorAdapterBase
+{
+  public:
+    virtual QCString updateNeededMessage()
+    { return createUpdateNeededMessage(idLanguage(),"release 1.9.5"); }
+
+    /*! Small trick to use the original functions as the wording has been changed */
+    virtual QCString trRelatedSymbols()
+    { return trRelatedFunctions(); }
+    virtual QCString trRelatedSymbolsSubscript()
+    { return trRelatedSubscript(); }
+    virtual QCString trRelatedSymbolDocumentation()
+    { return trRelatedFunctionDocumentation(); }
+
+    virtual QCString trCompoundType(ClassDef::CompoundType compType, SrcLangExt lang)
+    { return english.trCompoundType(compType, lang); }
+
+    virtual QCString trFileMembersDescriptionTotal(FileMemberHighlight::Enum hl)
+    {
+      if (hl==FileMemberHighlight::All)
+      {
+        return trFileMembersDescription(Config_getBool(EXTRACT_ALL));
+      }
+      else
+      {
+        // hack to work around a mozilla bug, which refuses to switch to
+        // normal lists otherwise
+        return "&nbsp;";
+      }
+    }
+    virtual QCString trCompoundMembersDescriptionTotal(ClassMemberHighlight::Enum hl)
+    {
+      if (hl==ClassMemberHighlight::All)
+      {
+        return trCompoundMembersDescription(Config_getBool(EXTRACT_ALL));
+      }
+      else
+      {
+        // hack to work around a mozilla bug, which refuses to switch to
+        // normal lists otherwise
+        return "&nbsp;";
+      }
+    }
+    virtual QCString trNamespaceMembersDescriptionTotal(NamespaceMemberHighlight::Enum hl)
+    {
+      if (hl==NamespaceMemberHighlight::All)
+      {
+        return trNamespaceMemberDescription(Config_getBool(EXTRACT_ALL));
+      }
+      else
+      {
+        // hack to work around a mozilla bug, which refuses to switch to
+        // normal lists otherwise
+        return "&nbsp;";
+      }
+    }
+};
+
+class TranslatorAdapter_1_9_5 : public TranslatorAdapter_1_9_6
+{
+  public:
+    virtual QCString updateNeededMessage()
+    { return createUpdateNeededMessage(idLanguage(),"release 1.9.5"); }
+
+    virtual QCString trFlowchart()
+    { return english.trFlowchart(); }
+};
+
+class TranslatorAdapter_1_9_4 : public TranslatorAdapter_1_9_5
+{
+  public:
+    virtual QCString updateNeededMessage()
+    { return createUpdateNeededMessage(idLanguage(),"release 1.9.4"); }
+
+    virtual QCString trPackageList()
+    { return english.trPackageList(); }
+};
+
+class TranslatorAdapter_1_9_2 : public TranslatorAdapter_1_9_4
 {
   public:
     virtual QCString updateNeededMessage()
@@ -106,7 +183,7 @@ class TranslatorAdapter_1_8_15 : public TranslatorAdapter_1_8_19
     virtual QCString trFunctionAndProc()
     { return english.trFunctionAndProc(); }
 
-    virtual QCString trVhdlType(uint64 type,bool single)
+    virtual QCString trVhdlType(uint64_t type,bool single)
     { return english.trVhdlType(type,single); }
 
     virtual QCString trCustomReference(const QCString &name)
@@ -313,8 +390,11 @@ class TranslatorAdapter_1_7_5 : public TranslatorAdapter_1_8_0
     { return english.trIncludesFileIn(name); }
     virtual QCString trDateTime(int year,int month,int day,int dayOfWeek,
                                 int hour,int minutes,int seconds,
-                                bool includeTime)
+                                DateTimeType includeTime)
     { return english.trDateTime(year,month,day,dayOfWeek,hour,minutes,seconds,includeTime); }
+    virtual QCString trDayPeriod(int period)
+    { return english.trDayPeriod(period); }
+
 };
 
 /** Adapter class for languages that only contain translations up to

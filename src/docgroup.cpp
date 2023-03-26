@@ -21,6 +21,7 @@
 #include "docgroup.h"
 
 static std::atomic_int g_groupId;
+static std::mutex g_memberGroupInfoMapMutex;
 
 void DocGroup::enterFile(const QCString &fileName,int)
 {
@@ -70,12 +71,12 @@ void DocGroup::enterCompound(const QCString &fileName,int line,const QCString &n
   {
     m_compoundName=fileName;
   }
-  //printf("groupEnterCompound(%s)\n",name);
+  //printf("groupEnterCompound(%s)\n",qPrint(name));
 }
 
-void DocGroup::leaveCompound(const QCString &,int,const QCString & /*name*/)
+void DocGroup::leaveCompound(const QCString &,int,const QCString &/* name */)
 {
-  //printf("groupLeaveCompound(%s)\n",name);
+  //printf("groupLeaveCompound(%s)\n",qPrint(name));
   //if (m_memberGroupId!=DOX_NOGROUP)
   //{
   //  warn(fileName,line,"end of compound %s while inside a member group\n",qPrint(name));
@@ -88,6 +89,7 @@ void DocGroup::leaveCompound(const QCString &,int,const QCString & /*name*/)
 
 int DocGroup::findExistingGroup(const MemberGroupInfo *info)
 {
+  std::lock_guard<std::mutex> lock(g_memberGroupInfoMapMutex);
   //printf("findExistingGroup %s:%s\n",qPrint(info->header),qPrint(info->compoundName));
   for (const auto &kv : Doxygen::memberGroupInfoMap)
   {
@@ -106,7 +108,7 @@ int DocGroup::findExistingGroup(const MemberGroupInfo *info)
 void DocGroup::open(Entry *e,const QCString &,int, bool implicit)
 {
   if (!implicit) m_openCount++;
-  //printf("==> openGroup(name=%s,sec=%x) m_autoGroupStack=%d\n",
+  //printf("==> openGroup(name=%s,sec=%x) m_autoGroupStack=%zu\n",
   //  	qPrint(e->name),e->section,m_autoGroupStack.size());
   if (e->section==Entry::GROUPDOC_SEC) // auto group
   {
@@ -121,11 +123,14 @@ void DocGroup::open(Entry *e,const QCString &,int, bool implicit)
       info->header = m_memberGroupHeader.stripWhiteSpace();
       info->compoundName = m_compoundName;
       m_memberGroupId = findExistingGroup(info.get());
-      auto it = Doxygen::memberGroupInfoMap.find(m_memberGroupId);
-      if (it==Doxygen::memberGroupInfoMap.end())
       {
-         //printf("    use membergroup %d\n",m_memberGroupId);
-         Doxygen::memberGroupInfoMap.insert(std::make_pair(m_memberGroupId,std::move(info)));
+        std::lock_guard<std::mutex> lock(g_memberGroupInfoMapMutex);
+        auto it = Doxygen::memberGroupInfoMap.find(m_memberGroupId);
+        if (it==Doxygen::memberGroupInfoMap.end())
+        {
+          //printf("    use membergroup %d\n",m_memberGroupId);
+          Doxygen::memberGroupInfoMap.insert(std::make_pair(m_memberGroupId,std::move(info)));
+        }
       }
       m_memberGroupRelates = e->relates;
       e->mGrpId = m_memberGroupId;
@@ -146,17 +151,20 @@ void DocGroup::close(Entry *e,const QCString &fileName,int line,bool foundInline
       m_openCount--;
     }
   }
-  //printf("==> closeGroup(name=%s,sec=%x,file=%s,line=%d) m_autoGroupStack=%d\n",
-  //    qPrint(e->name),e->section,fileName,line,m_autoGroupStack.size());
+  //printf("==> closeGroup(name=%s,sec=%x,file=%s,line=%d) m_autoGroupStack=%zu\n",
+  //    qPrint(e->name),e->section,qPrint(fileName),line,m_autoGroupStack.size());
   if (m_memberGroupId!=DOX_NOGROUP) // end of member group
   {
-    auto it = Doxygen::memberGroupInfoMap.find(m_memberGroupId);
-    if (it!=Doxygen::memberGroupInfoMap.end()) // known group
     {
-      auto &info = it->second;
-      info->doc = m_memberGroupDocs;
-      info->docFile = fileName;
-      info->docLine = line;
+      std::lock_guard<std::mutex> lock(g_memberGroupInfoMapMutex);
+      auto it = Doxygen::memberGroupInfoMap.find(m_memberGroupId);
+      if (it!=Doxygen::memberGroupInfoMap.end()) // known group
+      {
+        auto &info = it->second;
+        info->doc = m_memberGroupDocs;
+        //info->docFile = fileName;
+        //info->docLine = line;
+      }
     }
     m_memberGroupId=DOX_NOGROUP;
     m_memberGroupRelates.resize(0);
@@ -177,15 +185,15 @@ void DocGroup::close(Entry *e,const QCString &fileName,int line,bool foundInline
 
 void DocGroup::initGroupInfo(Entry *e)
 {
-  //printf("==> initGroup(id=%d,related=%s,e=%p)\n",m_memberGroupId,
-  //       qPrint(m_memberGroupRelates),e);
+  //printf("==> initGroup(id=%d,related=%s,e=%p,#stack=%zu)\n",m_memberGroupId,
+  //       qPrint(m_memberGroupRelates),(void*)e,m_autoGroupStack.size());
   e->mGrpId     = m_memberGroupId;
   e->relates    = m_memberGroupRelates;
   if (!m_autoGroupStack.empty())
   {
-    //printf("Appending group %s to %s: count=%d entry=%p\n",
-    //	qPrint(m_autoGroupStack.top()->groupname),
-    //	qPrint(e->name),e->groups->count(),e);
+    //printf("Appending group %s to %s: count=%zu entry=%p\n",
+    //	qPrint(m_autoGroupStack.back().groupname),
+    //    qPrint(e->name),e->groups.size(),(void*)e);
     e->groups.push_back(Grouping(m_autoGroupStack.back()));
   }
 }
@@ -201,14 +209,17 @@ void DocGroup::addDocs(Entry *e)
       m_memberGroupDocs+="\n\n";
     }
     m_memberGroupDocs+=e->doc;
-    auto it =Doxygen::memberGroupInfoMap.find(m_memberGroupId);
-    if (it!=Doxygen::memberGroupInfoMap.end())
     {
-      auto &info = it->second;
-      info->doc = m_memberGroupDocs;
-      info->docFile = e->docFile;
-      info->docLine = e->docLine;
-      info->setRefItems(e->sli);
+      std::lock_guard<std::mutex> lock(g_memberGroupInfoMapMutex);
+      auto it =Doxygen::memberGroupInfoMap.find(m_memberGroupId);
+      if (it!=Doxygen::memberGroupInfoMap.end())
+      {
+        auto &info = it->second;
+        info->doc = m_memberGroupDocs;
+        info->docFile = e->docFile;
+        info->docLine = e->docLine;
+        info->setRefItems(e->sli);
+      }
     }
     e->doc.resize(0);
     e->brief.resize(0);

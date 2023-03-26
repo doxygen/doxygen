@@ -28,7 +28,7 @@
 
 class Entry;
 class FileDef;
-class CodeOutputInterface;
+class OutputCodeList;
 class MemberDef;
 class Definition;
 class ClangTUParser;
@@ -42,7 +42,7 @@ class ClangTUParser;
 class OutlineParserInterface
 {
   public:
-    virtual ~OutlineParserInterface() {}
+    virtual ~OutlineParserInterface() = default;
 
     /** Parses a single input file with the goal to build an Entry tree.
      *  @param[in] fileName    The full name of the file.
@@ -83,11 +83,11 @@ class OutlineParserInterface
 class CodeParserInterface
 {
   public:
-    virtual ~CodeParserInterface() {}
+    virtual ~CodeParserInterface() = default;
 
     /** Parses a source file or fragment with the goal to produce
      *  highlighted and cross-referenced output.
-     *  @param[in] codeOutIntf Abstract interface for writing the result.
+     *  @param[in] codeOutList interface for writing the result.
      *  @param[in] scopeName Name of scope to which the code belongs.
      *  @param[in] input Actual code in the form of a string
      *  @param[in] lang The programming language of the code fragment.
@@ -107,7 +107,7 @@ class CodeParserInterface
      *  @param[in] searchCtx context under which search data has to be stored.
      *  @param[in] collectXRefs collect cross-reference relations.
      */
-    virtual void parseCode(CodeOutputInterface &codeOutIntf,
+    virtual void parseCode(OutputCodeList &codeOutList,
                            const QCString &scopeName,
                            const QCString &input,
                            SrcLangExt lang,

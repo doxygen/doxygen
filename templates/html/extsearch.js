@@ -22,9 +22,8 @@
 
  @licend  The above is the entire license notice for the JavaScript code in this file
  */
-function SearchBox(name, resultsPath, inFrame, label)
+function SearchBox(name, resultsPath, extension)
 {
-  this.searchLabel = label;
   this.DOMSearchField = function()
   {  return document.getElementById("MSearchField");  }
   this.DOMSearchBox = function()
@@ -34,16 +33,10 @@ function SearchBox(name, resultsPath, inFrame, label)
     if (isActive)
     {
       this.DOMSearchBox().className = 'MSearchBoxActive';
-      var searchField = this.DOMSearchField();
-      if (searchField.value == this.searchLabel)
-      {
-        searchField.value = '';
-      }
     }
     else
     {
       this.DOMSearchBox().className = 'MSearchBoxInactive';
-      this.DOMSearchField().value   = this.searchLabel;
     }
   }
 }
@@ -115,7 +108,7 @@ function searchFor(query,page,count) {
         r+='<div class="searchpages">';
         if (data.page>0)
         {
-          r+='<span class="pages"><a href="javascript:searchFor(\''+escapeHtml(query)+'\','+(page-1).toString()+','+count.toString()+')">&laquo;</a></span>&nbsp;';
+          r+='<span class="pages"><a href="javascript:searchFor(\''+escapeHtml(query)+'\','+(page-1).toString()+','+count.toString()+')">&laquo;</a></span>&#160;';
         }
         var firstPage = data.page-5;
         var lastPage  = data.page+5;
@@ -132,11 +125,11 @@ function searchFor(query,page,count) {
         {
           if (i==data.page)
           {
-            r+='<span class="pages"><b>'+(i+1).toString()+'</b></span>&nbsp;';
+            r+='<span class="pages"><b>'+(i+1).toString()+'</b></span>&#160;';
           }
           else
           {
-            r+='<span class="pages"><a href="javascript:searchFor(\''+escapeHtml(query)+'\','+i.toString()+','+count.toString()+')">'+(i+1).toString()+'</a></span>&nbsp;';
+            r+='<span class="pages"><a href="javascript:searchFor(\''+escapeHtml(query)+'\','+i.toString()+','+count.toString()+')">'+(i+1).toString()+'</a></span>&#160;';
           }
         }
         if (data.page+1<data.pages)

@@ -13,6 +13,7 @@
         <definition>int Test&lt; T &gt;::example</definition>
         <argsstring>(int p1, int p2)</argsstring>
         <name>example</name>
+        <qualifiedname>Test::example</qualifiedname>
         <param>
           <type>int</type>
           <declname>p1</declname>

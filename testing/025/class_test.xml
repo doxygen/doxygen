@@ -8,6 +8,7 @@
         <definition>void Test::example</definition>
         <argsstring>()</argsstring>
         <name>example</name>
+        <qualifiedname>Test::example</qualifiedname>
         <briefdescription>
           <para>An example member function. </para>
         </briefdescription>

@@ -35,12 +35,6 @@
 #ifndef TRUE
 #define TRUE true
 #endif
-typedef unsigned char	uchar;
-typedef unsigned short	ushort;
-typedef unsigned	uint;
-typedef unsigned long	ulong;
-typedef int64_t         int64;
-typedef uint64_t        uint64;
 #define ASSERT(x)  if ( !(x) )\
 	fprintf(stderr,"ASSERT: \"%s\" in %s (%d)\n",#x,__FILE__,__LINE__)
 
@@ -59,11 +53,11 @@ void *qmemmove( void *dst, const void *src, size_t len );
 
 char *qstrdup( const char * );
 
-inline uint cstrlen( const char *str )
-{ return (uint)strlen(str); }
+inline uint32_t cstrlen( const char *str )
+{ return static_cast<uint32_t>(strlen(str)); }
 
-inline uint qstrlen( const char *str )
-{ return str ? (uint)strlen(str) : 0; }
+inline uint32_t qstrlen( const char *str )
+{ return str ? static_cast<uint32_t>(strlen(str)) : 0; }
 
 inline char *cstrcpy( char *dst, const char *src )
 { return strcpy(dst,src); }
@@ -117,7 +111,7 @@ class QCString
 
     explicit QCString( const std::string &s ) : m_rep(s) {}
 
-    QCString( std::string &&s) { m_rep = std::move(s); }
+    QCString( std::string &&s) : m_rep(std::move(s)) {}
 
     /** creates a string with room for size characters
      *  @param[in] size the number of character to allocate (also counting the 0-terminator!)
@@ -144,10 +138,10 @@ class QCString
     bool isEmpty() const { return m_rep.empty(); }
 
     /** Returns the length of the string, not counting the 0-terminator. Equivalent to size(). */
-    uint length() const { return (uint)m_rep.size(); }
+    uint32_t length() const { return static_cast<uint32_t>(m_rep.size()); }
 
     /** Returns the length of the string, not counting the 0-terminator. */
-    uint size() const { return (uint)m_rep.size(); }
+    uint32_t size() const { return static_cast<uint32_t>(m_rep.size()); }
 
     /** Returns a pointer to the contents of the string in the form of a 0-terminated C string */
     const char *data() const { return m_rep.c_str(); }
@@ -166,6 +160,9 @@ class QCString
     /** Truncates the string at position \a pos. */
     bool truncate( size_t pos ) { return resize( pos + 1 ); }
 
+    /** Reserve space for \a size bytes without changing the string contents */
+    void reserve( size_t size ) { m_rep.reserve(size); }
+
     /** Fills a string with a predefined character
      *  @param[in] c the character used to fill the string with.
      *  @param[in] len the number of character to fill. Use -1 to fill the whole string.
@@ -174,7 +171,7 @@ class QCString
      */
     bool fill( char c, int len = -1 )
     {
-      int l = len==-1 ? (int)m_rep.size() : len;
+      int l = len==-1 ? static_cast<int>(m_rep.size()) : len;
       m_rep = std::string(l,c);
       return TRUE;
     }
@@ -224,7 +221,7 @@ class QCString
     QCString mid( size_t index, size_t len=static_cast<size_t>(-1)) const
     {
       size_t slen = m_rep.size();
-      if (len==static_cast<uint>(-1)) len = slen-index;
+      if (len==static_cast<uint32_t>(-1)) len = slen-index;
       return m_rep.empty() || index>slen || len==0 ? QCString() :
              QCString(m_rep.substr(index,len));
     }
@@ -249,6 +246,33 @@ class QCString
       if (start==sl) return QCString(); // only whitespace
       while (end>start && qisspace(m_rep[end])) end--;
       return QCString(m_rep.substr(start,1+end-start));
+    }
+
+    // Returns a quoted copy of this string, unless it is already quoted.
+    // Note that trailing and leading whitespace is removed.
+    QCString quoted() const
+    {
+      size_t start=0, sl=m_rep.size(), end=sl-1;
+      while (start<sl  && qisspace(m_rep[start])) start++; // skip over leading whitespace
+      if (start==sl) return QCString(); // only whitespace
+      while (end>start && qisspace(m_rep[end]))   end--;   // skip over trailing whitespace
+      bool needsQuotes=false;
+      size_t i=start;
+      if (i<end && m_rep[i]!='"') // stripped string has at least non-whitespace unquoted character
+      {
+        while (i<end && !needsQuotes) // check if the to be quoted part has at least one whitespace character
+        {
+          needsQuotes = m_rep[i] =='-';
+          needsQuotes |= qisspace(m_rep[i++]);
+        }
+      }
+      QCString result(m_rep.substr(start,1+end-start));
+      if (needsQuotes)
+      {
+        result.prepend("\"");
+        result.append("\"");
+      }
+      return result;
     }
 
     /// returns a copy of this string with all whitespace removed
@@ -361,13 +385,13 @@ class QCString
     QCString &replace( size_t index, size_t len, const char *s);
     //QCString &replace( const QRegExp &rx, const char *str );
 
-    short  toShort(  bool *ok=0, int base=10 ) const;
-    ushort toUShort( bool *ok=0, int base=10 ) const;
-    int	   toInt(    bool *ok=0, int base=10 ) const;
-    uint   toUInt(   bool *ok=0, int base=10 ) const;
-    long   toLong(   bool *ok=0, int base=10 ) const;
-    ulong  toULong(  bool *ok=0, int base=10 ) const;
-    uint64 toUInt64( bool *ok=0, int base=10 ) const;
+    short         toShort(  bool *ok=0, int base=10 ) const;
+    uint16_t      toUShort( bool *ok=0, int base=10 ) const;
+    int	          toInt(    bool *ok=0, int base=10 ) const;
+    uint32_t      toUInt(   bool *ok=0, int base=10 ) const;
+    long          toLong(   bool *ok=0, int base=10 ) const;
+    unsigned long toULong(  bool *ok=0, int base=10 ) const;
+    uint64_t      toUInt64( bool *ok=0, int base=10 ) const;
 
     QCString &setNum(short n)
     {
@@ -375,7 +399,7 @@ class QCString
       return *this;
     }
 
-    QCString &setNum(ushort n)
+    QCString &setNum(uint16_t n)
     {
       m_rep = std::to_string(n);
       return *this;
@@ -387,7 +411,7 @@ class QCString
       return *this;
     }
 
-    QCString &setNum(uint n)
+    QCString &setNum(uint32_t n)
     {
       m_rep = std::to_string(n);
       return *this;
@@ -399,7 +423,19 @@ class QCString
       return *this;
     }
 
-    QCString &setNum(ulong n)
+    QCString &setNum(long long n)
+    {
+      m_rep = std::to_string(n);
+      return *this;
+    }
+
+    QCString &setNum(unsigned long long n)
+    {
+      m_rep = std::to_string(n);
+      return *this;
+    }
+
+    QCString &setNum(unsigned long n)
     {
       m_rep = std::to_string(n);
       return *this;
@@ -439,7 +475,7 @@ class QCString
     }
 #endif
 
-    std::string str() const
+    const std::string &str() const
     {
       return m_rep;
     }
@@ -504,7 +540,7 @@ class QCString
  *****************************************************************************/
 
 inline bool operator==( const QCString &s1, const QCString &s2 )
-{ return qstrcmp(s1.data(),s2.data()) == 0; }
+{ return s1.str() == s2.str(); }
 
 inline bool operator==( const QCString &s1, const char *s2 )
 { return qstrcmp(s1.data(),s2) == 0; }
@@ -513,7 +549,7 @@ inline bool operator==( const char *s1, const QCString &s2 )
 { return qstrcmp(s1,s2.data()) == 0; }
 
 inline bool operator!=( const QCString &s1, const QCString &s2 )
-{ return qstrcmp(s1.data(),s2.data()) != 0; }
+{ return s1.str() != s2.str(); }
 
 inline bool operator!=( const QCString &s1, const char *s2 )
 { return qstrcmp(s1.data(),s2) != 0; }
@@ -567,24 +603,6 @@ inline QCString operator+( const char *s1, const QCString &s2 )
     tmp.append(s2);
     return tmp;
 }
-
-#define HAD_PLUS_OPERATOR_FOR_CHAR 0
-#if HAS_PLUS_OPERATOR_FOR_CHAR
-inline QCString operator+( const QCString &s1, char c2 )
-{
-    QCString tmp( s1.data() );
-    tmp.append(c2);
-    return tmp;
-}
-
-inline QCString operator+( char c1, const QCString &s2 )
-{
-    QCString tmp;
-    tmp.append(c1);
-    tmp.append(s2);
-    return tmp;
-}
-#endif
 
 inline const char *qPrint(const char *s)
 {
