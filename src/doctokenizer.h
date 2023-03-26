@@ -168,6 +168,7 @@ class DocTokenizer
     void setStatePattern();
     void setStateLink();
     void setStateCite();
+    void setStateDoxyConfig();
     void setStateRef();
     void setStateInternalRef();
     void setStateText();
