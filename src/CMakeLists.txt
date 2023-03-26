@@ -338,6 +338,7 @@ endif()
 
 add_executable(doxygen
     main.cpp
+    ${PROJECT_SOURCE_DIR}/templates/icon/doxygen.rc
 )
 
 # enable to monitor compilation times
