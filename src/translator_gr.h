@@ -2389,29 +2389,6 @@ class TranslatorGreek : public TranslatorAdapter_1_9_4
     virtual QCString trRelatedSymbolDocumentation()
     { return "Τεκμηρίωσης Φίλιων και Σχετικών Συμβόλων"; }
 
-    /*! the compound type as used for the xrefitems */
-    virtual QCString trCompoundType(ClassDef::CompoundType compType, SrcLangExt lang)
-    {
-      QCString result;
-      switch(compType)
-      {
-        case ClassDef::Class:
-          if (lang == SrcLangExt_Fortran) trType(true,true);
-          else result=trClass(true,true);
-          break;
-        case ClassDef::Struct:     result="Δομής"; break;
-        case ClassDef::Union:      result="Ένωσης"; break;
-        case ClassDef::Interface:  result="Διεπαφής"; break;
-        case ClassDef::Protocol:   result="Πρωτοκόλλου"; break;
-        case ClassDef::Category:   result="Κατηγορίας"; break;
-        case ClassDef::Exception:  result="Εξαίρεσης"; break;
-        case ClassDef::Service:    result="Υπηρεσίας"; break;
-        case ClassDef::Singleton:  result="Μονοσύνολου"; break;
-        default: break;
-      }
-      return result;
-    }
-    
     virtual QCString trFileMembersDescriptionTotal(FileMemberHighlight::Enum hl)
     {
       bool extractAll = Config_getBool(EXTRACT_ALL);
