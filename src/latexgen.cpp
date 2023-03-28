@@ -1338,12 +1338,6 @@ void LatexGenerator::endPageRef(const QCString &clname, const QCString &anchor)
 
 void LatexGenerator::startTitleHead(const QCString &fileName)
 {
-  bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
-  bool usePDFLatex   = Config_getBool(USE_PDFLATEX);
-  if (usePDFLatex && pdfHyperlinks && !fileName.isEmpty())
-  {
-    m_t << "\\hypertarget{" << stripPath(fileName) << "}{}";
-  }
   int hierarchyLevel = m_hierarchyLevel;
   if (Config_getBool(COMPACT_LATEX))
   {
@@ -1359,7 +1353,15 @@ void LatexGenerator::startTitleHead(const QCString &fileName)
 void LatexGenerator::endTitleHead(const QCString &fileName,const QCString &name)
 {
   m_t << "}\n";
-  if (!name.isEmpty())
+
+  bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
+  bool usePDFLatex   = Config_getBool(USE_PDFLATEX);
+  if (usePDFLatex && pdfHyperlinks && !fileName.isEmpty())
+  {
+    m_t << "\\hypertarget{" << stripPath(fileName) << "}{}";
+  }
+
+  if (!name.isEmpty() && !fileName.isEmpty())
   {
     m_t << "\\label{" << stripPath(fileName) << "}\\index{";
     m_t << latexEscapeLabelName(name);
