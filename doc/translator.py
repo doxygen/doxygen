@@ -1092,6 +1092,7 @@ class Transl:
         # Check whether adapter must be used or suggest the newest one.
         # Change the status and set the note accordingly.
         if self.baseClassId != 'Translator':
+            justUpdateNeesedMessage = True
             if not self.missingMethods:
                 self.note = 'Change the base class to Translator.'
                 self.status = ''
@@ -1106,8 +1107,13 @@ class Transl:
                     if uniProto in adaptDic:
                         version, cls = adaptDic[uniProto]
                         if version < adaptMinVersion:
+                            justUpdateNeesedMessage = False
                             adaptMinVersion = version
                             adaptMinClass = cls
+
+                if justUpdateNeesedMessage:
+                    self.note = 'Change the base class to Translator.'
+                    self.status = ''
 
                 # Test against the current status -- preserve the self.status.
                 # Possibly, the translator implements enough methods to
@@ -1117,7 +1123,7 @@ class Transl:
                 # If the version of the used adapter is smaller than
                 # the required, set the note and update the status as if
                 # the newer adapter was used.
-                if adaptMinVersion > status:
+                if not justUpdateNeesedMessage and adaptMinVersion > status:
                     self.note = 'Change the base class to %s.' % adaptMinClass
                     self.status = adaptMinVersion
                     self.adaptMinClass = adaptMinClass
@@ -1560,9 +1566,9 @@ class TrManager:
 
             # Write the summary about the status of language translators (how
             # many translators) are up-to-date, etc.
-            s = 'Of them, %d translators are up-to-date, ' % len(self.upToDateIdLst)
-            s += '%d translators are based on some adapter class, ' % len(self.adaptIdLst)
-            s += 'and %d are English based.' % len(self.EnBasedIdLst)
+            s = 'Of them, %d translators are (almost) up-to-date, ' % len(self.upToDateIdLst)
+            s += '%d translators are based on some adapter class. ' % len(self.adaptIdLst)
+            s += 'Furthermore %d are English based.' % len(self.EnBasedIdLst)
             f.write(fill(s) + '\n\n')
 
         # The e-mail addresses of the maintainers will be collected to
