@@ -24,14 +24,14 @@
 #include "docvisitor.h"
 #include "docnode.h"
 
-class CodeOutputInterface;
+class OutputCodeList;
 class TextStream;
 
 /*! @brief Concrete visitor implementation for RTF output. */
 class RTFDocVisitor : public DocVisitor
 {
   public:
-    RTFDocVisitor(TextStream &t,CodeOutputInterface &ci,const QCString &langExt);
+    RTFDocVisitor(TextStream &t,OutputCodeList &ci,const QCString &langExt);
 
     //--------------------------------------
     // visitor functions for leaf nodes
@@ -80,6 +80,7 @@ class RTFDocVisitor : public DocVisitor
     void operator()(const DocHtmlCell &);
     void operator()(const DocInternal &);
     void operator()(const DocHRef &);
+    void operator()(const DocHtmlSummary &);
     void operator()(const DocHtmlDetails &);
     void operator()(const DocHtmlHeader &);
     void operator()(const DocImage &);
@@ -137,7 +138,7 @@ class RTFDocVisitor : public DocVisitor
     //--------------------------------------
 
     TextStream &m_t;
-    CodeOutputInterface &m_ci;
+    OutputCodeList &m_ci;
     bool m_insidePre = false;
     bool m_hide = false;
     bool m_lastIsPara = false;

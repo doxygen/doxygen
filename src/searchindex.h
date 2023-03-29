@@ -61,28 +61,6 @@ struct SIData_Word
   bool hiPrio;
 };
 
-// class to aggregate the search data collected on a worker thread
-// and later transfer it to the search index on the main thread.
-class SIDataCollection
-{
-  public:
-    void setCurrentDoc(const Definition *ctx,const QCString &anchor,bool isSourceFile)
-    {
-      m_data.emplace_back(SIData_CurrentDoc(ctx,anchor,isSourceFile));
-    }
-    void addWord(const QCString &word,bool hiPriority)
-    {
-      m_data.emplace_back(SIData_Word(word,hiPriority));
-    }
-
-    // transfer the collected data into the given search index
-    void transfer();
-
-  private:
-    using SIData = std::variant<SIData_CurrentDoc,SIData_Word>;
-    std::vector<SIData> m_data;
-};
-
 //-----------------------------
 
 /** Writes search index for doxygen provided server based search engine that uses PHP. */
@@ -128,6 +106,7 @@ class SearchIndex
     std::unordered_map<std::string,int> m_url2IdMap;
     std::map<int,URL> m_urls;
     int m_urlIndex = -1;
+    int m_urlMaxIndex = 0;
 };
 
 /** Writes search index that should be used with an externally provided search engine,

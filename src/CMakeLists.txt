@@ -1,14 +1,16 @@
 # vim:ts=4:sw=4:expandtab:autoindent:
 
 include_directories(
-    ${PROJECT_SOURCE_DIR}/filesystem
-    ${PROJECT_SOURCE_DIR}/libmd5
-    ${PROJECT_SOURCE_DIR}/liblodepng
-    ${PROJECT_SOURCE_DIR}/libmscgen
+    ${PROJECT_SOURCE_DIR}/deps/TinyDeflate
+    ${PROJECT_SOURCE_DIR}/deps/filesystem
+    ${PROJECT_SOURCE_DIR}/deps/libmd5
+    ${PROJECT_SOURCE_DIR}/deps/liblodepng
+    ${PROJECT_SOURCE_DIR}/deps/libmscgen
     ${PROJECT_SOURCE_DIR}/libversion
     ${PROJECT_SOURCE_DIR}/libxml
     ${PROJECT_SOURCE_DIR}/vhdlparser
     ${PROJECT_SOURCE_DIR}/src
+    ${PROJECT_SOURCE_DIR}/deps/spdlog/include
     ${CLANG_INCLUDEDIR}
     ${GENERATED_SRC}
 )
@@ -92,53 +94,65 @@ add_custom_command(
 )
 set_source_files_properties(${GENERATED_SRC}/resources.cpp PROPERTIES GENERATED 1)
 
-set(LEX_FILES scanner 
+set(LEX_FILES
     code
-    pyscanner
-    pycode
-    fortranscanner
-    fortrancode
-    vhdlcode
-    pre
+    commentcnv
+    commentscan
+    configimpl
+    constexp
     declinfo
     defargs
     doctokenizer
-    commentcnv
-    commentscan
-    constexp
-    xmlcode
-    sqlcode
+    fortrancode
+    fortranscanner
     lexcode
     lexscanner
-    configimpl)
+    pre
+    pycode
+    pyscanner
+    scanner
+    sqlcode
+    vhdlcode
+    xmlcode
+)
 
 if (NOT depfile_supported)
     # In case the DEPFILE possibility is not supported the complete list of lex include files for the dependency has to be used
     set(LEX_INC_FILES)
 endif()
 
-# unfortunately ${LEX_FILES_H} and ${LEX_FILES_CPP} don't work in older versions of CMake (like 3.6.2) for add_library
+set(LEX_FILES_H)
+set(LEX_FILES_CPP)
+set(_depfile_args)
+
 foreach(lex_file ${LEX_FILES})
-    set(LEX_FILES_H ${LEX_FILES_H} " " ${GENERATED_SRC}/${lex_file}.l.h CACHE INTERNAL "Stores generated files")
-    set(LEX_FILES_CPP ${LEX_FILES_CPP} " " ${GENERATED_SRC}/${lex_file}.cpp CACHE INTERNAL "Stores generated files")
+    # configimpl is handled specially (it's in the static lib)
+    if (NOT lex_file STREQUAL "configimpl")
+        list(APPEND LEX_FILES_H ${GENERATED_SRC}/${lex_file}.l.h)
+        list(APPEND LEX_FILES_CPP ${GENERATED_SRC}/${lex_file}.cpp)
+    endif()
+
+    set(_generated_files
+        ${GENERATED_SRC}/${lex_file}.l
+        ${GENERATED_SRC}/${lex_file}.corr
+        ${GENERATED_SRC}/${lex_file}.d)
 
     if (depfile_supported)
-        add_custom_command(
-            COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_LIST_DIR}/pre_lex.py ${CMAKE_CURRENT_LIST_DIR}/${lex_file}.l  ${GENERATED_SRC}/${lex_file}.l ${GENERATED_SRC}/${lex_file}.corr ${GENERATED_SRC}/${lex_file}.d ${CMAKE_CURRENT_LIST_DIR}
-            DEPENDS ${CMAKE_CURRENT_LIST_DIR}/pre_lex.py ${CMAKE_CURRENT_LIST_DIR}/${lex_file}.l
-            DEPFILE ${GENERATED_SRC}/${lex_file}.d
-            OUTPUT  ${GENERATED_SRC}/${lex_file}.l ${GENERATED_SRC}/${lex_file}.corr ${GENERATED_SRC}/${lex_file}.d
-        )
-    else()
-        add_custom_command(
-            COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_LIST_DIR}/pre_lex.py ${CMAKE_CURRENT_LIST_DIR}/${lex_file}.l  ${GENERATED_SRC}/${lex_file}.l ${GENERATED_SRC}/${lex_file}.corr ${GENERATED_SRC}/${lex_file}.d ${CMAKE_CURRENT_LIST_DIR}
-            DEPENDS ${CMAKE_CURRENT_LIST_DIR}/pre_lex.py ${CMAKE_CURRENT_LIST_DIR}/${lex_file}.l ${LEX_INC_FILES}
-            OUTPUT  ${GENERATED_SRC}/${lex_file}.l ${GENERATED_SRC}/${lex_file}.corr ${GENERATED_SRC}/${lex_file}.d
-        )
+        set(_depfile_args DEPFILE ${GENERATED_SRC}/${lex_file}.d)
     endif()
-    set_source_files_properties(${GENERATED_SRC}/${lex_file}.l PROPERTIES GENERATED 1)
-    set_source_files_properties(${GENERATED_SRC}/${lex_file}.corr PROPERTIES GENERATED 1)
-    set_source_files_properties(${GENERATED_SRC}/${lex_file}.d PROPERTIES GENERATED 1)
+    add_custom_command(
+        OUTPUT ${_generated_files}
+        COMMAND ${PYTHON_EXECUTABLE}
+            ${CMAKE_CURRENT_LIST_DIR}/pre_lex.py
+            ${CMAKE_CURRENT_LIST_DIR}/${lex_file}.l
+            ${_generated_files}
+            ${CMAKE_CURRENT_LIST_DIR}
+        DEPENDS
+            ${CMAKE_CURRENT_LIST_DIR}/pre_lex.py
+            ${CMAKE_CURRENT_LIST_DIR}/${lex_file}.l
+        ${_depfile_args}
+    )
+    set_source_files_properties(${_generated_files} PROPERTIES GENERATED 1)
 
     add_custom_command(
         COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_LIST_DIR}/scan_states.py ${GENERATED_SRC}/${lex_file}.l > ${GENERATED_SRC}/${lex_file}.l.h
@@ -166,6 +180,12 @@ foreach(lex_file ${LEX_FILES})
         OUTPUT  ${GENERATED_SRC}/${lex_file}.cpp
     )
 endforeach()
+unset(_depfile_args)
+unset(_generated_files)
+
+# Cache generated sources lists
+set(LEX_FILES_H ${LEX_FILES_H} CACHE INTERNAL "Stores generated files")
+set(LEX_FILES_CPP ${LEX_FILES_CPP} CACHE INTERNAL "Stores generated files")
 
 
 BISON_TARGET(constexp
@@ -192,49 +212,14 @@ add_library(doxycfg STATIC
     portable_c.c
     message.cpp
     debug.cpp
+    trace.cpp
 )
 add_sanitizers(doxycfg)
 
 add_library(doxymain STATIC
     # generated for/by flex/bison
-    #${LEX_FILES_H} #unfortunately doesn't work in older versions of CMake (like 3.6.2)
-    #${LEX_FILES_CPP} #unfortunately doesn't work in older versions of CMake (like 3.6.2)
-    ${GENERATED_SRC}/code.l.h
-    ${GENERATED_SRC}/commentcnv.l.h
-    ${GENERATED_SRC}/commentscan.l.h
-    ${GENERATED_SRC}/constexp.cpp
-    ${GENERATED_SRC}/constexp.l.h
-    ${GENERATED_SRC}/declinfo.l.h
-    ${GENERATED_SRC}/defargs.l.h
-    ${GENERATED_SRC}/doctokenizer.l.h
-    ${GENERATED_SRC}/fortrancode.l.h
-    ${GENERATED_SRC}/fortranscanner.l.h
-    ${GENERATED_SRC}/lexcode.l.h
-    ${GENERATED_SRC}/lexscanner.l.h
-    ${GENERATED_SRC}/pre.l.h
-    ${GENERATED_SRC}/pycode.l.h
-    ${GENERATED_SRC}/pyscanner.l.h
-    ${GENERATED_SRC}/scanner.l.h
-    ${GENERATED_SRC}/sqlcode.l.h
-    ${GENERATED_SRC}/vhdlcode.l.h
-    ${GENERATED_SRC}/xmlcode.l.h
-    ${GENERATED_SRC}/code.cpp
-    ${GENERATED_SRC}/commentcnv.cpp
-    ${GENERATED_SRC}/commentscan.cpp
-    ${GENERATED_SRC}/declinfo.cpp
-    ${GENERATED_SRC}/defargs.cpp
-    ${GENERATED_SRC}/doctokenizer.cpp
-    ${GENERATED_SRC}/fortrancode.cpp
-    ${GENERATED_SRC}/fortranscanner.cpp
-    ${GENERATED_SRC}/lexcode.cpp
-    ${GENERATED_SRC}/lexscanner.cpp
-    ${GENERATED_SRC}/pre.cpp
-    ${GENERATED_SRC}/pycode.cpp
-    ${GENERATED_SRC}/pyscanner.cpp
-    ${GENERATED_SRC}/scanner.cpp
-    ${GENERATED_SRC}/sqlcode.cpp
-    ${GENERATED_SRC}/vhdlcode.cpp
-    ${GENERATED_SRC}/xmlcode.cpp
+    ${LEX_FILES_H}
+    ${LEX_FILES_CPP}
     #
     ${GENERATED_SRC}/ce_parse.cpp
     # custom generated files
@@ -242,6 +227,7 @@ add_library(doxymain STATIC
     ${GENERATED_SRC}/ce_parse.h
     ${GENERATED_SRC}/resources.cpp
     #
+    anchor.cpp
     arguments.cpp
     cite.cpp
     clangparser.cpp
@@ -339,10 +325,11 @@ add_library(doxymain STATIC
 add_sanitizers(doxymain)
 
 # LLVM/clang headers give a lot of warnings with -Wshadow and -Wcast-align so we disable them for
-# the one file that includes them
+# the one file that includes them.
+# for the -Wbitfield-enum-conversion warning issue https://github.com/llvm/llvm-project/issues/59840 was submitted
 
 if (NOT MSVC)
-set_source_files_properties(clangparser.cpp PROPERTIES COMPILE_FLAGS "-Wno-shadow -Wno-cast-align")
+set_source_files_properties(clangparser.cpp PROPERTIES COMPILE_FLAGS "-Wno-shadow -Wno-cast-align -Wno-bitfield-enum-conversion")
 endif()
 
 ##foreach(lex_file ${LEX_FILES})
@@ -351,6 +338,7 @@ endif()
 
 add_executable(doxygen
     main.cpp
+    ${PROJECT_SOURCE_DIR}/templates/icon/doxygen.rc
 )
 
 # enable to monitor compilation times
@@ -384,6 +372,12 @@ if (use_libclang)
     target_compile_definitions(doxygen PRIVATE ${LLVM_DEFINITIONS})
 endif()
 
+if((CMAKE_BUILD_TYPE STREQUAL "Debug") OR enable_tracing)
+    target_compile_definitions(doxycfg  PRIVATE -DENABLE_TRACING=1)
+    target_compile_definitions(doxymain PRIVATE -DENABLE_TRACING=1)
+    target_compile_definitions(doxygen  PRIVATE -DENABLE_TRACING=1)
+endif()
+
 target_link_libraries(doxygen PRIVATE
     doxymain
     doxycfg
@@ -393,6 +387,7 @@ target_link_libraries(doxygen PRIVATE
     xml
     doxygen_version
     vhdlparser
+    spdlog
     ${SQLITE3_LIBRARIES}
     ${ICONV_LIBRARIES}
     ${CMAKE_THREAD_LIBS_INIT}
@@ -410,6 +405,4 @@ set_project_coverage(doxycfg)
 set_project_coverage(doxymain)
 set_project_coverage(doxygen)
 
-
 install(TARGETS doxygen DESTINATION bin)
-

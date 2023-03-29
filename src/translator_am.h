@@ -56,6 +56,10 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
     virtual QCString trDetailedDescription()
     { return "Մանրամասն նկարագրություն"; }
 
+    /*! header that is used when the summary tag is missing inside the details tag */
+    virtual QCString trDetails()
+    { return "Մանրամասներ"; }
+
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
     { return "Անդամ տիպի սահմանումներ (typedef)"; }
@@ -361,12 +365,6 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
      */
     virtual QCString trFileDocumentation()
     { return "Ֆայլեր"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all examples.
-     */
-    virtual QCString trExampleDocumentation()
-    { return "Օրինակներ"; }
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
@@ -1757,18 +1755,22 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
      */
     virtual QCString trDateTime(int year,int month,int day,int dayOfWeek,
                                 int hour,int minutes,int seconds,
-                                bool includeTime)
+                                DateTimeType includeTime)
     {
       static const char *days[]   = { "Երկուշաբթի,","Երեքշաբթի,","Չորեքշաբթի,","Հինգշաբթի,",
 								"Ուրբաթ,","Շաբաթ,","Կիրակի," };
       static const char *months[] = { "Հունիսի","Փետրվարի","Մարտի","Ապրրիլի","Մայիսի","Հունիսի",
 								"Հուլիսի","Օգոստոսի","Սեպտեմբերի","Հոկտեբմերի","Նոյեմբերի","Դեկտեմբերի" };
       QCString sdate;
-      sdate.sprintf("%s %d %s %d",days[dayOfWeek-1],day,months[month-1],year);
-      if (includeTime)
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Date)
+      {
+        sdate.sprintf("%s %d %s %d",days[dayOfWeek-1],day,months[month-1],year);
+      }
+      if (includeTime == DateTimeType::DateTime) sdate += " ";
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Time)
       {
         QCString stime;
-        stime.sprintf(" %.2d:%.2d:%.2d ",hour,minutes,seconds);
+        stime.sprintf("%.2d:%.2d:%.2d ",hour,minutes,seconds);
         sdate+=stime;
       }
       return sdate;

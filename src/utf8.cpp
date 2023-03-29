@@ -129,7 +129,7 @@ std::string getUTF8CharAt(const std::string &input,size_t pos)
   if (input.length()<=pos) return std::string();
   int numBytes=getUTF8CharNumBytes(input[pos]);
   if (input.length()<pos+numBytes) return std::string();
-  return input.substr(pos,pos+numBytes);
+  return input.substr(pos,numBytes);
 }
 
 uint32_t getUnicodeForUTF8CharAt(const std::string &input,size_t pos)
@@ -229,5 +229,11 @@ int isUTF8NonBreakableSpace(const char *input)
 {
   return (static_cast<unsigned char>(input[0])==0xC2 &&
           static_cast<unsigned char>(input[1])==0xA0) ? 2 : 0;
+}
+
+bool isUTF8PunctuationCharacter(uint32_t unicode)
+{
+  bool b = isPunctuationCharacter(unicode);
+  return b;
 }
 

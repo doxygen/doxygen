@@ -18,7 +18,7 @@
 #include <memory>
 
 class Definition;
-class CodeOutputInterface;
+class OutputCodeList;
 
 //! Class that manages the tooltips for a source file
 class TooltipManager
@@ -28,10 +28,10 @@ class TooltipManager
    ~TooltipManager();
 
     /** add a tooltip for a given symbol definition */
-    void addTooltip(CodeOutputInterface &ol,const Definition *d);
+    void addTooltip(const Definition *d);
 
     /** write the list of all collected tooltip to the given outputs */
-    void writeTooltips(CodeOutputInterface &ol);
+    void writeTooltips(OutputCodeList &ol);
 
   private:
     class Private;

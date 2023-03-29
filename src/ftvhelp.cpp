@@ -36,34 +36,12 @@
 #include "classdef.h"
 #include "util.h"
 #include "resourcemgr.h"
+#include "portable.h"
+#include "outputlist.h"
+#include "threadpool.h"
 
 static int folderId=1;
 
-const char *JAVASCRIPT_LICENSE_TEXT = R"LIC(/*
- @licstart  The following is the entire license notice for the JavaScript code in this file.
-
- The MIT License (MIT)
-
- Copyright (C) 1997-2020 by Dimitri van Heesch
-
- Permission is hereby granted, free of charge, to any person obtaining a copy of this software
- and associated documentation files (the "Software"), to deal in the Software without restriction,
- including without limitation the rights to use, copy, modify, merge, publish, distribute,
- sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
- furnished to do so, subject to the following conditions:
-
- The above copyright notice and this permission notice shall be included in all copies or
- substantial portions of the Software.
-
- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
- BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
- DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
- @licend  The above is the entire license notice for the JavaScript code in this file
-*/
-)LIC";
 
 struct FTVNode;
 using FTVNodePtr     = std::shared_ptr<FTVNode>;
@@ -260,7 +238,7 @@ static QCString node2URL(const FTVNodePtr &n,bool overruleFile=FALSE,bool srcLin
         url = fd->getOutputFileBase();
       }
     }
-    url = addHtmlExtensionIfMissing(url);
+    addHtmlExtensionIfMissing(url);
     if (!n->anchor.isEmpty()) url+="#"+n->anchor;
   }
   return url;
@@ -358,8 +336,9 @@ static void generateBriefDoc(TextStream &t,const Definition *def)
     if (astImpl)
     {
       QCString relPath = relativePathToRoot(def->getOutputFileBase());
-      HtmlCodeGenerator htmlGen(t,relPath);
-      HtmlDocVisitor visitor(t,htmlGen,def);
+      OutputCodeList htmlList;
+      htmlList.add<HtmlCodeGenerator>(&t,relPath);
+      HtmlDocVisitor visitor(t,htmlList,def);
       std::visit(visitor,astImpl->root);
     }
   }
@@ -456,8 +435,9 @@ void FTVHelp::Private::generateTree(TextStream &t, const FTVNodes &nl,int level,
       }
       if (srcRef)
       {
-        t << "<a href=\"" << addHtmlExtensionIfMissing(srcRef->getSourceFileBase())
-          << "\">";
+        QCString fn=srcRef->getSourceFileBase();
+        addHtmlExtensionIfMissing(fn);
+        t << "<a href=\"" << fn << "\">";
       }
       if (n->def && n->def->definitionType()==Definition::TypeGroup)
       {
@@ -552,7 +532,9 @@ static void generateJSLink(TextStream &t,const FTVNodePtr &n)
   }
   else // link into other page
   {
-    t << "\"" << convertToJSString(n->name) << "\", \"";
+    QCString result = n->name;
+    if (Config_getBool(HIDE_SCOPE_NAMES)) result=stripScope(result);
+    t << "\"" << convertToJSString(result) << "\", \"";
     t << externalRef("",n->ref,TRUE);
     t << node2URL(n);
     t << "\", ";
@@ -566,6 +548,39 @@ static QCString convertFileId2Var(const QCString &fileId)
   if (i>=0) varId = varId.mid(i+1);
   return substitute(varId,"-","_");
 }
+
+
+struct JSTreeFile
+{
+  JSTreeFile(const QCString &fi,FTVNodePtr n) : fileId(fi), node(n) {}
+  QCString fileId;
+  FTVNodePtr node;
+};
+
+using JSTreeFiles = std::vector<JSTreeFile>;
+
+static void collectJSTreeFiles(const FTVNodes &nl,JSTreeFiles &files)
+{
+  QCString htmlOutput = Config_getString(HTML_OUTPUT);
+  for (const auto &n : nl)
+  {
+    if (n->separateIndex) // add new file if there are children
+    {
+      if (!n->children.empty())
+      {
+        QCString fileId = n->file;
+        files.emplace_back(fileId,n);
+        collectJSTreeFiles(n->children,files);
+      }
+    }
+    else // traverse without adding a new file
+    {
+      collectJSTreeFiles(n->children,files);
+    }
+  }
+}
+
+static std::mutex g_navIndexMutex;
 
 static bool generateJSTree(NavIndexEntryList &navIndex,TextStream &t,
                            const FTVNodes &nl,int level,bool &first)
@@ -590,6 +605,7 @@ static bool generateJSTree(NavIndexEntryList &navIndex,TextStream &t,
 
     if (n->addToNavIndex) // add entry to the navigation index
     {
+      std::lock_guard lock(g_navIndexMutex);
       if (n->def && n->def->definitionType()==Definition::TypeFile)
       {
         const FileDef *fd = toFileDef(n->def);
@@ -612,7 +628,6 @@ static bool generateJSTree(NavIndexEntryList &navIndex,TextStream &t,
 
     if (n->separateIndex) // store items in a separate file for dynamic loading
     {
-      bool firstChild=TRUE;
       t << indentStr << "  [ ";
       generateJSLink(t,n);
       if (!n->children.empty()) // write children to separate file for dynamic loading
@@ -626,16 +641,6 @@ static bool generateJSTree(NavIndexEntryList &navIndex,TextStream &t,
         {
           fileId+="_dup";
         }
-        QCString fileName = htmlOutput+"/"+fileId+".js";
-        std::ofstream f(fileName.str(),std::ofstream::out | std::ofstream::binary);
-        if (f.is_open())
-        {
-          TextStream tt(&f);
-          tt << "var " << convertFileId2Var(fileId) << " =\n";
-          generateJSTree(navIndex,tt,n->children,1,firstChild);
-          tt << "\n];";
-        }
-        f.close();
         t << "\"" << fileId << "\" ]";
       }
       else // no children
@@ -658,10 +663,61 @@ static bool generateJSTree(NavIndexEntryList &navIndex,TextStream &t,
   return found;
 }
 
+static void generateJSTreeFiles(NavIndexEntryList &navIndex,TextStream &t,const FTVNodes &nodeList)
+{
+  QCString htmlOutput = Config_getString(HTML_OUTPUT);
+
+  auto getVarName = [](const FTVNodePtr n)
+  {
+    QCString                  fileId = n->file;
+    if (!n->anchor.isEmpty()) fileId+="_"+n->anchor;
+    if (dupOfParent(n))       fileId+="_dup";
+    return fileId;
+  };
+
+  auto generateJSFile = [&](const JSTreeFile &tf)
+  {
+    QCString fileId = getVarName(tf.node);
+    QCString fileName = htmlOutput+"/"+fileId+".js";
+    std::ofstream ff = Portable::openOutputStream(fileName);
+    if (ff.is_open())
+    {
+      bool firstChild = true;
+      TextStream tt(&ff);
+      tt << "var " << convertFileId2Var(fileId) << " =\n";
+      generateJSTree(navIndex,tt,tf.node->children,1,firstChild);
+      tt << "\n];";
+    }
+  };
+
+  JSTreeFiles jsTreeFiles;
+  collectJSTreeFiles(nodeList,jsTreeFiles);
+
+  std::size_t numThreads = static_cast<std::size_t>(Config_getInt(NUM_PROC_THREADS));
+  if (numThreads>1) // multi threaded version
+  {
+    ThreadPool threadPool(numThreads);
+    std::vector< std::future<void> > results;
+    for (const auto &tf : jsTreeFiles)
+    {
+      results.emplace_back(threadPool.queue([&](){ generateJSFile(tf); }));
+    }
+    // wait for the results
+    for (auto &f : results) f.get();
+  }
+  else // single threaded version
+  {
+    for (const auto &tf : jsTreeFiles)
+    {
+      generateJSFile(tf);
+    }
+  }
+}
+
 static void generateJSNavTree(const FTVNodes &nodeList)
 {
   QCString htmlOutput = Config_getString(HTML_OUTPUT);
-  std::ofstream f(htmlOutput.str()+"/navtreedata.js",std::ofstream::out | std::ofstream::binary);
+  std::ofstream f = Portable::openOutputStream(htmlOutput+"/navtreedata.js");
   NavIndexEntryList navIndex;
   if (f.is_open())
   {
@@ -699,6 +755,7 @@ static void generateJSNavTree(const FTVNodes &nodeList)
 
     bool first=TRUE;
     generateJSTree(navIndex,t,nodeList,1,first);
+    generateJSTreeFiles(navIndex,t,nodeList);
 
     if (first)
       t << "]\n";
@@ -713,7 +770,7 @@ static void generateJSNavTree(const FTVNodes &nodeList)
     int subIndex=0;
     int elemCount=0;
     const int maxElemCount=250;
-    std::ofstream tsidx(htmlOutput.str()+"/navtreeindex0.js",std::ofstream::out | std::ofstream::binary);
+    std::ofstream tsidx = Portable::openOutputStream(htmlOutput+"/navtreeindex0.js");
     if (tsidx.is_open())
     {
       t << "var NAVTREEINDEX =\n";
@@ -750,7 +807,7 @@ static void generateJSNavTree(const FTVNodes &nodeList)
           tsidx.close();
           subIndex++;
           QCString fileName = htmlOutput+"/navtreeindex"+QCString().setNum(subIndex)+".js";
-          tsidx.open(fileName.str(),std::ofstream::out | std::ofstream::binary);
+          tsidx = Portable::openOutputStream(fileName);
           if (!tsidx.is_open()) break;
           tsidx << "var NAVTREEINDEX" << subIndex << " =\n";
           tsidx << "{\n";
@@ -791,7 +848,7 @@ void FTVHelp::generateTreeViewScripts()
   // copy resize.js & navtree.css
   auto &mgr = ResourceMgr::instance();
   {
-    std::ofstream f(htmlOutput.str()+"/resize.js",std::ofstream::out | std::ofstream::binary);
+    std::ofstream f = Portable::openOutputStream(htmlOutput+"/resize.js");
     if (f.is_open())
     {
       TextStream t(&f);
@@ -799,7 +856,7 @@ void FTVHelp::generateTreeViewScripts()
     }
   }
   {
-    std::ofstream f(htmlOutput.str()+"/navtree.css",std::ofstream::out | std::ofstream::binary);
+    std::ofstream f = Portable::openOutputStream(htmlOutput+"/navtree.css");
     if (f.is_open())
     {
       TextStream t(&f);

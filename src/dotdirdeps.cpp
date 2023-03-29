@@ -136,9 +136,11 @@ static std::string getDirectoryBorderStyle(const DotDirProperty &property)
 
 static TextStream &common_attributes(TextStream &t, const DirDef *const dir, const DotDirProperty &prop)
 {
+  QCString url = dir->getOutputFileBase();
+  addHtmlExtensionIfMissing(url);
   return t <<
     "style=\""   << getDirectoryBorderStyle(prop) << "\", "
-    "URL=\""     << addHtmlExtensionIfMissing(dir->getOutputFileBase()) << "\","
+    "URL=\""     << url << "\","
     "tooltip=\"" << escapeTooltip(dir->briefDescriptionAsTooltip()) << "\"";
 }
 
@@ -387,7 +389,9 @@ void writeDotDirDepGraph(TextStream &t,const DirDef *dd,bool linkRelations)
         t << " [headlabel=\"" << nrefs << "\", labeldistance=1.5";
         if (linkRelations)
         {
-          t << " headhref=\"" << addHtmlExtensionIfMissing(relationName) << "\"";
+          QCString fn = relationName;
+          addHtmlExtensionIfMissing(fn);
+          t << " headhref=\"" << fn << "\"";
         }
         t << " color=\"steelblue1\" fontcolor=\"steelblue1\"];\n";
       }

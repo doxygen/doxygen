@@ -17,6 +17,22 @@ import sys
 import re
 import textwrap
 from xml.dom import minidom, Node
+import io
+
+# wrapper class to write to file/output in UTF-8 format
+class OutputWriter:
+    def __init__(self,writer) :
+        self.writer = io.open(writer.fileno(), 'w', encoding='utf8')
+
+    def write(self, text) :
+        if sys.version_info.major == 2:
+            self.writer.write(unicode(text))
+        else:
+            self.writer.write(text)
+
+    def flush(self):
+        self.writer.flush()
+
 
 def transformDocs(doc):
     # join lines, unless it is an empty line
@@ -236,6 +252,8 @@ def prepCDocs(node):
 def parseOption(node):
     # Handling part for Doxyfile
     name = node.getAttribute('id')
+    if len(name)>23:
+        raise Exception('Option name {0} too long ({1}, where max is 23 characters)'.format(name,len(name)))
     type = node.getAttribute('type')
     format = node.getAttribute('format')
     defval = node.getAttribute('defval')
@@ -327,10 +345,16 @@ def parseOption(node):
         rng = len(docC)
         for i in range(rng):
             line = docC[i]
-            if i != rng - 1:  # since we go from 0 to rng-1
-                print("              \"%s\\n\"" % (line))
-            else:
-                print("              \"%s\"" % (line))
+            try:
+                if i != rng - 1:  # since we go from 0 to rng-1
+                    print("              \"%s\\n\"" % (line))
+                else:
+                    print("              \"%s\"" % (line))
+            except Exception as inst:
+                sys.stdout = sys.stderr
+                print("")
+                print(inst)
+                print("")
         print("             );")
         addValues("cl", node)
         if depends != '':
@@ -495,7 +519,7 @@ def getEnum2BoolMapping(node):
             bool_rep = nv.getAttribute("bool_representation")
             if name and bool_rep:
                 bool_value = "true" if bool_rep and bool_rep.upper() == 'YES' else "false"
-                mapping.append( "{{ \"{0}\", \"{1}\" }}".format(escape(name),bool_value))
+                mapping.append( "{{ \"{0}\", {1} }}".format(escape(name),bool_value))
     return mapping
 
 def parseGroupMapInit(node):
@@ -722,7 +746,12 @@ def main():
     if len(sys.argv)<3 or (not sys.argv[1] in ['-doc','-cpp','-wiz','-maph','-maps']):
         sys.exit('Usage: %s -doc|-cpp|-wiz|-maph|-maps config.xml' % sys.argv[0])
     try:
-        doc = xml.dom.minidom.parse(sys.argv[2])
+        if sys.version_info.major == 2:
+            fh = open(sys.argv[2],'r')
+        else:
+            fh = open(sys.argv[2],'r',encoding='utf8')
+        sys.stdout = OutputWriter(sys.stdout)
+        doc = xml.dom.minidom.parse(fh)
     except Exception as inst:
         sys.stdout = sys.stderr
         print("")

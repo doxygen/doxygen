@@ -29,6 +29,7 @@
 #include "dir.h"
 #include "doxygen.h"
 #include "outputgen.h"
+#include "outputlist.h"
 #include "parserintf.h"
 #include "classdef.h"
 #include "namespacedef.h"
@@ -39,7 +40,7 @@
 #include "filename.h"
 #include "version.h"
 
-class XRefDummyCodeGenerator : public CodeOutputInterface
+class XRefDummyCodeGenerator : public OutputCodeExtension
 {
   public:
     XRefDummyCodeGenerator(FileDef *fd) : m_fd(fd) {}
@@ -47,6 +48,7 @@ class XRefDummyCodeGenerator : public CodeOutputInterface
 
     // these are just null functions, they can be used to produce a syntax highlighted
     // and cross-linked version of the source code, but who needs that anyway ;-)
+    OutputType type() const override { return OutputType::Extension; }
     void codify(const QCString &) override {}
     void writeCodeLink(CodeSymbolType,const QCString &,const QCString &,const QCString &,const QCString &,const QCString &) override  {}
     void writeLineNumber(const QCString &,const QCString &,const QCString &,int,bool) override {}
@@ -58,8 +60,6 @@ class XRefDummyCodeGenerator : public CodeOutputInterface
     void startFontClass(const QCString &) override {}
     void endFontClass() override {}
     void writeCodeAnchor(const QCString &) override {}
-    void setCurrentDoc(const Definition *,const QCString &,bool) override {}
-    void addWord(const QCString &,bool) override {}
     void startCodeFragment(const QCString &) override {}
     void endCodeFragment(const QCString &) override {}
 
@@ -118,19 +118,18 @@ static void findXRefSymbols(FileDef *fd)
   intf->resetCodeParserState();
 
   // create a new backend object
-  XRefDummyCodeGenerator *xrefGen = new XRefDummyCodeGenerator(fd);
+  XRefDummyCodeGenerator xrefGen(fd);
+  OutputCodeList xrefList;
+  xrefList.add(OutputCodeDeferExtension(&xrefGen));
 
   // parse the source code
-  intf->parseCode(*xrefGen,
+  intf->parseCode(xrefList,
                 0,
                 fileToString(fd->absFilePath()),
                 lang,
                 FALSE,
                 0,
                 fd);
-
-  // dismiss the object.
-  delete xrefGen;
 }
 
 static void listSymbol(Definition *d)
@@ -267,6 +266,7 @@ int main(int argc,char **argv)
   Config_updateBool(WARNINGS,FALSE);
   Config_updateBool(WARN_IF_UNDOCUMENTED,FALSE);
   Config_updateBool(WARN_IF_DOC_ERROR,FALSE);
+  Config_updateBool(WARN_IF_UNDOC_ENUM_VAL,FALSE);
   // Extract as much as possible
   Config_updateBool(EXTRACT_ALL,TRUE);
   Config_updateBool(EXTRACT_STATIC,TRUE);

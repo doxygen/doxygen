@@ -129,7 +129,7 @@
  Translator class (by the local maintainer) when the localized
  translator is made up-to-date again.
 */
-class TranslatorCzech : public Translator
+class TranslatorCzech : public TranslatorAdapter_1_9_6
 {
   public:
 
@@ -192,6 +192,10 @@ class TranslatorCzech : public Translator
     /*! header that is put before the detailed description of files, classes and namespaces. */
     virtual QCString trDetailedDescription()
     { return "Detailní popis"; }
+
+    /*! header that is used when the summary tag is missing inside the details tag */
+    virtual QCString trDetails()
+    { return "Podrobnosti"; }
 
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
@@ -531,12 +535,6 @@ class TranslatorCzech : public Translator
      */
     virtual QCString trFileDocumentation()
     { return "Dokumentace souborů"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all examples.
-     */
-    virtual QCString trExampleDocumentation()
-    { return "Dokumentace příkladů"; }
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
@@ -1956,16 +1954,20 @@ class TranslatorCzech : public Translator
      */
     virtual QCString trDateTime(int year,int month,int day,int dayOfWeek,
                                 int hour,int minutes,int seconds,
-                                bool includeTime)
+                                DateTimeType includeTime)
     {
       static const char *days[]   = { "po","út","st","čt","pá","so","ne" };
       static const char *months[] = { "led","úno","bře","dub","kvě","čer","čec","srp","zář","říj","lis","pro" };
       QCString sdate;
-      sdate.sprintf("%s %d. %s %d",days[dayOfWeek-1],day,months[month-1],year);
-      if (includeTime)
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Date)
+      {
+        sdate.sprintf("%s %d. %s %d",days[dayOfWeek-1],day,months[month-1],year);
+      }
+      if (includeTime == DateTimeType::DateTime) sdate += " ";
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Time)
       {
         QCString stime;
-        stime.sprintf(" %.2d.%.2d:%.2d",hour,minutes,seconds);
+        stime.sprintf("%.2d.%.2d:%.2d",hour,minutes,seconds);
         sdate+=stime;
       }
       return sdate;
@@ -2188,7 +2190,7 @@ class TranslatorCzech : public Translator
     virtual QCString trFunctionAndProc()
     { return "Funkce/Procedury/Procesy"; }
     /** VHDL type */
-    virtual QCString trVhdlType(uint64 type,bool single)
+    virtual QCString trVhdlType(uint64_t type,bool single)
     {
       switch(type)
       {
@@ -2488,6 +2490,33 @@ class TranslatorCzech : public Translator
      *  VHDL sources documentation.
      *  Done.
      */
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.7
+//////////////////////////////////////////////////////////////////////////
+
+    /*! the compound type as used for the xrefitems */
+    virtual QCString trCompoundType(ClassDef::CompoundType compType, SrcLangExt lang)
+    {
+      QCString result;
+      switch(compType)
+      {
+        case ClassDef::Class:
+          if (lang == SrcLangExt_Fortran) trType(true,true);
+          else result=trClass(true,true);
+          break;
+        case ClassDef::Struct:     result = "Struktury"; break;
+        case ClassDef::Union:      result = "Unie"; break;
+        case ClassDef::Interface:  result = "Rozhraní"; break;
+        case ClassDef::Protocol:   result = "Protokolu"; break;
+        case ClassDef::Category:   result = "Kategorie"; break;
+        case ClassDef::Exception:  result = "Výjimky"; break;
+        case ClassDef::Service:    result = "Služby"; break;
+        case ClassDef::Singleton:  result = "Singletonu"; break;
+        default: break;
+      }
+      return result;
+    }
 };
 
 #endif // TRANSLATOR_CZ_H

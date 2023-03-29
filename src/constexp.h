@@ -17,7 +17,9 @@
 #define CONSTEXP_H
 
 #include <string>
+#include <memory>
 
+/** @brief constant expression parser used for the C preprocessor */
 class ConstExpressionParser
 {
   public:
@@ -26,7 +28,7 @@ class ConstExpressionParser
     bool parse(const char *fileName,int line,const std::string &expression);
   private:
     struct Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 #endif

@@ -33,7 +33,7 @@ std::tm getCurrentDateTime()
   if (!sourceDateEpoch.isEmpty()) // see https://reproducible-builds.org/specs/source-date-epoch/
   {
     bool ok;
-    uint64 epoch = sourceDateEpoch.toUInt64(&ok);
+    uint64_t epoch = sourceDateEpoch.toUInt64(&ok);
     if (!ok)
     {
       static bool warnedOnce=FALSE;
@@ -60,7 +60,7 @@ std::tm getCurrentDateTime()
   return *localtime(&time);
 }
 
-QCString dateToString(bool includeTime)
+QCString dateToString(DateTimeType includeTime)
 {
   auto current = getCurrentDateTime();
   return theTranslator->trDateTime(current.tm_year + 1900,

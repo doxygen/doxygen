@@ -42,6 +42,7 @@ typedef yyguts_t *yyscan_t;
 #include "util.h"
 #include "message.h"
 #include "types.h"
+#include "debug.h"
 
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
@@ -148,7 +149,7 @@ ID	([$a-z_A-Z\x80-\xFF][$a-z_A-Z0-9\x80-\xFF]*)|(@[0-9]+)
 <Start>{B}*"::"{B}*		{ // found a yyextra->scope specifier
  				  if (!yyextra->scope.isEmpty() && !yyextra->scope.endsWith("::"))
 				  {
-				    yyextra->scope+="::"+yyextra->name; // add yyextra->name to yyextra->scope
+                                    if (!yyextra->name.isEmpty()) yyextra->scope+="::"+yyextra->name; // add yyextra->name to yyextra->scope
 				  }
 				  else
 				  {
@@ -323,10 +324,10 @@ void parseFuncDecl(const QCString &decl,const SrcLangExt lang,QCString &cl,QCStr
   struct yyguts_t *yyg = (struct yyguts_t*)g_yyscanner;
 
 #ifdef FLEX_DEBUG
-  declinfoYYset_debug(1,g_yyscanner);
+  declinfoYYset_debug(Debug::isFlagSet(Debug::Lex_declinfo)?1:0,g_yyscanner);
 #endif
 
-  printlex(yy_flex_debug, TRUE, __FILE__, NULL);
+  DebugLex debugLex(Debug::Lex_declinfo,__FILE__, NULL);
   yyextra->inputString   = decl.data();
   //printf("Input='%s'\n",yyextra->inputString);
   yyextra->inputPosition      = 0;
@@ -381,7 +382,6 @@ void parseFuncDecl(const QCString &decl,const SrcLangExt lang,QCString &cl,QCStr
   //printf("yyextra->type='%s' class='%s' yyextra->name='%s' yyextra->args='%s'\n",
   //        qPrint(t),qPrint(cl),qPrint(n),qPrint(a));
 
-  printlex(yy_flex_debug, FALSE, __FILE__, NULL);
   declinfoYYlex_destroy(g_yyscanner);
   return;
 }

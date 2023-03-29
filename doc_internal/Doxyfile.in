@@ -50,8 +50,8 @@ SUBGROUPING            = YES
 INLINE_GROUPED_CLASSES = NO
 INLINE_SIMPLE_STRUCTS  = NO
 TYPEDEF_HIDES_STRUCT   = NO
-LOOKUP_CACHE_SIZE      = 0
-NUM_PROC_THREADS       = 1
+LOOKUP_CACHE_SIZE      = 1
+NUM_PROC_THREADS       = 0
 #---------------------------------------------------------------------------
 # Build related configuration options
 #---------------------------------------------------------------------------
@@ -104,7 +104,7 @@ WARN_IF_UNDOCUMENTED   = YES
 WARN_IF_DOC_ERROR      = YES
 WARN_IF_INCOMPLETE_DOC = YES
 WARN_NO_PARAMDOC       = NO
-WARN_AS_ERROR          = FAIL_ON_WARNINGS
+WARN_AS_ERROR          = FAIL_ON_WARNINGS_PRINT
 WARN_FORMAT            = "$file:$line: $text"
 WARN_LINE_FORMAT       = "at line $line of file $file"
 WARN_LOGFILE           =
@@ -112,10 +112,11 @@ WARN_LOGFILE           =
 # Configuration options related to the input files
 #---------------------------------------------------------------------------
 INPUT                  = \
-                         @CMAKE_SOURCE_DIR@/doc_internal/commands_history.md \
+                         @CMAKE_SOURCE_DIR@/doc_internal/doxygen.md \
+                         @PROJECT_BINARY_DIR@/doc_internal/commands_history.md \
                          @CMAKE_SOURCE_DIR@/doc_internal/commands_internal.md \
                          @CMAKE_SOURCE_DIR@/doc_internal/releases.md \
-                         @CMAKE_SOURCE_DIR@/doc_internal/tags_history.md \
+                         @PROJECT_BINARY_DIR@/doc_internal/tags_history.md \
                          @CMAKE_SOURCE_DIR@/src \
                          @CMAKE_SOURCE_DIR@/vhdlparser \
                          @CMAKE_SOURCE_DIR@/libxml
@@ -176,7 +177,7 @@ HTML_TIMESTAMP         = NO
 HTML_DYNAMIC_MENUS     = YES
 HTML_DYNAMIC_SECTIONS  = YES
 HTML_INDEX_NUM_ENTRIES = 100
-GENERATE_DOCSET        = YES
+GENERATE_DOCSET        = NO
 DOCSET_FEEDNAME        = "Doxygen docs"
 DOCSET_FEEDURL         =
 DOCSET_BUNDLE_ID       = org.doxygen.Doxygen
@@ -297,11 +298,11 @@ ENABLE_PREPROCESSING   = YES
 MACRO_EXPANSION        = YES
 EXPAND_ONLY_PREDEF     = YES
 SEARCH_INCLUDES        = YES
-INCLUDE_PATH           = @CMAKE_SOURCE_DIR@/libmd5 \
-                         @CMAKE_SOURCE_DIR@/liblodepng \
-                         @CMAKE_SOURCE_DIR@/libmscgen
+INCLUDE_PATH           = @CMAKE_SOURCE_DIR@/deps/libmd5 \
+                         @CMAKE_SOURCE_DIR@/deps/liblodepng \
+                         @CMAKE_SOURCE_DIR@/deps/libmscgen
 INCLUDE_FILE_PATTERNS  =
-PREDEFINED             =
+PREDEFINED             = DOXYGEN_ONLY
 EXPAND_AS_DEFINED      = DOC_NODES DN_SEP DN
 SKIP_FUNCTION_MACROS   = YES
 #---------------------------------------------------------------------------

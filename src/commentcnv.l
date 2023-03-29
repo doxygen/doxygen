@@ -47,8 +47,8 @@ typedef yyguts_t *yyscan_t;
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
 
-#define ADDCHAR(c)    yyextra->outBuf->addChar(c)
-#define ADDARRAY(a,s) yyextra->outBuf->addArray(a,s)
+#define ADDCHAR(c)    yyextra->outBuf.addChar(c)
+#define ADDARRAY(a,s) yyextra->outBuf.addArray(a,s)
 
 #define USE_STATE2STRING 0
   
@@ -70,8 +70,9 @@ struct CommentCtx
   
 struct commentcnvYY_state
 {
-  BufStr * inBuf = 0;
-  BufStr * outBuf = 0;
+  commentcnvYY_state(const BufStr &i,BufStr &o) : inBuf(i), outBuf(o) {}
+  const BufStr &inBuf;
+  BufStr &outBuf;
   int      inBufPos = 0;
   int      col = 0;
   int      blockHeadCol = 0;
@@ -212,6 +213,25 @@ SLASHopt [/]*
 				     }
 				     else
 				     {
+                                       yyextra->pythonDocString = TRUE;
+                                       yyextra->nestingCount=1;
+                                       clearCommentStack(yyscanner); /*  to be on the save side */
+                                       copyToOutput(yyscanner,yytext,(int)yyleng);
+				       BEGIN(CComment);
+                                       yyextra->commentStack.push(yyextra->lineNr);
+				     }
+                                   }
+<Scan>"\"\"\""                     { /* start of python long comment */
+                                     if (yyextra->lang!=SrcLangExt_Python)
+				     {
+				       REJECT;
+				     }
+                                     else if (Config_getBool(PYTHON_DOCSTRING))
+                                     {
+				       REJECT;
+                                     }
+				     else
+				     { /* handle as if """! */
                                        yyextra->pythonDocString = TRUE;
                                        yyextra->nestingCount=1;
                                        clearCommentStack(yyscanner); /*  to be on the save side */
@@ -1153,9 +1173,9 @@ static void replaceAliases(yyscan_t yyscanner,const QCString &s)
 static int yyread(yyscan_t yyscanner,char *buf,int max_size)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  int bytesInBuf = static_cast<int>(yyextra->inBuf->curPos())-yyextra->inBufPos;
+  int bytesInBuf = static_cast<int>(yyextra->inBuf.curPos())-yyextra->inBufPos;
   int bytesToCopy = std::min(max_size,bytesInBuf);
-  memcpy(buf,yyextra->inBuf->data()+yyextra->inBufPos,bytesToCopy);
+  memcpy(buf,yyextra->inBuf.data()+yyextra->inBufPos,bytesToCopy);
   yyextra->inBufPos+=bytesToCopy;
   return bytesToCopy;
 }
@@ -1191,18 +1211,16 @@ static void replaceComment(yyscan_t yyscanner,int offset)
  *  -# It replaces aliases with their definition (see ALIASES)
  *  -# It handles conditional sections (cond...endcond blocks)
  */
-void convertCppComments(BufStr *inBuf,BufStr *outBuf,const QCString &fileName)
+void convertCppComments(const BufStr &inBuf,BufStr &outBuf,const QCString &fileName)
 {
   yyscan_t yyscanner;
-  commentcnvYY_state extra;
+  commentcnvYY_state extra(inBuf,outBuf);
   commentcnvYYlex_init_extra(&extra,&yyscanner);
 #ifdef FLEX_DEBUG
-  commentcnvYYset_debug(1,yyscanner);
+  commentcnvYYset_debug(Debug::isFlagSet(Debug::Lex_commentcnv)?1:0,yyscanner);
 #endif
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   //printf("convertCppComments(%s)\n",fileName);
-  yyextra->inBuf    = inBuf;
-  yyextra->outBuf   = outBuf;
   yyextra->inBufPos = 0;
   yyextra->col      = 0;
   yyextra->mlBrief = Config_getBool(MULTILINE_CPP_IS_BRIEF);
@@ -1215,12 +1233,12 @@ void convertCppComments(BufStr *inBuf,BufStr *outBuf,const QCString &fileName)
   clearCommentStack(yyscanner);
   yyextra->vhdl = FALSE;
 
-  printlex(yy_flex_debug, TRUE, __FILE__, qPrint(fileName));
+  DebugLex debugLex(Debug::Lex_commentcnv,__FILE__, qPrint(fileName));
   yyextra->isFixedForm = FALSE;
   if (yyextra->lang==SrcLangExt_Fortran)
   {
     FortranFormat fmt = convertFileNameFortranParserCode(fileName);
-    yyextra->isFixedForm = recognizeFixedForm(QCString(inBuf->data()),fmt);
+    yyextra->isFixedForm = recognizeFixedForm(QCString(inBuf.data()),fmt);
   }
 
   if (yyextra->lang==SrcLangExt_Markdown)
@@ -1262,12 +1280,11 @@ void convertCppComments(BufStr *inBuf,BufStr *outBuf,const QCString &fileName)
   yyextra->nestingCount = 0;
   if (Debug::isFlagSet(Debug::CommentCnv))
   {
-    yyextra->outBuf->at(yyextra->outBuf->curPos())='\0';
+    yyextra->outBuf.at(yyextra->outBuf.curPos())='\0';
     Debug::print(Debug::CommentCnv,0,"-----------\nCommentCnv: %s\n"
-                 "output=[\n%s]\n-----------\n",qPrint(fileName),yyextra->outBuf->data()
+                 "output=[\n%s]\n-----------\n",qPrint(fileName),yyextra->outBuf.data()
                 );
   }
-  printlex(yy_flex_debug, FALSE, __FILE__, qPrint(fileName));
   commentcnvYYlex_destroy(yyscanner);
 }
 

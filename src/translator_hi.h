@@ -203,6 +203,10 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
     virtual QCString trDetailedDescription()
     { return "विस्तृत विवरण"; }
 
+    /*! header that is used when the summary tag is missing inside the details tag */
+    virtual QCString trDetails()
+    { return "विवरण"; }
+
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
     { return "सदस्य प्ररुप-परिभाषा दस्तावेज़ीकरण"; }
@@ -471,12 +475,6 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
      */
     virtual QCString trFileDocumentation()
     { return "फ़ाइल दस्तावेज़ीकरण"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all examples.
-     */
-    virtual QCString trExampleDocumentation()
-    { return "उदाहरण दस्तावेज़ीकरण"; }
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
@@ -1186,7 +1184,7 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trClass(bool first_capital, bool singular)
+    virtual QCString trClass(bool /* first_capital */, bool singular)
     {
       // There is no first-letter capitalization notion in Hindi.
       QCString result = "वर्ग";
@@ -1199,7 +1197,7 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trFile(bool first_capital, bool singular)
+    virtual QCString trFile(bool /* first_capital */, bool singular)
     {
       // There is no first-letter capitalization notion in Hindi.
       QCString result = "फ़ाइल";
@@ -1212,7 +1210,7 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trNamespace(bool first_capital, bool singular)
+    virtual QCString trNamespace(bool /* first_capital */, bool singular)
     {
       // There is no first-letter capitalization notion in Hindi.
       QCString result = "नाम-स्थान";
@@ -1225,7 +1223,7 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trGroup(bool first_capital, bool singular)
+    virtual QCString trGroup(bool /* first_capital */, bool singular)
     {
       // There is no first-letter capitalization notion in Hindi.
       QCString result = "अनुखंड";
@@ -1238,7 +1236,7 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trPage(bool first_capital, bool singular)
+    virtual QCString trPage(bool /* first_capital */, bool singular)
     {
       // There is no first-letter capitalization notion in Hindi.
       QCString result = "पृष्ठ";
@@ -1251,7 +1249,7 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trMember(bool first_capital, bool singular)
+    virtual QCString trMember(bool /* first_capital */, bool singular)
     {
       // There is no first-letter capitalization notion in Hindi.
       QCString result = "सदस्य";
@@ -1264,7 +1262,7 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trGlobal(bool first_capital, bool singular)
+    virtual QCString trGlobal(bool /* first_capital */, bool singular)
     {
       // There is no first-letter capitalization notion in Hindi.
       QCString result = "वैश्र्विक";
@@ -1279,7 +1277,7 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
 
     /*! This text is generated when the \\author command is used and
      *  for the author section in man pages. */
-    virtual QCString trAuthor(bool first_capital, bool singular)
+    virtual QCString trAuthor(bool /* first_capital */, bool singular)
     {
       // There is no first-letter capitalization notion in Hindi.
       QCString result = "लेखक";
@@ -1474,7 +1472,7 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
     /*! This returns the word directory with or without starting capital
      *  (\a first_capital) and in singular or plural form (\a singular).
      */
-    virtual QCString trDir(bool first_capital, bool singular)
+    virtual QCString trDir(bool /* first_capital */, bool singular)
     {
       // There is no first-letter capitalization notion in Hindi.
       QCString result = "निर्देशिका";
@@ -1652,7 +1650,7 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trModule(bool first_capital, bool singular)
+    virtual QCString trModule(bool /* first_capital */, bool singular)
     {
       // There is no first-letter capitalization notion in Hindi.
       QCString result = "अनुखंड";
@@ -1693,7 +1691,7 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trType(bool first_capital, bool singular)
+    virtual QCString trType(bool /* first_capital */, bool singular)
     {
       // There is no first-letter capitalization notion in Hindi.
       QCString result = "प्ररुप";
@@ -1706,7 +1704,7 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trSubprogram(bool first_capital, bool singular)
+    virtual QCString trSubprogram(bool /* first_capital */, bool singular)
     {
       // There is no first-letter capitalization notion in Hindi.
       QCString result = "उपप्रोग्राम";
@@ -1773,18 +1771,22 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
      */
     virtual QCString trDateTime(
       int year, int month, int day, int dayOfWeek,
-      int hour, int minutes, int seconds, bool includeTime)
+      int hour, int minutes, int seconds, DateTimeType includeTime)
     {
       static const char *days[] = { "सोमवार", "मंगलवार", "बुधवार", "गुरुवार",
                                     "शुक्रवार", "शनिवार", "रविवार" };
       static const char *months[] = { "जनवरी", "फरवरी", "मार्च", "अप्रैल", "मई", "जून",
                                     "जुलाई", "अगस्त", "सितम्बर", "अक्टूबर", "नवम्बर", "दिसम्बर" };
       QCString sdate;
-      sdate.sprintf("%s %s %d %d", days[dayOfWeek - 1], months[month - 1], day, year);
-      if (includeTime)
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Date)
+      {
+        sdate.sprintf("%s %s %d %d", days[dayOfWeek - 1], months[month - 1], day, year);
+      }
+      if (includeTime == DateTimeType::DateTime) sdate += " ";
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Time)
       {
         QCString stime;
-        stime.sprintf(" %.2d:%.2d:%.2d", hour, minutes, seconds);
+        stime.sprintf("%.2d:%.2d:%.2d", hour, minutes, seconds);
         sdate += stime;
       }
       return sdate;
@@ -2005,7 +2007,7 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
     { return "फलनगण/कार्यविधियाँ/प्रक्रियाएं"; }
 
     /** VHDL type */
-    virtual QCString trVhdlType(uint64 type,bool single)
+    virtual QCString trVhdlType(uint64_t type,bool single)
     {
       switch (type)
       {
@@ -2210,7 +2212,7 @@ class TranslatorHindi : public TranslatorAdapter_1_9_4
 //////////////////////////////////////////////////////////////////////////
 
     /** C++20 concept */
-    virtual QCString trConcept(bool first_capital, bool singular)
+    virtual QCString trConcept(bool /* first_capital */, bool singular)
     {
       // There is no first-letter capitalization notion in Hindi.
       QCString result = "संकल्पना";

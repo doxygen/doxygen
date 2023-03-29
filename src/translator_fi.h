@@ -141,6 +141,10 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
     virtual QCString trDetailedDescription()
     { return "Yksityiskohtainen selite"; } // "Detailed Description"
 
+    /*! header that is used when the summary tag is missing inside the details tag */
+    virtual QCString trDetails()
+    { return "Yksityiskohdat"; }
+
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
       // header that is put before the list of typedefs.
@@ -461,12 +465,6 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
      */
     virtual QCString trFileDocumentation()
     { return "Tiedostojen dokumentaatio"; } // "File Documentation"
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all examples.
-     */
-    virtual QCString trExampleDocumentation()
-    { return "Esimerkkien dokumentaatio"; } // "Example Documentation"
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()

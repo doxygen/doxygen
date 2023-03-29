@@ -44,6 +44,7 @@ CommandMap cmdMap[] =
   { "showdate",      CMD_SHOWDATE },
   { "dontinclude",   CMD_DONTINCLUDE },
   { "dotfile",       CMD_DOTFILE },
+  { "doxyconfig",    CMD_DOXYCONFIG },
   { "e",             CMD_EMPHASIS },
   { "em",            CMD_EMPHASIS },
   { "endicode",      CMD_ENDICODE },
@@ -159,6 +160,7 @@ CommandMap cmdMap[] =
   { "ifile",         CMD_IFILE },
   { "iliteral",      CMD_ILITERAL },
   { "endiliteral",   CMD_ENDILITERAL },
+  { "ianchor" ,      CMD_IANCHOR },
   { 0,               0 },
 };
 
@@ -211,6 +213,9 @@ CommandMap htmlTagMap[] =
   { "u",          HTML_UNDERLINE },
   { "ins",        HTML_INS },
   { "del",        HTML_DEL },
+  { "thead",      HTML_THEAD },
+  { "tbody",      HTML_TBODY },
+  { "tfoot",      HTML_TFOOT },
   { "details",    HTML_DETAILS },
 
   { "c",            XML_C },

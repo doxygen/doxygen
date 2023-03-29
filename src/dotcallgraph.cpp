@@ -35,14 +35,14 @@ void DotCallGraph::buildGraph(DotNode *n,const MemberDef *md,int distance)
   auto refs = m_inverse ? md->getReferencedByMembers() : md->getReferencesMembers();
   for (const auto &rmd : refs)
   {
-    if (rmd->showInCallGraph())
+    if (rmd->isCallable())
     {
       QCString uniqueId = getUniqueId(rmd);
       auto it = m_usedNodes.find(uniqueId.str());
       if (it!=m_usedNodes.end()) // file is already a node in the graph
       {
         DotNode *bn = it->second;
-        n->addChild(bn,0,0);
+        n->addChild(bn,EdgeInfo::Blue,EdgeInfo::Solid);
         bn->addParent(n);
         bn->setDistance(distance);
       }
@@ -66,7 +66,7 @@ void DotCallGraph::buildGraph(DotNode *n,const MemberDef *md,int distance)
             uniqueId,
             0 //distance
             );
-        n->addChild(bn,0,0);
+        n->addChild(bn,EdgeInfo::Blue,EdgeInfo::Solid);
         bn->addParent(n);
         bn->setDistance(distance);
         m_usedNodes.insert(std::make_pair(uniqueId.str(),bn));
@@ -214,7 +214,7 @@ bool DotCallGraph::isTrivial(const MemberDef *md,bool inverse)
   auto refs = inverse ? md->getReferencedByMembers() : md->getReferencesMembers();
   for (const auto &rmd : refs)
   {
-    if (rmd->showInCallGraph())
+    if (rmd->isCallable())
     {
       return FALSE;
     }

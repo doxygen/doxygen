@@ -41,6 +41,12 @@ class CPPValue
       else
         printf("(%f)\n",v.d);
     }
+    static CPPValue parseOctal(const std::string& token);
+    static CPPValue parseDecimal(const std::string& token);
+    static CPPValue parseHexadecimal(const std::string& token);
+    static CPPValue parseBinary(const std::string& token);
+    static CPPValue parseCharacter(const std::string& token);
+    static CPPValue parseFloat(const std::string& token);
 
   private:
     Type type;
@@ -50,11 +56,5 @@ class CPPValue
     } v;
 };
 
-extern CPPValue parseOctal(const std::string& token);
-extern CPPValue parseDecimal(const std::string& token);
-extern CPPValue parseHexadecimal(const std::string& token);
-extern CPPValue parseBinary(const std::string& token);
-extern CPPValue parseCharacter(const std::string& token);
-extern CPPValue parseFloat(const std::string& token);
 
 #endif

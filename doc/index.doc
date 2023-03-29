@@ -18,14 +18,13 @@
 \mainpage
 <!--Doxygen Manual-->
 \if logo_on
-<center>
 \htmlonly
+<center>
 <img src="doxygen_logo.svg" width="634" height="197" alt="doxygen"/><br/>
 Version: $(VERSION)
-\endhtmlonly
 </center>
+\endhtmlonly
 \endif
-
 <h2>Introduction</h2>
 Doxygen is the de facto standard tool for generating documentation from
 annotated C++ sources, but it also supports other popular programming
@@ -127,7 +126,7 @@ Copyright &copy; 1997-\showdate "%Y" by <a href="mailto:doxygen@gmail.com">Dimit
 Permission to use, copy, modify, and distribute this software and its
 documentation under the terms of the GNU General Public License is hereby
 granted. No representations are made about the suitability of this software
-for any purpose. It is provided "as is" without express or implied warranty.
+for any purpose. It is provided \"as&nbsp;is\" without express or implied warranty.
 See the
 <a href="http://www.gnu.org/licenses/old-licenses/gpl-2.0.html">
 GNU General Public License</a>

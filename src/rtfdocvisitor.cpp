@@ -1,9 +1,6 @@
 /******************************************************************************
  *
- *
- *
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2022 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -27,6 +24,7 @@
 #include "msc.h"
 #include "util.h"
 #include "rtfstyle.h"
+#include "rtfgen.h"
 #include "message.h"
 #include "parserintf.h"
 #include "msc.h"
@@ -37,6 +35,7 @@
 #include "emoji.h"
 #include "plantuml.h"
 #include "fileinfo.h"
+#include "portable.h"
 
 //#define DBG_RTF(x) m_t << x
 #define DBG_RTF(x) do {} while(0)
@@ -55,7 +54,7 @@ static QCString align(const DocHtmlCell &cell)
   return "";
 }
 
-RTFDocVisitor::RTFDocVisitor(TextStream &t,CodeOutputInterface &ci,
+RTFDocVisitor::RTFDocVisitor(TextStream &t,OutputCodeList &ci,
                              const QCString &langExt)
   : m_t(t), m_ci(ci), m_langExt(langExt)
 {
@@ -128,14 +127,14 @@ void RTFDocVisitor::operator()(const DocSymbol &s)
 {
   if (m_hide) return;
   DBG_RTF("{\\comment RTFDocVisitor::visit(DocSymbol)}\n");
-  const char *res = HtmlEntityMapper::instance()->rtf(s.symbol());
+  const char *res = HtmlEntityMapper::instance().rtf(s.symbol());
   if (res)
   {
     m_t << res;
   }
   else
   {
-    err("RTF: non supported HTML-entity found: %s\n",HtmlEntityMapper::instance()->html(s.symbol(),TRUE));
+    err("RTF: non supported HTML-entity found: %s\n",HtmlEntityMapper::instance().html(s.symbol(),TRUE));
   }
   m_lastIsPara=FALSE;
 }
@@ -144,7 +143,7 @@ void RTFDocVisitor::operator()(const DocEmoji &s)
 {
   if (m_hide) return;
   DBG_RTF("{\\comment RTFDocVisitor::visit(DocEmoji)}\n");
-  const char *res = EmojiEntityMapper::instance()->unicode(s.index());
+  const char *res = EmojiEntityMapper::instance().unicode(s.index());
   if (res)
   {
     const char *p = res;
@@ -286,9 +285,6 @@ void RTFDocVisitor::operator()(const DocStyleChange &s)
       break;
     case DocStyleChange::Div:  /* HTML only */ break;
     case DocStyleChange::Span: /* HTML only */ break;
-    case DocStyleChange::Summary: /* emulation of the <summary> tag inside a <details> tag */
-      if (s.enable()) m_t << "{\\b ";      else m_t << "}\\par ";
-      break;
   }
 }
 
@@ -351,7 +347,7 @@ void RTFDocVisitor::operator()(const DocVerbatim &s)
             dotindex++,
             ".dot"
            );
-        std::ofstream file(fileName.str(),std::ofstream::out | std::ofstream::binary);
+        std::ofstream file = Portable::openOutputStream(fileName);
         if (!file.is_open())
         {
           err("Could not open file %s for writing\n",qPrint(fileName));
@@ -380,7 +376,7 @@ void RTFDocVisitor::operator()(const DocVerbatim &s)
             mscindex++,
             ".msc"
            );
-        std::ofstream file(baseName.str(),std::ofstream::out | std::ofstream::binary);
+        std::ofstream file = Portable::openOutputStream(baseName);
         if (!file.is_open())
         {
           err("Could not open file %s for writing\n",qPrint(baseName));
@@ -504,12 +500,13 @@ void RTFDocVisitor::operator()(const DocInclude &inc)
       m_t << "}\n";
       break;
     case DocInclude::Snippet:
+    case DocInclude::SnippetTrimLeft:
       m_t << "{\n";
       if (!m_lastIsPara) m_t << "\\par\n";
       m_t << rtf_Style_Reset << getStyle("CodeExample");
       getCodeParser(inc.extension()).parseCode(m_ci,
                                         inc.context(),
-                                        extractBlock(inc.text(),inc.blockId()),
+                                        extractBlock(inc.text(),inc.blockId(),inc.type()==DocInclude::SnippetTrimLeft),
                                         langExt,
                                         inc.isExample(),
                                         inc.exampleFile()
@@ -1131,25 +1128,34 @@ void RTFDocVisitor::operator()(const DocHRef &href)
   m_lastIsPara=FALSE;
 }
 
+void RTFDocVisitor::operator()(const DocHtmlSummary &s)
+{
+  if (m_hide) return;
+  m_t << "{\\b ";
+  visitChildren(s);
+  m_t << "}\\par ";
+}
+
 void RTFDocVisitor::operator()(const DocHtmlDetails &d)
 {
   if (m_hide) return;
-  //m_lastIsPara=TRUE;
-  //m_t << "{\n";
-  //m_t << "\\par\n";
-  //visitChildren(d);
-  //m_t << "\\par";
-  //m_t << "}\n";
-  //m_lastIsPara=TRUE;
   DBG_RTF("{\\comment RTFDocVisitor::operator()(const DocHtmlDetails &)}\n");
   if (!m_lastIsPara) m_t << "\\par\n";
-  m_t << "{"; // start desc
-  incIndentLevel();
-  m_t << rtf_Style_Reset << getStyle("DescContinue");
+  auto summary = d.summary();
+  if (summary)
+  {
+    std::visit(*this,*summary);
+    m_t << "{"; // start desc
+    incIndentLevel();
+    m_t << rtf_Style_Reset << getStyle("DescContinue");
+  }
   visitChildren(d);
   if (!m_lastIsPara) m_t << "\\par\n";
-  decIndentLevel();
-  m_t << "}"; // end desc
+  if (summary)
+  {
+    decIndentLevel();
+    m_t << "}"; // end desc
+  }
   m_lastIsPara=TRUE;
 }
 

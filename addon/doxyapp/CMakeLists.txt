@@ -10,6 +10,7 @@ include_directories(
 
 add_executable(doxyapp
 doxyapp.cpp
+${PROJECT_SOURCE_DIR}/templates/icon/doxygen.rc
 )
 include(ApplyEditbin)
 apply_editbin(doxyapp console)
@@ -44,6 +45,7 @@ mscgen
 doxygen_version
 doxycfg
 vhdlparser
+spdlog
 ${ICONV_LIBRARIES}
 ${CMAKE_THREAD_LIBS_INIT}
 ${SQLITE3_LIBRARIES}

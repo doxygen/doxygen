@@ -388,7 +388,7 @@ void MemberList::writePlainDeclarations(OutputList &ol, bool inGroup,
                 first=FALSE;
               }
               ol.startMemberDeclaration();
-              ol.startMemberItem(md->anchor(),0,inheritId);
+              ol.startMemberItem(md->anchor(),OutputGenerator::MemberItemType::Normal,inheritId);
               bool detailsLinkable = md->hasDetailedDescription();
               if (!detailsLinkable)
               {
@@ -416,7 +416,7 @@ void MemberList::writePlainDeclarations(OutputList &ol, bool inGroup,
               {
                 ol.endDoxyAnchor(md->getOutputFileBase(),md->anchor());
               }
-              ol.endMemberItem();
+              ol.endMemberItem(OutputGenerator::MemberItemType::Normal);
               if (!md->briefDescription().isEmpty() && Config_getBool(BRIEF_MEMBER_DESC))
               {
                 auto parser { createDocParser() };
@@ -433,7 +433,7 @@ void MemberList::writePlainDeclarations(OutputList &ol, bool inGroup,
                   ol.writeDoc(ast.get(),cd,md);
                   if (md->hasDetailedDescription())
                   {
-                    ol.disableAllBut(OutputGenerator::Html);
+                    ol.disableAllBut(OutputType::Html);
                     ol.docify(" ");
                     ol.startTextLink(md->getOutputFileBase(),
                         md->anchor());
@@ -470,31 +470,6 @@ void MemberList::writePlainDeclarations(OutputList &ol, bool inGroup,
             }
           }
           break;
-      }
-    }
-  }
-
-  // handle members that are inside anonymous compounds and for which
-  // no variables of the anonymous compound type exist.
-  if (cd)
-  {
-    for (const auto &md : m_members)
-    {
-      if (md->fromAnonymousScope() && !md->anonymousDeclShown())
-      {
-        MemberDefMutable *mdm = toMemberDefMutable(md);
-        if (mdm) mdm->setFromAnonymousScope(FALSE);
-        //printf("anonymous compound members\n");
-        if (md->isBriefSectionVisible())
-        {
-          if (first)
-          {
-            ol.startMemberList();
-            first=FALSE;
-          }
-          md->writeDeclaration(ol,cd,nd,fd,gd,inGroup,indentLevel);
-        }
-        if (mdm) mdm->setFromAnonymousScope(TRUE);
       }
     }
   }
@@ -550,8 +525,6 @@ void MemberList::writeDeclarations(OutputList &ol,
     if ( cd && !optimizeVhdl && cd->countMembersIncludingGrouped(
                                       m_listType,inheritedFrom,TRUE)>0 )
     {
-      ol.pushGeneratorState();
-      ol.disableAllBut(OutputGenerator::Html);
       inheritId = substitute(listTypeAsString(lt),"-","_")+"_"+
                   stripPath(cd->getOutputFileBase());
       if (!title.isEmpty())
@@ -560,7 +533,6 @@ void MemberList::writeDeclarations(OutputList &ol,
                                       cd->getOutputFileBase(),
                                       cd->anchor(),title,cd->displayName());
       }
-      ol.popGeneratorState();
     }
   }
   else if (num>numEnumValues)
@@ -644,13 +616,9 @@ void MemberList::writeDeclarations(OutputList &ol,
   }
   if (inheritedFrom && cd)
   {
-    const ClassDefMutable *cdm = toClassDefMutable(cd);
-    if (cdm)
-    {
-      // also add members that of this list type, that are grouped together
-      // in a separate list in class 'inheritedFrom'
-      cdm->addGroupedInheritedMembers(ol,m_listType,inheritedFrom,inheritId);
-    }
+    // also add members that of this list type, that are grouped together
+    // in a separate list in class 'inheritedFrom'
+    cd->addGroupedInheritedMembers(ol,m_listType,inheritedFrom,inheritId);
   }
   //printf("----- end writeDeclaration() ----\n");
 }
@@ -671,7 +639,7 @@ void MemberList::writeDocumentation(OutputList &ol,
   if (!title.isEmpty())
   {
     ol.pushGeneratorState();
-      ol.disable(OutputGenerator::Html);
+      ol.disable(OutputType::Html);
       ol.writeRuler();
     ol.popGeneratorState();
     ol.startGroupHeader(showInline ? 2 : 0);
@@ -682,8 +650,8 @@ void MemberList::writeDocumentation(OutputList &ol,
 
   struct OverloadInfo
   {
-    uint count = 1;
-    uint total = 0;
+    uint32_t count = 1;
+    uint32_t total = 0;
   };
   std::unordered_map<std::string,OverloadInfo> overloadInfo;
   // count the number of overloaded members
@@ -703,8 +671,8 @@ void MemberList::writeDocumentation(OutputList &ol,
         !(md->isEnumValue() && !showInline))
     {
       auto it = overloadInfo.find(md->name().str());
-      uint overloadCount = it->second.total;
-      uint &count = it->second.count;
+      uint32_t overloadCount = it->second.total;
+      uint32_t &count = it->second.count;
       MemberDefMutable *mdm = toMemberDefMutable(md);
       if (mdm)
       {
@@ -753,8 +721,8 @@ void MemberList::writeDocumentationPage(OutputList &ol,
 
   struct OverloadInfo
   {
-    uint count = 1;
-    uint total = 0;
+    uint32_t count = 1;
+    uint32_t total = 0;
   };
   std::unordered_map<std::string,OverloadInfo> overloadInfo;
 
@@ -777,11 +745,11 @@ void MemberList::writeDocumentationPage(OutputList &ol,
     if (md && md->hasDetailedDescription())
     {
       auto it = overloadInfo.find(md->name().str());
-      uint overloadCount = it->second.total;
-      uint &count = it->second.count;
+      uint32_t overloadCount = it->second.total;
+      uint32_t &count = it->second.count;
       QCString diskName=md->getOutputFileBase();
       QCString title=md->qualifiedName();
-      startFile(ol,diskName,md->name(),title,HLI_None,!generateTreeView,diskName);
+      startFile(ol,diskName,md->name(),title,HighlightedItem::None,!generateTreeView,diskName);
       if (!generateTreeView)
       {
         container->writeNavigationPath(ol);
@@ -794,7 +762,7 @@ void MemberList::writeDocumentationPage(OutputList &ol,
         md->writeDocumentation(this,count++,overloadCount,ol,scopeName,container_d,m_container==MemberListContainer::Group);
 
         ol.endContents();
-        endFileWithNavPath(container_d,ol);
+        endFileWithNavPath(ol,container_d);
       }
       else
       {

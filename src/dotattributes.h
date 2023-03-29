@@ -34,7 +34,7 @@ class DotAttributes
 
     //! update a given attribute with a new value.
     //! If the attribute is not found a new attribute will be appended.
-    void updateValue(const QCString &key,const QCString &value)
+    void updateValue(const QCString &key,const QCString &inpValue)
     {
       // look for key\s*=
       const reg::Ex re = key.str()+R"(\s*=)";
@@ -57,13 +57,25 @@ class DotAttributes
         {
           while (pos<len && s[pos]!=',' && s[pos]!=';' && !qisspace(s[pos])) pos++;
         }
+        QCString value;
+        if (inpValue.isEmpty())
+        {
+          value = m_input.mid(startPos,pos-startPos);
+        }
+        else
+        {
+          value = inpValue;
+        }
         // pos is now the position after the value, so replace the part between [start..pos) with the new value
         m_input=m_input.left(startPos)+value.quoted()+m_input.mid(pos);
       }
       else // append new attribute
       {
-        if (!m_input.isEmpty()) m_input+=",";
-        m_input+=key+"="+value.quoted();
+        if (!inpValue.isEmpty())
+        {
+          if (!m_input.isEmpty()) m_input+=",";
+          m_input+=key+"="+inpValue.quoted();
+        }
       }
     }
 

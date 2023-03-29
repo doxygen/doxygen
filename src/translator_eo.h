@@ -100,6 +100,10 @@ class TranslatorEsperanto : public TranslatorAdapter_1_8_4
     virtual QCString trDetailedDescription()
     { return "Detala Priskribo"; }
 
+    /*! header that is used when the summary tag is missing inside the details tag */
+    virtual QCString trDetails()
+    { return "Detaloj"; }
+
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
     { return "Dokumentado de la Membraj Tipodifinoj"; }
@@ -413,12 +417,6 @@ class TranslatorEsperanto : public TranslatorAdapter_1_8_4
      */
     virtual QCString trFileDocumentation()
     { return "Dosiera Dokumentado"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all examples.
-     */
-    virtual QCString trExampleDocumentation()
-    { return "Ekzempla Dokumentado"; }
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
@@ -1800,7 +1798,7 @@ class TranslatorEsperanto : public TranslatorAdapter_1_8_4
      */
     virtual QCString trDateTime(int year,int month,int day,int dayOfWeek,
                                 int hour,int minutes,int seconds,
-                                bool includeTime)
+                                DateTimeType includeTime)
     {
       static const char *days[]   = { "lundo","mardo","merkredo",
                                         "ĵaŭdo","vendredo","sabato",
@@ -1813,11 +1811,15 @@ class TranslatorEsperanto : public TranslatorAdapter_1_8_4
                                         "Decembro"
                                     };
       QCString sdate;
-      sdate.sprintf("%s, %d-a de %s %d",days[dayOfWeek-1],day,months[month-1],year);
-      if (includeTime)
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Date)
+      {
+        sdate.sprintf("%s, %d-a de %s %d",days[dayOfWeek-1],day,months[month-1],year);
+      }
+      if (includeTime == DateTimeType::DateTime) sdate += " ";
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Time)
       {
         QCString stime;
-        stime.sprintf(" %.2d:%.2d:%.2d",hour,minutes,seconds);
+        stime.sprintf("%.2d:%.2d:%.2d",hour,minutes,seconds);
         sdate+=stime;
       }
       return sdate;

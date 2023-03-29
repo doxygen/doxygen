@@ -33,10 +33,13 @@ typedef yyguts_t *yyscan_t;
 #include "config.h"
 #include "doxygen.h"
 #include "outputgen.h"
+#include "outputlist.h"
 #include "code.h"
 #include "lexcode.h"
 #include "filedef.h"
 #include "message.h"
+#include "debug.h"
+#include "searchindex.h"
 
 #define YY_NEVER_INTERACTIVE 1
 #define YY_NO_INPUT 1
@@ -46,7 +49,7 @@ typedef yyguts_t *yyscan_t;
 
 struct lexcodeYY_state
 {
-     CodeOutputInterface * code;
+     OutputCodeList *code;
      CCodeParser ccodeParser;
      const char   *inputString;     //!< the code fragment as text
      int           inputPosition;   //!< read offset during parsing
@@ -74,7 +77,7 @@ struct lexcodeYY_state
      bool          insideCode = FALSE;
      QCString      delimiter;
      QCString      docBlockName;
-     uint          fencedSize = 0;
+     uint32_t      fencedSize = 0;
      bool          nestedComment = false;
 
      bool          exampleBlock;
@@ -955,11 +958,11 @@ static void setCurrentDoc(yyscan_t yyscanner,const QCString &anchor)
   {
     if (yyextra->searchCtx)
     {
-      yyextra->code->setCurrentDoc(yyextra->searchCtx,yyextra->searchCtx->anchor(),false);
+      Doxygen::searchIndex->setCurrentDoc(yyextra->searchCtx,yyextra->searchCtx->anchor(),false);
     }
     else
     {
-      yyextra->code->setCurrentDoc(yyextra->sourceFileDef,anchor,true);
+      Doxygen::searchIndex->setCurrentDoc(yyextra->sourceFileDef,anchor,true);
     }
   }
 }
@@ -1177,7 +1180,7 @@ LexCodeParser::LexCodeParser() : p(std::make_unique<Private>())
 {
   lexcodeYYlex_init_extra(&p->state, &p->yyscanner);
 #ifdef FLEX_DEBUG
-  lexcodeYYset_debug(1,p->yyscanner);
+  lexcodeYYset_debug(Debug::isFlagSet(Debug::Lex_lexcode)?1:0,p->yyscanner);
 #endif
   resetCodeParserState();
 }
@@ -1194,7 +1197,7 @@ void LexCodeParser::resetCodeParserState()
   yyextra->currentMemberDef = 0;
 }
 
-void LexCodeParser::parseCode(CodeOutputInterface &codeOutIntf,
+void LexCodeParser::parseCode(OutputCodeList &codeOutIntf,
                const QCString &scopeName,
                const QCString &input,
                SrcLangExt,
@@ -1215,7 +1218,7 @@ void LexCodeParser::parseCode(CodeOutputInterface &codeOutIntf,
 
   if (input.isEmpty()) return;
 
-  printlex(yy_flex_debug, true, __FILE__, fileDef ? qPrint(fileDef->fileName()): NULL);
+  DebugLex debugLex(Debug::Lex_lexcode, __FILE__, fileDef ? qPrint(fileDef->fileName()): NULL);
 
   yyextra->code = &codeOutIntf;
   yyextra->inputString   = input.data();
@@ -1277,8 +1280,6 @@ void LexCodeParser::parseCode(CodeOutputInterface &codeOutIntf,
     delete yyextra->sourceFileDef;
     yyextra->sourceFileDef=0;
   }
-
-  printlex(yy_flex_debug, false, __FILE__, fileDef ? qPrint(fileDef->fileName()): NULL);
 }
 
 //---------------------------------------------------------------------------------

@@ -35,12 +35,6 @@
 #ifndef TRUE
 #define TRUE true
 #endif
-typedef unsigned char	uchar;
-typedef unsigned short	ushort;
-typedef unsigned	uint;
-typedef unsigned long	ulong;
-typedef int64_t         int64;
-typedef uint64_t        uint64;
 #define ASSERT(x)  if ( !(x) )\
 	fprintf(stderr,"ASSERT: \"%s\" in %s (%d)\n",#x,__FILE__,__LINE__)
 
@@ -59,11 +53,11 @@ void *qmemmove( void *dst, const void *src, size_t len );
 
 char *qstrdup( const char * );
 
-inline uint cstrlen( const char *str )
-{ return static_cast<uint>(strlen(str)); }
+inline uint32_t cstrlen( const char *str )
+{ return static_cast<uint32_t>(strlen(str)); }
 
-inline uint qstrlen( const char *str )
-{ return str ? static_cast<uint>(strlen(str)) : 0; }
+inline uint32_t qstrlen( const char *str )
+{ return str ? static_cast<uint32_t>(strlen(str)) : 0; }
 
 inline char *cstrcpy( char *dst, const char *src )
 { return strcpy(dst,src); }
@@ -144,10 +138,10 @@ class QCString
     bool isEmpty() const { return m_rep.empty(); }
 
     /** Returns the length of the string, not counting the 0-terminator. Equivalent to size(). */
-    uint length() const { return static_cast<uint>(m_rep.size()); }
+    uint32_t length() const { return static_cast<uint32_t>(m_rep.size()); }
 
     /** Returns the length of the string, not counting the 0-terminator. */
-    uint size() const { return static_cast<uint>(m_rep.size()); }
+    uint32_t size() const { return static_cast<uint32_t>(m_rep.size()); }
 
     /** Returns a pointer to the contents of the string in the form of a 0-terminated C string */
     const char *data() const { return m_rep.c_str(); }
@@ -165,6 +159,9 @@ class QCString
 
     /** Truncates the string at position \a pos. */
     bool truncate( size_t pos ) { return resize( pos + 1 ); }
+
+    /** Reserve space for \a size bytes without changing the string contents */
+    void reserve( size_t size ) { m_rep.reserve(size); }
 
     /** Fills a string with a predefined character
      *  @param[in] c the character used to fill the string with.
@@ -224,7 +221,7 @@ class QCString
     QCString mid( size_t index, size_t len=static_cast<size_t>(-1)) const
     {
       size_t slen = m_rep.size();
-      if (len==static_cast<uint>(-1)) len = slen-index;
+      if (len==static_cast<uint32_t>(-1)) len = slen-index;
       return m_rep.empty() || index>slen || len==0 ? QCString() :
              QCString(m_rep.substr(index,len));
     }
@@ -265,7 +262,8 @@ class QCString
       {
         while (i<end && !needsQuotes) // check if the to be quoted part has at least one whitespace character
         {
-          needsQuotes = qisspace(m_rep[i++]);
+          needsQuotes = m_rep[i] =='-';
+          needsQuotes |= qisspace(m_rep[i++]);
         }
       }
       QCString result(m_rep.substr(start,1+end-start));
@@ -387,13 +385,13 @@ class QCString
     QCString &replace( size_t index, size_t len, const char *s);
     //QCString &replace( const QRegExp &rx, const char *str );
 
-    short  toShort(  bool *ok=0, int base=10 ) const;
-    ushort toUShort( bool *ok=0, int base=10 ) const;
-    int	   toInt(    bool *ok=0, int base=10 ) const;
-    uint   toUInt(   bool *ok=0, int base=10 ) const;
-    long   toLong(   bool *ok=0, int base=10 ) const;
-    ulong  toULong(  bool *ok=0, int base=10 ) const;
-    uint64 toUInt64( bool *ok=0, int base=10 ) const;
+    short         toShort(  bool *ok=0, int base=10 ) const;
+    uint16_t      toUShort( bool *ok=0, int base=10 ) const;
+    int	          toInt(    bool *ok=0, int base=10 ) const;
+    uint32_t      toUInt(   bool *ok=0, int base=10 ) const;
+    long          toLong(   bool *ok=0, int base=10 ) const;
+    unsigned long toULong(  bool *ok=0, int base=10 ) const;
+    uint64_t      toUInt64( bool *ok=0, int base=10 ) const;
 
     QCString &setNum(short n)
     {
@@ -401,7 +399,7 @@ class QCString
       return *this;
     }
 
-    QCString &setNum(ushort n)
+    QCString &setNum(uint16_t n)
     {
       m_rep = std::to_string(n);
       return *this;
@@ -413,7 +411,7 @@ class QCString
       return *this;
     }
 
-    QCString &setNum(uint n)
+    QCString &setNum(uint32_t n)
     {
       m_rep = std::to_string(n);
       return *this;
@@ -437,7 +435,7 @@ class QCString
       return *this;
     }
 
-    QCString &setNum(ulong n)
+    QCString &setNum(unsigned long n)
     {
       m_rep = std::to_string(n);
       return *this;

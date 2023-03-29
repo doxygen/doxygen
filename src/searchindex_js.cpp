@@ -15,7 +15,6 @@
 
 #include <utility>
 #include <algorithm>
-#include <fstream>
 
 #include "searchindex_js.h"
 #include "doxygen.h"
@@ -33,6 +32,8 @@
 #include "message.h"
 #include "resourcemgr.h"
 #include "indexlist.h"
+#include "portable.h"
+#include "threadpool.h"
 
 QCString searchName(const Definition *d)
 {
@@ -393,252 +394,288 @@ void createJavaScriptSearchIndex()
   }
 }
 
+static void writeJavascriptSearchData(const QCString &searchDirName)
+{
+  std::ofstream t = Portable::openOutputStream(searchDirName+"/searchdata.js");
+  if (t.is_open())
+  {
+    t << "var indexSectionsWithContent =\n";
+    t << "{\n";
+    int j=0;
+    for (const auto &sii : g_searchIndexInfo)
+    {
+      if (!sii.symbolMap.empty())
+      {
+        if (j>0) t << ",\n";
+        t << "  " << j << ": \"";
+
+        for (const auto &kv : sii.symbolMap)
+        {
+          if ( kv.first == "\"" ) t << "\\";
+          t << kv.first;
+        }
+        t << "\"";
+        j++;
+      }
+    }
+    if (j>0) t << "\n";
+    t << "};\n\n";
+    t << "var indexSectionNames =\n";
+    t << "{\n";
+    j=0;
+    for (const auto &sii : g_searchIndexInfo)
+    {
+      if (!sii.symbolMap.empty())
+      {
+        if (j>0) t << ",\n";
+        t << "  " << j << ": \"" << sii.name << "\"";
+        j++;
+      }
+    }
+    if (j>0) t << "\n";
+    t << "};\n\n";
+    t << "var indexSectionLabels =\n";
+    t << "{\n";
+    j=0;
+    for (const auto &sii : g_searchIndexInfo)
+    {
+      if (!sii.symbolMap.empty())
+      {
+        if (j>0) t << ",\n";
+        t << "  " << j << ": \"" << convertToXML(sii.getText()) << "\"";
+        j++;
+      }
+    }
+    if (j>0) t << "\n";
+    t << "};\n\n";
+  }
+}
+
+static void writeJavasScriptSearchDataPage(const QCString &baseName,const QCString &dataFileName,const SearchIndexList &list)
+{
+  int cnt = 0;
+  std::ofstream ti = Portable::openOutputStream(dataFileName);
+  if (ti.is_open())
+  {
+    ti << "var searchData=\n";
+    // format
+    // searchData[] = array of items
+    // searchData[x][0] = id
+    // searchData[x][1] = [ name + child1 + child2 + .. ]
+    // searchData[x][1][0] = name as shown
+    // searchData[x][1][y+1] = info for child y
+    // searchData[x][1][y+1][0] = url
+    // searchData[x][1][y+1][1] = 1 => target="_parent"
+    // searchData[x][1][y+1][1] = 0 => target="_blank"
+    // searchData[x][1][y+1][2] = scope
+
+    ti << "[\n";
+    bool firstEntry=TRUE;
+
+    int childCount=0;
+    QCString lastName;
+    const Definition *prevScope = 0;
+    for (auto it = list.begin(); it!=list.end();)
+    {
+      const Definition *d = *it;
+      QCString sname = searchName(d);
+      QCString id    = searchId(d);
+
+      if (sname!=lastName) // this item has a different search word
+      {
+        if (!firstEntry)
+        {
+          ti << "]]]";
+          ti << ",\n";
+        }
+        firstEntry=FALSE;
+
+        ti << "  ['" << id << "_" << cnt++ << "',['" << convertToXML(sname) << "',[";
+        childCount=0;
+        prevScope=0;
+      }
+
+      ++it;
+      const Definition *scope     = d->getOuterScope();
+      const Definition *next      = it!=list.end() ? *it : 0;
+      const Definition *nextScope = 0;
+      const MemberDef  *md        = toMemberDef(d);
+      if (next) nextScope = next->getOuterScope();
+      QCString anchor = d->anchor();
+
+      if (childCount>0)
+      {
+        ti << "],[";
+      }
+      QCString fn = d->getOutputFileBase();
+      addHtmlExtensionIfMissing(fn);
+      ti << "'" << externalRef("../",d->getReference(),TRUE) << fn;
+      if (!anchor.isEmpty())
+      {
+        ti << "#" << anchor;
+      }
+      ti << "',";
+
+      bool extLinksInWindow = Config_getBool(EXT_LINKS_IN_WINDOW);
+      if (!extLinksInWindow || d->getReference().isEmpty())
+      {
+        ti << "1,";
+      }
+      else
+      {
+        ti << "0,";
+      }
+
+      if (lastName!=sname && (next==0 || searchName(next)!=sname)) // unique name
+      {
+        if (d->getOuterScope()!=Doxygen::globalScope)
+        {
+          ti << "'" << convertToXML(d->getOuterScope()->name()) << "'";
+        }
+        else if (md)
+        {
+          const FileDef *fd = md->getBodyDef();
+          if (fd==0) fd = md->getFileDef();
+          if (fd)
+          {
+            ti << "'" << convertToXML(fd->localName()) << "'";
+          }
+        }
+        else
+        {
+          ti << "''";
+        }
+      }
+      else // multiple entries with the same name
+      {
+        bool found=FALSE;
+        bool overloadedFunction = ((prevScope!=0 && scope==prevScope) ||
+            (scope && scope==nextScope)) && md && (md->isFunction() || md->isSlot());
+        QCString prefix;
+        if (md) prefix=convertToXML(md->localName());
+        if (overloadedFunction) // overloaded member function
+        {
+          prefix+=convertToXML(md->argsString());
+          // show argument list to disambiguate overloaded functions
+        }
+        else if (md && md->isCallable()) // unique member function
+        {
+          prefix+="()"; // only to show it is a function
+        }
+        QCString name;
+        if (d->definitionType()==Definition::TypeClass)
+        {
+          name = convertToXML((toClassDef(d))->displayName());
+          found = TRUE;
+        }
+        else if (d->definitionType()==Definition::TypeNamespace)
+        {
+          name = convertToXML((toNamespaceDef(d))->displayName());
+          found = TRUE;
+        }
+        else if (scope==0 || scope==Doxygen::globalScope) // in global scope
+        {
+          if (md)
+          {
+            const FileDef *fd = md->getBodyDef();
+            if (fd==0) fd = md->resolveAlias()->getFileDef();
+            if (fd)
+            {
+              if (!prefix.isEmpty()) prefix+=":&#160;";
+              name = prefix + convertToXML(fd->localName());
+              found = TRUE;
+            }
+          }
+        }
+        else if (md && (md->resolveAlias()->getClassDef() || md->resolveAlias()->getNamespaceDef()))
+          // member in class or namespace scope
+        {
+          SrcLangExt lang = md->getLanguage();
+          name = convertToXML(d->getOuterScope()->qualifiedName())
+            + getLanguageSpecificSeparator(lang) + prefix;
+          found = TRUE;
+        }
+        else if (scope) // some thing else? -> show scope
+        {
+          name = prefix + convertToXML(scope->name());
+          found = TRUE;
+        }
+        if (!found) // fallback
+        {
+          name = prefix + "("+theTranslator->trGlobalNamespace()+")";
+        }
+
+        ti << "'" << name << "'";
+
+        prevScope = scope;
+        childCount++;
+      }
+      lastName = sname;
+    }
+    if (!firstEntry)
+    {
+      ti << "]]]\n";
+    }
+    ti << "];\n";
+    Doxygen::indexList->addStyleSheetFile(("search/"+baseName+".js").data());
+  }
+  else
+  {
+    err("Failed to open file '%s' for writing...\n",qPrint(dataFileName));
+  }
+}
+
 void writeJavaScriptSearchIndex()
 {
   // write index files
   QCString searchDirName = Config_getString(HTML_OUTPUT)+"/search";
 
-  for (auto &sii : g_searchIndexInfo)
+  std::size_t numThreads = static_cast<std::size_t>(Config_getInt(NUM_PROC_THREADS));
+  if (numThreads>1) // multi threaded version
   {
-    int p=0;
-    for (const auto &kv : sii.symbolMap)
+    ThreadPool threadPool(numThreads);
+    std::vector< std::future<int> > results;
+    for (auto &sii : g_searchIndexInfo)
     {
-      int cnt = 0;
-      QCString baseName;
-      baseName.sprintf("%s_%x",sii.name.data(),p);
-
-      QCString dataFileName = searchDirName + "/"+baseName+".js";
-
-      std::ofstream ti(dataFileName.str(), std::ofstream::out | std::ofstream::binary);
-      if (ti.is_open())
+      int p=0;
+      for (const auto &kv : sii.symbolMap)
       {
-
-        ti << "var searchData=\n";
-        // format
-        // searchData[] = array of items
-        // searchData[x][0] = id
-        // searchData[x][1] = [ name + child1 + child2 + .. ]
-        // searchData[x][1][0] = name as shown
-        // searchData[x][1][y+1] = info for child y
-        // searchData[x][1][y+1][0] = url
-        // searchData[x][1][y+1][1] = 1 => target="_parent"
-        // searchData[x][1][y+1][1] = 0 => target="_blank"
-        // searchData[x][1][y+1][2] = scope
-
-        ti << "[\n";
-        bool firstEntry=TRUE;
-
-        int childCount=0;
-        QCString lastName;
-        const Definition *prevScope = 0;
-        for (auto it = kv.second.begin(); it!=kv.second.end();)
+        QCString baseName;
+        baseName.sprintf("%s_%x",sii.name.data(),p);
+        QCString dataFileName = searchDirName + "/"+baseName+".js";
+        auto &list = kv.second;
+        auto processFile = [p,baseName,dataFileName,&list]()
         {
-          const Definition *d = *it;
-          QCString sname = searchName(d);
-          QCString id    = searchId(d);
-
-          if (sname!=lastName) // this item has a different search word
-          {
-            if (!firstEntry)
-            {
-              ti << "]]]";
-              ti << ",\n";
-            }
-            firstEntry=FALSE;
-
-            ti << "  ['" << id << "_" << cnt++ << "',['" << convertToXML(sname) << "',[";
-            childCount=0;
-            prevScope=0;
-          }
-
-          ++it;
-          const Definition *scope     = d->getOuterScope();
-          const Definition *next      = it!=kv.second.end() ? *it : 0;
-          const Definition *nextScope = 0;
-          const MemberDef  *md        = toMemberDef(d);
-          if (next) nextScope = next->getOuterScope();
-          QCString anchor = d->anchor();
-
-          if (childCount>0)
-          {
-            ti << "],[";
-          }
-          ti << "'" << externalRef("../",d->getReference(),TRUE)
-            << addHtmlExtensionIfMissing(d->getOutputFileBase());
-          if (!anchor.isEmpty())
-          {
-            ti << "#" << anchor;
-          }
-          ti << "',";
-
-          bool extLinksInWindow = Config_getBool(EXT_LINKS_IN_WINDOW);
-          if (!extLinksInWindow || d->getReference().isEmpty())
-          {
-            ti << "1,";
-          }
-          else
-          {
-            ti << "0,";
-          }
-
-          if (lastName!=sname && (next==0 || searchName(next)!=sname)) // unique name
-          {
-            if (d->getOuterScope()!=Doxygen::globalScope)
-            {
-              ti << "'" << convertToXML(d->getOuterScope()->name()) << "'";
-            }
-            else if (md)
-            {
-              const FileDef *fd = md->getBodyDef();
-              if (fd==0) fd = md->getFileDef();
-              if (fd)
-              {
-                ti << "'" << convertToXML(fd->localName()) << "'";
-              }
-            }
-            else
-            {
-              ti << "''";
-            }
-          }
-          else // multiple entries with the same name
-          {
-            bool found=FALSE;
-            bool overloadedFunction = ((prevScope!=0 && scope==prevScope) ||
-                (scope && scope==nextScope)) && md && (md->isFunction() || md->isSlot());
-            QCString prefix;
-            if (md) prefix=convertToXML(md->localName());
-            if (overloadedFunction) // overloaded member function
-            {
-              prefix+=convertToXML(md->argsString());
-              // show argument list to disambiguate overloaded functions
-            }
-            else if (md) // unique member function
-            {
-              prefix+="()"; // only to show it is a function
-            }
-            QCString name;
-            if (d->definitionType()==Definition::TypeClass)
-            {
-              name = convertToXML((toClassDef(d))->displayName());
-              found = TRUE;
-            }
-            else if (d->definitionType()==Definition::TypeNamespace)
-            {
-              name = convertToXML((toNamespaceDef(d))->displayName());
-              found = TRUE;
-            }
-            else if (scope==0 || scope==Doxygen::globalScope) // in global scope
-            {
-              if (md)
-              {
-                const FileDef *fd = md->getBodyDef();
-                if (fd==0) fd = md->resolveAlias()->getFileDef();
-                if (fd)
-                {
-                  if (!prefix.isEmpty()) prefix+=":&#160;";
-                  name = prefix + convertToXML(fd->localName());
-                  found = TRUE;
-                }
-              }
-            }
-            else if (md && (md->resolveAlias()->getClassDef() || md->resolveAlias()->getNamespaceDef()))
-              // member in class or namespace scope
-            {
-              SrcLangExt lang = md->getLanguage();
-              name = convertToXML(d->getOuterScope()->qualifiedName())
-                + getLanguageSpecificSeparator(lang) + prefix;
-              found = TRUE;
-            }
-            else if (scope) // some thing else? -> show scope
-            {
-              name = prefix + convertToXML(scope->name());
-              found = TRUE;
-            }
-            if (!found) // fallback
-            {
-              name = prefix + "("+theTranslator->trGlobalNamespace()+")";
-            }
-
-            ti << "'" << name << "'";
-
-            prevScope = scope;
-            childCount++;
-          }
-          lastName = sname;
-        }
-        if (!firstEntry)
-        {
-          ti << "]]]\n";
-        }
-        ti << "];\n";
+          writeJavasScriptSearchDataPage(baseName,dataFileName,list);
+          return p;
+        };
+        results.emplace_back(threadPool.queue(processFile));
+        p++;
       }
-      else
+    }
+    // wait for the results
+    for (auto &f : results) f.get();
+  }
+  else // single threaded version
+  {
+    for (auto &sii : g_searchIndexInfo)
+    {
+      int p=0;
+      for (const auto &kv : sii.symbolMap)
       {
-        err("Failed to open file '%s' for writing...\n",qPrint(dataFileName));
+        QCString baseName;
+        baseName.sprintf("%s_%x",sii.name.data(),p);
+        QCString dataFileName = searchDirName + "/"+baseName+".js";
+        writeJavasScriptSearchDataPage(baseName,dataFileName,kv.second);
+        p++;
       }
-      p++;
     }
   }
 
-  {
-    std::ofstream t(searchDirName.str()+"/searchdata.js",
-                    std::ofstream::out | std::ofstream::binary);
-    if (t.is_open())
-    {
-      t << "var indexSectionsWithContent =\n";
-      t << "{\n";
-      int j=0;
-      for (const auto &sii : g_searchIndexInfo)
-      {
-        if (!sii.symbolMap.empty())
-        {
-          if (j>0) t << ",\n";
-          t << "  " << j << ": \"";
+  writeJavascriptSearchData(searchDirName);
+  ResourceMgr::instance().copyResource("search.js",searchDirName);
 
-          for (const auto &kv : sii.symbolMap)
-          {
-            if ( kv.first == "\"" ) t << "\\";
-            t << kv.first;
-          }
-          t << "\"";
-          j++;
-        }
-      }
-      if (j>0) t << "\n";
-      t << "};\n\n";
-      t << "var indexSectionNames =\n";
-      t << "{\n";
-      j=0;
-      for (const auto &sii : g_searchIndexInfo)
-      {
-        if (!sii.symbolMap.empty())
-        {
-          if (j>0) t << ",\n";
-          t << "  " << j << ": \"" << sii.name << "\"";
-          j++;
-        }
-      }
-      if (j>0) t << "\n";
-      t << "};\n\n";
-      t << "var indexSectionLabels =\n";
-      t << "{\n";
-      j=0;
-      for (const auto &sii : g_searchIndexInfo)
-      {
-        if (!sii.symbolMap.empty())
-        {
-          if (j>0) t << ",\n";
-          t << "  " << j << ": \"" << convertToXML(sii.getText()) << "\"";
-          j++;
-        }
-      }
-      if (j>0) t << "\n";
-      t << "};\n\n";
-    }
-    ResourceMgr::instance().copyResource("search.js",searchDirName);
-  }
-
+  Doxygen::indexList->addStyleSheetFile("search/searchdata.js");
   Doxygen::indexList->addStyleSheetFile("search/search.js");
 }
 

@@ -31,6 +31,7 @@
       <xsd:element name="innernamespace" type="refType" minOccurs="0" maxOccurs="unbounded" />
       <xsd:element name="innerpage" type="refType" minOccurs="0" maxOccurs="unbounded" />
       <xsd:element name="innergroup" type="refType" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element name="qualifier" minOccurs="0" maxOccurs="unbounded" />
       <xsd:element name="templateparamlist" type="templateparamlistType" minOccurs="0" />
       <xsd:element name="sectiondef" type="sectiondefType" minOccurs="0" maxOccurs="unbounded" />
       <xsd:element name="tableofcontents" type="tableofcontentsType" minOccurs="0" maxOccurs="1" />
@@ -127,11 +128,38 @@
     </xsd:simpleContent>
   </xsd:complexType>
 
+  <xsd:simpleType name="MemberKind">
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="define"/>
+      <xsd:enumeration value="property"/>
+      <xsd:enumeration value="event"/>
+      <xsd:enumeration value="variable"/>
+      <xsd:enumeration value="typedef"/>
+      <xsd:enumeration value="enum"/>
+      <xsd:enumeration value="enumvalue"/>
+      <xsd:enumeration value="function"/>
+      <xsd:enumeration value="signal"/>
+      <xsd:enumeration value="prototype"/>
+      <xsd:enumeration value="friend"/>
+      <xsd:enumeration value="dcop"/>
+      <xsd:enumeration value="slot"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+
+  <xsd:complexType name="MemberType">
+    <xsd:sequence>
+      <xsd:element name="name" type="xsd:string"/>
+    </xsd:sequence>
+    <xsd:attribute name="refid" type="xsd:string" use="required"/>
+    <xsd:attribute name="kind" type="MemberKind" use="required"/>
+  </xsd:complexType>
+
   <xsd:complexType name="sectiondefType">
     <xsd:sequence>
       <xsd:element name="header" type="xsd:string" minOccurs="0" />
       <xsd:element name="description" type="descriptionType" minOccurs="0" />
-      <xsd:element name="memberdef" type="memberdefType" maxOccurs="unbounded" />
+      <xsd:element name="memberdef" type="memberdefType" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element name="member" type="MemberType" minOccurs="0" maxOccurs="unbounded" />
     </xsd:sequence>
     <xsd:attribute name="kind" type="DoxSectionKind" />
   </xsd:complexType>
@@ -149,6 +177,7 @@
       <xsd:element name="bitfield" minOccurs="0" />
       <xsd:element name="reimplements" type="reimplementType" minOccurs="0" maxOccurs="unbounded" />
       <xsd:element name="reimplementedby" type="reimplementType" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element name="qualifier" minOccurs="0" maxOccurs="unbounded" />
       <xsd:element name="param" type="paramType" minOccurs="0" maxOccurs="unbounded" />
       <xsd:element name="enumvalue" type="enumvalueType" minOccurs="0" maxOccurs="unbounded" />
       <xsd:element name="requiresclause" type="linkedTextType" minOccurs="0" />
@@ -223,7 +252,7 @@
     </xsd:sequence>
   </xsd:complexType>
 
-  <xsd:complexType name="enumvalueType" mixed="true">
+  <xsd:complexType name="enumvalueType">
     <xsd:sequence>
       <xsd:element name="name" />
       <xsd:element name="initializer" type="linkedTextType" minOccurs="0" />
@@ -432,7 +461,6 @@
       <xsd:element name="cite" type="docMarkupType" />
       <xsd:element name="del" type="docMarkupType" />
       <xsd:element name="ins" type="docMarkupType" />
-      <xsd:element name="summary" type="docMarkupType" />
       <xsd:element name="htmlonly" type="docHtmlOnlyType" />
       <xsd:element name="manonly" type="xsd:string" />
       <xsd:element name="xmlonly" type="xsd:string" />
@@ -453,6 +481,10 @@
   </xsd:group>
 
   <xsd:complexType name="docTitleType" mixed="true">
+    <xsd:group ref="docTitleCmdGroup" minOccurs="0" maxOccurs="unbounded" />
+  </xsd:complexType>
+
+  <xsd:complexType name="docSummaryType" mixed="true">
     <xsd:group ref="docTitleCmdGroup" minOccurs="0" maxOccurs="unbounded" />
   </xsd:complexType>
 
@@ -716,6 +748,7 @@
 
   <xsd:complexType name="docDetailsType">
     <xsd:sequence>
+      <xsd:element name="summary" type="docSummaryType" minOccurs="0" maxOccurs="1" />
       <xsd:element name="para" type="docParaType" minOccurs="0" maxOccurs="unbounded" />
     </xsd:sequence>
   </xsd:complexType>
@@ -919,6 +952,7 @@
       <xsd:enumeration value="keywordtype" />
       <xsd:enumeration value="keywordflow" />
       <xsd:enumeration value="stringliteral" />
+      <xsd:enumeration value="xmlcdata" />
       <xsd:enumeration value="charliteral" />
       <xsd:enumeration value="vhdlkeyword" />
       <xsd:enumeration value="vhdllogic" />
@@ -984,6 +1018,9 @@
       <xsd:enumeration value="flow"/>
       <xsd:enumeration value="board"/>
       <xsd:enumeration value="git"/>
+      <xsd:enumeration value="hcl"/>
+      <xsd:enumeration value="regex"/>
+      <xsd:enumeration value="ebnf"/>
     </xsd:restriction>
   </xsd:simpleType>
 

@@ -20,3 +20,6 @@
 tags
 
 .idea
+
+/examples/html/*
+/examples/latex/*

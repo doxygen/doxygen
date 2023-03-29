@@ -31,7 +31,6 @@
 #include <vector>
 #include <stdio.h>
 #include "xml.h"
-//#include "message.h"
 
 #define YY_NEVER_INTERACTIVE 1
 #define YY_NO_INPUT 1
@@ -426,28 +425,19 @@ XMLParser::~XMLParser()
   xmlYYlex_destroy(p->yyscanner);
 }
 
-void XMLParser::parse(const char *fileName,const char *inputStr, bool debugEnabled)
+void XMLParser::parse(const char *fileName,const char *inputStr, bool debugEnabled,
+                      std::function<void()> debugStart, std::function<void()> debugEnd)
 {
   yyscan_t yyscanner = p->yyscanner;
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
 
 #ifdef FLEX_DEBUG
-  xmlYYset_debug(1,p->yyscanner);
+  xmlYYset_debug(debugEnabled?1:0,p->yyscanner);
 #endif
 
   if (inputStr==nullptr || inputStr[0]=='\0') return; // empty input
 
-  FILE *output = 0;
-  const char *enter_txt = 0;
-  const char *finished_txt = 0;
-  const char *pre_txt = 0;
-  if      (yy_flex_debug) { output=stderr; pre_txt="--"; enter_txt="entering"; finished_txt="finished"; }
-  else if (debugEnabled)  { output=stdout; pre_txt="";   enter_txt="Entering"; finished_txt="Finished"; }
-
-  if (output)
-  {
-    fprintf(output,"%s%s lexical analyzer: %s (for: %s)\n",pre_txt,enter_txt, __FILE__, fileName);
-  }
+  debugStart();
 
   BEGIN(Initial);
   yyextra->fileName      = fileName;
@@ -474,10 +464,7 @@ void XMLParser::parse(const char *fileName,const char *inputStr, bool debugEnabl
     reportError(yyscanner,msg);
   }
 
-  if (output)
-  {
-    fprintf(output,"%s%s lexical analyzer: %s (for: %s)\n",pre_txt,finished_txt, __FILE__, fileName);
-  }
+  debugEnd();
 }
 
 int XMLParser::lineNr() const

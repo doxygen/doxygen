@@ -101,6 +101,10 @@ class TranslatorSerbianCyrillic : public TranslatorAdapter_1_6_0
     virtual QCString trDetailedDescription()
     { return "Опширније"; }
 
+    /*! header that is used when the summary tag is missing inside the details tag */
+    virtual QCString trDetails()
+    { return "Детаљи"; }
+
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
     { return "Документација дефиниције типа"; }
@@ -414,12 +418,6 @@ class TranslatorSerbianCyrillic : public TranslatorAdapter_1_6_0
      */
     virtual QCString trFileDocumentation()
     { return "Документација датотеке"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all examples.
-     */
-    virtual QCString trExampleDocumentation()
-    { return "Документација примера"; }
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()

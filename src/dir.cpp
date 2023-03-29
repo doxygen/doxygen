@@ -63,7 +63,7 @@ struct DirIterator::Private
   Private(const std::string &path) : it(path,ec) {}
   fs::directory_iterator it;
   std::error_code ec;
-  mutable DirEntry current;
+  DirEntry current;
 };
 
 DirIterator::DirIterator() : p(std::make_unique<Private>())

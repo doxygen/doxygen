@@ -46,6 +46,7 @@ typedef yyguts_t *yyscan_t;
 #include "portable.h"
 #include "cite.h"
 #include "regex.h"
+#include "debug.h"
 
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
@@ -79,7 +80,8 @@ struct doctokenizerYY_state
   QCString fileName;
   bool insidePre = false;
   int sharpCount=0;
-  bool markdownSupport=TRUE;
+  bool markdownSupport=true;
+  bool insideHtmlLink=false;
 
   // context for section finding phase
   const Definition  *definition = 0;
@@ -266,6 +268,7 @@ PHPTYPE   [\\:a-z_A-Z0-9\x80-\xFF\-]+
 CITESCHAR [a-z_A-Z0-9\x80-\xFF\-\?]
 CITEECHAR [a-z_A-Z0-9\x80-\xFF\-\+:\/\?]
 CITEID    {CITESCHAR}{CITEECHAR}*("."{CITESCHAR}{CITEECHAR}*)*|"\""{CITESCHAR}{CITEECHAR}*("."{CITESCHAR}{CITEECHAR}*)*"\""
+DOXYCFG   [A-Z][A-Z_0-9]*
 MAILADDR  ("mailto:")?[a-z_A-Z0-9\x80-\xFF.+-]+"@"[a-z_A-Z0-9\x80-\xFf-]+("."[a-z_A-Z0-9\x80-\xFf\-]+)+[a-z_A-Z0-9\x80-\xFf\-]+
 MAILWS    [\t a-z_A-Z0-9\x80-\xFF+-]
 MAILADDR2 {MAILWS}+{BLANK}+("at"|"AT"|"_at_"|"_AT_"){BLANK}+{MAILWS}+("dot"|"DOT"|"_dot_"|"_DOT_"){BLANK}+{MAILWS}+
@@ -380,6 +383,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
 %x St_Pattern
 %x St_Link
 %x St_Cite
+%x St_DoxyConfig
 %x St_Ref
 %x St_Ref2
 %x St_IntRef
@@ -407,17 +411,18 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
 %%
 <St_Para>\r            /* skip carriage return */
 <St_Para>^{LISTITEM}   { /* list item */
+                         if (yyextra->insideHtmlLink || yyextra->insidePre) REJECT;
                          lineCount(yytext,yyleng);
                          QCString text(yytext);
-                         uint dashPos = static_cast<uint>(text.findRev('-'));
-                         assert(dashPos!=static_cast<uint>(-1));
+                         uint32_t dashPos = static_cast<uint32_t>(text.findRev('-'));
+                         assert(dashPos!=static_cast<uint32_t>(-1));
                          yyextra->token->isEnumList = text.at(dashPos+1)=='#';
                          yyextra->token->id         = -1;
                          yyextra->token->indent     = computeIndent(yytext,dashPos);
                          return TK_LISTITEM;
                        }
 <St_Para>^{MLISTITEM}  { /* list item */
-                         if (!yyextra->markdownSupport || yyextra->insidePre)
+                         if (yyextra->insideHtmlLink || !yyextra->markdownSupport || yyextra->insidePre)
                          {
                            REJECT;
                          }
@@ -437,7 +442,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          }
                        }
 <St_Para>^{OLISTITEM}  { /* numbered list item */
-                         if (!yyextra->markdownSupport || yyextra->insidePre)
+                         if (yyextra->insideHtmlLink || !yyextra->markdownSupport || yyextra->insidePre)
                          {
                            REJECT;
                          }
@@ -462,17 +467,18 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          }
                        }
 <St_Para>{BLANK}*(\n|"\\ilinebr"){LISTITEM}     { /* list item on next line */
+                         if (yyextra->insideHtmlLink || yyextra->insidePre) REJECT;
                          lineCount(yytext,yyleng);
                          QCString text=extractPartAfterNewLine(QCString(yytext));
-                         uint dashPos = static_cast<uint>(text.findRev('-'));
-                         assert(dashPos!=static_cast<uint>(-1));
+                         uint32_t dashPos = static_cast<uint32_t>(text.findRev('-'));
+                         assert(dashPos!=static_cast<uint32_t>(-1));
                          yyextra->token->isEnumList = text.at(dashPos+1)=='#';
                          yyextra->token->id         = -1;
                          yyextra->token->indent     = computeIndent(text.data(),dashPos);
                          return TK_LISTITEM;
                        }
 <St_Para>{BLANK}*(\n|"\\ilinebr"){MLISTITEM}     { /* list item on next line */
-                         if (!yyextra->markdownSupport || yyextra->insidePre)
+                         if (yyextra->insideHtmlLink || !yyextra->markdownSupport || yyextra->insidePre)
                          {
                            REJECT;
                          }
@@ -492,7 +498,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          }
                        }
 <St_Para>{BLANK}*(\n|"\\ilinebr"){OLISTITEM}     { /* list item on next line */
-                         if (!yyextra->markdownSupport || yyextra->insidePre)
+                         if (yyextra->insideHtmlLink || !yyextra->markdownSupport || yyextra->insidePre)
                          {
                            REJECT;
                          }
@@ -518,12 +524,14 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          }
                        }
 <St_Para>^{ENDLIST}       { /* end list */
+                         if (yyextra->insideHtmlLink || yyextra->insidePre) REJECT;
                          lineCount(yytext,yyleng);
                          size_t dotPos = static_cast<size_t>(QCString(yytext).findRev('.'));
                          yyextra->token->indent     = computeIndent(yytext,dotPos);
                          return TK_ENDLIST;
                        }
 <St_Para>{BLANK}*(\n|"\\ilinebr"){ENDLIST}      { /* end list on next line */
+                         if (yyextra->insideHtmlLink || yyextra->insidePre) REJECT;
                          lineCount(yytext,yyleng);
                          QCString text=extractPartAfterNewLine(QCString(yytext));
                          size_t dotPos = static_cast<size_t>(text.findRev('.'));
@@ -985,6 +993,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                        }
 <St_TitleN>{HTMLTAG}   {
                          yyextra->token->name = yytext;
+                         handleHtmlTag(yyscanner,yytext);
                          return TK_HTMLTAG;
                        }
 <St_TitleN>\n          { /* new line => end of title */
@@ -1085,7 +1094,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          if (yytext[0] =='"')
                          {
                            yyextra->token->name=yytext+1;
-                           yyextra->token->name=yyextra->token->name.left(static_cast<uint>(yyleng)-2);
+                           yyextra->token->name=yyextra->token->name.left(static_cast<uint32_t>(yyleng)-2);
                          }
                          else
                          {
@@ -1102,6 +1111,22 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          return 0;
                        }
 <St_Cite>.             { // any other character
+                         unput(*yytext);
+                         return 0;
+                       }
+<St_DoxyConfig>{DOXYCFG} { // config option
+                         yyextra->token->name=yytext;
+                         return TK_WORD;
+                       }
+<St_DoxyConfig>{BLANK} { // white space
+                         unput(' ');
+                         return 0;
+                       }
+<St_DoxyConfig>(\n|"\\ilinebr")  { // new line
+                         unput_string(yytext,yyleng);
+                         return 0;
+                       }
+<St_DoxyConfig>.      { // any other character
                          unput(*yytext);
                          return 0;
                        }
@@ -1128,6 +1153,10 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
 <St_Ref>(\n|"\\ilinebr") { // new line
                          unput_string(yytext,yyleng);
                          return 0;
+                       }
+<St_Ref>"\""[^"\n]+"\"" { // quoted first argument -> return without quotes
+                         yyextra->token->name=QCString(yytext).mid(1,yyleng-2);
+                         return TK_WORD;
                        }
 <St_Ref>.              { // any other character
                          unput(*yytext);
@@ -1226,9 +1255,9 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                        }
 <St_Param>[^ \t\n,@\\]+  {
                          yyextra->token->name = yytext;
-                         if (yyextra->token->name.at(static_cast<uint>(yyleng)-1)==':')
+                         if (yyextra->token->name.at(static_cast<uint32_t>(yyleng)-1)==':')
                          {
-                           yyextra->token->name=yyextra->token->name.left(static_cast<uint>(yyleng)-1);
+                           yyextra->token->name=yyextra->token->name.left(static_cast<uint32_t>(yyleng)-1);
                          }
                          return TK_WORD;
                        }
@@ -1381,6 +1410,10 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                                       }
                                     }
 <St_Sections>{CMD}"anchor"{BLANK}+  {
+                                      yyextra->secType = SectionType::Anchor;
+                                      BEGIN(St_SecLabel1);
+                                    }
+<St_Sections>{CMD}"ianchor"{BLANK}+  {
                                       yyextra->secType = SectionType::Anchor;
                                       BEGIN(St_SecLabel1);
                                     }
@@ -1602,7 +1635,7 @@ static void handleHtmlTag(yyscan_t yyscanner,const char *text)
   {
     char c=tagText.at(i);
     // skip spaces
-    while (i<(int)yyleng && isspace((uchar)c)) { c=tagText.at(++i); }
+    while (i<(int)yyleng && isspace((uint8_t)c)) { c=tagText.at(++i); }
     // check for end of the tag
     if (c == '>') break;
     // Check for XML style "empty" tag.
@@ -1613,17 +1646,17 @@ static void handleHtmlTag(yyscan_t yyscanner,const char *text)
     }
     startName=i;
     // search for end of name
-    while (i<(int)yyleng && !isspace((uchar)c) && c!='=' && c!= '>') { c=tagText.at(++i); }
+    while (i<(int)yyleng && !isspace((uint8_t)c) && c!='=' && c!= '>') { c=tagText.at(++i); }
     endName=i;
     HtmlAttrib opt;
     opt.name  = tagText.mid(startName,endName-startName).lower();
     // skip spaces
-    while (i<(int)yyleng && isspace((uchar)c)) { c=tagText.at(++i); }
+    while (i<(int)yyleng && isspace((uint8_t)c)) { c=tagText.at(++i); }
     if (tagText.at(i)=='=') // option has value
     {
       c=tagText.at(++i);
       // skip spaces
-      while (i<(int)yyleng && isspace((uchar)c)) { c=tagText.at(++i); }
+      while (i<(int)yyleng && isspace((uint8_t)c)) { c=tagText.at(++i); }
       if (tagText.at(i)=='\'') // option '...'
       {
         c=tagText.at(++i);
@@ -1647,7 +1680,7 @@ static void handleHtmlTag(yyscan_t yyscanner,const char *text)
       {
         startAttrib=i;
         // search for separator or end symbol
-        while (i<(int)yyleng && !isspace((uchar)c) && c!='>') { c=tagText.at(++i); }
+        while (i<(int)yyleng && !isspace((uint8_t)c) && c!='>') { c=tagText.at(++i); }
         endAttrib=i;
         if (i<(int)yyleng) { c=tagText.at(++i);}
       }
@@ -1716,7 +1749,7 @@ DocTokenizer::DocTokenizer() : p(std::make_unique<Private>())
   //printf("%p:DocTokenizer::DocTokenizer()\n",(void*)this);
   doctokenizerYYlex_init_extra(&p->extra,&p->yyscanner);
 #ifdef FLEX_DEBUG
-  doctokenizerYYset_debug(1,p->yyscanner);
+  doctokenizerYYset_debug(Debug::isFlagSet(Debug::Lex_doctokenizer)?1:0,p->yyscanner);
 #endif
 }
 
@@ -1745,7 +1778,7 @@ void DocTokenizer::findSections(const QCString &input,const Definition *d,
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
 
   if (input.isEmpty()) return;
-  printlex(yy_flex_debug, TRUE, __FILE__, qPrint(fileName));
+  DebugLex debugLex(Debug::Lex_doctokenizer, __FILE__, qPrint(fileName));
   yyextra->inputString = input.data();
   //printf("parsing --->'%s'<---\n",input);
   yyextra->inputPos    = 0;
@@ -1754,10 +1787,9 @@ void DocTokenizer::findSections(const QCString &input,const Definition *d,
   BEGIN(St_Sections);
   yyextra->yyLineNr = 1;
   doctokenizerYYlex(yyscanner);
-  printlex(yy_flex_debug, FALSE, __FILE__, qPrint(fileName));
 }
 
-void DocTokenizer::init(const char *input,const QCString &fileName,bool markdownSupport)
+void DocTokenizer::init(const char *input,const QCString &fileName,bool markdownSupport, bool insideHtmlLink)
 {
   yyscan_t yyscanner = p->yyscanner;
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
@@ -1767,6 +1799,7 @@ void DocTokenizer::init(const char *input,const QCString &fileName,bool markdown
   yyextra->fileName    = fileName;
   yyextra->insidePre   = FALSE;
   yyextra->markdownSupport = markdownSupport;
+  yyextra->insideHtmlLink = insideHtmlLink;
   BEGIN(St_Para);
 }
 
@@ -1789,6 +1822,7 @@ void DocTokenizer::setStatePara()
 {
   yyscan_t yyscanner = p->yyscanner;
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->insideHtmlLink = false;
   BEGIN(St_Para);
 }
 
@@ -1990,6 +2024,13 @@ void DocTokenizer::setStateCite()
   BEGIN(St_Cite);
 }
 
+void DocTokenizer::setStateDoxyConfig()
+{
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  BEGIN(St_DoxyConfig);
+}
+
 void DocTokenizer::setStateRef()
 {
   yyscan_t yyscanner = p->yyscanner;
@@ -2126,14 +2167,6 @@ void DocTokenizer::endAutoList()
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yyextra->autoListLevel--;
 }
-
-//REAL_YY_DECL
-//{
-//  printlex(yy_flex_debug, TRUE, __FILE__, g_fileName);
-//  int retval = LOCAL_YY_DECL;
-//  printlex(yy_flex_debug, FALSE, __FILE__, g_fileName);
-//  return retval;
-//}
 
 void DocTokenizer::setLineNr(int lineno)
 {

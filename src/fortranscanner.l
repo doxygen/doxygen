@@ -232,7 +232,9 @@ static inline void pop_state(yyscan_t yyscanner);
 
 static void startScope(yyscan_t yyscanner,Entry *scope);
 static bool endScope(yyscan_t yyscanner,Entry *scope, bool isGlobalRoot=FALSE);
+static void copyEntry(std::shared_ptr<Entry> dest, const std::shared_ptr<Entry> &src);
 static void resolveModuleProcedures(yyscan_t yyscanner,Entry *current_root);
+static void resolveTypeBoundProcedures(Entry *scope);
 static void truncatePrepass(yyscan_t yyscanner,int index);
 static void pushBuffer(yyscan_t yyscanner,const QCString &buffer);
 static void popBuffer(yyscan_t yyscanner);
@@ -583,7 +585,7 @@ SCOPENAME ({ID}{BS}"::"{BS})*
 <Start>block{BS}data{BS}{ID_}           {  //
                                           yyextra->vtype = V_IGNORE;
                                           yy_push_state(BlockData,yyscanner);
-                                          yyextra->defaultProtection = Public;
+                                          yyextra->defaultProtection = Protection::Public;
                                         }
 <Start>module|program{BS_}              {  //
                                           yyextra->vtype = V_IGNORE;
@@ -595,12 +597,12 @@ SCOPENAME ({ID}{BS}"::"{BS})*
                                           {
                                             yy_push_state(Program,yyscanner);
                                           }
-                                          yyextra->defaultProtection = Public;
+                                          yyextra->defaultProtection = Protection::Public;
                                         }
 <BlockData>^{BS}"end"({BS}(block{BS}data)({BS_}{ID})?)?{BS}/(\n|!|;) { // end block data
                                           //if (!endScope(yyscanner,yyextra->current_root))
                                           //  yyterminate();
-                                          yyextra->defaultProtection = Public;
+                                          yyextra->defaultProtection = Protection::Public;
                                           pop_state(yyscanner);
                                         }
 <Start,ModuleBody,ModuleBodyContains>"end"({BS}(module|program)({BS_}{ID})?)?{BS}/(\n|!|;) { // end module
@@ -609,7 +611,7 @@ SCOPENAME ({ID}{BS}"::"{BS})*
                                           {
                                             yyterminate();
                                           }
-                                          yyextra->defaultProtection = Public;
+                                          yyextra->defaultProtection = Protection::Public;
                                           if (yyextra->global_scope)
                                           {
                                             if (yyextra->global_scope != INVALID_ENTRY)
@@ -639,11 +641,11 @@ SCOPENAME ({ID}{BS}"::"{BS})*
   /*------- access specification --------------------------------------------------------------------------*/
 
 <ModuleBody,TypedefBody,TypedefBodyContains>private/{BS}(\n|"!") {
-                                           yyextra->defaultProtection = Private;
+                                           yyextra->defaultProtection = Protection::Private;
                                            yyextra->current->protection = yyextra->defaultProtection ;
                                          }
 <ModuleBody,TypedefBody,TypedefBodyContains>public/{BS}(\n|"!")  {
-                                           yyextra->defaultProtection = Public;
+                                           yyextra->defaultProtection = Protection::Public;
                                            yyextra->current->protection = yyextra->defaultProtection ;
                                          }
 
@@ -658,8 +660,8 @@ SCOPENAME ({ID}{BS}"::"{BS})*
                                           }
 
                                           yy_push_state(Typedef,yyscanner);
-                                          yyextra->current->protection = Package; // invalid in Fortran, replaced below
-                                          yyextra->typeProtection = Public;
+                                          yyextra->current->protection = Protection::Package; // invalid in Fortran, replaced below
+                                          yyextra->typeProtection = Protection::Public;
                                           yyextra->typeMode = true;
                                         }
 <Typedef>{
@@ -672,13 +674,13 @@ abstract                                {
                                         }
 extends{ARGS}                           {
                                           QCString basename = extractFromParens(yytext).lower();
-                                          yyextra->current->extends.push_back(BaseInfo(basename, Public, Normal));
+                                          yyextra->current->extends.push_back(BaseInfo(basename, Protection::Public, Specifier::Normal));
                                         }
 public                                  {
-                                          yyextra->current->protection = Public;
+                                          yyextra->current->protection = Protection::Public;
                                         }
 private                                 {
-                                          yyextra->current->protection = Private;
+                                          yyextra->current->protection = Protection::Private;
                                         }
 {LANGUAGE_BIND_SPEC}                    {
                                           /* ignored for now */
@@ -700,15 +702,15 @@ private                                 {
                                           }
 
                                           // set modifiers to allow adjusting public/private in surrounding module scope
-                                          if( yyextra->current->protection == Package )
+                                          if( yyextra->current->protection == Protection::Package )
                                           {
                                             yyextra->current->protection = yyextra->defaultProtection;
                                           }
-                                          else if( yyextra->current->protection == Public )
+                                          else if( yyextra->current->protection == Protection::Public )
                                           {
                                             yyextra->modifiers[yyextra->current_root][yyextra->current->name.lower().str()] |= QCString("public");
                                           }
-                                          else if( yyextra->current->protection == Private )
+                                          else if( yyextra->current->protection == Protection::Private )
                                           {
                                             yyextra->modifiers[yyextra->current_root][yyextra->current->name.lower().str()] |= QCString("private");
                                           }
@@ -721,7 +723,7 @@ private                                 {
 
 <TypedefBodyContains>{                  /* Type Bound Procedures */
 ^{BS}PROCEDURE{ARGS}?                   {
-                                          yyextra->current->type = QCString(yytext).simplifyWhiteSpace();
+                                          yyextra->current->type = QCString(yytext).simplifyWhiteSpace().lower();
                                         }
 ^{BS}final                              {
                                           yyextra->current->spec |= Entry::Final;
@@ -733,7 +735,7 @@ private                                 {
 {COMMA}                                 {
                                         }
 {ATTR_SPEC}                             {
-                                          yyextra->currentModifiers |= QCString(yytext);
+                                          yyextra->currentModifiers |= QCString(yytext).stripWhiteSpace();
                                         }
 {BS}"::"{BS}                            {
                                         }
@@ -742,14 +744,48 @@ private                                 {
                                           yyextra->modifiers[yyextra->current_root][name.lower().str()] |= yyextra->currentModifiers;
                                           yyextra->current->section  = Entry::FUNCTION_SEC;
                                           yyextra->current->name     = name;
+                                          // check for procedure(name)
+                                          if (yyextra->current->type.find('(') != -1)
+                                          {
+                                            yyextra->current->args = extractFromParens(yyextra->current->type).stripWhiteSpace();
+                                          }
+                                          else
+                                          {
+                                            yyextra->current->args = name.lower(); // target procedure name if no => is given
+                                          }
                                           yyextra->current->fileName = yyextra->fileName;
                                           yyextra->current->bodyLine = yyextra->lineNr;
                                           yyextra->current->startLine  = yyextra->lineNr;
                                           addCurrentEntry(yyscanner,true);
                                         }
 {BS}"=>"[^(\n|\!)]*                     { /* Specific bindings come after the ID. */
-                                          QCString args = yytext;
-                                          yyextra->last_entry->args = args.lower();
+                                          QCString tmp = yytext;
+                                          int i = tmp.find("=>");
+                                          if (i!=-1)
+                                          {
+                                            tmp.remove(0, i+2);
+                                          }
+                                          tmp = tmp.simplifyWhiteSpace().lower();
+                                          if (yyextra->last_entry->type == "generic")
+                                          {
+                                            // duplicate entries for each overloaded variant
+                                            // (parse through medhod1,method2, methodN, ...
+                                            //printf("Parsing through %s for generic method %s.\n", tmp.data(), last_entry->name.data());
+                                            i = tmp.find(",");
+                                            while (i>0)
+                                            {
+                                              copyEntry(yyextra->current, yyextra->last_entry);
+                                              yyextra->current->name = yyextra->last_entry->name;
+                                              yyextra->current->section = Entry::FUNCTION_SEC;
+                                              yyextra->last_entry->args = tmp.left(i).stripWhiteSpace();
+                                              //printf("Found %s.\n", last_entry->args.data());
+                                              addCurrentEntry(yyscanner,true);
+                                              tmp = tmp.remove(0,i+1).stripWhiteSpace();
+                                              i = tmp.find(",");
+                                            }
+                                          }
+                                          //printf("Target function: %s\n", tmp.data());
+                                          yyextra->last_entry->args = tmp;
                                         }
 "\n"                                    {
                                           yyextra->currentModifiers = SymbolModifiers();
@@ -1881,7 +1917,11 @@ static void copyEntry(std::shared_ptr<Entry> dest, const std::shared_ptr<Entry> 
    dest->args        = src->args;
    dest->argList     = src->argList;
    dest->doc         = src->doc;
+   dest->docLine  = src->docLine;
+   dest->docFile  = src->docFile;
    dest->brief       = src->brief;
+   dest->briefLine= src->briefLine;
+   dest->briefFile= src->briefFile;
 }
 
 /** fill empty interface module procedures with info from
@@ -2010,8 +2050,8 @@ SymbolModifiers& SymbolModifiers::operator|=(QCString mdfStringArg)
   else if (mdfString.contains("intent"))
   {
     QCString tmp = extractFromParens(mdfString);
-    bool isin = tmp.contains("in");
-    bool isout = tmp.contains("out");
+    bool isin = tmp.contains("in")!=0;
+    bool isout = tmp.contains("out")!=0;
     if (isin && isout) newMdf.direction = SymbolModifiers::INOUT;
     else if (isin) newMdf.direction = SymbolModifiers::IN;
     else if (isout) newMdf.direction = SymbolModifiers::OUT;
@@ -2260,9 +2300,16 @@ static void applyModifiers(Entry *ent, const SymbolModifiers& mdfs)
   ent->type = applyModifiers(tmp, mdfs);
 
   if (mdfs.protection == SymbolModifiers::PUBLIC)
-    ent->protection = Public;
+    ent->protection = Protection::Public;
   else if (mdfs.protection == SymbolModifiers::PRIVATE)
-    ent->protection = Private;
+    ent->protection = Protection::Private;
+
+  if (mdfs.nonoverridable)
+    ent->spec |= Entry::Final;
+  if (mdfs.nopass)
+    ent->isStatic = TRUE;
+  if (mdfs.deferred)
+    ent->virt = Specifier::Pure;
 }
 
 /*! Starts the new scope in fortran program. Consider using this function when
@@ -2387,7 +2434,7 @@ static bool endScope(yyscan_t yyscanner,Entry *scope, bool isGlobalRoot)
     // iterate variables: get and apply yyextra->modifiers
     for (const auto &ce : scope->children())
     {
-      if (ce->section != Entry::VARIABLE_SEC && ce->section != Entry::FUNCTION_SEC && ce->section != Entry::CLASS_SEC && ce->section != Entry::FUNCTION_SEC)
+      if (ce->section != Entry::VARIABLE_SEC && ce->section != Entry::FUNCTION_SEC && ce->section != Entry::CLASS_SEC)
         continue;
 
       //cout<<ce->name<<", "<<mdfsMap.contains(ce->name.lower())<<mdfsMap.count()<<endl;
@@ -2407,7 +2454,160 @@ static bool endScope(yyscan_t yyscanner,Entry *scope, bool isGlobalRoot)
   // clear all yyextra->modifiers of the scope
   yyextra->modifiers.erase(scope);
 
+  // resolve procedures in types
+  resolveTypeBoundProcedures(scope);
+
   return TRUE;
+}
+
+/*! search for types with type bound procedures (e.g. methods)
+ *  and try to resolve their arguments
+ */
+static void resolveTypeBoundProcedures(Entry *scope)
+{
+  // map of all subroutines/functions
+  bool procMapCreated = false;
+  std::unordered_map<std::string,std::shared_ptr<Entry>> procMap;
+
+  // map of all abstract interfaces
+  bool interfMapCreated = false;
+  std::unordered_map<std::string,std::shared_ptr<Entry>> interfMap;
+
+  // iterate over all types
+  for (const auto &ce: scope->children())
+  {
+    if (ce->section!=Entry::CLASS_SEC)
+      continue;
+
+    // handle non-"generic" non-"deferred" methods, copying the arguments from the implementation
+    std::unordered_map<std::string,std::shared_ptr<Entry>> methodMap;
+    for (auto &ct: ce->children())
+    {
+      if (ct->section!=Entry::FUNCTION_SEC)
+        continue;
+
+      if (ct->type=="generic")
+        continue;
+
+      if (ct->virt==Specifier::Pure)
+        continue;
+
+      // set up the procMap
+      if (!procMapCreated)
+      {
+        for (const auto &cf: scope->children())
+        {
+          if (cf->section == Entry::FUNCTION_SEC)
+          {
+            procMap.insert(std::make_pair(cf->name.str(), cf));
+          }
+        }
+        procMapCreated = true;
+      }
+
+      // found a (non-generic) method
+      QCString implName = ct->args;
+      if (procMap.find(implName.str())!=procMap.end())
+      {
+        std::shared_ptr<Entry> proc = procMap[implName.str()];
+        ct->args = proc->args;
+        ct->argList = ArgumentList(proc->argList);
+        if (ct->brief.isEmpty())
+        {
+          ct->brief = proc->brief;
+          ct->briefLine = proc->briefLine;
+          ct->briefFile = proc->briefFile;
+        }
+        if (ct->doc.isEmpty())
+        {
+          ct->doc = proc->doc;
+          ct->docLine = proc->docLine;
+          ct->docFile = proc->docFile;
+        }
+        methodMap.insert(std::make_pair(ct->name.str(), ct));
+      }
+    }
+
+    // handle "deferred" methods (pure virtual functions), duplicating with arguments from the target abstract interface
+    for (auto &ct: ce->children())
+    {
+      if (ct->section != Entry::FUNCTION_SEC)
+        continue;
+
+      if (ct->virt != Specifier::Pure)
+        continue;
+
+      // set up the procMap
+      if (!interfMapCreated)
+      {
+        for(const auto &cf: scope->children())
+        {
+          if (cf->section == Entry::CLASS_SEC && cf->spec & Entry::Interface && cf->type == "abstract")
+          {
+            std::shared_ptr<Entry> ci = cf->children().front();
+            interfMap.insert(std::make_pair(ci->name.str(), ci));
+          }
+        }
+        interfMapCreated = true;
+      }
+
+      // found a (non-generic) method
+      QCString implName = ct->args;
+      if (interfMap.find(implName.str())!= interfMap.end() )
+      {
+        std::shared_ptr<Entry> proc = interfMap[implName.str()];
+        ct->args = proc->args;
+        ct->argList = ArgumentList(proc->argList);
+        if (ct->brief.isEmpty())
+        {
+          ct->brief = proc->brief;
+          ct->briefLine = proc->briefLine;
+          ct->briefFile = proc->briefFile;
+        }
+        if (ct->doc.isEmpty())
+        {
+          ct->doc = proc->doc;
+          ct->docLine = proc->docLine;
+          ct->docFile = proc->docFile;
+        }
+
+        methodMap.insert(std::make_pair(ct->name.str(), ct));
+      }
+    }
+
+    // handle "generic" methods (that is function overloading!), duplicating with arguments from the target method of the type
+    {
+      for (auto &ct: ce->children())
+      {
+        if (ct->section != Entry::FUNCTION_SEC)
+          continue;
+
+        if (ct->type!="generic")
+          continue;
+
+        // found a generic method (already duplicated for each entry by the parser)
+        QCString methodName = ct->args;
+        if (methodMap.find(methodName.str()) != methodMap.end())
+        {
+          std::shared_ptr<Entry> method = methodMap[methodName.str()];
+          ct->args = method->args;
+          ct->argList = ArgumentList(method->argList);
+          if (ct->brief.isEmpty())
+          {
+            ct->brief = method->brief;
+            ct->briefLine = method->briefLine;
+            ct->briefFile = method->briefFile;
+          }
+          if (ct->doc.isEmpty())
+          {
+            ct->doc = method->doc;
+            ct->docLine = method->docLine;
+            ct->docFile = method->docFile;
+          }
+        }
+      }
+    }
+  }
 }
 
 static int yyread(yyscan_t yyscanner,char *buf,int max_size)
@@ -2437,19 +2637,19 @@ static void initEntry(yyscan_t yyscanner)
   }
   else if (yyextra->current_root && yyextra->current_root->section == Entry::CLASS_SEC && yyextra->current_root->spec & Entry::Interface)
   {
-    yyextra->current->protection = Public;
+    yyextra->current->protection = Protection::Public;
   }
   else if (yyextra->current_root && yyextra->current_root->section == Entry::FUNCTION_SEC)
   {
-    yyextra->current->protection = Private;
+    yyextra->current->protection = Protection::Private;
   }
   else
   {
     yyextra->current->protection = yyextra->defaultProtection;
   }
-  yyextra->current->mtype      = Method;
-  yyextra->current->virt       = Normal;
-  yyextra->current->stat       = FALSE;
+  yyextra->current->mtype      = MethodTypes::Method;
+  yyextra->current->virt       = Specifier::Normal;
+  yyextra->current->isStatic   = false;
   yyextra->current->lang       = SrcLangExt_Fortran;
   yyextra->commentScanner.initGroupInfo(yyextra->current.get());
 }
@@ -2495,7 +2695,7 @@ static void addModule(yyscan_t yyscanner,const QCString &name, bool isModule)
   yyextra->current->fileName  = yyextra->fileName;
   yyextra->current->bodyLine  = yyextra->lineNr; // used for source reference
   yyextra->current->startLine  = yyextra->lineNr;
-  yyextra->current->protection = Public ;
+  yyextra->current->protection = Protection::Public ;
   addCurrentEntry(yyscanner,true);
   startScope(yyscanner,yyextra->last_entry.get());
 }
@@ -2513,7 +2713,7 @@ static void addSubprogram(yyscan_t yyscanner,const QCString &text)
   yyextra->current->type = yyextra->current->type.stripWhiteSpace();
   if (yyextra->ifType == IF_ABSTRACT)
   {
-    yyextra->current->virt = Virtual;
+    yyextra->current->virt = Specifier::Virtual;
   }
   yyextra->current->fileName  = yyextra->fileName;
   yyextra->current->bodyLine  = yyextra->lineNr; // used for source reference start of body of routine
@@ -2795,7 +2995,7 @@ static void parseMain(yyscan_t yyscanner, const QCString &fileName,const char *f
 
   if (fileBuf==0 || fileBuf[0]=='\0') return;
 
-  yyextra->defaultProtection = Public;
+  yyextra->defaultProtection = Protection::Public;
   yyextra->inputString = fileBuf;
   yyextra->inputPosition = 0;
   yyextra->inputStringPrepass = nullptr;
@@ -2894,7 +3094,7 @@ struct FortranOutlineParser::Private
   {
     fortranscannerYYlex_init_extra(&extra,&yyscanner);
 #ifdef FLEX_DEBUG
-    fortranscannerYYset_debug(1,yyscanner);
+    fortranscannerYYset_debug(Debug::isFlagSet(Debug::Lex_fortranscanner)?1:0,yyscanner);
 #endif
   }
   ~Private()
@@ -2920,11 +3120,9 @@ void FortranOutlineParser::parseInput(const QCString &fileName,
   struct yyguts_t *yyg = (struct yyguts_t*)p->yyscanner;
   yyextra->thisParser = this;
 
-  printlex(yy_flex_debug, TRUE, __FILE__, qPrint(fileName));
+  DebugLex debugLex(Debug::Lex_fortranscanner, __FILE__, qPrint(fileName));
 
   ::parseMain(p->yyscanner,fileName,fileBuf,root,p->format);
-
-  printlex(yy_flex_debug, FALSE, __FILE__, qPrint(fileName));
 }
 
 bool FortranOutlineParser::needsPreprocessing(const QCString &extension) const

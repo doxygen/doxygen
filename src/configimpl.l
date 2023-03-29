@@ -28,9 +28,9 @@
 #include <errno.h>
 #include <thread>
 #include <algorithm>
-#include <fstream>
 #include <iostream>
 #include <iomanip>
+#include <cstdint>
 
 #include "config.h"
 #include "regex.h"
@@ -44,6 +44,7 @@
 #include "dir.h"
 #include "textstream.h"
 #include "dotattributes.h"
+#include "debug.h"
 
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
@@ -946,7 +947,7 @@ static void readIncludeFile(const QCString &incName)
   QCString inc = incName;
   substEnvVarsInString(inc);
   inc = inc.stripWhiteSpace();
-  uint incLen = inc.length();
+  uint32_t incLen = inc.length();
   if (incLen>0 && inc.at(0)=='"' && inc.at(incLen-1)=='"') // strip quotes
   {
     inc=inc.mid(1,incLen-2);
@@ -1545,7 +1546,7 @@ static QCString configFileToString(const QCString &name)
     std::string ret;
     char buffer[4096];
     while (in.read(buffer, sizeof(buffer))) ret.append(buffer, sizeof(buffer));
-    ret.append(buffer, static_cast<uint>(in.gcount()));
+    ret.append(buffer, static_cast<uint32_t>(in.gcount()));
     if (!ret.empty() && ret[ret.length()-1]!='\n') ret+='\n'; // to help the scanner
     return ret;
   };
@@ -1557,7 +1558,7 @@ static QCString configFileToString(const QCString &name)
   }
   else // read from file
   {
-    std::ifstream f(name.str(),std::istream::in);
+    std::ifstream f = Portable::openInputStream(name);
     if (!f.is_open())
     {
       config_term("file '%s' not found or could not be opened\n",qPrint(name));
@@ -1569,6 +1570,9 @@ static QCString configFileToString(const QCString &name)
 
 bool ConfigImpl::parseString(const QCString &fn,const QCString &str,bool update)
 {
+#ifdef FLEX_DEBUG
+  configimplYYset_debug(Debug::isFlagSet(Debug::Lex_configimpl)?1:0);
+#endif
   g_config = ConfigImpl::instance();
   g_inputString   = str.data();
   g_inputPosition = 0;
@@ -1586,11 +1590,10 @@ bool ConfigImpl::parseString(const QCString &fn,const QCString &str,bool update)
 
 bool ConfigImpl::parse(const QCString &fn,bool update)
 {
-  int retval;
+  bool retval;
   g_encoding = "UTF-8";
-  printlex(yy_flex_debug, TRUE, __FILE__, qPrint(fn));
+  DebugLex debugLex(Debug::Lex_configimpl, __FILE__, qPrint(fn));
   retval =  parseString(fn,configFileToString(fn), update);
-  printlex(yy_flex_debug, FALSE, __FILE__, qPrint(fn));
   return retval;
 }
 
@@ -2038,7 +2041,7 @@ void Config::checkAndCorrect(bool quiet, const bool check)
     {
       diaPath=dp.dirPath(TRUE)+"/";
 #if defined(_WIN32) // convert slashes
-      uint i=0,l=diaPath.length();
+      uint32_t i=0,l=diaPath.length();
       for (i=0;i<l;i++) if (diaPath.at(i)=='/') diaPath.at(i)='\\';
 #endif
     }
@@ -2171,7 +2174,6 @@ void Config::checkAndCorrect(bool quiet, const bool check)
 
 static void updateAttribute(DotAttributes& attr, QCString name, ConfigObsolete* value)
 {
-  if (value==0 || value->valueStringRef()->isEmpty()) return;
   attr.updateValue(name,*value->valueStringRef());
 }
 

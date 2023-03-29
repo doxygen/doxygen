@@ -39,11 +39,10 @@ typedef yyguts_t *yyscan_t;
 #include <mutex>
 #include <thread>
 #include <algorithm>
-
-#include <stdio.h>
-#include <assert.h>
-#include <ctype.h>
-#include <errno.h>
+#include <cstdio>
+#include <cassert>
+#include <cctype>
+#include <cerrno>
 
 #include "qcstring.h"
 #include "containers.h"
@@ -64,14 +63,12 @@ typedef yyguts_t *yyscan_t;
 #include "filedef.h"
 #include "regex.h"
 #include "fileinfo.h"
+#include "trace.h"
+#include "debug.h"
 
 #define YY_NO_UNISTD_H 1
 
 #define USE_STATE2STRING 0
-
-// Toggle for some debugging info
-//#define DBG_CTX(x) fprintf x
-#define DBG_CTX(x) do { } while(0)
 
 #if USE_STATE2STRING
 static const char *stateToString(int state);
@@ -88,7 +85,7 @@ struct preYY_CondCtx
 
 struct FileState
 {
-  FileState(uint size) : fileBuf(size) {}
+  FileState(uint32_t size) : fileBuf(size) {}
   int lineNr = 1;
   int curlyCount = 0;
   BufStr fileBuf;
@@ -341,6 +338,7 @@ static void           addDefine(yyscan_t yyscanner);
 static void         setFileName(yyscan_t yyscanner,const QCString &name);
 static int               yyread(yyscan_t yyscanner,char *buf,int max_size);
 static Define *       isDefined(yyscan_t yyscanner,const QCString &name);
+static void  determineBlockName(yyscan_t yyscanner);
 
 /* ----------------------------------------------------------------- */
 
@@ -364,11 +362,19 @@ RAWBEGIN  (u|U|L|u8)?R\"[^ \t\(\)\\]{0,16}"("
 RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 
-  // C start comment 
+FORMULA_START  [\\@]("f{"|"f$"|"f["|"f(")
+FORMULA_END    [\\@]("f}"|"f$"|"f]"|"f)")
+VERBATIM_START [\\@]("verbatim"|"iliteral"|"latexonly"|"htmlonly"|"xmlonly"|"docbookonly"|"rtfonly"|"manonly"|"dot"|"msc"|"startuml"|"code"("{"[^}]*"}")?){BN}+
+VERBATIM_END   [\\@]("endverbatim"|"endiliteral"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endrtfonly"|"endmanonly"|"enddot"|"endmsc"|"enduml"|"endcode")
+VERBATIM_LINE  [\\@]"noop"{B}+
+LITERAL_BLOCK  {FORMULA_START}|{VERBATIM_START}
+LITERAL_BLOCK_END {FORMULA_END}|{VERBATIM_END}
+
+  // C start comment
 CCS   "/\*"
   // C end comment
 CCE   "*\/"
-  // Cpp comment 
+  // Cpp comment
 CPPC  "/\/"
   // optional characters after import
 ENDIMPORTopt [^\\\n]*
@@ -400,6 +406,7 @@ WSopt [ \t\r]*
 %x      ArgCopyCComment
 %x      CopyCComment
 %x      SkipVerbatim
+%x      SkipCondVerbatim
 %x      SkipCPPComment
 %x      JavaDocVerbatimCode
 %x      RemoveCComment
@@ -420,7 +427,7 @@ WSopt [ \t\r]*
 
 %%
 
-<*>\x06                                 
+<*>\x06
 <*>\x00
 <*>\r
 <*>"??"[=/'()!<>-]                      { // Trigraph
@@ -430,7 +437,7 @@ WSopt [ \t\r]*
                                           yyextra->yyColNr+=(int)yyleng;
                                           yyextra->yyMLines=0;
                                           yyextra->potentialDefine=yytext;
-                                          BEGIN(Command); 
+                                          BEGIN(Command);
                                         }
 <Start>^("%top{"|"%{")                  {
                                           if (getLanguageFromFileName(yyextra->fileName)!=SrcLangExt_Lex) REJECT
@@ -642,7 +649,7 @@ WSopt [ \t\r]*
                                             yyextra->defArgsStr=yytext;
                                             if (def->nargs==-1) // no function macro
                                             {
-                                              QCString result = def->isPredefined && !def->expandAsDefined ? 
+                                              QCString result = def->isPredefined && !def->expandAsDefined ?
                                                 def->definition :
                                                 expandMacro(yyscanner,yyextra->defArgsStr);
                                               outputString(yyscanner,result);
@@ -1012,7 +1019,7 @@ WSopt [ \t\r]*
                                           BEGIN(SkipLine);
                                         }
 <SkipCommand>.
-<SkipLine>[^'"/\n]+                     
+<SkipLine>[^'"/\n]+
 <SkipLine>{CHARLIT}                     { }
 <SkipLine>\"                            {
                                           BEGIN(SkipString);
@@ -1249,8 +1256,30 @@ WSopt [ \t\r]*
                                           outputChar(yyscanner,'/');outputChar(yyscanner,'*');
                                           //yyextra->commentCount++;
                                         }
-<SkipCComment>[\\@][\\@]("f{"|"f$"|"f[""f(") {
-                                          outputArray(yyscanner,yytext,yyleng);
+<SkipCond>[\\@][\\@]                    { }
+<SkipCond>^({B}*"*"+)?{B}{0,3}"~~~"[~]* {
+                                          bool markdownSupport = Config_getBool(MARKDOWN_SUPPORT);
+                                          if (!markdownSupport || !yyextra->isSpecialComment)
+                                          {
+                                            REJECT;
+                                          }
+                                          else
+                                          {
+                                            yyextra->fenceSize=(int)yyleng;
+                                            BEGIN(SkipCondVerbatim);
+                                          }
+                                        }
+<SkipCond>^({B}*"*"+)?{B}{0,3}"```"[`]* {
+                                          bool markdownSupport = Config_getBool(MARKDOWN_SUPPORT);
+                                          if (!markdownSupport || !yyextra->isSpecialComment)
+                                          {
+                                            REJECT;
+                                          }
+                                          else
+                                          {
+                                            yyextra->fenceSize=(int)yyleng;
+                                            BEGIN(SkipCondVerbatim);
+                                          }
                                         }
 <SkipCComment>^({B}*"*"+)?{B}{0,3}"~~~"[~]*   {
                                           bool markdownSupport = Config_getBool(MARKDOWN_SUPPORT);
@@ -1278,25 +1307,18 @@ WSopt [ \t\r]*
                                             BEGIN(SkipVerbatim);
                                           }
                                         }
-<SkipCComment>[\\@][\\@]("verbatim"|"iliteral"|"latexonly"|"htmlonly"|"xmlonly"|"docbookonly"|"rtfonly"|"manonly"|"dot"|"code"("{"[^}]*"}")?){BN}+ {
+<SkipCComment>[\\@]{VERBATIM_LINE}      |
+<SkipCComment>[\\@]{LITERAL_BLOCK}      { // escaped command
                                           outputArray(yyscanner,yytext,yyleng);
                                           yyextra->yyLineNr+=QCString(yytext).contains('\n');
                                         }
-<SkipCComment>[\\@]("verbatim"|"iliteral"|"latexonly"|"htmlonly"|"xmlonly"|"docbookonly"|"rtfonly"|"manonly"|"dot"|"code"("{"[^}]*"}")?){BN}+      {
+<SkipCComment>{VERBATIM_LINE}.*/\n      { // normal command
+                                          outputArray(yyscanner,yytext,yyleng);
+                                        }
+<SkipCComment>{LITERAL_BLOCK}           { // normal block command
                                           outputArray(yyscanner,yytext,yyleng);
                                           yyextra->yyLineNr+=QCString(yytext).contains('\n');
-                                          yyextra->fenceSize=0;
-                                          if (yytext[1]=='f')
-                                          {
-                                            yyextra->blockName="f";
-                                          }
-                                          else
-                                          {
-                                            QCString bn=&yytext[1];
-                                            int i = bn.find('{'); // for \code{.c}
-                                            if (i!=-1) bn=bn.left(i);
-                                            yyextra->blockName=bn.stripWhiteSpace();
-                                          }
+                                          determineBlockName(yyscanner);
                                           BEGIN(SkipVerbatim);
                                         }
 <SkipCond>[\\@][\\@]"cond"[ \t]+        {}// escaped cond command
@@ -1386,10 +1408,19 @@ WSopt [ \t\r]*
                                           BEGIN(SkipCond);
                                         }
 <SkipCond>\n                            { yyextra->yyLineNr++; outputChar(yyscanner,'\n'); }
+<SkipCond>{VERBATIM_LINE}.*/\n          { }
+<SkipCond>{LITERAL_BLOCK}               {
+                                          auto numNLs = QCString(yytext).contains('\n');
+                                          yyextra->yyLineNr+=numNLs;
+                                          for (int i = 0; i < numNLs; i++) outputChar(yyscanner,'\n');
+                                          determineBlockName(yyscanner);
+                                          BEGIN(SkipCondVerbatim);
+                                        }
+
 <SkipCond>.                             { }
 <SkipCond>[^\/\!*\\@\n]+                { }
-<SkipCond>{CPPC}[/!]                      { yyextra->ccomment=FALSE; }
-<SkipCond>{CCS}[*!]                      { yyextra->ccomment=TRUE; }
+<SkipCond>{CPPC}[/!]                    { yyextra->ccomment=FALSE; }
+<SkipCond>{CCS}[*!]                     { yyextra->ccomment=TRUE; }
 <SkipCond,SkipCComment,SkipCPPComment>[\\@][\\@]"endcond"/[^a-z_A-Z0-9\x80-\xFF] {
                                           if (!yyextra->skip)
                                           {
@@ -1416,15 +1447,37 @@ WSopt [ \t\r]*
                                             BEGIN(yyextra->condCtx);
                                           }
                                         }
-<SkipVerbatim>[\\@]("endverbatim"|"endiliteral"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endrtfonly"|"endmanonly"|"enddot"|"endcode"|"f$"|"f]"|"f}""f}") { /* end of verbatim block */
+<SkipCondVerbatim>{LITERAL_BLOCK_END}   { /* end of verbatim block */
+                                          if (yytext[1]=='f' && yyextra->blockName==&yytext[2])
+                                          {
+                                            BEGIN(SkipCond);
+                                          }
+                                          else if (&yytext[4]==yyextra->blockName)
+                                          {
+                                            BEGIN(SkipCond);
+                                          }
+                                        }
+<SkipVerbatim>{LITERAL_BLOCK_END}       { /* end of verbatim block */
                                           outputArray(yyscanner,yytext,yyleng);
-                                          if (yytext[1]=='f' && yyextra->blockName=="f")
+                                          if (yytext[1]=='f' && yyextra->blockName==&yytext[2])
                                           {
                                             BEGIN(SkipCComment);
                                           }
                                           else if (&yytext[4]==yyextra->blockName)
                                           {
                                             BEGIN(SkipCComment);
+                                          }
+                                        }
+<SkipCondVerbatim>^({B}*"*"+)?{B}{0,3}"~~~"[~]*                 {
+                                          if (yyextra->fenceSize==(yy_size_t)yyleng)
+                                          {
+                                            BEGIN(SkipCond);
+                                          }
+                                        }
+<SkipCondVerbatim>^({B}*"*"+)?{B}{0,3}"```"[`]*                 {
+                                          if (yyextra->fenceSize==(yy_size_t)yyleng)
+                                          {
+                                            BEGIN(SkipCond);
                                           }
                                         }
 <SkipVerbatim>^({B}*"*"+)?{B}{0,3}"~~~"[~]*                 {
@@ -1441,7 +1494,8 @@ WSopt [ \t\r]*
                                             BEGIN(SkipCComment);
                                           }
                                         }
-<SkipVerbatim>{CCE}|{CCS}                       {
+<SkipCondVerbatim>{CCE}|{CCS}           { }
+<SkipVerbatim>{CCE}|{CCS}               {
                                           outputArray(yyscanner,yytext,yyleng);
                                         }
 <JavaDocVerbatimCode>"{"                {
@@ -1480,14 +1534,16 @@ WSopt [ \t\r]*
 <JavaDocVerbatimCode>.                  { /* any other character */
                                           outputArray(yyscanner,yytext,(int)yyleng);
                                         }
+<SkipCondVerbatim>[^{*\\@\x06~`\n\/]+   { }
 <SkipCComment,SkipVerbatim>[^{*\\@\x06~`\n\/]+ {
                                           outputArray(yyscanner,yytext,yyleng);
                                         }
-<SkipCComment,SkipVerbatim>\n           {
+<SkipCComment,SkipVerbatim,SkipCondVerbatim>\n           {
                                           yyextra->yyLineNr++;
                                           outputChar(yyscanner,'\n');
                                         }
-<SkipCComment,SkipVerbatim>.            {
+<SkipCondVerbatim>.                     { }
+<SkipCComment,SkipVerbatim>.            { 
                                           outputChar(yyscanner,*yytext);
                                         }
 <CopyCComment>[^*a-z_A-Z\x80-\xFF\n]*[^*a-z_A-Z\x80-\xFF\\\n] {
@@ -1521,11 +1577,11 @@ WSopt [ \t\r]*
                                           }
                                         }
 <RemoveCComment>{CCE}                   { BEGIN(yyextra->lastCContext); }
-<RemoveCComment>{CPPC}                  
+<RemoveCComment>{CPPC}
 <RemoveCComment>{CCS}
 <RemoveCComment>[^*\x06\n]+
 <RemoveCComment>\n                      { yyextra->yyLineNr++; outputChar(yyscanner,'\n'); }
-<RemoveCComment>.                       
+<RemoveCComment>.
 <SkipCPPComment>[^\n\/\\@]+             {
                                           outputArray(yyscanner,yytext,yyleng);
                                         }
@@ -1734,11 +1790,11 @@ WSopt [ \t\r]*
                                           yyextra->defLitText += *yytext;
                                         }
 <<EOF>>                                 {
-                                          DBG_CTX((stderr,"End of include file\n"));
+                                          TRACE("End of include file");
                                           //printf("Include stack depth=%d\n",yyextra->includeStack.size());
                                           if (yyextra->includeStack.empty())
                                           {
-                                            DBG_CTX((stderr,"Terminating scanner!\n"));
+                                            TRACE("Terminating scanner");
                                             yyterminate();
                                           }
                                           else
@@ -1755,7 +1811,7 @@ WSopt [ \t\r]*
                                             yyextra->inputBufPos = fs->oldFileBufPos;
                                             yyextra->curlyCount  = fs->curlyCount;
                                             setFileName(yyscanner,fs->fileName);
-                                            DBG_CTX((stderr,"######## FileName %s\n",qPrint(yyextra->fileName)));
+                                            TRACE("switching to {}",yyextra->fileName);
 
                                             // Deal with file changes due to
                                             // #include's within { .. } blocks
@@ -1800,7 +1856,7 @@ WSopt [ \t\r]*
                                         }
 <*>{CCS}/{CCE}                          |
 <*>{CCS}[*!]?                           {
-                                          if (YY_START==SkipVerbatim || YY_START==SkipCond || YY_START==IDLquote)
+                                          if (YY_START==SkipVerbatim || YY_START == SkipCondVerbatim || YY_START==SkipCond || YY_START==IDLquote)
                                           {
                                             REJECT;
                                           }
@@ -1822,7 +1878,7 @@ WSopt [ \t\r]*
                                           }
                                         }
 <*>{CPPC}[/!]?                          {
-                                          if (YY_START==SkipVerbatim || YY_START==SkipCond || getLanguageFromFileName(yyextra->fileName)==SrcLangExt_Fortran || YY_START==IDLquote)
+                                          if (YY_START==SkipVerbatim || YY_START == SkipCondVerbatim || YY_START==SkipCond || getLanguageFromFileName(yyextra->fileName)==SrcLangExt_Fortran || YY_START==IDLquote)
                                           {
                                             REJECT;
                                           }
@@ -1883,7 +1939,8 @@ static void setFileName(yyscan_t yyscanner,const QCString &name)
   state->insideIDL = getLanguageFromFileName(state->fileName)==SrcLangExt_IDL;
   state->insideCS = getLanguageFromFileName(state->fileName)==SrcLangExt_CSharp;
   state->insideFtn = getLanguageFromFileName(state->fileName)==SrcLangExt_Fortran;
-  state->isSource = guessSection(state->fileName);
+  int isSource = guessSection(state->fileName);
+  state->isSource = isSource==Entry::HEADER_SEC || isSource==Entry::SOURCE_SEC;
 }
 
 static void incrLevel(yyscan_t yyscanner)
@@ -1969,7 +2026,7 @@ static FileState *checkAndOpenFile(yyscan_t yyscanner,const QCString &fileName,b
     }
     //printf("#include %s\n",qPrint(absName));
 
-    fs = new FileState(static_cast<uint>(fi.size())+4096);
+    fs = new FileState(static_cast<uint32_t>(fi.size())+4096);
     if (!readInputFile(absName,fs->fileBuf))
     { // error
       //printf("  error reading\n");
@@ -2091,15 +2148,15 @@ static QCString extractTrailingComment(const QCString &s)
   return "";
 }
 
-static int getNextChar(yyscan_t yyscanner,const QCString &expr,QCString *rest,uint &pos);
-static int getCurrentChar(yyscan_t yyscanner,const QCString &expr,QCString *rest,uint pos);
-static void unputChar(yyscan_t yyscanner,const QCString &expr,QCString *rest,uint &pos,char c);
+static int getNextChar(yyscan_t yyscanner,const QCString &expr,QCString *rest,uint32_t &pos);
+static int getCurrentChar(yyscan_t yyscanner,const QCString &expr,QCString *rest,uint32_t pos);
+static void unputChar(yyscan_t yyscanner,const QCString &expr,QCString *rest,uint32_t &pos,char c);
 static bool expandExpression(yyscan_t yyscanner,QCString &expr,QCString *rest,int pos,int level);
 
 static QCString stringize(const QCString &s)
 {
   QCString result;
-  uint i=0;
+  uint32_t i=0;
   bool inString=FALSE;
   bool inChar=FALSE;
   char c,pc;
@@ -2201,7 +2258,7 @@ static void processConcatOperators(QCString &expr)
       // remove the ## operator and the surrounding whitespace
       e=e.substr(0,n)+e.substr(n+l);
       int k=static_cast<int>(n)-1;
-      while (k>=0 && isId(e[k])) k--; 
+      while (k>=0 && isId(e[k])) k--;
       if (k>0 && e[k]=='-' && e[k-1]=='@')
       {
         // remove no-rescan marker before ID
@@ -2228,7 +2285,7 @@ static void returnCharToStream(yyscan_t yyscanner,char c)
 }
 
 static inline void addTillEndOfString(yyscan_t yyscanner,const QCString &expr,QCString *rest,
-                                       uint &pos,char term,QCString &arg)
+                                       uint32_t &pos,char term,QCString &arg)
 {
   int cc;
   while ((cc=getNextChar(yyscanner,expr,rest,pos))!=EOF && cc!=0)
@@ -2250,11 +2307,11 @@ static bool replaceFunctionMacro(yyscan_t yyscanner,const QCString &expr,QCStrin
 {
   YY_EXTRA_TYPE state = preYYget_extra(yyscanner);
   //printf(">replaceFunctionMacro(expr='%s',rest='%s',pos=%d,def='%s') level=%d\n",qPrint(expr),rest ? qPrint(*rest) : 0,pos,qPrint(def->name),state->levelGuard.size());
-  uint j=pos;
+  uint32_t j=pos;
   len=0;
   result.resize(0);
   int cc;
-  while ((cc=getCurrentChar(yyscanner,expr,rest,j))!=EOF && isspace(cc))
+  while ((cc=getCurrentChar(yyscanner,expr,rest,j))!=EOF && cc!='\n' && isspace(cc))
   {
     len++;
     getNextChar(yyscanner,expr,rest,j);
@@ -2398,7 +2455,7 @@ static bool replaceFunctionMacro(yyscan_t yyscanner,const QCString &expr,QCStrin
       (argCount>=def->nargs-1 && def->varArgs)) // variadic macro with at least as many
                                                 // params as the non-variadic part (see bug731985)
   {
-    uint k=0;
+    uint32_t k=0;
     // substitution of all formal arguments
     QCString resExpr;
     const QCString d=def->definition.stripWhiteSpace();
@@ -2878,7 +2935,7 @@ static QCString removeIdsAndMarkers(const QCString &s)
         result+="0L";
         p++;
         while ((c=*p) && isId(c)) p++;
-        while ((c=*p) && isspace((uchar)c)) p++;
+        while ((c=*p) && isspace((uint8_t)c)) p++;
         if (*p=='(') // undefined function macro
         {
           p++;
@@ -3117,7 +3174,7 @@ static inline void outputChar(yyscan_t yyscanner,char c)
 static inline void outputArray(yyscan_t yyscanner,const char *a,yy_size_t len)
 {
   YY_EXTRA_TYPE state = preYYget_extra(yyscanner);
-  if (state->includeStack.empty() || state->curlyCount>0) state->outputBuf->addArray(a,static_cast<uint>(len));
+  if (state->includeStack.empty() || state->curlyCount>0) state->outputBuf->addArray(a,static_cast<uint32_t>(len));
 }
 
 static inline void outputString(yyscan_t yyscanner,const QCString &a)
@@ -3153,6 +3210,39 @@ static inline void extraSpacing(yyscan_t yyscanner)
       yyextra->defExtraSpacing+='\t';
     else
       yyextra->defExtraSpacing+=' ';
+  }
+}
+
+static void determineBlockName(yyscan_t yyscanner)
+{
+  struct yyguts_t * yyg = (struct yyguts_t*)yyscanner;
+  yyextra->fenceSize=0;
+  char c=0;
+  if (yytext[1]=='f' && ((c=yytext[2])=='[' || c=='{' || c=='(' || c=='$'))
+  {
+    switch (c)
+    {
+      case '[': yyextra->blockName="]"; break;
+      case '{': yyextra->blockName="}"; break;
+      case '(': yyextra->blockName=")"; break;
+      case '$': yyextra->blockName="$"; break;
+      default: break;
+    }
+    yyextra->blockName=yyextra->blockName.stripWhiteSpace();
+  }
+  else
+  {
+    QCString bn=&yytext[1];
+    if (bn=="startuml")
+    {
+      yyextra->blockName="uml";
+    }
+    else
+    {
+      int i = bn.find('{'); // for \code{.c}
+      if (i!=-1) bn=bn.left(i);
+      yyextra->blockName=bn.stripWhiteSpace();
+    }
   }
 }
 
@@ -3196,14 +3286,15 @@ static QCString determineAbsoluteIncludeName(const QCString &curFile,const QCStr
 
 static void readIncludeFile(yyscan_t yyscanner,const QCString &inc)
 {
+  AUTO_TRACE("inc={}",inc);
   YY_EXTRA_TYPE state = preYYget_extra(yyscanner);
-  uint i=0;
+  uint32_t i=0;
 
   // find the start of the include file name
   while (i<inc.length() &&
          (inc.at(i)==' ' || inc.at(i)=='"' || inc.at(i)=='<')
         ) i++;
-  uint s=i;
+  uint32_t s=i;
 
   // was it a local include?
   bool localInclude = s>0 && inc.at(s-1)=='"';
@@ -3283,7 +3374,7 @@ static void readIncludeFile(yyscan_t yyscanner,const QCString &inc)
       lineStr.sprintf("# 1 \"%s\" 1\n",qPrint(state->fileName));
       outputString(yyscanner,lineStr);
 
-      DBG_CTX((stderr,"Switching to include file %s\n",qPrint(incFileName)));
+      AUTO_TRACE_ADD("Switching to include file {}",incFileName);
       state->expectGuard=TRUE;
       state->inputBuf   = &fs->fileBuf;
       state->inputBufPos=0;
@@ -3418,7 +3509,7 @@ static char resolveTrigraph(char c)
 /*@ ----------------------------------------------------------------------------
  */
 
-static int getNextChar(yyscan_t yyscanner,const QCString &expr,QCString *rest,uint &pos)
+static int getNextChar(yyscan_t yyscanner,const QCString &expr,QCString *rest,uint32_t &pos)
 {
   //printf("getNextChar(%s,%s,%d)\n",qPrint(expr),rest ? rest->data() : 0,pos);
   if (pos<expr.length())
@@ -3441,7 +3532,7 @@ static int getNextChar(yyscan_t yyscanner,const QCString &expr,QCString *rest,ui
   }
 }
 
-static int getCurrentChar(yyscan_t yyscanner,const QCString &expr,QCString *rest,uint pos)
+static int getCurrentChar(yyscan_t yyscanner,const QCString &expr,QCString *rest,uint32_t pos)
 {
   //printf("getCurrentChar(%s,%s,%d)\n",qPrint(expr),rest ? rest->data() : 0,pos);
   if (pos<expr.length())
@@ -3464,7 +3555,7 @@ static int getCurrentChar(yyscan_t yyscanner,const QCString &expr,QCString *rest
   }
 }
 
-static void unputChar(yyscan_t yyscanner,const QCString &expr,QCString *rest,uint &pos,char c)
+static void unputChar(yyscan_t yyscanner,const QCString &expr,QCString *rest,uint32_t &pos,char c)
 {
   //printf("unputChar(%s,%s,%d,%c)\n",qPrint(expr),rest ? rest->data() : 0,pos,c);
   if (pos<expr.length())
@@ -3535,8 +3626,8 @@ static void initPredefined(yyscan_t yyscanner,const QCString &fileName)
       continue; // no define name
     }
 
-    if (i_obrace<i_equals && i_cbrace<i_equals && 
-        i_obrace!=std::string::npos && i_cbrace!=std::string::npos && 
+    if (i_obrace<i_equals && i_cbrace<i_equals &&
+        i_obrace!=std::string::npos && i_cbrace!=std::string::npos &&
         i_obrace<i_cbrace
        ) // predefined function macro definition
     {
@@ -3564,7 +3655,7 @@ static void initPredefined(yyscan_t yyscanner,const QCString &fileName)
       reg::Iterator re_it(in,reId);
       reg::Iterator re_end;
       size_t i=0;
-      // substitute all occurrences of formal arguments by their 
+      // substitute all occurrences of formal arguments by their
       // corresponding markers
       for (; re_it!=re_end; ++re_it)
       {
@@ -3664,16 +3755,16 @@ Preprocessor::~Preprocessor()
 
 void Preprocessor::processFile(const QCString &fileName,BufStr &input,BufStr &output)
 {
-//  printf("Preprocessor::processFile(%s)\n",fileName);
+  AUTO_TRACE("fileName={}",fileName);
   yyscan_t yyscanner = p->yyscanner;
   YY_EXTRA_TYPE state = preYYget_extra(p->yyscanner);
   struct yyguts_t *yyg = (struct yyguts_t*)p->yyscanner;
 
 #ifdef FLEX_DEBUG
-  preYYset_debug(1,yyscanner);
+  preYYset_debug(Debug::isFlagSet(Debug::Lex_pre)?1:0,yyscanner);
 #endif
 
-  printlex(yy_flex_debug, TRUE, __FILE__, qPrint(fileName));
+  DebugLex debugLex(Debug::Lex_pre, __FILE__, qPrint(fileName));
   size_t orgOffset=output.curPos();
   //printf("##########################\n%s\n####################\n",
   //    qPrint(input));
@@ -3732,7 +3823,7 @@ void Preprocessor::processFile(const QCString &fileName,BufStr &input,BufStr &ou
     int line=1;
     Debug::print(Debug::Preprocessor,0,"---------\n");
     if (!Debug::isFlagSet(Debug::NoLineNo)) Debug::print(Debug::Preprocessor,0,"00001 ");
-    while (orgPos<newPos) 
+    while (orgPos<newPos)
     {
       putchar(*orgPos);
       if (*orgPos=='\n' && !Debug::isFlagSet(Debug::NoLineNo)) Debug::print(Debug::Preprocessor,0,"%05d ",++line);
@@ -3777,8 +3868,6 @@ void Preprocessor::processFile(const QCString &fileName,BufStr &input,BufStr &ou
   }
 
   //yyextra->defineManager.endContext();
-  printlex(yy_flex_debug, FALSE, __FILE__, qPrint(fileName));
-//  printf("Preprocessor::processFile(%s) finished\n",fileName);
 }
 
 #if USE_STATE2STRING

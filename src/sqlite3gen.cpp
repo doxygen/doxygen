@@ -48,6 +48,7 @@
 #include "section.h"
 #include "fileinfo.h"
 #include "dir.h"
+#include "datetime.h"
 
 #include <sys/stat.h>
 #include <string.h>
@@ -930,8 +931,8 @@ static void recordMetadata()
 {
   bindTextParameter(meta_insert,":doxygen_version",getFullVersion());
   bindTextParameter(meta_insert,":schema_version","0.2.1",TRUE); //TODO: this should be a constant somewhere; not sure where
-  bindTextParameter(meta_insert,":generated_at",dateToString(TRUE));
-  bindTextParameter(meta_insert,":generated_on",dateToString(FALSE));
+  bindTextParameter(meta_insert,":generated_at",dateToString(DateTimeType::DateTime));
+  bindTextParameter(meta_insert,":generated_on",dateToString(DateTimeType::Date));
   bindTextParameter(meta_insert,":project_name",Config_getString(PROJECT_NAME));
   bindTextParameter(meta_insert,":project_number",Config_getString(PROJECT_NUMBER));
   bindTextParameter(meta_insert,":project_brief",Config_getString(PROJECT_BRIEF));
@@ -1127,8 +1128,8 @@ static void associateMember(const MemberDef *md, struct Refid member_refid, stru
     bindIntParameter(member_insert, ":scope_rowid", scope_refid.rowid);
     bindIntParameter(member_insert, ":memberdef_rowid", member_refid.rowid);
 
-    bindIntParameter(member_insert, ":prot", md->protection());
-    bindIntParameter(member_insert, ":virt", md->virtualness());
+    bindIntParameter(member_insert, ":prot", static_cast<int>(md->protection()));
+    bindIntParameter(member_insert, ":virt", static_cast<int>(md->virtualness()));
     step(member_insert);
   }
 }
@@ -1425,9 +1426,10 @@ QCString getSQLDocBlock(const Definition *scope,
   auto astImpl = dynamic_cast<const DocNodeAST*>(ast.get());
   if (astImpl)
   {
-    XMLCodeGenerator codeGen(t);
+    OutputCodeList xmlCodeList;
+    xmlCodeList.add<XMLCodeGenerator>(&t);
     // create a parse tree visitor for XML
-    XmlDocVisitor visitor(t,codeGen,
+    XmlDocVisitor visitor(t,xmlCodeList,
         scope ? scope->getDefFileExtension() : QCString(""));
     std::visit(visitor,astImpl->root);
   }
@@ -1629,7 +1631,7 @@ static void generateSqlite3ForMember(const MemberDef *md, struct Refid scope_ref
 
   bindIntParameter(memberdef_insert,":rowid", refid.rowid);
   bindTextParameter(memberdef_insert,":kind",md->memberTypeName());
-  bindIntParameter(memberdef_insert,":prot",md->protection());
+  bindIntParameter(memberdef_insert,":prot",static_cast<int>(md->protection()));
 
   bindIntParameter(memberdef_insert,":static",md->isStatic());
   bindIntParameter(memberdef_insert,":extern",md->isExternal());
@@ -1661,7 +1663,7 @@ static void generateSqlite3ForMember(const MemberDef *md, struct Refid scope_ref
     bindIntParameter(memberdef_insert,":optional",md->isOptional());
     bindIntParameter(memberdef_insert,":required",md->isRequired());
 
-    bindIntParameter(memberdef_insert,":virt",md->virtualness());
+    bindIntParameter(memberdef_insert,":virt",static_cast<int>(md->virtualness()));
   }
 
   if (md->memberType() == MemberType_Variable)
@@ -1921,7 +1923,7 @@ static void generateSqlite3ForClass(const ClassDef *cd)
   bindTextParameter(compounddef_insert,":name",cd->name());
   bindTextParameter(compounddef_insert,":title",cd->title());
   bindTextParameter(compounddef_insert,":kind",cd->compoundTypeString());
-  bindIntParameter(compounddef_insert,":prot",cd->protection());
+  bindIntParameter(compounddef_insert,":prot",static_cast<int>(cd->protection()));
 
   int file_id = insertPath(cd->getDefFileName());
   bindIntParameter(compounddef_insert,":file_id",file_id);
@@ -1990,8 +1992,8 @@ static void generateSqlite3ForClass(const ClassDef *cd)
     struct Refid derived_refid = insertRefid(cd->getOutputFileBase());
     bindIntParameter(compoundref_insert,":base_rowid", base_refid.rowid);
     bindIntParameter(compoundref_insert,":derived_rowid", derived_refid.rowid);
-    bindIntParameter(compoundref_insert,":prot",bcd.prot);
-    bindIntParameter(compoundref_insert,":virt",bcd.virt);
+    bindIntParameter(compoundref_insert,":prot",static_cast<int>(bcd.prot));
+    bindIntParameter(compoundref_insert,":virt",static_cast<int>(bcd.virt));
     step(compoundref_insert);
   }
 
@@ -2002,8 +2004,8 @@ static void generateSqlite3ForClass(const ClassDef *cd)
     struct Refid base_refid = insertRefid(cd->getOutputFileBase());
     bindIntParameter(compoundref_insert,":base_rowid", base_refid.rowid);
     bindIntParameter(compoundref_insert,":derived_rowid", derived_refid.rowid);
-    bindIntParameter(compoundref_insert,":prot",bcd.prot);
-    bindIntParameter(compoundref_insert,":virt",bcd.virt);
+    bindIntParameter(compoundref_insert,":prot",static_cast<int>(bcd.prot));
+    bindIntParameter(compoundref_insert,":virt",static_cast<int>(bcd.virt));
     step(compoundref_insert);
   }
 
@@ -2304,7 +2306,7 @@ static void generateSqlite3ForGroup(const GroupDef *gd)
   // + classes
   writeInnerClasses(gd->getClasses(),refid);
 
-  // + concepts 
+  // + concepts
   writeInnerConcepts(gd->getConcepts(),refid);
 
   // + namespaces

@@ -88,6 +88,10 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
     virtual QCString trDetailedDescription()
     { return "Smulkus aprašymas"; }
 
+    /*! header that is used when the summary tag is missing inside the details tag */
+    virtual QCString trDetails()
+    { return "Išsamiau"; }
+
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
     { return "Tipo Aprašymo Dokumentacija"; }
@@ -401,12 +405,6 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
      */
     virtual QCString trFileDocumentation()
     { return "Failo Dokumentacija"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all examples.
-     */
-    virtual QCString trExampleDocumentation()
-    { return "Pavyzdžio Dokumentacija"; }
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()

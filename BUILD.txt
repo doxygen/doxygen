@@ -8,18 +8,19 @@ The second step is to invoke cmake from within the build directory with the desi
 
 For Linux/Unix systems do the following:
 
-  mkdir build
-  cd build
-  cmake -G "Unix Makefiles" path/to/root/of/doxygen/source/tree
-  make
+    mkdir build
+    cd build
+    cmake -G "Unix Makefiles" path/to/root/of/doxygen/source/tree
+    make
+Note: "path/to/root/of/doxygen/source/tree" is not the "src" directory but its parent.
 
 This also works for MacOS, but if XCode is installed you can also generate an XCode project file
 
-  cmake -G XCode path/to/root/of/doxygen/source/tree
+    cmake -G XCode path/to/root/of/doxygen/source/tree
 
 For Windows one can generate a Visual Studio project using
 
-  cmake -G "Visual Studio 12 2013" path\to\root\of\doxygen\source\tree
+    cmake -G "Visual Studio 12 2013" path\to\root\of\doxygen\source\tree
 
 (this is for Visual Studio 12, there are typically also generators for other versions of
 Visual Studio or other compiler environments like MinGW)
@@ -40,15 +41,15 @@ An option can be turned on, by adding -D<option>=ON as a command line option, th
 done when generating the initial build files, but also afterwards, i.e. to enable building
 of the documentation after an initial cmake -G run, do
 
-  cmake -Dbuild_doc=ON path/to/root/of/doxygen/source/tree
+    cmake -Dbuild_doc=ON path/to/root/of/doxygen/source/tree
 
 To turn the option off use
 
-  cmake -Dbuild_doc=OFF path/to/root/of/doxygen/source/tree
+    cmake -Dbuild_doc=OFF path/to/root/of/doxygen/source/tree
 
 To see the current value is of the various options, you can run
 
-  cmake -L path/to/root/of/doxygen/source/tree
+    cmake -L path/to/root/of/doxygen/source/tree
 
 The build target for building the documentation is 'docs' and the build target for
 the regression tests is 'tests'

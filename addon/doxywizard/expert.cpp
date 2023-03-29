@@ -223,11 +223,14 @@ static QString getDocsForNode(const QDomElement &child)
       }
       docsVal = docsVal.nextSiblingElement();
     }
-    docs+=SA("<br/>");
-    docs+=SA("<br/>");
-    docs+=SA(" The default value is: <code>")+
-          child.attribute(SA("defval"))+
-          SA("</code>.");
+    if (child.attribute(SA("defval")) != SA(""))
+    {
+      docs+=SA("<br/>");
+      docs+=SA("<br/>");
+      docs+=SA(" The default value is: <code>")+
+            child.attribute(SA("defval"))+
+            SA("</code>.");
+    }
     docs+= SA("<br/>");
   }
   else if (type==SA("int"))
@@ -481,6 +484,8 @@ static QString getDocsForNode(const QDomElement &child)
   docs.replace(SA("\\<"),SA("&lt;"));
   docs.replace(SA("\\>"),SA("&gt;"));
   regexp.setPattern(SA(" (http:[^ \\)]*)([ \\)])"));
+  docs.replace(regexp,SA(" <a href=\"\\1\">\\1</a>\\2"));
+  regexp.setPattern(SA(" (https:[^ \\)]*)([ \\)])"));
   docs.replace(regexp,SA(" <a href=\"\\1\">\\1</a>\\2"));
   // LaTeX name as formula -> LaTeX
   regexp.setPattern(SA("\\\\f\\$\\\\mbox\\{\\\\LaTeX\\}\\\\f\\$"));

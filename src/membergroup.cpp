@@ -45,7 +45,7 @@ MemberGroup::~MemberGroup()
 {
 }
 
-void MemberGroup::insertMember(const MemberDef *md)
+void MemberGroup::insertMember(MemberDef *md)
 {
   //printf("MemberGroup::insertMember memberList=%p count=%d"
   //       " member section list: %p: md=%p:%s\n",

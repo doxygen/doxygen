@@ -100,6 +100,11 @@ English:
 English:
 * Updated the language translation to 1.9.2
 
+2022/12/28
+* Uppdaterat översättningarna till 1.9.6
+English:
+* Updated the language translation to 1.9.6
+
 ===================================================================================
   Ordlista
 ===================================================================================
@@ -156,7 +161,7 @@ English:
 #ifndef TRANSLATOR_SE_H
 #define TRANSLATOR_SE_H
 
-class TranslatorSwedish : public TranslatorAdapter_1_9_4
+class TranslatorSwedish : public TranslatorAdapter_1_9_6
 {
   public:
 
@@ -205,6 +210,10 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_4
     virtual QCString trDetailedDescription()
     { return "Detaljerad beskrivning"; }
 
+    /*! header that is used when the summary tag is missing inside the details tag */
+    virtual QCString trDetails()
+    { return "Detaljer"; }
+
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
     { return "Dokumentation av typdefinierade medlemmar"; }
@@ -215,7 +224,16 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_4
 
     /*! header that is put before the list of member functions. */
     virtual QCString trMemberFunctionDocumentation()
-    { return "Dokumentation av medlemsfunktioner"; }
+    {
+      if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+        return "Dokumentation av medlemsfunktioner/-procedurer/-processer";
+      }
+      else
+      {
+        return "Dokumentation av medlemsfunktioner";
+      }
+    }
 
     /*! header that is put before the list of member attributes. */
     virtual QCString trMemberDataDocumentation()
@@ -519,12 +537,6 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_4
      */
     virtual QCString trFileDocumentation()
     { return "Fildokumentation"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all examples.
-     */
-    virtual QCString trExampleDocumentation()
-    { return "Exempeldokumentation"; }
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
@@ -1908,16 +1920,20 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_4
      */
     virtual QCString trDateTime(int year,int month,int day,int dayOfWeek,
                                 int hour,int minutes,int seconds,
-                                bool includeTime)
+                                DateTimeType includeTime)
     {
       static const char *days[]   = { "Mån","Tis","Ons","Tor","Fre","Lör","Sön" };
       static const char *months[] = { "Jan","Feb","Mar","Apr","Maj","Jun","Jul","Aug","Sep","Okt","Nov","Dec" };
       QCString sdate;
-      sdate.sprintf("%s %d %s %d",days[dayOfWeek-1],day,months[month-1],year);
-      if (includeTime)
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Date)
+      {
+        sdate.sprintf("%s %d %s %d",days[dayOfWeek-1],day,months[month-1],year);
+      }
+      if (includeTime == DateTimeType::DateTime) sdate += " ";
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Time)
       {
         QCString stime;
-        stime.sprintf(" %.2d:%.2d:%.2d",hour,minutes,seconds);
+        stime.sprintf("%.2d:%.2d:%.2d",hour,minutes,seconds);
         sdate+=stime;
       }
       return sdate;
@@ -2141,7 +2157,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_4
     virtual QCString trFunctionAndProc()
     { return "Funktioner/Procedurer/Processer"; }
     /** VHDL type */
-    virtual QCString trVhdlType(uint64 type,bool single)
+    virtual QCString trVhdlType(uint64_t type,bool single)
     {
       switch(type)
       {
@@ -2375,7 +2391,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_4
 //////////////////////////////////////////////////////////////////////////
 
     /** C++20 concept */
-    virtual QCString trConcept(bool first_capital, bool singular)
+    virtual QCString trConcept(bool first_capital, bool /* singular */)
     {
       QCString result((first_capital ? "Koncept" : "koncept"));
       return result;
@@ -2413,6 +2429,47 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_4
     virtual QCString trConceptDefinition()
     {
       return "Konceptdefinition";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.4
+//////////////////////////////////////////////////////////////////////////
+
+    virtual QCString trPackageList()
+    { return "Paketlista"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.6
+//////////////////////////////////////////////////////////////////////////
+
+    virtual QCString trFlowchart()
+    { return "Flödesdiagram: "; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.7
+//////////////////////////////////////////////////////////////////////////
+
+    /*! the compound type as used for the xrefitems */
+    virtual QCString trCompoundType(ClassDef::CompoundType compType, SrcLangExt lang)
+    {
+      QCString result;
+      switch(compType)
+      {
+        case ClassDef::Class:
+          if (lang == SrcLangExt_Fortran) trType(true,true);
+          else result=trClass(true,true);
+          break;
+        case ClassDef::Struct:     result="Strukt"; break;
+        case ClassDef::Union:      result="Union"; break;
+        case ClassDef::Interface:  result="Gränssnitt"; break;
+        case ClassDef::Protocol:   result="Protokoll"; break;
+        case ClassDef::Category:   result="Kategori"; break;
+        case ClassDef::Exception:  result="Undantag"; break;
+        case ClassDef::Service:    result="Tjänstere"; break;
+        case ClassDef::Singleton:  result="Singleton"; break;
+        default: break;
+      }
+      return result;
     }
 };
 #endif

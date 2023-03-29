@@ -15,7 +15,6 @@
 
 #include <set>
 #include <stack>
-#include <fstream>
 
 #include "docsets.h"
 #include "config.h"
@@ -28,6 +27,7 @@
 #include "namespacedef.h"
 #include "util.h"
 #include "textstream.h"
+#include "portable.h"
 
 struct DocSets::Private
 {
@@ -66,7 +66,7 @@ void DocSets::initialize()
   // -- write Makefile
   {
     QCString mfName = Config_getString(HTML_OUTPUT) + "/Makefile";
-    std::ofstream ts(mfName.str(),std::ofstream::out | std::ofstream::binary);
+    std::ofstream ts = Portable::openOutputStream(mfName);
     if (!ts.is_open())
     {
       term("Could not open file %s for writing\n",qPrint(mfName));
@@ -115,7 +115,7 @@ void DocSets::initialize()
   // -- write Info.plist
   {
     QCString plName = Config_getString(HTML_OUTPUT) + "/Info.plist";
-    std::ofstream ts(plName.str(),std::ofstream::out | std::ofstream::binary);
+    std::ofstream ts = Portable::openOutputStream(plName);
     if (!ts.is_open())
     {
       term("Could not open file %s for writing\n",qPrint(plName));
@@ -151,7 +151,7 @@ void DocSets::initialize()
 
   // -- start Nodes.xml
   QCString notes = Config_getString(HTML_OUTPUT) + "/Nodes.xml";
-  p->ntf.open(notes.str(),std::ofstream::out | std::ofstream::binary);
+  p->ntf = Portable::openOutputStream(notes);
   if (!p->ntf.is_open())
   {
     term("Could not open file %s for writing\n",qPrint(notes));
@@ -169,7 +169,7 @@ void DocSets::initialize()
   p->indentStack.push(true);
 
   QCString tokens = Config_getString(HTML_OUTPUT) + "/Tokens.xml";
-  p->ttf.open(tokens.str(),std::ofstream::out | std::ofstream::binary);
+  p->ttf = Portable::openOutputStream(tokens);
   if (!p->ttf.is_open())
   {
     term("Could not open file %s for writing\n",qPrint(tokens));
@@ -257,7 +257,9 @@ void DocSets::addContentsItem(bool isDir,
       }
       else if (!file.isEmpty()) // doxygen generated file
       {
-        p->nts << addHtmlExtensionIfMissing(file);
+        QCString fn = file;
+        addHtmlExtensionIfMissing(fn);
+        p->nts << fn;
       }
       p->nts << "</Path>\n";
       if (!file.isEmpty() && !anchor.isEmpty())
@@ -505,7 +507,9 @@ void DocSets::writeToken(TextStream &t,
     t << "      <Scope>" << convertToXML(scope) << "</Scope>\n";
   }
   t << "    </TokenIdentifier>\n";
-  t << "    <Path>" << addHtmlExtensionIfMissing(d->getOutputFileBase()) << "</Path>\n";
+  QCString fn = d->getOutputFileBase();
+  addHtmlExtensionIfMissing(fn);
+  t << "    <Path>" << fn << "</Path>\n";
   if (!anchor.isEmpty())
   {
     t << "    <Anchor>" << anchor << "</Anchor>\n";

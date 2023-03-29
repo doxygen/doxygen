@@ -48,7 +48,7 @@
 #ifndef TRANSLATOR_GR_H
 #define TRANSLATOR_GR_H
 
-class TranslatorGreek : public TranslatorAdapter_1_9_4
+class TranslatorGreek : public Translator
 {
   public:
 
@@ -97,6 +97,10 @@ class TranslatorGreek : public TranslatorAdapter_1_9_4
     /*! header that is put before the detailed description of files, classes and namespaces. */
     virtual QCString trDetailedDescription()
     { return "Λεπτομερής Περιγραφή"; }
+
+    /*! header that is used when the summary tag is missing inside the details tag */
+    virtual QCString trDetails()
+    { return "Λεπτομέρειες"; }
 
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
@@ -410,12 +414,6 @@ class TranslatorGreek : public TranslatorAdapter_1_9_4
      */
     virtual QCString trFileDocumentation()
     { return "Τεκμηρίωση Αρχείων"; }
-
-    /*! This is used in LaTeX as the title of the chapter containing
-     *  the documentation of all examples.
-     */
-    virtual QCString trExampleDocumentation()
-    { return "Τεκμηρίωση Παραδειγμάτων"; }
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
@@ -1815,16 +1813,20 @@ class TranslatorGreek : public TranslatorAdapter_1_9_4
      */
     virtual QCString trDateTime(int year,int month,int day,int dayOfWeek,
                                 int hour,int minutes,int seconds,
-                                bool includeTime)
+                                DateTimeType includeTime)
     {
       static const char *days[]   = { "Δευ","Τρι","Τετ","Πεμ","Παρ","Σαβ","Κυρ" };
       static const char *months[] = { "Ιαν","Φεβ","Μαρ","Απρ","Μαι","Ιουν","Ιουλ","Αυγ","Σεπ","Οκτ","Νοε","Δεκ" };
       QCString sdate;
-      sdate.sprintf("%s %.2d %s %d",days[dayOfWeek-1],day,months[month-1],year);
-      if (includeTime)
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Date)
+      {
+        sdate.sprintf("%s %.2d %s %d",days[dayOfWeek-1],day,months[month-1],year);
+      }
+      if (includeTime == DateTimeType::DateTime) sdate += " ";
+      if (includeTime == DateTimeType::DateTime || includeTime == DateTimeType::Time)
       {
         QCString stime;
-        stime.sprintf(" %.2d:%.2d:%.2d",hour,minutes,seconds);
+        stime.sprintf("%.2d:%.2d:%.2d",hour,minutes,seconds);
         sdate+=stime;
       }
       return sdate;
@@ -2043,7 +2045,7 @@ class TranslatorGreek : public TranslatorAdapter_1_9_4
     virtual QCString trFunctionAndProc()
     { return "Συναρτήσεις/Διαδικασίες/Διεργασίες"; }
     /** VHDL type */
-    virtual QCString trVhdlType(uint64 type,bool single)
+    virtual QCString trVhdlType(uint64_t type,bool single)
     {
       switch(type)
       {
@@ -2316,6 +2318,301 @@ class TranslatorGreek : public TranslatorAdapter_1_9_4
     virtual QCString trConceptDefinition()
     {
       return "Ορισμός Έννοιας";
+    }
+
+    /*! the compound type as used for the xrefitems */
+    virtual QCString trCompoundType(ClassDef::CompoundType compType, SrcLangExt lang)
+    {
+      QCString result;
+      switch(compType)
+      {
+        case ClassDef::Class:
+          if (lang == SrcLangExt_Fortran) trType(true,true);
+          else result=trClass(true,true);
+          break;
+        case ClassDef::Struct:     result="Δομής"; break;
+        case ClassDef::Union:      result="Ένωσης"; break;
+        case ClassDef::Interface:  result="Διεπαφής"; break;
+        case ClassDef::Protocol:   result="Πρωτοκόλλου"; break;
+        case ClassDef::Category:   result="Κατηγορίας"; break;
+        case ClassDef::Exception:  result="Εξαίρεσης"; break;
+        case ClassDef::Service:    result="Υπηρεσίας"; break;
+        case ClassDef::Singleton:  result="Μονοσύνολου"; break;
+        default: break;
+      }
+      return result;
+    }
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.4
+//////////////////////////////////////////////////////////////////////////
+
+    virtual QCString trPackageList()
+    { return "Λίστα πακέτου"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.6
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This is used for translation of the word that will be
+     *  followed by a single name of the VHDL process flowchart.
+     */
+    virtual QCString trFlowchart()
+    { return "Διάγραμμα ροής: "; }
+
+    /*! Please translate also updated body of the method
+     *  trMemberFunctionDocumentation(), now better adapted for
+     *  VHDL sources documentation.
+     */
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.7
+//////////////////////////////////////////////////////////////////////////
+    /*! used in the compound documentation before a list of related symbols.
+     *
+     *  Supersedes trRelatedFunctions
+     */
+    virtual QCString trRelatedSymbols()
+    { return "Σχετικά Σύμβολα"; }
+
+    /*! subscript for the related symbols
+     *
+     *  Supersedes trRelatedSubscript
+     */
+    virtual QCString trRelatedSymbolsSubscript()
+    { return "(Προσέξτε ότι αυτά δεν είναι σύμβολα μέλη.)"; }
+
+    /*! used in the class documentation as a header before the list of all
+     * related classes.
+     *
+     * Supersedes trRelatedFunctionDocumentation
+     */
+    virtual QCString trRelatedSymbolDocumentation()
+    { return "Τεκμηρίωσης Φίλιων και Σχετικών Συμβόλων"; }
+
+    virtual QCString trFileMembersDescriptionTotal(FileMemberHighlight::Enum hl)
+    {
+      bool extractAll = Config_getBool(EXTRACT_ALL);
+      QCString result="Αυτή είναι μια λίστα με ";
+
+      switch (hl)
+      {
+        case FileMemberHighlight::All:
+          if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+          {
+            result+="όλες τις ";
+            if (!extractAll) result+="τεκμηριωμένες ";
+            result+="συναρτήσεις, μεταβλητές, ορισμούς προεπεξεργαστή, απαριθμήσεις και ορισμούς τύπων δεδομένων";
+          }
+          else
+          {
+            result+="όλα τα ";
+            if (!extractAll) result+="τεκμηριωμένα ";
+            result+="μέλη αρχείων";
+          }
+          break;
+        case FileMemberHighlight::Functions:
+          result+="όλες τις ";
+          if (!extractAll) result+="τεκμηριωμένες ";
+          result+="συναρτήσεις";
+          break;
+        case FileMemberHighlight::Variables:
+          result+="όλες τις ";
+          if (!extractAll) result+="τεκμηριωμένες ";
+          result+="μεταβλητές";
+          break;
+        case FileMemberHighlight::Typedefs:
+          result+="όλους τους ";
+          if (!extractAll) result+="τεκμηριωμένους ";
+          result+="ορισμούς τύπων δεδομένων";
+          break;
+        case FileMemberHighlight::Sequences:
+          result+="όλες τις ";
+          if (!extractAll) result+="τεκμηριωμένες ";
+          result+="ακολουθίες";
+          break;
+        case FileMemberHighlight::Dictionaries:
+          result+="όλα τα ";
+          if (!extractAll) result+="τεκμηριωμένα ";
+          result+="λεξικά";
+          break;
+        case FileMemberHighlight::Enums:
+          result+="όλες τις ";
+          if (!extractAll) result+="τεκμηριωμένες ";
+          result+="απαριθμήσεις";
+          break;
+        case FileMemberHighlight::EnumValues:
+          result+="όλες τις ";
+          if (!extractAll) result+="τεκμηριωμένες ";
+          result+="τιμές απαριθμήσεων";
+          break;
+        case FileMemberHighlight::Defines:
+          result+="όλες τις ";
+          if (!extractAll) result+="τεκμηριωμένες ";
+          result+="μακροεντολές";
+          break;
+        case FileMemberHighlight::Total: // for completeness
+          break;
+      }
+      result+=" με συνδέσμους ";
+      if (extractAll)
+        result+="στα αρχεία που ανήκουν:";
+      else
+        result+="στην τεκμηρίωση:";
+      return result;
+    }
+    virtual QCString trCompoundMembersDescriptionTotal(ClassMemberHighlight::Enum hl)
+    {
+      bool extractAll = Config_getBool(EXTRACT_ALL);
+      QCString result="Αυτή είναι μια λίστα με ";
+
+      switch (hl)
+      {
+        case ClassMemberHighlight::All:
+          if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+          {
+            result+="όλα τα ";
+            if (!extractAll) result+="τεκμηριωμένα ";
+            result+="πεδία δομών και ενώσεων";
+          }
+          else
+          {
+            result+="όλα τα ";
+            if (!extractAll) result+="τεκμηριωμένα ";
+            result+="μέλη κλάσεων";
+          }
+          break;
+        case ClassMemberHighlight::Functions:
+          result+="όλες τις ";
+          if (!extractAll) result+="τεκμηριωμένες ";
+          result+="συναρτήσεις";
+          break;
+        case ClassMemberHighlight::Variables:
+          result+="όλες τις ";
+          if (!extractAll) result+="τεκμηριωμένες ";
+          result+="μεταβλητές";
+          break;
+        case ClassMemberHighlight::Typedefs:
+          result+="όλους τους ";
+          if (!extractAll) result+="τεκμηριωμένους ";
+          result+="ορισμούς τύπων δεδομένων";
+          break;
+        case ClassMemberHighlight::Enums:
+          result+="όλες τις ";
+          if (!extractAll) result+="τεκμηριωμένες ";
+          result+="απαριθμήσεις";
+          break;
+        case ClassMemberHighlight::EnumValues:
+          result+="όλες τις ";
+          if (!extractAll) result+="τεκμηριωμένες ";
+          result+="τιμές απαριθμήσεων";
+          break;
+        case ClassMemberHighlight::Properties:
+          result+="όλες τις ";
+          if (!extractAll) result+="τεκμηριωμένες ";
+          result+="ιδιότητες";
+          break;
+        case ClassMemberHighlight::Events:
+          result+="όλα τα ";
+          if (!extractAll) result+="τεκμηριωμένα ";
+          result+="συμβάντα";
+          break;
+        case ClassMemberHighlight::Related:
+          result+="όλα τα ";
+          if (!extractAll) result+="τεκμηριωμένα ";
+          result+="σχετικά σύμβολα";
+          break;
+        case ClassMemberHighlight::Total: // for completeness
+          break;
+      }
+      result+=" με συνδέσμους ";
+      if (!extractAll)
+      {
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+        {
+          result+="στην τεκμηρίωση κάθε πεδίου της δομής/ένωσης:";
+        }
+        else
+        {
+          result+="στην τεκμηρίωση κάθε μέλους της κλάσης:";
+        }
+      }
+      else
+      {
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+        {
+          result+="στις δομές/ενώσεις που ανήκουν:";
+        }
+        else
+        {
+          result+="στις κλάσεις που ανήκουν:";
+        }
+      }
+      return result;
+    }
+    virtual QCString trNamespaceMembersDescriptionTotal(NamespaceMemberHighlight::Enum hl)
+    {
+      bool extractAll = Config_getBool(EXTRACT_ALL);
+      QCString result="Αυτή είναι μια λίστα με ";
+      QCString singularResult = "";
+      switch (hl)
+      {
+        case NamespaceMemberHighlight::All:
+          result+="όλα τα ";
+          if (!extractAll) result+="τεκμηριωμένα ";
+          result+="μέλη ";
+          singularResult="μέλους";
+          break;
+        case NamespaceMemberHighlight::Functions:
+          result+="όλες τις ";
+          if (!extractAll) result+="τεκμηριωμένες ";
+          result+="συναρτήσεις ";
+          singularResult="συνάρτησης";
+          break;
+        case NamespaceMemberHighlight::Variables:
+          result+="όλες τις ";
+          if (!extractAll) result+="τεκμηριωμένες ";
+          result+="μεταβλητές ";
+          singularResult="μεταβλητής";
+          break;
+        case NamespaceMemberHighlight::Typedefs:
+          result+="όλους τους ";
+          if (!extractAll) result+="τεκμηριωμένους ";
+          result+="ορισμούς τύπων δεδομένων ";
+          singularResult="ορισμού τύπου δεδομένων";
+          break;
+        case NamespaceMemberHighlight::Sequences:
+          result+="όλες τις ";
+          if (!extractAll) result+="τεκμηριωμένες ";
+          result+="ακολουθίες ";
+          singularResult="ακολουθίας";
+          break;
+        case NamespaceMemberHighlight::Dictionaries:
+          result+="όλα τα ";
+          if (!extractAll) result+="τεκμηριωμένα ";
+          result+="λεξικά ";
+          singularResult="λεξικού";
+          break;
+        case NamespaceMemberHighlight::Enums:
+          result+="όλες τις ";
+          if (!extractAll) result+="τεκμηριωμένες ";
+          result+="απαριθμήσεις ";
+          singularResult="απαρίθμησης";
+          break;
+        case NamespaceMemberHighlight::EnumValues:
+          result+="όλες τις ";
+          if (!extractAll) result+="τεκμηριωμένες ";
+          result+="τιμές απαριθμήσεων ";
+          singularResult="τιμής απαρίθμησης";
+          break;
+        case NamespaceMemberHighlight::Total: // for completeness
+          break;
+      }
+      result+="του χώρου ονομάτων, με συνδέσμους ";
+      if (extractAll)
+        result+="στην τεκμηρίωση κάθε " + singularResult + " του χώρου ονομάτων:";
+      else
+        result+="στους χώρους ονομάτων που ανήκουν:";
+      return result;
     }
 };
 

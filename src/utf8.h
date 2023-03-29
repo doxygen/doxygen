@@ -69,4 +69,7 @@ bool isUTF8CharUpperCase(const std::string &input,size_t pos);
  */
 int isUTF8NonBreakableSpace(const char *input);
 
+/** Check if the given Unicode character represents a punctuation character */
+bool isUTF8PunctuationCharacter(uint32_t unicode);
+
 #endif

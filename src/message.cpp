@@ -13,15 +13,18 @@
  *
  */
 
-#include <stdio.h>
+#include <cstdio>
+#include <cstdlib>
+#include <mutex>
+#include <atomic>
+
 #include "config.h"
 #include "debug.h"
 #include "portable.h"
 #include "message.h"
 #include "doxygen.h"
-
-#include <mutex>
-#include <atomic>
+#include "fileinfo.h"
+#include "dir.h"
 
 // globals
 static QCString        g_warnFormat;
@@ -30,6 +33,8 @@ static const char *    g_warningStr = "warning: ";
 static const char *    g_errorStr = "error: ";
 static FILE *          g_warnFile = stderr;
 static WARN_AS_ERROR_t g_warnBehavior = WARN_AS_ERROR_t::NO;
+static QCString        g_warnlogFile;
+static bool            g_warnlogTemp = false;
 static std::atomic_bool g_warnStat = false;
 static std::mutex      g_mutex;
 
@@ -37,30 +42,56 @@ void initWarningFormat()
 {
   g_warnFormat = Config_getString(WARN_FORMAT);
   g_warnLineFormat = Config_getString(WARN_LINE_FORMAT);
-  QCString logFile = Config_getString(WARN_LOGFILE);
-
-  if (!logFile.isEmpty())
+  g_warnBehavior = Config_getEnum(WARN_AS_ERROR);
+  g_warnlogFile = Config_getString(WARN_LOGFILE);
+  if (g_warnlogFile.isEmpty() && g_warnBehavior == WARN_AS_ERROR_t::FAIL_ON_WARNINGS_PRINT)
   {
-    if (logFile == "-")
+    uint32_t pid = Portable::pid();
+    g_warnlogFile.sprintf("doxygen_warnings_temp_%d.tmp",pid);
+    g_warnlogTemp = true;
+  }
+
+  if (!g_warnlogFile.isEmpty())
+  {
+    if (g_warnlogFile == "-")
     {
       g_warnFile = stdout;
     }
-    else if (!(g_warnFile = Portable::fopen(logFile,"w")))
+    else
     {
-      // point it to something valid, because warn() relies on it
-      g_warnFile = stderr;
-      err("Cannot open '%s' for writing, redirecting 'WARN_LOGFILE' output to 'stderr'\n",logFile.data());
+      FileInfo fi(g_warnlogFile.str());
+      Dir d(fi.dirPath().c_str());
+      if (!d.exists() && !d.mkdir(fi.dirPath().c_str()))
+      {
+        // point it to something valid, because warn() relies on it
+        g_warnFile = stderr;
+        err("Cannot create directory for '%s', redirecting 'WARN_LOGFILE' output to 'stderr'\n",g_warnlogFile.data());
+      }
+      else if (!(g_warnFile = Portable::fopen(g_warnlogFile,"w")))
+      {
+        // point it to something valid, because warn() relies on it
+        g_warnFile = stderr;
+        err("Cannot open '%s' for writing, redirecting 'WARN_LOGFILE' output to 'stderr'\n",g_warnlogFile.data());
+      }
     }
   }
   else
   {
     g_warnFile = stderr;
   }
-  g_warnBehavior = Config_getEnum(WARN_AS_ERROR);
   if (g_warnBehavior != WARN_AS_ERROR_t::NO)
   {
     g_warningStr = g_errorStr;
   }
+
+  // make sure the g_warnFile is closed in case we call exit and it is still open
+  std::atexit([](){
+      if (g_warnFile && g_warnFile!=stderr && g_warnFile!=stdout)
+      {
+        Portable::fclose(g_warnFile);
+        g_warnFile = nullptr;
+      }
+  });
 }
 
 
@@ -270,37 +301,38 @@ void warn_flush()
 }
 
 
-void printlex(int dbg, bool enter, const char *lexName, const char *fileName)
-{
-  const char *enter_txt = "entering";
-  const char *enter_txt_uc = "Entering";
-
-  if (!enter)
-  {
-    enter_txt = "finished";
-    enter_txt_uc = "Finished";
-  }
-
-  std::unique_lock<std::mutex> lock(g_mutex);
-  if (dbg)
-  {
-    if (fileName)
-      fprintf(stderr,"--%s lexical analyzer: %s (for: %s)\n",enter_txt, qPrint(lexName), qPrint(fileName));
-    else
-      fprintf(stderr,"--%s lexical analyzer: %s\n",enter_txt, qPrint(lexName));
-  }
-  else
-  {
-    if (fileName)
-      Debug::print(Debug::Lex,0,"%s lexical analyzer: %s (for: %s)\n",enter_txt_uc, qPrint(lexName), qPrint(fileName));
-    else
-      Debug::print(Debug::Lex,0,"%s lexical analyzer: %s\n",enter_txt_uc, qPrint(lexName));
-  }
-}
 
 extern void finishWarnExit()
 {
-  if (g_warnStat && g_warnBehavior == WARN_AS_ERROR_t::FAIL_ON_WARNINGS)
+  if (g_warnBehavior == WARN_AS_ERROR_t::FAIL_ON_WARNINGS_PRINT && g_warnlogFile != "-")
+  {
+    Portable::fclose(g_warnFile);
+    g_warnFile = nullptr;
+  }
+  if (g_warnStat && g_warnBehavior == WARN_AS_ERROR_t::FAIL_ON_WARNINGS_PRINT && g_warnlogFile != "-")
+  {
+
+    std::ifstream warnFile = Portable::openInputStream(g_warnlogFile);
+    if (!warnFile.is_open())
+    {
+      g_warnFile = stderr;
+      err("Cannot open warnings file '%s' for reading\n",g_warnlogFile.data());
+    }
+    else
+    {
+      std::string line;
+      while (getline(warnFile,line))
+      {
+        fprintf(stderr,"%s\n",line.c_str());
+      }
+      warnFile.close();
+    }
+  }
+
+  if (g_warnlogTemp) Portable::unlink(g_warnlogFile);
+
+  if (g_warnStat && (g_warnBehavior == WARN_AS_ERROR_t::FAIL_ON_WARNINGS ||
+                     g_warnBehavior == WARN_AS_ERROR_t::FAIL_ON_WARNINGS_PRINT))
   {
     Doxygen::terminating=true;
     exit(1);

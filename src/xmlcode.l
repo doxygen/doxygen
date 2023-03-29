@@ -48,6 +48,7 @@ typedef yyguts_t *yyscan_t;
 #include "filedef.h"
 #include "tooltip.h"
 #include "message.h"
+#include "debug.h"
 
 #define YY_NEVER_INTERACTIVE 1
 #define YY_NO_INPUT 1
@@ -57,7 +58,7 @@ typedef yyguts_t *yyscan_t;
 
 struct xmlcodeYY_state
 {
-  CodeOutputInterface * code;
+  OutputCodeList * code;
   QCString      curClassName;
   QCString      parmType;
   QCString      parmName;
@@ -120,6 +121,7 @@ namechar    [:A-Za-z\200-\377_0-9.-]
 esc         "&#"[0-9]+";"|"&#x"[0-9a-fA-F]+";"
 name        {namestart}{namechar}*
 comment     {open}"!--"([^-]|"-"[^-])*"--"{close}
+cdata       {open}"![CDATA["([^\]]|"\]"[^\]])*"]]"{close}
 data        "random string"
 string      \"([^"&]|{esc})*\"|\'([^'&]|{esc})*\'
 
@@ -150,6 +152,11 @@ string      \"([^"&]|{esc})*\"|\'([^'&]|{esc})*\'
                     }
 <INITIAL>{string}   {
                         startFontClass(yyscanner,"stringliteral");
+                        codifyLines(yyscanner,yytext);
+                        endFontClass(yyscanner);
+                    }
+{cdata}             {
+                        startFontClass(yyscanner,"xmlcdata");
                         codifyLines(yyscanner,yytext);
                         endFontClass(yyscanner);
                     }
@@ -232,11 +239,11 @@ static void setCurrentDoc(yyscan_t yyscanner,const QCString &anchor)
   {
     if (yyextra->searchCtx)
     {
-      yyextra->code->setCurrentDoc(yyextra->searchCtx,yyextra->searchCtx->anchor(),false);
+      Doxygen::searchIndex->setCurrentDoc(yyextra->searchCtx,yyextra->searchCtx->anchor(),false);
     }
     else
     {
-      yyextra->code->setCurrentDoc(yyextra->sourceFileDef,anchor,true);
+      Doxygen::searchIndex->setCurrentDoc(yyextra->sourceFileDef,anchor,true);
     }
   }
 }
@@ -284,7 +291,7 @@ static void startCodeLine(yyscan_t yyscanner)
     }
   }
 
-  yyextra->code->startCodeLine(yyextra->sourceFileDef);
+  yyextra->code->startCodeLine(yyextra->sourceFileDef!=0);
   yyextra->insideCodeLine = true;
 
   if (yyextra->currentFontClass)
@@ -395,7 +402,7 @@ XMLCodeParser::XMLCodeParser() : p(std::make_unique<Private>())
 {
   xmlcodeYYlex_init_extra(&p->state,&p->yyscanner);
 #ifdef FLEX_DEBUG
-  xmlcodeYYset_debug(1,p->yyscanner);
+  xmlcodeYYset_debug(Debug::isFlagSet(Debug::Lex_xmlcode)?1:0,p->yyscanner);
 #endif
   resetCodeParserState();
 }
@@ -412,8 +419,8 @@ void XMLCodeParser::resetCodeParserState()
   yyextra->currentMemberDef = 0;
 }
 
-void XMLCodeParser::parseCode(CodeOutputInterface &codeOutIntf,
-               const QCString &scopeName,
+void XMLCodeParser::parseCode(OutputCodeList &codeOutIntf,
+               const QCString &/* scopeName */,
                const QCString &input,
                SrcLangExt,
                bool isExampleBlock,
@@ -422,10 +429,10 @@ void XMLCodeParser::parseCode(CodeOutputInterface &codeOutIntf,
                int startLine,
                int endLine,
                bool inlineFragment,
-               const MemberDef *memberDef,
-               bool showLineNumbers,
+               const MemberDef * /* memberDef */,
+               bool /* showLineNumbers */,
                const Definition *searchCtx,
-               bool collectXRefs
+               bool/* collectXRefs */ 
               )
 {
   yyscan_t yyscanner = p->yyscanner;
@@ -433,7 +440,7 @@ void XMLCodeParser::parseCode(CodeOutputInterface &codeOutIntf,
 
   if (input.isEmpty()) return;
 
-  printlex(yy_flex_debug, true, __FILE__, fileDef ? qPrint(fileDef->fileName()): NULL);
+  DebugLex debugLex(Debug::Lex_xmlcode, __FILE__, fileDef ? qPrint(fileDef->fileName()): NULL);
   yyextra->fileName      = fileDef ? fileDef->fileName():"";
 
   yyextra->code = &codeOutIntf;
@@ -489,8 +496,6 @@ void XMLCodeParser::parseCode(CodeOutputInterface &codeOutIntf,
     delete yyextra->sourceFileDef;
     yyextra->sourceFileDef=0;
   }
-
-  printlex(yy_flex_debug, false, __FILE__, fileDef ? qPrint(fileDef->fileName()): NULL);
 }
 
 
