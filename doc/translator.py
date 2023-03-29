@@ -1231,15 +1231,24 @@ class TrManager:
         doxy_default = os.path.join(self.script_path, '..')
         self.doxy_path = os.path.abspath(os.getenv('DOXYGEN', doxy_default))
 
+        self.internal = False
+        if sys.argv[1] == '--doc':
+            self.internal = False
+        elif sys.argv[1] == '--doc_internal':
+            self.internal = True
+
         # Build the path names based on the Doxygen's root knowledge.
-        self.doc_path = os.path.join(self.doxy_path, 'doc')
+        if self.internal:
+            self.doc_path = os.path.join(self.doxy_path, 'doc_internal')
+        else:
+            self.doc_path = os.path.join(self.doxy_path, 'doc')
         self.src_path = os.path.join(self.doxy_path, 'src')
         #  Normally the original sources aren't in the current directory
         # (as we are in the build directory) so we have to specify the
         # original source /documentation / ... directory.
-        self.org_src_path = os.path.join(sys.argv[1], 'src')
-        self.org_doc_path = os.path.join(sys.argv[1], 'doc')
-        self.org_doxy_path = sys.argv[1]
+        self.org_src_path = os.path.join(sys.argv[2], 'src')
+        self.org_doc_path = os.path.join(sys.argv[2], 'doc')
+        self.org_doxy_path = sys.argv[2]
 
         # Create the empty dictionary for Transl object identified by the
         # class identifier of the translator.
@@ -1265,7 +1274,11 @@ class TrManager:
         # Set the names of the translator report text file, of the template
         # for generating "Internationalization" document, for the generated
         # file itself, and for the maintainers list.
-        self.translatorReportFileName = 'translator_report.txt'
+
+        if self.internal:
+            self.translatorReportFileName = 'translator_report.md'
+        else:
+            self.translatorReportFileName = 'translator_report.txt'
         self.maintainersFileName = 'maintainers.txt'
         self.languageTplFileName = 'language.tpl'
         self.languageDocFileName = 'language.doc'
@@ -1525,7 +1538,11 @@ class TrManager:
         f = xopen(output, 'w')
 
         # Output the information about the version.
-        f.write('(' + self.doxVersion + ')\n\n')
+        if self.internal:
+            f.write('@page pg_trans Translator report\n\n')
+            f.write('@verbatim\n\n')
+        else:
+            f.write('(' + self.doxVersion + ')\n\n')
 
         # Output the information about the number of the supported languages
         # and the list of the languages.
@@ -1691,6 +1708,9 @@ class TrManager:
             obj = self.__translDic[c]
             assert(obj.classId != 'Translator')
             obj.report(f)
+
+        if self.internal:
+            f.write('\n\n@endverbatim\n')
 
         # Close the report file and the auxiliary file with e-mails.
         f.close()
