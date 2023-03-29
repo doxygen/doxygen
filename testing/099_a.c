@@ -12,7 +12,7 @@
 /**
  * @brief E in a.c
  */
-enum E {
+typedef enum E {
   /**
    * @brief A in a.c
    */
@@ -22,4 +22,4 @@ enum E {
    * @brief B in a.c
    */
   B
-};
+} E;

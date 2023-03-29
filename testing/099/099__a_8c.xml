@@ -32,6 +32,22 @@
         <location file="099_a.c" line="15" column="1" bodyfile="099_a.c" bodystart="15" bodyend="25"/>
       </memberdef>
     </sectiondef>
+    <sectiondef kind="typedef">
+      <memberdef kind="typedef" id="099__a_8c_1a620c373f942e951632e076054ad2d057" prot="public" static="no">
+        <type>enum <ref refid="099__a_8c_1aa57b8491d1d8fc1014dd54bcf83b130a" kindref="member">E</ref></type>
+        <definition>typedef enum E E</definition>
+        <argsstring/>
+        <name>E</name>
+        <briefdescription>
+          <para>E in a.c. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="099_a.c" line="25" column="3"/>
+      </memberdef>
+    </sectiondef>
     <briefdescription>
       <para>a.c </para>
     </briefdescription>
