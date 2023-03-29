@@ -1892,33 +1892,54 @@ void HtmlDocVisitor::operator()(const DocParamSect &s)
   forceEndParagraph(s);
   QCString className;
   QCString heading;
+  bool isCollapsible = false;
   switch(s.type())
   {
     case DocParamSect::Param:
       heading=theTranslator->trParameters();
+      isCollapsible = Config_getEnumListSet(COLLAPSIBLE, COLLAPSIBLE_t::param);
       className="params";
       break;
     case DocParamSect::RetVal:
       heading=theTranslator->trReturnValues();
+      isCollapsible = Config_getEnumListSet(COLLAPSIBLE, COLLAPSIBLE_t::retval);
       className="retval";
       break;
     case DocParamSect::Exception:
       heading=theTranslator->trExceptions();
+      isCollapsible = Config_getEnumListSet(COLLAPSIBLE, COLLAPSIBLE_t::exception);
       className="exception";
       break;
     case DocParamSect::TemplateParam:
       heading=theTranslator->trTemplateParameters();
+      isCollapsible = Config_getEnumListSet(COLLAPSIBLE, COLLAPSIBLE_t::tparam);
       className="tparams";
       break;
     default:
       ASSERT(0);
   }
-  m_t << "<dl class=\"" << className << "\"><dt>";
-  m_t << heading;
-  m_t << "</dt><dd>\n";
+
+  if (isCollapsible)
+  {
+    m_t << "<details class=\"" << className << "\">\n";
+    m_t << "<summary class=\"" << className << "\">" << heading << "</summary>\n";
+    // so we get the right indentation inside the details section but no extra heading
+    m_t << "<dl class=\"" << className << "\"><dt>";
+    m_t << "</dt><dd>\n";
+  }
+  else
+  {
+    m_t << "<dl class=\"" << className << "\"><dt>";
+    m_t << heading;
+    m_t << "</dt><dd>\n";
+  }
   m_t << "  <table class=\"" << className << "\">\n";
   visitChildren(s);
   m_t << "  </table>\n";
+  if (isCollapsible)
+  {
+    m_t << "</details>\n";
+  }
   m_t << "  </dd>\n";
   m_t << "</dl>\n";
   forceStartParagraph(s);

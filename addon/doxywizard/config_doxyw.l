@@ -25,6 +25,7 @@
 #include "input.h"
 #include "inputbool.h"
 #include "inputstring.h"
+#include "inputstrlist.h"
 #include "inputobsolete.h"
 #include "config_msg.h"
 
@@ -211,11 +212,18 @@ static void processList()
   const QByteArray s = stripComment(g_str.trimmed());
   int l = s.length();
 
+  InputStrList *cur = dynamic_cast<InputStrList *>(g_curOption);
+
   QByteArray elemStr;
 
   // helper to push elemStr to the list and clear it
-  auto addElem = [&elemStr]()
+  auto addElem = [&elemStr,cur]()
   {
+    if (g_isEnum)
+    {
+      elemStr = cur->checkEnumVal(g_codec->decode(elemStr)).toUtf8();
+      if (!elemStr.isEmpty() && g_arg->toStringList().contains(g_codec->decode(elemStr))) elemStr="";
+    }
     if (!elemStr.isEmpty())
     {
       //printf("Processed list element '%s'\n",e.data());
@@ -234,7 +242,7 @@ static void processList()
     {
       if (i<l-1 && s.at(i+1)=='"') // unescape the quote character
       {
-        elemStr+='"';
+       elemStr+='"';
       }
       else // keep other escaped characters in escaped form
       {
@@ -419,6 +427,7 @@ static const char *stateToString(int state);
 					     switch(g_curOption->kind())
 					     {
 					       case Input::StrList:
+                                                 g_isEnum = dynamic_cast<InputStrList *>(g_curOption)->listMode() == InputStrList::ListEnum;
 						 *g_arg = QStringList();
 					         BEGIN(GetStrList);
 					         break;

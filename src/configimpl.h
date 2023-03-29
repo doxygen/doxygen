@@ -122,7 +122,7 @@ class ConfigInfo : public ConfigOption
 class ConfigList : public ConfigOption
 {
   public:
-    enum WidgetType { String, File, Dir, FileAndDir };
+    enum WidgetType { String, File, Dir, FileAndDir, Enum };
     ConfigList(const char *name,const char *doc)
       : ConfigOption(O_List)
     {
@@ -131,6 +131,7 @@ class ConfigList : public ConfigOption
       m_widgetType = String;
     }
     void addValue(const char *v) { m_defaultValue.push_back(v); }
+    void addListEnumValue(const char *v) { m_valueRange.push_back(v); }
     void setWidgetType(WidgetType w) { m_widgetType = w; }
     WidgetType widgetType() const { return m_widgetType; }
     StringVector *valueRef() { return &m_value; }
@@ -140,9 +141,11 @@ class ConfigList : public ConfigOption
     void compareDoxyfile(TextStream &t,Config::CompareMode compareMode);
     void writeXMLDoxyfile(TextStream &t);
     void substEnvVars();
+    void convertStrToVal(Config::CompareMode compareMode);
     void init() { m_value = m_defaultValue; }
     bool isDefault();
   private:
+    std::vector<QCString> m_valueRange;
     StringVector m_value;
     StringVector m_defaultValue;
     WidgetType m_widgetType;

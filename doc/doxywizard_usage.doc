@@ -207,6 +207,9 @@ The representation of the input field depends on the type of the configuration o
     <br>and in case both files and folders are allowed, the look is:<br>
     \image{inline} html expert_list_filedir.png
     \image{inline} latex expert_list_filedir.png width=11.9cm
+    <br>and in case the values can only be chosen from a fixed set of values, the look is:<br>
+    \image{inline} html expert_list_enum.png
+    \image{inline} latex expert_list_enum.png width=11.7cm
 </ul>
 
 \section dw_run Run tab

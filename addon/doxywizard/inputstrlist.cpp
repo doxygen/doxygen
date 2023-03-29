@@ -13,7 +13,9 @@
 #include "inputstrlist.h"
 #include "helplabel.h"
 #include "doxywizard.h"
+#include "config_msg.h"
 #include "config.h"
+#include "nowheelcombo.h"
 
 #include <QToolBar>
 #include <QGridLayout>
@@ -27,12 +29,19 @@ InputStrList::InputStrList( QGridLayout *layout,int &row,
                             const QString & id,
                             const QStringList &sl, ListMode lm,
                             const QString & docs)
-  : m_default(sl), m_strList(sl), m_docs(docs), m_id(id)
+  : m_default(sl), m_strList(sl), m_lm(lm), m_docs(docs), m_id(id)
 {
   m_lab = new HelpLabel( id );
 
-  m_le  = new QLineEdit;
-  m_le->clear();
+  if (lm==ListEnum)
+  {
+    m_com = new NoWheelComboBox;
+  }
+  else
+  {
+    m_le  = new QLineEdit;
+    m_le->clear();
+  }
 
   QToolBar *toolBar = new QToolBar;
   toolBar->setIconSize(QSize(24,24));
@@ -42,9 +51,12 @@ InputStrList::InputStrList( QGridLayout *layout,int &row,
   m_del = toolBar->addAction(QIcon(QString::fromLatin1(":/images/del.png")),QString(),
                              this,SLOT(delString()));
   m_del->setToolTip(tr("Delete selected item"));
-  m_upd = toolBar->addAction(QIcon(QString::fromLatin1(":/images/refresh.png")),QString(),
-                             this,SLOT(updateString()));
-  m_upd->setToolTip(tr("Update selected item"));
+  if (!m_com)
+  {
+    m_upd = toolBar->addAction(QIcon(QString::fromLatin1(":/images/refresh.png")),QString(),
+                               this,SLOT(updateString()));
+    m_upd->setToolTip(tr("Update selected item"));
+  }
 
   m_lb  = new QListWidget;
   //m_lb->setMinimumSize(400,100);
@@ -68,7 +80,8 @@ InputStrList::InputStrList( QGridLayout *layout,int &row,
     }
   }
   QHBoxLayout *rowLayout = new QHBoxLayout;
-  rowLayout->addWidget( m_le );
+  if (m_le)  rowLayout->addWidget( m_le );
+  if (m_com) rowLayout->addWidget( m_com );
   rowLayout->addWidget( toolBar );
   layout->addWidget( m_lab,      row,0 );
   layout->addLayout( rowLayout,  row,1,1,2 );
@@ -77,8 +90,8 @@ InputStrList::InputStrList( QGridLayout *layout,int &row,
 
   m_value = m_strList;
 
-  connect(m_le,   SIGNAL(returnPressed()),
-          this, SLOT(addString()) );
+  if (m_le) connect(m_le,   SIGNAL(returnPressed()),
+                    this,   SLOT(addString()) );
   connect(m_lb,   SIGNAL(currentTextChanged(const QString &)),
           this, SLOT(selectText(const QString &)));
   connect( m_lab, SIGNAL(enter()), SLOT(help()) );
@@ -93,7 +106,7 @@ void InputStrList::help()
 
 void InputStrList::addString()
 {
-  if (!m_le->text().isEmpty())
+  if (m_le && !m_le->text().isEmpty())
   {
     m_lb->addItem(m_le->text());
     m_strList.append(m_le->text());
@@ -101,6 +114,15 @@ void InputStrList::addString()
     updateDefault();
     emit changed();
     m_le->clear();
+  }
+  if (m_com && !m_com->currentText().isEmpty())
+  {
+    if (m_strList.contains(m_com->currentText())) return;
+    m_lb->addItem(m_com->currentText());
+    m_strList.append(m_com->currentText());
+    m_value = m_strList;
+    updateDefault();
+    emit changed();
   }
 }
 
@@ -119,7 +141,7 @@ void InputStrList::delString()
 
 void InputStrList::updateString()
 {
-  if (m_lb->currentRow()!=-1 && !m_le->text().isEmpty())
+  if (m_lb->currentRow()!=-1 && m_le && !m_le->text().isEmpty())
   {
     m_lb->currentItem()->setText(m_le->text());
     m_strList.insert(m_lb->currentRow(),m_le->text());
@@ -132,16 +154,17 @@ void InputStrList::updateString()
 
 void InputStrList::selectText(const QString &s)
 {
-  m_le->setText(s);
+  if (m_le) m_le->setText(s);
 }
 
 void InputStrList::setEnabled(bool state)
 {
   m_lab->setEnabled(state);
-  m_le->setEnabled(state);
+  if (m_le) m_le->setEnabled(state);
+  if (m_com) m_com->setEnabled(state);
   m_add->setEnabled(state);
   m_del->setEnabled(state);
-  m_upd->setEnabled(state);
+  if (m_upd) m_upd->setEnabled(state);
   m_lb->setEnabled(state);
   if (m_brFile) m_brFile->setEnabled(state);
   if (m_brDir)  m_brDir->setEnabled(state);
@@ -174,7 +197,7 @@ void InputStrList::browseFiles()
       updateDefault();
       emit changed();
     }
-    m_le->setText(m_strList[0]);
+    if (m_le) m_le->setText(m_strList[0]);
   }
 }
 
@@ -199,13 +222,13 @@ void InputStrList::browseDir()
     m_value = m_strList;
     updateDefault();
     emit changed();
-    m_le->setText(dirName);
+    if (m_le) m_le->setText(dirName);
   }
 }
 
 void InputStrList::setValue(const QStringList &sl)
 {
-  m_le->clear();
+  if (m_le) m_le->clear();
   m_lb->clear();
   m_strList = sl;
   for (int i=0;i<m_strList.size();i++)
@@ -213,6 +236,30 @@ void InputStrList::setValue(const QStringList &sl)
     m_lb->addItem(m_strList[i].trimmed());
   }
   updateDefault();
+}
+
+void InputStrList::addValue(QString s)
+{
+  if (m_com)
+  {
+    m_valueRange.append(s);
+    m_com->addItem(s);
+  }
+}
+
+QString InputStrList::checkEnumVal(const QString &value)
+{
+  QString val = value.trimmed().toLower();
+  QStringList::Iterator it;
+  for ( it= m_valueRange.begin(); it != m_valueRange.end(); ++it )
+  {
+    QString enumVal = *it;
+    if (enumVal.toLower() == val) return enumVal;
+  }
+
+  config_warn("argument '%s' for option '%s' is not a valid list enum value, skipping it."
+              ,qPrintable(value),qPrintable(m_id));
+  return QString();
 }
 
 QVariant &InputStrList::value()

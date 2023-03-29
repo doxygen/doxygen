@@ -15,24 +15,14 @@
 #include "doxywizard.h"
 #include "config_msg.h"
 #include "config.h"
+#include "nowheelcombo.h"
 
-#include <QComboBox>
 #include <QLineEdit>
 #include <QGridLayout>
 #include <QWheelEvent>
 #include <QToolBar>
 #include <QFileInfo>
 #include <QFileDialog>
-
-class NoWheelComboBox : public QComboBox
-{
-  protected:
-    void wheelEvent(QWheelEvent *e)
-    {
-      e->ignore();
-    }
-};
-
 
 InputString::InputString( QGridLayout *layout,int &row,
                           const QString & id, const QString &s,

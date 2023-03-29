@@ -81,22 +81,22 @@ class InputString : public QObject, public Input
 
   private:
     void updateDefault();
-    QLabel       *m_lab;
-    QLineEdit    *m_le;
-    QLabel       *m_im;
-    QToolBar     *m_br;
-    QAction      *m_brFile;
-    QAction      *m_brDir;
-    QComboBox    *m_com;
+    QLabel       *m_lab = NULL;
+    QLineEdit    *m_le = NULL;
+    QLabel       *m_im = NULL;
+    QToolBar     *m_br = NULL;
+    QAction      *m_brFile = NULL;
+    QAction      *m_brDir = NULL;
+    QComboBox    *m_com = NULL;
     QString       m_str;
     QString       m_default;
     StringMode    m_sm;
     QStringList   m_values;
-    int           m_index;
+    int           m_index = 0;
     QVariant      m_value;
     QString       m_docs;
     QString       m_id;
-    bool          m_absPath;
+    bool          m_absPath = false;
     QString       m_tdocs;
 };
 

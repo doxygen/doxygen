@@ -59,6 +59,7 @@ set(DOC_FILES
         expert_enum.png
         expert_int.png
         expert_list_dir.png
+        expert_list_enum.png
         expert_list_file.png
         expert_list_filedir.png
         expert_list_string.png

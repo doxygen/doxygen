@@ -18,6 +18,7 @@
 #include <QObject>
 #include <QStringList>
 
+class QComboBox;
 class QLabel;
 class QLineEdit;
 class QPushButton;
@@ -33,13 +34,16 @@ class InputStrList : public QObject, public Input
     enum ListMode { ListString  = 0,
                     ListFile    = 1,
                     ListDir     = 2,
-                    ListFileDir = ListFile | ListDir
+                    ListFileDir = ListFile | ListDir,
+                    ListEnum    = 4
                   };
 
     InputStrList( QGridLayout *layout,int &row,
                   const QString &id, const QStringList &sl,
                   ListMode v, const QString &docs);
     void setValue(const QStringList &sl);
+    void addValue(QString s);
+    QString checkEnumVal(const QString &value);
 
     QVariant &value();
     void update();
@@ -47,6 +51,7 @@ class InputStrList : public QObject, public Input
     QString docs() const { return m_docs; }
     QString id() const { return m_id; }
     QString templateDocs() const { return m_tdocs; }
+    ListMode listMode() const { return m_lm; }
     void addDependency(Input *) { Q_ASSERT(false); }
     void setEnabled(bool);
     void updateDependencies() {}
@@ -73,16 +78,19 @@ class InputStrList : public QObject, public Input
 
   private:
     void updateDefault();
-    QLabel       *m_lab;
-    QLineEdit    *m_le;
-    QAction      *m_add;
-    QAction      *m_del;
-    QAction      *m_upd;
-    QAction      *m_brFile;
-    QAction      *m_brDir;
-    QListWidget  *m_lb;
+    QLabel       *m_lab = NULL;
+    QLineEdit    *m_le = NULL;
+    QComboBox    *m_com = NULL;
+    QAction      *m_add = NULL;
+    QAction      *m_del = NULL;
+    QAction      *m_upd = NULL;
+    QAction      *m_brFile = NULL;
+    QAction      *m_brDir = NULL;
+    QListWidget  *m_lb = NULL;
+    ListMode      m_lm;
     QStringList   m_default;
     QStringList   m_strList;
+    QStringList   m_valueRange;
     QVariant      m_value;
     QString       m_docs;
     QString       m_id;
