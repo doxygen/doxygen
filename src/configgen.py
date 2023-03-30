@@ -169,29 +169,27 @@ def prepCDocs(node):
                         doc += parseDocs(n)
         if (type == 'enum'):
             values = collectValues(node)
-            doc += "<br/>Possible values are: "
+            doc += "<br/>" + possible
             rng = len(values)
             for i in range(rng):
                 val = values[i]
                 if i == rng - 2:
-                    doc += "%s and " % (val)
+                    doc += "%s%s"%(val,andtxt)
                 elif i == rng - 1:
                     doc += "%s." % (val)
                 else:
                     doc += "%s, " % (val)
             if (defval != ""):
-                doc += "<br/>The default value is: <code>%s</code>." % (defval)
+                doc += "<br/>" + defvalcode.format(defval)
         elif (type == 'int'):
             minval = node.getAttribute('minval')
             maxval = node.getAttribute('maxval')
-            doc += "<br/>%s: %s, %s: %s, %s: %s." % (" Minimum value", minval, 
-                     "maximum value", maxval,
-                     "default value", defval)
+            doc += minmaxdef.format(minval, maxval, defval)
         elif (type == 'bool'):
             if (node.hasAttribute('altdefval')):
-                doc += "<br/>%s: %s." % ("The default value is", "system dependent")
+                doc += "<br/>" + defvaltxt.format(sysdep)
             else:
-                doc += "<br/>%s: %s." % ("The default value is", "YES" if (defval == "1") else "NO")
+                doc += "<br/>" + defvaltxt.format("YES" if (defval == "1") else "NO")
         elif (type == 'list'):
             if format == 'string':
                 values = collectValues(node)
@@ -199,7 +197,7 @@ def prepCDocs(node):
                 for i in range(rng):
                     val = values[i]
                     if i == rng - 2:
-                        doc += "%s and " % (val)
+                        doc += "%s%s"%(val,andtxt)
                     elif i == rng - 1:
                         doc += "%s." % (val)
                     else:
@@ -207,43 +205,34 @@ def prepCDocs(node):
         elif (type == 'string'):
             if format == 'dir':
                 if defval != '':
-                    doc += "<br/>The default directory is: <code>%s</code>." % (
-                        defval)
+                    doc += "<br/>" + defdir.format(defval)
             elif format == 'file':
                 abspath = node.getAttribute('abspath')
                 if defval != '':
                     if abspath != '1':
-                        doc += "<br/>The default file is: <code>%s</code>." % (
-                            defval)
+                        doc += "<br/>" + deffile.format(defval)
                     else:
-                        doc += "<br/>%s: %s%s%s." % (
-                            "The default file (with absolute path) is",
-                            "<code>",defval,"</code>")
+                        doc += "<br/>" + deffileabs.format(defval)
                 else:
                     if abspath == '1':
-                        doc += "<br/>The file has to be specified with full path."
+                        doc += "<br/>" + deffilefull
             elif format =='image':
                 abspath = node.getAttribute('abspath')
                 if defval != '':
                     if abspath != '1':
-                        doc += "<br/>The default image is: <code>%s</code>." % (
-                            defval)
+                        doc += "<br/>" + defimg.format(defval)
                     else:
-                        doc += "<br/>%s: %s%s%s." % (
-                            "The default image (with absolute path) is",
-                            "<code>",defval,"</code>")
+                        doc += "<br/>" + defimgabs.format(defval)
                 else:
                     if abspath == '1':
-                        doc += "<br/>The image has to be specified with full path."
+                        doc += "<br/>" + defimgfull
             else: # format == 'string':
                 if defval != '':
-                    doc += "<br/>The default value is: <code>%s</code>." % (
-                        defval)
+                    doc += "<br/>" + defvalcode.format(defval)
         # depends handling
         if (node.hasAttribute('depends')):
             depends = node.getAttribute('depends')
-            doc += "<br/>%s \\ref cfg_%s \"%s\" is set to \\c YES." % (
-                "This tag requires that the tag", depends.lower(), depends.upper())
+            doc += "<br/>" + depstxt.format(depends.lower(), depends.upper())
 
     docC = transformDocs(doc)
     return docC;
@@ -587,12 +576,12 @@ def parseOptionDoc(node, first):
         if (type == 'enum'):
             values = collectValues(node)
             print("")
-            print("Possible values are: ")
+            print(possible)
             rng = len(values)
             for i in range(rng):
                 val = values[i]
                 if i == rng - 2:
-                    print("%s and " % (val))
+                    print("%s%s" % (val,andtxt))
                 elif i == rng - 1:
                     print("%s." % (val))
                 else:
@@ -600,26 +589,22 @@ def parseOptionDoc(node, first):
             if (defval != ""):
                 print("")
                 print("")
-                print("The default value is: <code>%s</code>." % (defval))
+                print(defvalcode.format(defval))
             print("")
         elif (type == 'int'):
             minval = node.getAttribute('minval')
             maxval = node.getAttribute('maxval')
             print("")
             print("")
-            print("%s: %s%s%s, %s: %s%s%s, %s: %s%s%s." % (
-                     " Minimum value", "<code>", minval, "</code>", 
-                     "maximum value", "<code>", maxval, "</code>",
-                     "default value", "<code>", defval, "</code>"))
+            print(minmaxdefcode.format(minval, maxval,defval))
             print("")
         elif (type == 'bool'):
             print("")
             print("")
             if (node.hasAttribute('altdefval')):
-                print("The default value is: system dependent.")
+                print(defvaltxt.format(sysdep))
             else:
-                print("The default value is: <code>%s</code>." % (
-                    "YES" if (defval == "1") else "NO"))
+                print(defvalcode.format("YES" if (defval == "1") else "NO"))
             print("")
         elif (type == 'list'):
             if format == 'string':
@@ -628,7 +613,7 @@ def parseOptionDoc(node, first):
                 for i in range(rng):
                     val = values[i]
                     if i == rng - 2:
-                        print("%s and " % (val))
+                        print("%s%s" % (val,andtxt))
                     elif i == rng - 1:
                         print("%s." % (val))
                     else:
@@ -638,50 +623,41 @@ def parseOptionDoc(node, first):
             if format == 'dir':
                 if defval != '':
                     print("")
-                    print("The default directory is: <code>%s</code>." % (
-                        defval))
+                    print(defdir.format(defval))
             elif format == 'file':
                 abspath = node.getAttribute('abspath')
                 if defval != '':
                     print("")
                     if abspath != '1':
-                        print("The default file is: <code>%s</code>." % (
-                            defval))
+                        print(deffile.format(defval))
                     else:
-                        print("%s: %s%s%s." % (
-                            "The default file (with absolute path) is",
-                            "<code>",defval,"</code>"))
+                        print(deffileabs.format(defval))
                 else:
                     if abspath == '1':
                         print("")
-                        print("The file has to be specified with full path.")
+                        print(deffilefull)
             elif format =='image':
                 abspath = node.getAttribute('abspath')
                 if defval != '':
                     print("")
                     if abspath != '1':
-                        print("The default image is: <code>%s</code>." % (
-                            defval))
+                        print(defimg.format(defval))
                     else:
-                        print("%s: %s%s%s." % (
-                            "The default image (with absolute path) is",
-                            "<code>",defval,"</code>"))
+                        print(defimgabs.format(defval))
                 else:
                     if abspath == '1':
                         print("")
-                        print("The image has to be specified with full path.")
+                        print(defimgfull)
             else: # format == 'string':
                 if defval != '':
                     print("")
-                    print("The default value is: <code>%s</code>." % (
-                        defval.replace('\\','\\\\')))
+                    print(defvalcode.format(defval.replace('\\','\\\\')))
             print("")
         # depends handling
         if (node.hasAttribute('depends')):
             depends = node.getAttribute('depends')
             print("")
-            print("%s \\ref cfg_%s \"%s\" is set to \\c YES." % (
-                "This tag requires that the tag", depends.lower(), depends.upper()))
+            print(depstxt.format(depends.lower(), depends.upper()))
         return False
 
 
@@ -716,7 +692,7 @@ def parseDocs(node):
     for n in node.childNodes:
         if n.nodeType == Node.TEXT_NODE:
             doc += n.nodeValue.strip()
-        if n.nodeType == Node.CDATA_SECTION_NODE:
+        elif n.nodeType == Node.CDATA_SECTION_NODE:
             doc += n.nodeValue.rstrip("\r\n ").lstrip("\r\n")
     #doc += "<br>"
     return doc
@@ -742,6 +718,98 @@ def parseFooterDoc(node):
     print(doc)
 
 
+def setDefaultGenerate():
+    global minmaxdef
+    global minmaxdefcode
+    global possible
+    global defvaltxt
+    global defvalcode
+    global sysdep
+    global defdir
+    global deffile
+    global deffileabs
+    global deffilefull
+    global defimg
+    global defimgabs
+    global defimgfull
+    global depstxt
+    global andtxt
+
+    minmaxdef = "<br/> Minimum value: {0}, maximum value: {1}, default value: {2}."
+    minmaxdefcode = " Minimum value: <code>{0}</code>, maximum value: <code>{1}</code>, default value: <code>{2}</code>."
+    possible = "Possible values are: "
+    defvaltxt = "The default value is: {0}."
+    defvalcode = "The default value is: <code>{0}</code>."
+    sysdep = "system dependent"
+    defdir = "The default directory is: <code>{0}</code>."
+    deffile = "The default file is: <code>{0}</code>."
+    deffileabs = "The default file (with absolute path) is <code>{0}</code>"
+    deffilefull = "The file has to be specified with full path."
+    defimg = "The default image is: <code>{0}</code>."
+    defimgabs = "The default image (with absolute path) is <code>{0}</code>"
+    defimgfull = "The image has to be specified with full path."
+    depstxt = "This tag requires that the tag \\ref cfg_{0} \"{1}\" is set to \\c YES."
+    andtxt = " and "
+
+def parseGenerate(node):
+    global minmaxdef
+    global minmaxdefcode
+    global possible
+    global defvaltxt
+    global defvalcode
+    global sysdep
+    global defdir
+    global deffile
+    global deffileabs
+    global deffilefull
+    global defimg
+    global defimgabs
+    global defimgfull
+    global depstxt
+    global andtxt
+
+    for n in node.childNodes:
+        if n.nodeType == Node.ELEMENT_NODE:
+            if (n.nodeName == "format"):
+                name = n.getAttribute('name')
+                doc = ""
+                for n1 in n.childNodes:
+                    if n1.nodeType == Node.TEXT_NODE:
+                        doc += n1.nodeValue.strip()
+                    elif n1.nodeType == Node.CDATA_SECTION_NODE:
+                        doc += n1.nodeValue.rstrip("\r\n").lstrip("\r\n")
+                if (name == "minmaxdef"):
+                    minmaxdef = doc
+                elif (name == "minmaxdefcode"):
+                    minmaxdefcode = doc
+                elif (name == "possible"):
+                    possible = doc
+                elif (name == "defvaltxt"):
+                    defvaltxt = doc
+                elif (name == "defvalcode"):
+                    defvalcode = doc
+                elif (name == "sydep"):
+                    sydep = doc
+                elif (name == "defdir"):
+                    defdir = doc
+                elif (name == "deffile"):
+                    deffile = doc
+                elif (name == "deffileabs"):
+                    deffileabs = doc
+                elif (name == "deffilefull"):
+                    deffilefull = doc
+                elif (name == "defimg"):
+                    defimg = doc
+                elif (name == "defimgabs"):
+                    defimgabs = doc
+                elif (name == "defimgfull"):
+                    defimgfull = doc
+                elif (name == "depstxt"):
+                    depstxt = doc
+                elif (name == "andtxt"):
+                    andtxt = doc
+
+
 def main():
     if len(sys.argv)<3 or (not sys.argv[1] in ['-doc','-cpp','-wiz','-maph','-maps']):
         sys.exit('Usage: %s -doc|-cpp|-wiz|-maph|-maps config.xml' % sys.argv[0])
@@ -759,6 +827,13 @@ def main():
         print("")
         sys.exit(1)
     elem = doc.documentElement
+
+    setDefaultGenerate()
+    for n in elem.childNodes:
+        if n.nodeType == Node.ELEMENT_NODE:
+            if (n.nodeName == "generate"):
+                parseGenerate(n)
+
     if (sys.argv[1] == "-doc"):
         print("/* WARNING: This file is generated!")
         print(" * Do not edit this file, but edit config.xml instead and run")

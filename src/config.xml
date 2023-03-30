@@ -4108,4 +4108,21 @@ This setting is not only used for dot files but also for msc temporary files.
     <option type='obsolete' orgtype='bool' id='FORMULA_TRANSPARENT'/>
     <option type='obsolete' orgtype='bool' id='DOT_TRANSPARENT'/>
   </group>
+  <generate>
+    <format name='minmaxdef'><![CDATA[<br/> Minimum value: {0}, maximum value: {1}, default value: {2}.]]></format>
+    <format name='minmaxdefcode'><![CDATA[ Minimum value: <code>{0}</code>, maximum value: <code>{1}</code>, default value: <code>{2}</code>.]]></format>
+    <format name='possible'><![CDATA[Possible values are: ]]></format>
+    <format name='defvaltxt'><![CDATA[The default value is: {0}.]]></format>
+    <format name='defvalcode'><![CDATA[The default value is: <code>{0}</code>.]]></format>
+    <format name='sysdep'><![CDATA[system dependent]]></format>
+    <format name='defdir'><![CDATA[The default directory is: <code>{0}</code>.]]></format>
+    <format name='deffile'><![CDATA[The default file is: <code>{0}</code>.]]></format>
+    <format name='deffileabs'><![CDATA[The default file (with absolute path) is <code>{0}</code>]]></format>
+    <format name='deffilefull'><![CDATA[The file has to be specified with full path.]]></format>
+    <format name='defimg'><![CDATA[The default image is: <code>{0}</code>.]]></format>
+    <format name='defimgabs'><![CDATA[The default image (with absolute path) is <code>{0}</code>]]></format>
+    <format name='defimgfull'><![CDATA[The image has to be specified with full path.]]></format>
+    <format name='depstxt'><![CDATA[This tag requires that the tag \ref cfg_{0} "{1}" is set to \c YES.]]></format>
+    <format name='andtxt'><![CDATA[ and ]]></format>
+  </generate>
 </doxygenconfig>
