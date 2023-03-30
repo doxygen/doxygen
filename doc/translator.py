@@ -1092,6 +1092,7 @@ class Transl:
         # Check whether adapter must be used or suggest the newest one.
         # Change the status and set the note accordingly.
         if self.baseClassId != 'Translator':
+            justUpdateNeesedMessage = True
             if not self.missingMethods:
                 self.note = 'Change the base class to Translator.'
                 self.status = ''
@@ -1106,8 +1107,13 @@ class Transl:
                     if uniProto in adaptDic:
                         version, cls = adaptDic[uniProto]
                         if version < adaptMinVersion:
+                            justUpdateNeesedMessage = False
                             adaptMinVersion = version
                             adaptMinClass = cls
+
+                if justUpdateNeesedMessage:
+                    self.note = 'Change the base class to Translator.'
+                    self.status = ''
 
                 # Test against the current status -- preserve the self.status.
                 # Possibly, the translator implements enough methods to
@@ -1117,7 +1123,7 @@ class Transl:
                 # If the version of the used adapter is smaller than
                 # the required, set the note and update the status as if
                 # the newer adapter was used.
-                if adaptMinVersion > status:
+                if not justUpdateNeesedMessage and adaptMinVersion > status:
                     self.note = 'Change the base class to %s.' % adaptMinClass
                     self.status = adaptMinVersion
                     self.adaptMinClass = adaptMinClass
