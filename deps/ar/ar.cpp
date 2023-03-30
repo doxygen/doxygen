@@ -1,17 +1,12 @@
-#include "dijkstra.hpp"
-#include <algorithm>
-#include <cstdio>
-#include <functional>
-#include <iomanip>
-#include <iostream>
-#include <optional>
-#include <string>
-#include <unordered_map>
-#include <vector>
+#include "ar.h"
 
-#include "fuzzy.h"
-
-namespace ar {
+using ar::Dictionary;
+using ar::LongForm;
+using ar::Lmatch;
+using ar::nonDictWords;
+using ar::matches;
+using ar::Phi;
+using ar::Cfunc;
 
 using Dijkstra::Edge;
 using Dijkstra::Graph;
@@ -25,15 +20,7 @@ using std::pair;
 using std::string;
 using std::vector;
 
-using Dictionary = vector<pair<string, int>>;
-using LongForm = vector<string>;
-using Lmatch = vector<string>;
-using nonDictWords = vector<string>;
-using matches = vector<pair<string, string>>;
-using Phi = function<int(string &)>;
-using Cfunc = function<int(string &)>;
-
-LongForm expand_known_abbr(nonDictWords nonDictWords, Dictionary D) {
+LongForm ar::expand_known_abbr(nonDictWords nonDictWords, Dictionary D) {
   LongForm retvec;
 
   return retvec;
@@ -62,7 +49,7 @@ bool is_consonant(char character) {
   return !is_vowels(character);
 }
 
-void check_vowels_consonants(string word, int &vowels, int &consonants) {
+void ar::check_vowels_consonants(string word, int &vowels, int &consonants) {
   for (auto each : word) {
     if (is_vowels(each)) {
       vowels += 1;
@@ -73,12 +60,8 @@ void check_vowels_consonants(string word, int &vowels, int &consonants) {
   }
 }
 
-Lmatch split_matching(string ident, vector<Dictionary> D);
-vector<string> string_matching(std::string token, Dictionary D, Phi phi,
-                               Cfunc cost);
-
-LongForm expansion_matching(nonDictWords nonDictWords, Dictionary D) {
-  LongForm retvec = expand_known_abbr(nonDictWords, D);
+LongForm ar::expansion_matching(nonDictWords nonDictWords, Dictionary D) {
+  LongForm retvec = ar::expand_known_abbr(nonDictWords, D);
 
   LongForm toExpand;
   std::copy_if(nonDictWords.begin(), nonDictWords.end(), toExpand.begin(),
@@ -114,14 +97,7 @@ LongForm expansion_matching(nonDictWords nonDictWords, Dictionary D) {
   return retvec;
 }
 
-// A function to compute the matching sequence between two strings
-std::ostream &operator<<(std::ostream &os, Node &dt) {
-  os << "word: " << dt.word << " slice: " << dt.slice << " cost: " << dt.cost
-     << " i: " << dt.i << " j: " << dt.j;
-  return os;
-}
-
-Lmatch string_matching(std::string token, Dictionary D, Phi phi, Cfunc cost) {
+Lmatch ar::string_matching(std::string token, Dictionary D, Phi phi, Cfunc cost) {
   // Graph G = initializeMatchingGraph(token);
   //
   // int index = 0;
@@ -181,7 +157,6 @@ Lmatch string_matching(std::string token, Dictionary D, Phi phi, Cfunc cost) {
           .i = i,
           .j = j,
           .word = last,
-          .slice = first,
           .cost = cost(last),
       };
       auto s_first = token.substr(any.i, any.i + 1);
@@ -192,12 +167,10 @@ Lmatch string_matching(std::string token, Dictionary D, Phi phi, Cfunc cost) {
     }
   }
 
-  Node start = {.i = 0,
-                .j = 0,
-                .word = token,
-                .slice = string{token[0]},
-                .cost = 0};
-  Node end = {(int) token.length() - 1, (int) token.length(), token, token, (int)token.size()};
+  Node start = {
+      .i = 0, .j = 0, .word = token, .cost = 0};
+  Node end = {(int)token.length() - 1, (int)token.length(), token,
+              (int)token.size()};
   auto best_path = Dijkstra::dijkstra(G, token, start, end);
 
   cout << "RESULT" << endl;
@@ -213,7 +186,7 @@ Lmatch string_matching(std::string token, Dictionary D, Phi phi, Cfunc cost) {
   return getEdgeLabels(path, G);
 }
 
-Lmatch split_matching(string ident, vector<Dictionary> D) {
+Lmatch ar::split_matching(string ident, vector<Dictionary> D) {
   Lmatch retvec;
 
   Phi phi = [&D](string word) {
@@ -247,78 +220,4 @@ Lmatch split_matching(string ident, vector<Dictionary> D) {
     }
   }
   return retvec;
-}
-
-} // namespace ar
-
-#include <math.h>
-
-int main(void) {
-
-  // std::string token = "hel";
-  // ar::vector<ar::Dictionary> D = {{
-  //     {"hello", 3},
-  //     {"help", 1},
-  //     {"hollow", 2},
-  //     {"hallo", 2},
-  //     {"heal", 1},
-  //     {"heel", 1},
-  //     {"basketball", 4},
-  //     {"bicycle", 3},
-  // }};
-
-  std::string token = "getpnt";
-  ar::vector<ar::Dictionary> D = {{
-      {"get", 3},
-      {"getter", 1},
-      {"great", 2},
-      {"hallo", 2},
-      {"pointer", 3},
-      {"point", 4},
-      {"past", 2},
-      {"bicycle", 3},
-  }};
-
-  // std::string token = "avg";
-  // ar::vector<ar::Dictionary> D = {{
-  //   {"average", 3},
-  // }};
-
-  ar::Phi phi = [&token](std::string &word) {
-    int max = std::min(token.size(), word.size());
-    int counter = 0;
-    for (auto index = 0; index < max; index++) {
-      if (token[index] == word[index]) {
-        counter++;
-      }
-    }
-    if (counter == max) {
-      return 1;
-    }
-
-    return 0;
-
-    // return (int)floor(word.length() / log(word.length()));
-  }; // tolerance function always returns 1
-
-  ar::Cfunc cost = [&D](ar::string &word) {
-    for (auto dict : D) {
-      auto res = std::find_if(dict.begin(), dict.end(),
-                              [&word](ar::pair<ar::string, int> &match) {
-                                return match.first == word;
-                              });
-      if (res != dict.end()) {
-        std::cout << res->first << " " << res->second << std::endl;
-        return res->second;
-      }
-    }
-    return -1;
-  }; // cost function returns length of word
-  std::vector<std::string> labels = ar::string_matching(token, D[0], phi, cost);
-  printf("DONE\n");
-  for (std::string label : labels) {
-    std::cout << "found: " << label << " ";
-  }
-  std::cout << std::endl;
-  return 0;
 }
