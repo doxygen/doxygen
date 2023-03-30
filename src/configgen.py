@@ -19,6 +19,8 @@ import textwrap
 from xml.dom import minidom, Node
 import io
 
+messages = {}
+
 # wrapper class to write to file/output in UTF-8 format
 class OutputWriter:
     def __init__(self,writer) :
@@ -169,27 +171,27 @@ def prepCDocs(node):
                         doc += parseDocs(n)
         if (type == 'enum'):
             values = collectValues(node)
-            doc += "<br/>" + possible
+            doc += "<br/>" + messages['possible']
             rng = len(values)
             for i in range(rng):
                 val = values[i]
                 if i == rng - 2:
-                    doc += "%s%s"%(val,andtxt)
+                    doc += "%s%s"%(val,messages['andtxt'])
                 elif i == rng - 1:
                     doc += "%s." % (val)
                 else:
                     doc += "%s, " % (val)
             if (defval != ""):
-                doc += "<br/>" + defvalcode.format(defval)
+                doc += "<br/>" + messages['defvalcode'].format(defval)
         elif (type == 'int'):
             minval = node.getAttribute('minval')
             maxval = node.getAttribute('maxval')
-            doc += minmaxdef.format(minval, maxval, defval)
+            doc += messages['minmaxdef'].format(minval, maxval, defval)
         elif (type == 'bool'):
             if (node.hasAttribute('altdefval')):
-                doc += "<br/>" + defvaltxt.format(sysdep)
+                doc += "<br/>" + messages['defvaltxt'].format(messages['sysdep'])
             else:
-                doc += "<br/>" + defvaltxt.format("YES" if (defval == "1") else "NO")
+                doc += "<br/>" + messages['defvaltxt'].format("YES" if (defval == "1") else "NO")
         elif (type == 'list'):
             if format == 'string':
                 values = collectValues(node)
@@ -197,7 +199,7 @@ def prepCDocs(node):
                 for i in range(rng):
                     val = values[i]
                     if i == rng - 2:
-                        doc += "%s%s"%(val,andtxt)
+                        doc += "%s%s"%(val,messages['andtxt'])
                     elif i == rng - 1:
                         doc += "%s." % (val)
                     else:
@@ -205,34 +207,34 @@ def prepCDocs(node):
         elif (type == 'string'):
             if format == 'dir':
                 if defval != '':
-                    doc += "<br/>" + defdir.format(defval)
+                    doc += "<br/>" + messages['defdir'].format(defval)
             elif format == 'file':
                 abspath = node.getAttribute('abspath')
                 if defval != '':
                     if abspath != '1':
-                        doc += "<br/>" + deffile.format(defval)
+                        doc += "<br/>" + messages['deffile'].format(defval)
                     else:
-                        doc += "<br/>" + deffileabs.format(defval)
+                        doc += "<br/>" + messages['deffileabs'].format(defval)
                 else:
                     if abspath == '1':
-                        doc += "<br/>" + deffilefull
+                        doc += "<br/>" + messages['deffilefull']
             elif format =='image':
                 abspath = node.getAttribute('abspath')
                 if defval != '':
                     if abspath != '1':
-                        doc += "<br/>" + defimg.format(defval)
+                        doc += "<br/>" + messages['defimg'].format(defval)
                     else:
-                        doc += "<br/>" + defimgabs.format(defval)
+                        doc += "<br/>" + messages['defimgabs'].format(defval)
                 else:
                     if abspath == '1':
-                        doc += "<br/>" + defimgfull
+                        doc += "<br/>" + messages['defimgfull']
             else: # format == 'string':
                 if defval != '':
-                    doc += "<br/>" + defvalcode.format(defval)
+                    doc += "<br/>" + messages['defvalcode'].format(defval)
         # depends handling
         if (node.hasAttribute('depends')):
             depends = node.getAttribute('depends')
-            doc += "<br/>" + depstxt.format(depends.lower(), depends.upper())
+            doc += "<br/>" + messages['depstxt'].format(depends.lower(), depends.upper())
 
     docC = transformDocs(doc)
     return docC;
@@ -576,12 +578,12 @@ def parseOptionDoc(node, first):
         if (type == 'enum'):
             values = collectValues(node)
             print("")
-            print(possible)
+            print(messages['possible'])
             rng = len(values)
             for i in range(rng):
                 val = values[i]
                 if i == rng - 2:
-                    print("%s%s" % (val,andtxt))
+                    print("%s%s" % (val,messages['andtxt']))
                 elif i == rng - 1:
                     print("%s." % (val))
                 else:
@@ -589,22 +591,22 @@ def parseOptionDoc(node, first):
             if (defval != ""):
                 print("")
                 print("")
-                print(defvalcode.format(defval))
+                print(messages['defvalcode'].format(defval))
             print("")
         elif (type == 'int'):
             minval = node.getAttribute('minval')
             maxval = node.getAttribute('maxval')
             print("")
             print("")
-            print(minmaxdefcode.format(minval, maxval,defval))
+            print(messages['minmaxdefcode'].format(minval, maxval,defval))
             print("")
         elif (type == 'bool'):
             print("")
             print("")
             if (node.hasAttribute('altdefval')):
-                print(defvaltxt.format(sysdep))
+                print(messages['defvaltxt'].format(messages['sysdep']))
             else:
-                print(defvalcode.format("YES" if (defval == "1") else "NO"))
+                print(messages['defvalcode'].format("YES" if (defval == "1") else "NO"))
             print("")
         elif (type == 'list'):
             if format == 'string':
@@ -613,7 +615,7 @@ def parseOptionDoc(node, first):
                 for i in range(rng):
                     val = values[i]
                     if i == rng - 2:
-                        print("%s%s" % (val,andtxt))
+                        print("%s%s" % (val,messages['andtxt']))
                     elif i == rng - 1:
                         print("%s." % (val))
                     else:
@@ -623,41 +625,41 @@ def parseOptionDoc(node, first):
             if format == 'dir':
                 if defval != '':
                     print("")
-                    print(defdir.format(defval))
+                    print(messages['defdir'].format(defval))
             elif format == 'file':
                 abspath = node.getAttribute('abspath')
                 if defval != '':
                     print("")
                     if abspath != '1':
-                        print(deffile.format(defval))
+                        print(messages['deffile'].format(defval))
                     else:
-                        print(deffileabs.format(defval))
+                        print(messages['deffileabs'].format(defval))
                 else:
                     if abspath == '1':
                         print("")
-                        print(deffilefull)
+                        print(messages['deffilefull'])
             elif format =='image':
                 abspath = node.getAttribute('abspath')
                 if defval != '':
                     print("")
                     if abspath != '1':
-                        print(defimg.format(defval))
+                        print(messages['defimg'].format(defval))
                     else:
-                        print(defimgabs.format(defval))
+                        print(messages['defimgabs'].format(defval))
                 else:
                     if abspath == '1':
                         print("")
-                        print(defimgfull)
+                        print(messages['defimgfull'])
             else: # format == 'string':
                 if defval != '':
                     print("")
-                    print(defvalcode.format(defval.replace('\\','\\\\')))
+                    print(messages['defvalcode'].format(defval.replace('\\','\\\\')))
             print("")
         # depends handling
         if (node.hasAttribute('depends')):
             depends = node.getAttribute('depends')
             print("")
-            print(depstxt.format(depends.lower(), depends.upper()))
+            print(messages['depstxt'].format(depends.lower(), depends.upper()))
         return False
 
 
@@ -718,59 +720,10 @@ def parseFooterDoc(node):
     print(doc)
 
 
-def setDefaultGenerate():
-    global minmaxdef
-    global minmaxdefcode
-    global possible
-    global defvaltxt
-    global defvalcode
-    global sysdep
-    global defdir
-    global deffile
-    global deffileabs
-    global deffilefull
-    global defimg
-    global defimgabs
-    global defimgfull
-    global depstxt
-    global andtxt
-
-    minmaxdef = "<br/> Minimum value: {0}, maximum value: {1}, default value: {2}."
-    minmaxdefcode = " Minimum value: <code>{0}</code>, maximum value: <code>{1}</code>, default value: <code>{2}</code>."
-    possible = "Possible values are: "
-    defvaltxt = "The default value is: {0}."
-    defvalcode = "The default value is: <code>{0}</code>."
-    sysdep = "system dependent"
-    defdir = "The default directory is: <code>{0}</code>."
-    deffile = "The default file is: <code>{0}</code>."
-    deffileabs = "The default file (with absolute path) is <code>{0}</code>"
-    deffilefull = "The file has to be specified with full path."
-    defimg = "The default image is: <code>{0}</code>."
-    defimgabs = "The default image (with absolute path) is <code>{0}</code>"
-    defimgfull = "The image has to be specified with full path."
-    depstxt = "This tag requires that the tag \\ref cfg_{0} \"{1}\" is set to \\c YES."
-    andtxt = " and "
-
-def parseGenerate(node):
-    global minmaxdef
-    global minmaxdefcode
-    global possible
-    global defvaltxt
-    global defvalcode
-    global sysdep
-    global defdir
-    global deffile
-    global deffileabs
-    global deffilefull
-    global defimg
-    global defimgabs
-    global defimgfull
-    global depstxt
-    global andtxt
-
+def parseGenerator(node):
     for n in node.childNodes:
         if n.nodeType == Node.ELEMENT_NODE:
-            if (n.nodeName == "format"):
+            if (n.nodeName == "message"):
                 name = n.getAttribute('name')
                 doc = ""
                 for n1 in n.childNodes:
@@ -778,46 +731,17 @@ def parseGenerate(node):
                         doc += n1.nodeValue.strip()
                     elif n1.nodeType == Node.CDATA_SECTION_NODE:
                         doc += n1.nodeValue.rstrip("\r\n").lstrip("\r\n")
-                if (name == "minmaxdef"):
-                    minmaxdef = doc
-                elif (name == "minmaxdefcode"):
-                    minmaxdefcode = doc
-                elif (name == "possible"):
-                    possible = doc
-                elif (name == "defvaltxt"):
-                    defvaltxt = doc
-                elif (name == "defvalcode"):
-                    defvalcode = doc
-                elif (name == "sydep"):
-                    sydep = doc
-                elif (name == "defdir"):
-                    defdir = doc
-                elif (name == "deffile"):
-                    deffile = doc
-                elif (name == "deffileabs"):
-                    deffileabs = doc
-                elif (name == "deffilefull"):
-                    deffilefull = doc
-                elif (name == "defimg"):
-                    defimg = doc
-                elif (name == "defimgabs"):
-                    defimgabs = doc
-                elif (name == "defimgfull"):
-                    defimgfull = doc
-                elif (name == "depstxt"):
-                    depstxt = doc
-                elif (name == "andtxt"):
-                    andtxt = doc
-
+                messages[name] = doc
 
 def main():
     if len(sys.argv)<3 or (not sys.argv[1] in ['-doc','-cpp','-wiz','-maph','-maps']):
         sys.exit('Usage: %s -doc|-cpp|-wiz|-maph|-maps config.xml' % sys.argv[0])
     try:
+        configFile = sys.argv[2]
         if sys.version_info.major == 2:
-            fh = open(sys.argv[2],'r')
+            fh = open(configFile,'r')
         else:
-            fh = open(sys.argv[2],'r',encoding='utf8')
+            fh = open(configFile,'r',encoding='utf8')
         sys.stdout = OutputWriter(sys.stdout)
         doc = xml.dom.minidom.parse(fh)
     except Exception as inst:
@@ -828,11 +752,12 @@ def main():
         sys.exit(1)
     elem = doc.documentElement
 
-    setDefaultGenerate()
     for n in elem.childNodes:
         if n.nodeType == Node.ELEMENT_NODE:
-            if (n.nodeName == "generate"):
-                parseGenerate(n)
+            if (n.nodeName == "generator"):
+                parseGenerator(n)
+    if len(messages)==0:
+        sys.exit('<generator> section missing in %s' % configFile)
 
     if (sys.argv[1] == "-doc"):
         print("/* WARNING: This file is generated!")
