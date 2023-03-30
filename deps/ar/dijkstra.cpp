@@ -15,8 +15,10 @@ using std::vector;
 bool Node::operator==(const Node &other) const {
   // return this->i == other.i && this->j == other.j &&
   //        this->word == other.word && this->cost == other.cost;
-  return this->cost == other.cost && this->slice == other.slice &&
-         this->word == other.word;
+  return this->cost == other.cost &&
+         this->word == other.word &&
+         this->i == other.i &&
+         this->j == other.j;
 }
 
 bool Node::operator!=(const Node &other) const {
@@ -33,10 +35,9 @@ bool Node::operator>(const Node &other) const {
   return this->cost > other.cost;
 }
 
-std::ostream &operator<<(std::ostream &os, Node &dt) {
-  os << "word: " << dt.word << " slice: " << dt.slice << " cost: " << dt.cost
-     << " i: " << dt.i << " j: " << dt.j;
-  return os;
+const void Node::print() const {
+  std::cout << "word: " << this->word << " cost: " << this->cost
+     << " i: " << this->i << " j: " << this->j << std::endl;
 }
 
 size_t Node::operator()() const { return std::hash<size_t>()(cost + i + j); }
@@ -64,11 +65,10 @@ Graph Dijkstra::initializeMatchingGraph(string token) {
     auto str = string(1, token[i]);
     auto n_str = string(1, token[i + 1]);
     Node from = {
-        .i = i, .j = (j - i), .word = str, .slice = str, .cost = INT32_MIN};
+        .i = i, .j = (j - i), .word = str, .cost = INT32_MIN};
     Node to = {.i = from.j,
                .j = from.j + 1,
                .word = n_str,
-               .slice = n_str,
                .cost = INT32_MIN};
     std::cout << str << " " << n_str << std::endl;
     G[i].push_back({to});
@@ -111,7 +111,8 @@ vector<Node> Dijkstra::dijkstra(Graph G, string token, Node start, Node end) {
   while (!frontier.empty()) {
     Node current = frontier.top();
     frontier.pop();
-    std::cout << "current: " << current << std::endl;
+    std::cout << "current: ";
+    current.print();
     if (current.j == end.j) {
       std::cout << "ENDED" << std::endl;
       break;
@@ -122,7 +123,8 @@ vector<Node> Dijkstra::dijkstra(Graph G, string token, Node start, Node end) {
     for (Edge successors : G[current.j + 1]) {
       Node successor = successors.to;
       if (explored.count(successor) == 0 && !frontier.contains(successor)) {
-        std::cout << "\t" << successor << std::endl;
+        std::cout << "\t";
+        successor.print();
         prev[successor] = current;
         frontier.push(successor);
         successor.prev = &current;
@@ -131,14 +133,15 @@ vector<Node> Dijkstra::dijkstra(Graph G, string token, Node start, Node end) {
 
       bool hasErased = false;
       Node previous = *frontier.find(successor);
-      if (previous.slice == successor.slice &&
-          previous.word == successor.word &&
+      if (previous.word == successor.word &&
           previous.cost <= successor.cost) {
         hasErased = frontier.eraseNode(previous);
       }
       if (hasErased) {
-        std::cout << "successor: " << successor << "\n\t" << previous
-                  << std::endl;
+        std::cout << "successor: ";
+        successor.print();
+        std::cout << "\t";
+        previous.print();
         prev.erase(previous);
         frontier.push(successor);
       }
@@ -150,7 +153,9 @@ vector<Node> Dijkstra::dijkstra(Graph G, string token, Node start, Node end) {
   std::cout << "BEST: " << std::endl;
 
   for (auto &[successor, current] : prev) {
-    std::cout << current.word << " -> " << successor.word << std::endl;
+    current.print();
+    std::cout  << " -> ";
+    successor.print();
   }
 
   vector<Node> path;

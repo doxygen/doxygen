@@ -13,7 +13,6 @@ struct Node {
   int i;       // index of the first character in the matching sequence
   int j;       // index of the last character in the matching sequence
   std::string word; // the word associated with this node
-  std::string slice; // the word associated with this node
   int cost;    // the cost of the path to this node
   Node *prev;
 
@@ -23,6 +22,8 @@ public:
   bool operator<(const Node &other) const;
   bool operator>(const Node &other) const;
   size_t operator()() const;
+
+  const void print() const;
 };
 
 // A struct to represent an edge in the matching graph
