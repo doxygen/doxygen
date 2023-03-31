@@ -78,7 +78,6 @@ set(DOC_FILES
         tables.doc
         grouping.doc
         htmlcmds.doc
-        index.doc
         index.hhp.txt
         infoflow.eps
         infoflow.fig
@@ -167,6 +166,12 @@ configure_file(${PROJECT_SOURCE_DIR}/doc/doxywizard.1       ${PROJECT_BINARY_DIR
 configure_file(${PROJECT_SOURCE_DIR}/doc/doxysearch.1       ${PROJECT_BINARY_DIR}/man/doxysearch.1)
 configure_file(${PROJECT_SOURCE_DIR}/doc/doxyindexer.1      ${PROJECT_BINARY_DIR}/man/doxyindexer.1)
 
+# Call the main page "Introduction" in LaTeX, which is more appropriate for that format.
+set(MAINPAGE_TITLE Doxygen)
+configure_file(${PROJECT_SOURCE_DIR}/doc/index.doc          ${PROJECT_BINARY_DIR}/doc/index_html.doc)
+set(MAINPAGE_TITLE Introduction)
+configure_file(${PROJECT_SOURCE_DIR}/doc/index.doc          ${PROJECT_BINARY_DIR}/doc/index_latex.doc)
+
 # doc/language.doc (see tag Doxyfile:INPUT)
 add_custom_command(
         COMMAND ${PYTHON_EXECUTABLE} translator.py ${PROJECT_SOURCE_DIR}
@@ -187,7 +192,8 @@ set_source_files_properties(config.doc PROPERTIES GENERATED 1)
 ################################################################################
 add_custom_target(run_doxygen
         COMMENT "Generating Latex and HTML documentation."
-        COMMAND ${CMAKE_COMMAND} -E env VERSION=${VERSION} ${DOXYGEN_EXECUTABLE}
+        COMMAND ${CMAKE_COMMAND} -E env VERSION=${VERSION} INDEX_DOC=index_html.doc GENERATE_HTML=YES GENERATE_LATEX=NO ${DOXYGEN_EXECUTABLE}
+        COMMAND ${CMAKE_COMMAND} -E env VERSION=${VERSION} INDEX_DOC=index_latex.doc GENERATE_HTML=NO GENERATE_LATEX=YES ${DOXYGEN_EXECUTABLE}
         DEPENDS ${PROJECT_BINARY_DIR}/doc/language.doc ${PROJECT_BINARY_DIR}/doc/config.doc
         DEPENDS ${OUT_DOC_FILES}
         DEPENDS examples

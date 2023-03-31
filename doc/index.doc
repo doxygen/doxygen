@@ -15,7 +15,7 @@
  *
  */
 /*!
-\mainpage
+\mainpage @MAINPAGE_TITLE@
 <!--Doxygen Manual-->
 \if logo_on
 <center>
