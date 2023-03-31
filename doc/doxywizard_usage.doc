@@ -14,12 +14,12 @@
  */
 /*! \page doxywizard_usage Doxywizard usage
 
-Doxywizard is a GUI front-end for configuring and running doxygen.
+Doxywizard is a GUI front-end for configuring and running Doxygen.
 
-When starting doxywizard one can specify an existing configuration file to use as argument,
-otherwise the default settings will be used as a starting point.
+When starting Doxywizard one can specify an existing configuration file to use as an
+argument, otherwise, the default settings will be used as a starting point.
 
-When you start doxywizard it will display the main window
+When you start Doxywizard it will display the main window
 (the actual look depends on the platform used).
 
 \image html doxywizard_main.png "Main window"
@@ -34,8 +34,8 @@ The user interface consists of the following sections:
 <dt>Specify the working directory from which doxygen will run
 <dd>
 Using the <tt>Select...</tt> button a directory can be selected.
-When doxywizard is started with a configuration file or one is loaded using the open command
-(see: \ref dw_menu_file) the directory of this settings file used as the working directory.
+When Doxywizard is started with a configuration file or one is loaded using the open command
+(see: \ref dw_menu_file) the directory of this settings file is used as the working directory.
 
 <dt>Configure doxygen using the Wizard and/or Expert tab...
 <dd>
@@ -49,26 +49,26 @@ When doxywizard is started with a configuration file or one is loaded using the 
   </dl>
 
 Switching between these tabs is possible, e.g you could start with the wizard tab
-and then fine tune some settings by switching to the expert tab.
+and then fine-tune some settings by switching to the expert tab.
 
 </dl>
 
-After doxygen is configured you need to save (see: \ref dw_menu_file) the configuration as a file
-to disk. This allows doxygen to use the configuration
-and also allows running doxygen again with the same settings at a later point in time.
+After Doxygen is configured you need to save (see: \ref dw_menu_file) the configuration as a file
+to disk. This allows Doxygen to use the configuration
+and also allows running Doxygen again with the same settings at a later point in time.
 
 Since some configuration options may use relative paths, be sure to
-select a working directory that is root of those paths.
+select a working directory that is the root of those paths.
 This is often the root of the source tree and will typically be correctly filled in
 if the configuration file is stored at this location as well.
 
 Once the configuration file is saved and the working directory is set, you
-can run doxygen based on the selected settings. Do this by switching to the
+can run Doxygen based on the selected settings. Do this by switching to the
 \ref dw_run "Run" tab, and click the "Run doxygen" button.
 
-Once doxygen runs you can cancel it by clicking the same
-button again. The output produced by doxygen is captured and shown in the "Output produced by doxygen"
-pane. Once doxygen finishes, the log can be saved as a text file.
+Once Doxygen runs you can cancel it by clicking the same
+button again. The output produced by Doxygen is captured and shown in the "Output produced by doxygen"
+pane. Once Doxygen finishes, the log can be saved as a text file.
 
 \section dw_wizard Wizard tab
 
@@ -81,13 +81,13 @@ pane.
 settings that are available for the selected topic.
 </dl>
 
-The wizard only gives the possibility to quickly setup doxygen, for full control
+The wizard only gives the possibility to quickly setup Doxygen, for full control
 one should use the \ref dw_expert.
 
 \forceNewPage
 \subsection dw_wizard_project Project settings
 
-The fields in the Project pane speak for themselves. Once doxygen has finished
+The fields in the Project pane speak for themselves. Once Doxygen has finished
 the Destination directory is where to look for the results. Doxygen will
 put each output format in a separate sub-directory by default.
 
@@ -97,10 +97,10 @@ put each output format in a separate sub-directory by default.
 \forceNewPage
 \subsection dw_wizard_mode Mode of operating
 
-The Mode pane allows you to select how doxygen will look at your sources.
+The Mode pane allows you to select how Doxygen will look at your sources.
 The default is to only look for things that have been documented. Furthermore, the
 terminology used in the output can be changed to better match the main programming language used
-(this doesn't affect the way doxygen parses your source code).
+(this doesn't affect the way Doxygen parses your source code).
 
 \image html doxywizard_page2.png "Wizard tab: Mode of operating"
 \image latex doxywizard_page2.png "Wizard tab: Mode of operating" width=15cm
@@ -108,7 +108,7 @@ terminology used in the output can be changed to better match the main programmi
 \forceNewPage
 \subsection dw_wizard_output Output to produce
 
-The Output pane allows you to select what kinds of output doxygen will produce.
+The Output pane allows you to select what kinds of output Doxygen will produce.
 For HTML and \LaTeX there are additional options available.
 
 \image html doxywizard_page3.png "Wizard tab: Output to produce"
@@ -117,7 +117,7 @@ For HTML and \LaTeX there are additional options available.
 \forceNewPage
 \subsection dw_wizard_diagrams Diagrams to generate
 
-Doxygen can produce a number of diagrams. Using the Diagrams pane you
+Doxygen can produce several diagrams. Using the Diagrams pane you
 can select which ones to generate. For most diagrams the
 `dot` tool of the <a href="http://www.graphviz.org">GraphViz</a> package
 is needed. This needs to be installed separately.
@@ -211,7 +211,7 @@ The representation of the input field depends on the type of the configuration o
 
 \section dw_run Run tab
 
-The run tab gives the possibility to run doxygen with the given settings, see the HTML results,
+The run tab gives the possibility to run Doxygen with the given settings, see the HTML results,
 see the settings used and save the output as displayed in the output pane.
 
 \image html doxywizard_run.png "Run tab"
