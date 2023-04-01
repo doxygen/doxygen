@@ -57,6 +57,7 @@ class GroupDef : public DefinitionMutable, public Definition
     virtual void setGroupTitle( const QCString &newtitle ) = 0;
     virtual bool hasGroupTitle( ) const = 0;
     virtual void addFile(FileDef *def) = 0;
+    virtual bool containsFile(const FileDef *def) const = 0;
     virtual bool addClass(ClassDef *def) = 0;
     virtual bool addConcept(ConceptDef *def) = 0;
     virtual bool addNamespace(NamespaceDef *def) = 0;
