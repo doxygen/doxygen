@@ -125,7 +125,7 @@ vector<Node> Dijkstra::dijkstra(Graph G, string token, Node start, Node end) {
       if (explored.count(successor) == 0 && !frontier.contains(successor)) {
         std::cout << "\t";
         successor.print();
-        prev[successor] = current;
+        prev[current] = successor;
         frontier.push(successor);
         successor.prev = &current;
         continue;
@@ -138,10 +138,6 @@ vector<Node> Dijkstra::dijkstra(Graph G, string token, Node start, Node end) {
         hasErased = frontier.eraseNode(previous);
       }
       if (hasErased) {
-        std::cout << "successor: ";
-        successor.print();
-        std::cout << "\t";
-        previous.print();
         prev.erase(previous);
         frontier.push(successor);
       }
@@ -153,9 +149,10 @@ vector<Node> Dijkstra::dijkstra(Graph G, string token, Node start, Node end) {
   std::cout << "BEST: " << std::endl;
 
   for (auto &[successor, current] : prev) {
-    current.print();
-    std::cout  << " -> ";
-    successor.print();
+    // current.print();
+    // std::cout  << " -> ";
+    // successor.print();
+    std::cout << current.word << " -> " << successor.word << std::endl;
   }
 
   vector<Node> path;
