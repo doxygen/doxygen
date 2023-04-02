@@ -1,12 +1,12 @@
 #include "ar.h"
 
-using ar::Dictionary;
-using ar::LongForm;
-using ar::Lmatch;
-using ar::nonDictWords;
-using ar::matches;
-using ar::Phi;
 using ar::Cfunc;
+using ar::Dictionary;
+using ar::Lmatch;
+using ar::LongForm;
+using ar::matches;
+using ar::nonDictWords;
+using ar::Phi;
 
 using Dijkstra::Edge;
 using Dijkstra::Graph;
@@ -97,7 +97,8 @@ LongForm ar::expansion_matching(nonDictWords nonDictWords, Dictionary D) {
   return retvec;
 }
 
-Lmatch ar::string_matching(std::string token, Dictionary D, Phi phi, Cfunc cost) {
+Lmatch ar::string_matching(std::string token, Dictionary D, Phi phi,
+                           Cfunc cost) {
   // Graph G = initializeMatchingGraph(token);
   //
   // int index = 0;
@@ -167,16 +168,16 @@ Lmatch ar::string_matching(std::string token, Dictionary D, Phi phi, Cfunc cost)
     }
   }
 
-  Node start = {
-      .i = 0, .j = 0, .word = token, .cost = 0};
-  Node end = {(int)token.length() - 1, (int)token.length(), token,
+  Node start = {.i = 0, .j = 0, .word = token, .cost = 0};
+  Node end = {(int)token.length() - 1, (int)token.length(), token.substr(token.length() - 1, 1),
               (int)token.size()};
   auto best_path = Dijkstra::dijkstra(G, token, start, end);
 
   cout << "RESULT" << endl;
   for (auto each : best_path) {
-    cout << each.word << endl;
+    cout << each.word << " -> ";
   }
+  cout << endl;
 
   //    end for
   // end for
