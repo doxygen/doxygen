@@ -1,12 +1,11 @@
 #include "dijkstra.hpp"
 #include <iostream>
 #include <ostream>
+#include <memory>
 
 using Dijkstra::Graph;
 using Dijkstra::Node;
-using std::make_pair;
 using std::map;
-using std::pair;
 using std::size_t;
 using std::string;
 using std::unordered_set;
@@ -127,7 +126,7 @@ vector<Node> Dijkstra::dijkstra(Graph G, string token, Node start, Node end) {
         successor.print();
         prev[current] = successor;
         frontier.push(successor);
-        successor.prev = &current;
+        successor.prev = std::make_unique(current);
         continue;
       }
 
@@ -152,7 +151,10 @@ vector<Node> Dijkstra::dijkstra(Graph G, string token, Node start, Node end) {
     // current.print();
     // std::cout  << " -> ";
     // successor.print();
-    std::cout << current.word << " -> " << successor.word << std::endl;
+    current.print();
+    std::cout << "\n-> ";
+    successor.print();
+    std::cout << std::endl;
   }
 
   vector<Node> path;
