@@ -14,7 +14,6 @@ struct Node {
   int j;       // index of the last character in the matching sequence
   std::string word; // the word associated with this node
   int cost;    // the cost of the path to this node
-  Node *prev;
 
 public:
   bool operator==(const Node &other) const;
@@ -35,8 +34,10 @@ using Vertex = int;
 using Graph = std::map<Vertex, std::vector<Edge>>;
 
 struct node_hasher {
+  std::hash<std::string> hasher;
   size_t operator()(const Node &e) const {
     size_t hash_result = 0;
+    hash_result += hasher(e.word) * 30;
     hash_result += e.cost * 31;
     hash_result += e.i * 32;
     hash_result += e.j * 33;

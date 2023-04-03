@@ -59,7 +59,6 @@ int main(void) {
                                 return match.first == word;
                               });
       if (res != dict.end()) {
-        std::cout << res->first << " " << res->second << std::endl;
         return res->second;
       }
     }
