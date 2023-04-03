@@ -1,4 +1,5 @@
 #include "dijkstra.hpp"
+#include <cstdio>
 #include <iostream>
 #include <ostream>
 #include <memory>
@@ -63,6 +64,9 @@ Graph Dijkstra::initializeMatchingGraph(string token) {
   for (auto i = 0; i < token.length(); i++) {
     auto str = string(1, token[i]);
     auto n_str = string(1, token[i + 1]);
+    if(token[i + 1] == '\0') {
+      break;
+    }
     Node from = {
         .i = i, .j = (j - i), .word = str, .cost = INT32_MIN};
     Node to = {.i = from.j,
@@ -112,7 +116,7 @@ vector<Node> Dijkstra::dijkstra(Graph G, string token, Node start, Node end) {
     frontier.pop();
     std::cout << "current: ";
     current.print();
-    if (current.j == end.j) {
+    if (current == end) {
       std::cout << "ENDED" << std::endl;
       break;
     }
@@ -126,7 +130,6 @@ vector<Node> Dijkstra::dijkstra(Graph G, string token, Node start, Node end) {
         successor.print();
         prev[current] = successor;
         frontier.push(successor);
-        successor.prev = std::make_unique(current);
         continue;
       }
 
@@ -160,12 +163,14 @@ vector<Node> Dijkstra::dijkstra(Graph G, string token, Node start, Node end) {
   vector<Node> path;
   {
     Node u = end;
+    int i = 0;
     while (u != start) {
       path.push_back(u);
-      if (prev[u].word == "") {
-        break;
-      }
+      u.print();
       u = prev[u];
+      i++;
+      if(i == prev.size())
+        break;
     }
   }
   reverse(path.begin(), path.end());
