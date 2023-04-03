@@ -151,7 +151,6 @@ Lmatch ar::string_matching(std::string token, Dictionary D, Phi phi,
     matches matching_seq = fuzzy::BYP(token, word, phi);
     // for each: (<ch_i..ch_j>, word) E matching_seq do
     for (auto &[first, last] : matching_seq) {
-      std::cout << " first: " << first << " last: " << last << std::endl;
       int i = token.find(first);
       int j = i + first.length() - 1;
       Node any = {
