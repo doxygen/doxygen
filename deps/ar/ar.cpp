@@ -160,8 +160,6 @@ Lmatch ar::string_matching(std::string token, Dictionary D, Phi phi,
           .word = last,
           .cost = cost(last),
       };
-      auto s_first = token.substr(any.i, any.i + 1);
-      auto s_second = token.substr(any.j, any.j + 1);
       // std::cout << "HELLO " << s_first << " " << s_second << std::endl;
       // G(E) <- G(E) U {<i, j, word, cost(word)>}
       G[any.i].push_back({any});
@@ -169,8 +167,8 @@ Lmatch ar::string_matching(std::string token, Dictionary D, Phi phi,
   }
 
   Node start = {.i = 0, .j = 0, .word = token, .cost = 0};
-  Node end = {(int)token.length() - 1, (int)token.length(), token.substr(token.length() - 1, 1),
-              (int)token.size()};
+  Node end = {(int)token.length() - 1, (int)token.length(),
+              token.substr(token.length() - 1, 1), INT32_MIN};
   auto best_path = Dijkstra::dijkstra(G, token, start, end);
 
   cout << "RESULT" << endl;
