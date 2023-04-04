@@ -51,15 +51,9 @@ size_t Node::operator()() const {
 
 // A function to get the labels of the edges in a path
 vector<string> Dijkstra::getEdgeLabels(vector<Node> path, Graph G) {
-
   vector<string> labels;
-  if (path.size() > 0) {
-    for (int i = 0; i < path.size() - 1; i++) {
-      Node from = path[i];
-      Node to = path[i + 1];
-      labels.push_back(to.word);
-      break;
-    }
+  for(auto each: path) {
+    labels.push_back(each.word);
   }
   return labels;
 }
@@ -161,13 +155,16 @@ vector<Node> Dijkstra::dijkstra(Graph G, string token, Node start, Node end) {
   // }
 
   {
-    Node u = end;
+    Node u = prev.at(end);
     while (true) {
       path.push_back(u);
       u.print();
       try {
         auto found = prev.at(u);
         u = found;
+        if(u == start) {
+          break;
+        }
       } catch (std::out_of_range e) {
         break;
       }
