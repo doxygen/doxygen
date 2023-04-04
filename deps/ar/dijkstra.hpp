@@ -6,6 +6,7 @@
 #include <utility>
 #include <vector>
 #include <map>
+#include <memory>
 
 namespace Dijkstra {
 
@@ -37,10 +38,10 @@ struct node_hasher {
   std::hash<std::string> hasher;
   size_t operator()(const Node &e) const {
     size_t hash_result = 0;
-    hash_result += hasher(e.word) * 30;
-    hash_result += e.cost * 31;
-    hash_result += e.i * 32;
-    hash_result += e.j * 33;
+    hash_result += hasher(e.word) * 31;
+    hash_result += e.cost * 37;
+    hash_result += e.i * 41;
+    hash_result += e.j * 43;
     // calculate the hash result
     return hash_result;
   }
