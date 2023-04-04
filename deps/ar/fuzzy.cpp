@@ -4,8 +4,6 @@
 
 #define CHAR_MAX 256
 
-using std::function;
-
 std::string fuzzy::bitap_fuzzy_bitwise_search(std::string token,
                                               std::string pattern, int k) {
   std::string result;
@@ -53,9 +51,7 @@ std::string fuzzy::bitap_fuzzy_bitwise_search(std::string token,
   return result;
 }
 
-using matches = std::vector<std::pair<std::string, std::string>>;
-
-std::vector<std::pair<std::string, std::string>>
+matches
 fuzzy::BYP(std::string token, std::pair<std::string, int> word,
            Phi p) {
   matches matching_seq;
@@ -67,6 +63,10 @@ fuzzy::BYP(std::string token, std::pair<std::string, int> word,
     for (int j = i; j < n; j++) {
       std::string subtoken = token.substr(i, j - i + 1);
       double tolerance = p(subtoken, word.first);
+      // if(tolerance == 0 && subtoken == word.first) {
+      //     matching_seq.push_back({subtoken, word.first});
+      //     continue;
+      // }
 
       // auto res = bitap_fuzzy_bitwise_search(word.first, subtoken, tolerance);
       // if (res == "\0") {
