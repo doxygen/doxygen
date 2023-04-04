@@ -78,7 +78,7 @@ LongForm ar::expansion_matching(nonDictWords nonDictWords, Dictionary D) {
       int consonants;
       check_vowels_consonants(token, vowels, consonants);
       if (vowels > consonants) {
-        phi = [&D](string token) { return 0; };
+        phi = [&D](string token) { return 1; };
       } else {
         phi = [&D](string token) { return 0; };
       }
@@ -153,7 +153,7 @@ Lmatch ar::string_matching(std::string token, Dictionary D, Phi phi,
     for (auto &[first, last] : matching_seq) {
       int i = token.find(first);
       int j = i + first.length() - 1;
-      auto any = Node {
+      auto any = Node{
           .i = i,
           .j = j,
           .word = last,
@@ -165,9 +165,9 @@ Lmatch ar::string_matching(std::string token, Dictionary D, Phi phi,
     }
   }
 
-  auto start = Node {.i = 0, .j = 0, .word = token, .cost = 0};
-  auto end = Node {(int)token.length() - 1, (int)token.length(),
-              token.substr(token.length() - 1, 1), INT32_MIN};
+  auto start = Node{.i = 0, .j = 0, .word = token, .cost = 0};
+  auto end = Node{(int)token.length() - 1, (int)token.length(),
+                  token.substr(token.length() - 1, 1), INT32_MIN};
   auto best_path = Dijkstra::dijkstra(G, token, start, end);
 
   cout << "RESULT" << endl;
@@ -184,31 +184,28 @@ Lmatch ar::string_matching(std::string token, Dictionary D, Phi phi,
   return getEdgeLabels(path, G);
 }
 
-Lmatch ar::split_matching(string ident, vector<Dictionary> D) {
+Lmatch ar::split_matching(string ident, Dictionaries D) {
   Lmatch retvec;
 
-  Phi phi = [&D](string word) {
-    bool found = true;
-    for (auto dict : D) {
-      if (std::find_if(dict.begin(), dict.end(),
-                       [&word](const pair<string, int> &match) {
-                         return match.first == word;
-                       }) == dict.end()) {
-        found &= false;
+  ar::Phi phi = [&ident, &D](std::string &word) {
+    for (auto each : D) {
+      try {
+        auto res = each[word];
+        return 0;
+      } catch (std::out_of_range e) {
       }
     }
-    return found;
+    return -1;
   };
   ar::Cfunc cost = [&D](std::string &word) {
     for (auto dict : D) {
       try {
         return dict.at(word);
-      } catch(std::out_of_range e) {
-        
+      } catch (std::out_of_range e) {
       }
     }
     return -1;
-  }; // cost function returns length of word
+  };
 
   for (auto dict : D) {
     retvec = string_matching(ident, dict, phi, cost);
