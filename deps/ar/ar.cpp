@@ -153,7 +153,7 @@ Lmatch ar::string_matching(std::string token, Dictionary D, Phi phi,
     for (auto &[first, last] : matching_seq) {
       int i = token.find(first);
       int j = i + first.length() - 1;
-      Node any = {
+      auto any = Node {
           .i = i,
           .j = j,
           .word = last,
@@ -165,8 +165,8 @@ Lmatch ar::string_matching(std::string token, Dictionary D, Phi phi,
     }
   }
 
-  Node start = {.i = 0, .j = 0, .word = token, .cost = 0};
-  Node end = {(int)token.length() - 1, (int)token.length(),
+  auto start = Node {.i = 0, .j = 0, .word = token, .cost = 0};
+  auto end = Node {(int)token.length() - 1, (int)token.length(),
               token.substr(token.length() - 1, 1), INT32_MIN};
   auto best_path = Dijkstra::dijkstra(G, token, start, end);
 
@@ -199,13 +199,12 @@ Lmatch ar::split_matching(string ident, vector<Dictionary> D) {
     }
     return found;
   };
-  Cfunc cost = [&D](string word) {
+  ar::Cfunc cost = [&D](std::string &word) {
     for (auto dict : D) {
-      auto res = std::find_if(
-          dict.begin(), dict.end(),
-          [&word](pair<string, int> &match) { return match.first == word; });
-      if (res != dict.end()) {
-        return res->second;
+      try {
+        return dict.at(word);
+      } catch(std::out_of_range e) {
+        
       }
     }
     return -1;

@@ -39,9 +39,15 @@ const void Node::print() const {
             << " i: " << this->i << " j: " << this->j << std::endl;
 }
 
+std::ostream& operator<<(std::ostream &os, const Node &nd) {
+  os << "word: " << nd.word << " cost: " << nd.cost
+            << " i: " << nd.i << " j: " << nd.j << std::endl;
+  return os;
+}
+
 std::hash<std::string> hasher;
 size_t Node::operator()() const {
-  return std::hash<size_t>()(hasher(word) + cost + i + j);
+  return std::hash<size_t>()(hasher(word) * 31 + cost * 37 + i * 41 + j * 43);
 }
 
 // A function to get the labels of the edges in a path
@@ -70,7 +76,10 @@ Graph Dijkstra::initializeMatchingGraph(string token) {
     auto str = string(1, token[i]);
     auto n_str = string(1, token[i + 1]);
     Node from = {.i = i, .j = (j - i), .word = str, .cost = INT32_MIN};
-    Node to = {.i = from.j, .j = from.j + 1, .word = n_str, .cost = INT32_MIN};
+    auto to = Node{.i = from.j,
+                                          .j = from.j + 1,
+                                          .word = n_str,
+                                          .cost = INT32_MIN};
     G[i].push_back({to});
   }
 
@@ -93,7 +102,9 @@ Graph Dijkstra::initializeMatchingGraph(string token) {
 //
 // "g"
 
-vector<Node> Dijkstra::dijkstra(Graph G, string token, Node start, Node end) {
+vector<Node> Dijkstra::dijkstra(Graph G, string token,
+                                Node start,
+                                Node end) {
 
   // for (auto &[first, last] : G) {
   //   std::cout << first.first << " -> " << first.second;
@@ -102,14 +113,26 @@ vector<Node> Dijkstra::dijkstra(Graph G, string token, Node start, Node end) {
   //   }
   // }
 
-  MyQueue<Node, vector<Node>, std::less<Node>> frontier;
+  struct Compare {
+    bool operator()(const Node &a,
+                    const Node &b) {
+      return a.cost < b.cost;
+    }
+  };
+  MyQueue<Node, vector<Node>, Compare>
+      frontier;
   unordered_set<Node, node_hasher> explored;
-  map<Node, Node> prev;
+  auto comp = [](const Node &a,
+                    const Node &b){
+    return a.word != b.word && a.i != b.i && a.j != b.j;
+  };
+  map<Node, Node, decltype(comp)> prev(comp);
+  map<string, string> prevstr;
 
   frontier.push(start);
 
   while (!frontier.empty()) {
-    Node current = frontier.top();
+    auto current = frontier.top();
     frontier.pop();
     if (current == end) {
       std::cout << "ENDED" << std::endl;
@@ -119,16 +142,18 @@ vector<Node> Dijkstra::dijkstra(Graph G, string token, Node start, Node end) {
     explored.insert(current);
 
     for (Edge successors : G[current.j + 1]) {
-      Node successor = successors.to;
+      auto successor = successors.to;
       if (explored.count(successor) == 0 && !frontier.contains(successor)) {
         prev[successor] = current;
+        prevstr[successor.word] = current.word;
         frontier.push(successor);
         continue;
       }
 
       bool hasErased = false;
-      Node previous = *frontier.find(successor);
-      if (previous.word == successor.word && previous.cost <= successor.cost) {
+      auto previous = *frontier.find(successor);
+      if (previous.word == successor.word &&
+          previous.cost <= successor.cost) {
         if (frontier.eraseNode(previous)) {
           frontier.push(successor);
         }
@@ -136,41 +161,34 @@ vector<Node> Dijkstra::dijkstra(Graph G, string token, Node start, Node end) {
     }
   }
 
-  std::cout << prev.size() << std::endl;
-
   std::cout << "BEST: " << std::endl;
 
-  for (auto &[key, value] : prev) {
-    // current.print();
-    // std::cout  << " -> ";
-    // std::cout << "key: " << key;
-    key.print();
-    std::cout << "-> ";
-    value.print();
-    std::cout << std::endl;
+  for(auto &[key, value]: prevstr) {
+    std::cout << key << " -> " << value << std::endl;
   }
 
   vector<Node> path;
   // {
-  //   Node u = end;
-  //   int i = 0;
+  //   auto u = end;
   //   while (u != start) {
-  //     path.push_back(u);
-  //     u.print();
-  //     printf("%p\n", u.prev);
-  //     break;
+  //     path.push_back(*u);
   //   }
   // }
+
   {
     Node u = end;
-    int i = 0;
     while (u.i != start.i) {
       path.push_back(u);
       u.print();
-      u = prev[u];
-      i++;
-      if (i == prev.size())
+      auto found = std::find_if(
+          prev.begin(), prev.end(), [&u](const std::pair<Node, Node> &a) {
+            return a.first.i == u.i && a.first.j == u.j &&
+                   a.first.word == u.word && a.first.cost == u.cost;
+          });
+      if (found == prev.end()) {
         break;
+      }
+      u = found->second;
     }
   }
   reverse(path.begin(), path.end());
