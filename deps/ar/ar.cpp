@@ -171,47 +171,33 @@ Lmatch ar::string_matching(std::string token, Dictionary D, Phi phi,
   auto best_path = Dijkstra::dijkstra(G, token, start, end);
 
   cout << "RESULT" << endl;
-  for (auto each : best_path) {
-    cout << each.word << " -> ";
-  }
-  cout << endl;
-
   //    end for
   // end for
   // best_path <- Dijkstra(G)
   // return getEdgeLabels(best_path)
-  vector<Node> path;
-  return getEdgeLabels(path, G);
+  return getEdgeLabels(best_path, G);
 }
 
 Lmatch ar::split_matching(string ident, Dictionaries D) {
   Lmatch retvec;
 
   ar::Phi phi = [&ident, &D](std::string &word) {
-    for (auto each : D) {
-      try {
-        auto res = each[word];
-        return 0;
-      } catch (std::out_of_range e) {
-      }
-    }
-    return -1;
-  };
-  ar::Cfunc cost = [&D](std::string &word) {
-    for (auto dict : D) {
-      try {
-        return dict.at(word);
-      } catch (std::out_of_range e) {
-      }
+    if (D.check(word)) {
+      return 1;
     }
     return -1;
   };
 
-  for (auto dict : D) {
-    retvec = string_matching(ident, dict, phi, cost);
-    if (retvec.size() != 0) {
-      return retvec;
-    }
+  ar::Cfunc cost = [&D](std::string &word) { return D.find(word); };
+
+  for (auto dict : D.dicts) {
+    for (auto each : string_matching(ident, dict, phi, cost)) {
+      std::cout << each << std::endl;
+      retvec.push_back(each);
+    };
+    // if (retvec.size() != 0) {
+    //   return retvec;
+    // }
   }
   return retvec;
 }
