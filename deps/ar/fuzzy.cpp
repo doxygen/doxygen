@@ -73,9 +73,9 @@ fuzzy::BYP(std::string token, std::pair<std::string, int> word,
       // }
       // cout << "result: " << res << " subtoken: " << subtoken << endl;
 
-      if (subtoken.size() <= word.first.size() + tolerance) {
+      if (subtoken.length() <= (word.first.length() + tolerance)) {
         double distance = 0;
-        for (int k = 0; k < subtoken.size(); k++) {
+        for (int k = 0; k < subtoken.length(); k++) {
           if (subtoken[k] != word.first[k]) {
             distance++;
           }
