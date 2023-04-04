@@ -51,35 +51,7 @@ int main(void) {
   std::string token = "getpnt";
   std::cout << "STARTED:" << std::endl;
 
-  ar::Phi phi = [&token](std::string &word) {
-    int max = std::min(token.size(), word.size());
-    int counter = 0;
-    for (auto index = 0; index < max; index++) {
-      if (token[index] == word[index]) {
-        counter++;
-      }
-    }
-    if (counter == max) {
-      return 1;
-    }
-
-    return 0;
-
-    // return (int)floor(word.length() / log(word.length()));
-  }; // tolerance function always returns 1
-
-  ar::Cfunc cost = [&D](std::string &word) {
-    for (auto dict : D) {
-      try {
-        return dict.at(word);
-      } catch(std::out_of_range e) {
-        
-      }
-    }
-    return -1;
-  }; // cost function returns length of word
-  std::vector<std::string> labels = ar::string_matching(token, eng, phi, cost);
-  printf("DONE\n");
+  auto labels = ar::split_matching(token, D);
   for (std::string label : labels) {
     std::cout << "found: " << label << " ";
   }
