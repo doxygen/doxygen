@@ -6,6 +6,7 @@
 #include <optional>
 #include <string>
 #include <vector>
+#include "opts.hpp"
 
 namespace fuzzy {
 
@@ -14,7 +15,7 @@ std::string bitap_fuzzy_bitwise_search(std::string token, std::string pattern,
 
 std::vector<std::pair<std::string, std::string>>
 BYP(std::string token, std::pair<std::string, int> word,
-    std::function<int(std::string &)> p);
+    Phi p);
 } // namespace fuzzy
 
 #endif

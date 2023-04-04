@@ -1,5 +1,7 @@
 #include "fuzzy.h"
 
+#include <iostream>
+
 #define CHAR_MAX 256
 
 using std::function;
@@ -51,27 +53,25 @@ std::string fuzzy::bitap_fuzzy_bitwise_search(std::string token,
   return result;
 }
 
-using Phi = function<int(std::string &)>;
 using matches = std::vector<std::pair<std::string, std::string>>;
 
 std::vector<std::pair<std::string, std::string>>
 fuzzy::BYP(std::string token, std::pair<std::string, int> word,
-           std::function<int(std::string &)> p) {
+           Phi p) {
   matches matching_seq;
 
-  int n = token.size();
-  int m = word.first.size();
+  int n = token.length();
+  int m = word.first.length();
 
   for (int i = 0; i < n; i++) {
     for (int j = i; j < n; j++) {
       std::string subtoken = token.substr(i, j - i + 1);
-      double tolerance = p(word.first);
+      double tolerance = p(subtoken, word.first);
 
-      // auto res = bitap_fuzzy_bitwise_search(word.first, subtoken,
-      // tolerance); if(res == "\0") {
+      // auto res = bitap_fuzzy_bitwise_search(word.first, subtoken, tolerance);
+      // if (res == "\0") {
       //   continue;
       // }
-      // cout << "result: " << res << " subtoken: " << subtoken << endl;
 
       if (subtoken.length() <= (word.first.length() + tolerance)) {
         double distance = 0;
@@ -87,4 +87,57 @@ fuzzy::BYP(std::string token, std::pair<std::string, int> word,
     }
   }
   return matching_seq;
+}
+
+#define SIZE 256    /* size of alpha index and count array */
+#define MOD256 0xFF /* for the mod operation */
+struct anode {      /* structure for index of alphabet */
+  int offset;       /* distance of char from start of pattern */
+  anode *next;      /* pointer to next idxnode if it exists */
+};
+
+anode alpha[SIZE]; /* offset for each alphabetic character */
+int count[SIZE];   /* count of the characters that don't match */
+void search(char *t, int n, int m, int k, anode alpha[],
+            int count[]) /* string searching with mismatches */
+{
+  int i, off1;
+  anode *aptr;
+  for (i = 0; i < n; i++) {
+    if ((off1 = (aptr = &alpha[*t++])->offset) >= 0) {
+      count[(i + off1) & MOD256]--;
+      for (aptr = aptr->next; aptr != NULL; aptr = aptr->next) {
+        count[(i + aptr->offset) & MOD256]--;
+      }
+    }
+    if (count[i & MOD256] <= k) {
+      printf("Match in position %d with %d mismatches\n", i - m + 1,
+             count[i & MOD256]);
+      count[i & MOD256] = m;
+    }
+  }
+}
+
+void preprocess(char *p, int m, anode alpha[],
+                int count[]) /* preprocessing routine */
+{
+  int i, j;
+  anode *aptr;
+  for (i = 0; i < SIZE; i++) {
+    alpha[i].offset = -1;
+    alpha[i].next = NULL;
+    count[i] = m;
+  }
+  for (i = 0, j = 128; i < m; i++, p++) {
+    count[i] = SIZE;
+    if (alpha[*p].offset == -1)
+      alpha[*p].offset = m - i - i;
+    else {
+      aptr = alpha[*p].next;
+      alpha[*p].next = &alpha[j++];
+      alpha[*p].next->offset = m - i - 1;
+      alpha[*p].next->next = aptr;
+      count[m - 1] = m;
+    }
+  }
 }
