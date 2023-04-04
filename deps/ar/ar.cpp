@@ -1,16 +1,10 @@
 #include "ar.hpp"
 
-using Dijkstra::Edge;
 using Dijkstra::Graph;
 using Dijkstra::Node;
 using std::cout;
 using std::endl;
-using std::function;
-using std::make_pair;
-using std::map;
-using std::pair;
 using std::string;
-using std::vector;
 
 
 int ar::Dictionaries::find(std::string word) {
@@ -200,23 +194,29 @@ Lmatch ar::split_matching(string ident, Dictionaries D) {
   Lmatch retvec;
 
   Phi phi = [&ident, &D](std::string &token, std::string &word) {
-    if (D.check(word)) {
-      return 1;
+    std::cout << token << " " << word << std::endl;
+    if(token.length() != word.length()) {
+      return -1;
     }
-    return -1;
+    if(token == word) {
+      return 0;
+    }
+    return 1;
   };
 
   Cfunc cost = [&D](std::string &word) { return D.find(word); };
 
   for (auto dict : D.dicts) {
-    for (auto each : string_matching(ident, dict, phi, cost)) {
-      std::cout << each << std::endl;
+    for (std::string each : string_matching(ident, dict, phi, cost)) {
+      std::cout << "found word: " << each << std::endl;
       retvec.push_back(each);
     };
+
     // if (retvec.size() != 0) {
     //   std::cout << "RETURNED" << std::endl;
     //   return retvec;
     // }
+
   }
   return retvec;
 }
