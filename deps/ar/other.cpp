@@ -41,7 +41,7 @@ ar::Dictionary get_dict(string file) {
   return retvec;
 }
 
-int main2(void) {
+int main(void) {
   ar::Dictionaries D;
   auto eng = get_dict("wordlist.10000");
   auto it = get_dict("List_of_computing_and_IT_abbreviations");
@@ -87,7 +87,7 @@ int main2(void) {
   return 0;
 }
 
-int main(void) {
+int main2(void) {
 
   // std::string token = "hel";
   // ar::vector<ar::Dictionary> D = {{
