@@ -1,7 +1,6 @@
 #include "dijkstra.hpp"
 #include <algorithm>
 #include <cstdio>
-#include <functional>
 #include <iomanip>
 #include <iostream>
 #include <optional>
@@ -10,6 +9,7 @@
 #include <vector>
 
 #include "fuzzy.h"
+#include "opts.hpp"
 
 namespace ar {
 
@@ -21,47 +21,23 @@ struct Dictionaries {
   Dictionaries(std::vector<Dictionary> dict): dicts(dict){}
   Dictionaries(): dicts(){}
 
-  int find(std::string word) {
-    for(auto dict: this->dicts) {
-      try {
-        return dict[word];
-      } catch (std::out_of_range e) {
-      }
-    }
-    return -1;
-  }
+  int find(std::string word);
 
-  bool check(std::string word) {
-    for(auto dict: this->dicts) {
-      try {
-        auto res = dict[word];
-        return true;
-      } catch (std::out_of_range e) {
-      }
-    }
-    return false;
-  }
+  bool check(std::string word);
 
-  void add(Dictionary d) {
-    this->dicts.push_back(d);
-  }
+  void add(Dictionary d);
+
+  std::string compare(std::string token);
 };
-
-using LongForm = std::vector<std::string>;
-using Lmatch = std::vector<std::string>;
-using nonDictWords = std::vector<std::string>;
-using matches = std::vector<std::pair<std::string, std::string>>;
-using Phi = std::function<int(std::string &)>;
-using Cfunc = std::function<int(std::string &)>;
 
 LongForm expand_known_abbr(nonDictWords nonDictWords, ar::Dictionary D);
 
 void check_vowels_consonants(std::string word, int &vowels, int &consonants);
 
-LongForm expansion_matching(ar::nonDictWords nonDictWords, ar::Dictionary D);
+LongForm expansion_matching(nonDictWords nonDictWords, ar::Dictionary D);
 
-Lmatch string_matching(std::string token, ar::Dictionary D, ar::Phi phi,
-                       ar::Cfunc cost);
+Lmatch string_matching(std::string token, ar::Dictionary D, Phi phi,
+                       Cfunc cost);
 
 Lmatch split_matching(std::string ident, Dictionaries D);
 } // namespace ar

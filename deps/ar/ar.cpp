@@ -1,13 +1,5 @@
 #include "ar.hpp"
 
-using ar::Cfunc;
-using ar::Dictionary;
-using ar::Lmatch;
-using ar::LongForm;
-using ar::matches;
-using ar::nonDictWords;
-using ar::Phi;
-
 using Dijkstra::Edge;
 using Dijkstra::Graph;
 using Dijkstra::Node;
@@ -19,6 +11,32 @@ using std::map;
 using std::pair;
 using std::string;
 using std::vector;
+
+
+int ar::Dictionaries::find(std::string word) {
+  for(auto dict: this->dicts) {
+    try {
+      return dict[word];
+    } catch (std::out_of_range e) {
+    }
+  }
+  return -1;
+}
+
+bool ar::Dictionaries::check(std::string word) {
+  for(auto dict: this->dicts) {
+    try {
+      auto res = dict[word];
+      return true;
+    } catch (std::out_of_range e) {
+    }
+  }
+  return false;
+}
+
+void ar::Dictionaries::add(Dictionary d) {
+  this->dicts.push_back(d);
+}
 
 LongForm ar::expand_known_abbr(nonDictWords nonDictWords, Dictionary D) {
   LongForm retvec;
@@ -78,9 +96,9 @@ LongForm ar::expansion_matching(nonDictWords nonDictWords, Dictionary D) {
       int consonants;
       check_vowels_consonants(token, vowels, consonants);
       if (vowels > consonants) {
-        phi = [&D](string token) { return 1; };
+        phi = [&D](string &token, string &word) { return 1; };
       } else {
-        phi = [&D](string token) { return 0; };
+        phi = [&D](string &token, string &word) { return 0; };
       }
       Lmatch matches = string_matching(token, D, phi, c);
       if (matches.size() > 0) {
@@ -181,14 +199,14 @@ Lmatch ar::string_matching(std::string token, Dictionary D, Phi phi,
 Lmatch ar::split_matching(string ident, Dictionaries D) {
   Lmatch retvec;
 
-  ar::Phi phi = [&ident, &D](std::string &word) {
+  Phi phi = [&ident, &D](std::string &token, std::string &word) {
     if (D.check(word)) {
       return 1;
     }
     return -1;
   };
 
-  ar::Cfunc cost = [&D](std::string &word) { return D.find(word); };
+  Cfunc cost = [&D](std::string &word) { return D.find(word); };
 
   for (auto dict : D.dicts) {
     for (auto each : string_matching(ident, dict, phi, cost)) {
@@ -196,6 +214,7 @@ Lmatch ar::split_matching(string ident, Dictionaries D) {
       retvec.push_back(each);
     };
     // if (retvec.size() != 0) {
+    //   std::cout << "RETURNED" << std::endl;
     //   return retvec;
     // }
   }
