@@ -3,12 +3,14 @@
 #include <iostream>
 #include <memory>
 #include <ostream>
+#include <unordered_map>
 
 using Dijkstra::Graph;
 using Dijkstra::Node;
 using std::map;
 using std::size_t;
 using std::string;
+using std::unordered_map;
 using std::unordered_set;
 using std::vector;
 
@@ -34,16 +36,13 @@ bool Node::operator>(const Node &other) const {
   return this->cost > other.cost;
 }
 
-const void Node::print() const {
-  std::cout << "word: " << this->word << " cost: " << this->cost
-            << " i: " << this->i << " j: " << this->j << std::endl;
-}
-
-std::ostream& operator<<(std::ostream &os, const Node &nd) {
-  os << "word: " << nd.word << " cost: " << nd.cost
-            << " i: " << nd.i << " j: " << nd.j << std::endl;
+std::ostream &operator<<(std::ostream &os, const Node &nd) {
+  os << "word: " << nd.word << " cost: " << nd.cost << " i: " << nd.i
+     << " j: " << nd.j;
   return os;
 }
+
+const void Node::print() const { std::cout << *this << std::endl; }
 
 std::hash<std::string> hasher;
 size_t Node::operator()() const {
@@ -70,17 +69,13 @@ Graph Dijkstra::initializeMatchingGraph(string token) {
 
   int j = token.size();
   for (auto i = 0; i < token.length(); i++) {
-    if (token[i] == '\0' || token[i + 1] == '\0') {
-      break;
-    }
     auto str = string(1, token[i]);
     auto n_str = string(1, token[i + 1]);
-    Node from = {.i = i, .j = (j - i), .word = str, .cost = INT32_MIN};
-    auto to = Node{.i = from.j,
-                                          .j = from.j + 1,
-                                          .word = n_str,
-                                          .cost = INT32_MIN};
+    auto to =
+        Node{.i = i, .j = i + 1, .word = str, .cost = INT32_MIN};
+    std::cout << to << std::endl;
     G[i].push_back({to});
+
   }
 
   return G;
@@ -102,9 +97,7 @@ Graph Dijkstra::initializeMatchingGraph(string token) {
 //
 // "g"
 
-vector<Node> Dijkstra::dijkstra(Graph G, string token,
-                                Node start,
-                                Node end) {
+vector<Node> Dijkstra::dijkstra(Graph G, string token, Node start, Node end) {
 
   // for (auto &[first, last] : G) {
   //   std::cout << first.first << " -> " << first.second;
@@ -114,20 +107,11 @@ vector<Node> Dijkstra::dijkstra(Graph G, string token,
   // }
 
   struct Compare {
-    bool operator()(const Node &a,
-                    const Node &b) {
-      return a.cost < b.cost;
-    }
+    bool operator()(const Node &a, const Node &b) { return a.cost < b.cost; }
   };
-  MyQueue<Node, vector<Node>, Compare>
-      frontier;
+  MyQueue<Node, vector<Node>, Compare> frontier;
   unordered_set<Node, node_hasher> explored;
-  auto comp = [](const Node &a,
-                    const Node &b){
-    return a.word != b.word && a.i != b.i && a.j != b.j;
-  };
-  map<Node, Node, decltype(comp)> prev(comp);
-  map<string, string> prevstr;
+  unordered_map<Node, Node, node_hasher> prev;
 
   frontier.push(start);
 
@@ -139,21 +123,22 @@ vector<Node> Dijkstra::dijkstra(Graph G, string token,
       break;
     }
 
+    // std::cout << "cur: " << current << std::endl;
+
     explored.insert(current);
 
     for (Edge successors : G[current.j + 1]) {
       auto successor = successors.to;
       if (explored.count(successor) == 0 && !frontier.contains(successor)) {
+        // std::cout << "\tsuc: " << successor << std::endl;
         prev[successor] = current;
-        prevstr[successor.word] = current.word;
         frontier.push(successor);
         continue;
       }
 
       bool hasErased = false;
       auto previous = *frontier.find(successor);
-      if (previous.word == successor.word &&
-          previous.cost <= successor.cost) {
+      if (previous.word == successor.word && previous.cost <= successor.cost) {
         if (frontier.eraseNode(previous)) {
           frontier.push(successor);
         }
@@ -163,7 +148,7 @@ vector<Node> Dijkstra::dijkstra(Graph G, string token,
 
   std::cout << "BEST: " << std::endl;
 
-  for(auto &[key, value]: prevstr) {
+  for (auto &[key, value] : prev) {
     std::cout << key << " -> " << value << std::endl;
   }
 
@@ -177,18 +162,15 @@ vector<Node> Dijkstra::dijkstra(Graph G, string token,
 
   {
     Node u = end;
-    while (u.i != start.i) {
+    while (true) {
       path.push_back(u);
       u.print();
-      auto found = std::find_if(
-          prev.begin(), prev.end(), [&u](const std::pair<Node, Node> &a) {
-            return a.first.i == u.i && a.first.j == u.j &&
-                   a.first.word == u.word && a.first.cost == u.cost;
-          });
-      if (found == prev.end()) {
+      try {
+        auto found = prev.at(u);
+        u = found;
+      } catch (std::out_of_range e) {
         break;
       }
-      u = found->second;
     }
   }
   reverse(path.begin(), path.end());
