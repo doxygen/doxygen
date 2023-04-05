@@ -7370,10 +7370,10 @@ static bool tryAddEnumDocsToGroupMember(const Entry *root,const QCString &name)
       MemberList *ml = gd->getMemberList(MemberListType_decEnumMembers);
       if (ml)
       {
-        MemberDef *md = ml->find(name);
+        MemberDefMutable *md = toMemberDefMutable(ml->find(name));
         if (md)
         {
-          addEnumDocs(root,toMemberDefMutable(md));
+          addEnumDocs(root,md);
           return TRUE;
         }
       }
