@@ -218,7 +218,7 @@ Lmatch ar::split_matching(string ident, Dictionaries D) {
     ident.erase(0, ident.find(each) + each.size());
     retvec.push_back(split);
   }
-  if(ident != "") {
+  if(ident != "\0" && ident != "\n") {
     retvec.push_back(ident);
   }
   return retvec;

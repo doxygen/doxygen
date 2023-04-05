@@ -53,7 +53,7 @@ size_t Node::operator()() const {
 vector<string> Dijkstra::getEdgeLabels(vector<Node> path, Graph G) {
   vector<string> labels;
   for(auto each: path) {
-    if(each.cost == INT32_MIN) continue;
+    if(each.cost < 0) continue;
     labels.push_back(each.word);
   }
   return labels;
@@ -63,11 +63,14 @@ Graph Dijkstra::initializeMatchingGraph(string token) {
   Graph G;
 
   int j = token.size();
-  for (auto i = 0; i < token.length(); i++) {
+  for (auto i = 0; i <= token.size(); i++) {
     auto str = string(1, token[i]);
-    auto n_str = string(1, token[i + 1]);
     auto to =
         Node{.i = i, .j = i + 1, .word = str, .cost = INT32_MIN};
+    if(i == token.size()) {
+      to.cost = -100;
+      to.word = "\n";
+    }
     G[i].push_back({to});
 
   }
@@ -94,15 +97,17 @@ Graph Dijkstra::initializeMatchingGraph(string token) {
 vector<Node> Dijkstra::dijkstra(Graph G, string token) {
 
   auto start = Node{.i = 0, .j = 0, .word = token.substr(0, 1), .cost = 0};
-  auto end = Node{(int)token.length() - 1, (int)token.length(),
-                  token.substr(token.length() - 1, 1), INT32_MIN};
+  auto end = Node{(int)token.length(), (int)token.size() + 1,
+                  "\n", -100};
 
   for (auto &[first, last] : G) {
-    std::cout << first << " -> " << first;
+    std::cout << first;
     for (auto each : last) {
       std::cout << " -> " << each.to << std::endl;
     }
   }
+
+  std::cout << start << std::endl << end << std::endl;
 
   MyQueue<Node, vector<Node>, std::less<Node>> frontier;
   unordered_set<Node, node_hasher> explored;
@@ -145,7 +150,7 @@ vector<Node> Dijkstra::dijkstra(Graph G, string token) {
   std::cout << "BEST: " << std::endl;
 
   for (auto &[successor, current] : prev) {
-    std::cout << current << " -> " << successor << std::endl;
+    std::cout << successor << " -> " << current << std::endl;
   }
 
   vector<Node> path;
@@ -168,6 +173,7 @@ vector<Node> Dijkstra::dijkstra(Graph G, string token) {
           break;
         }
       } catch (std::out_of_range e) {
+        std::cout << "out of range" << std::endl;
         break;
       }
     }

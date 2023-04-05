@@ -90,5 +90,7 @@ int main(void) {
   }
 
   std::cout << std::endl;
+
+  auto thing = ar::expansion_matching(labels, D);
   return 0;
 }
