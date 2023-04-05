@@ -31,22 +31,25 @@ bool ar::Dictionaries::check(std::string word) {
 
 void ar::Dictionaries::add(Dictionary d) { this->dicts.push_back(d); }
 
-LongForm expand_known_abbr(NonDictWords &nonDictWords, ar::Dictionaries D) {
+LongForm expand_known_abbr(NonDictWords &nonDictWords, ar::Dictionaries D, NonDictWords *toExpand) {
   LongForm retvec;
-  NonDictWords new_list;
 
   for (auto it = 0; it < nonDictWords.size(); it++) {
+    auto each = nonDictWords[it];
+    std::cout << "trying to check: " << each << std::endl;
     try {
-      auto each = nonDictWords[it];
       auto word = D.known_abbr[each];
+      if(word.size() == 0) {
+        std::cout << "not found: " << each << std::endl;
+        toExpand->push_back(each);
+        continue;
+      }
+      std::cout << "found: " << word << " for: " << each << std::endl;
       retvec.insert({each, word});
     } catch (std::out_of_range e) {
-      new_list.push_back(nonDictWords[it]);
+      std::cout << "not found: " << each << std::endl;
+      toExpand->push_back(each);
     }
-  }
-  nonDictWords = new_list;
-  for (auto each : new_list) {
-    std::cout << "to expand: " << each << std::endl;
   }
 
   return retvec;
@@ -87,20 +90,10 @@ void ar::check_vowels_consonants(string word, int &vowels, int &consonants) {
 }
 
 LongForm ar::expansion_matching(NonDictWords nonDictWords, Dictionaries D) {
-  LongForm retvec = expand_known_abbr(nonDictWords, D);
-
   NonDictWords toExpand;
-  std::copy_if(
-      nonDictWords.begin(), nonDictWords.end(), toExpand.begin(),
-      [&retvec](string const value) {
-        return std::find_if(
-                   retvec.begin(), retvec.end(),
-                   [&value](const std::pair<std::string, std::string> &pair) {
-                     return pair.first != value;
-                   }) == retvec.end();
-      });
+  LongForm retvec = expand_known_abbr(nonDictWords, D, &toExpand);
 
-  if(toExpand.size() == 0) {
+  if (toExpand.size() == 0) {
     std::cout << "Nothing to expand" << std::endl;
     return retvec;
   }
@@ -119,7 +112,7 @@ LongForm ar::expansion_matching(NonDictWords nonDictWords, Dictionaries D) {
       }
       Lmatch matches = string_matching(token, dictionary, phi, c);
       if (matches.size() > 0) {
-        for(auto &each: matches) {
+        for (auto &each : matches) {
           retvec.insert({token, each});
         }
         break;
@@ -221,14 +214,15 @@ Lmatch ar::split_matching(string ident, Dictionaries D, Lmatch *matches) {
 
   for (auto dict : D.dicts) {
     for (std::string each : string_matching(ident, dict, phi, cost)) {
-      std::cout << "found word: " << each << std::endl;
+      std::cout << "matched word: " << each << std::endl;
       matches->push_back(each);
     };
 
-    // if (retvec.size() != 0) {
-    //   std::cout << "RETURNED" << std::endl;
-    //   return retvec;
-    // }
+    if (matches->size() != 0) {
+      std::cout << "RETURNED" << std::endl;
+      break;
+    }
+
   }
   Lmatch retvec;
   for (auto each : *matches) {
@@ -237,9 +231,11 @@ Lmatch ar::split_matching(string ident, Dictionaries D, Lmatch *matches) {
     ident.erase(0, find + each.size());
     retvec.push_back(split);
   }
+
   if (ident != "\0" || ident != "" || ident != "\n" || ident.size() > 0) {
     retvec.push_back(ident);
   }
+
   retvec.erase(
       std::remove_if(retvec.begin(), retvec.end(),
                      [](const std::string &str) { return str.size() == 0; }),
