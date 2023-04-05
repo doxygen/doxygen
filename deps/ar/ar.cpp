@@ -1,5 +1,6 @@
 #include "ar.hpp"
 #include "opts.hpp"
+#include <stdexcept>
 
 using Dijkstra::Graph;
 using Dijkstra::Node;
@@ -7,9 +8,8 @@ using std::cout;
 using std::endl;
 using std::string;
 
-
 int ar::Dictionaries::operator[](std::string &word) {
-  for(auto dict: this->dicts) {
+  for (auto dict : this->dicts) {
     try {
       return dict[word];
     } catch (std::out_of_range e) {
@@ -19,7 +19,7 @@ int ar::Dictionaries::operator[](std::string &word) {
 }
 
 bool ar::Dictionaries::check(std::string word) {
-  for(auto dict: this->dicts) {
+  for (auto dict : this->dicts) {
     try {
       auto res = dict[word];
       return true;
@@ -29,12 +29,25 @@ bool ar::Dictionaries::check(std::string word) {
   return false;
 }
 
-void ar::Dictionaries::add(Dictionary d) {
-  this->dicts.push_back(d);
-}
+void ar::Dictionaries::add(Dictionary d) { this->dicts.push_back(d); }
 
-LongForm ar::expand_known_abbr(nonDictWords nonDictWords, Dictionaries D) {
+LongForm expand_known_abbr(NonDictWords &nonDictWords, ar::Dictionaries D) {
   LongForm retvec;
+  NonDictWords new_list;
+
+  for (auto it = 0; it < nonDictWords.size(); it++) {
+    try {
+      auto each = nonDictWords[it];
+      auto word = D.known_abbr[each];
+      retvec.insert({each, word});
+    } catch (std::out_of_range e) {
+      new_list.push_back(nonDictWords[it]);
+    }
+  }
+  nonDictWords = new_list;
+  for (auto each : new_list) {
+    std::cout << "to expand: " << each << std::endl;
+  }
 
   return retvec;
 }
@@ -73,15 +86,24 @@ void ar::check_vowels_consonants(string word, int &vowels, int &consonants) {
   }
 }
 
-LongForm ar::expansion_matching(nonDictWords nonDictWords, Dictionaries D) {
-  LongForm retvec = ar::expand_known_abbr(nonDictWords, D);
+LongForm ar::expansion_matching(NonDictWords nonDictWords, Dictionaries D) {
+  LongForm retvec = expand_known_abbr(nonDictWords, D);
 
-  LongForm toExpand;
-  std::copy_if(nonDictWords.begin(), nonDictWords.end(), toExpand.begin(),
-               [&retvec](string const value) {
-                 return std::find(retvec.begin(), retvec.end(), value) ==
-                        retvec.end();
-               });
+  NonDictWords toExpand;
+  std::copy_if(
+      nonDictWords.begin(), nonDictWords.end(), toExpand.begin(),
+      [&retvec](string const value) {
+        return std::find_if(
+                   retvec.begin(), retvec.end(),
+                   [&value](const std::pair<std::string, std::string> &pair) {
+                     return pair.first != value;
+                   }) == retvec.end();
+      });
+
+  if(toExpand.size() == 0) {
+    std::cout << "Nothing to expand" << std::endl;
+    return retvec;
+  }
 
   Phi phi = nullptr;
   Cfunc c = nullptr;
@@ -97,11 +119,9 @@ LongForm ar::expansion_matching(nonDictWords nonDictWords, Dictionaries D) {
       }
       Lmatch matches = string_matching(token, dictionary, phi, c);
       if (matches.size() > 0) {
-        std::copy_if(matches.begin(), matches.end(), retvec.begin(),
-                     [&retvec](string const value) {
-                       return std::find(retvec.begin(), retvec.end(), value) ==
-                              retvec.end();
-                     });
+        for(auto &each: matches) {
+          retvec.insert({token, each});
+        }
         break;
       }
     }
@@ -188,11 +208,10 @@ Lmatch ar::string_matching(std::string token, Dictionary D, Phi phi,
   return getEdgeLabels(best_path, G);
 }
 
-Lmatch ar::split_matching(string ident, Dictionaries D) {
-  Lmatch matches;
+Lmatch ar::split_matching(string ident, Dictionaries D, Lmatch *matches) {
 
   Phi phi = [&ident, &D](std::string &token, std::string &word) {
-    if(token == word) {
+    if (token == word) {
       return 0;
     }
     return -1;
@@ -203,23 +222,27 @@ Lmatch ar::split_matching(string ident, Dictionaries D) {
   for (auto dict : D.dicts) {
     for (std::string each : string_matching(ident, dict, phi, cost)) {
       std::cout << "found word: " << each << std::endl;
-      matches.push_back(each);
+      matches->push_back(each);
     };
 
     // if (retvec.size() != 0) {
     //   std::cout << "RETURNED" << std::endl;
     //   return retvec;
     // }
-
   }
   Lmatch retvec;
-  for(auto each: matches) {
-    auto split = ident.substr(0, ident.find(each));
-    ident.erase(0, ident.find(each) + each.size());
+  for (auto each : *matches) {
+    auto find = ident.find(each);
+    auto split = ident.substr(0, find);
+    ident.erase(0, find + each.size());
     retvec.push_back(split);
   }
-  if(ident != "\0" && ident != "\n") {
+  if (ident != "\0" || ident != "" || ident != "\n" || ident.size() > 0) {
     retvec.push_back(ident);
   }
+  retvec.erase(
+      std::remove_if(retvec.begin(), retvec.end(),
+                     [](const std::string &str) { return str.size() == 0; }),
+      retvec.end());
   return retvec;
 }
