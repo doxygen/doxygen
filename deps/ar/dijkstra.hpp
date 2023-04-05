@@ -92,5 +92,5 @@ Graph initializeMatchingGraph(std::string token);
 // A function to get the labels of the edges in a path
 std::vector<std::string> getEdgeLabels(std::vector<Node> path, Graph G);
 
-std::vector<Node> dijkstra(Graph G, std::string token, Node start, Node end);
+std::vector<Node> dijkstra(Graph G, std::string token);
 } // namespace Dijkstra
