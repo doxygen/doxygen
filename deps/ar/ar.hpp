@@ -43,14 +43,12 @@ struct Dictionaries {
     return dicts.end(); } // 200 is out of bounds
 };
 
-LongForm expand_known_abbr(nonDictWords nonDictWords, ar::Dictionaries D);
-
 void check_vowels_consonants(std::string word, int &vowels, int &consonants);
 
-LongForm expansion_matching(nonDictWords nonDictWords, ar::Dictionaries D);
+LongForm expansion_matching(NonDictWords nonDictWords, ar::Dictionaries D);
 
 Lmatch string_matching(std::string token, ar::Dictionary D, Phi phi,
                        Cfunc cost);
 
-Lmatch split_matching(std::string ident, Dictionaries D);
+Lmatch split_matching(std::string ident, ar::Dictionaries D, Lmatch *matches);
 } // namespace ar

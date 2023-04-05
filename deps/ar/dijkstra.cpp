@@ -100,14 +100,12 @@ vector<Node> Dijkstra::dijkstra(Graph G, string token) {
   auto end = Node{(int)token.length(), (int)token.size() + 1,
                   "\n", -100};
 
-  for (auto &[first, last] : G) {
-    std::cout << first;
-    for (auto each : last) {
-      std::cout << " -> " << each.to << std::endl;
-    }
-  }
-
-  std::cout << start << std::endl << end << std::endl;
+  // for (auto &[first, last] : G) {
+  //   std::cout << first;
+  //   for (auto each : last) {
+  //     std::cout << " -> " << each.to << std::endl;
+  //   }
+  // }
 
   MyQueue<Node, vector<Node>, std::less<Node>> frontier;
   unordered_set<Node, node_hasher> explored;
@@ -124,14 +122,14 @@ vector<Node> Dijkstra::dijkstra(Graph G, string token) {
       break;
     }
 
-    std::cout << "cur: " << current << std::endl;
+    // std::cout << "cur: " << current << std::endl;
 
     explored.insert(current);
 
     for (Edge successors : G[current.j]) {
       auto successor = successors.to;
       if (explored.count(successor) == 0 && !frontier.contains(successor)) {
-        std::cout << "\tsuc: " << successor << std::endl;
+        // std::cout << "\tsuc: " << successor << std::endl;
         prev[successor] = current;
         frontier.push(successor);
         continue;
@@ -149,9 +147,9 @@ vector<Node> Dijkstra::dijkstra(Graph G, string token) {
 
   std::cout << "BEST: " << std::endl;
 
-  for (auto &[successor, current] : prev) {
-    std::cout << successor << " -> " << current << std::endl;
-  }
+  // for (auto &[successor, current] : prev) {
+  //   std::cout << successor << " -> " << current << std::endl;
+  // }
 
   vector<Node> path;
   // {
@@ -165,7 +163,6 @@ vector<Node> Dijkstra::dijkstra(Graph G, string token) {
     Node u = end;
     while (true) {
       path.push_back(u);
-      u.print();
       try {
         auto found = prev.at(u);
         u = found;
