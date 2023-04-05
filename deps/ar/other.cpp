@@ -66,7 +66,7 @@ ar::Dictionary get_dict(string file) {
 
 ar::Dictionaries get_true() {
   ar::Dictionaries D;
-  auto eng = get_dict("wordlist.10000");
+  auto eng = get_dict("test.txt");
   auto it = get_dict("List_of_computing_and_IT_abbreviations");
   D.add(eng);
   D.add(it);
@@ -89,7 +89,7 @@ ar::Dictionaries get_false() {
 
 int main(void) {
   auto D = get_true();
-  std::string token = "arrayavgsumnumheel";
+  std::string token = "arrayavgsumnumheelobvs";
   std::cout << "STARTED" << std::endl;
 
   Lmatch matches;
@@ -116,6 +116,7 @@ int main(void) {
 
     std::cout << each << std::endl;
   }
+
   for (auto each : matches) {
     size_t index = 0;
     while (true) {
@@ -132,6 +133,7 @@ int main(void) {
       index += each.size();
     }
   }
+
   for (auto &[each, word] : thing) {
     size_t index = 0;
     while (true) {
