@@ -18,9 +18,12 @@ using Dictionary = std::unordered_map<std::string, int>;
 
 struct Dictionaries {
   std::vector<Dictionary> dicts;
+  std::unordered_map<std::string, std::string> known_abbr;
   using Iterator = typeof(dicts.begin());
 
-  Dictionaries(std::vector<Dictionary> dict): dicts(dict){}
+  Dictionaries(std::vector<Dictionary> dict) : dicts(dict) {}
+  Dictionaries(std::vector<Dictionary> dict, std::unordered_map<std::string, std::string> known_abbr)
+    : dicts(dict), known_abbr(known_abbr){}
   Dictionaries(): dicts(){}
 
   int find(std::string word);
@@ -34,8 +37,10 @@ struct Dictionaries {
 
   // Iterator definition here ...
 
-  Iterator begin() { return dicts.begin(); }
-  Iterator end()   { return dicts.end(); } // 200 is out of bounds
+  Iterator begin() {
+    return dicts.begin(); }
+  Iterator end()   {
+    return dicts.end(); } // 200 is out of bounds
 };
 
 LongForm expand_known_abbr(nonDictWords nonDictWords, ar::Dictionaries D);
