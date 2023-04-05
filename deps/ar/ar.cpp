@@ -1,4 +1,5 @@
 #include "ar.hpp"
+#include "opts.hpp"
 
 using Dijkstra::Graph;
 using Dijkstra::Node;
@@ -7,7 +8,7 @@ using std::endl;
 using std::string;
 
 
-int ar::Dictionaries::find(std::string word) {
+int ar::Dictionaries::operator[](std::string &word) {
   for(auto dict: this->dicts) {
     try {
       return dict[word];
@@ -32,7 +33,7 @@ void ar::Dictionaries::add(Dictionary d) {
   this->dicts.push_back(d);
 }
 
-LongForm ar::expand_known_abbr(nonDictWords nonDictWords, Dictionary D) {
+LongForm ar::expand_known_abbr(nonDictWords nonDictWords, Dictionaries D) {
   LongForm retvec;
 
   return retvec;
@@ -72,7 +73,7 @@ void ar::check_vowels_consonants(string word, int &vowels, int &consonants) {
   }
 }
 
-LongForm ar::expansion_matching(nonDictWords nonDictWords, Dictionary D) {
+LongForm ar::expansion_matching(nonDictWords nonDictWords, Dictionaries D) {
   LongForm retvec = ar::expand_known_abbr(nonDictWords, D);
 
   LongForm toExpand;
@@ -94,7 +95,7 @@ LongForm ar::expansion_matching(nonDictWords nonDictWords, Dictionary D) {
       } else {
         phi = [&D](string &token, string &word) { return 0; };
       }
-      Lmatch matches = string_matching(token, D, phi, c);
+      Lmatch matches = string_matching(token, dictionary, phi, c);
       if (matches.size() > 0) {
         std::copy_if(matches.begin(), matches.end(), retvec.begin(),
                      [&retvec](string const value) {
@@ -167,7 +168,7 @@ Lmatch ar::string_matching(std::string token, Dictionary D, Phi phi,
       int j = i + first.length() - 1;
       auto any = Node{
           .i = i,
-          .j = j,
+          .j = j + 1,
           .word = last,
           .cost = cost(last),
       };
@@ -177,10 +178,7 @@ Lmatch ar::string_matching(std::string token, Dictionary D, Phi phi,
     }
   }
 
-  auto start = Node{.i = 0, .j = 0, .word = token, .cost = 0};
-  auto end = Node{(int)token.length() - 1, (int)token.length(),
-                  token.substr(token.length() - 1, 1), INT32_MIN};
-  auto best_path = Dijkstra::dijkstra(G, token, start, end);
+  auto best_path = Dijkstra::dijkstra(G, token);
 
   cout << "RESULT" << endl;
   //    end for
@@ -191,25 +189,21 @@ Lmatch ar::string_matching(std::string token, Dictionary D, Phi phi,
 }
 
 Lmatch ar::split_matching(string ident, Dictionaries D) {
-  Lmatch retvec;
+  Lmatch matches;
 
   Phi phi = [&ident, &D](std::string &token, std::string &word) {
-    std::cout << token << " " << word << std::endl;
-    if(token.length() != word.length()) {
-      return -1;
-    }
     if(token == word) {
       return 0;
     }
-    return 1;
+    return -1;
   };
 
-  Cfunc cost = [&D](std::string &word) { return D.find(word); };
+  Cfunc cost = [&D](std::string &word) { return D[word]; };
 
   for (auto dict : D.dicts) {
     for (std::string each : string_matching(ident, dict, phi, cost)) {
       std::cout << "found word: " << each << std::endl;
-      retvec.push_back(each);
+      matches.push_back(each);
     };
 
     // if (retvec.size() != 0) {
@@ -217,6 +211,15 @@ Lmatch ar::split_matching(string ident, Dictionaries D) {
     //   return retvec;
     // }
 
+  }
+  Lmatch retvec;
+  for(auto each: matches) {
+    auto split = ident.substr(0, ident.find(each));
+    ident.erase(0, ident.find(each) + each.size());
+    retvec.push_back(split);
+  }
+  if(ident != "") {
+    retvec.push_back(ident);
   }
   return retvec;
 }

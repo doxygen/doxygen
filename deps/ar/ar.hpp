@@ -3,6 +3,7 @@
 #include <cstdio>
 #include <iomanip>
 #include <iostream>
+#include <iterator>
 #include <optional>
 #include <string>
 #include <unordered_map>
@@ -17,6 +18,7 @@ using Dictionary = std::unordered_map<std::string, int>;
 
 struct Dictionaries {
   std::vector<Dictionary> dicts;
+  using Iterator = typeof(dicts.begin());
 
   Dictionaries(std::vector<Dictionary> dict): dicts(dict){}
   Dictionaries(): dicts(){}
@@ -28,13 +30,19 @@ struct Dictionaries {
   void add(Dictionary d);
 
   std::string compare(std::string token);
+  int operator[](std::string &word);
+
+  // Iterator definition here ...
+
+  Iterator begin() { return dicts.begin(); }
+  Iterator end()   { return dicts.end(); } // 200 is out of bounds
 };
 
-LongForm expand_known_abbr(nonDictWords nonDictWords, ar::Dictionary D);
+LongForm expand_known_abbr(nonDictWords nonDictWords, ar::Dictionaries D);
 
 void check_vowels_consonants(std::string word, int &vowels, int &consonants);
 
-LongForm expansion_matching(nonDictWords nonDictWords, ar::Dictionary D);
+LongForm expansion_matching(nonDictWords nonDictWords, ar::Dictionaries D);
 
 Lmatch string_matching(std::string token, ar::Dictionary D, Phi phi,
                        Cfunc cost);
