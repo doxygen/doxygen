@@ -99,7 +99,7 @@ LongForm ar::expansion_matching(NonDictWords nonDictWords, Dictionaries D) {
   }
 
   Phi phi = nullptr;
-  Cfunc c = nullptr;
+  Cfunc cost = [&D](std::string &word) { return D[word]; };
   for (auto token : toExpand) {
     for (auto dictionary : D) {
       int vowels;
@@ -110,7 +110,7 @@ LongForm ar::expansion_matching(NonDictWords nonDictWords, Dictionaries D) {
       } else {
         phi = [&D](string &token, string &word) { return 0; };
       }
-      Lmatch matches = string_matching(token, dictionary, phi, c);
+      Lmatch matches = string_matching(token, dictionary, phi, cost);
       if (matches.size() > 0) {
         for (auto &each : matches) {
           retvec.insert({token, each});
