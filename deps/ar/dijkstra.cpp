@@ -53,6 +53,7 @@ size_t Node::operator()() const {
 vector<string> Dijkstra::getEdgeLabels(vector<Node> path, Graph G) {
   vector<string> labels;
   for(auto each: path) {
+    if(each.cost == INT32_MIN) continue;
     labels.push_back(each.word);
   }
   return labels;
@@ -67,7 +68,6 @@ Graph Dijkstra::initializeMatchingGraph(string token) {
     auto n_str = string(1, token[i + 1]);
     auto to =
         Node{.i = i, .j = i + 1, .word = str, .cost = INT32_MIN};
-    std::cout << to << std::endl;
     G[i].push_back({to});
 
   }
@@ -91,19 +91,20 @@ Graph Dijkstra::initializeMatchingGraph(string token) {
 //
 // "g"
 
-vector<Node> Dijkstra::dijkstra(Graph G, string token, Node start, Node end) {
+vector<Node> Dijkstra::dijkstra(Graph G, string token) {
 
-  // for (auto &[first, last] : G) {
-  //   std::cout << first.first << " -> " << first.second;
-  //   for (auto each : last) {
-  //     std::cout << " -> " << each.to.word << std::endl;
-  //   }
-  // }
+  auto start = Node{.i = 0, .j = 0, .word = token.substr(0, 1), .cost = 0};
+  auto end = Node{(int)token.length() - 1, (int)token.length(),
+                  token.substr(token.length() - 1, 1), INT32_MIN};
 
-  struct Compare {
-    bool operator()(const Node &a, const Node &b) { return a.cost < b.cost; }
-  };
-  MyQueue<Node, vector<Node>, Compare> frontier;
+  for (auto &[first, last] : G) {
+    std::cout << first << " -> " << first;
+    for (auto each : last) {
+      std::cout << " -> " << each.to << std::endl;
+    }
+  }
+
+  MyQueue<Node, vector<Node>, std::less<Node>> frontier;
   unordered_set<Node, node_hasher> explored;
   unordered_map<Node, Node, node_hasher> prev;
 
@@ -112,19 +113,20 @@ vector<Node> Dijkstra::dijkstra(Graph G, string token, Node start, Node end) {
   while (!frontier.empty()) {
     auto current = frontier.top();
     frontier.pop();
+
     if (current == end) {
       std::cout << "ENDED" << std::endl;
       break;
     }
 
-    // std::cout << "cur: " << current << std::endl;
+    std::cout << "cur: " << current << std::endl;
 
     explored.insert(current);
 
-    for (Edge successors : G[current.j + 1]) {
+    for (Edge successors : G[current.j]) {
       auto successor = successors.to;
       if (explored.count(successor) == 0 && !frontier.contains(successor)) {
-        // std::cout << "\tsuc: " << successor << std::endl;
+        std::cout << "\tsuc: " << successor << std::endl;
         prev[successor] = current;
         frontier.push(successor);
         continue;
@@ -142,8 +144,8 @@ vector<Node> Dijkstra::dijkstra(Graph G, string token, Node start, Node end) {
 
   std::cout << "BEST: " << std::endl;
 
-  for (auto &[key, value] : prev) {
-    std::cout << key << " -> " << value << std::endl;
+  for (auto &[successor, current] : prev) {
+    std::cout << current << " -> " << successor << std::endl;
   }
 
   vector<Node> path;
@@ -155,7 +157,7 @@ vector<Node> Dijkstra::dijkstra(Graph G, string token, Node start, Node end) {
   // }
 
   {
-    Node u = prev.at(end);
+    Node u = end;
     while (true) {
       path.push_back(u);
       u.print();

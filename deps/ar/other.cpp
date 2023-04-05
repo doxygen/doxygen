@@ -60,8 +60,6 @@ ar::Dictionaries get_false() {
                           {"point", 4},
                           {"past", 2},
                           {"bicycle", 3},
-                      },
-                      {
                           {"hello", 3},
                           {"help", 1},
                           {"hollow", 2},
@@ -70,13 +68,17 @@ ar::Dictionaries get_false() {
                           {"heel", 1},
                           {"basketball", 4},
                           {"bicycle", 3},
+                          {"average", 2},
+                          {"sum", 3},
+                          {"number", 2},
+                          {"array", 2},
                       }});
   return D;
 }
 
 int main(void) {
   auto D = get_false();
-  std::string token = "getpnt";
+  std::string token = "arrayavgsumnumheel";
   std::cout << "STARTED" << std::endl;
 
   auto labels = ar::split_matching(token, D);
@@ -86,8 +88,6 @@ int main(void) {
   for (std::string label : labels) {
     std::cout << "found: " << label << " ";
   }
-
-  std::cout << "FINISHED" << std::endl;
 
   std::cout << std::endl;
   return 0;
