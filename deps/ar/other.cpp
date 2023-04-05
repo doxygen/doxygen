@@ -88,7 +88,7 @@ ar::Dictionaries get_false() {
 }
 
 int main(void) {
-  auto D = get_false();
+  auto D = get_true();
   std::string token = "arrayavgsumnumheel";
   std::cout << "STARTED" << std::endl;
 
@@ -98,7 +98,12 @@ int main(void) {
   std::cout << "GOT BACK" << std::endl;
 
   for (std::string label : labels) {
-    std::cout << "found: " << label << " ";
+    std::cout << "found labels: " << label << " ";
+  }
+  std::cout << std::endl;
+
+  for (std::string label : matches) {
+    std::cout << "found matches: " << label << std::endl;
   }
 
   std::cout << std::endl;
