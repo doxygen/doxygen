@@ -356,8 +356,33 @@ ar::Dictionaries get_true() {
   return D;
 }
 
+void replace(std::string &word, std::string rep, std::string what) {
+  for (size_t index = 0;;) {
+    /* Locate the substring to replace. */
+    index = word.find(rep, index);
+    if (index == std::string::npos)
+      break;
+
+    /* Make the replacement. */
+    word.replace(index, rep.size(), what);
+
+    /*
+     * Advance index forward so the next iteration doesn't pick it up as
+     * well.
+     */
+    index += rep.size();
+  }
+}
+
 auto D = get_true();
 std::string ar::do_ar(std::string token) {
+
+  auto vec = {"_", "-"};
+  for (auto each : vec) {
+    replace(token, each, "");
+  }
+  std::transform(token.begin(), token.end(), token.begin(),
+                 [](unsigned char c) { return std::tolower(c); });
   RESULT("STARTED: " << token)
 
   Lmatch matches;
@@ -367,38 +392,10 @@ std::string ar::do_ar(std::string token) {
 
   // Replace the words in the identifier
   for (auto each : matches) {
-    for (size_t index = 0;;) {
-      /* Locate the substring to replace. */
-      index = token.find(each, index);
-      if (index == std::string::npos)
-        break;
-
-      /* Make the replacement. */
-      token.replace(index, each.size(), each + "_");
-
-      /*
-       * Advance index forward so the next iteration doesn't pick it up as
-       * well.
-       */
-      index += each.size();
-    }
+    replace(token, each, each + "_");
   };
   for (auto &[each, word] : thing) {
-    size_t index = 0;
-    while (true) {
-      /* Locate the substring to replace. */
-      index = token.find(each, index);
-      if (index == std::string::npos)
-        break;
-
-      /* Make the replacement. */
-      token.replace(index, each.size(), word + "_");
-
-      /* Advance index forward so the next iteration doesn't pick it up as
-       * well.
-       */
-      index += word.size();
-    }
+    replace(token, each, word + "_");
   }
 
   RESULT(token)
