@@ -66,15 +66,7 @@ class OutputGenerator
   public:
     OutputGenerator() : m_t(40*1024) {}
 
-    enum ParamListTypes { Param, RetVal, Exception };
-    enum SectionTypes { /*See, Return, Author, Version,
-                        Since, Date, Bug, Note,
-                        Warning, Par, Deprecated, Pre,
-                        Post, Invar, Remark, Attention,
-                        Todo, Test, RCS, */
-	                EnumValues,
-                        Examples
-                      };
+    enum class ParamListTypes { Param, RetVal, Exception };
     enum class MemberItemType { Normal, AnonymousStart, AnonymousEnd, Templated };
 
     OutputGenerator(const QCString &dir);

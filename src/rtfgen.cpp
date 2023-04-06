@@ -1316,34 +1316,6 @@ void RTFGenerator::endIndexItem(const QCString &ref,const QCString &fn)
   m_omitParagraph = TRUE;
 }
 
-void RTFGenerator::startHtmlLink(const QCString &url)
-{
-
-  if (Config_getBool(RTF_HYPERLINKS))
-  {
-    m_t << "{\\field {\\*\\fldinst { HYPERLINK \"";
-    m_t << url;
-    m_t << "\" }{}";
-    m_t << "}{\\fldrslt {\\cs37\\ul\\cf2 ";
-  }
-  else
-  {
-    startTypewriter();
-  }
-}
-
-void RTFGenerator::endHtmlLink()
-{
-  if (Config_getBool(RTF_HYPERLINKS))
-  {
-    m_t << "}}}\n";
-  }
-  else
-  {
-    endTypewriter();
-  }
-}
-
 void RTFGenerator::writeStartAnnoItem(const QCString &,const QCString &f,
     const QCString &path,const QCString &name)
 {
@@ -1366,22 +1338,6 @@ void RTFGenerator::writeStartAnnoItem(const QCString &,const QCString &f,
     docify(name);
   }
   m_t << "} ";
-}
-
-void RTFGenerator::writeEndAnnoItem(const QCString &name)
-{
-  DBG_RTF(m_t << "{\\comment (writeEndAnnoItem)}\n")
-  if (!name.isEmpty())
-  {
-    m_t << "\\tab ";
-    writeRTFReference(name);
-    m_t << "\n";
-  }
-  else
-  {
-    m_t << "\n";
-  }
-  newParagraph();
 }
 
 void RTFGenerator::startIndexKey()
@@ -1421,22 +1377,7 @@ void RTFGenerator::endIndexValue(const QCString &name,bool hasBrief)
   newParagraph();
 }
 
-void RTFGenerator::startSubsection()
-{
-  //beginRTFSubSection();
-  m_t << "\n";
-  DBG_RTF(m_t << "{\\comment Begin SubSection}\n")
-  m_t << rtf_Style_Reset;
-  m_t << rtf_Style["Heading3"].reference() << "\n";
-}
-
-void RTFGenerator::endSubsection()
-{
-  newParagraph();
-  m_t << rtf_Style_Reset << "\n";
-}
-
-void RTFGenerator::startSubsubsection()
+void RTFGenerator::startCompoundTemplateParams()
 {
   //beginRTFSubSubSection();
   m_t << "\n";
@@ -1445,7 +1386,7 @@ void RTFGenerator::startSubsubsection()
   m_t << rtf_Style_Reset << rtf_Style["Heading4"].reference() << "\n";
 }
 
-void RTFGenerator::endSubsubsection()
+void RTFGenerator::endCompoundTemplateParams()
 {
   newParagraph();
   m_t << "}\n";
@@ -1573,19 +1514,9 @@ void RTFGenerator::endTitleHead(const QCString &fileName,const QCString &name)
   }
 }
 
-void RTFGenerator::startTitle()
-{
-  DBG_RTF(m_t << "{\\comment startTitle}\n")
-  if (Config_getBool(COMPACT_RTF))
-    beginRTFSection();
-  else
-    beginRTFChapter();
-}
-
 void RTFGenerator::startGroupHeader(int extraIndent)
 {
   DBG_RTF(m_t << "{\\comment startGroupHeader}\n")
-  //newParagraph();
   m_t << rtf_Style_Reset;
   if (extraIndent==2)
   {
@@ -1702,34 +1633,6 @@ void RTFGenerator::endIndent()
 }
 
 
-void RTFGenerator::startDescription()
-{
-  DBG_RTF(m_t << "{\\comment (startDescription)}"    << "\n")
-  m_t << "{\n";
-  m_t << rtf_Style_Reset << rtf_DList_DepthStyle();
-}
-
-void RTFGenerator::endDescription()
-{
-  DBG_RTF(m_t << "{\\comment (endDescription)}"    << "\n")
-  newParagraph();
-  m_t << "}";
-}
-
-void RTFGenerator::startDescItem()
-{
-  newParagraph();
-  DBG_RTF(m_t << "{\\comment (startDescItem)}\n")
-  m_t << "{\\b ";
-}
-
-void RTFGenerator::endDescItem()
-{
-  DBG_RTF(m_t << "{\\comment (endDescItem)}\n")
-  m_t << "}\n";
-  newParagraph();
-}
-
 void RTFGenerator::startMemberDescription(const QCString &,const QCString &,bool)
 {
   DBG_RTF(m_t << "{\\comment (startMemberDescription)}\n")
@@ -1743,20 +1646,10 @@ void RTFGenerator::endMemberDescription()
 {
   DBG_RTF(m_t << "{\\comment (endMemberDescription)}\n")
   endEmphasis();
-  //newParagraph();
   decIndentLevel();
   m_t << "\\par";
   m_t << "}\n";
   m_omitParagraph = TRUE;
-}
-
-void RTFGenerator::startDescList(SectionTypes)
-{
-  DBG_RTF(m_t << "{\\comment (startDescList)}\n")
-  m_t << "{"; // ends at endDescList
-  m_t << "{"; // ends at endDescTitle
-  startBold();
-  newParagraph();
 }
 
 void RTFGenerator::startDescForItem()
@@ -2272,8 +2165,7 @@ void RTFGenerator::endDotGraph(DotClassGraph &g)
 {
   newParagraph();
 
-  QCString fn =
-    g.writeGraph(m_t,GOF_BITMAP,EOF_Rtf,dir(),fileName(),m_relPath,TRUE,FALSE);
+  QCString fn = g.writeGraph(m_t,GOF_BITMAP,EOF_Rtf,dir(),fileName(),m_relPath,TRUE,FALSE);
 
   // display the file
   m_t << "{\n";
@@ -2526,30 +2418,6 @@ void RTFGenerator::endExamples()
 {
   DBG_RTF(m_t << "{\\comment (endExamples)}\n")
   m_omitParagraph = FALSE;
-  newParagraph();
-  decIndentLevel();
-  m_omitParagraph = TRUE;
-  m_t << "}";
-}
-
-void RTFGenerator::startParamList(ParamListTypes,const QCString &title)
-{
-  DBG_RTF(m_t << "{\\comment (startParamList)}\n")
-  m_t << "{"; // ends at endParamList
-  m_t << "{"; // ends at endDescTitle
-  startBold();
-  newParagraph();
-  docify(title);
-  endBold();
-  m_t << "}";
-  newParagraph();
-  incIndentLevel();
-  m_t << rtf_Style_Reset << rtf_DList_DepthStyle();
-}
-
-void RTFGenerator::endParamList()
-{
-  DBG_RTF(m_t << "{\\comment (endParamList)}\n")
   newParagraph();
   decIndentLevel();
   m_omitParagraph = TRUE;

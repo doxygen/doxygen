@@ -1454,13 +1454,10 @@ void ClassDefImpl::writeDetailedDocumentationBody(OutputList &ol) const
   {
     ol.startExamples();
     ol.startDescForItem();
-    //ol.startParagraph();
     writeExamples(ol,m_impl->examples);
-    //ol.endParagraph();
     ol.endDescForItem();
     ol.endExamples();
   }
-  //ol.newParagraph();
   writeSourceDef(ol,name());
   ol.endTextBlock();
 }
