@@ -102,13 +102,39 @@ LongForm ar::expansion_matching(NonDictWords nonDictWords, Dictionaries D) {
   Cfunc cost = [&D](std::string &word) { return D[word]; };
   for (auto token : toExpand) {
     for (auto dictionary : D) {
+      // INFO(token);
       int vowels;
       int consonants;
       check_vowels_consonants(token, vowels, consonants);
-      if (vowels > consonants) {
-        phi = [&D](string &token, string &word) { return 1; };
+      if (vowels >= consonants) {
+        std::cout << "HELLO" << std::endl;
+        phi = [&D](string &token, string &word) { 
+          for(auto i = 0; i < token.length(); i++) {
+            if(word[i] != token[i]) {
+              return -1;
+            }
+          }
+          return 2;
+        };
       } else {
-        phi = [&D](string &token, string &word) { return 0; };
+        std::cout << "OTHER HELLO" << std::endl;
+        phi = [&token, &D](string &tok, string &word) {
+          int counter = 0;
+          int pos = 0;
+          // std::cout << tok << " " << token << std::endl;
+          if(tok.length() != token.length()) {
+            return -1;
+          }
+          for(counter = 0; counter < tok.length(); counter++) {
+            for(auto j = pos; j < word.length(); j++) {
+              if(tok[counter] == word[j]) {
+                pos = j;
+                break;
+              }
+            }
+          }
+          return 1;
+        };
       }
       Lmatch matches = string_matching(token, dictionary, phi, cost);
       if (matches.size() > 0) {
@@ -177,6 +203,7 @@ Lmatch ar::string_matching(std::string token, Dictionary D, Phi phi,
     matches matching_seq = fuzzy::BYP(token, word, phi);
     // for each: (<ch_i..ch_j>, word) E matching_seq do
     for (auto &[first, last] : matching_seq) {
+      // INFO(first << " " << last)
       int i = token.find(first);
       int j = i + first.length() - 1;
       auto any = Node{
