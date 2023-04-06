@@ -62,6 +62,9 @@ fuzzy::BYP(std::string token, std::pair<std::string, int> word,
   for (int i = 0; i < n; i++) {
     for (int j = i; j < n; j++) {
       std::string subtoken = token.substr(i, j - i + 1);
+      if(subtoken.length() > word.first.length()) {
+        continue;
+      }
       double tolerance = p(subtoken, word.first);
       // if(tolerance == 0 && subtoken == word.first) {
       //     matching_seq.push_back({subtoken, word.first});
@@ -87,57 +90,4 @@ fuzzy::BYP(std::string token, std::pair<std::string, int> word,
     }
   }
   return matching_seq;
-}
-
-#define SIZE 256    /* size of alpha index and count array */
-#define MOD256 0xFF /* for the mod operation */
-struct anode {      /* structure for index of alphabet */
-  int offset;       /* distance of char from start of pattern */
-  anode *next;      /* pointer to next idxnode if it exists */
-};
-
-anode alpha[SIZE]; /* offset for each alphabetic character */
-int count[SIZE];   /* count of the characters that don't match */
-void search(char *t, int n, int m, int k, anode alpha[],
-            int count[]) /* string searching with mismatches */
-{
-  int i, off1;
-  anode *aptr;
-  for (i = 0; i < n; i++) {
-    if ((off1 = (aptr = &alpha[*t++])->offset) >= 0) {
-      count[(i + off1) & MOD256]--;
-      for (aptr = aptr->next; aptr != NULL; aptr = aptr->next) {
-        count[(i + aptr->offset) & MOD256]--;
-      }
-    }
-    if (count[i & MOD256] <= k) {
-      printf("Match in position %d with %d mismatches\n", i - m + 1,
-             count[i & MOD256]);
-      count[i & MOD256] = m;
-    }
-  }
-}
-
-void preprocess(char *p, int m, anode alpha[],
-                int count[]) /* preprocessing routine */
-{
-  int i, j;
-  anode *aptr;
-  for (i = 0; i < SIZE; i++) {
-    alpha[i].offset = -1;
-    alpha[i].next = NULL;
-    count[i] = m;
-  }
-  for (i = 0, j = 128; i < m; i++, p++) {
-    count[i] = SIZE;
-    if (alpha[*p].offset == -1)
-      alpha[*p].offset = m - i - i;
-    else {
-      aptr = alpha[*p].next;
-      alpha[*p].next = &alpha[j++];
-      alpha[*p].next->offset = m - i - 1;
-      alpha[*p].next->next = aptr;
-      count[m - 1] = m;
-    }
-  }
 }
