@@ -4,7 +4,7 @@ CFLAGS=-g -Wall -std=c++17
 OBJDIR=obj
 SRCDIR=./
 TESTDIR=tests
-BINDIR=./
+BINDIR=
 ASMDIR=hex
 
 #Wildcard find all .c-files
@@ -13,7 +13,7 @@ SRCS=$(wildcard $(SRCDIR)/*.cpp)
 #Substitute all .c files with .obj files, from the SRCS-variable
 OBJS=$(patsubst $(SRCDIR)/%.cpp, $(OBJDIR)/%.obj, $(SRCS))
 
-BIN = $(BINDIR)/main
+BIN = ./main
 
 all:$(BIN)
 

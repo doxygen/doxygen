@@ -63,7 +63,7 @@ ar::Dictionary get_dict(string file) {
     try {
       other = std::stoi(line.substr(0, first));
     } catch (std::invalid_argument e) {
-      other = (word.length() / std::log(word.length())) / file_size;
+      other = (word.length() / std::log(word.length()))/*  / file_size */;
     }
     retvec.insert({word, other});
   }
@@ -97,7 +97,7 @@ ar::Dictionaries get_false() {
 int main(void) {
   auto D = get_true();
   std::string token = "arrayavgsumnumheelobvs";
-  INFO("STARTED: " << token)
+  RESULT("STARTED: " << token)
 
   Lmatch matches;
   auto labels = ar::split_matching(token, D, &matches);
@@ -105,45 +105,43 @@ int main(void) {
   auto thing = ar::expansion_matching(labels, D);
 
   // Replace the words in the identifier
-  {
-    for (auto each : matches) {
-      size_t index = 0;
-      while (true) {
-        /* Locate the substring to replace. */
-        index = token.find(each, index);
-        if (index == std::string::npos)
-          break;
+  for (auto each : matches) {
+    size_t index = 0;
+    while (true) {
+      /* Locate the substring to replace. */
+      index = token.find(each, index);
+      if (index == std::string::npos)
+        break;
 
-        /* Make the replacement. */
-        token.replace(index, each.size(), each + "_");
+      /* Make the replacement. */
+      token.replace(index, each.size(), each + "_");
 
-        /* Advance index forward so the next iteration doesn't pick it up as
-         * well.
-         */
-        index += each.size();
-      }
-    }
-
-    for (auto &[each, word] : thing) {
-      size_t index = 0;
-      while (true) {
-        /* Locate the substring to replace. */
-        index = token.find(each, index);
-        if (index == std::string::npos)
-          break;
-
-        /* Make the replacement. */
-        token.replace(index, each.size(), word + "_");
-
-        /* Advance index forward so the next iteration doesn't pick it up as
-         * well.
-         */
-        index += word.size();
-      }
+      /* Advance index forward so the next iteration doesn't pick it up as
+       * well.
+       */
+      index += each.size();
     }
   }
 
-  std::cout << token << std::endl;
+  for (auto &[each, word] : thing) {
+    size_t index = 0;
+    while (true) {
+      /* Locate the substring to replace. */
+      index = token.find(each, index);
+      if (index == std::string::npos)
+        break;
+
+      /* Make the replacement. */
+      token.replace(index, each.size(), word + "_");
+
+      /* Advance index forward so the next iteration doesn't pick it up as
+       * well.
+       */
+      index += word.size();
+    }
+  }
+
+  RESULT(token)
 
   return 0;
 }
