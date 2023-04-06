@@ -1,4 +1,5 @@
 #include <cmath>
+#include <filesystem>
 #include <fstream>
 #include <math.h>
 #include <ostream>
@@ -8,6 +9,7 @@
 #include <vector>
 
 #include "ar.hpp"
+#include "opts.hpp"
 
 using std::string;
 
@@ -45,6 +47,11 @@ ar::Dictionary get_dict(string file) {
     std::cout << "Could not open file " << file << std::endl;
     exit(1);
   }
+  int file_size = std::count(std::istreambuf_iterator<char>(ifile),
+                             std::istreambuf_iterator<char>(), '\n');
+
+  ifile.clear();
+  ifile.seekg(0);
 
   string line;
   string delim = ";";
@@ -56,7 +63,7 @@ ar::Dictionary get_dict(string file) {
     try {
       other = std::stoi(line.substr(0, first));
     } catch (std::invalid_argument e) {
-      other = word.length() / std::log(word.length());
+      other = (word.length() / std::log(word.length())) / file_size;
     }
     retvec.insert({word, other});
   }
@@ -90,64 +97,49 @@ ar::Dictionaries get_false() {
 int main(void) {
   auto D = get_true();
   std::string token = "arrayavgsumnumheelobvs";
-  std::cout << "STARTED" << std::endl;
+  INFO("STARTED: " << token)
 
   Lmatch matches;
   auto labels = ar::split_matching(token, D, &matches);
 
-  std::cout << "GOT BACK" << std::endl;
-
-  for (std::string label : labels) {
-    std::cout << "found labels: " << label << " ";
-  }
-  std::cout << std::endl;
-
-  for (std::string label : matches) {
-    std::cout << "found matches: " << label << std::endl;
-  }
-
-  std::cout << std::endl;
-
   auto thing = ar::expansion_matching(labels, D);
 
-  string res[matches.size() + thing.size()];
+  // Replace the words in the identifier
+  {
+    for (auto each : matches) {
+      size_t index = 0;
+      while (true) {
+        /* Locate the substring to replace. */
+        index = token.find(each, index);
+        if (index == std::string::npos)
+          break;
 
-  for (auto &each : matches) {
+        /* Make the replacement. */
+        token.replace(index, each.size(), each + "_");
 
-    std::cout << each << std::endl;
-  }
-
-  for (auto each : matches) {
-    size_t index = 0;
-    while (true) {
-      /* Locate the substring to replace. */
-      index = token.find(each, index);
-      if (index == std::string::npos)
-        break;
-
-      /* Make the replacement. */
-      token.replace(index, each.size(), each + "_");
-
-      /* Advance index forward so the next iteration doesn't pick it up as well.
-       */
-      index += each.size();
+        /* Advance index forward so the next iteration doesn't pick it up as
+         * well.
+         */
+        index += each.size();
+      }
     }
-  }
 
-  for (auto &[each, word] : thing) {
-    size_t index = 0;
-    while (true) {
-      /* Locate the substring to replace. */
-      index = token.find(each, index);
-      if (index == std::string::npos)
-        break;
+    for (auto &[each, word] : thing) {
+      size_t index = 0;
+      while (true) {
+        /* Locate the substring to replace. */
+        index = token.find(each, index);
+        if (index == std::string::npos)
+          break;
 
-      /* Make the replacement. */
-      token.replace(index, each.size(), word + "_");
+        /* Make the replacement. */
+        token.replace(index, each.size(), word + "_");
 
-      /* Advance index forward so the next iteration doesn't pick it up as well.
-       */
-      index += word.size();
+        /* Advance index forward so the next iteration doesn't pick it up as
+         * well.
+         */
+        index += word.size();
+      }
     }
   }
 

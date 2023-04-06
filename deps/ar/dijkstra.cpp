@@ -118,7 +118,6 @@ vector<Node> Dijkstra::dijkstra(Graph G, string token) {
     frontier.pop();
 
     if (current == end) {
-      std::cout << "ENDED" << std::endl;
       break;
     }
 
@@ -145,20 +144,7 @@ vector<Node> Dijkstra::dijkstra(Graph G, string token) {
     }
   }
 
-  std::cout << "BEST: " << std::endl;
-
-  // for (auto &[successor, current] : prev) {
-  //   std::cout << successor << " -> " << current << std::endl;
-  // }
-
   vector<Node> path;
-  // {
-  //   auto u = end;
-  //   while (u != start) {
-  //     path.push_back(*u);
-  //   }
-  // }
-
   {
     Node u = end;
     while (true) {
@@ -170,7 +156,6 @@ vector<Node> Dijkstra::dijkstra(Graph G, string token) {
           break;
         }
       } catch (std::out_of_range e) {
-        std::cout << "out of range" << std::endl;
         break;
       }
     }
