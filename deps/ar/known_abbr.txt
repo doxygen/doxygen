@@ -115,8 +115,6 @@ iter;iterator
 iface;interface
 intf;interface
 js;javascript
-### L
-
 lang;language
 lat;latitude
 len;length
