@@ -10,7 +10,7 @@
 using std::string;
 
 int main(void) {
-  std::string token = "pnt_ArrayAvgSumNumHeelObvs";
+  std::string token = "pnts_ArrayAvgSumNumHeelObvs";
   std::cout << ar::do_ar(token) << std::endl;
   return 0;
 }
