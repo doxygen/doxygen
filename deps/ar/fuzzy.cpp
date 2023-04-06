@@ -65,6 +65,9 @@ fuzzy::BYP(std::string token, std::pair<std::string, int> word,
       if(subtoken.length() > word.first.length()) {
         continue;
       }
+      if(subtoken[0] != word.first[0]) {
+        continue;
+      }
       double tolerance = p(subtoken, word.first);
       // if(tolerance == 0 && subtoken == word.first) {
       //     matching_seq.push_back({subtoken, word.first});
