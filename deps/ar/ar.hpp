@@ -19,7 +19,7 @@ using Dictionary = std::unordered_map<std::string, int>;
 struct Dictionaries {
   std::vector<Dictionary> dicts;
   std::unordered_map<std::string, std::string> known_abbr;
-  using Iterator = typeof(dicts.begin());
+  using Iterator = decltype(dicts.begin());
 
   Dictionaries(std::vector<Dictionary> dict) : dicts(dict) {}
   Dictionaries(std::vector<Dictionary> dict, std::unordered_map<std::string, std::string> known_abbr)

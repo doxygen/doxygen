@@ -1,5 +1,5 @@
-CC=clang++
-CFLAGS=-g -Wall
+CC=clang++ 
+CFLAGS=-g -Wall -std=c++17
 
 OBJDIR=obj
 SRCDIR=./
