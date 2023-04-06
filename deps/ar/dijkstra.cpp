@@ -121,14 +121,14 @@ vector<Node> Dijkstra::dijkstra(Graph G, string token) {
       break;
     }
 
-    // std::cout << "cur: " << current << std::endl;
+    std::cout << "cur: " << current << std::endl;
 
     explored.insert(current);
 
     for (Edge successors : G[current.j]) {
       auto successor = successors.to;
       if (explored.count(successor) == 0 && !frontier.contains(successor)) {
-        // std::cout << "\tsuc: " << successor << std::endl;
+        std::cout << "\tsuc: " << successor << std::endl;
         prev[successor] = current;
         frontier.push(successor);
         continue;
