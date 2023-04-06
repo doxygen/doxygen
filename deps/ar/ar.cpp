@@ -123,6 +123,9 @@ LongForm ar::expansion_matching(NonDictWords nonDictWords, Dictionaries D) {
       } else {
         phi = [&token](string &tok, string &word) {
           int pos = 0;
+          if(token[0] != word[0]) {
+            return -1;
+          }
           if (tok[pos] != word[pos]) {
             auto n_pos = token.find(tok);
             if (n_pos != string::npos) {
