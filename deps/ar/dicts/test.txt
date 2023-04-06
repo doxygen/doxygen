@@ -5009,9 +5009,10 @@ poem
 poems
 poet
 poetry
+points;10
 point;10
-pointed;9
-pointer;9
+pointed
+pointer
 pointing
 pokemon
 poker

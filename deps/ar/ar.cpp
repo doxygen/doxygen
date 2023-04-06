@@ -271,9 +271,7 @@ Lmatch ar::split_matching(string ident, Dictionaries D, Lmatch *matches) {
     retvec.push_back(split);
   }
 
-  if (ident != "\0" || ident != "" || ident != "\n" || ident.size() > 0) {
-    retvec.push_back(ident);
-  }
+  retvec.push_back(ident);
 
   retvec.erase(
       std::remove_if(retvec.begin(), retvec.end(),
