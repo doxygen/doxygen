@@ -21,7 +21,7 @@ int ar::Dictionaries::operator[](std::string &word) {
 bool ar::Dictionaries::check(std::string word) {
   for (auto dict : this->dicts) {
     try {
-      auto res = dict[word];
+      dict[word];
       return true;
     } catch (std::out_of_range e) {
     }
@@ -109,7 +109,7 @@ LongForm ar::expansion_matching(NonDictWords nonDictWords, Dictionaries D) {
       check_vowels_consonants(token, &vowels, &consonants);
       if (vowels >= consonants) {
         // if the token is a prefix
-        phi = [&token, &D](string &tok, string &word) {
+        phi = [&token](string &tok, string &word) {
           if (tok.length() != token.length()) {
             return -1;
           }
@@ -121,11 +121,11 @@ LongForm ar::expansion_matching(NonDictWords nonDictWords, Dictionaries D) {
           return 1;
         };
       } else {
-        phi = [&token, &D](string &tok, string &word) {
+        phi = [&token](string &tok, string &word) {
           int pos = 0;
           if (tok[pos] != word[pos]) {
             auto n_pos = token.find(tok);
-            if(n_pos != string::npos) {
+            if (n_pos != string::npos) {
               pos = n_pos;
             } else {
               return -1;
@@ -233,7 +233,7 @@ Lmatch ar::string_matching(std::string token, Dictionary D, Phi phi,
   }
 
   auto best_path = Dijkstra::dijkstra(G, token);
-  INFO("DIJKSTRA DONE")
+  RESULT("DIJKSTRA DONE")
 
   //    end for
   // end for
@@ -244,7 +244,7 @@ Lmatch ar::string_matching(std::string token, Dictionary D, Phi phi,
 
 Lmatch ar::split_matching(string ident, Dictionaries D, Lmatch *matches) {
 
-  Phi phi = [&ident, &D](std::string &token, std::string &word) {
+  Phi phi = [](std::string &token, std::string &word) {
     if (token == word) {
       return 0;
     }
@@ -287,20 +287,29 @@ Lmatch ar::split_matching(string ident, Dictionaries D, Lmatch *matches) {
 #include <math.h>
 #include <ostream>
 
-std::unordered_map<std::string, std::string> get_abbr(string file) {
-  std::unordered_map<std::string, std::string> retvec;
-
+struct File {
   std::fstream ifile;
-  ifile.open(file);
+  std::string base = "./dicts/";
+  File(std::string filename) {
+    ifile.open(base + filename);
 
-  if (!ifile.is_open()) {
-    std::cout << "Could not open file " << file << std::endl;
-    exit(1);
+    if (!ifile.is_open()) {
+      DANGER("Could not open file: " << filename)
+      ifile.close();
+      exit(1);
+    }
   }
+
+  ~File() { ifile.close(); }
+};
+
+std::unordered_map<std::string, std::string> get_abbr(string filename) {
+  std::unordered_map<std::string, std::string> retvec;
+  File file(filename);
 
   string line;
   string delim = ";";
-  while (std::getline(ifile, line)) {
+  while (std::getline(file.ifile, line)) {
     int first = line.find(delim);
     string word = line.substr(0, first);
     line.erase(0, first + delim.length());
@@ -311,25 +320,17 @@ std::unordered_map<std::string, std::string> get_abbr(string file) {
   return retvec;
 }
 
-ar::Dictionary get_dict(string file) {
+ar::Dictionary get_dict(string filename) {
   ar::Dictionary retvec;
 
-  std::fstream ifile;
-  ifile.open(file);
+  File file(filename);
 
-  if (!ifile.is_open()) {
-    std::cout << "Could not open file " << file << std::endl;
-    exit(1);
-  }
-  int file_size = std::count(std::istreambuf_iterator<char>(ifile),
-                             std::istreambuf_iterator<char>(), '\n');
-
-  ifile.clear();
-  ifile.seekg(0);
+  file.ifile.clear();
+  file.ifile.seekg(0);
 
   string line;
   string delim = ";";
-  while (std::getline(ifile, line)) {
+  while (std::getline(file.ifile, line)) {
     int first = line.find(delim);
     string word = line.substr(0, first);
     line.erase(0, first + delim.length());
@@ -348,7 +349,7 @@ ar::Dictionary get_dict(string file) {
 ar::Dictionaries get_true() {
   ar::Dictionaries D;
   auto eng = get_dict("test.txt");
-  auto it = get_dict("List_of_computing_and_IT_abbreviations");
+  auto it = get_dict("it_abbr.txt");
   D.add(eng);
   D.add(it);
   D.known_abbr = get_abbr("known_abbr.txt");
@@ -366,8 +367,7 @@ std::string ar::do_ar(std::string token) {
 
   // Replace the words in the identifier
   for (auto each : matches) {
-    size_t index = 0;
-    while (true) {
+    for (size_t index = 0;;) {
       /* Locate the substring to replace. */
       index = token.find(each, index);
       if (index == std::string::npos)
@@ -376,13 +376,13 @@ std::string ar::do_ar(std::string token) {
       /* Make the replacement. */
       token.replace(index, each.size(), each + "_");
 
-      /* Advance index forward so the next iteration doesn't pick it up as
+      /*
+       * Advance index forward so the next iteration doesn't pick it up as
        * well.
        */
       index += each.size();
     }
-  }
-;
+  };
   for (auto &[each, word] : thing) {
     size_t index = 0;
     while (true) {
