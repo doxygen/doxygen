@@ -1,4 +1,5 @@
 #include "dijkstra.hpp"
+#include "opts.hpp"
 #include <cstdio>
 #include <iostream>
 #include <memory>
@@ -121,14 +122,14 @@ vector<Node> Dijkstra::dijkstra(Graph G, string token) {
       break;
     }
 
-    std::cout << "cur: " << current << std::endl;
+    INFO("cur: " << current)
 
     explored.insert(current);
 
     for (Edge successors : G[current.j]) {
       auto successor = successors.to;
       if (explored.count(successor) == 0 && !frontier.contains(successor)) {
-        std::cout << "\tsuc: " << successor << std::endl;
+        INFO("\tsuc: " << successor)
         prev[successor] = current;
         frontier.push(successor);
         continue;
