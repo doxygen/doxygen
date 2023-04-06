@@ -107,9 +107,12 @@ LongForm ar::expansion_matching(NonDictWords nonDictWords, Dictionaries D) {
       int consonants = 0;
       check_vowels_consonants(token, &vowels, &consonants);
       if (vowels >= consonants) {
-        phi = [&D](string &token, string &word) { 
-          for(auto i = 0; i < token.length(); i++) {
-            if(word[i] != token[i]) {
+        phi = [&token, &D](string &tok, string &word) { 
+          if(tok.length() != token.length()) {
+            return -1;
+          }
+          for(auto i = 0; i < tok.length(); i++) {
+            if(word[i] != tok[i]) {
               return -1;
             }
           }
@@ -119,7 +122,6 @@ LongForm ar::expansion_matching(NonDictWords nonDictWords, Dictionaries D) {
         phi = [&token, &D](string &tok, string &word) {
           int counter = 0;
           int pos = 0;
-          // std::cout << tok << " " << token << std::endl;
           if(tok.length() != token.length()) {
             return -1;
           }
