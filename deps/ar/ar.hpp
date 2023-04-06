@@ -43,8 +43,6 @@ struct Dictionaries {
     return dicts.end(); } // 200 is out of bounds
 };
 
-void check_vowels_consonants(std::string word, int &vowels, int &consonants);
-
 LongForm expansion_matching(NonDictWords nonDictWords, ar::Dictionaries D);
 
 Lmatch string_matching(std::string token, ar::Dictionary D, Phi phi,

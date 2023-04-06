@@ -74,13 +74,13 @@ bool is_consonant(char character) {
   return !is_vowels(character);
 }
 
-void ar::check_vowels_consonants(string word, int &vowels, int &consonants) {
+void check_vowels_consonants(string word, int *vowels, int *consonants) {
   for (auto each : word) {
     if (is_vowels(each)) {
-      vowels += 1;
+      *vowels += 1;
     }
     if (is_consonant(each)) {
-      consonants += 1;
+      *consonants += 1;
     }
   }
 }
@@ -103,11 +103,10 @@ LongForm ar::expansion_matching(NonDictWords nonDictWords, Dictionaries D) {
   for (auto token : toExpand) {
     for (auto dictionary : D) {
       // INFO(token);
-      int vowels;
-      int consonants;
-      check_vowels_consonants(token, vowels, consonants);
+      int vowels = 0;
+      int consonants = 0;
+      check_vowels_consonants(token, &vowels, &consonants);
       if (vowels >= consonants) {
-        std::cout << "HELLO" << std::endl;
         phi = [&D](string &token, string &word) { 
           for(auto i = 0; i < token.length(); i++) {
             if(word[i] != token[i]) {
@@ -117,7 +116,6 @@ LongForm ar::expansion_matching(NonDictWords nonDictWords, Dictionaries D) {
           return 2;
         };
       } else {
-        std::cout << "OTHER HELLO" << std::endl;
         phi = [&token, &D](string &tok, string &word) {
           int counter = 0;
           int pos = 0;
