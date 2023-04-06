@@ -131,7 +131,7 @@ LongForm ar::expansion_matching(NonDictWords nonDictWords, Dictionaries D) {
               return -1;
             }
           }
-          std::cout << tok << " " << word << std::endl;
+          INFO(tok << " " << word)
           int top_counter = 0;
           int counter = 0;
           // Ensure that the word contains all the needed letters
@@ -382,7 +382,7 @@ std::string ar::do_ar(std::string token) {
       index += each.size();
     }
   }
-
+;
   for (auto &[each, word] : thing) {
     size_t index = 0;
     while (true) {
