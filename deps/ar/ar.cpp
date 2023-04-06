@@ -36,18 +36,14 @@ LongForm expand_known_abbr(NonDictWords &nonDictWords, ar::Dictionaries D, NonDi
 
   for (auto it = 0; it < nonDictWords.size(); it++) {
     auto each = nonDictWords[it];
-    std::cout << "trying to check: " << each << std::endl;
     try {
       auto word = D.known_abbr[each];
       if(word.size() == 0) {
-        std::cout << "not found: " << each << std::endl;
         toExpand->push_back(each);
         continue;
       }
-      std::cout << "found: " << word << " for: " << each << std::endl;
       retvec.insert({each, word});
     } catch (std::out_of_range e) {
-      std::cout << "not found: " << each << std::endl;
       toExpand->push_back(each);
     }
   }
@@ -94,8 +90,12 @@ LongForm ar::expansion_matching(NonDictWords nonDictWords, Dictionaries D) {
   LongForm retvec = expand_known_abbr(nonDictWords, D, &toExpand);
 
   if (toExpand.size() == 0) {
-    std::cout << "Nothing to expand" << std::endl;
+    INFO("Nothing to expand")
     return retvec;
+  }
+
+  for(auto word: toExpand) {
+    INFO("HAVE TO EXPAND:" << word)
   }
 
   Phi phi = nullptr;
@@ -192,8 +192,8 @@ Lmatch ar::string_matching(std::string token, Dictionary D, Phi phi,
   }
 
   auto best_path = Dijkstra::dijkstra(G, token);
+  INFO("DIJKSTRA DONE")
 
-  cout << "RESULT" << endl;
   //    end for
   // end for
   // best_path <- Dijkstra(G)
@@ -214,12 +214,11 @@ Lmatch ar::split_matching(string ident, Dictionaries D, Lmatch *matches) {
 
   for (auto dict : D.dicts) {
     for (std::string each : string_matching(ident, dict, phi, cost)) {
-      std::cout << "matched word: " << each << std::endl;
       matches->push_back(each);
     };
 
     if (matches->size() != 0) {
-      std::cout << "RETURNED" << std::endl;
+      INFO("SPLIT_MATCHING DONE")
       break;
     }
 
