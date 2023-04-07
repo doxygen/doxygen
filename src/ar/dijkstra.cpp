@@ -52,8 +52,9 @@ size_t Node::operator()() const {
 // A function to get the labels of the edges in a path
 vector<string> Dijkstra::getEdgeLabels(vector<Node> path) {
   vector<string> labels;
-  for(auto each: path) {
-    if(each.cost < 0) continue;
+  for (auto each : path) {
+    if (each.cost < 0)
+      continue;
     labels.push_back(each.word);
   }
   return labels;
@@ -64,14 +65,12 @@ Graph Dijkstra::initializeMatchingGraph(string token) {
 
   for (size_t i = 0; i <= token.size(); i++) {
     auto str = string(1, token[i]);
-    auto to =
-        Node{.i = (int)i, .j = (int)i + 1, .word = str, .cost = INT32_MIN};
-    if(i == token.size()) {
+    auto to = Node{(int)i, (int)i + 1, str, INT32_MIN};
+    if (i == token.size()) {
       to.cost = -100;
       to.word = "\n";
     }
     G[i].push_back({to});
-
   }
 
   return G;
@@ -95,9 +94,8 @@ Graph Dijkstra::initializeMatchingGraph(string token) {
 
 vector<Node> Dijkstra::dijkstra(Graph &G, string token) {
 
-  auto start = Node{.i = 0, .j = 0, .word = token.substr(0, 1), .cost = 0};
-  auto end = Node{(int)token.length(), (int)token.size() + 1,
-                  "\n", -100};
+  auto start = Node{0, 0, token.substr(0, 1), 0};
+  auto end = Node{(int)token.length(), (int)token.size() + 1, "\n", -100};
 
   // for (auto &[first, last] : G) {
   //   std::cout << first;
@@ -150,10 +148,10 @@ vector<Node> Dijkstra::dijkstra(Graph &G, string token) {
       try {
         auto found = prev.at(u);
         u = found;
-        if(u == start) {
+        if (u == start) {
           break;
         }
-      } catch (std::out_of_range e) {
+      } catch (const std::out_of_range &e) {
         break;
       }
     }

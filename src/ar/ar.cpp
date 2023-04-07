@@ -11,7 +11,7 @@ int ar::Dictionaries::operator[](const std::string &word) const {
   for (auto dict : this->dicts) {
     try {
       return dict[word];
-    } catch (std::out_of_range e) {
+    } catch (const std::out_of_range &e) {
     }
   }
   return -1;
@@ -22,7 +22,7 @@ bool ar::Dictionaries::check(const std::string &word) const {
     try {
       dict[word];
       return true;
-    } catch (std::out_of_range e) {
+    } catch (const std::out_of_range &e) {
     }
   }
   return false;
@@ -43,7 +43,7 @@ const LongForm expand_known_abbr(NonDictWords &nonDictWords, ar::Dictionaries &D
         continue;
       }
       retvec.insert({each, word});
-    } catch (std::out_of_range e) {
+    } catch (const std::out_of_range &e) {
       toExpand->push_back(each);
     }
   }
@@ -216,17 +216,17 @@ const Lmatch ar::string_matching(std::string token, const Dictionary &D, const P
   // for each: word E Dict do
   for (pair<string, int> word : D) {
     // matching_seq <- BYP(token, word, phi(word))
-    matches matching_seq = fuzzy::BYP(token, word, phi);
+    Matches matching_seq = fuzzy::BYP(token, word, phi);
     // for each: (<ch_i..ch_j>, word) E matching_seq do
     for (auto &[first, last] : matching_seq) {
       // INFO(first << " " << last)
       int i = token.find(first);
       int j = i + first.length() - 1;
       auto any = Node{
-          .i = i,
-          .j = j + 1,
-          .word = last,
-          .cost = cost(last),
+          i,
+          j + 1,
+          last,
+          cost(last),
       };
       // std::cout << "HELLO " << s_first << " " << s_second << std::endl;
       // G(E) <- G(E) U {<i, j, word, cost(word)>}
@@ -337,7 +337,7 @@ ar::Dictionary get_dict(string filename) {
     int other = -1;
     try {
       other = std::stoi(line.substr(0, first));
-    } catch (std::invalid_argument e) {
+    } catch (const std::invalid_argument &e) {
       other = (word.length() / std::log(word.length()));
     }
     retvec.insert({word, other});

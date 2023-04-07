@@ -22,8 +22,8 @@ struct Dictionaries {
   using Iterator = decltype(dicts.begin());
 
   Dictionaries(std::vector<Dictionary> dict) : dicts(dict) {}
-  Dictionaries(std::vector<Dictionary> dict, std::unordered_map<std::string, std::string> known_abbr)
-    : dicts(dict), known_abbr(known_abbr){}
+  Dictionaries(std::vector<Dictionary> dict, std::unordered_map<std::string, std::string> known_abbr_c)
+    : dicts(dict), known_abbr(known_abbr_c){}
   Dictionaries(): dicts(){}
 
   int find(const std::string &word) const;
