@@ -533,6 +533,7 @@ class QCString
 
     void check();
     std::string get_checked();
+    const std::string get_checked() const;
 
   private:
     std::string m_rep;

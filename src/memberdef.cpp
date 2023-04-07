@@ -3316,6 +3316,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
 
   QCString ldef = definition();
   QCString title = name();
+  title.check();
   //printf("member '%s' def='%s'\n",qPrint(name()),qPrint(ldef));
   if (isEnumerate())
   {
@@ -3350,8 +3351,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
   }
   else if (isFunction() && !isObjCMethod())
   {
-    title.check();
-    title += "() AR: [ " + title.get_checked() + " ]";
+    title += "()";
   }
   if (lang == SrcLangExt_Slice)
   {
@@ -3420,6 +3420,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
   }
   else // not an enum value or anonymous compound
   {
+    title.check();
     ol.startDoxyAnchor(cfname,cname,memAnchor,doxyName,doxyArgs);
     ol.startMemberDoc(ciname,name(),memAnchor,title,memCount,memTotal,showInline);
 
