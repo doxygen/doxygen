@@ -531,8 +531,12 @@ class QCString
       return m_rep[i];
     }
 
+    void check();
+    std::string get_checked();
+
   private:
     std::string m_rep;
+    std::string checked_rep;
 };
 
 /*****************************************************************************
