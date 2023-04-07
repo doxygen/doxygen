@@ -26,29 +26,28 @@ struct Dictionaries {
     : dicts(dict), known_abbr(known_abbr){}
   Dictionaries(): dicts(){}
 
-  int find(std::string word);
+  int find(const std::string &word) const;
 
-  bool check(std::string word);
+  bool check(const std::string &word) const;
 
   void add(Dictionary d);
 
-  std::string compare(std::string token);
-  int operator[](std::string &word);
+  const std::string compare(std::string &token) const;
+  int operator[](const std::string &word) const;
 
-  // Iterator definition here ...
-
-  Iterator begin() {
+  const Iterator begin() {
     return dicts.begin(); }
-  Iterator end()   {
-    return dicts.end(); } // 200 is out of bounds
+
+  const Iterator end() {
+    return dicts.end(); }
 };
 
-std::string do_ar(std::string word);
+const std::string do_ar(std::string word);
 
-LongForm expansion_matching(NonDictWords nonDictWords, ar::Dictionaries D);
+const LongForm expansion_matching(NonDictWords &nonDictWords, ar::Dictionaries &D);
 
-Lmatch string_matching(std::string token, ar::Dictionary D, Phi phi,
-                       Cfunc cost);
+const Lmatch string_matching(std::string token, const ar::Dictionary &D, const Phi &phi,
+                       const Cfunc &cost);
 
-Lmatch split_matching(std::string ident, ar::Dictionaries D, Lmatch *matches);
+const Lmatch split_matching(std::string ident, const ar::Dictionaries &D, Lmatch *matches);
 } // namespace ar

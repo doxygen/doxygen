@@ -23,7 +23,7 @@ public:
   bool operator>(const Node &other) const;
   size_t operator()() const;
 
-  const void print() const;
+  void print() const;
 };
 
 // A struct to represent an edge in the matching graph
@@ -65,7 +65,7 @@ public:
     return last;
   }
 
-  const bool contains(const T &val) const {
+  bool contains(const T &val) const {
     return this->find(val) != this->c.cend();
   }
 
@@ -90,7 +90,7 @@ public:
 Graph initializeMatchingGraph(std::string token);
 
 // A function to get the labels of the edges in a path
-std::vector<std::string> getEdgeLabels(std::vector<Node> path, Graph G);
+std::vector<std::string> getEdgeLabels(std::vector<Node> path);
 
-std::vector<Node> dijkstra(Graph G, std::string token);
+std::vector<Node> dijkstra(Graph &G, std::string token);
 } // namespace Dijkstra
