@@ -8,7 +8,6 @@
 
 using Dijkstra::Graph;
 using Dijkstra::Node;
-using std::map;
 using std::size_t;
 using std::string;
 using std::unordered_map;
@@ -43,7 +42,7 @@ std::ostream &operator<<(std::ostream &os, const Node &nd) {
   return os;
 }
 
-const void Node::print() const { std::cout << *this << std::endl; }
+void Node::print() const { std::cout << *this << std::endl; }
 
 std::hash<std::string> hasher;
 size_t Node::operator()() const {
@@ -51,7 +50,7 @@ size_t Node::operator()() const {
 }
 
 // A function to get the labels of the edges in a path
-vector<string> Dijkstra::getEdgeLabels(vector<Node> path, Graph G) {
+vector<string> Dijkstra::getEdgeLabels(vector<Node> path) {
   vector<string> labels;
   for(auto each: path) {
     if(each.cost < 0) continue;
@@ -63,11 +62,10 @@ vector<string> Dijkstra::getEdgeLabels(vector<Node> path, Graph G) {
 Graph Dijkstra::initializeMatchingGraph(string token) {
   Graph G;
 
-  int j = token.size();
-  for (auto i = 0; i <= token.size(); i++) {
+  for (size_t i = 0; i <= token.size(); i++) {
     auto str = string(1, token[i]);
     auto to =
-        Node{.i = i, .j = i + 1, .word = str, .cost = INT32_MIN};
+        Node{.i = (int)i, .j = (int)i + 1, .word = str, .cost = INT32_MIN};
     if(i == token.size()) {
       to.cost = -100;
       to.word = "\n";
@@ -95,7 +93,7 @@ Graph Dijkstra::initializeMatchingGraph(string token) {
 //
 // "g"
 
-vector<Node> Dijkstra::dijkstra(Graph G, string token) {
+vector<Node> Dijkstra::dijkstra(Graph &G, string token) {
 
   auto start = Node{.i = 0, .j = 0, .word = token.substr(0, 1), .cost = 0};
   auto end = Node{(int)token.length(), (int)token.size() + 1,
@@ -135,7 +133,6 @@ vector<Node> Dijkstra::dijkstra(Graph G, string token) {
         continue;
       }
 
-      bool hasErased = false;
       auto previous = *frontier.find(successor);
       if (previous.word == successor.word && previous.cost <= successor.cost) {
         if (frontier.eraseNode(previous)) {
