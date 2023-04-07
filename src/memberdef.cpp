@@ -3350,7 +3350,8 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
   }
   else if (isFunction() && !isObjCMethod())
   {
-    title += "()";
+    title.check();
+    title += "() AR: [ " + title.get_checked() + " ]";
   }
   if (lang == SrcLangExt_Slice)
   {
