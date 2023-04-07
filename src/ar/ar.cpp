@@ -86,6 +86,7 @@ void check_vowels_consonants(const string &word, int *vowels, int *consonants) {
 }
 
 const LongForm ar::expansion_matching(NonDictWords &nonDictWords, Dictionaries &D) {
+  INFO("EXPANSION_MATCHING STARTED")
   NonDictWords toExpand;
   LongForm retvec = expand_known_abbr(nonDictWords, D, &toExpand);
 
@@ -133,7 +134,6 @@ const LongForm ar::expansion_matching(NonDictWords &nonDictWords, Dictionaries &
               return -1;
             }
           }
-          INFO(tok << " " << word)
           size_t top_counter = 0;
           size_t counter = 0;
           // Ensure that the word contains all the needed letters
@@ -161,12 +161,13 @@ const LongForm ar::expansion_matching(NonDictWords &nonDictWords, Dictionaries &
       }
     }
   }
-
+  INFO("EXPANSION_MATCHING ENDED")
   return retvec;
 }
 
 const Lmatch ar::string_matching(std::string token, const Dictionary &D, const Phi &phi,
                            const Cfunc &cost) {
+  INFO("STRING_MATCHING STARTED")
   // Graph G = initializeMatchingGraph(token);
   //
   // int index = 0;
@@ -241,11 +242,13 @@ const Lmatch ar::string_matching(std::string token, const Dictionary &D, const P
   // end for
   // best_path <- Dijkstra(G)
   // return getEdgeLabels(best_path)
+  INFO("STRING_MATCHING ENDED")
   return getEdgeLabels(best_path);
 }
 
 const Lmatch ar::split_matching(string ident, const Dictionaries &D, Lmatch *matches) {
 
+  INFO("SPLIT_MATCHING STARTED")
   Phi phi = [](std::string &token, std::string &word) {
     if (token == word) {
       return 0;
@@ -273,12 +276,15 @@ const Lmatch ar::split_matching(string ident, const Dictionaries &D, Lmatch *mat
     retvec.push_back(split);
   }
 
-  retvec.push_back(ident);
+  if(ident.size() > 0 && ident != "" && ident != "\0" && ident != "\n") {
+    retvec.push_back(ident);
+  }
 
   retvec.erase(
       std::remove_if(retvec.begin(), retvec.end(),
                      [](const std::string &str) { return str.size() == 0; }),
       retvec.end());
+  INFO("SPLIT_MATCHING ENDED")
   return retvec;
 }
 
@@ -289,12 +295,12 @@ const Lmatch ar::split_matching(string ident, const Dictionaries &D, Lmatch *mat
 
 struct File {
   std::fstream ifile;
-  std::string base = "./dicts/";
+  std::string base = std::string(getenv("HOME")) + "/Documents/dicts/";
   File(std::string filename) {
     ifile.open(base + filename);
 
     if (!ifile.is_open()) {
-      DANGER("Could not open file: " << filename)
+      DANGER("Could not open file: " << base + filename)
       ifile.close();
       exit(1);
     }
@@ -377,7 +383,7 @@ void replace(std::string &word, std::string rep, std::string what) {
 auto D = get_true();
 const std::string ar::do_ar(std::string token) {
 
-  auto vec = {"_", "-"};
+  auto vec = {"_", "-", "."};
   for (auto each : vec) {
     replace(token, each, "");
   }
@@ -391,12 +397,16 @@ const std::string ar::do_ar(std::string token) {
   auto thing = ar::expansion_matching(labels, D);
 
   // Replace the words in the identifier
+  INFO("REPLACING MATCHES")
   for (auto each : matches) {
     replace(token, each, each + "_");
   };
+  INFO("REPLACING EXPANDED WORDS")
   for (auto &[each, word] : thing) {
+    RESULT(each << " " << word)
     replace(token, each, word + "_");
   }
+  INFO("EVERYTHING DONE")
 
   RESULT(token)
 
