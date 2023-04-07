@@ -6,7 +6,7 @@
 #define WARNING_LEVEL 2
 #define DANGER_LEVEL 3
 
-#define LOG_LEVEL INFO_LEVEL
+#define LOG_LEVEL WARNING_LEVEL
 
 #include <functional>
 #include <iomanip>

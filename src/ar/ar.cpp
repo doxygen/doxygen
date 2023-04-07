@@ -4,8 +4,8 @@
 
 using Dijkstra::Graph;
 using Dijkstra::Node;
-using std::string;
 using std::pair;
+using std::string;
 
 int ar::Dictionaries::operator[](const std::string &word) const {
   for (auto dict : this->dicts) {
@@ -30,8 +30,8 @@ bool ar::Dictionaries::check(const std::string &word) const {
 
 void ar::Dictionaries::add(Dictionary d) { this->dicts.push_back(d); }
 
-const LongForm expand_known_abbr(NonDictWords &nonDictWords, ar::Dictionaries &D,
-                           NonDictWords *toExpand) {
+const LongForm expand_known_abbr(NonDictWords &nonDictWords,
+                                 ar::Dictionaries &D, NonDictWords *toExpand) {
   LongForm retvec;
 
   for (size_t it = 0; it < nonDictWords.size(); it++) {
@@ -85,7 +85,8 @@ void check_vowels_consonants(const string &word, int *vowels, int *consonants) {
   }
 }
 
-const LongForm ar::expansion_matching(NonDictWords &nonDictWords, Dictionaries &D) {
+const LongForm ar::expansion_matching(NonDictWords &nonDictWords,
+                                      Dictionaries &D) {
   INFO("EXPANSION_MATCHING STARTED")
   NonDictWords toExpand;
   LongForm retvec = expand_known_abbr(nonDictWords, D, &toExpand);
@@ -123,7 +124,7 @@ const LongForm ar::expansion_matching(NonDictWords &nonDictWords, Dictionaries &
       } else {
         phi = [&token](string &tok, string &word) {
           int pos = 0;
-          if(token[0] != word[0]) {
+          if (token[0] != word[0]) {
             return -1;
           }
           if (tok[pos] != word[pos]) {
@@ -165,8 +166,8 @@ const LongForm ar::expansion_matching(NonDictWords &nonDictWords, Dictionaries &
   return retvec;
 }
 
-const Lmatch ar::string_matching(std::string token, const Dictionary &D, const Phi &phi,
-                           const Cfunc &cost) {
+const Lmatch ar::string_matching(std::string token, const Dictionary &D,
+                                 const Phi &phi, const Cfunc &cost) {
   INFO("STRING_MATCHING STARTED")
   // Graph G = initializeMatchingGraph(token);
   //
@@ -246,7 +247,8 @@ const Lmatch ar::string_matching(std::string token, const Dictionary &D, const P
   return getEdgeLabels(best_path);
 }
 
-const Lmatch ar::split_matching(string ident, const Dictionaries &D, Lmatch *matches) {
+const Lmatch ar::split_matching(string ident, const Dictionaries &D,
+                                Lmatch *matches) {
 
   INFO("SPLIT_MATCHING STARTED")
   Phi phi = [](std::string &token, std::string &word) {
@@ -276,7 +278,7 @@ const Lmatch ar::split_matching(string ident, const Dictionaries &D, Lmatch *mat
     retvec.push_back(split);
   }
 
-  if(ident.size() > 0 && ident != "" && ident != "\0" && ident != "\n") {
+  if (ident.size() > 0 && ident != "" && ident != "\0" && ident != "\n") {
     retvec.push_back(ident);
   }
 
@@ -288,6 +290,7 @@ const Lmatch ar::split_matching(string ident, const Dictionaries &D, Lmatch *mat
   return retvec;
 }
 
+#include "../config.h"
 #include <filesystem>
 #include <fstream>
 #include <math.h>
@@ -295,12 +298,11 @@ const Lmatch ar::split_matching(string ident, const Dictionaries &D, Lmatch *mat
 
 struct File {
   std::fstream ifile;
-  std::string base = std::string(getenv("HOME")) + "/Documents/dicts/";
   File(std::string filename) {
-    ifile.open(base + filename);
+    ifile.open(filename);
 
     if (!ifile.is_open()) {
-      DANGER("Could not open file: " << base + filename)
+      DANGER("Could not open file: " << filename)
       ifile.close();
       exit(1);
     }
@@ -353,12 +355,10 @@ ar::Dictionary get_dict(string filename) {
 }
 
 ar::Dictionaries get_true() {
-  ar::Dictionaries D;
-  auto eng = get_dict("test.txt");
-  auto it = get_dict("it_abbr.txt");
-  D.add(eng);
-  D.add(it);
-  D.known_abbr = get_abbr("known_abbr.txt");
+  auto eng_dict = get_dict("eng_dict.txt");
+  auto it_dict = get_dict("it_dict.txt");
+  auto known_abbr = get_abbr("known_abbr.txt");
+  ar::Dictionaries D({eng_dict, it_dict}, known_abbr);
   return D;
 }
 
@@ -403,7 +403,10 @@ const std::string ar::do_ar(std::string token) {
   };
   INFO("REPLACING EXPANDED WORDS")
   for (auto &[each, word] : thing) {
-    RESULT(each << " " << word)
+    RESULT("thing " << each << " " << word)
+    if (each.length() <= 1) {
+      continue;
+    }
     replace(token, each, word + "_");
   }
   INFO("EVERYTHING DONE")

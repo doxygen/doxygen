@@ -24,6 +24,7 @@
 
 void QCString::check() { this->checked_rep = ar::do_ar(m_rep); }
 std::string QCString::get_checked() { return this->checked_rep; }
+const std::string QCString::get_checked() const { return this->checked_rep; }
 
 inline char toLowerChar(char c) { return c >= 'A' && c <= 'Z' ? c | 0x20 : c; }
 
