@@ -4,11 +4,10 @@
 
 using Dijkstra::Graph;
 using Dijkstra::Node;
-using std::cout;
-using std::endl;
 using std::string;
+using std::pair;
 
-int ar::Dictionaries::operator[](std::string &word) {
+int ar::Dictionaries::operator[](const std::string &word) const {
   for (auto dict : this->dicts) {
     try {
       return dict[word];
@@ -18,7 +17,7 @@ int ar::Dictionaries::operator[](std::string &word) {
   return -1;
 }
 
-bool ar::Dictionaries::check(std::string word) {
+bool ar::Dictionaries::check(const std::string &word) const {
   for (auto dict : this->dicts) {
     try {
       dict[word];
@@ -31,12 +30,12 @@ bool ar::Dictionaries::check(std::string word) {
 
 void ar::Dictionaries::add(Dictionary d) { this->dicts.push_back(d); }
 
-LongForm expand_known_abbr(NonDictWords &nonDictWords, ar::Dictionaries D,
+const LongForm expand_known_abbr(NonDictWords &nonDictWords, ar::Dictionaries &D,
                            NonDictWords *toExpand) {
   LongForm retvec;
 
-  for (auto it = 0; it < nonDictWords.size(); it++) {
-    auto each = nonDictWords[it];
+  for (size_t it = 0; it < nonDictWords.size(); it++) {
+    const auto &each = nonDictWords[it];
     try {
       auto word = D.known_abbr[each];
       if (word.size() == 0) {
@@ -75,7 +74,7 @@ bool is_consonant(char character) {
   return !is_vowels(character);
 }
 
-void check_vowels_consonants(string word, int *vowels, int *consonants) {
+void check_vowels_consonants(const string &word, int *vowels, int *consonants) {
   for (auto each : word) {
     if (is_vowels(each)) {
       *vowels += 1;
@@ -86,7 +85,7 @@ void check_vowels_consonants(string word, int *vowels, int *consonants) {
   }
 }
 
-LongForm ar::expansion_matching(NonDictWords nonDictWords, Dictionaries D) {
+const LongForm ar::expansion_matching(NonDictWords &nonDictWords, Dictionaries &D) {
   NonDictWords toExpand;
   LongForm retvec = expand_known_abbr(nonDictWords, D, &toExpand);
 
@@ -102,7 +101,7 @@ LongForm ar::expansion_matching(NonDictWords nonDictWords, Dictionaries D) {
   Phi phi = nullptr;
   Cfunc cost = [&D](std::string &word) { return D[word]; };
   for (auto token : toExpand) {
-    for (auto dictionary : D) {
+    for (const auto &dictionary : D) {
       // INFO(token);
       int vowels = 0;
       int consonants = 0;
@@ -113,7 +112,7 @@ LongForm ar::expansion_matching(NonDictWords nonDictWords, Dictionaries D) {
           if (tok.length() != token.length()) {
             return -1;
           }
-          for (auto i = 0; i < tok.length(); i++) {
+          for (size_t i = 0; i < tok.length(); i++) {
             if (word[i] != tok[i]) {
               return -1;
             }
@@ -135,11 +134,11 @@ LongForm ar::expansion_matching(NonDictWords nonDictWords, Dictionaries D) {
             }
           }
           INFO(tok << " " << word)
-          int top_counter = 0;
-          int counter = 0;
+          size_t top_counter = 0;
+          size_t counter = 0;
           // Ensure that the word contains all the needed letters
           for (counter = 0; counter < token.length(); counter++) {
-            for (auto j = pos; j < word.length(); j++) {
+            for (size_t j = pos; j < word.length(); j++) {
               if (token[counter] == word[j]) {
                 pos = j;
                 top_counter++;
@@ -166,8 +165,8 @@ LongForm ar::expansion_matching(NonDictWords nonDictWords, Dictionaries D) {
   return retvec;
 }
 
-Lmatch ar::string_matching(std::string token, Dictionary D, Phi phi,
-                           Cfunc cost) {
+const Lmatch ar::string_matching(std::string token, const Dictionary &D, const Phi &phi,
+                           const Cfunc &cost) {
   // Graph G = initializeMatchingGraph(token);
   //
   // int index = 0;
@@ -215,7 +214,7 @@ Lmatch ar::string_matching(std::string token, Dictionary D, Phi phi,
   // l -> '\0' INT32_MIN
 
   // for each: word E Dict do
-  for (auto word : D) {
+  for (pair<string, int> word : D) {
     // matching_seq <- BYP(token, word, phi(word))
     matches matching_seq = fuzzy::BYP(token, word, phi);
     // for each: (<ch_i..ch_j>, word) E matching_seq do
@@ -242,10 +241,10 @@ Lmatch ar::string_matching(std::string token, Dictionary D, Phi phi,
   // end for
   // best_path <- Dijkstra(G)
   // return getEdgeLabels(best_path)
-  return getEdgeLabels(best_path, G);
+  return getEdgeLabels(best_path);
 }
 
-Lmatch ar::split_matching(string ident, Dictionaries D, Lmatch *matches) {
+const Lmatch ar::split_matching(string ident, const Dictionaries &D, Lmatch *matches) {
 
   Phi phi = [](std::string &token, std::string &word) {
     if (token == word) {
@@ -376,7 +375,7 @@ void replace(std::string &word, std::string rep, std::string what) {
 }
 
 auto D = get_true();
-std::string ar::do_ar(std::string token) {
+const std::string ar::do_ar(std::string token) {
 
   auto vec = {"_", "-"};
   for (auto each : vec) {
