@@ -2,9 +2,9 @@
 
 #include <iostream>
 
-matches fuzzy::BYP(std::string token, std::pair<std::string, int> word,
+Matches fuzzy::BYP(std::string token, std::pair<std::string, int> word,
                    const Phi &p) {
-  matches matching_seq;
+  Matches matching_seq;
 
   size_t n = token.length();
 

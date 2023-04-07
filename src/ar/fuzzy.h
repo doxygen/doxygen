@@ -10,9 +10,7 @@
 
 namespace fuzzy {
 
-using matches = std::vector<std::pair<std::string, std::string>>;
-
-matches BYP(std::string token, std::pair<std::string, int> word, const Phi &p);
+Matches BYP(std::string token, std::pair<std::string, int> word, const Phi &p);
 } // namespace fuzzy
 
 #endif
