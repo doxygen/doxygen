@@ -290,7 +290,6 @@ const Lmatch ar::split_matching(string ident, const Dictionaries &D,
   return retvec;
 }
 
-#include "../config.h"
 #include <filesystem>
 #include <fstream>
 #include <math.h>
@@ -381,20 +380,18 @@ void replace(std::string &word, std::string rep, std::string what) {
 }
 
 auto D = get_true();
-const std::string ar::do_ar(std::string token) {
 
-  auto vec = {"_", "-", "."};
-  for (auto each : vec) {
-    replace(token, each, "");
-  }
-  std::transform(token.begin(), token.end(), token.begin(),
-                 [](unsigned char c) { return std::tolower(c); });
+const std::string internal_do_ar(std::string token) {
   RESULT("STARTED: " << token)
 
   Lmatch matches;
   auto labels = ar::split_matching(token, D, &matches);
-
-  auto thing = ar::expansion_matching(labels, D);
+  LongForm thing;
+  if (labels.size() != 0) {
+    if (labels[0].length() != 1) {
+      thing = ar::expansion_matching(labels, D);
+    }
+  }
 
   // Replace the words in the identifier
   INFO("REPLACING MATCHES")
@@ -414,4 +411,14 @@ const std::string ar::do_ar(std::string token) {
   RESULT(token)
 
   return token;
+}
+
+const std::string ar::do_ar(std::string token) {
+  std::transform(token.begin(), token.end(), token.begin(),
+                 [](unsigned char c) { return std::tolower(c); });
+  auto vec = {"_", "-"};
+  for (auto each : vec) {
+    replace(token, each, "");
+  }
+  return internal_do_ar(token);
 }

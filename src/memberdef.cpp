@@ -3316,7 +3316,6 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
 
   QCString ldef = definition();
   QCString title = name();
-  title.check();
   //printf("member '%s' def='%s'\n",qPrint(name()),qPrint(ldef));
   if (isEnumerate())
   {
@@ -3380,10 +3379,12 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
     bool found=false;
     for (const auto &vmd : *ml)
     {
+      QCString thing = name();
+      thing.check();
       if (vmd->isEnumerate() && match.str()==vmd->name())
       {
         ol.startDoxyAnchor(cfname,cname,memAnchor,doxyName,doxyArgs);
-        ol.startMemberDoc(ciname,name(),memAnchor,name(),memCount,memTotal,showInline);
+        ol.startMemberDoc(ciname,name(),memAnchor,name() + " AR: [ " + thing.get_checked() + " ]",memCount,memTotal,showInline);
         std::string prefix = match.prefix().str();
         std::string suffix = match.suffix().str();
         linkifyText(TextGeneratorOLImpl(ol),scopedContainer,getBodyDef(),this,prefix.c_str());
