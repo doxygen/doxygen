@@ -31,13 +31,14 @@ bool ar::Dictionaries::check(const std::string &word) const {
 void ar::Dictionaries::add(Dictionary d) { this->dicts.push_back(d); }
 
 const LongForm expand_known_abbr(NonDictWords &nonDictWords,
-                                 ar::Dictionaries &D, NonDictWords *toExpand) {
+                                 const ar::Dictionaries &D,
+                                 NonDictWords *toExpand) {
   LongForm retvec;
 
   for (size_t it = 0; it < nonDictWords.size(); it++) {
     const auto &each = nonDictWords[it];
     try {
-      auto word = D.known_abbr[each];
+      auto word = D.known_abbr.at(each);
       if (word.size() == 0) {
         toExpand->push_back(each);
         continue;
@@ -86,7 +87,7 @@ void check_vowels_consonants(const string &word, int *vowels, int *consonants) {
 }
 
 const LongForm ar::expansion_matching(NonDictWords &nonDictWords,
-                                      Dictionaries &D) {
+                                      const Dictionaries &D) {
   INFO("EXPANSION_MATCHING STARTED")
   NonDictWords toExpand;
   LongForm retvec = expand_known_abbr(nonDictWords, D, &toExpand);
@@ -169,46 +170,9 @@ const LongForm ar::expansion_matching(NonDictWords &nonDictWords,
 const Lmatch ar::string_matching(std::string token, const Dictionary &D,
                                  const Phi &phi, const Cfunc &cost) {
   INFO("STRING_MATCHING STARTED")
-  // Graph G = initializeMatchingGraph(token);
-  //
-  // int index = 0;
-  // for (auto word : D) {
-  //
-  //   vector<pair<string, string>> matching_seq = BYP(token, word, phi);
-  //
-  //   cout << " first " << " second " << endl;
-  //
-  //   // mathing_seq <- BYP(token, word, phi(word))
-  //   // for (<ch_i..ch_j>, word) e matching_seq do
-  //   for (pair<string, string> match : matching_seq) {
-  //     cout << "| " << std::setw(8) << match.first.c_str()
-  //          << " | " << std::setw(8) << match.second.c_str() << " |" << endl;
-  //     // hello
-  //     // hel
-  //     int i = token.find(match.first);    // 0
-  //     int j = i + match.first.size() - 1; // 0 + 3
-  //               // 0, 3, hel,         cost
-  //     Node from = {i, j, match.first, token.substr(i, j), cost(match.first)};
-  //
-  //             // 3, 4, hello,        cost
-  //     Node to = {j + 1, j, match.second, token.substr(j + 1, j),
-  //     cost(match.second)};
-  //
-  //     // G(E) <- G(E) U {(i, j), word, c(word)};
-  //     G[from.slice].push_back({.from = from, .to = to});
-  //   }
-  // }
-  //
-  // Node start = {0, 0, "h", "h", INT32_MIN};
-  // Node end = {0, 3, "hell", "hell", (int)token.size()};
-  // vector<Node> path = dijkstra(G, token, start, end);
-  // for (Node label : path) {
-  //   cout << "labels: " << label.word << " ";
-  // }
-  // return getEdgeLabels(path, G);
-
   // char, vec<{Node, Node}>
   // G = (V, E) <- initializeMathingGraph(token)
+  //
   Graph G = Dijkstra::initializeMatchingGraph(token);
   // h -> e    INT32_MIN
   // e -> l    INT32_MIN
@@ -221,7 +185,6 @@ const Lmatch ar::string_matching(std::string token, const Dictionary &D,
     Matches matching_seq = fuzzy::BYP(token, word, phi);
     // for each: (<ch_i..ch_j>, word) E matching_seq do
     for (auto &[first, last] : matching_seq) {
-      // INFO(first << " " << last)
       int i = token.find(first);
       int j = i + first.length() - 1;
       auto any = Node{
@@ -230,7 +193,6 @@ const Lmatch ar::string_matching(std::string token, const Dictionary &D,
           last,
           cost(last),
       };
-      // std::cout << "HELLO " << s_first << " " << s_second << std::endl;
       // G(E) <- G(E) U {<i, j, word, cost(word)>}
       G[any.i].push_back({any});
     }
@@ -310,6 +272,9 @@ struct File {
   ~File() { ifile.close(); }
 };
 
+/**
+ * Gets the abbreviation-list from memory
+ */
 std::unordered_map<std::string, std::string> get_abbr(string filename) {
   std::unordered_map<std::string, std::string> retvec;
   File file(filename);
@@ -327,6 +292,9 @@ std::unordered_map<std::string, std::string> get_abbr(string filename) {
   return retvec;
 }
 
+/**
+ * Reads the given file from memory
+ */
 ar::Dictionary get_dict(string filename) {
   ar::Dictionary retvec;
 
@@ -353,6 +321,9 @@ ar::Dictionary get_dict(string filename) {
   return retvec;
 }
 
+/**
+ * Gets all the necessary files from memory
+ */
 ar::Dictionaries get_true() {
   auto eng_dict = get_dict("eng_dict.txt");
   auto it_dict = get_dict("it_dict.txt");
@@ -361,12 +332,16 @@ ar::Dictionaries get_true() {
   return D;
 }
 
+/**
+ * Replaces a give string rep with what in the word word
+ */
 void replace(std::string &word, std::string rep, std::string what) {
   for (size_t index = 0;;) {
     /* Locate the substring to replace. */
     index = word.find(rep, index);
     if (index == std::string::npos)
       break;
+    RESULT("\tindex: " << index << " word: " << word << std::endl)
 
     /* Make the replacement. */
     word.replace(index, rep.size(), what);
@@ -375,11 +350,12 @@ void replace(std::string &word, std::string rep, std::string what) {
      * Advance index forward so the next iteration doesn't pick it up as
      * well.
      */
-    index += rep.size();
+    index += what.size();
   }
 }
 
-auto D = get_true();
+// Global Dictionary
+const auto D = get_true();
 
 const std::string internal_do_ar(std::string token) {
   RESULT("STARTED: " << token)
@@ -400,7 +376,7 @@ const std::string internal_do_ar(std::string token) {
   };
   INFO("REPLACING EXPANDED WORDS")
   for (auto &[each, word] : thing) {
-    RESULT("thing " << each << " " << word)
+    RESULT("\teach " << each << " word " << word)
     if (each.length() <= 1) {
       continue;
     }
@@ -408,7 +384,7 @@ const std::string internal_do_ar(std::string token) {
   }
   INFO("EVERYTHING DONE")
 
-  RESULT(token)
+  RESULT("RESULT: " << token)
 
   return token;
 }

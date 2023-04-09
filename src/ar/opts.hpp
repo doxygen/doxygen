@@ -28,10 +28,6 @@ using Cfunc = std::function<int(std::string &)>;
 #define BLUER_COLOR "\033[34m"
 #define RESET_COLOR "\033[0m"
 
-enum log_levels { INFO, RESULT, WARNING, DANGER };
-
-void LOG(std::string message, log_levels loglevel);
-
 #define PRINT(color, type, message)                                            \
   std::cout << color << std::setw(9) << std::left << type << message           \
             << RESET_COLOR << std::endl;
