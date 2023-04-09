@@ -108,10 +108,16 @@ of a HTML tag are passed on to the HTML output only
 <tr><td valign="top">\startalign\anchor htmltag_endSUP \addindex "\</SUP\>"\endalign<tt>\</SUP\></tt></td><td valign="top">Ends a \ref htmltag_SUP "\<SUP\>" section.</td></tr>
 <tr><td valign="top">\startalign\anchor htmltag_TABLE \addindex "\<TABLE\>"\endalign<tt>\<TABLE\></tt></td><td valign="top">starts a table.</td></tr>
 <tr><td valign="top">\startalign\anchor htmltag_endTABLE \addindex "\</TABLE\>"\endalign<tt>\</TABLE\></tt></td><td valign="top">ends a table.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_TBODY \addindex "\<TBODY\>"\endalign<tt>\<TBODY\></tt></td><td valign="top">Starts a new table body, currently ignored by doxygen.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_endTBODY \addindex "\</TBODY\>"\endalign<tt>\</TBODY\></tt></td><td valign="top">Ends a new table body, currently ignored by doxygen.</td></tr>
 <tr><td valign="top">\startalign\anchor htmltag_TD \addindex "\<TD\>"\endalign<tt>\<TD\></tt></td><td valign="top">Starts a new table data element.</td></tr>
 <tr><td valign="top">\startalign\anchor htmltag_endTD \addindex "\</TD\>"\endalign<tt>\</TD\></tt></td><td valign="top">Ends a table data element.</td></tr>
 <tr><td valign="top">\startalign\anchor htmltag_TH \addindex "\<TH\>"\endalign<tt>\<TH\></tt></td><td valign="top">Starts a new table header.</td></tr>
 <tr><td valign="top">\startalign\anchor htmltag_endTH \addindex "\</TH\>"\endalign<tt>\</TH\></tt></td><td valign="top">Ends a table header.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_THEAD \addindex "\<THEAD\>"\endalign<tt>\<THEAD\></tt></td><td valign="top">Starts a new table header, currently ignored by doxygen.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_endTHEAD \addindex "\</THEAD\>"\endalign<tt>\</THEAD\></tt></td><td valign="top">Ends a new table header, currently ignored by doxygen.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_TFOOT \addindex "\<TFOOT\>"\endalign<tt>\<TFOOT\></tt></td><td valign="top">Starts a new table footer, currently ignored by doxygen.</td></tr>
+<tr><td valign="top">\startalign\anchor htmltag_endTFOOT \addindex "\</TFOOT\>"\endalign<tt>\</TFOOT\></tt></td><td valign="top">Ends a new table footer, currently ignored by doxygen.</td></tr>
 <tr><td valign="top">\startalign\anchor htmltag_TR \addindex "\<TR\>"\endalign<tt>\<TR\></tt></td><td valign="top">Starts a new table row.</td></tr>
 <tr><td valign="top">\startalign\anchor htmltag_endTR \addindex "\</TR\>"\endalign<tt>\</TR\></tt></td><td valign="top">Ends a table row.</td></tr>
 <tr><td valign="top">\startalign\anchor htmltag_TT \addindex "\<TT\>"\endalign<tt>\<TT\></tt></td><td valign="top">Starts a piece of text displayed in a typewriter font.</td></tr>

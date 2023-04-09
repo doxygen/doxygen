@@ -1028,6 +1028,7 @@ class DoxHighlightClass(str, Enum):
     KEYWORDTYPE='keywordtype'
     KEYWORDFLOW='keywordflow'
     STRINGLITERAL='stringliteral'
+    XMLCDATA='xmlcdata'
     CHARLITERAL='charliteral'
     VHDLKEYWORD='vhdlkeyword'
     VHDLLOGIC='vhdllogic'
@@ -7493,7 +7494,7 @@ class highlightType(GeneratedsSuper):
                 self.gds_collector_.add_message('Value "%(value)s"%(lineno)s is not of the correct base simple type (str)' % {"value": value, "lineno": lineno, })
                 return False
             value = value
-            enumerations = ['comment', 'normal', 'preprocessor', 'keyword', 'keywordtype', 'keywordflow', 'stringliteral', 'charliteral', 'vhdlkeyword', 'vhdllogic', 'vhdlchar', 'vhdldigit']
+            enumerations = ['comment', 'normal', 'preprocessor', 'keyword', 'keywordtype', 'keywordflow', 'stringliteral', 'xmlcdata', 'charliteral', 'vhdlkeyword', 'vhdllogic', 'vhdlchar', 'vhdldigit']
             if value not in enumerations:
                 lineno = self.gds_get_node_lineno_()
                 self.gds_collector_.add_message('Value "%(value)s"%(lineno)s does not match xsd enumeration restriction on DoxHighlightClass' % {"value" : encode_str_2_3(value), "lineno": lineno} )

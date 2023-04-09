@@ -121,6 +121,7 @@ namechar    [:A-Za-z\200-\377_0-9.-]
 esc         "&#"[0-9]+";"|"&#x"[0-9a-fA-F]+";"
 name        {namestart}{namechar}*
 comment     {open}"!--"([^-]|"-"[^-])*"--"{close}
+cdata       {open}"![CDATA["([^\]]|"\]"[^\]])*"]]"{close}
 data        "random string"
 string      \"([^"&]|{esc})*\"|\'([^'&]|{esc})*\'
 
@@ -151,6 +152,11 @@ string      \"([^"&]|{esc})*\"|\'([^'&]|{esc})*\'
                     }
 <INITIAL>{string}   {
                         startFontClass(yyscanner,"stringliteral");
+                        codifyLines(yyscanner,yytext);
+                        endFontClass(yyscanner);
+                    }
+{cdata}             {
+                        startFontClass(yyscanner,"xmlcdata");
                         codifyLines(yyscanner,yytext);
                         endFontClass(yyscanner);
                     }
