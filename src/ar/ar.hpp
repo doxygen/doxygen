@@ -40,11 +40,17 @@ struct Dictionaries {
 
   const Iterator end() {
     return dicts.end(); }
+
+  const auto begin() const {
+    return dicts.begin(); }
+
+  const auto end() const {
+    return dicts.end(); }
 };
 
 const std::string do_ar(std::string word);
 
-const LongForm expansion_matching(NonDictWords &nonDictWords, ar::Dictionaries &D);
+const LongForm expansion_matching(NonDictWords &nonDictWords, const ar::Dictionaries &D);
 
 const Lmatch string_matching(std::string token, const ar::Dictionary &D, const Phi &phi,
                        const Cfunc &cost);

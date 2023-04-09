@@ -994,7 +994,12 @@ static bool writeDefArgumentList(OutputList &ol,const Definition *scope,const Me
       ol.enable(OutputType::Man);
       if (latexOn) ol.enable(OutputType::Latex);
       if (docbookOn) ol.enable(OutputType::Docbook);
-      if (a.name.isEmpty()) ol.docify(a.type); else ol.docify(a.name);
+      if (a.name.isEmpty()) {
+        ol.docify(a.type);
+      } else {
+        ol.docify(a.name);
+        ol.docify(" AR: [ " + a.name.get_checked() + " ]");
+      }
       ol.disable(OutputType::Man);
       ol.disable(OutputType::Latex);
       ol.disable(OutputType::Docbook);
