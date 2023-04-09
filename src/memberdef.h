@@ -289,7 +289,7 @@ class MemberDef : public Definition
     virtual void writeLink(OutputList &ol,
                  const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
                  bool onlyText=FALSE) const = 0;
-    virtual void detectUndocumentedParams(bool hasParamCommand,bool hasReturnCommand) const = 0;
+    virtual void detectUndocumentedParams(bool hasParamCommand,bool hasRetugnCommand) const = 0;
     virtual void warnIfUndocumented() const = 0;
     virtual void warnIfUndocumentedParams() const = 0;
     virtual bool visibleInIndex() const = 0;
