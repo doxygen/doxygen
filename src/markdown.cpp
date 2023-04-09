@@ -2886,18 +2886,42 @@ QCString Markdown::processQuotations(const QCString &s,int refIndent)
           int cmdPos  = pi+blockStart+1;
           QCString pl = QCString(data+cmdPos).left(blockEnd-blockStart-1);
           uint32_t ii = 0;
+          int nl = 1;
           // check for absence of start command, either @start<cmd>, or \\start<cmd>
-          while (ii<pl.length() && qisspace(pl[ii])) ii++; // skip leading whitespace
-          bool addNewLines = true;
+          while (ii<pl.length() && qisspace(pl[ii]))
+          {
+            if (pl[ii]=='\n') nl++;
+            ii++; // skip leading whitespace
+          }
+          bool addNewLines;
           if (ii+startCmd.length()>=pl.length() || // no room for start command
-              (pl[ii]!='\\' && pl[ii]!='@') ||     // no @ or \ after whitespace
+              (pl[ii]!='\\' && pl[ii]!='@')     || // no @ or \ after whitespace
               qstrncmp(pl.data()+ii+1,startCmd.data(),startCmd.length())!=0) // no start command
           {
-            pl = "@"+startCmd+"\\ilinebr " + pl + " @"+endCmd;
+            // input:                            output:
+            // ----------------------------------------------------
+            // ```{plantuml}            =>       @startuml
+            // A->B                              A->B
+            // ```                               @enduml
+            // ----------------------------------------------------
+            pl = "@"+startCmd+"\n" + pl + "@"+endCmd;
             addNewLines = false;
           }
-          if (addNewLines) m_out.addChar('\n');
-          processSpecialCommand(pl.data(),0,pl.length());
+          else // we have a @start... command inside the code block
+          {
+            // input:                            output:
+            // ----------------------------------------------------
+            // ```{plantuml}                     \n
+            //                                   \n
+            // @startuml                =>       @startuml
+            // A->B                              A->B
+            // @enduml                           @enduml
+            // ```                               \n
+            // ----------------------------------------------------
+            addNewLines = true;
+          }
+          if (addNewLines) for (int j=0;j<nl;j++) m_out.addChar('\n');
+          processSpecialCommand(pl.data()+ii,0,pl.length()-ii);
           if (addNewLines) m_out.addChar('\n');
         };
 
