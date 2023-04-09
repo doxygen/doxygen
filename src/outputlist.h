@@ -296,8 +296,6 @@ namespace OutputGenIntf
   template<class T> struct endFile                     { static constexpr auto method = &T::endFile;                     };
   template<class T> struct startTitleHead              { static constexpr auto method = &T::startTitleHead;              };
   template<class T> struct endTitleHead                { static constexpr auto method = &T::endTitleHead;                };
-  template<class T> struct startTitle                  { static constexpr auto method = &T::startTitle;                  };
-  template<class T> struct endTitle                    { static constexpr auto method = &T::endTitle;                    };
   template<class T> struct startParagraph              { static constexpr auto method = &T::startParagraph;              };
   template<class T> struct endParagraph                { static constexpr auto method = &T::endParagraph;                };
   template<class T> struct writeString                 { static constexpr auto method = &T::writeString;                 };
@@ -317,10 +315,7 @@ namespace OutputGenIntf
   template<class T> struct writeObjectLink             { static constexpr auto method = &T::writeObjectLink;             };
   template<class T> struct startTextLink               { static constexpr auto method = &T::startTextLink;               };
   template<class T> struct endTextLink                 { static constexpr auto method = &T::endTextLink;                 };
-  template<class T> struct startHtmlLink               { static constexpr auto method = &T::startHtmlLink;               };
-  template<class T> struct endHtmlLink                 { static constexpr auto method = &T::endHtmlLink;                 };
   template<class T> struct writeStartAnnoItem          { static constexpr auto method = &T::writeStartAnnoItem;          };
-  template<class T> struct writeEndAnnoItem            { static constexpr auto method = &T::writeEndAnnoItem;            };
   template<class T> struct startTypewriter             { static constexpr auto method = &T::startTypewriter;             };
   template<class T> struct endTypewriter               { static constexpr auto method = &T::endTypewriter;               };
   template<class T> struct startGroupHeader            { static constexpr auto method = &T::startGroupHeader;            };
@@ -367,16 +362,8 @@ namespace OutputGenIntf
   template<class T> struct startDoxyAnchor             { static constexpr auto method = &T::startDoxyAnchor;             };
   template<class T> struct endDoxyAnchor               { static constexpr auto method = &T::endDoxyAnchor;               };
   template<class T> struct writeLatexSpacing           { static constexpr auto method = &T::writeLatexSpacing;           };
-  template<class T> struct startDescription            { static constexpr auto method = &T::startDescription;            };
-  template<class T> struct endDescription              { static constexpr auto method = &T::endDescription;              };
-  template<class T> struct startDescItem               { static constexpr auto method = &T::startDescItem;               };
-  template<class T> struct endDescItem                 { static constexpr auto method = &T::endDescItem;                 };
   template<class T> struct startDescForItem            { static constexpr auto method = &T::startDescForItem;            };
   template<class T> struct endDescForItem              { static constexpr auto method = &T::endDescForItem;              };
-  template<class T> struct startSubsection             { static constexpr auto method = &T::startSubsection;             };
-  template<class T> struct endSubsection               { static constexpr auto method = &T::endSubsection;               };
-  template<class T> struct startSubsubsection          { static constexpr auto method = &T::startSubsubsection;          };
-  template<class T> struct endSubsubsection            { static constexpr auto method = &T::endSubsubsection;            };
   template<class T> struct startCenter                 { static constexpr auto method = &T::startCenter;                 };
   template<class T> struct endCenter                   { static constexpr auto method = &T::endCenter;                   };
   template<class T> struct startSmall                  { static constexpr auto method = &T::startSmall;                  };
@@ -391,8 +378,6 @@ namespace OutputGenIntf
   template<class T> struct writeInheritedSectionTitle  { static constexpr auto method = &T::writeInheritedSectionTitle;  };
   template<class T> struct startExamples               { static constexpr auto method = &T::startExamples;               };
   template<class T> struct endExamples                 { static constexpr auto method = &T::endExamples;                 };
-  template<class T> struct startParamList              { static constexpr auto method = &T::startParamList;              };
-  template<class T> struct endParamList                { static constexpr auto method = &T::endParamList;                };
   template<class T> struct startIndent                 { static constexpr auto method = &T::startIndent;                 };
   template<class T> struct endIndent                   { static constexpr auto method = &T::endIndent;                   };
   template<class T> struct startSection                { static constexpr auto method = &T::startSection;                };
@@ -548,10 +533,6 @@ class OutputList
     { foreach<OutputGenIntf::startTitleHead>(fileName); }
     void endTitleHead(const QCString &fileName,const QCString &name)
     { foreach<OutputGenIntf::endTitleHead>(fileName,name); }
-    void startTitle()
-    { foreach<OutputGenIntf::startTitle>(); }
-    void endTitle()
-    { foreach<OutputGenIntf::endTitle>(); }
     void startParagraph(const QCString &classDef=QCString())
     { foreach<OutputGenIntf::startParagraph>(classDef); }
     void endParagraph()
@@ -591,15 +572,9 @@ class OutputList
     { foreach<OutputGenIntf::startTextLink>(file,anchor); }
     void endTextLink()
     { foreach<OutputGenIntf::endTextLink>(); }
-    void startHtmlLink(const QCString &url)
-    { foreach<OutputGenIntf::startHtmlLink>(url); }
-    void endHtmlLink()
-    { foreach<OutputGenIntf::endHtmlLink>(); }
     void writeStartAnnoItem(const QCString &type,const QCString &file,
                             const QCString &path,const QCString &name)
     { foreach<OutputGenIntf::writeStartAnnoItem>(type,file,path,name); }
-    void writeEndAnnoItem(const QCString &name)
-    { foreach<OutputGenIntf::writeEndAnnoItem>(name); }
     void startTypewriter()
     { foreach<OutputGenIntf::startTypewriter>(); }
     void endTypewriter()
@@ -696,26 +671,10 @@ class OutputList
     { foreach<OutputGenIntf::endDoxyAnchor>(fn,anchor); }
     void writeLatexSpacing()
     { foreach<OutputGenIntf::writeLatexSpacing>(); }
-    void startDescription()
-    { foreach<OutputGenIntf::startDescription>(); }
-    void endDescription()
-    { foreach<OutputGenIntf::endDescription>(); }
-    void startDescItem()
-    { foreach<OutputGenIntf::startDescItem>(); }
-    void endDescItem()
-    { foreach<OutputGenIntf::endDescItem>(); }
     void startDescForItem()
     { foreach<OutputGenIntf::startDescForItem>(); }
     void endDescForItem()
     { foreach<OutputGenIntf::endDescForItem>(); }
-    void startSubsection()
-    { foreach<OutputGenIntf::startSubsection>(); }
-    void endSubsection()
-    { foreach<OutputGenIntf::endSubsection>(); }
-    void startSubsubsection()
-    { foreach<OutputGenIntf::startSubsubsection>(); }
-    void endSubsubsection()
-    { foreach<OutputGenIntf::endSubsubsection>(); }
     void startCenter()
     { foreach<OutputGenIntf::startCenter>(); }
     void endCenter()
@@ -747,10 +706,6 @@ class OutputList
     { foreach<OutputGenIntf::startExamples>(); }
     void endExamples()
     { foreach<OutputGenIntf::endExamples>(); }
-    void startParamList(OutputGenerator::ParamListTypes t,const QCString &title)
-    { foreach<OutputGenIntf::startParamList>(t,title); }
-    void endParamList()
-    { foreach<OutputGenIntf::endParamList>(); }
     void startIndent()
     { foreach<OutputGenIntf::startIndent>(); }
     void endIndent()

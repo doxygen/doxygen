@@ -687,7 +687,6 @@ void NamespaceDefImpl::writeDetailedDescription(OutputList &ol,const QCString &t
       ol.pushGeneratorState();
         ol.disable(OutputType::Man);
         ol.disable(OutputType::RTF);
-        //ol.newParagraph(); // FIXME:PARA
         ol.enableAll();
         ol.disableAllBut(OutputType::Man);
         ol.enable(OutputType::Latex);
@@ -735,12 +734,6 @@ void NamespaceDefImpl::writeBriefDescription(OutputList &ol)
       ol.popGeneratorState();
       ol.endParagraph();
     }
-
-    // FIXME:PARA
-    //ol.pushGeneratorState();
-    //ol.disable(OutputType::RTF);
-    //ol.newParagraph();
-    //ol.popGeneratorState();
   }
 
   // Write a summary of the Slice definition including metadata.

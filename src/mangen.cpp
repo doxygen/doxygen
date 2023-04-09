@@ -397,14 +397,6 @@ void ManGenerator::writeObjectLink(const QCString &,const QCString &,
   startBold(); docify(name); endBold();
 }
 
-void ManGenerator::startHtmlLink(const QCString &)
-{
-}
-
-void ManGenerator::endHtmlLink()
-{
-}
-
 void ManGenerator::startGroupHeader(int)
 {
   if (!m_firstCol) m_t << "\n";
@@ -470,17 +462,6 @@ void ManGenerator::writeChar(char c)
   }
   //printf("%c",c);fflush(stdout);
   m_paragraph=FALSE;
-}
-
-void ManGenerator::startDescList(SectionTypes)
-{
-  if (!m_firstCol)
-  { m_t << "\n" << ".PP\n";
-    m_firstCol=TRUE; m_paragraph=TRUE;
-    m_col=0;
-  }
-  m_paragraph=FALSE;
-  startBold();
 }
 
 void ManGenerator::startTitle()
@@ -554,21 +535,7 @@ void ManGenerator::endMemberDoc(bool)
     m_t << "\"\n";
 }
 
-void ManGenerator::startSubsection()
-{
-  if (!m_firstCol) m_t << "\n";
-  m_t << ".SS \"";
-  m_firstCol=FALSE;
-  m_paragraph=FALSE;
-}
-
-void ManGenerator::endSubsection()
-{
-  m_t << "\"";
-}
-
-
-void ManGenerator::startSubsubsection()
+void ManGenerator::startCompoundTemplateParams()
 {
   if (!m_firstCol) m_t << "\n";
   m_t << "\n.SS \"";
@@ -576,24 +543,16 @@ void ManGenerator::startSubsubsection()
   m_paragraph=FALSE;
 }
 
-void ManGenerator::endSubsubsection()
+void ManGenerator::endCompoundTemplateParams()
 {
   m_t << "\"";
 }
-
 void ManGenerator::writeSynopsis()
 {
   if (!m_firstCol) m_t << "\n";
   m_t << ".SH SYNOPSIS\n.br\n.PP\n";
   m_firstCol=TRUE;
   m_paragraph=FALSE;
-}
-
-void ManGenerator::startDescItem()
-{
-  if (!m_firstCol) m_t << "\n";
-  m_t << ".IP \"";
-  m_firstCol=FALSE;
 }
 
 void ManGenerator::startDescForItem()
@@ -608,12 +567,6 @@ void ManGenerator::startDescForItem()
 
 void ManGenerator::endDescForItem()
 {
-}
-
-void ManGenerator::endDescItem()
-{
-  m_t << "\" 1c\n";
-  m_firstCol=TRUE;
 }
 
 void ManGenerator::startAnonTypeScope(int indentLevel)
@@ -767,24 +720,6 @@ void ManGenerator::startDescTable(const QCString &title)
 void ManGenerator::endDescTable()
 {
   endDescForItem();
-}
-
-void ManGenerator::startParamList(ParamListTypes,const QCString &title)
-{
-  if (!m_firstCol)
-  { m_t << "\n.PP\n";
-    m_firstCol=TRUE; m_paragraph=TRUE;
-    m_col=0;
-  }
-  m_paragraph=FALSE;
-  startBold();
-  docify(title);
-  endBold();
-  m_paragraph=TRUE;
-}
-
-void ManGenerator::endParamList()
-{
 }
 
 void ManGenerator::writeDoc(const IDocNodeAST *ast,const Definition *ctx,const MemberDef *,int)

@@ -3094,12 +3094,6 @@ void MemberDefImpl::_writeEnumValues(OutputList &ol,const Definition *container,
               fmd,fmd->briefDescription(),TRUE,FALSE,
               QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
         }
-        // FIXME:PARA
-        //if (!fmd->briefDescription().isEmpty() &&
-        //    !fmd->documentation().isEmpty())
-        //{
-        //  ol.newParagraph();
-        //}
         if (hasDetails)
         {
           ol.generateDoc(fmd->docFile(),fmd->docLine(),

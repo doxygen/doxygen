@@ -633,7 +633,7 @@ class LayoutParser
           {
             if (lde->kind() == LayoutDocEntry::MemberDefStart)
             {
-               isVisible = dynamic_cast<const LayoutDocEntrySimple*>(lde.get())->visible();
+               isVisible = static_cast<const LayoutDocEntrySimple*>(lde.get())->visible();
             }
           }
           LayoutDocManager::instance().addEntry(m_part,new LayoutDocEntrySimple(LayoutDocEntry::MemberDefEnd,isVisible));
@@ -664,7 +664,7 @@ class LayoutParser
           {
             if (lde->kind() == LayoutDocEntry::MemberDeclStart)
             {
-               isVisible = dynamic_cast<const LayoutDocEntrySimple*>(lde.get())->visible();
+               isVisible = static_cast<const LayoutDocEntrySimple*>(lde.get())->visible();
             }
           }
           LayoutDocManager::instance().addEntry(m_part,new LayoutDocEntrySimple(LayoutDocEntry::MemberDeclEnd,isVisible));

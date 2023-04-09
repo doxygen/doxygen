@@ -596,6 +596,7 @@ void DotNode::writeArrow(TextStream &t,
   if (pointBack && !umlUseArrow) t << "dir=\"back\",";
   t << "color=\"" << eProps->edgeColorMap[ei->color()] << "\",";
   t << "style=\"" << eProps->edgeStyleMap[ei->style()] << "\"";
+  t << ",tooltip=\" \""; // space in tooltip is required otherwise still something like 'Node0 -> Node1' is used
   if (!ei->label().isEmpty())
   {
     t << ",label=\" " << convertLabel(ei->label()) << "\",fontcolor=\"grey\" ";

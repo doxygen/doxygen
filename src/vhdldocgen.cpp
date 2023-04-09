@@ -2023,7 +2023,6 @@ void VhdlDocGen::writeVHDLDeclaration(const MemberDefMutable* mdef,OutputList &o
     {
       ol.pushGeneratorState();
       ol.disableAllBut(OutputType::Html);
-      //ol.endEmphasis();
       ol.docify(" ");
       if (mdef->getGroupDef()!=0 && gd==0) // forward link to the group
       {
@@ -2034,10 +2033,8 @@ void VhdlDocGen::writeVHDLDeclaration(const MemberDefMutable* mdef,OutputList &o
         ol.startTextLink(QCString(),mdef->anchor());
       }
       ol.endTextLink();
-      //ol.startEmphasis();
       ol.popGeneratorState();
     }
-    //ol.newParagraph();
     ol.endMemberDescription();
   }
   mdef->warnIfUndocumented();

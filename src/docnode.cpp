@@ -3237,20 +3237,20 @@ void DocPara::handleDoxyConfig()
     switch (opt->kind())
     {
       case ConfigOption::O_Bool:
-        optionValue = *(dynamic_cast<ConfigBool*>(opt)->valueStringRef());
+        optionValue = *(static_cast<ConfigBool*>(opt)->valueStringRef());
         break;
       case ConfigOption::O_String:
-        optionValue = *(dynamic_cast<ConfigString*>(opt)->valueRef());
+        optionValue = *(static_cast<ConfigString*>(opt)->valueRef());
         break;
       case ConfigOption::O_Enum:
-        optionValue = *(dynamic_cast<ConfigEnum*>(opt)->valueRef());
+        optionValue = *(static_cast<ConfigEnum*>(opt)->valueRef());
         break;
       case ConfigOption::O_Int:
-        optionValue = *(dynamic_cast<ConfigInt*>(opt)->valueStringRef());
+        optionValue = *(static_cast<ConfigInt*>(opt)->valueStringRef());
         break;
       case ConfigOption::O_List:
         {
-          StringVector *lst = dynamic_cast<ConfigList*>(opt)->valueRef();
+          StringVector *lst = static_cast<ConfigList*>(opt)->valueRef();
           optionValue="";
           if (!lst->empty())
           {

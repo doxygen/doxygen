@@ -1593,11 +1593,6 @@ void HtmlGenerator::endDoxyAnchor(const QCString &,const QCString &)
 {
 }
 
-//void HtmlGenerator::newParagraph()
-//{
-//  t << "\n<p>\n";
-//}
-
 void HtmlGenerator::startParagraph(const QCString &classDef)
 {
   if (!classDef.isEmpty())
@@ -1721,21 +1716,6 @@ void HtmlGenerator::startTextLink(const QCString &f,const QCString &anchor)
 }
 
 void HtmlGenerator::endTextLink()
-{
-  m_t << "</a>";
-}
-
-void HtmlGenerator::startHtmlLink(const QCString &url)
-{
-  bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
-  m_t << "<a ";
-  if (generateTreeView) m_t << "target=\"top\" ";
-  m_t << "href=\"";
-  if (!url.isEmpty()) m_t << url;
-  m_t << "\">";
-}
-
-void HtmlGenerator::endHtmlLink()
 {
   m_t << "</a>";
 }
@@ -2327,10 +2307,16 @@ void HtmlGenerator::endDotGraph(DotClassGraph &g)
   g.writeGraph(m_t,GOF_BITMAP,EOF_Html,dir(),fileName(),m_relPath,TRUE,TRUE,m_sectionCount);
   if (generateLegend && !umlLook)
   {
+    QCString url = m_relPath+"graph_legend"+Doxygen::htmlFileExtension;
     m_t << "<center><span class=\"legend\">[";
-    startHtmlLink((m_relPath+"graph_legend"+Doxygen::htmlFileExtension));
+    bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
+    m_t << "<a ";
+    if (generateTreeView) m_t << "target=\"top\" ";
+    m_t << "href=\"";
+    if (!url.isEmpty()) m_t << url;
+    m_t << "\">";
     m_t << theTranslator->trLegend();
-    endHtmlLink();
+    m_t << "</a>";
     m_t << "]</span></center>";
   }
 
@@ -2521,6 +2507,7 @@ void HtmlGenerator::endExamples()
   m_t << "</dl>\n";
 }
 
+
 void HtmlGenerator::startParamList(ParamListTypes,
                                 const QCString &title)
 {
@@ -2534,7 +2521,6 @@ void HtmlGenerator::endParamList()
 {
   m_t << "</dl>";
 }
-
 void HtmlGenerator::writeDoc(const IDocNodeAST *ast,const Definition *ctx,const MemberDef *,int id)
 {
   const DocNodeAST *astImpl = dynamic_cast<const DocNodeAST*>(ast);
