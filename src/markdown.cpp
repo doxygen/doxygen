@@ -2888,13 +2888,17 @@ QCString Markdown::processQuotations(const QCString &s,int refIndent)
           uint32_t ii = 0;
           // check for absence of start command, either @start<cmd>, or \\start<cmd>
           while (ii<pl.length() && qisspace(pl[ii])) ii++; // skip leading whitespace
+          bool addNewLines = true;
           if (ii+startCmd.length()>=pl.length() || // no room for start command
               (pl[ii]!='\\' && pl[ii]!='@') ||     // no @ or \ after whitespace
               qstrncmp(pl.data()+ii+1,startCmd.data(),startCmd.length())!=0) // no start command
           {
             pl = "@"+startCmd+"\\ilinebr " + pl + " @"+endCmd;
+            addNewLines = false;
           }
+          if (addNewLines) m_out.addChar('\n');
           processSpecialCommand(pl.data(),0,pl.length());
+          if (addNewLines) m_out.addChar('\n');
         };
 
         if (!Config_getString(PLANTUML_JAR_PATH).isEmpty() && lang=="plantuml")
