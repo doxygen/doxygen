@@ -78,6 +78,7 @@ documentation:
 \refitem cmddontinclude \\dontinclude
 \refitem cmddot \\dot
 \refitem cmddotfile \\dotfile
+\refitem cmddoxyconfig \\doxyconfig
 \refitem cmde \\e
 \refitem cmdelse \\else
 \refitem cmdelseif \\elseif
@@ -3358,6 +3359,21 @@ class Receiver
   For a description of the possibilities see the paragraph
   \ref image_sizeindicator "Size indication" with the
   \ref cmdimage "\\image" command.
+
+<hr>
+\section cmddoxyconfig \\doxyconfig <config_option>
+
+  \addindex \\doxyconfig
+  Displays the value of the configuration option `<config_option>` as used in doxygen's
+  configuration file that is in use when this command is processed.
+
+  \par Example:
+  When creating this manual the following:
+  \verbatim
+  ... Project name = \doxyconfig PROJECT_NAME ...
+  \endverbatim
+  gives:<br>
+  ... Project name = \doxyconfig PROJECT_NAME ...
 
 <hr>
 \section cmde \\e <word>

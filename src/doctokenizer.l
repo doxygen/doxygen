@@ -268,6 +268,7 @@ PHPTYPE   [\\:a-z_A-Z0-9\x80-\xFF\-]+
 CITESCHAR [a-z_A-Z0-9\x80-\xFF\-\?]
 CITEECHAR [a-z_A-Z0-9\x80-\xFF\-\+:\/\?]
 CITEID    {CITESCHAR}{CITEECHAR}*("."{CITESCHAR}{CITEECHAR}*)*|"\""{CITESCHAR}{CITEECHAR}*("."{CITESCHAR}{CITEECHAR}*)*"\""
+DOXYCFG   [A-Z][A-Z_0-9]*
 MAILADDR  ("mailto:")?[a-z_A-Z0-9\x80-\xFF.+-]+"@"[a-z_A-Z0-9\x80-\xFf-]+("."[a-z_A-Z0-9\x80-\xFf\-]+)+[a-z_A-Z0-9\x80-\xFf\-]+
 MAILWS    [\t a-z_A-Z0-9\x80-\xFF+-]
 MAILADDR2 {MAILWS}+{BLANK}+("at"|"AT"|"_at_"|"_AT_"){BLANK}+{MAILWS}+("dot"|"DOT"|"_dot_"|"_DOT_"){BLANK}+{MAILWS}+
@@ -382,6 +383,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
 %x St_Pattern
 %x St_Link
 %x St_Cite
+%x St_DoxyConfig
 %x St_Ref
 %x St_Ref2
 %x St_IntRef
@@ -1109,6 +1111,22 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
                          return 0;
                        }
 <St_Cite>.             { // any other character
+                         unput(*yytext);
+                         return 0;
+                       }
+<St_DoxyConfig>{DOXYCFG} { // config option
+                         yyextra->token->name=yytext;
+                         return TK_WORD;
+                       }
+<St_DoxyConfig>{BLANK} { // white space
+                         unput(' ');
+                         return 0;
+                       }
+<St_DoxyConfig>(\n|"\\ilinebr")  { // new line
+                         unput_string(yytext,yyleng);
+                         return 0;
+                       }
+<St_DoxyConfig>.      { // any other character
                          unput(*yytext);
                          return 0;
                        }
@@ -2004,6 +2022,13 @@ void DocTokenizer::setStateCite()
   yyscan_t yyscanner = p->yyscanner;
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   BEGIN(St_Cite);
+}
+
+void DocTokenizer::setStateDoxyConfig()
+{
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  BEGIN(St_DoxyConfig);
 }
 
 void DocTokenizer::setStateRef()
