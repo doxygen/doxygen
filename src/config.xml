@@ -1616,9 +1616,6 @@ FILE_VERSION_FILTER = "cleartool desc -fmt \%Vn"
  output. The symbol name can be a fully qualified name, a word, or if the
  wildcard `*` is used, a substring. Examples: `ANamespace`, `AClass`,
  `ANamespace::AClass`, `ANamespace::*Test`
- <br>Note that the wildcards are matched against the file with absolute path,
- so to exclude all test directories use the pattern
- `*``/test/``*`
 ]]>
       </docs>
     </option>
@@ -4108,4 +4105,21 @@ This setting is not only used for dot files but also for msc temporary files.
     <option type='obsolete' orgtype='bool' id='FORMULA_TRANSPARENT'/>
     <option type='obsolete' orgtype='bool' id='DOT_TRANSPARENT'/>
   </group>
+  <generator>
+    <message name='minmaxdef'><![CDATA[<br/> Minimum value: {0}, maximum value: {1}, default value: {2}.]]></message>
+    <message name='minmaxdefcode'><![CDATA[ Minimum value: <code>{0}</code>, maximum value: <code>{1}</code>, default value: <code>{2}</code>.]]></message>
+    <message name='possible'><![CDATA[Possible values are: ]]></message>
+    <message name='defvaltxt'><![CDATA[The default value is: {0}.]]></message>
+    <message name='defvalcode'><![CDATA[The default value is: <code>{0}</code>.]]></message>
+    <message name='sysdep'><![CDATA[system dependent]]></message>
+    <message name='defdir'><![CDATA[The default directory is: <code>{0}</code>.]]></message>
+    <message name='deffile'><![CDATA[The default file is: <code>{0}</code>.]]></message>
+    <message name='deffileabs'><![CDATA[The default file (with absolute path) is <code>{0}</code>]]></message>
+    <message name='deffilefull'><![CDATA[The file has to be specified with full path.]]></message>
+    <message name='defimg'><![CDATA[The default image is: <code>{0}</code>.]]></message>
+    <message name='defimgabs'><![CDATA[The default image (with absolute path) is <code>{0}</code>]]></message>
+    <message name='defimgfull'><![CDATA[The image has to be specified with full path.]]></message>
+    <message name='depstxt'><![CDATA[This tag requires that the tag \ref cfg_{0} "{1}" is set to \c YES.]]></message>
+    <message name='andtxt'><![CDATA[ and ]]></message>
+  </generator>
 </doxygenconfig>

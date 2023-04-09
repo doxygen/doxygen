@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="101__static__assert_8c" kind="file" language="C++">
+    <compoundname>101_static_assert.c</compoundname>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+      <para>
+        <programlisting filename=".java">
+          <codeline>
+            <highlight class="keyword">public</highlight>
+            <highlight class="normal">
+              <sp/>
+            </highlight>
+            <highlight class="keyword">class<sp/></highlight>
+            <highlight class="normal">static_assert<sp/>{</highlight>
+          </codeline>
+          <codeline>
+            <highlight class="normal">
+              <sp/>
+              <sp/>
+            </highlight>
+            <highlight class="keyword">public</highlight>
+            <highlight class="normal">
+              <sp/>
+            </highlight>
+            <highlight class="keyword">static</highlight>
+            <highlight class="normal">
+              <sp/>
+            </highlight>
+            <highlight class="keywordtype">void</highlight>
+            <highlight class="normal"><sp/>static_assert()<sp/>{}</highlight>
+          </codeline>
+          <codeline>
+            <highlight class="normal">
+              <sp/>
+              <sp/>
+            </highlight>
+            <highlight class="keyword">public</highlight>
+            <highlight class="normal">
+              <sp/>
+            </highlight>
+            <highlight class="keyword">static</highlight>
+            <highlight class="normal">
+              <sp/>
+            </highlight>
+            <highlight class="keywordtype">void</highlight>
+            <highlight class="normal"><sp/>_Static_assert()<sp/>{}</highlight>
+          </codeline>
+          <codeline>
+            <highlight class="normal">}</highlight>
+          </codeline>
+        </programlisting>
+      </para>
+    </detaileddescription>
+    <location file="101_static_assert.c"/>
+  </compounddef>
+</doxygen>

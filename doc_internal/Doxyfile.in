@@ -117,6 +117,7 @@ INPUT                  = \
                          @CMAKE_SOURCE_DIR@/doc_internal/commands_internal.md \
                          @CMAKE_SOURCE_DIR@/doc_internal/releases.md \
                          @PROJECT_BINARY_DIR@/doc_internal/tags_history.md \
+                         @PROJECT_BINARY_DIR@/doc_internal/translator_report.md \
                          @CMAKE_SOURCE_DIR@/src \
                          @CMAKE_SOURCE_DIR@/vhdlparser \
                          @CMAKE_SOURCE_DIR@/libxml

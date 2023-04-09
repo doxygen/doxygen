@@ -251,7 +251,6 @@ void DirDefImpl::writeDetailedDescription(OutputList &ol,const QCString &title)
       ol.pushGeneratorState();
         ol.disable(OutputType::Man);
         ol.disable(OutputType::RTF);
-        // ol.newParagraph();  // FIXME:PARA
         ol.enableAll();
         ol.disableAllBut(OutputType::Man);
         ol.enable(OutputType::Latex);

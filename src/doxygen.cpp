@@ -13,10 +13,10 @@
  *
  */
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cerrno>
 #include <sys/stat.h>
-#include <errno.h>
 
 #include <algorithm>
 #include <unordered_map>
@@ -510,9 +510,12 @@ static void buildFileList(const Entry *root)
         GroupDef *gd=0;
         if (!g.groupname.isEmpty() && (gd=Doxygen::groupLinkedMap->find(g.groupname)))
         {
-          gd->addFile(fd);
-          fd->makePartOfGroup(gd);
-          //printf("File %s: in group %s\n",qPrint(fd->name()),qPrint(gd->name()));
+          if (!gd->containsFile(fd))
+          {
+            gd->addFile(fd);
+            fd->makePartOfGroup(gd);
+            //printf("File %s: in group %s\n",qPrint(fd->name()),qPrint(gd->name()));
+          }
         }
       }
     }
@@ -5164,6 +5167,28 @@ static const ClassDef *findClassDefinition(FileDef *fd,NamespaceDef *nd,
   return tcd;
 }
 
+//----------------------------------------------------------------------------
+// Returns TRUE, if the entry belongs to the group of the member definition,
+// otherwise FALSE.
+
+static bool isEntryInGroupOfMember(const Entry *root,const MemberDef *md)
+{
+  const GroupDef *gd = md->getGroupDef();
+  if (!gd)
+  {
+    return FALSE;
+  }
+
+  for (const auto &g : root->groups)
+  {
+    if (g.groupname == gd->name())
+    {
+      return TRUE;
+    }
+  }
+
+  return FALSE;
+}
 
 //----------------------------------------------------------------------
 // Adds the documentation contained in 'root' to a global function
@@ -5195,6 +5220,12 @@ static bool findGlobalMember(const Entry *root,
     bool found=FALSE;
     for (const auto &md : *mn)
     {
+      // If the entry has groups, then restrict the search to members which are
+      // in one of the groups of the entry.
+      if (!root->groups.empty() && !isEntryInGroupOfMember(root, md.get()))
+      {
+        continue;
+      }
       const NamespaceDef *nd=0;
       if (md->isAlias() && md->getOuterScope() &&
           md->getOuterScope()->definitionType()==Definition::TypeNamespace)
@@ -5296,13 +5327,16 @@ static bool findGlobalMember(const Entry *root,
         //    qPrint(argListToString(md->argumentList())),
         //    qPrint(argListToString(root->argList)));
 
-        // for static members we also check if the comment block was found in
+        // For static members we also check if the comment block was found in
         // the same file. This is needed because static members with the same
         // name can be in different files. Thus it would be wrong to just
-        // put the comment block at the first syntactically matching member.
+        // put the comment block at the first syntactically matching member. If
+        // the comment block belongs to a group of the static member, then add
+        // the documentation even if it is in a different file.
         if (matching && md->isStatic() &&
             md->getDefFileName()!=root->fileName &&
-            mn->size()>1)
+            mn->size()>1 &&
+            !isEntryInGroupOfMember(root,md.get()))
         {
           matching = FALSE;
         }
@@ -7229,7 +7263,7 @@ static void addEnumValuesToEnums(const Entry *root)
                         if (!fmd->isStrongEnumValue()) // only non strong enum values can be globally added
                         {
                           const FileDef *ffd=fmd->getFileDef();
-                          if (ffd==fd) // enum value has file scope
+                          if (ffd==fd && ffd==md->getFileDef()) // enum value has file scope
                           {
                             md->insertEnumField(fmd);
                             fmd->setEnumScope(md);
@@ -7319,6 +7353,33 @@ static void addEnumDocs(const Entry *root,MemberDefMutable *md)
   }
 }
 
+//----------------------------------------------------------------------
+// Search for the name in the associated groups.  If a matching member
+// definition exists, then add the documentation to it and return TRUE,
+// otherwise FALSE.
+
+static bool tryAddEnumDocsToGroupMember(const Entry *root,const QCString &name)
+{
+  for (const auto &g : root->groups)
+  {
+    const GroupDef *gd = Doxygen::groupLinkedMap->find(g.groupname);
+    if (gd)
+    {
+      MemberList *ml = gd->getMemberList(MemberListType_decEnumMembers);
+      if (ml)
+      {
+        MemberDefMutable *md = toMemberDefMutable(ml->find(name));
+        if (md)
+        {
+          addEnumDocs(root,md);
+          return TRUE;
+        }
+      }
+    }
+  }
+
+  return FALSE;
+}
 
 //----------------------------------------------------------------------
 // find the documentation blocks for the enumerations
@@ -7361,49 +7422,56 @@ static void findEnumDocumentation(const Entry *root)
 
     if (!name.isEmpty())
     {
-      bool found=FALSE;
-      MemberName *mn;
-      if (cd)
+      bool found = FALSE;
+      if (root->groups.empty())
       {
-        mn = Doxygen::memberNameLinkedMap->find(name);
-      }
-      else
-      {
-        mn = Doxygen::functionNameLinkedMap->find(name);
-      }
-      if (mn)
-      {
-        for (const auto &imd : *mn)
+        MemberName *mn;
+        if (cd)
         {
-          MemberDefMutable *md = toMemberDefMutable(imd.get());
-          if (md && md->isEnumerate())
+          mn = Doxygen::memberNameLinkedMap->find(name);
+        }
+        else
+        {
+          mn = Doxygen::functionNameLinkedMap->find(name);
+        }
+        if (mn)
+        {
+          for (const auto &imd : *mn)
           {
-            const ClassDef *mcd = md->getClassDef();
-            const NamespaceDef *mnd = md->getNamespaceDef();
-            const FileDef *mfd = md->getFileDef();
-            if (cd && mcd==cd)
+            MemberDefMutable *md = toMemberDefMutable(imd.get());
+            if (md && md->isEnumerate())
             {
-              AUTO_TRACE_ADD("Match found for class scope");
-              addEnumDocs(root,md);
-              found=TRUE;
-              break;
-            }
-            else if (cd==0 && mcd==0 && nd!=0 && mnd==nd)
-            {
-              AUTO_TRACE_ADD("Match found for namespace scope");
-              addEnumDocs(root,md);
-              found=TRUE;
-              break;
-            }
-            else if (cd==0 && nd==0 && mcd==0 && mnd==0 && fd==mfd)
-            {
-              AUTO_TRACE_ADD("Match found for global scope");
-              addEnumDocs(root,md);
-              found=TRUE;
-              break;
+              const ClassDef *mcd = md->getClassDef();
+              const NamespaceDef *mnd = md->getNamespaceDef();
+              const FileDef *mfd = md->getFileDef();
+              if (cd && mcd==cd)
+              {
+                AUTO_TRACE_ADD("Match found for class scope");
+                addEnumDocs(root,md);
+                found = TRUE;
+                break;
+              }
+              else if (cd==0 && mcd==0 && nd!=0 && mnd==nd)
+              {
+                AUTO_TRACE_ADD("Match found for namespace scope");
+                addEnumDocs(root,md);
+                found = TRUE;
+                break;
+              }
+              else if (cd==0 && nd==0 && mcd==0 && mnd==0 && fd==mfd)
+              {
+                AUTO_TRACE_ADD("Match found for global scope");
+                addEnumDocs(root,md);
+                found = TRUE;
+                break;
+              }
             }
           }
         }
+      }
+      else
+      {
+        found = tryAddEnumDocsToGroupMember(root, name);
       }
       if (!found)
       {
@@ -8747,6 +8815,44 @@ static void flushUnresolvedRelations()
 }
 
 //----------------------------------------------------------------------------
+// Returns TRUE if the entry and member definition have equal file names,
+// otherwise FALSE.
+
+static bool haveEqualFileNames(const Entry *root,const MemberDef *md)
+{
+  const FileDef *fd = md->getFileDef();
+  if (!fd)
+  {
+    return FALSE;
+  }
+
+  return fd->absFilePath() == root->fileName;
+}
+
+//----------------------------------------------------------------------------
+
+static void addDefineDoc(const Entry *root, MemberDefMutable *md)
+{
+  md->setDocumentation(root->doc,root->docFile,root->docLine);
+  md->setDocsForDefinition(!root->proto);
+  md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+  if (md->inbodyDocumentation().isEmpty())
+  {
+    md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
+  }
+  if (md->getStartBodyLine()==-1 && root->bodyLine!=-1)
+  {
+    md->setBodySegment(root->startLine,root->bodyLine,root->endBodyLine);
+    md->setBodyDef(root->fileDef());
+  }
+  md->addSectionsToDefinition(root->anchors);
+  md->setMaxInitLines(root->initLines);
+  md->setRefItems(root->sli);
+  if (root->mGrpId!=-1) md->setMemberGroupId(root->mGrpId);
+  addMemberToGroups(root,md);
+}
+
+//----------------------------------------------------------------------------
 
 static void findDefineDocumentation(Entry *root)
 {
@@ -8786,20 +8892,7 @@ static void findDefineDocumentation(Entry *root)
           MemberDefMutable *md = toMemberDefMutable(imd.get());
           if (md && md->memberType()==MemberType_Define)
           {
-            md->setDocumentation(root->doc,root->docFile,root->docLine);
-            md->setDocsForDefinition(!root->proto);
-            md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
-            if (md->inbodyDocumentation().isEmpty())
-            {
-              md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
-            }
-            md->setBodySegment(root->startLine,root->bodyLine,root->endBodyLine);
-            md->setBodyDef(root->fileDef());
-            md->addSectionsToDefinition(root->anchors);
-            md->setMaxInitLines(root->initLines);
-            md->setRefItems(root->sli);
-            if (root->mGrpId!=-1) md->setMemberGroupId(root->mGrpId);
-            addMemberToGroups(root,md);
+            addDefineDoc(root,md);
           }
         }
       }
@@ -8817,24 +8910,10 @@ static void findDefineDocumentation(Entry *root)
           MemberDefMutable *md = toMemberDefMutable(imd.get());
           if (md && md->memberType()==MemberType_Define)
           {
-            const FileDef *fd=md->getFileDef();
-            if (fd && fd->absFilePath()==root->fileName)
-              // doc and define in the same file assume they belong together.
+            if (haveEqualFileNames(root, md) || isEntryInGroupOfMember(root, md))
+              // doc and define in the same file or group assume they belong together.
             {
-              md->setDocumentation(root->doc,root->docFile,root->docLine);
-              md->setDocsForDefinition(!root->proto);
-              md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
-              if (md->inbodyDocumentation().isEmpty())
-              {
-                md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
-              }
-              md->setBodySegment(root->startLine,root->bodyLine,root->endBodyLine);
-              md->setBodyDef(root->fileDef());
-              md->addSectionsToDefinition(root->anchors);
-              md->setRefItems(root->sli);
-              md->setLanguage(root->lang);
-              if (root->mGrpId!=-1) md->setMemberGroupId(root->mGrpId);
-              addMemberToGroups(root,md);
+              addDefineDoc(root,md);
             }
           }
         }
@@ -10750,6 +10829,20 @@ void readConfiguration(int argc, char **argv)
 {
   QCString versionString = getFullVersion();
 
+  // helper that calls \a func to write to file \a fileName via a TextStream
+  auto writeFile = [](const char *fileName,std::function<void(TextStream&)> func) -> bool
+  {
+    std::ofstream f;
+    if (openOutputFile(fileName,f))
+    {
+      TextStream t(&f);
+      func(t);
+      return true;
+    }
+    return false;
+  };
+
+
   /**************************************************************************
    *             Handle arguments                                           *
    **************************************************************************/
@@ -10858,12 +10951,7 @@ void readConfiguration(int argc, char **argv)
             cleanUpDoxygen();
             exit(1);
           }
-          std::ofstream f;
-          if (openOutputFile(argv[optInd+1],f))
-          {
-            TextStream t(&f);
-            RTFGenerator::writeExtensionsFile(t);
-          }
+          writeFile(argv[optInd+1],RTFGenerator::writeExtensionsFile);
           cleanUpDoxygen();
           exit(0);
         }
@@ -10887,12 +10975,7 @@ void readConfiguration(int argc, char **argv)
             cleanUpDoxygen();
             exit(1);
           }
-          std::ofstream f;
-          if (openOutputFile(argv[optInd+1],f))
-          {
-            TextStream t(&f);
-            EmojiEntityMapper::instance().writeEmojiFile(t);
-          }
+          writeFile(argv[optInd+1],[](TextStream &t) { EmojiEntityMapper::instance().writeEmojiFile(t); });
           cleanUpDoxygen();
           exit(0);
         }
@@ -10916,13 +10999,7 @@ void readConfiguration(int argc, char **argv)
             cleanUpDoxygen();
             exit(1);
           }
-          std::ofstream f;
-          if (openOutputFile(argv[optInd+1],f))
-          {
-            TextStream t(&f);
-            RTFGenerator::writeStyleSheetFile(t);
-          }
-          else
+          if (!writeFile(argv[optInd+1],RTFGenerator::writeStyleSheetFile))
           {
             err("error opening RTF style sheet file %s!\n",argv[optInd+1]);
             cleanUpDoxygen();
@@ -10954,27 +11031,10 @@ void readConfiguration(int argc, char **argv)
           Config::postProcess(TRUE);
           Config::updateObsolete();
           Config::checkAndCorrect(Config_getBool(QUIET), false);
-
           setTranslator(Config_getEnum(OUTPUT_LANGUAGE));
-
-          std::ofstream f;
-          if (openOutputFile(argv[optInd+1],f))
-          {
-            TextStream t(&f);
-            HtmlGenerator::writeHeaderFile(t, argv[optInd+3]);
-          }
-          f.close();
-          if (openOutputFile(argv[optInd+2],f))
-          {
-            TextStream t(&f);
-            HtmlGenerator::writeFooterFile(t);
-          }
-          f.close();
-          if (openOutputFile(argv[optInd+3],f))
-          {
-            TextStream t(&f);
-            HtmlGenerator::writeStyleSheetFile(t);
-          }
+          writeFile(argv[optInd+1],[&](TextStream &t) { HtmlGenerator::writeHeaderFile(t,argv[optInd+3]); });
+          writeFile(argv[optInd+2],HtmlGenerator::writeFooterFile);
+          writeFile(argv[optInd+3],HtmlGenerator::writeStyleSheetFile);
           cleanUpDoxygen();
           exit(0);
         }
@@ -11000,27 +11060,10 @@ void readConfiguration(int argc, char **argv)
           Config::postProcess(TRUE);
           Config::updateObsolete();
           Config::checkAndCorrect(Config_getBool(QUIET), false);
-
           setTranslator(Config_getEnum(OUTPUT_LANGUAGE));
-
-          std::ofstream f;
-          if (openOutputFile(argv[optInd+1],f))
-          {
-            TextStream t(&f);
-            LatexGenerator::writeHeaderFile(t);
-          }
-          f.close();
-          if (openOutputFile(argv[optInd+2],f))
-          {
-            TextStream t(&f);
-            LatexGenerator::writeFooterFile(t);
-          }
-          f.close();
-          if (openOutputFile(argv[optInd+3],f))
-          {
-            TextStream t(&f);
-            LatexGenerator::writeStyleSheetFile(t);
-          }
+          writeFile(argv[optInd+1],LatexGenerator::writeHeaderFile);
+          writeFile(argv[optInd+2],LatexGenerator::writeFooterFile);
+          writeFile(argv[optInd+3],LatexGenerator::writeStyleSheetFile);
           cleanUpDoxygen();
           exit(0);
         }
@@ -11643,7 +11686,7 @@ void searchInputFiles()
 void parseInput()
 {
   AUTO_TRACE();
-  atexit(exitDoxygen);
+  std::atexit(exitDoxygen);
 
 #if USE_LIBCLANG
   Doxygen::clangAssistedParsing = Config_getBool(CLANG_ASSISTED_PARSING);

@@ -174,7 +174,7 @@ configure_file(${PROJECT_SOURCE_DIR}/doc/index.doc          ${PROJECT_BINARY_DIR
 
 # doc/language.doc (see tag Doxyfile:INPUT)
 add_custom_command(
-        COMMAND ${PYTHON_EXECUTABLE} translator.py ${PROJECT_SOURCE_DIR}
+        COMMAND ${PYTHON_EXECUTABLE} translator.py --doc ${PROJECT_SOURCE_DIR}
         DEPENDS ${PROJECT_SOURCE_DIR}/VERSION ${PROJECT_SOURCE_DIR}/doc/maintainers.txt ${PROJECT_SOURCE_DIR}/doc/language.tpl ${PROJECT_BINARY_DIR}/doc/translator.py ${LANG_FILES}
         OUTPUT language.doc
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/doc

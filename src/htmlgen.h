@@ -109,8 +109,6 @@ class HtmlGenerator : public OutputGenerator
     void writeStyleInfo(int part);
     void startTitleHead(const QCString &);
     void endTitleHead(const QCString &,const QCString &);
-    void startTitle() { m_t << "<div class=\"title\">"; }
-    void endTitle() { m_t << "</div>"; }
 
     void startParagraph(const QCString &classDef);
     void endParagraph();
@@ -134,8 +132,6 @@ class HtmlGenerator : public OutputGenerator
 
     void startTextLink(const QCString &file,const QCString &anchor);
     void endTextLink();
-    void startHtmlLink(const QCString &url);
-    void endHtmlLink();
     void startTypewriter() { m_t << "<code>"; }
     void endTypewriter()   { m_t << "</code>"; }
     void startGroupHeader(int);
@@ -190,10 +186,6 @@ class HtmlGenerator : public OutputGenerator
     void endEmphasis()   { m_t << "</em>"; }
     void startBold()     { m_t << "<b>"; }
     void endBold()       { m_t << "</b>"; }
-    void startDescription() { m_t << "\n<dl>\n"; }
-    void endDescription()   { m_t << "\n</dl>\n\n"; }
-    void startDescItem()    { m_t << "<dt>"; }
-    void endDescItem()      { m_t << "</dt>"; }
     void startDescForItem() { m_t << "<dd>"; }
     void endDescForItem()   { m_t << "</dd>\n"; }
     void lineBreak(const QCString &style);
@@ -209,19 +201,12 @@ class HtmlGenerator : public OutputGenerator
     void writeLatexSpacing() {}
     void writeStartAnnoItem(const QCString &type,const QCString &file,
                             const QCString &path,const QCString &name);
-    void writeEndAnnoItem(const QCString &) { m_t << "\n"; }
-    void startSubsection()    { m_t << "<h2>"; }
-    void endSubsection()      { m_t << "</h2>\n"; }
-    void startSubsubsection() { m_t << "<h3>"; }
-    void endSubsubsection()   { m_t << "</h3>\n"; }
     void startCenter()        { m_t << "<center>\n"; }
     void endCenter()          { m_t << "</center>\n"; }
     void startSmall()         { m_t << "<small>\n"; }
     void endSmall()           { m_t << "</small>\n"; }
     void startExamples();
     void endExamples();
-    void startParamList(ParamListTypes,const QCString &);
-    void endParamList();
     void startSection(const QCString &,const QCString &,SectionType);
     void endSection(const QCString &,SectionType);
     void addIndexItem(const QCString &,const QCString &);
@@ -311,6 +296,8 @@ class HtmlGenerator : public OutputGenerator
     void addCodeGen(OutputCodeList &list);
 
   private:
+    void startTitle() { m_t << "<div class=\"title\">"; }
+    void endTitle() { m_t << "</div>"; }
     static void writePageFooter(TextStream &t,const QCString &,const QCString &,const QCString &);
     void docify_(const QCString &text,bool inHtmlComment);
 

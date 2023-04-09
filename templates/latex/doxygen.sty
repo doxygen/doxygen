@@ -568,6 +568,7 @@
 \definecolor{preprocessor}{rgb}{0.5,0.38,0.125}
 \definecolor{stringliteral}{rgb}{0.0,0.125,0.25}
 \definecolor{charliteral}{rgb}{0.0,0.5,0.5}
+\definecolor{xmlcdata}{rgb}{0.0,0.0,0.0}
 \definecolor{vhdldigit}{rgb}{1.0,0.0,1.0}
 \definecolor{vhdlkeyword}{rgb}{0.43,0.0,0.43}
 \definecolor{vhdllogic}{rgb}{1.0,0.0,0.0}
@@ -602,9 +603,9 @@
 \def\toclevel@subparagraph{9}
 
 \newcommand\doxysection{\@startsection {section}{1}{\z@}%
-                                   {-3.5ex \@plus -1ex \@minus -.2ex}%
-                                   {2.3ex \@plus.2ex}%
-                                   {\raggedright\normalfont\Large\bfseries}}
+                                     {-3.5ex \@plus -1ex \@minus -.2ex}%
+                                     {2.3ex \@plus.2ex}%
+                                     {\raggedright\normalfont\Large\bfseries}}
 \newcommand\doxysubsection{\@startsection{subsection}{2}{\z@}%
                                      {-3.25ex\@plus -1ex \@minus -.2ex}%
                                      {1.5ex \@plus .2ex}%
@@ -637,6 +638,14 @@
                                        {3.25ex \@plus1ex \@minus .2ex}%
                                        {-1em}%
                                       {\raggedright\normalfont\normalsize\bfseries}}
+\newcommand\doxyparagraph{\@startsection{paragraph}{4}{\z@}%
+                                     {-3.25ex\@plus -1ex \@minus -.2ex}%
+                                     {1.5ex \@plus .2ex}%
+                                     {\raggedright\normalfont\normalsize\bfseries}}
+\newcommand\doxysubparagraph{\@startsection{subparagraph}{5}{\parindent}%
+                                     {-3.25ex\@plus -1ex \@minus -.2ex}%
+                                     {1.5ex \@plus .2ex}%
+                                     {\raggedright\normalfont\normalsize\bfseries}}                                      
 \newcommand\l@subsubsubsection{\@dottedtocline{4}{6.1em}{7.8em}}
 \newcommand\l@subsubsubsubsection{\@dottedtocline{5}{6.1em}{9.4em}}
 \newcommand\l@subsubsubsubsubsection{\@dottedtocline{6}{6.1em}{11em}}

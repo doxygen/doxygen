@@ -117,11 +117,8 @@ class LatexGenerator : public OutputGenerator
     void endProjectNumber() {}
     void writeStyleInfo(int part);
     void startTitleHead(const QCString &);
-    void startTitle();
     void endTitleHead(const QCString &,const QCString &name);
-    void endTitle()   { m_t << "}"; }
 
-    void newParagraph();
     void startParagraph(const QCString &classDef);
     void endParagraph();
     void writeString(const QCString &text);
@@ -143,8 +140,6 @@ class LatexGenerator : public OutputGenerator
 
     void startTextLink(const QCString &,const QCString &);
     void endTextLink();
-    void startHtmlLink(const QCString &url);
-    void endHtmlLink();
     void startTypewriter() { m_t << "{\\ttfamily "; }
     void endTypewriter()   { m_t << "}";      }
     void startGroupHeader(int);
@@ -172,8 +167,8 @@ class LatexGenerator : public OutputGenerator
     void endMemberItem(MemberItemType);
     void startMemberTemplateParams();
     void endMemberTemplateParams(const QCString &,const QCString &);
-    void startCompoundTemplateParams() { startSubsubsection(); }
-    void endCompoundTemplateParams() { endSubsubsection(); }
+    void startCompoundTemplateParams() { m_t << "\\subsubsection*{";}
+    void endCompoundTemplateParams()   { m_t << "}\n"; }
 
     void startMemberGroupHeader(bool);
     void endMemberGroupHeader();
@@ -191,10 +186,6 @@ class LatexGenerator : public OutputGenerator
     void endEmphasis()   { m_t << "}"; }
     void startBold()     { m_t << "{\\bfseries "; }
     void endBold()       { m_t << "}"; }
-    void startDescription();
-    void endDescription();
-    void startDescItem();
-    void endDescItem();
     void lineBreak(const QCString &style=QCString());
     void startMemberDoc(const QCString &,const QCString &,const QCString &,const QCString &,int,int,bool);
     void endMemberDoc(bool);
@@ -204,11 +195,6 @@ class LatexGenerator : public OutputGenerator
     void writeLatexSpacing() { m_t << "\\hspace{0.3cm}"; }
     void writeStartAnnoItem(const QCString &type,const QCString &file,
                             const QCString &path,const QCString &name);
-    void writeEndAnnoItem(const QCString &name);
-    void startSubsection() { m_t << "\\subsection*{"; }
-    void endSubsection() { m_t << "}\n"; }
-    void startSubsubsection() { m_t << "\\subsubsection*{"; }
-    void endSubsubsection() { m_t << "}\n"; }
     void startCenter()      { m_t << "\\begin{center}\n"; }
     void endCenter()        { m_t << "\\end{center}\n"; }
     void startSmall()       { m_t << "\\footnotesize "; }
@@ -219,12 +205,8 @@ class LatexGenerator : public OutputGenerator
     void endMemberDeclaration(const QCString &,const QCString &) {}
     void writeInheritedSectionTitle(const QCString &,const QCString &,const QCString &,
                       const QCString &,const QCString &,const QCString &);
-    void startDescList(SectionTypes)     { m_t << "\\begin{Desc}\n\\item["; }
-    void endDescList()       { m_t << "\\end{Desc}\n"; }
     void startExamples();
     void endExamples();
-    void startParamList(ParamListTypes,const QCString &title);
-    void endParamList();
     void startDescForItem()     { m_t << "\\par\n"; }
     void endDescForItem()       {}
     void startSection(const QCString &,const QCString &,SectionType);
@@ -315,6 +297,9 @@ class LatexGenerator : public OutputGenerator
     void addCodeGen(OutputCodeList &list);
 
   private:
+    void startTitle();
+    void endTitle()   { m_t << "}"; }
+
     bool m_firstDescItem = true;
     bool m_disableLinks = false;
     QCString m_relPath;

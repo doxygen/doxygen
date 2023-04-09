@@ -988,12 +988,12 @@ void DocbookGenerator::endExamples()
 DB_GEN_C
   m_t << "</simplesect>\n";
 }
-void DocbookGenerator::startSubsubsection()
+void DocbookGenerator::startCompoundTemplateParams()
 {
 DB_GEN_C
   m_t << "<simplesect><title>";
 }
-void DocbookGenerator::endSubsubsection()
+void DocbookGenerator::endCompoundTemplateParams()
 {
 DB_GEN_C
   m_t << "</title></simplesect>\n";

@@ -95,6 +95,10 @@ void LatexCodeGenerator::codify(const QCString &str)
                    m_col++;
                    p++;
                    break;
+        case '`':  *m_t <<"\\`{}";
+                   m_col++;
+                   p++;
+                   break;
         case '\t': spacesToNextTabStop =
                          tabSize - (m_col%tabSize);
                    for (i = 0; i < spacesToNextTabStop; i++) *m_t << (m_doxyCodeLineOpen ? "\\ " : " ");
@@ -1148,11 +1152,6 @@ void LatexGenerator::writeStyleInfo(int part)
   endPlainFile();
 }
 
-void LatexGenerator::newParagraph()
-{
-  m_t << "\n" << "\n";
-}
-
 void LatexGenerator::startParagraph(const QCString &)
 {
   m_t << "\n" << "\n";
@@ -1185,43 +1184,6 @@ void LatexGenerator::endIndexItem(const QCString &ref,const QCString &fn)
   }
 }
 
-//void LatexGenerator::writeIndexFileItem(const QCString &,const QCString &text)
-//{
-//  m_t << "\\item\\contentsline{section}{";
-//  docify(text);
-//  m_t << "}{\\pageref{" << stripPath(text) << "}}\n";
-//}
-
-
-void LatexGenerator::startHtmlLink(const QCString &url)
-{
-  if (Config_getBool(PDF_HYPERLINKS))
-  {
-    m_t << "\\href{";
-    m_t << latexFilterURL(url);
-    m_t << "}";
-  }
-  m_t << "{\\texttt{ ";
-}
-
-void LatexGenerator::endHtmlLink()
-{
-  m_t << "}}";
-}
-
-//void LatexGenerator::writeMailLink(const QCString &url)
-//{
-//  if (Config_getBool(PDF_HYPERLINKS))
-//  {
-//    m_t << "\\href{mailto:";
-//    m_t << url;
-//    m_t << "}";
-//  }
-//  m_t << "\\texttt{ ";
-//  docify(url);
-//  m_t << "}";
-//}
-
 void LatexGenerator::writeStartAnnoItem(const QCString &,const QCString &,
                                         const QCString &path,const QCString &name)
 {
@@ -1229,11 +1191,6 @@ void LatexGenerator::writeStartAnnoItem(const QCString &,const QCString &,
   if (!path.isEmpty()) docify(path);
   docify(name);
   m_t << "} ";
-}
-
-void LatexGenerator::writeEndAnnoItem(const QCString &name)
-{
-  m_t << "}{\\pageref{" << stripPath(name) << "}}{}\n";
 }
 
 void LatexGenerator::startIndexKey()
@@ -1876,7 +1833,7 @@ void LatexGenerator::endMemberGroup(bool hasHeader)
 
 void LatexGenerator::startDotGraph()
 {
-  newParagraph();
+  m_t << "\n" << "\n";
 }
 
 void LatexGenerator::endDotGraph(DotClassGraph &g)
@@ -1920,36 +1877,6 @@ void LatexGenerator::endDirDepGraph(DotDirDeps &g)
   g.writeGraph(m_t,GOF_EPS,EOF_LaTeX,dir(),fileName(),m_relPath);
 }
 
-void LatexGenerator::startDescription()
-{
-  m_t << "\\begin{description}\n";
-}
-
-void LatexGenerator::endDescription()
-{
-  m_t << "\\end{description}\n";
-  m_firstDescItem=TRUE;
-}
-
-void LatexGenerator::startDescItem()
-{
-  m_firstDescItem=TRUE;
-  m_t << "\\item[";
-}
-
-void LatexGenerator::endDescItem()
-{
-  if (m_firstDescItem)
-  {
-    m_t << "]\n";
-    m_firstDescItem=FALSE;
-  }
-  else
-  {
-    lineBreak();
-  }
-}
-
 void LatexGenerator::startExamples()
 {
   m_t << "\\begin{Desc}\n\\item[";
@@ -1958,18 +1885,6 @@ void LatexGenerator::startExamples()
 }
 
 void LatexGenerator::endExamples()
-{
-  m_t << "\\end{Desc}\n";
-}
-
-void LatexGenerator::startParamList(ParamListTypes,const QCString &title)
-{
-  m_t << "\\begin{Desc}\n\\item[";
-  docify(title);
-  m_t << "]";
-}
-
-void LatexGenerator::endParamList()
 {
   m_t << "\\end{Desc}\n";
 }

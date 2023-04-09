@@ -88,6 +88,16 @@ class MemberVector
     {
       return std::find(m_members.begin(),m_members.end(),md)!=m_members.end();
     }
+    MemberDef *find(const QCString &name)
+    {
+      auto it = std::find_if(m_members.begin(),m_members.end(),[name=name](auto &el) { return el->name()==name; });
+      if (it != m_members.end())
+      {
+        return *it;
+      }
+
+      return nullptr;
+    }
   protected:
     Vec m_members;
 };

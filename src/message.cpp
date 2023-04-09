@@ -13,15 +13,18 @@
  *
  */
 
-#include <stdio.h>
+#include <cstdio>
+#include <cstdlib>
+#include <mutex>
+#include <atomic>
+
 #include "config.h"
 #include "debug.h"
 #include "portable.h"
 #include "message.h"
 #include "doxygen.h"
-
-#include <mutex>
-#include <atomic>
+#include "fileinfo.h"
+#include "dir.h"
 
 // globals
 static QCString        g_warnFormat;
@@ -54,11 +57,22 @@ void initWarningFormat()
     {
       g_warnFile = stdout;
     }
-    else if (!(g_warnFile = Portable::fopen(g_warnlogFile,"w")))
+    else
     {
-      // point it to something valid, because warn() relies on it
-      g_warnFile = stderr;
-      err("Cannot open '%s' for writing, redirecting 'WARN_LOGFILE' output to 'stderr'\n",g_warnlogFile.data());
+      FileInfo fi(g_warnlogFile.str());
+      Dir d(fi.dirPath().c_str());
+      if (!d.exists() && !d.mkdir(fi.dirPath().c_str()))
+      {
+        // point it to something valid, because warn() relies on it
+        g_warnFile = stderr;
+        err("Cannot create directory for '%s', redirecting 'WARN_LOGFILE' output to 'stderr'\n",g_warnlogFile.data());
+      }
+      else if (!(g_warnFile = Portable::fopen(g_warnlogFile,"w")))
+      {
+        // point it to something valid, because warn() relies on it
+        g_warnFile = stderr;
+        err("Cannot open '%s' for writing, redirecting 'WARN_LOGFILE' output to 'stderr'\n",g_warnlogFile.data());
+      }
     }
   }
   else
@@ -69,6 +83,15 @@ void initWarningFormat()
   {
     g_warningStr = g_errorStr;
   }
+
+  // make sure the g_warnFile is closed in case we call exit and it is still open
+  std::atexit([](){
+      if (g_warnFile && g_warnFile!=stderr && g_warnFile!=stdout)
+      {
+        Portable::fclose(g_warnFile);
+        g_warnFile = nullptr;
+      }
+  });
 }
 
 
@@ -284,6 +307,7 @@ extern void finishWarnExit()
   if (g_warnBehavior == WARN_AS_ERROR_t::FAIL_ON_WARNINGS_PRINT && g_warnlogFile != "-")
   {
     Portable::fclose(g_warnFile);
+    g_warnFile = nullptr;
   }
   if (g_warnStat && g_warnBehavior == WARN_AS_ERROR_t::FAIL_ON_WARNINGS_PRINT && g_warnlogFile != "-")
   {

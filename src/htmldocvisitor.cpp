@@ -120,6 +120,9 @@ static bool mustBeOutsideParagraph(const DocNodeVariant &n)
                                  /* <hr> */         DocHorRuler,
                                  /* <blockquote> */ DocHtmlBlockQuote,
                                  /* \parblock */    DocParBlock,
+                                 /* \dotfile */     DocDotFile,
+                                 /* \mscfile */     DocMscFile,
+                                 /* \diafile */     DocDiaFile,
                                  /* <details> */    DocHtmlDetails,
                                  /* <summary> */    DocHtmlSummary,
                                                     DocIncOperator >(n))
@@ -1785,6 +1788,7 @@ void HtmlDocVisitor::operator()(const DocDotFile &df)
 {
   if (m_hide) return;
   if (!Config_getBool(DOT_CLEANUP)) copyFile(df.file(),Config_getString(HTML_OUTPUT)+"/"+stripPath(df.file()));
+  forceEndParagraph(df);
   m_t << "<div class=\"dotgraph\">\n";
   writeDotFile(df.file(),df.relPath(),df.context(),df.srcFile(),df.srcLine());
   if (df.hasCaption())
@@ -1797,12 +1801,14 @@ void HtmlDocVisitor::operator()(const DocDotFile &df)
     m_t << "</div>\n";
   }
   m_t << "</div>\n";
+  forceStartParagraph(df);
 }
 
 void HtmlDocVisitor::operator()(const DocMscFile &df)
 {
   if (m_hide) return;
   if (!Config_getBool(DOT_CLEANUP)) copyFile(df.file(),Config_getString(HTML_OUTPUT)+"/"+stripPath(df.file()));
+  forceEndParagraph(df);
   m_t << "<div class=\"mscgraph\">\n";
   writeMscFile(df.file(),df.relPath(),df.context(),df.srcFile(),df.srcLine());
   if (df.hasCaption())
@@ -1815,12 +1821,14 @@ void HtmlDocVisitor::operator()(const DocMscFile &df)
     m_t << "</div>\n";
   }
   m_t << "</div>\n";
+  forceStartParagraph(df);
 }
 
 void HtmlDocVisitor::operator()(const DocDiaFile &df)
 {
   if (m_hide) return;
   if (!Config_getBool(DOT_CLEANUP)) copyFile(df.file(),Config_getString(HTML_OUTPUT)+"/"+stripPath(df.file()));
+  forceEndParagraph(df);
   m_t << "<div class=\"diagraph\">\n";
   writeDiaFile(df.file(),df.relPath(),df.context(),df.srcFile(),df.srcLine());
   if (df.hasCaption())
@@ -1833,6 +1841,7 @@ void HtmlDocVisitor::operator()(const DocDiaFile &df)
     m_t << "</div>\n";
   }
   m_t << "</div>\n";
+  forceStartParagraph(df);
 }
 
 void HtmlDocVisitor::operator()(const DocLink &lnk)
