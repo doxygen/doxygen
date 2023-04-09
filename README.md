@@ -24,6 +24,10 @@ Doxygen can help you in three ways:
 3. You can also use doxygen for creating normal documentation (as I did for
    the doxygen user manual and doxygen web-site).
 
+This Fork
+---------
+This fork adds Abbreviation Resolution (AR) by using the methodology found in this paper: [LINSEN](https://ieeexplore.ieee.org/document/6405277)
+
 Download
 ---------
 The latest binaries and source of Doxygen can be downloaded from:
