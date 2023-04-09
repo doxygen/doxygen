@@ -7,7 +7,7 @@ and the version in which they were introduced.
 \refitem cmdendicode \\endicode
 \refitem cmdendiliteral \\endiliteral
 \refitem cmdendiverbatim \\endiverbatim
-\refitem cmdicode \\ianchor
+\refitem cmdianchor \\ianchor
 \refitem cmdicode \\icode
 \refitem cmdifile \\ifile
 \refitem cmdiline \\iline

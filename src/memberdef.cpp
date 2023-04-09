@@ -994,7 +994,12 @@ static bool writeDefArgumentList(OutputList &ol,const Definition *scope,const Me
       ol.enable(OutputType::Man);
       if (latexOn) ol.enable(OutputType::Latex);
       if (docbookOn) ol.enable(OutputType::Docbook);
-      if (a.name.isEmpty()) ol.docify(a.type); else ol.docify(a.name);
+      if (a.name.isEmpty()) {
+        ol.docify(a.type);
+      } else {
+        ol.docify(a.name);
+        ol.docify(" AR: [ " + a.name.get_checked() + " ]");
+      }
       ol.disable(OutputType::Man);
       ol.disable(OutputType::Latex);
       ol.disable(OutputType::Docbook);
@@ -3379,10 +3384,12 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
     bool found=false;
     for (const auto &vmd : *ml)
     {
+      QCString thing = name();
+      thing.check();
       if (vmd->isEnumerate() && match.str()==vmd->name())
       {
         ol.startDoxyAnchor(cfname,cname,memAnchor,doxyName,doxyArgs);
-        ol.startMemberDoc(ciname,name(),memAnchor,name(),memCount,memTotal,showInline);
+        ol.startMemberDoc(ciname,name(),memAnchor,name() + " AR: [ " + thing.get_checked() + " ]",memCount,memTotal,showInline);
         std::string prefix = match.prefix().str();
         std::string suffix = match.suffix().str();
         linkifyText(TextGeneratorOLImpl(ol),scopedContainer,getBodyDef(),this,prefix.c_str());
@@ -3419,6 +3426,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
   }
   else // not an enum value or anonymous compound
   {
+    title.check();
     ol.startDoxyAnchor(cfname,cname,memAnchor,doxyName,doxyArgs);
     ol.startMemberDoc(ciname,name(),memAnchor,title,memCount,memTotal,showInline);
 

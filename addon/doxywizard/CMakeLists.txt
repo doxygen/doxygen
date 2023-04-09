@@ -169,7 +169,7 @@ ${GENERATED_SRC_WIZARD}/config_doxyw.l.h
 ${GENERATED_SRC_WIZARD}/configdoc.cpp
 ${doxywizard_MOC}
 ${doxywizard_RESOURCES_RCC}
-doxywizard.rc
+${PROJECT_SOURCE_DIR}/templates/icon/doxygen.rc
 )
 
 set_property(TARGET doxywizard PROPERTY WIN32_EXECUTABLE true)

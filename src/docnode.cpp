@@ -16,6 +16,8 @@
 #include "docnode.h"
 #include "docparser_p.h"
 #include "htmlentity.h"
+#include "configimpl.h"
+#include "configoptions.h"
 #include "emoji.h"
 #include "message.h"
 #include "doxygen.h"
@@ -1940,7 +1942,19 @@ getrow:
   if (tok==TK_HTMLTAG)
   {
     int tagId=Mappers::htmlTagMapper->map(parser()->context.token->name);
-    if (tagId==HTML_TR && !parser()->context.token->endTag) // found <tr> tag
+    if (tagId==HTML_THEAD && !parser()->context.token->endTag) // found <thead> tag
+    {
+      goto getrow;
+    }
+    else if (tagId==HTML_TBODY && !parser()->context.token->endTag) // found <tbody> tag
+    {
+      goto getrow;
+    }
+    else if (tagId==HTML_TFOOT && !parser()->context.token->endTag) // found <tfoot> tag
+    {
+      goto getrow;
+    }
+    else if (tagId==HTML_TR && !parser()->context.token->endTag) // found <tr> tag
     {
       // no caption, just rows
       retval=RetVal_TableRow;
@@ -3193,6 +3207,103 @@ void DocPara::handleEmoji()
   parser()->tokenizer.setStatePara();
 }
 
+void DocPara::handleDoxyConfig()
+{
+  // get the argument of the cite command.
+  int tok=parser()->tokenizer.lex();
+  if (tok!=TK_WHITESPACE)
+  {
+    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"expected whitespace after \\doxyconfig command");
+    return;
+  }
+  parser()->tokenizer.setStateDoxyConfig();
+  tok=parser()->tokenizer.lex();
+  if (tok==0)
+  {
+    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected end of comment block while parsing the "
+        "argument of command \\doxyconfig\n");
+    return;
+  }
+  else if (tok!=TK_WORD && tok!=TK_LNKWORD)
+  {
+    warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"unexpected token %s as the argument of \\doxyconfig",
+        DocTokenizer::tokToString(tok));
+    return;
+  }
+  ConfigOption * opt = ConfigImpl::instance()->get(parser()->context.token->name);
+  if (opt)
+  {
+    QCString optionValue;
+    switch (opt->kind())
+    {
+      case ConfigOption::O_Bool:
+        optionValue = *(dynamic_cast<ConfigBool*>(opt)->valueStringRef());
+        break;
+      case ConfigOption::O_String:
+        optionValue = *(dynamic_cast<ConfigString*>(opt)->valueRef());
+        break;
+      case ConfigOption::O_Enum:
+        optionValue = *(dynamic_cast<ConfigEnum*>(opt)->valueRef());
+        break;
+      case ConfigOption::O_Int:
+        optionValue = *(dynamic_cast<ConfigInt*>(opt)->valueStringRef());
+        break;
+      case ConfigOption::O_List:
+        {
+          StringVector *lst = dynamic_cast<ConfigList*>(opt)->valueRef();
+          optionValue="";
+          if (!lst->empty())
+          {
+            std::string lstFormat = theTranslator->trWriteList(static_cast<int>(lst->size())).str();
+            static const reg::Ex marker(R"(@(\d+))");
+            reg::Iterator it(lstFormat,marker);
+            reg::Iterator end;
+            size_t index=0;
+            // now replace all markers with the real text
+            for ( ; it!=end ; ++it)
+            {
+              const auto &match = *it;
+              size_t newIndex = match.position();
+              size_t matchLen = match.length();
+              optionValue += lstFormat.substr(index,newIndex-index);
+              unsigned long entryIndex = std::stoul(match[1].str());
+              if (entryIndex<(unsigned long)lst->size())
+              {
+                optionValue += lst->at(entryIndex);
+              }
+              index=newIndex+matchLen;
+            }
+            optionValue+=lstFormat.substr(index);
+          }
+        }
+        break;
+      case ConfigOption::O_Obsolete:
+        warn(parser()->context.fileName,parser()->tokenizer.getLineNr(), "Obsolete setting for '\\doxyconfig': '%s'",
+              qPrint(parser()->context.token->name));
+        break;
+      case ConfigOption::O_Disabled:
+        warn(parser()->context.fileName,parser()->tokenizer.getLineNr(),
+              "Disabled setting (i.e. not supported in this doxygen executable) for '\\doxyconfig': '%s'",
+              qPrint(parser()->context.token->name));
+        break;
+      case ConfigOption::O_Info:
+        // nothing to show here
+        break;
+    }
+    if (!optionValue.isEmpty())
+    {
+      children().append<DocWord>(parser(),thisVariant(),optionValue);
+    }
+  }
+  else
+  {
+    warn(parser()->context.fileName,parser()->tokenizer.getLineNr(), "Unknown option for '\\doxyconfig': '%s'",
+         qPrint(parser()->context.token->name));
+    children().append<DocWord>(parser(),thisVariant(),parser()->context.token->name);
+  }
+  parser()->tokenizer.setStatePara();
+}
+
 int DocPara::handleXRefItem()
 {
   AUTO_TRACE();
@@ -4337,6 +4448,9 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
     case CMD_EMOJI:
       handleEmoji();
       break;
+    case CMD_DOXYCONFIG:
+      handleDoxyConfig();
+      break;
     case CMD_REF: // fall through
     case CMD_SUBPAGE:
       handleRef(cmdName);
@@ -4547,6 +4661,11 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
       break;
     case HTML_TH:
       retval = RetVal_TableHCell;
+      break;
+    case HTML_THEAD:
+    case HTML_TBODY:
+    case HTML_TFOOT:
+      // for time being ignore </t....> tag
       break;
     case HTML_CAPTION:
       warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Unexpected tag <caption> found");
@@ -4849,6 +4968,7 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
       break;
   default:
       // we should not get here!
+      warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Unexpected start tag %s\n",qPrint(tagName));
       ASSERT(0);
       break;
   }
@@ -4972,6 +5092,11 @@ int DocPara::handleHtmlEndTag(const QCString &tagName)
       break;
     case HTML_TH:
       // ignore </th> tag
+      break;
+    case HTML_THEAD:
+    case HTML_TBODY:
+    case HTML_TFOOT:
+      // for time being ignore </t....> tag
       break;
     case HTML_CAPTION:
       warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Unexpected tag </caption> found");

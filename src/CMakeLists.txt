@@ -10,6 +10,7 @@ include_directories(
     ${PROJECT_SOURCE_DIR}/libxml
     ${PROJECT_SOURCE_DIR}/vhdlparser
     ${PROJECT_SOURCE_DIR}/src
+    ${PROJECT_SOURCE_DIR}/src/ar
     ${PROJECT_SOURCE_DIR}/deps/spdlog/include
     ${CLANG_INCLUDEDIR}
     ${GENERATED_SRC}
@@ -321,6 +322,9 @@ add_library(doxymain STATIC
     vhdljjparser.cpp
     xmldocvisitor.cpp
     xmlgen.cpp
+    ar/ar.cpp
+    ar/fuzzy.cpp
+    ar/dijkstra.cpp
 )
 add_sanitizers(doxymain)
 
@@ -338,6 +342,7 @@ endif()
 
 add_executable(doxygen
     main.cpp
+    ${PROJECT_SOURCE_DIR}/templates/icon/doxygen.rc
 )
 
 # enable to monitor compilation times
