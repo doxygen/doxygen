@@ -60,6 +60,7 @@ void DotCallGraph::buildGraph(DotNode *n,const MemberDef *md,int distance)
         }
         QCString tooltip = rmd->briefDescriptionAsTooltip();
         DotNode *bn = new DotNode(
+            this,
             getNextNodeNumber(),
             linkToText(rmd->getLanguage(),name,FALSE),
             tooltip,
@@ -133,7 +134,7 @@ DotCallGraph::DotCallGraph(const MemberDef *md,bool inverse)
     name = md->qualifiedName();
   }
   QCString tooltip = md->briefDescriptionAsTooltip();
-  m_startNode = new DotNode(getNextNodeNumber(),
+  m_startNode = new DotNode(this,getNextNodeNumber(),
     linkToText(md->getLanguage(),name,FALSE),
     tooltip,
     uniqueId,

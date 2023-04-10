@@ -1173,6 +1173,7 @@ void HtmlGenerator::init()
   if (Config_getBool(INTERACTIVE_SVG))
   {
     mgr.copyResource("svgpan.js",dname);
+    mgr.copyResource("svgmin.js",dname);
   }
 
   if (!Config_getBool(DISABLE_INDEX) && Config_getBool(HTML_DYNAMIC_MENUS))
@@ -1564,6 +1565,7 @@ void HtmlGenerator::writeStyleInfo(int part)
     if (Config_getBool(INTERACTIVE_SVG))
     {
       Doxygen::indexList->addStyleSheetFile("svgpan.js");
+      Doxygen::indexList->addStyleSheetFile("svgmin.js");
     }
 
     if (!Config_getBool(DISABLE_INDEX) && Config_getBool(HTML_DYNAMIC_MENUS))

@@ -70,7 +70,7 @@ class DotNode
   public:
     static void deleteNodes(DotNode* node);
     static QCString convertLabel(const QCString& , bool htmlLike=false);
-    DotNode(int n,const QCString &lab,const QCString &tip,const QCString &url,
+    DotNode(DotGraph *parent,int n,const QCString &lab,const QCString &tip,const QCString &url,
         bool rootNode=FALSE,const ClassDef *cd=0);
     ~DotNode();
 
@@ -142,6 +142,7 @@ class DotNode
     int              m_distance   = 1000;    //!< shortest path to the root node
     bool             m_renumbered = false;   //!< indicates if the node has been renumbered (to prevent endless loops)
     int              m_subgraphId = -1;
+    DotGraph        *m_parent;
 };
 
 class DotNodeMap : public std::map<std::string,DotNode*>
