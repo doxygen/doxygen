@@ -49,11 +49,4 @@ struct Dictionaries {
 };
 
 const std::string do_ar(std::string word);
-
-const LongForm expansion_matching(NonDictWords &nonDictWords, const ar::Dictionaries &D);
-
-const Lmatch string_matching(std::string token, const ar::Dictionary &D, const Phi &phi,
-                       const Cfunc &cost);
-
-const Lmatch split_matching(std::string ident, const ar::Dictionaries &D, Lmatch *matches);
 } // namespace ar

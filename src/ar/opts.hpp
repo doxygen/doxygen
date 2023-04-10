@@ -6,7 +6,7 @@
 #define WARNING_LEVEL 2
 #define DANGER_LEVEL 3
 
-#define LOG_LEVEL RESULT_LEVEL
+#define LOG_LEVEL WARNING_LEVEL
 
 #include <functional>
 #include <iomanip>
@@ -16,6 +16,7 @@
 #include <vector>
 
 using LongForm = std::unordered_map<std::string, std::string>;
+using Lres = std::unordered_map<int, std::string>;
 using Lmatch = std::vector<std::string>;
 using NonDictWords = std::vector<std::string>;
 using Matches = std::vector<std::pair<std::string, std::string>>;

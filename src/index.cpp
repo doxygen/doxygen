@@ -2294,7 +2294,7 @@ static void writeAlphabeticalClassList(OutputList &ol, ClassDef::CompoundType ct
         }
 
         ol.writeObjectLink(cd->getReference(),
-            cd->getOutputFileBase(),cd->anchor(),cname);
+            cd->getOutputFileBase(),cd->anchor(),cname + " AR: [ " + cname.get_checked() + " ]");
         if (!namesp.isEmpty())
         {
           ol.writeString(" (");
@@ -2306,7 +2306,7 @@ static void writeAlphabeticalClassList(OutputList &ol, ClassDef::CompoundType ct
           }
           else
           {
-            ol.docify(nsDispName);
+            ol.docify(nsDispName + " AR: [ " + nsDispName.get_checked() + " ]");
           }
           ol.writeString(")");
         }

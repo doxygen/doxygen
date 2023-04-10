@@ -1,0 +1,1490 @@
+first-generation programming language
+first normal form
+10base-2
+10base-5
+10base-f
+10base-fb
+10base-fl
+10base-fp
+10base-t
+100base-fx
+100base-tx
+100base-vg
+intel 80286 processor
+2 binary 1 quaternary
+two-factor authentication
+second-generation programming language
+second normal form
+third-generation programming language
+3rd generation partnership project-'3g comms
+3rd generation partnership project 2
+third normal form
+intel 80386 processor
+intel 80486 processor
+f—4 byte 5 byte local fiber
+fourth-generation programming language
+fourth normal form
+fifth-generation programming language
+fifth normal form
+sixth normal form
+8 byte 10 byte local fiber
+wireless lan
+authentication authorization, accounting
+axis aligned bounding box
+advanced audio coding
+atm adaptation layer
+atm adaptation layer connection
+appletalk address resolution protocol
+attribute-based access control
+actor-based concurrent language
+application binary interface
+asynchronous balanced mode
+area border router
+auto baud-rate detection
+available bitrate
+average bitrate
+acoustic coupler
+alternating current
+automatic call distributor
+advanced computing environment
+atomicity consistency isolation durability
+acknowledgement
+amsterdam compiler kit
+access control list
+active current loop
+association for computing machinery
+automated classification of medical entities
+airline control program
+advanced configuration and power interface
+allowed cell rate
+attenuation to crosstalk ratio
+active directory
+administrative domain
+analog-to-digital converter
+apple display connector
+apple desktop bus
+advanced data communications control procedures
+activex data objects
+asymmetric digital subscriber line
+abstract data type
+adaptive equalizer
+advanced encryption standard
+anisotropic filtering
+apple filing protocol
+accelerated graphics port
+active hub
+artificial intelligence
+advanced interactive executive
+asynchronous javascript and xml
+active link
+access list
+apple lossless audio codec
+algorithmic language
+advanced linux sound architecture
+arithmetic and logical unit
+access method
+active matrix
+active-matrix organic light-emitting diode
+active monitor
+allied mastercomputer
+amplitude modulation
+advanced micro devices
+advanced message queuing protocol
+audio modem riser
+artificial neural network
+american national standards institute
+another neat tool
+ata over ethernet
+aspect-oriented programming
+application-layer protocol control information
+application programming interface
+advanced programmable interrupt controller
+automatic private ip addressing
+a programming language
+apache portable runtime
+adaptive replacement cache
+advanced risc computing
+american registry for internet numbers
+advanced risc machines
+aros research operating system
+address resolution protocol
+address and routing parameter area
+advanced research projects agency
+advanced research projects agency network
+access server
+american standard code for information interchange
+authenticated internet protocol
+abstract semantic graph
+application-specific integrated circuit
+advanced step in innovative mobility
+address space layout randomization
+algorithmic state machine
+asymmetric multiprocessing
+abstract syntax notation 1
+active server pages
+application service provider
+asynchronous signal routine
+abstract syntax tree
+advanced technology
+access time
+active terminator
+advanced technology attachment
+authoring tool accessibility guidelines
+advanced technology attachment packet interface
+asynchronous transfer mode
+authentication
+authorization
+antivirus
+advanced video coding
+audio video interleaved
+aho weinberger kernighan
+amazon web services
+abstract window toolkit
+business-to-business
+business-to-consumer
+business-to-employee
+basic assembly language
+block availability map
+bourne-again shell
+beginner's all-purpose symbolic instruction code
+baseband processor
+bulletin board system
+business continuity
+blind carbon copy
+binary coded decimal
+boot configuration data
+boyce–codd normal form
+business continuity planning
+backend
+blocks extensible exchange protocol
+bit error rate
+bidirectional forwarding detection
+binary file descriptor
+breadth-first search
+byzantine fault tolerant
+border gateway protocol
+business intelligence
+bi-directional
+binary
+binary automatic computer
+berkeley internet name domain
+basic input output system
+bipolar junction transistor
+binary digit
+binary large object
+web log
+basic multilingual plane
+baby neill constant
+berkeley open infrastructure for network computing
+byte order mark
+bootstrap protocol
+bridge protocol data unit
+business process execution language
+broadband over power lines
+business process management
+business process modeling
+bits per second
+business reference model
+business rule management system
+business readiness rating
+broadband radio service
+business software alliance
+backside bus
+berkeley software distribution
+blue screen of death
+block started by symbol
+bittorrent
+bluetooth
+basic telecommunications access method
+bandwidth
+bring your own device
+by eight (group of 8 bits)
+computer accountancy
+computer-aided design
+computer-aided engineering
+computer-aided industrial design
+computer-aided instruction
+computer-aided manufacturing
+consistency availability partition tolerance (theorem)
+completely automated public turing test to tell computers and humans apart
+computer-aided translation
+computer-aided quality assurance
+computer-aided software engineering
+c compiler
+carbon copy
+compact disc
+common desktop environment
+compact disk file system
+code-division multiple access
+content delivery network
+cisco discovery protocol
+continuous data protection
+cd-recordable
+cd read-only memory
+cd-rewritable
+common data security architecture
+computer emergency response team
+consumer electronics show
+compact flash
+computational fluid dynamics
+context-free grammar
+control-flow graph
+computer graphics
+color graphics array
+common gateway interface
+computer-generated imagery
+computational graph theory
+challenge-handshake authentication protocol
+cylinder-head-sector
+classless inter-domain routing
+common internet filesystem
+common information model
+computationally independent model
+chief information officer
+committed information rate
+complex instruction set computer
+chinese, japanese, and korean
+chinese, japanese, korean, and vietnamese
+command line interface
+common language runtime
+configuration management
+content management
+configuration management database
+capability maturity model integration
+complementary metal-oxide semiconductor
+current mode of operation
+content management system
+canonical name
+common name
+computer numerical control
+cryptographic next generation
+cryptography next generation
+communications and networking riser
+common business-oriented language
+component object model or communication
+common object request broker architecture
+cross-origin resource sharing
+commercial off-the-shelf
+cell processor architecture
+comprehensive perl archive network
+control program/monitor
+common public radio interface
+characters per second
+central processing unit
+command–query separation
+command query responsibility segregation
+carriage return
+comprehensive r archive network
+cyclic redundancy check
+carriage return line feeds
+customer relationship management
+computer reservations system
+cathode-ray tube
+create, read, update and delete
+cable select
+computer science
+computer science and engineering
+common system interface
+compatibility support module
+carrier-sense multiple access with collision detection
+cloud service provider
+communicating sequential processes
+cross-site request forgery
+cascading style sheets
+content-scrambling system
+closed source software
+cross-site scripting
+comma-separated values
+computerized tomography
+comprehensive tex archive network
+client-to-client protocol
+computer telephony integration
+compile-time function execution
+computational tree logic
+close to metal
+clear to send
+compatible time-sharing system
+common user access
+common vulnerabilities and exposures
+concurrent versioning system
+customer experience
+digital-to-analog converter
+discretionary access control
+database abstraction layer
+data access object
+data access objects
+disk-at-once
+directory access protocol
+defense advanced research projects agency
+direct attached storage
+digital audio tape
+database
+desktop
+database administrator
+double byte character set
+database management system
+direct client-to-client
+datagram congestion control protocol
+debian common core alliance
+data control language
+distributed control system
+dublin core metadata initiative
+distributed component object model
+double density
+dynamic data exchange
+ip address management
+data definition language
+distributed denial of service
+double data rate
+digital equipment corporation
+data encryption standard
+development
+deterministic finite automaton
+data flow diagram
+depth-first search
+distributed file system
+dworkin's game driver
+dynamic host configuration protocol
+dynamic hypertext markup language
+data integrity field
+dual inline memory module
+deutsches institut für normung
+dual in-line package
+deployment image and service management tool
+digital video express
+domain keys identified mail
+download
+dynamic link library
+digital living network alliance
+direct memory access
+digital millennium copyright act
+direct media interface
+data manipulation language
+definitive media library
+dennis m. ritchie
+demilitarized zone
+distinguished name
+drag-and-drop
+domain name system
+dead on arrival
+data over cable service interface specification
+document object model
+denial of service
+disk operating system
+dot pitch
+deferred procedure call
+deep packet inspection
+dots per inch
+dos protected mode interface
+display power management signaling
+disaster recovery
+dynamic random-access memory
+digital research - disk operating system
+direct rendering infrastructure
+digital rights management
+direct rendering manager
+digital signature algorithm
+document schema definition languages
+dynamic systems development method
+digital subscriber line
+domain-specific language
+digital subscriber line access multiplexer
+database source name
+data set name
+digital signal processor
+document style semantics and specification language
+document type definition
+data terminal equipment or data transfer rate
+data transfer object
+desktop publishing
+data terminal ready or data transfer rate
+digital versatile disc or digital video disc
+dvd-recordable
+dvd-read only memory
+dvd-rewritable
+digital visual interface
+digital video recorder
+data warehouse
+enterprise application integration
+extensible authentication protocol
+exchange activesync
+extended binary coded decimal interchange code
+extensible binary meta language
+elliptic curve cryptography
+european computer manufacturers association
+explicit congestion notification
+embedded configurable operating system
+expense and cost recovery system
+entity-component-system
+electronic design automation
+enhanced data rates for gsm evolution
+electronic data interchange
+extended data out
+electronic delay storage automatic calculator
+electronic discrete variable automatic computer
+electronically erasable programmable read-only memory
+electronic frontier foundation
+extensible firmware interface
+eight-to-fourteen modulation
+ethernet in the first mile
+encrypting file system
+enhanced graphics array
+electronic mail
+exterior gateway protocol
+electronic id card
+enhanced ide
+enhanced interior gateway routing protocol
+extended industry standard architecture
+extremely low frequency
+executable and linkable format
+electronic mail
+editor macros
+expanded memory specification
+electronic numerical integrator and computer
+end of day
+end of file
+end of life
+end of line
+end of message
+end of support
+explicitly parallel instruction computing
+erasable programmable read-only memory
+entity-relationship diagram
+entity-relationship model
+enterprise resource planning
+external sata
+enterprise service bus
+enterprise systems connection
+electrostatic discharge
+electronically stored information
+eric steven raymond
+extract, transform, load
+event tracing for windows
+extended unix code
+end user license agreement
+enterprise work management
+extended window manager hints
+extended file system
+estimated time of arrival
+fortran assembly program
+flat assembler
+file allocation table
+frequently asked questions
+fully buffered dual inline memory module
+fibre channel arbitrated loop
+file control block
+frame check sequence
+floppy-disk controller
+fedora directory server
+frequency-division duplexing
+floppy disk drive
+fiber distributed data interface
+frequency-division multiplexing
+frequency-division multiple access
+frontend
+forward error correction
+front-end motherboard
+field effect transistor
+filesystem hierarchy standard
+fiber connectivity
+first in first out
+federal information processing standards
+function level
+free lossless audio codec
+floating-point operations per second
+free/libre/open-source software
+fixed mobile convergence "mobile uc or unified communications over wireless"
+future mode of operation
+free on-line dictionary of computing
+formula translation
+free and open-source software developers' european meeting
+formatted output specification instance
+free and open-source software
+function programming
+functional programming
+field programmable gate array
+floating point systems
+floating-point unit
+field-replaceable unit
+file system
+front-side bus
+file system check
+free software foundation
+finite state machine
+fiber to the antenna
+fiber to the curb
+fiber to the home
+fiber to the premises
+file transfer protocol
+fully qualified domain name
+fear uncertainty doubt
+folding white space
+file exchange protocol
+for your information
+full volume encryption key
+globalization
+gnu assembler
+gigabit
+gigabyte
+gigabits per second
+gnu compiler collection
+gnu compiler for java
+google cloud platform
+group coded recording
+gnu debugger
+graphics device interface
+gnu free documentation license
+graphics interchange format
+garbage in, garbage out
+gnu image manipulation program
+great internet mersenne prime search
+geographic information system
+opengl utility toolkit
+geography markup language
+gnu network object model environment
+gnu's not unix
+goals, operators, methods, and selection rules
+gnu pic assembler
+general parallel file system
+gnu privacy guard
+general-purpose computing on graphics processing units
+general-purpose instrumentation bus
+general public license
+general-purpose language
+general packet radio service
+guid partition table
+graphics processing unit
+grand unified boot-loader
+gsm edge radio access network
+global system for mobile communications
+gimp toolkit
+graphical user interface
+globally unique identifier
+google web toolkit
+it networking
+high availability
+hardware abstraction layer
+html application rapid development
+houston automatic spooling priority
+host bus adapter
+human—computer interaction
+high density
+hard disk drive
+hardware compatibility list
+high definition dvd
+hardware description language
+high-definition multimedia interface
+host embedded controller interface
+high frequency
+hierarchical file system
+hybrid hard drive
+human interface device
+human interface guidelines
+hurd of interfaces representing depth
+high level assembler
+http live streaming
+high memory area
+hewlett-packard
+high-performance computing
+high performance file system
+high-speed downlink packet access
+high-throughput computing
+hierarchical storage management
+hyper threading
+hierarchical temporal memory
+hypertext markup language
+hypertext transfer protocol
+hypertext transport protocol daemon
+http secure
+hypertransport expansion
+hird of unix-replacing daemons
+holographic versatile disc
+hertz</div>
+inter-integrated circuit
+integrated interchip sound
+internationalization
+internet assigned numbers authority
+infrastructure as a service
+infrastructure as code
+intel binary compatibility standard
+international business machines
+integrated circuit
+internet corporation for assigned names and numbers
+in-circuit emulator
+intrusion countermeasure electronics
+i/o controller hub
+internet control message protocol
+internet cache protocol
+internet connection sharing
+information and communication technology
+integrated development environment
+integrated drive electronics
+intermediate distribution frame
+intermediate data format
+interactive data language
+interface definition language
+identity provider (cybersecurity)
+intrusion detection system
+internet explorer
+international electrotechnical commission
+institute of electrical and electronics engineers
+internet engineering task force
+integrated facility for linux
+internet group management protocol
+interior gateway routing protocol
+independent hardware vendor
+internet inter-orb protocol
+internet information services
+internet key exchange
+intermediate language
+instant message or instant messaging
+internet message access protocol
+input method editor
+information systems security
+input/output
+internet of things
+intellectual property
+internet protocol
+ip address management
+inter-process communication
+initial program load
+intelligent platform management interface
+inter procedural optimization
+internet printing protocol
+in-plane switching
+instructions per second
+intrusion prevention system
+internet protocol security
+internet protocol television
+internet protocol version 4
+internet protocol version 6
+internetwork packet exchange
+intermediate representation
+internet relay chat
+infrared data association
+internationalized resource identifier
+i/o request packet
+interrupt request
+information systems
+intermediate system to intermediate system
+industry standard architecture
+instruction set architecture
+indexed sequential access method
+intra-site automatic tunnel addressing protocol
+internet storm center
+internet small computer system interface
+integrated services digital network
+international organization for standardization
+internet storage name service
+internet service provider
+interactive system productivity facility
+interrupt service routine
+independent software vendor
+information technology
+information technology infrastructure library
+interval temporal logic
+international telecommunication union
+interactive voice response (system)
+java 2 micro edition
+java 2 standard edition
+java architecture for xml binding
+java xml for remote procedure calls
+java api for xml processing
+just a bunch of disks
+ java cryptography extension
+job control language
+java community process
+java database connectivity
+java development kit
+java enterprise edition
+job entry subsystem
+java desktop system
+java foundation classes
+junction field-effect transistor
+ibm journaling file system
+jini is not initials
+just-in-time
+java micro edition
+java management extensions
+java message service
+java naming and directory interface
+java native interface
+jump non-zero
+joint photographic experts group
+java runtime environment
+javascript
+java standard edition
+javascript object notation
+jackson structured programming
+javaserver pages
+joint test action group
+java virtual machine
+kernighan and ritchie
+keyboard
+kilobit
+kilobyte
+knowledge base
+kilobits per second
+kibibyte
+k desktop environment
+kilohertz
+<li>km—knowledge machine</li>
+knowledge representation language
+keyboard, video, mouse
+localization
+layer two tunneling protocol
+link aggregation control protocol
+linux apache mysql perl
+linux apache mysql php
+linux apache mysql python
+local area network
+logical block addressing
+load balancer
+liquid crystal display
+least cost routing
+liquid crystal on silicon
+lightweight directory access protocol
+logical extents
+light-emitting diode
+line feed
+low frequency
+linux from scratch
+land grid array
+lesser general public license
+library
+low insertion force
+last in first out
+linux loader
+<li>lip—loop initialization primitive</li>
+list processing
+linux kernel mailing list
+lan manager
+lines of code
+lars pensjö c
+lines per inch
+linux professional institute
+ line print terminal
+least recently used
+least significant bit
+linux standard base
+large-scale integration
+long term evolution
+linear temporal logic
+left-to-right
+linux user group
+logical unit number
+logical volume
+low voltage differential
+logical volume management
+lempel-ziv-welch
+mandatory access control
+media access control
+mobile ad-hoc network
+metropolitan area network
+messaging application programming interface
+multi byte character set
+model-based design
+master boot record
+megabit
+megabyte
+megabits per second
+microsoft certified application developer
+microsoft certified application specialist
+micro channel architecture
+microsoft certified architect
+microsoft certified database administrator
+microsoft certified desktop support technician
+microsoft certified information technology professional
+microsoft certified master
+multiple channels per carrier
+microsoft certified professional developer
+microsoft certified professional
+microsoft certified systems administrator
+microsoft certified solution developer
+microsoft certified systems engineer
+microsoft certified technology specialist
+microsoft certified trainer
+monochrome display adapter
+mail delivery agent
+model-driven architecture
+model-driven (software) development
+main distribution frame
+multiple-document interface
+master data management
+microsoft edge
+[windows] millennium edition
+multi-factor authentication
+microsoft foundation classes
+modified frequency modulation
+medium frequency
+media gateway control protocol
+megahertz
+management information base
+magnetic ink character recognition or magnetic ink character reader
+musical instrument digital interface
+multiple instruction, multiple data
+multipurpose internet mail extensions
+multiple-input multiple-output
+mini-unix
+microprocessor without interlocked pipeline stages
+million instructions per second
+multiple instruction, single data
+management information systems
+massachusetts institute of technology
+machine learning
+microsoft management console
+mortality medical data system
+multichannel multipoint distribution service
+multi-mode (optical) fiber
+memory-mapped i/o
+man machine interface.
+massively multiplayer online role-playing game
+multimedia message service
+memory management unit
+multi-media extensions
+multiple-image network graphics
+motherboard
+message-oriented middleware
+mud object oriented
+meta-object protocol
+metal-oxide semiconductor field effect transistor
+microsoft office specialist
+message of the day
+microsoft office user specialist
+apple quicktime multimedia file
+motion picture association of america
+motion pictures experts group
+multiprotocol label switching
+mozilla public license
+microprocessor unit
+microsoft dos
+mail submission agent
+most significant bit
+microsoft developer network
+medium-scale integration
+message signaled interrupt
+microsoft installer
+microsoft network
+microsoft
+memory stick
+mail transfer agent
+microsoft technology associate
+mean time between failures
+maximum transmission unit
+machine translation
+mail user agent
+multi-user dungeon
+memory unit
+model-view-controller
+most valuable professional
+multiple virtual storage
+mobile world congress
+material exchange format
+mail exchange
+network access control
+negative acknowledgement
+negative acknowledge character
+not a number
+network access protection
+network-attached storage
+netwide assembler
+network address translation
+netware core protocol
+native command queuing
+national center for supercomputing applications
+network driver interface specification
+novell distributed print services
+novell directory services
+network equipment provider
+network basic input/output system
+netbios over tcp/ip
+near-end crosstalk
+nondeterministic finite automaton
+near-field communication
+network file system
+ngl—angel
+next-generation secure computing base
+national instruments
+network interface controller or network interface card
+no internal message
+non-blocking i/o
+national institute of standards and technology
+non-linear editing system
+natural language processing
+native language support
+non-maskable interrupt
+network news transfer protocol
+network operations center
+no operation
+network operating system
+nondeterministic polynomial time
+netscape public license
+native posix thread library
+network processing unit
+netscape
+network security appliance
+network service interface
+netscape portable runtime
+novell storage service
+network security services
+name service switch
+new technology
+nt filesystem
+nt lan manager
+network time protocol
+non-uniform memory access
+non-uniform rational b-spline
+network video recorder
+non-volatile random access memory
+organization for the advancement of structured information standards
+operational acceptance testing
+open base station architecture initiative
+open database connectivity
+original equipment manufacturer
+open enterprise server
+orthogonal frequency-division multiplexing
+open and free technology community
+object identifier
+online analytical processing
+object linking and embedding
+organic light emitting diode
+one laptop per child
+online transaction processing
+object module format
+object management group
+optical mark reader
+object-oriented
+openoffice
+out-of-order execution
+out of memory
+openoffice.org
+out-of-order execution
+object-oriented programming
+out of the box
+outline processor markup language
+object request broker
+object-relational mapping
+open source
+operating system
+o'reilly open source convention
+open source development network
+open source initiative
+open systems interconnection
+open shortest path first
+open sound system
+open-source software
+operations support system
+open source technology group
+one-time password
+organisationally unique identifier
+peer-to-peer
+platform as a service
+privileged access management
+personal area network
+password authentication protocol
+palo alto research center
+parallel ata
+portable batch system
+personal computer
+printed circuit board
+process control block
+personal computer disc operating system
+peripheral component interconnect
+pci express
+pci extended
+printer command language
+personal computer memory card international association
+pulse-code modulation
+perl compatible regular expressions
+public domain
+personal digital assistant
+portable document format
+plesiochronous digital hierarchy
+programmed data processor
+physical extents
+practical extraction and reporting language
+please find attachment
+peripheral gateway
+pin grid array
+programmable gate array
+profile-guided optimization
+pretty good privacy
+hypertext preprocessor
+peripheral interface controller
+programmable interrupt controller
+proportional-integral-derivative
+process id
+personal information manager
+program for internet news and email
+platform independent model
+packet internet gopher
+programmed input/output
+public key cryptography standards
+public key infrastructure
+power line communication
+programmable logic controller
+programmable logic device
+programming language one
+programming language for microcomputers
+programming language for prime
+power line telecommunications
+post memory manager
+portable network graphics
+plug-and-play
+peer name resolution protocol
+power over ethernet
+point of sale
+plain old class object
+persistent object identifier
+plain old java object
+point of presence
+post office protocol v3
+portable operating system interface, formerly ieee-ix
+power-on self test
+powerpc
+pixels per inch
+pages per minute
+point-to-point protocol
+ppp over atm
+ppp over ethernet
+point-to-point tunneling protocol
+pull request
+programmable read-only memory
+postscript
+personal system/2
+professional services automation
+platform specific model
+public switched telephone network
+power supply unit
+post-schema-validation infoset
+phystechsoft – disk operating system
+physical volume
+physical volume group
+personal video recorder
+preboot execution environment
+pci extensions for instrumentation
+procedure remote call
+quad data rate
+quality assurance
+quad flat package
+quality of service
+quote of the day
+quasar toolkit
+queued teleprocessing access method
+quarter small outline package
+quality windows audio/video experience
+resource access control facility
+rapid application development
+remote authentication dial in user service
+redundant array of independent disks
+resource acquisition is initialization
+redundant array of inexpensive tapes
+random-access memory
+reverse address resolution protocol
+reliability, availability and serviceability
+remote access service
+region code
+release candidate
+run commands
+root cause analysis
+revision control system
+remote desktop
+remove directory
+relational database management system
+remote desktop connection
+resource description framework
+relational data model
+real-time disk operating system
+remote desktop protocol
+remote data services
+recursive functions algorithmic language
+<li>rep—raid error propagation</li>
+representational state transfer
+<li>resv—reservation message</li>
+regular expression
+regular expression
+radio frequency
+request for comments
+radio frequency interference
+radio frequency identification
+red, green, blue
+ed, green, blue, alpha
+red hat linux
+red hat enterprise linux
+rich internet application
+recording industry association of america
+raster image processor
+routing information protocol
+regional internet registry
+reduced instruction set computer
+reduced instruction set computer operating system
+remote job entry
+run-length encoding
+run-length limited
+remove directory
+remote method invocation
+richard matthew stallman
+read-only memory
+read-out motherboard
+read-only memory - disk operating system
+robotic process automation
+remote procedure call
+report program generator
+rpm package manager
+routing and remote access service
+rivest shamir adleman
+repetitive strain injury
+radio service software
+rich site summary, rdf site summary, or really simple syndication
+resource reservation protocol
+real-time application interface
+real-time clock
+real-time enterprise
+real-time executive for multiprocessor systems
+rich text format
+right-to-left
+real time messaging protocol
+real-time operating system
+real-time transport protocol
+ready to send
+real time streaming protocol
+run-time type information
+remote terminal unit
+responsive web design
+software as a service
+syntatically awesome style sheets
+security account manager
+storage area network
+serial attached scsi
+serial ata
+simple api for xml
+spinning beachball of death
+serial bus protocol 2
+superuser binary
+small business server
+standard build unit
+supervisory control and data acquisition
+source code in database
+software configuration management
+source code management
+secure copy
+single channel per carrier
+standard commands for programmable instrumentation
+secure content storage association
+small computer system interface
+stream control transmission protocol
+secure digital
+security descriptor definition language
+synchronous digital hierarchy
+single-document interface
+single edge contact
+secure digital input output
+software development kit
+simple directmedia layer
+service delivery network
+session description protocol
+software-defined radio
+synchronous dynamic random access memory
+symmetric dsl
+single ended
+software engineering institute
+search engine optimization
+secure ftp
+simple file transfer protocol
+ssh file transfer protocol
+silicon graphics, incorporated
+standard generalized markup language
+select graphic rendition
+secure hash algorithm
+single-pair high-speed digital subscriber line
+security information and event management
+special interest group on cd-rom applications and technology
+special interest group on graphics
+single instruction, multiple data
+subscriber identification module
+single inline memory module
+session initiation protocol
+supplementary ideographic plane
+single instruction, single data
+single-input and single-output
+service level agreement
+suse linux enterprise desktop
+suse linux enterprise server
+scalable link interface
+serial line internet protocol
+service level management
+source lines of code
+subject matter expert
+single-mode (optical) fiber
+software project management
+single program, multiple data
+single point of failure
+subminiature version a
+server message block
+system management bios
+synchronized multimedia integration language
+secure/multipurpose internet mail extensions
+supplementary multilingual plane
+symmetric multi-processing
+switch mode power supply
+short message service
+system management server
+simultaneous multithreading
+simple mail transfer protocol
+systems network architecture
+simple network management protocol
+simple network time protocol
+service-oriented architecture
+simple object access protocol
+symbolic optimal assembly program
+stop online piracy act
+system-on-a-chip
+small outline dimm
+standard operating environment
+small office/home office
+silicon on insulator
+service pack
+single page application
+sender policy framework
+serial peripheral interface
+stateful packet inspection
+scalable processor architecture
+structured query language
+static random access memory
+static single assignment
+software specification document
+solid-state drive
+simple service discovery protocol
+streaming simd extensions
+secure shell
+server side includes
+single-system image
+small-scale integration
+service set identifier
+secure socket layer
+single sign on
+supplementary special-purpose plane
+supplementary streaming simd extensions
+single source shortest path
+secure socket tunneling protocol
+superuser
+single unix specification
+software und system-entwicklung
+scalable video coding
+scalable vector graphics
+super video graphics array
+structured vlsi design
+shock wave flash
+standard widget toolkit
+system operator
+single-responsibility principle, open-closed principle, liskov substitution principle, interface segregation principle, dependency inversion principle
+track-at-once
+telephony application programming interface
+turbo assembler
+terabyte
+tool command language
+transmission control protocol
+transmission control protocol/internet protocol
+telecommunication control unit
+time-division multiple access
+thin-film transistor
+trivial file transfer protocol
+texas instruments
+tagged image file format
+three-letter acronym
+top-level domain
+thread-local storage
+transport layer security
+type—length—value
+temporary
+terminal node controller
+threaded neill-concelman connector
+transaction processing facility
+trusted platform module
+trace off
+trace on
+the real-time operating system nucleus
+tandy radio shack - disk operating system
+time sharing option
+traveling salesman problem
+terminate and stay resident
+true tap audio
+truetype font
+transistor—transistor logic
+time to live
+text-to-speech
+teletype
+the ultimate collection of winsock software
+tex users group
+technology without an interesting name
+user agent accessibility guidelines
+user account control
+universal asynchronous receiver/transmitter
+user acceptance testing
+undefined behavior
+universal character set
+universal description, discovery, and integration
+ultra dma
+user datagram protocol
+unified extensible firmware interface
+ultra high frequency
+user interface
+upload
+uncommitted logic array
+ultra large scale integration
+upper memory area
+upper memory block
+unified modeling language
+user-mode linux
+ultra-mobile personal computer
+universal mobile telecommunications system
+universal naming convention
+universal automatic computer (by mks)
+uninterruptible power supply or uninterrupted power supply
+uniform resource identifier
+uniform resource locator
+uniform resource name
+universal serial bus
+user system resources
+u.s. robotics
+coordinated universal time
+unicode transformation format
+unshielded twisted pair
+universal terrestrial radio access network
+unix to unix copy
+universally unique identifier
+universal user name
+universal virtual computer
+universal windows platform
+user experience
+variable
+voice over long term evolution
+virtual address extension
+virtual control program interface
+visual basic
+visual basic for applications
+visual basic script
+virtual desktop infrastructure
+visual display unit
+virtual dos machine
+very high bitrate digital subscriber line
+video electronics standards association
+virtual fat
+virtual hard disk
+virtual file system
+volume group
+video graphics array
+very high frequency
+vital information resource under seize
+virtual local area network
+variable length subnet mask
+vesa local bus
+very low frequency
+very long instruction word
+very-large-scale integration
+virtual machine
+virtual memory
+virtual machine monitor
+virtual network computing
+video on demand
+voice over internet protocol
+virtual private network
+virtual private server
+visual processing unit
+virtual reality
+virtual reality modeling language
+virtual storage access method
+very small aperture terminal
+video terminal
+virtual tape library
+virtual telecommunications access method
+video random access memory
+world wide web consortium
+apple world wide developer conference
+wide area file services
+web accessibility initiative
+wide area information server
+wide area network
+wireless access point
+wireless application protocol
+watcom assembler
+web-based enterprise management
+web content accessibility guidelines
+windows communication foundation
+wavelength-division multiplexing
+www distributed authoring and versioning
+wired equivalent privacy
+wait for interrupt
+wireless fidelity
+worldwide interoperability for microwave access
+windows future storage
+windows runtime
+windows internet name service
+wireless local area network
+windows media audio
+windows management instrumentation
+windows media video
+windows push notification service
+wake-on-lan
+wake-on-ring
+write once, run anywhere
+write once, run everywhere
+write once read many
+wi-fi protected access
+web proxy autodiscovery protocol
+wireless personal area network
+windows presentation foundation
+web services-discovery
+web services description language
+web services flow language
+wireless universal serial bus
+wireless wide area network
+world wide identifier
+world wide name
+world wide web
+what you see is what you get
+wireless zero configuration
+xml accessibility guidelines
+extensible application markup language
+x window display manager
+x display manager control protocol
+xml common business library
+extensible hypertext markup language
+x interactive listproc
+extensible markup language
+x multimedia system
+extensible messaging and presence protocol
+extended memory specification
+xerox network systems
+cross-platform
+extreme programming
+cross platform component object model
+xpinstall
+cross-platform idl
+xml paper specification
+xml schema definition
+extensible stylesheet language
+extensible stylesheet language formatting objects
+extensible stylesheet language transformations
+cross-site scripting
+extensible tag framework
+extended triton format
+xml user interface language
+extended video graphics adapter
+year two thousand thirty eight
+yet another application framework
+yet another compiler compiler
+you aren't gonna need it
+yaml ain't markup language
+yet another resource negotiator
+yet another setup tool
+zone constant angular velocity
+zero code suppression
+zero insertion force
+zero insertion force socket
+zip file archive
+zero instruction set computer
+zero one infinity
+z object publishing environment
+zone multicast address
+z-level programming language
