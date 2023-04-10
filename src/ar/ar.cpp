@@ -107,7 +107,7 @@ const Lmatch string_matching(std::string token, const ar::Dictionary &D,
           i,
           j + 1,
           last,
-          cost(last),
+          cost(last) * (int) first.size(),
       };
       // G(E) <- G(E) U {<i, j, word, cost(word)>}
       G[any.i].push_back({any});
