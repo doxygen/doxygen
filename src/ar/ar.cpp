@@ -88,7 +88,7 @@ void check_vowels_consonants(const string &word, int *vowels, int *consonants) {
 
 const Lmatch string_matching(std::string token, const ar::Dictionary &D,
                              const Phi &phi, const Cfunc &cost,
-                             std::vector<std::string> *fullvec = nullptr) {
+                             AllMatches *matches = nullptr) {
   INFO("STRING_MATCHING STARTED")
   // char, vec<{Node, Node}>
   // G = (V, E) <- initializeMathingGraph(token)
@@ -115,15 +115,31 @@ const Lmatch string_matching(std::string token, const ar::Dictionary &D,
   }
 
   auto best_path = Dijkstra::dijkstra(G, token);
-  if (fullvec != nullptr) {
-    std::string saved;
+  if (matches != nullptr) {
+    std::string saved = "";
+    int start = 0;
+    int end = 0;
     for (auto each : best_path) {
+      INFO("parsing: " << each.word)
+      if (each.word == EOS) {
+        if (saved != "") {
+          matches->insert({saved, start, end});
+        }
+        break;
+      }
       if (each.cost == INT32_MIN) {
         saved += each.word;
+        end += 1;
       } else {
-        fullvec->push_back(saved);
-        saved.clear();
-        fullvec->push_back(each.word);
+        if (saved != "") {
+          matches->insert({saved, start, end});
+          start = end + 1;
+          end = start + each.word.length();
+          saved.clear();
+        }
+        matches->insert({each.word, each.i, each.j});
+        start = each.j + 1;
+        end = start;
       }
     }
   }
@@ -134,7 +150,7 @@ const Lmatch string_matching(std::string token, const ar::Dictionary &D,
   // best_path <- Dijkstra(G)
   // return getEdgeLabels(best_path)
   INFO("STRING_MATCHING ENDED")
-  return getEdgeLabels(best_path);
+  return Dijkstra::getEdgeLabels(best_path);
 }
 
 const LongForm expansion_matching(NonDictWords &nonDictWords,
@@ -205,9 +221,9 @@ const LongForm expansion_matching(NonDictWords &nonDictWords,
           return 1;
         };
       }
-      Lmatch matches = string_matching(token, dictionary, phi, cost);
+      auto matches = string_matching(token, dictionary, phi, cost);
       if (matches.size() > 0) {
-        for (auto &each : matches) {
+        for (auto each : matches) {
           retvec.insert({token, each});
         }
         break;
@@ -219,7 +235,7 @@ const LongForm expansion_matching(NonDictWords &nonDictWords,
 }
 
 const Lmatch split_matching(string ident, const ar::Dictionaries &D,
-                            Lmatch *matches) {
+                            AllMatches *matches) {
 
   INFO("SPLIT_MATCHING STARTED")
   Phi phi = [&D, &ident](std::string &token, std::string &word) {
@@ -231,9 +247,9 @@ const Lmatch split_matching(string ident, const ar::Dictionaries &D,
 
   Cfunc cost = [&D](std::string &word) { return D[word]; };
 
-  std::vector<string> fullvec;
+  Lmatch fullvec;
   for (auto dict : D.dicts) {
-    for (std::string each : string_matching(ident, dict, phi, cost, matches)) {
+    for (auto each : string_matching(ident, dict, phi, cost, matches)) {
       fullvec.push_back(each);
     };
 
@@ -242,7 +258,13 @@ const Lmatch split_matching(string ident, const ar::Dictionaries &D,
       break;
     }
   }
-  Lmatch retvec = *matches;
+  Lmatch retvec;
+  for (auto each : *matches) {
+    retvec.push_back(each.word);
+  }
+  for (auto each : *matches) {
+    INFO("\t" << each.word)
+  }
 
   retvec.erase(std::remove_if(retvec.begin(), retvec.end(),
                               [&fullvec](const std::string &str) {
@@ -359,10 +381,12 @@ void replace(std::string &word, std::string rep, std::string what) {
 // Global Dictionary
 const auto D = get_true();
 
+#include <numeric>
+
 const std::string internal_do_ar(const std::string &token) {
   RESULT("STARTED: " << token)
 
-  Lmatch matches;
+  AllMatches matches;
   auto labels = split_matching(token, D, &matches);
   LongForm thing;
   if (labels.size() != 0) {
@@ -372,26 +396,41 @@ const std::string internal_do_ar(const std::string &token) {
   }
 
   INFO("REPLACING EXPANDED WORDS")
-  std::string retToken;
-  for (auto each : matches) {
+  string retToken = "";
+  size_t count = 0;
+  for (auto &[each, start, end] : matches) {
+    if (each == EOS || each == NULLS) {
+      continue;
+    }
     try {
       auto word = thing.at(each);
+      INFO("\tword: " << word);
       retToken += word;
     } catch (const std::exception &e) {
+      INFO("\teach: " << each);
       retToken += each;
     }
-    retToken += "_";
+
+    count += 1;
+    if (count != matches.size())
+      retToken += "_";
   }
   INFO("EVERYTHING DONE")
 
   RESULT("RESULT: " << retToken)
-
   return retToken;
 }
 
 const std::string ar::do_ar(std::string token) {
   std::transform(token.begin(), token.end(), token.begin(),
                  [](unsigned char c) { return std::tolower(c); });
+  token.erase(std::remove_if(token.begin(), token.end(),
+                             [](const char &s) {
+                               if (s == '_')
+                                 return false;
+                               return !std::isalnum(s);
+                             }),
+              token.end());
   auto vec = {"_", "-"};
   for (auto each : vec) {
     replace(token, each, "");

@@ -1,4 +1,6 @@
 abbr;abbreviation
+pnt;point
+pnts;points
 abs;absolute
 sum;addition
 addr;address
