@@ -24,8 +24,7 @@ bool Node::operator==(const Node &other) const {
 bool Node::operator!=(const Node &other) const {
   // return this->i == other.i && this->j == other.j &&
   //        this->word == other.word && this->cost == other.cost;
-  return this->cost != other.cost && this->word != other.word &&
-         this->i != other.i && this->j != other.j;
+  return !(*this == other);
 }
 
 bool Node::operator<(const Node &other) const {
@@ -68,7 +67,7 @@ Graph Dijkstra::initializeMatchingGraph(string token) {
     auto to = Node{(int)i, (int)i + 1, str, INT32_MIN};
     if (i == token.size()) {
       to.cost = -100;
-      to.word = "\n";
+      to.word = EOS;
     }
     G[i].push_back({to});
   }
@@ -95,7 +94,7 @@ Graph Dijkstra::initializeMatchingGraph(string token) {
 vector<Node> Dijkstra::dijkstra(Graph &G, string token) {
 
   auto start = Node{0, 0, token.substr(0, 1), 0};
-  auto end = Node{(int)token.length(), (int)token.size() + 1, "\n", -100};
+  auto end = Node{(int)token.length(), (int)token.size() + 1, EOS, -100};
 
   // for (auto &[first, last] : G) {
   //   std::cout << first;
