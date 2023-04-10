@@ -829,10 +829,12 @@ void FTVHelp::generateTreeViewImages()
 {
   QCString dname=Config_getString(HTML_OUTPUT);
   const ResourceMgr &rm = ResourceMgr::instance();
-  rm.copyResource("doc.luma",dname);
-  rm.copyResource("docd.luma",dname);
-  rm.copyResource("folderopen.luma",dname);
-  rm.copyResource("folderclosed.luma",dname);
+  rm.copyResource("doc.svg",dname);
+  rm.copyResource("docd.svg",dname);
+  rm.copyResource("folderopen.svg",dname);
+  rm.copyResource("folderopend.svg",dname);
+  rm.copyResource("folderclosed.svg",dname);
+  rm.copyResource("folderclosedd.svg",dname);
   rm.copyResource("splitbar.lum",dname);
   rm.copyResource("splitbard.lum",dname);
 }
