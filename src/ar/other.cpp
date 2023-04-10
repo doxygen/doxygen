@@ -11,6 +11,8 @@ using std::string;
 
 int main(void) {
   std::string token = "pnts_ArrayAvgSumNumHeelObvs";
-  std::cout << ar::do_ar(token) << std::endl;
+  // token = "obvs";
+  std::string res = ar::do_ar(token);
+  std::cout << "result: " << res << std::endl;
   return 0;
 }
