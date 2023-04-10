@@ -213,9 +213,9 @@ const Lmatch ar::split_matching(string ident, const Dictionaries &D,
                                 Lmatch *matches) {
 
   INFO("SPLIT_MATCHING STARTED")
-  Phi phi = [](std::string &token, std::string &word) {
+  Phi phi = [&D, &ident](std::string &token, std::string &word) {
     if (token == word) {
-      return 0;
+      return 1;
     }
     return -1;
   };
@@ -341,7 +341,6 @@ void replace(std::string &word, std::string rep, std::string what) {
     index = word.find(rep, index);
     if (index == std::string::npos)
       break;
-    RESULT("\tindex: " << index << " word: " << word << std::endl)
 
     /* Make the replacement. */
     word.replace(index, rep.size(), what);
@@ -372,11 +371,12 @@ const std::string internal_do_ar(std::string token) {
   // Replace the words in the identifier
   INFO("REPLACING MATCHES")
   for (auto each : matches) {
+    WARNING("\tno_match " << each)
     replace(token, each, each + "_");
   };
   INFO("REPLACING EXPANDED WORDS")
   for (auto &[each, word] : thing) {
-    RESULT("\teach " << each << " word " << word)
+    WARNING("\tmatch each " << each << " word " << word)
     if (each.length() <= 1) {
       continue;
     }

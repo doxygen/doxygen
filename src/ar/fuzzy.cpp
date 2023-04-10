@@ -15,6 +15,9 @@ Matches fuzzy::BYP(std::string token, std::pair<std::string, int> word,
         continue;
       }
       double tolerance = p(subtoken, word.first);
+      if(tolerance == -1) {
+        continue;
+      }
 
       if (subtoken.length() <= (word.first.length() + tolerance)) {
         double distance = 0;
