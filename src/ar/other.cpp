@@ -11,7 +11,7 @@ using std::string;
 
 int main(void) {
   std::string token = "pnts_ArrayAvgSumNumHeelObvs";
-  token = "get_clockwise";
+  token = "imgpos";
   std::string res = ar::do_ar(token);
   std::cout << "result: " << res << std::endl;
   return 0;

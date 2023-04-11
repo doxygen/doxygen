@@ -194,9 +194,9 @@ const LongForm expansion_matching(NonDictWords &nonDictWords,
           return 1;
         };
       } else {
-        phi = [&token](string &tok, string &word) {
+        phi = [&D, &token](string &tok, string &word) {
           int pos = 0;
-          if (token[0] != word[0]) {
+          if (tok[0] != word[0]) {
             return -1;
           }
           if (tok[pos] != word[pos]) {
