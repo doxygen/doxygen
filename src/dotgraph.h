@@ -36,6 +36,8 @@ class DotGraph
     DotGraph() : m_doNotAddImageToIndex(FALSE), m_noDivTag(FALSE),
                  m_zoomable(TRUE), m_urlOnly(FALSE) {}
     virtual ~DotGraph() = default;
+    /** returns edge numbers. The Counter is reset by the constructor */
+    int getNextEdgeNumber() { return ++m_curEdgeNumber; }
 
   protected:
     /** returns node numbers. The Counter is reset by the constructor */
@@ -102,6 +104,7 @@ class DotGraph
     void generateCode(TextStream &t);
 
     int m_curNodeNumber = 0;
+    int m_curEdgeNumber = 0;
 };
 
 #endif
