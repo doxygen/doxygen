@@ -334,12 +334,7 @@ ar::Dictionary get_dict(string filename) {
     int first = line.find(delim);
     string word = line.substr(0, first);
     line.erase(0, first + delim.length());
-    int other = -1;
-    try {
-      other = std::stoi(line.substr(0, first));
-    } catch (const std::invalid_argument &e) {
-      other = (word.length() / std::log(word.length()));
-    }
+    int other = (word.length() / std::log(word.length()));
     retvec.insert({word, other});
   }
 
@@ -355,27 +350,6 @@ ar::Dictionaries get_true() {
   auto known_abbr = get_abbr("known_abbr.txt");
   ar::Dictionaries D({eng_dict, it_dict}, known_abbr);
   return D;
-}
-
-/**
- * Replaces a give string rep with what in the word word
- */
-void replace(std::string &word, std::string rep, std::string what) {
-  for (size_t index = 0;;) {
-    /* Locate the substring to replace. */
-    index = word.find(rep, index);
-    if (index == std::string::npos)
-      break;
-
-    /* Make the replacement. */
-    word.replace(index, rep.size(), what);
-
-    /*
-     * Advance index forward so the next iteration doesn't pick it up as
-     * well.
-     */
-    index += what.size();
-  }
 }
 
 // Global Dictionary
@@ -396,44 +370,38 @@ const std::string internal_do_ar(const std::string &token) {
   }
 
   INFO("REPLACING EXPANDED WORDS")
-  string retToken = "";
   size_t count = 0;
-  for (auto &[each, start, end] : matches) {
+  std::stringstream retToken;
+  for (auto &[each, _start, _end] : matches) {
     if (each == EOS || each == NULLS) {
       continue;
     }
     try {
       auto word = thing.at(each);
       INFO("\tword: " << word);
-      retToken += word;
+      retToken << word;
     } catch (const std::exception &e) {
       INFO("\teach: " << each);
-      retToken += each;
+      retToken << each;
     }
 
     count += 1;
     if (count != matches.size())
-      retToken += "_";
+      retToken << "_";
   }
   INFO("EVERYTHING DONE")
 
   RESULT("RESULT: " << retToken)
-  return retToken;
+  return retToken.str();
 }
 
 const std::string ar::do_ar(std::string token) {
-  std::transform(token.begin(), token.end(), token.begin(),
-                 [](unsigned char c) { return std::tolower(c); });
   token.erase(std::remove_if(token.begin(), token.end(),
-                             [](const char &s) {
-                               if (s == '_')
-                                 return false;
+                             [](const unsigned char &s) {
                                return !std::isalnum(s);
                              }),
               token.end());
-  auto vec = {"_", "-"};
-  for (auto each : vec) {
-    replace(token, each, "");
-  }
+  std::transform(token.begin(), token.end(), token.begin(),
+                 [](const unsigned char &c) { return std::tolower(c); });
   return internal_do_ar(token);
 }
