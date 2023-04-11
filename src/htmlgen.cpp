@@ -630,7 +630,7 @@ static void fillColorStyleMap(const QCString &definitions,StringUnorderedMap &ma
       int separator = line.find(':');
       assert(separator!=-1);
       std::string key = line.left(separator).str();
-      int semi = line.find(';');
+      int semi = line.findRev(';');
       assert(semi!=-1);
       std::string value = line.mid(separator+1,semi-separator-1).stripWhiteSpace().str();
       map.insert(std::make_pair(key,value));
