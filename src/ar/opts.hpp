@@ -38,13 +38,13 @@ struct MNode {
   bool operator<(const MNode &other) const {
     // return this->i == other.i && this->j == other.j &&
     //        this->word == other.word && this->cost == other.cost;
-    return this->start < other.start;
+    return this->start < other.start && this->end <= other.end;
   }
 
   bool operator>(const MNode &other) const {
     // return this->i == other.i && this->j == other.j &&
     //        this->word == other.word && this->cost == other.cost;
-    return this->start > other.start;
+    return this->start > other.start && this->end >= other.end;
   }
 };
 
@@ -52,9 +52,9 @@ struct mnode_hasher {
   std::hash<std::string> hasher;
   size_t operator()(const MNode &e) const {
     size_t hash_result = 0;
-    hash_result += hasher(e.word) * 31;
-    hash_result += e.start * 37;
-    hash_result += e.end * 41;
+    hash_result += hasher(e.word) * 37;
+    hash_result += e.start * 41;
+    hash_result += e.end * 47;
     // calculate the hash result
     return hash_result;
   }

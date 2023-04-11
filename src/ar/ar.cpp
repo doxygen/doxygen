@@ -120,7 +120,6 @@ const Lmatch string_matching(std::string token, const ar::Dictionary &D,
     int start = 0;
     int end = 0;
     for (auto each : best_path) {
-      INFO("parsing: " << each.word)
       if (each.word == EOS) {
         if (saved != "") {
           matches->insert({saved, start, end});
@@ -137,8 +136,13 @@ const Lmatch string_matching(std::string token, const ar::Dictionary &D,
           end = start + each.word.length();
           saved.clear();
         }
-        matches->insert({each.word, each.i, each.j});
-        start = each.j + 1;
+        MNode any = {each.word, each.i, each.j};
+        auto res = matches->insert(any);
+        if(res.second == false) {
+          WARNING("Could not be inserted\t" << any.word << " " << any.start << " " << any.end)
+          WARNING("Due to\t" << res.first->word << " " << res.first->start << " " << res.first->end)
+        }
+        start = each.j;
         end = start;
       }
     }
@@ -218,7 +222,7 @@ const LongForm expansion_matching(NonDictWords &nonDictWords,
           if (top_counter != counter) {
             return -1;
           }
-          return 1;
+          return 0;
         };
       }
       auto matches = string_matching(token, dictionary, phi, cost);
@@ -391,7 +395,7 @@ const std::string internal_do_ar(const std::string &token) {
   }
   INFO("EVERYTHING DONE")
 
-  RESULT("RESULT: " << retToken)
+  RESULT("RESULT: " << retToken.str())
   return retToken.str();
 }
 
