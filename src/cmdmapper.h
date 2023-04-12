@@ -236,6 +236,7 @@ class Mapper
   public:
     int map(const QCString &n);
     QCString find(const int n);
+    int find(const QCString str);
     Mapper(const CommandMap *cm,bool caseSensitive);
   private:
     std::map<std::string,int> m_map;

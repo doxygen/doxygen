@@ -268,6 +268,16 @@ QCString Mapper::find(const int n)
   return QCString();
 }
 
+int Mapper::find(const QCString str)
+{
+  for (const auto &kv : m_map)
+  {
+    QCString curStr = kv.first.c_str();
+    if (curStr == str) return kv.second;
+  }
+  return -1;
+}
+
 Mapper::Mapper(const CommandMap *cm,bool caseSensitive) : m_cs(caseSensitive)
 {
   const CommandMap *p = cm;

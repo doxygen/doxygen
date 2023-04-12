@@ -92,4 +92,5 @@ class CommentScanner
     std::unique_ptr<Private> p;
 };
 
+bool isDoxygenScanCmd(QCString cmdName);
 #endif

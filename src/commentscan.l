@@ -326,6 +326,11 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "lineinfo",        { &handleLineInfo,         CommandSpacing::Inline    }},
 };
 
+bool isDoxygenScanCmd(QCString cmdName)
+{
+  return (docCmdMap.find(cmdName.str()) != docCmdMap.end());
+}
+
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
 #define YY_NEVER_INTERACTIVE 1
