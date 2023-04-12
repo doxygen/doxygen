@@ -107,7 +107,7 @@ const Lmatch string_matching(std::string token, const ar::Dictionary &D,
           i,
           j + 1,
           last,
-          cost(last) * (int) first.size(),
+          cost(last) * (int)first.size(),
       };
       // G(E) <- G(E) U {<i, j, word, cost(word)>}
       G[any.i].push_back({any});
@@ -138,9 +138,11 @@ const Lmatch string_matching(std::string token, const ar::Dictionary &D,
         }
         MNode any = {each.word, each.i, each.j};
         auto res = matches->insert(any);
-        if(res.second == false) {
-          WARNING("Could not be inserted\t" << any.word << " " << any.start << " " << any.end)
-          WARNING("Due to\t" << res.first->word << " " << res.first->start << " " << res.first->end)
+        if (res.second == false) {
+          WARNING("Could not be inserted\t" << any.word << " " << any.start
+                                            << " " << any.end)
+          WARNING("Due to\t" << res.first->word << " " << res.first->start
+                             << " " << res.first->end)
         }
         start = each.j;
         end = start;
@@ -238,6 +240,65 @@ const LongForm expansion_matching(NonDictWords &nonDictWords,
   return retvec;
 }
 
+#include <regex>
+const std::regex r("([a-z](?=[A-Z]))|_");
+
+const Lmatch split_regex(std::string ident, const ar::Dictionary &D,
+                         AllMatches *matches) {
+  Lmatch retvec;
+  std::smatch m;
+  std::regex_search(ident, m, r);
+  auto words_begin = std::sregex_iterator(ident.begin(), ident.end(), r);
+  auto words_end = std::sregex_iterator();
+
+  int prev = 0;
+  for (std::sregex_iterator i = words_begin; i != words_end; ++i) {
+    std::smatch match = *i;
+    std::string match_str = match.str();
+    int match_pos = match.position();
+    if (match_str != "_") {
+      match_pos += 1;
+    }
+
+    auto substr = ident.substr(prev, match_pos - prev);
+    std::transform(substr.begin(), substr.end(), substr.begin(),
+                   [](const unsigned char &c) { return std::tolower(c); });
+    substr.erase(
+        std::remove_if(substr.begin(), substr.end(),
+                       [](const unsigned char &s) { return !std::isalnum(s); }),
+        substr.end());
+    matches->insert({substr, prev, match_pos});
+
+    try {
+      auto _ = D.at(substr);
+    } catch (const std::exception &e) {
+      retvec.push_back(substr);
+    }
+
+    if (match_str == "_") {
+      match_pos += 1;
+    }
+    prev = match_pos;
+  }
+  auto str = ident.substr(prev, ident.length());
+
+  std::transform(str.begin(), str.end(), str.begin(),
+                 [](const unsigned char &c) { return std::tolower(c); });
+
+  str.erase(
+      std::remove_if(str.begin(), str.end(),
+                     [](const unsigned char &s) { return !std::isalnum(s); }),
+      str.end());
+  matches->insert({str, prev, (int)ident.length()});
+  try {
+    auto _ = D.at(str);
+  } catch (const std::exception &e) {
+    retvec.push_back(str);
+  }
+
+  return retvec;
+}
+
 const Lmatch split_matching(string ident, const ar::Dictionaries &D,
                             AllMatches *matches) {
 
@@ -253,30 +314,35 @@ const Lmatch split_matching(string ident, const ar::Dictionaries &D,
 
   Lmatch fullvec;
   for (auto dict : D.dicts) {
-    for (auto each : string_matching(ident, dict, phi, cost, matches)) {
+    for (auto each : split_regex(ident, dict, matches)) {
       fullvec.push_back(each);
-    };
+    }
+    // for (auto each : string_matching(ident, dict, phi, cost, matches)) {
+    //   fullvec.push_back(each);
+    // };
 
     if (fullvec.size() != 0) {
       INFO("SPLIT_MATCHING DONE")
       break;
     }
   }
-  Lmatch retvec;
-  for (auto each : *matches) {
-    retvec.push_back(each.word);
-  }
+  Lmatch retvec = fullvec;
+  // for (auto each : *matches) {
+  //   retvec.push_back(each.word);
+  // }
   for (auto each : *matches) {
     INFO("\t" << each.word)
   }
 
-  retvec.erase(std::remove_if(retvec.begin(), retvec.end(),
-                              [&fullvec](const std::string &str) {
-                                return std::find(fullvec.begin(), fullvec.end(),
-                                                 str) != fullvec.end() ||
-                                       str.size() == 0;
-                              }),
-               retvec.end());
+  // retvec.erase(std::remove_if(retvec.begin(), retvec.end(),
+  //                             [&fullvec](const std::string &str) {
+  //                               return std::find(fullvec.begin(),
+  //                               fullvec.end(),
+  //                                                str) != fullvec.end() ||
+  //                                      str.size() == 0;
+  //                             }),
+  //              retvec.end());
+
   INFO("SPLIT_MATCHING ENDED")
   return retvec;
 }
@@ -400,12 +466,12 @@ const std::string internal_do_ar(const std::string &token) {
 }
 
 const std::string ar::do_ar(std::string token) {
-  token.erase(std::remove_if(token.begin(), token.end(),
-                             [](const unsigned char &s) {
-                               return !std::isalnum(s);
-                             }),
-              token.end());
-  std::transform(token.begin(), token.end(), token.begin(),
-                 [](const unsigned char &c) { return std::tolower(c); });
+  // token.erase(
+  //     std::remove_if(token.begin(), token.end(),
+  //                    [](const unsigned char &s) { return !std::isalnum(s);
+  //                    }),
+  //     token.end());
+  // std::transform(token.begin(), token.end(), token.begin(),
+  //                [](const unsigned char &c) { return std::tolower(c); });
   return internal_do_ar(token);
 }
