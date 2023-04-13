@@ -1,5 +1,6 @@
 #include "ar.hpp"
 #include "opts.hpp"
+#include <exception>
 #include <stdexcept>
 
 using Dijkstra::Graph;
@@ -243,8 +244,7 @@ const LongForm expansion_matching(NonDictWords &nonDictWords,
 #include <regex>
 const std::regex r("([a-z](?=[A-Z]))|_");
 
-const Lmatch split_regex(std::string ident, const ar::Dictionary &D,
-                         AllMatches *matches) {
+const void split_regex(std::string ident, const ar::Dictionary &D, AllMatches *matches) {
   Lmatch retvec;
   std::smatch m;
   std::regex_search(ident, m, r);
@@ -269,12 +269,6 @@ const Lmatch split_regex(std::string ident, const ar::Dictionary &D,
         substr.end());
     matches->insert({substr, prev, match_pos});
 
-    try {
-      auto _ = D.at(substr);
-    } catch (const std::exception &e) {
-      retvec.push_back(substr);
-    }
-
     if (match_str == "_") {
       match_pos += 1;
     }
@@ -290,13 +284,25 @@ const Lmatch split_regex(std::string ident, const ar::Dictionary &D,
                      [](const unsigned char &s) { return !std::isalnum(s); }),
       str.end());
   matches->insert({str, prev, (int)ident.length()});
-  try {
-    auto _ = D.at(str);
-  } catch (const std::exception &e) {
-    retvec.push_back(str);
-  }
+}
 
-  return retvec;
+const Lmatch split(std::string ident, const ar::Dictionary &D, const Phi &phi,
+                   const Cfunc &cost, AllMatches *matches, bool *other) {
+  split_regex(ident, D, matches);
+  if (matches->size() == 0) {
+    *other = true;
+    return string_matching(ident, D, phi, cost);
+  } else {
+    Lmatch retvec;
+    for (auto each : *matches) {
+      try {
+        auto _ = D.at(each.word);
+      } catch (const std::out_of_range &e) {
+        retvec.push_back(each.word);
+      }
+    }
+    return retvec;
+  }
 }
 
 const Lmatch split_matching(string ident, const ar::Dictionaries &D,
@@ -313,35 +319,36 @@ const Lmatch split_matching(string ident, const ar::Dictionaries &D,
   Cfunc cost = [&D](std::string &word) { return D[word]; };
 
   Lmatch fullvec;
+  bool other = false;
   for (auto dict : D.dicts) {
-    for (auto each : split_regex(ident, dict, matches)) {
+    for (auto each : split(ident, dict, phi, cost, matches, &other)) {
       fullvec.push_back(each);
     }
-    // for (auto each : string_matching(ident, dict, phi, cost, matches)) {
-    //   fullvec.push_back(each);
-    // };
 
     if (fullvec.size() != 0) {
       INFO("SPLIT_MATCHING DONE")
       break;
     }
   }
-  Lmatch retvec = fullvec;
-  // for (auto each : *matches) {
-  //   retvec.push_back(each.word);
-  // }
-  for (auto each : *matches) {
-    INFO("\t" << each.word)
+  Lmatch retvec;
+  if (other) {
+    for (auto each : *matches) {
+      retvec.push_back(each.word);
+    }
+    for (auto each : *matches) {
+      INFO("\t" << each.word)
+    }
+    retvec.erase(std::remove_if(retvec.begin(), retvec.end(),
+                                [&fullvec](const std::string &str) {
+                                  return std::find(fullvec.begin(),
+                                                   fullvec.end(),
+                                                   str) != fullvec.end() ||
+                                         str.size() == 0;
+                                }),
+                 retvec.end());
+  } else {
+    retvec = fullvec;
   }
-
-  // retvec.erase(std::remove_if(retvec.begin(), retvec.end(),
-  //                             [&fullvec](const std::string &str) {
-  //                               return std::find(fullvec.begin(),
-  //                               fullvec.end(),
-  //                                                str) != fullvec.end() ||
-  //                                      str.size() == 0;
-  //                             }),
-  //              retvec.end());
 
   INFO("SPLIT_MATCHING ENDED")
   return retvec;
