@@ -244,13 +244,15 @@ const LongForm expansion_matching(NonDictWords &nonDictWords,
 #include <regex>
 const std::regex r("([a-z](?=[A-Z]))|_");
 
-const void split_regex(std::string ident, const ar::Dictionary &D, AllMatches *matches) {
+const void split_regex(std::string ident, AllMatches *matches) {
   Lmatch retvec;
   std::smatch m;
   std::regex_search(ident, m, r);
+  if (m.size() == 0) {
+    return;
+  }
   auto words_begin = std::sregex_iterator(ident.begin(), ident.end(), r);
   auto words_end = std::sregex_iterator();
-
   int prev = 0;
   for (std::sregex_iterator i = words_begin; i != words_end; ++i) {
     std::smatch match = *i;
@@ -278,7 +280,6 @@ const void split_regex(std::string ident, const ar::Dictionary &D, AllMatches *m
 
   std::transform(str.begin(), str.end(), str.begin(),
                  [](const unsigned char &c) { return std::tolower(c); });
-
   str.erase(
       std::remove_if(str.begin(), str.end(),
                      [](const unsigned char &s) { return !std::isalnum(s); }),
@@ -288,21 +289,15 @@ const void split_regex(std::string ident, const ar::Dictionary &D, AllMatches *m
 
 const Lmatch split(std::string ident, const ar::Dictionary &D, const Phi &phi,
                    const Cfunc &cost, AllMatches *matches, bool *other) {
-  split_regex(ident, D, matches);
-  if (matches->size() == 0) {
-    *other = true;
-    return string_matching(ident, D, phi, cost);
-  } else {
-    Lmatch retvec;
-    for (auto each : *matches) {
-      try {
-        auto _ = D.at(each.word);
-      } catch (const std::out_of_range &e) {
-        retvec.push_back(each.word);
-      }
+  Lmatch retvec;
+  for (auto each : *matches) {
+    try {
+      auto res = D.at(each.word);
+    } catch (const std::out_of_range &e) {
+      retvec.push_back(each.word);
     }
-    return retvec;
   }
+  return retvec;
 }
 
 const Lmatch split_matching(string ident, const ar::Dictionaries &D,
@@ -311,7 +306,7 @@ const Lmatch split_matching(string ident, const ar::Dictionaries &D,
   INFO("SPLIT_MATCHING STARTED")
   Phi phi = [&D, &ident](std::string &token, std::string &word) {
     if (token == word) {
-      return 1;
+      return 0;
     }
     return -1;
   };
@@ -320,35 +315,49 @@ const Lmatch split_matching(string ident, const ar::Dictionaries &D,
 
   Lmatch fullvec;
   bool other = false;
-  for (auto dict : D.dicts) {
-    for (auto each : split(ident, dict, phi, cost, matches, &other)) {
-      fullvec.push_back(each);
-    }
+  split_regex(ident, matches);
+  if (matches->size() == 0) {
+    other = true;
+    for (auto dict : D.dicts) {
+      for (auto each : string_matching(ident, dict, phi, cost, matches)) {
+        fullvec.push_back(each);
+      }
 
-    if (fullvec.size() != 0) {
-      INFO("SPLIT_MATCHING DONE")
-      break;
+      if (fullvec.size() != 0) {
+        INFO("SPLIT_MATCHING DONE")
+        break;
+      }
     }
-  }
-  Lmatch retvec;
-  if (other) {
-    for (auto each : *matches) {
-      retvec.push_back(each.word);
-    }
-    for (auto each : *matches) {
-      INFO("\t" << each.word)
-    }
-    retvec.erase(std::remove_if(retvec.begin(), retvec.end(),
-                                [&fullvec](const std::string &str) {
-                                  return std::find(fullvec.begin(),
-                                                   fullvec.end(),
-                                                   str) != fullvec.end() ||
-                                         str.size() == 0;
-                                }),
-                 retvec.end());
   } else {
-    retvec = fullvec;
+    Lmatch vec;
+    for (auto each : *matches) {
+      vec.push_back(each.word);
+    }
+    for (int i = 0; i < vec.size(); i++) {
+      for (auto dict : D.dicts) {
+        try {
+          auto _ = dict.at(vec[i]);
+          fullvec.push_back(vec[i]);
+          break;
+        } catch (const std::out_of_range &e) {
+        }
+      }
+    }
   }
+  Lmatch retvec{};
+  for (auto each : *matches) {
+    retvec.push_back(each.word);
+  }
+  for (auto each : *matches) {
+    INFO("\t" << each.word)
+  }
+  retvec.erase(std::remove_if(retvec.begin(), retvec.end(),
+                              [&fullvec](const std::string &str) {
+                                return std::find(fullvec.begin(), fullvec.end(),
+                                                 str) != fullvec.end() ||
+                                       str.size() == 0;
+                              }),
+               retvec.end());
 
   INFO("SPLIT_MATCHING ENDED")
   return retvec;
