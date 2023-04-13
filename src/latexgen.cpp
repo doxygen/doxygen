@@ -2302,7 +2302,7 @@ void filterLatexString(TextStream &t,const QCString &str,
                    break;
         case '\\': t << "\\textbackslash{}";
                    break;
-        case '"':  t << "\\char`\\\"{}";
+        case '"':  t << "\\\"{}";
                    break;
         case '`':  t << "\\`{}";
                    break;
@@ -2447,6 +2447,9 @@ QCString latexEscapePDFString(const QCString &s)
       case '_':  t << "\\_"; break;
       case '%':  t << "\\%"; break;
       case '&':  t << "\\&"; break;
+      case '#':  t << "\\#"; break;
+      case '$':  t << "\\$"; break;
+      case '~':  t << "\\string~";    break;
       default:
         t << c;
         break;

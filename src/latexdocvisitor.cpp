@@ -935,12 +935,21 @@ void LatexDocVisitor::operator()(const DocSimpleListItem &li)
 void LatexDocVisitor::operator()(const DocSection &s)
 {
   if (m_hide) return;
-  if (Config_getBool(PDF_HYPERLINKS))
+  bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
+  if (pdfHyperlinks)
   {
     m_t << "\\hypertarget{" << stripPath(s.file()) << "_" << s.anchor() << "}{}";
   }
   m_t << "\\" << getSectionName(s.level()) << "{";
+  if (pdfHyperlinks)
+  {
+    m_t << "\\texorpdfstring{";
+  }
   filter(convertCharEntitiesToUTF8(s.title()));
+  if (pdfHyperlinks)
+  {
+    m_t << "}{" << latexEscapePDFString(convertCharEntitiesToUTF8(s.title())) << "}";
+  }
   m_t << "}\\label{" << stripPath(s.file()) << "_" << s.anchor() << "}\n";
   visitChildren(s);
 }
