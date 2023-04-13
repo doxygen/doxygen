@@ -450,9 +450,7 @@ const std::string internal_do_ar(const std::string &token) {
   auto labels = split_matching(token, D, &matches);
   LongForm thing;
   if (labels.size() != 0) {
-    if (labels[0].length() != 1) {
-      thing = expansion_matching(labels, D);
-    }
+    thing = expansion_matching(labels, D);
   }
 
   INFO("REPLACING EXPANDED WORDS")
