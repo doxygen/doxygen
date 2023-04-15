@@ -295,10 +295,10 @@ static QCString stripProtectionPrefix(const QCString &s)
   }
 }
 
-DotNode::DotNode(DotGraph *parent,int n,const QCString &lab,const QCString &tip, const QCString &url,
+DotNode::DotNode(DotGraph *graph,const QCString &lab,const QCString &tip, const QCString &url,
   bool isRoot,const ClassDef *cd)
-  : m_parent(parent)
-  , m_number(n)
+  : m_graph(graph)
+  , m_number(graph->getNextNodeNumber())
   , m_label(lab)
   , m_tooltip(tip)
   , m_url(url)
@@ -595,7 +595,7 @@ void DotNode::writeArrow(TextStream &t,
   QCString aStyle = eProps->arrowStyleMap[ei->color()];
   bool umlUseArrow = aStyle=="odiamond";
 
-  t << "id=\"edge" << m_parent->getNextEdgeNumber() <<
+  t << "id=\"edge" << m_graph->getNextEdgeNumber() <<
        "_Node" << QCString().sprintf("%06d",m_number) <<
        "_Node" << QCString().sprintf("%06d",cn->number()) << "\",";
   if (pointBack && !umlUseArrow) t << "dir=\"back\",";

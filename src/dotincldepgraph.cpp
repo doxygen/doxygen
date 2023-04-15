@@ -59,7 +59,7 @@ void DotInclDepGraph::buildGraph(DotNode *n,const FileDef *fd,int distance)
           tmp_url=doc || src ? bfd->getReference()+"$"+url : QCString();
           tooltip = bfd->briefDescriptionAsTooltip();
         }
-        DotNode *bn = new DotNode(this,getNextNodeNumber(),// n
+        DotNode *bn = new DotNode(this,
                          ii.includeName,   // label
                          tooltip,           // tip
                          tmp_url,           // url
@@ -128,7 +128,7 @@ DotInclDepGraph::DotInclDepGraph(const FileDef *fd,bool inverse)
   m_inclByDepFileName = fd->includedByDependencyGraphFileName();
   QCString tmp_url=fd->getReference()+"$"+fd->getOutputFileBase();
   QCString tooltip = fd->briefDescriptionAsTooltip();
-  m_startNode = new DotNode(this,getNextNodeNumber(),
+  m_startNode = new DotNode(this,
                             fd->docName(),
                             tooltip,
                             tmp_url,

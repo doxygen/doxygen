@@ -32,16 +32,17 @@ enum GraphType            { Dependency, Inheritance, Collaboration, Hierarchy, C
 /** A dot graph */
 class DotGraph
 {
+    friend class DotNode;
   public:
     DotGraph() : m_doNotAddImageToIndex(FALSE), m_noDivTag(FALSE),
                  m_zoomable(TRUE), m_urlOnly(FALSE) {}
     virtual ~DotGraph() = default;
-    /** returns edge numbers. The Counter is reset by the constructor */
-    int getNextEdgeNumber() { return ++m_curEdgeNumber; }
 
   protected:
-    /** returns node numbers. The Counter is reset by the constructor */
+    /** returns the node number. */
     int getNextNodeNumber() { return ++m_curNodeNumber; }
+    /** returns the edge number. */
+    int getNextEdgeNumber() { return ++m_curEdgeNumber; }
 
     QCString writeGraph(TextStream &t,
                         GraphOutputFormat gf,
