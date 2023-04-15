@@ -111,6 +111,7 @@ class Doxygen
     static StringMap                 aliasMap;
     static MemberGroupInfoMap        memberGroupInfoMap;
     static StringUnorderedSet        expandAsDefinedSet;
+    static std::unique_ptr<NamespaceDef> globalNamespaceDef;
     static NamespaceDefMutable      *globalScope;
     static QCString                  htmlFileExtension;
     static bool                      parseSourcesNeeded;

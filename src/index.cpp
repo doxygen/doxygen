@@ -1122,15 +1122,14 @@ static void writeHierarchicalIndex(OutputList &ol)
     {
       Doxygen::indexList->addContentsItem(TRUE,title,QCString(),"hierarchy",QCString(),TRUE,TRUE);
     }
-    FTVHelp* ftv = new FTVHelp(FALSE);
-    writeClassHierarchy(ol,ftv,addToIndex,ClassDef::Class);
+    FTVHelp ftv(false);
+    writeClassHierarchy(ol,&ftv,addToIndex,ClassDef::Class);
     TextStream t;
-    ftv->generateTreeViewInline(t);
+    ftv.generateTreeViewInline(t);
     ol.pushGeneratorState();
     ol.disableAllBut(OutputType::Html);
     ol.writeString(t.str().c_str());
     ol.popGeneratorState();
-    delete ftv;
   }
   ol.popGeneratorState();
   //2.}
@@ -1228,15 +1227,14 @@ static void writeHierarchicalInterfaceIndex(OutputList &ol)
     {
       Doxygen::indexList->addContentsItem(TRUE,title,QCString(),"interfacehierarchy",QCString(),TRUE,TRUE);
     }
-    FTVHelp* ftv = new FTVHelp(FALSE);
-    writeClassHierarchy(ol,ftv,addToIndex,ClassDef::Interface);
+    FTVHelp ftv(false);
+    writeClassHierarchy(ol,&ftv,addToIndex,ClassDef::Interface);
     TextStream t;
-    ftv->generateTreeViewInline(t);
+    ftv.generateTreeViewInline(t);
     ol.pushGeneratorState();
     ol.disableAllBut(OutputType::Html);
     ol.writeString(t.str().c_str());
     ol.popGeneratorState();
-    delete ftv;
   }
   ol.popGeneratorState();
   //2.}
@@ -1334,15 +1332,14 @@ static void writeHierarchicalExceptionIndex(OutputList &ol)
     {
       Doxygen::indexList->addContentsItem(TRUE,title,QCString(),"exceptionhierarchy",QCString(),TRUE,TRUE);
     }
-    FTVHelp* ftv = new FTVHelp(FALSE);
-    writeClassHierarchy(ol,ftv,addToIndex,ClassDef::Exception);
+    FTVHelp ftv(false);
+    writeClassHierarchy(ol,&ftv,addToIndex,ClassDef::Exception);
     TextStream t;
-    ftv->generateTreeViewInline(t);
+    ftv.generateTreeViewInline(t);
     ol.pushGeneratorState();
     ol.disableAllBut(OutputType::Html);
     ol.writeString(t.str().c_str());
     ol.popGeneratorState();
-    delete ftv;
   }
   ol.popGeneratorState();
   //2.}
@@ -1590,12 +1587,13 @@ static void writeFileIndex(OutputList &ol)
   ol.pushGeneratorState();
   ol.disableAllBut(OutputType::Html);
 
-  FTVHelp* ftv = new FTVHelp(FALSE);
-  writeDirHierarchy(ol,ftv,addToIndex);
-  TextStream t;
-  ftv->generateTreeViewInline(t);
-  ol.writeString(t.str().c_str());
-  delete ftv;
+  {
+    FTVHelp ftv(false);
+    writeDirHierarchy(ol,&ftv,addToIndex);
+    TextStream t;
+    ftv.generateTreeViewInline(t);
+    ol.writeString(t.str().c_str());
+  }
 
   ol.popGeneratorState();
   // ------
@@ -1990,12 +1988,11 @@ static void writeNamespaceIndex(OutputList &ol)
       Doxygen::indexList->addContentsItem(TRUE,title,QCString(),"namespaces",QCString(),TRUE,TRUE);
       Doxygen::indexList->incContentsDepth();
     }
-    FTVHelp* ftv = new FTVHelp(FALSE);
-    writeNamespaceTree(*Doxygen::namespaceLinkedMap,ftv,TRUE,addToIndex);
+    FTVHelp ftv(false);
+    writeNamespaceTree(*Doxygen::namespaceLinkedMap,&ftv,TRUE,addToIndex);
     TextStream t;
-    ftv->generateTreeViewInline(t);
+    ftv.generateTreeViewInline(t);
     ol.writeString(t.str().c_str());
-    delete ftv;
     if (addToIndex)
     {
       Doxygen::indexList->decContentsDepth();
@@ -3606,7 +3603,7 @@ static void writePageIndex(OutputList &ol)
   ol.endTextBlock();
 
   {
-    FTVHelp* ftv = new FTVHelp(FALSE);
+    FTVHelp ftv(false);
     for (const auto &pd : *Doxygen::pageLinkedMap)
     {
       if ((pd->getOuterScope()==0 ||
@@ -3614,13 +3611,12 @@ static void writePageIndex(OutputList &ol)
           !pd->isReference() // not an external page
          )
       {
-        writePages(pd.get(),ftv);
+        writePages(pd.get(),&ftv);
       }
     }
     TextStream t;
-    ftv->generateTreeViewInline(t);
+    ftv.generateTreeViewInline(t);
     ol.writeString(t.str().c_str());
-    delete ftv;
   }
 
 //  ol.popGeneratorState();
@@ -3694,10 +3690,12 @@ void writeGraphInfo(OutputList &ol)
     legendDocs = legendDocs.left(s+8) + "[!-- " + "SVG 0 --]" + legendDocs.mid(e);
     //printf("legendDocs=%s\n",qPrint(legendDocs));
   }
-  FileDef *fd = createFileDef("","graph_legend.dox");
-  ol.generateDoc("graph_legend",1,fd,0,legendDocs,FALSE,FALSE,
-                 QCString(),FALSE,FALSE,FALSE);
-  delete fd;
+
+  {
+    auto fd = createFileDef("","graph_legend.dox");
+    ol.generateDoc("graph_legend",1,fd.get(),0,legendDocs,FALSE,FALSE,
+        QCString(),FALSE,FALSE,FALSE);
+  }
 
   // restore config settings
   Config_updateBool(STRIP_CODE_COMMENTS,oldStripCommentsState);
@@ -4017,13 +4015,12 @@ static void writeGroupIndex(OutputList &ol)
       Doxygen::indexList->addContentsItem(TRUE,title,QCString(),"modules",QCString(),TRUE,TRUE);
       Doxygen::indexList->incContentsDepth();
     }
-    FTVHelp* ftv = new FTVHelp(FALSE);
-    writeGroupHierarchy(ol,ftv,addToIndex);
+    FTVHelp ftv(false);
+    writeGroupHierarchy(ol,&ftv,addToIndex);
     TextStream t;
-    ftv->generateTreeViewInline(t);
+    ftv.generateTreeViewInline(t);
     ol.disableAllBut(OutputType::Html);
     ol.writeString(t.str().c_str());
-    delete ftv;
     if (addToIndex)
     {
       Doxygen::indexList->decContentsDepth();

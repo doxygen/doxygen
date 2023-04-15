@@ -109,8 +109,8 @@ class GroupDef : public DefinitionMutable, public Definition
 
 };
 
-GroupDef *createGroupDef(const QCString &fileName,int line,const QCString &name,
-                                const QCString &title,const QCString &refFileName=QCString());
+std::unique_ptr<GroupDef> createGroupDef(const QCString &fileName,int line,const QCString &name,
+                                         const QCString &title,const QCString &refFileName=QCString());
 
 // --- Cast functions
 

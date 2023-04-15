@@ -60,7 +60,7 @@ class PageDef : public DefinitionMutable, public Definition
 
 };
 
-PageDef *createPageDef(const QCString &f,int l,const QCString &n,const QCString &d,const QCString &t);
+std::unique_ptr<PageDef> createPageDef(const QCString &f,int l,const QCString &n,const QCString &d,const QCString &t);
 
 // --- Cast functions
 

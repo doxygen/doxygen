@@ -2576,7 +2576,7 @@ static void addInstance(ClassDefMutable* classEntity, ClassDefMutable* ar,
 
 ferr:
   QCString uu=cur->name;
-  std::unique_ptr<MemberDefMutable> md { createMemberDef(
+  auto md = createMemberDef(
       ar->getDefFileName(), cur->startLine,cur->startColumn,
       n1,uu,uu, QCString(),
       Protection::Public,
@@ -2586,7 +2586,8 @@ ferr:
       MemberType_Variable,
       ArgumentList(),
       ArgumentList(),
-      "") };
+      "");
+  auto mmd = toMemberDefMutable(md.get());
 
   if (!ar->getOutputFileBase().isEmpty())
   {
@@ -2594,18 +2595,18 @@ ferr:
     tg.anchor = 0;
     tg.fileName = ar->getOutputFileBase();
     tg.tagName = 0;
-    md->setTagInfo(&tg);
+    mmd->setTagInfo(&tg);
   }
 
   //fprintf(stderr,"\n%s%s%s\n",qPrint(md->name()),qPrint(cur->brief),qPrint(cur->doc));
 
-  md->setLanguage(SrcLangExt_VHDL);
-  md->setMemberSpecifiers(VhdlDocGen::INSTANTIATION);
-  md->setBriefDescription(cur->brief,cur->briefFile,cur->briefLine);
-  md->setBodySegment(cur->startLine,cur->startLine,-1) ;
-  md->setDocumentation(cur->doc,cur->docFile,cur->docLine);
+  mmd->setLanguage(SrcLangExt_VHDL);
+  mmd->setMemberSpecifiers(VhdlDocGen::INSTANTIATION);
+  mmd->setBriefDescription(cur->brief,cur->briefFile,cur->briefLine);
+  mmd->setBodySegment(cur->startLine,cur->startLine,-1) ;
+  mmd->setDocumentation(cur->doc,cur->docFile,cur->docLine);
   FileDef *fd=ar->getFileDef();
-  md->setBodyDef(fd);
+  mmd->setBodyDef(fd);
   ar->insertMember(md.get());
   MemberName *mn = Doxygen::functionNameLinkedMap->add(uu);
   mn->push_back(std::move(md));

@@ -1999,11 +1999,6 @@ IDocNodeASTPtr validatingParseDoc(IDocParser &parserIntf,
   }
   if (parser->context.memberDef) parser->context.memberDef->detectUndocumentedParams(parser->context.hasParamCommand,parser->context.hasReturnCommand);
 
-  // TODO: These should be called at the end of the program.
-  //parser->tokenizer.cleanup();
-  //Mappers::cmdMapper->freeInstance();
-  //Mappers::htmlTagMapper->freeInstance();
-
   // reset token
   parser->tokenizer.replaceToken(0);
 

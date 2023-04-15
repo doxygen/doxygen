@@ -16,6 +16,7 @@
 #ifndef CLASSDEF_H
 #define CLASSDEF_H
 
+#include <memory>
 #include <vector>
 #include <set>
 
@@ -459,13 +460,13 @@ class ClassDefMutable : public DefinitionMutable, public ClassDef
 };
 
 /** Factory method to create a new ClassDef object */
-ClassDefMutable *createClassDef(
+std::unique_ptr<ClassDef> createClassDef(
              const QCString &fileName,int startLine,int startColumn,
              const QCString &name,ClassDef::CompoundType ct,
              const QCString &ref=QCString(),const QCString &fName=QCString(),
              bool isSymbol=TRUE,bool isJavaEnum=FALSE);
 
-ClassDef *createClassDefAlias(const Definition *newScope,const ClassDef *cd);
+std::unique_ptr<ClassDef> createClassDefAlias(const Definition *newScope,const ClassDef *cd);
 
 // --- Cast functions
 

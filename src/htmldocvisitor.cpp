@@ -724,14 +724,14 @@ void HtmlDocVisitor::operator()(const DocInclude &inc)
          forceEndParagraph(inc);
          m_ci.startCodeFragment("DoxyCode");
          FileInfo cfi( inc.file().str() );
-         FileDef *fd = createFileDef( cfi.dirPath(), cfi.fileName() );
+         auto fd = createFileDef( cfi.dirPath(), cfi.fileName() );
          getCodeParser(inc.extension()).parseCode(m_ci,
                                            inc.context(),
                                            inc.text(),
                                            langExt,
                                            inc.isExample(),
                                            inc.exampleFile(),
-                                           fd,   // fileDef,
+                                           fd.get(),   // fileDef,
                                            -1,    // start line
                                            -1,    // end line
                                            FALSE, // inline fragment
@@ -739,7 +739,6 @@ void HtmlDocVisitor::operator()(const DocInclude &inc)
                                            TRUE,  // show line numbers
                                            m_ctx  // search context
                                            );
-         delete fd;
          m_ci.endCodeFragment("DoxyCode");
          forceStartParagraph(inc);
       }
@@ -794,14 +793,14 @@ void HtmlDocVisitor::operator()(const DocInclude &inc)
          forceEndParagraph(inc);
          m_ci.startCodeFragment("DoxyCode");
          FileInfo cfi( inc.file().str() );
-         FileDef *fd = createFileDef( cfi.dirPath(), cfi.fileName() );
+         auto fd = createFileDef( cfi.dirPath(), cfi.fileName() );
          getCodeParser(inc.extension()).parseCode(m_ci,
                                            inc.context(),
                                            extractBlock(inc.text(),inc.blockId()),
                                            langExt,
                                            inc.isExample(),
                                            inc.exampleFile(),
-                                           fd,
+                                           fd.get(),
                                            lineBlock(inc.text(),inc.blockId()),
                                            -1,    // endLine
                                            FALSE, // inlineFragment
@@ -809,7 +808,6 @@ void HtmlDocVisitor::operator()(const DocInclude &inc)
                                            TRUE,  // show line number
                                            m_ctx  // search context
                                           );
-         delete fd;
          m_ci.endCodeFragment("DoxyCode");
          forceStartParagraph(inc);
       }
@@ -841,7 +839,7 @@ void HtmlDocVisitor::operator()(const DocIncOperator &op)
     m_hide = popHidden();
     if (!m_hide)
     {
-      FileDef *fd = 0;
+      std::unique_ptr<FileDef> fd;
       if (!op.includeFileName().isEmpty())
       {
         FileInfo cfi( op.includeFileName().str() );
@@ -854,7 +852,7 @@ void HtmlDocVisitor::operator()(const DocIncOperator &op)
                                 langExt,
                                 op.isExample(),
                                 op.exampleFile(),
-                                fd,     // fileDef
+                                fd.get(),     // fileDef
                                 op.line(),    // startLine
                                 -1,    // endLine
                                 FALSE, // inline fragment
@@ -862,7 +860,6 @@ void HtmlDocVisitor::operator()(const DocIncOperator &op)
                                 op.showLineNo(),  // show line numbers
                                 m_ctx  // search context
                                );
-      if (fd) delete fd;
     }
     pushHidden(m_hide);
     m_hide=TRUE;

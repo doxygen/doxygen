@@ -16,6 +16,7 @@
 #ifndef NAMESPACEDEF_H
 #define NAMESPACEDEF_H
 
+#include <memory>
 #include <set>
 
 #include "definition.h"
@@ -134,13 +135,13 @@ class NamespaceDefMutable : public DefinitionMutable, public NamespaceDef
 };
 
 /** Factory method to create new NamespaceDef instance */
-NamespaceDefMutable *createNamespaceDef(const QCString &defFileName,int defLine,int defColumn,
+std::unique_ptr<NamespaceDef> createNamespaceDef(const QCString &defFileName,int defLine,int defColumn,
                  const QCString &name,const QCString &ref=QCString(),
                  const QCString &refFile=QCString(),const QCString &type=QCString(),
                  bool isPublished=false);
 
 /** Factory method to create an alias of an existing namespace. Used for inline namespaces. */
-NamespaceDef *createNamespaceDefAlias(const Definition *newScope,const NamespaceDef *nd);
+std::unique_ptr<NamespaceDef> createNamespaceDefAlias(const Definition *newScope,const NamespaceDef *nd);
 
 
 // --- Cast functions
