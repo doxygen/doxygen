@@ -149,7 +149,7 @@ void DotGfxHierarchyTable::addHierarchy(DotNode *n,const ClassDef *cd,ClassDefSe
           }
         }
         QCString tooltip = bClass->briefDescriptionAsTooltip();
-        auto bn = std::make_unique<DotNode>(getNextNodeNumber(),
+        auto bn = std::make_unique<DotNode>(this,
             bClass->displayName(),
             tooltip,
             tmp_url
@@ -206,7 +206,7 @@ void DotGfxHierarchyTable::addClassList(const ClassLinkedMap &cl,ClassDefSet &vi
       }
       //printf("Inserting root class %s\n",qPrint(cd->name()));
       QCString tooltip = cd->briefDescriptionAsTooltip();
-      auto n = std::make_unique<DotNode>(getNextNodeNumber(),
+      auto n = std::make_unique<DotNode>(this,
         cd->displayName(),
         tooltip,
         tmp_url);
