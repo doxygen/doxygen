@@ -52,7 +52,7 @@ static const std::vector<HtmlEntityInfo> g_htmlEntities
   { SYM(yen),      "\xc2\xa5",     "&yen;",      "<yen/>",               "&#165;",        "{$\\yen$}",              NULL,     "\\'A5",       { NULL,         HtmlEntityMapper::Perl_unknown }},
   { SYM(brvbar),   "\xc2\xa6",     "&brvbar;",   "<brvbar/>",            "&#166;",        "\\textbrokenbar{}",      NULL,     "\\'A6",       { NULL,         HtmlEntityMapper::Perl_unknown }},
   { SYM(sect),     "\xc2\xa7",     "&sect;",     "<sect/>",              "<simplesect/>", "{$\\S$}",                NULL,     "\\'A7",       { "sect",       HtmlEntityMapper::Perl_symbol  }},
-  { SYM(uml),      "\xc2\xa8",     "&uml;",      "<umlaut/>",            "&#168;",        "\\textasciidieresis{}",  " \\*(4", "\\'A8",       { " ",          HtmlEntityMapper::Perl_umlaut  }},
+  { SYM(uml),      "\xc2\xa8",     "&uml;",      "<umlaut/>",            "&#168;",        "\\\"{ }",                " \\*(4", "\\'A8",       { " ",          HtmlEntityMapper::Perl_umlaut  }},
   { SYM(copy),     "\xc2\xa9",     "&copy;",     "<copy/>",              "&#169;",        "\\copyright{}",          "(C)",    "\\'A9",       { "copyright",  HtmlEntityMapper::Perl_symbol  }},
   { SYM(ordf),     "\xc2\xaa",     "&ordf;",     "<ordf/>",              "&#170;",        "\\textordfeminine{}",    NULL,     "\\'AA",       { NULL,         HtmlEntityMapper::Perl_unknown }},
   { SYM(laquo),    "\xc2\xab",     "&laquo;",    "<laquo/>",             "&#171;",        "\\guillemotleft{}",      NULL,     "\\'AB",       { NULL,         HtmlEntityMapper::Perl_unknown }},

@@ -2172,10 +2172,28 @@ void writeLatexSpecialFormulaChars(TextStream &t)
     sup3[1]= 0xB3;
     sup3[2]= 0;
 
-    t << "\\usepackage{newunicodechar}\n"
-         "  \\newunicodechar{" << minus << "}{${}^{-}$}% Superscript minus\n"
-         "  \\newunicodechar{" << sup2  << "}{${}^{2}$}% Superscript two\n"
-         "  \\newunicodechar{" << sup3  << "}{${}^{3}$}% Superscript three\n"
+    t << "\\usepackage{newunicodechar}\n";
+    // taken from the newunicodechar package and removed the warning message
+    // actually forcing to redefine the unicode character
+    t << "  \\makeatletter\n"
+         "    \\def\\doxynewunicodechar#1#2{%\n"
+         "    \\@tempswafalse\n"
+         "    \\edef\\nuc@tempa{\\detokenize{#1}}%\n"
+         "    \\if\\relax\\nuc@tempa\\relax\n"
+         "      \\nuc@emptyargerr\n"
+         "    \\else\n"
+         "      \\edef\\@tempb{\\expandafter\\@car\\nuc@tempa\\@nil}%\n"
+         "      \\nuc@check\n"
+         "      \\if@tempswa\n"
+         "        \\@namedef{u8:\\nuc@tempa}{#2}%\n"
+         "      \\fi\n"
+         "    \\fi\n"
+         "  }\n"
+         "  \\makeatother\n";
+
+    t << "  \\doxynewunicodechar{" << minus << "}{${}^{-}$}% Superscript minus\n"
+         "  \\doxynewunicodechar{" << sup2  << "}{${}^{2}$}% Superscript two\n"
+         "  \\doxynewunicodechar{" << sup3  << "}{${}^{3}$}% Superscript three\n"
          "\n";
 }
 

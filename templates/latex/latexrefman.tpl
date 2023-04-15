@@ -30,9 +30,8 @@
 \usepackage[scaled=.90]{helvet}
 \usepackage{courier}
 \usepackage{amssymb}
-\usepackage{sectsty}
 \renewcommand{\familydefault}{\sfdefault}
-\allsectionsfont{
+\doxyallsectionsfont{
   \fontseries{bc}\selectfont
   \color{darkgray}
 }
