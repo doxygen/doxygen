@@ -1504,8 +1504,8 @@ int Markdown::processCodeSpan(const char *data, int /*offset*/, int size)
 
   /* finding the next delimiter */
   i = 0;
-  int nl=0;
-  for (end=nb; end<size && i<nb && nl<2; end++)
+  char pc = '`';
+  for (end=nb; end<size && i<nb; end++)
   {
     if (data[end]=='`')
     {
@@ -1513,8 +1513,10 @@ int Markdown::processCodeSpan(const char *data, int /*offset*/, int size)
     }
     else if (data[end]=='\n')
     {
-      i=0;
-      nl++;
+      // consecutive newlines
+      if (pc == '\n') return 0;
+      pc = '\n';
+      i = 0;
     }
     else if (data[end]=='\'' && nb==1 && (end==size-1 || (end<size-1 && !isIdChar(end+1))))
     { // look for quoted strings like 'some word', but skip strings like `it's cool`
@@ -1527,16 +1529,13 @@ int Markdown::processCodeSpan(const char *data, int /*offset*/, int size)
     }
     else
     {
+      if (data[end]!=' ') pc = data[end];
       i=0;
     }
   }
   if (i < nb && end >= size)
   {
     return 0;  // no matching delimiter
-  }
-  if (nl==2) // too many newlines inside the span
-  {
-    return 0;
   }
 
   // trimming outside whitespaces
