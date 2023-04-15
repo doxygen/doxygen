@@ -20,6 +20,7 @@
 #include "doxygen.h"
 #include "message.h"
 #include "config.h"
+#include "regex.h"
 #include "classlist.h"
 #include "util.h"
 #include "defargs.h"
@@ -497,9 +498,15 @@ static void writeMemberReference(TextStream &t,const Definition *def,const Membe
 
 }
 
-static void stripQualifiers(QCString &typeStr)
+static void stripQualifiers(QCString &typeStr,const bool onlyAnon)
 {
-  bool done=FALSE;
+  static const reg::Ex marker(R"(::@\d+)");
+  static const reg::Ex marker1(R"(^@\d+)");
+
+  typeStr = reg::replace(reg::replace(typeStr.str(),marker,""),marker1,"");
+  if (onlyAnon) return;
+
+  bool done=false;
   typeStr.stripPrefix("friend ");
   while (!done)
   {
@@ -576,16 +583,18 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
     case MemberType_Dictionary:  memType="dictionary";  break;
   }
 
+  QCString nameStr = md->name();
+  stripQualifiers(nameStr,true);
   ti << "    <member refid=\"" << memberOutputFileBase(md)
      << "_1" << md->anchor() << "\" kind=\"" << memType << "\"><name>"
-     << convertToXML(md->name()) << "</name></member>\n";
+     << convertToXML(nameStr) << "</name></member>\n";
 
   if (groupMember)
   {
     t << "      <member refid=\""
       << md->getGroupDef()->getOutputFileBase()
       << "_1" << md->anchor() << "\" kind=\"" << memType << "\"><name>"
-      << convertToXML(md->name()) << "</name></member>\n";
+      << convertToXML(nameStr) << "</name></member>\n";
     return;
   }
   else
@@ -815,11 +824,13 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
   {
     writeMemberTemplateLists(md,t);
     QCString typeStr = md->typeString();
-    stripQualifiers(typeStr);
+    stripQualifiers(typeStr,false);
     t << "        <type>";
     linkifyText(TextGeneratorXMLImpl(t),def,md->getBodyDef(),md,typeStr);
     t << "</type>\n";
-    t << "        <definition>" << convertToXML(md->definition()) << "</definition>\n";
+    QCString defStr = md->definition();
+    stripQualifiers(defStr,true);
+    t << "        <definition>" << convertToXML(defStr) << "</definition>\n";
     t << "        <argsstring>" << convertToXML(md->argsString()) << "</argsstring>\n";
   }
 
@@ -830,12 +841,12 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
     t << "</type>\n";
   }
 
-  QCString name = md->name();
-  QCString qualifiedName = md->qualifiedName();;
-  t << "        <name>" << convertToXML(name) << "</name>\n";
-  if (name!=qualifiedName)
+  QCString qualifiedNameStr = md->qualifiedName();;
+  stripQualifiers(qualifiedNameStr,true);
+  t << "        <name>" << convertToXML(nameStr) << "</name>\n";
+  if (nameStr!=qualifiedNameStr)
   {
-    t << "        <qualifiedname>" << convertToXML(qualifiedName) << "</qualifiedname>\n";
+    t << "        <qualifiedname>" << convertToXML(qualifiedNameStr) << "</qualifiedname>\n";
   }
 
   if (md->memberType() == MemberType_Property)
@@ -876,7 +887,7 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
   {
     t << "        <param>\n";
     t << "          <type>";
-    linkifyText(TextGeneratorXMLImpl(t),def,md->getBodyDef(),md,md->name());
+    linkifyText(TextGeneratorXMLImpl(t),def,md->getBodyDef(),md,nameStr);
     t << "</type>\n";
     t << "        </param>\n";
   }
@@ -1323,7 +1334,9 @@ static void generateXMLForClass(const ClassDef *cd,TextStream &ti)
   if (cd->isAbstract()) t << "\" abstract=\"yes";
   t << "\">\n";
   t << "    <compoundname>";
-  writeXMLString(t,cd->name());
+  QCString nameStr = cd->name();
+  stripQualifiers(nameStr,true);
+  writeXMLString(t,nameStr);
   t << "</compoundname>\n";
   for (const auto &bcd : cd->baseClasses())
   {
@@ -1478,7 +1491,9 @@ static void generateXMLForConcept(const ConceptDef *cd,TextStream &ti)
   t << "  <compounddef id=\"" << cd->getOutputFileBase()
     << "\" kind=\"concept\">\n";
   t << "    <compoundname>";
-  writeXMLString(t,cd->name());
+  QCString nameStr = cd->name();
+  stripQualifiers(nameStr,true);
+  writeXMLString(t,nameStr);
   t << "</compoundname>\n";
   writeIncludeInfo(cd->includeInfo(),t);
   writeTemplateList(cd,t);
@@ -1535,7 +1550,9 @@ static void generateXMLForNamespace(const NamespaceDef *nd,TextStream &ti)
     << "language=\""
     << langToString(nd->getLanguage()) << "\">\n";
   t << "    <compoundname>";
-  writeXMLString(t,nd->name());
+  QCString nameStr = nd->name();
+  stripQualifiers(nameStr,true);
+  writeXMLString(t,nameStr);
   t << "</compoundname>\n";
 
   writeInnerClasses(nd->getClasses(),t);
