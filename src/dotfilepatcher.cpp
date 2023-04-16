@@ -25,7 +25,7 @@
 #include "dir.h"
 #include "portable.h"
 
-static const char svgZoomHeader[] =
+static const char svgZoomHeader1[] =
 "<svg id=\"main\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xml:space=\"preserve\" onload=\"init(evt)\">\n"
 "<style type=\"text/css\"><![CDATA[\n"
 ".node, .edge {opacity: 0.7;}\n"
@@ -34,6 +34,8 @@ static const char svgZoomHeader[] =
 ".edge:hover polygon { stroke: red; fill: red; }\n"
 "]]></style>\n"
 "\n"
+;
+static const char svgZoomHeader2[] =
 "        <defs>\n"
 "                <circle id=\"rim\" cx=\"0\" cy=\"0\" r=\"7\"/>\n"
 "                <circle id=\"rim2\" cx=\"0\" cy=\"0\" r=\"3.5\"/>\n"
@@ -59,10 +61,12 @@ static const char svgZoomHeader[] =
 "               </g>\n"
 "        </defs>\n"
 "\n"
+;
+static const char svgZoomHeader3[] =
 "<script type=\"text/javascript\">\n"
 ;
 
-static const char svgZoomFooter[] =
+static const char svgZoomFooter1[] =
 // navigation panel
 "        <g id=\"navigator\" transform=\"translate(0 0)\" fill=\"#404254\">\n"
 "                <rect fill=\"#f2f5e9\" fill-opacity=\"0.5\" stroke=\"#606060\" stroke-width=\".5\" x=\"0\" y=\"0\" width=\"60\" height=\"60\"/>\n"
@@ -113,6 +117,8 @@ static const char svgZoomFooter[] =
 "          </a>\n"
 "         </g>\n"
 "        </svg>\n"
+;
+static const char svgZoomFooter2[] =
 "<style type='text/css'>\n"
 "<![CDATA[[data-mouse-over-selected='false'] {\n"
 "        opacity: 0.7;\n"
@@ -375,27 +381,43 @@ bool DotFilePatcher::run() const
           count = sscanf(line.data(),"<svg width=\"%dpt\" height=\"%dpt\"",&width,&height);
           //printf("width=%d height=%d\n",width,height);
           foundSize = count==2 && (width>500 || height>450);
-          if (foundSize) insideHeader=TRUE;
+          insideHeader = count==2;
         }
         else if (insideHeader && !replacedHeader && line.find("<g id=\"graph")!=-1)
         {
-          line="";
           if (foundSize)
           {
             // insert special replacement header for interactive SVGs
             t << "<!--zoomable " << height << " -->\n";
-            t << svgZoomHeader;
+          }
+          t << svgZoomHeader1;
+          if (foundSize)
+          {
+            t << svgZoomHeader2;
+          }
+          t << svgZoomHeader3;
+          if (foundSize)
+          {
             t << "var viewWidth = " << width << ";\n";
             t << "var viewHeight = " << height << ";\n";
             if (graphId>=0)
             {
               t << "var sectionId = 'dynsection-" << graphId << "';\n";
             }
-            t << "</script>\n";
-            t << "<script xlink:href=\"" << relPath << "svg.min.js\"/>\n";
-            t << "<svg id=\"graph\" class=\"graph\">\n";
+          }
+          t << "</script>\n";
+          t << "<script xlink:href=\"" << relPath << "svg.min.js\"/>\n";
+          t << "<svg id=\"graph\" class=\"graph\">\n";
+
+          if (foundSize)
+          {
             t << "<g id=\"viewport\">\n";
           }
+          else
+          {
+            t << line;
+          }
+          line="";
           insideHeader=FALSE;
           replacedHeader=TRUE;
         }
@@ -488,7 +510,11 @@ bool DotFilePatcher::run() const
   if (isSVGFile && interactiveSVG_local && replacedHeader)
   {
     QCString orgName=m_patchFile.left(m_patchFile.length()-4)+"_org.svg";
-    t << substitute(svgZoomFooter,"$orgname",stripPath(orgName));
+    if (foundSize)
+    {
+      t << substitute(svgZoomFooter1,"$orgname",stripPath(orgName));
+    }
+    t << svgZoomFooter2;
     t.flush();
     fo.close();
     // keep original SVG file so we can refer to it, we do need to replace
