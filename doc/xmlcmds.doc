@@ -24,7 +24,7 @@ not very precise and a number of the examples given are of poor quality.
 
 Here is the list of tags supported by doxygen:
 
-<table class="markdownTable" valign="top">
+<table class="markdownTable">
 <tr class="markdownTableHead"><th class="markdownTableHeadLeft">XML Command</th><th class="markdownTableHeadLeft">Description</th></tr>
 <tr><td valign="top">\startalign\anchor xmltag_c \addindex "\<c\>"\endalign<tt> \<c\></tt></td><td valign="top">Identifies inline text that should be rendered as a 
                        piece of code. Similar to using <tt>\<tt\></tt>text<tt>\</tt\></tt>.</td></tr>
