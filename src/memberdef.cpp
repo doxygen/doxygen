@@ -2176,14 +2176,29 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
 
   // *** write type
   QCString ltype(m_impl->type);
+  QCString preTypedefString;
   if (isTypedef() && getLanguage() != SrcLangExt_Slice)
   {
     ltype.prepend("typedef ");
+    if (m_impl->args.at(0) == ')') // to be on the safe side and to exclude variable like "int (*bla)[10]"
+    {
+      int lastOpen = -1;
+      for (uint i = 0; i < ltype.length(); i++)
+      {
+        if (ltype.at(i) == '(') lastOpen = i;
+      }
+      if (lastOpen != -1)
+      {
+        preTypedefString=ltype.right(ltype.length()-lastOpen);
+        ltype=ltype.left(lastOpen);
+      }
+    }
   }
   if (isTypeAlias())
   {
     ltype="using";
   }
+
   // strip 'friend' keyword from ltype
   ltype.stripPrefix("friend ");
   static const reg::Ex r(R"(@\d+)");
@@ -2293,6 +2308,10 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
   else
   {
     ol.insertMemberAlign(m_impl->tArgList.hasParameters());
+  }
+  if (!preTypedefString.isEmpty())
+  {
+    ol.docify(preTypedefString);
   }
 
   // *** write name
