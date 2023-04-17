@@ -73,9 +73,9 @@ class PageDefImpl : public DefinitionMixin<PageDef>
     bool m_showLineNo;
 };
 
-PageDef *createPageDef(const QCString &f,int l,const QCString &n,const QCString &d,const QCString &t)
+std::unique_ptr<PageDef> createPageDef(const QCString &f,int l,const QCString &n,const QCString &d,const QCString &t)
 {
-  return new PageDefImpl(f,l,n,d,t);
+  return std::make_unique<PageDefImpl>(f,l,n,d,t);
 }
 
 //------------------------------------------------------------------------------------------

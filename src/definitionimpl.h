@@ -18,6 +18,7 @@
 #ifndef DEFINITIONIMPL_H
 #define DEFINITIONIMPL_H
 
+#include <memory>
 #include <unordered_map>
 #include <string>
 
@@ -135,7 +136,7 @@ class DefinitionImpl
 
     // PIMPL idiom
     class IMPL;
-    IMPL *m_impl; // internal structure holding all private data
+    std::unique_ptr<IMPL> m_impl; // internal structure holding all private data
 };
 
 template<class Base>

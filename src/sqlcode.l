@@ -66,6 +66,7 @@ struct sqlcodeYY_state
      QCString      exampleName;
      QCString      classScope;
 
+     std::unique_ptr<FileDef> exampleFileDef;
      const FileDef    *sourceFileDef;
      const Definition *currentDefinition;
      const MemberDef  *currentMemberDef;
@@ -457,13 +458,11 @@ void SQLCodeParser::parseCode(OutputCodeList &codeOutIntf,
   yyextra->exampleName   = exampleName;
   yyextra->sourceFileDef = fileDef;
 
-  bool cleanupSourceDef = false;
-
   if (isExampleBlock && fileDef==0)
   {
     // create a dummy filedef for the example
-    yyextra->sourceFileDef = createFileDef(QCString(),!exampleName.isEmpty() ? exampleName : QCString("generated"));
-    cleanupSourceDef = true;
+    yyextra->exampleFileDef = createFileDef(QCString(),!exampleName.isEmpty() ? exampleName : QCString("generated"));
+    yyextra->sourceFileDef = yyextra->exampleFileDef.get();
   }
 
   if (yyextra->sourceFileDef)
@@ -483,10 +482,10 @@ void SQLCodeParser::parseCode(OutputCodeList &codeOutIntf,
   {
     endCodeLine(yyscanner);
   }
-  if (cleanupSourceDef)
+  if (yyextra->exampleFileDef)
   {
     // delete the temporary file definition used for this example
-    delete yyextra->sourceFileDef;
+    yyextra->exampleFileDef.reset();
     yyextra->sourceFileDef=0;
   }
 }

@@ -104,6 +104,7 @@ struct vhdlcodeYY_state
 
   bool          currArch = false;
 
+  std::unique_ptr<FileDef> exampleFileDef;
   const FileDef *     sourceFileDef = 0;
   const Definition *  currentDefinition = 0;
   const MemberDef *   currentMemberDef = 0;
@@ -1630,12 +1631,11 @@ void VHDLCodeParser::parseCode(OutputCodeList &od,
   yyextra->exampleBlock  = exBlock;
   yyextra->exampleName   = exName;
   yyextra->sourceFileDef = fd;
-  bool cleanupSourceDef = false;
   if (exBlock && fd==0)
   {
     // create a dummy filedef for the example
-    yyextra->sourceFileDef = createFileDef("",exName);
-    cleanupSourceDef = true;
+    yyextra->exampleFileDef = createFileDef("",exName);
+    yyextra->sourceFileDef = yyextra->exampleFileDef.get();
   }
   if (yyextra->sourceFileDef)
   {
@@ -1662,10 +1662,10 @@ void VHDLCodeParser::parseCode(OutputCodeList &od,
   {
     endCodeLine(yyscanner);
   }
-  if (cleanupSourceDef)
+  if (yyextra->exampleFileDef)
   {
     // delete the temporary file definition used for this example
-    delete yyextra->sourceFileDef;
+    yyextra->exampleFileDef.reset();
     yyextra->sourceFileDef=0;
   }
 

@@ -4816,8 +4816,7 @@ PageDef *addRelatedPage(const QCString &name,const QCString &ptitle,
     else // newPage
     {
       pd = Doxygen::pageLinkedMap->add(baseName,
-          std::unique_ptr<PageDef>(
-             createPageDef(fileName,docLine,baseName,doc,title)));
+             createPageDef(fileName,docLine,baseName,doc,title));
     }
     pd->setBodySegment(startLine,startLine,-1);
 

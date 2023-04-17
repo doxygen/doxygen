@@ -190,9 +190,9 @@ class FileDefImpl : public DefinitionMixin<FileDef>
     bool                  m_subGrouping;
 };
 
-FileDef *createFileDef(const QCString &p,const QCString &n,const QCString &ref,const QCString &dn)
+std::unique_ptr<FileDef> createFileDef(const QCString &p,const QCString &n,const QCString &ref,const QCString &dn)
 {
-  return new FileDefImpl(p,n,ref,dn);
+  return std::make_unique<FileDefImpl>(p,n,ref,dn);
 }
 
 

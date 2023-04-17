@@ -1985,11 +1985,11 @@ static void setCaseDone(yyscan_t yyscanner,bool value)
 }
 
 
-static FileState *checkAndOpenFile(yyscan_t yyscanner,const QCString &fileName,bool &alreadyProcessed)
+static std::unique_ptr<FileState> checkAndOpenFile(yyscan_t yyscanner,const QCString &fileName,bool &alreadyProcessed)
 {
   YY_EXTRA_TYPE state = preYYget_extra(yyscanner);
   alreadyProcessed = FALSE;
-  FileState *fs = 0;
+  std::unique_ptr<FileState> fs;
   //printf("checkAndOpenFile(%s)\n",qPrint(fileName));
   FileInfo fi(fileName.str());
   if (fi.exists() && fi.isFile())
@@ -2026,12 +2026,11 @@ static FileState *checkAndOpenFile(yyscan_t yyscanner,const QCString &fileName,b
     }
     //printf("#include %s\n",qPrint(absName));
 
-    fs = new FileState(static_cast<uint32_t>(fi.size())+4096);
+    fs = std::make_unique<FileState>(static_cast<uint32_t>(fi.size())+4096);
     if (!readInputFile(absName,fs->fileBuf))
     { // error
       //printf("  error reading\n");
-      delete fs;
-      fs=0;
+      fs.reset();
     }
     else
     {
@@ -2042,13 +2041,13 @@ static FileState *checkAndOpenFile(yyscan_t yyscanner,const QCString &fileName,b
   return fs;
 }
 
-static FileState *findFile(yyscan_t yyscanner, const QCString &fileName,bool localInclude,bool &alreadyProcessed)
+static std::unique_ptr<FileState> findFile(yyscan_t yyscanner, const QCString &fileName,bool localInclude,bool &alreadyProcessed)
 {
   YY_EXTRA_TYPE state = preYYget_extra(yyscanner);
   //printf("** findFile(%s,%d) state->fileName=%s\n",qPrint(fileName),localInclude,qPrint(state->fileName));
   if (Portable::isAbsolutePath(fileName))
   {
-    FileState *fs = checkAndOpenFile(yyscanner,fileName,alreadyProcessed);
+    auto fs = checkAndOpenFile(yyscanner,fileName,alreadyProcessed);
     if (fs)
     {
       setFileName(yyscanner,fileName);
@@ -2057,7 +2056,7 @@ static FileState *findFile(yyscan_t yyscanner, const QCString &fileName,bool loc
     }
     else if (alreadyProcessed)
     {
-      return 0;
+      return nullptr;
     }
   }
   if (localInclude && !state->fileName.isEmpty())
@@ -2066,7 +2065,7 @@ static FileState *findFile(yyscan_t yyscanner, const QCString &fileName,bool loc
     if (fi.exists())
     {
       QCString absName = QCString(fi.dirPath(TRUE))+"/"+fileName;
-      FileState *fs = checkAndOpenFile(yyscanner,absName,alreadyProcessed);
+      auto fs = checkAndOpenFile(yyscanner,absName,alreadyProcessed);
       if (fs)
       {
         setFileName(yyscanner,absName);
@@ -2075,19 +2074,19 @@ static FileState *findFile(yyscan_t yyscanner, const QCString &fileName,bool loc
       }
       else if (alreadyProcessed)
       {
-        return 0;
+        return nullptr;
       }
     }
   }
   if (state->pathList.empty())
   {
-    return 0;
+    return nullptr;
   }
   for (auto path : state->pathList)
   {
     std::string absName = (path+"/"+fileName).str();
     //printf("  Looking for %s in %s\n",fileName,path.c_str());
-    FileState *fs = checkAndOpenFile(yyscanner,absName.c_str(),alreadyProcessed);
+    auto fs = checkAndOpenFile(yyscanner,absName.c_str(),alreadyProcessed);
     if (fs)
     {
       setFileName(yyscanner,absName.c_str());
@@ -2097,10 +2096,10 @@ static FileState *findFile(yyscan_t yyscanner, const QCString &fileName,bool loc
     }
     else if (alreadyProcessed)
     {
-      return 0;
+      return nullptr;
     }
   }
-  return 0;
+  return nullptr;
 }
 
 static QCString extractTrailingComment(const QCString &s)
@@ -3320,7 +3319,7 @@ static void readIncludeFile(yyscan_t yyscanner,const QCString &inc)
     QCString absIncFileName = determineAbsoluteIncludeName(state->fileName,incFileName);
 
     // findFile will overwrite state->yyFileDef if found
-    FileState *fs;
+    std::unique_ptr<FileState> fs;
     bool alreadyProcessed = FALSE;
     //printf("calling findFile(%s)\n",qPrint(incFileName));
     if ((fs=findFile(yyscanner,incFileName,localInclude,alreadyProcessed))) // see if the include file can be found
@@ -3365,7 +3364,8 @@ static void readIncludeFile(yyscan_t yyscanner,const QCString &inc)
       fs->curlyCount = state->curlyCount;
       state->curlyCount = 0;
       // push the state on the stack
-      state->includeStack.emplace_back(fs);
+      FileState *fs_ptr = fs.get();
+      state->includeStack.push_back(std::move(fs));
       // set the scanner to the include file
 
       // Deal with file changes due to
@@ -3376,7 +3376,7 @@ static void readIncludeFile(yyscan_t yyscanner,const QCString &inc)
 
       AUTO_TRACE_ADD("Switching to include file {}",incFileName);
       state->expectGuard=TRUE;
-      state->inputBuf   = &fs->fileBuf;
+      state->inputBuf   = &fs_ptr->fileBuf;
       state->inputBufPos=0;
       yy_switch_to_buffer(yy_create_buffer(0, YY_BUF_SIZE, yyscanner),yyscanner);
     }

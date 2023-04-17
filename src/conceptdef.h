@@ -16,6 +16,8 @@
 #ifndef CONCEPTDEF_H
 #define CONCEPTDEF_H
 
+#include <memory>
+
 #include "definition.h"
 #include "filedef.h"
 
@@ -54,11 +56,11 @@ class ConceptDefMutable : public DefinitionMutable, public ConceptDef
     virtual void setGroupId(int id) = 0;
 };
 
-ConceptDefMutable *createConceptDef(
+std::unique_ptr<ConceptDef> createConceptDef(
     const QCString &fileName,int startLine,int startColumn,const QCString &name,
     const QCString &tagRef=QCString(),const QCString &tagFile=QCString());
 
-ConceptDef *createConceptDefAlias(const Definition *newScope,const ConceptDef *cd);
+std::unique_ptr<ConceptDef> createConceptDefAlias(const Definition *newScope,const ConceptDef *cd);
 
 // ---- Map
 

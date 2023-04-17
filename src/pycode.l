@@ -86,6 +86,7 @@ struct pycodeYY_state
   bool          collectXRefs = FALSE;
   int           inputLines = 0;      //!< number of line in the code fragment
   int           yyLineNr = 0;        //!< current line number
+  std::unique_ptr<FileDef> exampleFileDef;
   const FileDef *    sourceFileDef = 0;
   const Definition * currentDefinition = 0;
   const MemberDef *  currentMemberDef = 0;
@@ -407,8 +408,6 @@ TARGET            ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBU
                                       // in SuiteStart.
 
                                       // Push a class scope
-
-                                      std::unique_ptr<ClassDef> classDefToAdd { createClassDef("<code>",1,1,yyextra->curClassName,ClassDef::Class,QCString(),QCString(),FALSE) };
                                       ScopedTypeVariant var(yyextra->curClassName);
                                       for (const auto &s : yyextra->curClassBases)
                                       {
@@ -1611,12 +1610,11 @@ void PythonCodeParser::parseCode(OutputCodeList &codeOutIntf,
   yyextra->sourceFileDef = fileDef;
   yyextra->symbolResolver.setFileScope(fileDef);
 
-  bool cleanupSourceDef = FALSE;
   if (yyextra->exampleBlock && fileDef==0)
   {
     // create a dummy filedef for the example
-    yyextra->sourceFileDef = createFileDef("",(!exampleName.isEmpty()?qPrint(exampleName):"generated"));
-    cleanupSourceDef = TRUE;
+    yyextra->exampleFileDef = createFileDef("",(!exampleName.isEmpty()?qPrint(exampleName):"generated"));
+    yyextra->sourceFileDef = yyextra->exampleFileDef.get();
   }
   if (yyextra->sourceFileDef)
   {
@@ -1640,10 +1638,10 @@ void PythonCodeParser::parseCode(OutputCodeList &codeOutIntf,
   {
     endCodeLine(yyscanner);
   }
-  if (cleanupSourceDef)
+  if (yyextra->exampleFileDef)
   {
     // delete the temporary file definition used for this example
-    delete yyextra->sourceFileDef;
+    yyextra->exampleFileDef.reset();
     yyextra->sourceFileDef=0;
   }
   // write the tooltips

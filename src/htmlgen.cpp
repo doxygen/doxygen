@@ -630,7 +630,7 @@ static void fillColorStyleMap(const QCString &definitions,StringUnorderedMap &ma
       int separator = line.find(':');
       assert(separator!=-1);
       std::string key = line.left(separator).str();
-      int semi = line.find(';');
+      int semi = line.findRev(';');
       assert(semi!=-1);
       std::string value = line.mid(separator+1,semi-separator-1).stripWhiteSpace().str();
       map.insert(std::make_pair(key,value));
@@ -1172,7 +1172,7 @@ void HtmlGenerator::init()
   mgr.copyResource("jquery.js",dname);
   if (Config_getBool(INTERACTIVE_SVG))
   {
-    mgr.copyResource("svgpan.js",dname);
+    mgr.copyResource("svg.min.js",dname);
   }
 
   if (!Config_getBool(DISABLE_INDEX) && Config_getBool(HTML_DYNAMIC_MENUS))
@@ -1237,16 +1237,8 @@ void HtmlGenerator::writeTabData()
   Doxygen::indexList->addImageFile("doxygen.svg");
   mgr.copyResource("closed.luma",dname);
   mgr.copyResource("open.luma",dname);
-  mgr.copyResource("bdwn.luma",dname);
   mgr.copyResource("sync_on.luma",dname);
   mgr.copyResource("sync_off.luma",dname);
-
-  //{
-  //  unsigned char shadow[6] = { 5, 5, 5, 5, 5, 5 };
-  //  unsigned char shadow_alpha[6]  = { 80, 60, 40, 20, 10, 0 };
-  //  ColoredImage img(1,6,shadow,shadow_alpha,0,0,100);
-  //  img.save(dname+"/nav_g.png");
-  //}
   mgr.copyResource("nav_g.png",dname);
   Doxygen::indexList->addImageFile("nav_g.png");
 }
@@ -1571,7 +1563,7 @@ void HtmlGenerator::writeStyleInfo(int part)
 
     if (Config_getBool(INTERACTIVE_SVG))
     {
-      Doxygen::indexList->addStyleSheetFile("svgpan.js");
+      Doxygen::indexList->addStyleSheetFile("svg.min.js");
     }
 
     if (!Config_getBool(DISABLE_INDEX) && Config_getBool(HTML_DYNAMIC_MENUS))

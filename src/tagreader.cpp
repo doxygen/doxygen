@@ -1501,9 +1501,7 @@ void TagFileParser::buildLists(const std::shared_ptr<Entry> &root)
       fe->startLine = tfi->lineNr;
       //printf("createFileDef() filename=%s\n",qPrint(tfi->filename));
       QCString tagid = m_tagName+":"+tfi->path;
-      std::unique_ptr<FileDef> fd { createFileDef(tagid,
-          tfi->name,m_tagName,
-          tfi->filename) };
+      auto fd = createFileDef(tagid, tfi->name,m_tagName, tfi->filename);
       FileName *mn;
       if ((mn=Doxygen::inputNameLinkedMap->find(tfi->name)))
       {

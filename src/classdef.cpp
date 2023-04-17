@@ -155,8 +155,6 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
              const QCString &name,CompoundType ct,
              const QCString &ref=QCString(),const QCString &fName=QCString(),
              bool isSymbol=TRUE,bool isJavaEnum=FALSE);
-    /** Destroys a compound definition. */
-   ~ClassDefImpl();
 
     virtual ClassDef *resolveAlias() { return this; }
     virtual DefType definitionType() const { return TypeClass; }
@@ -358,16 +356,16 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
 
     // PIMPL idiom
     class IMPL;
-    IMPL *m_impl = 0;
+    std::unique_ptr<IMPL> m_impl;
 };
 
-ClassDefMutable *createClassDef(
+std::unique_ptr<ClassDef> createClassDef(
              const QCString &fileName,int startLine,int startColumn,
              const QCString &name,ClassDef::CompoundType ct,
              const QCString &ref,const QCString &fName,
              bool isSymbol,bool isJavaEnum)
 {
-  return new ClassDefImpl(fileName,startLine,startColumn,name,ct,ref,fName,isSymbol,isJavaEnum);
+  return std::make_unique<ClassDefImpl>(fileName,startLine,startColumn,name,ct,ref,fName,isSymbol,isJavaEnum);
 }
 //-----------------------------------------------------------------------------
 
@@ -584,9 +582,9 @@ class ClassDefAliasImpl : public DefinitionAliasMixin<ClassDef>
     virtual void updateSubClasses(const BaseClassList &) {}
 };
 
-ClassDef *createClassDefAlias(const Definition *newScope,const ClassDef *cd)
+std::unique_ptr<ClassDef> createClassDefAlias(const Definition *newScope,const ClassDef *cd)
 {
-  ClassDef *acd = new ClassDefAliasImpl(newScope,cd);
+  auto acd = std::make_unique<ClassDefAliasImpl>(newScope,cd);
   //printf("cd name=%s localName=%s qualifiedName=%s qualifiedNameWith=%s displayName()=%s\n",
   //    qPrint(acd->name()),qPrint(acd->localName()),qPrint(acd->qualifiedName()),
   //    qPrint(acd->qualifiedNameWithTemplateParameters()),qPrint(acd->displayName()));
@@ -599,8 +597,6 @@ ClassDef *createClassDefAlias(const Definition *newScope,const ClassDef *cd)
 class ClassDefImpl::IMPL
 {
   public:
-    IMPL();
-   ~IMPL();
     void init(const QCString &defFileName, const QCString &name,
               const QCString &ctStr, const QCString &fName);
 
@@ -789,14 +785,6 @@ void ClassDefImpl::IMPL::init(const QCString &defFileName, const QCString &name,
   }
 }
 
-ClassDefImpl::IMPL::IMPL()
-{
-}
-
-ClassDefImpl::IMPL::~IMPL()
-{
-}
-
 //-------------------------------------------------------------------------------------------
 
 // constructs a new class definition
@@ -805,10 +793,10 @@ ClassDefImpl::ClassDefImpl(
     const QCString &nm,CompoundType ct,
     const QCString &lref,const QCString &fName,
     bool isSymbol,bool isJavaEnum)
- : DefinitionMixin(defFileName,defLine,defColumn,removeRedundantWhiteSpace(nm),0,0,isSymbol)
+ : DefinitionMixin(defFileName,defLine,defColumn,removeRedundantWhiteSpace(nm),0,0,isSymbol),
+  m_impl(std::make_unique<IMPL>())
 {
   setReference(lref);
-  m_impl = new ClassDefImpl::IMPL;
   m_impl->compType = ct;
   m_impl->isJavaEnum = isJavaEnum;
   m_impl->init(defFileName,name(),compoundTypeString(),fName);
@@ -819,12 +807,6 @@ ClassDefImpl::ClassDefImpl(
   {
     m_impl->fileName = convertNameToFile(m_impl->fileName);
   }
-}
-
-// destroy the class definition
-ClassDefImpl::~ClassDefImpl()
-{
-  delete m_impl;
 }
 
 QCString ClassDefImpl::getMemberListFileName() const
@@ -3789,13 +3771,14 @@ void ClassDefImpl::mergeCategory(ClassDef *cat)
           //printf("Adding '%s'\n",qPrint(mi->memberDef->name()));
           Protection prot = mi->prot();
           //if (makePrivate) prot = Private;
-          std::unique_ptr<MemberDefMutable> newMd { toMemberDefMutable(mi->memberDef()->deepCopy()) };
+          auto newMd = mi->memberDef()->deepCopy();
           if (newMd)
           {
+            auto mmd = toMemberDefMutable(newMd.get());
             //printf("Copying member %s\n",qPrint(mi->memberDef->name()));
-            newMd->moveTo(this);
+            mmd->moveTo(this);
 
-            std::unique_ptr<MemberInfo> newMi=std::make_unique<MemberInfo>(newMd.get(),prot,mi->virt(),mi->inherited());
+            auto newMi=std::make_unique<MemberInfo>(newMd.get(),prot,mi->virt(),mi->inherited());
             newMi->setScopePath(mi->scopePath());
             newMi->setAmbigClass(mi->ambigClass());
             newMi->setAmbiguityResolutionScope(mi->ambiguityResolutionScope());
@@ -3806,19 +3789,13 @@ void ClassDefImpl::mergeCategory(ClassDef *cat)
             QCString name = newMd->name();
             MemberName *mn = Doxygen::memberNameLinkedMap->add(name);
 
-            if (newMd)
+            mmd->setCategory(category);
+            mmd->setCategoryRelation(mi->memberDef());
+
+            mmd->setCategoryRelation(newMd.get());
+            if (makePrivate || isExtension)
             {
-              newMd->setCategory(category);
-              newMd->setCategoryRelation(mi->memberDef());
-            }
-            MemberDefMutable *mdm = toMemberDefMutable(mi->memberDef());
-            if (mdm)
-            {
-              mdm->setCategoryRelation(newMd.get());
-            }
-            if (newMd && (makePrivate || isExtension))
-            {
-              newMd->makeImplementationDetail();
+              mmd->makeImplementationDetail();
             }
             internalInsertMember(newMd.get(),prot,FALSE);
             mn->push_back(std::move(newMd));
@@ -4097,16 +4074,16 @@ void ClassDefImpl::addMembersToTemplateInstance(const ClassDef *cd,const Argumen
     {
       auto actualArguments_p = stringToArgumentList(getLanguage(),templSpec);
       MemberDef *md = mi->memberDef();
-      std::unique_ptr<MemberDefMutable> imd { md->createTemplateInstanceMember(
-                          templateArguments,actualArguments_p) };
+      auto imd = md->createTemplateInstanceMember(templateArguments,actualArguments_p);
       //printf("%s->setMemberClass(%p)\n",qPrint(imd->name()),this);
-      imd->setMemberClass(this);
-      imd->setTemplateMaster(md);
-      imd->setDocumentation(md->documentation(),md->docFile(),md->docLine());
-      imd->setBriefDescription(md->briefDescription(),md->briefFile(),md->briefLine());
-      imd->setInbodyDocumentation(md->inbodyDocumentation(),md->inbodyFile(),md->inbodyLine());
-      imd->setMemberSpecifiers(md->getMemberSpecifiers());
-      imd->setMemberGroupId(md->getMemberGroupId());
+      auto mmd = toMemberDefMutable(imd.get());
+      mmd->setMemberClass(this);
+      mmd->setTemplateMaster(md);
+      mmd->setDocumentation(md->documentation(),md->docFile(),md->docLine());
+      mmd->setBriefDescription(md->briefDescription(),md->briefFile(),md->briefLine());
+      mmd->setInbodyDocumentation(md->inbodyDocumentation(),md->inbodyFile(),md->inbodyLine());
+      mmd->setMemberSpecifiers(md->getMemberSpecifiers());
+      mmd->setMemberGroupId(md->getMemberGroupId());
       insertMember(imd.get());
       //printf("Adding member=%s %s%s to class %s templSpec %s\n",
       //    imd->typeString(),qPrint(imd->name()),imd->argsString(),

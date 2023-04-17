@@ -18,7 +18,7 @@
 \mainpage @MAINPAGE_TITLE@
 <!--Doxygen Manual-->
 \if logo_on
-\htmlonly
+\htmlonly[block]
 <center>
 <img src="doxygen_logo.svg" width="634" height="197" alt="doxygen"/><br/>
 Version: $(VERSION)

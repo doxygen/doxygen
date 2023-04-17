@@ -22,7 +22,6 @@
 {% resource 'doxygen.svg' %}
 {% resource 'closed.luma' %}
 {% resource 'open.luma' %}
-{% resource 'bdwn.luma' %}
 {% resource 'sync_on.luma' %}
 {% resource 'sync_off.luma' %}
 
@@ -38,9 +37,9 @@
 {% if not config.DISABLE_INDEX and config.HTML_DYNAMIC_MENUS %}
 {% resource 'menu.js' %}
 {% endif %}
-{% resource 'doc.luma' %}
-{% resource 'folderopen.luma' %}
-{% resource 'folderclosed.luma' %}
+{% resource 'doc.svg' %}
+{% resource 'folderopen.svg' %}
+{% resource 'folderclosed.svg' %}
 {% resource 'splitbar.lum' %}
 
 {# general search resources #}

@@ -28,19 +28,12 @@
 static const char svgZoomHeader[] =
 "<svg id=\"main\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xml:space=\"preserve\" onload=\"init(evt)\">\n"
 "<style type=\"text/css\"><![CDATA[\n"
+".node, .edge {opacity: 0.7;}\n"
+".node.selected, .edge.selected {opacity: 1;}\n"
 ".edge:hover path { stroke: red; }\n"
 ".edge:hover polygon { stroke: red; fill: red; }\n"
 "]]></style>\n"
-"<script type=\"text/javascript\"><![CDATA[\n"
-"var edges = document.getElementsByTagName('g');\n"
-"if (edges && edges.length) {\n"
-"  for (var i=0;i<edges.length;i++) {\n"
-"    if (edges[i].id.substr(0,4)=='edge') {\n"
-"      edges[i].setAttribute('class','edge');\n"
-"    }\n"
-"  }\n"
-"}\n"
-"]]></script>\n"
+"\n"
 "        <defs>\n"
 "                <circle id=\"rim\" cx=\"0\" cy=\"0\" r=\"7\"/>\n"
 "                <circle id=\"rim2\" cx=\"0\" cy=\"0\" r=\"3.5\"/>\n"
@@ -120,6 +113,21 @@ static const char svgZoomFooter[] =
 "          </a>\n"
 "         </g>\n"
 "        </svg>\n"
+"<style type='text/css'>\n"
+"<![CDATA[[data-mouse-over-selected='false'] {\n"
+"        opacity: 0.7;\n"
+"}\n"
+"[data-mouse-over-selected='true'] {\n"
+"        opacity: 1.0;\n"
+"}\n"
+"]]>\n"
+"</style>\n"
+"<script><![CDATA[\n"
+"document.addEventListener('DOMContentLoaded', (event) => {\n"
+"  highlightEdges();\n"
+"  highlightAdjacentNodes();\n"
+"});\n"
+"]]></script>\n"
 "</svg>\n"
 ;
 
@@ -384,7 +392,7 @@ bool DotFilePatcher::run() const
               t << "var sectionId = 'dynsection-" << graphId << "';\n";
             }
             t << "</script>\n";
-            t << "<script xlink:href=\"" << relPath << "svgpan.js\"/>\n";
+            t << "<script xlink:href=\"" << relPath << "svg.min.js\"/>\n";
             t << "<svg id=\"graph\" class=\"graph\">\n";
             t << "<g id=\"viewport\">\n";
           }

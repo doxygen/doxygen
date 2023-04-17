@@ -70,7 +70,7 @@ class DotNode
   public:
     static void deleteNodes(DotNode* node);
     static QCString convertLabel(const QCString& , bool htmlLike=false);
-    DotNode(int n,const QCString &lab,const QCString &tip,const QCString &url,
+    DotNode(DotGraph *graph,const QCString &lab,const QCString &tip,const QCString &url,
         bool rootNode=FALSE,const ClassDef *cd=0);
     ~DotNode();
 
@@ -123,8 +123,10 @@ class DotNode
     const DotNodeRefVector &children() const { return m_children; }
     const DotNodeRefVector &parents() const { return m_parents; }
     const EdgeInfoVector &edgeInfo() const { return m_edgeInfo; }
+    DotNode &setNodeId(int number) { m_number=number; return *this; }
 
   private:
+    DotGraph        *m_graph;
     int              m_number;
     QCString         m_label;                //!< label text
     QCString         m_tooltip;              //!< node's tooltip

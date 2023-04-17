@@ -160,10 +160,10 @@ class GroupDefImpl : public DefinitionMixin<GroupDef>
 
 };
 
-GroupDef *createGroupDef(const QCString &fileName,int line,const QCString &name,
+std::unique_ptr<GroupDef> createGroupDef(const QCString &fileName,int line,const QCString &name,
                                 const QCString &title,const QCString &refFileName)
 {
-  return new GroupDefImpl(fileName,line,name,title,refFileName);
+  return std::make_unique<GroupDefImpl>(fileName,line,name,title,refFileName);
 }
 
 

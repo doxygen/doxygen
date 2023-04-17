@@ -149,7 +149,8 @@ StringMap             Doxygen::tagDestinationMap;            // all tag location
 StringUnorderedSet    Doxygen::expandAsDefinedSet;           // all macros that should be expanded
 MemberGroupInfoMap    Doxygen::memberGroupInfoMap;           // dictionary of the member groups heading
 std::unique_ptr<PageDef> Doxygen::mainPage;
-NamespaceDefMutable  *Doxygen::globalScope = 0;
+std::unique_ptr<NamespaceDef> Doxygen::globalNamespaceDef;
+NamespaceDefMutable  *Doxygen::globalScope;
 bool                  Doxygen::parseSourcesNeeded = FALSE;
 SearchIndexIntf      *Doxygen::searchIndex=0;
 SymbolMap<Definition>*Doxygen::symbolMap;
@@ -698,11 +699,10 @@ static Definition *buildScopeFromQualifiedName(const QCString &name_,SrcLangExt 
       NamespaceDefMutable *newNd=
         toNamespaceDefMutable(
           Doxygen::namespaceLinkedMap->add(fullScope,
-            std::unique_ptr<NamespaceDef>(
-              createNamespaceDef(
-                "[generated]",1,1,fullScope,
-                tagInfo?tagInfo->tagName:QCString(),
-                tagInfo?tagInfo->fileName:QCString()))));
+            createNamespaceDef(
+              "[generated]",1,1,fullScope,
+              tagInfo?tagInfo->tagName:QCString(),
+              tagInfo?tagInfo->fileName:QCString())));
       if (newNd)
       {
         newNd->setLanguage(lang);
@@ -1016,9 +1016,8 @@ static void addClassToContext(const Entry *root)
     // add class to the list
     cd = toClassDefMutable(
         Doxygen::classLinkedMap->add(fullName,
-          std::unique_ptr<ClassDef>(
-            createClassDef(tagInfo?tagName:root->fileName,root->startLine,root->startColumn,
-               fullName,sec,tagName,refFileName,TRUE,root->spec&Entry::Enum) )));
+          createClassDef(tagInfo?tagName:root->fileName,root->startLine,root->startColumn,
+             fullName,sec,tagName,refFileName,TRUE,root->spec&Entry::Enum) ));
     if (cd)
     {
       AUTO_TRACE_ADD("New class '{}' type={} #tArgLists={} tagInfo={} hidden={} artificial={}",
@@ -1170,9 +1169,8 @@ static void addConceptToContext(const Entry *root)
     // add concept to the list
     cd = toConceptDefMutable(
         Doxygen::conceptLinkedMap->add(qualifiedName,
-          std::unique_ptr<ConceptDef>(
             createConceptDef(tagInfo?tagName:root->fileName,root->startLine,root->startColumn,
-               qualifiedName,tagName,refFileName))));
+               qualifiedName,tagName,refFileName)));
     if (cd)
     {
       AUTO_TRACE_ADD("New concept '{}' #tArgLists={} tagInfo={}",
@@ -1331,7 +1329,7 @@ static void resolveClassNestingRelations()
                 dm = toDefinitionMutable(d);
                 if (dm)
                 {
-                  std::unique_ptr<ClassDef> aliasCd { createClassDefAlias(d,cd) };
+                  auto aliasCd = createClassDefAlias(d,cd);
                   QCString aliasFullName = d->qualifiedName()+"::"+aliasCd->localName();
                   aliases.push_back(ClassAlias(aliasFullName,std::move(aliasCd),dm));
                   //printf("adding %s to %s as %s\n",qPrint(aliasCd->name()),qPrint(d->name()),qPrint(aliasFullName));
@@ -1437,12 +1435,11 @@ static ClassDefMutable *createTagLessInstance(const ClassDef *rootCd,const Class
   //printf("** adding class %s based on %s\n",qPrint(fullName),qPrint(templ->name()));
   ClassDefMutable *cd = toClassDefMutable(
       Doxygen::classLinkedMap->add(fullName,
-         std::unique_ptr<ClassDef>(
-           createClassDef(templ->getDefFileName(),
-                              templ->getDefLine(),
-                              templ->getDefColumn(),
-                              fullName,
-                              templ->compoundType()))));
+         createClassDef(templ->getDefFileName(),
+                            templ->getDefLine(),
+                            templ->getDefColumn(),
+                            fullName,
+                            templ->compoundType())));
   if (cd)
   {
     cd->setDocumentation(templ->documentation(),templ->docFile(),templ->docLine()); // copy docs to definition
@@ -1479,11 +1476,12 @@ static ClassDefMutable *createTagLessInstance(const ClassDef *rootCd,const Class
       for (const auto &md : *ml)
       {
         //printf("    Member %s type=%s\n",qPrint(md->name()),md->typeString());
-        MemberDefMutable *imd = createMemberDef(md->getDefFileName(),md->getDefLine(),md->getDefColumn(),
+        auto newMd = createMemberDef(md->getDefFileName(),md->getDefLine(),md->getDefColumn(),
             md->typeString(),md->name(),md->argsString(),md->excpString(),
             md->protection(),md->virtualness(),md->isStatic(),Relationship::Member,
             md->memberType(),
             ArgumentList(),ArgumentList(),"");
+        MemberDefMutable *imd = toMemberDefMutable(newMd.get());
         imd->setMemberClass(cd);
         imd->setDocumentation(md->documentation(),md->docFile(),md->docLine());
         imd->setBriefDescription(md->briefDescription(),md->briefFile(),md->briefLine());
@@ -1496,6 +1494,8 @@ static ClassDefMutable *createTagLessInstance(const ClassDef *rootCd,const Class
         imd->setBitfields(md->bitfieldString());
         imd->setLanguage(md->getLanguage());
         cd->insertMember(imd);
+        MemberName *mn = Doxygen::memberNameLinkedMap->add(md->name());
+        mn->push_back(std::move(newMd));
       }
     }
   }
@@ -1689,10 +1689,9 @@ static void buildNamespaceList(const Entry *root)
         // add namespace to the list
         NamespaceDefMutable *nd = toNamespaceDefMutable(
             Doxygen::namespaceLinkedMap->add(fullName,
-              std::unique_ptr<NamespaceDef>(
-                createNamespaceDef(tagInfo?tagName:root->fileName,root->startLine,
-                  root->startColumn,fullName,tagName,tagFileName,
-                  root->type,root->spec&Entry::Published))));
+              createNamespaceDef(tagInfo?tagName:root->fileName,root->startLine,
+                root->startColumn,fullName,tagName,tagFileName,
+                root->type,root->spec&Entry::Published)));
         if (nd)
         {
           nd->setDocumentation(root->doc,root->docFile,root->docLine); // copy docs to definition
@@ -1755,12 +1754,11 @@ static void buildNamespaceList(const Entry *root)
                   dm = toDefinitionMutable(d);
                   if (dm)
                   {
-                    NamespaceDef *aliasNd = createNamespaceDefAlias(d,nd);
-                    dm->addInnerCompound(aliasNd);
+                    auto aliasNd = createNamespaceDefAlias(d,nd);
+                    dm->addInnerCompound(aliasNd.get());
                     QCString aliasName = aliasNd->name();
                     AUTO_TRACE_ADD("adding alias {} to {}",aliasName,d->name());
-                    Doxygen::namespaceLinkedMap->add(
-                        aliasName,std::unique_ptr<NamespaceDef>(aliasNd));
+                    Doxygen::namespaceLinkedMap->add(aliasName,std::move(aliasNd));
                   }
                 }
                 else
@@ -1897,8 +1895,7 @@ static void findUsingDirectives(const Entry *root)
         // add namespace to the list
         nd = toNamespaceDefMutable(
             Doxygen::namespaceLinkedMap->add(name,
-              std::unique_ptr<NamespaceDef>(
-                 createNamespaceDef(root->fileName,root->startLine,root->startColumn,name))));
+               createNamespaceDef(root->fileName,root->startLine,root->startColumn,name)));
         if (nd)
         {
           nd->setDocumentation(root->doc,root->docFile,root->docLine); // copy docs to definition
@@ -2004,8 +2001,7 @@ static void findUsingDeclarations(const Entry *root,bool filterPythonPackages)
              name,root->section,root->tArgLists.size());
         usingCd = toClassDefMutable(
              Doxygen::hiddenClassLinkedMap->add(name,
-               std::unique_ptr<ClassDef>(
-                 createClassDef( "<using>",1,1, name, ClassDef::Class))));
+               createClassDef( "<using>",1,1, name, ClassDef::Class)));
         if (usingCd)
         {
           usingCd->setArtificial(TRUE);
@@ -2074,44 +2070,45 @@ static void findUsingDeclImports(const Entry *root)
                 }
                 const ArgumentList &templAl = md->templateArguments();
                 const ArgumentList &al = md->argumentList();
-                std::unique_ptr<MemberDefMutable> newMd { createMemberDef(
+                auto newMd = createMemberDef(
                     fileName,root->startLine,root->startColumn,
                     md->typeString(),memName,md->argsString(),
                     md->excpString(),root->protection,root->virt,
                     md->isStatic(),Relationship::Member,md->memberType(),
                     templAl,al,root->metaData
-                    ) };
-                newMd->setMemberClass(cd);
+                    );
+                auto newMmd = toMemberDefMutable(newMd.get());
+                newMmd->setMemberClass(cd);
                 cd->insertMember(newMd.get());
                 if (!root->doc.isEmpty() || !root->brief.isEmpty())
                 {
-                  newMd->setDocumentation(root->doc,root->docFile,root->docLine);
-                  newMd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
-                  newMd->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
+                  newMmd->setDocumentation(root->doc,root->docFile,root->docLine);
+                  newMmd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+                  newMmd->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
                 }
                 else
                 {
-                  newMd->setDocumentation(md->documentation(),md->docFile(),md->docLine());
-                  newMd->setBriefDescription(md->briefDescription(),md->briefFile(),md->briefLine());
-                  newMd->setInbodyDocumentation(md->inbodyDocumentation(),md->inbodyFile(),md->inbodyLine());
+                  newMmd->setDocumentation(md->documentation(),md->docFile(),md->docLine());
+                  newMmd->setBriefDescription(md->briefDescription(),md->briefFile(),md->briefLine());
+                  newMmd->setInbodyDocumentation(md->inbodyDocumentation(),md->inbodyFile(),md->inbodyLine());
                 }
-                newMd->setDefinition(md->definition());
-                newMd->enableCallGraph(root->callGraph);
-                newMd->enableCallerGraph(root->callerGraph);
-                newMd->enableReferencedByRelation(root->referencedByRelation);
-                newMd->enableReferencesRelation(root->referencesRelation);
-                newMd->addQualifiers(root->qualifiers);
-                newMd->setBitfields(md->bitfieldString());
-                newMd->addSectionsToDefinition(root->anchors);
-                newMd->setBodySegment(md->getDefLine(),md->getStartBodyLine(),md->getEndBodyLine());
-                newMd->setBodyDef(md->getBodyDef());
-                newMd->setInitializer(md->initializer());
-                newMd->setRequiresClause(md->requiresClause());
-                newMd->setMaxInitLines(md->initializerLines());
-                newMd->setMemberGroupId(root->mGrpId);
-                newMd->setMemberSpecifiers(md->getMemberSpecifiers());
-                newMd->setLanguage(root->lang);
-                newMd->setId(root->id);
+                newMmd->setDefinition(md->definition());
+                newMmd->enableCallGraph(root->callGraph);
+                newMmd->enableCallerGraph(root->callerGraph);
+                newMmd->enableReferencedByRelation(root->referencedByRelation);
+                newMmd->enableReferencesRelation(root->referencesRelation);
+                newMmd->addQualifiers(root->qualifiers);
+                newMmd->setBitfields(md->bitfieldString());
+                newMmd->addSectionsToDefinition(root->anchors);
+                newMmd->setBodySegment(md->getDefLine(),md->getStartBodyLine(),md->getEndBodyLine());
+                newMmd->setBodyDef(md->getBodyDef());
+                newMmd->setInitializer(md->initializer());
+                newMmd->setRequiresClause(md->requiresClause());
+                newMmd->setMaxInitLines(md->initializerLines());
+                newMmd->setMemberGroupId(root->mGrpId);
+                newMmd->setMemberSpecifiers(md->getMemberSpecifiers());
+                newMmd->setLanguage(root->lang);
+                newMmd->setId(root->id);
                 MemberName *mn = Doxygen::memberNameLinkedMap->add(memName);
                 mn->push_back(std::move(newMd));
               }
@@ -2245,46 +2242,47 @@ static MemberDef *addVariableToClass(
   }
 
   // new member variable, typedef or enum value
-  std::unique_ptr<MemberDefMutable> md { createMemberDef(
+  auto md = createMemberDef(
       fileName,root->startLine,root->startColumn,
       type,name,args,root->exception,
       prot,Specifier::Normal,root->isStatic,related,
       mtype,!root->tArgLists.empty() ? root->tArgLists.back() : ArgumentList(),
-      ArgumentList(), root->metaData) };
-  md->setTagInfo(root->tagInfo());
-  md->setMemberClass(cd); // also sets outer scope (i.e. getOuterScope())
-  md->setDocumentation(root->doc,root->docFile,root->docLine);
-  md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
-  md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
-  md->setDefinition(def);
-  md->setBitfields(root->bitfields);
-  md->addSectionsToDefinition(root->anchors);
-  md->setFromAnonymousScope(fromAnnScope);
-  md->setFromAnonymousMember(fromAnnMemb);
+      ArgumentList(), root->metaData);
+  auto mmd = toMemberDefMutable(md.get());
+  mmd->setTagInfo(root->tagInfo());
+  mmd->setMemberClass(cd); // also sets outer scope (i.e. getOuterScope())
+  mmd->setDocumentation(root->doc,root->docFile,root->docLine);
+  mmd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+  mmd->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
+  mmd->setDefinition(def);
+  mmd->setBitfields(root->bitfields);
+  mmd->addSectionsToDefinition(root->anchors);
+  mmd->setFromAnonymousScope(fromAnnScope);
+  mmd->setFromAnonymousMember(fromAnnMemb);
   //md->setIndentDepth(indentDepth);
-  md->setBodySegment(root->startLine,root->bodyLine,root->endBodyLine);
+  mmd->setBodySegment(root->startLine,root->bodyLine,root->endBodyLine);
   std::string init = root->initializer.str();
-  md->setInitializer(init.c_str());
-  md->setMaxInitLines(root->initLines);
-  md->setMemberGroupId(root->mGrpId);
-  md->setMemberSpecifiers(root->spec);
-  md->setReadAccessor(root->read);
-  md->setWriteAccessor(root->write);
-  md->enableCallGraph(root->callGraph);
-  md->enableCallerGraph(root->callerGraph);
-  md->enableReferencedByRelation(root->referencedByRelation);
-  md->enableReferencesRelation(root->referencesRelation);
-  md->setHidden(root->hidden);
-  md->setArtificial(root->artificial);
-  md->setLanguage(root->lang);
-  md->setId(root->id);
+  mmd->setInitializer(init.c_str());
+  mmd->setMaxInitLines(root->initLines);
+  mmd->setMemberGroupId(root->mGrpId);
+  mmd->setMemberSpecifiers(root->spec);
+  mmd->setReadAccessor(root->read);
+  mmd->setWriteAccessor(root->write);
+  mmd->enableCallGraph(root->callGraph);
+  mmd->enableCallerGraph(root->callerGraph);
+  mmd->enableReferencedByRelation(root->referencedByRelation);
+  mmd->enableReferencesRelation(root->referencesRelation);
+  mmd->setHidden(root->hidden);
+  mmd->setArtificial(root->artificial);
+  mmd->setLanguage(root->lang);
+  mmd->setId(root->id);
   addMemberToGroups(root,md.get());
-  md->setBodyDef(root->fileDef());
-  md->addQualifiers(root->qualifiers);
+  mmd->setBodyDef(root->fileDef());
+  mmd->addQualifiers(root->qualifiers);
 
   AUTO_TRACE_ADD("Adding new member to class '{}'",cd->name());
   cd->insertMember(md.get());
-  md->setRefItems(root->sli);
+  mmd->setRefItems(root->sli);
 
   //TODO: insert FileDef instead of filename strings.
   cd->insertUsedFile(root->fileDef());
@@ -2470,45 +2468,46 @@ static MemberDef *addVariableToFile(
 
   AUTO_TRACE_ADD("new variable, namespace='{}'",nd?nd->name():QCString("<global>"));
   // new global variable, enum value or typedef
-  std::unique_ptr<MemberDefMutable> md { createMemberDef(
+  auto md =  createMemberDef(
       fileName,root->startLine,root->startColumn,
       type,name,args,QCString(),
       root->protection, Specifier::Normal,root->isStatic,Relationship::Member,
       mtype,!root->tArgLists.empty() ? root->tArgLists.back() : ArgumentList(),
-      root->argList, root->metaData) };
-  md->setTagInfo(root->tagInfo());
-  md->setMemberSpecifiers(root->spec);
-  md->setDocumentation(root->doc,root->docFile,root->docLine);
-  md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
-  md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
-  md->addSectionsToDefinition(root->anchors);
-  md->setFromAnonymousScope(fromAnnScope);
-  md->setFromAnonymousMember(fromAnnMemb);
+      root->argList, root->metaData);
+  auto mmd = toMemberDefMutable(md.get());
+  mmd->setTagInfo(root->tagInfo());
+  mmd->setMemberSpecifiers(root->spec);
+  mmd->setDocumentation(root->doc,root->docFile,root->docLine);
+  mmd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+  mmd->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
+  mmd->addSectionsToDefinition(root->anchors);
+  mmd->setFromAnonymousScope(fromAnnScope);
+  mmd->setFromAnonymousMember(fromAnnMemb);
   std::string init = root->initializer.str();
-  md->setInitializer(init.c_str());
-  md->setMaxInitLines(root->initLines);
-  md->setMemberGroupId(root->mGrpId);
-  md->setDefinition(def);
-  md->setLanguage(root->lang);
-  md->setId(root->id);
-  md->enableCallGraph(root->callGraph);
-  md->enableCallerGraph(root->callerGraph);
-  md->enableReferencedByRelation(root->referencedByRelation);
-  md->enableReferencesRelation(root->referencesRelation);
-  md->setExplicitExternal(root->explicitExternal,fileName,root->startLine,root->startColumn);
-  md->addQualifiers(root->qualifiers);
+  mmd->setInitializer(init.c_str());
+  mmd->setMaxInitLines(root->initLines);
+  mmd->setMemberGroupId(root->mGrpId);
+  mmd->setDefinition(def);
+  mmd->setLanguage(root->lang);
+  mmd->setId(root->id);
+  mmd->enableCallGraph(root->callGraph);
+  mmd->enableCallerGraph(root->callerGraph);
+  mmd->enableReferencedByRelation(root->referencedByRelation);
+  mmd->enableReferencesRelation(root->referencesRelation);
+  mmd->setExplicitExternal(root->explicitExternal,fileName,root->startLine,root->startColumn);
+  mmd->addQualifiers(root->qualifiers);
   //md->setOuterScope(fd);
   if (!root->explicitExternal)
   {
-    md->setBodySegment(root->startLine,root->bodyLine,root->endBodyLine);
-    md->setBodyDef(fd);
+    mmd->setBodySegment(root->startLine,root->bodyLine,root->endBodyLine);
+    mmd->setBodyDef(fd);
   }
   addMemberToGroups(root,md.get());
 
-  md->setRefItems(root->sli);
+  mmd->setRefItems(root->sli);
   if (nd && !nd->isAnonymous())
   {
-    md->setNamespace(nd);
+    mmd->setNamespace(nd);
     nd->insertMember(md.get());
   }
 
@@ -2516,7 +2515,7 @@ static MemberDef *addVariableToFile(
   // it into the namespace.
   if (fd)
   {
-    md->setFileDef(fd);
+    mmd->setFileDef(fd);
     fd->insertMember(md.get());
   }
 
@@ -3034,31 +3033,32 @@ static void addInterfaceOrServiceToServiceOrSingleton(
   {
     fileName = root->tagInfo()->tagName;
   }
-  std::unique_ptr<MemberDefMutable> md { createMemberDef(
+  auto md = createMemberDef(
       fileName, root->startLine, root->startColumn, root->type, rname,
       "", "", root->protection, root->virt, root->isStatic, Relationship::Member,
-      type, ArgumentList(), root->argList, root->metaData) };
-  md->setTagInfo(root->tagInfo());
-  md->setMemberClass(cd);
-  md->setDocumentation(root->doc,root->docFile,root->docLine);
-  md->setDocsForDefinition(false);
-  md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
-  md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
-  md->setBodySegment(root->startLine,root->bodyLine,root->endBodyLine);
-  md->setMemberSpecifiers(root->spec);
-  md->setMemberGroupId(root->mGrpId);
-  md->setTypeConstraints(root->typeConstr);
-  md->setLanguage(root->lang);
-  md->setBodyDef(fd);
-  md->setFileDef(fd);
-  md->addSectionsToDefinition(root->anchors);
+      type, ArgumentList(), root->argList, root->metaData);
+  auto mmd = toMemberDefMutable(md.get());
+  mmd->setTagInfo(root->tagInfo());
+  mmd->setMemberClass(cd);
+  mmd->setDocumentation(root->doc,root->docFile,root->docLine);
+  mmd->setDocsForDefinition(false);
+  mmd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+  mmd->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
+  mmd->setBodySegment(root->startLine,root->bodyLine,root->endBodyLine);
+  mmd->setMemberSpecifiers(root->spec);
+  mmd->setMemberGroupId(root->mGrpId);
+  mmd->setTypeConstraints(root->typeConstr);
+  mmd->setLanguage(root->lang);
+  mmd->setBodyDef(fd);
+  mmd->setFileDef(fd);
+  mmd->addSectionsToDefinition(root->anchors);
   QCString const def = root->type + " " + rname;
-  md->setDefinition(def);
-  md->enableCallGraph(root->callGraph);
-  md->enableCallerGraph(root->callerGraph);
-  md->enableReferencedByRelation(root->referencedByRelation);
-  md->enableReferencesRelation(root->referencesRelation);
-  md->addQualifiers(root->qualifiers);
+  mmd->setDefinition(def);
+  mmd->enableCallGraph(root->callGraph);
+  mmd->enableCallerGraph(root->callerGraph);
+  mmd->enableReferencedByRelation(root->referencedByRelation);
+  mmd->enableReferencesRelation(root->referencesRelation);
+  mmd->addQualifiers(root->qualifiers);
 
   AUTO_TRACE("Interface member: fileName='{}' type='{}' name='{}' mtype='{}' prot={} virt={} state={} proto={} def='{}'",
       fileName,root->type,rname,type,root->protection,root->virt,root->isStatic,root->proto,def);
@@ -3077,7 +3077,7 @@ static void addInterfaceOrServiceToServiceOrSingleton(
 
   addMemberToGroups(root,md.get());
   root->markAsProcessed();
-  md->setRefItems(root->sli);
+  mmd->setRefItems(root->sli);
 
   // add member to the global list of all members
   MemberName *mn = Doxygen::memberNameLinkedMap->add(rname);
@@ -3186,30 +3186,31 @@ static void addMethodToClass(const Entry *root,ClassDefMutable *cd,
   Relationship relationship = relates.isEmpty() ?                        Relationship::Member  :
                               root->relatesType==RelatesType::MemberOf ? Relationship::Foreign :
                                                                          Relationship::Related ;
-  std::unique_ptr<MemberDefMutable> md { createMemberDef(
+  auto md = createMemberDef(
       fileName,root->startLine,root->startColumn,
       type,name,args,root->exception,
       protection,virt,
       stat && root->relatesType!=RelatesType::MemberOf,
       relationship,
       mtype,!root->tArgLists.empty() ? root->tArgLists.back() : ArgumentList(),
-      root->argList, root->metaData) };
-  md->setTagInfo(root->tagInfo());
-  md->setMemberClass(cd);
-  md->setDocumentation(root->doc,root->docFile,root->docLine);
-  md->setDocsForDefinition(!root->proto);
-  md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
-  md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
-  md->setBodySegment(root->startLine,root->bodyLine,root->endBodyLine);
-  md->setMemberSpecifiers(spec);
-  md->setMemberGroupId(root->mGrpId);
-  md->setTypeConstraints(root->typeConstr);
-  md->setLanguage(root->lang);
-  md->setRequiresClause(root->req);
-  md->setId(root->id);
-  md->setBodyDef(fd);
-  md->setFileDef(fd);
-  md->addSectionsToDefinition(root->anchors);
+      root->argList, root->metaData);
+  auto mmd = toMemberDefMutable(md.get());
+  mmd->setTagInfo(root->tagInfo());
+  mmd->setMemberClass(cd);
+  mmd->setDocumentation(root->doc,root->docFile,root->docLine);
+  mmd->setDocsForDefinition(!root->proto);
+  mmd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+  mmd->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
+  mmd->setBodySegment(root->startLine,root->bodyLine,root->endBodyLine);
+  mmd->setMemberSpecifiers(spec);
+  mmd->setMemberGroupId(root->mGrpId);
+  mmd->setTypeConstraints(root->typeConstr);
+  mmd->setLanguage(root->lang);
+  mmd->setRequiresClause(root->req);
+  mmd->setId(root->id);
+  mmd->setBodyDef(fd);
+  mmd->setFileDef(fd);
+  mmd->addSectionsToDefinition(root->anchors);
   QCString def;
   QCString qualScope = cd->qualifiedNameWithTemplateParameters();
   SrcLangExt lang = cd->getLanguage();
@@ -3247,12 +3248,12 @@ static void addMethodToClass(const Entry *root,ClassDefMutable *cd,
     }
   }
   def.stripPrefix("friend ");
-  md->setDefinition(def);
-  md->enableCallGraph(root->callGraph);
-  md->enableCallerGraph(root->callerGraph);
-  md->enableReferencedByRelation(root->referencedByRelation);
-  md->enableReferencesRelation(root->referencesRelation);
-  md->addQualifiers(root->qualifiers);
+  mmd->setDefinition(def);
+  mmd->enableCallGraph(root->callGraph);
+  mmd->enableCallerGraph(root->callerGraph);
+  mmd->enableReferencedByRelation(root->referencedByRelation);
+  mmd->enableReferencesRelation(root->referencesRelation);
+  mmd->addQualifiers(root->qualifiers);
 
   AUTO_TRACE("function member: type='{}' scope='{}' name='{}' args='{}' proto={} def='{}'",
              type, qualScope, rname, args, root->proto, def);
@@ -3264,7 +3265,7 @@ static void addMethodToClass(const Entry *root,ClassDefMutable *cd,
 
   addMemberToGroups(root,md.get());
   root->markAsProcessed();
-  md->setRefItems(root->sli);
+  mmd->setRefItems(root->sli);
 
   // add member to the global list of all members
   //printf("Adding member=%s class=%s\n",qPrint(md->name()),qPrint(cd->name()));
@@ -3280,31 +3281,31 @@ static void addGlobalFunction(const Entry *root,const QCString &rname,const QCSt
 
   // new global function
   QCString name=removeRedundantWhiteSpace(rname);
-  std::unique_ptr<MemberDefMutable> md { createMemberDef(
+  auto md = createMemberDef(
       root->fileName,root->startLine,root->startColumn,
       root->type,name,root->args,root->exception,
       root->protection,root->virt,root->isStatic,Relationship::Member,
       MemberType_Function,
       !root->tArgLists.empty() ? root->tArgLists.back() : ArgumentList(),
-      root->argList,root->metaData) };
-
-  md->setTagInfo(root->tagInfo());
-  md->setLanguage(root->lang);
-  md->setId(root->id);
-  md->setDocumentation(root->doc,root->docFile,root->docLine);
-  md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
-  md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
-  md->setPrototype(root->proto,root->fileName,root->startLine,root->startColumn);
-  md->setDocsForDefinition(!root->proto);
-  md->setTypeConstraints(root->typeConstr);
+      root->argList,root->metaData);
+  auto mmd = toMemberDefMutable(md.get());
+  mmd->setTagInfo(root->tagInfo());
+  mmd->setLanguage(root->lang);
+  mmd->setId(root->id);
+  mmd->setDocumentation(root->doc,root->docFile,root->docLine);
+  mmd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+  mmd->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
+  mmd->setPrototype(root->proto,root->fileName,root->startLine,root->startColumn);
+  mmd->setDocsForDefinition(!root->proto);
+  mmd->setTypeConstraints(root->typeConstr);
   //md->setBody(root->body);
-  md->setBodySegment(root->startLine,root->bodyLine,root->endBodyLine);
+  mmd->setBodySegment(root->startLine,root->bodyLine,root->endBodyLine);
   FileDef *fd=root->fileDef();
-  md->setBodyDef(fd);
-  md->addSectionsToDefinition(root->anchors);
-  md->setMemberSpecifiers(root->spec);
-  md->setMemberGroupId(root->mGrpId);
-  md->setRequiresClause(root->req);
+  mmd->setBodyDef(fd);
+  mmd->addSectionsToDefinition(root->anchors);
+  mmd->setMemberSpecifiers(root->spec);
+  mmd->setMemberGroupId(root->mGrpId);
+  mmd->setRequiresClause(root->req);
 
   NamespaceDefMutable *nd = 0;
   // see if the function is inside a namespace that was not part of
@@ -3346,25 +3347,25 @@ static void addGlobalFunction(const Entry *root,const QCString &rname,const QCSt
   }
   AUTO_TRACE("new non-member function type='{}' scope='{}' name='{}' args='{}' proto={} def='{}'",
               root->type,scope,rname,root->args,root->proto,def);
-  md->setDefinition(def);
-  md->enableCallGraph(root->callGraph);
-  md->enableCallerGraph(root->callerGraph);
-  md->enableReferencedByRelation(root->referencedByRelation);
-  md->enableReferencesRelation(root->referencesRelation);
-  md->addQualifiers(root->qualifiers);
+  mmd->setDefinition(def);
+  mmd->enableCallGraph(root->callGraph);
+  mmd->enableCallerGraph(root->callerGraph);
+  mmd->enableReferencedByRelation(root->referencedByRelation);
+  mmd->enableReferencesRelation(root->referencesRelation);
+  mmd->addQualifiers(root->qualifiers);
 
-  md->setRefItems(root->sli);
+  mmd->setRefItems(root->sli);
   if (nd && !nd->name().isEmpty() && nd->name().at(0)!='@')
   {
     // add member to namespace
-    md->setNamespace(nd);
+    mmd->setNamespace(nd);
     nd->insertMember(md.get());
   }
   if (fd)
   {
     // add member to the file (we do this even if we have already
     // inserted it into the namespace)
-    md->setFileDef(fd);
+    mmd->setFileDef(fd);
     fd->insertMember(md.get());
   }
 
@@ -4044,13 +4045,12 @@ static void findUsedClassesForClass(const Entry *root,
               if (usedCd==0)
               {
                 usedCdm = toClassDefMutable(
-                    Doxygen::hiddenClassLinkedMap->add(usedName,
-                      std::unique_ptr<ClassDef>(
-                        createClassDef(
-                          masterCd->getDefFileName(),masterCd->getDefLine(),
-                          masterCd->getDefColumn(),
-                          usedName,
-                          ClassDef::Class))));
+                  Doxygen::hiddenClassLinkedMap->add(usedName,
+                    createClassDef(
+                      masterCd->getDefFileName(),masterCd->getDefLine(),
+                      masterCd->getDefColumn(),
+                      usedName,
+                      ClassDef::Class)));
                 if (usedCdm)
                 {
                   //printf("making %s a template argument!!!\n",qPrint(usedCd->name()));
@@ -4105,12 +4105,11 @@ static void findUsedClassesForClass(const Entry *root,
             }
             AUTO_TRACE_ADD("New undocumented used class '{}'", type);
             usedCdm = toClassDefMutable(
-                       Doxygen::hiddenClassLinkedMap->add(type,
-                         std::unique_ptr<ClassDef>(
-                           createClassDef(
-                             masterCd->getDefFileName(),masterCd->getDefLine(),
-                             masterCd->getDefColumn(),
-                             type,ClassDef::Class))));
+                        Doxygen::hiddenClassLinkedMap->add(type,
+                          createClassDef(
+                            masterCd->getDefFileName(),masterCd->getDefLine(),
+                            masterCd->getDefColumn(),
+                            type,ClassDef::Class)));
             if (usedCdm)
             {
               usedCdm->setUsedOnly(TRUE);
@@ -4577,10 +4576,9 @@ static bool findClassRelation(
             {
               baseClass= toClassDefMutable(
                 Doxygen::hiddenClassLinkedMap->add(baseClassName,
-                  std::unique_ptr<ClassDef>(
-                    createClassDef(root->fileName,root->startLine,root->startColumn,
-                                 baseClassName,
-                                 ClassDef::Class))));
+                  createClassDef(root->fileName,root->startLine,root->startColumn,
+                               baseClassName,
+                               ClassDef::Class)));
               if (baseClass) // really added (not alias)
               {
                 if (isArtificial) baseClass->setArtificial(TRUE);
@@ -4597,10 +4595,9 @@ static bool findClassRelation(
             {
               baseClass = toClassDefMutable(
                   Doxygen::classLinkedMap->add(baseClassName,
-                    std::unique_ptr<ClassDef>(
-                      createClassDef(root->fileName,root->startLine,root->startColumn,
-                        baseClassName,
-                        ClassDef::Class))));
+                    createClassDef(root->fileName,root->startLine,root->startColumn,
+                      baseClassName,
+                      ClassDef::Class)));
               if (baseClass) // really added (not alias)
               {
                 if (isArtificial) baseClass->setArtificial(TRUE);
@@ -5565,36 +5562,37 @@ static void addLocalObjCMethod(const Entry *root,
   if (Config_getBool(EXTRACT_LOCAL_METHODS) && (cd=getClassMutable(scopeName)))
   {
     AUTO_TRACE_ADD("Local objective C method '{}' scopeName='{}'",root->name,scopeName);
-    std::unique_ptr<MemberDefMutable> md { createMemberDef(
+    auto md = createMemberDef(
         root->fileName,root->startLine,root->startColumn,
         funcType,funcName,funcArgs,exceptions,
         root->protection,root->virt,root->isStatic,Relationship::Member,
-        MemberType_Function,ArgumentList(),root->argList,root->metaData) };
-    md->setTagInfo(root->tagInfo());
-    md->setLanguage(root->lang);
-    md->setId(root->id);
-    md->makeImplementationDetail();
-    md->setMemberClass(cd);
-    md->setDefinition(funcDecl);
-    md->enableCallGraph(root->callGraph);
-    md->enableCallerGraph(root->callerGraph);
-    md->enableReferencedByRelation(root->referencedByRelation);
-    md->enableReferencesRelation(root->referencesRelation);
-    md->addQualifiers(root->qualifiers);
-    md->setDocumentation(root->doc,root->docFile,root->docLine);
-    md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
-    md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
-    md->setDocsForDefinition(!root->proto);
-    md->setPrototype(root->proto,root->fileName,root->startLine,root->startColumn);
-    md->addSectionsToDefinition(root->anchors);
-    md->setBodySegment(root->startLine,root->bodyLine,root->endBodyLine);
+        MemberType_Function,ArgumentList(),root->argList,root->metaData);
+    auto mmd = toMemberDefMutable(md.get());
+    mmd->setTagInfo(root->tagInfo());
+    mmd->setLanguage(root->lang);
+    mmd->setId(root->id);
+    mmd->makeImplementationDetail();
+    mmd->setMemberClass(cd);
+    mmd->setDefinition(funcDecl);
+    mmd->enableCallGraph(root->callGraph);
+    mmd->enableCallerGraph(root->callerGraph);
+    mmd->enableReferencedByRelation(root->referencedByRelation);
+    mmd->enableReferencesRelation(root->referencesRelation);
+    mmd->addQualifiers(root->qualifiers);
+    mmd->setDocumentation(root->doc,root->docFile,root->docLine);
+    mmd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+    mmd->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
+    mmd->setDocsForDefinition(!root->proto);
+    mmd->setPrototype(root->proto,root->fileName,root->startLine,root->startColumn);
+    mmd->addSectionsToDefinition(root->anchors);
+    mmd->setBodySegment(root->startLine,root->bodyLine,root->endBodyLine);
     FileDef *fd=root->fileDef();
-    md->setBodyDef(fd);
-    md->setMemberSpecifiers(spec);
-    md->setMemberGroupId(root->mGrpId);
+    mmd->setBodyDef(fd);
+    mmd->setMemberSpecifiers(spec);
+    mmd->setMemberGroupId(root->mGrpId);
     cd->insertMember(md.get());
     cd->insertUsedFile(fd);
-    md->setRefItems(root->sli);
+    mmd->setRefItems(root->sli);
 
     MemberName *mn = Doxygen::memberNameLinkedMap->add(root->name);
     mn->push_back(std::move(md));
@@ -5969,38 +5967,39 @@ static void addMemberSpecialization(const Entry *root,
   MemberType mtype=MemberType_Function;
   ArgumentList tArgList;
   //  getTemplateArgumentsFromName(cd->name()+"::"+funcName,root->tArgLists);
-  std::unique_ptr<MemberDefMutable> md { createMemberDef(
+  auto md = createMemberDef(
       root->fileName,root->startLine,root->startColumn,
       funcType,funcName,funcArgs,exceptions,
       declMd ? declMd->protection() : root->protection,
       root->virt,root->isStatic,Relationship::Member,
-      mtype,tArgList,root->argList,root->metaData) };
+      mtype,tArgList,root->argList,root->metaData);
+  auto mmd = toMemberDefMutable(md.get());
   //printf("new specialized member %s args='%s'\n",qPrint(md->name()),qPrint(funcArgs));
-  md->setTagInfo(root->tagInfo());
-  md->setLanguage(root->lang);
-  md->setId(root->id);
-  md->setMemberClass(cd);
-  md->setTemplateSpecialization(TRUE);
-  md->setTypeConstraints(root->typeConstr);
-  md->setDefinition(funcDecl);
-  md->enableCallGraph(root->callGraph);
-  md->enableCallerGraph(root->callerGraph);
-  md->enableReferencedByRelation(root->referencedByRelation);
-  md->enableReferencesRelation(root->referencesRelation);
-  md->addQualifiers(root->qualifiers);
-  md->setDocumentation(root->doc,root->docFile,root->docLine);
-  md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
-  md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
-  md->setDocsForDefinition(!root->proto);
-  md->setPrototype(root->proto,root->fileName,root->startLine,root->startColumn);
-  md->addSectionsToDefinition(root->anchors);
-  md->setBodySegment(root->startLine,root->bodyLine,root->endBodyLine);
+  mmd->setTagInfo(root->tagInfo());
+  mmd->setLanguage(root->lang);
+  mmd->setId(root->id);
+  mmd->setMemberClass(cd);
+  mmd->setTemplateSpecialization(TRUE);
+  mmd->setTypeConstraints(root->typeConstr);
+  mmd->setDefinition(funcDecl);
+  mmd->enableCallGraph(root->callGraph);
+  mmd->enableCallerGraph(root->callerGraph);
+  mmd->enableReferencedByRelation(root->referencedByRelation);
+  mmd->enableReferencesRelation(root->referencesRelation);
+  mmd->addQualifiers(root->qualifiers);
+  mmd->setDocumentation(root->doc,root->docFile,root->docLine);
+  mmd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+  mmd->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
+  mmd->setDocsForDefinition(!root->proto);
+  mmd->setPrototype(root->proto,root->fileName,root->startLine,root->startColumn);
+  mmd->addSectionsToDefinition(root->anchors);
+  mmd->setBodySegment(root->startLine,root->bodyLine,root->endBodyLine);
   FileDef *fd=root->fileDef();
-  md->setBodyDef(fd);
-  md->setMemberSpecifiers(spec);
-  md->setMemberGroupId(root->mGrpId);
+  mmd->setBodyDef(fd);
+  mmd->setMemberSpecifiers(spec);
+  mmd->setMemberGroupId(root->mGrpId);
   cd->insertMember(md.get());
-  md->setRefItems(root->sli);
+  mmd->setRefItems(root->sli);
 
   mn->push_back(std::move(md));
 }
@@ -6038,39 +6037,40 @@ static void addOverloaded(const Entry *root,MemberName *mn,
     std::unique_ptr<ArgumentList> tArgList =
       getTemplateArgumentsFromName(cd->name()+"::"+funcName,root->tArgLists);
     //printf("new related member %s args='%s'\n",qPrint(md->name()),qPrint(funcArgs));
-    std::unique_ptr<MemberDefMutable> md { createMemberDef(
+    auto md = createMemberDef(
         root->fileName,root->startLine,root->startColumn,
         funcType,funcName,funcArgs,exceptions,
         root->protection,root->virt,root->isStatic,Relationship::Related,
-        mtype,tArgList ? *tArgList : ArgumentList(),root->argList,root->metaData) };
-    md->setTagInfo(root->tagInfo());
-    md->setLanguage(root->lang);
-    md->setId(root->id);
-    md->setTypeConstraints(root->typeConstr);
-    md->setMemberClass(cd);
-    md->setDefinition(funcDecl);
-    md->enableCallGraph(root->callGraph);
-    md->enableCallerGraph(root->callerGraph);
-    md->enableReferencedByRelation(root->referencedByRelation);
-    md->enableReferencesRelation(root->referencesRelation);
-    md->addQualifiers(root->qualifiers);
+        mtype,tArgList ? *tArgList : ArgumentList(),root->argList,root->metaData);
+    auto mmd = toMemberDefMutable(md.get());
+    mmd->setTagInfo(root->tagInfo());
+    mmd->setLanguage(root->lang);
+    mmd->setId(root->id);
+    mmd->setTypeConstraints(root->typeConstr);
+    mmd->setMemberClass(cd);
+    mmd->setDefinition(funcDecl);
+    mmd->enableCallGraph(root->callGraph);
+    mmd->enableCallerGraph(root->callerGraph);
+    mmd->enableReferencedByRelation(root->referencedByRelation);
+    mmd->enableReferencesRelation(root->referencesRelation);
+    mmd->addQualifiers(root->qualifiers);
     QCString doc=getOverloadDocs();
     doc+="<p>";
     doc+=root->doc;
-    md->setDocumentation(doc,root->docFile,root->docLine);
-    md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
-    md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
-    md->setDocsForDefinition(!root->proto);
-    md->setPrototype(root->proto,root->fileName,root->startLine,root->startColumn);
-    md->addSectionsToDefinition(root->anchors);
-    md->setBodySegment(root->startLine,root->bodyLine,root->endBodyLine);
+    mmd->setDocumentation(doc,root->docFile,root->docLine);
+    mmd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+    mmd->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
+    mmd->setDocsForDefinition(!root->proto);
+    mmd->setPrototype(root->proto,root->fileName,root->startLine,root->startColumn);
+    mmd->addSectionsToDefinition(root->anchors);
+    mmd->setBodySegment(root->startLine,root->bodyLine,root->endBodyLine);
     FileDef *fd=root->fileDef();
-    md->setBodyDef(fd);
-    md->setMemberSpecifiers(spec);
-    md->setMemberGroupId(root->mGrpId);
+    mmd->setBodyDef(fd);
+    mmd->setMemberSpecifiers(spec);
+    mmd->setMemberGroupId(root->mGrpId);
     cd->insertMember(md.get());
     cd->insertUsedFile(fd);
-    md->setRefItems(root->sli);
+    mmd->setRefItems(root->sli);
 
     mn->push_back(std::move(md));
   }
@@ -6538,7 +6538,7 @@ static void findMember(const Entry *root,
           // this accurately reflects the template arguments of
           // the related function, which don't have to do with
           // those of the related class.
-          std::unique_ptr<MemberDefMutable> md { createMemberDef(
+          auto md = createMemberDef(
               root->fileName,root->startLine,root->startColumn,
               funcType,funcName,funcArgs,exceptions,
               root->protection,root->virt,
@@ -6547,11 +6547,12 @@ static void findMember(const Entry *root,
               mtype,
               (!root->tArgLists.empty() ? root->tArgLists.back() : ArgumentList()),
               funcArgs.isEmpty() ? ArgumentList() : root->argList,
-              root->metaData) };
+              root->metaData);
+          auto mmd = toMemberDefMutable(md.get());
 
           if (mdDefine)
           {
-            md->setInitializer(mdDefine->initializer());
+            mmd->setInitializer(mdDefine->initializer());
           }
 
           //
@@ -6565,9 +6566,9 @@ static void findMember(const Entry *root,
           // are printed.  We use that and set it to the
           // template argument lists of the related function.
           //
-          md->setDefinitionTemplateParameterLists(root->tArgLists);
+          mmd->setDefinitionTemplateParameterLists(root->tArgLists);
 
-          md->setTagInfo(root->tagInfo());
+          mmd->setTagInfo(root->tagInfo());
 
           //printf("Related member name='%s' decl='%s' bodyLine='%d'\n",
           //       qPrint(funcName),qPrint(funcDecl),root->bodyLine);
@@ -6602,8 +6603,8 @@ static void findMember(const Entry *root,
               }
               if (rmd_found) // member found -> copy line number info
               {
-                md->setBodySegment(rmd_found->getDefLine(),rmd_found->getStartBodyLine(),rmd_found->getEndBodyLine());
-                md->setBodyDef(rmd_found->getBodyDef());
+                mmd->setBodySegment(rmd_found->getDefLine(),rmd_found->getStartBodyLine(),rmd_found->getEndBodyLine());
+                mmd->setBodyDef(rmd_found->getBodyDef());
                 //md->setBodyMember(rmd);
               }
             }
@@ -6611,36 +6612,36 @@ static void findMember(const Entry *root,
           if (!found) // line number could not be found or is available in this
                       // entry
           {
-            md->setBodySegment(root->startLine,root->bodyLine,root->endBodyLine);
-            md->setBodyDef(fd);
+            mmd->setBodySegment(root->startLine,root->bodyLine,root->endBodyLine);
+            mmd->setBodyDef(fd);
           }
 
           //if (root->mGrpId!=-1)
           //{
           //  md->setMemberGroup(memberGroupDict[root->mGrpId]);
           //}
-          md->setMemberClass(cd);
-          md->setMemberSpecifiers(spec);
-          md->setDefinition(funcDecl);
-          md->enableCallGraph(root->callGraph);
-          md->enableCallerGraph(root->callerGraph);
-          md->enableReferencedByRelation(root->referencedByRelation);
-          md->enableReferencesRelation(root->referencesRelation);
-          md->addQualifiers(root->qualifiers);
-          md->setDocumentation(root->doc,root->docFile,root->docLine);
-          md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
-          md->setDocsForDefinition(!root->proto);
-          md->setPrototype(root->proto,root->fileName,root->startLine,root->startColumn);
-          md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
-          md->addSectionsToDefinition(root->anchors);
-          md->setMemberGroupId(root->mGrpId);
-          md->setLanguage(root->lang);
-          md->setId(root->id);
+          mmd->setMemberClass(cd);
+          mmd->setMemberSpecifiers(spec);
+          mmd->setDefinition(funcDecl);
+          mmd->enableCallGraph(root->callGraph);
+          mmd->enableCallerGraph(root->callerGraph);
+          mmd->enableReferencedByRelation(root->referencedByRelation);
+          mmd->enableReferencesRelation(root->referencesRelation);
+          mmd->addQualifiers(root->qualifiers);
+          mmd->setDocumentation(root->doc,root->docFile,root->docLine);
+          mmd->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
+          mmd->setDocsForDefinition(!root->proto);
+          mmd->setPrototype(root->proto,root->fileName,root->startLine,root->startColumn);
+          mmd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+          mmd->addSectionsToDefinition(root->anchors);
+          mmd->setMemberGroupId(root->mGrpId);
+          mmd->setLanguage(root->lang);
+          mmd->setId(root->id);
           //md->setMemberDefTemplateArguments(root->mtArgList);
           cd->insertMember(md.get());
           cd->insertUsedFile(fd);
-          md->setRefItems(root->sli);
-          if (root->relatesType==RelatesType::Duplicate) md->setRelatedAlso(cd);
+          mmd->setRefItems(root->sli);
+          if (root->relatesType==RelatesType::Duplicate) mmd->setRelatedAlso(cd);
           if (!mdDefine)
           {
             addMemberToGroups(root,md.get());
@@ -6984,32 +6985,33 @@ static void findEnums(const Entry *root)
     if (!name.isEmpty())
     {
       // new enum type
-      std::unique_ptr<MemberDefMutable> md { createMemberDef(
+      auto md = createMemberDef(
           root->fileName,root->startLine,root->startColumn,
           QCString(),name,QCString(),QCString(),
           root->protection,Specifier::Normal,FALSE,
           isMemberOf ? Relationship::Foreign : isRelated ? Relationship::Related : Relationship::Member,
           MemberType_Enumeration,
-          ArgumentList(),ArgumentList(),root->metaData) };
-      md->setTagInfo(root->tagInfo());
-      md->setLanguage(root->lang);
-      md->setId(root->id);
-      if (!isGlobal) md->setMemberClass(cd); else md->setFileDef(fd);
-      md->setBodySegment(root->startLine,root->bodyLine,root->endBodyLine);
-      md->setBodyDef(root->fileDef());
-      md->setMemberSpecifiers(root->spec);
-      md->setEnumBaseType(root->args);
+          ArgumentList(),ArgumentList(),root->metaData);
+      auto mmd = toMemberDefMutable(md.get());
+      mmd->setTagInfo(root->tagInfo());
+      mmd->setLanguage(root->lang);
+      mmd->setId(root->id);
+      if (!isGlobal) mmd->setMemberClass(cd); else mmd->setFileDef(fd);
+      mmd->setBodySegment(root->startLine,root->bodyLine,root->endBodyLine);
+      mmd->setBodyDef(root->fileDef());
+      mmd->setMemberSpecifiers(root->spec);
+      mmd->setEnumBaseType(root->args);
       //printf("Enum %s definition at line %d of %s: protection=%d scope=%s\n",
       //    qPrint(root->name),root->bodyLine,qPrint(root->fileName),root->protection,cd?qPrint(cd->name()):"<none>");
-      md->addSectionsToDefinition(root->anchors);
-      md->setMemberGroupId(root->mGrpId);
-      md->enableCallGraph(root->callGraph);
-      md->enableCallerGraph(root->callerGraph);
-      md->enableReferencedByRelation(root->referencedByRelation);
-      md->enableReferencesRelation(root->referencesRelation);
-      md->addQualifiers(root->qualifiers);
+      mmd->addSectionsToDefinition(root->anchors);
+      mmd->setMemberGroupId(root->mGrpId);
+      mmd->enableCallGraph(root->callGraph);
+      mmd->enableCallerGraph(root->callerGraph);
+      mmd->enableReferencedByRelation(root->referencedByRelation);
+      mmd->enableReferencesRelation(root->referencesRelation);
+      mmd->addQualifiers(root->qualifiers);
       //printf("%s::setRefItems(%zu)\n",qPrint(md->name()),root->sli.size());
-      md->setRefItems(root->sli);
+      mmd->setRefItems(root->sli);
       //printf("found enum %s nd=%p\n",qPrint(md->name()),nd);
       bool defSet=FALSE;
 
@@ -7023,15 +7025,15 @@ static void findEnums(const Entry *root)
       {
         if (isRelated || Config_getBool(HIDE_SCOPE_NAMES))
         {
-          md->setDefinition(name+baseType);
+          mmd->setDefinition(name+baseType);
         }
         else
         {
-          md->setDefinition(nd->name()+"::"+name+baseType);
+          mmd->setDefinition(nd->name()+"::"+name+baseType);
         }
         //printf("definition=%s\n",md->definition());
         defSet=TRUE;
-        md->setNamespace(nd);
+        mmd->setNamespace(nd);
         nd->insertMember(md.get());
       }
 
@@ -7040,14 +7042,14 @@ static void findEnums(const Entry *root)
       // or class.
       if (isGlobal && (nd==0 || !nd->isAnonymous()))
       {
-        if (!defSet) md->setDefinition(name+baseType);
+        if (!defSet) mmd->setDefinition(name+baseType);
         if (fd==0 && root->parent())
         {
           fd=root->parent()->fileDef();
         }
         if (fd)
         {
-          md->setFileDef(fd);
+          mmd->setFileDef(fd);
           fd->insertMember(md.get());
         }
       }
@@ -7055,19 +7057,19 @@ static void findEnums(const Entry *root)
       {
         if (isRelated || Config_getBool(HIDE_SCOPE_NAMES))
         {
-          md->setDefinition(name+baseType);
+          mmd->setDefinition(name+baseType);
         }
         else
         {
-          md->setDefinition(cd->name()+"::"+name+baseType);
+          mmd->setDefinition(cd->name()+"::"+name+baseType);
         }
         cd->insertMember(md.get());
         cd->insertUsedFile(fd);
       }
-      md->setDocumentation(root->doc,root->docFile,root->docLine);
-      md->setDocsForDefinition(!root->proto);
-      md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
-      md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
+      mmd->setDocumentation(root->doc,root->docFile,root->docLine);
+      mmd->setDocsForDefinition(!root->proto);
+      mmd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+      mmd->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
 
       //printf("Adding member=%s\n",qPrint(md->name()));
       addMemberToGroups(root,md.get());
@@ -7161,10 +7163,10 @@ static void addEnumValuesToEnums(const Entry *root)
       {
         struct EnumValueInfo
         {
-          EnumValueInfo(const QCString &n,std::unique_ptr<MemberDefMutable> &md) :
+          EnumValueInfo(const QCString &n,std::unique_ptr<MemberDef> &&md) :
             name(n), member(std::move(md)) {}
           QCString name;
-          std::unique_ptr<MemberDefMutable> member;
+          std::unique_ptr<MemberDef> member;
         };
         std::vector< EnumValueInfo > extraMembers;
         // for each enum in this list
@@ -7200,35 +7202,36 @@ static void addEnumValuesToEnums(const Entry *root)
                   {
                     fileName = e->tagInfo()->tagName;
                   }
-                  std::unique_ptr<MemberDefMutable> fmd { createMemberDef(
+                  auto fmd = createMemberDef(
                       fileName,e->startLine,e->startColumn,
                       e->type,e->name,e->args,QCString(),
                       e->protection, Specifier::Normal,e->isStatic,Relationship::Member,
-                      MemberType_EnumValue,ArgumentList(),ArgumentList(),e->metaData) };
+                      MemberType_EnumValue,ArgumentList(),ArgumentList(),e->metaData);
+                  auto fmmd = toMemberDefMutable(fmd.get());
                   NamespaceDef *mnd = md->getNamespaceDef();
                   if      (md->getClassDef())
-                    fmd->setMemberClass(md->getClassDef());
+                    fmmd->setMemberClass(md->getClassDef());
                   else if (mnd && (mnd->isLinkable() || mnd->isAnonymous()))
-                    fmd->setNamespace(mnd);
+                    fmmd->setNamespace(mnd);
                   else if (md->getFileDef())
-                    fmd->setFileDef(md->getFileDef());
-                  fmd->setOuterScope(md->getOuterScope());
-                  fmd->setTagInfo(e->tagInfo());
-                  fmd->setLanguage(e->lang);
-                  fmd->setId(e->id);
-                  fmd->setDocumentation(e->doc,e->docFile,e->docLine);
-                  fmd->setBriefDescription(e->brief,e->briefFile,e->briefLine);
-                  fmd->addSectionsToDefinition(e->anchors);
+                    fmmd->setFileDef(md->getFileDef());
+                  fmmd->setOuterScope(md->getOuterScope());
+                  fmmd->setTagInfo(e->tagInfo());
+                  fmmd->setLanguage(e->lang);
+                  fmmd->setId(e->id);
+                  fmmd->setDocumentation(e->doc,e->docFile,e->docLine);
+                  fmmd->setBriefDescription(e->brief,e->briefFile,e->briefLine);
+                  fmmd->addSectionsToDefinition(e->anchors);
                   std::string init = e->initializer.str();
-                  fmd->setInitializer(init.c_str());
-                  fmd->setMaxInitLines(e->initLines);
-                  fmd->setMemberGroupId(e->mGrpId);
-                  fmd->setExplicitExternal(e->explicitExternal,fileName,e->startLine,e->startColumn);
-                  fmd->setRefItems(e->sli);
-                  fmd->setAnchor();
+                  fmmd->setInitializer(init.c_str());
+                  fmmd->setMaxInitLines(e->initLines);
+                  fmmd->setMemberGroupId(e->mGrpId);
+                  fmmd->setExplicitExternal(e->explicitExternal,fileName,e->startLine,e->startColumn);
+                  fmmd->setRefItems(e->sli);
+                  fmmd->setAnchor();
                   md->insertEnumField(fmd.get());
-                  fmd->setEnumScope(md,TRUE);
-                  extraMembers.push_back(EnumValueInfo(e->name,fmd));
+                  fmmd->setEnumScope(md,TRUE);
+                  extraMembers.push_back(EnumValueInfo(e->name,std::move(fmd)));
                 }
               }
               else
@@ -8208,19 +8211,20 @@ static void buildDefineList()
     {
       for (const auto &def : it->second)
       {
-        std::unique_ptr<MemberDefMutable> md { createMemberDef(
+        auto md = createMemberDef(
             def.fileName,def.lineNr,def.columnNr,
             "#define",def.name,def.args,QCString(),
             Protection::Public,Specifier::Normal,FALSE,Relationship::Member,MemberType_Define,
-            ArgumentList(),ArgumentList(),"") };
+            ArgumentList(),ArgumentList(),"");
+        auto mmd = toMemberDefMutable(md.get());
 
         if (!def.args.isEmpty())
         {
-          md->moveArgumentList(stringToArgumentList(SrcLangExt_Cpp, def.args));
+          mmd->moveArgumentList(stringToArgumentList(SrcLangExt_Cpp, def.args));
         }
-        md->setInitializer(def.definition);
-        md->setFileDef(def.fileDef);
-        md->setDefinition("#define "+def.name);
+        mmd->setInitializer(def.definition);
+        mmd->setFileDef(def.fileDef);
+        mmd->setDefinition("#define "+def.name);
 
         MemberName *mn=Doxygen::functionNameLinkedMap->add(def.name);
         if (def.fileDef)
@@ -8865,14 +8869,15 @@ static void findDefineDocumentation(Entry *root)
 
     if (root->tagInfo() && !root->name.isEmpty()) // define read from a tag file
     {
-      std::unique_ptr<MemberDefMutable> md { createMemberDef(root->tagInfo()->tagName,1,1,
+      auto md = createMemberDef(root->tagInfo()->tagName,1,1,
                     "#define",root->name,root->args,QCString(),
                     Protection::Public,Specifier::Normal,FALSE,Relationship::Member,MemberType_Define,
-                    ArgumentList(),ArgumentList(),"") };
-      md->setTagInfo(root->tagInfo());
-      md->setLanguage(root->lang);
+                    ArgumentList(),ArgumentList(),"");
+      auto mmd = toMemberDefMutable(md.get());
+      mmd->setTagInfo(root->tagInfo());
+      mmd->setLanguage(root->lang);
       //printf("Searching for '%s' fd=%p\n",qPrint(filePathName),fd);
-      md->setFileDef(root->parent()->fileDef());
+      mmd->setFileDef(root->parent()->fileDef());
       //printf("Adding member=%s\n",qPrint(md->name()));
       MemberName *mn = Doxygen::functionNameLinkedMap->add(root->name);
       mn->push_back(std::move(md));
@@ -9049,8 +9054,8 @@ static void findMainPage(Entry *root)
       if (title.isEmpty()) title = Config_getString(PROJECT_NAME);
       //QCString indexName=Config_getBool(GENERATE_TREEVIEW)?"main":"index";
       QCString indexName="index";
-      Doxygen::mainPage.reset(createPageDef(root->docFile,root->docLine,
-                              indexName, root->brief+root->doc+root->inbodyDocs,title));
+      Doxygen::mainPage = createPageDef(root->docFile,root->docLine,
+                              indexName, root->brief+root->doc+root->inbodyDocs,title);
       //setFileNameForSections(root->anchors,"index",Doxygen::mainPage);
       Doxygen::mainPage->setBriefDescription(root->brief,root->briefFile,root->briefLine);
       Doxygen::mainPage->setBodySegment(root->startLine,root->startLine,-1);
@@ -9273,9 +9278,8 @@ static void buildExampleList(Entry *root)
     else
     {
       PageDef *pd = Doxygen::exampleLinkedMap->add(root->name,
-             std::unique_ptr<PageDef>(
                createPageDef(root->fileName,root->startLine,
-                 root->name,root->brief+root->doc+root->inbodyDocs,root->args)));
+                 root->name,root->brief+root->doc+root->inbodyDocs,root->args));
       pd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
       pd->setFileName(convertNameToFile(pd->name()+"-example",FALSE,TRUE));
       pd->addSectionsToDefinition(root->anchors);
@@ -10340,7 +10344,7 @@ static void readDir(FileInfo *fi,
         std::string fullName=path+name;
         if (fnMap)
         {
-          std::unique_ptr<FileDef> fd { createFileDef(QCString(path),QCString(name)) };
+          auto fd = createFileDef(QCString(path),QCString(name));
           FileName *fn=0;
           if (!name.empty())
           {
@@ -10429,7 +10433,7 @@ void readFileOrDirectory(const QCString &s,
           std::string name=fi.fileName();
           if (fnMap)
           {
-            std::unique_ptr<FileDef> fd { createFileDef(QCString(dirPath+"/"),QCString(name)) };
+            auto fd = createFileDef(QCString(dirPath+"/"),QCString(name));
             if (!name.empty())
             {
               FileName *fn = fnMap->add(QCString(name),QCString(filePath));
@@ -10799,11 +10803,11 @@ void cleanUpDoxygen()
   Doxygen::mainPage.reset();
   delete Doxygen::pageLinkedMap;
   delete Doxygen::exampleLinkedMap;
-  delete Doxygen::globalScope;
+  Doxygen::globalNamespaceDef.reset();
+  Doxygen::globalScope = 0;
   delete Doxygen::parserManager;
   delete theTranslator;
   delete g_outputList;
-  Mappers::freeMappers();
 
   delete Doxygen::memberNameLinkedMap;
   delete Doxygen::functionNameLinkedMap;
@@ -11243,7 +11247,8 @@ void checkConfiguration()
 void adjustConfiguration()
 {
   AUTO_TRACE();
-  Doxygen::globalScope = createNamespaceDef("<globalScope>",1,1,"<globalScope>");
+  Doxygen::globalNamespaceDef = createNamespaceDef("<globalScope>",1,1,"<globalScope>");
+  Doxygen::globalScope = toNamespaceDefMutable(Doxygen::globalNamespaceDef.get());
   Doxygen::inputNameLinkedMap = new FileNameLinkedMap;
   Doxygen::includeNameLinkedMap = new FileNameLinkedMap;
   Doxygen::exampleNameLinkedMap = new FileNameLinkedMap;

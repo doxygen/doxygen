@@ -352,7 +352,15 @@ void DirDefImpl::writeSubDirList(OutputList &ol)
       {
         ol.startMemberDeclaration();
         ol.startMemberItem(dd->anchor(),OutputGenerator::MemberItemType::Normal);
-        ol.parseText(theTranslator->trDir(FALSE,TRUE)+" ");
+        {
+          ol.pushGeneratorState();
+          ol.disableAllBut(OutputType::Html);
+          ol.writeString("<span class=\"iconfclosed\"></span>");
+          ol.enableAll();
+          ol.disable(OutputType::Html);
+          ol.parseText(theTranslator->trDir(FALSE,TRUE)+" ");
+          ol.popGeneratorState();
+        }
         ol.insertMemberAlign();
         ol.writeObjectLink(dd->getReference(),dd->getOutputFileBase(),QCString(),dd->shortName());
         ol.endMemberItem(OutputGenerator::MemberItemType::Normal);
@@ -410,7 +418,24 @@ void DirDefImpl::writeFileList(OutputList &ol)
       {
         ol.startMemberDeclaration();
         ol.startMemberItem(fd->anchor(),OutputGenerator::MemberItemType::Normal);
-        ol.docify(theTranslator->trFile(FALSE,TRUE)+" ");
+        {
+          ol.pushGeneratorState();
+          ol.disableAllBut(OutputType::Html);
+          bool genSrc = fd->generateSourceFile();
+          if (genSrc)
+          {
+            ol.startTextLink(fd->includeName(),QCString());
+          }
+          ol.writeString("<span class=\"icondoc\"></span>");
+          if (genSrc)
+          {
+            ol.endTextLink();
+          }
+          ol.enableAll();
+          ol.disable(OutputType::Html);
+          ol.docify(theTranslator->trFile(FALSE,TRUE)+" ");
+          ol.popGeneratorState();
+        }
         ol.insertMemberAlign();
         if (fd->isLinkable())
         {
@@ -421,18 +446,6 @@ void DirDefImpl::writeFileList(OutputList &ol)
           ol.startBold();
           ol.docify(fd->name());
           ol.endBold();
-        }
-        if (fd->generateSourceFile())
-        {
-          ol.pushGeneratorState();
-          ol.disableAllBut(OutputType::Html);
-          ol.docify(" ");
-          ol.startTextLink(fd->includeName(),QCString());
-          ol.docify("[");
-          ol.parseText(theTranslator->trCode());
-          ol.docify("]");
-          ol.endTextLink();
-          ol.popGeneratorState();
         }
         ol.endMemberItem(OutputGenerator::MemberItemType::Normal);
         if (!fd->briefDescription().isEmpty() && Config_getBool(BRIEF_MEMBER_DESC))

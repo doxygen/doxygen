@@ -72,7 +72,6 @@ enum Tokens
 /** @brief Data associated with a token used by the comment block parser. */
 struct TokenInfo
 {
-  TokenInfo() : isEnumList(FALSE), indent(0), id(-1), endTag(FALSE), emptyTag(FALSE), paramDir(Unspecified) {}
   // command token
   QCString name;
 
@@ -124,8 +123,7 @@ class DocTokenizer
    ~DocTokenizer();
 
     TokenInfo *token();
-    TokenInfo *newToken();
-    void replaceToken(TokenInfo *newToken);
+    [[maybe_unused]] TokenInfo *resetToken();
 
     // helper functions
     static const char *tokToString(int token);
@@ -193,9 +191,5 @@ class DocTokenizer
     struct Private;
     std::unique_ptr<Private> p;
 };
-
-// globals
-//extern TokenInfo *g_token;
-
 
 #endif

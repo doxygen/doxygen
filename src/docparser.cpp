@@ -62,7 +62,7 @@ void DocParser::pushContext()
   auto &ctx = contextStack.top();
   ctx = context;
   ctx.lineNo = tokenizer.getLineNr();
-  context.token = tokenizer.newToken();
+  context.token = tokenizer.token();
 }
 
 void DocParser::popContext()
@@ -70,10 +70,9 @@ void DocParser::popContext()
   auto &ctx = contextStack.top();
   context = ctx;
   tokenizer.setLineNr(ctx.lineNo);
-  context.token = ctx.token;
-  tokenizer.replaceToken(context.token);
   contextStack.pop();
   tokenizer.popContext();
+  context.token = tokenizer.token();
 
   //QCString indent;
   //indent.fill(' ',contextStack.size()*2+2);
@@ -1904,7 +1903,7 @@ IDocNodeASTPtr validatingParseDoc(IDocParser &parserIntf,
   //printf("---------------- input --------------------\n%s\n----------- end input -------------------\n",qPrint(input));
 
   // set initial token
-  parser->context.token = parser->tokenizer.newToken();
+  parser->context.token = parser->tokenizer.resetToken();
 
   if (ctx && ctx!=Doxygen::globalScope &&
       (ctx->definitionType()==Definition::TypeClass ||
@@ -1999,13 +1998,8 @@ IDocNodeASTPtr validatingParseDoc(IDocParser &parserIntf,
   }
   if (parser->context.memberDef) parser->context.memberDef->detectUndocumentedParams(parser->context.hasParamCommand,parser->context.hasReturnCommand);
 
-  // TODO: These should be called at the end of the program.
-  //parser->tokenizer.cleanup();
-  //Mappers::cmdMapper->freeInstance();
-  //Mappers::htmlTagMapper->freeInstance();
-
   // reset token
-  parser->tokenizer.replaceToken(0);
+  parser->tokenizer.resetToken();
 
   //printf(">>>>>> end validatingParseDoc(%s,%s)\n",ctx?qPrint(ctx->name()):"<none>",
   //                                     md?qPrint(md->name()):"<none>");
@@ -2020,7 +2014,7 @@ IDocNodeASTPtr validatingParseText(IDocParser &parserIntf,const QCString &input)
   if (parser==0) return 0;
 
   // set initial token
-  parser->context.token = parser->tokenizer.newToken();
+  parser->context.token = parser->tokenizer.resetToken();
 
   //printf("------------ input ---------\n%s\n"
   //       "------------ end input -----\n",input);
@@ -2066,8 +2060,6 @@ IDocNodeASTPtr validatingParseText(IDocParser &parserIntf,const QCString &input)
     }
   }
 
-  // reset token
-  parser->tokenizer.replaceToken(0);
   return ast;
 }
 

@@ -85,7 +85,7 @@ void DotClassGraph::addClass(const ClassDef *cd,DotNode *n,EdgeInfo::Colors colo
       }
     }
     QCString tooltip = cd->briefDescriptionAsTooltip();
-    DotNode *bn = new DotNode(getNextNodeNumber(),
+    DotNode *bn = new DotNode(this,
       displayName,
       tooltip,
       tmp_url,
@@ -325,7 +325,7 @@ DotClassGraph::DotClassGraph(const ClassDef *cd,GraphType t)
   }
   QCString className = cd->displayName();
   QCString tooltip = cd->briefDescriptionAsTooltip();
-  m_startNode = new DotNode(getNextNodeNumber(),
+  m_startNode = new DotNode(this,
     className,
     tooltip,
     tmp_url,

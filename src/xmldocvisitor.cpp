@@ -402,7 +402,7 @@ void XmlDocVisitor::operator()(const DocInclude &inc)
       {
          m_t << "<programlisting filename=\"" << inc.file() << "\">";
          FileInfo cfi( inc.file().str() );
-         std::unique_ptr<FileDef> fd { createFileDef( cfi.dirPath(), cfi.fileName() ) };
+         auto fd = createFileDef( cfi.dirPath(), cfi.fileName());
          getCodeParser(inc.extension()).parseCode(m_ci,inc.context(),
                                            inc.text(),
                                            langExt,
@@ -493,7 +493,7 @@ void XmlDocVisitor::operator()(const DocInclude &inc)
       {
          m_t << "<programlisting filename=\"" << inc.file() << "\">";
          FileInfo cfi( inc.file().str() );
-         std::unique_ptr<FileDef> fd { createFileDef( cfi.dirPath(), cfi.fileName() ) };
+         auto fd = createFileDef( cfi.dirPath(), cfi.fileName());
          getCodeParser(inc.extension()).parseCode(m_ci,
                                            inc.context(),
                                            extractBlock(inc.text(),inc.blockId()),
@@ -543,7 +543,7 @@ void XmlDocVisitor::operator()(const DocIncOperator &op)
       if (!op.includeFileName().isEmpty())
       {
         FileInfo cfi( op.includeFileName().str() );
-        fd.reset(createFileDef( cfi.dirPath(), cfi.fileName() ));
+        fd = createFileDef( cfi.dirPath(), cfi.fileName() );
       }
 
       getCodeParser(locLangExt).parseCode(m_ci,op.context(),

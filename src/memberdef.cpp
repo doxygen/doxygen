@@ -63,7 +63,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     virtual       MemberDef *resolveAlias()       { return this; }
     virtual const MemberDef *resolveAlias() const { return this; }
     virtual CodeSymbolType codeSymbolType() const;
-    virtual MemberDef *deepCopy() const;
+    virtual std::unique_ptr<MemberDef> deepCopy() const;
     virtual void moveTo(Definition *);
     virtual QCString getOutputFileBase() const;
     virtual QCString getReference() const;
@@ -327,7 +327,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     virtual void warnIfUndocumentedParams() const;
     virtual bool visibleInIndex() const;
     virtual void detectUndocumentedParams(bool hasParamCommand,bool hasReturnCommand) const;
-    virtual MemberDefMutable *createTemplateInstanceMember(const ArgumentList &formalArgs,
+    virtual std::unique_ptr<MemberDef> createTemplateInstanceMember(const ArgumentList &formalArgs,
                const std::unique_ptr<ArgumentList> &actualArgs) const;
     virtual void findSectionsInDocumentation();
     virtual void writeLink(OutputList &ol,
@@ -376,13 +376,13 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     uint8_t m_isDestructorCached;  // 1 = not cached, 1=FALSE, 2=TRUE
 };
 
-MemberDefMutable *createMemberDef(const QCString &defFileName,int defLine,int defColumn,
+std::unique_ptr<MemberDef> createMemberDef(const QCString &defFileName,int defLine,int defColumn,
               const QCString &type,const QCString &name,const QCString &args,
               const QCString &excp,Protection prot,Specifier virt,bool stat,
               Relationship related,MemberType t,const ArgumentList &tal,
               const ArgumentList &al,const QCString &metaData)
 {
-  return new MemberDefImpl(defFileName,defLine,defColumn,type,name,args,excp,prot,virt,
+  return std::make_unique<MemberDefImpl>(defFileName,defLine,defColumn,type,name,args,excp,prot,virt,
                            stat,related,t,tal,al,metaData);
 }
 
@@ -401,7 +401,7 @@ class MemberDefAliasImpl : public DefinitionAliasMixin<MemberDef>
     virtual       MemberDef *resolveAlias()       { return const_cast<MemberDef*>(getMdAlias()); }
     virtual const MemberDef *resolveAlias() const { return getMdAlias(); }
 
-    virtual MemberDef *deepCopy() const  {
+    virtual std::unique_ptr<MemberDef> deepCopy() const  {
       return createMemberDefAlias(getScope(),getMdAlias());
     }
     virtual void moveTo(Definition *) {}
@@ -775,7 +775,7 @@ class MemberDefAliasImpl : public DefinitionAliasMixin<MemberDef>
     virtual void warnIfUndocumentedParams() const {}
     virtual void detectUndocumentedParams(bool /* hasParamCommand */,bool /* hasReturnCommand */) const {}
     virtual void setMemberGroup(MemberGroup *grp) { m_memberGroup = grp; }
-    virtual MemberDefMutable *createTemplateInstanceMember(const ArgumentList &formalArgs,
+    virtual std::unique_ptr<MemberDef> createTemplateInstanceMember(const ArgumentList &formalArgs,
                const std::unique_ptr<ArgumentList> &actualArgs) const
     { return getMdAlias()->createTemplateInstanceMember(formalArgs,actualArgs); }
 
@@ -801,9 +801,9 @@ class MemberDefAliasImpl : public DefinitionAliasMixin<MemberDef>
 };
 
 
-MemberDef *createMemberDefAlias(const Definition *newScope,const MemberDef *aliasMd)
+std::unique_ptr<MemberDef> createMemberDefAlias(const Definition *newScope,const MemberDef *aliasMd)
 {
-  MemberDef *amd = new MemberDefAliasImpl(newScope,aliasMd);
+  auto amd = std::make_unique<MemberDefAliasImpl>(newScope,aliasMd);
   //printf("amd: name=%s displayName=%s\n",qPrint(amd->name()),qPrint(amd->displayName()));
   return amd;
 }
@@ -1425,10 +1425,10 @@ MemberDefImpl::MemberDefImpl(const MemberDefImpl &md) : DefinitionMixin(md)
   m_isDestructorCached  = 0;
 }
 
-MemberDef *MemberDefImpl::deepCopy() const
+std::unique_ptr<MemberDef> MemberDefImpl::deepCopy() const
 {
   //MemberDef *result = new MemberDef(getDefFileName(),getDefLine(),name());
-  MemberDefImpl *result = new MemberDefImpl(*this);
+  std::unique_ptr<MemberDefImpl> result(new MemberDefImpl(*this));
   // first copy everything by reference
   *result->m_impl = *m_impl;
   result->m_impl->defArgList = m_impl->defArgList;
@@ -4213,7 +4213,7 @@ void MemberDefImpl::setNamespace(NamespaceDef *nd)
   setOuterScope(const_cast<NamespaceDef*>(nd));
 }
 
-MemberDefMutable *MemberDefImpl::createTemplateInstanceMember(
+std::unique_ptr<MemberDef> MemberDefImpl::createTemplateInstanceMember(
         const ArgumentList &formalArgs,const std::unique_ptr<ArgumentList> &actualArgs) const
 {
   //printf("  Member %s %s %s\n",typeString(),qPrint(name()),argsString());
@@ -4235,7 +4235,7 @@ MemberDefMutable *MemberDefImpl::createTemplateInstanceMember(
     methodName=substituteTemplateArgumentsInString(methodName,formalArgs,actualArgs);
   }
 
-  MemberDefMutable *imd = createMemberDef(
+  auto imd = createMemberDef(
                        getDefFileName(),getDefLine(),getDefColumn(),
                        substituteTemplateArgumentsInString(m_impl->type,formalArgs,actualArgs),
                        methodName,
@@ -4244,10 +4244,11 @@ MemberDefMutable *MemberDefImpl::createTemplateInstanceMember(
                        m_impl->virt, m_impl->stat, m_impl->related, m_impl->mtype,
                        ArgumentList(), ArgumentList(), ""
                    );
-  imd->moveArgumentList(std::move(actualArgList));
-  imd->setDefinition(substituteTemplateArgumentsInString(m_impl->def,formalArgs,actualArgs));
-  imd->setBodyDef(getBodyDef());
-  imd->setBodySegment(getDefLine(),getStartBodyLine(),getEndBodyLine());
+  auto mmd = toMemberDefMutable(imd.get());
+  mmd->moveArgumentList(std::move(actualArgList));
+  mmd->setDefinition(substituteTemplateArgumentsInString(m_impl->def,formalArgs,actualArgs));
+  mmd->setBodyDef(getBodyDef());
+  mmd->setBodySegment(getDefLine(),getStartBodyLine(),getEndBodyLine());
   //imd->setBodyMember(this);
 
   // TODO: init other member variables (if needed).
