@@ -65,7 +65,7 @@
 <li>NUM_PROC_THREAD!=1 will now process formulas on multiple threads [<a href="https://github.com/doxygen/doxygen/commit/a833e72a33b643690a4b64531f57646abeab76e4">view</a>]</li>
 <li>Treat <tt>__name</tt> variable as private and <tt>_name</tt> variables as protected in Python [<a href="https://github.com/doxygen/doxygen/commit/952bf8eaadb4c992dd4a13fe19dc8b07b226b129">view</a>]</li>
 <li>Add support for multiple &lt;summary&gt; sections inside &lt;details&gt; [<a href="https://github.com/doxygen/doxygen/commit/db8c371837e634838d12b52fce71841fccf48747">view</a>], [<a href="https://github.com/doxygen/doxygen/commit/503c3f4253c67fa3a8630ebfdb18284968bc7606">view</a>], [<a href="https://github.com/doxygen/doxygen/commit/70576f764ec3237284b7c40b1f3c59814918e81b">view</a>], [<a href="https://github.com/doxygen/doxygen/commit/56b9594ca8fc5cd75f286c1655f767b685b059f4">view</a>], [<a href="http://github.com/doxygen/doxygen/commit/e08c9be0938a96b5489329586ca12e03d1657e15">view</a>], [<a href="https://github.com/doxygen/doxygen/commit/61caf5d22fc908fa39ea2eff460720e545b0637f">view</a>], [<a href="https://github.com/doxygen/doxygen/commit/3624ad8fae4fdfafb85fab5dd7e22da8cb378c70">view</a>] and [<a href="https://github.com/doxygen/doxygen/commit/6ffdab8bb00a769d48cfbdadde8c49e8aca2929f">view</a>]</li>
-<li>Added option WARN_IF_UNDOC_ENUM_VAL to have warnings for undocumented enum values [<a href="https://github.com/doxygen/doxygen/commit/818db51c7e760e7128b039222354c45daee2488f">view</a>], [<a href="https://github.com/doxygen/doxygen/commit/1aa61f958e91c81ed535cd228a5599f06c243986">view</a>]
+<li>Added option WARN_IF_UNDOC_ENUM_VAL to have warnings for undocumented enum values [<a href="https://github.com/doxygen/doxygen/commit/818db51c7e760e7128b039222354c45daee2488f">view</a>], [<a href="https://github.com/doxygen/doxygen/commit/1aa61f958e91c81ed535cd228a5599f06c243986">view</a>]</li>
 </ul>
 <h3>Improved user feedback and documentation</h3>
 <ul>
@@ -184,7 +184,7 @@ nodes and arrows attributes [<a href="https://github.com/doxygen/doxygen/commit/
 [<a href="https://github.com/doxygen/doxygen/commit/241b3015356f7fa59285403008dd771bd26cafa2">view</a>], and
 [<a href="https://github.com/doxygen/doxygen/commit/d6a4618b39615db4af2146d2d08f69cf6d724702">view</a>]</li>
 <li>New option INPUT_FILE_ENCODING to specify input encoding based on a file pattern [<a href="https://github.com/doxygen/doxygen/commit/256f352fad995f70d58a777c4ce32f8104382b20">view</a>], [<a href="http://github.com/doxygen/doxygen/commit/d0d1482ddc6a78e9b6aafb02c63b736291881ac8">view</a>]</li>
-<li>New option FORTRAN_COMMENT_AFTER to configure the fixed format comment start position (default 72).
+<li>New option FORTRAN_COMMENT_AFTER to configure the fixed format comment start position (default 72).</li>
 <li>Added new commands \fileinfo and \lineinfo to show the current file and line. <br/>
 See issue <a href="https://github.com/doxygen/doxygen/issues/7046">#7046</a>: Add filename and line number support to tags, ala __FILE__ and __LINE__ macros [<a href="https://github.com/doxygen/doxygen/commit/7279874742ad21ca74506da1e898dfe9a27da248">view</a>] and [<a href="https://github.com/doxygen/doxygen/commit/6db7cd7d6da22e5219c96097e280539cf793a3a8">view</a>]</li>
 <li>Add support for \showdate command [<a href="https://github.com/doxygen/doxygen/commit/7958f3b22fd4a3c6fea26450214a8aa294d9a21d">view</a>],
@@ -198,7 +198,7 @@ See issue <a href="https://github.com/doxygen/doxygen/issues/7046">#7046</a>: Ad
 [<a href="https://github.com/doxygen/doxygen/commit/5961e8c06d738d9ebddfdeac79c0b14fff64d237">view</a>]</li>
 <li>Recognizing and name of implicit Fortran [programs [<a href="https://github.com/doxygen/doxygen/commit/943d8b7381fc79c4f78f8730fa1f2967521213a2">view</a>]</li>
 <li>Support HTML stylesheets on the Internet [<a href="https://github.com/doxygen/doxygen/commit/6b89e8f7b2793329c820d636a91126af52c757e0">view</a>]</li>
-Issue <a href="https://github.com/doxygen/doxygen/issues/9415">#9415</a>: fixed format source with wide lines [<a href="https://github.com/doxygen/doxygen/commit/155afc19f081b65d413f8fb175e9e7ec2ac3d8cc">view</a>]</li>
+<li>Issue <a href="https://github.com/doxygen/doxygen/issues/9415">#9415</a>: fixed format source with wide lines [<a href="https://github.com/doxygen/doxygen/commit/155afc19f081b65d413f8fb175e9e7ec2ac3d8cc">view</a>]</li>
 <li>End of &quot;here document&quot;  can be indented [<a href="https://github.com/doxygen/doxygen/commit/801e3fbfc44373e9f2e9cc68133c937ff81f9463">view</a>]</li>
 <li>Portuguese and Czech translators updated to 1.9.4. [<a href="https://github.com/doxygen/doxygen/commit/b45a92584ea4626f778842fa853230d679c6f266">view</a>] and [<a href="https://github.com/doxygen/doxygen/pull/9540">view</a>]</li>
 <li>issue <a href="https://github.com/doxygen/doxygen/issues/9444">#9444</a>: Upgrade jQuery UI to latest 1.13 release to get rid of security issues [<a href="https://github.com/doxygen/doxygen/commit/ac02185173cb7f6109b8945a8d7aa0ca6927d6fb">view</a>]</li>
