@@ -489,8 +489,7 @@ void DotNode::writeLabel(TextStream &t, GraphType gt) const
 
 void DotNode::writeUrl(TextStream &t) const
 {
-  if (m_url.isEmpty())
-    return;
+  if (m_url.isEmpty() || m_url == "doxygen_dummy_url") return;
   int tagPos = m_url.findRev('$');
   t << ",URL=\"";
   QCString noTagURL = m_url;
