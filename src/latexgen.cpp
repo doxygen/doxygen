@@ -1318,9 +1318,14 @@ void LatexGenerator::endTitleHead(const QCString &fileName,const QCString &name)
     m_t << "\\hypertarget{" << stripPath(fileName) << "}{}";
   }
 
-  if (!name.isEmpty() && !fileName.isEmpty())
+  QCString fn = stripPath(fileName);
+  if (!fn.isEmpty())
   {
-    m_t << "\\label{" << stripPath(fileName) << "}\\index{";
+    m_t << "\\label{" << fn << "}";
+  }
+  if (!name.isEmpty())
+  {
+    m_t << "\\index{";
     m_t << latexEscapeLabelName(name);
     m_t << "@{";
     m_t << latexEscapeIndexChars(name);
