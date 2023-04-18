@@ -49,9 +49,9 @@ void DotLegendGraph::computeTheGraph()
 
   DotNode{this,"Inherited", "", "", TRUE}.setNodeId(9).writeBox(md5stream, CallGraph, GOF_BITMAP, false);
   md5stream << "  Node10 -> Node9 [dir=\"back\",color=\"steelblue1\",style=\"solid\" tooltip=\" \"];\n";
-  DotNode{this,"PublicBase", "", "doxygen_dummy_url"}.setNodeId(10).markHasDocumentation().writeBox(md5stream, CallGraph, GOF_BITMAP, false);
+  DotNode{this,"PublicBase", "", DotNode::placeholderUrl}.setNodeId(10).markHasDocumentation().writeBox(md5stream, CallGraph, GOF_BITMAP, false);
   md5stream << "  Node11 -> Node10 [dir=\"back\",color=\"steelblue1\",style=\"solid\" tooltip=\" \"];\n";
-  DotNode{this,"Truncated", "", "doxygen_dummy_url"}.setNodeId(11).markAsTruncated().markHasDocumentation().writeBox(md5stream, CallGraph, GOF_BITMAP, true);
+  DotNode{this,"Truncated", "", DotNode::placeholderUrl}.setNodeId(11).markAsTruncated().markHasDocumentation().writeBox(md5stream, CallGraph, GOF_BITMAP, true);
   md5stream << "  Node13 -> Node9 [dir=\"back\",color=\"darkgreen\",style=\"solid\" tooltip=\" \"];\n";
   md5stream << "  Node13 [label=\"ProtectedBase\",color=\"gray40\",fillcolor=\"white\",style=\"filled\" tooltip=\" \"];\n";
   md5stream << "  Node14 -> Node9 [dir=\"back\",color=\"firebrick4\",style=\"solid\" tooltip=\" \"];\n";
