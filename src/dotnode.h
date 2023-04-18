@@ -68,6 +68,7 @@ using EdgeInfoVector = std::vector<EdgeInfo>;
 class DotNode
 {
   public:
+    static constexpr auto placeholderUrl = "-";
     static void deleteNodes(DotNode* node);
     static QCString convertLabel(const QCString& , bool htmlLike=false);
     DotNode(DotGraph *graph,const QCString &lab,const QCString &tip,const QCString &url,
