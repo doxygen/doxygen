@@ -36,7 +36,7 @@ static const char svgZoomHeader1[] = R"svg(
 ]]></style>
 )svg";
 
-// conditional part of the interactive SVG header in case the nagivation panel is shown
+// conditional part of the interactive SVG header in case the navigation panel is shown
 static const char svgZoomHeader2[] = R"svg(
 <defs>
   <circle id="rim" cx="0" cy="0" r="7"/>
