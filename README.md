@@ -1,3 +1,35 @@
+ParaMonte Doxygen
+=================
+
+This repository contains a variation of the original Doxygen software that is specially tailored for the needs of the ParaMonte library documentation website.
+
+Installation instructions on Windows
+====================================
+
+1. Download and install the [Microsoft Visual Studio Community version](https://visualstudio.microsoft.com/vs/community/) on your Windows system.
+1. Download and install a [recent GNU gcc compiler](https://github.com/LKedward/quickstart-fortran/releases) for Windows.
+1. Download and install a [recent version of Flex](https://gnuwin32.sourceforge.net/packages/flex.htm) on your Windows system.
+1. Download and install a recent version of GNU Bison.
+1. A recent version of the last two software above can be collectively found and installed from https://github.com/lexxmark/winflexbison/releases
+1. Download and install a recent version of [CMake software](https://cmake.org/download/) on yout Windows system.
+1. Esnure the path to `cmake.exe`, `bison.exe` and `flex.exe` and GNU compilers (`gcc.exe`, `g++.exe`) exist in the environmental `PATH` variable of your Windows CMD shell.
+1. Download the [ParaMonte Doxygen project](https://github.com/cdslaborg/doxygen) from github. 
+   If you have `git` software installed on your system, you can readily download via `git clone https://github.com/cdslaborg/doxygen` on a git-aware Windows command line.
+1. Navigate to the root directory of ParaMonte Doxygen project on the Windows command lind and type:
+   ```batch  
+   mkdir build
+   cd build
+   cmake -G "NMake Makefiles" ..
+   nmake
+   ```  
+1. The above commands will create a new folder `bin` within the current working directory (`build`) that contains the doxygen software eexecutable binary.
+1. You can now build the ParaMonte library documentation with this specific customized version of Doxygen software.
+
+Installation instructions on Linux/macOS
+========================================
+
+The installation instructions on Linux/macOS are identical to those offered by [Doxygen developers](https://www.doxygen.nl/manual/install.html).
+
 Doxygen
 ===============
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=9HHLRBCC8B2B8)
