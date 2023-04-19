@@ -112,7 +112,7 @@ class DocbookGenerator : public OutputGenerator
     // structural output interface
     ///////////////////////////////////////////////////////////////
     void startFile(const QCString &name,const QCString &manName,
-                           const QCString &title,int id);
+                           const QCString &title,int id,int hierarchyLevel);
     void writeSearchInfo(){DB_GEN_EMPTY};
     void writeFooter(const QCString &){DB_GEN_NEW};
     void endFile();
@@ -316,6 +316,7 @@ private:
     int m_inLevel = -1;
     bool m_firstMember = false;
     int m_openSectionCount = 0;
+    QCString m_pageLinks;
 };
 
 QCString convertToDocBook(const QCString &s, const bool retainNewline = false);

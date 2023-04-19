@@ -356,10 +356,10 @@ void endTitle(OutputList &ol,const QCString &fileName,const QCString &name)
 
 void startFile(OutputList &ol,const QCString &name,const QCString &manName,
                const QCString &title,HighlightedItem hli,bool additionalIndices,
-               const QCString &altSidebarName)
+               const QCString &altSidebarName, int hierarchyLevel)
 {
   bool disableIndex     = Config_getBool(DISABLE_INDEX);
-  ol.startFile(name,manName,title);
+  ol.startFile(name,manName,title,hierarchyLevel);
   ol.startQuickIndices();
   if (!disableIndex)
   {
@@ -4397,7 +4397,6 @@ static void writeIndex(OutputList &ol)
 
   if (Doxygen::mainPage)
   {
-    Doxygen::insideMainPage=TRUE;
     if (Doxygen::mainPage->localToc().isHtmlEnabled() && Doxygen::mainPage->hasSections())
     {
       Doxygen::mainPage->writeToc(ol,Doxygen::mainPage->localToc());
@@ -4409,8 +4408,6 @@ static void writeIndex(OutputList &ol)
                 QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
     ol.endTextBlock();
     ol.endPageDoc();
-
-    Doxygen::insideMainPage=FALSE;
   }
 
   endFile(ol);
@@ -4422,6 +4419,12 @@ static void writeIndex(OutputList &ol)
   ol.enable(OutputType::Latex);
   ol.enable(OutputType::Docbook);
   ol.enable(OutputType::RTF);
+
+  if (Doxygen::mainPage)
+  {
+    msg("Generating main page...\n");
+    Doxygen::mainPage->writeDocumentation(ol);
+  }
 
   ol.startFile("refman",QCString(),QCString());
   ol.startIndexSection(IndexSection::isTitlePageStart);
@@ -4455,61 +4458,13 @@ static void writeIndex(OutputList &ol)
   if (Doxygen::mainPage)
   {
     ol.startIndexSection(IndexSection::isMainPage);
-    if (mainPageHasTitle())
-    {
-      ol.parseText(Doxygen::mainPage->title());
-    }
-    else
-    {
-      ol.parseText(/*projPrefix+*/theTranslator->trMainPage());
-    }
     ol.endIndexSection(IndexSection::isMainPage);
   }
   const auto &index = Index::instance();
   if (index.numDocumentedPages()>0)
   {
-    bool first=Doxygen::mainPage==0;
-    for (const auto &pd : *Doxygen::pageLinkedMap)
-    {
-      if (!pd->getGroupDef() && !pd->isReference() &&
-          (!pd->hasParentPage() ||                    // not inside other page
-           (Doxygen::mainPage.get()==pd->getOuterScope()))  // or inside main page
-         )
-      {
-        bool isCitationPage = pd->name()=="citelist";
-        if (isCitationPage)
-        {
-          // For LaTeX the bibliograph is already written by \bibliography
-          ol.pushGeneratorState();
-          ol.disable(OutputType::Latex);
-        }
-        title = pd->title();
-        if (title.isEmpty()) title=pd->name();
-
-        ol.disable(OutputType::Docbook);
-        ol.startIndexSection(IndexSection::isPageDocumentation);
-        ol.parseText(title);
-        ol.endIndexSection(IndexSection::isPageDocumentation);
-        ol.enable(OutputType::Docbook);
-
-        ol.pushGeneratorState(); // write TOC title (RTF only)
-          ol.disableAllBut(OutputType::RTF);
-          ol.startIndexSection(IndexSection::isPageDocumentation2);
-          ol.parseText(title);
-          ol.endIndexSection(IndexSection::isPageDocumentation2);
-        ol.popGeneratorState();
-
-        ol.writeAnchor(QCString(),pd->getOutputFileBase());
-
-        ol.writePageLink(pd->getOutputFileBase(),first);
-        first=FALSE;
-
-        if (isCitationPage)
-        {
-          ol.popGeneratorState();
-        }
-      }
-    }
+    ol.startIndexSection(IndexSection::isPageDocumentation);
+    ol.endIndexSection(IndexSection::isPageDocumentation);
   }
 
   ol.disable(OutputType::Docbook);
@@ -4662,23 +4617,6 @@ static void writeIndex(OutputList &ol)
   }
   ol.endIndexSection(IndexSection::isEndIndex);
   endFile(ol);
-
-  if (Doxygen::mainPage)
-  {
-    Doxygen::insideMainPage=TRUE;
-    ol.disable(OutputType::Man);
-    startFile(ol,Doxygen::mainPage->name(),QCString(),Doxygen::mainPage->title());
-    ol.startContents();
-    ol.startTextBlock();
-    ol.generateDoc(defFileName,defLine,Doxygen::mainPage.get(),0,
-                Doxygen::mainPage->documentation(),FALSE,FALSE,
-                QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT)
-               );
-    ol.endTextBlock();
-    endFile(ol);
-    ol.enable(OutputType::Man);
-    Doxygen::insideMainPage=FALSE;
-  }
 
   ol.popGeneratorState();
 }

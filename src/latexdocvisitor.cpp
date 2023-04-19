@@ -39,17 +39,40 @@
 #include "regex.h"
 #include "portable.h"
 
-const int maxLevels=5;
+const int maxLevels=7;
 static const char *secLabels[maxLevels] =
-   { "doxysection","doxysubsection","doxysubsubsection","doxyparagraph","doxysubparagraph" };
+   { "doxysection","doxysubsection","doxysubsubsection",
+     "doxysubsubsubsection", "doxysubsubsubsubsection",
+     "doxysubsubsubsubsubsection", "doxysubsubsubsubsubsubsection" };
+static const char *paragraphLabel = "doxyparagraph";
+static const char *subparagraphLabel = "doxysubparagraph";
 
-static const char *getSectionName(int level)
+const char *LatexDocVisitor::getSectionName(int level) const
 {
   bool compactLatex = Config_getBool(COMPACT_LATEX);
   int l = level;
   if (compactLatex) l++;
-  if (Doxygen::insideMainPage) l--;
-  return secLabels[std::min(maxLevels-1,l)];
+
+  if (l <= 2)
+  {
+    // Sections get special treatment because they inherit the parent's level
+    l += m_hierarchyLevel; /* May be -1 if generating main page */
+    if (l > maxLevels - 1)
+      l = maxLevels - 1;
+    else if (l < 0)
+      /* Should not happen; level is always >= 1 and hierarchyLevel >= -1 */
+      l = 0;
+
+    return secLabels[l];
+  }
+  else if (l == 3)
+  {
+    return paragraphLabel;
+  }
+  else
+  {
+    return subparagraphLabel;
+  }
 }
 
 static void insertDimension(TextStream &t, QCString dimension, const char *orientationString)
@@ -201,10 +224,10 @@ QCString LatexDocVisitor::escapeMakeIndexChars(const char *s)
 
 
 LatexDocVisitor::LatexDocVisitor(TextStream &t,OutputCodeList &ci,LatexCodeGenerator &lcg,
-                                 const QCString &langExt)
+                                 const QCString &langExt, int hierarchyLevel)
   : m_t(t), m_ci(ci), m_lcg(lcg), m_insidePre(FALSE),
     m_insideItem(FALSE), m_hide(FALSE),
-    m_langExt(langExt)
+    m_langExt(langExt), m_hierarchyLevel(hierarchyLevel)
 {
 }
 

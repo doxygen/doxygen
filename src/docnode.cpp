@@ -1433,7 +1433,7 @@ int DocInternal::parse(int level)
         )
   {
     children().append<DocSection>(parser(),thisVariant(),
-                                  std::min(level+Doxygen::subpageNestingLevel,5),
+                                  level,
                                   parser()->context.token->sectionId);
     retval = children().get_last<DocSection>()->parse();
   }
@@ -5536,25 +5536,23 @@ int DocSection::parse()
 
   if (lastPar) lastPar->markLast();
 
-  //printf("m_level=%d <-> %d\n",m_level,Doxygen::subpageNestingLevel);
-
   while (true)
   {
-    if (retval==RetVal_Subsection && m_level<=Doxygen::subpageNestingLevel+1)
+    if (retval==RetVal_Subsection && m_level<=1)
     {
       // then parse any number of nested sections
       while (retval==RetVal_Subsection) // more sections follow
       {
         children().append<DocSection>(parser(),thisVariant(),
-                                std::min(2+Doxygen::subpageNestingLevel,5),
+                                2,
                                 parser()->context.token->sectionId);
         retval = children().get_last<DocSection>()->parse();
       }
       break;
     }
-    else if (retval==RetVal_Subsubsection && m_level<=Doxygen::subpageNestingLevel+2)
+    else if (retval==RetVal_Subsubsection && m_level<=2)
     {
-      if ((m_level <= 1 + Doxygen::subpageNestingLevel) &&
+      if ((m_level <= 1) &&
           AnchorGenerator::instance().isGenerated(parser()->context.token->sectionId.str()))
       {
         warn_doc_error(parser()->context.fileName,
@@ -5566,15 +5564,15 @@ int DocSection::parse()
       while (retval==RetVal_Subsubsection) // more sections follow
       {
         children().append<DocSection>(parser(),thisVariant(),
-                                std::min(3+Doxygen::subpageNestingLevel,5),
+                                3,
                                 parser()->context.token->sectionId);
         retval = children().get_last<DocSection>()->parse();
       }
-      if (!(m_level < Doxygen::subpageNestingLevel + 2 && retval == RetVal_Subsection)) break;
+      if (!(m_level < 2 && retval == RetVal_Subsection)) break;
     }
-    else if (retval==RetVal_Paragraph && m_level<=std::min(5,Doxygen::subpageNestingLevel+3))
+    else if (retval==RetVal_Paragraph && m_level<=3)
     {
-      if ((m_level <= 2 + Doxygen::subpageNestingLevel) &&
+      if ((m_level <= 2) &&
           AnchorGenerator::instance().isGenerated(parser()->context.token->sectionId.str()))
       {
         warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),
@@ -5585,11 +5583,11 @@ int DocSection::parse()
       while (retval==RetVal_Paragraph) // more sections follow
       {
         children().append<DocSection>(parser(),thisVariant(),
-                                std::min(4+Doxygen::subpageNestingLevel,5),
+                                4,
                                 parser()->context.token->sectionId);
         retval = children().get_last<DocSection>()->parse();
       }
-      if (!(m_level<Doxygen::subpageNestingLevel+3 && (retval == RetVal_Subsection || retval == RetVal_Subsubsection))) break;
+      if (!(m_level<3 && (retval == RetVal_Subsection || retval == RetVal_Subsubsection))) break;
     }
     else
     {
@@ -5762,7 +5760,7 @@ void DocRoot::parse()
           if (sec)
           {
             children().append<DocSection>(parser(),thisVariant(),
-                                    std::min(4+Doxygen::subpageNestingLevel,5),
+                                    4,
                                     parser()->context.token->sectionId);
             retval = children().get_last<DocSection>()->parse();
           }
@@ -5796,7 +5794,7 @@ void DocRoot::parse()
           if (sec)
           {
             children().append<DocSection>(parser(),thisVariant(),
-                                    std::min(3+Doxygen::subpageNestingLevel,5),
+                                    3,
                                     parser()->context.token->sectionId);
             retval = children().get_last<DocSection>()->parse();
           }
@@ -5830,7 +5828,7 @@ void DocRoot::parse()
           if (sec)
           {
             children().append<DocSection>(parser(),thisVariant(),
-                                    std::min(2+Doxygen::subpageNestingLevel,5),
+                                    2,
                                     parser()->context.token->sectionId);
             retval = children().get_last<DocSection>()->parse();
           }
@@ -5869,7 +5867,7 @@ void DocRoot::parse()
       if (sec)
       {
         children().append<DocSection>(parser(),thisVariant(),
-                                std::min(1+Doxygen::subpageNestingLevel,5),
+                                1,
                                 parser()->context.token->sectionId);
         retval = children().get_last<DocSection>()->parse();
       }

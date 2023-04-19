@@ -715,7 +715,7 @@ void MemberList::writeSimpleDocumentation(OutputList &ol,
 
 // separate member pages
 void MemberList::writeDocumentationPage(OutputList &ol,
-                     const QCString &scopeName, const DefinitionMutable *container) const
+                     const QCString &scopeName, const DefinitionMutable *container, int hierarchyLevel) const
 {
   bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
 
@@ -749,7 +749,7 @@ void MemberList::writeDocumentationPage(OutputList &ol,
       uint32_t &count = it->second.count;
       QCString diskName=md->getOutputFileBase();
       QCString title=md->qualifiedName();
-      startFile(ol,diskName,md->name(),title,HighlightedItem::None,!generateTreeView,diskName);
+      startFile(ol,diskName,md->name(),title,HighlightedItem::None,!generateTreeView,diskName, hierarchyLevel);
       if (!generateTreeView)
       {
         container->writeNavigationPath(ol);

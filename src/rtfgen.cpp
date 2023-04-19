@@ -605,15 +605,17 @@ void RTFGenerator::beginRTFSection()
   {
     m_t << "\\sect\\sbkpage\n";
   }
+  int level = 2 + m_hierarchyLevel;
 
-  m_t << rtf_Style["Heading2"].reference() << "\n";
+  m_t << rtf_Style[QCString().sprintf("Heading%d", level).str()].reference() << "\n";
 }
 
-void RTFGenerator::startFile(const QCString &name,const QCString &,const QCString &,int)
+void RTFGenerator::startFile(const QCString &name,const QCString &,const QCString &,int,int hierarchyLevel)
 {
   //setEncoding(QCString().sprintf("CP%s",theTranslator->trRTFansicp()));
   QCString fileName=name;
   m_relPath = relativePathToRoot(fileName);
+  m_hierarchyLevel = hierarchyLevel;
 
   if (!fileName.endsWith(".rtf")) fileName+=".rtf";
   startPlainFile(fileName);
@@ -806,15 +808,8 @@ void RTFGenerator::startIndexSection(IndexSection is)
       }
       break;
     case IndexSection::isPageDocumentation:
-      {
-        //Page Documentation
-        beginRTFChapter();
-      }
       break;
     case IndexSection::isPageDocumentation2:
-      {
-        m_t << "{\\tc \\v ";
-      }
       break;
     case IndexSection::isEndIndex:
       break;
@@ -920,19 +915,10 @@ void RTFGenerator::endIndexSection(IndexSection is)
       }
       break;
     case IndexSection::isMainPage:
-      m_t << "\\par " << rtf_Style_Reset << "\n";
-      if (!mainPageHasTitle())
+      if (Doxygen::mainPage)
       {
-        m_t << "{\\tc \\v " << theTranslator->trMainPage() << "}\n";
+        writePageLink(Doxygen::mainPage->getOutputFileBase(), TRUE);
       }
-      else
-      {
-        m_t << "{\\tc \\v " << substitute(Doxygen::mainPage->title(),"%","") << "}\n";
-      }
-      m_t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
-      //if (Config_getBool(GENERATE_TREEVIEW)) m_t << "main"; else m_t << "index";
-      m_t << "index";
-      m_t << ".rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
       break;
     case IndexSection::isModuleIndex:
       m_t << "\\par " << rtf_Style_Reset << "\n";
@@ -995,21 +981,12 @@ void RTFGenerator::endIndexSection(IndexSection is)
       break;
     case IndexSection::isModuleDocumentation:
       {
-        bool first=true;
         m_t << "{\\tc \\v " << theTranslator->trModuleDocumentation() << "}\n";
         for (const auto &gd : *Doxygen::groupLinkedMap)
         {
-          if (!gd->isReference())
+          if (!gd->isReference() && !gd->isASubGroup())
           {
-            m_t << "\\par " << rtf_Style_Reset << "\n";
-            if (!first)
-            {
-              beginRTFSection();
-            }
-            first=false;
-            m_t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
-            m_t << gd->getOutputFileBase();
-            m_t << ".rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
+            writePageLink(gd->getOutputFileBase(), FALSE);
           }
         }
       }
@@ -1164,12 +1141,19 @@ void RTFGenerator::endIndexSection(IndexSection is)
       }
       break;
     case IndexSection::isPageDocumentation:
+      {
+        m_t << "\\par " << rtf_Style_Reset << "\n";
+        for (const auto &pd : *Doxygen::pageLinkedMap)
+        {
+          if (!pd->getGroupDef() && !pd->isReference() && !pd->hasParentPage()
+            && Doxygen::mainPage.get() != pd.get())
+          {
+            writePageLink(pd->getOutputFileBase(), FALSE);
+          }
+        }
+      }
       break;
     case IndexSection::isPageDocumentation2:
-      {
-        m_t << "}";
-        m_t << "\\par " << rtf_Style_Reset << "\n";
-      }
       break;
     case IndexSection::isEndIndex:
       beginRTFChapter();
@@ -1183,9 +1167,9 @@ void RTFGenerator::endIndexSection(IndexSection is)
    }
 }
 
-void RTFGenerator::writePageLink(const QCString &name,bool first)
+void RTFGenerator::writePageLink(const QCString &name,bool)
 {
-   if (first) m_t << "\\par " << rtf_Style_Reset << "\n";
+   m_t << "\\par " << rtf_Style_Reset << "\n";
    m_t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
    m_t << name;
    m_t << ".rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
@@ -1383,7 +1367,8 @@ void RTFGenerator::startCompoundTemplateParams()
   m_t << "\n";
   DBG_RTF(m_t << "{\\comment Begin SubSubSection}\n")
   m_t << "{\n";
-  m_t << rtf_Style_Reset << rtf_Style["Heading4"].reference() << "\n";
+  int level = 4 + m_hierarchyLevel;
+  m_t << rtf_Style_Reset << rtf_Style[QCString().sprintf("Heading%d", level).str()].reference() << "\n";
 }
 
 void RTFGenerator::endCompoundTemplateParams()
@@ -1489,9 +1474,11 @@ void RTFGenerator::endPageRef(const QCString &clname, const QCString &anchor)
 void RTFGenerator::startTitleHead(const QCString &)
 {
   DBG_RTF(m_t << "{\\comment startTitleHead}\n")
-
+  int level = 2 + m_hierarchyLevel;
+  QCString heading;
+  heading.sprintf("Heading%d", level);
   //    beginRTFSection();
-  m_t << rtf_Style_Reset << rtf_Style["Heading2"].reference() << "\n";
+  m_t << rtf_Style_Reset << rtf_Style[heading.str()].reference() << "\n";
 }
 
 void RTFGenerator::endTitleHead(const QCString &fileName,const QCString &name)
@@ -1501,7 +1488,8 @@ void RTFGenerator::endTitleHead(const QCString &fileName,const QCString &name)
   if (!name.isEmpty())
   {
     // make table of contents entry
-    m_t << "{\\tc\\tcl2 \\v ";
+    int level = 2 + m_hierarchyLevel;
+    m_t << "{\\tc\\tcl" << level << " \\v ";
     docify(name);
     m_t << "}\n";
 
@@ -1518,7 +1506,8 @@ void RTFGenerator::startGroupHeader(int extraIndent)
 {
   DBG_RTF(m_t << "{\\comment startGroupHeader}\n")
   m_t << rtf_Style_Reset;
-  if (extraIndent==2)
+  extraIndent += m_hierarchyLevel;
+  if (extraIndent>=2)
   {
     m_t << rtf_Style["Heading5"].reference();
   }
@@ -1554,7 +1543,15 @@ void RTFGenerator::startMemberDoc(const QCString &clname,
     addIndexItem(memname,clname);
     addIndexItem(clname,memname);
   }
-  m_t << rtf_Style_Reset << rtf_Style[showInline ? "Heading5" : "Heading4"].reference();
+
+  int level = 4 + m_hierarchyLevel;
+  if (showInline)
+    ++level;
+  if (level > 5)
+    level = 5;
+  if (level < 1)
+    level = 1;
+  m_t << rtf_Style_Reset << rtf_Style[QCString().sprintf("Heading%d", level).str()].reference();
   //styleStack.push(rtf_Style_Heading4);
   m_t << "{\n";
   //printf("RTFGenerator::startMemberDoc() '%s'\n",rtf_Style["Heading4"].reference());
@@ -1670,13 +1667,15 @@ void RTFGenerator::startSection(const QCString &,const QCString &title,SectionTy
   int num=4;
   switch(type)
   {
-    case SectionType::Page:          num=2; break;
-    case SectionType::Section:       num=3; break;
-    case SectionType::Subsection:    num=4; break;
-    case SectionType::Subsubsection: num=4; break;
-    case SectionType::Paragraph:     num=4; break;
+    case SectionType::Page:          num=2+m_hierarchyLevel; break;
+    case SectionType::Section:       num=3+m_hierarchyLevel; break;
+    case SectionType::Subsection:    num=4+m_hierarchyLevel; break;
+    case SectionType::Subsubsection: num=4+m_hierarchyLevel; break;
+    case SectionType::Paragraph:     num=4+m_hierarchyLevel; break;
     default: ASSERT(0); break;
   }
+  if (num > 5)
+    num = 5;
   QCString heading;
   heading.sprintf("Heading%d",num);
   // set style
@@ -2458,7 +2457,7 @@ void RTFGenerator::writeDoc(const IDocNodeAST *ast,const Definition *ctx,const M
   auto astImpl = dynamic_cast<const DocNodeAST*>(ast);
   if (astImpl)
   {
-    RTFDocVisitor visitor(m_t,*m_codeList,ctx?ctx->getDefFileExtension():QCString(""));
+    RTFDocVisitor visitor(m_t,*m_codeList,ctx?ctx->getDefFileExtension():QCString(""),m_hierarchyLevel);
     std::visit(visitor,astImpl->root);
   }
   m_omitParagraph = TRUE;

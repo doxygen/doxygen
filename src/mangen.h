@@ -74,7 +74,7 @@ class ManGenerator : public OutputGenerator
 
     static void init();
     void cleanup();
-    void startFile(const QCString &name,const QCString &manName,const QCString &title,int);
+    void startFile(const QCString &name,const QCString &manName,const QCString &title,int id, int hierarchyLevel);
     void writeSearchInfo() {}
     void writeFooter(const QCString &) {}
     void endFile();

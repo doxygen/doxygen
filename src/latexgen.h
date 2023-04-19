@@ -102,7 +102,7 @@ class LatexGenerator : public OutputGenerator
 
     void writeDoc(const IDocNodeAST *node,const Definition *ctx,const MemberDef *,int id);
 
-    void startFile(const QCString &name,const QCString &manName,const QCString &title,int id);
+    void startFile(const QCString &name,const QCString &manName,const QCString &title,int id,int hierarchyLevel);
     void writeSearchInfo() {}
     void writeFooter(const QCString &) {}
     void endFile();
@@ -308,6 +308,7 @@ class LatexGenerator : public OutputGenerator
     std::unique_ptr<OutputCodeList> m_codeList;
     LatexCodeGenerator *m_codeGen;
     bool m_insideTableEnv = false;
+    int m_hierarchyLevel = 0;
 };
 
 void writeExtraLatexPackages(TextStream &t);
