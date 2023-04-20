@@ -248,7 +248,7 @@ namespace Mappers
 {
   extern const Mapper *cmdMapper;
   extern const Mapper *htmlTagMapper;
-};
+}
 
 
 #endif
