@@ -14,6 +14,7 @@
  */
 
 #include <algorithm>
+#include <array>
 
 #include "htmlattrib.h"
 #include "latexdocvisitor.h"
@@ -39,13 +40,19 @@
 #include "regex.h"
 #include "portable.h"
 
-const int maxLevels=7;
-static const char *secLabels[maxLevels] =
-   { "doxysection","doxysubsection","doxysubsubsection",
-     "doxysubsubsubsection", "doxysubsubsubsubsection",
-     "doxysubsubsubsubsubsection", "doxysubsubsubsubsubsubsection" };
-static const char *paragraphLabel = "doxyparagraph";
-static const char *subparagraphLabel = "doxysubparagraph";
+static const int g_maxLevels = 7;
+static const std::array<const char *,g_maxLevels> g_secLabels =
+{ "doxysection",
+  "doxysubsection",
+  "doxysubsubsection",
+  "doxysubsubsubsection",
+  "doxysubsubsubsubsection",
+  "doxysubsubsubsubsubsection",
+  "doxysubsubsubsubsubsubsection"
+};
+
+static const char *g_paragraphLabel = "doxyparagraph";
+static const char *g_subparagraphLabel = "doxysubparagraph";
 
 const char *LatexDocVisitor::getSectionName(int level) const
 {
@@ -57,21 +64,24 @@ const char *LatexDocVisitor::getSectionName(int level) const
   {
     // Sections get special treatment because they inherit the parent's level
     l += m_hierarchyLevel; /* May be -1 if generating main page */
-    if (l > maxLevels - 1)
-      l = maxLevels - 1;
+    if (l >= g_maxLevels)
+    {
+      l = g_maxLevels - 1;
+    }
     else if (l < 0)
+    {
       /* Should not happen; level is always >= 1 and hierarchyLevel >= -1 */
       l = 0;
-
-    return secLabels[l];
+    }
+    return g_secLabels[l];
   }
   else if (l == 3)
   {
-    return paragraphLabel;
+    return g_paragraphLabel;
   }
   else
   {
-    return subparagraphLabel;
+    return g_subparagraphLabel;
   }
 }
 

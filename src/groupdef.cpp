@@ -1110,11 +1110,9 @@ void GroupDefImpl::writeDocumentation(OutputList &ol)
   //bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
   ol.pushGeneratorState();
 
-  /* Find out how deep this group is nested. In case of multiple parents, use
-   * the first one.
-   */
+  // Find out how deep this group is nested. In case of multiple parents, use the first one.
   int hierarchyLevel = 0;
-  auto gd = static_cast<GroupDef*>(this);
+  const GroupDef *gd = this;
   while (!gd->partOfGroups().empty())
   {
     gd = gd->partOfGroups().front();
