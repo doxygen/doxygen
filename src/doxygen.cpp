@@ -149,7 +149,6 @@ StringMap             Doxygen::tagDestinationMap;            // all tag location
 StringUnorderedSet    Doxygen::expandAsDefinedSet;           // all macros that should be expanded
 MemberGroupInfoMap    Doxygen::memberGroupInfoMap;           // dictionary of the member groups heading
 std::unique_ptr<PageDef> Doxygen::mainPage;
-bool                  Doxygen::insideMainPage = FALSE; // are we generating docs for the main page?
 std::unique_ptr<NamespaceDef> Doxygen::globalNamespaceDef;
 NamespaceDefMutable  *Doxygen::globalScope;
 bool                  Doxygen::parseSourcesNeeded = FALSE;
@@ -165,7 +164,6 @@ QCString              Doxygen::htmlFileExtension;
 bool                  Doxygen::suppressDocWarnings = FALSE;
 QCString              Doxygen::filterDBFileName;
 IndexList            *Doxygen::indexList;
-int                   Doxygen::subpageNestingLevel = 0;
 QCString              Doxygen::spaces;
 bool                  Doxygen::generatingXmlOutput = FALSE;
 DefinesPerFileList    Doxygen::macroDefinitions;
@@ -9257,9 +9255,7 @@ static void generatePageDocs()
     if (!pd->getGroupDef() && !pd->isReference())
     {
       msg("Generating docs for page %s...\n",qPrint(pd->name()));
-      Doxygen::insideMainPage=TRUE;
       pd->writeDocumentation(*g_outputList);
-      Doxygen::insideMainPage=FALSE;
     }
   }
 }

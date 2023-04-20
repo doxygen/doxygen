@@ -368,7 +368,7 @@ void DocbookGenerator::cleanup()
 }
 
 
-void DocbookGenerator::startFile(const QCString &name,const QCString &,const QCString &,int)
+void DocbookGenerator::startFile(const QCString &name,const QCString &,const QCString &,int,int)
 {
 DB_GEN_C
   QCString fileName=name;
@@ -390,6 +390,7 @@ DB_GEN_C
   startPlainFile(fileName);
   m_codeGen->setRelativePath(relPath);
   m_codeGen->setSourceFileName(stripPath(fileName));
+  m_pageLinks = QCString();
 
   m_t << "<?xml version='1.0' encoding='UTF-8' standalone='no'?>\n";;
   m_t << "<" << fileType << " xmlns=\"http://docbook.org/ns/docbook\" version=\"5.0\" xmlns:xlink=\"http://www.w3.org/1999/xlink\"";
@@ -404,6 +405,9 @@ DB_GEN_C
   closeAllSections();
   m_inLevel = -1;
   m_inGroup = FALSE;
+
+  // Write page links only after all sections have been closed to avoid bugs
+  m_t << m_pageLinks;
 
   QCString fileType="section";
   QCString fileName= m_codeGen->sourceFileName();
@@ -436,8 +440,6 @@ DB_GEN_C2("IndexSection " << is)
     case IndexSection::isTitlePageAuthor:
       break;
     case IndexSection::isMainPage:
-      m_t << "<chapter>\n";
-      m_t << "    <title>";
       break;
     case IndexSection::isModuleIndex:
       //Module Index\n"
@@ -510,9 +512,12 @@ DB_GEN_C2("IndexSection " << is)
     case IndexSection::isTitlePageAuthor:
       break;
     case IndexSection::isMainPage:
-      m_t << "</title>\n";
-      m_t << "    <xi:include href=\"mainpage.xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>\n";
-      m_t << "</chapter>\n";
+      {
+        if (Doxygen::mainPage)
+        {
+          writePageLink(QCString("mainpage"), TRUE);
+        }
+      }
       break;
     case IndexSection::isModuleIndex:
       //m_t << "</chapter>\n";
@@ -549,9 +554,9 @@ DB_GEN_C2("IndexSection " << is)
         m_t << "</title>\n";
         for (const auto &gd : *Doxygen::groupLinkedMap)
         {
-          if (!gd->isReference())
+          if (!gd->isReference() && !gd->isASubGroup())
           {
-            m_t << "    <xi:include href=\"" << gd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>\n";
+            writePageLink(gd->getOutputFileBase(), TRUE);
           }
         }
       }
@@ -644,6 +649,14 @@ DB_GEN_C2("IndexSection " << is)
       m_t << "</chapter>\n";
       break;
     case IndexSection::isPageDocumentation:
+        for (const auto &pd : *Doxygen::pageLinkedMap)
+        {
+          if (!pd->getGroupDef() && !pd->isReference() && !pd->hasParentPage()
+            && Doxygen::mainPage.get() != pd.get())
+          {
+            writePageLink(pd->getOutputFileBase(), TRUE);
+          }
+        }
       break;
     case IndexSection::isPageDocumentation2:
       break;
@@ -652,26 +665,17 @@ DB_GEN_C2("IndexSection " << is)
       break;
   }
 }
-void DocbookGenerator::writePageLink(const QCString &name, bool /*first*/)
+void DocbookGenerator::writePageLink(const QCString &name, bool first)
 {
 DB_GEN_C
-  for (const auto &pd : *Doxygen::pageLinkedMap)
-  {
-    if (!pd->getGroupDef() && !pd->isReference() && pd->name() == stripPath(name))
-    {
-      m_t << "<chapter>\n";
-      if (pd->hasTitle())
-      {
-        m_t << "    <title>" << convertToDocBook(pd->title()) << "</title>\n";
-      }
-      else
-      {
-        m_t << "    <title>" << convertToDocBook(pd->name()) << "</title>\n";
-      }
-      m_t << "    <xi:include href=\"" << pd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>\n";
-      m_t << "</chapter>\n";
-    }
-  }
+  QCString link;
+  link.sprintf("    <xi:include href=\"%s.xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>\n",
+               name.data());
+  if (first)
+    m_t << link;
+  else
+    // Buffer page links and write them after all sections are closed
+    m_pageLinks += link;
 }
 
 void DocbookGenerator::writeDoc(const IDocNodeAST *ast,const Definition *ctx,const MemberDef *,int)

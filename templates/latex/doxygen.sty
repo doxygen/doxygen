@@ -583,6 +583,25 @@
 % possibility to have sections etc. be within the margins
 % unfortunately had to copy part of book.cls and add \raggedright
 \makeatletter
+\newcounter{subsubsubsection}[subsubsection]
+\newcounter{subsubsubsubsection}[subsubsubsection]
+\newcounter{subsubsubsubsubsection}[subsubsubsubsection]
+\newcounter{subsubsubsubsubsubsection}[subsubsubsubsection]
+\renewcommand{\thesubsubsubsection}{\thesubsubsection.\arabic{subsubsubsection}}
+\renewcommand{\thesubsubsubsubsection}{\thesubsubsubsection.\arabic{subsubsubsubsection}}
+\renewcommand{\thesubsubsubsubsubsection}{\thesubsubsubsubsection.\arabic{subsubsubsubsubsection}}
+\renewcommand{\thesubsubsubsubsubsubsection}{\thesubsubsubsubsubsection.\arabic{subsubsubsubsubsubsection}}
+\newcommand{\subsubsubsectionmark}[1]{}
+\newcommand{\subsubsubsubsectionmark}[1]{}
+\newcommand{\subsubsubsubsubsectionmark}[1]{}
+\newcommand{\subsubsubsubsubsubsectionmark}[1]{}
+\def\toclevel@subsubsubsection{4}
+\def\toclevel@subsubsubsubsection{5}
+\def\toclevel@subsubsubsubsubsection{6}
+\def\toclevel@subsubsubsubsubsubsection{7}
+\def\toclevel@paragraph{8}
+\def\toclevel@subparagraph{9}
+
 \newcommand\doxysection{\@startsection {section}{1}{\z@}%
                                      {-3.5ex \@plus -1ex \@minus -.2ex}%
                                      {2.3ex \@plus.2ex}%
@@ -595,14 +614,35 @@
                                      {-3.25ex\@plus -1ex \@minus -.2ex}%
                                      {1.5ex \@plus .2ex}%
                                      {\raggedright\normalfont\normalsize\bfseries}}
-\newcommand\doxyparagraph{\@startsection{paragraph}{4}{\z@}%
+\newcommand\doxysubsubsubsection{\@startsection{subsubsubsection}{4}{\z@}%
                                      {-3.25ex\@plus -1ex \@minus -.2ex}%
                                      {1.5ex \@plus .2ex}%
                                      {\raggedright\normalfont\normalsize\bfseries}}
-\newcommand\doxysubparagraph{\@startsection{subparagraph}{5}{\parindent}%
+\newcommand\doxysubsubsubsubsection{\@startsection{subsubsubsubsection}{5}{\z@}%
                                      {-3.25ex\@plus -1ex \@minus -.2ex}%
                                      {1.5ex \@plus .2ex}%
                                      {\raggedright\normalfont\normalsize\bfseries}}
+\newcommand\doxysubsubsubsubsubsection{\@startsection{subsubsubsubsubsection}{6}{\z@}%
+                                     {-3.25ex\@plus -1ex \@minus -.2ex}%
+                                     {1.5ex \@plus .2ex}%
+                                     {\raggedright\normalfont\normalsize\bfseries}}
+\newcommand\doxysubsubsubsubsubsubsection{\@startsection{subsubsubsubsubsubsection}{7}{\z@}%
+                                     {-3.25ex\@plus -1ex \@minus -.2ex}%
+                                     {1.5ex \@plus .2ex}%
+                                     {\raggedright\normalfont\normalsize\bfseries}}
+\newcommand\doxyparagraph{\@startsection{paragraph}{8}{\z@}%
+                                     {-3.25ex\@plus -1ex \@minus -.2ex}%
+                                     {1.5ex \@plus .2ex}%
+                                     {\raggedright\normalfont\normalsize\bfseries}}
+\newcommand\doxysubparagraph{\@startsection{subparagraph}{9}{\parindent}%
+                                     {-3.25ex\@plus -1ex \@minus -.2ex}%
+                                     {1.5ex \@plus .2ex}%
+                                     {\raggedright\normalfont\normalsize\bfseries}}    
+                                  
+\newcommand\l@subsubsubsection{\@dottedtocline{4}{6.1em}{7.8em}}
+\newcommand\l@subsubsubsubsection{\@dottedtocline{5}{6.1em}{9.4em}}
+\newcommand\l@subsubsubsubsubsection{\@dottedtocline{6}{6.1em}{11em}}
+\newcommand\l@subsubsubsubsubsubsection{\@dottedtocline{7}{6.1em}{12.6em}}
 \makeatother
 % the sectsty doesn't look to be maintained but gives, in our case, some warning like:
 % LaTeX Warning: Command \underline  has changed.

@@ -295,6 +295,18 @@ class QCString
     /// whitespace characters replaced by a single space
     QCString simplifyWhiteSpace() const;
 
+    // Returns a copy of this string repeated n times
+    QCString repeat(unsigned int n) const
+    {
+      QCString result(n * size() + 1);
+      size_t offset = 0;
+      for (offset = 0; offset < n * size(); offset += size())
+      {
+        memcpy(result.rawData() + offset, data(), size());
+      }
+      return result;
+    }
+
     QCString &insert( size_t index, const QCString &s )
     {
       if (s.length()>0)

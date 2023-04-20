@@ -89,7 +89,7 @@ class RTFGenerator : public OutputGenerator
 
     void writeDoc(const IDocNodeAST *ast,const Definition *,const MemberDef *,int);
 
-    void startFile(const QCString &name,const QCString &manName,const QCString &title,int id);
+    void startFile(const QCString &name,const QCString &manName,const QCString &title,int id,int hierarchyLevel);
     void writeSearchInfo() {}
     void writeFooter(const QCString &) {}
     void endFile();
@@ -306,6 +306,7 @@ class RTFGenerator : public OutputGenerator
     bool m_omitParagraph = false; // should a the next paragraph command be ignored?
     int  m_numCols = 0; // number of columns in a table
     QCString m_relPath;
+    int  m_hierarchyLevel = 0;
 
     // RTF does not really have a additive indent...manually set list level.
     static const int maxIndentLevels = 13;
