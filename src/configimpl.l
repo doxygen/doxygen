@@ -203,7 +203,7 @@ void ConfigOption::writeStringList(TextStream &t,const StringVector &l)
 /* -----------------------------------------------------------------
  */
 
-ConfigImpl *ConfigImpl::m_instance = 0;
+std::unique_ptr<ConfigImpl> ConfigImpl::m_instance;
 
 void ConfigInt::convertStrToVal(Config::CompareMode compareMode)
 {
@@ -1530,10 +1530,8 @@ void ConfigImpl::init()
   }
 }
 
-void ConfigImpl::create()
+ConfigImpl::ConfigImpl()
 {
-  if (m_initialized) return;
-  m_initialized = TRUE;
   addConfigOptions(this);
 }
 

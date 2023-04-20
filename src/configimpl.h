@@ -339,18 +339,18 @@ class ConfigImpl
     /////////////////////////////
     // public API
     /////////////////////////////
+    ConfigImpl();
 
     /*! Returns the one and only instance of this class */
     static ConfigImpl *instance()
     {
-      if (m_instance==0) m_instance = new ConfigImpl;
-      return m_instance;
+      if (!m_instance) m_instance = std::make_unique<ConfigImpl>();
+      return m_instance.get();
     }
     /*! Delete the instance */
     static void deleteInstance()
     {
-      delete m_instance;
-      m_instance=0;
+      m_instance.reset();
     }
 
     /*!
@@ -548,11 +548,6 @@ class ConfigImpl
      */
     bool parse(const QCString &fn,bool upd = FALSE);
 
-    /*! Called from the constructor, will add doxygen's default options
-     *  to the configuration object
-     */
-    void create();
-
     /*! Append user start comment
      */
     void appendStartComment(const QCString &u)
@@ -599,27 +594,15 @@ class ConfigImpl
       return substitute(result,"\r","");
     }
 
-  protected:
-
-    ConfigImpl()
-    {
-      m_initialized = FALSE;
-      create();
-    }
-   ~ConfigImpl()
-    {
-    }
-
   private:
     ConfigOptionList m_options;
     ConfigOptionList m_obsolete;
     ConfigOptionList m_disabled;
     ConfigOptionMap  m_dict;
-    static ConfigImpl *m_instance;
+    static std::unique_ptr<ConfigImpl> m_instance;
     QCString m_startComment;
     QCString m_userComment;
     QCString m_storeRepl;
-    bool m_initialized;
     QCString m_header;
 };
 
