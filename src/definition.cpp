@@ -62,8 +62,8 @@ class DeepCopyUniquePtr : public std::unique_ptr<T>
   public:
     using std::unique_ptr<T>::unique_ptr;
     DeepCopyUniquePtr(const DeepCopyUniquePtr &other)
+       : std::unique_ptr<T>(other ? new T(*other) : nullptr)
     {
-      this->reset(other ? new T(*other) : nullptr);
     }
     DeepCopyUniquePtr &operator=(const DeepCopyUniquePtr &other)
     {
