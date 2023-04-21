@@ -24,6 +24,14 @@
 \usepackage{array}[=2016-10-06]
 \fi
 %%
+\makeatletter
+% suppress package identification of infwarerr as it contains the word "warning"
+\let\@@protected@wlog\protected@wlog
+\def\protected@wlog#1{\wlog{package info suppressed}}
+\RequirePackage{infwarerr}
+\let\protected@wlog\@@protected@wlog
+\makeatother
+%%
 \usepackage[a4paper,left=2.5cm,right=2.5cm,top=2.5cm,bottom=2.5cm]{geometry}
 \usepackage{makeidx}
 \usepackage{natbib}
