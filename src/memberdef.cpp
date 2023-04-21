@@ -1917,7 +1917,7 @@ bool MemberDefImpl::isBriefSectionVisible() const
     auto &info = it->second;
     //printf("name=%s m_impl->grpId=%d info=%p\n",qPrint(name()),m_impl->grpId,info);
     //QCString *pMemGrp = Doxygen::memberDocDict[grpId];
-    hasDocs = hasDocs ||
+    hasDocs = hasDocs &&
                   // part of a documented member group
                  (m_impl->grpId!=-1 && !(info->doc.isEmpty() && info->header.isEmpty()));
   }
