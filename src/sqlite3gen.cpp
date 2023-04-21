@@ -859,14 +859,14 @@ class TextGeneratorSqlite3Impl : public TextGeneratorIntf
 };
 
 
-static bool bindTextParameter(SqlStmt &s,const char *name,const QCString &value, bool _static=FALSE)
+static bool bindTextParameter(SqlStmt &s,const char *name,const QCString &value)
 {
   int idx = sqlite3_bind_parameter_index(s.stmt, name);
   if (idx==0) {
     err("sqlite3_bind_parameter_index(%s)[%s] failed: %s\n", name, s.query, sqlite3_errmsg(s.db));
     return false;
   }
-  int rv = sqlite3_bind_text(s.stmt, idx, value.data(), -1, _static==TRUE?SQLITE_STATIC:SQLITE_TRANSIENT);
+  int rv = sqlite3_bind_text(s.stmt, idx, value.data(), -1, SQLITE_TRANSIENT);
   if (rv!=SQLITE_OK) {
     err("sqlite3_bind_text(%s)[%s] failed: %s\n", name, s.query, sqlite3_errmsg(s.db));
     return false;
@@ -930,7 +930,7 @@ static int insertPath(QCString name, bool local=TRUE, bool found=TRUE, int type=
 static void recordMetadata()
 {
   bindTextParameter(meta_insert,":doxygen_version",getFullVersion());
-  bindTextParameter(meta_insert,":schema_version","0.2.1",TRUE); //TODO: this should be a constant somewhere; not sure where
+  bindTextParameter(meta_insert,":schema_version","0.2.1"); //TODO: this should be a constant somewhere; not sure where
   bindTextParameter(meta_insert,":generated_at",dateToString(DateTimeType::DateTime));
   bindTextParameter(meta_insert,":generated_on",dateToString(DateTimeType::Date));
   bindTextParameter(meta_insert,":project_name",Config_getString(PROJECT_NAME));
@@ -2437,7 +2437,7 @@ static void generateSqlite3ForPage(const PageDef *pd,bool isExample)
   // + title
   bindTextParameter(compounddef_insert,":title",title);
 
-  bindTextParameter(compounddef_insert,":kind", isExample ? "example" : "page",TRUE);
+  bindTextParameter(compounddef_insert,":kind", isExample ? "example" : "page");
 
   int file_id = insertPath(pd->getDefFileName());
 
