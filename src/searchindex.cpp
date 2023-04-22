@@ -525,15 +525,11 @@ void initSearchIndexer()
   bool externalSearch    = Config_getBool(EXTERNAL_SEARCH);
   if (searchEngine && serverBasedSearch)
   {
-    Doxygen::searchIndex = new SearchIndexIntf(externalSearch ? SearchIndexIntf::External : SearchIndexIntf::Internal);
-  }
-  else // no search engine or pure javascript based search function
-  {
-    Doxygen::searchIndex = 0;
+    Doxygen::searchIndex = std::make_unique<SearchIndexIntf>(externalSearch ? SearchIndexIntf::External : SearchIndexIntf::Internal);
   }
 }
 
 void finalizeSearchIndexer()
 {
-  delete Doxygen::searchIndex;
+  Doxygen::searchIndex.reset();
 }

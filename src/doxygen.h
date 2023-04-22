@@ -114,7 +114,7 @@ class Doxygen
     static NamespaceDefMutable      *globalScope;
     static QCString                  htmlFileExtension;
     static bool                      parseSourcesNeeded;
-    static SearchIndexIntf          *searchIndex;
+    static std::unique_ptr<SearchIndexIntf> searchIndex;
     static SymbolMap<Definition>    *symbolMap;
     static ClangUsrMap              *clangUsrMap;
     static Cache<std::string,LookupInfo> *typeLookupCache;

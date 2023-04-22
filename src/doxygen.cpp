@@ -152,7 +152,7 @@ std::unique_ptr<PageDef> Doxygen::mainPage;
 std::unique_ptr<NamespaceDef> Doxygen::globalNamespaceDef;
 NamespaceDefMutable  *Doxygen::globalScope;
 bool                  Doxygen::parseSourcesNeeded = FALSE;
-SearchIndexIntf      *Doxygen::searchIndex=0;
+std::unique_ptr<SearchIndexIntf> Doxygen::searchIndex;
 SymbolMap<Definition>*Doxygen::symbolMap;
 ClangUsrMap          *Doxygen::clangUsrMap = 0;
 Cache<std::string,LookupInfo> *Doxygen::typeLookupCache;
