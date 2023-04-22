@@ -177,8 +177,8 @@ class LayoutParser
   public:
     static LayoutParser &instance()
     {
-      static LayoutParser *theInstance = new LayoutParser;
-      return *theInstance;
+      static LayoutParser theInstance;
+      return theInstance;
     }
 
     // =========== XMLHandler events
@@ -198,7 +198,7 @@ class LayoutParser
       bool isVisible = m_visible && elemIsVisible(attrib) && parentIsVisible(m_rootNav);
       if (m_part!=LayoutDocManager::Undefined && isVisible)
       {
-        LayoutDocManager::instance().addEntry(m_part,new LayoutDocEntrySimple(k,isVisible));
+        LayoutDocManager::instance().addEntry(m_part,std::make_unique<LayoutDocEntrySimple>(k,isVisible));
       }
     }
 
@@ -214,7 +214,7 @@ class LayoutParser
       if (userTitle.isEmpty())  userTitle = title;
       if (m_part!=LayoutDocManager::Undefined && isVisible)
       {
-        LayoutDocManager::instance().addEntry(m_part,new LayoutDocEntrySection(k,userTitle,isVisible));
+        LayoutDocManager::instance().addEntry(m_part,std::make_unique<LayoutDocEntrySection>(k,userTitle,isVisible));
       }
     }
 
@@ -229,7 +229,7 @@ class LayoutParser
       bool isVisible = m_visible && elemIsVisible(attrib) && parentIsVisible(m_rootNav);
       if (m_part!=LayoutDocManager::Undefined && isVisible)
       {
-        LayoutDocManager::instance().addEntry(m_part,new LayoutDocEntryMemberDecl(type,userTitle,userSubscript));
+        LayoutDocManager::instance().addEntry(m_part,std::make_unique<LayoutDocEntryMemberDecl>(type,userTitle,userSubscript));
       }
     }
 
@@ -242,8 +242,7 @@ class LayoutParser
       bool isVisible = m_visible && elemIsVisible(attrib) && parentIsVisible(m_rootNav);
       if (m_part!=LayoutDocManager::Undefined && isVisible)
       {
-        LayoutDocManager::instance().addEntry(m_part,
-                                              new LayoutDocEntryMemberDef(type,userTitle));
+        LayoutDocManager::instance().addEntry(m_part,std::make_unique<LayoutDocEntryMemberDef>(type,userTitle));
       }
     }
 
@@ -267,9 +266,8 @@ class LayoutParser
       if (m_rootNav && !m_rootNav->find(LayoutNavEntry::MainPage))
       {
         // no MainPage node... add one as the first item of the root node...
-        new LayoutNavEntry(m_rootNav,LayoutNavEntry::MainPage, TRUE,
-            /*Config_getBool(GENERATE_TREEVIEW) ? "main" :*/ "index",
-            theTranslator->trMainPage(),"",TRUE);
+        m_rootNav->prependChild(std::make_unique<LayoutNavEntry>(m_rootNav,LayoutNavEntry::MainPage, TRUE,
+                                                   "index",theTranslator->trMainPage(),""));
       }
     }
 
@@ -568,7 +566,7 @@ class LayoutParser
         }
       }
       // create new item and make it the new root
-      m_rootNav = new LayoutNavEntry(m_rootNav,kind,isVisible,baseFile,title,intro);
+      m_rootNav = LayoutDocManager::instance().createChildNavEntry(m_rootNav,kind,isVisible,baseFile,title,intro);
     }
 
     void endNavEntry()
@@ -615,7 +613,7 @@ class LayoutParser
       if (m_part!=LayoutDocManager::Undefined)
       {
         bool isVisible = m_visible && elemIsVisible(attrib) && parentIsVisible(m_rootNav);
-        LayoutDocManager::instance().addEntry(m_part,new LayoutDocEntrySimple(LayoutDocEntry::MemberDefStart,isVisible));
+        LayoutDocManager::instance().addEntry(m_part,std::make_unique<LayoutDocEntrySimple>(LayoutDocEntry::MemberDefStart,isVisible));
       }
     }
 
@@ -636,7 +634,7 @@ class LayoutParser
                isVisible = static_cast<const LayoutDocEntrySimple*>(lde.get())->visible();
             }
           }
-          LayoutDocManager::instance().addEntry(m_part,new LayoutDocEntrySimple(LayoutDocEntry::MemberDefEnd,isVisible));
+          LayoutDocManager::instance().addEntry(m_part,std::make_unique<LayoutDocEntrySimple>(LayoutDocEntry::MemberDefEnd,isVisible));
         }
       }
     }
@@ -647,7 +645,7 @@ class LayoutParser
       if (m_part!=LayoutDocManager::Undefined)
       {
         bool isVisible = m_visible && elemIsVisible(attrib) && parentIsVisible(m_rootNav);
-        LayoutDocManager::instance().addEntry(m_part,new LayoutDocEntrySimple(LayoutDocEntry::MemberDeclStart,isVisible));
+        LayoutDocManager::instance().addEntry(m_part,std::make_unique<LayoutDocEntrySimple>(LayoutDocEntry::MemberDeclStart,isVisible));
       }
     }
 
@@ -667,16 +665,12 @@ class LayoutParser
                isVisible = static_cast<const LayoutDocEntrySimple*>(lde.get())->visible();
             }
           }
-          LayoutDocManager::instance().addEntry(m_part,new LayoutDocEntrySimple(LayoutDocEntry::MemberDeclEnd,isVisible));
+          LayoutDocManager::instance().addEntry(m_part,std::make_unique<LayoutDocEntrySimple>(LayoutDocEntry::MemberDeclEnd,isVisible));
         }
       }
     }
 
-
   private:
-    LayoutParser() { }
-   ~LayoutParser() { delete m_rootNav; }
-
     QCString m_scope;
     LayoutDocManager::LayoutPart m_part = LayoutDocManager::Undefined;
     LayoutNavEntry *m_rootNav = 0;
@@ -1317,14 +1311,16 @@ class LayoutDocManager::Private
 {
   public:
     std::array<LayoutDocEntryList,LayoutDocManager::NrParts> docEntries;
-    LayoutNavEntry *rootNav;
+    LayoutNavEntry rootNav;
 };
 
 LayoutDocManager::LayoutDocManager() : d(std::make_unique<Private>())
 {
-  d->rootNav = new LayoutNavEntry;
 }
 
+LayoutDocManager::~LayoutDocManager()
+{
+}
 
 void LayoutDocManager::init()
 {
@@ -1343,15 +1339,10 @@ void LayoutDocManager::init()
               );
 }
 
-LayoutDocManager::~LayoutDocManager()
-{
-  delete d->rootNav;
-}
-
 LayoutDocManager & LayoutDocManager::instance()
 {
-  static LayoutDocManager *theInstance = new LayoutDocManager;
-  return *theInstance;
+  static LayoutDocManager theInstance;
+  return theInstance;
 }
 
 const LayoutDocEntryList &LayoutDocManager::docEntries(LayoutDocManager::LayoutPart part) const
@@ -1361,12 +1352,22 @@ const LayoutDocEntryList &LayoutDocManager::docEntries(LayoutDocManager::LayoutP
 
 LayoutNavEntry* LayoutDocManager::rootNavEntry() const
 {
-  return d->rootNav;
+  return &d->rootNav;
 }
 
-void LayoutDocManager::addEntry(LayoutDocManager::LayoutPart p,LayoutDocEntry *e)
+LayoutNavEntry *LayoutDocManager::createChildNavEntry(LayoutNavEntry *parent,LayoutNavEntry::Kind k,bool vs,const QCString &bf,
+                                                      const QCString &tl,const QCString &intro)
 {
-  d->docEntries[static_cast<int>(p)].push_back(std::unique_ptr<LayoutDocEntry>(e));
+  if (parent==0) parent = &d->rootNav;
+  auto ptr = std::make_unique<LayoutNavEntry>(parent,k,vs,bf,tl,intro);
+  auto child = ptr.get();
+  parent->addChild(std::move(ptr));
+  return child;
+}
+
+void LayoutDocManager::addEntry(LayoutDocManager::LayoutPart p,LayoutDocEntryPtr &&e)
+{
+  d->docEntries[static_cast<int>(p)].push_back(std::move(e));
 }
 
 void LayoutDocManager::clear(LayoutDocManager::LayoutPart p)

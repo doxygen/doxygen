@@ -160,14 +160,8 @@ struct LayoutNavEntry
       UserGroup
     };
     LayoutNavEntry(LayoutNavEntry *parent,Kind k,bool vs,const QCString &bf,
-                   const QCString &tl,const QCString &intro,bool prepend=false)
-      : m_parent(parent), m_kind(k), m_visible(vs), m_baseFile(bf), m_title(tl), m_intro(intro)
-    {
-      if (parent)
-      {
-        if (prepend) parent->prependChild(this); else parent->addChild(this);
-      }
-    }
+                   const QCString &tl,const QCString &intro)
+      : m_parent(parent), m_kind(k), m_visible(vs), m_baseFile(bf), m_title(tl), m_intro(intro) {}
     LayoutNavEntry *parent() const   { return m_parent; }
     Kind kind() const                { return m_kind; }
     QCString baseFile() const        { return m_baseFile; }
@@ -177,8 +171,10 @@ struct LayoutNavEntry
     void setVisible(bool v)          { m_visible = v; }
     bool visible()                   { return m_visible; }
     void clear()                     { m_children.clear(); }
-    void addChild(LayoutNavEntry *e) { m_children.push_back(std::unique_ptr<LayoutNavEntry>(e)); }
-    void prependChild(LayoutNavEntry *e) { m_children.insert(m_children.begin(),std::unique_ptr<LayoutNavEntry>(e)); }
+    void addChild(std::unique_ptr<LayoutNavEntry> &&e)
+    { m_children.push_back(std::move(e)); }
+    void prependChild(std::unique_ptr<LayoutNavEntry> &&e)
+    { m_children.insert(m_children.begin(),std::move(e)); }
     const LayoutNavEntryList &children() const { return m_children; }
     LayoutNavEntry *find(LayoutNavEntry::Kind k,const QCString &file=QCString()) const;
 
@@ -194,7 +190,8 @@ struct LayoutNavEntry
     friend class LayoutDocManager;
 };
 
-using LayoutDocEntryList = std::vector< std::unique_ptr<LayoutDocEntry> >;
+using LayoutDocEntryPtr  = std::unique_ptr<LayoutDocEntry>;
+using LayoutDocEntryList = std::vector<LayoutDocEntryPtr>;
 
 /** @brief Singleton providing access to the (user configurable) layout of the documentation */
 class LayoutDocManager
@@ -215,12 +212,14 @@ class LayoutDocManager
 
     /** returns the (invisible) root of the navigation tree. */
     LayoutNavEntry *rootNavEntry() const;
+    LayoutNavEntry *createChildNavEntry(LayoutNavEntry *root,LayoutNavEntry::Kind k,bool vs,const QCString &bf,
+                                        const QCString &tl,const QCString &intro);
 
     /** Parses a user provided layout */
     void parse(const QCString &fileName, const char* data = nullptr);
     void init();
   private:
-    void addEntry(LayoutPart p,LayoutDocEntry*e);
+    void addEntry(LayoutPart p,LayoutDocEntryPtr &&e);
     void clear(LayoutPart p);
     LayoutDocManager();
     ~LayoutDocManager();
