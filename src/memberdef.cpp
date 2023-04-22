@@ -442,7 +442,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     int m_grpId = 0;                // group id
     MemberGroup *m_memberGroup = 0; // group's member definition
     const GroupDef *m_group = 0;          // group in which this member is in
-    Grouping::GroupPri_t m_grouppri; // priority of this definition
+    Grouping::GroupPri_t m_grouppri = Grouping::GROUPING_AUTO_DEF; // priority of this definition
     QCString m_groupFileName;   // file where this grouping was defined
     int m_groupStartLine = 0;       // line  "      "      "     "     "
     MemberDef *m_groupMember = 0;
