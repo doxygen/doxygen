@@ -2681,7 +2681,7 @@ static const MemberDef *setCallContextForVar(yyscan_t yyscanner,const QCString &
   if (mcv)
   {
     DBG_CTX((stderr,"local variable?\n"));
-    if (mcv->type()!=ScopedTypeVariant::Dummy) // locally found variable
+    if (!mcv->isDummy()) // locally found variable
     {
       DBG_CTX((stderr,"local var '%s' mcd=%s\n",qPrint(name),qPrint(mcv->name())));
       yyextra->theCallContext.setScope(*mcv);
@@ -2967,7 +2967,7 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
   else
   {
     DBG_CTX((stderr,"local variable!\n"));
-    if (lcd->type()!=ScopedTypeVariant::Dummy)
+    if (!lcd->isDummy())
     {
       DBG_CTX((stderr,"non-dummy context lcd=%s!\n",qPrint(lcd->name())));
       yyextra->theCallContext.setScope(*lcd);
@@ -3189,7 +3189,7 @@ static void generateMemberLink(yyscan_t yyscanner,
   const ScopedTypeVariant *stv = yyextra->theVarContext.findVariable(varName);
   if (stv)
   {
-    if (stv->type()!=ScopedTypeVariant::Dummy)
+    if (!stv->isDummy())
     {
       DBG_CTX((stderr,"Class found!\n"));
       if (getLink(yyscanner,stv->name(),memName,ol))

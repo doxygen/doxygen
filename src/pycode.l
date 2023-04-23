@@ -1318,7 +1318,7 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
   }
   else
   {
-    if (lcd->type()!=ScopedTypeVariant::Dummy)
+    if (!lcd->isDummy())
     {
       yyextra->theCallContext.setScope(*lcd);
     }
