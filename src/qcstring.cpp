@@ -425,6 +425,11 @@ char *qstrdup( const char *str )
     return strcpy( dst, str );
 }
 
+void qstrfree( const char *str )
+{
+  delete[](str);
+}
+
 char *qstrncpy( char *dst, const char *src, size_t len )
 {
     if ( !src )

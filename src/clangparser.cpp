@@ -2,6 +2,7 @@
 #include "settings.h"
 #include <cstdio>
 #include <cstdint>
+#include <vector>
 #include <mutex>
 
 #if USE_LIBCLANG
@@ -74,7 +75,7 @@ class ClangTUParser::Private
     CXIndex index = 0;
     uint32_t curToken = 0;
     DetectedLang detectedLang = DetectedLang::Cpp;
-    uint32_t numFiles = 0;
+    size_t numFiles = 0;
     std::vector<QCString> sources;
     std::vector<CXUnsavedFile> ufs;
     std::vector<CXCursor> cursors;
@@ -124,7 +125,6 @@ void ClangTUParser::parse()
   p->index    = clang_createIndex(0, 0);
   p->curToken = 0;
   p->cursors.clear();
-  int argc=0;
   size_t clang_option_len = 0;
   std::vector<clang::tooling::CompileCommand> command;
   if (p->parser.database()!=nullptr)
@@ -137,26 +137,22 @@ void ClangTUParser::parse()
       clang_option_len = command[command.size()-1].CommandLine.size();
     }
   }
-  char **argv = static_cast<char**>(malloc(sizeof(char*)*
-                               (4+Doxygen::inputPaths.size()+
-                                includePath.size()+
-                                clangOptions.size()+
-                                clang_option_len)));
+  std::vector<char *> argv;
   if (!command.empty() )
   {
     std::vector<std::string> options = command[command.size()-1].CommandLine;
     // copy each compiler option used from the database. Skip the first which is compiler exe.
     for (auto option = options.begin()+1; option != options.end(); option++)
     {
-      argv[argc++] = qstrdup(option->c_str());
+      argv.push_back(qstrdup(option->c_str()));
     }
     // user specified options
     for (size_t i=0;i<clangOptions.size();i++)
     {
-      argv[argc++]=qstrdup(clangOptions[i].c_str());
+      argv.push_back(qstrdup(clangOptions[i].c_str()));
     }
     // this extra addition to argv is accounted for as we are skipping the first entry in
-    argv[argc++]=qstrdup("-w"); // finally, turn off warnings.
+    argv.push_back(qstrdup("-w")); // finally, turn off warnings.
   }
   else
   {
@@ -166,7 +162,7 @@ void ClangTUParser::parse()
       for (const std::string &path : Doxygen::inputPaths)
       {
         QCString inc = QCString("-I")+path.data();
-        argv[argc++]=qstrdup(inc.data());
+        argv.push_back(qstrdup(inc.data()));
         //printf("argv[%d]=%s\n",argc,argv[argc]);
       }
     }
@@ -174,16 +170,16 @@ void ClangTUParser::parse()
     for (size_t i=0;i<includePath.size();i++)
     {
       QCString inc = QCString("-I")+includePath[i].c_str();
-      argv[argc++]=qstrdup(inc.data());
+      argv.push_back(qstrdup(inc.data()));
     }
     // user specified options
     for (size_t i=0;i<clangOptions.size();i++)
     {
-      argv[argc++]=qstrdup(clangOptions[i].c_str());
+      argv.push_back(qstrdup(clangOptions[i].c_str()));
     }
     // extra options
-    argv[argc++]=qstrdup("-ferror-limit=0");
-    argv[argc++]=qstrdup("-x");
+    argv.push_back(qstrdup("-ferror-limit=0"));
+    argv.push_back(qstrdup("-x"));
 
     // Since we can be presented with a .h file that can contain C/C++ or
     // Objective C code and we need to configure the parser before knowing this,
@@ -210,18 +206,18 @@ void ClangTUParser::parse()
     }
     switch (p->detectedLang)
     {
-      case DetectedLang::Cpp:    argv[argc++]=qstrdup("c++");           break;
-      case DetectedLang::ObjC:   argv[argc++]=qstrdup("objective-c");   break;
-      case DetectedLang::ObjCpp: argv[argc++]=qstrdup("objective-c++"); break;
+      case DetectedLang::Cpp:    argv.push_back(qstrdup("c++"));           break;
+      case DetectedLang::ObjC:   argv.push_back(qstrdup("objective-c"));   break;
+      case DetectedLang::ObjCpp: argv.push_back(qstrdup("objective-c++")); break;
     }
 
     // provide the input and its dependencies as unsaved files so we can
     // pass the filtered versions
-    argv[argc++]=qstrdup(fileName.data());
+    argv.push_back(qstrdup(fileName.data()));
   }
   //printf("source %s ----------\n%s\n-------------\n\n",
   //    fileName,p->source.data());
-  int numUnsavedFiles = static_cast<int>(p->filesInSameTU.size()+1);
+  size_t numUnsavedFiles = p->filesInSameTU.size()+1;
   p->numFiles = numUnsavedFiles;
   p->sources.resize(numUnsavedFiles);
   p->ufs.resize(numUnsavedFiles);
@@ -231,7 +227,7 @@ void ClangTUParser::parse()
   p->ufs[0].Contents = p->sources[0].data();
   p->ufs[0].Length   = p->sources[0].length();
   p->fileMapping.insert({fileName.data(),0});
-  int i=1;
+  size_t i=1;
   for (auto it  = p->filesInSameTU.begin();
             it != p->filesInSameTU.end() && i<numUnsavedFiles;
           ++it, i++)
@@ -244,24 +240,24 @@ void ClangTUParser::parse()
   }
 
   // let libclang do the actual parsing
+  //for (i=0;i<argv.size();i++) printf("Argument %d: %s\n",i,argv[i]);
   p->tu = clang_parseTranslationUnit(p->index, 0,
-                                     argv, argc, p->ufs.data(), numUnsavedFiles,
+                                     argv.data(), static_cast<int>(argv.size()), p->ufs.data(), numUnsavedFiles,
                                      CXTranslationUnit_DetailedPreprocessingRecord);
   //printf("  tu=%p\n",p->tu);
   // free arguments
-  for (i=0;i<argc;++i)
+  for (i=0;i<argv.size();++i)
   {
-    delete[](argv[i]);
+    qstrfree(argv[i]);
   }
-  free(argv);
 
   if (p->tu)
   {
     // show any warnings that the compiler produced
-    int n=clang_getNumDiagnostics(p->tu);
+    size_t n=clang_getNumDiagnostics(p->tu);
     for (i=0; i!=n; ++i)
     {
-      CXDiagnostic diag = clang_getDiagnostic(p->tu, i);
+      CXDiagnostic diag = clang_getDiagnostic(p->tu, static_cast<unsigned>(i));
       CXString string = clang_formatDiagnostic(diag,
           clang_defaultDiagnosticDisplayOptions());
       err("%s [clang]\n",clang_getCString(string));
@@ -290,7 +286,7 @@ ClangTUParser::~ClangTUParser()
     p->tokens    = 0;
     p->numTokens = 0;
   }
-  for (uint32_t i=0;i<p->numFiles;i++)
+  for (size_t i=0;i<p->numFiles;i++)
   {
     delete[] p->ufs[i].Filename;
   }
