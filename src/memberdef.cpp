@@ -2113,7 +2113,7 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
     {
       doxyName.prepend(cdname+getLanguageSpecificSeparator(getLanguage()));
     }
-    ol.startDoxyAnchor(cfname,cname,anchor(),doxyName,doxyArgs);
+    if (inheritId.isEmpty()) ol.startDoxyAnchor(cfname,cname,anchor(),doxyName,doxyArgs);
   }
 
   if (!detailsVisible)
