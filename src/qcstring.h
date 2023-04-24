@@ -51,24 +51,20 @@ void *qmemmove( void *dst, const void *src, size_t len );
 #define qsnprintf snprintf
 #endif
 
-char *qstrdup( const char * );
+//! Returns a copy of a string \a s.
+//! Note that memory is passed to the caller, use qstrfree() to release.
+char *qstrdup( const char *s );
+//! Frees the memory allocated using qstrdup().
+void qstrfree( const char *s );
 
-inline uint32_t cstrlen( const char *str )
-{ return static_cast<uint32_t>(strlen(str)); }
-
+//! Returns the length of string \a str, or 0 if a null pointer is passed.
 inline uint32_t qstrlen( const char *str )
 { return str ? static_cast<uint32_t>(strlen(str)) : 0; }
-
-inline char *cstrcpy( char *dst, const char *src )
-{ return strcpy(dst,src); }
 
 inline char *qstrcpy( char *dst, const char *src )
 { return src ? strcpy(dst, src) : 0; }
 
 char * qstrncpy(char *dst,const char *src, size_t len);
-
-inline int cstrcmp( const char *str1, const char *str2 )
-{ return strcmp(str1,str2); }
 
 inline bool qisempty( const char *s)
 { return s==0 || *s==0; }
@@ -78,9 +74,6 @@ inline int qstrcmp( const char *str1, const char *str2 )
          (qisempty(str1) && qisempty(str2)) ? 0 : // both empty
          qisempty(str1) ? -1 : 1;                 // one empty, other non-empty
 }
-
-inline int cstrncmp( const char *str1, const char *str2, size_t len )
-{ return strncmp(str1,str2,len); }
 
 inline int qstrncmp( const char *str1, const char *str2, size_t len )
 { return (str1 && str2) ? strncmp(str1,str2,len) :  // both non-empty
