@@ -434,7 +434,7 @@ files that you implicitly load via navigating through the index. As a
 result this works even for very large projects where reading all XML
 files as one big DOM tree would not fit into memory.
 
-See <a href="https://github.com/michaeljones/breathe">the Breathe project</a> for
+See <a href="https://github.com/breathe-doc/breathe">the Breathe project</a> for
 an example that uses doxygen XML output from Python to bridge it with the
 <a href="http://www.sphinx-doc.org/en/stable/">Sphinx</a> document generator.
 
