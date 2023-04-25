@@ -210,6 +210,8 @@ add_custom_target(doxygen_pdf
         COMMAND ${PDFLATEX}  -shell-escape doxygen_manual.tex
         COMMAND ${MAKEINDEX} doxygen_manual.idx
         COMMAND ${PDFLATEX}  -shell-escape doxygen_manual.tex
+        COMMAND ${MAKEINDEX} doxygen_manual.idx
+        COMMAND ${PDFLATEX}  -shell-escape doxygen_manual.tex
         DEPENDS run_doxygen
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/latex
 )
