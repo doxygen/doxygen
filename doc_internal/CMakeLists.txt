@@ -27,6 +27,12 @@ set(DOC_FILES
         translator.py
 )
 
+if (${CMAKE_VERSION} VERSION_EQUAL "3.11.0" OR ${CMAKE_VERSION} VERSION_GREATER "3.11.0")
+    file(GLOB LANG_FILES CONFIGURE_DEPENDS "${TOP}/src//translator_??.h")
+else()
+    file(GLOB LANG_FILES "${TOP}/src//translator_??.h")
+endif()
+
 foreach (f  ${DOC_FILES})
 add_custom_command(OUTPUT ${PROJECT_BINARY_DIR}/doc_internal/${f}
     COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/doc/${f} ${PROJECT_BINARY_DIR}/doc_internal/
