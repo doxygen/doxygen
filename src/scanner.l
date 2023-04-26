@@ -1413,7 +1413,7 @@ NONLopt [^\n]*
                                           BEGIN( CompoundName );
                                         }
 <FindMembers>{B}*"exception"{BN}+       { // Corba IDL/Slice exception
-                                          if (yyextra->insideJava) REJECT;
+                                          if (yyextra->insideJava || yyextra->insideCpp) REJECT;
                                           yyextra->isTypedef=FALSE;
                                           yyextra->current->section = Entry::CLASS_SEC;
                                           // preserve UNO IDL, Slice local
