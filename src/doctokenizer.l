@@ -1382,7 +1382,7 @@ SHOWDATE ([0-9]{4}"-"[0-9]{1,2}"-"[0-9]{1,2})?({WS}*[0-9]{1,2}":"[0-9]{1,2}(":"[
 
 <St_SkipTitle>.
 <St_SkipTitle>(\n|"\\ilinebr") {
-                         lineCount(yytext,yyleng);
+                         if (*yytext == '\n') unput('\n');
                          return 0;
                          }
 
