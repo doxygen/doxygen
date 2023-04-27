@@ -426,13 +426,13 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
 
     ArgumentList m_tArgList;      // template argument list of function template
     ArgumentList m_typeConstraints; // type constraints for template parameters
-    MemberDef *m_templateMaster;
+    MemberDef *m_templateMaster = 0;
     ArgumentLists m_defTmpArgLists; // lists of template argument lists
                                          // (for template functions in nested template classes)
 
     QCString m_metaData;        // Slice metadata.
 
-    mutable ClassDef *m_cachedAnonymousType; // if the member has an anonymous compound
+    mutable ClassDef *m_cachedAnonymousType = 0; // if the member has an anonymous compound
                                    // as its type then this is computed by
                                    // getClassDefOfAnonymousType() and
                                    // cached here.
