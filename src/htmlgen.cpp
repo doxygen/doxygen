@@ -945,6 +945,8 @@ void HtmlCodeGenerator::writeTooltip(const QCString &id, const DocLinkInfo &docI
     *m_t << "<div class=\"ttdef\"><b>Definition:</b> ";
     if (!defInfo.url.isEmpty())
     {
+      url = defInfo.url;
+      addHtmlExtensionIfMissing(url);
       *m_t << "<a href=\"";
       *m_t << externalRef(m_relPath,defInfo.ref,TRUE);
       *m_t << url;
@@ -966,6 +968,8 @@ void HtmlCodeGenerator::writeTooltip(const QCString &id, const DocLinkInfo &docI
     *m_t << "<div class=\"ttdecl\"><b>Declaration:</b> ";
     if (!declInfo.url.isEmpty())
     {
+      url = declInfo.url;
+      addHtmlExtensionIfMissing(url);
       *m_t << "<a href=\"";
       *m_t << externalRef(m_relPath,declInfo.ref,TRUE);
       *m_t << url;
