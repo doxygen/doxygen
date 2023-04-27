@@ -118,7 +118,7 @@ namespace SpanishTranslatorUtils
     }
 }
 
-class TranslatorSpanish : public Translator
+class TranslatorSpanish : public TranslatorAdapter_1_9_6
 {
   public:
 
