@@ -2237,8 +2237,8 @@ class TranslatorDutch : public Translator
       return result;
     }
 
-    virtual QCString trDefinition()  { return "Definitie:";}
-    virtual QCString trDeclaration() { return "Declaratie:";}
+    virtual QCString trDefinition()  { return "Definitie";}
+    virtual QCString trDeclaration() { return "Declaratie";}
 };
 
 #endif

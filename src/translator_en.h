@@ -2563,8 +2563,8 @@ class TranslatorEnglish : public Translator
         result+="the namespaces they belong to:";
       return result;
     }
-    virtual QCString trDefinition()  { return "Definition:";}
-    virtual QCString trDeclaration() { return "Declaration:";}
+    virtual QCString trDefinition()  { return "Definition";}
+    virtual QCString trDeclaration() { return "Declaration";}
 };
 
 #endif
