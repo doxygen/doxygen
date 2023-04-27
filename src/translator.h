@@ -749,6 +749,8 @@ class Translator
     virtual QCString trFileMembersDescriptionTotal(FileMemberHighlight::Enum hl) = 0;
     virtual QCString trCompoundMembersDescriptionTotal(ClassMemberHighlight::Enum hl) = 0;
     virtual QCString trNamespaceMembersDescriptionTotal(NamespaceMemberHighlight::Enum hl) = 0;
+    virtual QCString trDefinition() = 0;
+    virtual QCString trDeclaration() = 0;
 };
 
 #endif

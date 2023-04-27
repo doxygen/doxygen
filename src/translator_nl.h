@@ -2236,6 +2236,9 @@ class TranslatorDutch : public Translator
         result+="de namespaces waartoe ze behoren:";
       return result;
     }
+
+    virtual QCString trDefinition()  { return "Definitie";}
+    virtual QCString trDeclaration() { return "Declaratie";}
 };
 
 #endif

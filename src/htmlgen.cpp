@@ -942,7 +942,7 @@ void HtmlCodeGenerator::writeTooltip(const QCString &id, const DocLinkInfo &docI
   }
   if (!defInfo.file.isEmpty())
   {
-    *m_t << "<div class=\"ttdef\"><b>Definition:</b> ";
+    *m_t << "<div class=\"ttdef\"><b>" << theTranslator->trDefinition() << "</b> ";
     if (!defInfo.url.isEmpty())
     {
       url = defInfo.url;
@@ -965,7 +965,7 @@ void HtmlCodeGenerator::writeTooltip(const QCString &id, const DocLinkInfo &docI
   }
   if (!declInfo.file.isEmpty())
   {
-    *m_t << "<div class=\"ttdecl\"><b>Declaration:</b> ";
+    *m_t << "<div class=\"ttdecl\"><b>" << theTranslator->trDeclaration() << "</b> ";
     if (!declInfo.url.isEmpty())
     {
       url = declInfo.url;

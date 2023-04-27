@@ -96,6 +96,11 @@ class TranslatorAdapter_1_9_6 : public TranslatorAdapterBase
         return "&nbsp;";
       }
     }
+
+    virtual QCString trDefinition()
+    { return english.trDefinition(); }
+    virtual QCString trDeclaration()
+    { return english.trDeclaration(); }
 };
 
 class TranslatorAdapter_1_9_5 : public TranslatorAdapter_1_9_6
