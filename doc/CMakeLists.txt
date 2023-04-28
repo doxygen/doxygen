@@ -92,7 +92,6 @@ set(DOC_FILES
         markdown.doc
         output.doc
         perlmod.doc
-        perlmod_tree.doc
         preprocessing.doc
         searching.doc
         starting.doc
