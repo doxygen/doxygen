@@ -1273,6 +1273,19 @@ static QCString objectLinkToString(const QCString &ref, const QCString &f,
   return result;
 }
 
+static void processEntity(TextStream &t, bool pdfHyperlinks, const char *strForm, const char *strRepl)
+{
+  if (pdfHyperlinks)
+  {
+    t << "\\texorpdfstring{";
+  }
+  t << strForm;
+  if (pdfHyperlinks)
+  {
+    t << "}{" << strRepl << "}";
+  }
+}
+
 void LatexGenerator::writeObjectLink(const QCString &ref, const QCString &f,
                                      const QCString &anchor, const QCString &text)
 {
@@ -2196,12 +2209,14 @@ void filterLatexString(TextStream &t,const QCString &str,
     bool insideTabbing,bool insidePre,bool insideItem,bool insideTable,bool keepSpaces, const bool retainNewline)
 {
   if (str.isEmpty()) return;
+  bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
   //printf("filterLatexString(%s) insideTabbing=%d\n",qPrint(str),insideTabbing);
   const char *p=str.data();
   const char *q;
   int cnt;
   unsigned char c;
   unsigned char pc='\0';
+
   while (*p)
   {
     c=static_cast<unsigned char>(*p++);
@@ -2259,7 +2274,7 @@ void filterLatexString(TextStream &t,const QCString &str,
         case '#':  t << "\\#";           break;
         case '$':  t << "\\$";           break;
         case '%':  t << "\\%";           break;
-        case '^':  t << "$^\\wedge$";    break;
+        case '^':  processEntity(t,pdfHyperlinks,"$^\\wedge$","\\string^");    break;
         case '&':  // possibility to have a special symbol
                    q = p;
                    cnt = 2; // we have to count & and ; as well
@@ -2289,7 +2304,7 @@ void filterLatexString(TextStream &t,const QCString &str,
                      t << "\\&";
                    }
                    break;
-        case '*':  t << "$\\ast$";       break;
+        case '*':  processEntity(t,pdfHyperlinks,"$\\ast$","*");    break;
         case '_':  if (!insideTabbing) t << "\\+";
                    t << "\\_";
                    if (!insideTabbing) t << "\\+";
@@ -2298,8 +2313,8 @@ void filterLatexString(TextStream &t,const QCString &str,
         case '}':  t << "\\}";           break;
         case '<':  t << "$<$";           break;
         case '>':  t << "$>$";           break;
-        case '|':  t << "$\\vert$";      break;
-        case '~':  t << "$\\sim$";       break;
+        case '|':  processEntity(t,pdfHyperlinks,"$\\vert$","|");    break;
+        case '~':  processEntity(t,pdfHyperlinks,"$\\sim$","\\string~");    break;
         case '[':  if (Config_getBool(PDF_HYPERLINKS) || insideItem)
                      t << "\\mbox{[}";
                    else
@@ -2462,6 +2477,7 @@ QCString latexEscapePDFString(const QCString &s)
       case '&':  t << "\\&"; break;
       case '#':  t << "\\#"; break;
       case '$':  t << "\\$"; break;
+      case '^':  t << "\\string^";    break;
       case '~':  t << "\\string~";    break;
       default:
         t << c;
