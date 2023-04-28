@@ -34,6 +34,7 @@ struct constexpYY_state
   int          constExpLineNr;
   std::string  constExpFileName;
 
+  std::string orgString;
   std::string inputString;
   int         inputPosition;
 };

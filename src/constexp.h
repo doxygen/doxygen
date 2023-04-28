@@ -25,7 +25,7 @@ class ConstExpressionParser
   public:
     ConstExpressionParser();
    ~ConstExpressionParser();
-    bool parse(const char *fileName,int line,const std::string &expression);
+    bool parse(const char *fileName,int line,const std::string &expression,const std::string &orgExpression);
   private:
     struct Private;
     std::unique_ptr<Private> p;

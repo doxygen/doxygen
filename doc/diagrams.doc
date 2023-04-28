@@ -22,7 +22,7 @@
   Doxygen can use the "dot" tool from graphviz to generate
   more advanced diagrams and graphs. Graphviz is an open-source, 
   cross-platform graph drawing toolkit and can be found 
-  at http://www.graphviz.org/
+  at https://www.graphviz.org/
 
   If you have the "dot" tool in the path, you can set
   \ref cfg_have_dot "HAVE_DOT" to \c YES in the configuration file to 

@@ -3574,6 +3574,11 @@ QCString escapeCharsInString(const QCString &name,bool allowDots,bool allowUnder
       case ']': growBuf.addStr("_0e"); break;
       case '[': growBuf.addStr("_0f"); break;
       case '#': growBuf.addStr("_0g"); break;
+      case '"': growBuf.addStr("_0h"); break;
+      case '~': growBuf.addStr("_0i"); break;
+      case '\'': growBuf.addStr("_0j"); break;
+      case ';': growBuf.addStr("_0k"); break;
+      case '`': growBuf.addStr("_0l"); break;
       default:
                 if (c<0)
                 {
@@ -3661,6 +3666,11 @@ QCString unescapeCharsInString(const QCString &s)
                case 'e': result+=']'; p+=2; break; // _0e -> ']'
                case 'f': result+='['; p+=2; break; // _0f -> '['
                case 'g': result+='#'; p+=2; break; // _0g -> '#'
+               case 'h': result+='"'; p+=2; break; // _0h -> '"'
+               case 'i': result+='~'; p+=2; break; // _0i -> '~'
+               case 'j': result+='\''; p+=2; break;// _0j -> '\'
+               case 'k': result+=';'; p+=2; break; // _0k -> ';'
+               case 'l': result+='`'; p+=2; break; // _0l -> '`'
                default: // unknown escape, just pass underscore character as-is
                  result+=c;
                  break;

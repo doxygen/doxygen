@@ -119,7 +119,7 @@ For HTML and \LaTeX there are additional options available.
 
 Doxygen can produce a number of diagrams. Using the Diagrams pane you
 can select which ones to generate. For most diagrams the
-`dot` tool of the <a href="http://www.graphviz.org">GraphViz</a> package
+`dot` tool of the <a href="https://www.graphviz.org">GraphViz</a> package
 is needed. This needs to be installed separately.
 
 \image html doxywizard_page4.png "Wizard tab: Diagrams to generate"
