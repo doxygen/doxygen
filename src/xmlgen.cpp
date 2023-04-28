@@ -502,8 +502,8 @@ static void writeMemberReference(TextStream &t,const Definition *def,const Membe
 static void stripAnonymousMarkers(QCString &s)
 {
   auto isDigit = [](char c) { return c>='0' && c<='9'; };
-  size_t len = s.length();
-  size_t i=0,j=0;
+  int len = static_cast<int>(s.length());
+  int i=0,j=0;
   if (len>0)
   {
     while (i<len)
