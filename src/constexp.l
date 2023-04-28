@@ -140,7 +140,7 @@ ConstExpressionParser::~ConstExpressionParser()
   constexpYYlex_destroy(p->yyscanner);
 }
 
-bool ConstExpressionParser::parse(const char *fileName,int lineNr,const std::string &s)
+bool ConstExpressionParser::parse(const char *fileName,int lineNr,const std::string &s, const std::string &orgStr)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)p->yyscanner;
 
@@ -150,6 +150,7 @@ bool ConstExpressionParser::parse(const char *fileName,int lineNr,const std::str
 
   yyextra->constExpFileName = fileName;
   yyextra->constExpLineNr = lineNr;
+  yyextra->orgString = orgStr;
   yyextra->inputString = s;
   yyextra->inputPosition = 0;
   constexpYYrestart( yyin, p->yyscanner );

@@ -3067,13 +3067,15 @@ static bool computeExpression(yyscan_t yyscanner,const QCString &expr)
 {
   YY_EXTRA_TYPE state = preYYget_extra(yyscanner);
   QCString e=expr;
+  QCString ee=expr;
+  ee = removeMarkers(ee);
   state->expanded.clear();
   expandExpression(yyscanner,e,0,0,0);
   //printf("after expansion '%s'\n",qPrint(e));
   e = removeIdsAndMarkers(e);
   if (e.isEmpty()) return FALSE;
   //printf("parsing '%s'\n",qPrint(e));
-  return state->constExpParser.parse(state->fileName.data(),state->yyLineNr,e.str());
+  return state->constExpParser.parse(state->fileName.data(),state->yyLineNr,e.str(),ee.str());
 }
 
 /*! expands the macro definition in \a name
