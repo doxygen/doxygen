@@ -393,9 +393,13 @@ void FTVHelp::Private::generateTree(TextStream &t, const FTVNodes &nl,int level,
       }
       else if (n->def && n->def->definitionType()==Definition::TypeNamespace)
       {
-        if (n->def->getLanguage() == SrcLangExt_Slice)
+        if ((n->def->getLanguage() == SrcLangExt_Slice) || (n->def->getLanguage() == SrcLangExt_Fortran))
         {
           t << "<span class=\"icona\"><span class=\"icon\">M</span></span>";
+        }
+        else if ((n->def->getLanguage() == SrcLangExt_Java) || (n->def->getLanguage() == SrcLangExt_VHDL))
+        {
+          t << "<span class=\"icona\"><span class=\"icon\">P</span></span>";
         }
         else
         {
@@ -449,9 +453,13 @@ void FTVHelp::Private::generateTree(TextStream &t, const FTVNodes &nl,int level,
       }
       else if (n->def && n->def->definitionType()==Definition::TypeNamespace)
       {
-        if (n->def->getLanguage() == SrcLangExt_Slice)
+        if ((n->def->getLanguage() == SrcLangExt_Slice) || (n->def->getLanguage() == SrcLangExt_Fortran))
         {
           t << "<span class=\"icona\"><span class=\"icon\">M</span></span>";
+        }
+        else if ((n->def->getLanguage() == SrcLangExt_Java) || (n->def->getLanguage() == SrcLangExt_VHDL))
+        {
+          t << "<span class=\"icona\"><span class=\"icon\">P</span></span>";
         }
         else
         {
