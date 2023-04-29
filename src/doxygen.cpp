@@ -765,8 +765,12 @@ static Definition *findScopeFromQualifiedName(NamespaceDefMutable *startScope,co
       {
         for (const auto &nd : fileScope->getUsedNamespaces())
         {
-          resultScope = findScopeFromQualifiedName(toNamespaceDefMutable(nd),n,fileScope,tagInfo);
-          if (resultScope!=0) break;
+          NamespaceDef *mnd = toNamespaceDefMutable(nd);
+          if (mnd)
+          {
+            resultScope = findScopeFromQualifiedName(toNamespaceDefMutable(nd),n,fileScope,tagInfo);
+            if (resultScope!=0) break;
+          }
         }
         if (resultScope)
         {
@@ -5369,10 +5373,10 @@ static bool findGlobalMember(const Entry *root,
          QCString("no matching file member found for \n")+substitute(fullFuncDecl,"%","%%");
       if (mn->size()>0)
       {
-        warnMsg+="\nPossible candidates:\n";
+        warnMsg+="\nPossible candidates:";
         for (const auto &md : *mn)
         {
-          warnMsg+=" '";
+          warnMsg+="\n '";
           warnMsg+=substitute(md->declaration(),"%","%%");
           warnMsg+="' " + warn_line(md->getDefFileName(),md->getDefLine());
         }
