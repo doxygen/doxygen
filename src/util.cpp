@@ -358,6 +358,10 @@ int guessSection(const QCString &name)
       return Entry::HEADER_SEC;
     }
   }
+  else
+  {
+    if (getLanguageFromFileName(name,SrcLangExt_Unknown) == SrcLangExt_Cpp) return Entry::HEADER_SEC;
+  }
   return 0;
 }
 
