@@ -2104,7 +2104,8 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
   // If there is no detailed description we need to write the anchor here.
   bool detailsVisible = hasDetailedDescription();
   bool writeAnchor = (inGroup || getGroupDef()==0) &&     // only write anchors for member that have no details and are
-                     !detailsVisible && !m_annMemb; // rendered inside the group page or are not grouped at all
+                     !detailsVisible && !m_annMemb && // rendered inside the group page or are not grouped at all
+                     inheritId.isEmpty();
   if (writeAnchor)
   {
     QCString doxyArgs=argsString();
@@ -2113,7 +2114,7 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
     {
       doxyName.prepend(cdname+getLanguageSpecificSeparator(getLanguage()));
     }
-    if (inheritId.isEmpty()) ol.startDoxyAnchor(cfname,cname,anchor(),doxyName,doxyArgs);
+    ol.startDoxyAnchor(cfname,cname,anchor(),doxyName,doxyArgs);
   }
 
   if (!detailsVisible)
