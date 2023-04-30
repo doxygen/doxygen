@@ -399,6 +399,7 @@ jobs:
           RESULT_VARIABLE result
         )
         if (NOT result EQUAL 0)
+          cat build/latex/doxygen_manual.log
           message(FATAL_ERROR "Building documentation failed")
         endif()
 
