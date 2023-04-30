@@ -19,7 +19,7 @@
  *    Thanks to Jorge Ramos, Fernando Carijo and others for their contributions.
  *
  * History:
- * 20230225:
+ * 20230430:
  *  - Updated to 1.9.7;
  *  - Adding the namespace PortugueseTranslatorUtils to hold common 
  *    functions shared by both Portuguese translators;
