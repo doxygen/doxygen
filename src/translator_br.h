@@ -140,9 +140,9 @@ namespace PortugueseTranslatorUtils
           return true;
       }
     }
-}
+};
 
-class TranslatorBrazilian : public TranslatorAdapter_1_9_6
+class TranslatorBrazilian : public Translator
 {
   public:
 
@@ -2753,7 +2753,9 @@ class TranslatorBrazilian : public TranslatorAdapter_1_9_6
       else
         result+="o namespace a que pertencem:";
       return result;
-    }    
+    }
+    virtual QCString trDefinition()  { return "Definição";}
+    virtual QCString trDeclaration() { return "Declaração";}        
 };
 
 #endif

@@ -74,7 +74,7 @@
 
 #include "translator_br.h"
 
-class TranslatorPortuguese : public TranslatorAdapter_1_9_6
+class TranslatorPortuguese : public Translator
 {
   public:
 
@@ -2635,6 +2635,8 @@ class TranslatorPortuguese : public TranslatorAdapter_1_9_6
         result+="o namespace a que pertencem:";
       return result;
     }
+    virtual QCString trDefinition()  { return "Definição";}
+    virtual QCString trDeclaration() { return "Declaração";}        
 };
 
 #endif
