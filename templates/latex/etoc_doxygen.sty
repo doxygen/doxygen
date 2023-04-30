@@ -1,31 +1,34 @@
 %%
-%% This is file `etoc.sty',
-%% generated with the docstrip utility.
+%% This is file etoc_doxygen.sty
 %%
-%% The original source files were:
+%% Apart from this header notice and the renaming from etoc to
+%% etoc_doxygen (also in \ProvidesPackage) it is an identical
+%% copy of
 %%
-%% etoc.dtx  (with options: `package')
+%%     etoc.sty
+%%
+%% at version 1.2a of 2023/05/01.
+%%
+%% This file has been provided to Doxygen team courtesy of the
+%% author for benefit of users having a LaTeX installation not
+%% yet providing version 1.2a or later of etoc, whose
+%% deeplevels feature is required.
+%%
+%% The orginal source etoc.dtx (only of the latest version at
+%% any given time) is available at
 %% 
-%% IMPORTANT NOTICE:
-%% 
-%% For the copyright see the source file.
-%% 
-%% Any modified versions of this file must be renamed
+%%     https://ctan.org/pkg/etoc
+%%
+%% and contains the terms for copying and modification as well
+%% as author contact information.
+%%
+%% In brief any modified versions of this file must be renamed
 %% with new filenames distinct from etoc.sty.
 %% 
-%% For distribution of the original source see the terms
-%% for copying and modification in the file etoc.dtx.
-%% 
-%% This generated file may be distributed as long as the
-%% original source files, as listed above, are part of the
-%% same distribution. (The sources need not necessarily be
-%% in the same archive or directory.)
-%%
 %% Package: etoc
 %% Version: 1.2a
 %% License: LPPL 1.3c
-%% Copyright (C) 2012-2023 <jfbu>
-%%                         <jfbu>
+%% Copyright (C) 2012-2023 Jean-Francois B. <user jfbu at github>
 \NeedsTeXFormat{LaTeX2e}[2003/12/01]
 \ProvidesPackage{etoc_doxygen}[2023/05/01 v1.2a Completely customisable TOCs (JFB)]
 \newif\ifEtoc@oldLaTeX
@@ -225,6 +228,7 @@
    \fi
 }
 \def\etoclevel#1{\csname Etoc@#1@@\endcsname}
+\def\etocthelevel#1{\number\csname Etoc@#1@@\endcsname}
 \def\etocifunknownlevelTF#1{\@ifundefined{Etoc@#1@@}}
 \@ifclassloaded{memoir}{\etocsetlevel{book}{-2}}{}
 \etocsetlevel{part}{-1}
@@ -528,7 +532,24 @@
 \let\etoc@startlocaltoc\@gobble
 \let\Etoc@@startlocaltoc@toc\Etoc@@startlocaltoc
 \let\Etoc@@startlocaltochook\@empty
-\ifEtoc@deeplevels
+\unless\ifEtoc@deeplevels
+  \def\etocdivisionnameatlevel#1{%
+    \ifcase\numexpr#1\relax
+             \ifdefined\c@chapter chapter\else section\fi%
+         \or section%
+         \or subsection%
+         \or subsubsection%
+         \or paragraph%
+         \or subparagraph%
+         \or empty%
+    \else\ifnum\numexpr#1<\m@ne
+             book%
+         \else
+             part%
+         \fi
+    \fi
+  }
+\else
   \def\etocdivisionnameatlevel#1{%
     \ifcase\numexpr#1\relax
              \ifdefined\c@chapter chapter\else section\fi%
@@ -548,23 +569,6 @@
          \else
              book%
          \fi\fi
-    \fi
-  }
-\else
-  \def\etocdivisionnameatlevel#1{%
-    \ifcase\numexpr#1\relax
-             \ifdefined\c@chapter chapter\else section\fi%
-         \or section%
-         \or subsection%
-         \or subsubsection%
-         \or paragraph%
-         \or subparagraph%
-         \or empty%
-    \else\ifnum\numexpr#1<\m@ne
-             book%
-         \else
-             part%
-         \fi
     \fi
   }
 \fi
@@ -1459,7 +1463,7 @@
     \tableofcontents}
 \newcommand*\etoc@ruledtoci[2][\etocdefaultnbcol]{%
     \etocruledstyle[#1]{#2}%
-    \tableofcontents*}
+[O    \tableofcontents*}
 \newcommand*\etoc@local@ruledtoc[2][\etocdefaultnbcol]{%
     \etocruledstyle[#1]{#2}%
     \localtableofcontents}
@@ -2028,7 +2032,7 @@
 }
 \def\Etoc@tocvsec@err #1{\PackageError {etoc}
         {The command \protect#1\space is incompatible with `etoc'}
-[O        {Use \protect\etocsettocdepth.toc as replacement}%
+        {Use \protect\etocsettocdepth.toc as replacement}%
 }%
 \AtBeginDocument {%
   \@ifclassloaded{memoir}
