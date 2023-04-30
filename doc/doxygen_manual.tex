@@ -128,7 +128,7 @@
 \doxynormalparskip
 \hbadness=750
 \tolerance=750
-\usepackage{etoc}
+\IfFormatAtLeastTF{2023/05/01}{\usepackage[deeplevels]{etoc}}{\usepackage[deeplevels]{etoc_doxygen}}
 \etocsettocstyle{\doxytocparskip}{\doxynormalparskip}
 \etocsetlevel{subsubsubsection}{4}
 \etocsetlevel{subsubsubsubsection}{5}
