@@ -11692,6 +11692,27 @@ void searchInputFiles()
 }
 
 
+static void checkMarkdownMainfile()
+{
+  if (Config_getBool(MARKDOWN_SUPPORT))
+  {
+    QCString mdfileAsMainPage = Config_getString(USE_MDFILE_AS_MAINPAGE);
+    if (mdfileAsMainPage.isEmpty()) return;
+    FileInfo fi(mdfileAsMainPage.data());
+    if (!fi.exists())
+    {
+      warn_uncond("Specified markdown mainpage '%s' does not exist",qPrint(mdfileAsMainPage));
+      return;
+    }
+    bool ambig = false;
+    if (findFileDef(Doxygen::inputNameLinkedMap,mdfileAsMainPage,ambig)==0)
+    {
+      warn_uncond("Specified markdown mainpage '%s' has not been defined as input file",qPrint(mdfileAsMainPage));
+      return;
+    }
+  }
+}
+
 void parseInput()
 {
   AUTO_TRACE();
@@ -11897,6 +11918,8 @@ void parseInput()
   Config_updateList(EXCLUDE_PATTERNS,exclPatterns);
 
   searchInputFiles();
+
+  checkMarkdownMainfile();
 
   // Notice: the order of the function calls below is very important!
 
