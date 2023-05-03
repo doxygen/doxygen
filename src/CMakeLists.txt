@@ -308,6 +308,7 @@ add_library(doxymain STATIC
     rtfstyle.cpp
     searchindex.cpp
     searchindex_js.cpp
+    sitemap.cpp
     sqlite3gen.cpp
     stlsupport.cpp
     symbolresolver.cpp

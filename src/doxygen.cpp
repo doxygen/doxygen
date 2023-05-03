@@ -50,6 +50,7 @@
 #include "debug.h"
 #include "htmlhelp.h"
 #include "qhp.h"
+#include "sitemap.h"
 #include "ftvhelp.h"
 #include "defargs.h"
 #include "rtfgen.h"
@@ -11770,6 +11771,13 @@ void parseInput()
   {
     htmlOutput = createOutputDirectory(outputDirectory,Config_getString(HTML_OUTPUT),"/html");
     Config_updateString(HTML_OUTPUT,htmlOutput);
+    QCString generateSitemapStr = Config_getString(GENERATE_SITEMAP);
+    bool generateSitemap     = !generateSitemapStr.isEmpty();
+    if (generateSitemap)
+    {
+      if (generateSitemapStr[generateSitemapStr.length()-1]!='/') generateSitemapStr += '/';
+      Config_updateString(GENERATE_SITEMAP,generateSitemapStr);
+    }
 
     // add HTML indexers that are enabled
     bool generateHtmlHelp    = Config_getBool(GENERATE_HTMLHELP);
@@ -11780,6 +11788,7 @@ void parseInput()
     if (generateEclipseHelp) Doxygen::indexList->addIndex<EclipseHelp>();
     if (generateHtmlHelp)    Doxygen::indexList->addIndex<HtmlHelp>();
     if (generateQhp)         Doxygen::indexList->addIndex<Qhp>();
+    if (generateSitemap)     Doxygen::indexList->addIndex<Sitemap>();
     if (generateTreeView)    Doxygen::indexList->addIndex<FTVHelp>(TRUE);
     if (generateDocSet)      Doxygen::indexList->addIndex<DocSets>();
     Doxygen::indexList->initialize();
