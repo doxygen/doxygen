@@ -301,6 +301,16 @@ function report_results(&$docs)
   echo "</div>\n";
 }
 
+/**
+ * @param string $query
+ * @return array[] List of matched documents, with each array value
+ * in the shape:
+ *  - string url
+ *  - string name
+ *  - float rank
+ *  - array[] words List of word arrays, each word array
+ *    holding properties "word" (string), "match" (string) and "freq" (int)
+ */
 function run_query($query)
 {
   if(strcmp('4.1.0', phpversion()) > 0) 
