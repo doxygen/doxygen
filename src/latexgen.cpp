@@ -1150,6 +1150,12 @@ void LatexGenerator::writeStyleInfo(int part)
   startPlainFile("longtable_doxygen.sty");
   m_t << ResourceMgr::instance().getAsString("longtable_doxygen.sty");
   endPlainFile();
+  /// an extension of the etoc package is required that is only available in the
+  /// newer version. Providing the updated version to be used with older versions
+  /// of LaTeX
+  startPlainFile("etoc_doxygen.sty");
+  m_t << ResourceMgr::instance().getAsString("etoc_doxygen.sty");
+  endPlainFile();
 }
 
 void LatexGenerator::startParagraph(const QCString &)
