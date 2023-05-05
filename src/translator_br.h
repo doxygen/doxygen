@@ -19,7 +19,7 @@
  *    Thanks to Jorge Ramos, Fernando Carijo and others for their contributions.
  *
  * History:
- * 20230225:
+ * 20230430:
  *  - Updated to 1.9.7;
  *  - Adding the namespace PortugueseTranslatorUtils to hold common 
  *    functions shared by both Portuguese translators;
@@ -140,9 +140,9 @@ namespace PortugueseTranslatorUtils
           return true;
       }
     }
-}
+};
 
-class TranslatorBrazilian : public TranslatorAdapter_1_9_6
+class TranslatorBrazilian : public Translator
 {
   public:
 
@@ -2753,7 +2753,9 @@ class TranslatorBrazilian : public TranslatorAdapter_1_9_6
       else
         result+="o namespace a que pertencem:";
       return result;
-    }    
+    }
+    virtual QCString trDefinition()  { return "Definição";}
+    virtual QCString trDeclaration() { return "Declaração";}        
 };
 
 #endif

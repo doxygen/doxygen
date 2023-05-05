@@ -60,7 +60,7 @@ const char *LatexDocVisitor::getSectionName(int level) const
   int l = level;
   if (compactLatex) l++;
 
-  if (l <= 2)
+  if (l <= 3)
   {
     // Sections get special treatment because they inherit the parent's level
     l += m_hierarchyLevel; /* May be -1 if generating main page */
@@ -75,7 +75,7 @@ const char *LatexDocVisitor::getSectionName(int level) const
     }
     return g_secLabels[l];
   }
-  else if (l == 3)
+  else if (l == 4)
   {
     return g_paragraphLabel;
   }
