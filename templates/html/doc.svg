@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<svg version="1.1" width="16" height="24" viewBox="0 0 80 60" id="doc" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg">
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "https://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1" width="16" height="24" viewBox="0 0 80 60" id="doc" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve">
 <g style="fill:##60">
 <path d="m 14,-1.1445312 c -2.824372,0 -5.1445313,2.320159 -5.1445312,5.1445312 v 72 c 0,2.824372 2.3201592,5.144531 5.1445312,5.144531 h 52 c 2.824372,0 5.144531,-2.320159 5.144531,-5.144531 V 23.699219 a 1.1447968,1.1447968 0 0 0 -0.01563,-0.1875 C 70.977847,22.605363 70.406495,21.99048 70.007812,21.591797 L 48.208984,-0.20898438 C 47.606104,-0.81186474 46.804652,-1.1445313 46,-1.1445312 Z m 1.144531,6.2890624 H 42.855469 V 24 c 0,1.724372 1.420159,3.144531 3.144531,3.144531 H 64.855469 V 74.855469 H 15.144531 Z m 34,4.4179688 L 60.4375,20.855469 H 49.144531 Z"/>
 </g>
