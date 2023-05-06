@@ -685,12 +685,12 @@ static QCString latex_batchmode()
 {
   switch (Config_getEnum(LATEX_BATCHMODE))
   {
-    case LATEX_BATCHMODE_t::NO:            return "";
-    case LATEX_BATCHMODE_t::YES:           return "\\batchmode";
-    case LATEX_BATCHMODE_t::BATCHMODE:     return "\\batchmode";
-    case LATEX_BATCHMODE_t::NONSTOPMODE:   return "\\nonstopmode";
-    case LATEX_BATCHMODE_t::SCROLLMODE:    return "\\scrollmode";
-    case LATEX_BATCHMODE_t::ERRORSTOPMODE: return "\\errorstopmode";
+    case LATEX_BATCHMODE_t::NO:         return "";
+    case LATEX_BATCHMODE_t::YES:        return "\\batchmode";
+    case LATEX_BATCHMODE_t::BATCH:      return "\\batchmode";
+    case LATEX_BATCHMODE_t::NON_STOP:   return "\\nonstopmode";
+    case LATEX_BATCHMODE_t::SCROLL:     return "\\scrollmode";
+    case LATEX_BATCHMODE_t::ERROR_STOP: return "\\errorstopmode";
   }
   return "";
 }
