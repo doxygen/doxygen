@@ -681,13 +681,26 @@ static QCString makeIndex()
   return result;
 }
 
+static QCString latex_batchmode()
+{
+  switch (Config_getEnum(LATEX_BATCHMODE))
+  {
+    case LATEX_BATCHMODE_t::NO:            return "";
+    case LATEX_BATCHMODE_t::YES:           return "\\batchmode";
+    case LATEX_BATCHMODE_t::BATCHMODE:     return "\\batchmode";
+    case LATEX_BATCHMODE_t::NONSTOPMODE:   return "\\nonstopmode";
+    case LATEX_BATCHMODE_t::SCROLLMODE:    return "\\scrollmode";
+    case LATEX_BATCHMODE_t::ERRORSTOPMODE: return "\\errorstopmode";
+  }
+  return "";
+}
+
 static QCString substituteLatexKeywords(const QCString &str,
                                         const QCString &title)
 {
   bool compactLatex = Config_getBool(COMPACT_LATEX);
   bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
   bool usePdfLatex = Config_getBool(USE_PDFLATEX);
-  bool latexBatchmode = Config_getBool(LATEX_BATCHMODE);
   QCString paperType = Config_getEnumAsString(PAPER_TYPE);
 
   QCString style = Config_getString(LATEX_BIB_STYLE);
@@ -768,7 +781,8 @@ static QCString substituteLatexKeywords(const QCString &str,
     { "$makeindex",                [&]() { return makeIndex();                                  } },
     { "$extralatexpackages",       [&]() { return extraLatexPackages;                           } },
     { "$latexspecialformulachars", [&]() { return latexSpecialFormulaChars;                     } },
-    { "$formulamacrofile",         [&]() { return stripMacroFile;                               } }
+    { "$formulamacrofile",         [&]() { return stripMacroFile;                               } },
+    { "$latex_batchmode",          [&]() { return latex_batchmode();                            } }
   });
 
   static const SelectionMarkerInfo latexMarkerInfo = { '%', "%%BEGIN ",8 ,"%%END ",6, "",0 };
@@ -782,7 +796,6 @@ static QCString substituteLatexKeywords(const QCString &str,
     { "PDF_HYPERLINKS",    pdfHyperlinks                          },
     { "USE_PDFLATEX",      usePdfLatex                            },
     { "LATEX_TIMESTAMP",   timeStamp                              },
-    { "LATEX_BATCHMODE",   latexBatchmode                         },
     { "LATEX_FONTENC",     !latexFontenc.isEmpty()                },
     { "FORMULA_MACROFILE", !formulaMacrofile.isEmpty()            },
     { "PROJECT_NUMBER",    !projectNumber.isEmpty()               }
