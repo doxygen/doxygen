@@ -397,8 +397,8 @@ void ConfigList::writeTemplate(TextStream &t,bool sl,bool)
 
 bool ConfigList::isDefault()
 {
-  auto get_stripped = [](std::string s)             { return QCString(s.c_str()).stripWhiteSpace(); };
-  auto is_not_empty = [get_stripped](std::string s) { return !get_stripped(s).isEmpty();            };
+  auto get_stripped = [](const std::string &s)             { return QCString(s.c_str()).stripWhiteSpace(); };
+  auto is_not_empty = [get_stripped](const std::string &s) { return !get_stripped(s).isEmpty();            };
   size_t defCnt = std::count_if(       m_value.begin(),       m_value.end(),is_not_empty);
   size_t valCnt = std::count_if(m_defaultValue.begin(),m_defaultValue.end(),is_not_empty);
   if ( valCnt != defCnt)
@@ -2188,7 +2188,8 @@ void Config::updateObsolete()
     ConfigObsolete *classDiagramsOpt_ = dynamic_cast<ConfigObsolete*>(classDiagramsOpt);
     ConfigBool     *haveDotOpt_       = dynamic_cast<ConfigBool*>(haveDotOpt);
     ConfigEnum     *classGraphOpt_    = dynamic_cast<ConfigEnum*>(classGraphOpt);
-    if (classDiagramsOpt_->isPresent() && classDiagramsOpt_->orgType()==ConfigOption::O_Bool)
+    if (classDiagramsOpt_ && haveDotOpt_ && classGraphOpt_ &&
+        classDiagramsOpt_->isPresent() && classDiagramsOpt_->orgType()==ConfigOption::O_Bool)
     {
       QCString classDiagramValue = *classDiagramsOpt_->valueStringRef();
       QCString haveDotValue      = *haveDotOpt_->valueStringRef();
@@ -2215,17 +2216,25 @@ void Config::updateObsolete()
                "  You may want to clear or change DOT_FONTNAME.\n"
                "  Otherwise you run the risk that the wrong font is being used for dot generated graphs.\n");
 
-  QCString& commonAttrStr = *dynamic_cast<ConfigString*>(ConfigImpl::instance()->get("DOT_COMMON_ATTR"))->valueRef();
-  DotAttributes commonAttr(commonAttrStr);
-  updateAttribute(commonAttr, "fontname", fontname);
-  updateAttribute(commonAttr, "fontsize", fontsize);
-  commonAttrStr = commonAttr.str();
+  auto commonAttrOpt = dynamic_cast<ConfigString*>(ConfigImpl::instance()->get("DOT_COMMON_ATTR"));
+  if (commonAttrOpt)
+  {
+    QCString& commonAttrStr = *commonAttrOpt->valueRef();
+    DotAttributes commonAttr(commonAttrStr);
+    updateAttribute(commonAttr, "fontname", fontname);
+    updateAttribute(commonAttr, "fontsize", fontsize);
+    commonAttrStr = commonAttr.str();
+  }
 
-  QCString& edgeAttrStr = *dynamic_cast<ConfigString*>(ConfigImpl::instance()->get("DOT_EDGE_ATTR"))->valueRef();
-  DotAttributes edgeAttr(edgeAttrStr);
-  updateAttribute(edgeAttr, "labelfontname", fontname);
-  updateAttribute(edgeAttr, "labelfontsize", fontsize);
-  edgeAttrStr = edgeAttr.str();
+  auto edgeAttrOpt = dynamic_cast<ConfigString*>(ConfigImpl::instance()->get("DOT_EDGE_ATTR"));
+  if (edgeAttrOpt)
+  {
+    QCString& edgeAttrStr = *edgeAttrOpt->valueRef();
+    DotAttributes edgeAttr(edgeAttrStr);
+    updateAttribute(edgeAttr, "labelfontname", fontname);
+    updateAttribute(edgeAttr, "labelfontsize", fontsize);
+    edgeAttrStr = edgeAttr.str();
+  }
 }
 
 void Config::writeTemplate(TextStream &t,bool shortList,bool update)

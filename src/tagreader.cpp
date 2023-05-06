@@ -1027,7 +1027,7 @@ static const std::map< std::string, ElementCallbacks > g_elementHandlers =
 struct CompoundFactory
 {
   using CreateFunc = std::function<TagCompoundVariant()>;
-  CompoundFactory(TagFileParser::State s,CreateFunc f) : state(s), make_instance(f) {}
+  CompoundFactory(TagFileParser::State s,const CreateFunc &f) : state(s), make_instance(f) {}
   TagFileParser::State state;
   CreateFunc make_instance;
 };

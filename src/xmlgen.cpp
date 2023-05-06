@@ -1926,9 +1926,11 @@ static void generateXMLForPage(PageDef *pd,TextStream &ti,bool isExample)
         {
           if (inLi[nextLevel]) t << "    </tocsect>\n";
           QCString titleDoc = convertToXML(si->title());
+          QCString label = convertToXML(si->label());
+          if (titleDoc.isEmpty()) titleDoc = label;
           t << "      <tocsect>\n";
-          t << "        <name>" << (si->title().isEmpty()?si->label():titleDoc) << "</name>\n";
-          t << "        <reference>"  <<  convertToXML(pageName) << "_1" << convertToXML(si->label()) << "</reference>\n";
+          t << "        <name>" << titleDoc << "</name>\n";
+          t << "        <reference>"  <<  convertToXML(pageName) << "_1" << label << "</reference>\n";
           inLi[nextLevel]=TRUE;
           level = nextLevel;
         }

@@ -560,7 +560,7 @@ static QCString convertFileId2Var(const QCString &fileId)
 
 struct JSTreeFile
 {
-  JSTreeFile(const QCString &fi,FTVNodePtr n) : fileId(fi), node(n) {}
+  JSTreeFile(const QCString &fi,const FTVNodePtr &n) : fileId(fi), node(n) {}
   QCString fileId;
   FTVNodePtr node;
 };

@@ -1075,8 +1075,7 @@ bool VhdlDocGen::deleteCharRev(QCString &s,char c)
   int index=s.findRev(c,-1,FALSE);
   if (index > -1)
   {
-    QCString qcs=s.remove(index,1);
-    s=qcs;
+    s = s.remove(index,1);
     return TRUE;
   }
   return FALSE;
@@ -1087,8 +1086,7 @@ void VhdlDocGen::deleteAllChars(QCString &s,char c)
   int index=s.findRev(c,-1,FALSE);
   while (index > -1)
   {
-    QCString qcs=s.remove(index,1);
-    s=qcs;
+    s = s.remove(index,1);
     index=s.findRev(c,-1,FALSE);
   }
 }
@@ -2243,7 +2241,7 @@ void VhdlDocGen::writeSource(const MemberDefMutable *mdef,OutputList& ol,const Q
 
 
 
-QCString VhdlDocGen::convertFileNameToClassName(QCString name)
+QCString VhdlDocGen::convertFileNameToClassName(const QCString &name)
 {
 
   QCString n=name;

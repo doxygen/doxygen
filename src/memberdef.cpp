@@ -3145,8 +3145,7 @@ QCString MemberDefImpl::displayDefinition() const
     if (i>0)
     {
       // insert branches around the type
-      QCString tmp("("+ldef.left(i+1)+")"+ldef.mid(i+1));
-      ldef=tmp;
+      ldef = "("+ldef.left(i+1)+")"+ldef.mid(i+1);
     }
     //printf("end   >%s< i=%d\n",qPrint(ldef),i);
     if (isStatic()) ldef.prepend("+ "); else ldef.prepend("- ");
@@ -3475,8 +3474,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
       if (i>0)
       {
         // insert branches around the type
-        QCString tmp("("+ldef.left(i+1)+")"+ldef.mid(i+1));
-        ldef=tmp;
+        ldef="("+ldef.left(i+1)+")"+ldef.mid(i+1);
       }
       //printf("end   >%s< i=%d\n",qPrint(ldef),i);
       if (isStatic()) ldef.prepend("+ "); else ldef.prepend("- ");

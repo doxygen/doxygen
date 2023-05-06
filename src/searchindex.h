@@ -68,7 +68,7 @@ class SearchIndex
 {
     struct URL
     {
-      URL(QCString n,QCString u) : name(n), url(u) {}
+      URL(const QCString &n,const QCString &u) : name(n), url(u) {}
       QCString name;
       QCString url;
     };
@@ -84,7 +84,7 @@ class SearchIndex
     {
       public:
         using URLInfoMap = std::unordered_map<int,URLInfo>;
-        IndexWord(QCString word) : m_word(word) {}
+        IndexWord(const QCString &word) : m_word(word) {}
         void addUrlIndex(int,bool);
         URLInfoMap urls() const { return m_urls; }
         QCString word() const { return m_word; }

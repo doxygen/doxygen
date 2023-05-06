@@ -4485,9 +4485,8 @@ static bool findClassRelation(
                                      true
                                     );
           baseClassTypeDef = resolver.getTypedef();
-          QCString tmpTemplSpec = resolver.getTemplateSpec();
           found=baseClass!=0 && baseClass!=cd;
-          if (found) templSpec = tmpTemplSpec;
+          if (found) templSpec = resolver.getTemplateSpec();
         }
         //printf("2. found=%d\n",found);
 
@@ -8001,7 +8000,7 @@ static void generateFileSources()
         msg("Generating code files using %zu threads.\n",numThreads);
         struct SourceContext
         {
-          SourceContext(FileDef *fd_,bool gen_,OutputList ol_)
+          SourceContext(FileDef *fd_,bool gen_,const OutputList &ol_)
             : fd(fd_), generateSourceFile(gen_), ol(ol_) {}
           FileDef *fd;
           bool generateSourceFile;
@@ -8077,7 +8076,7 @@ static void generateFileDocs()
     {
       struct DocContext
       {
-        DocContext(FileDef *fd_,OutputList ol_)
+        DocContext(FileDef *fd_,const OutputList &ol_)
           : fd(fd_), ol(ol_) {}
         FileDef *fd;
         OutputList ol;
@@ -8396,7 +8395,7 @@ static void generateDocsForClassList(const std::vector<ClassDefMutable*> &classL
   {
     struct DocContext
     {
-      DocContext(ClassDefMutable *cd_,OutputList ol_)
+      DocContext(ClassDefMutable *cd_,const OutputList &ol_)
         : cd(cd_), ol(ol_) {}
       ClassDefMutable *cd;
       OutputList ol;
@@ -9379,7 +9378,7 @@ static void generateNamespaceClassDocs(const ClassLinkedRefMap &classList)
   {
     struct DocContext
     {
-      DocContext(ClassDefMutable *cdm_,OutputList ol_)
+      DocContext(ClassDefMutable *cdm_,const OutputList &ol_)
         : cdm(cdm_), ol(ol_) {}
       ClassDefMutable *cdm;
       OutputList ol;
@@ -10200,7 +10199,7 @@ static void parseFilesSingleThreading(const std::shared_ptr<Entry> &root)
       ASSERT(fd!=0);
       std::unique_ptr<OutlineParserInterface> parser { getParserForFile(s.c_str()) };
       std::shared_ptr<Entry> fileRoot = parseFile(*parser.get(),fd,s.c_str(),nullptr,true);
-      root->moveToSubEntryAndKeep(fileRoot);
+      root->moveToSubEntryAndKeep(std::move(fileRoot));
     }
   }
 }

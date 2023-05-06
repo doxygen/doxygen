@@ -446,8 +446,7 @@ void SearchIndexExternal::setCurrentDoc(const Definition *ctx,const QCString &an
 {
   std::lock_guard<std::mutex> lock(g_searchIndexMutex);
   QCString extId = stripPath(Config_getString(EXTERNAL_SEARCH_ID));
-  QCString baseName = isSourceFile ? (toFileDef(ctx))->getSourceFileBase() : ctx->getOutputFileBase();
-  QCString url = baseName;
+  QCString url = isSourceFile ? (toFileDef(ctx))->getSourceFileBase() : ctx->getOutputFileBase();
   addHtmlExtensionIfMissing(url);
   if (!anchor.isEmpty()) url+=QCString("#")+anchor;
   QCString key = extId+";"+url;

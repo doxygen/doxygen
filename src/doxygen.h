@@ -60,8 +60,8 @@ class NamespaceDefMutable;
 struct LookupInfo
 {
   LookupInfo() = default;
-  LookupInfo(const Definition *d,const MemberDef *td,QCString ts,QCString rt)
-    : definition(d), typeDef(td), templSpec(ts),resolvedType(rt) {}
+  LookupInfo(const Definition *d,const MemberDef *td,const QCString &ts,const QCString &rt)
+    : definition(d), typeDef(td), templSpec(ts), resolvedType(rt) {}
   const Definition  *definition = 0;
   const MemberDef *typeDef = 0;
   QCString   templSpec;

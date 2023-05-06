@@ -2209,7 +2209,7 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
             { "isReference",       TemplateVariant(FALSE)     },
             { "externalReference", TemplateVariant("")        }
           });
-          list.push_back(s);
+          list.push_back(std::move(s));
         }
       }
       return TemplateImmutableList::alloc(list);
@@ -4151,7 +4151,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
             { "isReference",      TemplateVariant(FALSE)     },
             { "externalReference",TemplateVariant("")        }
           });
-          list.push_back(s);
+          list.push_back(std::move(s));
         }
       }
       return TemplateImmutableList::alloc(list);

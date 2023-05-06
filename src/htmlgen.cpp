@@ -3394,12 +3394,14 @@ void HtmlGenerator::writeLocalToc(const SectionRefs &sectionRefs,const LocalToc 
         {
           m_t << "</li>\n";
         }
-        QCString titleDoc = convertToHtml(si->title());
+        QCString titleDoc = si->title();
+        QCString label = si->label();
+        if (titleDoc.isEmpty()) titleDoc = label;
         if (nextLevel <= maxLevel)
         {
           m_t << "<li class=\"level"+QCString(cs)+"\">"
-              << "<a href=\"#"+si->label()+"\">"
-              << convertToHtml(filterTitle(si->title().isEmpty()?si->label():titleDoc))
+              << "<a href=\"#"+label+"\">"
+              << convertToHtml(filterTitle(titleDoc))
               << "</a>";
         }
         inLi[nextLevel]=true;

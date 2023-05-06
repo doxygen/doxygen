@@ -76,8 +76,8 @@ static const char *stateToString(int state);
 
 struct preYY_CondCtx
 {
-  preYY_CondCtx(int line,QCString id,bool b)
-    : lineNr(line),sectionId(id), skip(b) {}
+  preYY_CondCtx(int line,const QCString &id,bool b)
+    : lineNr(line), sectionId(id), skip(b) {}
   int lineNr;
   QCString sectionId;
   bool skip;
@@ -127,7 +127,7 @@ class DefineManager
           : m_parent(parent)
         {
         }
-        void addInclude(std::string fileName)
+        void addInclude(const std::string &fileName)
         {
           m_includedFiles.insert(fileName);
         }
@@ -174,7 +174,7 @@ class DefineManager
     friend class DefinesPerFile;
   public:
 
-    void addInclude(std::string fromFileName,std::string toFileName)
+    void addInclude(const std::string &fromFileName,const std::string &toFileName)
     {
       //printf("DefineManager::addInclude('%s'->'%s')\n",fromFileName.c_str(),toFileName.c_str());
       auto it = m_fileMap.find(fromFileName);
@@ -186,7 +186,7 @@ class DefineManager
       dpf->addInclude(toFileName);
     }
 
-    void store(std::string fileName,const DefineMap &fromMap)
+    void store(const std::string &fileName,const DefineMap &fromMap)
     {
       //printf("DefineManager::store(%s,#=%zu)\n",fileName.c_str(),fromMap.size());
       auto it = m_fileMap.find(fileName);
@@ -197,7 +197,7 @@ class DefineManager
       it->second->store(fromMap);
     }
 
-    void retrieve(std::string fileName,DefineMap &toMap)
+    void retrieve(const std::string &fileName,DefineMap &toMap)
     {
       auto it = m_fileMap.find(fileName);
       if (it!=m_fileMap.end())
@@ -208,7 +208,7 @@ class DefineManager
       //printf("DefineManager::retrieve(%s,#=%zu)\n",fileName.c_str(),toMap.size());
     }
 
-    bool alreadyProcessed(std::string fileName) const
+    bool alreadyProcessed(const std::string &fileName) const
     {
       auto it = m_fileMap.find(fileName);
       if (it!=m_fileMap.end())
@@ -220,7 +220,7 @@ class DefineManager
 
   private:
     /** Helper function to return the DefinesPerFile object for a given file name. */
-    DefinesPerFile *find(std::string fileName) const
+    DefinesPerFile *find(const std::string &fileName) const
     {
       auto it = m_fileMap.find(fileName);
       return it!=m_fileMap.end() ? it->second.get() : nullptr;

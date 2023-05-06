@@ -1262,7 +1262,7 @@ class FilterAlphaIndex
   private:
     struct ListElem
     {
-      ListElem(std::string k,const TemplateVariant &v) : key(k), value(v) {}
+      ListElem(const std::string &k,const TemplateVariant &v) : key(k), value(v) {}
       std::string key;
       TemplateVariant value;
     };

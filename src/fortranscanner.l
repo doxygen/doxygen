@@ -142,9 +142,9 @@ static const char *directionParam[] =
 
 struct CommentInPrepass
 {
+  CommentInPrepass(int col, const QCString &s) : column(col), str(s) {}
   int column;
   QCString str;
-  CommentInPrepass(int col, QCString s) : column(col), str(s) {}
 };
 
 /* -----------------------------------------------------------------
@@ -1218,8 +1218,7 @@ private                                 {
                                           }
 
                                           // TYPE_SPEC is for old function style function result
-                                          QCString result = QCString(yytext).stripWhiteSpace().lower();
-                                          yyextra->current->type = result;
+                                          yyextra->current->type = QCString(yytext).stripWhiteSpace().lower();
                                           yy_push_state(SubprogPrefix,yyscanner);
                                         }
 
@@ -1261,7 +1260,7 @@ private                                 {
                                           {
                                             yyextra->current->name= yyextra->current_root->name + "::" + yyextra->current->name;
                                           }
-                                          yyextra->modifiers[yyextra->current_root][yyextra->current->name.lower().str()].returnName = returnName;
+                                          yyextra->modifiers[yyextra->current_root][yyextra->current->name.lower().str()].returnName = std::move(returnName);
 
                                           if (yyextra->ifType == IF_ABSTRACT || yyextra->ifType == IF_SPECIFIC)
                                           {
@@ -1372,7 +1371,7 @@ private                                 {
                                             }
                                             handleCommentBlock(yyscanner,yyextra->docBlock,TRUE);
                                             // switch back
-                                            yyextra->current = tmp_entry;
+                                            yyextra->current = std::move(tmp_entry);
                                           }
                                           else if (yyextra->vtype == V_PARAMETER)
                                           {
@@ -2289,15 +2288,13 @@ static QCString applyModifiers(QCString typeName, const SymbolModifiers& mdfs)
 /*! Apply yyextra->modifiers stored in \a mdfs to the \a arg argument. */
 static void applyModifiers(Argument *arg, const SymbolModifiers& mdfs)
 {
-  QCString tmp = arg->type;
-  arg->type = applyModifiers(tmp, mdfs);
+  arg->type = applyModifiers(arg->type, mdfs);
 }
 
 /*! Apply yyextra->modifiers stored in \a mdfs to the \a ent entry. */
 static void applyModifiers(Entry *ent, const SymbolModifiers& mdfs)
 {
-  QCString tmp = ent->type;
-  ent->type = applyModifiers(tmp, mdfs);
+  ent->type = applyModifiers(ent->type, mdfs);
 
   if (mdfs.protection == SymbolModifiers::PUBLIC)
     ent->protection = Protection::Public;
@@ -2981,7 +2978,7 @@ static void subrHandleCommentBlockResult(yyscan_t yyscanner,const QCString &doc,
   }
 
   // reset yyextra->current back to the part inside the routine
-  yyextra->current = tmp_entry;
+  yyextra->current = std::move(tmp_entry);
 }
 
 //----------------------------------------------------------------------------

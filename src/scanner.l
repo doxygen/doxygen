@@ -1098,7 +1098,7 @@ NONLopt [^\n]*
 <PackageName>";"                        {
                                           std::shared_ptr<Entry> tmp = yyextra->current;
                                           yyextra->current_root->moveToSubEntryAndRefresh(yyextra->current);
-                                          yyextra->current_root = tmp;
+                                          yyextra->current_root = std::move(tmp);
                                           initEntry(yyscanner);
                                           BEGIN(FindMembers);
                                         }
@@ -4097,7 +4097,7 @@ NONLopt [^\n]*
                                                    )
                                                 { // namespaces and interfaces and java classes ends with a closing bracket without semicolon
                                                   yyextra->current->reset();
-                                                  yyextra->current_root = original_root; // restore scope from before namespace descent
+                                                  yyextra->current_root = std::move(original_root); // restore scope from before namespace descent
                                                   initEntry(yyscanner);
                                                   yyextra->memspecEntry.reset();
                                                   BEGIN( FindMembers ) ;

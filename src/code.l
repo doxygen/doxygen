@@ -1185,7 +1185,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           uint32_t e=(uint32_t)yyleng-1;while (e>1 && !isId(yytext[e])) e--;
                                           QCString varname = ((QCString)yytext).mid(s,e-s+1);
                                           addType(yyscanner);
-                                          yyextra->name=varname;
+                                          yyextra->name=std::move(varname);
                                         }
 <Body>{SCOPETNAME}{B}*"<"[^\n\/\-\.\{\"\>]*">"/{BN}*"(" |
 <Body>{SCOPETNAME}/{BN}*"("             { // a() or c::a() or t<A,B>::a() or A\B\foo()
@@ -2242,8 +2242,7 @@ static void addVariable(yyscan_t yyscanner,QCString type,QCString name)
       else if ((i=ltype.find('<'))!=-1)
       {
         // probably a template class
-        QCString typeName(ltype.left(i));
-        addVariable(yyscanner,typeName,name);
+        addVariable(yyscanner,ltype.left(i),name);
       }
       return varDef;
     };

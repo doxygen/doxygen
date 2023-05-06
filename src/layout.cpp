@@ -586,7 +586,8 @@ class LayoutParser
       }
     }
 
-    void startTop(const XMLHandlers::Attributes &attrib,LayoutDocManager::LayoutPart part,QCString scope, LayoutNavEntry::Kind nav)
+    void startTop(const XMLHandlers::Attributes &attrib,LayoutDocManager::LayoutPart part,
+                  const QCString &scope, LayoutNavEntry::Kind nav)
     {
       LayoutDocManager::instance().clear(part);
       m_scope = scope;
@@ -710,7 +711,7 @@ static auto startCb(void (LayoutParser::*fn)(Args...),
 template<class...Args>
 static auto startCb(void (LayoutParser::*fn)(Args...),
                     LayoutDocEntry::Kind kind,
-                    std::function<QCString()> title
+                    const std::function<QCString()> &title
                    )
 {
   return [=](LayoutParser &parser,const XMLHandlers::Attributes &attr) { (parser.*fn)(kind,attr,title()); };
@@ -719,7 +720,7 @@ static auto startCb(void (LayoutParser::*fn)(Args...),
 template<class...Args>
 static auto startCb(void (LayoutParser::*fn)(Args...),
                     MemberListType type,
-                    std::function<QCString()> title
+                    const std::function<QCString()> &title
                    )
 {
   return [=](LayoutParser &parser,const XMLHandlers::Attributes &attr) { (parser.*fn)(attr,type,title(),QCString()); };
@@ -728,8 +729,8 @@ static auto startCb(void (LayoutParser::*fn)(Args...),
 template<class...Args>
 static auto startCb(void (LayoutParser::*fn)(Args...),
                     MemberListType type,
-                    std::function<QCString()> title,
-                    std::function<QCString()> subtitle
+                    const std::function<QCString()> &title,
+                    const std::function<QCString()> &subtitle
                    )
 {
   return [=](LayoutParser &parser,const XMLHandlers::Attributes &attr) { (parser.*fn)(attr,type,title(),subtitle()); };
@@ -738,7 +739,7 @@ static auto startCb(void (LayoutParser::*fn)(Args...),
 template<class...Args>
 static auto startCb(void (LayoutParser::*fn)(Args...),
                     LayoutDocManager::LayoutPart part,
-                    QCString scope,
+                    const QCString &scope,
                     LayoutNavEntry::Kind nav
                    )
 {

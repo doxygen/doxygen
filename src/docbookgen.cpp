@@ -1359,7 +1359,9 @@ void DocbookGenerator::writeLocalToc(const SectionRefs &sectionRefs,const LocalT
         if (nextLevel <= maxLevel)
         {
           QCString titleDoc = convertToDocBook(si->title());
-          m_t << "      <tocentry>" << (si->title().isEmpty()?si->label():titleDoc) << "</tocentry>\n";
+          QCString label    = convertToDocBook(si->label());
+          if (titleDoc.isEmpty()) titleDoc = label;
+          m_t << "      <tocentry>" << titleDoc << "</tocentry>\n";
         }
         inLi[nextLevel]=TRUE;
         level = nextLevel;

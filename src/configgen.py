@@ -831,7 +831,7 @@ def main():
         print("      using Enum2BoolMap = std::unordered_map<std::string,bool>;");
         print("      Info(Type t,bool         ConfigValues::*b) : type(t), value(b) {}")
         print("      Info(Type t,int          ConfigValues::*i) : type(t), value(i) {}")
-        print("      Info(Type t,QCString     ConfigValues::*s, Enum2BoolMap boolMap = {}) : type(t), value(s), m_boolMap(boolMap) {}")
+        print("      Info(Type t,QCString     ConfigValues::*s, const Enum2BoolMap &boolMap = {}) : type(t), value(s), m_boolMap(boolMap) {}")
         print("      Info(Type t,StringVector ConfigValues::*l) : type(t), value(l) {}")
         print("      Type type;")
         print("      union Item")
