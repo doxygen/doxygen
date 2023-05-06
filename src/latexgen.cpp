@@ -683,7 +683,7 @@ static QCString makeIndex()
 
 static QCString latex_batchmode()
 {
-  switch Config_getEnum(LATEX_BATCHMODE)
+  switch (Config_getEnum(LATEX_BATCHMODE))
   {
     case LATEX_BATCHMODE_t::NO:            return "";
     case LATEX_BATCHMODE_t::YES:           return "\\batchmode";
