@@ -3164,15 +3164,18 @@ The following block name is set based on whether or not a feature is used in the
 ]]>
       </docs>
     </option>
-    <option type='bool' id='LATEX_BATCHMODE' defval='0' depends='GENERATE_LATEX'>
+    <option type='enum' id='LATEX_BATCHMODE' defval='NO' depends='GENERATE_LATEX'>
       <docs>
 <![CDATA[
- If the \c LATEX_BATCHMODE tag is set to \c YES, doxygen will add the \c \\batchmode
- command to the generated \f$\mbox{\LaTeX}\f$ files. This will
- instruct \f$\mbox{\LaTeX}\f$ to keep running if errors occur, instead of
- asking the user for help.
+ The \c LATEX_BATCHMODE tag ignals the behavior of \f$\mbox{\LaTeX}\f$ in case of an error.
 ]]>
       </docs>
+      <value name="NO" desc='same as ERROR_STOP' />
+      <value name="YES" desc='same as BATCH' />
+      <value name="BATCH" desc='In batch mode nothing is printed on the terminal, errors are scrolled as if \&lt;return\&gt; is hit at every error; missing files that TeX tries to input or request from keyboard input (\\read on a not open input stream) cause the job to abort' />
+      <value name="NON_STOP" desc='In nonstop mode the diagnostic message will appear on the terminal, but there is no possibility of user interaction just like in batch mode' />
+      <value name="SCROLL" desc='In scroll mode, TeX will stop only for missing files to input or if keyboard input is necessary' />
+      <value name="ERROR_STOP" desc='In errorstop mode, TeX will stop at each error, asking for user intervention' />
     </option>
     <option type='bool' id='LATEX_HIDE_INDICES' defval='0' depends='GENERATE_LATEX'>
       <docs>
