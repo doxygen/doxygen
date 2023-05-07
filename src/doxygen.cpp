@@ -12479,7 +12479,7 @@ void generateOutput()
   generateConceptDocs();
   g_s.end();
 
-  g_s.begin("Generating namespace index...\n");
+  g_s.begin("Generating namespace documentation...\n");
   generateNamespaceDocs();
   g_s.end();
 
