@@ -104,7 +104,7 @@ static const char svgZoomFooter2[] = R"svg(
 [data-mouse-over-selected='true']  { opacity: 1.0; }
 ]]>
 </style>
-<script><![CDATA[
+<script type="application/ecmascript"><![CDATA[
 document.addEventListener('DOMContentLoaded', (event) => {
   highlightEdges();
   highlightAdjacentNodes();
@@ -373,7 +373,7 @@ bool DotFilePatcher::run() const
           }
           if (useNagivation)
           {
-            t << "<script type=\"text/javascript\">\n";
+            t << "<script type=\"application/ecmascript\">\n";
             t << "var viewWidth = " << width << ";\n";
             t << "var viewHeight = " << height << ";\n";
             if (graphId>=0)
@@ -382,7 +382,7 @@ bool DotFilePatcher::run() const
             }
             t << "</script>\n";
           }
-          t << "<script xlink:href=\"" << relPath << "svg.min.js\"/>\n";
+          t << "<script type=\"application/ecmascript\" xlink:href=\"" << relPath << "svg.min.js\"/>\n";
           t << "<svg id=\"graph\" class=\"graph\">\n";
 
           if (useNagivation)
@@ -482,6 +482,8 @@ bool DotFilePatcher::run() const
       t << line;
     }
   }
+  if (isSVGFile && interactiveSVG && !useNagivation) t << "</svg>\n";
+
   fi.close();
   if (isSVGFile && interactiveSVG && replacedHeader)
   {
