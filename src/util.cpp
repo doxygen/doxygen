@@ -358,6 +358,10 @@ int guessSection(const QCString &name)
       return Entry::HEADER_SEC;
     }
   }
+  else
+  {
+    if (getLanguageFromFileName(name,SrcLangExt_Unknown) == SrcLangExt_Cpp) return Entry::HEADER_SEC;
+  }
   return 0;
 }
 
@@ -6815,10 +6819,10 @@ bool openOutputFile(const QCString &outFile,std::ofstream &f)
     if (fi.exists()) // create a backup
     {
       Dir dir;
-      FileInfo backup(fi.fileName()+".bak");
+      FileInfo backup(fi.filePath()+".bak");
       if (backup.exists()) // remove existing backup
-        dir.remove(backup.fileName());
-      dir.rename(fi.fileName(),fi.fileName()+".bak");
+        dir.remove(backup.filePath());
+      dir.rename(fi.filePath(),fi.filePath()+".bak");
     }
     f = Portable::openOutputStream(outFile);
     fileOpened = f.is_open();
