@@ -21,7 +21,7 @@
  * History:
  * 20230430:
  *  - Updated to 1.9.7;
- *  - Adding the namespace PortugueseTranslatorUtils to hold common 
+ *  - Adding the namespace PortugueseTranslatorUtils to hold common
  *    functions shared by both Portuguese translators;
  *  - Some translations used by TranslatorPortuguese have been merged
  *    into this translator to make both classes more similar.
@@ -95,9 +95,9 @@ namespace PortugueseTranslatorUtils
         case ClassMemberHighlight::Related:
         default:
           return true;
-      }    
+      }
     }
-    
+
     /*! Returns true if the gender of the given component is masculine in
     Portuguese. */
     inline bool isFileMemberHighlightMasculine(FileMemberHighlight::Enum hl)
@@ -117,9 +117,9 @@ namespace PortugueseTranslatorUtils
           return false;
         default:
           return true;
-      }    
+      }
     }
-    
+
     /*! Returns true if the gender of the given component is masculine in
     Brazilian Portuguese and European Portuguese. */
     inline bool isNamespaceMemberHighlightMasculine(NamespaceMemberHighlight::Enum hl)
@@ -140,7 +140,7 @@ namespace PortugueseTranslatorUtils
           return true;
       }
     }
-};
+}
 
 class TranslatorBrazilian : public Translator
 {
@@ -2512,11 +2512,11 @@ class TranslatorBrazilian : public Translator
     {
         return "Fluxograma: ";
     }
-    
+
     /*! Please translate also updated body of the method
      *  trMemberFunctionDocumentation(), now better adapted for
      *  VHDL sources documentation.
-    */    
+    */
 
     //////////////////////////////////////////////////////////////////////////
     // new since 1.9.7
@@ -2541,7 +2541,7 @@ class TranslatorBrazilian : public Translator
      * Supersedes trRelatedFunctionDocumentation
      */
     virtual QCString trRelatedSymbolDocumentation()
-    { return "Documentação dos símbolos amigos e relacionados"; }    
+    { return "Documentação dos símbolos amigos e relacionados"; }
 
     /*! the compound type as used for the xrefitems */
     virtual QCString trCompoundType(ClassDef::CompoundType compType, SrcLangExt lang)
@@ -2611,8 +2611,8 @@ class TranslatorBrazilian : public Translator
         case FileMemberHighlight::Total: // for completeness
           break;
       }
-      if (!extractAll) 
-      { 
+      if (!extractAll)
+      {
         result+= masculine? " documentados": " documentadas";
       }
       result+=" com links para ";
@@ -2622,7 +2622,7 @@ class TranslatorBrazilian : public Translator
         result+="a documentação:";
       return result;
     }
-   
+
     virtual QCString trCompoundMembersDescriptionTotal(ClassMemberHighlight::Enum hl)
     {
       bool extractAll = Config_getBool(EXTRACT_ALL);
@@ -2755,7 +2755,7 @@ class TranslatorBrazilian : public Translator
       return result;
     }
     virtual QCString trDefinition()  { return "Definição";}
-    virtual QCString trDeclaration() { return "Declaração";}        
+    virtual QCString trDeclaration() { return "Declaração";}
 };
 
 #endif
