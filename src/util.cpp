@@ -3232,7 +3232,6 @@ FileDef *findFileDef(const FileNameLinkedMap *fnMap,const QCString &n,bool &ambi
   ambig=FALSE;
   if (n.isEmpty()) return 0;
 
-  std::lock_guard<std::mutex> lock(g_findFileDefMutex);
 
   const int maxAddrSize = 20;
   char addr[maxAddrSize];
@@ -3240,6 +3239,7 @@ FileDef *findFileDef(const FileNameLinkedMap *fnMap,const QCString &n,bool &ambi
   QCString key = addr;
   key+=n;
 
+  std::lock_guard<std::mutex> lock(g_findFileDefMutex);
   FindFileCacheElem *cachedResult = g_findFileDefCache.find(key.str());
   //printf("key=%s cachedResult=%p\n",qPrint(key),cachedResult);
   if (cachedResult)
@@ -3256,16 +3256,16 @@ FileDef *findFileDef(const FileNameLinkedMap *fnMap,const QCString &n,bool &ambi
   QCString name=Dir::cleanDirPath(n.str());
   QCString path;
   int slashPos;
-  const FileName *fn;
-  if (name.isEmpty()) goto exit;
+  if (name.isEmpty()) return 0;
   slashPos=std::max(name.findRev('/'),name.findRev('\\'));
   if (slashPos!=-1)
   {
     path=name.left(slashPos+1);
     name=name.right(name.length()-slashPos-1);
   }
-  if (name.isEmpty()) goto exit;
-  if ((fn=fnMap->find(name)))
+  if (name.isEmpty()) return 0;
+  const FileName *fn = fnMap->find(name);
+  if (fn)
   {
     //printf("fn->size()=%zu\n",fn->size());
     if (fn->size()==1)
@@ -3306,8 +3306,6 @@ FileDef *findFileDef(const FileNameLinkedMap *fnMap,const QCString &n,bool &ambi
   {
     //printf("not found!\n");
   }
-exit:
-  //delete cachedResult;
   return 0;
 }
 
