@@ -5123,7 +5123,6 @@ int DocPara::handleHtmlEndTag(const QCString &tagName)
       warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Unexpected tag </h6> found");
       break;
     case HTML_IMG:
-      warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Unexpected tag </img> found");
       break;
     case HTML_HR:
       warn_doc_error(parser()->context.fileName,parser()->tokenizer.getLineNr(),"Illegal </hr> tag found\n");
