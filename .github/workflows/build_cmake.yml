@@ -435,5 +435,6 @@ jobs:
          deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
          external_repository: doxygen/doxygen-docs
          publish_dir: build/doxygen_docs/html
+         force_orphan: true
       if: ${{ github.event_name == 'push' && matrix.config.name == 'Ubuntu Latest GCC Release' }}
 
