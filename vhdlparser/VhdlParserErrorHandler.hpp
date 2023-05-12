@@ -22,6 +22,7 @@ class VhdlErrorHandler: public ErrorHandler
     {
       warn(m_fileName,actual->beginLine,"syntax error '%s'",actual->image.data());
       error_count++;
+      exit(0);
       throw std::exception();
     }
 
@@ -29,6 +30,7 @@ class VhdlErrorHandler: public ErrorHandler
     {
       warn(m_fileName,last->beginLine,"unexpected token: '%s'", unexpected->image.data());
       error_count++;
+      exit(0);
       throw std::exception();
     }
 
@@ -51,6 +53,7 @@ class VhdlTokenManagerErrorHandler: public TokenManagerErrorHandler
     virtual void lexicalError(bool EOFSeen, int /* lexState */, int errorLine, int /* errorColumn */, const JJString& errorAfter, JJChar curChar, VhdlParserTokenManager* /* token_manager */)
     {
       warn(m_fileName,errorLine,"Lexical error, Encountered: '%c' after: '%s'",curChar, (EOFSeen? "EOF" : (const char*)errorAfter.c_str()));
+     exit(0);
     }
 
     virtual void lexicalError(const JJString& errorMessage, VhdlParserTokenManager* /* token_manager */)
