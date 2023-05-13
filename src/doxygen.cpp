@@ -50,6 +50,7 @@
 #include "debug.h"
 #include "htmlhelp.h"
 #include "qhp.h"
+#include "sitemap.h"
 #include "ftvhelp.h"
 #include "defargs.h"
 #include "rtfgen.h"
@@ -11706,6 +11707,27 @@ void searchInputFiles()
 }
 
 
+static void checkMarkdownMainfile()
+{
+  if (Config_getBool(MARKDOWN_SUPPORT))
+  {
+    QCString mdfileAsMainPage = Config_getString(USE_MDFILE_AS_MAINPAGE);
+    if (mdfileAsMainPage.isEmpty()) return;
+    FileInfo fi(mdfileAsMainPage.data());
+    if (!fi.exists())
+    {
+      warn_uncond("Specified markdown mainpage '%s' does not exist",qPrint(mdfileAsMainPage));
+      return;
+    }
+    bool ambig = false;
+    if (findFileDef(Doxygen::inputNameLinkedMap,mdfileAsMainPage,ambig)==0)
+    {
+      warn_uncond("Specified markdown mainpage '%s' has not been defined as input file",qPrint(mdfileAsMainPage));
+      return;
+    }
+  }
+}
+
 void parseInput()
 {
   AUTO_TRACE();
@@ -11784,6 +11806,13 @@ void parseInput()
   {
     htmlOutput = createOutputDirectory(outputDirectory,Config_getString(HTML_OUTPUT),"/html");
     Config_updateString(HTML_OUTPUT,htmlOutput);
+    QCString generateSitemapStr = Config_getString(GENERATE_SITEMAP);
+    bool generateSitemap     = !generateSitemapStr.isEmpty();
+    if (generateSitemap)
+    {
+      if (generateSitemapStr[generateSitemapStr.length()-1]!='/') generateSitemapStr += '/';
+      Config_updateString(GENERATE_SITEMAP,generateSitemapStr);
+    }
 
     // add HTML indexers that are enabled
     bool generateHtmlHelp    = Config_getBool(GENERATE_HTMLHELP);
@@ -11794,6 +11823,7 @@ void parseInput()
     if (generateEclipseHelp) Doxygen::indexList->addIndex<EclipseHelp>();
     if (generateHtmlHelp)    Doxygen::indexList->addIndex<HtmlHelp>();
     if (generateQhp)         Doxygen::indexList->addIndex<Qhp>();
+    if (generateSitemap)     Doxygen::indexList->addIndex<Sitemap>();
     if (generateTreeView)    Doxygen::indexList->addIndex<FTVHelp>(TRUE);
     if (generateDocSet)      Doxygen::indexList->addIndex<DocSets>();
     Doxygen::indexList->initialize();
@@ -11911,6 +11941,8 @@ void parseInput()
   Config_updateList(EXCLUDE_PATTERNS,exclPatterns);
 
   searchInputFiles();
+
+  checkMarkdownMainfile();
 
   // Notice: the order of the function calls below is very important!
 

@@ -451,6 +451,23 @@ void RTFGenerator::init()
   if (!rtfExtensionsFile.isEmpty())
   {
     loadExtensions(rtfExtensionsFile);
+
+    if (!rtf_logoFilename.isEmpty())
+    {
+      FileInfo fi(rtf_logoFilename.str());
+      if (!fi.exists())
+      {
+        err("Logo '%s' specified by 'LogoFilename' in the rtf extension file '%s' does not exist!\n",
+            qPrint(rtf_logoFilename), qPrint(rtfExtensionsFile));
+        rtf_logoFilename = "";
+      }
+      else
+      {
+        QCString destFileName = Config_getString(RTF_OUTPUT)+"/"+fi.fileName();
+        copyFile(rtf_logoFilename,destFileName);
+        rtf_logoFilename = fi.fileName();
+      }
+    }
   }
 
   createSubDirs(d);

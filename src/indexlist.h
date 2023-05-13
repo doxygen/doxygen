@@ -30,6 +30,7 @@
 #include "ftvhelp.h"
 #include "htmlhelp.h"
 #include "qhp.h"
+#include "sitemap.h"
 
 class Definition;
 class MemberDef;
@@ -58,7 +59,7 @@ namespace IndexIntf
  */
 class IndexList
 {
-    using IndexVariant = std::variant<DocSets, EclipseHelp, FTVHelp, HtmlHelp, Qhp>;
+    using IndexVariant = std::variant<DocSets, EclipseHelp, FTVHelp, HtmlHelp, Qhp, Sitemap>;
 
     template<template <class> class IndexT, class... As>
     void foreach(As&&... args)

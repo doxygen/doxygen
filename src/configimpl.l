@@ -2093,6 +2093,14 @@ void Config::checkAndCorrect(bool quiet, const bool check)
   }
 
   //------------------------
+  // check sitemap creation requirements
+  if (!Config_getBool(GENERATE_HTML) &&
+      !Config_getString(GENERATE_SITEMAP).isEmpty())
+  {
+    warn_uncond("Setting GENERATE_SITEMAP requires GENERATE_HTML=YES.\n");
+  }
+
+  //------------------------
   // check QHP creation requirements
   if (Config_getBool(GENERATE_QHP))
   {
