@@ -7748,6 +7748,79 @@ static void vhdlCorrectMemberProperties()
   }
 }
 
+// recursive helper function looking for reimplements/implemented
+// by relations between class cd and direct or indirect base class bcd
+static void computeMemberRelationsForBaseClass(const ClassDef *cd,const BaseClassDef *bcd)
+{
+  for (const auto &mn : cd->memberNameInfoLinkedMap()) // for each member in class cd with a unique name
+  {
+    for (const auto &imd : *mn) // for each member with a given name
+    {
+      MemberDefMutable *md = toMemberDefMutable(imd->memberDef());
+      if (md && (md->isFunction() || md->isCSharpProperty())) // filter on reimplementable members
+      {
+        ClassDef *mbcd = bcd->classDef;
+        if (mbcd && mbcd->isLinkable()) // filter on linkable classes
+        {
+          const auto &bmn = mbcd->memberNameInfoLinkedMap();
+          const auto &bmni = bmn.find(mn->memberName());
+          if (bmni) // there are base class members with the same name
+          {
+            for (const auto &ibmd : *bmni) // for base class member with that name
+            {
+              MemberDefMutable *bmd = toMemberDefMutable(ibmd->memberDef());
+              if (bmd) // not part of an inline namespace
+              {
+                if (bmd->virtualness()!=Specifier::Normal     ||
+                    bmd->getLanguage()==SrcLangExt_Python     ||
+                    bmd->getLanguage()==SrcLangExt_Java       ||
+                    bmd->getLanguage()==SrcLangExt_PHP        ||
+                    mbcd->compoundType()==ClassDef::Interface ||
+                    mbcd->compoundType()==ClassDef::Protocol)
+                {
+                  const ArgumentList &bmdAl = bmd->argumentList();
+                  const ArgumentList &mdAl =  md->argumentList();
+                  //printf(" Base argList='%s'\n Super argList='%s'\n",
+                  //        qPrint(argListToString(bmdAl)),
+                  //        qPrint(argListToString(mdAl))
+                  //      );
+                  if (
+                      bmd->getLanguage()==SrcLangExt_Python ||
+                      matchArguments2(bmd->getOuterScope(),bmd->getFileDef(),&bmdAl,
+                        md->getOuterScope(), md->getFileDef(), &mdAl,
+                        TRUE,bmd->getLanguage()
+                        )
+                     )
+                  {
+                    //printf("match!\n");
+                    const MemberDef *rmd = md->reimplements();
+                    if (rmd==0) // not already assigned
+                    {
+                      //printf("%s: setting (new) reimplements member %s\n",qPrint(md->qualifiedName()),qPrint(bmd->qualifiedName()));
+                      md->setReimplements(bmd);
+                    }
+                    //printf("%s: add reimplementedBy member %s\n",qPrint(bmd->qualifiedName()),qPrint(md->qualifiedName()));
+                    bmd->insertReimplementedBy(md);
+                  }
+                  else
+                  {
+                    //printf("no match!\n");
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // do also for indirect base classes
+  for (const auto &bbcd : bcd->classDef->baseClasses())
+  {
+    computeMemberRelationsForBaseClass(cd,&bbcd);
+  }
+}
 
 //----------------------------------------------------------------------
 // computes the relation between all members. For each member 'm'
@@ -7756,71 +7829,13 @@ static void vhdlCorrectMemberProperties()
 
 static void computeMemberRelations()
 {
-  for (const auto &mn : *Doxygen::memberNameLinkedMap)
+  for (const auto &cd : *Doxygen::classLinkedMap)
   {
-    // for each member with a specific name
-    for (const auto &imd : *mn)
+    if (cd->isLinkable())
     {
-      MemberDefMutable *md = toMemberDefMutable(imd.get());
-      if (md)
+      for (const auto &bcd : cd->baseClasses())
       {
-        // for each other member with the same name
-        for ( const auto &ibmd : *mn)
-        {
-          MemberDefMutable *bmd = toMemberDefMutable(ibmd.get());
-          if (bmd && md!=bmd)
-          {
-            const ClassDef *mcd  = md->getClassDef();
-            if (mcd && !mcd->baseClasses().empty())
-            {
-              const ClassDef *bmcd = bmd->getClassDef();
-              //printf("Check relation between '%s'::'%s' (%p) and '%s'::'%s' (%p)\n",
-              //       qPrint(mcd->name()),qPrint(md->name()),md.get(),
-              //       qPrint(bmcd->name()),qPrint(bmd->name()),bmd.get()
-              //      );
-              if (bmcd && mcd && bmcd!=mcd &&
-                  (bmd->virtualness()!=Specifier::Normal ||
-                   bmd->getLanguage()==SrcLangExt_Python || bmd->getLanguage()==SrcLangExt_Java || bmd->getLanguage()==SrcLangExt_PHP ||
-                   bmcd->compoundType()==ClassDef::Interface || bmcd->compoundType()==ClassDef::Protocol
-                  ) &&
-                  (md->isFunction() || md->isCSharpProperty()) &&
-                  mcd->isLinkable() &&
-                  bmcd->isLinkable() &&
-                  mcd->isBaseClass(bmcd,TRUE))
-              {
-                //printf("  derived scope\n");
-                const ArgumentList &bmdAl = bmd->argumentList();
-                const ArgumentList &mdAl =  md->argumentList();
-                //printf(" Base argList='%s'\n Super argList='%s'\n",
-                //        qPrint(argListToString(bmdAl)),
-                //        qPrint(argListToString(mdAl))
-                //      );
-                if (
-                    bmd->getLanguage()==SrcLangExt_Python ||
-                    matchArguments2(bmd->getOuterScope(),bmd->getFileDef(),&bmdAl,
-                      md->getOuterScope(), md->getFileDef(), &mdAl,
-                      TRUE,bmd->getLanguage()
-                      )
-                   )
-                {
-                  //printf("match!\n");
-                  const MemberDef *rmd = md->reimplements();
-                  if (rmd==0 || minClassDistance(mcd,bmcd)<minClassDistance(mcd,rmd->getClassDef()))
-                  {
-                    //printf("setting (new) reimplements member\n");
-                    md->setReimplements(bmd);
-                  }
-                  //printf("%s: add reimplementedBy member %s\n",qPrint(bmcd->name()),qPrint(mcd->name()));
-                  bmd->insertReimplementedBy(md);
-                }
-                else
-                {
-                  //printf("no match!\n");
-                }
-              }
-            }
-          }
-        }
+        computeMemberRelationsForBaseClass(cd.get(),&bcd);
       }
     }
   }
