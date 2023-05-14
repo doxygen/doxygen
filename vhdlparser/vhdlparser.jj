@@ -20,7 +20,7 @@ options {
   TOKEN_MANAGER_SUPER_CLASS = "TokenParser";
  // DEBUG_PARSER  = true;
  //OUTPUT_DIRECTORY = ".";
- //DEBUG_PARSER=true;
+ // DEBUG_PARSER=true;
  //DEBUG_LOOKAHEAD=true;
 
   }
@@ -44,6 +44,8 @@ struct SharedState
   int param_sec = 0;
   int parse_sec = 0;
   int currP = 0;
+  bool interf_sec;
+  bool generic_sec;
 };
 
 VHDLOutlineParser *m_outlineParser;
@@ -54,7 +56,20 @@ VHDLOutlineParser *outlineParser() const { return m_outlineParser; }
 void setSharedState(SharedState *s) { m_sharedState=s; }
 void clearError() { hasError = false; }
 
+bool checkListTok()
+{
+    return  (getToken(1)->kind==SEMI_T) && (getToken(2)->kind==RPAREN_T);
+}
 
+bool checkNextTok(int kind)
+{
+    return  getToken(1)->kind==kind;
+}
+
+Token* _getPrevTok()
+{
+    return getToken(0);
+}
 
 
 //typedef unsigned long long uint64;
@@ -1096,7 +1111,7 @@ s=entity_tag() [ s1=signature() ] { return s+s1;}
 
 void entity_header() : {}
 {
- [  { m_sharedState->currP=VhdlDocGen::GENERIC;m_sharedState->parse_sec=GEN_SEC; } generic_clause()]
+ [  generic_clause()]
  [ { m_sharedState->currP=VhdlDocGen::PORT; } port_clause()]
 }
 
@@ -1298,7 +1313,7 @@ void generate_scheme() : {}
 
 void generic_clause() : {QCString s;}
 {
- <GENERIC_T>  <LPAREN_T> { m_sharedState->parse_sec=GEN_SEC; } s=generic_list() <RPAREN_T> <SEMI_T> { m_sharedState->parse_sec=0; }
+ <GENERIC_T>  <LPAREN_T> {m_sharedState->generic_sec=true; m_sharedState->parse_sec=GEN_SEC; } s=generic_list() <RPAREN_T> <SEMI_T> { m_sharedState->parse_sec=0;m_sharedState->generic_sec=false; }
 }
 
 QCString generic_list() :  {QCString s;}
@@ -1433,21 +1448,24 @@ QCString integer_type_definition() :  {QCString s;}
 
 QCString interface_declaration() :  {QCString s,s1;}
 {
-
-LOOKAHEAD(5)
- s=interface_subprogram_declaration() { return s;}
-|
-LOOKAHEAD(5)
-interface_package_declaration() { return s;}
-|
- LOOKAHEAD(5)
+LOOKAHEAD(interface_variable_declaration())
  s=interface_variable_declaration() { return s;}
 |
-LOOKAHEAD(5)
-interface_file_declaration() { return s;}
+ LOOKAHEAD(interface_object_declaration())
+ interface_object_declaration() { return " ";}
 |
-LOOKAHEAD(subprogram_declaration())
-subprogram_declaration() { return s;}
+LOOKAHEAD(interface_subprogram_declaration())
+ {m_sharedState->interf_sec=true;} s=interface_subprogram_declaration() {m_sharedState->interf_sec=false ;return s;}
+|
+LOOKAHEAD(interface_package_declaration())
+interface_package_declaration() { return s;}
+|
+
+LOOKAHEAD(5)
+s=interface_type_declaration() { return s;}
+|
+LOOKAHEAD(interface_subprogram_declaration())
+interface_subprogram_declaration() { return s;}
 |
  s=object_class() s1=identifier()
  {
@@ -1457,9 +1475,22 @@ subprogram_declaration() { return s;}
  }
 }
 
+void interface_object_declaration() :  {QCString s,s1,s2;}
+{
+      LOOKAHEAD(interface_constant_declaration()) interface_constant_declaration()
+      | LOOKAHEAD(interface_signal_declaration()) interface_signal_declaration()
+    //  | interface_variable_declaration()
+      | interface_file_declaration()
+}
+
+QCString interface_constant_declaration() :  {QCString s,s1,s2;}
+{
+  [ <CONSTANT_T> ] identifier_list() <COLON_T> [ <IN_T> ] interface_type_indication() [ <VARASSIGN_T> expression() ] {return "";}
+}
+
 QCString interface_element() :  {QCString s;}
 {
-  s=interface_declaration(){ return s;}
+  s=interface_declaration(){  return s;}
 }
 
 QCString interface_file_declaration() : {QCString s,s1;}
@@ -1473,9 +1504,132 @@ QCString interface_file_declaration() : {QCString s,s1;}
 
 QCString interface_list() :  {QCString s,s1,s2;}
 {
-  s=interface_element() (LOOKAHEAD(1) <SEMI_T> s1=interface_element(){s2+=";";s2+=s1;})* { return s+s2;}
+  s=interface_element() (LOOKAHEAD(2) <SEMI_T> s1=interface_element(){s2+=";";s2+=s1;})* [ LOOKAHEAD(1,{checkListTok()}) <SEMI_T> ]  { return s+s2;}
 }
 
+
+
+
+QCString interface_package_generic_map_aspect() :  {QCString s,s1,s2;}
+{
+  LOOKAHEAD(4) <GENERIC_T> <MAP_T> <LPAREN_T> <BOX_T> <RPAREN_T> {return "";}
+  | LOOKAHEAD(4)<GENERIC_T> <MAP_T> <LPAREN_T> <DEFAULT_T> <RPAREN_T> {return "";}
+  | generic_map_aspect()  {return "";}
+}
+
+QCString interface_procedure_specification() :  {QCString s,s1,s2;}
+{
+ <PROCEDURE_T>  designator() [ [ <PARAMETER_T> ] <LPAREN_T> formal_parameter_list() <RPAREN_T> ] {return "";}
+}
+
+QCString interface_signal_declaration() :  {QCString s,s1,s2;}
+{
+ [ <SIGNAL_T> ] identifier_list() <COLON_T> interface_type_indication() [ <BUS_T> ] [ <VARASSIGN_T> expression() ] {return "";}
+}
+
+QCString interface_subprogram_declaration(): {QCString s;}
+{
+   s=iproc()  { return s;}
+ | s=ifunc()  { return s; }
+}
+
+QCString iproc(): {QCString s,s1;}
+{
+  <PROCEDURE_T> s=identifier()  s1=param()
+  {
+    m_sharedState->current->name=s;
+    return "procedure "+s+s1;
+  }
+}
+
+QCString ifunc():{QCString s,s1,s2,s3;Token *t=0;Token *t1=0;Token *t2=0;}
+{
+ [t=<PURE_T> | t=<IMPURE_T> ] <FUNCTION_T>  s=name() s1=param() <RETURN_T> s2=name() [t1=<IS_T> (s3=identifier() | t2=<BOX_T>)]
+ {
+   QCString q;
+   if(t) q=t->image.data();
+   if(t2) s3="<>";
+   if (!s3.isEmpty())
+   {
+     s3.prepend(" is ");
+   }
+   m_sharedState->current->name=s;
+   if (m_sharedState->parse_sec==GEN_SEC)
+   {
+     QCString ss=q+" function "+s1+" return "+s2+s3;
+     int a=outlineParser()->getLine(FUNCTION_T);
+     int b=outlineParser()->getLine(PROCEDURE_T);
+
+     if (a>b) b=a;
+     outlineParser()->addVhdlType(m_sharedState->current->name.data(),b,Entry::VARIABLE_SEC,VhdlDocGen::GENERIC,ss.data(),0,Protection::Public);
+   }
+   m_sharedState->currP=0;return QCString();
+ }
+}
+
+
+QCString param(): {QCString s,s1;Token *tok=0;}
+{
+  [ tok=<PARAMETER_T> ] { m_sharedState->param_sec=PARAM_SEC; }
+  [ <LPAREN_T>  s1=interface_list() <RPAREN_T>]
+  {
+    if(tok)
+    {
+      s = tok->image.data();
+    }
+    m_sharedState->param_sec=0;
+    return s+"("+s1+")";
+  }
+}
+
+QCString interface_subprogram_default () :  {QCString s,s1,s2;}
+{
+ name()
+ | <BOX_T>
+}
+
+QCString interface_subprogram_specification () :  {QCString s,s1,s2;}
+{
+     interface_procedure_specification() {return "";}
+     | interface_function_specification() {return "";}
+}
+
+QCString  interface_function_specification() :  {QCString s,s1,s2;}
+{
+  [ <PURE_T>  | <IMPURE_T> ] <FUNCTION_T> designator() /*[LOOKAHEAD(1) subprogram_header()] */ [ [ <PARAMETER_T> ] <LPAREN_T> formal_parameter_list() <RPAREN_T> ] <RETURN_T>  type_mark() {return "";}
+}
+
+QCString  interface_incomplete_type_declaration() :  {QCString s="type";QCString s1;}
+{
+  <TYPE_T> s1=identifier()
+
+  {
+    if (m_sharedState->currP!=VhdlDocGen::COMPONENT && m_sharedState->interf_sec==false)
+      {
+         if (m_sharedState->currP==VhdlDocGen::FUNCTION || m_sharedState->currP==VhdlDocGen::PROCEDURE)
+        {
+            outlineParser()->addProto("",s1.data(),s.data(),"","","");
+        }
+         else if(m_sharedState->generic_sec){
+          outlineParser()->addVhdlType(s.data(),outlineParser()->getLine(),Entry::VARIABLE_SEC,VhdlDocGen::GENERIC,s1.data(),s1.data(),Protection::Public);
+         }
+     }
+    return s+" "+s1;
+
+ }
+}
+
+QCString  interface_type_declaration() :  {QCString s;}
+{
+  s=interface_incomplete_type_declaration() {return s;}
+}
+
+QCString  interface_type_indication() :  {QCString s,s1,s2;}
+{
+     subtype_indication() {return "";}
+    // | anonymous_type_indication() {return "";}
+    // | mode_view_indication() {return "";}
+}
 
 
 QCString interface_variable_declaration() :  {Token *tok=0;Token *tok1=0;Token *tok2=0;QCString s,s1,s2,s3,s4,s5;}
@@ -1494,22 +1648,18 @@ QCString interface_variable_declaration() :  {Token *tok=0;Token *tok1=0;Token *
         s3+=":=";
 
       QCString it=s+":"+s1+" "+s2+" "+s3+" "+s4;
-      if (m_sharedState->currP!=VhdlDocGen::COMPONENT)
+      if (m_sharedState->currP!=VhdlDocGen::COMPONENT && m_sharedState->interf_sec==false)
       {
-        if (m_sharedState->currP==VhdlDocGen::FUNCTION || m_sharedState->currP==VhdlDocGen::PROCEDURE)
+          if (m_sharedState->currP==VhdlDocGen::FUNCTION || m_sharedState->currP==VhdlDocGen::PROCEDURE)
         {
           outlineParser()->addProto(s5.data(),s.data(),s1.data(),s2.data(),s3.data(),s4.data());
         }
         else
         {
           QCString i=s2+s3+s4;
-          if (m_sharedState->currP==VhdlDocGen::GENERIC && m_sharedState->param_sec==0)
-            outlineParser()->addVhdlType(s.data(),outlineParser()->getLine(),Entry::VARIABLE_SEC,m_sharedState->currP,i.data(),s1.data(),Protection::Public);
-          else if(m_sharedState->parse_sec != GEN_SEC)
-            outlineParser()->addVhdlType(s.data(),outlineParser()->getLine(),Entry::VARIABLE_SEC,m_sharedState->currP,i.data(),s1.data(),Protection::Public);
-        }
-        //   fprintf(stderr,"\n\n <<port  %s  >>\n",$$.data());
-      } // if component
+             outlineParser()->addVhdlType(s.data(),outlineParser()->getLine(),Entry::VARIABLE_SEC,m_sharedState->currP,i.data(),s1.data(),Protection::Public);
+           }
+       } 
       return it;
     }
 }
@@ -2019,11 +2169,9 @@ QCString range_constraint() :  {QCString s,s1;}
 
 void record_type_definition() : {}
 {
-    <RECORD_T>
-     //  try{
-       (element_declaration())+
-            //    }catch(...){outlineParser()->error_skipto(END_T);}
-       <END_T>
+       <RECORD_T>
+       (element_declaration())*
+         <END_T>
        <RECORD_T> [ name()]
 }
 
@@ -2236,6 +2384,14 @@ QCString signal_list() : {QCString s,s1;}
 | <ALL_T> { return "all";}
 }
 
+
+QCString simple_mode_indication() : {QCString s,s1;}
+{
+  [ mode() ] subtype_indication() interface_type_indication() [ <BUS_T> ] [ <VARASSIGN_T> expression()]
+}
+
+
+
 QCString signature() : {QCString s,s1,s2;}
 {
 <LBRACKET_T>
@@ -2265,11 +2421,12 @@ QCString string_literal() : {Token *tok=0;}
 tok=<STRINGLITERAL> {return QCString(tok->image);}
 }
 
- void subprogram_body() : {QCString s;}
+
+void subprogram_body() : {QCString s;}
 {
 //subprogram_specification()
 <IS_T>
- //try{
+
  s=subprogram_declarative_part()
    {
       if (s.data())
@@ -2278,7 +2435,7 @@ tok=<STRINGLITERAL> {return QCString(tok->image);}
       }
       FlowChart::addFlowChart(FlowChart::BEGIN_NO,"BEGIN",QCString());
     }
- // }catch(...){outlineParser()->error_skipto(BEGIN_T);}
+ 
 <BEGIN_T>
 subprogram_statement_part()
 <END_T> [ subprogram_kind() ] [ designator() ] <SEMI_T>
@@ -2336,6 +2493,11 @@ void subprogram_kind() :  {}
  |<PROCEDURE_T>
 }
 
+void subprogram_header() :  {}
+{
+     <GENERIC_T> { m_sharedState->parse_sec=GEN_SEC; } <LPAREN_T> generic_list() <RPAREN_T> { m_sharedState->parse_sec=0; }[LOOKAHEAD(2) generic_map_aspect() ]
+}
+
 void subprogram_specification() : {QCString s;Token *tok=0;Token *t;}
 {
  <PROCEDURE_T> s=designator()
@@ -2352,19 +2514,20 @@ void subprogram_specification() : {QCString s;Token *tok=0;Token *t;}
    param()
  {  outlineParser()->newEntry(); }
  |
- [ (tok=<PURE_T> | tok=<IMPURE_T>) ] t=<FUNCTION_T> s=designator()
+ [ (tok=<PURE_T> | tok=<IMPURE_T>) ] t=<FUNCTION_T> { m_sharedState->currP=VhdlDocGen::FUNCTION;} s=designator() [subprogram_header()]
  {
-   m_sharedState->currP=VhdlDocGen::FUNCTION;
+
    if(tok)
      outlineParser()->createFunction(tok->image.c_str(),m_sharedState->currP,s.data());
    else
      outlineParser()->createFunction(0,m_sharedState->currP,s.data());
+
    m_sharedState->tempEntry=m_sharedState->current;
    m_sharedState->current->startLine=outlineParser()->getLine(FUNCTION_T);
    m_sharedState->current->bodyLine=outlineParser()->getLine(FUNCTION_T);
  }
- [{ m_sharedState->param_sec=PARAM_SEC; } <LPAREN_T> formal_parameter_list() <RPAREN_T> { m_sharedState->param_sec=0; }]
-    <RETURN_T> s=type_mark()
+ [[<PARAMETER_T>]{ m_sharedState->param_sec=PARAM_SEC; } <LPAREN_T> formal_parameter_list() <RPAREN_T> { m_sharedState->param_sec=0; }]
+    <RETURN_T> [ LOOKAHEAD(2)identifier() <OF_T> ] s=type_mark()
              {
                 m_sharedState->tempEntry=m_sharedState->current;
                 m_sharedState->current->type=s;
@@ -2375,6 +2538,16 @@ void subprogram_specification() : {QCString s;Token *tok=0;Token *t;}
 void subprogram_statement_part() : {}
 {
   (sequential_statement())*
+}
+
+QCString subprogram_instantiation_declaration():{QCString s,s1,s2;}
+{
+ <FUNCTION_T>  s=identifier() <IS_T> <NEW_T> s1=name()  [s2=signature()] [gen_assoc_list()] <SEMI_T>
+    {
+     QCString q= " is new "+s1+s2;
+      outlineParser()->addVhdlType(s.data(),outlineParser()->getLine(FUNCTION_T),Entry::VARIABLE_SEC,VhdlDocGen::INSTANTIATION,"function ",q.data(),Protection::Public);
+    return q;
+    }
 }
 
 QCString subtype_declaration() :  {QCString s,s1;}
@@ -2662,15 +2835,7 @@ QCString interface_package_declaration(): {QCString s,s1;}
                          }
 }
 
-QCString subprogram_instantiation_declaration():{QCString s,s1,s2;}
-{
- <FUNCTION_T>  s=identifier() <IS_T> <NEW_T> s1=name()  s2=signature() [gen_assoc_list()] <SEMI_T>
-    {
-     QCString q= " is new "+s1+s2;
-      outlineParser()->addVhdlType(s.data(),outlineParser()->getLine(FUNCTION_T),Entry::VARIABLE_SEC,VhdlDocGen::INSTANTIATION,"function ",q.data(),Protection::Public);
-    return q;
-    }
-}
+
 
 
 void gen_assoc_list():{}
@@ -2890,60 +3055,12 @@ void else_stat(): {}
 
 
 
-QCString interface_subprogram_declaration(): {QCString s;}
-{
-   s=iproc()  { return s;}
- | s=ifunc()  { return s; }
-}
-
-QCString iproc(): {QCString s,s1;}
-{
-  <PROCEDURE_T> s=identifier()  s1=param()
-  {
-    m_sharedState->current->name=s;
-    return "procedure "+s+s1;
-  }
-}
-
-QCString ifunc():{QCString s,s1,s2,s3;Token *t=0;Token *t1=0;Token *t2=0;}
-{
- [t=<PURE_T> | t=<IMPURE_T> ] <FUNCTION_T>  s=name() s1=param() <RETURN_T> s2=name() [t1=<IS_T> (s3=identifier() | t2=<BOX_T>)]
- {
-   QCString q;
-   if(t) q=t->image.data();
-   if(t2) s3="<>";
-   if (!s3.isEmpty())
-   {
-     s3.prepend(" is ");
-   }
-   m_sharedState->current->name=s;
-   if (m_sharedState->parse_sec==GEN_SEC)
-   {
-     QCString ss=q+" function "+s1+" return "+s2+s3;
-     int a=outlineParser()->getLine(FUNCTION_T);
-     int b=outlineParser()->getLine(PROCEDURE_T);
-
-     if (a>b) b=a;
-     outlineParser()->addVhdlType(m_sharedState->current->name.data(),b,Entry::VARIABLE_SEC,VhdlDocGen::GENERIC,ss.data(),0,Protection::Public);
-   }
-   m_sharedState->currP=0;return QCString();
- }
-}
 
 
-QCString param(): {QCString s,s1;Token *tok=0;}
-{
-  [ tok=<PARAMETER_T> ] { m_sharedState->param_sec=PARAM_SEC; }
-  [ <LPAREN_T>  s1=interface_list() <RPAREN_T>]
-  {
-    if(tok)
-    {
-      s = tok->image.data();
-    }
-    m_sharedState->param_sec=0;
-    return s+"("+s1+")";
-  }
-}
+
+
+
+
 
  // -----------------------------------------------------------------
  // needed for inline (function/process/procedure) parsing

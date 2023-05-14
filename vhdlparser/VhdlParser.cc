@@ -4,17 +4,17 @@
 namespace vhdl {
 namespace parser {
   unsigned int jj_la1_0[] = {
-0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x20000,0x0,0x90404000,0x20080000,0x40000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x90004000,0x400000,0x0,0x90404000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x20080000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x40000,0x0,0x0,0x0,0x0,0x20000000,0x0,0x0,0x40000000,0x0,0x400000,0x400000,0x0,0x0,0x0,0x0,0x0,0x0,0x40020000,0x40020001,0x0,0x0,0x0,0x40000000,0xd0020000,0x0,0x0,0x800000,0x0,0x0,0x80004000,0x400000,0x0,0x0,0x80404000,0x0,0x0,0x0,0x0,0x8000,0x0,0x80000,0x0,0x0,0x0,0x0,0x0,0x0,0x10000,0x10000,0x0,0x10800,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x10800,0x10000000,0x0,0x50000000,0x8000,0x80000000,0x0,0x80000000,0x80000000,0x4000000,0x8000000,0x0,0x0,0x20000,0x0,0x0,0x0,0x0,0x800,0x4000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x80000000,0x0,0x0,0x0,0x0,0x80004000,0x0,0x80004000,0x0,0x0,0x0,0x0,0x0,0x0,0x90004000,0x400000,0x0,0x0,0x90404000,0x0,0x0,0x0,0x40000000,0x0,0x0,0x80004000,0x400000,0x0,0x80404000,0x0,0x0,0x0,0x0,0x0,0x0,0x20080000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x10800,0x0,0x0,0x20000,0x0,0x0,0x8000,0x0,0x0,0x0,0x0,0x0,0x0,0x8000000,0x0,0x8000000,0x0,0x8000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x80004000,0x400000,0x0,0x80404000,0x0,0x0,0x0,0x0,0x0,0x0,0x20080000,0x0,0x8000,0x0,0x0,0x41000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x10800,0x2000,0x0,0x80004000,0x400000,0x0,0x80404000,0x0,0x400000,0x400000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x90c04000,0x20080000,0x0,0x0,0x80000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x10800,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,};
+0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x20000,0x0,0x90404000,0x20080000,0x40000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x90004000,0x400000,0x0,0x90404000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x20080000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x40000,0x0,0x0,0x0,0x0,0x20000000,0x0,0x0,0x40000000,0x0,0x400000,0x400000,0x0,0x0,0x0,0x0,0x0,0x0,0x40020000,0x40020001,0x0,0x0,0x0,0x40000000,0xd0020000,0x0,0x0,0x800000,0x0,0x0,0x80004000,0x400000,0x0,0x0,0x80404000,0x0,0x0,0x0,0x0,0x8000,0x0,0x80000,0x0,0x0,0x0,0x0,0x0,0x0,0x10000,0x10000,0x0,0x10800,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x10800,0x10000000,0x0,0x50000000,0x8000,0x80000000,0x0,0x80000000,0x0,0x0,0x0,0x0,0x0,0x0,0x8000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x80000000,0x80000000,0x4000000,0x8000000,0x0,0x0,0x20000,0x0,0x0,0x0,0x0,0x800,0x4000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x80000000,0x0,0x0,0x0,0x0,0x80004000,0x0,0x80004000,0x0,0x0,0x0,0x0,0x0,0x0,0x90004000,0x400000,0x0,0x0,0x90404000,0x0,0x0,0x0,0x40000000,0x0,0x0,0x80004000,0x400000,0x0,0x80404000,0x0,0x0,0x0,0x0,0x0,0x0,0x20080000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x10800,0x0,0x0,0x20000,0x0,0x0,0x8000,0x0,0x0,0x0,0x0,0x0,0x0,0x8000000,0x0,0x8000000,0x0,0x8000,0x4000000,0x8000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x80004000,0x400000,0x0,0x80404000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x20080000,0x0,0x0,0x0,0x8000,0x0,0x0,0x41000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x10800,0x2000,0x0,0x80004000,0x400000,0x0,0x80404000,0x0,0x400000,0x400000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x90c04000,0x20080000,0x0,0x0,0x80000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x10800,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,};
   unsigned int jj_la1_1[] = {
-0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x125808,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x10000,0x0,0x0,0x1000,0x104800,0x1008,0x20000,0x125808,0x10000,0x0,0x0,0x0,0x0,0x1000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x10000,0x1000,0x1000000,0x10000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x20000,0x20000,0x1000,0x0,0x4000000,0x1,0x0,0x400000,0x4000101,0x4000101,0x0,0x10,0x0,0x100,0x12024900,0x0,0x0,0x0,0x100,0x0,0x104800,0x8,0x20000,0x0,0x124808,0x0,0x10000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x1000000,0x0,0x200000,0x0,0x0,0x0,0x81000,0x0,0x0,0x0,0x0,0x0,0x40,0x20,0x0,0x0,0x0,0x0,0x0,0x100,0x0,0x800,0x0,0x0,0x0,0x8a00000,0x0,0x0,0x1000,0x0,0x0,0x0,0x1000,0x0,0x0,0x8a00000,0x80000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x800,0x40000,0x400000,0x0,0x0,0x104800,0x20000,0x124800,0x10000,0x10000,0x0,0x0,0x10000,0x10000,0x104800,0x8,0x20000,0x0,0x124808,0x0,0x0,0x0,0x100,0x1,0x0,0x104800,0x0,0x20000,0x124800,0x0,0x0,0x0,0x1000000,0x0,0x0,0x20081200,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x400000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x4000,0x0,0x104000,0x1000000,0x1104800,0x0,0x20000,0x1124800,0x4000,0x0,0x100000,0x100000,0x0,0x104000,0x20081200,0x0,0x0,0x0,0x0,0x800,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x1000,0x0,0x0,0x0,0x0,0x1104800,0x0,0x20000,0x1124800,0x0,0x104000,0x104000,0x0,0x4000001,0x1,0x0,0x4000001,0x10000,0x10000,0x10000,0x0,0x0,0x125808,0x0,0x20,0x40,0x0,0x0,0x0,0x0,0x0,0x0,0x400000,0x20,0x0,0x200000,0x0,0x0,0x0,0x0,0x0,0x400000,0x0,0x200000,0x0,0x0,0x0,0x200000,0x0,0x20,0x104000,0x100000,0x100000,0x0,0x1000000,0x0,0x0,0x104000,};
+0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x125808,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x10000,0x0,0x0,0x1000,0x104800,0x1008,0x20000,0x125808,0x10000,0x0,0x0,0x0,0x0,0x1000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x10000,0x1000,0x1000000,0x10000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x20000,0x20000,0x1000,0x0,0x4000000,0x1,0x0,0x400000,0x4000101,0x4000101,0x0,0x10,0x0,0x100,0x12024900,0x0,0x0,0x0,0x100,0x0,0x104800,0x8,0x20000,0x0,0x124808,0x0,0x10000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x1000000,0x0,0x200000,0x0,0x0,0x0,0x81000,0x0,0x0,0x0,0x0,0x0,0x40,0x20,0x0,0x0,0x0,0x0,0x0,0x100,0x0,0x800,0x800,0x0,0x200000,0x0,0x10000,0x0,0x0,0x0,0x0,0x0,0x104000,0x100000,0x100000,0x0,0x1000000,0x0,0x0,0x0,0x104000,0x100000,0x100000,0x0,0x0,0x0,0x0,0x8a00000,0x0,0x0,0x1000,0x0,0x0,0x0,0x1000,0x0,0x0,0x8a00000,0x80000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x800,0x40000,0x400000,0x0,0x0,0x104800,0x20000,0x124800,0x10000,0x10000,0x0,0x0,0x10000,0x10000,0x104800,0x8,0x20000,0x0,0x124808,0x0,0x0,0x0,0x100,0x1,0x0,0x104800,0x0,0x20000,0x124800,0x0,0x0,0x0,0x1000000,0x0,0x0,0x20081200,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x400000,0x0,0x0,0x0,0x0,0x0,0x0,0x8a00000,0x0,0x0,0x0,0x0,0x0,0x0,0x4000,0x0,0x104000,0x1000000,0x1104800,0x0,0x20000,0x1124800,0x4000,0x0,0x100000,0x100000,0x10000,0x0,0x0,0x104000,0x20081200,0x0,0x10000,0x0,0x0,0x0,0x0,0x800,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x1000,0x0,0x0,0x0,0x0,0x1104800,0x0,0x20000,0x1124800,0x0,0x104000,0x104000,0x0,0x4000001,0x1,0x0,0x4000001,0x10000,0x10000,0x0,0x0,0x125808,0x0,0x20,0x40,0x0,0x0,0x0,0x0,0x0,0x0,0x400000,0x20,0x0,0x200000,0x0,0x0,0x0,0x0,0x0,0x400000,0x0,0x200000,0x0,0x0,0x0,0x200000,0x0,0x20,0x104000,};
   unsigned int jj_la1_2[] = {
-0x0,0x100,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x2,0x0,0x0,0x110000,0x28000,0x0,0x20000000,0x0,0x0,0x0,0x200000,0x200000,0x0,0x0,0x0,0x4000,0x0,0x0,0x110000,0x0,0x0,0x110000,0x0,0x4000,0x4000,0x0,0x0,0x0,0x0,0x28000,0x0,0x0,0x0,0x0,0x400,0x0,0x4000,0x0,0x0,0x0,0x4000,0x0,0x4000,0x400000,0x8000,0x8000,0x8000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x1000000,0x1000000,0x1000,0x1000,0x0,0x0,0x0,0x100,0x11000,0x0,0x0,0x0,0x0,0x0,0x110000,0x0,0x0,0x1000,0x111000,0x0,0x0,0x4000,0x0,0x400,0x8000,0x28000,0x0,0x0,0x0,0x0,0x0,0x0,0x209,0x209,0x0,0x23b,0x100,0x100,0x800,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x23b,0x0,0x0,0x0,0x400,0x0,0x0,0x0,0x0,0x800,0x0,0x0,0x0,0x1000,0x20,0x0,0x0,0x0,0x10,0x800,0x10000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x1000000,0x1000,0x0,0x110000,0x0,0x110000,0x0,0x0,0x1000,0x0,0x0,0x0,0x110000,0x0,0x0,0x1000,0x111000,0x0,0x0,0x0,0x0,0x1000,0x0,0x110000,0x0,0x0,0x110000,0x0,0x8000,0x0,0x0,0x8000,0x0,0x20000024,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x23b,0x0,0x200000,0x1000,0x0,0x0,0x0,0x20,0xc0000000,0xc0000000,0x0,0x1000000,0x0,0x800000,0x0,0x800000,0x0,0x400,0x0,0x0,0x0,0x0,0x10000,0x0,0x110000,0x0,0x110000,0x0,0x0,0x110000,0x10000,0x0,0x100000,0x100000,0x0,0x110000,0x20000024,0x0,0x0,0x0,0x0,0x600000,0x80000,0x0,0x0,0x0,0x0,0x0,0x0,0x80,0x0,0x0,0x0,0x23b,0x0,0x0,0x110000,0x0,0x0,0x110000,0x0,0x110000,0x110000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x110000,0x28000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x1000000,0x0,0x0,0x800,0x23b,0x0,0x0,0x0,0x0,0x1000000,0x0,0x800,0x0,0x0,0x0,0x800,0x0,0x0,0x110000,0x100000,0x100000,0x0,0x0,0x2000,0x0,0x138000,};
+0x0,0x100,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x2,0x0,0x0,0x110000,0x28000,0x0,0x20000000,0x0,0x0,0x0,0x200000,0x200000,0x0,0x0,0x0,0x4000,0x0,0x0,0x110000,0x0,0x0,0x110000,0x0,0x4000,0x4000,0x0,0x0,0x0,0x0,0x28000,0x0,0x0,0x0,0x0,0x400,0x0,0x4000,0x0,0x0,0x0,0x4000,0x0,0x4000,0x400000,0x8000,0x8000,0x8000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x1000000,0x1000000,0x1000,0x1000,0x0,0x0,0x0,0x100,0x11000,0x0,0x0,0x0,0x0,0x0,0x110000,0x0,0x0,0x1000,0x111000,0x0,0x0,0x4000,0x0,0x400,0x8000,0x28000,0x0,0x0,0x0,0x0,0x0,0x0,0x209,0x209,0x0,0x23b,0x100,0x100,0x800,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x23b,0x0,0x0,0x0,0x400,0x0,0x0,0x0,0x0,0x0,0x0,0x2000,0x2000,0x0,0x0,0x0,0x110000,0x100000,0x100000,0x0,0x0,0x2000,0x0,0x0,0x110000,0x100000,0x100000,0x2000,0x2000,0x0,0x0,0x800,0x0,0x0,0x0,0x1000,0x20,0x0,0x0,0x0,0x10,0x800,0x10000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x1000000,0x1000,0x0,0x110000,0x0,0x110000,0x0,0x0,0x1000,0x0,0x0,0x0,0x110000,0x0,0x0,0x1000,0x111000,0x0,0x0,0x0,0x0,0x1000,0x0,0x110000,0x0,0x0,0x110000,0x0,0x8000,0x0,0x0,0x8000,0x0,0x20000024,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x23b,0x0,0x200000,0x1000,0x0,0x0,0x0,0x20,0xc0000000,0xc0000000,0x0,0x1000000,0x0,0x800000,0x0,0x800000,0x0,0x400,0x800,0x0,0x0,0x0,0x0,0x0,0x0,0x10000,0x0,0x110000,0x0,0x110000,0x0,0x0,0x110000,0x10000,0x0,0x100000,0x100000,0x0,0x2000,0x2000,0x110000,0x20000024,0x0,0x0,0x0,0x0,0x0,0x0,0x600000,0x80000,0x0,0x0,0x0,0x0,0x0,0x0,0x80,0x0,0x0,0x0,0x23b,0x0,0x0,0x110000,0x0,0x0,0x110000,0x0,0x110000,0x110000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x110000,0x28000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x1000000,0x0,0x0,0x800,0x23b,0x0,0x0,0x0,0x0,0x1000000,0x0,0x800,0x0,0x0,0x0,0x800,0x0,0x0,0x138000,};
   unsigned int jj_la1_3[] = {
-0x0,0x0,0x0,0x0,0x40000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x188830,0x8000000,0x0,0x0,0x8,0x0,0x0,0x0,0x0,0x0,0x80000,0x0,0x0,0x80000,0x0,0x108830,0x80000,0x0,0x188830,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x8000000,0x0,0x0,0x2000000,0x0,0x0,0x0,0x80000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x8000000,0x0,0x0,0x2000000,0x0,0x0,0x80000,0x80000,0x0,0x0,0x80000,0x0,0x0,0x4000,0x80000,0x80000,0x0,0x2000,0x0,0x0,0x128810,0x0,0x0,0x0,0x0,0x0,0x108830,0x80000,0x0,0x0,0x188830,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x2000000,0x30000000,0x30000000,0x0,0x30000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x30000000,0x0,0x0,0x0,0x0,0x108030,0x0,0x100030,0x100030,0x0,0x0,0x0,0x4000000,0x0,0x0,0x0,0x4000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x2000000,0x0,0x0,0x108030,0x0,0x4000,0x0,0x0,0x188820,0x0,0x188820,0x0,0x0,0x0,0x0,0x0,0x0,0x108830,0x80000,0x0,0x0,0x188830,0x0,0x0,0x0,0x0,0x0,0x0,0x108820,0x80000,0x0,0x188820,0x0,0x0,0x0,0x0,0x0,0x0,0xd000001,0x0,0x0,0x0,0x0,0x0,0x0,0x8,0x0,0x30000000,0x20000,0x0,0x0,0x0,0x0,0x0,0x0,0x3c0,0x3c0,0x0,0x4000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x1,0x0,0x0,0x0,0x0,0x0,0x108820,0x80000,0x0,0x188820,0x0,0x0,0x0,0x0,0x0,0x0,0xd000001,0x0,0x0,0x0,0x8000,0x0,0x0,0x0,0x0,0x8000000,0x20,0x0,0x0,0x0,0x40000,0x0,0x0,0x30010000,0x0,0x0,0x108820,0x80000,0x0,0x188820,0x0,0x80000,0x80000,0x0,0x80000,0x0,0x0,0x80000,0x0,0x0,0x0,0x2000000,0x0,0x188830,0x8000000,0x0,0x0,0x100010,0x0,0x0,0x0,0x0,0x0,0x4000,0x0,0x2000000,0x0,0x30000000,0x8000000,0x0,0x0,0x0,0x4000,0x0,0x0,0x0,0x0,0x0,0x0,0x2000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,};
+0x0,0x0,0x0,0x0,0x40000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x188830,0x8000000,0x0,0x0,0x8,0x0,0x0,0x0,0x0,0x0,0x80000,0x0,0x0,0x80000,0x0,0x108830,0x80000,0x0,0x188830,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x8000000,0x0,0x0,0x2000000,0x0,0x0,0x0,0x80000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x8000000,0x0,0x0,0x2000000,0x0,0x0,0x80000,0x80000,0x0,0x0,0x80000,0x0,0x0,0x4000,0x80000,0x80000,0x0,0x2000,0x0,0x0,0x128810,0x0,0x0,0x0,0x0,0x0,0x108830,0x80000,0x0,0x0,0x188830,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x2000000,0x30000000,0x30000000,0x0,0x30000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x30000000,0x0,0x0,0x0,0x0,0x108030,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x10,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x100030,0x100030,0x0,0x0,0x0,0x4000000,0x0,0x0,0x0,0x4000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x2000000,0x0,0x0,0x108030,0x0,0x4000,0x0,0x0,0x188820,0x0,0x188820,0x0,0x0,0x0,0x0,0x0,0x0,0x108830,0x80000,0x0,0x0,0x188830,0x0,0x0,0x0,0x0,0x0,0x0,0x108820,0x80000,0x0,0x188820,0x0,0x0,0x0,0x0,0x0,0x0,0xd000001,0x0,0x0,0x0,0x0,0x0,0x0,0x8,0x0,0x30000000,0x20000,0x0,0x0,0x0,0x0,0x0,0x0,0x3c0,0x3c0,0x0,0x4000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x1,0x0,0x0,0x0,0x0,0x0,0x108820,0x80000,0x0,0x188820,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0xd000001,0x0,0x0,0x0,0x0,0x0,0x8000,0x0,0x0,0x0,0x0,0x8000000,0x20,0x0,0x0,0x0,0x40000,0x0,0x0,0x30010000,0x0,0x0,0x108820,0x80000,0x0,0x188820,0x0,0x80000,0x80000,0x0,0x80000,0x0,0x0,0x80000,0x0,0x0,0x2000000,0x0,0x188830,0x8000000,0x0,0x0,0x100010,0x0,0x0,0x0,0x0,0x0,0x4000,0x0,0x2000000,0x0,0x30000000,0x8000000,0x0,0x0,0x0,0x4000,0x0,0x0,0x0,0x0,0x0,0x0,0x2000000,0x0,0x0,};
   unsigned int jj_la1_4[] = {
-0x0,0x0,0x0,0x20000,0x30,0x40,0x100,0x0,0x0,0x0,0x0,0x40000,0x0,0x40001,0x0,0x0,0x0,0x0,0x40,0x0,0x40000,0x1,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x1,0x1,0x0,0x0,0x40001,0x8000000,0x0,0x0,0x0,0x0,0x10000000,0x200,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x40000,0x0,0x0,0x0,0x80,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x1,0x0,0x0,0x20000,0x40,0x0,0x0,0x40000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x40,0x40000,0x40000,0x40000,0x40000,0x0,0x40,0x0,0x0,0x0,0x0,0x0,0x4,0x140001,0x0,0x0,0x0,0x40000,0x1,0x0,0x0,0x40000,0x40,0x0,0x40,0x0,0x0,0x0,0x0,0x40,0x140031,0x0,0x1,0x0,0x40000,0x0,0x200,0x0,0x0,0x0,0x0,0x80,0x0,0x0,0x0,0x0,0x0,0x0,0x4,0x0,0x40000008,0x40000,0x40,0x1,0x40,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x40000,0x0,0x0,0x0,0x0,0x0,0x0,0x40000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x40000,0x1,0x0,0x0,0x1,0x0,0x0,0x0,0x0,0x0,0x0,0x1,0x0,0x0,0x0,0x40001,0x1,0x40000,0x40000,0x7e0fc00,0x7e0fc00,0x0,0x0,0x0,0x140031,0x0,0x0,0x0,0x40,0x40,0x40000,0x0,0x0,0x0,0x30,0x0,0x40001,0x0,0x80,0x0,0x40,0x40000,0x40,0x40000,0x0,0x30,0x0,0x0,0x0,0x200,0x0,0x0,0x0,0x0,0x0,0x1,0x0,0x0,0x1,0x0,0x40001,0x40000,0x0,0x40001,0x0,0x1,0x0,0x40,0x40,0x40001,0x0,0x80,0x0,0x0,0x0,0x0,0x40,0x140031,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x20000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x40001,0x0,0x0,0x0,0xa0000000,0x20000000,0x0,0x1,0x40001,0x0,0x0,0x0,0x0,0x140031,0x0,0x8000000,0x40000,0x8000000,0x0,0x8000000,0x0,0x240,0x240,0x40,0x0,0x0,0x0,0x0,0x0,0x0,0x20000,0x0,0x0,0x1,0x0,};
+0x0,0x0,0x0,0x20000,0x30,0x40,0x100,0x0,0x0,0x0,0x0,0x40000,0x0,0x40001,0x0,0x0,0x0,0x0,0x40,0x0,0x40000,0x1,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x1,0x1,0x0,0x0,0x40001,0x8000000,0x0,0x0,0x0,0x0,0x10000000,0x200,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x40000,0x0,0x0,0x0,0x80,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x1,0x0,0x0,0x20000,0x40,0x0,0x0,0x40000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x40,0x40000,0x40000,0x40000,0x40000,0x0,0x40,0x0,0x0,0x0,0x0,0x0,0x4,0x140001,0x0,0x0,0x0,0x40000,0x1,0x0,0x0,0x40000,0x40,0x0,0x40,0x0,0x0,0x0,0x0,0x40,0x140031,0x0,0x1,0x0,0x40000,0x0,0x0,0x0,0x0,0x80,0x0,0x0,0x1,0x0,0x0,0x80,0x0,0x0,0x0,0x20000,0x0,0x0,0x1,0x60000,0x0,0x0,0x0,0x0,0x1,0x0,0x0,0x0,0x0,0x80,0x0,0x0,0x0,0x0,0x0,0x0,0x4,0x0,0x40000008,0x40000,0x40,0x1,0x40,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x40000,0x0,0x0,0x0,0x0,0x0,0x0,0x40000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x40000,0x1,0x0,0x0,0x1,0x0,0x0,0x0,0x0,0x0,0x0,0x1,0x0,0x0,0x0,0x40001,0x1,0x40000,0x40000,0x7e0fc00,0x7e0fc00,0x0,0x0,0x0,0x140031,0x0,0x0,0x0,0x40,0x40,0x40000,0x0,0x0,0x0,0x30,0x0,0x40001,0x0,0x80,0x0,0x40,0x40000,0x0,0x0,0x80,0x40,0x40000,0x0,0x30,0x0,0x0,0x0,0x200,0x0,0x0,0x0,0x0,0x0,0x1,0x0,0x0,0x0,0x0,0x1,0x0,0x40001,0x0,0x0,0x40000,0x0,0x40001,0x0,0x1,0x0,0x40,0x40,0x40001,0x0,0x80,0x0,0x0,0x0,0x0,0x40,0x140031,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x20000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x40001,0x0,0x0,0x0,0xa0000000,0x20000000,0x0,0x1,0x40001,0x0,0x0,0x0,0x0,0x140031,0x0,0x8000000,0x40000,0x8000000,0x0,0x8000000,0x0,0x240,0x240,0x40,0x0,0x0,0x0,0x0,};
   unsigned int jj_la1_5[] = {
-0x1420,0x0,0x180,0x0,0x0,0x0,0x0,0x2,0x3c0,0x0,0x0,0x1c0,0x0,0x200001c0,0x0,0x0,0x0,0x180,0x0,0x180,0x1c0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x180,0x200001c0,0x0,0x180,0x0,0x180,0x180,0x0,0x0,0x0,0x0,0x0,0x0,0x180,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x20000000,0x0,0x0,0x1c0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x1c0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x1c0,0x0,0x0,0x0,0x20000000,0x20000000,0x2,0x0,0x0,0x0,0x3c0,0x1c0,0x1c0,0x3c0,0x380,0x0,0x180,0x180,0x0,0x0,0x0,0x0,0x1017e0,0x0,0x0,0x0,0x1e0,0x0,0x180,0x0,0x3c0,0x0,0x180,0x0,0x180,0x0,0x0,0x180,0x0,0x1017e0,0x0,0x0,0x180,0x1c0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x40,0x180,0x0,0x180,0x0,0x0,0x0,0x1c0,0x0,0x0,0x0,0x180,0x180,0x0,0x180,0x1420,0x0,0x0,0x0,0x0,0x1c0,0x0,0x0,0x0,0x0,0x0,0x0,0x1c0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x180,0x1c0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x180,0x0,0x0,0x0,0x0,0x180,0x1c0,0x0,0x1c0,0x1c0,0x0,0x0,0x180,0x0,0x180,0x1017e0,0x0,0x0,0x0,0x0,0x0,0x1c0,0x180,0x0,0x0,0x0,0x0,0x1c0,0x0,0x0,0x0,0x0,0x1c0,0x0,0x1c0,0x0,0x0,0x0,0x1c0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x1c0,0x1c0,0x240,0x1c0,0x0,0x0,0x0,0x0,0x0,0x1c0,0x0,0x0,0x180,0x0,0x0,0x0,0x0,0x1017e0,0x0,0x180,0x0,0x0,0x0,0x0,0x180,0x0,0x0,0x0,0x0,0x0,0x180,0x0,0x0,0x0,0x0,0x0,0x180,0x0,0x200001c0,0x0,0x0,0x0,0x1,0x0,0x1,0x0,0x1c0,0x0,0x0,0x0,0x0,0x1017e0,0x0,0x0,0x1c0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x180,0x0,0x0,0x0,0x180,};
+0x1420,0x0,0x180,0x0,0x0,0x0,0x0,0x2,0x3c0,0x0,0x0,0x1c0,0x0,0x200001c0,0x0,0x0,0x0,0x180,0x0,0x180,0x1c0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x180,0x200001c0,0x0,0x180,0x0,0x180,0x180,0x0,0x0,0x0,0x0,0x0,0x0,0x180,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x20000000,0x0,0x0,0x1c0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x1c0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x1c0,0x0,0x0,0x0,0x20000000,0x20000000,0x2,0x0,0x0,0x0,0x3c0,0x1c0,0x1c0,0x3c0,0x380,0x0,0x180,0x180,0x0,0x0,0x0,0x0,0x1017e0,0x0,0x0,0x0,0x1e0,0x0,0x180,0x0,0x3c0,0x0,0x180,0x0,0x180,0x0,0x0,0x180,0x0,0x1017e0,0x0,0x0,0x180,0x1c0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x180,0x0,0x0,0x0,0x1c0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x40,0x180,0x0,0x180,0x0,0x0,0x0,0x1c0,0x0,0x0,0x0,0x180,0x180,0x0,0x180,0x1420,0x0,0x0,0x0,0x0,0x1c0,0x0,0x0,0x0,0x0,0x0,0x0,0x1c0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x180,0x1c0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x180,0x0,0x0,0x0,0x0,0x180,0x1c0,0x0,0x1c0,0x1c0,0x0,0x0,0x180,0x0,0x180,0x1017e0,0x0,0x0,0x0,0x0,0x0,0x1c0,0x180,0x0,0x0,0x0,0x0,0x1c0,0x0,0x0,0x0,0x0,0x1c0,0x0,0x0,0x0,0x0,0x1c0,0x0,0x0,0x0,0x1c0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x1c0,0x2,0x0,0x1c0,0x240,0x1c0,0x0,0x0,0x0,0x0,0x0,0x1c0,0x0,0x0,0x180,0x0,0x0,0x0,0x0,0x1017e0,0x0,0x180,0x0,0x0,0x0,0x0,0x180,0x0,0x0,0x0,0x0,0x0,0x180,0x0,0x0,0x0,0x0,0x180,0x0,0x200001c0,0x0,0x0,0x0,0x1,0x0,0x1,0x0,0x1c0,0x0,0x0,0x0,0x0,0x1017e0,0x0,0x0,0x1c0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x180,};
 
   /** Constructor with user supplied TokenManager. */
 
@@ -3181,9 +3181,6 @@ void VhdlParser::entity_header() {
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case GENERIC_T:{
       if (!hasError) {
-m_sharedState->currP=VhdlDocGen::GENERIC;m_sharedState->parse_sec=GEN_SEC;
-      }
-      if (!hasError) {
       generic_clause();
       }
       break;
@@ -4072,7 +4069,7 @@ void VhdlParser::generic_clause() {QCString s;
     jj_consume_token(LPAREN_T);
     }
     if (!hasError) {
-m_sharedState->parse_sec=GEN_SEC;
+m_sharedState->generic_sec=true; m_sharedState->parse_sec=GEN_SEC;
     }
     if (!hasError) {
     s = generic_list();
@@ -4083,7 +4080,7 @@ m_sharedState->parse_sec=GEN_SEC;
     if (!hasError) {
     jj_consume_token(SEMI_T);
     }
-m_sharedState->parse_sec=0;
+m_sharedState->parse_sec=0;m_sharedState->generic_sec=false;
 }
 
 
@@ -4701,37 +4698,47 @@ assert(false);
 
 
 QCString VhdlParser::interface_declaration() {QCString s,s1;
-    if (jj_2_42(5)) {
-      if (!hasError) {
-      s = interface_subprogram_declaration();
-      }
-      if (!hasError) {
-return s;
-      }
-    } else if (jj_2_43(5)) {
-      if (!hasError) {
-      interface_package_declaration();
-      }
-      if (!hasError) {
-return s;
-      }
-    } else if (jj_2_44(5)) {
+    if (jj_2_42(2147483647)) {
       if (!hasError) {
       s = interface_variable_declaration();
       }
       if (!hasError) {
 return s;
       }
-    } else if (jj_2_45(5)) {
+    } else if (jj_2_43(2147483647)) {
       if (!hasError) {
-      interface_file_declaration();
+      interface_object_declaration();
+      }
+      if (!hasError) {
+return " ";
+      }
+    } else if (jj_2_44(2147483647)) {
+      if (!hasError) {
+m_sharedState->interf_sec=true;
+      }
+      if (!hasError) {
+      s = interface_subprogram_declaration();
+      }
+      if (!hasError) {
+m_sharedState->interf_sec=false ;return s;
+      }
+    } else if (jj_2_45(2147483647)) {
+      if (!hasError) {
+      interface_package_declaration();
       }
       if (!hasError) {
 return s;
       }
-    } else if (jj_2_46(2147483647)) {
+    } else if (jj_2_46(5)) {
       if (!hasError) {
-      subprogram_declaration();
+      s = interface_type_declaration();
+      }
+      if (!hasError) {
+return s;
+      }
+    } else if (jj_2_47(2147483647)) {
+      if (!hasError) {
+      interface_subprogram_declaration();
       }
       if (!hasError) {
 return s;
@@ -4763,6 +4770,89 @@ if (m_sharedState->parse_sec==GEN_SEC)
         errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
       }
     }
+assert(false);
+}
+
+
+void VhdlParser::interface_object_declaration() {QCString s,s1,s2;
+    if (jj_2_48(2147483647)) {
+      if (!hasError) {
+      interface_constant_declaration();
+      }
+    } else if (jj_2_49(2147483647)) {
+      if (!hasError) {
+      interface_signal_declaration();
+      }
+    } else {
+      switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+      case FILE_T:{
+        if (!hasError) {
+        interface_file_declaration();
+        }
+        break;
+        }
+      default:
+        jj_la1[126] = jj_gen;
+        jj_consume_token(-1);
+        errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
+      }
+    }
+}
+
+
+QCString VhdlParser::interface_constant_declaration() {QCString s,s1,s2;
+    if (!hasError) {
+    switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+    case CONSTANT_T:{
+      if (!hasError) {
+      jj_consume_token(CONSTANT_T);
+      }
+      break;
+      }
+    default:
+      jj_la1[127] = jj_gen;
+      ;
+    }
+    }
+    if (!hasError) {
+    identifier_list();
+    }
+    if (!hasError) {
+    jj_consume_token(COLON_T);
+    }
+    if (!hasError) {
+    switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+    case IN_T:{
+      if (!hasError) {
+      jj_consume_token(IN_T);
+      }
+      break;
+      }
+    default:
+      jj_la1[128] = jj_gen;
+      ;
+    }
+    }
+    if (!hasError) {
+    interface_type_indication();
+    }
+    if (!hasError) {
+    switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+    case VARASSIGN_T:{
+      if (!hasError) {
+      jj_consume_token(VARASSIGN_T);
+      }
+      if (!hasError) {
+      expression();
+      }
+      break;
+      }
+    default:
+      jj_la1[129] = jj_gen;
+      ;
+    }
+    }
+return "";
 assert(false);
 }
 
@@ -4801,13 +4891,9 @@ QCString VhdlParser::interface_list() {QCString s,s1,s2;
     }
     if (!hasError) {
     while (!hasError) {
-      switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
-      case SEMI_T:{
+      if (jj_2_50(2)) {
         ;
-        break;
-        }
-      default:
-        jj_la1[126] = jj_gen;
+      } else {
         goto end_label_25;
       }
       if (!hasError) {
@@ -4822,7 +4908,549 @@ s2+=";";s2+=s1;
     }
     end_label_25: ;
     }
+    if (!hasError) {
+    if (jj_2_51(1) && (checkListTok())) {
+      if (!hasError) {
+      jj_consume_token(SEMI_T);
+      }
+    } else {
+      ;
+    }
+    }
 return s+s2;
+assert(false);
+}
+
+
+QCString VhdlParser::interface_package_generic_map_aspect() {QCString s,s1,s2;
+    if (jj_2_52(4)) {
+      if (!hasError) {
+      jj_consume_token(GENERIC_T);
+      }
+      if (!hasError) {
+      jj_consume_token(MAP_T);
+      }
+      if (!hasError) {
+      jj_consume_token(LPAREN_T);
+      }
+      if (!hasError) {
+      jj_consume_token(BOX_T);
+      }
+      if (!hasError) {
+      jj_consume_token(RPAREN_T);
+      }
+      if (!hasError) {
+return "";
+      }
+    } else if (jj_2_53(4)) {
+      if (!hasError) {
+      jj_consume_token(GENERIC_T);
+      }
+      if (!hasError) {
+      jj_consume_token(MAP_T);
+      }
+      if (!hasError) {
+      jj_consume_token(LPAREN_T);
+      }
+      if (!hasError) {
+      jj_consume_token(DEFAULT_T);
+      }
+      if (!hasError) {
+      jj_consume_token(RPAREN_T);
+      }
+      if (!hasError) {
+return "";
+      }
+    } else {
+      switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+      case GENERIC_T:{
+        if (!hasError) {
+        generic_map_aspect();
+        }
+        if (!hasError) {
+return "";
+        }
+        break;
+        }
+      default:
+        jj_la1[130] = jj_gen;
+        jj_consume_token(-1);
+        errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
+      }
+    }
+assert(false);
+}
+
+
+QCString VhdlParser::interface_procedure_specification() {QCString s,s1,s2;
+    if (!hasError) {
+    jj_consume_token(PROCEDURE_T);
+    }
+    if (!hasError) {
+    designator();
+    }
+    if (!hasError) {
+    switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+    case PARAMETER_T:
+    case LPAREN_T:{
+      if (!hasError) {
+      switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+      case PARAMETER_T:{
+        if (!hasError) {
+        jj_consume_token(PARAMETER_T);
+        }
+        break;
+        }
+      default:
+        jj_la1[131] = jj_gen;
+        ;
+      }
+      }
+      if (!hasError) {
+      jj_consume_token(LPAREN_T);
+      }
+      if (!hasError) {
+      formal_parameter_list();
+      }
+      if (!hasError) {
+      jj_consume_token(RPAREN_T);
+      }
+      break;
+      }
+    default:
+      jj_la1[132] = jj_gen;
+      ;
+    }
+    }
+return "";
+assert(false);
+}
+
+
+QCString VhdlParser::interface_signal_declaration() {QCString s,s1,s2;
+    if (!hasError) {
+    switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+    case SIGNAL_T:{
+      if (!hasError) {
+      jj_consume_token(SIGNAL_T);
+      }
+      break;
+      }
+    default:
+      jj_la1[133] = jj_gen;
+      ;
+    }
+    }
+    if (!hasError) {
+    identifier_list();
+    }
+    if (!hasError) {
+    jj_consume_token(COLON_T);
+    }
+    if (!hasError) {
+    interface_type_indication();
+    }
+    if (!hasError) {
+    switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+    case BUS_T:{
+      if (!hasError) {
+      jj_consume_token(BUS_T);
+      }
+      break;
+      }
+    default:
+      jj_la1[134] = jj_gen;
+      ;
+    }
+    }
+    if (!hasError) {
+    switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+    case VARASSIGN_T:{
+      if (!hasError) {
+      jj_consume_token(VARASSIGN_T);
+      }
+      if (!hasError) {
+      expression();
+      }
+      break;
+      }
+    default:
+      jj_la1[135] = jj_gen;
+      ;
+    }
+    }
+return "";
+assert(false);
+}
+
+
+QCString VhdlParser::interface_subprogram_declaration() {QCString s;
+    switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+    case PROCEDURE_T:{
+      if (!hasError) {
+      s = iproc();
+      }
+      if (!hasError) {
+return s;
+      }
+      break;
+      }
+    case FUNCTION_T:
+    case IMPURE_T:
+    case PURE_T:{
+      if (!hasError) {
+      s = ifunc();
+      }
+      if (!hasError) {
+return s;
+      }
+      break;
+      }
+    default:
+      jj_la1[136] = jj_gen;
+      jj_consume_token(-1);
+      errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
+    }
+assert(false);
+}
+
+
+QCString VhdlParser::iproc() {QCString s,s1;
+    if (!hasError) {
+    jj_consume_token(PROCEDURE_T);
+    }
+    if (!hasError) {
+    s = identifier();
+    }
+    if (!hasError) {
+    s1 = param();
+    }
+m_sharedState->current->name=s;
+    return "procedure "+s+s1;
+assert(false);
+}
+
+
+QCString VhdlParser::ifunc() {QCString s,s1,s2,s3;Token *t=0;Token *t1=0;Token *t2=0;
+    if (!hasError) {
+    switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+    case IMPURE_T:
+    case PURE_T:{
+      switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+      case PURE_T:{
+        if (!hasError) {
+        t = jj_consume_token(PURE_T);
+        }
+        break;
+        }
+      case IMPURE_T:{
+        if (!hasError) {
+        t = jj_consume_token(IMPURE_T);
+        }
+        break;
+        }
+      default:
+        jj_la1[137] = jj_gen;
+        jj_consume_token(-1);
+        errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
+      }
+      break;
+      }
+    default:
+      jj_la1[138] = jj_gen;
+      ;
+    }
+    }
+    if (!hasError) {
+    jj_consume_token(FUNCTION_T);
+    }
+    if (!hasError) {
+    s = name();
+    }
+    if (!hasError) {
+    s1 = param();
+    }
+    if (!hasError) {
+    jj_consume_token(RETURN_T);
+    }
+    if (!hasError) {
+    s2 = name();
+    }
+    if (!hasError) {
+    switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+    case IS_T:{
+      if (!hasError) {
+      t1 = jj_consume_token(IS_T);
+      }
+      if (!hasError) {
+      switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+      case BASIC_IDENTIFIER:
+      case EXTENDED_CHARACTER:{
+        if (!hasError) {
+        s3 = identifier();
+        }
+        break;
+        }
+      case BOX_T:{
+        if (!hasError) {
+        t2 = jj_consume_token(BOX_T);
+        }
+        break;
+        }
+      default:
+        jj_la1[139] = jj_gen;
+        jj_consume_token(-1);
+        errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
+      }
+      }
+      break;
+      }
+    default:
+      jj_la1[140] = jj_gen;
+      ;
+    }
+    }
+QCString q;
+   if(t) q=t->image.data();
+   if(t2) s3="<>";
+   if (!s3.isEmpty())
+   {
+     s3.prepend(" is ");
+   }
+   m_sharedState->current->name=s;
+   if (m_sharedState->parse_sec==GEN_SEC)
+   {
+     QCString ss=q+" function "+s1+" return "+s2+s3;
+     int a=outlineParser()->getLine(FUNCTION_T);
+     int b=outlineParser()->getLine(PROCEDURE_T);
+
+     if (a>b) b=a;
+     outlineParser()->addVhdlType(m_sharedState->current->name.data(),b,Entry::VARIABLE_SEC,VhdlDocGen::GENERIC,ss.data(),0,Protection::Public);
+   }
+   m_sharedState->currP=0;return QCString();
+assert(false);
+}
+
+
+QCString VhdlParser::param() {QCString s,s1;Token *tok=0;
+    if (!hasError) {
+    switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+    case PARAMETER_T:{
+      if (!hasError) {
+      tok = jj_consume_token(PARAMETER_T);
+      }
+      break;
+      }
+    default:
+      jj_la1[141] = jj_gen;
+      ;
+    }
+    }
+    if (!hasError) {
+m_sharedState->param_sec=PARAM_SEC;
+    }
+    if (!hasError) {
+    switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+    case LPAREN_T:{
+      if (!hasError) {
+      jj_consume_token(LPAREN_T);
+      }
+      if (!hasError) {
+      s1 = interface_list();
+      }
+      if (!hasError) {
+      jj_consume_token(RPAREN_T);
+      }
+      break;
+      }
+    default:
+      jj_la1[142] = jj_gen;
+      ;
+    }
+    }
+if(tok)
+    {
+      s = tok->image.data();
+    }
+    m_sharedState->param_sec=0;
+    return s+"("+s1+")";
+assert(false);
+}
+
+
+QCString VhdlParser::interface_subprogram_default() {QCString s,s1,s2;
+    switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+    case SLSL_T:
+    case STRINGLITERAL:
+    case BASIC_IDENTIFIER:
+    case EXTENDED_CHARACTER:{
+      if (!hasError) {
+      name();
+      }
+      break;
+      }
+    case BOX_T:{
+      if (!hasError) {
+      jj_consume_token(BOX_T);
+      }
+      break;
+      }
+    default:
+      jj_la1[143] = jj_gen;
+      jj_consume_token(-1);
+      errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
+    }
+assert(false);
+}
+
+
+QCString VhdlParser::interface_subprogram_specification() {QCString s,s1,s2;
+    switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+    case PROCEDURE_T:{
+      if (!hasError) {
+      interface_procedure_specification();
+      }
+      if (!hasError) {
+return "";
+      }
+      break;
+      }
+    case FUNCTION_T:
+    case IMPURE_T:
+    case PURE_T:{
+      if (!hasError) {
+      interface_function_specification();
+      }
+      if (!hasError) {
+return "";
+      }
+      break;
+      }
+    default:
+      jj_la1[144] = jj_gen;
+      jj_consume_token(-1);
+      errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
+    }
+assert(false);
+}
+
+
+QCString VhdlParser::interface_function_specification() {QCString s,s1,s2;
+    if (!hasError) {
+    switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+    case IMPURE_T:
+    case PURE_T:{
+      switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+      case PURE_T:{
+        if (!hasError) {
+        jj_consume_token(PURE_T);
+        }
+        break;
+        }
+      case IMPURE_T:{
+        if (!hasError) {
+        jj_consume_token(IMPURE_T);
+        }
+        break;
+        }
+      default:
+        jj_la1[145] = jj_gen;
+        jj_consume_token(-1);
+        errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
+      }
+      break;
+      }
+    default:
+      jj_la1[146] = jj_gen;
+      ;
+    }
+    }
+    if (!hasError) {
+    jj_consume_token(FUNCTION_T);
+    }
+    if (!hasError) {
+    designator();
+    }
+    if (!hasError) {
+    switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+    case PARAMETER_T:
+    case LPAREN_T:{
+      if (!hasError) {
+      switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+      case PARAMETER_T:{
+        if (!hasError) {
+        jj_consume_token(PARAMETER_T);
+        }
+        break;
+        }
+      default:
+        jj_la1[147] = jj_gen;
+        ;
+      }
+      }
+      if (!hasError) {
+      jj_consume_token(LPAREN_T);
+      }
+      if (!hasError) {
+      formal_parameter_list();
+      }
+      if (!hasError) {
+      jj_consume_token(RPAREN_T);
+      }
+      break;
+      }
+    default:
+      jj_la1[148] = jj_gen;
+      ;
+    }
+    }
+    if (!hasError) {
+    jj_consume_token(RETURN_T);
+    }
+    if (!hasError) {
+    type_mark();
+    }
+return "";
+assert(false);
+}
+
+
+QCString VhdlParser::interface_incomplete_type_declaration() {QCString s="type";QCString s1;
+    if (!hasError) {
+    jj_consume_token(TYPE_T);
+    }
+    if (!hasError) {
+    s1 = identifier();
+    }
+if (m_sharedState->currP!=VhdlDocGen::COMPONENT && m_sharedState->interf_sec==false)
+      {
+         if (m_sharedState->currP==VhdlDocGen::FUNCTION || m_sharedState->currP==VhdlDocGen::PROCEDURE)
+        {
+            outlineParser()->addProto("",s1.data(),s.data(),"","","");
+        }
+         else if(m_sharedState->generic_sec){
+          outlineParser()->addVhdlType(s.data(),outlineParser()->getLine(),Entry::VARIABLE_SEC,VhdlDocGen::GENERIC,s1.data(),s1.data(),Protection::Public);
+         }
+     }
+    return s+" "+s1;
+assert(false);
+}
+
+
+QCString VhdlParser::interface_type_declaration() {QCString s;
+    if (!hasError) {
+    s = interface_incomplete_type_declaration();
+    }
+return s;
+assert(false);
+}
+
+
+QCString VhdlParser::interface_type_indication() {QCString s,s1,s2;
+    if (!hasError) {
+    subtype_indication();
+    }
+return "";
 assert(false);
 }
 
@@ -4861,7 +5489,7 @@ QCString VhdlParser::interface_variable_declaration() {Token *tok=0;Token *tok1=
         break;
         }
       default:
-        jj_la1[127] = jj_gen;
+        jj_la1[149] = jj_gen;
         jj_consume_token(-1);
         errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
       }
@@ -4869,7 +5497,7 @@ QCString VhdlParser::interface_variable_declaration() {Token *tok=0;Token *tok1=
       break;
       }
     default:
-      jj_la1[128] = jj_gen;
+      jj_la1[150] = jj_gen;
       ;
     }
     }
@@ -4892,7 +5520,7 @@ QCString VhdlParser::interface_variable_declaration() {Token *tok=0;Token *tok1=
       break;
       }
     default:
-      jj_la1[129] = jj_gen;
+      jj_la1[151] = jj_gen;
       ;
     }
     }
@@ -4908,7 +5536,7 @@ QCString VhdlParser::interface_variable_declaration() {Token *tok=0;Token *tok1=
       break;
       }
     default:
-      jj_la1[130] = jj_gen;
+      jj_la1[152] = jj_gen;
       ;
     }
     }
@@ -4924,7 +5552,7 @@ QCString VhdlParser::interface_variable_declaration() {Token *tok=0;Token *tok1=
       break;
       }
     default:
-      jj_la1[131] = jj_gen;
+      jj_la1[153] = jj_gen;
       ;
     }
     }
@@ -4938,22 +5566,18 @@ if(tok)
         s3+=":=";
 
       QCString it=s+":"+s1+" "+s2+" "+s3+" "+s4;
-      if (m_sharedState->currP!=VhdlDocGen::COMPONENT)
+      if (m_sharedState->currP!=VhdlDocGen::COMPONENT && m_sharedState->interf_sec==false)
       {
-        if (m_sharedState->currP==VhdlDocGen::FUNCTION || m_sharedState->currP==VhdlDocGen::PROCEDURE)
+          if (m_sharedState->currP==VhdlDocGen::FUNCTION || m_sharedState->currP==VhdlDocGen::PROCEDURE)
         {
           outlineParser()->addProto(s5.data(),s.data(),s1.data(),s2.data(),s3.data(),s4.data());
         }
         else
         {
           QCString i=s2+s3+s4;
-          if (m_sharedState->currP==VhdlDocGen::GENERIC && m_sharedState->param_sec==0)
-            outlineParser()->addVhdlType(s.data(),outlineParser()->getLine(),Entry::VARIABLE_SEC,m_sharedState->currP,i.data(),s1.data(),Protection::Public);
-          else if(m_sharedState->parse_sec != GEN_SEC)
-            outlineParser()->addVhdlType(s.data(),outlineParser()->getLine(),Entry::VARIABLE_SEC,m_sharedState->currP,i.data(),s1.data(),Protection::Public);
-        }
-        //   fprintf(stderr,"\n\n <<port  %s  >>\n",$$.data());
-      } // if component
+             outlineParser()->addVhdlType(s.data(),outlineParser()->getLine(),Entry::VARIABLE_SEC,m_sharedState->currP,i.data(),s1.data(),Protection::Public);
+           }
+       }
       return it;
 assert(false);
 }
@@ -4992,7 +5616,7 @@ QCString q=m_sharedState->lab+" for "+s;
       break;
       }
     default:
-      jj_la1[132] = jj_gen;
+      jj_la1[154] = jj_gen;
       jj_consume_token(-1);
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
@@ -5032,7 +5656,7 @@ assert(false);
 
 
 QCString VhdlParser::library_unit() {QCString s;
-    if (jj_2_47(2)) {
+    if (jj_2_54(2)) {
       if (!hasError) {
       primary_unit();
       }
@@ -5052,7 +5676,7 @@ return s;
         break;
         }
       default:
-        jj_la1[133] = jj_gen;
+        jj_la1[155] = jj_gen;
         jj_consume_token(-1);
         errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
       }
@@ -5062,21 +5686,21 @@ assert(false);
 
 
 QCString VhdlParser::literal() {QCString s;
-    if (jj_2_48(2147483647)) {
+    if (jj_2_55(2147483647)) {
       if (!hasError) {
       s = bit_string_literal();
       }
       if (!hasError) {
 return s;
       }
-    } else if (jj_2_49(2147483647)) {
+    } else if (jj_2_56(2147483647)) {
       if (!hasError) {
       s = numeric_literal();
       }
       if (!hasError) {
 return s;
       }
-    } else if (jj_2_50(2147483647)) {
+    } else if (jj_2_57(2147483647)) {
       if (!hasError) {
       s = enumeration_literal();
       }
@@ -5104,7 +5728,7 @@ return "null";
         break;
         }
       default:
-        jj_la1[134] = jj_gen;
+        jj_la1[156] = jj_gen;
         jj_consume_token(-1);
         errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
       }
@@ -5139,7 +5763,7 @@ s+=":";
       break;
       }
     default:
-      jj_la1[135] = jj_gen;
+      jj_la1[157] = jj_gen;
       ;
     }
     }
@@ -5153,7 +5777,7 @@ s+=":";
       break;
       }
     default:
-      jj_la1[136] = jj_gen;
+      jj_la1[158] = jj_gen;
       ;
     }
     }
@@ -5183,7 +5807,7 @@ if(s1.isEmpty())
       break;
       }
     default:
-      jj_la1[137] = jj_gen;
+      jj_la1[159] = jj_gen;
       ;
     }
     }
@@ -5229,7 +5853,7 @@ return "not";
       break;
       }
     default:
-      jj_la1[138] = jj_gen;
+      jj_la1[160] = jj_gen;
       jj_consume_token(-1);
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
@@ -5285,7 +5909,7 @@ return "linkage";
       break;
       }
     default:
-      jj_la1[139] = jj_gen;
+      jj_la1[161] = jj_gen;
       jj_consume_token(-1);
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
@@ -5332,7 +5956,7 @@ return QCString(tok->image);
       break;
       }
     default:
-      jj_la1[140] = jj_gen;
+      jj_la1[162] = jj_gen;
       jj_consume_token(-1);
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
@@ -5348,7 +5972,7 @@ QCString VhdlParser::name() {QCString s,s1;
       s = operator_symbol();
       }
       if (!hasError) {
-      if (jj_2_51(2147483647)) {
+      if (jj_2_58(2147483647)) {
         if (!hasError) {
         s1 = name_ext1();
         }
@@ -5369,7 +5993,7 @@ return s;
       s = external_name();
       }
       if (!hasError) {
-      if (jj_2_52(2147483647)) {
+      if (jj_2_59(2147483647)) {
         if (!hasError) {
         s1 = name_ext1();
         }
@@ -5391,7 +6015,7 @@ return s;
       s = identifier();
       }
       if (!hasError) {
-      if (jj_2_53(2147483647)) {
+      if (jj_2_60(2147483647)) {
         if (!hasError) {
         s1 = name_ext1();
         }
@@ -5408,7 +6032,7 @@ return s;
       break;
       }
     default:
-      jj_la1[141] = jj_gen;
+      jj_la1[163] = jj_gen;
       jj_consume_token(-1);
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
@@ -5423,7 +6047,7 @@ QCString VhdlParser::name_ext1() {QCString s,s1,s2;
     }
     if (!hasError) {
     while (!hasError) {
-      if (jj_2_54(2147483647)) {
+      if (jj_2_61(2147483647)) {
         ;
       } else {
         goto end_label_26;
@@ -5444,7 +6068,7 @@ assert(false);
 
 QCString VhdlParser::name_ext() {QCString s,s1,s2;
     if (!hasError) {
-    if (jj_2_55(2147483647)) {
+    if (jj_2_62(2147483647)) {
       if (!hasError) {
       jj_consume_token(APOSTROPHE_T);
       }
@@ -5454,7 +6078,7 @@ QCString VhdlParser::name_ext() {QCString s,s1,s2;
       if (!hasError) {
 s+="'subtype"; return s;
       }
-    } else if (jj_2_56(2147483647)) {
+    } else if (jj_2_63(2147483647)) {
       if (!hasError) {
       jj_consume_token(DOT_T);
       }
@@ -5464,14 +6088,14 @@ s+="'subtype"; return s;
       if (!hasError) {
 s+=".";s+=s1; return s;
       }
-    } else if (jj_2_57(2147483647)) {
+    } else if (jj_2_64(2147483647)) {
       if (!hasError) {
       s1 = test_att_name();
       }
       if (!hasError) {
 s+=s1;return s;
       }
-    } else if (jj_2_58(2147483647)) {
+    } else if (jj_2_65(2147483647)) {
       if (!hasError) {
       jj_consume_token(LPAREN_T);
       }
@@ -5484,7 +6108,7 @@ s+=s1;return s;
       if (!hasError) {
 s+="(";s+=s1;s+=")";return s;
       }
-    } else if (jj_2_59(2147483647)) {
+    } else if (jj_2_66(2147483647)) {
       if (!hasError) {
       jj_consume_token(LPAREN_T);
       }
@@ -5502,7 +6126,7 @@ s+="(";s+=s1;
           break;
           }
         default:
-          jj_la1[142] = jj_gen;
+          jj_la1[164] = jj_gen;
           goto end_label_27;
         }
         if (!hasError) {
@@ -5534,7 +6158,7 @@ assert(false);
 
 QCString VhdlParser::test_att_name() {QCString s,s1;
     if (!hasError) {
-    if (jj_2_60(2147483647)) {
+    if (jj_2_67(2147483647)) {
       if (!hasError) {
       s1 = signature();
       }
@@ -5572,7 +6196,7 @@ s+="(";s+=s1;s+=")";
       break;
       }
     default:
-      jj_la1[143] = jj_gen;
+      jj_la1[165] = jj_gen;
       ;
     }
     }
@@ -5602,7 +6226,7 @@ s=s2+"("+s1;
         break;
         }
       default:
-        jj_la1[144] = jj_gen;
+        jj_la1[166] = jj_gen;
         goto end_label_28;
       }
       if (!hasError) {
@@ -5639,7 +6263,7 @@ QCString VhdlParser::next_statement() {QCString s,s1,s2;Token *t=0;Token *t1=0;
       break;
       }
     default:
-      jj_la1[145] = jj_gen;
+      jj_la1[167] = jj_gen;
       ;
     }
     }
@@ -5656,7 +6280,7 @@ QCString VhdlParser::next_statement() {QCString s,s1,s2;Token *t=0;Token *t1=0;
       break;
       }
     default:
-      jj_la1[146] = jj_gen;
+      jj_la1[168] = jj_gen;
       ;
     }
     }
@@ -5672,7 +6296,7 @@ QCString VhdlParser::next_statement() {QCString s,s1,s2;Token *t=0;Token *t1=0;
       break;
       }
     default:
-      jj_la1[147] = jj_gen;
+      jj_la1[169] = jj_gen;
       ;
     }
     }
@@ -5705,7 +6329,7 @@ s+=":";
       break;
       }
     default:
-      jj_la1[148] = jj_gen;
+      jj_la1[170] = jj_gen;
       ;
     }
     }
@@ -5721,7 +6345,7 @@ assert(false);
 
 
 QCString VhdlParser::numeric_literal() {QCString s;
-    if (jj_2_61(2147483647)) {
+    if (jj_2_68(2147483647)) {
       if (!hasError) {
       s = physical_literal();
       }
@@ -5742,7 +6366,7 @@ return s;
         break;
         }
       default:
-        jj_la1[149] = jj_gen;
+        jj_la1[171] = jj_gen;
         jj_consume_token(-1);
         errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
       }
@@ -5811,7 +6435,7 @@ return "type";
       break;
       }
     default:
-      jj_la1[150] = jj_gen;
+      jj_la1[172] = jj_gen;
       jj_consume_token(-1);
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
@@ -5838,7 +6462,7 @@ void VhdlParser::options() {
       break;
       }
     default:
-      jj_la1[151] = jj_gen;
+      jj_la1[173] = jj_gen;
       ;
     }
     }
@@ -5853,7 +6477,7 @@ void VhdlParser::options() {
       break;
       }
     default:
-      jj_la1[152] = jj_gen;
+      jj_la1[174] = jj_gen;
       ;
     }
     }
@@ -5896,7 +6520,7 @@ m_sharedState->lastCompound=m_sharedState->current;
       break;
       }
     default:
-      jj_la1[153] = jj_gen;
+      jj_la1[175] = jj_gen;
       ;
     }
     }
@@ -5912,7 +6536,7 @@ m_sharedState->lastCompound=m_sharedState->current;
       break;
       }
     default:
-      jj_la1[154] = jj_gen;
+      jj_la1[176] = jj_gen;
       ;
     }
     }
@@ -5978,8 +6602,8 @@ void VhdlParser::package_body_declarative_item() {
       break;
       }
     default:
-      jj_la1[155] = jj_gen;
-      if (jj_2_62(3)) {
+      jj_la1[177] = jj_gen;
+      if (jj_2_69(3)) {
         if (!hasError) {
         group_template_declaration();
         }
@@ -5992,7 +6616,7 @@ void VhdlParser::package_body_declarative_item() {
           break;
           }
         default:
-          jj_la1[156] = jj_gen;
+          jj_la1[178] = jj_gen;
           jj_consume_token(-1);
           errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
         }
@@ -6022,7 +6646,7 @@ void VhdlParser::package_body_declarative_part() {
         break;
         }
       default:
-        jj_la1[157] = jj_gen;
+        jj_la1[179] = jj_gen;
         goto end_label_29;
       }
       if (!hasError) {
@@ -6053,14 +6677,14 @@ void VhdlParser::package_header() {QCString s;
         break;
         }
       default:
-        jj_la1[158] = jj_gen;
+        jj_la1[180] = jj_gen;
         ;
       }
       }
       break;
       }
     default:
-      jj_la1[159] = jj_gen;
+      jj_la1[181] = jj_gen;
       ;
     }
     }
@@ -6107,7 +6731,7 @@ m_sharedState->lastCompound=m_sharedState->current;
       break;
       }
     default:
-      jj_la1[160] = jj_gen;
+      jj_la1[182] = jj_gen;
       ;
     }
     }
@@ -6123,7 +6747,7 @@ m_sharedState->lastCompound=m_sharedState->current;
       break;
       }
     default:
-      jj_la1[161] = jj_gen;
+      jj_la1[183] = jj_gen;
       ;
     }
     }
@@ -6156,14 +6780,14 @@ void VhdlParser::geninter() {
         break;
         }
       default:
-        jj_la1[162] = jj_gen;
+        jj_la1[184] = jj_gen;
         ;
       }
       }
       break;
       }
     default:
-      jj_la1[163] = jj_gen;
+      jj_la1[185] = jj_gen;
       ;
     }
     }
@@ -6231,8 +6855,8 @@ void VhdlParser::package_declarative_item() {
       break;
       }
     default:
-      jj_la1[164] = jj_gen;
-      if (jj_2_63(2147483647)) {
+      jj_la1[186] = jj_gen;
+      if (jj_2_70(2147483647)) {
         if (!hasError) {
         attribute_declaration();
         }
@@ -6257,8 +6881,8 @@ void VhdlParser::package_declarative_item() {
           break;
           }
         default:
-          jj_la1[165] = jj_gen;
-          if (jj_2_64(3)) {
+          jj_la1[187] = jj_gen;
+          if (jj_2_71(3)) {
             if (!hasError) {
             group_template_declaration();
             }
@@ -6271,8 +6895,8 @@ void VhdlParser::package_declarative_item() {
               break;
               }
             default:
-              jj_la1[166] = jj_gen;
-              if (jj_2_65(5)) {
+              jj_la1[188] = jj_gen;
+              if (jj_2_72(5)) {
                 if (!hasError) {
                 package_instantiation_declaration();
                 }
@@ -6285,7 +6909,7 @@ void VhdlParser::package_declarative_item() {
                   break;
                   }
                 default:
-                  jj_la1[167] = jj_gen;
+                  jj_la1[189] = jj_gen;
                   jj_consume_token(-1);
                   errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
                 }
@@ -6324,7 +6948,7 @@ void VhdlParser::package_declarative_part() {
         break;
         }
       default:
-        jj_la1[168] = jj_gen;
+        jj_la1[190] = jj_gen;
         goto end_label_30;
       }
       if (!hasError) {
@@ -6353,7 +6977,7 @@ assert(false);
 
 QCString VhdlParser::physical_literal() {QCString s,s1;
     if (!hasError) {
-    if (jj_2_66(2147483647)) {
+    if (jj_2_73(2147483647)) {
       if (!hasError) {
       s = abstract_literal();
       }
@@ -6391,7 +7015,7 @@ outlineParser()->addVhdlType(s.data(),t->beginLine,Entry::VARIABLE_SEC,VhdlDocGe
         break;
         }
       default:
-        jj_la1[169] = jj_gen;
+        jj_la1[191] = jj_gen;
         goto end_label_31;
       }
       if (!hasError) {
@@ -6418,7 +7042,7 @@ outlineParser()->addVhdlType(s.data(),t->beginLine,Entry::VARIABLE_SEC,VhdlDocGe
       break;
       }
     default:
-      jj_la1[170] = jj_gen;
+      jj_la1[192] = jj_gen;
       ;
     }
     }
@@ -6476,14 +7100,14 @@ void VhdlParser::port_map_aspect() {
 
 
 QCString VhdlParser::primary() {QCString s,s1;
-    if (jj_2_67(2147483647)) {
+    if (jj_2_74(2147483647)) {
       if (!hasError) {
       s = function_call();
       }
       if (!hasError) {
 return s;
       }
-    } else if (jj_2_68(2147483647)) {
+    } else if (jj_2_75(2147483647)) {
       if (!hasError) {
       jj_consume_token(LPAREN_T);
       }
@@ -6496,35 +7120,35 @@ return s;
       if (!hasError) {
 s="("+s1+")"; return s;
       }
-    } else if (jj_2_69(2147483647)) {
+    } else if (jj_2_76(2147483647)) {
       if (!hasError) {
       s = qualified_expression();
       }
       if (!hasError) {
 return s;
       }
-    } else if (jj_2_70(2147483647)) {
+    } else if (jj_2_77(2147483647)) {
       if (!hasError) {
       s = type_conversion();
       }
       if (!hasError) {
 return s;
       }
-    } else if (jj_2_71(2147483647)) {
+    } else if (jj_2_78(2147483647)) {
       if (!hasError) {
       s = literal();
       }
       if (!hasError) {
 s.prepend(" ");return s;
       }
-    } else if (jj_2_72(2147483647)) {
+    } else if (jj_2_79(2147483647)) {
       if (!hasError) {
       s = name();
       }
       if (!hasError) {
 return s;
       }
-    } else if (jj_2_73(2147483647)) {
+    } else if (jj_2_80(2147483647)) {
       if (!hasError) {
       allocator();
       }
@@ -6543,7 +7167,7 @@ return s;
         break;
         }
       default:
-        jj_la1[171] = jj_gen;
+        jj_la1[193] = jj_gen;
         jj_consume_token(-1);
         errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
       }
@@ -6567,12 +7191,12 @@ void VhdlParser::primary_unit() {
       break;
       }
     default:
-      jj_la1[172] = jj_gen;
-      if (jj_2_74(2147483647)) {
+      jj_la1[194] = jj_gen;
+      if (jj_2_81(2147483647)) {
         if (!hasError) {
         package_instantiation_declaration();
         }
-      } else if (jj_2_75(4)) {
+      } else if (jj_2_82(4)) {
         if (!hasError) {
         interface_package_declaration();
         }
@@ -6591,7 +7215,7 @@ void VhdlParser::primary_unit() {
           break;
           }
         default:
-          jj_la1[173] = jj_gen;
+          jj_la1[195] = jj_gen;
           jj_consume_token(-1);
           errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
         }
@@ -6622,7 +7246,7 @@ s1.prepend("("); s1.append(")");
       break;
       }
     default:
-      jj_la1[174] = jj_gen;
+      jj_la1[196] = jj_gen;
       ;
     }
     }
@@ -6633,7 +7257,7 @@ assert(false);
 
 QCString VhdlParser::procedure_call_statement() {QCString s,s1;
     if (!hasError) {
-    if (jj_2_76(2)) {
+    if (jj_2_83(2)) {
       if (!hasError) {
       s = identifier();
       }
@@ -6728,8 +7352,8 @@ return s;
       break;
       }
     default:
-      jj_la1[175] = jj_gen;
-      if (jj_2_77(3)) {
+      jj_la1[197] = jj_gen;
+      if (jj_2_84(3)) {
         if (!hasError) {
         s = attribute_declaration();
         }
@@ -6757,8 +7381,8 @@ return s;
           break;
           }
         default:
-          jj_la1[176] = jj_gen;
-          if (jj_2_78(3)) {
+          jj_la1[198] = jj_gen;
+          if (jj_2_85(3)) {
             if (!hasError) {
             s = group_template_declaration();
             }
@@ -6777,7 +7401,7 @@ return s;
               break;
               }
             default:
-              jj_la1[177] = jj_gen;
+              jj_la1[199] = jj_gen;
               jj_consume_token(-1);
               errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
             }
@@ -6811,7 +7435,7 @@ QCString VhdlParser::process_declarative_part() {QCString s,s1;
         break;
         }
       default:
-        jj_la1[178] = jj_gen;
+        jj_la1[200] = jj_gen;
         goto end_label_32;
       }
       if (!hasError) {
@@ -6842,7 +7466,7 @@ void VhdlParser::process_statement() {QCString s,s1,s2;Token *tok=0;Token *tok1=
       break;
       }
     default:
-      jj_la1[179] = jj_gen;
+      jj_la1[201] = jj_gen;
       ;
     }
     }
@@ -6855,7 +7479,7 @@ void VhdlParser::process_statement() {QCString s,s1,s2;Token *tok=0;Token *tok1=
       break;
       }
     default:
-      jj_la1[180] = jj_gen;
+      jj_la1[202] = jj_gen;
       ;
     }
     }
@@ -6884,7 +7508,7 @@ m_sharedState->currP=VhdlDocGen::PROCESS;
       break;
       }
     default:
-      jj_la1[181] = jj_gen;
+      jj_la1[203] = jj_gen;
       ;
     }
     }
@@ -6897,7 +7521,7 @@ m_sharedState->currP=VhdlDocGen::PROCESS;
       break;
       }
     default:
-      jj_la1[182] = jj_gen;
+      jj_la1[204] = jj_gen;
       ;
     }
     }
@@ -6927,7 +7551,7 @@ if (s2.data())
       break;
       }
     default:
-      jj_la1[183] = jj_gen;
+      jj_la1[205] = jj_gen;
       ;
     }
     }
@@ -6944,7 +7568,7 @@ if (s2.data())
       break;
       }
     default:
-      jj_la1[184] = jj_gen;
+      jj_la1[206] = jj_gen;
       ;
     }
     }
@@ -6995,7 +7619,7 @@ void VhdlParser::process_statement_part() {
         break;
         }
       default:
-        jj_la1[185] = jj_gen;
+        jj_la1[207] = jj_gen;
         goto end_label_33;
       }
       if (!hasError) {
@@ -7018,7 +7642,7 @@ QCString VhdlParser::qualified_expression() {QCString s,s1;
 s=s1+"'";
     }
     if (!hasError) {
-    if (jj_2_79(2147483647)) {
+    if (jj_2_86(2147483647)) {
       if (!hasError) {
       s1 = aggregate();
       }
@@ -7043,7 +7667,7 @@ s+="(";s+=s1;s+=")";
         break;
         }
       default:
-        jj_la1[186] = jj_gen;
+        jj_la1[208] = jj_gen;
         jj_consume_token(-1);
         errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
       }
@@ -7055,7 +7679,7 @@ assert(false);
 
 
 QCString VhdlParser::range() {QCString s,s1,s2;
-    if (jj_2_80(2147483647)) {
+    if (jj_2_87(2147483647)) {
       if (!hasError) {
       s = simple_expression();
       }
@@ -7068,7 +7692,7 @@ QCString VhdlParser::range() {QCString s,s1,s2;
       if (!hasError) {
 return s+" "+s1+" "+s2;
       }
-    } else if (jj_2_81(2147483647)) {
+    } else if (jj_2_88(2147483647)) {
       if (!hasError) {
       s = attribute_name();
       }
@@ -7101,9 +7725,6 @@ void VhdlParser::record_type_definition() {
     }
     if (!hasError) {
     while (!hasError) {
-      if (!hasError) {
-      element_declaration();
-      }
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
       case SLSL_T:
       case STRINGLITERAL:
@@ -7113,8 +7734,11 @@ void VhdlParser::record_type_definition() {
         break;
         }
       default:
-        jj_la1[187] = jj_gen;
+        jj_la1[209] = jj_gen;
         goto end_label_34;
+      }
+      if (!hasError) {
+      element_declaration();
       }
     }
     end_label_34: ;
@@ -7137,7 +7761,7 @@ void VhdlParser::record_type_definition() {
       break;
       }
     default:
-      jj_la1[188] = jj_gen;
+      jj_la1[210] = jj_gen;
       ;
     }
     }
@@ -7171,7 +7795,7 @@ QCString VhdlParser::relation() {QCString s,s1,s2;
       break;
       }
     default:
-      jj_la1[189] = jj_gen;
+      jj_la1[211] = jj_gen;
       ;
     }
     }
@@ -7291,7 +7915,7 @@ return "?/=";
       break;
       }
     default:
-      jj_la1[190] = jj_gen;
+      jj_la1[212] = jj_gen;
       jj_consume_token(-1);
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
@@ -7313,7 +7937,7 @@ QCString VhdlParser::report_statement() {Token *t=0;Token *t1=0;QCString s,s1,s2
       break;
       }
     default:
-      jj_la1[191] = jj_gen;
+      jj_la1[213] = jj_gen;
       ;
     }
     }
@@ -7335,7 +7959,7 @@ QCString VhdlParser::report_statement() {Token *t=0;Token *t1=0;QCString s,s1,s2
       break;
       }
     default:
-      jj_la1[192] = jj_gen;
+      jj_la1[214] = jj_gen;
       ;
     }
     }
@@ -7367,7 +7991,7 @@ s+=":";
       break;
       }
     default:
-      jj_la1[193] = jj_gen;
+      jj_la1[215] = jj_gen;
       ;
     }
     }
@@ -7405,7 +8029,7 @@ s+=":";
       break;
       }
     default:
-      jj_la1[194] = jj_gen;
+      jj_la1[216] = jj_gen;
       ;
     }
     }
@@ -7418,7 +8042,7 @@ assert(false);
 
 
 QCString VhdlParser::scalar_type_definition() {QCString s,s1;
-    if (jj_2_82(2147483647)) {
+    if (jj_2_89(2147483647)) {
       if (!hasError) {
       s = enumeration_type_definition();
       }
@@ -7440,7 +8064,7 @@ return s;
           break;
           }
         default:
-          jj_la1[195] = jj_gen;
+          jj_la1[217] = jj_gen;
           ;
         }
         }
@@ -7450,7 +8074,7 @@ return s+" "+s1;
         break;
         }
       default:
-        jj_la1[196] = jj_gen;
+        jj_la1[218] = jj_gen;
         jj_consume_token(-1);
         errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
       }
@@ -7474,7 +8098,7 @@ void VhdlParser::secondary_unit() {
       break;
       }
     default:
-      jj_la1[197] = jj_gen;
+      jj_la1[219] = jj_gen;
       jj_consume_token(-1);
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
@@ -7561,7 +8185,7 @@ void VhdlParser::selected_waveforms() {
         break;
         }
       default:
-        jj_la1[198] = jj_gen;
+        jj_la1[220] = jj_gen;
         goto end_label_35;
       }
       if (!hasError) {
@@ -7621,7 +8245,7 @@ if(tok) return "all" ;
           break;
           }
         default:
-          jj_la1[199] = jj_gen;
+          jj_la1[221] = jj_gen;
           goto end_label_36;
         }
         if (!hasError) {
@@ -7642,7 +8266,7 @@ return s;
       break;
       }
     default:
-      jj_la1[200] = jj_gen;
+      jj_la1[222] = jj_gen;
       jj_consume_token(-1);
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
@@ -7653,7 +8277,7 @@ assert(false);
 QCString VhdlParser::sequence_of_statement() {QCString s,s1;
     if (!hasError) {
     while (!hasError) {
-      if (jj_2_83(3)) {
+      if (jj_2_90(3)) {
         ;
       } else {
         goto end_label_37;
@@ -7673,84 +8297,84 @@ assert(false);
 
 
 QCString VhdlParser::sequential_statement() {QCString s;
-    if (jj_2_84(2147483647)) {
+    if (jj_2_91(2147483647)) {
       if (!hasError) {
       s = signal_assignment_statement();
       }
       if (!hasError) {
 FlowChart::addFlowChart(FlowChart::TEXT_NO,s,QCString());return s;
       }
-    } else if (jj_2_85(3)) {
+    } else if (jj_2_92(3)) {
       if (!hasError) {
       s = assertion_statement();
       }
       if (!hasError) {
 FlowChart::addFlowChart(FlowChart::TEXT_NO,s,QCString());return s;
       }
-    } else if (jj_2_86(3)) {
+    } else if (jj_2_93(3)) {
       if (!hasError) {
       s = report_statement();
       }
       if (!hasError) {
 FlowChart::addFlowChart(FlowChart::TEXT_NO,s,QCString());return s;
       }
-    } else if (jj_2_87(3)) {
+    } else if (jj_2_94(3)) {
       if (!hasError) {
       s = wait_statement();
       }
       if (!hasError) {
 FlowChart::addFlowChart(FlowChart::TEXT_NO,s,QCString());return s;
       }
-    } else if (jj_2_88(2147483647)) {
+    } else if (jj_2_95(2147483647)) {
       if (!hasError) {
       s = variable_assignment_statement();
       }
       if (!hasError) {
 FlowChart::addFlowChart(FlowChart::TEXT_NO,s,QCString());return s;
       }
-    } else if (jj_2_89(3)) {
+    } else if (jj_2_96(3)) {
       if (!hasError) {
       s = procedure_call_statement();
       }
       if (!hasError) {
 FlowChart::addFlowChart(FlowChart::TEXT_NO,s,QCString());return s;
       }
-    } else if (jj_2_90(3)) {
+    } else if (jj_2_97(3)) {
       if (!hasError) {
       if_statement();
       }
       if (!hasError) {
 return s;
       }
-    } else if (jj_2_91(3)) {
+    } else if (jj_2_98(3)) {
       if (!hasError) {
       case_statement();
       }
       if (!hasError) {
 return s;
       }
-    } else if (jj_2_92(3)) {
+    } else if (jj_2_99(3)) {
       if (!hasError) {
       loop_statement();
       }
       if (!hasError) {
 return s;
       }
-    } else if (jj_2_93(3)) {
+    } else if (jj_2_100(3)) {
       if (!hasError) {
       s = next_statement();
       }
       if (!hasError) {
 return s;
       }
-    } else if (jj_2_94(3)) {
+    } else if (jj_2_101(3)) {
       if (!hasError) {
       s = exit_statement();
       }
       if (!hasError) {
 return s;
       }
-    } else if (jj_2_95(3)) {
+    } else if (jj_2_102(3)) {
       if (!hasError) {
       s = return_statement();
       }
@@ -7771,7 +8395,7 @@ FlowChart::addFlowChart(FlowChart::TEXT_NO,s,QCString());return s;
         break;
         }
       default:
-        jj_la1[201] = jj_gen;
+        jj_la1[223] = jj_gen;
         jj_consume_token(-1);
         errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
       }
@@ -7801,7 +8425,7 @@ QCString VhdlParser::shift_expression() {QCString s,s1,s2;
       break;
       }
     default:
-      jj_la1[202] = jj_gen;
+      jj_la1[224] = jj_gen;
       ;
     }
     }
@@ -7867,7 +8491,7 @@ return "ror";
       break;
       }
     default:
-      jj_la1[203] = jj_gen;
+      jj_la1[225] = jj_gen;
       jj_consume_token(-1);
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
@@ -7896,7 +8520,7 @@ return "-";
       break;
       }
     default:
-      jj_la1[204] = jj_gen;
+      jj_la1[226] = jj_gen;
       jj_consume_token(-1);
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
@@ -7905,14 +8529,14 @@ assert(false);
 
 
 QCString VhdlParser::signal_assignment_statement() {QCString s,s1,s2,s3;
-    if (jj_2_97(2147483647)) {
+    if (jj_2_104(2147483647)) {
       if (!hasError) {
       conditional_signal_assignment_wave();
       }
       if (!hasError) {
 return QCString();
       }
-    } else if (jj_2_98(2147483647)) {
+    } else if (jj_2_105(2147483647)) {
       if (!hasError) {
       selected_signal_assignment_wave();
       }
@@ -7927,7 +8551,7 @@ return QCString();
       case BASIC_IDENTIFIER:
       case EXTENDED_CHARACTER:{
         if (!hasError) {
-        if (jj_2_96(2)) {
+        if (jj_2_103(2)) {
           if (!hasError) {
           s = identifier();
           }
@@ -7958,7 +8582,7 @@ s+=":";
           break;
           }
         default:
-          jj_la1[205] = jj_gen;
+          jj_la1[227] = jj_gen;
           ;
         }
         }
@@ -7974,7 +8598,7 @@ return s+s1+"<="+s2+s3+";";
         break;
         }
       default:
-        jj_la1[206] = jj_gen;
+        jj_la1[228] = jj_gen;
         jj_consume_token(-1);
         errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
       }
@@ -8013,7 +8637,7 @@ void VhdlParser::signal_declaration() {Token* tok=0;QCString s,s1,s2,s3,s4;
       break;
       }
     default:
-      jj_la1[207] = jj_gen;
+      jj_la1[229] = jj_gen;
       ;
     }
     }
@@ -8029,7 +8653,7 @@ void VhdlParser::signal_declaration() {Token* tok=0;QCString s,s1,s2,s3,s4;
       break;
       }
     default:
-      jj_la1[208] = jj_gen;
+      jj_la1[230] = jj_gen;
       ;
     }
     }
@@ -8064,7 +8688,7 @@ return "bus";
       break;
       }
     default:
-      jj_la1[209] = jj_gen;
+      jj_la1[231] = jj_gen;
       jj_consume_token(-1);
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
@@ -8089,7 +8713,7 @@ QCString VhdlParser::signal_list() {QCString s,s1;
           break;
           }
         default:
-          jj_la1[210] = jj_gen;
+          jj_la1[232] = jj_gen;
           goto end_label_38;
         }
         if (!hasError) {
@@ -8125,9 +8749,66 @@ return "all";
       break;
       }
     default:
-      jj_la1[211] = jj_gen;
+      jj_la1[233] = jj_gen;
       jj_consume_token(-1);
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
+    }
+assert(false);
+}
+
+
+QCString VhdlParser::simple_mode_indication() {QCString s,s1;
+    if (!hasError) {
+    switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+    case BUFFER_T:
+    case IN_T:
+    case INOUT_T:
+    case LINKAGE_T:
+    case OUT_T:{
+      if (!hasError) {
+      mode();
+      }
+      break;
+      }
+    default:
+      jj_la1[234] = jj_gen;
+      ;
+    }
+    }
+    if (!hasError) {
+    subtype_indication();
+    }
+    if (!hasError) {
+    interface_type_indication();
+    }
+    if (!hasError) {
+    switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+    case BUS_T:{
+      if (!hasError) {
+      jj_consume_token(BUS_T);
+      }
+      break;
+      }
+    default:
+      jj_la1[235] = jj_gen;
+      ;
+    }
+    }
+    if (!hasError) {
+    switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+    case VARASSIGN_T:{
+      if (!hasError) {
+      jj_consume_token(VARASSIGN_T);
+      }
+      if (!hasError) {
+      expression();
+      }
+      break;
+      }
+    default:
+      jj_la1[236] = jj_gen;
+      ;
+    }
     }
 assert(false);
 }
@@ -8154,7 +8835,7 @@ QCString VhdlParser::signature() {QCString s,s1,s2;
           break;
           }
         default:
-          jj_la1[212] = jj_gen;
+          jj_la1[237] = jj_gen;
           goto end_label_39;
         }
         if (!hasError) {
@@ -8172,7 +8853,7 @@ s+=",";s+=s1;
       break;
       }
     default:
-      jj_la1[213] = jj_gen;
+      jj_la1[238] = jj_gen;
       ;
     }
     }
@@ -8191,7 +8872,7 @@ s+="return ";s+=s1;
       break;
       }
     default:
-      jj_la1[214] = jj_gen;
+      jj_la1[239] = jj_gen;
       ;
     }
     }
@@ -8214,7 +8895,7 @@ QCString VhdlParser::simple_expression() {QCString s,s1,s2;
       break;
       }
     default:
-      jj_la1[215] = jj_gen;
+      jj_la1[240] = jj_gen;
       ;
     }
     }
@@ -8226,7 +8907,7 @@ s+=s1;
     }
     if (!hasError) {
     while (!hasError) {
-      if (jj_2_99(2147483647)) {
+      if (jj_2_106(2147483647)) {
         ;
       } else {
         goto end_label_40;
@@ -8287,8 +8968,7 @@ void VhdlParser::subprogram_body() {QCString s;
     jj_consume_token(IS_T);
     }
     if (!hasError) {
-    //try{
-     s = subprogram_declarative_part();
+    s = subprogram_declarative_part();
     }
     if (!hasError) {
 if (s.data())
@@ -8316,7 +8996,7 @@ if (s.data())
       break;
       }
     default:
-      jj_la1[216] = jj_gen;
+      jj_la1[241] = jj_gen;
       ;
     }
     }
@@ -8331,7 +9011,7 @@ if (s.data())
       break;
       }
     default:
-      jj_la1[217] = jj_gen;
+      jj_la1[242] = jj_gen;
       ;
     }
     }
@@ -8345,7 +9025,7 @@ m_sharedState->tempEntry->endBodyLine=outlineParser()->getLine(END_T);
 
 
 void VhdlParser::subprogram_declaration() {
-    if (jj_2_100(2147483647)) {
+    if (jj_2_107(2147483647)) {
       if (!hasError) {
       subprogram_instantiation_declaration();
       }
@@ -8367,7 +9047,7 @@ m_sharedState->currP=0;
         break;
         }
       default:
-        jj_la1[218] = jj_gen;
+        jj_la1[243] = jj_gen;
         jj_consume_token(-1);
         errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
       }
@@ -8390,7 +9070,7 @@ void VhdlParser::subprogram_1() {
       break;
       }
     default:
-      jj_la1[219] = jj_gen;
+      jj_la1[244] = jj_gen;
       jj_consume_token(-1);
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
@@ -8476,8 +9156,8 @@ return s;
       break;
       }
     default:
-      jj_la1[220] = jj_gen;
-      if (jj_2_101(2147483647)) {
+      jj_la1[245] = jj_gen;
+      if (jj_2_108(2147483647)) {
         if (!hasError) {
         s = attribute_declaration();
         }
@@ -8505,8 +9185,8 @@ return s;
           break;
           }
         default:
-          jj_la1[221] = jj_gen;
-          if (jj_2_102(3)) {
+          jj_la1[246] = jj_gen;
+          if (jj_2_109(3)) {
             if (!hasError) {
             s = group_template_declaration();
             }
@@ -8525,7 +9205,7 @@ return s;
               break;
               }
             default:
-              jj_la1[222] = jj_gen;
+              jj_la1[247] = jj_gen;
               jj_consume_token(-1);
               errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
             }
@@ -8560,7 +9240,7 @@ QCString VhdlParser::subprogram_declarative_part() {QCString s,s1;
         break;
         }
       default:
-        jj_la1[223] = jj_gen;
+        jj_la1[248] = jj_gen;
         goto end_label_41;
       }
       if (!hasError) {
@@ -8592,9 +9272,40 @@ void VhdlParser::subprogram_kind() {
       break;
       }
     default:
-      jj_la1[224] = jj_gen;
+      jj_la1[249] = jj_gen;
       jj_consume_token(-1);
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
+    }
+}
+
+
+void VhdlParser::subprogram_header() {
+    if (!hasError) {
+    jj_consume_token(GENERIC_T);
+    }
+    if (!hasError) {
+m_sharedState->parse_sec=GEN_SEC;
+    }
+    if (!hasError) {
+    jj_consume_token(LPAREN_T);
+    }
+    if (!hasError) {
+    generic_list();
+    }
+    if (!hasError) {
+    jj_consume_token(RPAREN_T);
+    }
+    if (!hasError) {
+m_sharedState->parse_sec=0;
+    }
+    if (!hasError) {
+    if (jj_2_110(2)) {
+      if (!hasError) {
+      generic_map_aspect();
+      }
+    } else {
+      ;
+    }
     }
 }
 
@@ -8636,12 +9347,12 @@ m_sharedState->param_sec=0;
         break;
         }
       default:
-        jj_la1[225] = jj_gen;
+        jj_la1[250] = jj_gen;
         ;
       }
       }
       if (!hasError) {
-      if (jj_2_103(2)) {
+      if (jj_2_111(2)) {
         if (!hasError) {
         gen_interface_list();
         }
@@ -8650,7 +9361,7 @@ m_sharedState->param_sec=0;
       }
       }
       if (!hasError) {
-      if (jj_2_104(2)) {
+      if (jj_2_112(2)) {
         if (!hasError) {
         gen_assoc_list();
         }
@@ -8688,7 +9399,7 @@ outlineParser()->newEntry();
           break;
           }
         default:
-          jj_la1[226] = jj_gen;
+          jj_la1[251] = jj_gen;
           jj_consume_token(-1);
           errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
         }
@@ -8696,7 +9407,7 @@ outlineParser()->newEntry();
         break;
         }
       default:
-        jj_la1[227] = jj_gen;
+        jj_la1[252] = jj_gen;
         ;
       }
       }
@@ -8704,21 +9415,51 @@ outlineParser()->newEntry();
       t = jj_consume_token(FUNCTION_T);
       }
       if (!hasError) {
+m_sharedState->currP=VhdlDocGen::FUNCTION;
+      }
+      if (!hasError) {
       s = designator();
       }
       if (!hasError) {
-m_sharedState->currP=VhdlDocGen::FUNCTION;
-   if(tok)
+      switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+      case GENERIC_T:{
+        if (!hasError) {
+        subprogram_header();
+        }
+        break;
+        }
+      default:
+        jj_la1[253] = jj_gen;
+        ;
+      }
+      }
+      if (!hasError) {
+if(tok)
      outlineParser()->createFunction(tok->image.c_str(),m_sharedState->currP,s.data());
    else
      outlineParser()->createFunction(0,m_sharedState->currP,s.data());
+
    m_sharedState->tempEntry=m_sharedState->current;
    m_sharedState->current->startLine=outlineParser()->getLine(FUNCTION_T);
    m_sharedState->current->bodyLine=outlineParser()->getLine(FUNCTION_T);
       }
       if (!hasError) {
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+      case PARAMETER_T:
       case LPAREN_T:{
+        if (!hasError) {
+        switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+        case PARAMETER_T:{
+          if (!hasError) {
+          jj_consume_token(PARAMETER_T);
+          }
+          break;
+          }
+        default:
+          jj_la1[254] = jj_gen;
+          ;
+        }
+        }
         if (!hasError) {
 m_sharedState->param_sec=PARAM_SEC;
         }
@@ -8737,12 +9478,24 @@ m_sharedState->param_sec=0;
         break;
         }
       default:
-        jj_la1[228] = jj_gen;
+        jj_la1[255] = jj_gen;
         ;
       }
       }
       if (!hasError) {
       jj_consume_token(RETURN_T);
+      }
+      if (!hasError) {
+      if (jj_2_113(2)) {
+        if (!hasError) {
+        identifier();
+        }
+        if (!hasError) {
+        jj_consume_token(OF_T);
+        }
+      } else {
+        ;
+      }
       }
       if (!hasError) {
       s = type_mark();
@@ -8755,7 +9508,7 @@ m_sharedState->tempEntry=m_sharedState->current;
       break;
       }
     default:
-      jj_la1[229] = jj_gen;
+      jj_la1[256] = jj_gen;
       jj_consume_token(-1);
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
@@ -8788,7 +9541,7 @@ void VhdlParser::subprogram_statement_part() {
         break;
         }
       default:
-        jj_la1[230] = jj_gen;
+        jj_la1[257] = jj_gen;
         goto end_label_42;
       }
       if (!hasError) {
@@ -8797,6 +9550,58 @@ void VhdlParser::subprogram_statement_part() {
     }
     end_label_42: ;
     }
+}
+
+
+QCString VhdlParser::subprogram_instantiation_declaration() {QCString s,s1,s2;
+    if (!hasError) {
+    jj_consume_token(FUNCTION_T);
+    }
+    if (!hasError) {
+    s = identifier();
+    }
+    if (!hasError) {
+    jj_consume_token(IS_T);
+    }
+    if (!hasError) {
+    jj_consume_token(NEW_T);
+    }
+    if (!hasError) {
+    s1 = name();
+    }
+    if (!hasError) {
+    switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+    case LBRACKET_T:{
+      if (!hasError) {
+      s2 = signature();
+      }
+      break;
+      }
+    default:
+      jj_la1[258] = jj_gen;
+      ;
+    }
+    }
+    if (!hasError) {
+    switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+    case GENERIC_T:{
+      if (!hasError) {
+      gen_assoc_list();
+      }
+      break;
+      }
+    default:
+      jj_la1[259] = jj_gen;
+      ;
+    }
+    }
+    if (!hasError) {
+    jj_consume_token(SEMI_T);
+    }
+QCString q= " is new "+s1+s2;
+      outlineParser()->addVhdlType(s.data(),outlineParser()->getLine(FUNCTION_T),Entry::VARIABLE_SEC,VhdlDocGen::INSTANTIATION,"function ",q.data(),Protection::Public);
+    return q;
+assert(false);
 }
 
 
@@ -8839,7 +9644,7 @@ assert(false);
 
 QCString VhdlParser::subtype_indication() {QCString s,s1,s2;
     if (!hasError) {
-    if (jj_2_105(5)) {
+    if (jj_2_114(5)) {
       if (!hasError) {
       s = reslution_indication();
       }
@@ -8861,14 +9666,14 @@ QCString VhdlParser::subtype_indication() {QCString s,s1,s2;
         break;
         }
       default:
-        jj_la1[231] = jj_gen;
+        jj_la1[260] = jj_gen;
         goto end_label_43;
       }
     }
     end_label_43: ;
     }
     if (!hasError) {
-    if (jj_2_106(2147483647)) {
+    if (jj_2_115(2147483647)) {
       if (!hasError) {
       s2 = constraint();
       }
@@ -8882,7 +9687,7 @@ assert(false);
 
 
 QCString VhdlParser::suffix() {QCString s;
-    if (jj_2_107(2147483647)) {
+    if (jj_2_116(2147483647)) {
       if (!hasError) {
       s = name();
       }
@@ -8919,7 +9724,7 @@ return " all ";
         break;
         }
       default:
-        jj_la1[232] = jj_gen;
+        jj_la1[261] = jj_gen;
         jj_consume_token(-1);
         errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
       }
@@ -8952,7 +9757,7 @@ return s;
       break;
       }
     default:
-      jj_la1[233] = jj_gen;
+      jj_la1[262] = jj_gen;
       jj_consume_token(-1);
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
@@ -8966,7 +9771,7 @@ QCString VhdlParser::term() {QCString s,s1,s2;
     }
     if (!hasError) {
     while (!hasError) {
-      if (jj_2_108(2)) {
+      if (jj_2_117(2)) {
         ;
       } else {
         goto end_label_44;
@@ -9019,7 +9824,7 @@ assert(false);
 
 
 QCString VhdlParser::type_declaration() {QCString s;
-    if (jj_2_109(3)) {
+    if (jj_2_118(3)) {
       if (!hasError) {
       s = full_type_declaration();
       }
@@ -9038,7 +9843,7 @@ return s;
         break;
         }
       default:
-        jj_la1[234] = jj_gen;
+        jj_la1[263] = jj_gen;
         jj_consume_token(-1);
         errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
       }
@@ -9088,8 +9893,8 @@ return s;
       break;
       }
     default:
-      jj_la1[235] = jj_gen;
-      if (jj_2_110(2)) {
+      jj_la1[264] = jj_gen;
+      if (jj_2_119(2)) {
         if (!hasError) {
         protected_type_body();
         }
@@ -9108,7 +9913,7 @@ return QCString();
           break;
           }
         default:
-          jj_la1[236] = jj_gen;
+          jj_la1[265] = jj_gen;
           jj_consume_token(-1);
           errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
         }
@@ -9145,7 +9950,7 @@ QCString VhdlParser::unconstraint_array_definition() {QCString s,s1,s2,s3;
         break;
         }
       default:
-        jj_la1[237] = jj_gen;
+        jj_la1[266] = jj_gen;
         goto end_label_45;
       }
       if (!hasError) {
@@ -9189,7 +9994,7 @@ QCString VhdlParser::use_clause() {QCString s,s1;
         break;
         }
       default:
-        jj_la1[238] = jj_gen;
+        jj_la1[267] = jj_gen;
         goto end_label_46;
       }
       if (!hasError) {
@@ -9239,7 +10044,7 @@ QCString VhdlParser::variable_assignment_statement() {QCString s,s1,s2;
     case BASIC_IDENTIFIER:
     case EXTENDED_CHARACTER:{
       if (!hasError) {
-      if (jj_2_111(2)) {
+      if (jj_2_120(2)) {
         if (!hasError) {
         s = identifier();
         }
@@ -9280,7 +10085,7 @@ return QCString();
       break;
       }
     default:
-      jj_la1[239] = jj_gen;
+      jj_la1[268] = jj_gen;
       jj_consume_token(-1);
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
@@ -9298,7 +10103,7 @@ QCString VhdlParser::variable_declaration() {Token *tok=0;Token *t1=0;QCString s
       break;
       }
     default:
-      jj_la1[240] = jj_gen;
+      jj_la1[269] = jj_gen;
       ;
     }
     }
@@ -9326,7 +10131,7 @@ QCString VhdlParser::variable_declaration() {Token *tok=0;Token *t1=0;QCString s
       break;
       }
     default:
-      jj_la1[241] = jj_gen;
+      jj_la1[270] = jj_gen;
       ;
     }
     }
@@ -9372,7 +10177,7 @@ QCString VhdlParser::wait_statement() {QCString s,s1,s2,s3;Token *t=0;
       break;
       }
     default:
-      jj_la1[242] = jj_gen;
+      jj_la1[271] = jj_gen;
       ;
     }
     }
@@ -9388,7 +10193,7 @@ QCString VhdlParser::wait_statement() {QCString s,s1,s2,s3;Token *t=0;
       break;
       }
     default:
-      jj_la1[243] = jj_gen;
+      jj_la1[272] = jj_gen;
       ;
     }
     }
@@ -9401,7 +10206,7 @@ QCString VhdlParser::wait_statement() {QCString s,s1,s2,s3;Token *t=0;
       break;
       }
     default:
-      jj_la1[244] = jj_gen;
+      jj_la1[273] = jj_gen;
       ;
     }
     }
@@ -9414,7 +10219,7 @@ QCString VhdlParser::wait_statement() {QCString s,s1,s2,s3;Token *t=0;
       break;
       }
     default:
-      jj_la1[245] = jj_gen;
+      jj_la1[274] = jj_gen;
       ;
     }
     }
@@ -9463,7 +10268,7 @@ QCString VhdlParser::waveform() {QCString s,s1;
           break;
           }
         default:
-          jj_la1[246] = jj_gen;
+          jj_la1[275] = jj_gen;
           goto end_label_47;
         }
         if (!hasError) {
@@ -9493,7 +10298,7 @@ return " unaffected ";
       break;
       }
     default:
-      jj_la1[247] = jj_gen;
+      jj_la1[276] = jj_gen;
       jj_consume_token(-1);
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
@@ -9520,7 +10325,7 @@ s1.prepend(" after ");
       break;
       }
     default:
-      jj_la1[248] = jj_gen;
+      jj_la1[277] = jj_gen;
       ;
     }
     }
@@ -9558,7 +10363,7 @@ QCString VhdlParser::protected_type_body() {
       break;
       }
     default:
-      jj_la1[249] = jj_gen;
+      jj_la1[278] = jj_gen;
       ;
     }
     }
@@ -9622,8 +10427,8 @@ void VhdlParser::protected_type_body_declarative_item() {
       break;
       }
     default:
-      jj_la1[250] = jj_gen;
-      if (jj_2_112(2147483647)) {
+      jj_la1[279] = jj_gen;
+      if (jj_2_121(2147483647)) {
         if (!hasError) {
         attribute_declaration();
         }
@@ -9642,8 +10447,8 @@ void VhdlParser::protected_type_body_declarative_item() {
           break;
           }
         default:
-          jj_la1[251] = jj_gen;
-          if (jj_2_113(3)) {
+          jj_la1[280] = jj_gen;
+          if (jj_2_122(3)) {
             if (!hasError) {
             group_template_declaration();
             }
@@ -9656,7 +10461,7 @@ void VhdlParser::protected_type_body_declarative_item() {
               break;
               }
             default:
-              jj_la1[252] = jj_gen;
+              jj_la1[281] = jj_gen;
               jj_consume_token(-1);
               errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
             }
@@ -9690,7 +10495,7 @@ void VhdlParser::protected_type_body_declarative_part() {
         break;
         }
       default:
-        jj_la1[253] = jj_gen;
+        jj_la1[282] = jj_gen;
         goto end_label_48;
       }
       if (!hasError) {
@@ -9731,7 +10536,7 @@ outlineParser()->error_skipto(END_T);
       break;
       }
     default:
-      jj_la1[254] = jj_gen;
+      jj_la1[283] = jj_gen;
       ;
     }
     }
@@ -9764,7 +10569,7 @@ void VhdlParser::protected_type_declarative_item() {
       break;
       }
     default:
-      jj_la1[255] = jj_gen;
+      jj_la1[284] = jj_gen;
       jj_consume_token(-1);
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
@@ -9785,7 +10590,7 @@ void VhdlParser::protected_type_declarative_part() {
         break;
         }
       default:
-        jj_la1[256] = jj_gen;
+        jj_la1[285] = jj_gen;
         goto end_label_49;
       }
       if (!hasError) {
@@ -9815,7 +10620,7 @@ QCString VhdlParser::context_ref() {QCString s, s1;
         break;
         }
       default:
-        jj_la1[257] = jj_gen;
+        jj_la1[286] = jj_gen;
         goto end_label_50;
       }
       if (!hasError) {
@@ -9861,7 +10666,7 @@ m_sharedState->parse_sec=CONTEXT_SEC;
         break;
         }
       default:
-        jj_la1[258] = jj_gen;
+        jj_la1[287] = jj_gen;
         goto end_label_51;
       }
       if (!hasError) {
@@ -9882,7 +10687,7 @@ m_sharedState->parse_sec=CONTEXT_SEC;
       break;
       }
     default:
-      jj_la1[259] = jj_gen;
+      jj_la1[288] = jj_gen;
       ;
     }
     }
@@ -9896,7 +10701,7 @@ m_sharedState->parse_sec=CONTEXT_SEC;
       break;
       }
     default:
-      jj_la1[260] = jj_gen;
+      jj_la1[289] = jj_gen;
       ;
     }
     }
@@ -9938,7 +10743,7 @@ return s;
       break;
       }
     default:
-      jj_la1[261] = jj_gen;
+      jj_la1[290] = jj_gen;
       jj_consume_token(-1);
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
@@ -9974,7 +10779,7 @@ void VhdlParser::package_instantiation_declaration() {QCString s,s1,s2;
       break;
       }
     default:
-      jj_la1[262] = jj_gen;
+      jj_la1[291] = jj_gen;
       ;
     }
     }
@@ -10011,54 +10816,12 @@ QCString VhdlParser::interface_package_declaration() {QCString s,s1;
       break;
       }
     default:
-      jj_la1[263] = jj_gen;
+      jj_la1[292] = jj_gen;
       ;
     }
     }
 m_sharedState->current->name=s;
                             return "package "+s+" is new "+s1;
-assert(false);
-}
-
-
-QCString VhdlParser::subprogram_instantiation_declaration() {QCString s,s1,s2;
-    if (!hasError) {
-    jj_consume_token(FUNCTION_T);
-    }
-    if (!hasError) {
-    s = identifier();
-    }
-    if (!hasError) {
-    jj_consume_token(IS_T);
-    }
-    if (!hasError) {
-    jj_consume_token(NEW_T);
-    }
-    if (!hasError) {
-    s1 = name();
-    }
-    if (!hasError) {
-    s2 = signature();
-    }
-    if (!hasError) {
-    switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
-    case GENERIC_T:{
-      if (!hasError) {
-      gen_assoc_list();
-      }
-      break;
-      }
-    default:
-      jj_la1[264] = jj_gen;
-      ;
-    }
-    }
-    if (!hasError) {
-    jj_consume_token(SEMI_T);
-    }
-QCString q= " is new "+s1+s2;
-      outlineParser()->addVhdlType(s.data(),outlineParser()->getLine(FUNCTION_T),Entry::VARIABLE_SEC,VhdlDocGen::INSTANTIATION,"function ",q.data(),Protection::Public);
-    return q;
 assert(false);
 }
 
@@ -10120,7 +10883,7 @@ void VhdlParser::case_scheme() {
     when_stats();
     }
     if (!hasError) {
-    if (jj_2_114(3)) {
+    if (jj_2_123(3)) {
       if (!hasError) {
       ttend();
       }
@@ -10150,7 +10913,7 @@ void VhdlParser::when_stats() {
       jj_consume_token(WHEN_T);
       }
       if (!hasError) {
-      if (jj_2_115(2)) {
+      if (jj_2_124(2)) {
         if (!hasError) {
         label();
         }
@@ -10176,7 +10939,7 @@ void VhdlParser::when_stats() {
         break;
         }
       default:
-        jj_la1[265] = jj_gen;
+        jj_la1[293] = jj_gen;
         goto end_label_52;
       }
     }
@@ -10199,7 +10962,7 @@ void VhdlParser::ttend() {
       break;
       }
     default:
-      jj_la1[266] = jj_gen;
+      jj_la1[294] = jj_gen;
       ;
     }
     }
@@ -10233,7 +10996,7 @@ void VhdlParser::generate_statement_body() {
     case VARIABLE_T:{
       if (!hasError) {
       while (!hasError) {
-        if (jj_2_116(2147483647)) {
+        if (jj_2_125(2147483647)) {
           ;
         } else {
           goto end_label_53;
@@ -10250,7 +11013,7 @@ void VhdlParser::generate_statement_body() {
       break;
       }
     default:
-      jj_la1[267] = jj_gen;
+      jj_la1[295] = jj_gen;
       ;
     }
     }
@@ -10272,7 +11035,7 @@ void VhdlParser::generate_statement_body() {
         break;
         }
       default:
-        jj_la1[268] = jj_gen;
+        jj_la1[296] = jj_gen;
         goto end_label_54;
       }
       if (!hasError) {
@@ -10300,7 +11063,7 @@ void VhdlParser::generate_statement_body1() {
       break;
       }
     default:
-      jj_la1[269] = jj_gen;
+      jj_la1[297] = jj_gen;
       ;
     }
     }
@@ -10316,7 +11079,7 @@ void VhdlParser::generate_scheme_1() {
         break;
         }
       default:
-        jj_la1[270] = jj_gen;
+        jj_la1[298] = jj_gen;
         goto end_label_55;
       }
       if (!hasError) {
@@ -10333,7 +11096,7 @@ void VhdlParser::generate_scheme_2() {
     jj_consume_token(ELSE_T);
     }
     if (!hasError) {
-    if (jj_2_117(2)) {
+    if (jj_2_126(2)) {
       if (!hasError) {
       identifier();
       }
@@ -10358,7 +11121,7 @@ void VhdlParser::generate_scheme_3() {
     jj_consume_token(ELSIF_T);
     }
     if (!hasError) {
-    if (jj_2_118(2)) {
+    if (jj_2_127(2)) {
       if (!hasError) {
       identifier();
       }
@@ -10437,7 +11200,7 @@ return QCString(t->image);
       break;
       }
     default:
-      jj_la1[271] = jj_gen;
+      jj_la1[299] = jj_gen;
       jj_consume_token(-1);
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
@@ -10475,7 +11238,7 @@ return s;
       break;
       }
     default:
-      jj_la1[272] = jj_gen;
+      jj_la1[300] = jj_gen;
       jj_consume_token(-1);
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
@@ -10484,7 +11247,7 @@ assert(false);
 
 
 QCString VhdlParser::absolute_pathname() {QCString s,s1;
-    if (jj_2_119(2147483647)) {
+    if (jj_2_128(2147483647)) {
       if (!hasError) {
       jj_consume_token(DOT_T);
       }
@@ -10512,7 +11275,7 @@ return "."+s;
         break;
         }
       default:
-        jj_la1[273] = jj_gen;
+        jj_la1[301] = jj_gen;
         jj_consume_token(-1);
         errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
       }
@@ -10526,7 +11289,7 @@ QCString VhdlParser::relative_pathname() {QCString s,s1,s2;
     s = neg_list();
     }
     if (!hasError) {
-    if (jj_2_120(2147483647)) {
+    if (jj_2_129(2147483647)) {
       if (!hasError) {
       s1 = pathname_element_list();
       }
@@ -10560,7 +11323,7 @@ s+="^.";
         break;
         }
       default:
-        jj_la1[274] = jj_gen;
+        jj_la1[302] = jj_gen;
         goto end_label_56;
       }
     }
@@ -10590,7 +11353,7 @@ QCString VhdlParser::pathname_element() {QCString s,s1;
       break;
       }
     default:
-      jj_la1[275] = jj_gen;
+      jj_la1[303] = jj_gen;
       ;
     }
     }
@@ -10616,7 +11379,7 @@ s+=".";
     }
     if (!hasError) {
     while (!hasError) {
-      if (jj_2_121(2147483647)) {
+      if (jj_2_130(2147483647)) {
         ;
       } else {
         goto end_label_57;
@@ -10651,7 +11414,7 @@ assert(false);
 
 
 void VhdlParser::conditional_signal_assignment_wave() {
-    if (jj_2_122(2147483647)) {
+    if (jj_2_131(2147483647)) {
       if (!hasError) {
       conditional_force_assignment();
       }
@@ -10668,7 +11431,7 @@ void VhdlParser::conditional_signal_assignment_wave() {
         break;
         }
       default:
-        jj_la1[276] = jj_gen;
+        jj_la1[304] = jj_gen;
         jj_consume_token(-1);
         errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
       }
@@ -10694,7 +11457,7 @@ void VhdlParser::conditional_waveform_assignment() {
       break;
       }
     default:
-      jj_la1[277] = jj_gen;
+      jj_la1[305] = jj_gen;
       ;
     }
     }
@@ -10716,7 +11479,7 @@ void VhdlParser::conditional_waveform_assignment() {
       break;
       }
     default:
-      jj_la1[278] = jj_gen;
+      jj_la1[306] = jj_gen;
       ;
     }
     }
@@ -10745,7 +11508,7 @@ void VhdlParser::else_wave_list() {
       break;
       }
     default:
-      jj_la1[279] = jj_gen;
+      jj_la1[307] = jj_gen;
       ;
     }
     }
@@ -10772,7 +11535,7 @@ void VhdlParser::conditional_force_assignment() {
       break;
       }
     default:
-      jj_la1[280] = jj_gen;
+      jj_la1[308] = jj_gen;
       ;
     }
     }
@@ -10816,7 +11579,7 @@ void VhdlParser::conditional_force_assignment() {
       break;
       }
     default:
-      jj_la1[281] = jj_gen;
+      jj_la1[309] = jj_gen;
       ;
     }
     }
@@ -10827,7 +11590,7 @@ void VhdlParser::conditional_force_assignment() {
 
 
 void VhdlParser::selected_signal_assignment_wave() {
-    if (jj_2_123(2147483647)) {
+    if (jj_2_132(2147483647)) {
       if (!hasError) {
       selected_force_assignment();
       }
@@ -10840,7 +11603,7 @@ void VhdlParser::selected_signal_assignment_wave() {
         break;
         }
       default:
-        jj_la1[282] = jj_gen;
+        jj_la1[310] = jj_gen;
         jj_consume_token(-1);
         errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
       }
@@ -10867,7 +11630,7 @@ void VhdlParser::selected_variable_assignment() {
       break;
       }
     default:
-      jj_la1[283] = jj_gen;
+      jj_la1[311] = jj_gen;
       ;
     }
     }
@@ -10884,7 +11647,7 @@ void VhdlParser::selected_variable_assignment() {
 
 
 void VhdlParser::select_name() {
-    if (jj_2_124(2147483647)) {
+    if (jj_2_133(2147483647)) {
       if (!hasError) {
       aggregate();
       }
@@ -10900,7 +11663,7 @@ void VhdlParser::select_name() {
         break;
         }
       default:
-        jj_la1[284] = jj_gen;
+        jj_la1[312] = jj_gen;
         jj_consume_token(-1);
         errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
       }
@@ -10927,7 +11690,7 @@ void VhdlParser::selected_waveform_assignment() {
       break;
       }
     default:
-      jj_la1[285] = jj_gen;
+      jj_la1[313] = jj_gen;
       ;
     }
     }
@@ -10948,7 +11711,7 @@ void VhdlParser::selected_waveform_assignment() {
       break;
       }
     default:
-      jj_la1[286] = jj_gen;
+      jj_la1[314] = jj_gen;
       ;
     }
     }
@@ -10977,7 +11740,7 @@ void VhdlParser::selected_force_assignment() {
       break;
       }
     default:
-      jj_la1[287] = jj_gen;
+      jj_la1[315] = jj_gen;
       ;
     }
     }
@@ -11000,7 +11763,7 @@ void VhdlParser::selected_force_assignment() {
       break;
       }
     default:
-      jj_la1[288] = jj_gen;
+      jj_la1[316] = jj_gen;
       ;
     }
     }
@@ -11036,7 +11799,7 @@ void VhdlParser::sel_var_list() {
       break;
       }
     default:
-      jj_la1[289] = jj_gen;
+      jj_la1[317] = jj_gen;
       jj_consume_token(-1);
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
@@ -11044,7 +11807,7 @@ void VhdlParser::sel_var_list() {
     }
     if (!hasError) {
     while (!hasError) {
-      if (jj_2_125(2147483647)) {
+      if (jj_2_134(2147483647)) {
         ;
       } else {
         goto end_label_58;
@@ -11073,7 +11836,7 @@ void VhdlParser::sel_var_list() {
         break;
         }
       default:
-        jj_la1[290] = jj_gen;
+        jj_la1[318] = jj_gen;
         jj_consume_token(-1);
         errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
       }
@@ -11102,7 +11865,7 @@ void VhdlParser::sel_wave_list() {
         break;
         }
       default:
-        jj_la1[291] = jj_gen;
+        jj_la1[319] = jj_gen;
         goto end_label_59;
       }
       if (!hasError) {
@@ -11135,7 +11898,7 @@ void VhdlParser::inout_stat() {
       break;
       }
     default:
-      jj_la1[292] = jj_gen;
+      jj_la1[320] = jj_gen;
       jj_consume_token(-1);
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
@@ -11163,7 +11926,7 @@ void VhdlParser::else_stat() {
         break;
         }
       default:
-        jj_la1[293] = jj_gen;
+        jj_la1[321] = jj_gen;
         ;
       }
       }
@@ -11173,206 +11936,12 @@ void VhdlParser::else_stat() {
         break;
         }
       default:
-        jj_la1[294] = jj_gen;
+        jj_la1[322] = jj_gen;
         goto end_label_60;
       }
     }
     end_label_60: ;
     }
-}
-
-
-QCString VhdlParser::interface_subprogram_declaration() {QCString s;
-    switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
-    case PROCEDURE_T:{
-      if (!hasError) {
-      s = iproc();
-      }
-      if (!hasError) {
-return s;
-      }
-      break;
-      }
-    case FUNCTION_T:
-    case IMPURE_T:
-    case PURE_T:{
-      if (!hasError) {
-      s = ifunc();
-      }
-      if (!hasError) {
-return s;
-      }
-      break;
-      }
-    default:
-      jj_la1[295] = jj_gen;
-      jj_consume_token(-1);
-      errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
-    }
-assert(false);
-}
-
-
-QCString VhdlParser::iproc() {QCString s,s1;
-    if (!hasError) {
-    jj_consume_token(PROCEDURE_T);
-    }
-    if (!hasError) {
-    s = identifier();
-    }
-    if (!hasError) {
-    s1 = param();
-    }
-m_sharedState->current->name=s;
-    return "procedure "+s+s1;
-assert(false);
-}
-
-
-QCString VhdlParser::ifunc() {QCString s,s1,s2,s3;Token *t=0;Token *t1=0;Token *t2=0;
-    if (!hasError) {
-    switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
-    case IMPURE_T:
-    case PURE_T:{
-      switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
-      case PURE_T:{
-        if (!hasError) {
-        t = jj_consume_token(PURE_T);
-        }
-        break;
-        }
-      case IMPURE_T:{
-        if (!hasError) {
-        t = jj_consume_token(IMPURE_T);
-        }
-        break;
-        }
-      default:
-        jj_la1[296] = jj_gen;
-        jj_consume_token(-1);
-        errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
-      }
-      break;
-      }
-    default:
-      jj_la1[297] = jj_gen;
-      ;
-    }
-    }
-    if (!hasError) {
-    jj_consume_token(FUNCTION_T);
-    }
-    if (!hasError) {
-    s = name();
-    }
-    if (!hasError) {
-    s1 = param();
-    }
-    if (!hasError) {
-    jj_consume_token(RETURN_T);
-    }
-    if (!hasError) {
-    s2 = name();
-    }
-    if (!hasError) {
-    switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
-    case IS_T:{
-      if (!hasError) {
-      t1 = jj_consume_token(IS_T);
-      }
-      if (!hasError) {
-      switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
-      case BASIC_IDENTIFIER:
-      case EXTENDED_CHARACTER:{
-        if (!hasError) {
-        s3 = identifier();
-        }
-        break;
-        }
-      case BOX_T:{
-        if (!hasError) {
-        t2 = jj_consume_token(BOX_T);
-        }
-        break;
-        }
-      default:
-        jj_la1[298] = jj_gen;
-        jj_consume_token(-1);
-        errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
-      }
-      }
-      break;
-      }
-    default:
-      jj_la1[299] = jj_gen;
-      ;
-    }
-    }
-QCString q;
-   if(t) q=t->image.data();
-   if(t2) s3="<>";
-   if (!s3.isEmpty())
-   {
-     s3.prepend(" is ");
-   }
-   m_sharedState->current->name=s;
-   if (m_sharedState->parse_sec==GEN_SEC)
-   {
-     QCString ss=q+" function "+s1+" return "+s2+s3;
-     int a=outlineParser()->getLine(FUNCTION_T);
-     int b=outlineParser()->getLine(PROCEDURE_T);
-
-     if (a>b) b=a;
-     outlineParser()->addVhdlType(m_sharedState->current->name.data(),b,Entry::VARIABLE_SEC,VhdlDocGen::GENERIC,ss.data(),0,Protection::Public);
-   }
-   m_sharedState->currP=0;return QCString();
-assert(false);
-}
-
-
-QCString VhdlParser::param() {QCString s,s1;Token *tok=0;
-    if (!hasError) {
-    switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
-    case PARAMETER_T:{
-      if (!hasError) {
-      tok = jj_consume_token(PARAMETER_T);
-      }
-      break;
-      }
-    default:
-      jj_la1[300] = jj_gen;
-      ;
-    }
-    }
-    if (!hasError) {
-m_sharedState->param_sec=PARAM_SEC;
-    }
-    if (!hasError) {
-    switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
-    case LPAREN_T:{
-      if (!hasError) {
-      jj_consume_token(LPAREN_T);
-      }
-      if (!hasError) {
-      s1 = interface_list();
-      }
-      if (!hasError) {
-      jj_consume_token(RPAREN_T);
-      }
-      break;
-      }
-    default:
-      jj_la1[301] = jj_gen;
-      ;
-    }
-    }
-if(tok)
-    {
-      s = tok->image.data();
-    }
-    m_sharedState->param_sec=0;
-    return s+"("+s1+")";
-assert(false);
 }
 
 
@@ -11397,7 +11966,7 @@ void VhdlParser::parseInline() {
       break;
       }
     default:
-      jj_la1[302] = jj_gen;
+      jj_la1[323] = jj_gen;
       jj_consume_token(-1);
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
@@ -11431,7 +12000,7 @@ void VhdlParser::ReInit(TokenManager* tokenManager){
     trace = false;
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 303; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 324; i++) jj_la1[i] = -1;
   }
 
 
@@ -11462,7 +12031,7 @@ Token * VhdlParser::jj_consume_token(int kind)  {
       jj_gen++;
       if (++jj_gc > 100) {
         jj_gc = 0;
-        for (int i = 0; i < 125; i++) {
+        for (int i = 0; i < 134; i++) {
           JJCalls *c = &jj_2_rtns[i];
           while (c != nullptr) {
             if (c->gen < jj_gen) c->first = nullptr;
@@ -11556,7 +12125,7 @@ int VhdlParser::jj_ntk_f(){
 
   void VhdlParser::jj_rescan_token(){
     jj_rescan = true;
-    for (int i = 0; i < 125; i++) {
+    for (int i = 0; i < 134; i++) {
       JJCalls *p = &jj_2_rtns[i];
       do {
         if (p->gen > jj_gen) {
@@ -11687,6 +12256,15 @@ int VhdlParser::jj_ntk_f(){
             case 122: jj_3_123(); break;
             case 123: jj_3_124(); break;
             case 124: jj_3_125(); break;
+            case 125: jj_3_126(); break;
+            case 126: jj_3_127(); break;
+            case 127: jj_3_128(); break;
+            case 128: jj_3_129(); break;
+            case 129: jj_3_130(); break;
+            case 130: jj_3_131(); break;
+            case 131: jj_3_132(); break;
+            case 132: jj_3_133(); break;
+            case 133: jj_3_134(); break;
           }
         }
         p = p->next;

@@ -1335,7 +1335,7 @@ void VhdlDocGen::writeFunctionProto(OutputList& ol,const ArgumentList &al,const 
   {
     ol.startBold();
     QCString att=arg.defval;
-    bool bGen=att.stripPrefix("gen!");
+     bool bGen=att.stripPrefix("generic");
 
     if (sem && len < 3)
     {
@@ -1447,12 +1447,13 @@ bool VhdlDocGen::writeFuncProcDocu(
     ol.startParameterType(first,"");
     //   if (first) ol.writeChar('(');
     QCString attl=arg.defval;
-    bool bGen=attl.stripPrefix("gen!");
-    if (bGen)
-      VhdlDocGen::writeFormatString(QCString("generic "),ol,md);
+    
+    //bool bGen=attl.stripPrefix("generic");
+    //if (bGen)
+    //  VhdlDocGen::writeFormatString(QCString("generic "),ol,md);
 
 
-    if (VhdlDocGen::isProcedure(md))
+    if (VhdlDocGen::isProcedure(md) || VhdlDocGen::isVhdlFunction(md) )
     {
       startFonts(arg.defval,"keywordtype",ol);
       ol.docify(" ");
