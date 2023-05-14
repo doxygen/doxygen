@@ -2095,9 +2095,9 @@ void Config::checkAndCorrect(bool quiet, const bool check)
   //------------------------
   // check sitemap creation requirements
   if (!Config_getBool(GENERATE_HTML) &&
-      !Config_getString(GENERATE_SITEMAP).isEmpty())
+      !Config_getString(SITEMAP_URL).isEmpty())
   {
-    warn_uncond("Setting GENERATE_SITEMAP requires GENERATE_HTML=YES.\n");
+    warn_uncond("Setting SITEMAP_URL requires GENERATE_HTML=YES.\n");
   }
 
   //------------------------

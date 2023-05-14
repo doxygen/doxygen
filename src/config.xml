@@ -2414,14 +2414,14 @@ The \c DOCSET_PUBLISHER_NAME tag identifies the documentation publisher.
 ]]>
       </docs>
     </option>
-    <option type='string' id='GENERATE_SITEMAP' format='string' depends='GENERATE_HTML'>
+    <option type='string' id='SITEMAP_URL' format='string' depends='GENERATE_HTML'>
       <docs>
 <![CDATA[
- The \c GENERATE_SITEMAP tag is used to specify the full URL of the place where the
+ The \c SITEMAP_URL tag is used to specify the full URL of the place where the
  generated documentation will be placed on the server by the user during the deployment
  of the documentation.
  The generated sitemap is called `sitemap.xml` and placed on the directory specified by
- \ref cfg_html_output "HTML_OUTPUT". In case no \c GENERATE_SITEMAP is specified no 
+ \ref cfg_html_output "HTML_OUTPUT". In case no \c SITEMAP_URL is specified no 
  sitemap is generated.
  For information about the sitemap protocol see https://www.sitemaps.org
 ]]>

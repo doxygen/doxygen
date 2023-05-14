@@ -11806,12 +11806,12 @@ void parseInput()
   {
     htmlOutput = createOutputDirectory(outputDirectory,Config_getString(HTML_OUTPUT),"/html");
     Config_updateString(HTML_OUTPUT,htmlOutput);
-    QCString generateSitemapStr = Config_getString(GENERATE_SITEMAP);
-    bool generateSitemap     = !generateSitemapStr.isEmpty();
-    if (generateSitemap)
+
+    QCString sitemapUrl = Config_getString(SITEMAP_URL);
+    bool generateSitemap = !sitemapUrl.isEmpty();
+    if (generateSitemap && !sitemapUrl.endsWith("/"))
     {
-      if (generateSitemapStr[generateSitemapStr.length()-1]!='/') generateSitemapStr += '/';
-      Config_updateString(GENERATE_SITEMAP,generateSitemapStr);
+      Config_updateString(SITEMAP_URL,sitemapUrl+"/");
     }
 
     // add HTML indexers that are enabled

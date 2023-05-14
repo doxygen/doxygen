@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1997-2022 Dimitri van Heesch.
+ * Copyright (C) 1997-2023 Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -43,7 +43,6 @@ Sitemap::Sitemap(Sitemap &&) = default;
 void Sitemap::initialize()
 {
   QCString fileName = Config_getString(HTML_OUTPUT) + "/" + sitemapFileName;
-  generateSitemap = Config_getString(GENERATE_SITEMAP);
 
   p->docFile = Portable::openOutputStream(fileName);
   if (!p->docFile.is_open())
@@ -70,8 +69,9 @@ void Sitemap::finalize()
 void Sitemap::addIndexFile(const QCString & fileName)
 {
   QCString fn = fileName;
+  QCString sidemapUrl = Config_getString(SITEMAP_URL);
   addHtmlExtensionIfMissing(fn);
   p->doc << "  <url>\n";
-  p->doc << "    <loc>" << convertToXML(generateSitemap + fn) << "</loc>\n";
+  p->doc << "    <loc>" << convertToXML(sidemapUrl + fn) << "</loc>\n";
   p->doc << "  </url>\n";
 }

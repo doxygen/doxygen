@@ -47,7 +47,6 @@ class Sitemap
   private:
     class Private;
     std::unique_ptr<Private> p;
-    QCString generateSitemap;
 };
 
 #endif // SITEMAP_H
