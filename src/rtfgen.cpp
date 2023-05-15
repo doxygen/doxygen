@@ -57,10 +57,22 @@ static QCString dateToRTFDateString()
 {
   auto tm = getCurrentDateTime();
   QCString result;
-  result.sprintf("\\yr%d\\mo%d\\dy%d\\hr%d\\min%d\\sec%d",
-      tm.tm_year+1900, tm.tm_mon+1, tm.tm_mday,
-      tm.tm_hour, tm.tm_min, tm.tm_sec);
-  return result;
+  switch (Config_getEnum(TIMESTAMP))
+  {
+    case TIMESTAMP_t::YES:
+    case TIMESTAMP_t::DATETIME:
+      result.sprintf("\\yr%d\\mo%d\\dy%d\\hr%d\\min%d\\sec%d",
+          tm.tm_year+1900, tm.tm_mon+1, tm.tm_mday,
+          tm.tm_hour, tm.tm_min, tm.tm_sec);
+      break;
+    case TIMESTAMP_t::DATE:
+      result.sprintf("\\yr%d\\mo%d\\dy%d",
+          tm.tm_year+1900, tm.tm_mon+1, tm.tm_mday);
+      break;
+    case TIMESTAMP_t::NO:
+      return "";
+  }
+  return "{\\creatim " + result + "}\n";
 }
 
 static QCString docifyToString(const QCString &str)
@@ -851,9 +863,10 @@ void RTFGenerator::endIndexSection(IndexSection is)
     case IndexSection::isTitlePageAuthor:
       {
         m_t << " doxygen " << getDoxygenVersion() << ".}\n";
-        m_t << "{\\creatim " << dateToRTFDateString() << "}\n}";
+        m_t << dateToRTFDateString();
         DBG_RTF(m_t << "{\\comment end of infoblock}\n");
         // setup for this section
+        m_t << "}";
         m_t << rtf_Style_Reset <<"\n";
         m_t << "\\sectd\\pgnlcrm\n";
         m_t << "{\\footer "<<rtf_Style["Footer"].reference() << "{\\chpgn}}\n";
@@ -915,8 +928,20 @@ void RTFGenerator::endIndexSection(IndexSection is)
         }
 
         m_t << theTranslator->trVersion() << " " << Config_getString(PROJECT_NUMBER) << "\\par";
-        m_t << "{\\field\\fldedit {\\*\\fldinst CREATEDATE \\\\*MERGEFORMAT}"
-          "{\\fldrslt "<< dateToString(DateTimeType::Date) << " }}\\par\n";
+        switch (Config_getEnum(TIMESTAMP))
+        {
+          case TIMESTAMP_t::YES:
+          case TIMESTAMP_t::DATETIME:
+            m_t << "{\\field\\fldedit {\\*\\fldinst CREATEDATE \\\\*MERGEFORMAT}"
+              "{\\fldrslt "<< dateToString(DateTimeType::DateTime) << " }}\\par\n";
+            break;
+          case TIMESTAMP_t::DATE:
+            m_t << "{\\field\\fldedit {\\*\\fldinst CREATEDATE \\\\*MERGEFORMAT}"
+              "{\\fldrslt "<< dateToString(DateTimeType::Date) << " }}\\par\n";
+            break;
+          case TIMESTAMP_t::NO:
+            break;
+        }
         m_t << "\\page\\page";
         DBG_RTF(m_t << "{\\comment End title page}\n")
 
