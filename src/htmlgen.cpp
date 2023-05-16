@@ -330,7 +330,6 @@ static QCString substituteHtmlKeywords(const QCString &str,
   QCString extraCssText;
 
   QCString projectName = Config_getString(PROJECT_NAME);
-  bool timeStamp = Config_getBool(HTML_TIMESTAMP);
   bool treeView = Config_getBool(GENERATE_TREEVIEW);
   bool searchEngine = Config_getBool(SEARCHENGINE);
   bool serverBasedSearch = Config_getBool(SERVER_BASED_SEARCH);
@@ -387,16 +386,21 @@ static QCString substituteHtmlKeywords(const QCString &str,
     }
   }
 
-  if (timeStamp)
+  switch (Config_getEnum(TIMESTAMP))
   {
-    generatedBy = theTranslator->trGeneratedAt(dateToString(DateTimeType::DateTime),
-                                convertToHtml(Config_getString(PROJECT_NAME)));
+    case TIMESTAMP_t::YES:
+    case TIMESTAMP_t::DATETIME:
+      generatedBy = theTranslator->trGeneratedAt(dateToString(DateTimeType::DateTime),
+                                                 convertToHtml(Config_getString(PROJECT_NAME)));
+      break;
+    case TIMESTAMP_t::DATE:
+      generatedBy = theTranslator->trGeneratedAt(dateToString(DateTimeType::Date),
+                                                 convertToHtml(Config_getString(PROJECT_NAME)));
+      break;
+    case TIMESTAMP_t::NO:
+      generatedBy = theTranslator->trGeneratedBy();
+      break;
   }
-  else
-  {
-    generatedBy = theTranslator->trGeneratedBy();
-  }
-
   if (treeView)
   {
     treeViewCssJs = "<link href=\"$relpath^navtree.css\" rel=\"stylesheet\" type=\"text/css\"/>\n"
@@ -1455,18 +1459,25 @@ void HtmlGenerator::writeSearchInfo()
 
 QCString HtmlGenerator::writeLogoAsString(const QCString &path)
 {
-  bool timeStamp = Config_getBool(HTML_TIMESTAMP);
   QCString result;
-  if (timeStamp)
+  switch (Config_getEnum(TIMESTAMP))
   {
-    result += theTranslator->trGeneratedAt(
-               dateToString(DateTimeType::DateTime),
-               Config_getString(PROJECT_NAME)
-              );
-  }
-  else
-  {
-    result += theTranslator->trGeneratedBy();
+    case TIMESTAMP_t::YES:
+    case TIMESTAMP_t::DATETIME:
+      result += theTranslator->trGeneratedAt(
+                 dateToString(DateTimeType::DateTime),
+                 Config_getString(PROJECT_NAME)
+                );
+      break;
+    case TIMESTAMP_t::DATE:
+      result += theTranslator->trGeneratedAt(
+                 dateToString(DateTimeType::Date),
+                 Config_getString(PROJECT_NAME)
+                );
+      break;
+    case TIMESTAMP_t::NO:
+      result += theTranslator->trGeneratedBy();
+      break;
   }
   result += "&#160;\n<a href=\"https://www.doxygen.org/index.html\">\n"
             "<img class=\"footer\" src=\"";

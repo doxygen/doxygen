@@ -2213,6 +2213,44 @@ void Config::updateObsolete()
     }
   }
 
+  // update TIMESTAMP based on HTML_TIMESTAMP and LATEX_TIMESTAMP
+  ConfigOption *HtmlTimestamp = ConfigImpl::instance()->get("HTML_TIMESTAMP");
+  ConfigOption *timestampOpt    = ConfigImpl::instance()->get("TIMESTAMP");
+  bool reset = false;
+  if (HtmlTimestamp && HtmlTimestamp->kind()==ConfigOption::O_Obsolete && timestampOpt)
+  {
+    ConfigObsolete *htmlTimestamp_ = dynamic_cast<ConfigObsolete*>(HtmlTimestamp);
+    ConfigEnum     *timestampOpt_ = dynamic_cast<ConfigEnum*>(timestampOpt);
+    if (htmlTimestamp_ && timestampOpt_ &&
+        htmlTimestamp_->isPresent() && htmlTimestamp_->orgType()==ConfigOption::O_Bool)
+    {
+      QCString &timestampValue  = *timestampOpt_->valueRef();
+      QCString htmlTimestampValue = *htmlTimestamp_->valueStringRef();
+      bool isValid=true;
+      bool bTimestamp = convertStringToBool(htmlTimestampValue,isValid);
+      if (isValid && bTimestamp)
+      {
+        reset = true;
+        timestampValue = "YES";
+      }
+    }
+  }
+  ConfigOption *LatexTimestamp = ConfigImpl::instance()->get("LATEX_TIMESTAMP");
+  if (!reset && LatexTimestamp && LatexTimestamp->kind()==ConfigOption::O_Obsolete && timestampOpt)
+  {
+    ConfigObsolete *latexTimestamp_ = dynamic_cast<ConfigObsolete*>(LatexTimestamp);
+    ConfigEnum     *timestampOpt_ = dynamic_cast<ConfigEnum*>(timestampOpt);
+    if (latexTimestamp_ && timestampOpt_ &&
+        latexTimestamp_->isPresent() && latexTimestamp_->orgType()==ConfigOption::O_Bool)
+    {
+      QCString &timestampValue  = *timestampOpt_->valueRef();
+      QCString latexTimestampValue = *latexTimestamp_->valueStringRef();
+      bool isValid=true;
+      bool bTimestamp = convertStringToBool(latexTimestampValue,isValid);
+      if (isValid && bTimestamp) timestampValue = "YES";
+    }
+  }
+
   auto fontname = dynamic_cast<ConfigObsolete*>(ConfigImpl::instance()->get("DOT_FONTNAME"));
   auto fontsize = dynamic_cast<ConfigObsolete*>(ConfigImpl::instance()->get("DOT_FONTSIZE"));
 

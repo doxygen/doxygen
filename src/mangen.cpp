@@ -329,8 +329,19 @@ void ManGenerator::endFile()
 
 void ManGenerator::endTitleHead(const QCString &,const QCString &name)
 {
-  m_t << ".TH \"" << name << "\" " << getExtension() << " \""
-    << dateToString(DateTimeType::Date) << "\" \"";
+  m_t << ".TH \"" << name << "\" " << getExtension();
+  switch (Config_getEnum(TIMESTAMP))
+  {
+    case TIMESTAMP_t::YES:
+    case TIMESTAMP_t::DATETIME:
+      m_t << " \"" << dateToString(DateTimeType::DateTime) << "\" \"";
+      break;
+    case TIMESTAMP_t::DATE:
+      m_t << " \"" << dateToString(DateTimeType::Date) << "\" \"";
+      break;
+    case TIMESTAMP_t::NO:
+      break;
+  }
   if (!Config_getString(PROJECT_NUMBER).isEmpty())
     m_t << "Version " << Config_getString(PROJECT_NUMBER) << "\" \"";
   if (Config_getString(PROJECT_NAME).isEmpty())

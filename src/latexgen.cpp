@@ -710,16 +710,22 @@ static QCString substituteLatexKeywords(const QCString &str,
   }
 
   TextStream tg;
-  bool timeStamp = Config_getBool(LATEX_TIMESTAMP);
   QCString generatedBy;
-  if (timeStamp)
+  auto timeStamp = Config_getEnum(TIMESTAMP);
+  switch (timeStamp)
   {
-    generatedBy = theTranslator->trGeneratedAt(dateToString(DateTimeType::DateTime).data(),
-                                               Config_getString(PROJECT_NAME).data());
-  }
-  else
-  {
-    generatedBy = theTranslator->trGeneratedBy();
+    case TIMESTAMP_t::YES:
+    case TIMESTAMP_t::DATETIME:
+      generatedBy = theTranslator->trGeneratedAt(dateToString(DateTimeType::DateTime),
+                                                 Config_getString(PROJECT_NAME));
+      break;
+    case TIMESTAMP_t::DATE:
+      generatedBy = theTranslator->trGeneratedAt(dateToString(DateTimeType::Date),
+                                                 Config_getString(PROJECT_NAME));
+      break;
+    case TIMESTAMP_t::NO:
+      generatedBy = theTranslator->trGeneratedBy();
+      break;
   }
   filterLatexString(tg, generatedBy,
                     false, // insideTabbing
@@ -795,7 +801,7 @@ static QCString substituteLatexKeywords(const QCString &str,
     { "COMPACT_LATEX",     compactLatex                           },
     { "PDF_HYPERLINKS",    pdfHyperlinks                          },
     { "USE_PDFLATEX",      usePdfLatex                            },
-    { "LATEX_TIMESTAMP",   timeStamp                              },
+    { "LATEX_TIMESTAMP",   timeStamp!=TIMESTAMP_t::NO             },
     { "LATEX_FONTENC",     !latexFontenc.isEmpty()                },
     { "FORMULA_MACROFILE", !formulaMacrofile.isEmpty()            },
     { "PROJECT_NUMBER",    !projectNumber.isEmpty()               }
