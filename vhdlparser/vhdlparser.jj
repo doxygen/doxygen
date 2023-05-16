@@ -2568,7 +2568,7 @@ QCString reslution_indication(): {QCString s;}
 // [ resolution_indication ] type_mark [ constraint ]
 QCString subtype_indication() :  {QCString s,s1,s2;}
 {
-  [LOOKAHEAD(5) s=reslution_indication()]  (s1=name())+ [LOOKAHEAD(constraint() ) s2=constraint()]
+  [LOOKAHEAD(5) s=reslution_indication()] (LOOKAHEAD(name()) s1=name())+ [LOOKAHEAD(constraint() ) s2=constraint()]
  {return s+" "+s1+" "+s2;}
 }
 

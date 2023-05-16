@@ -1388,6 +1388,14 @@ void parseInline();
  { jj_save(133, xla); }
   }
 
+ inline bool jj_2_135(int xla)
+ {
+    jj_la = xla; jj_lastpos = jj_scanpos = token;
+    jj_done = false;
+    return (!jj_3_135() || jj_done);
+ { jj_save(134, xla); }
+  }
+
  inline bool jj_3_50()
  {
     if (jj_done) return true;
@@ -1580,7 +1588,7 @@ void parseInline();
     return false;
   }
 
- inline bool jj_3_133()
+ inline bool jj_3_134()
  {
     if (jj_done) return true;
     if (jj_3R_aggregate_411_3_117()) return true;
@@ -1682,7 +1690,7 @@ void parseInline();
     return false;
   }
 
- inline bool jj_3_130()
+ inline bool jj_3_131()
  {
     if (jj_done) return true;
     if (jj_3R_pathname_element_2951_3_151()) return true;
@@ -1698,7 +1706,7 @@ void parseInline();
     return false;
   }
 
- inline bool jj_3_132()
+ inline bool jj_3_133()
  {
     if (jj_done) return true;
     if (jj_3R_selected_force_assignment_3030_3_153()) return true;
@@ -1931,7 +1939,7 @@ void parseInline();
     return false;
   }
 
- inline bool jj_3_131()
+ inline bool jj_3_132()
  {
     if (jj_done) return true;
     if (jj_3R_conditional_force_assignment_2993_3_152()) return true;
@@ -2049,7 +2057,7 @@ void parseInline();
     return false;
   }
 
- inline bool jj_3_129()
+ inline bool jj_3_130()
  {
     if (jj_done) return true;
     if (jj_3R_pathname_element_list_2962_3_150()) return true;
@@ -2208,7 +2216,7 @@ void parseInline();
     return false;
   }
 
- inline bool jj_3_128()
+ inline bool jj_3_129()
  {
     if (jj_done) return true;
     if (jj_scan_token(DOT_T)) return true;
@@ -2370,14 +2378,14 @@ void parseInline();
     return false;
   }
 
- inline bool jj_3_123()
+ inline bool jj_3_124()
  {
     if (jj_done) return true;
     if (jj_3R_ttend_2876_3_147()) return true;
     return false;
   }
 
- inline bool jj_3_127()
+ inline bool jj_3_128()
  {
     if (jj_done) return true;
     if (jj_3R_identifier_1363_3_74()) return true;
@@ -2441,7 +2449,7 @@ void parseInline();
     return false;
   }
 
- inline bool jj_3_126()
+ inline bool jj_3_127()
  {
     if (jj_done) return true;
     if (jj_3R_identifier_1363_3_74()) return true;
@@ -2475,7 +2483,7 @@ void parseInline();
     return false;
   }
 
- inline bool jj_3_125()
+ inline bool jj_3_126()
  {
     if (jj_done) return true;
     if (jj_3R_block_declarative_item_608_3_149()) return true;
@@ -2531,7 +2539,7 @@ void parseInline();
     return false;
   }
 
- inline bool jj_3_124()
+ inline bool jj_3_125()
  {
     if (jj_done) return true;
     if (jj_3R_label_1687_2_148()) return true;
@@ -2993,7 +3001,7 @@ void parseInline();
     return false;
   }
 
- inline bool jj_3_121()
+ inline bool jj_3_122()
  {
     if (jj_done) return true;
     if (jj_3R_attribute_declaration_520_2_67()) return true;
@@ -3048,7 +3056,7 @@ void parseInline();
     return false;
   }
 
- inline bool jj_3_122()
+ inline bool jj_3_123()
  {
     if (jj_done) return true;
     if (jj_3R_group_template_declaration_1350_2_68()) return true;
@@ -3188,7 +3196,7 @@ void parseInline();
     jj_scanpos = xsp;
     if (jj_3R_protected_type_body_declarative_item_2757_7_733()) {
     jj_scanpos = xsp;
-    if (jj_3_122()) {
+    if (jj_3_123()) {
     jj_scanpos = xsp;
     if (jj_3R_protected_type_body_declarative_item_2760_7_734()) return true;
     }
@@ -3632,7 +3640,7 @@ void parseInline();
     return false;
   }
 
- inline bool jj_3_120()
+ inline bool jj_3_121()
  {
     if (jj_done) return true;
     if (jj_3R_identifier_1363_3_74()) return true;
@@ -3665,7 +3673,7 @@ void parseInline();
     if (jj_done) return true;
     Token * xsp;
     xsp = jj_scanpos;
-    if (jj_3_120()) jj_scanpos = xsp;
+    if (jj_3_121()) jj_scanpos = xsp;
     if (jj_3R_target_2586_2_122()) return true;
     if (jj_scan_token(VARASSIGN_T)) return true;
     if (jj_3R_expression_1183_1_61()) return true;
@@ -3730,6 +3738,20 @@ void parseInline();
     return false;
   }
 
+ inline bool jj_3_116()
+ {
+    if (jj_done) return true;
+    if (jj_3R_constraint_916_5_142()) return true;
+    return false;
+  }
+
+ inline bool jj_3R_subtype_indication_2571_75_196()
+ {
+    if (jj_done) return true;
+    if (jj_3R_constraint_916_5_142()) return true;
+    return false;
+  }
+
  inline bool jj_3R_entity_designator_1109_1_658()
  {
     if (jj_done) return true;
@@ -3751,13 +3773,6 @@ void parseInline();
       if (jj_3R_use_clause_2640_28_505()) { jj_scanpos = xsp; break; }
     }
     if (jj_scan_token(SEMI_T)) return true;
-    return false;
-  }
-
- inline bool jj_3_115()
- {
-    if (jj_done) return true;
-    if (jj_3R_constraint_916_5_142()) return true;
     return false;
   }
 
@@ -3806,13 +3821,6 @@ void parseInline();
     return false;
   }
 
- inline bool jj_3R_subtype_indication_2571_58_196()
- {
-    if (jj_done) return true;
-    if (jj_3R_constraint_916_5_142()) return true;
-    return false;
-  }
-
  inline bool jj_3_35()
  {
     if (jj_done) return true;
@@ -3835,7 +3843,14 @@ void parseInline();
     return false;
   }
 
- inline bool jj_3_119()
+ inline bool jj_3_115()
+ {
+    if (jj_done) return true;
+    if (jj_3R_name_1783_2_63()) return true;
+    return false;
+  }
+
+ inline bool jj_3_120()
  {
     if (jj_done) return true;
     if (jj_3R_protected_type_body_2736_4_146()) return true;
@@ -3897,7 +3912,7 @@ void parseInline();
     jj_scanpos = xsp;
     if (jj_3R_type_definition_2620_3_656()) {
     jj_scanpos = xsp;
-    if (jj_3_119()) {
+    if (jj_3_120()) {
     jj_scanpos = xsp;
     if (jj_3R_type_definition_2624_3_657()) return true;
     }
@@ -3908,7 +3923,7 @@ void parseInline();
     return false;
   }
 
- inline bool jj_3R_subtype_indication_2571_45_195()
+ inline bool jj_3R_subtype_indication_2571_44_195()
  {
     if (jj_done) return true;
     if (jj_3R_name_1783_2_63()) return true;
@@ -3922,7 +3937,7 @@ void parseInline();
     return false;
   }
 
- inline bool jj_3_118()
+ inline bool jj_3_119()
  {
     if (jj_done) return true;
     if (jj_3R_full_type_declaration_1261_3_145()) return true;
@@ -3934,7 +3949,7 @@ void parseInline();
     if (jj_done) return true;
     Token * xsp;
     xsp = jj_scanpos;
-    if (jj_3_118()) {
+    if (jj_3_119()) {
     jj_scanpos = xsp;
     if (jj_3R_type_declaration_2612_3_491()) return true;
     }
@@ -3951,7 +3966,7 @@ void parseInline();
     return false;
   }
 
- inline bool jj_3_117()
+ inline bool jj_3_118()
  {
     if (jj_done) return true;
     if (jj_3R_multiplying_operation_1774_1_143()) return true;
@@ -3996,7 +4011,7 @@ void parseInline();
     Token * xsp;
     while (true) {
       xsp = jj_scanpos;
-      if (jj_3_117()) { jj_scanpos = xsp; break; }
+      if (jj_3_118()) { jj_scanpos = xsp; break; }
     }
     return false;
   }
@@ -4032,7 +4047,7 @@ void parseInline();
     return false;
   }
 
- inline bool jj_3_116()
+ inline bool jj_3_117()
  {
     if (jj_done) return true;
     if (jj_3R_name_1783_2_63()) return true;
@@ -4180,13 +4195,13 @@ void parseInline();
     Token * xsp;
     xsp = jj_scanpos;
     if (jj_3_114()) jj_scanpos = xsp;
-    if (jj_3R_subtype_indication_2571_45_195()) return true;
+    if (jj_3R_subtype_indication_2571_44_195()) return true;
     while (true) {
       xsp = jj_scanpos;
-      if (jj_3R_subtype_indication_2571_45_195()) { jj_scanpos = xsp; break; }
+      if (jj_3R_subtype_indication_2571_44_195()) { jj_scanpos = xsp; break; }
     }
     xsp = jj_scanpos;
-    if (jj_3R_subtype_indication_2571_58_196()) jj_scanpos = xsp;
+    if (jj_3R_subtype_indication_2571_75_196()) jj_scanpos = xsp;
     return false;
   }
 
@@ -8970,7 +8985,7 @@ void parseInline();
     return false;
   }
 
- inline bool jj_3_134()
+ inline bool jj_3_135()
  {
     if (jj_done) return true;
     if (jj_3R_expression_1183_1_61()) return true;
@@ -9095,7 +9110,7 @@ public:
 
 private: 
   int           jj_ntk;
-  JJCalls       jj_2_rtns[135];
+  JJCalls       jj_2_rtns[136];
   bool          jj_rescan;
   int           jj_gc;
   Token        *jj_scanpos, *jj_lastpos;
@@ -9104,7 +9119,7 @@ private:
   bool          jj_lookingAhead;
   bool          jj_semLA;
   int           jj_gen;
-  int           jj_la1[325];
+  int           jj_la1[324];
   ErrorHandler *errorHandler = nullptr;
 
 protected: 
