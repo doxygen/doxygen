@@ -1787,7 +1787,7 @@ static uint32_t skipToEndMarker(const char *data,uint32_t i,uint32_t len,const Q
 }
 
 
-QCString DocParser::processCopyDoc(const char *data,uint32_t &len)
+QCString DocParser::processCopyDoc(const char *data,size_t &len)
 {
   AUTO_TRACE("data={} len={}",Trace::trunc(data),len);
   GrowBuf buf;
@@ -1817,25 +1817,26 @@ QCString DocParser::processCopyDoc(const char *data,uint32_t &len)
           {
             QCString orgFileName = context.fileName;
             context.copyStack.push_back(def);
+            auto addDocs = [&](const QCString &file,int line,const QCString &doc)
+            {
+              buf.addStr(" \\ilinebr\\ifile \""+file+"\" ");
+              buf.addStr("\\iline "+QCString().setNum(line)+" ");
+              size_t len = doc.length();
+              buf.addStr(processCopyDoc(doc.data(),len));
+            };
             if (isBrief)
             {
-              buf.addStr(" \\ilinebr\\ifile \""+QCString(def->briefFile())+"\" ");
-              buf.addStr("\\iline "+QCString().setNum(def->briefLine())+" ");
-              uint32_t l=static_cast<uint32_t>(brief.length());
-              buf.addStr(processCopyDoc(brief.data(),l));
+              addDocs(def->briefFile(),def->briefLine(),brief);
             }
             else
             {
-              buf.addStr(" \\ilinebr\\ifile \""+QCString(def->docFile())+"\" ");
-              buf.addStr("\\iline "+QCString().setNum(def->docLine())+" ");
-              uint32_t l=static_cast<uint32_t>(doc.length());
-              buf.addStr(processCopyDoc(doc.data(),l));
-              if (def->definitionType() == Definition::TypeMember)
+              addDocs(def->docFile(),def->docLine(),doc);
+              if (def->definitionType()==Definition::TypeMember)
               {
-                const MemberDef *md = static_cast<const MemberDef *>(def);
+                const MemberDef *md = toMemberDef(def);
                 const ArgumentList &docArgList = md->templateMaster() ?
-                                   md->templateMaster()->argumentList() :
-                                   md->argumentList();
+                    md->templateMaster()->argumentList() :
+                    md->argumentList();
                 buf.addStr(inlineArgListToDoc(docArgList));
               }
             }
@@ -1980,7 +1981,7 @@ IDocNodeASTPtr validatingParseDoc(IDocParser &parserIntf,
 
   //printf("Starting comment block at %s:%d\n",qPrint(parser->context.fileName),startLine);
   parser->tokenizer.setLineNr(startLine);
-  uint32_t ioLen = static_cast<uint32_t>(input.length());
+  size_t ioLen = input.length();
   QCString inpStr = parser->processCopyDoc(input.data(),ioLen);
   if (inpStr.isEmpty() || inpStr.at(inpStr.length()-1)!='\n')
   {
