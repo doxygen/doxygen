@@ -2103,7 +2103,7 @@ void setPosition(double x,double y,double z,double t)
   Multiple adjacent \c \\todo commands will be joined into a single paragraph.
   Each todo description will start on a new line.
   Alternatively, one \c \\todo command may mention
-  several tod descriptioons. The \c \\todo command ends when a blank line or some other
+  several todo descriptions. The \c \\todo command ends when a blank line or some other
   sectioning command is encountered.
 
   The description will also add an item to a separate Todo list and
