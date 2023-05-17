@@ -3654,30 +3654,15 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
   const ArgumentList &docArgList = m_templateMaster ?
                                    m_templateMaster->argumentList() :
                                    m_defArgList;
-  if (docArgList.hasDocumentation())
-  {
-    QCString paramDocs;
-    for (const Argument &a : docArgList)
-    {
-      if (a.hasDocumentation())
-      {
-        QCString docsWithoutDir = a.docs;
-        QCString direction = extractDirection(docsWithoutDir);
-        paramDocs+=" \\ilinebr @param"+direction+" "+a.name+" "+docsWithoutDir;
-      }
-    }
-    // feed the result to the documentation parser
-    ol.generateDoc(
+  ol.generateDoc(
         docFile(),docLine(),
         scopedContainer,
         this,         // memberDef
-        paramDocs,    // docStr
+        inlineArgListToDoc(docArgList),    // docStr
         TRUE,         // indexWords
         FALSE,        // isExample
         QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT)
         );
-
-  }
 
   _writeEnumValues(ol,scopedContainer,cfname,ciname,cname);
   _writeReimplements(ol);
