@@ -98,7 +98,7 @@ class DocParser : public IDocParser
     void handleImg(DocNodeVariant *parent,DocNodeList &children,const HtmlAttribList &tagHtmlAttribs);
     int  internalValidatingParseDoc(DocNodeVariant *parent,DocNodeList &children,
                                     const QCString &doc);
-    QCString processCopyDoc(const char *data,uint32_t &len);
+    QCString processCopyDoc(const char *data,size_t &len);
     QCString findAndCopyImage(const QCString &fileName,DocImage::Type type, bool doWarn = true);
     void checkArgumentName();
     void checkRetvalName();
