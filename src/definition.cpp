@@ -1487,6 +1487,17 @@ QCString DefinitionImpl::navigationPathAsString() const
   {
     result+=(toFileDef(m_impl->def))->getDirDef()->navigationPathAsString();
   }
+  if (m_impl->def->definitionType() == Definition::DefType::TypeNamespace)
+  {
+    DefinitionMutable* x = m_impl->def->toDefinitionMutable_();
+    Definition* y = toDefinition(x);
+    NamespaceDef* z = reinterpret_cast<NamespaceDef*>(y);
+    if (z->isInline())
+    {
+      return result;
+    }
+  }
+
   result+="<li class=\"navelem\">";
   if (m_impl->def->isLinkableInProject())
   {
@@ -1537,10 +1548,10 @@ void DefinitionImpl::writeNavigationPath(OutputList &ol) const
 
   QCString navPath;
   navPath += "<div id=\"nav-path\" class=\"navpath\">\n"
-             "  <ul>\n";
+    "  <ul>\n";
   navPath += navigationPathAsString();
   navPath += "  </ul>\n"
-             "</div>\n";
+    "</div>\n";
   ol.writeNavigationPath(navPath);
 
   ol.popGeneratorState();
