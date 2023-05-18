@@ -133,9 +133,9 @@ class DefineManager
         }
         void store(const DefineMap &fromMap)
         {
-          for (auto &kv : fromMap)
+          for (auto &[name,define] : fromMap)
           {
-            m_defines.emplace(kv.first,kv.second);
+            m_defines.emplace(name,define);
           }
           //printf("  m_defines.size()=%zu\n",m_defines.size());
           m_stored=true;
@@ -158,9 +158,9 @@ class DefineManager
               //printf("  retrieveRec: processing include %s: #toMap=%zu\n",qPrint(incFile),toMap.size());
             }
           }
-          for (auto &kv : m_defines)
+          for (auto &[name,define] : m_defines)
           {
-            toMap.emplace(kv.first,kv.second);
+            toMap.emplace(name,define);
           }
         }
         bool stored() const { return m_stored; }

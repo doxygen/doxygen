@@ -380,11 +380,11 @@ void createJavaScriptSearchIndex()
   // sort all lists
   for (auto &sii : g_searchIndexInfo) // for each index
   {
-    for (auto &kv : sii.symbolMap) // for each symbol in the index
+    for (auto &[name,symList] : sii.symbolMap) // for each symbol in the index
     {
       // sort the symbols (first on "search" name, and then on full name)
-      std::sort(kv.second.begin(),
-                kv.second.end(),
+      std::sort(symList.begin(),
+                symList.end(),
                 [](const Definition *d1,const Definition *d2)
                 {
                   int eq = qstricmp(searchName(d1),searchName(d2));         // search name first
@@ -409,10 +409,10 @@ static void writeJavascriptSearchData(const QCString &searchDirName)
         if (j>0) t << ",\n";
         t << "  " << j << ": \"";
 
-        for (const auto &kv : sii.symbolMap)
+        for (const auto &[name,list] : sii.symbolMap)
         {
-          if ( kv.first == "\"" ) t << "\\";
-          t << kv.first;
+          if ( name == "\"" ) t << "\\";
+          t << name;
         }
         t << "\"";
         j++;
@@ -638,12 +638,12 @@ void writeJavaScriptSearchIndex()
     for (auto &sii : g_searchIndexInfo)
     {
       int p=0;
-      for (const auto &kv : sii.symbolMap)
+      for (const auto &[name,symList] : sii.symbolMap)
       {
         QCString baseName;
         baseName.sprintf("%s_%x",sii.name.data(),p);
         QCString dataFileName = searchDirName + "/"+baseName+".js";
-        auto &list = kv.second;
+        auto &list = symList;
         auto processFile = [p,baseName,dataFileName,&list]()
         {
           writeJavasScriptSearchDataPage(baseName,dataFileName,list);
@@ -661,12 +661,12 @@ void writeJavaScriptSearchIndex()
     for (auto &sii : g_searchIndexInfo)
     {
       int p=0;
-      for (const auto &kv : sii.symbolMap)
+      for (const auto &[name,symList] : sii.symbolMap)
       {
         QCString baseName;
         baseName.sprintf("%s_%x",sii.name.data(),p);
         QCString dataFileName = searchDirName + "/"+baseName+".js";
-        writeJavasScriptSearchDataPage(baseName,dataFileName,kv.second);
+        writeJavasScriptSearchDataPage(baseName,dataFileName,symList);
         p++;
       }
     }

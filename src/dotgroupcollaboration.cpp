@@ -38,9 +38,9 @@ DotGroupCollaboration::DotGroupCollaboration(const GroupDef* gd)
 DotGroupCollaboration::~DotGroupCollaboration()
 {
   // delete all created Nodes saved in m_usedNodes map
-  for (const auto &kv : m_usedNodes)
+  for (const auto &[name,node] : m_usedNodes)
   {
-    delete kv.second;
+    delete node;
   }
 }
 
@@ -219,15 +219,15 @@ void DotGroupCollaboration::computeTheGraph()
   writeGraphHeader(md5stream,m_rootNode->label());
 
   // clean write flags
-  for (const auto &kv : m_usedNodes)
+  for (const auto &[name,node] : m_usedNodes)
   {
-    kv.second->clearWriteFlag();
+    node->clearWriteFlag();
   }
 
   // write other nodes.
-  for (const auto &kv : m_usedNodes)
+  for (const auto &[name,node] : m_usedNodes)
   {
-    kv.second->write(md5stream,Inheritance,m_graphFormat,TRUE,FALSE,FALSE);
+    node->write(md5stream,Inheritance,m_graphFormat,TRUE,FALSE,FALSE);
   }
 
   // write edges

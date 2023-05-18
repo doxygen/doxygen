@@ -194,9 +194,9 @@ void Index::sortMemberIndexLists()
 {
   auto sortMemberIndexList = [](MemberIndexMap &map)
   {
-    for (auto &kv : map)
+    for (auto &[name,list] : map)
     {
-      std::sort(kv.second.begin(),kv.second.end(),
+      std::sort(list.begin(),list.end(),
           [](const MemberDef *md1,const MemberDef *md2)
           {
             int result = qstricmp(md1->name(),md2->name());
@@ -2238,9 +2238,9 @@ static void writeAlphabeticalClassList(OutputList &ol, ClassDef::CompoundType ct
   }
 
   // sort the class lists per letter while ignoring the prefix
-  for (auto &kv : classesByLetter)
+  for (auto &[letter,list] : classesByLetter)
   {
-    std::sort(kv.second.begin(), kv.second.end(),
+    std::sort(list.begin(), list.end(),
               [](const auto &c1,const auto &c2)
               {
                 QCString n1 = c1->className();
@@ -2908,9 +2908,9 @@ static void writeQuickMemberIndex(OutputList &ol,
 {
   bool first=TRUE;
   startQuickIndexList(ol,TRUE);
-  for (const auto &kv : map)
+  for (const auto &[letter,list] : map)
   {
-    QCString ci = kv.first.c_str();
+    QCString ci(letter);
     QCString is = letterToLabel(ci);
     QCString anchor;
     QCString extension=Doxygen::htmlFileExtension;
@@ -2920,7 +2920,7 @@ static void writeQuickMemberIndex(OutputList &ol,
       anchor=fullName+extension+"#index_";
     else
       anchor=fullName+"_"+is+extension+"#index_";
-    startQuickIndexItem(ol,anchor+convertToId(is),kv.first==page,TRUE,first);
+    startQuickIndexItem(ol,anchor+convertToId(is),letter==page,TRUE,first);
     ol.writeString(ci);
     endQuickIndexItem(ol);
     first=FALSE;
@@ -2990,13 +2990,12 @@ static void writeClassMemberIndexFiltered(OutputList &ol, ClassMemberHighlight::
   }
 
   bool first=TRUE;
-  for (const auto &kv : index.isClassIndexLetterUsed(hl))
+  for (const auto &[letter,list] : index.isClassIndexLetterUsed(hl))
   {
-    std::string page = kv.first;
     QCString fileName = getCmhlInfo(hl)->fname;
     if (multiPageIndex)
     {
-      QCString cs(page);
+      QCString cs(letter);
       if (!first)
       {
         fileName+="_"+letterToLabel(cs);
@@ -3043,7 +3042,7 @@ static void writeClassMemberIndexFiltered(OutputList &ol, ClassMemberHighlight::
         // quick alphabetical index
         if (quickIndex)
         {
-          writeQuickMemberIndex(ol,index.isClassIndexLetterUsed(hl),page,
+          writeQuickMemberIndex(ol,index.isClassIndexLetterUsed(hl),letter,
               getCmhlInfo(hl)->fname,multiPageIndex);
         }
       }
@@ -3059,7 +3058,7 @@ static void writeClassMemberIndexFiltered(OutputList &ol, ClassMemberHighlight::
     ol.endTextBlock();
 
     writeMemberList(ol,quickIndex,
-        multiPageIndex ? page : std::string(),
+        multiPageIndex ? letter : std::string(),
         index.isClassIndexLetterUsed(hl),
         Definition::TypeClass);
     endFile(ol);
@@ -3160,13 +3159,12 @@ static void writeFileMemberIndexFiltered(OutputList &ol, FileMemberHighlight::En
   }
 
   bool first=TRUE;
-  for (const auto &kv : index.isFileIndexLetterUsed(hl))
+  for (const auto &[letter,list] : index.isFileIndexLetterUsed(hl))
   {
-    std::string page = kv.first;
     QCString fileName = getFmhlInfo(hl)->fname;
     if (multiPageIndex)
     {
-      QCString cs(page);
+      QCString cs(letter);
       if (!first)
       {
         fileName+="_"+letterToLabel(cs);
@@ -3210,7 +3208,7 @@ static void writeFileMemberIndexFiltered(OutputList &ol, FileMemberHighlight::En
 
         if (quickIndex)
         {
-          writeQuickMemberIndex(ol,index.isFileIndexLetterUsed(hl),page,
+          writeQuickMemberIndex(ol,index.isFileIndexLetterUsed(hl),letter,
               getFmhlInfo(hl)->fname,multiPageIndex);
         }
       }
@@ -3226,7 +3224,7 @@ static void writeFileMemberIndexFiltered(OutputList &ol, FileMemberHighlight::En
     ol.endTextBlock();
 
     writeMemberList(ol,quickIndex,
-        multiPageIndex ? page : std::string(),
+        multiPageIndex ? letter : std::string(),
         index.isFileIndexLetterUsed(hl),
         Definition::TypeFile);
     endFile(ol);
@@ -3326,13 +3324,12 @@ static void writeNamespaceMemberIndexFiltered(OutputList &ol,
   }
 
   bool first=TRUE;
-  for (const auto &kv : index.isNamespaceIndexLetterUsed(hl))
+  for (const auto &[letter,list] : index.isNamespaceIndexLetterUsed(hl))
   {
-    std::string page = kv.first;
     QCString fileName = getNmhlInfo(hl)->fname;
     if (multiPageIndex)
     {
-      QCString cs(page);
+      QCString cs(letter);
       if (!first)
       {
         fileName+="_"+letterToLabel(cs);
@@ -3376,7 +3373,7 @@ static void writeNamespaceMemberIndexFiltered(OutputList &ol,
 
         if (quickIndex)
         {
-          writeQuickMemberIndex(ol,index.isNamespaceIndexLetterUsed(hl),page,
+          writeQuickMemberIndex(ol,index.isNamespaceIndexLetterUsed(hl),letter,
               getNmhlInfo(hl)->fname,multiPageIndex);
         }
       }
@@ -3392,7 +3389,7 @@ static void writeNamespaceMemberIndexFiltered(OutputList &ol,
     ol.endTextBlock();
 
     writeMemberList(ol,quickIndex,
-        multiPageIndex ? page : std::string(),
+        multiPageIndex ? letter : std::string(),
         index.isNamespaceIndexLetterUsed(hl),
         Definition::TypeNamespace);
     endFile(ol);
@@ -5003,10 +5000,9 @@ void renderMemberIndicesAsJs(std::ostream &t,
         }
         t << ",children:[\n";
         bool firstLetter=TRUE;
-        for (const auto &kv : getMemberList(i))
+        for (const auto &[letter,list] : getMemberList(i))
         {
           if (!firstLetter) t << ",\n";
-          std::string letter = kv.first;
           QCString ci(letter);
           QCString is(letterToLabel(ci));
           QCString anchor;

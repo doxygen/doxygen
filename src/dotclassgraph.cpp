@@ -460,24 +460,24 @@ QCString DotClassGraph::writeGraph(TextStream &out,
 
 void DotClassGraph::writeXML(TextStream &t)
 {
-  for (const auto &kv : m_usedNodes)
+  for (const auto &[name,node] : m_usedNodes)
   {
-    kv.second->writeXML(t,TRUE);
+    node->writeXML(t,TRUE);
   }
 }
 
 void DotClassGraph::writeDocbook(TextStream &t)
 {
-  for (const auto &kv : m_usedNodes)
+  for (const auto &[name,node] : m_usedNodes)
   {
-    kv.second->writeDocbook(t,TRUE);
+    node->writeDocbook(t,TRUE);
   }
 }
 
 void DotClassGraph::writeDEF(TextStream &t)
 {
-  for (const auto &kv : m_usedNodes)
+  for (const auto &[name,node] : m_usedNodes)
   {
-    kv.second->writeDEF(t);
+    node->writeDEF(t);
   }
 }

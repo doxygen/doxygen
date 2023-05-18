@@ -4753,9 +4753,8 @@ static void findInheritedTemplateInstances()
 {
   AUTO_TRACE();
   ClassDefSet visitedClasses;
-  for (const auto &kv : g_classEntries)
+  for (const auto &[name,root] : g_classEntries)
   {
-    const Entry *root = kv.second;
     ClassDef *cd;
     QCString bName = extractClassName(root);
     if ((cd=getClass(bName)))
@@ -4772,9 +4771,8 @@ static void findInheritedTemplateInstances()
 static void findUsedTemplateInstances()
 {
   AUTO_TRACE();
-  for (const auto &kv : g_classEntries)
+  for (const auto &[name,root] : g_classEntries)
   {
-    const Entry *root = kv.second;
     ClassDef *cd;
     QCString bName = extractClassName(root);
     if ((cd=getClass(bName)))
@@ -4792,9 +4790,8 @@ static void findUsedTemplateInstances()
 static void computeClassRelations()
 {
   AUTO_TRACE();
-  for (const auto &kv : g_classEntries)
+  for (const auto &[name,root] : g_classEntries)
   {
-    const Entry *root = kv.second;
     ClassDefMutable *cd;
 
     QCString bName = extractClassName(root);
@@ -4824,9 +4821,8 @@ static void computeClassRelations()
 static void computeTemplateClassRelations()
 {
   AUTO_TRACE();
-  for (const auto &kv : g_classEntries)
+  for (const auto &[name,root] : g_classEntries)
   {
-    const Entry *root = kv.second;
     QCString bName=stripAnonymousNamespaceScope(root->name);
     bName=stripTemplateSpecifiersFromScope(bName);
     ClassDefMutable *cd=getClassMutable(bName);
@@ -8314,9 +8310,9 @@ static void computeTooltipTexts()
     ThreadPool threadPool(numThreads);
     std::vector < std::future< void > > results;
     // queue the work
-    for (const auto &kv : *Doxygen::symbolMap)
+    for (const auto &[name,symList] : *Doxygen::symbolMap)
     {
-      for (const auto &def : kv.second)
+      for (const auto &def : symList)
       {
         DefinitionMutable *dm = toDefinitionMutable(def);
         if (dm && !isSymbolHidden(toDefinition(dm)) && toDefinition(dm)->isLinkableInProject())
@@ -8336,9 +8332,9 @@ static void computeTooltipTexts()
   }
   else
   {
-    for (const auto &kv : *Doxygen::symbolMap)
+    for (const auto &[name,symList] : *Doxygen::symbolMap)
     {
-      for (const auto &def : kv.second)
+      for (const auto &def : symList)
       {
         DefinitionMutable *dm = toDefinitionMutable(def);
         if (dm && !isSymbolHidden(toDefinition(dm)) && toDefinition(dm)->isLinkableInProject())
@@ -10482,9 +10478,9 @@ void readFileOrDirectory(const QCString &s,
 
 static void expandAliases()
 {
-  for (auto &kv : Doxygen::aliasMap)
+  for (auto &[name,value] : Doxygen::aliasMap)
   {
-    kv.second = expandAlias(kv.first,kv.second);
+    value = expandAlias(name,value);
   }
 }
 
@@ -10492,9 +10488,9 @@ static void expandAliases()
 
 static void escapeAliases()
 {
-  for (auto &kv : Doxygen::aliasMap)
+  for (auto &[name,definition] : Doxygen::aliasMap)
   {
-    QCString value(kv.second);
+    QCString value(definition);
     QCString newValue;
     int in,p=0;
     // for each \n in the alias command value
@@ -10527,8 +10523,8 @@ static void escapeAliases()
       p=in+2;
     }
     newValue+=value.mid(p,value.length()-p);
-    kv.second=newValue.str();
-    //printf("Alias %s has value %s\n",kv.first.c_str(),qPrint(newValue));
+    value=newValue.str();
+    //printf("Alias %s has value %s\n",name.c_str(),qPrint(newValue));
   }
 }
 
@@ -10597,9 +10593,9 @@ static void dumpSymbolMap()
   if (f.is_open())
   {
     TextStream t(&f);
-    for (const auto &kv : *Doxygen::symbolMap)
+    for (const auto &[name,symList] : *Doxygen::symbolMap)
     {
-      for (const auto &def : kv.second)
+      for (const auto &def : symList)
       {
         dumpSymbol(t,def);
       }

@@ -1097,16 +1097,16 @@ static bool getFortranTypeDefs(const QCString &tname, const QCString &moduleName
     //cout << "=== type found in global module" << endl;
     return TRUE;
   }
-  else if (!moduleName.isEmpty() && (cd= Doxygen::classLinkedMap->find(moduleName+"::"+tname)))
+  else if (!moduleName.isEmpty() && (cd=Doxygen::classLinkedMap->find(moduleName+"::"+tname)))
   {
     //cout << "=== type found in local module" << endl;
     return TRUE;
   }
   else
   {
-    for (const auto &kv : useMap)
+    for (const auto &[name,useEntry] : useMap)
     {
-      if ((cd= Doxygen::classLinkedMap->find(kv.second.module+"::"+tname)))
+      if ((cd=Doxygen::classLinkedMap->find(useEntry.module+"::"+tname)))
       {
         //cout << "===  type found in used module" << endl;
         return TRUE;

@@ -8750,9 +8750,9 @@ class SymbolIndicesContext::Private : public GenericNodeListContext
     Private(const SearchIndexInfo &info)
     {
       // use info->symbolList to populate the list
-      for (const auto &kv : info.symbolMap)
+      for (const auto &[symName,symList] : info.symbolMap)
       {
-        append(SymbolIndexContext::alloc(kv.first,kv.second,info.name));
+        append(SymbolIndexContext::alloc(symName,symList,info.name));
       }
     }
 };

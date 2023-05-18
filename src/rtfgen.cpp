@@ -563,22 +563,22 @@ void RTFGenerator::beginRTFDocument()
 
   // sort styles ascending by \s-number via an intermediate QArray
   unsigned maxIndex = 0;
-  for (const auto &kv : rtf_Style)
+  for (const auto &[name,data] : rtf_Style)
   {
-    uint32_t index = kv.second.index();
+    uint32_t index = data.index();
     if (index > maxIndex) maxIndex = index;
   }
   std::vector<const StyleData*> array(maxIndex + 1, 0);
   ASSERT(maxIndex < array.size());
 
-  for (const auto &kv : rtf_Style)
+  for (const auto &[name,data] : rtf_Style)
   {
-    uint32_t index = kv.second.index();
+    uint32_t index = data.index();
     if (array[index] != 0)
     {
-      msg("Style '%s' redefines \\s%d.\n", kv.first.c_str(), index);
+      msg("Style '%s' redefines \\s%d.\n", name.c_str(), index);
     }
-    array[index] = &kv.second;
+    array[index] = &data;
   }
 
   // write array elements

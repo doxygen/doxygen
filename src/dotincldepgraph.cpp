@@ -210,16 +210,16 @@ int DotInclDepGraph::numNodes() const
 
 void DotInclDepGraph::writeXML(TextStream &t)
 {
-  for (const auto &kv : m_usedNodes)
+  for (const auto &[name,node] : m_usedNodes)
   {
-    kv.second->writeXML(t,FALSE);
+    node->writeXML(t,FALSE);
   }
 }
 
 void DotInclDepGraph::writeDocbook(TextStream &t)
 {
-  for (const auto &kv : m_usedNodes)
+  for (const auto &[name,node] : m_usedNodes)
   {
-    kv.second->writeDocbook(t,FALSE);
+    node->writeDocbook(t,FALSE);
   }
 }

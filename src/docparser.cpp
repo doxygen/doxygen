@@ -1817,12 +1817,12 @@ QCString DocParser::processCopyDoc(const char *data,size_t &len)
           {
             QCString orgFileName = context.fileName;
             context.copyStack.push_back(def);
-            auto addDocs = [&](const QCString &file,int line,const QCString &doc)
+            auto addDocs = [&](const QCString &file_,int line_,const QCString &doc_)
             {
-              buf.addStr(" \\ilinebr\\ifile \""+file+"\" ");
-              buf.addStr("\\iline "+QCString().setNum(line)+" ");
-              size_t len = doc.length();
-              buf.addStr(processCopyDoc(doc.data(),len));
+              buf.addStr(" \\ilinebr\\ifile \""+file_+"\" ");
+              buf.addStr("\\iline "+QCString().setNum(line_)+" ");
+              size_t len_ = doc_.length();
+              buf.addStr(processCopyDoc(doc_.data(),len_));
             };
             if (isBrief)
             {

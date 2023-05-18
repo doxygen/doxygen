@@ -248,10 +248,10 @@ int Mapper::map(const QCString &n) const
 
 QCString Mapper::find(const int n) const
 {
-  for (const auto &kv : m_map)
+  for (const auto &[name,id] : m_map)
   {
-    int curVal = kv.second;
-    if (curVal == n || (curVal == (n | SIMPLESECT_BIT))) return kv.first.c_str();
+    int curVal = id;
+    if (curVal == n || (curVal == (n | SIMPLESECT_BIT))) return name.c_str();
   }
   return QCString();
 }

@@ -187,9 +187,9 @@ TemplateVariant TemplateStruct::get(const QCString &name) const
 StringVector TemplateStruct::fields() const
 {
   StringVector result;
-  for (const auto &kv : m_fields)
+  for (const auto &[name,variant] : m_fields)
   {
-    result.push_back(kv.first);
+    result.push_back(name);
   }
   std::sort(result.begin(),result.end());
   return result;
@@ -465,9 +465,9 @@ TemplateVariant TemplateImmutableStruct::get(const QCString &name) const
 StringVector TemplateImmutableStruct::fields() const
 {
   StringVector result;
-  for (const auto &kv : p->fields)
+  for (const auto &[name,variant] : p->fields)
   {
-    result.push_back(kv.first);
+    result.push_back(name);
   }
   std::sort(result.begin(),result.end());
   return result;
@@ -625,9 +625,9 @@ class TemplateContextImpl : public TemplateContext
     using EscapeIntfMap = std::unordered_map<std::string, std::unique_ptr<TemplateEscapeIntf>>;
     void copyEscapeIntfMap(const EscapeIntfMap &map)
     {
-      for (const auto &kv : map)
+      for (const auto &[name,intf] : map)
       {
-        m_escapeIntfMap.insert(std::make_pair(kv.first,kv.second->clone()));
+        m_escapeIntfMap.insert(std::make_pair(name,intf->clone()));
       }
     }
 
@@ -4738,9 +4738,9 @@ void TemplateBlockContext::add(TemplateNodeBlock *block)
 
 void TemplateBlockContext::add(TemplateBlockContext *ctx)
 {
-  for (auto &kv : ctx->m_blocks)
+  for (auto &[name,blocks] : ctx->m_blocks)
   {
-    for (auto &nb : kv.second)
+    for (auto &nb : blocks)
     {
       add(nb);
     }

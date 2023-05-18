@@ -2249,9 +2249,9 @@ static void addVariable(yyscan_t yyscanner,QCString type,QCString name)
     const ClassDef *varDef = findVariableType(yyextra->currentDefinition);
     if (varDef==0) // also check via using directive
     {
-      for (const auto &kv : yyextra->theUsingContext)
+      for (const auto &[usingName,namespaceDef] : yyextra->theUsingContext)
       {
-        varDef = findVariableType(kv.second);
+        varDef = findVariableType(namespaceDef);
         if (varDef!=0) break;
       }
     }
@@ -2928,9 +2928,9 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
     if (cd==0 && md==0)
     {
       // also check via using directive
-      for (const auto &kv : yyextra->theUsingContext)
+      for (const auto &[usingName,namespaceDef] : yyextra->theUsingContext)
       {
-        checkForClass(kv.second,cd,md);
+        checkForClass(namespaceDef,cd,md);
         if (cd!=0 || md!=0) break;
       }
     }

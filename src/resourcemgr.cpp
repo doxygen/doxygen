@@ -54,9 +54,8 @@ void ResourceMgr::registerResources(std::initializer_list<Resource> resources)
 
 bool ResourceMgr::writeCategory(const QCString &categoryName,const QCString &targetDir) const
 {
-  for (auto &kv : p->resources)
+  for (auto &[name,res] : p->resources)
   {
-    Resource &res = kv.second;
     if (res.category==categoryName)
     {
       QCString pathName = targetDir+"/"+res.name;

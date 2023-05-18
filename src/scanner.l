@@ -7870,10 +7870,10 @@ static void parseMain(yyscan_t yyscanner,
   anonNSCount++;
 
   // add additional entries that were created during processing
-  for (auto &kv: yyextra->outerScopeEntries)
+  for (auto &[parent,child]: yyextra->outerScopeEntries)
   {
-    //printf(">>> adding '%s' to scope '%s'\n",qPrint(kv.second->name),qPrint(kv.first->name));
-    kv.first->moveToSubEntryAndKeep(kv.second);
+    //printf(">>> adding '%s' to scope '%s'\n",qPrint(child->name),qPrint(parent->name));
+    parent->moveToSubEntryAndKeep(child);
   }
   yyextra->outerScopeEntries.clear();
 

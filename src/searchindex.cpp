@@ -486,9 +486,8 @@ void SearchIndexExternal::write(const QCString &fileName)
   {
     t << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
     t << "<add>\n";
-    for (auto &kv : m_docEntries)
+    for (auto &[name,doc] : m_docEntries)
     {
-      SearchDocEntry &doc = kv.second;
       doc.normalText.addChar(0);    // make sure buffer ends with a 0 terminator
       doc.importantText.addChar(0); // make sure buffer ends with a 0 terminator
       t << "  <doc>\n";

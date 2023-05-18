@@ -91,15 +91,15 @@ int DocGroup::findExistingGroup(const MemberGroupInfo *info)
 {
   std::lock_guard<std::mutex> lock(g_memberGroupInfoMapMutex);
   //printf("findExistingGroup %s:%s\n",qPrint(info->header),qPrint(info->compoundName));
-  for (const auto &kv : Doxygen::memberGroupInfoMap)
+  for (const auto &[groupId,groupInfo] : Doxygen::memberGroupInfoMap)
   {
-    if (m_compoundName==kv.second->compoundName &&  // same file or scope
-	!kv.second->header.isEmpty() &&             // not a nameless group
-	qstricmp(kv.second->header,info->header)==0  // same header name
+    if (m_compoundName==groupInfo->compoundName &&  // same file or scope
+	!groupInfo->header.isEmpty() &&             // not a nameless group
+	qstricmp(groupInfo->header,info->header)==0  // same header name
        )
     {
       //printf("Found it!\n");
-      return kv.first; // put the item in this group
+      return groupId; // put the item in this group
     }
   }
   return ++g_groupId; // start new group
