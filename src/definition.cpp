@@ -1298,11 +1298,34 @@ void DefinitionImpl::addInnerCompound(Definition *)
 
 static std::recursive_mutex g_qualifiedNameMutex;
 
+// foo::_v1 => foo
+// suitable for namespace
+static QCString rStripInlineNamespaceScope(const QCString& name)
+{
+  QCString newName = name;
+  int pos = name.find("::");
+  if (pos != -1)
+  {
+    newName = name.str().substr(0, pos);
+  }
+  return newName;
+}
+
 QCString DefinitionImpl::qualifiedName() const
 {
   std::lock_guard<std::recursive_mutex> lock(g_qualifiedNameMutex);
   if (!m_impl->qualifiedName.isEmpty())
   {
+    if (m_impl->def->definitionType() == Definition::DefType::TypeNamespace)
+    {
+      DefinitionMutable* x = m_impl->def->toDefinitionMutable_();
+      Definition* y = toDefinition(x);
+      NamespaceDef* z = reinterpret_cast<NamespaceDef*>(y);
+      if (z->isInline())
+      {
+        return rStripInlineNamespaceScope(m_impl->qualifiedName);
+      }
+    }
     return m_impl->qualifiedName;
   }
 
@@ -1326,8 +1349,8 @@ QCString DefinitionImpl::qualifiedName() const
   else
   {
     m_impl->qualifiedName = m_impl->outerScope->qualifiedName()+
-           getLanguageSpecificSeparator(getLanguage())+
-           m_impl->localName;
+          getLanguageSpecificSeparator(getLanguage())+
+          m_impl->localName;
   }
   //printf("end %s::qualifiedName()=%s\n",qPrint(name()),qPrint(m_impl->qualifiedName));
   //count--;
@@ -1936,8 +1959,8 @@ void DefinitionAliasImpl::updateQualifiedName() const
     else
     {
       m_qualifiedName = m_scope->qualifiedName()+
-        getLanguageSpecificSeparator(m_scope->getLanguage())+
-        m_def->localName();
+       getLanguageSpecificSeparator(m_scope->getLanguage())+
+       m_def->localName();
     }
   }
 }
