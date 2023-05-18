@@ -10523,7 +10523,7 @@ static void escapeAliases()
       p=in+2;
     }
     newValue+=value.mid(p,value.length()-p);
-    value=newValue.str();
+    definition=newValue.str();
     //printf("Alias %s has value %s\n",name.c_str(),qPrint(newValue));
   }
 }
