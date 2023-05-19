@@ -206,11 +206,11 @@ add_custom_target(doxygen_pdf
         COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_BINARY_DIR}/doc/doxygen_manual.tex  .
         COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_BINARY_DIR}/doc/manual.sty  .
         COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/doc/doxygen_logo.pdf  .
-        COMMAND ${PDFLATEX}  -shell-escape doxygen_manual.tex
+        COMMAND ${CMAKE_COMMAND} -E env VERSION=${VERSION} ${PDFLATEX}  -shell-escape doxygen_manual.tex
         COMMAND ${MAKEINDEX} doxygen_manual.idx
-        COMMAND ${PDFLATEX}  -shell-escape doxygen_manual.tex
+        COMMAND ${CMAKE_COMMAND} -E env VERSION=${VERSION} ${PDFLATEX}  -shell-escape doxygen_manual.tex
         COMMAND ${MAKEINDEX} doxygen_manual.idx
-        COMMAND ${PDFLATEX}  -shell-escape doxygen_manual.tex
+        COMMAND ${CMAKE_COMMAND} -E env VERSION=${VERSION} ${PDFLATEX}  -shell-escape doxygen_manual.tex
         DEPENDS run_doxygen
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/latex
 )

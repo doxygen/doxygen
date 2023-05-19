@@ -74,6 +74,19 @@
 \usepackage{amssymb}
 \usepackage{doxygen}
 \usepackage{manual}
+
+\ExplSyntaxOn
+\NewDocumentCommand{\getenv}{om}%
+  {%
+    \sys_get_shell:nnN { kpsewhich ~ --var-value ~ #2 }%
+      { \cctab_select:N \c_str_cctab } \l_tmpa_tl
+    \tl_trim_spaces:N \l_tmpa_tl
+    \IfNoValueTF { #1 }
+      { \tl_use:N \l_tmpa_tl }
+      { \tl_set_eq:NN #1 \l_tmpa_tl }
+  }
+\ExplSyntaxOff
+\getenv[\VERSION]{VERSION}
 %%
 %gave problems when in doxygen.sty
 \makeatletter
@@ -145,7 +158,7 @@
 \begin{titlepage}
 \includegraphics[width=\textwidth]{doxygen_logo}
 \begin{center}
-Manual for version @VERSION@\\[2ex]
+Manual for version \VERSION\\[2ex]
 Written by Dimitri van Heesch\\[2ex]
 \copyright 1997-\thisyear
 \end{center}
