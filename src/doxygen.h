@@ -28,7 +28,6 @@
 
 #define THREAD_LOCAL thread_local
 #define AtomicInt    std::atomic_int
-#define AtomicBool   std::atomic_bool
 
 class RefList;
 class PageLinkedMap;
@@ -36,7 +35,6 @@ class PageDef;
 class SearchIndexIntf;
 class ParserManager;
 class BufStr;
-class CiteDict;
 class MemberDef;
 class GroupDef;
 class GroupLinkedMap;
@@ -50,9 +48,6 @@ class NamespaceLinkedMap;
 class NamespaceDef;
 class DirRelationLinkedMap;
 class IndexList;
-class FormulaList;
-class FormulaDict;
-class FormulaNameDict;
 class Preprocessor;
 struct MemberGroupInfo;
 class NamespaceDefMutable;
@@ -167,6 +162,5 @@ void readFileOrDirectory(const QCString &s,
                         StringUnorderedSet *killSet = 0,
                         StringSet *paths = 0
                        );
-void copyAndFilterFile(const char *fileName,BufStr &dest);
 
 #endif
