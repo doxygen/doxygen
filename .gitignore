@@ -18,6 +18,7 @@
 /warnings.log
 
 tags
+.cache/
 
 .idea
 cmake-build-debug/
