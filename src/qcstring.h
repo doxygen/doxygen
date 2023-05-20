@@ -58,7 +58,7 @@ inline uint32_t qstrlen( const char *str )
 { return str ? static_cast<uint32_t>(strlen(str)) : 0; }
 
 inline char *qstrcpy( char *dst, const char *src )
-{ return src ? strcpy(dst, src) : 0; }
+{ return src ? strcpy(dst, src) : nullptr; }
 
 char * qstrncpy(char *dst,const char *src, size_t len);
 
