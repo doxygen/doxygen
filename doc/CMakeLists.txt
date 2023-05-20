@@ -204,13 +204,14 @@ add_custom_target(doxygen_pdf
         COMMAND ${CMAKE_COMMAND} -E remove refman.tex
         COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_BINARY_DIR}/doc/manual.sty  .
         COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/doc/doxygen_logo.pdf  .
-        COMMAND ${CMAKE_COMMAND} -E chdir ${PROJECT_BINARY_DIR}/latex ${PYTHON_EXECUTABLE} ${PROJECT_SOURCE_DIR}/doc/doxygen_manual_latex.py "${VERSION}" "${PROJECT_BINARY_DIR}/doc/doxygen_manual.tex" "${PROJECT_BINARY_DIR}/latex/doxygen_manual.tex"
+        COMMAND ${CMAKE_COMMAND} -E chdir ${PROJECT_BINARY_DIR}/latex ${PYTHON_EXECUTABLE} ${PROJECT_SOURCE_DIR}/doc/replace_version.py "${PROJECT_BINARY_DIR}/doc/doxygen_manual.tex" "${PROJECT_BINARY_DIR}/latex/doxygen_manual.tex" "${VERSION}"
         COMMAND ${PDFLATEX}  -shell-escape doxygen_manual.tex
         COMMAND ${MAKEINDEX} doxygen_manual.idx
         COMMAND ${PDFLATEX}  -shell-escape doxygen_manual.tex
         COMMAND ${MAKEINDEX} doxygen_manual.idx
         COMMAND ${PDFLATEX}  -shell-escape doxygen_manual.tex
-        DEPENDS run_doxygen
+        DEPENDS ${PROJECT_BINARY_DIR}/doc/manual.sty ${PROJECT_SOURCE_DIR}/doc/doxygen_logo.pdf
+        DEPENDS run_doxygen ${PROJECT_SOURCE_DIR}/doc/replace_version.py ${PROJECT_BINARY_DIR}/doc/doxygen_manual.tex
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/latex
 )
 add_custom_target(docs
