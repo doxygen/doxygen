@@ -63,7 +63,7 @@ inline char *qstrcpy( char *dst, const char *src )
 char *qstrncpy(char *dst,const char *src, size_t len);
 
 inline bool qisempty( const char *s)
-{ return s==0 || *s==0; }
+{ return s==nullptr || *s=='\0'; }
 
 inline int qstrcmp( const char *str1, const char *str2 )
 { return (str1 && str2) ? strcmp(str1,str2) :     // both non-empty
