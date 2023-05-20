@@ -45,11 +45,7 @@
 
 void *qmemmove( void *dst, const void *src, size_t len );
 
-#if defined(_OS_WIN32_)
-#define qsnprintf _snprintf
-#else
 #define qsnprintf snprintf
-#endif
 
 //! Returns a copy of a string \a s.
 //! Note that memory is passed to the caller, use qstrfree() to release.
