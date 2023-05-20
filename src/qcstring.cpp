@@ -433,12 +433,12 @@ void qstrfree( const char *str )
 
 char *qstrncpy( char *dst, const char *src, size_t len )
 {
-    if ( !src )
-	return 0;
-    strncpy( dst, src, len );
-    if ( len > 0 )
-	dst[len-1] = '\0';
-    return dst;
+  if ( !src )
+    return nullptr;
+  strncpy( dst, src, len );
+  if ( len > 0 )
+    dst[len-1] = '\0';
+  return dst;
 }
 
 int qstricmp( const char *s1, const char *s2 )

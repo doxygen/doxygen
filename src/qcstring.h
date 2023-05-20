@@ -60,7 +60,7 @@ inline uint32_t qstrlen( const char *str )
 inline char *qstrcpy( char *dst, const char *src )
 { return src ? strcpy(dst, src) : nullptr; }
 
-char * qstrncpy(char *dst,const char *src, size_t len);
+char *qstrncpy(char *dst,const char *src, size_t len);
 
 inline bool qisempty( const char *s)
 { return s==0 || *s==0; }
