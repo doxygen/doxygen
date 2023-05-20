@@ -401,20 +401,21 @@ bye:
 
 void *qmemmove( void *dst, const void *src, size_t len )
 {
-    char *d;
-    const char *s;
-    if ( dst > src ) {
-	d = static_cast<char *>(dst) + len - 1;
-	s = static_cast<const char *>(src) + len - 1;
-	while ( len-- )
-	    *d-- = *s--;
-    } else if ( dst < src ) {
-	d = static_cast<char *>(dst);
-	s = static_cast<const char *>(src);
-	while ( len-- )
-	    *d++ = *s++;
-    }
-    return dst;
+  char *d;
+  const char *s;
+  if ( dst > src ) {
+    d = static_cast<char *>(dst) + len - 1;
+    s = static_cast<const char *>(src) + len - 1;
+    while ( len-- )
+      *d-- = *s--;
+  }
+  else if ( dst < src ) {
+    d = static_cast<char *>(dst);
+    s = static_cast<const char *>(src);
+    while ( len-- )
+      *d++ = *s++;
+  }
+  return dst;
 }
 
 char *qstrdup( const char *str )
