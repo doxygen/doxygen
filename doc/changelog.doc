@@ -98,7 +98,7 @@
 <li>New option MARKDOWN_ID_STYLE to generate GitHub style identifiers for sections [<a href="https://github.com/doxygen/doxygen/commit/45612e24023db52fe3c4e4dea43b8d7c8eb76e66">view</a>]</li>
 <li>New option SITEMAP_URL to generate Sitemaps [<a href="https://github.com/doxygen/doxygen/commit/7a7ec118299679f6ea5fb23a50bea7d6532910af">view</a>]</li>
 <li>New option TIMESTAMP to disable pages without timestamps (replaces HTML_TIMESTAMP and LATEX_TIMESTAMP) [<a href="https://github.com/doxygen/doxygen/commit/27933ab863b27d2570f48f07f0c7318457a6201e">view</a>]</li>
-<li>Making settings from settings file available via new \doxyconfig command. [<a href="https://github.com/doxygen/doxygen/commit/a942aa0fe8c1b6700891510a900100f5b0b8f633">view</a>],
+<li>Making settings from settings file available via new \doxyconfig command. [<a href="https://github.com/doxygen/doxygen/commit/a942aa0fe8c1b6700891510a900100f5b0b8f633">view</a>]</li>
 <li>Add &#39;&lt;thead&gt;&#39;, &#39;&lt;tbody&gt;&#39; and &#39;&lt;tfoot&gt;&#39; HTML tags as dummies [<a href="https://github.com/doxygen/doxygen/commit/c5202a612fbd1e74c40d89caca846152502b1de3">view</a>]</li>
 <li>Add `point` as email separator [<a href="https://github.com/doxygen/doxygen/commit/713ceed8be0ce90ae0f7559d452c5a27a37e70ab">view</a>]</li>
 <li>Improved group handling for defines, static functions, and enums [<a href="https://github.com/doxygen/doxygen/commit/e56eb6bf15fdea42611cb705b8f83c48a4ce1a5a">view</a>],
@@ -117,7 +117,7 @@ href="https://github.com/doxygen/doxygen/commit/2073b3b376df7307cc45ea4e007dfd59
 <li>Support for basic hierarchical grouping in LaTeX output [<a href="https://github.com/doxygen/doxygen/commit/219610a2110b4e4ad43094bad70090f918b83c2a">view</a>]</li>
 <li>Support hierarchical groups in RTF and use the same model for pages [<a href="https://github.com/doxygen/doxygen/commit/0bf554bbf8815974f75da513ddc2e4ccc52448c4">view</a>]</li>
 <li>Improve default LaTeX hypertarget location [<a href="https://github.com/doxygen/doxygen/commit/ad7ccbe39ecf0e434ede0abf40a0e8e25ebf7e5d">view</a>]</li>
-<li>Allow multiple newlines in a Markdown code span. [<a href="https://github.com/doxygen/doxygen/commit/1beeab697fce7ac1e6878f2fc61578808a7aa070">view</a>], [<a href="https://github.com/doxygen/doxygen/commit/36fae1e91635c37bdeaa231ebd8ffd012a9a181e">view</a>]</li>
+<li>Allow multiple newlines in a Markdown code span. [<a href="https://github.com/doxygen/doxygen/commit/1beeab697fce7ac1e6878f2fc61578808a7aa070">view</a>], [<a href="https://github.com/doxygen/doxygen/commit/36fae1e91635c37bdeaa231ebd8ffd012a9a181e">view</a>],
 [<a href="https://github.com/doxygen/doxygen/commit/a3de007be214adc142c6897e1c7b04a06f1d1ed6">view</a>]</li>
 <li>Enable possible other LaTeX error modes via new LATEX_BATCHMODE options [<a href="https://github.com/doxygen/doxygen/commit/a0f48f3578125b2e02254209e184dcbb79bbe5ad">view</a>], [<a href="https://github.com/doxygen/doxygen/commit/ab2a52330cc2fbe7a3736a3ec6f9ac78adb62000">view</a>]</li>
 <li>Added option `trimleft` to the command `\snippet` [<a href="https://github.com/doxygen/doxygen/commit/e377f5302226c70ae2951bb4262e9f1bde517ae9">view</a>]</li>
