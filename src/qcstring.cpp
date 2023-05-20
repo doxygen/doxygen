@@ -420,10 +420,10 @@ void *qmemmove( void *dst, const void *src, size_t len )
 
 char *qstrdup( const char *str )
 {
-    if ( !str )
-	return 0;
-    char *dst = new char[qstrlen(str)+1];
-    return strcpy( dst, str );
+  if ( !str )
+    return 0;
+  char *dst = new char[qstrlen(str)+1];
+  return strcpy( dst, str );
 }
 
 void qstrfree( const char *str )
