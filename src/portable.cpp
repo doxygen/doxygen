@@ -502,15 +502,6 @@ int Portable::pclose(FILE *stream)
   #endif
 }
 
-void Portable::sleep(int ms)
-{
-#if defined(_WIN32) && !defined(__CYGWIN__)
-  Sleep(ms);
-#else
-  usleep(1000*ms);
-#endif
-}
-
 bool Portable::isAbsolutePath(const QCString &fileName)
 {
   const char *fn = fileName.data();

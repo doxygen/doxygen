@@ -68,33 +68,4 @@ class DotRunner
     std::vector<DotJob>  m_jobs;
 };
 
-/** Queue of dot jobs to run. */
-// all methods are thread save
-class DotRunnerQueue
-{
-  public:
-    void enqueue(DotRunner *runner);
-    DotRunner *dequeue();
-    size_t size() const;
-  private:
-    std::condition_variable m_bufferNotEmpty;
-    std::queue<DotRunner *> m_queue;
-    mutable std::mutex    m_mutex;
-};
-
-/** Worker thread to execute a dot run */
-class DotWorkerThread
-{
-  public:
-    DotWorkerThread(DotRunnerQueue *queue);
-   ~DotWorkerThread();
-    void run();
-    void start();
-    bool isRunning() const { return m_thread && m_thread->joinable(); }
-    void wait() { m_thread->join(); }
-  private:
-    std::unique_ptr<std::thread> m_thread;
-    DotRunnerQueue *m_queue;
-};
-
 #endif

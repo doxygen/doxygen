@@ -33,7 +33,6 @@ namespace Portable
   FILE *         popen(const QCString &name,const QCString &type);
   int            pclose(FILE *stream);
   double         getSysElapsedTime();
-  void           sleep(int ms);
   bool           isAbsolutePath(const QCString &fileName);
   void           correct_path();
   void           setShortDir();
