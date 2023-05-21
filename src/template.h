@@ -200,7 +200,7 @@ class TemplateVariant
     /** Compares this QVariant with v and returns true if they are equal;
      *  otherwise returns false.
      */
-    bool operator==(TemplateVariant &other) const;
+    bool operator==(const TemplateVariant &other) const;
 
     /** Returns the variant as a string. */
     QCString toString() const;

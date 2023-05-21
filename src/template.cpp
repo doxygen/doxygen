@@ -318,7 +318,7 @@ TemplateVariant &TemplateVariant::operator=(TemplateVariant &&v)
   return *this;
 }
 
-bool TemplateVariant::operator==(TemplateVariant &other) const
+bool TemplateVariant::operator==(const TemplateVariant &other) const
 {
   if (!isValid())
   {
