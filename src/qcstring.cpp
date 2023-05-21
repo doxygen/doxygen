@@ -53,7 +53,7 @@ int QCString::find( char c, int index, bool cs ) const
     pos = data()+index;
     c = toLowerChar(c);
     while (*pos && toLowerChar(*pos)!=c) pos++;
-    if (!*pos && c) pos=0; // not found
+    if (!*pos && c) pos=nullptr; // not found
   }
   return pos ? static_cast<int>(pos - data()) : -1;
 }
@@ -78,7 +78,7 @@ int QCString::find( const char *str, int index, bool cs ) const
       if (qstrnicmp(pos,str,len)==0) break;
       pos++;
     }
-    if (!*pos) pos = 0; // not found
+    if (!*pos) pos = nullptr; // not found
   }
   return pos ? static_cast<int>(pos - data()) : -1;
 }
