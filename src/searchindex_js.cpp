@@ -306,13 +306,14 @@ static void addMemberToSearchIndex(const MemberDef *md)
 
 void createJavaScriptSearchIndex()
 {
+  bool hideInlineNamespaces = Config_getBool(HIDE_INLINE_NAMESPACES);
   // index classes
   for (const auto &cd : *Doxygen::classLinkedMap)
   {
     if (cd->isLinkable())
     {
       Definition* outerDef = cd->getOuterScope();
-      if (outerDef && outerDef->definitionType() == Definition::DefType::TypeNamespace)
+      if (hideInlineNamespaces && outerDef && outerDef->definitionType() == Definition::DefType::TypeNamespace)
       {
         NamespaceDef* outerDefReal = reinterpret_cast<NamespaceDef*>(outerDef);
         if (outerDefReal->isInline())

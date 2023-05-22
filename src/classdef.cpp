@@ -2423,6 +2423,7 @@ void ClassDefImpl::writeDeclarationLink(OutputList &ol,bool &found,const QCStrin
   //bool fortranOpt = Config_getBool(OPTIMIZE_FOR_FORTRAN);
   //bool vhdlOpt    = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
   bool sliceOpt   = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
+  bool hideInlineNamespaces = Config_getBool(HIDE_INLINE_NAMESPACES);
   SrcLangExt lang = getLanguage();
   if (visibleInParentsDeclList())
   {
@@ -2475,7 +2476,7 @@ void ClassDefImpl::writeDeclarationLink(OutputList &ol,bool &found,const QCStrin
     QCString cname = displayName(!localNames);
 
     Definition* outDef = getOuterScope();
-    if (outDef->definitionType() == Definition::DefType::TypeNamespace)
+    if (hideInlineNamespaces && outDef && outDef->definitionType() == Definition::DefType::TypeNamespace)
     {
       NamespaceDef* outDefReal = reinterpret_cast<NamespaceDef*>(outDef);
       if (outDefReal->isInline())
