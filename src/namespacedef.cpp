@@ -1393,7 +1393,7 @@ void NamespaceLinkedRefMap::writeDeclaration(OutputList &ol,const QCString &titl
   ol.startMemberList();
   for (const auto &nd : *this)
   {
-    if (nd->isLinkable() && nd->hasDocumentation())
+    if (nd->isLinkable() && nd->hasDocumentation() && !nd->isInline())
     {
       SrcLangExt lang = nd->getLanguage();
       if (lang==SrcLangExt::IDL && (isConstantGroup != nd->isConstantGroup()))
