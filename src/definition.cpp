@@ -1909,6 +1909,15 @@ QCString DefinitionImpl::externalReference(const QCString &relPath) const
 
 const QCString &DefinitionImpl::name() const
 {
+  Definition* outerDef = getOuterScope();
+  if (outerDef && outerDef->definitionType() == Definition::DefType::TypeNamespace)
+  {
+    NamespaceDef* outerDefReal = reinterpret_cast<NamespaceDef*>(outerDef);
+    if (outerDefReal->isInline())
+    {
+      return outerDefReal->getOuterScope()->name();
+    }
+  }
   return m_impl->name;
 }
 
