@@ -271,7 +271,7 @@ $(document).ready(function(){initNavTree('{{ page.fileName }}{% if page_postfix 
       {% endfor %}
     {% endif %}
     <li class="footer">
-{% if config.HTML_TIMESTAMP %}
+{% if config.TIMESTAMP %}
 {{ tr.generatedAt:doxygen.date,config.PROJECT_NAME }}
 {% else %}
 {{ tr.generatedBy }}
@@ -281,7 +281,7 @@ $(document).ready(function(){initNavTree('{{ page.fileName }}{% if page_postfix 
 </div>
 {% else %}
   <hr class="footer"/><address class="footer"><small>
-{% if config.HTML_TIMESTAMP %}{{ tr.generatedAt:doxygen.date,config.PROJECT_NAME }}{% else %}{{ tr.generatedBy }}{% endif %}&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="{{ page.relPath }}doxygen.svg" width="104" height="31" alt="doxygen"/></a> {{ doxygen.version }}
+{% if config.TIMESTAMP %}{{ tr.generatedAt:doxygen.date,config.PROJECT_NAME }}{% else %}{{ tr.generatedBy }}{% endif %}&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="{{ page.relPath }}doxygen.svg" width="104" height="31" alt="doxygen"/></a> {{ doxygen.version }}
 </small></address>
 {% endif %}
 </body>

@@ -18,8 +18,11 @@
 /warnings.log
 
 tags
+.cache/
 
 .idea
+cmake-build-debug/
+cmake-build-debug-event-trace/
 
 /examples/html/*
 /examples/latex/*

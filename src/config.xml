@@ -711,8 +711,8 @@ Go to the <a href="commands.html">next</a> section or return to the
  Note: Every identifier is unique.
 ]]>
       </docs>
-      <value name="DOXYGEN" desc="Use a fixed 'autotoc_md' string followed by a sequence number starting at 0."/>
-      <value name="GITHUB" desc="Use the lower case version of title with any whitespace replaced by '-' and punctations characters removed."/>
+      <value name="DOXYGEN" desc="use a fixed 'autotoc_md' string followed by a sequence number starting at 0"/>
+      <value name="GITHUB" desc="use the lower case version of title with any whitespace replaced by '-' and punctuation characters removed"/>
     </option>
     <option type='bool' id='AUTOLINK_SUPPORT' defval='1'>
       <docs>
