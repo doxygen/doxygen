@@ -2474,6 +2474,16 @@ void ClassDefImpl::writeDeclarationLink(OutputList &ol,bool &found,const QCStrin
     QCString ctype = compoundTypeString();
     QCString cname = displayName(!localNames);
 
+    Definition* outDef = getOuterScope();
+    if (outDef->definitionType() == Definition::DefType::TypeNamespace)
+    {
+      NamespaceDef* outDefReal = reinterpret_cast<NamespaceDef*>(outDef);
+      if (outDefReal->isInline())
+      {
+        return;
+      }
+    }
+
     if (lang!=SrcLangExt::VHDL) // for VHDL we swap the name and the type
     {
       if (isSliceLocal())
