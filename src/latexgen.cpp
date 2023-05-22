@@ -801,7 +801,7 @@ static QCString substituteLatexKeywords(const QCString &str,
     { "COMPACT_LATEX",     compactLatex                           },
     { "PDF_HYPERLINKS",    pdfHyperlinks                          },
     { "USE_PDFLATEX",      usePdfLatex                            },
-    { "LATEX_TIMESTAMP",   timeStamp!=TIMESTAMP_t::NO             },
+    { "TIMESTAMP",         timeStamp!=TIMESTAMP_t::NO             },
     { "LATEX_FONTENC",     !latexFontenc.isEmpty()                },
     { "FORMULA_MACROFILE", !formulaMacrofile.isEmpty()            },
     { "PROJECT_NUMBER",    !projectNumber.isEmpty()               }
