@@ -694,6 +694,9 @@ TARGET            ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBU
     \n                              {
                                       codifyLines(yyscanner,yytext);
                                     }
+    [ \t]+                          {
+                                      codify(yyscanner,yytext);
+                                    }
     .                               {
                                       codify(yyscanner,yytext);
                                     }
