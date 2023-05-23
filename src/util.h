@@ -174,6 +174,7 @@ struct SelectionMarkerInfo
 };
 
 QCString selectBlocks(const QCString& s,const SelectionBlockList &blockList, const SelectionMarkerInfo &markerInfo);
+void checkBlocks(const QCString& s,const QCString fileName, const SelectionMarkerInfo &markerInfo);
 
 QCString removeEmptyLines(const QCString &s);
 
