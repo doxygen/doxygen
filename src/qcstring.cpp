@@ -443,36 +443,36 @@ char *qstrncpy( char *dst, const char *src, size_t len )
 
 int qstricmp( const char *s1, const char *s2 )
 {
-    if ( !s1 || !s2 )
-    {
-      return s1 == s2 ? 0 : static_cast<int>(s2 - s1);
-    }
-    int res;
-    char c;
-    for ( ; !(res = ((c=toLowerChar(*s1)) - toLowerChar(*s2))); s1++, s2++ )
-    {
-      if ( !c )				// strings are equal
-        break;
-    }
-    return res;
+  if ( !s1 || !s2 )
+  {
+    return s1 == s2 ? 0 : static_cast<int>(s2 - s1);
+  }
+  int res;
+  char c;
+  for ( ; !(res = ((c=toLowerChar(*s1)) - toLowerChar(*s2))); s1++, s2++ )
+  {
+    if ( !c ) // strings are equal
+      break;
+  }
+  return res;
 }
 
 int qstrnicmp( const char *s1, const char *s2, size_t len )
 {
-    if ( !s1 || !s2 )
-    {
-      return static_cast<int>(s2 - s1);
-    }
-    for ( ; len--; s1++, s2++ )
-    {
-        char c = toLowerChar(*s1);
-        int res = c-toLowerChar(*s2);
-	if ( res!=0 ) // strings are not equal
-	    return res;
-	if ( c==0 ) // strings are equal
-	    break;
-    }
-    return 0;
+  if ( !s1 || !s2 )
+  {
+    return static_cast<int>(s2 - s1);
+  }
+  for ( ; len--; s1++, s2++ )
+  {
+    char c = toLowerChar(*s1);
+    int res = c-toLowerChar(*s2);
+    if ( res!=0 ) // strings are not equal
+      return res;
+    if ( c==0 ) // strings are equal
+      break;
+  }
+  return 0;
 }
 
 /// substitute all occurrences of \a src in \a s by \a dst
