@@ -7023,6 +7023,69 @@ QCString selectBlocks(const QCString &s,const SelectionBlockList &blockList,cons
   return result;
 }
 
+void checkBlocks(const QCString &s, const QCString fileName,const SelectionMarkerInfo &markerInfo)
+{
+  if (s.isEmpty()) return;
+
+  const char *p = s.data();
+  char c;
+  while ((c=*p))
+  {
+    if (c==markerInfo.markerChar) // potential start of marker
+    {
+      if (qstrncmp(p,markerInfo.beginStr,markerInfo.beginLen)==0) // start of begin marker
+      {
+        size_t len = markerInfo.beginLen;
+        bool negate = *(p+len)=='!';
+        if (negate) len++;
+        p += len;
+        QCString marker;
+        while (*p)
+        {
+          if (markerInfo.closeLen==0 && *p=='\n') // matching end of line
+          {
+            warn(fileName,-1,"Remaining begin replacement with marker '%s'",qPrint(marker));
+            break;
+          }
+          else if (markerInfo.closeLen!= 0 && qstrncmp(p,markerInfo.closeStr,markerInfo.closeLen)==0) // matching marker closing
+          {
+            p += markerInfo.closeLen;
+            warn(fileName,-1,"Remaining begin replacement with marker '%s'",qPrint(marker));
+            break;
+          }
+          marker += *p;
+          p++;
+        }
+      }
+      else if (qstrncmp(p,markerInfo.endStr,markerInfo.endLen)==0) // start of end marker
+      {
+        size_t len = markerInfo.endLen;
+        bool negate = *(p+len)=='!';
+        if (negate) len++;
+        p += len;
+        QCString marker;
+        while (*p)
+        {
+          if (markerInfo.closeLen==0 && *p=='\n') // matching end of line
+          {
+            warn(fileName,-1,"Remaining end replacement with marker '%s'",qPrint(marker));
+            break;
+          }
+          else if (markerInfo.closeLen!= 0 && qstrncmp(p,markerInfo.closeStr,markerInfo.closeLen)==0) // matching marker closing
+          {
+            p += markerInfo.closeLen;
+            warn(fileName,-1,"Remaining end replacement with marker '%s'",qPrint(marker));
+            break;
+          }
+          marker += *p;
+          p++;
+        }
+      }
+    }
+    p++;
+  }
+}
+
 
 QCString removeEmptyLines(const QCString &s)
 {

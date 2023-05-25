@@ -53,7 +53,7 @@ int QCString::find( char c, int index, bool cs ) const
     pos = data()+index;
     c = toLowerChar(c);
     while (*pos && toLowerChar(*pos)!=c) pos++;
-    if (!*pos && c) pos=0; // not found
+    if (!*pos && c) pos=nullptr; // not found
   }
   return pos ? static_cast<int>(pos - data()) : -1;
 }
@@ -78,7 +78,7 @@ int QCString::find( const char *str, int index, bool cs ) const
       if (qstrnicmp(pos,str,len)==0) break;
       pos++;
     }
-    if (!*pos) pos = 0; // not found
+    if (!*pos) pos = nullptr; // not found
   }
   return pos ? static_cast<int>(pos - data()) : -1;
 }
@@ -401,28 +401,29 @@ bye:
 
 void *qmemmove( void *dst, const void *src, size_t len )
 {
-    char *d;
-    const char *s;
-    if ( dst > src ) {
-	d = static_cast<char *>(dst) + len - 1;
-	s = static_cast<const char *>(src) + len - 1;
-	while ( len-- )
-	    *d-- = *s--;
-    } else if ( dst < src ) {
-	d = static_cast<char *>(dst);
-	s = static_cast<const char *>(src);
-	while ( len-- )
-	    *d++ = *s++;
-    }
-    return dst;
+  char *d;
+  const char *s;
+  if ( dst > src ) {
+    d = static_cast<char *>(dst) + len - 1;
+    s = static_cast<const char *>(src) + len - 1;
+    while ( len-- )
+      *d-- = *s--;
+  }
+  else if ( dst < src ) {
+    d = static_cast<char *>(dst);
+    s = static_cast<const char *>(src);
+    while ( len-- )
+      *d++ = *s++;
+  }
+  return dst;
 }
 
 char *qstrdup( const char *str )
 {
-    if ( !str )
-	return 0;
-    char *dst = new char[qstrlen(str)+1];
-    return strcpy( dst, str );
+  if ( !str )
+    return 0;
+  char *dst = new char[qstrlen(str)+1];
+  return strcpy( dst, str );
 }
 
 void qstrfree( const char *str )
@@ -432,46 +433,46 @@ void qstrfree( const char *str )
 
 char *qstrncpy( char *dst, const char *src, size_t len )
 {
-    if ( !src )
-	return 0;
-    strncpy( dst, src, len );
-    if ( len > 0 )
-	dst[len-1] = '\0';
-    return dst;
+  if ( !src )
+    return nullptr;
+  strncpy( dst, src, len );
+  if ( len > 0 )
+    dst[len-1] = '\0';
+  return dst;
 }
 
 int qstricmp( const char *s1, const char *s2 )
 {
-    if ( !s1 || !s2 )
-    {
-      return s1 == s2 ? 0 : static_cast<int>(s2 - s1);
-    }
-    int res;
-    char c;
-    for ( ; !(res = ((c=toLowerChar(*s1)) - toLowerChar(*s2))); s1++, s2++ )
-    {
-      if ( !c )				// strings are equal
-        break;
-    }
-    return res;
+  if ( !s1 || !s2 )
+  {
+    return s1 == s2 ? 0 : static_cast<int>(s2 - s1);
+  }
+  int res;
+  char c;
+  for ( ; !(res = ((c=toLowerChar(*s1)) - toLowerChar(*s2))); s1++, s2++ )
+  {
+    if ( !c ) // strings are equal
+      break;
+  }
+  return res;
 }
 
 int qstrnicmp( const char *s1, const char *s2, size_t len )
 {
-    if ( !s1 || !s2 )
-    {
-      return static_cast<int>(s2 - s1);
-    }
-    for ( ; len--; s1++, s2++ )
-    {
-        char c = toLowerChar(*s1);
-        int res = c-toLowerChar(*s2);
-	if ( res!=0 ) // strings are not equal
-	    return res;
-	if ( c==0 ) // strings are equal
-	    break;
-    }
-    return 0;
+  if ( !s1 || !s2 )
+  {
+    return static_cast<int>(s2 - s1);
+  }
+  for ( ; len--; s1++, s2++ )
+  {
+    char c = toLowerChar(*s1);
+    int res = c-toLowerChar(*s2);
+    if ( res!=0 ) // strings are not equal
+      return res;
+    if ( c==0 ) // strings are equal
+      break;
+  }
+  return 0;
 }
 
 /// substitute all occurrences of \a src in \a s by \a dst

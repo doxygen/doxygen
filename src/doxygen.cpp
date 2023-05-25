@@ -11712,13 +11712,13 @@ static void checkMarkdownMainfile()
     FileInfo fi(mdfileAsMainPage.data());
     if (!fi.exists())
     {
-      warn_uncond("Specified markdown mainpage '%s' does not exist",qPrint(mdfileAsMainPage));
+      warn_uncond("Specified markdown mainpage '%s' does not exist\n",qPrint(mdfileAsMainPage));
       return;
     }
     bool ambig = false;
     if (findFileDef(Doxygen::inputNameLinkedMap,mdfileAsMainPage,ambig)==0)
     {
-      warn_uncond("Specified markdown mainpage '%s' has not been defined as input file",qPrint(mdfileAsMainPage));
+      warn_uncond("Specified markdown mainpage '%s' has not been defined as input file\n",qPrint(mdfileAsMainPage));
       return;
     }
   }

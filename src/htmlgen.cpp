@@ -67,6 +67,8 @@ static QCString g_mathjax_code;
 static QCString g_latex_macro;
 static constexpr auto hex="0123456789ABCDEF";
 
+static const SelectionMarkerInfo htmlMarkerInfo = { '<', "<!--BEGIN ",10,"<!--END ",8,"-->",3 };
+
 // note: this is only active if DISABLE_INDEX=YES, if DISABLE_INDEX is disabled, this
 // part will be rendered inside menu.js
 static void writeClientSearchBox(TextStream &t,const QCString &relPath)
@@ -596,8 +598,6 @@ static QCString substituteHtmlKeywords(const QCString &str,
 
   result = substitute(result,"$relpath^",relPath); //<-- must be done after the previous substitutions
 
-  static const SelectionMarkerInfo htmlMarkerInfo = { '<', "<!--BEGIN ",10,"<!--END ",8,"-->",3 };
-
   // remove conditional blocks
   result = selectBlocks(result,
   {
@@ -1125,20 +1125,28 @@ void HtmlGenerator::init()
   {
     g_header=fileToString(Config_getString(HTML_HEADER));
     //printf("g_header='%s'\n",qPrint(g_header));
+    QCString result = substituteHtmlKeywords(g_header,QCString(),QCString());
+    checkBlocks(result,Config_getString(HTML_HEADER),htmlMarkerInfo);
   }
   else
   {
     g_header = ResourceMgr::instance().getAsString("header.html");
+    QCString result = substituteHtmlKeywords(g_header,QCString(),QCString());
+    checkBlocks(result,"<default header.html>",htmlMarkerInfo);
   }
 
   if (!Config_getString(HTML_FOOTER).isEmpty())
   {
     g_footer=fileToString(Config_getString(HTML_FOOTER));
     //printf("g_footer='%s'\n",qPrint(g_footer));
+    QCString result = substituteHtmlKeywords(g_footer,QCString(),QCString());
+    checkBlocks(result,Config_getString(HTML_FOOTER),htmlMarkerInfo);
   }
   else
   {
     g_footer = ResourceMgr::instance().getAsString("footer.html");
+    QCString result = substituteHtmlKeywords(g_footer,QCString(),QCString());
+    checkBlocks(result,"<default footer.html>",htmlMarkerInfo);
   }
 
   if (Config_getBool(USE_MATHJAX))

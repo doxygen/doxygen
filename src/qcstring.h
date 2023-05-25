@@ -45,11 +45,7 @@
 
 void *qmemmove( void *dst, const void *src, size_t len );
 
-#if defined(_OS_WIN32_)
-#define qsnprintf _snprintf
-#else
 #define qsnprintf snprintf
-#endif
 
 //! Returns a copy of a string \a s.
 //! Note that memory is passed to the caller, use qstrfree() to release.
@@ -62,12 +58,12 @@ inline uint32_t qstrlen( const char *str )
 { return str ? static_cast<uint32_t>(strlen(str)) : 0; }
 
 inline char *qstrcpy( char *dst, const char *src )
-{ return src ? strcpy(dst, src) : 0; }
+{ return src ? strcpy(dst, src) : nullptr; }
 
-char * qstrncpy(char *dst,const char *src, size_t len);
+char *qstrncpy(char *dst,const char *src, size_t len);
 
 inline bool qisempty( const char *s)
-{ return s==0 || *s==0; }
+{ return s==nullptr || *s=='\0'; }
 
 inline int qstrcmp( const char *str1, const char *str2 )
 { return (str1 && str2) ? strcmp(str1,str2) :     // both non-empty

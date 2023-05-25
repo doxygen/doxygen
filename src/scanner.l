@@ -1106,7 +1106,7 @@ NONLopt [^\n]*
                                           yyextra->curlyCount=0;
                                           BEGIN( ReadNSBody );
                                         }
-<FindMembers>{B}*"initonly"{BN}+        { if (yyextra->insideJava) REJECT;
+<FindMembers>{B}*"initonly"{BN}+        { if (yyextra->insideJava || yyextra->insideCpp) REJECT;
                                           yyextra->current->type += " initonly ";
                                           if (yyextra->insideCli) yyextra->current->spec |= Entry::Initonly;
                                           lineCount(yyscanner);
@@ -1161,6 +1161,7 @@ NONLopt [^\n]*
 <FindMembers>{B}*"abstract"{BN}+        {
                                           if (!yyextra->insidePHP)
                                           {
+                                            if (yyextra->insideCpp) REJECT;
                                             yyextra->current->type += " abstract ";
                                             if (!yyextra->insideJava)
                                             {
@@ -1189,7 +1190,7 @@ NONLopt [^\n]*
                                           yyextra->current->spec|=Entry::Explicit;
                                           lineCount(yyscanner);
                                         }
-<FindMembers>{B}*"local"{BN}+           { if (yyextra->insideJava) REJECT;
+<FindMembers>{B}*"local"{BN}+           { if (yyextra->insideJava || yyextra->insideCpp) REJECT;
                                           yyextra->current->spec|=Entry::Local;
                                           lineCount(yyscanner);
                                         }
