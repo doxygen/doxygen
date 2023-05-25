@@ -49,6 +49,9 @@
 
 static QCString g_header;
 static QCString g_footer;
+static const SelectionMarkerInfo latexMarkerInfo = { '%', "%%BEGIN ",8 ,"%%END ",6, "",0 };
+
+static QCString substituteLatexKeywords(const QCString &str, const QCString &title);
 
 LatexCodeGenerator::LatexCodeGenerator(TextStream *t,const QCString &relPath,const QCString &sourceFileName)
   : m_t(t), m_relPath(relPath), m_sourceFileName(sourceFileName)
@@ -554,19 +557,27 @@ void LatexGenerator::init()
   {
     g_header=fileToString(Config_getString(LATEX_HEADER));
     //printf("g_header='%s'\n",qPrint(g_header));
+    QCString result = substituteLatexKeywords(g_header,QCString());
+    checkBlocks(result,Config_getString(LATEX_HEADER),latexMarkerInfo);
   }
   else
   {
     g_header = ResourceMgr::instance().getAsString("header.tex");
+    QCString result = substituteLatexKeywords(g_header,QCString());
+    checkBlocks(result,"<default header.tex>",latexMarkerInfo);
   }
   if (!Config_getString(LATEX_FOOTER).isEmpty())
   {
     g_footer=fileToString(Config_getString(LATEX_FOOTER));
     //printf("g_footer='%s'\n",qPrint(g_footer));
+    QCString result = substituteLatexKeywords(g_footer,QCString());
+    checkBlocks(result,Config_getString(LATEX_FOOTER),latexMarkerInfo);
   }
   else
   {
     g_footer = ResourceMgr::instance().getAsString("footer.tex");
+    QCString result = substituteLatexKeywords(g_footer,QCString());
+    checkBlocks(result,"<default footer.tex>",latexMarkerInfo);
   }
 
   writeLatexMakefile();
@@ -790,8 +801,6 @@ static QCString substituteLatexKeywords(const QCString &str,
     { "$formulamacrofile",         [&]() { return stripMacroFile;                               } },
     { "$latex_batchmode",          [&]() { return latex_batchmode();                            } }
   });
-
-  static const SelectionMarkerInfo latexMarkerInfo = { '%', "%%BEGIN ",8 ,"%%END ",6, "",0 };
 
   // remove conditional blocks
   result = selectBlocks(result,
