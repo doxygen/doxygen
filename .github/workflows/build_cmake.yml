@@ -369,7 +369,9 @@ jobs:
         set(ENV{CTEST_OUTPUT_ON_FAILURE} "ON")
 
         execute_process(
-          COMMAND cmake --build build --target tests TEST_FLAGS="--xml --xmlxsd --xhtml --qhp --docbook --rtf"
+          COMMAND
+            cmake -E env TEST_FLAGS="--xml --xmlxsd --xhtml --qhp --docbook --rtf"
+            cmake --build build --target tests
           RESULT_VARIABLE result
         )
         if (NOT result EQUAL 0)
@@ -383,7 +385,9 @@ jobs:
         set(ENV{CTEST_OUTPUT_ON_FAILURE} "ON")
 
         execute_process(
-          COMMAND cmake --build build --target tests TEST_FLAGS="--xml --xmlxsd --xhtml --qhp --docbook --rtf --pdf"
+          COMMAND
+            cmake -E env TEST_FLAGS="--xml --xmlxsd --xhtml --qhp --docbook --rtf --pdf"
+            cmake --build build --target tests 
           RESULT_VARIABLE result
         )
         if (NOT result EQUAL 0)
