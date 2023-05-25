@@ -1672,7 +1672,7 @@ static void adjustBoolSetting(const char *depOption, const char *optionName,bool
   {
     if (ConfigValues::instance().*(option->value.b)!=expectedValue) // current value differs from expectation
     {
-      err("When enabling %s the %s option should be disabled. I'll adjust it for you.\n",depOption,optionName);
+      err("When enabling %s the %s option should be %s. I'll adjust it for you.\n",depOption,optionName,expectedValue? "enabled" : "disabled");
       ConfigValues::instance().*(option->value.b)=expectedValue; // adjust option
     }
   }
