@@ -23,6 +23,7 @@ tags
 .idea
 cmake-build-debug/
 cmake-build-debug-event-trace/
+.vscode/
 
 /examples/html/*
 /examples/latex/*
