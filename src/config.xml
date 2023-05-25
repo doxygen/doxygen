@@ -1268,7 +1268,7 @@ Go to the <a href="commands.html">next</a> section or return to the
 ]]>
       </docs>
     </option>
-    <option type='bool' id='HIDE_INLINE_NAMESPACES' defval='1'>
+    <option type='bool' id='HIDE_INLINE_NAMESPACES' defval='0'>
       <docs>
 <![CDATA[
  Set the \c HIDE_INLINE_NAMESPACES tag to \c NO to show inline namespaces and
