@@ -1098,7 +1098,7 @@ NONLopt [^\n]*
 <PackageName>";"                        {
                                           std::shared_ptr<Entry> tmp = yyextra->current;
                                           yyextra->current_root->moveToSubEntryAndRefresh(yyextra->current);
-                                          yyextra->current_root = tmp;
+                                          yyextra->current_root = std::move(tmp);
                                           initEntry(yyscanner);
                                           BEGIN(FindMembers);
                                         }
@@ -1106,7 +1106,7 @@ NONLopt [^\n]*
                                           yyextra->curlyCount=0;
                                           BEGIN( ReadNSBody );
                                         }
-<FindMembers>{B}*"initonly"{BN}+        { if (yyextra->insideJava) REJECT;
+<FindMembers>{B}*"initonly"{BN}+        { if (yyextra->insideJava || yyextra->insideCpp) REJECT;
                                           yyextra->current->type += " initonly ";
                                           if (yyextra->insideCli) yyextra->current->spec |= Entry::Initonly;
                                           lineCount(yyscanner);
@@ -1161,6 +1161,7 @@ NONLopt [^\n]*
 <FindMembers>{B}*"abstract"{BN}+        {
                                           if (!yyextra->insidePHP)
                                           {
+                                            if (yyextra->insideCpp) REJECT;
                                             yyextra->current->type += " abstract ";
                                             if (!yyextra->insideJava)
                                             {
@@ -1189,7 +1190,7 @@ NONLopt [^\n]*
                                           yyextra->current->spec|=Entry::Explicit;
                                           lineCount(yyscanner);
                                         }
-<FindMembers>{B}*"local"{BN}+           { if (yyextra->insideJava) REJECT;
+<FindMembers>{B}*"local"{BN}+           { if (yyextra->insideJava || yyextra->insideCpp) REJECT;
                                           yyextra->current->spec|=Entry::Local;
                                           lineCount(yyscanner);
                                         }
@@ -1413,7 +1414,7 @@ NONLopt [^\n]*
                                           BEGIN( CompoundName );
                                         }
 <FindMembers>{B}*"exception"{BN}+       { // Corba IDL/Slice exception
-                                          if (yyextra->insideJava) REJECT;
+                                          if (yyextra->insideJava || yyextra->insideCpp) REJECT;
                                           yyextra->isTypedef=FALSE;
                                           yyextra->current->section = Entry::CLASS_SEC;
                                           // preserve UNO IDL, Slice local
@@ -2315,9 +2316,9 @@ NONLopt [^\n]*
                                             yyextra->current->name="this";
                                             BEGIN(CSIndexer);
                                           }
-                                          else if (yyextra->insideCpp && qstrcmp(yytext,"static_assert")==0)
+                                          else if (yyextra->insideCpp && (qstrcmp(yytext,"static_assert")==0 || qstrcmp(yytext,"_Static_assert")==0))
                                           {
-                                            // C++11 static_assert
+                                            // C/C++11 static_assert
                                             BEGIN(StaticAssert);
                                           }
                                           else if (yyextra->insideCpp && qstrcmp(yytext,"decltype")==0)
@@ -4097,7 +4098,7 @@ NONLopt [^\n]*
                                                    )
                                                 { // namespaces and interfaces and java classes ends with a closing bracket without semicolon
                                                   yyextra->current->reset();
-                                                  yyextra->current_root = original_root; // restore scope from before namespace descent
+                                                  yyextra->current_root = std::move(original_root); // restore scope from before namespace descent
                                                   initEntry(yyscanner);
                                                   yyextra->memspecEntry.reset();
                                                   BEGIN( FindMembers ) ;
@@ -7870,10 +7871,10 @@ static void parseMain(yyscan_t yyscanner,
   anonNSCount++;
 
   // add additional entries that were created during processing
-  for (auto &kv: yyextra->outerScopeEntries)
+  for (auto &[parent,child]: yyextra->outerScopeEntries)
   {
-    //printf(">>> adding '%s' to scope '%s'\n",qPrint(kv.second->name),qPrint(kv.first->name));
-    kv.first->moveToSubEntryAndKeep(kv.second);
+    //printf(">>> adding '%s' to scope '%s'\n",qPrint(child->name),qPrint(parent->name));
+    parent->moveToSubEntryAndKeep(child);
   }
   yyextra->outerScopeEntries.clear();
 

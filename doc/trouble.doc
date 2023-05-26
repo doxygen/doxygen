@@ -99,7 +99,7 @@ please <a href="https://github.com/doxygen/doxygen/issues/new">report it</a>.
 
 If you are unsure whether or not something is a bug, please ask help first
 (subscription is required)
-on the <a href="http://sourceforge.net/mail/?group_id=5971">users mailing list</a> or
+on the <a href="https://sourceforge.net/p/doxygen/mailman/">users mailing list</a> or
 at <a href="https://stackoverflow.com/questions/tagged/doxygen">Stack Overflow</a>
 using the `doxygen` label.
 
@@ -139,7 +139,7 @@ If you do so, please use "issue #NUMBER TITLE" as a title in the
 where "NUMBER" and "TITLE" refer to the associated issue on GitHub.
 
 If you have ideas how to fix existing bugs and limitations please discuss them on
-the <a href="http://sourceforge.net/mail/?group_id=5971">developers mailing list</a>
+the <a href="https://sourceforge.net/p/doxygen/mailman/">developers mailing list</a>
 (subscription required). Patches can also be sent directly to doxygen@gmail.com if
 you prefer not to send them via the bug tracker or mailing list.
 

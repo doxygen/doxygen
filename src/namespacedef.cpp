@@ -162,13 +162,13 @@ class NamespaceDefImpl : public DefinitionMixin<NamespaceDefMutable>
     bool                  m_inline = false;
 };
 
-NamespaceDefMutable *createNamespaceDef(const QCString &defFileName,int defLine,int defColumn,
+std::unique_ptr<NamespaceDef> createNamespaceDef(const QCString &defFileName,int defLine,int defColumn,
                  const QCString &name,const QCString &ref,
                  const QCString &refFile,const QCString &type,
                  bool isPublished)
 {
   //printf("createNamespaceDef(%s)\n",qPrint(name));
-  return new NamespaceDefImpl(defFileName,defLine,defColumn,name,ref,refFile,type,isPublished);
+  return std::make_unique<NamespaceDefImpl>(defFileName,defLine,defColumn,name,ref,refFile,type,isPublished);
 }
 
 //------------------------------------------------------------------
@@ -246,9 +246,9 @@ class NamespaceDefAliasImpl : public DefinitionAliasMixin<NamespaceDef>
     { return getNSAlias()->countVisibleMembers(); }
 };
 
-NamespaceDef *createNamespaceDefAlias(const Definition *newScope,const NamespaceDef *nd)
+std::unique_ptr<NamespaceDef> createNamespaceDefAlias(const Definition *newScope,const NamespaceDef *nd)
 {
-  NamespaceDef *alnd = new NamespaceDefAliasImpl(newScope,nd);
+  auto alnd = std::make_unique<NamespaceDefAliasImpl>(newScope,nd);
   //printf("alnd name=%s localName=%s qualifiedName=%s displayName()=%s\n",
   //    qPrint(alnd->name()),qPrint(alnd->localName()),qPrint(alnd->qualifiedName()),
   //    qPrint(alnd->displayName()));
@@ -541,7 +541,7 @@ void NamespaceDefImpl::insertMember(MemberDef *md)
         std::unique_ptr<MemberDef> aliasMd;
         if (outerScope->definitionType()==Definition::TypeNamespace)
         {
-          aliasMd.reset(createMemberDefAlias(outerScope,md));
+          aliasMd = createMemberDefAlias(outerScope,md);
           NamespaceDefMutable *ndm = toNamespaceDefMutable(outerScope);
           if (ndm)
           {
@@ -550,7 +550,7 @@ void NamespaceDefImpl::insertMember(MemberDef *md)
         }
         else if (outerScope->definitionType()==Definition::TypeFile)
         {
-          aliasMd.reset(createMemberDefAlias(outerScope,md));
+          aliasMd = createMemberDefAlias(outerScope,md);
           toFileDef(outerScope)->insertMember(aliasMd.get());
         }
         if (aliasMd)
@@ -687,7 +687,6 @@ void NamespaceDefImpl::writeDetailedDescription(OutputList &ol,const QCString &t
       ol.pushGeneratorState();
         ol.disable(OutputType::Man);
         ol.disable(OutputType::RTF);
-        //ol.newParagraph(); // FIXME:PARA
         ol.enableAll();
         ol.disableAllBut(OutputType::Man);
         ol.enable(OutputType::Latex);
@@ -735,12 +734,6 @@ void NamespaceDefImpl::writeBriefDescription(OutputList &ol)
       ol.popGeneratorState();
       ol.endParagraph();
     }
-
-    // FIXME:PARA
-    //ol.pushGeneratorState();
-    //ol.disable(OutputType::RTF);
-    //ol.newParagraph();
-    //ol.popGeneratorState();
   }
 
   // Write a summary of the Slice definition including metadata.

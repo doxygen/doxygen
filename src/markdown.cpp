@@ -383,6 +383,25 @@ int Markdown::isSpecialCommand(const char *data,int offset,int size)
     return 0;
   };
 
+  static const auto endOfLabelOpt = [](const char *data_,int offset_,int size_) -> int
+  {
+    int index=offset_;
+    if (index<size_ && data_[index]==' ') // skip over optional spaces
+    {
+      index++;
+      while (index<size_ && data_[index]==' ') index++;
+    }
+    if (index<size_ && data_[index]=='{') // find matching '}'
+    {
+      index++;
+      char c;
+      while (index<size_ && (c=data_[index])!='}' && c!='\\' && c!='@' && c!='\n') index++;
+      if (index==size_ || data_[index]!='}') return 0; // invalid option
+      offset_=index+1; // part after {...} is the option
+    }
+    return endOfLabel(data_,offset_,size_);
+  };
+
   static const auto endOfParam = [](const char *data_,int offset_,int size_) -> int
   {
     int index=offset_;
@@ -479,6 +498,7 @@ int Markdown::isSpecialCommand(const char *data,int offset,int size)
     { "fn",             endOfFunc  },
     { "headerfile",     endOfLine  },
     { "htmlinclude",    endOfLine  },
+    { "ianchor",        endOfLabelOpt },
     { "idlexcept",      endOfLine  },
     { "if",             endOfGuard },
     { "ifnot",          endOfGuard },
@@ -1484,8 +1504,8 @@ int Markdown::processCodeSpan(const char *data, int /*offset*/, int size)
 
   /* finding the next delimiter */
   i = 0;
-  int nl=0;
-  for (end=nb; end<size && i<nb && nl<2; end++)
+  char pc = '`';
+  for (end=nb; end<size && i<nb; end++)
   {
     if (data[end]=='`')
     {
@@ -1493,8 +1513,10 @@ int Markdown::processCodeSpan(const char *data, int /*offset*/, int size)
     }
     else if (data[end]=='\n')
     {
-      i=0;
-      nl++;
+      // consecutive newlines
+      if (pc == '\n') return 0;
+      pc = '\n';
+      i = 0;
     }
     else if (data[end]=='\'' && nb==1 && (end==size-1 || (end<size-1 && !isIdChar(end+1))))
     { // look for quoted strings like 'some word', but skip strings like `it's cool`
@@ -1507,16 +1529,13 @@ int Markdown::processCodeSpan(const char *data, int /*offset*/, int size)
     }
     else
     {
+      if (data[end]!=' ') pc = data[end];
       i=0;
     }
   }
   if (i < nb && end >= size)
   {
     return 0;  // no matching delimiter
-  }
-  if (nl==2) // too many newlines inside the span
-  {
-    return 0;
   }
 
   // trimming outside whitespaces
@@ -2866,15 +2885,43 @@ QCString Markdown::processQuotations(const QCString &s,int refIndent)
           int cmdPos  = pi+blockStart+1;
           QCString pl = QCString(data+cmdPos).left(blockEnd-blockStart-1);
           uint32_t ii = 0;
+          int nl = 1;
           // check for absence of start command, either @start<cmd>, or \\start<cmd>
-          while (ii<pl.length() && qisspace(pl[ii])) ii++; // skip leading whitespace
+          while (ii<pl.length() && qisspace(pl[ii]))
+          {
+            if (pl[ii]=='\n') nl++;
+            ii++; // skip leading whitespace
+          }
+          bool addNewLines;
           if (ii+startCmd.length()>=pl.length() || // no room for start command
-              (pl[ii]!='\\' && pl[ii]!='@') ||     // no @ or \ after whitespace
+              (pl[ii]!='\\' && pl[ii]!='@')     || // no @ or \ after whitespace
               qstrncmp(pl.data()+ii+1,startCmd.data(),startCmd.length())!=0) // no start command
           {
-            pl = "@"+startCmd+"\\ilinebr " + pl + " @"+endCmd;
+            // input:                            output:
+            // ----------------------------------------------------
+            // ```{plantuml}            =>       @startuml
+            // A->B                              A->B
+            // ```                               @enduml
+            // ----------------------------------------------------
+            pl = "@"+startCmd+"\n" + pl + "@"+endCmd;
+            addNewLines = false;
           }
-          processSpecialCommand(pl.data(),0,pl.length());
+          else // we have a @start... command inside the code block
+          {
+            // input:                            output:
+            // ----------------------------------------------------
+            // ```{plantuml}                     \n
+            //                                   \n
+            // @startuml                =>       @startuml
+            // A->B                              A->B
+            // @enduml                           @enduml
+            // ```                               \n
+            // ----------------------------------------------------
+            addNewLines = true;
+          }
+          if (addNewLines) for (int j=0;j<nl;j++) m_out.addChar('\n');
+          processSpecialCommand(pl.data()+ii,0,pl.length()-ii);
+          if (addNewLines) m_out.addChar('\n');
         };
 
         if (!Config_getString(PLANTUML_JAR_PATH).isEmpty() && lang=="plantuml")
@@ -3356,14 +3403,23 @@ void MarkdownOutlineParser::parseInput(const QCString &fileName,
       }
       else
       {
-        if (title.isEmpty()) {title = titleFn;prepend=0;}
-        if (!wasEmpty)
+        if (title.isEmpty())
         {
-          docs.prepend("@ianchor{" + title + "} " +  markdownFileNameToId(fileName) + "\\ilinebr ");
+          title = titleFn;
+          prepend = 0;
+        }
+        if (wasEmpty)
+        {
+          docs.prepend("@ianchor{" + title + "} " + id + "\\ilinebr ");
         }
         else if (!generatedId.isEmpty())
         {
           docs.prepend("@ianchor " +  generatedId + "\\ilinebr ");
+        }
+        else if (Config_getEnum(MARKDOWN_ID_STYLE)==MARKDOWN_ID_STYLE_t::GITHUB)
+        {
+          QCString autoId = AnchorGenerator::instance().generate(title.str());
+          docs.prepend("@ianchor{" + title + "} " +  autoId + "\\ilinebr ");
         }
         docs.prepend("@page "+id+" "+title+"\\ilinebr ");
       }

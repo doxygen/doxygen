@@ -108,6 +108,7 @@ void VHDLOutlineParser::Private::parseVhdlfile(const QCString &fileName,
     }
     else
     {
+     // vhdlParser->interface_variable_declaration(); //interface_declaration() ;
       vhdlParser->design_file();
     }
   }
@@ -648,7 +649,7 @@ void VHDLOutlineParser::addProto(const char *s1,const char *s2,const char *s3,
     }
     if (s->parse_sec==GEN_SEC && s->param_sec==0)
     {
-      arg.defval="gen!";
+      arg.defval="generic";
     }
 
     if (s->parse_sec==PARAM_SEC)

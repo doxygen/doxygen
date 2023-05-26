@@ -30,7 +30,94 @@
  * Updated to 1.8.2 by Bartomeu Creus Navarro (01-julio-2012)
  * Updated to 1.8.4 by Bartomeu Creus Navarro (17-julio-2013)
  * Updated to 1.9.6 by David H. Martín (28-diciembre-2022)
+ * Updated to 1.9.7 by David H. Martín (27-marzo-2023)
 */
+
+namespace SpanishTranslatorUtils
+{
+    /*! Returns true if the gender of the given component is masculine in
+    Spanish. */
+    inline bool isClassMemberHighlightMasculine(ClassMemberHighlight::Enum hl)
+    {
+      switch (hl)
+      {
+        case ClassMemberHighlight::All:
+          if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+          {
+            // structs and unions
+            return false;
+          }
+          else
+          {
+            // class members
+            return true;
+          }
+        case ClassMemberHighlight::Functions:
+        case ClassMemberHighlight::Variables:
+        case ClassMemberHighlight::Enums:
+        case ClassMemberHighlight::Properties:
+          return false;
+        case ClassMemberHighlight::EnumValues:
+        case ClassMemberHighlight::Typedefs:
+        case ClassMemberHighlight::Events:
+        case ClassMemberHighlight::Related:
+        default:
+          return true;
+      }
+    }
+
+    /*! Returns true if the gender of the given component is masculine in
+    Spanish. */
+    inline bool isFileMemberHighlightMasculine(FileMemberHighlight::Enum hl)
+    {
+      switch (hl)
+      {
+        case FileMemberHighlight::All:
+          if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+          {
+            // functions, variables...
+            return false;
+          }
+          else
+          {
+            // file members
+            return true;
+          }
+        case FileMemberHighlight::Functions:
+        case FileMemberHighlight::Variables:
+        case FileMemberHighlight::Sequences:
+        case FileMemberHighlight::Enums:
+        case FileMemberHighlight::Defines:
+          return false;
+        case FileMemberHighlight::Dictionaries:
+        case FileMemberHighlight::EnumValues:
+        case FileMemberHighlight::Typedefs:
+        default:
+          return true;
+      }
+    }
+
+    /*! Returns true if the gender of the given component is masculine in
+    Spanish. */
+    inline bool isNamespaceMemberHighlightMasculine(NamespaceMemberHighlight::Enum hl)
+    {
+      switch (hl)
+      {
+        case NamespaceMemberHighlight::Functions:
+        case NamespaceMemberHighlight::Variables:
+        case NamespaceMemberHighlight::Sequences:
+        case NamespaceMemberHighlight::Enums:
+          return false;
+        case NamespaceMemberHighlight::All:
+        case NamespaceMemberHighlight::Dictionaries:
+        case NamespaceMemberHighlight::EnumValues:
+        case NamespaceMemberHighlight::Typedefs:
+        default:
+          return true;
+      }
+    }
+}
+
 class TranslatorSpanish : public TranslatorAdapter_1_9_6
 {
   public:
@@ -244,7 +331,7 @@ class TranslatorSpanish : public TranslatorAdapter_1_9_6
       }
       else
       {
-        return "Este listado de herencia esta ordenado de forma general "
+        return "Este listado de herencia está ordenado de forma general "
                "pero no está en orden alfabético estricto:";
       }
     }
@@ -2402,6 +2489,237 @@ class TranslatorSpanish : public TranslatorAdapter_1_9_6
      *  trMemberFunctionDocumentation(), now better adapted for
      *  VHDL sources documentation.
      */
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.7
+//////////////////////////////////////////////////////////////////////////
+    /*! used in the compound documentation before a list of related symbols.
+     *
+     *  Supersedes trRelatedFunctions
+     */
+    virtual QCString trRelatedSymbols()
+    { return "Símbolos relacionados"; }
+
+    /*! subscript for the related symbols
+     *
+     *  Supersedes trRelatedSubscript
+     */
+    virtual QCString trRelatedSymbolsSubscript()
+    { return "(Observar que estos no son símbolos miembro.)"; }
+
+    /*! used in the class documentation as a header before the list of all
+     * related classes.
+     *
+     * Supersedes trRelatedFunctionDocumentation
+     */
+    virtual QCString trRelatedSymbolDocumentation()
+    { return "Documentación de símbolos amigos y relacionados"; }
+
+    /*! the compound type as used for the xrefitems */
+    virtual QCString trCompoundType(ClassDef::CompoundType compType, SrcLangExt lang)
+    {
+      QCString result;
+      switch(compType)
+      {
+        case ClassDef::Class:
+          if (lang == SrcLangExt_Fortran) trType(true,true);
+          else result=trClass(true,true);
+          break;
+        case ClassDef::Struct:     result="Estructura"; break;
+        case ClassDef::Union:      result="Unión"; break;
+        case ClassDef::Interface:  result="Interface"; break;
+        case ClassDef::Protocol:   result="Protocolo"; break;
+        case ClassDef::Category:   result="Categoría"; break;
+        case ClassDef::Exception:  result="Excepción"; break;
+        case ClassDef::Service:    result="Servicio"; break;
+        case ClassDef::Singleton:  result="Singleton"; break;
+        default: break;
+      }
+      return result;
+    }
+
+    virtual QCString trFileMembersDescriptionTotal(FileMemberHighlight::Enum hl)
+    {
+      bool extractAll = Config_getBool(EXTRACT_ALL);
+      bool masculine = SpanishTranslatorUtils::isFileMemberHighlightMasculine(hl);
+      QCString result="Lista de ";
+      result+=(masculine ? "todos los " : "todas las ");
+      switch (hl)
+      {
+        case FileMemberHighlight::All:
+          if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+          {
+            result+="funciones, variables, «defines», enumeraciones y «typedefs»";
+          }
+          else
+          {
+            result+="miembros de los archivos";
+          }
+          break;
+        case FileMemberHighlight::Functions:
+          result+="funciones";
+          break;
+        case FileMemberHighlight::Variables:
+          result+="variables";
+          break;
+        case FileMemberHighlight::Typedefs:
+          result+="«typedefs»";
+          break;
+        case FileMemberHighlight::Sequences:
+          result+="secuencias";
+          break;
+        case FileMemberHighlight::Dictionaries:
+          result+="diccionarios";
+          break;
+        case FileMemberHighlight::Enums:
+          result+="enumeraciones";
+          break;
+        case FileMemberHighlight::EnumValues:
+          result+="valores enumerados";
+          break;
+        case FileMemberHighlight::Defines:
+          result+="macros";
+          break;
+        case FileMemberHighlight::Total: // for completeness
+          break;
+      }
+      if (!extractAll) result+=(masculine ? "documentados " : "documentadas ");
+      result+=" con enlaces ";
+      if (extractAll)
+        result+="a los archivos a los que corresponden:";
+      else
+        result+="a la documentación:";
+      return result;
+    }
+
+    virtual QCString trCompoundMembersDescriptionTotal(ClassMemberHighlight::Enum hl)
+    {
+      bool extractAll = Config_getBool(EXTRACT_ALL);
+      bool masculine = SpanishTranslatorUtils::isClassMemberHighlightMasculine(hl);
+      QCString result="Lista de ";
+      result+=(masculine ? "todos los " : "todas las ");
+      switch (hl)
+      {
+        case ClassMemberHighlight::All:
+          if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+          {
+            result+="estructuras y uniones";
+          }
+          else
+          {
+            result+="miembros de clases";
+          }
+          break;
+        case ClassMemberHighlight::Functions:
+          result+="funciones";
+          break;
+        case ClassMemberHighlight::Variables:
+          result+="variables";
+          break;
+        case ClassMemberHighlight::Typedefs:
+          result+="«typedefs»";
+          break;
+        case ClassMemberHighlight::Enums:
+          result+="enumeraciones";
+          break;
+        case ClassMemberHighlight::EnumValues:
+          result+="valores enumerados";
+          break;
+        case ClassMemberHighlight::Properties:
+          result+="propiedades";
+          break;
+        case ClassMemberHighlight::Events:
+          result+="eventos";
+          break;
+        case ClassMemberHighlight::Related:
+          result+="símbolos relacionados";
+          break;
+        case ClassMemberHighlight::Total: // for completeness
+          break;
+      }
+      if (!extractAll) result+=(masculine ? "documentados " : "documentadas ");
+      result+=" con enlaces ";
+      if (!extractAll)
+      {
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+        {
+          result+="a la documentación de la estructura/unión para cada campo:";
+        }
+        else
+        {
+          result+="a la documentación de la clase para cada miembro:";
+        }
+      }
+      else
+      {
+        if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+        {
+          result+="a las estructuras/uniones a las que pertenecen:";
+        }
+        else
+        {
+          result+="a las clases a las que pertenecen:";
+        }
+      }
+      return result;
+    }
+
+    virtual QCString trNamespaceMembersDescriptionTotal(NamespaceMemberHighlight::Enum hl)
+    {
+      bool extractAll = Config_getBool(EXTRACT_ALL);
+      bool masculine = SpanishTranslatorUtils::isNamespaceMemberHighlightMasculine(hl);
+      QCString result="Lista de ";
+      result+=(masculine ? "todos los " : "todas las ");
+      QCString singularResult = "";
+      QCString pluralResult = "";
+      switch (hl)
+      {
+        case NamespaceMemberHighlight::All:
+          singularResult="miembro";
+          pluralResult="miembros";
+          break;
+        case NamespaceMemberHighlight::Functions:
+          singularResult="función";
+          pluralResult="funciones";
+          break;
+        case NamespaceMemberHighlight::Variables:
+          singularResult="variable";
+          pluralResult="variables";
+          break;
+        case NamespaceMemberHighlight::Typedefs:
+          singularResult="«typedef»";
+          pluralResult="«typedefs»";
+          break;
+        case NamespaceMemberHighlight::Sequences:
+          singularResult="secuencia";
+          pluralResult="secuencias";
+          break;
+        case NamespaceMemberHighlight::Dictionaries:
+          singularResult="diccionario";
+          pluralResult="diccionarios";
+          break;
+        case NamespaceMemberHighlight::Enums:
+          singularResult="enumeración";
+          pluralResult="enumeraciones";
+          break;
+        case NamespaceMemberHighlight::EnumValues:
+          singularResult="valor enumerado";
+          pluralResult="valores enumerados";
+          break;
+        case NamespaceMemberHighlight::Total: // for completeness
+          break;
+      }
+      result+=(pluralResult.isEmpty() ? singularResult+"s" : pluralResult);
+
+      result+="del espacio de nombres ";
+      if (!extractAll) result+=(masculine ? "documentados " : "documentadas ");
+      result+=" con enlaces ";
+      if (extractAll)
+        result+="a la documentación del espacio de nombres de cada " + singularResult + ":";
+      else
+        result+="a los espacios de nombres a los que pertenecen:";
+      return result;
+    }
 };
 
 #endif

@@ -446,8 +446,7 @@ void SearchIndexExternal::setCurrentDoc(const Definition *ctx,const QCString &an
 {
   std::lock_guard<std::mutex> lock(g_searchIndexMutex);
   QCString extId = stripPath(Config_getString(EXTERNAL_SEARCH_ID));
-  QCString baseName = isSourceFile ? (toFileDef(ctx))->getSourceFileBase() : ctx->getOutputFileBase();
-  QCString url = baseName;
+  QCString url = isSourceFile ? (toFileDef(ctx))->getSourceFileBase() : ctx->getOutputFileBase();
   addHtmlExtensionIfMissing(url);
   if (!anchor.isEmpty()) url+=QCString("#")+anchor;
   QCString key = extId+";"+url;
@@ -487,9 +486,8 @@ void SearchIndexExternal::write(const QCString &fileName)
   {
     t << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
     t << "<add>\n";
-    for (auto &kv : m_docEntries)
+    for (auto &[name,doc] : m_docEntries)
     {
-      SearchDocEntry &doc = kv.second;
       doc.normalText.addChar(0);    // make sure buffer ends with a 0 terminator
       doc.importantText.addChar(0); // make sure buffer ends with a 0 terminator
       t << "  <doc>\n";
@@ -525,15 +523,11 @@ void initSearchIndexer()
   bool externalSearch    = Config_getBool(EXTERNAL_SEARCH);
   if (searchEngine && serverBasedSearch)
   {
-    Doxygen::searchIndex = new SearchIndexIntf(externalSearch ? SearchIndexIntf::External : SearchIndexIntf::Internal);
-  }
-  else // no search engine or pure javascript based search function
-  {
-    Doxygen::searchIndex = 0;
+    Doxygen::searchIndex = std::make_unique<SearchIndexIntf>(externalSearch ? SearchIndexIntf::External : SearchIndexIntf::Internal);
   }
 }
 
 void finalizeSearchIndexer()
 {
-  delete Doxygen::searchIndex;
+  Doxygen::searchIndex.reset();
 }

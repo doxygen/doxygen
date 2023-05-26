@@ -122,7 +122,7 @@ class VhdlDocGen
     VhdlDocGen();
     virtual ~VhdlDocGen();
     static void init();
-    static QCString convertFileNameToClassName(QCString name);
+    static QCString convertFileNameToClassName(const QCString &name);
     // --- used by vhdlscanner.l -----------
 
     static bool isSubClass(ClassDef* cd,ClassDef *scd, bool followInstances,int level);

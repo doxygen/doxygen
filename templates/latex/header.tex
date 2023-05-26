@@ -1,10 +1,10 @@
   % Handle batch mode
-%%BEGIN LATEX_BATCHMODE
-  \batchmode
-%%END LATEX_BATCHMODE
+  $latex_batchmode
 
   % to overcome problems with too many open files
   \let\mypdfximage\pdfximage\def\pdfximage{\immediate\mypdfximage}
+
+  \pdfminorversion=7
 
   % Set document class depending on configuration
 %%BEGIN COMPACT_LATEX
@@ -24,7 +24,17 @@
   %%
 
   % Packages required by doxygen
-  \usepackage{fixltx2e} % for \textsubscript
+  \makeatletter
+  \providecommand\IfFormatAtLeastTF{\@ifl@t@r\fmtversion}
+  % suppress package identification of infwarerr as it contains the word "warning"
+  \let\@@protected@wlog\protected@wlog
+  \def\protected@wlog#1{\wlog{package info suppressed}}
+  \RequirePackage{infwarerr}
+  \let\protected@wlog\@@protected@wlog
+  \makeatother
+  \IfFormatAtLeastTF{2016/01/01}{}{\usepackage{fixltx2e}} % for \textsubscript
+  \IfFormatAtLeastTF{2015/01/01}{\pdfsuppresswarningpagegroup=1}{}
+
   \usepackage{doxygen}
 
   $extralatexstylesheet
@@ -49,8 +59,7 @@
   % set main and monospaced font
   $latexfont
 
-  \usepackage{sectsty}
-  \allsectionsfont{%
+  \doxyallsectionsfont{%
     \fontseries{bc}\selectfont%
     \color{darkgray}%
   }
@@ -191,8 +200,14 @@
 
 
   % in page table of contents
-  \usepackage{etoc}
+  \IfFormatAtLeastTF{2023/05/01}{\usepackage[deeplevels]{etoc}}{\usepackage[deeplevels]{etoc_doxygen}}
   \etocsettocstyle{\doxytocparskip}{\doxynormalparskip}
+  \etocsetlevel{subsubsubsection}{4}
+  \etocsetlevel{subsubsubsubsection}{5}
+  \etocsetlevel{subsubsubsubsubsection}{6}
+  \etocsetlevel{subsubsubsubsubsubsection}{7}
+  \etocsetlevel{paragraph}{8}
+  \etocsetlevel{subparagraph}{9}
 
   % prevent numbers overlap the titles in toc
   \renewcommand{\numberline}[1]{#1~}
@@ -226,10 +241,10 @@
 %%END PROJECT_NUMBER
   \vspace*{1cm}
   {\large $generatedby Doxygen $doxygenversion}\\
-%%BEGIN LATEX_TIMESTAMP
+%%BEGIN TIMESTAMP
     \vspace*{0.5cm}
     {\small $datetime}
-%%END LATEX_TIMESTAMP
+%%END TIMESTAMP
   \end{center}
   \end{titlepage}
 

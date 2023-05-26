@@ -56,7 +56,7 @@ class FileNameFn
       return searchKey(t1) == searchKey(t2);
     }
   private:
-    std::string searchKey(std::string input) const
+    std::string searchKey(const std::string &input) const
     {
       std::string key = input;
       if (!getCaseSenseNames())

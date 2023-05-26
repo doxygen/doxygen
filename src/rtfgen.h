@@ -89,7 +89,7 @@ class RTFGenerator : public OutputGenerator
 
     void writeDoc(const IDocNodeAST *ast,const Definition *,const MemberDef *,int);
 
-    void startFile(const QCString &name,const QCString &manName,const QCString &title,int id);
+    void startFile(const QCString &name,const QCString &manName,const QCString &title,int id,int hierarchyLevel);
     void writeSearchInfo() {}
     void writeFooter(const QCString &) {}
     void endFile();
@@ -104,11 +104,8 @@ class RTFGenerator : public OutputGenerator
     void endProjectNumber();
     void writeStyleInfo(int part);
     void startTitleHead(const QCString &);
-    void startTitle();
     void endTitleHead(const QCString &,const QCString &name);
-    void endTitle() {}
 
-    void newParagraph();
     void startParagraph(const QCString &classDef);
     void endParagraph();
     void writeString(const QCString &text);
@@ -129,8 +126,6 @@ class RTFGenerator : public OutputGenerator
                          const QCString &anchor,const QCString &name);
     void startTextLink(const QCString &f,const QCString &anchor);
     void endTextLink();
-    void startHtmlLink(const QCString &url);
-    void endHtmlLink();
     void startTypewriter() { m_t << "{\\f2 "; }
     void endTypewriter()   { m_t << "}";      }
     void startGroupHeader(int);
@@ -158,8 +153,8 @@ class RTFGenerator : public OutputGenerator
     void endMemberItem(MemberItemType);
     void startMemberTemplateParams() {}
     void endMemberTemplateParams(const QCString &,const QCString &) {}
-    void startCompoundTemplateParams() { startSubsubsection(); }
-    void endCompoundTemplateParams() { endSubsubsection(); }
+    void startCompoundTemplateParams();
+    void endCompoundTemplateParams();
     void insertMemberAlign(bool) {}
     void insertMemberAlignLeft(MemberItemType,bool){}
 
@@ -170,10 +165,6 @@ class RTFGenerator : public OutputGenerator
     void endEmphasis()   { m_t << "}"; }
     void startBold()     { m_t << "{\\b "; }
     void endBold()       { m_t << "}"; }
-    void startDescription();
-    void endDescription();
-    void startDescItem();
-    void endDescItem();
     void lineBreak(const QCString &style=QCString());
     void startMemberDoc(const QCString &,const QCString &,const QCString &,const QCString &,int,int,bool);
     void endMemberDoc(bool);
@@ -183,11 +174,6 @@ class RTFGenerator : public OutputGenerator
     void writeLatexSpacing() {};//{ m_t << "\\hspace{0.3cm}"; }
     void writeStartAnnoItem(const QCString &type,const QCString &file,
                             const QCString &path,const QCString &name);
-    void writeEndAnnoItem(const QCString &name);
-    void startSubsection();
-    void endSubsection();
-    void startSubsubsection();
-    void endSubsubsection();
     void startCenter()      { m_t << "{\\qc\n"; }
     void endCenter()        { m_t << "}"; }
     void startSmall()       { m_t << "{\\sub "; }
@@ -199,11 +185,8 @@ class RTFGenerator : public OutputGenerator
     void endMemberDeclaration(const QCString &,const QCString &) {}
     void writeInheritedSectionTitle(const QCString &,const QCString &,const QCString &,
                       const QCString &,const QCString &,const QCString &);
-    void startDescList(SectionTypes);
     void startExamples();
     void endExamples();
-    void startParamList(ParamListTypes,const QCString &);
-    void endParamList();
     void startDescForItem();
     void endDescForItem();
     void startSection(const QCString &,const QCString &,SectionType);
@@ -313,6 +296,7 @@ class RTFGenerator : public OutputGenerator
     void rtfwriteRuler_thick();
     void rtfwriteRuler_thin();
     void writeRTFReference(const QCString &label);
+    void newParagraph();
 
     int indentLevel() const;
     void incIndentLevel();
@@ -322,6 +306,7 @@ class RTFGenerator : public OutputGenerator
     bool m_omitParagraph = false; // should a the next paragraph command be ignored?
     int  m_numCols = 0; // number of columns in a table
     QCString m_relPath;
+    int  m_hierarchyLevel = 0;
 
     // RTF does not really have a additive indent...manually set list level.
     static const int maxIndentLevels = 13;

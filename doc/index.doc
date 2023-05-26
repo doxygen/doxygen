@@ -15,17 +15,16 @@
  *
  */
 /*!
-\mainpage
+\mainpage @MAINPAGE_TITLE@
 <!--Doxygen Manual-->
 \if logo_on
+\htmlonly[block]
 <center>
-\htmlonly
 <img src="doxygen_logo.svg" width="634" height="197" alt="doxygen"/><br/>
 Version: $(VERSION)
-\endhtmlonly
 </center>
+\endhtmlonly
 \endif
-
 <h2>Introduction</h2>
 Doxygen is the de facto standard tool for generating documentation from
 annotated C++ sources, but it also supports other popular programming
@@ -172,7 +171,7 @@ Thanks go to:
     for rendering the logos.
 <li>Harm van der Heijden for adding HTML help support.
 <li>Wouter Slegers of
-    <a href="http://www.yourcreativesolutions.nl">Your Creative Solutions</a>
+    <a href="https://yourcreativesolutions.nl">Your Creative Solutions</a>
     for registering the www.doxygen.org domain.
 <li>Martin Kreis for adding VHDL support.
 <li>Parker Waechter for adding the RTF output generator.

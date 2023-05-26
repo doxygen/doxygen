@@ -46,14 +46,14 @@ tools should be installed.
 
 <ul>
 <li>Qt Software's GUI toolkit
-    <a href="https://www.qt.io/developers">Qt</A>
+    <a href="https://doc.qt.io/">Qt</A>
     \addindex Qt
     version 5.14 or higher (including Qt 6).
     This is needed to build the GUI front-end doxywizard.
 <li>A \LaTeX distribution: for instance
     <a href="http://www.tug.org/interest.html#free">TeX Live</a>
     This is needed for generating \LaTeX, Postscript, and PDF output.
-<li><a href="http://www.graphviz.org/">
+<li><a href="https://www.graphviz.org/">
     the Graph visualization toolkit version 2.38 or higher</a>
     Needed for the include dependency graphs,
     the graphical inheritance graphs, and the collaboration graphs.
@@ -188,7 +188,7 @@ Now start a visual studio native command shell (for either x86 or x64) and type
 cd c:\tools
 tar zxvf doxygen-x.y.z.src.tar.gz
 \endverbatim
-to unpack the sources (you can obtain \c tar from e.g. http://gnuwin32.sourceforge.net/packages.html).
+to unpack the sources (you can obtain \c tar from e.g. https://gnuwin32.sourceforge.net/packages.html).
 Alternatively you can use an unpack program, like 7-Zip (see https://www.7-zip.org/)
 or use the built-in unpack feature of modern Windows systems).
 
@@ -211,7 +211,7 @@ nmake
 \endverbatim
 
 Note that compiling Doxywizard requires Qt 5.14 or newer
-(see https://www.qt.io/developers).
+(see https://doc.qt.io/).
 
 Also read the next section for additional tools you may need to install to run
 doxygen with certain features enabled.

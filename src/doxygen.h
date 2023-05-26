@@ -28,7 +28,6 @@
 
 #define THREAD_LOCAL thread_local
 #define AtomicInt    std::atomic_int
-#define AtomicBool   std::atomic_bool
 
 class RefList;
 class PageLinkedMap;
@@ -36,7 +35,6 @@ class PageDef;
 class SearchIndexIntf;
 class ParserManager;
 class BufStr;
-class CiteDict;
 class MemberDef;
 class GroupDef;
 class GroupLinkedMap;
@@ -50,9 +48,6 @@ class NamespaceLinkedMap;
 class NamespaceDef;
 class DirRelationLinkedMap;
 class IndexList;
-class FormulaList;
-class FormulaDict;
-class FormulaNameDict;
 class Preprocessor;
 struct MemberGroupInfo;
 class NamespaceDefMutable;
@@ -60,8 +55,8 @@ class NamespaceDefMutable;
 struct LookupInfo
 {
   LookupInfo() = default;
-  LookupInfo(const Definition *d,const MemberDef *td,QCString ts,QCString rt)
-    : definition(d), typeDef(td), templSpec(ts),resolvedType(rt) {}
+  LookupInfo(const Definition *d,const MemberDef *td,const QCString &ts,const QCString &rt)
+    : definition(d), typeDef(td), templSpec(ts), resolvedType(rt) {}
   const Definition  *definition = 0;
   const MemberDef *typeDef = 0;
   QCString   templSpec;
@@ -93,7 +88,6 @@ class Doxygen
     static PageLinkedMap            *exampleLinkedMap;
     static PageLinkedMap            *pageLinkedMap;
     static std::unique_ptr<PageDef>  mainPage;
-    static bool                      insideMainPage;
     static FileNameLinkedMap        *includeNameLinkedMap;
     static FileNameLinkedMap        *exampleNameLinkedMap;
     static StringSet                 inputPaths;
@@ -111,10 +105,11 @@ class Doxygen
     static StringMap                 aliasMap;
     static MemberGroupInfoMap        memberGroupInfoMap;
     static StringUnorderedSet        expandAsDefinedSet;
+    static std::unique_ptr<NamespaceDef> globalNamespaceDef;
     static NamespaceDefMutable      *globalScope;
     static QCString                  htmlFileExtension;
     static bool                      parseSourcesNeeded;
-    static SearchIndexIntf          *searchIndex;
+    static std::unique_ptr<SearchIndexIntf> searchIndex;
     static SymbolMap<Definition>    *symbolMap;
     static ClangUsrMap              *clangUsrMap;
     static Cache<std::string,LookupInfo> *typeLookupCache;
@@ -125,7 +120,6 @@ class Doxygen
     static bool                      suppressDocWarnings;
     static QCString                  filterDBFileName;
     static IndexList                *indexList;
-    static int                       subpageNestingLevel;
     static QCString                  spaces;
     static bool                      generatingXmlOutput;
     static DefinesPerFileList        macroDefinitions;
@@ -136,17 +130,6 @@ class Doxygen
     static std::mutex                countFlowKeywordsMutex;
     static std::mutex                addExampleMutex;
 };
-
-/** Deleter that only deletes an object if doxygen is not already terminating */
-template<class T>
-struct NonTerminatingDeleter
-{
-  void operator()(T *obj)
-  {
-    if (!Doxygen::terminating) delete obj;
-  }
-};
-
 
 void initDoxygen();
 void readConfiguration(int argc, char **argv);
@@ -168,6 +151,5 @@ void readFileOrDirectory(const QCString &s,
                         StringUnorderedSet *killSet = 0,
                         StringSet *paths = 0
                        );
-void copyAndFilterFile(const char *fileName,BufStr &dest);
 
 #endif

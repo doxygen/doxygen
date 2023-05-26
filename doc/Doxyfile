@@ -23,8 +23,8 @@ GENERATE_TREEVIEW = YES
 EXTRACT_ALL       = NO
 EXTRACT_PRIVATE   = NO
 GENERATE_MAN      = NO
-GENERATE_LATEX    = YES
-GENERATE_HTML     = YES
+GENERATE_LATEX    = $(GENERATE_LATEX)
+GENERATE_HTML     = $(GENERATE_HTML)
 GENERATE_HTMLHELP = NO
 GENERATE_RTF      = NO
 GENERATE_XML      = NO
@@ -34,7 +34,7 @@ ENABLE_PREPROCESSING = NO
 HTML_COLORSTYLE   = LIGHT
 CASE_SENSE_NAMES  = NO
 IMAGE_PATH        = . images
-INPUT             = index.doc install.doc starting.doc docblocks.doc markdown.doc \
+INPUT             = $(INDEX_DOC) install.doc starting.doc docblocks.doc markdown.doc \
                     lists.doc grouping.doc formulas.doc tables.doc diagrams.doc preprocessing.doc \
                     autolink.doc output.doc searching.doc extsearch.doc customize.doc custcmd.doc \
                     external.doc faq.doc trouble.doc features.doc \
@@ -58,6 +58,7 @@ ALIASES          += TeX="\f({\TeX}\f)"
 ALIASES          += forceNewPage="\latexonly \newpage \endlatexonly"
 ALIASES          += startalign=" \latexonly\noalign{\endlatexonly"
 ALIASES          += endalign=" \latexonly}\endlatexonly"
+ALIASES          += startendhtmltag{1}="\startalign\anchor htmltag_\1 \addindex \"\<\1\>\" ^^ \anchor htmltag_end\1 \addindex \"\</\1\>\"\endalign <tt>\<\1\></tt> / <tt>\</\1\></tt>"
 LATEX_BATCHMODE   = YES
 LATEX_EXTRA_STYLESHEET = manual.sty
 LATEX_EMOJI_DIRECTORY  = ../doc

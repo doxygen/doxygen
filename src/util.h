@@ -25,6 +25,7 @@
 #include <algorithm>
 #include <functional>
 #include <fstream>
+#include <variant>
 
 #include <ctype.h>
 #include "types.h"
@@ -153,9 +154,28 @@ void mergeArguments(ArgumentList &,ArgumentList &,bool forceNameOverwrite=FALSE)
 
 QCString substituteClassNames(const QCString &s);
 
+struct SelectionBlock
+{
+  const char *name;
+  bool enabled;
+};
 
-QCString clearBlock(const char *s,const char *begin,const char *end);
-QCString selectBlock(const QCString& s,const QCString &name,bool enable, OutputType o);
+using SelectionBlockList = std::vector<SelectionBlock>;
+
+struct SelectionMarkerInfo
+{
+  char        markerChar;
+  const char *beginStr;
+  size_t      beginLen;
+  const char *endStr;
+  size_t      endLen;
+  const char *closeStr;
+  size_t      closeLen;
+};
+
+QCString selectBlocks(const QCString& s,const SelectionBlockList &blockList, const SelectionMarkerInfo &markerInfo);
+void checkBlocks(const QCString& s,const QCString fileName, const SelectionMarkerInfo &markerInfo);
+
 QCString removeEmptyLines(const QCString &s);
 
 
@@ -176,6 +196,8 @@ inline bool isIdJS(int c)
 }
 
 QCString removeRedundantWhiteSpace(const QCString &s);
+
+QCString inlineArgListToDoc(const ArgumentList &al);
 
 QCString argListToString(const ArgumentList &al,bool useCanonicalType=FALSE,bool showDefVals=TRUE);
 
@@ -198,7 +220,9 @@ bool leftScopeMatch(const QCString &scope, const QCString &name);
 struct KeywordSubstitution
 {
   const char *keyword;
-  std::function<QCString()> getValue;
+  using GetValue          = std::function<QCString()>;
+  using GetValueWithParam = std::function<QCString(const QCString &)>;
+  std::variant<GetValue,GetValueWithParam> getValueVariant;
 };
 
 using KeywordSubstitutionList = std::vector<KeywordSubstitution>;

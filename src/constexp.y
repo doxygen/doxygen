@@ -26,7 +26,8 @@ int constexpYYerror(yyscan_t yyscanner, const char *s)
 {
   struct constexpYY_state* yyextra = constexpYYget_extra(yyscanner);
   warn(yyextra->constExpFileName.c_str(), yyextra->constExpLineNr,
-       "preprocessing issue while doing constant expression evaluation: %s: input='%s'",s,yyextra->inputString.c_str());
+       "preprocessing issue while doing constant expression evaluation: %s:\n    input='%s'\n    doxygen interpretation '%s'",
+       s,yyextra->orgString.c_str(),yyextra->inputString.c_str());
   return 0;
 }
 

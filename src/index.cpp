@@ -194,9 +194,9 @@ void Index::sortMemberIndexLists()
 {
   auto sortMemberIndexList = [](MemberIndexMap &map)
   {
-    for (auto &kv : map)
+    for (auto &[name,list] : map)
     {
-      std::sort(kv.second.begin(),kv.second.end(),
+      std::sort(list.begin(),list.end(),
           [](const MemberDef *md1,const MemberDef *md2)
           {
             int result = qstricmp(md1->name(),md2->name());
@@ -356,10 +356,10 @@ void endTitle(OutputList &ol,const QCString &fileName,const QCString &name)
 
 void startFile(OutputList &ol,const QCString &name,const QCString &manName,
                const QCString &title,HighlightedItem hli,bool additionalIndices,
-               const QCString &altSidebarName)
+               const QCString &altSidebarName, int hierarchyLevel)
 {
   bool disableIndex     = Config_getBool(DISABLE_INDEX);
-  ol.startFile(name,manName,title);
+  ol.startFile(name,manName,title,hierarchyLevel);
   ol.startQuickIndices();
   if (!disableIndex)
   {
@@ -1122,15 +1122,14 @@ static void writeHierarchicalIndex(OutputList &ol)
     {
       Doxygen::indexList->addContentsItem(TRUE,title,QCString(),"hierarchy",QCString(),TRUE,TRUE);
     }
-    FTVHelp* ftv = new FTVHelp(FALSE);
-    writeClassHierarchy(ol,ftv,addToIndex,ClassDef::Class);
+    FTVHelp ftv(false);
+    writeClassHierarchy(ol,&ftv,addToIndex,ClassDef::Class);
     TextStream t;
-    ftv->generateTreeViewInline(t);
+    ftv.generateTreeViewInline(t);
     ol.pushGeneratorState();
     ol.disableAllBut(OutputType::Html);
     ol.writeString(t.str().c_str());
     ol.popGeneratorState();
-    delete ftv;
   }
   ol.popGeneratorState();
   //2.}
@@ -1228,15 +1227,14 @@ static void writeHierarchicalInterfaceIndex(OutputList &ol)
     {
       Doxygen::indexList->addContentsItem(TRUE,title,QCString(),"interfacehierarchy",QCString(),TRUE,TRUE);
     }
-    FTVHelp* ftv = new FTVHelp(FALSE);
-    writeClassHierarchy(ol,ftv,addToIndex,ClassDef::Interface);
+    FTVHelp ftv(false);
+    writeClassHierarchy(ol,&ftv,addToIndex,ClassDef::Interface);
     TextStream t;
-    ftv->generateTreeViewInline(t);
+    ftv.generateTreeViewInline(t);
     ol.pushGeneratorState();
     ol.disableAllBut(OutputType::Html);
     ol.writeString(t.str().c_str());
     ol.popGeneratorState();
-    delete ftv;
   }
   ol.popGeneratorState();
   //2.}
@@ -1334,15 +1332,14 @@ static void writeHierarchicalExceptionIndex(OutputList &ol)
     {
       Doxygen::indexList->addContentsItem(TRUE,title,QCString(),"exceptionhierarchy",QCString(),TRUE,TRUE);
     }
-    FTVHelp* ftv = new FTVHelp(FALSE);
-    writeClassHierarchy(ol,ftv,addToIndex,ClassDef::Exception);
+    FTVHelp ftv(false);
+    writeClassHierarchy(ol,&ftv,addToIndex,ClassDef::Exception);
     TextStream t;
-    ftv->generateTreeViewInline(t);
+    ftv.generateTreeViewInline(t);
     ol.pushGeneratorState();
     ol.disableAllBut(OutputType::Html);
     ol.writeString(t.str().c_str());
     ol.popGeneratorState();
-    delete ftv;
   }
   ol.popGeneratorState();
   //2.}
@@ -1590,12 +1587,13 @@ static void writeFileIndex(OutputList &ol)
   ol.pushGeneratorState();
   ol.disableAllBut(OutputType::Html);
 
-  FTVHelp* ftv = new FTVHelp(FALSE);
-  writeDirHierarchy(ol,ftv,addToIndex);
-  TextStream t;
-  ftv->generateTreeViewInline(t);
-  ol.writeString(t.str().c_str());
-  delete ftv;
+  {
+    FTVHelp ftv(false);
+    writeDirHierarchy(ol,&ftv,addToIndex);
+    TextStream t;
+    ftv.generateTreeViewInline(t);
+    ol.writeString(t.str().c_str());
+  }
 
   ol.popGeneratorState();
   // ------
@@ -1990,12 +1988,11 @@ static void writeNamespaceIndex(OutputList &ol)
       Doxygen::indexList->addContentsItem(TRUE,title,QCString(),"namespaces",QCString(),TRUE,TRUE);
       Doxygen::indexList->incContentsDepth();
     }
-    FTVHelp* ftv = new FTVHelp(FALSE);
-    writeNamespaceTree(*Doxygen::namespaceLinkedMap,ftv,TRUE,addToIndex);
+    FTVHelp ftv(false);
+    writeNamespaceTree(*Doxygen::namespaceLinkedMap,&ftv,TRUE,addToIndex);
     TextStream t;
-    ftv->generateTreeViewInline(t);
+    ftv.generateTreeViewInline(t);
     ol.writeString(t.str().c_str());
-    delete ftv;
     if (addToIndex)
     {
       Doxygen::indexList->decContentsDepth();
@@ -2241,9 +2238,9 @@ static void writeAlphabeticalClassList(OutputList &ol, ClassDef::CompoundType ct
   }
 
   // sort the class lists per letter while ignoring the prefix
-  for (auto &kv : classesByLetter)
+  for (auto &[letter,list] : classesByLetter)
   {
-    std::sort(kv.second.begin(), kv.second.end(),
+    std::sort(list.begin(), list.end(),
               [](const auto &c1,const auto &c2)
               {
                 QCString n1 = c1->className();
@@ -2911,9 +2908,9 @@ static void writeQuickMemberIndex(OutputList &ol,
 {
   bool first=TRUE;
   startQuickIndexList(ol,TRUE);
-  for (const auto &kv : map)
+  for (const auto &[letter,list] : map)
   {
-    QCString ci = kv.first.c_str();
+    QCString ci(letter);
     QCString is = letterToLabel(ci);
     QCString anchor;
     QCString extension=Doxygen::htmlFileExtension;
@@ -2923,7 +2920,7 @@ static void writeQuickMemberIndex(OutputList &ol,
       anchor=fullName+extension+"#index_";
     else
       anchor=fullName+"_"+is+extension+"#index_";
-    startQuickIndexItem(ol,anchor+convertToId(is),kv.first==page,TRUE,first);
+    startQuickIndexItem(ol,anchor+convertToId(is),letter==page,TRUE,first);
     ol.writeString(ci);
     endQuickIndexItem(ol);
     first=FALSE;
@@ -2993,13 +2990,12 @@ static void writeClassMemberIndexFiltered(OutputList &ol, ClassMemberHighlight::
   }
 
   bool first=TRUE;
-  for (const auto &kv : index.isClassIndexLetterUsed(hl))
+  for (const auto &[letter,list] : index.isClassIndexLetterUsed(hl))
   {
-    std::string page = kv.first;
     QCString fileName = getCmhlInfo(hl)->fname;
     if (multiPageIndex)
     {
-      QCString cs(page);
+      QCString cs(letter);
       if (!first)
       {
         fileName+="_"+letterToLabel(cs);
@@ -3046,7 +3042,7 @@ static void writeClassMemberIndexFiltered(OutputList &ol, ClassMemberHighlight::
         // quick alphabetical index
         if (quickIndex)
         {
-          writeQuickMemberIndex(ol,index.isClassIndexLetterUsed(hl),page,
+          writeQuickMemberIndex(ol,index.isClassIndexLetterUsed(hl),letter,
               getCmhlInfo(hl)->fname,multiPageIndex);
         }
       }
@@ -3062,7 +3058,7 @@ static void writeClassMemberIndexFiltered(OutputList &ol, ClassMemberHighlight::
     ol.endTextBlock();
 
     writeMemberList(ol,quickIndex,
-        multiPageIndex ? page : std::string(),
+        multiPageIndex ? letter : std::string(),
         index.isClassIndexLetterUsed(hl),
         Definition::TypeClass);
     endFile(ol);
@@ -3163,13 +3159,12 @@ static void writeFileMemberIndexFiltered(OutputList &ol, FileMemberHighlight::En
   }
 
   bool first=TRUE;
-  for (const auto &kv : index.isFileIndexLetterUsed(hl))
+  for (const auto &[letter,list] : index.isFileIndexLetterUsed(hl))
   {
-    std::string page = kv.first;
     QCString fileName = getFmhlInfo(hl)->fname;
     if (multiPageIndex)
     {
-      QCString cs(page);
+      QCString cs(letter);
       if (!first)
       {
         fileName+="_"+letterToLabel(cs);
@@ -3213,7 +3208,7 @@ static void writeFileMemberIndexFiltered(OutputList &ol, FileMemberHighlight::En
 
         if (quickIndex)
         {
-          writeQuickMemberIndex(ol,index.isFileIndexLetterUsed(hl),page,
+          writeQuickMemberIndex(ol,index.isFileIndexLetterUsed(hl),letter,
               getFmhlInfo(hl)->fname,multiPageIndex);
         }
       }
@@ -3229,7 +3224,7 @@ static void writeFileMemberIndexFiltered(OutputList &ol, FileMemberHighlight::En
     ol.endTextBlock();
 
     writeMemberList(ol,quickIndex,
-        multiPageIndex ? page : std::string(),
+        multiPageIndex ? letter : std::string(),
         index.isFileIndexLetterUsed(hl),
         Definition::TypeFile);
     endFile(ol);
@@ -3329,13 +3324,12 @@ static void writeNamespaceMemberIndexFiltered(OutputList &ol,
   }
 
   bool first=TRUE;
-  for (const auto &kv : index.isNamespaceIndexLetterUsed(hl))
+  for (const auto &[letter,list] : index.isNamespaceIndexLetterUsed(hl))
   {
-    std::string page = kv.first;
     QCString fileName = getNmhlInfo(hl)->fname;
     if (multiPageIndex)
     {
-      QCString cs(page);
+      QCString cs(letter);
       if (!first)
       {
         fileName+="_"+letterToLabel(cs);
@@ -3379,7 +3373,7 @@ static void writeNamespaceMemberIndexFiltered(OutputList &ol,
 
         if (quickIndex)
         {
-          writeQuickMemberIndex(ol,index.isNamespaceIndexLetterUsed(hl),page,
+          writeQuickMemberIndex(ol,index.isNamespaceIndexLetterUsed(hl),letter,
               getNmhlInfo(hl)->fname,multiPageIndex);
         }
       }
@@ -3395,7 +3389,7 @@ static void writeNamespaceMemberIndexFiltered(OutputList &ol,
     ol.endTextBlock();
 
     writeMemberList(ol,quickIndex,
-        multiPageIndex ? page : std::string(),
+        multiPageIndex ? letter : std::string(),
         index.isNamespaceIndexLetterUsed(hl),
         Definition::TypeNamespace);
     endFile(ol);
@@ -3606,7 +3600,7 @@ static void writePageIndex(OutputList &ol)
   ol.endTextBlock();
 
   {
-    FTVHelp* ftv = new FTVHelp(FALSE);
+    FTVHelp ftv(false);
     for (const auto &pd : *Doxygen::pageLinkedMap)
     {
       if ((pd->getOuterScope()==0 ||
@@ -3614,13 +3608,12 @@ static void writePageIndex(OutputList &ol)
           !pd->isReference() // not an external page
          )
       {
-        writePages(pd.get(),ftv);
+        writePages(pd.get(),&ftv);
       }
     }
     TextStream t;
-    ftv->generateTreeViewInline(t);
+    ftv.generateTreeViewInline(t);
     ol.writeString(t.str().c_str());
-    delete ftv;
   }
 
 //  ol.popGeneratorState();
@@ -3694,10 +3687,12 @@ void writeGraphInfo(OutputList &ol)
     legendDocs = legendDocs.left(s+8) + "[!-- " + "SVG 0 --]" + legendDocs.mid(e);
     //printf("legendDocs=%s\n",qPrint(legendDocs));
   }
-  FileDef *fd = createFileDef("","graph_legend.dox");
-  ol.generateDoc("graph_legend",1,fd,0,legendDocs,FALSE,FALSE,
-                 QCString(),FALSE,FALSE,FALSE);
-  delete fd;
+
+  {
+    auto fd = createFileDef("","graph_legend.dox");
+    ol.generateDoc("graph_legend",1,fd.get(),0,legendDocs,FALSE,FALSE,
+        QCString(),FALSE,FALSE,FALSE);
+  }
 
   // restore config settings
   Config_updateBool(STRIP_CODE_COMMENTS,oldStripCommentsState);
@@ -4017,13 +4012,12 @@ static void writeGroupIndex(OutputList &ol)
       Doxygen::indexList->addContentsItem(TRUE,title,QCString(),"modules",QCString(),TRUE,TRUE);
       Doxygen::indexList->incContentsDepth();
     }
-    FTVHelp* ftv = new FTVHelp(FALSE);
-    writeGroupHierarchy(ol,ftv,addToIndex);
+    FTVHelp ftv(false);
+    writeGroupHierarchy(ol,&ftv,addToIndex);
     TextStream t;
-    ftv->generateTreeViewInline(t);
+    ftv.generateTreeViewInline(t);
     ol.disableAllBut(OutputType::Html);
     ol.writeString(t.str().c_str());
-    delete ftv;
     if (addToIndex)
     {
       Doxygen::indexList->decContentsDepth();
@@ -4400,7 +4394,6 @@ static void writeIndex(OutputList &ol)
 
   if (Doxygen::mainPage)
   {
-    Doxygen::insideMainPage=TRUE;
     if (Doxygen::mainPage->localToc().isHtmlEnabled() && Doxygen::mainPage->hasSections())
     {
       Doxygen::mainPage->writeToc(ol,Doxygen::mainPage->localToc());
@@ -4412,8 +4405,6 @@ static void writeIndex(OutputList &ol)
                 QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
     ol.endTextBlock();
     ol.endPageDoc();
-
-    Doxygen::insideMainPage=FALSE;
   }
 
   endFile(ol);
@@ -4425,6 +4416,12 @@ static void writeIndex(OutputList &ol)
   ol.enable(OutputType::Latex);
   ol.enable(OutputType::Docbook);
   ol.enable(OutputType::RTF);
+
+  if (Doxygen::mainPage)
+  {
+    msg("Generating main page...\n");
+    Doxygen::mainPage->writeDocumentation(ol);
+  }
 
   ol.startFile("refman",QCString(),QCString());
   ol.startIndexSection(IndexSection::isTitlePageStart);
@@ -4458,61 +4455,13 @@ static void writeIndex(OutputList &ol)
   if (Doxygen::mainPage)
   {
     ol.startIndexSection(IndexSection::isMainPage);
-    if (mainPageHasTitle())
-    {
-      ol.parseText(Doxygen::mainPage->title());
-    }
-    else
-    {
-      ol.parseText(/*projPrefix+*/theTranslator->trMainPage());
-    }
     ol.endIndexSection(IndexSection::isMainPage);
   }
   const auto &index = Index::instance();
   if (index.numDocumentedPages()>0)
   {
-    bool first=Doxygen::mainPage==0;
-    for (const auto &pd : *Doxygen::pageLinkedMap)
-    {
-      if (!pd->getGroupDef() && !pd->isReference() &&
-          (!pd->hasParentPage() ||                    // not inside other page
-           (Doxygen::mainPage.get()==pd->getOuterScope()))  // or inside main page
-         )
-      {
-        bool isCitationPage = pd->name()=="citelist";
-        if (isCitationPage)
-        {
-          // For LaTeX the bibliograph is already written by \bibliography
-          ol.pushGeneratorState();
-          ol.disable(OutputType::Latex);
-        }
-        title = pd->title();
-        if (title.isEmpty()) title=pd->name();
-
-        ol.disable(OutputType::Docbook);
-        ol.startIndexSection(IndexSection::isPageDocumentation);
-        ol.parseText(title);
-        ol.endIndexSection(IndexSection::isPageDocumentation);
-        ol.enable(OutputType::Docbook);
-
-        ol.pushGeneratorState(); // write TOC title (RTF only)
-          ol.disableAllBut(OutputType::RTF);
-          ol.startIndexSection(IndexSection::isPageDocumentation2);
-          ol.parseText(title);
-          ol.endIndexSection(IndexSection::isPageDocumentation2);
-        ol.popGeneratorState();
-
-        ol.writeAnchor(QCString(),pd->getOutputFileBase());
-
-        ol.writePageLink(pd->getOutputFileBase(),first);
-        first=FALSE;
-
-        if (isCitationPage)
-        {
-          ol.popGeneratorState();
-        }
-      }
-    }
+    ol.startIndexSection(IndexSection::isPageDocumentation);
+    ol.endIndexSection(IndexSection::isPageDocumentation);
   }
 
   ol.disable(OutputType::Docbook);
@@ -4665,23 +4614,6 @@ static void writeIndex(OutputList &ol)
   }
   ol.endIndexSection(IndexSection::isEndIndex);
   endFile(ol);
-
-  if (Doxygen::mainPage)
-  {
-    Doxygen::insideMainPage=TRUE;
-    ol.disable(OutputType::Man);
-    startFile(ol,Doxygen::mainPage->name(),QCString(),Doxygen::mainPage->title());
-    ol.startContents();
-    ol.startTextBlock();
-    ol.generateDoc(defFileName,defLine,Doxygen::mainPage.get(),0,
-                Doxygen::mainPage->documentation(),FALSE,FALSE,
-                QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT)
-               );
-    ol.endTextBlock();
-    endFile(ol);
-    ol.enable(OutputType::Man);
-    Doxygen::insideMainPage=FALSE;
-  }
 
   ol.popGeneratorState();
 }
@@ -5068,10 +5000,9 @@ void renderMemberIndicesAsJs(std::ostream &t,
         }
         t << ",children:[\n";
         bool firstLetter=TRUE;
-        for (const auto &kv : getMemberList(i))
+        for (const auto &[letter,list] : getMemberList(i))
         {
           if (!firstLetter) t << ",\n";
-          std::string letter = kv.first;
           QCString ci(letter);
           QCString is(letterToLabel(ci));
           QCString anchor;

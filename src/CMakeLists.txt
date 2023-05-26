@@ -308,6 +308,7 @@ add_library(doxymain STATIC
     rtfstyle.cpp
     searchindex.cpp
     searchindex_js.cpp
+    sitemap.cpp
     sqlite3gen.cpp
     stlsupport.cpp
     symbolresolver.cpp
@@ -338,6 +339,7 @@ endif()
 
 add_executable(doxygen
     main.cpp
+    ${PROJECT_SOURCE_DIR}/templates/icon/doxygen.rc
 )
 
 # enable to monitor compilation times

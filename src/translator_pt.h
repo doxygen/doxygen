@@ -26,7 +26,7 @@
  * VERSION HISTORY
  * ---------------
  * History:
- * 20230225:
+ * 20230430:
  *  - Updated to 1.9.7;
  *  - Inclusion of translator_br.h's PortugueseTranslatorUtils namespace;
  *  - All entries of "Directório" has been replaced by "Diretório";
@@ -2635,6 +2635,8 @@ class TranslatorPortuguese : public Translator
         result+="o namespace a que pertencem:";
       return result;
     }
+    virtual QCString trDefinition()  { return "Definição";}
+    virtual QCString trDeclaration() { return "Declaração";}        
 };
 
 #endif

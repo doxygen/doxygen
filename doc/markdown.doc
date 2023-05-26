@@ -189,7 +189,7 @@ emphasis / strikethrough spans slightly different than standard Markdown / GitHu
 
 \subsection md_codespan code spans
 
-To indicate a span of code, you should wrap it in backticks (`). Unlike code blocks,
+To indicate a span of code, you should wrap it in backticks (`` ` ``). Unlike code blocks,
 code spans appear inline in a paragraph. An example:
 
     Use the `printf()` function.

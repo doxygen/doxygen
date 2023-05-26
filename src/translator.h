@@ -82,6 +82,8 @@ class Translator
     virtual QCString trISOLang() = 0;
 
     /** language codes for Html help
+ 
+       <pre>
        0x402 Bulgarian
        0x405 Czech
        0x406 Danish
@@ -114,8 +116,10 @@ class Translator
        0x412 Korean
        0x804 Chinese (PRC)
        0x404 Chinese (Taiwan)
+       </pre>
 
        New LCIDs:
+       <pre>
        0x421 Indonesian
        0x41A Croatian
        0x418 Romanian
@@ -130,17 +134,22 @@ class Translator
        0x42A Vietnamese
        0x429 Persian (Iran)
        0xC01 Arabic (Egypt) - I don't know which version of arabic is used inside translator_ar.h ,
-       so I have chosen Egypt at random
+             so I have chosen Egypt at random
+       </pre>
 
       Code for Esperanto should be as shown below but the htmlhelp compiler 1.3 does not support this
       (and no newer version is available).
+      <pre>
       0x48f Esperanto
+      </pre>
       So do a fallback to the default language
+      <pre>
       0x409 English (United States)
+      </pre>
 
-
+      <pre>
       0xC1A Serbian (Serbia, Cyrillic)
-
+      </pre>
     */
     virtual QCString getLanguageString() = 0;
 
@@ -740,6 +749,8 @@ class Translator
     virtual QCString trFileMembersDescriptionTotal(FileMemberHighlight::Enum hl) = 0;
     virtual QCString trCompoundMembersDescriptionTotal(ClassMemberHighlight::Enum hl) = 0;
     virtual QCString trNamespaceMembersDescriptionTotal(NamespaceMemberHighlight::Enum hl) = 0;
+    virtual QCString trDefinition() = 0;
+    virtual QCString trDeclaration() = 0;
 };
 
 #endif

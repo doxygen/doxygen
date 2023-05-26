@@ -127,6 +127,7 @@ struct codeYY_state
   std::stack<int> scopeStack;      //!< 1 if bracket starts a scope,
                                    //   2 for internal blocks
   int           anchorCount = 0;
+  std::unique_ptr<FileDef> exampleFileDef;
   const FileDef *     sourceFileDef = 0;
   bool          lineNumbers = FALSE;
   const Definition *  currentDefinition = 0;
@@ -280,7 +281,7 @@ SCOPETNAME (((({ID}{TEMPLIST}?){BN}*)?{SEP}{BN}*)*)((~{BN}*)?{ID})
 SCOPEPREFIX ({ID}{TEMPLIST}?{BN}*{SEP}{BN}*)+
 KEYWORD_OBJC ("@public"|"@private"|"@protected"|"@class"|"@implementation"|"@interface"|"@end"|"@selector"|"@protocol"|"@optional"|"@required"|"@throw"|"@synthesize"|"@property")
   /* please also pay attention to skipLanguageSpecificKeyword when changing the list of keywords. */
-KEYWORD ("asm"|"__assume"|"auto"|"class"|"const"|"delete"|"enum"|"explicit"|"extern"|"false"|"friend"|"gcnew"|"gcroot"|"set"|"get"|"inline"|"internal"|"mutable"|"namespace"|"new"|"null"|"nullptr"|"override"|"operator"|"pin_ptr"|"private"|"protected"|"public"|"raise"|"register"|"remove"|"self"|"sizeof"|"static"|"struct"|"__super"|"function"|"template"|"generic"|"this"|"true"|"typedef"|"typeid"|"typename"|"union"|"using"|"virtual"|"volatile"|"abstract"|"final"|"import"|"synchronized"|"transient"|"alignas"|"alignof"|"concept"|"requires"|"decltype"|{KEYWORD_OBJC}|"constexpr"|"consteval"|"constinit"|"co_await"|"co_return"|"co_yield"|"static_assert"|"noexcept"|"thread_local"|"enum"{B}+("class"|"struct"))
+KEYWORD ("asm"|"__assume"|"auto"|"class"|"const"|"delete"|"enum"|"explicit"|"extern"|"false"|"friend"|"gcnew"|"gcroot"|"set"|"get"|"inline"|"internal"|"mutable"|"namespace"|"new"|"null"|"nullptr"|"override"|"operator"|"pin_ptr"|"private"|"protected"|"public"|"raise"|"register"|"remove"|"self"|"sizeof"|"static"|"struct"|"__super"|"function"|"template"|"generic"|"this"|"true"|"typedef"|"typeid"|"typename"|"union"|"using"|"virtual"|"volatile"|"abstract"|"final"|"import"|"synchronized"|"transient"|"alignas"|"alignof"|"concept"|"requires"|"decltype"|{KEYWORD_OBJC}|"constexpr"|"consteval"|"constinit"|"co_await"|"co_return"|"co_yield"|"static_assert"|"_Static_assert"|"noexcept"|"thread_local"|"enum"{B}+("class"|"struct"))
 FLOWKW  ("break"|"catch"|"continue"|"default"|"do"|"else"|"finally"|"return"|"switch"|"throw"|"throws"|"@catch"|"@finally")
 FLOWCONDITION  ("case"|"for"|"foreach"|"for each"|"goto"|"if"|"try"|"while"|"@try")
 TYPEKW  ("bool"|"byte"|"char"|"char8_t"|"char16_t"|"char32_t"|"double"|"float"|"int"|"long"|"object"|"short"|"signed"|"unsigned"|"void"|"wchar_t"|"size_t"|"boolean"|"id"|"SEL"|"string"|"nullptr")
@@ -1184,7 +1185,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           uint32_t e=(uint32_t)yyleng-1;while (e>1 && !isId(yytext[e])) e--;
                                           QCString varname = ((QCString)yytext).mid(s,e-s+1);
                                           addType(yyscanner);
-                                          yyextra->name=varname;
+                                          yyextra->name=std::move(varname);
                                         }
 <Body>{SCOPETNAME}{B}*"<"[^\n\/\-\.\{\"\>]*">"/{BN}*"(" |
 <Body>{SCOPETNAME}/{BN}*"("             { // a() or c::a() or t<A,B>::a() or A\B\foo()
@@ -2241,17 +2242,16 @@ static void addVariable(yyscan_t yyscanner,QCString type,QCString name)
       else if ((i=ltype.find('<'))!=-1)
       {
         // probably a template class
-        QCString typeName(ltype.left(i));
-        addVariable(yyscanner,typeName,name);
+        addVariable(yyscanner,ltype.left(i),name);
       }
       return varDef;
     };
     const ClassDef *varDef = findVariableType(yyextra->currentDefinition);
     if (varDef==0) // also check via using directive
     {
-      for (const auto &kv : yyextra->theUsingContext)
+      for (const auto &[usingName,namespaceDef] : yyextra->theUsingContext)
       {
-        varDef = findVariableType(kv.second);
+        varDef = findVariableType(namespaceDef);
         if (varDef!=0) break;
       }
     }
@@ -2680,7 +2680,7 @@ static const MemberDef *setCallContextForVar(yyscan_t yyscanner,const QCString &
   if (mcv)
   {
     DBG_CTX((stderr,"local variable?\n"));
-    if (mcv->type()!=ScopedTypeVariant::Dummy) // locally found variable
+    if (!mcv->isDummy()) // locally found variable
     {
       DBG_CTX((stderr,"local var '%s' mcd=%s\n",qPrint(name),qPrint(mcv->name())));
       yyextra->theCallContext.setScope(*mcv);
@@ -2928,9 +2928,9 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
     if (cd==0 && md==0)
     {
       // also check via using directive
-      for (const auto &kv : yyextra->theUsingContext)
+      for (const auto &[usingName,namespaceDef] : yyextra->theUsingContext)
       {
-        checkForClass(kv.second,cd,md);
+        checkForClass(namespaceDef,cd,md);
         if (cd!=0 || md!=0) break;
       }
     }
@@ -2966,7 +2966,7 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
   else
   {
     DBG_CTX((stderr,"local variable!\n"));
-    if (lcd->type()!=ScopedTypeVariant::Dummy)
+    if (!lcd->isDummy())
     {
       DBG_CTX((stderr,"non-dummy context lcd=%s!\n",qPrint(lcd->name())));
       yyextra->theCallContext.setScope(*lcd);
@@ -3188,7 +3188,7 @@ static void generateMemberLink(yyscan_t yyscanner,
   const ScopedTypeVariant *stv = yyextra->theVarContext.findVariable(varName);
   if (stv)
   {
-    if (stv->type()!=ScopedTypeVariant::Dummy)
+    if (!stv->isDummy())
     {
       DBG_CTX((stderr,"Class found!\n"));
       if (getLink(yyscanner,stv->name(),memName,ol))
@@ -3795,7 +3795,7 @@ static bool skipLanguageSpecificKeyword(yyscan_t yyscanner,const char *keyword)
     "friend", "inline", "mutable", "namespace", "noexcept",
     "not", "not_eq", "nullptr", "operator", "or",
     "or_eq", "reflexpr", "register", "reinterpret_cast", "requires",
-    "signed", "sizeof", "static_assert", "static_cast", "struct",
+    "signed", "sizeof", "static_assert", "_Static_assert", "static_cast", "struct",
     "template", "thread_local", "typedef", "typeid", "typename",
     "union", "unsigned", "using", "virtual", "wchar_t",
     "xor", "xor_eq",
@@ -3984,12 +3984,11 @@ void CCodeParser::parseCode(OutputCodeList &od,const QCString &className,const Q
   yyextra->exampleName   = exName;
   yyextra->sourceFileDef = fd;
   yyextra->lineNumbers   = fd!=0 && showLineNumbers;
-  bool cleanupSourceDef = FALSE;
   if (fd==0)
   {
     // create a dummy filedef for the example
-    yyextra->sourceFileDef = createFileDef(QCString(),(!exName.isEmpty()?exName:"generated"));
-    cleanupSourceDef = TRUE;
+    yyextra->exampleFileDef = createFileDef(QCString(),(!exName.isEmpty()?exName:"generated"));
+    yyextra->sourceFileDef  = yyextra->exampleFileDef.get();
   }
   yyextra->lang        = lang;
   yyextra->insideObjC  = lang==SrcLangExt_ObjC;
@@ -4026,10 +4025,10 @@ void CCodeParser::parseCode(OutputCodeList &od,const QCString &className,const Q
   {
     endCodeLine(yyscanner);
   }
-  if (cleanupSourceDef)
+  if (yyextra->exampleFileDef)
   {
     // delete the temporary file definition used for this example
-    delete yyextra->sourceFileDef;
+    yyextra->exampleFileDef.reset();
     yyextra->sourceFileDef=0;
   }
   // write the tooltips

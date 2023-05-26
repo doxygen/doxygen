@@ -156,6 +156,7 @@ struct fortrancodeYY_state
   QCString      exampleName;
   QCString      exampleFile;
 
+  std::unique_ptr<FileDef> exampleFileDef;
   const FileDef *    sourceFileDef = 0;
   const Definition * currentDefinition = 0;
   const MemberDef *  currentMemberDef = 0;
@@ -1096,16 +1097,16 @@ static bool getFortranTypeDefs(const QCString &tname, const QCString &moduleName
     //cout << "=== type found in global module" << endl;
     return TRUE;
   }
-  else if (!moduleName.isEmpty() && (cd= Doxygen::classLinkedMap->find(moduleName+"::"+tname)))
+  else if (!moduleName.isEmpty() && (cd=Doxygen::classLinkedMap->find(moduleName+"::"+tname)))
   {
     //cout << "=== type found in local module" << endl;
     return TRUE;
   }
   else
   {
-    for (const auto &kv : useMap)
+    for (const auto &[name,useEntry] : useMap)
     {
-      if ((cd= Doxygen::classLinkedMap->find(kv.second.module+"::"+tname)))
+      if ((cd=Doxygen::classLinkedMap->find(useEntry.module+"::"+tname)))
       {
         //cout << "===  type found in used module" << endl;
         return TRUE;
@@ -1495,7 +1496,8 @@ void FortranCodeParser::parseCode(OutputCodeList & codeOutIntf,
   if (isExampleBlock && fileDef==0)
   {
     // create a dummy filedef for the example
-    yyextra->sourceFileDef = createFileDef(QCString(),exampleName);
+    yyextra->exampleFileDef = createFileDef(QCString(),exampleName);
+    yyextra->sourceFileDef = yyextra->exampleFileDef.get();
   }
   if (yyextra->sourceFileDef)
   {
@@ -1519,7 +1521,7 @@ void FortranCodeParser::parseCode(OutputCodeList & codeOutIntf,
   if (!fileDef && isExampleBlock && yyextra->sourceFileDef)
   {
     // delete the temporary file definition used for this example
-    delete yyextra->sourceFileDef;
+    yyextra->exampleFileDef.reset();
     yyextra->sourceFileDef=0;
   }
   if (yyextra->hasContLine) free(yyextra->hasContLine);

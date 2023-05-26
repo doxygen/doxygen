@@ -265,20 +265,19 @@ void ManDocVisitor::operator()(const DocInclude &inc)
          m_t << ".PP\n";
          m_t << ".nf\n";
          FileInfo cfi( inc.file().str() );
-         FileDef *fd = createFileDef( cfi.dirPath(), cfi.fileName() );
+         auto fd = createFileDef( cfi.dirPath(), cfi.fileName() );
          getCodeParser(inc.extension()).parseCode(m_ci,inc.context(),
                                            inc.text(),
                                            langExt,
                                            inc.isExample(),
                                            inc.exampleFile(),
-                                           fd,   // fileDef,
+                                           fd.get(), // fileDef,
                                            -1,    // start line
                                            -1,    // end line
                                            FALSE, // inline fragment
                                            0,     // memberDef
                                            TRUE
 					   );
-         delete fd;
          if (!m_firstCol) m_t << "\n";
          m_t << ".fi\n";
          m_t << ".PP\n";
@@ -350,21 +349,20 @@ void ManDocVisitor::operator()(const DocInclude &inc)
          m_t << ".PP\n";
          m_t << ".nf\n";
          FileInfo cfi( inc.file().str() );
-         FileDef *fd = createFileDef( cfi.dirPath(), cfi.fileName() );
+         auto fd = createFileDef( cfi.dirPath(), cfi.fileName() );
          getCodeParser(inc.extension()).parseCode(m_ci,
                                            inc.context(),
                                            extractBlock(inc.text(),inc.blockId()),
                                            langExt,
                                            inc.isExample(),
                                            inc.exampleFile(),
-                                           fd,
+                                           fd.get(),
                                            lineBlock(inc.text(),inc.blockId()),
                                            -1,    // endLine
                                            FALSE, // inlineFragment
                                            0,     // memberDef
                                            TRUE   // show line number
                                           );
-         delete fd;
          if (!m_firstCol) m_t << "\n";
          m_t << ".fi\n";
          m_t << ".PP\n";
@@ -402,7 +400,7 @@ void ManDocVisitor::operator()(const DocIncOperator &op)
     m_hide = popHidden();
     if (!m_hide)
     {
-      FileDef *fd = 0;
+      std::unique_ptr<FileDef> fd;
       if (!op.includeFileName().isEmpty())
       {
         FileInfo cfi( op.includeFileName().str() );
@@ -411,14 +409,13 @@ void ManDocVisitor::operator()(const DocIncOperator &op)
 
       getCodeParser(locLangExt).parseCode(m_ci,op.context(),op.text(),langExt,
                                         op.isExample(),op.exampleFile(),
-                                        fd,     // fileDef
+                                        fd.get(),     // fileDef
                                         op.line(),    // startLine
                                         -1,    // endLine
                                         FALSE, // inline fragment
                                         0,     // memberDef
                                         op.showLineNo()  // show line numbers
                                        );
-      if (fd) delete fd;
     }
     pushHidden(m_hide);
     m_hide=TRUE;

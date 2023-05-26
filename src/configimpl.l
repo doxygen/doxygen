@@ -203,7 +203,7 @@ void ConfigOption::writeStringList(TextStream &t,const StringVector &l)
 /* -----------------------------------------------------------------
  */
 
-ConfigImpl *ConfigImpl::m_instance = 0;
+std::unique_ptr<ConfigImpl> ConfigImpl::m_instance;
 
 void ConfigInt::convertStrToVal(Config::CompareMode compareMode)
 {
@@ -397,8 +397,8 @@ void ConfigList::writeTemplate(TextStream &t,bool sl,bool)
 
 bool ConfigList::isDefault()
 {
-  auto get_stripped = [](std::string s)             { return QCString(s.c_str()).stripWhiteSpace(); };
-  auto is_not_empty = [get_stripped](std::string s) { return !get_stripped(s).isEmpty();            };
+  auto get_stripped = [](const std::string &s)             { return QCString(s.c_str()).stripWhiteSpace(); };
+  auto is_not_empty = [get_stripped](const std::string &s) { return !get_stripped(s).isEmpty();            };
   size_t defCnt = std::count_if(       m_value.begin(),       m_value.end(),is_not_empty);
   size_t valCnt = std::count_if(m_defaultValue.begin(),m_defaultValue.end(),is_not_empty);
   if ( valCnt != defCnt)
@@ -1530,10 +1530,8 @@ void ConfigImpl::init()
   }
 }
 
-void ConfigImpl::create()
+ConfigImpl::ConfigImpl()
 {
-  if (m_initialized) return;
-  m_initialized = TRUE;
   addConfigOptions(this);
 }
 
@@ -1674,7 +1672,7 @@ static void adjustBoolSetting(const char *depOption, const char *optionName,bool
   {
     if (ConfigValues::instance().*(option->value.b)!=expectedValue) // current value differs from expectation
     {
-      err("When enabling %s the %s option should be disabled. I'll adjust it for you.\n",depOption,optionName);
+      err("When enabling %s the %s option should be %s. I'll adjust it for you.\n",depOption,optionName,expectedValue? "enabled" : "disabled");
       ConfigValues::instance().*(option->value.b)=expectedValue; // adjust option
     }
   }
@@ -2095,6 +2093,14 @@ void Config::checkAndCorrect(bool quiet, const bool check)
   }
 
   //------------------------
+  // check sitemap creation requirements
+  if (!Config_getBool(GENERATE_HTML) &&
+      !Config_getString(SITEMAP_URL).isEmpty())
+  {
+    warn_uncond("Setting SITEMAP_URL requires GENERATE_HTML=YES.\n");
+  }
+
+  //------------------------
   // check QHP creation requirements
   if (Config_getBool(GENERATE_QHP))
   {
@@ -2190,7 +2196,8 @@ void Config::updateObsolete()
     ConfigObsolete *classDiagramsOpt_ = dynamic_cast<ConfigObsolete*>(classDiagramsOpt);
     ConfigBool     *haveDotOpt_       = dynamic_cast<ConfigBool*>(haveDotOpt);
     ConfigEnum     *classGraphOpt_    = dynamic_cast<ConfigEnum*>(classGraphOpt);
-    if (classDiagramsOpt_->isPresent() && classDiagramsOpt_->orgType()==ConfigOption::O_Bool)
+    if (classDiagramsOpt_ && haveDotOpt_ && classGraphOpt_ &&
+        classDiagramsOpt_->isPresent() && classDiagramsOpt_->orgType()==ConfigOption::O_Bool)
     {
       QCString classDiagramValue = *classDiagramsOpt_->valueStringRef();
       QCString haveDotValue      = *haveDotOpt_->valueStringRef();
@@ -2206,6 +2213,44 @@ void Config::updateObsolete()
     }
   }
 
+  // update TIMESTAMP based on HTML_TIMESTAMP and LATEX_TIMESTAMP
+  ConfigOption *HtmlTimestamp = ConfigImpl::instance()->get("HTML_TIMESTAMP");
+  ConfigOption *timestampOpt    = ConfigImpl::instance()->get("TIMESTAMP");
+  bool reset = false;
+  if (HtmlTimestamp && HtmlTimestamp->kind()==ConfigOption::O_Obsolete && timestampOpt)
+  {
+    ConfigObsolete *htmlTimestamp_ = dynamic_cast<ConfigObsolete*>(HtmlTimestamp);
+    ConfigEnum     *timestampOpt_ = dynamic_cast<ConfigEnum*>(timestampOpt);
+    if (htmlTimestamp_ && timestampOpt_ &&
+        htmlTimestamp_->isPresent() && htmlTimestamp_->orgType()==ConfigOption::O_Bool)
+    {
+      QCString &timestampValue  = *timestampOpt_->valueRef();
+      QCString htmlTimestampValue = *htmlTimestamp_->valueStringRef();
+      bool isValid=true;
+      bool bTimestamp = convertStringToBool(htmlTimestampValue,isValid);
+      if (isValid && bTimestamp)
+      {
+        reset = true;
+        timestampValue = "YES";
+      }
+    }
+  }
+  ConfigOption *LatexTimestamp = ConfigImpl::instance()->get("LATEX_TIMESTAMP");
+  if (!reset && LatexTimestamp && LatexTimestamp->kind()==ConfigOption::O_Obsolete && timestampOpt)
+  {
+    ConfigObsolete *latexTimestamp_ = dynamic_cast<ConfigObsolete*>(LatexTimestamp);
+    ConfigEnum     *timestampOpt_ = dynamic_cast<ConfigEnum*>(timestampOpt);
+    if (latexTimestamp_ && timestampOpt_ &&
+        latexTimestamp_->isPresent() && latexTimestamp_->orgType()==ConfigOption::O_Bool)
+    {
+      QCString &timestampValue  = *timestampOpt_->valueRef();
+      QCString latexTimestampValue = *latexTimestamp_->valueStringRef();
+      bool isValid=true;
+      bool bTimestamp = convertStringToBool(latexTimestampValue,isValid);
+      if (isValid && bTimestamp) timestampValue = "YES";
+    }
+  }
+
   auto fontname = dynamic_cast<ConfigObsolete*>(ConfigImpl::instance()->get("DOT_FONTNAME"));
   auto fontsize = dynamic_cast<ConfigObsolete*>(ConfigImpl::instance()->get("DOT_FONTSIZE"));
 
@@ -2217,17 +2262,25 @@ void Config::updateObsolete()
                "  You may want to clear or change DOT_FONTNAME.\n"
                "  Otherwise you run the risk that the wrong font is being used for dot generated graphs.\n");
 
-  QCString& commonAttrStr = *dynamic_cast<ConfigString*>(ConfigImpl::instance()->get("DOT_COMMON_ATTR"))->valueRef();
-  DotAttributes commonAttr(commonAttrStr);
-  updateAttribute(commonAttr, "fontname", fontname);
-  updateAttribute(commonAttr, "fontsize", fontsize);
-  commonAttrStr = commonAttr.str();
+  auto commonAttrOpt = dynamic_cast<ConfigString*>(ConfigImpl::instance()->get("DOT_COMMON_ATTR"));
+  if (commonAttrOpt)
+  {
+    QCString& commonAttrStr = *commonAttrOpt->valueRef();
+    DotAttributes commonAttr(commonAttrStr);
+    updateAttribute(commonAttr, "fontname", fontname);
+    updateAttribute(commonAttr, "fontsize", fontsize);
+    commonAttrStr = commonAttr.str();
+  }
 
-  QCString& edgeAttrStr = *dynamic_cast<ConfigString*>(ConfigImpl::instance()->get("DOT_EDGE_ATTR"))->valueRef();
-  DotAttributes edgeAttr(edgeAttrStr);
-  updateAttribute(edgeAttr, "labelfontname", fontname);
-  updateAttribute(edgeAttr, "labelfontsize", fontsize);
-  edgeAttrStr = edgeAttr.str();
+  auto edgeAttrOpt = dynamic_cast<ConfigString*>(ConfigImpl::instance()->get("DOT_EDGE_ATTR"));
+  if (edgeAttrOpt)
+  {
+    QCString& edgeAttrStr = *edgeAttrOpt->valueRef();
+    DotAttributes edgeAttr(edgeAttrStr);
+    updateAttribute(edgeAttr, "labelfontname", fontname);
+    updateAttribute(edgeAttr, "labelfontsize", fontsize);
+    edgeAttrStr = edgeAttr.str();
+  }
 }
 
 void Config::writeTemplate(TextStream &t,bool shortList,bool update)

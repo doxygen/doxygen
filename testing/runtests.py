@@ -137,8 +137,11 @@ class Tester:
         shutil.rmtree(self.test_out,ignore_errors=True)
         os.mkdir(self.test_out)
         shutil.copy(self.args.inputdir+'/Doxyfile',self.test_out)
+        inputs = '%s/%s' % (self.args.inputdir,self.test)
+        for i in self.config.get('input', []):
+            inputs += ' %s/%s' % (self.args.inputdir,i)
         with xopen(self.test_out+'/Doxyfile','a') as f:
-            print('INPUT=%s/%s' % (self.args.inputdir,self.test), file=f)
+            print('INPUT=%s' % inputs, file=f)
             print('STRIP_FROM_PATH=%s' % self.args.inputdir, file=f)
             print('EXAMPLE_PATH=%s' % self.args.inputdir, file=f)
             print('WARN_LOGFILE=%s/warnings.log' % self.test_out, file=f)

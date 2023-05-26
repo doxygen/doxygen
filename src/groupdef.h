@@ -57,6 +57,7 @@ class GroupDef : public DefinitionMutable, public Definition
     virtual void setGroupTitle( const QCString &newtitle ) = 0;
     virtual bool hasGroupTitle( ) const = 0;
     virtual void addFile(FileDef *def) = 0;
+    virtual bool containsFile(const FileDef *def) const = 0;
     virtual bool addClass(ClassDef *def) = 0;
     virtual bool addConcept(ConceptDef *def) = 0;
     virtual bool addNamespace(NamespaceDef *def) = 0;
@@ -68,7 +69,7 @@ class GroupDef : public DefinitionMutable, public Definition
     virtual void removeMember(MemberDef *md) = 0;
     virtual bool findGroup(const GroupDef *def) const = 0;
     virtual void writeDocumentation(OutputList &ol) = 0;
-    virtual void writeMemberPages(OutputList &ol) = 0;
+    virtual void writeMemberPages(OutputList &ol, int hierarchyLevel) = 0;
     virtual void writeQuickMemberLinks(OutputList &ol,const MemberDef *currentMd) const = 0;
     virtual void writeTagFile(TextStream &) = 0;
     virtual size_t numDocMembers() const = 0;
@@ -108,8 +109,8 @@ class GroupDef : public DefinitionMutable, public Definition
 
 };
 
-GroupDef *createGroupDef(const QCString &fileName,int line,const QCString &name,
-                                const QCString &title,const QCString &refFileName=QCString());
+std::unique_ptr<GroupDef> createGroupDef(const QCString &fileName,int line,const QCString &name,
+                                         const QCString &title,const QCString &refFileName=QCString());
 
 // --- Cast functions
 

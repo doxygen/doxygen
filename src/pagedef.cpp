@@ -73,9 +73,9 @@ class PageDefImpl : public DefinitionMixin<PageDef>
     bool m_showLineNo;
 };
 
-PageDef *createPageDef(const QCString &f,int l,const QCString &n,const QCString &d,const QCString &t)
+std::unique_ptr<PageDef> createPageDef(const QCString &f,int l,const QCString &n,const QCString &d,const QCString &t)
 {
-  return new PageDefImpl(f,l,n,d,t);
+  return std::make_unique<PageDefImpl>(f,l,n,d,t);
 }
 
 //------------------------------------------------------------------------------------------
@@ -173,6 +173,13 @@ void PageDefImpl::writeTagFile(TextStream &tagFile)
 void PageDefImpl::writeDocumentation(OutputList &ol)
 {
   bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
+  int hierarchyLevel = -1; // Pages start at the root
+  PageDef *pd = this;
+  while (pd->hasParentPage())
+  {
+    pd = (PageDef *)pd->getOuterScope();
+    ++hierarchyLevel;
+  }
 
   //outputList->disable(OutputType::Man);
   QCString pageName,manPageName;
@@ -184,25 +191,15 @@ void PageDefImpl::writeDocumentation(OutputList &ol)
   ol.pushGeneratorState();
   //1.{
 
-  if (m_nestingLevel>0
-      //&& // a sub page
-      //(Doxygen::mainPage==0 || getOuterScope()!=Doxygen::mainPage) // and not a subpage of the mainpage
-     )
-  {
-    // do not generate sub page output for RTF and LaTeX, as these are
-    // part of their parent page
-    ol.disableAll();
-    ol.enable(OutputType::Man);
-    ol.enable(OutputType::Html);
-  }
-
   ol.pushGeneratorState();
   //2.{
   ol.disableAllBut(OutputType::Man);
-  startFile(ol,getOutputFileBase(),manPageName,title(),HighlightedItem::Pages,!generateTreeView);
+  startFile(ol,getOutputFileBase(),manPageName,title(),HighlightedItem::Pages,!generateTreeView,
+            QCString() /* altSidebarName */, hierarchyLevel);
   ol.enableAll();
   ol.disable(OutputType::Man);
-  startFile(ol,getOutputFileBase(),pageName,title(),HighlightedItem::Pages,!generateTreeView);
+  startFile(ol,getOutputFileBase(),pageName,title(),HighlightedItem::Pages,!generateTreeView,
+            QCString() /* altSidebarName */, hierarchyLevel);
   ol.popGeneratorState();
   //2.}
 
@@ -228,10 +225,7 @@ void PageDefImpl::writeDocumentation(OutputList &ol)
   ol.endTitleHead(manPageName, manPageName);
   if (si)
   {
-    ol.pushGeneratorState();
-    ol.disableAllBut(OutputType::Man);
     ol.writeString(" - ");
-    ol.popGeneratorState();
 
     if (si->title() != manPageName)
     {
@@ -243,33 +237,36 @@ void PageDefImpl::writeDocumentation(OutputList &ol)
   ol.popGeneratorState();
   //2.}
 
-  // for Latex the section is already generated as a chapter in the index!
   ol.pushGeneratorState();
   //2.{
-  ol.disable(OutputType::Latex);
-  ol.disable(OutputType::Docbook);
-  ol.disable(OutputType::RTF);
   ol.disable(OutputType::Man);
-  if (hasTitle() && !name().isEmpty() && si!=0)
+  QCString title;
+  if (this == Doxygen::mainPage.get() && !hasTitle())
+    title = theTranslator->trMainPage();
+  else
+    title = m_title;
+
+  if (!title.isEmpty() && !name().isEmpty() && si!=0)
   {
     ol.startPageDoc(si->title());
     //ol.startSection(si->label,si->title,si->type);
-    startTitle(ol,getOutputFileBase(),this);
-    ol.generateDoc(docFile(),getStartBodyLine(),this,0,si->title(),TRUE,FALSE,
-                   QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
-    //stringToSearchIndex(getOutputFileBase(),
-    //                    theTranslator->trPage(TRUE,TRUE)+" "+si->title,
-    //                    si->title);
-    //ol.endSection(si->label,si->type);
-    endTitle(ol,getOutputFileBase(),name());
+    ol.startHeaderSection();
+    ol.startTitleHead(getOutputFileBase());
+    ol.parseText(title);
+    ol.endTitleHead(getOutputFileBase(),title);
+    ol.endHeaderSection();
+
+    /*ol.generateDoc(docFile(),getStartBodyLine(),this,0,si->title(),TRUE,FALSE,
+                   QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT));*/
   }
   else
     ol.startPageDoc("");
-  ol.startContents();
   ol.popGeneratorState();
   //2.}
 
-  if ((m_localToc.isHtmlEnabled() || m_localToc.isLatexEnabled() || m_localToc.isDocbookEnabled()) && hasSections())
+  ol.startContents();
+  if ((m_localToc.isHtmlEnabled() || m_localToc.isLatexEnabled() || m_localToc.isDocbookEnabled())
+    && hasSections() && !hasParentPage())
   {
     writeToc(ol, m_localToc);
   }
@@ -329,23 +326,7 @@ void PageDefImpl::writePageDocumentation(OutputList &ol) const
 
     for (const auto &subPage : m_subPages)
     {
-      SectionType sectionType = SectionType::Paragraph;
-      switch (m_nestingLevel)
-      {
-        case  0: sectionType = SectionType::Page;          break;
-        case  1: sectionType = SectionType::Section;       break;
-        case  2: sectionType = SectionType::Subsection;    break;
-        case  3: sectionType = SectionType::Subsubsection; break;
-        default: sectionType = SectionType::Paragraph;     break;
-      }
-      QCString title = subPage->title();
-      if (title.isEmpty()) title = subPage->name();
-      ol.startSection(subPage->name(),title,sectionType);
-      ol.parseText(title);
-      ol.endSection(subPage->name(),sectionType);
-      Doxygen::subpageNestingLevel++;
-      subPage->writePageDocumentation(ol);
-      Doxygen::subpageNestingLevel--;
+      ol.writePageLink(subPage->getOutputFileBase(), FALSE);
     }
 
     ol.popGeneratorState();

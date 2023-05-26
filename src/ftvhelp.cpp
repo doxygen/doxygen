@@ -38,6 +38,7 @@
 #include "resourcemgr.h"
 #include "portable.h"
 #include "outputlist.h"
+#include "threadpool.h"
 
 static int folderId=1;
 
@@ -392,9 +393,13 @@ void FTVHelp::Private::generateTree(TextStream &t, const FTVNodes &nl,int level,
       }
       else if (n->def && n->def->definitionType()==Definition::TypeNamespace)
       {
-        if (n->def->getLanguage() == SrcLangExt_Slice)
+        if ((n->def->getLanguage() == SrcLangExt_Slice) || (n->def->getLanguage() == SrcLangExt_Fortran))
         {
           t << "<span class=\"icona\"><span class=\"icon\">M</span></span>";
+        }
+        else if ((n->def->getLanguage() == SrcLangExt_Java) || (n->def->getLanguage() == SrcLangExt_VHDL))
+        {
+          t << "<span class=\"icona\"><span class=\"icon\">P</span></span>";
         }
         else
         {
@@ -448,9 +453,13 @@ void FTVHelp::Private::generateTree(TextStream &t, const FTVNodes &nl,int level,
       }
       else if (n->def && n->def->definitionType()==Definition::TypeNamespace)
       {
-        if (n->def->getLanguage() == SrcLangExt_Slice)
+        if ((n->def->getLanguage() == SrcLangExt_Slice) || (n->def->getLanguage() == SrcLangExt_Fortran))
         {
           t << "<span class=\"icona\"><span class=\"icon\">M</span></span>";
+        }
+        else if ((n->def->getLanguage() == SrcLangExt_Java) || (n->def->getLanguage() == SrcLangExt_VHDL))
+        {
+          t << "<span class=\"icona\"><span class=\"icon\">P</span></span>";
         }
         else
         {
@@ -531,7 +540,9 @@ static void generateJSLink(TextStream &t,const FTVNodePtr &n)
   }
   else // link into other page
   {
-    t << "\"" << convertToJSString(n->name) << "\", \"";
+    QCString result = n->name;
+    if (Config_getBool(HIDE_SCOPE_NAMES)) result=stripScope(result);
+    t << "\"" << convertToJSString(result) << "\", \"";
     t << externalRef("",n->ref,TRUE);
     t << node2URL(n);
     t << "\", ";
@@ -545,6 +556,39 @@ static QCString convertFileId2Var(const QCString &fileId)
   if (i>=0) varId = varId.mid(i+1);
   return substitute(varId,"-","_");
 }
+
+
+struct JSTreeFile
+{
+  JSTreeFile(const QCString &fi,const FTVNodePtr &n) : fileId(fi), node(n) {}
+  QCString fileId;
+  FTVNodePtr node;
+};
+
+using JSTreeFiles = std::vector<JSTreeFile>;
+
+static void collectJSTreeFiles(const FTVNodes &nl,JSTreeFiles &files)
+{
+  QCString htmlOutput = Config_getString(HTML_OUTPUT);
+  for (const auto &n : nl)
+  {
+    if (n->separateIndex) // add new file if there are children
+    {
+      if (!n->children.empty())
+      {
+        QCString fileId = n->file;
+        files.emplace_back(fileId,n);
+        collectJSTreeFiles(n->children,files);
+      }
+    }
+    else // traverse without adding a new file
+    {
+      collectJSTreeFiles(n->children,files);
+    }
+  }
+}
+
+static std::mutex g_navIndexMutex;
 
 static bool generateJSTree(NavIndexEntryList &navIndex,TextStream &t,
                            const FTVNodes &nl,int level,bool &first)
@@ -569,6 +613,7 @@ static bool generateJSTree(NavIndexEntryList &navIndex,TextStream &t,
 
     if (n->addToNavIndex) // add entry to the navigation index
     {
+      std::lock_guard lock(g_navIndexMutex);
       if (n->def && n->def->definitionType()==Definition::TypeFile)
       {
         const FileDef *fd = toFileDef(n->def);
@@ -591,7 +636,6 @@ static bool generateJSTree(NavIndexEntryList &navIndex,TextStream &t,
 
     if (n->separateIndex) // store items in a separate file for dynamic loading
     {
-      bool firstChild=TRUE;
       t << indentStr << "  [ ";
       generateJSLink(t,n);
       if (!n->children.empty()) // write children to separate file for dynamic loading
@@ -605,16 +649,6 @@ static bool generateJSTree(NavIndexEntryList &navIndex,TextStream &t,
         {
           fileId+="_dup";
         }
-        QCString fileName = htmlOutput+"/"+fileId+".js";
-        std::ofstream f = Portable::openOutputStream(fileName);
-        if (f.is_open())
-        {
-          TextStream tt(&f);
-          tt << "var " << convertFileId2Var(fileId) << " =\n";
-          generateJSTree(navIndex,tt,n->children,1,firstChild);
-          tt << "\n];";
-        }
-        f.close();
         t << "\"" << fileId << "\" ]";
       }
       else // no children
@@ -635,6 +669,57 @@ static bool generateJSTree(NavIndexEntryList &navIndex,TextStream &t,
     }
   }
   return found;
+}
+
+static void generateJSTreeFiles(NavIndexEntryList &navIndex,TextStream &t,const FTVNodes &nodeList)
+{
+  QCString htmlOutput = Config_getString(HTML_OUTPUT);
+
+  auto getVarName = [](const FTVNodePtr n)
+  {
+    QCString                  fileId = n->file;
+    if (!n->anchor.isEmpty()) fileId+="_"+n->anchor;
+    if (dupOfParent(n))       fileId+="_dup";
+    return fileId;
+  };
+
+  auto generateJSFile = [&](const JSTreeFile &tf)
+  {
+    QCString fileId = getVarName(tf.node);
+    QCString fileName = htmlOutput+"/"+fileId+".js";
+    std::ofstream ff = Portable::openOutputStream(fileName);
+    if (ff.is_open())
+    {
+      bool firstChild = true;
+      TextStream tt(&ff);
+      tt << "var " << convertFileId2Var(fileId) << " =\n";
+      generateJSTree(navIndex,tt,tf.node->children,1,firstChild);
+      tt << "\n];";
+    }
+  };
+
+  JSTreeFiles jsTreeFiles;
+  collectJSTreeFiles(nodeList,jsTreeFiles);
+
+  std::size_t numThreads = static_cast<std::size_t>(Config_getInt(NUM_PROC_THREADS));
+  if (numThreads>1) // multi threaded version
+  {
+    ThreadPool threadPool(numThreads);
+    std::vector< std::future<void> > results;
+    for (const auto &tf : jsTreeFiles)
+    {
+      results.emplace_back(threadPool.queue([&](){ generateJSFile(tf); }));
+    }
+    // wait for the results
+    for (auto &f : results) f.get();
+  }
+  else // single threaded version
+  {
+    for (const auto &tf : jsTreeFiles)
+    {
+      generateJSFile(tf);
+    }
+  }
 }
 
 static void generateJSNavTree(const FTVNodes &nodeList)
@@ -678,6 +763,7 @@ static void generateJSNavTree(const FTVNodes &nodeList)
 
     bool first=TRUE;
     generateJSTree(navIndex,t,nodeList,1,first);
+    generateJSTreeFiles(navIndex,t,nodeList);
 
     if (first)
       t << "]\n";
@@ -751,10 +837,12 @@ void FTVHelp::generateTreeViewImages()
 {
   QCString dname=Config_getString(HTML_OUTPUT);
   const ResourceMgr &rm = ResourceMgr::instance();
-  rm.copyResource("doc.luma",dname);
-  rm.copyResource("docd.luma",dname);
-  rm.copyResource("folderopen.luma",dname);
-  rm.copyResource("folderclosed.luma",dname);
+  rm.copyResource("doc.svg",dname);
+  rm.copyResource("docd.svg",dname);
+  rm.copyResource("folderopen.svg",dname);
+  rm.copyResource("folderopend.svg",dname);
+  rm.copyResource("folderclosed.svg",dname);
+  rm.copyResource("folderclosedd.svg",dname);
   rm.copyResource("splitbar.lum",dname);
   rm.copyResource("splitbard.lum",dname);
 }

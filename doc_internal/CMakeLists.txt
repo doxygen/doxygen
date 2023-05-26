@@ -21,6 +21,26 @@ endif()
 
 configure_file(${CMAKE_SOURCE_DIR}/doc_internal/Doxyfile.in "${CMAKE_CURRENT_BINARY_DIR}/Doxyfile" @ONLY)
 
+set(DOC_FILES
+        language.tpl
+        maintainers.txt
+        translator.py
+)
+
+if (${CMAKE_VERSION} VERSION_EQUAL "3.11.0" OR ${CMAKE_VERSION} VERSION_GREATER "3.11.0")
+    file(GLOB LANG_FILES CONFIGURE_DEPENDS "${TOP}/src//translator_??.h")
+else()
+    file(GLOB LANG_FILES "${TOP}/src//translator_??.h")
+endif()
+
+foreach (f  ${DOC_FILES})
+add_custom_command(OUTPUT ${PROJECT_BINARY_DIR}/doc_internal/${f}
+    COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/doc/${f} ${PROJECT_BINARY_DIR}/doc_internal/
+    DEPENDS ${PROJECT_SOURCE_DIR}/doc/${f}
+    )
+set_source_files_properties(${PROJECT_BINARY_DIR}/doc_internal/${f} PROPERTIES GENERATED 1)
+endforeach()
+
 add_custom_command(
     COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/doc_internal/cmds_tags.py -cmds ${CMAKE_SOURCE_DIR}/doc_internal ${CMAKE_SOURCE_DIR}/doc_internal/commands_history.md ${PROJECT_BINARY_DIR}/doc_internal/commands_history.md
     DEPENDS ${CMAKE_CURRENT_LIST_DIR}/cmds_tags.py ${CMAKE_SOURCE_DIR}/doc_internal/commands_history.md
@@ -33,10 +53,18 @@ add_custom_command(
     OUTPUT ${PROJECT_BINARY_DIR}/doc_internal/tags_history.md
 )
 
+add_custom_command(
+        COMMAND ${PYTHON_EXECUTABLE} translator.py --doc_internal ${PROJECT_SOURCE_DIR}
+        DEPENDS ${PROJECT_SOURCE_DIR}/VERSION ${PROJECT_SOURCE_DIR}/doc/maintainers.txt ${PROJECT_SOURCE_DIR}/doc/language.tpl ${PROJECT_BINARY_DIR}/doc_internal/translator.py ${LANG_FILES}
+        OUTPUT translator_report.md
+        WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/doc_internal
+)
+
 add_custom_target(docs_internal
         COMMENT "Generating HTML internal documentation."
         COMMAND ${CMAKE_COMMAND} -E env VERSION=${VERSION} ${DOXYGEN_EXECUTABLE}
         DEPENDS doxygen
         DEPENDS ${PROJECT_BINARY_DIR}/doc_internal/commands_history.md
         DEPENDS ${PROJECT_BINARY_DIR}/doc_internal/tags_history.md
+        DEPENDS ${PROJECT_BINARY_DIR}/doc_internal/translator_report.md
         )

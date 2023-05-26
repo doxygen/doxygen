@@ -492,7 +492,7 @@ int main(int argc,char **argv) {
     if (strcmp(argv[i], "-") == 0) {
       char filename[1024];
       while (1) {
-        scanf("%s[^\n]", filename);
+        (void)scanf("%s[^\n]", filename);
         if (feof(stdin)) {
           break;
         }
@@ -530,7 +530,7 @@ int main(int argc,char **argv) {
 
   std::string cleanup_command = "rm -rf ";
   cleanup_command += tmpdir.str();
-  system(cleanup_command.c_str());
+  (void)system(cleanup_command.c_str());
 
   exit(0);
 }

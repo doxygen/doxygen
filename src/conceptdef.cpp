@@ -84,11 +84,11 @@ class ConceptDefImpl : public DefinitionMixin<ConceptDefMutable>
     int                          m_groupId = -1;
 };
 
-ConceptDefMutable *createConceptDef(
+std::unique_ptr<ConceptDef> createConceptDef(
              const QCString &fileName,int startLine,int startColumn,
              const QCString &name, const QCString &tagRef,const QCString &tagFile)
 {
-  return new ConceptDefImpl(fileName,startLine,startColumn,name,tagRef,tagFile);
+  return std::make_unique<ConceptDefImpl>(fileName,startLine,startColumn,name,tagRef,tagFile);
 }
 
 //------------------------------------------------------------------------------------
@@ -141,10 +141,9 @@ class ConceptDefAliasImpl : public DefinitionAliasMixin<ConceptDef>
     { return getCdAlias()->groupId(); }
 };
 
-ConceptDef *createConceptDefAlias(const Definition *newScope,const ConceptDef *cd)
+std::unique_ptr<ConceptDef> createConceptDefAlias(const Definition *newScope,const ConceptDef *cd)
 {
-  ConceptDef *acd = new ConceptDefAliasImpl(newScope,cd);
-  return acd;
+  return std::make_unique<ConceptDefAliasImpl>(newScope,cd);
 }
 
 //------------------------------------------------------------------------------------

@@ -289,8 +289,7 @@ void loadEnvironment()
       {                                               // ...which has to contain an equal sign as delimiter by definition
         std::string name = env_var.substr(0,pos);     // the string til the equal sign contains the name
         std::string value = env_var.substr(pos + 1);  // the string from the equal sign contains the value
-
-        proc_env[name] = value;                       // save the value by the name as its key in the classes map
+        proc_env[name] = std::move(value);            // save the value by the name as its key in the classes map
       }
       i++;
       current = environ[i];
@@ -501,15 +500,6 @@ int Portable::pclose(FILE *stream)
   #else
   return ::pclose(stream);
   #endif
-}
-
-void Portable::sleep(int ms)
-{
-#if defined(_WIN32) && !defined(__CYGWIN__)
-  Sleep(ms);
-#else
-  usleep(1000*ms);
-#endif
 }
 
 bool Portable::isAbsolutePath(const QCString &fileName)

@@ -81,6 +81,7 @@ struct xmlcodeYY_state
 
   QCString      CurrScope;
 
+  std::unique_ptr<FileDef> exampleFileDef;
   const FileDef *     sourceFileDef = 0;
   const Definition *  currentDefinition = 0;
   const MemberDef *   currentMemberDef = 0;
@@ -121,6 +122,7 @@ namechar    [:A-Za-z\200-\377_0-9.-]
 esc         "&#"[0-9]+";"|"&#x"[0-9a-fA-F]+";"
 name        {namestart}{namechar}*
 comment     {open}"!--"([^-]|"-"[^-])*"--"{close}
+cdata       {open}"![CDATA["([^\]]|"\]"[^\]])*"]]"{close}
 data        "random string"
 string      \"([^"&]|{esc})*\"|\'([^'&]|{esc})*\'
 
@@ -151,6 +153,11 @@ string      \"([^"&]|{esc})*\"|\'([^'&]|{esc})*\'
                     }
 <INITIAL>{string}   {
                         startFontClass(yyscanner,"stringliteral");
+                        codifyLines(yyscanner,yytext);
+                        endFontClass(yyscanner);
+                    }
+{cdata}             {
+                        startFontClass(yyscanner,"xmlcdata");
                         codifyLines(yyscanner,yytext);
                         endFontClass(yyscanner);
                     }
@@ -458,13 +465,11 @@ void XMLCodeParser::parseCode(OutputCodeList &codeOutIntf,
   yyextra->exampleName   = exampleName;
   yyextra->sourceFileDef = fileDef;
 
-  bool cleanupSourceDef = false;
-
   if (isExampleBlock && fileDef==0)
   {
     // create a dummy filedef for the example
-    yyextra->sourceFileDef = createFileDef("",(!exampleName.isEmpty()?exampleName:QCString("generated")));
-    cleanupSourceDef = true;
+    yyextra->exampleFileDef = createFileDef("",(!exampleName.isEmpty()?exampleName:QCString("generated")));
+    yyextra->sourceFileDef = yyextra->exampleFileDef.get();
   }
 
   if (yyextra->sourceFileDef)
@@ -484,10 +489,10 @@ void XMLCodeParser::parseCode(OutputCodeList &codeOutIntf,
   {
     endCodeLine(yyscanner);
   }
-  if (cleanupSourceDef)
+  if (yyextra->exampleFileDef)
   {
     // delete the temporary file definition used for this example
-    delete yyextra->sourceFileDef;
+    yyextra->exampleFileDef.reset();
     yyextra->sourceFileDef=0;
   }
 }

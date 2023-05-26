@@ -62,7 +62,7 @@ void DocParser::pushContext()
   auto &ctx = contextStack.top();
   ctx = context;
   ctx.lineNo = tokenizer.getLineNr();
-  context.token = tokenizer.newToken();
+  context.token = tokenizer.token();
 }
 
 void DocParser::popContext()
@@ -70,10 +70,9 @@ void DocParser::popContext()
   auto &ctx = contextStack.top();
   context = ctx;
   tokenizer.setLineNr(ctx.lineNo);
-  context.token = ctx.token;
-  tokenizer.replaceToken(context.token);
   contextStack.pop();
   tokenizer.popContext();
+  context.token = tokenizer.token();
 
   //QCString indent;
   //indent.fill(' ',contextStack.size()*2+2);
@@ -1788,7 +1787,7 @@ static uint32_t skipToEndMarker(const char *data,uint32_t i,uint32_t len,const Q
 }
 
 
-QCString DocParser::processCopyDoc(const char *data,uint32_t &len)
+QCString DocParser::processCopyDoc(const char *data,size_t &len)
 {
   AUTO_TRACE("data={} len={}",Trace::trunc(data),len);
   GrowBuf buf;
@@ -1818,19 +1817,28 @@ QCString DocParser::processCopyDoc(const char *data,uint32_t &len)
           {
             QCString orgFileName = context.fileName;
             context.copyStack.push_back(def);
+            auto addDocs = [&](const QCString &file_,int line_,const QCString &doc_)
+            {
+              buf.addStr(" \\ilinebr\\ifile \""+file_+"\" ");
+              buf.addStr("\\iline "+QCString().setNum(line_)+" ");
+              size_t len_ = doc_.length();
+              buf.addStr(processCopyDoc(doc_.data(),len_));
+            };
             if (isBrief)
             {
-              buf.addStr(" \\ilinebr\\ifile \""+QCString(def->briefFile())+"\" ");
-              buf.addStr("\\iline "+QCString().setNum(def->briefLine())+" ");
-              uint32_t l=static_cast<uint32_t>(brief.length());
-              buf.addStr(processCopyDoc(brief.data(),l));
+              addDocs(def->briefFile(),def->briefLine(),brief);
             }
             else
             {
-              buf.addStr(" \\ilinebr\\ifile \""+QCString(def->docFile())+"\" ");
-              buf.addStr("\\iline "+QCString().setNum(def->docLine())+" ");
-              uint32_t l=static_cast<uint32_t>(doc.length());
-              buf.addStr(processCopyDoc(doc.data(),l));
+              addDocs(def->docFile(),def->docLine(),doc);
+              if (def->definitionType()==Definition::TypeMember)
+              {
+                const MemberDef *md = toMemberDef(def);
+                const ArgumentList &docArgList = md->templateMaster() ?
+                    md->templateMaster()->argumentList() :
+                    md->argumentList();
+                buf.addStr(inlineArgListToDoc(docArgList));
+              }
             }
             context.copyStack.pop_back();
             buf.addStr(" \\ilinebr\\ifile \""+context.fileName+"\" ");
@@ -1904,7 +1912,7 @@ IDocNodeASTPtr validatingParseDoc(IDocParser &parserIntf,
   //printf("---------------- input --------------------\n%s\n----------- end input -------------------\n",qPrint(input));
 
   // set initial token
-  parser->context.token = parser->tokenizer.newToken();
+  parser->context.token = parser->tokenizer.resetToken();
 
   if (ctx && ctx!=Doxygen::globalScope &&
       (ctx->definitionType()==Definition::TypeClass ||
@@ -1973,7 +1981,7 @@ IDocNodeASTPtr validatingParseDoc(IDocParser &parserIntf,
 
   //printf("Starting comment block at %s:%d\n",qPrint(parser->context.fileName),startLine);
   parser->tokenizer.setLineNr(startLine);
-  uint32_t ioLen = static_cast<uint32_t>(input.length());
+  size_t ioLen = input.length();
   QCString inpStr = parser->processCopyDoc(input.data(),ioLen);
   if (inpStr.isEmpty() || inpStr.at(inpStr.length()-1)!='\n')
   {
@@ -1999,13 +2007,8 @@ IDocNodeASTPtr validatingParseDoc(IDocParser &parserIntf,
   }
   if (parser->context.memberDef) parser->context.memberDef->detectUndocumentedParams(parser->context.hasParamCommand,parser->context.hasReturnCommand);
 
-  // TODO: These should be called at the end of the program.
-  //parser->tokenizer.cleanup();
-  //Mappers::cmdMapper->freeInstance();
-  //Mappers::htmlTagMapper->freeInstance();
-
   // reset token
-  parser->tokenizer.replaceToken(0);
+  parser->tokenizer.resetToken();
 
   //printf(">>>>>> end validatingParseDoc(%s,%s)\n",ctx?qPrint(ctx->name()):"<none>",
   //                                     md?qPrint(md->name()):"<none>");
@@ -2020,7 +2023,7 @@ IDocNodeASTPtr validatingParseText(IDocParser &parserIntf,const QCString &input)
   if (parser==0) return 0;
 
   // set initial token
-  parser->context.token = parser->tokenizer.newToken();
+  parser->context.token = parser->tokenizer.resetToken();
 
   //printf("------------ input ---------\n%s\n"
   //       "------------ end input -----\n",input);
@@ -2066,8 +2069,6 @@ IDocNodeASTPtr validatingParseText(IDocParser &parserIntf,const QCString &input)
     }
   }
 
-  // reset token
-  parser->tokenizer.replaceToken(0);
   return ast;
 }
 

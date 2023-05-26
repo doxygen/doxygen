@@ -54,11 +54,35 @@
 
 //-----------------------------------------------------------------------------------------
 
+//! Helper class add copy/assignment support to std::unique_ptr by making a deep copy
+//! Note that T may not be a polymorphic type
+template<class T>
+class DeepCopyUniquePtr : public std::unique_ptr<T>
+{
+  public:
+    using std::unique_ptr<T>::unique_ptr;
+    DeepCopyUniquePtr(const DeepCopyUniquePtr &other)
+       : std::unique_ptr<T>(other ? new T(*other) : nullptr)
+    {
+    }
+    DeepCopyUniquePtr &operator=(const DeepCopyUniquePtr &other)
+    {
+      if (*this!=other) this->reset(other ? new T(*other) : nullptr);
+      return *this;
+    }
+};
+
+//! Helper to create an object wrapped in a DeepCopyUniquePtr.
+template<typename T, typename... Args>
+DeepCopyUniquePtr<T> make_DeepCopyUnique(Args&&... args)
+{
+  return DeepCopyUniquePtr<T>(new T(std::forward<Args>(args)...));
+}
+
 /** Private data associated with a Symbol DefinitionImpl object. */
 class DefinitionImpl::IMPL
 {
   public:
-   ~IMPL();
     void init(const QCString &df, const QCString &n);
     void setDefFileName(const QCString &df);
 
@@ -71,10 +95,10 @@ class DefinitionImpl::IMPL
     RefItemVector xrefListItems;
     GroupList partOfGroups;
 
-    DocInfo   *details = 0;    // not exported
-    DocInfo   *inbodyDocs = 0; // not exported
-    BriefInfo *brief = 0;      // not exported
-    BodyInfo  *body = 0;       // not exported
+    DeepCopyUniquePtr<DocInfo>   details;    // not exported
+    DeepCopyUniquePtr<DocInfo>   inbodyDocs; // not exported
+    DeepCopyUniquePtr<BriefInfo> brief;      // not exported
+    DeepCopyUniquePtr<BodyInfo>  body;       // not exported
     QCString   briefSignatures;
     QCString   docSignatures;
 
@@ -108,14 +132,6 @@ class DefinitionImpl::IMPL
 };
 
 
-DefinitionImpl::IMPL::~IMPL()
-{
-  delete brief;
-  delete details;
-  delete body;
-  delete inbodyDocs;
-}
-
 void DefinitionImpl::IMPL::setDefFileName(const QCString &df)
 {
   defFileName = df;
@@ -141,10 +157,10 @@ void DefinitionImpl::IMPL::init(const QCString &df, const QCString &n)
   }
   //printf("localName=%s\n",qPrint(localName));
 
-  brief           = 0;
-  details         = 0;
-  body            = 0;
-  inbodyDocs      = 0;
+  brief.reset();
+  details.reset();
+  body.reset();
+  inbodyDocs.reset();
   sourceRefByDict.clear();
   sourceRefsDict.clear();
   outerScope      = Doxygen::globalScope;
@@ -241,8 +257,8 @@ DefinitionImpl::DefinitionImpl(Definition *def,
                        const QCString &df,int dl,int dc,
                        const QCString &name,const char *b,
                        const char *d,bool isSymbol)
+  : m_impl(std::make_unique<DefinitionImpl::IMPL>())
 {
-  m_impl = new DefinitionImpl::IMPL;
   setName(name);
   m_impl->def = def;
   m_impl->defLine = dl;
@@ -259,30 +275,8 @@ DefinitionImpl::DefinitionImpl(Definition *def,
 }
 
 DefinitionImpl::DefinitionImpl(const DefinitionImpl &d)
+  : m_impl(std::make_unique<DefinitionImpl::IMPL>(*d.m_impl))
 {
-  m_impl = new DefinitionImpl::IMPL;
-  *m_impl = *d.m_impl;
-  m_impl->brief = 0;
-  m_impl->details = 0;
-  m_impl->body = 0;
-  m_impl->inbodyDocs = 0;
-  if (d.m_impl->brief)
-  {
-    m_impl->brief = new BriefInfo(*d.m_impl->brief);
-  }
-  if (d.m_impl->details)
-  {
-    m_impl->details = new DocInfo(*d.m_impl->details);
-  }
-  if (d.m_impl->body)
-  {
-    m_impl->body = new BodyInfo(*d.m_impl->body);
-  }
-  if (d.m_impl->inbodyDocs)
-  {
-    m_impl->inbodyDocs = new DocInfo(*d.m_impl->inbodyDocs);
-  }
-
   if (m_impl->isSymbol) addToMap(m_impl->name,m_impl->def);
 }
 
@@ -292,8 +286,6 @@ DefinitionImpl::~DefinitionImpl()
   {
     removeFromMap(m_impl->symbolName,m_impl->def);
   }
-  delete m_impl;
-  m_impl=0;
 }
 
 void DefinitionImpl::setName(const QCString &name)
@@ -471,9 +463,9 @@ void DefinitionImpl::_setDocumentation(const QCString &d,const QCString &docFile
   if (!_docsAlreadyAdded(doc,m_impl->docSignatures))
   {
     //printf("setting docs for %s: '%s'\n",qPrint(name()),qPrint(m_doc));
-    if (m_impl->details==0)
+    if (!m_impl->details)
     {
-      m_impl->details = new DocInfo;
+      m_impl->details = make_DeepCopyUnique<DocInfo>();
     }
     if (m_impl->details->doc.isEmpty()) // fresh detailed description
     {
@@ -539,9 +531,9 @@ void DefinitionImpl::_setBriefDescription(const QCString &b,const QCString &brie
     else
     {
       //fprintf(stderr,"DefinitionImpl::setBriefDescription(%s,%s,%d)\n",b,briefFile,briefLine);
-      if (m_impl->brief==0)
+      if (!m_impl->brief)
       {
-        m_impl->brief = new BriefInfo;
+        m_impl->brief = make_DeepCopyUnique<BriefInfo>();
       }
       m_impl->brief->doc=brief;
       if (briefLine!=-1)
@@ -570,9 +562,9 @@ void DefinitionImpl::setBriefDescription(const QCString &b,const QCString &brief
 
 void DefinitionImpl::_setInbodyDocumentation(const QCString &doc,const QCString &inbodyFile,int inbodyLine)
 {
-  if (m_impl->inbodyDocs==0)
+  if (!m_impl->inbodyDocs)
   {
-    m_impl->inbodyDocs = new DocInfo;
+    m_impl->inbodyDocs = make_DeepCopyUnique<DocInfo>();
   }
   if (m_impl->inbodyDocs->doc.isEmpty()) // fresh inbody docs
   {
@@ -747,13 +739,16 @@ class FilterCache
     }
 
     //! Returns the byte offset and size within a file of a fragment given the array of
-    //! line offsets and the start emd end line of the fragment.
+    //! line offsets and the start and end line of the fragment.
     auto getFragmentLocation(const LineOffsets &lineOffsets,
                              size_t startLine,size_t endLine) -> std::tuple<size_t,size_t>
     {
-      size_t startLineOffset = lineOffsets[std::min(startLine-1,lineOffsets.size()-1)];
-      size_t endLineOffset   = lineOffsets[std::min(endLine,    lineOffsets.size()-1)];
-      size_t fragmentSize = endLineOffset-startLineOffset;
+      assert(startLine > 0);
+      assert(startLine <= endLine);
+      const size_t startLineOffset = lineOffsets[std::min(startLine-1,lineOffsets.size()-1)];
+      const size_t endLineOffset   = lineOffsets[std::min(endLine,    lineOffsets.size()-1)];
+      assert(startLineOffset <= endLineOffset);
+      const size_t fragmentSize = endLineOffset-startLineOffset;
       return std::tie(startLineOffset,fragmentSize);
     };
 
@@ -826,8 +821,8 @@ bool readCodeFragment(const QCString &fileName,
   const int blockSize = 4096;
   BufStr str(blockSize);
   FilterCache::instance().getFileContents(fileName,
-                                          static_cast<size_t>(startLine),
-                                          static_cast<size_t>(endLine),str);
+                                          static_cast<size_t>(std::max(1,startLine)),
+                                          static_cast<size_t>(std::max({1,startLine,endLine})),str);
   //printf("readCodeFragment(%s,startLine=%d,endLine=%d)=\n[[[\n%s]]]\n",qPrint(fileName),startLine,endLine,qPrint(str));
 
   bool found = lang==SrcLangExt_VHDL   ||
@@ -1032,7 +1027,7 @@ void DefinitionImpl::writeSourceDef(OutputList &ol,const QCString &) const
 void DefinitionImpl::setBodySegment(int defLine, int bls,int ble)
 {
   //printf("setBodySegment(%d,%d) for %s\n",bls,ble,qPrint(name()));
-  if (m_impl->body==0) m_impl->body = new BodyInfo;
+  if (!m_impl->body) m_impl->body = make_DeepCopyUnique<BodyInfo>();
   m_impl->body->defLine   = defLine;
   m_impl->body->startLine = bls;
   m_impl->body->endLine   = ble;
@@ -1040,7 +1035,7 @@ void DefinitionImpl::setBodySegment(int defLine, int bls,int ble)
 
 void DefinitionImpl::setBodyDef(const FileDef *fd)
 {
-  if (m_impl->body==0) m_impl->body = new BodyInfo;
+  if (!m_impl->body) m_impl->body = make_DeepCopyUnique<BodyInfo>();
   m_impl->body->fileDef=fd;
 }
 

@@ -302,7 +302,7 @@ int main(int argc,char **argv)
   while (1)
   {
     printf("> Type a symbol name or\n> .list for a list of symbols or\n> .quit to exit\n> ");
-    fgets(cmd,256,stdin);
+    (void)fgets(cmd,256,stdin);
     QCString s(cmd);
     if (s.at(s.length()-1)=='\n') s=s.left(s.length()-1); // strip trailing \n
     if (s==".list")

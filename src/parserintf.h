@@ -147,7 +147,7 @@ class ParserManager
 
     struct ParserPair
     {
-      ParserPair(OutlineParserFactory opf, CodeParserFactory cpf, const QCString &pn)
+      ParserPair(OutlineParserFactory opf, const CodeParserFactory &cpf, const QCString &pn)
         : outlineParserFactory(opf), codeParserFactory(cpf), parserName(pn)
       {
       }
@@ -162,8 +162,8 @@ class ParserManager
      *  @param outlineParserFactory the fallback outline parser factory to use for unknown extensions
      *  @param codeParserFactory    the fallback code parser factory to use for unknown extensions
      */
-    ParserManager(OutlineParserFactory outlineParserFactory,
-                  CodeParserFactory    codeParserFactory)
+    ParserManager(const OutlineParserFactory &outlineParserFactory,
+                  const CodeParserFactory    &codeParserFactory)
       : m_defaultParsers(outlineParserFactory,codeParserFactory, QCString())
     {
     }
@@ -176,8 +176,8 @@ class ParserManager
      *  @param[in] codeParserFactory    A factory method to create a code parser that is to be used
      *                           for the given name.
      */
-    void registerParser(const QCString &name,OutlineParserFactory outlineParserFactory,
-                                         CodeParserFactory    codeParserFactory)
+    void registerParser(const QCString &name,const OutlineParserFactory &outlineParserFactory,
+                                             const CodeParserFactory    &codeParserFactory)
     {
       m_parsers.emplace(name.str(),ParserPair(outlineParserFactory,codeParserFactory,name));
     }

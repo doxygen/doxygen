@@ -1075,8 +1075,7 @@ bool VhdlDocGen::deleteCharRev(QCString &s,char c)
   int index=s.findRev(c,-1,FALSE);
   if (index > -1)
   {
-    QCString qcs=s.remove(index,1);
-    s=qcs;
+    s = s.remove(index,1);
     return TRUE;
   }
   return FALSE;
@@ -1087,8 +1086,7 @@ void VhdlDocGen::deleteAllChars(QCString &s,char c)
   int index=s.findRev(c,-1,FALSE);
   while (index > -1)
   {
-    QCString qcs=s.remove(index,1);
-    s=qcs;
+    s = s.remove(index,1);
     index=s.findRev(c,-1,FALSE);
   }
 }
@@ -1337,7 +1335,7 @@ void VhdlDocGen::writeFunctionProto(OutputList& ol,const ArgumentList &al,const 
   {
     ol.startBold();
     QCString att=arg.defval;
-    bool bGen=att.stripPrefix("gen!");
+     bool bGen=att.stripPrefix("generic");
 
     if (sem && len < 3)
     {
@@ -1449,12 +1447,13 @@ bool VhdlDocGen::writeFuncProcDocu(
     ol.startParameterType(first,"");
     //   if (first) ol.writeChar('(');
     QCString attl=arg.defval;
-    bool bGen=attl.stripPrefix("gen!");
-    if (bGen)
-      VhdlDocGen::writeFormatString(QCString("generic "),ol,md);
+    
+    //bool bGen=attl.stripPrefix("generic");
+    //if (bGen)
+    //  VhdlDocGen::writeFormatString(QCString("generic "),ol,md);
 
 
-    if (VhdlDocGen::isProcedure(md))
+    if (VhdlDocGen::isProcedure(md) || VhdlDocGen::isVhdlFunction(md) )
     {
       startFonts(arg.defval,"keywordtype",ol);
       ol.docify(" ");
@@ -2023,7 +2022,6 @@ void VhdlDocGen::writeVHDLDeclaration(const MemberDefMutable* mdef,OutputList &o
     {
       ol.pushGeneratorState();
       ol.disableAllBut(OutputType::Html);
-      //ol.endEmphasis();
       ol.docify(" ");
       if (mdef->getGroupDef()!=0 && gd==0) // forward link to the group
       {
@@ -2034,10 +2032,8 @@ void VhdlDocGen::writeVHDLDeclaration(const MemberDefMutable* mdef,OutputList &o
         ol.startTextLink(QCString(),mdef->anchor());
       }
       ol.endTextLink();
-      //ol.startEmphasis();
       ol.popGeneratorState();
     }
-    //ol.newParagraph();
     ol.endMemberDescription();
   }
   mdef->warnIfUndocumented();
@@ -2246,7 +2242,7 @@ void VhdlDocGen::writeSource(const MemberDefMutable *mdef,OutputList& ol,const Q
 
 
 
-QCString VhdlDocGen::convertFileNameToClassName(QCString name)
+QCString VhdlDocGen::convertFileNameToClassName(const QCString &name)
 {
 
   QCString n=name;
@@ -2579,7 +2575,7 @@ static void addInstance(ClassDefMutable* classEntity, ClassDefMutable* ar,
 
 ferr:
   QCString uu=cur->name;
-  std::unique_ptr<MemberDefMutable> md { createMemberDef(
+  auto md = createMemberDef(
       ar->getDefFileName(), cur->startLine,cur->startColumn,
       n1,uu,uu, QCString(),
       Protection::Public,
@@ -2589,7 +2585,8 @@ ferr:
       MemberType_Variable,
       ArgumentList(),
       ArgumentList(),
-      "") };
+      "");
+  auto mmd = toMemberDefMutable(md.get());
 
   if (!ar->getOutputFileBase().isEmpty())
   {
@@ -2597,18 +2594,18 @@ ferr:
     tg.anchor = 0;
     tg.fileName = ar->getOutputFileBase();
     tg.tagName = 0;
-    md->setTagInfo(&tg);
+    mmd->setTagInfo(&tg);
   }
 
   //fprintf(stderr,"\n%s%s%s\n",qPrint(md->name()),qPrint(cur->brief),qPrint(cur->doc));
 
-  md->setLanguage(SrcLangExt_VHDL);
-  md->setMemberSpecifiers(VhdlDocGen::INSTANTIATION);
-  md->setBriefDescription(cur->brief,cur->briefFile,cur->briefLine);
-  md->setBodySegment(cur->startLine,cur->startLine,-1) ;
-  md->setDocumentation(cur->doc,cur->docFile,cur->docLine);
+  mmd->setLanguage(SrcLangExt_VHDL);
+  mmd->setMemberSpecifiers(VhdlDocGen::INSTANTIATION);
+  mmd->setBriefDescription(cur->brief,cur->briefFile,cur->briefLine);
+  mmd->setBodySegment(cur->startLine,cur->startLine,-1) ;
+  mmd->setDocumentation(cur->doc,cur->docFile,cur->docLine);
   FileDef *fd=ar->getFileDef();
-  md->setBodyDef(fd);
+  mmd->setBodyDef(fd);
   ar->insertMember(md.get());
   MemberName *mn = Doxygen::functionNameLinkedMap->add(uu);
   mn->push_back(std::move(md));

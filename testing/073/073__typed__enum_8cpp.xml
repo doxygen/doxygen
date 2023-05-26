@@ -77,7 +77,7 @@
       </memberdef>
       <memberdef kind="enum" id="073__typed__enum_8cpp_1a06fc87d81c62e9abb8790b6e5713c55b" prot="public" static="no" strong="no">
         <type/>
-        <name>@0</name>
+        <name/>
         <enumvalue id="073__typed__enum_8cpp_1a06fc87d81c62e9abb8790b6e5713c55ba52c998ad250c15a855ff5559e6d0d1d6" prot="public">
           <name>Unnamed1</name>
           <briefdescription>
@@ -95,7 +95,7 @@
       </memberdef>
       <memberdef kind="enum" id="073__typed__enum_8cpp_1adf764cbdea00d65edcd07bb9953ad2b7" prot="public" static="no" strong="no">
         <type/>
-        <name>@1</name>
+        <name/>
         <enumvalue id="073__typed__enum_8cpp_1adf764cbdea00d65edcd07bb9953ad2b7a7b130af0c5cb18bfee8c60994fe1d5ee" prot="public">
           <name>Unnamed2</name>
           <briefdescription>

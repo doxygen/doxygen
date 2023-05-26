@@ -2209,7 +2209,7 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
             { "isReference",       TemplateVariant(FALSE)     },
             { "externalReference", TemplateVariant("")        }
           });
-          list.push_back(s);
+          list.push_back(std::move(s));
         }
       }
       return TemplateImmutableList::alloc(list);
@@ -4153,7 +4153,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
             { "isReference",      TemplateVariant(FALSE)     },
             { "externalReference",TemplateVariant("")        }
           });
-          list.push_back(s);
+          list.push_back(std::move(s));
         }
       }
       return TemplateImmutableList::alloc(list);
@@ -8754,9 +8754,9 @@ class SymbolIndicesContext::Private : public GenericNodeListContext
     Private(const SearchIndexInfo &info)
     {
       // use info->symbolList to populate the list
-      for (const auto &kv : info.symbolMap)
+      for (const auto &[symName,symList] : info.symbolMap)
       {
-        append(SymbolIndexContext::alloc(kv.first,kv.second,info.name));
+        append(SymbolIndexContext::alloc(symName,symList,info.name));
       }
     }
 };
@@ -9112,7 +9112,7 @@ void generateOutputViaTemplate()
       else
       {
         // TODO: for LaTeX output index should be main... => solve in template
-        Doxygen::mainPage.reset(createPageDef("[generated]",1,"index","",Config_getString(PROJECT_NAME)));
+        Doxygen::mainPage = createPageDef("[generated]",1,"index","",Config_getString(PROJECT_NAME));
         Doxygen::mainPage->setFileName("index");
         TemplateStructIntfPtr mainPage = PageContext::alloc(Doxygen::mainPage.get(),TRUE,FALSE);
         ctx->set("mainPage",mainPage);

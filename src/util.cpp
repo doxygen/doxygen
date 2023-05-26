@@ -358,6 +358,10 @@ int guessSection(const QCString &name)
       return Entry::HEADER_SEC;
     }
   }
+  else
+  {
+    if (getLanguageFromFileName(name,SrcLangExt_Unknown) == SrcLangExt_Cpp) return Entry::HEADER_SEC;
+  }
   return 0;
 }
 
@@ -1142,6 +1146,24 @@ void writeExamples(OutputList &ol,const ExampleList &list)
   ol.writeString(".");
 }
 
+
+QCString inlineArgListToDoc(const ArgumentList &al)
+{
+  QCString paramDocs;
+  if (al.hasDocumentation())
+  {
+    for (const Argument &a : al)
+    {
+      if (a.hasDocumentation())
+      {
+        QCString docsWithoutDir = a.docs;
+        QCString direction = extractDirection(docsWithoutDir);
+        paramDocs+=" \\ilinebr @param"+direction+" "+a.name+" "+docsWithoutDir;
+      }
+    }
+  }
+  return paramDocs;
+}
 
 QCString argListToString(const ArgumentList &al,bool useCanonicalType,bool showDefVals)
 {
@@ -3228,7 +3250,6 @@ FileDef *findFileDef(const FileNameLinkedMap *fnMap,const QCString &n,bool &ambi
   ambig=FALSE;
   if (n.isEmpty()) return 0;
 
-  std::lock_guard<std::mutex> lock(g_findFileDefMutex);
 
   const int maxAddrSize = 20;
   char addr[maxAddrSize];
@@ -3236,6 +3257,7 @@ FileDef *findFileDef(const FileNameLinkedMap *fnMap,const QCString &n,bool &ambi
   QCString key = addr;
   key+=n;
 
+  std::lock_guard<std::mutex> lock(g_findFileDefMutex);
   FindFileCacheElem *cachedResult = g_findFileDefCache.find(key.str());
   //printf("key=%s cachedResult=%p\n",qPrint(key),cachedResult);
   if (cachedResult)
@@ -3252,16 +3274,16 @@ FileDef *findFileDef(const FileNameLinkedMap *fnMap,const QCString &n,bool &ambi
   QCString name=Dir::cleanDirPath(n.str());
   QCString path;
   int slashPos;
-  const FileName *fn;
-  if (name.isEmpty()) goto exit;
+  if (name.isEmpty()) return 0;
   slashPos=std::max(name.findRev('/'),name.findRev('\\'));
   if (slashPos!=-1)
   {
     path=name.left(slashPos+1);
     name=name.right(name.length()-slashPos-1);
   }
-  if (name.isEmpty()) goto exit;
-  if ((fn=fnMap->find(name)))
+  if (name.isEmpty()) return 0;
+  const FileName *fn = fnMap->find(name);
+  if (fn)
   {
     //printf("fn->size()=%zu\n",fn->size());
     if (fn->size()==1)
@@ -3302,8 +3324,6 @@ FileDef *findFileDef(const FileNameLinkedMap *fnMap,const QCString &n,bool &ambi
   {
     //printf("not found!\n");
   }
-exit:
-  //delete cachedResult;
   return 0;
 }
 
@@ -3355,8 +3375,36 @@ QCString substituteKeywords(const QCString &s,const KeywordSubstitutionList &key
           size_t keyLen = qstrlen(kw.keyword);
           if (qstrncmp(p,kw.keyword,keyLen)==0)
           {
-            substRes+=kw.getValue().str();
-            p+=keyLen;
+            const char *startArg = p+keyLen;
+            bool expectParam = std::holds_alternative<KeywordSubstitution::GetValueWithParam>(kw.getValueVariant);
+            //printf("%s: expectParam=%d *startArg=%c\n",kw.keyword,expectParam,*startArg);
+            if (expectParam && *startArg=='(') // $key(value)
+            {
+              size_t j=1;
+              const char *endArg = 0;
+              while ((c=*(startArg+j)) && c!=')' && c!='\n' && c!=0) j++;
+              if (c==')') endArg=startArg+j;
+              if (endArg)
+              {
+                QCString value = QCString(startArg+1).left(endArg-startArg-1);
+                auto &&getValue = std::get<KeywordSubstitution::GetValueWithParam>(kw.getValueVariant);
+                substRes+=getValue(value).str();
+                p=endArg+1;
+                //printf("found '%s'->'%s'\n",kw.keyword,qPrint(getValue(value)));
+              }
+              else
+              {
+                //printf("missing argument\n");
+                p+=keyLen;
+              }
+            }
+            else if (!expectParam) // $key
+            {
+              auto &&getValue = std::get<KeywordSubstitution::GetValue>(kw.getValueVariant);
+              substRes+=getValue().str();
+              //printf("found '%s'->'%s'\n",kw.keyword,qPrint(getValue()));
+              p+=keyLen;
+            }
             found = true;
             break;
           }
@@ -3370,6 +3418,19 @@ QCString substituteKeywords(const QCString &s,const KeywordSubstitutionList &key
     }
   }
   return substRes;
+}
+
+static QCString showDate(const QCString &fmt)
+{
+   // get the current date and time
+  std::tm dat{};
+  int specFormat=0;
+  QCString specDate = "";
+  QCString err = dateTimeFromString(specDate,dat,specFormat);
+
+  // do the conversion
+  int usedFormat=0;
+  return formatDateTime(fmt,dat,usedFormat);
 }
 
 QCString substituteKeywords(const QCString &s,const QCString &title,
@@ -3388,7 +3449,8 @@ QCString substituteKeywords(const QCString &s,const QCString &title,
     { "$projectnumber", [&]() { return projNum;                                   } },
     { "$projectbrief",  [&]() { return projBrief;                                 } },
     { "$projectlogo",   [&]() { return stripPath(Config_getString(PROJECT_LOGO)); } },
-    { "$langISO",       [&]() { return theTranslator->trISOLang();                } }
+    { "$langISO",       [&]() { return theTranslator->trISOLang();                } },
+    { "$showdate",      [&](const QCString &fmt) { return showDate(fmt);          } }
   });
 }
 
@@ -3532,6 +3594,11 @@ QCString escapeCharsInString(const QCString &name,bool allowDots,bool allowUnder
       case ']': growBuf.addStr("_0e"); break;
       case '[': growBuf.addStr("_0f"); break;
       case '#': growBuf.addStr("_0g"); break;
+      case '"': growBuf.addStr("_0h"); break;
+      case '~': growBuf.addStr("_0i"); break;
+      case '\'': growBuf.addStr("_0j"); break;
+      case ';': growBuf.addStr("_0k"); break;
+      case '`': growBuf.addStr("_0l"); break;
       default:
                 if (c<0)
                 {
@@ -3619,6 +3686,11 @@ QCString unescapeCharsInString(const QCString &s)
                case 'e': result+=']'; p+=2; break; // _0e -> ']'
                case 'f': result+='['; p+=2; break; // _0f -> '['
                case 'g': result+='#'; p+=2; break; // _0g -> '#'
+               case 'h': result+='"'; p+=2; break; // _0h -> '"'
+               case 'i': result+='~'; p+=2; break; // _0i -> '~'
+               case 'j': result+='\''; p+=2; break;// _0j -> '\'
+               case 'k': result+=';'; p+=2; break; // _0k -> ';'
+               case 'l': result+='`'; p+=2; break; // _0l -> '`'
                default: // unknown escape, just pass underscore character as-is
                  result+=c;
                  break;
@@ -4774,8 +4846,7 @@ PageDef *addRelatedPage(const QCString &name,const QCString &ptitle,
     else // newPage
     {
       pd = Doxygen::pageLinkedMap->add(baseName,
-          std::unique_ptr<PageDef>(
-             createPageDef(fileName,docLine,baseName,doc,title)));
+             createPageDef(fileName,docLine,baseName,doc,title));
     }
     pd->setBodySegment(startLine,startLine,-1);
 
@@ -6764,10 +6835,10 @@ bool openOutputFile(const QCString &outFile,std::ofstream &f)
     if (fi.exists()) // create a backup
     {
       Dir dir;
-      FileInfo backup(fi.fileName()+".bak");
+      FileInfo backup(fi.filePath()+".bak");
       if (backup.exists()) // remove existing backup
-        dir.remove(backup.fileName());
-      dir.rename(fi.fileName(),fi.fileName()+".bak");
+        dir.remove(backup.filePath());
+      dir.rename(fi.filePath(),fi.filePath()+".bak");
     }
     f = Portable::openOutputStream(outFile);
     fileOpened = f.is_open();
@@ -6838,88 +6909,183 @@ FortranFormat convertFileNameFortranParserCode(QCString fn)
 }
 //------------------------------------------------------------------------
 
-/// Clear a text block \a s from \a begin to \a end markers
-QCString clearBlock(const QCString &s,const QCString &begin,const QCString &end)
+//! remove disabled blocks and all block markers from \a s and return the result as a string
+QCString selectBlocks(const QCString &s,const SelectionBlockList &blockList,const SelectionMarkerInfo &markerInfo)
 {
-  if (s.isEmpty() || begin.isEmpty() || end.isEmpty()) return s;
-  const char *p, *q;
-  size_t beginLen = begin.length();
-  size_t endLen = end.length();
-  size_t resLen = 0;
-  for (p=s.data(); (q=strstr(p,begin.data()))!=0; p=q+endLen)
+  if (s.isEmpty()) return s;
+
+  // helper to find the end of a block
+  auto skipBlock = [&markerInfo](const char *p,const SelectionBlock &blk)
   {
-    resLen += q-p;
-    p = q+beginLen;
-    if ((q=strstr(p,end.data()))==0)
+    char c;
+    while ((c=*p))
     {
-      resLen+=beginLen;
-      break;
+      if (c==markerInfo.markerChar && qstrncmp(p,markerInfo.endStr,markerInfo.endLen)==0) // end marker
+      {
+        size_t len = markerInfo.endLen;
+        bool negate = *(p+markerInfo.endLen)=='!';
+        if (negate) len++;
+        size_t blkNameLen = qstrlen(blk.name);
+        if (qstrncmp(p+len,blk.name,blkNameLen)==0 &&                                // matching marker name
+            qstrncmp(p+len+blkNameLen,markerInfo.closeStr,markerInfo.closeLen)==0) // matching marker closing
+        {
+          //printf("Found end marker %s enabled=%d negate=%d\n",blk.name,blk.enabled,negate);
+          return p+len+blkNameLen+markerInfo.closeLen;
+        }
+        else // not the right marker id
+        {
+          p++;
+        }
+      }
+      else // not and end marker
+      {
+        p++;
+      }
+    }
+    return p;
+  };
+
+  QCString result;
+  result.reserve(s.length());
+  const char *p = s.data();
+  char c;
+  while ((c=*p))
+  {
+    if (c==markerInfo.markerChar) // potential start of marker
+    {
+      if (qstrncmp(p,markerInfo.beginStr,markerInfo.beginLen)==0) // start of begin marker
+      {
+        bool found = false;
+        size_t len = markerInfo.beginLen;
+        bool negate = *(p+len)=='!';
+        if (negate) len++;
+        for (const auto &blk : blockList)
+        {
+          size_t blkNameLen = qstrlen(blk.name);
+          if (qstrncmp(p+len,blk.name,blkNameLen)==0 &&                                // matching marker name
+              qstrncmp(p+len+blkNameLen,markerInfo.closeStr,markerInfo.closeLen)==0) // matching marker closing
+          {
+            bool blockEnabled = blk.enabled!=negate;
+            //printf("Found start marker %s enabled=%d negate=%d\n",blk.name,blk.enabled,negate);
+            p+=len+blkNameLen+markerInfo.closeLen;
+            if (!blockEnabled) // skip until the end of the block
+            {
+              //printf("skipping block\n");
+              p=skipBlock(p,blk);
+            }
+            found=true;
+            break;
+          }
+        }
+        if (!found) // unknown marker id
+        {
+          result+=c;
+          p++;
+        }
+      }
+      else if (qstrncmp(p,markerInfo.endStr,markerInfo.endLen)==0) // start of end marker
+      {
+        bool found = false;
+        size_t len = markerInfo.endLen;
+        bool negate = *(p+len)=='!';
+        if (negate) len++;
+        for (const auto &blk : blockList)
+        {
+          size_t blkNameLen = qstrlen(blk.name);
+          if (qstrncmp(p+len,blk.name,blkNameLen)==0 &&                                // matching marker name
+              qstrncmp(p+len+blkNameLen,markerInfo.closeStr,markerInfo.closeLen)==0) // matching marker closing
+          {
+            //printf("Found end marker %s enabled=%d negate=%d\n",blk.name,blk.enabled,negate);
+            p+=len+blkNameLen+markerInfo.closeLen;
+            found=true;
+            break;
+          }
+        }
+        if (!found) // unknown marker id
+        {
+          result+=c;
+          p++;
+        }
+      }
+      else // not a start or end marker
+      {
+        result+=c;
+        p++;
+      }
+    }
+    else // not a marker character
+    {
+      result+=c;
+      p++;
     }
   }
-  resLen+=qstrlen(p);
-  // resLen is the length of the string without the marked block
-
-  QCString result(resLen+1);
-  char *r;
-  for (r=result.rawData(), p=s.data(); (q=strstr(p,begin.data()))!=0; p=q+endLen)
-  {
-    size_t l = q-p;
-    memcpy(r,p,l);
-    r+=l;
-    p=q+beginLen;
-    if ((q=strstr(p,end.data()))==0)
-    {
-      memcpy(r,begin.data(),beginLen);
-      r+=beginLen;
-      break;
-    }
-  }
-  qstrcpy(r,p);
+  //printf("====\n%s\n-----\n%s\n~~~~\n",qPrint(s),qPrint(result));
   return result;
 }
-//----------------------------------------------------------------------
 
-QCString selectBlock(const QCString& s,const QCString &name,bool enable, OutputType o)
+void checkBlocks(const QCString &s, const QCString fileName,const SelectionMarkerInfo &markerInfo)
 {
-  // TODO: this is an expensive function that is called a lot -> optimize it
-  QCString begin;
-  QCString end;
-  QCString nobegin;
-  QCString noend;
-  switch (o)
-  {
-    case OutputType::Html:
-      begin = "<!--BEGIN " + name + "-->";
-      end = "<!--END " + name + "-->";
-      nobegin = "<!--BEGIN !" + name + "-->";
-      noend = "<!--END !" + name + "-->";
-      break;
-    case OutputType::Latex:
-      begin = "%%BEGIN " + name;
-      end = "%%END " + name;
-      nobegin = "%%BEGIN !" + name;
-      noend = "%%END !" + name;
-      break;
-    default:
-      break;
-  }
+  if (s.isEmpty()) return;
 
-  QCString result = s;
-  if (enable)
+  const char *p = s.data();
+  char c;
+  while ((c=*p))
   {
-    result = substitute(result, begin, "");
-    result = substitute(result, end, "");
-    result = clearBlock(result, nobegin, noend);
+    if (c==markerInfo.markerChar) // potential start of marker
+    {
+      if (qstrncmp(p,markerInfo.beginStr,markerInfo.beginLen)==0) // start of begin marker
+      {
+        size_t len = markerInfo.beginLen;
+        bool negate = *(p+len)=='!';
+        if (negate) len++;
+        p += len;
+        QCString marker;
+        while (*p)
+        {
+          if (markerInfo.closeLen==0 && *p=='\n') // matching end of line
+          {
+            warn(fileName,-1,"Remaining begin replacement with marker '%s'",qPrint(marker));
+            break;
+          }
+          else if (markerInfo.closeLen!= 0 && qstrncmp(p,markerInfo.closeStr,markerInfo.closeLen)==0) // matching marker closing
+          {
+            p += markerInfo.closeLen;
+            warn(fileName,-1,"Remaining begin replacement with marker '%s'",qPrint(marker));
+            break;
+          }
+          marker += *p;
+          p++;
+        }
+      }
+      else if (qstrncmp(p,markerInfo.endStr,markerInfo.endLen)==0) // start of end marker
+      {
+        size_t len = markerInfo.endLen;
+        bool negate = *(p+len)=='!';
+        if (negate) len++;
+        p += len;
+        QCString marker;
+        while (*p)
+        {
+          if (markerInfo.closeLen==0 && *p=='\n') // matching end of line
+          {
+            warn(fileName,-1,"Remaining end replacement with marker '%s'",qPrint(marker));
+            break;
+          }
+          else if (markerInfo.closeLen!= 0 && qstrncmp(p,markerInfo.closeStr,markerInfo.closeLen)==0) // matching marker closing
+          {
+            p += markerInfo.closeLen;
+            warn(fileName,-1,"Remaining end replacement with marker '%s'",qPrint(marker));
+            break;
+          }
+          marker += *p;
+          p++;
+        }
+      }
+    }
+    p++;
   }
-  else
-  {
-    result = substitute(result, nobegin, "");
-    result = substitute(result, noend, "");
-    result = clearBlock(result, begin, end);
-  }
-
-  return result;
 }
+
 
 QCString removeEmptyLines(const QCString &s)
 {

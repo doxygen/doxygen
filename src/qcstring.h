@@ -45,42 +45,31 @@
 
 void *qmemmove( void *dst, const void *src, size_t len );
 
-#if defined(_OS_WIN32_)
-#define qsnprintf _snprintf
-#else
 #define qsnprintf snprintf
-#endif
 
-char *qstrdup( const char * );
+//! Returns a copy of a string \a s.
+//! Note that memory is passed to the caller, use qstrfree() to release.
+char *qstrdup( const char *s );
+//! Frees the memory allocated using qstrdup().
+void qstrfree( const char *s );
 
-inline uint32_t cstrlen( const char *str )
-{ return static_cast<uint32_t>(strlen(str)); }
-
+//! Returns the length of string \a str, or 0 if a null pointer is passed.
 inline uint32_t qstrlen( const char *str )
 { return str ? static_cast<uint32_t>(strlen(str)) : 0; }
 
-inline char *cstrcpy( char *dst, const char *src )
-{ return strcpy(dst,src); }
-
 inline char *qstrcpy( char *dst, const char *src )
-{ return src ? strcpy(dst, src) : 0; }
+{ return src ? strcpy(dst, src) : nullptr; }
 
-char * qstrncpy(char *dst,const char *src, size_t len);
-
-inline int cstrcmp( const char *str1, const char *str2 )
-{ return strcmp(str1,str2); }
+char *qstrncpy(char *dst,const char *src, size_t len);
 
 inline bool qisempty( const char *s)
-{ return s==0 || *s==0; }
+{ return s==nullptr || *s=='\0'; }
 
 inline int qstrcmp( const char *str1, const char *str2 )
 { return (str1 && str2) ? strcmp(str1,str2) :     // both non-empty
          (qisempty(str1) && qisempty(str2)) ? 0 : // both empty
          qisempty(str1) ? -1 : 1;                 // one empty, other non-empty
 }
-
-inline int cstrncmp( const char *str1, const char *str2, size_t len )
-{ return strncmp(str1,str2,len); }
 
 inline int qstrncmp( const char *str1, const char *str2, size_t len )
 { return (str1 && str2) ? strncmp(str1,str2,len) :  // both non-empty
@@ -294,6 +283,18 @@ class QCString
     /// return a copy of this string with leading and trailing whitespace removed and multiple
     /// whitespace characters replaced by a single space
     QCString simplifyWhiteSpace() const;
+
+    // Returns a copy of this string repeated n times
+    QCString repeat(unsigned int n) const
+    {
+      QCString result(n * size() + 1);
+      size_t offset = 0;
+      for (offset = 0; offset < n * size(); offset += size())
+      {
+        memcpy(result.rawData() + offset, data(), size());
+      }
+      return result;
+    }
 
     QCString &insert( size_t index, const QCString &s )
     {

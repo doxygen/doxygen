@@ -295,9 +295,10 @@ static QCString stripProtectionPrefix(const QCString &s)
   }
 }
 
-DotNode::DotNode(int n,const QCString &lab,const QCString &tip, const QCString &url,
+DotNode::DotNode(DotGraph *graph,const QCString &lab,const QCString &tip, const QCString &url,
   bool isRoot,const ClassDef *cd)
-  : m_number(n)
+  : m_graph(graph)
+  , m_number(graph->getNextNodeNumber())
   , m_label(lab)
   , m_tooltip(tip)
   , m_url(url)
@@ -488,8 +489,7 @@ void DotNode::writeLabel(TextStream &t, GraphType gt) const
 
 void DotNode::writeUrl(TextStream &t) const
 {
-  if (m_url.isEmpty())
-    return;
+  if (m_url.isEmpty() || m_url == DotNode::placeholderUrl) return;
   int tagPos = m_url.findRev('$');
   t << ",URL=\"";
   QCString noTagURL = m_url;
@@ -545,6 +545,7 @@ void DotNode::writeBox(TextStream &t,
     (hasNonReachableChildren ? "#FFF0F0" : "white");
   }
   t << "  Node" << m_number << " [";
+  t << "id=\"Node" << QCString().sprintf("%06d",m_number) << "\",";
   writeLabel(t,gt);
   t << ",height=0.2,width=0.4";
   if (m_isRoot)
@@ -593,9 +594,13 @@ void DotNode::writeArrow(TextStream &t,
   QCString aStyle = eProps->arrowStyleMap[ei->color()];
   bool umlUseArrow = aStyle=="odiamond";
 
+  t << "id=\"edge" << m_graph->getNextEdgeNumber() <<
+       "_Node" << QCString().sprintf("%06d",m_number) <<
+       "_Node" << QCString().sprintf("%06d",cn->number()) << "\",";
   if (pointBack && !umlUseArrow) t << "dir=\"back\",";
   t << "color=\"" << eProps->edgeColorMap[ei->color()] << "\",";
   t << "style=\"" << eProps->edgeStyleMap[ei->style()] << "\"";
+  t << ",tooltip=\" \""; // space in tooltip is required otherwise still something like 'Node0 -> Node1' is used
   if (!ei->label().isEmpty())
   {
     t << ",label=\" " << convertLabel(ei->label()) << "\",fontcolor=\"grey\" ";

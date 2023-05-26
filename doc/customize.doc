@@ -397,14 +397,12 @@ its name prefixed with a dollar sign, e.g.
 This was mainly added for backward compatibility.
 Note that the \c visible attribute is just a hint for doxygen.
 If no relevant information is available for a certain piece it is
-omitted even if it is set to \c yes (i.e. no empty sections are generated).
+omitted even if it is set to \c yes (i.e. no empty sections are generated).<br>
+Not all elements have a \c visible attribute shown in the layout file, though
+this attribute can be used anyway (the default is `visible="yes"`).
 
 Some elements have a \c title attribute. This attribute can be used
 to customize the title doxygen will use as a header for the piece.
-
-@warning at the moment you should not remove elements from the layout file
-as a way to hide information. Doing so can cause broken links in the
-generated output!
 
 
 \section xmlgenerator Using the XML output
@@ -436,7 +434,7 @@ files that you implicitly load via navigating through the index. As a
 result this works even for very large projects where reading all XML
 files as one big DOM tree would not fit into memory.
 
-See <a href="https://github.com/michaeljones/breathe">the Breathe project</a> for
+See <a href="https://github.com/breathe-doc/breathe">the Breathe project</a> for
 an example that uses doxygen XML output from Python to bridge it with the
 <a href="http://www.sphinx-doc.org/en/stable/">Sphinx</a> document generator.
 

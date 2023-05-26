@@ -47,7 +47,7 @@ class MemberDef : public Definition
   public:
     virtual DefType definitionType() const = 0;
     // move this member into a different scope
-    virtual MemberDef *deepCopy() const =0;
+    virtual std::unique_ptr<MemberDef> deepCopy() const =0;
     virtual void moveTo(Definition *) = 0;
 
     virtual MemberDef *resolveAlias() = 0;
@@ -279,7 +279,7 @@ class MemberDef : public Definition
     virtual int getDeclLine() const = 0;
     virtual int getDeclColumn() const = 0;
 
-    virtual MemberDefMutable *createTemplateInstanceMember(const ArgumentList &formalArgs,
+    virtual std::unique_ptr<MemberDef> createTemplateInstanceMember(const ArgumentList &formalArgs,
                const std::unique_ptr<ArgumentList> &actualArgs) const = 0;
     virtual void writeDeclaration(OutputList &ol,
                  const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
@@ -446,13 +446,13 @@ MemberDefMutable     *toMemberDefMutable(Definition *d);
 
 
 /** Factory method to create a new instance of a MemberDef */
-MemberDefMutable *createMemberDef(const QCString &defFileName,int defLine,int defColumn,
+std::unique_ptr<MemberDef> createMemberDef(const QCString &defFileName,int defLine,int defColumn,
               const QCString &type,const QCString &name,const QCString &args,
               const QCString &excp,Protection prot,Specifier virt,bool stat,
               Relationship related,MemberType t,const ArgumentList &tal,
               const ArgumentList &al,const QCString &metaData);
 
-MemberDef *createMemberDefAlias(const Definition *newScope,const MemberDef *aliasMd);
+std::unique_ptr<MemberDef> createMemberDefAlias(const Definition *newScope,const MemberDef *aliasMd);
 
 void combineDeclarationAndDefinition(MemberDefMutable *mdec,MemberDefMutable *mdef);
 void addDocCrossReference(const MemberDef *src,const MemberDef *dst);

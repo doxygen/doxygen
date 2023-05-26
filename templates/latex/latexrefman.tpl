@@ -1,7 +1,12 @@
+\pdfminorversion=7
 \documentclass[twoside]{<% if config.COMPACT_LATEX %>article<% else %>book<% endif %>}
 
 % Packages required by doxygen
-\usepackage{fixltx2e}
+\makeatletter
+\providecommand\IfFormatAtLeastTF{\@ifl@t@r\fmtversion}
+\makeatother
+\IfFormatAtLeastTF{2016/01/01}{}{\usepackage{fixltx2e}} % for \textsubscript
+\IfFormatAtLeastTF{2015/01/01}{\pdfsuppresswarningpagegroup=1}{}
 \usepackage{calc}
 \usepackage{doxygen}
 \usepackage[export]{adjustbox} % also loads graphicx
@@ -25,9 +30,8 @@
 \usepackage[scaled=.90]{helvet}
 \usepackage{courier}
 \usepackage{amssymb}
-\usepackage{sectsty}
 \renewcommand{\familydefault}{\sfdefault}
-\allsectionsfont{
+\doxyallsectionsfont{
   \fontseries{bc}\selectfont
   \color{darkgray}
 }

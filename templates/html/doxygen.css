@@ -312,7 +312,7 @@ div.line {
 	font-family: var(--font-family-monospace);
         font-size: 13px;
 	min-height: 13px;
-	line-height: 1.0;
+	line-height: 1.2;
 	text-wrap: unrestricted;
 	white-space: -moz-pre-wrap; /* Moz */
 	white-space: -pre-wrap;     /* Opera 4-6 */
@@ -480,6 +480,10 @@ span.stringliteral {
 
 span.charliteral {
 	color: var(--code-char-literal-color);
+}
+
+span.xmlcdata {
+	color: var(--code-xml-cdata-color);
 }
 
 span.vhdldigit { 
@@ -896,7 +900,7 @@ div.directory {
     width: 24px;
     height: 18px;
     margin-bottom: 4px;
-    background-image:url('folderopen.png');
+    background-image:var(--icon-folder-open-image);
     background-repeat: repeat-y;
     vertical-align:top;
     display: inline-block;
@@ -906,7 +910,7 @@ div.directory {
     width: 24px;
     height: 18px;
     margin-bottom: 4px;
-    background-image:url('folderclosed.png');
+    background-image:var(--icon-folder-closed-image);
     background-repeat: repeat-y;
     vertical-align:top;
     display: inline-block;
@@ -1325,7 +1329,7 @@ div.toc {
 }
 
 div.toc li {
-        background: url("bdwn.png") no-repeat scroll 0 5px transparent;
+        background: var(--toc-down-arrow-image) no-repeat scroll 0 5px transparent;
         font: 10px/1.2 var(--font-family-toc);
         margin-top: 5px;
         padding-left: 10px;
@@ -1354,11 +1358,11 @@ div.toc li.level2 {
 }
 
 div.toc li.level3 {
-        margin-left: 30px;
+        margin-left: 15px;
 }
 
 div.toc li.level4 {
-        margin-left: 45px;
+        margin-left: 15px;
 }
 
 span.emoji {

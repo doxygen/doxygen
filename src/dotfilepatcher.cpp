@@ -25,103 +25,93 @@
 #include "dir.h"
 #include "portable.h"
 
-static const char svgZoomHeader[] =
-"<svg id=\"main\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xml:space=\"preserve\" onload=\"init(evt)\">\n"
-"<style type=\"text/css\"><![CDATA[\n"
-".edge:hover path { stroke: red; }\n"
-".edge:hover polygon { stroke: red; fill: red; }\n"
-"]]></style>\n"
-"<script type=\"text/javascript\"><![CDATA[\n"
-"var edges = document.getElementsByTagName('g');\n"
-"if (edges && edges.length) {\n"
-"  for (var i=0;i<edges.length;i++) {\n"
-"    if (edges[i].id.substr(0,4)=='edge') {\n"
-"      edges[i].setAttribute('class','edge');\n"
-"    }\n"
-"  }\n"
-"}\n"
-"]]></script>\n"
-"        <defs>\n"
-"                <circle id=\"rim\" cx=\"0\" cy=\"0\" r=\"7\"/>\n"
-"                <circle id=\"rim2\" cx=\"0\" cy=\"0\" r=\"3.5\"/>\n"
-"                <g id=\"zoomPlus\">\n"
-"                        <use xlink:href=\"#rim\" fill=\"#404040\">\n"
-"                                <set attributeName=\"fill\" to=\"#808080\" begin=\"zoomplus.mouseover\" end=\"zoomplus.mouseout\"/>\n"
-"                        </use>\n"
-"                        <path d=\"M-4,0h8M0,-4v8\" fill=\"none\" stroke=\"white\" stroke-width=\"1.5\" pointer-events=\"none\"/>\n"
-"                </g>\n"
-"                <g id=\"zoomMin\">\n"
-"                        <use xlink:href=\"#rim\" fill=\"#404040\">\n"
-"                                <set attributeName=\"fill\" to=\"#808080\" begin=\"zoomminus.mouseover\" end=\"zoomminus.mouseout\"/>\n"
-"                        </use>\n"
-"                        <path d=\"M-4,0h8\" fill=\"none\" stroke=\"white\" stroke-width=\"1.5\" pointer-events=\"none\"/>\n"
-"                </g>\n"
-"                <g id=\"dirArrow\">\n"
-"                        <path fill=\"none\" stroke=\"white\" stroke-width=\"1.5\" d=\"M0,-3.0v7 M-2.5,-0.5L0,-3.0L2.5,-0.5\"/>\n"
-"                </g>\n"
-"               <g id=\"resetDef\">\n"
-"                       <use xlink:href=\"#rim2\" fill=\"#404040\">\n"
-"                               <set attributeName=\"fill\" to=\"#808080\" begin=\"reset.mouseover\" end=\"reset.mouseout\"/>\n"
-"                       </use>\n"
-"               </g>\n"
-"        </defs>\n"
-"\n"
-"<script type=\"text/javascript\">\n"
-;
+// top part of the interactive SVG header
+static const char svgZoomHeader1[] = R"svg(
+<svg id="main" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" onload="init(evt)">
+<style type="text/css"><![CDATA[
+.node, .edge {opacity: 0.7;}
+.node.selected, .edge.selected {opacity: 1;}
+.edge:hover path { stroke: red; }
+.edge:hover polygon { stroke: red; fill: red; }
+]]></style>
+)svg";
 
-static const char svgZoomFooter[] =
-// navigation panel
-"        <g id=\"navigator\" transform=\"translate(0 0)\" fill=\"#404254\">\n"
-"                <rect fill=\"#f2f5e9\" fill-opacity=\"0.5\" stroke=\"#606060\" stroke-width=\".5\" x=\"0\" y=\"0\" width=\"60\" height=\"60\"/>\n"
-// zoom in
-"                <use id=\"zoomplus\" xlink:href=\"#zoomPlus\" x=\"17\" y=\"9\" onmousedown=\"handleZoom(evt,'in')\"/>\n"
-// zoom out
-"                <use id=\"zoomminus\" xlink:href=\"#zoomMin\" x=\"42\" y=\"9\" onmousedown=\"handleZoom(evt,'out')\"/>\n"
-// reset zoom
-"                <use id=\"reset\" xlink:href=\"#resetDef\" x=\"30\" y=\"36\" onmousedown=\"handleReset()\"/>\n"
-// arrow up
-"                <g id=\"arrowUp\" xlink:href=\"#dirArrow\" transform=\"translate(30 24)\" onmousedown=\"handlePan(0,-1)\">\n"
-"                  <use xlink:href=\"#rim\" fill=\"#404040\">\n"
-"                        <set attributeName=\"fill\" to=\"#808080\" begin=\"arrowUp.mouseover\" end=\"arrowUp.mouseout\"/>\n"
-"                  </use>\n"
-"                  <path fill=\"none\" stroke=\"white\" stroke-width=\"1.5\" d=\"M0,-3.0v7 M-2.5,-0.5L0,-3.0L2.5,-0.5\"/>\n"
-"                </g>\n"
-// arrow right
-"                <g id=\"arrowRight\" xlink:href=\"#dirArrow\" transform=\"rotate(90) translate(36 -43)\" onmousedown=\"handlePan(1,0)\">\n"
-"                  <use xlink:href=\"#rim\" fill=\"#404040\">\n"
-"                        <set attributeName=\"fill\" to=\"#808080\" begin=\"arrowRight.mouseover\" end=\"arrowRight.mouseout\"/>\n"
-"                  </use>\n"
-"                  <path fill=\"none\" stroke=\"white\" stroke-width=\"1.5\" d=\"M0,-3.0v7 M-2.5,-0.5L0,-3.0L2.5,-0.5\"/>\n"
-"                </g>\n"
-// arrow down
-"                <g id=\"arrowDown\" xlink:href=\"#dirArrow\" transform=\"rotate(180) translate(-30 -48)\" onmousedown=\"handlePan(0,1)\">\n"
-"                  <use xlink:href=\"#rim\" fill=\"#404040\">\n"
-"                        <set attributeName=\"fill\" to=\"#808080\" begin=\"arrowDown.mouseover\" end=\"arrowDown.mouseout\"/>\n"
-"                  </use>\n"
-"                  <path fill=\"none\" stroke=\"white\" stroke-width=\"1.5\" d=\"M0,-3.0v7 M-2.5,-0.5L0,-3.0L2.5,-0.5\"/>\n"
-"                </g>\n"
-// arrow left
-"                <g id=\"arrowLeft\" xlink:href=\"#dirArrow\" transform=\"rotate(270) translate(-36 17)\" onmousedown=\"handlePan(-1,0)\">\n"
-"                  <use xlink:href=\"#rim\" fill=\"#404040\">\n"
-"                        <set attributeName=\"fill\" to=\"#808080\" begin=\"arrowLeft.mouseover\" end=\"arrowLeft.mouseout\"/>\n"
-"                  </use>\n"
-"                  <path fill=\"none\" stroke=\"white\" stroke-width=\"1.5\" d=\"M0,-3.0v7 M-2.5,-0.5L0,-3.0L2.5,-0.5\"/>\n"
-"                </g>\n"
-"        </g>\n"
-// link to original SVG
-"        <svg viewBox=\"0 0 15 15\" width=\"100%\" height=\"30px\" preserveAspectRatio=\"xMaxYMin meet\">\n"
-"         <g id=\"arrow_out\" transform=\"scale(0.3 0.3)\">\n"
-"          <a xlink:href=\"$orgname\" target=\"_base\">\n"
-"           <rect id=\"button\" ry=\"5\" rx=\"5\" y=\"6\" x=\"6\" height=\"38\" width=\"38\"\n"
-"                fill=\"#f2f5e9\" fill-opacity=\"0.5\" stroke=\"#606060\" stroke-width=\"1.0\"/>\n"
-"           <path id=\"arrow\"\n"
-"             d=\"M 11.500037,31.436501 C 11.940474,20.09759 22.043105,11.32322 32.158766,21.979434 L 37.068811,17.246167 C 37.068811,17.246167 37.088388,32 37.088388,32 L 22.160133,31.978069 C 22.160133,31.978069 26.997745,27.140456 26.997745,27.140456 C 18.528582,18.264221 13.291696,25.230495 11.500037,31.436501 z\"\n"
-"             style=\"fill:#404040;\"/>\n"
-"          </a>\n"
-"         </g>\n"
-"        </svg>\n"
-"</svg>\n"
-;
+// conditional part of the interactive SVG header in case the navigation panel is shown
+static const char svgZoomHeader2[] = R"svg(
+<defs>
+  <circle id="rim" cx="0" cy="0" r="7"/>
+  <circle id="rim2" cx="0" cy="0" r="3.5"/>
+  <g id="zoomPlus">
+    <use xlink:href="#rim" fill="#404040"><set attributeName="fill" to="#808080" begin="zoomplus.mouseover" end="zoomplus.mouseout"/></use>
+    <path d="M-4,0h8M0,-4v8" fill="none" stroke="white" stroke-width="1.5" pointer-events="none"/>
+  </g>
+  <g id="zoomMin">
+    <use xlink:href="#rim" fill="#404040"><set attributeName="fill" to="#808080" begin="zoomminus.mouseover" end="zoomminus.mouseout"/></use>
+    <path d="M-4,0h8" fill="none" stroke="white" stroke-width="1.5" pointer-events="none"/>
+  </g>
+  <g id="arrowUp" transform="translate(30 24)">
+    <use xlink:href="#rim"/>
+    <path pointer-events="none" fill="none" stroke="white" stroke-width="1.5" d="M0,-3.0v7 M-2.5,-0.5L0,-3.0L2.5,-0.5"/>
+  </g>
+  <g id="arrowRight" transform="rotate(90) translate(36 -43)">
+    <use xlink:href="#rim"/>
+    <path pointer-events="none" fill="none" stroke="white" stroke-width="1.5" d="M0,-3.0v7 M-2.5,-0.5L0,-3.0L2.5,-0.5"/>
+  </g>
+  <g id="arrowDown" transform="rotate(180) translate(-30 -48)">
+    <use xlink:href="#rim"/>
+    <path pointer-events="none" fill="none" stroke="white" stroke-width="1.5" d="M0,-3.0v7 M-2.5,-0.5L0,-3.0L2.5,-0.5"/>
+  </g>
+  <g id="arrowLeft" transform="rotate(270) translate(-36 17)">
+    <use xlink:href="#rim"/>
+    <path pointer-events="none" fill="none" stroke="white" stroke-width="1.5" d="M0,-3.0v7 M-2.5,-0.5L0,-3.0L2.5,-0.5"/>
+  </g>
+  <g id="resetDef">
+    <use xlink:href="#rim2" fill="#404040"><set attributeName="fill" to="#808080" begin="reset.mouseover" end="reset.mouseout"/></use>
+  </g>
+</defs>
+)svg";
+
+// part of the footer that is needed if the navigation panel is shown
+static const char svgZoomFooter1[] = R"svg(
+<g id="navigator" transform="translate(0 0)" fill="#404254">
+  <rect fill="#f2f5e9" fill-opacity="0.5" stroke="#606060" stroke-width=".5" x="0" y="0" width="60" height="60"/>
+  <use id="zoomplus" xlink:href="#zoomPlus" x="17" y="9" onmousedown="handleZoom(evt,'in')"/>
+  <use id="zoomminus" xlink:href="#zoomMin" x="42" y="9" onmousedown="handleZoom(evt,'out')"/>
+  <use id="reset" xlink:href="#resetDef" x="30" y="36" onmousedown="handleReset()"/>
+   <use id="arrowup" xlink:href="#arrowUp" x="0" y="0" onmousedown="handlePan(0,-1)"/>
+  <use id="arrowright" xlink:href="#arrowRight" x="0" y="0" onmousedown="handlePan(1,0)"/>
+  <use id="arrowdown" xlink:href="#arrowDown" x="0" y="0" onmousedown="handlePan(0,1)"/>
+  <use id="arrowleft" xlink:href="#arrowLeft" x="0" y="0" onmousedown="handlePan(-1,0)"/>
+</g>
+<svg viewBox="0 0 15 15" width="100%" height="30px" preserveAspectRatio="xMaxYMin meet">
+ <g id="arrow_out" transform="scale(0.3 0.3)">
+  <a xlink:href="$orgname" target="_base">
+   <rect id="button" ry="5" rx="5" y="6" x="6" height="38" width="38"
+        fill="#f2f5e9" fill-opacity="0.5" stroke="#606060" stroke-width="1.0"/>
+   <path id="arrow"
+     d="M 11.500037,31.436501 C 11.940474,20.09759 22.043105,11.32322 32.158766,21.979434 L 37.068811,17.246167 C 37.068811,17.246167 37.088388,32 37.088388,32 L 22.160133,31.978069 C 22.160133,31.978069 26.997745,27.140456 26.997745,27.140456 C 18.528582,18.264221 13.291696,25.230495 11.500037,31.436501 z"
+     style="fill:#404040;"/>
+  </a>
+ </g>
+</svg>
+)svg";
+
+// generic part of the interactive SVG footer
+static const char svgZoomFooter2[] = R"svg(
+<style type='text/css'>
+<![CDATA[
+[data-mouse-over-selected='false'] { opacity: 0.7; }
+[data-mouse-over-selected='true']  { opacity: 1.0; }
+]]>
+</style>
+<script type="application/ecmascript"><![CDATA[
+document.addEventListener('DOMContentLoaded', (event) => {
+  highlightEdges();
+  highlightAdjacentNodes();
+});
+]]></script>
+</svg>
+)svg";
 
 static QCString replaceRef(const QCString &buf,const QCString &relPath,
   bool urlOnly,const QCString &context,const QCString &target=QCString())
@@ -308,14 +298,14 @@ int DotFilePatcher::addSVGObject(const QCString &baseName,
 bool DotFilePatcher::run() const
 {
   //printf("DotFilePatcher::run(): %s\n",qPrint(m_patchFile));
-  bool interactiveSVG_local = Config_getBool(INTERACTIVE_SVG);
+  bool interactiveSVG = Config_getBool(INTERACTIVE_SVG);
   bool isSVGFile = m_patchFile.endsWith(".svg");
   int graphId = -1;
   QCString relPath;
   if (isSVGFile)
   {
     const Map &map = m_maps.front(); // there is only one 'map' for a SVG file
-    interactiveSVG_local = interactiveSVG_local && map.zoomable;
+    interactiveSVG = interactiveSVG && map.zoomable;
     graphId = map.graphId;
     relPath = map.relPath;
     //printf("DotFilePatcher::addSVGConversion: file=%s zoomable=%d\n",
@@ -346,7 +336,7 @@ bool DotFilePatcher::run() const
   int width=0,height=0;
   bool insideHeader=FALSE;
   bool replacedHeader=FALSE;
-  bool foundSize=FALSE;
+  bool useNagivation=FALSE;
   std::string lineStr;
   static const reg::Ex reSVG(R"([\[<]!-- SVG [0-9]+)");
   static const reg::Ex reMAP(R"(<!-- MAP [0-9]+)");
@@ -359,24 +349,31 @@ bool DotFilePatcher::run() const
     int i;
     if (isSVGFile)
     {
-      if (interactiveSVG_local)
+      if (interactiveSVG)
       {
         if (line.find("<svg")!=-1 && !replacedHeader)
         {
           int count;
           count = sscanf(line.data(),"<svg width=\"%dpt\" height=\"%dpt\"",&width,&height);
           //printf("width=%d height=%d\n",width,height);
-          foundSize = count==2 && (width>500 || height>450);
-          if (foundSize) insideHeader=TRUE;
+          useNagivation = count==2 && (width>500 || height>450);
+          insideHeader = count==2;
         }
         else if (insideHeader && !replacedHeader && line.find("<g id=\"graph")!=-1)
         {
-          line="";
-          if (foundSize)
+          if (useNagivation)
           {
             // insert special replacement header for interactive SVGs
             t << "<!--zoomable " << height << " -->\n";
-            t << svgZoomHeader;
+          }
+          t << svgZoomHeader1;
+          if (useNagivation)
+          {
+            t << svgZoomHeader2;
+          }
+          if (useNagivation)
+          {
+            t << "<script type=\"application/ecmascript\">\n";
             t << "var viewWidth = " << width << ";\n";
             t << "var viewHeight = " << height << ";\n";
             if (graphId>=0)
@@ -384,15 +381,24 @@ bool DotFilePatcher::run() const
               t << "var sectionId = 'dynsection-" << graphId << "';\n";
             }
             t << "</script>\n";
-            t << "<script xlink:href=\"" << relPath << "svgpan.js\"/>\n";
-            t << "<svg id=\"graph\" class=\"graph\">\n";
+          }
+          t << "<script type=\"application/ecmascript\" xlink:href=\"" << relPath << "svg.min.js\"/>\n";
+          t << "<svg id=\"graph\" class=\"graph\">\n";
+
+          if (useNagivation)
+          {
             t << "<g id=\"viewport\">\n";
           }
+          else
+          {
+            t << line;
+          }
+          line="";
           insideHeader=FALSE;
           replacedHeader=TRUE;
         }
       }
-      if (!insideHeader || !foundSize) // copy SVG and replace refs,
+      if (!insideHeader || !useNagivation) // copy SVG and replace refs,
                                        // unless we are inside the header of the SVG.
                                        // Then we replace it with another header.
       {
@@ -476,11 +482,17 @@ bool DotFilePatcher::run() const
       t << line;
     }
   }
+  if (isSVGFile && interactiveSVG && !useNagivation) t << "</svg>\n";
+
   fi.close();
-  if (isSVGFile && interactiveSVG_local && replacedHeader)
+  if (isSVGFile && interactiveSVG && replacedHeader)
   {
     QCString orgName=m_patchFile.left(m_patchFile.length()-4)+"_org.svg";
-    t << substitute(svgZoomFooter,"$orgname",stripPath(orgName));
+    if (useNagivation)
+    {
+      t << substitute(svgZoomFooter1,"$orgname",stripPath(orgName));
+    }
+    t << svgZoomFooter2;
     t.flush();
     fo.close();
     // keep original SVG file so we can refer to it, we do need to replace

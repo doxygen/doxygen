@@ -315,7 +315,7 @@ static QCString buildFileName(const QCString &name)
   return fileName;
 }
 
-void ManGenerator::startFile(const QCString &,const QCString &manName,const QCString &,int)
+void ManGenerator::startFile(const QCString &,const QCString &manName,const QCString &,int,int)
 {
   startPlainFile( buildFileName( manName ) );
   m_firstCol=TRUE;
@@ -329,8 +329,19 @@ void ManGenerator::endFile()
 
 void ManGenerator::endTitleHead(const QCString &,const QCString &name)
 {
-  m_t << ".TH \"" << name << "\" " << getExtension() << " \""
-    << dateToString(DateTimeType::Date) << "\" \"";
+  m_t << ".TH \"" << name << "\" " << getExtension();
+  switch (Config_getEnum(TIMESTAMP))
+  {
+    case TIMESTAMP_t::YES:
+    case TIMESTAMP_t::DATETIME:
+      m_t << " \"" << dateToString(DateTimeType::DateTime) << "\" \"";
+      break;
+    case TIMESTAMP_t::DATE:
+      m_t << " \"" << dateToString(DateTimeType::Date) << "\" \"";
+      break;
+    case TIMESTAMP_t::NO:
+      break;
+  }
   if (!Config_getString(PROJECT_NUMBER).isEmpty())
     m_t << "Version " << Config_getString(PROJECT_NUMBER) << "\" \"";
   if (Config_getString(PROJECT_NAME).isEmpty())
@@ -395,14 +406,6 @@ void ManGenerator::writeObjectLink(const QCString &,const QCString &,
                                    const QCString &, const QCString &name)
 {
   startBold(); docify(name); endBold();
-}
-
-void ManGenerator::startHtmlLink(const QCString &)
-{
-}
-
-void ManGenerator::endHtmlLink()
-{
 }
 
 void ManGenerator::startGroupHeader(int)
@@ -470,17 +473,6 @@ void ManGenerator::writeChar(char c)
   }
   //printf("%c",c);fflush(stdout);
   m_paragraph=FALSE;
-}
-
-void ManGenerator::startDescList(SectionTypes)
-{
-  if (!m_firstCol)
-  { m_t << "\n" << ".PP\n";
-    m_firstCol=TRUE; m_paragraph=TRUE;
-    m_col=0;
-  }
-  m_paragraph=FALSE;
-  startBold();
 }
 
 void ManGenerator::startTitle()
@@ -554,21 +546,7 @@ void ManGenerator::endMemberDoc(bool)
     m_t << "\"\n";
 }
 
-void ManGenerator::startSubsection()
-{
-  if (!m_firstCol) m_t << "\n";
-  m_t << ".SS \"";
-  m_firstCol=FALSE;
-  m_paragraph=FALSE;
-}
-
-void ManGenerator::endSubsection()
-{
-  m_t << "\"";
-}
-
-
-void ManGenerator::startSubsubsection()
+void ManGenerator::startCompoundTemplateParams()
 {
   if (!m_firstCol) m_t << "\n";
   m_t << "\n.SS \"";
@@ -576,24 +554,16 @@ void ManGenerator::startSubsubsection()
   m_paragraph=FALSE;
 }
 
-void ManGenerator::endSubsubsection()
+void ManGenerator::endCompoundTemplateParams()
 {
   m_t << "\"";
 }
-
 void ManGenerator::writeSynopsis()
 {
   if (!m_firstCol) m_t << "\n";
   m_t << ".SH SYNOPSIS\n.br\n.PP\n";
   m_firstCol=TRUE;
   m_paragraph=FALSE;
-}
-
-void ManGenerator::startDescItem()
-{
-  if (!m_firstCol) m_t << "\n";
-  m_t << ".IP \"";
-  m_firstCol=FALSE;
 }
 
 void ManGenerator::startDescForItem()
@@ -608,12 +578,6 @@ void ManGenerator::startDescForItem()
 
 void ManGenerator::endDescForItem()
 {
-}
-
-void ManGenerator::endDescItem()
-{
-  m_t << "\" 1c\n";
-  m_firstCol=TRUE;
 }
 
 void ManGenerator::startAnonTypeScope(int indentLevel)
@@ -767,24 +731,6 @@ void ManGenerator::startDescTable(const QCString &title)
 void ManGenerator::endDescTable()
 {
   endDescForItem();
-}
-
-void ManGenerator::startParamList(ParamListTypes,const QCString &title)
-{
-  if (!m_firstCol)
-  { m_t << "\n.PP\n";
-    m_firstCol=TRUE; m_paragraph=TRUE;
-    m_col=0;
-  }
-  m_paragraph=FALSE;
-  startBold();
-  docify(title);
-  endBold();
-  m_paragraph=TRUE;
-}
-
-void ManGenerator::endParamList()
-{
 }
 
 void ManGenerator::writeDoc(const IDocNodeAST *ast,const Definition *ctx,const MemberDef *,int)

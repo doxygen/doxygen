@@ -446,13 +446,12 @@ DB_VIS_C
       {
         m_t << "<literallayout><computeroutput>";
         FileInfo cfi( inc.file().str() );
-        FileDef *fd = createFileDef( cfi.dirPath(), cfi.fileName() );
+        auto fd = createFileDef( cfi.dirPath(), cfi.fileName() );
         getCodeParser(inc.extension()).parseCode(m_ci,inc.context(),
                                                   inc.text(),
                                                   langExt,
                                                   inc.isExample(),
-                                                  inc.exampleFile(), fd);
-        delete fd;
+                                                  inc.exampleFile(), fd.get());
         m_t << "</computeroutput></literallayout>";
       }
       break;
@@ -496,7 +495,7 @@ DB_VIS_C
     case DocInclude::SnipWithLines:
       {
          FileInfo cfi( inc.file().str() );
-         FileDef *fd = createFileDef( cfi.dirPath(), cfi.fileName() );
+         auto fd = createFileDef( cfi.dirPath(), cfi.fileName() );
          m_t << "<literallayout><computeroutput>";
          getCodeParser(inc.extension()).parseCode(m_ci,
                                            inc.context(),
@@ -504,14 +503,13 @@ DB_VIS_C
                                            langExt,
                                            inc.isExample(),
                                            inc.exampleFile(),
-                                           fd,
+                                           fd.get(),
                                            lineBlock(inc.text(),inc.blockId()),
                                            -1,    // endLine
                                            FALSE, // inlineFragment
                                            0,     // memberDef
                                            TRUE   // show line number
                                           );
-         delete fd;
          m_t << "</computeroutput></literallayout>";
       }
       break;
@@ -543,7 +541,7 @@ DB_VIS_C
     m_hide = popHidden();
     if (!m_hide)
     {
-      FileDef *fd = 0;
+      std::unique_ptr<FileDef> fd;
       if (!op.includeFileName().isEmpty())
       {
         FileInfo cfi( op.includeFileName().str() );
@@ -553,14 +551,13 @@ DB_VIS_C
       getCodeParser(locLangExt).parseCode(m_ci,op.context(),
                                         op.text(),langExt,op.isExample(),
                                         op.exampleFile(),
-                                        fd,     // fileDef
+                                        fd.get(),     // fileDef
                                         op.line(),    // startLine
                                         -1,    // endLine
                                         FALSE, // inline fragment
                                         0,     // memberDef
                                         op.showLineNo()  // show line numbers
                                        );
-      if (fd) delete fd;
     }
     pushHidden(m_hide);
     m_hide=TRUE;

@@ -112,7 +112,7 @@ class DocbookGenerator : public OutputGenerator
     // structural output interface
     ///////////////////////////////////////////////////////////////
     void startFile(const QCString &name,const QCString &manName,
-                           const QCString &title,int id);
+                           const QCString &title,int id,int hierarchyLevel);
     void writeSearchInfo(){DB_GEN_EMPTY};
     void writeFooter(const QCString &){DB_GEN_NEW};
     void endFile();
@@ -145,8 +145,6 @@ class DocbookGenerator : public OutputGenerator
     void startParagraph(const QCString &);
     void endParagraph();
     void writeObjectLink(const QCString &,const QCString &,const QCString &,const QCString &);
-    void startHtmlLink(const QCString &){DB_GEN_NEW};
-    void endHtmlLink(){DB_GEN_NEW};
     void startBold();
     void endBold();
     void startTypewriter();
@@ -154,22 +152,14 @@ class DocbookGenerator : public OutputGenerator
     void startEmphasis(){DB_GEN_NEW};
     void endEmphasis(){DB_GEN_NEW};
     void writeRuler();
-    void startDescription(){DB_GEN_NEW};
-    void endDescription(){DB_GEN_NEW};
-    void startDescItem(){DB_GEN_NEW};
     void startDescForItem(){DB_GEN_EMPTY};
     void endDescForItem(){DB_GEN_EMPTY};
-    void endDescItem(){DB_GEN_NEW};
     void startCenter(){DB_GEN_NEW};
     void endCenter(){DB_GEN_NEW};
     void startSmall(){DB_GEN_NEW};
     void endSmall(){DB_GEN_NEW};
     void startExamples();
     void endExamples();
-    void startParamList(ParamListTypes,const QCString &){DB_GEN_NEW};
-    void endParamList(){DB_GEN_NEW};
-    void startTitle(){DB_GEN_NEW};
-    void endTitle(){DB_GEN_NEW};
     void writeAnchor(const QCString &,const QCString &){DB_GEN_EMPTY};
     void startSection(const QCString &,const QCString &,SectionType);
     void endSection(const QCString &,SectionType);
@@ -188,11 +178,6 @@ class DocbookGenerator : public OutputGenerator
     void endTextLink(){DB_GEN_NEW};
     void startPageRef(){DB_GEN_NEW};
     void endPageRef(const QCString &,const QCString &){DB_GEN_NEW};
-    void startSubsection(){DB_GEN_NEW};
-    void endSubsection(){DB_GEN_NEW};
-    void startSubsubsection();
-    void endSubsubsection();
-
 
     void startGroupHeader(int);
     void endGroupHeader(int);
@@ -216,8 +201,8 @@ class DocbookGenerator : public OutputGenerator
     void endMemberItem(MemberItemType);
     void startMemberTemplateParams();
     void endMemberTemplateParams(const QCString &,const QCString &);
-    void startCompoundTemplateParams() { startSubsubsection(); }
-    void endCompoundTemplateParams() { endSubsubsection(); }
+    void startCompoundTemplateParams();
+    void endCompoundTemplateParams();
     void startMemberGroupHeader(bool);
     void endMemberGroupHeader();
     void startMemberGroupDocs(){DB_GEN_EMPTY};
@@ -236,7 +221,6 @@ class DocbookGenerator : public OutputGenerator
     void writeLatexSpacing(){DB_GEN_EMPTY}
     void writeStartAnnoItem(const QCString &,const QCString &,
                             const QCString &,const QCString &){DB_GEN_NEW};
-    void writeEndAnnoItem(const QCString &){DB_GEN_NEW};
     void startMemberDescription(const QCString &,const QCString &,bool){DB_GEN_EMPTY};
     void endMemberDescription(){DB_GEN_EMPTY};
     void startMemberDeclaration(){DB_GEN_EMPTY};
@@ -332,6 +316,7 @@ private:
     int m_inLevel = -1;
     bool m_firstMember = false;
     int m_openSectionCount = 0;
+    QCString m_pageLinks;
 };
 
 QCString convertToDocBook(const QCString &s, const bool retainNewline = false);

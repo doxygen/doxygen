@@ -26,7 +26,7 @@ DotGroupCollaboration::DotGroupCollaboration(const GroupDef* gd)
 {
   QCString tmp_url = gd->getReference()+"$"+gd->getOutputFileBase();
   QCString tooltip = gd->briefDescriptionAsTooltip();
-  m_rootNode = new DotNode(getNextNodeNumber(), gd->groupTitle(), tooltip, tmp_url, TRUE );
+  m_rootNode = new DotNode(this, gd->groupTitle(), tooltip, tmp_url, TRUE );
   m_rootNode->markAsVisible();
   m_usedNodes.insert(std::make_pair(gd->name().str(), m_rootNode));
 
@@ -38,9 +38,9 @@ DotGroupCollaboration::DotGroupCollaboration(const GroupDef* gd)
 DotGroupCollaboration::~DotGroupCollaboration()
 {
   // delete all created Nodes saved in m_usedNodes map
-  for (const auto &kv : m_usedNodes)
+  for (const auto &[name,node] : m_usedNodes)
   {
-    delete kv.second;
+    delete node;
   }
 }
 
@@ -53,7 +53,7 @@ static void makeURL(const Definition *def,QCString &url)
   {
     url+="#"+def->anchor();
   }
-};
+}
 
 void DotGroupCollaboration::buildGraph(const GroupDef* gd)
 {
@@ -70,7 +70,7 @@ void DotGroupCollaboration::buildGraph(const GroupDef* gd)
     { // add node
       makeURL(d,url);
       QCString tooltip = d->briefDescriptionAsTooltip();
-      nnode = new DotNode(getNextNodeNumber(), d->groupTitle(), tooltip, url );
+      nnode = new DotNode(this, d->groupTitle(), tooltip, url );
       nnode->markAsVisible();
       m_usedNodes.insert(std::make_pair(d->name().str(), nnode));
     }
@@ -91,7 +91,7 @@ void DotGroupCollaboration::buildGraph(const GroupDef* gd)
     { // add node
       makeURL(def,url);
       QCString tooltip = def->briefDescriptionAsTooltip();
-      nnode = new DotNode(getNextNodeNumber(), def->groupTitle(), tooltip, url );
+      nnode = new DotNode(this, def->groupTitle(), tooltip, url );
       nnode->markAsVisible();
       m_usedNodes.insert(std::make_pair(def->name().str(), nnode));
     }
@@ -198,7 +198,7 @@ void DotGroupCollaboration::addCollaborationMember(
       { // add node
         tmp_str = d->getReference()+"$"+d->getOutputFileBase();
         QCString tooltip = d->briefDescriptionAsTooltip();
-        nnode = new DotNode(getNextNodeNumber(), d->groupTitle(), tooltip, tmp_str );
+        nnode = new DotNode(this, d->groupTitle(), tooltip, tmp_str );
         nnode->markAsVisible();
         m_usedNodes.insert(std::make_pair(d->name().str(), nnode));
       }
@@ -219,15 +219,15 @@ void DotGroupCollaboration::computeTheGraph()
   writeGraphHeader(md5stream,m_rootNode->label());
 
   // clean write flags
-  for (const auto &kv : m_usedNodes)
+  for (const auto &[name,node] : m_usedNodes)
   {
-    kv.second->clearWriteFlag();
+    node->clearWriteFlag();
   }
 
   // write other nodes.
-  for (const auto &kv : m_usedNodes)
+  for (const auto &[name,node] : m_usedNodes)
   {
-    kv.second->write(md5stream,Inheritance,m_graphFormat,TRUE,FALSE,FALSE);
+    node->write(md5stream,Inheritance,m_graphFormat,TRUE,FALSE,FALSE);
   }
 
   // write edges

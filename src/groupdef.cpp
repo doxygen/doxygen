@@ -64,6 +64,7 @@ class GroupDefImpl : public DefinitionMixin<GroupDef>
     virtual void setGroupTitle( const QCString &newtitle );
     virtual bool hasGroupTitle( ) const { return m_titleSet; }
     virtual void addFile(FileDef *def);
+    virtual bool containsFile(const FileDef *def) const;
     virtual bool addClass(ClassDef *def);
     virtual bool addConcept(ConceptDef *def);
     virtual bool addNamespace(NamespaceDef *def);
@@ -75,7 +76,7 @@ class GroupDefImpl : public DefinitionMixin<GroupDef>
     virtual void removeMember(MemberDef *md);
     virtual bool findGroup(const GroupDef *def) const; // true if def is a subgroup of this group
     virtual void writeDocumentation(OutputList &ol);
-    virtual void writeMemberPages(OutputList &ol);
+    virtual void writeMemberPages(OutputList &ol, int hierarchyLevel);
     virtual void writeQuickMemberLinks(OutputList &ol,const MemberDef *currentMd) const;
     virtual void writeTagFile(TextStream &);
     virtual size_t numDocMembers() const;
@@ -159,10 +160,10 @@ class GroupDefImpl : public DefinitionMixin<GroupDef>
 
 };
 
-GroupDef *createGroupDef(const QCString &fileName,int line,const QCString &name,
+std::unique_ptr<GroupDef> createGroupDef(const QCString &fileName,int line,const QCString &name,
                                 const QCString &title,const QCString &refFileName)
 {
-  return new GroupDefImpl(fileName,line,name,title,refFileName);
+  return std::make_unique<GroupDefImpl>(fileName,line,name,title,refFileName);
 }
 
 
@@ -246,6 +247,11 @@ void GroupDefImpl::addFile(FileDef *def)
                        def);
   else
     m_fileList.push_back(def);
+}
+
+bool GroupDefImpl::containsFile(const FileDef *def) const
+{
+  return std::find(m_fileList.cbegin(),m_fileList.cend(), def) != m_fileList.cend();
 }
 
 bool GroupDefImpl::addClass(ClassDef *cd)
@@ -770,7 +776,6 @@ void GroupDefImpl::writeDetailedDescription(OutputList &ol,const QCString &title
       ol.pushGeneratorState();
       ol.disable(OutputType::Man);
       ol.disable(OutputType::RTF);
-      // ol.newParagraph(); // FIXME:PARA
       ol.enableAll();
       ol.disableAllBut(OutputType::Man);
       ol.enable(OutputType::Latex);
@@ -1104,7 +1109,18 @@ void GroupDefImpl::writeDocumentation(OutputList &ol)
 {
   //bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
   ol.pushGeneratorState();
-  startFile(ol,getOutputFileBase(),name(),m_title,HighlightedItem::Modules);
+
+  // Find out how deep this group is nested. In case of multiple parents, use the first one.
+  int hierarchyLevel = 0;
+  const GroupDef *gd = this;
+  while (!gd->partOfGroups().empty())
+  {
+    gd = gd->partOfGroups().front();
+    ++hierarchyLevel;
+  }
+
+  startFile(ol,getOutputFileBase(),name(),m_title,HighlightedItem::Modules,
+            FALSE /* additionalIndices*/, QCString() /*altSidebarName*/, hierarchyLevel);
 
   ol.startHeaderSection();
   writeSummaryLinks(ol);
@@ -1246,6 +1262,21 @@ void GroupDefImpl::writeDocumentation(OutputList &ol)
 
   //---------------------------------------- end flexible part -------------------------------
 
+  for (auto &subgd : getSubGroups())
+  {
+    if (!subgd->isReference())
+    {
+      if (subgd->partOfGroups().front() == this)
+      {
+        ol.writePageLink(subgd->getOutputFileBase(), FALSE);
+      }
+      else
+      {
+        // Could write a note explaining that the subgroup belongs to another
+        // group and add a link here.
+      }
+    }
+  }
   endFile(ol);
 
   ol.popGeneratorState();
@@ -1253,12 +1284,11 @@ void GroupDefImpl::writeDocumentation(OutputList &ol)
   if (Config_getBool(SEPARATE_MEMBER_PAGES))
   {
     m_allMemberList.sort();
-    writeMemberPages(ol);
+    writeMemberPages(ol, hierarchyLevel + 1);
   }
-
 }
 
-void GroupDefImpl::writeMemberPages(OutputList &ol)
+void GroupDefImpl::writeMemberPages(OutputList &ol, int hierarchyLevel)
 {
   ol.pushGeneratorState();
   ol.disableAllBut(OutputType::Html);
@@ -1267,7 +1297,7 @@ void GroupDefImpl::writeMemberPages(OutputList &ol)
   {
     if (ml->listType()&MemberListType_documentationLists)
     {
-       ml->writeDocumentationPage(ol,name(),this);
+       ml->writeDocumentationPage(ol,name(),this,hierarchyLevel);
     }
   }
 

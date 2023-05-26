@@ -88,6 +88,16 @@ class MemberVector
     {
       return std::find(m_members.begin(),m_members.end(),md)!=m_members.end();
     }
+    MemberDef *find(const QCString &name)
+    {
+      auto it = std::find_if(m_members.begin(),m_members.end(),[name=name](auto &el) { return el->name()==name; });
+      if (it != m_members.end())
+      {
+        return *it;
+      }
+
+      return nullptr;
+    }
   protected:
     Vec m_members;
 };
@@ -123,7 +133,7 @@ class MemberList : public MemberVector
                bool showEnumValues=FALSE,bool showInline=FALSE) const;
     void writeSimpleDocumentation(OutputList &ol,const Definition *container) const;
     void writeDocumentationPage(OutputList &ol,
-               const QCString &scopeName, const DefinitionMutable *container) const;
+               const QCString &scopeName, const DefinitionMutable *container, int hierarchyLevel=0) const;
     void writeTagFile(TextStream &,bool useQualifiedName=false);
     bool declVisible() const;
     void addMemberGroup(MemberGroup *mg);

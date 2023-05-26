@@ -18,6 +18,7 @@
 #ifndef FILEDEF_H
 #define FILEDEF_H
 
+#include <memory>
 #include <set>
 
 #include "definition.h"
@@ -189,7 +190,7 @@ class FileDef : public DefinitionMutable, public Definition
     virtual void addListReferences() = 0;
 };
 
-FileDef *createFileDef(const QCString &p,const QCString &n,const QCString &ref=QCString(),const QCString &dn=QCString());
+std::unique_ptr<FileDef> createFileDef(const QCString &p,const QCString &n,const QCString &ref=QCString(),const QCString &dn=QCString());
 
 
 // --- Cast functions

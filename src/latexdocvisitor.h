@@ -32,7 +32,7 @@ class LatexDocVisitor : public DocVisitor
 {
   public:
     LatexDocVisitor(TextStream &t,OutputCodeList &ci,LatexCodeGenerator &lcg,
-                    const QCString &langExt);
+                    const QCString &langExt, int hierarchyLevel = 0);
 
     //--------------------------------------
     // visitor functions for leaf nodes
@@ -155,6 +155,7 @@ class LatexDocVisitor : public DocVisitor
     void incIndentLevel();
     void decIndentLevel();
     int indentLevel() const;
+    const char *getSectionName(int level) const;
 
     //--------------------------------------
     // state variables
@@ -167,6 +168,7 @@ class LatexDocVisitor : public DocVisitor
     bool m_insideItem;
     bool m_hide;
     QCString m_langExt;
+    int m_hierarchyLevel;
 
     struct TableState
     {

@@ -40,7 +40,7 @@ SET(enlarge_lex_buffers "262144" CACHE INTERNAL "Sets the lex input and read buf
 
 if(enable_coverage)
   if ("${PROJECT_BINARY_DIR}" STREQUAL "${PROJECT_SOURCE_DIR}")
-    message(FATAL_ERROR "Doxygen cannot be generated in-place, the build directory (${PROJECT_BINARY_DIR}) has to differ from the doxygen main directory (${PROJECT_SOURCE_DIR})\nPlease don't forget to remove the already file created file 'CMakeCache.txt' and the directory 'CMakeFiles'!")
+    message(FATAL_ERROR "Doxygen cannot be generated in-place, the build directory (${PROJECT_BINARY_DIR}) has to differ from the doxygen main directory (${PROJECT_SOURCE_DIR})\nPlease don't forget to remove the already created file 'CMakeCache.txt' and the directory 'CMakeFiles'!")
   endif()
 endif()
 
@@ -202,6 +202,7 @@ endif()
 
 include(cmake/CompilerWarnings.cmake)
 include(cmake/Coverage.cmake)
+include(cmake/WindowsEncoding.cmake)
 
 add_subdirectory(deps)
 add_subdirectory(libversion)
