@@ -202,7 +202,6 @@ endif()
 
 include(cmake/CompilerWarnings.cmake)
 include(cmake/Coverage.cmake)
-include(cmake/WindowsEncoding.cmake)
 
 add_subdirectory(deps)
 add_subdirectory(libversion)
