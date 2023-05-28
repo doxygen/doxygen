@@ -441,11 +441,11 @@ static bool updateEPSBoundingBox(const QCString &formBase,
     {
       if (line.rfind("%%BoundingBox",0)==0)
       {
-        epsOut << "%%BoundingBox: " << x1 << " " << y1 << " " << x2 << " " << y2 << "\n";
+        epsOut << "%%BoundingBox: " << std::max(0,x1-1) << " " << std::max(0,y1-1) << " " << (x2+1) << " " << (y2+1) << "\n";
       }
       else if (line.rfind("%%HiResBoundingBox",0)==0)
       {
-        epsOut << "%%HiResBoundingBox: " << x1hi << " " << y1hi << " " << x2hi << " " << y2hi << "\n";
+        epsOut << "%%HiResBoundingBox: " << std::max(0.0,x1hi-1.0) << " " << std::max(0.0,y1hi-1.0) << " " << (x2hi+1.0) << " " << (y2hi+1.0) << "\n";
       }
       else
       {
@@ -468,7 +468,7 @@ static bool createPNG(const QCString &formBase,const QCString &outFile,double sc
 {
   const size_t argsLen = 4096;
   char args[argsLen];
-  qsnprintf(args,argsLen,"-q -dNOSAFER -dBATCH -dNOPAUSE -dEPSCrop -sDEVICE=pnggray -dGraphicsAlphaBits=4 -dTextAlphaBits=4 "
+  qsnprintf(args,argsLen,"-q -dNOSAFER -dBATCH -dNOPAUSE -dEPSCrop -sDEVICE=pngalpha -dGraphicsAlphaBits=4 -dTextAlphaBits=4 "
                "-r%d -sOutputFile=%s %s_tmp_corr.eps",static_cast<int>(scaleFactor*72),qPrint(outFile),qPrint(formBase));
   if (Portable::system(Portable::ghostScriptCommand(),args)!=0)
   {
