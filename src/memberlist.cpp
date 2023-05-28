@@ -105,7 +105,7 @@ int MemberList::countInheritableMembers(const ClassDef *inheritedFrom) const
     count+=mg->countInheritableMembers(inheritedFrom);
   }
   //printf("%s::countInheritableMembers(%s)=%d\n",
-  //    qPrint(listTypeAsString()),
+  //    qPrint(listTypeAsString(m_listType)),
   //    qPrint(inheritedFrom->name()),count);
   return count;
 }
@@ -348,8 +348,8 @@ void MemberList::writePlainDeclarations(OutputList &ol, bool inGroup,
   bool first=TRUE;
   for (const auto &md : m_members)
   {
-    //printf(">>> Member '%s' type=%d visible=%d\n",
-    //    qPrint(md->name()),md->memberType(),md->isBriefSectionVisible());
+    //printf(">>> Member '%s' type=%d visible=%d inheritedFrom=%p\n",
+    //    qPrint(md->name()),md->memberType(),md->isBriefSectionVisible(),(void*)inheritedFrom);
     if ((inheritedFrom==0 || !md->isReimplementedBy(inheritedFrom)) &&
         md->isBriefSectionVisible())
     {
@@ -515,15 +515,14 @@ void MemberList::writeDeclarations(OutputList &ol,
   if (ctx==0 && fd) ctx = fd;
 
   //printf("%p: MemberList::writeDeclaration(title='%s',subtitle='%s')=%d inheritedFrom=%p\n",
-  //       this,title,subtitle,numDecMembers(),inheritedFrom);
+  //       (void*)this,qPrint(title),qPrint(subtitle),numDecMembers(),(void*)inheritedFrom);
 
   int num = numDecMembers();
   int numEnumValues = numDecEnumValues();
   if (inheritedFrom)
   {
-    //if ( cd && !optimizeVhdl && countInheritableMembers(inheritedFrom)>0 )
-    if ( cd && !optimizeVhdl && cd->countMembersIncludingGrouped(
-                                      m_listType,inheritedFrom,TRUE)>0 )
+    int count = cd->countMembersIncludingGrouped(m_listType,inheritedFrom,TRUE);
+    if ( cd && !optimizeVhdl && count>0 )
     {
       inheritId = substitute(listTypeAsString(lt),"-","_")+"_"+
                   stripPath(cd->getOutputFileBase());
@@ -580,7 +579,7 @@ void MemberList::writeDeclarations(OutputList &ol,
     }
     else
     {
-      writePlainDeclarations(ol,inGroup,cd,nd,fd,gd,0,0,inheritId);
+      writePlainDeclarations(ol,inGroup,cd,nd,fd,gd,0,inheritedFrom,inheritId);
     }
 
     //printf("memberGroupList=%p\n",memberGroupList);

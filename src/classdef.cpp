@@ -866,7 +866,7 @@ void ClassDefImpl::internalInsertMember(MemberDef *md,
                                     bool addToAllList
                                    )
 {
-  //printf("insertInternalMember(%s) isHidden()=%d\n",qPrint(md->name()),md->isHidden());
+  //printf("%s:insertInternalMember(%s) isHidden()=%d\n",qPrint(name()),qPrint(md->name()),md->isHidden());
   if (md->isHidden()) return;
 
   if (getLanguage()==SrcLangExt_VHDL)
@@ -4558,7 +4558,7 @@ void ClassDefImpl::writeMemberDeclarations(OutputList &ol,ClassDefSet &visitedCl
 void ClassDefImpl::addGroupedInheritedMembers(OutputList &ol,MemberListType lt,
                         const ClassDef *inheritedFrom,const QCString &inheritId) const
 {
-  //printf("** %s::addGroupedInheritedMembers(%p) inheritId=%s\n",qPrint(name()),m_impl->memberGroupSDict,qPrint(inheritId));
+  //printf("** %s::addGroupedInheritedMembers() inheritId=%s\n",qPrint(name()),qPrint(inheritId));
   for (const auto &mg : m_impl->memberGroups)
   {
     if (!mg->allMembersInSameSection() || !m_impl->subGrouping) // group is in its own section
