@@ -521,8 +521,9 @@ void MemberList::writeDeclarations(OutputList &ol,
   int numEnumValues = numDecEnumValues();
   if (inheritedFrom)
   {
-    int count = cd->countMembersIncludingGrouped(m_listType,inheritedFrom,TRUE);
-    if ( cd && !optimizeVhdl && count>0 )
+    if ( cd && !optimizeVhdl &&
+         cd->countMembersIncludingGrouped(m_listType,inheritedFrom,TRUE)>0
+       )
     {
       inheritId = substitute(listTypeAsString(lt),"-","_")+"_"+
                   stripPath(cd->getOutputFileBase());
