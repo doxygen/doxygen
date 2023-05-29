@@ -28,6 +28,7 @@ class Debug
                      Preprocessor      = 0x0001,
                      CommentCnv        = 0x0002,
                      CommentScan       = 0x0004,
+                     Formula           = 0x0008,
                      PrintTree         = 0x0010,
                      Time              = 0x0020,
                      ExtCmd            = 0x0040,

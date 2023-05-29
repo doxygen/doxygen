@@ -31,16 +31,13 @@
 #include "threadpool.h"
 #include "portable.h"
 #include "latexgen.h"
+#include "debug.h"
 
 // TODO: remove these dependencies
 #include "doxygen.h"   // for Doxygen::indexList
 #include "indexlist.h" // for Doxygen::indexList
 
 static int determineInkscapeVersion(const Dir &thisDir);
-
-// Remove the temporary files
-#define RM_TMP_FILES (true)
-//#define RM_TMP_FILES (false)
 
 struct FormulaManager::Private
 {
@@ -663,7 +660,7 @@ void FormulaManager::generateImages(const QCString &path,Format format,HighDPI h
   }
 
   // clean up temporary files
-  if (RM_TMP_FILES)
+  if (!Debug::isFlagSet(Debug::Formula))
   {
     for (const auto &file : p->tempFiles)
     {
@@ -761,7 +758,7 @@ static int determineInkscapeVersion(const Dir &thisDir)
     {
       return -1;
     }
-    if (RM_TMP_FILES)
+    if (!Debug::isFlagSet(Debug::Formula))
     {
       thisDir.remove(inkscapeVersionFile.str());
     }
