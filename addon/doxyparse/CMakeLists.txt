@@ -28,6 +28,7 @@ endif()
 target_link_libraries(doxyparse
 doxymain
 md5
+sqlite3
 xml
 lodepng
 mscgen

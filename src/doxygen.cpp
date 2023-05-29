@@ -110,9 +110,7 @@
 #include "conceptdef.h"
 #include "trace.h"
 
-#if USE_SQLITE3
 #include <sqlite3.h>
-#endif
 
 #if USE_LIBCLANG
 #include <clang/Basic/Version.h>
@@ -10628,11 +10626,9 @@ static void version(const bool extended)
   if (extended)
   {
     QCString extVers;
-#if USE_SQLITE3
     if (!extVers.isEmpty()) extVers+= ", ";
     extVers += "sqlite3 ";
     extVers += sqlite3_libversion();
-#endif
 #if USE_LIBCLANG
     if (!extVers.isEmpty()) extVers+= ", ";
     extVers += "clang support ";
@@ -11865,7 +11861,6 @@ void parseInput()
     Config_updateString(MAN_OUTPUT,manOutput);
   }
 
-#if USE_SQLITE3
   QCString sqlOutput;
   bool generateSql = Config_getBool(GENERATE_SQLITE3);
   if (generateSql)
@@ -11873,7 +11868,6 @@ void parseInput()
     sqlOutput = createOutputDirectory(outputDirectory,Config_getString(SQLITE3_OUTPUT),"/sqlite3");
     Config_updateString(SQLITE3_OUTPUT,sqlOutput);
   }
-#endif
 
   if (Config_getBool(HAVE_DOT))
   {
@@ -12558,14 +12552,12 @@ void generateOutput()
     Doxygen::generatingXmlOutput=FALSE;
     g_s.end();
   }
-#if USE_SQLITE3
   if (Config_getBool(GENERATE_SQLITE3))
   {
     g_s.begin("Generating SQLITE3 output...\n");
     generateSqlite3();
     g_s.end();
   }
-#endif
 
   if (Config_getBool(GENERATE_AUTOGEN_DEF))
   {
