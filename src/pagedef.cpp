@@ -266,7 +266,7 @@ void PageDefImpl::writeDocumentation(OutputList &ol)
 
   ol.startContents();
   if ((m_localToc.isHtmlEnabled() || m_localToc.isLatexEnabled() || m_localToc.isDocbookEnabled())
-    && hasSections() && !hasParentPage())
+    && hasSections())
   {
     writeToc(ol, m_localToc);
   }
