@@ -32,6 +32,7 @@ static std::map< std::string, Debug::DebugMask > s_labels =
   { "nolineno",           Debug::NoLineNo           },
   { "commentcnv",         Debug::CommentCnv         },
   { "commentscan",        Debug::CommentScan        },
+  { "formula",            Debug::Formula            },
   { "printtree",          Debug::PrintTree          },
   { "time",               Debug::Time               },
   { "extcmd",             Debug::ExtCmd             },
