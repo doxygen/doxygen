@@ -3408,7 +3408,7 @@ void MarkdownOutlineParser::parseInput(const QCString &fileName,
           title = titleFn;
           prepend = 0;
         }
-        if (wasEmpty)
+        if (!wasEmpty)
         {
           docs.prepend("@ianchor{" + title + "} " + id + "\\ilinebr ");
         }
