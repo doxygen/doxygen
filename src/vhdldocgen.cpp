@@ -963,19 +963,37 @@ void VhdlDocGen::writeVhdlLink(const ClassDef* ccd ,OutputList& ol,QCString& typ
 
 
 /*!
- * strips the "--" prefixes of vhdl comments
+ * strips the "--!" prefixes of vhdl comments
  */
 void VhdlDocGen::prepareComment(QCString& qcs)
 {
-  const char* s="--!";
-  int index=0;
+  qcs=qcs.stripWhiteSpace();
+  if (qcs.isEmpty()) return;
 
-  while (TRUE)
+  const char* sc="--!";
+  if (qcs.startsWith(sc)) qcs = qcs.mid(qstrlen(sc));
+  static const reg::Ex re(R"(\n[ \t]*--!)");
+  std::string s = qcs.str();
+  reg::Iterator iter(s,re);
+  reg::Iterator end;
+  std::string result;
+  size_t p=0;
+  size_t sl=s.length();
+  for ( ; iter!=end ; ++iter)
   {
-    index=qcs.find(s,0,TRUE);
-    if (index<0) break;
-    qcs=qcs.remove(index,qstrlen(s));
+    const auto &match = *iter;
+    size_t i = match.position();
+    result+="\n";
+    result+=s.substr(p,i-p);
+    p = match.position()+match.length();
   }
+  if (p<sl)
+  {
+    result+="\n";
+    result+=s.substr(p);
+  }
+
+  qcs = result;
   qcs=qcs.stripWhiteSpace();
 }
 
