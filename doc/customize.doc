@@ -181,6 +181,7 @@ optionally the name of the layout file can be specified, if omitted
 \c DoxygenLayout.xml will be used.
 
 The next step is to mention the layout file in the configuration file
+(see also \ref cfg_layout_file "LAYOUT_FILE")
 \verbatim
 LAYOUT_FILE = DoxygenLayout.xml
 \endverbatim
