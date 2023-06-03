@@ -405,6 +405,7 @@ void VHDLOutlineParser::handleCommentBlock(const QCString &doc1, bool brief)
 
   Protection protection = Protection::Public;
   VhdlDocGen::prepareComment(doc);
+  if (doc.isEmpty()) return;
 
   if (p->oldEntry == s->current.get())
   {
