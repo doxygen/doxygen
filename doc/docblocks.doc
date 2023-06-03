@@ -134,7 +134,7 @@ or
  ***********************************************/
 \endverbatim
 
-as long as JAVADOC_BANNER = YES is used.
+as long as \ref cfg_javadoc_banner "JAVADOC_BANNER" is set to \c YES.
 \include javadoc-banner.h
  \htmlonly
  Click <a href="examples/javadoc-banner/html/javadoc-banner_8h.html">here</a>

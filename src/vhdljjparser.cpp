@@ -140,6 +140,8 @@ void VHDLOutlineParser::parseInput(const QCString &fileName,const char *fileBuf,
 
   bool inLine = fileName.isEmpty();
 
+  if (!inLine) msg("Parsing file %s...\n",qPrint(fileName));
+
   p->yyFileName=fileName;
 
   bool xilinx_ucf=isConstraintFile(p->yyFileName,".ucf");
@@ -403,6 +405,7 @@ void VHDLOutlineParser::handleCommentBlock(const QCString &doc1, bool brief)
 
   Protection protection = Protection::Public;
   VhdlDocGen::prepareComment(doc);
+  if (doc.isEmpty()) return;
 
   if (p->oldEntry == s->current.get())
   {
