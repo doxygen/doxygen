@@ -7296,14 +7296,17 @@ QCString VhdlParser::interface_incomplete_type_declaration() {QCString s="type";
     s1 = identifier();
     }
 if (m_sharedState->currP!=VhdlDocGen::COMPONENT && m_sharedState->interf_sec==false)
+    {
+      if (m_sharedState->currP==VhdlDocGen::FUNCTION || m_sharedState->currP==VhdlDocGen::PROCEDURE)
       {
-          if (m_sharedState->currP==VhdlDocGen::FUNCTION || m_sharedState->currP==VhdlDocGen::PROCEDURE)
-        {
-          outlineParser()->addProto("",s1.data(),s.data(),"","","");
-        }
+        outlineParser()->addProto("",s1.data(),s.data(),"","","");
+      }
+      else if(m_sharedState->parse_sec==GEN_SEC)
+      {
+        outlineParser()->addVhdlType(s.data(),outlineParser()->getLine(),Entry::VARIABLE_SEC,VhdlDocGen::GENERIC,s1.data(),"",Protection::Public);
+      }
 
-
-    return s+" "+s1;
+      return s+" "+s1;
     }
 assert(false);
 }
