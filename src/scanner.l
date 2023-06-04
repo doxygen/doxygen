@@ -221,6 +221,7 @@ static const char *stateToString(int state);
 
 // forward declarations for stateless functions
 static inline int computeIndent(const char *s,int startIndent);
+static inline void initMethodProtection(yyscan_t yyscanner,Protection prot);
 static QCString stripQuotes(const char *s);
 static bool nameIsOperator(QCString &name);
 void fixArgumentListForJavaScript(ArgumentList &al);
@@ -282,11 +283,11 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 
   /* no comment start / end signs inside square brackets */
 NCOMM [^/\*]
-  // C start comment 
+  // C start comment
 CCS   "/\*"
   // C end comment
 CCE   "*\/"
-  // Cpp comment 
+  // Cpp comment
 CPPC  "/\/"
   // doxygen C start comment
 DCOMMC ("/\*!"|"/\**")
@@ -438,6 +439,7 @@ NONLopt [^\n]*
 %x      RawString
 %x      RawGString
 %x      CSString
+%x      CppProt
 
 %x      IDLAttribute
 %x      IDLProp
@@ -590,82 +592,41 @@ NONLopt [^\n]*
                                             REJECT;
                                         }
 <FindMembers>{B}*("properties"){BN}*":"{BN}*  { // IDL or Borland C++ builder property
+                                          initMethodProtection(yyscanner,Protection::Public);
                                           yyextra->current->mtype = yyextra->mtype = MethodTypes::Property;
-                                          yyextra->current->protection = yyextra->protection = Protection::Public ;
-                                          yyextra->current->type.resize(0);
-                                          yyextra->current->name.resize(0);
-                                          yyextra->current->args.resize(0);
-                                          yyextra->current->argList.clear();
-                                          lineCount(yyscanner) ;
                                         }
 
-<FindMembers>{B}*"k_dcop"{BN}*":"{BN}*  { yyextra->current->mtype = yyextra->mtype = MethodTypes::DCOP;
-                                          yyextra->current->protection = yyextra->protection = Protection::Public ;
-                                          yyextra->current->type.resize(0);
-                                          yyextra->current->name.resize(0);
-                                          yyextra->current->args.resize(0);
-                                          yyextra->current->argList.clear();
-                                          lineCount(yyscanner) ;
+<FindMembers>{B}*"k_dcop"{BN}*":"{BN}*  {
+                                          initMethodProtection(yyscanner,Protection::Public);
+                                          yyextra->current->mtype = yyextra->mtype = MethodTypes::DCOP;
                                         }
 
-<FindMembers>{B}*("signals"|"Q_SIGNALS"){BN}*":"{BN}* { yyextra->current->mtype = yyextra->mtype = MethodTypes::Signal;
-
-                                          yyextra->current->protection = yyextra->protection = Protection::Public ;
-                                          yyextra->current->type.resize(0);
-                                          yyextra->current->name.resize(0);
-                                          yyextra->current->args.resize(0);
-                                          yyextra->current->argList.clear();
-                                          lineCount(yyscanner) ;
+<FindMembers>{B}*("signals"|"Q_SIGNALS"){BN}*":"{BN}* {
+                                          initMethodProtection(yyscanner,Protection::Public);
+                                          yyextra->current->mtype = yyextra->mtype = MethodTypes::Signal;
                                         }
 
 <FindMembers>{B}*"public"{BN}*("slots"|"Q_SLOTS"){BN}*":"{BN}* {
-                                          yyextra->current->protection = yyextra->protection = Protection::Public ;
+                                          initMethodProtection(yyscanner,Protection::Public);
                                           yyextra->current->mtype = yyextra->mtype = MethodTypes::Slot;
-                                          yyextra->current->type.resize(0);
-                                          yyextra->current->name.resize(0);
-                                          yyextra->current->args.resize(0);
-                                          yyextra->current->argList.clear();
-                                          lineCount(yyscanner);
                                         }
 
 <FindMembers>{B}*"protected"{BN}*("slots"|"Q_SLOTS"){BN}*":"{BN}* {
-                                          yyextra->current->protection = yyextra->protection = Protection::Protected ;
+                                          initMethodProtection(yyscanner,Protection::Protected);
                                           yyextra->current->mtype = yyextra->mtype = MethodTypes::Slot;
-                                          yyextra->current->type.resize(0);
-                                          yyextra->current->name.resize(0);
-                                          yyextra->current->args.resize(0);
-                                          yyextra->current->argList.clear();
-                                          lineCount(yyscanner);
                                         }
 
 <FindMembers>{B}*"private"{BN}*("slots"|"Q_SLOTS"){BN}*":"{BN}* {
-                                          yyextra->current->protection = yyextra->protection = Protection::Private ;
+                                          initMethodProtection(yyscanner,Protection::Private);
                                           yyextra->current->mtype = yyextra->mtype = MethodTypes::Slot;
-                                          yyextra->current->type.resize(0);
-                                          yyextra->current->name.resize(0);
-                                          yyextra->current->args.resize(0);
-                                          yyextra->current->argList.clear();
-                                          lineCount(yyscanner);
                                         }
 <FindMembers>{B}*("public"|"methods"|"__published"){BN}*":"{BN}* {
-                                          yyextra->current->protection = yyextra->protection = Protection::Public ;
-                                          yyextra->current->mtype = yyextra->mtype = MethodTypes::Method;
-                                          yyextra->current->type.resize(0);
-                                          yyextra->current->name.resize(0);
-                                          yyextra->current->args.resize(0);
-                                          yyextra->current->argList.clear();
-                                          lineCount(yyscanner) ;
+                                          initMethodProtection(yyscanner,Protection::Public);
                                         }
 <FindMembers>{B}*"internal"{BN}*":"{BN}* {  // for now treat C++/CLI's internal as package...
                                           if (yyextra->insideCli)
                                           {
-                                            yyextra->current->protection = yyextra->protection = Protection::Package ;
-                                            yyextra->current->mtype = yyextra->mtype = MethodTypes::Method;
-                                            yyextra->current->type.resize(0);
-                                            yyextra->current->name.resize(0);
-                                            yyextra->current->args.resize(0);
-                                            yyextra->current->argList.clear();
-                                            lineCount(yyscanner) ;
+                                            initMethodProtection(yyscanner,Protection::Package);
                                           }
                                           else
                                           {
@@ -673,22 +634,36 @@ NONLopt [^\n]*
                                           }
                                         }
 <FindMembers>{B}*"protected"{BN}*":"{BN}* {
-                                          yyextra->current->protection = yyextra->protection = Protection::Protected ;
-                                          yyextra->current->mtype = yyextra->mtype = MethodTypes::Method;
-                                          yyextra->current->type.resize(0);
-                                          yyextra->current->name.resize(0);
-                                          yyextra->current->args.resize(0);
-                                          yyextra->current->argList.clear();
-                                          lineCount(yyscanner) ;
+                                          initMethodProtection(yyscanner,Protection::Protected);
                                         }
 <FindMembers>{B}*"private"{BN}*":"{BN}* {
-                                          yyextra->current->protection = yyextra->protection = Protection::Private ;
-                                          yyextra->current->mtype = yyextra->mtype = MethodTypes::Method;
-                                          yyextra->current->type.resize(0);
-                                          yyextra->current->name.resize(0);
-                                          yyextra->current->args.resize(0);
-                                          yyextra->current->argList.clear();
-                                          lineCount(yyscanner) ;
+                                          initMethodProtection(yyscanner,Protection::Private);
+                                        }
+<FindMembers>{B}*"public"/({BN}|{CCS}|{CPPC}) {
+                                          if (!yyextra->insideCpp) REJECT;
+                                          initMethodProtection(yyscanner,Protection::Public);
+                                          BEGIN(CppProt);
+                                        }
+<FindMembers>{B}*"protected"/({BN}|{CCS}|{CPPC}) {
+                                          if (!yyextra->insideCpp) REJECT;
+                                          initMethodProtection(yyscanner,Protection::Protected);
+                                          BEGIN(CppProt);
+                                        }
+<FindMembers>{B}*"private"/({BN}|{CCS}|{CPPC}) {
+                                          if (!yyextra->insideCpp) REJECT;
+                                          initMethodProtection(yyscanner,Protection::Private);
+                                          BEGIN(CppProt);
+                                        }
+<CppProt>":"                            {
+                                          BEGIN(FindMembers);
+                                        }
+<CppProt>{BN}+                          { lineCount(yyscanner); }
+<CppProt>{CPPC}.*\n                     { lineCount(yyscanner); }
+<CppProt>{CCS}                          { yyextra->lastCContext = YY_START ;
+                                          BEGIN( SkipComment ) ;
+                                        }
+<CppProt>("slots"|"Q_SLOTS")            {
+                                          yyextra->current->mtype = yyextra->mtype = MethodTypes::Slot;
                                         }
 <FindMembers>{B}*"event"{BN}+           {
                                           if (yyextra->insideCli)
@@ -776,31 +751,13 @@ NONLopt [^\n]*
                                         }
   */
 <FindMembers>{B}*"@private"{BN}+        {
-                                          yyextra->current->protection = yyextra->protection = Protection::Private ;
-                                          yyextra->current->mtype = yyextra->mtype = MethodTypes::Method;
-                                          yyextra->current->type.resize(0);
-                                          yyextra->current->name.resize(0);
-                                          yyextra->current->args.resize(0);
-                                          yyextra->current->argList.clear();
-                                          lineCount(yyscanner) ;
+                                          initMethodProtection(yyscanner,Protection::Private);
                                         }
 <FindMembers>{B}*"@protected"{BN}+      {
-                                          yyextra->current->protection = yyextra->protection = Protection::Protected ;
-                                          yyextra->current->mtype = yyextra->mtype = MethodTypes::Method;
-                                          yyextra->current->type.resize(0);
-                                          yyextra->current->name.resize(0);
-                                          yyextra->current->args.resize(0);
-                                          yyextra->current->argList.clear();
-                                          lineCount(yyscanner) ;
+                                          initMethodProtection(yyscanner,Protection::Protected);
                                         }
-<FindMembers>{B}*"@public"{BN}+ {
-                                          yyextra->current->protection = yyextra->protection = Protection::Public ;
-                                          yyextra->current->mtype = yyextra->mtype = MethodTypes::Method;
-                                          yyextra->current->type.resize(0);
-                                          yyextra->current->name.resize(0);
-                                          yyextra->current->args.resize(0);
-                                          yyextra->current->argList.clear();
-                                          lineCount(yyscanner) ;
+<FindMembers>{B}*"@public"{BN}+         {
+                                          initMethodProtection(yyscanner,Protection::Public);
                                         }
 <FindMembers>[\-+]{BN}*                 {
                                           if (!yyextra->insideObjC)
@@ -809,23 +766,18 @@ NONLopt [^\n]*
                                           }
                                           else
                                           {
-                                            lineCount(yyscanner);
                                             yyextra->current->fileName  = yyextra->fileName;
                                             yyextra->current->startLine = yyextra->yyLineNr;
                                             yyextra->current->startColumn = yyextra->yyColNr;
                                             yyextra->current->bodyLine  = yyextra->yyLineNr;
                                             yyextra->current->bodyColumn = yyextra->yyColNr;
                                             yyextra->current->section = Entry::FUNCTION_SEC;
-                                            yyextra->current->protection = yyextra->protection = Protection::Public ;
                                             yyextra->language = yyextra->current->lang = SrcLangExt_ObjC;
                                             yyextra->insideObjC = TRUE;
                                             yyextra->current->virt = Specifier::Virtual;
+
                                             yyextra->current->isStatic=yytext[0]=='+';
-                                            yyextra->current->mtype = yyextra->mtype = MethodTypes::Method;
-                                            yyextra->current->type.resize(0);
-                                            yyextra->current->name.resize(0);
-                                            yyextra->current->args.resize(0);
-                                            yyextra->current->argList.clear();
+                                            initMethodProtection(yyscanner,Protection::Public);
                                             BEGIN( ObjCMethod );
                                           }
                                         }
@@ -4758,7 +4710,7 @@ NONLopt [^\n]*
                                         }
 <CopyArgVerbatim>[\\@]("f$"|"f]"|"f}"|"f)") { // end of verbatim block
                                           yyextra->fullArgString+=yytext;
-					  if (yyextra->docBlockName==&yytext[1])
+                                          if (yyextra->docBlockName==&yytext[1])
                                           {
                                             yyextra->docBlockName="";
                                             BEGIN(CopyArgCommentLine);
@@ -7272,6 +7224,17 @@ static inline int computeIndent(const char *s,int startIndent)
     else col++;
   }
   return col;
+}
+static inline void initMethodProtection(yyscan_t yyscanner,Protection prot)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->current->protection = yyextra->protection = prot;
+  yyextra->current->mtype = yyextra->mtype = MethodTypes::Method;
+  yyextra->current->type.resize(0);
+  yyextra->current->name.resize(0);
+  yyextra->current->args.resize(0);
+  yyextra->current->argList.clear();
+  lineCount(yyscanner) ;
 }
 
 static void addType(yyscan_t yyscanner)
