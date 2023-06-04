@@ -21,7 +21,6 @@ option(build_xmlparser "Automatically update the XML parser modules when updatin
 option(build_search    "Build external search tools (doxysearch and doxyindexer)" OFF)
 option(build_doc       "Build user manual (HTML and PDF)" OFF)
 option(build_doc_chm   "Build user manual (CHM)" OFF)
-option(use_sqlite3     "Add support for sqlite3 output [experimental]." OFF)
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     option(use_libc++  "Use libc++ as C++ standard library." ON)
 endif()
@@ -56,11 +55,7 @@ else()
     set(depfile_supported  "1" CACHE INTERNAL "DEPFILE is supported")
 endif()
 
-set(sqlite3  "0" CACHE INTERNAL "used in settings.h")
 set(clang    "0" CACHE INTERNAL "used in settings.h")
-if (use_sqlite3)
-	set(sqlite3  "1" CACHE INTERNAL "used in settings.h")
-endif()
 
 set(MACOS_VERSION_MIN 10.14)
 if (use_libclang)
@@ -88,6 +83,8 @@ if (CMAKE_SYSTEM MATCHES "Darwin")
     find_library(CORESERVICES_LIB CoreServices)
     set(EXTRA_LIBS ${CORESERVICES_LIB})
 endif()
+
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DSQLITE_OMIT_LOAD_EXTENSION=1")
 
 if (WIN32)
     if (MSVC)
@@ -156,13 +153,6 @@ find_package(Sanitizers)
 
 if ((CMAKE_BUILD_TYPE STREQUAL "Debug") OR enable_lex_debug)
   set(LEX_FLAGS "${LEX_FLAGS} -d")
-endif()
-
-if (sqlite3)
-  find_package(SQLite3 REQUIRED)
-  if (SQLITE3_VERSION VERSION_LESS 3.9.0)
-    message(SEND_ERROR "Doxygen requires at least sqlite3 version 3.9.0 (installed: ${SQLITE3_VERSION})")
-  endif()
 endif()
 
 find_package(Iconv REQUIRED)

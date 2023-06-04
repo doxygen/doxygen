@@ -20,7 +20,6 @@
 #include "settings.h"
 #include "message.h"
 
-#if USE_SQLITE3
 
 #include "sqlite3gen.h"
 #include "doxygen.h"
@@ -2611,10 +2610,4 @@ void generateSqlite3()
   endTransaction(db);
 }
 
-#else // USE_SQLITE3
-void generateSqlite3()
-{
-  err("sqlite3 support has not been compiled in!\n");
-}
-#endif
 // vim: noai:ts=2:sw=2:ss=2:expandtab
