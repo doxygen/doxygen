@@ -51,8 +51,6 @@ const int messageTimeout = 5000; //!< status bar message timeout in milliseconds
 
 #define APPQT(x) QString::fromLatin1("<qt><pre>") + x + QString::fromLatin1("</pre></qt>")
 
-static QString text1  = QString::fromLatin1("");
-
 MainWindow &MainWindow::instance()
 {
   static MainWindow *theInstance = new MainWindow;
@@ -568,7 +566,6 @@ void MainWindow::runDoxygen()
     args << QString::fromLatin1("-");  // read config from stdin
 
     m_outputLog->clear();
-    text1  = QString::fromLatin1("");
     m_runProcess->start(doxygenPath + QString::fromLatin1("doxygen"), args);
 
     if (!m_runProcess->waitForStarted())
@@ -613,9 +610,9 @@ void MainWindow::readStdout()
     QString text = QString::fromUtf8(data);
     if (!text.isEmpty())
     {
-      text1 += text;
-      m_outputLog->clear();
-      m_outputLog->append(APPQT(text1.toHtmlEscaped().trimmed()));
+      m_outputLog->moveCursor (QTextCursor::End);
+      m_outputLog->insertPlainText (text);
+      m_outputLog->moveCursor (QTextCursor::End);
     }
   }
 }
