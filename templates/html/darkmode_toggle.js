@@ -100,6 +100,11 @@ class DarkModeToggle extends HTMLElement {
                 $(window).resize(function(){
                     addButton();
                 })
+                $(document).keyup(function(e) {
+                    if (e.key === "Escape") { // escape key maps to keycode `27`
+                       DarkModeToggle.userPreference = !DarkModeToggle.userPreference
+                   }
+                })
                 DarkModeToggle.setDarkModeVisibility(DarkModeToggle.darkModeEnabled)
             })
         })
