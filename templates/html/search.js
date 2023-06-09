@@ -195,6 +195,7 @@ function SearchBox(name, resultsPath, extension)
     }
     else if (e.keyCode==27) // Escape out of the search field
     {
+      e.stopPropagation();
       this.DOMSearchField().blur();
       this.DOMPopupSearchResultsWindow().style.display = 'none';
       this.DOMSearchClose().style.display = 'none';
@@ -289,6 +290,7 @@ function SearchBox(name, resultsPath, extension)
     }
     else if (e.keyCode==13 || e.keyCode==27)
     {
+      e.stopPropagation();
       this.OnSelectItem(this.searchIndex);
       this.CloseSelectionWindow();
       this.DOMSearchField().focus();
@@ -670,6 +672,7 @@ function SearchResults(name)
       }
       else if (this.lastKey==27) // Escape
       {
+        e.stopPropagation();
         searchBox.CloseResultsWindow();
         document.getElementById("MSearchField").focus();
       }
@@ -713,6 +716,7 @@ function SearchResults(name)
       }
       else if (this.lastKey==27) // Escape
       {
+        e.stopPropagation();
         searchBox.CloseResultsWindow();
         document.getElementById("MSearchField").focus();
       }
