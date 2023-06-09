@@ -261,7 +261,7 @@ jobs:
       if: matrix.config.os == 'windows-latest'
 
     - name: Refresh Env (Windows)
-      run:
+      run: |
         Import-Module $env:ChocolateyInstall\helpers\chocolateyProfile.psm1
         refreshenv
       if: matrix.config.os == 'windows-latest'
