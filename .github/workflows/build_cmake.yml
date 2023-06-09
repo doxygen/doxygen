@@ -262,7 +262,8 @@ jobs:
 
     - name: Refresh Env (Windows)
       run:
-        call RefreshEnv.cmd
+        Import-Module $env:ChocolateyInstall\helpers\chocolateyProfile.psm1
+        refreshenv
       if: matrix.config.os == 'windows-latest'
 
     - name: Install Qt
