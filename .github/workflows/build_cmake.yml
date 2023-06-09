@@ -262,7 +262,7 @@ jobs:
 
     - name: Refresh Env (Windows)
       run:
-        refreshenv
+        call RefreshEnv.cmd
       if: matrix.config.os == 'windows-latest'
 
     - name: Install Qt
