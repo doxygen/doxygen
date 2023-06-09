@@ -88,8 +88,8 @@ struct VHDLOutlineParser::Private
 void VHDLOutlineParser::Private::parseVhdlfile(const QCString &fileName,
                                                const char* inputBuffer,bool inLine)
 {
-  JAVACC_STRING_TYPE s =inputBuffer;
-  CharStream *stream = new CharStream(s.c_str(), (int)s.size(), 1, 1);
+  QCString s =inputBuffer;
+  CharStream *stream = new CharStream(reinterpret_cast<const JJChar*>(s.data()), (int)s.size(), 1, 1);
   VhdlParserTokenManager *tokenManager = new VhdlParserTokenManager(stream);
   VhdlTokenManagerErrorHandler *tokErrHandler=new VhdlTokenManagerErrorHandler(fileName.data());
   vhdlParser=new VhdlParser(tokenManager);
@@ -186,11 +186,14 @@ void VHDLOutlineParser::lineCount()
   p->yyLineNr++;
 }
 
-void VHDLOutlineParser::lineCount(const char* text)
+void VHDLOutlineParser::lineCount(const QCString &text)
 {
-  for (const char* c=text ; *c ; ++c )
+  if (!text.isEmpty())
   {
-    if (*c == '\n') p->yyLineNr++;
+    for (const char* c=text.data() ; *c ; ++c )
+    {
+      if (*c == '\n') p->yyLineNr++;
+    }
   }
 }
 
@@ -259,7 +262,7 @@ QCString VHDLOutlineParser::getNameID()
   return QCString().setNum(idCounter++);
 }
 
-void VHDLOutlineParser::handleFlowComment(const char* doc)
+void VHDLOutlineParser::handleFlowComment(const QCString &doc)
 {
   lineCount(doc);
 
@@ -551,11 +554,9 @@ void VHDLOutlineParser::addVhdlType(const char *n,int startLine,int section,
   }
 }
 
-void VHDLOutlineParser::createFunction(const char *imp,uint64_t spec,const char *fn)
+void VHDLOutlineParser::createFunction(const QCString &impure,uint64_t spec,const QCString &fname)
 {
   VhdlParser::SharedState *s = &p->shared;
-  QCString impure(imp);
-  QCString fname(fn);
   s->current->spec=spec;
   s->current->section=Entry::FUNCTION_SEC;
 
@@ -862,10 +863,11 @@ void VHDLOutlineParser::error_skipto(int kind)
   // "if"/"while".
 }
 
-QCString filter2008VhdlComment(const char *s)
+QCString filter2008VhdlComment(const QCString &s)
 {
+  if (s.length()<4) return s;
   GrowBuf growBuf;
-  const char *p=s+3; // skip /*!
+  const char *p=s.data()+3; // skip /*!
   char c='\0';
   while (*p == ' ' || *p == '\t') p++;
   while ((c=*p++))

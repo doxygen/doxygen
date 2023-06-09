@@ -84,6 +84,7 @@ int qstricmp( const char *str1, const char *str2 );
 
 int qstrnicmp( const char *str1, const char *str2, size_t len );
 
+using JavaCCString = std::basic_string<unsigned char>;
 
 /** This is an alternative implementation of QCString. It provides basically
  *  the same functions but uses std::string as the underlying string type
@@ -101,6 +102,19 @@ class QCString
     explicit QCString( const std::string &s ) : m_rep(s) {}
 
     QCString( std::string &&s) : m_rep(std::move(s)) {}
+
+    /** For converting a JavaCC string */
+    QCString( const JavaCCString &s)
+    {
+      m_rep.resize(s.size());
+      memcpy(m_rep.data(),s.data(),s.size());
+    }
+    QCString &operator=( const JavaCCString &s)
+    {
+      m_rep.resize(s.size());
+      memcpy(m_rep.data(),s.data(),s.size());
+      return *this;
+    }
 
     /** creates a string with room for size characters
      *  @param[in] size the number of character to allocate (also counting the 0-terminator!)

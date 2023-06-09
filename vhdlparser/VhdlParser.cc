@@ -144,7 +144,7 @@ return QCString(t->image);
           t = jj_consume_token(INERTIAL_T);
           }
           if (!hasError) {
-s=t->image+" ";
+s=QCString(t->image)+" ";
           }
           break;
           }
@@ -9959,7 +9959,7 @@ if(s.isEmpty())
           m_sharedState->currP=0;
           if(tok)
             s1=tok->image;
-          outlineParser()->createFunction(m_sharedState->currName.data(),VhdlDocGen::PROCESS,s1.data());
+          outlineParser()->createFunction(m_sharedState->currName,VhdlDocGen::PROCESS,s1);
           outlineParser()->createFlow();
           m_sharedState->currName="";
           outlineParser()->newEntry();
@@ -12945,7 +12945,7 @@ void VhdlParser::subprogram_specification() {QCString s;Token *tok=0;Token *t;
       }
       if (!hasError) {
 m_sharedState->currP=VhdlDocGen::PROCEDURE;
-   outlineParser()->createFunction(s.data(),m_sharedState->currP,0);
+   outlineParser()->createFunction(s,m_sharedState->currP,0);
    m_sharedState->tempEntry=m_sharedState->current;
    m_sharedState->current->startLine=outlineParser()->getLine(PROCEDURE_T);
    m_sharedState->current->bodyLine=outlineParser()->getLine(PROCEDURE_T);
@@ -13058,10 +13058,10 @@ m_sharedState->currP=VhdlDocGen::FUNCTION;
       }
       }
       if (!hasError) {
-if(tok)
-     outlineParser()->createFunction(tok->image.c_str(),m_sharedState->currP,s.data());
+if (tok)
+     outlineParser()->createFunction(tok->image,m_sharedState->currP,s);
    else
-     outlineParser()->createFunction(0,m_sharedState->currP,s.data());
+     outlineParser()->createFunction(QCString(),m_sharedState->currP,s);
 
    m_sharedState->tempEntry=m_sharedState->current;
    m_sharedState->current->startLine=outlineParser()->getLine(FUNCTION_T);

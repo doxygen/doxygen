@@ -43,15 +43,14 @@ class VHDLOutlineParser : public OutlineParserInterface
     void setLineParsed(int tok);
     int getLine(int tok);
     int getLine();
-    void lineCount(const char*);
+    void lineCount(const QCString &);
     void lineCount();
     void addProto(const char *s1,const char *s2,const char *s3,const char *s4,const char *s5,const char *s6);
-    //void addConfigureNode(const char* a,const char*b, bool,bool isLeaf,bool inlineConf);
-    void createFunction(const char *impure,uint64_t spec,const char *fname);
+    void createFunction(const QCString &impure,uint64_t spec,const QCString &fname);
     void addVhdlType(const char *n,int startLine,int section, uint64_t spec,const char* args,const char* type,Protection prot);
     void addCompInst(const char *n, const char* instName, const char* comp,int iLine);
     void handleCommentBlock(const QCString &doc,bool brief);
-    void handleFlowComment(const char*);
+    void handleFlowComment(const QCString &);
     void initEntry(Entry *e);
     void newEntry();
     bool isFuncProcProced();
@@ -75,6 +74,6 @@ class VHDLOutlineParser : public OutlineParserInterface
 
 const EntryList &getVhdlInstList();
 
-QCString filter2008VhdlComment(const char *s);
+QCString filter2008VhdlComment(const QCString &s);
 
 #endif

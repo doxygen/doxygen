@@ -3513,7 +3513,7 @@ void  VhdlParserTokenManager::SkipLexicalActions(Token *matchedToken){
     QCString doc(image.data());
      int count=doc.contains("--!");
      parser->outlineParser()->setMultCommentLine();
-    parser->outlineParser()->lineCount(image.data());
+    parser->outlineParser()->lineCount(image);
     if (count == 1)
       parser->outlineParser()->oneLineComment(doc);
     else
@@ -3523,26 +3523,26 @@ void  VhdlParserTokenManager::SkipLexicalActions(Token *matchedToken){
        }
       case 7 : {
          image.append(input_stream->GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
-                                                                               parser->outlineParser()->handleFlowComment(image.data());
+                                                                               parser->outlineParser()->handleFlowComment(image);
          break;
        }
       case 8 : {
          image.append(input_stream->GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
-    parser->outlineParser()->lineCount(image.data());
+    parser->outlineParser()->lineCount(image);
          break;
        }
       case 9 : {
          image.append(input_stream->GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
    {
-     QCString q = filter2008VhdlComment(image.data());
-     parser->outlineParser()->lineCount(image.data());
+     QCString q = filter2008VhdlComment(image);
+     parser->outlineParser()->lineCount(image);
      parser->outlineParser()->handleCommentBlock(QCString(q),TRUE);image.clear();
    }
          break;
        }
       case 10 : {
          image.append(input_stream->GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
-      parser->outlineParser()->lineCount(image.data());image.clear();
+      parser->outlineParser()->lineCount(image);image.clear();
          break;
        }
       default :

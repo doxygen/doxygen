@@ -92,7 +92,7 @@ SKIP:
     QCString doc(image.data());
      int count=doc.contains("--!");
      parser->outlineParser()->setMultCommentLine();
-    parser->outlineParser()->lineCount(image.data());
+    parser->outlineParser()->lineCount(image);
     if (count == 1)
       parser->outlineParser()->oneLineComment(doc);
     else
@@ -100,10 +100,10 @@ SKIP:
     }
 
   }
-  |<VHDL_FLOWCHART_COMMENT: "--#" (~["\n", "\r"])* ("\n" | "\r" | "\r\n")?>  { parser->outlineParser()->handleFlowComment(image.data());}
+  |<VHDL_FLOWCHART_COMMENT: "--#" (~["\n", "\r"])* ("\n" | "\r" | "\r\n")?>  { parser->outlineParser()->handleFlowComment(image);}
   |<VHDL_COMMENT: "--" (~["\n", "\r"])* ("\n" | "\r" | "\r\n")?>
   {
-    parser->outlineParser()->lineCount(image.data());}
+    parser->outlineParser()->lineCount(image);}
   }
 
 // VHDL 2008  comment /* .... */
@@ -113,14 +113,14 @@ SKIP :
   <MULT_DOXYGEN_VHDL_COMMENT_2008 : "/*!" (~["*"])* "*" ("*" | ~["*","/"] (~["*"])* "*")* "/">
   {
    {
-     QCString q = filter2008VhdlComment(image.data());
-     parser->outlineParser()->lineCount(image.data());
+     QCString q = filter2008VhdlComment(image);
+     parser->outlineParser()->lineCount(image);
      parser->outlineParser()->handleCommentBlock(QCString(q),TRUE);image.clear();
    }
   }
   | <MULT_VHDL_2008_COMMENT : "/*" (~["*"])* "*" ("*" | ~["*","/"] (~["*"])* "*")* "/">
     {
-      parser->outlineParser()->lineCount(image.data());image.clear();}
+      parser->outlineParser()->lineCount(image);image.clear();}
     }
 
 /* KEYWORDS */
@@ -357,7 +357,7 @@ QCString actual_designator() :
 {
 t=<OPEN_T> { return QCString(t->image); }
 |
-LOOKAHEAD([ <INERTIAL_T> ] expression()) [ t=<INERTIAL_T> {s=t->image+" ";}] str=expression() {  return s+str; }
+LOOKAHEAD([ <INERTIAL_T> ] expression()) [ t=<INERTIAL_T> {s=QCString(t->image)+" ";}] str=expression() {  return s+str; }
 |
  LOOKAHEAD(5) str=subtype_indication() {return str;}
 |
@@ -2544,7 +2544,7 @@ void process_statement() : {QCString s,s1,s2;Token *tok=0;Token *tok1=0;}
           m_sharedState->currP=0;
           if(tok)
             s1=tok->image;
-          outlineParser()->createFunction(m_sharedState->currName.data(),VhdlDocGen::PROCESS,s1.data());
+          outlineParser()->createFunction(m_sharedState->currName,VhdlDocGen::PROCESS,s1);
           outlineParser()->createFlow();
           m_sharedState->currName="";
           outlineParser()->newEntry();
@@ -3136,7 +3136,7 @@ void subprogram_specification() : {QCString s;Token *tok=0;Token *t;}
  <PROCEDURE_T> s=designator()
  {
    m_sharedState->currP=VhdlDocGen::PROCEDURE;
-   outlineParser()->createFunction(s.data(),m_sharedState->currP,0);
+   outlineParser()->createFunction(s,m_sharedState->currP,0);
    m_sharedState->tempEntry=m_sharedState->current;
    m_sharedState->current->startLine=outlineParser()->getLine(PROCEDURE_T);
    m_sharedState->current->bodyLine=outlineParser()->getLine(PROCEDURE_T);
@@ -3150,10 +3150,10 @@ void subprogram_specification() : {QCString s;Token *tok=0;Token *t;}
  [ (tok=<PURE_T> | tok=<IMPURE_T>) ] t=<FUNCTION_T> { m_sharedState->currP=VhdlDocGen::FUNCTION;} s=designator() [subprogram_header()]
  {
 
-   if(tok)
-     outlineParser()->createFunction(tok->image.c_str(),m_sharedState->currP,s.data());
+   if (tok)
+     outlineParser()->createFunction(tok->image,m_sharedState->currP,s);
    else
-     outlineParser()->createFunction(0,m_sharedState->currP,s.data());
+     outlineParser()->createFunction(QCString(),m_sharedState->currP,s);
 
    m_sharedState->tempEntry=m_sharedState->current;
    m_sharedState->current->startLine=outlineParser()->getLine(FUNCTION_T);
