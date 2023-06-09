@@ -37,6 +37,7 @@
 #include <QRegularExpression>
 #include <QDebug>
 #include <QDate>
+#include <QScrollBar>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -610,9 +611,26 @@ void MainWindow::readStdout()
     QString text = QString::fromUtf8(data);
     if (!text.isEmpty())
     {
-      m_outputLog->moveCursor (QTextCursor::End);
-      m_outputLog->insertPlainText (text);
-      m_outputLog->moveCursor (QTextCursor::End);
+      QScrollBar *vbar = m_outputLog->verticalScrollBar();
+
+      const QTextCursor old_cursor = m_outputLog->textCursor();
+      const bool is_scrolled_up = vbar->value() == vbar->maximum();
+      const int distanceFromBottom = vbar->minimum() - vbar->value();
+
+      m_outputLog->moveCursor(QTextCursor::End);
+
+      m_outputLog->insertPlainText(text);
+
+      if (old_cursor.hasSelection() || !is_scrolled_up)
+      {
+        m_outputLog->setTextCursor(old_cursor);
+        vbar->setValue(vbar->minimum() - distanceFromBottom);
+      }
+      else
+      {
+        m_outputLog->moveCursor(QTextCursor::End);
+        vbar->setValue(m_outputLog->verticalScrollBar()->maximum());
+      }
     }
   }
 }
