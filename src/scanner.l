@@ -1110,8 +1110,22 @@ NONLopt [^\n]*
                                             REJECT;
                                           }
                                         }
+<FindMembers>{B}*"sealed"{BN}+          {
+                                          if (yyextra->insideCS)
+                                          {
+                                            yyextra->current->spec|=Entry::Sealed;
+                                          }
+                                          else
+                                          {
+                                            REJECT;
+                                          }
+                                        }
 <FindMembers>{B}*"abstract"{BN}+        {
-                                          if (!yyextra->insidePHP)
+                                          if (yyextra->insidePHP || yyextra->insideCS)
+                                          {
+                                            yyextra->current->spec|=Entry::Abstract;
+                                          }
+                                          else
                                           {
                                             if (yyextra->insideCpp) REJECT;
                                             yyextra->current->type += " abstract ";
@@ -1123,10 +1137,6 @@ NONLopt [^\n]*
                                             {
                                               yyextra->current->spec|=Entry::Abstract;
                                             }
-                                          }
-                                          else
-                                          {
-                                            yyextra->current->spec|=Entry::Abstract;
                                           }
                                           lineCount(yyscanner);
                                         }
