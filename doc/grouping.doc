@@ -42,8 +42,8 @@ a \ref cmdingroup "\\ingroup" command inside its documentation block.
 
 To avoid putting \ref cmdingroup "\\ingroup" commands in the documentation
 for each member you can also group members together by the 
-open marker <code>\@{</code> before the group and the 
-closing marker <code>\@}</code> after the group. The markers can 
+open marker \ref cmdgroupopen "\@{" before the group and the 
+closing marker \ref cmdgroupclose "\@}" after the group. The markers can 
 be put in the documentation of the group definition or in a separate 
 documentation block. 
 
@@ -76,7 +76,8 @@ or file, but only visible as part of a group).
 
 Doxygen will put members into the group whose definition has
 the highest "priority": e.g. An explicit \ref cmdingroup "\\ingroup" overrides 
-an implicit grouping definition via <code>\@{</code> <code>\@}</code>. 
+an implicit grouping definition via a block with \ref cmdgroupopen "\@{" and
+\ref cmdgroupclose "\@}".
 Conflicting grouping definitions with the same priority trigger a warning, 
 unless one definition was for a member without any explicit documentation. 
 
