@@ -871,7 +871,7 @@ void GroupDefImpl::writeFiles(OutputList &ol,const QCString &title)
       ol.startMemberItem(fd->getOutputFileBase(),OutputGenerator::MemberItemType::Normal);
       ol.docify(theTranslator->trFile(FALSE,TRUE)+" ");
       ol.insertMemberAlign();
-      ol.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),QCString(),fd->name());
+      ol.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),QCString(),fd->displayName());
       ol.endMemberItem(OutputGenerator::MemberItemType::Normal);
       if (!fd->briefDescription().isEmpty() && Config_getBool(BRIEF_MEMBER_DESC))
       {

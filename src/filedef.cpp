@@ -66,7 +66,7 @@ class FileDefImpl : public DefinitionMixin<FileDef>
     virtual CodeSymbolType codeSymbolType() const { return CodeSymbolType::Default; }
     virtual const QCString &name() const;
 
-    virtual QCString displayName(bool=TRUE) const { return name(); }
+    virtual QCString displayName(bool=TRUE) const { return localName(); }
     virtual QCString fileName() const { return m_fileName; }
     virtual QCString getOutputFileBase() const;
     virtual QCString anchor() const { return QCString(); }

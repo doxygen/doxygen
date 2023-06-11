@@ -883,7 +883,7 @@ static void writeDirHierarchy(OutputList &ol, FTVHelp* ftv,bool addToIndex)
             else if (src)
             {
               Doxygen::indexList->addContentsItem(
-                  FALSE, fd->name(), QCString(),
+                  FALSE, fd->displayName(), QCString(),
                   fd->getSourceFileBase(), QCString(), FALSE, TRUE, fd.get());
             }
           }

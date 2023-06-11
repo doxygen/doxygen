@@ -439,12 +439,12 @@ void DirDefImpl::writeFileList(OutputList &ol)
         ol.insertMemberAlign();
         if (fd->isLinkable())
         {
-          ol.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),QCString(),fd->name());
+          ol.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),QCString(),fd->displayName());
         }
         else
         {
           ol.startBold();
-          ol.docify(fd->name());
+          ol.docify(fd->displayName());
           ol.endBold();
         }
         ol.endMemberItem(OutputGenerator::MemberItemType::Normal);
