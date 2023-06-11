@@ -101,7 +101,7 @@ class DarkModeToggle extends HTMLElement {
                     addButton();
                 })
                 $(document).keyup(function(e) {
-                    if (e.key === "Escape") { // escape key maps to keycode `27`
+                    if (e.keyCode==27) { // escape key maps to keycode `27`
                        e.stopPropagation();
                        DarkModeToggle.userPreference = !DarkModeToggle.userPreference
                    }
