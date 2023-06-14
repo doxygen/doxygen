@@ -914,7 +914,7 @@ void GroupDefImpl::writeNestedGroups(OutputList &ol,const QCString &title)
         ol.startMemberDeclaration();
         ol.startMemberItem(gd->getOutputFileBase(),OutputGenerator::MemberItemType::Normal);
         //ol.docify(theTranslator->trGroup(FALSE,TRUE));
-        //ol.docify(" ");
+        ol.docify(" ");
         ol.insertMemberAlign();
         ol.writeObjectLink(gd->getReference(),gd->getOutputFileBase(),QCString(),gd->groupTitle());
         ol.endMemberItem(OutputGenerator::MemberItemType::Normal);
@@ -946,7 +946,7 @@ void GroupDefImpl::writeDirs(OutputList &ol,const QCString &title)
       if (!dd->hasDocumentation()) continue;
       ol.startMemberDeclaration();
       ol.startMemberItem(dd->getOutputFileBase(),OutputGenerator::MemberItemType::Normal);
-      ol.parseText(theTranslator->trDir(FALSE,TRUE));
+      ol.docify(theTranslator->trDir(FALSE,TRUE)+" ");
       ol.insertMemberAlign();
       ol.writeObjectLink(dd->getReference(),dd->getOutputFileBase(),QCString(),dd->shortName());
       ol.endMemberItem(OutputGenerator::MemberItemType::Normal);
