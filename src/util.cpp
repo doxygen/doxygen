@@ -1820,6 +1820,8 @@ static QCString extractCanonicalArgType(const Definition *d,const FileDef *fs,co
   return extractCanonicalType(d,fs,type,lang);
 }
 
+static std::mutex g_matchArgsMutex;
+
 static bool matchArgument2(
     const Definition *srcScope,const FileDef *srcFileScope,Argument &srcA,
     const Definition *dstScope,const FileDef *dstFileScope,Argument &dstA,
@@ -1858,11 +1860,14 @@ static bool matchArgument2(
     dstA.canType=""; // invalidate cached type value
   }
 
-  if (srcA.canType.isEmpty() || dstA.canType.isEmpty())
   {
-    // need to re-evaluate both see issue #8370
-    srcA.canType = extractCanonicalArgType(srcScope,srcFileScope,srcA,lang);
-    dstA.canType = extractCanonicalArgType(dstScope,dstFileScope,dstA,lang);
+    std::lock_guard lock(g_matchArgsMutex);
+    if (srcA.canType.isEmpty() || dstA.canType.isEmpty())
+    {
+      // need to re-evaluate both see issue #8370
+      srcA.canType = extractCanonicalArgType(srcScope,srcFileScope,srcA,lang);
+      dstA.canType = extractCanonicalArgType(dstScope,dstFileScope,dstA,lang);
+    }
   }
 
   if (srcA.canType==dstA.canType)
@@ -4378,7 +4383,7 @@ int extractClassNameFromType(const QCString &type,int &pos,QCString &name,QCStri
 {
   static const reg::Ex re_norm(R"(\a[\w:]*)");
   static const reg::Ex re_fortran(R"(\a[\w:()=]*)");
-  static const reg::Ex *re = &re_norm;
+  const reg::Ex *re = &re_norm;
 
   name.resize(0);
   templSpec.resize(0);
