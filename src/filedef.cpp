@@ -816,14 +816,16 @@ void FileDefImpl::writeDocumentation(OutputList &ol)
       getDirDef()->writeNavigationPath(ol);
       ol.endQuickIndices();
     }
-    QCString pageTitleShort=theTranslator->trFileReference(name());
     startTitle(ol,getOutputFileBase(),this);
     ol.pushGeneratorState();
       ol.disableAllBut(OutputType::Html);
-      ol.parseText(pageTitleShort); // Html only
+      ol.parseText(theTranslator->trFileReference(displayName())); // Html only
       ol.enableAll();
       ol.disable(OutputType::Html);
-      ol.parseText(pageTitle); // other output formats
+      if (Config_getBool(FULL_PATH_NAMES))
+        ol.parseText(theTranslator->trFileReference(m_docname)); // other output formats
+      else
+        ol.parseText(theTranslator->trFileReference(name())); // other output formats
     ol.popGeneratorState();
     addGroupListToTitle(ol,this);
     endTitle(ol,getOutputFileBase(),title);
