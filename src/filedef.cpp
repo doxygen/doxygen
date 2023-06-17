@@ -1084,6 +1084,11 @@ void FileDefImpl::writeSourceHeader(OutputList &ol)
     ol.startTextLink(getOutputFileBase(),QCString());
     ol.parseText(theTranslator->trGotoDocumentation());
     ol.endTextLink();
+
+    ol.pushGeneratorState();
+    ol.disableAllBut(OutputType::RTF);
+    ol.writeString("\\par\n");
+    ol.popGeneratorState();
   }
 }
 
