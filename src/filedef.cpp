@@ -822,10 +822,9 @@ void FileDefImpl::writeDocumentation(OutputList &ol)
       ol.parseText(theTranslator->trFileReference(displayName())); // Html only
       ol.enableAll();
       ol.disable(OutputType::Html);
-      if (Config_getBool(FULL_PATH_NAMES))
-        ol.parseText(theTranslator->trFileReference(m_docname)); // other output formats
-      else
-        ol.parseText(theTranslator->trFileReference(name())); // other output formats
+      ol.parseText(Config_getBool(FULL_PATH_NAMES) ?  // other output formats
+                   pageTitle :
+                   theTranslator->trFileReference(name()));
     ol.popGeneratorState();
     addGroupListToTitle(ol,this);
     endTitle(ol,getOutputFileBase(),title);
