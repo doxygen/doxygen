@@ -56,7 +56,7 @@ constexpr bool has_newline_at_end(const char (&str)[N])
 #define msg_newline_required(x) \
    static_assert(has_newline_at_end(x),"text: \"" x "\" should have \\n at end");
 
-#if __GNUC__
+#if (defined(__GNUC__) && !defined(__clang__))
 #define warn(file,line,fmt,...) do { \
    msg_no_newline_allowed(fmt);      \
    warn_(file,line,fmt,##__VA_ARGS__); \
