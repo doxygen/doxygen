@@ -2773,18 +2773,15 @@ static bool getLinkInScope(yyscan_t yyscanner,
                           )
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  const MemberDef    *md = 0;
-  const ClassDef     *cd = 0;
-  const FileDef      *fd = 0;
-  const NamespaceDef *nd = 0;
-  const GroupDef     *gd = 0;
   DBG_CTX((stderr,"getLinkInScope: trying '%s'::'%s' varOnly=%d\n",qPrint(c),qPrint(m),varOnly));
-  if (getDefs(c,m,"()",md,cd,fd,nd,gd,FALSE,yyextra->sourceFileDef,FALSE) &&
-      (!varOnly || md->isVariable()))
+  GetDefInput input(c,m,"()");
+  input.currentFile = yyextra->sourceFileDef;
+  GetDefResult result = getDefs(input);
+  if (result.found && (!varOnly || result.md->isVariable()))
   {
-    if (md->isLinkable())
+    if (result.md->isLinkable())
     {
-      DBG_CTX((stderr,"found it %s!\n",qPrint(md->qualifiedName())));
+      DBG_CTX((stderr,"found it %s!\n",qPrint(result.md->qualifiedName())));
       if (yyextra->exampleBlock)
       {
         std::lock_guard<std::mutex> lock(Doxygen::addExampleMutex);
@@ -2792,7 +2789,7 @@ static bool getLinkInScope(yyscan_t yyscanner,
         anchor.sprintf("a%d",yyextra->anchorCount);
         DBG_CTX((stderr,"addExampleFile(%s,%s,%s)\n",qPrint(anchor),qPrint(yyextra->exampleName),
                                                      qPrint(yyextra->exampleFile)));
-        MemberDefMutable *mdm = toMemberDefMutable(const_cast<MemberDef*>(md));
+        MemberDefMutable *mdm = toMemberDefMutable(const_cast<MemberDef*>(result.md));
         if (mdm && mdm->addExample(anchor,yyextra->exampleName,yyextra->exampleFile))
         {
           ol.writeCodeAnchor(anchor);
@@ -2800,23 +2797,23 @@ static bool getLinkInScope(yyscan_t yyscanner,
         }
       }
 
-      const Definition *d = md->getOuterScope()==Doxygen::globalScope ?
-                            md->resolveAlias()->getFileDef() : md->getOuterScope();
-      if (md->resolveAlias()->getGroupDef()) d = md->resolveAlias()->getGroupDef();
+      const Definition *d = result.md->getOuterScope()==Doxygen::globalScope ?
+                            result.md->resolveAlias()->getFileDef() : result.md->getOuterScope();
+      if (result.md->resolveAlias()->getGroupDef()) d = result.md->resolveAlias()->getGroupDef();
       if (d && d->isLinkable())
       {
-        yyextra->theCallContext.setScope(ScopedTypeVariant(stripClassName(yyscanner,md->typeString(),md->getOuterScope())));
+        yyextra->theCallContext.setScope(ScopedTypeVariant(stripClassName(yyscanner,result.md->typeString(),result.md->getOuterScope())));
         DBG_CTX((stderr,"yyextra->currentDefinition=%p yyextra->currentMemberDef=%p yyextra->insideBody=%d\n",
                  (void*)yyextra->currentDefinition,(void*)yyextra->currentMemberDef,yyextra->insideBody));
 
         if (yyextra->currentDefinition && yyextra->currentMemberDef &&
             yyextra->insideBody && yyextra->collectXRefs)
         {
-          addDocCrossReference(yyextra->currentMemberDef,md);
+          addDocCrossReference(yyextra->currentMemberDef,result.md);
         }
         DBG_CTX((stderr,"d->getReference()='%s' d->getOutputBase()='%s' name='%s' member name='%s'\n",qPrint(d->getReference()),qPrint(d->getOutputFileBase()),qPrint(d->name()),qPrint(md->name())));
 
-        writeMultiLineCodeLink(yyscanner,ol,md, !text.isEmpty() ? text : memberText);
+        writeMultiLineCodeLink(yyscanner,ol,result.md, !text.isEmpty() ? text : memberText);
         addToSearchIndex(yyscanner,!text.isEmpty() ? text : memberText);
         return TRUE;
       }

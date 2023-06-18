@@ -462,23 +462,20 @@ bool DocParser::findDocsForMemberOrCompound(const QCString &commandName,
   QCString name=removeRedundantWhiteSpace(cmdArg.left(funcStart));
   QCString args=cmdArg.right(l-funcStart);
   // try if the link is to a member
-  const MemberDef    *md=0;
-  const ClassDef     *cd=0;
-  const NamespaceDef *nd=0;
-  bool found = getDefs(
-      context.context.find('.')==-1?context.context:QCString(), // find('.') is a hack to detect files
+  GetDefInput input(
+      context.context.find('.')==-1 ? context.context : QCString(), // find('.') is a hack to detect files
       name,
-      args.isEmpty() ? QCString() : args,
-      md,cd,fd,nd,gd,FALSE,0,TRUE);
+      args.isEmpty() ? QCString() : args);
+  input.checkCV=true;
+  GetDefResult result = getDefs(input);
   //printf("found=%d context=%s name=%s\n",found,qPrint(context.context),qPrint(name));
-  if (found && md)
+  if (result.found && result.md)
   {
-    *pDoc=md->documentation();
-    *pBrief=md->briefDescription();
-    *pDef=md;
+    *pDoc=result.md->documentation();
+    *pBrief=result.md->briefDescription();
+    *pDef=result.md;
     return TRUE;
   }
-
 
   int scopeOffset=static_cast<int>(context.context.length());
   do // for each scope
@@ -491,7 +488,7 @@ bool DocParser::findDocsForMemberOrCompound(const QCString &commandName,
     //printf("Trying fullName='%s'\n",qPrint(fullName));
 
     // try class, namespace, group, page, file reference
-    cd = Doxygen::classLinkedMap->find(fullName);
+    const ClassDef *cd = Doxygen::classLinkedMap->find(fullName);
     if (cd) // class
     {
       *pDoc=cd->documentation();
@@ -499,7 +496,7 @@ bool DocParser::findDocsForMemberOrCompound(const QCString &commandName,
       *pDef=cd;
       return TRUE;
     }
-    nd = Doxygen::namespaceLinkedMap->find(fullName);
+    const NamespaceDef *nd = Doxygen::namespaceLinkedMap->find(fullName);
     if (nd) // namespace
     {
       *pDoc=nd->documentation();

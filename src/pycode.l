@@ -1207,35 +1207,29 @@ static bool getLinkInScope(yyscan_t yyscanner,
                           )
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  const MemberDef    *md = 0;
-  const ClassDef     *cd = 0;
-  const FileDef      *fd = 0;
-  const NamespaceDef *nd = 0;
-  const GroupDef     *gd = 0;
+  GetDefInput input(c,m,"()");
+  input.currentFile = yyextra->sourceFileDef;
+  GetDefResult result = getDefs(input);
   //printf("Trying '%s'::'%s'\n",qPrint(c),qPrint(m));
-  if (getDefs(c,m,"()",md,cd,fd,nd,gd,FALSE,yyextra->sourceFileDef) &&
-      md->isLinkable())
+  if (result.found && result.md->isLinkable())
   {
-    //Definition *d=0;
-    //if (cd) d=cd; else if (nd) d=nd; else if (fd) d=fd; else d=gd;
-
-    const Definition *d = md->getOuterScope()==Doxygen::globalScope ?
-                          md->getBodyDef() : md->getOuterScope();
+    const Definition *d = result.md->getOuterScope()==Doxygen::globalScope ?
+                          result.md->getBodyDef() : result.md->getOuterScope();
     //printf("Found! d=%s\n",d?qPrint(d->name()):"<none>");
-    if (md->getGroupDef()) d = md->getGroupDef();
+    if (result.md->getGroupDef()) d = result.md->getGroupDef();
     if (d && d->isLinkable())
     {
-      yyextra->theCallContext.setScope(ScopedTypeVariant(stripClassName(yyscanner,md->typeString(),md->getOuterScope())));
+      yyextra->theCallContext.setScope(ScopedTypeVariant(stripClassName(yyscanner,result.md->typeString(),result.md->getOuterScope())));
       //printf("yyextra->currentDefinition=%p yyextra->currentMemberDef=%p\n",
       //        yyextra->currentDefinition,yyextra->currentMemberDef);
 
       if (yyextra->currentDefinition && yyextra->currentMemberDef && yyextra->collectXRefs && yyextra->insideBody)
       {
-        addDocCrossReference(yyextra->currentMemberDef,md);
+        addDocCrossReference(yyextra->currentMemberDef,result.md);
       }
       //printf("d->getReference()='%s' d->getOutputBase()='%s' name='%s' member name='%s'\n",qPrint(d->getReference()),qPrint(d->getOutputFileBase()),qPrint(d->name()),qPrint(md->name()));
 
-      writeMultiLineCodeLink(yyscanner,ol,md, !text.isEmpty() ? text : memberText);
+      writeMultiLineCodeLink(yyscanner,ol,result.md, !text.isEmpty() ? text : memberText);
       addToSearchIndex(yyscanner,!text.isEmpty() ? text : memberText);
       return TRUE;
     }

@@ -103,18 +103,29 @@ void linkifyText(const TextGeneratorIntf &ol,
 
 QCString fileToString(const QCString &name,bool filter=FALSE,bool isSourceCode=FALSE);
 
-bool getDefs(const QCString &scopeName,
-                    const QCString &memberName,
-                    const QCString &args,
-                    const MemberDef *&md,
-                    const ClassDef *&cd,
-                    const FileDef *&fd,
-                    const NamespaceDef *&nd,
-                    const GroupDef *&gd,
-                    bool forceEmptyScope=FALSE,
-                    const FileDef *currentFile=0,
-                    bool checkCV=FALSE
-                   );
+struct GetDefInput
+{
+  GetDefInput(const QCString &scName,const QCString &memName,const QCString &a) :
+    scopeName(scName),memberName(memName),args(a) {}
+  QCString scopeName;
+  QCString memberName;
+  QCString args;
+  bool forceEmptyScope = false;
+  const FileDef *currentFile = 0;
+  bool checkCV = false;
+};
+
+struct GetDefResult
+{
+  bool found = false;
+  const MemberDef    *md=0;
+  const ClassDef     *cd=0;
+  const FileDef      *fd=0;
+  const NamespaceDef *nd=0;
+  const GroupDef     *gd=0;
+};
+
+GetDefResult getDefs(const GetDefInput &input);
 
 QCString getFileFilter(const QCString &name,bool isSourceCode);
 
