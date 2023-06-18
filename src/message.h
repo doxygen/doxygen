@@ -56,7 +56,16 @@ constexpr bool has_newline_at_end(const char (&str)[N])
 #define msg_newline_required(x) \
    static_assert(has_newline_at_end(x),"text: \"" x "\" should have \\n at end");
 
-#if (defined(__GNUC__) && !defined(__clang__))
+#if defined(__clang__)
+#define  warn warn_
+#define  warn_undoc warn_undoc_
+#define  warn_incomplete_doc warn_incomplete_doc_
+#define  warn_doc_error warn_doc_error_
+#define  warn_uncond warn_uncond_
+#define  err err_
+#define  err_full err_full_
+#define  term term_
+#else
 #define warn(file,line,fmt,...) do { \
    msg_no_newline_allowed(fmt);      \
    warn_(file,line,fmt,##__VA_ARGS__); \
@@ -96,49 +105,6 @@ constexpr bool has_newline_at_end(const char (&str)[N])
    msg_newline_required(fmt); \
    term_(fmt,##__VA_ARGS__);    \
    } while(0)
-
-#else
-
-#define warn(file,line,fmt,...) do { \
-   msg_no_newline_allowed(fmt);      \
-   warn_(file,line,fmt,__VA_ARGS__); \
-   } while(0)
-
-#define warn_undoc(file,line,fmt,...) do { \
-   msg_no_newline_allowed(fmt);            \
-   warn_undoc_(file,line,fmt,__VA_ARGS__); \
-   } while(0)
-
-#define warn_incomplete_doc(file,line,fmt,...) do { \
-   msg_no_newline_allowed(fmt);                     \
-   warn_incomplete_doc_(file,line,fmt,__VA_ARGS__); \
-   } while(0)
-
-#define warn_doc_error(file,line,fmt,...) do { \
-   msg_no_newline_allowed(fmt);                \
-   warn_doc_error_(file,line,fmt,__VA_ARGS__); \
-   } while(0)
-
-#define warn_uncond(fmt,...) do { \
-   msg_newline_required(fmt);     \
-   warn_uncond_(fmt,__VA_ARGS__); \
-   } while(0)
-
-#define err(fmt,...) do {     \
-   msg_newline_required(fmt); \
-   err_(fmt,__VA_ARGS__);     \
-   } while(0)
-
-#define err_full(file,line,fmt,...) do { \
-   msg_no_newline_allowed(fmt);          \
-   err_full_(file,line,fmt,__VA_ARGS__); \
-   } while(0)
-
-#define term(fmt,...) do {    \
-   msg_newline_required(fmt); \
-   term_(fmt,__VA_ARGS__);    \
-   } while(0)
-
 #endif
 
 #endif
